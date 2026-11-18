@@ -52,7 +52,14 @@ export const PROP_LIB: readonly PropLibEntry[] = [
   { id: 'prop_cong_thanh_vo', map: 'co_thanh', kind: 'gate', repeat: false, h: 14, colliders: [c(-8, 0, 4.5), c(8, 0, 4.5)] },
   { id: 'prop_den_long_troi', map: 'co_thanh', kind: 'light', repeat: true, h: 1.2, colliders: [] },
   { id: 'prop_tru_da_khac_van', map: 'co_thanh', kind: 'rock', repeat: true, h: 9, colliders: [c(0, 0, 1.4)] },
-  { id: 'prop_tuong_da_vo_si', map: 'co_thanh', kind: 'arch', repeat: false, h: 7, colliders: [c(-3.3, 0, 2.8), c(0, 0, 2.8), c(3.3, 0, 2.8)] },
+  {
+    id: 'prop_tuong_da_vo_si',
+    map: 'co_thanh',
+    kind: 'arch',
+    repeat: false,
+    h: 7,
+    colliders: [c(-3.3, 0, 2.8), c(0, 0, 2.8), c(3.3, 0, 2.8)],
+  },
   { id: 'prop_than_nien_chau', map: 'co_thanh', kind: 'artifact', repeat: false, h: 0.23, colliders: [] },
 ];
 

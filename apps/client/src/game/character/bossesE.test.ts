@@ -20,7 +20,15 @@ const NEW_BOSSES: Record<string, { kind: 'quad' | 'serpent' | 'biped'; level: st
   boss_vo_dien_than_quan: { kind: 'biped', level: 'than_tang' },
 };
 
-type Entry = { file: string; animations?: string[]; skinned?: boolean; bones?: number; triangles?: number; class?: string; textures?: { width: number; height: number }[] };
+type Entry = {
+  file: string;
+  animations?: string[];
+  skinned?: boolean;
+  bones?: number;
+  triangles?: number;
+  class?: string;
+  textures?: { width: number; height: number }[];
+};
 const entry = (id: string) => MANIFEST.assets[id] as unknown as Entry;
 
 describe('boss mở rộng (asset Tripo nhập E-2/E-3/E-4)', () => {

@@ -20,7 +20,13 @@ let acc = 9970;
 
 function setup(level = 28, levelId = 'bac_hoang') {
   const host = { broadcast: () => {} };
-  const sim = new GameSim(new WorldState(), host as never, { levelId, roomName: 'test', spawn: { x: 1024, z: 1556 }, respawn: { x: 1024, z: 1556 }, persistPosition: false });
+  const sim = new GameSim(new WorldState(), host as never, {
+    levelId,
+    roomName: 'test',
+    spawn: { x: 1024, z: 1556 },
+    respawn: { x: 1024, z: 1556 },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'q5' + acc);
   char.level = level;
   char.recalc();
@@ -57,7 +63,8 @@ describe('dữ liệu chương 5', () => {
   it('NPC nhận/trả có thật; điểm chạm/quét có trong bac_hoang', () => {
     for (const q of ch5()) {
       for (const n of [q.giver, q.turnin]) expect(NPC.get(n), `${q.id}: ${n}`).toBeTruthy();
-      for (const o of q.objectives) if (o.type === 'touch' || o.type === 'scan') expect(questSpot(BH, o.target), `${q.id}/${o.target}`).toBeTruthy();
+      for (const o of q.objectives)
+        if (o.type === 'touch' || o.type === 'scan') expect(questSpot(BH, o.target), `${q.id}/${o.target}`).toBeTruthy();
     }
   });
   it('nhiệm vụ mở trận không cho nhận sớm hơn cấp vào level đích', () => {

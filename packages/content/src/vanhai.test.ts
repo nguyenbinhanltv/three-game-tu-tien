@@ -79,7 +79,8 @@ describe('van_hai', () => {
       const s: MoveState = { x: r.ax, y: d.voidFloor!, z: r.az, vy: 0, grounded: true, flying: false };
       // hướng tiến = (-sin yaw, -cos yaw) khi mz = 1
       const yaw = Math.atan2(-ux, -uz);
-      for (let i = 0; i < Math.ceil(len / 0.35) + 20; i++) stepMove(s, { s: i, mx: 0, mz: 1, yaw, f: 0 }, { canFly: false, frozen: false, speedMul: 1, terrain: tr });
+      for (let i = 0; i < Math.ceil(len / 0.35) + 20; i++)
+        stepMove(s, { s: i, mx: 0, mz: 1, yaw, f: 0 }, { canFly: false, frozen: false, speedMul: 1, terrain: tr });
       expect(s.y, r.id).toBeGreaterThan(r.by - 3);
       expect(s.grounded).toBe(true);
     }
@@ -127,7 +128,11 @@ describe('van_hai: chặn leo vách đảo và thành cầu (đảo và cầu th
     let maxY = s.y;
     let near = Infinity;
     for (let i = 0; i < steps; i++) {
-      stepMove(s, { s: i, mx: 0, mz: 1, yaw: yawOf(dir[0], dir[1]), f: opt.jump ? 1 : 0 }, { canFly: false, frozen: false, speedMul: opt.speedMul ?? 1, terrain: tr });
+      stepMove(
+        s,
+        { s: i, mx: 0, mz: 1, yaw: yawOf(dir[0], dir[1]), f: opt.jump ? 1 : 0 },
+        { canFly: false, frozen: false, speedMul: opt.speedMul ?? 1, terrain: tr },
+      );
       maxY = Math.max(maxY, s.y);
       near = Math.min(near, nearSeg(s.x, s.z));
     }
@@ -186,7 +191,14 @@ describe('van_hai: chặn leo vách đảo và thành cầu (đảo và cầu th
           const a = (deg * Math.PI) / 180;
           for (const opt of OPTS) {
             // đứng cách đường tim cầu 25 m, đi về phía cầu lệch `deg` so với đường tim
-            const s: MoveState = { x: mx - uz * side * 25 - ux * 10, y: floor, z: mz + ux * side * 25 - uz * 10, vy: 0, grounded: true, flying: false };
+            const s: MoveState = {
+              x: mx - uz * side * 25 - ux * 10,
+              y: floor,
+              z: mz + ux * side * 25 - uz * 10,
+              vy: 0,
+              grounded: true,
+              flying: false,
+            };
             const dir: [number, number] = [ux * Math.cos(a) + uz * side * Math.sin(a), uz * Math.cos(a) - ux * side * Math.sin(a)];
             const [maxY] = walk(s, dir, 150, { ...opt });
             expect(maxY, `${b.id} ${side} ${deg}° ${JSON.stringify(opt)}`).toBeLessThan(floor + 3);

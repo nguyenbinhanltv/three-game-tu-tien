@@ -48,12 +48,19 @@ function bladeTrailNodes(U: FxUniforms) {
   const yy = y.sub(cut).div(max(one.sub(cut), 0.001));
   const inside = smoothstep(0, 0.18, yy).mul(step(0, y));
   const mask = inside.mul(pow(one.sub(age), 1.6));
-  const edge = exp(one.sub(yy).negate().div(0.1)).mul(smoothstep(1, 0.6, age)).mul(step(0, yy));
+  const edge = exp(one.sub(yy).negate().div(0.1))
+    .mul(smoothstep(1, 0.6, age))
+    .mul(step(0, yy));
   const n = vnoise(vec2(age.mul(14).sub(time.mul(7)).add(U.a.z), yy.mul(6)));
   const n2 = vnoise(vec2(age.mul(30).sub(time.mul(11)), yy.mul(13).add(U.a.z)));
-  const body = pow(clamp(yy, 0, 1), 2).mul(1.5).mul(n.mul(n).mul(1.1).add(n2.mul(n2).mul(0.4)).add(0.3));
+  const body = pow(clamp(yy, 0, 1), 2)
+    .mul(1.5)
+    .mul(n.mul(n).mul(1.1).add(n2.mul(n2).mul(0.4)).add(0.3));
   const rim = mix(U.color, vec3(1, 1, 1), 0.75);
-  const col = mix(U.color.mul(0.4), U.color, clamp(body, 0, 1)).mul(body).mul(1.3).add(rim.mul(edge).mul(1.9));
+  const col = mix(U.color.mul(0.4), U.color, clamp(body, 0, 1))
+    .mul(body)
+    .mul(1.3)
+    .add(rim.mul(edge).mul(1.9));
   return {
     color: min(col, U.maxHdr),
     opacity: U.opacity.mul(min(mask.mul(body.mul(0.9).add(edge.mul(1.2))), 1)),
@@ -71,7 +78,9 @@ export function trailNodes(U: FxUniforms) {
   const one = float(1);
   const core = exp(x.mul(x).mul(-10));
   const tail = pow(one.sub(u), 1.6);
-  const flow = vnoise(vec2(u.mul(9).sub(time.mul(6)).add(U.a.z), st.y.mul(3))).mul(0.45).add(0.65);
+  const flow = vnoise(vec2(u.mul(9).sub(time.mul(6)).add(U.a.z), st.y.mul(3)))
+    .mul(0.45)
+    .add(0.65);
   const lum = core.mul(tail).mul(flow);
   const c = mix(U.color, vec3(1, 1, 1), core.mul(one.sub(u)).mul(0.5));
   const fly = {
@@ -112,7 +121,13 @@ class Ribbon {
     this.geo.setAttribute('position', this.pos);
     this.geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
     // Pháp tuyến hằng (dải tự phát sáng; node material mặc định vẫn đọc).
-    this.geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(RIB_PTS * 2 * 3).map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
+    this.geo.setAttribute(
+      'normal',
+      new THREE.BufferAttribute(
+        new Float32Array(RIB_PTS * 2 * 3).map((_, i) => (i % 3 === 1 ? 1 : 0)),
+        3,
+      ),
+    );
     this.geo.setIndex(idx);
     this.geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e4);
   }
@@ -293,12 +308,42 @@ export class Trails {
           st.spark += dt * 26 * pk * (0.3 + fast);
           while (st.spark >= 1) {
             st.spark -= 1;
-            P.emit('glow', hx + (Math.random() - 0.5) * 0.5, hy + (Math.random() - 0.5) * 0.2, hz + (Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.6, -0.4 - Math.random() * 0.6, (Math.random() - 0.5) * 0.6, 0.45 + Math.random() * 0.3, 0.09, 0.02, Math.random() < 0.6 ? C_SWORD : C_SWORD_DEEP, 0.9, 0.6, 1.5);
+            P.emit(
+              'glow',
+              hx + (Math.random() - 0.5) * 0.5,
+              hy + (Math.random() - 0.5) * 0.2,
+              hz + (Math.random() - 0.5) * 0.5,
+              (Math.random() - 0.5) * 0.6,
+              -0.4 - Math.random() * 0.6,
+              (Math.random() - 0.5) * 0.6,
+              0.45 + Math.random() * 0.3,
+              0.09,
+              0.02,
+              Math.random() < 0.6 ? C_SWORD : C_SWORD_DEEP,
+              0.9,
+              0.6,
+              1.5,
+            );
           }
           st.mist += dt * 7 * pk;
           while (st.mist >= 1) {
             st.mist -= 1;
-            P.emit('dust', a.x + (Math.random() - 0.5) * 0.8, hy - 0.15, a.z + (Math.random() - 0.5) * 0.8, (Math.random() - 0.5) * 0.8, 0.15, (Math.random() - 0.5) * 0.8, 1.1 + Math.random() * 0.5, 0.5, 2.0, C_MIST, 0.22, -0.05, 1.2);
+            P.emit(
+              'dust',
+              a.x + (Math.random() - 0.5) * 0.8,
+              hy - 0.15,
+              a.z + (Math.random() - 0.5) * 0.8,
+              (Math.random() - 0.5) * 0.8,
+              0.15,
+              (Math.random() - 0.5) * 0.8,
+              1.1 + Math.random() * 0.5,
+              0.5,
+              2.0,
+              C_MIST,
+              0.22,
+              -0.05,
+              1.2,
+            );
           }
         }
       }
@@ -316,7 +361,22 @@ export class Trails {
         while (st.mote >= 1 || burst > 0) {
           if (burst > 0) burst--;
           else st.mote -= 1;
-          P.emit('glow', bx + (Math.random() - 0.5) * 0.35, by + (Math.random() - 0.5) * 0.7, bz + (Math.random() - 0.5) * 0.35, (Math.random() - 0.5) * 0.25, 0.25 + Math.random() * 0.35, (Math.random() - 0.5) * 0.25, 0.9 + Math.random() * 0.6, 0.05, 0.015, C_SWORD, 0.8, -0.05, 0.6);
+          P.emit(
+            'glow',
+            bx + (Math.random() - 0.5) * 0.35,
+            by + (Math.random() - 0.5) * 0.7,
+            bz + (Math.random() - 0.5) * 0.35,
+            (Math.random() - 0.5) * 0.25,
+            0.25 + Math.random() * 0.35,
+            (Math.random() - 0.5) * 0.25,
+            0.9 + Math.random() * 0.6,
+            0.05,
+            0.015,
+            C_SWORD,
+            0.8,
+            -0.05,
+            0.6,
+          );
         }
       }
 
@@ -332,7 +392,22 @@ export class Trails {
           const ang = Math.random() * Math.PI * 2;
           const sp = 0.4 + Math.random() * 0.6;
           // Bụi bị hất về sau một chút.
-          P.emit('dust', fx, gy + 0.08, fz, Math.cos(ang) * sp - sy * 0.6, 0.35 + Math.random() * 0.3, Math.sin(ang) * sp - cy * 0.6, 0.6 + Math.random() * 0.3, 0.22, 0.85, C_DUST, 0.32, -0.1, 2.5);
+          P.emit(
+            'dust',
+            fx,
+            gy + 0.08,
+            fz,
+            Math.cos(ang) * sp - sy * 0.6,
+            0.35 + Math.random() * 0.3,
+            Math.sin(ang) * sp - cy * 0.6,
+            0.6 + Math.random() * 0.3,
+            0.22,
+            0.85,
+            C_DUST,
+            0.32,
+            -0.1,
+            2.5,
+          );
         }
       }
     }

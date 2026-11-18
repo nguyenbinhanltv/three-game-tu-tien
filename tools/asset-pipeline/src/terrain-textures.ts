@@ -71,9 +71,17 @@ export const ASH_LAYERS = [
   { layer: 'gravel', ph: 'dry_riverbed_rock', author: 'Amal Kumar', tint: [0.94, 0.9, 0.88] },
 ] as const;
 
-const SRC = process.env.DTL_ASSET_SOURCE ? path.resolve(process.env.DTL_ASSET_SOURCE, 'texture') : path.resolve(ROOT, '..', 'dtl-asset-source', 'texture');
+const SRC = process.env.DTL_ASSET_SOURCE
+  ? path.resolve(process.env.DTL_ASSET_SOURCE, 'texture')
+  : path.resolve(ROOT, '..', 'dtl-asset-source', 'texture');
 const SET = process.argv.includes('--set') ? process.argv[process.argv.indexOf('--set') + 1] : 'terrain';
-const OUT = path.join(ROOT, 'apps', 'client', 'public', SET === 'ochre' ? 'terrain-ochre' : SET === 'slate' ? 'terrain-slate' : SET === 'ash' ? 'terrain-ash' : 'terrain');
+const OUT = path.join(
+  ROOT,
+  'apps',
+  'client',
+  'public',
+  SET === 'ochre' ? 'terrain-ochre' : SET === 'slate' ? 'terrain-slate' : SET === 'ash' ? 'terrain-ash' : 'terrain',
+);
 const SIZE = 1024;
 
 async function fetchBuf(url: string): Promise<Buffer> {
@@ -85,7 +93,10 @@ async function fetchBuf(url: string): Promise<Buffer> {
 async function source(ph: string, kind: 'Diffuse' | 'nor_gl' | 'Rough'): Promise<Buffer> {
   const f = path.join(SRC, ph, `${ph}_${kind}_1k.jpg`);
   if (existsSync(f)) return readFile(f);
-  const files = (await (await fetch(`https://api.polyhaven.com/files/${ph}`)).json()) as Record<string, Record<string, Record<string, { url: string }>>>;
+  const files = (await (await fetch(`https://api.polyhaven.com/files/${ph}`)).json()) as Record<
+    string,
+    Record<string, Record<string, { url: string }>>
+  >;
   const buf = await fetchBuf(files[kind]['1k'].jpg.url);
   await mkdir(path.dirname(f), { recursive: true });
   await writeFile(f, buf);
@@ -106,7 +117,8 @@ async function emit(layer: string, suffix: 'a' | 'n', buf: Buffer, written: Map<
   if (prev) return prev;
   let name = `${layer}.${key}`;
   const baseDir = path.join(path.dirname(OUT), BASE_SET);
-  const shared = path.basename(OUT) !== BASE_SET && existsSync(baseDir) ? readdirSync(baseDir).find((f) => f.endsWith(`.${key}`)) : undefined;
+  const shared =
+    path.basename(OUT) !== BASE_SET && existsSync(baseDir) ? readdirSync(baseDir).find((f) => f.endsWith(`.${key}`)) : undefined;
   if (shared) name = `../${BASE_SET}/${shared}`;
   else await writeFile(path.join(OUT, name), buf);
   written.set(key, name);
@@ -117,7 +129,8 @@ async function main(): Promise<void> {
   await mkdir(OUT, { recursive: true });
   const written = new Map<string, string>();
   const manifest: { layer: string; ph: string; a: string; n: string }[] = [];
-  const layers: readonly { layer: string; ph: string; author: string; tint?: readonly number[] }[] = SET === 'ochre' ? OCHRE_LAYERS : SET === 'slate' ? SLATE_LAYERS : SET === 'ash' ? ASH_LAYERS : LAYERS;
+  const layers: readonly { layer: string; ph: string; author: string; tint?: readonly number[] }[] =
+    SET === 'ochre' ? OCHRE_LAYERS : SET === 'slate' ? SLATE_LAYERS : SET === 'ash' ? ASH_LAYERS : LAYERS;
   for (const L of layers) {
     const [diff, nor, rough] = await Promise.all([source(L.ph, 'Diffuse'), source(L.ph, 'nor_gl'), source(L.ph, 'Rough')]);
     let img = sharp(diff).resize(SIZE, SIZE).removeAlpha();
@@ -127,7 +140,9 @@ async function main(): Promise<void> {
     const nrm = await sharp(nor).resize(SIZE, SIZE).removeAlpha().raw().toBuffer();
     const r = await sharp(rough).resize(SIZE, SIZE).greyscale().raw().toBuffer();
     for (let i = 0; i < SIZE * SIZE; i++) nrm[i * 3 + 2] = r[i];
-    const n = await sharp(nrm, { raw: { width: SIZE, height: SIZE, channels: 3 } }).webp({ quality: 78 }).toBuffer();
+    const n = await sharp(nrm, { raw: { width: SIZE, height: SIZE, channels: 3 } })
+      .webp({ quality: 78 })
+      .toBuffer();
     const ar = albedo;
     const entry = { layer: L.layer, ph: L.ph, a: await emit(L.layer, 'a', ar, written), n: await emit(L.layer, 'n', n, written) };
     manifest.push(entry);
@@ -139,7 +154,9 @@ async function main(): Promise<void> {
   }
   // Mặt nạ vùng (đường mòn, sân lát, cát, nhiễu vĩ mô): tính một lần ở đây (~1 s), client chỉ giải mã PNG.
   const maskRaw = buildMaskData();
-  const maskPng = await sharp(Buffer.from(maskRaw.buffer), { raw: { width: MASK_RES, height: MASK_RES, channels: 4 } }).png({ compressionLevel: 9 }).toBuffer();
+  const maskPng = await sharp(Buffer.from(maskRaw.buffer), { raw: { width: MASK_RES, height: MASK_RES, channels: 4 } })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
   const mask = `mask.${createHash('sha1').update(maskPng).digest('hex').slice(0, 10)}.png`;
   await writeFile(path.join(OUT, mask), maskPng);
   console.log(`[terrain] mask: ${(maskPng.length / 1024) | 0} KB`);

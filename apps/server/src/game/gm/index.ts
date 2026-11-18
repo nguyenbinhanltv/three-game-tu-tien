@@ -1,10 +1,64 @@
 // Lệnh GM của tài khoản thử (`/gm …`, `?realm=`, `?tribulation=`): tách từ GameSim (R-7), giữ nguyên hành vi.
 // Hệ con chỉ biết GameSim qua giao diện hẹp `GmCtx`; mọi đổi vật phẩm/tiền vẫn qua `Character.tx` (tx + idem + sổ cái).
-import { ARTIFACT_MAX_LEVEL, CHARGE_MAX, parseAppearance, EQUIP_SLOTS, wearableBy, MAX_ENHANCE, MAX_SKILL_LEVEL, VARIANT_MIN_LEVEL, type EquipSlot, type Quality, QUALITY_COUNT, initialBottleneck, MAX_LEVEL, parseRealmCode, INV_SIZE, planSort, MS_DEAD, tribDef, TRIB_DEFS, type TribId, xpNeed } from '@dtl/shared';
-import { ARTIFACT, APPEARANCE, ITEM, itemName, itemTier, methodName, LEVELS, MONSTER, QUEST, QUESTS, SET, SETS, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
+import {
+  ARTIFACT_MAX_LEVEL,
+  CHARGE_MAX,
+  parseAppearance,
+  EQUIP_SLOTS,
+  wearableBy,
+  MAX_ENHANCE,
+  MAX_SKILL_LEVEL,
+  VARIANT_MIN_LEVEL,
+  type EquipSlot,
+  type Quality,
+  QUALITY_COUNT,
+  initialBottleneck,
+  MAX_LEVEL,
+  parseRealmCode,
+  INV_SIZE,
+  planSort,
+  MS_DEAD,
+  tribDef,
+  TRIB_DEFS,
+  type TribId,
+  xpNeed,
+} from '@dtl/shared';
+import {
+  ARTIFACT,
+  APPEARANCE,
+  ITEM,
+  itemName,
+  itemTier,
+  methodName,
+  LEVELS,
+  MONSTER,
+  QUEST,
+  QUESTS,
+  SET,
+  SETS,
+  SKILL,
+  t,
+  METHOD,
+  VARIANTS,
+  skillName,
+} from '@dtl/content';
 import { PLACE } from '@dtl/content/places';
 import { isEquipSlot, type Character } from '../character';
-import { BRANCH_METHOD, findIds, GM_GROUPS, GM_MAX_TIER, hasOutfitAsset, helpLine, isGmBranch, outfitRows, parsePlus, planKit, skinIds, weaponIds, type GmBranch } from './tools';
+import {
+  BRANCH_METHOD,
+  findIds,
+  GM_GROUPS,
+  GM_MAX_TIER,
+  hasOutfitAsset,
+  helpLine,
+  isGmBranch,
+  outfitRows,
+  parsePlus,
+  planKit,
+  skinIds,
+  weaponIds,
+  type GmBranch,
+} from './tools';
 import { setSkillLevel, skillLevelOf } from '../method';
 import type { LevelDef, MonsterDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from '../entities';
@@ -64,7 +118,8 @@ export class GmSystem {
     c.bk = def.from;
     c.xp = xpNeed(def.from);
     const item = def.item;
-    if (item && !c.inv.some((it) => it?.id === item) && !c.tx('gm', null, (d) => d.add(item, 1))) return 'trib: túi đầy, không thêm được vật phẩm đột phá';
+    if (item && !c.inv.some((it) => it?.id === item) && !c.tx('gm', null, (d) => d.add(item, 1)))
+      return 'trib: túi đầy, không thêm được vật phẩm đột phá';
     this.c.onBreakthrough(p, true);
     return p.trib ? 'trib: bắt đầu độ kiếp' : def.room === 'tribulation' ? 'trib: đang vào room độ kiếp' : 'trib: không bắt đầu được';
   }
@@ -140,7 +195,11 @@ export class GmSystem {
       }
       case 'trib':
         // /gm trib [id]: kích độ kiếp ngay (mặc định Trúc Cơ: Ngưng Khí 15 viên mãn + Trúc Cơ Đan nếu thiếu).
-        return say(a[1] && !(a[1] in TRIB_DEFS) ? `trib ${Object.keys(TRIB_DEFS).join(' | ')}` : this.tribulation(p, (a[1] as TribId | undefined) ?? 'truc_co'));
+        return say(
+          a[1] && !(a[1] in TRIB_DEFS)
+            ? `trib ${Object.keys(TRIB_DEFS).join(' | ')}`
+            : this.tribulation(p, (a[1] as TribId | undefined) ?? 'truc_co'),
+        );
       case 'xp':
         this.c.giveXp(p, Math.max(0, Number(a[1]) | 0));
         return;
@@ -253,7 +312,12 @@ export class GmSystem {
         return say(this.c.teleGm(p, a[1]));
       case 'qdone': {
         // /gm qdone <id|chuong2>: ghi nhiệm vụ đã xong (bỏ qua điều kiện) để thử chuỗi nhiệm vụ; chuong2 = mọi q2_* trước q2_ket_dan.
-        const ids = a[1] === 'chuong2' ? QUESTS.filter((q) => q.id.startsWith('q2_') && q.id !== 'q2_ket_dan').map((q) => q.id) : QUEST.has(a[1] ?? '') ? [a[1]!] : [];
+        const ids =
+          a[1] === 'chuong2'
+            ? QUESTS.filter((q) => q.id.startsWith('q2_') && q.id !== 'q2_ket_dan').map((q) => q.id)
+            : QUEST.has(a[1] ?? '')
+              ? [a[1]!]
+              : [];
         if (!ids.length) return say('qdone <id nhiệm vụ> | chuong2');
         for (const id of ids) {
           delete p.char.quests.active[id];
@@ -293,7 +357,8 @@ export class GmSystem {
       case 'variant': {
         // /gm variant <id chiêu> <a|b>: chọn biến thức ngay (không cần cấp 3, ngoài combat, hồi chờ) để chụp ảnh/thử.
         const sk = SKILL.get(a[1]);
-        if (!sk || !VARIANTS[sk.id] || (a[2] !== 'a' && a[2] !== 'b')) return say('variant <skill> a|b — skill: ' + Object.keys(VARIANTS).join(' | '));
+        if (!sk || !VARIANTS[sk.id] || (a[2] !== 'a' && a[2] !== 'b'))
+          return say('variant <skill> a|b — skill: ' + Object.keys(VARIANTS).join(' | '));
         if (skillLevelOf(c.meta, sk.id) < VARIANT_MIN_LEVEL) setSkillLevel(c.meta, sk.id, VARIANT_MIN_LEVEL);
         c.meta.skillVar ??= {};
         c.meta.skillVar[sk.id] = a[2];
@@ -367,9 +432,11 @@ export class GmSystem {
         const fwd = p.s.yaw;
         for (let i = 0; i < n; i++) {
           // Quạt rộng 150° phía trước, cách 8 m (xếp hai hàng khi đông).
-          const ang = fwd + (n === 1 ? 0 : ((i / (n - 1)) - 0.5) * (Math.PI * 5) / 6);
+          const ang = fwd + (n === 1 ? 0 : ((i / (n - 1) - 0.5) * (Math.PI * 5)) / 6);
           const r = 8 + (i % 2) * 3;
-          this.spawned.add(this.c.spawnMonster(def, Math.max(1, p.char.level - 1), p.move.x + Math.sin(ang) * r, p.move.z + Math.cos(ang) * r, null));
+          this.spawned.add(
+            this.c.spawnMonster(def, Math.max(1, p.char.level - 1), p.move.x + Math.sin(ang) * r, p.move.z + Math.cos(ang) * r, null),
+          );
         }
         return say(`gọi ${n} ${def.id}`);
       }
@@ -408,7 +475,12 @@ export class GmSystem {
         const own = [...SKILL.values()].filter((sk) => !sk.method || sk.method === c.meta.method);
         say(t('gm.msg.skills_head', { m: c.meta.method ? methodName(c.meta.method) : '—', n: own.length }));
         for (let i = 0; i < own.length; i += 4) {
-          say(own.slice(i, i + 4).map((sk) => `${sk.id} (${sk.unlock}${sk.locked ? ',' + t('gm.msg.locked') : ''})`).join(' · '));
+          say(
+            own
+              .slice(i, i + 4)
+              .map((sk) => `${sk.id} (${sk.unlock}${sk.locked ? ',' + t('gm.msg.locked') : ''})`)
+              .join(' · '),
+          );
         }
         return;
       }
@@ -453,33 +525,55 @@ export class GmSystem {
         this.run(p, ['art', KIT_ARTIFACT[br], '5']);
         c.hp = c.mhp;
         c.mp = c.mmp;
-        return say(t('gm.msg.kit', { tier: plan.tier, used: plan.used, set: t('set.' + plan.set + '.name'), n: plan.pieces.length, plus, m: methodName(c.meta.method!) }) + (plan.used < plan.tier ? ' ' + t('gm.msg.kit_cap', { used: plan.used }) : ''));
+        return say(
+          t('gm.msg.kit', {
+            tier: plan.tier,
+            used: plan.used,
+            set: t('set.' + plan.set + '.name'),
+            n: plan.pieces.length,
+            plus,
+            m: methodName(c.meta.method!),
+          }) + (plan.used < plan.tier ? ' ' + t('gm.msg.kit_cap', { used: plan.used }) : ''),
+        );
       }
       case 'outfit': {
         // /gm outfit <id bộ|list|off> [m|f]: mặc bộ để xem trang phục (hình áo theo bộ đang mặc).
         if (!a[1] || a[1] === 'list') {
           say(t('gm.msg.outfit_head'));
-          for (const r of outfitRows()) say(`${r.id} — ${t('set.' + r.id + '.name')} · ${r.wearable ? t('gm.msg.outfit_ok') : t('gm.msg.outfit_asset')}`);
+          for (const r of outfitRows())
+            say(`${r.id} — ${t('set.' + r.id + '.name')} · ${r.wearable ? t('gm.msg.outfit_ok') : t('gm.msg.outfit_asset')}`);
           return;
         }
         if (a[1] === 'off') return this.run(p, ['set', 'off']);
         const st = SET.get(a[1]);
-        if (!st || !st.pieces.length) return say(t(st || hasOutfitAsset(a[1]) ? 'gm.msg.outfit_asset_only' : 'gm.msg.outfit_none', { id: a[1] }));
+        if (!st || !st.pieces.length)
+          return say(t(st || hasOutfitAsset(a[1]) ? 'gm.msg.outfit_asset_only' : 'gm.msg.outfit_none', { id: a[1] }));
         if (a[2] === 'm' || a[2] === 'f') this.gender(p, a[2]);
-        return say(this.wearSet(p, st, st.pieces.length) ? t('gm.msg.outfit', { id: st.id, name: t('set.' + st.id + '.name'), n: st.pieces.length }) : t('gm.msg.bag_full'));
+        return say(
+          this.wearSet(p, st, st.pieces.length)
+            ? t('gm.msg.outfit', { id: st.id, name: t('set.' + st.id + '.name'), n: st.pieces.length })
+            : t('gm.msg.bag_full'),
+        );
       }
       case 'weapon': {
         // /gm weapon <id|list> [+N]: lấy và cầm kiếm (phẩm cao nhất), +10 = dạng cuối, vỏ lưng.
         const ids = weaponIds();
         if (!a[1] || a[1] === 'list') {
           say(t('gm.msg.weapon_head'));
-          for (const id of ids) say(`${id} — ${itemName(id)} · ${t('gm.msg.tier', { n: itemTier(id) })} · ${t('gm.msg.req', { n: ITEM.get(id)?.reqLevel ?? 1 })}`);
+          for (const id of ids)
+            say(
+              `${id} — ${itemName(id)} · ${t('gm.msg.tier', { n: itemTier(id) })} · ${t('gm.msg.req', { n: ITEM.get(id)?.reqLevel ?? 1 })}`,
+            );
           return;
         }
         if (!ids.includes(a[1])) return say(t('gm.msg.no_weapon', { id: a[1] }));
         const plus = a[2] === undefined ? 0 : parsePlus(a[2], MAX_ENHANCE);
         if (plus === null) return say(helpLine('weapon')!);
-        return say(this.equipPieces(p, [{ slot: 'weapon', id: a[1] }], plus) ? t('gm.msg.weapon', { name: itemName(a[1]), plus }) : t('gm.msg.bag_full'));
+        return say(
+          this.equipPieces(p, [{ slot: 'weapon', id: a[1] }], plus)
+            ? t('gm.msg.weapon', { name: itemName(a[1]), plus })
+            : t('gm.msg.bag_full'),
+        );
       }
       case 'skin': {
         // /gm skin <id|list|off>: lấy (nếu chưa có) và mặc skin vào ô ngoại hình; off = tháo về túi. Skin không có chỉ số.

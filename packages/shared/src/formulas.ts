@@ -23,10 +23,22 @@ export const CRIT_MULT = 1.6;
  * Trúc Cơ cũ là 30k/50k/70k (cấp 16–18, 2,5 giờ): đường cong mới kéo dài chặng này, db.ts có migration giữ tỉ lệ tiến độ.
  */
 const XP_NEED_ADV: readonly number[] = [
-  56_000, 59_000, 62_000, 65_000, // Trúc Cơ 16–19
-  102_500, 107_500, 112_000, 117_000, // Kết Đan 20–23
-  162_000, 168_500, 174_500, 181_000, // Nguyên Anh 24–27
-  234_000, 242_000, 250_000, 257_500, // Hóa Thần 28–31 (DIVUC_DESIGN 2.2: 2,5 giờ/cấp)
+  56_000,
+  59_000,
+  62_000,
+  65_000, // Trúc Cơ 16–19
+  102_500,
+  107_500,
+  112_000,
+  117_000, // Kết Đan 20–23
+  162_000,
+  168_500,
+  174_500,
+  181_000, // Nguyên Anh 24–27
+  234_000,
+  242_000,
+  250_000,
+  257_500, // Hóa Thần 28–31 (DIVUC_DESIGN 2.2: 2,5 giờ/cấp)
 ];
 
 /** Tu vi cần để đầy cảnh giới hiện tại. */
@@ -63,7 +75,17 @@ export function realmMul(level: number): number {
 
 /** Đại cảnh giới của cấp: 0 Ngưng Khí, 1 Trúc Cơ, 2 Kết Đan, 3 Nguyên Anh, 4 Hóa Thần (chỉ số của `glossary.realms`). */
 export function majorRealmOf(level: number): number {
-  return level >= ANH_BIEN_LEVEL ? 5 : level >= HOA_THAN_LEVEL ? 4 : level >= NGUYEN_ANH_LEVEL ? 3 : level >= KET_DAN_LEVEL ? 2 : level >= TRUC_CO_LEVEL ? 1 : 0;
+  return level >= ANH_BIEN_LEVEL
+    ? 5
+    : level >= HOA_THAN_LEVEL
+      ? 4
+      : level >= NGUYEN_ANH_LEVEL
+        ? 3
+        : level >= KET_DAN_LEVEL
+          ? 2
+          : level >= TRUC_CO_LEVEL
+            ? 1
+            : 0;
 }
 
 /** Tầng/kỳ trong đại cảnh giới của cấp, tính từ 1 (Ngưng Khí tầng 12 → 12, Kết Đan sơ kỳ → 1). Dùng cho chữ triện ở khung nhân vật. */
@@ -195,7 +217,13 @@ export const TRIB_NET = TC.phases[1].net as TribNet;
 /** Tia cuối (đầu pha 3): báo trước `delay` giây quanh người độ kiếp, `pct` khí huyết tối đa, khóa mệnh (đứng đâu cũng trúng). Đan Kim Cương giảm thêm `defMul` lần mức buff phòng ngự. */
 export const TRIB_FINAL = TC.phases[2].final as TribFinal;
 /** Mưa sét sau tia cuối: nhịp dồn, nhẹ hơn mỗi tia. */
-export const TRIB_RAIN = { gap: TC.phases[2].gap, count: TC.phases[2].extra as number, pct: TC.phases[2].extraPct as number, aimPct: TC.phases[2].aimPct as number, r: TC.phases[2].extraR as number };
+export const TRIB_RAIN = {
+  gap: TC.phases[2].gap,
+  count: TC.phases[2].extra as number,
+  pct: TC.phases[2].extraPct as number,
+  aimPct: TC.phases[2].aimPct as number,
+  r: TC.phases[2].extraR as number,
+};
 /** Số đan hồi phục dùng được trong một lần độ kiếp (đan độc tích tụ). */
 export const TRIB_PILL_MAX = TC.pillMax;
 /** Chết sau chừng này giây thì hoàn lại Trúc Cơ Đan (viên đan cần nội đan Hàn Giao, mất trắng là phạt quá nặng). Vẫn mất tu vi. */

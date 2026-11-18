@@ -96,7 +96,9 @@ export class SkyIslands {
         const cy = (y0 + y1) / 2;
         const cz = (z0 + z1) / 2;
         q.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
-        planks.push(new THREE.Matrix4().compose(new THREE.Vector3(cx, cy - 0.09, cz), q.clone(), new THREE.Vector3(1, 1, (segLen / PLANK) * 0.94)));
+        planks.push(
+          new THREE.Matrix4().compose(new THREE.Vector3(cx, cy - 0.09, cz), q.clone(), new THREE.Vector3(1, 1, (segLen / PLANK) * 0.94)),
+        );
         // dây xích tay vịn: hình trụ (trục y) xoay nằm dọc nhịp
         const qr = new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch + Math.PI / 2, yaw, 0, 'YXZ'));
         for (const side of [-1, 1]) {
@@ -111,7 +113,13 @@ export class SkyIslands {
           }
           const first = !prevOver[side === -1 ? 0 : 1];
           prevOver[side === -1 ? 0 : 1] = true;
-          rails.push(new THREE.Matrix4().compose(new THREE.Vector3(cx + ox, cy + RAIL_H, cz + oz), qr.clone(), new THREE.Vector3(1, segLen * 1.02, 1)));
+          rails.push(
+            new THREE.Matrix4().compose(
+              new THREE.Vector3(cx + ox, cy + RAIL_H, cz + oz),
+              qr.clone(),
+              new THREE.Vector3(1, segLen * 1.02, 1),
+            ),
+          );
           if (first || i % POST_EVERY === 0 || i === n - 1) {
             posts.push(new THREE.Matrix4().compose(new THREE.Vector3(x0 + ox, y0 + RAIL_H / 2, z0 + oz), new THREE.Quaternion(), one));
           }
@@ -147,11 +155,26 @@ export class SkyIslands {
     const kind: VhKind = vi?.kind ?? 'tieu_dao';
     const SK = SKIRT[kind];
     const prof: [number, number][] = [
-      [r - 4, -0.02], [r + 3, -0.1], [r + 6.5, -1.2], [r + 7.5, -4], [r + 6, -9], [r + 2, -15], [r - 5, -22], [r - 14, -31],
-      [r * 0.78, -41], [r * 0.58, -52], [r * 0.38, -62], [r * 0.2, -72], [r * 0.07, -80], [0.01, -86],
+      [r - 4, -0.02],
+      [r + 3, -0.1],
+      [r + 6.5, -1.2],
+      [r + 7.5, -4],
+      [r + 6, -9],
+      [r + 2, -15],
+      [r - 5, -22],
+      [r - 14, -31],
+      [r * 0.78, -41],
+      [r * 0.58, -52],
+      [r * 0.38, -62],
+      [r * 0.2, -72],
+      [r * 0.07, -80],
+      [0.01, -86],
     ];
     // bản sắc dáng đảo: Thạch Quy phình rộng như mai rùa, Kình Ngư thon dài, Lôi Vân nhọn lởm chởm
-    const lathe = new THREE.LatheGeometry(prof.map(([x, y]) => new THREE.Vector2(x < r ? x * (x < r * 0.9 ? SK.belly : 1) : x, y * SK.len)), 56).toNonIndexed();
+    const lathe = new THREE.LatheGeometry(
+      prof.map(([x, y]) => new THREE.Vector2(x < r ? x * (x < r * 0.9 ? SK.belly : 1) : x, y * SK.len)),
+      56,
+    ).toNonIndexed();
     const pos = lathe.attributes.position;
     const col: number[] = [];
     const rock = new THREE.Color();
@@ -176,7 +199,10 @@ export class SkyIslands {
       pos.setXYZ(i, x, y, z);
       // vân tầng đá: mỗi lớp ~3 m một sắc độ riêng (xếp lớp trầm tích), lộ rõ ở thân đảo
       const band = hash01(Math.floor(y / 3.1), seed, 61);
-      rock.copy(B).lerp(D, depth * 0.9).multiplyScalar((0.86 + n2 * 0.25) * (0.88 + band * 0.26));
+      rock
+        .copy(B)
+        .lerp(D, depth * 0.9)
+        .multiplyScalar((0.86 + n2 * 0.25) * (0.88 + band * 0.26));
       if (y > -4) rock.lerp(A, Math.min(1, (y + 4) / 4.5));
       col.push(rock.r, rock.g, rock.b);
     }
@@ -231,7 +257,16 @@ export class SkyIslands {
     mesh.frustumCulled = false;
     this.group.add(mesh);
     // sương ôm chân đảo: hai vành mờ ở lưng chừng thân đá
-    const ringMat = this.track(new THREE.MeshBasicMaterial({ map: this.mistRing(), transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide, color: 0xf2f5f4 }));
+    const ringMat = this.track(
+      new THREE.MeshBasicMaterial({
+        map: this.mistRing(),
+        transparent: true,
+        opacity: 0.8,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        color: 0xf2f5f4,
+      }),
+    );
     const geo = this.track(new THREE.CircleGeometry(r / 0.7, 48));
     for (const dy of [-30, -42]) {
       const ring = new THREE.Mesh(geo, ringMat);
@@ -275,7 +310,11 @@ export class SkyIslands {
         // tổng sin chu kỳ nguyên theo N: ghép được không thấy mối
         const u = (i / N) * Math.PI * 2;
         const v = (j / N) * Math.PI * 2;
-        const n = 0.5 + 0.25 * Math.sin(u * 2 + Math.sin(v * 3) * 1.2) * Math.cos(v * 2 + 0.7) + 0.18 * Math.sin(u * 5 + v * 4 + 1.3) + 0.1 * Math.sin(u * 9 - v * 7);
+        const n =
+          0.5 +
+          0.25 * Math.sin(u * 2 + Math.sin(v * 3) * 1.2) * Math.cos(v * 2 + 0.7) +
+          0.18 * Math.sin(u * 5 + v * 4 + 1.3) +
+          0.1 * Math.sin(u * 9 - v * 7);
         const a = Math.max(0, Math.min(1, (n - 0.25) * 1.6));
         const k = (j * N + i) * 4;
         img.data[k] = 238;
@@ -355,13 +394,28 @@ export class SkyIslands {
         const rr = isl.r * (0.85 + hash01(i, Math.floor(isl.z), 313) * 0.7);
         const y = floor + 16 + hash01(i, Math.floor(isl.x + isl.z), 317) * Math.max(8, isl.y - 40 - floor - 16);
         const sc = (isl.r > 100 ? 70 : 34) * (0.7 + hash01(i, Math.floor(isl.z), 319) * 0.9);
-        list.push(new THREE.Matrix4().compose(new THREE.Vector3(isl.x + Math.cos(a) * rr, y, isl.z + Math.sin(a) * rr), q, new THREE.Vector3(sc, sc, 1)));
+        list.push(
+          new THREE.Matrix4().compose(
+            new THREE.Vector3(isl.x + Math.cos(a) * rr, y, isl.z + Math.sin(a) * rr),
+            q,
+            new THREE.Vector3(sc, sc, 1),
+          ),
+        );
         // dưới đảo ngả lam xám, gần mặt sàn ngả ngà ấm (nắng bình minh hắt lên)
         cols.push(new THREE.Color().setHSL(0.52 - 0.04 * hash01(i, 5, 321), 0.18, 0.8 + 0.12 * ((y - floor) / (isl.y - floor))));
       }
     }
     const geo = this.track(new THREE.PlaneGeometry(2, 2));
-    const mat = this.track(new THREE.MeshBasicMaterial({ map: this.puffTex(), transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide, fog: true }));
+    const mat = this.track(
+      new THREE.MeshBasicMaterial({
+        map: this.puffTex(),
+        transparent: true,
+        opacity: 0.55,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        fog: true,
+      }),
+    );
     const im = new THREE.InstancedMesh(geo, mat, list.length);
     list.forEach((m, i) => {
       im.setMatrixAt(i, m);
@@ -390,7 +444,13 @@ export class SkyIslands {
         const s = 1.3 + hash01(i, Math.floor(isl.z), 339) ** 2 * 6;
         e.set(hash01(i, 1, 341) * 3, hash01(i, 2, 343) * 6, hash01(i, 3, 347) * 3);
         q.setFromEuler(e);
-        list.push(new THREE.Matrix4().compose(new THREE.Vector3(isl.x + Math.cos(a) * rr, y, isl.z + Math.sin(a) * rr), q, new THREE.Vector3(s, s * (0.55 + hash01(i, 4, 349) * 0.5), s * 0.9)));
+        list.push(
+          new THREE.Matrix4().compose(
+            new THREE.Vector3(isl.x + Math.cos(a) * rr, y, isl.z + Math.sin(a) * rr),
+            q,
+            new THREE.Vector3(s, s * (0.55 + hash01(i, 4, 349) * 0.5), s * 0.9),
+          ),
+        );
         cols.push(new THREE.Color(isl.pal.dark).lerp(new THREE.Color(isl.pal.stone), hash01(i, 5, 351) * 0.6).multiplyScalar(1.1));
       }
     }
@@ -441,7 +501,9 @@ export class SkyIslands {
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
     t.colorSpace = THREE.SRGBColorSpace;
     this.fallTex = t;
-    const mat = this.track(new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide, color: 0xf4f8f8 }));
+    const mat = this.track(
+      new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide, color: 0xf4f8f8 }),
+    );
     const geos: THREE.BufferGeometry[] = [];
     const which: VhKind[] = ['tung_dai_dao', 'kinh_ho_dao', 'kinh_ngu_dai', 'thach_quy_dao', 'hub'];
     for (const isl of islands) {
@@ -473,7 +535,8 @@ export class SkyIslands {
     const mat = this.track(pondMaterial());
     for (const p of ponds) {
       let sum = 0;
-      for (let i = 0; i < 12; i++) sum += terrain.heightAt(p.x + Math.cos(i * 0.5236) * p.r * 1.02, p.z + Math.sin(i * 0.5236) * p.r * 1.02);
+      for (let i = 0; i < 12; i++)
+        sum += terrain.heightAt(p.x + Math.cos(i * 0.5236) * p.r * 1.02, p.z + Math.sin(i * 0.5236) * p.r * 1.02);
       const geo = this.track(new THREE.CircleGeometry(p.r * 1.06, 48));
       geo.rotateX(-Math.PI / 2);
       const m = new THREE.Mesh(geo, mat);
@@ -492,13 +555,29 @@ export class SkyIslands {
     if (!isl) return;
     const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
     const geo = this.track(new THREE.PlaneGeometry(2, 2));
-    const mat = this.track(new THREE.MeshBasicMaterial({ map: this.puffTex(), transparent: true, opacity: 0.42, depthWrite: false, side: THREE.DoubleSide, color: 0x6f7480 }));
+    const mat = this.track(
+      new THREE.MeshBasicMaterial({
+        map: this.puffTex(),
+        transparent: true,
+        opacity: 0.42,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        color: 0x6f7480,
+      }),
+    );
     const im = new THREE.InstancedMesh(geo, mat, 9);
     for (let i = 0; i < 9; i++) {
       const a = (i / 9) * Math.PI * 2;
       const rr = i === 0 ? 0 : isl.r * (0.35 + hash01(i, 5, 381) * 0.7);
       const sc = 75 + hash01(i, 5, 383) * 60;
-      im.setMatrixAt(i, new THREE.Matrix4().compose(new THREE.Vector3(isl.x + Math.cos(a) * rr, isl.y + 70 + hash01(i, 5, 385) * 26, isl.z + Math.sin(a) * rr), q, new THREE.Vector3(sc, sc, 1)));
+      im.setMatrixAt(
+        i,
+        new THREE.Matrix4().compose(
+          new THREE.Vector3(isl.x + Math.cos(a) * rr, isl.y + 70 + hash01(i, 5, 385) * 26, isl.z + Math.sin(a) * rr),
+          q,
+          new THREE.Vector3(sc, sc, 1),
+        ),
+      );
     }
     im.instanceMatrix.needsUpdate = true;
     im.frustumCulled = false;
@@ -570,14 +649,34 @@ export class SkyIslands {
     }
     const merged = this.track(mergeGeometries(parts, false));
     for (const p of parts) p.dispose();
-    const mat = this.track(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, transparent: true, opacity: 1, emissive: new THREE.Color(0x9fe8ff), emissiveIntensity: 0 }));
+    const mat = this.track(
+      new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.95,
+        metalness: 0,
+        transparent: true,
+        opacity: 1,
+        emissive: new THREE.Color(0x9fe8ff),
+        emissiveIntensity: 0,
+      }),
+    );
     const mesh = new THREE.Mesh(merged, mat);
     mesh.position.set(f.x, f.y, f.z);
     mesh.name = 'fake-island';
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     this.group.add(mesh);
-    const glowMat = this.track(new THREE.MeshBasicMaterial({ color: 0x9fe8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    const glowMat = this.track(
+      new THREE.MeshBasicMaterial({
+        color: 0x9fe8ff,
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        fog: false,
+      }),
+    );
     const ring = new THREE.Mesh(this.track(new THREE.RingGeometry(f.r - 1.2, f.r, 64)), glowMat);
     ring.rotation.x = -Math.PI / 2;
     ring.position.set(f.x, f.y + 0.3, f.z);

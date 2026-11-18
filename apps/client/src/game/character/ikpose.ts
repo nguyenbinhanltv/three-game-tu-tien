@@ -141,7 +141,13 @@ function eulerQ(r: PoseVec, f = 1, out = new THREE.Quaternion()): THREE.Quaterni
 }
 
 /** Quaternion biến cặp (a1, b1) thành (a2, b2); b được chỉnh vuông góc với a. */
-function quatFromBasis(a1: THREE.Vector3, b1: THREE.Vector3, a2: THREE.Vector3, b2: THREE.Vector3, out: THREE.Quaternion): THREE.Quaternion {
+function quatFromBasis(
+  a1: THREE.Vector3,
+  b1: THREE.Vector3,
+  a2: THREE.Vector3,
+  b2: THREE.Vector3,
+  out: THREE.Quaternion,
+): THREE.Quaternion {
   const basis = (a: THREE.Vector3, b: THREE.Vector3, m: THREE.Matrix4) => {
     const x = a.clone().normalize();
     const y = b.clone().addScaledVector(x, -b.dot(x));
@@ -367,7 +373,9 @@ export class IkRig {
   private legChain(): boolean {
     if (this.chainOk === null) {
       const b = this.bones;
-      this.chainOk = (['R', 'L'] as const).every((s) => b[`upLeg${s}`]!.parent === b.hips && b[`leg${s}`]!.parent === b[`upLeg${s}`] && b[`foot${s}`]!.parent === b[`leg${s}`]);
+      this.chainOk = (['R', 'L'] as const).every(
+        (s) => b[`upLeg${s}`]!.parent === b.hips && b[`leg${s}`]!.parent === b[`upLeg${s}`] && b[`foot${s}`]!.parent === b[`leg${s}`],
+      );
     }
     return this.chainOk;
   }
@@ -416,7 +424,13 @@ export class IkRig {
   swordMount(): { position: THREE.Vector3; quaternion: THREE.Quaternion } {
     const hand = this.bones.handR!;
     const ws = hand.getWorldScale(new THREE.Vector3()).x || 1;
-    const q = quatFromBasis(new THREE.Vector3(0, 0, 1), new THREE.Vector3(1, 0, 0), this.bladeLocal, this.edgeLocal, new THREE.Quaternion());
+    const q = quatFromBasis(
+      new THREE.Vector3(0, 0, 1),
+      new THREE.Vector3(1, 0, 0),
+      this.bladeLocal,
+      this.edgeLocal,
+      new THREE.Quaternion(),
+    );
     // Lòng bàn tay cách cổ tay ~0,08m theo hướng ngón (= hướng lưỡi lúc nghỉ).
     const position = this.edgeLocal.clone().multiplyScalar((0.08 * this.scale) / ws);
     return { position, quaternion: q };
@@ -440,7 +454,10 @@ export class IkRig {
     if (perp.lengthSq() < 1e-8) perp.copy(bPos).sub(a).addScaledVector(dir, -_v1.copy(bPos).sub(a).dot(dir));
     if (perp.lengthSq() < 1e-8) perp.set(0, -1, 0).addScaledVector(dir, dir.y);
     perp.normalize();
-    const elbow = a.clone().addScaledVector(dir, l1 * cosA).addScaledVector(perp, l1 * Math.sqrt(1 - cosA * cosA));
+    const elbow = a
+      .clone()
+      .addScaledVector(dir, l1 * cosA)
+      .addScaledVector(perp, l1 * Math.sqrt(1 - cosA * cosA));
 
     const q = upper.getWorldQuaternion(new THREE.Quaternion());
     q.premultiply(_q1.setFromUnitVectors(_v1.copy(bPos).sub(a).normalize(), _v2.copy(elbow).sub(a).normalize()));
@@ -513,7 +530,14 @@ function setWorldQ(bone: THREE.Object3D, q: THREE.Quaternion): void {
  * IK hai đốt không cấp phát cho chân (bám đất mỗi khung): đưa `end` tới `target`, gối về phía `pole`; bàn chân giữ hướng
  * `endQ`. Dùng thẳng `matrixWorld` (đã làm mới), không gọi lại chuỗi cha như `getWorldPosition`.
  */
-function solveLeg(upper: THREE.Bone, mid: THREE.Bone, end: THREE.Bone, target: THREE.Vector3, pole: THREE.Vector3, endQ: THREE.Quaternion): void {
+function solveLeg(
+  upper: THREE.Bone,
+  mid: THREE.Bone,
+  end: THREE.Bone,
+  target: THREE.Vector3,
+  pole: THREE.Vector3,
+  endQ: THREE.Quaternion,
+): void {
   const a = _sa.setFromMatrixPosition(upper.matrixWorld);
   const bp = _sb.setFromMatrixPosition(mid.matrixWorld);
   const c = _sc.setFromMatrixPosition(end.matrixWorld);
@@ -527,7 +551,10 @@ function solveLeg(upper: THREE.Bone, mid: THREE.Bone, end: THREE.Bone, target: T
   _perp.copy(pole).addScaledVector(_dir, -pole.dot(_dir));
   if (_perp.lengthSq() < 1e-8) _perp.set(0, 0, 1).addScaledVector(_dir, -_dir.z);
   _perp.normalize();
-  _elb.copy(a).addScaledVector(_dir, l1 * cosA).addScaledVector(_perp, l1 * Math.sqrt(1 - cosA * cosA));
+  _elb
+    .copy(a)
+    .addScaledVector(_dir, l1 * cosA)
+    .addScaledVector(_perp, l1 * Math.sqrt(1 - cosA * cosA));
 
   // Đùi: xoay đưa gối tới vị trí mới.
   upper.matrixWorld.decompose(_w1, _sq, _ss);
@@ -594,7 +621,13 @@ export function resolveKeys(def: PoseDef): Resolved[] {
   const fields = Object.keys(raw[0]) as Field[];
   const first: Partial<Record<Field, PoseVec>> = {};
   for (const r of raw) for (const f of fields) first[f] ??= r[f];
-  const defaults: Partial<Record<Field, PoseVec>> = { hipsPos: [0, 0, 0], hipsRot: [0, 0, 0], spine: [0, 0, 0], head: [0, 0, 0], ...DEFAULT_POLE };
+  const defaults: Partial<Record<Field, PoseVec>> = {
+    hipsPos: [0, 0, 0],
+    hipsRot: [0, 0, 0],
+    spine: [0, 0, 0],
+    head: [0, 0, 0],
+    ...DEFAULT_POLE,
+  };
   const cur: Partial<Record<Field, PoseVec>> = {};
   for (const f of fields) cur[f] = first[f] ?? defaults[f];
   return def.keys.map((k, i) => {
@@ -636,7 +669,11 @@ function arcHand(a: PoseVec, b: PoseVec, u: number, side: 1 | -1): PoseVec {
   const lb = rb.length();
   if (la < 1e-4 || lb < 1e-4) return lerp(a, b, u);
   const d = slerpDir(arr(ra), arr(rb), u);
-  return arr(vec(d).multiplyScalar(la + (lb - la) * u).add(s));
+  return arr(
+    vec(d)
+      .multiplyScalar(la + (lb - la) * u)
+      .add(s),
+  );
 }
 
 /** Giá trị nội suy ở thời điểm t (giây). */
@@ -743,7 +780,9 @@ export function maskClip(clip: THREE.AnimationClip, rig: IkRig, part: BodyPart, 
     for (; o; o = o.parent) if (o === top) return true;
     return false;
   };
-  const tracks = clip.tracks.filter((t) => under(THREE.PropertyBinding.parseTrackName(t.name).nodeName) === (part !== 'lower')).map((t) => t.clone());
+  const tracks = clip.tracks
+    .filter((t) => under(THREE.PropertyBinding.parseTrackName(t.name).nodeName) === (part !== 'lower'))
+    .map((t) => t.clone());
   return new THREE.AnimationClip(name, clip.duration, tracks, clip.blendMode);
 }
 

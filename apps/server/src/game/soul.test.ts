@@ -1,5 +1,23 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { BLINK_CD, BLINK_DIST, groundAt, IN_FLY, PF_DEAD, PF_SOUL, S, SOUL_COMBAT_BLOCK_MS, SOUL_DEATH_CD_MS, SOUL_DEATH_HP, SOUL_DEATH_MS, SOUL_RANGE, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, WORLD_MARGIN, type FxMsg, type SoulStateMsg } from '@dtl/shared';
+import {
+  BLINK_CD,
+  BLINK_DIST,
+  groundAt,
+  IN_FLY,
+  PF_DEAD,
+  PF_SOUL,
+  S,
+  SOUL_COMBAT_BLOCK_MS,
+  SOUL_DEATH_CD_MS,
+  SOUL_DEATH_HP,
+  SOUL_DEATH_MS,
+  SOUL_RANGE,
+  SOUL_SCOUT_CD_MS,
+  SOUL_SCOUT_MS,
+  WORLD_MARGIN,
+  type FxMsg,
+  type SoulStateMsg,
+} from '@dtl/shared';
 
 // E3-K: nguyên anh xuất khiếu (thám thính + cứu mạng khi chết), ngự không, thuấn di. Server quyết định hết.
 process.env.DB_FILE = ':memory:';
@@ -34,7 +52,13 @@ function setup(level = 24, method = 'lac_kiem_quyet') {
   vi.setSystemTime(2_000_000);
   const sent: Sent[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X + 300, z: Z }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X + 300, z: Z },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'sl' + acc);
   char.level = level;
   char.meta.method = method;
@@ -292,7 +316,10 @@ describe('thuấn di (thay Lướt cơ bản từ Nguyên Anh)', () => {
 
 describe('ngự không (server)', () => {
   it('Nguyên Anh bay dưới 30 m không tốn linh lực; Trúc Cơ bay 25 m thì tốn', () => {
-    for (const [lv, drains] of [[24, false], [18, true]] as const) {
+    for (const [lv, drains] of [
+      [24, false],
+      [18, true],
+    ] as const) {
       const t = setup(lv);
       t.p.move.y = groundAt(X, Z) + 25;
       t.p.move.flying = true;

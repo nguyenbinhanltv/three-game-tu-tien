@@ -78,7 +78,6 @@ export function buildSect(buildings = true): THREE.BufferGeometry {
 }
 
 function buildSectBuildings(b: GeoBuilder, y: number, cx: number): void {
-
   // --- Chính điện ---
   const hz = 2004;
   b.add(G.box, mat(cx, y + 0.6, hz, 0, 0, 0, 32, 1.2, 22), C_STONE);
@@ -229,19 +228,23 @@ export function buildMoonGate(x: number, z: number): THREE.Mesh {
   const paint = (g: THREE.BufferGeometry, color: number, kind: Kind = 'stone'): THREE.BufferGeometry => {
     const n = g.index ? g.toNonIndexed() : g;
     n.computeVertexNormals();
-    const pos = n.attributes.position, nor = n.attributes.normal;
+    const pos = n.attributes.position,
+      nor = n.attributes.normal;
     const base = new THREE.Color(color);
     const arr = new Float32Array(pos.count * 3);
     const nv = new THREE.Vector3();
     for (let i = 0; i < pos.count; i++) {
       nv.fromBufferAttribute(nor, i);
-      const px = pos.getX(i), qy = pos.getY(i), pz = pos.getZ(i);
+      const px = pos.getX(i),
+        qy = pos.getY(i),
+        pz = pos.getZ(i);
       let k = 1;
       if (kind !== 'glow') {
         const lam = Math.max(0, nv.dot(L));
         const ao = 0.72 + 0.28 * Math.min(1, qy / 3.2); // chân tối hơn (bóng đổ xuống nền)
         k = (0.5 + 0.5 * lam) * ao;
-        if (kind === 'stone') k *= 0.92 + 0.16 * hash3(Math.round(px * 2.5), Math.round(qy * 2.5), Math.round(pz * 2.5)); // vân đá
+        if (kind === 'stone')
+          k *= 0.92 + 0.16 * hash3(Math.round(px * 2.5), Math.round(qy * 2.5), Math.round(pz * 2.5)); // vân đá
         else k += Math.pow(Math.max(0, nv.dot(H)), 10) * 0.55; // vệt sáng kim loại
       }
       arr[i * 3] = Math.min(1, base.r * k);
@@ -252,7 +255,14 @@ export function buildMoonGate(x: number, z: number): THREE.Mesh {
     n.deleteAttribute('uv');
     return n;
   };
-  const IVORY = 0xe6dcc6, IVORY_D = 0xc6bba3, SILVER = 0xc4d0e2, CARVE = 0x7d7562, MIRROR = 0x1d2e4e, JADE = 0x57e0e8, LANTERN = 0xffc274, SILK = 0xdce8ff;
+  const IVORY = 0xe6dcc6,
+    IVORY_D = 0xc6bba3,
+    SILVER = 0xc4d0e2,
+    CARVE = 0x7d7562,
+    MIRROR = 0x1d2e4e,
+    JADE = 0x57e0e8,
+    LANTERN = 0xffc274,
+    SILK = 0xdce8ff;
   const box = (w: number, h: number, d: number, cx: number, cy: number, cz: number, col: number, kind: Kind = 'stone', rz = 0) => {
     const g = new THREE.BoxGeometry(w, h, d);
     if (rz) g.rotateZ(rz);
@@ -260,36 +270,60 @@ export function buildMoonGate(x: number, z: number): THREE.Mesh {
   };
   const parts: THREE.BufferGeometry[] = [
     // Bệ tam cấp đá trắng ngà
-    box(13, 0.4, 5.6, 0, 0.2, 0, IVORY_D), box(11, 0.4, 4.4, 0, 0.6, 0, IVORY), box(9.2, 0.4, 3.2, 0, 1.0, 0, IVORY_D),
+    box(13, 0.4, 5.6, 0, 0.2, 0, IVORY_D),
+    box(11, 0.4, 4.4, 0, 0.6, 0, IVORY),
+    box(9.2, 0.4, 3.2, 0, 1.0, 0, IVORY_D),
   ];
   for (const sx of [-1, 1]) {
     const cx = sx * 4.4;
-    parts.push(box(1.9, 0.6, 1.9, cx, 1.5, 0, SILVER, 'metal'), box(1.3, 7.2, 1.3, cx, 5.4, 0, IVORY), box(1.7, 0.5, 1.7, cx, 9.2, 0, SILVER, 'metal'));
+    parts.push(
+      box(1.9, 0.6, 1.9, cx, 1.5, 0, SILVER, 'metal'),
+      box(1.3, 7.2, 1.3, cx, 5.4, 0, IVORY),
+      box(1.7, 0.5, 1.7, cx, 9.2, 0, SILVER, 'metal'),
+    );
     parts.push(paint(new THREE.ConeGeometry(0.95, 1.2, 4).rotateY(Math.PI / 4).translate(cx, 10.05, 0), SILVER, 'metal'));
     // Đai bạc quanh thân trụ
     parts.push(box(1.45, 0.16, 1.45, cx, 3.0, 0, SILVER, 'metal'), box(1.45, 0.16, 1.45, cx, 7.6, 0, SILVER, 'metal'));
     // Khắc mây (cung xoắn) ở mặt trước trụ
-    for (const cy of [4.2, 5.4, 6.6]) parts.push(paint(new THREE.TorusGeometry(0.22, 0.05, 4, 8, Math.PI * 1.5).rotateZ(sx * 0.7).translate(cx, cy, 0.68), CARVE));
+    for (const cy of [4.2, 5.4, 6.6])
+      parts.push(paint(new THREE.TorusGeometry(0.22, 0.05, 4, 8, Math.PI * 1.5).rotateZ(sx * 0.7).translate(cx, cy, 0.68), CARVE));
     // Đèn lồng treo cạnh đỉnh trụ (phía ngoài), dải lụa buông từ chóp
     const lx = cx + sx * 1.15;
-    parts.push(box(0.05, 1.1, 0.05, lx, 8.65, 0, SILVER, 'metal'), paint(new THREE.OctahedronGeometry(0.42).scale(1, 1.3, 1).translate(lx, 7.75, 0), LANTERN, 'glow'), box(0.34, 0.12, 0.34, lx, 8.25, 0, SILVER, 'metal'));
-    for (let i = 0; i < 4; i++) parts.push(box(0.3, 1.0, 0.05, cx + sx * (0.95 + 0.14 * i), 8.7 - i * 0.55, 0.78, SILK, 'stone', sx * (0.1 + i * 0.07)));
+    parts.push(
+      box(0.05, 1.1, 0.05, lx, 8.65, 0, SILVER, 'metal'),
+      paint(new THREE.OctahedronGeometry(0.42).scale(1, 1.3, 1).translate(lx, 7.75, 0), LANTERN, 'glow'),
+      box(0.34, 0.12, 0.34, lx, 8.25, 0, SILVER, 'metal'),
+    );
+    for (let i = 0; i < 4; i++)
+      parts.push(box(0.3, 1.0, 0.05, cx + sx * (0.95 + 0.14 * i), 8.7 - i * 0.55, 0.78, SILK, 'stone', sx * (0.1 + i * 0.07)));
   }
   // Vòm: torus bạc dày + vòng viền sáng trong lòng vòm
-  const arch = new THREE.TorusGeometry(3.0, 0.55, 12, 36); arch.scale(1, 1.25, 1); arch.translate(0, 5.0, 0);
-  const rim = new THREE.TorusGeometry(2.55, 0.12, 6, 36); rim.scale(1, 1.25, 1); rim.translate(0, 5.0, 0.28);
+  const arch = new THREE.TorusGeometry(3.0, 0.55, 12, 36);
+  arch.scale(1, 1.25, 1);
+  arch.translate(0, 5.0, 0);
+  const rim = new THREE.TorusGeometry(2.55, 0.12, 6, 36);
+  rim.scale(1, 1.25, 1);
+  rim.translate(0, 5.0, 0.28);
   parts.push(paint(arch, SILVER, 'metal'), paint(rim, 0xdff0ff, 'glow'));
   // Hoa văn trăng: bảy ngọc lam nhỏ dọc nửa trên vòm, chân đế bạc; ngọc lớn ở đỉnh
   for (let i = 0; i < 7; i++) {
     const t = Math.PI * (0.12 + (0.76 * i) / 6);
-    const gx = Math.cos(t) * 3.0, gy = 5.0 + Math.sin(t) * 3.75;
+    const gx = Math.cos(t) * 3.0,
+      gy = 5.0 + Math.sin(t) * 3.75;
     const r = i === 3 ? 0.26 : 0.15;
-    parts.push(paint(new THREE.SphereGeometry(r, 6, 5).translate(gx, gy, 0.55), JADE, 'glow'), paint(new THREE.CylinderGeometry(r * 1.4, r * 1.4, 0.08, 8).rotateX(Math.PI / 2).translate(gx, gy, 0.5), SILVER, 'metal'));
+    parts.push(
+      paint(new THREE.SphereGeometry(r, 6, 5).translate(gx, gy, 0.55), JADE, 'glow'),
+      paint(new THREE.CylinderGeometry(r * 1.4, r * 1.4, 0.08, 8).rotateX(Math.PI / 2).translate(gx, gy, 0.5), SILVER, 'metal'),
+    );
   }
   // Mặt gương: đĩa dày (trụ ngắn xoay hướng +z) có gờ bạc nổi
-  const mir = new THREE.CylinderGeometry(2.55, 2.55, 0.5, 32).rotateX(Math.PI / 2); mir.scale(1, 1.25, 1); mir.translate(0, 5.0, 0);
+  const mir = new THREE.CylinderGeometry(2.55, 2.55, 0.5, 32).rotateX(Math.PI / 2);
+  mir.scale(1, 1.25, 1);
+  mir.translate(0, 5.0, 0);
   parts.push(paint(mir, MIRROR));
-  const lip = new THREE.TorusGeometry(2.45, 0.18, 6, 32); lip.scale(1, 1.25, 1); lip.translate(0, 5.0, 0.27);
+  const lip = new THREE.TorusGeometry(2.45, 0.18, 6, 32);
+  lip.scale(1, 1.25, 1);
+  lip.translate(0, 5.0, 0.27);
   parts.push(paint(lip, SILVER, 'metal'));
   const geo = mergeGeometries(parts)!;
   const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, fog: false }));
@@ -305,34 +339,60 @@ export function buildMoonGate(x: number, z: number): THREE.Mesh {
  */
 export function moonMirrorTexture(): THREE.CanvasTexture | null {
   if (typeof document === 'undefined') return null;
-  const N = 256, c = document.createElement('canvas');
+  const N = 256,
+    c = document.createElement('canvas');
   c.width = c.height = N;
   const g = c.getContext('2d');
   if (!g) return null;
   const grad = g.createRadialGradient(N * 0.45, N * 0.4, N * 0.05, N / 2, N / 2, N / 2);
-  grad.addColorStop(0, '#6f9acb'); grad.addColorStop(0.6, '#3b5f93'); grad.addColorStop(0.88, '#2b4575'); grad.addColorStop(1, '#2b4575');
-  g.fillStyle = grad; g.fillRect(0, 0, N, N);
+  grad.addColorStop(0, '#6f9acb');
+  grad.addColorStop(0.6, '#3b5f93');
+  grad.addColorStop(0.88, '#2b4575');
+  grad.addColorStop(1, '#2b4575');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, N, N);
   // Mây phản chiếu
   g.filter = 'blur(10px)';
   g.fillStyle = 'rgba(225,238,255,0.35)';
-  for (const [cx, cy, rx, ry] of [[90, 80, 60, 14], [160, 130, 70, 12], [100, 190, 50, 10], [180, 60, 36, 9]]) { g.beginPath(); g.ellipse(cx, cy, rx, ry, -0.2, 0, Math.PI * 2); g.fill(); }
+  for (const [cx, cy, rx, ry] of [
+    [90, 80, 60, 14],
+    [160, 130, 70, 12],
+    [100, 190, 50, 10],
+    [180, 60, 36, 9],
+  ]) {
+    g.beginPath();
+    g.ellipse(cx, cy, rx, ry, -0.2, 0, Math.PI * 2);
+    g.fill();
+  }
   g.filter = 'none';
   // Trăng khuyết (vẽ riêng một lớp để cắt không xóa nền)
   const moon = document.createElement('canvas');
   moon.width = moon.height = N;
   const mg = moon.getContext('2d')!;
   mg.fillStyle = 'rgba(240,248,255,0.8)';
-  mg.beginPath(); mg.arc(150, 100, 20, 0, Math.PI * 2); mg.fill();
+  mg.beginPath();
+  mg.arc(150, 100, 20, 0, Math.PI * 2);
+  mg.fill();
   mg.globalCompositeOperation = 'destination-out';
-  mg.beginPath(); mg.arc(158, 95, 18, 0, Math.PI * 2); mg.fill();
+  mg.beginPath();
+  mg.arc(158, 95, 18, 0, Math.PI * 2);
+  mg.fill();
   g.drawImage(moon, 0, 0);
   // Ripple đồng tâm
-  g.strokeStyle = 'rgba(200,225,255,0.25)'; g.lineWidth = 2;
-  for (const r of [34, 62, 90]) { g.beginPath(); g.arc(N / 2, N / 2, r, 0, Math.PI * 2); g.stroke(); }
+  g.strokeStyle = 'rgba(200,225,255,0.25)';
+  g.lineWidth = 2;
+  for (const r of [34, 62, 90]) {
+    g.beginPath();
+    g.arc(N / 2, N / 2, r, 0, Math.PI * 2);
+    g.stroke();
+  }
   // Viền fresnel
   const fr = g.createRadialGradient(N / 2, N / 2, N * 0.34, N / 2, N / 2, N / 2);
-  fr.addColorStop(0, 'rgba(210,232,255,0)'); fr.addColorStop(0.85, 'rgba(210,232,255,0.45)'); fr.addColorStop(1, 'rgba(235,246,255,0.85)');
-  g.fillStyle = fr; g.fillRect(0, 0, N, N);
+  fr.addColorStop(0, 'rgba(210,232,255,0)');
+  fr.addColorStop(0.85, 'rgba(210,232,255,0.45)');
+  fr.addColorStop(1, 'rgba(235,246,255,0.85)');
+  g.fillStyle = fr;
+  g.fillRect(0, 0, N, N);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.center.set(0.5, 0.5);

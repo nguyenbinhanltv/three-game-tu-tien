@@ -12,8 +12,24 @@ import { bakePoseLibrary, poseClipName, type PoseClips, type PoseLibrary } from 
 /** Asset Mixamo dùng làm nguồn nướng pose (nhỏ nhất trong các nhân vật Mixamo của game). */
 export const POSE_SOURCE_ASSET = 'chr_v2_nam';
 
-const LIMB: Record<string, string> = { shoulder: 'clavicle', arm: 'upperarm', forearm: 'lowerarm', hand: 'hand', upleg: 'thigh', leg: 'calf', foot: 'foot', toebase: 'ball' };
-const SPINE: Record<string, string> = { pelvis: 'hips', spine_01: 'spine', spine_02: 'spine1', spine_03: 'spine2', neck_01: 'neck', Head: 'head' };
+const LIMB: Record<string, string> = {
+  shoulder: 'clavicle',
+  arm: 'upperarm',
+  forearm: 'lowerarm',
+  hand: 'hand',
+  upleg: 'thigh',
+  leg: 'calf',
+  foot: 'foot',
+  toebase: 'ball',
+};
+const SPINE: Record<string, string> = {
+  pelvis: 'hips',
+  spine_01: 'spine',
+  spine_02: 'spine1',
+  spine_03: 'spine2',
+  neck_01: 'neck',
+  Head: 'head',
+};
 const MIXAMO_FROM_LIMB = Object.fromEntries(Object.entries(LIMB).map(([mx, mq]) => [mq, mx]));
 const FINGER = new Set(['thumb', 'index', 'middle', 'ring', 'pinky']);
 

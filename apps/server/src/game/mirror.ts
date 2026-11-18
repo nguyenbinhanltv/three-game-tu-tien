@@ -6,7 +6,19 @@
 //  - Nguyệt phản: người trong màn gương bị Tâm Ma Ảnh của chính mình đuổi và ném chiêu; hết màn thì bóng tan.
 // Sát thương từ quái có `glass` (hoặc boss gương) bị Định Thần Phù giảm ở `GameSim.damagePlayer` (hàm `wardMul`).
 
-import { computeDamage, MS_ATTACK, MS_CHASE, MS_DEAD, PF_DEAD, shadowStats, type FxMsg, type HazardGeom, type HazardMsg, type MonsterDef, type SpiritHit } from '@dtl/shared';
+import {
+  computeDamage,
+  MS_ATTACK,
+  MS_CHASE,
+  MS_DEAD,
+  PF_DEAD,
+  shadowStats,
+  type FxMsg,
+  type HazardGeom,
+  type HazardMsg,
+  type MonsterDef,
+  type SpiritHit,
+} from '@dtl/shared';
 import { SKILL } from '@dtl/content';
 import type { MonEnt, PlayerEnt } from './entities';
 import { tamMaSkills } from './tribmech';
@@ -180,7 +192,9 @@ export class MirrorSystem {
   /** Câu chat gần boss: nó lặp lại câu cuối của người đối diện. Chỉ boss có `mirror.echo` đã giao chiến và người chat trong `ECHO_CHAT_RANGE` m. */
   echoLine(text: string, p: PlayerEnt): { boss: MonEnt; line: string } | null {
     if (this.rt.size === 0) return null;
-    const m = this.bosses().find((o) => o.def.mirror?.echo && this.rt.get(o.id)?.started && Math.hypot(p.move.x - o.s.x, p.move.z - o.s.z) <= ECHO_CHAT_RANGE);
+    const m = this.bosses().find(
+      (o) => o.def.mirror?.echo && this.rt.get(o.id)?.started && Math.hypot(p.move.x - o.s.x, p.move.z - o.s.z) <= ECHO_CHAT_RANGE,
+    );
     if (!m) return null;
     const line = text.trim().replace(/[?!.…]+$/u, '');
     if (!line) return null;
@@ -214,7 +228,8 @@ export class MirrorSystem {
     }
     this.h.fx({ t: 'mirror_split', src: m.id, x: m.s.x, z: m.s.z, r: cfg.r });
     // Room thế giới mở (boss ngoài trời): chỉ người trong tầm boss nhận tin, không báo cả room.
-    for (const p of this.h.players()) if (Math.hypot(p.move.x - m.s.x, p.move.z - m.s.z) <= SPLIT_NOTICE_RANGE) this.h.sys(p, 'sys.mirror_split', undefined, 'info');
+    for (const p of this.h.players())
+      if (Math.hypot(p.move.x - m.s.x, p.move.z - m.s.z) <= SPLIT_NOTICE_RANGE) this.h.sys(p, 'sys.mirror_split', undefined, 'info');
   }
 
   private clearDecoys(rt: BossRt): void {
@@ -235,8 +250,24 @@ export class MirrorSystem {
     const cfg = m.def.mirror!.disc!;
     if (!rt.disc) {
       if (now < rt.discNext) return;
-      rt.disc = { t0: now, warnUntil: now + cfg.warn * 1000, until: now + (cfg.warn + cfg.dur) * 1000, theta0: Math.random() * Math.PI * 2, hitAt: new Map() };
-      this.h.fx({ t: 'mirror_disc', src: m.id, x: m.s.x, z: m.s.z, r: cfg.len, d: cfg.dur, n: cfg.beams, sd: Math.round(rt.disc.theta0 * 1000), pg: cfg.warn * 100 });
+      rt.disc = {
+        t0: now,
+        warnUntil: now + cfg.warn * 1000,
+        until: now + (cfg.warn + cfg.dur) * 1000,
+        theta0: Math.random() * Math.PI * 2,
+        hitAt: new Map(),
+      };
+      this.h.fx({
+        t: 'mirror_disc',
+        src: m.id,
+        x: m.s.x,
+        z: m.s.z,
+        r: cfg.len,
+        d: cfg.dur,
+        n: cfg.beams,
+        sd: Math.round(rt.disc.theta0 * 1000),
+        pg: cfg.warn * 100,
+      });
       return;
     }
     const d = rt.disc;
@@ -276,7 +307,11 @@ export class MirrorSystem {
       for (const p of inside) {
         const c = p.char;
         const base = shadowStats(c.level, c.atk, c.def);
-        const sh = this.h.spawnShadow(p, { hp: Math.max(1, Math.round(c.mhp * cfg.hpMul)), atk: Math.max(1, Math.round(base.atk * cfg.atkMul)), def: base.def });
+        const sh = this.h.spawnShadow(p, {
+          hp: Math.max(1, Math.round(c.mhp * cfg.hpMul)),
+          atk: Math.max(1, Math.round(base.atk * cfg.atkMul)),
+          def: base.def,
+        });
         if (sh) {
           shadows.push(sh.id);
           this.h.sys(p, 'sys.mirror_veil', undefined, 'bad');
@@ -311,11 +346,26 @@ export class MirrorSystem {
       const sk = id ? SKILL.get(id) : undefined;
       if (!sk) continue;
       const pow = VEIL_CAST.pow * Math.max(1, sk.power);
-      if (sk.kind === 'aoe') this.h.addHazard({ x: owner.move.x, z: owner.move.z, r: Math.min(8, sk.radius ?? 5) }, VEIL_CAST.warn, pow, 'spirit', sh.id, sh.atk);
+      if (sk.kind === 'aoe')
+        this.h.addHazard(
+          { x: owner.move.x, z: owner.move.z, r: Math.min(8, sk.radius ?? 5) },
+          VEIL_CAST.warn,
+          pow,
+          'spirit',
+          sh.id,
+          sh.atk,
+        );
       else {
         const dx = owner.move.x - sh.s.x;
         const dz = owner.move.z - sh.s.z;
-        this.h.addHazard({ x: sh.s.x, z: sh.s.z, r: Math.min(16, Math.hypot(dx, dz) + 4), sh: 'rect', yaw: Math.atan2(dx, dz), w: 3 }, VEIL_CAST.warn, pow, 'spirit', sh.id, sh.atk);
+        this.h.addHazard(
+          { x: sh.s.x, z: sh.s.z, r: Math.min(16, Math.hypot(dx, dz) + 4), sh: 'rect', yaw: Math.atan2(dx, dz), w: 3 },
+          VEIL_CAST.warn,
+          pow,
+          'spirit',
+          sh.id,
+          sh.atk,
+        );
       }
       this.h.fx({ t: 'tamma_cast', src: sh.id, s: sk.id, x: owner.move.x, z: owner.move.z, d: VEIL_CAST.warn });
     }

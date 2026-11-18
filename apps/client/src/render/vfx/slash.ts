@@ -129,17 +129,13 @@ export function slashNodes(U: FxUniforms, ink: boolean) {
   const burn = alive.mul(one.sub(smoothstep(erode, erode.add(0.1), e))).mul(step(0.02, erode));
   const hot = one.sub(U.k).pow(2).mul(0.25).add(1);
   // Viền cắt (kỹ thuật EdgeFlux, MIT): sáng gắt sát mép ngoài, tắt theo hàm mũ, chỉ ở phần đầu quét (đuôi không có), mũi nhọn tắt mềm.
-  const cutEdge = exp(one.sub(v).negate().div(0.07)).mul(smoothstep(0.15, 0.9, trail)).mul(ends);
+  const cutEdge = exp(one.sub(v).negate().div(0.07))
+    .mul(smoothstep(0.15, 0.9, trail))
+    .mul(ends);
   const lum = float(0.6).add(rim.mul(1.2)).add(streak.mul(0.35)).add(burn.mul(1.2)).add(cutEdge.mul(1.1)).mul(trail.mul(0.6).add(0.4));
   const tint = mix(U.color, vec3(1, 1, 1), min(cutEdge.mul(0.7), 0.7));
   return {
     color: min(tint.mul(lum).mul(hot), U.maxHdr),
-    opacity: U.opacity
-      .mul(reveal)
-      .mul(alive)
-      .mul(ends)
-      .mul(body)
-      .mul(trail.mul(0.7).add(0.3))
-      .mul(streak.mul(0.3).add(0.7)),
+    opacity: U.opacity.mul(reveal).mul(alive).mul(ends).mul(body).mul(trail.mul(0.7).add(0.3)).mul(streak.mul(0.3).add(0.7)),
   };
 }

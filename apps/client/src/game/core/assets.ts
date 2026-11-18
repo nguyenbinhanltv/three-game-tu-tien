@@ -159,7 +159,10 @@ export function localLibsManager(extra: Record<string, string> = {}): THREE.Load
   return manager;
 }
 
-type Ktx2Config = Record<'astcSupported' | 'astcHDRSupported' | 'etc1Supported' | 'etc2Supported' | 'dxtSupported' | 'bptcSupported' | 'pvrtcSupported', boolean>;
+type Ktx2Config = Record<
+  'astcSupported' | 'astcHDRSupported' | 'etc1Supported' | 'etc2Supported' | 'dxtSupported' | 'bptcSupported' | 'pvrtcSupported',
+  boolean
+>;
 type Ktx2Internals = { workerConfig: Ktx2Config | null; _createTexture(buffer: ArrayBuffer, config?: object): Promise<THREE.Texture> };
 
 /** Tệp KTX2 mã hóa UASTC (pipeline dùng cho normal map): vkFormat 0 (Basis) và supercompression khác BasisLZ (1 = ETC1S). */
@@ -282,7 +285,11 @@ export function createGltfLoader(ktx2: KTX2Loader): GLTFLoader {
 }
 
 /** Thay texture bậc cao vào vật liệu cùng tên (`meta.mat`) trong cây `root`; null nếu không có vật liệu/slot nào khớp. */
-export function swapHiresTexture(root: THREE.Object3D, meta: { mat: string; slots: string[]; gpuBytes: number }, tex: THREE.Texture): HiresApplied | null {
+export function swapHiresTexture(
+  root: THREE.Object3D,
+  meta: { mat: string; slots: string[]; gpuBytes: number },
+  tex: THREE.Texture,
+): HiresApplied | null {
   const swaps: HiresApplied['swaps'] = [];
   root.traverse((o) => {
     const mats = (o as THREE.Mesh).material;
@@ -431,7 +438,15 @@ export class AssetCache {
   async acquire(id: string, opts: AcquireOptions = {}): Promise<AssetHandle> {
     let e = this.entries.get(id);
     if (!e) {
-      const entry: Entry = { id, refs: 0, gltf: null, promise: null as unknown as Promise<GLTF>, handles: new Set(), tracked: new Set(), hires: new Map() };
+      const entry: Entry = {
+        id,
+        refs: 0,
+        gltf: null,
+        promise: null as unknown as Promise<GLTF>,
+        handles: new Set(),
+        tracked: new Set(),
+        hires: new Map(),
+      };
       entry.promise = this.getManifest()
         .then((m) => {
           const a = m.assets[id];
@@ -752,12 +767,10 @@ export class AssetCache {
       for (let i = 1; i < this.queue.length; i++) if (this.rank(this.queue[i]) < this.rank(this.queue[best])) best = i;
       const job = this.queue.splice(best, 1)[0];
       this.active++;
-      job
-        .run()
-        .finally(() => {
-          this.active--;
-          this.pump();
-        });
+      job.run().finally(() => {
+        this.active--;
+        this.pump();
+      });
     }
   }
 

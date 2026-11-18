@@ -120,8 +120,20 @@ function fixtureMesh(bones: Map<string, THREE.Bone>, world: Map<string, THREE.Ve
     g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), pb.clone().sub(pa).normalize()));
     g.translate((pa.x + pb.x) / 2, (pa.y + pb.y) / 2, (pa.z + pb.z) / 2);
     const n = g.attributes.position.count;
-    g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(new Array(n * 4).fill(0).map((_, i) => (i % 4 === 0 ? idx.get(bone)! : 0)), 4));
-    g.setAttribute('skinWeight', new THREE.Float32BufferAttribute(new Array(n * 4).fill(0).map((_, i) => (i % 4 === 0 ? 1 : 0)), 4));
+    g.setAttribute(
+      'skinIndex',
+      new THREE.Uint16BufferAttribute(
+        new Array(n * 4).fill(0).map((_, i) => (i % 4 === 0 ? idx.get(bone)! : 0)),
+        4,
+      ),
+    );
+    g.setAttribute(
+      'skinWeight',
+      new THREE.Float32BufferAttribute(
+        new Array(n * 4).fill(0).map((_, i) => (i % 4 === 0 ? 1 : 0)),
+        4,
+      ),
+    );
     parts.push(g);
   };
   seg('Hips', 'Hips', 'Spine', 0.32, 0.2);

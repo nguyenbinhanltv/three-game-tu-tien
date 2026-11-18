@@ -10,9 +10,26 @@ import type { MonSkillRt } from './monskill';
 import type { SkillFlow } from './skillflow';
 
 /** Kiếm đan bản mệnh (E2-G): mỗi người một bộ, nhịp đánh theo `every`. */
-export interface Summon { sid: string; until: number; nextAt: number; every: number; count: number; range: number; power: number; markFirst: boolean; elem?: string }
+export interface Summon {
+  sid: string;
+  until: number;
+  nextAt: number;
+  every: number;
+  count: number;
+  range: number;
+  power: number;
+  markFirst: boolean;
+  elem?: string;
+}
 /** Giậm của Sơn Nhạc Hóa Thân (E2-G). */
-export interface Stomp { sid: string; until: number; nextAt: number; every: number; r: number; power: number }
+export interface Stomp {
+  sid: string;
+  until: number;
+  nextAt: number;
+  every: number;
+  r: number;
+  power: number;
+}
 
 export interface PlayerEnt {
   sid: string;
@@ -193,7 +210,6 @@ export interface Bolt {
   mul: number;
   mon: MonEnt;
 }
-
 
 export interface SimHost {
   broadcast(type: string, msg: unknown): void;

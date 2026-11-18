@@ -50,7 +50,16 @@ function drawArhat(g: Ctx): void {
     const a = (i / 28) * Math.PI * 2;
     const r0 = 214;
     const r1 = 236 + (i % 2) * 22;
-    line(g, 0.9, 5, [[C + Math.cos(a) * r0, 235 + Math.sin(a) * r0], [C + Math.cos(a) * r1, 235 + Math.sin(a) * r1]], 1);
+    line(
+      g,
+      0.9,
+      5,
+      [
+        [C + Math.cos(a) * r0, 235 + Math.sin(a) * r0],
+        [C + Math.cos(a) * r1, 235 + Math.sin(a) * r1],
+      ],
+      1,
+    );
   }
   // Đài sen: hai lớp cánh dưới.
   for (let k = 0; k < 2; k++) {
@@ -58,76 +67,187 @@ function drawArhat(g: Ctx): void {
     for (let i = 0; i < n; i++) {
       const x = C + (i - (n - 1) / 2) * (k === 0 ? 50 : 56);
       const y = 700 - k * 26;
-      fillPath(g, k === 0 ? 0.6 : 0.78, 1, () => {
-        g.moveTo(x, y - 62);
-        g.quadraticCurveTo(x + 36, y - 10, x, y + 28);
-        g.quadraticCurveTo(x - 36, y - 10, x, y - 62);
-      }, 1, 4);
+      fillPath(
+        g,
+        k === 0 ? 0.6 : 0.78,
+        1,
+        () => {
+          g.moveTo(x, y - 62);
+          g.quadraticCurveTo(x + 36, y - 10, x, y + 28);
+          g.quadraticCurveTo(x - 36, y - 10, x, y - 62);
+        },
+        1,
+        4,
+      );
     }
   }
   // Hai chân bắt chéo (kiết già).
-  fillPath(g, 0.5, 0, () => {
-    g.ellipse(C, 610, 210, 78, 0, 0, Math.PI * 2);
-  }, 1, 7);
-  line(g, 0.18, 7, [[90, 618], [180, 590], [256, 612]]);
-  line(g, 0.18, 7, [[422, 618], [332, 590], [256, 612]]);
-  line(g, 0.18, 6, [[130, 650], [256, 636], [382, 650]]);
+  fillPath(
+    g,
+    0.5,
+    0,
+    () => {
+      g.ellipse(C, 610, 210, 78, 0, 0, Math.PI * 2);
+    },
+    1,
+    7,
+  );
+  line(g, 0.18, 7, [
+    [90, 618],
+    [180, 590],
+    [256, 612],
+  ]);
+  line(g, 0.18, 7, [
+    [422, 618],
+    [332, 590],
+    [256, 612],
+  ]);
+  line(g, 0.18, 6, [
+    [130, 650],
+    [256, 636],
+    [382, 650],
+  ]);
   // Thân áo cà sa: vai rộng, xuôi xuống.
-  fillPath(g, 0.5, 0, () => {
-    g.moveTo(150, 340);
-    g.quadraticCurveTo(256, 315, 362, 340);
-    g.lineTo(420, 580);
-    g.quadraticCurveTo(256, 640, 92, 580);
-    g.closePath();
-  }, 1, 7);
+  fillPath(
+    g,
+    0.5,
+    0,
+    () => {
+      g.moveTo(150, 340);
+      g.quadraticCurveTo(256, 315, 362, 340);
+      g.lineTo(420, 580);
+      g.quadraticCurveTo(256, 640, 92, 580);
+      g.closePath();
+    },
+    1,
+    7,
+  );
   // Dải áo vắt chéo (điểm nhấn vàng) + nếp áo.
-  fillPath(g, 0.62, 1, () => {
-    g.moveTo(170, 336);
-    g.lineTo(212, 332);
-    g.lineTo(380, 560);
-    g.lineTo(330, 566);
-    g.closePath();
-  }, 1, 4);
-  line(g, 0.18, 6, [[256, 360], [250, 470], [268, 560]]);
-  line(g, 0.18, 5, [[190, 420], [176, 520], [150, 580]]);
-  line(g, 0.18, 5, [[322, 420], [338, 520], [366, 580]]);
+  fillPath(
+    g,
+    0.62,
+    1,
+    () => {
+      g.moveTo(170, 336);
+      g.lineTo(212, 332);
+      g.lineTo(380, 560);
+      g.lineTo(330, 566);
+      g.closePath();
+    },
+    1,
+    4,
+  );
+  line(g, 0.18, 6, [
+    [256, 360],
+    [250, 470],
+    [268, 560],
+  ]);
+  line(g, 0.18, 5, [
+    [190, 420],
+    [176, 520],
+    [150, 580],
+  ]);
+  line(g, 0.18, 5, [
+    [322, 420],
+    [338, 520],
+    [366, 580],
+  ]);
   // Hai tay: từ vai xuống, chắp ấn trước ngực.
-  fillPath(g, 0.55, 0, () => {
-    g.moveTo(150, 348);
-    g.quadraticCurveTo(92, 440, 168, 500);
-    g.lineTo(256, 470);
-    g.lineTo(230, 430);
-    g.quadraticCurveTo(166, 450, 176, 372);
-    g.closePath();
-  }, 1, 6);
-  fillPath(g, 0.55, 0, () => {
-    g.moveTo(362, 348);
-    g.quadraticCurveTo(420, 440, 344, 500);
-    g.lineTo(256, 470);
-    g.lineTo(282, 430);
-    g.quadraticCurveTo(346, 450, 336, 372);
-    g.closePath();
-  }, 1, 6);
-  fillPath(g, 0.8, 1, () => {
-    g.ellipse(256, 470, 46, 34, 0, 0, Math.PI * 2);
-  }, 1, 6);
-  line(g, 0.2, 4, [[236, 470], [276, 470]]);
+  fillPath(
+    g,
+    0.55,
+    0,
+    () => {
+      g.moveTo(150, 348);
+      g.quadraticCurveTo(92, 440, 168, 500);
+      g.lineTo(256, 470);
+      g.lineTo(230, 430);
+      g.quadraticCurveTo(166, 450, 176, 372);
+      g.closePath();
+    },
+    1,
+    6,
+  );
+  fillPath(
+    g,
+    0.55,
+    0,
+    () => {
+      g.moveTo(362, 348);
+      g.quadraticCurveTo(420, 440, 344, 500);
+      g.lineTo(256, 470);
+      g.lineTo(282, 430);
+      g.quadraticCurveTo(346, 450, 336, 372);
+      g.closePath();
+    },
+    1,
+    6,
+  );
+  fillPath(
+    g,
+    0.8,
+    1,
+    () => {
+      g.ellipse(256, 470, 46, 34, 0, 0, Math.PI * 2);
+    },
+    1,
+    6,
+  );
+  line(g, 0.2, 4, [
+    [236, 470],
+    [276, 470],
+  ]);
   // Cổ + đầu + tai dài + búi tóc + điểm bạch hào.
-  fillPath(g, 0.5, 0, () => {
-    g.rect(226, 288, 60, 50);
-  }, 1, 5);
-  fillPath(g, 0.55, 0, () => {
-    g.ellipse(256, 232, 62, 74, 0, 0, Math.PI * 2);
-  }, 1, 7);
-  fillPath(g, 0.5, 0, () => {
-    g.ellipse(190, 252, 14, 46, 0.1, 0, Math.PI * 2);
-  }, 1, 4);
-  fillPath(g, 0.5, 0, () => {
-    g.ellipse(322, 252, 14, 46, -0.1, 0, Math.PI * 2);
-  }, 1, 4);
-  fillPath(g, 0.8, 1, () => {
-    g.ellipse(256, 152, 34, 28, 0, 0, Math.PI * 2);
-  }, 1, 5);
+  fillPath(
+    g,
+    0.5,
+    0,
+    () => {
+      g.rect(226, 288, 60, 50);
+    },
+    1,
+    5,
+  );
+  fillPath(
+    g,
+    0.55,
+    0,
+    () => {
+      g.ellipse(256, 232, 62, 74, 0, 0, Math.PI * 2);
+    },
+    1,
+    7,
+  );
+  fillPath(
+    g,
+    0.5,
+    0,
+    () => {
+      g.ellipse(190, 252, 14, 46, 0.1, 0, Math.PI * 2);
+    },
+    1,
+    4,
+  );
+  fillPath(
+    g,
+    0.5,
+    0,
+    () => {
+      g.ellipse(322, 252, 14, 46, -0.1, 0, Math.PI * 2);
+    },
+    1,
+    4,
+  );
+  fillPath(
+    g,
+    0.8,
+    1,
+    () => {
+      g.ellipse(256, 152, 34, 28, 0, 0, Math.PI * 2);
+    },
+    1,
+    5,
+  );
   g.beginPath();
   g.arc(256, 196, 6, 0, Math.PI * 2);
   g.fillStyle = col(1, 1);
@@ -139,9 +259,16 @@ function drawArhat(g: Ctx): void {
     g.strokeStyle = col(0.12);
     g.lineWidth = 5;
     g.stroke();
-    line(g, 0.12, 5, [[256 + s * 12, 208], [256 + s * 42, 204]]);
+    line(g, 0.12, 5, [
+      [256 + s * 12, 208],
+      [256 + s * 42, 204],
+    ]);
   }
-  line(g, 0.12, 4, [[240, 266], [256, 272], [272, 266]]);
+  line(g, 0.12, 4, [
+    [240, 266],
+    [256, 272],
+    [272, 266],
+  ]);
 }
 
 function drawPhoenix(g: Ctx): void {
@@ -150,12 +277,22 @@ function drawPhoenix(g: Ctx): void {
     g.save();
     g.translate(x, y);
     g.rotate(ang);
-    fillPath(g, tier, acc, () => {
-      g.moveTo(0, 0);
-      g.quadraticCurveTo(len * 0.45, -w, len, 0);
-      g.quadraticCurveTo(len * 0.45, w, 0, 0);
-    }, 1, 4);
-    line(g, 0.15, 3, [[len * 0.08, 0], [len * 0.9, 0]]);
+    fillPath(
+      g,
+      tier,
+      acc,
+      () => {
+        g.moveTo(0, 0);
+        g.quadraticCurveTo(len * 0.45, -w, len, 0);
+        g.quadraticCurveTo(len * 0.45, w, 0, 0);
+      },
+      1,
+      4,
+    );
+    line(g, 0.15, 3, [
+      [len * 0.08, 0],
+      [len * 0.9, 0],
+    ]);
     g.restore();
   };
   // Đuôi dài rủ xuống: bảy lông cong, vòng mắt ở đầu lông.
@@ -178,32 +315,67 @@ function drawPhoenix(g: Ctx): void {
     }
   }
   // Thân hình giọt nước + ngực sáng.
-  fillPath(g, 0.55, 0, () => {
-    g.moveTo(C, 190);
-    g.quadraticCurveTo(C + 90, 290, C + 20, 400);
-    g.quadraticCurveTo(C, 420, C - 20, 400);
-    g.quadraticCurveTo(C - 90, 290, C, 190);
-  }, 1, 7);
-  fillPath(g, 0.85, 1, () => {
-    g.ellipse(C, 300, 34, 70, 0, 0, Math.PI * 2);
-  }, 1, 4);
+  fillPath(
+    g,
+    0.55,
+    0,
+    () => {
+      g.moveTo(C, 190);
+      g.quadraticCurveTo(C + 90, 290, C + 20, 400);
+      g.quadraticCurveTo(C, 420, C - 20, 400);
+      g.quadraticCurveTo(C - 90, 290, C, 190);
+    },
+    1,
+    7,
+  );
+  fillPath(
+    g,
+    0.85,
+    1,
+    () => {
+      g.ellipse(C, 300, 34, 70, 0, 0, Math.PI * 2);
+    },
+    1,
+    4,
+  );
   // Cổ cong + đầu + mỏ + mào ba lông.
-  fillPath(g, 0.55, 0, () => {
-    g.moveTo(C - 22, 200);
-    g.quadraticCurveTo(C - 40, 120, C - 6, 96);
-    g.lineTo(C + 22, 110);
-    g.quadraticCurveTo(C + 28, 160, C + 22, 200);
-    g.closePath();
-  }, 1, 6);
-  fillPath(g, 0.55, 0, () => {
-    g.ellipse(C, 92, 34, 28, 0, 0, Math.PI * 2);
-  }, 1, 6);
-  fillPath(g, 0.85, 1, () => {
-    g.moveTo(C + 28, 86);
-    g.lineTo(C + 74, 100);
-    g.lineTo(C + 28, 108);
-    g.closePath();
-  }, 1, 4);
+  fillPath(
+    g,
+    0.55,
+    0,
+    () => {
+      g.moveTo(C - 22, 200);
+      g.quadraticCurveTo(C - 40, 120, C - 6, 96);
+      g.lineTo(C + 22, 110);
+      g.quadraticCurveTo(C + 28, 160, C + 22, 200);
+      g.closePath();
+    },
+    1,
+    6,
+  );
+  fillPath(
+    g,
+    0.55,
+    0,
+    () => {
+      g.ellipse(C, 92, 34, 28, 0, 0, Math.PI * 2);
+    },
+    1,
+    6,
+  );
+  fillPath(
+    g,
+    0.85,
+    1,
+    () => {
+      g.moveTo(C + 28, 86);
+      g.lineTo(C + 74, 100);
+      g.lineTo(C + 28, 108);
+      g.closePath();
+    },
+    1,
+    4,
+  );
   g.beginPath();
   g.arc(C + 10, 86, 6, 0, Math.PI * 2);
   g.fillStyle = col(0.1);
@@ -217,41 +389,89 @@ function drawPhoenix(g: Ctx): void {
 function drawGhost(g: Ctx): void {
   const C = 128;
   // Kiếm sau lưng.
-  line(g, 1, 8, [[C + 40, 120], [C - 36, 330]], 1);
-  line(g, 0.6, 4, [[C + 40, 120], [C - 36, 330]], 1);
+  line(
+    g,
+    1,
+    8,
+    [
+      [C + 40, 120],
+      [C - 36, 330],
+    ],
+    1,
+  );
+  line(
+    g,
+    0.6,
+    4,
+    [
+      [C + 40, 120],
+      [C - 36, 330],
+    ],
+    1,
+  );
   // Chân + giày.
   for (const s of [-1, 1]) {
     fillPath(g, 0.5, 0, () => g.rect(C + s * 26 - 14, 380, 28, 80), 1, 4);
     fillPath(g, 0.8, 1, () => g.ellipse(C + s * 26, 470, 24, 12, 0, 0, Math.PI * 2), 1, 3);
   }
   // Áo dài choàng, vạt xòe, đai lưng (điểm nhấn).
-  fillPath(g, 0.5, 0, () => {
-    g.moveTo(84, 118);
-    g.quadraticCurveTo(C, 104, 172, 118);
-    g.lineTo(196, 392);
-    g.quadraticCurveTo(C, 410, 60, 392);
-    g.closePath();
-  }, 1, 6);
+  fillPath(
+    g,
+    0.5,
+    0,
+    () => {
+      g.moveTo(84, 118);
+      g.quadraticCurveTo(C, 104, 172, 118);
+      g.lineTo(196, 392);
+      g.quadraticCurveTo(C, 410, 60, 392);
+      g.closePath();
+    },
+    1,
+    6,
+  );
   fillPath(g, 0.78, 1, () => g.rect(76, 236, 104, 22), 1, 3);
-  line(g, 0.18, 5, [[C, 130], [C - 6, 230], [C, 395]]);
-  line(g, 0.18, 4, [[96, 270], [84, 380]]);
-  line(g, 0.18, 4, [[160, 270], [172, 380]]);
+  line(g, 0.18, 5, [
+    [C, 130],
+    [C - 6, 230],
+    [C, 395],
+  ]);
+  line(g, 0.18, 4, [
+    [96, 270],
+    [84, 380],
+  ]);
+  line(g, 0.18, 4, [
+    [160, 270],
+    [172, 380],
+  ]);
   // Hai tay buông, tay áo rộng.
   for (const s of [-1, 1]) {
-    fillPath(g, 0.55, 0, () => {
-      g.moveTo(C + s * 44, 120);
-      g.quadraticCurveTo(C + s * 86, 200, C + s * 70, 330);
-      g.lineTo(C + s * 36, 320);
-      g.quadraticCurveTo(C + s * 40, 220, C + s * 30, 140);
-      g.closePath();
-    }, 1, 5);
+    fillPath(
+      g,
+      0.55,
+      0,
+      () => {
+        g.moveTo(C + s * 44, 120);
+        g.quadraticCurveTo(C + s * 86, 200, C + s * 70, 330);
+        g.lineTo(C + s * 36, 320);
+        g.quadraticCurveTo(C + s * 40, 220, C + s * 30, 140);
+        g.closePath();
+      },
+      1,
+      5,
+    );
   }
   // Cổ + đầu + búi tóc.
   fillPath(g, 0.5, 0, () => g.rect(C - 14, 94, 28, 30), 1, 4);
   fillPath(g, 0.6, 0, () => g.ellipse(C, 66, 30, 36, 0, 0, Math.PI * 2), 1, 5);
   fillPath(g, 0.85, 1, () => g.ellipse(C, 32, 16, 14, 0, 0, Math.PI * 2), 1, 3);
-  line(g, 0.12, 4, [[C - 16, 66], [C - 6, 66]]);
-  line(g, 0.12, 4, [[C + 6, 66], [C + 16, 66]]);
+  line(g, 0.12, 4, [
+    [C - 16, 66],
+    [C - 6, 66],
+  ]);
+  line(g, 0.12, 4, [
+    [C + 6, 66],
+    [C + 16, 66],
+  ]);
 }
 
 const tex = new Map<CardId, THREE.Texture>();

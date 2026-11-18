@@ -68,7 +68,8 @@ const cssText = [html, ...[...bootUrls].filter((u) => u.endsWith('.css')).map((u
 for (const text of cssText) {
   for (const m of text.matchAll(/url\(\s*['"]?(\/?fonts\/[^'")]+)['"]?\s*\)/g)) fontUrls.add('/' + m[1].replace(/^\//, ''));
 }
-for (const m of html.matchAll(/<link[^>]*\bas="font"[^>]*\bhref="([^"]+)"|<link[^>]*\bhref="([^"]+)"[^>]*\bas="font"/g)) fontUrls.add(m[1] ?? m[2]);
+for (const m of html.matchAll(/<link[^>]*\bas="font"[^>]*\bhref="([^"]+)"|<link[^>]*\bhref="([^"]+)"[^>]*\bas="font"/g))
+  fontUrls.add(m[1] ?? m[2]);
 for (const u of fontUrls) boot.push(measure('font', u));
 
 // ---------- asset 3D (AssetCache) ----------
@@ -103,7 +104,12 @@ for (const [id, from] of bootAssetIds) {
 const iconsJson = path.join(DIST, 'assets/ui/icons.json');
 if (fs.existsSync(iconsJson)) {
   boot.push(measure('ui', '/assets/ui/icons.json'));
-  boot.push(measure('ui', '/assets/ui/' + (JSON.parse(fs.readFileSync(iconsJson, 'utf8')) as { sheets: { hud: { file: string } } }).sheets.hud.file));
+  boot.push(
+    measure(
+      'ui',
+      '/assets/ui/' + (JSON.parse(fs.readFileSync(iconsJson, 'utf8')) as { sheets: { hud: { file: string } } }).sheets.hud.file,
+    ),
+  );
 }
 
 // ---------- âm thanh ----------
@@ -131,16 +137,23 @@ for (const profile of ['webm', 'm4a'] as Profile[]) {
   for (const [name, s] of Object.entries(audio.sprites ?? {})) {
     const lazy = typeof s === 'object' && !Array.isArray(s) && !!s.lazy;
     const src = typeof s === 'object' && !Array.isArray(s) ? s.src : s;
-    (lazy ? audioLater : audioBoot)[profile].push(measure('audio', '/audio/' + pick(src, profile), (lazy ? 'sprite lazy ' : 'sprite ') + name));
+    (lazy ? audioLater : audioBoot)[profile].push(
+      measure('audio', '/audio/' + pick(src, profile), (lazy ? 'sprite lazy ' : 'sprite ') + name),
+    );
   }
   const loose = new Set<string>();
   for (const e of Object.values(audio.sfx ?? {})) for (const v of e.variants ?? []) if (v.file) loose.add(pick(v.file, profile));
   for (const f of loose) audioBoot[profile].push(measure('audio', '/audio/' + f, 'sfx lẻ'));
-  for (const [kind, table] of [['ambient', audio.ambient], ['music', audio.music]] as const) {
+  for (const [kind, table] of [
+    ['ambient', audio.ambient],
+    ['music', audio.music],
+  ] as const) {
     for (const [id, e] of Object.entries(table ?? {})) {
       // Nhạc chủ đề phát ở màn đăng nhập/màn tải (App.tsx) nên tải trước khi vào game.
       const pre = kind === 'music' && PRE_GAME_MUSIC.has(id);
-      (pre ? audioBoot : audioLater)[profile].push(measure('audio', '/audio/' + pick(e.src, profile), `${kind} ${id}${pre ? ' (màn tiêu đề)' : ''}`));
+      (pre ? audioBoot : audioLater)[profile].push(
+        measure('audio', '/audio/' + pick(e.src, profile), `${kind} ${id}${pre ? ' (màn tiêu đề)' : ''}`),
+      );
     }
   }
 }

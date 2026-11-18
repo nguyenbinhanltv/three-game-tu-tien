@@ -17,7 +17,13 @@ export class LanternLights {
 
   constructor(
     scene: THREE.Scene,
-    private points: readonly { x: number; y: number; z: number; /** Màu riêng của điểm (0xRRGGBB); mặc định vàng ấm. */ color?: number; /** Hệ số cường độ riêng. */ k?: number }[],
+    private points: readonly {
+      x: number;
+      y: number;
+      z: number;
+      /** Màu riêng của điểm (0xRRGGBB); mặc định vàng ấm. */ color?: number;
+      /** Hệ số cường độ riêng. */ k?: number;
+    }[],
     max = 8,
     readonly baseIntensity = 22,
   ) {

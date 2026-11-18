@@ -16,7 +16,19 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { decode as ffDecode, encode as ffEncode, FFMPEG_HELP, findFfmpeg, hashName, HERE, localDate, replaceBlock, ROOT, SR, sourceRoot } from './common.mjs';
+import {
+  decode as ffDecode,
+  encode as ffEncode,
+  FFMPEG_HELP,
+  findFfmpeg,
+  hashName,
+  HERE,
+  localDate,
+  replaceBlock,
+  ROOT,
+  SR,
+  sourceRoot,
+} from './common.mjs';
 
 const SPEC_FILE = path.join(HERE, 'sounds.json');
 const OUT_DIR = path.join(ROOT, 'apps/client/public/audio');
@@ -158,10 +170,11 @@ function loudRms(a) {
 function rmsOf(chans) {
   let s = 0;
   let n = 0;
-  for (const a of chans) for (const v of a) {
-    s += v * v;
-    n++;
-  }
+  for (const a of chans)
+    for (const v of a) {
+      s += v * v;
+      n++;
+    }
   return Math.sqrt(s / n);
 }
 
@@ -204,7 +217,7 @@ function synthMetal(l) {
   for (const [r, amp] of METAL_PARTIALS) {
     const w = (2 * Math.PI * l.f * r) / SR;
     // Thời gian tắt (hằng số e^-1): phần cao ngắn hơn; đủ để kết thúc ≈ -60 dB khi hết `dur`.
-    const tau = (dur / 6.9) / Math.pow(r, 0.55);
+    const tau = dur / 6.9 / Math.pow(r, 0.55);
     for (let i = 0; i < n; i++) {
       const t = i / SR;
       out[i] += Math.sin(w * i) * amp * Math.exp(-t / tau) * Math.min(1, t / 0.0015);
@@ -383,13 +396,21 @@ function writeEncoded(subdir, base, chans, webmArgs, m4aArgs, written) {
 
 function licenseBlock(spec, used) {
   const lines = [LIC_BEGIN, '', '### Âm thanh (SFX, âm môi trường)', ''];
-  lines.push('Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi để tra lại). File nguồn nằm ở `../dtl-asset-source/sfx/`, khai báo xử lý trong `tools/audio/sounds.json`. Bản build trong `apps/client/public/audio/`. Lớp kim loại tổng hợp (`synth: metal` trong sounds.json: `sfx_ascend`, `sfx_spellbreak`, `sfx_rare`) và âm chuông/lách tách đèn lồng ở client do code tự sinh, không dùng nguồn ngoài.', '');
+  lines.push(
+    'Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi để tra lại). File nguồn nằm ở `../dtl-asset-source/sfx/`, khai báo xử lý trong `tools/audio/sounds.json`. Bản build trong `apps/client/public/audio/`. Lớp kim loại tổng hợp (`synth: metal` trong sounds.json: `sfx_ascend`, `sfx_spellbreak`, `sfx_rare`) và âm chuông/lách tách đèn lồng ở client do code tự sinh, không dùng nguồn ngoài.',
+    '',
+  );
   lines.push('| Âm | Nguồn | Giấy phép | Ngày | Chi tiết |', '| --- | --- | --- | --- | --- |');
   const today = localDate();
   for (const [id, srcs] of used) {
     const packs = [...new Set(srcs.map((s) => s.pack))];
     // Nguồn: gói + tác giả; Chi tiết: link trang gói + đường dẫn file trong dtl-asset-source/sfx.
-    const source = packs.map((p) => `${new URL(spec.packs[p].url).hostname.includes('opengameart') ? 'OpenGameArt' : new URL(spec.packs[p].url).hostname}: ${spec.packs[p].title} — ${spec.packs[p].author}`).join('; ');
+    const source = packs
+      .map(
+        (p) =>
+          `${new URL(spec.packs[p].url).hostname.includes('opengameart') ? 'OpenGameArt' : new URL(spec.packs[p].url).hostname}: ${spec.packs[p].title} — ${spec.packs[p].author}`,
+      )
+      .join('; ');
     const detail = packs
       .map((p) => {
         const P = spec.packs[p];
@@ -409,7 +430,8 @@ function licenseBlock(spec, used) {
 function main() {
   const spec = JSON.parse(fs.readFileSync(SPEC_FILE, 'utf8'));
   const errors = [];
-  for (const [id, p] of Object.entries(spec.packs)) if (!ALLOWED_LICENSES.has(p.license)) errors.push(`gói ${id}: giấy phép ${p.license} không được phép (chỉ CC0)`);
+  for (const [id, p] of Object.entries(spec.packs))
+    if (!ALLOWED_LICENSES.has(p.license)) errors.push(`gói ${id}: giấy phép ${p.license} không được phép (chỉ CC0)`);
   const used = new Map();
   const note = (id, ref) => {
     const s = parseSrc(spec, ref);
@@ -430,7 +452,9 @@ function main() {
     process.exit(1);
   }
   if (CHECK) {
-    console.log(`OK: ${Object.keys(spec.sfx).length} SFX, ${Object.keys(spec.ambient).length} âm môi trường, ${Object.keys(spec.packs).length} gói CC0.`);
+    console.log(
+      `OK: ${Object.keys(spec.sfx).length} SFX, ${Object.keys(spec.ambient).length} âm môi trường, ${Object.keys(spec.packs).length} gói CC0.`,
+    );
     return;
   }
   FF = findFfmpeg();
@@ -508,10 +532,16 @@ function main() {
     tm += s.m4a;
     if (!s.lazy) eager += s.webm;
     const extra = s.seamJump !== undefined ? `  nối=${s.seamJump.toFixed(3)} chu kỳ=${s.periodicity.toFixed(2)}@${s.lag}s` : '';
-    console.log(`${s.file.padEnd(20)} ${s.dur.toFixed(1).padStart(6)} ${kb(s.webm).padStart(8)} ${kb(s.m4a).padStart(7)}  ${s.lazy ? 'khi cần' : 'lúc rảnh'}${extra}`);
+    console.log(
+      `${s.file.padEnd(20)} ${s.dur.toFixed(1).padStart(6)} ${kb(s.webm).padStart(8)} ${kb(s.m4a).padStart(7)}  ${s.lazy ? 'khi cần' : 'lúc rảnh'}${extra}`,
+    );
   }
-  console.log(`Tổng webm ${(tw / 1048576).toFixed(2)} MB, m4a ${(tm / 1048576).toFixed(2)} MB (trình duyệt chỉ tải một định dạng). Nạp lúc rảnh sau khi vào trang: ${kb(eager)} KB webm.`);
-  console.log(`${Object.keys(manifest.sfx).length} SFX, ${Object.keys(manifest.ambient).length} âm môi trường → ${path.relative(ROOT, MANIFEST)}`);
+  console.log(
+    `Tổng webm ${(tw / 1048576).toFixed(2)} MB, m4a ${(tm / 1048576).toFixed(2)} MB (trình duyệt chỉ tải một định dạng). Nạp lúc rảnh sau khi vào trang: ${kb(eager)} KB webm.`,
+  );
+  console.log(
+    `${Object.keys(manifest.sfx).length} SFX, ${Object.keys(manifest.ambient).length} âm môi trường → ${path.relative(ROOT, MANIFEST)}`,
+  );
 }
 
 main();

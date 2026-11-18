@@ -5,7 +5,22 @@ import type { Game } from '../../game/engine';
 import { type AncientMap, mipFor } from './ancient';
 import type { MinimapFrame } from './marks';
 import { edgeClamp, formatCountdown, type Mark, project, type View } from './model';
-import { bossSprite, flagSprite, edgeArrowSprite, eliteSprite, mateSprite, monSprite, nodeSprite, npcSprite, scanSprite, playerSprite, portalSprite, selfSprite, type Sprite, teleSprite } from './sprites';
+import {
+  bossSprite,
+  flagSprite,
+  edgeArrowSprite,
+  eliteSprite,
+  mateSprite,
+  monSprite,
+  nodeSprite,
+  npcSprite,
+  scanSprite,
+  playerSprite,
+  portalSprite,
+  selfSprite,
+  type Sprite,
+  teleSprite,
+} from './sprites';
 import { npcFunction } from './model';
 import { NPC } from '@dtl/content';
 
@@ -17,7 +32,20 @@ export interface HitPt {
   mark: Mark;
 }
 
-const ORDER: Record<Mark['kind'], number> = { node: 0, mon: 1, player: 2, portal: 3, tele: 3, goal: 3, npc: 4, elite: 5, mate: 6, boss: 7, flag: 7, scan: 6 };
+const ORDER: Record<Mark['kind'], number> = {
+  node: 0,
+  mon: 1,
+  player: 2,
+  portal: 3,
+  tele: 3,
+  goal: 3,
+  npc: 4,
+  elite: 5,
+  mate: 6,
+  boss: 7,
+  flag: 7,
+  scan: 6,
+};
 const _p = { x: 0, y: 0 };
 
 function put(ctx: CanvasRenderingContext2D, s: Sprite, x: number, y: number, dy = 0): void {
@@ -53,7 +81,17 @@ function spriteOf(m: Mark, dpr: number): { s: Sprite; dy: number; r: number } {
   }
 }
 
-export function drawMinimap(ctx: CanvasRenderingContext2D, g: Game, frame: MinimapFrame, v: View, dpr: number, now: number, map: AncientMap | null, yaw: number, hits: HitPt[]): void {
+export function drawMinimap(
+  ctx: CanvasRenderingContext2D,
+  g: Game,
+  frame: MinimapFrame,
+  v: View,
+  dpr: number,
+  now: number,
+  map: AncientMap | null,
+  yaw: number,
+  hits: HitPt[],
+): void {
   const size = v.size;
   const s = size / v.span;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -95,35 +133,35 @@ export function drawMinimap(ctx: CanvasRenderingContext2D, g: Game, frame: Minim
   // Vẽ theo lớp (chấm nhỏ dưới, boss trên cùng) bằng vài lượt lọc thay vì sort mỗi khung.
   for (let pass = 0; pass < 8; pass++)
     for (const m of frame.marks) {
-    if (ORDER[m.kind] !== pass) continue;
-    let c = project(v, m.x, m.z, _p);
-    const outside = c.x < -10 || c.y < -10 || c.x > size + 10 || c.y > size + 10;
-    // Điểm đánh dấu nằm ngoài khung: bám mép để luôn biết hướng.
-    if (outside && m.kind === 'flag') {
-      const e = edgeClamp(c.x, c.y, size, 12);
-      c = { x: e.x, y: e.y };
-    } else if (outside) continue;
-    const { s: sp, dy, r } = spriteOf(m, dpr);
-    if (m.hurtUntil && m.hurtUntil > now && blink) {
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, r + 3.5, 0, Math.PI * 2);
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#ff3b30';
-      ctx.stroke();
-    }
-    put(ctx, sp, c.x, c.y, dy);
-    if (m.kind === 'boss' && m.dead && m.respawnAt) {
-      ctx.font = '700 9px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = '#1a120c';
-      const txt = formatCountdown((m.respawnAt - Date.now()) / 1000);
-      ctx.strokeText(txt, c.x, c.y + 12);
-      ctx.fillStyle = '#ffe9b0';
-      ctx.fillText(txt, c.x, c.y + 12);
-    }
-    hits.push({ x: c.x, y: c.y, r, mark: m });
+      if (ORDER[m.kind] !== pass) continue;
+      let c = project(v, m.x, m.z, _p);
+      const outside = c.x < -10 || c.y < -10 || c.x > size + 10 || c.y > size + 10;
+      // Điểm đánh dấu nằm ngoài khung: bám mép để luôn biết hướng.
+      if (outside && m.kind === 'flag') {
+        const e = edgeClamp(c.x, c.y, size, 12);
+        c = { x: e.x, y: e.y };
+      } else if (outside) continue;
+      const { s: sp, dy, r } = spriteOf(m, dpr);
+      if (m.hurtUntil && m.hurtUntil > now && blink) {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, r + 3.5, 0, Math.PI * 2);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#ff3b30';
+        ctx.stroke();
+      }
+      put(ctx, sp, c.x, c.y, dy);
+      if (m.kind === 'boss' && m.dead && m.respawnAt) {
+        ctx.font = '700 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#1a120c';
+        const txt = formatCountdown((m.respawnAt - Date.now()) / 1000);
+        ctx.strokeText(txt, c.x, c.y + 12);
+        ctx.fillStyle = '#ffe9b0';
+        ctx.fillText(txt, c.x, c.y + 12);
+      }
+      hits.push({ x: c.x, y: c.y, r, mark: m });
     }
 
   // 4) mục tiêu nhiệm vụ ngoài tầm: mũi tên ở mép
@@ -147,7 +185,19 @@ export function drawMinimap(ctx: CanvasRenderingContext2D, g: Game, frame: Minim
       ctx.globalAlpha = 0.75 + 0.25 * pulse;
       put(ctx, edgeArrowSprite(dpr), 0, 0);
       ctx.restore();
-      hits.push({ x: e.x, y: e.y, r: 9, mark: { kind: 'goal', id: 'goal-edge', x: gp.x, z: gp.z, label: gp.label, sub: t('ui.mm.goal_far', { d: Math.round(Math.hypot(gp.x - v.cx, gp.z - v.cz)) }) } });
+      hits.push({
+        x: e.x,
+        y: e.y,
+        r: 9,
+        mark: {
+          kind: 'goal',
+          id: 'goal-edge',
+          x: gp.x,
+          z: gp.z,
+          label: gp.label,
+          sub: t('ui.mm.goal_far', { d: Math.round(Math.hypot(gp.x - v.cx, gp.z - v.cz)) }),
+        },
+      });
     } else {
       ctx.beginPath();
       ctx.arc(c.x, c.y, 8 + 3 * pulse, 0, Math.PI * 2);

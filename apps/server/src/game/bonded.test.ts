@@ -34,14 +34,23 @@ interface Sent {
 function setup(level = 20) {
   const sent: Sent[] = [];
   const host = { broadcast: () => {} };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   const join = (name: string, lv = level): Ent => {
     const char = Character.create(nextAcc++, name + nextAcc);
     char.level = lv;
     char.recalc();
     char.hp = char.mhp;
     char.mp = char.mmp;
-    const client = { sessionId: name + nextAcc, send: (type: string, msg: unknown) => sent.push({ type, msg: { to: name, ...(msg as object) } }) };
+    const client = {
+      sessionId: name + nextAcc,
+      send: (type: string, msg: unknown) => sent.push({ type, msg: { to: name, ...(msg as object) } }),
+    };
     const p = sim.addPlayer(client as never, char, true, 's' + nextAcc);
     p.move.x = X;
     p.move.z = Z;

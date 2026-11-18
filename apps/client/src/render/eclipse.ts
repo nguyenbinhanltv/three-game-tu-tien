@@ -25,16 +25,39 @@ export function buildEclipseSun(x: number, y: number, z: number, radius: number)
 
   // Đĩa tối: tròn bán kính 0,5 trong tấm (uv 0..1), mép mềm.
   // Đĩa là vật đặc cắt bằng alphaTest (vẽ trong lượt đặc, đầu tiên, nên vách/địa hình vẽ sau đè lên đúng); vành cộng sáng vẽ sau cùng.
-  const disc = new THREE.MeshBasicNodeMaterial({ transparent: false, alphaTest: 0.5, depthWrite: false, depthTest: false, side: THREE.DoubleSide, fog: false });
+  const disc = new THREE.MeshBasicNodeMaterial({
+    transparent: false,
+    alphaTest: 0.5,
+    depthWrite: false,
+    depthTest: false,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
   const d = length(uv().sub(vec2(0.5, 0.5))).mul(2); // 0 tâm … 1 mép tấm
   disc.colorNode = vec3(0.012, 0.006, 0.018);
-  disc.opacityNode = float(1).sub(smoothstep(0.5, 0.53, d)).mul(0.97).mul(k);
+  disc.opacityNode = float(1)
+    .sub(smoothstep(0.5, 0.53, d))
+    .mul(0.97)
+    .mul(k);
 
   // Vành lửa + quầng: sáng nhất ngay ngoài mép đĩa, tan dần ra xa; nhấp nháy chậm.
-  const rim = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+  const rim = new THREE.MeshBasicNodeMaterial({
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
   const out = clamp(d.sub(0.5).div(0.5), 0, 1); // 0 ở mép đĩa … 1 ở mép tấm
-  const ring = float(1).sub(smoothstep(0.0, 0.1, out)).mul(smoothstep(0.46, 0.5, d)); // vành sát mép
-  const corona = float(1).sub(out).pow(3).mul(smoothstep(0.48, 0.52, d)).mul(0.55);
+  const ring = float(1)
+    .sub(smoothstep(0.0, 0.1, out))
+    .mul(smoothstep(0.46, 0.5, d)); // vành sát mép
+  const corona = float(1)
+    .sub(out)
+    .pow(3)
+    .mul(smoothstep(0.48, 0.52, d))
+    .mul(0.55);
   const flick = time.mul(1.7).sin().mul(0.08).add(1);
   rim.colorNode = vec3(1.7, 0.62, 0.16).mul(ring.mul(1.2).add(corona)).mul(flick);
   rim.opacityNode = clamp(ring.add(corona), 0, 1).mul(k);

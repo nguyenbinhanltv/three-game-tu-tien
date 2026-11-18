@@ -42,7 +42,9 @@ export const FFMPEG_HELP =
 
 /** Giải mã về float32 48 kHz, `ch` kênh, trả mảng kênh. */
 export function decode(ff, abs, ch) {
-  const r = spawnSync(ff, ['-v', 'error', '-i', abs, '-f', 'f32le', '-ac', String(ch), '-ar', String(SR), 'pipe:1'], { maxBuffer: 1 << 30 });
+  const r = spawnSync(ff, ['-v', 'error', '-i', abs, '-f', 'f32le', '-ac', String(ch), '-ar', String(SR), 'pipe:1'], {
+    maxBuffer: 1 << 30,
+  });
   if (r.status !== 0) throw new Error(`ffmpeg không giải mã được ${abs}: ${r.stderr}`);
   const all = new Float32Array(r.stdout.buffer.slice(r.stdout.byteOffset, r.stdout.byteOffset + r.stdout.length));
   const n = all.length / ch;
@@ -61,12 +63,36 @@ export function encode(ff, chans, kind, args) {
   const n = chans[0].length;
   const inter = new Float32Array(n * ch);
   for (let i = 0; i < n; i++) for (let c = 0; c < ch; c++) inter[i * ch + c] = chans[c][i];
-  const fmt = kind === 'webm' ? ['-c:a', 'libopus', '-vbr', 'on', '-application', 'audio', '-f', 'webm'] : ['-c:a', 'aac', '-movflags', '+faststart', '-f', 'mp4'];
+  const fmt =
+    kind === 'webm'
+      ? ['-c:a', 'libopus', '-vbr', 'on', '-application', 'audio', '-f', 'webm']
+      : ['-c:a', 'aac', '-movflags', '+faststart', '-f', 'mp4'];
   // MP4 cần đầu ra tua được nên ghi qua file tạm. Không ghi metadata thời gian/bộ mã hóa để byte ổn định giữa các lần build.
   const tmp = path.join(os.tmpdir(), `dtl-audio-${process.pid}-${crypto.randomBytes(4).toString('hex')}.${kind}`);
   const r = spawnSync(
     ff,
-    ['-v', 'error', '-y', '-f', 'f32le', '-ar', String(SR), '-ac', String(ch), '-i', 'pipe:0', ...args, ...fmt, '-map_metadata', '-1', '-fflags', '+bitexact', '-flags:a', '+bitexact', tmp],
+    [
+      '-v',
+      'error',
+      '-y',
+      '-f',
+      'f32le',
+      '-ar',
+      String(SR),
+      '-ac',
+      String(ch),
+      '-i',
+      'pipe:0',
+      ...args,
+      ...fmt,
+      '-map_metadata',
+      '-1',
+      '-fflags',
+      '+bitexact',
+      '-flags:a',
+      '+bitexact',
+      tmp,
+    ],
     { input: Buffer.from(inter.buffer), maxBuffer: 1 << 30 },
   );
   if (r.status !== 0) throw new Error(`ffmpeg mã hóa ${kind} lỗi: ${r.stderr}`);

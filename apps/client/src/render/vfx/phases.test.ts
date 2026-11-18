@@ -154,7 +154,7 @@ describe('vệt kiếm Catmull-Rom (EdgeFlux)', () => {
     for (const v of P) expect(Number.isFinite(v)).toBe(true);
     // Điểm đầu = mẫu mới nhất (a = 1,5), điểm cuối phần có dữ liệu = mẫu cũ nhất (a = 0).
     expect(P[0]).toBeCloseTo(Math.cos(1.5), 5);
-    const last = (5 * BLADE_SUB) * 6;
+    const last = 5 * BLADE_SUB * 6;
     expect(P[last]).toBeCloseTo(1, 5);
     let prev = -1;
     for (let q = 0; q <= 5 * BLADE_SUB; q++) {

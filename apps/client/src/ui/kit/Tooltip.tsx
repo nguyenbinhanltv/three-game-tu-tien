@@ -62,7 +62,14 @@ export function Tooltip({ content, children, tipClass }: { content: ReactNode; c
       {children}
       {open &&
         createPortal(
-          <div ref={tip} id={id} role="tooltip" className={'k-tip' + (tipClass ? ' ' + tipClass : '')} data-show={pos ? 'true' : 'false'} style={{ left: pos?.x ?? 0, top: pos?.y ?? 0 }}>
+          <div
+            ref={tip}
+            id={id}
+            role="tooltip"
+            className={'k-tip' + (tipClass ? ' ' + tipClass : '')}
+            data-show={pos ? 'true' : 'false'}
+            style={{ left: pos?.x ?? 0, top: pos?.y ?? 0 }}
+          >
             <div className="k-tip-edge">
               <div className="k-tip-in">{content}</div>
             </div>
@@ -74,7 +81,19 @@ export function Tooltip({ content, children, tipClass }: { content: ReactNode; c
 }
 
 /** Bố cục chuẩn cho nội dung chú giải: tên (tô màu theo phẩm), dòng phụ, các dòng chỉ số, mô tả. */
-export function TipCard({ title, rarity, sub, lines, desc }: { title: string; rarity?: number; sub?: string; lines?: { text: string; tone?: 'good' | 'bad' | 'dim' | 'set' }[]; desc?: string }) {
+export function TipCard({
+  title,
+  rarity,
+  sub,
+  lines,
+  desc,
+}: {
+  title: string;
+  rarity?: number;
+  sub?: string;
+  lines?: { text: string; tone?: 'good' | 'bad' | 'dim' | 'set' }[];
+  desc?: string;
+}) {
   return (
     <div>
       <div className="k-tip-title" data-q={rarity}>

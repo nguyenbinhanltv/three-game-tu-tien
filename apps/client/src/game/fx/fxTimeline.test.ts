@@ -55,7 +55,13 @@ describe('V2: biến thức, mốc trúng, kích hoạt theo S.FX', () => {
     expect(s.filter((x) => x.ev.type === 'mesh' && x.ev.shape === 'spike').every((x) => x.hit === 2)).toBe(true);
     // Khựng nhẹ ở nhát 1–2, nặng ở nhát cuối.
     const stops = s.filter((x) => x.ev.type === 'hitstop').map((x) => [x.hit, (x.ev as { ms: number }).ms]);
-    expect(stops).toEqual(expect.arrayContaining([[0, 40], [1, 40], [2, 70]]));
+    expect(stops).toEqual(
+      expect.arrayContaining([
+        [0, 40],
+        [1, 40],
+        [2, 70],
+      ]),
+    );
   });
 
   it('chiêu lướt kích hoạt theo S.FX, neo tại 0', () => {
@@ -70,7 +76,24 @@ describe('V2: biến thức, mốc trúng, kích hoạt theo S.FX', () => {
   });
 
   it('mỗi chiêu Kiếm tu có timeline và không trùng hình mẫu (khác nhau rõ)', () => {
-    const ids = ['skl_phi_kiem', 'skl_kiem_khi_tram', 'skl_linh_khi_ho_the', 'skl_thien_kiem_vu', 'skl_hoi_nguyen_thuat', 'skl_loi_dinh_nhat_kiem', 'skl_kiem_anh_bo', 'skl_phi_kiem_truy_hon', 'skl_van_kiem_quy_tong', 'skl_hoanh_kiem_pha_mach', 'skl_kiem_vu_tam_diep', 'skl_kiem_dan_ban_menh', 'skl_nghich_kiem_chuyen_phong', 'skl_phan_anh_kiem_anh', 'skl_thuan_di_tram', 'skl_thien_kiem_hoa_hinh'];
+    const ids = [
+      'skl_phi_kiem',
+      'skl_kiem_khi_tram',
+      'skl_linh_khi_ho_the',
+      'skl_thien_kiem_vu',
+      'skl_hoi_nguyen_thuat',
+      'skl_loi_dinh_nhat_kiem',
+      'skl_kiem_anh_bo',
+      'skl_phi_kiem_truy_hon',
+      'skl_van_kiem_quy_tong',
+      'skl_hoanh_kiem_pha_mach',
+      'skl_kiem_vu_tam_diep',
+      'skl_kiem_dan_ban_menh',
+      'skl_nghich_kiem_chuyen_phong',
+      'skl_phan_anh_kiem_anh',
+      'skl_thuan_di_tram',
+      'skl_thien_kiem_hoa_hinh',
+    ];
     const sig = ids.map((id) => {
       expect(FX_TIMELINE.has(id), id).toBe(true);
       return JSON.stringify(fxEventsFor(FX_TIMELINE.get(id)!, -1).map((e) => [e.type, (e as { shape?: string }).shape, e.t]));
@@ -84,7 +107,9 @@ describe('biến thức theo chiêu', () => {
   it('của mình: lấy theo lựa chọn cục bộ của chiêu, không phụ thuộc S.FX của chiêu trước', () => {
     // Vừa đánh thường (S.FX không có biến thức, hoặc `twin` của chiêu khác), rồi ra Hoành Kiếm đã chọn biến thức a.
     expect(variantFor({ mine: true, skillId: 'skl_hoanh_kiem_pha_mach', chosen: 'a', variants: vars, lastFx: 'twin' })).toBe('long');
-    expect(variantFor({ mine: true, skillId: 'skl_hoanh_kiem_pha_mach', chosen: undefined, variants: vars, lastFx: 'twin' })).toBeUndefined();
+    expect(
+      variantFor({ mine: true, skillId: 'skl_hoanh_kiem_pha_mach', chosen: undefined, variants: vars, lastFx: 'twin' }),
+    ).toBeUndefined();
   });
   it('của người khác: dùng biến thức S.FX cùng loại hiệu ứng', () => {
     expect(variantFor({ mine: false, skillId: 'x', lastFx: 'long' })).toBe('long');
@@ -93,8 +118,30 @@ describe('biến thức theo chiêu', () => {
 });
 
 describe('V3: Hộ pháp + Đan sư', () => {
-  const HP = ['skl_tran_son_an', 'skl_kim_cuong_bat_hoai', 'skl_thiet_quyen_chan_dia', 'skl_kim_chung_tran', 'skl_son_nhac_hoa_than', 'skl_anh_thiet_than', 'skl_thuan_di_ho_the', 'skl_thien_kim_phap_tuong', 'skl_thiet_bich_xung', 'skl_dich_son_xung'];
-  const DS = ['skl_hoi_xuan_quyet', 'skl_hoi_thien_dan_lo', 'skl_moc_linh_tran', 'skl_duoc_vu', 'skl_ngung_dan_ho_the', 'skl_dan_hoa_phong_tran', 'skl_anh_duoc_hoa_than', 'skl_thuan_di_cuu_vien', 'skl_thien_dan_phap_gioi', 'skl_luu_huong_bo'];
+  const HP = [
+    'skl_tran_son_an',
+    'skl_kim_cuong_bat_hoai',
+    'skl_thiet_quyen_chan_dia',
+    'skl_kim_chung_tran',
+    'skl_son_nhac_hoa_than',
+    'skl_anh_thiet_than',
+    'skl_thuan_di_ho_the',
+    'skl_thien_kim_phap_tuong',
+    'skl_thiet_bich_xung',
+    'skl_dich_son_xung',
+  ];
+  const DS = [
+    'skl_hoi_xuan_quyet',
+    'skl_hoi_thien_dan_lo',
+    'skl_moc_linh_tran',
+    'skl_duoc_vu',
+    'skl_ngung_dan_ho_the',
+    'skl_dan_hoa_phong_tran',
+    'skl_anh_duoc_hoa_than',
+    'skl_thuan_di_cuu_vien',
+    'skl_thien_dan_phap_gioi',
+    'skl_luu_huong_bo',
+  ];
   it('đủ 20 chiêu có timeline, chiêu khác nhau rõ', () => {
     const sig = [...HP, ...DS].map((id) => {
       expect(FX_TIMELINE.has(id), id).toBe(true);
@@ -108,7 +155,9 @@ describe('V3: Hộ pháp + Đan sư', () => {
     expect(paletteOf('bat_dong_kim_than').body).not.toBe(paletteOf('thanh_moc_dan_kinh').body);
   });
   it('chiêu lướt: hai công pháp cùng `dash` nhưng không giẫm nhau', () => {
-    const keys = ['skl_kiem_anh_bo', 'skl_thiet_bich_xung', 'skl_luu_huong_bo'].map((id) => FX_TIMELINE.get(id)!).map((tl) => `${tl.fxKind}:${tl.method}`);
+    const keys = ['skl_kiem_anh_bo', 'skl_thiet_bich_xung', 'skl_luu_huong_bo']
+      .map((id) => FX_TIMELINE.get(id)!)
+      .map((tl) => `${tl.fxKind}:${tl.method}`);
     expect(new Set(keys).size).toBe(3);
   });
   it('chớp va chạm (burst) < 120 ms và hitstop 40–80 ms ở mọi chiêu', () => {
@@ -127,14 +176,18 @@ describe('V4: pháp tướng', () => {
     const want: Record<string, string> = { skl_van_kiem_quy_tong: 'dragon', skl_kim_cuong_bat_hoai: 'card', skl_hoi_thien_dan_lo: 'card' };
     for (const [id, shape] of Object.entries(want)) {
       const ev = fxEventsFor(FX_TIMELINE.get(id)!, -1);
-      expect(ev.some((e) => e.type === 'mesh' && e.shape === shape), id).toBe(true);
+      expect(
+        ev.some((e) => e.type === 'mesh' && e.shape === shape),
+        id,
+      ).toBe(true);
       const cam = ev.find((e) => e.type === 'camera');
       expect(cam, id).toBeTruthy();
       expect((cam as { pull: number }).pull).toBeLessThanOrEqual(0.4);
     }
   });
   it('thẻ La Hán / Phượng đúng tranh theo nhánh', () => {
-    const card = (id: string) => (fxEventsFor(FX_TIMELINE.get(id)!, -1).find((e) => e.type === 'mesh' && e.shape === 'card') as { card?: string }).card;
+    const card = (id: string) =>
+      (fxEventsFor(FX_TIMELINE.get(id)!, -1).find((e) => e.type === 'mesh' && e.shape === 'card') as { card?: string }).card;
     expect(card('skl_kim_cuong_bat_hoai')).toBe('arhat');
     expect(card('skl_hoi_thien_dan_lo')).toBe('phoenix');
   });

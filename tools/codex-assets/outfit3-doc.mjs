@@ -61,7 +61,11 @@ for (const id of Object.keys(items)) {
     const m = await sharp(png).metadata();
     const half = Math.floor(m.width / 2);
     await put(`outfit_${id}_v01_front.png`, (f) => sharp(png).extract({ left: 0, top: 0, width: half, height: m.height }).toFile(f));
-    await put(`outfit_${id}_v01_34.png`, (f) => sharp(png).extract({ left: half, top: 0, width: m.width - half, height: m.height }).toFile(f));
+    await put(`outfit_${id}_v01_34.png`, (f) =>
+      sharp(png)
+        .extract({ left: half, top: 0, width: m.width - half, height: m.height })
+        .toFile(f),
+    );
   }
 }
 console.log(`${have.length}/${Object.keys(items).length} ảnh`);
@@ -76,25 +80,32 @@ const tripoPrompt = (id) => {
     .map((p) => p[1])
     .join(', ')}.`;
 };
-const mode = (sid, pid) => (['ao_ngoai', 'lop_duoi'].includes(pid) || (sid === 'van_kinh' && pid === 'vai_giap') ? '**HD Model**' : 'Smart Mesh');
+const mode = (sid, pid) =>
+  ['ao_ngoai', 'lop_duoi'].includes(pid) || (sid === 'van_kinh' && pid === 'vai_giap') ? '**HD Model**' : 'Smart Mesh';
 const total = (set) => PIECES.reduce((n, p) => n + Number(set.pieces[p].tris), 0);
 const ico = (b) => (b ? '✅' : '⏳');
 
 // prompts.md
-const T = [`# Prompt Tripo và spec từng mảnh (bộ Nguyên Anh bậc 3)\n\nẢnh đầu vào luôn là \`outfit_<id>_v01_front.png\` (một góc chính diện). Hướng dẫn từng bước: [../README.md](../README.md). Ngân sách mỗi nhân vật ≤ 18k tam giác (thân nền 6k + mảnh ≤ 13k), tối đa 2 mảnh xuyên sáng mỗi bộ.\n`];
+const T = [
+  `# Prompt Tripo và spec từng mảnh (bộ Nguyên Anh bậc 3)\n\nẢnh đầu vào luôn là \`outfit_<id>_v01_front.png\` (một góc chính diện). Hướng dẫn từng bước: [../README.md](../README.md). Ngân sách mỗi nhân vật ≤ 18k tam giác (thân nền 6k + mảnh ≤ 13k), tối đa 2 mảnh xuyên sáng mỗi bộ.\n`,
+];
 for (const [sid, set] of Object.entries(SETS)) {
   T.push(`\n## ${set.name} (${set.method}, ${set.element})\n`);
   for (const pid of PIECES) {
     const p = set.pieces[pid];
     const id = `${sid}_${pid}`;
-    T.push(`### ${p.name} · \`${id}\`\n\n![${id}](${id}.webp)\n\n- **Lưu GLB:** \`${set.dir}/${set.srcId}/tripo/raw_${pid}_v01.glb\`\n- **Xương gắn vào:** ${p.bones}\n- **Xương lò xo:** ${p.spring}\n- **Lưu ý khi dựng:** ${p.notes}\n\nPrompt (tùy chọn, dán vào ô mô tả thêm):\n\n\`\`\`text\n${tripoPrompt(id)}\n\`\`\`\n`);
+    T.push(
+      `### ${p.name} · \`${id}\`\n\n![${id}](${id}.webp)\n\n- **Lưu GLB:** \`${set.dir}/${set.srcId}/tripo/raw_${pid}_v01.glb\`\n- **Xương gắn vào:** ${p.bones}\n- **Xương lò xo:** ${p.spring}\n- **Lưu ý khi dựng:** ${p.notes}\n\nPrompt (tùy chọn, dán vào ô mô tả thêm):\n\n\`\`\`text\n${tripoPrompt(id)}\n\`\`\`\n`,
+    );
   }
 }
 T.push(`\n## ${SWORD.short}: dạng cuối +10 và vỏ\n\n${SWORD.base}\n`);
 for (const iid of Object.keys(SWORD.items)) {
   const it = SWORD.items[iid];
   const id = `kiem_${SWORD.id}_${iid}`;
-  T.push(`### ${it.name} · \`${id}\`\n\n![${id}](${id}.webp)\n\n- **Lưu GLB:** \`prop/${SWORD.srcId}/tripo/raw_${iid}_v01.glb\`\n- **Gắn vào:** ${it.bones}\n- **Xương lò xo:** ${it.spring}\n- **Lưu ý khi dựng:** ${it.notes}\n\n\`\`\`text\n${tripoPrompt(id)}\n\`\`\`\n`);
+  T.push(
+    `### ${it.name} · \`${id}\`\n\n![${id}](${id}.webp)\n\n- **Lưu GLB:** \`prop/${SWORD.srcId}/tripo/raw_${iid}_v01.glb\`\n- **Gắn vào:** ${it.bones}\n- **Xương lò xo:** ${it.spring}\n- **Lưu ý khi dựng:** ${it.notes}\n\n\`\`\`text\n${tripoPrompt(id)}\n\`\`\`\n`,
+  );
 }
 fs.writeFileSync(path.join(imgDir, 'prompts.md'), T.join('\n'));
 
@@ -159,7 +170,10 @@ ${SWORD.base}
 | Mảnh | Ảnh | Tam giác | Gắn vào | Ghi chú |
 | --- | --- | --- | --- | --- |
 ${Object.entries(SWORD.items)
-  .map(([iid, it]) => `| ${it.name} | [\`kiem_${SWORD.id}_${iid}\`](img/kiem_${SWORD.id}_${iid}.webp) | ${it.tris} | ${it.bones} | ${it.notes} |`)
+  .map(
+    ([iid, it]) =>
+      `| ${it.name} | [\`kiem_${SWORD.id}_${iid}\`](img/kiem_${SWORD.id}_${iid}.webp) | ${it.tris} | ${it.bones} | ${it.notes} |`,
+  )
   .join('\n')}
 
 ![Dạng cuối](img/kiem_${SWORD.id}_cuoi.webp)

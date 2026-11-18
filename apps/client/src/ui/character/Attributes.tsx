@@ -15,7 +15,13 @@ function sourceText(r: StatRow, src: SourceId, v: number): string {
 }
 
 function AttrRow({ r }: { r: StatRow }) {
-  const tip = <TipCard title={t('ui.cmp.' + r.id)} lines={r.sources.map((s) => ({ text: sourceText(r, s.src, s.v), tone: SRC_TONE[s.src] }))} desc={t('ui.attr.desc.' + r.id)} />;
+  const tip = (
+    <TipCard
+      title={t('ui.cmp.' + r.id)}
+      lines={r.sources.map((s) => ({ text: sourceText(r, s.src, s.v), tone: SRC_TONE[s.src] }))}
+      desc={t('ui.attr.desc.' + r.id)}
+    />
+  );
   return (
     <Tooltip content={tip}>
       <div className="attr-row" tabIndex={0} data-stat={r.id}>
@@ -39,9 +45,11 @@ export function Attributes() {
         <div key={g.id} className="attr-group" data-group={g.id}>
           <Divider label={t('ui.attr.group.' + g.id)} />
           <div className="attr-rows">
-            {rows.filter((r) => r.group === g.id).map((r) => (
-              <AttrRow key={r.id} r={r} />
-            ))}
+            {rows
+              .filter((r) => r.group === g.id)
+              .map((r) => (
+                <AttrRow key={r.id} r={r} />
+              ))}
           </div>
         </div>
       ))}
@@ -49,7 +57,16 @@ export function Attributes() {
         <Divider label={t('ui.attr.group.elements')} />
         <div className="attr-elems">
           {elems.map((e) => (
-            <Tooltip key={e.elem} content={<TipCard title={t(`elem.${e.elem}`)} lines={[{ text: t('ui.attr.elem_dmg', { v: pctText(e.dmg) }) }, { text: t('ui.attr.elem_res', { v: pctText(e.res) }) }]} desc={t('ui.attr.desc.elements')} />}>
+            <Tooltip
+              key={e.elem}
+              content={
+                <TipCard
+                  title={t(`elem.${e.elem}`)}
+                  lines={[{ text: t('ui.attr.elem_dmg', { v: pctText(e.dmg) }) }, { text: t('ui.attr.elem_res', { v: pctText(e.res) }) }]}
+                  desc={t('ui.attr.desc.elements')}
+                />
+              }
+            >
               <div className={'attr-elem' + (e.own ? ' own' : '')} tabIndex={0} data-elem={e.elem}>
                 <UiIcon id={`root_${e.elem}`} fallback={t(`elem.${e.elem}`)} className="inline" />
                 <span>{pctText(e.dmg)}%</span>

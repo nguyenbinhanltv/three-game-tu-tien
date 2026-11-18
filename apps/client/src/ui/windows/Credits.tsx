@@ -29,7 +29,9 @@ export function Credits() {
                     </a>
                   </div>
                   {c.note && <div className="k-dim">{t('ui.credits.note.' + c.note)}</div>}
-                  {c.mods.length > 0 && <div className="k-dim">{t('ui.credits.mods', { list: c.mods.map((m) => t('ui.credits.mod.' + m)).join(', ') })}</div>}
+                  {c.mods.length > 0 && (
+                    <div className="k-dim">{t('ui.credits.mods', { list: c.mods.map((m) => t('ui.credits.mod.' + m)).join(', ') })}</div>
+                  )}
                 </li>
               ))}
             </ul>

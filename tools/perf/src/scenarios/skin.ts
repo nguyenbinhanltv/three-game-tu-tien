@@ -11,7 +11,8 @@ import { centerClip, snap } from '../lib/shot';
 export default {
   name: 'skin',
   desc: 'Skin toàn thân (ô ngoại hình) nam/nữ: đứng 3 hướng, chạy, bay, đả tọa, chém, chết; soát trọng số và xuyên lưới',
-  usage: '[--ids itm_skin_varkessa] [--genders f|m,f (skin giới hạn giới tính: sai giới thì server từ chối, ảnh ra hình thường)] [--set <id bộ đang mặc bên dưới>] [--only still|motion] [--dist 3.6] [--size 1100x900] [--refuse (nhân vật sai giới: ảnh túi khóa + thông báo từ chối)]',
+  usage:
+    '[--ids itm_skin_varkessa] [--genders f|m,f (skin giới hạn giới tính: sai giới thì server từ chối, ảnh ra hình thường)] [--set <id bộ đang mặc bên dưới>] [--only still|motion] [--dist 3.6] [--size 1100x900] [--refuse (nhân vật sai giới: ảnh túi khóa + thông báo từ chối)]',
   async run(r) {
     const [vw, vh] = size('1100x900');
     const dist = num('--dist', 3.6);
@@ -35,7 +36,11 @@ export default {
           await snap(page, r.out, `${id}-${g}-tu-choi-3-tooltip.jpg`, { wait: 900 });
           await cell.click({ button: 'right' });
           await snap(page, r.out, `${id}-${g}-tu-choi-4-thong-bao.jpg`, { wait: 900 });
-          const st = await page.evaluate(() => ({ sn: (window.__game!.me()?.sn as string | undefined) ?? '', nowear: document.querySelectorAll('.bag-cell[data-nowear="1"]').length, text: document.body.innerText.includes('không hợp với giới tính') }));
+          const st = await page.evaluate(() => ({
+            sn: (window.__game!.me()?.sn as string | undefined) ?? '',
+            nowear: document.querySelectorAll('.bag-cell[data-nowear="1"]').length,
+            text: document.body.innerText.includes('không hợp với giới tính'),
+          }));
           console.log(`[shots:skin] ${id} ${g} (sai giới): sn='${st.sn}', ô túi bị khóa ${st.nowear}, có thông báo từ chối: ${st.text}`);
           await page.keyboard.press('KeyB');
         }
@@ -44,7 +49,15 @@ export default {
       return;
     }
     for (const g of list('--genders', 'f')) {
-      const { ctx, page } = await r.open({ name: `Skin${g}`, viewport: [vw, vh], dpr: 2, quality: 'high', look: { g }, hide: 'hud', warnings: /models/ });
+      const { ctx, page } = await r.open({
+        name: `Skin${g}`,
+        viewport: [vw, vh],
+        dpr: 2,
+        quality: 'high',
+        look: { g },
+        hide: 'hud',
+        warnings: /models/,
+      });
       await gm(page, 'level 20', 1600);
       await gm(page, 'god on', 1600);
       await gm(page, 'tp 2048 2088', 1600);
@@ -60,7 +73,9 @@ export default {
         await gm(page, `skin ${id}`, 4500);
         const worn = await info(page);
         const sn = await page.evaluate(() => (window.__game!.me()?.sn as string | undefined) ?? '');
-        console.log(`[shots:skin] ${id} ${g}: server báo sn='${sn}'; draw ${bare.drawCalls}→${worn.drawCalls}, tam giác ${bare.triangles}→${worn.triangles}`);
+        console.log(
+          `[shots:skin] ${id} ${g}: server báo sn='${sn}'; draw ${bare.drawCalls}→${worn.drawCalls}, tam giác ${bare.triangles}→${worn.triangles}`,
+        );
         if (only !== 'motion') await stillViews(page, shot, dist);
         if (only !== 'still') await motionViews(page, shot, dist, { die: true, home: '2048 2088' });
         await gm(page, 'skin off', 3000);

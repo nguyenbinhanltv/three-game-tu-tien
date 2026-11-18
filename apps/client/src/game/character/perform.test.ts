@@ -63,9 +63,18 @@ function makeChar() {
   const lib = bakePoseLibrary(scene, POSES)!;
   // Test dùng chung một cảnh cho thư viện và nhân vật: nướng trước mọi pose chiêu (nướng lười sẽ đặt lại xương giữa chừng).
   for (const p of POSES) lib.get(p.id);
-  const idle = bakePose({ id: 'idle', duration: 1, loop: true, keys: [{ t: 0, handR: [-0.25, -0.05, 0.02], handL: [0.25, -0.05, 0.02] }] }, rig, { name: 'idle' });
+  const idle = bakePose(
+    { id: 'idle', duration: 1, loop: true, keys: [{ t: 0, handR: [-0.25, -0.05, 0.02], handL: [0.25, -0.05, 0.02] }] },
+    rig,
+    { name: 'idle' },
+  );
   const run = bakePose(
-    { id: 'run', duration: 1, loop: true, keys: [{ t: 0, footR: [-0.1, 0.05, 0.3], footL: [0.1, 0, -0.3], handR: [-0.3, -0.1, -0.15], handL: [0.3, -0.1, 0.15] }] },
+    {
+      id: 'run',
+      duration: 1,
+      loop: true,
+      keys: [{ t: 0, footR: [-0.1, 0.05, 0.3], footL: [0.1, 0, -0.3], handR: [-0.3, -0.1, -0.15], handL: [0.3, -0.1, 0.15] }],
+    },
     rig,
     { name: 'run' },
   );
@@ -126,7 +135,11 @@ describe('SkinnedCharacter.perform', () => {
 
   it('không ra đòn khi trên không / ngự kiếm / chết; bay lên giữa chừng thì tắt', () => {
     const { ch } = makeChar();
-    for (const a of [{ ...STILL, airborne: true }, { ...STILL, flying: true }, { ...STILL, dead: true }]) {
+    for (const a of [
+      { ...STILL, airborne: true },
+      { ...STILL, flying: true },
+      { ...STILL, dead: true },
+    ]) {
       step(ch, a, 0.1);
       expect(ch.perform('phi_kiem')).toBe(true);
       expect(ch.performing('phi_kiem')).toBe(false);
@@ -312,7 +325,10 @@ describe('dự đoán theo trạng thái thật của model', () => {
   });
 
   it('trên không / ngự kiếm: không ghi dự đoán, FX về thì phát ngay (không giữ hiệu ứng, không trễ sát thương)', () => {
-    for (const a of [{ ...STILL, airborne: true }, { ...STILL, flying: true }]) {
+    for (const a of [
+      { ...STILL, airborne: true },
+      { ...STILL, flying: true },
+    ]) {
       const { ch } = makeChar();
       step(ch, a, 0.2);
       const sp = new SkillPoses();

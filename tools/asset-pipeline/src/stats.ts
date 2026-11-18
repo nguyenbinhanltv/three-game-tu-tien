@@ -73,11 +73,23 @@ export function lodCount(doc: Document): number {
 }
 
 export function isSkinned(doc: Document): boolean {
-  return doc.getRoot().listSkins().length > 0 && doc.getRoot().listMeshes().some((m) => m.listPrimitives().some((p) => !!p.getAttribute('JOINTS_0')));
+  return (
+    doc.getRoot().listSkins().length > 0 &&
+    doc
+      .getRoot()
+      .listMeshes()
+      .some((m) => m.listPrimitives().some((p) => !!p.getAttribute('JOINTS_0')))
+  );
 }
 
 export function maxBones(doc: Document): number {
-  return Math.max(0, ...doc.getRoot().listSkins().map((s) => s.listJoints().length));
+  return Math.max(
+    0,
+    ...doc
+      .getRoot()
+      .listSkins()
+      .map((s) => s.listJoints().length),
+  );
 }
 
 /** Đọc kích thước ảnh; KTX2 đọc thẳng header (pixelWidth @20, pixelHeight @24). */
@@ -267,7 +279,8 @@ export function measurePoses(doc: Document): Record<string, Dims> {
   const rest = measureCurrentPose(doc);
   if (!rest) return out;
   out.rest = rest;
-  doc.getRoot()
+  doc
+    .getRoot()
     .listAnimations()
     .forEach((anim, i) => {
       const [a, b] = animRange(doc, i);

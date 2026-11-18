@@ -8,7 +8,8 @@ const TESTS = ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', '**/tests/**'];
 /** Import tương đối xuyên gói (`../../packages/x/src`, `../../../apps/y`): dùng tên gói (`@dtl/shared`...) hoặc `exports` của gói. */
 const CROSS_PACKAGE = {
   group: ['**/packages/*/**', '**/apps/*/**'],
-  message: 'Không import tương đối xuyên gói: dùng tên gói workspace (@dtl/shared, @dtl/content, @dtl/client...) hoặc đưa hàm thuần xuống packages/shared.',
+  message:
+    'Không import tương đối xuyên gói: dùng tên gói workspace (@dtl/shared, @dtl/content, @dtl/client...) hoặc đưa hàm thuần xuống packages/shared.',
 };
 
 /** Hai chỗ tools còn nhập thẳng mã client (chưa có `exports` cho @dtl/client): ghi nhận ở đây, gỡ khi dời hàm thuần xuống packages/shared (R-5). */
@@ -44,7 +45,17 @@ const LEGACY_UI_STYLE = [
 
 export default tseslint.config(
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/build/**', 'apps/client/public/**', 'bench/results/**', 'docs/**', 'assets/**', '**/.vite/**', '**/*.d.ts'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      'apps/client/public/**',
+      'bench/results/**',
+      'docs/**',
+      'assets/**',
+      '**/.vite/**',
+      '**/*.d.ts',
+    ],
   },
   {
     linterOptions: { reportUnusedDisableDirectives: 'off' },
@@ -74,7 +85,12 @@ export default tseslint.config(
         'error',
         {
           patterns: [CROSS_PACKAGE],
-          paths: [{ name: '@dtl/content/loot', message: 'Bảng rơi đồ/linh thạch chỉ dành cho server (loot.json). Client biết món rơi qua tin sys.loot.' }],
+          paths: [
+            {
+              name: '@dtl/content/loot',
+              message: 'Bảng rơi đồ/linh thạch chỉ dành cho server (loot.json). Client biết món rơi qua tin sys.loot.',
+            },
+          ],
         },
       ],
     },
@@ -89,7 +105,10 @@ export default tseslint.config(
         {
           patterns: [
             CROSS_PACKAGE,
-            { group: ['**/game/**', '../game', '../../game', '**/ui/**'], message: 'render/ không import game/ hay ui/: đưa phần dùng chung xuống src/base/.' },
+            {
+              group: ['**/game/**', '../game', '../../game', '**/ui/**'],
+              message: 'render/ không import game/ hay ui/: đưa phần dùng chung xuống src/base/.',
+            },
           ],
           paths: [{ name: '@dtl/content/loot', message: 'Chỉ dành cho server.' }],
         },
@@ -105,7 +124,10 @@ export default tseslint.config(
         {
           patterns: [
             CROSS_PACKAGE,
-            { group: ['**/game/**', '**/ui/**', '**/render/**', '../game', '../render', '../ui'], message: 'base/ là tầng thấp nhất của client: không import game/, render/ hay ui/.' },
+            {
+              group: ['**/game/**', '**/ui/**', '**/render/**', '../game', '../render', '../ui'],
+              message: 'base/ là tầng thấp nhất của client: không import game/, render/ hay ui/.',
+            },
           ],
           paths: [{ name: '@dtl/content/loot', message: 'Chỉ dành cho server.' }],
         },

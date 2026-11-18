@@ -7,7 +7,10 @@ import type { ItemDef } from './types';
 const SET: SetDef = {
   id: 's1',
   pieces: ['a', 'b', 'c', 'd'],
-  tiers: [{ n: 2, lines: [{ id: 'atk_pct', v: 0.05 }] }, { n: 4, fx: 'phi_kiem_extra', v: 0.2 }],
+  tiers: [
+    { n: 2, lines: [{ id: 'atk_pct', v: 0.05 }] },
+    { n: 4, fx: 'phi_kiem_extra', v: 0.2 },
+  ],
   look: { hex: '#112233', trim: '#445566', blade: '#778899' },
   src: 'forge',
 };
@@ -33,7 +36,15 @@ describe('bộ trang bị', () => {
   it('hiệu ứng combat chỉ bật ở bậc cao; bộ nhiều món nhất quyết định màu', () => {
     expect(computePlayerStats(10, worn('a', 'b', 'c'), null, [SET]).setFx).toEqual(NO_SET_FX);
     expect(computePlayerStats(10, worn('a', 'b', 'c', 'd'), null, [SET]).setFx.phiKiemExtra).toBe(0.2);
-    const other: SetDef = { ...SET, id: 's2', pieces: ['x', 'y', 'z'], tiers: [{ n: 2, lines: [{ id: 'def_pct', v: 0.08 }] }, { n: 3, fx: 'crit_slow', v: 1 }] };
+    const other: SetDef = {
+      ...SET,
+      id: 's2',
+      pieces: ['x', 'y', 'z'],
+      tiers: [
+        { n: 2, lines: [{ id: 'def_pct', v: 0.08 }] },
+        { n: 3, fx: 'crit_slow', v: 1 },
+      ],
+    };
     expect(lookSet(setStatuses([SET, other], ['a']))).toBeNull();
     expect(lookSet(setStatuses([SET, other], ['a', 'b', 'x']))?.id).toBe('s1');
     expect(lookSet(setStatuses([SET, other], ['a', 'b', 'x', 'y', 'z']))?.id).toBe('s2');
@@ -47,7 +58,15 @@ describe('rơi theo bộ', () => {
     { id: 'a', kind: 'robe', stack: 1, price: 0, sell: 1, rarity: 2, icon: 'a', reqLevel: 13, set: 's1' },
     { id: 'b', kind: 'belt', stack: 1, price: 0, sell: 1, rarity: 2, icon: 'b', reqLevel: 13, set: 's1' },
   ];
-  const data = { slots: [{ id: 'robe', weight: 1, main: { def: 1 } }, { id: 'belt', weight: 1, main: { hp: 1 } }], qualities: [], affixes: [], params: { skill: [], element: [] } } as never;
+  const data = {
+    slots: [
+      { id: 'robe', weight: 1, main: { def: 1 } },
+      { id: 'belt', weight: 1, main: { hp: 1 } },
+    ],
+    qualities: [],
+    affixes: [],
+    params: { skill: [], element: [] },
+  } as never;
   it('chỉ ra món của bộ khi bảng có set, và bảng chung không bao giờ ra món bộ', () => {
     const rng = seededRng(7);
     for (let i = 0; i < 50; i++) {

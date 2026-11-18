@@ -31,7 +31,13 @@ function setup(method: string, level = 22) {
   vi.setSystemTime(1_800_000_000_000);
   const sent: { type: string; msg: Record<string, unknown> }[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg: msg as Record<string, unknown> }) };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   sim.now = Date.now();
   const raw = sim.onSkill.bind(sim);
   // Xả đòn chờ `hitAt` ngay lúc bấm (như method.test.ts); các mốc sau của chiêu nhiều nhát chạy qua `sim.tick`.
@@ -516,7 +522,9 @@ describe('SETS-4: hiệu ứng 4 món của bộ bậc 4 nối vào chiêu', () 
     }
   });
   afterAll(() => {
-    ['skl_anh_duoc_hoa_than', 'skl_anh_thiet_than'].forEach((id, i) => ((METHOD_SKILLS.find((x) => x.id === id) as { locked?: boolean }).locked = unlocked[i].locked));
+    ['skl_anh_duoc_hoa_than', 'skl_anh_thiet_than'].forEach(
+      (id, i) => ((METHOD_SKILLS.find((x) => x.id === id) as { locked?: boolean }).locked = unlocked[i].locked),
+    );
   });
   it('Anh Dược Hóa Thân hồi thêm anhDuocBoost', () => {
     const healed = (boost: number) => {

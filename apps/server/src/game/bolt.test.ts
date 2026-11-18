@@ -1,5 +1,17 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { BOLT_MAX_LIVE, type BoltEndMsg, type BoltMsg, COLLIDERS, FLY_MIN_CLEAR, groundAt, type MonsterCaster, MS_CHASE, MS_RETURN, S, VALLEY } from '@dtl/shared';
+import {
+  BOLT_MAX_LIVE,
+  type BoltEndMsg,
+  type BoltMsg,
+  COLLIDERS,
+  FLY_MIN_CLEAR,
+  groundAt,
+  type MonsterCaster,
+  MS_CHASE,
+  MS_RETURN,
+  S,
+  VALLEY,
+} from '@dtl/shared';
 
 // Đạn đánh xa (D1): server mô phỏng và phán định theo vị trí người chơi server giữ.
 // DB trong bộ nhớ: sim.ts kéo theo character.ts → db.ts.

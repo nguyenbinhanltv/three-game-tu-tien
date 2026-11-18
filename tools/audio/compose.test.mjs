@@ -16,7 +16,10 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 test('Scale: ngũ cung theo bậc, quãng tám âm/dương', () => {
   const d = new Scale('D4', 'gong');
-  assert.deepEqual([0, 1, 2, 3, 4, 5].map((k) => d.deg(k)), [62, 64, 66, 69, 71, 74]);
+  assert.deepEqual(
+    [0, 1, 2, 3, 4, 5].map((k) => d.deg(k)),
+    [62, 64, 66, 69, 71, 74],
+  );
   assert.equal(d.deg(-1), 59);
   assert.equal(new Scale('B3', 'yu').deg(1), n('D4'));
 });

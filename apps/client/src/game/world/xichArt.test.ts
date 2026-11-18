@@ -27,7 +27,13 @@ describe('xichArt (DV-3K)', () => {
 
   it('màu đất hợp lệ 0..1 ở sàn, vách, cao nguyên; vách tối và đỏ/tím hơn cao nguyên tro', () => {
     const out: [number, number, number] = [0, 0, 0];
-    for (const [dx, dz] of [[0, 20], [40, 0], [c.halfW + 10, 0], [c.halfW + 60, 0], [-c.halfW - 60, 40]]) {
+    for (const [dx, dz] of [
+      [0, 20],
+      [40, 0],
+      [c.halfW + 10, 0],
+      [c.halfW + 60, 0],
+      [-c.halfW - 60, 40],
+    ]) {
       const x = c.cx + dx;
       const z = c.cz + dz;
       xichGroundColor(def, cracks, x, z, h(x, z), 0.9, out);
@@ -40,7 +46,10 @@ describe('xichArt (DV-3K)', () => {
 
   it('rải đá: tất định, chừa vòng cấm quanh bia và vết nứt, không lên cao nguyên', () => {
     const d = LEVELS.xich_tan_khich.dungeon!;
-    const clear = [{ x: d.center.x, z: d.center.z, r: 16 }, { x: d.spawn.x, z: d.spawn.z, r: 9 }];
+    const clear = [
+      { x: d.center.x, z: d.center.z, r: 16 },
+      { x: d.spawn.x, z: d.spawn.z, r: 9 },
+    ];
     const a = scatterXich({ def, heightAt: h, clear, cracks });
     const b = scatterXich({ def, heightAt: h, clear, cracks });
     expect(a.length).toBeGreaterThan(30);

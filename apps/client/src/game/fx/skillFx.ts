@@ -52,7 +52,11 @@ export interface SkillFxActor {
   fl: number;
   lv: number;
   speed: number;
-  model: { bladePoints?(b: THREE.Vector3, t: THREE.Vector3): boolean; performClock?(): { t: number; skill: string } | null; hit?: { hitStop(sec: number, delay?: number): void } };
+  model: {
+    bladePoints?(b: THREE.Vector3, t: THREE.Vector3): boolean;
+    performClock?(): { t: number; skill: string } | null;
+    hit?: { hitStop(sec: number, delay?: number): void };
+  };
 }
 
 export interface SkillFxEnv {
@@ -202,15 +206,34 @@ export class SkillFx {
     return out.set(a.x + Math.sin(a.yaw) * ahead, a.y + 1.15, a.z + Math.cos(a.yaw) * ahead);
   }
 
-  private onWindup(sid: string, a: SkillFxActor, def: SkillDef, e: SkillEvent, mine: boolean, ult: boolean, color: number, dist: number): void {
+  private onWindup(
+    sid: string,
+    a: SkillFxActor,
+    def: SkillDef,
+    e: SkillEvent,
+    mine: boolean,
+    ult: boolean,
+    color: number,
+    dist: number,
+  ): void {
     const tm = skillTiming(def, e.combo >= 0 ? e.combo : undefined);
     const toHit = tm.hitAt[0] - e.t;
     const caps = capsFor(mine, ult);
     // Hẹn bùng nổ cho từng mốc trúng: bắt đầu trước hitAt một `BURST_LEAD` để đỉnh sáng khớp hitAt.
     this.dropPending(sid);
-    tm.hitAt.forEach((h, index) => this.pending.push({ sid, index, def, mine, ult, color, at: h - BURST_LEAD, left: h - e.t - BURST_LEAD }));
+    tm.hitAt.forEach((h, index) =>
+      this.pending.push({ sid, index, def, mine, ult, color, at: h - BURST_LEAD, left: h - e.t - BURST_LEAD }),
+    );
     // Vệt kiếm bám mũi kiếm: một cửa sổ cho mỗi mốc trúng (chiêu liên hoàn nhiều mốc có nhiều vệt nối nhau).
-    if (a.model.bladePoints && bladeVisible(mine, dist) && def.kind !== 'heal' && def.kind !== 'guard' && def.kind !== 'taunt' && def.kind !== 'buff' && def.kind !== 'summon') {
+    if (
+      a.model.bladePoints &&
+      bladeVisible(mine, dist) &&
+      def.kind !== 'heal' &&
+      def.kind !== 'guard' &&
+      def.kind !== 'taunt' &&
+      def.kind !== 'buff' &&
+      def.kind !== 'summon'
+    ) {
       for (const h of tm.hitAt) {
         const [s, en] = bladeWindow(h - e.t);
         if (en > 0) this.jobs.push({ sid, actor: a, color, t: 0, start: s, end: en, rib: null });
@@ -229,7 +252,20 @@ export class SkillFx {
       const oy = Math.sin(el) * r;
       const oz = Math.sin(ang) * Math.cos(el) * r;
       const life = dur * (0.7 + Math.random() * 0.3);
-      this.v.particles.emit('glow', c.x + ox, c.y + oy, c.z + oz, (-ox / life) * 0.95, (-oy / life) * 0.95, (-oz / life) * 0.95, life, 0.07, 0.02, color, 0.75);
+      this.v.particles.emit(
+        'glow',
+        c.x + ox,
+        c.y + oy,
+        c.z + oz,
+        (-ox / life) * 0.95,
+        (-oy / life) * 0.95,
+        (-oz / life) * 0.95,
+        life,
+        0.07,
+        0.02,
+        color,
+        0.75,
+      );
     }
     if (mine) {
       const ring = this.v.fx(RING_GEO, color, 0.5, 'glow');
@@ -301,7 +337,22 @@ export class SkillFx {
     for (let i = 0; i < n; i++) {
       const ang = Math.random() * Math.PI * 2;
       const sp = 1.5 + Math.random() * (ult ? 6 : 3);
-      this.v.particles.emit('glow', pos.x, pos.y, pos.z, Math.cos(ang) * sp, 0.5 + Math.random() * 2, Math.sin(ang) * sp, 0.25 + Math.random() * 0.3, 0.07, 0.015, i & 1 ? 0xffffff : color, 0.9, 6, 2);
+      this.v.particles.emit(
+        'glow',
+        pos.x,
+        pos.y,
+        pos.z,
+        Math.cos(ang) * sp,
+        0.5 + Math.random() * 2,
+        Math.sin(ang) * sp,
+        0.25 + Math.random() * 0.3,
+        0.07,
+        0.015,
+        i & 1 ? 0xffffff : color,
+        0.9,
+        6,
+        2,
+      );
     }
     // Lớp mực nền sống lâu hơn lớp sáng 0,3 s (chỉ của mình: người khác bị giới hạn 2 lưới).
     if (mine && caps.meshes >= 3) {
@@ -328,7 +379,13 @@ export class SkillFx {
       if (import.meta.env.DEV) {
         // Độ lệch của bùng nổ so với hitAt theo đồng hồ animation của model (giây; spec: trong ±0,05).
         const hitAt = p.at + BURST_LEAD;
-        this.log.push({ kind: 'burst', skill: p.def.id, combo: p.index, t: clock && clock.skill === p.def.id ? clock.t - hitAt : NaN, at: performance.now() });
+        this.log.push({
+          kind: 'burst',
+          skill: p.def.id,
+          combo: p.index,
+          t: clock && clock.skill === p.def.id ? clock.t - hitAt : NaN,
+          at: performance.now(),
+        });
       }
       const a = this.env.player(p.sid);
       if (a && (a.fl & PF_DEAD) === 0) this.onHit(a, p.def, p.mine, p.ult, p.color);
@@ -391,4 +448,8 @@ export class SkillFx {
 }
 
 // Bản dev: công cụ đo sân đông (`pnpm shots:vfx --crowd N`) lấy timeline/chiêu để cho người giả ra chiêu.
-if (import.meta.env.DEV && typeof window !== 'undefined') (window as unknown as { __fxTimelines: unknown }).__fxTimelines = { get: (id: string) => FX_TIMELINE.get(id), skill: (id: string) => SKILL.get(id) };
+if (import.meta.env.DEV && typeof window !== 'undefined')
+  (window as unknown as { __fxTimelines: unknown }).__fxTimelines = {
+    get: (id: string) => FX_TIMELINE.get(id),
+    skill: (id: string) => SKILL.get(id),
+  };

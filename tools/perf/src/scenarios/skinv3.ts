@@ -12,7 +12,13 @@ import { snap } from '../lib/shot';
 
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 /** Skin → giới tính nhân vật mặc được (khớp `gender` trong items.json). */
-const GENDER: Record<string, string> = { itm_skin_varkessa: 'f', itm_skin_duskrella: 'f', itm_skin_crimson_knight: 'm', itm_skin_noxavyra: 'f', itm_skin_kings_demon: 'f' };
+const GENDER: Record<string, string> = {
+  itm_skin_varkessa: 'f',
+  itm_skin_duskrella: 'f',
+  itm_skin_crimson_knight: 'm',
+  itm_skin_noxavyra: 'f',
+  itm_skin_kings_demon: 'f',
+};
 
 export default {
   name: 'skinv3',
@@ -25,19 +31,35 @@ export default {
       const tag = `${id.replace('itm_skin_', '')}-${g === 'm' ? 'nam' : 'nu'}`;
       const dir = path.join(r.out, `_rec-${tag}`);
       const t0 = Date.now();
-      const { ctx, page } = await r.open({ name: `Sk3${g}`, viewport: [vw, vh], quality: 'high', look: { g }, query: { chr: 'v3' }, hide: 'hud', warnings: /models|chr_v3|clip/, video: dir });
+      const { ctx, page } = await r.open({
+        name: `Sk3${g}`,
+        viewport: [vw, vh],
+        quality: 'high',
+        look: { g },
+        query: { chr: 'v3' },
+        hide: 'hud',
+        warnings: /models|chr_v3|clip/,
+        video: dir,
+      });
       await gm(page, 'level 12', 1500);
       await gm(page, 'god on', 1200);
       await gm(page, 'killall', 800);
       await gm(page, 'tp 2048 2088', 1500);
-      await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+      await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+        timeout: 60_000,
+        polling: 300,
+      });
       await gm(page, `skin ${id}`, 5000);
       const sn = await page.evaluate(() => (window.__game!.me()?.sn as string | undefined) ?? '');
       console.log(`[shots:skinv3] ${id}: server báo sn='${sn}'`);
       const frame = () => cam(page, { yaw: 0.5, pitch: 0.08, dist: 3.6 });
       await frame();
       const tScene = Date.now();
-      for (const [view, yaw] of [['truoc', 0], ['nghieng', Math.PI / 2], ['sau', Math.PI]] as const) {
+      for (const [view, yaw] of [
+        ['truoc', 0],
+        ['nghieng', Math.PI / 2],
+        ['sau', Math.PI],
+      ] as const) {
         await cam(page, { yaw, pitch: 0.1, dist: 3.6 });
         await sleep(1500);
         await snap(page, r.out, `${tag}-dung-${view}.jpg`);
@@ -76,7 +98,21 @@ export default {
         const raw = await vid.path();
         const dst = path.join(r.out, `${tag}.webm`);
         const ss = Math.max(0, (tScene - t0) / 1000 - 0.3);
-        const cut = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-ss', ss.toFixed(2), '-i', raw, '-c:v', 'libvpx', '-b:v', '1.5M', '-an', dst]);
+        const cut = spawnSync(FFMPEG, [
+          '-y',
+          '-loglevel',
+          'error',
+          '-ss',
+          ss.toFixed(2),
+          '-i',
+          raw,
+          '-c:v',
+          'libvpx',
+          '-b:v',
+          '1.5M',
+          '-an',
+          dst,
+        ]);
         if (cut.status !== 0) fs.copyFileSync(raw, dst);
       }
       fs.rmSync(dir, { recursive: true, force: true });

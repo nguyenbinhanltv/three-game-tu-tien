@@ -28,7 +28,13 @@ const ITEM = 'itm_ket_dan_dich';
 function setup(withItem = true) {
   const sent: { type: string; msg: unknown }[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
-  const sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'kd' + acc);
   char.level = 19;
   char.bk = 19;
@@ -99,7 +105,10 @@ describe('Đan Hỏa Kiếp: Đan Trận', () => {
     t.run(41);
     expect(t.p.trib?.id).toBe('ket_dan');
     expect(t.fx('dantran').some((m) => m.r === 4 && m.x === X)).toBe(true);
-    const last = t.fx('dantran').filter((m) => m.pg !== undefined && m.pg >= 0).pop();
+    const last = t
+      .fx('dantran')
+      .filter((m) => m.pg !== undefined && m.pg >= 0)
+      .pop();
     expect(last?.pg).toBe(100);
     expect(t.fx('dantran').some((m) => m.pg === -1)).toBe(true);
     // Có tia quét 18×3 m đi qua vòng.

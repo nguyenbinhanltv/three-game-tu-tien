@@ -9,7 +9,14 @@ import { groundAt } from '../../base/levelCtx';
 
 const SHOW = 220;
 /** Tiền tố id điểm → màu: gương nước (E3-H2) lam, đèn trời (E4-H) hổ phách, môn phong ấn (E4-H) lục bích. */
-const KINDS: Record<string, number> = { guong_nuoc_: 0x4fb0ff, den_troi_: 0xffb347, phong_an_mon_: 0x6fe3b0, xac_tho_san_: 0xd9d2c3, tran_gioi_bia_: 0x7fe0ff, mach_nhan_: 0x57e0c0 };
+const KINDS: Record<string, number> = {
+  guong_nuoc_: 0x4fb0ff,
+  den_troi_: 0xffb347,
+  phong_an_mon_: 0x6fe3b0,
+  xac_tho_san_: 0xd9d2c3,
+  tran_gioi_bia_: 0x7fe0ff,
+  mach_nhan_: 0x57e0c0,
+};
 
 interface Shard {
   id: string;
@@ -20,22 +27,39 @@ interface Shard {
   open: boolean;
 }
 
-const additive = (color: number, opacity: number, hdr = 1) => new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(hdr), transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
+const additive = (color: number, opacity: number, hdr = 1) =>
+  new THREE.MeshBasicMaterial({
+    color: new THREE.Color(color).multiplyScalar(hdr),
+    transparent: true,
+    opacity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
 
 export class QuestSpotVis {
   private shards: Shard[] = [];
-  private geo = { gem: new THREE.OctahedronGeometry(0.5, 0), ring: new THREE.RingGeometry(0.9, 1.3, 28), beam: new THREE.CylinderGeometry(0.1, 0.16, 16, 8, 1, true) };
+  private geo = {
+    gem: new THREE.OctahedronGeometry(0.5, 0),
+    ring: new THREE.RingGeometry(0.9, 1.3, 28),
+    beam: new THREE.CylinderGeometry(0.1, 0.16, 16, 8, 1, true),
+  };
   /** Bộ vật liệu theo màu (mỗi màu một bộ, dựng khi có điểm dùng màu đó). */
   private mats = new Map<number, { gem: THREE.Material; ring: THREE.Material; beam: THREE.Material }>();
   private lastQuests: QuestView | null = null;
 
-  constructor(private parent: THREE.Group, levelId: string | null) {
+  constructor(
+    private parent: THREE.Group,
+    levelId: string | null,
+  ) {
     const spots = (levelId && LEVELS[levelId]?.spots) || [];
     for (const sp of spots) {
       const color = Object.entries(KINDS).find(([pre]) => sp.id.startsWith(pre))?.[1];
       if (color === undefined) continue;
       let mat = this.mats.get(color);
-      if (!mat) this.mats.set(color, (mat = { gem: additive(color, 0.9, 1.25), ring: additive(color, 0.7, 1.2), beam: additive(color, 0.2, 1.2) }));
+      if (!mat)
+        this.mats.set(color, (mat = { gem: additive(color, 0.9, 1.25), ring: additive(color, 0.7, 1.2), beam: additive(color, 0.2, 1.2) }));
       const root = new THREE.Group();
       root.position.set(sp.x, groundAt(sp.x, sp.z), sp.z);
       const gem = new THREE.Mesh(this.geo.gem, mat.gem);

@@ -10,7 +10,10 @@ const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.j
 interface Gltf {
   images: { name: string; mimeType: string; bufferView: number }[];
   textures: { extensions?: { KHR_texture_basisu?: { source: number } } }[];
-  materials: { normalTexture?: { index: number }; pbrMetallicRoughness?: { baseColorTexture?: { index: number }; metallicRoughnessTexture?: { index: number } } }[];
+  materials: {
+    normalTexture?: { index: number };
+    pbrMetallicRoughness?: { baseColorTexture?: { index: number }; metallicRoughnessTexture?: { index: number } };
+  }[];
   bufferViews: { buffer: number; byteOffset?: number; byteLength: number }[];
 }
 
@@ -61,7 +64,15 @@ describe('isUastcKtx2 (chọn đường cho normal map)', () => {
 });
 
 describe('GameKtx2Loader.configure (normal map nén hay giải ra RGBA8)', () => {
-  const NONE = { astcSupported: false, astcHDRSupported: false, etc1Supported: false, etc2Supported: false, dxtSupported: false, bptcSupported: false, pvrtcSupported: false };
+  const NONE = {
+    astcSupported: false,
+    astcHDRSupported: false,
+    etc1Supported: false,
+    etc2Supported: false,
+    dxtSupported: false,
+    bptcSupported: false,
+    pvrtcSupported: false,
+  };
   /** Gán `workerConfig` giả thay cho `detectSupportAsync(renderer)`: Node không có GPU. */
   function configured(support: Partial<typeof NONE>): GameKtx2Loader {
     const loader = createKtx2Loader();
