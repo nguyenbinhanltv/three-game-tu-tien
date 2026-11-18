@@ -172,6 +172,7 @@ describe('sói có xương (mon_soi_xam thật)', () => {
 
   it('mọi clip khai báo trong bảng đều có trong GLB (đủ idle/run/attack/hit/death)', () => {
     for (const [id, s] of Object.entries(MONSTER_SKINS)) {
+      if (s.mannequin) continue; // clip UAL nằm ở anim_ual_native, kiểm ở mannequinMonster.test.ts
       const anims = (MANIFEST.assets[s.asset] as { animations?: string[] }).animations ?? [];
       for (const st of ['idle', 'run', 'attack', 'hit', 'death'] as const) expect(s.clips[st], `${id}.${st}`).toBeDefined();
       for (const clip of Object.values(s.clips)) expect(anims, `${id}: ${clip}`).toContain(clip);
@@ -354,7 +355,9 @@ describe('sói có xương (mon_soi_xam thật)', () => {
     expect(disposed).toEqual([]); // geometry/texture dùng chung chưa bị đụng
     // Mỗi asset trong bảng giữ đúng một handle mẫu.
     const assetCount = new Set(LIVE_SKINS.map(([, s]) => s.asset)).size;
-    expect(cache.stats()).toEqual({ loaded: assetCount, loading: 0, refs: assetCount });
+    // Quái Mannequin (DV-2 đợt 2) giữ thêm một handle: thư viện clip UAL dùng chung.
+    const libs = LIVE_SKINS.some(([, s]) => s.mannequin) ? 1 : 0;
+    expect(cache.stats()).toEqual({ loaded: assetCount + libs, loading: 0, refs: assetCount + libs });
     skins.dispose();
     expect(cache.stats()).toEqual({ loaded: 0, loading: 0, refs: 0 });
     expect(disposed.filter((d) => d === 'geometry').length).toBe(3 * assetCount); // 3 mức LOD mỗi asset
