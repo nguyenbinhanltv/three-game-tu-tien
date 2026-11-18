@@ -136,6 +136,21 @@ describe('trang bị đã roll: lưu, ledger, idempotency', () => {
     expect(c.atk).toBeGreaterThan(bare.atk + inst.main.atk! - 1);
   });
 
+  it('Thần phẩm (q5): lưu DB không cần migration, 5 dòng phụ, ledger ghi q5, nạp lại giống hệt; q6 bị từ chối', () => {
+    const c = mk('T');
+    expect(c.tx('test:roll', 'than-1', (d) => d.addRolled('itm_thanh_phong_kiem', 12, 5))).toBe(true);
+    const slot = c.inv.findIndex((s) => s?.id === 'itm_thanh_phong_kiem');
+    const inst = c.inv[slot]!.inst!;
+    expect(inst.q).toBe(5);
+    expect(inst.affixes).toHaveLength(5);
+    expect(inst.gems).toHaveLength(3);
+    const led = sqlite.prepare("SELECT reason FROM ledger WHERE char_id = ? AND kind = 'item'").all(c.id) as { reason: string }[];
+    expect(led).toHaveLength(1);
+    expect(led[0].reason).toMatch(/^test:roll roll=\d+:q5:il12$/);
+    expect(Character.load(c.id).inv[slot]).toEqual(c.inv[slot]);
+    expect(c.tx('test:roll', 'than-2', (d) => d.addRolled('itm_thanh_phong_kiem', 12, 6 as 0))).toBe(false);
+  });
+
   it('cùng khóa idempotency lần hai bị từ chối, không sinh thêm đồ', () => {
     const c = mk('I');
     expect(c.tx('test:roll', 'dup-1', (d) => d.addRolled('itm_dao_bao', 5, 2))).toBe(true);

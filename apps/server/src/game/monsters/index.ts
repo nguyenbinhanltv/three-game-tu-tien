@@ -44,6 +44,7 @@ import {
   phaseRules,
   postureDecay,
   postureGain,
+  QUALITY_THAN,
   MS_ATTACK,
   MS_CHASE,
   MS_DEAD,
@@ -546,7 +547,8 @@ export class MonsterSystem {
     for (const g of kept) this.c.sys(p, 'sys.loot', { item: itemName(g.id), n: g.n }, 'loot', { i: g.id, src: mon.id });
     for (const g of keptGear) {
       this.c.sys(p, 'sys.loot_gear', { item: itemName(g.id), quality: t('ui.quality.' + g.q) }, 'loot', { i: g.id, src: mon.id, q: g.q });
-      if (g.q >= 4) this.c.sysAll('sys.loot_heaven', { name: p.char.name, item: itemName(g.id) }, 'good');
+      if (g.q >= QUALITY_THAN) this.c.sysAll('sys.loot_than', { name: p.char.name, item: itemName(g.id) }, 'good');
+      else if (g.q >= 4) this.c.sysAll('sys.loot_heaven', { name: p.char.name, item: itemName(g.id) }, 'good');
     }
     if (full) this.c.warn(p, 'sys.inv_full');
   }

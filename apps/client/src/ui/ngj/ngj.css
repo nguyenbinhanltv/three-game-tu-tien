@@ -386,6 +386,9 @@
 .ngj-slot[data-q='4'] {
   --q: var(--ngj-q4);
 }
+.ngj-slot[data-q='5'] {
+  --q: var(--ngj-q5);
+}
 .ngj-slot-fill {
   position: absolute;
   inset: 0;
@@ -423,7 +426,8 @@
   filter: drop-shadow(0 0 3px var(--q));
 }
 .ngj-slot[data-q='3'] .ngj-slot-ring path,
-.ngj-slot[data-q='4'] .ngj-slot-ring path {
+.ngj-slot[data-q='4'] .ngj-slot-ring path,
+.ngj-slot[data-q='5'] .ngj-slot-ring path {
   filter: drop-shadow(0 0 5px var(--q)) drop-shadow(0 0 9px var(--q));
 }
 .ngj-slot[data-empty='true'] {
@@ -640,6 +644,9 @@
 }
 .ngj-tipcard[data-q='4'] .ngj-tipcard-title {
   color: var(--ngj-q4);
+}
+.ngj-tipcard[data-q='5'] .ngj-tipcard-title {
+  color: #ff8fbb;
 }
 .ngj-tipcard-sub {
   margin-top: 2px;

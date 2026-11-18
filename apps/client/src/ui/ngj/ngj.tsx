@@ -230,7 +230,7 @@ export function NgjSlot({
   label?: string;
   disabled?: boolean;
 }) {
-  const q = Math.max(0, Math.min(4, Math.round(rarity)));
+  const q = Math.max(0, Math.min(5, Math.round(rarity)));
   const aria = empty ? t('ui.kit.slot.empty') : [label, t('ui.kit.rarity.' + q)].filter(Boolean).join(', ');
   return (
     <button

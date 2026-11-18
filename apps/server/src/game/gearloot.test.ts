@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { groundAt, INV_SIZE, mulberry32, rollEquipDrops, S, type SysMsg, VALLEY } from '@dtl/shared';
 
 // Rơi trang bị (3-2): phân bố theo nguồn, roll ở server, mặc/tháo có idempotency + ledger.
@@ -131,6 +131,30 @@ describe('rơi và mặc/tháo trong sim', () => {
     expect(msgs.every((m) => typeof m.q === 'number' && m.i && m.src === mon.id)).toBe(true);
     const led = sqlite.prepare("SELECT reason FROM ledger WHERE char_id = ? AND kind = 'item'").all(c.id) as { reason: string }[];
     expect(led.some((l) => /roll=\d+:q\d:il\d+/.test(l.reason))).toBe(true);
+  });
+
+  it('Thần phẩm rơi từ boss: tin gửi TÊN món + tên phẩm đã dịch (không phải id), phát thông báo toàn phòng', () => {
+    const { sim, c, p, sent } = setup();
+    const mon = sim.spawnMonster(content.MONSTER.get('boss_thien_khuyet_thu_linh')!, 15, X + 3, Z, null);
+    // Random = ~1: mọi lần chọn trọng số rơi vào phần tử cuối (q5), chỉ bảng chance 1 qua được.
+    vi.spyOn(Math, 'random').mockReturnValue(0.999999);
+    try {
+      (sim as unknown as WithLoot).monSys.rollLoot(p, mon);
+    } finally {
+      vi.restoreAllMocks();
+    }
+    const got = c.inv.find((x) => x?.inst?.q === 5);
+    expect(got).toBeTruthy();
+    const name = content.itemName(got!.id);
+    expect(name).not.toBe(got!.id);
+    const sys = sent.filter((x) => x.type === S.SYS).map((x) => x.msg as SysMsg);
+    const mine = sys.find((m) => m.k === 'sys.loot_gear' && m.q === 5)!;
+    expect(mine.p).toEqual({ item: name, quality: content.t('ui.quality.5') });
+    expect(content.t(mine.k, mine.p)).toBe(`Nhận được ${name} (Thần phẩm)`);
+    const bc = sys.find((m) => m.k === 'sys.loot_than')!;
+    expect(bc.p).toMatchObject({ item: name });
+    expect(content.t(bc.k, bc.p)).toContain(name);
+    expect(content.t(bc.k, bc.p)).not.toContain(got!.id);
   });
 
   it('túi đầy: món trang bị bị bỏ, vàng vẫn vào', () => {

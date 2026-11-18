@@ -119,7 +119,7 @@ export function NgjKit() {
               <div className="ngj-kit-row" key={s}>
                 <span className="ngj-kit-label">{t('ui.ngj.shape.' + s)}</span>
                 <NgjSlot shape={s} empty />
-                {[0, 1, 2, 3, 4].map((q) => (
+                {[0, 1, 2, 3, 4, 5].map((q) => (
                   <NgjSlot
                     key={q}
                     shape={s}

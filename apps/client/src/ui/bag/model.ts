@@ -17,7 +17,7 @@ import {
 
 export type BagTab = 'all' | ItemCategory;
 export const BAG_TABS: readonly BagTab[] = ['all', 'gear', 'pill', 'material', 'quest', 'other'];
-export type QualityFilter = 'all' | 0 | 1 | 2 | 3 | 4;
+export type QualityFilter = 'all' | 0 | 1 | 2 | 3 | 4 | 5;
 
 export interface BagFilter {
   tab: BagTab;
