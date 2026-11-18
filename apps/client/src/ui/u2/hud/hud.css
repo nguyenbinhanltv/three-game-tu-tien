@@ -285,18 +285,6 @@
   font-size: var(--u-fs-2);
   color: var(--u-gold-text);
 }
-/* minimap: vòng tròn viền kim của lớp Ngọc Giản cũ (ngj/hud.css); nút +/- nằm ngoài vòng nên không được cắt clip-path */
-.hud.u2hud .u2h-tr .minimap-wrap {
-  width: var(--h-map-w);
-}
-.hud.u2hud .u2h-tr .minimap-wrap .minimap {
-  width: var(--h-map-w);
-  height: var(--h-map-w);
-}
-.hud.u2hud .u2h-tr .minimap-wrap .minimap-ctl {
-  left: -30px;
-  bottom: 12px;
-}
 .u2h-quest {
   width: var(--h-quest-w);
   min-height: var(--h-quest-h);

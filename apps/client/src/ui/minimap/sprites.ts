@@ -2,6 +2,7 @@
 // Mỗi loại có hình dáng riêng để phân biệt không cần dựa vào màu.
 import type { SpiritKind } from '@dtl/shared';
 import type { NpcFn, QuestMark, Tone } from './model';
+import { pal } from './palette';
 
 const INK = '#2a1f16';
 const GOLD = '#ffd54a';
@@ -44,27 +45,54 @@ function outline(g: CanvasRenderingContext2D, fill: string, lw = 1.4): void {
   g.stroke();
 }
 
-/** Thoi có nhãn chức năng theo màu; phía trên có thể có dấu nhiệm vụ. */
+/**
+ * NPC: chấm tròn ngà (chấm nhỏ màu chức năng ở giữa). Có nhiệm vụ (nhận/trả): hình thoi vàng với vòng sóng, kèm ! hoặc ?;
+ * nhiệm vụ đang làm: thoi ngà nhạt.
+ */
 export function npcSprite(fn: NpcFn, q: QuestMark, dpr: number): Sprite {
-  return make(`npc:${fn}:${q}`, 22, 30, dpr, (g) => {
+  return make(`npc:${fn}:${q}`, 30, 34, dpr, (g) => {
+    const P = pal();
     g.translate(0, 6);
+    if (q === 'give' || q === 'turn') {
+      for (const [r, a] of [
+        [12.5, 0.45],
+        [9, 0.8],
+      ] as const) {
+        g.beginPath();
+        g.arc(0, 0, r, 0, Math.PI * 2);
+        g.lineWidth = 1.2;
+        g.globalAlpha = a;
+        g.strokeStyle = P.goldLo;
+        g.stroke();
+        g.globalAlpha = 1;
+      }
+    }
+    if (q) {
+      g.beginPath();
+      g.moveTo(0, -6.5);
+      g.lineTo(5.5, 0);
+      g.lineTo(0, 6.5);
+      g.lineTo(-5.5, 0);
+      g.closePath();
+      outline(g, q === 'wait' ? P.giayLo : P.gold);
+      g.font = `800 15px ${P.head}`;
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.lineWidth = 3;
+      g.strokeStyle = INK;
+      const ch = q === 'give' ? '!' : '?';
+      g.strokeText(ch, 0, -16);
+      g.fillStyle = q === 'wait' ? '#aeb4b6' : P.goldHi;
+      g.fillText(ch, 0, -16);
+      return;
+    }
     g.beginPath();
-    g.moveTo(0, -6.5);
-    g.lineTo(5.5, 0);
-    g.lineTo(0, 6.5);
-    g.lineTo(-5.5, 0);
-    g.closePath();
-    outline(g, NPC_COLOR[fn]);
-    if (!q) return;
-    g.font = '800 15px Georgia, serif';
-    g.textAlign = 'center';
-    g.textBaseline = 'middle';
-    g.lineWidth = 3;
-    g.strokeStyle = INK;
-    const ch = q === 'give' ? '!' : '?';
-    g.strokeText(ch, 0, -16);
-    g.fillStyle = q === 'wait' ? '#aeb4b6' : GOLD;
-    g.fillText(ch, 0, -16);
+    g.arc(0, 0, 4.8, 0, Math.PI * 2);
+    outline(g, P.giay, 1.6);
+    g.beginPath();
+    g.arc(0, 0, 1.7, 0, Math.PI * 2);
+    g.fillStyle = NPC_COLOR[fn];
+    g.fill();
   });
 }
 
@@ -99,24 +127,22 @@ export function eliteSprite(dead: boolean, dpr: number): Sprite {
   });
 }
 
-/** Boss: ngôi sao nhọn trong vòng, to hơn hẳn. */
+/** Boss: đầu tam giác đỏ (đầu triền độ) có vạch ngà; chết thì xám. */
 export function bossSprite(dead: boolean, dpr: number): Sprite {
   return make(`boss:${dead}`, 28, 28, dpr, (g) => {
+    const P = pal();
     g.beginPath();
-    g.arc(0, 0, 11, 0, Math.PI * 2);
-    g.fillStyle = 'rgba(26,12,10,0.7)';
-    g.fill();
-    g.lineWidth = 1.6;
-    g.strokeStyle = dead ? '#8a8a82' : '#ff8a3c';
-    g.stroke();
-    g.beginPath();
-    for (let i = 0; i < 10; i++) {
-      const r = i % 2 ? 3.6 : 8.4;
-      const a = -Math.PI / 2 + (i * Math.PI) / 5;
-      g.lineTo(Math.cos(a) * r, Math.sin(a) * r);
-    }
+    g.moveTo(0, -10);
+    g.lineTo(10, 8);
+    g.lineTo(-10, 8);
     g.closePath();
-    outline(g, dead ? '#8c8d84' : '#ff5a36', 1.2);
+    outline(g, dead ? '#8c8d84' : P.son, 1.7);
+    g.beginPath();
+    g.moveTo(-3.6, 2.6);
+    g.lineTo(3.6, 2.6);
+    g.lineWidth = 1.7;
+    g.strokeStyle = dead ? '#c8c8c0' : P.goldHi;
+    g.stroke();
   });
 }
 
@@ -125,11 +151,11 @@ export function mateSprite(num: number, dpr: number): Sprite {
   return make(`mate:${num}`, 18, 18, dpr, (g) => {
     g.beginPath();
     g.arc(0, 0, 6.6, 0, Math.PI * 2);
-    outline(g, '#3b9bf0', 1.5);
-    g.font = '800 9.5px sans-serif';
+    outline(g, pal().ngocHi, 1.5);
+    g.font = `800 9.5px ${pal().head}`;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.fillStyle = '#fff';
+    g.fillStyle = INK;
     g.fillText(String(num), 0, 0.5);
   });
 }
@@ -139,9 +165,9 @@ export function playerSprite(dpr: number): Sprite {
     g.beginPath();
     g.arc(0, 0, 2.6, 0, Math.PI * 2);
     g.lineWidth = 1.5;
-    g.strokeStyle = '#2f7fd0';
+    g.strokeStyle = INK;
     g.stroke();
-    g.fillStyle = 'rgba(190,225,255,0.85)';
+    g.fillStyle = pal().ngocHi;
     g.fill();
   });
 }
@@ -179,30 +205,27 @@ export function portalSprite(dpr: number): Sprite {
   });
 }
 
-/** Truyền tống trận: vòng tròn hai lớp với ngôi sao sáu cánh. */
+/** Truyền tống trận: đĩa ngọc có vòng trong và dấu thập (nhìn rõ trên giấy). */
 export function teleSprite(dpr: number): Sprite {
-  return make('tele', 20, 20, dpr, (g) => {
-    g.lineWidth = 1.6;
-    g.strokeStyle = INK;
-    g.fillStyle = 'rgba(30,60,80,0.75)';
+  return make('tele', 22, 22, dpr, (g) => {
+    const P = pal();
     g.beginPath();
-    g.arc(0, 0, 8, 0, Math.PI * 2);
+    g.arc(0, 0, 8.5, 0, Math.PI * 2);
+    g.globalAlpha = 0.75;
+    g.fillStyle = P.ngocHi;
     g.fill();
+    g.globalAlpha = 1;
+    g.lineWidth = 1.6;
+    g.strokeStyle = P.ngocLo;
     g.stroke();
-    g.strokeStyle = '#7fe0f0';
-    g.lineWidth = 1.2;
     g.beginPath();
-    g.arc(0, 0, 8, 0, Math.PI * 2);
+    g.arc(0, 0, 4.2, 0, Math.PI * 2);
+    g.moveTo(-8.5, 0);
+    g.lineTo(8.5, 0);
+    g.moveTo(0, -8.5);
+    g.lineTo(0, 8.5);
+    g.lineWidth = 1.2;
     g.stroke();
-    for (const off of [-Math.PI / 2, Math.PI / 2]) {
-      g.beginPath();
-      for (let i = 0; i < 3; i++) {
-        const a = off + (i * Math.PI * 2) / 3;
-        g.lineTo(Math.cos(a) * 5.6, Math.sin(a) * 5.6);
-      }
-      g.closePath();
-      g.stroke();
-    }
   });
 }
 
@@ -228,7 +251,7 @@ export function selfSprite(dpr: number): Sprite {
     g.lineTo(0, 3);
     g.lineTo(-5.5, 6);
     g.closePath();
-    outline(g, '#ffffff', 1.5);
+    outline(g, pal().goldHi, 1.5);
   });
 }
 
