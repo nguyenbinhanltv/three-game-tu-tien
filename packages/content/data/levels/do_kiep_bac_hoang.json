@@ -1,0 +1,16 @@
+{
+  "id": "do_kiep_bac_hoang",
+  "terrain": "bac_hoang",
+  "spawns": [],
+  "nodes": [],
+  "tribulation": true,
+  "dungeon": {
+    "spawn": { "x": 1050, "z": 540 },
+    "exit": { "x": 1050, "z": 556 },
+    "center": { "x": 1050, "z": 510 },
+    "minLevel": 31,
+    "returnLevel": "bac_hoang",
+    "returnSpawn": { "x": 1050, "z": 560 },
+    "waves": []
+  }
+}

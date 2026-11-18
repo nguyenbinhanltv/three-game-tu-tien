@@ -44,7 +44,7 @@ export function ambientRates(x: number, z: number, above: number, out?: AmbientR
   const r = out ?? ({} as AmbientRates);
   for (const k of KINDS) r[k] = 0;
   // Bắc Hoang (DV-3I): tro bay khắp nơi, tàn lửa dày dần về phía Giới Khích và bên kia; không phấn hoa, lá, cánh đào, sương xanh của Vân Lam.
-  if (level === 'bac_hoang') {
+  if (level === 'bac_hoang' || level === 'do_kiep_bac_hoang') {
     const T = levelTerrain();
     if (bhPathFor !== T) {
       bhPathFor = T;

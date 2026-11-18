@@ -107,9 +107,14 @@ describe('Character: Trúc Cơ → Nguyên Anh', () => {
       expect(c.level).toBe(peak);
       expect(c.xp).toBe(xpNeed(peak));
     }
-    const top = at(28, 27);
+    // Hóa Thần 28–31: 28 → 29 chặn đầy; 31 chặn đầy chờ Nhật Thực Kiếp; 32 là trần.
+    const mid = at(29, 27);
+    mid.gainXp(xpNeed(29) * 2);
+    expect(mid.level).toBe(29);
+    expect(mid.passBottleneck()).toBe(30);
+    const top = at(32, 27);
     top.gainXp(1e9);
-    expect(top.level).toBe(28);
+    expect(top.level).toBe(32);
   });
 
   it('chỉ số tăng theo hệ số cảnh giới khi lên Kết Đan', () => {

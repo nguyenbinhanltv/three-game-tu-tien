@@ -182,6 +182,22 @@ export class MonsterSystem {
     this.c.sysAll('sys.posture_broken', { boss: monsterName(m.def.id) }, 'good');
   }
 
+  /**
+   * Choáng `sec` giây không phát tin "mất thế" (Nhật Thực Kiếp: thiên lôi trúng boss kiếp mỗi vài giây): cắt chiêu/niệm đang dở và bật cờ MF_STUN để client hạ hover.
+   */
+  stun(m: MonEnt, sec: number): void {
+    this.c.monSkills.cancel(m);
+    const ch = m.rules.ai.chant;
+    if (m.chant && ch) m.chantAt = this.c.now + ch.cd * 1000;
+    m.chant = null;
+    m.windUntil = 0;
+    m.comboAt = 0;
+    m.comboTarget = '';
+    m.cast = null;
+    m.stunUntil = Math.max(m.stunUntil, this.c.now + sec * 1000);
+    this.setMonFlags(m, MF_STUN, m.stunUntil);
+  }
+
   /** Đổi pha boss: thay bộ chiêu/nhịp; `ph` lên state để client vẽ thanh niệm chú đúng thời lượng. */
   setPhase(m: MonEnt, ph: number): void {
     if (m.phase === ph) return;
