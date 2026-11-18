@@ -3,7 +3,7 @@
 // `planDash` của shared nên không qua vách, không rơi khỏi đảo; vũng độc gây sát thương nhỏ mỗi nhịp cho ai đang đứng trong,
 // ra khỏi vũng là hết. sim.ts móc vào: releaseChant (startPull), killMonster (onDeath), tick (tick).
 
-import { type MonsterDeathPool, type MonsterPull, inPool, pullStep } from '@dtl/shared';
+import { type MonsterDeathPool, type MonsterPull, type MonsterTrail, inPool, pullStep, trailSpots } from '@dtl/shared';
 
 /** Phần của người chơi mà vùng cần (PlayerEnt thỏa cấu trúc này). */
 export interface ZonePlayer {
@@ -30,7 +30,7 @@ export interface MonZoneHost {
   /** Đi tối đa `dist` m theo hướng (dx, dz) bằng luật lướt (không xuyên vách); trả quãng đi được và áp lên người chơi. */
   drag(p: ZonePlayer, dx: number, dz: number, dist: number): number;
   /** Vạch báo (không sát thương) gửi client. */
-  telegraph(x: number, z: number, r: number, delay: number, kind: string, src: string, mv: 'pull' | 'pool', dur?: number): void;
+  telegraph(x: number, z: number, r: number, delay: number, kind: string, src: string, mv: 'pull' | 'pool' | 'trail', dur?: number): void;
   /** Người ở quá cao so với mặt đất (ngự kiếm bay cao): vùng nổ và vũng độc không với tới (cùng luật `tickHazards`, > 8 m). */
   tooHigh(p: ZonePlayer): boolean;
   /** Sát thương vũng độc (đã tính phòng thủ). */
@@ -61,7 +61,7 @@ interface Pool {
 }
 
 /** Trần số vũng độc cùng lúc trong room (hạ cả bầy cùng lúc không làm đầy room). */
-export const POOL_MAX = 24;
+export const POOL_MAX = 32;
 
 export class MonZones {
   private pulls: Pull[] = [];
@@ -80,6 +80,20 @@ export class MonZones {
     const now = this.h.now();
     this.h.telegraph(m.s.x, m.s.z, cfg.range, cfg.delay, kind, m.id, 'pull');
     this.pulls.push({ mon: m, cfg, at: now + cfg.delay * 1000, endAt: now + (cfg.delay + cfg.dur) * 1000, last: now + cfg.delay * 1000, victims: null });
+  }
+
+  /**
+   * Vệt dọc vạch (x, z, yaw, len): sau `delay` giây (lúc vạch nổ) chuỗi vũng tròn tồn tại `cfg.dur` giây, mỗi `cfg.tick` giây gây sát thương.
+   * Vũng nào vượt trần `POOL_MAX` thì bỏ vũng cũ nhất.
+   */
+  addTrail(m: ZoneMon, x: number, z: number, yaw: number, len: number, cfg: MonsterTrail, delay: number): void {
+    const now = this.h.now();
+    const at = now + delay * 1000;
+    for (const sp of trailSpots(x, z, yaw, len, cfg.r)) {
+      if (this.pools.length >= POOL_MAX) this.pools.shift();
+      this.pools.push({ x: sp.x, z: sp.z, r: cfg.r, at, endAt: at + cfg.dur * 1000, nextAt: at + cfg.tick * 1000, cfg: { r: cfg.r, delay, dur: cfg.dur, tick: cfg.tick, mul: cfg.mul, kind: cfg.kind }, atk: m.atk, src: m.id });
+      this.h.telegraph(sp.x, sp.z, cfg.r, delay, cfg.kind, m.id, 'trail', cfg.dur);
+    }
   }
 
   /** Quái chết: để lại vũng độc theo `deathPool` (nếu có). */

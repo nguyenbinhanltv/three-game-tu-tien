@@ -141,3 +141,15 @@ export function pullStep(d0: number, dist: number, stop: number, dur: number, dt
 export function inPool(x: number, z: number, r: number, px: number, pz: number): boolean {
   return (px - x) ** 2 + (pz - z) ** 2 <= r * r;
 }
+
+/** Tâm các vũng của một vệt dọc vạch từ (x, z) theo `yaw` dài `len`: cách nhau 1,5 r (phủ kín, chồng nhẹ), tối đa 8 vũng. */
+export function trailSpots(x: number, z: number, yaw: number, len: number, r: number): { x: number; z: number }[] {
+  const step = Math.max(0.5, r * 1.5);
+  const n = Math.min(8, Math.max(1, Math.ceil(len / step)));
+  const out: { x: number; z: number }[] = [];
+  for (let i = 0; i < n; i++) {
+    const d = n === 1 ? len / 2 : (len * (i + 0.5)) / n;
+    out.push({ x: x + Math.sin(yaw) * d, z: z + Math.cos(yaw) * d });
+  }
+  return out;
+}

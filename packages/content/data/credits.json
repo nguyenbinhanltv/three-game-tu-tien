@@ -455,6 +455,23 @@
       ]
     },
     {
+      "id": "aetherion_nemesis",
+      "kind": "model",
+      "title": "AETHERION NEMESIS // The Violet Seraph",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/aetherion-nemesis-the-violet-seraph-9e86faa1fe764b0e8ea1f509ddbf8d13",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "cut",
+        "decimate",
+        "bake",
+        "rig"
+      ],
+      "assets": [
+        "boss_thu_khich_duc_chu"
+      ]
+    },
+    {
       "id": "ravenyth",
       "kind": "model",
       "title": "RAVENYTH // The Gilded Night Empress",
