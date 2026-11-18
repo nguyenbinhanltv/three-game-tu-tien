@@ -34,6 +34,8 @@ export interface Flags {
   v3Model: string | null;
   /** `?jog=<số>` ép tốc độ clip chạy v3 (chụp). */
   jog: number;
+  /** `?armclear=<độ>` góc chừa khoảng cách tay của Lạc Kiếm v3b2 (null: mặc định; 0 tắt, để so ảnh). */
+  armClear: number | null;
   /** `?v3pal=0` tắt bảng màu nhuộm v3. */
   v3Palette: boolean;
   /** `?ual=0` tắt clip UAL. */
@@ -82,6 +84,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   hair: { scope: 'test', doc: 'ép kiểu tóc' },
   v3model: { scope: 'test', doc: '=a bản Lạc Kiếm v3 cũ' },
   jog: { scope: 'test', doc: 'tốc độ clip chạy v3' },
+  armClear: { scope: 'diag', doc: 'góc chừa khoảng cách tay v3b2 (0 tắt)' },
   v3pal: { scope: 'test', doc: '=0 tắt nhuộm v3' },
   ual: { scope: 'test', doc: '=0 tắt clip UAL' },
   renderer: { scope: 'diag', doc: 'webgl2|webgpu|auto' },
@@ -141,6 +144,7 @@ export function readFlags(search: string): Flags {
     hair: q.get('hair'),
     v3Model: q.get('v3model'),
     jog: Number(q.get('jog')) || 0,
+    armClear: q.has('armclear') ? Number(q.get('armclear')) || 0 : null,
     v3Palette: !off(q.get('v3pal')),
     ual: !off(q.get('ual')),
     renderer: q.get('renderer'),

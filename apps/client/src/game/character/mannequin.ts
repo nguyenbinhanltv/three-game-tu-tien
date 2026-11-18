@@ -47,7 +47,7 @@ const ARM_DOWN_HI = 0.9;
 const _a0 = new THREE.Vector3();
 const _a1 = new THREE.Vector3();
 /** Thông số lò xo v2 (sửa được lúc chạy chỉ để quét tham số trong `springMetrics.test.ts`). */
-export const SPRING2 = { hemStiff: HEM_STIFF, sitScale: SIT_COLLIDER_SCALE, arms: true, rMul: 1.3, armDeg: new URLSearchParams(search).has('armclear') ? Number(new URLSearchParams(search).get('armclear')) || 0 : ARM_CLEAR_DEG };
+export const SPRING2 = { hemStiff: HEM_STIFF, sitScale: SIT_COLLIDER_SCALE, arms: true, rMul: 1.3, armDeg: FLAGS.armClear ?? ARM_CLEAR_DEG };
 /** Thông số riêng của vạt ở lò xo v2: góc lệch tối đa hẹp (12°) vì vạt nay do lò xo + va chạm điều khiển phần lớn (share 0,8): lệch rộng làm hai nửa vạt chéo nhau khi chạy. Tóc và tay áo giữ `V3_SPRING`. */
 export const V3_SKIRT_SPRING2: SpringParams = { stiffness: 130, drag: 8, maxAngle: 12, maxInward: 8 };
 /** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. */
