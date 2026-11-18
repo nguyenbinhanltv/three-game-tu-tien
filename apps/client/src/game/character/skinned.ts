@@ -476,7 +476,7 @@ export class SkinnedCharacter implements CharacterView {
   }
 
   private emit(p: Perform, kind: SkillEvent['kind'], index: number): void {
-    const hitIn = kind === 'windup' && p.timing ? Math.max(0, p.timing.hitAt[0] - p.t) : undefined;
+    const hitIn = kind === 'windup' && p.timing ? Math.max(0, p.timing.hitAt[0]! - p.t) : undefined;
     this.onSkillEvent?.({ kind, skill: p.skill, index, combo: p.combo, t: p.t, kb: !!p.timing?.kb, ...(hitIn !== undefined && { hitIn }) });
   }
 
@@ -899,7 +899,7 @@ export class SkinnedCharacter implements CharacterView {
       // Sự kiện đúng khung: mốc `hitAt` phát một lần mỗi mốc theo đồng hồ animation (dừng khi hit-stop).
       const n = hitsPassed(tm, p.t);
       while (p.fired < n) this.emit(p, 'hit', p.fired++);
-      if (!p.recovered && p.t >= tm.hitAt[tm.hitAt.length - 1]) {
+      if (!p.recovered && p.t >= tm.hitAt[tm.hitAt.length - 1]!) {
         p.recovered = true;
         this.emit(p, 'recovery', p.fired);
       }
@@ -1024,7 +1024,7 @@ export class SkinnedCharacter implements CharacterView {
     this.lodLevel = level;
     // Chỉ LOD0 đổ bóng: pass bóng vẽ lại cả lưới, ở xa bóng nhỏ không thấy khác.
     for (let i = 0; i < this.lods.length; i++)
-      for (const m of this.lods[i]) {
+      for (const m of this.lods[i]!) {
         m.visible = i === level;
         // Phụ kiện đồ bộ (`userData.noShadow`) không đổ bóng: nhỏ, và mỗi mesh đổ bóng là thêm một draw call ở pass bóng.
         m.castShadow = i === level && level === 0 && !m.userData.noShadow;

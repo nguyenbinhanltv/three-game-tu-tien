@@ -26,14 +26,14 @@ const SEP_GAP = 0.05;
 /** Giải tách cho `n` thân đầu của `bodies` (phần tử thừa bị bỏ qua). O(n²), n nhỏ (thân gần camera). */
 export function solveSeparation(bodies: Body[], n = bodies.length, iterations = 3): void {
   for (let i = 0; i < n; i++) {
-    bodies[i].ox = 0;
-    bodies[i].oz = 0;
+    bodies[i]!.ox = 0;
+    bodies[i]!.oz = 0;
   }
   for (let it = 0; it < iterations; it++) {
     for (let i = 0; i < n; i++) {
-      const a = bodies[i];
+      const a = bodies[i]!;
       for (let j = i + 1; j < n; j++) {
-        const b = bodies[j];
+        const b = bodies[j]!;
         if (a.fixed && b.fixed) continue;
         let dx = b.x + b.ox - (a.x + a.ox);
         let dz = b.z + b.oz - (a.z + a.oz);
@@ -64,7 +64,7 @@ export function solveSeparation(bodies: Body[], n = bodies.length, iterations = 
     }
   }
   for (let i = 0; i < n; i++) {
-    const b = bodies[i];
+    const b = bodies[i]!;
     const len = Math.hypot(b.ox, b.oz);
     if (len > SEP_MAX) {
       b.ox *= SEP_MAX / len;

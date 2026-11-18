@@ -456,9 +456,9 @@ export class PlayerSkins {
     let src: THREE.Material | null = null;
     t.handle.scene.traverse((o) => {
       const mesh = o as THREE.Mesh;
-      if (!src && mesh.isMesh) src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+      if (!src && mesh.isMesh) src = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) ?? null;
     });
-    m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0];
+    m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0]!;
     const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)).pow(2.2);
     if (kind === 'soul') {
       applyPalette(m, { dark: '#8fb7aa', light: '#eaf6ee', glow: '#f0dc9c' });
@@ -546,8 +546,8 @@ export class PlayerSkins {
     const springs: SpringDef[] = [];
     for (const p of outfit.parts) springs.push(...p.tpl.springs);
     const sk = extendSkeleton(
-      bodies[0].skeleton,
-      outfit.parts.map((p) => p.tpl.meshes[0].skeleton),
+      bodies[0]!.skeleton,
+      outfit.parts.map((p) => p.tpl.meshes[0]!.skeleton),
     );
     for (const pm of bodies) {
       if (sk) pm.bind(sk, pm.bindMatrix);
@@ -576,6 +576,7 @@ export class PlayerSkins {
       if (!pm.parent) continue;
       for (const part of outfit.parts) {
         const src = part.tpl.meshes.find((m) => (m.userData.lod ?? 0) === lod) ?? part.tpl.meshes[part.tpl.meshes.length - 1];
+        if (!src) continue;
         const rk = `${part.id}|${lod}|${pm.skeleton.bones.length}`;
         let geo = this.remapped.get(rk);
         if (geo === undefined) {
@@ -584,7 +585,7 @@ export class PlayerSkins {
         }
         if (!geo) continue;
         // Mảnh có voan (extras dtl_outfitAlpha): LOD0 vẽ hai lượt cùng hình học (phần đặc `cutout` + voan blend thật), LOD xa vẽ voan như vải đặc.
-        const veilPart = lod === 0 && (part.tpl.meshes[0].material as THREE.MeshStandardMaterial).userData?.dtl_outfitAlpha === 1;
+        const veilPart = lod === 0 && (part.tpl.meshes[0]!.material as THREE.MeshStandardMaterial).userData?.dtl_outfitAlpha === 1;
         const g = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl, veilPart ? 'cutout' : 'solid', outfit.dye));
         g.name = `${part.id}_${lod}`;
         g.userData.outfit = true;
@@ -624,12 +625,12 @@ export class PlayerSkins {
     const key = starter ? `${base}|${dye!.id}` : base;
     let m = this.outMats.get(key);
     if (m) return m;
-    const src = tpl.meshes[0].material as THREE.MeshStandardMaterial;
+    const src = tpl.meshes[0]!.material as THREE.MeshStandardMaterial;
     if (hasOutfitMask(src))
       m = createOutfitMaterial(src, undefined, mode); // bộ mô-đun T-5: nhuộm 3 kênh, vải/kim loại, vân sáng
     else {
       // Bộ đồ đệ tử tân thủ (màu phẳng): nhuộm vải tham chiếu theo màu đạo bào đã chọn như thân.
-      m = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src), starter ? (x) => applyDye(x, '#3B6584', dye!.hex) : undefined)[0]);
+      m = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src), starter ? (x) => applyDye(x, '#3B6584', dye!.hex) : undefined)[0]!);
       m.side = THREE.DoubleSide; // bản tạm #119: các tấm vỏ mỏng (vạt, tay áo): không cull mặt sau
     }
     this.outMats.set(key, m);
@@ -797,7 +798,7 @@ export class PlayerSkins {
           }
           releaseAll();
           // Tốc độ nền của clip K-3 đo trên Thanh Phong; nhân vật khác theo tỉ lệ tốc độ chạy.
-          const f = skin.refSpeed / (HUMAN_CLIPS.run.refSpeed ?? 3.09);
+          const f = skin.refSpeed / (HUMAN_CLIPS.run?.refSpeed ?? 3.09);
           const map: ClipMap = {};
           const locoRef: Partial<Record<CharState, number>> = {};
           for (const [state, clip] of Object.entries(K3_STATES) as [CharState, string][]) {
@@ -870,8 +871,8 @@ export class PlayerSkins {
           return;
         }
         try {
-          this.templates.set(id, templateOf(handle, lib, PLAYER_SKINS[id], !!sword));
-          setTimeout(() => this.loadK3(id, PLAYER_SKINS[id]), K3_DELAY);
+          this.templates.set(id, templateOf(handle, lib, PLAYER_SKINS[id]!, !!sword));
+          setTimeout(() => this.loadK3(id, PLAYER_SKINS[id]!), K3_DELAY);
         } catch (err) {
           modelsLog.warn(`không dựng được ${id}, dùng model khối`, err);
           handle.release();
@@ -935,9 +936,9 @@ export class PlayerSkins {
     let src: THREE.Material | null = null;
     t.handle.scene.traverse((o) => {
       const mesh = o as THREE.Mesh;
-      if (!src && mesh.isMesh) src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+      if (!src && mesh.isMesh) src = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) ?? null;
     });
-    m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0];
+    m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0]!;
     applyPalette(m, { dark: '#0d0916', light: '#5a4080', glow: '#c24a7a' });
     m.transparent = true;
     m.opacity = 0.86;
@@ -953,9 +954,9 @@ export class PlayerSkins {
     let src: THREE.Material | null = null;
     t.handle.scene.traverse((o) => {
       const mesh = o as THREE.Mesh;
-      if (!src && mesh.isMesh) src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+      if (!src && mesh.isMesh) src = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) ?? null;
     });
-    m = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined), (x) => applyDye(x, skin.clothRef, hex, accent))[0]);
+    m = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined), (x) => applyDye(x, skin.clothRef, hex, accent))[0]!);
     this.mats.set(key, m);
     return m;
   }
@@ -1205,7 +1206,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     }
     this.swap = null;
     if (s.drawn) return;
-    if (!skill && this.gesture(POSE_SWORD_DRAW)) this.swap = { id: POSE_SWORD_DRAW, at: POSE_SWORD_SWAP[POSE_SWORD_DRAW], drawn: true };
+    if (!skill && this.gesture(POSE_SWORD_DRAW)) this.swap = { id: POSE_SWORD_DRAW, at: POSE_SWORD_SWAP[POSE_SWORD_DRAW]!, drawn: true };
     else s.set(true);
   }
 
@@ -1231,7 +1232,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
       return;
     }
     if (this.calm < SHEATHE_AFTER || a.airborne) return;
-    if (this.gesture(POSE_SWORD_SHEATHE)) this.swap = { id: POSE_SWORD_SHEATHE, at: POSE_SWORD_SWAP[POSE_SWORD_SHEATHE], drawn: false };
+    if (this.gesture(POSE_SWORD_SHEATHE)) this.swap = { id: POSE_SWORD_SHEATHE, at: POSE_SWORD_SWAP[POSE_SWORD_SHEATHE]!, drawn: false };
     else if (!this.performing(POSE_SWORD_SHEATHE)) s.set(false);
   }
 

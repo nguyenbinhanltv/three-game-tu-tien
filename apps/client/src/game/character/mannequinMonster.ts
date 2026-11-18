@@ -52,7 +52,7 @@ export function pelvisScaledClips(
   const k = a && b && b.length() > 1e-6 ? a.length() / b.length() : 1;
   return clips.map((c) => {
     const cl = c.clone();
-    for (const t of cl.tracks) if (t.name === 'pelvis.position') for (let i = 0; i < t.values.length; i++) t.values[i] *= k;
+    for (const t of cl.tracks) if (t.name === 'pelvis.position') for (let i = 0; i < t.values.length; i++) t.values[i]! *= k;
     return cl;
   });
 }

@@ -105,11 +105,11 @@ export function retargetClips(
   const hipsD = hipsDi >= 0 ? hipsDi : undefined;
   // Độ cao hông đo trong không gian thế giới (nguồn Z-up như UAL có root xoay -90° X: trục đứng nằm ở Z cục bộ của hông).
   const parentW = (set: { bones: BoneInfo[] }, h: number, rootW: THREE.Quaternion) => {
-    const p = set.bones[h].parent;
-    return p >= 0 ? set.bones[p].world : rootW;
+    const p = set.bones[h]!.parent;
+    return p >= 0 ? set.bones[p]!.world : rootW;
   };
   const hipHeight = (set: { bones: BoneInfo[] }, h: number, rootW: THREE.Quaternion) =>
-    set.bones[h].pos.clone().applyQuaternion(parentW(set, h, rootW)).y;
+    set.bones[h]!.pos.clone().applyQuaternion(parentW(set, h, rootW)).y;
   const hS = hipsS !== undefined ? hipHeight(src, hipsS, srcRootW) : 0;
   const hD = hipsD !== undefined ? hipHeight(dst, hipsD, dstRootW) : 0;
   const k = hS > 1e-6 && hD > 0 ? hD / hS : 1;
@@ -141,31 +141,31 @@ export function retargetClips(
     const srcWorld = src.bones.map(() => new THREE.Quaternion());
     const dstWorld = dst.bones.map(() => new THREE.Quaternion());
     for (let f = 0; f <= n; f++) {
-      const t = times[f];
+      const t = times[f]!;
       for (let i = 0; i < src.bones.length; i++) {
-        const b = src.bones[i];
+        const b = src.bones[i]!;
         const it = rotI.get(i);
         if (it) {
           const r = it.evaluate(t) as unknown as ArrayLike<number>;
-          qa.set(r[0], r[1], r[2], r[3]);
+          qa.set(r[0]!, r[1]!, r[2]!, r[3]!);
         } else qa.copy(b.local);
-        srcWorld[i].copy(b.parent >= 0 ? srcWorld[b.parent] : srcRootW).multiply(qa);
+        srcWorld[i]!.copy(b.parent >= 0 ? srcWorld[b.parent]! : srcRootW).multiply(qa);
       }
       for (let j = 0; j < dst.bones.length; j++) {
-        const b = dst.bones[j];
-        const pw = b.parent >= 0 ? dstWorld[b.parent] : dstRootW;
-        const si = map[j];
+        const b = dst.bones[j]!;
+        const pw = b.parent >= 0 ? dstWorld[b.parent]! : dstRootW;
+        const si = map[j]!;
         if (si < 0) {
           qa.copy(b.local);
-          dstWorld[j].copy(pw).multiply(qa);
+          dstWorld[j]!.copy(pw).multiply(qa);
         } else {
-          delta.copy(srcWorld[si]).multiply(srcInv[si]);
-          dstWorld[j].copy(delta).multiply(b.world);
-          qa.copy(pw).invert().multiply(dstWorld[j]);
+          delta.copy(srcWorld[si]!).multiply(srcInv[si]!);
+          dstWorld[j]!.copy(delta).multiply(b.world);
+          qa.copy(pw).invert().multiply(dstWorld[j]!);
         }
         // Liên tục dấu để nội suy tuyến tính không đi đường vòng.
-        const o = vals[j];
-        if (f > 0 && qa.x * o[(f - 1) * 4] + qa.y * o[(f - 1) * 4 + 1] + qa.z * o[(f - 1) * 4 + 2] + qa.w * o[(f - 1) * 4 + 3] < 0) {
+        const o = vals[j]!;
+        if (f > 0 && qa.x * o[(f - 1) * 4]! + qa.y * o[(f - 1) * 4 + 1]! + qa.z * o[(f - 1) * 4 + 2]! + qa.w * o[(f - 1) * 4 + 3]! < 0) {
           qa.set(-qa.x, -qa.y, -qa.z, -qa.w);
         }
         o[f * 4] = qa.x;
@@ -175,12 +175,12 @@ export function retargetClips(
       }
       if (posI && hipsD !== undefined && hipsS !== undefined) {
         const p = posI.evaluate(t) as unknown as ArrayLike<number>;
-        const sp = src.bones[hipsS].pos;
-        const dp = dst.bones[hipsD].pos;
+        const sp = src.bones[hipsS]!.pos;
+        const dp = dst.bones[hipsD]!.pos;
         // Độ dời hông: nguồn → thế giới (quay thế giới của cha hông nguồn, khung đang diễn) → cha hông đích.
-        const pwS = src.bones[hipsS].parent >= 0 ? srcWorld[src.bones[hipsS].parent] : srcRootW;
-        const pwD = dst.bones[hipsD].parent >= 0 ? dstWorld[dst.bones[hipsD].parent] : dstRootW;
-        const d = new THREE.Vector3(p[0] - sp.x, p[1] - sp.y, p[2] - sp.z)
+        const pwS = src.bones[hipsS]!.parent >= 0 ? srcWorld[src.bones[hipsS]!.parent]! : srcRootW;
+        const pwD = dst.bones[hipsD]!.parent >= 0 ? dstWorld[dst.bones[hipsD]!.parent]! : dstRootW;
+        const d = new THREE.Vector3(p[0]! - sp.x, p[1]! - sp.y, p[2]! - sp.z)
           .applyQuaternion(pwS)
           .multiplyScalar(k)
           .applyQuaternion(pwD.clone().invert());
@@ -191,19 +191,19 @@ export function retargetClips(
     }
     const tracks: THREE.KeyframeTrack[] = [];
     for (let j = 0; j < dst.bones.length; j++) {
-      if (map[j] < 0) continue;
-      if (opts.trackedOnly && !rotI.has(map[j])) continue;
-      const v = vals[j];
+      if (map[j]! < 0) continue;
+      if (opts.trackedOnly && !rotI.has(map[j]!)) continue;
+      const v = vals[j]!;
       let still = true;
-      for (let f = 1; f <= n && still; f++) for (let c = 0; c < 4; c++) if (Math.abs(v[f * 4 + c] - v[c]) > EPS) still = false;
-      const name = `${dst.bones[j].name}.quaternion`;
+      for (let f = 1; f <= n && still; f++) for (let c = 0; c < 4; c++) if (Math.abs(v[f * 4 + c]! - v[c]!) > EPS) still = false;
+      const name = `${dst.bones[j]!.name}.quaternion`;
       tracks.push(
         still
           ? new THREE.QuaternionKeyframeTrack(name, [0, clip.duration], [...v.slice(0, 4), ...v.slice(0, 4)])
           : new THREE.QuaternionKeyframeTrack(name, times, v),
       );
     }
-    if (posI && hipsD !== undefined) tracks.push(new THREE.VectorKeyframeTrack(`${dst.bones[hipsD].name}.position`, times, hipPos));
+    if (posI && hipsD !== undefined) tracks.push(new THREE.VectorKeyframeTrack(`${dst.bones[hipsD]!.name}.position`, times, hipPos));
     return new THREE.AnimationClip(clip.name, clip.duration, tracks, clip.blendMode);
   });
 }

@@ -207,7 +207,7 @@ export class NpcSkins {
             lib.animations.filter((c) => c.name === 'walk'),
             t.handle.scene,
           );
-          const ref = (HUMAN_CLIPS.walk.refSpeed ?? 0.978) * (3 / (HUMAN_CLIPS.run.refSpeed ?? 3.09));
+          const ref = (HUMAN_CLIPS.walk?.refSpeed ?? 0.978) * (3 / (HUMAN_CLIPS.run?.refSpeed ?? 3.09));
           m.addClips(clips, { walk: 'walk' }, { walk: ref });
         } finally {
           lib.release();
@@ -276,7 +276,7 @@ function templateOf(handle: AssetHandle, lib: AssetHandle): Template {
   handle.scene.traverse((o) => {
     const m = o as THREE.Mesh;
     if (!m.isMesh) return;
-    if (!src) src = Array.isArray(m.material) ? m.material[0] : m.material;
+    if (!src) src = (Array.isArray(m.material) ? m.material[0] : m.material) ?? null;
     if ((o.userData.lod ?? 0) > 0) return;
     if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
     box.union(m.geometry.boundingBox!);
@@ -284,7 +284,7 @@ function templateOf(handle: AssetHandle, lib: AssetHandle): Template {
   if (box.isEmpty()) box.set(new THREE.Vector3(-0.4, 0, -0.3), new THREE.Vector3(0.4, 1.7, 0.3));
   const height = box.max.y;
   const bounds = new THREE.Sphere(new THREE.Vector3(0, height * 0.5, 0), height * 1.15);
-  const mat = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0]);
+  const mat = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0]!);
   const clips = mergeClips(handle.animations, retargetClips(lib.scene, lib.animations, handle.scene));
   return { handle, lib, clips, height, bounds, mat, ual: null, ualLoading: false, ualWait: [] };
 }
