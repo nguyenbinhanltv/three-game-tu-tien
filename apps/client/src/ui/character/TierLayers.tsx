@@ -61,8 +61,8 @@ export function TierBack({ pick }: { pick: PortraitPick }) {
             <img src={url('set_tim_vang')} alt="" draggable={false} />
           </div>
           <div className="hoatruc-phanthan">
-            {Array.from({ length: 8 }, (_, i) => (
-              <img key={i} src={url(pick.char)} alt="" draggable={false} style={{ '--a': i * 45 + 'deg' } as CSSProperties} />
+            {Array.from({ length: 5 }, (_, i) => (
+              <img key={i} src={url(pick.char)} alt="" draggable={false} style={{ '--a': i * 72 + 'deg' } as CSSProperties} />
             ))}
           </div>
         </>
@@ -137,6 +137,13 @@ function NameScroll({ big }: { big: boolean }) {
   if (!char) return null;
   return (
     <div className="hoatruc-name" data-big={big ? '1' : undefined}>
+      {/* mực nhám: viền chữ lệch nhẹ như nét cọ khô */}
+      <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: 'absolute' }}>
+        <filter id="hoatruc-muc" x="-10%" y="-5%" width="120%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="7" result="t" />
+          <feDisplacementMap in="SourceGraphic" in2="t" scale="3" />
+        </filter>
+      </svg>
       <span className="hoatruc-name-t">{char.name}</span>
       <span className="hoatruc-name-seal">{realmName(char.level)}</span>
     </div>

@@ -9,6 +9,15 @@ import type { PortraitPick } from './portraitPick';
 /** Đường dẫn tranh (nạp lười khi mở bảng, không nằm trong tải đầu). */
 const url = tierUrl;
 
+/** Tâm thân từng tranh (0–1 theo bề ngang ảnh, `tools/hoa-truc/centers.py`): tay áo/lụa bay lệch nên tâm khung ≠ tâm người. */
+let centers: Promise<Record<string, { cx?: number }>> | undefined;
+function loadCenters(): Promise<Record<string, { cx?: number }>> {
+  centers ??= fetch(`${import.meta.env.BASE_URL}hoa-truc/manifest.json`)
+    .then((r) => (r.ok ? r.json() : {}))
+    .catch(() => ({}));
+  return centers;
+}
+
 const cache = new Map<string, Promise<HTMLImageElement | null>>();
 function load(name: string): Promise<HTMLImageElement | null> {
   let p = cache.get(name);
@@ -51,6 +60,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
   });
   const mouse = useRef({ x: 0, y: 0, sx: 0, sy: 0 });
   const [charImg, setCharImg] = useState<HTMLImageElement | null>(null);
+  const cxRef = useRef(0.5);
   const [failed, setFailed] = useState(false);
   // Đổi bộ (lần đầu mở thì không quét): `swap` tăng mỗi lần tranh nhân vật đổi.
   const first = useRef(true);
@@ -60,8 +70,9 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
   useEffect(() => {
     let live = true;
     setFailed(false);
-    void load(pick.char).then((im) => {
+    void Promise.all([load(pick.char), loadCenters()]).then(([im, man]) => {
       if (!live) return;
+      cxRef.current = man[pick.char]?.cx ?? 0.5;
       if (!im) setFailed(true);
       setCharImg(im);
     });
@@ -89,13 +100,17 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
     if (!ctx) return;
     let raf = 0;
     let last = 0;
-    const size = { w: 0, h: 0, dpr: 1 };
+    const size = { w: 0, h: 0, dpr: 1, mid: 0 };
     const fit = () => {
       const r = host.getBoundingClientRect();
-      const z = Number.parseFloat(getComputedStyle(host).zoom || '1') || 1;
+      // hệ số zoom THỰC (kể cả zoom của bảng cha, `--ui-scale`): khung nhìn thấy / khung bố cục. getComputedStyle().zoom chỉ trả zoom của chính phần tử.
+      const z = host.clientWidth > 0 ? r.width / host.clientWidth : 1;
       size.dpr = Math.min(2, window.devicePixelRatio || 1);
-      size.w = Math.max(1, Math.round(r.width / z));
-      size.h = Math.max(1, Math.round(r.height / z));
+      size.w = Math.max(1, host.clientWidth);
+      size.h = Math.max(1, host.clientHeight);
+      // tâm vùng tranh thực = giữa khoảng trống giữa hai cột ô (cột giữa của lưới), không phải giữa cả lưới
+      const sp = host.parentElement?.querySelector('.equip-spacer')?.getBoundingClientRect();
+      size.mid = sp && sp.width > 40 ? (sp.left + sp.width / 2 - r.left) / z : size.w / 2;
       cv.width = Math.round(size.w * size.dpr * z);
       cv.height = Math.round(size.h * size.dpr * z);
       cv.style.width = size.w + 'px';
@@ -110,9 +125,9 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
       const k = cv.width / size.w;
       ctx.setTransform(k, 0, 0, k, 0, 0);
       ctx.clearRect(0, 0, size.w, size.h);
-      const ih = size.h * (pick.tier >= 2 ? 0.88 : 0.99);
+      const ih = size.h * [0.86, 0.86, 0.82, 0.85, 0.85][pick.tier]!;
       const iw = (charImg.width / charImg.height) * ih;
-      const ox = (size.w - iw) / 2 + (still || reduce ? 0 : m.sx * 12);
+      const ox = size.mid - cxRef.current * iw + (still || reduce ? 0 : m.sx * 12);
       const oy = size.h - ih - size.h * 0.004 + (still || reduce ? 0 : m.sy * 5);
       if (still || reduce) {
         ctx.drawImage(charImg, ox, oy, iw, ih);

@@ -24,6 +24,8 @@ export interface OpenOpts {
   look?: { g: string; dye?: string };
   /** Bỏ đoạn mở đầu lần đầu vào tông môn (đánh dấu đã xem), khỏi phải bấm phím bỏ qua. */
   seenIntro?: boolean;
+  /** Khóa localStorage ghi thêm trước khi vào game (vd `dtl.uiScale` để chụp cỡ giao diện nhỏ/lớn). */
+  store?: Record<string, string>;
   /** Ẩn lớp UI trước khi chụp: `hud` (cả HUD lẫn chat) hoặc `chat`. */
   hide?: 'hud' | 'chat';
   /** Quay webm của trang vào thư mục này (đóng context mới ghi xong file). */
@@ -57,6 +59,7 @@ export async function openGame(browser: Browser, o: OpenOpts): Promise<GamePage>
   if (o.look)
     Object.assign(store, { 'dtl.controls': 'strafe', 'dtl.look': JSON.stringify({ g: o.look.g, dye: o.look.dye ?? 'attire_sect' }) });
   if (o.seenIntro) store['dtl.seen.sect.' + name] = '1';
+  Object.assign(store, o.store);
   await ctx.addInitScript((kv) => Object.entries(kv).forEach(([k, v]) => localStorage.setItem(k, v)), store);
   const page = await ctx.newPage();
   const errors = watchErrors(page, { tag: name, warnings: o.warnings, into: o.errors });
