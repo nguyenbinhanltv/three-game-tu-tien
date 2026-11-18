@@ -410,7 +410,7 @@ export class MonsterModel implements MonsterView {
           [1, -1],
         ]) {
           const leg = new THREE.Mesh(g.leg!, MODEL_MAT);
-          leg.position.set(sx * lx, g.legLen, sz * 0.46);
+          leg.position.set(sx! * lx, g.legLen, sz! * 0.46);
           this.legs.push(leg);
           this.inner.add(leg);
         }
@@ -454,7 +454,7 @@ export class MonsterModel implements MonsterView {
       const n = this.segs.length;
       for (let i = 0; i < n; i++) {
         const u = i / n;
-        const m = this.segs[i];
+        const m = this.segs[i]!;
         const rise = Math.max(0, 1 - u * 3.4);
         const wave = Math.sin(u * 8 - this.time * 1.8) * 0.75 * (0.25 + u);
         m.position.set(
@@ -469,19 +469,19 @@ export class MonsterModel implements MonsterView {
       return;
     }
     if (this.def.model === 'ape') {
-      this.legs[0].rotation.x = sw * 0.7;
-      this.legs[1].rotation.x = -sw * 0.7;
+      this.legs[0]!.rotation.x = sw * 0.7;
+      this.legs[1]!.rotation.x = -sw * 0.7;
       const smash = lunge * 2.4;
-      this.arms[0].rotation.x = -sw * 0.6 - smash;
-      this.arms[1].rotation.x = sw * 0.6 - smash;
-      this.arms[0].rotation.z = 0.18;
-      this.arms[1].rotation.z = -0.18;
+      this.arms[0]!.rotation.x = -sw * 0.6 - smash;
+      this.arms[1]!.rotation.x = sw * 0.6 - smash;
+      this.arms[0]!.rotation.z = 0.18;
+      this.arms[1]!.rotation.z = -0.18;
       this.inner.rotation.x = lunge * 0.25 + (dead ? 0 : Math.sin(this.time * 1.4) * 0.02);
     } else {
-      this.legs[0].rotation.x = sw * 0.75;
-      this.legs[1].rotation.x = sw * 0.75;
-      this.legs[2].rotation.x = -sw * 0.75;
-      this.legs[3].rotation.x = -sw * 0.75;
+      this.legs[0]!.rotation.x = sw * 0.75;
+      this.legs[1]!.rotation.x = sw * 0.75;
+      this.legs[2]!.rotation.x = -sw * 0.75;
+      this.legs[3]!.rotation.x = -sw * 0.75;
       this.inner.rotation.x = -lunge * 0.3;
       this.inner.position.z = lunge * 0.55;
     }

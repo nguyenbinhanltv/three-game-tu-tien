@@ -175,7 +175,7 @@ export class SkyIslands {
       prof.map(([x, y]) => new THREE.Vector2(x < r ? x * (x < r * 0.9 ? SK.belly : 1) : x, y * SK.len)),
       56,
     ).toNonIndexed();
-    const pos = lathe.attributes.position;
+    const pos = lathe.attributes.position!;
     const col: number[] = [];
     const rock = new THREE.Color();
     const pal = vi?.pal;
@@ -226,7 +226,7 @@ export class SkyIslands {
       sp.rotateZ((hash01(i, seed, 113) - 0.5) * 0.35);
       sp.translate(Math.cos(a) * rr, dy, Math.sin(a) * rr);
       const sc: number[] = [];
-      for (let k = 0; k < sp.attributes.position.count; k++) sc.push(DK.r, DK.g, DK.b);
+      for (let k = 0; k < sp.attributes.position!.count; k++) sc.push(DK.r, DK.g, DK.b);
       sp.setAttribute('color', new THREE.Float32BufferAttribute(sc, 3));
       parts.push(sp);
     }
@@ -243,7 +243,7 @@ export class SkyIslands {
       cone.rotateY(a + Math.PI / 2);
       cone.translate(Math.cos(a) * rr, depthAt, Math.sin(a) * rr);
       const cc: number[] = [];
-      for (let k = 0; k < cone.attributes.position.count; k++) cc.push(ROOT.r, ROOT.g, ROOT.b);
+      for (let k = 0; k < cone.attributes.position!.count; k++) cc.push(ROOT.r, ROOT.g, ROOT.b);
       cone.setAttribute('color', new THREE.Float32BufferAttribute(cc, 3));
       parts.push(cone);
     }
@@ -419,7 +419,7 @@ export class SkyIslands {
     const im = new THREE.InstancedMesh(geo, mat, list.length);
     list.forEach((m, i) => {
       im.setMatrixAt(i, m);
-      im.setColorAt(i, cols[i]);
+      im.setColorAt(i, cols[i]!);
     });
     im.instanceMatrix.needsUpdate = true;
     if (im.instanceColor) im.instanceColor.needsUpdate = true;
@@ -459,7 +459,7 @@ export class SkyIslands {
     const im = new THREE.InstancedMesh(geo, mat, list.length);
     list.forEach((m, i) => {
       im.setMatrixAt(i, m);
-      im.setColorAt(i, cols[i]);
+      im.setColorAt(i, cols[i]!);
     });
     im.instanceMatrix.needsUpdate = true;
     if (im.instanceColor) im.instanceColor.needsUpdate = true;
@@ -603,7 +603,7 @@ export class SkyIslands {
       const d = -70 + t * 120;
       rib.translate(isl.x + Math.cos(a0) * d - Math.sin(a0) * 80, isl.y - 0.5, isl.z + Math.sin(a0) * d + Math.cos(a0) * 80);
       const cc: number[] = [];
-      for (let k = 0; k < rib.attributes.position.count; k++) cc.push(bone.r, bone.g, bone.b);
+      for (let k = 0; k < rib.attributes.position!.count; k++) cc.push(bone.r, bone.g, bone.b);
       rib.setAttribute('color', new THREE.Float32BufferAttribute(cc, 3));
       parts.push(rib);
     }
@@ -629,7 +629,7 @@ export class SkyIslands {
     ];
     const body = new THREE.LatheGeometry(pts, 28).toNonIndexed();
     const painted = (g: THREE.BufferGeometry, pick: (x: number, y: number, z: number) => THREE.Color) => {
-      const pos = g.attributes.position;
+      const pos = g.attributes.position!;
       const colors: number[] = [];
       for (let i = 0; i < pos.count; i++) {
         const c = pick(pos.getX(i), pos.getY(i), pos.getZ(i));

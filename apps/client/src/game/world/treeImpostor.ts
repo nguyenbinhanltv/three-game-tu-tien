@@ -121,8 +121,8 @@ export class ImpostorLayer {
     const row = new Float32Array(n);
     const pos = new Float32Array(n * 2);
     for (let i = 0; i < n; i++) {
-      const p = g.items[Math.min(i, g.items.length - 1)];
-      const sp = SPECIES[p.id];
+      const p = g.items[Math.min(i, g.items.length - 1)]!;
+      const sp = SPECIES[p.id]!;
       const sy = p.sy ?? 1;
       _q.setFromAxisAngle(_up, p.yaw);
       // Khung bake vuông V, tâm ở nửa chiều cao cây: đáy khung lệch (cao − V)/2 so với gốc cây.

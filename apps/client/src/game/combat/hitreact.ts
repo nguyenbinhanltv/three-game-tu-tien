@@ -185,11 +185,11 @@ export class HitReact {
     if (on) {
       const fm = this.crit ? FLASH_MAT_CRIT : FLASH_MAT;
       for (let i = 0; i < this.meshes.length; i++) {
-        this.orig[i] = this.meshes[i].material as THREE.Material;
-        this.meshes[i].material = fm;
+        this.orig[i] = this.meshes[i]!.material as THREE.Material;
+        this.meshes[i]!.material = fm;
       }
     } else {
-      for (let i = 0; i < this.meshes.length; i++) this.meshes[i].material = this.orig[i];
+      for (let i = 0; i < this.meshes.length; i++) this.meshes[i]!.material = this.orig[i]!;
     }
   }
 

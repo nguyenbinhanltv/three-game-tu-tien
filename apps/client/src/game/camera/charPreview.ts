@@ -228,10 +228,10 @@ export class CharPreview {
           const o = sy * row;
           const d = y * row;
           for (let x = 0; x < row; x += 4) {
-            dst[d + x] = SRGB[src[o + x]];
-            dst[d + x + 1] = SRGB[src[o + x + 1]];
-            dst[d + x + 2] = SRGB[src[o + x + 2]];
-            dst[d + x + 3] = src[o + x + 3];
+            dst[d + x] = SRGB[src[o + x]!]!;
+            dst[d + x + 1] = SRGB[src[o + x + 1]!]!;
+            dst[d + x + 2] = SRGB[src[o + x + 2]!]!;
+            dst[d + x + 3] = src[o + x + 3]!;
           }
         }
         this.ctx.putImageData(this.img, 0, 0);

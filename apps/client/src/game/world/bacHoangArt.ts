@@ -39,8 +39,8 @@ export function riftDist(path: readonly RiftPt[], x: number, z: number): { d: nu
   let best = Infinity;
   let bt = 0;
   for (let i = 0; i + 1 < path.length; i++) {
-    const a = path[i];
-    const b = path[i + 1];
+    const a = path[i]!;
+    const b = path[i + 1]!;
     const vx = b.x - a.x;
     const vz = b.z - a.z;
     const l2 = vx * vx + vz * vz || 1;
@@ -223,7 +223,7 @@ export function scatterBacHoang(ctx: BhScatterCtx): BhRock[] {
         });
       else
         out.push({
-          id: ROCKS[Math.floor(hash01(gx, gz, 8151) * ROCKS.length)],
+          id: ROCKS[Math.floor(hash01(gx, gz, 8151) * ROCKS.length)]!,
           x,
           z,
           yaw: k * Math.PI * 2,
@@ -282,5 +282,5 @@ export function deadTreeSpots(ctx: BhScatterCtx, max: number): DeadTreeSpot[] {
   if (spots.length <= max) return spots;
   // Quá trần: giữ đều theo bước nhảy (xác định), không cắt một góc bản đồ.
   const step = spots.length / max;
-  return Array.from({ length: max }, (_, i) => spots[Math.floor(i * step)]);
+  return Array.from({ length: max }, (_, i) => spots[Math.floor(i * step)]!);
 }

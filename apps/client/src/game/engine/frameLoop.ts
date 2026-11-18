@@ -463,11 +463,11 @@ export function tickCombat(eng: Game, now: number, me: PState | undefined): void
       const st = get();
       const dead = (me.fl & (PF_DEAD | PF_FLYING | PF_CASTING)) !== 0;
       const dist = Math.hypot(m.x - eng.cur.x, m.z - eng.cur.z);
-      if (!dead && Date.now() >= st.gcdAt - 30 && dist < SKILLS[0].range + 1) {
-        predictSkill(eng, 0, eng.bar()[0] ?? SKILLS[0], true);
+      if (!dead && Date.now() >= st.gcdAt - 30 && dist < SKILLS[0]!.range + 1) {
+        predictSkill(eng, 0, eng.bar()[0] ?? SKILLS[0]!, true);
         eng.lastAttackSend = now;
         eng.faceTargetUntil = now + 600;
-        eng.send(C.SKILL, { id: SKILLS[0].id, t: eng.targetId });
+        eng.send(C.SKILL, { id: SKILLS[0]!.id, t: eng.targetId });
       }
     }
   }
@@ -482,7 +482,7 @@ export function reconcile(eng: Game, me: PState): void {
   eng.lastSz = me.z;
   eng.lastFl = me.fl;
   const base: MoveState = { x: me.x, y: me.y, z: me.z, vy: me.vy, grounded: me.gr, flying: (me.fl & PF_FLYING) !== 0 };
-  while (eng.pending.length && eng.pending[0].s <= me.seq) eng.pending.shift();
+  while (eng.pending.length && eng.pending[0]!.s <= me.seq) eng.pending.shift();
   const ctx = moveCtx(eng, me);
   for (const inp of eng.pending) stepMove(base, inp, ctx);
   const dx = base.x - eng.cur.x;

@@ -208,7 +208,7 @@ export class MapVis {
     }
     this.spots.update(me, now);
     for (const it of this.marks.values()) {
-      const ring = it.root.children[1];
+      const ring = it.root.children[1]!;
       ring.rotation.z = t * 0.8;
       ring.scale.setScalar(1 + Math.sin(t * 3) * 0.1);
     }
