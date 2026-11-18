@@ -7,6 +7,8 @@ import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { MonsterModel } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { type BossMove, SkinnedMonster } from './skinned';
+import { partExtras } from './sword';
+import { SWORD_METALNESS, SWORD_ROUGHNESS, swordTemplateOf, type SwordTemplate } from './swordModel';
 import type { ClipMap } from './states';
 import { ELITE_SKINS_NEW } from './eliteSkins';
 import { MQ_CLIPS, MQ_LIB, MQ_MOVES, MQ_SHIELD_CLIPS, MQ_ZOMBIE_CLIPS, MQ_ZOMBIE_MOVES, pelvisScaledClips } from './mannequinMonster';
@@ -51,6 +53,11 @@ export interface MonsterSkin {
   ghost?: number;
   /** Lưới dựng trên bộ xương UE5 Mannequin (chr_v3.py): clip lấy từ thư viện UAL dùng chung (`MQ_LIB`), `clips` trỏ tên clip UAL. Không bám địa hình bằng IK. */
   mannequin?: boolean;
+  /**
+   * Vũ khí rời (DV-2 đợt 3): asset kiếm `prop_kiem_*` gắn vào xương `dtl_sword` (cổ tay phải của chr_v3.py), lưỡi hướng lên ở tư thế
+   * nghỉ như kiếm người chơi nên clip UAL cầm kiếm đúng. `scale` nhân kích thước model kiếm (0,82 m ở 1×).
+   */
+  weapon?: { asset: string; scale: number };
 }
 
 const WOLF_CLIPS: ClipMap = { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' };
@@ -188,6 +195,11 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_tan_chung: { asset: 'mon_tan_chung', clips: MQ_ZOMBIE_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.2, lift: 0.3, lazy: true, level: 'bac_hoang', moves: MQ_ZOMBIE_MOVES, mannequin: true },
   mon_giac_kiem_trong_binh: { asset: 'mon_giac_kiem_trong_binh', clips: MQ_SHIELD_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, metalness: 0, palette: { dark: '#2e2c3a', light: '#d2c4a6', glow: '#d9a93e' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
   elite_hoi_giac_cu_thu: { asset: 'elite_hoi_giac_cu_thu', clips: MQ_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, palette: { dark: '#34303a', light: '#cdbfb2', glow: '#ff5a3a' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
+  // DV-2 đợt 3 (boss hình người Dị Vực, docs/dv2-mon/README.md): xương Mannequin + clip UAL. Kiếm Cơ cầm kiếm Tẫn Hỏa rời (`weapon`).
+  boss_tan_hoa_kiem_co: { asset: 'boss_tan_hoa_kiem_co', clips: { ...MQ_CLIPS, cast: 'Idle_Loop' }, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.35, palette: { dark: '#3c2c26', light: '#f0d2b0', glow: '#ff7a30' }, lift: 0.3, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true, weapon: { asset: 'prop_kiem_tan_hoa', scale: 1.5 } },
+  boss_kim_da_ma_hau: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.5, lift: 0.45, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
+  // Bóng của Ma Hậu (decoy `mirror.decoys`): cùng model, mờ và ngả vàng dát.
+  mon_kim_da_bong: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffe0a0', rim: 0.5, lift: 0.3, ghost: 0.55, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
 };
 
 interface Template {
@@ -207,6 +219,7 @@ export class MonsterSkins {
   private templates = new Map<string, Template | 'loading' | 'failed'>();
   private mats = new Map<string, THREE.MeshStandardNodeMaterial>();
   private disposed = false;
+  private swords = new Map<string, SwordTemplate | 'loading' | 'failed'>();
   /** Thư viện clip UAL dùng chung cho mọi quái Mannequin (nạp một lần, lúc skin Mannequin đầu tiên cần). */
   private mqLib: Promise<AssetHandle> | null = null;
   private mqLibHandle: AssetHandle | null = null;
@@ -237,7 +250,11 @@ export class MonsterSkins {
    */
   preloadLazy(levelId: string): void {
     if (this.legacy) return;
-    for (const s of Object.values(MONSTER_SKINS)) if (s.lazy && s.level === levelId) this.load(s.asset);
+    for (const s of Object.values(MONSTER_SKINS)) {
+      if (!s.lazy || s.level !== levelId) continue;
+      this.load(s.asset);
+      if (s.weapon) this.sword(s.weapon.asset);
+    }
   }
 
   /** Quái này sẽ có model mới nhưng asset đang nạp (tạm dùng model khối, nạp xong thì đổi). Asset lười bắt đầu nạp ở đây. */
@@ -246,7 +263,8 @@ export class MonsterSkins {
     const s = MONSTER_SKINS[def.id];
     if (this.legacy || !s) return false;
     if (s.lazy) this.load(s.asset);
-    return this.templates.get(s.asset) === 'loading';
+    const weaponLoading = !!s.weapon && this.sword(s.weapon.asset) === null && this.swords.get(s.weapon.asset) === 'loading';
+    return this.templates.get(s.asset) === 'loading' || weaponLoading;
   }
 
   create(def: MonsterDef): MonsterView {
@@ -263,11 +281,41 @@ export class MonsterSkins {
       const m = o as THREE.Mesh;
       if (m.isMesh) m.material = mat;
     });
-    return new SkinnedMonster(def, { scene, clips: t.clips, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves, ground: s.legs === 'none' ? undefined : s.legs });
+    const view = new SkinnedMonster(def, { scene, clips: t.clips, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves, ground: s.legs === 'none' ? undefined : s.legs });
+    // Kiếm rời (`weapon`): mesh dùng chung, gắn vào xương `dtl_sword` (cổ tay phải); chưa nạp xong thì quái cầm tay không.
+    const blade = s.weapon ? this.sword(s.weapon.asset) : null;
+    if (blade && s.weapon) view.mountProp('dtl_sword', blade.mesh.clone(), s.weapon.scale);
+    return view;
+  }
+
+  /** Mẫu kiếm `id` (prop_kiem_*), nạp lười; null khi chưa xong hoặc lỗi. */
+  private sword(id: string): SwordTemplate | null {
+    const cur = this.swords.get(id);
+    if (cur) return typeof cur === 'string' ? null : cur;
+    this.swords.set(id, 'loading');
+    this.cache.acquire(id, { priority: 120 }).then(
+      (h) => {
+        const tpl = this.disposed ? null : swordTemplateOf(h.scene, partExtras(h.scene), () => h.release());
+        if (!tpl) {
+          h.release();
+          this.swords.set(id, 'failed');
+          return;
+        }
+        for (const m of adoptGltfMaterials(h.scene)) {
+          m.metalness = SWORD_METALNESS;
+          m.roughness = SWORD_ROUGHNESS;
+        }
+        this.swords.set(id, tpl);
+      },
+      () => this.swords.set(id, 'failed'),
+    );
+    return null;
   }
 
   dispose(): void {
     this.disposed = true;
+    for (const t of this.swords.values()) if (typeof t !== 'string') t.release();
+    this.swords.clear();
     for (const t of this.templates.values()) if (typeof t !== 'string') t.handle.release();
     this.mqLibHandle?.release();
     this.mqLibHandle = null;

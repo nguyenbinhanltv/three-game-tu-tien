@@ -1026,6 +1026,8 @@ function skipUnchangedSkeletons(scene: THREE.Object3D, rig: THREE.Object3D): () 
 /** Quái dùng model có xương; cùng interface với `MonsterModel` (model khối). */
 export class SkinnedMonster extends SkinnedCharacter implements MonsterView {
   private moves: Partial<Record<BossMoveKind, BossMove>>;
+  /** Vật rời (kiếm) bám theo một xương: cây xương đã tách khỏi cảnh (`detachRig`) nên không thể gắn mesh làm con xương, mỗi khung chép ma trận xương sang mesh. */
+  private props: { bone: THREE.Object3D; mesh: THREE.Object3D; local: THREE.Matrix4 }[] = [];
 
   constructor(
     readonly def: MonsterDef,
@@ -1035,6 +1037,36 @@ export class SkinnedMonster extends SkinnedCharacter implements MonsterView {
     this.moves = o.moves ?? {};
     this.holdStates = new Set<CharState>(['cast', 'stun']);
     this.hit.feel = HIT_FEEL[bodyClassOf(def)];
+  }
+
+  /**
+   * Gắn vật rời vào xương `boneName` (DV-2 đợt 3: kiếm Tẫn Hỏa của Kiếm Cơ). Trục +Y của mesh hướng lên trời ở tư thế nghỉ
+   * (cùng quy ước kiếm người chơi), gốc mesh ở tâm xương, `scale` nhân kích thước. False nếu không có xương.
+   */
+  mountProp(boneName: string, mesh: THREE.Object3D, scale: number): boolean {
+    const bone = this.rig.getObjectByName(boneName);
+    if (!bone) return false;
+    this.rig.updateMatrixWorld(true);
+    const q = bone.getWorldQuaternion(new THREE.Quaternion()).invert();
+    const local = new THREE.Matrix4().compose(new THREE.Vector3(), q, new THREE.Vector3(scale, scale, scale));
+    mesh.matrixAutoUpdate = false;
+    mesh.frustumCulled = false;
+    this.inner.add(mesh);
+    this.props.push({ bone, mesh, local });
+    this.syncProps();
+    return true;
+  }
+
+  override update(realDt: number, a: AnimState): void {
+    super.update(realDt, a);
+    this.syncProps();
+  }
+
+  private syncProps(): void {
+    for (const p of this.props) {
+      p.mesh.matrix.multiplyMatrices(this.scene.matrix, p.bone.matrixWorld).multiply(p.local);
+      p.mesh.matrixWorldNeedsUpdate = true;
+    }
   }
 
   bossMove(kind: BossMoveKind, delay: number): boolean {

@@ -205,6 +205,26 @@
       "detail": 1.2
     },
     {
+      "id": "boss_kiem_co",
+      "x": 804,
+      "z": 624,
+      "y": 68,
+      "flatR": 44,
+      "outerR": 120,
+      "round": true,
+      "detail": 1.2
+    },
+    {
+      "id": "boss_ma_hau",
+      "x": 554,
+      "z": 624,
+      "y": 68,
+      "flatR": 44,
+      "outerR": 120,
+      "round": true,
+      "detail": 1.2
+    },
+    {
       "id": "khe_0",
       "x": 1024,
       "z": 834,

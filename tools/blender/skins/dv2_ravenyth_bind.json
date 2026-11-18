@@ -1,0 +1,141 @@
+{
+ "binds": [
+  {
+   "note": "đầu + tóc quanh đầu (tay trái giơ lên sát tóc, khỏi kéo tóc theo tay)",
+   "box": {
+    "min": [
+     -0.32,
+     -0.42,
+     0.72
+    ],
+    "max": [
+     0.12,
+     0.2,
+     0.97
+    ]
+   },
+   "bone": "Head",
+   "feather": 0.05
+  },
+  {
+   "note": "bím tóc trước ngực: theo ngực",
+   "box": {
+    "min": [
+     -0.22,
+     -0.5,
+     0.1
+    ],
+    "max": [
+     -0.04,
+     -0.3,
+     0.62
+    ]
+   },
+   "bone": "spine_03",
+   "feather": 0.04
+  },
+  {
+   "note": "đuôi áo choàng sau lưng và chân váy: dưới ngực theo hông (khỏi kéo theo hai chân)",
+   "box": {
+    "min": [
+     -0.6,
+     -0.08,
+     -0.97
+    ],
+    "max": [
+     0.6,
+     0.6,
+     0.3
+    ]
+   },
+   "bone": "pelvis",
+   "feather": 0.06
+  },
+  {
+   "note": "choàng buông dưới bàn tay phải (khỏi bị tay dạng ra kéo thành cánh)",
+   "box": {
+    "min": [
+     -0.34,
+     -0.5,
+     -0.97
+    ],
+    "max": [
+     -0.18,
+     0.6,
+     -0.03
+    ]
+   },
+   "bone": "pelvis",
+   "feather": 0.05
+  },
+  {
+   "note": "vạt choàng bên phải (-X) ngoài tay áo",
+   "box": {
+    "min": [
+     -0.6,
+     -0.5,
+     -0.97
+    ],
+    "max": [
+     -0.32,
+     0.6,
+     0.55
+    ]
+   },
+   "blend": [
+    [
+     0.5,
+     "spine_03"
+    ],
+    [
+     0.2,
+     "pelvis"
+    ]
+   ],
+   "feather": 0.05
+  },
+  {
+   "note": "vạt choàng bên trái (+X) dưới khuỷu",
+   "box": {
+    "min": [
+     0.34,
+     -0.5,
+     -0.97
+    ],
+    "max": [
+     0.6,
+     0.6,
+     0.3
+    ]
+   },
+   "bone": "pelvis",
+   "feather": 0.05
+  },
+  {
+   "note": "áo choàng sau lưng, vai tới thắt lưng: trên theo ngực, dưới theo hông",
+   "box": {
+    "min": [
+     -0.6,
+     -0.08,
+     0.3
+    ],
+    "max": [
+     0.6,
+     0.6,
+     0.64
+    ]
+   },
+   "blend": [
+    [
+     0.55,
+     "spine_03"
+    ],
+    [
+     0.25,
+     "pelvis"
+    ]
+   ],
+   "feather": 0.06
+  }
+ ]
+}

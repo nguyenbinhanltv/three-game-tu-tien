@@ -101,3 +101,39 @@ Bản đồ Bắc Hoang (`node tools/maps/gen-bac-hoang.mjs`, vị trí cụm kh
 - Khiên/kiếm/áo choàng Trọng Binh gắn cứng theo xương (`--bind` có `feather`: trọng số chuyển dần quanh hộp, không còn mảng nhọn kéo dãn ở Sword_Attack); áo choàng vẫn vẫy mạnh ở clip nhào lộn (Sword_Regular_C, Melee_Hook, nên không dùng) và lúc ngã; Hôi Giác Cự Thú: rìu cứng theo tay phải, chùy cuối cán chạm đất trong clip chạy. Thân xuyên giáp ở nhiều khung (số xuyên thân ghi ở log `chr_v3.py`). Xương xoắn/lò xo cho áo choàng chưa làm.
 - Texture nguồn Hôi Giác/Trọng Binh gần như xám đen: skin dùng `palette` (dark→light) + `glow` kim dát (Trọng Binh) / đỏ than (Hôi Giác) + `rim` để đọc ra ở 12–24 m; trang xem asset không áp bảng màu này (chỉ trong game).
 - Thời điểm chạm là suy từ clip UAL người, không chỉnh theo thân hình quái.
+
+---
+
+# DV-2 đợt 3: hai boss hình người (Tẫn Hỏa Kiếm Cơ, Kim Dạ Ma Hậu)
+
+Cùng đường ống đợt 2 (`skin_prep.py --stage bake` → `chr_v3.py` landmarks + `--bind` → xương Mannequin + clip UAL phát thẳng), lớp ngân sách mới `boss_mq` (20–50 nghìn tam giác, 96 xương, texture 2048). Ảnh, tờ khung clip và video duyệt ở thư mục artifact của phiên (không commit).
+
+| Boss | Nguồn (assets-online) | Tác giả, giấy phép | Tam giác nguồn → game (LOD0/1/2) | Ghi chú |
+| --- | --- | --- | --- | --- |
+| `boss_tan_hoa_kiem_co` Tẫn Hỏa Kiếm Cơ (mini-boss D2) | `protector_nemesis__the_fallen_seraph.glb` | Atahan3D, CC BY 4.0 | 856 nghìn → 23.990 / 11.995 / 4.788 | Bỏ đại kiếm xanh dính tay (`cut.capsules`), đổi ánh sáng xanh → than hồng (`recolor` mới ở `skin_prep.py`), **kiếm Tẫn Hỏa rời** `prop_kiem_tan_hoa` gắn xương `dtl_sword` |
+| `boss_kim_da_ma_hau` Kim Dạ Ma Hậu (boss D2) | `ravenyth__the_gilded_night_empress.glb` | Atahan3D, CC BY 4.0 | 1,99 triệu → 29.999 / 14.997 / 5.948 | Tóc buộc xương đầu, áo choàng/váy buộc hông (`dv2_ravenyth_bind.json`) |
+
+GLB nguồn có `asset.extras.license` CC-BY-4.0, tên mesh/node mặc định Sketchfab (`Object_N`), không có tên của game khác.
+
+**Lệch so với thiết kế (DIVUC mục 6.4):** thiết kế gán Varkessa cho Kiếm Cơ nhưng Varkessa đã là skin người chơi; `protector_nemesis` thực ra là hiệp sĩ cầm đại kiếm (không có cánh như bảng ghi) nên dùng cho Kiếm Cơ (thân nam, tên "Cơ" là chức danh, đã ghi ở mô tả). Dực Chủ (Aetherion, Nyxarion) chưa làm: để đợt sau.
+
+## Client
+`MonsterSkin.weapon { asset, scale }` (`monsterSkins.ts`): `MonsterSkins` nạp lười mesh kiếm (cùng quy ước `swordTemplateOf`), `SkinnedMonster.mountProp('dtl_sword', mesh, scale)` chép ma trận xương cổ tay sang mesh mỗi khung (cây xương đã tách khỏi cảnh nên không gắn làm con xương được); mũi kiếm hướng lên trời ở tư thế nghỉ như kiếm người chơi nên clip UAL cầm kiếm đúng. Bóng Ma Hậu `mon_kim_da_bong` dùng cùng model, mờ (`ghost`).
+
+## Dữ liệu và vị trí
+| Boss | Hành | hp/atk/xp | Chiêu |
+| --- | --- | --- | --- |
+| Tẫn Hỏa Kiếm Cơ (cấp 31) | Hỏa | 85 / 1,45 / 20 | `sweep` nón 9 m 40° báo 1,2 s; `charge` 16×3 m báo 0,9 s (lao 18 m/s); từ 65%: `line` 14×3,5 báo 1,3 s + `reveal` sau cú lao; từ 30%: `leap` r 5, tốc độ ×1,15 |
+| Kim Dạ Ma Hậu (cấp 31) | Kim | 150 / 1,45 / 36 | Pha 1: `slam` r 8 (Dạ chiếu trong) + `chant` r 12 (Dạ chiếu ngoài, phá chú được) + `summon` 2 Giác Kiếm Trọng Binh mỗi 20 s; từ 65%: bóng `mirror.decoys` (một bóng, nổ r 8 khi bị hạ) + `chant` r 20 (cast 3 s, choáng 3 s nếu phá); từ 30%: `line` 24×4 + `slam` r 8 nhanh hơn |
+
+Tạm đặt ngoài trời ở Kim Dạ Ngoại Uyển (`gen-bac-hoang.mjs`: đấu trường phẳng `BOSS3` (-220,-400), `BOSS4` (-470,-400), hồi sinh 30 phút, `TARGET_CAMPS` 66 → 68 để giữ độ phủ); phó bản Kim Dạ Cung chuyển hai boss vào đợt 5–6 và bỏ spawn ngoài trời. Thử: `/gm spawn boss_tan_hoa_kiem_co`.
+
+**Chưa làm so với thiết kế mục 5.2** (cần cơ chế mới, để DV3-E): vệt lửa 8 s sau mỗi đường chém của Kiếm Cơ, sân hẹp dần; "Mặc cả" phá cả hai chú trong 3 s hoặc dính 5 tầng Tẫn ấn (hiện dùng bóng + chant có sẵn); pha 3 "Kim dạ" (sàn tối, vòng sáng quanh hai bia). VFX dùng bộ `fx/mon_*` theo `kind` (lửa/tinh thần) có sẵn; chưa có hình riêng.
+
+## Giới hạn hình ảnh
+Ravenyth: cánh tay dạng 45° theo xương Mannequin kéo theo phần tay áo choàng (đã buộc phần choàng ngoài tay vào hông, vẫn thấy một mảng "cánh" nhỏ ở tư thế nghỉ); tóc và bím dùng `Head`/ngực. Protector: vạt choàng buộc hông nên không bay theo gió. Thân xuyên giáp ở nhiều khung (số ở log `chr_v3.py`).
+
+## Sửa sau duyệt ảnh #231
+- Kiếm Cơ quá tối: `palette` (dark→light) + `glow` than hồng + `lift` 0,3 ở `MONSTER_SKINS`; kiếm 1,5×.
+- Mảng đen dựng chéo ở clip `Spell_Simple_Idle_Loop`: `chr_v3.py --bind` có thêm `drop` (bỏ ảnh hưởng xương tay lên vạt từ thắt lưng xuống), vai gai/cổ áo choàng/giáp đùi buộc cứng vào ngực/đùi (`dv2_protector_bind.json`). Mảng vẫn còn trong clip niệm chú (vạt choàng lẫn vai), nên Kiếm Cơ (không niệm chú) đổi trạng thái `cast` sang `Idle_Loop`, không phát clip đó.
+- Ma Hậu nhỏ: `scale` 1,35 (Kiếm Cơ 1,2); lift 0,45. Chụp góc ngang (`--yaw 1.57 --quiet`) để chiêu người chơi không che.
