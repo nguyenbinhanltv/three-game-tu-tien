@@ -126,6 +126,20 @@ export const QUALITY: Record<
     lights: true,
     radial: true,
   },
+  // Cực cao: như Cao nhưng trần điểm ảnh 14M, bóng 4096² ±110 m (env.ts), nhiều hạt hơn; WebGL2 vẫn bị `WEBGL2_MAX_PIXELS`.
+  ultra: {
+    pixelRatio: 2,
+    maxPixels: 14e6,
+    shadows: true,
+    bloom: true,
+    msaa: 0,
+    fxaa: true,
+    heightFog: true,
+    ground: 'high',
+    ao: true,
+    lights: true,
+    radial: true,
+  },
 };
 
 /** Hệ số đèn thật theo thời điểm: buổi sớm vừa phải, đêm đậm. */

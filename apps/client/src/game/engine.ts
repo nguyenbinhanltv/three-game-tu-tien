@@ -1,3 +1,4 @@
+import { AutoQuality, isQuality } from '../base/quality';
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
 import {
@@ -412,6 +413,9 @@ export class Game {
   /** Số đo khung vừa vẽ, cộng dồn qua mọi pass (cho `__game.info()`). */
   lastRender = { drawCalls: 0, triangles: 0 };
   hudAt = 0;
+  /** Tự hạ preset khi nghẽn (base/quality.ts, nối ở engine/frameLoop.ts). */
+  autoQuality = new AutoQuality();
+  autoAt = 0;
   fpsAcc = 0;
   fpsFrames = 0;
   lastT = performance.now();
@@ -1148,14 +1152,28 @@ export class Game {
     set({ hitStop: on });
   }
 
+  /** Khóa preset: bật thì không tự hạ khi nghẽn. */
+  setQualityLock(on: boolean): void {
+    localStorage.setItem('dtl.qualityLock', on ? '1' : '0');
+    set({ qualityLock: on });
+  }
+
+  /** Ẩn gợi ý preset theo GPU (hiện một lần). */
+  dismissQualityHint(): void {
+    localStorage.setItem('dtl.qualityHintSeen', '1');
+    set({ qualityHintSeen: true });
+  }
+
   setCamShake(on: boolean): void {
     this.shake.setEnabled(on);
     set({ camShake: on });
   }
 
   setQuality(q: string): void {
+    if (!isQuality(q)) return;
     localStorage.setItem('dtl.quality', q);
     set({ quality: q });
+    this.autoQuality.reset(performance.now());
     const cfg = QUALITY[q] ?? QUALITY.medium;
     setHeightFog(cfg.heightFog);
     this.env?.setQuality(q);

@@ -1,3 +1,5 @@
+import { levelId } from '../../base/levelCtx';
+import { baseOf } from '../../base/quality';
 import * as THREE from 'three/webgpu';
 import { type AssetCache, type AssetHandle, assets } from '../core/assets';
 import { adoptGltfMaterials } from '../../render/materials/world';
@@ -74,6 +76,30 @@ export const PROP_CFG: Record<string, PropCfg> = {
 const CHUNK = 128;
 /** Ô trong phạm vi này (cộng đệm) mới nạp asset, để mạng có thời gian trước khi ô vào tầm vẽ. */
 const LOAD_MARGIN = 80;
+
+/**
+ * Cực cao: hệ số tầm cây/đá/LOD theo bản đồ (Vân Lam, Vân Hải nhiều cây nên thấy rõ nhất; Thiên Khuyết, Bắc Hoang tối,
+ * ít cây nên chỉ nhích hơn Cao để khỏi tốn CPU vô ích). Cao là 1,15.
+ */
+export const ULTRA_RANGE: Record<string, number> = { van_lam: 1.3, van_hai: 1.25, thien_khuyet: 1.2 };
+const ULTRA_RANGE_DEFAULT = 1.15;
+/** Trần tam giác Cực cao (ngân sách riêng) và ngưỡng điều tiết: vượt `TRI_HIGH` thì co tầm, dưới `TRI_LOW` thì nở lại. */
+export const ULTRA_TRI_CAP = 2_500_000;
+export const TRI_HIGH = 2_300_000;
+export const TRI_LOW = 1_900_000;
+const HIGH_SCALE = 1.15;
+
+/** Tầm cây/đá ở Cực cao: hệ số bản đồ × điều tiết, không bao giờ dưới mức Cao. */
+export function ultraRangeScale(level: string, govern: number): number {
+  return Math.max(HIGH_SCALE, (ULTRA_RANGE[level] ?? ULTRA_RANGE_DEFAULT) * govern);
+}
+
+/** Cập nhật hệ số điều tiết theo tải tam giác: co 6% mỗi lần khi > `TRI_HIGH` (tối thiểu 0,6), nở 3% khi < `TRI_LOW`. */
+export function governScale(prev: number, tris: number): number {
+  if (tris > TRI_HIGH) return Math.max(0.6, prev - 0.06);
+  if (tris < TRI_LOW) return Math.min(1, prev + 0.03);
+  return prev;
+}
 
 interface LodMesh {
   geometry: THREE.BufferGeometry;
@@ -178,6 +204,8 @@ export class PropLayer {
   private lastVis = 0;
   /** Lần cập nhật trước đã gán đủ cây (không còn chờ asset): mới được bỏ qua khi camera đứng yên. */
   private poolReady = false;
+  /** Hệ số điều tiết tầm Cực cao theo tải tam giác (1 = đủ tầm, nhỏ hơn khi gần trần 2,5M). */
+  private govern = 1;
   /** pool[id][k] = các InstancedMesh (mỗi mesh của asset ở mức LOD k) dùng chung cho mọi cây loài `id` ở mức k. */
   private pool = new Map<string, TreeSlot[][]>();
   /** Số InstancedMesh đang hiện (đo draw call). */
@@ -286,7 +314,14 @@ export class PropLayer {
   }
 
   private rangeScale(): number {
-    return this.quality === 'low' ? 0.55 : this.quality === 'high' ? 1.15 : 1;
+    if (this.quality === 'ultra') return ultraRangeScale(levelId(), this.govern);
+    const q = baseOf(this.quality);
+    return q === 'low' ? 0.55 : q === 'high' ? 1.15 : 1;
+  }
+
+  /** Điều tiết cây/đá ở Cực cao theo số tam giác khung vừa vẽ (engine gọi ~10 lần/giây). */
+  setTriangleLoad(tris: number): void {
+    this.govern = governScale(this.govern, tris);
   }
 
   /** Gọi mỗi khung: chọn ô trong tầm, nạp asset, đặt mức LOD. Việc nặng chạy ~4 lần/giây. */
