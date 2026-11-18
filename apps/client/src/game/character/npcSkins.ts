@@ -54,6 +54,12 @@ export const NPC_SKINS: Record<string, NpcSkin> = {
   npc_mac_chieu: { asset: 'chr_npc_chuong_mon', tint: 0x8a8678 },
   npc_to_van_ngu_tk: { asset: 'chr_kiem_tu_nu', look: { g: 'f', hex: '#3B6584', accent: '#22364E' } },
   npc_mac_chieu_do: { asset: 'chr_npc_chuong_mon', tint: 0x8a8678 },
+  // DV3-H: Vọng Bắc Trạm (Bắc Hoang). Tịnh Quang Dực Sứ tạm dùng người áo xám nhạt (model Đọa Dực chờ DV-2 Tử Quang).
+  npc_to_van_ngu_bh: { asset: 'chr_kiem_tu_nu', look: { g: 'f', hex: '#3B6584', accent: '#22364E' } },
+  npc_co_bat_dich: { asset: 'chr_npc_thiet_lao', tint: 0x7a6a58 },
+  npc_mac_chieu_bia: { asset: 'chr_npc_chuong_mon', tint: 0x8a8678 },
+  npc_tinh_quang_su: { asset: 'chr_npc_chuong_mon', tint: 0xcfd6dc },
+  npc_tinh_quang_do: { asset: 'chr_npc_chuong_mon', tint: 0xcfd6dc },
   npc_thuong_nhan: { asset: 'chr_npc_thiet_lao', tint: 0xb89a6a },
 };
 

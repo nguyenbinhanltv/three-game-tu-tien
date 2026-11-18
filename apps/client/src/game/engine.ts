@@ -396,6 +396,7 @@ export class Game {
   private ch2Checked = false;
   private ch3Checked = false;
   private ch4Checked = false;
+  private ch5Checked = false;
   private danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
   /** Phiên bản hiệu ứng cung gương (E3-M): tin mới/tin tắt tăng số, hiệu ứng cũ thấy số lệch thì tự tắt. */
   private mirrorDiscVer = 0;
@@ -3577,6 +3578,14 @@ export class Game {
       if (who) {
         this.ch4Checked = true;
         if (firstTime(localStorage, 'ch4', who)) window.setTimeout(() => !this.disposed && this.chapter('ch4'), 1200);
+      }
+    }
+    // Chương 5 · Bắc Hoang (DV3-H): cùng cách.
+    if (!this.ch5Checked && levelId() === 'bac_hoang' && get().phase === 'game') {
+      const who = get().char?.name;
+      if (who) {
+        this.ch5Checked = true;
+        if (firstTime(localStorage, 'ch5', who)) window.setTimeout(() => !this.disposed && this.chapter('ch5'), 1200);
       }
     }
     if (this.pendingChapter) {

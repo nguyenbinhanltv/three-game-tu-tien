@@ -409,7 +409,12 @@
     "npc_lam_chieu_dung_do": "Lâm Chiếu Dung",
     "npc_mac_chieu": "Mặc Chiếu",
     "npc_to_van_ngu_tk": "Tô Vãn Ngư",
-    "npc_mac_chieu_do": "Mặc Chiếu"
+    "npc_mac_chieu_do": "Mặc Chiếu",
+    "npc_to_van_ngu_bh": "Tô Vãn Ngư",
+    "npc_co_bat_dich": "Cố Bất Dịch",
+    "npc_mac_chieu_bia": "Mặc Chiếu",
+    "npc_tinh_quang_su": "Tịnh Quang Dực Sứ",
+    "npc_tinh_quang_do": "Tịnh Quang Dực Sứ"
   },
   "skins": {
     "itm_skin_varkessa": "Xích Diễm Ma Cơ",
@@ -446,7 +451,16 @@
     "tran_gioi_bia_2": "Trấn Giới Bia (Xích Tẫn Bình, bia hai)",
     "tran_gioi_bia_3": "Trấn Giới Bia (Kim Dạ Ngoại Uyển, bia ba)",
     "tran_gioi_bia_4": "Trấn Giới Bia (Kim Dạ Ngoại Uyển, bia bốn)",
-    "tran_gioi_bia_5": "Trấn Giới Bia (Trấn Giới Đài, bia năm)"
+    "tran_gioi_bia_5": "Trấn Giới Bia (Trấn Giới Đài, bia năm)",
+    "mach_nhan_1": "Mạch Nhãn thứ nhất",
+    "mach_nhan_2": "Mạch Nhãn thứ hai",
+    "mach_nhan_3": "Mạch Nhãn thứ ba",
+    "xac_tho_san_1": "Chỗ bạn săn ngã (Hàn Hôi Nguyên, số 1)",
+    "xac_tho_san_2": "Chỗ bạn săn ngã (Hàn Hôi Nguyên, số 2)",
+    "xac_tho_san_3": "Chỗ bạn săn ngã (Hàn Hôi Nguyên, số 3)",
+    "xac_tho_san_4": "Chỗ bạn săn ngã (Khô Lộc Lâm, số 4)",
+    "xac_tho_san_5": "Chỗ bạn săn ngã (Khô Lộc Lâm, số 5)",
+    "xac_tho_san_6": "Chỗ bạn săn ngã (Khô Lộc Lâm, số 6)"
   },
   "divucMonsters": {
     "mon_liet_hoa_ma_nguu": "Liệt Hỏa Ma Ngưu",

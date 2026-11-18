@@ -48,9 +48,9 @@ describe('dữ liệu Kim Dạ Cung', () => {
     expect(d.private).toBe(true);
     expect(d.maxRevives).toBe(2);
     expect(d.waves).toHaveLength(6);
-    expect(d.waves[0].mons.map((g) => [g.id, g.n])).toEqual([['mon_giac_kiem_trong_binh', 8], ['mon_trien_bo_cham_ba', 2]]);
+    expect(d.waves[0].mons.map((g) => [g.id, g.n])).toEqual([['mon_giac_kiem_trong_binh', 8], ['mon_kd_trien_bo_cham_ba', 2]]);
     expect(d.waves[1].mons[0]).toMatchObject({ id: 'mon_u_anh_cot_loc', n: 6 });
-    expect(d.waves[2].mons[0]).toMatchObject({ id: 'elite_huyet_giac_ma_tuong', n: 2 });
+    expect(d.waves[2].mons[0]).toMatchObject({ id: 'elite_kd_huyet_giac_ma_tuong', n: 2 });
     expect(d.waves[3].puzzle!.points).toHaveLength(4);
     expect(d.waves[4].mons[0].id).toBe('boss_tan_hoa_kiem_co');
     expect(d.waves[5].mons[0].id).toBe('boss_kim_da_ma_hau');
@@ -73,8 +73,8 @@ describe('dữ liệu Kim Dạ Cung', () => {
     expect(boss.kd!.night!.steles).toHaveLength(2);
     expect(boss.phases).toHaveLength(2);
     expect(content.MONSTER.get('boss_tan_hoa_kiem_co')!.kd!.trail).toBeTruthy();
-    expect(content.MONSTER.get('elite_huyet_giac_ma_tuong')!.kd!.twin!.mul).toBeGreaterThan(1);
-    expect(content.MONSTER.get('mon_trien_bo_cham_ba')!.kd!.mend!.pct).toBeGreaterThan(0);
+    expect(content.MONSTER.get('elite_kd_huyet_giac_ma_tuong')!.kd!.twin!.mul).toBeGreaterThan(1);
+    expect(content.MONSTER.get('mon_kd_trien_bo_cham_ba')!.kd!.mend!.pct).toBeGreaterThan(0);
   });
 });
 
@@ -388,14 +388,14 @@ describe('room thật', () => {
     step(room);
     expect(room.wave).toBe(1);
     expect(room.kimda).toBeTruthy();
-    expect(alive().filter((m) => m.def.id === 'mon_trien_bo_cham_ba')).toHaveLength(2);
+    expect(alive().filter((m) => m.def.id === 'mon_kd_trien_bo_cham_ba')).toHaveLength(2);
     clear(sim);
     step(room);
     expect(room.wave).toBe(2);
     clear(sim);
     step(room);
     expect(room.wave).toBe(3);
-    expect(alive().filter((m) => m.def.id === 'elite_huyet_giac_ma_tuong')).toHaveLength(2);
+    expect(alive().filter((m) => m.def.id === 'elite_kd_huyet_giac_ma_tuong')).toHaveLength(2);
     expect(room.kimda).toBeTruthy();
     clear(sim);
     step(room);
