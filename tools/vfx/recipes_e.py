@@ -121,6 +121,7 @@ def register(R, H):
             mesh('ripple', -0.05, 0.5, at='origin', offset=[0, -1.1, 0], scale=0.3, scaleTo=2.4, sweep=0.4, erodeFrom=0.4, tone='core', alpha=0.85, seed=22, tier=1),
             mesh('helix', 0.0, 0.3, at='origin', scale=[1.4, 1.4, 6.0], sweep=0.2, erodeFrom=0.3, spin=800, tone='accent', alpha=0.9, move={'to': 'self', 'ease': 'in'}, seed=23, tier=0),
             mesh('crescent', 0.0, 0.3, at='origin', rot=[0, 0, 90], scale=2.2, sweep=0.3, erodeFrom=0.3, ragged=0.6, tone='body', alpha=0.9, move={'to': 'self', 'ease': 'in'}, seed=24, tier=0),
+            mesh('gust', -0.02, 0.4, at='origin', scale=[1.6, 1.6, 5.0], tone='rim', alpha=0.85, move={'to': 'self', 'ease': 'in'}, seed=26, tier=1),
             mesh('burst', 0.28, 0.11, at='self', scale=2.4, billboard=True, sweep=0.0, tone='rim', tier=0),
             mesh('ripple', 0.28, 0.6, at='self', offset=[0, -1.1, 0], scale=0.3, scaleTo=3.2, sweep=0.4, erodeFrom=0.4, tone='body', seed=25, tier=0),
             *ring_spikes(6, 1.5, 0.3, 'self', 0.8, 0.7, tier=1, y=-1.15, tilt=20),

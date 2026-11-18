@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { abs, atan, cos, exp, float, length, log, min, mix, pow, sin, smoothstep, time, uv, vec2, vec3 } from 'three/tsl';
+import { abs, atan, clamp, cos, exp, float, floor, fract, length, log, max, min, mix, pow, sin, smoothstep, step, time, uv, vec2, vec3 } from 'three/tsl';
 import { seededRandom, vnoise, type FxUniforms } from './common';
 
 /**
@@ -13,6 +13,10 @@ import { seededRandom, vnoise, type FxUniforms } from './common';
  *    UV: `u` chạy từ đỉnh (0) xuống đất (1), `v` ngang dải. Shader: lõi trắng nóng ở giữa, quầng màu
  *    thiên lôi ra mép, tia dẫn (leader) lộ dần từ trên xuống rồi tia ngược sáng bừng và nhấp nháy.
  *    Tham số theo lưới (`fxA`): x = đầu tia dẫn 0..1, y = độ sáng (nhấp nháy), z = seed.
+ * 2b. Kỹ thuật `bolt`/`strike`/`line` của Storm & Wind 3D Free (heyheythere, CC BY 4.0, ghi công ở credits.json) viết lại bằng TSL:
+ *    mũi tia dẫn có đốm sáng riêng khi đang lộ xuống, mỗi tia nhấp nháy theo sin(thời gian) lệch pha theo seed (`boltNodes`);
+ *    vũng sáng, tia chớp tỏa và vòng xung kích trên đất là decal `strike` (`decalNodes` ở stylized.ts); đường gió là `windNodes`
+ *    (hình `gust` ở fxShapes.ts, kiểu `wind`).
  * 3. Mây kiếp xoáy (`vortex`): một đĩa phẳng, xoắn ốc logarit + nhiễu trôi trong fragment, mắt bão
  *    sáng tím ở giữa, sét trong mây khi có tia đánh gần (`fxA.y`). `fxA.z` = seed.
  */
@@ -227,10 +231,14 @@ export function boltNodes(U: FxUniforms) {
   // Gợn sáng chạy dọc thân.
   const ripple = vnoise(vec2(u.mul(40).sub(time.mul(25)).add(seed.mul(7)), seed)).mul(0.35).add(0.75);
   const c = mix(U.color, vec3(1, 0.98, 1), core.mul(0.85));
-  const glow = core.mul(1.6).add(halo.mul(0.7)).mul(ripple).mul(lum);
+  // Nhấp nháy theo thời gian, lệch pha theo seed và theo vị trí dọc tia (Storm & Wind: 0,8 + 0,2·sin(70·t + jitter·40)).
+  const flick = sin(time.mul(70).add(seed.mul(40)).add(u.mul(18))).mul(0.2).add(0.8);
+  // Đốm sáng ở mũi tia dẫn khi đang lộ xuống (head < 1): tắt hẳn khi tia đã chạm đất.
+  const tip = exp(abs(head.sub(u)).mul(-25)).mul(0.8).mul(one.sub(step(0.999, head)));
+  const glow = core.mul(1.6).add(halo.mul(0.7)).mul(ripple).mul(max(lum.mul(flick), tip));
   return {
     color: min(c.mul(glow).mul(1.2), U.maxHdr),
-    opacity: U.opacity.mul(reveal).mul(min(halo.add(core), 1)).mul(lum.mul(0.6).add(0.4)),
+    opacity: U.opacity.mul(reveal).mul(min(halo.add(core), 1)).mul(max(lum.mul(0.6).add(0.4), tip)),
   };
 }
 
@@ -282,3 +290,32 @@ export function vortexNodes(U: FxUniforms) {
   };
 }
 
+
+/**
+ * Node chùm đường gió (kiểu `wind`, cộng sáng, bloom nhẹ), viết lại theo `line.gdshader` của Storm & Wind 3D Free (CC BY 4.0).
+ * UV từ `gustGeometry`: `u` dọc đường, `v` = chỉ số vệt + ngang dải. Mỗi vệt một pha lệch; đầu vệt chạy dọc đường theo tiến độ `k`,
+ * thân phình sau đầu mềm (dày nhất ở 1/5 đoạn đuôi) rồi mảnh dần. Màu lưới = màu gió, pha trắng cho lõi. `fxA.z` = seed (pha thêm).
+ */
+export function windNodes(U: FxUniforms) {
+  const st = uv();
+  const u = st.x;
+  const idx = floor(st.y);
+  const across = fract(st.y).div(0.98).mul(2).sub(1);
+  const one = float(1);
+  const phase = idx.div(7).add(fract(U.a.z.mul(0.37)).mul(0.1));
+  const trail = 0.42;
+  // Đầu vệt đi từ trước đường (−) tới sau đường (1 + trail); vệt sau xuất phát muộn một chút.
+  const head = U.k.mul(1.15).sub(phase.mul(0.12)).mul(one.add(trail));
+  const d = head.sub(u);
+  const kk = clamp(d.div(trail), 0, 1);
+  const swell = smoothstep(0, 0.2, kk).mul(one.sub(smoothstep(0.2, 1, kk)));
+  const acr = abs(across).div(max(mix(float(0.3), one, swell), 0.05));
+  const body = smoothstep(1, 0.2, acr).mul(step(0, d)).mul(swell);
+  const ends = smoothstep(0, 0.08, u).mul(smoothstep(1, 0.9, u));
+  const late = one.sub(smoothstep(0.82, 1, U.k));
+  const col = mix(U.color, vec3(1, 1, 1), body.mul(0.45));
+  return {
+    color: min(col.mul(body.mul(0.8).add(0.5)), U.maxHdr),
+    opacity: U.opacity.mul(body).mul(ends).mul(late),
+  };
+}

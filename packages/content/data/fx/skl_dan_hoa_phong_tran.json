@@ -210,6 +210,12 @@
    "tier": 1
   },
   {
+   "type": "sound",
+   "t": 0.12,
+   "id": "fire_burst",
+   "gain": 0.9
+  },
+  {
    "type": "hitstop",
    "t": 0.12,
    "ms": 55

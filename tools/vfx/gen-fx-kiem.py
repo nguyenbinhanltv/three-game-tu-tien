@@ -26,6 +26,10 @@ def decal(tex, t, r, dur, **k):
     return e
 
 
+def sound(t, sid, gain=1.0, **k):
+    return {'type': 'sound', 't': t, 'id': sid, 'gain': gain, **k}
+
+
 def stop(t, ms, **k):
     return {'type': 'hitstop', 't': t, 'ms': ms, **k}
 
@@ -142,6 +146,7 @@ R['skl_loi_dinh_nhat_kiem'] = lambda: {
         *ring_spikes(5, 1.3, 0.04, 'ground', 0.5, 0.5, tier=1, tilt=20, tone='body'),
         parts('spark', 0.0, 30, 8, 1, 0.4, 0.05, at='target', tone='body', tier=0),
         parts('shard', 0.02, 10, 5, 0.9, 0.6, 0.09, at='ground', offset=[0, 0.3, 0], tone='core', tier=2),
+        sound(0.0, 'loi_cast', 0.8),
         stop(0.0, 65),
         shake(0.0, 0.3),
     ],
@@ -152,9 +157,9 @@ import recipes_b  # noqa: E402
 
 import recipes_c  # noqa: E402
 
-recipes_b.register(R, dict(mesh=mesh, parts=parts, decal=decal, stop=stop, shake=shake, flash=flash, ring_spikes=ring_spikes))
+recipes_b.register(R, dict(mesh=mesh, parts=parts, decal=decal, stop=stop, shake=shake, flash=flash, ring_spikes=ring_spikes, sound=sound))
 
-recipes_c.register(R, dict(mesh=mesh, parts=parts, decal=decal, stop=stop, shake=shake, flash=flash, ring_spikes=ring_spikes))
+recipes_c.register(R, dict(mesh=mesh, parts=parts, decal=decal, stop=stop, shake=shake, flash=flash, ring_spikes=ring_spikes, sound=sound))
 import recipes_d  # noqa: E402
 
 recipes_d.register(R, dict(mesh=mesh, parts=parts, flash=flash))

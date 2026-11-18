@@ -496,6 +496,18 @@
     "alpha": 0.7,
     "tier": 1,
     "seed": 20
+   },
+   {
+    "type": "sound",
+    "t": 0.04,
+    "id": "ice_spike",
+    "gain": 0.9
+   },
+   {
+    "type": "sound",
+    "t": 0.32,
+    "id": "ice_hit",
+    "gain": 0.8
    }
   ],
   "echo": [

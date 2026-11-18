@@ -4,7 +4,7 @@ import math
 
 
 def register(R, H):
-    mesh, parts, decal, stop, shake, flash, ring_spikes = H['mesh'], H['parts'], H['decal'], H['stop'], H['shake'], H['flash'], H['ring_spikes']
+    mesh, parts, decal, stop, shake, flash, ring_spikes, sound = H['mesh'], H['parts'], H['decal'], H['stop'], H['shake'], H['flash'], H['ring_spikes'], H['sound']
 
     def lotus(at, t, r=0.5, scale=1.0, tone='body', inner_tone='rim', y=-1.1, tier=0, n=8, seed0=100, dur=0.9, offset_xz=(0, 0), **k):
         """Sen nở: hai lớp cánh (kite nghiêng ra ngoài) bung từ khép sang mở trong `dur`."""
@@ -319,6 +319,7 @@ def register(R, H):
             decal('crack', 0.14, 4.8, 2.4, at='area', grow=0.15, tone='accent', alpha=0.9, tier=1),
             parts('spark', 0.12, 36, 7, 1, 0.5, 0.06, at='area', offset=[0, 0.4, 0], tone='accent', tier=0),
             parts('petal', 0.14, 20, 3, 1, 0.9, 0.1, at='area', offset=[0, 0.5, 0], grav=-1, tone='body', tier=1),
+            sound(0.12, 'fire_burst', 0.9),
             stop(0.12, 55),
             shake(0.12, 0.22),
         ],

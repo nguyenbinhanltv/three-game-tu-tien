@@ -113,6 +113,27 @@
    "seed": 6
   },
   {
+   "type": "mesh",
+   "shape": "gust",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "self",
+   "offset": [
+    0,
+    0,
+    -1.8
+   ],
+   "scale": [
+    1.8,
+    1.8,
+    5.5
+   ],
+   "tone": "rim",
+   "alpha": 0.85,
+   "seed": 7,
+   "tier": 1
+  },
+  {
    "type": "particles",
    "kind": "spark",
    "t": 0.0,

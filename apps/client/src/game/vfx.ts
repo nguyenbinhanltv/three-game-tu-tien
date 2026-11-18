@@ -10,6 +10,7 @@ import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTi
 import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootCrowd, lootDuration, lootHop, lootPulse, type LootTier } from '../render/vfx/loot';
 import { PARTICLES } from '../render/vfx/particles';
 import { QUAD_XZ, shapeGeometry, shapeKind, type ShapeKey } from '../render/vfx/fxShapes';
+import { DECAL_STRIKE } from '../render/vfx/stylized';
 import { hazardFlash, hazardStack, hazardStyle, maxRadiusFor } from '../render/vfx/phases';
 import { BoltFx, HALO_GEO, SHADOW_GEO } from '../render/vfx/projectile';
 import { SwordRainFx } from '../render/vfx/swordRain';
@@ -102,6 +103,9 @@ const POOL = new FxPool(96);
 /** Màu vũng độc khi chết (ngọc lục, Bích Ngọc Kim Thiền). */
 const POOL_COLOR = 0x5fe39a;
 
+/** Số vũng sét tối đa cùng lúc. */
+const STRIKE_POOL_MAX = 2;
+
 export class Vfx {
   group = new THREE.Group();
   readonly pool = POOL;
@@ -124,6 +128,8 @@ export class Vfx {
   onFlash: ((amount: number) => void) | null = null;
   /** Mây kiếp đang hiện: tia sét đánh gần thì bừng sáng trong mây. */
   private clouds = new Set<FxMesh>();
+  /** Số vũng sét (decal `strike`) đang sống: lôi võng độ kiếp đánh nhiều tia cùng lúc nên chặn trần. */
+  private strikePools = 0;
   /** Vết mực trên đất (giới hạn MAX_INK); hai mảng phụ dùng lại khi chọn vết phải tan sớm. */
   private inks: InkMark[] = [];
   private inkAges: number[] = [];
@@ -154,7 +160,7 @@ export class Vfx {
 
   /** Vẽ ấm một lưới cho mỗi kiểu material (cỡ 0, độ trong 0). */
   private warmKinds(): void {
-    for (const kind of ['bolt', 'vortex', 'trail', 'beam', 'inkpool', 'dome', 'glow', 'flat', 'solid', 'slash', 'ink', 'sigil', 'toon', 'crystal', 'burst', 'decal', 'card'] as const) {
+    for (const kind of ['bolt', 'vortex', 'trail', 'beam', 'inkpool', 'dome', 'glow', 'flat', 'solid', 'slash', 'ink', 'sigil', 'toon', 'crystal', 'burst', 'decal', 'card', 'wind'] as const) {
       const m = this.fx(G.ico1, 0xffffff, 0, kind);
       m.scale.setScalar(1e-3);
       this.add(0.15, () => {}, () => this.drop(m));
@@ -473,8 +479,37 @@ export class Vfx {
     );
   }
 
+  /**
+   * Vũng sáng + tia chớp tỏa + vòng xung kích trên đất chỗ sét đánh (decal `strike`, kỹ thuật Storm & Wind CC BY, xem `decalNodes`).
+   * Sống 0,6 s, tối đa `STRIKE_POOL_MAX` (2) cái cùng lúc (quá thì bỏ, tia vẫn vẽ).
+   */
+  private strikePool(x: number, y: number, z: number, color: number, scale: number): void {
+    if (this.strikePools >= STRIKE_POOL_MAX) return;
+    this.strikePools++;
+    const m = this.fx(QUAD_XZ, color, 0.7, 'decal');
+    m.fxA.z = (x * 7.13 + z * 3.71) % 40;
+    m.fxA.w = DECAL_STRIKE;
+    m.fxB.set(1, 0.97, 1, 0);
+    m.renderOrder = -3;
+    m.position.set(x, y + 0.14, z);
+    m.scale.setScalar(3.2 * scale);
+    this.add(
+      0.6,
+      (k) => {
+        m.fxA.x = Math.min(1, k / 0.35);
+        m.fxA.y = 0;
+        m.fxK = Math.max(0, 1 - k * 1.15);
+      },
+      () => {
+        this.drop(m);
+        this.strikePools--;
+      },
+    );
+  }
+
   private strike(x: number, y: number, z: number, color: number, scale: number, flash: number): void {
     if (flash > 0) this.onFlash?.(flash);
+    this.strikePool(x, y, z, color, scale);
     const n = Math.round(14 * scale);
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;

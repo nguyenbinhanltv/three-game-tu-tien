@@ -21,9 +21,9 @@ describe('dòng thời gian hiệu ứng', () => {
     expect(fxDrawCount(fxEventsFor(tl, 2))).toBe(6);
   });
 
-  it('tia sét không gộp: mỗi tia một draw + hai nhóm chung; kiểm tầm và số tia', () => {
+  it('tia sét không gộp: mỗi tia một draw + ba nhóm chung (cầu, vòng, vũng sáng); kiểm tầm và số tia', () => {
     const bolt = (scale?: number) => ({ type: 'bolt' as const, t: 0, scale });
-    expect(fxDrawCount([bolt(), bolt(), bolt()])).toBe(5);
+    expect(fxDrawCount([bolt(), bolt(), bolt()])).toBe(6);
     expect(fxDrawCount([])).toBe(0);
     // Tầm tia hợp lệ là (0, 4] (nới từ V5 cho sét của boss): 4 qua, 5 và 0 bị bác.
     expect(validateFxTimeline({ skill: 'a', events: [bolt(4)] }, () => true).join(',')).not.toMatch(/bolt scale/);
