@@ -83,7 +83,8 @@ import { SkillPoses } from './combat/skillPose';
 import { SkillFx } from './fx/skillFx';
 import { MonFx } from './fx/monFx';
 import { variantFor } from './fx/fxTimeline';
-import { fxQuality, hitStopOn, setFxQuality, setHitStopOn } from './fx/fxSettings';
+import { fxQuality, hitStopOn, realmAuraOn, setFxQuality, setHitStopOn, setRealmAuraOn } from './fx/fxSettings';
+import { RealmAuraFx } from './fx/realmAura';
 import { type FxQuality } from '@dtl/shared';
 import { type SkillEvent } from './character/view';
 import { HitQueue, SwingGuard, type HitSoundLog } from './combat/hitjuice';
@@ -232,6 +233,8 @@ export class Game {
   vfx!: Vfx;
   /** VFX ba pha theo sự kiện chiêu + vệt kiếm + linh quang hộ thể (K-6). */
   skillFx: SkillFx | null = null;
+  /** Hào quang cảnh giới trên nhân vật (RFX-1). */
+  realmAura: RealmAuraFx | null = null;
   /** Hiệu ứng quái/tinh anh/boss (V5). */
   monFx: MonFx | null = null;
   boltKinds = new Map<number, string>();
@@ -409,6 +412,7 @@ export class Game {
     onSwingEvent(this, sid, e);
     for (const fn of this.skillListeners) fn(sid, e);
     this.skillFx?.handle(sid, e);
+    this.realmAura?.handle(sid, e);
     if (import.meta.env.DEV) {
       this.skillLog.push({ sid, e, at: performance.now() });
       if (this.skillLog.length > 200) this.skillLog.shift();
@@ -631,6 +635,14 @@ export class Game {
           if (vol > 0) sfx(id as Sfx, vol, pv, false);
         },
       },
+    });
+    this.realmAura = new RealmAuraFx(this.vfx, {
+      players: () => this.ents?.players.values() ?? [],
+      mySid: () => this.sid,
+      camera: () => this.camera,
+      gfxQuality: () => get().quality,
+      fxQuality,
+      enabled: realmAuraOn,
     });
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
     this.vfx.particles.setQuality(get().quality);
@@ -1157,6 +1169,11 @@ export class Game {
     set({ hitStop: on });
   }
 
+  setRealmAura(on: boolean): void {
+    setRealmAuraOn(on);
+    set({ realmAura: on });
+  }
+
   /** Khóa preset: bật thì không tự hạ khi nghẽn. */
   setQualityLock(on: boolean): void {
     localStorage.setItem('dtl.qualityLock', on ? '1' : '0');
@@ -1222,6 +1239,8 @@ export class Game {
     this.ents?.dispose();
     this.skillFx?.dispose();
     this.skillFx = null;
+    this.realmAura?.dispose();
+    this.realmAura = null;
     this.monFx = null;
     this.vfx?.dispose();
     this.terrain?.dispose();

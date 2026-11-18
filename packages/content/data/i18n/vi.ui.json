@@ -356,6 +356,8 @@
   "ui.settings.fxq.high": "Cao",
   "ui.settings.fx_quality_hint": "Thấp bớt chi tiết (chỉ hình chính); chiêu của người khác luôn giảm một bậc.",
   "ui.settings.hit_stop": "Khựng hình khi đánh trúng",
+  "ui.settings.realm_aura": "Hào quang cảnh giới",
+  "ui.settings.realm_aura_hint": "Từ Kết Đan: kim đan, phi kiếm, sen lửa, pháp tướng quanh nhân vật (của bạn và người khác). Preset Thấp giảm hoặc tắt.",
   "ui.settings.offscreen": "Chỉ báo ngoài màn hình",
   "ui.settings.offscreen_hint": "Huy hiệu ở mép màn hình chỉ hướng tới mục tiêu, boss và nhiệm vụ đang theo dõi khi chúng ra khỏi khung nhìn.",
   "ui.offscreen.dist": "{n} m",

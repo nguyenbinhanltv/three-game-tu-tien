@@ -160,6 +160,7 @@ export class Vfx {
     const list: [FxKind, THREE.BufferGeometry, number][] = [
       ['glow', G.octa, 0],
       ['glow', G.sphere, 0],
+      ['glow', G.ico1, 0],
       ['glow', RING_GEO, 0],
       ['flat', RING_GEO, 0],
       ['dome', G.dome, 0],

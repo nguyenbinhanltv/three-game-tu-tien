@@ -466,10 +466,14 @@ export function cardNodes(U: FxUniforms): { color: N; opacity: N } {
   const ta = texture(cardTexture('arhat'), q);
   const tp = texture(cardTexture('phoenix'), q);
   const tg = texture(cardTexture('ghost'), q);
-  const t = select(which.greaterThan(1.5), tg, mix(ta, tp, step(0.5, which)));
+  const ts = texture(cardTexture('sword'), q);
+  const tt = texture(cardTexture('turtle'), q);
+  const base012 = select(which.greaterThan(1.5), tg, mix(ta, tp, step(0.5, which)));
+  const t = select(which.greaterThan(3.5), tt, select(which.greaterThan(2.5), ts, base012));
   const tier = t.r;
   const acc = t.g;
-  const accent = select(which.greaterThan(1.5), vec3(0.62, 0.92, 1.0), mix(vec3(1.0, 0.78, 0.3), vec3(0.92, 0.2, 0.1), step(0.5, which)));
+  const accent012 = select(which.greaterThan(1.5), vec3(0.62, 0.92, 1.0), mix(vec3(1.0, 0.78, 0.3), vec3(0.92, 0.2, 0.1), step(0.5, which)));
+  const accent = select(which.greaterThan(3.5), vec3(0.55, 0.82, 1.0), select(which.greaterThan(2.5), vec3(0.62, 1.0, 0.86), accent012));
   const base = ramp3(tier, body.mul(body).mul(0.42), body, rim, 0.3, 0.72, 0.05);
   const accCol = ramp3(tier, accent.mul(0.35), accent, mix(accent, vec3(1, 1, 1), 0.35), 0.3, 0.72, 0.05);
   const lit = mix(base, accCol, acc);
@@ -480,6 +484,10 @@ export function cardNodes(U: FxUniforms): { color: N; opacity: N } {
   const e = n.mul(0.7).add(fromBottom.mul(0.3));
   const alive = dissolve(e, erode, 0.07);
   const edge = one.sub(smoothstep(erode, erode.add(0.1), e)).mul(step(0.02, erode));
-  const color = min(lit.add(rim.mul(edge.mul(0.9))), U.maxHdr);
-  return { color, opacity: U.opacity.mul(t.a).mul(reveal).mul(alive) };
+  // Pháp tướng Hóa Thần (thẻ 3, 4): `fxK` là giờ (giây), gợn sóng sáng chạy từ chân lên đầu (RFX-1).
+  const isPhantom = step(2.5, which);
+  const wave = sin(q.y.mul(34).sub(U.k.mul(7))).mul(0.5).add(0.5);
+  const waveMul = one.sub(isPhantom.mul(0.22)).add(isPhantom.mul(wave).mul(0.22));
+  const color = min(lit.add(rim.mul(edge.mul(0.9))).add(rim.mul(isPhantom.mul(wave).mul(0.16))), U.maxHdr);
+  return { color, opacity: U.opacity.mul(t.a).mul(reveal).mul(alive).mul(waveMul) };
 }

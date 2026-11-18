@@ -36,6 +36,7 @@ import hudplay from './scenarios/hudplay';
 import ui from './scenarios/ui';
 import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
+import realmaura from './scenarios/realmaura';
 import xichkhe from './scenarios/xichkhe';
 
 const SCENARIOS: Scenario[] = [
@@ -69,6 +70,7 @@ const SCENARIOS: Scenario[] = [
   xichkhe,
   hires,
   quality,
+  realmaura,
 ];
 
 const name = args[0] && !args[0].startsWith('--') ? args[0] : 'points';
