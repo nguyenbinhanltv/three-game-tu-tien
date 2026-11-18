@@ -42,6 +42,28 @@ const procedural = [
     source: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     source2: 'anim/ual/ual2/Universal Animation Library 2[Standard]/Unreal-Godot/UAL2_Standard.glb',
   },
+  // Nhân vật v3 (N-0): lưới nguyên khối → xương UE5 Mannequin (chr_v3.py). `extra` = đối số thêm, `template` = UAL1 để lấy bộ xương mẫu.
+  {
+    id: 'chr_v3_varkessa_nu',
+    script: 'tools/blender/chr_v3.py',
+    source: 'chr/skin_varkessa/prep/rig_v01.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'chr_v3_varkessa_nu'],
+  },
+  {
+    id: 'chr_v3_v2_nam',
+    script: 'tools/blender/chr_v3.py',
+    source: 'chr/chr_v3_test/chr_v2_nam_built.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'chr_v3_v2_nam'],
+  },
+  // Clip UAL giữ tên xương Mannequin, phát thẳng lên chr_v3_* (không chuyển clip).
+  {
+    id: 'anim_ual_native',
+    script: 'tools/blender/anim_ual_native.py',
+    source: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    source2: 'anim/ual/ual2/Universal Animation Library 2[Standard]/Unreal-Godot/UAL2_Standard.glb',
+  },
 ];
 
 /** @typedef {{ id: string, script: string, args: string[], deps: string[], legacy?: string }} Job */
@@ -70,6 +92,16 @@ function proceduralJobs() {
       }
       deps.push(src);
       args.push('--src', src);
+      if (j.template) {
+        const tp = path.join(sourceRoot(), j.template);
+        if (!fs.existsSync(tp)) {
+          console.warn(`[blender] CẢNH BÁO: bỏ qua ${j.id}, thiếu ${tp}`);
+          continue;
+        }
+        deps.push(tp);
+        args.push('--template', tp);
+      }
+      if (j.extra) args.push(...j.extra);
       if (j.source2) {
         const src2 = path.join(sourceRoot(), j.source2);
         if (!fs.existsSync(src2)) {
