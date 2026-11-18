@@ -10,7 +10,15 @@ export function Button({
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & { kind?: 'son' | 'ngoc' | 'khoa'; size?: 's'; force?: 'hover' | 'active' }) {
   return (
-    <button type="button" {...rest} className="u2-btn" data-kind={kind} data-size={size} data-force={force} disabled={disabled || kind === 'khoa'}>
+    <button
+      type="button"
+      {...rest}
+      className="u2-btn"
+      data-kind={kind}
+      data-size={size}
+      data-force={force}
+      disabled={disabled || kind === 'khoa'}
+    >
       <span>{children}</span>
     </button>
   );
@@ -79,10 +87,30 @@ export function Badge({ tone, children }: { tone?: 'son' | 'ngoc' | 'kim' | 'lam
 }
 
 /** Thanh vát chéo: hp (son) | mp (ngọc) | xp (kim) | boss. `text` là chữ giữa thanh (đã định dạng ở nơi gọi). */
-export function Bar({ kind = 'hp', value, max, text, label }: { kind?: 'hp' | 'mp' | 'xp' | 'boss'; value: number; max: number; text?: ReactNode; label?: string }) {
+export function Bar({
+  kind = 'hp',
+  value,
+  max,
+  text,
+  label,
+}: {
+  kind?: 'hp' | 'mp' | 'xp' | 'boss';
+  value: number;
+  max: number;
+  text?: ReactNode;
+  label?: string;
+}) {
   const p = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
   return (
-    <div className="u2-bar" data-kind={kind} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.round(value)}>
+    <div
+      className="u2-bar"
+      data-kind={kind}
+      role="progressbar"
+      aria-label={label}
+      aria-valuemin={0}
+      aria-valuemax={max}
+      aria-valuenow={Math.round(value)}
+    >
       <div className="u2-bar__fill" style={{ '--p': p } as CSSProperties} />
       {text !== undefined && <div className="u2-bar__text">{text}</div>}
     </div>

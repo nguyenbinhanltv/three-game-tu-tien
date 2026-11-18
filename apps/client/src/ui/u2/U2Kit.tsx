@@ -1,19 +1,59 @@
 import { useState } from 'react';
 import { t } from '@dtl/content';
 import { ContentIcon } from '../ContentIcon';
-import { Badge, Bar, Button, CloudScroll, CornerCloud, Dialog, IconFrame, InkBanner, InkStroke, JadeRing, LockMark, Panel, SkillButton, Slot, SonSeal, Tabs, Toasts, Tooltip, WaveLine, type ToastItem } from './index';
+import {
+  Badge,
+  Bar,
+  Button,
+  CloudScroll,
+  CornerCloud,
+  Dialog,
+  IconFrame,
+  InkBanner,
+  InkStroke,
+  JadeRing,
+  LockMark,
+  Panel,
+  SkillButton,
+  Slot,
+  SonSeal,
+  Tabs,
+  Toasts,
+  Tooltip,
+  WaveLine,
+  type ToastItem,
+} from './index';
 import './viewer.css';
 
 const ITEMS = ['itm_linh_thao', 'itm_huyet_linh_chi', 'itm_yeu_dan', 'itm_thiet_tinh', 'itm_nanh_soi'];
 const SKILLS = ['skl_kiem_khi_tram', 'skl_phi_kiem', 'skl_linh_khi_ho_the', 'skl_thien_kiem_vu'];
 const TOKENS: Array<[string, string]> = [
-  ['ink-0', 'ink'], ['ink-1', 'ink'], ['ink-2', 'ink'], ['ink-3', 'ink'],
-  ['gold-hi', 'kim'], ['gold', 'kim'], ['gold-lo', 'kim'],
-  ['son-hi', 'son'], ['son', 'son'], ['son-lo', 'son'],
-  ['ngoc-hi', 'ngọc'], ['ngoc', 'ngọc'], ['ngoc-lo', 'ngọc'],
-  ['cel-0', 'celadon'], ['cel-1', 'celadon'], ['cel-2', 'celadon'], ['cel-3', 'celadon'],
-  ['giay', 'giấy'], ['giay-lo', 'giấy'], ['giay-sau', 'giấy'],
-  ['q0', 'phẩm'], ['q1', 'phẩm'], ['q2', 'phẩm'], ['q3', 'phẩm'], ['q4', 'phẩm'], ['q5', 'phẩm'],
+  ['ink-0', 'ink'],
+  ['ink-1', 'ink'],
+  ['ink-2', 'ink'],
+  ['ink-3', 'ink'],
+  ['gold-hi', 'kim'],
+  ['gold', 'kim'],
+  ['gold-lo', 'kim'],
+  ['son-hi', 'son'],
+  ['son', 'son'],
+  ['son-lo', 'son'],
+  ['ngoc-hi', 'ngọc'],
+  ['ngoc', 'ngọc'],
+  ['ngoc-lo', 'ngọc'],
+  ['cel-0', 'celadon'],
+  ['cel-1', 'celadon'],
+  ['cel-2', 'celadon'],
+  ['cel-3', 'celadon'],
+  ['giay', 'giấy'],
+  ['giay-lo', 'giấy'],
+  ['giay-sau', 'giấy'],
+  ['q0', 'phẩm'],
+  ['q1', 'phẩm'],
+  ['q2', 'phẩm'],
+  ['q3', 'phẩm'],
+  ['q4', 'phẩm'],
+  ['q5', 'phẩm'],
 ];
 
 function Sec({ id, wide, children }: { id: string; wide?: boolean; children: React.ReactNode }) {
@@ -73,14 +113,30 @@ export function U2Kit() {
 
         <Sec id="pattern">
           <div className="u2v-pat">
-            <span className="u2v-box"><CornerCloud /></span>
-            <span className="u2v-box wide"><CloudScroll /></span>
-            <span className="u2v-box wide"><WaveLine /></span>
-            <span className="u2v-box wide ink"><InkStroke variant={0} /></span>
-            <span className="u2v-box wide ink"><InkStroke variant={1} /></span>
-            <span className="u2v-box wide ink"><InkStroke variant={2} /></span>
-            <span className="u2v-box seal"><SonSeal /></span>
-            <span className="u2v-box"><LockMark /></span>
+            <span className="u2v-box">
+              <CornerCloud />
+            </span>
+            <span className="u2v-box wide">
+              <CloudScroll />
+            </span>
+            <span className="u2v-box wide">
+              <WaveLine />
+            </span>
+            <span className="u2v-box wide ink">
+              <InkStroke variant={0} />
+            </span>
+            <span className="u2v-box wide ink">
+              <InkStroke variant={1} />
+            </span>
+            <span className="u2v-box wide ink">
+              <InkStroke variant={2} />
+            </span>
+            <span className="u2v-box seal">
+              <SonSeal />
+            </span>
+            <span className="u2v-box">
+              <LockMark />
+            </span>
           </div>
         </Sec>
 
@@ -146,14 +202,30 @@ export function U2Kit() {
         <Sec id="slot">
           <div className="u2v-row on-giay">
             {[0, 1, 2, 3, 4, 5].map((q) => (
-              <Slot key={q} rarity={q} icon={icon(q)} count={q === 1 ? 12 : undefined} plus={q === 4 ? 7 : undefined} on="light" label={t('ui.u2v.slot.item')} />
+              <Slot
+                key={q}
+                rarity={q}
+                icon={icon(q)}
+                count={q === 1 ? 12 : undefined}
+                plus={q === 4 ? 7 : undefined}
+                on="light"
+                label={t('ui.u2v.slot.item')}
+              />
             ))}
             <Slot empty on="light" />
             <Slot rarity={3} icon={icon(2)} locked on="light" label={t('ui.u2v.slot.item')} />
           </div>
           <div className="u2v-row on-ink">
             {[0, 1, 2, 3, 4, 5].map((q) => (
-              <Slot key={q} rarity={q} icon={icon(q + 1)} selected={sel === q} onClick={() => setSel(q)} count={q * 3 + 2} label={t('ui.u2v.slot.item')} />
+              <Slot
+                key={q}
+                rarity={q}
+                icon={icon(q + 1)}
+                selected={sel === q}
+                onClick={() => setSel(q)}
+                count={q * 3 + 2}
+                label={t('ui.u2v.slot.item')}
+              />
             ))}
             <Slot size="s" rarity={2} icon={icon(0)} label={t('ui.u2v.slot.item')} />
             <Slot size="l" rarity={4} icon={icon(3)} label={t('ui.u2v.slot.item')} />
@@ -164,7 +236,16 @@ export function U2Kit() {
         <Sec id="skill">
           <div className="u2v-row on-ink">
             {SKILLS.map((s, i) => (
-              <SkillButton key={s} icon={<ContentIcon def={{ icon: s }} />} keyLabel={String(i + 1)} cooldown={[0, 0.65, 0.3, 0][i]} cdText={['', '12', '5', ''][i]} active={i === 0} locked={i === 3} label={t('ui.u2v.slot.skill')} />
+              <SkillButton
+                key={s}
+                icon={<ContentIcon def={{ icon: s }} />}
+                keyLabel={String(i + 1)}
+                cooldown={[0, 0.65, 0.3, 0][i]}
+                cdText={['', '12', '5', ''][i]}
+                active={i === 0}
+                locked={i === 3}
+                label={t('ui.u2v.slot.skill')}
+              />
             ))}
           </div>
           <div className="u2v-row on-cel">

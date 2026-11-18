@@ -15,18 +15,18 @@ const CROSS_PACKAGE = {
 /** Hai chỗ tools còn nhập thẳng mã client (chưa có `exports` cho @dtl/client): ghi nhận ở đây, gỡ khi dời hàm thuần xuống packages/shared (R-5). */
 const CLIENT_IMPORT_EXCEPTIONS = ['tools/asset-pipeline/src/terrain-textures.ts', 'tools/audio/walkthrough/route.ts'];
 
-
 /**
  * U2-1: giao diện chỉ dùng token của UI Kit 2.0 (`apps/client/src/ui/u2/tokens.css`). Cấm hex/rgb/hsl viết thẳng trong chuỗi
  * và `style={{ color: '…' }}` với màu/font/viền cứng (giá trị `var(--u-…)` hoặc biểu thức tính được thì cho qua).
  * File cũ chưa chuyển nằm ở LEGACY_UI_STYLE (danh sách co dần theo U2-2…U2-4, rỗng ở U2-5); file mới không được thêm vào đó.
  */
-const STYLE_PROPS = '/^(color|background|backgroundColor|backgroundImage|borderColor|border|borderTop|borderBottom|borderLeft|borderRight|outline|fill|stroke|boxShadow|textShadow|fontFamily|borderRadius|filter)$/';
+const STYLE_PROPS =
+  '/^(color|background|backgroundColor|backgroundImage|borderColor|border|borderTop|borderBottom|borderLeft|borderRight|outline|fill|stroke|boxShadow|textShadow|fontFamily|borderRadius|filter)$/';
 const UI_STYLE_RULES = {
   'no-restricted-syntax': [
     'error',
     {
-      selector: "Literal[value=/(^|[ (,])#[0-9a-fA-F]{3,8}($|[ ),;])|(rgb|hsl)a?[(]/]",
+      selector: 'Literal[value=/(^|[ (,])#[0-9a-fA-F]{3,8}($|[ ),;])|(rgb|hsl)a?[(]/]',
       message: 'Không viết màu cứng trong UI: dùng biến --u-* (ui/u2/tokens.css) qua className hoặc var(--u-…).',
     },
     {

@@ -20,7 +20,13 @@ export function IconFrame({
   empty?: boolean;
 }) {
   return (
-    <span className="u2-frame" data-size={size} data-on={on} data-empty={empty ? '1' : undefined} data-q={empty || rarity === undefined ? undefined : clampQ(rarity)}>
+    <span
+      className="u2-frame"
+      data-size={size}
+      data-on={on}
+      data-empty={empty ? '1' : undefined}
+      data-q={empty || rarity === undefined ? undefined : clampQ(rarity)}
+    >
       <span className="u2-frame__in">{children}</span>
     </span>
   );
@@ -58,7 +64,17 @@ export function Slot({
   const q = clampQ(rarity);
   const aria = empty ? t('ui.u2.slot.empty') : [label, t('ui.u2.rarity.' + q)].filter(Boolean).join(', ');
   return (
-    <button type="button" className="u2-slot" data-sel={selected ? '1' : undefined} data-empty={empty ? '1' : undefined} onClick={onClick} aria-label={aria} aria-pressed={selected} disabled={empty} tabIndex={empty ? -1 : undefined}>
+    <button
+      type="button"
+      className="u2-slot"
+      data-sel={selected ? '1' : undefined}
+      data-empty={empty ? '1' : undefined}
+      onClick={onClick}
+      aria-label={aria}
+      aria-pressed={selected}
+      disabled={empty}
+      tabIndex={empty ? -1 : undefined}
+    >
       <IconFrame rarity={q} size={size} on={on} empty={empty}>
         {!empty && icon}
       </IconFrame>

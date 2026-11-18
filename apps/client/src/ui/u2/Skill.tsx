@@ -28,7 +28,15 @@ export function SkillButton({
 }) {
   const cd = Math.max(0, Math.min(1, cooldown));
   return (
-    <button type="button" className="u2-slot u2-skill" data-active={active ? '1' : undefined} data-cd={cd > 0 ? '1' : undefined} disabled={locked} onClick={onClick} aria-label={[label, locked ? t('ui.u2.locked') : undefined].filter(Boolean).join(', ') || undefined}>
+    <button
+      type="button"
+      className="u2-slot u2-skill"
+      data-active={active ? '1' : undefined}
+      data-cd={cd > 0 ? '1' : undefined}
+      disabled={locked}
+      onClick={onClick}
+      aria-label={[label, locked ? t('ui.u2.locked') : undefined].filter(Boolean).join(', ') || undefined}
+    >
       <IconFrame>{icon}</IconFrame>
       {keyLabel && <span className="u2-skill__key">{keyLabel}</span>}
       {cd > 0 && <span className="u2-skill__cd" style={{ '--cd': cd } as CSSProperties} />}

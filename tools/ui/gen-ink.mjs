@@ -8,7 +8,7 @@ const W = 320;
 const H = 64;
 function rng(seed) {
   let s = seed >>> 0;
-  return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296);
+  return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296;
 }
 const f = (n) => Math.round(n * 10) / 10;
 

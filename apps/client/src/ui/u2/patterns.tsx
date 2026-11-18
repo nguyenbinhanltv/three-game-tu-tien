@@ -14,7 +14,16 @@ const deco = { 'aria-hidden': true, focusable: false } as const;
  */
 export function CornerCloud(p: P) {
   return (
-    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...deco} {...p}>
+    <svg
+      viewBox="0 0 48 48"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...deco}
+      {...p}
+    >
       <path d="M3 46V15C3 8.4 8.4 3 15 3h31" />
       <path d="M8.5 46V18.5c0-5.5 4.5-10 10-10H46" strokeWidth="0.9" opacity="0.6" />
       <path d="M16 16.5c0-3.4 4.2-4.4 6-2 1.6 2.2-.4 5-3 4.6-1.9-.3-2.2-2.5-.8-3.2" strokeWidth="1.3" />
@@ -52,7 +61,14 @@ export function WaveLine(p: P) {
 export function InkStroke({ variant = 0, flip, style, ...p }: P & { variant?: number; flip?: boolean }) {
   const n = INK_PATHS.length;
   return (
-    <svg viewBox="0 0 320 64" preserveAspectRatio="none" fill="currentColor" {...deco} {...p} style={flip ? { transform: 'scaleX(-1)', ...style } : style}>
+    <svg
+      viewBox="0 0 320 64"
+      preserveAspectRatio="none"
+      fill="currentColor"
+      {...deco}
+      {...p}
+      style={flip ? { transform: 'scaleX(-1)', ...style } : style}
+    >
       <path d={INK_PATHS[((variant % n) + n) % n]} />
     </svg>
   );
@@ -63,7 +79,14 @@ export function SonSeal(p: P) {
   return (
     <svg viewBox="0 0 40 40" {...deco} {...p}>
       <path d="M3 5l4-2h27l3 3v29l-4 3H8l-5-3z" fill="currentColor" />
-      <path d="M20 9l8 8-8 8-8-8zM20 27l4 4h-8z" fill="none" stroke="var(--u-son-text)" strokeWidth="1.8" strokeLinejoin="round" opacity="0.9" />
+      <path
+        d="M20 9l8 8-8 8-8-8zM20 27l4 4h-8z"
+        fill="none"
+        stroke="var(--u-son-text)"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+        opacity="0.9"
+      />
     </svg>
   );
 }
@@ -87,7 +110,16 @@ export function JadeRing({ tone = 'ngoc', ...p }: P & { tone?: 'ngoc' | 'kim' | 
 /** Dấu khóa. 24×24. */
 export function LockMark(p: P) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...deco} {...p}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...deco}
+      {...p}
+    >
       <path d="M5 11h14v9H5zM8 11V8a4 4 0 0 1 8 0v3M12 14.5V17" />
     </svg>
   );

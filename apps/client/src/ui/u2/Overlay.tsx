@@ -4,7 +4,21 @@ import { Panel } from './Panel';
 import { Button } from './Controls';
 
 /** Tooltip bọc quanh phần tử kích hoạt: hiện khi rê chuột hoặc focus. `open` ép hiện (trang xem). */
-export function Tooltip({ title, sub, rarity, children, tip, open }: { title: ReactNode; sub?: ReactNode; rarity?: number; children: ReactNode; tip?: ReactNode; open?: boolean }) {
+export function Tooltip({
+  title,
+  sub,
+  rarity,
+  children,
+  tip,
+  open,
+}: {
+  title: ReactNode;
+  sub?: ReactNode;
+  rarity?: number;
+  children: ReactNode;
+  tip?: ReactNode;
+  open?: boolean;
+}) {
   return (
     <span className="u2-tipwrap">
       {children}
@@ -18,7 +32,21 @@ export function Tooltip({ title, sub, rarity, children, tip, open }: { title: Re
 }
 
 /** Hộp thoại giữa màn: nền tối, Escape đóng, focus vào nút đầu, trả focus khi đóng. */
-export function Dialog({ title, children, confirmLabel, cancelLabel, onConfirm, onCancel }: { title: ReactNode; children: ReactNode; confirmLabel?: string; cancelLabel?: string; onConfirm: () => void; onCancel: () => void }) {
+export function Dialog({
+  title,
+  children,
+  confirmLabel,
+  cancelLabel,
+  onConfirm,
+  onCancel,
+}: {
+  title: ReactNode;
+  children: ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
   const box = useRef<HTMLDivElement>(null);
   // onCancel hay là arrow inline: giữ trong ref để effect chỉ chạy lúc mở/đóng (không giành lại focus mỗi lần cha render).
   const cancelRef = useRef(onCancel);
