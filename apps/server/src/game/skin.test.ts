@@ -129,6 +129,24 @@ describe('ô ngoại hình (skin)', () => {
       expect(wearableBy(undefined, 'm')).toBe(true);
     });
 
+    it.each([
+      ['itm_skin_duskrella', 'f', 'm'],
+      ['itm_skin_crimson_knight', 'm', 'f'],
+    ] as const)('%s chỉ cho giới %s: đúng giới mặc được (sn đồng bộ), sai giới %s bị từ chối', (id, ok, bad) => {
+      expect(ITEM.get(id)!.gender).toBe(ok);
+      const good = setup(false, ok);
+      good.p.char.tx('test:give', null, (d) => d.add(id, 1));
+      good.sim.onEquip(good.p, { slot: 0, r: `skin-${id}-ok` });
+      good.sim.tick(50);
+      expect(good.p.char.equip.skin?.id).toBe(id);
+      expect(good.p.s.sn).toBe(id);
+      const no = setup(false, bad);
+      no.p.char.tx('test:give', null, (d) => d.add(id, 1));
+      no.sim.onEquip(no.p, { slot: 0, r: `skin-${id}-no` });
+      expect(no.p.char.equip.skin).toBeUndefined();
+      expect(no.said.some((m) => m.includes('sys.equip_gender'))).toBe(true);
+    });
+
     it('nhân vật nam: server từ chối mặc, món vẫn nằm trong túi, có báo lý do, không ghi ledger mặc', () => {
       const { sim, p, said } = setup(false, 'm');
       p.char.tx('test:give', null, (d) => d.add(SKIN, 1));

@@ -4,10 +4,11 @@ import { PLAY_BOUNDS } from './level';
 import { DOAN_MACH_PADS } from './teleport.doanmach';
 import { VAN_HAI_PADS } from './teleport.vanhai';
 import { THIEN_KHUYET_PADS } from './teleport.thienkhuyet';
+import { BAC_HOANG_PADS } from './teleport.bachoang';
 
 export interface TelePad {
   id: string;
-  /** Level đặt trận (E1-B). Id trận ở level khác Vân Lam có tiền tố level (`dm_`, `vh_`, `tk_`) để `characters.tele` không đổi cấu trúc. */
+  /** Level đặt trận (E1-B). Id trận ở level khác Vân Lam có tiền tố level (`dm_`, `vh_`, `tk_`, `bh_`) để `characters.tele` không đổi cấu trúc. */
   level: string;
   /** Hướng nhìn khi tới (điểm trận quay về phía này); thiếu thì về phía tông môn Vân Lam. */
   face?: { x: number; z: number };
@@ -38,6 +39,8 @@ export const TELE_PADS: readonly TelePad[] = [
   ...VAN_HAI_PADS,
   // Thiên Khuyết Cổ Thành (E4-A, tiền tố tk_).
   ...THIEN_KHUYET_PADS,
+  // Bắc Hoang Tẫn Nguyên (DV-1, tiền tố bh_).
+  ...BAC_HOANG_PADS,
 ];
 
 export const TELE_PAD = new Map(TELE_PADS.map((p) => [p.id, p]));
