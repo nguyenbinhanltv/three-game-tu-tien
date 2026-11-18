@@ -282,12 +282,16 @@ export class GmSystem {
             return true;
           });
           if (ok) c.recalc();
-          return say(ok ? 'đã cởi hết' : 'túi đầy');
+          return say(t(ok ? 'gm.msg.set_off' : 'gm.msg.bag_full'));
         }
         const st = SET.get(a[1] ?? '');
         if (!st) return say('set off | ' + SETS.map((x) => x.id).join(' | ') + ' [số món]');
         const n = Math.max(1, Math.min(st.pieces.length, Number(a[2] ?? st.pieces.length) | 0));
-        return say(this.wearSet(p, st, n) ? `mặc ${n}/${st.pieces.length} món ${st.id}` : 'túi đầy');
+        return say(
+          this.wearSet(p, st, n)
+            ? t('gm.msg.set_worn', { n, total: st.pieces.length, name: t('set.' + st.id + '.name') })
+            : t('gm.msg.bag_full'),
+        );
       }
       case 'tp': {
         // `tp x z` hoặc `tp <địa điểm>` (bảng packages/content/data/places.json, cùng bảng với ?at=).
