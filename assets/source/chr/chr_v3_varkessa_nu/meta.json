@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "chr_v3_varkessa_nu",
+  "type": "chr",
+  "budgetClass": "player_v3",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 24000,
+    "texture": 2048
+  },
+  "procedural": {
+    "script": "tools/blender/chr_v3.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Sketchfab: \"VARKESSA // The Infernal Emberblade\" của Atahan3D (https://sketchfab.com/Atahan3D), đã sửa (xem set_skin_varkessa_nu); đặt lên bộ xương UE5 Mannequin bằng tools/blender/chr_v3.py (N-0, bản thử pipeline)",
+    "owner": "Atahan3D",
+    "date": "2026-11-18",
+    "url": "https://sketchfab.com/3d-models/varkessa-the-infernal-emberblade-13c07cff4b884037a08b7463df5bc996",
+    "spdx": "CC-BY-4.0"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "chr_v3_v2_nam",
+  "type": "chr",
+  "budgetClass": "player_v3",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 24000,
+    "texture": 2048
+  },
+  "procedural": {
+    "script": "tools/blender/chr_v3.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Thân nền v2 (MakeHuman CC0 + đầu/tóc Tripo của người dùng, xem chr_v2_nam) đặt lên bộ xương UE5 Mannequin bằng tools/blender/chr_v3.py (N-0, bản thử pipeline)",
+    "owner": "dự án",
+    "date": "2026-11-18"
+  }
+}
