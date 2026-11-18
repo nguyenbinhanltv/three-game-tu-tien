@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type MoveCtx, type MoveInput, type MoveState, stepMove, terrainOf } from '@dtl/shared';
+import { IN_FLY, IN_UP, type MoveCtx, type MoveInput, type MoveState, stepMove, terrainOf } from '@dtl/shared';
 import { LEVELS } from './index';
 
 // DV-3K: hẻm núi của phó bản Xích Tẫn Khích (`TerrainDef.canyon`): chỉ đổi địa hình, không đổi luật đợt quái.
@@ -35,6 +35,18 @@ describe('địa hình hẻm Xích Tẫn Khích', () => {
       const inp: MoveInput = { s: 1, mx: 0, mz: 1, yaw, f: 0 };
       for (let k = 0; k < 600; k++) stepMove(st, inp, ctx);
       expect(st.y - floor, `yaw ${yaw}`).toBeLessThan(c.rise * 0.5);
+    }
+  });
+
+  it('ngự kiếm/ngự không: bay hết cỡ về mọi hướng không ra khỏi sàn hẻm và không lên cao nguyên', () => {
+    const ctx: MoveCtx = { canFly: true, frozen: false, speedMul: 1, terrain: tr, bound: { x: dg.center.x, z: dg.center.z, r: dg.bound! } };
+    for (const yaw of [0, Math.PI / 2, Math.PI, -Math.PI / 2, 0.8, 2.4]) {
+      const st: MoveState = { x: c.cx, y: floor + 10, z: c.cz, vy: 0, grounded: false, flying: true };
+      const inp: MoveInput = { s: 1, mx: 0, mz: 1, yaw, f: IN_FLY | IN_UP };
+      for (let k = 0; k < 900; k++) stepMove(st, inp, ctx);
+      expect(Math.abs(st.x - c.cx), `x yaw ${yaw}`).toBeLessThan(c.halfW);
+      expect(Math.abs(st.z - c.cz), `z yaw ${yaw}`).toBeLessThan(c.halfL);
+      expect(tr.groundAt(st.x, st.z) - floor, `đáp yaw ${yaw}`).toBeLessThan(4);
     }
   });
 
