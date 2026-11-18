@@ -63,7 +63,12 @@ export default function lake() {
   // nhị: vuốt nhiều, ngân rung chậm
   const ERHU = ['4~:3 3:1', '2:2 3~:2', '1~:3 0:1', '-1:4', '0~:2 1:1 2:1', '3~:3 2:1', '1:2 0~:2', '0:4'].join(' | ');
   erhu.phrase(s.bar(8), C, ERHU, { vel: 82, vib: 1, legato: 1 });
-  erhu.phrase(s.bar(24), C, ['2~:4', '1:2 0:2', '-1~:4', '-2:4', '0~:3 -1:1', '0:4', 'r:4', 'r:4'].join(' | '), { oct: -1, vel: 78, vib: 1, legato: 1 });
+  erhu.phrase(s.bar(24), C, ['2~:4', '1:2 0:2', '-1~:4', '-2:4', '0~:3 -1:1', '0:4', 'r:4', 'r:4'].join(' | '), {
+    oct: -1,
+    vel: 78,
+    vib: 1,
+    legato: 1,
+  });
   xiao.phrase(s.bar(29), C, '4:1 3:1 2:2 | 1~:4 | 0:4', { vel: 70, vib: 1.5 });
   // C: tiêu một câu báo điềm
   xiao.phrase(s.bar(18), C, '3:3 2:1 | 1b~:4', { vel: 66, vib: 1.5 });

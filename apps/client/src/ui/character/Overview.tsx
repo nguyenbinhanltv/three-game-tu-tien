@@ -30,7 +30,12 @@ function Silhouette({ q }: { q: number }) {
           </radialGradient>
         </defs>
         <ellipse cx="40" cy="80" rx="38" ry="74" fill="url(#eqglow)" />
-        <path d="M40 18c7 0 11 5 11 11s-4 12-11 12-11-6-11-12 4-11 11-11zm-17 30c6-4 12-6 17-6s11 2 17 6l9 40-10 4 2 50H44l-4-34-4 34H22l2-50-10-4z" fill="rgba(20,32,46,0.92)" stroke="currentColor" strokeWidth="1.2" />
+        <path
+          d="M40 18c7 0 11 5 11 11s-4 12-11 12-11-6-11-12 4-11 11-11zm-17 30c6-4 12-6 17-6s11 2 17 6l9 40-10 4 2 50H44l-4-34-4 34H22l2-50-10-4z"
+          fill="rgba(20,32,46,0.92)"
+          stroke="currentColor"
+          strokeWidth="1.2"
+        />
       </svg>
     </div>
   );
@@ -51,7 +56,11 @@ function EquipBoard() {
       className="equip-cell"
       data-slot={es}
       data-drop={drag ? (canDrop(drag.id, es) ? 'ok' : 'no') : undefined}
-      title={drag && itemKindOk((x) => ITEM.get(x), drag.id, es) && !canDrop(drag.id, es) ? t('ui.item.gender.' + ITEM.get(drag.id)!.gender) : undefined}
+      title={
+        drag && itemKindOk((x) => ITEM.get(x), drag.id, es) && !canDrop(drag.id, es)
+          ? t('ui.item.gender.' + ITEM.get(drag.id)!.gender)
+          : undefined
+      }
       onDragOver={(e) => {
         if (drag && canDrop(drag.id, es)) {
           e.preventDefault();
@@ -153,7 +162,13 @@ export function Overview() {
       <div className="char-bars">
         <ProgressBar cls="hp" value={char.hp} max={char.mhp} text={`${t('ui.hp')} ${char.hp} / ${char.mhp}`} label={t('ui.hp')} />
         <ProgressBar cls="mp" value={char.mp} max={char.mmp} text={`${t('ui.mp')} ${char.mp} / ${char.mmp}`} label={t('ui.mp')} />
-        <ProgressBar cls="xp" value={char.xp} max={char.xpNeed} text={xpFull ? t('ui.xp_full') : `${t('ui.xp')} ${char.xp} / ${char.xpNeed}`} label={t('ui.xp')} />
+        <ProgressBar
+          cls="xp"
+          value={char.xp}
+          max={char.xpNeed}
+          text={xpFull ? t('ui.xp_full') : `${t('ui.xp')} ${char.xp} / ${char.xpNeed}`}
+          label={t('ui.xp')}
+        />
       </div>
       <dl className="stats char-main-stats">
         {MAIN_STATS.map((id) => {

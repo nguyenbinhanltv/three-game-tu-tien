@@ -78,7 +78,10 @@ export function swordSocketDef(template: THREE.Object3D, ex: SwordExtras): Sword
   const mount = rig.swordMount();
   // Bỏ scale của bàn tay (Mixamo có thể mang scale 0,01 ở Armature) để kiếm giữ đúng cỡ.
   const ws = 1 / (toScene.clone().multiply(hand.matrixWorld).getMaxScaleOnAxis() || 1);
-  const handLocal = new THREE.Matrix4().compose(mount.position, mount.quaternion, new THREE.Vector3(ws, ws, ws)).multiply(g.invert()).multiply(boneW);
+  const handLocal = new THREE.Matrix4()
+    .compose(mount.position, mount.quaternion, new THREE.Vector3(ws, ws, ws))
+    .multiply(g.invert())
+    .multiply(boneW);
   return { bone: bone.name, back: bone.parent!.name, hand: hand.name, backLocal: bone.matrix.clone(), handLocal, glowLocal };
 }
 

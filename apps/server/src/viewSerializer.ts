@@ -10,6 +10,7 @@ import { ClientState, Protocol, SchemaSerializer } from '@colyseus/core';
 import { Encoder } from '@colyseus/schema';
 import type { Client } from '@colyseus/core';
 import type { StateView } from '@colyseus/schema';
+import { log } from './log';
 
 type Ser = {
   encoder: import('@colyseus/schema').Encoder;
@@ -28,7 +29,9 @@ function encodeViewChecked(enc: Ser['encoder'], view: StateView, sharedOffset: n
   const out = enc.encodeView(view, sharedOffset, it, buf);
   // `it` còn giữ offset của lượt mã hóa đầu (lượt ghi lại khi tràn dùng iterator riêng), nên vượt cỡ bộ đệm nghĩa là đã tràn.
   if (it.offset > buf.byteLength) {
-    console.error(`[viewSerializer] bộ đệm mã hóa bị tràn (${buf.byteLength} B, cần ${it.offset} B): gói của một client có thể bị cắt. Tăng VIEW_BUFFER_SIZE.`);
+    log.error(
+      `[viewSerializer] bộ đệm mã hóa bị tràn (${buf.byteLength} B, cần ${it.offset} B): gói của một client có thể bị cắt. Tăng VIEW_BUFFER_SIZE.`,
+    );
   }
   return out;
 }
@@ -75,7 +78,9 @@ export function installViewPatchFix(): void {
   const proto = SchemaSerializer.prototype as unknown as { applyPatches?: unknown };
   // Thư viện được ghim bằng dấu mũ: nếu bản nâng cấp đổi hình dạng thì phải báo ngay, không được bỏ qua bản vá trong im lặng.
   if (typeof proto.applyPatches !== 'function' || !('encodeView' in Encoder.prototype)) {
-    throw new Error('viewSerializer: SchemaSerializer.applyPatches/Encoder.encodeView không còn như @colyseus 0.16, cần xem lại bản vá L1.');
+    throw new Error(
+      'viewSerializer: SchemaSerializer.applyPatches/Encoder.encodeView không còn như @colyseus 0.16, cần xem lại bản vá L1.',
+    );
   }
   installed = true;
   // Bộ đệm này nằm trên mỗi room (không phải mỗi client), nên chi phí bộ nhớ nhỏ. Phải đặt trước khi tạo room.

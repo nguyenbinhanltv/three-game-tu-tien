@@ -28,8 +28,6 @@ export type MusicTrack =
   | 'tribulation'
   | 'meditate';
 
-const MUSIC_TRACKS: readonly MusicTrack[] = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'wild_ash', 'wild_rift', 'forest', 'lake', 'dungeon', 'dungeon_rift', 'combat', 'boss', 'dungeon_boss', 'dungeon_rift_boss', 'tribulation', 'meditate'];
-
 export interface MusicInput {
   /** Đang ở room bí cảnh (Kiếm Trủng) thay vì bản đồ thế giới. */
   dungeon: boolean;
@@ -289,7 +287,6 @@ function fadeFor(from: MusicTrack | null, to: MusicTrack): number {
 
 /** Id âm môi trường trong manifest.ambient (tools/audio/sounds.json). */
 type AmbientId = 'wind' | 'forest' | 'stream' | 'night' | 'cave';
-const AMBIENT_IDS: readonly AmbientId[] = ['wind', 'forest', 'stream', 'night', 'cave'];
 
 /**
  * Âm môi trường cho vùng: Kiếm Trủng/bí cảnh là gió hang; ven hồ luôn có nước vỗ (kể cả đêm);

@@ -7,7 +7,13 @@ export function Quests() {
   const quests = useUI((s) => s.quests);
   const ids = Object.keys(quests.active);
   return (
-    <Window title={t('ui.quests')} sub={t('ui.quest.done_count', { n: quests.done.length, total: QUESTS.length })} onClose={() => closePanel('quests')} cls="quests" width={460}>
+    <Window
+      title={t('ui.quests')}
+      sub={t('ui.quest.done_count', { n: quests.done.length, total: QUESTS.length })}
+      onClose={() => closePanel('quests')}
+      cls="quests"
+      width={460}
+    >
       {ids.length === 0 && <div className="k-dim">{t('ui.quest.none')}</div>}
       {ids.map((id) => {
         const q = QUEST.get(id);

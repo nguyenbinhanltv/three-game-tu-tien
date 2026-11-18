@@ -40,6 +40,9 @@ jobs:
       - name: Lint (luật ranh giới, R-9)
         run: pnpm lint
 
+      - name: Prettier (140 cột)
+        run: pnpm format:check
+
       - name: Test
         run: pnpm test
 
@@ -48,3 +51,6 @@ jobs:
 
       - name: docs:check
         run: pnpm docs:check
+
+      - name: docs:paths (đường dẫn trong CLAUDE.md, handbook, skill)
+        run: pnpm docs:paths

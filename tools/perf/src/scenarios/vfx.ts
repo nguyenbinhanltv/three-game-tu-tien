@@ -26,8 +26,30 @@ const HP = 'bat_dong_kim_than';
 const DS = 'thanh_moc_dan_kinh';
 /** Công pháp của từng chiêu (V3: Hộ pháp/Đan sư); chiêu không ghi là Kiếm tu. */
 const METHOD_OF: Record<string, string> = Object.fromEntries([
-  ...['skl_thiet_bich_xung', 'skl_tran_son_an', 'skl_kim_cuong_bat_hoai', 'skl_thiet_quyen_chan_dia', 'skl_kim_chung_tran', 'skl_son_nhac_hoa_than', 'skl_dich_son_xung', 'skl_anh_thiet_than', 'skl_thuan_di_ho_the', 'skl_thien_kim_phap_tuong'].map((k) => [k, HP]),
-  ...['skl_luu_huong_bo', 'skl_hoi_xuan_quyet', 'skl_hoi_thien_dan_lo', 'skl_moc_linh_tran', 'skl_duoc_vu', 'skl_ngung_dan_ho_the', 'skl_dan_hoa_phong_tran', 'skl_anh_duoc_hoa_than', 'skl_thuan_di_cuu_vien', 'skl_thien_dan_phap_gioi'].map((k) => [k, DS]),
+  ...[
+    'skl_thiet_bich_xung',
+    'skl_tran_son_an',
+    'skl_kim_cuong_bat_hoai',
+    'skl_thiet_quyen_chan_dia',
+    'skl_kim_chung_tran',
+    'skl_son_nhac_hoa_than',
+    'skl_dich_son_xung',
+    'skl_anh_thiet_than',
+    'skl_thuan_di_ho_the',
+    'skl_thien_kim_phap_tuong',
+  ].map((k) => [k, HP]),
+  ...[
+    'skl_luu_huong_bo',
+    'skl_hoi_xuan_quyet',
+    'skl_hoi_thien_dan_lo',
+    'skl_moc_linh_tran',
+    'skl_duoc_vu',
+    'skl_ngung_dan_ho_the',
+    'skl_dan_hoa_phong_tran',
+    'skl_anh_duoc_hoa_than',
+    'skl_thuan_di_cuu_vien',
+    'skl_thien_dan_phap_gioi',
+  ].map((k) => [k, DS]),
 ]);
 /** Cảnh lớn: `scene_<tên>` → tin S.FX bơm vào `Game.onFx`. */
 const SCENES: Record<string, Record<string, unknown>> = {
@@ -47,15 +69,42 @@ const SCENES: Record<string, Record<string, unknown>> = {
 const PHAP = /scene_|van_kiem_quy_tong|kim_cuong|hoi_thien/;
 const PHAP_SOLO = /kim_cuong|hoi_thien|scene_/;
 /** Chiêu diện rộng/từ trên cao: lùi camera, ngẩng cao để thấy cả vùng. */
-const WIDE = /scene_|kim_cuong|thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
+const WIDE =
+  /scene_|kim_cuong|thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
 const DASH = /kiem_anh_bo|nghich_kiem|thiet_bich_xung|luu_huong_bo|dich_son_xung/;
-const ULT = /van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/;
+const ULT =
+  /van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/;
 /** Thời lượng ghi riêng (ms game) của chiêu có niệm. */
-const SPAN: Record<string, number> = { skl_phi_kiem: 3000, skl_loi_dinh_nhat_kiem: 3300, skl_kiem_vu_tam_diep: 1900, skl_van_kiem_quy_tong: 2200, skl_thien_kiem_hoa_hinh: 2200 };
+const SPAN: Record<string, number> = {
+  skl_phi_kiem: 3000,
+  skl_loi_dinh_nhat_kiem: 3300,
+  skl_kiem_vu_tam_diep: 1900,
+  skl_van_kiem_quy_tong: 2200,
+  skl_thien_kiem_hoa_hinh: 2200,
+};
 const MON_SPAN: Record<string, number> = { boom_circle: 2600, boom_line: 2600, boom_cone: 2600, death: 2400, chant: 2400 };
 const MON_DIST: Record<string, number> = { boom_circle: 13, cast: 15, bolt: 15 };
-const MON_DEFAULT: Record<string, string> = { hit: 'mon_hoa_van_ho', strike: 'mon_yeu_lang', cast: 'mon_hoa_van_ho', boom_circle: 'elite_cu_nham_vien', boom_line: 'mon_mach_thuong_ho_ve', boom_cone: 'boss_han_giao', bolt: 'mon_hoa_van_ho', death: 'mon_thach_vien', chant: 'boss_han_giao' };
-const SPOTS: [number, number][] = [[2048, 2088], [2088, 2088], [2008, 2088], [2048, 2128], [2048, 2048], [2088, 2128], [2008, 2128], [2088, 2048]];
+const MON_DEFAULT: Record<string, string> = {
+  hit: 'mon_hoa_van_ho',
+  strike: 'mon_yeu_lang',
+  cast: 'mon_hoa_van_ho',
+  boom_circle: 'elite_cu_nham_vien',
+  boom_line: 'mon_mach_thuong_ho_ve',
+  boom_cone: 'boss_han_giao',
+  bolt: 'mon_hoa_van_ho',
+  death: 'mon_thach_vien',
+  chant: 'boss_han_giao',
+};
+const SPOTS: [number, number][] = [
+  [2048, 2088],
+  [2088, 2088],
+  [2008, 2088],
+  [2048, 2128],
+  [2048, 2048],
+  [2088, 2128],
+  [2008, 2128],
+  [2088, 2048],
+];
 
 const ALLY_ONLY = /thuan_di_ho_the|thuan_di_cuu_vien/;
 const SKILLS = list('--skills', 'skl_kiem_khi_tram,skl_phi_kiem');
@@ -79,7 +128,9 @@ function ffmpegPath(): string {
   if (env('FFMPEG')) return env('FFMPEG');
   const pnpm = path.join(ROOT, 'node_modules/.pnpm');
   for (const d of fs.existsSync(pnpm) ? fs.readdirSync(pnpm) : []) {
-    const exe = ['ffmpeg.exe', 'ffmpeg'].map((e) => path.join(pnpm, d, 'node_modules/ffmpeg-static', e)).find((p) => d.startsWith('ffmpeg-static@') && fs.existsSync(p));
+    const exe = ['ffmpeg.exe', 'ffmpeg']
+      .map((e) => path.join(pnpm, d, 'node_modules/ffmpeg-static', e))
+      .find((p) => d.startsWith('ffmpeg-static@') && fs.existsSync(p));
     if (exe) return exe;
   }
   return 'ffmpeg';
@@ -89,7 +140,9 @@ function ffmpegPath(): string {
 async function closeCam(page: Page, dist: number, yawOff: number, pitch = 0.2): Promise<void> {
   const yaw = await page.evaluate(() => {
     const g = window.__game!;
-    const near = [...g.view.monsters.values()].filter((m) => m.st !== 3).sort((a, b) => Math.hypot(a.x - g.cur.x, a.z - g.cur.z) - Math.hypot(b.x - g.cur.x, b.z - g.cur.z))[0];
+    const near = [...g.view.monsters.values()]
+      .filter((m) => m.st !== 3)
+      .sort((a, b) => Math.hypot(a.x - g.cur.x, a.z - g.cur.z) - Math.hypot(b.x - g.cur.x, b.z - g.cur.z))[0];
     return near ? Math.atan2(near.x - g.cur.x, near.z - g.cur.z) : g.cur.yaw;
   });
   await cam(page, { yaw: yaw + yawOff, pitch, dist });
@@ -136,10 +189,23 @@ const monAct = (page: Page, kind: string, slow: number) =>
 /** Ra một chiêu: cảnh lớn bơm tin FX, chiêu lướt gọi `useDash`, chiêu trên thanh bấm ô; chiêu còn khóa phát thẳng sự kiện windup vào SkillFx. */
 async function press(page: Page, id: string): Promise<void> {
   if (id === 'scene_fly_on') return page.evaluate(() => window.__game!.toggleFly());
-  if (SCENES[id]) return page.evaluate((msg) => void window.__game!.onFx({ ...msg, src: window.__game!.sid, x: window.__game!.cur.x + 6, z: window.__game!.cur.z, ox: window.__game!.cur.x - 2, oz: window.__game!.cur.z }), SCENES[id]);
+  if (SCENES[id])
+    return page.evaluate(
+      (msg) =>
+        void window.__game!.onFx({
+          ...msg,
+          src: window.__game!.sid,
+          x: window.__game!.cur.x + 6,
+          z: window.__game!.cur.z,
+          ox: window.__game!.cur.x - 2,
+          oz: window.__game!.cur.z,
+        }),
+      SCENES[id],
+    );
   if (DASH.test(id)) return page.evaluate(() => window.__game!.useDash());
   // Thuấn Di Hộ Thế/Cứu Viện cần đồng đội (server từ chối khi đứng một mình): chỉ phát dòng thời gian FX.
-  const slot = id === 'skl_phi_kiem' ? 0 : ALLY_ONLY.test(id) ? -1 : await page.evaluate((i) => window.__game!.bar().findIndex((s) => s.id === i), id);
+  const slot =
+    id === 'skl_phi_kiem' ? 0 : ALLY_ONLY.test(id) ? -1 : await page.evaluate((i) => window.__game!.bar().findIndex((s) => s.id === i), id);
   if (slot >= 0) return page.evaluate((s) => window.__game!.useSkill(s), slot);
   await page.evaluate((sk) => {
     const g = window.__game!;
@@ -172,7 +238,10 @@ async function record(ctx: BrowserContext, page: Page, slow: number, span: numbe
   await sleep(Math.max(0, span / slow - ((await page.evaluate(() => performance.now())) - t0p)));
   await cdp.send('Page.stopScreencast');
   await cdp.detach().catch(() => undefined);
-  const hits = await page.evaluate(([p, s]) => window.__game!.skillLog.filter((x) => x.e.kind === 'hit').map((x) => Math.round((x.at - p) * s)), [t0p, slow] as const);
+  const hits = await page.evaluate(
+    ([p, s]) => window.__game!.skillLog.filter((x) => x.e.kind === 'hit').map((x) => Math.round((x.at - p) * s)),
+    [t0p, slow] as const,
+  );
   return { frames, t0, hits };
 }
 
@@ -188,7 +257,30 @@ function encodeWebm(r: Rec, file: string): boolean {
     while (j + 1 < r.frames.length && Math.abs(r.frames[j + 1].at - t) <= Math.abs(r.frames[j].at - t)) j++;
     fs.writeFileSync(path.join(dir, `f${String(i).padStart(5, '0')}.jpg`), Buffer.from(r.frames[j].data, 'base64'));
   }
-  const ff = spawnSync(ffmpegPath(), ['-y', '-loglevel', 'error', '-framerate', String(FPS), '-i', path.join(dir, 'f%05d.jpg'), '-vf', 'crop=900:760:100:90', '-c:v', 'libvpx-vp9', '-b:v', '1800k', '-crf', '34', '-pix_fmt', 'yuv420p', file], { encoding: 'utf8' });
+  const ff = spawnSync(
+    ffmpegPath(),
+    [
+      '-y',
+      '-loglevel',
+      'error',
+      '-framerate',
+      String(FPS),
+      '-i',
+      path.join(dir, 'f%05d.jpg'),
+      '-vf',
+      'crop=900:760:100:90',
+      '-c:v',
+      'libvpx-vp9',
+      '-b:v',
+      '1800k',
+      '-crf',
+      '34',
+      '-pix_fmt',
+      'yuv420p',
+      file,
+    ],
+    { encoding: 'utf8' },
+  );
   fs.rmSync(dir, { recursive: true, force: true });
   if (ff.status !== 0) console.warn('[shots:vfx] ffmpeg lỗi:', ff.stderr?.slice(0, 300));
   return ff.status === 0;
@@ -210,7 +302,12 @@ async function tileSheet(ctx: BrowserContext, file: string, title: string, r: Re
   const cell = Math.min(300, Math.floor(1800 / Math.min(8, cells.length)));
   const z = cell / 780;
   // Cắt vùng 780×640 quanh nhân vật trong khung 1100×900.
-  await sheet(ctx, file, rows, { cell, ratio: 640 / 780, title, crop: `width:${Math.round(1100 * z)}px;margin-left:${-Math.round(160 * z)}px;margin-top:${-Math.round(130 * z)}px` });
+  await sheet(ctx, file, rows, {
+    cell,
+    ratio: 640 / 780,
+    title,
+    crop: `width:${Math.round(1100 * z)}px;margin-left:${-Math.round(160 * z)}px;margin-top:${-Math.round(130 * z)}px`,
+  });
 }
 
 /** Sân đông: N người giả (chỉ phía client) cùng ra chiêu quanh mình, mỗi người ~0,9 s một chiêu; in số đo. */
@@ -229,7 +326,8 @@ async function crowd(page: Page, n: number): Promise<void> {
 export default {
   name: 'vfx',
   desc: 'VFX từng chiêu/FX quái/cảnh lớn: webm chậm + thật và tờ dãy khung có mốc hit, nam/nữ; --crowd N đo sân đông',
-  usage: '[--skills skl_a,mon:hit,scene_kiep_kd] [--genders m,f] [--fxq high|medium|low] [--level 12] [--perf] [--crowd N] [--webm-only|--sheet-only] [--fps 24] [--tile 40] [--tmax 1000] [--dist 7] [--span 1700] [--query a=b]',
+  usage:
+    '[--skills skl_a,mon:hit,scene_kiep_kd] [--genders m,f] [--fxq high|medium|low] [--level 12] [--perf] [--crowd N] [--webm-only|--sheet-only] [--fps 24] [--tile 40] [--tmax 1000] [--dist 7] [--span 1700] [--query a=b]',
   async run(r) {
     const sheetCtx = await r.browser.newContext({ viewport: { width: 1800, height: 800 } });
     const sheets: (() => Promise<void>)[] = [];
@@ -238,7 +336,15 @@ export default {
     for (const g of list('--genders', 'm,f')) {
       for (const pass of ['slow', 'real'] as const) {
         const slow = pass === 'slow' ? SLOW : 1;
-        const { ctx, page } = await r.open({ name: `V${g}${pass[0]}`, viewport: [1100, 900], quality: 'high', look: { g }, hide: 'hud', query: { quiet: 1, fxq: FXQ, slowmo: pass === 'slow' ? SLOW : undefined }, extra: opt('--query', '') });
+        const { ctx, page } = await r.open({
+          name: `V${g}${pass[0]}`,
+          viewport: [1100, 900],
+          quality: opt('--quality', 'high'),
+          look: { g },
+          hide: 'hud',
+          query: { quiet: 1, fxq: FXQ, slowmo: pass === 'slow' ? SLOW : undefined },
+          extra: opt('--query', ''),
+        });
         const method = async (id: string) => {
           await gm(page, `method ${id} 5`, 1400);
           if (LEVEL >= 16) await gm(page, 'skills max', 1500);
@@ -248,7 +354,10 @@ export default {
         await method('lac_kiem_quyet');
         await gm(page, `tp ${SPOTS[spot++ % SPOTS.length].join(' ')}`, 1600);
         // Chờ model người chơi nạp xong thư viện K-3 (trúng đòn có hướng) để động tác đủ.
-        await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.dirHits === true, undefined, { timeout: 60_000, polling: 300 });
+        await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.dirHits === true, undefined, {
+          timeout: 60_000,
+          polling: 300,
+        });
         const crowdN = num('--crowd', 0);
         if (crowdN > 0) {
           await crowd(page, crowdN);
@@ -274,8 +383,13 @@ export default {
           if (ULT.test(sk)) await gm(page, 'charge', 900);
           const wide = WIDE.test(sk);
           const dist = mon ? num('--mon-dist', MON_DIST[mon.kind] ?? 10) : wide ? num('--wide', 9.5) : num('--dist', 7);
-          await closeCam(page, dist, PHAP.test(sk) ? Math.PI + 0.15 : mon ? num('--mon-yaw', 1.1) : 0.9, mon ? 0.4 : wide && !PHAP.test(sk) ? 0.3 : 0.2);
-          const span = SPAN[sk] ?? (mon ? MON_SPAN[mon.kind] ?? 1600 : num('--span', 1700));
+          await closeCam(
+            page,
+            dist,
+            PHAP.test(sk) ? Math.PI + 0.15 : mon ? num('--mon-yaw', 1.1) : 0.9,
+            mon ? 0.4 : wide && !PHAP.test(sk) ? 0.3 : 0.2,
+          );
+          const span = SPAN[sk] ?? (mon ? (MON_SPAN[mon.kind] ?? 1600) : num('--span', 1700));
           const rec = await record(ctx, page, slow, span, async () => {
             if (mon) return mon.kind === 'death' ? gm(page, 'killall', 0) : monAct(page, mon.kind, slow);
             // Đánh thường: liên hoàn 3 đòn, bấm theo nhịp game (đồng hồ thật = game / slow).
@@ -288,7 +402,10 @@ export default {
           if (gpuErr.length) console.warn('[shots:vfx] gpuErrors:', JSON.stringify(gpuErr).slice(0, 1500));
           if (PERF) console.log(`[perf] ${sk} ${pass}: ${perfLine((await page.evaluate(() => window.__vfxPerf))!)}`);
           const tag = `${g === 'm' ? 'nam' : 'nu'}-${sk.replace('skl_', '').replace(/:/g, '_')}`;
-          if (!flag('--sheet-only')) console.log(`[shots:vfx] webm ${tag}-${pass}: ${encodeWebm(rec, path.join(r.out, `${tag}-${pass === 'slow' ? 'cham' : 'that'}.webm`)) ? 'ok' : 'lỗi'} (${rec.frames.length} khung)`);
+          if (!flag('--sheet-only'))
+            console.log(
+              `[shots:vfx] webm ${tag}-${pass}: ${encodeWebm(rec, path.join(r.out, `${tag}-${pass === 'slow' ? 'cham' : 'that'}.webm`)) ? 'ok' : 'lỗi'} (${rec.frames.length} khung)`,
+            );
           // Tờ ảnh lấy từ lượt chậm; lượt chậm không ghi được khung (hiếm, GPU bận) thì lấy từ lượt thật.
           const slowOk = pass === 'slow' && rec.frames.length >= 3;
           if (slowOk) sheeted.add(tag);

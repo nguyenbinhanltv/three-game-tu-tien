@@ -101,7 +101,12 @@ function arrayTexture(data: Uint8Array, size: number, layers: number, srgb: bool
  * một (nhường khung hình giữa các lớp) rồi ghép vào 2 texture mảng, nên shader địa hình chỉ tốn 2 slot
  * texture. VRAM: albedo 8 × 1024² × 4 B + mip ≈ 43 MB, pháp tuyến 8 × 512² ≈ 11 MB.
  */
-export async function loadGroundTextures(base: string, signal?: { aborted: boolean }, kind: GroundMaskKind = 'manifest', set = 'terrain'): Promise<GroundTextures> {
+export async function loadGroundTextures(
+  base: string,
+  signal?: { aborted: boolean },
+  kind: GroundMaskKind = 'manifest',
+  set = 'terrain',
+): Promise<GroundTextures> {
   const manifest = (await (await fetch(`${base}${set}/manifest.json`)).json()) as Manifest;
   const size = manifest.size;
   // Pháp tuyến/độ nhám tải ở nửa độ phân giải (chi tiết vi mô mềm hơn chút, đổi lấy ~32 MB VRAM: ngân sách texture 512 MB).

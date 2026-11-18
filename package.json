@@ -31,6 +31,7 @@
     "check:black": "pnpm --filter @dtl/perf run check:black",
     "assets:terrain": "pnpm --filter @dtl/asset-pipeline exec tsx src/terrain-textures.ts",
     "assets:grass-cards": "pnpm --filter @dtl/asset-pipeline exec tsx src/grass-cards.ts",
+    "assets:hires": "pnpm --filter @dtl/asset-pipeline exec tsx src/hires.ts",
     "assets:validate": "pnpm --filter @dtl/asset-pipeline run validate",
     "assets:impostor": "pnpm --filter @dtl/asset-pipeline run impostor",
     "audio:build": "node tools/audio/build.mjs",
@@ -46,12 +47,16 @@
     "icons:build": "node tools/icons/build.mjs",
     "icons:check": "node tools/icons/build.mjs --check",
     "lint": "eslint .",
-    "docs:check": "node tools/docs/check.mjs"
+    "format": "prettier --write \"**/*.{ts,tsx,mjs,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,mjs,css}\"",
+    "docs:check": "node tools/docs/check.mjs",
+    "docs:paths": "node tools/docs/check-paths.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
     "concurrently": "^9.1.0",
     "eslint": "^9.39.5",
+    "prettier": "^3.10.1",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.73.0"
   }

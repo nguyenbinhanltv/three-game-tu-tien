@@ -4,9 +4,7 @@
 // Server KHÔNG được bật RATE_LIMIT_EXEMPT (bài 11 kiểm giới hạn /matchmake). Bài 11 làm cạn xô
 // của IP này, chạy lại cả bộ sau khoảng 1 phút.
 
-
-import { C, type InitMsg } from '@dtl/shared';
-import { Client } from 'colyseus.js';
+import { C } from '@dtl/shared';
 import { runHttp } from './security/http';
 import { runTransfer } from './security/transfer';
 import { runMovement } from './security/movement';
@@ -19,7 +17,7 @@ import { runTeleport } from './security/teleport';
 import { runBag } from './security/bag';
 import { runRatelimit } from './security/ratelimit';
 import { testParamsChecks } from './security/testparams';
-import { type Ctx, HTTP, join, M, P, stats, W, health } from './security/lib';
+import { type Ctx, join, M, P, stats, W } from './security/lib';
 
 async function main() {
   // SECURITY_ONLY=testparams: chỉ chạy bài ?god/?at (bài 13) để thử lại nhanh.

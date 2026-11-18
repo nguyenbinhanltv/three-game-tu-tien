@@ -8,7 +8,8 @@ const TESTS = ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', '**/tests/**'];
 /** Import tương đối xuyên gói (`../../packages/x/src`, `../../../apps/y`): dùng tên gói (`@dtl/shared`...) hoặc `exports` của gói. */
 const CROSS_PACKAGE = {
   group: ['**/packages/*/**', '**/apps/*/**'],
-  message: 'Không import tương đối xuyên gói: dùng tên gói workspace (@dtl/shared, @dtl/content, @dtl/client...) hoặc đưa hàm thuần xuống packages/shared.',
+  message:
+    'Không import tương đối xuyên gói: dùng tên gói workspace (@dtl/shared, @dtl/content, @dtl/client...) hoặc đưa hàm thuần xuống packages/shared.',
 };
 
 /** Hai chỗ tools còn nhập thẳng mã client (chưa có `exports` cho @dtl/client): ghi nhận ở đây, gỡ khi dời hàm thuần xuống packages/shared (R-5). */
@@ -16,7 +17,17 @@ const CLIENT_IMPORT_EXCEPTIONS = ['tools/asset-pipeline/src/terrain-textures.ts'
 
 export default tseslint.config(
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/build/**', 'apps/client/public/**', 'bench/results/**', 'docs/**', 'assets/**', '**/.vite/**', '**/*.d.ts'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      'apps/client/public/**',
+      'bench/results/**',
+      'docs/**',
+      'assets/**',
+      '**/.vite/**',
+      '**/*.d.ts',
+    ],
   },
   {
     linterOptions: { reportUnusedDisableDirectives: 'off' },
@@ -28,7 +39,15 @@ export default tseslint.config(
     plugins: { '@typescript-eslint': tseslint.plugin },
     rules: {
       'no-restricted-imports': ['error', { patterns: [CROSS_PACKAGE] }],
+      // Khối catch rỗng nuốt lỗi âm thầm: ghi log hoặc chú thích lý do bên trong (khối có chú thích không bị tính là rỗng).
+      'no-empty': ['error', { allowEmptyCatch: false }],
     },
+  },
+  {
+    // Server: mọi dòng log đi qua apps/server/src/log.ts (có mức). Công cụ dòng lệnh (src/tools) và test được in thẳng.
+    files: ['apps/server/src/**/*.ts'],
+    ignores: ['apps/server/src/log.ts', 'apps/server/src/tools/**', ...TESTS],
+    rules: { 'no-console': 'error' },
   },
   {
     // Client: không đọc dữ liệu chỉ của server (bảng rơi đồ) — `monsters.json` vào bundle client (xem CLAUDE.md, no-server-data.test.ts).
@@ -38,7 +57,12 @@ export default tseslint.config(
         'error',
         {
           patterns: [CROSS_PACKAGE],
-          paths: [{ name: '@dtl/content/loot', message: 'Bảng rơi đồ/linh thạch chỉ dành cho server (loot.json). Client biết món rơi qua tin sys.loot.' }],
+          paths: [
+            {
+              name: '@dtl/content/loot',
+              message: 'Bảng rơi đồ/linh thạch chỉ dành cho server (loot.json). Client biết món rơi qua tin sys.loot.',
+            },
+          ],
         },
       ],
     },
@@ -53,7 +77,10 @@ export default tseslint.config(
         {
           patterns: [
             CROSS_PACKAGE,
-            { group: ['**/game/**', '../game', '../../game', '**/ui/**'], message: 'render/ không import game/ hay ui/: đưa phần dùng chung xuống src/base/.' },
+            {
+              group: ['**/game/**', '../game', '../../game', '**/ui/**'],
+              message: 'render/ không import game/ hay ui/: đưa phần dùng chung xuống src/base/.',
+            },
           ],
           paths: [{ name: '@dtl/content/loot', message: 'Chỉ dành cho server.' }],
         },
@@ -69,7 +96,10 @@ export default tseslint.config(
         {
           patterns: [
             CROSS_PACKAGE,
-            { group: ['**/game/**', '**/ui/**', '**/render/**', '../game', '../render', '../ui'], message: 'base/ là tầng thấp nhất của client: không import game/, render/ hay ui/.' },
+            {
+              group: ['**/game/**', '**/ui/**', '**/render/**', '../game', '../render', '../ui'],
+              message: 'base/ là tầng thấp nhất của client: không import game/, render/ hay ui/.',
+            },
           ],
           paths: [{ name: '@dtl/content/loot', message: 'Chỉ dành cho server.' }],
         },

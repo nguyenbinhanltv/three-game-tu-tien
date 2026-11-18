@@ -110,7 +110,31 @@ describe('mã cảnh giới kiểm thử', () => {
     expect(parseRealmCode('7')).toBe(7);
     expect(parseRealmCode('28')).toBe(28);
     expect(parseRealmCode(28)).toBe(28);
-    for (const bad of ['', 'nk0', 'nk16', 'tc0', 'tc5', 'kd5', 'na5', 'ht5', 'ab2', 'tc10', '33', '0', 'nk1x', '1e1', 0, 33, 2.5, NaN, null, undefined, {}, []]) expect(parseRealmCode(bad), String(bad)).toBeNull();
+    for (const bad of [
+      '',
+      'nk0',
+      'nk16',
+      'tc0',
+      'tc5',
+      'kd5',
+      'na5',
+      'ht5',
+      'ab2',
+      'tc10',
+      '33',
+      '0',
+      'nk1x',
+      '1e1',
+      0,
+      33,
+      2.5,
+      NaN,
+      null,
+      undefined,
+      {},
+      [],
+    ])
+      expect(parseRealmCode(bad), String(bad)).toBeNull();
   });
 });
 
@@ -118,7 +142,9 @@ describe('thang 28 cấp (E1-C)', () => {
   const sum = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => xpNeed(a + i)).reduce((x, y) => x + y, 0);
   it('xpNeed khớp bảng thiết kế, tích lũy 242k / 439k / 686k', () => {
     expect(MAX_LEVEL).toBe(32);
-    expect([16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27].map(xpNeed)).toEqual([56000, 59000, 62000, 65000, 102500, 107500, 112000, 117000, 162000, 168500, 174500, 181000]);
+    expect([16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27].map(xpNeed)).toEqual([
+      56000, 59000, 62000, 65000, 102500, 107500, 112000, 117000, 162000, 168500, 174500, 181000,
+    ]);
     expect(sum(16, 19)).toBe(242_000);
     expect(sum(20, 23)).toBe(439_000);
     expect(sum(24, 27)).toBe(686_000);

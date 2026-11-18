@@ -6,7 +6,23 @@ import type { AffixStat } from './items';
 import { EQUIP_SLOTS, type EquipSlot } from './types';
 
 /** Hiệu ứng combat của bậc cao: server đọc cờ này trong `executeSkill`/`hitMonster`/`damagePlayer`. */
-export type SetFxId = 'phi_kiem_extra' | 'shield_boost' | 'heal_share' | 'crit_slow' | 'hoanh_kiem' | 'kim_chung' | 'moc_linh' | 'nghich_kiem' | 'dich_son' | 'ngung_dan' | 'phan_anh' | 'anh_thiet' | 'anh_duoc' | 'thuan_tram' | 'thuan_ho' | 'cuu_vien';
+export type SetFxId =
+  | 'phi_kiem_extra'
+  | 'shield_boost'
+  | 'heal_share'
+  | 'crit_slow'
+  | 'hoanh_kiem'
+  | 'kim_chung'
+  | 'moc_linh'
+  | 'nghich_kiem'
+  | 'dich_son'
+  | 'ngung_dan'
+  | 'phan_anh'
+  | 'anh_thiet'
+  | 'anh_duoc'
+  | 'thuan_tram'
+  | 'thuan_ho'
+  | 'cuu_vien';
 
 export interface SetLine {
   id: AffixStat;
@@ -94,7 +110,26 @@ export interface SetFx {
   cuuVienBoost: number;
 }
 
-export const NO_SET_FX: SetFx = { phiKiemExtra: 0, shieldBoost: 0, shieldReflect: 0, healShare: 0, critSlowSec: 0, hoanhKiemPower: 0, hoanhKiemReach: 0, kimChungReflect: 0, mocLinhDur: 0, nghichKiemRefund: 0, dichSonStun: 0, ngungDanBoost: 0, phanAnhPower: 0, anhThietShare: 0, anhDuocBoost: 0, thuanTramPower: 0, thuanHoBoost: 0, cuuVienBoost: 0 };
+export const NO_SET_FX: SetFx = {
+  phiKiemExtra: 0,
+  shieldBoost: 0,
+  shieldReflect: 0,
+  healShare: 0,
+  critSlowSec: 0,
+  hoanhKiemPower: 0,
+  hoanhKiemReach: 0,
+  kimChungReflect: 0,
+  mocLinhDur: 0,
+  nghichKiemRefund: 0,
+  dichSonStun: 0,
+  ngungDanBoost: 0,
+  phanAnhPower: 0,
+  anhThietShare: 0,
+  anhDuocBoost: 0,
+  thuanTramPower: 0,
+  thuanHoBoost: 0,
+  cuuVienBoost: 0,
+};
 
 /** Đếm món bộ đang mặc theo `setOf(itemId)`; chỉ tính mỗi món một lần (mỗi ô một món nên tự khác nhau). */
 export function setStatuses(sets: readonly SetDef[], wornIds: readonly string[]): SetStatus[] {
@@ -118,22 +153,56 @@ export function setFxOf(statuses: readonly SetStatus[]): SetFx {
   for (const s of statuses) {
     for (const t of s.active) {
       switch (t.fx) {
-        case 'phi_kiem_extra': fx.phiKiemExtra = Math.max(fx.phiKiemExtra, t.v ?? 0); break;
-        case 'shield_boost': fx.shieldBoost = Math.max(fx.shieldBoost, t.v ?? 0); fx.shieldReflect = Math.max(fx.shieldReflect, t.w ?? 0); break;
-        case 'heal_share': fx.healShare = Math.max(fx.healShare, t.v ?? 0); break;
-        case 'crit_slow': fx.critSlowSec = Math.max(fx.critSlowSec, t.v ?? 0); break;
-        case 'hoanh_kiem': fx.hoanhKiemPower = Math.max(fx.hoanhKiemPower, t.v ?? 0); fx.hoanhKiemReach = Math.max(fx.hoanhKiemReach, t.w ?? 0); break;
-        case 'kim_chung': fx.kimChungReflect = Math.max(fx.kimChungReflect, t.v ?? 0); break;
-        case 'moc_linh': fx.mocLinhDur = Math.max(fx.mocLinhDur, t.v ?? 0); break;
-        case 'nghich_kiem': fx.nghichKiemRefund = Math.max(fx.nghichKiemRefund, t.v ?? 0); break;
-        case 'dich_son': fx.dichSonStun = Math.max(fx.dichSonStun, t.v ?? 0); break;
-        case 'ngung_dan': fx.ngungDanBoost = Math.max(fx.ngungDanBoost, t.v ?? 0); break;
-        case 'phan_anh': fx.phanAnhPower = Math.max(fx.phanAnhPower, t.v ?? 0); break;
-        case 'anh_thiet': fx.anhThietShare = Math.max(fx.anhThietShare, t.v ?? 0); break;
-        case 'anh_duoc': fx.anhDuocBoost = Math.max(fx.anhDuocBoost, t.v ?? 0); break;
-        case 'thuan_tram': fx.thuanTramPower = Math.max(fx.thuanTramPower, t.v ?? 0); break;
-        case 'thuan_ho': fx.thuanHoBoost = Math.max(fx.thuanHoBoost, t.v ?? 0); break;
-        case 'cuu_vien': fx.cuuVienBoost = Math.max(fx.cuuVienBoost, t.v ?? 0); break;
+        case 'phi_kiem_extra':
+          fx.phiKiemExtra = Math.max(fx.phiKiemExtra, t.v ?? 0);
+          break;
+        case 'shield_boost':
+          fx.shieldBoost = Math.max(fx.shieldBoost, t.v ?? 0);
+          fx.shieldReflect = Math.max(fx.shieldReflect, t.w ?? 0);
+          break;
+        case 'heal_share':
+          fx.healShare = Math.max(fx.healShare, t.v ?? 0);
+          break;
+        case 'crit_slow':
+          fx.critSlowSec = Math.max(fx.critSlowSec, t.v ?? 0);
+          break;
+        case 'hoanh_kiem':
+          fx.hoanhKiemPower = Math.max(fx.hoanhKiemPower, t.v ?? 0);
+          fx.hoanhKiemReach = Math.max(fx.hoanhKiemReach, t.w ?? 0);
+          break;
+        case 'kim_chung':
+          fx.kimChungReflect = Math.max(fx.kimChungReflect, t.v ?? 0);
+          break;
+        case 'moc_linh':
+          fx.mocLinhDur = Math.max(fx.mocLinhDur, t.v ?? 0);
+          break;
+        case 'nghich_kiem':
+          fx.nghichKiemRefund = Math.max(fx.nghichKiemRefund, t.v ?? 0);
+          break;
+        case 'dich_son':
+          fx.dichSonStun = Math.max(fx.dichSonStun, t.v ?? 0);
+          break;
+        case 'ngung_dan':
+          fx.ngungDanBoost = Math.max(fx.ngungDanBoost, t.v ?? 0);
+          break;
+        case 'phan_anh':
+          fx.phanAnhPower = Math.max(fx.phanAnhPower, t.v ?? 0);
+          break;
+        case 'anh_thiet':
+          fx.anhThietShare = Math.max(fx.anhThietShare, t.v ?? 0);
+          break;
+        case 'anh_duoc':
+          fx.anhDuocBoost = Math.max(fx.anhDuocBoost, t.v ?? 0);
+          break;
+        case 'thuan_tram':
+          fx.thuanTramPower = Math.max(fx.thuanTramPower, t.v ?? 0);
+          break;
+        case 'thuan_ho':
+          fx.thuanHoBoost = Math.max(fx.thuanHoBoost, t.v ?? 0);
+          break;
+        case 'cuu_vien':
+          fx.cuuVienBoost = Math.max(fx.cuuVienBoost, t.v ?? 0);
+          break;
       }
     }
   }

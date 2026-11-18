@@ -358,7 +358,43 @@
           "depth": 9,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_dia_mach_long_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_dia_mach_long.baseColor.ba0ccb3559.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 727377,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_dia_mach_long_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_dia_mach_long.normal.3fbe1fd657.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1957953,
+          "gpuBytes": 22369621
+        },
+        {
+          "mat": "boss_dia_mach_long_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/boss_dia_mach_long.metallicRoughness.4f296b022c.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 259012,
+          "gpuBytes": 5592405
+        }
+      ]
     },
     "boss_han_giao": {
       "id": "boss_han_giao",
@@ -443,7 +479,43 @@
           "depth": 6.4,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_han_giao_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_han_giao.baseColor.128d25d6da.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 771214,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_han_giao_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_han_giao.normal.7c9345d504.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1912152,
+          "gpuBytes": 22369621
+        },
+        {
+          "mat": "boss_han_giao_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/boss_han_giao.metallicRoughness.b35d5aaabb.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 333187,
+          "gpuBytes": 5592405
+        }
+      ]
     },
     "boss_huyet_lang_vuong": {
       "id": "boss_huyet_lang_vuong",
@@ -527,7 +599,43 @@
           "depth": 1.8,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_huyet_lang_vuong_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_huyet_lang_vuong.baseColor.e93e0014dc.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 640986,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_huyet_lang_vuong_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_huyet_lang_vuong.normal.eaa857ff74.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1382384,
+          "gpuBytes": 22369621
+        },
+        {
+          "mat": "boss_huyet_lang_vuong_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/boss_huyet_lang_vuong.metallicRoughness.739018c9c8.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 297207,
+          "gpuBytes": 5592405
+        }
+      ]
     },
     "boss_kiem_khoi": {
       "id": "boss_kiem_khoi",
@@ -611,7 +719,43 @@
           "depth": 1.3797,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_kiem_khoi_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_kiem_khoi.baseColor.d09800ec48.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 707060,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_kiem_khoi_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_kiem_khoi.normal.9279e8f14b.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1819484,
+          "gpuBytes": 22369621
+        },
+        {
+          "mat": "boss_kiem_khoi_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/boss_kiem_khoi.metallicRoughness.9ad63aad44.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 501149,
+          "gpuBytes": 5592405
+        }
+      ]
     },
     "boss_kim_da_ma_hau": {
       "id": "boss_kim_da_ma_hau",
@@ -762,7 +906,43 @@
           "depth": 2.0595,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_kinh_nguyet_chan_quan_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_kinh_nguyet_chan_quan.baseColor.36138ec09d.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 625030,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_kinh_nguyet_chan_quan_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_kinh_nguyet_chan_quan.normal.29f26a2e90.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1090386,
+          "gpuBytes": 22369621
+        },
+        {
+          "mat": "boss_kinh_nguyet_chan_quan_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/boss_kinh_nguyet_chan_quan.metallicRoughness.8b97ce98aa.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 467760,
+          "gpuBytes": 5592405
+        }
+      ]
     },
     "boss_tam_thu_nguc_khuyen": {
       "id": "boss_tam_thu_nguc_khuyen",
@@ -856,7 +1036,31 @@
           "depth": 5.4445,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_tam_thu_nguc_khuyen_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_tam_thu_nguc_khuyen.baseColor.c96c7ab4ef.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 703338,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_tam_thu_nguc_khuyen_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_tam_thu_nguc_khuyen.normal.86255ddb7b.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 2515371,
+          "gpuBytes": 22369621
+        }
+      ]
     },
     "boss_tan_hoa_kiem_co": {
       "id": "boss_tan_hoa_kiem_co",
@@ -1007,7 +1211,43 @@
           "depth": 3.7737,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_thach_tam_khoi_vuong_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_thach_tam_khoi_vuong.baseColor.cf42b6e94f.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 664981,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_thach_tam_khoi_vuong_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_thach_tam_khoi_vuong.normal.c0839a8e9d.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1362304,
+          "gpuBytes": 22369621
+        },
+        {
+          "mat": "boss_thach_tam_khoi_vuong_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/boss_thach_tam_khoi_vuong.metallicRoughness.9e73139643.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 239866,
+          "gpuBytes": 5592405
+        }
+      ]
     },
     "boss_thien_khuyet_thu_linh": {
       "id": "boss_thien_khuyet_thu_linh",
@@ -1092,7 +1332,43 @@
           "depth": 4.6404,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_thien_khuyet_thu_linh_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_thien_khuyet_thu_linh.baseColor.e1d6a8a543.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 651312,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_thien_khuyet_thu_linh_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_thien_khuyet_thu_linh.normal.ea2a980fde.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1694674,
+          "gpuBytes": 22369621
+        },
+        {
+          "mat": "boss_thien_khuyet_thu_linh_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/boss_thien_khuyet_thu_linh.metallicRoughness.66244c0824.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 284085,
+          "gpuBytes": 5592405
+        }
+      ]
     },
     "boss_thon_mach_ngo_cong_vuong": {
       "id": "boss_thon_mach_ngo_cong_vuong",
@@ -1177,7 +1453,43 @@
           "depth": 14,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_thon_mach_ngo_cong_vuong_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_thon_mach_ngo_cong_vuong.baseColor.18fc6581c6.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 729833,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_thon_mach_ngo_cong_vuong_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_thon_mach_ngo_cong_vuong.normal.735c26f3c1.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1731982,
+          "gpuBytes": 22369621
+        },
+        {
+          "mat": "boss_thon_mach_ngo_cong_vuong_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/boss_thon_mach_ngo_cong_vuong.metallicRoughness.8ddc1ffa28.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 527079,
+          "gpuBytes": 5592405
+        }
+      ]
     },
     "boss_thu_khich_duc_chu": {
       "id": "boss_thu_khich_duc_chu",
@@ -1328,7 +1640,43 @@
           "depth": 0.9807,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_thu_mo_tuong_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_thu_mo_tuong.baseColor.21c9f461f5.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 658490,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_thu_mo_tuong_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_thu_mo_tuong.normal.dd5ab6f49c.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1968835,
+          "gpuBytes": 22369621
+        },
+        {
+          "mat": "boss_thu_mo_tuong_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/boss_thu_mo_tuong.metallicRoughness.83e03c9c09.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 486918,
+          "gpuBytes": 5592405
+        }
+      ]
     },
     "boss_van_hai_kinh_vuong": {
       "id": "boss_van_hai_kinh_vuong",
@@ -1413,7 +1761,43 @@
           "depth": 18,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_van_hai_kinh_vuong_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_van_hai_kinh_vuong.baseColor.9c5de3007d.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 618260,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_van_hai_kinh_vuong_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_van_hai_kinh_vuong.normal.d57f9ded74.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1380479,
+          "gpuBytes": 22369621
+        },
+        {
+          "mat": "boss_van_hai_kinh_vuong_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/boss_van_hai_kinh_vuong.metallicRoughness.4b4d016a2a.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 296454,
+          "gpuBytes": 5592405
+        }
+      ]
     },
     "boss_vo_dien_than_quan": {
       "id": "boss_vo_dien_than_quan",
@@ -1498,7 +1882,43 @@
           "depth": 2.2909,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "boss_vo_dien_than_quan_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/boss_vo_dien_than_quan.baseColor.994566d5fb.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 623514,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "boss_vo_dien_than_quan_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/boss_vo_dien_than_quan.normal.26b7dfbc11.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 1104875,
+          "gpuBytes": 22369621
+        },
+        {
+          "mat": "boss_vo_dien_than_quan_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/boss_vo_dien_than_quan.metallicRoughness.e28b9976df.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 465565,
+          "gpuBytes": 5592405
+        }
+      ]
     },
     "chr_kiem_tu_nam": {
       "id": "chr_kiem_tu_nam",
@@ -2950,7 +3370,43 @@
           "depth": 1.1538,
           "minY": 0.0001
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_cot_kiem_thong_linh_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_cot_kiem_thong_linh.baseColor.2c856d4fae.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 631815,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_cot_kiem_thong_linh_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_cot_kiem_thong_linh.normal.64610a53ac.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 398770,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_cot_kiem_thong_linh_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_cot_kiem_thong_linh.metallicRoughness.b71b2a5387.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 124580,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "elite_cu_nham_vien": {
       "id": "elite_cu_nham_vien",
@@ -3034,7 +3490,43 @@
           "depth": 0.9338,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_cu_nham_vien_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_cu_nham_vien.baseColor.90fd4eea49.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 683067,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_cu_nham_vien_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_cu_nham_vien.normal.fb99f89d17.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 551880,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_cu_nham_vien_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_cu_nham_vien.metallicRoughness.b9b95c861b.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 133410,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "elite_da_minh_loc_vuong": {
       "id": "elite_da_minh_loc_vuong",
@@ -3115,7 +3607,43 @@
           "depth": 3,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_da_minh_loc_vuong_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_da_minh_loc_vuong.baseColor.b45b654df8.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 693233,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_da_minh_loc_vuong_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_da_minh_loc_vuong.normal.e362a2aa49.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 421804,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_da_minh_loc_vuong_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_da_minh_loc_vuong.metallicRoughness.ee71e90008.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 108579,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "elite_ho_mach_khoi_tuong": {
       "id": "elite_ho_mach_khoi_tuong",
@@ -3199,7 +3727,43 @@
           "depth": 2.3635,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_ho_mach_khoi_tuong_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_ho_mach_khoi_tuong.baseColor.0cd67d8fbb.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 667996,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_ho_mach_khoi_tuong_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_ho_mach_khoi_tuong.normal.88aa277013.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 618174,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_ho_mach_khoi_tuong_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_ho_mach_khoi_tuong.metallicRoughness.b9ee338b14.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 124967,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "elite_hoi_giac_cu_thu": {
       "id": "elite_hoi_giac_cu_thu",
@@ -3346,7 +3910,43 @@
           "depth": 1.5,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_huyet_nha_lang_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_huyet_nha_lang.baseColor.972d36de8a.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 632972,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_huyet_nha_lang_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_huyet_nha_lang.normal.f373d8f6c8.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 428298,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_huyet_nha_lang_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_huyet_nha_lang.metallicRoughness.c9da681aeb.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 116436,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "elite_kinh_dien_ma_quan": {
       "id": "elite_kinh_dien_ma_quan",
@@ -3430,7 +4030,43 @@
           "depth": 0.9821,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_kinh_dien_ma_quan_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_kinh_dien_ma_quan.baseColor.4e0e725da9.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 596139,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_kinh_dien_ma_quan_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_kinh_dien_ma_quan.normal.203abbfd25.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 370166,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_kinh_dien_ma_quan_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_kinh_dien_ma_quan.metallicRoughness.8d36f6e7aa.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 135455,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "elite_liet_cot_bao": {
       "id": "elite_liet_cot_bao",
@@ -3511,7 +4147,43 @@
           "depth": 2.8,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_liet_cot_bao_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_liet_cot_bao.baseColor.482a7f55cf.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 694513,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_liet_cot_bao_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_liet_cot_bao.normal.bdeb9b3861.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 643509,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_liet_cot_bao_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_liet_cot_bao.metallicRoughness.1525dd6c8f.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 122759,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "elite_loi_van_su_vuong": {
       "id": "elite_loi_van_su_vuong",
@@ -3592,7 +4264,43 @@
           "depth": 3.2,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_loi_van_su_vuong_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_loi_van_su_vuong.baseColor.cf6a3f9a46.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 509390,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_loi_van_su_vuong_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_loi_van_su_vuong.normal.f4975330a2.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 443005,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_loi_van_su_vuong_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_loi_van_su_vuong.metallicRoughness.4cf480f0cc.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 134266,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "elite_thach_tuong_dai_tuong": {
       "id": "elite_thach_tuong_dai_tuong",
@@ -3676,7 +4384,43 @@
           "depth": 1.0919,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_thach_tuong_dai_tuong_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_thach_tuong_dai_tuong.baseColor.84ec346285.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 722243,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_thach_tuong_dai_tuong_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_thach_tuong_dai_tuong.normal.08d3e971ce.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 644014,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_thach_tuong_dai_tuong_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_thach_tuong_dai_tuong.metallicRoughness.1afcabad99.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 117729,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "elite_van_hac_vuong": {
       "id": "elite_van_hac_vuong",
@@ -3757,7 +4501,43 @@
           "depth": 4.1544,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_van_hac_vuong_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_van_hac_vuong.baseColor.c3870dd61a.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 575200,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_van_hac_vuong_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_van_hac_vuong.normal.73da055f05.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 319606,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_van_hac_vuong_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_van_hac_vuong.metallicRoughness.b3982d970e.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 107123,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "elite_xich_dien_ho": {
       "id": "elite_xich_dien_ho",
@@ -3838,7 +4618,43 @@
           "depth": 1.27,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_xich_dien_ho_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_xich_dien_ho.baseColor.68ff6e25e1.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 586073,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_xich_dien_ho_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_xich_dien_ho.normal.e3b3808597.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 309081,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_xich_dien_ho_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_xich_dien_ho.metallicRoughness.c3a8fbbc7c.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 84890,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "elite_xich_sa_ngo_cong": {
       "id": "elite_xich_sa_ngo_cong",
@@ -3919,7 +4735,43 @@
           "depth": 6,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "elite_xich_sa_ngo_cong_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/elite_xich_sa_ngo_cong.baseColor.b4d0a7b5a3.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 663786,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_xich_sa_ngo_cong_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/elite_xich_sa_ngo_cong.normal.edfb6297ed.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 509682,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "elite_xich_sa_ngo_cong_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/elite_xich_sa_ngo_cong.metallicRoughness.f3d15c5cba.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 110869,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_bich_ngoc_kim_thien": {
       "id": "mon_bich_ngoc_kim_thien",
@@ -4000,7 +4852,43 @@
           "depth": 0.7,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_bich_ngoc_kim_thien_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_bich_ngoc_kim_thien.baseColor.79d37652c7.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 627787,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_bich_ngoc_kim_thien_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_bich_ngoc_kim_thien.normal.0b6cf70d8d.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 367385,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_bich_ngoc_kim_thien_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_bich_ngoc_kim_thien.metallicRoughness.9fc8265e99.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 106667,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_co_thanh_chien_ma": {
       "id": "mon_co_thanh_chien_ma",
@@ -4081,7 +4969,43 @@
           "depth": 0.9929,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_co_thanh_chien_ma_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_co_thanh_chien_ma.baseColor.7dbeb8dba2.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 601639,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_co_thanh_chien_ma_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_co_thanh_chien_ma.normal.8d9c9d7433.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 437260,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_co_thanh_chien_ma_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_co_thanh_chien_ma.metallicRoughness.bd8091b597.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 148526,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_cot_ve_kiem_thu": {
       "id": "mon_cot_ve_kiem_thu",
@@ -4163,7 +5087,43 @@
           "depth": 0.7861,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_cot_ve_kiem_thu_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_cot_ve_kiem_thu.baseColor.873b4ac23b.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 622435,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_cot_ve_kiem_thu_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_cot_ve_kiem_thu.normal.7c0f13c61f.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 388392,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_cot_ve_kiem_thu_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_cot_ve_kiem_thu.metallicRoughness.755919c3af.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 141343,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_da_minh_loc": {
       "id": "mon_da_minh_loc",
@@ -4244,7 +5204,43 @@
           "depth": 2.2,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_da_minh_loc_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_da_minh_loc.baseColor.41571456b5.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 547676,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_da_minh_loc_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_da_minh_loc.normal.2658547bd0.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 388998,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_da_minh_loc_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_da_minh_loc.metallicRoughness.9e133b4b5a.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 103729,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_giac_kiem_trong_binh": {
       "id": "mon_giac_kiem_trong_binh",
@@ -4392,7 +5388,43 @@
           "depth": 1.5,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_hoa_van_ho_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_hoa_van_ho.baseColor.981794c117.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 645617,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_hoa_van_ho_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_hoa_van_ho.normal.09b3137ed6.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 350738,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_hoa_van_ho_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_hoa_van_ho.metallicRoughness.884eb50779.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 110166,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_khai_mach_khoi_loi": {
       "id": "mon_khai_mach_khoi_loi",
@@ -4473,7 +5505,43 @@
           "depth": 1.0252,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_khai_mach_khoi_loi_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_khai_mach_khoi_loi.baseColor.2da69b0ee5.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 666051,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_khai_mach_khoi_loi_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_khai_mach_khoi_loi.normal.10d224974a.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 564778,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_khai_mach_khoi_loi_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_khai_mach_khoi_loi.metallicRoughness.b7f52492ef.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 94777,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_kinh_linh": {
       "id": "mon_kinh_linh",
@@ -4555,7 +5623,43 @@
           "depth": 0.8575,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_kinh_linh_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_kinh_linh.baseColor.e5eda78a4c.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 600627,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_kinh_linh_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_kinh_linh.normal.e50fda5910.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 403480,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_kinh_linh_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_kinh_linh.metallicRoughness.c72b193c6c.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 145811,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_liet_hoa_ma_nguu": {
       "id": "mon_liet_hoa_ma_nguu",
@@ -4645,7 +5749,43 @@
           "depth": 3.6256,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_liet_hoa_ma_nguu_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_liet_hoa_ma_nguu.baseColor.e50113092c.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 576391,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_liet_hoa_ma_nguu_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_liet_hoa_ma_nguu.normal.a3508e58cd.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 799800,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_liet_hoa_ma_nguu_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_liet_hoa_ma_nguu.metallicRoughness.769bc62e8b.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 114603,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_mach_thuong_ho_ve": {
       "id": "mon_mach_thuong_ho_ve",
@@ -4727,7 +5867,43 @@
           "depth": 0.8505,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_mach_thuong_ho_ve_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_mach_thuong_ho_ve.baseColor.ac0356a854.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 597442,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_mach_thuong_ho_ve_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_mach_thuong_ho_ve.normal.32f7df81bc.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 411890,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_mach_thuong_ho_ve_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_mach_thuong_ho_ve.metallicRoughness.86ae0846c2.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 124281,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_ngo_cong_au": {
       "id": "mon_ngo_cong_au",
@@ -4808,7 +5984,43 @@
           "depth": 2.4,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_ngo_cong_au_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_ngo_cong_au.baseColor.75d809f234.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 588842,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_ngo_cong_au_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_ngo_cong_au.normal.0ff2b4ba74.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 395870,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_ngo_cong_au_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_ngo_cong_au.metallicRoughness.d64218d88e.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 55407,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_phu_dao_thach_quy": {
       "id": "mon_phu_dao_thach_quy",
@@ -4889,7 +6101,43 @@
           "depth": 2.6,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_phu_dao_thach_quy_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_phu_dao_thach_quy.baseColor.63166e7d93.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 720785,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_phu_dao_thach_quy_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_phu_dao_thach_quy.normal.da101ed220.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 628457,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_phu_dao_thach_quy_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_phu_dao_thach_quy.metallicRoughness.8e9609460a.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 113869,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_soi_xam": {
       "id": "mon_soi_xam",
@@ -4970,7 +6218,43 @@
           "depth": 1.5,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_soi_xam_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_soi_xam.baseColor.a8254f6a0b.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 775044,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_soi_xam_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_soi_xam.normal.12a3f6d568.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 465827,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_soi_xam_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_soi_xam.metallicRoughness.1179683677.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 97867,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_tan_chung": {
       "id": "mon_tan_chung",
@@ -5117,7 +6401,43 @@
           "depth": 2.2,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_thach_giap_te_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_thach_giap_te.baseColor.2b17db6ec0.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 607986,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_thach_giap_te_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_thach_giap_te.normal.e57bc687c3.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 656965,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_thach_giap_te_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_thach_giap_te.metallicRoughness.02f721f6cf.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 132463,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_thach_tuong_vo_si": {
       "id": "mon_thach_tuong_vo_si",
@@ -5199,7 +6519,43 @@
           "depth": 0.7155,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_thach_tuong_vo_si_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_thach_tuong_vo_si.baseColor.cf97a3652f.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 652657,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_thach_tuong_vo_si_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_thach_tuong_vo_si.normal.b1fd7c9d74.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 548424,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_thach_tuong_vo_si_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_thach_tuong_vo_si.metallicRoughness.efdb424401.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 133311,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_thach_vien": {
       "id": "mon_thach_vien",
@@ -5280,7 +6636,43 @@
           "depth": 0.8382,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_thach_vien_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_thach_vien.baseColor.5534fe4cb5.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 635440,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_thach_vien_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_thach_vien.normal.48375f9175.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 556295,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_thach_vien_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_thach_vien.metallicRoughness.d359ddf3eb.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 134143,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_thiet_boi_tru": {
       "id": "mon_thiet_boi_tru",
@@ -5361,7 +6753,43 @@
           "depth": 1.4,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_thiet_boi_tru_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_thiet_boi_tru.baseColor.b52758d43f.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 687906,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_thiet_boi_tru_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_thiet_boi_tru.normal.92f4ad4654.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 483599,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_thiet_boi_tru_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_thiet_boi_tru.metallicRoughness.c3b04336f0.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 118432,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_u_anh_cot_loc": {
       "id": "mon_u_anh_cot_loc",
@@ -5442,7 +6870,43 @@
           "depth": 2.2197,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_u_anh_cot_loc_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_u_anh_cot_loc.baseColor.ec441d6707.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 602097,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_u_anh_cot_loc_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_u_anh_cot_loc.normal.1220f3ba98.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 842878,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_u_anh_cot_loc_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_u_anh_cot_loc.metallicRoughness.ac111e68a3.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 128984,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "mon_van_hac": {
       "id": "mon_van_hac",
@@ -5523,7 +6987,43 @@
           "depth": 2.1109,
           "minY": 0
         }
-      }
+      },
+      "hires": [
+        {
+          "mat": "mon_van_hac_mat",
+          "slots": [
+            "map"
+          ],
+          "file": "hi/mon_van_hac.baseColor.67e6896a3d.ktx2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 524635,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_van_hac_mat",
+          "slots": [
+            "normalMap"
+          ],
+          "file": "hi/mon_van_hac.normal.31b03740e3.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 293544,
+          "gpuBytes": 5592405
+        },
+        {
+          "mat": "mon_van_hac_mat",
+          "slots": [
+            "roughnessMap",
+            "metalnessMap"
+          ],
+          "file": "hi/mon_van_hac.metallicRoughness.e6b5476cee.ktx2",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 110097,
+          "gpuBytes": 1398101
+        }
+      ]
     },
     "prop_anh_dao": {
       "id": "prop_anh_dao",

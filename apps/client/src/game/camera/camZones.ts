@@ -31,7 +31,16 @@ const ZONES: readonly Zone[] = [
   // Sân tông môn: quảng trường rộng, nhiều kiến trúc cao.
   { id: 'sect', x: SECT.x, z: SECT.z, inner: SECT.flatR + 10, outer: SECT.flatR + 90, distMul: 1.25, pitchAdd: 0.04, fov: 58 },
   // Kiếm Trủng: lòng chảo hẹp, vách đá bao quanh.
-  { id: 'kiem_trung', x: KIEM_TRUNG.x, z: KIEM_TRUNG.z, inner: KIEM_TRUNG.flatR + 30, outer: KIEM_TRUNG.outerR - 10, distMul: 0.74, pitchAdd: 0.05, fov: 50 },
+  {
+    id: 'kiem_trung',
+    x: KIEM_TRUNG.x,
+    z: KIEM_TRUNG.z,
+    inner: KIEM_TRUNG.flatR + 30,
+    outer: KIEM_TRUNG.outerR - 10,
+    distMul: 0.74,
+    pitchAdd: 0.05,
+    fov: 50,
+  },
   // Biển hồ: mở, thấy xa.
   { id: 'ho', x: LAKE.x, z: LAKE.z, inner: LAKE_WATER_R - 80, outer: LAKE_WATER_R + 60, distMul: 1.18, pitchAdd: 0.02, fov: 60 },
   // Rừng: tán cây dày, kéo gần để ít bị che.
@@ -39,7 +48,16 @@ const ZONES: readonly Zone[] = [
   // Thung lũng chân núi: thoáng.
   { id: 'thung_lung', x: VALLEY.x, z: VALLEY.z, inner: VALLEY.flatR - 80, outer: VALLEY.flatR + 80, distMul: 1.08, pitchAdd: 0, fov: 56 },
   // Bệ cổng bí cảnh trên sườn núi cao: nhìn ra biển mây.
-  { id: 'cong', x: PORTAL_PAD.x, z: PORTAL_PAD.z, inner: PORTAL_PAD.flatR, outer: PORTAL_PAD.outerR - 60, distMul: 1.15, pitchAdd: 0.03, fov: 59 },
+  {
+    id: 'cong',
+    x: PORTAL_PAD.x,
+    z: PORTAL_PAD.z,
+    inner: PORTAL_PAD.flatR,
+    outer: PORTAL_PAD.outerR - 60,
+    distMul: 1.15,
+    pitchAdd: 0.03,
+    fov: 59,
+  },
 ];
 
 function smooth(x: number): number {
@@ -82,4 +100,3 @@ export function easeZoneCam(cur: ZoneCam, want: ZoneCam, dt: number, rate = 2.2)
   cur.pitchAdd += (want.pitchAdd - cur.pitchAdd) * a;
   cur.fov += (want.fov - cur.fov) * a;
 }
-

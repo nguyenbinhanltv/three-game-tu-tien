@@ -1,7 +1,7 @@
 // Nhiệm vụ chương 4 Thiên Khuyết (E4-H): thẻ chương, hội thoại giao/trả ở Mặc Chiếu và Tô Vãn Ngư, bảng theo dõi nhiệm vụ.
 import { NPC } from '@dtl/content';
 import { sleep } from '../lib/devserver';
-import { enterLevel, gm, tp } from '../lib/game';
+import { gm, tp } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap } from '../lib/shot';
 
@@ -14,7 +14,11 @@ export default {
     await gm(page, 'qdone q3_nguyen_anh');
     await gm(page, 'tp tk_tram', 800);
     // Thẻ chương hiện 1,2 s sau khi tới nơi: chụp ngay khi chữ xuất hiện.
-    await page.getByText('Chương bốn').first().waitFor({ timeout: 60_000 }).catch(() => {});
+    await page
+      .getByText('Chương bốn')
+      .first()
+      .waitFor({ timeout: 60_000 })
+      .catch(() => {});
     await sleep(1500);
     await snap(page, r.out, '01-the-chuong-4.jpg', { wait: 0 });
     await sleep(4500);
@@ -24,7 +28,8 @@ export default {
       await tp(page, n.x + 1.5, n.z + 1.5);
       await sleep(700);
     };
-    const talk = (id: string) => page.evaluate((v) => (window as unknown as { __game: { openNpc(i: string): void } }).__game.openNpc(v), id);
+    const talk = (id: string) =>
+      page.evaluate((v) => (window as unknown as { __game: { openNpc(i: string): void } }).__game.openNpc(v), id);
     const close = () => page.keyboard.press('Escape');
 
     // Mặc Chiếu: nhận q4_thach_tuong (đã xong q4_bac_len).
@@ -33,7 +38,11 @@ export default {
     await talk('npc_mac_chieu');
     await sleep(1200);
     await snap(page, r.out, '02-mac-chieu-nhan-nhiem-vu.jpg', { wait: 0 });
-    await page.getByRole('button', { name: /nhận/i }).first().click().catch(() => {});
+    await page
+      .getByRole('button', { name: /nhận/i })
+      .first()
+      .click()
+      .catch(() => {});
     await sleep(1200);
     await close();
     await snap(page, r.out, '03-theo-doi-nhiem-vu.jpg');
@@ -52,7 +61,11 @@ export default {
     await near('npc_mac_chieu');
     await talk('npc_mac_chieu');
     await sleep(1200);
-    await page.getByRole('button', { name: /nhận/i }).first().click().catch(() => {});
+    await page
+      .getByRole('button', { name: /nhận/i })
+      .first()
+      .click()
+      .catch(() => {});
     await sleep(900);
     await gm(page, 'qev touch tinh_bai_dai');
     await sleep(900);

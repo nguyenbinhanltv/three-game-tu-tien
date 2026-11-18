@@ -40,7 +40,13 @@ PRAGMA user_version = 1;`);
     raw.close();
 
     const first = openDb(file);
-    const rows = () => first.sqlite.prepare('SELECT name, level, root, bk FROM characters ORDER BY id').all() as { name: string; level: number; root: string; bk: number }[];
+    const rows = () =>
+      first.sqlite.prepare('SELECT name, level, root, bk FROM characters ORDER BY id').all() as {
+        name: string;
+        level: number;
+        root: string;
+        bk: number;
+      }[];
     const got = rows();
     expect(got.map((r) => r.bk)).toEqual([0, 0, 5, 5, 10, 15]);
     for (const r of got) {
@@ -150,7 +156,13 @@ describe('thiên kiếp và người ngoài cuộc', () => {
   it('người đứng trong vòng sét của người khác vẫn mất máu nhưng không chết; chủ kiếp thì chết được', async () => {
     const { GameSim } = await import('./sim');
     const { WorldState } = await import('../state');
-    const sim = new GameSim(new WorldState(), { broadcast: () => {} } as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: 2048, z: 2088 }, respawn: { x: 2048, z: 2088 }, persistPosition: false });
+    const sim = new GameSim(new WorldState(), { broadcast: () => {} } as never, {
+      levelId: 'van_lam',
+      roomName: 'test',
+      spawn: { x: 2048, z: 2088 },
+      respawn: { x: 2048, z: 2088 },
+      persistPosition: false,
+    });
     const join = (sid: string) => sim.addPlayer({ sessionId: sid, send: () => {} } as never, fresh(), false, 'sess', false);
     const owner = join('own');
     const by = join('by');

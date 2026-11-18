@@ -158,7 +158,22 @@ export class BoltFx {
     for (let k = 0; k < (hit ? 14 : 8); k++) {
       const a = (k / 14) * Math.PI * 2;
       const s = 2 + (k % 3);
-      P.emit('glow', _v.x, _v.y, _v.z, fx * 2 + Math.cos(a) * s, 1 + (k % 4) * 0.6, fz * 2 + Math.sin(a) * s, 0.4, b.r * 0.5, 0.05, b.color, 0.9, 4, 2.5);
+      P.emit(
+        'glow',
+        _v.x,
+        _v.y,
+        _v.z,
+        fx * 2 + Math.cos(a) * s,
+        1 + (k % 4) * 0.6,
+        fz * 2 + Math.sin(a) * s,
+        0.4,
+        b.r * 0.5,
+        0.05,
+        b.color,
+        0.9,
+        4,
+        2.5,
+      );
     }
     this.remove(i);
   }
@@ -221,7 +236,22 @@ export class BoltFx {
       b.trailAcc -= 1;
       const j = Math.sin(b.age * 131 + b.trailAcc * 7 + b.sd) * 0.5;
       const k = Math.cos(b.age * 97 + b.sd) * 0.5;
-      P.emit('glow', _p.x - fx * r, y + k * r * 0.6, _p.z - fz * r, -fx * 0.8 + j, 0.3 + k * 0.4, -fz * 0.8 - j, 0.35, r * 0.55, 0.04, b.color, 0.75 * a, -0.5, 1.5);
+      P.emit(
+        'glow',
+        _p.x - fx * r,
+        y + k * r * 0.6,
+        _p.z - fz * r,
+        -fx * 0.8 + j,
+        0.3 + k * 0.4,
+        -fz * 0.8 - j,
+        0.35,
+        r * 0.55,
+        0.04,
+        b.color,
+        0.75 * a,
+        -0.5,
+        1.5,
+      );
     }
   }
 

@@ -139,10 +139,42 @@ export function setHeightFog(on: boolean): void {
 
 // ---------- quầng sáng giả quanh đèn ----------
 
-const HALO_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 0.9, ochre_dawn: 0.5, ochre: 0.3, ochre_night: 0.9, cloud_dawn: 0.5, cloud: 0.3, cloud_night: 0.9, tk_dawn: 0.6, tk: 0.35, tk_night: 1.1, ash_dawn: 0.5, rift: 0.8, rift_pit: 0.9 };
+const HALO_INTENSITY: Record<string, number> = {
+  dawn: 0.5,
+  day: 0.3,
+  night: 0.9,
+  ochre_dawn: 0.5,
+  ochre: 0.3,
+  ochre_night: 0.9,
+  cloud_dawn: 0.5,
+  cloud: 0.3,
+  cloud_night: 0.9,
+  tk_dawn: 0.6,
+  tk: 0.35,
+  tk_night: 1.1,
+  ash_dawn: 0.5,
+  rift: 0.8,
+  rift_pit: 0.9,
+};
 
 /** Cột linh quang (M-5, render/beacons.ts): yếu ban ngày, rõ ban đêm. */
-const BEACON_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 1, ochre_dawn: 0.5, ochre: 0.3, ochre_night: 1, cloud_dawn: 0.5, cloud: 0.3, cloud_night: 1, tk_dawn: 0.6, tk: 0.35, tk_night: 1.1, ash_dawn: 0.5, rift: 0.55, rift_pit: 0.55 };
+const BEACON_INTENSITY: Record<string, number> = {
+  dawn: 0.5,
+  day: 0.3,
+  night: 1,
+  ochre_dawn: 0.5,
+  ochre: 0.3,
+  ochre_night: 1,
+  cloud_dawn: 0.5,
+  cloud: 0.3,
+  cloud_night: 1,
+  tk_dawn: 0.6,
+  tk: 0.35,
+  tk_night: 1.1,
+  ash_dawn: 0.5,
+  rift: 0.55,
+  rift_pit: 0.55,
+};
 export const beaconParams = { intensity: uniform(0.3) };
 
 const haloParams = {
@@ -155,7 +187,11 @@ const haloParams = {
  * Quầng sáng giả (billboard cộng sáng) quanh các đèn: một mesh, một draw call cho mọi đèn.
  * Không đổ sáng thật lên cảnh; mờ dần theo khoảng cách thay cho sương (vì cộng sáng + sương sẽ sáng sai).
  */
-export function createLanternHalos(points: readonly { x: number; y: number; z: number }[], size = 2.4, tint?: THREE.ColorRepresentation): THREE.Mesh {
+export function createLanternHalos(
+  points: readonly { x: number; y: number; z: number }[],
+  size = 2.4,
+  tint?: THREE.ColorRepresentation,
+): THREE.Mesh {
   const n = points.length;
   const center = new Float32Array(n * 4 * 3);
   const uvs = new Float32Array(n * 4 * 2);
@@ -173,7 +209,13 @@ export function createLanternHalos(points: readonly { x: number; y: number; z: n
   geo.setAttribute('position', new THREE.BufferAttribute(center, 3));
   geo.setAttribute('center', new THREE.BufferAttribute(center, 3));
   geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-  geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(n * 4 * 3).fill(0).map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
+  geo.setAttribute(
+    'normal',
+    new THREE.BufferAttribute(
+      new Float32Array(n * 4 * 3).fill(0).map((_, i) => (i % 3 === 1 ? 1 : 0)),
+      3,
+    ),
+  );
   geo.setIndex(index);
   geo.computeBoundingSphere();
 

@@ -55,7 +55,17 @@ export function Button({
 }
 
 /** Nhóm nút chọn một (radiogroup): mũi tên đổi lựa chọn, Tab chỉ dừng ở lựa chọn hiện tại. */
-export function Segmented<T extends string | number | boolean>({ options, value, onChange, label }: { options: { value: T; label: string }[]; value: T; onChange: (v: T) => void; label?: string }) {
+export function Segmented<T extends string | number | boolean>({
+  options,
+  value,
+  onChange,
+  label,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  label?: string;
+}) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const cur = Math.max(
     0,
@@ -105,7 +115,17 @@ type TabItem = {
  * Thanh tab (tablist). Nội dung do nơi gọi chọn theo `value`. Mũi tên trái/phải, Home/End đổi tab
  * (kích hoạt ngay), Tab nhảy ra khỏi thanh.
  */
-export function Tabs({ items, value, onChange, label }: { items: TabItem[]; value: string; onChange: (id: string) => void; label?: string }) {
+export function Tabs({
+  items,
+  value,
+  onChange,
+  label,
+}: {
+  items: TabItem[];
+  value: string;
+  onChange: (id: string) => void;
+  label?: string;
+}) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const enabled = items.map((it, i) => (it.disabled ? -1 : i)).filter((i) => i >= 0);
   return (

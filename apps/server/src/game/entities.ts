@@ -1,7 +1,7 @@
 // Kiểu thực thể của sim (R-7): người chơi, quái, vùng nổ, đạn, giao diện host. Tách khỏi sim.ts để các hệ con không import vòng.
 import type { CampDef } from '@dtl/shared';
 import type { Client } from 'colyseus';
-import type { boltLift, computeDamage, hazardHit, HazardGeom, InvSlot, MonsterDef, MoveInput, MoveState, PhaseRules, S, SkillDef, SpawnDef, TribDef } from '@dtl/shared';
+import type { HazardGeom, InvSlot, MonsterDef, MoveInput, MoveState, PhaseRules, SkillDef, SpawnDef, TribDef } from '@dtl/shared';
 import type { GuardCfg, TribState } from './tribtypes';
 import type { MonS, NodeS, PlayerS } from '../state';
 import type { Character } from './character';
@@ -10,9 +10,26 @@ import type { MonSkillRt } from './monskill';
 import type { SkillFlow } from './skillflow';
 
 /** Kiếm đan bản mệnh (E2-G): mỗi người một bộ, nhịp đánh theo `every`. */
-export interface Summon { sid: string; until: number; nextAt: number; every: number; count: number; range: number; power: number; markFirst: boolean; elem?: string }
+export interface Summon {
+  sid: string;
+  until: number;
+  nextAt: number;
+  every: number;
+  count: number;
+  range: number;
+  power: number;
+  markFirst: boolean;
+  elem?: string;
+}
 /** Giậm của Sơn Nhạc Hóa Thân (E2-G). */
-export interface Stomp { sid: string; until: number; nextAt: number; every: number; r: number; power: number }
+export interface Stomp {
+  sid: string;
+  until: number;
+  nextAt: number;
+  every: number;
+  r: number;
+  power: number;
+}
 
 export interface PlayerEnt {
   sid: string;
@@ -193,7 +210,6 @@ export interface Bolt {
   mul: number;
   mon: MonEnt;
 }
-
 
 export interface SimHost {
   broadcast(type: string, msg: unknown): void;

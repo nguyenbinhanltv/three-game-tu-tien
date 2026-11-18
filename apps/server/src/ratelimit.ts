@@ -3,6 +3,7 @@
 import type http from 'node:http';
 import net from 'node:net';
 import type { Duplex } from 'node:stream';
+import { log } from './log';
 
 export interface RateLimitOptions {
   /** Số request dồn tối đa (dung lượng xô). <= 0 thì tắt giới hạn. */
@@ -122,7 +123,10 @@ export function clientIp(headers: http.IncomingHttpHeaders, remote: string | und
     const xff = headers['x-forwarded-for'];
     const s = Array.isArray(xff) ? xff.join(',') : xff;
     if (s) {
-      const parts = s.split(',').map((p) => p.trim()).filter(Boolean);
+      const parts = s
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean);
       const last = parts[parts.length - 1];
       if (last) return ipKey(last);
     }
@@ -138,7 +142,10 @@ export function rateLimitFromEnv(env: NodeJS.ProcessEnv): RateLimitOptions {
   };
   const production = env.NODE_ENV === 'production';
   const exempt = new Set<string>();
-  for (const e of (env.RATE_LIMIT_EXEMPT ?? '').split(',').map((s) => s.trim()).filter(Boolean)) {
+  for (const e of (env.RATE_LIMIT_EXEMPT ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)) {
     if (e === 'loopback') {
       exempt.add('127.0.0.1');
       exempt.add('::1');
@@ -146,12 +153,12 @@ export function rateLimitFromEnv(env: NodeJS.ProcessEnv): RateLimitOptions {
   }
   exempt.delete('invalid');
   if (production && exempt.size > 0) {
-    console.warn('[config] RATE_LIMIT_EXEMPT bị bỏ qua vì đang ở production.');
+    log.warn('[config] RATE_LIMIT_EXEMPT bị bỏ qua vì đang ở production.');
     exempt.clear();
   }
   let burst = num(env.RATE_LIMIT_BURST, 40);
   if (production && burst <= 0) {
-    console.warn('[config] RATE_LIMIT_BURST<=0 (tắt giới hạn) bị bỏ qua ở production, dùng mặc định 40.');
+    log.warn('[config] RATE_LIMIT_BURST<=0 (tắt giới hạn) bị bỏ qua ở production, dùng mặc định 40.');
     burst = 40;
   }
   return {
@@ -194,7 +201,7 @@ export function installHttpRateLimit(
     const now = Date.now();
     if (now - warnedAt < 10_000) return;
     warnedAt = now;
-    console.warn(`[ratelimit] chặn ${kind} từ ${key}`);
+    log.warn(`[ratelimit] chặn ${kind} từ ${key}`);
   };
 
   // Colyseus gom cả thân request vào bộ nhớ không giới hạn; tùy chọn đăng nhập (kể cả ID token Google) chỉ vài KB.
@@ -255,7 +262,7 @@ export function installHttpRateLimit(
         if (!capBody(req, res)) return;
       }
     } catch (e) {
-      console.error('[ratelimit] lỗi bộ lọc request:', e);
+      log.error('[ratelimit] lỗi bộ lọc request:', e);
       if (!res.headersSent) res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
       res.end('Bad request');
       return;
@@ -277,7 +284,7 @@ export function installHttpRateLimit(
         }
       }
     } catch (e) {
-      console.error('[ratelimit] lỗi bộ lọc upgrade:', e);
+      log.error('[ratelimit] lỗi bộ lọc upgrade:', e);
       socket.destroy();
       return;
     }

@@ -35,7 +35,8 @@ const points = (): LevelPoint[] => {
 export default {
   name: 'points',
   desc: 'Ảnh cảnh cố định theo điểm (trước/sau khi đổi render; duyệt bản đồ mới với --level)',
-  usage: '[--level <id>] [--points a,b|all] [--renderers webgpu,webgl2 | --renderer webgpu] [--presets low,medium,high] [--size 1280x720] [--query a=b] [--perf] [--dry]',
+  usage:
+    '[--level <id>] [--points a,b|all] [--renderers webgpu,webgl2 | --renderer webgpu] [--presets low,medium,high] [--size 1280x720] [--query a=b] [--perf] [--dry]',
   dry() {
     if (!flag('--dry')) return false;
     for (const p of points()) console.log(`${LEVEL}/${p.name}\t${Math.round(p.x)}, ${Math.round(p.z)}`);
@@ -45,7 +46,14 @@ export default {
     const perf: Record<string, unknown> = {};
     for (const renderer of list('--renderers', opt('--renderer', 'webgpu,webgl2'))) {
       for (const preset of list('--presets', 'low,medium,high')) {
-        const { ctx, page } = await r.open({ name: `Shot${renderer === 'webgpu' ? 'gpu' : 'gl'}${preset[0]}`, renderer, quality: preset, viewport: size('1280x720'), extra: opt('--query', ''), warnings: true });
+        const { ctx, page } = await r.open({
+          name: `Shot${renderer === 'webgpu' ? 'gpu' : 'gl'}${preset[0]}`,
+          renderer,
+          quality: preset,
+          viewport: size('1280x720'),
+          extra: opt('--query', ''),
+          warnings: true,
+        });
         await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(27, requireLevel(LEVEL).minLevel ?? 0)}`);
         await gm(page, 'god on');
         if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);

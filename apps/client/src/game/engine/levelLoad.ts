@@ -38,7 +38,16 @@ export async function loadGround(eng: Game): Promise<void> {
   try {
     const self = eng;
     const g0 = levelAssets(levelId()).ground;
-    const tex = await loadGroundTextures(import.meta.env.BASE_URL, { get aborted() { return self.disposed; } }, g0 ? g0.mask : 'manifest', g0 ? g0.set : 'terrain');
+    const tex = await loadGroundTextures(
+      import.meta.env.BASE_URL,
+      {
+        get aborted() {
+          return self.disposed;
+        },
+      },
+      g0 ? g0.mask : 'manifest',
+      g0 ? g0.set : 'terrain',
+    );
     if (eng.disposed) {
       tex.dispose();
       return;
@@ -75,7 +84,14 @@ export function buildXich(eng: Game, id: string, q: (typeof QUALITY)[string]): v
   const T = levelTerrain();
   const paths = xichCracks(T.def, (x, z) => heightAt(x, z));
   for (const p of paths) {
-    const v = buildRiftVeil(p, (x, z) => heightAt(x, z), { height: 7, ribs: false, floorHalf: 3, strength: 0.22, floorStrength: 0.6, endFade: true });
+    const v = buildRiftVeil(p, (x, z) => heightAt(x, z), {
+      height: 7,
+      ribs: false,
+      floorHalf: 3,
+      strength: 0.22,
+      floorStrength: 0.6,
+      endFade: true,
+    });
     eng.scene.add(v.group);
     eng.xichRifts.push(v);
   }
@@ -168,7 +184,7 @@ export function disposeBacHoang(eng: Game): void {
 }
 
 /** Mood của level; `?mood=` trên URL thắng (chụp ảnh so sánh). */
-export function moodOf(eng: Game, id: string): GradingName {
+export function moodOf(_eng: Game, id: string): GradingName {
   const m = levelAssets(id).mood;
   if (m === 'default' || !(m in GRADING)) return GRADING_DEFAULT;
   // `?mood=dawn|day|night` thắng; level có bộ mood riêng (ochre) lấy biến thể cùng thời điểm.
@@ -202,7 +218,21 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
       eng.gateDiscs.push(buildMoonGate(g.x, g.z));
       // Đĩa sáng nằm ngay trước mặt gương (tâm vòm cao 5 m trên nền, lùi 0,3 m ra phía trước).
       const disc = eng.gateDiscs.find((d) => d.position.x === g.x && d.position.z === g.z && d.name !== 'moon-gate');
-      if (disc) { disc.position.y -= 3.6; disc.position.y += 5.0; disc.position.z += 0.32; disc.scale.set(0.9, 1.12, 1); disc.userData.still = true; disc.userData.op = 0.82; const tex = moonMirrorTexture(); if (tex) { const dm = disc.material as THREE.MeshBasicMaterial; dm.map = tex; dm.color.set(0xffffff); dm.needsUpdate = true; disc.userData.mirrorTex = tex; }
+      if (disc) {
+        disc.position.y -= 3.6;
+        disc.position.y += 5.0;
+        disc.position.z += 0.32;
+        disc.scale.set(0.9, 1.12, 1);
+        disc.userData.still = true;
+        disc.userData.op = 0.82;
+        const tex = moonMirrorTexture();
+        if (tex) {
+          const dm = disc.material as THREE.MeshBasicMaterial;
+          dm.map = tex;
+          dm.color.set(0xffffff);
+          dm.needsUpdate = true;
+          disc.userData.mirrorTex = tex;
+        }
         // Mặt sau cổng cũng có gương (người chơi vào từ phía nào cũng thấy): đĩa thứ hai dùng chung lưới và vật liệu.
         const back = new THREE.Mesh(disc.geometry, disc.material);
         back.position.set(disc.position.x, disc.position.y, disc.position.z - 0.64);
@@ -226,9 +256,16 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
   setHeightFog(q.heightFog);
   if (F.lanterns) {
     // Vân Lam: đèn lồng tông môn; level khác: đèn đá bày trong `propsOf` (E2-C).
-    const pts = id === 'van_lam' || id === 'kiem_trung' ? SECT_LANTERNS : propsOf(id).filter((p) => p.id === 'prop_den_da').map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
+    const pts =
+      id === 'van_lam' || id === 'kiem_trung'
+        ? SECT_LANTERNS
+        : propsOf(id)
+            .filter((p) => p.id === 'prop_den_da')
+            .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
     // Cung gương: quầng đèn nhỏ, màu lạnh, không vào bloom (đèn đá không cháy trắng).
-    const halos = levelAssets(id).palace ? createLanternHalos(pts, 1.3, levelAssets(id).palace === 'gilt' ? 0xd8a64a : 0xb8cdee) : createLanternHalos(pts);
+    const halos = levelAssets(id).palace
+      ? createLanternHalos(pts, 1.3, levelAssets(id).palace === 'gilt' ? 0xd8a64a : 0xb8cdee)
+      : createLanternHalos(pts);
     eng.scene.add(halos);
     eng.levelObjs.push(halos);
     eng.lanterns = new LanternLights(eng.scene, pts);
@@ -241,7 +278,11 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     const palaceAsset = levelAssets(id).palace;
     const palace: false | 'moon' | 'gilt' = palaceAsset ? (palaceAsset === 'gilt' ? 'gilt' : 'moon') : false;
     const shell = buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
-    const glow = buildCrystalGlow(propsOf(id).filter((p) => p.id === 'prop_mach_tinh_tru').map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 1.8, z: p.z })));
+    const glow = buildCrystalGlow(
+      propsOf(id)
+        .filter((p) => p.id === 'prop_mach_tinh_tru')
+        .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 1.8, z: p.z })),
+    );
     eng.scene.add(shell, glow);
     eng.levelObjs.push(shell, glow);
     if (palace) {
@@ -269,7 +310,9 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   const pois = LEVELS[id]?.pois ?? [];
   if (F.beacons && pois.length) {
     // Giới Khích (Bắc Hoang) tự có vệt sáng riêng (render/riftVeil.ts), không thêm cột linh quang nón.
-    eng.beacons = new Beacons(pois.filter((p) => p.beamH && !(id === 'bac_hoang' && p.id === 'gioi_khich')).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })));
+    eng.beacons = new Beacons(
+      pois.filter((p) => p.beamH && !(id === 'bac_hoang' && p.id === 'gioi_khich')).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })),
+    );
     eng.beacons.mesh.visible = isWorldRoom(get().room);
     eng.scene.add(eng.beacons.mesh);
   }

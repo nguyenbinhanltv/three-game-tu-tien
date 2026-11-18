@@ -55,7 +55,11 @@ function branch(b: Builder, from: THREE.Vector3, dir: THREE.Vector3, len: number
   let d = dir.clone();
   let rr = r;
   for (let s = 0; s < segs; s++) {
-    const bend = new THREE.Vector3((hash01(seed, s, 11) - 0.5) * 0.5, (hash01(seed, s, 13) - 0.4) * 0.18, (hash01(seed, s, 17) - 0.5) * 0.5);
+    const bend = new THREE.Vector3(
+      (hash01(seed, s, 11) - 0.5) * 0.5,
+      (hash01(seed, s, 13) - 0.4) * 0.18,
+      (hash01(seed, s, 17) - 0.5) * 0.5,
+    );
     d = d.clone().add(bend).normalize();
     const q = p.clone().addScaledVector(d, len / segs);
     const r2 = rr * 0.72;
@@ -68,7 +72,10 @@ function branch(b: Builder, from: THREE.Vector3, dir: THREE.Vector3, len: number
   for (let i = 0; i < n; i++) {
     const a = hash01(seed, i + 3, 31) * Math.PI * 2;
     const spread = 0.55 + hash01(seed, i, 37) * 0.5;
-    const nd = d.clone().add(new THREE.Vector3(Math.cos(a) * spread, 0.25 + hash01(seed, i, 41) * 0.3, Math.sin(a) * spread)).normalize();
+    const nd = d
+      .clone()
+      .add(new THREE.Vector3(Math.cos(a) * spread, 0.25 + hash01(seed, i, 41) * 0.3, Math.sin(a) * spread))
+      .normalize();
     branch(b, p, nd, len * (0.55 + hash01(seed, i, 43) * 0.2), rr * 0.8, depth + 1, seed * 7 + i + 1);
   }
 }
@@ -126,7 +133,11 @@ export class DeadTrees {
       mine.forEach((s, i) => {
         e.set((hash01(i, kind, 91) - 0.5) * 0.18, s.yaw, (hash01(i, kind, 93) - 0.5) * 0.18);
         q.setFromEuler(e);
-        m.compose(new THREE.Vector3(s.x, heightAt(s.x, s.z), s.z), q, new THREE.Vector3(s.s, s.s * (0.85 + hash01(i, kind, 95) * 0.4), s.s));
+        m.compose(
+          new THREE.Vector3(s.x, heightAt(s.x, s.z), s.z),
+          q,
+          new THREE.Vector3(s.s, s.s * (0.85 + hash01(i, kind, 95) * 0.4), s.s),
+        );
         mesh.setMatrixAt(i, m);
         // Tro than có hơi ấm: 0x3a3330 ± 20 %, vài cây ngả huyết sậm.
         const k = 0.8 + hash01(i, kind, 97) * 0.45;

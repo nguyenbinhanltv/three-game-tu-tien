@@ -1,5 +1,19 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { AOI_IN, AOI_OUT, CAMP_RESPAWN_MAX, CAMP_RESPAWN_MIN, campMeleeCount, groundAt, MS_CHASE, MS_DEAD, MS_IDLE, S, WATER_Y, heightAt, type BossTimerMsg } from '@dtl/shared';
+import {
+  AOI_IN,
+  AOI_OUT,
+  CAMP_RESPAWN_MAX,
+  CAMP_RESPAWN_MIN,
+  campMeleeCount,
+  groundAt,
+  MS_CHASE,
+  MS_DEAD,
+  MS_IDLE,
+  S,
+  WATER_Y,
+  heightAt,
+  type BossTimerMsg,
+} from '@dtl/shared';
 
 // M-2: bãi quái theo cụm, hồi sinh theo số người, giờ hồi sinh tinh anh/boss, AOI.
 process.env.DB_FILE = ':memory:';
@@ -35,7 +49,13 @@ function setup() {
     broadcast: (type: string, msg: unknown) => sent.push({ type, msg }),
     broadcastExcept: (type: string, msg: unknown, except: ReadonlySet<string>) => sent.push({ type, msg, except }),
   };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: 2040, z: 2040 }, respawn: { x: 2040, z: 2040 }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: 2040, z: 2040 },
+    respawn: { x: 2040, z: 2040 },
+    persistPosition: false,
+  });
   const join = (x: number, z: number): Ent => {
     const char = Character.create(acc++, 'cp' + acc);
     char.level = 10;
@@ -80,7 +100,8 @@ describe('bãi quái theo cụm', () => {
     const { sim } = setup();
     for (const rt of sim.camps.camps) {
       const ms = rt.melee;
-      for (let i = 0; i < ms.length; i++) for (let j = i + 1; j < ms.length; j++) expect(Math.hypot(ms[i].s.x - ms[j].s.x, ms[i].s.z - ms[j].s.z)).toBeLessThan(23);
+      for (let i = 0; i < ms.length; i++)
+        for (let j = i + 1; j < ms.length; j++) expect(Math.hypot(ms[i].s.x - ms[j].s.x, ms[i].s.z - ms[j].s.z)).toBeLessThan(23);
     }
   });
   it('hạ một phần không hẹn tái sinh; hạ hết cụm thì hẹn theo số người (không người: 25 s)', () => {
@@ -251,7 +272,10 @@ describe('AOI: chỉ đồng bộ quái/người trong tầm', () => {
     const rt = sim.camps.camps[0];
     const a = join(rt.def.x, rt.def.z);
     const far = join(rt.def.x + 1500, rt.def.z);
-    const views = new Map<string, FakeView>([[a.sid, new FakeView()], [far.sid, new FakeView()]]);
+    const views = new Map<string, FakeView>([
+      [a.sid, new FakeView()],
+      [far.sid, new FakeView()],
+    ]);
     const aoi = new Aoi(sim);
     aoi.update((sid) => asView(views.get(sid)!));
     const va = views.get(a.sid)!;

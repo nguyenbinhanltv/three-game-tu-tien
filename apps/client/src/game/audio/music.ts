@@ -331,7 +331,8 @@ class Voice {
         const accent = i % 4 === 0 ? 1 : 0.7;
         this.play(this.bank.pluck(this.freqOf(this.degree), this.s.sustain), t, 0.32 * accent, 1, active);
         // Thỉnh thoảng gảy thêm quãng tám dưới cho dày tiếng.
-        if (i % 8 === 0 && Math.random() < 0.4) this.play(this.bank.pluck(this.freqOf(this.degree - this.s.scale.length), this.s.sustain), t, 0.2, 1, active);
+        if (i % 8 === 0 && Math.random() < 0.4)
+          this.play(this.bank.pluck(this.freqOf(this.degree - this.s.scale.length), this.s.sustain), t, 0.2, 1, active);
       }
       this.step++;
       this.nextT += dt * (i % 2 === 0 ? 1.04 : 0.96); // hơi lệch phách cho đỡ máy móc
@@ -463,7 +464,13 @@ export class MusicController {
           combat: this.dir.inCombat,
           boss: this.dir.inBoss,
           input: this.lastInput,
-          layers: { zone: this.layerZone, level: this.level, mix: this.layerZone ? mixFor(this.level) : null, stemPlaying: this.stems.playing, stemPos: this.stems.position() },
+          layers: {
+            zone: this.layerZone,
+            level: this.level,
+            mix: this.layerZone ? mixFor(this.level) : null,
+            stemPlaying: this.stems.playing,
+            stemPos: this.stems.position(),
+          },
         }),
       };
     }
@@ -554,7 +561,10 @@ export class MusicController {
     const audible = this.stems.playing === zone;
     this.layerLog.push({ t: Math.round(performance.now()), zone, level: this.level, mix, audible });
     if (this.layerLog.length > 50) this.layerLog.shift();
-    if (DEBUG) console.info(`[music] lớp ${zone}: mức ${this.level} → nền ${mix.base} nhịp ${mix.pulse} căng ${mix.edge}${audible ? '' : ' (chưa ra tiếng)'}`);
+    if (DEBUG)
+      console.info(
+        `[music] lớp ${zone}: mức ${this.level} → nền ${mix.base} nhịp ${mix.pulse} căng ${mix.edge}${audible ? '' : ' (chưa ra tiếng)'}`,
+      );
   }
 
   private apply(ch: MusicChange): void {
@@ -567,7 +577,8 @@ export class MusicController {
     const zone = this.stemZoneFor(this.track);
     if (zone) this.stems.preload(zone, () => this.refresh());
     const want = this.pickSrc();
-    if (want === this.src && (want !== 'synth' || this.synth.playing === this.track) && (want !== 'stems' || this.stems.playing === zone)) return;
+    if (want === this.src && (want !== 'synth' || this.synth.playing === this.track) && (want !== 'stems' || this.stems.playing === zone))
+      return;
     this.route(2, this.track, want === this.src ? 'mở lại nhạc sinh thủ tục' : 'đổi nguồn phát');
   }
 

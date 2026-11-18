@@ -6,7 +6,7 @@ import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/shared';
-import type { AssetCache, AssetHandle } from '../core/assets';
+import { type AssetCache, type AssetHandle, assets } from '../core/assets';
 import { HitReact, type HitOpts } from '../combat/hitreact';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { lodLevel, mixerInterval } from './skinned';
@@ -56,7 +56,12 @@ export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_noxavyra: 'chr_v3_noxavyra_nu',
 };
 /** Skin chỉ có bản v3 (v1/v2 không có asset `set_skin_<tên>_<giới>`: bỏ qua, hiện trang phục thường). Varkessa có cả v1. */
-export const V3_ONLY_SKINS: ReadonlySet<string> = new Set(['set_skin_duskrella', 'set_skin_crimson', 'set_skin_noxavyra', 'set_skin_kings_demon']);
+export const V3_ONLY_SKINS: ReadonlySet<string> = new Set([
+  'set_skin_duskrella',
+  'set_skin_crimson',
+  'set_skin_noxavyra',
+  'set_skin_kings_demon',
+]);
 /** Asset v3 của một nhân vật (giới `g`, skin đang mặc nếu có). Skin sai giới (server không cho mặc) bị bỏ qua. */
 export function v3AssetOf(g: string, skin?: string): string {
   const base = g === 'f' ? V3_MODELS.f : V3_MODELS.m;
@@ -134,8 +139,6 @@ const IDENT = new THREE.Matrix4();
 const _w = new THREE.Quaternion();
 const _pw = new THREE.Quaternion();
 const _ax = new THREE.Vector3();
-const _fwd = new THREE.Vector3(0, 0, 1);
-const _rgt = new THREE.Vector3(1, 0, 0);
 const _up = new THREE.Vector3(0, 1, 0);
 /** Xoay xương quanh trục THẾ GIỚI `axis` một góc `ang` (cộng thêm lên tư thế mixer vừa đặt). Cần ma trận thế giới của cha mới. */
 function rotateWorld(bone: THREE.Object3D | null, axis: THREE.Vector3, ang: number): void {
@@ -167,7 +170,10 @@ export function colliderDefs(rig: THREE.Object3D, height: number, arms = false, 
   if (arms) {
     // Tay (cánh tay, cẳng tay): vạt không xuyên tay khi chém/xoay; không phình khi ngồi.
     for (const sd of ['l', 'r']) {
-      for (const [a, b, r] of [[`upperarm_${sd}`, `lowerarm_${sd}`, 0.05], [`lowerarm_${sd}`, `hand_${sd}`, 0.04]] as [string, string, number][]) {
+      for (const [a, b, r] of [
+        [`upperarm_${sd}`, `lowerarm_${sd}`, 0.05],
+        [`lowerarm_${sd}`, `hand_${sd}`, 0.04],
+      ] as [string, string, number][]) {
         const na = rig.getObjectByName(a);
         const nb = rig.getObjectByName(b);
         if (na && nb) out.push({ a: na, b: nb, r: r * k, fixed: true });
@@ -198,7 +204,14 @@ export function twistAngle(q: THREE.Quaternion, axis: THREE.Vector3): number {
 let shadowMat: THREE.MeshStandardNodeMaterial | null = null;
 function shadowMaterial(): THREE.MeshStandardNodeMaterial {
   if (!shadowMat) {
-    shadowMat = new THREE.MeshStandardNodeMaterial({ color: new THREE.Color('#2a1d3a'), roughness: 1, metalness: 0, transparent: true, opacity: 0.55, depthWrite: false });
+    shadowMat = new THREE.MeshStandardNodeMaterial({
+      color: new THREE.Color('#2a1d3a'),
+      roughness: 1,
+      metalness: 0,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+    });
   }
   return shadowMat;
 }
@@ -298,11 +311,16 @@ export class MannequinCharacter implements CharacterView {
   private armFit = 0;
   private disposed = false;
 
-  constructor(private tpl: MannequinTemplate, shadow = false, sword: SwordTemplate | null = null) {
+  constructor(
+    private tpl: MannequinTemplate,
+    shadow = false,
+    sword: SwordTemplate | null = null,
+  ) {
     this.height = tpl.height;
     this.shadow = shadow;
     this.spring2 = isSpring2(tpl.handle.id);
     this.rig = cloneSkinned(tpl.handle.scene);
+    assets.trackInstance(tpl.handle.id, this.rig); // vị trí thật cho thứ tự nạp texture bậc cao (game/hires)
     const meshes: THREE.Mesh[] = [];
     this.rig.traverse((o) => {
       const m = o as THREE.Mesh;
@@ -319,14 +337,24 @@ export class MannequinCharacter implements CharacterView {
     this.rig.traverse((o) => {
       if (!(o as THREE.Bone).isBone || !o.name.startsWith('dtl_o_')) return;
       const child = o.children.find((c) => (c as THREE.Bone).isBone);
-      defs.push({ bone: o.name, tailLocal: (child ?? o).position.clone(), ...(this.spring2 && /^dtl_o_skirt_\d+_[1-9]$/.test(o.name) && { stiff: SPRING2.hemStiff }) });
+      defs.push({
+        bone: o.name,
+        tailLocal: (child ?? o).position.clone(),
+        ...(this.spring2 && /^dtl_o_skirt_\d+_[1-9]$/.test(o.name) && { stiff: SPRING2.hemStiff }),
+      });
     });
     if (this.spring2) {
       // Lò xo v2: vạt tách riêng (góc hẹp, gấu cứng hơn, viên nang tay + đùi phình khi ngồi); tóc và tay áo như cũ.
       const skirt = defs.filter((d) => d.bone.startsWith('dtl_o_skirt_'));
       const rest = defs.filter((d) => !d.bone.startsWith('dtl_o_skirt_'));
       if (rest.length && !shadow) this.springs = new SpringBones(this.rig, rest, V3_SPRING, colliderDefs(this.rig, tpl.height));
-      if (skirt.length && !shadow) this.skirtSprings = new SpringBones(this.rig, skirt, V3_SKIRT_SPRING2, colliderDefs(this.rig, tpl.height, SPRING2.arms, SPRING2.rMul));
+      if (skirt.length && !shadow)
+        this.skirtSprings = new SpringBones(
+          this.rig,
+          skirt,
+          V3_SKIRT_SPRING2,
+          colliderDefs(this.rig, tpl.height, SPRING2.arms, SPRING2.rMul),
+        );
     } else if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs, V3_SPRING, colliderDefs(this.rig, tpl.height));
     for (const sd of ['l', 'r']) {
       for (const [limb, next] of Object.entries(TWIST_NEXT)) {
@@ -334,10 +362,29 @@ export class MannequinCharacter implements CharacterView {
         const tw = this.rig.getObjectByName(`${limb}_twist_${sd}`);
         const child = this.rig.getObjectByName(`${next}_${sd}`);
         if (!L || !tw || !child) continue;
-        this.twists.push({ limb: L, tw, axis: child.position.clone().normalize(), restLimb: L.quaternion.clone(), restTw: tw.quaternion.clone() });
+        this.twists.push({
+          limb: L,
+          tw,
+          axis: child.position.clone().normalize(),
+          restLimb: L.quaternion.clone(),
+          restTw: tw.quaternion.clone(),
+        });
       }
     }
-    for (const n of ['spine_01', 'spine_02', 'spine_03', 'neck_01', 'head', 'upperarm_l', 'upperarm_r', 'lowerarm_l', 'lowerarm_r', 'clavicle_l', 'clavicle_r']) this.bones[n] = this.rig.getObjectByName(n) ?? null;
+    for (const n of [
+      'spine_01',
+      'spine_02',
+      'spine_03',
+      'neck_01',
+      'head',
+      'upperarm_l',
+      'upperarm_r',
+      'lowerarm_l',
+      'lowerarm_r',
+      'clavicle_l',
+      'clavicle_r',
+    ])
+      this.bones[n] = this.rig.getObjectByName(n) ?? null;
     {
       const th = this.rig.getObjectByName('thigh_l');
       this.rig.updateMatrixWorld(true);
@@ -397,7 +444,17 @@ export class MannequinCharacter implements CharacterView {
   private baseFor(a: AnimState, fallback: string): string {
     const bank = this.tpl.bank;
     if (!bank) return fallback;
-    const want = a.dead ? null : a.meditating ? 'tam_thien' : a.flying || a.sky ? (a.sky ? POSE_SKY : POSE_FLY) : a.casting ? POSE_CAST : null;
+    const want = a.dead
+      ? null
+      : a.meditating
+        ? 'tam_thien'
+        : a.flying || a.sky
+          ? a.sky
+            ? POSE_SKY
+            : POSE_FLY
+          : a.casting
+            ? POSE_CAST
+            : null;
     if (!want) return fallback;
     const name = poseClipName(want);
     return bank.baseClip(name) ? name : fallback;
@@ -546,8 +603,18 @@ export class MannequinCharacter implements CharacterView {
     };
     const tm = o.timing;
     this.perf = {
-      id, pose, upper: act(pose.upper), lower: act(pose.lower), lowerBase: null, t: o.from ?? 0, end: Math.max(pose.def.duration, tm?.end ?? 0), timing: tm,
-      skill: o.skill ?? '', combo: o.combo ?? -1, fired: 0, env: 0,
+      id,
+      pose,
+      upper: act(pose.upper),
+      lower: act(pose.lower),
+      lowerBase: null,
+      t: o.from ?? 0,
+      end: Math.max(pose.def.duration, tm?.end ?? 0),
+      timing: tm,
+      skill: o.skill ?? '',
+      combo: o.combo ?? -1,
+      fired: 0,
+      env: 0,
     };
     const p = this.perf;
     if (tm) {
@@ -719,14 +786,19 @@ export class MannequinCharacter implements CharacterView {
     } else if (this.base && name === 'Jog_Fwd_Loop') this.base.timeScale = jogRate(a.speed);
     else if (this.base) this.base.timeScale = 1;
     // Đòn UAL dự phòng: anticipation (kéo lại chậm rồi bung nhanh qua điểm trúng).
-    if (V3_ANIM && this.shot && this.swingBase > 0 && SWING.some((n) => this.shot!.getClip().name === n || this.shot!.getClip().name === `${n}|upper`)) {
+    if (
+      V3_ANIM &&
+      this.shot &&
+      this.swingBase > 0 &&
+      SWING.some((n) => this.shot!.getClip().name === n || this.shot!.getClip().name === `${n}|upper`)
+    ) {
       this.shot.timeScale = swingRate(this.shot.time / this.shot.getClip().duration, this.swingBase);
     }
     // Bước chân: đếm theo pha chu kỳ chạy (hai bước mỗi chu kỳ).
     if (name === 'Jog_Fwd_Loop' && this.base) {
       const len = this.base.getClip().duration;
       const ph = (this.loco ? this.locoPhase : this.base.time / len) % 1;
-      if ((ph >= 0.5) !== (this.lastPhase >= 0.5)) this.steps++;
+      if (ph >= 0.5 !== this.lastPhase >= 0.5) this.steps++;
       this.lastPhase = ph;
     }
     // Giảm tần số cập nhật xương cho người ở xa.
@@ -836,7 +908,12 @@ export class MannequinCharacter implements CharacterView {
     let ty = 0;
     let tp = 0;
     if (free && !a.casting && a.lookAt) {
-      const la = lookAngles(a.lookAt.x - this.root.position.x, a.lookAt.y - (this.root.position.y + this.height * 0.9), a.lookAt.z - this.root.position.z, y);
+      const la = lookAngles(
+        a.lookAt.x - this.root.position.x,
+        a.lookAt.y - (this.root.position.y + this.height * 0.9),
+        a.lookAt.z - this.root.position.z,
+        y,
+      );
       ty = la.yaw;
       tp = la.pitch;
     }
@@ -904,7 +981,9 @@ export class MannequinPlayers {
 
   private ensurePoses(): void {
     if (this.poseSrc) {
-      if (this.poseSrc instanceof PoseSource) for (const t of this.tpl.values()) if (typeof t === 'object' && !t.bank) t.bank = new MannequinPoseBank(this.poseSrc, t.handle.scene);
+      if (this.poseSrc instanceof PoseSource)
+        for (const t of this.tpl.values())
+          if (typeof t === 'object' && !t.bank) t.bank = new MannequinPoseBank(this.poseSrc, t.handle.scene);
       return;
     }
     this.poseSrc = 'loading';

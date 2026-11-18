@@ -108,7 +108,10 @@ describe('UAL: thư viện anim_human_ual', () => {
         for (const t of c.tracks) {
           if (!t.name.endsWith('.quaternion')) continue;
           const k = t.times.length;
-          worst = Math.max(worst, new THREE.Quaternion().fromArray(t.values, 0).angleTo(new THREE.Quaternion().fromArray(t.values, (k - 1) * 4)));
+          worst = Math.max(
+            worst,
+            new THREE.Quaternion().fromArray(t.values, 0).angleTo(new THREE.Quaternion().fromArray(t.values, (k - 1) * 4)),
+          );
         }
         expect((worst * 180) / Math.PI, c.name).toBeLessThan(6);
       }

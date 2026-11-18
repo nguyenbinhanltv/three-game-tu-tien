@@ -85,7 +85,13 @@ export class SkillPoses {
    * FX chiêu của người chơi `model` tới. Trả về số giây nên giữ hiệu ứng lại (chỉ với đòn của mình đã dự đoán),
    * 0 = phát ngay.
    */
-  onFx(fx: string, model: CharacterView | undefined, mine: boolean, now: number, extra: { n?: number; gap?: number; method?: string } = {}): number {
+  onFx(
+    fx: string,
+    model: CharacterView | undefined,
+    mine: boolean,
+    now: number,
+    extra: { n?: number; gap?: number; method?: string } = {},
+  ): number {
     const skill = SKILL_BY_FX.get(fx);
     if (!skill || !model) return 0;
     const p = this.predicted;
@@ -101,7 +107,9 @@ export class SkillPoses {
     // Đã xếp lịch từ lúc niệm chú.
     const pose = skill.pose ? poseOf(skill, extra.n, extra.method) : undefined;
     if (pose && model.performing?.(pose)) return 0;
-    const done = pose ? model.perform?.(pose, { ...performOpts(skill, extra.n, extra.gap), from: Math.max(0, releaseAt(skill, pose) - FX_LEAD) }) : false;
+    const done = pose
+      ? model.perform?.(pose, { ...performOpts(skill, extra.n, extra.gap), from: Math.max(0, releaseAt(skill, pose) - FX_LEAD) })
+      : false;
     if (!done && ATTACK_FX.has(fx)) model.attack();
     return 0;
   }

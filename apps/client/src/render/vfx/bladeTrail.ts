@@ -60,7 +60,13 @@ export class BladeRibbon {
     }
     this.geo.setAttribute('position', this.pos);
     this.geo.setAttribute('uv', this.uvA);
-    this.geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(BLADE_PTS * 2 * 3).map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
+    this.geo.setAttribute(
+      'normal',
+      new THREE.BufferAttribute(
+        new Float32Array(BLADE_PTS * 2 * 3).map((_, i) => (i % 3 === 1 ? 1 : 0)),
+        3,
+      ),
+    );
     this.geo.setIndex(idx);
     this.geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e4);
   }

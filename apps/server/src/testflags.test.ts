@@ -57,7 +57,8 @@ describe('quyền tham số kiểm thử', () => {
     expect(ok('na4')).toBe(27);
     expect(ok('ht')).toBe(28);
     expect(ok('28')).toBe(28);
-    for (const bad of ['nk16', 'nk0', 'tc5', 'kd5', 'ht5', 'ab2', '33', '0', -1, 1.5, 'a'.repeat(50), { level: 15 }, ['nk15'], '__proto__']) expect(ok(bad), String(bad)).toBe('bad_realm');
+    for (const bad of ['nk16', 'nk0', 'tc5', 'kd5', 'ht5', 'ab2', '33', '0', -1, 1.5, 'a'.repeat(50), { level: 15 }, ['nk15'], '__proto__'])
+      expect(ok(bad), String(bad)).toBe('bad_realm');
     // Sai một tham số thì không áp tham số nào (không bật god một nửa).
     expect(readTestFlags({ god: true, realm: 'nk99' }, true, true).kind).toBe('bad_realm');
   });
@@ -192,7 +193,12 @@ describe('?realm, ?tribulation, /gm realm, /gm trib với nhân vật thật', (
     const p = sim.addPlayer(client as never, char, dev, 'sess', false);
     return { sim, p, char, sent };
   }
-  const ledger = (id: number) => sqlite.prepare('SELECT ref, delta, reason FROM ledger WHERE char_id = ? ORDER BY id').all(id) as { ref: string; delta: number; reason: string }[];
+  const ledger = (id: number) =>
+    sqlite.prepare('SELECT ref, delta, reason FROM ledger WHERE char_id = ? ORDER BY id').all(id) as {
+      ref: string;
+      delta: number;
+      reason: string;
+    }[];
 
   it('?realm=nk15 đặt cấp, hồi đầy, bình cảnh các mốc dưới coi như đã vượt', () => {
     const { sim, p, char } = join(true);
@@ -216,7 +222,10 @@ describe('?realm, ?tribulation, /gm realm, /gm trib với nhân vật thật', (
     expect(p.trib).not.toBeNull();
     expect(char.inv.some((it) => it?.id === 'itm_truc_co_dan')).toBe(false);
     const rows = ledger(char.id).filter((r) => r.ref === 'itm_truc_co_dan');
-    expect(rows.map((r) => [r.delta, r.reason])).toEqual([[1, 'gm'], [-1, 'tribulation']]);
+    expect(rows.map((r) => [r.delta, r.reason])).toEqual([
+      [1, 'gm'],
+      [-1, 'tribulation'],
+    ]);
   });
 
   it('/gm trib gọi hai lần liền không chồng độ kiếp, không nhân đan', () => {
@@ -311,14 +320,32 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
     for (const it of char.inv) if (it) have.set(it.id, (have.get(it.id) ?? 0) + it.n);
     for (const it of Object.values(char.equip)) if (it) have.set(it.id, (have.get(it.id) ?? 0) + (it.n || 1));
     const sums = new Map<string, number>();
-    for (const r of sqlite.prepare("SELECT ref, delta FROM ledger WHERE char_id = ? AND kind = 'item'").all(char.id) as { ref: string; delta: number }[]) sums.set(r.ref, (sums.get(r.ref) ?? 0) + r.delta);
+    for (const r of sqlite.prepare("SELECT ref, delta FROM ledger WHERE char_id = ? AND kind = 'item'").all(char.id) as {
+      ref: string;
+      delta: number;
+    }[])
+      sums.set(r.ref, (sums.get(r.ref) ?? 0) + r.delta);
     for (const id of new Set([...have.keys(), ...sums.keys()])) expect(sums.get(id) ?? 0, id).toBe(have.get(id) ?? 0);
   }
 
   it('tài khoản thường: mọi lệnh mới bị từ chối, không đổi gì, sổ cái trống', () => {
     const { sim, p, char, run } = join(false);
     const monsters0 = sim.monsters.length;
-    for (const cmd of ['help', 'skills all', 'skills max', 'learn skl_kiem_khi_tram 5', 'kit 2 kiem +10 f', 'outfit set_liet_mach f', 'outfit off', 'weapon itm_liet_mach_kiem +10', 'find kiem', 'spawn boss_han_giao 3', 'spawn clear', 'bag clear', 'bag sort']) {
+    for (const cmd of [
+      'help',
+      'skills all',
+      'skills max',
+      'learn skl_kiem_khi_tram 5',
+      'kit 2 kiem +10 f',
+      'outfit set_liet_mach f',
+      'outfit off',
+      'weapon itm_liet_mach_kiem +10',
+      'find kiem',
+      'spawn boss_han_giao 3',
+      'spawn clear',
+      'bag clear',
+      'bag sort',
+    ]) {
       expect(run(cmd), cmd).toBe('');
     }
     expect(char.level).toBe(1);
@@ -407,7 +434,10 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
     for (let tier = 1; tier <= 5; tier++) {
       for (const br of tools.GM_BRANCHES) {
         const plan = tools.planKit(tier, br);
-        expect(plan.pieces.map((x) => x.slot), `${tier}/${br}`).toContain('weapon');
+        expect(
+          plan.pieces.map((x) => x.slot),
+          `${tier}/${br}`,
+        ).toContain('weapon');
         for (const x of plan.pieces) expect(content.ITEM.get(x.id)?.kind, x.id).toBe(x.slot);
         expect(new Set(plan.pieces.map((x) => x.slot)).size).toBe(plan.pieces.length);
       }

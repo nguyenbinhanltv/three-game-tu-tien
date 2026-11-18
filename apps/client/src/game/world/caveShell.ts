@@ -96,7 +96,6 @@ export function buildCaveShell(def: CaveDef, groundY: number, palace: false | Pa
   const col = new Float32Array(pos.count * 3);
   const c = new THREE.Color();
   const wall = new THREE.Color(0x8a6c4e);
-  const wallHi = new THREE.Color(0x2a2119);
   const roof = new THREE.Color(0x07090c);
   for (let i = 0; i < pos.count; i++) {
     const nx = pos.getX(i);
@@ -272,7 +271,8 @@ export function buildPalaceHall(def: CaveDef, groundAt: (x: number, z: number) =
     const tz = Math.cos(ang);
     const nx = Math.cos(ang);
     const nz = Math.sin(ang);
-    const corner = (sx: number, sz: number) => [cx + tx * w * 0.5 * sx + nx * d * 0.5 * sz, cz + tz * w * 0.5 * sx + nz * d * 0.5 * sz] as const;
+    const corner = (sx: number, sz: number) =>
+      [cx + tx * w * 0.5 * sx + nx * d * 0.5 * sz, cz + tz * w * 0.5 * sx + nz * d * 0.5 * sz] as const;
     const cs = [corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)];
     const lo = cs.map(([x, z]) => V(x, y0, z, c0));
     const hi = cs.map(([x, z]) => V(x, y1, z, c1));

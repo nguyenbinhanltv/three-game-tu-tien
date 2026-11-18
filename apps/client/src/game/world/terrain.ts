@@ -56,9 +56,6 @@ function isVanLam(): boolean {
   return VL;
 }
 
-const C_VOID_ROCK = col(0x6b6a72);
-/** Sàn mây đi bộ được của level đảo nổi (E3-N). */
-const C_CLOUD_FLOOR = col(0xe6eef0);
 const C_OCHRE = col(0xb2a082);
 const C_OCHRE_DRY = col(0xc4b08e);
 const C_OCHRE_RED = col(0x9f8068);
@@ -69,16 +66,16 @@ const C_SANDSTONE_DARK = col(0x7d6e5c);
 
 function ochreColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
   const n = fbm(x * 0.013, z * 0.013, 2, T.def.seed + 300);
-  out.copy(C_OCHRE).lerp(n > 0 ? C_OCHRE_DRY : C_OCHRE_RED, Math.min(1, Math.abs(n) * 0.9)).multiplyScalar(0.94 + n * 0.12);
+  out
+    .copy(C_OCHRE)
+    .lerp(n > 0 ? C_OCHRE_DRY : C_OCHRE_RED, Math.min(1, Math.abs(n) * 0.9))
+    .multiplyScalar(0.94 + n * 0.12);
   const slope = 1 - ny;
   if (slope > 0.12) out.lerp(n > 0 ? C_SANDSTONE : C_SANDSTONE_DARK, Math.min(1, (slope - 0.12) * 4.5));
   const w = T.def.water;
   if (w && h < w.y + 2.2) out.lerp(C_SAND, Math.min(1, (w.y + 2.2 - h) / 1.6));
 }
 
-const C_ISLE_MOSS = col(0xa7a688);
-const C_ISLE_SOIL = col(0xb5a285);
-const C_ISLE_STONE = col(0xb9b5a8);
 const C_ISLE_DARK = col(0x7c7d6c);
 const C_CLOUD_LIGHT = col(0xc9d4d7);
 const C_CLOUD_SHADE = col(0xa4b2b8);
@@ -147,7 +144,8 @@ function islandColor(x: number, z: number, h: number, ny: number, out: THREE.Col
   if (tw > 0) {
     out.lerp(P.trail, tw * (isl.kind === 'hub' ? 0.92 : 0.45));
     // Phù Đảo Các: lối lát đá, vân ô phiến (mỗi ô ~1,7 m một sắc độ riêng)
-    if (isl.kind === 'hub') out.multiplyScalar(1 - tw * 0.1 + tw * 0.14 * hash01(Math.floor(x / 1.7), Math.floor(z / 1.7), 77) - 0.22 * tw * (1 - tw) * 4);
+    if (isl.kind === 'hub')
+      out.multiplyScalar(1 - tw * 0.1 + tw * 0.14 * hash01(Math.floor(x / 1.7), Math.floor(z / 1.7), 77) - 0.22 * tw * (1 - tw) * 4);
   }
   // bờ hồ gương: đất ẩm sẫm, lòng hồ phù sa
   const pw = art.pondW(x, z);
@@ -165,7 +163,10 @@ function genericColor(x: number, z: number, h: number, ny: number, out: THREE.Co
   const t = T;
   if (t.def.islands) return islandColor(x, z, h, ny, out);
   const n = fbm(x * 0.013, z * 0.013, 2, t.def.seed + 300);
-  out.copy(C_GRASS_WILD).lerp(C_GRASS_DRY, Math.max(0, n) * 0.35).multiplyScalar(0.92 + n * 0.14);
+  out
+    .copy(C_GRASS_WILD)
+    .lerp(C_GRASS_DRY, Math.max(0, n) * 0.35)
+    .multiplyScalar(0.92 + n * 0.14);
   const slope = 1 - ny;
   if (slope > 0.12) out.lerp(n > 0 ? C_ROCK : C_ROCK_DARK, Math.min(1, (slope - 0.12) * 4.5));
   if (h > 250) out.lerp(C_SNOW, Math.min(1, (h - 250) / 60) * (slope < 0.45 ? 1 : 0.4));
@@ -462,7 +463,11 @@ export class Terrain {
       const big = texture(nz, positionWorld.xz.mul(1 / 71));
       const mid = texture(nz, positionWorld.xz.mul(1 / 9.7));
       const fine = texture(nz, positionWorld.xz.mul(1 / 2.3));
-      this.material.colorNode = vertexColor().mul(tmix(0.86, 1.16, big.g).mul(tmix(0.9, 1.1, mid.b)).mul(tmix(0.94, 1.06, fine.b)));
+      this.material.colorNode = vertexColor().mul(
+        tmix(0.86, 1.16, big.g)
+          .mul(tmix(0.9, 1.1, mid.b))
+          .mul(tmix(0.94, 1.06, fine.b)),
+      );
     }
     this.coarse = new THREE.Mesh(g, this.material);
     this.coarse.frustumCulled = false;

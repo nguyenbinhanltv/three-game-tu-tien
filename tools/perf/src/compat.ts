@@ -28,7 +28,7 @@ import path from 'node:path';
 import { SPAWN_POINT } from '@dtl/shared';
 import { chromium, firefox, webkit, type Browser, type BrowserType, type Page } from 'playwright';
 import { createDevServer, ROOT, sleep } from './lib/devserver';
-import { args, env, opt, ports } from './lib/env';
+import { args, opt, ports } from './lib/env';
 import { CHROME_ARGS } from './lib/browser';
 import { gm } from './lib/game';
 
@@ -80,7 +80,15 @@ function initScript(o: { preset: string }): void {
 }
 
 // ---------- dò tính năng ----------
-type AudioCheck = { file: string; kind: string; canPlay: string; decoded: boolean; seconds: number | null; error?: string; chosen: boolean };
+type AudioCheck = {
+  file: string;
+  kind: string;
+  canPlay: string;
+  decoded: boolean;
+  seconds: number | null;
+  error?: string;
+  chosen: boolean;
+};
 type Probe = {
   userAgent: string;
   webgpu: { api: boolean; adapter: string; features: string[]; error?: string };
@@ -134,7 +142,16 @@ async function probe(page: Page): Promise<Probe> {
     const decodeAll = async (kind: string, srcs: string[]) => {
       const chosen = srcs.find(playable);
       for (const f of srcs) {
-        const row: AudioCheck = { file: f, kind, canPlay: typesOf(f).map((t) => el.canPlayType(t)).join('|'), decoded: false, seconds: null, chosen: f === chosen };
+        const row: AudioCheck = {
+          file: f,
+          kind,
+          canPlay: typesOf(f)
+            .map((t) => el.canPlayType(t))
+            .join('|'),
+          decoded: false,
+          seconds: null,
+          chosen: f === chosen,
+        };
         try {
           const buf = await (await fetch('/audio/' + f)).arrayBuffer();
           const ctx = new OfflineAudioContext(2, 44100, 44100);
@@ -151,7 +168,9 @@ async function probe(page: Page): Promise<Probe> {
     for (const [, s] of Object.entries(m.ambient ?? {})) await decodeAll('ambient', list((s as any).src));
     for (const [, s] of Object.entries(m.music ?? {})) await decodeAll('music', list((s as any).src));
     // Nhạc/âm môi trường phát dạng stream qua <audio>: chỉ nạp metadata của file được chọn, không play.
-    const streams = [...Object.values(m.ambient ?? {}), ...Object.values(m.music ?? {})].map((s: any) => list(s.src).find(playable)).filter(Boolean) as string[];
+    const streams = [...Object.values(m.ambient ?? {}), ...Object.values(m.music ?? {})]
+      .map((s: any) => list(s.src).find(playable))
+      .filter(Boolean) as string[];
     for (const f of streams) {
       const a = new Audio();
       a.muted = true;
@@ -172,8 +191,18 @@ async function probe(page: Page): Promise<Probe> {
 }
 
 // ---------- chạy game ----------
-type Inputs = { keyboardMoveM: number; tabTarget: string; wheelDist: [number, number]; dragYaw: [number, number]; pointerLock: boolean | string };
-type Assets = { glb: { id: string; ok: boolean; ms: number; meshes?: number; error?: string }[]; ktx2: { file: string; ok: boolean; format?: string; error?: string }[]; ktx2Config?: Record<string, boolean> };
+type Inputs = {
+  keyboardMoveM: number;
+  tabTarget: string;
+  wheelDist: [number, number];
+  dragYaw: [number, number];
+  pointerLock: boolean | string;
+};
+type Assets = {
+  glb: { id: string; ok: boolean; ms: number; meshes?: number; error?: string }[];
+  ktx2: { file: string; ok: boolean; format?: string; error?: string }[];
+  ktx2Config?: Record<string, boolean>;
+};
 type GameRun = {
   preset: string;
   forced: string;
@@ -195,7 +224,6 @@ type GameRun = {
   fail?: string;
 };
 
-
 /** Bơm đủ khung để cảnh vẽ lại khi trình duyệt headless bóp requestAnimationFrame. */
 async function waitFrames(page: Page, n: number, ms: number): Promise<void> {
   const f0 = await page.evaluate(() => window.__game!.frames as number);
@@ -207,7 +235,14 @@ async function waitFrames(page: Page, n: number, ms: number): Promise<void> {
   }
 }
 
-async function runGame(browser: Browser, label: string, outDir: string, preset: string, forced: '' | 'webgl2', full: boolean): Promise<GameRun> {
+async function runGame(
+  browser: Browser,
+  label: string,
+  outDir: string,
+  preset: string,
+  forced: '' | 'webgl2',
+  full: boolean,
+): Promise<GameRun> {
   const ctx = await browser.newContext({ viewport: { width: VW, height: VH } });
   const page = await ctx.newPage();
   const errors: string[] = [];
@@ -219,14 +254,37 @@ async function runGame(browser: Browser, label: string, outDir: string, preset: 
   });
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})(${JSON.stringify({ preset })});` });
   const name = `C_${label.slice(0, 4)}_${preset.slice(0, 3)}${forced ? '_gl' : ''}`;
-  const run: GameRun = { preset, forced, ok: false, backend: '', adapter: '', pixelRatio: 0, loadMs: 0, fps: 0, cpuP50: 0, cpuP95: 0, drawCalls: 0, triangles: 0, shot: '', errors, warnings };
+  const run: GameRun = {
+    preset,
+    forced,
+    ok: false,
+    backend: '',
+    adapter: '',
+    pixelRatio: 0,
+    loadMs: 0,
+    fps: 0,
+    cpuP50: 0,
+    cpuP95: 0,
+    drawCalls: 0,
+    triangles: 0,
+    shot: '',
+    errors,
+    warnings,
+  };
   const t0 = Date.now();
   try {
-    await page.goto(`${ORIGIN}/?mute=1&debug=1&cine=0&auto=${name}${forced ? '&renderer=webgl2' : ''}`, { waitUntil: 'load', timeout: 120_000 });
-    await page.waitForFunction(() => {
-      const g = window.__game;
-      return !!g && g.frames > 30 && !!g.me?.();
-    }, undefined, { timeout: 150_000, polling: 250 });
+    await page.goto(`${ORIGIN}/?mute=1&debug=1&cine=0&auto=${name}${forced ? '&renderer=webgl2' : ''}`, {
+      waitUntil: 'load',
+      timeout: 120_000,
+    });
+    await page.waitForFunction(
+      () => {
+        const g = window.__game;
+        return !!g && g.frames > 30 && !!g.me?.();
+      },
+      undefined,
+      { timeout: 150_000, polling: 250 },
+    );
     run.loadMs = Date.now() - t0;
     Object.assign(
       run,
@@ -330,7 +388,11 @@ async function checkAssets(page: Page): Promise<Assets> {
         const bin = Uint8Array.from(atob(s.b64), (c) => c.charCodeAt(0));
         try {
           const tex: any = await new Promise((res, rej) => ktx2.parse(bin.buffer, res, rej));
-          out.ktx2.push({ file: s.file, ok: true, format: `${tex.format} ${tex.image?.width ?? tex.mipmaps?.[0]?.width}px ${tex.mipmaps?.length ?? 0} mip` });
+          out.ktx2.push({
+            file: s.file,
+            ok: true,
+            format: `${tex.format} ${tex.image?.width ?? tex.mipmaps?.[0]?.width}px ${tex.mipmaps?.length ?? 0} mip`,
+          });
           tex.dispose();
         } catch (e) {
           out.ktx2.push({ file: s.file, ok: false, error: String((e as Error)?.message ?? e).slice(0, 160) });
@@ -347,7 +409,13 @@ async function checkInputs(page: Page): Promise<Inputs> {
   const state = () =>
     page.evaluate(() => {
       const g = window.__game!;
-      return { x: g.cur.x as number, z: g.cur.z as number, target: g.targetId as string, dist: g.camDist as number, yaw: g.camYaw as number };
+      return {
+        x: g.cur.x as number,
+        z: g.cur.z as number,
+        target: g.targetId as string,
+        dist: g.camDist as number,
+        yaw: g.camYaw as number,
+      };
     });
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur?.());
   // Bàn phím: giữ W 1,2 giây.
@@ -400,7 +468,8 @@ type ShotDiff = { shot: string; ref: string; meanDiff: number; pctOver: number }
  * lớn (màn đen, mất sương/chỉnh màu, sai gamma), còn so bằng mắt vẫn cần thiết.
  */
 async function compareShots(outDir: string, results: BrowserResult[]): Promise<ShotDiff[]> {
-  const ref = (preset: string) => results.find((r) => r.id === 'chrome')?.games.find((g) => g.ok && g.preset === preset && !g.forced && g.backend === 'WebGPU')?.shot;
+  const ref = (preset: string) =>
+    results.find((r) => r.id === 'chrome')?.games.find((g) => g.ok && g.preset === preset && !g.forced && g.backend === 'WebGPU')?.shot;
   const pairs: { shot: string; ref: string }[] = [];
   for (const r of results)
     for (const g of r.games) {
@@ -411,14 +480,23 @@ async function compareShots(outDir: string, results: BrowserResult[]): Promise<S
   const browser = await chromium.launch({ args: ['--mute-audio'] });
   try {
     const page = await browser.newPage();
-    await page.evaluate("globalThis.__name ??= (f) => f");
+    await page.evaluate('globalThis.__name ??= (f) => f');
     const out: ShotDiff[] = [];
     for (const p of pairs) {
       const a = 'data:image/png;base64,' + fs.readFileSync(path.join(outDir, p.shot)).toString('base64');
       const b = 'data:image/png;base64,' + fs.readFileSync(path.join(outDir, p.ref)).toString('base64');
       const r = await page.evaluate(
         async ({ a, b, th }) => {
-          const load = (src: string) => new Promise<HTMLImageElement>((res, rej) => Object.assign(new Image(), { onload: function (this: HTMLImageElement) { res(this); }, onerror: rej, src }));
+          const load = (src: string) =>
+            new Promise<HTMLImageElement>((res, rej) =>
+              Object.assign(new Image(), {
+                onload: function (this: HTMLImageElement) {
+                  res(this);
+                },
+                onerror: rej,
+                src,
+              }),
+            );
           const [ia, ib] = await Promise.all([load(a), load(b)]);
           const w = Math.min(ia.width, ib.width);
           const h = Math.min(ia.height, ib.height);
@@ -511,10 +589,14 @@ async function runAudioLive(browser: Browser, label: string, blockWebm: boolean)
   });
   try {
     await page.goto(`${ORIGIN}/?auto=A_${label.slice(0, 4)}${blockWebm ? '_m4a' : ''}`, { waitUntil: 'load', timeout: 120_000 });
-    await page.waitForFunction(() => {
-      const g = window.__game;
-      return !!g && g.frames > 30 && !!g.me?.();
-    }, undefined, { timeout: 150_000, polling: 250 });
+    await page.waitForFunction(
+      () => {
+        const g = window.__game;
+        return !!g && g.frames > 30 && !!g.me?.();
+      },
+      undefined,
+      { timeout: 150_000, polling: 250 },
+    );
     // Thao tác đầu tiên mở khóa AudioContext (unlockAudio trong keydown).
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur?.());
     await page.keyboard.press('KeyW');
@@ -533,11 +615,22 @@ async function runAudioLive(browser: Browser, label: string, blockWebm: boolean)
 }
 
 async function launch(id: string): Promise<{ browser: Browser; type: BrowserType; name: string }> {
-  if (id === 'chrome' || id === 'msedge') return { browser: await chromium.launch({ channel: id, headless: !HEADED, args: CHROME_ARGS }), type: chromium, name: id === 'chrome' ? 'Chrome' : 'Edge' };
-  if (id === 'chromium') return { browser: await chromium.launch({ headless: !HEADED, args: CHROME_ARGS }), type: chromium, name: 'Chromium (Playwright)' };
+  if (id === 'chrome' || id === 'msedge')
+    return {
+      browser: await chromium.launch({ channel: id, headless: !HEADED, args: CHROME_ARGS }),
+      type: chromium,
+      name: id === 'chrome' ? 'Chrome' : 'Edge',
+    };
+  if (id === 'chromium')
+    return { browser: await chromium.launch({ headless: !HEADED, args: CHROME_ARGS }), type: chromium, name: 'Chromium (Playwright)' };
   if (id === 'firefox')
-    return { browser: await firefox.launch({ headless: !HEADED, firefoxUserPrefs: { 'media.volume_scale': '0.0' } }), type: firefox, name: 'Firefox (Playwright)' };
-  if (id === 'webkit') return { browser: await webkit.launch({ headless: !HEADED }), type: webkit, name: 'WebKit (Playwright, gần đúng Safari)' };
+    return {
+      browser: await firefox.launch({ headless: !HEADED, firefoxUserPrefs: { 'media.volume_scale': '0.0' } }),
+      type: firefox,
+      name: 'Firefox (Playwright)',
+    };
+  if (id === 'webkit')
+    return { browser: await webkit.launch({ headless: !HEADED }), type: webkit, name: 'WebKit (Playwright, gần đúng Safari)' };
   throw new Error('trình duyệt không hỗ trợ: ' + id);
 }
 
@@ -561,13 +654,17 @@ async function main(): Promise<void> {
         res.version = browser.version();
         console.log(`\n[compat] ${res.name} ${res.version}`);
         const ctx = await browser.newContext();
-        await ctx.addInitScript({ content: "globalThis.__name ??= (f) => f;" });
+        await ctx.addInitScript({ content: 'globalThis.__name ??= (f) => f;' });
         const page = await ctx.newPage();
         res.probe = await probe(page);
         await ctx.close();
         const p = res.probe;
-        console.log(`  WebGPU: ${p.webgpu.adapter || p.webgpu.error || (p.webgpu.api ? '?' : 'không có navigator.gpu')}; WebGL2: ${p.webgl2.ok ? p.webgl2.renderer : 'không'}`);
-        console.log(`  âm thanh: ${p.audio.filter((a) => a.chosen && a.decoded).length}/${p.audio.filter((a) => a.chosen).length} file được chọn giải mã được; stream ${p.streams.filter((s) => s.ok).length}/${p.streams.length}`);
+        console.log(
+          `  WebGPU: ${p.webgpu.adapter || p.webgpu.error || (p.webgpu.api ? '?' : 'không có navigator.gpu')}; WebGL2: ${p.webgl2.ok ? p.webgl2.renderer : 'không'}`,
+        );
+        console.log(
+          `  âm thanh: ${p.audio.filter((a) => a.chosen && a.decoded).length}/${p.audio.filter((a) => a.chosen).length} file được chọn giải mã được; stream ${p.streams.filter((s) => s.ok).length}/${p.streams.length}`,
+        );
         const passes: { preset: string; forced: '' | 'webgl2' }[] = PRESETS.map((preset) => ({ preset, forced: '' as const }));
         if (WEBGL2_PASS && l.type === chromium) passes.push({ preset: 'medium', forced: 'webgl2' });
         for (const ps of passes) {
@@ -580,7 +677,10 @@ async function main(): Promise<void> {
               : `LỖI: ${g.fail}`,
           );
           if (g.inputs) console.log(`    input: ${JSON.stringify(g.inputs)}`);
-          if (g.assets) console.log(`    asset: GLB ${g.assets.glb.filter((a) => a.ok).length}/${g.assets.glb.length}, KTX2 ${g.assets.ktx2.filter((a) => a.ok).length}/${g.assets.ktx2.length}`);
+          if (g.assets)
+            console.log(
+              `    asset: GLB ${g.assets.glb.filter((a) => a.ok).length}/${g.assets.glb.length}, KTX2 ${g.assets.ktx2.filter((a) => a.ok).length}/${g.assets.ktx2.length}`,
+            );
         }
         // Âm thanh thật chỉ ở trình duyệt có tắt tiếng mức trình duyệt (WebKit của Playwright không có cờ đó).
         if (AUDIO_LIVE && (l.type === chromium || l.type === firefox)) {
@@ -605,12 +705,22 @@ async function main(): Promise<void> {
     dev.stop();
   }
   const diffs = await compareShots(outDir, results);
-  for (const d of diffs) console.log(`  ảnh ${d.shot} so với ${d.ref}: lệch trung bình ${d.meanDiff}/255, ${d.pctOver}% điểm ảnh lệch > ${DIFF_THRESHOLD}`);
+  for (const d of diffs)
+    console.log(`  ảnh ${d.shot} so với ${d.ref}: lệch trung bình ${d.meanDiff}/255, ${d.pctOver}% điểm ảnh lệch > ${DIFF_THRESHOLD}`);
   const out = path.join(outDir, 'compat.json');
   fs.writeFileSync(
     out,
     JSON.stringify(
-      { kind: 'compat', date: started.toISOString(), machine: { platform: `${os.platform()} ${os.release()}`, cpu: os.cpus()[0]?.model ?? '' }, viewport: `${VW}x${VH}`, headless: !HEADED, shot: SHOT, diffs, results },
+      {
+        kind: 'compat',
+        date: started.toISOString(),
+        machine: { platform: `${os.platform()} ${os.release()}`, cpu: os.cpus()[0]?.model ?? '' },
+        viewport: `${VW}x${VH}`,
+        headless: !HEADED,
+        shot: SHOT,
+        diffs,
+        results,
+      },
       null,
       2,
     ) + '\n',

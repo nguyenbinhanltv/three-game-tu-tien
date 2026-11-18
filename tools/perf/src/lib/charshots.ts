@@ -7,7 +7,11 @@ import { cam, gm } from './game';
 type Shot = (view: string) => Promise<unknown>;
 
 export async function stillViews(page: Page, shot: Shot, dist: number): Promise<void> {
-  for (const [view, yaw] of [['sau', Math.PI], ['truoc', 0], ['nghieng', Math.PI / 2]] as const) {
+  for (const [view, yaw] of [
+    ['sau', Math.PI],
+    ['truoc', 0],
+    ['nghieng', Math.PI / 2],
+  ] as const) {
     await cam(page, { yaw, pitch: 0.12, dist });
     await sleep(1100);
     await shot(view);

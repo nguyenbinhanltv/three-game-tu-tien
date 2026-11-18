@@ -34,7 +34,14 @@ export interface Slot {
  * Đội hình cụm quanh tâm: `n` con thường đứng đều trên một vòng (bán kính ~40% bán kính bãi, 4–9 m), con đánh xa đứng
  * phía sau gần tâm. `phase` (radian) cố định theo bãi để mỗi lần tái sinh vẫn là đội hình cũ. Vị trí là điểm nhà (leash).
  */
-export function formationSlots(cx: number, cz: number, radius: number, n: number, phase: number, ranged: boolean): { melee: Slot[]; ranged?: Slot } {
+export function formationSlots(
+  cx: number,
+  cz: number,
+  radius: number,
+  n: number,
+  phase: number,
+  ranged: boolean,
+): { melee: Slot[]; ranged?: Slot } {
   const ring = Math.min(9, Math.max(4, radius * 0.4));
   const melee: Slot[] = [];
   for (let i = 0; i < n; i++) {

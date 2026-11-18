@@ -46,6 +46,7 @@ import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT, SETS } from '@dtl/content';
 import { characters, db, items, ledger, rootForName } from '../db';
 import { methodDefMul, methodOf, sanitizeMethodMeta, type MethodMeta } from './method';
 import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta } from './artifact';
+import { log } from '../log';
 
 export interface CharMeta extends MethodMeta, ArtifactMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
@@ -202,7 +203,13 @@ export class InvDraft {
 
 export function sameSlot(a: InvSlot, b: InvSlot): boolean {
   if (!a || !b) return a === b;
-  return a.id === b.id && a.n === b.n && (a.plus ?? 0) === (b.plus ?? 0) && !a.lk === !b.lk && JSON.stringify(a.inst ?? null) === JSON.stringify(b.inst ?? null);
+  return (
+    a.id === b.id &&
+    a.n === b.n &&
+    (a.plus ?? 0) === (b.plus ?? 0) &&
+    !a.lk === !b.lk &&
+    JSON.stringify(a.inst ?? null) === JSON.stringify(b.inst ?? null)
+  );
 }
 
 /** Đọc cột `tele`: mảng JSON id trận; '' hoặc hỏng thì rỗng, id lạ bị bỏ. */
@@ -345,7 +352,13 @@ export class Character {
     }
     // Giao dịch dọn hỏng (lỗi DB): KHÔNG giữ bản đã dọn trong bộ nhớ, nếu không lần ghi thành công kế tiếp sẽ ghi đè cột `equip`
     // thiếu món `stray` (mất đồ không có ledger). Giữ nguyên nội dung cột như trong DB; lần nạp sau sẽ thử dọn lại.
-    if ((misplaced.stray.length || misplaced.dropped.length) && !c.settleMisplaced(misplaced.stray, misplaced.dropped) && rawEquip && typeof rawEquip === 'object') c.equip = rawEquip;
+    if (
+      (misplaced.stray.length || misplaced.dropped.length) &&
+      !c.settleMisplaced(misplaced.stray, misplaced.dropped) &&
+      rawEquip &&
+      typeof rawEquip === 'object'
+    )
+      c.equip = rawEquip;
     c.recalc();
     if (c.hp > c.mhp) c.hp = c.mhp;
     if (c.mp > c.mmp) c.mp = c.mmp;
@@ -366,7 +379,7 @@ export class Character {
       for (const id of dropped) d.bump(id, -1);
       return true;
     });
-    if (!ok) console.error('[load] không dọn được món sai ô của nhân vật', this.id, this.txFail);
+    if (!ok) log.error('[load] không dọn được món sai ô của nhân vật', this.id, this.txFail);
     return ok;
   }
 
@@ -395,7 +408,10 @@ export class Character {
     const atkBuff = buffMag(this.meta.buffs, 'atk', now) + sb('atk');
     this.atk = atkBuff > 0 ? Math.round(st.atk * (1 + atkBuff)) : st.atk;
     // Nội tại Kim Thân: phòng ngự cộng thêm theo tỉ lệ.
-    this.def = Math.round(st.def * (1 + methodDefMul(this.meta) + passiveValue(this.equip, this.meta, 'def') + buffMag(this.meta.buffs, 'def', now) + sb('def')));
+    this.def = Math.round(
+      st.def *
+        (1 + methodDefMul(this.meta) + passiveValue(this.equip, this.meta, 'def') + buffMag(this.meta.buffs, 'def', now) + sb('def')),
+    );
     if (this.hp > this.mhp) this.hp = this.mhp;
     if (this.mp > this.mmp) this.mp = this.mmp;
     this.charDirty = true;
@@ -430,14 +446,20 @@ export class Character {
   unlockTele(id: string): boolean {
     if (!TELE_PAD.has(id) || TELE_FREE.includes(id) || this.tele.includes(id)) return false;
     this.tele.push(id);
-    db.update(characters).set({ tele: JSON.stringify(this.tele) }).where(eq(characters.id, this.id)).run();
+    db.update(characters)
+      .set({ tele: JSON.stringify(this.tele) })
+      .where(eq(characters.id, this.id))
+      .run();
     return true;
   }
 
   /** Đổi ngoại hình (chỉ lệnh GM thử); `a` phải đã qua `parseAppearance`. Ghi ngay. */
   setAppearance(a: Appearance): void {
     this.appearance = a;
-    db.update(characters).set({ appearance: JSON.stringify(a) }).where(eq(characters.id, this.id)).run();
+    db.update(characters)
+      .set({ appearance: JSON.stringify(a) })
+      .where(eq(characters.id, this.id))
+      .run();
   }
 
   /** Lưu các trường thay đổi liên tục (không phải vật phẩm/tiền — chúng lưu ngay trong transaction). */
@@ -495,10 +517,15 @@ export class Character {
             const inst = b.inst ? JSON.stringify(b.inst) : null;
             tx.insert(items)
               .values({ charId: this.id, slot: i, itemId: b.id, qty: b.n, plus: b.plus ?? 0, inst, locked: b.lk ? 1 : 0 })
-              .onConflictDoUpdate({ target: [items.charId, items.slot], set: { itemId: b.id, qty: b.n, plus: b.plus ?? 0, inst, locked: b.lk ? 1 : 0 } })
+              .onConflictDoUpdate({
+                target: [items.charId, items.slot],
+                set: { itemId: b.id, qty: b.n, plus: b.plus ?? 0, inst, locked: b.lk ? 1 : 0 },
+              })
               .run();
           } else {
-            tx.delete(items).where(and(eq(items.charId, this.id), eq(items.slot, i))).run();
+            tx.delete(items)
+              .where(and(eq(items.charId, this.id), eq(items.slot, i)))
+              .run();
           }
         }
         tx.update(characters)
@@ -512,7 +539,7 @@ export class Character {
         this.txFail = 'dup';
       } else {
         this.txFail = 'db';
-        console.error('[tx] lỗi ghi DB:', reason, msg);
+        log.error('[tx] lỗi ghi DB:', reason, msg);
       }
       return false;
     }
@@ -631,7 +658,7 @@ function parseStoredInst(itemId: string, raw: string | null): ItemInst | null {
   if (!isEquipSlot(kind)) return null;
   try {
     const inst = parseInst(ITEM_SYS, kind, JSON.parse(raw));
-    if (!inst) console.warn('[load] inst trong túi bị bác, về chỉ số mẫu:', itemId);
+    if (!inst) log.warn('[load] inst trong túi bị bác, về chỉ số mẫu:', itemId);
     return inst;
   } catch {
     return null;
@@ -653,22 +680,22 @@ function sanitizeEquip(raw: unknown, gender: string): { equip: Equipment; stray:
     if (!e || typeof e.id !== 'string') continue;
     const kind = ITEM.get(e.id)?.kind;
     if (!kind) {
-      console.warn('[load] bỏ trang bị có mẫu không còn tồn tại:', e.id);
+      log.warn('[load] bỏ trang bị có mẫu không còn tồn tại:', e.id);
       dropped.push(e.id);
       continue;
     }
     // Skin ở ô có chỉ số: không bao giờ hợp lệ (ô đó sẽ vào tính chỉ số, nâng cấp): trả về túi.
     if (!isEquipSlot(kind)) {
-      console.warn('[load] món không phải trang bị nằm ở ô có chỉ số, trả về túi:', e.id, 'ở', k);
+      log.warn('[load] món không phải trang bị nằm ở ô có chỉ số, trả về túi:', e.id, 'ở', k);
       stray.push({ id: e.id, n: 1 });
       continue;
     }
-    if (kind !== k) console.warn('[load] trang bị lệch ô (giữ nguyên):', e.id, 'ở', k);
+    if (kind !== k) log.warn('[load] trang bị lệch ô (giữ nguyên):', e.id, 'ở', k);
     const it: InvItem = { id: e.id, n: 1 };
     if (e.plus && e.plus > 0) it.plus = Math.min(e.plus | 0, MAX_ENHANCE);
     const inst = e.inst ? parseInst(ITEM_SYS, k, e.inst) : null;
     if (inst) it.inst = inst;
-    else if (e.inst) console.warn('[load] inst trang bị bị bác, về chỉ số mẫu:', e.id, k);
+    else if (e.inst) log.warn('[load] inst trang bị bị bác, về chỉ số mẫu:', e.id, k);
     out[k] = it;
   }
   // Ô ngoại hình: chỉ giữ món còn tồn tại và đúng loại; không có plus/inst (skin không có chỉ số).
@@ -680,7 +707,7 @@ function sanitizeEquip(raw: unknown, gender: string): { equip: Equipment; stray:
     if (def?.kind === k && wearableBy(def, gender)) out[k] = { id: e.id, n: 1 };
     else if (def) {
       // Món khác loại hoặc sai giới nằm ở ô skin: trả về túi, giữ cấp cường hóa và dòng đã roll nếu là trang bị.
-      console.warn('[load] món không hợp lệ ở ô ngoại hình (sai loại hoặc sai giới), trả về túi:', e.id);
+      log.warn('[load] món không hợp lệ ở ô ngoại hình (sai loại hoặc sai giới), trả về túi:', e.id);
       const it: InvItem = { id: e.id, n: 1 };
       if (isEquipSlot(def.kind)) {
         if (e.plus && e.plus > 0) it.plus = Math.min(e.plus | 0, MAX_ENHANCE);
@@ -689,7 +716,7 @@ function sanitizeEquip(raw: unknown, gender: string): { equip: Equipment; stray:
       }
       stray.push(it);
     } else {
-      console.warn('[load] bỏ món ở ô ngoại hình có mẫu không còn tồn tại:', e.id);
+      log.warn('[load] bỏ món ở ô ngoại hình có mẫu không còn tồn tại:', e.id);
       dropped.push(e.id);
     }
   }

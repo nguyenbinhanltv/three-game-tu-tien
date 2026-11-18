@@ -4,7 +4,7 @@ import { C, ROOM_DUNGEON, S } from '@dtl/shared';
 import { WS, W, check, health, join, tag, type Ctx } from './lib';
 
 export async function runTransfer(ctx: Ctx): Promise<void> {
-  const { client, room, init, gm } = ctx;
+  const { client, init } = ctx;
   // 6. Vào bí cảnh không có vé bị từ chối.
   let direct = false;
   try {
@@ -61,7 +61,11 @@ export async function runTransfer(ctx: Ctx): Promise<void> {
     await bgm('tp 2048 1712');
     b.room.send(C.PORTAL, {});
     await W(700);
-    check('bấm cổng đúng chỗ: có lệnh chuyển sang bí cảnh', xfers.length === 1 && xfers[0].room === ROOM_DUNGEON && xfers[0].level === 'kiem_trung', JSON.stringify(xfers));
+    check(
+      'bấm cổng đúng chỗ: có lệnh chuyển sang bí cảnh',
+      xfers.length === 1 && xfers[0].room === ROOM_DUNGEON && xfers[0].level === 'kiem_trung',
+      JSON.stringify(xfers),
+    );
     let first = false;
     try {
       const d = await new Client(WS).joinOrCreate(ROOM_DUNGEON, { session: b.init.session });
@@ -70,7 +74,11 @@ export async function runTransfer(ctx: Ctx): Promise<void> {
       d.onMessage(S.TRANSFER, () => (bounced = true));
       d.onMessage('*', () => {});
       await W(1500);
-      check('vào bí cảnh bằng vé: ở lại bí cảnh, không bị dẫn ngược về thế giới', !bounced && d.name === ROOM_DUNGEON, `bounced=${bounced} room=${d.name}`);
+      check(
+        'vào bí cảnh bằng vé: ở lại bí cảnh, không bị dẫn ngược về thế giới',
+        !bounced && d.name === ROOM_DUNGEON,
+        `bounced=${bounced} room=${d.name}`,
+      );
       await d.leave(true);
     } catch {
       /* xem bên dưới */
@@ -92,10 +100,13 @@ export async function runTransfer(ctx: Ctx): Promise<void> {
     c.room.send(C.PORTAL, {});
     await W(700);
     await W(16_000);
-    check('vé hết hạn sau 15 s bị từ chối', xc.length === 1 && !(await tryJoin(ROOM_DUNGEON, { session: c.init.session })), `lệnh chuyển ${xc.length}`);
+    check(
+      'vé hết hạn sau 15 s bị từ chối',
+      xc.length === 1 && !(await tryJoin(ROOM_DUNGEON, { session: c.init.session })),
+      `lệnh chuyển ${xc.length}`,
+    );
     // Phiên b đã bị đá khi vào bí cảnh (đăng nhập trùng): leave có thể không bao giờ trả về, nên chỉ chờ có hạn.
     await Promise.race([c.room.leave(true).catch(() => {}), W(1500)]);
     await Promise.race([b.room.leave(true).catch(() => {}), W(1500)]);
   }
-
 }

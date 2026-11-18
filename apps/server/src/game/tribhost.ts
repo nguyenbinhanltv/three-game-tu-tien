@@ -14,7 +14,21 @@ export interface HazardExtra {
 
 export interface TribHost {
   now(): number;
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardKind, src: string, atk?: number, lock?: boolean, grp?: number, guard?: GuardCfg, cut?: { mul: number; max: number }, hot?: boolean, extra?: HazardExtra): void;
+  addHazard(
+    g: HazardGeom,
+    delay: number,
+    dmg: number,
+    pct: boolean,
+    kind: HazardKind,
+    src: string,
+    atk?: number,
+    lock?: boolean,
+    grp?: number,
+    guard?: GuardCfg,
+    cut?: { mul: number; max: number },
+    hot?: boolean,
+    extra?: HazardExtra,
+  ): void;
   /** Gây sát thương cho `p` (đã tính giảm; `ke` = đứng đúng trận môn khắc chế). */
   damage(p: PlayerEnt, n: number, ke?: 1 | -1): void;
   fx(m: FxMsg): void;

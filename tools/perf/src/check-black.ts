@@ -9,8 +9,21 @@ page.on('pageerror', (e) => console.log('PAGEERR', e.message.slice(0, 500)));
 page.on('console', (m) => ['error', 'warning'].includes(m.type()) && console.log(m.type().toUpperCase(), m.text().slice(0, 500)));
 await page.goto(gameUrl(Number(port), { debug: 1, auto: name }, { renderer, extra }));
 await new Promise((r) => setTimeout(r, 20000));
-console.log(JSON.stringify(await page.evaluate(() => { return window.__game?.info?.(); })));
-console.log(JSON.stringify(await page.evaluate(async () => { const a = await (navigator as any).gpu?.requestAdapter?.(); return a ? { info: a.info && { v: a.info.vendor, a: a.info.architecture, d: a.info.description } } : 'no adapter'; })));
+console.log(
+  JSON.stringify(
+    await page.evaluate(() => {
+      return window.__game?.info?.();
+    }),
+  ),
+);
+console.log(
+  JSON.stringify(
+    await page.evaluate(async () => {
+      const a = await (navigator as any).gpu?.requestAdapter?.();
+      return a ? { info: a.info && { v: a.info.vendor, a: a.info.architecture, d: a.info.description } } : 'no adapter';
+    }),
+  ),
+);
 const buf = await page.screenshot({ path: out });
 const lum = await page.evaluate(async (b64) => {
   const img = new Image();

@@ -13,8 +13,23 @@ import type { AnimState } from './view';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
-const IDS = ['mon_tan_chung', 'mon_giac_kiem_trong_binh', 'elite_hoi_giac_cu_thu', 'boss_tan_hoa_kiem_co', 'boss_kim_da_ma_hau', 'boss_thu_khich_duc_chu'];
-const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
+const IDS = [
+  'mon_tan_chung',
+  'mon_giac_kiem_trong_binh',
+  'elite_hoi_giac_cu_thu',
+  'boss_tan_hoa_kiem_co',
+  'boss_kim_da_ma_hau',
+  'boss_thu_khich_duc_chu',
+];
+const anim = (o: Partial<AnimState> = {}): AnimState => ({
+  speed: 0,
+  flying: false,
+  meditating: false,
+  dead: false,
+  casting: false,
+  airborne: false,
+  ...o,
+});
 
 function cache(): AssetCache {
   return new AssetCache({
@@ -48,7 +63,10 @@ describe('quái hai chân Mannequin (DV-2 đợt 2)', () => {
       g.add(p);
       return g;
     };
-    const clip = new THREE.AnimationClip('c', 1, [new THREE.VectorKeyframeTrack('pelvis.position', [0, 1], [0, 1, 0, 0, 2, 0]), new THREE.VectorKeyframeTrack('pelvis.quaternion', [0], [0, 0, 0, 1])]);
+    const clip = new THREE.AnimationClip('c', 1, [
+      new THREE.VectorKeyframeTrack('pelvis.position', [0, 1], [0, 1, 0, 0, 2, 0]),
+      new THREE.VectorKeyframeTrack('pelvis.quaternion', [0], [0, 0, 0, 1]),
+    ]);
     const out = pelvisScaledClips(mk(2), mk(1), [clip]);
     expect(Array.from(out[0].tracks[0].values)).toEqual([0, 2, 0, 0, 4, 0]);
     expect(Array.from(clip.tracks[0].values)).toEqual([0, 1, 0, 0, 2, 0]);
@@ -58,7 +76,7 @@ describe('quái hai chân Mannequin (DV-2 đợt 2)', () => {
   it('dựng thật từ GLB đã build: mọi clip trong ClipMap/moves có trong thư viện UAL, chạy được các trạng thái', async () => {
     const c = cache();
     const skins = new MonsterSkins(c, false);
-    for (const id of IDS) skins.preloadLazy('bac_hoang');
+    for (const _id of IDS) skins.preloadLazy('bac_hoang');
     for (const id of IDS) for (let i = 0; i < 400 && skins.pending(MONSTER.get(id)!); i++) await new Promise((r) => setTimeout(r, 10));
     for (const id of IDS) {
       const s = MONSTER_SKINS[id];

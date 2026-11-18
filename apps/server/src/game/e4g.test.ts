@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { groundAt, MS_DEAD, PF_DEAD, S } from '@dtl/shared';
+import { groundAt, MS_DEAD, PF_DEAD } from '@dtl/shared';
 
 // E4-G: chiêu Nguyên Anh (24/26) và biến thức cấp 28. Dựng sim như e2g.test.ts.
 process.env.DB_FILE = ':memory:';
@@ -31,7 +31,13 @@ function setup(method: string, level = 22) {
   vi.setSystemTime(1_800_000_000_000);
   const sent: { type: string; msg: Record<string, unknown> }[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg: msg as Record<string, unknown> }) };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   sim.now = Date.now();
   const raw = sim.onSkill.bind(sim);
   // Xả đòn chờ `hitAt` ngay lúc bấm (như method.test.ts); các mốc sau của chiêu nhiều nhát chạy qua `sim.tick`.
@@ -101,7 +107,14 @@ const dist = (a: Ent, b: { move: { x: number; z: number } }) => Math.hypot(a.mov
 
 describe('E4-G: chiêu Nguyên Anh', () => {
   it('sáu chiêu cấp 24/26 đã mở khóa', () => {
-    for (const id of ['skl_phan_anh_kiem_anh', 'skl_thuan_di_tram', 'skl_anh_thiet_than', 'skl_thuan_di_ho_the', 'skl_anh_duoc_hoa_than', 'skl_thuan_di_cuu_vien']) {
+    for (const id of [
+      'skl_phan_anh_kiem_anh',
+      'skl_thuan_di_tram',
+      'skl_anh_thiet_than',
+      'skl_thuan_di_ho_the',
+      'skl_anh_duoc_hoa_than',
+      'skl_thuan_di_cuu_vien',
+    ]) {
       const sk = METHOD_SKILLS.find((x) => x.id === id)!;
       expect(sk.locked, id).toBeFalsy();
     }
@@ -265,7 +278,10 @@ describe('E4-G: biến thức cấp 28 (chiêu do E4-K đưa vào ô 10)', () =>
   });
 
   it('Thiên Đan Pháp Giới: A tăng công, B tăng phòng cho đạo hữu', () => {
-    for (const [v, kind] of [['a', 'atk'], ['b', 'def']] as const) {
+    for (const [v, kind] of [
+      ['a', 'atk'],
+      ['b', 'def'],
+    ] as const) {
       const { sim, p, join, fresh, setVar } = setup('thanh_moc_dan_kinh', 28);
       const mate = join('b');
       setVar('skl_thien_dan_phap_gioi', v);

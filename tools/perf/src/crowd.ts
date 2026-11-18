@@ -45,7 +45,10 @@ import { gm } from './lib/game';
 const OUT_DIR = path.join(ROOT, 'bench/results');
 
 // ---------- tham số ----------
-const BOTS = opt('--bots', '50,100').split(',').map(Number).filter((n) => n > 0);
+const BOTS = opt('--bots', '50,100')
+  .split(',')
+  .map(Number)
+  .filter((n) => n > 0);
 const SCENES = opt('--scenes', 'san,rung,boss,dungeon').split(',').filter(Boolean);
 const RENDERERS = opt('--renderers', 'webgpu,webgl2').split(',').filter(Boolean) as ('webgpu' | 'webgl2')[];
 const PRESETS = opt('--presets', 'medium,high').split(',').filter(Boolean);
@@ -65,7 +68,16 @@ const BUDGET = { drawCalls: 300, triangles: 2_000_000, textureMB: 512, cpuP95Ms:
 const CAM = { pitch: 0.38, dist: 13 };
 
 type Keep = { ids: string[]; min: number; bossIds?: string[] };
-type Scene = { name: string; x: number; z: number; bots: string[]; keep?: Keep; dungeon?: boolean; /** Địa điểm `places.json` ở level khác: client đo mở trận rồi `tp` sang đó trước khi tới tâm cảnh. */ place?: string; room?: string };
+type Scene = {
+  name: string;
+  x: number;
+  z: number;
+  bots: string[];
+  keep?: Keep;
+  dungeon?: boolean;
+  /** Địa điểm `places.json` ở level khác: client đo mở trận rồi `tp` sang đó trước khi tới tâm cảnh. */ place?: string;
+  room?: string;
+};
 const KT = { x: KIEM_TRUNG.x, z: KIEM_TRUNG.z - 12 };
 const SCENE_DEFS: Record<string, Scene> = {
   san: { name: 'san', x: SPAWN_POINT.x, z: SPAWN_POINT.z, bots: ['--crowd', `${SPAWN_POINT.x},${SPAWN_POINT.z},25`, '--tp'] },
@@ -129,7 +141,19 @@ class Bots {
   child: ChildProcess | null = null;
   out: string[] = [];
   async start(count: number, prefix: string, extra: string[]): Promise<number> {
-    const a = [TSX_CLI, 'src/index.ts', '--count', String(count), '--duration', '3600', '--url', `ws://localhost:${PORT}`, '--prefix', prefix, ...extra];
+    const a = [
+      TSX_CLI,
+      'src/index.ts',
+      '--count',
+      String(count),
+      '--duration',
+      '3600',
+      '--url',
+      `ws://localhost:${PORT}`,
+      '--prefix',
+      prefix,
+      ...extra,
+    ];
     this.out = [];
     this.child = spawn(process.execPath, a, { cwd: path.join(ROOT, 'apps/bot-client'), stdio: ['pipe', 'pipe', 'pipe'] });
     const onData = (d: Buffer) => this.out.push(...String(d).split(/\r?\n/).filter(Boolean));
@@ -251,7 +275,7 @@ function initScript(preset: string, port: number): void {
       this.counted = String(url).includes(':' + port);
       if (this.counted) this.addEventListener('message', (e) => (B.rx += size((e as MessageEvent).data)));
     }
-    send(d: any): void {
+    override send(d: any): void {
       if (this.counted) B.tx += size(d);
       super.send(d);
     }
@@ -260,7 +284,20 @@ function initScript(preset: string, port: number): void {
 
   // Byte texture ước tính (giống bench.ts).
   const COMPS: Record<number, number> = { 1021: 1, 1022: 4, 1023: 4, 1026: 1, 1027: 1, 1028: 1, 1029: 1, 1030: 2, 1031: 2, 1033: 4 };
-  const TYPE_B: Record<number, number> = { 1009: 1, 1010: 1, 1011: 2, 1012: 2, 1013: 4, 1014: 4, 1015: 4, 1016: 2, 1017: 2, 1018: 2, 1020: 4, 35902: 4 };
+  const TYPE_B: Record<number, number> = {
+    1009: 1,
+    1010: 1,
+    1011: 2,
+    1012: 2,
+    1013: 4,
+    1014: 4,
+    1015: 4,
+    1016: 2,
+    1017: 2,
+    1018: 2,
+    1020: 4,
+    35902: 4,
+  };
   const HALF_BLOCK = new Set([33776, 33777, 36196, 37492, 36283, 36284, 35840, 35841]);
   const bytesOf = (t: any, o: any): number => {
     const w0 = Math.max(1, o?.width ?? t.image?.width ?? 1);
@@ -312,7 +349,10 @@ function initScript(preset: string, port: number): void {
           tex.set(t, bytesOf(t, o));
           const a = t as any;
           const oo = o as any;
-          texDesc.set(t, `${a.name || a.constructor?.name} ${oo?.width}x${oo?.height}x${oo?.depth ?? 1} L${oo?.levels ?? 1} f${a.format} t${a.type} s${oo?.sampleCount ?? 1}`);
+          texDesc.set(
+            t,
+            `${a.name || a.constructor?.name} ${oo?.width}x${oo?.height}x${oo?.depth ?? 1} L${oo?.levels ?? 1} f${a.format} t${a.type} s${oo?.sampleCount ?? 1}`,
+          );
         };
         be.destroyTexture = (t: object) => {
           tex.delete(t);
@@ -326,7 +366,10 @@ function initScript(preset: string, port: number): void {
             const ro = a[0] as any;
             const m = ro?.material;
             const o = ro?.object;
-            if (B.pipeDesc.length < 40) B.pipeDesc.push(`${m?.type ?? '?'}:${m?.name || '-'} obj=${o?.type ?? '?'}:${o?.name || o?.parent?.name || '-'}${o?.isSkinnedMesh ? ' skinned' : ''}${o?.isInstancedMesh ? ' inst' : ''}`);
+            if (B.pipeDesc.length < 40)
+              B.pipeDesc.push(
+                `${m?.type ?? '?'}:${m?.name || '-'} obj=${o?.type ?? '?'}:${o?.name || o?.parent?.name || '-'}${o?.isSkinnedMesh ? ' skinned' : ''}${o?.isInstancedMesh ? ' inst' : ''}`,
+              );
           }
           return pipe(...a);
         };
@@ -354,11 +397,24 @@ function initScript(preset: string, port: number): void {
         // three gán `_handleObjectFunction = _renderObjectDirect` ở constructor (và sau compileAsync): bọc cả hai.
         const direct = Object.getPrototypeOf(r)._renderObjectDirect.bind(r);
         r._handleObjectFunction = r._renderObjectDirect = (object: any, material: any, ...rest: unknown[]) => {
-          if (B.rec) B.drawing = `${material?.name || material?.type || '?'}/${object?.name || object?.parent?.name || object?.type} ${object?.geometry?.attributes?.position?.count ?? 0}v`;
+          if (B.rec)
+            B.drawing = `${material?.name || material?.type || '?'}/${object?.name || object?.parent?.name || object?.type} ${object?.geometry?.attributes?.position?.count ?? 0}v`;
           if (B.probe === 2) {
             const rt = r.getRenderTarget();
             const dst = rt ? rt.texture?.name || (rt.depthTexture && !rt.texture?.isTexture ? 'depth' : 'rt') : 'screen';
-            const kind = object.isSkinnedMesh ? 'skin' : object.isInstancedMesh ? 'inst' : object.isBatchedMesh ? 'batch' : object.isSprite ? 'sprite' : object.isPoints ? 'points' : object.isLine ? 'line' : 'mesh';
+            const kind = object.isSkinnedMesh
+              ? 'skin'
+              : object.isInstancedMesh
+                ? 'inst'
+                : object.isBatchedMesh
+                  ? 'batch'
+                  : object.isSprite
+                    ? 'sprite'
+                    : object.isPoints
+                      ? 'points'
+                      : object.isLine
+                        ? 'line'
+                        : 'mesh';
             let named = object;
             while (named && !named.name && named.parent) named = named.parent;
             const geo = object.geometry?.name || `${object.geometry?.type ?? '?'}/${object.geometry?.attributes?.position?.count ?? 0}v`;
@@ -502,7 +558,6 @@ function topSelf(p: CpuProfile, n: number): [string, number][] {
   return [...acc.entries()].sort((a, b) => b[1] - a[1]).slice(0, n);
 }
 
-
 /** Đếm quái/boss còn sống quanh tâm cảnh (theo trạng thái room client nhận). */
 async function aliveNear(page: Page, sc: Scene): Promise<Record<string, number>> {
   return page.evaluate(
@@ -552,7 +607,12 @@ async function keeper(page: Page, sc: Scene, stop: { v: boolean }): Promise<void
   }
 }
 
-async function openClient(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: string, name: string): Promise<{ page: Page; errors: string[]; backend: string; adapter: string }> {
+async function openClient(
+  browser: Browser,
+  renderer: 'webgpu' | 'webgl2',
+  preset: string,
+  name: string,
+): Promise<{ page: Page; errors: string[]; backend: string; adapter: string }> {
   const ctx = await browser.newContext({ viewport: { width: VW, height: VH }, deviceScaleFactor: DPR });
   const page = await ctx.newPage();
   const errors: string[] = [];
@@ -561,7 +621,7 @@ async function openClient(browser: Browser, renderer: 'webgpu' | 'webgl2', prese
     if (m.type() === 'error') errors.push(m.text().slice(0, 300));
   });
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})(${JSON.stringify(preset)}, ${PORT});` });
-  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&gputime=1&cine=0&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${(env('CROWD_QUERY')).includes('fxq=') ? '' : `&fxq=${preset}`}${env('CROWD_QUERY')}`;
+  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&gputime=1&cine=0&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${env('CROWD_QUERY').includes('fxq=') ? '' : `&fxq=${preset}`}${env('CROWD_QUERY')}`;
   await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
   await waitInGame(page);
   const info = await page.evaluate(async () => {
@@ -622,7 +682,15 @@ async function goTo(page: Page, sc: Scene): Promise<boolean> {
   return arrived;
 }
 
-async function measure(page: Page, sc: Scene, nBots: number, renderer: string, backend: string, preset: string, arrived: boolean): Promise<Point> {
+async function measure(
+  page: Page,
+  sc: Scene,
+  nBots: number,
+  renderer: string,
+  backend: string,
+  preset: string,
+  arrived: boolean,
+): Promise<Point> {
   await sleep(WARMUP * 1000);
   const roomName = await page.evaluate(() => window.__game!.room?.name as string);
   await page.evaluate(
@@ -742,7 +810,12 @@ async function measure(page: Page, sc: Scene, nBots: number, renderer: string, b
     preset,
     frames: raw.frames.length,
     fps: round(raw.frames.length / secs, 1),
-    cpuMs: { p50: round(quant(cpu, 0.5)), p95: round(quant(cpu, 0.95)), p99: round(quant(cpu, 0.99)), max: round(cpu[cpu.length - 1] ?? 0) },
+    cpuMs: {
+      p50: round(quant(cpu, 0.5)),
+      p95: round(quant(cpu, 0.95)),
+      p99: round(quant(cpu, 0.99)),
+      max: round(cpu[cpu.length - 1] ?? 0),
+    },
     gpuMs: gpu.length ? { p50: round(quant(gpu, 0.5)), p95: round(quant(gpu, 0.95)) } : null,
     parts,
     drawCalls: { p50: quant(dc, 0.5), max: dc[dc.length - 1] ?? 0 },
@@ -765,7 +838,9 @@ async function measure(page: Page, sc: Scene, nBots: number, renderer: string, b
     programs: raw.programs,
     newPipelines: raw.pipeDesc,
     fxBuckets: raw.fxBuckets,
-    drawBreakdown: Object.entries(raw.probe as Record<string, number>).sort((a, b) => b[1] - a[1]).slice(0, 40),
+    drawBreakdown: Object.entries(raw.probe as Record<string, number>)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 40),
     sceneNodes: raw.sceneNodes,
     attrUploadKBps: Object.entries(raw.uploads as Record<string, number>)
       .map(([k, b]) => [k, round(b / 1024 / secs, 1)] as [string, number])
@@ -807,14 +882,18 @@ async function runOne(
     stop.v = true;
     await keep.catch(() => undefined);
     errorsOut.push(...c.errors.map((e) => `${sc.name}/${nBots}/${c.backend}/${preset}: ${e}`));
-    await c.page.context().close().catch(() => undefined);
+    await c.page
+      .context()
+      .close()
+      .catch(() => undefined);
   }
 }
 
 /** Một cảnh ở thế giới: bot đã chạy sẵn; đo mọi renderer × preset. */
 async function runWorldScene(browser: Browser, sc: Scene, nBots: number, errorsOut: string[]): Promise<Point[]> {
   const points: Point[] = [];
-  for (const renderer of RENDERERS) for (const preset of PRESETS) points.push(await runOne(browser, sc, nBots, renderer, preset, errorsOut));
+  for (const renderer of RENDERERS)
+    for (const preset of PRESETS) points.push(await runOne(browser, sc, nBots, renderer, preset, errorsOut));
   return points;
 }
 
@@ -871,16 +950,48 @@ function line(p: Point): string {
 function printTable(points: Point[]): void {
   console.log(
     '\n' +
-      pad('cảnh', 9) + lpad('bot', 4) + ' ' + pad('backend', 8) + pad('preset', 8) + lpad('fps', 6) + lpad('cpu50', 7) + lpad('p95', 6) + lpad('p99', 6) +
-      lpad('gpu50', 7) + lpad('gpu95', 7) + lpad('draw', 6) + lpad('tri', 7) + lpad('texMB', 7) + lpad('heap', 6) + lpad('↓KB/s', 7) + lpad('tick', 6) + '  ngân sách',
+      pad('cảnh', 9) +
+      lpad('bot', 4) +
+      ' ' +
+      pad('backend', 8) +
+      pad('preset', 8) +
+      lpad('fps', 6) +
+      lpad('cpu50', 7) +
+      lpad('p95', 6) +
+      lpad('p99', 6) +
+      lpad('gpu50', 7) +
+      lpad('gpu95', 7) +
+      lpad('draw', 6) +
+      lpad('tri', 7) +
+      lpad('texMB', 7) +
+      lpad('heap', 6) +
+      lpad('↓KB/s', 7) +
+      lpad('tick', 6) +
+      '  ngân sách',
   );
   for (const p of points) {
     const o = over(p);
     console.log(
-      pad(p.scene, 9) + lpad(p.bots, 4) + ' ' + pad(p.backend, 8) + pad(p.preset, 8) + lpad(p.fps, 6) + lpad(p.cpuMs.p50, 7) + lpad(p.cpuMs.p95, 6) +
-        lpad(p.cpuMs.p99, 6) + lpad(p.gpuMs?.p50 ?? '-', 7) + lpad(p.gpuMs?.p95 ?? '-', 7) + lpad(p.drawCalls.max, 6) +
-        lpad(Math.round(p.triangles.max / 1000) + 'k', 7) + lpad(p.textureMB, 7) + lpad(p.jsHeapMB ?? '-', 6) + lpad(p.kbpsDown, 7) +
-        lpad(p.tickP95Ms, 6) + '  ' + (o.length ? 'VƯỢT ' + o.join(',') : 'đạt') + (p.arrived ? '' : ' (CHƯA TỚI ĐIỂM)'),
+      pad(p.scene, 9) +
+        lpad(p.bots, 4) +
+        ' ' +
+        pad(p.backend, 8) +
+        pad(p.preset, 8) +
+        lpad(p.fps, 6) +
+        lpad(p.cpuMs.p50, 7) +
+        lpad(p.cpuMs.p95, 6) +
+        lpad(p.cpuMs.p99, 6) +
+        lpad(p.gpuMs?.p50 ?? '-', 7) +
+        lpad(p.gpuMs?.p95 ?? '-', 7) +
+        lpad(p.drawCalls.max, 6) +
+        lpad(Math.round(p.triangles.max / 1000) + 'k', 7) +
+        lpad(p.textureMB, 7) +
+        lpad(p.jsHeapMB ?? '-', 6) +
+        lpad(p.kbpsDown, 7) +
+        lpad(p.tickP95Ms, 6) +
+        '  ' +
+        (o.length ? 'VƯỢT ' + o.join(',') : 'đạt') +
+        (p.arrived ? '' : ' (CHƯA TỚI ĐIỂM)'),
     );
   }
 }
@@ -941,7 +1052,16 @@ async function main(): Promise<void> {
         git: gitSha,
         browser: `${CHANNEL} ${browser.version()}${HEADED ? '' : ' headless'}`,
         machine: { platform: `${os.platform()} ${os.release()}`, cpu: os.cpus()[0]?.model ?? '', cores: os.cpus().length },
-        settings: { bots: BOTS, scenes: SCENES, secondsPerPoint: SECONDS, warmup: WARMUP, viewport: `${VW}x${VH}`, dpr: DPR, camera: CAM, maxClients: 128 },
+        settings: {
+          bots: BOTS,
+          scenes: SCENES,
+          secondsPerPoint: SECONDS,
+          warmup: WARMUP,
+          viewport: `${VW}x${VH}`,
+          dpr: DPR,
+          camera: CAM,
+          maxClients: 128,
+        },
         budget: BUDGET,
         notes: [
           'cpuMs: thời gian CPU của Game.frame() (ghi lệnh GPU, không gồm thời gian GPU chạy); parts: ms mỗi khung theo phần',

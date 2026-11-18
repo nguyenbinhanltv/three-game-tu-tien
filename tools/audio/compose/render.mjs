@@ -82,7 +82,10 @@ export async function renderRaw(song, repeats = song.loop ? 2 : 1) {
   tracks.forEach((tr, ti) => tr.forEach(([tick, msg], i) => msg[0] !== 0xff && evs.push({ at: song.tickToSample(tick, SR), ti, i, msg })));
   evs.sort((x, y) => x.at - y.at || x.ti - y.ti || x.i - y.i);
   const synth = new SpessaSynthProcessor(SR, { eventsEnabled: false });
-  synth.soundBankManager.addSoundBank(SoundBankLoader.fromArrayBuffer(bank.buffer.slice(bank.byteOffset, bank.byteOffset + bank.byteLength)), 'main');
+  synth.soundBankManager.addSoundBank(
+    SoundBankLoader.fromArrayBuffer(bank.buffer.slice(bank.byteOffset, bank.byteOffset + bank.byteLength)),
+    'main',
+  );
   await synth.ready;
   synth.setSystemParameter('autoAllocateVoices', true);
   const total = song.tickToSample(endTick, SR);

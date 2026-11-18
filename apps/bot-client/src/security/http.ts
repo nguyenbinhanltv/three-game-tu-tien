@@ -1,7 +1,6 @@
 // Bài kiểm tra bảo mật: Request HTTP xấu, matchmake không đăng nhập, ngoại hình lúc tạo nhân vật (R-7, tách từ security-check.ts).
 import { Client, type Room } from 'colyseus.js';
 import { ROOM_WORLD } from '@dtl/shared';
-import path from 'node:path';
 import { HTTP, WS, W, check, health, tag } from './lib';
 
 export async function runHttp(): Promise<void> {
@@ -18,12 +17,20 @@ export async function runHttp(): Promise<void> {
 
   // 4. Matchmake không có thông tin đăng nhập bị từ chối và không dựng room.
   const before = ((await (await fetch(HTTP + '/health')).json()) as { rooms: unknown[] }).rooms.length;
-  const r1 = await fetch(HTTP + '/matchmake/joinOrCreate/world', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+  const r1 = await fetch(HTTP + '/matchmake/joinOrCreate/world', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}',
+  });
   const j1 = (await r1.json()) as { error?: string; code?: number };
   check('matchmake không đăng nhập bị từ chối', !!j1.error || !!j1.code, JSON.stringify(j1).slice(0, 80));
 
   // 3. Client không tự create được kênh mới.
-  const r2 = await fetch(HTTP + '/matchmake/create/world', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ dev: 'kiemthu' }) });
+  const r2 = await fetch(HTTP + '/matchmake/create/world', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ dev: 'kiemthu' }),
+  });
   const j2 = (await r2.json()) as { error?: string; code?: number };
   check('client không tự tạo được kênh', !!j2.error || !!j2.code, JSON.stringify(j2).slice(0, 80));
   const after = ((await (await fetch(HTTP + '/health')).json()) as { rooms: unknown[] }).rooms.length;
@@ -50,7 +57,11 @@ export async function runHttp(): Promise<void> {
     r.onMessage('*', () => {});
     await W(400);
     const me = (r.state as unknown as { players: Map<string, { g: string; dye: string }> }).players.get(r.sessionId);
-    check(`ngoại hình không hợp lệ thì về mặc định (${JSON.stringify(ap).slice(0, 30)})`, me?.g === 'm' && me?.dye === 'attire_sect', `${me?.g}/${me?.dye}`);
+    check(
+      `ngoại hình không hợp lệ thì về mặc định (${JSON.stringify(ap).slice(0, 30)})`,
+      me?.g === 'm' && me?.dye === 'attire_sect',
+      `${me?.g}/${me?.dye}`,
+    );
     await r.leave(true);
   }
   // Ca dương tính: nữ tu hợp lệ được nhận lúc tạo nhân vật mới.
@@ -73,5 +84,4 @@ export async function runHttp(): Promise<void> {
     check('ngoại hình chỉ nhận lúc tạo nhân vật', me?.dye === 'attire_sect', String(me?.dye));
     await r.leave(true);
   }
-
 }

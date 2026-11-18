@@ -17,14 +17,19 @@ describe('mannequinToMixamo (bảng đổi tên xương cho pose K-5)', () => {
     expect(mannequinToMixamo('thumb_03_r')).toBe('mixamorig_righthandthumb3');
   });
   it('xương không có tương ứng (twist, lò xo, dtl_*, xương lá, root) trả undefined', () => {
-    for (const n of ['root', 'upperarm_twist_l', 'dtl_o_skirt_0_0', 'dtl_sword', 'index_04_leaf_l', 'ball_leaf_r']) expect(mannequinToMixamo(n)).toBeUndefined();
+    for (const n of ['root', 'upperarm_twist_l', 'dtl_o_skirt_0_0', 'dtl_sword', 'index_04_leaf_l', 'ball_leaf_r'])
+      expect(mannequinToMixamo(n)).toBeUndefined();
   });
 });
 
 describe('lowerBodyOf', () => {
   it('chỉ giữ kênh hông và chân, đặt tên riêng', () => {
     const mk = (n: string) => new THREE.QuaternionKeyframeTrack(`${n}.quaternion`, [0, 1], [0, 0, 0, 1, 0, 0, 0, 1]);
-    const clip = new THREE.AnimationClip('Jog', 1, ['pelvis', 'thigh_l', 'calf_r', 'foot_l', 'ball_r', 'spine_01', 'upperarm_l', 'Head'].map(mk));
+    const clip = new THREE.AnimationClip(
+      'Jog',
+      1,
+      ['pelvis', 'thigh_l', 'calf_r', 'foot_l', 'ball_r', 'spine_01', 'upperarm_l', 'Head'].map(mk),
+    );
     const low = lowerBodyOf(clip);
     expect(low.tracks.map((t) => t.name.split('.')[0]).sort()).toEqual(['ball_r', 'calf_r', 'foot_l', 'pelvis', 'thigh_l']);
     expect(low.name).toBe('Jog|lower');
@@ -33,7 +38,7 @@ describe('lowerBodyOf', () => {
 });
 
 describe('retargetClips với bảng đổi tên + trackedOnly', () => {
-  const chain = (names: string[], type: 'bone' = 'bone') => {
+  const chain = (names: string[], _type: 'bone' = 'bone') => {
     const root = new THREE.Group();
     let parent: THREE.Object3D = root;
     names.forEach((n, i) => {
@@ -51,7 +56,9 @@ describe('retargetClips với bảng đổi tên + trackedOnly', () => {
     const src = chain(['mixamorig_hips', 'mixamorig_spine']);
     const dst = chain(['pelvis', 'spine_01']);
     const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.5);
-    const clip = new THREE.AnimationClip('c', 1, [new THREE.QuaternionKeyframeTrack('mixamorig_spine.quaternion', [0, 1], [0, 0, 0, 1, q.x, q.y, q.z, q.w])]);
+    const clip = new THREE.AnimationClip('c', 1, [
+      new THREE.QuaternionKeyframeTrack('mixamorig_spine.quaternion', [0, 1], [0, 0, 0, 1, q.x, q.y, q.z, q.w]),
+    ]);
     const all = retargetClips(src, [clip], dst, { dstName: mannequinToMixamo })[0];
     expect(all.tracks.map((t) => t.name).sort()).toEqual(['pelvis.quaternion', 'spine_01.quaternion']);
     const only = retargetClips(src, [clip], dst, { dstName: mannequinToMixamo, trackedOnly: true })[0];

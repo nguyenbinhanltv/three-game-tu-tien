@@ -31,7 +31,14 @@ const STAGES: Record<1 | 2, Stage> = {
 };
 
 function glowMat(color: number): THREE.MeshBasicMaterial {
-  const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+  const m = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity: 0.3,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    fog: false,
+  });
   markBloom(m, 1.8);
   return m;
 }

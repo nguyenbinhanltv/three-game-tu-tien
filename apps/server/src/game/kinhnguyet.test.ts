@@ -48,7 +48,8 @@ const sent: Sent[] = [];
 let acc = 58000;
 const LV = 'kinh_nguyet';
 const DEF = () => content.LEVELS[LV];
-const keys = (p: Ent) => sent.filter((s) => s.type === S.SYS && (s.to === p.char.name || s.to === '*')).map((s) => (s.msg as { k: string }).k);
+const keys = (p: Ent) =>
+  sent.filter((s) => s.type === S.SYS && (s.to === p.char.name || s.to === '*')).map((s) => (s.msg as { k: string }).k);
 const fxs = (t: string) => sent.filter((s) => s.type === S.FX && (s.msg as FxMsg).t === t).map((s) => s.msg as FxMsg);
 const xfers = (p: Ent) => sent.filter((s) => s.type === S.TRANSFER && s.to === p.char.name).map((s) => s.msg as TransferMsg);
 
@@ -63,7 +64,14 @@ function mkChar(name: string, level: number) {
   return char;
 }
 
-type TestRoom = InstanceType<Rooms['GameRoom']> & { director(): void; onRespawn(p: Ent): void; payReward(): void; wave: number; nextWaveAt: number; clearedAt: number };
+type TestRoom = InstanceType<Rooms['GameRoom']> & {
+  director(): void;
+  onRespawn(p: Ent): void;
+  payReward(): void;
+  wave: number;
+  nextWaveAt: number;
+  clearedAt: number;
+};
 
 async function mkRoom(levelId: string, cls: { prototype: object }) {
   const { Aoi } = await import('../aoi');
@@ -71,7 +79,13 @@ async function mkRoom(levelId: string, cls: { prototype: object }) {
   const lv = content.LEVELS[levelId];
   const spawn = lv.dungeon?.spawn ?? lv.spawn!;
   room.broadcast = (type: string, msg: unknown) => sent.push({ type, msg, to: '*' });
-  room.sim = new GameSim(new WorldState(), room as never, { levelId, roomName: levelId, spawn, respawn: spawn, persistPosition: !lv.dungeon });
+  room.sim = new GameSim(new WorldState(), room as never, {
+    levelId,
+    roomName: levelId,
+    spawn,
+    respawn: spawn,
+    persistPosition: !lv.dungeon,
+  });
   room.aoi = new Aoi(room.sim);
   room.clients = { getById: () => undefined };
   room.markers = { drop() {}, sync() {} };
@@ -82,7 +96,11 @@ async function mkRoom(levelId: string, cls: { prototype: object }) {
   Object.assign(room, { wave: 0, nextWaveAt: 0, clearedAt: 0, revives: new Map(), puzzle: null });
   const join = (char: InstanceType<typeof Character>, auth: Record<string, unknown> = {}): Ent => {
     const c = { sessionId: 'sid' + acc++, send: (type: string, msg: unknown) => sent.push({ type, msg, to: char.name }) };
-    (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(c, {}, { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true, ...auth });
+    (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(
+      c,
+      {},
+      { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true, ...auth },
+    );
     return [...room.sim.players.values()].find((q) => q.char.id === char.id)!;
   };
   return { room: room as unknown as TestRoom, sim: room.sim, join, locked };
@@ -352,7 +370,11 @@ describe('Kính Nguyệt Chân Quân (MirrorSystem)', () => {
     p.char.hp = 1_000_000;
     let now = 40_000_000;
     vi.spyOn(Date, 'now').mockImplementation(() => now);
-    const sim = r.sim as unknown as { now: number; hazards: { src: string; x: number; z: number }[]; mirror: InstanceType<typeof mir.MirrorSystem> };
+    const sim = r.sim as unknown as {
+      now: number;
+      hazards: { src: string; x: number; z: number }[];
+      mirror: InstanceType<typeof mir.MirrorSystem>;
+    };
     sim.now = now;
     const adv = (ms: number) => {
       now += ms;
@@ -361,7 +383,8 @@ describe('Kính Nguyệt Chân Quân (MirrorSystem)', () => {
     };
     return { r, p, boss, sim, adv, c };
   }
-  const decoys = (r: Awaited<ReturnType<typeof fight>>['r']) => r.sim.monsters.filter((m) => m.def.id === 'mon_kinh_anh_gia' && m.state !== MS_DEAD);
+  const decoys = (r: Awaited<ReturnType<typeof fight>>['r']) =>
+    r.sim.monsters.filter((m) => m.def.id === 'mon_kinh_anh_gia' && m.state !== MS_DEAD);
 
   it('vào trận: ba bóng giả quanh boss, cờ thể thật; bóng giả chết thì nổ vòng báo trước', async () => {
     const { r, p, boss, sim, adv } = await fight();
@@ -455,7 +478,13 @@ describe('Kính Nguyệt Chân Quân (MirrorSystem)', () => {
     sim.mirror.onScan(p, []);
     expect(boss.s.mf & MF_SENSED).toBe(MF_SENSED);
     adv(mir.SENSE_MS + 100);
-    (r.sim as unknown as { monSkills: { tick(m: unknown, t: unknown, d: number, r: boolean, dt: number): boolean } }).monSkills.tick(boss, p, 5, true, 0.05);
+    (r.sim as unknown as { monSkills: { tick(m: unknown, t: unknown, d: number, r: boolean, dt: number): boolean } }).monSkills.tick(
+      boss,
+      p,
+      5,
+      true,
+      0.05,
+    );
     expect(boss.s.mf & MF_SENSED).toBe(0);
     expect(boss.s.mf & MF_REAL).toBe(MF_REAL);
   });
@@ -518,7 +547,13 @@ describe('thưởng', () => {
     expect(p.char.xp - xp0).toBeGreaterThanOrEqual(Math.round(xpNeed(23) * 0.15) - 1);
     expect(p.char.inv.some((i) => i?.id === 'itm_kinh_hoa_sa')).toBe(true);
     const idem = `dungeon:${LV}:${p.char.id}:${new Date().toISOString().slice(0, 10)}`;
-    expect(dbm.db.select().from(dbm.ledger).all().filter((x) => x.idem === idem)).toHaveLength(1);
+    expect(
+      dbm.db
+        .select()
+        .from(dbm.ledger)
+        .all()
+        .filter((x) => x.idem === idem),
+    ).toHaveLength(1);
     const gold1 = p.char.gold;
     r.room.payReward();
     expect(p.char.gold).toBe(gold1);

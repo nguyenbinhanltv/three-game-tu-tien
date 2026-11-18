@@ -100,7 +100,12 @@ export function npcQuestMark(npcId: string, quests: readonly QuestDef[], q: Ques
 type ZoneStatus = 'ok' | 'low' | 'high' | 'none';
 
 /** Vùng đang đứng và mình có hợp cấp không (`low` = cấp thấp hơn khoảng hợp, `high` = cao hơn). */
-export function zoneStatus(zones: readonly ZoneDef[] | undefined, x: number, z: number, level: number): { zone: ZoneDef | undefined; status: ZoneStatus } {
+export function zoneStatus(
+  zones: readonly ZoneDef[] | undefined,
+  x: number,
+  z: number,
+  level: number,
+): { zone: ZoneDef | undefined; status: ZoneStatus } {
   const zone = zoneAt(zones, x, z);
   if (!zone) return { zone, status: 'none' };
   return { zone, status: level < zone.lvMin ? 'low' : level > zone.lvMax ? 'high' : 'ok' };
@@ -160,12 +165,6 @@ export function nearestIndex(pts: readonly { x: number; y: number; r: number }[]
 export function formatCountdown(sec: number): string {
   const s = Math.max(0, Math.ceil(sec));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-}
-
-/** Hướng la bàn tới điểm đích (rad theo canvas, 0 = sang phải), dùng cho mũi tên mục tiêu ngoài tầm. */
-function arrowAngle(v: View, x: number, z: number): number {
-  const p = project(v, x, z);
-  return Math.atan2(p.y - v.size / 2, p.x - v.size / 2);
 }
 
 /** Ngược của `project`: toạ độ trên canvas → thế giới. */

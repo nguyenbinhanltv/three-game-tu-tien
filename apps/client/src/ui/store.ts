@@ -1,9 +1,33 @@
 import { create } from 'zustand';
-import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MarkInfo, MethodMsg, PartyMsg, QuestView, SpiritHit } from '@dtl/shared';
+import type {
+  BossTimerMsg,
+  CharView,
+  DuelMsg,
+  Equipment,
+  InviteMsg,
+  InvSlot,
+  MarkInfo,
+  MethodMsg,
+  PartyMsg,
+  QuestView,
+  SpiritHit,
+} from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio/audio';
 import { fxQuality, hitStopOn } from '../game/fx/fxSettings';
 import { uiScale } from './uiScale';
-import { closeWindow, fitWindows, focusWindow, loadSavedPos, moveWindow, openWindow, savePos, topWindow, type Viewport, type WinId, type WinState } from './windows/layout';
+import {
+  closeWindow,
+  fitWindows,
+  focusWindow,
+  loadSavedPos,
+  moveWindow,
+  openWindow,
+  savePos,
+  topWindow,
+  type Viewport,
+  type WinId,
+  type WinState,
+} from './windows/layout';
 
 export interface TargetInfo {
   id: string;
@@ -351,7 +375,9 @@ export const useUI = create<UIState>(() => ({
   offscreen: localStorage.getItem('dtl.offscreen') !== '0',
   chapterCards: localStorage.getItem('dtl.chapterCards') !== '0',
   trackQuest: localStorage.getItem('dtl.trackQuest') ?? '',
-  controls: ['turn', 'strafe'].includes(localStorage.getItem('dtl.controls') ?? '') ? (localStorage.getItem('dtl.controls') as string) : 'mouse',
+  controls: ['turn', 'strafe'].includes(localStorage.getItem('dtl.controls') ?? '')
+    ? (localStorage.getItem('dtl.controls') as string)
+    : 'mouse',
   mouseLook: false,
   queuedSkill: -1,
   method: null,
@@ -428,7 +454,9 @@ export function togglePanel(p: Panel): void {
 }
 
 export function focusPanel(p: Panel): void {
-  useUI.setState((s) => (s.windows.some((w) => w.id === p) && topWindow(s.windows)?.id !== p ? { windows: focusWindow(s.windows, p).list } : s));
+  useUI.setState((s) =>
+    s.windows.some((w) => w.id === p) && topWindow(s.windows)?.id !== p ? { windows: focusWindow(s.windows, p).list } : s,
+  );
 }
 
 /** Kéo cửa sổ tới (x, y) theo đơn vị thiết kế; `save` ghi nhớ vị trí (thả chuột). */

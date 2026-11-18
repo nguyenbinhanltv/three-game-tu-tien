@@ -48,7 +48,23 @@ async function skins(): Promise<PlayerSkins> {
 }
 
 const player = (name: string, x: number, z: number): PState => ({
-  name, x, y: 0, z, yaw: 0, vy: 0, gr: true, fl: 0, lv: 1, hp: 100, mhp: 100, mp: 10, mmp: 10, seq: 0, wp: '', g: 'm', dye: APPEARANCE.defaultDye,
+  name,
+  x,
+  y: 0,
+  z,
+  yaw: 0,
+  vy: 0,
+  gr: true,
+  fl: 0,
+  lv: 1,
+  hp: 100,
+  mhp: 100,
+  mp: 10,
+  mmp: 10,
+  seq: 0,
+  wp: '',
+  g: 'm',
+  dye: APPEARANCE.defaultDye,
 });
 
 let EntityManager: typeof EM;
@@ -106,7 +122,8 @@ describe('EntityManager: LOD theo camera (M3-9)', () => {
     npcSkins.preload();
     const monSkins = new MonsterSkins(cache, false);
     monSkins.preload();
-    for (let i = 0; i < 500 && ['npc_chuong_mon', 'npc_duoc_su', 'npc_thiet_lao'].some((id) => npcSkins.pending(id)); i++) await new Promise((r) => setTimeout(r, 10));
+    for (let i = 0; i < 500 && ['npc_chuong_mon', 'npc_duoc_su', 'npc_thiet_lao'].some((id) => npcSkins.pending(id)); i++)
+      await new Promise((r) => setTimeout(r, 10));
     await new Promise((r) => setTimeout(r, 50));
     Object.assign(em as unknown as Record<string, unknown>, { npcSkins, skins: monSkins });
     // Camera giữa sân nhìn về Chính điện (-z): chưởng môn trước mặt; dược sư, Thiết lão ở hai bên ngoài khung nhìn.

@@ -34,7 +34,10 @@ describe('dòng thời gian hiệu ứng', () => {
     expect(errs).toMatch(/5 tia sét > 4/);
     // 4 tia + 9 nhóm khác vượt 12 draw.
     const shapes = ['crescent', 'spike', 'kite', 'ripple', 'burst', 'smoke', 'helix'] as const;
-    const over: FxTimeline = { skill: 'a', events: [...shapes.map((s) => ({ type: 'mesh' as const, shape: s, dur: 0.3, t: 0 })), bolt(), bolt(), bolt(), bolt()] };
+    const over: FxTimeline = {
+      skill: 'a',
+      events: [...shapes.map((s) => ({ type: 'mesh' as const, shape: s, dur: 0.3, t: 0 })), bolt(), bolt(), bolt(), bolt()],
+    };
     expect(validateFxTimeline(over, () => true).join(',')).toMatch(/draw > 12/);
   });
 
@@ -56,7 +59,15 @@ describe('dòng thời gian hiệu ứng', () => {
   it('kiểm: hợp lệ và bắt lỗi ngoài giới hạn', () => {
     expect(validateFxTimeline(tl, () => true)).toEqual([]);
     expect(validateFxTimeline(tl, () => false)[0]).toMatch(/không có chiêu/);
-    const bad: FxTimeline = { skill: 'a', events: [{ type: 'hitstop', ms: 200, t: 0 }, { type: 'shake', level: 2, t: 0 }, { type: 'flash', amount: 1, t: 0 }, { type: 'mesh', shape: 'ripple', dur: 9, t: 0 }] };
+    const bad: FxTimeline = {
+      skill: 'a',
+      events: [
+        { type: 'hitstop', ms: 200, t: 0 },
+        { type: 'shake', level: 2, t: 0 },
+        { type: 'flash', amount: 1, t: 0 },
+        { type: 'mesh', shape: 'ripple', dur: 9, t: 0 },
+      ],
+    };
     const errs = validateFxTimeline(bad, () => true).join('\n');
     expect(errs).toMatch(/hitstop 200/);
     expect(errs).toMatch(/rung 2/);
@@ -74,7 +85,16 @@ describe('dòng thời gian hiệu ứng', () => {
         { type: 'decal', tex: 'rune', r: 1, dur: 1, t: 0 },
         { type: 'decal', tex: 'scorch', r: 1, dur: 1, t: 0 },
         { type: 'trail', dur: 0.2, t: 0 },
-        ...Array.from({ length: 4 }, () => ({ type: 'particles' as const, kind: 'spark' as const, n: 400, speed: 1, spread: 1, life: 0.3, size: 0.05, t: 0 })),
+        ...Array.from({ length: 4 }, () => ({
+          type: 'particles' as const,
+          kind: 'spark' as const,
+          n: 400,
+          speed: 1,
+          spread: 1,
+          life: 0.3,
+          size: 0.05,
+          t: 0,
+        })),
       ],
     };
     const errs = validateFxTimeline(many, () => true).join('\n');

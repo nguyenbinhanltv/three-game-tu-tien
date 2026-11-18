@@ -1,8 +1,7 @@
 // Bài ?god/?at (M1-10): tài khoản thử, tham số lạ, server production (R-7, tách từ security-check.ts).
 import { Client } from 'colyseus.js';
 import { C, type InitMsg, ROOM_WORLD, S } from '@dtl/shared';
-import { spawn } from 'node:child_process';
-import { WS, W, check, health, withServer, type P, type M } from './lib';
+import { WS, W, check, health, withServer, type P } from './lib';
 
 export async function testParamsChecks(): Promise<void> {
   // a) Tài khoản thử trên server dev: ?at đưa tới điểm đặt tên, ?god không mất máu dù bị quái đánh.
@@ -17,7 +16,11 @@ export async function testParamsChecks(): Promise<void> {
     room.onMessage('*', () => {});
     await W(500);
     const me = () => (room.state as { players: Map<string, P> }).players.get(init.sid)!;
-    check('?at=thung_lung đưa tài khoản thử tới thung lũng', Math.hypot(me().x - 2048, me().z - 2400) < 3, `(${me().x.toFixed(0)}, ${me().z.toFixed(0)})`);
+    check(
+      '?at=thung_lung đưa tài khoản thử tới thung lũng',
+      Math.hypot(me().x - 2048, me().z - 2400) < 3,
+      `(${me().x.toFixed(0)}, ${me().z.toFixed(0)})`,
+    );
     // Đứng yên giữa 4 con sói vừa gọi (cách 10 m, trong tầm phát hiện 12 m). Trước đây dịch chuyển sang (2048, 2455) rồi
     // trông vào sói của bãi quái gần đó; sau M-1 bãi quái đổi chỗ nên có lượt không con nào tới đánh.
     room.send(C.CHAT, { m: '/gm spawn mon_soi_xam 4' });
@@ -54,12 +57,18 @@ export async function testParamsChecks(): Promise<void> {
   // c) Server production / đã cấu hình Google (kể cả lỡ để AUTH_DEV_BYPASS=1): đăng nhập thử kèm ?god/?at
   //    và token giả kèm ?god/?at đều bị từ chối, không có đường tắt.
   //    Tài khoản Google thật xin ?god/?at bị bỏ qua: xem apps/server/src/testflags.test.ts (cần token thật mới chạy được ở đây).
-  const envs: Record<string, string>[] = [{ GOOGLE_CLIENT_ID: 'security-check.apps.googleusercontent.com' }, { NODE_ENV: 'production', GOOGLE_CLIENT_ID: '' }];
+  const envs: Record<string, string>[] = [
+    { GOOGLE_CLIENT_ID: 'security-check.apps.googleusercontent.com' },
+    { NODE_ENV: 'production', GOOGLE_CLIENT_ID: '' },
+  ];
   for (const env of envs) {
     const tag = env.NODE_ENV ? 'NODE_ENV=production' : 'có GOOGLE_CLIENT_ID';
     await withServer(env, async (http) => {
       const ws = http.replace(/^http/, 'ws');
-      for (const opts of [{ dev: 'kiemthu', god: true, at: 'boss' }, { token: 'a.b.c', god: true, at: 'boss' }]) {
+      for (const opts of [
+        { dev: 'kiemthu', god: true, at: 'boss' },
+        { token: 'a.b.c', god: true, at: 'boss' },
+      ]) {
         let code: number | undefined;
         let joined = false;
         try {

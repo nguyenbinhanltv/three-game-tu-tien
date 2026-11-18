@@ -47,6 +47,13 @@ const out = path.join(src, meta.sculpt.out);
 const work = path.join(root, 'assets/build/sculpt');
 fs.mkdirSync(work, { recursive: true });
 const status = runBlender(blender, path.join(root, 'tools/blender/sculpt_rig.py'), [
-  input, out, '--meta', metaFile, '--work', work, '--stage', stage,
+  input,
+  out,
+  '--meta',
+  metaFile,
+  '--work',
+  work,
+  '--stage',
+  stage,
 ]);
 process.exit(status);

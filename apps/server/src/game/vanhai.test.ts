@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { HOME_LEVEL, S, STEP, TELE_CAST_LEVEL_MS, TELE_PAD, TELE_TOUCH_R, terrainOf, type TransferMsg } from '@dtl/shared';
+import { HOME_LEVEL, S, TELE_CAST_LEVEL_MS, TELE_PAD, TELE_TOUCH_R, terrainOf, type TransferMsg } from '@dtl/shared';
 
 // E3-A/E3-N: Vân Hải Phù Đảo (level thật) đi qua đường vé + Truyền Tống như E2-A, nhận nhiệm vụ mở trận hub, và rơi khỏi đảo trong sim server thật không mất máu.
 process.env.DB_FILE = ':memory:';
@@ -92,7 +92,12 @@ describe('Vân Hải Phù Đảo qua Truyền Tống và địa hình đảo', (
     expect(hp).toBeGreaterThan(0);
     // chỗ ngoài mọi đảo là sàn mây: groundAt = voidFloor, đứng được
     let cloud = 0;
-    for (let a = 0; a < 360; a += 10) if (Math.abs(tr.groundAt(1024 + Math.cos((a * Math.PI) / 180) * 160, 1024 + Math.sin((a * Math.PI) / 180) * 160) - tr.def.voidFloor!) < 0.001) cloud++;
+    for (let a = 0; a < 360; a += 10)
+      if (
+        Math.abs(tr.groundAt(1024 + Math.cos((a * Math.PI) / 180) * 160, 1024 + Math.sin((a * Math.PI) / 180) * 160) - tr.def.voidFloor!) <
+        0.001
+      )
+        cloud++;
     expect(cloud).toBeGreaterThan(10);
   });
 });

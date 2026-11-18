@@ -39,7 +39,23 @@ import { FLAGS } from '../../base/flags';
 import { ramp, StreamDeck, type DeckEnv } from './audioDecks';
 
 /** Âm có bản tổng hợp dự phòng (dùng khi không có manifest). */
-type SynthSfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend' | 'ui_hover';
+type SynthSfx =
+  | 'sword'
+  | 'slash'
+  | 'rain'
+  | 'thunder'
+  | 'hit'
+  | 'hurt'
+  | 'heal'
+  | 'shield'
+  | 'levelup'
+  | 'loot'
+  | 'quest'
+  | 'death'
+  | 'fly'
+  | 'gather'
+  | 'ascend'
+  | 'ui_hover';
 /** Âm chỉ có bản file (thiếu file thì im lặng hoặc mượn âm tổng hợp gần nhất theo SYNTH_ALIAS). */
 type FileSfx =
   | 'crit'
@@ -726,7 +742,24 @@ function musicRequested(): string | null {
   return music?.want ?? null;
 }
 
-const SYNTH_NAMES = new Set<string>(['sword', 'slash', 'rain', 'thunder', 'hit', 'hurt', 'heal', 'shield', 'levelup', 'loot', 'quest', 'death', 'fly', 'gather', 'ascend', 'ui_hover']);
+const SYNTH_NAMES = new Set<string>([
+  'sword',
+  'slash',
+  'rain',
+  'thunder',
+  'hit',
+  'hurt',
+  'heal',
+  'shield',
+  'levelup',
+  'loot',
+  'quest',
+  'death',
+  'fly',
+  'gather',
+  'ascend',
+  'ui_hover',
+]);
 
 function emit(name: Sfx, volume: number, at: { x: number; z: number } | undefined, allowPending: boolean, o?: SfxOpts): void {
   const c = ctx!;
@@ -910,12 +943,15 @@ export function spatialLoop(buf: AudioBuffer, bus: Bus, x: number, z: number, o:
       if (stopped) return;
       stopped = true;
       ramp(g, 0, c.currentTime, Math.max(0.02, fade));
-      setTimeout(() => {
-        src.stop();
-        src.disconnect();
-        g.disconnect();
-        pan.disconnect();
-      }, fade * 1000 + 80);
+      setTimeout(
+        () => {
+          src.stop();
+          src.disconnect();
+          g.disconnect();
+          pan.disconnect();
+        },
+        fade * 1000 + 80,
+      );
     },
   };
 }
@@ -960,8 +996,6 @@ export function spatialPartials(
 }
 
 // ---------- nhạc nền / âm môi trường (stream, crossfade 2 kênh) ----------
-
-
 
 const pending: { music: [string | null, number] | null; ambient: [string | null, number] | null } = { music: null, ambient: null };
 
@@ -1035,14 +1069,6 @@ export function musicOutput(): { ctx: AudioContext; out: AudioNode } | null {
   return { ctx, out: duckGain };
 }
 
-/** Danh sách ghi nguồn nhạc trong manifest (cho mục credits ở Cài đặt). */
-async function musicCredits(): Promise<(MusicCredit & { id: string })[]> {
-  await loadManifest();
-  return Object.entries(manifest?.music ?? {})
-    .filter(([, e]) => e.credit)
-    .map(([id, e]) => ({ id, ...e.credit }));
-}
-
 /** Trạng thái để gỡ lỗi/kiểm thử. */
 function audioStats() {
   return {
@@ -1073,7 +1099,17 @@ if (!urlMute && typeof window !== 'undefined') {
 }
 
 if (DEV && typeof window !== 'undefined') {
-  (window as unknown as { __audio?: unknown }).__audio = { hitLog: sfxLog, stats: audioStats, sfx, playMusic, playAmbient, duck, duckHold, holdAmount, setVolume };
+  (window as unknown as { __audio?: unknown }).__audio = {
+    hitLog: sfxLog,
+    stats: audioStats,
+    sfx,
+    playMusic,
+    playAmbient,
+    duck,
+    duckHold,
+    holdAmount,
+    setVolume,
+  };
   // Nghe thử bài khi làm nội dung: ?music=<id>&ambient=<id> (phát sau thao tác đầu tiên).
   if (FLAGS.music) playMusic(FLAGS.music);
   if (FLAGS.ambient) playAmbient(FLAGS.ambient);

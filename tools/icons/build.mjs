@@ -10,14 +10,24 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const sharp = createRequire(path.join(root, 'tools/asset-pipeline/package.json'))('sharp');
 const read = (file) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 const methods = read('packages/content/data/methods.json');
-const defs = [...read('packages/content/data/skills.json'), ...methods.skills, ...read('packages/content/data/items.json'), ...methods.items, ...read('packages/content/data/artifacts.json').items, ...read('packages/content/data/alchemy.json').items, ...read('packages/content/data/equipment/templates.json'), ...read('packages/content/data/equipment/setItems.json')];
+const defs = [
+  ...read('packages/content/data/skills.json'),
+  ...methods.skills,
+  ...read('packages/content/data/items.json'),
+  ...methods.items,
+  ...read('packages/content/data/artifacts.json').items,
+  ...read('packages/content/data/alchemy.json').items,
+  ...read('packages/content/data/equipment/templates.json'),
+  ...read('packages/content/data/equipment/setItems.json'),
+];
 const out = path.join(root, 'apps/client/public/assets/ui');
 const manifestPath = path.join(out, 'icons.json');
 const hash = (data) => createHash('sha256').update(data).digest('hex');
 // Icon phụ (biến thức, công pháp, linh căn, vai trò, buff, tiền, nút HUD, dấu nhiệm vụ): không có trong content, khai ở codex-assets/icons.json.
 const defIcons = new Set(defs.map((d) => d.icon));
 const extras = Object.keys(read('tools/codex-assets/icons.json')).filter((id) => !defIcons.has(id));
-const size = 128, columns = 8;
+const size = 128,
+  columns = 8;
 // Hai bảng (T7): `hud` nạp ngay khi vào game (thanh chiêu, nút HUD, buff, dấu nhiệm vụ, pháp bảo trên thanh);
 // `items` (vật phẩm, trang bị, linh ngọc) nạp lười khi có ô vật phẩm đầu tiên cần vẽ (mở Túi...).
 const artifactIcons = new Set(read('packages/content/data/artifacts.json').items.map((d) => d.icon));
@@ -40,7 +50,8 @@ if (process.argv.includes('--check')) {
   const checkCell = (id, cell) => {
     const sh = m.sheets[cell.s];
     if (!sh || cell.s !== sheetOf(id)) throw new Error(`Wrong sheet: ${id}`);
-    if (!Number.isInteger(cell.x) || !Number.isInteger(cell.y) || cell.x < 0 || cell.x >= sh.columns || cell.y < 0 || cell.y >= sh.rows) throw new Error(`Invalid cell: ${id}`);
+    if (!Number.isInteger(cell.x) || !Number.isInteger(cell.y) || cell.x < 0 || cell.x >= sh.columns || cell.y < 0 || cell.y >= sh.rows)
+      throw new Error(`Invalid cell: ${id}`);
     const key = `${cell.x},${cell.y}`;
     if (cellsOf[cell.s].has(key)) throw new Error(`Duplicate cell: ${id}`);
     cellsOf[cell.s].add(key);
@@ -57,11 +68,16 @@ if (process.argv.includes('--check')) {
   }
   for (const id of extras) {
     const cell = m.icons[id];
-    if (!cell) { fallbackOnly++; continue; }
+    if (!cell) {
+      fallbackOnly++;
+      continue;
+    }
     if (!licenses.includes(id)) throw new Error(`Missing license: ${id}`);
     checkCell(id, cell);
   }
-  console.log(`Icons OK: ${defs.length - fallbackOnly}/${defs.length} có tranh (${fallbackOnly} dùng emoji dự phòng), hud ${m.sheets.hud.bytes} B + items ${m.sheets.items.bytes} B`);
+  console.log(
+    `Icons OK: ${defs.length - fallbackOnly}/${defs.length} có tranh (${fallbackOnly} dùng emoji dự phòng), hud ${m.sheets.hud.bytes} B + items ${m.sheets.items.bytes} B`,
+  );
   process.exit(0);
 }
 const git = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root, encoding: 'utf8' });
@@ -79,11 +95,15 @@ for (const def of [...defs, ...extras.map((id) => ({ id, icon: id }))]) {
   const v2 = path.join(source, '2d', 'icons', `${def.icon}.png`);
   const file = fs.existsSync(v2) ? v2 : path.join(source, 'icons', `${def.icon}.png`);
   // Chưa có tranh gốc: không chiếm ô, client dùng emoji `iconFallback`.
-  if (!fs.existsSync(file)) { console.log(`Bỏ qua (chưa có PNG): ${def.icon}`); continue; }
+  if (!fs.existsSync(file)) {
+    console.log(`Bỏ qua (chưa có PNG): ${def.icon}`);
+    continue;
+  }
   const input = fs.readFileSync(file);
   const sheet = sheetOf(def.icon);
   const cellIndex = count[sheet]++;
-  const x = cellIndex % columns, y = Math.floor(cellIndex / columns);
+  const x = cellIndex % columns,
+    y = Math.floor(cellIndex / columns);
   icons[def.icon] = { s: sheet, x, y, sourceSha256: hash(input), sourceBytes: input.length };
   layers[sheet].push({ input: await sharp(input).resize(size, size, { fit: 'cover' }).png().toBuffer(), left: x * size, top: y * size });
 }
@@ -93,9 +113,13 @@ const keep = new Set();
 let webp;
 for (const name of sheetNames) {
   const rows = Math.max(2, Math.ceil(count[name] / columns));
-  const png = await sharp({ create: { width: columns * size, height: rows * size, channels: 4, background: '#123B45' } }).composite(layers[name]).png().toBuffer();
+  const png = await sharp({ create: { width: columns * size, height: rows * size, channels: 4, background: '#123B45' } })
+    .composite(layers[name])
+    .png()
+    .toBuffer();
   const data = await sharp(png).webp({ quality: 90, effort: 6 }).toBuffer();
-  const sha256 = hash(data), file = `icons-${name}.${sha256.slice(0, 10)}.webp`;
+  const sha256 = hash(data),
+    file = `icons-${name}.${sha256.slice(0, 10)}.webp`;
   fs.writeFileSync(path.join(out, file), data);
   keep.add(file);
   sheets[name] = { file, sha256, bytes: data.length, columns, rows };
@@ -106,4 +130,6 @@ fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
 for (const old of fs.readdirSync(out)) {
   if (/^icons(-[a-z]+)?\.[a-f0-9]{10}\.(webp|ktx2)$/.test(old) && !keep.has(old)) fs.unlinkSync(path.join(out, old));
 }
-console.log(`${Object.keys(icons).length} icons → hud ${sheets.hud.file} (${sheets.hud.bytes} B), items ${sheets.items.file} (${sheets.items.bytes} B)`);
+console.log(
+  `${Object.keys(icons).length} icons → hud ${sheets.hud.file} (${sheets.hud.bytes} B), items ${sheets.items.file} (${sheets.items.bytes} B)`,
+);

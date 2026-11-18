@@ -4,7 +4,6 @@ import './realm.css';
 import { useEffect, useState } from 'react';
 import {
   BOTTLENECK_RETRY_SEC,
-  bottleneckReady,
   C,
   type CharView,
   isBottleneckLevel,
@@ -21,7 +20,7 @@ import { itemName, nextMajorRealmName, realmName, ROOT, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { UiIcon } from './ContentIcon';
 import { Button, Divider } from './kit';
-import { closePanel, set, useUI } from './store';
+import { closePanel, useUI } from './store';
 
 /** Số giây còn lại, đếm xuống từ `sec` (server gửi lúc `char` đổi). 0 = không chạy. */
 function useCountdown(sec: number, key: unknown): number {
@@ -37,11 +36,6 @@ function useCountdown(sec: number, key: unknown): number {
     return () => clearInterval(id);
   }, [deadline]);
   return deadline ? Math.max(0, Math.ceil((deadline - now) / 1000)) : 0;
-}
-
-/** Đang kẹt bình cảnh với tu vi đầy (cấp 5/10/15 chưa vượt). */
-function isStuck(c: CharView): boolean {
-  return bottleneckReady(c.level, c.bk, c.xp, c.xpNeed);
 }
 
 /** Thẻ linh căn trong bảng nhân vật. */
@@ -84,7 +78,11 @@ export function BottleneckBox({ char }: { char: CharView }) {
   return (
     <div className="k-card bk-box" data-testid="bk-box">
       <div className="bk-title">{t('ui.bk.title')}</div>
-      <div className="k-dim">{isPeakLevel(char.level) ? t('ui.bk.hint15', { realm: realmName(char.level), to: nextMajorRealmName(char.level) }) : t('ui.bk.hint', { realm: realmName(char.level) })}</div>
+      <div className="k-dim">
+        {isPeakLevel(char.level)
+          ? t('ui.bk.hint15', { realm: realmName(char.level), to: nextMajorRealmName(char.level) })
+          : t('ui.bk.hint', { realm: realmName(char.level) })}
+      </div>
       <div className={full ? 'ok' : 'bad'}>
         {full ? '✔' : '✘'} {full ? t('ui.xp_full') : t('ui.bk.xp_not_full')}
       </div>
@@ -134,7 +132,14 @@ export function RootPicker({ value, onChange }: { value: RootId | null; onChange
       <label>{t('ui.root.pick')}</label>
       <div className="root-row">
         {ROOT_IDS.map((id) => (
-          <button key={id} type="button" className={'root-opt' + (value === id ? ' sel' : '')} data-root={id} title={t(`root.${id}.desc`)} onClick={() => onChange(id)}>
+          <button
+            key={id}
+            type="button"
+            className={'root-opt' + (value === id ? ' sel' : '')}
+            data-root={id}
+            title={t(`root.${id}.desc`)}
+            onClick={() => onChange(id)}
+          >
             <UiIcon id={`root_${id}`} fallback={t(`elem.${id}`)} className="inline" /> {t(`elem.${id}`)}
           </button>
         ))}
@@ -171,7 +176,11 @@ export function RootTab({ npcId }: { npcId: string }) {
               <div className="item-name">{t(`root.${id}.name`)}</div>
               <div className="k-dim">{t(`root.${id}.desc`)}</div>
             </div>
-            <Button variant="primary" disabled={cur || char.gold < cost} onClick={() => g?.send(C.ROOT, { npc: npcId, root: id, r: reqId() })}>
+            <Button
+              variant="primary"
+              disabled={cur || char.gold < cost}
+              onClick={() => g?.send(C.ROOT, { npc: npcId, root: id, r: reqId() })}
+            >
               {cur ? t('ui.root.current') : t('ui.root.change_btn', { n: cost })}
             </Button>
           </div>

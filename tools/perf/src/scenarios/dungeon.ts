@@ -3,7 +3,21 @@
 import { LEVELS, MONSTER } from '@dtl/content';
 import { opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
-import { cam, clearMonsters, enterLevel, gm, hazards, info, monsters, resetHazards, skipCutscene, tp, waitHazard, waitLevel, waitMonster } from '../lib/game';
+import {
+  cam,
+  clearMonsters,
+  enterLevel,
+  gm,
+  hazards,
+  info,
+  monsters,
+  resetHazards,
+  skipCutscene,
+  tp,
+  waitHazard,
+  waitLevel,
+  waitMonster,
+} from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
 
@@ -19,8 +33,19 @@ export default {
     const dg = LEVELS[id]?.dungeon;
     const home = dg && LEVELS[dg.returnLevel];
     const portal = home?.portals?.find((p) => p.to === id);
-    if (!dg || !portal) throw new Error(`level ${id} không phải phó bản có cổng (có: ${Object.keys(LEVELS).filter((k) => LEVELS[k].dungeon?.waves.length).join(', ')})`);
-    const { page } = await r.open({ name: 'Dg', quality: 'high', query: { quiet: 1 }, hide: 'chat', video: opt('--video', '') ? r.out : undefined });
+    if (!dg || !portal)
+      throw new Error(
+        `level ${id} không phải phó bản có cổng (có: ${Object.keys(LEVELS)
+          .filter((k) => LEVELS[k].dungeon?.waves.length)
+          .join(', ')})`,
+      );
+    const { page } = await r.open({
+      name: 'Dg',
+      quality: 'high',
+      query: { quiet: 1 },
+      hide: 'chat',
+      video: opt('--video', '') ? r.out : undefined,
+    });
     const shot = (name: string, wait = 0) => snap(page, r.out, `${name}.jpg`, { wait });
     const log: Record<string, unknown> = {};
     const c = dg.center;
@@ -79,7 +104,11 @@ export default {
         for (const [i, d] of rest.entries()) {
           await gm(page, `tp ${d.x} ${d.z + 4}`, 1200);
           // Túi đã dọn: bùa nằm ở một trong vài ô đầu; ô trống bị server bỏ qua nên thử lần lượt.
-          for (let slot = 0; slot < 6; slot++, await sleep(250)) await page.evaluate(([sl, r]) => window.__game!.send('use', { slot: sl, r }), [slot, `pap-${i}-${slot}-${Date.now()}`] as const);
+          for (let slot = 0; slot < 6; slot++, await sleep(250))
+            await page.evaluate(([sl, r]) => window.__game!.send('use', { slot: sl, r }), [
+              slot,
+              `pap-${i}-${slot}-${Date.now()}`,
+            ] as const);
           await shot(`${tag}-cua-${i + 2}-pha-an-phu`, 1500);
         }
         log[`${tag}-phong-an`] = { opened: /Ba cửa phong ấn đã mở/.test(await page.evaluate(() => document.body.innerText)) };
@@ -108,7 +137,9 @@ export default {
       const lead = wave.mons[wave.mons.length - 1].id;
       const boss = lead.startsWith('boss_');
       if (!(await waitMonster(page, lead, 45_000))) {
-        console.log(`[shots:dungeon] ${tag}: không thấy ${lead}; còn ${(await monsters(page)).map((m) => m.t).join(', ') || 'không con nào'}`);
+        console.log(
+          `[shots:dungeon] ${tag}: không thấy ${lead}; còn ${(await monsters(page)).map((m) => m.t).join(', ') || 'không con nào'}`,
+        );
         await shot(`${tag}-MISS`);
         break;
       }

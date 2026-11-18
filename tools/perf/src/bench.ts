@@ -24,7 +24,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { FOREST, LAKE, SPAWN_POINT } from '@dtl/shared';
-import type { Browser, Page } from 'playwright';
+import type { Browser } from 'playwright';
 import { createDevServer, ROOT, sleep } from './lib/devserver';
 import { args, env, opt, ports } from './lib/env';
 import { launchChrome } from './lib/browser';
@@ -56,7 +56,12 @@ const VAN_LAM_WAYPOINTS = [
   { name: 'rung', x: FOREST.x, z: FOREST.z },
   { name: 'ho', x: LAKE.x - 185, z: LAKE.z },
 ];
-const WAYPOINTS = LEVEL === 'van_lam' ? VAN_LAM_WAYPOINTS : levelPoints(LEVEL).filter((p) => p.name !== 'trencao').map(({ name, x, z }) => ({ name, x, z }));
+const WAYPOINTS =
+  LEVEL === 'van_lam'
+    ? VAN_LAM_WAYPOINTS
+    : levelPoints(LEVEL)
+        .filter((p) => p.name !== 'trencao')
+        .map(({ name, x, z }) => ({ name, x, z }));
 const CAM = { pitch: 0.38, dist: 13 };
 
 /** Ngưỡng desktop trong skill perf-budget. */
@@ -109,7 +114,20 @@ function initScript(preset: string): void {
   w.__bench = B;
   // Byte/điểm ảnh: số kênh × byte mỗi kênh (hằng số của three r178); nén khối ≈ 1 B/px (BC7/ASTC 4x4), 0,5 với BC1/ETC1/RGTC1.
   const COMPS: Record<number, number> = { 1021: 1, 1022: 4, 1023: 4, 1026: 1, 1027: 1, 1028: 1, 1029: 1, 1030: 2, 1031: 2, 1033: 4 };
-  const TYPE_B: Record<number, number> = { 1009: 1, 1010: 1, 1011: 2, 1012: 2, 1013: 4, 1014: 4, 1015: 4, 1016: 2, 1017: 2, 1018: 2, 1020: 4, 35902: 4 };
+  const TYPE_B: Record<number, number> = {
+    1009: 1,
+    1010: 1,
+    1011: 2,
+    1012: 2,
+    1013: 4,
+    1014: 4,
+    1015: 4,
+    1016: 2,
+    1017: 2,
+    1018: 2,
+    1020: 4,
+    35902: 4,
+  };
   const HALF_BLOCK = new Set([33776, 33777, 36196, 37492, 36283, 36284, 35840, 35841]);
   const bytesOf = (t: any, o: any): number => {
     const w0 = Math.max(1, o?.width ?? t.image?.width ?? 1);
@@ -140,7 +158,10 @@ function initScript(preset: string): void {
           tex.set(t, bytesOf(t, o));
           const a = t as any;
           const oo = o as any;
-          texDesc.set(t, `${a.name || a.constructor?.name} ${oo?.width}x${oo?.height}x${oo?.depth ?? 1} L${oo?.levels ?? 1} f${a.format} t${a.type} s${oo?.sampleCount ?? 1}`);
+          texDesc.set(
+            t,
+            `${a.name || a.constructor?.name} ${oo?.width}x${oo?.height}x${oo?.depth ?? 1} L${oo?.levels ?? 1} f${a.format} t${a.type} s${oo?.sampleCount ?? 1}`,
+          );
         };
         be.destroyTexture = (t: object) => {
           tex.delete(t);
@@ -209,12 +230,24 @@ type Run = {
   errors: string[];
 };
 
-
 async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: string): Promise<Run> {
   const ctx = await browser.newContext({ viewport: { width: VW, height: VH }, deviceScaleFactor: DPR });
   const page = await ctx.newPage();
   const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push('pageerror: ' + e.message + (e.stack ? ' @ ' + e.stack.split('\n').slice(1, 4).map((l) => l.trim().slice(0, 110)).join(' | ') : '')));
+  page.on('pageerror', (e) =>
+    errors.push(
+      'pageerror: ' +
+        e.message +
+        (e.stack
+          ? ' @ ' +
+            e.stack
+              .split('\n')
+              .slice(1, 4)
+              .map((l) => l.trim().slice(0, 110))
+              .join(' | ')
+          : ''),
+    ),
+  );
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text().slice(0, 300));
   });
@@ -247,7 +280,12 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
         const ext = gl?.getExtension('WEBGL_debug_renderer_info');
         adapter = gl ? String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER)) : '';
       }
-      return { backend: be.isWebGPUBackend ? 'WebGPU' : 'WebGL2', adapter, pixelRatio: g.renderer.getPixelRatio(), loadStats: { ...g.loadStats } };
+      return {
+        backend: be.isWebGPUBackend ? 'WebGPU' : 'WebGL2',
+        adapter,
+        pixelRatio: g.renderer.getPixelRatio(),
+        loadStats: { ...g.loadStats },
+      };
     });
     await gm(page, 'level 15');
     const points: Point[] = [];
@@ -331,7 +369,18 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
         topTextures: raw.top,
       });
     }
-    return { renderer, backend: info.backend, adapter: info.adapter, preset, viewport: `${VW}x${VH}`, pixelRatio: info.pixelRatio, loadMs, loadStats: info.loadStats, points, errors };
+    return {
+      renderer,
+      backend: info.backend,
+      adapter: info.adapter,
+      preset,
+      viewport: `${VW}x${VH}`,
+      pixelRatio: info.pixelRatio,
+      loadMs,
+      loadStats: info.loadStats,
+      points,
+      errors,
+    };
   } finally {
     await ctx.close().catch(() => undefined);
   }
@@ -353,17 +402,22 @@ async function runSwitch(browser: Browser, renderer: 'webgpu' | 'webgl2', n: num
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
   page.on('console', (m) => {
-    if (m.type() === 'error' || (m.type() === 'warning' && /webgpu|pipeline|attachment|GL_INVALID/i.test(m.text()))) errors.push(m.text().slice(0, 300));
+    if (m.type() === 'error' || (m.type() === 'warning' && /webgpu|pipeline|attachment|GL_INVALID/i.test(m.text())))
+      errors.push(m.text().slice(0, 300));
   });
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})("high");` });
   const name = `Swap_${renderer === 'webgpu' ? 'gpu' : 'gl'}`;
   const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&cine=0&auto=${name}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${env('BENCH_QUERY')}`;
   try {
     await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
-    await page.waitForFunction(() => {
-      const g = window.__game;
-      return !!g && g.frames > 30 && !!g.me?.();
-    }, undefined, { timeout: 120_000, polling: 250 });
+    await page.waitForFunction(
+      () => {
+        const g = window.__game;
+        return !!g && g.frames > 30 && !!g.me?.();
+      },
+      undefined,
+      { timeout: 120_000, polling: 250 },
+    );
     const backend = await page.evaluate(() => (window.__game!.renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL2'));
     // VFX liên tục: mỗi 150 ms một hiệu ứng quanh nhân vật (đủ loại material có markBloom).
     await page.evaluate(() => {
@@ -374,11 +428,21 @@ async function runSwitch(browser: Browser, renderer: 'webgpu' | 'webgl2', n: num
         const v = g.vfx;
         const at = p.clone().add({ x: 3, y: 1, z: 0 });
         switch (i++ % 5) {
-          case 0: v.swordRain(p.x + 4, p.y, p.z, 3, 0x9fe8ff); break;
-          case 1: v.lightning(p.x - 3, p.y, p.z + 2); break;
-          case 2: v.burst(at, 0xffd27a); break;
-          case 3: v.slash(p.clone().add({ x: 0, y: 1, z: 0 }), () => at, 0x9fe8ff); break;
-          default: v.pillar(() => at, 0xd6c4ff, 0.6); break;
+          case 0:
+            v.swordRain(p.x + 4, p.y, p.z, 3, 0x9fe8ff);
+            break;
+          case 1:
+            v.lightning(p.x - 3, p.y, p.z + 2);
+            break;
+          case 2:
+            v.burst(at, 0xffd27a);
+            break;
+          case 3:
+            v.slash(p.clone().add({ x: 0, y: 1, z: 0 }), () => at, 0x9fe8ff);
+            break;
+          default:
+            v.pillar(() => at, 0xd6c4ff, 0.6);
+            break;
         }
       }, 150);
     });
@@ -393,7 +457,12 @@ async function runSwitch(browser: Browser, renderer: 'webgpu' | 'webgl2', n: num
         await new Promise((r) => setTimeout(r, 600));
         const m = g.renderer.info.memory;
         const progs = (g.renderer.info as any).programs;
-        return { geometries: m.geometries as number, textures: m.textures as number, gpuTextures: w.__bench.texCount(), programs: Array.isArray(progs) ? progs.length : (progs ?? 0) };
+        return {
+          geometries: m.geometries as number,
+          textures: m.textures as number,
+          gpuTextures: w.__bench.texCount(),
+          programs: Array.isArray(progs) ? progs.length : (progs ?? 0),
+        };
       }, preset);
       samples.push({ step, preset, ...s });
     }
@@ -422,10 +491,16 @@ async function mainSwitch(n: number): Promise<void> {
   try {
     for (const renderer of RENDERERS) {
       const r = await runSwitch(browser, renderer, n);
-      console.log(`\n[switch] ${r.backend}: ${r.switches} lần đổi preset, ${r.errors.length} lỗi console, ${r.leaks.length ? 'RÒ: ' + r.leaks.join('; ') : 'không rò'}`);
-      for (const s of r.samples) console.log(`  #${lpad(s.step, 2)} ${pad(s.preset, 7)} geo ${lpad(s.geometries, 5)} tex ${lpad(s.textures, 4)} gpuTex ${lpad(s.gpuTextures, 4)} prog ${s.programs}`);
+      console.log(
+        `\n[switch] ${r.backend}: ${r.switches} lần đổi preset, ${r.errors.length} lỗi console, ${r.leaks.length ? 'RÒ: ' + r.leaks.join('; ') : 'không rò'}`,
+      );
+      for (const s of r.samples)
+        console.log(
+          `  #${lpad(s.step, 2)} ${pad(s.preset, 7)} geo ${lpad(s.geometries, 5)} tex ${lpad(s.textures, 4)} gpuTex ${lpad(s.gpuTextures, 4)} prog ${s.programs}`,
+        );
       for (const e of [...new Set(r.errors)].slice(0, 10)) console.log('  lỗi: ' + e);
-      if (renderer === 'webgpu' && r.backend !== 'WebGPU') console.warn('[switch] cảnh báo: yêu cầu WebGPU nhưng renderer đã lùi về WebGL2');
+      if (renderer === 'webgpu' && r.backend !== 'WebGPU')
+        console.warn('[switch] cảnh báo: yêu cầu WebGPU nhưng renderer đã lùi về WebGL2');
       if (r.errors.length || r.leaks.length) fail = true;
     }
   } finally {
@@ -454,15 +529,35 @@ function flags(p: Point): string {
 function printRuns(runs: Run[]): void {
   console.log(
     '\n' +
-      pad('backend', 8) + pad('preset', 8) + pad('điểm', 14) + lpad('fps', 6) + lpad('cpu p50', 9) + lpad('p95', 7) + lpad('draw max', 10) +
-      lpad('tri max', 10) + lpad('tex', 6) + lpad('tex MB', 8) + lpad('heap MB', 9) + '  ngân sách',
+      pad('backend', 8) +
+      pad('preset', 8) +
+      pad('điểm', 14) +
+      lpad('fps', 6) +
+      lpad('cpu p50', 9) +
+      lpad('p95', 7) +
+      lpad('draw max', 10) +
+      lpad('tri max', 10) +
+      lpad('tex', 6) +
+      lpad('tex MB', 8) +
+      lpad('heap MB', 9) +
+      '  ngân sách',
   );
   for (const r of runs) {
     for (const p of r.points) {
       console.log(
-        pad(r.backend, 8) + pad(r.preset, 8) + pad(p.name, 14) + lpad(p.fps, 6) + lpad(p.cpuMs.p50, 9) + lpad(p.cpuMs.p95, 7) +
-          lpad(p.drawCalls.max, 10) + lpad(Math.round(p.triangles.max / 1000) + 'k', 10) + lpad(p.textures, 6) + lpad(p.textureMB, 8) +
-          lpad(p.jsHeapMB ?? '-', 9) + '  ' + flags(p),
+        pad(r.backend, 8) +
+          pad(r.preset, 8) +
+          pad(p.name, 14) +
+          lpad(p.fps, 6) +
+          lpad(p.cpuMs.p50, 9) +
+          lpad(p.cpuMs.p95, 7) +
+          lpad(p.drawCalls.max, 10) +
+          lpad(Math.round(p.triangles.max / 1000) + 'k', 10) +
+          lpad(p.textures, 6) +
+          lpad(p.textureMB, 8) +
+          lpad(p.jsHeapMB ?? '-', 9) +
+          '  ' +
+          flags(p),
       );
     }
   }
@@ -475,7 +570,9 @@ function compare(runs: Run[], prevFile: string | null): { worse: string[]; pairs
   const prev = JSON.parse(fs.readFileSync(prevFile, 'utf8')) as { runs: Run[] };
   const worse: string[] = [];
   for (const r of runs) {
-    const pr = prev.runs?.find((x) => x.renderer === r.renderer && x.preset === r.preset && x.viewport === r.viewport && x.pixelRatio === r.pixelRatio);
+    const pr = prev.runs?.find(
+      (x) => x.renderer === r.renderer && x.preset === r.preset && x.viewport === r.viewport && x.pixelRatio === r.pixelRatio,
+    );
     if (!pr) continue;
     for (const p of r.points) {
       const pp = pr.points.find((x) => x.name === p.name);
@@ -506,7 +603,8 @@ async function main(): Promise<void> {
         const r = await runOne(browser, renderer, preset);
         runs.push(r);
         console.log(`${r.backend} (${r.adapter || '?'}), nạp ${(r.loadMs / 1000).toFixed(1)} s, ${r.errors.length} lỗi console`);
-        if (renderer === 'webgpu' && r.backend !== 'WebGPU') console.warn('[bench] cảnh báo: yêu cầu WebGPU nhưng renderer đã lùi về WebGL2');
+        if (renderer === 'webgpu' && r.backend !== 'WebGPU')
+          console.warn('[bench] cảnh báo: yêu cầu WebGPU nhưng renderer đã lùi về WebGL2');
       }
     }
   } finally {
@@ -537,7 +635,15 @@ async function main(): Promise<void> {
     git: gitSha,
     browser: `${CHANNEL} ${browser.version()}${HEADED ? '' : ' headless'}`,
     machine: { platform: `${os.platform()} ${os.release()}`, cpu: os.cpus()[0]?.model ?? '', cores: os.cpus().length },
-    settings: { level: LEVEL, secondsPerPoint: SECONDS, viewport: `${VW}x${VH}`, dpr: DPR, camera: CAM, waypoints: WAYPOINTS, devServer: true },
+    settings: {
+      level: LEVEL,
+      secondsPerPoint: SECONDS,
+      viewport: `${VW}x${VH}`,
+      dpr: DPR,
+      camera: CAM,
+      waypoints: WAYPOINTS,
+      devServer: true,
+    },
     budget: BUDGET,
     notes: [
       'cpuMs: thời gian CPU của Game.frame() (gồm ghi lệnh GPU, không gồm thời gian GPU chạy)',

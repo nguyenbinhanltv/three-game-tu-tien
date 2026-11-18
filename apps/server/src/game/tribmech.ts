@@ -18,6 +18,7 @@ import { PF_DEAD, TRIB_MECHANIC_IDS, tribDef, type TribDef, type TribPhaseDef } 
 import type { PlayerEnt } from './entities';
 import type { TribState } from './tribtypes';
 import type { TribHost } from './tribhost';
+import { log } from '../log';
 
 export interface TribMechCtx {
   /** Cổng vào sim (hành động server). */
@@ -51,12 +52,22 @@ export function hasMechanic(id: string): boolean {
 }
 
 for (const id of TRIB_MECHANIC_IDS) {
-  if (id === 'dan_tran' || id === 'tia_xich' || id === 'xuat_khieu' || id === 'tam_canh' || id === 'ngu_hanh' || id === 'phan_than' || id === 'dan_loi' || id === 'nhat_thuc') continue; // đã cài thật (E2-D, E3-L ở dưới; E4-D ở tribnhan.ts)
+  if (
+    id === 'dan_tran' ||
+    id === 'tia_xich' ||
+    id === 'xuat_khieu' ||
+    id === 'tam_canh' ||
+    id === 'ngu_hanh' ||
+    id === 'phan_than' ||
+    id === 'dan_loi' ||
+    id === 'nhat_thuc'
+  )
+    continue; // đã cài thật (E2-D, E3-L ở dưới; E4-D ở tribnhan.ts)
   registerMechanic(id, {
     enter(c) {
       if (warned.has(id)) return;
       warned.add(id);
-      console.log(`[trib] cơ chế "${id}" (kiếp ${c.def.id}, pha ${c.phase.id}) chưa cài: chạy pha chung`);
+      log.info(`[trib] cơ chế "${id}" (kiếp ${c.def.id}, pha ${c.phase.id}) chưa cài: chạy pha chung`);
     },
   });
 }
@@ -98,7 +109,18 @@ registerMechanic('dan_tran', {
     const cfg = c.phase.danTran;
     if (!cfg) return;
     // Người độ kiếp chọn chỗ đặt vòng bằng cách đứng ở đâu lúc pha bắt đầu.
-    const st: DanTranState = { x: c.p.move.x, z: c.p.move.z, pg: 0, last: c.now, lx: c.p.move.x, lz: c.p.move.z, sweepAt: c.now + 1500, sendAt: 0, done: false, sweeps: 0 };
+    const st: DanTranState = {
+      x: c.p.move.x,
+      z: c.p.move.z,
+      pg: 0,
+      last: c.now,
+      lx: c.p.move.x,
+      lz: c.p.move.z,
+      sweepAt: c.now + 1500,
+      sendAt: 0,
+      done: false,
+      sweeps: 0,
+    };
     (c.tr.mech ??= {}).dan_tran = st;
     const len = c.phase.end - (c.phaseIdx > 0 ? c.def.phases[c.phaseIdx - 1].end : 0);
     c.host.fx({ t: 'dantran', src: c.p.sid, x: st.x, z: st.z, r: cfg.r, d: len, pg: 0 });
@@ -131,7 +153,20 @@ registerMechanic('dan_tran', {
       // Gốc vạch lùi nửa chiều dài để vạch đi qua điểm (tâm vòng + lệch ngang).
       const cx = st.x + fz * off;
       const cz = st.z - fx * off;
-      c.host.addHazard({ x: cx - fx * half, z: cz - fz * half, r: cfg.sweepLen, sh: 'rect', yaw, w: cfg.sweepW }, cfg.sweepWarn, cfg.sweepPct, true, 'lightning', c.p.sid, 0, false, 0, undefined, undefined, c.phase.hot);
+      c.host.addHazard(
+        { x: cx - fx * half, z: cz - fz * half, r: cfg.sweepLen, sh: 'rect', yaw, w: cfg.sweepW },
+        cfg.sweepWarn,
+        cfg.sweepPct,
+        true,
+        'lightning',
+        c.p.sid,
+        0,
+        false,
+        0,
+        undefined,
+        undefined,
+        c.phase.hot,
+      );
     }
     if (c.now >= st.sendAt) {
       st.sendAt = c.now + 500;
@@ -152,7 +187,6 @@ registerMechanic('dan_tran', {
     }
   },
 });
-
 
 // ---------- tia_xich (E3-L): tia xích nối giữa hai tia ----------
 
@@ -181,9 +215,48 @@ registerMechanic('tia_xich', {
     const bx = cx + fx * half;
     const bz = cz + fz * half;
     const h = c.host;
-    h.addHazard({ x: ax, z: az, r: cfg.endR }, cfg.warn, cfg.endPct, true, 'lightning', c.p.sid, 0, false, 0, undefined, undefined, c.phase.hot);
-    h.addHazard({ x: bx, z: bz, r: cfg.endR }, cfg.warn, cfg.endPct, true, 'lightning', c.p.sid, 0, false, 0, undefined, undefined, c.phase.hot);
-    h.addHazard({ x: ax, z: az, r: cfg.len, sh: 'rect', yaw, w: cfg.w }, cfg.warn, cfg.pct, true, 'lightning', c.p.sid, 0, false, h.nextGrp(), undefined, undefined, c.phase.hot);
+    h.addHazard(
+      { x: ax, z: az, r: cfg.endR },
+      cfg.warn,
+      cfg.endPct,
+      true,
+      'lightning',
+      c.p.sid,
+      0,
+      false,
+      0,
+      undefined,
+      undefined,
+      c.phase.hot,
+    );
+    h.addHazard(
+      { x: bx, z: bz, r: cfg.endR },
+      cfg.warn,
+      cfg.endPct,
+      true,
+      'lightning',
+      c.p.sid,
+      0,
+      false,
+      0,
+      undefined,
+      undefined,
+      c.phase.hot,
+    );
+    h.addHazard(
+      { x: ax, z: az, r: cfg.len, sh: 'rect', yaw, w: cfg.w },
+      cfg.warn,
+      cfg.pct,
+      true,
+      'lightning',
+      c.p.sid,
+      0,
+      false,
+      h.nextGrp(),
+      undefined,
+      undefined,
+      c.phase.hot,
+    );
   },
 });
 
@@ -305,10 +378,26 @@ registerMechanic('tam_canh', {
         const dist = Math.hypot(dx, dz) || 1;
         const pow = cfg.skillPow * Math.max(1, sk.power);
         if (sk.kind === 'aoe') {
-          c.host.addHazard({ x: c.p.move.x, z: c.p.move.z, r: Math.min(10, sk.radius ?? 6) }, cfg.skillWarn, pow, false, 'spirit', sh.id, sh.atk);
+          c.host.addHazard(
+            { x: c.p.move.x, z: c.p.move.z, r: Math.min(10, sk.radius ?? 6) },
+            cfg.skillWarn,
+            pow,
+            false,
+            'spirit',
+            sh.id,
+            sh.atk,
+          );
         } else {
           const len = Math.min(18, dist + 4);
-          c.host.addHazard({ x: sh.s.x, z: sh.s.z, r: len, sh: 'rect', yaw: Math.atan2(dx, dz), w: 3 }, cfg.skillWarn, pow, false, 'spirit', sh.id, sh.atk);
+          c.host.addHazard(
+            { x: sh.s.x, z: sh.s.z, r: len, sh: 'rect', yaw: Math.atan2(dx, dz), w: 3 },
+            cfg.skillWarn,
+            pow,
+            false,
+            'spirit',
+            sh.id,
+            sh.atk,
+          );
         }
         c.host.fx({ t: 'tamma_cast', src: sh.id, s: sk.id, x: c.p.move.x, z: c.p.move.z, d: cfg.skillWarn });
       }
@@ -345,7 +434,7 @@ export function runMechanic(id: string | undefined, hook: keyof TribMechanic, c:
   if (!m) {
     if (!warned.has(id)) {
       warned.add(id);
-      console.warn(`[trib] cơ chế "${id}" không có trong registry`);
+      log.warn(`[trib] cơ chế "${id}" không có trong registry`);
     }
     return;
   }

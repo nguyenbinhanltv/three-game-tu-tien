@@ -55,7 +55,14 @@ export interface ItemDef {
   quest?: boolean;
   /** Đích Thăng Bậc của món này (cùng ô, bậc kế); thiếu = món thường cùng ô ở bậc kế. */
   promoteTo?: string;
-  use?: { /** Phá Ấn Phù (E4-C): mở một cửa phong ấn ở Thần Tàng Điện. */ seal?: boolean; hpPct?: number; mpPct?: number; xp?: number; cd: number; /** Đan tăng sức (P3-8): buff tạm thời. */ buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } };
+  use?: {
+    /** Phá Ấn Phù (E4-C): mở một cửa phong ấn ở Thần Tàng Điện. */ seal?: boolean;
+    hpPct?: number;
+    mpPct?: number;
+    xp?: number;
+    cd: number;
+    /** Đan tăng sức (P3-8): buff tạm thời. */ buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number };
+  };
 }
 
 export type MonsterModel = 'wolf' | 'boar' | 'fox' | 'ape' | 'serpent';
@@ -162,7 +169,17 @@ export interface MonsterThan {
   hands?: { phase: number; n: number; r: number; w: number; delay: number; turn: number; cd: number; mul: number };
   elem?: { phase: number; cd: number; r: number; delay: number; mul: number; cut: number; sealR: number; ring: number };
   clone?: { phase: number; mon: string; n: number; r: number; life: number; heal: number; weak: number; cd: number };
-  rings?: { phase: number; n: number; r: number; orbit: number; dur: number; spin: number; mul: number; cd: number; final: { delay: number; r: number; w: number; mul: number; gather: number } };
+  rings?: {
+    phase: number;
+    n: number;
+    r: number;
+    orbit: number;
+    dur: number;
+    spin: number;
+    mul: number;
+    cd: number;
+    final: { delay: number; r: number; w: number; mul: number; gather: number };
+  };
 }
 
 /**
@@ -188,7 +205,16 @@ export interface MonsterKimDa {
   mend?: { cd: number; r: number; pct: number };
   twin?: { mul: number };
   bargain?: { phase: number; mon: string; sep: number; pen: number };
-  night?: { phase: number; steles: { x: number; z: number; r: number }[]; press: number; cd: number; warn: number; mul: number; dur: number; grace: number };
+  night?: {
+    phase: number;
+    steles: { x: number; z: number; r: number }[];
+    press: number;
+    cd: number;
+    warn: number;
+    mul: number;
+    dur: number;
+    grace: number;
+  };
 }
 
 /** Đòn đôi: sau một đòn cận chiến, có xác suất đánh thêm một đòn nặng sau `delay` giây (né được nếu ra khỏi tầm). */
@@ -601,7 +627,12 @@ export interface SkillDef {
   /** `summon`: `count` kiếm đan, mỗi `every` giây đánh quái gần nhất trong `range` mét; `power` là hệ số mỗi nhịp. */
   summon?: { count: number; every: number; range: number };
   /** `buff`: giảm sát thương nhận `reduce` trong `duration` giây; `stomp` giậm quanh mình mỗi `every` giây; `regen` hồi %/giây. */
-  buff?: { reduce?: number; regen?: number; stomp?: { every: number; r: number; mul: number }; /** E4-G: kiếm ảnh lặp lại chiêu gây sát thương ngươi vừa tung (hệ số = `power` × `hits`). */ echo?: boolean };
+  buff?: {
+    reduce?: number;
+    regen?: number;
+    stomp?: { every: number; r: number; mul: number };
+    /** E4-G: kiếm ảnh lặp lại chiêu gây sát thương ngươi vừa tung (hệ số = `power` × `hits`). */ echo?: boolean;
+  };
   /** E4-G (Thuấn Di Trảm): thuấn di tới sát mục tiêu (cách `stop` mét) rồi mới đánh. */
   blink?: { stop: number };
   /** E4-G (Thuấn Di Hộ Thế/Cứu Viện): thuấn di tới đồng đội (hoặc đồng đội ngã) trong `range` mét; không có thì không ra chiêu. */
@@ -617,7 +648,22 @@ export interface SkillDef {
  * nằm trong bán kính quét; cần Kết Đan), `escort` (đưa người đồng hành `target` = id `escorts` của level tới nơi). Cả ba do server quyết định.
  * `enhance` (M-5): món trang bị đạt +count (lấy mức cao nhất, như `level`); `dungeon`: vào Kiếm Trủng; `duel`: hoàn tất một trận tỉ thí.
  */
-export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough' | 'enhance' | 'dungeon' | 'duel' | 'meditate' | 'scan' | 'escort' | 'touch' | 'clone';
+export type ObjectiveType =
+  | 'kill'
+  | 'gather'
+  | 'craft'
+  | 'level'
+  | 'talk'
+  | 'fly'
+  | 'breakthrough'
+  | 'enhance'
+  | 'dungeon'
+  | 'duel'
+  | 'meditate'
+  | 'scan'
+  | 'escort'
+  | 'touch'
+  | 'clone';
 
 export interface ObjectiveDef {
   type: ObjectiveType;
@@ -774,14 +820,34 @@ export interface WaveDef {
    * nguyên anh xuất khiếu chạm trận môn (trong `touch` m) cũng mở cửa. Người bằng xương thịt không vào được vùng trong `bar` m quanh trận môn khi cửa đóng.
    * Mỗi cửa mở thì `reinforce` quái kéo đến. Mở đủ mọi cửa và hạ hết quái thì sang đợt sau.
    */
-  seals?: { doors: { x: number; z: number; gx: number; gz: number }[]; touch: number; phuR: number; bar: number; reinforce: { mon: string; level: number; n: number } };
+  seals?: {
+    doors: { x: number; z: number; gx: number; gz: number }[];
+    touch: number;
+    phuR: number;
+    bar: number;
+    reinforce: { mon: string; level: number; n: number };
+  };
   /**
    * Đợt giữ bia (DV-3D, Xích Tẫn Khích): Trấn Giới Bia ở (`x`, `z`), bán kính `r`. Cần có người còn sống đứng trong vòng đủ `secs` giây (cộng dồn).
    * Trong lúc trống người quá `grace` giây thì bia tắt: mỗi giây mọi người mất `press` × khí huyết tối đa (giới áp) và tiến độ không tăng.
    * Quái tiếp viện `reinforce[i].mon` kéo tới khi tiến độ đạt `reinforce[i].at` giây (quanh bia, `n` con).
    */
-  steles?: { x: number; z: number; r: number; secs: number; grace: number; press: number; reinforce: { at: number; mon: string; level: number; n: number }[] };
-  puzzle?: { points: { x: number; z: number }[]; msg?: string; secs: number; wrong: { mon: string; level: number; n: number }; bossCut: number };
+  steles?: {
+    x: number;
+    z: number;
+    r: number;
+    secs: number;
+    grace: number;
+    press: number;
+    reinforce: { at: number; mon: string; level: number; n: number }[];
+  };
+  puzzle?: {
+    points: { x: number; z: number }[];
+    msg?: string;
+    secs: number;
+    wrong: { mon: string; level: number; n: number };
+    bossCut: number;
+  };
 }
 
 /** Thưởng khi dẹp xong phó bản, nhận một lần mỗi ngày và mỗi nhân vật (khóa idem `dungeon:<level>:<ngày>`). */

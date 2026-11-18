@@ -10,6 +10,8 @@ import { installHttpRateLimit } from './ratelimit';
 import { dungeonRoomName, ROOM_TRIBULATION, TRIB_LEVEL, tribRoomNameOf, worldRoomName } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
 import { activeRooms, defineDungeon, defineTribulation, defineWorld, onlineCount, TribulationRoom } from './rooms';
+import { maybeCpuProfile } from './game/tickprof';
+import { log } from './log';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -44,6 +46,7 @@ function handleHttp(req: http.IncomingMessage, res: http.ServerResponse): void {
       players: r.sim.players.size,
       monsters: r.sim.monsters.length,
       tickP95: Number(r.sim.tickP95().toFixed(2)),
+      ...(r.sim.prof.enabled ? { prof: r.sim.prof.report() } : {}),
     }));
     res.writeHead(200, { 'content-type': 'application/json', 'access-control-allow-origin': '*' });
     res.end(JSON.stringify({ ok: true, online: onlineCount(), rooms }));
@@ -52,7 +55,9 @@ function handleHttp(req: http.IncomingMessage, res: http.ServerResponse): void {
   const dist = config.clientDist;
   if (!fs.existsSync(dist)) {
     res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
-    res.end(`Đạp Thiên Lộ — server đang chạy. Client dev ở http://localhost:${process.env.CLIENT_PORT || 5173} (hoặc chạy pnpm build để server phục vụ bản build).`);
+    res.end(
+      `Đạp Thiên Lộ — server đang chạy. Client dev ở http://localhost:${process.env.CLIENT_PORT || 5173} (hoặc chạy pnpm build để server phục vụ bản build).`,
+    );
     return;
   }
   let file = path.normalize(path.join(dist, decodeURIComponent(url.pathname)));
@@ -83,7 +88,12 @@ const httpServer = http.createServer(serveStatic);
 // WebGL2 ở khung đầu) thì gói còn nằm trong hàng đợi bị tick sau ghi đè → client giải mã hỏng ("refId" not found, mất đồng
 // bộ trạng thái). Quái nhiều (M-1: 378) làm patch đủ lớn để dính. Sao chép trước khi gửi (một memcpy vài KB mỗi gói).
 const rawSend = WebSocketClient.prototype.raw;
-WebSocketClient.prototype.raw = function (this: InstanceType<typeof WebSocketClient>, data: Uint8Array | Buffer, options?: unknown, cb?: (err?: Error) => void) {
+WebSocketClient.prototype.raw = function (
+  this: InstanceType<typeof WebSocketClient>,
+  data: Uint8Array | Buffer,
+  options?: unknown,
+  cb?: (err?: Error) => void,
+) {
   return rawSend.call(this, Buffer.from(data), options as never, cb);
 };
 // Nhịp ping của ws: mặc định 3 s × 2 lần ≈ 9 s. Trình duyệt dừng đọc socket khi luồng chính của trang bị chặn (biên
@@ -112,17 +122,22 @@ for (const lv of Object.values(LEVELS)) {
 }
 
 await gameServer.listen(config.port);
-console.log(`[server] Đạp Thiên Lộ chạy ở cổng ${config.port}`);
-console.log(
+void maybeCpuProfile();
+log.info(`[server] Đạp Thiên Lộ chạy ở cổng ${config.port}`);
+log.info(
   `[server] giới hạn /matchmake + websocket: ${rl.burst > 0 ? `${rl.burst} dồn, ${rl.perMin}/phút mỗi IP` : 'TẮT'}` +
     `${rl.trustProxy ? ', tin X-Forwarded-For' : ''}${rl.exempt.size ? `, miễn: ${[...rl.exempt].join(' ')}` : ''}`,
 );
-console.log(`[server] đăng nhập dev: ${config.devBypass ? 'BẬT (chỉ dùng khi phát triển)' : 'tắt'}; Google: ${config.googleClientId ? 'đã cấu hình' : 'chưa cấu hình'}`);
+log.info(
+  `[server] đăng nhập dev: ${config.devBypass ? 'BẬT (chỉ dùng khi phát triển)' : 'tắt'}; Google: ${config.googleClientId ? 'đã cấu hình' : 'chưa cấu hình'}`,
+);
 
 setInterval(() => {
   for (const r of activeRooms) {
     if (r.sim.players.size > 0) {
-      console.log(`[metric] room=${r.roomName} players=${r.sim.players.size} monsters=${r.sim.monsters.length} tick_ms_p95=${r.sim.tickP95().toFixed(2)}`);
+      log.info(
+        `[metric] room=${r.roomName} players=${r.sim.players.size} monsters=${r.sim.monsters.length} tick_ms_p95=${r.sim.tickP95().toFixed(2)}`,
+      );
     }
   }
 }, 30_000).unref();
@@ -131,23 +146,23 @@ let closing = false;
 async function shutdown() {
   if (closing) return;
   closing = true;
-  console.log('[server] đang lưu và tắt…');
+  log.info('[server] đang lưu và tắt…');
   for (const r of activeRooms) r.sim.saveAll();
   try {
     await gameServer.gracefullyShutdown(false);
-  } catch {
-    /* bỏ qua */
+  } catch (e) {
+    log.warn('[server] tắt Colyseus không gọn (tiếp tục thoát):', e);
   }
   sqlite.close();
   process.exit(0);
 }
 // Lỗi lọt lưới: ghi log, lưu mọi nhân vật, và tiếp tục chạy thay vì để cả nhóm rớt mạng.
 process.on('uncaughtException', (e) => {
-  console.error('[server] uncaughtException:', e);
+  log.error('[server] uncaughtException:', e);
   for (const r of activeRooms) r.sim.saveAll();
 });
 process.on('unhandledRejection', (e) => {
-  console.error('[server] unhandledRejection:', e);
+  log.error('[server] unhandledRejection:', e);
 });
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);

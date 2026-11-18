@@ -183,7 +183,10 @@ const LIFT = 0.06;
 /** Kẹp cổ tay về trong tầm với và chỉnh lưỡi kiếm vuông góc với mũi (tránh sword/edge song song sau khi trộn khung). */
 function fit(f) {
   const o = { ...f };
-  for (const [n, side] of [['handR', -1], ['handL', 1]]) {
+  for (const [n, side] of [
+    ['handR', -1],
+    ['handL', 1],
+  ]) {
     if (!o[n]) continue;
     const s = [SHOULDER[0] * side + o.hipsPos[0], SHOULDER[1] + o.hipsPos[1], SHOULDER[2] + o.hipsPos[2]];
     const d = sub(o[n], s);
@@ -211,7 +214,8 @@ function keyOf(t, f0, ease) {
   if (f.hipsPos) hips.pos = v3(f.hipsPos);
   if (f.hipsRot) hips.rot = v3(f.hipsRot);
   if (hips.pos || hips.rot) k.hips = hips;
-  for (const n of ['spine', 'head', 'handR', 'elbowR', 'sword', 'edge', 'handL', 'elbowL', 'footR', 'footL', 'kneeR', 'kneeL']) if (f[n]) k[n] = v3(f[n]);
+  for (const n of ['spine', 'head', 'handR', 'elbowR', 'sword', 'edge', 'handL', 'elbowL', 'footR', 'footL', 'kneeR', 'kneeL'])
+    if (f[n]) k[n] = v3(f[n]);
   return k;
 }
 
@@ -334,7 +338,9 @@ for (const voice of ['kt', 'hp', 'ds']) {
 // ---- Kiếm Khí Trảm ×3 giọng ----
 for (const voice of ['kt', 'hp', 'ds']) {
   const { f3, f5 } = swingFrames('kkt', VX[voice]);
-  emit(`kiem_khi_tram${SUF[voice]}`, 'skl_kiem_khi_tram', SK.get('skl_kiem_khi_tram').hitAt[0], true, (w, rec) => frames({ w, rec, voice: VX[voice], f3, f5, nine: true, arc: voice === 'ds' }));
+  emit(`kiem_khi_tram${SUF[voice]}`, 'skl_kiem_khi_tram', SK.get('skl_kiem_khi_tram').hitAt[0], true, (w, rec) =>
+    frames({ w, rec, voice: VX[voice], f3, f5, nine: true, arc: voice === 'ds' }),
+  );
 }
 // ---- Chiêu tấn công khác (một giọng, theo công pháp của chiêu hoặc kiếm tu cho chiêu gốc) ----
 for (const [id, skill, swing] of [
@@ -352,50 +358,226 @@ const GEST = {
   loi_dinh: {
     skill: 'skl_loi_dinh_nhat_kiem',
     voice: 'kt',
-    f3: { hipsPos: [0, -0.15, -0.03], hipsRot: [0, 4, 0], spine: [-16, 0, 0], head: [-10, 0, 0], handR: [-0.1, 0.94, -0.06], elbowR: [-0.9, 0.2, -0.2], sword: [0, 0.3, -0.95], edge: [0, 0.95, 0.3], handL: [0.04, 0.92, -0.04], elbowL: [0.9, 0.2, -0.2], footR: GUARD.footR, footL: GUARD.footL },
-    f5: { hipsPos: [0, -0.2, 0.1], hipsRot: [0, 4, 0], spine: [26, 0, 0], head: [-6, 0, 0], handR: [-0.08, 0.2, 0.44], elbowR: [-0.6, -0.8, 0], sword: [0, -0.4, 0.92], edge: [0, -0.92, -0.4], handL: [0.02, 0.22, 0.42], elbowL: [0.6, -0.8, 0], footR: [-0.14, 0, 0.34], footL: [0.15, 0, -0.2] },
+    f3: {
+      hipsPos: [0, -0.15, -0.03],
+      hipsRot: [0, 4, 0],
+      spine: [-16, 0, 0],
+      head: [-10, 0, 0],
+      handR: [-0.1, 0.94, -0.06],
+      elbowR: [-0.9, 0.2, -0.2],
+      sword: [0, 0.3, -0.95],
+      edge: [0, 0.95, 0.3],
+      handL: [0.04, 0.92, -0.04],
+      elbowL: [0.9, 0.2, -0.2],
+      footR: GUARD.footR,
+      footL: GUARD.footL,
+    },
+    f5: {
+      hipsPos: [0, -0.2, 0.1],
+      hipsRot: [0, 4, 0],
+      spine: [26, 0, 0],
+      head: [-6, 0, 0],
+      handR: [-0.08, 0.2, 0.44],
+      elbowR: [-0.6, -0.8, 0],
+      sword: [0, -0.4, 0.92],
+      edge: [0, -0.92, -0.4],
+      handL: [0.02, 0.22, 0.42],
+      elbowL: [0.6, -0.8, 0],
+      footR: [-0.14, 0, 0.34],
+      footL: [0.15, 0, -0.2],
+    },
   },
   // Linh Khí Hộ Thể: khép tay trước ngực rồi mở ra hai bên.
   ho_the: {
     skill: 'skl_linh_khi_ho_the',
     voice: 'kt',
-    f3: { hipsPos: [0, -0.14, 0], hipsRot: [0, 0, 0], spine: [6, 0, 0], head: [10, 0, 0], handR: [-0.03, 0.46, 0.24], elbowR: [-1, -0.3, 0], handL: [0.03, 0.46, 0.24], elbowL: [1, -0.3, 0], sword: [0, 1, 0.05], edge: [1, 0, 0], footR: [-0.15, 0, 0.04], footL: [0.15, 0, -0.04] },
-    f5: { hipsPos: [0, -0.1, 0], hipsRot: [0, 0, 0], spine: [-6, 0, 0], head: [-6, 0, 0], handR: [-0.6, 0.36, 0.14], elbowR: [-0.3, -1, -0.3], handL: [0.6, 0.36, 0.14], elbowL: [0.3, -1, -0.3], sword: [-0.6, 0.2, 0.75], edge: [0, -1, 0], footR: [-0.15, 0, 0.04], footL: [0.15, 0, -0.04] },
+    f3: {
+      hipsPos: [0, -0.14, 0],
+      hipsRot: [0, 0, 0],
+      spine: [6, 0, 0],
+      head: [10, 0, 0],
+      handR: [-0.03, 0.46, 0.24],
+      elbowR: [-1, -0.3, 0],
+      handL: [0.03, 0.46, 0.24],
+      elbowL: [1, -0.3, 0],
+      sword: [0, 1, 0.05],
+      edge: [1, 0, 0],
+      footR: [-0.15, 0, 0.04],
+      footL: [0.15, 0, -0.04],
+    },
+    f5: {
+      hipsPos: [0, -0.1, 0],
+      hipsRot: [0, 0, 0],
+      spine: [-6, 0, 0],
+      head: [-6, 0, 0],
+      handR: [-0.6, 0.36, 0.14],
+      elbowR: [-0.3, -1, -0.3],
+      handL: [0.6, 0.36, 0.14],
+      elbowL: [0.3, -1, -0.3],
+      sword: [-0.6, 0.2, 0.75],
+      edge: [0, -1, 0],
+      footR: [-0.15, 0, 0.04],
+      footL: [0.15, 0, -0.04],
+    },
   },
   // Hồi Nguyên Thuật: cúi xuống thu linh khí rồi nâng hai tay lên.
   hoi_nguyen: {
     skill: 'skl_hoi_nguyen_thuat',
     voice: 'kt',
-    f3: { hipsPos: [0, -0.14, 0], hipsRot: [0, 0, 0], spine: [8, 0, 0], head: [20, 0, 0], handR: [-0.07, 0.1, 0.24], elbowR: [-0.8, -0.6, -0.2], handL: [0.07, 0.1, 0.24], elbowL: [0.8, -0.6, -0.2], sword: [0, -1, 0.15], edge: [0, 0, 1], footR: [-0.15, 0, 0.04], footL: [0.15, 0, -0.04] },
-    f5: { hipsPos: [0, -0.04, 0], hipsRot: [0, 0, 0], spine: [-6, 0, 0], head: [-12, 0, 0], handR: [-0.1, 0.52, 0.3], elbowR: [-0.8, -0.2, -0.2], handL: [0.1, 0.52, 0.3], elbowL: [0.8, -0.2, -0.2], sword: [0.1, 0.9, 0.3], edge: [1, 0, 0], footR: [-0.15, 0, 0.04], footL: [0.15, 0, -0.04] },
+    f3: {
+      hipsPos: [0, -0.14, 0],
+      hipsRot: [0, 0, 0],
+      spine: [8, 0, 0],
+      head: [20, 0, 0],
+      handR: [-0.07, 0.1, 0.24],
+      elbowR: [-0.8, -0.6, -0.2],
+      handL: [0.07, 0.1, 0.24],
+      elbowL: [0.8, -0.6, -0.2],
+      sword: [0, -1, 0.15],
+      edge: [0, 0, 1],
+      footR: [-0.15, 0, 0.04],
+      footL: [0.15, 0, -0.04],
+    },
+    f5: {
+      hipsPos: [0, -0.04, 0],
+      hipsRot: [0, 0, 0],
+      spine: [-6, 0, 0],
+      head: [-12, 0, 0],
+      handR: [-0.1, 0.52, 0.3],
+      elbowR: [-0.8, -0.2, -0.2],
+      handL: [0.1, 0.52, 0.3],
+      elbowL: [0.8, -0.2, -0.2],
+      sword: [0.1, 0.9, 0.3],
+      edge: [1, 0, 0],
+      footR: [-0.15, 0, 0.04],
+      footL: [0.15, 0, -0.04],
+    },
   },
   // Trấn Sơn Ấn (hộ pháp): hạ thấp, dậm chân, ấn một chưởng ra trước.
   tran_son: {
     skill: 'skl_tran_son_an',
     voice: 'hp',
-    f3: { hipsPos: [0, -0.25, -0.02], hipsRot: [0, 0, 0], spine: [10, 0, 0], head: [6, 0, 0], handR: [-0.2, 0.12, 0.14], elbowR: [-0.8, -0.5, -0.4], sword: [0, -1, 0.2], edge: [0, 0, 1], handL: [0.1, 0.3, 0.22], elbowL: [0.7, -0.5, -0.3], footR: [-0.29, 0.12, 0.06], footL: [0.29, 0, -0.06], kneeR: [-0.5, 0.4, 0.7], kneeL: [0.5, 0, 0.7] },
-    f5: { hipsPos: [0, -0.24, 0.06], hipsRot: [0, 0, 0], spine: [14, 0, 0], head: [0, 0, 0], handR: [-0.14, 0.1, 0.4], elbowR: [-0.5, -0.9, -0.1], handL: [0.12, 0.3, 0.5], elbowL: [0.4, -0.9, -0.1], footR: [-0.29, 0, 0.12], footL: [0.29, 0, -0.06] },
+    f3: {
+      hipsPos: [0, -0.25, -0.02],
+      hipsRot: [0, 0, 0],
+      spine: [10, 0, 0],
+      head: [6, 0, 0],
+      handR: [-0.2, 0.12, 0.14],
+      elbowR: [-0.8, -0.5, -0.4],
+      sword: [0, -1, 0.2],
+      edge: [0, 0, 1],
+      handL: [0.1, 0.3, 0.22],
+      elbowL: [0.7, -0.5, -0.3],
+      footR: [-0.29, 0.12, 0.06],
+      footL: [0.29, 0, -0.06],
+      kneeR: [-0.5, 0.4, 0.7],
+      kneeL: [0.5, 0, 0.7],
+    },
+    f5: {
+      hipsPos: [0, -0.24, 0.06],
+      hipsRot: [0, 0, 0],
+      spine: [14, 0, 0],
+      head: [0, 0, 0],
+      handR: [-0.14, 0.1, 0.4],
+      elbowR: [-0.5, -0.9, -0.1],
+      handL: [0.12, 0.3, 0.5],
+      elbowL: [0.4, -0.9, -0.1],
+      footR: [-0.29, 0, 0.12],
+      footL: [0.29, 0, -0.06],
+    },
   },
   // Kim Cương Bất Hoại (hộ pháp): gồng khí, hai tay đẩy ra hai bên, trụ vững.
   kim_cuong: {
     skill: 'skl_kim_cuong_bat_hoai',
     voice: 'hp',
-    f3: { hipsPos: [0, -0.25, 0], hipsRot: [0, 0, 0], spine: [10, 0, 0], head: [6, 0, 0], handR: [0.06, 0.4, 0.3], elbowR: [-0.6, 0.2, -0.2], handL: [-0.06, 0.38, 0.3], elbowL: [0.6, 0.2, -0.2], sword: [0, -1, 0.2], edge: [0, 0, 1], footR: [-0.27, 0, 0.04], footL: [0.27, 0, -0.04] },
-    f5: { hipsPos: [0, -0.24, 0], hipsRot: [0, 0, 0], spine: [-4, 0, 0], head: [-8, 0, 0], handR: [-0.5, 0.36, 0.14], elbowR: [-1, -0.3, -0.2], handL: [0.5, 0.36, 0.14], elbowL: [1, -0.3, -0.2], footR: [-0.27, 0, 0.06], footL: [0.27, 0, -0.06] },
+    f3: {
+      hipsPos: [0, -0.25, 0],
+      hipsRot: [0, 0, 0],
+      spine: [10, 0, 0],
+      head: [6, 0, 0],
+      handR: [0.06, 0.4, 0.3],
+      elbowR: [-0.6, 0.2, -0.2],
+      handL: [-0.06, 0.38, 0.3],
+      elbowL: [0.6, 0.2, -0.2],
+      sword: [0, -1, 0.2],
+      edge: [0, 0, 1],
+      footR: [-0.27, 0, 0.04],
+      footL: [0.27, 0, -0.04],
+    },
+    f5: {
+      hipsPos: [0, -0.24, 0],
+      hipsRot: [0, 0, 0],
+      spine: [-4, 0, 0],
+      head: [-8, 0, 0],
+      handR: [-0.5, 0.36, 0.14],
+      elbowR: [-1, -0.3, -0.2],
+      handL: [0.5, 0.36, 0.14],
+      elbowL: [1, -0.3, -0.2],
+      footR: [-0.27, 0, 0.06],
+      footL: [0.27, 0, -0.06],
+    },
   },
   // Hồi Xuân Quyết (đan sư): uốn người, tay áo vẽ vòng, tung linh khí.
   xuan_phong: {
     skill: 'skl_hoi_xuan_quyet',
     voice: 'ds',
-    f3: { hipsPos: [0, -0.095, 0], hipsRot: [0, -10, 0], spine: [8, -14, 0], head: [10, 0, 0], handR: [-0.1, 0.1, 0.34], elbowR: [-0.8, -0.6, -0.2], sword: [0, -1, 0.15], edge: [0, 0, 1], handL: [0.05, 0.34, 0.26], elbowL: [0.8, -0.6, -0.2], footR: [-0.15, 0, 0.04], footL: [0.15, 0, -0.14] },
-    f5: { hipsPos: [0, -0.07, 0], hipsRot: [0, 12, 0], spine: [-8, 16, 0], head: [-18, 0, 0], handR: [-0.5, 0.64, 0.24], elbowR: [-1, 0.2, -0.2], handL: [0.06, 0.38, 0.3], elbowL: [0.8, -0.4, -0.2], footR: [-0.14, 0, 0.1], footL: [0.15, 0, -0.34] },
+    f3: {
+      hipsPos: [0, -0.095, 0],
+      hipsRot: [0, -10, 0],
+      spine: [8, -14, 0],
+      head: [10, 0, 0],
+      handR: [-0.1, 0.1, 0.34],
+      elbowR: [-0.8, -0.6, -0.2],
+      sword: [0, -1, 0.15],
+      edge: [0, 0, 1],
+      handL: [0.05, 0.34, 0.26],
+      elbowL: [0.8, -0.6, -0.2],
+      footR: [-0.15, 0, 0.04],
+      footL: [0.15, 0, -0.14],
+    },
+    f5: {
+      hipsPos: [0, -0.07, 0],
+      hipsRot: [0, 12, 0],
+      spine: [-8, 16, 0],
+      head: [-18, 0, 0],
+      handR: [-0.5, 0.64, 0.24],
+      elbowR: [-1, 0.2, -0.2],
+      handL: [0.06, 0.38, 0.3],
+      elbowL: [0.8, -0.4, -0.2],
+      footR: [-0.14, 0, 0.1],
+      footL: [0.15, 0, -0.34],
+    },
   },
   // Hồi Thiên Đan Lộ (đan sư): chắp tay cúi, rồi dâng hai tay lên trời.
   hoi_thien: {
     skill: 'skl_hoi_thien_dan_lo',
     voice: 'ds',
-    f3: { hipsPos: [0, -0.1, 0], hipsRot: [0, 0, 0], spine: [12, 0, 0], head: [18, 0, 0], handR: [-0.1, 0.2, 0.36], elbowR: [-0.7, -0.6, -0.1], handL: [0.1, 0.2, 0.36], elbowL: [0.7, -0.6, -0.1], sword: [0, -1, 0.15], edge: [0, 0, 1], footR: [-0.16, 0, 0.12], footL: [0.18, 0, -0.18] },
-    f5: { hipsPos: [0, -0.08, 0], hipsRot: [0, 0, 0], spine: [-10, 0, 0], head: [-26, 0, 0], handR: [-0.16, 0.86, 0.2], elbowR: [-0.8, 0, -0.1], handL: [0.16, 0.86, 0.2], elbowL: [0.8, 0, -0.1], footR: [-0.14, 0, 0.14], footL: [0.18, 0, -0.34] },
+    f3: {
+      hipsPos: [0, -0.1, 0],
+      hipsRot: [0, 0, 0],
+      spine: [12, 0, 0],
+      head: [18, 0, 0],
+      handR: [-0.1, 0.2, 0.36],
+      elbowR: [-0.7, -0.6, -0.1],
+      handL: [0.1, 0.2, 0.36],
+      elbowL: [0.7, -0.6, -0.1],
+      sword: [0, -1, 0.15],
+      edge: [0, 0, 1],
+      footR: [-0.16, 0, 0.12],
+      footL: [0.18, 0, -0.18],
+    },
+    f5: {
+      hipsPos: [0, -0.08, 0],
+      hipsRot: [0, 0, 0],
+      spine: [-10, 0, 0],
+      head: [-26, 0, 0],
+      handR: [-0.16, 0.86, 0.2],
+      elbowR: [-0.8, 0, -0.1],
+      handL: [0.16, 0.86, 0.2],
+      elbowL: [0.8, 0, -0.1],
+      footR: [-0.14, 0, 0.14],
+      footL: [0.18, 0, -0.34],
+    },
   },
 };
 /** VFX-V2: cường điệu cử chỉ của các chiêu cơ bản Kiếm tu (thân/hông/đầu lệch khỏi thế thủ nhiều hơn `k` lần; tay giữ nguyên để không vượt tầm). */
@@ -453,27 +635,81 @@ for (const [id, skill, swing, voice] of [
     if (i === s.hitAt.length - 1) ks.push(keyOf(h + 0.06, overshoot(f3, f5, VOICES.kt.over), 'out'));
   });
   ks.push(keyOf(s.hitAt[s.hitAt.length - 1] + s.recovery, GUARD, 'inOut'));
-  POSES.push({ id: 'kiem_vu', duration: r3(s.hitAt[s.hitAt.length - 1] + s.recovery), loop: false, hit: [r3(s.hitAt[0]), r3(s.hitAt[0] + 0.16)], keys: ks });
+  POSES.push({
+    id: 'kiem_vu',
+    duration: r3(s.hitAt[s.hitAt.length - 1] + s.recovery),
+    loop: false,
+    hit: [r3(s.hitAt[0]), r3(s.hitAt[0] + 0.16)],
+    keys: ks,
+  });
 }
 
 // Cử chỉ hai tay (7 khung). `mk` tạo cặp khung (tụ lực → ra chiêu) từ mẫu: ép xuống, nâng lên, mở hai bên, đẩy ra trước, ấn quyết.
 const L0 = { footR: GUARD.footR, footL: GUARD.footL };
 const WIDE = { footR: [-0.27, 0, 0.05], footL: [0.27, 0, -0.05] };
 const SOFT = { footR: [-0.16, 0, 0.12], footL: [0.18, 0, -0.2] };
-const hands = (a, b, y, z, ex = 0.8) => ({ handR: [-a, y, z], handL: [a, y, z], elbowR: [-ex, -0.5, -0.2], elbowL: [ex, -0.5, -0.2], ...b });
+const hands = (a, b, y, z, ex = 0.8) => ({
+  handR: [-a, y, z],
+  handL: [a, y, z],
+  elbowR: [-ex, -0.5, -0.2],
+  elbowL: [ex, -0.5, -0.2],
+  ...b,
+});
 const TPL = {
   // Ấn hai tay xuống đất.
-  press: (v) => ({ f3: { ...v.pose, spine: [4, 0, 0], head: [8, 0, 0], ...hands(0.1, {}, 0.5, 0.22) }, f5: { ...v.pose, hipsPos: [0, v.pose.hipsPos[1] - 0.04, 0.04], spine: [18, 0, 0], head: [14, 0, 0], ...hands(0.14, {}, 0.1, 0.42, 0.5) } }),
+  press: (v) => ({
+    f3: { ...v.pose, spine: [4, 0, 0], head: [8, 0, 0], ...hands(0.1, {}, 0.5, 0.22) },
+    f5: {
+      ...v.pose,
+      hipsPos: [0, v.pose.hipsPos[1] - 0.04, 0.04],
+      spine: [18, 0, 0],
+      head: [14, 0, 0],
+      ...hands(0.14, {}, 0.1, 0.42, 0.5),
+    },
+  }),
   // Nâng hai tay lên cao.
-  raise: (v) => ({ f3: { ...v.pose, spine: [10, 0, 0], head: [16, 0, 0], ...hands(0.1, {}, 0.18, 0.3) }, f5: { ...v.pose, spine: [-10, 0, 0], head: [-24, 0, 0], ...hands(0.16, {}, 0.88, 0.18, 0.7) } }),
+  raise: (v) => ({
+    f3: { ...v.pose, spine: [10, 0, 0], head: [16, 0, 0], ...hands(0.1, {}, 0.18, 0.3) },
+    f5: { ...v.pose, spine: [-10, 0, 0], head: [-24, 0, 0], ...hands(0.16, {}, 0.88, 0.18, 0.7) },
+  }),
   // Khép tay trước ngực rồi mở ra hai bên.
-  open: (v) => ({ f3: { ...v.pose, spine: [6, 0, 0], head: [8, 0, 0], ...hands(0.04, {}, 0.46, 0.24, 1) }, f5: { ...v.pose, spine: [-6, 0, 0], head: [-8, 0, 0], ...hands(0.6, {}, 0.38, 0.12, 0.3) } }),
+  open: (v) => ({
+    f3: { ...v.pose, spine: [6, 0, 0], head: [8, 0, 0], ...hands(0.04, {}, 0.46, 0.24, 1) },
+    f5: { ...v.pose, spine: [-6, 0, 0], head: [-8, 0, 0], ...hands(0.6, {}, 0.38, 0.12, 0.3) },
+  }),
   // Gồng khí rồi đẩy hai chưởng ra trước.
-  thrust: (v) => ({ f3: { ...v.pose, spine: [8, 0, 0], head: [6, 0, 0], ...hands(0.1, {}, 0.36, 0.14, 0.9) }, f5: { ...v.pose, hipsPos: [0, v.pose.hipsPos[1] - 0.02, 0.1], spine: [16, 0, 0], head: [-4, 0, 0], ...hands(0.12, {}, 0.4, 0.5, 0.45) } }),
+  thrust: (v) => ({
+    f3: { ...v.pose, spine: [8, 0, 0], head: [6, 0, 0], ...hands(0.1, {}, 0.36, 0.14, 0.9) },
+    f5: { ...v.pose, hipsPos: [0, v.pose.hipsPos[1] - 0.02, 0.1], spine: [16, 0, 0], head: [-4, 0, 0], ...hands(0.12, {}, 0.4, 0.5, 0.45) },
+  }),
   // Tay áo vung vòng (đan sư): một tay quét ngang.
-  sweep: (v) => ({ f3: { ...v.pose, hipsRot: [0, -12, 0], spine: [6, -14, 0], head: [10, 0, 0], handR: [-0.3, 0.2, 0.14], elbowR: [-0.7, -0.6, -0.4], handL: [0.06, 0.34, 0.26], elbowL: [0.8, -0.6, -0.2] }, f5: { ...v.pose, hipsRot: [0, 14, 0], spine: [-8, 16, 0], head: [-16, 0, 0], handR: [-0.55, 0.62, 0.3], elbowR: [-1, 0.1, -0.3], handL: [0.06, 0.38, 0.3], elbowL: [0.8, -0.4, -0.2] } }),
+  sweep: (v) => ({
+    f3: {
+      ...v.pose,
+      hipsRot: [0, -12, 0],
+      spine: [6, -14, 0],
+      head: [10, 0, 0],
+      handR: [-0.3, 0.2, 0.14],
+      elbowR: [-0.7, -0.6, -0.4],
+      handL: [0.06, 0.34, 0.26],
+      elbowL: [0.8, -0.6, -0.2],
+    },
+    f5: {
+      ...v.pose,
+      hipsRot: [0, 14, 0],
+      spine: [-8, 16, 0],
+      head: [-16, 0, 0],
+      handR: [-0.55, 0.62, 0.3],
+      elbowR: [-1, 0.1, -0.3],
+      handL: [0.06, 0.38, 0.3],
+      elbowL: [0.8, -0.4, -0.2],
+    },
+  }),
   // Chắp tay cúi đầu rồi dang tay đón.
-  vow: (v) => ({ f3: { ...v.pose, spine: [14, 0, 0], head: [20, 0, 0], ...hands(0.03, {}, 0.38, 0.28, 1) }, f5: { ...v.pose, spine: [-6, 0, 0], head: [-14, 0, 0], ...hands(0.55, {}, 0.6, 0.2, 0.4) } }),
+  vow: (v) => ({
+    f3: { ...v.pose, spine: [14, 0, 0], head: [20, 0, 0], ...hands(0.03, {}, 0.38, 0.28, 1) },
+    f5: { ...v.pose, spine: [-6, 0, 0], head: [-14, 0, 0], ...hands(0.55, {}, 0.6, 0.2, 0.4) },
+  }),
 };
 const VOICE_POSE = {
   kt: { pose: { hipsPos: [0, -0.15, 0], hipsRot: [0, 0, 0], ...L0, sword: [0, 1, 0.05], edge: [1, 0, 0] } },

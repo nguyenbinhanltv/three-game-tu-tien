@@ -27,7 +27,8 @@ test('khai báo: vùng có stem là sect, wild, dungeon; mỗi vùng đủ pulse
 
 test('bảng trộn: mức 0 chỉ nền, lớp không giảm khi mức tăng', () => {
   assert.deepEqual(table[0], { base: 1, pulse: 0, edge: 0 });
-  for (const k of ['pulse', 'edge']) for (const lv of [1, 2]) assert.ok(table[lv][k] >= table[lv - 1][k], `${k} giảm từ mức ${lv - 1} lên ${lv}`);
+  for (const k of ['pulse', 'edge'])
+    for (const lv of [1, 2]) assert.ok(table[lv][k] >= table[lv - 1][k], `${k} giảm từ mức ${lv - 1} lên ${lv}`);
 });
 
 for (const z of zones) {
@@ -47,7 +48,9 @@ for (const z of zones) {
     }
     // Vào giao tranh không được to lên hay nhỏ đi quá 1,5 dB so với lúc khám phá.
     assert.ok(Math.abs(lufs[2] - lufs[0]) <= 1.5, `${z}: nhảy ${(lufs[2] - lufs[0]).toFixed(2)} dB giữa mức 0 và 2`);
-    console.log(`  ${z}: LUFS mức0 ${lufs[0].toFixed(2)}, mức1 ${lufs[1].toFixed(2)}, mức2 ${lufs[2].toFixed(2)}; ${n} mẫu/lớp (${(n / SR).toFixed(2)} s)`);
+    console.log(
+      `  ${z}: LUFS mức0 ${lufs[0].toFixed(2)}, mức1 ${lufs[1].toFixed(2)}, mức2 ${lufs[2].toFixed(2)}; ${n} mẫu/lớp (${(n / SR).toFixed(2)} s)`,
+    );
   });
 }
 

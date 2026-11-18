@@ -1,11 +1,9 @@
 // Bài kiểm tra bảo mật: Truyền Tống Trận và điểm đánh dấu (M-4) (R-7, tách từ security-check.ts).
 import { type Room } from 'colyseus.js';
 import { C, MS_DEAD, S } from '@dtl/shared';
-import { spawn } from 'node:child_process';
 import { W, check, health, join, tag, type Ctx, type P, type M } from './lib';
 
-export async function runTeleport(ctx: Ctx): Promise<void> {
-  const { client, gm } = ctx;
+export async function runTeleport(_ctx: Ctx): Promise<void> {
   // 14. Truyền Tống Trận và điểm đánh dấu (M-4): server quyết định mở khóa, giao chiến, spam, kiểu gửi lạ, chia sẻ chỉ trong tổ đội.
   {
     const ta = await join('tele' + tag + 'a');
@@ -45,14 +43,22 @@ export async function runTeleport(ctx: Ctx): Promise<void> {
       await W(450);
     }
     await W(3600);
-    check('trận chưa mở khóa / id lạ / sai kiểu: không niệm, không dịch chuyển', moved() < 3 && !teleA?.cast && (await health()), `lệch ${moved().toFixed(1)} m, thông báo: ${[...new Set(sysA)].join(',')}`);
+    check(
+      'trận chưa mở khóa / id lạ / sai kiểu: không niệm, không dịch chuyển',
+      moved() < 3 && !teleA?.cast && (await health()),
+      `lệch ${moved().toFixed(1)} m, thông báo: ${[...new Set(sysA)].join(',')}`,
+    );
     // b. Mở khóa rồi niệm đủ: dịch chuyển; hồi chiêu chặn lần sau.
     await sayT(ta.room, 'tele tp_thung_lung');
     await W(500);
     ta.room.send(C.TELE, { id: 'tp_thung_lung' });
     await W(3800);
     const dest = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
-    check('niệm đủ 3 giây thì tới trận đã mở khóa', Math.hypot(dest.x - 2010, dest.z - 2375) < 20, `(${dest.x.toFixed(0)}, ${dest.z.toFixed(0)})`);
+    check(
+      'niệm đủ 3 giây thì tới trận đã mở khóa',
+      Math.hypot(dest.x - 2010, dest.z - 2375) < 20,
+      `(${dest.x.toFixed(0)}, ${dest.z.toFixed(0)})`,
+    );
     check('sau khi tới có hồi chiêu', (teleA?.cd ?? 0) > 20_000, `cd ${teleA?.cd}`);
     await sayT(ta.room, 'tele cd');
     // c. Giao chiến thật (tự đánh một con sói): bắt đầu niệm rồi ra chiêu thì lượt niệm bị hủy; đang giao chiến thì không bắt đầu niệm được.
@@ -68,7 +74,9 @@ export async function runTeleport(ctx: Ctx): Promise<void> {
     await sayT(tb.room, `tp ${(WX - Math.sin(tbYaw) * 8).toFixed(1)} ${(WZ - Math.cos(tbYaw) * 8).toFixed(1)}`);
     await sayT(tb.room, 'spawn mon_soi_xam 1');
     const here = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
-    const wolf = [...(ta.room.state as { monsters: Map<string, M> }).monsters.entries()].filter(([, m]) => m.t === 'mon_soi_xam' && m.st !== MS_DEAD).sort((x, y) => Math.hypot(x[1].x - WX, x[1].z - WZ) - Math.hypot(y[1].x - WX, y[1].z - WZ))[0];
+    const wolf = [...(ta.room.state as { monsters: Map<string, M> }).monsters.entries()]
+      .filter(([, m]) => m.t === 'mon_soi_xam' && m.st !== MS_DEAD)
+      .sort((x, y) => Math.hypot(x[1].x - WX, x[1].z - WZ) - Math.hypot(y[1].x - WX, y[1].z - WZ))[0];
     if (!wolf) check('dựng được sói để thử giao chiến', false);
     else {
       sysA.length = 0;
@@ -80,11 +88,19 @@ export async function runTeleport(ctx: Ctx): Promise<void> {
       const hpBefore = mp(ta.room, ta.init.sid).hp;
       const gap = Math.hypot(wolf[1].x - here.x, wolf[1].z - here.z);
       const clean = casting && hpBefore >= hp0 && gap > 18 && gap < 26 && !sysA.includes('sys.tele_combat');
-      check('trước khi ra chiêu: đang niệm, chưa bị đánh, sói cách ~20 m (không đua với sói)', clean, `niệm ${casting ? 'có' : 'không'}, cách sói ${gap.toFixed(1)} m, hp ${hpBefore}`);
+      check(
+        'trước khi ra chiêu: đang niệm, chưa bị đánh, sói cách ~20 m (không đua với sói)',
+        clean,
+        `niệm ${casting ? 'có' : 'không'}, cách sói ${gap.toFixed(1)} m, hp ${hpBefore}`,
+      );
       ta.room.send(C.SKILL, { id: 'skl_phi_kiem', t: wolf[0] });
       await W(4200);
       const p1 = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
-      check('đang niệm mà ra chiêu đánh quái: lượt niệm bị hủy, không dịch chuyển', casting && Math.hypot(p1.x - 1580, p1.z - 2070) > 100 && sysA.includes('sys.tele_broken'), `niệm ${casting ? 'có' : 'không'}, (${p1.x.toFixed(0)}, ${p1.z.toFixed(0)}), sys ${[...new Set(sysA)].join(',')}`);
+      check(
+        'đang niệm mà ra chiêu đánh quái: lượt niệm bị hủy, không dịch chuyển',
+        casting && Math.hypot(p1.x - 1580, p1.z - 2070) > 100 && sysA.includes('sys.tele_broken'),
+        `niệm ${casting ? 'có' : 'không'}, (${p1.x.toFixed(0)}, ${p1.z.toFixed(0)}), sys ${[...new Set(sysA)].join(',')}`,
+      );
       // Vừa đánh xong (đang trong cửa sổ giao chiến): không bắt đầu niệm được.
       await sayT(ta.room, 'heal');
       ta.room.send(C.SKILL, { id: 'skl_phi_kiem', t: wolf[0] });
@@ -92,7 +108,11 @@ export async function runTeleport(ctx: Ctx): Promise<void> {
       sysA.length = 0;
       ta.room.send(C.TELE, { id: 'tp_ho' });
       await W(700);
-      check('đang giao chiến: không bắt đầu niệm Truyền Tống', !teleA?.cast && sysA.includes('sys.tele_combat'), `cast ${teleA?.cast ? 'có' : 'không'}, sys ${[...new Set(sysA)].join(',')}`);
+      check(
+        'đang giao chiến: không bắt đầu niệm Truyền Tống',
+        !teleA?.cast && sysA.includes('sys.tele_combat'),
+        `cast ${teleA?.cast ? 'có' : 'không'}, sys ${[...new Set(sysA)].join(',')}`,
+      );
     }
     await sayT(ta.room, 'killall');
     await sayT(ta.room, 'heal');
@@ -134,7 +154,11 @@ export async function runTeleport(ctx: Ctx): Promise<void> {
       for (let i = 0; i < 60; i++) ta.room.send(C.SPIRIT, { on: true });
       for (let i = 0; i < 60; i++) ta.room.send(C.BONDED, {});
       await W(3200);
-      check('chưa Kết Đan: thần thức và Ngưng Đan Lô bị từ chối, không có kết quả quét', scans === 0 && (await health()), `${scans} kết quả quét`);
+      check(
+        'chưa Kết Đan: thần thức và Ngưng Đan Lô bị từ chối, không có kết quả quét',
+        scans === 0 && (await health()),
+        `${scans} kết quả quét`,
+      );
       await sayT(ta.room, 'level 20');
       await sayT(ta.room, 'god on');
       await W(600);
@@ -147,7 +171,11 @@ export async function runTeleport(ctx: Ctx): Promise<void> {
       const s0 = spiStates;
       for (let i = 0; i < 80; i++) ta.room.send(C.SPIRIT, { on: true });
       await W(3400);
-      check('Kết Đan: spam 80 lệnh giữ V chỉ cho đúng một lần quét', scans === 1 && spiStates - s0 <= 4 && (await health()), `${scans} kết quả quét, ${spiStates - s0} trạng thái`);
+      check(
+        'Kết Đan: spam 80 lệnh giữ V chỉ cho đúng một lần quét',
+        scans === 1 && spiStates - s0 <= 4 && (await health()),
+        `${scans} kết quả quét, ${spiStates - s0} trạng thái`,
+      );
       for (let i = 0; i < 80; i++) ta.room.send(C.SPIRIT, { on: true });
       await W(3000);
       check('đang hồi chiêu: giữ V lại không quét thêm', scans === 1, `${scans} kết quả quét`);
@@ -174,7 +202,7 @@ export async function runTeleport(ctx: Ctx): Promise<void> {
       const body = { x: mine()?.x ?? 0, z: mine()?.z ?? 0 };
       ta.room.send(C.SOUL, { on: true });
       await W(700);
-      check('xuất khiếu được từ Nguyên Anh', lastK() === 1 && (((mine()?.fl ?? 0) & 128) !== 0));
+      check('xuất khiếu được từ Nguyên Anh', lastK() === 1 && ((mine()?.fl ?? 0) & 128) !== 0);
       // Cố chạy thật xa bằng input (không giới hạn phía client).
       let seq = 1000;
       for (let i = 0; i < 90; i++) {
@@ -198,10 +226,13 @@ export async function runTeleport(ctx: Ctx): Promise<void> {
       await W(800);
       for (let i = 0; i < 80; i++) ta.room.send(C.SOUL, {});
       await W(1200);
-      check('đang hồi chiêu: rác và spam 80 lệnh X không mở lại nguyên anh, server sống', (await health()) && lastK() === 0 && (((mine()?.fl ?? 0) & 128) === 0), `k ${lastK()}`);
+      check(
+        'đang hồi chiêu: rác và spam 80 lệnh X không mở lại nguyên anh, server sống',
+        (await health()) && lastK() === 0 && ((mine()?.fl ?? 0) & 128) === 0,
+        `k ${lastK()}`,
+      );
     }
     await ta.room.leave(true);
     await tb.room.leave(true);
   }
-
 }

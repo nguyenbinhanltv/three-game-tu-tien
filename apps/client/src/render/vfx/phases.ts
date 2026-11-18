@@ -109,7 +109,10 @@ export function hazardFlash(k: number, delay: number): number {
  * `dim` (1/√(1+số vùng chồng), tối thiểu 0,35) cho sigil + chớp, và `fx` (có phát hiệu ứng nổ không: từ vùng chồng thứ 3 trở đi
  * chỉ còn sigil, bỏ tia sét/vòng nổ để không cộng sáng thành mảng trắng, art bible mục 5, 8). Ai trúng do server phán, không đổi.
  */
-export function hazardStack(all: readonly { x: number; z: number; r: number }[], z: { x: number; z: number; r: number }): { dim: number; fx: boolean } {
+export function hazardStack(
+  all: readonly { x: number; z: number; r: number }[],
+  z: { x: number; z: number; r: number },
+): { dim: number; fx: boolean } {
   let n = 0;
   for (const h of all) if (Math.hypot(h.x - z.x, h.z - z.z) < Math.max(h.r, z.r)) n++;
   return { dim: n === 0 ? 1 : Math.max(0.35, 1 / Math.sqrt(1 + n)), fx: n < 2 };

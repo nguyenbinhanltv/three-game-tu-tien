@@ -1,5 +1,21 @@
 import * as THREE from 'three/webgpu';
-import { cameraPosition, clamp, exp, float, instancedBufferAttribute, length, max, min, mix, pow, smoothstep, step, uniform, uv, vec3 } from 'three/tsl';
+import {
+  cameraPosition,
+  clamp,
+  exp,
+  float,
+  instancedBufferAttribute,
+  length,
+  max,
+  min,
+  mix,
+  pow,
+  smoothstep,
+  step,
+  uniform,
+  uv,
+  vec3,
+} from 'three/tsl';
 import { markBloom } from '../post';
 import { FX_MAX_HDR } from '../materials/vfx';
 
@@ -14,10 +30,17 @@ import { FX_MAX_HDR } from '../materials/vfx';
  */
 
 /** Ngân sách hạt theo preset chất lượng (tổng hai lớp). */
-export const PARTICLE_BUDGET: Record<string, number> = { low: 5000, medium: 12000, high: 20000 };
+export const PARTICLE_BUDGET: Record<string, number> = { low: 5000, medium: 12000, high: 20000, ultra: 32000 };
+/**
+ * Hệ số số hạt chiêu theo preset đồ họa (chỉ chiêu của mình, chỉ khi "Chất lượng hiệu ứng" = Cao; đám đông giữ nguyên).
+ * Kích thước mỗi hạt co theo `densitySize` để tổng ánh sáng cộng dồn tăng chậm (độ đọc, chống lóa).
+ */
+export const PARTICLE_DENSITY: Record<string, number> = { low: 1, medium: 1, high: 1.3, ultra: 1.7 };
+/** Co kích thước hạt khi mật độ tăng `d` lần: d^-0,3 (tổng diện tích ×d^0,4, tối đa ~1,23 ở Cực cao). */
+export const densitySize = (d: number): number => Math.pow(d, -0.3);
 /** Tỉ lệ ngân sách cho lớp cộng sáng; phần còn lại cho bụi/sương. */
 const GLOW_SHARE = 0.6;
-const MAX_TOTAL = 20000;
+const MAX_TOTAL = 32000;
 /**
  * Tuổi thọ tối đa của một hạt (giây); `emit` chặn ở mức này để biết ô nào chắc chắn đã chết.
  * 9 s để mảng sương/lá rơi của hạt môi trường (game/ambient.ts) trôi chậm, hiện/tắt từ từ.
@@ -75,7 +98,9 @@ class Layer {
     const k = clamp(t.div(life), 0, 1);
     // Lực cản tuyến tính: quãng đi = v·(1 − e^(−d·t))/d; trọng lực cộng riêng.
     const d = max(p2.w, 1e-3);
-    const drift = float(1).sub(exp(d.negate().mul(t))).div(d);
+    const drift = float(1)
+      .sub(exp(d.negate().mul(t)))
+      .div(d);
     const pos = p0.xyz.add(p1.xyz.mul(drift)).sub(vec3(0, p2.z.mul(t).mul(t).mul(0.5), 0));
 
     const mat = new THREE.SpriteNodeMaterial({
@@ -106,7 +131,22 @@ class Layer {
     this.sprite.name = mat.name;
   }
 
-  emit(now: number, x: number, y: number, z: number, vx: number, vy: number, vz: number, life: number, s0: number, s1: number, grav: number, drag: number, c: THREE.Color, alpha: number): void {
+  emit(
+    now: number,
+    x: number,
+    y: number,
+    z: number,
+    vx: number,
+    vy: number,
+    vz: number,
+    life: number,
+    s0: number,
+    s1: number,
+    grav: number,
+    drag: number,
+    c: THREE.Color,
+    alpha: number,
+  ): void {
     const i = this.next;
     this.next = i + 1;
     this.total++;
@@ -212,10 +252,13 @@ export class Particles {
   /** Đồng hồ riêng (giây). */
   now = 0;
   private budget = PARTICLE_BUDGET.medium;
+  /** Mật độ hạt chiêu theo preset (`PARTICLE_DENSITY`). */
+  density = 1;
 
   /** Ngân sách theo preset (`low`/`medium`/`high`). */
   setQuality(q: string): void {
     this.budget = PARTICLE_BUDGET[q] ?? PARTICLE_BUDGET.medium;
+    this.density = PARTICLE_DENSITY[q] ?? 1;
     this.glow.setLimit(this.budget * GLOW_SHARE, this.now);
     this.dust.setLimit(this.budget * (1 - GLOW_SHARE), this.now);
   }
@@ -237,7 +280,22 @@ export class Particles {
    * Sinh một hạt. `color`: hex sRGB. `grav` m/s² (dương = rơi xuống), `drag` 1/s.
    * `s0`/`s1` cỡ (m) lúc sinh/lúc tắt.
    */
-  emit(layer: ParticleLayer, x: number, y: number, z: number, vx: number, vy: number, vz: number, life: number, s0: number, s1: number, color: number, alpha = 1, grav = 0, drag = 0): void {
+  emit(
+    layer: ParticleLayer,
+    x: number,
+    y: number,
+    z: number,
+    vx: number,
+    vy: number,
+    vz: number,
+    life: number,
+    s0: number,
+    s1: number,
+    color: number,
+    alpha = 1,
+    grav = 0,
+    drag = 0,
+  ): void {
     _c.setHex(color);
     (layer === 'glow' ? this.glow : this.dust).emit(this.now, x, y, z, vx, vy, vz, life, s0, s1, grav, drag, _c, alpha);
   }

@@ -2,7 +2,22 @@
 import { type Client, Room, ServerError } from 'colyseus';
 import { installViewPatchFix } from '../viewSerializer';
 import { StateView } from '@colyseus/schema';
-import { C, S, TELE_PARTY_R, tribLevelOf, tribRoomNameOf, type TribDef, type TransferMsg, dungeonRoomName, isRootId, parseAppearance, terrainOf, validName, worldRoomName, AOI_PERIOD_MS } from '@dtl/shared';
+import {
+  C,
+  S,
+  TELE_PARTY_R,
+  tribLevelOf,
+  tribRoomNameOf,
+  type TribDef,
+  type TransferMsg,
+  dungeonRoomName,
+  isRootId,
+  parseAppearance,
+  terrainOf,
+  validName,
+  worldRoomName,
+  AOI_PERIOD_MS,
+} from '@dtl/shared';
 import { APPEARANCE, LEVELS, realmName, t } from '@dtl/content';
 import { Aoi } from '../aoi';
 import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, issueSession, sessionAuth } from '../auth';
@@ -16,6 +31,7 @@ import { WorldState } from '../state';
 import { readTestFlags, testAccess } from '../testflags';
 import { tickets, type Ticket } from '../transfer';
 import { randomUUID } from 'node:crypto';
+import { log } from '../log';
 
 export interface JoinAuth extends AuthResult {
   charId: number;
@@ -97,7 +113,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
   aoi!: Aoi;
   abstract simOptions(options: unknown): SimOptions;
 
-  onCreate(options: unknown): void {
+  override onCreate(options: unknown): void {
     this.maxClients = config.maxClients;
     this.setState(new WorldState());
     this.sim = new GameSim(this.state, this, this.simOptions(options));
@@ -114,7 +130,9 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       }
       if (this.sim.now - aoiAt >= AOI_PERIOD_MS) {
         aoiAt = this.sim.now;
+        const a0 = this.sim.prof.enabled ? performance.now() : 0;
         this.aoi.update((sid) => this.clients.getById(sid)?.view);
+        if (a0) this.sim.prof.add('aoi_update', performance.now() - a0);
       }
     }, 50);
     activeRooms.add(this);
@@ -130,7 +148,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
         try {
           handler(p, msg);
         } catch (e) {
-          console.error(`[room] lỗi xử lý message "${type}" của ${p.char.name}:`, e);
+          log.error(`[room] lỗi xử lý message "${type}" của ${p.char.name}:`, e);
         }
       });
     };
@@ -194,7 +212,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
    * Xác thực ở mức class: Colyseus gọi trước khi giữ chỗ hay tạo room,
    * nên request matchmake không có thông tin đăng nhập hợp lệ không dựng được room nào.
    */
-  static async onAuth(_token: string, options: unknown): Promise<JoinAuth> {
+  static override async onAuth(_token: string, options: unknown): Promise<JoinAuth> {
     const auth = await authenticate(options);
     const o = (options ?? {}) as { name?: unknown; dev?: unknown; session?: unknown; ap?: unknown; rt?: unknown };
     let charId = Character.findByAccount(auth.accountId);
@@ -205,7 +223,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       if (Character.nameTaken(name)) throw new ServerError(ERR_NAME_TAKEN, 'name_taken');
       // Ngoại hình chỉ nhận lúc tạo nhân vật; id lạ / giới tính chưa mở thì dùng mặc định (không báo lỗi).
       charId = Character.create(auth.accountId, name, parseAppearance(APPEARANCE, o.ap), isRootId(o.rt) ? o.rt : null).id;
-      console.log(`[auth] tạo nhân vật mới: ${name}`);
+      log.info(`[auth] tạo nhân vật mới: ${name}`);
     }
     const session = sessionAuth(o.session) ? (o.session as string) : issueSession(auth);
     return { ...auth, charId, session };
@@ -246,7 +264,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     char.y = 0;
   }
 
-  onJoin(client: Client, options: unknown, auth: JoinAuth): void {
+  override onJoin(client: Client, options: unknown, auth: JoinAuth): void {
     // Đăng nhập trùng: đá phiên cũ (và lưu) trước khi nạp nhân vật.
     const prev = online.get(auth.charId);
     if (prev) {
@@ -294,12 +312,12 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.sim.soul.sendState(p);
     this.sim.clone.sendState(p);
     ensurePartyTick();
-    console.log(`[join] ${char.name} vào ${this.roomName} (${this.sim.players.size} người)`);
+    log.info(`[join] ${char.name} vào ${this.roomName} (${this.sim.players.size} người)`);
     this.afterJoin(p);
     // M1-10: ?god / ?at=<địa điểm>. Server kiểm quyền; tài khoản thật bị từ chối và được báo.
     const tf = readTestFlags(options, auth.dev, config.devBypass);
     if (tf.kind === 'denied') {
-      console.warn(`[join] ${char.name} xin tham số kiểm thử (?god/?at/?realm/?tribulation) nhưng không phải tài khoản thử: từ chối`);
+      log.warn(`[join] ${char.name} xin tham số kiểm thử (?god/?at/?realm/?tribulation) nhưng không phải tài khoản thử: từ chối`);
       this.sim.sys(p, 'sys.test_denied', undefined, 'bad');
     } else if (tf.kind === 'bad_place') {
       this.sim.sys(p, 'sys.gm', { m: `at ${tf.id}? ${this.sim.placeIds().join(' | ')}` }, 'info');
@@ -312,7 +330,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
 
   afterJoin(_p: PlayerEnt): void {}
 
-  async onLeave(client: Client, consented: boolean): Promise<void> {
+  override async onLeave(client: Client, consented: boolean): Promise<void> {
     const p = this.sim.players.get(client.sessionId);
     if (!p) return;
     if (!consented && !p.kicked) {
@@ -353,7 +371,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.markers.drop(p);
     this.aoi.detach(sid);
     this.sim.removePlayer(sid);
-    console.log(`[leave] ${p.char.name} rời ${this.roomName}`);
+    log.info(`[leave] ${p.char.name} rời ${this.roomName}`);
   }
 
   beforeRemove(_sid: string): void {}
@@ -445,7 +463,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     return Number.isFinite(at.x) && Number.isFinite(at.z) && at.x >= b.x0 && at.x <= b.x1 && at.z >= b.z0 && at.z <= b.z1;
   }
 
-  onDispose(): void {
+  override onDispose(): void {
     this.sim.saveAll();
     for (const p of this.sim.players.values()) {
       parties.detach(p);

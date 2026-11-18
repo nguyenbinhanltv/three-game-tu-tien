@@ -173,7 +173,7 @@ export function budget(ilvl: number, q: Quality, slotWeight: number): number {
 }
 
 export function affixIlvlScale(ilvl: number): number {
-  return 0.6 + 0.4 * Math.min(Math.max(ilvl, 0), AFFIX_ILVL_CAP) / AFFIX_ILVL_CAP;
+  return 0.6 + (0.4 * Math.min(Math.max(ilvl, 0), AFFIX_ILVL_CAP)) / AFFIX_ILVL_CAP;
 }
 
 /** Phẩm hiển thị của đồ cũ chưa có `inst`: theo `rarity` của mẫu. */
@@ -206,7 +206,15 @@ function affixValue(def: AffixDef, ilvl: number, q: Quality, r: number): number 
 }
 
 /** Chọn `count` dòng phụ khác nhau (theo id + tham số) có trọng số. Trả ít hơn nếu hết dòng hợp lệ. */
-export function rollAffixes(data: ItemSysData, slot: EquipSlot, count: number, ilvl: number, q: Quality, rng: () => number, exclude: AffixRoll[] = []): AffixRoll[] {
+export function rollAffixes(
+  data: ItemSysData,
+  slot: EquipSlot,
+  count: number,
+  ilvl: number,
+  q: Quality,
+  rng: () => number,
+  exclude: AffixRoll[] = [],
+): AffixRoll[] {
   const out: AffixRoll[] = [];
   const taken = new Set(exclude.map((a) => affixKey(a)));
   const pool = affixCandidates(data, slot);
@@ -244,7 +252,14 @@ export function affixKey(a: AffixRoll): string {
 }
 
 /** Dòng chính của một món theo ngân sách; `rollR` ∈ [0,1) quyết định độ lệch ±5%. */
-export function mainLine(data: ItemSysData, slot: EquipSlot, ilvl: number, q: Quality, rollR: number, tier = 1): Partial<Record<MainStat, number>> {
+export function mainLine(
+  data: ItemSysData,
+  slot: EquipSlot,
+  ilvl: number,
+  q: Quality,
+  rollR: number,
+  tier = 1,
+): Partial<Record<MainStat, number>> {
   const sd = slotDef(data, slot);
   const qd = data.qualities[q];
   const out: Partial<Record<MainStat, number>> = {};
@@ -285,7 +300,10 @@ export function parseInst(data: ItemSysData, slot: EquipSlot, raw: unknown): Ite
   const qd = data.qualities[q];
   if (!sd || !qd) return null;
   // Chỉ chặn giá trị vô lý tuyệt đối (không so với công thức hiện hành) để đổi cân bằng sau này không làm bác đồ đã rơi.
-  const cap = budget(MAX_ILVL, (QUALITY_COUNT - 1) as Quality, Math.max(...data.slots.map((x) => x.weight))) * TIER_MUL[MAX_TIER] * (1 + MAIN_ROLL_SPREAD);
+  const cap =
+    budget(MAX_ILVL, (QUALITY_COUNT - 1) as Quality, Math.max(...data.slots.map((x) => x.weight))) *
+    TIER_MUL[MAX_TIER] *
+    (1 + MAIN_ROLL_SPREAD);
   // Hỏng từng phần thì bỏ đúng phần đó, giữ phẩm, ilvl, ràng buộc và phần còn lại (không đặt lại cả món).
   const main: Partial<Record<MainStat, number>> = {};
   if (sd.weight > 0) {
@@ -346,7 +364,12 @@ export interface EquippedEntry {
  * Tổng chỉ số từ cảnh giới + các ô đang mặc. Công thức: cộng phẳng (dòng chính × cường hóa), rồi nhân phần trăm.
  * Đồ cũ (không `inst`) cộng đúng như trước nên nhịp lên cấp không đổi. Linh căn cộng ở đây (P3-7); bộ trang bị, công pháp cộng ở đợt sau.
  */
-export function computePlayerStats(level: number, equipped: EquippedEntry[], root?: RootDef | null, sets: readonly SetDef[] = []): PlayerStats {
+export function computePlayerStats(
+  level: number,
+  equipped: EquippedEntry[],
+  root?: RootDef | null,
+  sets: readonly SetDef[] = [],
+): PlayerStats {
   const b = playerBaseStats(level);
   let hp = b.hp;
   let mp = b.mp;
@@ -368,20 +391,48 @@ export function computePlayerStats(level: number, equipped: EquippedEntry[], roo
   const elemRes: Record<string, number> = {};
   const addLine = (a: { id: AffixStat; p?: string; v: number }): void => {
     switch (a.id) {
-      case 'atk_pct': atkPct += a.v; break;
-      case 'def_pct': defPct += a.v; break;
-      case 'hp_pct': hpPct += a.v; break;
-      case 'mp_pct': mpPct += a.v; break;
-      case 'crit_rate': critRate += a.v; break;
-      case 'crit_dmg': critDmg += a.v; break;
-      case 'cdr': cdr += a.v; break;
-      case 'lifesteal': lifesteal += a.v; break;
-      case 'heal_recv': healRecv += a.v; break;
-      case 'elite_dmg': eliteDmg += a.v; break;
-      case 'move_speed': moveSpeed += a.v; break;
-      case 'skill_dmg': if (a.p) skillDmg[a.p] = (skillDmg[a.p] ?? 0) + a.v; break;
-      case 'elem_dmg': if (a.p) elemDmg[a.p] = (elemDmg[a.p] ?? 0) + a.v; break;
-      case 'elem_res': if (a.p) elemRes[a.p] = (elemRes[a.p] ?? 0) + a.v; break;
+      case 'atk_pct':
+        atkPct += a.v;
+        break;
+      case 'def_pct':
+        defPct += a.v;
+        break;
+      case 'hp_pct':
+        hpPct += a.v;
+        break;
+      case 'mp_pct':
+        mpPct += a.v;
+        break;
+      case 'crit_rate':
+        critRate += a.v;
+        break;
+      case 'crit_dmg':
+        critDmg += a.v;
+        break;
+      case 'cdr':
+        cdr += a.v;
+        break;
+      case 'lifesteal':
+        lifesteal += a.v;
+        break;
+      case 'heal_recv':
+        healRecv += a.v;
+        break;
+      case 'elite_dmg':
+        eliteDmg += a.v;
+        break;
+      case 'move_speed':
+        moveSpeed += a.v;
+        break;
+      case 'skill_dmg':
+        if (a.p) skillDmg[a.p] = (skillDmg[a.p] ?? 0) + a.v;
+        break;
+      case 'elem_dmg':
+        if (a.p) elemDmg[a.p] = (elemDmg[a.p] ?? 0) + a.v;
+        break;
+      case 'elem_res':
+        if (a.p) elemRes[a.p] = (elemRes[a.p] ?? 0) + a.v;
+        break;
     }
   };
   for (const { item, tpl } of equipped) {
@@ -396,7 +447,12 @@ export function computePlayerStats(level: number, equipped: EquippedEntry[], roo
     for (const a of lines) addLine(a);
   }
   // Bộ trang bị: thưởng chỉ số của các bậc đã kích hoạt (hiệu ứng combat ở `setFx`).
-  const setSt = sets.length ? setStatuses(sets, equipped.map((e) => e.item.id)) : [];
+  const setSt = sets.length
+    ? setStatuses(
+        sets,
+        equipped.map((e) => e.item.id),
+      )
+    : [];
   for (const s of setSt) for (const tier of s.active) for (const a of tier.lines ?? []) addLine(a);
   // Linh căn: +% sát thương hệ của mình và một chỉ số phụ nhẹ (thiết kế mục 2).
   if (root) {

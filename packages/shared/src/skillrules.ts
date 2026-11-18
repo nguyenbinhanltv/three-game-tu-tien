@@ -86,7 +86,13 @@ export interface DashPlan {
  * Không xuyên vách: bước nào bị đẩy lùi quá nửa quãng dự định thì dừng ở bước trước; đất dốc hơn `DASH_MAX_SLOPE` coi là vách.
  * `stopAt`: dừng trước mục tiêu (khoảng `r` m tính từ tâm).
  */
-export function planDash(start: MoveState, dir: { x: number; z: number }, dist: number, stopAt?: { x: number; z: number; r: number }, level?: Pick<MoveCtx, 'terrain' | 'bound'>): DashPlan {
+export function planDash(
+  start: MoveState,
+  dir: { x: number; z: number },
+  dist: number,
+  stopAt?: { x: number; z: number; r: number },
+  level?: Pick<MoveCtx, 'terrain' | 'bound'>,
+): DashPlan {
   const s = cloneMoveState(start);
   s.grounded = true;
   s.flying = false;
@@ -157,11 +163,13 @@ export function validateSkillRules(s: SkillDef, pose: PoseDef | undefined, ids: 
       for (let i = 0; i < hit.length; i++) {
         if (!(hit[i] >= 0) || (i > 0 && hit[i] < hit[i - 1])) errs.push(`${at}: hitAt phải không âm và tăng dần`);
       }
-      if (pose?.hit && Math.abs(hit[0] - pose.hit[0]) > 0.03) errs.push(`${at}: hitAt[0] = ${hit[0]} lệch hit[0] = ${pose.hit[0]} của pose ${pose.id} (hình và sát thương phải cùng nhịp)`);
+      if (pose?.hit && Math.abs(hit[0] - pose.hit[0]) > 0.03)
+        errs.push(`${at}: hitAt[0] = ${hit[0]} lệch hit[0] = ${pose.hit[0]} của pose ${pose.id} (hình và sát thương phải cùng nhịp)`);
       if (s.windup !== undefined && s.windup > hit[0] + 1e-6) errs.push(`${at}: windup ${s.windup} lớn hơn hitAt[0] ${hit[0]}`);
       if (s.recovery !== undefined && pose) {
         const end = hit[hit.length - 1] + s.recovery;
-        if (Math.abs(end - pose.duration) > 0.06) errs.push(`${at}: hitAt cuối + recovery = ${end.toFixed(2)} lệch độ dài pose ${pose.duration}`);
+        if (Math.abs(end - pose.duration) > 0.06)
+          errs.push(`${at}: hitAt cuối + recovery = ${end.toFixed(2)} lệch độ dài pose ${pose.duration}`);
         if (ct === 'instant' && end > GCD + 1e-6) errs.push(`${at}: hitAt cuối + recovery = ${end.toFixed(2)} quá GCD ${GCD}`);
       }
     }

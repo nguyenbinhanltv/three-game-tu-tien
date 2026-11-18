@@ -108,19 +108,19 @@ function LookPicker({ look, onChange }: { look: Appearance; onChange: (a: Appear
         <span className="look-name">{t(`appearance.dye.${look.dye}`)}</span>
       </div>
       {CHR_V2_ON && (
-      <div className="look-row">
-        <span className="look-key">{t('ui.login.hair')}</span>
-        {HAIRS.map((h) => (
-          <button
-            key={h}
-            type="button"
-            className={'look-gender' + ((look.hair ?? 'a') === h ? ' sel' : '')}
-            onClick={() => onChange({ ...look, hair: h })}
-          >
-            <span>{t(`appearance.hair.${look.g}.${h}`)}</span>
-          </button>
-        ))}
-      </div>
+        <div className="look-row">
+          <span className="look-key">{t('ui.login.hair')}</span>
+          {HAIRS.map((h) => (
+            <button
+              key={h}
+              type="button"
+              className={'look-gender' + ((look.hair ?? 'a') === h ? ' sel' : '')}
+              onClick={() => onChange({ ...look, hair: h })}
+            >
+              <span>{t(`appearance.hair.${look.g}.${h}`)}</span>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -170,7 +170,8 @@ function Login() {
   // Tiện cho kiểm thử: ?auto=<đạo hiệu> tự đăng nhập bằng tài khoản thử.
   useEffect(() => {
     const auto = FLAGS.auto;
-    if (auto && DEV_LOGIN && validName(auto) && !needName) Game.connect({ dev: auto.trim(), ap: initialLook(), rt: initialRoot() ?? undefined });
+    if (auto && DEV_LOGIN && validName(auto) && !needName)
+      Game.connect({ dev: auto.trim(), ap: initialLook(), rt: initialRoot() ?? undefined });
   }, []);
   const onToken = (tk: string) => {
     setToken(tk);
@@ -182,48 +183,54 @@ function Login() {
       <Corners material="paper" />
       <p className="login-tag">{t('ui.tagline')}</p>
 
-        {needName && token ? (
-          <div className="login-form">
-            <label>{t('ui.login.need_name')}</label>
-            <input autoFocus value={name} maxLength={14} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submitName()} />
-            <div className="login-hint">{t('ui.login.name_rule')}</div>
-            <LookPicker look={look} onChange={setLook} />
-            <RootPicker value={root} onChange={setRoot} />
-            <button className="btn primary" onClick={submitName}>
-              {t('ui.login.enter')}
-            </button>
-          </div>
-        ) : (
-          <>
-            {GOOGLE_CLIENT_ID && (
-              <div className="login-form">
-                <label>{t('ui.login.google_title')}</label>
-                <GoogleButton onToken={onToken} />
-                <div className="login-hint">{t('ui.login.google_hint')}</div>
-              </div>
-            )}
-            {DEV_LOGIN && (
-              <div className="login-form">
-                <label>{t('ui.login.dev_title')}</label>
-                <input
-                  autoFocus
-                  placeholder={t('ui.login.dev_name')}
-                  value={name}
-                  maxLength={14}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && submitDev()}
-                />
-                <div className="login-hint">{t('ui.login.dev_hint')}</div>
-                <LookPicker look={look} onChange={setLook} />
-                <RootPicker value={root} onChange={setRoot} />
-                <button className="btn primary" onClick={submitDev}>
-                  {t('ui.login.enter')}
-                </button>
-              </div>
-            )}
-            {!GOOGLE_CLIENT_ID && !DEV_LOGIN && <div className="login-error">{t('ui.login.no_method')}</div>}
-          </>
-        )}
+      {needName && token ? (
+        <div className="login-form">
+          <label>{t('ui.login.need_name')}</label>
+          <input
+            autoFocus
+            value={name}
+            maxLength={14}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && submitName()}
+          />
+          <div className="login-hint">{t('ui.login.name_rule')}</div>
+          <LookPicker look={look} onChange={setLook} />
+          <RootPicker value={root} onChange={setRoot} />
+          <button className="btn primary" onClick={submitName}>
+            {t('ui.login.enter')}
+          </button>
+        </div>
+      ) : (
+        <>
+          {GOOGLE_CLIENT_ID && (
+            <div className="login-form">
+              <label>{t('ui.login.google_title')}</label>
+              <GoogleButton onToken={onToken} />
+              <div className="login-hint">{t('ui.login.google_hint')}</div>
+            </div>
+          )}
+          {DEV_LOGIN && (
+            <div className="login-form">
+              <label>{t('ui.login.dev_title')}</label>
+              <input
+                autoFocus
+                placeholder={t('ui.login.dev_name')}
+                value={name}
+                maxLength={14}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && submitDev()}
+              />
+              <div className="login-hint">{t('ui.login.dev_hint')}</div>
+              <LookPicker look={look} onChange={setLook} />
+              <RootPicker value={root} onChange={setRoot} />
+              <button className="btn primary" onClick={submitDev}>
+                {t('ui.login.enter')}
+              </button>
+            </div>
+          )}
+          {!GOOGLE_CLIENT_ID && !DEV_LOGIN && <div className="login-error">{t('ui.login.no_method')}</div>}
+        </>
+      )}
       {(err || nameError) && <div className="login-error">{nameError || err}</div>}
     </div>
   );

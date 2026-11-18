@@ -38,7 +38,8 @@ const spin = (m: MannequinCharacter) => {
     m.root.updateMatrixWorld(true);
   }
 };
-const elbowX = (m: MannequinCharacter, name: string) => (m as unknown as { rig: THREE.Object3D }).rig.getObjectByName(name)!.getWorldPosition(new THREE.Vector3()).x;
+const elbowX = (m: MannequinCharacter, name: string) =>
+  (m as unknown as { rig: THREE.Object3D }).rig.getObjectByName(name)!.getWorldPosition(new THREE.Vector3()).x;
 
 describe('ARM_FIT: dạng tay theo model, hệ số theo độ buông', () => {
   it('tay buông: dạng ra khỏi thân (trái +x, phải −x), đối xứng, theo góc của model', () => {

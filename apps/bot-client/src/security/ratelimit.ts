@@ -1,10 +1,9 @@
 // Bài kiểm tra bảo mật: Giới hạn tần suất /matchmake theo IP (chạy cuối: làm cạn xô của IP) (R-7, tách từ security-check.ts).
 import { Client } from 'colyseus.js';
 import { ROOM_WORLD } from '@dtl/shared';
-import { HTTP, WS, check, health, join, type Ctx } from './lib';
+import { HTTP, WS, check, health, type Ctx } from './lib';
 
-export async function runRatelimit(ctx: Ctx): Promise<void> {
-  const { client } = ctx;
+export async function runRatelimit(_ctx: Ctx): Promise<void> {
   // 11. Giới hạn tần suất /matchmake theo IP (đặt cuối: làm cạn xô của IP này; chạy lại sau ~1 phút).
   //     Mỗi request mang X-Forwarded-For khác nhau: khi chưa bật TRUST_PROXY thì không lách được.
   {
@@ -29,7 +28,9 @@ export async function runRatelimit(ctx: Ctx): Promise<void> {
     check(
       '/matchmake dồn dập bị chặn 429 (X-Forwarded-For giả không lách được)',
       !!limited && body?.code === 429 && Number(limited.headers.get('retry-after')) > 0,
-      limited ? `sau ${sent} request, Retry-After ${limited.headers.get('retry-after')}s` : `${sent} request không bị chặn — server đang bật RATE_LIMIT_EXEMPT/TRUST_PROXY hoặc RATE_LIMIT_BURST<=0?`,
+      limited
+        ? `sau ${sent} request, Retry-After ${limited.headers.get('retry-after')}s`
+        : `${sent} request không bị chặn — server đang bật RATE_LIMIT_EXEMPT/TRUST_PROXY hoặc RATE_LIMIT_BURST<=0?`,
     );
     // Bị chặn rồi thì join qua colyseus.js báo lỗi 429 thay vì treo.
     let code: number | undefined;

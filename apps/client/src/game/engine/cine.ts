@@ -6,7 +6,18 @@ import { hasString, MONSTER, monsterName, t } from '@dtl/content';
 import { get, set } from '../../ui/store';
 import { chapterSting, duckHold } from '../audio/audio';
 import { CHAPTER, type ChapterKind } from '../camera/chapter';
-import { BOSS_CUTSCENE, BOSS_CUTSCENE_RANGE, bossIntroPath, DAN_CUTSCENE, danTranPath, minBossDist, PHASE_CUTSCENE, phaseShiftPath, SECT_CUTSCENE, type Waypoint } from '../camera/cutscene';
+import {
+  BOSS_CUTSCENE,
+  BOSS_CUTSCENE_RANGE,
+  bossIntroPath,
+  DAN_CUTSCENE,
+  danTranPath,
+  minBossDist,
+  PHASE_CUTSCENE,
+  phaseShiftPath,
+  SECT_CUTSCENE,
+  type Waypoint,
+} from '../camera/cutscene';
 import { type PState } from '../entities/entities';
 import { postParams } from '../../render/post';
 import { _cineEndL, _cineEndP, _cineFwd, _cineL, _cineP, _v } from './common';
@@ -27,7 +38,7 @@ export function chapter(eng: Game, kind: ChapterKind, sting = true): void {
 }
 
 /** Cảnh mở đầu chỉ chạy khi đứng gần điểm hồi sinh (đường camera dựng cho sân tông môn) , người chơi chưa tắt thẻ chương trong Cài đặt và không tắt bằng `?cine=0`. */
-export function canCine(eng: Game, x: number, z: number): boolean {
+export function canCine(_eng: Game, x: number, z: number): boolean {
   return get().chapterCards && FLAGS.cinematics && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
 }
 
@@ -47,7 +58,13 @@ export function canBossCine(eng: Game, me: PState | undefined): boolean {
   return get().chapterCards && FLAGS.cinematics;
 }
 
-export function beginBossCine(eng: Game, kind: 'boss' | 'phase' | 'dan', path: readonly Waypoint[], prof: { dur: number; out: number }, info: { name: string; title?: string; text: string }): void {
+export function beginBossCine(
+  eng: Game,
+  kind: 'boss' | 'phase' | 'dan',
+  path: readonly Waypoint[],
+  prof: { dur: number; out: number },
+  info: { name: string; title?: string; text: string },
+): void {
   eng.cineKind = kind;
   eng.cineShakeAt = 0;
   eng.cineFocus = null;
@@ -97,7 +114,12 @@ export function danCine(eng: Game, x: number, z: number, color = '#ffb070'): voi
   if (!canBossCine(eng, eng.me())) return;
   const cam = eng.camera;
   const look = _cineEndL.copy(cam.position).add(_cineFwd.set(0, 0, -1).applyQuaternion(cam.quaternion).multiplyScalar(10));
-  const path = danTranPath({ x: cam.position.x, y: cam.position.y, z: cam.position.z }, { x: look.x, y: look.y, z: look.z }, { x, y: groundAt(x, z), z }, groundAt);
+  const path = danTranPath(
+    { x: cam.position.x, y: cam.position.y, z: cam.position.z },
+    { x: look.x, y: look.y, z: look.z },
+    { x, y: groundAt(x, z), z },
+    groundAt,
+  );
   postParams.pulseColor.value.set(color);
   beginBossCine(eng, 'dan', path, DAN_CUTSCENE, { name: '', text: '' });
 }

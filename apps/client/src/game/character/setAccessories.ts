@@ -97,14 +97,27 @@ const boxGeo = (x: number, y: number, z: number) => new THREE.BoxGeometry(x, y, 
 /**
  * Dải elip quanh thân tại độ cao `y` (đai): nửa rộng `rx`, nửa sâu trước/sau khác nhau, cao `h`, hơi loe xuống theo `flare`.
  */
-function bandGeo(cx: number, cz: number, rx: number, zFront: number, zBack: number, y: number, h: number, flare = 0, seg = 28): THREE.BufferGeometry {
+function bandGeo(
+  cx: number,
+  cz: number,
+  rx: number,
+  zFront: number,
+  zBack: number,
+  y: number,
+  h: number,
+  flare = 0,
+  seg = 28,
+): THREE.BufferGeometry {
   const pos: number[] = [];
   const idx: number[] = [];
   for (let i = 0; i <= seg; i++) {
     const a = (i / seg) * Math.PI * 2;
     const sn = Math.sin(a);
     const rz = sn >= 0 ? zFront : zBack;
-    for (const [dy, f] of [[h / 2, 0], [-h / 2, flare]] as const) {
+    for (const [dy, f] of [
+      [h / 2, 0],
+      [-h / 2, flare],
+    ] as const) {
       pos.push(cx + (rx + f) * Math.cos(a), y + dy, cz + (rz + (rz >= 0 ? f : -f)) * sn);
     }
   }
@@ -215,25 +228,47 @@ const add = (c: Ctx, bone: FitBone, kind: Kind, geo: THREE.BufferGeometry) => c.
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 
 /** Chỏm vai: lớp `layers` xếp chồng quanh khớp vai, cực hướng lên-ra ngoài, có viền. */
-function pauldron(c: Ctx, s: 1 | -1, o: { r: number; facets: number; layers: { k: number; theta: number; lift: number; color: string; kind: Kind }[]; rim: string; rimKind: Kind; stud?: string; spikes?: string; scales?: { color: string; tiers: [number, number, number][] } }): void {
+function pauldron(
+  c: Ctx,
+  s: 1 | -1,
+  o: {
+    r: number;
+    facets: number;
+    layers: { k: number; theta: number; lift: number; color: string; kind: Kind }[];
+    rim: string;
+    rimKind: Kind;
+    stud?: string;
+    spikes?: string;
+    scales?: { color: string; tiers: [number, number, number][] };
+  },
+): void {
   const sh = c.fit.shoulder[s];
   const bone: FitBone = s === 1 ? 'leftarm' : 'rightarm';
   const u = V(s * 0.72, 0.69, -0.02).normalize();
   const R = o.r;
   for (const L of o.layers) {
-    const centre = sh.center.clone().addScaledVector(u, L.lift * R).add(V(0, -0.004, 0));
+    const centre = sh.center
+      .clone()
+      .addScaledVector(u, L.lift * R)
+      .add(V(0, -0.004, 0));
     const g = put(capGeo(L.theta, o.facets, 3), L.color, { pos: centre, dir: u, scale: R * L.k });
     add(c, bone, L.kind, g);
   }
   // Viền ở mép lớp ngoài cùng.
   const base = o.layers[0];
   const rr = Math.sin(base.theta) * R * base.k;
-  const rimC = sh.center.clone().addScaledVector(u, (base.lift + Math.cos(base.theta) * base.k) * R).add(V(0, -0.004, 0));
+  const rimC = sh.center
+    .clone()
+    .addScaledVector(u, (base.lift + Math.cos(base.theta) * base.k) * R)
+    .add(V(0, -0.004, 0));
   add(c, bone, o.rimKind, put(ringGeo(rr, 0.006 * c.h * 1.3, o.facets * 2), o.rim, { pos: rimC, dir: u, scale: 1 }).rotateX(0));
   if (o.scales) {
     // Vảy chồng: mỗi tầng một vòng vảy lục giác nhọn (góc cực θ, số vảy n, cỡ k·R) nghiêng xuống phía mép như ngói.
     const base = o.layers[0];
-    const c0 = sh.center.clone().addScaledVector(u, base.lift * R).add(V(0, -0.004, 0));
+    const c0 = sh.center
+      .clone()
+      .addScaledVector(u, base.lift * R)
+      .add(V(0, -0.004, 0));
     const e1 = new THREE.Vector3().crossVectors(u, V(0, 0, 1)).normalize();
     const e2 = new THREE.Vector3().crossVectors(u, e1).normalize();
     for (const [theta, n, k] of o.scales.tiers) {
@@ -244,7 +279,12 @@ function pauldron(c: Ctx, s: 1 | -1, o: { r: number; facets: number; layers: { k
         const down = tang.clone().multiplyScalar(Math.cos(theta)).addScaledVector(u, -Math.sin(theta));
         const w = k * R;
         const pos = c0.clone().addScaledVector(d, R * base.k + 0.002);
-        add(c, bone, 'hard', put(new THREE.ConeGeometry(w, w * 0.55, 5, 1, true), o.scales.color, { pos, dir: d.clone().addScaledVector(down, 0.5) }));
+        add(
+          c,
+          bone,
+          'hard',
+          put(new THREE.ConeGeometry(w, w * 0.55, 5, 1, true), o.scales.color, { pos, dir: d.clone().addScaledVector(down, 0.5) }),
+        );
       }
     }
   }
@@ -254,9 +294,17 @@ function pauldron(c: Ctx, s: 1 | -1, o: { r: number; facets: number; layers: { k
   }
   if (o.spikes) {
     for (let i = -1; i <= 1; i++) {
-      const d = u.clone().applyAxisAngle(V(0, 0, 1), (-s * i * 0.42)).applyAxisAngle(V(0, 1, 0), i * 0.0);
+      const d = u
+        .clone()
+        .applyAxisAngle(V(0, 0, 1), -s * i * 0.42)
+        .applyAxisAngle(V(0, 1, 0), i * 0.0);
       const p = sh.center.clone().addScaledVector(d, R * 1.02);
-      add(c, bone, 'hard', put(new THREE.ConeGeometry(0.02 * c.h, 0.1 * c.h, 5), o.spikes, { pos: p.addScaledVector(d, 0.035 * c.h), dir: d }));
+      add(
+        c,
+        bone,
+        'hard',
+        put(new THREE.ConeGeometry(0.02 * c.h, 0.1 * c.h, 5), o.spikes, { pos: p.addScaledVector(d, 0.035 * c.h), dir: d }),
+      );
     }
   }
 }
@@ -265,7 +313,10 @@ function pauldron(c: Ctx, s: 1 | -1, o: { r: number; facets: number; layers: { k
 function around(at: THREE.Vector3, axis: THREE.Vector3, out: THREE.Vector3, r: number, deg: number): THREE.Vector3 {
   const side = new THREE.Vector3().crossVectors(axis, out).normalize();
   const a = (deg * Math.PI) / 180;
-  return at.clone().addScaledVector(out, Math.cos(a) * r).addScaledVector(side, Math.sin(a) * r);
+  return at
+    .clone()
+    .addScaledVector(out, Math.cos(a) * r)
+    .addScaledVector(side, Math.sin(a) * r);
 }
 
 /**
@@ -287,20 +338,63 @@ function bracer(c: Ctx, s: 1 | -1, o: { len: number; kind: Kind; color: string; 
   const up = f.axis.clone().negate();
   add(c, bone, o.kind, put(tubeGeo(rE, rW, len, 14), o.color, { pos: centre, dir: up }));
   // Mép khuỷu loe vát.
-  add(c, bone, o.kind, put(tubeGeo(rE * 1.1, rE * 0.99, 0.016 * h, 14), o.color, { pos: elbow.clone().addScaledVector(f.axis, 0.006 * h), dir: up }));
-  add(c, bone, 'hard', put(ringGeo(rE * 1.1, 0.0042 * h, 14), o.rim, { pos: elbow.clone().addScaledVector(f.axis, -0.002 * h), dir: f.axis }));
+  add(
+    c,
+    bone,
+    o.kind,
+    put(tubeGeo(rE * 1.1, rE * 0.99, 0.016 * h, 14), o.color, { pos: elbow.clone().addScaledVector(f.axis, 0.006 * h), dir: up }),
+  );
+  add(
+    c,
+    bone,
+    'hard',
+    put(ringGeo(rE * 1.1, 0.0042 * h, 14), o.rim, { pos: elbow.clone().addScaledVector(f.axis, -0.002 * h), dir: f.axis }),
+  );
   add(c, bone, 'hard', put(ringGeo(rW + 0.0015, 0.0042 * h, 16), o.rim, { pos: wrist, dir: f.axis }));
   // Vòng khảm giữa (khắc nổi, màu viền).
-  add(c, bone, 'hard', put(ringGeo(rAt(0.55) + 0.0012, 0.0028 * h, 16), o.rim, { pos: centre.clone().addScaledVector(f.axis, len * 0.05), dir: f.axis }));
-  const out = V(s, 0, 0).addScaledVector(f.axis, -f.axis.x * s).normalize();
+  add(
+    c,
+    bone,
+    'hard',
+    put(ringGeo(rAt(0.55) + 0.0012, 0.0028 * h, 16), o.rim, { pos: centre.clone().addScaledVector(f.axis, len * 0.05), dir: f.axis }),
+  );
+  const out = V(s, 0, 0)
+    .addScaledVector(f.axis, -f.axis.x * s)
+    .normalize();
   // Hàng đinh tán ở nửa ngoài, gần khuỷu.
   for (const deg of [-52, -26, 0, 26, 52]) {
-    add(c, bone, 'hard', put(new THREE.OctahedronGeometry(1), o.rim, { pos: around(elbow.clone().addScaledVector(f.axis, len * 0.22), f.axis, out, rAt(0.22) + 0.0018, deg), scale: 0.0042 * h }));
+    add(
+      c,
+      bone,
+      'hard',
+      put(new THREE.OctahedronGeometry(1), o.rim, {
+        pos: around(elbow.clone().addScaledVector(f.axis, len * 0.22), f.axis, out, rAt(0.22) + 0.0018, deg),
+        scale: 0.0042 * h,
+      }),
+    );
   }
   // Tấm dày nổi mặt ngoài, vát về cổ tay.
-  const plate = put(boxGeo(0.026 * h, len * 0.7, 0.007 * h), o.plate ?? o.rim, { pos: centre.clone().addScaledVector(out, rAt(0.45) + 0.004 * h).addScaledVector(f.axis, -len * 0.04), dir: up });
+  const plate = put(boxGeo(0.026 * h, len * 0.7, 0.007 * h), o.plate ?? o.rim, {
+    pos: centre
+      .clone()
+      .addScaledVector(out, rAt(0.45) + 0.004 * h)
+      .addScaledVector(f.axis, -len * 0.04),
+    dir: up,
+  });
   add(c, bone, 'hard', plate);
-  if (o.gem) add(c, bone, 'hard', put(sphereGeo(6), o.gem, { pos: centre.clone().addScaledVector(out, rAt(0.45) + 0.009 * h).addScaledVector(f.axis, -len * 0.04), scale: V(0.01, 0.01, 0.007).multiplyScalar(h) }));
+  if (o.gem)
+    add(
+      c,
+      bone,
+      'hard',
+      put(sphereGeo(6), o.gem, {
+        pos: centre
+          .clone()
+          .addScaledVector(out, rAt(0.45) + 0.009 * h)
+          .addScaledVector(f.axis, -len * 0.04),
+        scale: V(0.01, 0.01, 0.007).multiplyScalar(h),
+      }),
+    );
 }
 
 /**
@@ -330,14 +424,35 @@ function cuff(c: Ctx, s: 1 | -1, o: { len: number; kind: Kind; color: string; ri
   const up = axis.clone().negate();
   const rAt = (t: number) => rUp + (rDn - rUp) * t;
   add(c, bone, o.kind, put(tubeGeo(rUp, rDn, len, 12), o.color, { pos: mid, dir: up }));
-  add(c, bone, o.kind, put(tubeGeo(rUp * 1.08, rUp * 0.99, 0.012 * h, 12), o.color, { pos: top.clone().addScaledVector(axis, 0.004 * h), dir: up }));
+  add(
+    c,
+    bone,
+    o.kind,
+    put(tubeGeo(rUp * 1.08, rUp * 0.99, 0.012 * h, 12), o.color, { pos: top.clone().addScaledVector(axis, 0.004 * h), dir: up }),
+  );
   add(c, bone, 'hard', put(ringGeo(rUp * 1.08, 0.0035 * h, 12), o.rim, { pos: top.clone().addScaledVector(axis, -0.001 * h), dir: axis }));
   add(c, bone, 'hard', put(ringGeo(rDn + 0.001, 0.0035 * h, 12), o.rim, { pos: bot, dir: axis }));
   const front = V(0, 0, 1);
   for (const deg of [-30, 0, 30]) {
-    add(c, bone, 'hard', put(new THREE.OctahedronGeometry(1), o.rim, { pos: around(top.clone().addScaledVector(axis, len * 0.2), axis, front, rAt(0.2) + 0.001, deg), scale: 0.0036 * h }));
+    add(
+      c,
+      bone,
+      'hard',
+      put(new THREE.OctahedronGeometry(1), o.rim, {
+        pos: around(top.clone().addScaledVector(axis, len * 0.2), axis, front, rAt(0.2) + 0.001, deg),
+        scale: 0.0036 * h,
+      }),
+    );
   }
-  add(c, bone, 'hard', put(boxGeo(0.02 * h, len * 0.72, 0.005 * h), o.plate ?? o.rim, { pos: mid.clone().addScaledVector(front, rAt(0.5) + 0.002 * h), dir: up }));
+  add(
+    c,
+    bone,
+    'hard',
+    put(boxGeo(0.02 * h, len * 0.72, 0.005 * h), o.plate ?? o.rim, {
+      pos: mid.clone().addScaledVector(front, rAt(0.5) + 0.002 * h),
+      dir: up,
+    }),
+  );
 }
 
 /** Đai lưng: dải ôm eo + 2 viền + khóa trước. */
@@ -347,11 +462,21 @@ function belt(c: Ctx, o: { h: number; color: string; rim: string; buckle: string
   const hh = o.h * c.h;
   add(c, 'spine', 'cloth', put(bandGeo(w.cx, w.cz, w.rx + k, w.zFront + k, w.zBack - k, w.y, hh, 0.006), o.color));
   for (const d of [-1, 1]) {
-    add(c, 'spine', 'hard', put(bandGeo(w.cx, w.cz, w.rx + k + 0.003, w.zFront + k + 0.003, w.zBack - k - 0.003, w.y + d * hh * 0.5, 0.008 * c.h, 0, 28), o.rim));
+    add(
+      c,
+      'spine',
+      'hard',
+      put(bandGeo(w.cx, w.cz, w.rx + k + 0.003, w.zFront + k + 0.003, w.zBack - k - 0.003, w.y + d * hh * 0.5, 0.008 * c.h, 0, 28), o.rim),
+    );
   }
   const front = V(w.cx, w.y, w.zFront + k + 0.004);
   add(c, 'spine', 'hard', put(boxGeo((o.wide ? 0.07 : 0.05) * c.h, hh * 1.15, 0.014 * c.h), o.buckle, { pos: front }));
-  add(c, 'spine', 'hard', put(sphereGeo(7), o.gem, { pos: front.clone().add(V(0, 0, 0.009 * c.h)), scale: V(0.013, 0.013, 0.008).multiplyScalar(c.h) }));
+  add(
+    c,
+    'spine',
+    'hard',
+    put(sphereGeo(7), o.gem, { pos: front.clone().add(V(0, 0, 0.009 * c.h)), scale: V(0.013, 0.013, 0.008).multiplyScalar(c.h) }),
+  );
 }
 
 /** Dải lụa sau lưng (2 đuôi) bám đai, treo sau vạt áo. */
@@ -383,7 +508,11 @@ function hipCharm(c: Ctx, o: { cord: string; item: 'tassel' | 'gourd' | 'jade'; 
     geos.push(put(ringGeo(0.011 * c.h, 0.003 * c.h, 8), o.accent, { pos: V(x, yEnd - 0.036 * c.h, z) }));
     geos.push(put(stripGeo(0.016 * c.h, 0.07 * c.h, 'v', 2), o.accent, { pos: V(x, yEnd - 0.084 * c.h, z) }));
   } else if (o.item === 'jade') {
-    geos.push(put(new THREE.CylinderGeometry(0.026 * c.h, 0.026 * c.h, 0.008 * c.h, 14).rotateX(Math.PI / 2), o.color, { pos: V(x, yEnd - 0.026 * c.h, z) }));
+    geos.push(
+      put(new THREE.CylinderGeometry(0.026 * c.h, 0.026 * c.h, 0.008 * c.h, 14).rotateX(Math.PI / 2), o.color, {
+        pos: V(x, yEnd - 0.026 * c.h, z),
+      }),
+    );
     geos.push(put(stripGeo(0.016 * c.h, 0.1 * c.h, 'v', 3), o.accent, { pos: V(x, yEnd - 0.052 * c.h, z) }));
   } else {
     geos.push(put(sphereGeo(7), o.accent, { pos: V(x, yEnd - 0.012 * c.h, z), scale: 0.014 * c.h }));
@@ -407,7 +536,12 @@ function pendant(c: Ctx, o: { cord: string; jade: string; rim: string }): void {
     add(c, 'spine2', 'cloth', put(boxGeo(0.004 * c.h, d.length(), 0.004 * c.h), o.cord, { pos: mid, dir: d }));
   }
   const p = V(ch.cx, y, z);
-  add(c, 'spine2', 'hard', put(new THREE.CylinderGeometry(0.03 * c.h, 0.03 * c.h, 0.008 * c.h, 16).rotateX(Math.PI / 2), o.jade, { pos: p }));
+  add(
+    c,
+    'spine2',
+    'hard',
+    put(new THREE.CylinderGeometry(0.03 * c.h, 0.03 * c.h, 0.008 * c.h, 16).rotateX(Math.PI / 2), o.jade, { pos: p }),
+  );
   add(c, 'spine2', 'hard', put(new THREE.TorusGeometry(0.031 * c.h, 0.0045 * c.h, 5, 18), o.rim, { pos: p.clone().add(V(0, 0, 0.002)) }));
 }
 
@@ -419,7 +553,12 @@ function dorsal(c: Ctx, o: { color: string }): void {
     const y = ch.y - (0.05 + i * 0.075) * c.h;
     const len = (0.12 - i * 0.02) * c.h;
     const d = V(0, 0.45, -1).normalize();
-    add(c, 'spine1', 'hard', put(new THREE.ConeGeometry(0.024 * c.h, len, 5), o.color, { pos: V(ch.cx, y, z).addScaledVector(d, len * 0.4), dir: d }));
+    add(
+      c,
+      'spine1',
+      'hard',
+      put(new THREE.ConeGeometry(0.024 * c.h, len, 5), o.color, { pos: V(ch.cx, y, z).addScaledVector(d, len * 0.4), dir: d }),
+    );
   }
 }
 
@@ -445,7 +584,16 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
     robe: (c) => {
       for (const s of [1, -1] as const) {
         const r = shR(c, s, 1.22);
-        pauldron(c, s, { r, facets: 12, rim: c.pal.hard, rimKind: 'hard', layers: [{ k: 1, theta: 1.2, lift: 0, color: c.pal.cloth, kind: 'cloth' }, { k: 0.72, theta: 1.05, lift: 0.2, color: c.pal.cloth2, kind: 'cloth' }] });
+        pauldron(c, s, {
+          r,
+          facets: 12,
+          rim: c.pal.hard,
+          rimKind: 'hard',
+          layers: [
+            { k: 1, theta: 1.2, lift: 0, color: c.pal.cloth, kind: 'cloth' },
+            { k: 0.72, theta: 1.05, lift: 0.2, color: c.pal.cloth2, kind: 'cloth' },
+          ],
+        });
       }
       backTails(c, { w: 0.075, len: 0.36, color: c.pal.cloth, stripe: c.pal.cloth2, tip: 'v', gain: 0.07 });
     },
@@ -465,18 +613,39 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
     robe: (c) => {
       for (const s of [1, -1] as const) {
         const r = shR(c, s, 1.3);
-        pauldron(c, s, { r, facets: 6, rim: c.pal.trim, rimKind: 'hard', stud: c.pal.trim, scales: { color: '#454953', tiers: [[0.42, 6, 0.26], [0.78, 9, 0.28], [1.1, 12, 0.29]] }, layers: [{ k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' }, { k: 0.8, theta: 1.0, lift: 0.28, color: c.pal.hard, kind: 'hard' }, { k: 0.5, theta: 0.8, lift: 0.5, color: c.pal.cloth, kind: 'hard' }] });
+        pauldron(c, s, {
+          r,
+          facets: 6,
+          rim: c.pal.trim,
+          rimKind: 'hard',
+          stud: c.pal.trim,
+          scales: {
+            color: '#454953',
+            tiers: [
+              [0.42, 6, 0.26],
+              [0.78, 9, 0.28],
+              [1.1, 12, 0.29],
+            ],
+          },
+          layers: [
+            { k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' },
+            { k: 0.8, theta: 1.0, lift: 0.28, color: c.pal.hard, kind: 'hard' },
+            { k: 0.5, theta: 0.8, lift: 0.5, color: c.pal.cloth, kind: 'hard' },
+          ],
+        });
       }
       backTails(c, { w: 0.09, len: 0.34, color: c.pal.cloth, stripe: c.pal.trim, tip: 'flat', gain: 0.045 });
     },
     bracer: (c) => {
-      for (const s of [1, -1] as const) bracer(c, s, { len: 0.12, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth, gem: c.pal.gem });
+      for (const s of [1, -1] as const)
+        bracer(c, s, { len: 0.12, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth, gem: c.pal.gem });
     },
     belt: (c) => {
       belt(c, { h: 0.075, color: c.pal.cloth, rim: c.pal.trim, buckle: c.pal.trim, gem: c.pal.gem, wide: true });
     },
     boots: (c) => {
-      for (const s of [1, -1] as const) cuff(c, s, { len: 0.14, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, flare: 0.012, plate: c.pal.cloth });
+      for (const s of [1, -1] as const)
+        cuff(c, s, { len: 0.14, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, flare: 0.012, plate: c.pal.cloth });
     },
   },
   // Đan Tâm Y Bát: xanh ngọc, vàng nhạt, ngọc bội, hồ lô thuốc; mềm mại.
@@ -484,7 +653,16 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
     robe: (c) => {
       for (const s of [1, -1] as const) {
         const r = shR(c, s, 1.25);
-        pauldron(c, s, { r, facets: 12, rim: c.pal.trim, rimKind: 'hard', layers: [{ k: 1, theta: 1.35, lift: 0, color: c.pal.cloth, kind: 'cloth' }, { k: 0.68, theta: 1.1, lift: 0.18, color: c.pal.cloth2, kind: 'cloth' }] });
+        pauldron(c, s, {
+          r,
+          facets: 12,
+          rim: c.pal.trim,
+          rimKind: 'hard',
+          layers: [
+            { k: 1, theta: 1.35, lift: 0, color: c.pal.cloth, kind: 'cloth' },
+            { k: 0.68, theta: 1.1, lift: 0.18, color: c.pal.cloth2, kind: 'cloth' },
+          ],
+        });
       }
       backTails(c, { w: 0.075, len: 0.34, color: c.pal.cloth, stripe: c.pal.trim, tip: 'point', gain: 0.07 });
     },
@@ -498,19 +676,37 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
   set_liet_mach: {
     robe: (c) => {
       const r = shR(c, -1, 1.3);
-      pauldron(c, -1, { r, facets: 8, rim: c.pal.trim, rimKind: 'hard', stud: c.pal.gem, layers: [{ k: 1, theta: 1.25, lift: 0, color: c.pal.hard, kind: 'hard' }, { k: 0.7, theta: 1.0, lift: 0.26, color: c.pal.hard, kind: 'hard' }] });
-      pauldron(c, 1, { r: shR(c, 1, 1.05), facets: 12, rim: c.pal.hard, rimKind: 'hard', layers: [{ k: 1, theta: 1.2, lift: 0, color: c.pal.cloth2, kind: 'cloth' }] });
+      pauldron(c, -1, {
+        r,
+        facets: 8,
+        rim: c.pal.trim,
+        rimKind: 'hard',
+        stud: c.pal.gem,
+        layers: [
+          { k: 1, theta: 1.25, lift: 0, color: c.pal.hard, kind: 'hard' },
+          { k: 0.7, theta: 1.0, lift: 0.26, color: c.pal.hard, kind: 'hard' },
+        ],
+      });
+      pauldron(c, 1, {
+        r: shR(c, 1, 1.05),
+        facets: 12,
+        rim: c.pal.hard,
+        rimKind: 'hard',
+        layers: [{ k: 1, theta: 1.2, lift: 0, color: c.pal.cloth2, kind: 'cloth' }],
+      });
       backTails(c, { w: 0.07, len: 0.38, color: c.pal.cloth2, stripe: c.pal.trim, tip: 'v', gain: 0.07 });
     },
     bracer: (c) => {
-      for (const s of [1, -1] as const) bracer(c, s, { len: 0.1, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth2, gem: c.pal.gem });
+      for (const s of [1, -1] as const)
+        bracer(c, s, { len: 0.1, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth2, gem: c.pal.gem });
     },
     belt: (c) => {
       belt(c, { h: 0.058, color: c.pal.trim, rim: c.pal.hard, buckle: c.pal.hard, gem: c.pal.gem });
       hipCharm(c, { cord: c.pal.trim, item: 'jade', color: c.pal.gem, accent: c.pal.cloth2, gain: 0.05 });
     },
     boots: (c) => {
-      for (const s of [1, -1] as const) cuff(c, s, { len: 0.1, kind: 'cloth', color: c.pal.cloth, rim: c.pal.gem, flare: 0.006, plate: c.pal.trim });
+      for (const s of [1, -1] as const)
+        cuff(c, s, { len: 0.1, kind: 'cloth', color: c.pal.cloth, rim: c.pal.gem, flare: 0.006, plate: c.pal.trim });
     },
   },
   // Địa Long Hộ Giáp (bậc 2, hộ pháp): nâu đất, vảy đá, viền đồng vàng, nặng và rộng.
@@ -518,18 +714,38 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
     robe: (c) => {
       for (const s of [1, -1] as const) {
         const r = shR(c, s, 1.34);
-        pauldron(c, s, { r, facets: 5, rim: c.pal.trim, rimKind: 'hard', stud: c.pal.gem, scales: { color: '#5d4430', tiers: [[0.45, 5, 0.27], [0.82, 8, 0.29], [1.12, 11, 0.3]] }, layers: [{ k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' }, { k: 0.78, theta: 1.0, lift: 0.3, color: c.pal.cloth2, kind: 'hard' }] });
+        pauldron(c, s, {
+          r,
+          facets: 5,
+          rim: c.pal.trim,
+          rimKind: 'hard',
+          stud: c.pal.gem,
+          scales: {
+            color: '#5d4430',
+            tiers: [
+              [0.45, 5, 0.27],
+              [0.82, 8, 0.29],
+              [1.12, 11, 0.3],
+            ],
+          },
+          layers: [
+            { k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' },
+            { k: 0.78, theta: 1.0, lift: 0.3, color: c.pal.cloth2, kind: 'hard' },
+          ],
+        });
       }
       backTails(c, { w: 0.09, len: 0.32, color: c.pal.cloth, stripe: c.pal.trim, tip: 'flat', gain: 0.04 });
     },
     bracer: (c) => {
-      for (const s of [1, -1] as const) bracer(c, s, { len: 0.13, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth, gem: c.pal.gem });
+      for (const s of [1, -1] as const)
+        bracer(c, s, { len: 0.13, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth, gem: c.pal.gem });
     },
     belt: (c) => {
       belt(c, { h: 0.08, color: c.pal.cloth, rim: c.pal.trim, buckle: c.pal.trim, gem: c.pal.gem, wide: true });
     },
     boots: (c) => {
-      for (const s of [1, -1] as const) cuff(c, s, { len: 0.15, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, flare: 0.014, plate: c.pal.cloth });
+      for (const s of [1, -1] as const)
+        cuff(c, s, { len: 0.15, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, flare: 0.014, plate: c.pal.cloth });
     },
   },
   // Phục Mạch Đan Bào (bậc 2, đan sư): xanh rêu, ngà nhạt, ngọc bội, túi thuốc, vòng ngọc ở tay; mềm.
@@ -537,7 +753,16 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
     robe: (c) => {
       for (const s of [1, -1] as const) {
         const r = shR(c, s, 1.2);
-        pauldron(c, s, { r, facets: 12, rim: c.pal.trim, rimKind: 'hard', layers: [{ k: 1, theta: 1.35, lift: 0, color: c.pal.cloth, kind: 'cloth' }, { k: 0.66, theta: 1.1, lift: 0.18, color: c.pal.cloth2, kind: 'cloth' }] });
+        pauldron(c, s, {
+          r,
+          facets: 12,
+          rim: c.pal.trim,
+          rimKind: 'hard',
+          layers: [
+            { k: 1, theta: 1.35, lift: 0, color: c.pal.cloth, kind: 'cloth' },
+            { k: 0.66, theta: 1.1, lift: 0.18, color: c.pal.cloth2, kind: 'cloth' },
+          ],
+        });
       }
       backTails(c, { w: 0.08, len: 0.4, color: c.pal.cloth, stripe: c.pal.trim, tip: 'point', gain: 0.075 });
     },
@@ -552,44 +777,86 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
   set_kinh_quang: {
     robe: (c) => {
       for (const s of [1, -1] as const) {
-        pauldron(c, s, { r: shR(c, s, s < 0 ? 1.28 : 1.1), facets: 10, rim: c.pal.trim, rimKind: 'hard', stud: c.pal.gem, layers: [{ k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' }, { k: 0.66, theta: 1.05, lift: 0.22, color: c.pal.cloth2, kind: 'hard' }] });
+        pauldron(c, s, {
+          r: shR(c, s, s < 0 ? 1.28 : 1.1),
+          facets: 10,
+          rim: c.pal.trim,
+          rimKind: 'hard',
+          stud: c.pal.gem,
+          layers: [
+            { k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' },
+            { k: 0.66, theta: 1.05, lift: 0.22, color: c.pal.cloth2, kind: 'hard' },
+          ],
+        });
       }
       backTails(c, { w: 0.065, len: 0.44, color: c.pal.cloth2, stripe: c.pal.trim, tip: 'v', gain: 0.08 });
     },
     bracer: (c) => {
-      for (const s of [1, -1] as const) bracer(c, s, { len: 0.11, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth2, gem: c.pal.gem });
+      for (const s of [1, -1] as const)
+        bracer(c, s, { len: 0.11, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth2, gem: c.pal.gem });
     },
     belt: (c) => {
       belt(c, { h: 0.056, color: c.pal.hard, rim: c.pal.trim, buckle: c.pal.cloth2, gem: c.pal.gem });
       hipCharm(c, { cord: c.pal.trim, item: 'jade', color: c.pal.cloth2, accent: c.pal.gem, gain: 0.05 });
     },
     boots: (c) => {
-      for (const s of [1, -1] as const) cuff(c, s, { len: 0.12, kind: 'hard', color: c.pal.hard, rim: c.pal.gem, flare: 0.008, plate: c.pal.cloth2 });
+      for (const s of [1, -1] as const)
+        cuff(c, s, { len: 0.12, kind: 'hard', color: c.pal.hard, rim: c.pal.gem, flare: 0.008, plate: c.pal.cloth2 });
     },
   },
   // Vân Kình Thiết Giáp (bậc 3, hộ pháp): xám thép lam, vai ba lớp đội mây, đai thiết bản rộng, ủng thiết.
   set_van_kinh: {
     robe: (c) => {
       for (const s of [1, -1] as const) {
-        pauldron(c, s, { r: shR(c, s, 1.38), facets: 6, rim: c.pal.trim, rimKind: 'hard', stud: c.pal.gem, scales: { color: '#56667a', tiers: [[0.45, 6, 0.27], [0.82, 9, 0.29], [1.12, 12, 0.3]] }, layers: [{ k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' }, { k: 0.8, theta: 1.0, lift: 0.3, color: c.pal.cloth2, kind: 'hard' }, { k: 0.5, theta: 0.8, lift: 0.52, color: c.pal.trim, kind: 'hard' }] });
+        pauldron(c, s, {
+          r: shR(c, s, 1.38),
+          facets: 6,
+          rim: c.pal.trim,
+          rimKind: 'hard',
+          stud: c.pal.gem,
+          scales: {
+            color: '#56667a',
+            tiers: [
+              [0.45, 6, 0.27],
+              [0.82, 9, 0.29],
+              [1.12, 12, 0.3],
+            ],
+          },
+          layers: [
+            { k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' },
+            { k: 0.8, theta: 1.0, lift: 0.3, color: c.pal.cloth2, kind: 'hard' },
+            { k: 0.5, theta: 0.8, lift: 0.52, color: c.pal.trim, kind: 'hard' },
+          ],
+        });
       }
       backTails(c, { w: 0.095, len: 0.34, color: c.pal.cloth, stripe: c.pal.trim, tip: 'flat', gain: 0.04 });
     },
     bracer: (c) => {
-      for (const s of [1, -1] as const) bracer(c, s, { len: 0.14, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth, gem: c.pal.gem });
+      for (const s of [1, -1] as const)
+        bracer(c, s, { len: 0.14, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth, gem: c.pal.gem });
     },
     belt: (c) => {
       belt(c, { h: 0.085, color: c.pal.cloth, rim: c.pal.trim, buckle: c.pal.hard, gem: c.pal.gem, wide: true });
     },
     boots: (c) => {
-      for (const s of [1, -1] as const) cuff(c, s, { len: 0.16, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, flare: 0.016, plate: c.pal.cloth });
+      for (const s of [1, -1] as const)
+        cuff(c, s, { len: 0.16, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, flare: 0.016, plate: c.pal.cloth });
     },
   },
   // Lưu Ly Đan Y (bậc 3, đan sư): xanh ngọc, ngà, ngọc bội giọt nước, bình thuốc lưu ly ở đai, vòng ngọc ở tay; mềm.
   set_luu_ly: {
     robe: (c) => {
       for (const s of [1, -1] as const) {
-        pauldron(c, s, { r: shR(c, s, 1.22), facets: 12, rim: c.pal.trim, rimKind: 'hard', layers: [{ k: 1, theta: 1.38, lift: 0, color: c.pal.cloth, kind: 'cloth' }, { k: 0.68, theta: 1.12, lift: 0.2, color: c.pal.cloth2, kind: 'cloth' }] });
+        pauldron(c, s, {
+          r: shR(c, s, 1.22),
+          facets: 12,
+          rim: c.pal.trim,
+          rimKind: 'hard',
+          layers: [
+            { k: 1, theta: 1.38, lift: 0, color: c.pal.cloth, kind: 'cloth' },
+            { k: 0.68, theta: 1.12, lift: 0.2, color: c.pal.cloth2, kind: 'cloth' },
+          ],
+        });
       }
       backTails(c, { w: 0.085, len: 0.44, color: c.pal.cloth, stripe: c.pal.trim, tip: 'point', gain: 0.08 });
     },
@@ -605,7 +872,25 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
     robe: (c) => {
       for (const s of [1, -1] as const) {
         const r = shR(c, s, 1.28);
-        pauldron(c, s, { r, facets: 7, rim: c.pal.trim, rimKind: 'hard', spikes: c.pal.gem, scales: { color: c.pal.hard, tiers: [[0.5, 6, 0.24], [0.9, 10, 0.27]] }, layers: [{ k: 1, theta: 1.25, lift: 0, color: c.pal.cloth, kind: 'hard' }, { k: 0.8, theta: 1.05, lift: 0.22, color: c.pal.hard, kind: 'hard' }, { k: 0.58, theta: 0.9, lift: 0.4, color: c.pal.cloth2, kind: 'hard' }] });
+        pauldron(c, s, {
+          r,
+          facets: 7,
+          rim: c.pal.trim,
+          rimKind: 'hard',
+          spikes: c.pal.gem,
+          scales: {
+            color: c.pal.hard,
+            tiers: [
+              [0.5, 6, 0.24],
+              [0.9, 10, 0.27],
+            ],
+          },
+          layers: [
+            { k: 1, theta: 1.25, lift: 0, color: c.pal.cloth, kind: 'hard' },
+            { k: 0.8, theta: 1.05, lift: 0.22, color: c.pal.hard, kind: 'hard' },
+            { k: 0.58, theta: 0.9, lift: 0.4, color: c.pal.cloth2, kind: 'hard' },
+          ],
+        });
       }
       dorsal(c, { color: c.pal.gem });
     },
@@ -646,17 +931,6 @@ export interface AccessoryMaterials {
   hard: THREE.Material;
 }
 
-/** Phụ kiện đang gắn vào một bản sao nhân vật. */
-interface AttachedAccessories {
-  /** Cập nhật lắc dải lụa; gọi sau khi mixer đã cập nhật xương. `speed`: m/s. */
-  update(dt: number, speed: number, boneWorld: (b: FitBone) => THREE.Matrix4 | null): void;
-  /** LOD xa: ẩn dải lụa (mesh cứng ẩn theo LOD0 của thân). */
-  setNear(near: boolean): void;
-  /** Dải lụa cần thêm vào `inner` của nhân vật. */
-  readonly objects: THREE.Object3D[];
-  dispose(): void;
-}
-
 /** Gộp phần cứng theo vật liệu: về hệ cục bộ của mesh thân, gắn cứng vào xương (chỉ số theo `boneIndex`). */
 function mergeByKind(fit: BodyFit, built: BuiltAccessories, boneIndex: Map<string, number>): Partial<Record<Kind, THREE.BufferGeometry>> {
   const toMesh = fit.meshToScene.clone().invert();
@@ -691,7 +965,12 @@ function mergeByKind(fit: BodyFit, built: BuiltAccessories, boneIndex: Map<strin
 }
 
 /** Gộp phần cứng theo vật liệu thành `SkinnedMesh` gắn vào cùng cha với mesh LOD0 của `scene` (bản sao đã clone). */
-export function attachAccessories(scene: THREE.Object3D, fit: BodyFit, built: BuiltAccessories, mats: AccessoryMaterials): { meshes: THREE.SkinnedMesh[]; ribbons: AttachedRibbons | null } {
+export function attachAccessories(
+  scene: THREE.Object3D,
+  fit: BodyFit,
+  built: BuiltAccessories,
+  mats: AccessoryMaterials,
+): { meshes: THREE.SkinnedMesh[]; ribbons: AttachedRibbons | null } {
   let base: THREE.SkinnedMesh | null = null;
   scene.traverse((o) => {
     const m = o as THREE.SkinnedMesh;
@@ -767,7 +1046,10 @@ export class AttachedRibbons {
       this.ang[i] = Math.max(0, Math.min(0.7, this.ang[i] + this.vel[i] * step));
       const p = r.pivot;
       // M = xươngHiệnTại · xươngIdle⁻¹ · T(pivot) · Rx(góc) · T(−pivot)
-      this._pv.makeTranslation(p.x, p.y, p.z).multiply(this._r.makeRotationX(this.ang[i])).multiply(this._m.makeTranslation(-p.x, -p.y, -p.z));
+      this._pv
+        .makeTranslation(p.x, p.y, p.z)
+        .multiply(this._r.makeRotationX(this.ang[i]))
+        .multiply(this._m.makeTranslation(-p.x, -p.y, -p.z));
       this.objects[i].matrix.copy(bw).multiply(this.restInv[i]).multiply(this._pv);
       this.objects[i].matrixWorldNeedsUpdate = true;
     }

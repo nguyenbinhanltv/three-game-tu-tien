@@ -127,7 +127,8 @@ export class MonSkills {
     const rt = m.mx;
     this.expire(m, now);
     const an = m.rules.ai.anchor;
-    if (an && m.s.hp < m.s.mhp && (m.s.x - m.homeX) ** 2 + (m.s.z - m.homeZ) ** 2 <= an.r * an.r) m.s.hp = Math.min(m.s.mhp, m.s.hp + Math.max(1, Math.round(m.s.mhp * an.pct * dt)));
+    if (an && m.s.hp < m.s.mhp && (m.s.x - m.homeX) ** 2 + (m.s.z - m.homeZ) ** 2 <= an.r * an.r)
+      m.s.hp = Math.min(m.s.mhp, m.s.hp + Math.max(1, Math.round(m.s.mhp * an.pct * dt)));
     if (rt.act) {
       this.runAct(m, target, dt, now);
       return true;
@@ -218,7 +219,9 @@ export class MonSkills {
           rt.next.summon = now + 1500;
           return false;
         }
-        const spots = summonSpots(m.s.x, m.s.z, n, c.r, Math.random() * Math.PI * 2).map((sp) => (this.h.canStand(sp.x, sp.z) ? sp : { x: m.s.x, z: m.s.z }));
+        const spots = summonSpots(m.s.x, m.s.z, n, c.r, Math.random() * Math.PI * 2).map((sp) =>
+          this.h.canStand(sp.x, sp.z) ? sp : { x: m.s.x, z: m.s.z },
+        );
         for (const sp of spots) this.h.hazard({ x: sp.x, z: sp.z, r: 1.6 }, c.delay, 0, 'spirit', m, 'summon');
         rt.act = { k: 'summon', at: now + c.delay * 1000, spots };
         rt.next.summon = now + c.cd * 1000;

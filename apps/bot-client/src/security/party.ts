@@ -3,8 +3,7 @@ import { type Room } from 'colyseus.js';
 import { applyInvMsg, C, type InvMsg, type InvSlot, S } from '@dtl/shared';
 import { W, check, health, join, type Ctx, type P, type CharV } from './lib';
 
-export async function runParty(ctx: Ctx): Promise<void> {
-  const { client, gm } = ctx;
+export async function runParty(_ctx: Ctx): Promise<void> {
   // 16. Tổ đội và tỉ thí (P3-9): server giữ lời mời, chặn spam, không cho đánh đồng đội ngoài tỉ thí, tỉ thí không thưởng.
   {
     const A = 'doi_a' + (Date.now() % 1000);
@@ -14,7 +13,6 @@ export async function runParty(ctx: Ctx): Promise<void> {
     const b = await join(B);
     const c = await join(Cn);
     const players = (r: Room) => (r.state as { players: Map<string, P> }).players;
-    const pa = () => players(a.room).get(a.init.sid)!;
     const pb = () => players(a.room).get(b.init.sid)!;
     const pc = () => players(a.room).get(c.init.sid)!;
     const say = async (r: Room, cmd: string) => {
@@ -45,7 +43,20 @@ export async function runParty(ctx: Ctx): Promise<void> {
       await say(r.room, 'tp 2048 2455'); // xa võ đài
     }
     // a. Rác không làm sập, không tạo tổ đội.
-    for (const m of [null, 5, 'x', {}, { a: 7 }, { a: 'inv' }, { a: 'inv', n: 5 }, { a: 'acc', id: 'x' }, { a: 'kick', id: NaN }, { a: 'loot', m: 'bậy' }, { a: 'inv', n: 'x'.repeat(500) }]) a.room.send(C.PARTY, m);
+    for (const m of [
+      null,
+      5,
+      'x',
+      {},
+      { a: 7 },
+      { a: 'inv' },
+      { a: 'inv', n: 5 },
+      { a: 'acc', id: 'x' },
+      { a: 'kick', id: NaN },
+      { a: 'loot', m: 'bậy' },
+      { a: 'inv', n: 'x'.repeat(500) },
+    ])
+      a.room.send(C.PARTY, m);
     for (const m of [null, 5, { a: 'inv', n: {} }, { a: 'acc', id: -1 }, { a: 'yield' }]) a.room.send(C.DUEL, m);
     await W(600);
     check('lệnh tổ đội/tỉ thí sai kiểu bị bỏ qua, server còn sống', !partyA && (await health()));
@@ -67,7 +78,10 @@ export async function runParty(ctx: Ctx): Promise<void> {
     b.room.send(C.PARTY, { a: 'loot', m: 'free' });
     b.room.send(C.PARTY, { a: 'kick', id: inviteB[0].id });
     await W(500);
-    check('thành viên thường không đổi được chia đồ hay đuổi trưởng nhóm', partyA?.loot === 'turn' && partyA?.members.length === 2 && sysB.includes('party.not_leader'));
+    check(
+      'thành viên thường không đổi được chia đồ hay đuổi trưởng nhóm',
+      partyA?.loot === 'turn' && partyA?.members.length === 2 && sysB.includes('party.not_leader'),
+    );
     // e. Không đánh được đồng đội hay người lạ bằng chiêu.
     await say(a.room, 'tp 2048 2090');
     await say(b.room, 'tp 2050 2090');
@@ -82,7 +96,11 @@ export async function runParty(ctx: Ctx): Promise<void> {
       a.room.send(C.SKILL, { id: 'skl_phi_kiem', t: c.init.sid });
       await W(1100);
     }
-    check('không đánh được đồng đội hay người lạ ngoài tỉ thí', pb().hp >= hpB && pc().hp >= hpC, `B ${hpB} → ${pb().hp}, C ${hpC} → ${pc().hp}`);
+    check(
+      'không đánh được đồng đội hay người lạ ngoài tỉ thí',
+      pb().hp >= hpB && pc().hp >= hpC,
+      `B ${hpB} → ${pb().hp}, C ${hpC} → ${pc().hp}`,
+    );
     // f. Tỉ thí ngoài võ đài bị từ chối.
     await say(b.room, 'tp 2048 2455');
     await say(a.room, 'tp 2048 2455');
@@ -126,8 +144,15 @@ export async function runParty(ctx: Ctx): Promise<void> {
       await W(600);
     }
     check('kết thúc rõ ràng, có kết quả gửi cho người chơi', duelA?.phase === 'end' && (pb().fl & 2) === 0);
-    check('tỉ thí không cho tu vi hay linh thạch', (ca?.xp ?? 0) === xp0 && (ca?.gold ?? 0) === gold0, `xp ${xp0} → ${ca?.xp}, vàng ${gold0} → ${ca?.gold}`);
-    check('người thua không ngã (không mất tu vi), trận hết thì đánh được quái bình thường', !sysB.includes('sys.died') && !sysA.includes('sys.died'));
+    check(
+      'tỉ thí không cho tu vi hay linh thạch',
+      (ca?.xp ?? 0) === xp0 && (ca?.gold ?? 0) === gold0,
+      `xp ${xp0} → ${ca?.xp}, vàng ${gold0} → ${ca?.gold}`,
+    );
+    check(
+      'người thua không ngã (không mất tu vi), trận hết thì đánh được quái bình thường',
+      !sysB.includes('sys.died') && !sysA.includes('sys.died'),
+    );
     void sysC;
     for (const r of [a, b, c]) await r.room.leave(true);
   }
@@ -158,7 +183,11 @@ export async function runParty(ctx: Ctx): Promise<void> {
       g.room.send(C.ARTIFACT, bad);
       await W(150);
     }
-    check('kích hoạt pháp bảo khi chưa đeo bị từ chối', has('sys.art_none') && !artId, `${JSON.stringify(msgs.map((m) => m.k))} artId=${artId}`);
+    check(
+      'kích hoạt pháp bảo khi chưa đeo bị từ chối',
+      has('sys.art_none') && !artId,
+      `${JSON.stringify(msgs.map((m) => m.k))} artId=${artId}`,
+    );
     // Chế pháp bảo ở xa Thiết lão, thiếu nguyên liệu: từ chối, không mất linh thạch, không ra món nào.
     const gold0 = gold;
     await chat('/gm tp 2200 2400');
@@ -168,9 +197,18 @@ export async function runParty(ctx: Ctx): Promise<void> {
     await chat('/gm tp 2090 2066');
     g.room.send(C.CRAFT, { id: 'rcp_tu_kim_ho_lo', n: 1, r: 'art-craft-002' });
     await W(500);
-    check('chế pháp bảo thiếu nguyên liệu bị từ chối, không mất linh thạch', has('sys.not_enough_mat') && gold === gold0 && !inv.some((x) => x?.id === 'itm_tu_kim_ho_lo'), `vàng ${gold0} → ${gold}`);
+    check(
+      'chế pháp bảo thiếu nguyên liệu bị từ chối, không mất linh thạch',
+      has('sys.not_enough_mat') && gold === gold0 && !inv.some((x) => x?.id === 'itm_tu_kim_ho_lo'),
+      `vàng ${gold0} → ${gold}`,
+    );
     // Số lượng giả (nhiều món một lần) và công thức không tồn tại.
-    for (const bad of [{ id: 'rcp_tu_kim_ho_lo', n: 5, r: 'art-craft-003' }, { id: 'rcp_khong_co', n: 1, r: 'art-craft-004' }, { id: { $ne: 1 }, n: 1, r: 'art-craft-005' }, { id: 'rcp_tu_kim_ho_lo', n: -1, r: 'art-craft-006' }]) {
+    for (const bad of [
+      { id: 'rcp_tu_kim_ho_lo', n: 5, r: 'art-craft-003' },
+      { id: 'rcp_khong_co', n: 1, r: 'art-craft-004' },
+      { id: { $ne: 1 }, n: 1, r: 'art-craft-005' },
+      { id: 'rcp_tu_kim_ho_lo', n: -1, r: 'art-craft-006' },
+    ]) {
       g.room.send(C.CRAFT, bad);
       await W(150);
     }
@@ -182,11 +220,18 @@ export async function runParty(ctx: Ctx): Promise<void> {
     await W(700);
     const pills = inv.filter((x) => x?.id === 'itm_hoi_xuan_dan');
     const total = pills.reduce((a, x) => a + (x?.n ?? 0), 0);
-    check('luyện đan ra đúng số lượng, phẩm do server roll', total === 4 && pills.every((x) => (x?.plus ?? 0) >= 0 && (x?.plus ?? 0) <= 2), JSON.stringify(pills));
+    check(
+      'luyện đan ra đúng số lượng, phẩm do server roll',
+      total === 4 && pills.every((x) => (x?.plus ?? 0) >= 0 && (x?.plus ?? 0) <= 2),
+      JSON.stringify(pills),
+    );
     // Cùng khóa gửi lại: không luyện thêm.
     g.room.send(C.CRAFT, { id: 'rcp_hoi_xuan_dan', n: 4, r: 'art-pill-001' });
     await W(500);
-    check('luyện đan gửi lặp cùng khóa không ra thêm', inv.filter((x) => x?.id === 'itm_hoi_xuan_dan').reduce((a, x) => a + (x?.n ?? 0), 0) === 4);
+    check(
+      'luyện đan gửi lặp cùng khóa không ra thêm',
+      inv.filter((x) => x?.id === 'itm_hoi_xuan_dan').reduce((a, x) => a + (x?.n ?? 0), 0) === 4,
+    );
     // Đeo pháp bảo (GM thử) rồi spam kích hoạt: không crash, linh lực không tăng quá mức tối đa.
     await chat('/gm art itm_thanh_lien_an 2');
     check('đeo được pháp bảo ở ô Pháp bảo phụ', equip.artifact?.id === 'itm_thanh_lien_an' && artId === 'itm_thanh_lien_an');
@@ -195,8 +240,7 @@ export async function runParty(ctx: Ctx): Promise<void> {
       await W(10);
     }
     await W(300);
-    check('spam kích hoạt pháp bảo không làm sập server', await health() && mp <= 100000);
+    check('spam kích hoạt pháp bảo không làm sập server', (await health()) && mp <= 100000);
     await g.room.leave(true);
   }
-
 }

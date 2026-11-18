@@ -14,12 +14,24 @@ describe('bac_hoang', () => {
   it('đúng số liệu thiết kế (6 vùng, 13 tinh anh, bốn boss: Tam Thủ Ngục Khuyển gác miệng nam khe, Kiếm Cơ, Ma Hậu, 5 bia)', () => {
     const zones = lv.zones ?? [];
     const camps = lv.camps ?? [];
-    expect(zones.map((z) => z.id).sort()).toEqual(['han_hoi_nguyen', 'khich_giai', 'kho_loc_lam', 'kim_da_ngoai_uyen', 'tran_gioi_dai', 'xich_tan_binh']);
+    expect(zones.map((z) => z.id).sort()).toEqual([
+      'han_hoi_nguyen',
+      'khich_giai',
+      'kho_loc_lam',
+      'kim_da_ngoai_uyen',
+      'tran_gioi_dai',
+      'xich_tan_binh',
+    ]);
     expect(Math.max(...zones.map((z) => z.lvMax))).toBeLessThanOrEqual(MAX_LEVEL);
     expect(lv.spawns.filter((s) => s.mon.startsWith('elite_')).reduce((a, s) => a + s.count, 0)).toBe(13);
     const boss = lv.spawns.filter((s) => s.mon.startsWith('boss_'));
     // Tam Thủ Ngục Khuyển gác miệng nam khe; DV-2 đợt 3: Tẫn Hỏa Kiếm Cơ và Kim Dạ Ma Hậu đứng tạm ở Kim Dạ Ngoại Uyển (chờ phó bản Kim Dạ Cung).
-    expect(boss.map((s) => s.mon).sort()).toEqual(['boss_kim_da_ma_hau', 'boss_tam_thu_nguc_khuyen', 'boss_tan_hoa_kiem_co', 'boss_thu_khich_duc_chu']);
+    expect(boss.map((s) => s.mon).sort()).toEqual([
+      'boss_kim_da_ma_hau',
+      'boss_tam_thu_nguc_khuyen',
+      'boss_tan_hoa_kiem_co',
+      'boss_thu_khich_duc_chu',
+    ]);
     expect(boss.find((s) => s.mon === 'boss_tam_thu_nguc_khuyen')).toMatchObject({ x: C, z: C - 90, respawn: 1800 });
     expect(zones.find((z) => z.id === 'khich_giai')!.poly.length).toBeGreaterThan(3);
     expect((lv.spots ?? []).filter((s) => s.id.startsWith('tran_gioi_bia_'))).toHaveLength(5);

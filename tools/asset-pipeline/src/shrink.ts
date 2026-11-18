@@ -40,17 +40,32 @@ for (const entry of Object.values(manifest.assets)) {
     if (side <= limit) continue;
     const mime = tex.getMimeType();
     const resized = sharp(img).resize({ width: limit, height: limit, fit: 'inside', kernel: 'lanczos3' });
-    const data = mime === 'image/png' ? await resized.png({ compressionLevel: 9 }).toBuffer() : await resized.jpeg({ quality: 90, mozjpeg: true }).toBuffer();
+    const data =
+      mime === 'image/png'
+        ? await resized.png({ compressionLevel: 9 }).toBuffer()
+        : await resized.jpeg({ quality: 90, mozjpeg: true }).toBuffer();
     tex.setImage(new Uint8Array(data));
     saved += (side * side - limit * limit) * 4 * 1.333;
     touched = true;
   }
   if (!touched) continue;
   changed++;
-  console.log(`[shrink] ${entry.id}: ${entry.textures.map((t) => `${t.width}`).join('/')} → ${listTextures(doc).map((t) => t.width).join('/')}`);
+  console.log(
+    `[shrink] ${entry.id}: ${entry.textures.map((t) => `${t.width}`).join('/')} → ${listTextures(doc)
+      .map((t) => t.width)
+      .join('/')}`,
+  );
   if (dry) continue;
-  if (!doc.getRoot().listExtensionsUsed().some((e) => e.extensionName === 'EXT_meshopt_compression'))
-    doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.QUANTIZE });
+  if (
+    !doc
+      .getRoot()
+      .listExtensionsUsed()
+      .some((e) => e.extensionName === 'EXT_meshopt_compression')
+  )
+    doc
+      .createExtension(EXTMeshoptCompression)
+      .setRequired(true)
+      .setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.QUANTIZE });
   const bytes = await io.writeBinary(doc);
   const name = hashName(entry.id, bytes);
   fs.writeFileSync(path.join(outDir, name), bytes);

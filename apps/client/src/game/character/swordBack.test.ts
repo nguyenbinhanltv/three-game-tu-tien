@@ -20,7 +20,10 @@ const cache = new AssetCache({
 });
 
 /** Mỗi 0,1 s của clip: hướng vỏ kiếm lưng (xương dtl_sword) so với ngực (spine2) và độ cúi của ngực so với phương đứng. */
-function trace(target: THREE.Object3D, clip: THREE.AnimationClip): { rel: number[]; swordFromUp: number[]; chestFromUp: number[]; geo: THREE.Vector3[]; hipsLean: number[] } {
+function trace(
+  target: THREE.Object3D,
+  clip: THREE.AnimationClip,
+): { rel: number[]; swordFromUp: number[]; chestFromUp: number[]; geo: THREE.Vector3[]; hipsLean: number[] } {
   const root = target.clone(true);
   new THREE.Scene().add(root);
   const mixer = new THREE.AnimationMixer(root);
@@ -66,7 +69,22 @@ function trace(target: THREE.Object3D, clip: THREE.AnimationClip): { rel: number
 }
 
 /** Độ cúi tối đa của ngực (°) ở clip không phải ngã/chết: cúi sâu hơn thì vỏ kiếm lưng nằm ngang qua đầu. Lộn (dodge_*) cho phép sâu hơn ở đỉnh lộn. */
-const LEAN_MAX: Record<string, number> = { heavy_chop: 60, hit_front_1: 50, hit_front_2: 50, hit_heavy: 50, hit_head: 50, hit_l: 50, hit_r: 50, getup: 56, dodge_f: 85, dodge_l: 85, dodge_r: 85, dodge_back: 95, combat_idle: 20, guard: 30 };
+const LEAN_MAX: Record<string, number> = {
+  heavy_chop: 60,
+  hit_front_1: 50,
+  hit_front_2: 50,
+  hit_heavy: 50,
+  hit_head: 50,
+  hit_l: 50,
+  hit_r: 50,
+  getup: 56,
+  dodge_f: 85,
+  dodge_l: 85,
+  dodge_r: 85,
+  dodge_back: 95,
+  combat_idle: 20,
+  guard: 30,
+};
 
 describe('vỏ kiếm đeo lưng đi theo ngực trong mọi clip của thư viện', () => {
   it('hướng vỏ trong khung hình học (lên = cổ − hông, trước = lên × vai phải-trái) lệch dưới 40° so với lúc đứng ở mọi khung thân chưa nằm/lộn', async () => {

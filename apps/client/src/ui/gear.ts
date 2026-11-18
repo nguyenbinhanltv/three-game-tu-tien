@@ -3,7 +3,6 @@
 
 import {
   type AffixRoll,
-  bindsOnEquip,
   gemAffixes,
   computePlayerStats,
   enhanceMul,
@@ -82,7 +81,8 @@ export function itemLines(item: InvItem, def: ItemDef): TipLine[] {
 /** Dòng phụ: "Huyền phẩm · Pháp kiếm · Cấp vật phẩm 12". */
 export function itemSub(item: InvItem, def: ItemDef): string {
   // Đan có phẩm riêng (Hạ/Trung/Thượng) thay cho phẩm trang bị.
-  const q = def.kind === 'consumable' && item.plus ? t('ui.pill.q' + clampPillQuality(item.plus)) : t('ui.quality.' + gearQuality(item, def));
+  const q =
+    def.kind === 'consumable' && item.plus ? t('ui.pill.q' + clampPillQuality(item.plus)) : t('ui.quality.' + gearQuality(item, def));
   const parts = [q, t('ui.item.kind.' + def.kind)];
   if (item.inst) parts.push(t('ui.item.ilvl', { n: item.inst.ilvl }));
   if (item.inst && itemTier(def.id) >= 2) parts.push(t('ui.item.tier', { n: itemTier(def.id) }));
@@ -170,7 +170,12 @@ export function tierText(tier: SetTier): string {
   for (const l of tier.lines ?? []) parts.push(affixText(l));
   if (tier.fx) {
     const pct = (x: number | undefined) => pctText(x ?? 0);
-    parts.push(t('set.fx.' + (tier.fx as SetFxId), { v: tier.fx === 'crit_slow' ? (tier.v ?? 0) : tier.fx === 'dich_son' ? String(tier.v ?? 0).replace('.', ',') : pct(tier.v), w: tier.fx === 'hoanh_kiem' ? (tier.w ?? 0) : pct(tier.w) }));
+    parts.push(
+      t('set.fx.' + (tier.fx as SetFxId), {
+        v: tier.fx === 'crit_slow' ? (tier.v ?? 0) : tier.fx === 'dich_son' ? String(tier.v ?? 0).replace('.', ',') : pct(tier.v),
+        w: tier.fx === 'hoanh_kiem' ? (tier.w ?? 0) : pct(tier.w),
+      }),
+    );
   }
   return parts.join('; ');
 }
@@ -183,10 +188,14 @@ export function wornIds(equip: Equipment): string[] {
 export function setLines(set: SetDef, equip: Equipment): TipLine[] {
   const st = setStatuses([set], wornIds(equip))[0];
   const n = st?.n ?? 0;
-  const out: TipLine[] = [{ text: t('ui.set.title', { name: t(`set.${set.id}.name`), n, total: set.pieces.length }), tone: n >= 2 ? 'set' : 'dim' }];
+  const out: TipLine[] = [
+    { text: t('ui.set.title', { name: t(`set.${set.id}.name`), n, total: set.pieces.length }), tone: n >= 2 ? 'set' : 'dim' },
+  ];
   const worn = new Set(wornIds(equip));
-  for (const pid of set.pieces) out.push({ text: `${worn.has(pid) ? '◆' : '◇'} ${t(`item.${pid}.name`)}`, tone: worn.has(pid) ? 'set' : 'dim' });
-  for (const tier of set.tiers) out.push({ text: `${t('ui.set.tier', { n: tier.n })} ${tierText(tier)}`, tone: n >= tier.n ? 'set' : 'dim' });
+  for (const pid of set.pieces)
+    out.push({ text: `${worn.has(pid) ? '◆' : '◇'} ${t(`item.${pid}.name`)}`, tone: worn.has(pid) ? 'set' : 'dim' });
+  for (const tier of set.tiers)
+    out.push({ text: `${t('ui.set.tier', { n: tier.n })} ${tierText(tier)}`, tone: n >= tier.n ? 'set' : 'dim' });
   out.push({ text: set.src === 'forge' ? t('ui.set.src.forge') : t('ui.set.src.drop', { from: t('ui.set.from.' + set.id) }), tone: 'dim' });
   return out;
 }
@@ -208,7 +217,14 @@ export function pillLines(item: InvItem, def: ItemDef): TipLine[] {
   const pot = pillPotency(PILL_QUALITY, q);
   out.push({ text: t('ui.pill.quality_line', { q: t('ui.pill.q' + q), n: Math.round(pot * 100) }), tone: q > 0 ? 'good' : 'dim' });
   const b = def.use?.buff;
-  if (b) out.push({ text: t('ui.pill.buff_line', { what: t('ui.pill.buff.' + b.kind), n: Math.round(b.pct * pot * 100), m: Math.round((b.sec * pot) / 60) }) });
+  if (b)
+    out.push({
+      text: t('ui.pill.buff_line', {
+        what: t('ui.pill.buff.' + b.kind),
+        n: Math.round(b.pct * pot * 100),
+        m: Math.round((b.sec * pot) / 60),
+      }),
+    });
   return out;
 }
 
@@ -216,7 +232,11 @@ export function pillLines(item: InvItem, def: ItemDef): TipLine[] {
 function artifactParams(id: string, lv: number): Record<string, number> {
   const def = ARTIFACT.get(id);
   if (!def) return {};
-  return { r: def.radius, n: Math.round(def.power * artifactLevelMods(lv).powerMul * 100), s: Math.round((def.kind === 'seal' ? sealStun(def, lv) : (def.duration ?? 0)) * 10) / 10 };
+  return {
+    r: def.radius,
+    n: Math.round(def.power * artifactLevelMods(lv).powerMul * 100),
+    s: Math.round((def.kind === 'seal' ? sealStun(def, lv) : (def.duration ?? 0)) * 10) / 10,
+  };
 }
 
 /** Dòng chú giải pháp bảo phụ: kỹ năng, hồi chiêu, nội tại, cấp và linh khí (P3-8). `prog` chỉ có khi đang đeo. */
@@ -233,6 +253,7 @@ export function artifactLines(def: ItemDef, prog?: ArtifactMsg): TipLine[] {
   if (a.mp) out.push({ text: t('ui.art.mp', { n: a.mp }) });
   out.push({ text: `${t('ui.art.passive')}: ${t(`art.passive.${a.passive.kind}`, { n: Math.round(artifactPassive(a, lv) * 100) })}` });
   out.push({ text: t('ui.art.level', { lv, max: ARTIFACT_MAX_LEVEL }) });
-  if (prog?.id === def.id) out.push({ text: prog.need > 0 ? t('ui.art.qi', { qi: prog.qi, need: prog.need }) : t('ui.art.qi_max'), tone: 'dim' });
+  if (prog?.id === def.id)
+    out.push({ text: prog.need > 0 ? t('ui.art.qi', { qi: prog.qi, need: prog.need }) : t('ui.art.qi_max'), tone: 'dim' });
   return out;
 }

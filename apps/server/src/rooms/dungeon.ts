@@ -1,6 +1,6 @@
 // Room bí cảnh (R-7, tách từ rooms.ts).
 import { ServerError } from 'colyseus';
-import { C, MS_DEAD, PF_DEAD, type DungeonDef, type WaveDef, dungeonRoomName } from '@dtl/shared';
+import { MS_DEAD, PF_DEAD, type DungeonDef, type WaveDef, dungeonRoomName } from '@dtl/shared';
 import { LEVELS, MONSTER, monsterName, t } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import { Character } from '../game/character';
@@ -34,7 +34,7 @@ export class DungeonRoom extends GameRoom {
     return { levelId: this.levelId, roomName: dungeonRoomName(this.levelId), spawn: d.spawn, respawn: d.spawn, persistPosition: false };
   }
 
-  onCreate(options: unknown): void {
+  override onCreate(options: unknown): void {
     super.onCreate(options);
     this.maxClients = 5;
     this.nextWaveAt = Date.now() + (this.def.waves[0]?.delay ?? 8) * 1000;
@@ -44,7 +44,7 @@ export class DungeonRoom extends GameRoom {
   }
 
   /** Chỉ vào được bằng vé cấp ở cổng; gọi thẳng joinOrCreate('dungeon') sẽ bị từ chối. */
-  static async onAuth(token: string, options: unknown): Promise<JoinAuth> {
+  static override async onAuth(token: string, options: unknown): Promise<JoinAuth> {
     const auth = await GameRoom.onAuth(token, options);
     const level = (this as unknown as { levelId: string }).levelId;
     // Phó bản riêng: vé phải mang khóa nhóm và client phải gửi đúng khóa đó (không khóa/khóa lạ = không vé, vé không bị đốt).
@@ -67,11 +67,11 @@ export class DungeonRoom extends GameRoom {
     else (char.meta.dungeonDays ??= {})[this.levelId] = today();
   }
 
-  noLootFor(char: Character): boolean {
+  override noLootFor(char: Character): boolean {
     return this.usedDay(char) === today();
   }
 
-  afterJoin(p: PlayerEnt): void {
+  override afterJoin(p: PlayerEnt): void {
     this.sim.sys(p, 'sys.dungeon_enter', { name: this.dname }, 'info');
     // Hook nhiệm vụ (mục tiêu `dungeon` ×1): phát sự kiện kèm đích của phó bản này để nhiệm vụ có `target` lọc được
     // (q2_phuc_mach, q3_kinh_nguyet, q4_than_tang). Kiếm Trủng không có đích: chỉ khớp mục tiêu `dungeon` không khai `target`.
@@ -86,14 +86,14 @@ export class DungeonRoom extends GameRoom {
     this.sendTransfer(p, d.returnLevel);
   }
 
-  onPortal(p: PlayerEnt): void {
+  override onPortal(p: PlayerEnt): void {
     const ex = this.def.exit;
     if ((p.move.x - ex.x) ** 2 + (p.move.z - ex.z) ** 2 > 14 * 14) return this.sim.sys(p, 'sys.too_far', undefined, 'bad');
     this.leave(p);
   }
 
   /** Hồi sinh ở điểm vào; tối đa `maxRevives` lần mỗi người, hết lượt thì được hồi sinh rồi bị đưa ra ngoài. */
-  onRespawn(p: PlayerEnt): void {
+  override onRespawn(p: PlayerEnt): void {
     const max = this.def.maxRevives;
     if (max === undefined || (p.s.fl & PF_DEAD) === 0) return super.onRespawn(p);
     const used = this.revives.get(p.char.id) ?? 0;
@@ -106,7 +106,7 @@ export class DungeonRoom extends GameRoom {
     this.sim.sys(p, 'sys.dungeon_revive', { n: max - used - 1 }, 'info');
   }
 
-  onMonsterKilled(m: MonEnt): void {
+  override onMonsterKilled(m: MonEnt): void {
     // Hạ con quái đầu tiên là đã dùng lượt thưởng hôm nay; trong lượt này vẫn nhận đủ.
     void m;
     for (const p of this.sim.players.values()) {
@@ -220,7 +220,8 @@ export class DungeonRoom extends GameRoom {
   private startKimDa(): void {
     const sim = this.sim;
     const c = this.def.center;
-    const pool = (x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost') => sim.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur);
+    const pool = (x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost') =>
+      sim.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur);
     this.kimda = new KimDaSystem({
       now: () => Date.now(),
       monsters: () => sim.monsters,
@@ -256,7 +257,8 @@ export class DungeonRoom extends GameRoom {
 
   private startSteles(w: WaveDef): void {
     const sim = this.sim;
-    const marker = (x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost') => sim.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur);
+    const marker = (x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost') =>
+      sim.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur);
     this.stele = new SteleHold(
       {
         now: () => Date.now(),
@@ -283,7 +285,8 @@ export class DungeonRoom extends GameRoom {
       monsters: () => sim.monsters,
       stagger: (m, sec) => sim.stagger(m, sec),
       purify: (m) => sim.purifyMonster(m),
-      marker: (x, z, r, dur) => sim.addHazard({ x, z, r }, 0.2, 0, false, 'frost', '', 0, false, 0, undefined, undefined, 'pool', false, dur),
+      marker: (x, z, r, dur) =>
+        sim.addHazard({ x, z, r }, 0.2, 0, false, 'frost', '', 0, false, 0, undefined, undefined, 'pool', false, dur),
       sysAll: (k, params, type) => sim.sysAll(k, params, type),
     });
   }
@@ -344,7 +347,11 @@ export class DungeonRoom extends GameRoom {
         this.sim.spawnMonster(def, g.level, c.x + Math.cos(a) * r, c.z + Math.sin(a) * r, null);
       }
     }
-    this.sim.sysAll('sys.dungeon_wave', { n: this.wave, boss: w.title ? t('dungeon.' + this.levelId + '.wave.' + this.wave) : lead }, 'info');
+    this.sim.sysAll(
+      'sys.dungeon_wave',
+      { n: this.wave, boss: w.title ? t('dungeon.' + this.levelId + '.wave.' + this.wave) : lead },
+      'info',
+    );
   }
 }
 
@@ -353,6 +360,6 @@ export function defineDungeon(levelId: string): typeof DungeonRoom {
   if (!LEVELS[levelId]?.dungeon) throw new Error(`defineDungeon: ${levelId} không phải bí cảnh`);
   if (levelId === DungeonRoom.levelId) return DungeonRoom;
   return class extends DungeonRoom {
-    static levelId = levelId;
+    static override levelId = levelId;
   };
 }
