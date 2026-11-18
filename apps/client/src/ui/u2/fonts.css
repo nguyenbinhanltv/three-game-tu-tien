@@ -34,7 +34,7 @@
 @font-face {
   font-family: 'DTL Thu Phap';
   src: url('/fonts/dtl-thu-phap.woff2') format('woff2');
-  font-weight: 400;
+  font-weight: 700; /* tệp thật là Charm Bold: khai 400 làm trình duyệt tô đậm giả khi vẽ ở 700 */
   font-style: normal;
   font-display: swap;
 }

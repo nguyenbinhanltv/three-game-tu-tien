@@ -1,6 +1,7 @@
-import type { CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import { realmName } from '@dtl/content';
 import { useUI } from '../store';
+import { brushColumns, renderBrushName } from './brushName';
 import type { PortraitPick } from './portraitPick';
 
 /** Đường dẫn ảnh tranh/lớp (nạp lười khi mở bảng, không nằm trong tải đầu). */
@@ -131,20 +132,43 @@ export function TierFront({ pick }: { pick: PortraitPick }) {
   );
 }
 
-/** Tên thư pháp dọc theo đạo hiệu của chính người chơi + dấu triện cảnh giới. */
+/** Tên thư pháp dọc theo đạo hiệu của chính người chơi (nét cọ vẽ bằng canvas, brushName.ts) + dấu triện cảnh giới nhỏ dưới cột tên. */
 function NameScroll({ big }: { big: boolean }) {
   const char = useUI((s) => s.char);
+  const name = char?.name ?? '';
+  const host = useRef<HTMLDivElement>(null);
+  const cv = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const el = host.current;
+    const out = cv.current;
+    if (!name || !el || !out) return;
+    let live = true;
+    const family = getComputedStyle(el).fontFamily;
+    void (document.fonts?.load(`700 64px ${family}`) ?? Promise.resolve()).then(() => {
+      if (!live) return;
+      const cs = getComputedStyle(el);
+      // màu nét = `color`, màu quầng loang = `text-decoration-color` (đều từ token trong hoatruc.css)
+      const src = renderBrushName(name, big ? 'gold' : 'ink', family, { main: cs.color, halo: cs.textDecorationColor });
+      out.width = src.width;
+      out.height = src.height;
+      out.getContext('2d')?.drawImage(src, 0, 0);
+    });
+    return () => {
+      live = false;
+    };
+  }, [name, big]);
   if (!char) return null;
+  const cols = brushColumns(name);
+  const rows = Math.max(...cols.map((c) => c.length), 1);
   return (
-    <div className="hoatruc-name" data-big={big ? '1' : undefined}>
-      {/* mực nhám: viền chữ lệch nhẹ như nét cọ khô */}
-      <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: 'absolute' }}>
-        <filter id="hoatruc-muc" x="-10%" y="-5%" width="120%" height="110%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="7" result="t" />
-          <feDisplacementMap in="SourceGraphic" in2="t" scale="3" />
-        </filter>
-      </svg>
-      <span className="hoatruc-name-t">{char.name}</span>
+    <div
+      ref={host}
+      className="hoatruc-name"
+      data-big={big ? '1' : undefined}
+      data-cols={cols.length}
+      style={{ '--rows': rows } as CSSProperties}
+    >
+      <canvas ref={cv} className="hoatruc-name-c" role="img" aria-label={name} />
       <span className="hoatruc-name-seal">{realmName(char.level)}</span>
     </div>
   );
