@@ -138,7 +138,7 @@ const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: 
 };
 
 /** Hệ số đèn thật theo thời điểm: buổi sớm vừa phải, đêm đậm. */
-const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8, ochre_dawn: 1, ochre: 0.6, ochre_night: 1.8, cloud_dawn: 1, cloud: 0.6, cloud_night: 1.8 };
+const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8, ochre_dawn: 1, ochre: 0.6, ochre_night: 1.8, cloud_dawn: 1, cloud: 0.6, cloud_night: 1.8, ash_dawn: 1, rift: 1.2 };
 
 /** Hiệu ứng của chính mình → nhạc ngắn trong manifest.music (tools/audio/compose/sting_*.mjs). */
 const STINGS: Record<string, string> = { levelup: 'sting_levelup', ascend: 'sting_breakthrough', death: 'sting_death' };
@@ -1054,6 +1054,7 @@ export class Game {
     }
     this.grass = new Grass(levelAssets(id).grassCards);
     this.grass.setQuality(get().quality, q.shadows);
+    this.grass.setEnabled(F.grass);
     this.grass.mesh.visible = F.grass;
     this.scene.add(this.grass.mesh);
     const bf = BUTTERFLY_LEVELS[id];

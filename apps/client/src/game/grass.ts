@@ -398,6 +398,8 @@ export class Grass {
   private readonly pushVec = Array.from({ length: GRASS_PUSH_SLOTS }, () => new THREE.Vector4());
   private readonly uPush = uniformArray(this.pushVec, 'vec4');
   private preset: GrassPreset = GRASS_PRESETS.medium;
+  /** Level tắt cỏ (`features.grass: false`, vd. Bắc Hoang): lớp cỏ không bao giờ hiện lại dù cập nhật đổi `visible`. */
+  private enabled = true;
   private chunks = new Map<number, ChunkRec>();
   private want: number[] = [];
   private wantSet = new Set<number>();
@@ -524,7 +526,7 @@ export class Grass {
       this.buildShader(t, man.cols, man.rows);
       this.ready = true;
       this.material.needsUpdate = true;
-      this.mesh.visible = this.geo.instanceCount > 0;
+      this.mesh.visible = this.enabled && this.geo.instanceCount > 0;
     } catch (e) {
       console.warn('[grass] không nạp được thẻ cỏ:', e);
     }
@@ -538,7 +540,7 @@ export class Grass {
     this.preset = next;
     if (respace) this.chunks.clear();
     this.ccx = this.ccz = -1e9;
-    this.mesh.visible = next.radius > 0;
+    this.mesh.visible = this.enabled && next.radius > 0;
     if (next.radius <= 0) {
       this.chunks.clear();
       this.geo.instanceCount = 0;
@@ -639,7 +641,12 @@ export class Grass {
     }
     this.geo.instanceCount = n;
     this.count = n;
-    this.mesh.visible = n > 0 && this.ready;
+    this.mesh.visible = this.enabled && n > 0 && this.ready;
+  }
+
+  setEnabled(on: boolean): void {
+    this.enabled = on;
+    if (!on) this.mesh.visible = false;
   }
 
   dispose(): void {

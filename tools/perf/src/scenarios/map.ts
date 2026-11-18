@@ -10,7 +10,7 @@ import { snap, UI_SIZES, writeJson } from '../lib/shot';
 export default {
   name: 'map',
   desc: 'Minimap + bản đồ lớn của một level ở 1080p/1440p/4K (sau khi đổi địa hình, zones hay UI bản đồ)',
-  usage: '[--level van_lam|doan_mach|van_hai|thien_khuyet] [--sizes 1080p,1440p,4k] [--dpr 1]',
+  usage: '[--level van_lam|doan_mach|van_hai|thien_khuyet|bac_hoang] [--sizes 1080p,1440p,4k] [--dpr 1]',
   async run(r) {
     const level = opt('--level', 'van_lam');
     requireLevel(level);

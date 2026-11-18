@@ -264,7 +264,13 @@
     "tinh_bai_dai": "Tinh Bái Đài",
     "kho_giao": "Kho Giáo",
     "cong_than_tang_dien": "Cổng Thần Tàng Điện",
-    "co_thanh_that_lo": "Cổ Thành Thất Lộ"
+    "co_thanh_that_lo": "Cổ Thành Thất Lộ",
+    "diet_mach_khau": "Diệt Mạch Khẩu",
+    "tan_mach_nhan": "Tàn Mạch Nhãn",
+    "gioi_khich": "Giới Khích",
+    "cong_xich_tan_khich": "Cổng Xích Tẫn Khích",
+    "cong_kim_da_cung": "Cổng Kim Dạ Cung",
+    "tran_gioi_bia": "Trấn Giới Bia"
   },
   "poiNpcs": {
     "npc_mieu_cong": "Lão Miếu Công",
@@ -298,7 +304,8 @@
     "van_lam": "Vân Lam Sơn Mạch",
     "doan_mach": "Đoạn Mạch Cổ Cốc",
     "van_hai": "Vân Hải Phù Đảo",
-    "thien_khuyet": "Thiên Khuyết Cổ Thành"
+    "thien_khuyet": "Thiên Khuyết Cổ Thành",
+    "bac_hoang": "Bắc Hoang Tẫn Nguyên"
   },
   "zones": {
     "sa_thach_pha": "Sa Thạch Pha",
@@ -315,7 +322,13 @@
     "lam_sao_vien": "Lâm Sao Viên",
     "binh_khi_kho": "Binh Khí Khố",
     "dien_tien_quang_truong": "Điện Tiền Quảng Trường",
-    "mo_dao": "Mộ Đạo"
+    "mo_dao": "Mộ Đạo",
+    "han_hoi_nguyen": "Hàn Hôi Nguyên",
+    "kho_loc_lam": "Khô Lộc Lâm",
+    "khich_giai": "Khích Giai",
+    "xich_tan_binh": "Xích Tẫn Bình",
+    "kim_da_ngoai_uyen": "Kim Dạ Ngoại Uyển",
+    "tran_gioi_dai": "Trấn Giới Đài"
   },
   "teleports": {
     "tp_thien_mach": "Trận Thiên Mạch Đài",
@@ -336,7 +349,14 @@
     "tk_tp_lam_sao": "Trận Lâm Sao Viên",
     "tk_tp_binh_khi": "Trận Binh Khí Khố",
     "tk_tp_dien_tien": "Trận Điện Tiền Quảng Trường",
-    "tk_tp_mo_dao": "Trận Mộ Đạo"
+    "tk_tp_mo_dao": "Trận Mộ Đạo",
+    "bh_tp_tram": "Trận Vọng Bắc Trạm",
+    "bh_tp_han_hoi": "Trận Hàn Hôi Nguyên",
+    "bh_tp_kho_loc": "Trận Khô Lộc Lâm",
+    "bh_tp_khich_giai": "Trận Khích Giai",
+    "bh_tp_xich_tan": "Trận Xích Tẫn Bình",
+    "bh_tp_kim_da": "Trận Kim Dạ Ngoại Uyển",
+    "bh_tp_tran_gioi": "Trận Trấn Giới Đài"
   },
   "materials": {
     "itm_mach_tinh_phien": "Mạch Tinh Phiến",
@@ -386,6 +406,11 @@
     "den_troi_8": "Đèn trời thứ tám",
     "phong_an_mon_1": "Môn phong ấn thứ nhất",
     "phong_an_mon_2": "Môn phong ấn thứ hai",
-    "phong_an_mon_3": "Môn phong ấn thứ ba"
+    "phong_an_mon_3": "Môn phong ấn thứ ba",
+    "tran_gioi_bia_1": "Trấn Giới Bia (Xích Tẫn Bình, bia một)",
+    "tran_gioi_bia_2": "Trấn Giới Bia (Xích Tẫn Bình, bia hai)",
+    "tran_gioi_bia_3": "Trấn Giới Bia (Kim Dạ Ngoại Uyển, bia ba)",
+    "tran_gioi_bia_4": "Trấn Giới Bia (Kim Dạ Ngoại Uyển, bia bốn)",
+    "tran_gioi_bia_5": "Trấn Giới Bia (Trấn Giới Đài, bia năm)"
   }
 }

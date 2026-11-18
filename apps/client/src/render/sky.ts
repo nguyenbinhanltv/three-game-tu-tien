@@ -67,7 +67,7 @@ export function createSky(): THREE.Mesh {
 }
 
 /** Màu đỉnh trời theo preset (không có trong art bible, chọn cho khớp màu sương). */
-const TOP: Record<string, number> = { dawn: 0x7ea6b6, day: 0x4f93bf, night: 0x0b1520, ochre_dawn: 0x8c8ea0, ochre: 0x6f8fa6, ochre_night: 0x0c1420, cloud_dawn: 0x6fb2c6, cloud: 0x4f9fc9, cloud_night: 0x0d1a2c };
+const TOP: Record<string, number> = { dawn: 0x7ea6b6, day: 0x4f93bf, night: 0x0b1520, ochre_dawn: 0x8c8ea0, ochre: 0x6f8fa6, ochre_night: 0x0c1420, cloud_dawn: 0x6fb2c6, cloud: 0x4f9fc9, cloud_night: 0x0d1a2c, ash_dawn: 0x8a99a3, rift: 0x241634 };
 
 export function applySkyPreset(name: string, fogColor: number, glowColor: number, sunColor: number): void {
   skyParams.horizon.value.setHex(fogColor);

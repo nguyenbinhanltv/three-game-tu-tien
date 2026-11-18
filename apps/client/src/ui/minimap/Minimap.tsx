@@ -15,7 +15,7 @@ import { backingScale, clampZoom, screenToWorld, DEFAULT_ZOOM, formatCountdown, 
 import '../minimap.css';
 
 const SIZE = 176;
-const MOTIFS: string[] = ['van_lam', 'doan_mach', 'van_hai', 'thien_khuyet'];
+const MOTIFS: string[] = ['van_lam', 'doan_mach', 'van_hai', 'thien_khuyet', 'bac_hoang'];
 /** Vẽ lại 15 lần/giây: đủ mượt cho chấm di chuyển chậm, và giữ chi phí CPU/khung gần như bằng bản cũ. */
 const FRAME_MS = 1000 / 15;
 
