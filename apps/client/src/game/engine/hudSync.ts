@@ -1,7 +1,7 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
 import { AIRBORNE_HEIGHT, MF_BROKEN, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, ROOM_WORLD, SOUL_SCOUT } from '@dtl/shared';
-import { areaKey, biomeAt, groundAt, levelId } from '../core/levelCtx';
+import { areaKey, biomeAt, groundAt, levelId } from '../../base/levelCtx';
 import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPCS, QUEST, t } from '@dtl/content';
 import { type BossInfo, type DebugInfo, get, pushToast, set, type TargetCast, type TargetInfo } from '../../ui/store';
 import { type DebugPerf } from '../../ui/store';

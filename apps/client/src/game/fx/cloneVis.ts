@@ -7,7 +7,7 @@
 
 import * as THREE from 'three/webgpu';
 import { CLONE_SPEED } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import { OTHERS_FX_DIST, OTHERS_FX_LIVE_MAX } from './fxBudget';
 import { paletteOf } from '../../render/vfx/palette';
 import type { FxMesh } from '../../render/materials/vfx';

@@ -1,7 +1,7 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
 import { terrainOf, propsOf, SECT } from '@dtl/shared';
-import { heightAt, levelAssets, levelId, levelTerrain } from '../core/levelCtx';
+import { heightAt, levelAssets, levelId, levelTerrain } from '../../base/levelCtx';
 import { LEVELS } from '@dtl/content';
 import { get } from '../../ui/store';
 import { Butterflies, BUTTERFLY_LEVELS } from '../world/butterflies';
@@ -26,8 +26,8 @@ import { PropLayer } from '../world/props';
 import { allProps } from '../world/propScatter';
 import { assets } from '../core/assets';
 import { Terrain } from '../world/terrain';
-import { loadGroundTextures } from '../world/groundTextures';
-import { FLAGS } from '../core/flags';
+import { loadGroundTextures } from '../../base/groundTextures';
+import { FLAGS } from '../../base/flags';
 import { LANTERN_LIGHT, QUALITY, isWebGPU, isWorldRoom } from './common';
 import type { Game } from '../engine';
 

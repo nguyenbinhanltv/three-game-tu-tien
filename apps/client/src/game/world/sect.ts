@@ -2,7 +2,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import * as THREE from 'three/webgpu';
 import { DUNGEON_EXIT, heightAt, KIEM_TRUNG, PORTAL_POS, SECT } from '@dtl/shared';
 import { col, G, GeoBuilder, mat } from '../core/geo';
-import { heightAt as levelHeight } from '../core/levelCtx';
+import { heightAt as levelHeight } from '../../base/levelCtx';
 
 const C_STONE = col(0xa9a59b);
 const C_STONE_DARK = col(0x86827a);

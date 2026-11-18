@@ -1,7 +1,7 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
 import { C, caveBoundOf, TELE_CAST_MS, cloneMoveState, canFlyAt, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type MoveCtx, type MoveInput, type MoveState, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_TRIBULATION, STEP, stepMove, type SkillDef, CHARGE_MAX, needsTarget, PF_SOUL, SOUL_RANGE, SOUL_SCOUT, skyFlightUnlocked, domainRadius } from '@dtl/shared';
-import { groundAt, levelId, levelTerrain } from '../core/levelCtx';
+import { groundAt, levelId, levelTerrain } from '../../base/levelCtx';
 import { LEVELS, MONSTER, resolveBarSkill, SKILLS, t } from '@dtl/content';
 import { get, pushLog, pushToast, set } from '../../ui/store';
 import { frameStats, RENDER_FAIL_LIMIT, RENDERER_KEY, rendererChoice } from '../core/gpuGuard';

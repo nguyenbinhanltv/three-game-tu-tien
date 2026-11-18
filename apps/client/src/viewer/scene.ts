@@ -15,7 +15,7 @@ import { buildFixtureSword, buildMixamoFixture } from '../game/character/mixamoF
 import { partExtras, stripPartTracks, SwordSocket, swordSocketDef } from '../game/character/sword';
 import { BoneLines, makeGrid } from './helpers';
 import { collectStats, type ModelStats } from './stats';
-import { currentSearch, urlParams } from '../game/core/flags';
+import { currentSearch, urlParams } from '../base/flags';
 
 /** Chiều cao người chuẩn để so tỉ lệ (m). */
 export const HUMAN_HEIGHT = 1.7;

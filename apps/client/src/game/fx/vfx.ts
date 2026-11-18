@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import { FxBatcher } from '../../render/materials/fxBatch';
 import { BATCHING, BATCH_KINDS, type FxKind, type FxMesh } from '../../render/materials/vfx';
 import { SIGIL_CIRCLE, SIGIL_GEO, sigilLayout, type SigilShape } from '../../render/vfx/sigil';
@@ -18,7 +18,7 @@ import { assets } from '../core/assets';
 import { PREFETCH_PRIORITY } from '../core/preload';
 import { G } from '../core/geo';
 import { type Box } from '../core/screenFit';
-import { FLAGS } from '../core/flags';
+import { FLAGS } from '../../base/flags';
 import { BOLTS, Fx, InkMark, POOL, PosFn, RAIN, RING_GEO, SLASH_CENTER, STRIKE_POOL_MAX, TUBE_GEO, UP, _a, _b, _c, _q, orientSlash, takeBolt } from './vfxParts/common';
 import { hazard, trailPool, venomPool } from './vfxParts/hazard';
 import { goldDrop, lootDrop } from './vfxParts/loot';

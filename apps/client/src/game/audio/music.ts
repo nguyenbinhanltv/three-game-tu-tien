@@ -17,7 +17,7 @@
 // Gỡ lỗi: chuyển trạng thái được log `[music] ...` khi chạy dev hoặc có `?debug`;
 // `window.__music.log` giữ 50 lần chuyển gần nhất, `__music.state()` xem trạng thái hiện tại.
 import { MS_ATTACK, MS_CHASE, PF_DEAD, PF_MEDITATING, PF_TRIBULATION } from '@dtl/shared';
-import { biomeAt, levelId, levelTerrain } from '../core/levelCtx';
+import { biomeAt, levelId, levelTerrain } from '../../base/levelCtx';
 import { riftBlend } from '../world/bacHoangArt';
 import { hasMusicFile, musicOutput, musicPosition, playAmbient, playMusic, stemSources } from './audio';
 import type { MonVis } from '../entities/entities';
@@ -36,7 +36,7 @@ import {
   type StemZone,
 } from './musicDirector';
 import { StemPlayer } from './stemMusic';
-import { FLAGS } from '../core/flags';
+import { FLAGS } from '../../base/flags';
 
 export { type MusicTrack } from './musicDirector';
 

@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { abs, cameraViewMatrix, cos, float, floor, instancedBufferAttribute, int, length, max, min, mix, positionGeometry, sin, smoothstep, step, texture, uniform, uniformArray, uv, vec2, vec3 } from 'three/tsl';
 import { FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
-import { heightAt, levelTerrain } from '../core/levelCtx';
+import { heightAt, levelTerrain } from '../../base/levelCtx';
 import { vanHaiArt } from './vanHaiArt';
 import { tkGrassDensity } from './thienKhuyetArt';
 import type { N } from '../../render/vfx/common';

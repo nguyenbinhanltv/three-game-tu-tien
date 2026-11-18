@@ -4,7 +4,7 @@
 
 import * as THREE from 'three/webgpu';
 import { type FxMsg } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import { G } from '../core/geo';
 import { SIGIL_CIRCLE } from '../../render/vfx/sigil';
 import type { Vfx } from './vfx';

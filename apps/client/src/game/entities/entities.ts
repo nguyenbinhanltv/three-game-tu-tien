@@ -3,7 +3,7 @@ import * as THREE from 'three/webgpu';
 import { uiScale } from '../../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from '../core/screenFit';
 import { locoDirOf, inSkyBand, PF_SOUL, MF_CHANT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import { gatesOf, type Gate } from '../world/gates';
 import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t } from '@dtl/content';
 import { hoverBob, hoverTarget, stepHover } from './hover';

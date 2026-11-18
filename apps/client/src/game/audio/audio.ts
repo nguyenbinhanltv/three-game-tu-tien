@@ -35,7 +35,7 @@
 import { bellPartials } from './lootBell';
 import { gongPartials } from '../camera/chapter';
 import MIX from './audioMix.json';
-import { FLAGS } from '../core/flags';
+import { FLAGS } from '../../base/flags';
 import { ramp, StreamDeck, type DeckEnv } from './audioDecks';
 
 /** Âm có bản tổng hợp dự phòng (dùng khi không có manifest). */

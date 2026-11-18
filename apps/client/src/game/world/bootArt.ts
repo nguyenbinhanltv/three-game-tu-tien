@@ -1,6 +1,6 @@
 import { biomeAt, featureWeight, SUOI, VACH } from '@dtl/shared';
 import { loadArtUrl } from '../../ui/Art';
-import { levelId } from '../core/levelCtx';
+import { levelId } from '../../base/levelCtx';
 
 /**
  * Tranh nền màn tiêu đề và màn tải (ảnh Codex, nạp lười sau khung đầu). Màn tải chọn theo vùng người chơi đứng lần cuối

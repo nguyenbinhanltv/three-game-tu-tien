@@ -1,7 +1,7 @@
 import type * as THREE from 'three/webgpu';
 import type { LocoDir, MonsterDef, SkillTiming } from '@dtl/shared';
 import type { HitOpts, HitReact } from '../combat/hitreact';
-import { FLAGS, readFlags } from '../core/flags';
+import { FLAGS, readFlags } from '../../base/flags';
 
 /** Trạng thái hiển thị một nhân vật/quái nhận mỗi khung (chỉ trình bày, suy từ trạng thái server). */
 export interface AnimState {

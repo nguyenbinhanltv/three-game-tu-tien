@@ -14,7 +14,7 @@ import { RootPicker } from './Realm';
 import { Corners } from './ngj';
 import { Portrait } from './Art';
 import { get, type Phase, set, useUI } from './store';
-import { FLAGS, urlParams } from '../game/core/flags';
+import { FLAGS, urlParams } from '../base/flags';
 
 const GOOGLE_CLIENT_ID = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_GOOGLE_CLIENT_ID ?? '';
 const IS_LOCAL = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname) || window.location.hostname.endsWith('.localhost');

@@ -10,7 +10,7 @@ import { Environment } from './env';
 import { MODEL_MAT } from '../core/models';
 import { buildSect, SECT_LANTERNS } from './sect';
 import { Terrain } from './terrain';
-import { FLAGS } from '../core/flags';
+import { FLAGS } from '../../base/flags';
 
 /**
  * Cảnh nền màn tiêu đề: thế giới thủ tục sẵn có (trời, mây, địa hình, Lạc Kiếm Tông dựng bằng

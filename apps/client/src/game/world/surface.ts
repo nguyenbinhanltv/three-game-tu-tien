@@ -1,5 +1,5 @@
 import { featureWeight, LAKE, PORTAL_PAD, SECT, WATER_Y } from '@dtl/shared';
-import { heightAt, inLakeWater } from '../core/levelCtx';
+import { heightAt, inLakeWater } from '../../base/levelCtx';
 import { distToPaths, PATH_HALF_WIDTH, pathPolylines } from '../../render/groundMask';
 
 /**

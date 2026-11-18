@@ -1,7 +1,7 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { type Room } from 'colyseus.js';
 import { applyInvMsg, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type EscortMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_PAD, type TeleMsg, type DmgMsg, type FxMsg, type HazardMsg, type BoltEndMsg, type BoltMsg, type InitMsg, type InvMsg, type QuestView, ROOM_DUNGEON, S, type SysMsg, type TransferMsg, type MethodMsg, type SpiritScanMsg, type SpiritStateMsg, type SoulStateMsg, type CloneStateMsg } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import { MONSTER, t } from '@dtl/content';
 import { minimapHooks } from '../../ui/minimap/model';
 import { visibleView } from '../net/aoiView';

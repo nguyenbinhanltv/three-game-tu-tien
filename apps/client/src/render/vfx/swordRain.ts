@@ -24,7 +24,7 @@ import {
   vec2,
   vec3,
 } from 'three/tsl';
-import { groundAt } from '../../game/core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import { markBloom } from '../post';
 import { FX_MAX_HDR } from '../materials/vfx';
 import { hash21, seededRandom, vnoise, type N } from './common';

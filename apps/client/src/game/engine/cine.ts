@@ -1,6 +1,6 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { MS_ATTACK, MS_CHASE, MS_DEAD, PF_DEAD, SPAWN_POINT } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import { hasString, MONSTER, monsterName, t } from '@dtl/content';
 import { get, set } from '../../ui/store';
 import { chapterSting, duckHold } from '../audio/audio';

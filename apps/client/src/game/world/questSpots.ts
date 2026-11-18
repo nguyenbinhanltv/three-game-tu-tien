@@ -5,7 +5,7 @@
 import * as THREE from 'three/webgpu';
 import { LEVELS, QUEST } from '@dtl/content';
 import type { QuestView } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 
 const SHOW = 220;
 /** Tiền tố id điểm → màu: gương nước (E3-H2) lam, đèn trời (E4-H) hổ phách, môn phong ấn (E4-H) lục bích. */

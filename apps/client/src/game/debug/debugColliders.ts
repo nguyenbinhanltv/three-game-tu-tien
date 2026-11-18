@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { COLLIDERS, type CircleCollider } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 
 /**
  * Khung va chạm cho bảng gỡ lỗi F3: vẽ các hình tròn collider tĩnh mà `stepMove` (dùng chung client/server) đang chặn,

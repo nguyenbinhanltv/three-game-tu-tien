@@ -1,5 +1,5 @@
 import { FX_QUALITY_TIER, type FxQuality } from '@dtl/shared';
-import { FLAGS } from '../core/flags';
+import { FLAGS } from '../../base/flags';
 
 /**
  * Cài đặt hiệu ứng chiêu (VFX-V0): "Chất lượng hiệu ứng" Thấp/Vừa/Cao và công tắc khựng hình.

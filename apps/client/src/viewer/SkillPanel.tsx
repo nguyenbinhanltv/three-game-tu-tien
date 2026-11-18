@@ -5,7 +5,7 @@ import { poseOf } from '../game/combat/skillPose';
 import { poseClipName } from '../game/character/ikpose';
 import { timingOf } from './skillTiming';
 import type { ViewerScene } from './scene';
-import { urlParams } from '../game/core/flags';
+import { urlParams } from '../base/flags';
 
 const s2 = (n: number) => n.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const ALL = [...SKILLS, ...METHOD_SKILLS].filter((s) => s.pose);

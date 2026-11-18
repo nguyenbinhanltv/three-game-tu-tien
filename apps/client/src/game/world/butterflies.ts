@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { abs, cos, float, instancedBufferAttribute, mix, positionGeometry, sin, texture, time, uniform, uniformArray, uv, vec3 } from 'three/tsl';
 import { beaconParams } from '../../render/atmosphere';
-import { heightAt, inLakeWater, levelTerrain } from '../core/levelCtx';
+import { heightAt, inLakeWater, levelTerrain } from '../../base/levelCtx';
 
 /**
  * Bướm mạch (DV-C): sinh vật trang trí bay quanh người chơi ở các bản đồ ngoài trời. Chỉ là hình ở client, server

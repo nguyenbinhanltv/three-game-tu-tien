@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { bodyClassOf, canCancel, HIT_FEEL, hitDirOf, hitsPassed, lungeOffset, type MonsterDef, type SkillTiming } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import { HitReact, type HitOpts } from '../combat/hitreact';
 import { IkRig } from './ikpose';
 import { type PoseClips, type PoseLibrary, libraryClips } from './poseLib';

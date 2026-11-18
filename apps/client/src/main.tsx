@@ -3,7 +3,7 @@ import { App } from './ui/App';
 import './styles.css';
 import './styles2.css';
 import { installUiScale } from './ui/uiScale';
-import { urlParams } from './game/core/flags';
+import { urlParams } from './base/flags';
 import { installMotion } from './ui/ngj/motion';
 
 const root = document.getElementById('root')!;

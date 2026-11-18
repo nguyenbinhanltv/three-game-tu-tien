@@ -1,5 +1,5 @@
 // R-8: tách từ game/vfx.ts (hàm nhận `v: Vfx`, trước là phương thức của lớp Vfx).
-import { groundAt } from '../../core/levelCtx';
+import { groundAt } from '../../../base/levelCtx';
 import { SIGIL_CIRCLE } from '../../../render/vfx/sigil';
 import { hazardFlash, hazardStack, hazardStyle } from '../../../render/vfx/phases';
 import { G } from '../../core/geo';

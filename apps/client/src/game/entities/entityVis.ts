@@ -1,4 +1,4 @@
-import { currentSearch } from '../core/flags';
+import { currentSearch } from '../../base/flags';
 import { TRUC_CO_LEVEL } from '@dtl/shared';
 import { swordOverride } from '../core/testParams';
 import { APPEARANCE, ITEM, SET, MONSTER, monsterName, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';

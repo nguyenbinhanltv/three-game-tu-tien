@@ -4,7 +4,7 @@
 
 import * as THREE from 'three/webgpu';
 import { SOUL_RANGE } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import type { CharacterView } from '../character/view';
 
 const additive = (color: number, opacity: number) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });

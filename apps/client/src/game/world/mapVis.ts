@@ -6,7 +6,7 @@
 import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { type MarkInfo, type QuestView, padsOfLevel, type TelePad, terrainOf } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import { SpiritVis } from '../fx/scan';
 import { QuestSpotVis } from './questSpots';
 import { SkyIslands } from './skyIslands';

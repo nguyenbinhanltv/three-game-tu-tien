@@ -7,7 +7,7 @@ import { assetBaseUrl, type Manifest } from '../game/core/assets';
 import { isBossViewer, isSkillViewer, SHOW_ALIASES, showAssetId } from '../game/core/testParams';
 import { SkillPanel } from './SkillPanel';
 import { skillForId } from './skillTiming';
-import { currentSearch, urlParams } from '../game/core/flags';
+import { currentSearch, urlParams } from '../base/flags';
 
 const BASE_URL = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL;
 /** Chỉ nhận đường dẫn tương đối cùng origin tới .glb/.gltf, không có "..". */

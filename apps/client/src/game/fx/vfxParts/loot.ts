@@ -1,6 +1,6 @@
 // R-8: tách từ game/vfx.ts (hàm nhận `v: Vfx`, trước là phương thức của lớp Vfx).
 import * as THREE from 'three/webgpu';
-import { groundAt } from '../../core/levelCtx';
+import { groundAt } from '../../../base/levelCtx';
 import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootCrowd, lootDuration, lootHop, lootPulse, type LootTier } from '../../../render/vfx/loot';
 import { PARTICLES } from '../../../render/vfx/particles';
 import { G } from '../../core/geo';

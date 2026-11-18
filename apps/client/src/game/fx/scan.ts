@@ -4,7 +4,7 @@
 
 import * as THREE from 'three/webgpu';
 import type { SpiritKind } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import type { SpiritScan, SpiritState } from '../../ui/store';
 
 /** Màu theo loại điểm (cũng dùng cho biểu tượng minimap). */

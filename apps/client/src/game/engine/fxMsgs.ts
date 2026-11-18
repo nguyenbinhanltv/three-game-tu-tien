@@ -1,7 +1,7 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
 import { type DmgMsg, type FxMsg, type HazardMsg, MF_SENSED, MF_REAL, MF_BURROW, MF_CHANT, MF_REFLECT, MF_WEAK, MS_ATTACK, PF_CASTING, PF_DEAD, PF_FLYING, PF_SHIELD, PF_TRIBULATION, type SysMsg, BONDED_ARTIFACT_ID, PF_SOUL, inSkyBand, SOUL_SCOUT } from '@dtl/shared';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
 import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from '../fx/methodFx';

@@ -6,7 +6,7 @@
 import { MON_FX, MONSTER } from '@dtl/content';
 import type { FxTimeline, HazardMsg } from '@dtl/shared';
 import { monPaletteKey } from '../../render/vfx/palette';
-import { groundAt } from '../core/levelCtx';
+import { groundAt } from '../../base/levelCtx';
 import type { FxCaster, FxRunner, FxTarget } from './fxTimeline';
 import { OTHERS_FX_LIVE_MAX } from './fxBudget';
 

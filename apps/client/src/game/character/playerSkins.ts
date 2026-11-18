@@ -28,7 +28,7 @@ import { type BladeMount, bladeLocal, cutOldSword, glowDims, type OldSwordSpan, 
 import type { CharState, ClipMap } from './states';
 import { CHR_V3, MannequinPlayers, V3_ONLY_SKINS } from './mannequin';
 import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
-import { FLAGS } from '../core/flags';
+import { FLAGS } from '../../base/flags';
 
 /** Ngoại hình hiển thị của một người chơi (từ schema server: `g`, `dye`). */
 export interface PlayerLook {

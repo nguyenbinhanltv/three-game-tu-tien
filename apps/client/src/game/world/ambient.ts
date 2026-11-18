@@ -1,5 +1,5 @@
 import { FOREST, featureWeight, KIEM_TRUNG, LAKE, SECT, VALLEY, WATER_Y } from '@dtl/shared';
-import { heightAt, levelId, levelTerrain } from '../core/levelCtx';
+import { heightAt, levelId, levelTerrain } from '../../base/levelCtx';
 import { bhAmbient, riftPath, type RiftPt } from './bacHoangArt';
 import type { Particles } from '../../render/vfx/particles';
 

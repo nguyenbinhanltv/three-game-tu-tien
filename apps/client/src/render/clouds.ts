@@ -17,7 +17,7 @@ import {
   vec4,
 } from 'three/tsl';
 import { FOREST, LAKE, VALLEY } from '@dtl/shared';
-import { heightAt, levelTerrain } from '../game/core/levelCtx';
+import { heightAt, levelTerrain } from '../base/levelCtx';
 import { getCloudNoise } from './noiseTex';
 import { skyParams } from './sky';
 

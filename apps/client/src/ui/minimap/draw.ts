@@ -1,5 +1,5 @@
 // Vẽ lớp động của minimap lên canvas: nền bản đồ (một drawImage), vùng mục tiêu, biểu tượng, mũi tên mép, mũi tên mình, chữ N.
-import { levelTerrain } from '../../game/core/levelCtx';
+import { levelTerrain } from '../../base/levelCtx';
 import { t } from '@dtl/content';
 import type { Game } from '../../game/engine';
 import { type AncientMap, mipFor } from './ancient';
