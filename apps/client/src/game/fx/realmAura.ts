@@ -3,20 +3,22 @@
 //   Kết Đan (vàng)      : kim đan cầu sáng ở bụng chớp theo nhịp + tia linh khí vàng xoáy ốc lên + hạt vàng.
 //   Nguyên Anh (vàng-ngọc): Nguyên Anh nhỏ ngồi thiền trên đầu, vòng ngũ hành 5 màu xoay; Kiếm tu 9 thanh kiếm thật (lưỡi + chắn + chuôi, có vệt sáng)
 //                         xếp vòng đều, Hộ pháp trận đồ + khiên, Đan sư sen lửa; nhân vật nhấc khỏi đất ~0,2 m trên đài mây + sen.
-//   Hóa Thần (xanh đêm-bạc): viền sáng bạc quanh người; pháp tướng người khổng lồ (cao ~3 lần) sau lưng: mờ nhẹ khi đứng yên, BÙNG rõ khi ra chiêu lớn
-//                         (kèm thẻ thần thú theo đạo 1,3 s); phù văn đạo luật xoay ngang lưng khi đứng yên.
-//   Ảnh Biến (đen-vàng-tím): vũng + sương mực đen-vàng quanh chân, tia sét tím-vàng chạy quanh thân, 4 phân thân mờ xếp vòng sau lưng.
+//   Hóa Thần (xanh đêm-bạc): rim light bạc trên chính nhân vật (emissive fresnel gắn vào vật liệu); pháp tướng là TRANH VẼ TAY của Thiên Giải
+//                         (Kiếm long ngọc / Huyền vũ / Chu tước, atlas `render/vfx/art.ts`, kind `art`) làm billboard lớn sau lưng: mờ nhẹ khi đứng yên,
+//                         BÙNG rõ + phình khi ra chiêu lớn, mờ dần ở viền, gợn sóng sáng; phù văn đạo luật xoay ngang lưng khi đứng yên.
+//   Ảnh Biến (đen-vàng-tím): vũng + sương mực đen-vàng quanh chân, tia sét tím-vàng chạy quanh thân, 4 phân thân = bản sao mesh nhân vật với vật liệu bóng mờ.
 // Mọi lưới đi qua `FxPool` kiểu gộp (`crystal`/`solid`/`glow`/`dome`/`decal`/`toon`/`card`: cả đám đông dùng chung vài draw call) và hạt GPU dùng chung
 // (`PARTICLES`, không tốn draw call). Lớp thân dùng hòa trộn thường (đọc được trên nền sáng ban ngày) cộng lớp cộng sáng + bloom.
 import * as THREE from 'three/webgpu';
 import { SKILL } from '@dtl/content';
+import { float, normalView, positionViewDirection, uniform, vec3 } from 'three/tsl';
 import type { FxQuality } from '@dtl/shared';
 import type { FxKind, FxMesh } from '../../render/materials/vfx';
-import { paletteOf } from '../../render/vfx/palette';
-import { bodyFxGeometry, shapeGeometry, swordFxGeometry, QUAD_XZ } from '../../render/vfx/fxShapes';
+import { shapeGeometry, swordFxGeometry, QUAD_XZ } from '../../render/vfx/fxShapes';
 import { DECAL_RUNE, DECAL_SMOKE } from '../../render/vfx/stylized';
 import { G } from '../core/geo';
-import type { SkillEvent } from '../character/view';
+import { groundAt } from '../../base/levelCtx';
+import type { CharacterView, SkillEvent } from '../character/view';
 import { OTHERS_FX_DIST } from './fxBudget';
 import type { Vfx } from './vfx';
 import {
@@ -27,7 +29,6 @@ import {
   daoOf,
   haloVisibility,
   isCalm,
-  phantomPhase,
   PHANTOM_DUR,
   qualityTier,
   summonsPhantom,
@@ -45,7 +46,7 @@ export interface AuraActor {
   lv: number;
   speed: number;
   /** Vị trí hiển thị đã tính giật lùi (root của model). Hào quang nhấc `y` của root (Nguyên Anh trở lên). */
-  model: { root: { position: THREE.Vector3 } };
+  model: { root: THREE.Object3D };
   /** Công pháp đang tu. */
   mt: string;
 }
@@ -54,6 +55,10 @@ export interface RealmAuraEnv {
   players(): Iterable<AuraActor>;
   mySid(): string;
   camera(): THREE.Camera;
+  /** Nơi đặt phân thân (cảnh). */
+  parent(): THREE.Object3D;
+  /** Bản sao mesh nhân vật `sid` với vật liệu bóng mờ (null nếu asset chưa nạp). */
+  makeShadow(sid: string): CharacterView | null;
   /** Preset đồ họa chung (`get().quality`). */
   gfxQuality(): string;
   fxQuality(): FxQuality;
@@ -63,10 +68,10 @@ export interface RealmAuraEnv {
 
 /** Số người khác gần nhất được vẽ hào quang, theo bậc chất lượng (Thấp tắt hẳn). */
 export const OTHERS_MAX = [0, 4, 8] as const;
-/** Số bóng pháp tướng (thẻ thần thú) sống đồng thời tối đa trên toàn cảnh. */
-export const PHANTOM_MAX = 3;
 /** Độ nhấc người khỏi đất khi Nguyên Anh trở lên (m). */
 export const LIFT = 0.2;
+/** Số phân thân Ảnh Biến (3–5). */
+const CLONES = 3;
 
 /** Cùng `renderOrder` với các nhóm gộp đã vẽ ấm ở `Vfx.warmBatches` (nhóm khác thì biên dịch shader ở lần vẽ đầu). */
 const CRYSTAL_ORDER = 1;
@@ -78,7 +83,6 @@ const _col = new THREE.Color();
 const AX_Z = new THREE.Vector3(0, 0, 1);
 const AX_Y = new THREE.Vector3(0, 1, 0);
 const UPRIGHT = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
-const FLAT_TO_FACE = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
 
 /** Bảng màu theo tầng (sRGB hex): thân, viền sáng. */
 const GOLD = { body: 0xe8a424, rim: 0xfff0b0, core: 0xffc83a };
@@ -86,14 +90,34 @@ const JADE = { body: 0x1fae7c, rim: 0xc8ffe8 };
 const SILVER = { body: 0x2a4fa8, rim: 0xe6efff, glow: 0xcfe0ff };
 const VIOLET = { body: 0x8a52f0, rim: 0xffe27a };
 const INK = { body: 0x15110a, rim: 0x6a4a1a };
+/** Rim light theo tầng (Nguyên Anh vàng-ngọc, Hóa Thần bạc xanh, Ảnh Biến tím) và độ mạnh gốc. */
+const RIM = { 2: { hex: 0xffd98a, k: 0.8 }, 3: { hex: 0xbfd6ff, k: 1.8 }, 4: { hex: 0xc9a4ff, k: 1.8 } } as const;
 const WUXING = [0xf4ecd0, 0x4fd16a, 0x3a8cf0, 0xf0502a, 0xe3b43a];
 
-/** Màu theo đạo (thẻ thần thú, hạt linh khí, phi kiếm). */
-const DAO_LOOK: Record<AuraDao, { body: number; rim: number; mote: number; card: number; cardRim: number; method: string }> = {
-  kiem: { body: 0x2cc7dc, rim: 0xf2fdff, mote: 0x9fe2f0, card: 0x1486a8, cardRim: 0xa6e8ff, method: 'lac_kiem_quyet' },
-  ho: { body: 0xe39a2c, rim: 0xfff0c2, mote: 0xffc95a, card: 0xb86a12, cardRim: 0xffdc8a, method: 'bat_dong_kim_than' },
-  dan: { body: 0xe4452f, rim: 0xffd9a0, mote: 0x8ff0b0, card: 0xd02c18, cardRim: 0xffb98a, method: 'thanh_moc_dan_kinh' },
+/** Màu theo đạo (phi kiếm, hạt linh khí, viền tranh pháp tướng). */
+const DAO_LOOK: Record<AuraDao, { body: number; rim: number; mote: number; art: number; artRim: number }> = {
+  kiem: { body: 0x2cc7dc, rim: 0xf2fdff, mote: 0x9fe2f0, art: 0, artRim: 0xa6e8ff },
+  ho: { body: 0xe39a2c, rim: 0xfff0c2, mote: 0xffc95a, art: 1, artRim: 0xffdc8a },
+  dan: { body: 0xe4452f, rim: 0xffd9a0, mote: 0x8ff0b0, art: 2, artRim: 0xffb98a },
 };
+
+// ---- Rim light lên chính nhân vật: emissive fresnel cộng vào vật liệu node của model, cường độ/màu theo `mesh.userData.rimCol` (đọc mỗi lần vẽ
+// từng mesh nên vật liệu dùng chung giữa nhiều người vẫn sáng đúng người). Không có rimCol thì đen: không đổi gì. Vá một lần mỗi vật liệu.
+const NO_RIM = new THREE.Color(0, 0, 0);
+const uRim = uniform(new THREE.Color()).onObjectUpdate(({ object }) => (object?.userData.rimCol as THREE.Color | undefined) ?? NO_RIM);
+const rimPatched = new WeakSet<THREE.Material>();
+
+function patchRim(mat: THREE.Material): void {
+  const m = mat as THREE.MeshStandardNodeMaterial;
+  if (!m.isNodeMaterial || rimPatched.has(mat)) return;
+  rimPatched.add(mat);
+  const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)).pow(2.4);
+  const rim = vec3(uRim).mul(fres);
+  m.emissiveNode = m.emissiveNode ? (m.emissiveNode as unknown as { add(x: unknown): THREE.Node }).add(rim) : rim;
+  m.needsUpdate = true;
+}
+
+const _idle = { speed: 0, flying: false, sky: false, meditating: false, dead: false, casting: false, airborne: false };
 
 const hashStr = (s: string): number => {
   let h = 2166136261;
@@ -138,22 +162,18 @@ interface Aura {
   acc: number;
   /** Mốc nhấp nháy tia sét (giây). */
   flick: number;
-}
-
-interface Phantom {
-  sid: string;
-  t: number;
-  card: FxMesh;
-  ring: FxMesh;
-  dx: number;
-  dz: number;
-  hw: number;
-  hh: number;
+  /** Rim light: màu hiện tại, các mesh đã gắn và nơi lấy mesh. */
+  rimCol: THREE.Color;
+  rimMeshes: THREE.Mesh[];
+  rimRoot: THREE.Object3D | null;
+  rimAt: number;
+  /** Phân thân (Ảnh Biến). */
+  clones: CharacterView[];
+  cloneAt: number;
 }
 
 export class RealmAuraFx {
   private auras = new Map<string, Aura>();
-  private phantoms: Phantom[] = [];
   private clock = 0;
   private recount = 0;
   private allowed = new Set<string>();
@@ -168,56 +188,20 @@ export class RealmAuraFx {
     private env: RealmAuraEnv,
   ) {}
 
-  /** Nghe sự kiện chiêu: ghi mốc chiến đấu, bùng pháp tướng và mở thẻ thần thú khi ra chiêu lớn ở Hóa Thần+. */
+  /** Nghe sự kiện chiêu: ghi mốc chiến đấu và bùng pháp tướng khi ra chiêu lớn ở Hóa Thần+ (người chơi ở preset cho phép). */
   handle(sid: string, e: SkillEvent): void {
     if (e.kind === 'windup') this.lastCast.set(sid, this.clock);
     if (e.kind !== 'windup' || !this.env.enabled()) return;
     const a = this.actor(sid);
     if (!a) return;
     const tier = qualityTier(this.env.gfxQuality(), this.env.fxQuality());
-    const mine = sid === this.env.mySid();
-    if (!auraCaps(tier, mine).phantom) return;
-    if (!summonsPhantom(SKILL.get(e.skill), a.lv)) return;
-    this.bigAt.set(sid, this.clock);
-    if (this.phantoms.some((p) => p.sid === sid) || this.phantoms.length >= PHANTOM_MAX) return;
-    const cam = this.env.camera().position;
-    const p = a.model.root.position;
-    const dist = Math.hypot(p.x - cam.x, p.z - cam.z);
-    if (!mine && dist > OTHERS_FX_DIST) return;
-    this.openPhantom(a, dist);
+    if (!auraCaps(tier, sid === this.env.mySid()).phantom) return;
+    if (summonsPhantom(SKILL.get(e.skill), a.lv)) this.bigAt.set(sid, this.clock);
   }
 
   private actor(sid: string): AuraActor | undefined {
     for (const a of this.env.players()) if (a.sid === sid) return a;
     return undefined;
-  }
-
-  private openPhantom(a: AuraActor, dist: number): void {
-    const dao = daoOf(a.mt);
-    const look = DAO_LOOK[dao];
-    const cam = this.env.camera().position;
-    const p = a.model.root.position;
-    let dx = p.x - cam.x;
-    let dz = p.z - cam.z;
-    const d = Math.hypot(dx, dz) || 1;
-    dx /= d;
-    dz /= d;
-    const which = dao === 'kiem' ? 3 : dao === 'ho' ? 4 : 1;
-    const seed = hashStr(a.sid) * 40;
-    const card = this.v.fx(shapeGeometry('card'), look.card, 0, 'card');
-    _col.setHex(look.cardRim);
-    card.fxB.set(_col.r, _col.g, _col.b, 0.5);
-    card.fxA.set(0, 0, seed, which);
-    const pal = paletteOf(look.method);
-    const ring = this.v.fx(QUAD_XZ, pal.body, 0, 'decal');
-    _col.setHex(pal.rim);
-    ring.fxB.set(_col.r, _col.g, _col.b, 0.5);
-    ring.fxA.set(0, 0, seed, DECAL_RUNE);
-    ring.renderOrder = DECAL_ORDER;
-    const tall = which === 3;
-    const big = Math.min(1, 12 / Math.max(dist, 12));
-    const hh = (tall ? 4.6 : 3.9) * big;
-    this.phantoms.push({ sid: a.sid, t: 0, card, ring, dx, dz, hw: hh * (tall ? 0.667 : 1.2), hh });
   }
 
   update(dt: number): void {
@@ -245,7 +229,6 @@ export class RealmAuraFx {
         this.bigAt.delete(sid);
       }
     }
-    this.updatePhantoms(dt, on);
   }
 
   /** Mỗi ~0,4 s chọn lại ai được vẽ: mình luôn có, người khác trong `OTHERS_FX_DIST` lấy vài người gần nhất. */
@@ -324,7 +307,28 @@ export class RealmAuraFx {
     c.pulse = pulse;
     c.beat = danBeat(t);
     for (const f of au.ups) f(c);
+    if (stage >= 2) this.updateRim(au, a, stage, c);
     this.emitParticles(au, c, stage, dao, caps, dt);
+  }
+
+  /** Rim light: gắn emissive fresnel cho mesh của model (tìm lại mỗi giây để bắt model mới sau khi đổi trang phục), đặt màu/cường độ. */
+  private updateRim(au: Aura, a: AuraActor, stage: AuraStage, c: Ctx): void {
+    const root = a.model.root;
+    if (au.rimRoot !== root || this.clock - au.rimAt > 1) {
+      au.rimAt = this.clock;
+      if (au.rimRoot && au.rimRoot !== root) for (const m of au.rimMeshes) delete m.userData.rimCol;
+      au.rimRoot = root;
+      au.rimMeshes = [];
+      root.traverse((o) => {
+        const mesh = o as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) patchRim(m);
+        au.rimMeshes.push(mesh);
+      });
+    }
+    const r = RIM[stage as 2 | 3 | 4];
+    au.rimCol.setHex(r.hex).multiplyScalar(r.k * c.vDan * (1 + c.pulse * 0.8));
+    for (const m of au.rimMeshes) m.userData.rimCol = au.rimCol;
   }
 
   /** Hạt GPU: linh khí lắng khi đứng yên, điểm vàng theo nhịp kim đan, đốm lửa lò đan, sương mực Ảnh Biến, tia lửa tím. */
@@ -460,7 +464,26 @@ export class RealmAuraFx {
     const handles: FxMesh[] = [];
     const ups: ((c: Ctx) => void)[] = [];
     const look = DAO_LOOK[dao];
-    const au: Aura = { sid, key, seed, handles, ups, vHalo: 0, vDan: 0, vCalm: 0, lift: 0, beatPrev: 0, acc: 0, flick: 0 };
+    const au: Aura = {
+      sid,
+      key,
+      seed,
+      handles,
+      ups,
+      vHalo: 0,
+      vDan: 0,
+      vCalm: 0,
+      lift: 0,
+      beatPrev: 0,
+      acc: 0,
+      flick: 0,
+      rimCol: new THREE.Color(),
+      rimMeshes: [],
+      rimRoot: null,
+      rimAt: -9,
+      clones: [],
+      cloneAt: 0,
+    };
     const mk = (geo: THREE.BufferGeometry, color: number, kind: FxKind, rim?: number): FxMesh => {
       const m = this.v.fx(geo, color, 0, kind);
       m.visible = false;
@@ -521,21 +544,11 @@ export class RealmAuraFx {
         const cloud = mk(QUAD_XZ, 0xf2ead2, 'decal', 0xffffff);
         cloud.fxA.set(1, 0, seed * 30, DECAL_SMOKE);
         cloud.fxK = 0.4;
-        const petals: FxMesh[] = [];
-        for (let i = 0; i < 8; i++) petals.push(mk(shapeGeometry('kite'), JADE.body, 'crystal', JADE.rim));
         ups.push((c) => {
           cloud.position.set(c.p.x, c.y0 + 0.08, c.p.z);
           cloud.rotation.y = c.t * 0.25;
           cloud.scale.set(1.35, 1, 1.35);
           show(cloud, c.vh * 0.6);
-          for (let i = 0; i < petals.length; i++) {
-            const ang = c.t * 0.3 + (i / petals.length) * Math.PI * 2;
-            const m = petals[i];
-            m.position.set(c.p.x + Math.cos(ang) * 0.46, c.y0 + 0.12, c.p.z + Math.sin(ang) * 0.46);
-            face(m, _v.set(Math.cos(ang), 0.55, Math.sin(ang)).normalize());
-            m.scale.setScalar(0.34);
-            show(m, c.vh);
-          }
         });
         // Vòng ngũ hành: 5 viên 5 màu xoay quanh eo + vòng sáng nối.
         const ring = mk(shapeGeometry('ripple'), JADE.body, 'toon', GOLD.rim);
@@ -569,22 +582,22 @@ export class RealmAuraFx {
           const n = swords.length;
           for (let i = 0; i < n; i++) {
             const s = swords[i];
-            const ang = c.t * 0.75 + (i / n) * Math.PI * 2;
-            const x = c.p.x + Math.cos(ang) * 1.3;
+            const ang = c.t * 0.4 + (i / n) * Math.PI * 2;
+            const x = c.p.x + Math.cos(ang) * 1.05;
             const y = c.p.y + 1.18 + Math.sin(c.t * 1.9 + i * 1.7) * 0.07;
-            const z = c.p.z + Math.sin(ang) * 1.3;
+            const z = c.p.z + Math.sin(ang) * 1.05;
             s.position.set(x, y, z);
             // Mũi kiếm theo hướng xoay (tiếp tuyến), chúc nhẹ lên: cả vòng như thế trận kiếm.
             const dir = _v.set(-Math.sin(ang), 0.12, Math.cos(ang)).normalize();
             face(s, dir);
-            s.scale.setScalar(1.5);
+            s.scale.setScalar(0.9);
             show(s, c.vh);
             if (detail) {
               const tr = trails[i];
               tr.position.set(x, y, z);
               face(tr, dir.negate());
-              tr.scale.set(0.7, 0.7, 1.3);
-              show(tr, c.vh * 0.55);
+              tr.scale.set(0.22, 0.22, 0.75);
+              show(tr, c.vh * 0.5);
             }
           }
         });
@@ -592,16 +605,11 @@ export class RealmAuraFx {
         const rune = mk(QUAD_XZ, GOLD.body, 'decal', GOLD.rim);
         rune.fxA.set(1, 0, seed * 30, DECAL_RUNE);
         rune.fxK = 1;
-        const dome = mk(G.dome, look.body, 'dome');
         ups.push((c) => {
           rune.position.set(c.p.x, c.y0 + 0.1, c.p.z);
           rune.rotation.y = c.t * 0.35;
           rune.scale.set(1.6, 1, 1.6);
           show(rune, c.vh * 0.75);
-          dome.position.set(c.p.x, c.p.y + 0.95, c.p.z);
-          dome.scale.set(0.95, 1.2, 0.95);
-          dome.rotation.y = c.t * 0.6;
-          show(dome, c.vh * (0.6 + Math.sin(c.t * 3.1) * 0.15));
         });
       } else {
         const petals: FxMesh[] = [];
@@ -615,7 +623,7 @@ export class RealmAuraFx {
             const m = petals[i];
             m.position.set(c.p.x + Math.cos(ang) * 0.34, c.p.y + 0.92, c.p.z + Math.sin(ang) * 0.34);
             face(m, _v.set(Math.cos(ang) * 0.75 * open, 0.66, Math.sin(ang) * 0.75 * open).normalize());
-            m.scale.setScalar(0.66);
+            m.scale.setScalar(0.5);
             show(m, c.vh);
           }
           for (let i = 0; i < orbs.length; i++) {
@@ -632,59 +640,47 @@ export class RealmAuraFx {
       }
     }
 
-    if (stage >= 3) {
-      // ---------- Hóa Thần: viền bạc + pháp tướng người khổng lồ + phù văn ----------
-      const rim = mk(G.dome, SILVER.glow, 'dome');
+    if (stage >= 3 && detail) {
+      // ---------- Hóa Thần: pháp tướng là tranh vẽ tay billboard lớn sau lưng + phù văn đạo luật ----------
+      // Lớp bóng sẫm cùng hình đặt ngay sau tranh: tranh sáng đọc được trên nền ban ngày.
+      const under = mk(shapeGeometry('card'), 0x16243d, 'art', 0x000000);
+      under.fxA.set(1.3, 0, seed * 30, look.art);
+      const art = mk(shapeGeometry('card'), 0xffffff, 'art', look.artRim);
+      art.fxA.set(1.3, 0, seed * 30, look.art);
+      const ring = mk(QUAD_XZ, SILVER.body, 'decal', SILVER.rim);
+      ring.fxA.set(0, 0, seed * 30, DECAL_RUNE);
+      const rune = mk(QUAD_XZ, SILVER.body, 'decal', SILVER.rim);
+      rune.fxA.set(1, 0, seed * 30, DECAL_RUNE);
+      rune.fxK = 1;
       ups.push((c) => {
-        rim.position.set(c.p.x, c.p.y + 0.92, c.p.z);
-        rim.scale.set(0.5, 1.0, 0.5);
-        rim.rotation.y = c.yaw;
-        show(rim, c.vDan * (0.85 + c.pulse * 0.6));
+        // Mờ nhẹ khi đứng yên, bùng rõ + phình khi ra chiêu lớn.
+        const hh = 3.8 * (1 + 0.1 * c.pulse);
+        art.position.set(c.p.x + c.dx * 2.8, c.y0 + c.lift + hh * 0.9, c.p.z + c.dz * 2.8);
+        art.quaternion.copy(c.camQ);
+        art.scale.set(hh * 0.75, hh, 1);
+        art.fxK = c.t;
+        const op = Math.min(1, c.vCalm * 0.3 * c.vh + c.pulse * 0.92);
+        show(art, op);
+        under.position.set(art.position.x + c.dx * 0.06, art.position.y - 0.04, art.position.z + c.dz * 0.06);
+        under.quaternion.copy(c.camQ);
+        under.scale.set(art.scale.x * 1.015, art.scale.y * 1.015, 1);
+        under.fxK = c.t;
+        show(under, op * 0.55);
+        // Gợn sóng trận đồ tỏa dưới chân pháp tướng khi bùng.
+        const k = 1 - c.pulse;
+        ring.position.set(art.position.x, c.y0 + 0.1, art.position.z);
+        ring.rotation.y = c.t * 0.8;
+        ring.scale.set(1.2 + k * 3, 1, 1.2 + k * 3);
+        ring.fxA.x = Math.min(1, k * 3);
+        ring.fxA.y = Math.max(0, (k - 0.55) / 0.45);
+        ring.fxK = c.pulse;
+        show(ring, c.pulse > 0.01 ? 0.15 + 0.6 * c.pulse : 0);
+        // Phù văn đạo luật xoay ngang lưng khi đứng yên.
+        rune.position.set(c.p.x, c.p.y + 1.0, c.p.z);
+        rune.rotation.y = -c.t * 0.7;
+        rune.scale.set(1.4, 1, 1.4);
+        show(rune, c.vCalm * 0.85);
       });
-      if (detail) {
-        const body = bodyFxGeometry();
-        const ghost = mk(body, SILVER.body, 'crystal', SILVER.rim);
-        const edge = mk(body, SILVER.glow, 'dome');
-        const sword = dao === 'kiem' ? mk(swordFxGeometry(), SILVER.body, 'crystal', SILVER.rim) : null;
-        const halo =
-          dao !== 'kiem'
-            ? mk(shapeGeometry('ripple'), dao === 'ho' ? GOLD.body : 0xe4452f, 'toon', dao === 'ho' ? GOLD.rim : 0xffd9a0)
-            : null;
-        const rune = mk(QUAD_XZ, SILVER.body, 'decal', SILVER.rim);
-        rune.fxA.set(1, 0, seed * 30, DECAL_RUNE);
-        rune.fxK = 1;
-        ups.push((c) => {
-          // Mờ nhẹ khi đứng yên, bùng rõ + phình khi ra chiêu lớn.
-          const s = 3.2 * (1 + 0.14 * c.pulse);
-          const op = Math.min(1, c.vCalm * 0.34 * c.vh + c.pulse * 0.95);
-          const gx = c.p.x + c.dx * 2.4;
-          const gz = c.p.z + c.dz * 2.4;
-          for (const m of [ghost, edge]) {
-            m.position.set(gx, c.y0 + c.lift, gz);
-            m.scale.setScalar(s);
-            m.rotation.y = c.yaw;
-          }
-          show(ghost, op * 0.62);
-          show(edge, op * 1.5);
-          if (sword) {
-            sword.position.set(gx + c.fx * 0.12 * s, c.y0 + 0.78 * s, gz + c.fz * 0.12 * s);
-            sword.quaternion.copy(UPRIGHT);
-            sword.scale.setScalar(0.85 * s);
-            show(sword, op * 0.7);
-          }
-          if (halo) {
-            halo.position.set(gx - c.dx * 0.05 * s, c.y0 + 1.68 * s, gz - c.dz * 0.05 * s);
-            halo.quaternion.copy(c.camQ).multiply(FLAT_TO_FACE);
-            halo.scale.setScalar(0.5 * s);
-            show(halo, op);
-          }
-          // Phù văn đạo luật xoay ngang lưng khi đứng yên.
-          rune.position.set(c.p.x, c.p.y + 1.0, c.p.z);
-          rune.rotation.y = -c.t * 0.7;
-          rune.scale.set(1.4, 1, 1.4);
-          show(rune, c.vCalm * 0.85);
-        });
-      }
     }
 
     if (stage >= 4) {
@@ -715,17 +711,33 @@ export class RealmAuraFx {
         }
       });
       if (detail) {
-        const body = bodyFxGeometry();
-        const clones = [0, 1, 2, 3].map(() => mk(body, 0x4b2a8a, 'crystal', VIOLET.rim));
+        // Phân thân: CHÍNH mesh nhân vật (vật liệu bóng mờ tím-vàng), xếp cung sau lưng nhìn từ camera, theo dáng đứng yên.
         ups.push((c) => {
+          if (au.clones.length < CLONES && this.clock - au.cloneAt > 1) {
+            au.cloneAt = this.clock;
+            while (au.clones.length < CLONES) {
+              const v = this.env.makeShadow(sid);
+              if (!v) break;
+              // Bóng mờ không đổ/nhận bóng: bớt lượt vẽ pass bóng (mỗi mesh một draw call).
+              v.root.traverse((o) => {
+                o.castShadow = false;
+                o.receiveShadow = false;
+              });
+              this.env.parent().add(v.root);
+              au.clones.push(v);
+            }
+          }
+          const n = au.clones.length;
           const base = Math.atan2(c.dz, c.dx);
-          for (let i = 0; i < clones.length; i++) {
-            const ang = base + (i - 1.5) * 0.62;
-            const m = clones[i];
-            m.position.set(c.p.x + Math.cos(ang) * 1.9, c.y0 + c.lift + Math.sin(c.t * 1.4 + i * 1.9) * 0.08, c.p.z + Math.sin(ang) * 1.9);
-            m.scale.setScalar(1.0);
-            m.rotation.y = c.yaw;
-            show(m, c.vDan * 0.34);
+          for (let i = 0; i < n; i++) {
+            const v = au.clones[i];
+            const ang = base + (i - (n - 1) / 2) * 0.72;
+            const x = c.p.x + Math.cos(ang) * 1.9;
+            const z = c.p.z + Math.sin(ang) * 1.9;
+            v.root.position.set(x, groundAt(x, z) + Math.sin(c.t * 1.4 + i * 1.9) * 0.05, z);
+            v.root.rotation.y = c.yaw;
+            v.root.visible = c.vDan > 0.4;
+            v.update(c.dt, _idle);
           }
         });
       }
@@ -737,55 +749,29 @@ export class RealmAuraFx {
     for (const m of au.handles) this.v.drop(m);
     au.handles = [];
     au.ups = [];
-  }
-
-  private updatePhantoms(dt: number, on: boolean): void {
-    for (let i = this.phantoms.length - 1; i >= 0; i--) {
-      const ph = this.phantoms[i];
-      ph.t += dt;
-      const a = this.actor(ph.sid);
-      if (!on || !a || ph.t >= PHANTOM_DUR) {
-        this.v.drop(ph.card);
-        this.v.drop(ph.ring);
-        this.phantoms.splice(i, 1);
-        continue;
-      }
-      const f = phantomPhase(ph.t);
-      const p = a.model.root.position;
-      const cam = this.env.camera();
-      ph.card.position.set(p.x + ph.dx * 1.6, p.y + ph.hh * 0.85, p.z + ph.dz * 1.6);
-      ph.card.quaternion.copy(cam.quaternion);
-      ph.card.scale.set(ph.hw, ph.hh, 1);
-      ph.card.fxA.x = f.reveal;
-      ph.card.fxA.y = f.erode;
-      ph.card.fxK = ph.t;
-      ph.card.fxOpacity = f.alpha;
-      // Gợn sóng: vành trận đồ trên đất tỏa ra dưới chân bóng rồi tan.
-      const k = ph.t / PHANTOM_DUR;
-      ph.ring.position.set(p.x + ph.dx * 1.6, p.y + 0.12, p.z + ph.dz * 1.6);
-      ph.ring.scale.set(1.2 + k * 2.4, 1, 1.2 + k * 2.4);
-      ph.ring.rotation.y = ph.t * 0.8;
-      ph.ring.fxA.x = Math.min(1, k * 3);
-      ph.ring.fxA.y = Math.max(0, (k - 0.55) / 0.45);
-      ph.ring.fxK = 1 - k;
-      ph.ring.fxOpacity = 0.55 * (1 - k * 0.5);
+    for (const v of au.clones) {
+      v.root.removeFromParent();
+      v.dispose();
     }
+    au.clones = [];
+    for (const m of au.rimMeshes) delete m.userData.rimCol;
+    au.rimMeshes = [];
+    au.rimRoot = null;
   }
 
   /** Số lưới đang dùng (đo đạc, bảng F3 và test). */
-  stats(): { auras: number; handles: number; phantoms: number } {
+  stats(): { auras: number; handles: number; clones: number } {
     let handles = 0;
-    for (const au of this.auras.values()) handles += au.handles.length;
-    return { auras: this.auras.size, handles, phantoms: this.phantoms.length };
+    let clones = 0;
+    for (const au of this.auras.values()) {
+      handles += au.handles.length;
+      clones += au.clones.length;
+    }
+    return { auras: this.auras.size, handles, clones };
   }
 
   dispose(): void {
     for (const au of this.auras.values()) this.release(au);
     this.auras.clear();
-    for (const ph of this.phantoms) {
-      this.v.drop(ph.card);
-      this.v.drop(ph.ring);
-    }
-    this.phantoms = [];
   }
 }

@@ -406,27 +406,6 @@ function swordGeometry(): THREE.BufferGeometry {
   return mergedParts([blade, guard, hilt, pommel], 'z');
 }
 
-/**
- * Dáng pháp tướng đứng (cao ~1,8, chân ở y = 0): đầu + búi tóc, cổ, vai, hai tay áo rộng buông, áo dài xòe chạm đất. Dùng cho bóng pháp tướng
- * khổng lồ (vẽ bằng `dome` fresnel + `crystal`) và các phân thân mờ. UV `v` theo độ cao.
- */
-function bodyGeometry(): THREE.BufferGeometry {
-  const parts: THREE.BufferGeometry[] = [];
-  parts.push(new THREE.SphereGeometry(0.115, 20, 14).scale(1, 1.18, 1).translate(0, 1.64, 0));
-  parts.push(new THREE.SphereGeometry(0.055, 8, 6).translate(0, 1.82, -0.01));
-  parts.push(new THREE.CylinderGeometry(0.05, 0.06, 0.12, 8).translate(0, 1.49, 0));
-  // Thân: vai rộng thon xuống eo rồi áo dài xòe.
-  parts.push(new THREE.CylinderGeometry(0.2, 0.15, 0.52, 18).translate(0, 1.2, 0));
-  parts.push(new THREE.CylinderGeometry(0.15, 0.36, 1.0, 20).translate(0, 0.5, 0));
-  for (const s of [-1, 1]) {
-    parts.push(new THREE.SphereGeometry(0.075, 12, 8).translate(s * 0.23, 1.4, 0));
-    // Tay áo rộng buông chéo ra ngoài.
-    const sleeve = new THREE.CylinderGeometry(0.06, 0.13, 0.62, 14).rotateZ(s * 0.22).translate(s * 0.31, 1.08, 0.02);
-    parts.push(sleeve);
-  }
-  return mergedParts(parts, 'y', true);
-}
-
 const cache = new Map<string, THREE.BufferGeometry>();
 const memo = (k: string, f: () => THREE.BufferGeometry) => {
   let g = cache.get(k);
@@ -434,9 +413,8 @@ const memo = (k: string, f: () => THREE.BufferGeometry) => {
   return g;
 };
 
-/** Hình riêng của hào quang cảnh giới (RFX-1): thanh kiếm thật và dáng pháp tướng người (dựng một lần, dùng chung). */
+/** Hình riêng của hào quang cảnh giới (RFX-1): thanh kiếm thật (dựng một lần, dùng chung). */
 export const swordFxGeometry = (): THREE.BufferGeometry => memo('sword', swordGeometry);
-export const bodyFxGeometry = (): THREE.BufferGeometry => memo('body', bodyGeometry);
 
 export type ShapeKey = FxShape | 'shard';
 

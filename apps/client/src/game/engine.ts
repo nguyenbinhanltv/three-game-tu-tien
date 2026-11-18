@@ -642,6 +642,8 @@ export class Game {
       players: () => this.ents?.players.values() ?? [],
       mySid: () => this.sid,
       camera: () => this.camera,
+      parent: () => this.scene,
+      makeShadow: (sid) => this.ents?.makeSoul(sid, 'shadow') ?? null,
       gfxQuality: () => get().quality,
       fxQuality,
       enabled: realmAuraOn,

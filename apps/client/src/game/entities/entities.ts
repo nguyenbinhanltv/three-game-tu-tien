@@ -180,7 +180,7 @@ export class EntityManager {
   /** Dựng model người chơi (Thanh Phong có xương hoặc khối dự phòng), màu áo theo lựa chọn. */
   private playerSkins = new PlayerSkins();
   /** Nguyên anh (E3-K): bản thu nhỏ của người chơi `sid` (null nếu chưa có hoặc asset chưa nạp). */
-  makeSoul(sid: string, kind: 'soul' | 'husk'): CharacterView | null {
+  makeSoul(sid: string, kind: 'soul' | 'husk' | 'shadow'): CharacterView | null {
     const v = this.players.get(sid);
     return v ? this.playerSkins.createSoul(v.look, kind) : null;
   }

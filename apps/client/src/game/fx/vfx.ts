@@ -9,7 +9,7 @@ import { boltPhase, boltShape } from '../../render/vfx/lightning';
 import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTiming } from '../../render/vfx/ink';
 import { type LootTier } from '../../render/vfx/loot';
 import { PARTICLES } from '../../render/vfx/particles';
-import { bodyFxGeometry, QUAD_XZ, shapeGeometry, shapeKind, swordFxGeometry, type ShapeKey } from '../../render/vfx/fxShapes';
+import { QUAD_XZ, shapeGeometry, shapeKind, swordFxGeometry, type ShapeKey } from '../../render/vfx/fxShapes';
 import { DECAL_STRIKE } from '../../render/vfx/stylized';
 import { maxRadiusFor } from '../../render/vfx/phases';
 import { BoltFx, HALO_GEO, SHADOW_GEO } from '../../render/vfx/projectile';
@@ -131,6 +131,7 @@ export class Vfx {
       'burst',
       'decal',
       'card',
+      'art',
       'wind',
     ] as const) {
       const m = this.fx(G.ico1, 0xffffff, 0, kind);
@@ -164,8 +165,7 @@ export class Vfx {
       ['solid', G.ico1, 0],
       ['glow', shapeGeometry('kite'), 0],
       ['crystal', swordFxGeometry(), 1],
-      ['crystal', bodyFxGeometry(), 1],
-      ['dome', bodyFxGeometry(), 0],
+      ['art', shapeGeometry('card'), 0],
       ['glow', RING_GEO, 0],
       ['flat', RING_GEO, 0],
       ['dome', G.dome, 0],
