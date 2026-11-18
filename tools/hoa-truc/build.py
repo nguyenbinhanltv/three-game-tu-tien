@@ -18,21 +18,20 @@ MAG = np.array([255, 0, 255], float)
 
 
 def key(im: Image.Image) -> Image.Image:
-    a = np.asarray(im.convert('RGB')).astype(float)
-    d = np.linalg.norm(a - MAG, axis=2)
-    # alpha: 0 gần magenta thuần, 1 khi xa; dải chuyển 60..140 làm mềm viền
-    alpha = np.clip((d - 60) / 80, 0, 1)
-    # khử viền hồng: nơi bán trong suốt, kéo màu về xa magenta (giảm kênh đỏ/xanh dương dư so với xanh lục)
-    spill = np.clip(1 - alpha, 0, 1)[..., None]
-    g = a[..., 1:2]
-    rb = a[..., [0, 2]]
-    rb = rb - spill * np.maximum(0, rb - g) * 0.9
-    a[..., 0] = rb[..., 0]
-    a[..., 2] = rb[..., 1]
-    out = np.dstack([a.clip(0, 255), alpha * 255]).astype('uint8')
+    """Tách nền magenta KỂ CẢ vùng bán trong suốt (voan, lụa): P = a·C + (1−a)·M ⇒ a = 1 − m/255 với m = min(R,B) − G (nền magenta m=255, màu thật m≈0),
+    rồi khôi phục màu thật C = (P − (1−a)·M)/a để voan không bị ám hồng."""
+    p = np.asarray(im.convert('RGB')).astype(float)
+    m = np.clip(np.minimum(p[..., 0], p[..., 2]) - p[..., 1], 0, 255)
+    a = np.clip(1 - m / 255, 0, 1)
+    a = np.clip((a - 0.03) / 0.94, 0, 1)
+    af = np.maximum(a, 1e-3)[..., None]
+    c = (p - (1 - a)[..., None] * MAG) / af
+    c = np.clip(c, 0, 255)
+    c[a < 0.02] = 0
+    out = np.dstack([c, a * 255]).astype('uint8')
     im2 = Image.fromarray(out, 'RGBA')
-    # co alpha 1 điểm ảnh để bỏ quầng
-    al = im2.getchannel('A').filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.6))
+    # viền cứng của nền phẳng: co alpha 1 điểm ảnh cho sạch quầng
+    al = im2.getchannel('A').filter(ImageFilter.GaussianBlur(0.4))
     im2.putalpha(al)
     return im2
 
@@ -45,10 +44,24 @@ def save(im: Image.Image, name: str, q: int, alpha: bool) -> dict:
 
 
 man = {}
-for f in sorted(SRC.glob('*.png')):
-    n = f.stem
+# Thiên Giai: thư mục thien_giai cạnh hoa_truc; tên ra khác tên nguồn (liet_mach_nam_pose → liet_mach_nam); bản A-pose chỉ để dựng 3D, bỏ qua.
+TG = SRC.parent / 'thien_giai'
+files = [(f, f.stem) for f in sorted(SRC.glob('*.png'))]
+LOP = SRC.parent / 'thien_giai_lop'  # lớp nền + hiệu ứng theo cảnh giới (nen_* không alpha; còn lại tách nền magenta)
+if LOP.exists():
+    files += [(f, f.stem) for f in sorted(LOP.glob('*.png'))]
+if TG.exists():
+    for f in sorted(TG.glob('*.png')):
+        if f.stem in ('canh_kd', 'canh_na', 'canh_ht', 'phap_tuong_kiem_long', 'phi_kiem'):
+            continue  # bản cũ, thay bằng thien_giai_lop
+        if f.stem.endswith('_apose'):
+            continue
+        if f.stem.startswith(('dia_giap', 'phuc_mach')):
+            continue  # chưa dùng (bước hàng loạt sau)
+        files.append((f, f.stem[:-5] if f.stem.endswith('_pose') else f.stem))
+for f, n in files:
     im = Image.open(f)
-    if n.startswith('canh_'):
+    if n.startswith(('canh_', 'nen_')):
         im = im.convert('RGB')
         im = im.resize((800, int(800 * im.size[1] / im.size[0])), Image.LANCZOS)
         man[n] = save(im, n, 70, False)
@@ -56,7 +69,13 @@ for f in sorted(SRC.glob('*.png')):
         k = key(im)
         bb = k.getchannel('A').point(lambda v: 255 if v > 24 else 0).getbbox()
         k = k.crop(bb)
-        tall = 1000 if n.startswith(('lac_', 'de_')) else 900
-        k = k.resize((int(k.size[0] * tall / k.size[1]), tall), Image.LANCZOS)
-        man[n] = save(k, n, 82, True)
+        cap = {'nguyen_anh': 360, 'cau_linh_vuc': 360, 'sen_lua': 480, 'ngu_hanh': 640, 'dai_sen_may': 760, 'thien_mon': 760, 'set_tim_vang': 640}.get(n)
+        if n.startswith('phap_tuong_'):
+            cap = 760
+        if cap:
+            k.thumbnail((cap, cap), Image.LANCZOS)  # lớp hiệu ứng: cạnh dài nhất ≤ cap
+        else:
+            tall = 1000 if n.startswith(('lac_', 'de_', 'liet_')) else 900
+            k = k.resize((int(k.size[0] * tall / k.size[1]), tall), Image.LANCZOS)
+        man[n] = save(k, n, 70 if n.startswith('liet_') else 82, True)
 (OUT / 'manifest.json').write_text(json.dumps(man, indent=1), encoding='utf8')
