@@ -48,7 +48,11 @@ for (const f of wanted) {
     }
     if (!lines.some((l) => l.startsWith(`| \`${id}\` `))) {
       const at = Math.max(...lines.map((l, i) => (l.startsWith('| `chr_v3') ? i : -1)));
-      lines.splice(at + 1, 0, `| \`${id}\` | Tripo web app (image→3D, người dùng dựng) từ concept Codex ${cfg.name ?? cfg.set} (v3, ${gen}); đặt lên xương UE5 Mannequin bằng \`tools/blender/chr_v3.py\` | dự án | ${new Date().toISOString().slice(0, 10)} | xem meta.json |`);
+      lines.splice(
+        at + 1,
+        0,
+        `| \`${id}\` | Tripo web app (image→3D, người dùng dựng) từ concept Codex ${cfg.name ?? cfg.set} (v3, ${gen}); đặt lên xương UE5 Mannequin bằng \`tools/blender/chr_v3.py\` | dự án | ${new Date().toISOString().slice(0, 10)} | xem meta.json |`,
+      );
       console.log(`+ LICENSES.md: ${id}`);
     }
   }

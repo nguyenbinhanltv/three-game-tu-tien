@@ -20,11 +20,16 @@ const force = args.includes('--force');
 const only = opt('--sets', Object.keys(V3_SETS).join(',')).split(',');
 
 const VIEW = {
-  front: 'strictly FRONT view, orthographic-looking, camera at chest height, figure facing the camera, symmetric, face clearly visible and well lit',
+  front:
+    'strictly FRONT view, orthographic-looking, camera at chest height, figure facing the camera, symmetric, face clearly visible and well lit',
   back: 'strictly BACK view, orthographic-looking, camera at chest height, figure facing away from the camera, symmetric',
   side: 'strictly SIDE view (left profile, figure facing left of the image), orthographic-looking, camera at chest height, head in profile',
 };
-const prompt = (set, g, v) => `Use case: stylized-concept. ONE full-body 3D character concept image (FULL CHARACTER WITH FACE, head to feet, one single piece) for image-to-3D modeling, for a Chinese fantasy cultivation game. ${ORIGINAL}
+const prompt = (
+  set,
+  g,
+  v,
+) => `Use case: stylized-concept. ONE full-body 3D character concept image (FULL CHARACTER WITH FACE, head to feet, one single piece) for image-to-3D modeling, for a Chinese fantasy cultivation game. ${ORIGINAL}
 Subject: ${set.who[g]}, wearing ${set.outfit}. Slender build, about 8 heads tall, narrow shoulders, long legs. The clothing follows the torso closely with modest ease and hangs straight and clean, NO bulky padding, NO oversized volume. Bare hands with relaxed open fingers. NO weapon in hand, NO sword on the back, NO props.
 ${COMMON_RULES}
 Pose: strict A-pose, standing upright, feet shoulder-width apart, arms straight and held about 35 degrees away from the torso with a CLEAR VISIBLE GAP between each sleeve and the torso (visible armpit gap), sleeves not touching the body, the lower garment not covering between the legs (clear gap between the legs), head neutral facing forward${v === 'side' ? ' (side view: head in profile)' : ''}.
@@ -39,7 +44,8 @@ for (const id of only) {
   if (!set) throw new Error(`không có bộ ${id} trong v3-sets-data.mjs`);
   const dir = path.join(source, 'chr', set.folder, 'concept');
   fs.mkdirSync(dir, { recursive: true });
-  for (const g of Object.keys(set.who)) for (const v of Object.keys(VIEW)) todo.push({ dir, name: `v3_${g}_${v}`, prompt: A(prompt(set, g, v)) });
+  for (const g of Object.keys(set.who))
+    for (const v of Object.keys(VIEW)) todo.push({ dir, name: `v3_${g}_${v}`, prompt: A(prompt(set, g, v)) });
 }
 const queue = todo.filter((t) => force || !fs.existsSync(path.join(t.dir, `${t.name}.png`)));
 console.log(`${queue.length}/${todo.length} ảnh, ${jobs} luồng`);
@@ -52,7 +58,10 @@ const runOne = (t) =>
     fs.writeFileSync(path.join(t.dir, `${t.name}.prompt.txt`), t.prompt + '\n');
     const body = `Use the built-in image generation tool to create exactly ONE image from the brief below. Do nothing else (do not copy or move the file).\n\n${t.prompt}\n`;
     const target = path.join(t.dir, `${t.name}.png`);
-    const p = spawn('codex', ['exec', '--skip-git-repo-check', '--sandbox', 'workspace-write', '-C', t.dir, '-'], { stdio: ['pipe', 'pipe', 'pipe'], shell: process.platform === 'win32' });
+    const p = spawn('codex', ['exec', '--skip-git-repo-check', '--sandbox', 'workspace-write', '-C', t.dir, '-'], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      shell: process.platform === 'win32',
+    });
     let session = null;
     let text = '';
     const onData = (d) => {
@@ -76,7 +85,12 @@ const runOne = (t) =>
     const poll = setInterval(() => {
       if (!session) return;
       const d = path.join(GEN, session);
-      const f = fs.existsSync(d) ? fs.readdirSync(d).filter((x) => x.endsWith('.png')).sort() : [];
+      const f = fs.existsSync(d)
+        ? fs
+            .readdirSync(d)
+            .filter((x) => x.endsWith('.png'))
+            .sort()
+        : [];
       if (!f.length) return;
       const file = path.join(d, f[f.length - 1]);
       const size = fs.statSync(file).size;

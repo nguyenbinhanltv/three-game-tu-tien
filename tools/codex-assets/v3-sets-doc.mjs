@@ -108,9 +108,11 @@ for (const [title, f] of WAVES) {
     if (s.keep.length) g += `- **Giữ**: ${s.keep.join('; ')}.\n`;
     const notes = [...(d?.guide ?? []), ...s.fix];
     if (notes.length) g += `- **Lưu ý riêng (tay áo, vạt, phụ kiện)**:\n${notes.map((n) => `  - ${n}`).join('\n')}\n`;
-    if (d) g += `- **Mặt/tóc**: mỗi bộ một mặt riêng, xem ảnh concept (mô tả gốc trong \`v3_<nam|nu>_front.prompt.txt\`); dựng giống ảnh, nhất quán giữa các góc.
+    if (d)
+      g += `- **Mặt/tóc**: mỗi bộ một mặt riêng, xem ảnh concept (mô tả gốc trong \`v3_<nam|nu>_front.prompt.txt\`); dựng giống ảnh, nhất quán giữa các góc.
 `;
-    else g += `- **Mặt/tóc**: chưa chốt (mỗi bộ một mặt riêng theo model Tripo; sẽ ghi trong concept khi sinh).
+    else
+      g += `- **Mặt/tóc**: chưa chốt (mỗi bộ một mặt riêng theo model Tripo; sẽ ghi trong concept khi sinh).
 `;
     g += `- **Kiểu dáng cấu hình nhập**: ${s.branch === 'Hộ pháp' ? '`_template_giap.json`' : s.id === 'set_de_tu' ? '`_template_de_tu.json`' : '`_template_ao_dai.json`'}.\n`;
   }
