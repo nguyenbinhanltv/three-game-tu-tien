@@ -15,7 +15,7 @@ import { float, normalView, positionViewDirection, uniform, vec3 } from 'three/t
 import type { FxQuality } from '@dtl/shared';
 import type { FxKind, FxMesh } from '../../render/materials/vfx';
 import { shapeGeometry, swordFxGeometry, QUAD_XZ } from '../../render/vfx/fxShapes';
-import { DECAL_RUNE, DECAL_SMOKE } from '../../render/vfx/stylized';
+import { DECAL_RUNE } from '../../render/vfx/stylized';
 import { G } from '../core/geo';
 import { groundAt } from '../../base/levelCtx';
 import type { CharacterView, SkillEvent } from '../character/view';
@@ -527,29 +527,31 @@ export class RealmAuraFx {
     }
 
     if (stage >= 2) {
+      // Trận đồ mực mỏng rõ nét dưới chân (triện văn, không phải vệt loang): vàng → bạc → tím-vàng theo tầng.
+      const fr =
+        stage >= 4 ? { b: VIOLET.body, r: VIOLET.rim } : stage >= 3 ? { b: SILVER.body, r: SILVER.rim } : { b: GOLD.body, r: GOLD.rim };
+      const feet = mk(QUAD_XZ, fr.b, 'decal', fr.r);
+      feet.fxA.set(1, 0, seed * 30, DECAL_RUNE);
+      feet.fxK = 1;
+      ups.push((c) => {
+        feet.position.set(c.p.x, c.y0 + 0.09, c.p.z);
+        feet.rotation.y = c.t * 0.3;
+        feet.scale.set(1.5, 1, 1.5);
+        show(feet, c.vh * 0.9);
+      });
       // ---------- Nguyên Anh: Nguyên Anh nhỏ trên đầu ----------
-      const infant = mk(shapeGeometry('card'), GOLD.body, 'card', GOLD.rim);
+      const infant = mk(shapeGeometry('card'), 0xe0a21c, 'card', 0xfff0b0);
       infant.fxA.set(1.2, 0, seed * 30, 5);
       ups.push((c) => {
         const bob = Math.sin(c.t * 1.5) * 0.05;
         infant.position.set(c.p.x, c.p.y + 2.7 + bob, c.p.z);
         infant.quaternion.copy(c.camQ);
-        infant.scale.set(0.62, 0.62, 1);
+        infant.scale.set(0.7, 0.7, 1);
         infant.fxK = c.t;
         show(infant, Math.min(1, c.vh * 1.15));
         halo(infant.position.x, infant.position.y, infant.position.z, 1.0 + Math.sin(c.t * 2.2) * 0.06, GOLD.core, c.vh * 0.14);
       });
-      // Mây + sen dưới chân (đài đỡ nhân vật nhấc khỏi đất).
       if (detail) {
-        const cloud = mk(QUAD_XZ, 0xf2ead2, 'decal', 0xffffff);
-        cloud.fxA.set(1, 0, seed * 30, DECAL_SMOKE);
-        cloud.fxK = 0.4;
-        ups.push((c) => {
-          cloud.position.set(c.p.x, c.y0 + 0.08, c.p.z);
-          cloud.rotation.y = c.t * 0.25;
-          cloud.scale.set(1.35, 1, 1.35);
-          show(cloud, c.vh * 0.6);
-        });
         // Vòng ngũ hành: 5 viên 5 màu xoay quanh eo + vòng sáng nối.
         const ring = mk(shapeGeometry('ripple'), JADE.body, 'toon', GOLD.rim);
         const orbs = WUXING.map((col) => mk(G.ico1, col, 'solid'));
@@ -602,15 +604,7 @@ export class RealmAuraFx {
           }
         });
       } else if (dao === 'ho') {
-        const rune = mk(QUAD_XZ, GOLD.body, 'decal', GOLD.rim);
-        rune.fxA.set(1, 0, seed * 30, DECAL_RUNE);
-        rune.fxK = 1;
-        ups.push((c) => {
-          rune.position.set(c.p.x, c.y0 + 0.1, c.p.z);
-          rune.rotation.y = c.t * 0.35;
-          rune.scale.set(1.6, 1, 1.6);
-          show(rune, c.vh * 0.75);
-        });
+        // Hộ pháp: trận đồ dưới chân dùng chung bên dưới.
       } else {
         const petals: FxMesh[] = [];
         for (let i = 0; i < nPetals; i++) petals.push(mk(shapeGeometry('kite'), 0xe4452f, 'crystal', look.rim));
@@ -685,15 +679,6 @@ export class RealmAuraFx {
 
     if (stage >= 4) {
       // ---------- Ảnh Biến: vũng mực, tia sét tím-vàng, phân thân ----------
-      const pool = mk(QUAD_XZ, INK.body, 'decal', INK.rim);
-      pool.fxA.set(1, 0, seed * 30, DECAL_SMOKE);
-      pool.fxK = 0.6;
-      ups.push((c) => {
-        pool.position.set(c.p.x, c.y0 + 0.07, c.p.z);
-        pool.rotation.y = -c.t * 0.2;
-        pool.scale.set(2.0, 1, 2.0);
-        show(pool, c.vDan * 0.85);
-      });
       const bolts = [mk(shapeGeometry('ribbon'), VIOLET.body, 'toon', VIOLET.rim), mk(shapeGeometry('ribbon'), 0xe2b84a, 'toon', 0xfff4c0)];
       ups.push((c) => {
         // Nháy tia sét: thỉnh thoảng cụt ngắn (erode) rồi bật lại.

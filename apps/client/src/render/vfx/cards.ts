@@ -474,69 +474,112 @@ function drawGhost(g: Ctx): void {
   ]);
 }
 
-/** Nguyên Anh (RFX-1): em bé ngồi thiền kiết già trên đài sen, hào quang tròn sau lưng; thân vàng, đài sen và hào quang là điểm nhấn (kênh G). */
+/**
+ * Nguyên Anh (RFX-1): hài nhi ngồi thiền kiết già trên đài sen, hào quang tròn sau lưng. Thân vàng (tầng giữa) viền vàng kim dày (tầng sáng, điểm nhấn),
+ * mặt có mắt nhắm + miệng cười + chấm giữa trán (tầng sẫm), hai tay kết ấn trước ngực: đọc ra hình hài nhi ngồi thiền chứ không phải bóng trắng.
+ */
 function drawInfant(g: Ctx): void {
   const C = 192;
   g.lineCap = 'round';
+  g.lineJoin = 'round';
+  // Hào quang: hai vành + tia.
   g.beginPath();
-  g.arc(C, 170, 150, 0, Math.PI * 2);
+  g.arc(C, 170, 152, 0, Math.PI * 2);
   g.strokeStyle = col(1, 1);
-  g.lineWidth = 9;
+  g.lineWidth = 8;
   g.stroke();
   g.beginPath();
-  g.arc(C, 170, 126, 0, Math.PI * 2);
-  g.strokeStyle = col(0.7, 1);
+  g.arc(C, 170, 128, 0, Math.PI * 2);
+  g.strokeStyle = col(0.62, 1);
   g.lineWidth = 5;
   g.stroke();
   for (let i = 0; i < 16; i++) {
     const a = (i / 16) * Math.PI * 2;
+    const r1 = 176 + (i % 2) * 10;
     line(
       g,
       0.9,
       4,
       [
         [C + Math.cos(a) * 158, 170 + Math.sin(a) * 158],
-        [C + Math.cos(a) * (176 + (i % 2) * 10), 170 + Math.sin(a) * (176 + (i % 2) * 10)],
+        [C + Math.cos(a) * r1, 170 + Math.sin(a) * r1],
       ],
       1,
     );
   }
-  // Đài sen.
-  for (let i = 0; i < 7; i++) {
-    const x = C + (i - 3) * 38;
+  // Đài sen: hai lớp cánh, viền vàng kim.
+  for (let k = 0; k < 2; k++) {
+    const n = k === 0 ? 7 : 5;
+    for (let i = 0; i < n; i++) {
+      const x = C + (i - (n - 1) / 2) * (k === 0 ? 40 : 46);
+      const y = 292 + k * 14;
+      fillPath(
+        g,
+        k === 0 ? 0.5 : 0.62,
+        1,
+        () => {
+          g.moveTo(x, y);
+          g.quadraticCurveTo(x + 28, y + 26, x, y + 58);
+          g.quadraticCurveTo(x - 28, y + 26, x, y);
+        },
+        1,
+        4,
+      );
+    }
+  }
+  // Chân kiết già, thân, tay kết ấn.
+  fillPath(g, 0.5, 0, () => g.ellipse(C, 276, 104, 34, 0, 0, Math.PI * 2), 1, 7);
+  line(g, 0.1, 4, [
+    [C - 70, 280],
+    [C - 20, 262],
+    [C + 20, 262],
+    [C + 70, 280],
+  ]);
+  fillPath(g, 0.5, 0, () => g.ellipse(C, 224, 56, 66, 0, 0, Math.PI * 2), 1, 7);
+  // Hai tay: cánh tay từ vai khép về ngực, hai bàn tay chắp thành ấn (viền sáng), đường ngón.
+  for (const s of [-1, 1]) {
     fillPath(
       g,
-      0.7,
-      1,
+      0.55,
+      0,
       () => {
-        g.moveTo(x, 292);
-        g.quadraticCurveTo(x + 26, 318, x, 350);
-        g.quadraticCurveTo(x - 26, 318, x, 292);
+        g.moveTo(C + s * 46, 196);
+        g.quadraticCurveTo(C + s * 62, 232, C + s * 14, 232);
+        g.lineTo(C + s * 8, 216);
+        g.quadraticCurveTo(C + s * 34, 214, C + s * 34, 192);
+        g.closePath();
       },
       1,
-      3,
+      5,
     );
   }
-  // Thân + chân kiết già.
-  fillPath(g, 0.8, 0, () => g.ellipse(C, 276, 104, 34, 0, 0, Math.PI * 2), 1, 5);
-  fillPath(g, 0.85, 0, () => g.ellipse(C, 222, 58, 66, 0, 0, Math.PI * 2), 1, 5);
-  // Tay chắp trước ngực, đầu, búi tóc.
-  fillPath(g, 0.95, 0, () => g.ellipse(C, 214, 22, 14, 0, 0, Math.PI * 2), 1, 3);
-  fillPath(g, 0.9, 0, () => g.ellipse(C, 142, 42, 46, 0, 0, Math.PI * 2), 1, 5);
-  fillPath(g, 1, 1, () => g.ellipse(C, 96, 15, 17, 0, 0, Math.PI * 2), 1, 3);
-  line(g, 0.12, 4, [
-    [C - 22, 146],
-    [C - 10, 150],
+  fillPath(g, 0.6, 1, () => g.ellipse(C, 226, 20, 13, 0, 0, Math.PI * 2), 1, 4);
+  line(g, 0.1, 3, [
+    [C - 10, 226],
+    [C + 10, 226],
   ]);
-  line(g, 0.12, 4, [
-    [C + 10, 150],
-    [C + 22, 146],
+  line(g, 0.1, 3, [
+    [C, 220],
+    [C, 232],
   ]);
-  line(g, 0.5, 3, [
-    [C - 8, 168],
-    [C, 172],
-    [C + 8, 168],
-  ]);
+  // Đầu to tròn trẻ thơ, búi tóc vàng kim, mắt nhắm, miệng cười, chấm giữa trán.
+  fillPath(g, 0.55, 0, () => g.ellipse(C, 142, 44, 48, 0, 0, Math.PI * 2), 1, 7);
+  fillPath(g, 0.8, 1, () => g.ellipse(C, 92, 16, 18, 0, 0, Math.PI * 2), 1, 4);
+  fillPath(g, 0.45, 0, () => g.ellipse(C, 108, 38, 12, 0, 0, Math.PI * 2));
+  for (const s of [-1, 1]) {
+    g.beginPath();
+    g.arc(C + s * 17, 144, 9, 0.15 * Math.PI, 0.85 * Math.PI);
+    g.strokeStyle = col(0.04, 0);
+    g.lineWidth = 5;
+    g.stroke();
+    fillPath(g, 0.7, 1, () => g.ellipse(C + s * 30, 162, 8, 5, 0, 0, Math.PI * 2));
+  }
+  g.beginPath();
+  g.arc(C, 158, 11, 0.2 * Math.PI, 0.8 * Math.PI);
+  g.strokeStyle = col(0.04, 0);
+  g.lineWidth = 4;
+  g.stroke();
+  fillPath(g, 1, 1, () => g.arc(C, 126, 4, 0, Math.PI * 2));
 }
 
 const tex = new Map<CardId, THREE.Texture>();
