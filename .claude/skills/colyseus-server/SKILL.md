@@ -5,7 +5,7 @@ description: Quy ước server Colyseus của Đạp Thiên Lộ — cấu trúc
 
 # Server Colyseus
 
-> Hiện trạng (2026-11-15): `WorldRoom` và `DungeonRoom` trong `apps/server/src/rooms/ (base.ts, world.ts, dungeon.ts, tribulation.ts)`; luật chơi trong `game/sim.ts`, đã tách theo hệ: `game/upgrade.ts` (cường hóa/khảm/tẩy luyện/chế tạo, lệnh `enh`/`upg`), `game/method.ts` (công pháp, biến thức), `game/realm.ts` (bình cảnh, tâm ma, linh căn), `game/party.ts` (tổ đội, mức tiến trình, không lưu DB), `game/duel.ts` (tỉ thí); nhân vật + `tx()` trong `game/character.ts`. Công thức dùng chung ở `packages/shared/src/` (`formulas.ts`, `upgrade.ts`, `sets.ts`, `party.ts`…), giao thức ở `protocol.ts`. Chống lạm dụng: `ratelimit.ts` (token bucket theo IP), `testflags.ts` (tham số thử chỉ cho tài khoản thử). Các đường dẫn `protocol/messages.ts`, `formulas/`, `db/schema.ts` ở dưới là hướng mở rộng; hiện là `protocol.ts`, `formulas.ts`, `db.ts`. Độ kiếp chạy trong room thế giới (chưa có `TribulationRoom`, `LobbyRoom`). Chưa có AOI. Bảng tạo bằng DDL trong `db.ts`. Validator viết tay ngay trong từng handler `on*` của sim. Sau lần đăng nhập đầu server cấp mã phiên (`issueSession`) để vào room khác mà không cần token Google.
+> Hiện trạng (2026-11-18, sau R-7/R-9): phòng ở `apps/server/src/rooms/` (`base.ts` = `GameRoom` dùng chung, `world.ts`, `dungeon.ts`, `tribulation.ts`; `index.ts` đăng ký). Luật chơi trong `game/sim.ts` (`GameSim`, chỉ nối các hệ, dưới 1100 dòng) và các hệ tách theo thư mục `game/{gm,combat,monsters,economy,players,artifacts,death,tribulation}/index.ts` (mỗi hệ một `*System` nhận giao diện hẹp `*Ctx`, không import ngược `GameSim`); kiểu dùng chung `game/entities.ts` (`PlayerEnt`, `MonEnt`, `SimHost`); module riêng theo tính năng (`upgrade.ts`, `method.ts`, `realm.ts`, `soul.ts`, `spirit.ts`, `teleport.ts`, `trib*.ts`, `thantang.ts`, `mirror*.ts`, `monskill.ts`…). `db.ts` (DDL tay + Drizzle, không drizzle-kit migrate), `character.ts`, `auth.ts`, `aoi.ts`, `ratelimit.ts`, `viewSerializer.ts`. **Log đi qua `src/log.ts`** (`log.info|warn|error`, mức `LOG_LEVEL`, đọc lười); ESLint cấm `console` ngoài `log.ts`, `src/tools/` và test. Mỗi lần đụng `rooms/`, `auth.ts`, `index.ts`, `ratelimit.ts` hoặc luật di chuyển/combat: chạy `pnpm --filter @dtl/bot-client security` (DB mới, không bật `RATE_LIMIT_EXEMPT`; chạy lại cần DB mới và cách nhau khoảng 1 phút).
 
 ## Cấu trúc room
 
@@ -27,7 +27,7 @@ description: Quy ước server Colyseus của Đạp Thiên Lộ — cấu trúc
 ## Trạng thái và giao thức
 
 - Trạng thái đồng bộ bằng `@colyseus/schema`; chỉ đưa vào schema những gì người chơi được phép thấy (không có tỉ lệ rơi đồ, không có vị trí boss ẩn).
-- Lệnh từ client là message có kiểu, định nghĩa trong `packages/shared/protocol/messages.ts`. Mỗi message có validator (zod hoặc hàm tay) chạy trước khi xử lý.
+- Lệnh từ client là message có kiểu, định nghĩa trong `packages/shared/src/protocol.ts`. Mỗi message có validator (zod hoặc hàm tay) chạy trước khi xử lý.
 - Giới hạn tần suất mỗi client (ví dụ 30 message/giây); vượt thì bỏ và cộng điểm nghi ngờ, vượt nhiều thì ngắt kết nối.
 
 ## Server quyết định
@@ -42,7 +42,7 @@ description: Quy ước server Colyseus của Đạp Thiên Lộ — cấu trúc
 
 ## Lưu dữ liệu
 
-- SQLite qua Drizzle ORM, schema trong `apps/server/src/db/schema.ts`, migration bằng `drizzle-kit`.
+- SQLite qua Drizzle ORM, schema trong `apps/server/src/db.ts` (DDL + bảng Drizzle; đổi schema phải sửa cả hai, thêm cột thì sửa `ADDED_COLUMNS` và `DATA_VERSION`), migration bằng `drizzle-kit`.
 - Thay đổi vật phẩm/tiền: một transaction, có `idempotency_key` duy nhất, ghi dòng `ledger` (ai, gì, bao nhiêu, lý do, thời điểm). Không cập nhật số dư mà không có dòng ledger.
 - Nhân vật lưu định kỳ 30 giây và khi rời room. Mất kết nối giữ nhân vật 60 giây (`allowReconnection`).
 
