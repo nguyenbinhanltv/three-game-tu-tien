@@ -111,7 +111,7 @@ export class TribulationSystem {
     const c = p.char;
     this.c.clone.drop(p);
     const item = def.item;
-    if (consume && item && !c.tx('tribulation', null, (d) => d.remove(item, 1))) {
+    if (consume && item && !c.tx('tribulation', `trib:${def.id}:${c.id}:${this.c.now}`, (d) => d.remove(item, 1))) {
       this.c.warn(p, 'sys.trib_need_pill', { item: itemName(item) });
       return false;
     }
@@ -146,6 +146,19 @@ export class TribulationSystem {
     m.defn = st.def;
     m.s.mhp = st.hp;
     m.s.hp = st.hp;
+    m.target = p.sid;
+    this.c.setMonState(m, MS_CHASE);
+    return m;
+  }
+
+  /** Quái của kiếp (Nhật Thực Dực Chủ, DV-3K): đứng `dist` mét trước mặt người độ kiếp, đuổi đúng người đó, không rơi đồ (`minionOf`). */
+  spawnTribBoss(p: PlayerEnt, id: string, dist: number): MonEnt | null {
+    const def = MONSTER.get(id);
+    if (!def) return null;
+    const x = p.move.x + Math.sin(p.s.yaw) * dist;
+    const z = p.move.z + Math.cos(p.s.yaw) * dist;
+    const m = this.c.spawnMonster(def, p.char.level, x, z, null);
+    m.minionOf = 'trib';
     m.target = p.sid;
     this.c.setMonState(m, MS_CHASE);
     return m;
@@ -195,6 +208,7 @@ export class TribulationSystem {
     const c = p.char;
     const def = tribDef(p.trib?.id);
     const elapsed = p.trib ? def.duration - (p.trib.endAt - this.c.now) / 1000 : 0;
+    this.c.tribSys.cleanup(p);
     p.trib = null;
     this.c.setFlag(p, PF_TRIBULATION, false);
     if (success) {
@@ -215,7 +229,7 @@ export class TribulationSystem {
       if (!silent) this.c.sys(p, lost > 0 ? 'sys.trib_fail' : 'sys.trib_fail_free', { n: lost }, 'bad');
       // Trụ qua nửa đầu: hoàn vật phẩm đột phá (chỉ khi chết trong lôi kiếp, không hoàn khi thoát game giữa chừng).
       const item = def.item;
-      if (!silent && item && elapsed >= def.refundAfter && c.tx('tribulation:refund', null, (d) => d.add(item, 1))) this.c.sys(p, 'sys.trib_refund', { item: itemName(item) }, 'info');
+      if (!silent && item && elapsed >= def.refundAfter && c.tx('tribulation:refund', `trib-refund:${def.id}:${c.id}:${this.c.now}`, (d) => d.add(item, 1))) this.c.sys(p, 'sys.trib_refund', { item: itemName(item) }, 'info');
     }
     this.c.host.onTribulationEnd?.(p, def, success);
   }

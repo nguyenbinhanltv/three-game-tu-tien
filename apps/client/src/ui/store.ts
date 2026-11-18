@@ -221,6 +221,8 @@ export interface UIState {
   soulUntil: number;
   /** Thiên Nhân Kiếp (E4-D): tia ngũ hành đang báo (chỉ số hành, mốc nổ) và mốc thế thân thần niệm tan; chỉ là lớp hình. */
   nguHanh: { e: number; at: number } | null;
+  /** Trấn Giới Bia sáng của Nhật Thực Kiếp (mặt nạ bit 0..4); -1 = không trong kiếp này. */
+  steles: number;
   cloneUntil: number;
   /** Kiếp đang độ (id trong `tribulations.json`) để HUD đọc pha. */
   tribId: string;
@@ -323,6 +325,7 @@ export const useUI = create<UIState>(() => ({
   tamCanh: -1,
   soulUntil: 0,
   nguHanh: null,
+  steles: -1,
   cloneUntil: 0,
   tribId: 'truc_co',
   bossLine: null,

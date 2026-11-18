@@ -176,6 +176,63 @@
           "final": { "r": 11, "delay": 4, "pct": 0.75, "defMul": 2, "defMaxCut": 0.5, "guardShare": 0.25, "guardMax": 2, "guardR": 12 }
         }
       ]
+    },
+    "anh_bien": {
+      "from": 31,
+      "to": 32,
+      "enabled": true,
+      "item": "itm_anh_bien_lo",
+      "room": "tribulation",
+      "level": "do_kiep_bac_hoang",
+      "element": "nhat_thuc",
+      "duration": 90,
+      "firstDelay": 3,
+      "failXpLoss": 0.15,
+      "refundAfter": 45,
+      "pillMax": 3,
+      "aim": { "r": 4.2, "delay": 1.25 },
+      "extraDelay": { "min": 1.2, "max": 1.7 },
+      "extraDist": { "min": 5, "max": 14 },
+      "guard": { "r": 20 },
+      "phases": [
+        {
+          "id": "dan_loi",
+          "kind": "lei",
+          "end": 25,
+          "gap": 3.0,
+          "aimPct": 0,
+          "extra": 1,
+          "extraR": 3.4,
+          "extraPct": 0.07,
+          "mechanic": "dan_loi",
+          "danLoi": { "ring": 16, "steleR": 4, "first": 2, "every": 3, "warn": 1.4, "pct": 0.13, "r": 3.2 }
+        },
+        {
+          "id": "nhat_thuc",
+          "kind": "lei",
+          "end": 65,
+          "gap": 2.6,
+          "aimPct": 0.06,
+          "extra": 1,
+          "extraR": 3.4,
+          "extraPct": 0.07,
+          "hot": true,
+          "mechanic": "nhat_thuc",
+          "nhatThuc": { "boss": "boss_nhat_thuc_duc_chu", "dist": 10, "smashEvery": 9, "smashWarn": 2.5, "smashR": 4, "smashPct": 0.12, "every": 4.5, "warn": 1.5, "r": 4, "pct": 0.12, "stun": 4, "shieldEvery": 20 }
+        },
+        {
+          "id": "han",
+          "kind": "lei",
+          "end": 90,
+          "gap": 1.1,
+          "aimPct": 0.07,
+          "extra": 2,
+          "extraR": 3.4,
+          "extraPct": 0.05,
+          "shadows": { "once": true, "count": 2, "levelDelta": 0, "hpFrac": 0.4, "maxAlive": 2 },
+          "final": { "r": 11, "delay": 4, "pct": 0.75, "defMul": 2, "defMaxCut": 0.5, "guardShare": 0.25, "guardMax": 2, "guardR": 12, "gateSteles": 3 }
+        }
+      ]
     }
   }
 }

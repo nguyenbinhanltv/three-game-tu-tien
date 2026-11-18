@@ -115,7 +115,7 @@ const xfers = (p: Ent) => sent.filter((s) => s.type === S.TRANSFER && s.to === p
 
 describe('dữ liệu tribulations.json', () => {
   it('bốn kiếp mở ra từ bốn đại viên mãn, pha liền mạch tới hết thời lượng', () => {
-    expect(TRIB_IDS.sort()).toEqual(['hoa_than', 'ket_dan', 'nguyen_anh', 'truc_co']);
+    expect(TRIB_IDS.sort()).toEqual(['anh_bien', 'hoa_than', 'ket_dan', 'nguyen_anh', 'truc_co']);
     for (const level of PEAK_LEVELS) expect(tribForLevel(level)?.from).toBe(level);
     expect(tribForLevel(16)).toBeNull();
     for (const id of TRIB_IDS) {
@@ -124,7 +124,7 @@ describe('dữ liệu tribulations.json', () => {
       expect(d.phases.at(-1)!.end).toBe(d.duration);
       for (let i = 1; i < d.phases.length; i++) expect(d.phases[i].end).toBeGreaterThan(d.phases[i - 1].end);
     }
-    expect(TRIB_IDS.map((i) => TRIB_DEFS[i].duration).sort((a, b) => a - b)).toEqual([40, 55, 65, 80]);
+    expect(TRIB_IDS.map((i) => TRIB_DEFS[i].duration).sort((a, b) => a - b)).toEqual([40, 55, 65, 80, 90]);
     expect(TRIB_DEFS.nguyen_anh.room).toBe('tribulation');
     expect(TRIB_DEFS.hoa_than.room).toBe('tribulation');
     expect(TRIB_DEFS.ket_dan.room).toBe('world');
@@ -641,5 +641,25 @@ describe('room độ kiếp riêng', () => {
     expect(owner.trib).toBeNull();
     expect(owner.char.level).toBe(24);
     expect(fxs().some((f) => f.t === 'ascend')).toBe(true);
+  });
+  it('Nhật Thực Kiếp: đồng đội cấp < 28 trong tầm hộ pháp không nhận vé (không bị đưa tới Bắc Hoang quá cấp), cấp >= 28 thì có', async () => {
+    const level = 'do_kiep_bac_hoang';
+    const w = await mkRoom('bac_hoang', rooms.WorldRoom);
+    const lead = prime(w.join(mkChar('abchu', 31), { ticket: false }), 31);
+    const high = prime(w.join(mkChar('abcao', 29), { ticket: false }), 29);
+    const low = prime(w.join(mkChar('abthap', 27), { ticket: false }), 27);
+    for (const m of [lead, high, low]) {
+      m.move.x = X;
+      m.move.z = Z;
+      m.move.y = groundAt(X, Z);
+    }
+    const party = { members: [lead, high, low].map((m) => m.char.id), leader: lead.char.id };
+    for (const m of [lead, high, low]) (parties as unknown as { byChar: Map<number, unknown> }).byChar.set(m.char.id, party);
+    (w.room as unknown as { enterTribulationRoom(p: Ent, d: unknown, f: boolean): boolean }).enterTribulationRoom(lead, tribDef('anh_bien'), true);
+    expect(transfer.tickets.has(lead.char.id, level)).toBe(true);
+    expect(transfer.tickets.has(high.char.id, level)).toBe(true);
+    expect(transfer.tickets.has(low.char.id, level)).toBe(false);
+    expect(xfers(low)).toHaveLength(0);
+    expect(xfers(high).at(-1)!.room).toBe('tribulation-do_kiep_bac_hoang');
   });
 });

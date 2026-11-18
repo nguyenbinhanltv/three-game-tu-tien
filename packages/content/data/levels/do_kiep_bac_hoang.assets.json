@@ -1,0 +1,8 @@
+{
+  "mood": "rift",
+  "glb": [],
+  "ground": { "set": "terrain-ash", "mask": "neutral" },
+  "music": ["wild_rift", "tribulation"],
+  "features": { "sect": false, "portals": false, "lanterns": false, "lake": false, "clouds": false, "grass": false, "trees": "scatter", "beacons": false, "vegetation": false },
+  "minimap": "bac_hoang"
+}

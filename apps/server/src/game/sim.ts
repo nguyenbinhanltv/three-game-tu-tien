@@ -116,6 +116,10 @@ export class GameSim {
     aliveShadows: (p) => this.monsters.filter((m) => m.owner === p.sid && m.state !== MS_DEAD).length,
     shadowOf: (p) => this.monsters.find((m) => m.owner === p.sid && m.state !== MS_DEAD) ?? null,
     end: (p, ok) => this.endTribulation(p, ok, false),
+    spawnBoss: (p, id, dist) => this.tribHub.spawnTribBoss(p, id, dist),
+    removeMonster: (m) => this.removeMonster(m),
+    stunMonster: (m, sec) => this.monSys.stun(m, sec),
+    heal: (p, n) => this.healPlayer(p, n),
   });
   /** Bình cảnh, tâm ma, linh căn (P3-7). */
   readonly realm = new RealmSystem({

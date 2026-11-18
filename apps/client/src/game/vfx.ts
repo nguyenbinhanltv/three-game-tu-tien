@@ -993,6 +993,101 @@ export class Vfx {
   }
 
   /**
+   * Năm Trấn Giới Bia của Nhật Thực Kiếp (Anh Biến): cột sáng mảnh ở ngũ giác bán kính `ring` quanh (cx, cz), cùng thứ tự `tribSealPos` ở server.
+   * Bia chưa sáng là cột tím sẫm mờ; bia sáng ngả vàng nhật thực, cao hơn, có vành dưới chân. Tông trầm, cộng sáng thấp (đỉnh dưới `FX_MAX_HDR`).
+   * `set(mask)` cập nhật bia sáng (bit i = bia i); `stop()` hoặc `stillOn()` sai thì tắt dần.
+   */
+  steleRing(cx: number, cz: number, ring: number, stillOn: () => boolean): { set(mask: number): void; stop(): void } {
+    const cols: FxMesh[] = [];
+    const rings: FxMesh[] = [];
+    const pos: { x: number; z: number; y: number }[] = [];
+    for (let i = 0; i < 5; i++) {
+      const a = (i * Math.PI * 2) / 5;
+      const x = cx + Math.sin(a) * ring;
+      const z = cz + Math.cos(a) * ring;
+      pos.push({ x, z, y: groundAt(x, z) });
+      cols.push(this.fx(G.ico1, 0x6a4a9a, 0.3));
+      const r = this.fx(RING_GEO, 0xffd27a, 0.3);
+      r.rotation.x = -Math.PI / 2;
+      rings.push(r);
+    }
+    let mask = 0;
+    let t = 0;
+    let fade = 0;
+    let stopping = false;
+    const lit = [0, 0, 0, 0, 0];
+    const it = {
+      t: 0,
+      dur: 400,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const on = !stopping && stillOn();
+        fade = on ? Math.min(1, fade + dt * 2) : Math.max(0, fade - dt * 2);
+        if (!on && fade <= 0) it.t = it.dur;
+        for (let i = 0; i < 5; i++) {
+          const target = mask & (1 << i) ? 1 : 0;
+          lit[i] += (target - lit[i]) * Math.min(1, dt * 5);
+          const k = lit[i];
+          const h = 3.5 + 7 * k;
+          const pulse = 1 + Math.sin(t * 2.2 + i) * 0.05 * k;
+          cols[i].position.set(pos[i].x, pos[i].y + h * 0.5, pos[i].z);
+          cols[i].scale.set(0.3 + 0.4 * k, h * pulse, 0.3 + 0.4 * k);
+          cols[i].fxColor.setHex(k > 0.5 ? 0xffd27a : 0x6a4a9a);
+          cols[i].fxOpacity = (0.18 + 0.55 * k) * fade;
+          rings[i].position.set(pos[i].x, pos[i].y + 0.12, pos[i].z);
+          rings[i].scale.setScalar(1.6 + 0.4 * Math.sin(t * 2 + i));
+          rings[i].fxOpacity = 0.55 * k * fade;
+        }
+      },
+      end: () => {
+        for (const m of [...cols, ...rings]) this.drop(m);
+      },
+    };
+    this.items.push(it);
+    return {
+      set: (m) => {
+        mask = m;
+      },
+      stop: () => {
+        stopping = true;
+      },
+    };
+  }
+
+  /**
+   * Vết nứt Giới Khích bị hàn (Nhật Thực Kiếp): một vệt tím cao ở (x, z) khép dần trong `dur` giây, cuối cùng một chớp vàng nhạt khi tia cuối đánh vào.
+   * `close` = true (đủ bia): khép lại; false: chỉ phập phồng rồi tan.
+   */
+  riftVein(x: number, z: number, r: number, dur: number, close: boolean): void {
+    const y = groundAt(x, z);
+    const vein = this.fx(G.ico1, 0xb48cff, 0.5);
+    const base = this.fx(RING_GEO, 0xcfa8ff, 0.4);
+    base.rotation.x = -Math.PI / 2;
+    let t = 0;
+    const it = {
+      t: 0,
+      dur: dur + 1.2,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const k = Math.min(1, t / dur);
+        const open = close ? 1 - k : 1;
+        vein.position.set(x, y + 4.5, z);
+        vein.scale.set(0.35 * (0.3 + open), 9 * (0.4 + 0.6 * open), 0.35 * (0.3 + open));
+        vein.fxOpacity = (0.55 + 0.1 * Math.sin(t * 9)) * (t < dur ? 1 : Math.max(0, 1 - (t - dur) * 2));
+        base.position.set(x, y + 0.14, z);
+        base.scale.setScalar(r * (0.5 + 0.5 * k));
+        base.fxOpacity = 0.45 * (t < dur ? k : Math.max(0, 1 - (t - dur) * 2));
+      },
+      end: () => {
+        this.burst(new THREE.Vector3(x, y + 1.2, z), 0xffe3a8, 2.2, 0.5);
+        this.drop(vein);
+        this.drop(base);
+      },
+    };
+    this.items.push(it);
+  }
+
+  /**
    * Đĩa gương (E3-M, Kính Nguyệt Chân Quân): `n` tia dài `len` rộng `w` xoay quanh (x, z) từ góc `theta0` (rad) với tốc độ `spin`
    * độ/giây, theo CÙNG công thức server (`discAngle`: góc 0 hướng +z). `warn` giây đầu tia mờ và chưa gây sát thương (vạch tụ dần), sau
    * đó sáng lên; một vành đĩa mờ nằm dưới chân. Cộng sáng thấp, sắc lam bạc để không che nhân vật. Tự tắt khi hết giờ hoặc `stillOn()` sai.
