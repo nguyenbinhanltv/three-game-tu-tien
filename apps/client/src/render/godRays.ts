@@ -1,5 +1,21 @@
 import * as THREE from 'three/webgpu';
-import { attribute, cameraPosition, clamp, cross, dot, float, length, mix, normalize, sin, smoothstep, time, uniform, uv, vec3 } from 'three/tsl';
+import {
+  attribute,
+  cameraPosition,
+  clamp,
+  cross,
+  dot,
+  float,
+  length,
+  mix,
+  normalize,
+  sin,
+  smoothstep,
+  time,
+  uniform,
+  uv,
+  vec3,
+} from 'three/tsl';
 import { heightAt } from '../base/levelCtx';
 import { skyParams } from './sky';
 
@@ -46,7 +62,13 @@ function rng(seed: number): () => number {
 }
 
 function rayMaterial(): THREE.MeshBasicNodeMaterial {
-  const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+  const mat = new THREE.MeshBasicNodeMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
   const center = attribute('iCenter', 'vec3');
   const prm = attribute('iParams', 'vec4'); // x = dài, y = rộng, z = pha, w = độ mạnh riêng
   // Trục dải: hướng nắng nhưng dựng dốc hơn (nắng thấp thì dải nằm ngang, trông như tấm sáng phẳng); chân ở center, đỉnh ở center + axis * dài.
@@ -61,14 +83,22 @@ function rayMaterial(): THREE.MeshBasicNodeMaterial {
   const across = float(1).sub(uv().x.sub(0.5).abs().mul(2)); // 1 giữa dải, 0 ở mép
   const edge = smoothstep(0, 0.55, across).pow(1.2);
   const along = smoothstep(0, 0.22, t).mul(float(1).sub(smoothstep(0.55, 1, t)));
-  const shimmer = sin(time.mul(0.35).add(prm.z).add(t.mul(3.2))).mul(0.5).add(0.5).mul(0.35).add(0.65);
+  const shimmer = sin(time.mul(0.35).add(prm.z).add(t.mul(3.2)))
+    .mul(0.5)
+    .add(0.5)
+    .mul(0.35)
+    .add(0.65);
   const toDir = normalize(center.add(axis.mul(prm.x.mul(0.5))).sub(cameraPosition));
   // Nhìn về phía mặt trời thì đậm (dải nằm ngược sáng); quay lưng vẫn còn một phần.
   const facing = smoothstep(-0.3, 0.85, dot(toDir, axis)).mul(0.6).add(0.4);
   const dist = length(toCam);
   const nearFade = smoothstep(18, 90, dist);
   const farFade = float(1).sub(smoothstep(900, 1800, dist).mul(0.6));
-  mat.opacityNode = clamp(edge.mul(along).mul(shimmer).mul(facing).mul(nearFade).mul(farFade).mul(prm.w).mul(godRayParams.intensity).mul(OPACITY_GAIN), 0, MAX_OPACITY);
+  mat.opacityNode = clamp(
+    edge.mul(along).mul(shimmer).mul(facing).mul(nearFade).mul(farFade).mul(prm.w).mul(godRayParams.intensity).mul(OPACITY_GAIN),
+    0,
+    MAX_OPACITY,
+  );
   // Sắc nắng ấm pha sắc vùng sáng; hơi trắng ở lõi để dải trông như ánh sáng chứ không như sương nhuộm.
   mat.colorNode = mix(skyParams.glow, skyParams.sunColor, 0.5).mul(1.15).add(vec3(0.06));
   return mat;

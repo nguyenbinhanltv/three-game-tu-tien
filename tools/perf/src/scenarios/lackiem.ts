@@ -33,7 +33,8 @@ export const VIEWS: View[] = [
 export default {
   name: 'lackiem',
   desc: 'MAP-1: ảnh trước/sau Lạc Kiếm Tông (6 góc × 4 thời điểm × 2 cỡ ảnh) + số đo hiệu năng + video bay quanh',
-  usage: '[--moods dawn,day,dusk,night] [--sizes 1920x1080,1280x720] [--views a,b|all] [--preset low|medium|high|ultra] [--perf 1] [--video 1] [--secs 45] [--tag truoc|sau]',
+  usage:
+    '[--moods dawn,day,dusk,night] [--sizes 1920x1080,1280x720] [--views a,b|all] [--preset low|medium|high|ultra] [--perf 1] [--video 1] [--secs 45] [--tag truoc|sau]',
   async run(r) {
     const tag = opt('--tag', 'sau');
     const preset = opt('--preset', 'high');
@@ -43,7 +44,15 @@ export default {
     for (const size of list('--sizes', '1920x1080,1280x720')) {
       const viewport = size.split('x').map(Number) as [number, number];
       for (const mood of list('--moods', 'dawn,day,dusk,night')) {
-        const { ctx, page } = await r.open({ name: `Lk${mood[0]}${viewport[1]}`, quality: preset, viewport, query: { mood }, seenIntro: true, hide: 'hud', warnings: true });
+        const { ctx, page } = await r.open({
+          name: `Lk${mood[0]}${viewport[1]}`,
+          quality: preset,
+          viewport,
+          query: { mood },
+          seenIntro: true,
+          hide: 'hud',
+          warnings: true,
+        });
         await gm(page, 'level 15');
         await gm(page, 'god on');
         await gm(page, 'killall', 1200);
@@ -62,7 +71,14 @@ export default {
     if (flag('--video')) {
       const dir = path.join(r.out, 'video');
       fs.mkdirSync(dir, { recursive: true });
-      const { page, ctx } = await r.open({ name: 'LkVid', quality: preset, viewport: [1920, 1080], query: { mood: opt('--vmood', 'dawn') }, video: dir, seenIntro: true });
+      const { page, ctx } = await r.open({
+        name: 'LkVid',
+        quality: preset,
+        viewport: [1920, 1080],
+        query: { mood: opt('--vmood', 'dawn') },
+        video: dir,
+        seenIntro: true,
+      });
       await gm(page, 'level 15');
       await gm(page, 'god on');
       await gm(page, 'killall', 1000);
@@ -74,7 +90,11 @@ export default {
       while ((Date.now() - t0) / 1000 < secs) {
         const t = (Date.now() - t0) / 1000;
         // Vòng quanh tông môn, dần xa ra rồi lên cao: yaw quay đủ một vòng.
-        await cam(page, { yaw: (t / secs) * Math.PI * 2, pitch: 0.18 + 0.5 * Math.sin((t / secs) * Math.PI), dist: 14 + 90 * Math.sin((t / secs) * Math.PI) });
+        await cam(page, {
+          yaw: (t / secs) * Math.PI * 2,
+          pitch: 0.18 + 0.5 * Math.sin((t / secs) * Math.PI),
+          dist: 14 + 90 * Math.sin((t / secs) * Math.PI),
+        });
         await sleep(100);
       }
       const video = page.video();
