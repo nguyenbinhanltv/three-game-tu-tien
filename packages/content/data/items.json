@@ -26,6 +26,8 @@
   { "id": "itm_skin_varkessa", "kind": "skin", "stack": 1, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_skin_varkessa", "iconFallback": "🎭", "reqLevel": 1, "skin": "set_skin_varkessa", "gender": "f" },
   { "id": "itm_skin_duskrella", "kind": "skin", "stack": 1, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_skin_duskrella", "iconFallback": "🎭", "reqLevel": 1, "skin": "set_skin_duskrella", "gender": "f" },
   { "id": "itm_skin_crimson_knight", "kind": "skin", "stack": 1, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_skin_crimson_knight", "iconFallback": "🎭", "reqLevel": 1, "skin": "set_skin_crimson", "gender": "m" },
+  { "id": "itm_skin_noxavyra", "kind": "skin", "stack": 1, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_skin_noxavyra", "iconFallback": "🎭", "reqLevel": 1, "skin": "set_skin_noxavyra", "gender": "f" },
+  { "id": "itm_skin_kings_demon", "kind": "skin", "stack": 1, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_skin_kings_demon", "iconFallback": "🎭", "reqLevel": 1, "skin": "set_skin_kings_demon", "gender": "f" },
 
   { "id": "itm_bo_y", "kind": "robe", "stack": 1, "price": 30, "sell": 8, "rarity": 0, "icon": "itm_bo_y", "iconFallback": "👘", "reqLevel": 1, "stats": { "def": 3, "hp": 20 } },
   { "id": "itm_dao_bao", "kind": "robe", "stack": 1, "price": 380, "sell": 95, "rarity": 0, "icon": "itm_dao_bao", "iconFallback": "👘", "reqLevel": 5, "stats": { "def": 8, "hp": 70 } },

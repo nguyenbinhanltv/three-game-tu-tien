@@ -28,10 +28,14 @@ describe('v3AssetOf (chọn asset v3 theo giới + skin)', () => {
   it('skin đúng giới đổi asset', () => {
     expect(v3AssetOf('f', 'set_skin_duskrella')).toBe('chr_v3_duskrella_nu');
     expect(v3AssetOf('m', 'set_skin_crimson')).toBe('chr_v3_crimson_nam');
+    expect(v3AssetOf('f', 'set_skin_noxavyra')).toBe('chr_v3_noxavyra_nu');
+    expect(v3AssetOf('f', 'set_skin_kings_demon')).toBe('chr_v3_kings_demon_nu');
   });
   it('skin sai giới hoặc không có bản v3 thì về model mặc định', () => {
     expect(v3AssetOf('m', 'set_skin_duskrella')).toBe(V3_MODELS.m);
     expect(v3AssetOf('f', 'set_skin_crimson')).toBe(V3_MODELS.f);
+    expect(v3AssetOf('m', 'set_skin_noxavyra')).toBe(V3_MODELS.m);
+    expect(v3AssetOf('m', 'set_skin_kings_demon')).toBe(V3_MODELS.m);
     expect(v3AssetOf('f', 'set_skin_khong_co')).toBe(V3_MODELS.f);
   });
 });
