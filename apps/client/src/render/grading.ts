@@ -36,7 +36,7 @@ export interface GradingPreset {
   rim?: number;
 }
 
-export type GradingName = 'dawn' | 'day' | 'night' | 'ochre_dawn' | 'ochre' | 'ochre_night' | 'cloud_dawn' | 'cloud' | 'cloud_night' | 'tk_dawn' | 'tk' | 'tk_night';
+export type GradingName = 'dawn' | 'day' | 'night' | 'ochre_dawn' | 'ochre' | 'ochre_night' | 'cloud_dawn' | 'cloud' | 'cloud_night' | 'tk_dawn' | 'tk' | 'tk_night' | 'ash_dawn' | 'rift';
 /** Thời điểm trong ngày (`?mood=`); level có bộ mood riêng (Đoạn Mạch: `ochre*`) đổi theo. */
 export type TimeOfDay = 'dawn' | 'day' | 'night';
 
@@ -72,12 +72,15 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   tk_dawn: parse(raw.presets.tk_dawn),
   tk: parse(raw.presets.tk),
   tk_night: parse(raw.presets.tk_night),
+  ash_dawn: parse(raw.presets.ash_dawn),
+  rift: parse(raw.presets.rift),
 };
 
 /** Tên mood của level theo thời điểm trong ngày: `ochre` + night → `ochre_night`. */
 export function moodVariant(base: GradingName, tod: TimeOfDay): GradingName {
   if (base.startsWith('ochre')) return tod === 'dawn' ? 'ochre_dawn' : tod === 'night' ? 'ochre_night' : 'ochre';
   if (base.startsWith('cloud')) return tod === 'dawn' ? 'cloud_dawn' : tod === 'night' ? 'cloud_night' : 'cloud';
+  if (base === 'ash_dawn' || base === 'rift') return base; // Bắc Hoang (DV-1): mood cố định theo nửa bản đồ, không đổi theo giờ
   if (base.startsWith('tk')) return tod === 'dawn' ? 'tk_dawn' : tod === 'night' ? 'tk_night' : 'tk';
   return tod;
 }
