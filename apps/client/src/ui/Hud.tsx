@@ -1,11 +1,10 @@
-import { Portrait, useArtUrl } from './Art';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import './tutien.css';
 import './ngj/hud.css';
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import './u2/hud/hud.css';
+import { type CSSProperties, useEffect } from 'react';
 import {
-  realmStageOf,
   ARTIFACT_MAX_LEVEL,
   artifactLevelMods,
   BAR_SIZE,
@@ -24,19 +23,12 @@ import {
   SOUL_SCOUT_MS,
   PF_SOUL,
   C,
-  CHARGE_MAX,
-  NGUNG_KHI_MAX,
   tribDef,
   ELEMENTS,
   elemCounterOf,
   tribPhaseIndex,
   tribPhaseStart,
-  TRUC_CO_LEVEL,
   PF_DEAD,
-  PF_FLYING,
-  PF_MEDITATING,
-  PF_TRIBULATION,
-  type SkillDef,
 } from '@dtl/shared';
 import {
   ARTIFACT,
@@ -44,22 +36,17 @@ import {
   ITEM,
   itemName,
   METHOD,
-  monsterName,
   nextMajorRealmName,
-  QUEST,
   realmName,
   resolveBarSkill,
-  skillBar,
   t,
-  thanThong10Skill,
-  thanThongSkill,
   tierBar,
   VARIANTS,
 } from '@dtl/content';
+import { Portrait, useArtUrl } from './Art';
 import { Game } from '../game/engine';
-import { trackedQuestId } from '../game/entities/offscreen';
 import { artifactLines } from './gear';
-import { Corners, RingSweep, SealNumeral, SysIcon, type SysIconName } from './ngj';
+import { Corners, RingSweep } from './ngj';
 import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './kit';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
@@ -68,71 +55,14 @@ import { Minimap } from './minimap/Minimap';
 import { Panels } from './windows/Panels';
 import { TrialBanner } from './Realm';
 import { BagWarn } from './BagWarn';
-import { breakGoal } from './breakGoal';
-import { type BossLine, type ChapterCard, openPanel, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
-import { objectiveText } from './objective';
-
-function PlayerFrame() {
-  const char = useUI((s) => s.char);
-  const hp = useUI((s) => s.hp);
-  const mhp = useUI((s) => s.mhp);
-  const mp = useUI((s) => s.mp);
-  const mmp = useUI((s) => s.mmp);
-  // Mọi hook phải đứng trước lệnh return sớm (store khởi đầu với char = null).
-  const flags = useUI((s) => s.flags);
-  if (!char) return null;
-  const goal = breakGoal(char);
-  // Đang độ kiếp thì không mời đột phá nữa.
-  if (flags & PF_TRIBULATION) goal.ready = false;
-  const full = goal.ready || (flags & PF_TRIBULATION) !== 0 || (char.level === NGUNG_KHI_MAX && char.xp >= char.xpNeed);
-  return (
-    <div className={'frame player-frame' + (goal.ready ? ' can-break' : '') + ' ngj-pf'}>
-      <Corners />
-      <div className="ngj-pf-portrait" aria-hidden="true">
-        <SysIcon name="character" size={34} />
-        {/* Chân dung theo giới tính của mình (`player_m|player_f`, tranh Codex); chưa nạp xong thì thấy icon phía sau. */}
-        <Portrait id={'player_' + (Game.current?.view?.players.get(Game.current.sid)?.g === 'f' ? 'f' : 'm')} className="ngj-pf-face" />
-        <span className="ngj-pf-seal">
-          <SealNumeral n={realmStageOf(char.level)} size={20} />
-        </span>
-      </div>
-      <div className="frame-head">
-        <span className="frame-name">{char.name}</span>
-        <span className="frame-realm" data-tier={char.level >= TRUC_CO_LEVEL ? 'tc' : 'nk'}>
-          {realmName(char.level)}
-        </span>
-      </div>
-      <ProgressBar cls="hp" value={hp} max={mhp} text={`${hp} / ${mhp}`} segs={4} trail />
-      <ProgressBar cls="mp" value={mp} max={mmp} text={`${mp} / ${mmp}`} segs={4} trail />
-      <div className="frame-xp-row">
-        <ProgressBar
-          cls="xp"
-          value={char.xp}
-          max={char.xpNeed}
-          text={full ? t('ui.xp_full') : `${t('ui.xp')} ${char.xp} / ${char.xpNeed}`}
-        />
-        {goal.ready && (
-          // Chỉ mở bảng Nhân vật ở khối đột phá: bắt đầu độ kiếp tốn Trúc Cơ Đan nên không làm bằng một cú bấm trên HUD.
-          <Button
-            size="s"
-            variant="primary"
-            className="break-btn"
-            title={t(goal.kind === 'trib' ? 'ui.frame.break_trib' : 'ui.frame.break_bk', { n: char.level })}
-            onClick={(e) => {
-              openPanel('char');
-              blurAfterPointer(e);
-            }}
-          >
-            {t('ui.frame.break')}
-          </Button>
-        )}
-      </div>
-      {!goal.ready && goal.kind && (
-        <div className="frame-next">{t(goal.kind === 'trib' ? 'ui.frame.next_trib' : 'ui.frame.next_bk', { n: goal.level })}</div>
-      )}
-    </div>
-  );
-}
+import { type BossLine, type ChapterCard, togglePanel, useUI } from './store';
+import { HubBar } from './u2/hud/HubBar';
+import { PlayerCard, BossCard, TargetCastBar } from './u2/hud/Frames';
+import { QuestTrack, ChatBox } from './u2/hud/QuestChat';
+import { SkillBanner } from './u2/hud/SkillBanner';
+import { SkillCluster } from './u2/hud/SkillCluster';
+import { blurAfterPointer, useNow } from './u2/hud/common';
+import { hudVars, useHudMode } from './u2/hud/hudVars';
 
 function TargetFrame({ below }: { below: boolean }) {
   const target = useUI((s) => s.target);
@@ -162,48 +92,6 @@ function TargetFrame({ below }: { below: boolean }) {
         />
       )}
       {target.cast && <TargetCastBar cast={target.cast} />}
-    </div>
-  );
-}
-
-/** Thanh máu boss giữa phía trên: tên lớn + danh hiệu (font serif), máu 10 vạch có đoạn trễ, niệm chú bên dưới. */
-function BossBar() {
-  const boss = useUI((s) => s.boss);
-  if (!boss) return null;
-  // Làm tròn xuống, nhưng còn sống thì tối thiểu 1% (không hiện 100% khi đã mất máu, không hiện 0% khi chưa chết).
-  const pct = boss.hp > 0 && boss.mhp > 0 ? Math.max(1, Math.floor((boss.hp / boss.mhp) * 100)) : 0;
-  return (
-    <div className="boss-bar" key={boss.id}>
-      <Corners />
-      <Portrait id={boss.def} className="boss-portrait" />
-      <div className="boss-head">
-        <span className="boss-name">{monsterName(boss.def)}</span>
-        <span className="boss-level">{t('ui.level_short', { n: boss.level })}</span>
-      </div>
-      <div className="boss-title">{t(`mon.${boss.def}.title`)}</div>
-      <div className="boss-hp">
-        <ProgressBar
-          cls="hp boss"
-          value={boss.hp}
-          max={boss.mhp}
-          text={`${boss.hp} / ${boss.mhp} · ${t('ui.boss.hp', { pct })}`}
-          segs={10}
-          trail
-        />
-        {/* Vạch chuyển pha: báo trước boss sẽ đổi chiêu ở mức máu này. */}
-        {boss.marks?.map((f) => (
-          <div key={f} className="boss-mark" style={{ left: f * 100 + '%' }} />
-        ))}
-      </div>
-      {boss.posture !== undefined && (
-        <div className={'gauge posture' + (boss.cast?.kind === 'broken' ? ' broken' : boss.posture >= 0.75 ? ' near' : '')}>
-          <div className="gauge-in">
-            <div className="gauge-fill" style={{ width: (boss.cast?.kind === 'broken' ? 100 : boss.posture * 100) + '%' }} />
-          </div>
-          <div className="gauge-label">{t('ui.boss.posture')}</div>
-        </div>
-      )}
-      {boss.cast && <TargetCastBar cast={boss.cast} />}
     </div>
   );
 }
@@ -302,475 +190,6 @@ function CineView() {
           <div className="cine-skip">{t('ui.cine.skip')}</div>
         </>
       )}
-    </div>
-  );
-}
-
-/** Thanh niệm chú/choáng của mục tiêu (boss). Đoạn đầu tô tối là lúc hộ chú, chưa phá chú được. */
-function TargetCastBar({ cast }: { cast: TargetCast }) {
-  const now = useNow(50);
-  if (now >= cast.end) return null;
-  const done = Math.max(0, Math.min(1, 1 - (cast.end - now) / cast.total));
-  const guarded = cast.kind === 'chant' && done < cast.open;
-  // Niệm chú: thanh đầy dần; choáng: thanh cạn dần.
-  const pct = (cast.kind === 'chant' ? done : 1 - done) * 100;
-  const label =
-    cast.kind === 'broken'
-      ? 'ui.target.broken'
-      : cast.kind === 'stun'
-        ? 'ui.target.stun'
-        : guarded
-          ? 'ui.target.chant_guard'
-          : 'ui.target.chant';
-  return (
-    <div className={'gauge tcast ' + cast.kind + (guarded ? ' guarded' : '')}>
-      <div className="gauge-in">
-        {cast.kind === 'chant' && cast.open > 0 && <div className="tcast-guard" style={{ width: cast.open * 100 + '%' }} />}
-        <div className="gauge-fill" style={{ width: pct + '%' }} />
-      </div>
-      <div className="gauge-text">{t(label)}</div>
-    </div>
-  );
-}
-
-function QuestTracker() {
-  const quests = useUI((s) => s.quests);
-  const track = useUI((s) => s.trackQuest);
-  const ids = Object.keys(quests.active);
-  if (!ids.length) return null;
-  // Nhiệm vụ đang theo dõi (chỉ báo ngoài màn hình trỏ tới): ghim bằng cú nhấp; mặc định nhiệm vụ đầu tiên có đích.
-  // Cùng hàm với engine để chấm và chỉ báo luôn cùng một nhiệm vụ.
-  const tracked = trackedQuestId(quests, track);
-  return (
-    <div className="tracker">
-      <Corners />
-      <div className="ngj-tracker-head">
-        <SysIcon name="quest" size={16} />
-        <span>{t('ui.quests')}</span>
-      </div>
-      {ids.slice(0, 4).map((id) => {
-        const q = QUEST.get(id);
-        if (!q) return null;
-        const prog = quests.active[id];
-        const complete = q.objectives.every((o, i) => (prog[i] ?? 0) >= o.count);
-        return (
-          <div
-            key={id}
-            className={'tracker-quest' + (complete ? ' done' : '') + (id === tracked ? ' tracked' : '')}
-            title={t(id === tracked ? 'ui.quest.tracked' : 'ui.quest.track')}
-            onClick={() => setTrackQuest(id === track ? '' : id)}
-          >
-            <div className="tracker-title">{t(`quest.${id}.name`)}</div>
-            {q.objectives.map((o, i) => {
-              const cur = Math.min(o.count, prog[i] ?? 0);
-              const ok = cur >= o.count;
-              // Nhiệm vụ không theo dõi chỉ hiện mục tiêu chưa xong đầu tiên cho gọn.
-              if (id !== tracked && (ok || q.objectives.findIndex((x, j) => (prog[j] ?? 0) < x.count) !== i)) return null;
-              const count =
-                o.type === 'level' ||
-                o.type === 'talk' ||
-                o.type === 'fly' ||
-                o.type === 'breakthrough' ||
-                o.type === 'enhance' ||
-                o.type === 'dungeon' ||
-                o.type === 'duel' ||
-                o.type === 'clone' ||
-                o.type === 'touch' ||
-                o.type === 'scan' ||
-                o.type === 'escort'
-                  ? ''
-                  : ` ${cur}/${o.count}`;
-              return (
-                <div key={i} className={'tracker-obj' + (ok ? ' ok' : '')}>
-                  {ok ? '✔ ' : '· '}
-                  {objectiveText(o)}
-                  {count}
-                </div>
-              );
-            })}
-            {complete && <div className="tracker-turnin">{t('ui.quest.turnin_at', { npc: t(`npc.${q.turnin}.name`) })}</div>}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function useNow(ms: number): number {
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), ms);
-    return () => clearInterval(id);
-  }, [ms]);
-  return now;
-}
-
-/** Bấm bằng chuột xong thì bỏ focus để phím số/mũi tên tiếp theo tới game (bàn phím giữ focus). */
-function blurAfterPointer(e: React.MouseEvent<HTMLElement>): void {
-  if (e.detail > 0) e.currentTarget.blur();
-}
-
-/**
- * Thanh chiêu: ô vát viền đồng thau, icon atlas, nhãn phím, hồi chiêu quét theo vòng (conic, bắt đầu từ trên,
- * chiều kim đồng hồ) kèm số giây, xám khi thiếu linh lực hoặc không ra chiêu được (ngự kiếm/lơ lửng, khớp luật
- * `airborne()` của server), khóa khi chưa đủ cảnh giới. Viền hàng đợi (M1-11) và vòng tự đánh giữ nguyên.
- */
-/** Một nút thanh chức năng kiểu Ngọc Giản: vòng vàng chứa icon nét vàng, nhãn, chip phím. Giữ nguyên hành vi như `Button` cũ. */
-function SysButton({
-  icon,
-  label,
-  kbd,
-  pressed,
-  onClick,
-  title,
-  bag,
-}: {
-  icon: SysIconName;
-  label?: string;
-  kbd: string;
-  pressed?: boolean;
-  onClick: (e: React.MouseEvent<HTMLElement>) => void;
-  title?: string;
-  bag?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      className="ngj-sysbtn"
-      aria-pressed={pressed || undefined}
-      title={title}
-      data-bag={bag ? '' : undefined}
-      onClick={onClick}
-    >
-      <span className="ngj-sysbtn-ring">
-        <SysIcon name={icon} size={18} />
-      </span>
-      {label && <span className="ngj-sysbtn-label">{label}</span>}
-      <kbd>{kbd}</kbd>
-    </button>
-  );
-}
-
-function SysRow({ flags, wantFly }: { flags: number; wantFly: boolean }) {
-  return (
-    <div className="action-row ngj-sys">
-      <SysButton
-        icon="meditate"
-        label={t('ui.meditate')}
-        kbd="Z"
-        pressed={(flags & PF_MEDITATING) !== 0}
-        title={t('ui.help.meditate_v')}
-        onClick={(e) => {
-          Game.current?.toggleMeditate();
-          blurAfterPointer(e);
-        }}
-      />
-      <SysButton
-        icon="sword"
-        label={t('ui.fly')}
-        kbd="F"
-        pressed={wantFly || (flags & PF_FLYING) !== 0}
-        title={t('ui.help.fly_v')}
-        onClick={(e) => {
-          Game.current?.toggleFly();
-          blurAfterPointer(e);
-        }}
-      />
-      <SysButton
-        icon="bag"
-        label={t('ui.bag.short')}
-        kbd="B"
-        bag
-        onClick={(e) => {
-          togglePanel('bag');
-          blurAfterPointer(e);
-        }}
-      />
-      <SysButton
-        icon="character"
-        label={t('ui.char')}
-        kbd="C"
-        onClick={(e) => {
-          togglePanel('char');
-          blurAfterPointer(e);
-        }}
-      />
-      <SysButton
-        icon="method"
-        label={t('ui.method.key')}
-        kbd="K"
-        title={t('ui.method.title')}
-        onClick={(e) => {
-          togglePanel('method');
-          blurAfterPointer(e);
-        }}
-      />
-      <SysButton
-        icon="party"
-        label={t('ui.party.key')}
-        kbd="P"
-        title={t('ui.party.title')}
-        onClick={(e) => {
-          togglePanel('party');
-          blurAfterPointer(e);
-        }}
-      />
-      <SysButton
-        icon="quest"
-        label={t('ui.quests')}
-        kbd="L"
-        onClick={(e) => {
-          togglePanel('quests');
-          blurAfterPointer(e);
-        }}
-      />
-      <SysButton
-        icon="help"
-        kbd="H"
-        title={t('ui.help')}
-        onClick={(e) => {
-          togglePanel('help');
-          blurAfterPointer(e);
-        }}
-      />
-      <SysButton
-        icon="settings"
-        kbd="O"
-        title={`${t('ui.settings')} (O)`}
-        onClick={(e) => {
-          togglePanel('settings');
-          blurAfterPointer(e);
-        }}
-      />
-    </div>
-  );
-}
-
-function SkillBar() {
-  const char = useUI((s) => s.char);
-  const cds = useUI((s) => s.cds);
-  const gcdAt = useUI((s) => s.gcdAt);
-  const flags = useUI((s) => s.flags);
-  const auto = useUI((s) => s.autoAttack);
-  const wantFly = useUI((s) => s.wantFly);
-  const mp = useUI((s) => s.mp);
-  const queued = useUI((s) => s.queuedSkill);
-  const empowered = useUI((s) => s.empowered);
-  // Một cờ do engine tính sẵn: trước đây đăng ký x/y/z nên cả thanh chiêu dựng lại mỗi lần vị trí đổi.
-  const airborne = useUI((s) => s.airborne);
-  const method = useUI((s) => s.method);
-  const now = useNow(100);
-  if (!char) return null;
-  const mdef = method?.method ? METHOD.get(method.method) : undefined;
-  const tt = thanThongSkill(method?.method);
-  const tt10 = thanThong10Skill(method?.method);
-  const bar = [...skillBar(method?.method), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : [])];
-  const clone = useUI((s) => s.clone);
-  const charge = method?.charge ?? 0;
-  const pas = mdef?.passive;
-  const stackKind = pas?.kind === 'kiem_y' || pas?.kind === 'the' ? pas.kind : null;
-  const slots: (SkillDef | null)[] = Array.from({ length: BAR_SIZE + 2 }, (_, i) => bar[i] ?? null);
-  const tier = tierBar(method?.method);
-  return (
-    <div className="skillbar" style={mdef ? ({ '--mc': '#' + mdef.color } as CSSProperties) : undefined}>
-      {stackKind && (
-        <div className="stack-pips" aria-label={t(`ui.method.stacks.${stackKind}`)}>
-          <span>{t(`ui.method.stacks.${stackKind}`)}</span>
-          {Array.from({ length: pas?.max ?? 5 }, (_, i) => (
-            <i key={i} className={i < (method?.stacks ?? 0) ? 'on' : ''} />
-          ))}
-        </div>
-      )}
-      {char.level >= CLONE_UNLOCK_LEVEL && (
-        <div className={'clone-chip' + (now < clone.until ? ' on' : '')} data-testid="clone-chip" aria-label={t('ui.clone.title')}>
-          <span className="clone-key">G</span>
-          {now < clone.until
-            ? t('ui.clone.left', { n: Math.ceil((clone.until - now) / 1000) })
-            : now < clone.cdUntil
-              ? t('ui.clone.cd', { n: Math.ceil((clone.cdUntil - now) / 1000) })
-              : t('ui.clone.title')}
-        </div>
-      )}
-      <div className="skill-row">
-        <Corners />
-        {slots.map((sk, i) => {
-          // Ô 9 (thần thông, phím 0) và ô 10 (Hóa Thần, phím `): không có công pháp thì không vẽ.
-          if (!sk && i >= BAR_SIZE) return null;
-          const keyLabel = i === BAR_SIZE ? '0' : i === BAR_SIZE + 1 ? '`' : String(i + 1);
-          if (!sk) {
-            // Ô 7–8 khi chưa chọn công pháp: ô trống, bấm để mở bảng Công pháp.
-            return (
-              <Tooltip
-                key={'empty' + i}
-                content={<TipCard title={t(i === 6 ? 'ui.method.slot7' : 'ui.method.slot8')} desc={t('ui.method.empty_slot')} />}
-              >
-                <button
-                  type="button"
-                  className="skill"
-                  data-state="empty"
-                  aria-label={`${t(i === 6 ? 'ui.method.slot7' : 'ui.method.slot8')} (${i + 1})`}
-                  onClick={(e) => {
-                    togglePanel('method');
-                    blurAfterPointer(e);
-                  }}
-                >
-                  <span className="skill-icon">
-                    <span className="content-icon">＋</span>
-                  </span>
-                  <span className="skill-key">{i + 1}</span>
-                </button>
-              </Tooltip>
-            );
-          }
-          const rs = resolveBarSkill(method, sk);
-          const locked = char.level < sk.unlock;
-          const ready = Math.max(cds[sk.id] ?? 0, gcdAt);
-          const left = Math.max(0, ready - now);
-          const total = (cds[sk.id] ?? 0) > gcdAt ? Math.max(1, rs.cd) * 1000 : 1000;
-          const noMp = !locked && mp < sk.mp;
-          const blocked = !locked && airborne;
-          const charging = !locked && !!sk.ult && charge < CHARGE_MAX;
-          const state = locked
-            ? 'locked'
-            : blocked
-              ? 'air'
-              : charging
-                ? 'charging'
-                : noMp
-                  ? 'nomp'
-                  : sk.ult
-                    ? 'ultready'
-                    : left > 80
-                      ? 'cd'
-                      : 'ready';
-          const lv = method?.lv[sk.id] ?? 1;
-          const vr = method?.vr[sk.id];
-          const lines = [
-            ...(lv > 1 ? [{ text: t('ui.skill.level_tag', { n: lv }) }] : []),
-            ...(vr && VARIANTS[sk.id] ? [{ text: t('ui.skill.variant_tag', { name: t(`skill.${sk.id}.var.${vr}.name`) }) }] : []),
-            ...(sk.ult
-              ? [{ text: t('ui.skill.ult_charge', { n: Math.floor(charge) }), tone: charging ? ('bad' as const) : undefined }]
-              : []),
-            ...(sk.mp ? [{ text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined }] : []),
-            ...(rs.cd ? [{ text: t('ui.skill.cd', { n: rs.cd }) }] : []),
-            ...(blocked ? [{ text: t('ui.skill.airborne'), tone: 'bad' as const }] : []),
-            ...(noMp ? [{ text: t('ui.skill.no_mp'), tone: 'bad' as const }] : []),
-          ];
-          return (
-            <Tooltip
-              key={sk.id}
-              content={
-                <TipCard
-                  title={t(`skill.${sk.id}.name`)}
-                  sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined}
-                  lines={lines}
-                  desc={t(`skill.${sk.id}.desc`)}
-                />
-              }
-            >
-              <button
-                type="button"
-                className={
-                  'skill' +
-                  (i === 0 && auto ? ' auto' : '') +
-                  (i === queued ? ' queued' : '') +
-                  ((empowered[sk.id] ?? 0) > Date.now() ? ' empowered' : '')
-                }
-                data-state={state}
-                data-method={sk.method ? '1' : undefined}
-                aria-label={`${t(`skill.${sk.id}.name`)} (${keyLabel})`}
-                onClick={(e) => {
-                  Game.current?.useSkill(i);
-                  blurAfterPointer(e);
-                }}
-              >
-                <span className="skill-icon">
-                  <ContentIcon def={sk} />
-                </span>
-                <span className="skill-key">{keyLabel}</span>
-                {charging && (
-                  <>
-                    <span className="skill-charge" style={{ '--p': Math.min(1, charge / CHARGE_MAX) } as CSSProperties} />
-                    <span className="skill-charge-text">{Math.floor(charge)}</span>
-                  </>
-                )}
-                {!charging && left > 80 && !locked && (
-                  <>
-                    <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
-                    {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
-                  </>
-                )}
-                {locked && <span className="skill-lock">🔒</span>}
-              </button>
-            </Tooltip>
-          );
-        })}
-        <ArtifactSlot />
-        <BondedSlot />
-        <SpiritSlot />
-        <SoulSlot />
-      </div>
-      {tier.length > 0 && (
-        <div className="skill-row tier-row" aria-label={t('ui.skill.tier_row')}>
-          {tier.map((sk, j) => {
-            const rs = resolveBarSkill(method, sk);
-            const locked = char.level < sk.unlock;
-            const ready = Math.max(cds[sk.id] ?? 0, gcdAt);
-            const left = Math.max(0, ready - now);
-            const total = (cds[sk.id] ?? 0) > gcdAt ? Math.max(1, rs.cd) * 1000 : 1000;
-            const noMp = !locked && mp < sk.mp;
-            const state = locked ? 'locked' : airborne ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
-            const lv = method?.lv[sk.id] ?? 1;
-            const vr = method?.vr[sk.id];
-            const lines = [
-              { text: t('ui.skill.tier_key', { n: j + 1 }) },
-              ...(lv > 1 ? [{ text: t('ui.skill.level_tag', { n: lv }) }] : []),
-              ...(vr && VARIANTS[sk.id] ? [{ text: t('ui.skill.variant_tag', { name: t(`skill.${sk.id}.var.${vr}.name`) }) }] : []),
-              ...(sk.mp ? [{ text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined }] : []),
-              ...(rs.cd ? [{ text: t('ui.skill.cd', { n: rs.cd }) }] : []),
-            ];
-            return (
-              <Tooltip
-                key={sk.id}
-                content={
-                  <TipCard
-                    title={t(`skill.${sk.id}.name`)}
-                    sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined}
-                    lines={lines}
-                    desc={t(`skill.${sk.id}.desc`)}
-                  />
-                }
-              >
-                <button
-                  type="button"
-                  className="skill"
-                  data-state={state}
-                  data-method="1"
-                  aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`}
-                  onClick={(e) => {
-                    Game.current?.useSkill(BAR_SIZE + 2 + j);
-                    blurAfterPointer(e);
-                  }}
-                >
-                  <span className="skill-icon">
-                    <ContentIcon def={sk} />
-                  </span>
-                  <span className="skill-key">⇧{j + 1}</span>
-                  {!locked && left > 80 && (
-                    <>
-                      <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
-                      {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
-                    </>
-                  )}
-                  {locked && <span className="skill-lock">🔒</span>}
-                </button>
-              </Tooltip>
-            );
-          })}
-        </div>
-      )}
-      <BuffRow />
-      <SysRow flags={flags} wantFly={wantFly} />
     </div>
   );
 }
@@ -879,77 +298,6 @@ function TribBars() {
   );
 }
 
-const CHAT_IDLE_MS = 12_000;
-
-function Chat() {
-  const log = useUI((s) => s.log);
-  const open = useUI((s) => s.chatOpen);
-  const [text, setText] = useState('');
-  const listRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  // Không gõ và không có dòng mới trong 12 giây thì nhật ký mờ đi (HUD gọn); có dòng mới hoặc mở chat thì hiện lại.
-  const [idle, setIdle] = useState(false);
-  useEffect(() => {
-    const el = listRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-    setIdle(false);
-    const id = window.setTimeout(() => setIdle(true), CHAT_IDLE_MS);
-    return () => window.clearTimeout(id);
-  }, [log]);
-  useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
-  const submit = () => {
-    const m = text.trim();
-    // Lệnh chat tổ đội/tỉ thí: chỉ là ý định, server kiểm mọi điều kiện.
-    const cmd = /^\/(moi|p|tithi|roi)(?:\s+(.*))?$/i.exec(m);
-    if (cmd) {
-      const arg = (cmd[2] ?? '').trim();
-      const g = Game.current;
-      const c = cmd[1].toLowerCase();
-      if (c === 'moi' && arg) g?.send(C.PARTY, { a: 'inv', n: arg });
-      else if (c === 'p' && arg) g?.send(C.PARTY, { a: 'say', m: arg });
-      else if (c === 'tithi' && arg) g?.send(C.DUEL, { a: 'inv', n: arg });
-      else if (c === 'roi') g?.send(C.PARTY, { a: 'leave' });
-    } else if (m) Game.current?.send(C.CHAT, { m });
-    setText('');
-    set({ chatOpen: false });
-    inputRef.current?.blur();
-  };
-  return (
-    <div className={'chat' + (open ? ' open' : '') + (idle && !open ? ' idle' : '')}>
-      <Corners />
-      <div className="chat-log" ref={listRef}>
-        {log.map((l) => (
-          <div key={l.id} className={'chat-line ' + l.type}>
-            {l.from ? <b>{l.from}: </b> : null}
-            {l.text}
-          </div>
-        ))}
-      </div>
-      <input
-        ref={inputRef}
-        className="chat-input"
-        value={text}
-        maxLength={160}
-        placeholder={t('ui.chat.placeholder')}
-        onChange={(e) => setText(e.target.value)}
-        onFocus={() => set({ chatOpen: true })}
-        onBlur={() => set({ chatOpen: false })}
-        onKeyDown={(e) => {
-          e.stopPropagation();
-          if (e.key === 'Enter') submit();
-          else if (e.key === 'Escape') {
-            setText('');
-            set({ chatOpen: false });
-            inputRef.current?.blur();
-          }
-        }}
-      />
-    </div>
-  );
-}
-
 function Toasts() {
   const toasts = useUI((s) => s.toasts);
   return (
@@ -1037,10 +385,20 @@ export function Hud() {
   }, [cut]);
   const cining = useUI((s) => s.cine !== null && !s.cine.out && s.cine.kind !== 'dan');
   const dueling = useUI((s) => s.duel !== null);
+  const skillLayout = useUI((s) => s.skillLayout);
+  const questCollapsed = useUI((s) => s.questCollapsed);
+  const chatCollapsed = useUI((s) => s.chatCollapsed);
+  const mode = useHudMode();
   return (
-    <div className={'hud' + (dueling ? ' duel-on' : '') + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')} data-cut={cut}>
+    <div
+      className={'hud u2hud' + (dueling ? ' duel-on' : '') + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')}
+      data-cut={cut}
+      data-mode={mode}
+      data-skills={skillLayout}
+      style={hudVars(mode, { skillLayout, questCollapsed, chatCollapsed })}
+    >
       <TribBars />
-      <PlayerFrame />
+      <PlayerCard />
       <PartyFrame />
       <InviteStack />
       <DuelBanner />
@@ -1048,11 +406,12 @@ export function Hud() {
       <ChapterCardView />
       <UltCardView />
       <BossLineView />
-      <BossBar />
+      <BossCard />
       <TargetFrame below={hasBoss} />
-      <div className="right-col">
+      <div className="u2h-zone u2h-tr">
+        <HubBar />
         <Minimap />
-        <QuestTracker />
+        <QuestTrack />
       </div>
       <Toasts />
       <Tribulation />
@@ -1062,14 +421,123 @@ export function Hud() {
       {controls === 'mouse' && !mouseLook && !npc && !panel && !dead && <LockHint />}
       {hint && !npc && <div className="hint">{hint}</div>}
       <CastBar />
-      <SkillBar />
-      <Chat />
+      <SkillBanner />
+      <SkillCluster layout={skillLayout} utility={<UtilityRow />} />
+      <ChatBox />
       <Panels />
       {npc && <NpcDialog npcId={npc} />}
       <DeathOverlay />
       <DebugPanel />
       <Corner />
     </div>
+  );
+}
+
+/**
+ * Ô tiện ích cạnh cụm kỹ năng (U2-2): pháp bảo phụ (9), đan lô (T), thần thức (V), nguyên anh (X), chip phân thân (G), dấu chồng
+ * công pháp, hàng chiêu bậc cao (Shift+số) và buff. Giữ nguyên logic cũ; chỉ đổi chỗ đặt.
+ */
+function UtilityRow() {
+  const char = useUI((s) => s.char);
+  const cds = useUI((s) => s.cds);
+  const gcdAt = useUI((s) => s.gcdAt);
+  const mp = useUI((s) => s.mp);
+  const airborne = useUI((s) => s.airborne);
+  const method = useUI((s) => s.method);
+  const clone = useUI((s) => s.clone);
+  const now = useNow(100);
+  if (!char) return null;
+  const mdef = method?.method ? METHOD.get(method.method) : undefined;
+  const pas = mdef?.passive;
+  const stackKind = pas?.kind === 'kiem_y' || pas?.kind === 'the' ? pas.kind : null;
+  const tier = tierBar(method?.method);
+  return (
+    <>
+      {stackKind && (
+        <div className="stack-pips" aria-label={t(`ui.method.stacks.${stackKind}`)}>
+          <span>{t(`ui.method.stacks.${stackKind}`)}</span>
+          {Array.from({ length: pas?.max ?? 5 }, (_, i) => (
+            <i key={i} className={i < (method?.stacks ?? 0) ? 'on' : ''} />
+          ))}
+        </div>
+      )}
+      {char.level >= CLONE_UNLOCK_LEVEL && (
+        <div className={'clone-chip' + (now < clone.until ? ' on' : '')} data-testid="clone-chip" aria-label={t('ui.clone.title')}>
+          <span className="clone-key">G</span>
+          {now < clone.until
+            ? t('ui.clone.left', { n: Math.ceil((clone.until - now) / 1000) })
+            : now < clone.cdUntil
+              ? t('ui.clone.cd', { n: Math.ceil((clone.cdUntil - now) / 1000) })
+              : t('ui.clone.title')}
+        </div>
+      )}
+      <div className="u2h-extras">
+        <ArtifactSlot />
+        <BondedSlot />
+        <SpiritSlot />
+        <SoulSlot />
+      </div>
+      {tier.length > 0 && (
+        <div className="u2h-extras u2h-tier" aria-label={t('ui.skill.tier_row')}>
+          {tier.map((sk, j) => {
+            const rs = resolveBarSkill(method, sk);
+            const locked = char.level < sk.unlock;
+            const ready = Math.max(cds[sk.id] ?? 0, gcdAt);
+            const left = Math.max(0, ready - now);
+            const total = (cds[sk.id] ?? 0) > gcdAt ? Math.max(1, rs.cd) * 1000 : 1000;
+            const noMp = !locked && mp < sk.mp;
+            const state = locked ? 'locked' : airborne ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
+            const lv = method?.lv[sk.id] ?? 1;
+            const vr = method?.vr[sk.id];
+            const lines = [
+              { text: t('ui.skill.tier_key', { n: j + 1 }) },
+              ...(lv > 1 ? [{ text: t('ui.skill.level_tag', { n: lv }) }] : []),
+              ...(vr && VARIANTS[sk.id] ? [{ text: t('ui.skill.variant_tag', { name: t(`skill.${sk.id}.var.${vr}.name`) }) }] : []),
+              ...(sk.mp ? [{ text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined }] : []),
+              ...(rs.cd ? [{ text: t('ui.skill.cd', { n: rs.cd }) }] : []),
+            ];
+            return (
+              <Tooltip
+                key={sk.id}
+                content={
+                  <TipCard
+                    title={t(`skill.${sk.id}.name`)}
+                    sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined}
+                    lines={lines}
+                    desc={t(`skill.${sk.id}.desc`)}
+                  />
+                }
+              >
+                <button
+                  type="button"
+                  className="skill"
+                  data-state={state}
+                  data-method="1"
+                  aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`}
+                  onClick={(e) => {
+                    Game.current?.useSkill(BAR_SIZE + 2 + j);
+                    blurAfterPointer(e);
+                  }}
+                >
+                  <span className="skill-icon">
+                    <ContentIcon def={sk} />
+                  </span>
+                  <span className="skill-key">⇧{j + 1}</span>
+                  {!locked && left > 80 && (
+                    <>
+                      <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
+                      {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
+                    </>
+                  )}
+                  {locked && <span className="skill-lock">🔒</span>}
+                </button>
+              </Tooltip>
+            );
+          })}
+        </div>
+      )}
+      <BuffRow />
+    </>
   );
 }
 
