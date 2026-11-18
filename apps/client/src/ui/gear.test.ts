@@ -3,7 +3,15 @@ import type { Equipment, InvItem, ItemInst } from '@dtl/shared';
 import { affixText, compareLines, diffLines, equipDiff, gearQuality, itemLines, itemSub, pctText, tierText } from './gear';
 import { ITEM } from '@dtl/content';
 
-const inst = (q: 0 | 1 | 2 | 3 | 4, atk: number, extra: Partial<ItemInst> = {}): ItemInst => ({ q, ilvl: 12, main: { atk }, affixes: [], gems: [], bound: false, ...extra });
+const inst = (q: 0 | 1 | 2 | 3 | 4, atk: number, extra: Partial<ItemInst> = {}): ItemInst => ({
+  q,
+  ilvl: 12,
+  main: { atk },
+  affixes: [],
+  gems: [],
+  bound: false,
+  ...extra,
+});
 const sword = (i: ItemInst, plus = 0): InvItem => ({ id: 'itm_thanh_phong_kiem', n: 1, inst: i, ...(plus ? { plus } : {}) });
 const def = ITEM.get('itm_thanh_phong_kiem')!;
 
@@ -14,7 +22,16 @@ describe('hiển thị trang bị', () => {
   });
 
   it('dòng chính nhân cường hóa, dòng phụ có tham số hệ và chiêu qua i18n', () => {
-    const it = sword(inst(2, 20, { affixes: [{ id: 'crit_rate', v: 0.025 }, { id: 'elem_dmg', p: 'hoa', v: 0.06 }, { id: 'skill_dmg', p: 'skl_phi_kiem', v: 0.1 }] }), 5);
+    const it = sword(
+      inst(2, 20, {
+        affixes: [
+          { id: 'crit_rate', v: 0.025 },
+          { id: 'elem_dmg', p: 'hoa', v: 0.06 },
+          { id: 'skill_dmg', p: 'skl_phi_kiem', v: 0.1 },
+        ],
+      }),
+      5,
+    );
     const lines = itemLines(it, def).map((l) => l.text);
     expect(lines[0]).toMatch(/^Công \+\d+$/);
     expect(Number(lines[0].match(/\d+/)![0])).toBeGreaterThan(20);
@@ -59,7 +76,11 @@ describe('so sánh với món đang mặc', () => {
 describe('đồ bậc 3 (E3-F)', () => {
   const kq = ITEM.get('itm_kinh_quang_kiem')!;
   const lm = ITEM.get('itm_liet_mach_kiem')!;
-  const mk = (id: string, ilvl: number, atk: number): InvItem => ({ id, n: 1, inst: { q: 2, ilvl, main: { atk }, affixes: [], gems: ['', '', ''], bound: false } });
+  const mk = (id: string, ilvl: number, atk: number): InvItem => ({
+    id,
+    n: 1,
+    inst: { q: 2, ilvl, main: { atk }, affixes: [], gems: ['', '', ''], bound: false },
+  });
 
   it('dòng phụ ghi bậc 3 và cấp vật phẩm', () => {
     expect(itemSub(mk(kq.id, 21, 100), kq)).toBe('Huyền phẩm · Pháp kiếm · Cấp vật phẩm 21 · Bậc 3');

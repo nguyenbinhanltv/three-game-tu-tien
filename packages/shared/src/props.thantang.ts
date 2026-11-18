@@ -5,7 +5,10 @@ import type { HandProp } from './props';
 const CX = 1520;
 const CZ = 1300;
 const PI = Math.PI;
-const at = (r: number, a: number) => ({ x: Math.round((CX + Math.cos(a) * r) * 100) / 100, z: Math.round((CZ + Math.sin(a) * r) * 100) / 100 });
+const at = (r: number, a: number) => ({
+  x: Math.round((CX + Math.cos(a) * r) * 100) / 100,
+  z: Math.round((CZ + Math.sin(a) * r) * 100) / 100,
+});
 const DOOR_DEG = [200, 270, 340];
 
 export const THAN_TANG_PROPS: readonly HandProp[] = (() => {

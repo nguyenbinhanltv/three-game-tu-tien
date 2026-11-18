@@ -48,7 +48,21 @@ function CloseIcon() {
 }
 
 /** Tiêu đề bảng: mốc thoi, chữ serif giãn cách, đường kẻ đồng thau, nút đóng (nếu có `onClose`). */
-export function Header({ title, sub, onClose, actions, id, plate }: { title: string; sub?: string; onClose?: () => void; actions?: ReactNode; id?: string; plate?: MapMotif }) {
+export function Header({
+  title,
+  sub,
+  onClose,
+  actions,
+  id,
+  plate,
+}: {
+  title: string;
+  sub?: string;
+  onClose?: () => void;
+  actions?: ReactNode;
+  id?: string;
+  plate?: MapMotif;
+}) {
   const heading = (
     <h2 className="k-head-title" id={id}>
       {title}

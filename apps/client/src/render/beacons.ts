@@ -59,13 +59,28 @@ function beaconGeometry(): THREE.BufferGeometry {
 }
 
 function beaconMaterial(halo = false): THREE.MeshBasicNodeMaterial {
-  const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+  const mat = new THREE.MeshBasicNodeMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
   const h = uv().y;
   const around = uv().x;
   // Sáng ở chân, tắt dần tới đỉnh; chân cột tắt nhẹ để không có mép cứng trên đất.
   const vertical = smoothstep(0, 0.06, h).mul(float(1).sub(smoothstep(0.55, 1, h)));
   // Dải sáng trôi lên chậm, lệch pha theo góc quanh trục.
-  const flow = sin(h.mul(22).sub(time.mul(1.1)).add(around.mul(Math.PI * 6))).mul(0.5).add(0.5).mul(0.4).add(0.6);
+  const flow = sin(
+    h
+      .mul(22)
+      .sub(time.mul(1.1))
+      .add(around.mul(Math.PI * 6)),
+  )
+    .mul(0.5)
+    .add(0.5)
+    .mul(0.4)
+    .add(0.6);
   // Mép mờ: pháp tuyến vuông góc hướng nhìn thì trong suốt (mặt nghiêng về phía người nhìn thì đậm).
   const facing = abs(dot(normalize(normalView), normalize(positionView.negate())));
   const edge = facing.pow(halo ? 2.2 : 1.4);
@@ -75,7 +90,17 @@ function beaconMaterial(halo = false): THREE.MeshBasicNodeMaterial {
   const near = mix(float(0.22), float(1), smoothstep(10, 120, dist));
   const k = beaconParams.intensity;
   mat.colorNode = vec3(0.45, 1, 0.86).mul(clamp(float(1).add(k.mul(halo ? 0.2 : 0.9)), 1, BEACON_MAX_HDR));
-  mat.opacityNode = clamp(vertical.mul(flow).mul(edge).mul(k).mul(halo ? 0.4 : 1.2).mul(far).mul(near), 0, 1);
+  mat.opacityNode = clamp(
+    vertical
+      .mul(flow)
+      .mul(edge)
+      .mul(k)
+      .mul(halo ? 0.4 : 1.2)
+      .mul(far)
+      .mul(near),
+    0,
+    1,
+  );
   // Không đánh dấu bloom: dải sáng mảnh, rất sáng ở xa làm bloom ra khối chữ nhật; cột tự có mép mờ.
   return mat;
 }
@@ -102,7 +127,11 @@ export class Beacons {
     this.halo.renderOrder = 4;
     this.halo.count = points.length;
     points.forEach((p, i) => {
-      m.compose(new THREE.Vector3(p.x, heightAt(p.x, p.z) - 0.5, p.z), new THREE.Quaternion(), new THREE.Vector3(HALO_SCALE, p.h, HALO_SCALE));
+      m.compose(
+        new THREE.Vector3(p.x, heightAt(p.x, p.z) - 0.5, p.z),
+        new THREE.Quaternion(),
+        new THREE.Vector3(HALO_SCALE, p.h, HALO_SCALE),
+      );
       this.halo.setMatrixAt(i, m);
     });
     this.halo.instanceMatrix.needsUpdate = true;

@@ -48,7 +48,8 @@ const sent: Sent[] = [];
 let acc = 61000;
 const LV = 'than_tang';
 const DEF = () => content.LEVELS[LV];
-const keys = (p: Ent) => sent.filter((s) => s.type === S.SYS && (s.to === p.char.name || s.to === '*')).map((s) => (s.msg as { k: string }).k);
+const keys = (p: Ent) =>
+  sent.filter((s) => s.type === S.SYS && (s.to === p.char.name || s.to === '*')).map((s) => (s.msg as { k: string }).k);
 const fxs = (t: string) => sent.filter((s) => s.type === S.FX && (s.msg as FxMsg).t === t).map((s) => s.msg as FxMsg);
 const xfers = (p: Ent) => sent.filter((s) => s.type === S.TRANSFER && s.to === p.char.name).map((s) => s.msg as TransferMsg);
 
@@ -63,7 +64,14 @@ function mkChar(name: string, level: number) {
   return char;
 }
 
-type TestRoom = InstanceType<Rooms['GameRoom']> & { director(): void; payReward(): void; wave: number; nextWaveAt: number; clearedAt: number; seals: InstanceType<typeof import('./seal').SealSystem> | null };
+type TestRoom = InstanceType<Rooms['GameRoom']> & {
+  director(): void;
+  payReward(): void;
+  wave: number;
+  nextWaveAt: number;
+  clearedAt: number;
+  seals: InstanceType<typeof import('./seal').SealSystem> | null;
+};
 
 async function mkRoom(levelId: string, cls: { prototype: object }) {
   const { Aoi } = await import('../aoi');
@@ -71,7 +79,13 @@ async function mkRoom(levelId: string, cls: { prototype: object }) {
   const lv = content.LEVELS[levelId];
   const spawn = lv.dungeon?.spawn ?? lv.spawn!;
   room.broadcast = (type: string, msg: unknown) => sent.push({ type, msg, to: '*' });
-  room.sim = new GameSim(new WorldState(), room as never, { levelId, roomName: levelId, spawn, respawn: spawn, persistPosition: !lv.dungeon });
+  room.sim = new GameSim(new WorldState(), room as never, {
+    levelId,
+    roomName: levelId,
+    spawn,
+    respawn: spawn,
+    persistPosition: !lv.dungeon,
+  });
   room.aoi = new Aoi(room.sim);
   room.clients = { getById: () => undefined };
   room.markers = { drop() {}, sync() {} };
@@ -81,7 +95,11 @@ async function mkRoom(levelId: string, cls: { prototype: object }) {
   Object.assign(room, { wave: 0, nextWaveAt: 0, clearedAt: 0, revives: new Map(), puzzle: null, seals: null });
   const join = (char: InstanceType<typeof Character>, auth: Record<string, unknown> = {}): Ent => {
     const c = { sessionId: 'sid' + acc++, send: (type: string, msg: unknown) => sent.push({ type, msg, to: char.name }) };
-    (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(c, {}, { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true, ...auth });
+    (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(
+      c,
+      {},
+      { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true, ...auth },
+    );
     return [...room.sim.players.values()].find((q) => q.char.id === char.id)!;
   };
   return { room: room as unknown as TestRoom, sim: room.sim, join };
@@ -154,8 +172,25 @@ describe('hàm thuần', () => {
     expect(tt.handYaws(0, 6, 1, 45)[0]).toBeCloseTo(Math.PI / 4);
   });
   it('gathered: cả đội gần nhau thì đúng; một người đứng xa thì sai; một mình thì sai', () => {
-    expect(tt.gathered([{ x: 0, z: 0 }, { x: 4, z: 0 }], 10)).toBe(true);
-    expect(tt.gathered([{ x: 0, z: 0 }, { x: 4, z: 0 }, { x: 40, z: 0 }], 10)).toBe(false);
+    expect(
+      tt.gathered(
+        [
+          { x: 0, z: 0 },
+          { x: 4, z: 0 },
+        ],
+        10,
+      ),
+    ).toBe(true);
+    expect(
+      tt.gathered(
+        [
+          { x: 0, z: 0 },
+          { x: 4, z: 0 },
+          { x: 40, z: 0 },
+        ],
+        10,
+      ),
+    ).toBe(false);
     expect(tt.gathered([{ x: 0, z: 0 }], 10)).toBe(false);
   });
   it('ringPos quay đều quanh tâm', () => {
@@ -187,7 +222,8 @@ describe('vào bí cảnh', () => {
     const p = prime(r.join(mkChar('ttcong', 26)), 26);
     const portal = content.LEVELS.thien_khuyet.portals![0];
     place(p, portal.x, portal.z);
-    (r.room as unknown as { sendTransfer: (p: Ent, to: string, o?: unknown) => void }).sendTransfer = (_p, to, o) => void sent.push({ type: S.TRANSFER, msg: { level: to, options: o }, to: p.char.name });
+    (r.room as unknown as { sendTransfer: (p: Ent, to: string, o?: unknown) => void }).sendTransfer = (_p, to, o) =>
+      void sent.push({ type: S.TRANSFER, msg: { level: to, options: o }, to: p.char.name });
     p.char.level = 25;
     r.room.onPortal(p);
     expect(keys(p)).toContain('sys.dungeon_level');
@@ -209,7 +245,18 @@ describe('đợt phong ấn', () => {
     r.room.wave = 3;
     r.room.nextWaveAt = now;
     r.room.director();
-    return { r, p, alive, adv: (ms: number) => (now += ms), set now(v: number) { now = v; }, get now() { return now; } };
+    return {
+      r,
+      p,
+      alive,
+      adv: (ms: number) => (now += ms),
+      set now(v: number) {
+        now = v;
+      },
+      get now() {
+        return now;
+      },
+    };
   }
 
   it('đợt 4: 6 quái, ba cửa đóng; chưa mở đủ thì hết quái cũng không sang đợt sau', async () => {
@@ -326,7 +373,11 @@ describe('Vô Diện Thần Quân (ThanTangSystem)', () => {
     p.char.hp = 1_000_000;
     let now = 80_000_000;
     vi.spyOn(Date, 'now').mockImplementation(() => now);
-    const sim = r.sim as unknown as { now: number; hazards: { src: string; dmg: number; sh?: string }[]; than: InstanceType<typeof tt.ThanTangSystem> };
+    const sim = r.sim as unknown as {
+      now: number;
+      hazards: { src: string; dmg: number; sh?: string }[];
+      than: InstanceType<typeof tt.ThanTangSystem>;
+    };
     sim.now = now;
     const adv = (ms: number) => {
       now += ms;
@@ -341,7 +392,8 @@ describe('Vô Diện Thần Quân (ThanTangSystem)', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
     adv(0);
     adv(5000);
-    const volley = () => sim.hazards.filter((h) => h.sh === 'cone' && h.src === boss.id).slice(-6) as unknown as { yaw: number; dmg: number }[];
+    const volley = () =>
+      sim.hazards.filter((h) => h.sh === 'cone' && h.src === boss.id).slice(-6) as unknown as { yaw: number; dmg: number }[];
     expect(volley()).toHaveLength(6);
     expect(volley().every((h) => h.dmg === 0)).toBe(true);
     // Tay đầu nhắm thẳng người gần nhất; khe giữa hai tay cách trục 30°, nón rộng 22° nên 30° là an toàn.
@@ -424,7 +476,9 @@ describe('Vô Diện Thần Quân (ThanTangSystem)', () => {
     adv(4000);
     expect(keys(p)).toContain('sys.tt_rings');
     const cfg = def.than!.rings!;
-    const rt = (sim.than as unknown as { rt: Map<string, { cx: number; cz: number; rings: { t0: number; theta0: number } }> }).rt.get(boss.id)!;
+    const rt = (sim.than as unknown as { rt: Map<string, { cx: number; cz: number; rings: { t0: number; theta0: number } }> }).rt.get(
+      boss.id,
+    )!;
     adv(1000);
     const pos = tt.ringPos(rt.cx, rt.cz, cfg.orbit, 0, cfg.n, cfg.spin, (sim.now - rt.rings.t0) / 1000, rt.rings.theta0);
     const hp0 = p.char.hp;
@@ -434,7 +488,9 @@ describe('Vô Diện Thần Quân (ThanTangSystem)', () => {
     // Hết 12 s: tia Phản hồi. Hai người đứng cạnh nhau trên đường tia (trước mặt boss) nhận gấp đôi một mình.
     adv(cfg.dur * 1000);
     expect(keys(p)).toContain('sys.tt_final');
-    const beam = (sim as unknown as { hazards: { sh?: string; yaw?: number; x: number; z: number }[] }).hazards.find((h) => h.sh === 'rect')!;
+    const beam = (sim as unknown as { hazards: { sh?: string; yaw?: number; x: number; z: number }[] }).hazards.find(
+      (h) => h.sh === 'rect',
+    )!;
     expect(beam).toBeDefined();
     const yaw = beam.yaw ?? 0;
     place(p, beam.x + Math.sin(yaw) * 20, beam.z + Math.cos(yaw) * 20);
@@ -456,7 +512,8 @@ describe('Vô Diện Thần Quân (ThanTangSystem)', () => {
     // Vừa bị phá thế thường (brk 4 s): addPosture sẽ là no-op, nhưng mất thế của phân thân vẫn phải kéo dài tới `weak`.
     (r.sim as unknown as { stagger(m: typeof boss, s: number): void }).stagger(boss, def.posture!.brk);
     expect(boss.stunUntil).toBeCloseTo(t0 + def.posture!.brk * 1000, -2);
-    for (const cl of r.sim.monsters.filter((m) => m.def.id === 'mon_tt_phan_than' && m.state !== MS_DEAD)) r.sim.damageMonster(cl, cl.s.mhp, p);
+    for (const cl of r.sim.monsters.filter((m) => m.def.id === 'mon_tt_phan_than' && m.state !== MS_DEAD))
+      r.sim.damageMonster(cl, cl.s.mhp, p);
     adv(100);
     expect(keys(p)).toContain('sys.tt_clone_ok');
     expect(boss.stunUntil).toBeGreaterThanOrEqual(t0 + 100 + def.than!.clone!.weak * 1000 - 50);
@@ -489,7 +546,13 @@ describe('thưởng', () => {
     expect(keys(p)).toContain('sys.dungeon_reward');
     expect(p.char.inv.some((i) => i?.id === 'itm_than_tang_ngoc')).toBe(true);
     const idem = `dungeon:${LV}:${p.char.id}:${new Date().toISOString().slice(0, 10)}`;
-    expect(dbm.db.select().from(dbm.ledger).all().filter((x) => x.idem === idem)).toHaveLength(1);
+    expect(
+      dbm.db
+        .select()
+        .from(dbm.ledger)
+        .all()
+        .filter((x) => x.idem === idem),
+    ).toHaveLength(1);
     const gold1 = p.char.gold;
     r.room.payReward();
     expect(p.char.gold).toBe(gold1);

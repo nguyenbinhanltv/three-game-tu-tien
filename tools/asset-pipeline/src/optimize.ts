@@ -39,7 +39,17 @@ import {
   rel,
 } from './config.js';
 import { TOKTX_HELP, compressTexturesKTX2, findToktx, toktxVersion } from './ktx.js';
-import { type Dims, type TextureInfo, countTriangles, primitiveTriangles, isSkinned, listTextures, lodLevel, maxBones, measureCurrentPose } from './stats.js';
+import {
+  type Dims,
+  type TextureInfo,
+  countTriangles,
+  primitiveTriangles,
+  isSkinned,
+  listTextures,
+  lodLevel,
+  maxBones,
+  measureCurrentPose,
+} from './stats.js';
 
 export interface ManifestLod {
   level: number;
@@ -176,7 +186,9 @@ async function capLod0(doc: Document, cap: number): Promise<number> {
   for (let round = 0; round < 8; round++, ratio *= 0.95) {
     for (const { error, permissive } of ATTEMPTS) {
       const simplifier = makeSimplifier(MeshoptSimplifier, permissive);
-      const trial = new Map(meshes.map((m) => [m, m.listPrimitives().map((p) => simplifyPrimitive(p.clone(), { simplifier, ratio, error }))]));
+      const trial = new Map(
+        meshes.map((m) => [m, m.listPrimitives().map((p) => simplifyPrimitive(p.clone(), { simplifier, ratio, error }))]),
+      );
       let got = 0;
       for (const [m, prims] of trial) got += (uses.get(m) ?? 1) * prims.reduce((s, p) => s + primitiveTriangles(p), 0);
       if (got <= cap) {
@@ -285,7 +297,12 @@ export async function optimizeAsset(
   const rawDims = measureCurrentPose(doc);
   const skinned = isSkinned(doc);
 
-  await doc.transform(dedup(), prune({ keepLeaves: true, keepExtras: true }), weld(), resample(cls === 'anim' ? { tolerance: ANIM_TOLERANCE } : {}));
+  await doc.transform(
+    dedup(),
+    prune({ keepLeaves: true, keepExtras: true }),
+    weld(),
+    resample(cls === 'anim' ? { tolerance: ANIM_TOLERANCE } : {}),
+  );
 
   const rawTriangles = countTriangles(doc, 0);
   const lod0 = await capLod0(doc, cap);
@@ -295,10 +312,14 @@ export async function optimizeAsset(
   if (toktx && doc.getRoot().listTextures().length > 0) ktx2 = (await compressTexturesKTX2(doc, toktx, spec)).converted > 0;
   else if (spec.webp && doc.getRoot().listTextures().length > 0) {
     // Thiếu KTX-Software: WebP (three nạp EXT_texture_webp), màu + normal lossy, mặt nạ/emissive lossless.
-    await doc.transform(textureCompress({ encoder: sharp, targetFormat: 'webp', slots: /^(baseColor|normal|diffuse)/, quality: 88, effort: 5 }));
+    await doc.transform(
+      textureCompress({ encoder: sharp, targetFormat: 'webp', slots: /^(baseColor|normal|diffuse)/, quality: 88, effort: 5 }),
+    );
     await doc.transform(textureCompress({ encoder: sharp, targetFormat: 'webp', slots: /^emissive/, lossless: true, effort: 5 } as never));
     // ORM = mặt nạ nhuộm (trọng số mượt, kiểm bằng ảnh game: không đổi màu đáng kể): lossy q93.
-    await doc.transform(textureCompress({ encoder: sharp, targetFormat: 'webp', slots: /^(metallicRoughness|occlusion)/, quality: 93, effort: 5 } as never));
+    await doc.transform(
+      textureCompress({ encoder: sharp, targetFormat: 'webp', slots: /^(metallicRoughness|occlusion)/, quality: 93, effort: 5 } as never),
+    );
   }
 
   const lods: ManifestLod[] = [{ level: 0, triangles: lod0 }];
@@ -329,7 +350,10 @@ export async function optimizeAsset(
     skinned,
     quantized: !skinned,
     bones: maxBones(doc),
-    animations: doc.getRoot().listAnimations().map((a) => a.getName()),
+    animations: doc
+      .getRoot()
+      .listAnimations()
+      .map((a) => a.getName()),
     ktx2,
     textures: listTextures(doc),
     lods,
@@ -357,7 +381,12 @@ export async function optimize(opts: OptimizeOptions = {}): Promise<OptimizeRepo
   }
 
   fs.mkdirSync(outDir, { recursive: true });
-  const rawFiles = fs.existsSync(rawDir) ? fs.readdirSync(rawDir).filter((f) => f.toLowerCase().endsWith('.glb')).sort() : [];
+  const rawFiles = fs.existsSync(rawDir)
+    ? fs
+        .readdirSync(rawDir)
+        .filter((f) => f.toLowerCase().endsWith('.glb'))
+        .sort()
+    : [];
   if (rawFiles.length === 0) warn(`không có GLB thô nào trong ${rel(rawDir)}; giữ nguyên manifest hiện có.`);
 
   const cache = readCache(cacheFile);
@@ -367,7 +396,10 @@ export async function optimize(opts: OptimizeOptions = {}): Promise<OptimizeRepo
     const id = path.basename(f, path.extname(f));
     if (opts.only && id !== opts.only) continue;
     if (!ASSET_ID.test(id)) {
-      report.failed.push({ id, error: `tên "${id}" sai quy ước (tiền tố chr_/mon_/elite_/boss_/prop_/arch_/fx_/anim_ + snake_case không dấu)` });
+      report.failed.push({
+        id,
+        error: `tên "${id}" sai quy ước (tiền tố chr_/mon_/elite_/boss_/prop_/arch_/fx_/anim_ + snake_case không dấu)`,
+      });
       continue;
     }
     const cls = classify(id, budgets);

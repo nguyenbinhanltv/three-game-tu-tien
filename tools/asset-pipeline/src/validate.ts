@@ -143,7 +143,10 @@ export async function validate(opts: ValidateOptions = {}): Promise<ValidateRepo
     }
 
     // Quantize trên mesh có xương
-    const used = doc.getRoot().listExtensionsUsed().map((e) => e.extensionName);
+    const used = doc
+      .getRoot()
+      .listExtensionsUsed()
+      .map((e) => e.extensionName);
     if (skinned && used.includes('KHR_mesh_quantization')) {
       err(id, `mesh có xương bị quantize (KHR_mesh_quantization) — nhân vật sẽ co lại khi clip có track scale`);
     }
@@ -153,7 +156,8 @@ export async function validate(opts: ValidateOptions = {}): Promise<ValidateRepo
       const edge = Math.max(tex.width, tex.height);
       const limit = textureLimit(spec, tex.slots);
       if (limit === 0) err(id, `lớp ${entry.class} không được có texture (${tex.name})`);
-      else if (edge > limit) err(id, `texture ${tex.name} (${tex.slots.join(', ')}) ${tex.width}×${tex.height} vượt ${limit}px của ${entry.class}`);
+      else if (edge > limit)
+        err(id, `texture ${tex.name} (${tex.slots.join(', ')}) ${tex.width}×${tex.height} vượt ${limit}px của ${entry.class}`);
       if (tex.mimeType !== 'image/ktx2') warn(id, `texture ${tex.name} chưa nén KTX2 (${tex.mimeType})`);
     }
 
@@ -169,7 +173,9 @@ export async function validate(opts: ValidateOptions = {}): Promise<ValidateRepo
 
     // Tên trong file
     const root = doc.getRoot();
-    const bad = [...root.listNodes(), ...root.listMeshes(), ...root.listMaterials()].map((p) => p.getName()).filter((n) => !SAFE_NAME.test(n));
+    const bad = [...root.listNodes(), ...root.listMeshes(), ...root.listMaterials()]
+      .map((p) => p.getName())
+      .filter((n) => !SAFE_NAME.test(n));
     if (bad.length) warn(id, `${bad.length} tên node/mesh/material có dấu hoặc khoảng trắng: ${bad.slice(0, 5).join(', ')}`);
 
     // Chiều cao raw ↔ build ở mọi tư thế

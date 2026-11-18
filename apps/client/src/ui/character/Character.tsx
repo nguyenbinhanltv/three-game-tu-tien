@@ -39,7 +39,13 @@ export function Character() {
       width={560}
     >
       <div className="ngj-char">
-        <TabRail label={t('ui.char.tabs')} material="paper" value={tab} onChange={(id) => setTab(id as TabId)} items={RAIL.map((r) => ({ ...r, label: t('ui.char.tab.' + r.id) }))} />
+        <TabRail
+          label={t('ui.char.tabs')}
+          material="paper"
+          value={tab}
+          onChange={(id) => setTab(id as TabId)}
+          items={RAIL.map((r) => ({ ...r, label: t('ui.char.tab.' + r.id) }))}
+        />
         <div className="ngj-char-body">{body}</div>
       </div>
     </Window>

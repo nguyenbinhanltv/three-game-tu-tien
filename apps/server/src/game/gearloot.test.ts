@@ -27,13 +27,17 @@ const Z = VALLEY.z + 40;
 
 function setup(level = 15) {
   const sent: { type: string; to: string; msg: unknown }[] = [];
-  const sim: Sim = new GameSim(new WorldState(), { broadcast: (type: string, msg: unknown) => sent.push({ type, to: '*', msg }) } as never, {
-    levelId: 'van_lam',
-    roomName: 'test',
-    spawn: { x: X, z: Z },
-    respawn: { x: X, z: Z },
-    persistPosition: false,
-  });
+  const sim: Sim = new GameSim(
+    new WorldState(),
+    { broadcast: (type: string, msg: unknown) => sent.push({ type, to: '*', msg }) } as never,
+    {
+      levelId: 'van_lam',
+      roomName: 'test',
+      spawn: { x: X, z: Z },
+      respawn: { x: X, z: Z },
+      persistPosition: false,
+    },
+  );
   const c = Character.create(800_000 + Math.floor(Math.random() * 90_000), 'G' + Math.floor(Math.random() * 1e7));
   c.level = level;
   c.recalc();
@@ -155,7 +159,10 @@ describe('rơi và mặc/tháo trong sim', () => {
     sim.onEquip(p as never, { slot: b, r: 'req-bbbb' });
     expect(c.equip.weapon?.inst?.q).toBe(1);
     expect(c.inv[b]?.inst?.q).toBe(3);
-    const led = sqlite.prepare("SELECT reason, idem FROM ledger WHERE char_id = ? AND kind = 'noop' ORDER BY id").all(c.id) as { reason: string; idem: string }[];
+    const led = sqlite.prepare("SELECT reason, idem FROM ledger WHERE char_id = ? AND kind = 'noop' ORDER BY id").all(c.id) as {
+      reason: string;
+      idem: string;
+    }[];
     expect(led.map((l) => l.idem)).toEqual([`${c.id}:req-aaaa`, `${c.id}:req-bbbb`]);
     expect(led[1].reason).toContain('equip:weapon:');
     expect(Character.load(c.id).equip.weapon).toEqual(c.equip.weapon);

@@ -1,7 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { LEVELS } from '@dtl/content';
 import { PLAY_BOUNDS } from '@dtl/shared';
-import { clampView, placeLabels, fitScale, fitView, MAX_SCALE, panBy, parseLayers, pick, screenToWorld, soloSpawns, worldToScreen, zoneInfos, zoomAt } from './model';
+import {
+  clampView,
+  placeLabels,
+  fitScale,
+  fitView,
+  MAX_SCALE,
+  panBy,
+  parseLayers,
+  pick,
+  screenToWorld,
+  soloSpawns,
+  worldToScreen,
+  zoneInfos,
+  zoomAt,
+} from './model';
 
 const SIZE = { w: 660, h: 560 };
 

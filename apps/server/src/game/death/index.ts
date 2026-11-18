@@ -1,5 +1,24 @@
 // Chết và hồi sinh của người chơi (R-7): sát thương lên người, killPlayer, onRespawn, thưởng phó bản
-import { chargeFromTaken, RESONANCE_DEF, DEATH_XP_LOSS, type DmgMsg, type DungeonReward, reduceDamage, rollEquipDrops, type Quality, type FxMsg, MS_DEAD, PF_DEAD, PF_SHIELD, S, type SysMsg, buffMag, SOUL_DEATH_HP, xpNeed, type Terrain } from '@dtl/shared';
+import {
+  chargeFromTaken,
+  RESONANCE_DEF,
+  DEATH_XP_LOSS,
+  type DmgMsg,
+  type DungeonReward,
+  reduceDamage,
+  rollEquipDrops,
+  type Quality,
+  type FxMsg,
+  MS_DEAD,
+  PF_DEAD,
+  PF_SHIELD,
+  S,
+  type SysMsg,
+  buffMag,
+  SOUL_DEATH_HP,
+  xpNeed,
+  type Terrain,
+} from '@dtl/shared';
 import { TribSystem } from '../trib';
 import { ITEM_SYS, ITEMS, itemName, t } from '@dtl/content';
 import type { PlayerEnt, MonEnt, SimOptions } from '../entities';
@@ -18,7 +37,16 @@ export interface DeathCtx {
   addStack(p: PlayerEnt, max: number, decay: number): void;
   readonly bossDmgMul: number;
   readonly clone: CloneSystem;
-  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit?: boolean, hv?: boolean, heavy?: boolean, ke?: 0 | 1 | -1, dot?: boolean): void;
+  damageMonster(
+    mon: MonEnt,
+    dmg: number,
+    p: PlayerEnt | null,
+    crit?: boolean,
+    hv?: boolean,
+    heavy?: boolean,
+    ke?: 0 | 1 | -1,
+    dot?: boolean,
+  ): void;
   readonly domain: DomainSystem;
   readonly duel: DuelSystem;
   emit(type: string, payload: object): void;
@@ -78,7 +106,8 @@ export class DeathSystem {
     this.c.sys(p, 'sys.dungeon_reward', { name: t('dungeon.' + label + '.name'), xp }, 'good');
     if (gold > 0) this.c.sys(p, 'sys.gold', { n: gold }, 'loot');
     for (const g of kept) this.c.sys(p, 'sys.loot', { item: itemName(g.id), n: g.n }, 'loot', { i: g.id });
-    for (const g of keptGear) this.c.sys(p, 'sys.loot_gear', { item: itemName(g.id), quality: t('ui.quality.' + g.q) }, 'loot', { i: g.id, q: g.q });
+    for (const g of keptGear)
+      this.c.sys(p, 'sys.loot_gear', { item: itemName(g.id), quality: t('ui.quality.' + g.q) }, 'loot', { i: g.id, q: g.q });
     if (full) this.c.warn(p, 'sys.inv_full');
     return true;
   }
@@ -104,7 +133,8 @@ export class DeathSystem {
     // Kim Chung Trấn (E2-G): phản một phần sát thương (sau khi giảm) về quái đánh mình.
     if (this.c.now < p.mth.reflectUntil && src) {
       const attacker = this.c.monById.get(src);
-      if (attacker && attacker.state !== MS_DEAD && !(attacker.owner && attacker.owner !== p.sid)) this.c.damageMonster(attacker, Math.max(1, Math.round(n * p.mth.reflectMul)), p);
+      if (attacker && attacker.state !== MS_DEAD && !(attacker.owner && attacker.owner !== p.sid))
+        this.c.damageMonster(attacker, Math.max(1, Math.round(n * p.mth.reflectMul)), p);
     }
     if (parties.resonance(p)) n = Math.max(1, Math.round(n * (1 - RESONANCE_DEF)));
     if (p.shield) {

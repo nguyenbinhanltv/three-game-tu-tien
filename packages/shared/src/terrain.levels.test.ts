@@ -156,13 +156,13 @@ describe('E1-A: nhiều level', () => {
     // collider Vân Lam (Chính điện 2048,2004) không áp ở level này
     const open = registerTerrain({ ...ISLE, id: 'test_open', size: 4096, margin: 24, play: undefined, colliders: [] });
     const t: MoveState = { x: 2048, y: 0, z: 2040, vy: 0, grounded: true, flying: false };
-    for (let i = 0; i < 200; i++) stepMove(t, { s: i, mx: 0, mz: 1, yaw: 0, f: 0 }, { canFly: false, frozen: false, speedMul: 1, terrain: open });
+    for (let i = 0; i < 200; i++)
+      stepMove(t, { s: i, mx: 0, mz: 1, yaw: 0, f: 0 }, { canFly: false, frozen: false, speedMul: 1, terrain: open });
     expect(t.z).toBeLessThan(2000);
   });
 });
 
 // ---- Bản chép nguyên văn thuật toán cũ (trước E1-A) ----
-
 
 const MIN_LAND_Y = WATER_Y + 3;
 /** Độ cao thêm của vách ranh vùng chơi (m). */
@@ -178,7 +178,8 @@ function legacyWarped(f: Feature, x: number, z: number): number {
   const d = Math.sqrt(dx * dx + dz * dz);
   if (d < 1) return d;
   const ph = f.x * 0.013 + f.z * 0.007;
-  const n = fbm(x * 0.007 + ph, z * 0.007 - ph, 3, TERRAIN_SEED + 211) * 0.9 + fbm(x * 0.021 - ph, z * 0.021 + ph, 1, TERRAIN_SEED + 223) * 0.1;
+  const n =
+    fbm(x * 0.007 + ph, z * 0.007 - ph, 3, TERRAIN_SEED + 211) * 0.9 + fbm(x * 0.021 - ph, z * 0.021 + ph, 1, TERRAIN_SEED + 223) * 0.1;
   return d * (1 + 0.6 * n);
 }
 
@@ -274,7 +275,6 @@ function legacyInLake(x: number, z: number): boolean {
 
 /** Lơ lửng cao hơn mức này so với mặt đất thì coi là đang trên không (không ra chiêu được). Server và HUD dùng chung. */
 
-
 /** Độ cao "đứng được": mặt đất, hoặc mặt nước trừ độ sâu lội trong hồ. */
 function legacyGroundAt(x: number, z: number): number {
   const h = legacyHeightAt(x, z);
@@ -292,5 +292,3 @@ function legacyBiomeAt(x: number, z: number): LegacyBiome {
   if (legacyFeatureWeight(VALLEY, x, z) > 0.35 || legacyFeatureWeight(SUOI, x, z) > 0.35) return 'valley';
   return 'wild';
 }
-
-

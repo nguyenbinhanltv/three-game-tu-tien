@@ -33,7 +33,13 @@ interface Sent {
 function setup(level = 10, method?: string) {
   const sent: Sent[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'sf' + acc);
   char.level = level;
   char.recalc();
@@ -236,14 +242,22 @@ describe('đánh thường liên hoàn', () => {
       sim.now += 600;
       sim.onSkill(p, { id: 'skl_phi_kiem', t: m.id });
       resolve();
-      seq.push(fxs().filter((f) => f.t === 'sword').pop()?.n);
+      seq.push(
+        fxs()
+          .filter((f) => f.t === 'sword')
+          .pop()?.n,
+      );
     }
     expect(seq).toEqual([0, 1, 2, 0]);
     fresh();
     sim.now += 2500;
     sim.onSkill(p, { id: 'skl_phi_kiem', t: m.id });
     resolve();
-    expect(fxs().filter((f) => f.t === 'sword').pop()?.n).toBe(0);
+    expect(
+      fxs()
+        .filter((f) => f.t === 'sword')
+        .pop()?.n,
+    ).toBe(0);
   });
   it('đòn 3 mạnh hơn đòn 1 (hệ số 1,4 so với 0,9)', () => {
     const { sim, p, mon, fresh } = setup();

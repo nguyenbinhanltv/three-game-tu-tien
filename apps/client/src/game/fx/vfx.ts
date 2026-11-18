@@ -19,10 +19,39 @@ import { PREFETCH_PRIORITY } from '../core/preload';
 import { G } from '../core/geo';
 import { type Box } from '../core/screenFit';
 import { FLAGS } from '../../base/flags';
-import { BOLTS, Fx, InkMark, POOL, PosFn, RAIN, RING_GEO, SLASH_CENTER, STRIKE_POOL_MAX, TUBE_GEO, UP, _a, _b, _c, _q, orientSlash, takeBolt } from './vfxParts/common';
+import {
+  BOLTS,
+  Fx,
+  InkMark,
+  POOL,
+  PosFn,
+  RAIN,
+  RING_GEO,
+  SLASH_CENTER,
+  STRIKE_POOL_MAX,
+  TUBE_GEO,
+  UP,
+  _a,
+  _b,
+  _c,
+  _q,
+  orientSlash,
+  takeBolt,
+} from './vfxParts/common';
 import { hazard, trailPool, venomPool } from './vfxParts/hazard';
 import { goldDrop, lootDrop } from './vfxParts/loot';
-import { ascendGlow, danTran, kdStele, mirrorDisc, mirrorPillar, reviveGlow, soulOut, tamMaAura, thanNiem, tribulationCloud } from './vfxParts/scenes';
+import {
+  ascendGlow,
+  danTran,
+  kdStele,
+  mirrorDisc,
+  mirrorPillar,
+  reviveGlow,
+  soulOut,
+  tamMaAura,
+  thanNiem,
+  tribulationCloud,
+} from './vfxParts/scenes';
 export { HAZARD_COLORS } from './vfxParts/common';
 
 let rainModel: Promise<void> | null = null;
@@ -81,10 +110,33 @@ export class Vfx {
 
   /** Vẽ ấm một lưới cho mỗi kiểu material (cỡ 0, độ trong 0). */
   warmKinds(): void {
-    for (const kind of ['bolt', 'vortex', 'trail', 'beam', 'inkpool', 'dome', 'glow', 'flat', 'solid', 'slash', 'ink', 'sigil', 'toon', 'crystal', 'burst', 'decal', 'card', 'wind'] as const) {
+    for (const kind of [
+      'bolt',
+      'vortex',
+      'trail',
+      'beam',
+      'inkpool',
+      'dome',
+      'glow',
+      'flat',
+      'solid',
+      'slash',
+      'ink',
+      'sigil',
+      'toon',
+      'crystal',
+      'burst',
+      'decal',
+      'card',
+      'wind',
+    ] as const) {
       const m = this.fx(G.ico1, 0xffffff, 0, kind);
       m.scale.setScalar(1e-3);
-      this.add(0.15, () => {}, () => this.drop(m));
+      this.add(
+        0.15,
+        () => {},
+        () => this.drop(m),
+      );
     }
   }
 
@@ -114,7 +166,20 @@ export class Vfx {
       ['flat', SHADOW_GEO, 0],
       ['solid', G.cone6, 0],
     ];
-    const shapes: ShapeKey[] = ['crescent', 'spike', 'shard', 'kite', 'ripple', 'burst', 'smoke', 'helix', 'dragon', 'statue', 'card', 'ribbon'];
+    const shapes: ShapeKey[] = [
+      'crescent',
+      'spike',
+      'shard',
+      'kite',
+      'ripple',
+      'burst',
+      'smoke',
+      'helix',
+      'dragon',
+      'statue',
+      'card',
+      'ribbon',
+    ];
     for (const s of shapes) {
       const kind = shapeKind(s);
       const order = kind === 'decal' ? -1 : kind === 'crystal' ? 1 : 0;
@@ -128,12 +193,20 @@ export class Vfx {
       if (seen.has(key)) continue;
       seen.add(key);
       const at = 0.2 + Math.floor(n++ / 3) * 0.12;
-      this.add(at, () => {}, () => {
-        const m = this.fx(geo, 0xffffff, 0, kind);
-        m.renderOrder = order;
-        m.scale.setScalar(1e-3);
-        this.add(0.15, () => {}, () => this.drop(m));
-      });
+      this.add(
+        at,
+        () => {},
+        () => {
+          const m = this.fx(geo, 0xffffff, 0, kind);
+          m.renderOrder = order;
+          m.scale.setScalar(1e-3);
+          this.add(
+            0.15,
+            () => {},
+            () => this.drop(m),
+          );
+        },
+      );
     }
   }
 
@@ -181,7 +254,8 @@ export class Vfx {
   burst(pos: THREE.Vector3, color: number, size = 1.2, dur = 0.28, alpha = 0.9): void {
     // Không che quá 25% màn hình (K-6): vòng chấn động tối đa 2,7 × size, nên size bị chặn theo khoảng cách camera.
     const cam = this.camera as THREE.PerspectiveCamera | null;
-    if (cam?.isPerspectiveCamera) size = Math.max(0.15, Math.min(size, maxRadiusFor(cam.position.distanceTo(pos), cam.fov, cam.aspect) / 2.7));
+    if (cam?.isPerspectiveCamera)
+      size = Math.max(0.15, Math.min(size, maxRadiusFor(cam.position.distanceTo(pos), cam.fov, cam.aspect) / 2.7));
     // Vỏ cầu fresnel (rìa sáng, giữa trong suốt): quả cầu đặc cộng sáng che kín người/quái trúng đòn.
     const m = this.fx(G.ico1, color, 0.9, 'dome');
     m.position.copy(pos);
@@ -323,7 +397,9 @@ export class Vfx {
           ink.visible = true;
           ink.quaternion.copy(g.quaternion);
           ink.scale.setScalar(s * 1.12);
-          _c.copy(SLASH_CENTER).multiplyScalar(s * 1.12).applyQuaternion(g.quaternion);
+          _c.copy(SLASH_CENTER)
+            .multiplyScalar(s * 1.12)
+            .applyQuaternion(g.quaternion);
           ink.position.copy(at).sub(_c);
           // Lùi lớp mực ra sau một chút theo hướng nhìn.
           if (cam) ink.position.addScaledVector(_c.subVectors(at, cam).normalize(), 0.08);
@@ -435,7 +511,22 @@ export class Vfx {
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;
       const sp = 3 + Math.random() * 6;
-      PARTICLES.emit('glow', x, y + 0.3, z, Math.cos(a) * sp, 2 + Math.random() * 5, Math.sin(a) * sp, 0.3 + Math.random() * 0.3, 0.12, 0.03, i & 1 ? 0xffffff : color, 1, 14, 2.5);
+      PARTICLES.emit(
+        'glow',
+        x,
+        y + 0.3,
+        z,
+        Math.cos(a) * sp,
+        2 + Math.random() * 5,
+        Math.sin(a) * sp,
+        0.3 + Math.random() * 0.3,
+        0.12,
+        0.03,
+        i & 1 ? 0xffffff : color,
+        1,
+        14,
+        2.5,
+      );
     }
     for (const c of this.clouds) {
       if (Math.hypot(c.position.x - x, c.position.z - z) < 50) c.fxA.y = 1;
@@ -448,7 +539,14 @@ export class Vfx {
    * với vị trí cuối: engine cho icon bay vào túi). `slot`: thứ tự món trong cùng một lần rơi, để các món
    * tỏa ra các hướng khác nhau và nảy lệch nhịp. Trả về điểm chạm đất (cho chỉ báo ngoài màn hình).
    */
-  lootDrop(from: THREE.Vector3, tier: LootTier, slot = 0, onLand?: () => void, onCollect?: (at: THREE.Vector3) => void, color?: number): THREE.Vector3 {
+  lootDrop(
+    from: THREE.Vector3,
+    tier: LootTier,
+    slot = 0,
+    onLand?: () => void,
+    onCollect?: (at: THREE.Vector3) => void,
+    color?: number,
+  ): THREE.Vector3 {
     return lootDrop(this, from, tier, slot, onLand, onCollect, color);
   }
 
@@ -461,7 +559,16 @@ export class Vfx {
    * Vết mực loang trên đất (M4-14) tâm (x, z), bán kính `r` (m). `stretch` > 1 kéo dài vết theo hướng
    * `yaw` (vệt dưới đòn nặng). Tấm áp nghiêng theo mặt đất. Quá `MAX_INK` vết thì vết cũ nhất tan nhanh.
    */
-  inkSplat(x: number, z: number, r: number, T: InkTiming = INK_DEATH, yaw = Math.random() * Math.PI * 2, stretch = 1, alpha = INK_ALPHA, edge = 1): void {
+  inkSplat(
+    x: number,
+    z: number,
+    r: number,
+    T: InkTiming = INK_DEATH,
+    yaw = Math.random() * Math.PI * 2,
+    stretch = 1,
+    alpha = INK_ALPHA,
+    edge = 1,
+  ): void {
     const n = this.inks.length;
     this.inkAges.length = this.inkForced.length = n;
     for (let i = 0; i < n; i++) {
@@ -496,10 +603,40 @@ export class Vfx {
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;
       const sp = 1.5 + Math.random() * 2.5;
-      PARTICLES.emit('dust', pos.x, pos.y, pos.z, Math.cos(a) * sp, 1.5 + Math.random() * 3, Math.sin(a) * sp, 0.45 + Math.random() * 0.3, 0.2 * size, 0.06, INK_POOL, 0.9, 11, 0.5);
+      PARTICLES.emit(
+        'dust',
+        pos.x,
+        pos.y,
+        pos.z,
+        Math.cos(a) * sp,
+        1.5 + Math.random() * 3,
+        Math.sin(a) * sp,
+        0.45 + Math.random() * 0.3,
+        0.2 * size,
+        0.06,
+        INK_POOL,
+        0.9,
+        11,
+        0.5,
+      );
     }
     for (let i = 0; i < 5; i++) {
-      PARTICLES.emit('glow', pos.x + (Math.random() - 0.5) * size, pos.y, pos.z + (Math.random() - 0.5) * size, 0, 0.8 + Math.random(), 0, 0.9 + Math.random() * 0.5, 0.08, 0.02, 0xdce6df, 0.6, -0.3, 0.8);
+      PARTICLES.emit(
+        'glow',
+        pos.x + (Math.random() - 0.5) * size,
+        pos.y,
+        pos.z + (Math.random() - 0.5) * size,
+        0,
+        0.8 + Math.random(),
+        0,
+        0.9 + Math.random() * 0.5,
+        0.08,
+        0.02,
+        0xdce6df,
+        0.6,
+        -0.3,
+        0.8,
+      );
     }
   }
 
@@ -756,7 +893,18 @@ export class Vfx {
    * độ/giây, theo CÙNG công thức server (`discAngle`: góc 0 hướng +z). `warn` giây đầu tia mờ và chưa gây sát thương (vạch tụ dần), sau
    * đó sáng lên; một vành đĩa mờ nằm dưới chân. Cộng sáng thấp, sắc lam bạc để không che nhân vật. Tự tắt khi hết giờ hoặc `stillOn()` sai.
    */
-  mirrorDisc(x: number, z: number, len: number, w: number, n: number, theta0: number, spin: number, warn: number, dur: number, stillOn: () => boolean): void {
+  mirrorDisc(
+    x: number,
+    z: number,
+    len: number,
+    w: number,
+    n: number,
+    theta0: number,
+    spin: number,
+    warn: number,
+    dur: number,
+    stillOn: () => boolean,
+  ): void {
     return mirrorDisc(this, x, z, len, w, n, theta0, spin, warn, dur, stillOn);
   }
 
@@ -818,7 +966,18 @@ export class Vfx {
   }
 
   /** Vùng nguy hiểm tròn báo trước trên mặt đất (pháp trận), rồi đánh xuống. */
-  hazard(x: number, z: number, r: number, delay: number, kind: string, seed?: number, flash = 0, boss = false, hot = false, quiet?: () => boolean): void {
+  hazard(
+    x: number,
+    z: number,
+    r: number,
+    delay: number,
+    kind: string,
+    seed?: number,
+    flash = 0,
+    boss = false,
+    hot = false,
+    quiet?: () => boolean,
+  ): void {
     return hazard(this, x, z, r, delay, kind, seed, flash, boss, hot, quiet);
   }
 

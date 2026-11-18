@@ -62,7 +62,21 @@ import {
   xpNeed,
 } from '@dtl/shared';
 import { lootOf } from './loot';
-import { ENHANCE_ORE, FORGE, RECIPE, ITEM, ITEM_SYS, ITEMS, LEVELS, METHODS, METHOD_SKILLS, MONSTER, QUESTS, realmName, SKILLS } from './index';
+import {
+  ENHANCE_ORE,
+  FORGE,
+  RECIPE,
+  ITEM,
+  ITEM_SYS,
+  ITEMS,
+  LEVELS,
+  METHODS,
+  METHOD_SKILLS,
+  MONSTER,
+  QUESTS,
+  realmName,
+  SKILLS,
+} from './index';
 
 /** Trang bị dự kiến ở mỗi cảnh giới (theo phần thưởng nhiệm vụ). */
 function gear(level: number): { atk: number; def: number; hp: number } {
@@ -216,7 +230,10 @@ for (const q of QUESTS) {
     if (sp) lv = Math.max(lv, sp.levelMin);
   }
   questByLevel.set(lv, (questByLevel.get(lv) ?? 0) + q.rewards.xp);
-  questScrollByLevel.set(lv, (questScrollByLevel.get(lv) ?? 0) + (q.rewards.items ?? []).filter((i) => i.id === SCROLL_ID).reduce((n, i) => n + i.n, 0));
+  questScrollByLevel.set(
+    lv,
+    (questScrollByLevel.get(lv) ?? 0) + (q.rewards.items ?? []).filter((i) => i.id === SCROLL_ID).reduce((n, i) => n + i.n, 0),
+  );
 }
 
 /** Bãi quái người chơi chọn ở cảnh giới `level`: cấp quái gần cấp mình nhất. */
@@ -231,7 +248,20 @@ function timeline(id?: MethodId): Timeline {
   let questXp = 0;
   let scrollTotal = 0;
   let goldTotal = 0;
-  const t: Timeline = { hours: 0, fightHours: 0, restHours: 0, trialMin: 0, rows: [], trialRows: [], questXp: 0, scrollAt: [], goldAt: [], killsByLevel: [], secByLevel: [], goldTotal: 0 };
+  const t: Timeline = {
+    hours: 0,
+    fightHours: 0,
+    restHours: 0,
+    trialMin: 0,
+    rows: [],
+    trialRows: [],
+    questXp: 0,
+    scrollAt: [],
+    goldAt: [],
+    killsByLevel: [],
+    secByLevel: [],
+    goldTotal: 0,
+  };
   for (let level = 1; level <= NGUNG_KHI_MAX; level++) {
     const pl = playerM(level, id);
     const sp = pickSpawn(level);
@@ -271,7 +301,9 @@ function timeline(id?: MethodId): Timeline {
       const taken = Math.max(0, raw - selfSustain(level, id) * pl.hp * tt);
       trialSec += tt + 20;
       totalSec += tt + 20;
-      t.trialRows.push(`${realmName(level).padEnd(20)} bóng hp ${String(sh.hp).padStart(5)}  TTK ${tt.toFixed(0).padStart(3)}s / ${TRIAL_DURATION}s  mất máu ${pct(raw / pl.hp).padStart(4)} nếu đứng yên, ${pct(taken / pl.hp).padStart(4)} sau khiên + hồi nguyên`);
+      t.trialRows.push(
+        `${realmName(level).padEnd(20)} bóng hp ${String(sh.hp).padStart(5)}  TTK ${tt.toFixed(0).padStart(3)}s / ${TRIAL_DURATION}s  mất máu ${pct(raw / pl.hp).padStart(4)} nếu đứng yên, ${pct(taken / pl.hp).padStart(4)} sau khiên + hồi nguyên`,
+      );
     }
     t.rows.push(
       `${realmName(level).padEnd(20)} ${(def.id + ' (' + mlv + ')').padEnd(23)} ${ttk.toFixed(1).padStart(4)}s ${pct(inc / pl.hp).padStart(5)} ${pct(lost / pl.hp).padStart(7)} ${rest.toFixed(0).padStart(4)}s ${sk.seek.toFixed(1).padStart(5)}s ${String(kills).padStart(5)} ${(sec / 60).toFixed(0).padStart(6)} ${(totalSec / 3600).toFixed(1).padStart(8)} giờ`,
@@ -290,7 +322,13 @@ const TL = new Map<MethodId, Timeline>(METHOD_IDS.map((m) => [m, timeline(m)] as
 const main = TL.get('lac_kiem_quyet')!;
 const scrollAt = main.scrollAt;
 const goldTotal = main.goldTotal;
-console.log('Nhịp lên cấp (Kiếm tu; từ tầng 5 dùng công pháp; tìm quái = đi giữa các cụm của M-2, kéo ' + PULL + ' con mỗi cụm, hiệu suất khiên/hồi ' + pct(SUSTAIN_EFF) + ')');
+console.log(
+  'Nhịp lên cấp (Kiếm tu; từ tầng 5 dùng công pháp; tìm quái = đi giữa các cụm của M-2, kéo ' +
+    PULL +
+    ' con mỗi cụm, hiệu suất khiên/hồi ' +
+    pct(SUSTAIN_EFF) +
+    ')',
+);
 console.log('Cảnh giới            quái (cấp)              TTK  máu/s  mất/lần  tọa   tìm   giết   phút   cộng dồn');
 for (const r of main.rows) console.log(r);
 console.log(
@@ -339,16 +377,22 @@ console.log(
     }
   }
   const hb = playerBaseStats(HOA_THAN_LEVEL);
-  console.log(`${realmName(HOA_THAN_LEVEL).padEnd(22)} ${'(trần tạm)'.padStart(7)} ${' '.padStart(9)} ${String(hb.hp).padStart(6)} ${String(hb.mp).padStart(6)} ${String(hb.atk).padStart(5)} ${String(hb.def).padStart(5)}`);
+  console.log(
+    `${realmName(HOA_THAN_LEVEL).padEnd(22)} ${'(trần tạm)'.padStart(7)} ${' '.padStart(9)} ${String(hb.hp).padStart(6)} ${String(hb.mp).padStart(6)} ${String(hb.atk).padStart(5)} ${String(hb.def).padStart(5)}`,
+  );
   console.log(`Mốc thiết kế: Trúc Cơ 4 giờ, Kết Đan 6 giờ, Nguyên Anh 8 giờ (cờ LỖI nếu ngoài ±${TOL * 100}%).`);
 
   // Thu nhập tu vi thực của mô phỏng ở cấp 15 (Kiếm tu), so với thu nhập thiết kế cùng cấp: mô hình thiết kế có sát thực không.
   const sim15 = (xpNeed(NGUNG_KHI_MAX) - (questByLevel.get(NGUNG_KHI_MAX) ?? 0)) / (main.secByLevel[NGUNG_KHI_MAX] / 3600);
-  console.log(`Đối chiếu: thu nhập tu vi mô phỏng ở tầng ${NGUNG_KHI_MAX} (Kiếm tu, quái thường + đả tọa) ≈ ${sim15.toFixed(0)}/giờ, thiết kế đặt ${designIncome(NGUNG_KHI_MAX).toFixed(0)}/giờ.`);
+  console.log(
+    `Đối chiếu: thu nhập tu vi mô phỏng ở tầng ${NGUNG_KHI_MAX} (Kiếm tu, quái thường + đả tọa) ≈ ${sim15.toFixed(0)}/giờ, thiết kế đặt ${designIncome(NGUNG_KHI_MAX).toFixed(0)}/giờ.`,
+  );
 
   // TTK và máu mất với quái "cùng khuôn" U Minh Lang đặt ở cấp L (monsterStats đã nhân hệ số cảnh giới): thời gian hạ quái không được sụp.
   const refDef = MONSTER.get('mon_u_minh_lang')!;
-  console.log('\nTTK quái thường cùng khuôn (u_minh_lang đặt ở cấp L, đã nhân hệ số cảnh giới), theo công pháp (trang bị theo nhiệm vụ chỉ tới cấp 15):');
+  console.log(
+    '\nTTK quái thường cùng khuôn (u_minh_lang đặt ở cấp L, đã nhân hệ số cảnh giới), theo công pháp (trang bị theo nhiệm vụ chỉ tới cấp 15):',
+  );
   console.log('cảnh giới              TTK Kiếm/Hộ/Đan         mất/lần Kiếm/Hộ/Đan');
   for (let l = TRUC_CO_LEVEL; l <= HOA_THAN_LEVEL; l++) {
     const ms = monsterStats(l, refDef.hpMul, refDef.atkMul);
@@ -359,12 +403,18 @@ console.log(
       const pl = playerM(l, id);
       const ttk = ms.hp / playerDps(l, pl.atk, ms.def, id, refDef.elem);
       ttks.push(ttk);
-      losts.push(Math.max(0, monsterDps(refDef, ms.atk, pl.def) * ttk * PULL_FACTOR - selfSustain(l, id) * pl.hp * (ttk + sk.seek)) / pl.hp);
+      losts.push(
+        Math.max(0, monsterDps(refDef, ms.atk, pl.def) * ttk * PULL_FACTOR - selfSustain(l, id) * pl.hp * (ttk + sk.seek)) / pl.hp,
+      );
     }
-    console.log(`${realmName(l).padEnd(22)} ${ttks.map((x) => x.toFixed(1).padStart(5) + 's').join(' ')}   ${losts.map((x) => pct(x).padStart(5)).join(' ')}`);
+    console.log(
+      `${realmName(l).padEnd(22)} ${ttks.map((x) => x.toFixed(1).padStart(5) + 's').join(' ')}   ${losts.map((x) => pct(x).padStart(5)).join(' ')}`,
+    );
     ttks.forEach((x, i) => {
       if (x < 3.5 || x > 8.5) {
-        console.error(`LỖI: cấp ${l} ${METHOD_NAME[METHOD_IDS[i]]} TTK ${x.toFixed(1)}s ngoài 3,5–8,5 s (hệ số cảnh giới quái lệch người chơi)`);
+        console.error(
+          `LỖI: cấp ${l} ${METHOD_NAME[METHOD_IDS[i]]} TTK ${x.toFixed(1)}s ngoài 3,5–8,5 s (hệ số cảnh giới quái lệch người chơi)`,
+        );
         process.exitCode = 1;
       }
     });
@@ -374,7 +424,13 @@ console.log(
   console.log('\nTrang bị theo bậc (bộ 7 món thường Huyền phẩm, trung bình 40 lần roll) so với không đồ, quái cùng khuôn ở cấp L:');
   console.log('cấp  bậc  lực chiến (không đồ → có đồ)  atk    def    hp     TTK Kiếm/Hộ/Đan         mất/lần Kiếm/Hộ/Đan');
   const gearRows: { level: number; tier: number; power: number }[] = [];
-  for (const [l, tier] of [[13, 1], [17, 2], [19, 2], [21, 3], [23, 3]] as const) {
+  for (const [l, tier] of [
+    [13, 1],
+    [17, 2],
+    [19, 2],
+    [21, 3],
+    [23, 3],
+  ] as const) {
     const slots = droppableSlots(ITEM_SYS, ITEMS);
     const ilvl = TIER_MIN_ILVL[tier] > 1 ? Math.max(TIER_MIN_ILVL[tier], 1) : l;
     const RUNS = 40;
@@ -382,11 +438,16 @@ console.log(
     for (let run = 0; run < RUNS; run++) {
       const rng = seededRng(2000 + run);
       const worn = slots.map((sl) => {
-        const tpl = ITEMS.filter((i) => i.kind === sl && !i.set && (i.tier ?? 1) === tier && (i.reqLevel ?? 1) <= l)[0] ?? templatesFor(ITEMS, sl, l)[0];
+        const tpl =
+          ITEMS.filter((i) => i.kind === sl && !i.set && (i.tier ?? 1) === tier && (i.reqLevel ?? 1) <= l)[0] ??
+          templatesFor(ITEMS, sl, l)[0];
         return { item: { id: tpl.id, n: 1, inst: rollItemInstance(ITEM_SYS, sl, Math.min(ilvl, l + 1), 2, rng, tpl.tier) } };
       });
       const st = computePlayerStats(l, worn);
-      acc.atk += st.atk; acc.def += st.def; acc.hp += st.hp; acc.mp += st.mp;
+      acc.atk += st.atk;
+      acc.def += st.def;
+      acc.hp += st.hp;
+      acc.mp += st.mp;
     }
     const g = { atk: acc.atk / RUNS, def: acc.def / RUNS, hp: acc.hp / RUNS, mp: acc.mp / RUNS };
     const base = playerBaseStats(l);
@@ -396,16 +457,31 @@ console.log(
     const ms = monsterStats(l, refDef.hpMul, refDef.atkMul);
     const sk = seekModel(refDef.id);
     const ttks = METHOD_IDS.map((id) => ms.hp / playerDps(l, g.atk, ms.def, id, refDef.elem));
-    const losts = METHOD_IDS.map((id, i) => Math.max(0, monsterDps(refDef, ms.atk, g.def) * ttks[i] * PULL_FACTOR - selfSustain(l, id) * g.hp * (ttks[i] + sk.seek)) / g.hp);
-    console.log(`${String(l).padEnd(4)} ${String(tier).padEnd(4)} ${String(p0).padStart(7)} → ${String(p1).padStart(7)} (${(p1 / p0).toFixed(2)}×)   ${g.atk.toFixed(0).padStart(5)} ${g.def.toFixed(0).padStart(6)} ${g.hp.toFixed(0).padStart(6)}  ${ttks.map((x) => x.toFixed(1).padStart(5) + 's').join(' ')}   ${losts.map((x) => pct(x).padStart(5)).join(' ')}`);
-    for (const x of ttks) if (x < 2.5 || x > 8.5) { console.error(`LỖI: cấp ${l} đồ bậc ${tier} TTK ${x.toFixed(1)}s ngoài 2,5–8,5 s`); process.exitCode = 1; }
-    if (p1 / p0 > 3.2 || p1 / p0 < 1.1) { console.error(`LỖI: cấp ${l} đồ bậc ${tier} đổi lực chiến ×${(p1 / p0).toFixed(2)}, ngoài 1,1–3,2`); process.exitCode = 1; }
+    const losts = METHOD_IDS.map(
+      (id, i) =>
+        Math.max(0, monsterDps(refDef, ms.atk, g.def) * ttks[i] * PULL_FACTOR - selfSustain(l, id) * g.hp * (ttks[i] + sk.seek)) / g.hp,
+    );
+    console.log(
+      `${String(l).padEnd(4)} ${String(tier).padEnd(4)} ${String(p0).padStart(7)} → ${String(p1).padStart(7)} (${(p1 / p0).toFixed(2)}×)   ${g.atk.toFixed(0).padStart(5)} ${g.def.toFixed(0).padStart(6)} ${g.hp.toFixed(0).padStart(6)}  ${ttks.map((x) => x.toFixed(1).padStart(5) + 's').join(' ')}   ${losts.map((x) => pct(x).padStart(5)).join(' ')}`,
+    );
+    for (const x of ttks)
+      if (x < 2.5 || x > 8.5) {
+        console.error(`LỖI: cấp ${l} đồ bậc ${tier} TTK ${x.toFixed(1)}s ngoài 2,5–8,5 s`);
+        process.exitCode = 1;
+      }
+    if (p1 / p0 > 3.2 || p1 / p0 < 1.1) {
+      console.error(`LỖI: cấp ${l} đồ bậc ${tier} đổi lực chiến ×${(p1 / p0).toFixed(2)}, ngoài 1,1–3,2`);
+      process.exitCode = 1;
+    }
   }
   // Bậc cao phải mạnh hơn bậc thấp ở cùng cấp (cấp 19: bậc 2 vs bậc 3 qua `gearRows` kế nhau; mỗi bậc tăng lực chiến so với bậc trước).
   for (const t of [2, 3]) {
     const lo = Math.max(...gearRows.filter((r) => r.tier === t - 1).map((r) => r.power));
     const hi = Math.min(...gearRows.filter((r) => r.tier === t).map((r) => r.power));
-    if (!(hi > lo)) { console.error(`LỖI: lực chiến đồ bậc ${t} (${hi}) không vượt bậc ${t - 1} (${lo})`); process.exitCode = 1; }
+    if (!(hi > lo)) {
+      console.error(`LỖI: lực chiến đồ bậc ${t} (${hi}) không vượt bậc ${t - 1} (${lo})`);
+      process.exitCode = 1;
+    }
   }
 
   // Giờ theo nguồn tu vi ĐANG CÓ: chỉ quái Vân Lam (cấp ≤ 15, `xpLevelFactor` hạ dần tới 0,1 khi chênh ≥ 8 cấp), nhiệm vụ hiện có,
@@ -436,13 +512,19 @@ console.log(
       }
       return { hours: sec / 3600, kills };
     });
-  console.log('\nNhịp theo nguồn tu vi hiện có (chỉ quái Vân Lam cấp ≤ 15 + nhiệm vụ + đả tọa + tâm ma; chưa phó bản, tinh anh/boss, quái cấp 16+):');
+  console.log(
+    '\nNhịp theo nguồn tu vi hiện có (chỉ quái Vân Lam cấp ≤ 15 + nhiệm vụ + đả tọa + tâm ma; chưa phó bản, tinh anh/boss, quái cấp 16+):',
+  );
   console.log('chặng         mục tiêu   ' + METHOD_IDS.map((m) => METHOD_NAME[m].padEnd(20)).join(' '));
   const ex = METHOD_IDS.map((m) => existing(m));
   STAGES.forEach((st, i) => {
-    console.log(`${st.name.padEnd(13)} ${(st.hours + ' giờ').padEnd(10)} ${ex.map((e) => (e[i].hours.toFixed(1) + ' giờ, ' + e[i].kills + ' giết').padEnd(20)).join(' ')}`);
+    console.log(
+      `${st.name.padEnd(13)} ${(st.hours + ' giờ').padEnd(10)} ${ex.map((e) => (e[i].hours.toFixed(1) + ' giờ, ' + e[i].kills + ' giết').padEnd(20)).join(' ')}`,
+    );
   });
-  console.log('Quái Vân Lam (cấp ≤ 15) cho tu vi đủ cho Trúc Cơ (hơi dài hơn 4 giờ vì tu vi hạ dần theo chênh cấp), nhưng từ Kết Đan chênh cấp làm tu vi rơi về 10%: các chặng Kết Đan và Nguyên Anh cần quái, phó bản và boss của E-2/E-3/E-4 (mục 4–6, 11 của thiết kế) mới đạt 4/6/8 giờ.');
+  console.log(
+    'Quái Vân Lam (cấp ≤ 15) cho tu vi đủ cho Trúc Cơ (hơi dài hơn 4 giờ vì tu vi hạ dần theo chênh cấp), nhưng từ Kết Đan chênh cấp làm tu vi rơi về 10%: các chặng Kết Đan và Nguyên Anh cần quái, phó bản và boss của E-2/E-3/E-4 (mục 4–6, 11 của thiết kế) mới đạt 4/6/8 giờ.',
+  );
 }
 
 // ---------- tu vi từ nhiệm vụ chương 2 (E2-H) ----------
@@ -459,11 +541,15 @@ console.log(
   for (const q of mainQ) {
     cum += q.rewards.xp;
     const lv = Math.max(TRUC_CO_LEVEL, q.minLevel ?? TRUC_CO_LEVEL);
-    console.log(`${q.id.padEnd(19)} ${String(lv).padStart(3)} ${String(q.rewards.xp).padStart(6)} ${String(q.rewards.gold).padStart(10)} ${String(cum).padStart(9)} ${pct(cum / stageXp).padStart(9)} ${(q.rewards.xp / income(lv)).toFixed(2).padStart(10)}`);
+    console.log(
+      `${q.id.padEnd(19)} ${String(lv).padStart(3)} ${String(q.rewards.xp).padStart(6)} ${String(q.rewards.gold).padStart(10)} ${String(cum).padStart(9)} ${pct(cum / stageXp).padStart(9)} ${(q.rewards.xp / income(lv)).toFixed(2).padStart(10)}`,
+    );
   }
   const mainShare = sum(mainQ) / stageXp;
   const sideXp = sum(sideQ);
-  console.log(`Chính ${sum(mainQ)} (${pct(mainShare)} chặng, thiết kế ≈ 14%), phụ ${sideXp} (${pct(sideXp / stageXp)}); phần còn lại ${pct(1 - mainShare)} chặng đến từ quái, phó bản, boss và đả tọa để giữ nhịp ≈ 4 giờ.`);
+  console.log(
+    `Chính ${sum(mainQ)} (${pct(mainShare)} chặng, thiết kế ≈ 14%), phụ ${sideXp} (${pct(sideXp / stageXp)}); phần còn lại ${pct(1 - mainShare)} chặng đến từ quái, phó bản, boss và đả tọa để giữ nhịp ≈ 4 giờ.`,
+  );
   if (mainShare < 0.12 || mainShare > 0.16) {
     console.error(`LỖI: tu vi nhiệm vụ chính chương 2 chiếm ${pct(mainShare)} chặng Trúc Cơ, ngoài 12–16% (thiết kế ≈ 14%)`);
     process.exitCode = 1;
@@ -490,10 +576,14 @@ console.log(
   for (const q of mainQ) {
     cum += q.rewards.xp;
     const lv = Math.max(KET_DAN_LEVEL, q.minLevel ?? KET_DAN_LEVEL);
-    console.log(`${q.id.padEnd(19)} ${String(lv).padStart(3)} ${String(q.rewards.xp).padStart(6)} ${String(q.rewards.gold).padStart(10)} ${String(cum).padStart(9)} ${pct(cum / stageXp).padStart(9)}`);
+    console.log(
+      `${q.id.padEnd(19)} ${String(lv).padStart(3)} ${String(q.rewards.xp).padStart(6)} ${String(q.rewards.gold).padStart(10)} ${String(cum).padStart(9)} ${pct(cum / stageXp).padStart(9)}`,
+    );
   }
   const mainShare = sum(mainQ) / stageXp;
-  console.log(`Chính ${sum(mainQ)} (${pct(mainShare)} chặng, thiết kế ≈ 14%), phụ ${sum(sideQ)} (${pct(sum(sideQ) / stageXp)}); phần còn lại ${pct(1 - mainShare)} chặng đến từ quái, phó bản, boss và đả tọa để giữ nhịp ≈ 6 giờ.`);
+  console.log(
+    `Chính ${sum(mainQ)} (${pct(mainShare)} chặng, thiết kế ≈ 14%), phụ ${sum(sideQ)} (${pct(sum(sideQ) / stageXp)}); phần còn lại ${pct(1 - mainShare)} chặng đến từ quái, phó bản, boss và đả tọa để giữ nhịp ≈ 6 giờ.`,
+  );
   if (mainShare < 0.12 || mainShare > 0.16) {
     console.error(`LỖI: tu vi nhiệm vụ chính chương 3 chiếm ${pct(mainShare)} chặng Kết Đan, ngoài 12–16% (thiết kế ≈ 14%)`);
     process.exitCode = 1;
@@ -520,10 +610,14 @@ console.log(
   for (const q of mainQ) {
     cum += q.rewards.xp;
     const lv = Math.max(NGUYEN_ANH_LEVEL, q.minLevel ?? NGUYEN_ANH_LEVEL);
-    console.log(`${q.id.padEnd(19)} ${String(lv).padStart(3)} ${String(q.rewards.xp).padStart(6)} ${String(q.rewards.gold).padStart(10)} ${String(cum).padStart(9)} ${pct(cum / stageXp).padStart(9)}`);
+    console.log(
+      `${q.id.padEnd(19)} ${String(lv).padStart(3)} ${String(q.rewards.xp).padStart(6)} ${String(q.rewards.gold).padStart(10)} ${String(cum).padStart(9)} ${pct(cum / stageXp).padStart(9)}`,
+    );
   }
   const mainShare = sum(mainQ) / stageXp;
-  console.log(`Chính ${sum(mainQ)} (${pct(mainShare)} chặng, thiết kế ≈ 14%), phụ ${sum(sideQ)} (${pct(sum(sideQ) / stageXp)}); phần còn lại ${pct(1 - mainShare)} chặng đến từ quái, phó bản, boss và đả tọa để giữ nhịp ≈ 8 giờ.`);
+  console.log(
+    `Chính ${sum(mainQ)} (${pct(mainShare)} chặng, thiết kế ≈ 14%), phụ ${sum(sideQ)} (${pct(sum(sideQ) / stageXp)}); phần còn lại ${pct(1 - mainShare)} chặng đến từ quái, phó bản, boss và đả tọa để giữ nhịp ≈ 8 giờ.`,
+  );
   if (mainShare < 0.12 || mainShare > 0.16) {
     console.error(`LỖI: tu vi nhiệm vụ chính chương 4 chiếm ${pct(mainShare)} chặng Nguyên Anh, ngoài 12–16% (thiết kế ≈ 14%)`);
     process.exitCode = 1;
@@ -550,10 +644,14 @@ console.log(
   let cum = 0;
   for (const q of mainQ) {
     cum += q.rewards.xp;
-    console.log(`${q.id.padEnd(19)} ${String(q.minLevel ?? 28).padStart(3)} ${String(q.rewards.xp).padStart(6)} ${String(q.rewards.gold).padStart(10)} ${String(cum).padStart(9)} ${pct(cum / stageXp).padStart(9)}`);
+    console.log(
+      `${q.id.padEnd(19)} ${String(q.minLevel ?? 28).padStart(3)} ${String(q.rewards.xp).padStart(6)} ${String(q.rewards.gold).padStart(10)} ${String(cum).padStart(9)} ${pct(cum / stageXp).padStart(9)}`,
+    );
   }
   const mainShare = sum(mainQ) / stageXp;
-  console.log(`Chính ${sum(mainQ)} (${pct(mainShare)} chặng, thiết kế ≈ 14%), phụ ${sum(sideQ)} (${pct(sum(sideQ) / stageXp)}); phần còn lại ${pct(1 - mainShare)} chặng đến từ quái, phó bản, boss và đả tọa để giữ nhịp ≈ 10 giờ.`);
+  console.log(
+    `Chính ${sum(mainQ)} (${pct(mainShare)} chặng, thiết kế ≈ 14%), phụ ${sum(sideQ)} (${pct(sum(sideQ) / stageXp)}); phần còn lại ${pct(1 - mainShare)} chặng đến từ quái, phó bản, boss và đả tọa để giữ nhịp ≈ 10 giờ.`,
+  );
   if (mainShare < 0.12 || mainShare > 0.16) {
     console.error(`LỖI: tu vi nhiệm vụ chính chương 5 chiếm ${pct(mainShare)} chặng Hóa Thần, ngoài 12–16% (thiết kế ≈ 14%)`);
     process.exitCode = 1;
@@ -569,7 +667,9 @@ console.log(
 
 console.log('\nThử thách tâm ma (bình cảnh, Kiếm tu):');
 for (const r of main.trialRows) console.log(r);
-console.log('máu/s: phần trăm máu tối đa mất mỗi giây khi đứng yên không né; mất/lần: sau khi trừ khiên + hồi nguyên, đã nhân kéo cụm; tọa: giây đả tọa hồi lại; tìm: giây tìm quái mỗi lần giết.');
+console.log(
+  'máu/s: phần trăm máu tối đa mất mỗi giây khi đứng yên không né; mất/lần: sau khi trừ khiên + hồi nguyên, đã nhân kéo cụm; tọa: giây đả tọa hồi lại; tìm: giây tìm quái mỗi lần giết.',
+);
 
 // ---------- TTK và áp lực theo cấp × công pháp (G9, 3-10) ----------
 
@@ -604,9 +704,18 @@ for (let level = 1; level <= NGUNG_KHI_MAX; level++) {
   for (const r of pressureRows) {
     for (let i = 0; i < 3; i++) {
       const who = `tầng ${r.level} ${METHOD_NAME[METHOD_IDS[i]]}`;
-      if (r.ttk[i] < 3.5 || r.ttk[i] > 8.5) { console.error(`LỖI: ${who} TTK ${r.ttk[i].toFixed(1)}s ngoài 3,5–8,5 s`); process.exitCode = 1; }
-      if (r.lost[i] > 0.45) { console.error(`LỖI: ${who} mất ${pct(r.lost[i])} máu mỗi lần giết`); process.exitCode = 1; }
-      if (r.level >= 6 && r.lost[i] < [0.08, 0.06, 0][i]) { console.error(`LỖI: ${who} chỉ mất ${pct(r.lost[i])} máu mỗi lần giết (quái thường không tạo áp lực)`); process.exitCode = 1; }
+      if (r.ttk[i] < 3.5 || r.ttk[i] > 8.5) {
+        console.error(`LỖI: ${who} TTK ${r.ttk[i].toFixed(1)}s ngoài 3,5–8,5 s`);
+        process.exitCode = 1;
+      }
+      if (r.lost[i] > 0.45) {
+        console.error(`LỖI: ${who} mất ${pct(r.lost[i])} máu mỗi lần giết`);
+        process.exitCode = 1;
+      }
+      if (r.level >= 6 && r.lost[i] < [0.08, 0.06, 0][i]) {
+        console.error(`LỖI: ${who} chỉ mất ${pct(r.lost[i])} máu mỗi lần giết (quái thường không tạo áp lực)`);
+        process.exitCode = 1;
+      }
     }
   }
 }
@@ -627,12 +736,25 @@ for (let level = 1; level <= NGUNG_KHI_MAX; level++) {
   const c5 = costTo(MAX_SKILL_LEVEL);
   console.log(`
 Bí Tịch Tàn Quyển (quái thường + nhiệm vụ): tầng 5 ≈ ${scrollAt[5].toFixed(0)}, tầng 10 ≈ ${scrollAt[10].toFixed(0)}, viên mãn tầng 15 ≈ ${scrollAt[15].toFixed(0)} cuộn; linh thạch từ quái ≈ ${goldTotal.toFixed(0)}.`);
-  console.log(`Nâng một chiêu: cấp 3 = ${c3.s} cuộn + ${c3.g} linh thạch, cấp 5 = ${c5.s} cuộn + ${c5.g} linh thạch. 4 chiêu chủ lực cấp 3 = ${4 * c3.s} cuộn; 8 chiêu cấp 3 = ${8 * c3.s}; 8 chiêu cấp 5 = ${8 * c5.s}.`);
-  console.log('Đổi ở Dược sư (8 yêu đan + 2 thiết tinh + 120 linh thạch mỗi cuộn) là đường bù khi rơi xui; boss, tinh anh và rương bí cảnh cho thêm.');
+  console.log(
+    `Nâng một chiêu: cấp 3 = ${c3.s} cuộn + ${c3.g} linh thạch, cấp 5 = ${c5.s} cuộn + ${c5.g} linh thạch. 4 chiêu chủ lực cấp 3 = ${4 * c3.s} cuộn; 8 chiêu cấp 3 = ${8 * c3.s}; 8 chiêu cấp 5 = ${8 * c5.s}.`,
+  );
+  console.log(
+    'Đổi ở Dược sư (8 yêu đan + 2 thiết tinh + 120 linh thạch mỗi cuộn) là đường bù khi rơi xui; boss, tinh anh và rương bí cảnh cho thêm.',
+  );
   // Nhịp: tới viên mãn nên đủ nâng 4 chiêu chủ lực lên cấp 3 (có biến thức), nhưng chưa đủ nâng đủ 8 chiêu lên cấp 5 (mục tiêu hậu kỳ).
-  if (scrollAt[15] < 4 * c3.s) { console.error('LỖI: tới tầng 15 chưa đủ cuộn nâng 4 chiêu chủ lực lên cấp 3'); process.exitCode = 1; }
-  if (scrollAt[15] >= 8 * c5.s) { console.error('LỖI: tới tầng 15 đã đủ cuộn nâng mọi chiêu lên cấp 5 (quá dễ)'); process.exitCode = 1; }
-  if (goldTotal < 4 * c3.g) { console.error('LỖI: linh thạch từ quái không đủ nâng 4 chiêu lên cấp 3'); process.exitCode = 1; }
+  if (scrollAt[15] < 4 * c3.s) {
+    console.error('LỖI: tới tầng 15 chưa đủ cuộn nâng 4 chiêu chủ lực lên cấp 3');
+    process.exitCode = 1;
+  }
+  if (scrollAt[15] >= 8 * c5.s) {
+    console.error('LỖI: tới tầng 15 đã đủ cuộn nâng mọi chiêu lên cấp 5 (quá dễ)');
+    process.exitCode = 1;
+  }
+  if (goldTotal < 4 * c3.g) {
+    console.error('LỖI: linh thạch từ quái không đủ nâng 4 chiêu lên cấp 3');
+    process.exitCode = 1;
+  }
 }
 // ---------- đường cong trang bị theo phẩm (3-2) ----------
 
@@ -673,7 +795,9 @@ for (const q of [0, 1, 2, 3, 4] as Quality[]) {
 
 console.log('\nThu nhập kỳ vọng mỗi lần hạ quái (linh thạch): vàng rơi + bán trang bị rơi (giá theo ilvl, phẩm)');
 const seenIncome = new Set<string>();
-for (const sp of Object.values(LEVELS).filter((l) => l.id === 'van_lam' || l.id === 'doan_mach').flatMap((l) => levelSpawns(l))) {
+for (const sp of Object.values(LEVELS)
+  .filter((l) => l.id === 'van_lam' || l.id === 'doan_mach')
+  .flatMap((l) => levelSpawns(l))) {
   const m = MONSTER.get(sp.mon)!;
   const key = m.id + ':' + Math.round((sp.levelMin + sp.levelMax) / 2);
   if (seenIncome.has(key)) continue;
@@ -689,11 +813,17 @@ for (const sp of Object.values(LEVELS).filter((l) => l.id === 'van_lam' || l.id 
       gear += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
     }
   }
-  console.log(`${m.id.padEnd(24)} vàng ${gold.toFixed(1).padStart(6)}  bán đồ ${(gear / N).toFixed(1).padStart(6)}  (${((gear / N / gold) * 100).toFixed(0)}% so với vàng)`);
+  console.log(
+    `${m.id.padEnd(24)} vàng ${gold.toFixed(1).padStart(6)}  bán đồ ${(gear / N).toFixed(1).padStart(6)}  (${((gear / N / gold) * 100).toFixed(0)}% so với vàng)`,
+  );
 }
-console.log('\nTinh anh (người cùng cấp): TTK Kiếm/Hộ/Đan không đồ | bộ Huyền phẩm; máu/s đứng yên (bộ Huyền phẩm), máu mất cả trận (đứng yên, Kiếm tu)');
+console.log(
+  '\nTinh anh (người cùng cấp): TTK Kiếm/Hộ/Đan không đồ | bộ Huyền phẩm; máu/s đứng yên (bộ Huyền phẩm), máu mất cả trận (đứng yên, Kiếm tu)',
+);
 for (const m of MONSTERS_ELITE()) {
-  const sp = Object.values(LEVELS).flatMap((l) => levelSpawns(l)).find((x) => x.mon === m.id);
+  const sp = Object.values(LEVELS)
+    .flatMap((l) => levelSpawns(l))
+    .find((x) => x.mon === m.id);
   if (!sp) continue;
   const lv = sp.levelMax;
   const ms = monsterStats(lv, m.hpMul, m.atkMul);
@@ -701,8 +831,14 @@ for (const m of MONSTERS_ELITE()) {
   const t0 = METHOD_IDS.map((id) => ms.hp / playerDps(lv, playerM(lv, id).atk, ms.def, id, m.elem));
   const t1 = METHOD_IDS.map((id) => ms.hp / playerDps(lv, set.atk, ms.def, id, m.elem));
   const inc = monsterDps(m, ms.atk, set.def);
-  console.log(`${(m.id + ' (' + lv + ')').padEnd(26)} ${t0.map((x) => x.toFixed(0).padStart(3) + 's').join('/')} | ${t1.map((x) => x.toFixed(0).padStart(3) + 's').join('/')}   ${pct(inc / set.hp).padStart(4)}   cả trận ${pct((inc * t1[0]) / set.hp)}`);
-  for (const x of t0) if (x < 20 || x > 40) { console.error(`LỖI: ${m.id} TTK không đồ ${x.toFixed(0)}s ngoài 20–40 s`); process.exitCode = 1; }
+  console.log(
+    `${(m.id + ' (' + lv + ')').padEnd(26)} ${t0.map((x) => x.toFixed(0).padStart(3) + 's').join('/')} | ${t1.map((x) => x.toFixed(0).padStart(3) + 's').join('/')}   ${pct(inc / set.hp).padStart(4)}   cả trận ${pct((inc * t1[0]) / set.hp)}`,
+  );
+  for (const x of t0)
+    if (x < 20 || x > 40) {
+      console.error(`LỖI: ${m.id} TTK không đồ ${x.toFixed(0)}s ngoài 20–40 s`);
+      process.exitCode = 1;
+    }
 }
 function MONSTERS_ELITE(): MonsterDef[] {
   // Chỉ tinh anh của Vân Lam (chặng Ngưng Khí, không đồ bậc 2); tinh anh Đoạn Mạch kiểm ở khối chương 2 theo đồ bậc 2 kỳ vọng.
@@ -750,9 +886,16 @@ function incomePerHour(level: number): number {
   return perKill * (kills / (main.secByLevel[level] / 3600));
 }
 
-console.log('\nCường hóa vũ khí: linh thạch kỳ vọng từ +0 (Thiết Tinh tính theo giá mua; không Hộ Phù | có Hộ Phù) và số giờ thu nhập cấp tương ứng');
+console.log(
+  '\nCường hóa vũ khí: linh thạch kỳ vọng từ +0 (Thiết Tinh tính theo giá mua; không Hộ Phù | có Hộ Phù) và số giờ thu nhập cấp tương ứng',
+);
 console.log('món (cấp)                 giá cơ sở  thu/giờ    +5            +7            +9                 +10');
-for (const [id, lv] of [['itm_thiet_kiem', 4], ['itm_thanh_phong_kiem', 8], ['itm_han_quang_kiem', 12], ['itm_tram_ta_kiem', 15]] as const) {
+for (const [id, lv] of [
+  ['itm_thiet_kiem', 4],
+  ['itm_thanh_phong_kiem', 8],
+  ['itm_han_quang_kiem', 12],
+  ['itm_tram_ta_kiem', 15],
+] as const) {
   const d = ITEM.get(id)!;
   const price = Math.max(d.price, d.sell * 3);
   const inc = incomePerHour(lv);
@@ -762,9 +905,18 @@ for (const [id, lv] of [['itm_thiet_kiem', 4], ['itm_thanh_phong_kiem', 8], ['it
     `${(id + ' (' + lv + ')').padEnd(26)} ${String(price).padStart(6)} ${inc.toFixed(0).padStart(8)}  ${f(5, false).toFixed(0).padStart(6)} (${h(f(5, false)).padStart(5)})  ${f(7, false).toFixed(0).padStart(6)} (${h(f(7, false)).padStart(5)})  ${f(9, false).toFixed(0).padStart(6)}|${f(9, true).toFixed(0).padStart(6)} (${h(f(9, true)).padStart(5)})  ${f(10, true).toFixed(0).padStart(6)} (${h(f(10, true)).padStart(5)})`,
   );
   // Mục tiêu 3-10: +5 trong ~1 giờ thu nhập, +9 (có Hộ Phù) 2–7 giờ, +10 không quá 14 giờ.
-  if (f(5, false) / inc > 1.2) { console.error(`LỖI: ${id} +5 tốn ${h(f(5, false))} thu nhập (quá đắt)`); process.exitCode = 1; }
-  if (f(9, true) / inc < 2 || f(9, true) / inc > 7) { console.error(`LỖI: ${id} +9 (Hộ Phù) tốn ${h(f(9, true))} thu nhập, ngoài 2–7 giờ`); process.exitCode = 1; }
-  if (f(10, true) / inc > 14) { console.error(`LỖI: ${id} +10 (Hộ Phù) tốn ${h(f(10, true))} thu nhập (quá đắt)`); process.exitCode = 1; }
+  if (f(5, false) / inc > 1.2) {
+    console.error(`LỖI: ${id} +5 tốn ${h(f(5, false))} thu nhập (quá đắt)`);
+    process.exitCode = 1;
+  }
+  if (f(9, true) / inc < 2 || f(9, true) / inc > 7) {
+    console.error(`LỖI: ${id} +9 (Hộ Phù) tốn ${h(f(9, true))} thu nhập, ngoài 2–7 giờ`);
+    process.exitCode = 1;
+  }
+  if (f(10, true) / inc > 14) {
+    console.error(`LỖI: ${id} +10 (Hộ Phù) tốn ${h(f(10, true))} thu nhập (quá đắt)`);
+    process.exitCode = 1;
+  }
 }
 // Chương 2 (bậc 2, E2-F) và chương 3 (bậc 3, E3-F): hố tiêu của người cầu toàn so với thu nhập theo thiết kế (`docs/EXPANSION_DESIGN.md` 7.5).
 // Quái bản đồ 2/3 chưa nằm trong sim nên thu nhập lấy theo `TIER_INCOME_HOUR` (6.000 / 7.400 một giờ) × số giờ chương (4 / 6), cộng ~20% bán đồ rơi.
@@ -784,7 +936,10 @@ for (const [tier, hours, pre, four] of [
     `
 Chương ${tier} (bậc ${tier}): thu nhập ~${income.toFixed(0)} (${hours} giờ) | hố tiêu cầu toàn ${sink.toFixed(0)} = Thăng Bậc ${plain.length} ô ${promote} + cường hóa +5 bốn ô ${enh.toFixed(0)} + chế một bộ ${forge} (${(sink / income).toFixed(2)}× thu nhập)`,
   );
-  if (sink / income < 1 || sink / income > 2.5) { console.error(`LỖI: hố tiêu chương ${tier} gấp ${(sink / income).toFixed(2)} lần thu nhập, ngoài 1–2,5 (lạm phát hoặc quá đắt)`); process.exitCode = 1; }
+  if (sink / income < 1 || sink / income > 2.5) {
+    console.error(`LỖI: hố tiêu chương ${tier} gấp ${(sink / income).toFixed(2)} lần thu nhập, ngoài 1–2,5 (lạm phát hoặc quá đắt)`);
+    process.exitCode = 1;
+  }
 }
 {
   // Nguồn/tiêu tới viên mãn tầng 15 (một mình).
@@ -798,7 +953,9 @@ Chương ${tier} (bậc ${tier}): thu nhập ~${income.toFixed(0)} (${hours} gi�
     const rng = seededRng(11 + l);
     let g = 0;
     const N = 1000;
-    for (let i = 0; i < N; i++) for (const d of rollEquipDrops(lt.equip, ITEM_SYS, ITEMS, mlv, rng)) g += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
+    for (let i = 0; i < N; i++)
+      for (const d of rollEquipDrops(lt.equip, ITEM_SYS, ITEMS, mlv, rng))
+        g += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
     sold += (g / N) * main.killsByLevel[l];
   }
   const source = main.goldTotal + quest + sold;
@@ -816,8 +973,14 @@ Chương ${tier} (bậc ${tier}): thu nhập ~${income.toFixed(0)} (${hours} gi�
       `Tiêu thiết yếu ${shop} (đồ cửa hàng, đan) + 4 chiêu cấp 3 ${4 * skill3} + 8 chiêu cấp 5 ${8 * skill5} + một kiếm Thanh Phong +7 ${enh.toFixed(0)} = ${(shop + 4 * skill3 + 8 * skill5 + enh).toFixed(0)}.`,
   );
   // Đủ cho thiết yếu và nâng bốn chiêu chủ lực; không đủ làm hết (còn chỗ tiêu, tránh dư thừa lạm phát).
-  if (source < shop + 4 * skill3) { console.error('LỖI: nguồn linh thạch tới tầng 15 không đủ đồ thiết yếu và 4 chiêu cấp 3'); process.exitCode = 1; }
-  if (source > shop + 4 * skill3 + 8 * skill5 + enh) { console.error('LỖI: nguồn linh thạch tới tầng 15 vượt mọi chỗ tiêu (lạm phát)'); process.exitCode = 1; }
+  if (source < shop + 4 * skill3) {
+    console.error('LỖI: nguồn linh thạch tới tầng 15 không đủ đồ thiết yếu và 4 chiêu cấp 3');
+    process.exitCode = 1;
+  }
+  if (source > shop + 4 * skill3 + 8 * skill5 + enh) {
+    console.error('LỖI: nguồn linh thạch tới tầng 15 vượt mọi chỗ tiêu (lạm phát)');
+    process.exitCode = 1;
+  }
 }
 
 // ---------- độ kiếp Trúc Cơ (ba pha, G11) ----------
@@ -865,9 +1028,18 @@ Chương ${tier} (bậc ${tier}): thu nhập ~${income.toFixed(0)} (${hours} gi�
       `có Hộ Thể (${pct(shield)}) còn ${pct(Math.max(0, noTools - shield))}; Kim Cương Đan giảm tia cuối ${pct(Math.min(TRIB_FINAL.defMaxCut, 0.15 * TRIB_FINAL.defMul))}. Dùng được tối đa ${TRIB_PILL_MAX} đan hồi phục; hoàn Trúc Cơ Đan nếu chết sau ${TRIBULATION_REFUND_AFTER} s.`,
   );
   // Phải cần chống đỡ (không công cụ nào thì dễ chết) nhưng một lớp chống đỡ là qua được.
-  if (aimDmg + chip < 1.2) { console.error('LỖI: độ kiếp đứng yên không chết (quá dễ)'); process.exitCode = 1; }
-  if (noTools < 1.0) { console.error('LỖI: độ kiếp không cần chống đỡ tia cuối cũng qua (quá dễ)'); process.exitCode = 1; }
-  if (noTools - shield > 0.9) { console.error('LỖI: độ kiếp có Hộ Thể vẫn chết gần chắc (quá khó)'); process.exitCode = 1; }
+  if (aimDmg + chip < 1.2) {
+    console.error('LỖI: độ kiếp đứng yên không chết (quá dễ)');
+    process.exitCode = 1;
+  }
+  if (noTools < 1.0) {
+    console.error('LỖI: độ kiếp không cần chống đỡ tia cuối cũng qua (quá dễ)');
+    process.exitCode = 1;
+  }
+  if (noTools - shield > 0.9) {
+    console.error('LỖI: độ kiếp có Hộ Thể vẫn chết gần chắc (quá khó)');
+    process.exitCode = 1;
+  }
 }
 
 // ---------- đòn dồn của quái đọc chú ----------
@@ -883,7 +1055,9 @@ for (const [id, lv] of [
   const pl = player(lv);
   const one = hit(monsterStats(lv, def.hpMul, def.atkMul).atk, cs.mul, pl.def);
   // Miễn vùng nổ (HAZARD_IFRAME) nên nổ cùng lúc chỉ trúng một vùng.
-  console.log(`${(id + ' (' + lv + ')').padEnd(32)} ${pct(one / pl.hp).padStart(5)}   ${pct(one / pl.hp).padStart(5)} (không miễn vùng: ${pct((3 * one) / pl.hp)})`);
+  console.log(
+    `${(id + ' (' + lv + ')').padEnd(32)} ${pct(one / pl.hp).padStart(5)}   ${pct(one / pl.hp).padStart(5)} (không miễn vùng: ${pct((3 * one) / pl.hp)})`,
+  );
 }
 
 // ---------- boss ----------
@@ -905,7 +1079,10 @@ for (const [id, lv, n] of [
   const ms = monsterStats(lv, def.hpMul, def.atkMul);
   const pl = player(lv);
   // Nhóm: 1 hộ pháp + 1 đan sư + (n−2) kiếm tu.
-  const grp = [...Array(Math.max(0, n - 2)).fill('lac_kiem_quyet'), 'bat_dong_kim_than', 'thanh_moc_dan_kinh'].reduce((sum: number, id) => sum + playerDps(lv, pl.atk, ms.def, id as MethodId, def.elem), 0);
+  const grp = [...Array(Math.max(0, n - 2)).fill('lac_kiem_quyet'), 'bat_dong_kim_than', 'thanh_moc_dan_kinh'].reduce(
+    (sum: number, id) => sum + playerDps(lv, pl.atk, ms.def, id as MethodId, def.elem),
+    0,
+  );
   const ch = def.ai?.chant;
   const sl = def.ai?.slam;
   // Thời gian boss bận (niệm chú hoặc choáng) trên mỗi chu kỳ chú.
@@ -918,7 +1095,10 @@ for (const [id, lv, n] of [
   const chantHit = ch ? hit(ms.atk, ch.mul, pl.def) : 0;
   // Pha sau: chiêu chém vùng mạnh nhất qua các pha; số lần mất thế ước tính từ sát thương (k lần thanh trên cả trận)
   // cộng các lần ngắt chú thành công.
-  const swHit = Math.max(0, ...(def.phases ?? []).map((_, i) => phaseRules(def, i + 1).ai.sweep).map((w) => (w ? hit(ms.atk, w.mul, pl.def) : 0)));
+  const swHit = Math.max(
+    0,
+    ...(def.phases ?? []).map((_, i) => phaseRules(def, i + 1).ai.sweep).map((w) => (w ? hit(ms.atk, w.mul, pl.def) : 0)),
+  );
   const ps = def.posture;
   const breaks = ps ? Math.floor(ps.k + (ch ? Math.floor(ttkInt / ch.cd) * ps.interrupt : 0)) : 0;
   // Tank đứng yên: cận chiến (trừ lúc boss bận) + đập vùng + chú (nếu không ngắt).
@@ -927,7 +1107,9 @@ for (const [id, lv, n] of [
     `${(id + ' (' + n + '×' + lv + ')').padEnd(32)} ${ttkInt.toFixed(0).padStart(4)}s/${ttkNo.toFixed(0).padStart(4)}s ${pct(tankNo / pl.hp).padStart(10)} ${(ch ? pct(chantHit / pl.hp) : '-').padStart(6)} ${pct(slamHit / pl.hp).padStart(5)} ${pct(hit(ms.atk, 1, pl.def) / pl.hp).padStart(8)} ${(swHit ? pct(swHit / pl.hp) : '-').padStart(6)} ${String(breaks).padStart(8)}`,
   );
 }
-console.log('chú/đập/cận chiến/chém: phần trăm máu một người cùng cấp mất mỗi đòn (trang bị theo nhiệm vụ). Mất thế: số lần ước tính mỗi trận.');
+console.log(
+  'chú/đập/cận chiến/chém: phần trăm máu một người cùng cấp mất mỗi đòn (trang bị theo nhiệm vụ). Mất thế: số lần ước tính mỗi trận.',
+);
 
 // ---------- phó bản (E2-C) ----------
 
@@ -976,7 +1158,10 @@ for (const lv of Object.values(LEVELS)) {
       }
     }
     const refDef = ref || monsterStats(w.mons[0].level, MONSTER.get(w.mons[0].id)!.hpMul, MONSTER.get(w.mons[0].id)!.atkMul).def;
-    const grp = [...Array(2).fill('lac_kiem_quyet'), 'bat_dong_kim_than', 'thanh_moc_dan_kinh'].reduce((s: number, id) => s + playerDps(L, pl.atk, refDef, id as MethodId, w.mons[0] ? MONSTER.get(w.mons[0].id)?.elem : undefined), 0);
+    const grp = [...Array(2).fill('lac_kiem_quyet'), 'bat_dong_kim_than', 'thanh_moc_dan_kinh'].reduce(
+      (s: number, id) => s + playerDps(L, pl.atk, refDef, id as MethodId, w.mons[0] ? MONSTER.get(w.mons[0].id)?.elem : undefined),
+      0,
+    );
     let dps = grp * (boss ? DG_EFF_BOSS : DG_EFF_TRASH);
     if (boss) {
       // Boss gương (E3-M): ba bóng giả phải tìm/đánh, tránh đĩa gương, Tâm Ma Ảnh chiếm người trong màn: hiệu suất giảm.
@@ -1005,7 +1190,9 @@ for (const lv of Object.values(LEVELS)) {
     console.error(`LỖI: Phục Mạch Quật ra ${first.toFixed(1)} phút, ngoài khoảng 15–25 phút quanh mục tiêu ~20 phút`);
     process.exitCode = 1;
   }
-  console.log(`${(lv.id + ' (4×' + L + ')').padEnd(32)} ${String(d.waves.length).padStart(3)} ${(total / 60).toFixed(1).padStart(8)} phút ${((total * DG_FIRST_TRY) / 60).toFixed(1).padStart(14)} phút   [${rows.join(' ')}]`);
+  console.log(
+    `${(lv.id + ' (4×' + L + ')').padEnd(32)} ${String(d.waves.length).padStart(3)} ${(total / 60).toFixed(1).padStart(8)} phút ${((total * DG_FIRST_TRY) / 60).toFixed(1).padStart(14)} phút   [${rows.join(' ')}]`,
+  );
 }
 
 // ---------- nhịp chương 2: Trúc Cơ → Kết Đan (E2-J) ----------
@@ -1157,7 +1344,9 @@ function ch2Timeline(id: MethodId): Ch2 {
       fixedSec += dgSec;
       parts.dungeon += dgSec;
       fixedGold += (dg.reward!.gold[0] + dg.reward!.gold[1]) / 2;
-      danFixed += dg.reward!.items.filter((i) => i.item === 'itm_ngung_dan_mach_tinh').reduce((s, i) => s + i.chance * ((i.min + i.max) / 2), 0);
+      danFixed += dg
+        .reward!.items.filter((i) => i.item === 'itm_ngung_dan_mach_tinh')
+        .reduce((s, i) => s + i.chance * ((i.min + i.max) / 2), 0);
     }
     if (level === 19) {
       const bd = MONSTER.get('boss_dia_mach_long')!;
@@ -1347,16 +1536,30 @@ function danHoaPass(id: MethodId, dodge: number, guards: number, runs = 4000): {
   return { pass: ok / runs, fillFail: fillFail / runs };
 }
 {
-  console.log('\nĐan Hỏa Kiếp (Kết Đan, cấp 19, Monte Carlo 4000 lần): tỉ lệ qua theo tay nghề (né thành công mỗi lần cố né) và công pháp, một mình | có hộ pháp chắn tia cuối');
+  console.log(
+    '\nĐan Hỏa Kiếp (Kết Đan, cấp 19, Monte Carlo 4000 lần): tỉ lệ qua theo tay nghề (né thành công mỗi lần cố né) và công pháp, một mình | có hộ pháp chắn tia cuối',
+  );
   for (const sk of TRIB_SKILL) {
     const cells = METHOD_IDS.map((m) => {
       const a = danHoaPass(m, sk.dodge, 0);
       const b = danHoaPass(m, sk.dodge, 1);
       // Thang khó: người thường qua 55–90% một mình, người giỏi ≥ 90%, hộ pháp chắn luôn giúp; ngưng đan thiếu giờ không phải nguyên nhân chính.
-      if (sk.name === 'thường' && (a.pass < 0.55 || a.pass > 0.9)) { console.error(`LỖI: Đan Hỏa Kiếp ${METHOD_NAME[m]} tay thường qua ${pct(a.pass)} một mình, ngoài 55–90%`); process.exitCode = 1; }
-      if (sk.name === 'giỏi' && a.pass < 0.9) { console.error(`LỖI: Đan Hỏa Kiếp ${METHOD_NAME[m]} tay giỏi chỉ qua ${pct(a.pass)} (quá khó)`); process.exitCode = 1; }
-      if (sk.name === 'vụng' && a.pass > 0.5) { console.error(`LỖI: Đan Hỏa Kiếp ${METHOD_NAME[m]} tay vụng qua ${pct(a.pass)} (quá dễ)`); process.exitCode = 1; }
-      if (b.pass < a.pass) { console.error(`LỖI: Đan Hỏa Kiếp có hộ pháp (${pct(b.pass)}) kém hơn một mình (${pct(a.pass)})`); process.exitCode = 1; }
+      if (sk.name === 'thường' && (a.pass < 0.55 || a.pass > 0.9)) {
+        console.error(`LỖI: Đan Hỏa Kiếp ${METHOD_NAME[m]} tay thường qua ${pct(a.pass)} một mình, ngoài 55–90%`);
+        process.exitCode = 1;
+      }
+      if (sk.name === 'giỏi' && a.pass < 0.9) {
+        console.error(`LỖI: Đan Hỏa Kiếp ${METHOD_NAME[m]} tay giỏi chỉ qua ${pct(a.pass)} (quá khó)`);
+        process.exitCode = 1;
+      }
+      if (sk.name === 'vụng' && a.pass > 0.5) {
+        console.error(`LỖI: Đan Hỏa Kiếp ${METHOD_NAME[m]} tay vụng qua ${pct(a.pass)} (quá dễ)`);
+        process.exitCode = 1;
+      }
+      if (b.pass < a.pass) {
+        console.error(`LỖI: Đan Hỏa Kiếp có hộ pháp (${pct(b.pass)}) kém hơn một mình (${pct(a.pass)})`);
+        process.exitCode = 1;
+      }
       return `${METHOD_NAME[m]} ${pct(a.pass)} | ${pct(b.pass)}`;
     });
     console.log(`  tay ${sk.name.padEnd(6)} (né ${pct(sk.dodge)}): ${cells.join('; ')}`);
@@ -1365,7 +1568,11 @@ function danHoaPass(id: MethodId, dodge: number, guards: number, runs = 4000): {
 
 {
   const out = new Map<MethodId, Ch2>(METHOD_IDS.map((m) => [m, ch2Timeline(m)] as const));
-  console.log('\nNhịp chương 2 (E2-J): Trúc Cơ cấp 16 → độ kiếp Kết Đan, một mình, đồ bậc 2 kỳ vọng ' + CH2_GEAR_FRAC.map(pct).join('/') + ` (phẩm ${CH2_GEAR_Q}); tinh anh 1 con/${CH2_ELITE_EVERY / 60} phút săn`);
+  console.log(
+    '\nNhịp chương 2 (E2-J): Trúc Cơ cấp 16 → độ kiếp Kết Đan, một mình, đồ bậc 2 kỳ vọng ' +
+      CH2_GEAR_FRAC.map(pct).join('/') +
+      ` (phẩm ${CH2_GEAR_Q}); tinh anh 1 con/${CH2_ELITE_EVERY / 60} phút săn`,
+  );
   console.log('cấp  bãi                                   TTK  mất/lần  tọa  tìm   giết  tinh anh (TTK/mất)  giờ cấp');
   for (const id of METHOD_IDS) {
     const t = out.get(id)!;
@@ -1377,14 +1584,25 @@ function danHoaPass(id: MethodId, dodge: number, guards: number, runs = 4000): {
     }
     const p = t.parts;
     const h = (x: number) => (x / 3600).toFixed(2);
-    console.log(`  thành phần (giờ): quái ${h(p.hunt)}, tinh anh ${h(p.elite)}, đả tọa ${h(p.rest)}, nhiệm vụ ${h(p.quest)}, phó bản ${h(p.dungeon)}, Địa Mạch Long ${h(p.boss)}, tâm ma ${h(p.trial)}, chế Dịch ${h(p.craft)}, Đan Hỏa Kiếp ${h(p.trib)}`);
+    console.log(
+      `  thành phần (giờ): quái ${h(p.hunt)}, tinh anh ${h(p.elite)}, đả tọa ${h(p.rest)}, nhiệm vụ ${h(p.quest)}, phó bản ${h(p.dungeon)}, Địa Mạch Long ${h(p.boss)}, tâm ma ${h(p.trial)}, chế Dịch ${h(p.craft)}, Đan Hỏa Kiếp ${h(p.trib)}`,
+    );
   }
   // Thời gian hạ quái với đồ bậc 2 kỳ vọng: quái thường 4–7 s (hộ pháp/đan sư chậm hơn một chút nên cho tới 7,3 s), tinh anh 18–40 s.
   for (const id of METHOD_IDS) {
     for (const r of out.get(id)!.rows) {
-      if (r.ttk < 3.8 || r.ttk > 7.3) { console.error(`LỖI: chương 2 cấp ${r.level} ${METHOD_NAME[id]} TTK quái thường ${r.ttk.toFixed(1)}s ngoài 3,8–7,3 s`); process.exitCode = 1; }
-      if (r.eliteTtk < 18 || r.eliteTtk > 40) { console.error(`LỖI: chương 2 cấp ${r.level} ${METHOD_NAME[id]} TTK tinh anh ${r.eliteTtk.toFixed(0)}s ngoài 18–40 s`); process.exitCode = 1; }
-      if (r.lostPct > 0.45) { console.error(`LỖI: chương 2 cấp ${r.level} ${METHOD_NAME[id]} mất ${pct(r.lostPct)} máu mỗi lần giết`); process.exitCode = 1; }
+      if (r.ttk < 3.8 || r.ttk > 7.3) {
+        console.error(`LỖI: chương 2 cấp ${r.level} ${METHOD_NAME[id]} TTK quái thường ${r.ttk.toFixed(1)}s ngoài 3,8–7,3 s`);
+        process.exitCode = 1;
+      }
+      if (r.eliteTtk < 18 || r.eliteTtk > 40) {
+        console.error(`LỖI: chương 2 cấp ${r.level} ${METHOD_NAME[id]} TTK tinh anh ${r.eliteTtk.toFixed(0)}s ngoài 18–40 s`);
+        process.exitCode = 1;
+      }
+      if (r.lostPct > 0.45) {
+        console.error(`LỖI: chương 2 cấp ${r.level} ${METHOD_NAME[id]} mất ${pct(r.lostPct)} máu mỗi lần giết`);
+        process.exitCode = 1;
+      }
     }
   }
   const hs = METHOD_IDS.map((m) => out.get(m)!.hours);
@@ -1398,7 +1616,10 @@ function danHoaPass(id: MethodId, dodge: number, guards: number, runs = 4000): {
   // Độ nhạy theo đồ bậc 2: không có món nào (mặc đồ cấp 15) và đủ bộ phẩm Linh từ đầu chương. Người chơi thật nằm giữa hai mốc này.
   const keep = CH2_GEAR_FRAC;
   const sens: string[] = [];
-  for (const [name, f] of [['không đồ bậc 2', [0, 0, 0, 0]], ['đủ bộ ngay', [1, 1, 1, 1]]] as const) {
+  for (const [name, f] of [
+    ['không đồ bậc 2', [0, 0, 0, 0]],
+    ['đủ bộ ngay', [1, 1, 1, 1]],
+  ] as const) {
     CH2_GEAR_FRAC = [...f];
     const h = ch2Timeline('lac_kiem_quyet').hours;
     sens.push(`${name} ${h.toFixed(2)} giờ`);
@@ -1412,13 +1633,18 @@ function danHoaPass(id: MethodId, dodge: number, guards: number, runs = 4000): {
     const rng = seededRng(5 + lv);
     let g = 0;
     const N = 1500;
-    for (let i = 0; i < N; i++) for (const d of rollEquipDrops(lt.equip, ITEM_SYS, ITEMS, lv, rng)) g += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
+    for (let i = 0; i < N; i++)
+      for (const d of rollEquipDrops(lt.equip, ITEM_SYS, ITEMS, lv, rng))
+        g += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
     return g / N;
   };
   const price = (id: string) => Math.max(ITEM.get(id)!.price, ITEM.get(id)!.sell * 3);
   const t2 = ITEMS.filter((i) => (i.tier === 2 && !i.set && i.kind !== 'weapon') || i.id === 'itm_liet_mach_kiem');
   const promote = t2.length * promoteGold(2);
-  const enh5 = ['itm_liet_mach_kiem', 'itm_mach_van_dao_bao', 'itm_sa_thach_ho_uyen', 'itm_kho_ha_van_ngoa'].reduce((n, id) => n + enhanceExpect(5, price(id), false), 0);
+  const enh5 = ['itm_liet_mach_kiem', 'itm_mach_van_dao_bao', 'itm_sa_thach_ho_uyen', 'itm_kho_ha_van_ngoa'].reduce(
+    (n, id) => n + enhanceExpect(5, price(id), false),
+    0,
+  );
   const forge = FORGE.filter((f) => f.id.startsWith('frg_lm_')).reduce((n, f) => n + f.gold, 0);
   const kdFail = 1 - danHoaPass('lac_kiem_quyet', CH2_TRIB_DODGE, 0, 2000).pass;
   const kdDich = (ITEMS.find((i) => i.id === 'itm_ket_dan_dich') ? 1500 : 0) * (1 + kdFail / (1 - kdFail));
@@ -1431,21 +1657,35 @@ function danHoaPass(id: MethodId, dodge: number, guards: number, runs = 4000): {
     let sold = 0;
     for (const r of t.rows) sold += r.kills * sellOf(ch2Camps(r.level)[0].mon, r.level) + r.elites * sellOf('elite_liet_cot_bao', r.level);
     const src = t.gold + sold;
-    console.log(`  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${(t.gold).toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${TIER_INCOME_HOUR[2] * 1.2}/giờ)`);
+    console.log(
+      `  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${TIER_INCOME_HOUR[2] * 1.2}/giờ)`,
+    );
     const r = sink / src;
-    if (id === 'lac_kiem_quyet' && (r < 0.8 || r > 2.2)) { console.error(`LỖI: hố tiêu chương 2 gấp ${r.toFixed(2)} lần nguồn thu của sim, ngoài 0,8–2,2`); process.exitCode = 1; }
+    if (id === 'lac_kiem_quyet' && (r < 0.8 || r > 2.2)) {
+      console.error(`LỖI: hố tiêu chương 2 gấp ${r.toFixed(2)} lần nguồn thu của sim, ngoài 0,8–2,2`);
+      process.exitCode = 1;
+    }
   }
-  console.log(`  tiêu cầu toàn ${sink.toFixed(0)} = Thăng Bậc ${t2.length} ô ${promote} + cường hóa +5 bốn ô ${enh5.toFixed(0)} + chế một bộ ${forge} + Kết Đan Dịch ${kdDich.toFixed(0)} + Phá Cảnh Đan ${phaCanh} + đan hồi ${consumables}.`);
+  console.log(
+    `  tiêu cầu toàn ${sink.toFixed(0)} = Thăng Bậc ${t2.length} ô ${promote} + cường hóa +5 bốn ô ${enh5.toFixed(0)} + chế một bộ ${forge} + Kết Đan Dịch ${kdDich.toFixed(0)} + Phá Cảnh Đan ${phaCanh} + đan hồi ${consumables}.`,
+  );
   // Nguyên liệu: cần 3 Ngưng Đan Mạch Tinh + 10 Yêu Đan cho mỗi Kết Đan Dịch (+ làm lại), 20 Mạch Tinh Phiến mỗi lần Thăng Bậc.
   const k = out.get('lac_kiem_quyet')!;
   const dan = k.rows.reduce((n, r) => n + r.dan, 0);
   const yeu = k.rows.reduce((n, r) => n + r.yeu, 0);
   const need = 3 * (1 + kdFail / (1 - kdFail));
-  console.log(`  Ngưng Đan Mạch Tinh ≈ ${dan.toFixed(1)} (cần ${need.toFixed(1)}), Yêu Đan ≈ ${yeu.toFixed(0)} (cần 10 + ${(2 * 4).toFixed(0)} Phá Cảnh Đan).`);
+  console.log(
+    `  Ngưng Đan Mạch Tinh ≈ ${dan.toFixed(1)} (cần ${need.toFixed(1)}), Yêu Đan ≈ ${yeu.toFixed(0)} (cần 10 + ${(2 * 4).toFixed(0)} Phá Cảnh Đan).`,
+  );
   // Mạch Tinh Phiến: quái thường 12%/con + tinh anh 2–3 + phó bản 6–9 + Địa Mạch Long 6–9 (chưa tính điểm thu thập 8 cục/60 s); Thăng Bậc cần 20 mỗi món.
   const phien = k.rows.reduce((n, r) => n + r.kills * 0.12 + r.elites * 2.5, 0) + 7.5 + 7.5;
-  console.log(`  Mạch Tinh Phiến ≈ ${phien.toFixed(0)} (từ rơi; chưa tính điểm thu thập), Thăng Bậc ${t2.length} ô cần ${t2.length * PROMOTE_MAT_COUNT}.`);
-  if (dan < need * 1.3) { console.error(`LỖI: Ngưng Đan Mạch Tinh ≈ ${dan.toFixed(1)} không đủ dư (cần ${need.toFixed(1)} × 1,3) cho Kết Đan Dịch`); process.exitCode = 1; }
+  console.log(
+    `  Mạch Tinh Phiến ≈ ${phien.toFixed(0)} (từ rơi; chưa tính điểm thu thập), Thăng Bậc ${t2.length} ô cần ${t2.length * PROMOTE_MAT_COUNT}.`,
+  );
+  if (dan < need * 1.3) {
+    console.error(`LỖI: Ngưng Đan Mạch Tinh ≈ ${dan.toFixed(1)} không đủ dư (cần ${need.toFixed(1)} × 1,3) cho Kết Đan Dịch`);
+    process.exitCode = 1;
+  }
 }
 
 // ---------- Nhịp chương 3 (E3-G/E3-J): Kết Đan sơ kỳ (cấp 20) → độ kiếp Nguyên Anh ----------
@@ -1496,7 +1736,11 @@ function fullSetTier(level: number, q: Quality, req: number) {
 function ch3Player(level: number, id: MethodId): { atk: number; def: number; hp: number } {
   const base = player(level);
   const t2 = fullSetTier(level, CH2_GEAR_Q, KET_DAN_LEVEL - 1);
-  const prev = { atk: base.atk + 0.85 * (t2.atk - base.atk), def: base.def + 0.85 * (t2.def - base.def), hp: base.hp + 0.85 * (t2.hp - base.hp) };
+  const prev = {
+    atk: base.atk + 0.85 * (t2.atk - base.atk),
+    def: base.def + 0.85 * (t2.def - base.def),
+    hp: base.hp + 0.85 * (t2.hp - base.hp),
+  };
   const frac = CH3_GEAR_FRAC[Math.min(CH3_GEAR_FRAC.length - 1, level - KET_DAN_LEVEL)] ?? 1;
   const t3 = fullSetTier(level, CH3_GEAR_Q, level);
   const pas = methodAt(level, id)?.passive;
@@ -1533,7 +1777,12 @@ function tamTrongRun(id: MethodId, dodge: number, rng: () => number): { ok: bool
     const pl = ch3Player(lv, id);
     const sh = shadowStats(lv, pl.atk, pl.def);
     const shHp = Math.max(1, Math.round(pl.hp * ph[2].shadows!.hpFrac));
-    ctx = { mhp: pl.hp, regen: selfSustain(lv, id) * 0.5, shKill: shHp / playerDps(lv, pl.atk, sh.def, id), skillDmg: hit(sh.atk, ph[2].tamCanh!.skillPow, pl.def) / pl.hp };
+    ctx = {
+      mhp: pl.hp,
+      regen: selfSustain(lv, id) * 0.5,
+      shKill: shHp / playerDps(lv, pl.atk, sh.def, id),
+      skillDmg: hit(sh.atk, ph[2].tamCanh!.skillPow, pl.def) / pl.hp,
+    };
     naCtxCache.set(ckey, ctx);
   }
   const { mhp, regen, shKill, skillDmg } = ctx;
@@ -1691,11 +1940,14 @@ function ch3Timeline(id: MethodId): Ch3 {
     const eSec = eTtk + 25 + eRest;
     const eLoot = lootOf(eDef.id);
     const eGold = (eLoot.gold[0] + eLoot.gold[1]) / 2;
-    const phachOf = (lt: ReturnType<typeof lootOf>) => lt.drops.filter((d) => d.item === 'itm_ngung_anh_phach').reduce((s, d) => s + d.chance * ((d.min + d.max) / 2), 0);
+    const phachOf = (lt: ReturnType<typeof lootOf>) =>
+      lt.drops.filter((d) => d.item === 'itm_ngung_anh_phach').reduce((s, d) => s + d.chance * ((d.min + d.max) / 2), 0);
     const ePhach = phachOf(eLoot);
 
     // Phần cố định của cấp: nhiệm vụ chính + phụ, Kính Nguyệt Cung (một lần, cấp 21), Vân Hải Kình Vương (cấp 23, nhóm), thử thách tâm ma ở bình cảnh.
-    const qs = QUESTS.filter((q) => (q.id.startsWith('q3_') || q.id.startsWith('s3_')) && Math.max(KET_DAN_LEVEL, q.minLevel ?? KET_DAN_LEVEL) === level);
+    const qs = QUESTS.filter(
+      (q) => (q.id.startsWith('q3_') || q.id.startsWith('s3_')) && Math.max(KET_DAN_LEVEL, q.minLevel ?? KET_DAN_LEVEL) === level,
+    );
     let fixedXp = qs.reduce((s, q) => s + q.rewards.xp, 0);
     let fixedSec = qs.length * CH3_QUEST_OVERHEAD;
     parts.quest += qs.length * CH3_QUEST_OVERHEAD;
@@ -1710,7 +1962,9 @@ function ch3Timeline(id: MethodId): Ch3 {
       fixedSec += dgSec;
       parts.dungeon += dgSec;
       fixedGold += (dg.reward!.gold[0] + dg.reward!.gold[1]) / 2;
-      phachFixed += dg.reward!.items.filter((i) => i.item === 'itm_ngung_anh_phach').reduce((s, i) => s + i.chance * ((i.min + i.max) / 2), 0);
+      phachFixed += dg
+        .reward!.items.filter((i) => i.item === 'itm_ngung_anh_phach')
+        .reduce((s, i) => s + i.chance * ((i.min + i.max) / 2), 0);
     }
     if (level === 23) {
       const bd = MONSTER.get('boss_van_hai_kinh_vuong')!;
@@ -1770,19 +2024,34 @@ function ch3Timeline(id: MethodId): Ch3 {
 
 {
   const out = new Map<MethodId, Ch3>(METHOD_IDS.map((m) => [m, ch3Timeline(m)] as const));
-  console.log('\nTam Trọng Kiếp (Nguyên Anh, cấp 23, Monte Carlo 4000 lần): tỉ lệ qua theo tay nghề; một mình = có hộ pháp (kiếp không có tia khóa mệnh nên hộ pháp không chắn được gì)');
+  console.log(
+    '\nTam Trọng Kiếp (Nguyên Anh, cấp 23, Monte Carlo 4000 lần): tỉ lệ qua theo tay nghề; một mình = có hộ pháp (kiếp không có tia khóa mệnh nên hộ pháp không chắn được gì)',
+  );
   for (const sk of TRIB_SKILL) {
     const cells = METHOD_IDS.map((m) => {
       const a = tamTrongPass(m, sk.dodge);
-      if (sk.name === 'thường' && (a < 0.55 || a > 0.9)) { console.error(`LỖI: Tam Trọng Kiếp ${METHOD_NAME[m]} tay thường qua ${pct(a)}, ngoài 55–90%`); process.exitCode = 1; }
-      if (sk.name === 'giỏi' && a < 0.9) { console.error(`LỖI: Tam Trọng Kiếp ${METHOD_NAME[m]} tay giỏi chỉ qua ${pct(a)} (quá khó)`); process.exitCode = 1; }
-      if (sk.name === 'vụng' && a > 0.5) { console.error(`LỖI: Tam Trọng Kiếp ${METHOD_NAME[m]} tay vụng qua ${pct(a)} (quá dễ)`); process.exitCode = 1; }
+      if (sk.name === 'thường' && (a < 0.55 || a > 0.9)) {
+        console.error(`LỖI: Tam Trọng Kiếp ${METHOD_NAME[m]} tay thường qua ${pct(a)}, ngoài 55–90%`);
+        process.exitCode = 1;
+      }
+      if (sk.name === 'giỏi' && a < 0.9) {
+        console.error(`LỖI: Tam Trọng Kiếp ${METHOD_NAME[m]} tay giỏi chỉ qua ${pct(a)} (quá khó)`);
+        process.exitCode = 1;
+      }
+      if (sk.name === 'vụng' && a > 0.5) {
+        console.error(`LỖI: Tam Trọng Kiếp ${METHOD_NAME[m]} tay vụng qua ${pct(a)} (quá dễ)`);
+        process.exitCode = 1;
+      }
       return `${METHOD_NAME[m]} ${pct(a)}`;
     });
     console.log(`  tay ${sk.name.padEnd(6)} (né ${pct(sk.dodge)}): ${cells.join('; ')}`);
   }
 
-  console.log('\nNhịp chương 3 (E3-G/J): Kết Đan cấp 20 → độ kiếp Nguyên Anh, một mình, đồ bậc 3 kỳ vọng ' + CH3_GEAR_FRAC.map(pct).join('/') + ` (phẩm ${CH3_GEAR_Q}); tinh anh 1 con/${CH3_ELITE_EVERY / 60} phút săn`);
+  console.log(
+    '\nNhịp chương 3 (E3-G/J): Kết Đan cấp 20 → độ kiếp Nguyên Anh, một mình, đồ bậc 3 kỳ vọng ' +
+      CH3_GEAR_FRAC.map(pct).join('/') +
+      ` (phẩm ${CH3_GEAR_Q}); tinh anh 1 con/${CH3_ELITE_EVERY / 60} phút săn`,
+  );
   console.log('cấp  bãi                                   TTK  mất/lần  tọa  tìm   giết  tinh anh (TTK/mất)  giờ cấp');
   for (const id of METHOD_IDS) {
     const t = out.get(id)!;
@@ -1794,13 +2063,24 @@ function ch3Timeline(id: MethodId): Ch3 {
     }
     const p = t.parts;
     const h = (x: number) => (x / 3600).toFixed(2);
-    console.log(`  thành phần (giờ): quái ${h(p.hunt)}, tinh anh ${h(p.elite)}, đả tọa ${h(p.rest)}, nhiệm vụ ${h(p.quest)}, Kính Nguyệt Cung ${h(p.dungeon)}, Kình Vương ${h(p.boss)}, tâm ma ${h(p.trial)}, chế Đan ${h(p.craft)}, Tam Trọng Kiếp ${h(p.trib)}`);
+    console.log(
+      `  thành phần (giờ): quái ${h(p.hunt)}, tinh anh ${h(p.elite)}, đả tọa ${h(p.rest)}, nhiệm vụ ${h(p.quest)}, Kính Nguyệt Cung ${h(p.dungeon)}, Kình Vương ${h(p.boss)}, tâm ma ${h(p.trial)}, chế Đan ${h(p.craft)}, Tam Trọng Kiếp ${h(p.trib)}`,
+    );
   }
   for (const id of METHOD_IDS) {
     for (const r of out.get(id)!.rows) {
-      if (r.ttk < 3.8 || r.ttk > 7.3) { console.error(`LỖI: chương 3 cấp ${r.level} ${METHOD_NAME[id]} TTK quái thường ${r.ttk.toFixed(1)}s ngoài 3,8–7,3 s`); process.exitCode = 1; }
-      if (r.eliteTtk < 18 || r.eliteTtk > 40) { console.error(`LỖI: chương 3 cấp ${r.level} ${METHOD_NAME[id]} TTK tinh anh ${r.eliteTtk.toFixed(0)}s ngoài 18–40 s`); process.exitCode = 1; }
-      if (r.lostPct > 0.45) { console.error(`LỖI: chương 3 cấp ${r.level} ${METHOD_NAME[id]} mất ${pct(r.lostPct)} máu mỗi lần giết`); process.exitCode = 1; }
+      if (r.ttk < 3.8 || r.ttk > 7.3) {
+        console.error(`LỖI: chương 3 cấp ${r.level} ${METHOD_NAME[id]} TTK quái thường ${r.ttk.toFixed(1)}s ngoài 3,8–7,3 s`);
+        process.exitCode = 1;
+      }
+      if (r.eliteTtk < 18 || r.eliteTtk > 40) {
+        console.error(`LỖI: chương 3 cấp ${r.level} ${METHOD_NAME[id]} TTK tinh anh ${r.eliteTtk.toFixed(0)}s ngoài 18–40 s`);
+        process.exitCode = 1;
+      }
+      if (r.lostPct > 0.45) {
+        console.error(`LỖI: chương 3 cấp ${r.level} ${METHOD_NAME[id]} mất ${pct(r.lostPct)} máu mỗi lần giết`);
+        process.exitCode = 1;
+      }
     }
   }
   const hs = METHOD_IDS.map((m) => out.get(m)!.hours);
@@ -1813,7 +2093,10 @@ function ch3Timeline(id: MethodId): Ch3 {
   }
   const keep = CH3_GEAR_FRAC;
   const sens: string[] = [];
-  for (const [name, f] of [['không đồ bậc 3', [0, 0, 0, 0]], ['đủ bộ ngay', [1, 1, 1, 1]]] as const) {
+  for (const [name, f] of [
+    ['không đồ bậc 3', [0, 0, 0, 0]],
+    ['đủ bộ ngay', [1, 1, 1, 1]],
+  ] as const) {
     CH3_GEAR_FRAC = [...f];
     sens.push(`${name} ${ch3Timeline('lac_kiem_quyet').hours.toFixed(2)} giờ`);
   }
@@ -1826,13 +2109,18 @@ function ch3Timeline(id: MethodId): Ch3 {
     const rng = seededRng(7 + lv);
     let g = 0;
     const N = 1500;
-    for (let i = 0; i < N; i++) for (const d of rollEquipDrops(lt.equip, ITEM_SYS, ITEMS, lv, rng)) g += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
+    for (let i = 0; i < N; i++)
+      for (const d of rollEquipDrops(lt.equip, ITEM_SYS, ITEMS, lv, rng))
+        g += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
     return g / N;
   };
   const price = (id: string) => Math.max(ITEM.get(id)!.price, ITEM.get(id)!.sell * 3);
   const t3 = ITEMS.filter((i) => i.tier === 3 && !i.set);
   const promote = t3.length * promoteGold(3);
-  const enh5 = ['itm_kinh_quang_kiem', 'itm_kinh_van_dao_bao', 'itm_luu_ly_ho_uyen', 'itm_phu_van_ngoa'].reduce((n, id) => n + enhanceExpect(5, price(id), false), 0);
+  const enh5 = ['itm_kinh_quang_kiem', 'itm_kinh_van_dao_bao', 'itm_luu_ly_ho_uyen', 'itm_phu_van_ngoa'].reduce(
+    (n, id) => n + enhanceExpect(5, price(id), false),
+    0,
+  );
   const forge = FORGE.filter((f) => f.id.startsWith('frg_kq_')).reduce((n, f) => n + f.gold, 0);
   const naFail = 1 - tamTrongPass('lac_kiem_quyet', CH3_TRIB_DODGE, 2000);
   const naRetry = 1 + naFail / (1 - naFail);
@@ -1847,17 +2135,27 @@ function ch3Timeline(id: MethodId): Ch3 {
     let sold = 0;
     for (const r of t.rows) sold += r.kills * sellOf(ch3Camps(r.level)[0].mon, r.level) + r.elites * sellOf('elite_van_hac_vuong', r.level);
     const src = t.gold + sold;
-    console.log(`  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${TIER_INCOME_HOUR[3] * 1.2}/giờ)`);
+    console.log(
+      `  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${TIER_INCOME_HOUR[3] * 1.2}/giờ)`,
+    );
     const r = sink / src;
-    if (id === 'lac_kiem_quyet' && (r < 0.8 || r > 2.2)) { console.error(`LỖI: hố tiêu chương 3 gấp ${r.toFixed(2)} lần nguồn thu của sim, ngoài 0,8–2,2`); process.exitCode = 1; }
+    if (id === 'lac_kiem_quyet' && (r < 0.8 || r > 2.2)) {
+      console.error(`LỖI: hố tiêu chương 3 gấp ${r.toFixed(2)} lần nguồn thu của sim, ngoài 0,8–2,2`);
+      process.exitCode = 1;
+    }
   }
-  console.log(`  tiêu cầu toàn ${sink.toFixed(0)} = Thăng Bậc ${t3.length} ô ${promote} + cường hóa +5 bốn ô ${enh5.toFixed(0)} + chế một bộ ${forge} + Nguyên Anh Đan ${naDan.toFixed(0)} (kể cả làm lại) + Phá Cảnh Đan ${phaCanh} + đan hồi ${consumables}.`);
+  console.log(
+    `  tiêu cầu toàn ${sink.toFixed(0)} = Thăng Bậc ${t3.length} ô ${promote} + cường hóa +5 bốn ô ${enh5.toFixed(0)} + chế một bộ ${forge} + Nguyên Anh Đan ${naDan.toFixed(0)} (kể cả làm lại) + Phá Cảnh Đan ${phaCanh} + đan hồi ${consumables}.`,
+  );
   // Ngưng Anh Phách: cần 3 mỗi Nguyên Anh Đan (+ làm lại).
   const k = out.get('lac_kiem_quyet')!;
   const phach = k.rows.reduce((n, r) => n + r.phach, 0);
   const needP = 3 * naRetry;
   console.log(`  Ngưng Anh Phách ≈ ${phach.toFixed(1)} (cần ${needP.toFixed(1)}, kể cả làm lại).`);
-  if (phach < needP * 1.3) { console.error(`LỖI: Ngưng Anh Phách ≈ ${phach.toFixed(1)} không đủ dư (cần ${needP.toFixed(1)} × 1,3) cho Nguyên Anh Đan`); process.exitCode = 1; }
+  if (phach < needP * 1.3) {
+    console.error(`LỖI: Ngưng Anh Phách ≈ ${phach.toFixed(1)} không đủ dư (cần ${needP.toFixed(1)} × 1,3) cho Nguyên Anh Đan`);
+    process.exitCode = 1;
+  }
 }
 
 // ---------- Nhịp chương 4 (E4-J): Nguyên Anh sơ kỳ (cấp 24) → độ kiếp Hóa Thần ----------
@@ -1880,7 +2178,11 @@ const CH4_MATS = ['itm_tinh_quang_mac', 'itm_than_tang_ngoc', 'itm_co_thanh_phie
 function ch4Player(level: number, id: MethodId): { atk: number; def: number; hp: number } {
   const base = player(level);
   const t3 = fullSetTier(level, CH3_GEAR_Q, KET_DAN_LEVEL);
-  const prev = { atk: base.atk + 0.85 * (t3.atk - base.atk), def: base.def + 0.85 * (t3.def - base.def), hp: base.hp + 0.85 * (t3.hp - base.hp) };
+  const prev = {
+    atk: base.atk + 0.85 * (t3.atk - base.atk),
+    def: base.def + 0.85 * (t3.def - base.def),
+    hp: base.hp + 0.85 * (t3.hp - base.hp),
+  };
   const frac = CH4_GEAR_FRAC[Math.min(CH4_GEAR_FRAC.length - 1, level - NGUYEN_ANH_LEVEL)] ?? 1;
   const t4 = fullSetTier(level, CH4_GEAR_Q, NGUYEN_ANH_LEVEL);
   const pas = methodAt(level, id)?.passive;
@@ -1902,7 +2204,9 @@ function ch4Camps(level: number) {
 
 /** Số vật phẩm kỳ vọng mỗi lần giết quái `mon`. */
 function dropExp(mon: string, item: string): number {
-  return lootOf(mon).drops.filter((d) => d.item === item).reduce((s, d) => s + d.chance * ((d.min + d.max) / 2), 0);
+  return lootOf(mon)
+    .drops.filter((d) => d.item === item)
+    .reduce((s, d) => s + d.chance * ((d.min + d.max) / 2), 0);
 }
 
 /**
@@ -2077,7 +2381,12 @@ function ch4Timeline(id: MethodId): Ch4 {
     const eLoot = lootOf(eDef.id);
     const eGold = (eLoot.gold[0] + eLoot.gold[1]) / 2;
 
-    const qs = QUESTS.filter((q) => (q.id.startsWith('q4_') || q.id.startsWith('s4_')) && (q.minLevel ?? NGUYEN_ANH_LEVEL) < HOA_THAN_LEVEL && Math.max(NGUYEN_ANH_LEVEL, q.minLevel ?? NGUYEN_ANH_LEVEL) === level);
+    const qs = QUESTS.filter(
+      (q) =>
+        (q.id.startsWith('q4_') || q.id.startsWith('s4_')) &&
+        (q.minLevel ?? NGUYEN_ANH_LEVEL) < HOA_THAN_LEVEL &&
+        Math.max(NGUYEN_ANH_LEVEL, q.minLevel ?? NGUYEN_ANH_LEVEL) === level,
+    );
     let fixedXp = qs.reduce((s, q) => s + q.rewards.xp, 0);
     let fixedSec = qs.length * CH4_QUEST_OVERHEAD;
     parts.quest += qs.length * CH4_QUEST_OVERHEAD;
@@ -2095,7 +2404,12 @@ function ch4Timeline(id: MethodId): Ch4 {
       fixedGold += (dg.reward!.gold[0] + dg.reward!.gold[1]) / 2;
       for (const it of dg.reward!.items) fixedMats[it.item] = (fixedMats[it.item] ?? 0) + it.chance * ((it.min + it.max) / 2);
       // Quái trong phó bản (chia nhóm 4: mỗi người nhặt phần mình, tính trọn cho một người như mọi bảng khác của sim).
-      for (const w of dg.waves) for (const g of w.mons) for (const m of CH4_MATS) fixedMats[m] = (fixedMats[m] ?? 0) + (g.n * dropExp(g.id, m)) / (MONSTER.get(g.id)!.boss || MONSTER.get(g.id)!.elite ? 1 : CH2_PARTY_SHARE * 4);
+      for (const w of dg.waves)
+        for (const g of w.mons)
+          for (const m of CH4_MATS)
+            fixedMats[m] =
+              (fixedMats[m] ?? 0) +
+              (g.n * dropExp(g.id, m)) / (MONSTER.get(g.id)!.boss || MONSTER.get(g.id)!.elite ? 1 : CH2_PARTY_SHARE * 4);
     }
     if (level === 27) {
       const bd = MONSTER.get('boss_thien_khuyet_thu_linh')!;
@@ -2127,7 +2441,21 @@ function ch4Timeline(id: MethodId): Ch4 {
     total += lvSec;
     const mats: Record<string, number> = {};
     for (const m of CH4_MATS) mats[m] = cycles * (mobsPerCycle * (killMats[m] ?? 0) + dropExp(eDef.id, m)) + (fixedMats[m] ?? 0);
-    rows.push({ level, mobs: mix.join('+'), ttk, lostPct: lost / pl.hp, rest, seek, kills: cycles * mobsPerCycle, eliteTtk: eTtk, eliteLostPct: eLost / pl.hp, elites: cycles, sec: lvSec, gold: g, mats });
+    rows.push({
+      level,
+      mobs: mix.join('+'),
+      ttk,
+      lostPct: lost / pl.hp,
+      rest,
+      seek,
+      kills: cycles * mobsPerCycle,
+      eliteTtk: eTtk,
+      eliteLostPct: eLost / pl.hp,
+      elites: cycles,
+      sec: lvSec,
+      gold: g,
+      mats,
+    });
   }
   const td = tribDef('hoa_than');
   const tribOnce = CH4_TRIB_PREP_SEC + td.duration;
@@ -2142,19 +2470,36 @@ function ch4Timeline(id: MethodId): Ch4 {
 
 {
   const out = new Map<MethodId, Ch4>(METHOD_IDS.map((m) => [m, ch4Timeline(m)] as const));
-  console.log('\nNgũ Hành Thiên Nhân Kiếp (Hóa Thần, cấp 27, Monte Carlo 4000 lần): tỉ lệ qua theo tay nghề; cột cuối: Kiếm tu có 2 hộ pháp chắn tia khóa mệnh');
+  console.log(
+    '\nNgũ Hành Thiên Nhân Kiếp (Hóa Thần, cấp 27, Monte Carlo 4000 lần): tỉ lệ qua theo tay nghề; cột cuối: Kiếm tu có 2 hộ pháp chắn tia khóa mệnh',
+  );
   for (const sk of TRIB_SKILL) {
     const cells = METHOD_IDS.map((m) => {
       const a = hoaThanPass(m, sk.dodge);
-      if (sk.name === 'thường' && (a < 0.55 || a > 0.9)) { console.error(`LỖI: Hóa Thần Kiếp ${METHOD_NAME[m]} tay thường qua ${pct(a)}, ngoài 55–90%`); process.exitCode = 1; }
-      if (sk.name === 'giỏi' && a < 0.9) { console.error(`LỖI: Hóa Thần Kiếp ${METHOD_NAME[m]} tay giỏi chỉ qua ${pct(a)} (quá khó)`); process.exitCode = 1; }
-      if (sk.name === 'vụng' && a > 0.5) { console.error(`LỖI: Hóa Thần Kiếp ${METHOD_NAME[m]} tay vụng qua ${pct(a)} (quá dễ)`); process.exitCode = 1; }
+      if (sk.name === 'thường' && (a < 0.55 || a > 0.9)) {
+        console.error(`LỖI: Hóa Thần Kiếp ${METHOD_NAME[m]} tay thường qua ${pct(a)}, ngoài 55–90%`);
+        process.exitCode = 1;
+      }
+      if (sk.name === 'giỏi' && a < 0.9) {
+        console.error(`LỖI: Hóa Thần Kiếp ${METHOD_NAME[m]} tay giỏi chỉ qua ${pct(a)} (quá khó)`);
+        process.exitCode = 1;
+      }
+      if (sk.name === 'vụng' && a > 0.5) {
+        console.error(`LỖI: Hóa Thần Kiếp ${METHOD_NAME[m]} tay vụng qua ${pct(a)} (quá dễ)`);
+        process.exitCode = 1;
+      }
       return `${METHOD_NAME[m]} ${pct(a)}`;
     });
-    console.log(`  tay ${sk.name.padEnd(6)} (né ${pct(sk.dodge)}): ${cells.join('; ')}; có 2 hộ pháp (Kiếm tu): ${pct(hoaThanPass('lac_kiem_quyet', sk.dodge, 4000, 2))}`);
+    console.log(
+      `  tay ${sk.name.padEnd(6)} (né ${pct(sk.dodge)}): ${cells.join('; ')}; có 2 hộ pháp (Kiếm tu): ${pct(hoaThanPass('lac_kiem_quyet', sk.dodge, 4000, 2))}`,
+    );
   }
 
-  console.log('\nNhịp chương 4 (E4-J): Nguyên Anh cấp 24 → độ kiếp Hóa Thần, một mình, đồ bậc 4 kỳ vọng ' + CH4_GEAR_FRAC.map(pct).join('/') + ` (phẩm ${CH4_GEAR_Q}); tinh anh 1 con/${CH4_ELITE_EVERY / 60} phút săn`);
+  console.log(
+    '\nNhịp chương 4 (E4-J): Nguyên Anh cấp 24 → độ kiếp Hóa Thần, một mình, đồ bậc 4 kỳ vọng ' +
+      CH4_GEAR_FRAC.map(pct).join('/') +
+      ` (phẩm ${CH4_GEAR_Q}); tinh anh 1 con/${CH4_ELITE_EVERY / 60} phút săn`,
+  );
   console.log('cấp  bãi                                   TTK  mất/lần  tọa  tìm   giết  tinh anh (TTK/mất)  giờ cấp');
   for (const id of METHOD_IDS) {
     const t = out.get(id)!;
@@ -2166,14 +2511,28 @@ function ch4Timeline(id: MethodId): Ch4 {
     }
     const p = t.parts;
     const h = (x: number) => (x / 3600).toFixed(2);
-    console.log(`  thành phần (giờ): quái ${h(p.hunt)}, tinh anh ${h(p.elite)}, đả tọa ${h(p.rest)}, nhiệm vụ ${h(p.quest)}, Thần Tàng Điện ${h(p.dungeon)}, Thủ Linh ${h(p.boss)}, tâm ma ${h(p.trial)}, chế Hóa Thần Lộ ${h(p.craft)}, Thiên Nhân Kiếp ${h(p.trib)}`);
+    console.log(
+      `  thành phần (giờ): quái ${h(p.hunt)}, tinh anh ${h(p.elite)}, đả tọa ${h(p.rest)}, nhiệm vụ ${h(p.quest)}, Thần Tàng Điện ${h(p.dungeon)}, Thủ Linh ${h(p.boss)}, tâm ma ${h(p.trial)}, chế Hóa Thần Lộ ${h(p.craft)}, Thiên Nhân Kiếp ${h(p.trib)}`,
+    );
   }
   for (const id of METHOD_IDS) {
     for (const r of out.get(id)!.rows) {
-      if (r.ttk < 3.8 || r.ttk > 7.3) { console.error(`LỖI: chương 4 cấp ${r.level} ${METHOD_NAME[id]} TTK quái thường ${r.ttk.toFixed(1)}s ngoài 3,8–7,3 s`); process.exitCode = 1; }
-      if (r.eliteTtk < 18 || r.eliteTtk > 40) { console.error(`LỖI: chương 4 cấp ${r.level} ${METHOD_NAME[id]} TTK tinh anh ${r.eliteTtk.toFixed(0)}s ngoài 18–40 s`); process.exitCode = 1; }
-      if (r.eliteLostPct > 0.6) { console.error(`LỖI: chương 4 cấp ${r.level} ${METHOD_NAME[id]} đánh tinh anh mất ${pct(r.eliteLostPct)} máu (đứng yên), quá nặng`); process.exitCode = 1; }
-      if (r.lostPct > 0.45) { console.error(`LỖI: chương 4 cấp ${r.level} ${METHOD_NAME[id]} mất ${pct(r.lostPct)} máu mỗi lần giết`); process.exitCode = 1; }
+      if (r.ttk < 3.8 || r.ttk > 7.3) {
+        console.error(`LỖI: chương 4 cấp ${r.level} ${METHOD_NAME[id]} TTK quái thường ${r.ttk.toFixed(1)}s ngoài 3,8–7,3 s`);
+        process.exitCode = 1;
+      }
+      if (r.eliteTtk < 18 || r.eliteTtk > 40) {
+        console.error(`LỖI: chương 4 cấp ${r.level} ${METHOD_NAME[id]} TTK tinh anh ${r.eliteTtk.toFixed(0)}s ngoài 18–40 s`);
+        process.exitCode = 1;
+      }
+      if (r.eliteLostPct > 0.6) {
+        console.error(`LỖI: chương 4 cấp ${r.level} ${METHOD_NAME[id]} đánh tinh anh mất ${pct(r.eliteLostPct)} máu (đứng yên), quá nặng`);
+        process.exitCode = 1;
+      }
+      if (r.lostPct > 0.45) {
+        console.error(`LỖI: chương 4 cấp ${r.level} ${METHOD_NAME[id]} mất ${pct(r.lostPct)} máu mỗi lần giết`);
+        process.exitCode = 1;
+      }
     }
   }
   const hs = METHOD_IDS.map((m) => out.get(m)!.hours);
@@ -2186,7 +2545,10 @@ function ch4Timeline(id: MethodId): Ch4 {
   }
   const keep = CH4_GEAR_FRAC;
   const sens: string[] = [];
-  for (const [name, f] of [['không đồ bậc 4', [0, 0, 0, 0]], ['đủ bộ ngay', [1, 1, 1, 1]]] as const) {
+  for (const [name, f] of [
+    ['không đồ bậc 4', [0, 0, 0, 0]],
+    ['đủ bộ ngay', [1, 1, 1, 1]],
+  ] as const) {
     CH4_GEAR_FRAC = [...f];
     sens.push(`${name} ${ch4Timeline('lac_kiem_quyet').hours.toFixed(2)} giờ`);
   }
@@ -2198,17 +2560,22 @@ function ch4Timeline(id: MethodId): Ch4 {
     const rng = seededRng(7 + lv);
     let g = 0;
     const N = 1500;
-    for (let i = 0; i < N; i++) for (const d of rollEquipDrops(lt.equip, ITEM_SYS, ITEMS, lv, rng)) g += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
+    for (let i = 0; i < N; i++)
+      for (const d of rollEquipDrops(lt.equip, ITEM_SYS, ITEMS, lv, rng))
+        g += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
     return g / N;
   };
   const price = (id: string) => Math.max(ITEM.get(id)!.price, ITEM.get(id)!.sell * 3);
   const t4 = ITEMS.filter((i) => i.tier === 4 && !i.set);
   const promote = t4.length * promoteGold(4);
-  const enh5 = ['itm_tinh_khuyet_kiem', 'itm_tinh_khuyet_dao_bao', 'itm_co_thanh_ho_uyen', 'itm_da_hanh_van_ngoa'].reduce((n, id) => n + enhanceExpect(5, price(id), false), 0);
+  const enh5 = ['itm_tinh_khuyet_kiem', 'itm_tinh_khuyet_dao_bao', 'itm_co_thanh_ho_uyen', 'itm_da_hanh_van_ngoa'].reduce(
+    (n, id) => n + enhanceExpect(5, price(id), false),
+    0,
+  );
   const forge = FORGE.filter((f) => f.id.startsWith('frg_tk_')).reduce((n, f) => n + f.gold, 0);
   const htFail = 1 - hoaThanPass('lac_kiem_quyet', CH4_TRIB_DODGE, 2000);
   const htRetry = 1 + htFail / (1 - htFail);
-  const htGold = (RECIPE.get("rcp_hoa_than_lo")?.gold ?? 8000) * htRetry;
+  const htGold = (RECIPE.get('rcp_hoa_than_lo')?.gold ?? 8000) * htRetry;
   const phaCanh = 2 * 150 + 2 * 4 * 5;
   const consumables = 60 * 35;
   const sink = promote + enh5 + forge + htGold + phaCanh + consumables;
@@ -2216,23 +2583,43 @@ function ch4Timeline(id: MethodId): Ch4 {
   for (const id of METHOD_IDS) {
     const t = out.get(id)!;
     let sold = 0;
-    for (const r of t.rows) sold += r.kills * sellOf(ch4Camps(r.level)[0].mon, r.level) + r.elites * sellOf('elite_cot_kiem_thong_linh', r.level);
+    for (const r of t.rows)
+      sold += r.kills * sellOf(ch4Camps(r.level)[0].mon, r.level) + r.elites * sellOf('elite_cot_kiem_thong_linh', r.level);
     const src = t.gold + sold;
-    console.log(`  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${TIER_INCOME_HOUR[4] * 1.2}/giờ)`);
+    console.log(
+      `  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${TIER_INCOME_HOUR[4] * 1.2}/giờ)`,
+    );
     const r = sink / src;
-    if (id === 'lac_kiem_quyet' && (r < 0.8 || r > 2.2)) { console.error(`LỖI: hố tiêu chương 4 gấp ${r.toFixed(2)} lần nguồn thu của sim, ngoài 0,8–2,2`); process.exitCode = 1; }
+    if (id === 'lac_kiem_quyet' && (r < 0.8 || r > 2.2)) {
+      console.error(`LỖI: hố tiêu chương 4 gấp ${r.toFixed(2)} lần nguồn thu của sim, ngoài 0,8–2,2`);
+      process.exitCode = 1;
+    }
   }
-  console.log(`  tiêu cầu toàn ${sink.toFixed(0)} = Thăng Bậc ${t4.length} ô ${promote} + cường hóa +5 bốn ô ${enh5.toFixed(0)} + chế một bộ ${forge} + Hóa Thần Lộ ${htGold.toFixed(0)} (kể cả làm lại) + Phá Cảnh Đan ${phaCanh} + đan hồi ${consumables}.`);
+  console.log(
+    `  tiêu cầu toàn ${sink.toFixed(0)} = Thăng Bậc ${t4.length} ô ${promote} + cường hóa +5 bốn ô ${enh5.toFixed(0)} + chế một bộ ${forge} + Hóa Thần Lộ ${htGold.toFixed(0)} (kể cả làm lại) + Phá Cảnh Đan ${phaCanh} + đan hồi ${consumables}.`,
+  );
   const k = out.get('lac_kiem_quyet')!;
   const have = (m: string) => k.rows.reduce((n, r) => n + (r.mats[m] ?? 0), 0);
-  const need: [string, number][] = [['itm_than_tang_ngoc', 3], ['itm_tinh_quang_mac', 5], ['itm_co_thanh_phien', 2], ['itm_yeu_dan', 16]];
+  const need: [string, number][] = [
+    ['itm_than_tang_ngoc', 3],
+    ['itm_tinh_quang_mac', 5],
+    ['itm_co_thanh_phien', 2],
+    ['itm_yeu_dan', 16],
+  ];
   for (const [m, c] of need) {
     const nd = c * htRetry;
-    console.log(`  ${m} ≈ ${have(m).toFixed(1)} (cần ${nd.toFixed(1)} cho Hóa Thần Lộ, kể cả làm lại${m === 'itm_tinh_quang_mac' ? `; Thăng Bậc bậc 4 cần thêm ${t4.length * PROMOTE_MAT_COUNT}` : ''})`);
-    if (have(m) < nd * 1.3) { console.error(`LỖI: ${m} ≈ ${have(m).toFixed(1)} không đủ dư (cần ${nd.toFixed(1)} × 1,3) cho Hóa Thần Lộ`); process.exitCode = 1; }
+    console.log(
+      `  ${m} ≈ ${have(m).toFixed(1)} (cần ${nd.toFixed(1)} cho Hóa Thần Lộ, kể cả làm lại${m === 'itm_tinh_quang_mac' ? `; Thăng Bậc bậc 4 cần thêm ${t4.length * PROMOTE_MAT_COUNT}` : ''})`,
+    );
+    if (have(m) < nd * 1.3) {
+      console.error(`LỖI: ${m} ≈ ${have(m).toFixed(1)} không đủ dư (cần ${nd.toFixed(1)} × 1,3) cho Hóa Thần Lộ`);
+      process.exitCode = 1;
+    }
   }
   const t5 = ITEMS.filter((i) => i.tier === 5 && !i.set);
-  console.log(`  Tẫn Giác ≈ ${have('itm_tan_giac').toFixed(0)} trong chặng (Thăng Bậc 4 → 5 cần ${PROMOTE_MAT_COUNT} mỗi ô × ${t5.length} ô = ${PROMOTE_MAT_COUNT * t5.length}, ${promoteGold(5)} linh thạch mỗi ô; làm sau khi đã Hóa Thần).`);
+  console.log(
+    `  Tẫn Giác ≈ ${have('itm_tan_giac').toFixed(0)} trong chặng (Thăng Bậc 4 → 5 cần ${PROMOTE_MAT_COUNT} mỗi ô × ${t5.length} ô = ${PROMOTE_MAT_COUNT * t5.length}, ${promoteGold(5)} linh thạch mỗi ô; làm sau khi đã Hóa Thần).`,
+  );
 }
 
 // ---------- Nhịp chương 5 (DV3-J): Hóa Thần sơ kỳ (cấp 28) → độ kiếp Anh Biến (Nhật Thực Kiếp, trần cấp 32) ----------
@@ -2340,7 +2727,9 @@ function ch5Timeline(id: MethodId) {
     const eLoot = lootOf(eDef.id);
     const eGold = (eLoot.gold[0] + eLoot.gold[1]) / 2;
 
-    const qs = QUESTS.filter((q) => (q.id.startsWith('q5_') || q.id.startsWith('s5_')) && Math.max(HOA_THAN_LEVEL, q.minLevel ?? HOA_THAN_LEVEL) === level);
+    const qs = QUESTS.filter(
+      (q) => (q.id.startsWith('q5_') || q.id.startsWith('s5_')) && Math.max(HOA_THAN_LEVEL, q.minLevel ?? HOA_THAN_LEVEL) === level,
+    );
     let fixedXp = qs.reduce((s, q) => s + q.rewards.xp, 0);
     let fixedSec = qs.length * CH5_QUEST_OVERHEAD;
     parts.quest += qs.length * CH5_QUEST_OVERHEAD;
@@ -2358,7 +2747,12 @@ function ch5Timeline(id: MethodId) {
       parts.dungeon += dgSec;
       fixedGold += (dg.reward!.gold[0] + dg.reward!.gold[1]) / 2;
       for (const it of dg.reward!.items) fixedMats[it.item] = (fixedMats[it.item] ?? 0) + it.chance * ((it.min + it.max) / 2);
-      for (const w of dg.waves) for (const g of w.mons) for (const m of CH5_MATS) fixedMats[m] = (fixedMats[m] ?? 0) + (g.n * dropExp(g.id, m)) / (MONSTER.get(g.id)!.boss || MONSTER.get(g.id)!.elite ? 1 : CH2_PARTY_SHARE * 4);
+      for (const w of dg.waves)
+        for (const g of w.mons)
+          for (const m of CH5_MATS)
+            fixedMats[m] =
+              (fixedMats[m] ?? 0) +
+              (g.n * dropExp(g.id, m)) / (MONSTER.get(g.id)!.boss || MONSTER.get(g.id)!.elite ? 1 : CH2_PARTY_SHARE * 4);
     }
     for (const b of CH5_BOSSES[level] ?? []) {
       const bd = MONSTER.get(b)!;
@@ -2390,7 +2784,18 @@ function ch5Timeline(id: MethodId) {
     total += lvSec;
     const mats: Record<string, number> = {};
     for (const m of CH5_MATS) mats[m] = cycles * (mobsPerCycle * (killMats[m] ?? 0) + dropExp(eDef.id, m)) + (fixedMats[m] ?? 0);
-    rows.push({ level, mobs: mix.join('+'), ttk, lostPct: lost / pl.hp, eliteTtk: eTtk, eliteLostPct: eLost / pl.hp, kills: cycles * mobsPerCycle, sec: lvSec, gold: g, mats });
+    rows.push({
+      level,
+      mobs: mix.join('+'),
+      ttk,
+      lostPct: lost / pl.hp,
+      eliteTtk: eTtk,
+      eliteLostPct: eLost / pl.hp,
+      kills: cycles * mobsPerCycle,
+      sec: lvSec,
+      gold: g,
+      mats,
+    });
   }
   const td = tribDef('anh_bien');
   const tribOnce = CH5_TRIB_PREP_SEC + td.duration;
@@ -2404,30 +2809,53 @@ function ch5Timeline(id: MethodId) {
 
 {
   const out = new Map<MethodId, ReturnType<typeof ch5Timeline>>(METHOD_IDS.map((m) => [m, ch5Timeline(m)] as const));
-  console.log('\nNhịp chương 5 (DV3-J): Hóa Thần cấp 28 → độ kiếp Anh Biến, một mình, đồ bậc 5 kỳ vọng ' + CH5_GEAR_FRAC.map(pct).join('/') + ` (phẩm ${CH5_GEAR_Q}); tinh anh 1 con/${CH5_ELITE_EVERY / 60} phút săn; Nhật Thực Kiếp qua ${pct(CH5_TRIB_PASS)} (giả định)`);
+  console.log(
+    '\nNhịp chương 5 (DV3-J): Hóa Thần cấp 28 → độ kiếp Anh Biến, một mình, đồ bậc 5 kỳ vọng ' +
+      CH5_GEAR_FRAC.map(pct).join('/') +
+      ` (phẩm ${CH5_GEAR_Q}); tinh anh 1 con/${CH5_ELITE_EVERY / 60} phút săn; Nhật Thực Kiếp qua ${pct(CH5_TRIB_PASS)} (giả định)`,
+  );
   console.log('cấp  bãi                                   TTK  mất/lần  giết  tinh anh (TTK/mất)  giờ cấp');
   for (const id of METHOD_IDS) {
     const t = out.get(id)!;
     console.log(METHOD_NAME[id] + ': ' + t.hours.toFixed(2) + ' giờ');
     for (const r of t.rows) {
-      console.log(`${String(r.level).padStart(3)}  ${r.mobs.slice(0, 36).padEnd(36)} ${r.ttk.toFixed(1).padStart(4)}s ${pct(r.lostPct).padStart(6)} ${r.kills.toFixed(0).padStart(5)}  ${r.eliteTtk.toFixed(0).padStart(3)}s ${pct(r.eliteLostPct).padStart(4)}  ${(r.sec / 3600).toFixed(2).padStart(6)}`);
+      console.log(
+        `${String(r.level).padStart(3)}  ${r.mobs.slice(0, 36).padEnd(36)} ${r.ttk.toFixed(1).padStart(4)}s ${pct(r.lostPct).padStart(6)} ${r.kills.toFixed(0).padStart(5)}  ${r.eliteTtk.toFixed(0).padStart(3)}s ${pct(r.eliteLostPct).padStart(4)}  ${(r.sec / 3600).toFixed(2).padStart(6)}`,
+      );
     }
     const p = t.parts;
     const h = (x: number) => (x / 3600).toFixed(2);
-    console.log(`  thành phần (giờ): quái ${h(p.hunt)}, tinh anh ${h(p.elite)}, đả tọa ${h(p.rest)}, nhiệm vụ ${h(p.quest)}, phó bản ${h(p.dungeon)}, boss ${h(p.boss)}, tâm ma ${h(p.trial)}, chế Anh Biến Lộ ${h(p.craft)}, Nhật Thực Kiếp ${h(p.trib)}`);
+    console.log(
+      `  thành phần (giờ): quái ${h(p.hunt)}, tinh anh ${h(p.elite)}, đả tọa ${h(p.rest)}, nhiệm vụ ${h(p.quest)}, phó bản ${h(p.dungeon)}, boss ${h(p.boss)}, tâm ma ${h(p.trial)}, chế Anh Biến Lộ ${h(p.craft)}, Nhật Thực Kiếp ${h(p.trib)}`,
+    );
   }
   for (const id of METHOD_IDS) {
     for (const r of out.get(id)!.rows) {
-      if (r.ttk < 3.8 || r.ttk > 7.3) { console.error(`LỖI: chương 5 cấp ${r.level} ${METHOD_NAME[id]} TTK quái thường ${r.ttk.toFixed(1)}s ngoài 3,8–7,3 s`); process.exitCode = 1; }
-      if (r.eliteTtk < 18 || r.eliteTtk > 40) { console.error(`LỖI: chương 5 cấp ${r.level} ${METHOD_NAME[id]} TTK tinh anh ${r.eliteTtk.toFixed(0)}s ngoài 18–40 s`); process.exitCode = 1; }
-      if (r.eliteLostPct > 0.6) { console.error(`LỖI: chương 5 cấp ${r.level} ${METHOD_NAME[id]} đánh tinh anh mất ${pct(r.eliteLostPct)} máu`); process.exitCode = 1; }
-      if (r.lostPct > 0.45) { console.error(`LỖI: chương 5 cấp ${r.level} ${METHOD_NAME[id]} mất ${pct(r.lostPct)} máu mỗi lần giết`); process.exitCode = 1; }
+      if (r.ttk < 3.8 || r.ttk > 7.3) {
+        console.error(`LỖI: chương 5 cấp ${r.level} ${METHOD_NAME[id]} TTK quái thường ${r.ttk.toFixed(1)}s ngoài 3,8–7,3 s`);
+        process.exitCode = 1;
+      }
+      if (r.eliteTtk < 18 || r.eliteTtk > 40) {
+        console.error(`LỖI: chương 5 cấp ${r.level} ${METHOD_NAME[id]} TTK tinh anh ${r.eliteTtk.toFixed(0)}s ngoài 18–40 s`);
+        process.exitCode = 1;
+      }
+      if (r.eliteLostPct > 0.6) {
+        console.error(`LỖI: chương 5 cấp ${r.level} ${METHOD_NAME[id]} đánh tinh anh mất ${pct(r.eliteLostPct)} máu`);
+        process.exitCode = 1;
+      }
+      if (r.lostPct > 0.45) {
+        console.error(`LỖI: chương 5 cấp ${r.level} ${METHOD_NAME[id]} mất ${pct(r.lostPct)} máu mỗi lần giết`);
+        process.exitCode = 1;
+      }
     }
   }
   const hs = METHOD_IDS.map((m) => out.get(m)!.hours);
   console.log(`[pace5] ${METHOD_IDS.map((m, i) => m + '=' + hs[i].toFixed(2)).join(' ')} target=${CH5_TARGET_H} tol=${CH5_TOL}`);
   for (const [i, m] of METHOD_IDS.entries()) {
-    if (Math.abs(hs[i] / CH5_TARGET_H - 1) > CH5_TOL) { console.error(`LỖI: chương 5 ${METHOD_NAME[m]} ra ${hs[i].toFixed(2)} giờ, ngoài ${CH5_TARGET_H} giờ ±${CH5_TOL * 100}%`); process.exitCode = 1; }
+    if (Math.abs(hs[i] / CH5_TARGET_H - 1) > CH5_TOL) {
+      console.error(`LỖI: chương 5 ${METHOD_NAME[m]} ra ${hs[i].toFixed(2)} giờ, ngoài ${CH5_TARGET_H} giờ ±${CH5_TOL * 100}%`);
+      process.exitCode = 1;
+    }
   }
   const k = out.get('lac_kiem_quyet')!;
   const have = (m: string) => k.rows.reduce((n, r) => n + (r.mats[m] ?? 0), 0);
@@ -2435,16 +2863,23 @@ function ch5Timeline(id: MethodId) {
   console.log('\nKinh tế chương 5 (một mình, tới độ kiếp Anh Biến):');
   for (const id of METHOD_IDS) {
     const t = out.get(id)!;
-    console.log(`  ${METHOD_NAME[id].padEnd(8)} nguồn ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss (chưa tính bán đồ); ${(t.gold / t.hours).toFixed(0)}/giờ`);
+    console.log(
+      `  ${METHOD_NAME[id].padEnd(8)} nguồn ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss (chưa tính bán đồ); ${(t.gold / t.hours).toFixed(0)}/giờ`,
+    );
   }
   const rcp = RECIPE.get('rcp_anh_bien_lo')!;
   for (const inp of rcp.inputs) {
     const nd = inp.n * retryAB;
     console.log(`  ${inp.id} ≈ ${have(inp.id).toFixed(1)} (cần ${nd.toFixed(1)} cho Anh Biến Lộ, kể cả làm lại)`);
-    if (have(inp.id) < nd * 1.3) { console.error(`LỖI: ${inp.id} ≈ ${have(inp.id).toFixed(1)} không đủ dư (cần ${nd.toFixed(1)} × 1,3) cho Anh Biến Lộ`); process.exitCode = 1; }
+    if (have(inp.id) < nd * 1.3) {
+      console.error(`LỖI: ${inp.id} ≈ ${have(inp.id).toFixed(1)} không đủ dư (cần ${nd.toFixed(1)} × 1,3) cho Anh Biến Lộ`);
+      process.exitCode = 1;
+    }
   }
   const t5 = ITEMS.filter((i) => i.tier === 5 && !i.set);
   const forgeGold = rcp.gold * retryAB;
   const promote = t5.length * promoteGold(5);
-  console.log(`  tiêu cầu toàn ≈ ${(promote + forgeGold).toFixed(0)} = Thăng Bậc 4 → 5 ${t5.length} ô ${promote} + Anh Biến Lộ ${forgeGold.toFixed(0)} (kể cả làm lại); Tẫn Giác ≈ ${have('itm_tan_giac').toFixed(0)} (Thăng Bậc cần ${PROMOTE_MAT_COUNT * t5.length} + Anh Biến Lộ ${rcp.inputs.find((i) => i.id === 'itm_tan_giac')!.n}).`);
+  console.log(
+    `  tiêu cầu toàn ≈ ${(promote + forgeGold).toFixed(0)} = Thăng Bậc 4 → 5 ${t5.length} ô ${promote} + Anh Biến Lộ ${forgeGold.toFixed(0)} (kể cả làm lại); Tẫn Giác ≈ ${have('itm_tan_giac').toFixed(0)} (Thăng Bậc cần ${PROMOTE_MAT_COUNT * t5.length} + Anh Biến Lộ ${rcp.inputs.find((i) => i.id === 'itm_tan_giac')!.n}).`,
+  );
 }

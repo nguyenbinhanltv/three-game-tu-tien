@@ -25,14 +25,27 @@ const force = args.includes('--force');
 const all = build();
 const sel = args.filter((a) => !a.startsWith('--'));
 const ids = sel.length
-  ? [...new Set(sel.flatMap((s) => (all[s] ? [s] : s === 'kiem' ? Object.keys(all).filter((k) => k.startsWith('kiem_')) : Object.keys(all).filter((k) => k.startsWith(`${s}_`)))))]
+  ? [
+      ...new Set(
+        sel.flatMap((s) =>
+          all[s]
+            ? [s]
+            : s === 'kiem'
+              ? Object.keys(all).filter((k) => k.startsWith('kiem_'))
+              : Object.keys(all).filter((k) => k.startsWith(`${s}_`)),
+        ),
+      ),
+    ]
   : Object.keys(all);
 const outDir = path.join(source, '2d', 'outfit_p3');
 fs.mkdirSync(outDir, { recursive: true });
 const todo = ids.filter((id) => force || !fs.existsSync(path.join(outDir, `${id}.png`)));
 console.log(`outfit_p3: ${todo.length}/${ids.length} ảnh, ${jobs} luồng → ${outDir}`);
 
-const genDir = path.join(process.env.CODEX_HOME ?? path.join(process.env.USERPROFILE ?? process.env.HOME ?? '', '.codex'), 'generated_images');
+const genDir = path.join(
+  process.env.CODEX_HOME ?? path.join(process.env.USERPROFILE ?? process.env.HOME ?? '', '.codex'),
+  'generated_images',
+);
 // Codex trên Windows hay lỗi bước shell (sao chép), nên không nhờ nó sao chép: đọc session id, đợi ảnh trong generated_images/<session>/ rồi tự sao chép.
 const runOne = (id) =>
   new Promise((resolve) => {

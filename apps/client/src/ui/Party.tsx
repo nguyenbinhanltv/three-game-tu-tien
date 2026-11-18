@@ -46,7 +46,11 @@ export function PartyFrame() {
         <div key={m.id} className={'pty-row' + (m.dead ? ' dead' : '') + (!m.room ? ' off' : '') + (m.sid && m.sid === sid ? ' me' : '')}>
           <div className="pty-head">
             <span className="pty-name">
-              {m.lead && <i className="pty-crown" title={t('ui.party.leader')}>♛</i>}
+              {m.lead && (
+                <i className="pty-crown" title={t('ui.party.leader')}>
+                  ♛
+                </i>
+              )}
               {m.name || '…'}
             </span>
             <RoleTag role={m.role} />
@@ -85,7 +89,9 @@ export function InviteStack() {
         };
         return (
           <div key={i.kind + i.id} className="pty-invite" data-kind={i.kind}>
-            <div className="pty-invite-title">{t(i.kind === 'party' ? 'ui.party.invite_title' : 'ui.duel.invite_title', { name: i.name })}</div>
+            <div className="pty-invite-title">
+              {t(i.kind === 'party' ? 'ui.party.invite_title' : 'ui.duel.invite_title', { name: i.name })}
+            </div>
             <div className="pty-invite-btns">
               <Button size="s" variant="primary" onClick={() => answer('acc')}>
                 {t('ui.party.accept')}

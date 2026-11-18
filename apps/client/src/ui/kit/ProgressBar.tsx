@@ -38,7 +38,23 @@ function ProgressTrail({ frac }: { frac: number }) {
  * (`hp`, `hp ally`, `hp boss`, `mp`, `xp`, `tcast`…, định nghĩa ở mục `.gauge` trong styles.css). Có `label`
  * thì thành `role="progressbar"` cho trình đọc màn hình.
  */
-export function ProgressBar({ cls, value, max, text, segs = 0, trail = false, label }: { cls: string; value: number; max: number; text?: string; segs?: number; trail?: boolean; label?: string }) {
+export function ProgressBar({
+  cls,
+  value,
+  max,
+  text,
+  segs = 0,
+  trail = false,
+  label,
+}: {
+  cls: string;
+  value: number;
+  max: number;
+  text?: string;
+  segs?: number;
+  trail?: boolean;
+  label?: string;
+}) {
   const frac = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
   return (
     <div

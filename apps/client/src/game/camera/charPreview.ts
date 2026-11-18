@@ -145,7 +145,8 @@ export class CharPreview {
     this.checkAcc += dt;
     if (this.checkAcc > 0.5) {
       this.checkAcc = 0;
-      if (!this.model || this.host.lookKey() !== this.key || (this.pending && this.host.lookKey() === this.key && this.stillPending())) this.rebuild();
+      if (!this.model || this.host.lookKey() !== this.key || (this.pending && this.host.lookKey() === this.key && this.stillPending()))
+        this.rebuild();
     }
     if (!this.model) {
       this.rebuild();

@@ -8,8 +8,16 @@ import { HiresStreamer } from './streamer';
 const START_DELAY_MS = 8000;
 
 function navInfo(): NavInfo {
-  const n = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean; effectiveType?: string; downlink?: number } };
-  return { deviceMemory: n.deviceMemory, saveData: n.connection?.saveData, effectiveType: n.connection?.effectiveType, downlink: n.connection?.downlink };
+  const n = navigator as Navigator & {
+    deviceMemory?: number;
+    connection?: { saveData?: boolean; effectiveType?: string; downlink?: number };
+  };
+  return {
+    deviceMemory: n.deviceMemory,
+    saveData: n.connection?.saveData,
+    effectiveType: n.connection?.effectiveType,
+    downlink: n.connection?.downlink,
+  };
 }
 
 let streamer: HiresStreamer | null = null;
@@ -51,7 +59,9 @@ export function startHires(): HiresStreamer | null {
     void streamer?.tick();
     if (streamer?.policy.tier === 0) measure(false);
   }, 500);
-  (window as unknown as { __hires?: typeof hiresInfo & { freeze: () => void } }).__hires = Object.assign(() => hiresInfo(), { freeze: () => streamer?.freeze() });
+  (window as unknown as { __hires?: typeof hiresInfo & { freeze: () => void } }).__hires = Object.assign(() => hiresInfo(), {
+    freeze: () => streamer?.freeze(),
+  });
   return streamer;
 }
 

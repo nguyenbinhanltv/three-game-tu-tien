@@ -33,7 +33,21 @@ for (const id of TREES) {
     process.exit(1);
   }
   const png = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'dtl-imp-')), `${id}.png`);
-  const r = spawnSync(blender, ['--background', '--factory-startup', '--python', path.join(root, 'tools/blender/bake_impostor.py'), '--', raw, png, '--size', String(size)], { encoding: 'utf8' });
+  const r = spawnSync(
+    blender,
+    [
+      '--background',
+      '--factory-startup',
+      '--python',
+      path.join(root, 'tools/blender/bake_impostor.py'),
+      '--',
+      raw,
+      png,
+      '--size',
+      String(size),
+    ],
+    { encoding: 'utf8' },
+  );
   const m = /IMPOSTOR (\{.*\})/.exec(r.stdout ?? '');
   if (r.status !== 0 || !m) {
     console.error(r.stdout, r.stderr);
@@ -42,7 +56,9 @@ for (const id of TREES) {
   const info = JSON.parse(m[1]) as { frame: number; height: number };
   rows.push({ id, png, ...info });
 }
-const atlas = await sharp({ create: { width: size * 2, height: size * rows.length, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+const atlas = await sharp({
+  create: { width: size * 2, height: size * rows.length, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+})
   .composite(rows.map((r, i) => ({ input: r.png, left: 0, top: i * size })))
   .webp({ quality: 82, alphaQuality: 90, effort: 6 })
   .toBuffer();
@@ -50,7 +66,14 @@ const hash = crypto.createHash('sha256').update(atlas).digest('hex').slice(0, 10
 for (const f of fs.readdirSync(outDir)) fs.rmSync(path.join(outDir, f));
 const file = `trees.${hash}.webp`;
 fs.writeFileSync(path.join(outDir, file), atlas);
-const index = { file, rows: rows.length, species: Object.fromEntries(rows.map((r, i) => [r.id, { row: i, frame: r.frame, height: r.height }])) };
-fs.writeFileSync(indexFile, `${JSON.stringify(index, null, 2)}
-`);
+const index = {
+  file,
+  rows: rows.length,
+  species: Object.fromEntries(rows.map((r, i) => [r.id, { row: i, frame: r.frame, height: r.height }])),
+};
+fs.writeFileSync(
+  indexFile,
+  `${JSON.stringify(index, null, 2)}
+`,
+);
 console.log(`[impostor] ${file} ${(atlas.length / 1024).toFixed(1)}KB, ${rows.length} loài`, index.species);

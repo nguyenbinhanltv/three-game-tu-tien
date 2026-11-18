@@ -48,7 +48,8 @@ export default {
         await skipCutscene(page, 20);
         // Quái chỉ đánh thường/bắn đạn không có vạch báo: vẫn chụp dãy khung lúc giao chiến.
         const t0 = Date.now();
-        for (let i = 0; i < num('--frames', 6); i++) await snap(page, r.out, `${tag}-${seen ? 'skill' : 'fight'}-${i}-t${Date.now() - t0}.jpg`, { wait: 250 });
+        for (let i = 0; i < num('--frames', 6); i++)
+          await snap(page, r.out, `${tag}-${seen ? 'skill' : 'fight'}-${i}-t${Date.now() - t0}.jpg`, { wait: 250 });
         log[tag] = { telegraph: seen, hazards: await hazards(page) };
       }
       // Boss chặn sát thương ở ngưỡng pha: hạ nhiều lượt tới khi chết, rồi chụp từ lúc ngã.

@@ -2,7 +2,19 @@ import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { POSE, POSES } from '@dtl/content';
 import { POSE_REF, type PoseDef, type PoseVec, validatePose } from '@dtl/shared';
-import { bakePose, formatProbe, slerpDir, IkRig, makeAdditive, maskClip, type PoseSample, poseClipName, probeClip, resolveKeys, samplePose } from './ikpose';
+import {
+  bakePose,
+  formatProbe,
+  slerpDir,
+  IkRig,
+  makeAdditive,
+  maskClip,
+  type PoseSample,
+  poseClipName,
+  probeClip,
+  resolveKeys,
+  samplePose,
+} from './ikpose';
 import { buildMixamoFixture } from './mixamoFixture';
 import { SkinnedCharacter } from './skinned';
 import type { AnimState } from './view';
@@ -125,7 +137,8 @@ describe('key pose dữ liệu', () => {
       ],
     };
     const errs = validatePose(bad).join('\n');
-    for (const m of ['id không hợp lệ', 'hit', 'key đầu', 'ngoài tầm với', 't phải tăng', 'song song', 'nhấc âm']) expect(errs).toContain(m);
+    for (const m of ['id không hợp lệ', 'hit', 'key đầu', 'ngoài tầm với', 't phải tăng', 'song song', 'nhấc âm'])
+      expect(errs).toContain(m);
   });
 
   it('trường thiếu giữ giá trị key trước; clip lặp nối về key đầu', () => {
@@ -190,7 +203,11 @@ describe('key pose dữ liệu', () => {
 
 describe('hướng đảo 180°', () => {
   it('slerpDir quét nửa vòng, luôn là vector đơn vị (kể cả gần ngược)', () => {
-    for (const b of [[0, -1, 0], [0.001, -1, 0], [0, -1, 0.03]] as PoseVec[]) {
+    for (const b of [
+      [0, -1, 0],
+      [0.001, -1, 0],
+      [0, -1, 0.03],
+    ] as PoseVec[]) {
       for (let u = 0; u <= 1; u += 0.05) {
         const v = slerpDir([0, 1, 0], b, u, new THREE.Vector3(1, 0, 0));
         expect(Math.hypot(...v)).toBeCloseTo(1, 6);
@@ -206,7 +223,15 @@ describe('hướng đảo 180°', () => {
     ['đâm từ sau ra trước (không có lưỡi)', { sword: [0, 0, -1] }, { sword: [0, 0, 1] }],
   ] as [string, Partial<PoseDef['keys'][0]>, Partial<PoseDef['keys'][0]>][]) {
     it(`nướng ${name}: mọi giá trị hữu hạn, mũi kiếm giữa đòn là vector đơn vị`, () => {
-      const def: PoseDef = { id: 'flip', duration: 0.4, loop: false, keys: [{ t: 0, handR: [-0.1, 0.3, 0.35], ...k0 }, { t: 0.4, ease: 'linear', ...k1 }] };
+      const def: PoseDef = {
+        id: 'flip',
+        duration: 0.4,
+        loop: false,
+        keys: [
+          { t: 0, handR: [-0.1, 0.3, 0.35], ...k0 },
+          { t: 0.4, ease: 'linear', ...k1 },
+        ],
+      };
       expect(validatePose(def)).toEqual([]);
       const rig = IkRig.from(buildMixamoFixture())!;
       const clip = bakePose(def, rig);
@@ -240,7 +265,15 @@ describe('trộn với clip khác', () => {
     const rig = IkRig.from(buildMixamoFixture())!;
     const pose = bakePose(POSE.get('kiem_thu')!, rig);
     // Clip nền: chân bước dài (giả lập clip chạy của Tripo).
-    const stride = bakePose({ id: 'stride', duration: 1, loop: true, keys: [{ t: 0, footR: [-0.1, 0.05, 0.22], footL: [0.1, 0, -0.25], handR: [-0.3, -0.2, -0.1] }] }, rig);
+    const stride = bakePose(
+      {
+        id: 'stride',
+        duration: 1,
+        loop: true,
+        keys: [{ t: 0, footR: [-0.1, 0.05, 0.22], footL: [0.1, 0, -0.25], handR: [-0.3, -0.2, -0.1] }],
+      },
+      rig,
+    );
     const mixer = new THREE.AnimationMixer(rig.root);
     mixer.clipAction(maskClip(stride, rig, 'lower')).play();
     mixer.clipAction(maskClip(pose, rig, 'upper')).play();

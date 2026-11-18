@@ -10,7 +10,8 @@ describe('vanHaiArt (E3-I: bản sắc từng đảo)', () => {
   it('có 9 đảo thật, mỗi đảo một loại; năm đảo vùng khác bảng màu nhau', () => {
     expect(art.islands.length).toBe(9);
     const kinds = art.islands.map((i) => i.kind);
-    for (const k of ['hub', 'tung_dai_dao', 'thach_quy_dao', 'kinh_ho_dao', 'loi_van_dao', 'kinh_ngu_dai'] as const) expect(kinds).toContain(k);
+    for (const k of ['hub', 'tung_dai_dao', 'thach_quy_dao', 'kinh_ho_dao', 'loi_van_dao', 'kinh_ngu_dai'] as const)
+      expect(kinds).toContain(k);
     const zones = art.islands.filter((i) => i.r > 100);
     expect(new Set(zones.map((i) => i.pal.stone)).size).toBe(zones.length);
     expect(new Set(zones.map((i) => i.pal.moss)).size).toBe(zones.length);

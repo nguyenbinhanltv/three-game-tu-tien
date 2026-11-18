@@ -1,5 +1,22 @@
 import * as THREE from 'three/webgpu';
-import { clamp, dot, exp, float, Fn, max, mix, normalize, positionLocal, pow, smoothstep, texture, time, uniform, vec2, vec3 } from 'three/tsl';
+import {
+  clamp,
+  dot,
+  exp,
+  float,
+  Fn,
+  max,
+  mix,
+  normalize,
+  positionLocal,
+  pow,
+  smoothstep,
+  texture,
+  time,
+  uniform,
+  vec2,
+  vec3,
+} from 'three/tsl';
 import { getCloudNoise } from './noiseTex';
 
 /**
@@ -53,7 +70,12 @@ export function createSky(): THREE.Mesh {
     const streak = texture(noise, proj.mul(vec2(0.16, 0.6)).add(wind)).a;
     const detail = texture(noise, proj.mul(0.55).add(wind.mul(1.7))).g;
     const dens = smoothstep(0.52, 0.82, streak.mul(0.75).add(detail.mul(0.35)));
-    const cover = dens.mul(smoothstep(0.03, 0.22, h)).mul(float(1).sub(smoothstep(0.55, 0.9, h).mul(0.4))).mul(0.55).mul(skyParams.cirrus).mul(skyParams.cirrusAmt);
+    const cover = dens
+      .mul(smoothstep(0.03, 0.22, h))
+      .mul(float(1).sub(smoothstep(0.55, 0.9, h).mul(0.4)))
+      .mul(0.55)
+      .mul(skyParams.cirrus)
+      .mul(skyParams.cirrusAmt);
     // Sợi mây sáng ấm về phía mặt trời, lạnh ở phía đối diện.
     const cirrusCol = mix(mix(skyParams.horizon, vec3(1), 0.55), skyParams.glow.add(0.25), pow(sd, 2).mul(0.8));
     return mix(base, cirrusCol, clamp(cover, 0, 1));
@@ -67,7 +89,23 @@ export function createSky(): THREE.Mesh {
 }
 
 /** Màu đỉnh trời theo preset (không có trong art bible, chọn cho khớp màu sương). */
-const TOP: Record<string, number> = { dawn: 0x7ea6b6, day: 0x4f93bf, night: 0x0b1520, ochre_dawn: 0x8c8ea0, ochre: 0x6f8fa6, ochre_night: 0x0c1420, cloud_dawn: 0x6fb2c6, cloud: 0x4f9fc9, cloud_night: 0x0d1a2c, tk_dawn: 0x5d6f8c, tk: 0x6b86a3, tk_night: 0x0a1c2e, ash_dawn: 0x8a99a3, rift: 0x241634, rift_pit: 0x4a4668 };
+const TOP: Record<string, number> = {
+  dawn: 0x7ea6b6,
+  day: 0x4f93bf,
+  night: 0x0b1520,
+  ochre_dawn: 0x8c8ea0,
+  ochre: 0x6f8fa6,
+  ochre_night: 0x0c1420,
+  cloud_dawn: 0x6fb2c6,
+  cloud: 0x4f9fc9,
+  cloud_night: 0x0d1a2c,
+  tk_dawn: 0x5d6f8c,
+  tk: 0x6b86a3,
+  tk_night: 0x0a1c2e,
+  ash_dawn: 0x8a99a3,
+  rift: 0x241634,
+  rift_pit: 0x4a4668,
+};
 
 /** Màu đỉnh trời của preset (để trộn mood theo vị trí). */
 export const skyTopOf = (name: string): number => TOP[name] ?? TOP.day;

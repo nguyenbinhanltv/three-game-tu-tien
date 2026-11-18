@@ -1,6 +1,16 @@
 // E3-N: đảo nổi trên biển mây: sàn mây đi bộ được, cầu xích, rơi không chết, đảo giả không đứng được, chặn leo bậc cao.
 import { describe, expect, it } from 'vitest';
-import { cloneMoveState, GRAVITY, MAX_SLOPE_UP, type MoveCtx, type MoveInput, type MoveState, registerTerrain, stepMove, type TerrainDef } from './index';
+import {
+  cloneMoveState,
+  GRAVITY,
+  MAX_SLOPE_UP,
+  type MoveCtx,
+  type MoveInput,
+  type MoveState,
+  registerTerrain,
+  stepMove,
+  type TerrainDef,
+} from './index';
 
 const DEF: TerrainDef = {
   id: 'test_sky',

@@ -68,7 +68,14 @@ export interface DevServer {
  * `env`: biến môi trường thêm cho server (vd. `RATE_LIMIT_EXEMPT=loopback` khi chạy bot).
  * Đăng ký tự tắt khi tiến trình thoát hoặc nhận SIGINT/SIGTERM/SIGHUP.
  */
-export function createDevServer(o: { port: number; clientPort: number; tag: string; command: string; serverOnly?: boolean; env?: Record<string, string> }): DevServer {
+export function createDevServer(o: {
+  port: number;
+  clientPort: number;
+  tag: string;
+  command: string;
+  serverOnly?: boolean;
+  env?: Record<string, string>;
+}): DevServer {
   const { port, clientPort, tag } = o;
   const owned = o.serverOnly ? [port] : [port, clientPort];
   let child: ChildProcess | null = null;
@@ -115,7 +122,8 @@ export function createDevServer(o: { port: number; clientPort: number; tag: stri
     const until = Date.now() + ms;
     let last = '';
     while (Date.now() < until) {
-      if (child?.exitCode !== null && child?.exitCode !== undefined) throw new Error(`server thoát sớm (mã ${child.exitCode}), xem ${logFile}`);
+      if (child?.exitCode !== null && child?.exitCode !== undefined)
+        throw new Error(`server thoát sớm (mã ${child.exitCode}), xem ${logFile}`);
       try {
         const r = await fetch(url);
         if (r.ok) return;
@@ -141,7 +149,15 @@ export function createDevServer(o: { port: number; clientPort: number; tag: stri
     const log = fs.openSync(logFile, 'w');
     child = spawn(script, {
       cwd: ROOT,
-      env: { ...process.env, PORT: String(port), CLIENT_PORT: String(clientPort), AUTH_DEV_BYPASS: '1', DB_FILE: dbFile, NODE_ENV: 'development', ...o.env },
+      env: {
+        ...process.env,
+        PORT: String(port),
+        CLIENT_PORT: String(clientPort),
+        AUTH_DEV_BYPASS: '1',
+        DB_FILE: dbFile,
+        NODE_ENV: 'development',
+        ...o.env,
+      },
       stdio: ['ignore', log, log],
       shell: process.platform === 'win32',
       detached: process.platform !== 'win32',

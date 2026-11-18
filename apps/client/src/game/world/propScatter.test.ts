@@ -65,7 +65,8 @@ describe('bố cục prop (P2-A4)', () => {
 
   describe('cây Tripo thay cây thủ tục (P2-A4b)', () => {
     const trees = all.filter((p) => (TREE_IDS as readonly string[]).includes(p.id));
-    const near = (x: number, z: number, r: number, id?: string) => trees.filter((p) => (!id || p.id === id) && Math.hypot(p.x - x, p.z - z) < r);
+    const near = (x: number, z: number, r: number, id?: string) =>
+      trees.filter((p) => (!id || p.id === id) && Math.hypot(p.x - x, p.z - z) < r);
 
     it('đủ năm loài, mỗi loài có cấu hình cây, atlas impostor và mọi cây có tỉ lệ + sắc độ hữu hạn', () => {
       for (const id of TREE_IDS) {

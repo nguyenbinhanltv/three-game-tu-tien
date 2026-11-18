@@ -37,10 +37,24 @@ describe('prefetchWorldAssets (M6-1)', () => {
     expect(ids).toContain('prop_phi_kiem');
     expect(new Set(ids).size).toBe(ids.length); // ba loài sói dùng chung một asset, Kiếm Linh dùng chung asset cáo
     // Boss (skin `lazy`) chỉ nạp khi gặp trong bí cảnh, không tải trước.
-    const monsters = [...new Set(Object.values(MONSTER_SKINS).filter((s) => !s.lazy).map((s) => s.asset))];
+    const monsters = [
+      ...new Set(
+        Object.values(MONSTER_SKINS)
+          .filter((s) => !s.lazy)
+          .map((s) => s.asset),
+      ),
+    ];
     expect(ids.some((id) => id.startsWith('boss_'))).toBe(false);
     const byRank = [...calls].sort((a, b) => rank(a[1], viewer[0]) - rank(b[1], viewer[0])).map(([id]) => id);
-    expect(byRank).toEqual(['chr_v2_nam', 'set_de_tu_v2_nam', 'anim_human_base', 'prop_kiem_thanh_phong', 'arch_sect', ...monsters, 'prop_phi_kiem']);
+    expect(byRank).toEqual([
+      'chr_v2_nam',
+      'set_de_tu_v2_nam',
+      'anim_human_base',
+      'prop_kiem_thanh_phong',
+      'arch_sect',
+      ...monsters,
+      'prop_phi_kiem',
+    ]);
     expect(calls.find(([id]) => id === 'arch_sect')![1].pos).toEqual({ x: SECT.x, z: SECT.z });
     expect(calls.find(([id]) => id === 'chr_v2_nam')![1].priority).toBe(PREFETCH_PRIORITY.player);
   });

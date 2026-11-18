@@ -39,12 +39,21 @@ export default {
           await gm(page, 'killall', 800);
           await gm(page, 'tp 2048 2088', 1500);
           // Chờ thư viện K-3 (và UAL ở bản mới) nạp lười xong.
-          await page.waitForFunction(() => {
-            const g2 = window.__game!;
-            const m = g2.ents?.players.get(g2.sid)?.model;
-            return !!m && m.dirHits === true;
-          }, undefined, { timeout: 60_000, polling: 300 });
-          if (v === 'new') await page.waitForFunction(() => window.__game!.ents.players.get(window.__game!.sid).model.clipLength('ual_death') > 0, undefined, { timeout: 30_000, polling: 300 });
+          await page.waitForFunction(
+            () => {
+              const g2 = window.__game!;
+              const m = g2.ents?.players.get(g2.sid)?.model;
+              return !!m && m.dirHits === true;
+            },
+            undefined,
+            { timeout: 60_000, polling: 300 },
+          );
+          if (v === 'new')
+            await page.waitForFunction(
+              () => window.__game!.ents.players.get(window.__game!.sid).model.clipLength('ual_death') > 0,
+              undefined,
+              { timeout: 30_000, polling: 300 },
+            );
           // Camera cận cảnh góc 3/4, giữ cố định (camera theo khu kéo xa lại nếu chỉ đặt một lần).
           const yaw0 = await page.evaluate(() => window.__game!.cur.yaw as number);
           const keepCam = setInterval(() => void cam(page, { yaw: yaw0 + 0.9, pitch: 0.08, dist: 3.4 }).catch(() => undefined), 50);
@@ -80,7 +89,21 @@ export default {
             const raw = await vid.path();
             const dst = path.join(r.out, `${tag}.webm`);
             const ss = Math.max(0, (tScene - t0) / 1000 - 0.3);
-            const cut = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-ss', ss.toFixed(2), '-i', raw, '-c:v', 'libvpx', '-b:v', '1.5M', '-an', dst]);
+            const cut = spawnSync(FFMPEG, [
+              '-y',
+              '-loglevel',
+              'error',
+              '-ss',
+              ss.toFixed(2),
+              '-i',
+              raw,
+              '-c:v',
+              'libvpx',
+              '-b:v',
+              '1.5M',
+              '-an',
+              dst,
+            ]);
             if (cut.status !== 0) fs.copyFileSync(raw, dst);
           }
           fs.rmSync(dir, { recursive: true, force: true });

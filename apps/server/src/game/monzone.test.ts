@@ -235,7 +235,8 @@ describe('Bích Ngọc Kim Thiền: vũng độc khi chết', () => {
     sim.damageMonster(mon, 1e12, null);
     expect(sim.zones.poolCount).toBe(0);
     const t = setup('mon_bich_ngoc_kim_thien', 21);
-    for (let i = 0; i < POOL_MAX + 6; i++) t.sim.zones.onDeath({ id: 'x' + i, s: { x: t.X, z: t.Z }, atk: 10, state: 5, stunUntil: 0 }, t.mon.def.deathPool);
+    for (let i = 0; i < POOL_MAX + 6; i++)
+      t.sim.zones.onDeath({ id: 'x' + i, s: { x: t.X, z: t.Z }, atk: 10, state: 5, stunUntil: 0 }, t.mon.def.deathPool);
     expect(t.sim.zones.poolCount).toBe(POOL_MAX);
   });
 });

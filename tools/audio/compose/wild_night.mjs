@@ -39,7 +39,13 @@ export default function wildNight() {
     const c = CH[chordAt(b)];
     pad.chord(s.bar(b), c, 8, 50);
     bass.note(s.bar(b), c[0], 7, 62);
-    if (b >= 24 && b < 32) strings.chord(s.bar(b), c.slice(1).map((p) => p + 12), 8, 54);
+    if (b >= 24 && b < 32)
+      strings.chord(
+        s.bar(b),
+        c.slice(1).map((p) => p + 12),
+        8,
+        54,
+      );
     if (b >= 16 && b < 32) choir.chord(s.bar(b), [c[1], c[2]], 8, 44);
   }
 

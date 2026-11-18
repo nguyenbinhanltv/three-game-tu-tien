@@ -1,5 +1,15 @@
 import * as THREE from 'three/webgpu';
-import { cameraProjectionMatrix, cameraViewMatrix, instancedBufferAttribute, positionGeometry, texture, uv, vec2, vec3, vec4 } from 'three/tsl';
+import {
+  cameraProjectionMatrix,
+  cameraViewMatrix,
+  instancedBufferAttribute,
+  positionGeometry,
+  texture,
+  uv,
+  vec2,
+  vec3,
+  vec4,
+} from 'three/tsl';
 
 /**
  * Nhãn tên trên đầu (T8): một atlas chữ dùng chung + **một** `InstancedMesh` (1 draw call cho mọi nhãn),

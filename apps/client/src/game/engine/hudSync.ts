@@ -1,6 +1,24 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
-import { AIRBORNE_HEIGHT, MF_BROKEN, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, ROOM_WORLD, SOUL_SCOUT } from '@dtl/shared';
+import {
+  AIRBORNE_HEIGHT,
+  MF_BROKEN,
+  MF_CHANT,
+  MF_STUN,
+  MS_ATTACK,
+  MS_CHASE,
+  MS_DEAD,
+  PF_CASTING,
+  PF_DEAD,
+  PF_FLYING,
+  PF_MEDITATING,
+  PF_TRIBULATION,
+  tribDef,
+  tribForLevel,
+  phaseRules,
+  ROOM_WORLD,
+  SOUL_SCOUT,
+} from '@dtl/shared';
 import { areaKey, biomeAt, groundAt, levelId } from '../../base/levelCtx';
 import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPCS, QUEST, t } from '@dtl/content';
 import { type BossInfo, type DebugInfo, get, pushToast, set, type TargetCast, type TargetInfo } from '../../ui/store';
@@ -85,7 +103,16 @@ export function syncHud(eng: Game, me: PState | undefined): void {
           set({ autoAttack: false });
         }
       } else {
-        target = { id: eng.targetId, kind: 'mon', name: monsterName(def.id), def: def.id, level: m.lv, hp: m.hp, mhp: m.mhp, boss: !!def.boss };
+        target = {
+          id: eng.targetId,
+          kind: 'mon',
+          name: monsterName(def.id),
+          def: def.id,
+          level: m.lv,
+          hp: m.hp,
+          mhp: m.mhp,
+          boss: !!def.boss,
+        };
         const cast = castOf(eng, m);
         if (cast) target.cast = cast;
       }
@@ -94,7 +121,16 @@ export function syncHud(eng: Game, me: PState | undefined): void {
       if (p) target = { id: eng.targetId, kind: 'player', name: p.name, level: p.lv, hp: p.hp, mhp: p.mhp, boss: false };
       else eng.targetId = '';
     } else {
-      target = { id: eng.targetId, kind: 'npc', name: t(`npc.${eng.targetId}.name`), def: eng.targetId, level: 0, hp: 1, mhp: 1, boss: false };
+      target = {
+        id: eng.targetId,
+        kind: 'npc',
+        name: t(`npc.${eng.targetId}.name`),
+        def: eng.targetId,
+        level: 0,
+        hp: 1,
+        mhp: 1,
+        boss: false,
+      };
       const n = eng.ents.npcs.find((e) => e.id === eng.targetId);
       if (n && Math.hypot(n.x - rp.x, n.z - rp.z) > 30) eng.targetId = '';
     }
@@ -110,7 +146,10 @@ export function syncHud(eng: Game, me: PState | undefined): void {
     if (near) {
       if (near.kind === 'npc') hint = t('ui.hint.talk', { name: t(`npc.${near.id}.name`) });
       else if (near.kind === 'node') hint = t('ui.hint.gather', { name: t(`item.${eng.view.nodes.get(near.id)?.t}.name`) });
-      else hint = t(near.id === 'exit' ? 'ui.hint.exit' : 'ui.hint.portal', { name: t(`dungeon.${near.id === 'exit' ? levelId() : (near.to ?? 'kiem_trung')}.name`) });
+      else
+        hint = t(near.id === 'exit' ? 'ui.hint.exit' : 'ui.hint.portal', {
+          name: t(`dungeon.${near.id === 'exit' ? levelId() : (near.to ?? 'kiem_trung')}.name`),
+        });
     }
   }
   const st = get();
@@ -131,7 +170,8 @@ export function syncHud(eng: Game, me: PState | undefined): void {
   eng.fpsFrames = 0;
   let perf = st.perf;
   // Dòng gọn ở góc khi có ?debug (chỉ số và đơn vị quốc tế, không có chữ cần dịch); số đủ nằm trong bảng F3.
-  if (eng.debugPerf) perf = `${eng.cpuAvg.toFixed(1)} ms · ${eng.lastRender.drawCalls} draw · ${Math.round(eng.lastRender.triangles / 1000)}k tri`;
+  if (eng.debugPerf)
+    perf = `${eng.cpuAvg.toFixed(1)} ms · ${eng.lastRender.drawCalls} draw · ${Math.round(eng.lastRender.triangles / 1000)}k tri`;
   const nearby: { name: string; lv: number }[] = [];
   eng.view.players.forEach((p, sid) => {
     if (sid !== eng.sid) nearby.push({ name: p.name, lv: p.lv });
@@ -190,9 +230,17 @@ export function offscreenCandidates(eng: Game, target: TargetInfo | null, boss: 
   };
   if (target) {
     const pos = target.kind === 'npc' ? npcPos(target.id) : entityPos(target.id);
-    if (pos) out.push({ key: target.id, kind: target.boss ? 'boss' : target.kind === 'mon' ? 'foe' : 'target', label: target.name, pos, span: target.kind === 'npc' ? 1.6 : spanOf(target.id) });
+    if (pos)
+      out.push({
+        key: target.id,
+        kind: target.boss ? 'boss' : target.kind === 'mon' ? 'foe' : 'target',
+        label: target.name,
+        pos,
+        span: target.kind === 'npc' ? 1.6 : spanOf(target.id),
+      });
   }
-  if (boss && boss.id !== target?.id) out.push({ key: boss.id, kind: 'boss', label: monsterName(boss.def), pos: entityPos(boss.id), span: spanOf(boss.id) });
+  if (boss && boss.id !== target?.id)
+    out.push({ key: boss.id, kind: 'boss', label: monsterName(boss.def), pos: entityPos(boss.id), span: spanOf(boss.id) });
 
   const st = get();
   // Cùng luật với chấm ở bảng theo dõi (trackedQuestId): chỉ chỉ tới đúng nhiệm vụ đó, không nhảy sang nhiệm vụ khác.
@@ -229,12 +277,25 @@ export function offscreenCandidates(eng: Game, target: TargetInfo | null, boss: 
       const y = groundAt(spot.x, spot.z) + 1;
       pos = (o) => (o.set(spot.x, y, spot.z), true);
     }
-    out.push({ key: qid + ':' + key, kind: goal.kind === 'node' ? 'gather' : 'quest', label, icon: goal.kind === 'node' ? goal.item : undefined, pos, span: goal.kind === 'mon' && 'id' in spot ? spanOf(spot.id) : 0.8 });
+    out.push({
+      key: qid + ':' + key,
+      kind: goal.kind === 'node' ? 'gather' : 'quest',
+      label,
+      icon: goal.kind === 'node' ? goal.item : undefined,
+      pos,
+      span: goal.kind === 'mon' && 'id' in spot ? spanOf(spot.id) : 0.8,
+    });
   } while (false);
   // Điểm đánh dấu của mình và đồng đội (M-4): mũi tên ở rìa màn hình khi nằm ngoài khung nhìn.
   for (const m of st.marks) {
     const y = groundAt(m.x, m.z) + 2;
-    out.push({ key: `mark:${m.id}`, kind: m.own ? 'mark' : 'mate', label: m.own ? t('ui.wm.mark_own') : t('ui.wm.mark_of', { name: m.name }), pos: (o) => (o.set(m.x, y, m.z), true), span: 0.4 });
+    out.push({
+      key: `mark:${m.id}`,
+      kind: m.own ? 'mark' : 'mate',
+      label: m.own ? t('ui.wm.mark_own') : t('ui.wm.mark_of', { name: m.name }),
+      pos: (o) => (o.set(m.x, y, m.z), true),
+      span: 0.4,
+    });
   }
   // Đồ rơi quý (M4-6) đang nằm trên đất ngoài khung nhìn: chỉ trong lúc cột sáng còn đứng.
   pruneRareLoot(eng);
@@ -318,7 +379,11 @@ export function recoverTribulation(eng: Game, me: PState): void {
   eng.tribId = def.id;
   eng.tribUntil = now + def.duration * 1000;
   const sid = eng.sid;
-  eng.vfx.tribulationCloud((out) => eng.ents.chestOf(sid, out), def.duration, () => ((eng.view.players.get(sid)?.fl ?? 0) & PF_TRIBULATION) !== 0);
+  eng.vfx.tribulationCloud(
+    (out) => eng.ents.chestOf(sid, out),
+    def.duration,
+    () => ((eng.view.players.get(sid)?.fl ?? 0) & PF_TRIBULATION) !== 0,
+  );
   set({ tribEnd: eng.tribUntil, tribId: eng.tribId });
 }
 
@@ -364,7 +429,10 @@ export function debugPerfInfo(eng: Game, fps: number): DebugPerf {
   const lod = eng.ents.lodStats();
   return {
     backend: isWebGPU(eng.renderer) ? 'WebGPU' : 'WebGL2',
-    gpu: eng.gpuInfo + (eng.gpuErrors.length ? ` · LỖI: ${eng.gpuErrors[eng.gpuErrors.length - 1]}` : '') + (eng.lastBlank ? ` · khung sd ${eng.lastBlank.sd}` : ''),
+    gpu:
+      eng.gpuInfo +
+      (eng.gpuErrors.length ? ` · LỖI: ${eng.gpuErrors[eng.gpuErrors.length - 1]}` : '') +
+      (eng.lastBlank ? ` · khung sd ${eng.lastBlank.sd}` : ''),
     fps,
     cpuMs: eng.cpuAvg,
     cpuMaxMs: eng.cpuPeak,

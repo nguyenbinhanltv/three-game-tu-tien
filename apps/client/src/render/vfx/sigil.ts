@@ -118,25 +118,39 @@ export function sigilNodes(U: FxUniforms) {
 
   const inside = smoothstep(-0.03, 0.03, d);
   const urg = smoothstep(0.7, 1, k);
-  const pulse = sin(time.mul(float(14).add(urg.mul(18)))).mul(0.5).add(0.5);
+  const pulse = sin(time.mul(float(14).add(urg.mul(18))))
+    .mul(0.5)
+    .add(0.5);
 
   // Viền ngoài; vùng tròn sáng dần theo kim đồng hồ (từ phía sau, tới k).
   const border = one.sub(smoothstep(0.05, 0.11, abs(d.sub(0.12))));
   const a01 = ang.div(Math.PI * 2).add(0.5);
-  const clockLit = select(isCircle, one.sub(smoothstep(k.sub(0.004), k, a01)).mul(0.6).add(0.4), one);
+  const clockLit = select(
+    isCircle,
+    one
+      .sub(smoothstep(k.sub(0.004), k, a01))
+      .mul(0.6)
+      .add(0.4),
+    one,
+  );
   const borderL = border.mul(clockLit).mul(urg.mul(pulse).mul(0.6).add(0.85));
 
   // Dải phù văn.
   const bandW = clamp(min(r.mul(0.11), select(isRect, hw.mul(0.38), r)), 0.3, 0.7);
   const b0 = float(0.3);
   const cv = band.sub(b0).div(bandW);
-  const inBand = smoothstep(-0.02, 0.02, cv).mul(one.sub(smoothstep(0.98, 1.02, cv))).mul(inside);
+  const inBand = smoothstep(-0.02, 0.02, cv)
+    .mul(one.sub(smoothstep(0.98, 1.02, cv)))
+    .mul(inside);
   const cellLen = bandW.mul(1.15);
   // Tròn: xoay; chữ nhật: trôi về phía trước; quạt: trôi ngang chậm.
   const speed = select(isCircle, float(0.7), select(isRect, float(-1.4), float(0.5)));
   const a2 = along.div(cellLen).sub(time.mul(speed).div(cellLen));
   const runes = glyph(floor(a2), seed, fract(a2), cv).mul(inBand);
-  const innerLine = one.sub(smoothstep(0.02, 0.045, abs(band.sub(b0.add(bandW).add(0.08))))).mul(inside).mul(0.55);
+  const innerLine = one
+    .sub(smoothstep(0.02, 0.045, abs(band.sub(b0.add(bandW).add(0.08)))))
+    .mul(inside)
+    .mul(0.55);
 
   // Phần đã quét và vạch tiến độ.
   const kM = k.mul(r);
@@ -159,6 +173,9 @@ export function sigilNodes(U: FxUniforms) {
   const A = b.add(wash.mul(one.sub(b)));
   const hot = one.add(urg.mul(0.5)).add(front.mul(0.4)).add(flash.mul(0.5));
   const bright = min(U.color.mul(hot), U.maxHdr);
-  const col = bright.mul(b).add(color(SIGIL_INK).mul(wash.mul(one.sub(b)))).div(max(A, 0.001));
+  const col = bright
+    .mul(b)
+    .add(color(SIGIL_INK).mul(wash.mul(one.sub(b))))
+    .div(max(A, 0.001));
   return { color: col, opacity: A.mul(U.opacity) };
 }

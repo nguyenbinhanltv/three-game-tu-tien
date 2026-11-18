@@ -32,7 +32,10 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dtl-walk-'));
 const tsxDir = fs.readdirSync(path.join(ROOT, 'node_modules/.pnpm')).find((d) => d.startsWith('tsx@'));
 if (!tsxDir) throw new Error('chưa cài tsx (pnpm install)');
 const tsx = path.join(ROOT, 'node_modules/.pnpm', tsxDir, 'node_modules/tsx/dist/cli.mjs');
-const r = spawnSync(process.execPath, [tsx, path.join(ROOT, 'tools/audio/walkthrough/route.ts'), tmp], { cwd: path.join(ROOT, 'apps/client'), encoding: 'utf8' });
+const r = spawnSync(process.execPath, [tsx, path.join(ROOT, 'tools/audio/walkthrough/route.ts'), tmp], {
+  cwd: path.join(ROOT, 'apps/client'),
+  encoding: 'utf8',
+});
 process.stdout.write(r.stdout);
 if (r.status !== 0) {
   process.stderr.write(r.stderr);
@@ -46,7 +49,7 @@ const crackle = new Float32Array(crackleRaw.buffer, crackleRaw.byteOffset, crack
 const AUDIO = path.join(ROOT, 'apps/client/public/audio');
 const man = JSON.parse(fs.readFileSync(path.join(AUDIO, 'manifest.json'), 'utf8'));
 const MIX = JSON.parse(fs.readFileSync(path.join(ROOT, 'apps/client/src/game/audio/audioMix.json'), 'utf8')).bus;
-const pick = (src) => (Array.isArray(src) ? src.find((s) => s.endsWith('.webm')) ?? src[0] : src);
+const pick = (src) => (Array.isArray(src) ? (src.find((s) => s.endsWith('.webm')) ?? src[0]) : src);
 const cache = new Map();
 const dec = (rel, ch) => {
   const k = rel + ch;
@@ -58,7 +61,7 @@ const TAIL = 5;
 const XFADE = 0.6;
 
 let rs = 12345;
-const rnd = () => ((rs = (rs * 1664525 + 1013904223) >>> 0) / 4294967296);
+const rnd = () => (rs = (rs * 1664525 + 1013904223) >>> 0) / 4294967296;
 
 function interp(track, t) {
   let i = 0;
@@ -116,7 +119,10 @@ function renderClip(c) {
     }
   };
   // Nhạc và môi trường: stream, bắt đầu ở đoạn ngẫu nhiên, vào/ra mờ dần.
-  for (const [bus, id] of [['music', ZONE[c.zone].music], ['ambient', ZONE[c.zone].amb]]) {
+  for (const [bus, id] of [
+    ['music', ZONE[c.zone].music],
+    ['ambient', ZONE[c.zone].amb],
+  ]) {
     const e = man[bus][id];
     const s = dec(pick(e.src), 2);
     const off = Math.floor(rnd() * Math.max(1, s[0].length - N));
@@ -221,12 +227,33 @@ for (let i = 0; i < len; i++) {
 fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true });
 const enc = spawnSync(
   ff,
-  ['-y', '-v', 'error', '-f', 'f32le', '-ar', String(SR), '-ac', '2', '-i', 'pipe:0', '-c:a', 'libmp3lame', '-b:a', '192k', '-metadata', 'title=Dap Thien Lo - nghe thu P2-D2/D3', path.resolve(out)],
+  [
+    '-y',
+    '-v',
+    'error',
+    '-f',
+    'f32le',
+    '-ar',
+    String(SR),
+    '-ac',
+    '2',
+    '-i',
+    'pipe:0',
+    '-c:a',
+    'libmp3lame',
+    '-b:a',
+    '192k',
+    '-metadata',
+    'title=Dap Thien Lo - nghe thu P2-D2/D3',
+    path.resolve(out),
+  ],
   { input: Buffer.from(inter.buffer), maxBuffer: 1 << 28 },
 );
 if (enc.status !== 0) {
   console.error(enc.stderr.toString());
   process.exit(1);
 }
-console.log(`đã ghi ${out}: ${(len / SR).toFixed(1)} s, gốc ${lufs.toFixed(1)} LUFS → nâng ${(20 * Math.log10(gain)).toFixed(1)} dB, đỉnh ${(20 * Math.log10(pk * gain)).toFixed(1)} dBFS`);
+console.log(
+  `đã ghi ${out}: ${(len / SR).toFixed(1)} s, gốc ${lufs.toFixed(1)} LUFS → nâng ${(20 * Math.log10(gain)).toFixed(1)} dB, đỉnh ${(20 * Math.log10(pk * gain)).toFixed(1)} dBFS`,
+);
 fs.rmSync(tmp, { recursive: true, force: true });

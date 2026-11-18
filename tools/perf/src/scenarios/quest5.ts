@@ -13,7 +13,11 @@ export default {
     await gm(page, 'tele all');
     await gm(page, 'qdone q4_hoa_than');
     await gm(page, 'tp bh_tram', 800);
-    await page.getByText('Chương năm').first().waitFor({ timeout: 60_000 }).catch(() => {});
+    await page
+      .getByText('Chương năm')
+      .first()
+      .waitFor({ timeout: 60_000 })
+      .catch(() => {});
     await sleep(1500);
     await snap(page, r.out, '01-the-chuong-5.jpg', { wait: 0 });
     await sleep(4500);
@@ -23,9 +27,15 @@ export default {
       await tp(page, n.x + 1.5, n.z + 1.5);
       await sleep(700);
     };
-    const talk = (id: string) => page.evaluate((v) => (window as unknown as { __game: { openNpc(i: string): void } }).__game.openNpc(v), id);
+    const talk = (id: string) =>
+      page.evaluate((v) => (window as unknown as { __game: { openNpc(i: string): void } }).__game.openNpc(v), id);
     const close = () => page.keyboard.press('Escape');
-    const accept = () => page.getByRole('button', { name: /nhận/i }).first().click().catch(() => {});
+    const accept = () =>
+      page
+        .getByRole('button', { name: /nhận/i })
+        .first()
+        .click()
+        .catch(() => {});
 
     await gm(page, 'qdone q5_bac_hanh');
     await near('npc_to_van_ngu_bh');

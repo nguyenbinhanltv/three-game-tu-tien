@@ -25,6 +25,20 @@ describe('skipOthersFx', () => {
 
   it('không đụng tới hiệu ứng mang trạng thái (niệm chú, độ kiếp, lên cấp)', () => {
     const crowded = { ...other, live: 999, dist: 999 };
-    for (const t of ['cast', 'castend', 'mcast', 'chant', 'interrupt', 'break', 'phase', 'tribstart', 'levelup', 'ascend', 'death', 'respawn']) expect(skipOthersFx(t, crowded)).toBe(false);
+    for (const t of [
+      'cast',
+      'castend',
+      'mcast',
+      'chant',
+      'interrupt',
+      'break',
+      'phase',
+      'tribstart',
+      'levelup',
+      'ascend',
+      'death',
+      'respawn',
+    ])
+      expect(skipOthersFx(t, crowded)).toBe(false);
   });
 });

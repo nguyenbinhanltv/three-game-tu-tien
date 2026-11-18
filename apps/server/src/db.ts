@@ -3,7 +3,20 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import { DUNGEON_MIN_LEVEL, initialBottleneck, INV_SIZE, isEquipSlot, isRootId, isWearSlot, ROOT_IDS, TELE_FREE, TELE_PADS, TRUC_CO_LEVEL, HOA_THAN_LEVEL, xpNeed } from '@dtl/shared';
+import {
+  DUNGEON_MIN_LEVEL,
+  initialBottleneck,
+  INV_SIZE,
+  isEquipSlot,
+  isRootId,
+  isWearSlot,
+  ROOT_IDS,
+  TELE_FREE,
+  TELE_PADS,
+  TRUC_CO_LEVEL,
+  HOA_THAN_LEVEL,
+  xpNeed,
+} from '@dtl/shared';
 import { ITEM, LEVELS } from '@dtl/content';
 import { config } from './config';
 import { log } from './log';
@@ -211,7 +224,12 @@ export function rootForName(name: string): (typeof ROOT_IDS)[number] {
  * (người đã qua tầng 5/10 không bị chặn lại). Không đụng vật phẩm/tiền nên không ghi ledger. Idempotent.
  */
 export function migrateRealm(sqlite: Database.Database): void {
-  const rows = sqlite.prepare('SELECT id, name, level, root FROM characters').all() as { id: number; name: string; level: number; root: string }[];
+  const rows = sqlite.prepare('SELECT id, name, level, root FROM characters').all() as {
+    id: number;
+    name: string;
+    level: number;
+    root: string;
+  }[];
   const upd = sqlite.prepare('UPDATE characters SET root = ?, bk = ? WHERE id = ?');
   for (const r of rows) upd.run(isRootId(r.root) ? r.root : rootForName(r.name), initialBottleneck(r.level), r.id);
 }
@@ -225,7 +243,12 @@ export function migrateTele(sqlite: Database.Database): void {
   const rows = sqlite.prepare("SELECT id, level FROM characters WHERE tele = ''").all() as { id: number; level: number }[];
   const upd = sqlite.prepare('UPDATE characters SET tele = ? WHERE id = ?');
   for (const r of rows) {
-    const open = TELE_PADS.filter((p) => p.level === 'van_lam' && (p.zone ? levelPast(zones, p.zone, r.level) : p.id === 'tp_cong' && r.level >= DUNGEON_MIN_LEVEL) && !TELE_FREE.includes(p.id)).map((p) => p.id);
+    const open = TELE_PADS.filter(
+      (p) =>
+        p.level === 'van_lam' &&
+        (p.zone ? levelPast(zones, p.zone, r.level) : p.id === 'tp_cong' && r.level >= DUNGEON_MIN_LEVEL) &&
+        !TELE_FREE.includes(p.id),
+    ).map((p) => p.id);
     upd.run(JSON.stringify(open), r.id);
   }
 }
@@ -246,7 +269,12 @@ export function migrateHoaThanXp(sqlite: Database.Database): void {
 }
 
 export function migrateTrucCoXp(sqlite: Database.Database): void {
-  const rows = sqlite.prepare('SELECT id, level, xp, bk FROM characters WHERE level >= ? AND level <= 18').all(TRUC_CO_LEVEL) as { id: number; level: number; xp: number; bk: number }[];
+  const rows = sqlite.prepare('SELECT id, level, xp, bk FROM characters WHERE level >= ? AND level <= 18').all(TRUC_CO_LEVEL) as {
+    id: number;
+    level: number;
+    xp: number;
+    bk: number;
+  }[];
   const upd = sqlite.prepare('UPDATE characters SET xp = ?, bk = ? WHERE id = ?');
   for (const r of rows) {
     const oldNeed = legacyTrucCoNeed(r.level);

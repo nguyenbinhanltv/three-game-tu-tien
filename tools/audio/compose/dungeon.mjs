@@ -37,7 +37,12 @@ export default function dungeon() {
 
   for (let b = 0; b < 32; b += 2) {
     const c = CH[chordAt(b)];
-    drone.chord(s.bar(b), c.slice(1).map((p) => p + 12), 8, 64);
+    drone.chord(
+      s.bar(b),
+      c.slice(1).map((p) => p + 12),
+      8,
+      64,
+    );
     glass.chord(s.bar(b), [c[2] + 24, c[3] + 24], 8, 54);
     bass.note(s.bar(b), c[0] + 12, 8, 66);
     if (b >= 16 && b < 24) {
@@ -61,13 +66,31 @@ export default function dungeon() {
   }
 
   // B: đàn tranh thưa kiểu cổ cầm (nốt rời, nhiều lặng) + tiếng lưỡi kiếm ngân
-  koto.phrase(s.bar(8), A, ['0:2 r:1 2:1', '1:3 r:1', '4:1 r:1 3:1 2:1', '0:4', '2:2 r:1 3:1', '4:3 r:1', '5:1 4:1 2:1 1:1', '0:4'].join(' | '), { vel: 72 });
-  for (const [b, x, d] of [[9, 2.5, 12], [11, 1, 13], [13, 3, 11], [15, 2, 14], [26, 1.5, 12], [30, 2.5, 13]]) blade.note(s.bar(b) + x, A.deg(d), 4, 52);
+  koto.phrase(
+    s.bar(8),
+    A,
+    ['0:2 r:1 2:1', '1:3 r:1', '4:1 r:1 3:1 2:1', '0:4', '2:2 r:1 3:1', '4:3 r:1', '5:1 4:1 2:1 1:1', '0:4'].join(' | '),
+    { vel: 72 },
+  );
+  for (const [b, x, d] of [
+    [9, 2.5, 12],
+    [11, 1, 13],
+    [13, 3, 11],
+    [15, 2, 14],
+    [26, 1.5, 12],
+    [30, 2.5, 13],
+  ])
+    blade.note(s.bar(b) + x, A.deg(d), 4, 52);
   // A, D: đàn tranh rất thưa giữ mạch
   for (const b of [1, 3, 5, 7, 25, 27, 31]) koto.phrase(s.bar(b) + 2, A, "0':1/2 2':1/2 0':1", { oct: -1, vel: 56 });
 
   // D: tiêu trầm
-  xiao.phrase(s.bar(24), A, ['2~:3 1:1', '0:4', '1:2 2:1 3:1', '2~:4', '1:2 0:2', '-1~:4'].join(' | '), { oct: 1, vel: 74, vib: 1.5, legato: 1 });
+  xiao.phrase(s.bar(24), A, ['2~:3 1:1', '0:4', '1:2 2:1 3:1', '2~:4', '1:2 0:2', '-1~:4'].join(' | '), {
+    oct: 1,
+    vel: 74,
+    vib: 1.5,
+    legato: 1,
+  });
 
   return s;
 }

@@ -23,12 +23,23 @@ let acc = 9980;
 function setup() {
   const sent: { type: string; msg: unknown }[] = [];
   const host = { broadcast: () => {} };
-  const sim = new GameSim(new WorldState(), host as never, { levelId: 'van_hai', roomName: 'test', spawn: { x: 1024, z: 1036 }, respawn: { x: 1024, z: 1036 }, persistPosition: false });
+  const sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_hai',
+    roomName: 'test',
+    spawn: { x: 1024, z: 1036 },
+    respawn: { x: 1024, z: 1036 },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'q3b' + acc);
   char.level = 22;
   char.recalc();
   char.hp = char.mhp;
-  const p = sim.addPlayer({ sessionId: 's' + acc, send: (type: string, msg: unknown) => sent.push({ type, msg }) } as never, char, true, 's' + acc);
+  const p = sim.addPlayer(
+    { sessionId: 's' + acc, send: (type: string, msg: unknown) => sent.push({ type, msg }) } as never,
+    char,
+    true,
+    's' + acc,
+  );
   sim.now = 1_000_000;
   const at = (x: number, z: number) => {
     p.move.x = x;
@@ -43,7 +54,18 @@ function setup() {
   };
   const sys = () => sent.filter((s) => s.type === S.SYS).map((s) => (s.msg as { k: string }).k);
   const esc = () => sent.filter((s) => s.type === S.ESCORT).map((s) => s.msg as EscortMsg);
-  return { sim, p, char, at, atNpc, step, sys, esc, accept: (id: string) => sim.onQuest(p, { a: 'accept', id }), turnin: (id: string) => sim.onQuest(p, { a: 'turnin', id }) };
+  return {
+    sim,
+    p,
+    char,
+    at,
+    atNpc,
+    step,
+    sys,
+    esc,
+    accept: (id: string) => sim.onQuest(p, { a: 'accept', id }),
+    turnin: (id: string) => sim.onQuest(p, { a: 'turnin', id }),
+  };
 }
 
 describe('dữ liệu', () => {
@@ -90,7 +112,8 @@ describe('s3_guong_nuoc', () => {
 describe('s3_do_thuyen', () => {
   const def = VH.escorts!.find((e) => e.id === 'esc_do_thuyen')!;
   type Convoys = Map<string, Map<string, { walk: { x: number; z: number } }>>;
-  const walkOf = (t: ReturnType<typeof setup>) => (t.sim.questObj as unknown as { convoys: Convoys }).convoys.get(t.p.sid)?.get(def.id)?.walk;
+  const walkOf = (t: ReturnType<typeof setup>) =>
+    (t.sim.questObj as unknown as { convoys: Convoys }).convoys.get(t.p.sid)?.get(def.id)?.walk;
 
   it('đi cùng ba chuyến thì tới nơi, trả nhiệm vụ một lần', () => {
     const t = setup();

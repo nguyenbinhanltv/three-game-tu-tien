@@ -101,7 +101,11 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
 
   // Cỏ / rừng / đất khô: Cao trộn 3 mẫu, Vừa/Thấp chọn lớp trội (ranh giới bị nhiễu làm lệch cho tự nhiên).
   const pick = bio.x.add(noise2.sub(0.5).mul(0.5));
-  const baseLayer = select(pick.greaterThan(0.5), int(L.forest), select(bio.y.add(noise2.sub(0.5).mul(0.4)).greaterThan(0.5), int(L.dirt), int(L.grass)));
+  const baseLayer = select(
+    pick.greaterThan(0.5),
+    int(L.forest),
+    select(bio.y.add(noise2.sub(0.5).mul(0.4)).greaterThan(0.5), int(L.dirt), int(L.grass)),
+  );
   const baseScale = select(pick.greaterThan(0.5), float(5.5), float(6));
 
   // ----- albedo -----
@@ -134,7 +138,9 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     base = base.mul(float(0.72).add(big.mul(0.5)).add(mid.sub(0.5).mul(0.22)));
   }
   // Sân lát đá có mạch vữa tương phản cao: từ ~20 m hoặc khi nhìn lướt thì hòa về màu đỉnh lưới, nếu không sinh vân ô/sọc kẻ ô (P2-E4).
-  const pavFar = max(smoothstep(20, 75, dist), smoothstep(0.35, 0.08, ndv)).mul(0.88).mul(step(0.5, pav));
+  const pavFar = max(smoothstep(20, 75, dist), smoothstep(0.35, 0.08, ndv))
+    .mul(0.88)
+    .mul(step(0.5, pav));
   const special = mix(A(p.div(spScale), spLayer), vc.mul(0.7), pavFar);
   const hue = mix(vec3(1), vc.div(luminance(vc).max(0.04)), float(0.6).sub(spW.mul(0.5)));
   const dirtEdge = hi ? A(p.div(5), L.dirt) : base.mul(0.85);

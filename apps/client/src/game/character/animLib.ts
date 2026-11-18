@@ -59,7 +59,9 @@ function rootParentWorld(root: THREE.Object3D, isBone: (o: THREE.Object3D) => bo
   root.traverse((o) => {
     if (!top && o.name && isBone(o)) top = o;
   });
-  return top && (top as THREE.Object3D).parent ? (top as THREE.Object3D).parent!.getWorldQuaternion(new THREE.Quaternion()) : new THREE.Quaternion();
+  return top && (top as THREE.Object3D).parent
+    ? (top as THREE.Object3D).parent!.getWorldQuaternion(new THREE.Quaternion())
+    : new THREE.Quaternion();
 }
 
 /** `createInterpolant` có trên đối tượng track của three nhưng thiếu trong kiểu. */
@@ -87,7 +89,12 @@ interface RetargetOpts {
   trackedOnly?: boolean;
 }
 
-export function retargetClips(libScene: THREE.Object3D, libClips: readonly THREE.AnimationClip[], target: THREE.Object3D, opts: RetargetOpts = {}): THREE.AnimationClip[] {
+export function retargetClips(
+  libScene: THREE.Object3D,
+  libClips: readonly THREE.AnimationClip[],
+  target: THREE.Object3D,
+  opts: RetargetOpts = {},
+): THREE.AnimationClip[] {
   const src = skeletonOf(libScene, isMixamo);
   const dst = skeletonOf(target, isRigBone);
   const srcRootW = rootParentWorld(libScene, isMixamo);
@@ -101,7 +108,8 @@ export function retargetClips(libScene: THREE.Object3D, libClips: readonly THREE
     const p = set.bones[h].parent;
     return p >= 0 ? set.bones[p].world : rootW;
   };
-  const hipHeight = (set: { bones: BoneInfo[] }, h: number, rootW: THREE.Quaternion) => set.bones[h].pos.clone().applyQuaternion(parentW(set, h, rootW)).y;
+  const hipHeight = (set: { bones: BoneInfo[] }, h: number, rootW: THREE.Quaternion) =>
+    set.bones[h].pos.clone().applyQuaternion(parentW(set, h, rootW)).y;
   const hS = hipsS !== undefined ? hipHeight(src, hipsS, srcRootW) : 0;
   const hD = hipsD !== undefined ? hipHeight(dst, hipsD, dstRootW) : 0;
   const k = hS > 1e-6 && hD > 0 ? hD / hS : 1;
@@ -172,7 +180,10 @@ export function retargetClips(libScene: THREE.Object3D, libClips: readonly THREE
         // Độ dời hông: nguồn → thế giới (quay thế giới của cha hông nguồn, khung đang diễn) → cha hông đích.
         const pwS = src.bones[hipsS].parent >= 0 ? srcWorld[src.bones[hipsS].parent] : srcRootW;
         const pwD = dst.bones[hipsD].parent >= 0 ? dstWorld[dst.bones[hipsD].parent] : dstRootW;
-        const d = new THREE.Vector3(p[0] - sp.x, p[1] - sp.y, p[2] - sp.z).applyQuaternion(pwS).multiplyScalar(k).applyQuaternion(pwD.clone().invert());
+        const d = new THREE.Vector3(p[0] - sp.x, p[1] - sp.y, p[2] - sp.z)
+          .applyQuaternion(pwS)
+          .multiplyScalar(k)
+          .applyQuaternion(pwD.clone().invert());
         hipPos[f * 3] = dp.x + d.x;
         hipPos[f * 3 + 1] = dp.y + d.y;
         hipPos[f * 3 + 2] = dp.z + d.z;
@@ -186,7 +197,11 @@ export function retargetClips(libScene: THREE.Object3D, libClips: readonly THREE
       let still = true;
       for (let f = 1; f <= n && still; f++) for (let c = 0; c < 4; c++) if (Math.abs(v[f * 4 + c] - v[c]) > EPS) still = false;
       const name = `${dst.bones[j].name}.quaternion`;
-      tracks.push(still ? new THREE.QuaternionKeyframeTrack(name, [0, clip.duration], [...v.slice(0, 4), ...v.slice(0, 4)]) : new THREE.QuaternionKeyframeTrack(name, times, v));
+      tracks.push(
+        still
+          ? new THREE.QuaternionKeyframeTrack(name, [0, clip.duration], [...v.slice(0, 4), ...v.slice(0, 4)])
+          : new THREE.QuaternionKeyframeTrack(name, times, v),
+      );
     }
     if (posI && hipsD !== undefined) tracks.push(new THREE.VectorKeyframeTrack(`${dst.bones[hipsD].name}.position`, times, hipPos));
     return new THREE.AnimationClip(clip.name, clip.duration, tracks, clip.blendMode);

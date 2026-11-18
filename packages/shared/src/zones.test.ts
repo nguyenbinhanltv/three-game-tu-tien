@@ -28,15 +28,35 @@ describe('đa giác vùng', () => {
 });
 
 describe('camp → điểm sinh', () => {
-  const camp: CampDef = { id: 'c', zone: 'a', mon: 'm1', x: 5, z: 6, count: 3, radius: 20, levelMin: 1, levelMax: 2, respawn: 25, ranged: 'm2' };
+  const camp: CampDef = {
+    id: 'c',
+    zone: 'a',
+    mon: 'm1',
+    x: 5,
+    z: 6,
+    count: 3,
+    radius: 20,
+    levelMin: 1,
+    levelMax: 2,
+    respawn: 25,
+    ranged: 'm2',
+  };
   it('count con thường + một con đánh xa cùng tâm', () => {
     const sp = campSpawns(camp);
-    expect(sp.map((s) => [s.mon, s.count])).toEqual([['m1', 3], ['m2', 1]]);
+    expect(sp.map((s) => [s.mon, s.count])).toEqual([
+      ['m1', 3],
+      ['m2', 1],
+    ]);
     expect(sp.every((s) => s.x === 5 && s.z === 6 && s.radius === 20 && s.respawn === 25)).toBe(true);
     expect(campSpawns({ ...camp, ranged: undefined })).toHaveLength(1);
   });
   it('levelSpawns gộp spawns lẻ và camps', () => {
-    const lv: LevelDef = { id: 'x', spawns: [{ mon: 'boss', x: 1, z: 1, radius: 4, count: 1, levelMin: 15, levelMax: 15, respawn: 480 }], nodes: [], camps: [camp] };
+    const lv: LevelDef = {
+      id: 'x',
+      spawns: [{ mon: 'boss', x: 1, z: 1, radius: 4, count: 1, levelMin: 15, levelMax: 15, respawn: 480 }],
+      nodes: [],
+      camps: [camp],
+    };
     expect(levelSpawns(lv).map((s) => s.mon)).toEqual(['boss', 'm1', 'm2']);
     expect(levelSpawns({ id: 'y', spawns: [], nodes: [] })).toEqual([]);
   });

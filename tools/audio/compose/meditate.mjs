@@ -23,7 +23,11 @@ export default function meditate() {
   s.section('A', 0, 7).section('B', 7, 14).section('C', 14, 21).section('D', 21, 28);
 
   // drone: A ngân suốt, đổi màu ở phần C
-  const CH = { A: [n('A2'), n('E3'), n('B3'), n('C#4')], D: [n('D3'), n('A3'), n('E4'), n('F#4')], E: [n('E3'), n('B3'), n('F#4'), n('A4')] };
+  const CH = {
+    A: [n('A2'), n('E3'), n('B3'), n('C#4')],
+    D: [n('D3'), n('A3'), n('E4'), n('F#4')],
+    E: [n('E3'), n('B3'), n('F#4'), n('A4')],
+  };
   const chordAt = (b) => (b >= 14 && b < 21 ? (b < 18 ? 'D' : 'E') : 'A');
   // Nốt drone ngân dài: tách theo từng đoạn hợp âm, tối đa 7 ô mỗi nốt.
   const segs = [
@@ -53,7 +57,11 @@ export default function meditate() {
     [0, 1, 2, 3].forEach((k, i) => harp.note(s.bar(b) + i, c[k] + 12, 3, 50 + (i === 0 ? 8 : 0)));
   }
   // D: tiêu một câu dài
-  xiao.phrase(s.bar(21), A, ['2:3 1:1', '0~:4', '1:2 2:2', '3~:4', '2:2 1:1 0:1', '-1~:4', '0:4'].join(' | '), { vel: 66, vib: 1.5, legato: 1 });
+  xiao.phrase(s.bar(21), A, ['2:3 1:1', '0~:4', '1:2 2:2', '3~:4', '2:2 1:1 0:1', '-1~:4', '0:4'].join(' | '), {
+    vel: 66,
+    vib: 1.5,
+    legato: 1,
+  });
 
   return s;
 }

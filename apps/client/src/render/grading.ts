@@ -37,7 +37,22 @@ export interface GradingPreset {
   rim?: number;
 }
 
-export type GradingName = 'dawn' | 'day' | 'night' | 'ochre_dawn' | 'ochre' | 'ochre_night' | 'cloud_dawn' | 'cloud' | 'cloud_night' | 'tk_dawn' | 'tk' | 'tk_night' | 'ash_dawn' | 'rift' | 'rift_pit';
+export type GradingName =
+  | 'dawn'
+  | 'day'
+  | 'night'
+  | 'ochre_dawn'
+  | 'ochre'
+  | 'ochre_night'
+  | 'cloud_dawn'
+  | 'cloud'
+  | 'cloud_night'
+  | 'tk_dawn'
+  | 'tk'
+  | 'tk_night'
+  | 'ash_dawn'
+  | 'rift'
+  | 'rift_pit';
 /** Thời điểm trong ngày (`?mood=`); level có bộ mood riêng (Đoạn Mạch: `ochre*`) đổi theo. */
 type TimeOfDay = 'dawn' | 'day' | 'night';
 

@@ -113,7 +113,10 @@ export async function runMovement(ctx: Ctx): Promise<void> {
   const again = await join('kiemthu');
   await W(400);
   const p2 = (again.room.state as { players: Map<string, P> }).players.get(again.init.sid)!;
-  check('chết rồi vào lại thì về điểm hồi sinh', Math.hypot(p2.x - 2048, p2.z - 2088) < 5 && p2.hp > 0, `(${p2.x.toFixed(0)}, ${p2.z.toFixed(0)}) hp ${p2.hp}`);
+  check(
+    'chết rồi vào lại thì về điểm hồi sinh',
+    Math.hypot(p2.x - 2048, p2.z - 2088) < 5 && p2.hp > 0,
+    `(${p2.x.toFixed(0)}, ${p2.z.toFixed(0)}) hp ${p2.hp}`,
+  );
   await again.room.leave(true);
-
 }

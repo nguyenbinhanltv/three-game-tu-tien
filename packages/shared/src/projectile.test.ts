@@ -2,7 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { COLLIDERS, VALLEY } from './level';
 import { PLAYER_RADIUS } from './movement';
 import { FLY_MIN_CLEAR } from './movement';
-import { BOLT_BODY_H, BOLT_MAX_LIFT, boltBlocked, boltBlockedAt, boltHits, boltLift, boltXZ, boltY, boltYaws, segDist2 } from './projectile';
+import {
+  BOLT_BODY_H,
+  BOLT_MAX_LIFT,
+  boltBlocked,
+  boltBlockedAt,
+  boltHits,
+  boltLift,
+  boltXZ,
+  boltY,
+  boltYaws,
+  segDist2,
+} from './projectile';
 import { groundAt } from './terrain';
 
 describe('đạn đánh xa (D1)', () => {

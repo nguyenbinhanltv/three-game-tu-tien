@@ -28,7 +28,9 @@ export async function runRatelimit(_ctx: Ctx): Promise<void> {
     check(
       '/matchmake dồn dập bị chặn 429 (X-Forwarded-For giả không lách được)',
       !!limited && body?.code === 429 && Number(limited.headers.get('retry-after')) > 0,
-      limited ? `sau ${sent} request, Retry-After ${limited.headers.get('retry-after')}s` : `${sent} request không bị chặn — server đang bật RATE_LIMIT_EXEMPT/TRUST_PROXY hoặc RATE_LIMIT_BURST<=0?`,
+      limited
+        ? `sau ${sent} request, Retry-After ${limited.headers.get('retry-after')}s`
+        : `${sent} request không bị chặn — server đang bật RATE_LIMIT_EXEMPT/TRUST_PROXY hoặc RATE_LIMIT_BURST<=0?`,
     );
     // Bị chặn rồi thì join qua colyseus.js báo lỗi 429 thay vì treo.
     let code: number | undefined;

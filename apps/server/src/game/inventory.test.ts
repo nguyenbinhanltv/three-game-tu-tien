@@ -29,9 +29,20 @@ const ORE = 'itm_thiet_tinh';
 
 function setup() {
   const sent: { type: string; msg: unknown }[] = [];
-  const sim = new GameSim(new WorldState(), { broadcast: () => undefined } as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: 2040, z: 2040 }, respawn: { x: 2040, z: 2040 }, persistPosition: false });
+  const sim = new GameSim(new WorldState(), { broadcast: () => undefined } as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: 2040, z: 2040 },
+    respawn: { x: 2040, z: 2040 },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'tui' + acc);
-  const p = sim.addPlayer({ sessionId: 'c' + acc, send: (type: string, msg: unknown) => sent.push({ type, msg }) } as never, char, true, 'c' + acc);
+  const p = sim.addPlayer(
+    { sessionId: 'c' + acc, send: (type: string, msg: unknown) => sent.push({ type, msg }) } as never,
+    char,
+    true,
+    'c' + acc,
+  );
   p.move.x = 2040;
   p.move.z = 2040;
   p.move.y = groundAt(2040, 2040);
@@ -42,7 +53,10 @@ function setup() {
   };
   const sort = (r = 'sort-' + ++n) => (step(), sim.inventory.onSort(p, { r }));
   const lock = (slot: number, on: boolean) => (step(), sim.inventory.onLock(p, { slot, on }));
-  const split = (slot: number, k: number, extra: Record<string, unknown> = {}, r = 'split-' + ++n) => (step(), sim.inventory.onSplit(p, { slot, n: k, r, ...extra }));
+  const split = (slot: number, k: number, extra: Record<string, unknown> = {}, r = 'split-' + ++n) => (
+    step(),
+    sim.inventory.onSplit(p, { slot, n: k, r, ...extra })
+  );
   const give = (fn: (d: import('./character').InvDraft) => void) => expect(char.tx('test', null, (d) => (fn(d), true))).toBe(true);
   const total = (id: string) => char.inv.reduce((s, x) => s + (x?.id === id ? x.n : 0), 0);
   const invMsgs = () => sent.filter((x) => x.type === S.INV).map((x) => x.msg as InvMsg);
@@ -295,7 +309,9 @@ describe('migration DB v4 → v5', () => {
     expect(DATA_VERSION).toBe(6);
     const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'dtl-tda-')), 'v4.db');
     const a = openDb(file);
-    a.sqlite.exec('DROP TABLE items; CREATE TABLE items (char_id INTEGER NOT NULL, slot INTEGER NOT NULL, item_id TEXT NOT NULL, qty INTEGER NOT NULL, plus INTEGER NOT NULL DEFAULT 0, inst TEXT, PRIMARY KEY (char_id, slot));');
+    a.sqlite.exec(
+      'DROP TABLE items; CREATE TABLE items (char_id INTEGER NOT NULL, slot INTEGER NOT NULL, item_id TEXT NOT NULL, qty INTEGER NOT NULL, plus INTEGER NOT NULL DEFAULT 0, inst TEXT, PRIMARY KEY (char_id, slot));',
+    );
     a.sqlite.prepare('INSERT INTO characters (account_id, name, level) VALUES (1, ?, 5)').run('cu_nhan');
     const id = (a.sqlite.prepare('SELECT id FROM characters').get() as { id: number }).id;
     a.sqlite.prepare('INSERT INTO items (char_id, slot, item_id, qty) VALUES (?, 0, ?, 7), (?, 29, ?, 3)').run(id, ORE, id, PILL);

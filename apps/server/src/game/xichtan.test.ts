@@ -45,7 +45,14 @@ describe('dữ liệu Xích Tẫn Khích', () => {
     expect(d.private).toBe(true);
     expect(d.maxRevives).toBe(2);
     expect(d.waves).toHaveLength(6);
-    expect(d.waves.map((w) => w.mons[0].id)).toEqual(['mon_giac_kiem_trong_binh', 'mon_liet_hoa_ma_nguu', 'boss_xich_tan_cu_khoi', 'mon_u_anh_cot_loc', 'boss_tu_nhan_ma_tuong', 'boss_tu_quang_duc_chu']);
+    expect(d.waves.map((w) => w.mons[0].id)).toEqual([
+      'mon_giac_kiem_trong_binh',
+      'mon_liet_hoa_ma_nguu',
+      'boss_xich_tan_cu_khoi',
+      'mon_u_anh_cot_loc',
+      'boss_tu_nhan_ma_tuong',
+      'boss_tu_quang_duc_chu',
+    ]);
     expect(d.waves[0].mons[0].n).toBe(10);
     expect(d.waves[1].mons[0].n).toBe(6);
     expect(d.waves[3].steles!.secs).toBe(60);
@@ -86,7 +93,15 @@ describe('hàm thuần', () => {
     expect(xt.dueReinforce(45, 3, l)).toEqual([]);
   });
   it('veinUnder: chỉ số khe boss đứng lên, -1 nếu ngoài', () => {
-    const r: MonsterRift = { phase: 1, burn: 3, weak: 6, veins: [{ x: 0, z: 0, r: 5 }, { x: 20, z: 0, r: 5 }] };
+    const r: MonsterRift = {
+      phase: 1,
+      burn: 3,
+      weak: 6,
+      veins: [
+        { x: 0, z: 0, r: 5 },
+        { x: 20, z: 0, r: 5 },
+      ],
+    };
     expect(xt.veinUnder(r, 21, 2)).toBe(1);
     expect(xt.veinUnder(r, 10, 0)).toBe(-1);
   });
@@ -107,7 +122,18 @@ describe('SteleHold với host giả', () => {
       spawn: (mon: string) => void log.spawn.push(mon),
       sysAll: (k: string) => void log.say.push(k),
     };
-    const def = { x: 0, z: 0, r: 5, secs, grace: 3, press: 0.05, reinforce: [{ at: 0, mon: 'a', level: 1, n: 2 }, { at: 5, mon: 'b', level: 1, n: 1 }] };
+    const def = {
+      x: 0,
+      z: 0,
+      r: 5,
+      secs,
+      grace: 3,
+      press: 0.05,
+      reinforce: [
+        { at: 0, mon: 'a', level: 1, n: 2 },
+        { at: 5, mon: 'b', level: 1, n: 1 },
+      ],
+    };
     const st = new xt.SteleHold(h, def);
     const adv = (sec: number) => {
       for (let i = 0; i < sec * 4; i++) {
@@ -165,7 +191,13 @@ describe('SteleHold với host giả', () => {
 describe('RiftVeins với host giả', () => {
   it('chú trên khe: mất thế + mất tầng; chú ngoài khe không tính; hết tầng thì gột', () => {
     const rift: MonsterRift = { phase: 1, burn: 3, weak: 6, veins: [{ x: 0, z: 0, r: 5 }] };
-    const boss = { def: { rift }, state: 1, phase: 1, s: { hp: 100, x: 0, z: 0 }, chant: null as null | { startAt: number; endAt: number } } as never as import('./sim').MonEnt;
+    const boss = {
+      def: { rift },
+      state: 1,
+      phase: 1,
+      s: { hp: 100, x: 0, z: 0 },
+      chant: null as null | { startAt: number; endAt: number },
+    } as never as import('./sim').MonEnt;
     const log = { stagger: [] as number[], purified: 0, say: [] as string[] };
     const rv = new xt.RiftVeins({
       now: () => 5000,
@@ -196,9 +228,22 @@ describe('RiftVeins với host giả', () => {
   });
   it('chưa vào pha thì chưa có khe', () => {
     const rift: MonsterRift = { phase: 2, burn: 3, weak: 6, veins: [{ x: 0, z: 0, r: 5 }] };
-    const boss = { def: { rift }, state: 1, phase: 1, s: { hp: 100, x: 0, z: 0 }, chant: { startAt: 1, endAt: 9 } } as never as import('./sim').MonEnt;
+    const boss = {
+      def: { rift },
+      state: 1,
+      phase: 1,
+      s: { hp: 100, x: 0, z: 0 },
+      chant: { startAt: 1, endAt: 9 },
+    } as never as import('./sim').MonEnt;
     let marks = 0;
-    const rv = new xt.RiftVeins({ now: () => 1, monsters: () => [boss], stagger: () => undefined, purify: () => undefined, marker: () => void marks++, sysAll: () => undefined });
+    const rv = new xt.RiftVeins({
+      now: () => 1,
+      monsters: () => [boss],
+      stagger: () => undefined,
+      purify: () => undefined,
+      marker: () => void marks++,
+      sysAll: () => undefined,
+    });
     rv.tick();
     expect(marks).toBe(0);
     expect(rv.burn).toBe(3);
@@ -206,7 +251,14 @@ describe('RiftVeins với host giả', () => {
 });
 
 describe('room thật', () => {
-  type TestRoom = InstanceType<Rooms['GameRoom']> & { director(): void; wave: number; nextWaveAt: number; clearedAt: number; stele: { held: number; complete: boolean } | null; veins: { burn: number; tick(): void } | null };
+  type TestRoom = InstanceType<Rooms['GameRoom']> & {
+    director(): void;
+    wave: number;
+    nextWaveAt: number;
+    clearedAt: number;
+    stele: { held: number; complete: boolean } | null;
+    veins: { burn: number; tick(): void } | null;
+  };
 
   async function mkRoom() {
     const { Aoi } = await import('../aoi');
@@ -227,7 +279,11 @@ describe('room thật', () => {
     char.recalc();
     char.hp = char.mhp;
     const c = { sessionId: 'sid' + acc++, send: (type: string, msg: unknown) => sent.push({ type, msg, to: char.name }) };
-    (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(c, {}, { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true });
+    (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(
+      c,
+      {},
+      { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true },
+    );
     const p = [...room.sim.players.values()][0];
     return { room: room as unknown as TestRoom, sim: room.sim, p };
   }

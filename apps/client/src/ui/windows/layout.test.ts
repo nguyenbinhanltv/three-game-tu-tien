@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { clampPos, closeWindow, fitWindows, focusWindow, moveWindow, openWindow, overlaps, topWindow, type Viewport, type WinState, winRect } from './layout';
+import {
+  clampPos,
+  closeWindow,
+  fitWindows,
+  focusWindow,
+  moveWindow,
+  openWindow,
+  overlaps,
+  topWindow,
+  type Viewport,
+  type WinState,
+  winRect,
+} from './layout';
 
 const VPS: Viewport[] = [
   { vw: 1280, vh: 720 },

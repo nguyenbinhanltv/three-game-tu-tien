@@ -12,7 +12,9 @@ import { sheet, type SheetRow } from '../lib/shot';
 function assetIds(): string[] {
   const ids = list('--ids', '');
   if (ids.length) return ids;
-  const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'apps/client/public/assets/manifest.json'), 'utf8')) as { assets: Record<string, unknown> };
+  const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'apps/client/public/assets/manifest.json'), 'utf8')) as {
+    assets: Record<string, unknown>;
+  };
   const prefix = opt('--group', 'boss_');
   return Object.keys(manifest.assets).filter((id) => id.startsWith(prefix));
 }
@@ -34,18 +36,32 @@ export default {
     const shot = () => page.screenshot({ type: 'jpeg', quality: 86 });
     /** Đặt góc nhìn rồi nhân khoảng cách camera với `zoom` (mặc định lùi 1,35× để chiêu vung rộng không tràn khung). */
     const view = async (v: string) => {
-      await page.evaluate(([name, k]) => {
-        const w = window.__viewer!;
-        w.setView(name);
-        w.camera.position.sub(w.controls.target).multiplyScalar(k).add(w.controls.target);
-        w.controls.update();
-      }, [v, zoom] as const);
+      await page.evaluate(
+        ([name, k]) => {
+          const w = window.__viewer!;
+          w.setView(name);
+          w.camera.position.sub(w.controls.target).multiplyScalar(k).add(w.controls.target);
+          w.controls.update();
+        },
+        [v, zoom] as const,
+      );
       await sleep(350);
     };
     for (const id of assetIds()) {
-      await page.goto(gameUrl(r.clientPort, id.startsWith('boss_') && !lib ? { show: 'boss', id } : { show: id, ...(lib ? { lib } : {}) }, { renderer: r.renderer }), { waitUntil: 'load' });
-      await page.waitForFunction(() => !!window.__viewer?.model || !!window.__viewer?.clips?.length, undefined, { timeout: 60_000, polling: 250 });
-      await page.addStyleTag({ content: '.viewer-panel,.viewer-hud,.panel,aside,header{display:none!important}.viewer-host{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important}' });
+      await page.goto(
+        gameUrl(r.clientPort, id.startsWith('boss_') && !lib ? { show: 'boss', id } : { show: id, ...(lib ? { lib } : {}) }, {
+          renderer: r.renderer,
+        }),
+        { waitUntil: 'load' },
+      );
+      await page.waitForFunction(() => !!window.__viewer?.model || !!window.__viewer?.clips?.length, undefined, {
+        timeout: 60_000,
+        polling: 250,
+      });
+      await page.addStyleTag({
+        content:
+          '.viewer-panel,.viewer-hud,.panel,aside,header{display:none!important}.viewer-host{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important}',
+      });
       const clips = await page.evaluate(() => {
         const w = window.__viewer!;
         w.setHuman(false);
@@ -64,13 +80,18 @@ export default {
         await view(v);
         turn.push(await shot());
       }
-      await sheet(ctx, path.join(r.out, `${id}_turntable.jpg`), [{ label: `${id} · trước / nghiêng / sau / chéo`, cells: turn }], { cell: 320 });
+      await sheet(ctx, path.join(r.out, `${id}_turntable.jpg`), [{ label: `${id} · trước / nghiêng / sau / chéo`, cells: turn }], {
+        cell: 320,
+      });
       const rows: SheetRow[] = [];
       for (const [i, c] of clips.entries()) {
         if (want.length && !want.includes(c.name)) continue;
         const cells: Buffer[] = [];
         for (let k = 0; k < frames; k++) {
-          await page.evaluate(([ci, t]) => (window.__viewer!.playClip(ci), window.__viewer!.seek(t)), [i, (c.duration * k) / (frames - 1) - (k === frames - 1 ? 1e-3 : 0)] as const);
+          await page.evaluate(([ci, t]) => (window.__viewer!.playClip(ci), window.__viewer!.seek(t)), [
+            i,
+            (c.duration * k) / (frames - 1) - (k === frames - 1 ? 1e-3 : 0),
+          ] as const);
           await sleep(220);
           cells.push(await shot());
         }

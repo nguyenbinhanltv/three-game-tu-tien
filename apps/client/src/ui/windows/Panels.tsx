@@ -61,7 +61,16 @@ function WindowHost({ id, x, y, z, top }: { id: WinId; x: number; y: number; z: 
     movePanel(id, e.clientX / d.k - d.dx, e.clientY / d.k - d.dy, true);
   };
   return (
-    <div className="win-host" data-id={id} data-top={top ? '1' : undefined} style={{ left: x, top: y, zIndex: 20 + z, '--y': y + 'px' } as React.CSSProperties} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
+    <div
+      className="win-host"
+      data-id={id}
+      data-top={top ? '1' : undefined}
+      style={{ left: x, top: y, zIndex: 20 + z, '--y': y + 'px' } as React.CSSProperties}
+      onPointerDown={onDown}
+      onPointerMove={onMove}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+    >
       <Body id={id} />
     </div>
   );

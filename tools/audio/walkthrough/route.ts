@@ -10,7 +10,14 @@ import path from 'node:path';
 import { LAKE, RUN_SPEED, SECT } from '@dtl/shared';
 import { StepClock, stepVolume } from '../../../apps/client/src/game/audio/footsteps';
 import { pathPolylines } from '../../../apps/client/src/render/groundMask';
-import { buildSources, KINDS, makeCrackle, Soundscape, type SpatialApi, templeBellPartials } from '../../../apps/client/src/game/audio/soundscape';
+import {
+  buildSources,
+  KINDS,
+  makeCrackle,
+  Soundscape,
+  type SpatialApi,
+  templeBellPartials,
+} from '../../../apps/client/src/game/audio/soundscape';
 import { surfaceAt, type Surface } from '../../../apps/client/src/game/world/surface';
 
 const outDir = process.argv[2];
@@ -64,7 +71,7 @@ function walk(name: string, zone: Clip['zone'], pts: P[], dur: number, bellSeed:
   };
   // Soundscape ghi nguồn đang hoạt động qua nhật ký (+id / -id); `loop` của api giả trả null nên đọc state() mỗi bước.
   let seed = bellSeed;
-  const sc = new Soundscape(SOURCES, api).seed(() => ((seed = (seed * 16807) % 2147483647) / 2147483647));
+  const sc = new Soundscape(SOURCES, api).seed(() => (seed = (seed * 16807) % 2147483647) / 2147483647);
   const clock = new StepClock();
   let lastYaw = 0;
   const dt = 0.01;
@@ -85,7 +92,8 @@ function walk(name: string, zone: Clip['zone'], pts: P[], dur: number, bellSeed:
         open.delete(id);
       }
     }
-    if (clock.advance(p.x, p.z, RUN_SPEED, moving) > 0) clip.footsteps.push({ t: T, surface: surfaceAt(p.x, p.z), vol: stepVolume(0, true, false) });
+    if (clock.advance(p.x, p.z, RUN_SPEED, moving) > 0)
+      clip.footsteps.push({ t: T, surface: surfaceAt(p.x, p.z), vol: stepVolume(0, true, false) });
   }
   for (const [id, o] of open) clip.sources.push({ id, kind: o.kind, x: o.x, z: o.z, t0: o.t0, t1: dur });
   return clip;
@@ -115,14 +123,27 @@ const lakePt = (r: number): P => ({ x: LAKE.x - r, z: LAKE.z });
 
 const clips = [
   // Lối đèn đá: đi bắc dọc trục sân (đèn hai bên), rẽ tây về phía lối ra. Chuông chính điện ở phía bắc.
-  walk('san_da', 'sect', [{ x: SECT.x, z: 2128 }, { x: SECT.x, z: 2080 }, { x: SECT.x - 50, z: 2058 }, { x: SECT.x - 90, z: 2048 }], 20, 11),
+  walk(
+    'san_da',
+    'sect',
+    [
+      { x: SECT.x, z: 2128 },
+      { x: SECT.x, z: 2080 },
+      { x: SECT.x - 50, z: 2058 },
+      { x: SECT.x - 90, z: 2048 },
+    ],
+    20,
+    11,
+  ),
   walk('duong_dat', 'wild', pathPts(120, 160), 5, 3),
   walk('co_ven_ho', 'lake', [lakePt(290), lakePt(205)], 12, 5),
 ];
 for (const c of clips) {
   const by: Record<string, number> = {};
   for (const f of c.footsteps) by[f.surface] = (by[f.surface] ?? 0) + 1;
-  console.log(`${c.name}: ${c.dur}s, bước ${JSON.stringify(by)}, nguồn ${c.sources.map((s) => `${s.id}[${s.t0.toFixed(1)}-${s.t1.toFixed(1)}]`).join(' ')}, chuông ${c.bells.map((b) => b.t.toFixed(1)).join(',') || '—'}`);
+  console.log(
+    `${c.name}: ${c.dur}s, bước ${JSON.stringify(by)}, nguồn ${c.sources.map((s) => `${s.id}[${s.t0.toFixed(1)}-${s.t1.toFixed(1)}]`).join(' ')}, chuông ${c.bells.map((b) => b.t.toFixed(1)).join(',') || '—'}`,
+  );
 }
 fs.writeFileSync(path.join(outDir, 'events.json'), JSON.stringify({ clips, kinds: KINDS, bell: templeBellPartials() }));
 fs.writeFileSync(path.join(outDir, 'crackle.f32'), Buffer.from(makeCrackle(48000).buffer));

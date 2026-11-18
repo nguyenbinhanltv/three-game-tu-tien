@@ -101,7 +101,6 @@ export class MonFx {
     return this.bossOf(m) ? 'boss' : undefined;
   }
 
-
   /** Quái bị đánh (sát thương lên quái). `victim` = chân quái; chest = 55% chiều cao. */
   hit(m: MonLike): void {
     const tl = this.tl('mon_hit');
@@ -117,7 +116,13 @@ export class MonFx {
     if (!tl || !this.near(dst.x, dst.z) || !this.gap('strike', m.id, MON_STRIKE_GAP)) return;
     const yaw = Math.atan2(dst.x - m.x, dst.z - m.z);
     const tgt: FxTarget = { x: dst.x, y: dst.y, z: dst.z, chest: 1.1 };
-    this.runner.startAt(tl, { actor: this.actorOf({ ...m, yaw }), palette: this.elemOf(m), tgt, mul: Math.min(2.2, monScale(m.model.height)), variant: this.variantOf(m) });
+    this.runner.startAt(tl, {
+      actor: this.actorOf({ ...m, yaw }),
+      palette: this.elemOf(m),
+      tgt,
+      mul: Math.min(2.2, monScale(m.model.height)),
+      variant: this.variantOf(m),
+    });
     this.note('mon_strike', m.id);
   }
 
@@ -125,7 +130,13 @@ export class MonFx {
   cast(m: MonLike): void {
     const tl = this.tl('mon_cast');
     if (!tl || !this.near(m.x, m.z) || !this.gap('cast', m.id, 0.5)) return;
-    this.runner.startAt(tl, { actor: this.actorOf({ ...m, y: m.y }), palette: this.elemOf(m), tgt: null, mul: monScale(m.model.height), variant: this.variantOf(m) });
+    this.runner.startAt(tl, {
+      actor: this.actorOf({ ...m, y: m.y }),
+      palette: this.elemOf(m),
+      tgt: null,
+      mul: monScale(m.model.height),
+      variant: this.variantOf(m),
+    });
     this.note('mon_cast', m.id);
   }
 
@@ -135,7 +146,13 @@ export class MonFx {
     if (!tl || !this.near(m.x, m.z)) return;
     const h = m.model.height;
     const a = this.actorOf({ ...m, y: m.y + h * 0.5 });
-    this.runner.startAt(tl, { actor: { ...a, y: m.y + h * 0.5 }, palette: this.elemOf(m), tgt: null, mul: Math.min(this.bossOf(m) ? 2.2 : 1.5, monScale(h)), variant: this.variantOf(m) });
+    this.runner.startAt(tl, {
+      actor: { ...a, y: m.y + h * 0.5 },
+      palette: this.elemOf(m),
+      tgt: null,
+      mul: Math.min(this.bossOf(m) ? 2.2 : 1.5, monScale(h)),
+      variant: this.variantOf(m),
+    });
     this.note('mon_death', m.id);
   }
 
@@ -153,7 +170,15 @@ export class MonFx {
     const tl = key ? this.tl(key) : undefined;
     if (!tl || !key) return;
     const y = groundAt(h.x, h.z);
-    this.runner.startAt(tl, { actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} }, palette: this.hazardPalette(h, src), tgt: null, area: { x: h.x, z: h.z, r: h.r }, mul: hazardMul(h.r, key === 'mon_warn' ? 4 : 8), delay: h.delay, variant: this.variantOf(src) });
+    this.runner.startAt(tl, {
+      actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} },
+      palette: this.hazardPalette(h, src),
+      tgt: null,
+      area: { x: h.x, z: h.z, r: h.r },
+      mul: hazardMul(h.r, key === 'mon_warn' ? 4 : 8),
+      delay: h.delay,
+      variant: this.variantOf(src),
+    });
     this.note(key, src.id);
   }
 
@@ -164,7 +189,14 @@ export class MonFx {
     const tl = this.tl(key);
     if (!tl || !this.near(h.x, h.z)) return false;
     const y = groundAt(h.x, h.z);
-    this.runner.startAt(tl, { actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} }, palette: this.hazardPalette(h, src), tgt: null, area: { x: h.x, z: h.z, r: h.r }, mul: hazardMul(h.r, key === 'mon_boom_circle' ? 4 : 8), variant: this.variantOf(src) });
+    this.runner.startAt(tl, {
+      actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} },
+      palette: this.hazardPalette(h, src),
+      tgt: null,
+      area: { x: h.x, z: h.z, r: h.r },
+      mul: hazardMul(h.r, key === 'mon_boom_circle' ? 4 : 8),
+      variant: this.variantOf(src),
+    });
     this.note(key, src.id);
     return true;
   }

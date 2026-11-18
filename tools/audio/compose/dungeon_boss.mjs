@@ -68,11 +68,21 @@ export default function dungeonBoss() {
   for (let b = 8; b < 16; b += 2) kit.note(s.bar(b) + 3.5, n('F3'), 1, 90);
 
   // nhị (fiddle) chủ đề
-  const THEME = ['0>:1/2 0:1/2 2:1 1:1/2 0:1/2 -1:1', '0~:3 r:1', '2:1/2 3:1/2 4:1 3:1 2:1', '3~:3 r:1', '4>:1/2 4:1/2 5:1 4:1/2 3:1/2 2:1', '3:2 2:1 1:1', '2:1 1:1 0:1 -1:1', '0~:4'].join(' | ');
+  const THEME = [
+    '0>:1/2 0:1/2 2:1 1:1/2 0:1/2 -1:1',
+    '0~:3 r:1',
+    '2:1/2 3:1/2 4:1 3:1 2:1',
+    '3~:3 r:1',
+    '4>:1/2 4:1/2 5:1 4:1/2 3:1/2 2:1',
+    '3:2 2:1 1:1',
+    '2:1 1:1 0:1 -1:1',
+    '0~:4',
+  ].join(' | ');
   fiddle.phrase(s.bar(8), Fs, THEME, { vel: 102, vib: 1, legato: 0.92 });
   fiddle.phrase(s.bar(24), Fs, THEME, { oct: 1, vel: 96, vib: 1, legato: 0.92 });
   // E: nhị đứt câu
-  for (let b = 32; b < 40; b += 2) fiddle.phrase(s.bar(b) + 2, Fs, b % 4 ? "4>':1/2 3':1/2 2:1 | 1~:2 r:2" : "2>':1/2 3':1/2 4:1 | 5~:2 r:2", { vel: 98 });
+  for (let b = 32; b < 40; b += 2)
+    fiddle.phrase(s.bar(b) + 2, Fs, b % 4 ? "4>':1/2 3':1/2 2:1 | 1~:2 r:2" : "2>':1/2 3':1/2 4:1 | 5~:2 r:2", { vel: 98 });
 
   // C: dàn dây đồng âm + chuông ống
   for (let b = 16; b < 24; b++) {
@@ -82,9 +92,11 @@ export default function dungeonBoss() {
   }
   for (const b of [0, 40, 42, 44, 46]) tube.note(s.bar(b), n('F#4'), 4, 74);
   // D: đàn gảy vê
-  for (let b = 24; b < 32; b++) shamisen.phrase(s.bar(b), Fs, b % 2 ? '2*:2 1*:2' : '0*:2 3*:2', { vel: 76, trem: 8, transpose: ROOT[chordAt(b)] - n('F#2') });
+  for (let b = 24; b < 32; b++)
+    shamisen.phrase(s.bar(b), Fs, b % 2 ? '2*:2 1*:2' : '0*:2 3*:2', { vel: 76, trem: 8, transpose: ROOT[chordAt(b)] - n('F#2') });
   // A, F: shamisen riff ngắn mỗi 2 ô
-  for (const b of [1, 3, 5, 7, 41, 43, 45]) shamisen.phrase(s.bar(b) + 2, Fs, "0':1/4 0':1/4 2':1/2 1':1/2 0':1/2", { vel: 88, transpose: ROOT[chordAt(b)] - n('F#2') });
+  for (const b of [1, 3, 5, 7, 41, 43, 45])
+    shamisen.phrase(s.bar(b) + 2, Fs, "0':1/4 0':1/4 2':1/2 1':1/2 0':1/2", { vel: 88, transpose: ROOT[chordAt(b)] - n('F#2') });
 
   return s;
 }

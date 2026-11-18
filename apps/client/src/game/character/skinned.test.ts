@@ -15,7 +15,15 @@ import { type AnimState, legacyModelsRequested } from './view';
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
 
-const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
+const anim = (o: Partial<AnimState> = {}): AnimState => ({
+  speed: 0,
+  flying: false,
+  meditating: false,
+  dead: false,
+  casting: false,
+  airborne: false,
+  ...o,
+});
 
 /** Parse GLB thật trong node (thay texture bằng Texture rỗng vì node không giải mã ảnh); đếm dispose. */
 async function loadReal(file: string, disposed: string[]): Promise<GLTF> {
@@ -50,7 +58,9 @@ async function wolfSkins(disposed: string[] = [], fail = false) {
   const skins = new MonsterSkins(cache, false);
   skins.preload();
   // Skin E-0 (12 quái bản đồ mở rộng) chưa có dòng trong monsters.json cho tới E-2/E-3/E-4: bỏ qua.
-  const ids = Object.keys(MONSTER_SKINS).map((id) => MONSTER.get(id)).filter((d): d is NonNullable<typeof d> => !!d);
+  const ids = Object.keys(MONSTER_SKINS)
+    .map((id) => MONSTER.get(id))
+    .filter((d): d is NonNullable<typeof d> => !!d);
   for (let i = 0; i < 200 && ids.some((d) => skins.pending(d)); i++) await new Promise((r) => setTimeout(r, 10));
   return { cache, skins };
 }
@@ -126,7 +136,9 @@ describe('sói có xương (mon_soi_xam thật)', () => {
   });
 
   it('12 skin E-0 đều nạp lười theo màn, không vào gói tải đầu, đủ clip trong GLB', () => {
-    const e0 = Object.entries(MONSTER_SKINS).filter(([id, s]) => id.startsWith('mon_') && ['doan_mach', 'van_hai', 'thien_khuyet'].includes(s.level ?? ''));
+    const e0 = Object.entries(MONSTER_SKINS).filter(
+      ([id, s]) => id.startsWith('mon_') && ['doan_mach', 'van_hai', 'thien_khuyet'].includes(s.level ?? ''),
+    );
     expect(e0.length).toBe(12);
     // Quái đã có dòng trong monsters.json (E2-A thêm bản tạm của Đoạn Mạch, E2-B hoàn thiện) hoặc còn chờ: đủ 12 skin, không thừa id lạ.
     expect(E0_PENDING.every((id) => e0.some(([k]) => k === id))).toBe(true);
@@ -143,7 +155,9 @@ describe('sói có xương (mon_soi_xam thật)', () => {
     const skins = new MonsterSkins(cache, false);
     skins.preload();
     expect(cache.stats().loaded + cache.stats().loading).toBeLessThanOrEqual(LIVE_SKINS.length); // lazy: preload không kéo skin E-0
-    const e0 = Object.entries(MONSTER_SKINS).filter(([id, s]) => id.startsWith('mon_') && ['doan_mach', 'van_hai', 'thien_khuyet'].includes(s.level ?? ''));
+    const e0 = Object.entries(MONSTER_SKINS).filter(
+      ([id, s]) => id.startsWith('mon_') && ['doan_mach', 'van_hai', 'thien_khuyet'].includes(s.level ?? ''),
+    );
     const base = MONSTER.get('mon_soi_xam')!;
     const defs = e0.map(([id]) => ({ ...base, id }));
     for (const level of new Set(e0.map(([, s]) => s.level!))) skins.preloadLazy(level);

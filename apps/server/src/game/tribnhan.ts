@@ -9,12 +9,29 @@
 //
 // Thế thân của kiếp chỉ là móc cho tới khi E4-K làm phân thân thần niệm thật của người chơi (phím G chung): khi đó nối vào `cloneOut`.
 
-import { ELEMENTS, PF_DEAD, TRIB_LINK_SEAL, nguHanhIndex, nguHanhSealFor, tribDef, tribSealPos, type HazardKind, type TribDef, type TribNguHanh } from '@dtl/shared';
+import {
+  ELEMENTS,
+  PF_DEAD,
+  TRIB_LINK_SEAL,
+  nguHanhIndex,
+  nguHanhSealFor,
+  tribDef,
+  tribSealPos,
+  type HazardKind,
+  type TribDef,
+  type TribNguHanh,
+} from '@dtl/shared';
 import type { PlayerEnt } from './entities';
 import type { TribHost } from './tribhost';
 import { registerMechanic, type TribMechCtx } from './tribmech';
 
-const ELEM_HAZARD: Record<(typeof ELEMENTS)[number], HazardKind> = { kim: 'lightning', moc: 'spirit', thuy: 'frost', hoa: 'fire', tho: 'spirit' };
+const ELEM_HAZARD: Record<(typeof ELEMENTS)[number], HazardKind> = {
+  kim: 'lightning',
+  moc: 'spirit',
+  thuy: 'frost',
+  hoa: 'fire',
+  tho: 'spirit',
+};
 /** Dấu trận môn vẽ lại sau từng này giây (dấu tồn tại SEAL_REFRESH + 1 giây). */
 const SEAL_REFRESH = 9;
 
@@ -48,7 +65,21 @@ function markSeals(host: TribHost, now: number, st: NguHanhState, cfg: TribNguHa
   st.markAt = now + SEAL_REFRESH * 1000;
   for (let i = 0; i < ELEMENTS.length; i++) {
     const s = tribSealPos(st, cfg.ring, i);
-    host.addHazard({ x: s.x, z: s.z, r: cfg.sealR }, 0.2, 0, false, ELEM_HAZARD[ELEMENTS[i]], '', 0, false, 0, undefined, undefined, false, { mv: 'pool', dur: SEAL_REFRESH + 1 });
+    host.addHazard(
+      { x: s.x, z: s.z, r: cfg.sealR },
+      0.2,
+      0,
+      false,
+      ELEM_HAZARD[ELEMENTS[i]],
+      '',
+      0,
+      false,
+      0,
+      undefined,
+      undefined,
+      false,
+      { mv: 'pool', dur: SEAL_REFRESH + 1 },
+    );
   }
 }
 
@@ -78,7 +109,21 @@ registerMechanic('ngu_hanh', {
     const e = ELEMENTS[idx];
     const seal = tribSealPos(st, cfg.ring, nguHanhSealFor(idx));
     // Tia kiếp quét cả sân và luôn trúng chủ kiếp dù đứng ngoài sân (`reach`: rời sân không bỏ qua được cơ chế); ai đứng trong trận môn khắc chế hành này lúc nổ giảm `cut` (cờ `ke`).
-    c.host.addHazard({ x: st.x, z: st.z, r: cfg.ring + cfg.sealR + cfg.pad }, cfg.warn, cfg.pct, true, ELEM_HAZARD[e], c.p.sid, 0, false, 0, undefined, undefined, false, { seal: { x: seal.x, z: seal.z, r: cfg.sealR, cut: cfg.cut }, reach: true });
+    c.host.addHazard(
+      { x: st.x, z: st.z, r: cfg.ring + cfg.sealR + cfg.pad },
+      cfg.warn,
+      cfg.pct,
+      true,
+      ELEM_HAZARD[e],
+      c.p.sid,
+      0,
+      false,
+      0,
+      undefined,
+      undefined,
+      false,
+      { seal: { x: seal.x, z: seal.z, r: cfg.sealR, cut: cfg.cut }, reach: true },
+    );
     c.host.fx({ t: 'nguhanh', src: c.p.sid, n: idx, d: cfg.warn, x: st.x, z: st.z, r: cfg.ring });
   },
 });
@@ -107,7 +152,12 @@ export function cloneAlive(st: CloneState | undefined, now: number): boolean {
 }
 
 /** Ai chắn mạch nối thiên phạt? 'clone' = thế thân đứng trong trận môn thứ hai, 'body' = thân chính đứng trong đó, 'none' = không ai. Hàm thuần để test. */
-export function linkBlocker(center: { x: number; z: number }, cfg: { ring: number; sealR: number }, clone: { x: number; z: number } | null, body: { x: number; z: number }): 'clone' | 'body' | 'none' {
+export function linkBlocker(
+  center: { x: number; z: number },
+  cfg: { ring: number; sealR: number },
+  clone: { x: number; z: number } | null,
+  body: { x: number; z: number },
+): 'clone' | 'body' | 'none' {
   const s = tribSealPos(center, cfg.ring, TRIB_LINK_SEAL);
   if (clone && Math.hypot(clone.x - s.x, clone.z - s.z) <= cfg.sealR) return 'clone';
   if (Math.hypot(body.x - s.x, body.z - s.z) <= cfg.sealR) return 'body';
@@ -151,7 +201,17 @@ registerMechanic('phan_than', {
     const cfg = c.phase.phanThan;
     if (!cfg) return;
     const old = c.tr.mech?.phan_than as CloneState | undefined;
-    const st: CloneState = { x: old?.x ?? 0, z: old?.z ?? 0, until: old?.until ?? 0, made: old?.made ?? 0, t0: c.now, sweeps: 0, pillar: false, link: false, linkAt: 0 };
+    const st: CloneState = {
+      x: old?.x ?? 0,
+      z: old?.z ?? 0,
+      until: old?.until ?? 0,
+      made: old?.made ?? 0,
+      t0: c.now,
+      sweeps: 0,
+      pillar: false,
+      link: false,
+      linkAt: 0,
+    };
     (c.tr.mech ??= {}).phan_than = st;
     c.host.sys(c.p, cfg.sweeps ? 'sys.phan_than_hint' : 'sys.phan_than_hint2', undefined, 'info');
   },
@@ -175,7 +235,14 @@ registerMechanic('phan_than', {
       const fx = Math.sin(yaw);
       const fz = Math.cos(yaw);
       const len = cfg.sweepLen ?? 30;
-      h.addHazard({ x: ctr.x - fx * (len / 2), z: ctr.z - fz * (len / 2), r: len, sh: 'rect', yaw, w: cfg.sweepW ?? 4 }, cfg.sweepWarn ?? 1.8, cfg.sweepPct ?? 0.2, true, 'lightning', c.p.sid);
+      h.addHazard(
+        { x: ctr.x - fx * (len / 2), z: ctr.z - fz * (len / 2), r: len, sh: 'rect', yaw, w: cfg.sweepW ?? 4 },
+        cfg.sweepWarn ?? 1.8,
+        cfg.sweepPct ?? 0.2,
+        true,
+        'lightning',
+        c.p.sid,
+      );
     }
     // Cột thiên phạt: rơi cùng lúc lên `pillars` trận môn (không gồm trận môn thứ hai, nơi gánh mạch nối).
     if (cfg.pillarAt !== undefined && !st.pillar && rel >= cfg.pillarAt) {
@@ -197,7 +264,10 @@ registerMechanic('phan_than', {
       const warn = cfg.linkWarn ?? 2.5;
       st.linkAt = c.now + warn * 1000;
       const s = tribSealPos(ctr, ng.ring, TRIB_LINK_SEAL);
-      h.addHazard({ x: s.x, z: s.z, r: ng.sealR }, warn, 0, false, 'spirit', '', 0, false, 0, undefined, undefined, false, { mv: 'pool', dur: warn + 1 });
+      h.addHazard({ x: s.x, z: s.z, r: ng.sealR }, warn, 0, false, 'spirit', '', 0, false, 0, undefined, undefined, false, {
+        mv: 'pool',
+        dur: warn + 1,
+      });
       h.sys(c.p, 'sys.than_niem_link', undefined, 'bad');
     }
     if (st.linkAt > 0 && c.now >= st.linkAt) {
