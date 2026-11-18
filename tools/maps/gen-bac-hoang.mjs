@@ -479,6 +479,8 @@ const level = {
   spawn: { x: W(TRAM[0]), z: W(TRAM[1] + 12) },
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
   pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 80 })),
+  // Cổng vào Xích Tẫn Khích (DV-3D), cách poi cong_xich_tan_khich 18 m về phía tâm bản đồ.
+  portals: [{ x: W(337), z: W(-387), r: 12, to: 'xich_tan_khich' }],
   // Vị trí năm Trấn Giới Bia (cơ chế giới áp/thắp bia là DV3-C; nhiệm vụ `touch` dùng các điểm này).
   spots: STELES.map((b) => ({ id: b.id, zone: b.zone, x: W(b.off[0]), z: W(b.off[1]) })),
   camps,
