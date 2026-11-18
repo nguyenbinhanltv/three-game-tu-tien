@@ -52,7 +52,7 @@ function setup(level = 15) {
   return { sim, c, p, sent };
 }
 
-type WithLoot = { rollLoot(p: unknown, m: unknown): void };
+type WithLoot = { monSys: { rollLoot(p: unknown, m: unknown): void } };
 
 describe('bảng rơi trang bị theo nguồn (server)', () => {
   const N = 4000;
@@ -115,7 +115,7 @@ describe('rơi và mặc/tháo trong sim', () => {
   it('hạ boss: món rơi vào túi có inst, ledger kèm seed, client nhận q của phẩm', () => {
     const { sim, c, p, sent } = setup();
     const mon = sim.spawnMonster(content.MONSTER.get('boss_han_giao')!, 15, X + 3, Z, null);
-    (sim as unknown as WithLoot).rollLoot(p, mon);
+    (sim as unknown as WithLoot).monSys.rollLoot(p, mon);
     const gear = c.inv.filter((s) => s?.inst);
     expect(gear.length).toBeGreaterThanOrEqual(1);
     for (const g of gear) expect(g!.inst!.q).toBeGreaterThanOrEqual(2);
@@ -134,7 +134,7 @@ describe('rơi và mặc/tháo trong sim', () => {
     for (let i = 0; i < INV_SIZE; i++) c.tx('fill', null, (d) => d.addRolled('itm_moc_kiem', 3, 0));
     const mon = sim.spawnMonster(content.MONSTER.get('elite_cu_nham_vien')!, 13, X, Z, null);
     const gold0 = c.gold;
-    (sim as unknown as WithLoot).rollLoot(p, mon);
+    (sim as unknown as WithLoot).monSys.rollLoot(p, mon);
     expect(c.inv.filter(Boolean)).toHaveLength(INV_SIZE);
     expect(c.gold).toBeGreaterThan(gold0);
   });
