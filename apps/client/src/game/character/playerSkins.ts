@@ -289,7 +289,7 @@ export class PlayerSkins {
 
   /** Người chơi này sẽ có model mới nhưng asset đang nạp (tạm model khối, nạp xong thì đổi). */
   pending(look: PlayerLook): boolean {
-    if (this.v3 && !this.legacy) return this.v3.pending(look.g);
+    if (this.v3 && !this.legacy) return this.v3.pending(look.g, look.w);
     const id = modelOf(look.g, look.hair);
     if (this.legacy || !id) return false;
     // Kiếm riêng còn nạp: tạm cầm kiếm mặc định, nạp xong thì entities dựng lại (cùng cơ chế với asset nhân vật).
@@ -351,7 +351,7 @@ export class PlayerSkins {
 
   create(look: PlayerLook): CharacterView {
     if (this.v3 && !this.legacy) {
-      const v = this.v3.create(look.g);
+      const v = this.v3.create(look.g, look.w);
       if (v) return v;
     }
     const dye = dyeOf(look.dye, look.set);
