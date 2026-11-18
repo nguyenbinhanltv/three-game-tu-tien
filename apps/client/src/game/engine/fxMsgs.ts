@@ -121,7 +121,7 @@ export function updateSoulVis(eng: Game, dt: number, me: PState | undefined): vo
   vis.update(dt, scouts, body, now, eng.sid, eng.soulBodyYaw);
 }
 
-export function onFx(eng: Game, m: FxMsg, held = false): void {
+export function handleFx(eng: Game, m: FxMsg, held = false): void {
   const v = eng.vfx;
   const e = eng.ents;
   if (!v || !e || eng.disposed) return;
@@ -151,7 +151,7 @@ export function onFx(eng: Game, m: FxMsg, held = false): void {
     const gap = pSrc && dstV ? Math.hypot(dstV.x - pSrc.x, dstV.z - pSrc.z) - ('model' in dstV && 'def' in dstV.model ? ((dstV.model as { def?: { scale?: number } }).def?.scale ?? 1) : 0.5) : undefined;
     const hold = eng.skillPoses.onFx(m.t, pSrc?.model, src === eng.sid, performance.now(), { n: m.n, gap, method: eng.methodOfPlayer(src) });
     if (hold > 0) {
-      setTimeout(() => onFx(eng, m, true), hold * 1000);
+      setTimeout(() => eng.onFx(m, true), hold * 1000);
       return;
     }
   }

@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { C, type DmgMsg, FLY_UNLOCK_LEVEL, type InitMsg, type MoveInput, type MoveState, PF_DEAD, PF_MEDITATING, SECT, ROOM_WORLD, S, type TransferMsg, type SkillDef, CHARGE_MAX, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg } from '@dtl/shared';
+import { C, type DmgMsg, FLY_UNLOCK_LEVEL, type FxMsg, type InitMsg, type MoveInput, type MoveState, PF_DEAD, PF_MEDITATING, SECT, ROOM_WORLD, S, type TransferMsg, type SkillDef, CHARGE_MAX, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg } from '@dtl/shared';
 import { knownLevel, levelAssets, levelId, sameLayout, setActiveLevel } from './levelCtx';
 import { FX_TIMELINE, ARTIFACT, METHOD, realmName, skillBar, thanThong10Skill, thanThongSkill, tierBar, SKILL, VARIANTS, t } from '@dtl/content';
 import { visibleView } from './aoiView';
@@ -57,8 +57,8 @@ import { debugAllowed, readTestParams } from './testParams';
 import { CharPreview } from './charPreview';
 import { currentSearch, FLAGS } from './flags';
 import { LoginOptions, QUALITY, isWebGPU, isWorldRoom, levelOfInit, levelOfRoom, serverUrl } from './engine/common';
-import { describeGpu, fireSkill, frame, pickRenderer, watchGpuDevice } from './engine/frameLoop';
-import { monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
+import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from './engine/frameLoop';
+import { handleFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
 import { fxTargetOf } from './engine/hudSync';
 import { bindInput, onResize, releaseLock } from './engine/input';
 import { applyGround, buildLevelA, buildLevelB, disposeBacHoang, disposeXich, loadGround, precompile, unloadLevel } from './engine/levelLoad';
@@ -585,7 +585,7 @@ export class Game {
       mark('compile');
     }
     if (this.disposed) return;
-    this.renderer.setAnimationLoop(() => frame(this));
+    this.renderer.setAnimationLoop(() => this.frame());
   }
 
 
@@ -1087,6 +1087,15 @@ export class Game {
       this.post = new PostPipeline(this.renderer, this.scene, this.camera, cfg);
     }
     onResize(this);
+  }
+
+  /** Mỏng: công cụ đo bọc `__game.frame`/`__game.onFx`, nên hai hàm này vẫn là phương thức của Game. */
+  frame(): void {
+    runFrame(this);
+  }
+
+  onFx(m: FxMsg, held = false): void {
+    handleFx(this, m, held);
   }
 
   dispose(): void {

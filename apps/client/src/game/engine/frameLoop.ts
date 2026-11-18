@@ -70,7 +70,7 @@ export function predictSkill(eng: Game, i: number, skill: SkillDef, needTarget: 
   }
 }
 
-export function frame(eng: Game): void {
+export function runFrame(eng: Game): void {
   if (eng.disposed || eng.compiling > 0) return;
   eng.renderer.info.reset();
   const now = performance.now();

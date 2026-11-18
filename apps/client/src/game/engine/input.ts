@@ -7,7 +7,6 @@ import { budgetPixelRatio } from '../../render/post';
 import { isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../../input/bindings';
 import { QUALITY, WEBGL2_MAX_PIXELS, isWebGPU } from './common';
 import { skipCine } from './cine';
-import { frame } from './frameLoop';
 import type { Game } from '../engine';
 
 /**
@@ -26,7 +25,7 @@ export function setHidden(eng: Game, hidden: boolean): void {
   eng.acc = 0;
   eng.pending.length = 0;
   eng.snapToServer = true;
-  eng.renderer.setAnimationLoop(() => frame(eng));
+  eng.renderer.setAnimationLoop(() => eng.frame());
 }
 
 export function bindInput(eng: Game): void {

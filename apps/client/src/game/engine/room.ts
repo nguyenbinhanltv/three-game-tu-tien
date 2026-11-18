@@ -13,7 +13,7 @@ import { MapVis } from '../mapVis';
 import { telegraph } from '../telegraph';
 import { HAZARD_COLORS } from '../vfx';
 import { isWorldRoom, levelOfInit } from './common';
-import { isBossSrc, lightningFlash, monFlagFx, monsterInk, onDmg, onFx, onSys, resetSound, shakeForHazard, volumeAt } from './fxMsgs';
+import { isBossSrc, lightningFlash, monFlagFx, monsterInk, onDmg, onSys, resetSound, shakeForHazard, volumeAt } from './fxMsgs';
 import type { Game } from '../engine';
 
 export function applyInit(eng: Game, init: InitMsg): void {
@@ -107,7 +107,7 @@ export function bindRoom(eng: Game, room: Room): void {
   });
   room.onMessage(S.METHOD, (m: MethodMsg) => set({ method: m, methodOff: Date.now() - m.now }));
   room.onMessage(S.SYS, (m: SysMsg) => onSys(eng, m));
-  room.onMessage(S.FX, (m: FxMsg) => onFx(eng, m));
+  room.onMessage(S.FX, (m: FxMsg) => eng.onFx(m));
   room.onMessage(S.DMG, (m: DmgMsg) => onDmg(eng, m));
   room.onMessage(S.HAZARD, (m: HazardMsg) => {
     if (eng.monFx?.lab) return;
