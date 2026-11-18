@@ -10,7 +10,7 @@ Theo `docs/DIVUC_DESIGN.md` mục 5.2, cùng khuôn với Xích Tẫn Khích (DV
 | 2 | 6 U Ảnh Cốt Lộc | `reveal` sẵn có |
 | 3 | 2 Huyết Giác Ma Tướng (tinh anh đôi) | `kd.twin`: một con chết thì con kia nổi giận (sát thương ×1,6) |
 | 4 | Hành lang đèn | Đố **bốn** cột đèn (tổng quát hóa `MirrorPuzzle`: 3–4 điểm, khóa tin `kd_lamp`); sai/hết giờ: 4 trọng binh; giải xong: Ma Hậu giảm 15% sát thương (`bossDmgMul`) |
-| 5 | **Tẫn Hỏa Kiếm Cơ** (boss phụ) | `kd.trail`: đòn chém/lao nổ xong để lại vệt lửa rải mỗi 4 m, sống 8 s, mất 5% khí huyết tối đa mỗi giây khi đứng trong |
+| 5 | **Tẫn Hỏa Kiếm Cơ** (boss phụ) | Vệt lửa Tẫn Hỏa do AI quái (`MonsterTrail`, #235) làm; không có cơ chế riêng ở `kimda.ts` (bản `kd.trail` đã gỡ để khỏi sát thương đôi) |
 | 6 | **Kim Dạ Ma Hậu** (boss) | Pha 1: slam + chú + triệu thị vệ (đã có). Pha 2 (65%) **Mặc cả** (`kd.bargain`): mỗi lần niệm chú có thêm Bóng Kim Dạ niệm chú ở phía đối diện sảnh (cách ≥ 18 m); chú xong mà bóng còn sống thì cả đội mất 20% khí huyết tối đa. Pha 3 (30%) **Kim dạ** (`kd.night`): chỉ hai vòng bia sáng, ngoài vòng mất 4%/s; Ma Hậu dập luân phiên từng bia (báo 2,2 s, bia tắt 7 s), bia không người giữ quá 6 s cũng tắt |
 
 - Cổng: Kim Dạ Ngoại Uyển trên Bắc Hoang, cách poi `cong_kim_da_cung` 18 m về tâm bản đồ (`levels/bac_hoang.json` `portals`, và `tools/maps/gen-bac-hoang.mjs`).

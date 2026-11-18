@@ -1,14 +1,13 @@
 // Kim Dạ Cung (DV-3E): cơ chế riêng của phó bản 2 chương 5, mọi thứ do server phán định (client chỉ vẽ cột bia `kd_stele` và vạch báo `pool`).
 //  - Châm Bà (`kd.mend`): định kỳ hồi khí huyết cho bầy quanh nó; làm nó mất thế hoặc hạ nó trước để cắt.
 //  - Tinh anh đôi (`kd.twin`): một con chết thì con còn lại nổi giận.
-//  - Tẫn Hỏa Kiếm Cơ (`kd.trail`): mỗi đòn chém/lao nổ xong để lại vệt lửa trên sàn một lúc, đứng trong vệt mất khí huyết theo giây.
 //  - Mặc cả (Ma Hậu, `kd.bargain`): mỗi lần niệm chú có thêm bóng niệm chú ở phía đối diện sảnh; chú xong mà bóng còn sống thì cả đội chịu phạt
 //    (thay Tẫn ấn 5 tầng, chưa có hệ Tẫn ấn).
 //  - Kim dạ (Ma Hậu, `kd.night`): sàn tối, chỉ vòng quanh các bia là sáng, ngoài vòng mất khí huyết; boss dập luân phiên từng bia, bia trống quá lâu cũng tắt.
 // Cấu hình ở `monsters.json` (`kd`), kiểu `MonsterKimDa`. Hàm thuần và lớp `KimDaSystem` có test ở kimda.test.ts.
 
 import { MS_DEAD, type FxMsg, type MonsterKimDa } from '@dtl/shared';
-import type { Hazard, MonEnt, PlayerEnt } from './sim';
+import type { MonEnt, PlayerEnt } from './sim';
 
 export interface Pt {
   x: number;
@@ -37,20 +36,6 @@ export function shadowSpot(boss: Pt, center: Pt, sep: number): Pt {
   return { x: boss.x + dx * k, z: boss.z + dz * k };
 }
 
-/** Các điểm vệt lửa của một vùng đã nổ: hình chữ nhật (đường chém) thì rải dọc theo chiều dài mỗi `step` mét, vùng tròn nhỏ thì một điểm tâm. */
-export function trailPoints(h: { x: number; z: number; r: number; sh?: string; yaw?: number }, step: number, max = 12): Pt[] {
-  if (h.sh === 'cone') return [];
-  if (h.sh !== 'rect') return h.r <= 8 ? [{ x: h.x, z: h.z }] : [];
-  const yaw = h.yaw ?? 0;
-  const n = Math.min(max, Math.max(1, Math.floor(h.r / step)));
-  const out: Pt[] = [];
-  for (let i = 1; i <= n; i++) {
-    const d = (i / n) * h.r;
-    out.push({ x: h.x + Math.sin(yaw) * d, z: h.z + Math.cos(yaw) * d });
-  }
-  return out;
-}
-
 export interface KimDaHost {
   now(): number;
   monsters(): readonly MonEnt[];
@@ -63,8 +48,6 @@ export interface KimDaHost {
   spawn(mon: string, level: number, x: number, z: number): MonEnt | null;
   /** Gỡ quái ngay, không rơi đồ, không tính hạ. */
   despawn(m: MonEnt): void;
-  /** Vùng nguy hiểm của quái (để biết đòn nào vừa nổ xong). */
-  hazardsOf(m: MonEnt): readonly Hazard[];
   marker(x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost'): void;
   /** Đòn thật của boss: nổ sau `delay` giây, vòng tròn r. */
   smash(m: MonEnt, x: number, z: number, r: number, delay: number, mul: number): void;
@@ -79,15 +62,11 @@ interface Stele extends Circle {
   emptySince: number;
 }
 
-const MAX_POOLS = 40;
-
 export class KimDaSystem {
   private mendAt = new Map<string, number>();
   private mendSaid = false;
   private twinPeak = new Map<string, number>();
   private enraged = new Set<string>();
-  private seenHaz = new Map<string, Set<Hazard>>();
-  private pools: { x: number; z: number; r: number; until: number; dps: number }[] = [];
   private bargainStart = 0;
   private bargainEnd = 0;
   private shadow: MonEnt | null = null;
@@ -115,12 +94,10 @@ export class KimDaSystem {
       const kd = m.def.kd;
       if (!kd) continue;
       if (kd.mend) this.tickMend(m, kd.mend, now, mons);
-      if (kd.trail) this.tickTrail(m, kd.trail, now);
       if (kd.bargain) this.tickBargain(m, kd.bargain, now);
       if (kd.night) this.tickNight(m, kd.night, now, dt);
     }
     this.tickTwin(mons);
-    this.tickPools(now, dt);
     this.cleanup(mons);
   }
 
@@ -168,36 +145,6 @@ export class KimDaSystem {
         m.atk = Math.round(m.atk * m.def.kd!.twin!.mul);
         this.h.sysAll('sys.kd_twin_rage', undefined, 'bad');
       }
-    }
-  }
-
-  // ---------- Vệt lửa ----------
-  private tickTrail(m: MonEnt, tr: NonNullable<MonsterKimDa['trail']>, now: number): void {
-    const cur = new Set(this.h.hazardsOf(m).filter((z) => z.dmg > 0));
-    const prev = this.seenHaz.get(m.id);
-    if (prev) {
-      for (const z of prev) {
-        if (cur.has(z)) continue;
-        for (const p of trailPoints(z, tr.step)) this.addPool(p.x, p.z, tr.r, tr.dur, tr.dps, now);
-      }
-    }
-    this.seenHaz.set(m.id, cur);
-  }
-
-  private addPool(x: number, z: number, r: number, dur: number, dps: number, now: number): void {
-    if (this.pools.length >= MAX_POOLS) this.pools.shift();
-    this.pools.push({ x, z, r, until: now + dur * 1000, dps });
-    this.h.marker(x, z, r, dur, 'fire');
-  }
-
-  private tickPools(now: number, dt: number): void {
-    this.pools = this.pools.filter((p) => p.until > now);
-    if (this.pools.length === 0) return;
-    for (const p of this.h.players()) {
-      if (this.h.isDead(p) || this.h.isGhost(p)) continue;
-      let dps = 0;
-      for (const z of this.pools) if ((p.move.x - z.x) ** 2 + (p.move.z - z.z) ** 2 <= z.r * z.r) dps = Math.max(dps, z.dps);
-      if (dps > 0) this.h.damagePlayer(p, Math.max(1, Math.round(p.s.mhp * dps * dt)), 'kd_flame');
     }
   }
 
@@ -283,8 +230,8 @@ export class KimDaSystem {
   }
 
   /**
-   * Dọn khi chủ cơ chế không còn (chết, rút lui về pha trước, bỏ đuổi): bia/bóng mặc cả theo Ma Hậu, vệt lửa theo Kiếm Cơ.
-   * Mỗi thứ dọn độc lập (Kiếm Cơ chết thì vệt lửa tắt dù Ma Hậu chưa xuất hiện; Ma Hậu chết thì bóng mặc cả không còn chặn đợt).
+   * Dọn khi chủ cơ chế không còn (chết, rút lui về pha trước, bỏ đuổi): bia/bóng mặc cả theo Ma Hậu.
+   * Mỗi thứ dọn độc lập (Ma Hậu chết thì bóng mặc cả không còn chặn đợt).
    */
   private cleanup(mons: readonly MonEnt[]): void {
     const now = this.h.now();
@@ -304,7 +251,6 @@ export class KimDaSystem {
         this.bargainEnd = 0;
       }
     }
-    if (this.pools.length > 0 && !mons.some((m) => m.def.kd?.trail && m.state !== MS_DEAD)) this.pools = [];
   }
 
   /** Số bia đang sáng (test). */

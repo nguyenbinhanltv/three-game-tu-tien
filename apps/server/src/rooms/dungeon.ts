@@ -243,7 +243,6 @@ export class DungeonRoom extends GameRoom {
         m.s.st = MS_DEAD;
         m.removeAt = Date.now() + 500;
       },
-      hazardsOf: (m) => sim.hazards.filter((h) => h.mon === m),
       marker: pool,
       smash: (m, x, z, r, delay, mul) => sim.addHazard({ x, z, r }, delay, mul, false, 'spirit', m.id, m.atk),
       fx: (msg) => sim.fx(msg),

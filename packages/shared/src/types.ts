@@ -181,14 +181,12 @@ export interface MonsterRift {
  * Cơ chế Kim Dạ Cung (DV-3E); các khối độc lập, quái chỉ khai khối mình dùng.
  *  - `mend`: Triền Bố Châm Bà, mỗi `cd` giây hồi `pct` khí huyết tối đa cho đồng loại trong `r` mét (hạ nó hoặc làm nó mất thế để cắt).
  *  - `twin`: tinh anh đôi, một con chết thì con còn lại nổi giận (sát thương ×`mul`, đi nhanh hơn).
- *  - `trail`: Tẫn Hỏa Kiếm Cơ, mỗi đòn lao/chém để lại vệt lửa trên sàn (bán kính `r`, sống `dur` giây, mỗi giây `dps` × khí huyết tối đa người đứng trong), rải cách nhau `step` mét.
  *  - `bargain` (Ma Hậu, từ pha `phase`): mỗi lần niệm chú có thêm một bóng niệm chú ở phía đối diện sảnh (`mon`, cách tâm `sep` mét); chú xong mà bóng còn sống thì cả đội chịu `pen` × khí huyết tối đa (thay Tẫn ấn 5 tầng).
  *  - `night` (Ma Hậu, từ pha `phase`): sàn tối, chỉ vòng quanh các bia `steles` là sáng; ngoài vòng mất `press` × khí huyết tối đa mỗi giây. Boss dập luân phiên từng bia (báo `warn` s, mul, bia tắt `dur` s); bia trống quá `grace` s cũng tắt.
  */
 export interface MonsterKimDa {
   mend?: { cd: number; r: number; pct: number };
   twin?: { mul: number };
-  trail?: { r: number; dur: number; step: number; dps: number };
   bargain?: { phase: number; mon: string; sep: number; pen: number };
   night?: { phase: number; steles: { x: number; z: number; r: number }[]; press: number; cd: number; warn: number; mul: number; dur: number; grace: number };
 }

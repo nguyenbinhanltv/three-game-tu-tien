@@ -634,7 +634,6 @@ for (const m of MONSTERS) {
     const nph = (m.phases?.length ?? 0) + 1;
     if (k.mend && !(k.mend.cd >= 3 && k.mend.r >= 4 && k.mend.pct > 0 && k.mend.pct <= 0.2)) err(`monster ${m.id}: kd.mend cd ≥ 3 s, r ≥ 4 m, pct ∈ (0; 20%]`);
     if (k.twin && !(k.twin.mul > 1 && k.twin.mul <= 2.5)) err(`monster ${m.id}: kd.twin.mul ∈ (1; 2,5]`);
-    if (k.trail && !(k.trail.r >= 1.5 && k.trail.r <= 6 && k.trail.dur >= 3 && k.trail.dur <= 12 && k.trail.step >= 2 && k.trail.dps > 0 && k.trail.dps <= 0.1)) err(`monster ${m.id}: kd.trail r 1,5–6 m, dur 3–12 s, step ≥ 2 m, dps ∈ (0; 10%]`);
     if (k.bargain) {
       if (!m.boss || !m.ai?.chant && !m.phases?.some((ph) => ph.ai?.chant)) err(`monster ${m.id}: kd.bargain cần boss có chú (ai.chant)`);
       if (!(Number.isInteger(k.bargain.phase) && k.bargain.phase >= 0 && k.bargain.phase < nph)) err(`monster ${m.id}: kd.bargain.phase ngoài số pha`);

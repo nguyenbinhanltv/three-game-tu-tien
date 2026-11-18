@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { MS_CHASE, MS_DEAD, type FxMsg } from '@dtl/shared';
 
-// DV-3E: Kim Dạ Cung. Dữ liệu đợt, hàm thuần, KimDaSystem với host giả (Châm Bà, tinh anh đôi, vệt lửa, mặc cả, Kim dạ),
+// DV-3E: Kim Dạ Cung. Dữ liệu đợt, hàm thuần, KimDaSystem với host giả (Châm Bà, tinh anh đôi, mặc cả, Kim dạ),
 // và một lượt DungeonRoom thật đi qua sáu đợt (kể cả đố đèn 4 cột).
 process.env.DB_FILE = ':memory:';
 process.env.AUTH_DEV_BYPASS = '1';
@@ -72,7 +72,7 @@ describe('dữ liệu Kim Dạ Cung', () => {
     expect(boss.kd!.night!.phase).toBe(2);
     expect(boss.kd!.night!.steles).toHaveLength(2);
     expect(boss.phases).toHaveLength(2);
-    expect(content.MONSTER.get('boss_tan_hoa_kiem_co')!.kd!.trail).toBeTruthy();
+    expect(JSON.stringify(content.MONSTER.get('boss_tan_hoa_kiem_co')!.ai)).toContain('"trail"');
     expect(content.MONSTER.get('elite_kd_huyet_giac_ma_tuong')!.kd!.twin!.mul).toBeGreaterThan(1);
     expect(content.MONSTER.get('mon_kd_trien_bo_cham_ba')!.kd!.mend!.pct).toBeGreaterThan(0);
   });
@@ -91,16 +91,6 @@ describe('hàm thuần', () => {
     const s = kd.shadowSpot({ x: 2, z: 0 }, { x: 0, z: 0 }, 18);
     expect(Math.hypot(s.x - 2, s.z)).toBeCloseTo(18);
     expect(kd.shadowSpot({ x: 0, z: 0 }, { x: 0, z: 0 }, 18)).toEqual({ x: 18, z: 0 });
-  });
-  it('trailPoints: đường chém rải dọc, vòng nhỏ một điểm, nón không để vệt', () => {
-    const pts = kd.trailPoints({ x: 0, z: 0, r: 16, sh: 'rect', yaw: 0 }, 4);
-    expect(pts).toHaveLength(4);
-    expect(pts[3].z).toBeCloseTo(16);
-    expect(pts[0].x).toBeCloseTo(0);
-    expect(kd.trailPoints({ x: 1, z: 2, r: 5 }, 4)).toEqual([{ x: 1, z: 2 }]);
-    expect(kd.trailPoints({ x: 1, z: 2, r: 30 }, 4)).toEqual([]);
-    expect(kd.trailPoints({ x: 0, z: 0, r: 9, sh: 'cone' }, 4)).toEqual([]);
-    expect(kd.trailPoints({ x: 0, z: 0, r: 400, sh: 'rect' }, 4).length).toBeLessThanOrEqual(12);
   });
   it('shuffleN là hoán vị của 0..n-1 (đố đèn 4 cột)', () => {
     for (const r of [() => 0, () => 0.5, () => 0.99]) expect([...pzl.shuffleN(4, r)].sort()).toEqual([0, 1, 2, 3]);
@@ -127,7 +117,6 @@ function mk(mons: FakeMon[], center = { x: 0, z: 0 }) {
   const t = { now: 100000 };
   const pl = [{ move: { x: 0, z: 0 }, s: { mhp: 1000 }, dead: false }];
   const log = { dmg: [] as { src: string; n: number }[], say: [] as string[], marks: [] as number[], fx: [] as FxMsg[], smash: [] as number[], spawned: [] as string[], heal: 0 };
-  const hazards: { mon: unknown; dmg: number; x: number; z: number; r: number; sh?: string; yaw?: number }[] = [];
   const sys = new kd.KimDaSystem({
     now: () => t.now,
     monsters: () => mons as never,
@@ -150,7 +139,6 @@ function mk(mons: FakeMon[], center = { x: 0, z: 0 }) {
       m.state = MS_DEAD;
       m.s.hp = 0;
     },
-    hazardsOf: (m) => hazards.filter((h) => h.mon === m) as never,
     marker: (_x, _z, r) => void log.marks.push(r),
     smash: (_m, x) => void log.smash.push(x),
     fx: (m) => void log.fx.push(m),
@@ -163,7 +151,7 @@ function mk(mons: FakeMon[], center = { x: 0, z: 0 }) {
       sys.tick();
     }
   };
-  return { sys, t, pl, log, hazards, adv, mons };
+  return { sys, t, pl, log, adv, mons };
 }
 
 describe('KimDaSystem với host giả', () => {
@@ -205,43 +193,6 @@ describe('KimDaSystem với host giả', () => {
     const { adv } = mk([e1]);
     adv(2);
     expect(e1.atk).toBe(100);
-  });
-
-  it('vệt lửa: vùng nổ xong để lại vệt gây sát thương theo giây tới khi hết giờ', () => {
-    const boss = mon('kc', { id: 'kc', boss: true, kd: { trail: { r: 3, dur: 8, step: 4, dps: 0.05 } } });
-    const { adv, log, hazards, pl } = mk([boss]);
-    hazards.push({ mon: boss, dmg: 1.5, x: 0, z: 0, r: 8, sh: 'rect', yaw: 0 });
-    adv(1);
-    expect(log.marks).toHaveLength(0);
-    hazards.length = 0;
-    adv(0.25);
-    expect(log.marks).toHaveLength(2);
-    expect(log.marks[0]).toBe(3);
-    pl[0].move = { x: 0, z: 8 };
-    log.dmg.length = 0;
-    adv(1);
-    const burn = log.dmg.filter((d) => d.src === 'kd_flame').reduce((s, d) => s + d.n, 0);
-    expect(burn).toBeGreaterThanOrEqual(45);
-    expect(burn).toBeLessThanOrEqual(55);
-    pl[0].move = { x: 50, z: 50 };
-    log.dmg.length = 0;
-    adv(1);
-    expect(log.dmg).toHaveLength(0);
-    pl[0].move = { x: 0, z: 8 };
-    adv(10);
-    log.dmg.length = 0;
-    adv(1);
-    expect(log.dmg).toHaveLength(0);
-  });
-
-  it('vùng không sát thương (vạch báo) không để vệt', () => {
-    const boss = mon('kc', { id: 'kc', boss: true, kd: { trail: { r: 3, dur: 8, step: 4, dps: 0.05 } } });
-    const { adv, log, hazards } = mk([boss]);
-    hazards.push({ mon: boss, dmg: 0, x: 0, z: 0, r: 8, sh: 'rect', yaw: 0 });
-    adv(1);
-    hazards.length = 0;
-    adv(1);
-    expect(log.marks).toHaveLength(0);
   });
 
   const maHau = () =>
@@ -327,21 +278,6 @@ describe('KimDaSystem với host giả', () => {
     expect(log.say).not.toContain('sys.kd_stele_out');
     adv(3);
     expect(log.say).toContain('sys.kd_stele_out');
-  });
-
-  it('Kiếm Cơ chết thì vệt lửa tắt ngay, không gây thêm sát thương', () => {
-    const kc = mon('kc', { id: 'kc', boss: true, kd: { trail: { r: 3, dur: 8, step: 4, dps: 0.05 } } });
-    const { adv, log, hazards, pl } = mk([kc]);
-    hazards.push({ mon: kc, dmg: 1.5, x: 0, z: 0, r: 8, sh: 'rect', yaw: 0 });
-    adv(1);
-    hazards.length = 0;
-    adv(0.25);
-    pl[0].move = { x: 0, z: 8 };
-    kc.state = MS_DEAD;
-    adv(0.25);
-    log.dmg.length = 0;
-    adv(2);
-    expect(log.dmg).toHaveLength(0);
   });
 
   it('Ma Hậu chết giữa chú mặc cả thì bóng bị gỡ, không phạt đội', () => {
