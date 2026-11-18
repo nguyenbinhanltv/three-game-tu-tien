@@ -5,7 +5,8 @@ import { list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { cam, gm, tp, type Cam } from '../lib/game';
 import type { Run, Scenario } from '../lib/scenario';
-import { snapSizes, writeJson } from '../lib/shot';
+import { gameUrl } from '../lib/browser';
+import { snap, snapSizes, UI_SIZES, writeJson } from '../lib/shot';
 
 interface HudScene {
   id: string;
@@ -185,16 +186,57 @@ async function panels(r: Run, variants: string[], sizes: string[], only: string[
   }
 }
 
+/** Màn đặc trưng (U2-4): tiêu đề/đăng nhập (chưa có Game), màn tải (đang kết nối), Bản đồ chương (phím N) ở chương 1 và 5, đột phá/độ kiếp. */
+async function extra(r: Run, sizes: string[], only: string[]): Promise<void> {
+  const want = (id: string) => !only.length || only.includes(id);
+  if (want('tieu-de')) {
+    for (const tag of sizes) {
+      const [width, height] = UI_SIZES[tag] ?? UI_SIZES['1080p'];
+      const ctx = await r.browser.newContext({ viewport: { width, height } });
+      const page = await ctx.newPage();
+      await page.goto(gameUrl(r.clientPort, {}, { renderer: r.renderer }));
+      await sleep(5200);
+      await snap(page, r.out, `man-tieu-de-${tag}.jpg`);
+      await ctx.close();
+    }
+  }
+  if (want('chuong')) {
+    const { ctx, page } = await open(r, 'Chuong', 'sau', { realm: 30, at: 'tong_mon' });
+    await sleep(2500);
+    for (const c of ['qdone q_truc_co', 'qdone chuong2', 'qdone q3_nguyen_anh', 'qdone q4_hoa_than']) await gm(page, c, 900);
+    await page.keyboard.press('n');
+    await sleep(1500);
+    await snapSizes(page, r.out, 'chuong-ban-do', sizes, 900);
+    await page
+      .locator('[role=tab]')
+      .nth(4)
+      .click()
+      .catch(() => undefined);
+    await sleep(1000);
+    await snapSizes(page, r.out, 'chuong-ban-do-ch5', sizes, 900);
+    await ctx.close();
+  }
+  if (want('do-kiep')) {
+    const { ctx, page } = await open(r, 'DoKiep', 'sau', { realm: 'tc3', at: 'tong_mon' });
+    await sleep(2500);
+    await gm(page, 'trib', 800);
+    await sleep(4500);
+    await snapSizes(page, r.out, 'do-kiep', sizes, 900);
+    await ctx.close();
+  }
+}
+
 export default {
   name: 'ui',
-  desc: 'HUD ở 5 cảnh + 13 bảng lớn Ngọc Giản ở 1080p/1440p, (nhãn trước/sau) và đo CPU của trang',
-  usage: '[--part hud|panels|all] [--only <id cảnh hoặc id bảng>,…] [--variants truoc,sau] [--sizes 720p,1080p,1440p,4k]',
+  desc: 'HUD ở 5 cảnh, các bảng lớn UI Kit 2.0, màn đặc trưng (tiêu đề, Bản đồ chương, độ kiếp) ở 720p/1080p/1440p, nhãn trước/sau và đo CPU của trang. So hai lần chạy bằng `node tools/ui/compare.mjs`',
+  usage: '[--part hud|panels|extra|all] [--only <id cảnh hoặc id bảng>,…] [--variants truoc,sau] [--sizes 720p,1080p,1440p,4k]',
   async run(r) {
     const part = opt('--part', 'all');
     const variants = list('--variants', 'sau');
-    const sizes = list('--sizes', '1080p,1440p');
+    const sizes = list('--sizes', '720p,1080p,1440p');
     const only = list('--only', '');
-    if (part !== 'panels') writeJson(r.out, 'hud-metrics.json', await hud(r, variants, sizes, only));
-    if (part !== 'hud') await panels(r, variants, sizes, only);
+    if (part === 'all' || part === 'hud') writeJson(r.out, 'hud-metrics.json', await hud(r, variants, sizes, only));
+    if (part === 'all' || part === 'panels') await panels(r, variants, sizes, only);
+    if (part === 'all' || part === 'extra') await extra(r, sizes, only);
   },
 } satisfies Scenario;

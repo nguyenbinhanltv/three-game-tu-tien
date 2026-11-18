@@ -46,7 +46,11 @@ description: Quy ước code client Three.js của Đạp Thiên Lộ — render
 
 ## UI
 
-- UI (túi đồ, nhiệm vụ, chat, bản đồ, nhân vật, Thiết lão, công pháp, tổ đội) là React nằm trên canvas, đọc trạng thái qua store (zustand). Bảng mới dùng bộ khung `ui/kit/` (xem `?mute=1&viewer=ui`), chuỗi qua i18n. Không re-render React mỗi khung; chỉ cập nhật khi trạng thái đổi.
+- UI là React nằm trên canvas, đọc trạng thái qua store (zustand), chuỗi qua i18n. Không re-render React mỗi khung; chỉ cập nhật khi trạng thái đổi.
+- **UI Kit 2.0 "Mặc Kim Giản"** (`apps/client/src/ui/u2/`, xem `?mute=1&ui=kit`) là bộ khung duy nhất cho bảng/HUD mới: import từ `ui/u2` (Panel, Tabs, Button, Badge, Bar, Slot/IconFrame, Tooltip, Dialog, SkillButton, SysGlyph, SetMark…). Màu/khoảng cách/font **chỉ** là biến `--u-*` ở `apps/client/src/ui/u2/tokens.css` (dải: mực `ink`, kim `gold`, son, ngọc, giấy, Ngọc Thanh `thanh`, phẩm chất `q0–q5`); **không** viết hex/rgb trong TSX hay CSS mới (ESLint `UI_STYLE_RULES` và `apps/client/src/ui/u2/tokens.test.ts` chặn; file cũ còn trong `LEGACY_UI_STYLE` chỉ được xóa dòng). Hình khối: vát góc `--u-cut-*` bằng `clip-path`, không `border-radius` trừ vòng tròn. HUD = sơn mài tối, cửa sổ = giấy ngà; icon vật phẩm/chiêu qua `ContentIcon`/`UiIcon` (atlas, ảnh không có khung: khung và viền phẩm chất do `IconFrame`/`Slot`), icon hệ thống là `SysGlyph` (`apps/client/src/ui/u2/sysGlyphs.ts`, sinh từ `tools/icons/v2/sysicons.py`).
+- Thêm bảng mới: dùng `PanelWindow`/`Panel` (vỏ U2), kích thước theo vùng thiết kế (`ui/u2/hud/layout.ts`, chia `--ui-scale` vì `zoom` nhân vw/vh), không chồng lên vùng cụm kỹ năng/hub. Màn toàn màn (Bản đồ chương, `ui/chapters/`) có store riêng và chặn phím game khi mở (`game/engine/input.ts`).
+- Màn tiêu đề/tải dùng nền sơn thủy nhiều lớp (`ui/u2/boot/`), tranh nạp lười qua `art.json`; luôn tôn trọng Giảm chuyển động (`data-reduce-motion`).
+- **Kiểm UI:** `pnpm shots ui [--part hud|panels|extra] --sizes 720p,1080p,1440p --out <thư mục>` (mọi cảnh, mặc định 3 cỡ); so hai lần chạy bằng `node tools/ui/compare.mjs <trước> <sau> <ra> [--min 0.2]` (ảnh ghép + % điểm ảnh lệch); workflow tay `UI compare` (`.github/workflows/ui-compare.yml`) làm việc đó trên CI. Tắt tiếng: `?mute=1` + `--mute-audio` (khung `shots` đã làm sẵn).
 - Tên và thanh máu trên đầu nhân vật vẽ trong WebGL (sprite/SDF text), không dùng DOM.
 
 ## Cờ URL và lint
