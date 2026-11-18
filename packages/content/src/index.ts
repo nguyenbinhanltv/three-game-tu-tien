@@ -251,11 +251,14 @@ export interface CreditEntry {
   assets?: string[];
   /** Asset chưa nằm trên main (PR đang mở); check bỏ qua đối chiếu meta/LICENSES. */
   pending?: boolean;
+  /** Ghi chú điều kiện giấy phép → chuỗi `ui.credits.note.<mã>` (vd. `nc`: CC BY-NC, gỡ nếu game có thu tiền). */
+  note?: string;
 }
 export const CREDITS = (creditsJson as { entries: CreditEntry[] }).entries;
 export const CREDIT_KINDS: CreditKind[] = ['model', 'anim', 'texture', 'sound', 'font', 'music'];
 export const CREDIT_LICENSE_URL: Record<string, string> = {
   'CC-BY-4.0': 'https://creativecommons.org/licenses/by/4.0/',
+  'CC-BY-NC-4.0': 'https://creativecommons.org/licenses/by-nc/4.0/',
   'CC0-1.0': 'https://creativecommons.org/publicdomain/zero/1.0/',
   'OFL-1.1': 'https://openfontlicense.org/open-font-license-official-text/',
   'GeneralUser-GS-2.0': 'https://github.com/mrbumpy409/GeneralUser-GS/blob/main/LICENSE.txt',

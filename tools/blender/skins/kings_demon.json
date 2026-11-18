@@ -1,0 +1,188 @@
+{
+ "$comment": "Cấu hình skin_prep.py cho Kings Demon (Wilson/neilhancart, CC BY-NC 4.0: chỉ dùng khi game không thương mại). Model Maya cao 2,4 (sừng) gốc dưới chân, 8 vật liệu/19 ảnh: nướng cả tám về một atlas (skin_prep gộp mọi vật liệu nguồn). Vật liệu lambert19 (Hairdet) alpha 0: bỏ. Tóc là thẻ alpha (26k tam giác, màu hệ số đen × alpha): nướng thành vỏ tóc đặc. Váy dài ôm chân, không tách chân: trọng số theo xương, chân kéo váy.",
+ "id": "skin_kings_demon",
+ "source": "C:/Users/PC/AppData/Local/Temp/skin3-work/src/kings_demon.glb",
+ "out": "chr/skin_kings_demon/prep/rig_v01.glb",
+ "view": {
+  "scale": 2.6,
+  "center": [
+   0,
+   0.15,
+   1.2
+  ]
+ },
+ "triangles": 24000,
+ "bake": {
+  "size": 2048,
+  "cage": 0.006,
+  "ray": 0.015
+ },
+ "roughness": 0.65,
+ "cut": {
+  "minIsland": 0,
+  "dropMaterials": [
+   "lambert19"
+  ],
+  "fill": false
+ },
+ "joints": {
+  "Hips": [
+   0,
+   -0.01,
+   1.33
+  ],
+  "Spine": [
+   0,
+   -0.02,
+   1.45
+  ],
+  "Spine1": [
+   0,
+   -0.04,
+   1.6
+  ],
+  "Spine2": [
+   0,
+   -0.06,
+   1.75
+  ],
+  "Neck": [
+   0,
+   -0.07,
+   1.92
+  ],
+  "Head": [
+   0,
+   -0.07,
+   2.0
+  ],
+  "HeadTop": [
+   0,
+   -0.06,
+   2.2
+  ],
+  "LeftArm": [
+   0.19,
+   0.0,
+   1.85
+  ],
+  "LeftForeArm": [
+   0.24,
+   0.02,
+   1.58
+  ],
+  "LeftHand": [
+   0.23,
+   -0.35,
+   1.52
+  ],
+  "LeftHandEnd": [
+   0.23,
+   -0.52,
+   1.5
+  ],
+  "RightArm": [
+   -0.19,
+   0.0,
+   1.85
+  ],
+  "RightForeArm": [
+   -0.255,
+   0.03,
+   1.55
+  ],
+  "RightHand": [
+   -0.25,
+   -0.03,
+   1.26
+  ],
+  "RightHandEnd": [
+   -0.25,
+   -0.07,
+   1.12
+  ],
+  "LeftUpLeg": [
+   0.09,
+   -0.01,
+   1.33
+  ],
+  "LeftLeg": [
+   0.09,
+   -0.01,
+   0.75
+  ],
+  "LeftFoot": [
+   0.1,
+   0.0,
+   0.12
+  ],
+  "LeftToeBase": [
+   0.1,
+   -0.12,
+   0.04
+  ],
+  "LeftToeEnd": [
+   0.1,
+   -0.2,
+   0.02
+  ],
+  "RightUpLeg": [
+   -0.09,
+   -0.01,
+   1.33
+  ],
+  "RightLeg": [
+   -0.09,
+   -0.01,
+   0.75
+  ],
+  "RightFoot": [
+   -0.1,
+   0.0,
+   0.12
+  ],
+  "RightToeBase": [
+   -0.1,
+   -0.12,
+   0.04
+  ],
+  "RightToeEnd": [
+   -0.1,
+   -0.2,
+   0.02
+  ]
+ },
+ "stray": {
+  "Shoulder": 0.1,
+  "Arm": 0.1,
+  "ForeArm": 0.12,
+  "Hand": 0.1
+ },
+ "zones": [
+  {
+   "name": "toc",
+   "box": {
+    "min": [
+     -9,
+     -9,
+     2.0
+    ],
+    "max": [
+     9,
+     9,
+     9
+    ]
+   },
+   "blend": {
+    "axis": 2,
+    "from": 1.96,
+    "width": 0.06
+   },
+   "bones": [
+    {
+     "bone": "Head"
+    }
+   ]
+  }
+ ]
+}

@@ -88,6 +88,42 @@
       ]
     },
     {
+      "id": "noxavyra",
+      "kind": "model",
+      "title": "NOXAVYRA // The Crimson Twinblade",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/noxavyra-the-crimson-twinblade-194340bf60d1496eb723fa89909d44bf",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "cut",
+        "decimate",
+        "bake",
+        "rig",
+        "pose"
+      ],
+      "assets": [
+        "chr_v3_noxavyra_nu"
+      ]
+    },
+    {
+      "id": "kings_demon",
+      "kind": "model",
+      "title": "Kings Demon",
+      "author": "Wilson (neilhancart)",
+      "url": "https://sketchfab.com/3d-models/kings-demon-1c8a4b2cd3ce4492ac0cff2fdfe4e59d",
+      "license": "CC-BY-NC-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig",
+        "pose"
+      ],
+      "assets": [
+        "chr_v3_kings_demon_nu"
+      ],
+      "note": "nc"
+    },
+    {
       "id": "ual",
       "kind": "anim",
       "title": "Universal Animation Library 1 + 2 (Standard)",

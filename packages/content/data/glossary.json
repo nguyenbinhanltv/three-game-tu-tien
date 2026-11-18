@@ -413,7 +413,9 @@
   "skins": {
     "itm_skin_varkessa": "Xích Diễm Ma Cơ",
     "itm_skin_duskrella": "Tẫn Ngữ Ma Cơ",
-    "itm_skin_crimson_knight": "Xích Huyết Tử Kỵ"
+    "itm_skin_crimson_knight": "Xích Huyết Tử Kỵ",
+    "itm_skin_kings_demon": "Cổ Giác Ma Hậu",
+    "itm_skin_noxavyra": "Huyết Nhận Yêu Cơ"
   },
   "factions": {
     "tang_mach_hoi": "Tàng Mạch Hội"

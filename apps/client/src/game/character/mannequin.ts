@@ -22,9 +22,11 @@ export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_varkessa: 'chr_v3_varkessa_nu',
   set_skin_duskrella: 'chr_v3_duskrella_nu',
   set_skin_crimson: 'chr_v3_crimson_nam',
+  set_skin_kings_demon: 'chr_v3_kings_demon_nu',
+  set_skin_noxavyra: 'chr_v3_noxavyra_nu',
 };
 /** Skin chỉ có bản v3 (v1/v2 không có asset `set_skin_<tên>_<giới>`: bỏ qua, hiện trang phục thường). Varkessa có cả v1. */
-export const V3_ONLY_SKINS: ReadonlySet<string> = new Set(['set_skin_duskrella', 'set_skin_crimson']);
+export const V3_ONLY_SKINS: ReadonlySet<string> = new Set(['set_skin_duskrella', 'set_skin_crimson', 'set_skin_noxavyra', 'set_skin_kings_demon']);
 /** Asset v3 của một nhân vật (giới `g`, skin đang mặc nếu có). Skin sai giới (server không cho mặc) bị bỏ qua. */
 export function v3AssetOf(g: string, skin?: string): string {
   const base = g === 'f' ? V3_MODELS.f : V3_MODELS.m;

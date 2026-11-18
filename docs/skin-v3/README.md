@@ -40,3 +40,32 @@ Death Knight: hai đao dính liền găng và cùng một mảnh lưới nên c�
 - Noxavyra (nữ, Atahan3D, CC BY, cắt hai katana, tay sát hông), Korvaden (nam, Atahan3D, CC BY, thế khom, cắt hai rìu).
 - Kings Demon (nữ, neilhancart/Wilson, **CC BY-NC 4.0**): người dùng chấp nhận vì game không thương mại; khi làm phải ghi rõ "NC" ở `credits.json` (`license: "CC-BY-NC-4.0"`) và `LICENSES.md`, và gỡ nếu game có thu tiền. 64k tam giác, 19 ảnh cần nướng về một atlas.
 - Xương lò xo cho áo choàng; bản v1/v2 của hai skin nếu cần.
+
+## Đợt 2: Huyết Nhận Yêu Cơ (Noxavyra) và Cổ Giác Ma Hậu (Kings Demon); Korvaden bỏ qua
+
+| Vật phẩm | Giới | Asset v3 | Nguồn | Tam giác LOD0/1/2 | GLB |
+| --- | --- | --- | --- | --- | --- |
+| `itm_skin_noxavyra` Huyết Nhận Yêu Cơ | nữ | `chr_v3_noxavyra_nu` | "NOXAVYRA // The Crimson Twinblade", Atahan3D, CC BY 4.0, https://sketchfab.com/3d-models/noxavyra-the-crimson-twinblade-194340bf60d1496eb723fa89909d44bf | 21.975 / 10.986 / 4.394 | 4,7 MB |
+| `itm_skin_kings_demon` Cổ Giác Ma Hậu | nữ | `chr_v3_kings_demon_nu` | "Kings Demon", Wilson (neilhancart), **CC BY-NC 4.0**, https://sketchfab.com/3d-models/kings-demon-1c8a4b2cd3ce4492ac0cff2fdfe4e59d | 23.947 / 11.972 / 4.789 | 5,4 MB |
+
+**Kings Demon là phi thương mại (NC)**: người dùng chấp nhận vì game không thương mại. `credits.json` có `license: "CC-BY-NC-4.0"` + `note: "nc"` (màn Ghi công hiện "CC BY-NC 4.0, phi thương mại — gỡ nếu game có thu tiền"), `LICENSES.md` ghi đậm cùng điều kiện; `content:check` bắt buộc mọi mục CC BY-NC có `note: "nc"`. **Gỡ skin (asset, item, mục ghi công) nếu game có thu tiền.**
+
+### Thay đổi `skin_prep.py`
+- `cut.capsules` `{a,b,r}`: bỏ mặt có tâm cách đoạn a→b không quá r (katana chéo thân: cán sau hông không bọc được bằng hộp trục).
+- `cut.dropMaterials`: bỏ cả vật liệu nguồn (Kings Demon: `lambert19` alpha 0).
+- Nướng **nhiều vật liệu nguồn vào một atlas** (màu = texture nối vào Base Color hoặc hệ số màu). Kings Demon: 8 vật liệu/19 ảnh → 1 atlas 2048 màu + normal.
+
+### Noxavyra
+Hai katana là một khối liền với nắm tay. Cắt: hộp cho lưỡi + tsuba (x ≥ 0,345 / 0,325 / 0,285 theo độ cao) và hai capsule cho cán chạy sau hông (kashira nằm trên lưng váy, dính váy). Trang phục giữ nguyên thiết kế gốc (váy da bó, vớ ren), không thêm gì. Còn một mẩu cán nhỏ trong nắm tay. Tay buông sát hông nên xuyên thân cao hơn Duskrella (Idle 444, Jog 749/693, Sword 1064/780, Sitting 646, Death 1075, Roll 89, Hit_Chest 914; chỉ số tương đối của `chr_v3.py`).
+
+### Kings Demon
+- Tóc là thẻ alpha 26k tam giác, hệ số màu đen: nướng thành **vỏ tóc đặc màu đen** (mất sợi tóc).
+- Váy dài ôm chân là một ống liền, không tách chân: khi chạy/ngự kiếm váy căng như vải thun (đuôi váy phía sau đi theo hông/chân). Xuyên thân Sitting 1107, Roll 652, Jog 398/116, Death 666.
+
+### Korvaden: bỏ qua
+Thế khom chiến đấu (chân dạng rộng, thân nghiêng, hai tay gập ra trước giữ rìu) cộng hai rìu dính tay chéo thân và áo choàng rách bất đối xứng khổng lồ dính lưng. Đưa về chữ A cần sửa tư thế bằng tay (không đo khớp từ ảnh chiếu thẳng được) và cắt rìu bằng capsule trong không gian 3D chéo; không đạt chất lượng nếu làm vội. Chưa có asset/item nào của Korvaden trong PR này. Nguồn nếu làm sau: https://sketchfab.com/3d-models/56b55945548942f28359c76820b4e910 (Atahan3D, CC BY 4.0; zip không metadata, tự ghi meta.json).
+
+### Chung
+- Chưa có xương lò xo (tóc Noxavyra dài tới hông, vạt váy Kings Demon): `MannequinCharacter` chưa mô phỏng chuỗi `dtl_o_*`.
+- `pnpm shots skinv3 --ids itm_skin_noxavyra,itm_skin_kings_demon --out <thư mục tuyệt đối>`; ảnh từ chối: `pnpm shots skin --refuse --genders m --ids itm_skin_noxavyra,itm_skin_kings_demon`. Tờ khung 8 tư thế: `chr_v3.py ... --sheet <thư mục>`.
+- Kiểm: `pnpm typecheck`, `pnpm test` (server 725, client 765), `pnpm content:check`, `pnpm assets:validate` (0 lỗi).

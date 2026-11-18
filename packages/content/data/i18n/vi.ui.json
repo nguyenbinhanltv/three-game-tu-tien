@@ -1045,6 +1045,8 @@
   "ui.credits.kind.font": "Font chữ",
   "ui.credits.kind.music": "Nhạc",
   "ui.credits.license.CC-BY-4.0": "CC BY 4.0",
+  "ui.credits.license.CC-BY-NC-4.0": "CC BY-NC 4.0",
+  "ui.credits.note.nc": "CC BY-NC 4.0, phi thương mại — gỡ nếu game có thu tiền.",
   "ui.credits.license.CC0-1.0": "CC0 1.0 (phạm vi công cộng)",
   "ui.credits.license.OFL-1.1": "SIL OFL 1.1",
   "ui.credits.license.GeneralUser-GS-2.0": "GeneralUser GS License 2.0",
