@@ -1,0 +1,346 @@
+/*
+ * Chế độ cảm ứng (U2-6): chỉ var(--u-*) và biến --t-*; số đo hình học nằm ở touchLayout.ts (nút ≥ 44 px, test chặn).
+ * Mọi thứ bọc trong `html[data-touch]` hoặc `.hud[data-mode='touch']` nên PC không đổi một điểm ảnh. Đơn vị là px CSS thật
+ * (`--ui-scale` ở chế độ cảm ứng chỉ còn hệ số người dùng, xem ui/uiScale.ts).
+ */
+
+/* ───────── chống cuộn/zoom trang, safe-area ───────── */
+html[data-touch],
+html[data-touch] body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+html[data-touch] canvas {
+  touch-action: none;
+}
+/* cửa sổ lớn: cuộn dọc bằng ngón, không kéo cả trang */
+html[data-touch] .k-window,
+html[data-touch] .win-host {
+  touch-action: pan-y;
+}
+html[data-touch] input,
+html[data-touch] textarea {
+  user-select: text;
+  -webkit-user-select: text;
+  font-size: 16px; /* dưới 16 px thì iOS tự phóng to khi focus */
+}
+/* tooltip dựa vào hover: trên cảm ứng chỉ còn thẻ mô tả khi giữ ngón (u2t-tip) */
+html[data-touch] .k-tip {
+  display: none;
+}
+
+.hud.u2hud[data-mode='touch'] {
+  --t-inset: 10px;
+  --t-l: max(8px, env(safe-area-inset-left));
+  --t-r: max(8px, env(safe-area-inset-right));
+  --t-t: max(8px, env(safe-area-inset-top));
+  --t-b: max(8px, env(safe-area-inset-bottom));
+  /* tâm nút đánh lớn cách mép phải/dưới */
+  --t-ax: calc(max(var(--t-inset), env(safe-area-inset-right)) + 42px);
+  --t-ay: calc(max(var(--t-inset), env(safe-area-inset-bottom)) + 42px);
+  --h-safe: 8px;
+}
+
+/* ───────── lớp điều khiển ───────── */
+.hud.u2hud[data-mode='touch'] > .u2t {
+  position: absolute;
+  inset: 0;
+  zoom: 1;
+  pointer-events: none;
+}
+.u2t-joy {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 46%;
+  height: 68%;
+  pointer-events: auto;
+  touch-action: none;
+}
+/* vòng gợi ý nơi đặt ngón (mờ, biến mất khi đang kéo) */
+.u2t-joy-hint {
+  position: absolute;
+  left: calc(var(--t-l) + 86px);
+  bottom: calc(var(--t-b) + 58px);
+  width: 112px;
+  height: 112px;
+  margin: -0px;
+  border-radius: 50%;
+  border: var(--u-line-2) solid var(--u-gold-line);
+  background: var(--u-ink-veil);
+  opacity: 0;
+  transition: opacity var(--u-dur) var(--u-ease);
+}
+.u2t-joy-hint[data-on='1'] {
+  opacity: 0.55;
+}
+.u2t-joy-base {
+  position: fixed;
+  width: calc(var(--r) * 2);
+  height: calc(var(--r) * 2);
+  margin: calc(var(--r) * -1) 0 0 calc(var(--r) * -1);
+  border-radius: 50%;
+  border: var(--u-line-2) solid var(--u-gold);
+  background: var(--u-ink-veil);
+  pointer-events: none;
+}
+.u2t-joy-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  border-radius: 50%;
+  background: var(--u-gold);
+  border: var(--u-line-2) solid var(--u-gold-hi);
+  box-shadow: var(--u-sh-hud);
+}
+.u2t-joy-knob[data-run='1'] {
+  background: var(--u-gold-hi);
+}
+
+.u2t-act {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.u2t-btn {
+  appearance: none;
+  position: absolute;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--u-chu);
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+.u2hud .u2t-btn .u2-frame {
+  width: 100%;
+  height: 100%;
+  --sz: inherit;
+}
+.u2t-btn:active .u2-frame {
+  filter: brightness(1.35);
+}
+.u2t-btn[aria-pressed='true'] .u2-frame {
+  background: var(--u-gold-hi);
+}
+.u2t-btn[data-main='1'] .u2-frame {
+  border-radius: 50%;
+}
+.u2t-glyph {
+  font-family: var(--u-font-head);
+  font-weight: 800;
+  font-size: var(--u-fs-4);
+  line-height: 1;
+  color: var(--u-gold-hi);
+}
+.u2t-lbl {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.u2t-tip {
+  position: absolute;
+  right: calc(var(--t-ax) + 56px);
+  bottom: calc(var(--t-ay) + 150px);
+  width: 260px;
+  padding: var(--u-sp-3) var(--u-sp-4);
+  background: var(--u-ink-veil);
+  color: var(--u-chu);
+  border: var(--u-line-1) solid var(--u-gold-line);
+  box-shadow: var(--u-sh-hud);
+  pointer-events: none;
+}
+
+/* gợi ý xoay ngang */
+.u2t-rotate {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--t-t) + 8px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--u-sp-3);
+  padding: var(--u-sp-2) var(--u-sp-2) var(--u-sp-2) var(--u-sp-4);
+  background: var(--u-ink-veil);
+  color: var(--u-chu);
+  border: var(--u-line-1) solid var(--u-gold-line);
+  font-size: var(--u-fs-2);
+  pointer-events: auto;
+  z-index: 5;
+}
+.u2t-rotate button {
+  appearance: none;
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: var(--u-gold-hi);
+  font-size: var(--u-fs-4);
+}
+
+/* ───────── bố cục bốn góc ở chế độ cảm ứng ───────── */
+.hud.u2hud[data-mode='touch'] .u2h-tl {
+  left: var(--t-l);
+  top: var(--t-t);
+  width: 240px;
+  height: 98px;
+  padding: var(--u-sp-1) var(--u-sp-3) var(--u-sp-1) var(--u-sp-1);
+  gap: var(--u-sp-2);
+}
+.hud.u2hud[data-mode='touch'] .u2h-portrait {
+  width: 52px;
+  height: 52px;
+}
+.hud.u2hud[data-mode='touch'] .u2h-tr {
+  right: var(--t-r);
+  top: var(--t-t);
+  width: auto;
+  gap: var(--u-sp-2);
+}
+.hud.u2hud[data-mode='touch'] .u2h-hub {
+  --h-hub-h: 44px;
+  gap: 2px;
+  height: 44px;
+}
+.hud.u2hud[data-mode='touch'] .u2h-hubbtn {
+  width: 44px;
+  height: 44px;
+}
+.hud.u2hud[data-mode='touch'] .u2h-hubbtn .u2-frame {
+  --sz: 44px;
+}
+.hud.u2hud[data-mode='touch'] .u2h-tr .minimap-wrap {
+  --h-map-w: 176px;
+  width: 176px;
+  zoom: 0.6; /* canvas bản đồ cố định 176 px: thu còn ~106 px */
+}
+.hud.u2hud[data-mode='touch'] .u2h-tr .minimap-wrap .minimap-ctl,
+.hud.u2hud[data-mode='touch'] .u2h-tr .minimap-wrap .minimap-foot {
+  display: none;
+}
+/* nhiệm vụ mở bằng nút L trên Ngọc Đái; chat chỉ còn dòng cuối, không bấm được (không có bàn phím) */
+.hud.u2hud[data-mode='touch'] .u2h-quest {
+  display: none;
+}
+.hud.u2hud[data-mode='touch'] .u2h-chat {
+  left: var(--t-l);
+  bottom: calc(var(--t-b) + 190px);
+  width: 236px;
+  height: 32px;
+  pointer-events: none;
+  grid-template-rows: auto;
+}
+.hud.u2hud[data-mode='touch'] .u2h-chat .u2h-chat-log,
+.hud.u2hud[data-mode='touch'] .u2h-chat .u2h-chat-input,
+.hud.u2hud[data-mode='touch'] .u2h-chat .u2h-fold {
+  display: none;
+}
+.hud.u2hud[data-mode='touch'] .u2h-tc {
+  top: calc(var(--t-t) + 72px);
+  left: var(--t-l);
+  width: min(420px, calc(100vw - 2 * var(--t-l) - 130px));
+}
+
+/* ───────── cửa sổ lớn: chiếm cả màn hình (trừ lề an toàn), cuộn dọc bằng ngón ───────── */
+.hud.u2hud[data-mode='touch'] > .win-host {
+  zoom: 1;
+  --s: 1;
+  left: var(--t-l) !important;
+  top: var(--t-t) !important;
+  right: var(--t-r);
+  bottom: var(--t-b);
+}
+.hud.u2hud[data-mode='touch'] > .win-host > .k-window {
+  width: 100% !important;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+}
+/* có cửa sổ lớn đang mở: ẩn Ngọc Đái và bản đồ nhỏ (cửa sổ phủ gần cả màn hình, nút đóng ở góc cửa sổ) */
+.hud.u2hud[data-mode='touch']:has(> .win-host) .u2h-tr,
+.hud.u2hud[data-mode='touch']:has(> .win-host) .u2h-tl,
+.hud.u2hud[data-mode='touch']:has(> .win-host) .u2t-act,
+.hud.u2hud[data-mode='touch']:has(> .win-host) .u2t-joy {
+  visibility: hidden;
+}
+
+/* ───────── nút trong cửa sổ: đủ lớn để chạm (≥ 44 px), không dựa vào hover ───────── */
+html[data-touch] .win-host .k-close, html[data-touch] .win-host .u2-close,
+html[data-touch] .win-host .k-btn,
+html[data-touch] .win-host .k-tab,
+html[data-touch] .win-host .bag-page,
+html[data-touch] .win-host select,
+html[data-touch] .win-host input:not([type='range']):not([type='checkbox']) {
+  min-width: 44px;
+  min-height: 44px;
+}
+html[data-touch] .win-host .k-close, html[data-touch] .win-host .u2-close {
+  display: grid;
+  place-items: center;
+}
+
+/* ───────── cầm dọc: thẻ người chơi + bản đồ nhỏ ở hàng trên, Ngọc Đái hàng dưới ───────── */
+@media (orientation: portrait) {
+  .hud.u2hud[data-mode='touch'] .u2h-tl {
+    width: calc(100vw - var(--t-l) - var(--t-r) - 116px);
+  }
+  .hud.u2hud[data-mode='touch'] .u2h-tr {
+    left: var(--t-l);
+    width: auto;
+    height: 0;
+    display: block;
+  }
+  .hud.u2hud[data-mode='touch'] .u2h-hub {
+    position: absolute;
+    left: 0;
+    top: 112px;
+  }
+  .hud.u2hud[data-mode='touch'] .u2h-tr .minimap-wrap {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+  .hud.u2hud[data-mode='touch'] .u2h-tc {
+    top: calc(var(--t-t) + 168px);
+    width: calc(100vw - var(--t-l) - var(--t-r));
+  }
+  .u2t-rotate {
+    top: calc(var(--t-t) + 170px);
+  }
+  .u2t-joy-hint {
+    bottom: calc(var(--t-b) + 150px);
+  }
+  .hud.u2hud[data-mode='touch'] .u2h-chat {
+    bottom: calc(var(--t-b) + 270px);
+  }
+}
+
+/* điện thoại cầm dọc (< 460 px): cửa sổ thiết kế rộng ~500 px nên thu 0,76 để vừa bề ngang; nút trong cửa sổ phóng lại 1/0,76 để vẫn ≥ 44 px chạm */
+@media (max-width: 460px) {
+  .hud.u2hud[data-mode='touch'] > .win-host > .k-window {
+    zoom: 0.76;
+  }
+  html[data-touch] .win-host .u2-close,
+  html[data-touch] .win-host .k-close,
+  html[data-touch] .win-host .k-btn,
+  html[data-touch] .win-host .k-tab,
+  html[data-touch] .win-host .bag-page,
+  html[data-touch] .win-host select,
+  html[data-touch] .win-host input:not([type='range']):not([type='checkbox']) {
+    min-width: 58px;
+    min-height: 58px;
+  }
+}

@@ -1,4 +1,7 @@
 import { type DragEvent, type MouseEvent, useMemo, useState } from 'react';
+import { useRef } from 'react';
+import { useTouchMode } from '../../input/touchMode';
+import { justTouchDragged, touchDragHandlers, type GhostState, type TouchDragOpts } from './touchDrag';
 import { createPortal } from 'react-dom';
 import { C, INV_PAGE, INV_PAGES, INV_SIZE, isWearSlot, wearableBy, type InvItem, type InvSlot } from '@dtl/shared';
 import { ITEM, itemName, t } from '@dtl/content';
@@ -82,6 +85,11 @@ function BagCell({
   onSplit: (s: { slot: number; to: number; max: number }) => void;
 }) {
   const [over, setOver] = useState(false);
+  const [ghost, setGhost] = useState<GhostState | null>(null);
+  const touch = useTouchMode();
+  const dragOpts = useRef<TouchDragOpts | null>(null);
+  dragOpts.current = touch && item ? { slot, id: item.id, onGhost: setGhost, onDrop: (tg) => dropFromDrag(tg, onSplit) } : null;
+  const touchDrag = useRef(touchDragHandlers(() => dragOpts.current)).current;
   const def = item ? ITEM.get(item.id) : undefined;
   const g = Game.current;
   // Món giới hạn giới tính mà nhân vật của mình không mặc được: tô xám, có dấu khóa (server cũng từ chối khi mặc).
@@ -93,7 +101,7 @@ function BagCell({
     startBagDrag({ slot, split: e.shiftKey, id: item.id });
   };
   const onClick = (e: MouseEvent): void => {
-    if (!item) return;
+    if (!item || justTouchDragged()) return;
     if (e.ctrlKey || e.metaKey) {
       g?.send(C.INV_LOCK, { slot, on: !item.lk });
       return;
@@ -102,7 +110,7 @@ function BagCell({
   };
   const onContext = (e: MouseEvent): void => {
     e.preventDefault();
-    if (!item || !def) return;
+    if (!item || !def || touch) return; // cảm ứng: giữ ngón = bốc kéo; dùng/mặc bằng nút ở chi tiết món
     if (def.kind === 'consumable') g?.send(C.USE, { slot, r: reqId() });
     else if (isWearSlot(def.kind)) g?.send(C.EQUIP, { slot, r: reqId() });
   };
@@ -131,7 +139,8 @@ function BagCell({
       data-locked={item?.lk ? '1' : undefined}
       data-nowear={noWear ? '1' : undefined}
       data-new={isNew ? '1' : undefined}
-      draggable={!!item}
+      draggable={!!item && !touch}
+      {...touchDrag}
       onDragStart={onDragStart}
       onDragEnd={endBagDrag}
       onDragOver={(e) => {
@@ -152,6 +161,7 @@ function BagCell({
       onMouseEnter={() => item && isNew && clearNewMark(item.id)}
     >
       {item && def ? <Tooltip content={<ItemTip item={item} def={def} />}>{body}</Tooltip> : body}
+      {ghost && item && def && createPortal(<div className="bag-ghost" style={{ left: ghost.x, top: ghost.y }}><ContentIcon def={def} /></div>, document.body)}
       {item?.lk && <LockIcon />}
       {isNew && <i className="bag-new" title={t('ui.bag.new')} />}
     </div>
@@ -176,6 +186,7 @@ function PageButton({
     <button
       type="button"
       className="bag-page"
+      data-page={page}
       data-active={active ? '1' : undefined}
       data-over={over ? '1' : undefined}
       aria-pressed={active}
@@ -252,6 +263,7 @@ function SplitDialog({ split, onClose }: { split: { slot: number; to: number; ma
 }
 
 export function Bag() {
+  const touchMode = useTouchMode();
   const inv = useUI((s) => s.inv);
   const gold = useUI((s) => s.char?.gold ?? 0);
   const marks = useNewMarks((s) => s.marks);
@@ -371,7 +383,7 @@ export function Bag() {
           )}
         </div>
       )}
-      <div className="k-dim bag-hint">{t('ui.bag.hint')}</div>
+      <div className="k-dim bag-hint">{t(touchMode ? 'ui.bag.hint_touch' : 'ui.bag.hint')}</div>
       <SplitDialog split={split} onClose={() => setSplit(null)} />
     </Window>
   );

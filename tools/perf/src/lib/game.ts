@@ -17,6 +17,8 @@ export interface OpenOpts {
   extra?: string;
   viewport?: [number, number];
   dpr?: number;
+  /** Giả lập thiết bị cảm ứng (U2-6): bật `hasTouch` + `isMobile` (pointer: coarse, hover: none). */
+  touch?: boolean;
   quality?: string;
   /** Giới tính + màu áo lúc tạo nhân vật (`dtl.look`); kèm điều khiển `strafe` để phím A/D chạy ngang. */
   look?: { g: string; dye?: string };
@@ -43,6 +45,7 @@ export async function openGame(browser: Browser, o: OpenOpts): Promise<GamePage>
   const ctx = await browser.newContext({
     viewport: { width, height },
     deviceScaleFactor: o.dpr ?? 1,
+    ...(o.touch ? { hasTouch: true, isMobile: true } : {}),
     ...(o.video ? { recordVideo: { dir: o.video, size: { width, height } } } : {}),
   });
   const name = `${o.name}${Date.now() % 10000}`.slice(0, 14);

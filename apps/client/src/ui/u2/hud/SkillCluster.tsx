@@ -19,7 +19,7 @@ export function keyLabelOf(i: number): string {
 type SkillState = 'ready' | 'cd' | 'locked' | 'air' | 'nomp' | 'charging' | 'ultready' | 'empty';
 
 /** Trạng thái hiển thị của một chiêu (cùng luật với thanh chiêu cũ: khóa, ngự kiếm, thiếu linh lực, ult chưa sạc, hồi chiêu). */
-function useSkillView() {
+export function useSkillView() {
   const char = useUI((s) => s.char);
   const cds = useUI((s) => s.cds);
   const gcdAt = useUI((s) => s.gcdAt);

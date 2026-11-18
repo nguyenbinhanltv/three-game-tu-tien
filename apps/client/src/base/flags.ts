@@ -64,10 +64,13 @@ export interface Flags {
   bhArt: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
   butterflies: boolean;
+  /** `?touch=1|0` ép bật/tắt chế độ cảm ứng (U2-6; kiểm thử, ghi đè cài đặt). */
+  touch: boolean | null;
 }
 
 /** Mô tả từng tham số, để người sau biết cờ nào còn sống. */
 export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test' | 'viewer'; doc: string }>> = {
+  touch: { scope: 'user', doc: '=1 ép chế độ cảm ứng, =0 ép tắt (mặc định theo thiết bị + Cài đặt)' },
   mute: { scope: 'user', doc: 'tắt tiếng (playtest luôn bật)' },
   auto: { scope: 'test', doc: 'tự đăng nhập bằng đạo hiệu thử' },
   dev: { scope: 'test', doc: 'hiện đăng nhập thử ngoài localhost' },
@@ -126,6 +129,7 @@ export function readFlags(search: string): Flags {
   const chr = q.get('chr');
   return {
     mute: q.get('mute') === '1',
+    touch: q.get('touch') === '1' ? true : q.get('touch') === '0' ? false : null,
     auto: q.get('auto'),
     dev: q.has('dev'),
     debug: q.has('debug'),
