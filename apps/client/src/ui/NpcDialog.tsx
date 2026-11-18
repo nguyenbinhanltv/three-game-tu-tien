@@ -33,7 +33,12 @@ function QuestTab({ npcId }: { npcId: string }) {
         return (
           <div key={q.id} className={'k-card quest-card' + (complete ? ' ready' : '')}>
             <div className="quest-title">
-              {complete ? <UiIcon id="mark_xong" fallback="❓" className="inline" /> : '⏳'} {t(`quest.${q.id}.name`)}
+              {complete ? (
+                <UiIcon id="mark_xong" fallback="❓" className="inline" />
+              ) : (
+                <UiIcon id="ui_thu_gon" fallback="⏳" className="inline" />
+              )}{' '}
+              {t(`quest.${q.id}.name`)}
             </div>
             <div className="quest-desc">{complete ? `“${t(`quest.${q.id}.done`)}”` : t(`quest.${q.id}.desc`)}</div>
             {!complete &&
@@ -42,7 +47,12 @@ function QuestTab({ npcId }: { npcId: string }) {
                 const count = o.type === 'kill' || o.type === 'gather' || o.type === 'craft' ? ` ${cur}/${o.count}` : '';
                 return (
                   <div key={i} className={'quest-obj' + (cur >= o.count ? ' ok' : '')}>
-                    {cur >= o.count ? '✔' : '○'} {objectiveText(o)}
+                    {cur >= o.count ? (
+                      <UiIcon id="mark_xong" fallback="✔" className="quest-mark" />
+                    ) : (
+                      <i className="quest-dot" aria-hidden="true" />
+                    )}{' '}
+                    {objectiveText(o)}
                     {count}
                   </div>
                 );
