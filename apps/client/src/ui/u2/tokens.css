@@ -61,6 +61,12 @@
   --u-q2: #5fa7d8;
   --u-q3: #b48cff;
   --u-q4: #f0b840;
+  /* bậc 6 "Thần" (q5): hồng ngọc ánh tím lam; viền đổi sắc + lấp lánh, chỉ ở viền ô, tên và tooltip */
+  --u-q5: #ff5f9e;
+  --u-q5-a: #ff5f9e;
+  --u-q5-b: #b48cff;
+  --u-q5-c: #6fe0ff;
+  --u-q5-glint: rgba(255, 244, 252, 0.7);
 
   /* ── Trạng thái ── */
   --u-ok: var(--u-ngoc-hi);
@@ -123,6 +129,7 @@
   --u-dur: 180ms;
   --u-dur-open: 250ms;
   --u-dur-ink: 400ms; /* vệt mực quét */
+  --u-dur-shimmer: 3.2s; /* lấp lánh bậc Thần (vòng lặp chậm) */
   --u-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   /* ── Lớp xếp chồng ── */
@@ -145,4 +152,5 @@
   --u-dur: 0ms;
   --u-dur-open: 0ms;
   --u-dur-ink: 0ms;
+  --u-dur-shimmer: 0s;
 }

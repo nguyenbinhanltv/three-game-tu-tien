@@ -13,7 +13,7 @@ const TOKENS: Array<[string, string]> = [
   ['ngoc-hi', 'ngọc'], ['ngoc', 'ngọc'], ['ngoc-lo', 'ngọc'],
   ['cel-0', 'celadon'], ['cel-1', 'celadon'], ['cel-2', 'celadon'], ['cel-3', 'celadon'],
   ['giay', 'giấy'], ['giay-lo', 'giấy'], ['giay-sau', 'giấy'],
-  ['q0', 'phẩm'], ['q1', 'phẩm'], ['q2', 'phẩm'], ['q3', 'phẩm'], ['q4', 'phẩm'],
+  ['q0', 'phẩm'], ['q1', 'phẩm'], ['q2', 'phẩm'], ['q3', 'phẩm'], ['q4', 'phẩm'], ['q5', 'phẩm'],
 ];
 
 function Sec({ id, wide, children }: { id: string; wide?: boolean; children: React.ReactNode }) {
@@ -76,7 +76,9 @@ export function U2Kit() {
             <span className="u2v-box"><CornerCloud /></span>
             <span className="u2v-box wide"><CloudScroll /></span>
             <span className="u2v-box wide"><WaveLine /></span>
-            <span className="u2v-box wide ink"><InkStroke /></span>
+            <span className="u2v-box wide ink"><InkStroke variant={0} /></span>
+            <span className="u2v-box wide ink"><InkStroke variant={1} /></span>
+            <span className="u2v-box wide ink"><InkStroke variant={2} /></span>
             <span className="u2v-box seal"><SonSeal /></span>
             <span className="u2v-box"><LockMark /></span>
           </div>
@@ -143,14 +145,14 @@ export function U2Kit() {
 
         <Sec id="slot">
           <div className="u2v-row on-giay">
-            {[0, 1, 2, 3, 4].map((q) => (
+            {[0, 1, 2, 3, 4, 5].map((q) => (
               <Slot key={q} rarity={q} icon={icon(q)} count={q === 1 ? 12 : undefined} plus={q === 4 ? 7 : undefined} on="light" label={t('ui.u2v.slot.item')} />
             ))}
             <Slot empty on="light" />
             <Slot rarity={3} icon={icon(2)} locked on="light" label={t('ui.u2v.slot.item')} />
           </div>
           <div className="u2v-row on-ink">
-            {[0, 1, 2, 3, 4].map((q) => (
+            {[0, 1, 2, 3, 4, 5].map((q) => (
               <Slot key={q} rarity={q} icon={icon(q + 1)} selected={sel === q} onClick={() => setSel(q)} count={q * 3 + 2} label={t('ui.u2v.slot.item')} />
             ))}
             <Slot size="s" rarity={2} icon={icon(0)} label={t('ui.u2v.slot.item')} />
@@ -162,13 +164,15 @@ export function U2Kit() {
         <Sec id="skill">
           <div className="u2v-row on-ink">
             {SKILLS.map((s, i) => (
-              <SkillButton key={s} icon={<ContentIcon def={{ icon: s }} />} keyLabel={String(i + 1)} cooldown={[0, 0.65, 0.3, 0][i]} cdText={['', '4', '2', ''][i]} active={i === 0} locked={i === 3} label={t('ui.u2v.slot.skill')} />
+              <SkillButton key={s} icon={<ContentIcon def={{ icon: s }} />} keyLabel={String(i + 1)} cooldown={[0, 0.65, 0.3, 0][i]} cdText={['', '12', '5', ''][i]} active={i === 0} locked={i === 3} label={t('ui.u2v.slot.skill')} />
             ))}
           </div>
           <div className="u2v-row on-cel">
             <InkBanner enter key={enter}>
               {t('ui.u2v.ink')}
             </InkBanner>
+            <InkBanner variant={1}>{t('ui.u2v.ink2')}</InkBanner>
+            <InkBanner variant={2}>{t('ui.u2v.ink3')}</InkBanner>
             <Button size="s" kind="ngoc" onClick={() => setEnter((n) => n + 1)}>
               {t('ui.u2v.replay')}
             </Button>

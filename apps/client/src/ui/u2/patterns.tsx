@@ -1,4 +1,5 @@
 import type { SVGProps } from 'react';
+import { INK_PATHS } from './inkPaths';
 
 /**
  * Họa tiết SVG tự vẽ của Kit 2.0. Mọi màu lấy từ biến CSS --u-* (qua `currentColor` hoặc `var()`), không hex.
@@ -7,14 +8,22 @@ import type { SVGProps } from 'react';
 type P = Omit<SVGProps<SVGSVGElement>, 'children'>;
 const deco = { 'aria-hidden': true, focusable: false } as const;
 
-/** Góc kim chạm mây (góc trên-trái; xoay bằng CSS cho các góc còn lại). 40×40. */
+/**
+ * Góc kim chạm mây (góc trên-trái; xoay bằng CSS cho các góc còn lại). 48×48.
+ * Khung chữ L hai nét (đậm ngoài, mảnh trong) bo ở góc; cụm mây cuộn ba thùy ở góc; hạt ngọc kim ở đầu mút.
+ */
 export function CornerCloud(p: P) {
   return (
-    <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...deco} {...p}>
-      <path d="M2 38V9C2 5 5 2 9 2h29" />
-      <path d="M8 38V14c0-3.3 2.7-6 6-6h24" opacity="0.55" />
-      <path d="M13 13c0-3 4.5-3.2 4.5-.2 0 2.2-3 2.4-3.4.6M19 8.5c2.2-1.8 5.6-.4 4.6 2" />
-      <circle cx="2" cy="2" r="2" fill="currentColor" stroke="none" />
+    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...deco} {...p}>
+      <path d="M3 46V15C3 8.4 8.4 3 15 3h31" />
+      <path d="M8.5 46V18.5c0-5.5 4.5-10 10-10H46" strokeWidth="0.9" opacity="0.6" />
+      <path d="M16 16.5c0-3.4 4.2-4.4 6-2 1.6 2.2-.4 5-3 4.6-1.9-.3-2.2-2.5-.8-3.2" strokeWidth="1.3" />
+      <path d="M22 14.5c2.4-3 7-3.4 9.4-.6 1.8 2.2.8 5-1.6 5.3M16.5 22c-3 2.4-3.4 7-.6 9.4 2.2 1.8 5 .8 5.3-1.6" strokeWidth="1.3" />
+      <path d="M31.4 13.9c3-1.6 7.5-.8 10.5 1.2M13.9 31.4c-1.6 3-.8 7.5 1.2 10.5" strokeWidth="1" opacity="0.8" />
+      <path d="M26 3.2c1 2.4 2.8 3.6 5.4 3.6M3.2 26c2.4 1 3.6 2.8 3.6 5.4" strokeWidth="0.9" opacity="0.7" />
+      <path d="M3 .2l3 3-3 3-3-3z" fill="currentColor" stroke="none" />
+      <circle cx="46" cy="3" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="3" cy="46" r="1.5" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -39,12 +48,12 @@ export function WaveLine(p: P) {
   );
 }
 
-/** Vết mực loang (nền cho tên chiêu, thẻ chương): đường viền rách tay, fill = currentColor. 320×64. */
-export function InkStroke(p: P) {
+/** Vết mực nét bút lông (sinh bởi tools/ui/gen-ink.mjs): đầu bút đậm, đuôi thưa, xơ cọ, mép răng cưa. `variant` 0–2; `flip` đảo đầu/đuôi. 320×64. */
+export function InkStroke({ variant = 0, flip, style, ...p }: P & { variant?: number; flip?: boolean }) {
+  const n = INK_PATHS.length;
   return (
-    <svg viewBox="0 0 320 64" preserveAspectRatio="none" fill="currentColor" {...deco} {...p}>
-      <path d="M4 34c8-9 14-5 24-12 10-7 20 0 34-8 14-8 24 3 44-4 22-7 34 4 58-3 20-6 34 4 52-2 22-8 34 6 56-2 18-6 30 4 40-1 6-3 6 6 4 12 6 4-2 9 2 14-8 5-4 12-12 14-10 3-16-5-30 2-16 8-28-4-46 2-20 7-34-6-56 2-22 7-34-3-58 3-22 5-34-4-52 2-18 6-26-3-42 1-12 3-18-4-24-1-8-7-6-12-12-14-5-4 3-9-2-12z" />
-      <path d="M300 18c10-2 16 2 18 8-6-1-12-1-18-8zM14 50c-6 2-9 6-8 10 6-2 10-5 8-10z" opacity="0.7" />
+    <svg viewBox="0 0 320 64" preserveAspectRatio="none" fill="currentColor" {...deco} {...p} style={flip ? { transform: 'scaleX(-1)', ...style } : style}>
+      <path d={INK_PATHS[((variant % n) + n) % n]} />
     </svg>
   );
 }

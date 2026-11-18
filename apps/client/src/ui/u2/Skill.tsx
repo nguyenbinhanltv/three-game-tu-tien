@@ -28,7 +28,7 @@ export function SkillButton({
 }) {
   const cd = Math.max(0, Math.min(1, cooldown));
   return (
-    <button type="button" className="u2-slot u2-skill" data-active={active ? '1' : undefined} disabled={locked} onClick={onClick} aria-label={[label, locked ? t('ui.u2.locked') : undefined].filter(Boolean).join(', ') || undefined}>
+    <button type="button" className="u2-slot u2-skill" data-active={active ? '1' : undefined} data-cd={cd > 0 ? '1' : undefined} disabled={locked} onClick={onClick} aria-label={[label, locked ? t('ui.u2.locked') : undefined].filter(Boolean).join(', ') || undefined}>
       <IconFrame>{icon}</IconFrame>
       {keyLabel && <span className="u2-skill__key">{keyLabel}</span>}
       {cd > 0 && <span className="u2-skill__cd" style={{ '--cd': cd } as CSSProperties} />}
@@ -43,10 +43,10 @@ export function SkillButton({
 }
 
 /** Dải tên chiêu: vệt mực loang + chữ display kim (≤ 3 từ, ≥ 28 px). `enter` chạy vệt quét 400 ms. */
-export function InkBanner({ children, enter }: { children: ReactNode; enter?: boolean }) {
+export function InkBanner({ children, enter, variant = 0 }: { children: ReactNode; enter?: boolean; variant?: number }) {
   return (
     <div className="u2-ink" data-enter={enter ? '1' : undefined}>
-      <InkStroke className="u2-ink__bg" />
+      <InkStroke className="u2-ink__bg" variant={variant} />
       <span className="u2-ink__t">{children}</span>
     </div>
   );

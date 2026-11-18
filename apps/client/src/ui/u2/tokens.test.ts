@@ -24,11 +24,12 @@ describe('u2 token', () => {
   });
   it('mọi var(--u-*) được dùng đều đã khai báo trong tokens.css', () => {
     const declared = new Set([...css('tokens.css').matchAll(/(--u-[a-z0-9-]+)\s*:/g)].map((m) => m[1]));
+    for (const f of FILES) for (const m of css(f).matchAll(/@property\s+(--u-[a-z0-9-]+)/g)) declared.add(m[1]); // biến hoạt ảnh nội bộ
     // biến cục bộ của thành phần (đặt ngay trên phần tử, không phải token): --c, --p, --cd, --sz, --qc
     for (const f of FILES) for (const m of css(f).matchAll(/var\((--u-[a-z0-9-]+)/g)) expect(declared.has(m[1]!), `${f}: ${m[1]}`).toBe(true);
   });
   it('tiếng Việt: mọi khóa i18n kit dùng đều có', async () => {
     const { hasString } = await import('@dtl/content');
-    for (const k of ['ui.u2.close', 'ui.u2.ok', 'ui.u2.cancel', 'ui.u2.locked', 'ui.u2.slot.empty', 'ui.u2.rarity.0', 'ui.u2.rarity.4']) expect(hasString(k), k).toBe(true);
+    for (const k of ['ui.u2.rarity.5', 'ui.u2.close', 'ui.u2.ok', 'ui.u2.cancel', 'ui.u2.locked', 'ui.u2.slot.empty', 'ui.u2.rarity.0', 'ui.u2.rarity.4']) expect(hasString(k), k).toBe(true);
   }, 30000);
 });

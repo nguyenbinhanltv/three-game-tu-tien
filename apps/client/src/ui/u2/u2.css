@@ -34,16 +34,16 @@
 }
 .u2-panel__corner {
   position: absolute;
-  width: 34px;
-  height: 34px;
+  width: 46px;
+  height: 46px;
   color: var(--u-gold);
   pointer-events: none;
   filter: drop-shadow(0 1px 0 var(--u-ink-0));
 }
-.u2-panel__corner[data-c='tl'] { left: -6px; top: -6px; }
-.u2-panel__corner[data-c='tr'] { right: -6px; top: -6px; transform: scaleX(-1); }
-.u2-panel__corner[data-c='bl'] { left: -6px; bottom: -6px; transform: scaleY(-1); }
-.u2-panel__corner[data-c='br'] { right: -6px; bottom: -6px; transform: scale(-1, -1); }
+.u2-panel__corner[data-c='tl'] { left: -9px; top: -9px; }
+.u2-panel__corner[data-c='tr'] { right: -9px; top: -9px; transform: scaleX(-1); }
+.u2-panel__corner[data-c='bl'] { left: -9px; bottom: -9px; transform: scaleY(-1); }
+.u2-panel__corner[data-c='br'] { right: -9px; bottom: -9px; transform: scale(-1, -1); }
 .u2-panel__close {
   position: absolute;
   right: -14px;
@@ -233,6 +233,20 @@
 .u2-frame[data-q='2'] { --qc: var(--u-q2); }
 .u2-frame[data-q='3'] { --qc: var(--u-q3); }
 .u2-frame[data-q='4'] { --qc: var(--u-q4); }
+.u2-frame[data-q='5'] {
+  --qc: var(--u-q5);
+  background: conic-gradient(from var(--u-spin, 0deg), var(--u-q5-a), var(--u-q5-b), var(--u-q5-c), var(--u-q5-a));
+  animation: u2-spin var(--u-dur-shimmer) linear infinite;
+}
+.u2-frame[data-q='5'] .u2-frame__in::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 38%, var(--u-q5-glint) 50%, transparent 62%);
+  background-size: 260% 100%;
+  animation: u2-glint var(--u-dur-shimmer) ease-in-out infinite;
+  pointer-events: none;
+}
 .u2-frame__in {
   position: absolute;
   inset: var(--u-line-3);
@@ -296,19 +310,19 @@
   color: var(--u-gold-hi);
   text-shadow: 0 0 3px var(--u-ink-0);
 }
+/* Hồi chiêu: icon mờ + xám, phần còn hồi tối đi theo hình quạt, mép quét là vạch kim chạy THEO chiều kim đồng hồ từ 12 giờ;
+   số giây ở giữa, cỡ lớn, có viền tối để đọc rõ trên mọi icon. */
+.u2-skill[data-cd='1'] .u2-frame__in > * { filter: blur(1.2px) saturate(0.4) brightness(0.65); }
 .u2-skill__cd {
+  --c: var(--u-cut-m);
+  --sweep: calc((1 - var(--cd, 0)) * 360deg);
   position: absolute;
-  inset: 0;
-  /* phần còn hồi tối đi theo hình quạt; mép quét là vạch kim */
-  background: conic-gradient(from 0deg, transparent calc((1 - var(--cd, 0)) * 360deg), var(--u-ink-scrim) 0);
+  inset: var(--u-line-3);
+  clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c));
+  background:
+    conic-gradient(from calc(var(--sweep) - 1.5deg), var(--u-gold) 0 3deg, transparent 3deg),
+    conic-gradient(from var(--sweep), var(--u-ink-scrim) 0 calc(360deg - var(--sweep)), transparent 0);
   pointer-events: none;
-}
-.u2-skill__cd::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: conic-gradient(from calc((1 - var(--cd, 0)) * 360deg - 4deg), var(--u-gold) 0 4deg, transparent 0);
-  opacity: 0.85;
 }
 .u2-skill__cdn {
   position: absolute;
@@ -317,9 +331,13 @@
   place-items: center;
   font-family: var(--u-font-head);
   font-weight: 800;
-  font-size: var(--u-fs-4);
+  font-size: var(--u-fs-6);
+  line-height: 1;
+  font-feature-settings: var(--u-num);
   color: var(--u-gold-text);
-  text-shadow: 0 0 4px var(--u-ink-0);
+  -webkit-text-stroke: 3px var(--u-ink-0);
+  paint-order: stroke fill;
+  text-shadow: 0 2px 4px var(--u-ink-0);
 }
 
 /* ───────── Tooltip ───────── */
@@ -353,6 +371,7 @@
 .u2-tip[data-q='2'] .u2-tip__h { color: var(--u-q2); }
 .u2-tip[data-q='3'] .u2-tip__h { color: var(--u-q3); }
 .u2-tip[data-q='4'] .u2-tip__h { color: var(--u-q4); }
+.u2-tip[data-q='5'] .u2-tip__h { color: var(--u-q5); text-shadow: 0 0 8px var(--u-q5-b); }
 
 /* ───────── Dialog ───────── */
 .u2-scrim { position: fixed; inset: 0; z-index: var(--u-z-dialog); display: grid; place-items: center; background: var(--u-ink-scrim); animation: u2-fade var(--u-dur-open) var(--u-ease); }
@@ -400,6 +419,9 @@
 .u2-ring[data-tone='kim'] { color: var(--u-gold); }
 .u2-ring[data-tone='son'] { color: var(--u-son); }
 
+@property --u-spin { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+@keyframes u2-spin { to { --u-spin: 360deg; } }
+@keyframes u2-glint { 0% { background-position: 130% 0; } 60%, 100% { background-position: -30% 0; } }
 @keyframes u2-fade { from { opacity: 0; } }
 @keyframes u2-pop { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
 @keyframes u2-slide { from { opacity: 0; transform: translateX(16px); } }
