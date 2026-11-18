@@ -2,7 +2,7 @@
 
 > Tách từ CLAUDE.md (R-2). Sửa trang này khi đổi hệ thống tương ứng; đừng nối dòng vào CLAUDE.md.
 
-## Hiện trạng (2026-11-15, lịch sử; cập nhật ngày 2026-11-18 ở các mục đã sửa; sau Phase 2 "Chỉn chu" và phần lớn Phase 3 "Thăng tiến")
+## Hiện trạng (2026-11-15; các mục đã sửa cập nhật 2026-11-18)
 
 Hướng hình ảnh hiện là **bán tả thực điện ảnh, sương sớm** (`docs/art-bible.md` v3), không còn cel-shading/thủy mặc cũ.
 
@@ -30,6 +30,7 @@ Khác với spec ban đầu (chấp nhận, ghi lại để không làm lệch t
 - Màu áo nhân vật nhuộm bằng shader theo `appearance.json` (chọn khi tạo nhân vật, cột `characters.appearance`); chiêu, bay, niệm chú dùng pose IK (`withPoses`, `data/poses/`); thiền dùng tư thế tạm `tam_thien`, nhảy mượn `ngu_kiem`. NPC chỉ phát idle.
 - Đăng nhập Google chưa thử với Client ID thật (chưa có); đường đăng nhập thử đã kiểm.
 - Nhịp lên cấp (3-10): `pnpm sim:progress` ra **3,1–3,4 giờ** tới Ngưng Khí 15 viên mãn cho cả ba công pháp (`xpNeed = 90·L²`; sim đã tính đi giữa các cụm quái của M-2 và áp lực quái; chưa tính boss/bí cảnh). Sim báo LỖI nếu ngoài 3–4 giờ, TTK quái thường ngoài 3,5–8,5 s, quái thường không gây áp lực từ tầng 6, tinh anh ngoài 20–40 s, giá cường hóa/kinh tế lệch. Số trước/sau, bảng TTK, kinh tế: `docs/p3-10/README.md`.
+
 ## Còn mở
 
 - **P2-F (phát hành)**: chưa làm.
