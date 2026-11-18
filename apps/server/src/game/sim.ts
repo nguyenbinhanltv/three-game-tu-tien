@@ -1620,10 +1620,6 @@ export class GameSim {
     return this.monSys.respawnMonster(m, at);
   }
 
-  private rollLoot(p: PlayerEnt, mon: MonEnt, part: 'all' | 'gold' = 'all'): void {
-    return this.monSys.rollLoot(p, mon, part);
-  }
-
   sendBossTimers(p?: PlayerEnt): void {
     return this.monSys.sendBossTimers(p);
   }
