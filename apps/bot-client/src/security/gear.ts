@@ -2,8 +2,7 @@
 import { applyInvMsg, C, type InvMsg, type InvSlot, S } from '@dtl/shared';
 import { W, check, health, join, type Ctx } from './lib';
 
-export async function runGear(ctx: Ctx): Promise<void> {
-  const { client, gm } = ctx;
+export async function runGear(_ctx: Ctx): Promise<void> {
   // 14. Trang bị (3-2): client chỉ gửi ô túi + khóa idempotency; không giả được dòng chính/phụ, không mặc đồ không có, không spam.
   {
     const g = await join('trangbi' + (Date.now() % 100000));

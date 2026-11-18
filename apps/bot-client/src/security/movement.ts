@@ -1,7 +1,6 @@
 // Bài kiểm tra bảo mật: Ngự kiếm/ra chiêu khi lơ lửng, rơi, ngắt chú boss, chết và hồi sinh (R-7, tách từ security-check.ts).
 import { type Room } from 'colyseus.js';
 import { C, IN_FLY, IN_UP, MF_CHANT, MF_STUN, MS_DEAD, S } from '@dtl/shared';
-import { spawn } from 'node:child_process';
 import { W, check, join, type Ctx, type P, type M } from './lib';
 
 export async function runMovement(ctx: Ctx): Promise<void> {

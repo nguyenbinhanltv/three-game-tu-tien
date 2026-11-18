@@ -1,7 +1,7 @@
 // Độ kiếp phía sim (R-7): onBreakthrough, bắt đầu/kết thúc kiếp, hộ pháp, bóng tâm ma, thế thân
 import { computeDamage, type DmgMsg, type FxMsg, elemDamageMul, elemCounter, STAT_CAPS, counterMul, MAX_LEVEL, type LevelDef, type MonsterDef, MS_CHASE, MS_DEAD, PF_TRIBULATION, S, type SkillDef, type SpawnDef, type SysMsg, tribDef, tribForLevel, type TribDef, bottleneckBlocked, TRUC_CO_FREE_FLY_ALT, vulnerableDamage, xpNeed } from '@dtl/shared';
 import { TribSystem } from '../trib';
-import { itemName, MONSTER, nextMajorRealmName, realmName, t } from '@dtl/content';
+import { itemName, MONSTER, nextMajorRealmName, realmName } from '@dtl/content';
 import { type Character } from '../character';
 import type { PlayerEnt, MonEnt, Hazard, SimHost } from '../entities';
 import { visualSeed } from '../combat/consts';
@@ -65,7 +65,7 @@ export class TribulationSystem {
     return f ? { mul: f.defMul, max: f.defMaxCut } : { mul: 0, max: 0 };
   }
 
-  shareToGuards(owner: PlayerEnt, n: number, h: Hazard): number {
+  shareToGuards(_owner: PlayerEnt, n: number, h: Hazard): number {
     const guards = this.pickGuards(h);
     if (guards.length === 0) return 0;
     const part = n * h.guard!.share;

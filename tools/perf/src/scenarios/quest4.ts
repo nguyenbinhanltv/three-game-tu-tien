@@ -1,7 +1,7 @@
 // Nhiệm vụ chương 4 Thiên Khuyết (E4-H): thẻ chương, hội thoại giao/trả ở Mặc Chiếu và Tô Vãn Ngư, bảng theo dõi nhiệm vụ.
 import { NPC } from '@dtl/content';
 import { sleep } from '../lib/devserver';
-import { enterLevel, gm, tp } from '../lib/game';
+import { gm, tp } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap } from '../lib/shot';
 

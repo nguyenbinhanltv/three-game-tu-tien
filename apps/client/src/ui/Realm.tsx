@@ -4,7 +4,6 @@ import './realm.css';
 import { useEffect, useState } from 'react';
 import {
   BOTTLENECK_RETRY_SEC,
-  bottleneckReady,
   C,
   type CharView,
   isBottleneckLevel,
@@ -21,7 +20,7 @@ import { itemName, nextMajorRealmName, realmName, ROOT, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { UiIcon } from './ContentIcon';
 import { Button, Divider } from './kit';
-import { closePanel, set, useUI } from './store';
+import { closePanel, useUI } from './store';
 
 /** Số giây còn lại, đếm xuống từ `sec` (server gửi lúc `char` đổi). 0 = không chạy. */
 function useCountdown(sec: number, key: unknown): number {
@@ -37,11 +36,6 @@ function useCountdown(sec: number, key: unknown): number {
     return () => clearInterval(id);
   }, [deadline]);
   return deadline ? Math.max(0, Math.ceil((deadline - now) / 1000)) : 0;
-}
-
-/** Đang kẹt bình cảnh với tu vi đầy (cấp 5/10/15 chưa vượt). */
-function isStuck(c: CharView): boolean {
-  return bottleneckReady(c.level, c.bk, c.xp, c.xpNeed);
 }
 
 /** Thẻ linh căn trong bảng nhân vật. */

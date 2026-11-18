@@ -96,7 +96,6 @@ export function buildCaveShell(def: CaveDef, groundY: number, palace: false | Pa
   const col = new Float32Array(pos.count * 3);
   const c = new THREE.Color();
   const wall = new THREE.Color(0x8a6c4e);
-  const wallHi = new THREE.Color(0x2a2119);
   const roof = new THREE.Color(0x07090c);
   for (let i = 0; i < pos.count; i++) {
     const nx = pos.getX(i);

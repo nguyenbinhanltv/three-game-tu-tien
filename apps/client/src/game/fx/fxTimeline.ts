@@ -11,7 +11,8 @@ import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
 import { DECAL_CRACK, DECAL_RUNE, DECAL_SCORCH, DECAL_SMOKE, DECAL_STRIKE } from '../../render/vfx/stylized';
 import { bladeVisible } from '../../render/vfx/bladeTrail';
 import type { SkillEvent } from '../character/view';
-import { particleScale } from './fxSettings';
+import { emitCount } from './fxSettings';
+import { densitySize } from '../../render/vfx/particles';
 import type { Vfx } from './vfx';
 
 export interface FxTarget {
@@ -70,6 +71,8 @@ interface Cast {
   clock: number;
   seed: number;
   dist: number;
+  /** Số hạt đã phát của chiêu này (trần `CAST_PARTICLE_CAP`). */
+  emitted: number;
   /** Mốc trúng đầu tiên (giây từ bấm): hủy trước mốc này thì đòn không trúng, bỏ các sự kiện chưa phát. */
   firstHit: number;
   /** FX của quái (V5): mục tiêu/vùng cố định, hệ số cỡ, thời gian báo trước, biến thức ép. */
@@ -107,7 +110,6 @@ interface BladeJob {
 const UP = new THREE.Vector3(0, 1, 0);
 const AXIS_Z = new THREE.Vector3(0, 0, 1);
 const _q = new THREE.Quaternion();
-const _q2 = new THREE.Quaternion();
 const _e = new THREE.Euler();
 const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
@@ -178,7 +180,7 @@ export class FxRunner {
     const pal = paletteOf(tl.palette ?? def.method ?? (mine ? method : undefined));
     const events = fxEventsFor(tl, e.combo, this.env.variantOf(sid, def.id));
     const q = scheduleEvents(events, tm.hitAt, tier).map((s, idx) => ({ ...s, idx, done: false }));
-    this.casts.set(sid, { sid, actor, def, mine, tier, pal, q, clock: e.t, seed: ++this.serial * 7.31, dist, firstHit: Math.min(...tm.hitAt), mul: 1 });
+    this.casts.set(sid, { sid, actor, def, mine, tier, pal, q, clock: e.t, seed: ++this.serial * 7.31, dist, firstHit: Math.min(...tm.hitAt), mul: 1, emitted: 0 });
     this.pump(this.casts.get(sid)!, e.t);
   }
 
@@ -189,7 +191,7 @@ export class FxRunner {
     const pal = paletteOf(tl.palette ?? def?.method ?? (mine ? method : undefined));
     const events = fxEventsFor(tl, -1, this.env.variantOf(sid, def?.id ?? tl.skill));
     const q = scheduleEvents(events, [0], tier).map((s, idx) => ({ ...s, idx, done: false }));
-    const cast: Cast = { sid, actor, def: def ?? ({ id: tl.skill } as SkillDef), mine, tier, pal, q, clock: 0, seed: ++this.serial * 7.31, dist, firstHit: Infinity, mul: 1 };
+    const cast: Cast = { sid, actor, def: def ?? ({ id: tl.skill } as SkillDef), mine, tier, pal, q, clock: 0, seed: ++this.serial * 7.31, dist, firstHit: Infinity, mul: 1, emitted: 0 };
     // Không có đồng hồ animation của chiêu: chạy theo dt (đồng hồ dự phòng).
     this.casts.set(sid, cast);
     this.pump(cast, 0);
@@ -205,7 +207,7 @@ export class FxRunner {
     const pal = paletteOf(o.palette);
     const events = fxEventsFor(tl, -1, o.variant);
     const q = scheduleEvents(events, [o.hitAt ?? 0], tier).map((s, idx) => ({ ...s, idx, done: false }));
-    const cast: Cast = { sid, actor: o.actor, def: { id: tl.skill } as SkillDef, mine: false, tier, pal, q, clock: 0, seed: this.serial * 7.31, dist: 0, firstHit: Infinity, tgt: o.tgt, area: o.area, mul: o.mul ?? 1, delay: o.delay, variant: o.variant };
+    const cast: Cast = { sid, actor: o.actor, def: { id: tl.skill } as SkillDef, mine: false, tier, pal, q, clock: 0, seed: this.serial * 7.31, dist: 0, firstHit: Infinity, tgt: o.tgt, area: o.area, mul: o.mul ?? 1, delay: o.delay, variant: o.variant, emitted: 0 };
     this.casts.set(sid, cast);
     this.pump(cast, 0);
   }
@@ -352,7 +354,6 @@ export class FxRunner {
     const alpha = ev.alpha ?? 0.95;
     const sweep = ev.sweep ?? 0.35;
     const erodeFrom = ev.erodeFrom ?? 0.5;
-    const rag = ev.ragged ?? 0.5;
     const spin = (ev.spin ?? 0) * DEG;
     // Hướng thân hình: theo hướng bay nếu có `move` (mũi dài +Z hướng về đích), không thì theo hướng nhìn.
     const baseQ = new THREE.Quaternion();
@@ -447,14 +448,18 @@ export class FxRunner {
   private particles(c: Cast, ev: FxParticleEvent, tgt: FxTarget | null): void {
     const yaw = this.aim(c, tgt);
     const p = this.anchor(c, ev.at ?? 'target', ev.offset, yaw, tgt, _a);
-    const n = Math.max(1, Math.round(ev.n * particleScale(this.env.quality(), c.mine)));
+    // Preset đồ họa cao hơn: thêm hạt cho chiêu của mình (Cao hiệu ứng), hạt nhỏ lại để không lóa; trần 1.500 hạt cho cả chiêu.
+    const q = this.env.quality();
+    const dens = q === 'high' && c.mine ? this.v.particles.density : 1;
+    const n = emitCount(ev.n, q, c.mine, this.v.particles.density, c.emitted);
+    c.emitted += n;
     const fx = Math.sin(yaw);
     const fz = Math.cos(yaw);
     const color = toneOf(c.pal, ev.tone ?? (ev.kind === 'shard' ? 'core' : ev.kind === 'dust' ? 'body' : 'rim'));
     const layer = ev.kind === 'dust' ? 'dust' : 'glow';
     const dir = ev.back ? -1 : 1;
     const pm = Math.sqrt(c.mul);
-    const psz = ev.size * pm;
+    const psz = ev.size * pm * densitySize(dens);
     for (let i = 0; i < n; i++) {
       const ang = Math.random() * Math.PI * 2;
       const el = (Math.random() - 0.35) * Math.PI * 0.5;

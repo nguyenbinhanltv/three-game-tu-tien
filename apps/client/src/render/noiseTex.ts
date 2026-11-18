@@ -98,9 +98,3 @@ export function getWaterNormals(): THREE.DataTexture {
   normalTex = finish(new THREE.DataTexture(data, N, N, THREE.RGBAFormat));
   return normalTex;
 }
-
-function disposeNoise(): void {
-  cloudTex?.dispose();
-  normalTex?.dispose();
-  cloudTex = normalTex = null;
-}
