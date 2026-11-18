@@ -17,7 +17,8 @@
 // Gỡ lỗi: chuyển trạng thái được log `[music] ...` khi chạy dev hoặc có `?debug`;
 // `window.__music.log` giữ 50 lần chuyển gần nhất, `__music.state()` xem trạng thái hiện tại.
 import { MS_ATTACK, MS_CHASE, PF_DEAD, PF_MEDITATING, PF_TRIBULATION } from '@dtl/shared';
-import { biomeAt, levelId } from './levelCtx';
+import { biomeAt, levelId, levelTerrain } from './levelCtx';
+import { riftBlend } from './bacHoangArt';
 import { hasMusicFile, musicOutput, musicPosition, playAmbient, playMusic, stemSources } from './audio';
 import type { MonVis } from './entities';
 import {
@@ -84,6 +85,8 @@ const STYLES: Record<MusicTrack, Style> = {
   sect: { root: 293.66, scale: GONG, bpm: 66, density: 0.32, span: 9, gain: 0.5, drone: 0.1, bell: 0.25, sustain: 0.997 },
   wild: { root: 329.63, scale: GONG, bpm: 84, density: 0.42, span: 10, gain: 0.48, drone: 0.08, sustain: 0.996 },
   wild_ochre: { root: 293.66, scale: GONG, bpm: 68, density: 0.3, span: 9, gain: 0.46, drone: 0.1, sustain: 0.997 },
+  wild_ash: { root: 293.66, scale: YU, bpm: 52, density: 0.22, span: 8, gain: 0.46, drone: 0.12, bell: 0.15, sustain: 0.998 },
+  wild_rift: { root: 164.81, scale: YU, bpm: 60, density: 0.2, span: 7, gain: 0.46, drone: 0.16, bell: 0.2, sustain: 0.998 },
   wild_night: { root: 220.0, scale: GONG, bpm: 60, density: 0.26, span: 9, gain: 0.46, drone: 0.12, bell: 0.2, sustain: 0.997 },
   wild_cloud: { root: 392.0, scale: GONG, bpm: 72, density: 0.34, span: 10, gain: 0.46, drone: 0.08, bell: 0.2, sustain: 0.997 },
   forest: { root: 392.0, scale: GONG, bpm: 92, density: 0.4, span: 10, gain: 0.45, drone: 0.06, sustain: 0.995 },
@@ -491,6 +494,7 @@ export class MusicController {
       dungeon: s.room === 'dungeon',
       biome: biomeAt(s.x, s.z),
       level: levelId(),
+      rift: levelId() === 'bac_hoang' && riftBlend(s.z - levelTerrain().def.size / 2) > 0.5,
       combat,
       boss,
       tribulation: (s.flags & PF_TRIBULATION) !== 0,

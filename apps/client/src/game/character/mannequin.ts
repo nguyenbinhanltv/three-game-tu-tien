@@ -10,9 +10,10 @@ import type { AssetCache, AssetHandle } from '../assets';
 import { HitReact, type HitOpts } from '../hitreact';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { lodLevel, mixerInterval } from './skinned';
-import { SpringBones, type SpringDef } from './spring';
+import { SpringBones, type SpringDef, type SpringParams } from './spring';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
+import { applyV3Palette } from './v3Palette';
 import type { AnimState, CharacterView, MonsterView, PerformOpts } from './view';
 
 const search = typeof location === 'undefined' ? '' : location.search;
@@ -67,7 +68,8 @@ function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
 }
 
 export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
-  adoptGltfMaterials(handle.scene);
+  const mats = adoptGltfMaterials(handle.scene);
+  if (handle.id.startsWith('chr_v3_lac_kiem')) for (const m of mats) applyV3Palette(m);
   const box = new THREE.Box3().setFromObject(handle.scene);
   // Độ cao hông của nhân vật so với bộ xương mẫu của thư viện: chỉ kênh vị trí của pelvis bị nhân theo tỉ lệ.
   const a = restPos(handle.scene, 'pelvis');
@@ -85,6 +87,29 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
 }
 
 const IDENT = new THREE.Matrix4();
+const _tq = new THREE.Quaternion();
+const _tq2 = new THREE.Quaternion();
+/** Lò xo v3 (vạt dài + tóc): cứng vừa, cản nhiều, góc lệch hẹp để vạt không xé/xuyên khi ngồi, lăn, chém (N-4). */
+export const V3_SPRING: SpringParams = { stiffness: 130, drag: 8, maxAngle: 30, maxInward: 8 };
+
+/** Xương twist (chr_v3.py): `<limb>_twist_<l|r>` là con của `<limb>_<l|r>`; trục xoắn = hướng tới xương con chính của limb. */
+const TWIST_NEXT: Record<string, string> = { upperarm: 'lowerarm', lowerarm: 'hand', thigh: 'calf' };
+/** Hệ số xoay ngược của xương twist so với góc xoắn của xương cha (đỉnh gần đầu xương chỉ xoắn ~1/3, gần cuối xoắn đủ). */
+export const TWIST_COUNTER = -0.8;
+
+interface Twist {
+  limb: THREE.Object3D;
+  tw: THREE.Object3D;
+  axis: THREE.Vector3;
+  restLimb: THREE.Quaternion;
+  restTw: THREE.Quaternion;
+}
+
+/** Góc xoắn (rad, [-π, π]) của `q` quanh trục đơn vị `axis` (tách swing-twist). */
+export function twistAngle(q: THREE.Quaternion, axis: THREE.Vector3): number {
+  const a = 2 * Math.atan2(q.x * axis.x + q.y * axis.y + q.z * axis.z, q.w);
+  return a > Math.PI ? a - 2 * Math.PI : a < -Math.PI ? a + 2 * Math.PI : a;
+}
 let shadowMat: THREE.MeshStandardNodeMaterial | null = null;
 function shadowMaterial(): THREE.MeshStandardNodeMaterial {
   if (!shadowMat) {
@@ -120,6 +145,7 @@ export class MannequinCharacter implements CharacterView {
   private lastPhase = 0;
   private dead = false;
   private springs: SpringBones | null = null;
+  private twists: Twist[] = [];
   private lodLevel = 0;
   /** Kiếm: vỏ trên lưng (`dtl_scabbard`) khi nghỉ, nắm tay (`dtl_sword`) khi giao chiến. */
   private blade: THREE.Mesh | null = null;
@@ -155,7 +181,16 @@ export class MannequinCharacter implements CharacterView {
       const child = o.children.find((c) => (c as THREE.Bone).isBone);
       defs.push({ bone: o.name, tailLocal: (child ?? o).position.clone() });
     });
-    if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs);
+    if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs, V3_SPRING);
+    for (const sd of ['l', 'r']) {
+      for (const [limb, next] of Object.entries(TWIST_NEXT)) {
+        const L = this.rig.getObjectByName(`${limb}_${sd}`);
+        const tw = this.rig.getObjectByName(`${limb}_twist_${sd}`);
+        const child = this.rig.getObjectByName(`${next}_${sd}`);
+        if (!L || !tw || !child) continue;
+        this.twists.push({ limb: L, tw, axis: child.position.clone().normalize(), restLimb: L.quaternion.clone(), restTw: tw.quaternion.clone() });
+      }
+    }
     this.scabbard = this.rig.getObjectByName('dtl_scabbard') ?? null;
     this.hand = this.rig.getObjectByName('dtl_sword') ?? null;
     if (sword && !shadow && this.scabbard && this.hand) {
@@ -317,6 +352,10 @@ export class MannequinCharacter implements CharacterView {
     if (this.interval > 0 && this.acc < this.interval) return;
     this.blendBases(this.acc);
     this.mixer.update(this.acc);
+    for (const t of this.twists) {
+      _tq.copy(t.restLimb).invert().multiply(t.limb.quaternion);
+      t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
+    }
     const drawNow = this.combatT > 0 || !!a.combat;
     if (drawNow !== this.drawn) this.mountBlade(drawNow);
     // Lò xo vạt: chỉ LOD0 và trong khung nhìn; ma trận thế giới của xương phải mới (root vừa được đặt vị trí).

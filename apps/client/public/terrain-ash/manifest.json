@@ -1,0 +1,53 @@
+{
+  "size": 1024,
+  "layers": [
+    {
+      "layer": "grass",
+      "ph": "burned_ground_01",
+      "a": "grass.a.bd1242184b.webp",
+      "n": "grass.n.db7189dc3d.webp"
+    },
+    {
+      "layer": "dirt",
+      "ph": "mud_cracked_dry_03",
+      "a": "dirt.a.fc6b841dcf.webp",
+      "n": "dirt.n.54aaf66c29.webp"
+    },
+    {
+      "layer": "forest",
+      "ph": "aerial_mud_1",
+      "a": "forest.a.49360dede7.webp",
+      "n": "forest.n.645f1c5a25.webp"
+    },
+    {
+      "layer": "rock",
+      "ph": "rock_boulder_cracked",
+      "a": "rock.a.428571014b.webp",
+      "n": "rock.n.64170b9a96.webp"
+    },
+    {
+      "layer": "cliff",
+      "ph": "rock_wall_08",
+      "a": "cliff.a.c753f9a3f2.webp",
+      "n": "cliff.n.3166666674.webp"
+    },
+    {
+      "layer": "sand",
+      "ph": "aerial_sand",
+      "a": "sand.a.6b60b2d3a2.webp",
+      "n": "sand.n.da812ae190.webp"
+    },
+    {
+      "layer": "paving",
+      "ph": "volcanic_rock_tiles",
+      "a": "paving.a.eb0967f790.webp",
+      "n": "paving.n.16a9ffecc6.webp"
+    },
+    {
+      "layer": "gravel",
+      "ph": "dry_riverbed_rock",
+      "a": "gravel.a.5074d20eae.webp",
+      "n": "gravel.n.3f0678e996.webp"
+    }
+  ]
+}

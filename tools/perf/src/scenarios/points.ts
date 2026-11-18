@@ -46,7 +46,7 @@ export default {
     for (const renderer of list('--renderers', opt('--renderer', 'webgpu,webgl2'))) {
       for (const preset of list('--presets', 'low,medium,high')) {
         const { ctx, page } = await r.open({ name: `Shot${renderer === 'webgpu' ? 'gpu' : 'gl'}${preset[0]}`, renderer, quality: preset, viewport: size('1280x720'), extra: opt('--query', ''), warnings: true });
-        await gm(page, `level ${LEVEL === 'van_lam' ? 15 : 27}`);
+        await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(27, requireLevel(LEVEL).minLevel ?? 0)}`);
         await gm(page, 'god on');
         if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
         for (const p of points()) {

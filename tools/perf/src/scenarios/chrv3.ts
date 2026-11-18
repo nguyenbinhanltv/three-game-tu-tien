@@ -11,12 +11,14 @@ import { cam, gm } from '../lib/game';
 import { centerClip, snap } from '../lib/shot';
 import type { Scenario } from '../lib/scenario';
 
+/** `v3raw` = v3 không bảng màu (`?v3pal=0`), để so trước/sau chỉnh màu. */
+const QUERY: Record<string, Record<string, string>> = { v1: {}, v2: { chr: 'v2' }, v3: { chr: 'v3' }, v3raw: { chr: 'v3', v3pal: '0' } };
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 
 export default {
   name: 'chrv3',
   desc: 'Video so nhân vật hiện tại (v1/v2) với v3 (Lạc Kiếm trên Mannequin + UAL trực tiếp) cùng chuỗi hành động, nam/nữ',
-  usage: '[--genders m,f] [--variants v1,v2,v3] [--size 960x600]',
+  usage: '[--genders m,f] [--variants v1,v2,v3,v3raw] [--size 960x600]',
   async run(r) {
     const viewport = size('960x600');
     for (const g of list('--genders', 'm,f')) {
@@ -25,17 +27,28 @@ export default {
         const dir = path.join(r.out, `_rec-${tag}`);
         const stills = async () => {
           // Ảnh cận mặt: phiên riêng, camera đặt ngay sau khi vào game (trong phiên quay, nhân vật đã bị `level`/di chuyển nên hướng nhìn lệch).
-          const still = await r.open({ name: `V3c${g}${v}`, viewport: [800, 500], quality: 'high', look: { g }, query: v === 'v1' ? {} : { chr: v }, hide: 'hud', warnings: /models|chr_v3|clip/ });
+          const still = await r.open({ name: `V3c${g}${v}`, viewport: [800, 500], quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/ });
           await gm(still.page, 'god on', 1000);
           await gm(still.page, 'set set_lac_kiem', 1200);
           await gm(still.page, 'killall', 800);
           await gm(still.page, 'tp 2048 2088', 1500);
-          if (v === 'v3') await still.page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+          if (v.startsWith('v3')) await still.page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
           await sleep(2500);
           // Không `level`/di chuyển trước khi chụp: ngay sau khi vào, nhân vật quay mặt về camera yaw 0 (hướng thấy mặt).
           await cam(still.page, { yaw: 0, pitch: 0.12, dist: 1.25 });
           await sleep(1200);
           await snap(still.page, r.out, `${tag}-canmat.jpg`, { clip: centerClip(800, 500, 520, 400) });
+          // Toàn thân cùng góc ảnh concept (trước mặt, xa hơn), để so màu cạnh nhau.
+          await cam(still.page, { yaw: 0, pitch: 0.06, dist: 2.6 });
+          await sleep(1200);
+          await snap(still.page, r.out, `${tag}-toanthan.jpg`, { clip: centerClip(800, 500, 360, 460) });
+          // Cùng khung nhưng ẩn nhân vật: hiệu hai ảnh cho mặt nạ chính xác của nhân vật (đo màu trong game, không lẫn nền).
+          await still.page.evaluate(() => {
+            const g = window.__game!;
+            g.ents.players.get(g.sid).model.root.visible = false;
+          });
+          await sleep(500);
+          await snap(still.page, r.out, `${tag}-toanthan-nen.jpg`, { clip: centerClip(800, 500, 360, 460) });
           await still.ctx.close();
         };
         if (process.argv.includes('--stills')) {
@@ -43,13 +56,13 @@ export default {
           continue;
         }
         const t0 = Date.now();
-        const { ctx, page } = await r.open({ name: `V3${g}${v}`, viewport, quality: 'high', look: { g }, query: v === 'v1' ? {} : { chr: v }, hide: 'hud', warnings: /models|chr_v3|clip/, video: dir });
+        const { ctx, page } = await r.open({ name: `V3${g}${v}`, viewport, quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/, video: dir });
         await gm(page, 'level 12', 1500);
         await gm(page, 'god on', 1200);
         await gm(page, 'set set_lac_kiem', 1200);
         await gm(page, 'killall', 800);
         await gm(page, 'tp 2048 2088', 1500);
-        if (v === 'v3') await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+        if (v.startsWith('v3')) await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
         else if (v !== 'v1' || true) await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.dirHits === true, undefined, { timeout: 60_000, polling: 300 });
         // Camera 3/4 gần, đặt lại trước mỗi pha (camera theo khu có thể kéo xa).
         const frame = () => cam(page, { yaw: 0.5, pitch: 0.08, dist: 3.4 });

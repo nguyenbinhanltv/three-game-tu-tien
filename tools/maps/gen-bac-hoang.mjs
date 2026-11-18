@@ -6,7 +6,7 @@
 // Chạy: node tools/maps/gen-bac-hoang.mjs   (rồi pnpm content:check, pnpm map:report --level bac_hoang)
 // Tọa độ trong bảng là offset (m) so với TÂM bản đồ (1024, 1024); +x đông, +z nam, Bắc là -z (docs/DIVUC_DESIGN.md mục 4.1).
 // Vọng Bắc Trạm ở (0, +520), Giới Khích chạy nam → bắc dọc trục x = 0 từ Khích Giai (z = -40) tới Trấn Giới Đài (z = -600).
-// Quái trong bảng MIX/ELITES là CHỖ ĐỨNG TẠM (quái chương 4 có sẵn) tới khi DV-2/DV3-B có quái Dị Vực: đổi id ở đó (vị trí không đổi).
+// Quái thường trong MIX là quái Dị Vực đợt 1 (DV-2: Liệt Hỏa Ma Ngưu, U Ảnh Cốt Lộc) + Cốt Vệ Kiếm Thú đứng tạm chỗ Giác Kiếm Trọng Binh; ELITES vẫn là chỗ đứng tạm (quái chương 4) tới DV3-B. Đổi id ở đó (vị trí không đổi).
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -286,11 +286,12 @@ const TARGET_CAMPS = 66;
 const TARGET_DENSITY = 120;
 const CAMP_R = 30;
 const MIX = {
-  han_hoi_nguyen: [['mon_co_thanh_chien_ma', 1]], // đứng chỗ Liệt Hỏa Ma Ngưu (DV-2)
-  kho_loc_lam: [['mon_da_minh_loc', 0.6], ['mon_co_thanh_chien_ma', 0.4]], // U Ảnh Cốt Lộc ← Dạ Minh Lộc
-  khich_giai: [['mon_da_minh_loc', 0.3], ['mon_giac_kiem_trong_binh', 0.4], ['mon_tan_chung', 0.3]], // DV-2 đợt 2: Trọng Binh, Tẫn chủng lọt qua miệng khe
-  xich_tan_binh: [['mon_giac_kiem_trong_binh', 0.5], ['mon_co_thanh_chien_ma', 0.5]],
-  kim_da_ngoai_uyen: [['mon_giac_kiem_trong_binh', 0.5], ['mon_da_minh_loc', 0.5]],
+  // DV-3I: quái Dị Vực đợt 1 (DV-2) thay quái chương 4 đứng tạm; DV-2 đợt 2: Giác Kiếm Trọng Binh thay Cốt Vệ Kiếm Thú, Tẫn chủng lọt qua miệng khe.
+  han_hoi_nguyen: [['mon_liet_hoa_ma_nguu', 1]],
+  kho_loc_lam: [['mon_u_anh_cot_loc', 0.6], ['mon_liet_hoa_ma_nguu', 0.4]],
+  khich_giai: [['mon_u_anh_cot_loc', 0.3], ['mon_giac_kiem_trong_binh', 0.4], ['mon_tan_chung', 0.3]],
+  xich_tan_binh: [['mon_liet_hoa_ma_nguu', 0.5], ['mon_giac_kiem_trong_binh', 0.5]],
+  kim_da_ngoai_uyen: [['mon_u_anh_cot_loc', 0.5], ['mon_giac_kiem_trong_binh', 0.5]],
   tran_gioi_dai: [['mon_giac_kiem_trong_binh', 0.7], ['mon_tan_chung', 0.3]],
 };
 const pick = (list) => {
