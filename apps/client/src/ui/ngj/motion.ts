@@ -1,5 +1,4 @@
 import { useSyncExternalStore } from 'react';
-import { FLAGS } from '../../game/flags';
 
 /**
  * Cài đặt "Giảm chuyển động" (UI-1): tắt mọi hiệu ứng mở bảng, vòng quét, hạt sáng của bộ giao diện Ngọc Giản.
