@@ -2,7 +2,7 @@
 // Hàm thuần dùng chung client (hiển thị) và server (phán định). Bảng linh căn nằm ở packages/content/data/roots.json.
 
 import { tribForLevel } from './tribulation';
-import { HOA_THAN_LEVEL, KET_DAN_LEVEL, MAX_LEVEL, NGUNG_KHI_MAX, NGUYEN_ANH_LEVEL, TRUC_CO_LEVEL, playerBaseStats } from './formulas';
+import { ANH_BIEN_LEVEL, HOA_THAN_LEVEL, KET_DAN_LEVEL, MAX_LEVEL, NGUNG_KHI_MAX, NGUYEN_ANH_LEVEL, TRUC_CO_LEVEL, playerBaseStats } from './formulas';
 
 // ---------- bình cảnh ----------
 
@@ -11,13 +11,13 @@ import { HOA_THAN_LEVEL, KET_DAN_LEVEL, MAX_LEVEL, NGUNG_KHI_MAX, NGUYEN_ANH_LEV
  * Hai nút mỗi đại cảnh giới (`docs/EXPANSION_DESIGN.md` 2.4): trung kỳ → hậu kỳ (Ngưng Khí 5/10, Trúc Cơ 17, Kết Đan 21,
  * Nguyên Anh 25) và đại viên mãn → độ kiếp (15, 19, 23, 27 = `PEAK_LEVELS`).
  */
-export const BOTTLENECK_LEVELS: readonly number[] = [5, 10, 15, 17, 19, 21, 23, 25, 27];
+export const BOTTLENECK_LEVELS: readonly number[] = [5, 10, 15, 17, 19, 21, 23, 25, 27, 29, 31];
 
 /**
  * Cấp đại viên mãn của mỗi đại cảnh giới (Ngưng Khí 15, Trúc Cơ 19, Kết Đan 23, Nguyên Anh 27): tu vi đầy thì dừng,
  * không tự lên cấp; muốn sang đại cảnh giới kế phải vượt bình cảnh rồi độ kiếp.
  */
-export const PEAK_LEVELS: readonly number[] = [15, 19, 23, 27];
+export const PEAK_LEVELS: readonly number[] = [15, 19, 23, 27, 31];
 
 export function isPeakLevel(level: number): boolean {
   return PEAK_LEVELS.includes(level);
@@ -140,7 +140,8 @@ const REALM_CODES = [
   { code: 'tc', from: TRUC_CO_LEVEL, count: 4 },
   { code: 'kd', from: KET_DAN_LEVEL, count: 4 },
   { code: 'na', from: NGUYEN_ANH_LEVEL, count: 4 },
-  { code: 'ht', from: HOA_THAN_LEVEL, count: 1 },
+  { code: 'ht', from: HOA_THAN_LEVEL, count: 4 },
+  { code: 'ab', from: ANH_BIEN_LEVEL, count: 1 },
 ] as const;
 
 /**
@@ -151,7 +152,7 @@ const REALM_CODES = [
 export function parseRealmCode(code: unknown): number | null {
   if (typeof code === 'number') return Number.isInteger(code) && code >= 1 && code <= MAX_LEVEL ? code : null;
   if (typeof code !== 'string' || code.length > 8) return null;
-  const m = /^(nk|tc|kd|na|ht)?(\d{1,2})?$/.exec(code.trim().toLowerCase());
+  const m = /^(nk|tc|kd|na|ht|ab)?(\d{1,2})?$/.exec(code.trim().toLowerCase());
   if (!m || (!m[1] && !m[2])) return null;
   if (!m[1]) {
     const n = Number(m[2]);

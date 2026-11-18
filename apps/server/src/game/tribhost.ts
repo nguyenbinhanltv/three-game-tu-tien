@@ -28,4 +28,9 @@ export interface TribHost {
   shadowOf(p: PlayerEnt): MonEnt | null;
   /** Kết thúc kiếp (thành công khi hết giờ). */
   end(p: PlayerEnt, success: boolean): void;
+  /** Nhật Thực Kiếp: gọi quái kiếp trước mặt người độ kiếp (null nếu không dựng được), gỡ quái, làm quái mất thế, hồi máu người. */
+  spawnBoss(p: PlayerEnt, id: string, dist: number): MonEnt | null;
+  removeMonster(m: MonEnt): void;
+  stunMonster(m: MonEnt, sec: number): void;
+  heal(p: PlayerEnt, n: number): void;
 }
