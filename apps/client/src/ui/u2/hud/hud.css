@@ -359,6 +359,9 @@
 .u2h-chat[data-collapsed='1'] .u2h-chat-input {
   display: none;
 }
+.u2h-chat-head {
+  cursor: pointer;
+}
 .u2h-chat-last {
   flex: 1;
   min-width: 0;

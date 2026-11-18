@@ -104,7 +104,7 @@ export function QuestTrack() {
 const CHAT_IDLE_MS = 12_000;
 
 /**
- * Chat góc trái dưới, thu gọn được thành một dòng 32 px (dòng mới nhất); Enter mở lại để gõ. Lệnh /moi /p /tithi /roi giữ nguyên:
+ * Chat góc trái dưới, thu gọn được thành một dòng 32 px (dòng mới nhất); bấm thanh tiêu đề, mũi tên hoặc Enter mở lại (Enter ở `input.ts`). Lệnh /moi /p /tithi /roi giữ nguyên:
  * chỉ là ý định, server kiểm mọi điều kiện.
  */
 export function ChatBox() {
@@ -153,7 +153,15 @@ export function ChatBox() {
       data-collapsed={collapsed ? '1' : undefined}
       aria-label={t('ui.chat.title')}
     >
-      <header className="u2h-card-head">
+      <header
+        className="u2h-card-head u2h-chat-head"
+        // Bấm cả thanh tiêu đề để thu/mở (nút mũi tên chỉ là gợi ý), trạng thái lưu `dtl.chatCollapsed`.
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest('.u2h-fold')) return;
+          setHudPref('chatCollapsed', !pref);
+          blurAfterPointer(e);
+        }}
+      >
         <span>{t('ui.chat.title')}</span>
         {collapsed && last && (
           <span className="u2h-chat-last">
