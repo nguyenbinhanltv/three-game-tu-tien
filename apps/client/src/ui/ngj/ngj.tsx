@@ -1,7 +1,5 @@
-import { type KeyboardEvent, type ReactNode, useId, useRef } from 'react';
+import type { ReactNode } from 'react';
 import { t } from '@dtl/content';
-import { Tooltip } from '../kit/Tooltip';
-import { SysIcon, type SysIconName } from './icons';
 
 /** Bộ thành phần "Ngọc Giản Kim Văn" (UI-1). Khung SVG/CSS, màu theo token `--ngj-*` (tokens.css), chưa gắn vào HUD/bảng thật. */
 
@@ -55,40 +53,6 @@ export function Corners({ material = 'lacquer' }: { material?: Material }) {
       <OrnateCorner kind={k[2]} pos="bl" />
       <OrnateCorner kind={k[3]} pos="br" />
     </>
-  );
-}
-
-/* ───────── Panel ───────── */
-
-/** Khung bảng: sơn mài huyền (HUD) hoặc giấy ngà tường vân (bảng lớn), bốn góc hoa văn. `corners` = false cho khung nhỏ. */
-export function NgjPanel({
-  material = 'lacquer',
-  corners = true,
-  className,
-  children,
-  ...aria
-}: {
-  material?: Material;
-  corners?: boolean;
-  className?: string;
-  children: ReactNode;
-  role?: string;
-  'aria-label'?: string;
-  'aria-labelledby'?: string;
-}) {
-  const k = CORNERS[material];
-  return (
-    <div className={'ngj-panel' + (className ? ' ' + className : '')} data-mat={material} {...aria}>
-      {corners && (
-        <>
-          <OrnateCorner kind={k[0]} pos="tl" />
-          <OrnateCorner kind={k[1]} pos="tr" />
-          <OrnateCorner kind={k[2]} pos="bl" />
-          <OrnateCorner kind={k[3]} pos="br" />
-        </>
-      )}
-      <div className="ngj-panel-in">{children}</div>
-    </div>
   );
 }
 
@@ -254,141 +218,6 @@ export function NgjSlot({
         <path d={RING[shape]} />
       </svg>
     </button>
-  );
-}
-
-/* ───────── OrnateBar ───────── */
-
-/** Thanh máu / linh lực / tu vi có đầu mút: trái hoa văn vàng, phải hạt ngọc. `value` 0–1; phần đầy co bằng transform, không tính layout. */
-export function OrnateBar({
-  value,
-  tone = 'health',
-  label,
-  text,
-}: {
-  value: number;
-  tone?: 'health' | 'energy' | 'exp';
-  label: string;
-  text?: string;
-}) {
-  const v = Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
-  return (
-    <div
-      className="ngj-bar"
-      data-tone={tone}
-      role="progressbar"
-      aria-label={label}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={Math.round(v * 100)}
-    >
-      <svg className="ngj-bar-cap" viewBox="0 0 24 24" aria-hidden="true">
-        <path className="ngj-line-gold" d="M23 4H12C7 4 5 7 5 9.5S8 12 8 12s-3 .5-3 2.5S7 20 12 20h11" />
-        <path className="ngj-fill-gold" d="M3 12l3-3 3 3-3 3z" />
-      </svg>
-      <div className="ngj-bar-track">
-        <div className="ngj-bar-fill" style={{ transform: `scaleX(${v})` }} />
-        {text && <span className="ngj-bar-text">{text}</span>}
-      </div>
-      <svg className="ngj-bar-jewel" viewBox="0 0 24 24" aria-hidden="true">
-        <circle className="ngj-bead" cx="12" cy="12" r="6.5" />
-        <circle className="ngj-line-gold" cx="12" cy="12" r="9.5" />
-      </svg>
-    </div>
-  );
-}
-
-/* ───────── TabRail ───────── */
-
-export type RailTab = { id: string; label: string; icon: SysIconName };
-
-/** Tab dọc có icon nét vàng; mũi tên lên/xuống chuyển tab, tab đang chọn có mốc thoi vàng phát sáng. */
-export function TabRail({
-  items,
-  value,
-  onChange,
-  label,
-  material = 'lacquer',
-}: {
-  items: RailTab[];
-  value: string;
-  onChange: (id: string) => void;
-  label: string;
-  material?: Material;
-}) {
-  const refs = useRef<(HTMLButtonElement | null)[]>([]);
-  const onKey = (e: KeyboardEvent, i: number) => {
-    const d = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
-    if (!d) return;
-    e.preventDefault();
-    const n = (i + d + items.length) % items.length;
-    onChange(items[n].id);
-    refs.current[n]?.focus();
-  };
-  return (
-    <div className="ngj-rail" data-mat={material} role="tablist" aria-orientation="vertical" aria-label={label}>
-      {items.map((it, i) => (
-        <button
-          key={it.id}
-          ref={(el) => {
-            refs.current[i] = el;
-          }}
-          type="button"
-          role="tab"
-          aria-selected={it.id === value}
-          tabIndex={it.id === value ? 0 : -1}
-          className="ngj-rail-tab"
-          onClick={() => onChange(it.id)}
-          onKeyDown={(e) => onKey(e, i)}
-        >
-          <SysIcon name={it.icon} size={22} />
-          <span>{it.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/* ───────── Tooltip ───────── */
-
-/** Chú giải kiểu sơn mài: dùng lại định vị của `Tooltip` kit (portal, lật khi hết chỗ), chỉ đổi khung và chữ. */
-export function NgjTooltip({ content, children }: { content: ReactNode; children: ReactNode }) {
-  return (
-    <Tooltip content={content} tipClass="ngj-tip">
-      {children}
-    </Tooltip>
-  );
-}
-
-/** Nội dung chuẩn của chú giải: tên (viền phẩm chất), phân cách có mốc thoi, các dòng chỉ số. */
-export function NgjTipCard({
-  title,
-  rarity = 0,
-  sub,
-  lines,
-}: {
-  title: string;
-  rarity?: number;
-  sub?: string;
-  lines?: { name: string; value: string }[];
-}) {
-  const id = useId();
-  return (
-    <div className="ngj-tipcard" data-q={rarity} aria-labelledby={id}>
-      <div className="ngj-tipcard-title" id={id}>
-        {title}
-      </div>
-      {sub && <div className="ngj-tipcard-sub">{sub}</div>}
-      <div className="ngj-tipcard-div" aria-hidden="true">
-        <i />
-      </div>
-      {lines?.map((l) => (
-        <div className="ngj-tipcard-line" key={l.name}>
-          <span>{l.name}</span>
-          <b>{l.value}</b>
-        </div>
-      ))}
-    </div>
   );
 }
 

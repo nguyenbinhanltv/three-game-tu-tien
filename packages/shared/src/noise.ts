@@ -25,7 +25,7 @@ export function hash01(ix: number, iz: number, seed: number): number {
 
 function grad(ix: number, iz: number, dx: number, dz: number, seed: number): number {
   const h = (hash2(ix, iz, seed) >>> 7) & 15;
-  return GX[h] * dx + GZ[h] * dz;
+  return (GX[h] ?? 0) * dx + (GZ[h] ?? 0) * dz;
 }
 
 /** Perlin 2D, giá trị xấp xỉ trong [-1, 1]. */

@@ -1,6 +1,7 @@
 // Linh ngọc: bảng chỉ số, id, tách id, dòng chỉ số cộng vào món. Tách khỏi upgrade.ts để items.ts dùng `gemAffixes` mà upgrade.ts
 // (cần items.ts) không phải import vòng. upgrade.ts re-export nên API công khai không đổi.
 
+import { at } from './arr';
 import { ELEMENTS, type Element } from './elements';
 import type { AffixRoll, AffixStat } from './itemtypes';
 
@@ -33,7 +34,7 @@ export function parseGem(id: unknown): { elem: Element; tier: number } | null {
   if (typeof id !== 'string') return null;
   const m = /^gem_([a-z]+)_([1-9])$/.exec(id);
   if (!m) return null;
-  const elem = (ELEMENTS as readonly string[]).includes(m[1]) ? (m[1] as Element) : null;
+  const elem = (ELEMENTS as readonly string[]).includes(m[1] ?? '') ? (m[1] as Element) : null;
   const tier = Number(m[2]);
   return elem && tier >= 1 && tier <= GEM_TIERS ? { elem, tier } : null;
 }
@@ -44,7 +45,7 @@ export function gemAffixes(id: string): AffixRoll[] {
   if (!g) return [];
   const main = GEM_STATS[g.elem];
   return [
-    { id: main.stat, v: main.v[g.tier - 1] },
-    { id: 'elem_dmg', p: g.elem, v: GEM_ELEM_DMG[g.tier - 1] },
+    { id: main.stat, v: at(main.v, g.tier - 1, 'GEM_STATS.v') },
+    { id: 'elem_dmg', p: g.elem, v: at(GEM_ELEM_DMG, g.tier - 1, 'GEM_ELEM_DMG') },
   ];
 }

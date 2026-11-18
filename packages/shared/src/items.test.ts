@@ -1,3 +1,4 @@
+import { at } from './arr';
 import { pickQuality } from './equipLoot';
 import { describe, expect, it } from 'vitest';
 import {
@@ -32,7 +33,7 @@ const SYS: ItemSysData = {
     { id: 'ring', weight: 0.6, main: { atk: 1 } },
     { id: 'artifact', weight: 0, main: {} },
   ],
-  qualities: [0, 1, 2, 3, 4, 5].map((i) => ({ id: i as 0, color: '#ffffff', affixes: i, affixFrac: [0, 0.2, 0.3, 0.4, 0.5, 0.55][i] })),
+  qualities: [0, 1, 2, 3, 4, 5].map((i) => ({ id: i as 0, color: '#ffffff', affixes: i, affixFrac: at([0, 0.2, 0.3, 0.4, 0.5, 0.55], i) })),
   affixes: [
     { id: 'atk_pct', min: 0.02, max: 0.04, weight: 10 },
     { id: 'crit_rate', min: 0.015, max: 0.03, weight: 8 },
@@ -120,7 +121,7 @@ describe('roll', () => {
     for (let n = 0; n < 200; n++) {
       const q = (n % QUALITY_COUNT) as 0;
       const inst = rollItemInstance(SYS, 'weapon', 10, q, rng);
-      expect(inst.main.atk!).toBeLessThanOrEqual(Math.ceil(budget(10, q, 1.3) * (1 - SYS.qualities[q].affixFrac) * 1.05));
+      expect(inst.main.atk!).toBeLessThanOrEqual(Math.ceil(budget(10, q, 1.3) * (1 - at(SYS.qualities, q).affixFrac) * 1.05));
     }
   });
   it('pháp bảo phụ chưa có chỉ số hay dòng phụ', () => {
@@ -197,7 +198,7 @@ describe('tổng chỉ số nhân vật', () => {
   it('trần: bạo kích 40%, sát thương bạo kích +100%, tốc độ chạy', () => {
     const one = (id: AffixRoll['id']): ItemInst => ({ q: 4, ilvl: 10, main: {}, gems: [], bound: false, affixes: [{ id, v: 0.1 }] });
     const ids: AffixRoll['id'][] = ['crit_rate', 'crit_dmg', 'move_speed'];
-    const items = Array.from({ length: 30 }, (_, i) => ({ item: { id: 'x' + i, n: 1, inst: one(ids[i % 3]) } }));
+    const items = Array.from({ length: 30 }, (_, i) => ({ item: { id: 'x' + i, n: 1, inst: one(at(ids, i % 3)) } }));
     const s = computePlayerStats(10, items);
     expect(s.critRate).toBe(STAT_CAPS.critRate);
     expect(s.critMul).toBeCloseTo(1.6 + STAT_CAPS.critDmg);

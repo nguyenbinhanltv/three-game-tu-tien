@@ -2,6 +2,7 @@
 // Hàm thuần. Bảng dữ liệu (ô, phẩm, dòng phụ) nằm ở packages/content/data/equipment/*.json và được truyền vào
 // qua `ItemSysData`; việc roll chỉ chạy ở server (client không bao giờ roll, chỉ hiển thị kết quả server gửi).
 
+import { at } from './arr';
 import { clamp, lerp, mulberry32 } from './noise';
 import { enhanceMul, type BaseStats, playerBaseStats, CRIT_CHANCE, CRIT_MULT } from './formulas';
 import type { EquipSlot, InvItem, StatBlock } from './types';
@@ -193,7 +194,7 @@ export function rollAffixes(
     const weightOf = (o: { def: AffixDef }) => (o.def.param ? o.def.weight / Math.max(1, data.params[o.def.param].length) : o.def.weight);
     const total = opts.reduce((s, o) => s + weightOf(o), 0);
     let pick = rng() * total;
-    let chosen = opts[opts.length - 1];
+    let chosen = at(opts, opts.length - 1, 'affix opts');
     for (const o of opts) {
       pick -= weightOf(o);
       if (pick < 0) {
@@ -223,7 +224,7 @@ export function mainLine(
   tier = 1,
 ): Partial<Record<MainStat, number>> {
   const sd = slotDef(data, slot);
-  const qd = data.qualities[q];
+  const qd = at(data.qualities, q, 'qualities');
   const out: Partial<Record<MainStat, number>> = {};
   if (sd.weight <= 0) return out;
   const pts = budget(ilvl, q, sd.weight) * (TIER_MUL[clampTier(tier)] ?? 1) * (1 - qd.affixFrac) * (1 + (rollR * 2 - 1) * MAIN_ROLL_SPREAD);
@@ -240,7 +241,7 @@ export function mainLine(
  */
 export function rollItemInstance(data: ItemSysData, slot: EquipSlot, ilvl: number, q: Quality, rng: () => number, tier = 1): ItemInst {
   const sd = slotDef(data, slot);
-  const qd = data.qualities[q];
+  const qd = at(data.qualities, q, 'qualities');
   const li = clamp(Math.round(ilvl), 1, MAX_ILVL);
   const main = mainLine(data, slot, li, q, rng(), tier);
   const affixes = sd.weight > 0 ? rollAffixes(data, slot, qd.affixes, li, q, rng) : [];
@@ -264,7 +265,7 @@ export function parseInst(data: ItemSysData, slot: EquipSlot, raw: unknown): Ite
   // Chỉ chặn giá trị vô lý tuyệt đối (không so với công thức hiện hành) để đổi cân bằng sau này không làm bác đồ đã rơi.
   const cap =
     budget(MAX_ILVL, (QUALITY_COUNT - 1) as Quality, Math.max(...data.slots.map((x) => x.weight))) *
-    TIER_MUL[MAX_TIER] *
+    at(TIER_MUL, MAX_TIER, 'TIER_MUL') *
     (1 + MAIN_ROLL_SPREAD);
   // Hỏng từng phần thì bỏ đúng phần đó, giữ phẩm, ilvl, ràng buộc và phần còn lại (không đặt lại cả món).
   const main: Partial<Record<MainStat, number>> = {};

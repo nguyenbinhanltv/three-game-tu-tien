@@ -1,3 +1,4 @@
+import { at } from './arr';
 import { describe, expect, it } from 'vitest';
 import {
   allGemIds,
@@ -26,8 +27,8 @@ describe('cường hóa +10', () => {
   it('tỉ lệ giảm dần, +0..+4 chắc chắn, +10 là trần', () => {
     const tbl = enhanceTable();
     expect(tbl).toHaveLength(MAX_ENHANCE);
-    for (let p = 0; p < 5; p++) expect(tbl[p].chance).toBe(1);
-    for (let p = 1; p < tbl.length; p++) expect(tbl[p].chance).toBeLessThanOrEqual(tbl[p - 1].chance);
+    for (let p = 0; p < 5; p++) expect(at(tbl, p).chance).toBe(1);
+    for (let p = 1; p < tbl.length; p++) expect(at(tbl, p).chance).toBeLessThanOrEqual(at(tbl, p - 1).chance);
     expect(enhanceChance(9)).toBe(0.3);
   });
 

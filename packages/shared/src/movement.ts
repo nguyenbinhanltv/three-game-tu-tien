@@ -138,6 +138,7 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
   const colliders = ctx.ghost ? [] : terrain.colliders;
   for (let c = 0; c < colliders.length; c++) {
     const col = colliders[c];
+    if (!col) continue;
     const dx = s.x - col.x;
     const dz = s.z - col.z;
     const rr = col.r + PLAYER_RADIUS;
