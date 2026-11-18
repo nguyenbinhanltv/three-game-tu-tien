@@ -2,7 +2,7 @@
 
 Nền tảng: token, font, họa tiết, thành phần và trang xem. Chưa thay HUD/bảng thật (U2-2…U2-4).
 
-- Xem: `?mute=1&ui=kit` (bản Ngọc Giản cũ còn ở `?ui=ngj`, gỡ ở U2-5).
+- Xem: `?mute=1&ui=kit` (trang xem Ngọc Giản cũ `?ui=ngj` đã gỡ ở U2-5b).
 - Token (MỘT nguồn): `tokens.css`, tiền tố `--u-*`. Màu hex/rgba **chỉ** ở file này. `fonts.css` khai `@font-face`.
 - Thành phần: `Panel`/`PanelTitle`/`CloseButton`, `Tabs`, `Button`, `Badge`, `Bar`, `Slot`/`IconFrame`, `Tooltip`, `Dialog`, `Toasts`, `SkillButton`, `InkBanner`; họa tiết SVG ở `patterns.tsx`. Import từ `ui/u2`.
 - Quy tắc hình: HUD = sơn mài tối; mọi cửa sổ = giấy ngà; mọi ô/nút/nhãn cùng họ hình vát (`clip-path`), không `border-radius` trừ vòng tròn.

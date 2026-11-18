@@ -10,7 +10,7 @@ import type { MonsterAi, MonsterDef, MonsterPhase, MonsterPosture } from './type
 export function bossPhaseAt(frac: number, phases: readonly MonsterPhase[] | undefined, cur = 0): number {
   let ph = 0;
   if (phases) {
-    for (let i = 0; i < phases.length; i++) if (frac <= phases[i].hp) ph = i + 1;
+    for (let i = 0; i < phases.length; i++) if (frac <= (phases[i]?.hp ?? -Infinity)) ph = i + 1;
   }
   return Math.max(cur, ph);
 }
@@ -28,7 +28,8 @@ export function phaseRules(def: Pick<MonsterDef, 'ai' | 'phases'>, ph: number): 
   let speedMul = 1;
   const n = Math.min(ph, def.phases?.length ?? 0);
   for (let i = 0; i < n; i++) {
-    const p = def.phases![i];
+    const p = def.phases?.[i];
+    if (!p) continue;
     if (p.ai) {
       for (const k of Object.keys(p.ai) as (keyof MonsterAi)[]) {
         const v = p.ai[k];

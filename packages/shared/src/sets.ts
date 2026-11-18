@@ -259,7 +259,9 @@ export function parseAccessoryCode(sets: readonly SetDef[], code: string): Parti
   const out: Partial<Record<EquipSlot, string>> = {};
   for (let i = 0; i < ACC_SLOTS.length && i < code.length; i++) {
     const n = code.charCodeAt(i) - 48;
-    if (n >= 1 && n <= sets.length) out[ACC_SLOTS[i]] = sets[n - 1].id;
+    const slot = ACC_SLOTS[i];
+    const set = sets[n - 1];
+    if (slot && set && n >= 1 && n <= sets.length) out[slot] = set.id;
   }
   return out;
 }
