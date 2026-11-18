@@ -16,7 +16,7 @@ const SAFE_PATH = /^[\w\-./]+\.(glb|gltf)$/i;
 const num = (n: number) => n.toLocaleString('vi-VN');
 const m = (n: number) => n.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
 
-export function resolveFile(file: string): string | null {
+function resolveFile(file: string): string | null {
   const p = file.replace(/^\/+/, '');
   if (!SAFE_PATH.test(p) || p.includes('..')) return null;
   return BASE_URL + p;

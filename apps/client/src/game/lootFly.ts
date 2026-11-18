@@ -6,9 +6,9 @@ import { contentIconStyle } from '../ui/ContentIcon';
  * túi (phần tử có `data-bag`) nháy một nhịp. Chỉ là lớp hình: đồ đã nằm trong túi ở server từ trước.
  */
 
-export const MAX_FLYING = 10;
+const MAX_FLYING = 10;
 /** Thời gian bay (giây). */
-export const FLY_DUR = 0.6;
+const FLY_DUR = 0.6;
 
 /**
  * Vị trí trên đường cong bậc hai từ (x0, y0) tới (x1, y1), vồng lên `lift` px, tại tiến độ `k` (0..1)

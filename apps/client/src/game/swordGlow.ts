@@ -11,7 +11,7 @@ const BLADE_LEN = 0.95;
 const BLADE_START = 0.12;
 
 /** Số đo lưỡi tính từ tâm chuôi dọc mũi (m): gốc lưỡi và chiều dài lưỡi, theo model kiếm đang cầm. */
-export interface BladeDims {
+interface BladeDims {
   start: number;
   len: number;
 }

@@ -21,7 +21,7 @@ export interface Body {
 /** Độ lệch tối đa so với vị trí logic (m). */
 export const SEP_MAX = 1.6;
 /** Khe hở chừa giữa hai thân (m). */
-export const SEP_GAP = 0.05;
+const SEP_GAP = 0.05;
 
 /** Giải tách cho `n` thân đầu của `bodies` (phần tử thừa bị bỏ qua). O(n²), n nhỏ (thân gần camera). */
 export function solveSeparation(bodies: Body[], n = bodies.length, iterations = 3): void {

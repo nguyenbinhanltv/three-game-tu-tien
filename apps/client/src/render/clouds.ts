@@ -92,7 +92,7 @@ function getWorldMask(): THREE.DataTexture {
   return worldTex;
 }
 
-export const cloudParams = {
+const cloudParams = {
   /** Sắc đáy mây (phần khuất nắng): lạnh, trùng bóng ngọc lam. */
   shade: uniform(new THREE.Color(0x7d99a3)),
   /** Hệ số bật/tắt toàn bộ (preset). */

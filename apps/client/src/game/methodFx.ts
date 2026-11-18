@@ -9,10 +9,10 @@ import { G } from './geo';
 import { SIGIL_CIRCLE } from '../render/vfx/sigil';
 import type { Vfx } from './vfx';
 
-export type FxPos = (out: THREE.Vector3) => boolean;
+type FxPos = (out: THREE.Vector3) => boolean;
 
 /** Màu mặc định của chiêu công pháp khi không có màu trong FX. */
-export const METHOD_COLORS: Record<string, number> = {
+const METHOD_COLORS: Record<string, number> = {
   kanh: 0x9fd8ff,
   vankiem: 0xbfe6ff,
   transon: 0xffc95a,
@@ -47,14 +47,14 @@ export function fxColor(m: FxMsg, fallback: number): number {
 }
 
 /** Hệ số cỡ theo cấp chiêu: mỗi cấp thêm 6%, cấp 5 sáng hơn một chút. */
-export function levelScale(lv: number | undefined): number {
+function levelScale(lv: number | undefined): number {
   return 1 + 0.06 * (Math.max(1, Math.min(5, lv ?? 1)) - 1);
 }
 
 const _a = new THREE.Vector3();
 
 /** Pháp trận tròn nằm trên đất, hiện ra rồi tan dần. */
-export function groundRing(v: Vfx, x: number, z: number, r: number, color: number, dur: number): void {
+function groundRing(v: Vfx, x: number, z: number, r: number, color: number, dur: number): void {
   const m = v.sigil(SIGIL_CIRCLE, x, z, 0, r, 0, color, groundAt(x, z) + 0.14);
   v.track(
     dur,
@@ -66,7 +66,7 @@ export function groundRing(v: Vfx, x: number, z: number, r: number, color: numbe
   );
 }
 
-export interface MethodFxCtx {
+interface MethodFxCtx {
   v: Vfx;
   m: FxMsg;
   src: FxPos;

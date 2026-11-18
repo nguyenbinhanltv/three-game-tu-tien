@@ -8,7 +8,7 @@ import { groundAt } from './levelCtx';
 import type { SpiritScan, SpiritState } from '../ui/store';
 
 /** Màu theo loại điểm (cũng dùng cho biểu tượng minimap). */
-export const SPIRIT_COLOR: Record<SpiritKind, number> = { boss: 0xff6a4a, elite: 0xffb84a, mon: 0xd8d2c0, node: 0x7dffa0, player: 0x5cb8ff, poi: 0xe8c46a };
+const SPIRIT_COLOR: Record<SpiritKind, number> = { boss: 0xff6a4a, elite: 0xffb84a, mon: 0xd8d2c0, node: 0x7dffa0, player: 0x5cb8ff, poi: 0xe8c46a };
 
 /** Các loại có cột sáng trong thế giới (quái thường chỉ hiện trên minimap cho khỏi rối). */
 const BEAM_KINDS: ReadonlySet<SpiritKind> = new Set(['boss', 'elite', 'node', 'player', 'poi']);

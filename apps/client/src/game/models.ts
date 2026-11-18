@@ -7,7 +7,6 @@ import { createLabel, releaseLabel, type Label } from './labelBatch';
 import { HitReact, type HitOpts } from './hitreact';
 import type { AnimState, CharacterView, MonsterView } from './character/view';
 
-export type { AnimState } from './character/view';
 
 /** Material dùng chung cho mọi mô hình tô màu theo đỉnh. */
 export const MODEL_MAT = createWorldMaterial({ vertexColors: true });
@@ -40,7 +39,7 @@ function buildSword(): THREE.BufferGeometry {
   b.add(G.ico0, mat(0, -0.09, 0, 0, 0, 0, 0.04), C_GOLD);
   return b.build();
 }
-export const SWORD_GEO = buildSword();
+const SWORD_GEO = buildSword();
 
 /**
  * Phi kiếm dưới chân khi ngự kiếm (ẩn sẵn). Dùng chung cho model khối và model có xương.
@@ -61,7 +60,7 @@ export function buildFlySword(): { group: THREE.Group; aura: THREE.Material } {
   return { group, aura };
 }
 
-export interface HumanoidOpts {
+interface HumanoidOpts {
   robe: number | string;
   trim: number | string;
   hair?: number | string;
@@ -487,7 +486,7 @@ export class MonsterModel implements MonsterView {
 
 const NODE_GEO = new Map<string, THREE.BufferGeometry>();
 
-export function nodeGeometry(item: string): THREE.BufferGeometry {
+function nodeGeometry(item: string): THREE.BufferGeometry {
   let g = NODE_GEO.get(item);
   if (g) return g;
   const b = new GeoBuilder();

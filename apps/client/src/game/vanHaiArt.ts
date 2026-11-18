@@ -50,14 +50,14 @@ export interface VhIsland {
   trail: Float32Array;
 }
 
-export interface VhPond {
+interface VhPond {
   x: number;
   z: number;
   r: number;
   depth: number;
 }
 
-export interface VhArt {
+interface VhArt {
   islands: VhIsland[];
   ponds: VhPond[];
   floor: number;

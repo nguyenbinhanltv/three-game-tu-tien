@@ -4,7 +4,7 @@ import { METHOD_SKILLS, POSE, SKILLS } from '@dtl/content';
 import { MAX_HOLD } from '../game/skillPose';
 
 /** Bảng thời gian một chiêu (K-1): pose, nhịp vung, và lúc server áp sát thương so với lúc hình trúng. */
-export interface SkillTiming {
+interface SkillTiming {
   skill: string;
   pose: string;
   /** Công pháp của chiêu (rỗng = chiêu gốc). */

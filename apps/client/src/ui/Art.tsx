@@ -17,7 +17,7 @@ function loadManifest() {
 }
 
 /** Đường dẫn ảnh, hoặc null khi chưa có manifest / thiếu ảnh (chỗ dùng tự bỏ qua, không lỗi). */
-export function artUrl(group: string, id: string): string | null {
+function artUrl(group: string, id: string): string | null {
   if (resolved === undefined) void loadManifest();
   const e = resolved?.files[group]?.[id];
   return e ? base + e.file : null;

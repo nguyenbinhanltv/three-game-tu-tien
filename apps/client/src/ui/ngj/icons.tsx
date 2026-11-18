@@ -71,7 +71,7 @@ const SEAL: Record<string, string> = {
 };
 
 /** Số nguyên 1–99 thành dãy chữ triện (mười = 十, 13 = 十三, 20 = 二十). */
-export function sealGlyphs(n: number): string[] {
+function sealGlyphs(n: number): string[] {
   const v = Math.max(1, Math.min(99, Math.floor(n)));
   const tens = Math.floor(v / 10);
   const ones = v % 10;

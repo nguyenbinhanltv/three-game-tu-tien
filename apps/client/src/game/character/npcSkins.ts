@@ -12,7 +12,7 @@ import type { CharState, ClipMap } from './states';
 import { type CharacterView, legacyModelsRequested } from './view';
 
 /** NPC dùng model có xương: asset và tốc độ phát riêng. */
-export interface NpcSkin {
+interface NpcSkin {
   asset: string;
   rates?: Partial<Record<CharState, number>>;
   /** Nhân màu lên vật liệu (0xRRGGBB) để NPC dùng chung asset không giống hệt nhau (E2-H). */
@@ -64,7 +64,7 @@ export const NPC_SKINS: Record<string, NpcSkin> = {
 };
 
 /** Model khối cũ của NPC (dự phòng khi asset chưa nạp/lỗi, và `?models=legacy`). */
-export function legacyNpc(id: string, robe: string): Humanoid {
+function legacyNpc(id: string, robe: string): Humanoid {
   return new Humanoid({
     robe,
     trim: id === 'npc_chuong_mon' ? 0x3b6ea8 : 0x4a3a2a,

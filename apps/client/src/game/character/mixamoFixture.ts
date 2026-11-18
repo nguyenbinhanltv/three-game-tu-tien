@@ -48,7 +48,7 @@ function joints(): J[] {
 
 const PREFIX = 'mixamorig';
 
-export interface FixtureOpts {
+interface FixtureOpts {
   /** Bọc xương trong node `Armature` scale 0,01 (xương tính bằng cm) như GLB Mixamo xuất từ FBX. */
   centimeters?: boolean;
   /** Thêm SkinnedMesh khối (1 draw call) để xem trong viewer. */

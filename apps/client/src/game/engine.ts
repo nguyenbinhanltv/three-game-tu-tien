@@ -69,7 +69,7 @@ import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
 import { SkillFx, fxTriggered, replacedFx } from './skillFx';
-import { MonFx, MONFX_ON } from './monFx';
+import { MonFx } from './monFx';
 import { variantFor } from './fxTimeline';
 import { fxQuality, hitStopOn, setFxQuality, setHitStopOn } from './fxSettings';
 import type { FxQuality } from '@dtl/shared';

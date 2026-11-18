@@ -109,7 +109,7 @@ function statValue(s: PlayerStats, k: StatKey): number {
   return s[k];
 }
 
-export interface StatDiff {
+interface StatDiff {
   key: StatKey;
   before: number;
   after: number;
@@ -213,7 +213,7 @@ export function pillLines(item: InvItem, def: ItemDef): TipLine[] {
 }
 
 /** Số liệu kỹ năng pháp bảo ở cấp `lv`, dùng cho chuỗi mô tả. */
-export function artifactParams(id: string, lv: number): Record<string, number> {
+function artifactParams(id: string, lv: number): Record<string, number> {
   const def = ARTIFACT.get(id);
   if (!def) return {};
   return { r: def.radius, n: Math.round(def.power * artifactLevelMods(lv).powerMul * 100), s: Math.round((def.kind === 'seal' ? sealStun(def, lv) : (def.duration ?? 0)) * 10) / 10 };

@@ -23,7 +23,7 @@ function system(): boolean {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-export function reduceMotion(): boolean {
+function reduceMotion(): boolean {
   return stored() ?? system();
 }
 

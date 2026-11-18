@@ -135,7 +135,7 @@ export function markBloom(material: THREE.Material, strength = 1): void {
 
 // ---------- pipeline ----------
 
-export interface PostOptions {
+interface PostOptions {
   bloom: boolean;
   /** Số mẫu MSAA của pass cảnh: 0 hoặc 4. */
   msaa: number;

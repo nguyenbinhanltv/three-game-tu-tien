@@ -7,7 +7,7 @@ import './tokens.css';
 import './ngj.css';
 import './screens.css';
 
-export { Corners, Cartouche, RingSweep, NgjButton, type NgjButtonVariant, NgjPanel, NgjSlot, NgjTipCard, NgjTooltip, OrnateBar, OrnateCorner, type CornerKind, type MapMotif, type Material, type RailTab, type SlotShape, TabRail } from './ngj';
-export { isSysIcon, SealNumeral, sealGlyphs, SYS_ICON_NAMES, SysIcon, type SysIconName } from './icons';
-export { installMotion, installNgjHud, ngjHud, reduceMotion, setReduceMotion, useReduceMotion } from './motion';
+export { Corners, Cartouche, RingSweep, NgjButton, NgjPanel, NgjSlot, NgjTipCard, NgjTooltip, OrnateBar, OrnateCorner, type CornerKind, type MapMotif, type RailTab, type SlotShape, TabRail } from './ngj';
+export { isSysIcon, SealNumeral, SYS_ICON_NAMES, SysIcon, type SysIconName } from './icons';
+export { installMotion, installNgjHud, ngjHud, setReduceMotion, useReduceMotion } from './motion';
 export { MethodCarousel } from './MethodCarousel';

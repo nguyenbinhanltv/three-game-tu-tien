@@ -60,10 +60,6 @@ export interface Flags {
   bhArt: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
   butterflies: boolean;
-  /** Các cờ sắp gỡ ở R-4b/R-4c (giữ hành vi cũ tới đó). */
-  k6: boolean;
-  fxTimeline: boolean;
-  monFx: boolean;
   ngj: boolean;
 }
 
@@ -95,9 +91,6 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   xichart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Xích Tẫn Khích' },
   bhart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Bắc Hoang' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
-  k6: { scope: 'diag', doc: '=0 tắt ba pha K-6 (sẽ gỡ R-4b)' },
-  fxtl: { scope: 'diag', doc: '=0 tắt VFX timeline (sẽ gỡ R-4b)' },
-  monfx: { scope: 'diag', doc: '=0 tắt VFX quái V5 (sẽ gỡ R-4b)' },
   ngj: { scope: 'diag', doc: '=0 HUD cũ (sẽ gỡ R-4c)' },
   god: { scope: 'test', doc: 'bất tử (server kiểm lại, xem testParams.ts)' },
   at: { scope: 'test', doc: 'vào ở điểm đặt tên hoặc x,z (testParams.ts)' },
@@ -154,9 +147,6 @@ export function readFlags(search: string): Flags {
     xichArt: !off(q.get('xichart')),
     cinematics: !off(q.get('cine')),
     butterflies: !off(q.get('bf')),
-    k6: !off(q.get('k6')),
-    fxTimeline: !off(q.get('fxtl')),
-    monFx: !off(q.get('monfx')),
     ngj: !off(q.get('ngj')),
   };
 }

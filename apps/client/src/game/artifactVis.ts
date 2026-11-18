@@ -9,7 +9,7 @@ import { assets, type AssetHandle } from './assets';
 import { adoptGltfMaterials } from '../render/materials/world';
 
 /** Tư thế trong khung nhân vật: x = bên trái, y = lên, z = phía trước (trùng quy ước import Tripo). */
-export interface ArtPose {
+interface ArtPose {
   x: number;
   y: number;
   z: number;

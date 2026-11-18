@@ -32,7 +32,7 @@ import { applySkyPreset, skyParams } from './sky';
  * preset chỉnh màu. Sương là một `scene.fogNode` dùng chung nên áp cho mọi material có `fog: true`
  * (địa hình, kiến trúc, nhân vật, quái), thay cho `FogExp2` phẳng mà `env.ts` đặt.
  */
-export const fogParams = {
+const fogParams = {
   color: uniform(new THREE.Color(0xd6e4de)),
   density: uniform(0.0011),
   /** Đáy lớp sương dày (m): thung lũng, mặt hồ. */
@@ -81,7 +81,7 @@ export const rimParams = {
   strength: uniform(0.22),
 };
 
-export interface EnvLike {
+interface EnvLike {
   sun: THREE.DirectionalLight;
   hemi: THREE.HemisphereLight;
   sky: THREE.Mesh;
@@ -145,7 +145,7 @@ const HALO_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 0.9
 const BEACON_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 1, ochre_dawn: 0.5, ochre: 0.3, ochre_night: 1, cloud_dawn: 0.5, cloud: 0.3, cloud_night: 1, tk_dawn: 0.6, tk: 0.35, tk_night: 1.1, ash_dawn: 0.5, rift: 0.55, rift_pit: 0.55 };
 export const beaconParams = { intensity: uniform(0.3) };
 
-export const haloParams = {
+const haloParams = {
   color: uniform(new THREE.Color(0xffc985)),
   /** Cường độ: ban ngày nhẹ, đêm rõ. */
   intensity: uniform(0.35),

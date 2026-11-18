@@ -1,14 +1,14 @@
 import { BOTTLENECK_LEVELS, bottleneckReady, NGUNG_KHI_MAX } from '@dtl/shared';
 
 /** Phần của nhân vật mà mốc đột phá cần biết (khớp `CharView`). */
-export interface BreakChar {
+interface BreakChar {
   level: number;
   xp: number;
   xpNeed: number;
   bk: number;
 }
 
-export interface BreakGoal {
+interface BreakGoal {
   /** Mốc kế tiếp: bình cảnh (`bk`), độ kiếp Trúc Cơ (`trib`), hoặc null khi đã qua Ngưng Khí. */
   kind: 'bk' | 'trib' | null;
   /** Tầng của mốc (bình cảnh: 5/10/15; độ kiếp: 15). */

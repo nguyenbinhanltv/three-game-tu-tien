@@ -13,7 +13,7 @@ import { contentIconStyle } from '../ui/ContentIcon';
  * Chỉ đọc vị trí đã có ở client; không thêm thông tin mới (không tỉ lệ rơi, không đổi luật).
  */
 
-export const MAX_INDICATORS = 3;
+const MAX_INDICATORS = 3;
 
 export type OffKind = 'target' | 'foe' | 'boss' | 'quest' | 'turnin' | 'gather' | 'loot' | 'mark' | 'mate';
 
@@ -32,7 +32,7 @@ export interface OffCandidate {
 }
 
 /** Khoảng lề (px) của khung bám mép, chừa chỗ cho khung nhân vật, thanh boss, bản đồ nhỏ, thanh chiêu. */
-export interface EdgeInset {
+interface EdgeInset {
   left: number;
   right: number;
   top: number;
@@ -42,7 +42,7 @@ export interface EdgeInset {
 export const DEFAULT_INSET: EdgeInset = { left: 40, right: 40, top: 40, bottom: 165 };
 
 /** Khối HUD (khung chữ nhật px) mà chỉ báo phải tránh. */
-export interface Rect {
+interface Rect {
   left: number;
   top: number;
   right: number;
@@ -74,7 +74,7 @@ const AVOID_SELECTOR = '.player-frame, .target-frame, .boss-bar, .right-col, .ch
 /** Điểm trong NDC coi là "đang thấy" khi |x|,|y| ≤ ngưỡng này (để chỉ báo hiện trước khi vật chạm hẳn mép). */
 const VISIBLE_NDC = 0.94;
 
-export interface EdgePlace {
+interface EdgePlace {
   x: number;
   y: number;
   /** Góc (radian) của hướng chỉ trên màn hình, 0 = sang phải, tăng theo chiều kim đồng hồ (trục y màn hình hướng xuống). */
@@ -153,7 +153,7 @@ export function avoidRects(at: EdgePlace, rects: readonly Rect[], w: number, h: 
 }
 
 /** Đích của nhiệm vụ đang theo dõi, chưa gắn vị trí. */
-export type QuestGoal =
+type QuestGoal =
   | { kind: 'npc'; npc: string; turnin: boolean }
   | { kind: 'mon'; mon: string }
   | { kind: 'node'; item: string };

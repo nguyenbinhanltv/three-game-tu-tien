@@ -13,7 +13,7 @@ export const SURFACES: readonly Surface[] = ['stone', 'grass', 'dirt', 'sand', '
 /** Độ dốc (Δy/Δx) từ đó mặt đất là đá trơ (lớp rock/cliff của shader). */
 export const ROCK_SLOPE = 0.7;
 /** Độ cao (m) từ đó mặt đất là đá (khớp smoothstep(175, 235) của lớp rock trong render/materials/ground.ts, lấy điểm giữa). */
-export const ROCK_HEIGHT = 205;
+const ROCK_HEIGHT = 205;
 
 interface Rect {
   x0: number;

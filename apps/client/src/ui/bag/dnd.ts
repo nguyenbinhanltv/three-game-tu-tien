@@ -3,7 +3,7 @@ import { useUI } from '../store';
 import { diffNew } from './model';
 
 /** Món đang kéo từ túi (ô, có giữ Shift để tách không). Ô trang bị ở bảng nhân vật đọc cái này để sáng lên. */
-export interface BagDrag {
+interface BagDrag {
   slot: number;
   split: boolean;
   /** id vật phẩm đang kéo (để ô trang bị biết hợp loại). */
