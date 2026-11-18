@@ -1058,19 +1058,19 @@ export class SkinnedPlayer extends SkinnedCharacter {
   }
 
   /** Ra chiêu: kiếm vào tay nếu động tác thật sự phát (bay, trên không, chết thì server không cho ra chiêu). */
-  perform(id: string, o?: PerformOpts): boolean {
+  override perform(id: string, o?: PerformOpts): boolean {
     const ok = super.perform(id, o);
     if (this.performing(id)) this.engage(true);
     return ok;
   }
 
-  hitReact(o: HitOpts): void {
+  override hitReact(o: HitOpts): void {
     super.hitReact(o);
     this.engage(false);
   }
 
   /** LOD xa: bỏ hào quang phi kiếm (một draw call trong suốt), giữ thân kiếm. */
-  protected onLod(level: number): void {
+  protected override onLod(level: number): void {
     this.ribbons?.setNear(level === 0);
     const aura = this.flySword?.children[1];
     if (aura) aura.visible = level < 2;
@@ -1089,7 +1089,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
   }
 
   /** Đòn không có động tác riêng (clip `attack` của asset); động tác chiêu tự đếm trong `perform`. */
-  attack(): void {
+  override attack(): void {
     this.engage(true);
     super.attack();
     this.attacks++;
@@ -1142,7 +1142,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     else if (!this.performing(POSE_SWORD_SHEATHE)) s.set(false);
   }
 
-  update(dt: number, a: AnimState): void {
+  override update(dt: number, a: AnimState): void {
     // Vừa ra chiêu/trúng đòn/niệm chú trong khoảng gần thì đứng thủ thế (clip `combat_idle` của K-3).
     this.combatBias = this.calm < COMBAT_HOLD && !!this.sword?.drawn;
     super.update(dt, a);
@@ -1170,7 +1170,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     }
   }
 
-  dispose(): void {
+  override dispose(): void {
     super.dispose();
     this.flyAura.dispose();
     this.glow?.dispose();

@@ -1,7 +1,7 @@
 // Kiểu thực thể của sim (R-7): người chơi, quái, vùng nổ, đạn, giao diện host. Tách khỏi sim.ts để các hệ con không import vòng.
 import type { CampDef } from '@dtl/shared';
 import type { Client } from 'colyseus';
-import type { boltLift, computeDamage, hazardHit, HazardGeom, InvSlot, MonsterDef, MoveInput, MoveState, PhaseRules, S, SkillDef, SpawnDef, TribDef } from '@dtl/shared';
+import type { HazardGeom, InvSlot, MonsterDef, MoveInput, MoveState, PhaseRules, SkillDef, SpawnDef, TribDef } from '@dtl/shared';
 import type { GuardCfg, TribState } from './tribtypes';
 import type { MonS, NodeS, PlayerS } from '../state';
 import type { Character } from './character';

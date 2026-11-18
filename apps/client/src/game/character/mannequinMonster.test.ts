@@ -58,7 +58,7 @@ describe('quái hai chân Mannequin (DV-2 đợt 2)', () => {
   it('dựng thật từ GLB đã build: mọi clip trong ClipMap/moves có trong thư viện UAL, chạy được các trạng thái', async () => {
     const c = cache();
     const skins = new MonsterSkins(c, false);
-    for (const id of IDS) skins.preloadLazy('bac_hoang');
+    for (const _id of IDS) skins.preloadLazy('bac_hoang');
     for (const id of IDS) for (let i = 0; i < 400 && skins.pending(MONSTER.get(id)!); i++) await new Promise((r) => setTimeout(r, 10));
     for (const id of IDS) {
       const s = MONSTER_SKINS[id];

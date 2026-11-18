@@ -635,7 +635,7 @@ export class Grass {
   }
 
   /** Ghép dữ liệu các ô đang cần vào bộ đệm instance (chỉ khi tập ô đổi). */
-  private rebuild(center: { x: number; y: number; z: number }): void {
+  private rebuild(_center: { x: number; y: number; z: number }): void {
     this.dirty = false;
     const A = this.a0.array as Float32Array;
     const B = this.a1.array as Float32Array;

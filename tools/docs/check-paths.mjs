@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const SKIP_DIRS = ['.claude/skills/guizang-game-skill'];
 /** Thư mục gốc để thử khi đường dẫn viết tắt (`game/engine.ts`, `ui/store.ts`, `levels/van_lam.json`...). */
-const BASES = ['', 'apps/client/src', 'apps/client', 'apps/server/src', 'apps/server', 'apps/bot-client/src', 'apps/client/src/game', 'packages', 'packages/shared/src', 'packages/content', 'packages/content/data', 'packages/content/src', 'tools', 'assets', 'docs'];
+const BASES = ['', 'apps/client/src', 'apps/client', 'apps/server/src', 'apps/server', 'apps/bot-client/src', 'packages', 'packages/shared/src', 'packages/content', 'packages/content/data', 'packages/content/src', 'tools', 'assets', 'docs'];
 /** File chỉ có sau khi chạy lệnh (không nằm trong git). */
 const GENERATED = [/^bench\/results\//, /^apps\/client\/public\/(assets|audio|map|terrain|art|icons)\//, /^assets\/build\//, /\/dist\//, /\.local$/, /\.env/, /node_modules/, /^\.mcp\.json$/, /data\/game\.db$/, /^assets-online/];
 
@@ -36,8 +36,15 @@ let total = 0;
 for (const f of files) {
   const text = fs.readFileSync(path.join(ROOT, f), 'utf8');
   const lines = text.split(/\r?\n/);
+  let fence = false;
   lines.forEach((ln, i) => {
-    for (const m of ln.matchAll(/`([^`\s]+)`/g)) {
+    if (/^\s*```/.test(ln)) {
+      fence = !fence;
+      return;
+    }
+    // Trong khối mã (sơ đồ cấu trúc repo) token không có dấu huyền: kiểm từng từ dạng đường dẫn có đuôi file.
+    const toks = fence ? [...ln.matchAll(/(?<![\w`])([\w@.][\w@./-]*\/[\w@.-]+\.[a-z0-9]{1,5})(?![\w/])/g)].map((m) => [null, m[1]]) : [...ln.matchAll(/`([^`\s]+)`/g)];
+    for (const m of toks) {
       let t = m[1].replace(/[,;:.)]+$/, '').replace(/^\.\//, '');
       if (!/\//.test(t) || !/^[\w@.][\w@./-]*$/.test(t)) continue; // không phải đường dẫn thuần
       if (/^(https?:|\.\.\/|@|\/)/.test(t) || t.includes('..') || /^\d/.test(t)) continue;

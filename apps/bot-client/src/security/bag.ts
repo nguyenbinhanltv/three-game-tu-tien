@@ -2,8 +2,7 @@
 import { applyInvMsg, C, type InvMsg, type InvSlot, S } from '@dtl/shared';
 import { W, check, health, join, type Ctx } from './lib';
 
-export async function runBag(ctx: Ctx): Promise<void> {
-  const { gm } = ctx;
+export async function runBag(_ctx: Ctx): Promise<void> {
   // 15. Túi đồ 120 ô (TD-A): ô ngoài phạm vi, kiểu lạ, spam sắp xếp, tách số âm, khóa bán/gộp.
   {
     const g = await join('kt_tui' + (Date.now() % 100000));

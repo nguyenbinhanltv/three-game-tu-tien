@@ -56,9 +56,6 @@ function isVanLam(): boolean {
   return VL;
 }
 
-const C_VOID_ROCK = col(0x6b6a72);
-/** Sàn mây đi bộ được của level đảo nổi (E3-N). */
-const C_CLOUD_FLOOR = col(0xe6eef0);
 const C_OCHRE = col(0xb2a082);
 const C_OCHRE_DRY = col(0xc4b08e);
 const C_OCHRE_RED = col(0x9f8068);
@@ -76,9 +73,6 @@ function ochreColor(x: number, z: number, h: number, ny: number, out: THREE.Colo
   if (w && h < w.y + 2.2) out.lerp(C_SAND, Math.min(1, (w.y + 2.2 - h) / 1.6));
 }
 
-const C_ISLE_MOSS = col(0xa7a688);
-const C_ISLE_SOIL = col(0xb5a285);
-const C_ISLE_STONE = col(0xb9b5a8);
 const C_ISLE_DARK = col(0x7c7d6c);
 const C_CLOUD_LIGHT = col(0xc9d4d7);
 const C_CLOUD_SHADE = col(0xa4b2b8);

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { type HazardMsg, MF_REFLECT, MF_WEAK, MS_CHASE, S } from '@dtl/shared';
+import { type HazardMsg, MS_CHASE, S } from '@dtl/shared';
 
 // E4-B: quái, tinh anh, boss ngoài trời của Thiên Khuyết Cổ Thành dùng các kiểu chiêu E1-E bằng dữ liệu thật trong monsters.json.
 // Level Thiên Khuyết thuộc E4-A (chưa có ở nhánh này) nên đấu trường mượn mặt đảo phẳng Kình Ngư Đài của Vân Hải; người chơi đứng cách quái `dist` m về phía nam.
