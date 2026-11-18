@@ -47,6 +47,44 @@ describe('Thiên Giai: tầng cảnh giới', () => {
   });
 });
 
+describe('Thiên Giai: bộ Kết Đan, Nguyên Anh, Hóa Thần', () => {
+  it('Địa Giáp / Phục Mạch có tranh riêng theo giới tính', () => {
+    for (const [id, art] of [
+      ['set_dia_giap', 'dia_giap'],
+      ['set_phuc_mach', 'phuc_mach'],
+    ] as const) {
+      const set = SETS.find((s) => s.id === id)!;
+      expect(pickPortrait({ ...base, level: 20, worn: set.pieces }).char).toBe(art + '_nam');
+      expect(pickPortrait({ ...base, level: 20, worn: set.pieces, gender: 'f' }).char).toBe(art + '_nu');
+    }
+  });
+  it('Kính Quang / Vân Kinh / Lưu Ly (Nguyên Anh) có tranh riêng theo giới tính', () => {
+    for (const [id, art] of [
+      ['set_kinh_quang', 'kinh_quang'],
+      ['set_van_kinh', 'van_kinh'],
+      ['set_luu_ly', 'luu_ly'],
+    ] as const) {
+      const set = SETS.find((s) => s.id === id)!;
+      expect(pickPortrait({ ...base, level: 24, worn: set.pieces }).char).toBe(art + '_nam');
+      expect(pickPortrait({ ...base, level: 24, worn: set.pieces, gender: 'f' }).char).toBe(art + '_nu');
+    }
+  });
+  it('Tinh Khuyết / Cổ Thành / Thần Tàng (Hóa Thần) có tranh riêng theo giới tính', () => {
+    for (const [id, art] of [
+      ['set_tinh_khuyet', 'tinh_khuyet'],
+      ['set_co_thanh', 'co_thanh'],
+      ['set_than_tang', 'than_tang'],
+    ] as const) {
+      const set = SETS.find((s) => s.id === id)!;
+      expect(pickPortrait({ ...base, level: 28, worn: set.pieces }).char).toBe(art + '_nam');
+      expect(pickPortrait({ ...base, level: 28, worn: set.pieces, gender: 'f' }).char).toBe(art + '_nu');
+    }
+  });
+  it('bộ không có tranh riêng (bộ khác ngoài danh sách) rơi về đồ đệ tử', () => {
+    expect(pickPortrait({ ...base, level: 28, worn: [] }).char).toBe('de_tu_nam');
+  });
+});
+
 describe('Hoa Trúc: bản đồ chuyển động', () => {
   it('đầu (v nhỏ, giữa ngang) gần như đứng yên; vạt dưới và mép đung đưa nhiều hơn', () => {
     const head = Math.abs(motionAt(0.5, 0.05, 1.3)[0]);
