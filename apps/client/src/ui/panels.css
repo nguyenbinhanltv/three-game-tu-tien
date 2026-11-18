@@ -9,7 +9,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 9px 12px;
-  background: rgba(8, 14, 22, 0.42);
+  background: var(--u-card);
   border-left: 2px solid var(--k-edge-dim);
   line-height: 1.5;
 }
@@ -24,7 +24,7 @@
   margin-top: 6px;
 }
 .k-panel .ok {
-  color: #8fe0a8;
+  color: var(--u-ok-ink);
 }
 .k-panel .bad {
   color: var(--k-cinnabar-hi);
@@ -46,12 +46,12 @@
   color: var(--u-q3-ink);
 }
 .item-name[data-q='4'] {
-  color: #ffd45a;
-  text-shadow: 0 0 8px rgba(255, 190, 70, 0.4);
+  color: var(--u-q4-ink);
+  text-shadow: none;
 }
 .item-name[data-q='5'] {
-  color: #ff8fbb;
-  text-shadow: 0 0 9px rgba(255, 95, 158, 0.5);
+  color: var(--u-q5-ink);
+  text-shadow: none;
 }
 .item-stat {
   color: var(--k-sword);
@@ -60,8 +60,8 @@
   color: var(--k-jade);
 }
 .item-stat.set {
-  color: #ffd45a;
-  text-shadow: 0 0 6px rgba(255, 190, 70, 0.45);
+  color: var(--u-q4-ink);
+  text-shadow: none;
 }
 .item-stat.bad {
   color: var(--k-cinnabar-hi);
@@ -89,7 +89,7 @@
 .k-panel kbd {
   font: 600 10px var(--k-font-body);
   padding: 0 4px;
-  background: rgba(8, 14, 22, 0.5);
+  background: var(--u-card);
   border: 1px solid var(--k-edge-dim);
   color: var(--k-bronze-hi);
   border-radius: 0;
@@ -147,7 +147,7 @@
   justify-content: space-between;
   align-items: baseline;
   padding: 5px 2px;
-  border-bottom: 1px solid rgba(174, 139, 73, 0.2);
+  border-bottom: 1px solid var(--u-wash-gold);
 }
 .stat-cell dt {
   color: var(--k-text-dim);
@@ -183,7 +183,7 @@
 }
 .trib-box {
   border-left-color: var(--k-q3);
-  background: rgba(60, 30, 100, 0.22);
+  background: var(--u-wash-tim);
 }
 
 /* ---------- nhiệm vụ, đối thoại ---------- */
@@ -289,7 +289,7 @@
 }
 .help-table td {
   padding: 6px 8px;
-  border-bottom: 1px solid rgba(174, 139, 73, 0.2);
+  border-bottom: 1px solid var(--u-wash-gold);
   vertical-align: top;
 }
 .help-table td:first-child {

@@ -70,8 +70,11 @@ import { hudVars, useHudMode } from './u2/hud/hudVars';
 function TargetFrame({ below }: { below: boolean }) {
   const target = useUI((s) => s.target);
   const bossId = useUI((s) => s.boss?.id);
+  const talking = useUI((s) => s.npc !== null);
   // Boss đang chọn đã có thanh lớn ở giữa phía trên.
   if (!target || (target.boss && target.id === bossId)) return null;
+  // Đang mở bảng hội thoại/cửa hàng của NPC: tên NPC đã nằm trên tiêu đề bảng, ẩn khung mục tiêu để khỏi bị tab tiêu đề đè.
+  if (talking && target.kind === 'npc') return null;
   return (
     <div className={'frame target-frame' + (below ? ' below-boss' : '')} data-kind={target.kind}>
       <Corners />

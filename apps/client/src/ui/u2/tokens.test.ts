@@ -11,7 +11,7 @@ const NO_FF = OTHERS.filter((f) => f !== 'fonts.css'); // fonts.css khai @font-f
 const COLOR = /#[0-9a-fA-F]{3,8}\b|\b(rgb|hsl)a?\(/;
 
 /** CSS của các bảng đã chuyển sang Kit 2.0 (đường dẫn tính từ `ui/`): không màu cứng, danh sách tăng dần theo từng PR U2-3. */
-const MIGRATED = ['bag/bag.css', 'character/character.css', 'methodpanel.css', 'party.css', 'worldmap/worldmap.css'];
+const MIGRATED = ['bag/bag.css', 'character/character.css', 'methodpanel.css', 'party.css', 'worldmap/worldmap.css', 'upgrade.css'];
 
 describe('u2 token', () => {
   it('CSS bảng đã chuyển không có màu cứng và chỉ dùng biến --u-*/--k-* đã khai báo', () => {
