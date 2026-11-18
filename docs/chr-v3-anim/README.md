@@ -42,16 +42,33 @@ Không thấy hồi quy rõ (dao động giữa hai lượt cùng bản lớn h�
 
 **Tay xuyên thân** (`pnpm shots chrv3anim --nopen` tắt; mặc định ghi `pen-<giới>-<bản>.json`): trung bình số đỉnh có xương tay trội (mẫu ~900 đỉnh LOD0) nằm trong ba viên nang thân (pelvis → cổ), lấy mẫu mỗi 120 ms trong từng tình huống. Chỉ số TƯƠNG ĐỐI, rất nhỏ (cùng một cách đo cho cả ba bản): cũ (`?v3anim=0`), mới không bù tay (`?armfit=0`), mới.
 
-| Tình huống (nam) | cũ | mới, không bù tay | mới |
-| --- | --- | --- | --- |
-| đứng yên | 1,73 | 1,58 | 0 |
-| đứng lại | 1,62 | 1,38 | 0 |
-| rẽ gấp | 0,57 | 0,69 | 0,05 |
-| chạy + chém | 0,14 | 0,81 | 0 |
-| chuỗi 3 chiêu | 1,06 | 1,17 | 0 |
-| trúng đòn | 1,12 | 1,20 | 0,12 |
-| lăn / lướt | 1,31 | 1,63 | 0 |
-| ngã rồi dậy | 2,23 | 2,20 | 1 |
-| chạy, đả tọa | 0 | 0 / 0,08 | 0 |
+| Tình huống | cũ | mới |
+| --- | --- | --- |
+| đứng yên (3/4 trước) (nam) | 1,89 | 0 |
+| chạy (3/4 trước) (nam) | 0,09 | 0,17 |
+| chạy (góc ngang) (nam) | 0,08 | 0 |
+| rẽ gấp (3/4 trước) (nam) | 0,17 | 0 |
+| rẽ gấp (góc ngang) (nam) | 0,61 | 0 |
+| chạy + chém (3/4 trước) (nam) | 0,09 | 0 |
+| chạy + chém (góc ngang) (nam) | 0 | 0 |
+| chuỗi 3 chiêu (đứng) (nam) | 1,21 | 7,73 |
+| trúng đòn (nhẹ rồi nặng) (nam) | 1,46 | 0,17 |
+| lăn / lướt (Q) (nam) | 1,58 | 0 |
+| ngã rồi dậy (nam) | 2,11 | 0,83 |
+| ngồi đả tọa (nam) | 0,34 | 0 |
+| đứng yên (3/4 trước) (nu) | 0,8 | 0 |
+| chạy (3/4 trước) (nu) | 0 | 0 |
+| chạy (góc ngang) (nu) | 0 | 0 |
+| rẽ gấp (3/4 trước) (nu) | 0 | 0 |
+| rẽ gấp (góc ngang) (nu) | 0,13 | 0 |
+| chạy + chém (3/4 trước) (nu) | 0 | 1,36 |
+| chạy + chém (góc ngang) (nu) | 0 | 3,89 |
+| chuỗi 3 chiêu (đứng) (nu) | 0,49 | 3,1 |
+| trúng đòn (nhẹ rồi nặng) (nu) | 0,4 | 5 |
+| lăn / lướt (Q) (nu) | 0,51 | 12,14 |
+| ngã rồi dậy (nu) | 0,94 | 0,31 |
+| ngồi đả tọa (nu) | 0 | 0 |
 
-Quay: `pnpm shots chrv3anim --out <thư mục tuyệt đối> [--genders m,f] [--variants old,new,noarm]` (đặt `FFMPEG=` nếu không có trong PATH): mỗi (giới × bản) một webm có nhãn tình huống ở góc và `<giới>-cu-moi.webm` ghép trái cũ | phải mới.
+Lưu ý: ở `chuỗi 3 chiêu (đứng)` nam, chỉ số "mới" (7,73) CAO hơn "cũ" (1,21): chiêu K-5 vắt tay ngang ngực nên đỉnh tay đi qua viên nang thân; chưa phân biệt được đó là xuyên thật hay tư thế hợp lệ (khung hình không thấy lỗi rõ). Chỉ số lấy mẫu ~25 lần mỗi tình huống, rất nhiễu.
+
+Quay: `pnpm shots chrv3anim --out <thư mục tuyệt đối> [--genders m,f] [--variants old,new,noarm]` (đặt `FFMPEG=` nếu không có trong PATH): quay riêng từng bản, ghi mốc đầu từng tình huống rồi cắt cùng tình huống (3,5 s, toàn thân, 3/4 trước + góc ngang cho chạy/rẽ/chạy+chém) từ hai bản, xếp trái cũ | phải mới vào `<giới>-cu-moi.webm`.

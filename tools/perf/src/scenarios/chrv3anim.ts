@@ -1,6 +1,7 @@
-// Animation nhân vật v3 (Lạc Kiếm v3b): cùng chuỗi tình huống có nhãn, quay hai bản (cũ = `?v3anim=0`, mới) cho nam và nữ, ghép trái|phải
-// bằng ffmpeg (FFMPEG=đường dẫn, mặc định ffmpeg-static). Kèm đo "đỉnh tay nằm trong khối thân" (xuyên ống tay) theo từng tình huống:
-// ghi `pen-<giới>-<bản>.json`. Tình huống: đứng yên, chạy, rẽ gấp, chạy+chém, chuỗi 3 chiêu, trúng đòn, lăn, đả tọa.
+// Animation nhân vật v3 (Lạc Kiếm v3b): quay RIÊNG từng bản (cũ = `?v3anim=0`, mới), mỗi tình huống 3,5 s có nhãn, ghi mốc đầu từng tình huống,
+// rồi cắt cùng tình huống từ hai bản và xếp trái (cũ) | phải (mới), nối lần lượt (FFMPEG=đường dẫn, mặc định ffmpeg trong PATH).
+// Camera gần, toàn thân ~60% chiều cao khung; chạy/rẽ/chạy+chém có hai góc (3/4 trước và ngang). Kèm đo "đỉnh tay nằm trong khối thân"
+// (xuyên ống tay) theo từng tình huống: `pen-<giới>-<bản>.json`.
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,6 +10,7 @@ import { list, size } from '../lib/env';
 import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 
+const DUR = 3500;
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const QUERY: Record<string, Record<string, string>> = { old: { chr: 'v3', v3anim: '0' }, new: { chr: 'v3' }, noarm: { chr: 'v3', armfit: '0' } };
 
@@ -50,7 +52,7 @@ const PEN_INSTALL = `(() => {
 
 export default {
   name: 'chrv3anim',
-  desc: 'Animation nhân vật v3: video cũ | mới theo tình huống có nhãn (đứng, chạy, rẽ gấp, chạy+chém, chuỗi 3 chiêu, trúng đòn, lăn, đả tọa) + đo tay xuyên thân',
+  desc: 'Animation nhân vật v3: video cũ | mới ghép theo mốc từng tình huống (3,5 s, toàn thân, hai góc) + đo tay xuyên thân',
   usage: '[--genders m,f] [--variants old,new,noarm] [--size 960x600] [--nopen]',
   async run(r) {
     const viewport = size('960x600');
@@ -58,11 +60,11 @@ export default {
     const genders = list('--genders', 'm,f');
     const pen = !process.argv.includes('--nopen');
     for (const g of genders) {
+      const gname = g === 'm' ? 'nam' : 'nu';
       for (const v of variants) {
-        const tag = `${g === 'm' ? 'nam' : 'nu'}-${v}`;
-        const dir = path.join(r.out, `_rec-${tag}`);
+        const tag = `${gname}-${v}`;
         const t0 = Date.now();
-        const { ctx, page } = await r.open({ name: `A${g}${v}`, viewport, quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/, video: dir });
+        const { ctx, page } = await r.open({ name: `A${g}${v}`, viewport, quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/, video: path.join(r.out, `_rec-${tag}`) });
         await gm(page, 'level 12', 1500);
         await gm(page, 'god on', 1200);
         await gm(page, 'set set_lac_kiem', 1200);
@@ -71,11 +73,13 @@ export default {
         await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
         await sleep(3500); // chờ nguồn pose K-5 nướng
         if (pen) await page.evaluate(PEN_INSTALL);
-        const frame = () => cam(page, { yaw: 0.5, pitch: 0.08, dist: 3.6 });
+        // Toàn thân ~60% chiều cao khung: camera gần.
+        const frame = () => cam(page, { yaw: 0.5, pitch: 0.1, dist: 2.7 });
         await frame();
-        const label = async (text: string) => {
-          await page.evaluate(
-            ([t, vtag]) => {
+        const vtag = v === 'old' ? 'CŨ' : v === 'new' ? 'MỚI' : 'MỚI (không bù tay)';
+        const setLabel = (text: string) =>
+          page.evaluate(
+            ([t, vt]) => {
               let d = document.getElementById('anim-label');
               if (!d) {
                 d = document.createElement('div');
@@ -83,91 +87,153 @@ export default {
                 d.style.cssText = 'position:fixed;left:12px;top:10px;z-index:99999;padding:6px 12px;background:#000a;color:#fff;font:600 20px sans-serif;border-radius:6px;pointer-events:none';
                 document.body.appendChild(d);
               }
-              d.textContent = `${vtag} · ${t}`;
-              (window as unknown as { __pen?: { name: string } }).__pen && ((window as unknown as { __pen: { name: string } }).__pen.name = t);
+              d.textContent = `${vt} · ${t}`;
+              const w = (window as unknown as { __pen?: { name: string } }).__pen;
+              if (w) w.name = t;
             },
-            [text, v === 'old' ? 'CŨ' : v === 'new' ? 'MỚI' : 'MỚI (không bù tay)'] as const,
+            [text, vtag] as const,
           );
-        };
-        const tScene = Date.now();
-        const key = async (k: string, ms: number) => {
-          await page.keyboard.down(k);
+        const hold = async (keys: string[], ms: number) => {
+          for (const k of keys) await page.keyboard.down(k);
           await sleep(ms);
-          await page.keyboard.up(k);
+          for (const k of keys) await page.keyboard.up(k);
         };
-        await label('đứng yên');
-        await sleep(3000);
-        await label('chạy');
-        await key('KeyW', 3000);
-        await label('đứng lại');
-        await sleep(1500);
-        await label('rẽ gấp (vuông)');
-        await frame();
-        for (const k of ['KeyW', 'KeyD', 'KeyS', 'KeyA']) await key(k, 1000);
-        await sleep(800);
-        await frame();
-        await gm(page, 'spawn mon_soi_xam 2', 1500);
-        await frame();
-        await label('chạy + chém');
-        await page.keyboard.down('KeyW');
-        for (const slot of [1, 2, 3, 1]) {
-          await page.evaluate((n) => window.__game!.useSkill(n), slot);
-          await sleep(900);
-        }
-        await page.keyboard.up('KeyW');
-        await sleep(500);
-        await frame();
-        await label('chuỗi 3 chiêu (đứng)');
-        for (const slot of [1, 2, 3]) {
-          await page.evaluate((n) => window.__game!.useSkill(n), slot);
-          await sleep(1100);
-        }
-        await gm(page, 'killall', 700);
-        await label('trúng đòn (nhẹ, nặng)');
-        for (const heavy of [false, true]) {
-          await page.evaluate((hv) => {
+        const useSkill = (n: number) => page.evaluate((x) => window.__game!.useSkill(x), n);
+        const hit = (hv: boolean) =>
+          page.evaluate((h) => {
             const g2 = window.__game!;
             const m = g2.ents.players.get(g2.sid).model;
             const y = m.root.rotation.y;
-            m.hitReact({ dirX: -Math.sin(y), dirZ: -Math.cos(y), heavy: hv, crit: hv });
-          }, heavy);
-          await sleep(1500);
+            m.hitReact({ dirX: -Math.sin(y), dirZ: -Math.cos(y), heavy: h, crit: h });
+          }, hv);
+        // Phím chạy tương đối camera: S+D = chạy chếch về phía camera (3/4 trước), D = chạy ngang màn hình (góc ngang).
+        const FRONT = ['KeyS', 'KeyD'];
+        const BACKL = ['KeyS', 'KeyA'];
+        interface Sit {
+          name: string;
+          prep?: () => Promise<void>;
+          run: () => Promise<void>;
         }
-        await label('lăn / lướt (Q)');
-        await key('KeyW', 300);
-        await page.keyboard.press('KeyQ');
-        await sleep(1500);
-        await label('ngã rồi dậy');
-        await page.evaluate(() => window.__game!.ents.players.get(window.__game!.sid).model.knockdown());
-        await sleep(3000);
-        await frame();
-        await label('ngồi đả tọa');
-        await page.keyboard.press('KeyZ');
-        await sleep(3500);
-        await page.keyboard.press('KeyW');
-        await sleep(800);
+        const slash = async (keys: string[]) => {
+          for (const k of keys) await page.keyboard.down(k);
+          for (const slot of [1, 2, 3, 1]) {
+            await useSkill(slot);
+            await sleep(DUR / 4);
+          }
+          for (const k of keys) await page.keyboard.up(k);
+        };
+        const sits: Sit[] = [
+          { name: 'đứng yên (3/4 trước)', run: async () => void (await sleep(DUR)) },
+          { name: 'chạy (3/4 trước)', run: () => hold(FRONT, DUR) },
+          { name: 'chạy (góc ngang)', run: () => hold(['KeyD'], DUR) },
+          {
+            name: 'rẽ gấp (3/4 trước)',
+            run: async () => {
+              for (const ks of [FRONT, BACKL, FRONT, BACKL]) await hold(ks, DUR / 4);
+            },
+          },
+          {
+            name: 'rẽ gấp (góc ngang)',
+            run: async () => {
+              for (const ks of [['KeyD'], ['KeyW'], ['KeyD'], ['KeyS']]) await hold(ks, DUR / 4);
+            },
+          },
+          {
+            name: 'chạy + chém (3/4 trước)',
+            prep: async () => {
+              await gm(page, 'spawn mon_soi_xam 2', 1500);
+            },
+            run: () => slash(FRONT),
+          },
+          { name: 'chạy + chém (góc ngang)', run: () => slash(['KeyD']) },
+          {
+            name: 'chuỗi 3 chiêu (đứng)',
+            run: async () => {
+              for (const slot of [1, 2, 3]) {
+                await useSkill(slot);
+                await sleep(DUR / 3);
+              }
+            },
+          },
+          {
+            name: 'trúng đòn (nhẹ rồi nặng)',
+            prep: async () => {
+              await gm(page, 'killall', 700);
+            },
+            run: async () => {
+              await sleep(300);
+              await hit(false);
+              await sleep(1500);
+              await hit(true);
+              await sleep(DUR - 1800);
+            },
+          },
+          {
+            name: 'lăn / lướt (Q)',
+            run: async () => {
+              await hold(FRONT, 400);
+              await page.keyboard.press('KeyQ');
+              await sleep(DUR - 400);
+            },
+          },
+          {
+            name: 'ngã rồi dậy',
+            run: async () => {
+              await sleep(200);
+              await page.evaluate(() => window.__game!.ents.players.get(window.__game!.sid).model.knockdown());
+              await sleep(DUR - 200);
+            },
+          },
+          {
+            name: 'ngồi đả tọa',
+            run: async () => {
+              await sleep(300);
+              await page.keyboard.press('KeyZ');
+              await sleep(DUR - 300);
+              await page.keyboard.press('KeyW');
+            },
+          },
+        ];
+        const marks: { name: string; at: number }[] = [];
+        await hold(FRONT, 350); // quay mặt về phía camera
+        await sleep(700);
+        for (const sit of sits) {
+          if (sit.prep) await sit.prep();
+          await frame();
+          await setLabel(sit.name);
+          await sleep(150);
+          marks.push({ name: sit.name, at: (Date.now() - t0) / 1000 });
+          await sit.run();
+          await sleep(500);
+        }
         if (pen) {
           const res = (await page.evaluate(`(() => { const o = {}; for (const [k, v] of Object.entries(window.__pen.byName)) o[k] = { samples: v.n, meanArmVertsInTorso: +(v.sum / v.n).toFixed(2) }; return o; })()`)) as unknown;
           fs.writeFileSync(path.join(r.out, `pen-${tag}.json`), JSON.stringify(res, null, 1));
-          console.log(`[shots:chrv3anim] pen ${tag}: ${JSON.stringify(res)}`);
         }
         const vid = page.video();
         await ctx.close();
         if (vid) {
-          const raw = await vid.path();
-          const dst = path.join(r.out, `${tag}.webm`);
-          const ss = Math.max(0, (tScene - t0) / 1000 - 0.3);
-          const cut = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-ss', ss.toFixed(2), '-i', raw, '-c:v', 'libvpx', '-b:v', '1.5M', '-an', dst]);
-          if (cut.status !== 0) fs.copyFileSync(raw, dst);
+          fs.copyFileSync(await vid.path(), path.join(r.out, `_raw-${tag}.webm`));
+          fs.writeFileSync(path.join(r.out, `_marks-${tag}.json`), JSON.stringify(marks));
         }
-        fs.rmSync(dir, { recursive: true, force: true });
-        console.log(`[shots:chrv3anim] ${tag}.webm`);
+        fs.rmSync(path.join(r.out, `_rec-${tag}`), { recursive: true, force: true });
+        console.log(`[shots:chrv3anim] ${tag} quay xong, ${marks.length} tình huống`);
       }
-      // Ghép trái (cũ) | phải (mới).
+      // Ghép theo mốc đầu từng tình huống (cùng tình huống, cùng thời điểm bắt đầu): trái cũ | phải mới.
       if (variants.includes('old') && variants.includes('new')) {
-        const sx = `${r.out}/${g === 'm' ? 'nam' : 'nu'}`;
-        const res = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-i', `${sx}-old.webm`, '-i', `${sx}-new.webm`, '-filter_complex', 'hstack=inputs=2', '-c:v', 'libvpx', '-b:v', '3M', '-an', `${sx}-cu-moi.webm`]);
-        console.log(`[shots:chrv3anim] ghép ${g}: ${res.status === 0 ? 'ok' : 'lỗi ' + res.stderr}`);
+        const mo = JSON.parse(fs.readFileSync(path.join(r.out, `_marks-${gname}-old.json`), 'utf8')) as { at: number }[];
+        const mn = JSON.parse(fs.readFileSync(path.join(r.out, `_marks-${gname}-new.json`), 'utf8')) as { at: number }[];
+        const parts: string[] = [];
+        const outs: string[] = [];
+        mo.forEach((m, n) => {
+          parts.push(`[0:v]trim=start=${m.at.toFixed(2)}:duration=${DUR / 1000},setpts=PTS-STARTPTS[o${n}]`);
+          parts.push(`[1:v]trim=start=${mn[n].at.toFixed(2)}:duration=${DUR / 1000},setpts=PTS-STARTPTS[n${n}]`);
+          parts.push(`[o${n}][n${n}]hstack[h${n}]`);
+          outs.push(`[h${n}]`);
+        });
+        parts.push(`${outs.join('')}concat=n=${mo.length}:v=1:a=0[v]`);
+        const res = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-i', path.join(r.out, `_raw-${gname}-old.webm`), '-i', path.join(r.out, `_raw-${gname}-new.webm`), '-filter_complex', parts.join(';'), '-map', '[v]', '-c:v', 'libvpx', '-b:v', '3M', '-an', path.join(r.out, `${gname}-cu-moi.webm`)]);
+        console.log(`[shots:chrv3anim] ghép ${gname}: ${res.status === 0 ? 'ok' : 'lỗi ' + res.stderr}`);
       }
     }
   },
