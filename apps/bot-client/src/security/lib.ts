@@ -95,7 +95,7 @@ export function freePort(): Promise<number> {
  * để chứng minh chốt chặn trong config.ts thắng (giống lỡ mang .env.local lên VPS).
  */
 export async function withServer(env: Record<string, string>, fn: (http: string) => Promise<void>): Promise<void> {
-  const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'server');
+  const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'server');
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dtl-sec-'));
   const port = await freePort();
   const childEnv: NodeJS.ProcessEnv = { ...process.env, PORT: String(port), DB_FILE: path.join(tmp, 'game.db'), AUTH_DEV_BYPASS: '1', ...env };
