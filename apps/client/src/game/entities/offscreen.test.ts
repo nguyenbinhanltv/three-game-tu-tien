@@ -98,7 +98,7 @@ describe('questGoal', () => {
 });
 
 describe('nearestGoalSpot', () => {
-  const lv = LEVELS.van_lam;
+  const lv = LEVELS.van_lam!;
   it('chọn con quái sống gần nhất, bỏ con đã chết', () => {
     const mons = new Map([
       ['a', { t: 'mon_soi_xam', st: MS_DEAD, x: 1, y: 0, z: 0 }],
@@ -112,7 +112,7 @@ describe('nearestGoalSpot', () => {
   it('không có con nào đang sống → tâm vùng xuất hiện', () => {
     const spawn = levelSpawns(lv)
       .filter((s) => s.mon === 'mon_soi_xam')
-      .sort((a, b) => a.x ** 2 + a.z ** 2 - (b.x ** 2 + b.z ** 2))[0];
+      .sort((a, b) => a.x ** 2 + a.z ** 2 - (b.x ** 2 + b.z ** 2))[0]!;
     expect(nearestGoalSpot({ kind: 'mon', mon: 'mon_soi_xam' }, 0, 0, new Map(), new Map(), lv)).toEqual({ x: spawn.x, z: spawn.z });
   });
 

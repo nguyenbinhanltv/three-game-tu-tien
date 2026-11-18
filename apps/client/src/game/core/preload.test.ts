@@ -45,7 +45,7 @@ describe('prefetchWorldAssets (M6-1)', () => {
       ),
     ];
     expect(ids.some((id) => id.startsWith('boss_'))).toBe(false);
-    const byRank = [...calls].sort((a, b) => rank(a[1], viewer[0]) - rank(b[1], viewer[0])).map(([id]) => id);
+    const byRank = [...calls].sort((a, b) => rank(a[1], viewer[0]!) - rank(b[1], viewer[0]!)).map(([id]) => id);
     expect(byRank).toEqual([
       'chr_v2_nam',
       'set_de_tu_v2_nam',

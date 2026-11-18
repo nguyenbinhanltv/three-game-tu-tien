@@ -48,7 +48,7 @@ const HEIGHT: Record<string, number> = {
 describe('model NPC (M3-6)', () => {
   it('mọi NPC trong npcs.json có asset trong bảng và trong manifest', () => {
     for (const n of NPCS) {
-      const s = NPC_SKINS[n.id];
+      const s = NPC_SKINS[n.id]!;
       expect(s, n.id).toBeDefined();
       expect(MANIFEST.assets[s.asset], s.asset).toBeDefined();
     }
@@ -59,7 +59,7 @@ describe('model NPC (M3-6)', () => {
     for (const n of NPCS) {
       const m = s.create(n.id, n.color) as SkinnedCharacter;
       expect(m, n.id).toBeInstanceOf(SkinnedCharacter);
-      expect(m.height).toBeCloseTo(HEIGHT[n.id], 1);
+      expect(m.height).toBeCloseTo(HEIGHT[n.id]!, 1);
       expect(m.state).toBe('idle');
       for (let t = 0; t < 1; t += 1 / 30) m.update(1 / 30, STAND);
       expect(m.state).toBe('idle');

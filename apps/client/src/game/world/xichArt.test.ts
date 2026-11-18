@@ -22,7 +22,7 @@ describe('xichArt (DV-3K)', () => {
         expect(q.y).toBeCloseTo(h(q.x, q.z), 6);
       }
     }
-    expect(xichCrackDist(cracks, cracks[0][3].x, cracks[0][3].z)).toBeLessThan(0.01);
+    expect(xichCrackDist(cracks, cracks[0]![3]!.x, cracks[0]![3]!.z)).toBeLessThan(0.01);
   });
 
   it('màu đất hợp lệ 0..1 ở sàn, vách, cao nguyên; vách tối và đỏ/tím hơn cao nguyên tro', () => {
@@ -34,8 +34,8 @@ describe('xichArt (DV-3K)', () => {
       [c.halfW + 60, 0],
       [-c.halfW - 60, 40],
     ]) {
-      const x = c.cx + dx;
-      const z = c.cz + dz;
+      const x = c.cx + dx!;
+      const z = c.cz + dz!;
       xichGroundColor(def, cracks, x, z, h(x, z), 0.9, out);
       for (const v of out) {
         expect(v).toBeGreaterThanOrEqual(0);
@@ -45,7 +45,7 @@ describe('xichArt (DV-3K)', () => {
   });
 
   it('rải đá: tất định, chừa vòng cấm quanh bia và vết nứt, không lên cao nguyên', () => {
-    const d = LEVELS.xich_tan_khich.dungeon!;
+    const d = LEVELS.xich_tan_khich!.dungeon!;
     const clear = [
       { x: d.center.x, z: d.center.z, r: 16 },
       { x: d.spawn.x, z: d.spawn.z, r: 9 },

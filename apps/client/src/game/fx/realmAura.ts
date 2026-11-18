@@ -251,7 +251,7 @@ export class RealmAuraFx {
       if (d <= OTHERS_FX_DIST) others.push({ sid: a.sid, d });
     }
     others.sort((x, y) => x.d - y.d);
-    for (let i = 0; i < Math.min(others.length, OTHERS_MAX[tier]); i++) this.allowed.add(others[i].sid);
+    for (let i = 0; i < Math.min(others.length, OTHERS_MAX[tier]); i++) this.allowed.add(others[i]!.sid);
   }
 
   private tick(a: AuraActor, stage: AuraStage, caps: AuraCaps, dt: number): void {
@@ -370,7 +370,7 @@ export class RealmAuraFx {
       const ang = Math.random() * Math.PI * 2;
       const r = 0.35 + Math.random() * 0.6;
       const sp = 0.2;
-      const col = stage >= 2 && Math.random() < 0.35 ? WUXING[(Math.random() * 5) | 0] : stage <= 1 ? GOLD.core : DAO_LOOK[dao].mote;
+      const col = stage >= 2 && Math.random() < 0.35 ? WUXING[(Math.random() * 5) | 0]! : stage <= 1 ? GOLD.core : DAO_LOOK[dao].mote;
       pp.emit(
         'glow',
         p.x + Math.cos(ang) * r,
@@ -565,10 +565,10 @@ export class RealmAuraFx {
             const x = c.p.x + Math.cos(ang) * 1.12;
             const y = c.p.y + 1.0 + Math.sin(c.t * 1.7 + i * 1.3) * 0.06;
             const z = c.p.z + Math.sin(ang) * 1.12;
-            orbs[i].position.set(x, y, z);
-            orbs[i].scale.setScalar(0.1);
-            show(orbs[i], c.vh);
-            halo(x, y, z, 0.42, WUXING[i], c.vh * 0.2);
+            orbs[i]!.position.set(x, y, z);
+            orbs[i]!.scale.setScalar(0.1);
+            show(orbs[i]!, c.vh);
+            halo(x, y, z, 0.42, WUXING[i]!, c.vh * 0.2);
           }
         });
       }
@@ -583,7 +583,7 @@ export class RealmAuraFx {
         ups.push((c) => {
           const n = swords.length;
           for (let i = 0; i < n; i++) {
-            const s = swords[i];
+            const s = swords[i]!;
             const ang = c.t * 0.4 + (i / n) * Math.PI * 2;
             const x = c.p.x + Math.cos(ang) * 1.05;
             const y = c.p.y + 1.18 + Math.sin(c.t * 1.9 + i * 1.7) * 0.07;
@@ -595,7 +595,7 @@ export class RealmAuraFx {
             s.scale.setScalar(0.9);
             show(s, c.vh);
             if (detail) {
-              const tr = trails[i];
+              const tr = trails[i]!;
               tr.position.set(x, y, z);
               face(tr, dir.negate());
               tr.scale.set(0.22, 0.22, 0.75);
@@ -614,7 +614,7 @@ export class RealmAuraFx {
           for (let i = 0; i < n; i++) {
             const ang = c.t * 0.25 + (i / n) * Math.PI * 2;
             const open = 0.8 + Math.sin(c.t * 1.4) * 0.12;
-            const m = petals[i];
+            const m = petals[i]!;
             m.position.set(c.p.x + Math.cos(ang) * 0.34, c.p.y + 0.92, c.p.z + Math.sin(ang) * 0.34);
             face(m, _v.set(Math.cos(ang) * 0.75 * open, 0.66, Math.sin(ang) * 0.75 * open).normalize());
             m.scale.setScalar(0.5);
@@ -622,13 +622,13 @@ export class RealmAuraFx {
           }
           for (let i = 0; i < orbs.length; i++) {
             const ang = -c.t * 1.3 + (i / orbs.length) * Math.PI * 2;
-            orbs[i].position.set(
+            orbs[i]!.position.set(
               c.p.x + Math.cos(ang) * 0.9,
               c.p.y + 1.25 + Math.sin(c.t * 2 + i * 2.1) * 0.12,
               c.p.z + Math.sin(ang) * 0.9,
             );
-            orbs[i].scale.setScalar(0.09 + Math.sin(c.t * 6 + i) * 0.015);
-            show(orbs[i], c.vh);
+            orbs[i]!.scale.setScalar(0.09 + Math.sin(c.t * 6 + i) * 0.015);
+            show(orbs[i]!, c.vh);
           }
         });
       }
@@ -688,7 +688,7 @@ export class RealmAuraFx {
           for (const b of bolts) b.fxA.y = Math.random() < 0.3 ? 0.35 + Math.random() * 0.45 : 0;
         }
         for (let i = 0; i < bolts.length; i++) {
-          const b = bolts[i];
+          const b = bolts[i]!;
           b.position.set(c.p.x, c.p.y + 0.0, c.p.z);
           b.quaternion.copy(_q2.setFromAxisAngle(AX_Y, c.t * (i ? -5.5 : 4.5) + i * 2)).multiply(UPRIGHT);
           b.scale.set(2.1 + i * 0.4, 2.1 + i * 0.4, 2.3);
@@ -715,7 +715,7 @@ export class RealmAuraFx {
           const n = au.clones.length;
           const base = Math.atan2(c.dz, c.dx);
           for (let i = 0; i < n; i++) {
-            const v = au.clones[i];
+            const v = au.clones[i]!;
             const ang = base + (i - (n - 1) / 2) * 0.72;
             const x = c.p.x + Math.cos(ang) * 1.9;
             const z = c.p.z + Math.sin(ang) * 1.9;

@@ -163,7 +163,7 @@ describe('sói có xương (mon_soi_xam thật)', () => {
     for (const level of new Set(e0.map(([, s]) => s.level!))) skins.preloadLazy(level);
     for (let i = 0; i < 1500 && defs.some((d) => skins.pending(d)); i++) await new Promise((r) => setTimeout(r, 20));
     for (const d of defs) {
-      const skin = MONSTER_SKINS[d.id];
+      const skin = MONSTER_SKINS[d.id]!;
       const m = skins.create(d);
       expect(m, d.id).toBeInstanceOf(SkinnedMonster);
       const sm = m as SkinnedMonster;
@@ -204,12 +204,12 @@ describe('sói có xương (mon_soi_xam thật)', () => {
       m.dispose();
       return mat;
     });
-    expect(MONSTER_SKINS.mon_kiem_linh.asset).toBe(MONSTER_SKINS.mon_hoa_van_ho.asset);
+    expect(MONSTER_SKINS.mon_kiem_linh!.asset).toBe(MONSTER_SKINS.mon_hoa_van_ho!.asset);
     expect(spirit).not.toBe(fox);
-    expect(spirit.map).toBe(fox.map);
-    expect(spirit.colorNode).toBeTruthy();
-    expect(spirit.emissiveNode).toBeTruthy();
-    expect(fox.colorNode).toBeFalsy();
+    expect(spirit!.map).toBe(fox!.map);
+    expect(spirit!.colorNode).toBeTruthy();
+    expect(spirit!.emissiveNode).toBeTruthy();
+    expect(fox!.colorNode).toBeFalsy();
     skins.dispose();
   });
 
@@ -225,8 +225,8 @@ describe('sói có xương (mon_soi_xam thật)', () => {
       return mat;
     });
     expect(new Set(mats).size).toBe(3);
-    expect(mats[1].map).toBe(mats[0].map);
-    expect(mats[1].color.getHex()).not.toBe(mats[0].color.getHex());
+    expect(mats[1]!.map).toBe(mats[0]!.map);
+    expect(mats[1]!.color.getHex()).not.toBe(mats[0]!.color.getHex());
     skins.dispose();
   });
 

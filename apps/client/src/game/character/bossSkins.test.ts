@@ -70,8 +70,8 @@ describe('boss có xương (asset thật)', () => {
       for (const c of ['idle', 'run', 'attack', 'hit_light', 'death', 'stun']) expect(anims, id).toContain(c);
       const def = MONSTER.get(id)!;
       const ai = [def.ai, ...(def.phases ?? []).map((p) => p.ai)];
-      if (ai.some((a) => a?.slam)) expect(anims, id).toContain(MONSTER_SKINS[id].moves!.slam!.clip);
-      if (ai.some((a) => a?.sweep)) expect(anims, id).toContain(MONSTER_SKINS[id].moves!.sweep!.clip);
+      if (ai.some((a) => a?.slam)) expect(anims, id).toContain(MONSTER_SKINS[id]!.moves!.slam!.clip);
+      if (ai.some((a) => a?.sweep)) expect(anims, id).toContain(MONSTER_SKINS[id]!.moves!.sweep!.clip);
       if (ai.some((a) => a?.chant)) expect(anims, id).toContain('chant');
     }
   });
@@ -128,7 +128,7 @@ describe('boss có xương (asset thật)', () => {
     b.hitReact({});
     run(b, anim({ combat: true }), delay - 0.2);
     const act = b.actionOf('slam')!;
-    expect(act.time).toBeCloseTo(MONSTER_SKINS[def.id].moves!.slam!.impact, 1);
+    expect(act.time).toBeCloseTo(MONSTER_SKINS[def.id]!.moves!.slam!.impact, 1);
     expect(b.state).toBe('attack');
     run(b, anim({ combat: true }), 2);
     expect(b.state).toBe('combatIdle');
@@ -141,7 +141,7 @@ describe('boss có xương (asset thật)', () => {
     const def = MONSTER.get('boss_thu_mo_tuong')!;
     skins.pending(def);
     await ready(skins, def.id);
-    const impact = MONSTER_SKINS[def.id].moves!.slam!.impact;
+    const impact = MONSTER_SKINS[def.id]!.moves!.slam!.impact;
     // Đang phát.
     const b = skins.create(def) as SkinnedMonster;
     const delay = def.ai!.slam!.delay;

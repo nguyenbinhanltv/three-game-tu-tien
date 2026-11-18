@@ -6,8 +6,8 @@ describe('gợi ý vật phẩm suy từ dữ liệu', () => {
   it('nguồn rơi lấy từ quái, không có tỉ lệ', () => {
     const lines = itemSources('itm_nanh_soi');
     expect(lines.length).toBeGreaterThan(0);
-    expect(lines[0].text).toMatch(/^Nguồn: rơi từ /);
-    expect(lines[0].text).not.toMatch(/%|\d/);
+    expect(lines[0]!.text).toMatch(/^Nguồn: rơi từ /);
+    expect(lines[0]!.text).not.toMatch(/%|\d/);
   });
 
   it('nguyên liệu có dòng "Dùng để" chế món', () => {

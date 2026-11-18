@@ -55,8 +55,8 @@ describe('phụ kiện đồ bộ', () => {
   });
 
   it('mã phụ kiện khớp bảng bộ', () => {
-    const code = accessoryCode(SETS, { robe: { id: SETS[0].pieces[0] } });
-    expect(parseAccessoryCode(SETS, code).robe).toBe(SETS[0].id);
+    const code = accessoryCode(SETS, { robe: { id: SETS[0]!.pieces[0]! } });
+    expect(parseAccessoryCode(SETS, code).robe).toBe(SETS[0]!.id);
   });
 
   it.skipIf(!HAS).each(ASSETS)(
@@ -103,12 +103,12 @@ describe('phụ kiện đồ bộ', () => {
     async (id, height) => {
       const { h, fit } = await setup(id, height);
       const mats = createAccessoryMaterials(() => new THREE.MeshBasicMaterial());
-      const built = buildAccessories(fit, slotsOf(SETS[1].id));
+      const built = buildAccessories(fit, slotsOf(SETS[1]!.id));
       const a = attachAccessories(cloneSkinned(h.scene), fit, built, mats).meshes;
       const b = attachAccessories(cloneSkinned(h.scene), fit, built, mats).meshes;
       expect(a.length).toBeGreaterThan(0);
       // Hai người chơi cùng đồ: cùng một geometry (không tạo thêm bộ đệm GPU cho mỗi người).
-      a.forEach((m, i) => expect(m.geometry).toBe(b[i].geometry));
+      a.forEach((m, i) => expect(m.geometry).toBe(b[i]!.geometry));
       let freed = 0;
       for (const g of [...built.parts.map((p) => p.geo), ...built.ribbons.map((r) => r.geo), ...Object.values(built.merged ?? {})])
         g.addEventListener('dispose', () => freed++);

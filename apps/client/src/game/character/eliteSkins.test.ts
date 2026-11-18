@@ -30,7 +30,7 @@ describe('12 tinh anh Tripo (E-1b)', () => {
   it('đủ 12 asset, lớp elite, có xương, đủ clip cơ bản, trong trần tam giác', () => {
     expect(new Set(ids).size).toBe(12);
     for (const id of ids) {
-      const a = MANIFEST.assets[id];
+      const a = MANIFEST.assets[id]!;
       expect(a, id).toBeDefined();
       expect(a.class, id).toBe('elite');
       expect(a.skinned, id).toBe(true);
@@ -45,26 +45,26 @@ describe('12 tinh anh Tripo (E-1b)', () => {
   it('ba tinh anh Vân Lam có skin nạp lười theo màn (không vào tải đầu), ba con Đoạn Mạch (E2-B), Kính Diện Ma Quân (E3-M) và hai con Vân Hải (E3-B) đã gộp vào bảng, các con còn lại chưa', () => {
     for (const id of IN_GAME) {
       expect(MONSTER_SKINS[id]?.lazy, id).toBe(true);
-      expect(MONSTER_SKINS[id].level, id).toBe('van_lam');
+      expect(MONSTER_SKINS[id]!.level, id).toBe('van_lam');
     }
     for (const [id, s] of Object.entries(ELITE_SKINS_NEW)) {
       if (DOAN_MACH.includes(id)) {
         expect(MONSTER_SKINS[id]?.level, id).toBe('doan_mach');
-        expect(MONSTER_SKINS[id].lazy, id).toBe(true);
+        expect(MONSTER_SKINS[id]!.lazy, id).toBe(true);
       } else if (VAN_HAI.includes(id)) {
         expect(MONSTER_SKINS[id]?.level, id).toBe('van_hai');
-        expect(MONSTER_SKINS[id].lazy, id).toBe(true);
+        expect(MONSTER_SKINS[id]!.lazy, id).toBe(true);
       } else if (THIEN_KHUYET.includes(id)) {
         // Thiên Khuyết Cổ Thành (E4-B) đã gộp vào bảng.
         expect(MONSTER_SKINS[id]?.level, id).toBe('thien_khuyet');
-        expect(MONSTER_SKINS[id].lazy, id).toBe(true);
+        expect(MONSTER_SKINS[id]!.lazy, id).toBe(true);
       } else if (id === 'elite_kinh_dien_ma_quan') {
         // Kính Nguyệt Cung (E3-M) đã gộp vào bảng.
         expect(MONSTER_SKINS[id]?.level, id).toBe('kinh_nguyet');
-        expect(MONSTER_SKINS[id].lazy, id).toBe(true);
+        expect(MONSTER_SKINS[id]!.lazy, id).toBe(true);
       } else expect(MONSTER_SKINS[id], id).toBeUndefined();
       expect(s.lazy, id).toBe(true);
-      for (const clip of Object.values(s.clips)) expect(MANIFEST.assets[s.asset].animations, `${id}: ${clip}`).toContain(clip);
+      for (const clip of Object.values(s.clips)) expect(MANIFEST.assets[s.asset]!.animations, `${id}: ${clip}`).toContain(clip);
     }
   });
 });

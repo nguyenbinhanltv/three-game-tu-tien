@@ -124,7 +124,7 @@ describe('model người chơi (Thanh Phong)', () => {
     const m = s.create(MALE) as SkinnedPlayer;
     run(m, anim({ speed: 7 }), 1.5);
     expect(m.state).toBe('run');
-    expect(m.actionOf('run')!.timeScale).toBeCloseTo(PLAYER_SKINS.chr_kiem_tu_nam.maxLocoScale, 5);
+    expect(m.actionOf('run')!.timeScale).toBeCloseTo(PLAYER_SKINS.chr_kiem_tu_nam!.maxLocoScale, 5);
     // 1,5 s × 1,8 × (4 bước / 1,23 s) ≈ 8–9 bước.
     expect(m.steps).toBeGreaterThanOrEqual(6);
     expect(m.steps).toBeLessThanOrEqual(11);
@@ -202,8 +202,8 @@ describe('model người chơi (Thanh Phong)', () => {
     // LOD2: thân phi kiếm còn, hào quang ẩn.
     m.setView({ dist: 200, inView: true, allowLod0: false });
     const fly = m.root.children.find((o) => o !== (m as unknown as { inner: THREE.Object3D }).inner)!;
-    expect(fly.children[0].visible).toBe(true);
-    expect(fly.children[1].visible).toBe(false);
+    expect(fly.children[0]!.visible).toBe(true);
+    expect(fly.children[1]!.visible).toBe(false);
     m.dispose();
     s.dispose();
   });
@@ -240,7 +240,7 @@ describe('model người chơi (Thanh Phong)', () => {
         .clone()
         .applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2)
         .add(new THREE.Vector3(10, 2, -5));
-      expect(after[k].distanceTo(want)).toBeLessThan(1e-4);
+      expect(after[k]!.distanceTo(want)).toBeLessThan(1e-4);
     }
     m.dispose();
     s.dispose();
@@ -267,8 +267,8 @@ describe('máy trạng thái chiêu (K-4)', () => {
     const hits = ev.filter((e) => e.kind === 'hit');
     expect(hits).toHaveLength(1);
     // Sai số một khung (1/60 s) quanh mốc hitAt của dữ liệu.
-    expect(hits[0].t).toBeGreaterThanOrEqual(phi.combo!.hits[0].hitAt);
-    expect(hits[0].t).toBeLessThan(phi.combo!.hits[0].hitAt + 1 / 60 + 1e-6);
+    expect(hits[0]!.t).toBeGreaterThanOrEqual(phi.combo!.hits[0]!.hitAt);
+    expect(hits[0]!.t).toBeLessThan(phi.combo!.hits[0]!.hitAt + 1 / 60 + 1e-6);
     run(m, anim(), 1);
     expect(ev.map((e) => e.kind)).toEqual(['windup', 'hit', 'recovery', 'end']);
     m.dispose();
@@ -309,7 +309,7 @@ describe('máy trạng thái chiêu (K-4)', () => {
     const m = s.create(MALE) as SkinnedPlayer;
     const ev = events(m);
     m.perform(phi.pose!, opts());
-    run(m, anim(), phi.hitAt![0] + 0.05);
+    run(m, anim(), phi.hitAt![0]! + 0.05);
     m.root.position.set(0, 0, 8); // server đã đặt người chơi cách chỗ cũ 8 m
     m.dashFrom(0, 0, 0.3);
     expect(ev.some((e) => e.kind === 'cancel')).toBe(true);

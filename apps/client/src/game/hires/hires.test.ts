@@ -182,7 +182,7 @@ describe('AssetCache.applyHires', () => {
       loadTexture: async () => hi,
     });
     const h = await cache.acquire('boss_x');
-    const [c] = cache.hiresCandidates();
+    const c = cache.hiresCandidates()[0]!;
     expect(c.file).toBe('hi/boss_x.map.ktx2');
     expect(await cache.applyHires(c)).toBe('ok');
     expect(mat.map).toBe(hi);
@@ -315,14 +315,14 @@ describe('AssetCache.applyHires với material dẫn xuất (adoptGltfMaterials)
     const hi = new THREE.Texture();
     const cache = fakeCache(src, hi);
     const h = await cache.acquire('mon_x');
-    const [before] = adoptGltfMaterials(h.scene);
+    const before = adoptGltfMaterials(h.scene)[0]!;
     expect(before.map).toBe(old);
-    const [c] = cache.hiresCandidates();
+    const c = cache.hiresCandidates()[0]!;
     expect(await cache.applyHires(c)).toBe('ok');
     expect(before.map).toBe(hi);
     // material dẫn xuất tạo SAU khi áp dụng chép texture bậc cao từ material gốc; revert cũng phải trả nó
     const h2 = await cache.acquire('mon_x');
-    const [after] = adoptGltfMaterials(h2.scene);
+    const after = adoptGltfMaterials(h2.scene)[0]!;
     expect(after.map).toBe(hi);
     cache.revertHires();
     expect(before.map).toBe(old);
@@ -337,7 +337,7 @@ describe('AssetCache.applyHires với material dẫn xuất (adoptGltfMaterials)
     src.name = 'm1';
     const cache = fakeCache(src, new THREE.Texture());
     const h = await cache.acquire('mon_x');
-    await cache.applyHires(cache.hiresCandidates()[0]);
+    await cache.applyHires(cache.hiresCandidates()[0]!);
     expect(cache.hiresApplied().map((a) => a.key)).toEqual(['mon_x#hi/mon_x.ktx2']);
     cache.revertHiresFile('mon_x#hi/mon_x.ktx2');
     expect(src.map).toBe(old);
@@ -360,16 +360,16 @@ describe('AssetCache.trackInstance: khoảng cách theo bản đang vẽ', () =>
     far.position.set(300, 0, 0);
     world.add(near, far);
     world.updateMatrixWorld(true);
-    expect(cache.hiresCandidates()[0].dist).toBe(Infinity); // chưa khai báo: không biết vị trí
+    expect(cache.hiresCandidates()[0]!.dist).toBe(Infinity); // chưa khai báo: không biết vị trí
     cache.trackInstance('mon_x', near);
     cache.trackInstance('mon_x', far);
-    expect(cache.hiresCandidates()[0].dist).toBeCloseTo(6);
+    expect(cache.hiresCandidates()[0]!.dist).toBeCloseTo(6);
     world.remove(near);
-    expect(cache.hiresCandidates()[0].dist).toBeCloseTo(300);
+    expect(cache.hiresCandidates()[0]!.dist).toBeCloseTo(300);
     // đuổi: tệp đã áp dụng ở xa (300 m) nhường chỗ cho ứng viên ở 6 m
-    await cache.applyHires(cache.hiresCandidates()[0]);
+    await cache.applyHires(cache.hiresCandidates()[0]!);
     const applied = cache.hiresApplied();
-    expect(applied[0].dist).toBeCloseTo(300);
+    expect(applied[0]!.dist).toBeCloseTo(300);
     const want = { key: 'k', assetId: 'x', dist: 6, file: 'f', width: 2048, bytes: 1, gpuBytes: MB };
     expect(planEviction(want, applied, 128 * MB, 128 * MB)).toEqual(['mon_x#hi/mon_x.ktx2']);
     tpl.release();

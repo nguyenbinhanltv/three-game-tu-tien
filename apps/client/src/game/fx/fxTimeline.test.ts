@@ -11,12 +11,12 @@ describe('FxRunner.scheduleEvents', () => {
     const tm = skillTiming(SKILL.get('skl_kiem_khi_tram')!, undefined);
     const s = scheduleEvents(evs, tm.hitAt, 2);
     const burst = s.find((x) => x.ev.type === 'mesh' && x.ev.shape === 'burst')!;
-    expect(burst.at).toBeCloseTo(tm.hitAt[0] + burst.ev.t, 6);
+    expect(burst.at).toBeCloseTo(tm.hitAt[0]! + burst.ev.t, 6);
     // Lưỡi liềm bắt đầu trước hitAt.
     const cres = s.find((x) => x.ev.type === 'mesh' && x.ev.shape === 'crescent')!;
-    expect(cres.at).toBeLessThan(tm.hitAt[0]);
+    expect(cres.at).toBeLessThan(tm.hitAt[0]!);
     // Đã sắp theo thời gian.
-    for (let i = 1; i < s.length; i++) expect(s[i].at).toBeGreaterThanOrEqual(s[i - 1].at);
+    for (let i = 1; i < s.length; i++) expect(s[i]!.at).toBeGreaterThanOrEqual(s[i - 1]!.at);
   });
 
   it('bậc chất lượng: Thấp bỏ hạt phụ, decal, gai; Cao đủ', () => {

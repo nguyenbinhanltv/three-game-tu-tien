@@ -111,7 +111,7 @@ describe.skipIf(!OUT)('đo xuyên thân của vạt với lò xo mô phỏng th�
         const total = (loop ? 2 * dur : 0) + t * dur + (t >= 1 ? 0.25 : 0);
         for (let s = 0; s < Math.round(total * 60); s++) m.update(1 / 60, anim);
         m.root.updateMatrixWorld(true);
-        const posed = pose(mm.lods[0][0]);
+        const posed = pose(mm.lods[0]![0]!);
         if (
           process.env.SPRING_DIAG &&
           /Idle_Loop|Sitting|Sword_Attack|Roll|Jog_Fwd_Loop@?/.test(clip) &&
@@ -170,7 +170,7 @@ describe.skipIf(!process.env.SPRING_CPU)('CPU 50 nhân vật: lò xo cũ so vớ
     }
     for (const id of ids)
       console.log(
-        `[springCpu] ${id}: ${res[id].map((x) => x.toFixed(2)).join(' / ')} ms/khung (50 nhân vật, 3 vòng, trung vị ${[...res[id]].sort((a, b) => a - b)[1].toFixed(2)})`,
+        `[springCpu] ${id}: ${res[id]!.map((x) => x.toFixed(2)).join(' / ')} ms/khung (50 nhân vật, 3 vòng, trung vị ${[...res[id]!].sort((a, b) => a - b)[1]!.toFixed(2)})`,
       );
     expect(Object.keys(res).length).toBe(ids.length);
   }, 900_000);

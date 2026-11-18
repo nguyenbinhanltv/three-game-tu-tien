@@ -19,14 +19,14 @@ interface Gltf {
 
 /** Đọc thẳng container GLB (không qua loader): JSON + khối BIN, trả byte của ảnh mà một texture trỏ tới. */
 function ktx2Images(id: string) {
-  const glb = fs.readFileSync(path.join(PUBLIC_ASSETS, MANIFEST.assets[id].file));
+  const glb = fs.readFileSync(path.join(PUBLIC_ASSETS, MANIFEST.assets[id]!.file));
   const jsonLen = glb.readUInt32LE(12);
   const gltf = JSON.parse(glb.subarray(20, 20 + jsonLen).toString('utf8')) as Gltf;
   const binStart = 20 + jsonLen + 8;
   const image = (texture: number): ArrayBuffer => {
-    const img = gltf.images[gltf.textures[texture].extensions!.KHR_texture_basisu!.source];
+    const img = gltf.images[gltf.textures[texture]!.extensions!.KHR_texture_basisu!.source]!;
     expect(img.mimeType).toBe('image/ktx2');
-    const view = gltf.bufferViews[img.bufferView];
+    const view = gltf.bufferViews[img.bufferView]!;
     expect(view.buffer).toBe(0);
     const start = binStart + (view.byteOffset ?? 0);
     return new Uint8Array(glb.subarray(start, start + view.byteLength)).buffer;

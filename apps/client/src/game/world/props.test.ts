@@ -43,7 +43,7 @@ describe('prop layer (P2-A4)', () => {
     const t = (
       layer as unknown as { templates: Map<string, { lods: { geometry: THREE.BufferGeometry; owned?: boolean }[][] }> }
     ).templates.get('prop_den_da')!;
-    const baked = t.lods[0][0];
+    const baked = t.lods[0]![0]!;
     expect(baked.owned).toBe(true);
     expect(baked.geometry).not.toBe(geo);
     let disposed = 0;

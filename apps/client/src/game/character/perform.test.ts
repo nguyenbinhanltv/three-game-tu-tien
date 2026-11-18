@@ -47,8 +47,8 @@ describe('động tác 6 chiêu (dữ liệu)', () => {
     // Mỗi cặp chiêu khác nhau ít nhất 12 cm ở một tay lúc ra đòn, hoặc kiếm lệch hướng trên 30°.
     for (let i = 0; i < atRelease.length; i++)
       for (let j = i + 1; j < atRelease.length; j++) {
-        const a = atRelease[i];
-        const b = atRelease[j];
+        const a = atRelease[i]!;
+        const b = atRelease[j]!;
         const diff = Math.max(dist(a.hR, b.hR), dist(a.hL, b.hL));
         const ang = Math.acos(Math.min(1, a.sword[0] * b.sword[0] + a.sword[1] * b.sword[1] + a.sword[2] * b.sword[2]));
         expect(diff > 0.12 || ang > Math.PI / 6, `${a.id} ~ ${b.id}`).toBe(true);
@@ -210,9 +210,9 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     const { m, calls } = fake();
     sp.predict(m, phi, 1000);
     expect(calls).toHaveLength(1);
-    expect(calls[0].pose).toBe('phi_kiem');
+    expect(calls[0]!.pose).toBe('phi_kiem');
     // Thời gian lấy từ dữ liệu chiêu, không viết cứng trong code.
-    expect((calls[0].o as { timing?: { hitAt: number[] } }).timing?.hitAt).toEqual([phi.combo!.hits[0].hitAt]);
+    expect((calls[0]!.o as { timing?: { hitAt: number[] } }).timing?.hitAt).toEqual([phi.combo!.hits[0]!.hitAt]);
     const hold = sp.onFx('sword', m, true, 1060);
     expect(hold).toBeCloseTo(releaseAt(phi) - 0.06, 5);
     expect(sp.holdLeft(1060)).toBeCloseTo(hold, 5);
@@ -228,8 +228,8 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     const { m, calls } = fake();
     expect(sp.onFx('slash', m, false, 0)).toBe(0);
     const slash = SKILLS.find((s) => s.fx === 'slash')!;
-    expect(calls[0].pose).toBe(slash.pose);
-    expect(calls[0].o?.from).toBeCloseTo(releaseAt(slash) - FX_LEAD, 6);
+    expect(calls[0]!.pose).toBe(slash.pose);
+    expect(calls[0]!.o?.from).toBeCloseTo(releaseAt(slash) - FX_LEAD, 6);
     const block = { attack: vi.fn() } as unknown as CharacterView;
     sp.onFx('rain', block, false, 0);
     sp.onFx('heal', block, false, 0);
@@ -242,8 +242,8 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     const thunder = SKILLS.find((s) => s.cast > 0)!;
     // Thời lượng lấy theo server (vd. đã giảm thời gian niệm), chiêu theo id chứ không đoán theo thời lượng.
     sp.onCast(m, thunder.id, 1.2);
-    expect(calls[0].pose).toBe(thunder.pose);
-    expect(calls[0].o?.delay).toBeCloseTo(1.2 - releaseAt(thunder), 6);
+    expect(calls[0]!.pose).toBe(thunder.pose);
+    expect(calls[0]!.o?.delay).toBeCloseTo(1.2 - releaseAt(thunder), 6);
     sp.onFx(thunder.fx, m, false, 0);
     expect(calls.length).toBe(1);
     sp.onCastEnd(m);
@@ -269,7 +269,7 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     expect(combos()).toEqual([0, 1, 2, 0]);
     sp.predict(m, phi, 4150 + (phi.combo!.window + 0.5) * 1000);
     expect(combos()[4]).toBe(0);
-    expect((calls[2].o?.timing as { kb: boolean }).kb).toBe(true);
+    expect((calls[2]!.o?.timing as { kb: boolean }).kb).toBe(true);
   });
 
   it('gửi lặp trong GCD (tự đánh 220 ms/lần) không dự đoán lại: không khởi động lại động tác, không tăng đòn liên hoàn', () => {
@@ -277,11 +277,11 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     const { m, calls } = fake();
     for (let t = 1000; t < 1900; t += 220) sp.predict(m, phi, t);
     expect(calls).toHaveLength(1);
-    expect(calls[0].o?.combo).toBe(0);
+    expect(calls[0]!.o?.combo).toBe(0);
     // Hết GCD thì đòn kế (đòn 2) mới được đoán.
     sp.predict(m, phi, 2050);
     expect(calls).toHaveLength(2);
-    expect(calls[1].o?.combo).toBe(1);
+    expect(calls[1]!.o?.combo).toBe(1);
   });
 
   it('lao người: chỉ chuỗi đánh thường, có mục tiêu, và không vượt chỗ đứng sát', () => {
@@ -294,7 +294,7 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     sp.predict(m, phi, 9000);
     const r = calls.map((c) => c.o?.reach as number);
     expect(r[0]).toBeGreaterThan(0);
-    expect(r[2]).toBeGreaterThan(r[0]);
+    expect(r[2]).toBeGreaterThan(r[0]!);
     expect(r[3]).toBeLessThanOrEqual(0.2 + 1e-9);
     expect(r[4]).toBe(0);
   });
@@ -303,11 +303,11 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     const sp = new SkillPoses();
     const { m, calls } = fake();
     sp.onFx('sword', m, false, 0, { n: 2, gap: 5 });
-    expect(calls[0].o?.combo).toBe(2);
-    expect(calls[0].o?.from).toBeGreaterThan(0);
+    expect(calls[0]!.o?.combo).toBe(2);
+    expect(calls[0]!.o?.from).toBeGreaterThan(0);
     const loi = SKILLS.find((s) => s.fx === 'thunder')!;
     sp.onCast(m, loi.id, 1.5);
-    expect(calls[1].o?.timing).toBeUndefined();
+    expect(calls[1]!.o?.timing).toBeUndefined();
   });
 });
 

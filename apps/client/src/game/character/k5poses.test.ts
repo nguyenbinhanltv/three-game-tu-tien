@@ -14,12 +14,12 @@ const P = (id: string): PoseDef => {
 };
 /** Chiều dài kiếm từ cổ tay tới mũi dùng cho đầu dò (m): thấp hơn kiếm thật, nên phép đo "đi ≥ 1,2 m" chặt hơn thực tế. */
 const BLADE = 0.9;
-const len = (v: number[]) => Math.hypot(v[0], v[1], v[2]);
-const sub = (a: number[], b: number[]) => a.map((x, i) => x - b[i]);
+const len = (v: number[]) => Math.hypot(v[0]!, v[1]!, v[2]!);
+const sub = (a: number[], b: number[]) => a.map((x, i) => x - b[i]!);
 const norm = (v: number[]) => v.map((x) => x / (len(v) || 1));
 const tipOf = (s: PoseSample): number[] => {
   const d = norm(s.sword ?? [0, 0, 1]);
-  return (s.handR ?? [0, 0, 0]).map((x, i) => x + d[i] * BLADE);
+  return (s.handR ?? [0, 0, 0]).map((x, i) => x + d[i]! * BLADE);
 };
 
 interface Row {
@@ -44,7 +44,7 @@ for (const voice of POSE_VOICES) {
     skill: 'skl_kiem_khi_tram',
     voice,
     nine: true,
-    hitAt: SK.get('skl_kiem_khi_tram')!.hitAt![0],
+    hitAt: SK.get('skl_kiem_khi_tram')!.hitAt![0]!,
     swing: true,
   });
 }
@@ -53,7 +53,7 @@ for (const [id, skill] of [
   ['kiem_anh', 'skl_phi_kiem_truy_hon'],
   ['van_kiem', 'skl_van_kiem_quy_tong'],
 ] as const)
-  ROWS.push({ id, skill, voice: 'kt', nine: true, hitAt: SK.get(skill)!.hitAt![0], swing: true });
+  ROWS.push({ id, skill, voice: 'kt', nine: true, hitAt: SK.get(skill)!.hitAt![0]!, swing: true });
 for (const [id, skill, voice] of [
   ['loi_dinh', 'skl_loi_dinh_nhat_kiem', 'kt'],
   ['ho_the', 'skl_linh_khi_ho_the', 'kt'],
@@ -63,7 +63,7 @@ for (const [id, skill, voice] of [
   ['xuan_phong', 'skl_hoi_xuan_quyet', 'ds'],
   ['hoi_thien', 'skl_hoi_thien_dan_lo', 'ds'],
 ] as const)
-  ROWS.push({ id, skill, voice, nine: false, hitAt: SK.get(skill)!.hitAt![0], swing: false });
+  ROWS.push({ id, skill, voice, nine: false, hitAt: SK.get(skill)!.hitAt![0]!, swing: false });
 
 const RANGE: Record<
   PoseVoice,
@@ -78,11 +78,11 @@ const RANGE: Record<
 export function measure(row: Row) {
   const def = P(row.id);
   const ks = resolveKeys(def);
-  const at = (i: number) => ks[i];
+  const at = (i: number) => ks[i]!;
   // Chỉ số khung: 9 khung = 0..8, 7 khung = 0..4 rồi 5 (hãm), 6 (về thủ thế).
   const [f1, f2, f3, f4, f5] = [at(0), at(1), at(2), at(3), at(4)];
-  const f6 = row.nine ? at(5) : undefined;
-  const guard = resolveKeys(P('kiem_thu'))[0];
+  const f6 = row.nine ? ks[5] : undefined;
+  const guard = resolveKeys(P('kiem_thu'))[0]!;
   const drop = guard.hipsPos[1] - f3.hipsPos[1];
   const twist = Math.abs(f3.hipsRot[1] - f5.hipsRot[1]);
   const hold = f4.t - f3.t;
@@ -121,10 +121,10 @@ describe('K-5: cấu trúc khung khóa', () => {
       const skill = SK.get(row.skill)!;
       expect(m.def.keys.length).toBe(row.nine ? 9 : 7);
       // Khung 1 trùng thủ thế chờ để liên chiêu không giật; khung cuối trùng khung 1.
-      expect(m.f1.hipsPos).toEqual(m.guard.hipsPos);
-      expect(m.f1.handR).toEqual(m.guard.handR);
-      expect(m.f1.sword).toEqual(m.guard.sword);
-      const last = m.ks[m.ks.length - 1];
+      expect(m.f1.hipsPos).toEqual(m.guard!.hipsPos);
+      expect(m.f1.handR).toEqual(m.guard!.handR);
+      expect(m.f1.sword).toEqual(m.guard!.sword);
+      const last = m.ks[m.ks.length - 1]!;
       expect(last.hipsPos).toEqual(m.f1.hipsPos);
       expect(last.handR).toEqual(m.f1.handR);
       expect(last.t).toBeCloseTo(m.def.duration, 2);
@@ -143,13 +143,13 @@ describe('K-5: cấu trúc khung khóa', () => {
       expect(m.hold).toBeLessThanOrEqual(0.08 + 1e-3);
       expect(m.hold).toBeCloseTo(RANGE[row.voice].hold, 2);
       // Trúng: ease-out bậc 4 từ khung 4 sang 5.
-      expect(m.def.keys[4].ease).toBe('quartOut');
+      expect(m.def.keys[4]!.ease).toBe('quartOut');
       if (row.nine) {
         // Thu kiếm (khung 8) nằm sau mốc cancel.move của chiêu.
-        const f8 = m.ks[7];
+        const f8 = m.ks[7]!;
         if (skill.cancel) expect(f8.t).toBeGreaterThanOrEqual(skill.cancel.move - 1e-6);
-        expect(m.ks[5].t).toBeCloseTo(row.hitAt + 0.06, 2);
-        expect(m.ks[6].t).toBeCloseTo(row.hitAt + 0.35 * skill.recovery!, 2);
+        expect(m.ks[5]!.t).toBeCloseTo(row.hitAt + 0.06, 2);
+        expect(m.ks[6]!.t).toBeCloseTo(row.hitAt + 0.35 * skill.recovery!, 2);
         expect(f8.t).toBeCloseTo(row.hitAt + 0.75 * skill.recovery!, 2);
       }
     });
@@ -213,9 +213,10 @@ describe('K-5: ba giọng đo được', () => {
     });
   }
   it('ba giọng khác nhau rõ rệt ở cùng một đòn', () => {
-    const [kt, hp, ds] = (['kt', 'hp', 'ds'] as const).map((v) =>
-      measure(ROWS.find((r) => r.skill === 'skl_kiem_khi_tram' && r.voice === v)!),
-    );
+    const of = (v: 'kt' | 'hp' | 'ds') => measure(ROWS.find((r) => r.skill === 'skl_kiem_khi_tram' && r.voice === v)!);
+    const kt = of('kt');
+    const hp = of('hp');
+    const ds = of('ds');
     expect(hp.drop).toBeGreaterThan(kt.drop * 1.8);
     expect(kt.drop).toBeGreaterThan(ds.drop * 1.8);
     expect(kt.twist).toBeGreaterThan(ds.twist);
@@ -244,12 +245,12 @@ describe('K-5: kiếm không xuyên thân', () => {
         const base = s.hipsPos;
         const sd = norm(s.sword);
         for (let u = 0.15; u <= BLADE + 1e-6; u += 0.05) {
-          const p = s.handR.map((x, i) => x + sd[i] * u);
+          const p = s.handR.map((x, i) => x + sd[i]! * u);
           const rel = sub(p, base);
-          const along = Math.min(0.62, Math.max(0, rel[0] * axis[0] + rel[1] * axis[1] + rel[2] * axis[2]));
-          const q = axis.map((x, i) => base[i] + x * along);
+          const along = Math.min(0.62, Math.max(0, rel[0]! * axis[0]! + rel[1]! * axis[1]! + rel[2]! * axis[2]!));
+          const q = axis.map((x, i) => base[i]! + x * along);
           // Khoảng cách ngang (bỏ trục dọc không có ý nghĩa khi điểm nằm dưới hông: chân, không phải thân).
-          if (p[1] < base[1] - 0.05) continue;
+          if (p[1]! < base[1] - 0.05) continue;
           const d = len(sub(p, q));
           if (d < worst) {
             worst = d;
