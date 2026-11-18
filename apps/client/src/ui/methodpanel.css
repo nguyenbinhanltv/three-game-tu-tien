@@ -364,8 +364,12 @@
   .mp-card-role {
     display: none;
   }
+  /* nội tại vẫn hiện nhưng gọn một dòng; đọc đủ ở `title` (rê chuột) hoặc màn cao hơn */
   .mp-passive {
-    display: none; /* nội tại xem lại ở màn cao hơn hoặc trong tooltip chiêu */
+    font-size: var(--u-fs-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .mp-pick {
     margin-top: 0;
