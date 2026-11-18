@@ -107,6 +107,10 @@ export function levelOfRoom(room: string): string {
   if (room === ROOM_WORLD) return 'van_lam';
   if (room === ROOM_DUNGEON) return 'kiem_trung';
   if (room === ROOM_TRIBULATION) return TRIB_LEVEL; // sân độ kiếp (E1-F)
+  if (room.startsWith(ROOM_TRIBULATION + '-')) {
+    const tl = room.slice(ROOM_TRIBULATION.length + 1);
+    return knownLevel(tl) ? tl : TRIB_LEVEL; // sân kiếp riêng (Nhật Thực Kiếp)
+  }
   const id = room.replace(/^(world|dungeon)-/, '');
   return id !== room && knownLevel(id) ? id : 'van_lam';
 }
@@ -398,6 +402,8 @@ export class Game {
   private ch4Checked = false;
   private ch5Checked = false;
   private danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
+  /** Năm Trấn Giới Bia của Nhật Thực Kiếp (của mình). */
+  private stelesVfx: { set(mask: number): void; stop(): void } | null = null;
   /** Phiên bản hiệu ứng cung gương (E3-M): tin mới/tin tắt tăng số, hiệu ứng cũ thấy số lệch thì tự tắt. */
   private mirrorDiscVer = 0;
   private mirrorVeilVer = 0;
@@ -2213,9 +2219,9 @@ export class Game {
     if (replacedFx(m.t) && typeof pSrc?.model.performClock === 'function') {
       // Đột phá của mình: hình do timeline lo, nhưng trạng thái HUD, chớp sáng và thẻ chương vẫn phải chạy (trước đây bị bỏ qua cùng nhánh hình cũ).
       if (m.t === 'ascend' && src === this.sid) {
-        set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
+        set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
         this.post?.flash(0.3);
-        window.setTimeout(() => !this.disposed && this.chapter(m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
+        window.setTimeout(() => !this.disposed && this.chapter(m.tb === 'anh_bien' ? 'ascend_ab' : m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
       }
       return;
     }
@@ -2293,10 +2299,10 @@ export class Game {
         if (src === this.sid) v.ascendGlow(posSrc, 2.6, m.tb === 'ket_dan', m.tb === 'nguyen_anh', m.tb === 'hoa_than');
         else v.pillar(posSrc, m.tb === 'hoa_than' ? 0xffeeb8 : m.tb === 'nguyen_anh' ? 0xd2c4ff : m.tb === 'ket_dan' ? 0xffd79a : 0xfff2b8, 3.2, 2.4, 40);
         if (src === this.sid) {
-          set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
+          set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
           this.post?.flash(0.3);
           // Thẻ chương đột phá sau khi mây kiếp tan và trụ sáng bốc lên; sting đột phá đã phát nên không thêm chiêng.
-          window.setTimeout(() => !this.disposed && this.chapter(m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
+          window.setTimeout(() => !this.disposed && this.chapter(m.tb === 'anh_bien' ? 'ascend_ab' : m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
         }
         if (e.chestOf(src, _v)) v.burst(_v, 0xfff2b8, 6, 1.2);
         break;
@@ -2317,7 +2323,7 @@ export class Game {
         v.burst(_v, 0x8fffc0, 0.8, 0.35);
         break;
       case 'death':
-        if (src === this.sid) set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
+        if (src === this.sid) set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
         this.cloneVfx.get(src)?.stop();
         this.cloneVfx.delete(src);
         if (e.chestOf(src, _v)) v.burst(_v, 0x8a8f98, 1.6, 0.5);
@@ -2440,6 +2446,19 @@ export class Game {
       case 'clone_end':
         this.cloneVis?.end(src, m.pg === 1);
         break;
+      case 'steles': {
+        // Năm Trấn Giới Bia của Nhật Thực Kiếp: mỗi tin mang mặt nạ bia sáng; HUD đếm, hình do vfx.steleRing.
+        if (src !== this.sid) break;
+        if (!this.stelesVfx) this.stelesVfx = v.steleRing(m.x ?? 0, m.z ?? 0, m.r ?? 16, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0);
+        this.stelesVfx.set(m.n ?? 0);
+        set({ steles: m.n ?? 0 });
+        break;
+      }
+      case 'rift':
+        // Tia cuối của Nhật Thực Kiếp đánh vào khe Giới Khích (đủ bia): khe khép lại.
+        v.riftVein(m.x ?? 0, m.z ?? 0, m.r ?? 11, m.d ?? 4, m.pg === 1);
+        if (src === this.sid) this.shake.kick(0.5);
+        break;
       case 'nguhanh': {
         // Tia kiếp ngũ hành (E4-D): HUD hiện hành đang giáng và trận môn cần đứng; vạch báo do vùng nguy hiểm vẽ.
         if (src === this.sid) set({ nguHanh: { e: m.n ?? 0, at: Date.now() + (m.d ?? 2) * 1000 } });
@@ -2534,9 +2553,13 @@ export class Game {
         this.danVfx.delete(src);
         this.soulVfx.get(src)?.stop();
         this.soulVfx.delete(src);
+        if (src === this.sid) {
+          this.stelesVfx?.stop();
+          this.stelesVfx = null;
+        }
         this.cloneVfx.get(src)?.stop();
         this.cloneVfx.delete(src);
-        if (src === this.sid) set({ danPg: -1, tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
+        if (src === this.sid) set({ danPg: -1, tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
         v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
         if (src === this.sid) {
           this.tribUntil = Date.now() + (m.d ?? 40) * 1000;

@@ -7,9 +7,9 @@ import { WebSocketClient, WebSocketTransport } from '@colyseus/ws-transport';
 import { config } from './config';
 import { sqlite } from './db';
 import { installHttpRateLimit } from './ratelimit';
-import { dungeonRoomName, ROOM_TRIBULATION, worldRoomName } from '@dtl/shared';
+import { dungeonRoomName, ROOM_TRIBULATION, TRIB_LEVEL, tribRoomNameOf, worldRoomName } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
-import { activeRooms, defineDungeon, defineWorld, onlineCount, TribulationRoom } from './rooms';
+import { activeRooms, defineDungeon, defineTribulation, defineWorld, onlineCount, TribulationRoom } from './rooms';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -107,6 +107,9 @@ for (const lv of Object.values(LEVELS)) {
 
 // Room độ kiếp riêng (E1-F): mỗi lần độ kiếp một room (khóa `tribRoom` trong vé), tổ đội vào cùng.
 gameServer.define(ROOM_TRIBULATION, TribulationRoom).filterBy(['tribRoom']);
+for (const lv of Object.values(LEVELS)) {
+  if (lv.tribulation && lv.id !== TRIB_LEVEL) gameServer.define(tribRoomNameOf(lv.id), defineTribulation(lv.id)).filterBy(['tribRoom']);
+}
 
 await gameServer.listen(config.port);
 console.log(`[server] Đạp Thiên Lộ chạy ở cổng ${config.port}`);

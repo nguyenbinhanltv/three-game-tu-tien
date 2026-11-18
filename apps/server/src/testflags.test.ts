@@ -57,7 +57,7 @@ describe('quyền tham số kiểm thử', () => {
     expect(ok('na4')).toBe(27);
     expect(ok('ht')).toBe(28);
     expect(ok('28')).toBe(28);
-    for (const bad of ['nk16', 'nk0', 'tc5', 'kd5', 'ht2', '29', '0', -1, 1.5, 'a'.repeat(50), { level: 15 }, ['nk15'], '__proto__']) expect(ok(bad), String(bad)).toBe('bad_realm');
+    for (const bad of ['nk16', 'nk0', 'tc5', 'kd5', 'ht5', 'ab2', '33', '0', -1, 1.5, 'a'.repeat(50), { level: 15 }, ['nk15'], '__proto__']) expect(ok(bad), String(bad)).toBe('bad_realm');
     // Sai một tham số thì không áp tham số nào (không bật god một nửa).
     expect(readTestFlags({ god: true, realm: 'nk99' }, true, true).kind).toBe('bad_realm');
   });
@@ -342,7 +342,7 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
     const { p, char, run } = join(true);
     expect(run('skills list')).toContain('skl_phi_kiem');
     run('skills all');
-    expect(char.level).toBe(28);
+    expect(char.level).toBe(32);
     expect(p.mth.dirty).toBe(true);
     const c2 = join(true);
     expect(c2.run('learn skl_kiem_khi_tram 3')).toContain('cấp 3');

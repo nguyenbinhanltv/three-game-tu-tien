@@ -400,6 +400,12 @@ export class GameSim {
     aliveShadows: (p) => this.monsters.filter((m) => m.owner === p.sid && m.state !== MS_DEAD).length,
     shadowOf: (p) => this.monsters.find((m) => m.owner === p.sid && m.state !== MS_DEAD) ?? null,
     end: (p, ok) => this.endTribulation(p, ok, false),
+    spawnBoss: (p, id, dist) => this.spawnTribBoss(p, id, dist),
+    removeMonster: (m) => this.removeMonster(m),
+    stunMonster: (m, sec) => {
+      m.stunUntil = Math.max(m.stunUntil, this.now + sec * 1000);
+    },
+    heal: (p, n) => this.healPlayer(p, n),
   });
   /** Bình cảnh, tâm ma, linh căn (P3-7). */
   readonly realm = new RealmSystem({
@@ -1913,6 +1919,19 @@ export class GameSim {
     return m;
   }
 
+  /** Quái của kiếp (Nhật Thực Dực Chủ, DV-3K): đứng `dist` mét trước mặt người độ kiếp, đuổi đúng người đó, không rơi đồ. */
+  private spawnTribBoss(p: PlayerEnt, id: string, dist: number): MonEnt | null {
+    const def = MONSTER.get(id);
+    if (!def) return null;
+    const x = p.move.x + Math.sin(p.s.yaw) * dist;
+    const z = p.move.z + Math.cos(p.s.yaw) * dist;
+    const m = this.spawnMonster(def, p.char.level, x, z, null);
+    m.minionOf = 'trib';
+    m.target = p.sid;
+    this.setMonState(m, MS_CHASE);
+    return m;
+  }
+
   /** Xuất khiếu trong Tam Trọng Kiếp (E3-L; E3-K nối phím X thật vào đây). */
   onTribSoul(p: PlayerEnt): void {
     if (p.trib) this.tribSys.soul(p);
@@ -1957,6 +1976,7 @@ export class GameSim {
     const c = p.char;
     const def = tribDef(p.trib?.id);
     const elapsed = p.trib ? def.duration - (p.trib.endAt - this.now) / 1000 : 0;
+    this.tribSys.cleanup(p);
     p.trib = null;
     this.setFlag(p, PF_TRIBULATION, false);
     if (success) {

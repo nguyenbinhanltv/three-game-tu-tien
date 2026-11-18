@@ -2,7 +2,7 @@
 import { type Client, Room, ServerError } from 'colyseus';
 import { installViewPatchFix } from '../viewSerializer';
 import { StateView } from '@colyseus/schema';
-import { C, ROOM_TRIBULATION, S, TELE_PARTY_R, TRIB_LEVEL, type TribDef, type TransferMsg, dungeonRoomName, isRootId, parseAppearance, terrainOf, validName, worldRoomName, AOI_PERIOD_MS } from '@dtl/shared';
+import { C, S, TELE_PARTY_R, tribLevelOf, tribRoomNameOf, type TribDef, type TransferMsg, dungeonRoomName, isRootId, parseAppearance, terrainOf, validName, worldRoomName, AOI_PERIOD_MS } from '@dtl/shared';
 import { APPEARANCE, LEVELS, realmName, t } from '@dtl/content';
 import { Aoi } from '../aoi';
 import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, issueSession, sessionAuth } from '../auth';
@@ -29,7 +29,7 @@ export interface JoinAuth extends AuthResult {
 
 /** Tên room của một level (thế giới hoặc bí cảnh). */
 export function roomNameOf(levelId: string): string {
-  if (LEVELS[levelId]?.tribulation) return ROOM_TRIBULATION;
+  if (LEVELS[levelId]?.tribulation) return tribRoomNameOf(levelId);
   return LEVELS[levelId]?.dungeon ? dungeonRoomName(levelId) : worldRoomName(levelId);
 }
 
@@ -388,11 +388,12 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
         if (Math.hypot(m.move.x - p.move.x, m.move.z - p.move.z) <= r) mates.push(m);
       }
     }
-    tickets.issue(p.char.id, TRIB_LEVEL, null, { key, id: def.id });
-    this.sendTransfer(p, TRIB_LEVEL, opts);
+    const level = tribLevelOf(def);
+    tickets.issue(p.char.id, level, null, { key, id: def.id });
+    this.sendTransfer(p, level, opts);
     for (const m of mates) {
-      tickets.issue(m.char.id, TRIB_LEVEL, null, { key });
-      this.sendTransfer(m, TRIB_LEVEL, opts);
+      tickets.issue(m.char.id, level, null, { key });
+      this.sendTransfer(m, level, opts);
     }
     return true;
   }

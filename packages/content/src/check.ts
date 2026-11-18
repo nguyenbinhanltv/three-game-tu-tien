@@ -758,7 +758,6 @@ for (const n of NPCS) {
 const PENDING_OBJ: Record<string, readonly string[]> = {
   kill: ['elite_trien_bo_cham_ba', 'boss_thu_khich_duc_chu', 'elite_huyet_giac_ma_tuong'],
   dungeon: ['kim_da_cung'],
-  breakthrough: ['anh_bien'],
 };
 for (const q of QUESTS) {
   needStr(`quest.${q.id}.name`);
@@ -808,7 +807,7 @@ for (const m of MONSTERS) if ((m.elite || m.boss) && !m.elem) err(`quái ${m.id}
 needItem(PHA_CANH_PILL, 'Phá Cảnh Đan');
 if (ITEM.get(PHA_CANH_PILL)?.use) err('Phá Cảnh Đan không có `use`: chỉ dùng qua bình cảnh (server)');
 if (!RECIPES.some((r) => r.output.id === PHA_CANH_PILL)) err('thiếu công thức luyện Phá Cảnh Đan');
-if (BOTTLENECK_LEVELS.join() !== '5,10,15,17,19,21,23,25,27') err('bình cảnh phải ở cấp 5, 10, 15, 17, 19, 21, 23, 25, 27');
+if (BOTTLENECK_LEVELS.join() !== '5,10,15,17,19,21,23,25,27,29,31') err('bình cảnh phải ở cấp 5, 10, 15, 17, 19, 21, 23, 25, 27, 29, 31');
 // Thang cảnh giới (E1-C): realms.json đủ 1…MAX_LEVEL, tên đúng đại cảnh giới của glossary, xpNeed tăng đều, hệ số cảnh giới tăng.
 if (REALMS.length !== MAX_LEVEL) err(`realms.json phải có ${MAX_LEVEL} cấp (đang ${REALMS.length})`);
 REALMS.forEach((r, i) => {
@@ -818,7 +817,7 @@ REALMS.forEach((r, i) => {
   if (!t(r.key).startsWith(major)) err(`${r.key}: tên "${t(r.key)}" phải bắt đầu bằng đại cảnh giới "${major}" của glossary`);
   if (r.level > TRUC_CO_LEVEL && r.level < MAX_LEVEL && xpNeed(r.level) <= xpNeed(r.level - 1) && majorRealmOf(r.level) === majorRealmOf(r.level - 1)) err(`xpNeed(${r.level}) phải lớn hơn cấp trước`);
 });
-if (!t(`realm.${MAX_LEVEL}`).endsWith('sơ kỳ')) err('cấp tối đa tạm là Hóa Thần sơ kỳ');
+if (!t(`realm.${MAX_LEVEL}`).endsWith('sơ kỳ')) err('cấp tối đa tạm là Anh Biến sơ kỳ');
 if (!MONSTER.has('mon_tam_ma')) err('thiếu quái mon_tam_ma (bóng tâm ma của thử thách bình cảnh)');
 if (!NPCS.some((n) => n.rootChange)) err('không NPC nào đổi linh căn');
 for (const n of NPCS) if (n.rootChange) needStr(`npc.${n.id}.root`);
@@ -956,6 +955,10 @@ if (!LEVELS.van_lam.spawn) err('van_lam: thiếu spawn');
     if (d.item !== null && !ITEM.get(d.item)) err(`${w}: vật phẩm đột phá ${d.item} không tồn tại`);
     if (d.enabled && d.item === null) err(`${w}: bật (enabled) mà chưa có vật phẩm đột phá`);
     if (d.room !== 'world' && d.room !== 'tribulation') err(`${w}: room phải là world hoặc tribulation`);
+    if (d.level !== undefined) {
+      const lv = LEVELS[d.level];
+      if (d.room !== 'tribulation' || !lv?.tribulation || !lv.dungeon) err(`${w}: level ${d.level} phải là sân độ kiếp (tribulation + dungeon) và room = tribulation`);
+    }
     if (!(d.duration > 0) || !(d.firstDelay >= 0) || !(d.failXpLoss >= 0 && d.failXpLoss <= 0.5) || !(d.pillMax >= 0)) err(`${w}: thời lượng/phạt/đan ngoài khoảng`);
     if (!d.phases.length) err(`${w}: thiếu pha`);
     let prev = 0;
@@ -1002,6 +1005,17 @@ if (!LEVELS.van_lam.spawn) err('van_lam: thiếu spawn');
         const x = p.xuatKhieu;
         if (!x || !(x.dur > 0 && x.cd >= x.dur) || !p.grid) err(`độ kiếp ${id}/${p.id}: xuat_khieu cần xuatKhieu {dur, cd >= dur} và lưới ô lửa (grid)`);
       }
+      if (p.mechanic === 'dan_loi') {
+        const x = p.danLoi;
+        if (!x || !(x.ring > 0 && x.steleR > 0 && x.first >= 0 && x.every > 0 && x.warn > 0 && x.pct > 0 && x.pct < 1 && x.r > 0)) err(`độ kiếp ${id}/${p.id}: thiếu hoặc sai thông số danLoi`);
+        else if (!(x.first + 5 * x.every <= p.end - (d.phases[d.phases.indexOf(p) - 1]?.end ?? 0))) err(`độ kiếp ${id}/${p.id}: pha dẫn lôi quá ngắn để thắp đủ năm bia`);
+      }
+      if (p.mechanic === 'nhat_thuc') {
+        const x = p.nhatThuc;
+        if (!x || !MONSTER.get(x.boss) || !(x.dist > 0 && x.smashEvery > 0 && x.smashWarn > 0 && x.smashR > 0 && x.every > 0 && x.warn > 0 && x.r > 0 && x.stun > 0 && x.shieldEvery > 0 && x.pct > 0 && x.pct < 1 && x.smashPct > 0 && x.smashPct < 1)) err(`độ kiếp ${id}/${p.id}: thiếu hoặc sai thông số nhatThuc (boss phải tồn tại)`);
+        if (!d.phases.some((q) => q.danLoi)) err(`độ kiếp ${id}/${p.id}: nhat_thuc cần một pha dan_loi trước đó (bia của kiếp)`);
+      }
+      if (p.final?.gateSteles !== undefined && !(p.final.gateSteles >= 1 && p.final.gateSteles <= 5 && d.phases.some((q) => q.danLoi))) err(`độ kiếp ${id}/${p.id}: gateSteles ngoài 1–5 hoặc thiếu pha dan_loi`);
       if (p.mechanic === 'tam_canh') {
         const x = p.tamCanh;
         if (!x || !(x.hurt > 0 && x.hit >= 0 && x.skillEvery > 0 && x.skillWarn > 0 && x.skillPow > 0) || !p.shadows) err(`độ kiếp ${id}/${p.id}: tam_canh cần tamCanh {hurt, hit, skillEvery, skillWarn, skillPow} và shadows`);
@@ -1058,7 +1072,7 @@ for (const it of ITEMS) {
 }
 for (const r of RECIPES) {
   if (r.quality && ITEM.get(r.output.id)?.kind !== 'consumable') err(`${r.id}: chỉ đan (consumable) mới có phẩm chất`);
-  if (r.reqLevel !== undefined && !(r.reqLevel >= 1 && r.reqLevel <= 28)) err(`${r.id}: reqLevel ngoài khoảng`);
+  if (r.reqLevel !== undefined && !(r.reqLevel >= 1 && r.reqLevel <= MAX_LEVEL)) err(`${r.id}: reqLevel ngoài khoảng`);
 }
 
 // Điểm đặt tên cho ?at= / `/gm tp <id>` (chỉ server đọc).

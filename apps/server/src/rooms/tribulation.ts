@@ -1,6 +1,6 @@
 // Room độ kiếp (R-7, tách từ rooms.ts).
 import { type Client, Room, ServerError } from 'colyseus';
-import { PF_DEAD, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, tribDef, type TribId, type DungeonDef } from '@dtl/shared';
+import { PF_DEAD, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, tribDef, tribRoomNameOf, type TribId, type DungeonDef } from '@dtl/shared';
 import { LEVELS, t } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import { type PlayerEnt, type SimOptions } from '../game/sim';
@@ -14,6 +14,15 @@ import { GameRoom, type JoinAuth } from './base';
  * `returnLevel`; chưa ai bắt đầu kiếp sau `WAIT_MS` cũng đưa về (vé hỏng, mất vật phẩm giữa đường).
  */
 const tribArrivals = new Map<number, TribId | undefined>();
+
+/** Lớp room độ kiếp cho một level kiếp: `tribulation` (do_kiep) hoặc `tribulation-<id>` (sân riêng, ví dụ Nhật Thực Kiếp). */
+export function defineTribulation(levelId: string): typeof TribulationRoom {
+  if (!LEVELS[levelId]?.tribulation) throw new Error(`defineTribulation: ${levelId} không phải sân độ kiếp`);
+  if (levelId === TribulationRoom.levelId) return TribulationRoom;
+  return class extends TribulationRoom {
+    static levelId = levelId;
+  };
+}
 
 export class TribulationRoom extends GameRoom {
   static levelId: string = TRIB_LEVEL;
@@ -34,7 +43,7 @@ export class TribulationRoom extends GameRoom {
 
   simOptions(): SimOptions {
     const d = this.def;
-    return { levelId: this.levelId, roomName: ROOM_TRIBULATION, spawn: d.spawn, respawn: d.spawn, persistPosition: false };
+    return { levelId: this.levelId, roomName: tribRoomNameOf(this.levelId), spawn: d.spawn, respawn: d.spawn, persistPosition: false };
   }
 
   onCreate(options: unknown): void {
@@ -46,7 +55,7 @@ export class TribulationRoom extends GameRoom {
   static async onAuth(token: string, options: unknown): Promise<JoinAuth> {
     const auth = await GameRoom.onAuth(token, options);
     const key = (options as { tribRoom?: unknown } | null)?.tribRoom;
-    const t = tickets.take(auth.charId, TRIB_LEVEL);
+    const t = tickets.take(auth.charId, this.levelId);
     if (!t?.trib || typeof key !== 'string' || t.trib.key !== key) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
     return { ...auth, ticket: true, spawn: t.spawn, trib: t.trib };
   }
