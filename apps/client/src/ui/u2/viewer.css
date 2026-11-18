@@ -1,0 +1,170 @@
+/* Trang ?ui=kit (Kit 2.0): chỉ bố cục xem, dùng token --u-*, không phải thành phần. */
+html,
+body {
+  margin: 0;
+  background: var(--u-ink-0);
+}
+#root:has(.u2v) {
+  pointer-events: auto;
+  overflow: auto;
+}
+body:has(.u2v) {
+  overflow: auto;
+}
+.u2v {
+  min-height: 100vh;
+  padding: var(--u-sp-5) var(--u-sp-6) calc(var(--u-sp-6) * 2);
+  color: var(--u-chu);
+  background: radial-gradient(ellipse at 50% -10%, var(--u-ink-3), var(--u-ink-0) 70%);
+}
+.u2v-head h1 {
+  margin: 0;
+  font: 700 var(--u-fs-7) var(--u-font-display);
+  background: var(--u-gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.u2v-head p {
+  margin: var(--u-sp-1) 0 var(--u-sp-5);
+  color: var(--u-chu-dim);
+}
+.u2v-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--u-sp-6) var(--u-sp-6);
+  align-items: start;
+}
+.u2v-sec[data-wide] {
+  grid-column: span 2;
+}
+.u2v-sec h2 {
+  margin: 0 0 var(--u-sp-3);
+  padding-bottom: var(--u-sp-1);
+  border-bottom: var(--u-line-1) solid var(--u-gold-line);
+  font: 700 var(--u-fs-2) var(--u-font-head);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--u-gold);
+}
+.u2v-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--u-sp-4);
+  margin: var(--u-sp-3) 0;
+}
+.u2v-row.on-ink,
+.u2v-bars.on-ink {
+  padding: var(--u-sp-3);
+  background: var(--u-ink-1);
+  box-shadow: var(--u-sh-hud);
+}
+.u2v-row.on-giay {
+  padding: var(--u-sp-3);
+  background: var(--u-giay);
+}
+.u2v-bars {
+  display: grid;
+  gap: var(--u-sp-2);
+  min-width: 240px;
+  margin-top: var(--u-sp-3);
+}
+.u2v-panelbox {
+  flex: 1 1 280px;
+  min-width: 280px;
+}
+.u2v-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: var(--u-sp-2);
+}
+.u2v-sw {
+  display: grid;
+  gap: var(--u-sp-1);
+  font-size: var(--u-fs-1);
+}
+.u2v-sw span {
+  height: 36px;
+  box-shadow: inset 0 0 0 var(--u-line-1) var(--u-gold-line);
+}
+.u2v-sw code {
+  font-family: var(--u-font-body);
+  color: var(--u-chu-dim);
+}
+.u2v-type {
+  display: grid;
+  gap: var(--u-sp-2);
+}
+.u2v-display {
+  font: 700 var(--u-fs-8) var(--u-font-display);
+  background: var(--u-gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: var(--u-lh-tight);
+}
+.u2v-head2 {
+  font: 700 var(--u-fs-6) var(--u-font-head);
+  color: var(--u-gold-text);
+}
+.u2v-body,
+.u2v-num {
+  margin: 0;
+  font: 400 var(--u-fs-3) var(--u-font-body);
+  font-feature-settings: var(--u-num);
+}
+.u2v-pat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--u-sp-3);
+}
+.u2v-box {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  padding: var(--u-sp-2);
+  color: var(--u-gold);
+  background: var(--u-ink-1);
+}
+.u2v-box.wide {
+  width: 160px;
+}
+.u2v-box.ink {
+  color: var(--u-ink-3);
+  background: var(--u-giay);
+}
+.u2v-box.seal {
+  color: var(--u-son);
+  background: var(--u-giay);
+}
+.u2v-box svg {
+  width: 100%;
+  height: 100%;
+}
+.u2v-row.on-cel {
+  padding: var(--u-sp-4);
+  background: linear-gradient(90deg, var(--u-cel-1), var(--u-cel-3));
+}
+.u2v-tiprow {
+  min-height: 200px;
+  align-items: flex-end;
+}
+.u2v-portrait {
+  position: relative;
+  width: 84px;
+  height: 84px;
+}
+.u2v-portrait .u2-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.u2v-pimg {
+  position: absolute;
+  inset: 10%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--u-cel-3), var(--u-cel-1) 60%, var(--u-cel-0));
+}
