@@ -2700,8 +2700,8 @@
       "id": "elite_hoi_giac_cu_thu",
       "class": "elite_mq",
       "source": "assets/build/raw/elite_hoi_giac_cu_thu.glb",
-      "file": "elite_hoi_giac_cu_thu.157f532d87.glb",
-      "bytes": 1439264,
+      "file": "elite_hoi_giac_cu_thu.48c6ce2a16.glb",
+      "bytes": 1440764,
       "rawBytes": 9640980,
       "triangles": 13999,
       "rawTriangles": 13999,
@@ -3745,9 +3745,9 @@
       "id": "mon_giac_kiem_trong_binh",
       "class": "monster_mq",
       "source": "assets/build/raw/mon_giac_kiem_trong_binh.glb",
-      "file": "mon_giac_kiem_trong_binh.c2465e5fd7.glb",
-      "bytes": 1338672,
-      "rawBytes": 11060632,
+      "file": "mon_giac_kiem_trong_binh.bb798fbdd4.glb",
+      "bytes": 1346408,
+      "rawBytes": 11060636,
       "triangles": 8993,
       "rawTriangles": 8993,
       "lod0Cap": 10000,
@@ -3783,27 +3783,27 @@
         },
         {
           "level": 1,
-          "triangles": 3120,
+          "triangles": 3115,
           "target": 3148
         },
         {
           "level": 2,
-          "triangles": 1078,
+          "triangles": 1072,
           "target": 1079
         }
       ],
       "dims": {
         "raw": {
           "width": 4.2465,
-          "height": 2.4163,
+          "height": 2.4088,
           "depth": 1.6901,
-          "minY": 0.0844
+          "minY": 0.0918
         },
         "build": {
           "width": 4.2465,
-          "height": 2.4163,
+          "height": 2.4088,
           "depth": 1.6901,
-          "minY": 0.0844
+          "minY": 0.0918
         }
       }
     },

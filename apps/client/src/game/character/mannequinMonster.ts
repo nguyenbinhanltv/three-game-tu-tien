@@ -27,11 +27,11 @@ export const MQ_SHIELD_CLIPS: ClipMap = { ...MQ_CLIPS, idle: 'Idle_Shield_Loop' 
 
 /**
  * Thời điểm chạm (giây trong clip ở 1×) đo bằng tốc độ cổ tay đạt đỉnh (Blender, UAL1/UAL2 gốc): Sword_Attack 0,33,
- * Sword_Regular_C 0,53, Zombie_Scratch 0,47, Melee_Hook 0,20.
+ * Sword_Regular_A 0,20, Zombie_Scratch 0,47, Melee_Hook 0,20. Quái mặc giáp/khiên tránh clip nhào lộn (Sword_Regular_C, Melee_Hook): áo choàng gắn cứng bị vẫy quá mạnh.
  */
 export const MQ_MOVES: Partial<Record<BossMoveKind, BossMove>> = {
-  slam: { clip: 'Sword_Regular_C', impact: 0.53 },
-  sweep: { clip: 'Sword_Attack', impact: 0.33 },
+  slam: { clip: 'Sword_Attack', impact: 0.33 },
+  sweep: { clip: 'Sword_Regular_A', impact: 0.2 },
 };
 export const MQ_ZOMBIE_MOVES: Partial<Record<BossMoveKind, BossMove>> = {
   slam: { clip: 'Zombie_Scratch', impact: 0.47 },

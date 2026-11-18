@@ -182,8 +182,8 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_tt_phan_than: { asset: 'boss_vo_dien_than_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.75, legs: 'biped', tint: '#c8c0e0', rim: 0.25, lift: 0.12, lazy: true, level: 'than_tang', moves: BIPED_MOVES },
   // DV-2 đợt 2 (quái hai chân Dị Vực, docs/dv2-mon/README.md): lưới trên xương Mannequin + clip UAL (`mannequin: true`). Nạp lười theo màn Bắc Hoang.
   mon_tan_chung: { asset: 'mon_tan_chung', clips: MQ_ZOMBIE_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.2, lift: 0.3, lazy: true, level: 'bac_hoang', moves: MQ_ZOMBIE_MOVES, mannequin: true },
-  mon_giac_kiem_trong_binh: { asset: 'mon_giac_kiem_trong_binh', clips: MQ_SHIELD_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.25, lift: 0.3, metalness: 0, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
-  elite_hoi_giac_cu_thu: { asset: 'elite_hoi_giac_cu_thu', clips: MQ_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, lift: 0.3, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
+  mon_giac_kiem_trong_binh: { asset: 'mon_giac_kiem_trong_binh', clips: MQ_SHIELD_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, metalness: 0, palette: { dark: '#2e2c3a', light: '#d2c4a6', glow: '#d9a93e' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
+  elite_hoi_giac_cu_thu: { asset: 'elite_hoi_giac_cu_thu', clips: MQ_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, palette: { dark: '#34303a', light: '#cdbfb2', glow: '#ff5a3a' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
 };
 
 interface Template {
