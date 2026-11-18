@@ -1,8 +1,8 @@
 /**
  * Tên thư pháp dọc kiểu câu đối: mỗi CHỮ (một tiếng, vd "Lạc") viết thành một ô, các ô xếp từ trên xuống; tên dài hơn 4 chữ chia 2 cột
  * (cột đầu ở bên phải). Vẽ lên canvas MỘT LẦN rồi cache theo (tên, tông, màu), không tốn CPU mỗi khung.
- * Nét cọ giả lập từ đường nét của font có dấu Việt: độ dày đổi theo vị trí nét (phình ở đầu nét, mảnh dần về cuối), cuối nét xơ (cọ khô, vệt dọc),
- * mép nhám nhẹ, vết mực loang quanh nét. Dấu tiếng Việt thường nằm ở nửa trên ô nên được làm đậm, không bị cọ khô ăn mất.
+ * Nét cọ giả lập từ đường nét của font có dấu Việt: độ dày đổi theo vị trí nét (phình ở đầu nét, mảnh dần về cuối), cuối nét xơ nhẹ ở MÉP (cọ khô, không có vệt sọc xuyên thân chữ),
+ * mép xơ nhẹ (cọ khô chỉ ở mép), vết mực loang rất nhẹ quanh nét; thân chữ đặc, không có vệt sọc. Dấu tiếng Việt thường nằm ở nửa trên ô nên được làm đậm, không bị cọ khô ăn mất.
  */
 
 export type BrushTone = 'ink' | 'gold';
@@ -109,9 +109,11 @@ export function brushGlyphMask(word: string, family: string, seed: number): { a:
       const edge = (n1(x * 0.2, y * 0.2) - 0.5) * 0.14 + (n1(x * 0.65, y * 0.65) - 0.5) * 0.06;
       const thr = 0.16 + 0.26 * smooth(0.2, 1, ty) + edge;
       let v = smooth(thr - 0.07, thr + 0.07, bl[i]!);
-      // cọ khô: vệt dọc, càng xuống cuối nét càng nhiều khe hở (nửa trên, nơi có dấu, gần như không khô)
-      const streak = n2(x * 0.5, y * 0.05);
-      v *= 1 - smooth(0.5, 1, ty) * 0.8 * smooth(0.55, 0.25, streak);
+      // cọ khô CHỈ ở mép (đầu/cuối nét): lõi nét (blur cao) giữ đặc, mép bị nhiễu ăn thành các vụn xơ, càng xuống cuối nét càng nhiều
+      const rim = 1 - smooth(0.55, 0.85, bl[i]!);
+      v *= 1 - rim * smooth(0.3, 1, ty) * 0.85 * smooth(0.6, 0.3, n2(x * 0.35, y * 0.35));
+      // đậm nhạt theo nét: đầu nét đậm hơn, cuối nét nhạt nhẹ (không bao giờ thủng thân chữ)
+      v *= 1 - 0.14 * smooth(0.3, 1, ty);
       a[i] = v;
     }
   }
@@ -151,7 +153,7 @@ export function renderBrushName(name: string, tone: BrushTone, family: string, c
       for (let i = 0; i < CW * CH; i++) {
         const v = a[i]!;
         // loang: quầng mờ màu `halo` dưới nét, nét chính phủ lên
-        const hl = Math.max(0, halo[i]! * 0.42 - v * 0.3);
+        const hl = Math.max(0, halo[i]! * 0.3 - v * 0.3);
         const outA = v + hl * (1 - v);
         if (outA <= 0.002) continue;
         img.data[i * 4] = (mr * v + hr * hl * (1 - v)) / outA;
