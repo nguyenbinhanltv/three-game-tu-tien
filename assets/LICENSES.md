@@ -281,6 +281,23 @@ Bộ ochre cho `doan_mach`, cũng từ [Poly Haven](https://polyhaven.com/textur
 
 Thẻ cỏ alpha (`apps/client/public/grass-ochre/`) dựng từ ảnh concept của dự án `docs/asset-concepts/prop_co_*.webp` bằng `pnpm assets:grass-cards` (không dùng Tripo).
 
+### Texture mặt đất Thiên Khuyết Cổ Thành (E4-I)
+
+Bộ slate cho `thien_khuyet`, cũng từ [Poly Haven](https://polyhaven.com/textures), **CC0-1.0**; đổi sắc (giảm bão hòa, ngả xám lam đêm) bằng `pnpm --filter @dtl/asset-pipeline exec tsx src/terrain-textures.ts --set slate`, ra `apps/client/public/terrain-slate/` (nạp lười khi vào level).
+
+| Lớp | Poly Haven | Tác giả | Giấy phép |
+| --- | --- | --- | --- |
+| nền (đá lát cổ) | [monastery_stone_floor](https://polyhaven.com/a/monastery_stone_floor) | Amal Kumar | CC0-1.0 |
+| đất (lối đá) | [rock_path](https://polyhaven.com/a/rock_path) | Amal Kumar | CC0-1.0 |
+| nền rêu | [mossy_cobblestone](https://polyhaven.com/a/mossy_cobblestone) | Sơn Nguyễn | CC0-1.0 |
+| đá | [slate_floor_02](https://polyhaven.com/a/slate_floor_02) | Dimitrios Savva | CC0-1.0 |
+| vách đá | [rock_face_03](https://polyhaven.com/a/rock_face_03) | Rob Tuytel | CC0-1.0 |
+| cát | [gravelly_sand](https://polyhaven.com/a/gravelly_sand) | Dario Barresi | CC0-1.0 |
+| lát đá | [patterned_slate_tiles](https://polyhaven.com/a/patterned_slate_tiles) | Dimitrios Savva | CC0-1.0 |
+| sỏi | [rocky_gravel](https://polyhaven.com/a/rocky_gravel) | Dario Barresi, Dimitrios Savva | CC0-1.0 |
+
+Thẻ cỏ sao (`apps/client/public/grass-night/`) dựng từ ảnh concept của dự án `docs/asset-concepts/prop_co_*.webp` bằng `pnpm assets:grass-cards --set night` (không dùng Tripo).
+
 <!-- audio:begin (sinh bởi tools/audio/build.mjs, đừng sửa tay) -->
 
 ### Âm thanh (SFX, âm môi trường)
@@ -362,6 +379,7 @@ Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằn
 | `combat` | Giao Phong | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/combat.mjs` |
 | `wild` | Vân Lam Sơn Mạch | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild.mjs` |
 | `wild_ochre` | Đoạn Mạch Cổ Cốc | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild_ochre.mjs` |
+| `wild_night` | Thiên Khuyết Cổ Thành | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_night.mjs` |
 | `wild_cloud` | Vân Hải Phù Đảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/wild_cloud.mjs` |
 | `forest` | Rừng Linh Thảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/forest.mjs` |
 | `lake` | Hồ Sương Mù | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/lake.mjs` |

@@ -1,0 +1,15 @@
+{
+  "atlas": "cards.189e82cef6.webp",
+  "cell": [
+    512,
+    384
+  ],
+  "cols": 2,
+  "rows": 2,
+  "cards": [
+    "co_thanh",
+    "linh_rung",
+    "van_hai",
+    "hoang_coc"
+  ]
+}

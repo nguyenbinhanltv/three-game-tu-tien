@@ -1,12 +1,12 @@
 {
-  "mood": "night",
+  "mood": "tk_night",
   "glb": [],
   "ground": {
-    "set": "terrain",
+    "set": "terrain-slate",
     "mask": "neutral"
   },
   "music": [
-    "wild"
+    "wild_night"
   ],
   "features": {
     "sect": false,
@@ -19,5 +19,6 @@
     "beacons": true,
     "vegetation": false
   },
-  "minimap": "thien_khuyet"
+  "minimap": "thien_khuyet",
+  "grassCards": "grass-night"
 }

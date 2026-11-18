@@ -95,6 +95,9 @@ export class MannequinCharacter implements CharacterView {
   private combatT = 0;
   private swing = 0;
   private lastPhase = 0;
+  private dead = false;
+  /** Đòn nối tiếp sau đòn hiện tại (ngã → đứng dậy). */
+  private chain: string | null = null;
   private weights = new Map<THREE.AnimationAction, number>();
   private disposed = false;
 
@@ -118,7 +121,11 @@ export class MannequinCharacter implements CharacterView {
     this.mixer = new THREE.AnimationMixer(this.rig);
     this.hit = new HitReact(meshes);
     this.mixer.addEventListener('finished', (e) => {
-      if ((e as unknown as { action: THREE.AnimationAction }).action === this.shot) this.shot = null;
+      if ((e as unknown as { action: THREE.AnimationAction }).action !== this.shot) return;
+      this.shot = null;
+      const next = this.chain;
+      this.chain = null;
+      if (next && !this.dead) this.oneShot(next);
     });
     this.play('Idle_Loop');
     this.mixer.update(0);
@@ -183,6 +190,7 @@ export class MannequinCharacter implements CharacterView {
   }
 
   attack(): void {
+    if (this.dead) return;
     this.attacks++;
     this.combatT = COMBAT_HOLD;
     this.oneShot(SWING[this.swing++ % SWING.length], 1.6);
@@ -193,11 +201,14 @@ export class MannequinCharacter implements CharacterView {
   }
 
   knockdown(): void {
+    if (this.dead) return;
+    this.chain = this.tpl.clips.has('LayToIdle') ? 'LayToIdle' : null;
     this.oneShot('Hit_Knockback');
   }
 
   hitReact(o: HitOpts): void {
     this.hit.react(o);
+    if (this.dead) return;
     if (!this.shot && !o.noFlash) this.oneShot(o.heavy ? 'Hit_Knockback' : 'Hit_Chest', o.heavy ? 1.2 : 1.4);
   }
 
@@ -216,6 +227,13 @@ export class MannequinCharacter implements CharacterView {
     const dt = this.hit.update(realDt);
     this.inner.position.x = this.hit.shake;
     this.combatT = a.combat ? COMBAT_HOLD : Math.max(0, this.combatT - realDt);
+    if (a.dead && !this.dead) {
+      // Chết: bỏ đòn đang phát và đòn nối tiếp, để Death01 phát trọn.
+      this.shot?.stop();
+      this.shot = null;
+      this.chain = null;
+    }
+    this.dead = a.dead;
     this.grounded = !(a.flying || a.airborne || a.sky);
     const name = baseClipOf({ ...a, combat: a.combat || this.combatT > 0 });
     this.play(name);
