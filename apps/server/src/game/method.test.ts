@@ -84,6 +84,8 @@ function setup(level = 8) {
     e.flow.lastDashAt = -1e9;
     e.char.mp = e.char.mmp;
     e.lastCombatAt = 0;
+    // Đồng hồ sim đứng yên nên giới hạn lệnh chiêu mỗi giây (SKILL_MSG_PER_SEC) cộng dồn qua cả vòng thử.
+    e.skillCount = 0;
   };
   return { sim, sent, p, join, mon, fresh };
 }

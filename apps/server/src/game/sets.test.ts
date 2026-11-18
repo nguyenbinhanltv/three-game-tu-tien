@@ -47,8 +47,8 @@ function setup() {
 }
 
 describe('dữ liệu bộ', () => {
-  it('mười ba bộ, mỗi món trỏ đúng bộ, công thức chế bậc 1 chỉ ra món của bộ Lạc Kiếm', () => {
-    expect(SETS.map((s) => s.id)).toEqual(['set_lac_kiem', 'set_huyen_giap', 'set_dan_tam', 'set_han_giao', 'set_liet_mach', 'set_dia_giap', 'set_phuc_mach', 'set_kinh_quang', 'set_van_kinh', 'set_luu_ly', 'set_tinh_khuyet', 'set_co_thanh', 'set_than_tang']);
+  it('mười sáu bộ, mỗi món trỏ đúng bộ, công thức chế bậc 1 chỉ ra món của bộ Lạc Kiếm', () => {
+    expect(SETS.map((s) => s.id)).toEqual(['set_lac_kiem', 'set_huyen_giap', 'set_dan_tam', 'set_han_giao', 'set_liet_mach', 'set_dia_giap', 'set_phuc_mach', 'set_kinh_quang', 'set_van_kinh', 'set_luu_ly', 'set_tinh_khuyet', 'set_co_thanh', 'set_than_tang', 'set_tran_khich', 'set_tan_thiet', 'set_tinh_dan_bao']);
     for (const s of SETS) for (const pid of s.pieces) expect(ITEM.get(pid)?.set).toBe(s.id);
     for (const f of FORGE.filter((x) => x.id.startsWith('frg_lk_'))) expect(ITEM.get(f.output)?.set).toBe('set_lac_kiem');
   });
@@ -61,6 +61,24 @@ describe('dữ liệu bộ', () => {
       for (const pid of set.pieces) {
         expect(ITEM.get(pid)?.tier, pid).toBe(4);
         expect(FORGE.some((f) => f.output === pid), pid).toBe(true);
+      }
+      for (const old of SETS.find((x) => x.id === from)!.pieces) expect(ITEM.get(ITEM.get(old)!.promoteTo!)?.set, old).toBe(id);
+    }
+  });
+});
+
+describe('bộ bậc 5 (E4-F)', () => {
+  it('5 món cùng bậc 5 (cấp 28), đủ công thức chế bằng Tẫn Giác, đồ bậc 4 trỏ promoteTo vào đúng bộ', () => {
+    for (const [id, from] of [['set_tran_khich', 'set_tinh_khuyet'], ['set_tan_thiet', 'set_co_thanh'], ['set_tinh_dan_bao', 'set_than_tang']] as const) {
+      const set = SETS.find((x) => x.id === id)!;
+      expect(set.pieces.length, id).toBe(5);
+      expect(set.pieces.map((p) => ITEM.get(p)!.kind), id).toContain('head');
+      for (const pid of set.pieces) {
+        expect(ITEM.get(pid)?.tier, pid).toBe(5);
+        expect(ITEM.get(pid)?.reqLevel, pid).toBe(28);
+        const f = FORGE.find((x) => x.output === pid);
+        expect(f, pid).toBeTruthy();
+        expect(f!.inputs.some((i) => i.id === 'itm_tan_giac'), pid).toBe(true);
       }
       for (const old of SETS.find((x) => x.id === from)!.pieces) expect(ITEM.get(ITEM.get(old)!.promoteTo!)?.set, old).toBe(id);
     }
