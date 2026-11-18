@@ -20,12 +20,14 @@ function assetIds(): string[] {
 export default {
   name: 'asset',
   desc: 'Tấm xoay 4 hướng + tấm clip của asset trong trang xem (duyệt model/rig/clip sau khi nhập)',
-  usage: '[--ids a,b | --group boss_|elite_|mon_|prop_] [--clips idle,run,attack,death] [--frames 5] [--zoom 1.35]',
+  usage: '[--ids a,b | --group boss_|elite_|mon_|prop_] [--clips idle,run,attack,death] [--frames 5] [--zoom 1.35] [--lib ual]',
   async run(r) {
     const frames = num('--frames', 5);
     // Trang xem đặt camera cho vật cao ≥ 1 m; vật nhỏ (kiếm, pháp bảo) dùng --zoom < 1 để kéo camera lại gần.
     const zoom = num('--zoom', 1.35);
     const want = list('--clips', '');
+    // `--lib ual`: model Mannequin (quái hai chân Dị Vực, nhân vật v3) phát clip UAL từ anim_ual_native, tên clip là tên UAL (Idle_Loop, Jog_Fwd_Loop, Sword_Attack...).
+    const lib = opt('--lib', '');
     const ctx = await r.browser.newContext({ viewport: { width: 640, height: 640 }, deviceScaleFactor: 1 });
     const page = await ctx.newPage();
     watchErrors(page, { into: r.errors });
@@ -41,7 +43,7 @@ export default {
       await sleep(350);
     };
     for (const id of assetIds()) {
-      await page.goto(gameUrl(r.clientPort, id.startsWith('boss_') ? { show: 'boss', id } : { show: id }, { renderer: r.renderer }), { waitUntil: 'load' });
+      await page.goto(gameUrl(r.clientPort, id.startsWith('boss_') ? { show: 'boss', id } : { show: id, ...(lib ? { lib } : {}) }, { renderer: r.renderer }), { waitUntil: 'load' });
       await page.waitForFunction(() => !!window.__viewer?.model || !!window.__viewer?.clips?.length, undefined, { timeout: 60_000, polling: 250 });
       await page.addStyleTag({ content: '.viewer-panel,.viewer-hud,.panel,aside,header{display:none!important}.viewer-host{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important}' });
       const clips = await page.evaluate(() => {
@@ -49,7 +51,7 @@ export default {
         w.setHuman(false);
         w.controls.autoRotate = false;
         window.dispatchEvent(new Event('resize'));
-        const idle = w.clips.findIndex((c) => c.name === 'idle');
+        const idle = w.clips.findIndex((c) => c.name === 'idle' || c.name === 'Idle_Loop');
         if (idle >= 0) {
           w.playClip(idle);
           w.seek(0);

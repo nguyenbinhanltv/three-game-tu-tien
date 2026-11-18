@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "elite_hoi_giac_cu_thu",
+  "type": "mon",
+  "budgetClass": "elite_mq",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 14000,
+    "texture": 1024
+  },
+  "procedural": {
+    "script": "tools/blender/chr_v3.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Sketchfab: \"GORTHAZUL // The Ashhorn Behemoth\" của Atahan3D, CC BY 4.0. Đã chỉnh sửa: giảm lưới 701.253 → 14.000 tam giác, UV mới và nướng lại texture (tools/blender/skin_prep.py --stage bake, cấu hình tools/blender/skins/dv2_gorthazul.json), rìu gắn cứng vào xương tay phải (--bind); đặt lên bộ xương UE5 Mannequin bằng tools/blender/chr_v3.py (clip UAL của Quaternius CC0 phát trực tiếp)",
+    "owner": "6 (https://sketchfab.com/Atahan3D)",
+    "date": "2026-11-18",
+    "url": "https://sketchfab.com/3d-models/gorthazul-the-ashhorn-behemoth-0e2a0f6baad64f51b2aa613112b7fd7c",
+    "spdx": "CC-BY-4.0"
+  }
+}

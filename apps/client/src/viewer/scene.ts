@@ -8,6 +8,7 @@ import { POSES } from '@dtl/content';
 import { POSE_FLY, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { createGltfLoader, createKtx2Loader, detectKtx2Support, localLibsManager } from '../game/assets';
 import { mergeClips, retargetClips } from '../game/character/animLib';
+import { pelvisScaledClips } from '../game/character/mannequinMonster';
 import { bakePose, formatProbe, IkRig, poseClipName } from '../game/character/ikpose';
 import { isSkillViewer } from '../game/testParams';
 import { buildFixtureSword, buildMixamoFixture } from '../game/character/mixamoFixture';
@@ -132,15 +133,18 @@ export class ViewerScene {
     return this.loadBuffer(buf, url.slice(url.lastIndexOf('/') + 1), url.slice(0, url.lastIndexOf('/') + 1), libUrls);
   }
 
-  /** `libUrls`: thư viện clip chung (anim_human_base, anim_human_k3); clip retarget sang model, clip riêng của model thắng khi trùng tên. */
+  /** `libUrls`: thư viện clip chung (anim_human_base, anim_human_k3; `native:` + anim_ual_native cho model Mannequin); clip retarget sang model, clip riêng của model thắng khi trùng tên. */
   async loadBuffer(buf: ArrayBuffer, name: string, path = '', libUrls: string[] = []): Promise<LoadedInfo> {
     const gltf: GLTF = await this.loader.parseAsync(buf, path);
     let lib: THREE.AnimationClip[] = [];
-    for (const libUrl of libUrls) {
+    for (const spec of libUrls) {
+      // `native:<url>`: thư viện cùng tên xương với model (UAL/Mannequin): phát thẳng, chỉ chỉnh độ cao hông, không retarget.
+      const native = spec.startsWith('native:');
+      const libUrl = native ? spec.slice(7) : spec;
       const r = await fetch(libUrl);
       if (!r.ok) throw new Error(`HTTP ${r.status} ${libUrl}`);
       const libGltf = await this.loader.parseAsync(await r.arrayBuffer(), libUrl.slice(0, libUrl.lastIndexOf('/') + 1));
-      lib = lib.concat(retargetClips(libGltf.scene, libGltf.animations, gltf.scene));
+      lib = lib.concat(native ? pelvisScaledClips(gltf.scene, libGltf.scene, libGltf.animations) : retargetClips(libGltf.scene, libGltf.animations, gltf.scene));
     }
     const json = (gltf.parser as unknown as { json: { extensionsUsed?: string[] } }).json;
     // ?pose=…: nướng thêm các key pose IK nếu model có rig người Mixamo.

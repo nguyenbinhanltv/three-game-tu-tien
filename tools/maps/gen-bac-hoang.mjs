@@ -234,11 +234,12 @@ for (const b of STELES) {
   [[-5, 5], [5, 5]].forEach(([dx, dz]) => addProp(LAMP, b.off[0] + dx, b.off[1] + dz, 0, 1));
 }
 
-// ---- tinh anh (chỗ đứng tạm, xem đầu tệp): 13 con (2/2/2/2/3/2) ----
+// ---- tinh anh (chỗ đứng tạm, xem đầu tệp): 13 con (2/2/2/2/3/2); Hôi Giác Cự Thú (DV-2 đợt 2) ở Hàn Hôi Nguyên và Khích Giai ----
 const ELITES = [
-  { zone: 'han_hoi_nguyen', mon: 'elite_cot_kiem_thong_linh', n: 2 },
+  { zone: 'han_hoi_nguyen', mon: 'elite_hoi_giac_cu_thu', n: 2 }, // DV-2 đợt 2: Hôi Giác Cự Thú
   { zone: 'kho_loc_lam', mon: 'elite_da_minh_loc_vuong', n: 2 },
-  { zone: 'khich_giai', mon: 'elite_cot_kiem_thong_linh', n: 2 },
+  { zone: 'khich_giai', mon: 'elite_hoi_giac_cu_thu', n: 1 },
+  { zone: 'khich_giai', mon: 'elite_cot_kiem_thong_linh', n: 1 },
   { zone: 'xich_tan_binh', mon: 'elite_thach_tuong_dai_tuong', n: 2 },
   { zone: 'kim_da_ngoai_uyen', mon: 'elite_thach_tuong_dai_tuong', n: 3 },
   { zone: 'tran_gioi_dai', mon: 'elite_cot_kiem_thong_linh', n: 2 },
@@ -285,13 +286,13 @@ const TARGET_CAMPS = 66;
 const TARGET_DENSITY = 120;
 const CAMP_R = 30;
 const MIX = {
-  // DV-3I: quái Dị Vực đợt 1 (DV-2) thay quái chương 4 đứng tạm. Cốt Vệ Kiếm Thú vẫn đứng chỗ Giác Kiếm Trọng Binh (chưa có model, DV3-B).
+  // DV-3I: quái Dị Vực đợt 1 (DV-2) thay quái chương 4 đứng tạm; DV-2 đợt 2: Giác Kiếm Trọng Binh thay Cốt Vệ Kiếm Thú, Tẫn chủng lọt qua miệng khe.
   han_hoi_nguyen: [['mon_liet_hoa_ma_nguu', 1]],
   kho_loc_lam: [['mon_u_anh_cot_loc', 0.6], ['mon_liet_hoa_ma_nguu', 0.4]],
-  khich_giai: [['mon_u_anh_cot_loc', 0.5], ['mon_cot_ve_kiem_thu', 0.5]],
-  xich_tan_binh: [['mon_liet_hoa_ma_nguu', 0.5], ['mon_cot_ve_kiem_thu', 0.5]],
-  kim_da_ngoai_uyen: [['mon_u_anh_cot_loc', 0.5], ['mon_cot_ve_kiem_thu', 0.5]],
-  tran_gioi_dai: [['mon_cot_ve_kiem_thu', 1]],
+  khich_giai: [['mon_u_anh_cot_loc', 0.3], ['mon_giac_kiem_trong_binh', 0.4], ['mon_tan_chung', 0.3]],
+  xich_tan_binh: [['mon_liet_hoa_ma_nguu', 0.5], ['mon_giac_kiem_trong_binh', 0.5]],
+  kim_da_ngoai_uyen: [['mon_u_anh_cot_loc', 0.5], ['mon_giac_kiem_trong_binh', 0.5]],
+  tran_gioi_dai: [['mon_giac_kiem_trong_binh', 0.7], ['mon_tan_chung', 0.3]],
 };
 const pick = (list) => {
   let t = R();
