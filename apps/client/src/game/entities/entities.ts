@@ -401,7 +401,9 @@ export class EntityManager {
       }
       h.push({ t: this.time, x: v.x, z: v.z });
       while (h.length > 1 && this.time - h[0].t > HIST_SEC) h.shift();
+      const lookMon = isLocal && targetId ? this.monsters.get(targetId) : undefined;
       v.model.update(dt, {
+        lookAt: lookMon ? { x: lookMon.x, y: lookMon.y + 1.2, z: lookMon.z } : undefined,
         moveDir: v.speed > 0.3 ? locoDirOf(v.yaw, v.mvx, v.mvz) : undefined,
         speed: v.speed,
         flying: (s.fl & PF_FLYING) !== 0,
