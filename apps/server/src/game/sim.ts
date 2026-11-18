@@ -1588,6 +1588,14 @@ export class GameSim {
     return this.monSys.homeDist(m);
   }
 
+  /** Gột xong (DV-3D, Xích Tẫn Khích): hủy vùng boss đã thả rồi hạ boss qua đường giết chung (cùng tu vi, rơi đồ, nhiệm vụ như bị đánh chết). */
+  purifyMonster(mon: MonEnt): void {
+    if (mon.state === MS_DEAD) return;
+    this.hazards = this.hazards.filter((h) => h.mon !== mon);
+    mon.s.hp = 0;
+    this.killMonster(mon);
+  }
+
   private killMonster(mon: MonEnt): void {
     return this.monSys.killMonster(mon);
   }

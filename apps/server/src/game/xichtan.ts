@@ -81,11 +81,12 @@ export class SteleHold {
     if (this.complete) return;
     const pts: { x: number; z: number }[] = [];
     for (const p of this.h.players()) if (!this.h.isDead(p) && !this.h.isGhost(p)) pts.push({ x: p.move.x, z: p.move.z });
-    const st = stepStele(this.held, this.empty, dt, occupied(pts, d.x, d.z, d.r), d.grace, d.secs);
+    const has = occupied(pts, d.x, d.z, d.r);
+    const st = stepStele(this.held, this.empty, dt, has, d.grace, d.secs);
     this.held = st.held;
     this.empty = st.empty;
-    if (this.empty === 0 && !this.wasOn) this.h.sysAll('sys.xt_stele_on', undefined, 'good');
-    this.wasOn = this.empty === 0;
+    if (has && !this.wasOn) this.h.sysAll('sys.xt_stele_on', undefined, 'good');
+    this.wasOn = has;
     if (st.off) {
       if (!this.offNoted) {
         this.offNoted = true;
@@ -118,7 +119,7 @@ export interface RiftHost {
   monsters(): readonly MonEnt[];
   /** Boss mất thế `sec` giây (cắt chú đang niệm). */
   stagger(m: MonEnt, sec: number): void;
-  /** Gột xong: boss dừng ở 1 máu và ngã xuống không rơi đồ riêng. */
+  /** Gột xong: boss (đang ở 1 máu) hạ qua đường giết chung; hủy vùng đã thả. */
   purify(m: MonEnt): void;
   marker(x: number, z: number, r: number, dur: number, kind: 'frost'): void;
   sysAll(k: string, params?: Record<string, string | number>, type?: string): void;

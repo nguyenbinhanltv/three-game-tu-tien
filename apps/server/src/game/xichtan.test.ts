@@ -145,6 +145,15 @@ describe('SteleHold với host giả', () => {
     adv(1);
     expect(st.held).toBeGreaterThan(held);
   });
+  it('tin "bia sáng" chỉ phát khi có người đứng vào, không phải tick đầu', () => {
+    const { pl, log, adv } = mk();
+    pl.move.x = 50;
+    adv(1);
+    expect(log.say).not.toContain('sys.xt_stele_on');
+    pl.move.x = 0;
+    adv(1);
+    expect(log.say.filter((k) => k === 'sys.xt_stele_on')).toHaveLength(1);
+  });
   it('người chết không giữ được bia', () => {
     const { st, pl, adv } = mk();
     pl.dead = true;
@@ -206,7 +215,7 @@ describe('room thật', () => {
     room.broadcast = (type: string, msg: unknown) => sent.push({ type, msg, to: '*' });
     room.sim = new GameSim(new WorldState(), room as never, { levelId: LV, roomName: LV, spawn, respawn: spawn, persistPosition: false });
     room.aoi = new Aoi(room.sim);
-    room.clients = { getById: () => undefined };
+    room.clients = Object.assign([] as unknown[], { getById: () => undefined });
     room.markers = { drop() {}, sync() {} };
     room.clock = { setTimeout: () => undefined, setInterval: () => undefined };
     Object.defineProperty(room, 'roomName', { value: LV });
@@ -238,7 +247,7 @@ describe('room thật', () => {
   };
 
   it('đi đủ sáu đợt: giữ bia chặn đợt 5, khe mạch gột boss, rồi hoàn thành', async () => {
-    const { room, sim } = await mkRoom();
+    const { room, sim, p } = await mkRoom();
     const alive = () => sim.monsters.filter((m) => m.state !== MS_DEAD);
     for (let w = 1; w <= 3; w++) {
       step(room);
@@ -263,6 +272,13 @@ describe('room thật', () => {
     expect(boss).toBeTruthy();
     expect(room.veins).toBeTruthy();
     boss.phase = 2;
+    // Sàn 1 máu: sát thương dồn không giết được boss còn khe mạch, bỏ qua cơ chế không đi vòng được.
+    const hpBefore = p.char.xp;
+    sim.damageMonster(boss, boss.s.mhp * 5, p);
+    expect(boss.state).not.toBe(MS_DEAD);
+    expect(boss.s.hp).toBe(1);
+    sim.addHazard({ x: 1, z: 1, r: 3 }, 5, 0, false, 'fire', boss.id, 100);
+    expect(sim.hazards.some((h) => h.mon === boss)).toBe(true);
     const rift = boss.def.rift!;
     for (let i = 0; i < 3; i++) {
       boss.s.x = rift.veins[i].x;
@@ -270,7 +286,11 @@ describe('room thật', () => {
       boss.chant = { startAt: 100 + i, endAt: 9999 };
       room.veins!.tick();
     }
+    // Gột qua đường giết chung: chết, hủy vùng đã thả, tính tu vi cho người đã đánh.
     expect(boss.state).toBe(MS_DEAD);
+    expect(sim.hazards.some((h) => h.mon === boss)).toBe(false);
+    expect(boss.removeAt).toBeGreaterThan(0);
+    expect(p.char.xp).toBeGreaterThan(hpBefore);
     step(room);
     expect(room.wave).toBe(7);
     expect(room.clearedAt).toBeGreaterThan(0);

@@ -695,7 +695,7 @@ export class DungeonRoom extends GameRoom {
     if (this.stele && !this.stele.complete) return;
     if (this.sim.monsters.some((m) => m.state !== MS_DEAD)) return;
     if (this.seals) this.endSeals();
-    this.stele = null;
+    if (this.stele) this.stele = null;
     const waves = this.def.waves;
     if (!this.nextWaveAt) this.nextWaveAt = now + (waves[this.wave]?.delay ?? 6) * 1000;
     if (now < this.nextWaveAt) return;
@@ -787,12 +787,7 @@ export class DungeonRoom extends GameRoom {
       now: () => Date.now(),
       monsters: () => sim.monsters,
       stagger: (m, sec) => sim.stagger(m, sec),
-      purify: (m) => {
-        m.s.hp = 0;
-        m.state = MS_DEAD;
-        m.s.st = MS_DEAD;
-        m.removeAt = Date.now() + 800;
-      },
+      purify: (m) => sim.purifyMonster(m),
       marker: (x, z, r, dur) => sim.addHazard({ x, z, r }, 0.2, 0, false, 'frost', '', 0, false, 0, undefined, undefined, 'pool', false, dur),
       sysAll: (k, params, type) => sim.sysAll(k, params, type),
     });

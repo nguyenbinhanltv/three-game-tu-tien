@@ -166,7 +166,7 @@ export interface MonsterThan {
 /**
  * Khe mạch (DV-3D, Tử Quang Dực Chủ). Từ pha `phase` (như `MonsterThan`) trên sàn có các khe mạch ngọc lam `veins` (tâm `x, z`, bán kính `r`).
  * Boss đang niệm chú (`ai.chant`) mà đứng trên một khe thì chú bị phản lại: boss mất thế `weak` giây và mất một tầng "cháy" (tổng `burn` tầng).
- * Hết tầng cháy: boss dừng đánh ở 1 máu và được gột (không chết do đòn đánh, không rơi đồ riêng; phó bản tính là hạ xong).
+ * Hết tầng cháy: boss không chết vì sát thương (sàn 1 máu); chỉ gột hết tầng thì hạ qua đường giết chung (cùng tu vi, rơi đồ, nhiệm vụ).
  */
 export interface MonsterRift {
   phase: number;

@@ -267,7 +267,8 @@ export class MonsterSystem {
       return;
     }
     dmg = mxDmg;
-    const hp = Math.max(0, mon.s.hp - dmg);
+    // Khe mạch (DV-3D): boss có `rift` không chết vì sát thương, chỉ về 1 máu; chỉ gột hết tầng cháy (GameSim.purifyMonster) mới hạ được.
+    const hp = Math.max(mon.def.rift ? 1 : 0, mon.s.hp - dmg);
     mon.s.hp = hp;
     const msg: DmgMsg = { dst: mon.id, n: dmg };
     if (crit) msg.crit = true;
