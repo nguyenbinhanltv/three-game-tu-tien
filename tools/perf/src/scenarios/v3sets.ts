@@ -25,6 +25,7 @@ export default {
     const viewport = size('640x600');
     const genders = list('--genders', 'm,f');
     const sets = list('--sets', 'de_tu,huyen_giap,dan_tam');
+    const only = list('--sits', ''); // lọc tình huống theo từ khóa trong tên (vd. chạy,chém)
     for (const g of genders) {
       const gname = g === 'm' ? 'nam' : 'nu';
       for (const s of sets) {
@@ -155,9 +156,10 @@ export default {
           },
         ];
         const marks: { name: string; at: number }[] = [];
+        const sitsRun = only.length ? sits.filter((x) => only.some((k) => k && x.name.includes(k))) : sits;
         await hold(FRONT, 350);
         await sleep(700);
-        for (const sit of sits) {
+        for (const sit of sitsRun) {
           if (sit.prep) await sit.prep();
           await frame();
           await setLabel(sit.name);
@@ -207,7 +209,7 @@ export default {
         sets.forEach((_s, k) =>
           parts.push(`[${k}:v]trim=start=${ms[k][n].at.toFixed(2)}:duration=${DUR / 1000},setpts=PTS-STARTPTS[v${n}_${k}]`),
         );
-        parts.push(`${sets.map((_s, k) => `[v${n}_${k}]`).join('')}hstack=inputs=${sets.length}[h${n}]`);
+        parts.push(`${sets.map((_s, k) => `[v${n}_${k}]`).join('')}${sets.length > 1 ? `hstack=inputs=${sets.length}` : 'null'}[h${n}]`);
         outs.push(`[h${n}]`);
       });
       parts.push(`${outs.join('')}concat=n=${ms[0].length}:v=1:a=0[v]`);
