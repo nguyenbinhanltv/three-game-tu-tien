@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { MS_DEAD, type MonsterRift } from '@dtl/shared';
+import { MF_CHANT, MS_DEAD, type MonsterRift } from '@dtl/shared';
 
 // DV-3D: Xích Tẫn Khích. Dữ liệu đợt, hàm thuần giữ bia/khe mạch, SteleHold + RiftVeins với host giả,
 // và một lượt DungeonRoom thật đi qua đợt 4 (giữ bia), đợt 6 (khe mạch gột boss).
@@ -290,6 +290,8 @@ describe('room thật', () => {
     expect(boss.state).toBe(MS_DEAD);
     expect(sim.hazards.some((h) => h.mon === boss)).toBe(false);
     expect(boss.removeAt).toBeGreaterThan(0);
+    expect(boss.chant).toBeNull();
+    expect(boss.s.mf & MF_CHANT).toBe(0);
     expect(p.char.xp).toBeGreaterThan(hpBefore);
     step(room);
     expect(room.wave).toBe(7);
