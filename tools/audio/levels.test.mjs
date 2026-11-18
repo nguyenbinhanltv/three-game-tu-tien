@@ -6,7 +6,12 @@ import { rules, SFX_GROUPS } from './levels.mjs';
 const sfx = (names, eff) => names.map((name) => ({ name, bus: 'sfx', lufs: eff, eff }));
 function data(over = {}) {
   return {
-    sfx: [...sfx(SFX_GROUPS['Đòn đánh'], -14), ...sfx(SFX_GROUPS['Xác nhận thành công'], -10), ...sfx(SFX_GROUPS['Bước chân'], -26), ...sfx(['heal'], -15)],
+    sfx: [
+      ...sfx(SFX_GROUPS['Đòn đánh'], -14),
+      ...sfx(SFX_GROUPS['Xác nhận thành công'], -10),
+      ...sfx(SFX_GROUPS['Bước chân'], -26),
+      ...sfx(['heal'], -15),
+    ],
     music: [{ id: 'sect', kind: 'music', lufs: -16, eff: -24.5, stem: false, sting: false }],
     ambient: [{ id: 'wind', kind: 'ambient', lufs: -22, eff: -31, stem: false, sting: false }],
     ...over,

@@ -24,7 +24,14 @@ export default {
         const m = METHODS[key];
         const dir = path.join(r.out, `${m.name}-${g === 'f' ? 'nu' : 'nam'}`);
         fs.mkdirSync(dir, { recursive: true });
-        const { page, ctx } = await r.open({ name: 'Cl' + key + g, quality: 'high', look: { g }, video: dir, seenIntro: true, query: { at: 'tong_mon' } });
+        const { page, ctx } = await r.open({
+          name: 'Cl' + key + g,
+          quality: 'high',
+          look: { g },
+          video: dir,
+          seenIntro: true,
+          query: { at: 'tong_mon' },
+        });
         await gm(page, 'level 28', 1000);
         await gm(page, `method ${m.id} 5`, 1000);
         await gm(page, 'skills max', 1000);

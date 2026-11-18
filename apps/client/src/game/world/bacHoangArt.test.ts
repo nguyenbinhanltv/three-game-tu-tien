@@ -8,7 +8,14 @@ import { mixPreset, GRADING } from '../../render/grading';
 const tr = terrainOf('bac_hoang');
 const def = tr.def;
 const path = riftPath(def);
-const ctx = { def, bounds: tr.playBounds, heightAt: (x: number, z: number) => tr.heightAt(x, z), clear: [{ x: 1024, z: 1544, r: 70 }], colliders: tr.colliders, path };
+const ctx = {
+  def,
+  bounds: tr.playBounds,
+  heightAt: (x: number, z: number) => tr.heightAt(x, z),
+  clear: [{ x: 1024, z: 1544, r: 70 }],
+  colliders: tr.colliders,
+  path,
+};
 
 describe('bacHoangArt (DV-3I)', () => {
   it('đường tâm khe: 14 điểm sắp từ nam lên bắc, cách nhau 30 m', () => {

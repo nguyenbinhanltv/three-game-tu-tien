@@ -39,7 +39,10 @@ export function bakePoseLibrary(root: THREE.Object3D, poses: readonly PoseDef[])
  */
 class LazyPoseLibrary extends Map<string, PoseClips> {
   private pending = new Map<string, PoseDef>();
-  constructor(private rig: IkRig, poses: readonly PoseDef[]) {
+  constructor(
+    private rig: IkRig,
+    poses: readonly PoseDef[],
+  ) {
     super();
     for (const def of poses) {
       if (def.hit) this.pending.set(def.id, def);
@@ -89,7 +92,11 @@ export const POSE_BASE_CLIPS: ClipMap = { fly: poseClipName(POSE_FLY), sky: pose
  * Có `poses` thì ra chiêu dùng động tác riêng (`perform`, engine gọi theo FX), không dùng clip `attack` của asset.
  * Clip bay/niệm chú của asset (nếu có trong `clipMap`) được giữ, chỉ thêm khi thiếu. Không phải rig người → không có pose.
  */
-export function withPoses(template: THREE.Object3D, clipMap: ClipMap, poses: readonly PoseDef[] = POSES): { poses?: PoseLibrary; clipMap: ClipMap } {
+export function withPoses(
+  template: THREE.Object3D,
+  clipMap: ClipMap,
+  poses: readonly PoseDef[] = POSES,
+): { poses?: PoseLibrary; clipMap: ClipMap } {
   const lib = bakePoseLibrary(template, poses);
   if (!lib) return { clipMap };
   return { poses: lib, clipMap: { ...POSE_BASE_CLIPS, ...clipMap } };

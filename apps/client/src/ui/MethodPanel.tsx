@@ -1,6 +1,16 @@
 import './methodpanel.css';
 import { type CSSProperties, useState } from 'react';
-import { C, MAX_SKILL_LEVEL, VARIANT_SWITCH_COOLDOWN_SEC, METHOD_UNLOCK_LEVEL, methodSwitchCost, type SkillDef, skillUpgradeCost, variantUnlocked, type VariantId } from '@dtl/shared';
+import {
+  C,
+  MAX_SKILL_LEVEL,
+  VARIANT_SWITCH_COOLDOWN_SEC,
+  METHOD_UNLOCK_LEVEL,
+  methodSwitchCost,
+  type SkillDef,
+  skillUpgradeCost,
+  variantUnlocked,
+  type VariantId,
+} from '@dtl/shared';
 import { METHODS, METHOD, realmName, resolveBarSkill, skillBar, SKILL, t, VARIANTS } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { ContentIcon, UiIcon } from './ContentIcon';
@@ -29,7 +39,19 @@ function Pips({ n, max = MAX_SKILL_LEVEL }: { n: number; max?: number }) {
   );
 }
 
-function SkillRow({ sk, scrolls, gold, locked, canChange }: { sk: SkillDef; scrolls: number; gold: number; locked: boolean; canChange: boolean }) {
+function SkillRow({
+  sk,
+  scrolls,
+  gold,
+  locked,
+  canChange,
+}: {
+  sk: SkillDef;
+  scrolls: number;
+  gold: number;
+  locked: boolean;
+  canChange: boolean;
+}) {
   const method = useUI((s) => s.method);
   const lv = method?.lv[sk.id] ?? 1;
   const vr = method?.vr[sk.id];
@@ -52,8 +74,24 @@ function SkillRow({ sk, scrolls, gold, locked, canChange }: { sk: SkillDef; scro
           {lv >= MAX_SKILL_LEVEL ? (
             <span className="ok">{t('ui.skillup.max')}</span>
           ) : (
-            <Tooltip content={<TipCard title={t('ui.skillup.title')} lines={[{ text: cost ? t('ui.skillup.cost', { n: lv + 1, scrolls: cost.scrolls, gold: cost.gold }) : '' }, { text: t('ui.skillup.have', { n: scrolls }) }]} desc={t('ui.skillup.bonus')} />}>
-              <Button size="s" variant="primary" disabled={locked || !can} onClick={() => g?.send(C.SKILL_UP, { skill: sk.id, r: reqId() })}>
+            <Tooltip
+              content={
+                <TipCard
+                  title={t('ui.skillup.title')}
+                  lines={[
+                    { text: cost ? t('ui.skillup.cost', { n: lv + 1, scrolls: cost.scrolls, gold: cost.gold }) : '' },
+                    { text: t('ui.skillup.have', { n: scrolls }) },
+                  ]}
+                  desc={t('ui.skillup.bonus')}
+                />
+              }
+            >
+              <Button
+                size="s"
+                variant="primary"
+                disabled={locked || !can}
+                onClick={() => g?.send(C.SKILL_UP, { skill: sk.id, r: reqId() })}
+              >
                 {t('ui.skillup.btn')}
               </Button>
             </Tooltip>
@@ -66,7 +104,16 @@ function SkillRow({ sk, scrolls, gold, locked, canChange }: { sk: SkillDef; scro
             const open = variantUnlocked(lv);
             const picked = vr === id;
             return (
-              <Tooltip key={id} content={<TipCard title={t(`skill.${sk.id}.var.${id}.name`)} sub={lv >= MAX_SKILL_LEVEL ? t('ui.variant.empower') : undefined} desc={t(`skill.${sk.id}.var.${id}.desc`)} />}>
+              <Tooltip
+                key={id}
+                content={
+                  <TipCard
+                    title={t(`skill.${sk.id}.var.${id}.name`)}
+                    sub={lv >= MAX_SKILL_LEVEL ? t('ui.variant.empower') : undefined}
+                    desc={t(`skill.${sk.id}.var.${id}.desc`)}
+                  />
+                }
+              >
                 <button
                   type="button"
                   className={'mp-var' + (picked ? ' picked' : '')}
@@ -74,7 +121,8 @@ function SkillRow({ sk, scrolls, gold, locked, canChange }: { sk: SkillDef; scro
                   data-var={id}
                   onClick={() => g?.send(C.SKILL_VAR, { skill: sk.id, v: id })}
                 >
-                  <UiIcon id={`var_${sk.id.replace('skl_', '')}_${id}`} fallback={id.toUpperCase()} className="inline" /> <b>{id.toUpperCase()}</b> {t(`skill.${sk.id}.var.${id}.name`)}
+                  <UiIcon id={`var_${sk.id.replace('skl_', '')}_${id}`} fallback={id.toUpperCase()} className="inline" />{' '}
+                  <b>{id.toUpperCase()}</b> {t(`skill.${sk.id}.var.${id}.name`)}
                   {picked && <i> · {t('ui.variant.picked')}</i>}
                 </button>
               </Tooltip>
@@ -102,9 +150,19 @@ export function MethodPanel() {
   const open = char.level >= METHOD_UNLOCK_LEVEL;
   const g = Game.current;
   const bar = skillBar(cur?.id);
-  const pickLabel = !cur ? t('ui.method.pick') : shown.id === cur.id ? t('ui.method.current') : t('ui.method.switch', { n: methodSwitchCost(char.level) });
+  const pickLabel = !cur
+    ? t('ui.method.pick')
+    : shown.id === cur.id
+      ? t('ui.method.current')
+      : t('ui.method.switch', { n: methodSwitchCost(char.level) });
   return (
-    <PanelWindow title={t('ui.method.title')} sub={cur ? t(`method.${cur.id}.name`) : t('ui.method.none')} onClose={() => closePanel('method')} width={600} className="method">
+    <PanelWindow
+      title={t('ui.method.title')}
+      sub={cur ? t(`method.${cur.id}.name`) : t('ui.method.none')}
+      onClose={() => closePanel('method')}
+      width={600}
+      className="method"
+    >
       {!open && <div className="k-card bad">{t('ui.method.locked', { realm: realmName(METHOD_UNLOCK_LEVEL) })}</div>}
       {open && !cur && <div className="k-dim">{t('ui.method.pick_hint')}</div>}
       {open && (
@@ -116,7 +174,9 @@ export function MethodPanel() {
         <MethodCarousel
           current={cur?.id}
           canPick={open}
-          pickLabel={(id) => (!cur ? t('ui.method.pick') : id === cur.id ? t('ui.method.current') : t('ui.method.switch', { n: methodSwitchCost(char.level) }))}
+          pickLabel={(id) =>
+            !cur ? t('ui.method.pick') : id === cur.id ? t('ui.method.current') : t('ui.method.switch', { n: methodSwitchCost(char.level) })
+          }
           onPick={(id) => {
             g?.send(C.METHOD, { method: id, r: reqId() });
             setCarousel(false);
@@ -147,7 +207,11 @@ export function MethodPanel() {
           <b>{t('ui.method.passive')}</b>: {t(`method.${shown.id}.passive`)}
         </div>
         <div className="mp-pick">
-          <Button variant="primary" disabled={!open || shown.id === cur?.id} onClick={() => g?.send(C.METHOD, { method: shown.id, r: reqId() })}>
+          <Button
+            variant="primary"
+            disabled={!open || shown.id === cur?.id}
+            onClick={() => g?.send(C.METHOD, { method: shown.id, r: reqId() })}
+          >
             {pickLabel}
           </Button>
         </div>

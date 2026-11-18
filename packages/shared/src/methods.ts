@@ -190,7 +190,12 @@ export type VariantBlock = 'low' | 'combat' | 'casting' | 'cooldown';
  * Quy tắc đổi biến thức (server quyết, client chỉ dùng để làm mờ nút): chiêu phải từ cấp 3; không đổi khi đang giao
  * chiến, đang niệm chú, hay vừa đổi chưa quá `VARIANT_SWITCH_COOLDOWN_SEC`. Trả về lý do bị chặn hoặc null nếu được đổi.
  */
-export function variantSwitchBlock(o: { skillLevel: number; inCombat: boolean; casting: boolean; sinceLastSwitchMs: number }): VariantBlock | null {
+export function variantSwitchBlock(o: {
+  skillLevel: number;
+  inCombat: boolean;
+  casting: boolean;
+  sinceLastSwitchMs: number;
+}): VariantBlock | null {
   if (!variantUnlocked(o.skillLevel)) return 'low';
   if (o.inCombat) return 'combat';
   if (o.casting) return 'casting';
@@ -251,7 +256,12 @@ export interface ResolvedSkill {
   hits: number[];
 }
 
-export function resolveSkill(def: SkillDef, level: unknown, variants: { a: SkillVariant; b: SkillVariant } | undefined, chosen: unknown): ResolvedSkill {
+export function resolveSkill(
+  def: SkillDef,
+  level: unknown,
+  variants: { a: SkillVariant; b: SkillVariant } | undefined,
+  chosen: unknown,
+): ResolvedSkill {
   const lv = clampSkillLevel(level);
   const mods = skillLevelMods(lv);
   const v = activeVariant(variants, lv, chosen);

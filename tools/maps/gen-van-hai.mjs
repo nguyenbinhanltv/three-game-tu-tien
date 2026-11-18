@@ -110,7 +110,13 @@ const hubAngle = (z) => Math.atan2(HUB.off[1] - z.off[1], HUB.off[0] - z.off[0])
 
 // ---- trận truyền tống ----
 const PADS = [{ id: 'vh_tp_hub', zone: '', off: [0, -38] }];
-const PAD_IDS = { tung_dai_dao: 'vh_tp_tung_dai', thach_quy_dao: 'vh_tp_thach_quy', kinh_ho_dao: 'vh_tp_kinh_ho', loi_van_dao: 'vh_tp_loi_van', kinh_ngu_dai: 'vh_tp_kinh_ngu' };
+const PAD_IDS = {
+  tung_dai_dao: 'vh_tp_tung_dai',
+  thach_quy_dao: 'vh_tp_thach_quy',
+  kinh_ho_dao: 'vh_tp_kinh_ho',
+  loi_van_dao: 'vh_tp_loi_van',
+  kinh_ngu_dai: 'vh_tp_kinh_ngu',
+};
 for (const z of ZONES) {
   const [px, pz] = polar(60, hubAngle(z) + (z.id === 'kinh_ngu_dai' || z.id === 'loi_van_dao' ? deg(35) : 0));
   PADS.push({ id: PAD_IDS[z.id], zone: z.id, off: [z.off[0] + px, z.off[1] + pz] });
@@ -130,11 +136,26 @@ const POIS = ZONES.map((z) => {
   return { id: d.id, zone: z.id, off: [z.off[0] + x, z.off[1] + zz] };
 });
 const POI_KIT = {
-  phu_dao_dinh: { center: ['prop_phu_dao_dinh', 0.4, 1.2], around: ['prop_tung_phu_dao', 'prop_tung_phu_dao', 'prop_tung_phu_dao', 'prop_tung_phu_dao', 'prop_da_troi', 'prop_den_da'] },
-  cau_xich_may: { center: ['prop_phu_dao_dinh', 1.2, 1], around: ['prop_da_troi', 'prop_da_troi', 'prop_da_troi', 'prop_tung_phu_dao', 'prop_tung_phu_dao', 'prop_den_da', 'prop_den_da'] },
-  kinh_ho_dai: { center: ['prop_kinh_ho_dai', 0, 1.2], around: ['prop_anh_ngoc_kinh', 'prop_anh_ngoc_kinh', 'prop_anh_ngoc_kinh', 'prop_da_troi', 'prop_da_troi', 'prop_den_da'] },
-  dinh_sam: { center: null, around: ['prop_da_troi', 'prop_da_troi', 'prop_da_troi', 'prop_da_troi', 'prop_da_troi', 'prop_den_da', 'prop_tung_phu_dao'] },
-  vuc_kinh_ngu: { center: null, around: ['prop_da_troi', 'prop_da_troi', 'prop_da_troi', 'prop_phu_dao_dinh', 'prop_phu_dao_dinh', 'prop_den_da', 'prop_den_da'] },
+  phu_dao_dinh: {
+    center: ['prop_phu_dao_dinh', 0.4, 1.2],
+    around: ['prop_tung_phu_dao', 'prop_tung_phu_dao', 'prop_tung_phu_dao', 'prop_tung_phu_dao', 'prop_da_troi', 'prop_den_da'],
+  },
+  cau_xich_may: {
+    center: ['prop_phu_dao_dinh', 1.2, 1],
+    around: ['prop_da_troi', 'prop_da_troi', 'prop_da_troi', 'prop_tung_phu_dao', 'prop_tung_phu_dao', 'prop_den_da', 'prop_den_da'],
+  },
+  kinh_ho_dai: {
+    center: ['prop_kinh_ho_dai', 0, 1.2],
+    around: ['prop_anh_ngoc_kinh', 'prop_anh_ngoc_kinh', 'prop_anh_ngoc_kinh', 'prop_da_troi', 'prop_da_troi', 'prop_den_da'],
+  },
+  dinh_sam: {
+    center: null,
+    around: ['prop_da_troi', 'prop_da_troi', 'prop_da_troi', 'prop_da_troi', 'prop_da_troi', 'prop_den_da', 'prop_tung_phu_dao'],
+  },
+  vuc_kinh_ngu: {
+    center: null,
+    around: ['prop_da_troi', 'prop_da_troi', 'prop_da_troi', 'prop_phu_dao_dinh', 'prop_phu_dao_dinh', 'prop_den_da', 'prop_den_da'],
+  },
 };
 const COLL_R = { prop_tung_phu_dao: 0.8, prop_kinh_ho_dai: 2.8 };
 const props = [];
@@ -150,12 +171,25 @@ for (const p of POIS) {
   kit.around.forEach((id, i) => {
     const a = (i / kit.around.length) * Math.PI * 2 + R() * 0.5;
     const r = rMin + R() * 4;
-    addProp(id, p.off[0] + Math.cos(a) * r, p.off[1] + Math.sin(a) * r, R() * Math.PI * 2, id === 'prop_da_troi' ? 0.9 + R() * 0.5 : 0.9 + R() * 0.3);
+    addProp(
+      id,
+      p.off[0] + Math.cos(a) * r,
+      p.off[1] + Math.sin(a) * r,
+      R() * Math.PI * 2,
+      id === 'prop_da_troi' ? 0.9 + R() * 0.5 : 0.9 + R() * 0.3,
+    );
   });
 }
 // Phù Đảo Các: đình ở giữa, đèn đá, ảnh ngọc kính, đá trôi quanh mép (không va chạm)
 addProp('prop_phu_dao_dinh', 42, 34, Math.PI, 1.3); // lệch khỏi trục điểm sinh: camera sau lưng người mới vào không kẹt trong mái đình
-for (const [x, z] of [[-14, -24], [14, -24], [-26, 14], [26, 14], [0, -10]]) addProp('prop_den_da', x, z, 0, 1);
+for (const [x, z] of [
+  [-14, -24],
+  [14, -24],
+  [-26, 14],
+  [26, 14],
+  [0, -10],
+])
+  addProp('prop_den_da', x, z, 0, 1);
 addProp('prop_anh_ngoc_kinh', -10, 20, 0, 1);
 addProp('prop_anh_ngoc_kinh', 12, 22, 0.8, 1);
 for (let i = 0; i < 5; i++) {
@@ -210,21 +244,51 @@ for (const e of ELITES) {
       }
     }
     eliteAt.push({ x: best[0], z: best[1] });
-    spawns.push({ mon: e.mons[i], x: W(best[0]), z: W(best[1]), radius: 10, count: 1, levelMin: zn.lv[1], levelMax: zn.lv[1], respawn: 240 });
+    spawns.push({
+      mon: e.mons[i],
+      x: W(best[0]),
+      z: W(best[1]),
+      radius: 10,
+      count: 1,
+      levelMin: zn.lv[1],
+      levelMax: zn.lv[1],
+      respawn: 240,
+    });
   }
 }
 // Kình Ngư Đài: boss Vân Hải Kình Vương (E3-B) bay lơ lửng ở tâm đảo (đấu trường), hồi sinh 30 phút.
-spawns.push({ mon: 'boss_van_hai_kinh_vuong', x: W(ZONES[4].off[0]), z: W(ZONES[4].off[1]), radius: 6, count: 1, levelMin: 23, levelMax: 23, respawn: 1800 });
+spawns.push({
+  mon: 'boss_van_hai_kinh_vuong',
+  x: W(ZONES[4].off[0]),
+  z: W(ZONES[4].off[1]),
+  radius: 6,
+  count: 1,
+  levelMin: 23,
+  levelMax: 23,
+  respawn: 1800,
+});
 keep.push({ x: ZONES[4].off[0], z: ZONES[4].off[1], r: 0 });
 
 // ---- cụm quái ----
 const CAMP_R = 30;
 const MIX = {
-  tung_dai_dao: [['mon_van_hac', 0.5], ['mon_bich_ngoc_kim_thien', 0.5]],
-  thach_quy_dao: [['mon_phu_dao_thach_quy', 0.6], ['mon_van_hac', 0.4]],
+  tung_dai_dao: [
+    ['mon_van_hac', 0.5],
+    ['mon_bich_ngoc_kim_thien', 0.5],
+  ],
+  thach_quy_dao: [
+    ['mon_phu_dao_thach_quy', 0.6],
+    ['mon_van_hac', 0.4],
+  ],
   kinh_ho_dao: [['mon_kinh_linh', 1]],
-  loi_van_dao: [['mon_kinh_linh', 0.5], ['mon_van_hac', 0.5]],
-  kinh_ngu_dai: [['mon_van_hac', 0.5], ['mon_bich_ngoc_kim_thien', 0.5]],
+  loi_van_dao: [
+    ['mon_kinh_linh', 0.5],
+    ['mon_van_hac', 0.5],
+  ],
+  kinh_ngu_dai: [
+    ['mon_van_hac', 0.5],
+    ['mon_bich_ngoc_kim_thien', 0.5],
+  ],
 };
 const pick = (list) => {
   let t = R();
@@ -250,12 +314,18 @@ for (const zn of ZONES) {
   const cx = W(zn.off[0]);
   const cz = W(zn.off[1]);
   for (let x = Math.floor((cx - zn.r) / STEP_N) * STEP_N; x <= cx + zn.r; x += STEP_N)
-    for (let z = Math.floor((cz - zn.r) / STEP_N) * STEP_N; z <= cz + zn.r; z += STEP_N) if (inPoly(zn.poly, x, z)) need.push([x - C, z - C]);
+    for (let z = Math.floor((cz - zn.r) / STEP_N) * STEP_N; z <= cz + zn.r; z += STEP_N)
+      if (inPoly(zn.poly, x, z)) need.push([x - C, z - C]);
   for (let x = -zn.r; x <= zn.r; x += 4)
     for (let z = -zn.r; z <= zn.r; z += 4) {
       const wx = zn.off[0] + x;
       const wz = zn.off[1] + z;
-      if (Math.hypot(x, z) <= zn.r - 14 && !keep.some((q) => Math.hypot(q.x - wx, q.z - wz) < q.r + CAMP_R + 6) && !eliteAt.some((q) => Math.hypot(q.x - wx, q.z - wz) < 16)) cand.push([wx, wz]);
+      if (
+        Math.hypot(x, z) <= zn.r - 14 &&
+        !keep.some((q) => Math.hypot(q.x - wx, q.z - wz) < q.r + CAMP_R + 6) &&
+        !eliteAt.some((q) => Math.hypot(q.x - wx, q.z - wz) < 16)
+      )
+        cand.push([wx, wz]);
     }
   // Mục tiêu: p95 của khoảng cách tới mép cụm gần nhất (+ nhẹ theo điểm xa nhất), ủ nhiệt.
   const cost = (set) => {
@@ -266,7 +336,10 @@ for (const zn of ZONES) {
       ds[k] = Math.max(0, b);
     }
     ds.sort();
-    return [ds[Math.floor(ds.length * 0.95)] + 0.03 * ds[ds.length - 1] + (ds[ds.length - 1] > 83 ? 3 * (ds[ds.length - 1] - 83) : 0), ds[ds.length - 1]];
+    return [
+      ds[Math.floor(ds.length * 0.95)] + 0.03 * ds[ds.length - 1] + (ds[ds.length - 1] > 83 ? 3 * (ds[ds.length - 1] - 83) : 0),
+      ds[ds.length - 1],
+    ];
   };
   let best = null;
   for (let rs = 0; rs < 30; rs++) {
@@ -299,11 +372,32 @@ for (const zn of ZONES) {
   const [bf, m] = cost(best.set);
   console.log(`${zn.id}: ${best.set.length} cụm, điểm xa nhất ${m.toFixed(0)} m, mục tiêu ${bf.toFixed(1)}`);
   best.set.forEach((c, i) => {
-    const lv = zn.lv[0] + (zn.lv[1] > zn.lv[0] && Math.hypot(c[0] - HUB.off[0], c[1] - HUB.off[1]) > Math.hypot(zn.off[0] - HUB.off[0], zn.off[1] - HUB.off[1]) ? 1 : 0);
-    camps.push({ id: `c_${zn.id}_${String(i + 1).padStart(2, '0')}`, zone: zn.id, mon: pick(MIX[zn.id]), x: W(c[0]), z: W(c[1]), count: 3, radius: CAMP_R, levelMin: lv, levelMax: lv, respawn: 45 });
+    const lv =
+      zn.lv[0] +
+      (zn.lv[1] > zn.lv[0] && Math.hypot(c[0] - HUB.off[0], c[1] - HUB.off[1]) > Math.hypot(zn.off[0] - HUB.off[0], zn.off[1] - HUB.off[1])
+        ? 1
+        : 0);
+    camps.push({
+      id: `c_${zn.id}_${String(i + 1).padStart(2, '0')}`,
+      zone: zn.id,
+      mon: pick(MIX[zn.id]),
+      x: W(c[0]),
+      z: W(c[1]),
+      count: 3,
+      radius: CAMP_R,
+      levelMin: lv,
+      levelMax: lv,
+      respawn: 45,
+    });
   });
 }
-const polyAreaOf = (poly) => Math.abs(poly.reduce((a, p, i) => { const q = poly[(i + 1) % poly.length]; return a + (p[0] * q[1] - q[0] * p[1]); }, 0)) / 2;
+const polyAreaOf = (poly) =>
+  Math.abs(
+    poly.reduce((a, p, i) => {
+      const q = poly[(i + 1) % poly.length];
+      return a + (p[0] * q[1] - q[0] * p[1]);
+    }, 0),
+  ) / 2;
 const areaKm2 = ZONES.reduce((a, z) => a + polyAreaOf(z.poly), 0) / 1e6;
 const TARGET_DENSITY = 122;
 let total = camps.reduce((a, c) => a + c.count, 0);
@@ -314,7 +408,14 @@ for (const c of camps) {
 }
 
 // ---- tài nguyên: linh thảo trên đảo nhỏ (đi bằng ngự kiếm) ----
-const nodes = SMALL.map((s) => ({ item: 'itm_linh_thao', x: W(s.off[0]), z: W(s.off[1]), radius: Math.round(s.r * 0.5), count: 4, respawn: 60 }));
+const nodes = SMALL.map((s) => ({
+  item: 'itm_linh_thao',
+  x: W(s.off[0]),
+  z: W(s.off[1]),
+  radius: Math.round(s.r * 0.5),
+  count: 4,
+  respawn: 60,
+}));
 
 // ---- thang mây (Thăng Vân Đài): mỗi đảo vùng và hub một bậc dốc từ sàn mây lên mép đảo (vì mép đảo là vách đứng) ----
 {
@@ -326,7 +427,12 @@ const nodes = SMALL.map((s) => ({ item: 'itm_linh_thao', x: W(s.off[0]), z: W(s.
     const t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / (dx * dx + dz * dz)));
     return Math.hypot(ax + dx * t - px, az + dz * t - pz);
   };
-  const obstacles = [...camps.map((c) => [c.x - C, c.z - C]), ...PADS.map((p) => p.off), ...POIS.map((p) => p.off), ...eliteAt.map((e) => [e.x, e.z])];
+  const obstacles = [
+    ...camps.map((c) => [c.x - C, c.z - C]),
+    ...PADS.map((p) => p.off),
+    ...POIS.map((p) => p.off),
+    ...eliteAt.map((e) => [e.x, e.z]),
+  ];
   for (const I of [HUB, ...ZONES]) {
     let best = null;
     for (let a = 0; a < 360; a += 15) {
@@ -338,24 +444,76 @@ const nodes = SMALL.map((s) => ({ item: 'itm_linh_thao', x: W(s.off[0]), z: W(s.
       let ok = true;
       for (const O of [HUB, ...ZONES, ...SMALL])
         if (O !== I && segDist(O.off[0], O.off[1], S[0], S[1], E[0], E[1]) < O.r + EDGE + 14) ok = false;
-      for (const b of bridges) if (Math.min(segDist(b.ax - C, b.az - C, S[0], S[1], E[0], E[1]), segDist(b.bx - C, b.bz - C, S[0], S[1], E[0], E[1])) < 30) ok = false;
+      for (const b of bridges)
+        if (Math.min(segDist(b.ax - C, b.az - C, S[0], S[1], E[0], E[1]), segDist(b.bx - C, b.bz - C, S[0], S[1], E[0], E[1])) < 30)
+          ok = false;
       if (!ok) continue;
       const score = Math.min(...obstacles.map((o) => Math.hypot(o[0] - E[0], o[1] - E[1])));
       if (!best || score > best.score) best = { E, S, score };
     }
     if (!best) throw new Error('không đặt được thang mây cho ' + I.id);
-    bridges.push({ id: 'thang_' + I.id, ax: W(best.S[0]), az: W(best.S[1]), ay: FLOOR, bx: W(best.E[0]), bz: W(best.E[1]), by: I.y, halfW: 2.6, sag: 0 });
+    bridges.push({
+      id: 'thang_' + I.id,
+      ax: W(best.S[0]),
+      az: W(best.S[1]),
+      ay: FLOOR,
+      bx: W(best.E[0]),
+      bz: W(best.E[1]),
+      by: I.y,
+      halfW: 2.6,
+      sag: 0,
+    });
   }
 }
 
 // ---- địa hình ----
 // E3-I: nhấp nhô mặt đảo (nhạt dần về rìa) và hồ gương nông của Kính Hồ Đảo (chỗ đặt: tránh cụm, tinh anh, trận, điểm đáng chú ý, đầu cầu).
-const RELIEF = { phu_dao_cac: [1.2, 0.025], tung_dai_dao: [2.4, 0.01], thach_quy_dao: [3.0, 0.014, true], kinh_ho_dao: [0.7, 0.012], loi_van_dao: [3.0, 0.016, true], kinh_ngu_dai: [2.0, 0.008], tieu_dao_1: [0.8, 0.03], tieu_dao_2: [0.8, 0.03], tieu_dao_3: [0.8, 0.03] };
-const PONDS = [{ x: 1239, z: 1572, r: 30, depth: 1 }, { x: 1133, z: 1620, r: 22, depth: 1 }, { x: 1139, z: 1521, r: 18, depth: 1 }];
+const RELIEF = {
+  phu_dao_cac: [1.2, 0.025],
+  tung_dai_dao: [2.4, 0.01],
+  thach_quy_dao: [3.0, 0.014, true],
+  kinh_ho_dao: [0.7, 0.012],
+  loi_van_dao: [3.0, 0.016, true],
+  kinh_ngu_dai: [2.0, 0.008],
+  tieu_dao_1: [0.8, 0.03],
+  tieu_dao_2: [0.8, 0.03],
+  tieu_dao_3: [0.8, 0.03],
+};
+const PONDS = [
+  { x: 1239, z: 1572, r: 30, depth: 1 },
+  { x: 1133, z: 1620, r: 22, depth: 1 },
+  { x: 1139, z: 1521, r: 18, depth: 1 },
+];
 const features = [
-  ...[HUB, ...ZONES, ...SMALL].map((i) => ({ id: 'isl_' + i.id, x: W(i.off[0]), z: W(i.off[1]), y: i.y, flatR: i.r, outerR: i.r + EDGE, round: true, detail: i.id.startsWith('tieu') ? 0.4 : 1.1, relief: RELIEF[i.id] ? { amp: RELIEF[i.id][0], freq: RELIEF[i.id][1], ...(RELIEF[i.id][2] ? { crease: true } : {}) } : undefined })),
-  ...PADS.map((p) => ({ id: 'pad_' + p.id, x: W(p.off[0]), z: W(p.off[1]), y: (ZONES.find((z) => z.id === p.zone) ?? HUB).y, flatR: 8, outerR: 22, round: true })),
-  ...POIS.map((p) => ({ id: 'poi_' + p.id, x: W(p.off[0]), z: W(p.off[1]), y: ZONES.find((z) => z.id === p.zone).y, flatR: 14, outerR: 30, round: true })),
+  ...[HUB, ...ZONES, ...SMALL].map((i) => ({
+    id: 'isl_' + i.id,
+    x: W(i.off[0]),
+    z: W(i.off[1]),
+    y: i.y,
+    flatR: i.r,
+    outerR: i.r + EDGE,
+    round: true,
+    detail: i.id.startsWith('tieu') ? 0.4 : 1.1,
+    relief: RELIEF[i.id] ? { amp: RELIEF[i.id][0], freq: RELIEF[i.id][1], ...(RELIEF[i.id][2] ? { crease: true } : {}) } : undefined,
+  })),
+  ...PADS.map((p) => ({
+    id: 'pad_' + p.id,
+    x: W(p.off[0]),
+    z: W(p.off[1]),
+    y: (ZONES.find((z) => z.id === p.zone) ?? HUB).y,
+    flatR: 8,
+    outerR: 22,
+    round: true,
+  })),
+  ...POIS.map((p) => ({
+    id: 'poi_' + p.id,
+    x: W(p.off[0]),
+    z: W(p.off[1]),
+    y: ZONES.find((z) => z.id === p.zone).y,
+    flatR: 14,
+    outerR: 30,
+    round: true,
+  })),
 ];
 const islandDef = (i) => ({ x: W(i.off[0]), z: W(i.off[1]), r: i.r, edge: EDGE, y: i.y });
 const terrain = {
@@ -363,7 +521,18 @@ const terrain = {
   seed: SEED,
   size: 2048,
   margin: 24,
-  natural: { freq: 0.002, baseOct: 1, ridgeOct: 1, level: FLOOR, baseAmp: 0, ridgeAmp: 0, maskFreq: 0.001, maskOct: 1, maskLo: 0, maskHi: 1 },
+  natural: {
+    freq: 0.002,
+    baseOct: 1,
+    ridgeOct: 1,
+    level: FLOOR,
+    baseAmp: 0,
+    ridgeAmp: 0,
+    maskFreq: 0.001,
+    maskOct: 1,
+    maskLo: 0,
+    maskHi: 1,
+  },
   islands: [HUB, ...ZONES, ...SMALL].map(islandDef),
   fakeIslands: FAKE.map(islandDef),
   voidFloor: FLOOR,
@@ -392,9 +561,24 @@ const level = {
       npc: 'npc_lam_chieu_dung_do',
       speed: 4,
       path: [
-        [1062, 1066], [1004, 1056], [952, 1057], [846, 1107], [770, 1150], [846, 1107], [952, 1057], [1030, 1050],
-        [1100, 1045], [1226, 1079], [1330, 1112], [1226, 1079], [1100, 1045], [1030, 1054],
-        [1034, 1102], [1060, 1316], [1096, 1440], [1150, 1540],
+        [1062, 1066],
+        [1004, 1056],
+        [952, 1057],
+        [846, 1107],
+        [770, 1150],
+        [846, 1107],
+        [952, 1057],
+        [1030, 1050],
+        [1100, 1045],
+        [1226, 1079],
+        [1330, 1112],
+        [1226, 1079],
+        [1100, 1045],
+        [1030, 1054],
+        [1034, 1102],
+        [1060, 1316],
+        [1096, 1440],
+        [1150, 1540],
       ],
     },
   ],
@@ -417,7 +601,9 @@ ${propLines.join('\n')}
 ];
 `,
 );
-const padLines = PADS.map((p) => `  { id: '${p.id}', level: 'van_hai', face: { x: ${C}, z: ${C} }, zone: '${p.zone}', x: ${W(p.off[0])}, z: ${W(p.off[1])} },`);
+const padLines = PADS.map(
+  (p) => `  { id: '${p.id}', level: 'van_hai', face: { x: ${C}, z: ${C} }, zone: '${p.zone}', x: ${W(p.off[0])}, z: ${W(p.off[1])} },`,
+);
 out(
   'packages/shared/src/teleport.vanhai.ts',
   `// Truyền Tống Trận của Vân Hải Phù Đảo (E3-A, tiền tố vh_). SINH BẰNG tools/maps/gen-van-hai.mjs.
@@ -429,4 +615,6 @@ ${padLines.join('\n')}
 ];
 `,
 );
-console.log(`diện tích săn ${areaKm2.toFixed(3)} km², camps ${camps.length}, quái thường ${camps.reduce((a, c) => a + c.count, 0)} (${(camps.reduce((a, c) => a + c.count, 0) / areaKm2).toFixed(1)}/km²), tinh anh ${spawns.length}, prop ${props.length}, cầu ${bridges.length}`);
+console.log(
+  `diện tích săn ${areaKm2.toFixed(3)} km², camps ${camps.length}, quái thường ${camps.reduce((a, c) => a + c.count, 0)} (${(camps.reduce((a, c) => a + c.count, 0) / areaKm2).toFixed(1)}/km²), tinh anh ${spawns.length}, prop ${props.length}, cầu ${bridges.length}`,
+);

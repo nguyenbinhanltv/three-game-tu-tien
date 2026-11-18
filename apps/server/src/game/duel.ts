@@ -115,7 +115,8 @@ export class DuelSystem {
     const o = this.find(rawName);
     if (!o || o === p) return this.h.warn(p, 'party.no_such');
     if (!parties.rateOk(p.char.id)) return this.h.warn(p, 'party.invite_rate');
-    if (parties.pairBlocked('duel', p.char.id, o.char.id) || parties.pairBlocked('duel', o.char.id, p.char.id)) return this.h.warn(p, 'duel.pair_cd', { name: o.char.name });
+    if (parties.pairBlocked('duel', p.char.id, o.char.id) || parties.pairBlocked('duel', o.char.id, p.char.id))
+      return this.h.warn(p, 'duel.pair_cd', { name: o.char.name });
     const ob = this.ready(o);
     if (ob) return this.h.warn(p, 'duel.target_busy', { name: o.char.name });
     const cur = this.invites.get(o.char.id);
@@ -149,7 +150,16 @@ export class DuelSystem {
     const bad = this.ready(p) ?? this.ready(from);
     if (bad) return this.h.warn(p, bad);
     const now = this.h.now();
-    const d: Duel = { a: from, b: p, fightAt: now + DUEL_COUNTDOWN_MS, endAt: now + DUEL_COUNTDOWN_MS + DUEL_MAX_MS, snap: new Map(), leaveSince: new Map(), over: false, fought: false };
+    const d: Duel = {
+      a: from,
+      b: p,
+      fightAt: now + DUEL_COUNTDOWN_MS,
+      endAt: now + DUEL_COUNTDOWN_MS + DUEL_MAX_MS,
+      snap: new Map(),
+      leaveSince: new Map(),
+      over: false,
+      fought: false,
+    };
     for (const x of [from, p]) {
       d.snap.set(x.sid, { hp: x.char.hp, mp: x.char.mp });
       this.bySid.set(x.sid, d);
@@ -169,7 +179,10 @@ export class DuelSystem {
   }
 
   private notify(d: Duel, phase: 'count' | 'fight' | 'end', won?: PlayerEnt, why?: DuelEnd): void {
-    for (const [me, foe] of [[d.a, d.b], [d.b, d.a]] as const) {
+    for (const [me, foe] of [
+      [d.a, d.b],
+      [d.b, d.a],
+    ] as const) {
       const m: DuelMsg = { phase, foe: foe.sid, name: foe.char.name, at: phase === 'count' ? d.fightAt : d.endAt };
       if (phase === 'end') {
         m.won = won === me;
@@ -190,7 +203,14 @@ export class DuelSystem {
       if (inv.until <= now) {
         this.invites.delete(id);
         for (const o of this.h.players()) {
-          if (o.char.id === id) o.client.send(S.INVITE, { kind: 'duel', id: inv.from.char.id, name: inv.from.char.name, until: inv.until, gone: true } satisfies InviteMsg);
+          if (o.char.id === id)
+            o.client.send(S.INVITE, {
+              kind: 'duel',
+              id: inv.from.char.id,
+              name: inv.from.char.name,
+              until: inv.until,
+              gone: true,
+            } satisfies InviteMsg);
         }
       }
     }
@@ -263,10 +283,17 @@ export class DuelSystem {
     parties.setPairCooldown('duel', d.b.char.id, d.a.char.id, DUEL_PAIR_COOLDOWN_MS);
     this.notify(d, 'end', winner ?? undefined, why);
     // M-5: trận đã đánh thật (đã qua đếm ngược) thì cả hai tính là đã tỉ thí, thắng thua đều được.
-    if (d.fought && (why === 'win' || why === 'yield' || why === 'timeout')) for (const x of [d.a, d.b]) this.h.questEvent(x, 'duel', undefined, 1);
+    if (d.fought && (why === 'win' || why === 'yield' || why === 'timeout'))
+      for (const x of [d.a, d.b]) this.h.questEvent(x, 'duel', undefined, 1);
     if (winner) {
       const loser = winner === d.a ? d.b : d.a;
-      for (const x of [winner, loser]) this.h.sys(x, x === winner ? 'duel.win' : 'duel.lose', { name: (x === winner ? loser : winner).char.name }, x === winner ? 'good' : 'info');
+      for (const x of [winner, loser])
+        this.h.sys(
+          x,
+          x === winner ? 'duel.win' : 'duel.lose',
+          { name: (x === winner ? loser : winner).char.name },
+          x === winner ? 'good' : 'info',
+        );
     } else {
       for (const x of [d.a, d.b]) this.h.sys(x, why === 'timeout' ? 'duel.timeout' : 'duel.abort');
     }

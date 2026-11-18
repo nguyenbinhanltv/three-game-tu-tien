@@ -40,7 +40,15 @@ function setup(nClients: number) {
     const view = new StateView();
     view.add(own);
     const dec = new Decoder(new WorldState());
-    const c: Fake = { state: ClientState.JOINED, view, sessionId: 'c' + i, packets: [], raw: (b) => void c.packets.push(Buffer.from(b)), own, dec };
+    const c: Fake = {
+      state: ClientState.JOINED,
+      view,
+      sessionId: 'c' + i,
+      packets: [],
+      raw: (b) => void c.packets.push(Buffer.from(b)),
+      own,
+      dec,
+    };
     clients.push(c);
     const full = (ser as unknown as { getFullState(c: unknown): Buffer }).getFullState(c);
     dec.decode(full.subarray(1));

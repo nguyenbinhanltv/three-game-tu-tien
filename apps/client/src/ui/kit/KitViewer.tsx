@@ -101,7 +101,13 @@ export function KitViewer() {
                   <Tooltip
                     key={id}
                     content={
-                      <TipCard title={itemName(id)} rarity={def.rarity} sub={t('ui.item.kind.' + def.kind)} lines={[{ text: t('ui.kit.tip.line'), tone: 'good' }]} desc={t(`item.${id}.desc`)} />
+                      <TipCard
+                        title={itemName(id)}
+                        rarity={def.rarity}
+                        sub={t('ui.item.kind.' + def.kind)}
+                        lines={[{ text: t('ui.kit.tip.line'), tone: 'good' }]}
+                        desc={t(`item.${id}.desc`)}
+                      />
                     }
                   >
                     <Slot
@@ -122,7 +128,15 @@ export function KitViewer() {
             <div className="kit-row">
               {SAMPLE.map((id, i) => {
                 const def = ITEM.get(id)!;
-                return <Slot key={id} icon={<ContentIcon def={def} />} rarity={def.rarity} count={i === 0 ? 7 : undefined} label={itemName(id)} />;
+                return (
+                  <Slot
+                    key={id}
+                    icon={<ContentIcon def={def} />}
+                    rarity={def.rarity}
+                    count={i === 0 ? 7 : undefined}
+                    label={itemName(id)}
+                  />
+                );
               })}
               <Slot empty />
               <Slot size="s" icon={<ContentIcon def={ITEM.get(SAMPLE[1])!} />} rarity={1} label={itemName(SAMPLE[1])} />

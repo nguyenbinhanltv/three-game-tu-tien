@@ -22,7 +22,7 @@ export default function stingBreakthrough() {
   strings.chord(1, [n('D3'), n('A3'), n('D4'), n('F#4'), n('A4')], 6.6, 96);
   strings.swell(1, 4, 90, 127);
   brass.chord(1.5, [n('D3'), n('A3'), n('D4')], 6, 84);
-  dizi.phrase(1.25, D, "0:1/2 1:1/4 2:1/4 3:1/4 4:1/4 5>~:3 r:1", { vel: 100, vib: 1.2 });
+  dizi.phrase(1.25, D, '0:1/2 1:1/4 2:1/4 3:1/4 4:1/4 5>~:3 r:1', { vel: 100, vib: 1.2 });
   for (let i = 0; i < 10; i++) harp.note(1 + i * 0.06, D.deg(i - 5), 3, 66 + i * 2);
   return s;
 }

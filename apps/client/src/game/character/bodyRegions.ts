@@ -8,7 +8,18 @@ import { boneKey } from './ikpose';
  */
 type BodyRegion = 'head' | 'neck' | 'chest' | 'belly' | 'upperArm' | 'forearm' | 'hand' | 'thigh' | 'calf' | 'foot';
 
-export const BODY_REGIONS: readonly BodyRegion[] = ['head', 'neck', 'chest', 'belly', 'upperArm', 'forearm', 'hand', 'thigh', 'calf', 'foot'];
+export const BODY_REGIONS: readonly BodyRegion[] = [
+  'head',
+  'neck',
+  'chest',
+  'belly',
+  'upperArm',
+  'forearm',
+  'hand',
+  'thigh',
+  'calf',
+  'foot',
+];
 
 /** Xương (theo `boneKey`) → vùng; null nếu xương không thuộc vùng nào (xương phụ, kiếm). */
 export function regionOfBone(key: string): BodyRegion | null {
@@ -80,6 +91,8 @@ export function coveredIndex(mesh: THREE.SkinnedMesh, covered: ReadonlySet<BodyR
 /** Hợp các vùng che của nhiều mảnh áo (`covers[mảnh]`, mảnh không khai báo thì không che gì). */
 export function coverUnion(parts: readonly string[], covers: Readonly<Record<string, readonly string[]>>): Set<BodyRegion> {
   const out = new Set<BodyRegion>();
-  for (const p of parts) for (const r of covers[p.replace(/_v2(?=_(nam|nu)$)/, '').replace(/_(nam|nu)$/, '')] ?? []) if ((BODY_REGIONS as readonly string[]).includes(r)) out.add(r as BodyRegion);
+  for (const p of parts)
+    for (const r of covers[p.replace(/_v2(?=_(nam|nu)$)/, '').replace(/_(nam|nu)$/, '')] ?? [])
+      if ((BODY_REGIONS as readonly string[]).includes(r)) out.add(r as BodyRegion);
   return out;
 }

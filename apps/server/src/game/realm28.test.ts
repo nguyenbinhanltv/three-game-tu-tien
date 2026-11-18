@@ -35,7 +35,11 @@ describe('migration tu vi Trúc Cơ (DB v3 → v4)', () => {
     a.sqlite.close();
 
     const rows = (s: ReturnType<typeof openDb>['sqlite']) =>
-      Object.fromEntries((s.prepare('SELECT name, level, xp, bk FROM characters').all() as { name: string; level: number; xp: number; bk: number }[]).map((r) => [r.name, r]));
+      Object.fromEntries(
+        (s.prepare('SELECT name, level, xp, bk FROM characters').all() as { name: string; level: number; xp: number; bk: number }[]).map(
+          (r) => [r.name, r],
+        ),
+      );
     const b = openDb(file);
     expect(b.sqlite.pragma('user_version', { simple: true })).toBe(DATA_VERSION);
     const r = rows(b.sqlite);
@@ -96,7 +100,10 @@ describe('Character: Trúc Cơ → Nguyên Anh', () => {
   });
 
   it('mỗi đại cảnh giới có hai nút: 21 → 22 và 23 chặn đầy; 25 → 26 và 27 chặn đầy; 28 là trần', () => {
-    for (const [mid, peak] of [[21, 23], [25, 27]] as const) {
+    for (const [mid, peak] of [
+      [21, 23],
+      [25, 27],
+    ] as const) {
       const c = at(mid, mid - 2);
       c.gainXp(xpNeed(mid) * 2);
       expect(c.level).toBe(mid);
@@ -127,7 +134,12 @@ describe('Character: Trúc Cơ → Nguyên Anh', () => {
 describe('đại viên mãn chưa có độ kiếp: không vượt bình cảnh', () => {
   const pills = (c: InstanceType<typeof Character>) => c.inv.reduce((n, s) => n + (s?.id === bottleneckPill(c.level) ? s.n : 0), 0);
   const setup = (level: number, bk: number) => {
-    const c = Character.create(700_000 + level * 10 + Math.floor(Math.random() * 9), 'Pk' + level + Date.now() + Math.floor(Math.random() * 1e6), null, null);
+    const c = Character.create(
+      700_000 + level * 10 + Math.floor(Math.random() * 9),
+      'Pk' + level + Date.now() + Math.floor(Math.random() * 1e6),
+      null,
+      null,
+    );
     c.level = level;
     c.bk = bk;
     c.xp = xpNeed(level);

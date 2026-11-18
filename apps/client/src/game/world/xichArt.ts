@@ -5,8 +5,16 @@ import { RIFT, type BhRock, type RiftPt } from './bacHoangArt';
 
 export const XICH_LEVEL = 'xich_tan_khich';
 
-const hex = (c: number, k = 1): [number, number, number] => [(((c >> 16) & 255) / 255) * k, (((c >> 8) & 255) / 255) * k, ((c & 255) / 255) * k];
-const lerp3 = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+const hex = (c: number, k = 1): [number, number, number] => [
+  (((c >> 16) & 255) / 255) * k,
+  (((c >> 8) & 255) / 255) * k,
+  ((c & 255) / 255) * k,
+];
+const lerp3 = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [
+  a[0] + (b[0] - a[0]) * t,
+  a[1] + (b[1] - a[1]) * t,
+  a[2] + (b[2] - a[2]) * t,
+];
 
 /**
  * Ba đường nứt trên sàn hẻm (nam → bắc): hai vết ven chân vách và một vết xương sống chạy qua Trấn Giới Bia ở tâm. Quanh co theo sin, mỗi 10 m một điểm.
@@ -51,7 +59,15 @@ export function xichRel(def: TerrainDef, h: number): number {
  * Màu mặt đất (RGB 0..1, sRGB; nhân với texture bộ ash). Sàn: đá nền than xám tro, mạng nứt hồng sẫm nóng dần về các vết nứt, bục xương quanh bia giữ;
  * vách: vân tầng đá xen lớp huyết sậm và dạ tím (dải theo độ cao), chân vách ám khói; cao nguyên: tro bay xám ấm.
  */
-export function xichGroundColor(def: TerrainDef, cracks: readonly RiftPt[][], x: number, z: number, h: number, ny: number, out: [number, number, number]): void {
+export function xichGroundColor(
+  def: TerrainDef,
+  cracks: readonly RiftPt[][],
+  x: number,
+  z: number,
+  h: number,
+  ny: number,
+  out: [number, number, number],
+): void {
   const c = def.canyon;
   const n = fbm(x * 0.012, z * 0.012, 3, def.seed + 300);
   const m = fbm(x * 0.05, z * 0.05, 2, def.seed + 331);
@@ -88,7 +104,12 @@ export function xichGroundColor(def: TerrainDef, cracks: readonly RiftPt[][], x:
     // Chân vách ám khói, gờ đỉnh vách ánh than hồng (nắng xiên).
     // Viền sáng: chân vách ánh than hồng hắt từ vết nứt (rim thấp), gờ đỉnh vách ánh tím lạnh của trời.
     col = lerp3(col, hex(RIFT.ember, 1.3 + m * 0.4), (1 - smoothstep(1.5, 9, rel)) * 0.6);
-    if (c) col = lerp3(col, hex(RIFT.violet, 1.9), smoothstep(c.wallH - 7, c.wallH - 1, rel) * (1 - smoothstep(c.wallH - 1, c.wallH + 3, rel)) * 0.7);
+    if (c)
+      col = lerp3(
+        col,
+        hex(RIFT.violet, 1.9),
+        smoothstep(c.wallH - 7, c.wallH - 1, rel) * (1 - smoothstep(c.wallH - 1, c.wallH + 3, rel)) * 0.7,
+      );
   }
   // Cao nguyên: tro bay.
   if (c && rel > c.wallH - 6) col = lerp3(col, hex(RIFT.ashLight, 0.82 + n * 0.16), smoothstep(c.wallH - 6, c.wallH + 4, rel) * 0.7);
@@ -158,9 +179,39 @@ export function scatterXich(ctx: XichScatterCtx): BhRock[] {
       const dark = 0.4 + k2 * 0.16;
       const tint: [number, number, number] = [dark * 1.18, dark * 0.9, dark * 0.86];
       const pick = hash01(gx, gz, 9151);
-      if (!onWall && pick > 0.93) out.push({ id: 'prop_kiem_gay', x, z, yaw: k * Math.PI * 2, s: 1 + k2 * 0.5, lean: 0.25 + k * 0.35, sink: 0.2, tint: [0.8, 0.72, 0.72] });
-      else if (foot > 0.35 && pick > 0.78) out.push({ id: 'prop_tru_da_khac_van', x, z, yaw: k * Math.PI * 2, s: 0.8 + k2 * 0.45, lean: 0.8 + k * 0.6, sink: 0.6 + k2 * 0.9, tint });
-      else out.push({ id: ROCKS[Math.floor(pick * 2.99)], x, z, yaw: k * Math.PI * 2, s: 0.7 + k2 * 0.8 + foot * 0.5, lean: (k - 0.5) * 0.3, sink: 0.12 + foot * 0.4, tint });
+      if (!onWall && pick > 0.93)
+        out.push({
+          id: 'prop_kiem_gay',
+          x,
+          z,
+          yaw: k * Math.PI * 2,
+          s: 1 + k2 * 0.5,
+          lean: 0.25 + k * 0.35,
+          sink: 0.2,
+          tint: [0.8, 0.72, 0.72],
+        });
+      else if (foot > 0.35 && pick > 0.78)
+        out.push({
+          id: 'prop_tru_da_khac_van',
+          x,
+          z,
+          yaw: k * Math.PI * 2,
+          s: 0.8 + k2 * 0.45,
+          lean: 0.8 + k * 0.6,
+          sink: 0.6 + k2 * 0.9,
+          tint,
+        });
+      else
+        out.push({
+          id: ROCKS[Math.floor(pick * 2.99)],
+          x,
+          z,
+          yaw: k * Math.PI * 2,
+          s: 0.7 + k2 * 0.8 + foot * 0.5,
+          lean: (k - 0.5) * 0.3,
+          sink: 0.12 + foot * 0.4,
+          tint,
+        });
     }
   }
   return out;

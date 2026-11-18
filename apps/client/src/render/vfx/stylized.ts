@@ -1,5 +1,32 @@
 import * as THREE from 'three/webgpu';
-import { abs, atan, clamp, cos, dot, exp, float, floor, fract, length, max, min, mix, normalize, normalView, positionView, pow, select, sin, smoothstep, step, texture, time, uv, vec2, vec3 } from 'three/tsl';
+import {
+  abs,
+  atan,
+  clamp,
+  cos,
+  dot,
+  exp,
+  float,
+  floor,
+  fract,
+  length,
+  max,
+  min,
+  mix,
+  normalize,
+  normalView,
+  positionView,
+  pow,
+  select,
+  sin,
+  smoothstep,
+  step,
+  texture,
+  time,
+  uv,
+  vec2,
+  vec3,
+} from 'three/tsl';
 import { hash21, vnoise, type FxUniforms, type N } from './common';
 import { cardTexture } from './cards';
 
@@ -22,7 +49,11 @@ import { cardTexture } from './cards';
 
 /** Ramp ba tầng: `s` 0..1 → lõi dưới `t1`, thân tới `t2`, viền trên `t2`; `soft` là độ mềm mép giữa các tầng. */
 function ramp3(s: N, core: N, body: N, rim: N, t1 = 0.52, t2 = 0.86, soft = 0.04): N {
-  return mix(mix(core, body, smoothstep(float(t1).sub(soft), float(t1).add(soft), s)), rim, smoothstep(float(t2).sub(soft), float(t2).add(soft), s));
+  return mix(
+    mix(core, body, smoothstep(float(t1).sub(soft), float(t1).add(soft), s)),
+    rim,
+    smoothstep(float(t2).sub(soft), float(t2).add(soft), s),
+  );
 }
 
 /** Ngưỡng rách mép theo chiều dài `u`: mép trong của hình bị cắt lởm chởm (0 = mịn). Trả 0..1 (1 = còn). */
@@ -99,7 +130,9 @@ export function crystalNodes(U: FxUniforms): { color: N; opacity: N } {
   const rim = U.b.xyz;
   const one = float(1);
   const n = normalize(normalView);
-  const light = dot(n, normalize(vec3(0.35, 0.8, 0.45))).mul(0.5).add(0.5);
+  const light = dot(n, normalize(vec3(0.35, 0.8, 0.45)))
+    .mul(0.5)
+    .add(0.5);
   // Mỗi mặt một tông rõ (xô lệch theo hướng pháp tuyến), thêm dốc sáng dần lên đỉnh.
   const facet = light.mul(0.55).add(v.mul(0.45));
   const lit = ramp3(facet, coreOf(body), body, rim, 0.4, 0.78, 0.03);
@@ -109,7 +142,14 @@ export function crystalNodes(U: FxUniforms): { color: N; opacity: N } {
   const tinted = mix(lit, rim, fres.mul(0.55));
   const color = min(mix(tinted, gold.mul(1.5), edge.mul(0.85)), U.maxHdr);
   const rise = one.sub(smoothstep(grow.sub(0.03), grow, v));
-  const gone = dissolve(hash21(vec2(floor(u.mul(6)), seed)).mul(0.3).add(v.mul(0.5)).add(0.1), erode, 0.08);
+  const gone = dissolve(
+    hash21(vec2(floor(u.mul(6)), seed))
+      .mul(0.3)
+      .add(v.mul(0.5))
+      .add(0.1),
+    erode,
+    0.08,
+  );
   return { color, opacity: U.opacity.mul(rise).mul(gone) };
 }
 
@@ -129,13 +169,19 @@ export function burstNodes(U: FxUniforms): { color: N; opacity: N } {
   const rim = U.b.xyz;
   // Vạch: 26 nan hoa, mỗi nan có độ dài riêng; nan thon dần ra ngoài.
   const N_SPOKE = 26;
-  const t = ang.div(Math.PI * 2).add(0.5).mul(N_SPOKE);
+  const t = ang
+    .div(Math.PI * 2)
+    .add(0.5)
+    .mul(N_SPOKE);
   const id = floor(t);
   const fr = abs(fract(t).sub(0.5)); // 0 ở giữa nan
   const len = hash21(vec2(id, seed)).mul(0.5).add(0.5);
   const reach = spread.mul(len);
   const width = one.sub(r.div(max(reach, 0.05))).mul(0.34);
-  const spoke = one.sub(smoothstep(0, max(width, 0.001), fr)).mul(smoothstep(0.1, 0.22, r)).mul(one.sub(smoothstep(reach.sub(0.12), reach, r)));
+  const spoke = one
+    .sub(smoothstep(0, max(width, 0.001), fr))
+    .mul(smoothstep(0.1, 0.22, r))
+    .mul(one.sub(smoothstep(reach.sub(0.12), reach, r)));
   // Lõi chớp: tròn trắng nóng nhỏ.
   const core = exp(r.mul(r).mul(-9)).mul(one.sub(fade));
   const ring = smoothstep(0.03, 0.0, abs(r.sub(spread.mul(0.62)))).mul(0.6);
@@ -143,10 +189,26 @@ export function burstNodes(U: FxUniforms): { color: N; opacity: N } {
   const cs = seed.mul(2.399);
   const q = vec2(p.x.mul(cos(cs)).add(p.y.mul(sin(cs))), p.y.mul(cos(cs)).sub(p.x.mul(sin(cs))));
   const hs = exp(abs(q.y).mul(-38)).mul(pow(max(one.sub(abs(q.x)), 0), 1.5));
-  const vs = exp(abs(q.x).mul(-30)).mul(pow(max(one.sub(abs(q.y)), 0), 3)).mul(0.6);
-  const cross = hs.add(vs).mul(step(0.5, U.a.w)).mul(one.sub(smoothstep(0.55, 1, fade))).mul(smoothstep(0, 0.12, spread));
-  const col = min(mix(body, rim, clamp(core.add(spoke.mul(0.7)).add(cross.mul(0.8)), 0, 1)).mul(float(1).add(core.mul(0.9)).add(cross.mul(0.5))), U.maxHdr);
-  const a = clamp(spoke.add(core).add(cross).add(ring.mul(spoke.add(0.3))), 0, 1).mul(one.sub(fade));
+  const vs = exp(abs(q.x).mul(-30))
+    .mul(pow(max(one.sub(abs(q.y)), 0), 3))
+    .mul(0.6);
+  const cross = hs
+    .add(vs)
+    .mul(step(0.5, U.a.w))
+    .mul(one.sub(smoothstep(0.55, 1, fade)))
+    .mul(smoothstep(0, 0.12, spread));
+  const col = min(
+    mix(body, rim, clamp(core.add(spoke.mul(0.7)).add(cross.mul(0.8)), 0, 1)).mul(float(1).add(core.mul(0.9)).add(cross.mul(0.5))),
+    U.maxHdr,
+  );
+  const a = clamp(
+    spoke
+      .add(core)
+      .add(cross)
+      .add(ring.mul(spoke.add(0.3))),
+    0,
+    1,
+  ).mul(one.sub(fade));
   return { color: col, opacity: U.opacity.mul(a) };
 }
 
@@ -289,18 +351,38 @@ export function decalNodes(U: FxUniforms): { color: N; opacity: N } {
 
   // Vết nứt: nan hoa gãy khúc theo nhiễu, mỗi nan một độ dài; một lớp nan ngắn thứ hai (nhánh phụ).
   const spokes = (n: number, wMul: number, reachMul: number, sd: number) => {
-    const t = ang.div(Math.PI * 2).add(0.5).mul(n).add(vnoise(vec2(r.mul(5), seed.add(sd))).sub(0.5).mul(0.9));
+    const t = ang
+      .div(Math.PI * 2)
+      .add(0.5)
+      .mul(n)
+      .add(
+        vnoise(vec2(r.mul(5), seed.add(sd)))
+          .sub(0.5)
+          .mul(0.9),
+      );
     const id = floor(t);
     const f = abs(fract(t).sub(0.5));
-    const len = hash21(vec2(id, seed.add(sd))).mul(0.55).add(0.45).mul(reachMul);
+    const len = hash21(vec2(id, seed.add(sd)))
+      .mul(0.55)
+      .add(0.45)
+      .mul(reachMul);
     const reach = grow.mul(len);
-    const w = float(0.09).mul(wMul).mul(one.sub(r.div(max(reach, 0.05)).mul(0.8)));
-    return one.sub(smoothstep(0, max(w, 0.002), f)).mul(one.sub(smoothstep(reach.sub(0.05), reach, r))).mul(smoothstep(0.03, 0.08, r));
+    const w = float(0.09)
+      .mul(wMul)
+      .mul(one.sub(r.div(max(reach, 0.05)).mul(0.8)));
+    return one
+      .sub(smoothstep(0, max(w, 0.002), f))
+      .mul(one.sub(smoothstep(reach.sub(0.05), reach, r)))
+      .mul(smoothstep(0.03, 0.08, r));
   };
   const crack = max(spokes(7, 1, 1, 0), spokes(15, 0.7, 0.55, 3.1));
   const crackHalo = max(spokes(7, 3.2, 1, 0), spokes(15, 2.4, 0.55, 3.1)).mul(0.55);
   const heat = U.k;
-  const crackCol = mix(vec3(0.02, 0.03, 0.035), min(mix(body, rim, heat.mul(heat)).mul(heat.mul(1.1).add(0.25)), U.maxHdr), crack.mul(heat.mul(0.9).add(0.1)));
+  const crackCol = mix(
+    vec3(0.02, 0.03, 0.035),
+    min(mix(body, rim, heat.mul(heat)).mul(heat.mul(1.1).add(0.25)), U.maxHdr),
+    crack.mul(heat.mul(0.9).add(0.1)),
+  );
   const crackA = max(crack, crackHalo).mul(edgeMask);
 
   // Vòng triện văn: nhân texture (trắng) với màu; quay chậm, mọc theo bán kính; mép ngoài tắt mềm.
@@ -313,7 +395,10 @@ export function decalNodes(U: FxUniforms): { color: N; opacity: N } {
   // Vết cháy: mảng sẫm rách mép bằng nhiễu, mọc nhanh rồi giữ.
   const scorchN = vnoise(p.mul(3.2).add(seed.mul(9)));
   const scorchEdge = grow.mul(0.85).add(scorchN.sub(0.5).mul(0.35));
-  const scorchA = one.sub(smoothstep(scorchEdge.sub(0.12), scorchEdge, r)).mul(float(0.7).sub(r.mul(0.35)).max(0)).mul(edgeMask);
+  const scorchA = one
+    .sub(smoothstep(scorchEdge.sub(0.12), scorchEdge, r))
+    .mul(float(0.7).sub(r.mul(0.35)).max(0))
+    .mul(edgeMask);
   const scorchCol = mix(vec3(0.02, 0.02, 0.025), body.mul(0.12), heat.mul(0.4));
 
   // Tấm khói toon: mảng trắng ngả lam, hai tông (sáng/tối) cắt cứng, nở ra rồi tan theo nhiễu.
@@ -330,8 +415,14 @@ export function decalNodes(U: FxUniforms): { color: N; opacity: N } {
   const flash = pow(max(U.k, 0), 1.6);
   const turn = ang.div(Math.PI * 2).add(0.5);
   const pool = exp(r.mul(r).mul(-10)).mul(flash);
-  const rays = pow(vnoise(vec2(turn.mul(20), seed.mul(13).add(r.mul(3)))), 4).mul(exp(r.mul(-2.2))).mul(smoothstep(0.02, 0.1, r)).mul(flash).mul(2.4);
-  const ring = smoothstep(0.07, 0, abs(r.sub(grow.min(1).mul(0.95)))).mul(one.sub(grow.min(1))).mul(0.9);
+  const rays = pow(vnoise(vec2(turn.mul(20), seed.mul(13).add(r.mul(3)))), 4)
+    .mul(exp(r.mul(-2.2)))
+    .mul(smoothstep(0.02, 0.1, r))
+    .mul(flash)
+    .mul(2.4);
+  const ring = smoothstep(0.07, 0, abs(r.sub(grow.min(1).mul(0.95))))
+    .mul(one.sub(grow.min(1)))
+    .mul(0.9);
   const strikeGlow = clamp(pool.add(rays).add(ring), 0, 1).mul(smoothstep(1, 0.75, r));
   const strikeCol = min(mix(rim, body, clamp(pool.add(rays.mul(0.5)), 0, 1)).mul(1.1), U.maxHdr);
 
@@ -339,8 +430,20 @@ export function decalNodes(U: FxUniforms): { color: N; opacity: N } {
   const isCrack = step(-0.5, kind).mul(step(kind, 0.5));
   const isRune = step(0.5, kind).mul(step(kind, 1.5));
   const isScorch = step(1.5, kind).mul(step(kind, 2.5));
-  const color = select(isStrike.greaterThan(0.5), strikeCol, select(isCrack.greaterThan(0.5), crackCol, select(isRune.greaterThan(0.5), runeCol, select(isScorch.greaterThan(0.5), scorchCol, smokeCol))));
-  const a = select(isStrike.greaterThan(0.5), strikeGlow, select(isCrack.greaterThan(0.5), crackA, select(isRune.greaterThan(0.5), runeA, select(isScorch.greaterThan(0.5), scorchA, smokeA))));
+  const color = select(
+    isStrike.greaterThan(0.5),
+    strikeCol,
+    select(
+      isCrack.greaterThan(0.5),
+      crackCol,
+      select(isRune.greaterThan(0.5), runeCol, select(isScorch.greaterThan(0.5), scorchCol, smokeCol)),
+    ),
+  );
+  const a = select(
+    isStrike.greaterThan(0.5),
+    strikeGlow,
+    select(isCrack.greaterThan(0.5), crackA, select(isRune.greaterThan(0.5), runeA, select(isScorch.greaterThan(0.5), scorchA, smokeA))),
+  );
   // Smoke và strike tự quản lý mờ (xói mòn / theo k); các kiểu khác mờ theo `fade` trực tiếp.
   const fadeMul = select(step(2.5, kind).greaterThan(0.5), one, one.sub(fade));
   return { color, opacity: U.opacity.mul(a).mul(fadeMul) };

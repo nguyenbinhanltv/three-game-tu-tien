@@ -34,19 +34,53 @@ export interface MinimapMeta {
 
 /** Đường mòn: các điểm nối tông môn với từng vùng và cổng (chỉ để vẽ nền, không ảnh hưởng di chuyển). */
 export const TRAILS: [number, number][][] = [
-  [[2048, 2088], [2048, 2250], [2048, 2400], [2048, 2540]],
-  [[2048, 2250], [2200, 2330], [2390, 2440]],
-  [[2048, 2088], [2250, 2080], [2450, 2110]],
-  [[2450, 2110], [2470, 1930], [2450, 1740]],
-  [[2048, 2088], [2060, 1900], [2048, 1708]],
-  [[2048, 2088], [1860, 2150], [1700, 2215]],
+  [
+    [2048, 2088],
+    [2048, 2250],
+    [2048, 2400],
+    [2048, 2540],
+  ],
+  [
+    [2048, 2250],
+    [2200, 2330],
+    [2390, 2440],
+  ],
+  [
+    [2048, 2088],
+    [2250, 2080],
+    [2450, 2110],
+  ],
+  [
+    [2450, 2110],
+    [2470, 1930],
+    [2450, 1740],
+  ],
+  [
+    [2048, 2088],
+    [2060, 1900],
+    [2048, 1708],
+  ],
+  [
+    [2048, 2088],
+    [1860, 2150],
+    [1700, 2215],
+  ],
 ];
 
 /** Đường mòn tự động cho level không có `TRAILS` riêng: nối tâm các vùng liên tiếp theo cấp (đường đi tu luyện). */
 export function autoTrails(zones: { lvMin: number; poly: [number, number][] }[], hub?: [number, number]): [number, number][][] {
   // Có trạm trung tâm ngoài mọi vùng (Đoạn Mạch Cổ Cốc): đường mòn tỏa từ trạm tới tâm từng vùng.
-  if (hub) return zones.map((z): [number, number][] => [hub, [z.poly.reduce((a, p) => a + p[0], 0) / z.poly.length, z.poly.reduce((a, p) => a + p[1], 0) / z.poly.length]]);
-  const centers = [...zones].sort((a, b) => a.lvMin - b.lvMin).map((z): [number, number] => [z.poly.reduce((a, p) => a + p[0], 0) / z.poly.length, z.poly.reduce((a, p) => a + p[1], 0) / z.poly.length]);
+  if (hub)
+    return zones.map((z): [number, number][] => [
+      hub,
+      [z.poly.reduce((a, p) => a + p[0], 0) / z.poly.length, z.poly.reduce((a, p) => a + p[1], 0) / z.poly.length],
+    ]);
+  const centers = [...zones]
+    .sort((a, b) => a.lvMin - b.lvMin)
+    .map((z): [number, number] => [
+      z.poly.reduce((a, p) => a + p[0], 0) / z.poly.length,
+      z.poly.reduce((a, p) => a + p[1], 0) / z.poly.length,
+    ]);
   return centers.slice(1).map((c, i) => [centers[i], c]);
 }
 
@@ -76,7 +110,8 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
   const step = size / N;
   const H = new Float32Array((N + 2) * (N + 2));
   const hAt = (i: number, j: number) => H[(j + 1) * (N + 2) + (i + 1)];
-  for (let j = -1; j <= N; j++) for (let i = -1; i <= N; i++) H[(j + 1) * (N + 2) + (i + 1)] = heightAt(x0 + (i + 0.5) * step, z0 + (j + 0.5) * step);
+  for (let j = -1; j <= N; j++)
+    for (let i = -1; i <= N; i++) H[(j + 1) * (N + 2) + (i + 1)] = heightAt(x0 + (i + 0.5) * step, z0 + (j + 0.5) * step);
 
   const out = new Float32Array(N * N * 3);
   const water = new Uint8Array(N * N);
@@ -113,18 +148,32 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
   const zones = lv.zones ?? [];
   for (const zn of zones) {
     const c = hex(zn.color);
-    let ax = Infinity, bx = -Infinity, az = Infinity, bz = -Infinity;
-    for (const [px, pz] of zn.poly) { ax = Math.min(ax, px); bx = Math.max(bx, px); az = Math.min(az, pz); bz = Math.max(bz, pz); }
-    const i0 = Math.max(0, Math.floor((ax - x0) / step)), i1 = Math.min(N - 1, Math.ceil((bx - x0) / step));
-    const j0 = Math.max(0, Math.floor((az - z0) / step)), j1 = Math.min(N - 1, Math.ceil((bz - z0) / step));
-    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) if (inPoly(zn.poly, x0 + (i + 0.5) * step, z0 + (j + 0.5) * step)) put(i, j, c, 0.2);
+    let ax = Infinity,
+      bx = -Infinity,
+      az = Infinity,
+      bz = -Infinity;
+    for (const [px, pz] of zn.poly) {
+      ax = Math.min(ax, px);
+      bx = Math.max(bx, px);
+      az = Math.min(az, pz);
+      bz = Math.max(bz, pz);
+    }
+    const i0 = Math.max(0, Math.floor((ax - x0) / step)),
+      i1 = Math.min(N - 1, Math.ceil((bx - x0) / step));
+    const j0 = Math.max(0, Math.floor((az - z0) / step)),
+      j1 = Math.min(N - 1, Math.ceil((bz - z0) / step));
+    for (let j = j0; j <= j1; j++)
+      for (let i = i0; i <= i1; i++) if (inPoly(zn.poly, x0 + (i + 0.5) * step, z0 + (j + 0.5) * step)) put(i, j, c, 0.2);
   }
 
   // 3) hồ: nước lót + gợn sóng + bờ mực
   for (let j = 0; j < N; j++) {
     for (let i = 0; i < N; i++) {
       if (!water[j * N + i]) continue;
-      const rip = ((j + Math.floor(hash01(Math.floor(i / 40), 0, SEED + 3) * 9)) % 9 === 0 && hash01(Math.floor(i / 14), j, SEED + 4) > 0.45) ? 0.35 : 0;
+      const rip =
+        (j + Math.floor(hash01(Math.floor(i / 40), 0, SEED + 3) * 9)) % 9 === 0 && hash01(Math.floor(i / 14), j, SEED + 4) > 0.45
+          ? 0.35
+          : 0;
       put(i, j, WATER, 0.86);
       put(i, j, WATER_INK, rip);
     }
@@ -170,10 +219,11 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
   // 6) nét vẽ: đoạn thẳng có kiểu nét
   const pt = (wx: number, wz: number): [number, number] => [(wx - x0) / step, (wz - z0) / step];
   const disc = (cx: number, cz: number, r: number, c: RGB, a: number) => {
-    for (let dj = -Math.ceil(r); dj <= Math.ceil(r); dj++) for (let di = -Math.ceil(r); di <= Math.ceil(r); di++) {
-      const d = Math.hypot(di, dj);
-      if (d <= r) put(Math.round(cx) + di, Math.round(cz) + dj, c, a * Math.min(1, r + 0.6 - d));
-    }
+    for (let dj = -Math.ceil(r); dj <= Math.ceil(r); dj++)
+      for (let di = -Math.ceil(r); di <= Math.ceil(r); di++) {
+        const d = Math.hypot(di, dj);
+        if (d <= r) put(Math.round(cx) + di, Math.round(cz) + dj, c, a * Math.min(1, r + 0.6 - d));
+      }
   };
   const stroke = (pts: [number, number][], r: number, c: RGB, a: number, dash: number, gap: number, wobble = 0) => {
     let run = 0;
@@ -194,14 +244,16 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
   };
   for (const zn of zones) stroke([...zn.poly, zn.poly[0]], 1.5, INK, 0.8, 14, 8);
   // Đường mòn: bezier bậc hai giữa các điểm, nét chấm nâu.
-  const hub: [number, number] | undefined = tr.def.play && !zones.some((z) => inPoly(z.poly, tr.def.play!.cx, tr.def.play!.cz)) ? [tr.def.play.cx, tr.def.play.cz] : undefined;
+  const hub: [number, number] | undefined =
+    tr.def.play && !zones.some((z) => inPoly(z.poly, tr.def.play!.cx, tr.def.play!.cz)) ? [tr.def.play.cx, tr.def.play.cz] : undefined;
   for (const tr of levelId === 'van_lam' ? TRAILS : autoTrails(zones, hub)) {
     const pts: [number, number][] = [];
     for (let s = 0; s + 1 < tr.length; s++) {
       const [a, b] = [tr[s], tr[s + 1]];
       const mx = (a[0] + b[0]) / 2 + (hash01(a[0], b[1], SEED + 5) - 0.5) * 30;
       const mz = (a[1] + b[1]) / 2 + (hash01(a[1], b[0], SEED + 6) - 0.5) * 30;
-      for (let t = 0; t < 1; t += 0.04) pts.push([(1 - t) ** 2 * a[0] + 2 * (1 - t) * t * mx + t * t * b[0], (1 - t) ** 2 * a[1] + 2 * (1 - t) * t * mz + t * t * b[1]]);
+      for (let t = 0; t < 1; t += 0.04)
+        pts.push([(1 - t) ** 2 * a[0] + 2 * (1 - t) * t * mx + t * t * b[0], (1 - t) ** 2 * a[1] + 2 * (1 - t) * t * mz + t * t * b[1]]);
     }
     pts.push(tr[tr.length - 1]);
     stroke(pts, 1.3, TRAIL, 0.85, 5, 5, 0.6);
@@ -241,7 +293,9 @@ async function main(): Promise<void> {
   const { data, meta } = buildMinimapPixels(levelId);
   const dir = path.join(ROOT, 'apps/client/public/map');
   await mkdir(dir, { recursive: true });
-  const webp = await sharp(Buffer.from(data.buffer), { raw: { width: meta.px, height: meta.px, channels: 4 } }).webp({ quality: 82, effort: 5 }).toBuffer();
+  const webp = await sharp(Buffer.from(data.buffer), { raw: { width: meta.px, height: meta.px, channels: 4 } })
+    .webp({ quality: 82, effort: 5 })
+    .toBuffer();
   await writeFile(path.join(dir, `${levelId}.webp`), webp);
   await writeFile(path.join(dir, `${levelId}.json`), JSON.stringify(meta) + '\n');
   console.log(`minimap: ${(webp.length / 1024).toFixed(0)} KB, ${meta.px}px / ${meta.size} m, ${((Date.now() - t0) / 1000).toFixed(1)} s`);

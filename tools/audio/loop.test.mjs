@@ -123,18 +123,62 @@ test('loop.mjs: chạy thật trên MP3 sinh bằng ffmpeg', { skip: FF ? false 
     const drone = '0.08*sin(2*PI*110*t)';
     const expr = `${pluck}+${kick}+${drone}|0.8*${pluck}+${kick}+${drone}`;
     const mp3 = path.join(srcDir, 'sect.mp3');
-    const g = spawnSync(FF, ['-v', 'error', '-y', '-f', 'lavfi', '-i', `aevalsrc='${expr}':s=44100:d=60`, '-af', 'afade=t=out:st=52:d=8,adelay=2500|2500,volume=3', '-c:a', 'libmp3lame', '-b:a', '192k', mp3], { encoding: 'utf8' });
+    const g = spawnSync(
+      FF,
+      [
+        '-v',
+        'error',
+        '-y',
+        '-f',
+        'lavfi',
+        '-i',
+        `aevalsrc='${expr}':s=44100:d=60`,
+        '-af',
+        'afade=t=out:st=52:d=8,adelay=2500|2500,volume=3',
+        '-c:a',
+        'libmp3lame',
+        '-b:a',
+        '192k',
+        mp3,
+      ],
+      { encoding: 'utf8' },
+    );
     assert.equal(g.status, 0, g.stderr);
 
     // Sting không lặp, sinh bằng ffmpeg: tiếng chuông tắt dần sau 0,5 s lặng.
     const sting = path.join(srcDir, 'sting_levelup.mp3');
-    const g2 = spawnSync(FF, ['-v', 'error', '-y', '-f', 'lavfi', '-i', "aevalsrc='0.5*sin(2*PI*880*t)*exp(-3*t)|0.5*sin(2*PI*880*t)*exp(-3*t)':s=44100:d=3", '-af', 'adelay=500|500', '-c:a', 'libmp3lame', sting], { encoding: 'utf8' });
+    const g2 = spawnSync(
+      FF,
+      [
+        '-v',
+        'error',
+        '-y',
+        '-f',
+        'lavfi',
+        '-i',
+        "aevalsrc='0.5*sin(2*PI*880*t)*exp(-3*t)|0.5*sin(2*PI*880*t)*exp(-3*t)':s=44100:d=3",
+        '-af',
+        'adelay=500|500',
+        '-c:a',
+        'libmp3lame',
+        sting,
+      ],
+      { encoding: 'utf8' },
+    );
     assert.equal(g2.status, 0, g2.stderr);
 
     const out = path.join(tmp, 'out');
     fs.mkdirSync(out);
     // Manifest cũ có SFX: loop.mjs phải giữ nguyên.
-    fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify({ sprites: { a: ['sfx/a.webm'] }, sfx: { hit: { variants: [] } }, music: {}, ambient: { wind: { src: ['amb/w.webm'] } } }));
+    fs.writeFileSync(
+      path.join(out, 'manifest.json'),
+      JSON.stringify({
+        sprites: { a: ['sfx/a.webm'] },
+        sfx: { hit: { variants: [] } },
+        music: {},
+        ambient: { wind: { src: ['amb/w.webm'] } },
+      }),
+    );
     const lic = path.join(tmp, 'LICENSES.md');
     fs.writeFileSync(lic, '# Giấy phép\n');
     const spec = path.join(tmp, 'music.json');
@@ -150,7 +194,10 @@ test('loop.mjs: chạy thật trên MP3 sinh bằng ffmpeg', { skip: FF ? false 
       }),
     );
     const env = { ...process.env, DTL_ASSET_SOURCE: path.join(tmp, 'src'), FFMPEG: FF };
-    const run = spawnSync(process.execPath, [path.join(HERE, 'loop.mjs'), '--spec', spec, '--out', out, '--licenses', lic, '--preview'], { encoding: 'utf8', env });
+    const run = spawnSync(process.execPath, [path.join(HERE, 'loop.mjs'), '--spec', spec, '--out', out, '--licenses', lic, '--preview'], {
+      encoding: 'utf8',
+      env,
+    });
     assert.equal(run.status, 0, run.stdout + run.stderr);
     process.stdout.write(run.stdout.replace(/^/gm, '    '));
 
@@ -160,7 +207,12 @@ test('loop.mjs: chạy thật trên MP3 sinh bằng ffmpeg', { skip: FF ? false 
     assert.deepEqual(Object.keys(m.music).sort(), ['sect', 'sting_levelup']);
     const e = m.music.sect;
     assert.equal(e.loop, true);
-    assert.deepEqual(e.credit, { title: 'Lạc Kiếm Tông', by: 'Suno (free, non-commercial)', license: 'phi thương mại, ghi nguồn', url: 'https://suno.com/song/test' });
+    assert.deepEqual(e.credit, {
+      title: 'Lạc Kiếm Tông',
+      by: 'Suno (free, non-commercial)',
+      license: 'phi thương mại, ghi nguồn',
+      url: 'https://suno.com/song/test',
+    });
     assert.match(e.src[0], /^music\/sect\.[0-9a-f]{10}\.webm$/);
     assert.match(e.src[1], /^music\/sect\.[0-9a-f]{10}\.m4a$/);
     assert.equal(m.music.sting_levelup.loop, false);
@@ -181,14 +233,20 @@ test('loop.mjs: chạy thật trên MP3 sinh bằng ffmpeg', { skip: FF ? false 
 
     const md = fs.readFileSync(lic, 'utf8');
     assert.match(md, /<!-- music:begin/);
-    assert.match(md, /\| `sect` \| Lạc Kiếm Tông \| Suno \(free, non-commercial\) \| phi thương mại, ghi nguồn \| \d{4}-\d{2}-\d{2} \| https:\/\/suno\.com\/song\/test \|/);
+    assert.match(
+      md,
+      /\| `sect` \| Lạc Kiếm Tông \| Suno \(free, non-commercial\) \| phi thương mại, ghi nguồn \| \d{4}-\d{2}-\d{2} \| https:\/\/suno\.com\/song\/test \|/,
+    );
     assert.match(run.stdout, /chưa điền url Suno.*sting_levelup/);
     assert.match(run.stdout, /Chưa có nguồn.*combat/);
     assert.match(run.stdout, /nghe thử chỗ nối: .*sect\.seam\.wav/);
 
     // Chạy lại: cùng nguồn → cùng file (hash ổn định), không sinh file thừa.
     const before = fs.readdirSync(path.join(out, 'music')).sort();
-    const run2 = spawnSync(process.execPath, [path.join(HERE, 'loop.mjs'), '--spec', spec, '--out', out, '--licenses', lic], { encoding: 'utf8', env });
+    const run2 = spawnSync(process.execPath, [path.join(HERE, 'loop.mjs'), '--spec', spec, '--out', out, '--licenses', lic], {
+      encoding: 'utf8',
+      env,
+    });
     assert.equal(run2.status, 0, run2.stderr);
     assert.deepEqual(fs.readdirSync(path.join(out, 'music')).sort(), before);
     assert.equal(fs.readFileSync(lic, 'utf8'), md);

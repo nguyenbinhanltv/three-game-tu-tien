@@ -19,7 +19,16 @@ const OWN_COLOR = 0xffd54a;
 const MATE_COLOR = 0x5cb8ff;
 const MARK_BEAM_H = 150;
 
-const additive = (color: number, opacity: number) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
+const additive = (color: number, opacity: number) =>
+  new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
 
 interface PadVis {
   pad: TelePad;

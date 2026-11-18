@@ -71,7 +71,7 @@ describe('nguyên anh xuất khiếu (ghost)', () => {
   });
 
   it('thuấn di thay Lướt cơ bản từ Nguyên Anh; chiêu xuyên/đẩy giữ nguyên', () => {
-    expect(blinkReplaces(SOUL_UNLOCK_LEVEL, { })).toBe(true);
+    expect(blinkReplaces(SOUL_UNLOCK_LEVEL, {})).toBe(true);
     expect(blinkReplaces(SOUL_UNLOCK_LEVEL - 1, {})).toBe(false);
     expect(blinkReplaces(SOUL_UNLOCK_LEVEL, { pierce: { r: 2 } })).toBe(false);
     expect(blinkReplaces(SOUL_UNLOCK_LEVEL, { push: 6 })).toBe(false);

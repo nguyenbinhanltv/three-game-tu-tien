@@ -45,25 +45,42 @@ describe('migration 3 ô → 8 ô', () => {
     const { file, raw } = oldDb();
     const eqOf = (items: Record<string, unknown>) => JSON.stringify(items);
     const ins = raw.prepare('INSERT INTO characters (account_id, name, equip) VALUES (?, ?, ?)');
-    ins.run(1, 'A', eqOf({ weapon: { id: 'itm_moc_kiem', n: 1, plus: 3 }, robe: { id: 'itm_bo_y', n: 1 }, accessory: { id: 'itm_ngoc_boi', n: 1, plus: 2 } }));
+    ins.run(
+      1,
+      'A',
+      eqOf({
+        weapon: { id: 'itm_moc_kiem', n: 1, plus: 3 },
+        robe: { id: 'itm_bo_y', n: 1 },
+        accessory: { id: 'itm_ngoc_boi', n: 1, plus: 2 },
+      }),
+    );
     ins.run(2, 'B', eqOf({ accessory: { id: 'itm_huyen_thiet_gioi', n: 1 } }));
     ins.run(3, 'C', eqOf({ weapon: { id: 'itm_moc_kiem', n: 1 } }));
     raw.prepare('INSERT INTO items VALUES (1, 0, ?, 1, 4)').run('itm_thiet_kiem');
     raw.close();
 
     const { sqlite: s } = openDb(file);
-    const eq = (name: string) => JSON.parse((s.prepare('SELECT equip FROM characters WHERE name = ?').get(name) as { equip: string }).equip);
-    expect(eq('A')).toEqual({ weapon: { id: 'itm_moc_kiem', n: 1, plus: 3 }, robe: { id: 'itm_bo_y', n: 1 }, jade: { id: 'itm_ngoc_boi', n: 1, plus: 2 } });
+    const eq = (name: string) =>
+      JSON.parse((s.prepare('SELECT equip FROM characters WHERE name = ?').get(name) as { equip: string }).equip);
+    expect(eq('A')).toEqual({
+      weapon: { id: 'itm_moc_kiem', n: 1, plus: 3 },
+      robe: { id: 'itm_bo_y', n: 1 },
+      jade: { id: 'itm_ngoc_boi', n: 1, plus: 2 },
+    });
     expect(eq('B')).toEqual({ ring: { id: 'itm_huyen_thiet_gioi', n: 1 } });
     expect(eq('C')).toEqual({ weapon: { id: 'itm_moc_kiem', n: 1 } });
-    expect(s.prepare('SELECT item_id, plus, inst FROM items WHERE char_id = 1').all()).toEqual([{ item_id: 'itm_thiet_kiem', plus: 4, inst: null }]);
+    expect(s.prepare('SELECT item_id, plus, inst FROM items WHERE char_id = 1').all()).toEqual([
+      { item_id: 'itm_thiet_kiem', plus: 4, inst: null },
+    ]);
     expect(s.pragma('user_version', { simple: true })).toBe(DATA_VERSION);
     s.close();
   }, 30_000);
 
   it('chạy lại không đổi gì (idempotent) và không ghi ledger', () => {
     const { file, raw } = oldDb();
-    raw.prepare('INSERT INTO characters (account_id, name, equip) VALUES (1, ?, ?)').run('A', JSON.stringify({ accessory: { id: 'itm_ngoc_boi', n: 1 } }));
+    raw
+      .prepare('INSERT INTO characters (account_id, name, equip) VALUES (1, ?, ?)')
+      .run('A', JSON.stringify({ accessory: { id: 'itm_ngoc_boi', n: 1 } }));
     raw.close();
     const first = openDb(file);
     const snap = JSON.stringify(first.sqlite.prepare('SELECT * FROM characters').all());
@@ -78,7 +95,9 @@ describe('migration 3 ô → 8 ô', () => {
     // Weapon +3 (atk 4) và ngọc bội +2 (mp 40, hp 20) nạp qua Character.load.
     const acc = Date.now() % 1_000_000;
     const c = Character.create(acc, 'Cu' + acc, null, 'kim' as never); // Kim không cộng hp/mp/công/thủ
-    sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify({ weapon: { id: 'itm_moc_kiem', n: 1, plus: 3 }, jade: { id: 'itm_ngoc_boi', n: 1, plus: 2 } }), c.id);
+    sqlite
+      .prepare('UPDATE characters SET equip = ? WHERE id = ?')
+      .run(JSON.stringify({ weapon: { id: 'itm_moc_kiem', n: 1, plus: 3 }, jade: { id: 'itm_ngoc_boi', n: 1, plus: 2 } }), c.id);
     const l = Character.load(c.id);
     const base = Character.load(Character.create(acc + 1, 'Cu' + (acc + 1), null, 'kim' as never).id);
     expect(l.atk).toBe(base.atk + Math.round(4 * 1.24));
@@ -89,7 +108,8 @@ describe('migration 3 ô → 8 ô', () => {
 describe('trang bị đã roll: lưu, ledger, idempotency', () => {
   // Linh căn cố định (Kim không cộng hp/mp/công/thủ): bỏ trống thì `Character.create` roll ngẫu nhiên, hai nhân vật đem so chỉ số
   // có thể lệch nhau 1 điểm công và test đỏ theo lượt (từng gặp trên CI: `expected 68 to be greater than 68`).
-  const mk = (n: string) => Character.create(900_000 + Math.floor(Math.random() * 90_000), n + Math.floor(Math.random() * 1e6), null, 'kim' as never);
+  const mk = (n: string) =>
+    Character.create(900_000 + Math.floor(Math.random() * 90_000), n + Math.floor(Math.random() * 1e6), null, 'kim' as never);
 
   it('roll ghi inst vào DB, ledger có seed, nạp lại giống hệt, chỉ số tính từ inst', () => {
     const c = mk('R');
@@ -100,7 +120,10 @@ describe('trang bị đã roll: lưu, ledger, idempotency', () => {
     expect(inst.affixes).toHaveLength(4);
     const row = sqlite.prepare('SELECT inst FROM items WHERE char_id = ? AND slot = ?').get(c.id, slot) as { inst: string };
     expect(JSON.parse(row.inst)).toEqual(inst);
-    const led = sqlite.prepare("SELECT reason, delta FROM ledger WHERE char_id = ? AND kind = 'item'").all(c.id) as { reason: string; delta: number }[];
+    const led = sqlite.prepare("SELECT reason, delta FROM ledger WHERE char_id = ? AND kind = 'item'").all(c.id) as {
+      reason: string;
+      delta: number;
+    }[];
     expect(led).toHaveLength(1);
     expect(led[0].delta).toBe(1);
     expect(led[0].reason).toMatch(/^test:roll roll=\d+:q4:il12$/);
@@ -135,14 +158,20 @@ describe('trang bị đã roll: lưu, ledger, idempotency', () => {
     const c = mk('H');
     expect(c.tx('t', null, (d) => d.addRolled('itm_moc_kiem', 5, 1))).toBe(true);
     const slot = c.inv.findIndex(Boolean);
-    sqlite.prepare('UPDATE items SET inst = ? WHERE char_id = ? AND slot = ?').run(JSON.stringify({ q: 4, ilvl: 5, main: { atk: 99999 }, affixes: [], gems: [], bound: false }), c.id, slot);
+    sqlite
+      .prepare('UPDATE items SET inst = ? WHERE char_id = ? AND slot = ?')
+      .run(JSON.stringify({ q: 4, ilvl: 5, main: { atk: 99999 }, affixes: [], gems: [], bound: false }), c.id, slot);
     expect(Character.load(c.id).inv[slot]!.inst).toMatchObject({ q: 4, ilvl: 5, main: {} });
   });
 
   it('nạp trang bị: bỏ khóa ô cũ, không xóa thầm đồ lệch ô', () => {
     const c = mk('E');
     sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(
-      JSON.stringify({ weapon: { id: 'itm_moc_kiem', n: 1 }, robe: { id: 'itm_moc_kiem', n: 1 }, accessory: { id: 'itm_ngoc_boi', n: 1 } }),
+      JSON.stringify({
+        weapon: { id: 'itm_moc_kiem', n: 1 },
+        robe: { id: 'itm_moc_kiem', n: 1 },
+        accessory: { id: 'itm_ngoc_boi', n: 1 },
+      }),
       c.id,
     );
     const l = Character.load(c.id);

@@ -78,7 +78,11 @@ export function BottleneckBox({ char }: { char: CharView }) {
   return (
     <div className="k-card bk-box" data-testid="bk-box">
       <div className="bk-title">{t('ui.bk.title')}</div>
-      <div className="k-dim">{isPeakLevel(char.level) ? t('ui.bk.hint15', { realm: realmName(char.level), to: nextMajorRealmName(char.level) }) : t('ui.bk.hint', { realm: realmName(char.level) })}</div>
+      <div className="k-dim">
+        {isPeakLevel(char.level)
+          ? t('ui.bk.hint15', { realm: realmName(char.level), to: nextMajorRealmName(char.level) })
+          : t('ui.bk.hint', { realm: realmName(char.level) })}
+      </div>
       <div className={full ? 'ok' : 'bad'}>
         {full ? '✔' : '✘'} {full ? t('ui.xp_full') : t('ui.bk.xp_not_full')}
       </div>
@@ -128,7 +132,14 @@ export function RootPicker({ value, onChange }: { value: RootId | null; onChange
       <label>{t('ui.root.pick')}</label>
       <div className="root-row">
         {ROOT_IDS.map((id) => (
-          <button key={id} type="button" className={'root-opt' + (value === id ? ' sel' : '')} data-root={id} title={t(`root.${id}.desc`)} onClick={() => onChange(id)}>
+          <button
+            key={id}
+            type="button"
+            className={'root-opt' + (value === id ? ' sel' : '')}
+            data-root={id}
+            title={t(`root.${id}.desc`)}
+            onClick={() => onChange(id)}
+          >
             <UiIcon id={`root_${id}`} fallback={t(`elem.${id}`)} className="inline" /> {t(`elem.${id}`)}
           </button>
         ))}
@@ -165,7 +176,11 @@ export function RootTab({ npcId }: { npcId: string }) {
               <div className="item-name">{t(`root.${id}.name`)}</div>
               <div className="k-dim">{t(`root.${id}.desc`)}</div>
             </div>
-            <Button variant="primary" disabled={cur || char.gold < cost} onClick={() => g?.send(C.ROOT, { npc: npcId, root: id, r: reqId() })}>
+            <Button
+              variant="primary"
+              disabled={cur || char.gold < cost}
+              onClick={() => g?.send(C.ROOT, { npc: npcId, root: id, r: reqId() })}
+            >
               {cur ? t('ui.root.current') : t('ui.root.change_btn', { n: cost })}
             </Button>
           </div>

@@ -24,18 +24,102 @@ export type VhKind = 'hub' | 'tung_dai_dao' | 'thach_quy_dao' | 'kinh_ho_dao' | 
 
 export const VH_PALETTES: Record<VhKind, VhPalette> = {
   // Phù Đảo Các: sân lát đá nhạt, cỏ cắt gọn ở rìa
-  hub: { moss: 0x8c9c76, soil: 0xaa9d80, stone: 0xc4bfae, dark: 0x70745f, trail: 0xeee8d4, wet: 0x8c9684, grass: 0x8fa874, grassDry: 0xb0b088, grassDensity: 0.3, grassClump: 0.75, rockBias: 0.05 },
+  hub: {
+    moss: 0x8c9c76,
+    soil: 0xaa9d80,
+    stone: 0xc4bfae,
+    dark: 0x70745f,
+    trail: 0xeee8d4,
+    wet: 0x8c9684,
+    grass: 0x8fa874,
+    grassDry: 0xb0b088,
+    grassDensity: 0.3,
+    grassClump: 0.75,
+    rockBias: 0.05,
+  },
   // Tùng Đài: rêu xanh thẫm, đất nâu ẩm, đồi tùng
-  tung_dai_dao: { moss: 0x6c8960, soil: 0x8b7858, stone: 0x9a9b8b, dark: 0x465a45, trail: 0xbba985, wet: 0x58705a, grass: 0x7c9a5e, grassDry: 0xa4a872, grassDensity: 0.62, grassClump: 0.7, rockBias: -0.05 },
+  tung_dai_dao: {
+    moss: 0x6c8960,
+    soil: 0x8b7858,
+    stone: 0x9a9b8b,
+    dark: 0x465a45,
+    trail: 0xbba985,
+    wet: 0x58705a,
+    grass: 0x7c9a5e,
+    grassDry: 0xa4a872,
+    grassDensity: 0.62,
+    grassClump: 0.7,
+    rockBias: -0.05,
+  },
   // Thạch Quy: đá phiến xám cát lấn cỏ, mảng như mai rùa
-  thach_quy_dao: { moss: 0x9a9a82, soil: 0xa3917a, stone: 0xb7b0a2, dark: 0x6b695f, trail: 0xcbbfa6, wet: 0x8b8a76, grass: 0x9aa476, grassDry: 0xbab38a, grassDensity: 0.22, grassClump: 0.85, rockBias: 0.32 },
+  thach_quy_dao: {
+    moss: 0x9a9a82,
+    soil: 0xa3917a,
+    stone: 0xb7b0a2,
+    dark: 0x6b695f,
+    trail: 0xcbbfa6,
+    wet: 0x8b8a76,
+    grass: 0x9aa476,
+    grassDry: 0xbab38a,
+    grassDensity: 0.22,
+    grassClump: 0.85,
+    rockBias: 0.32,
+  },
   // Kính Hồ: bãi phù sa xanh nhạt, cỏ dày quanh hồ
-  kinh_ho_dao: { moss: 0x8aa596, soil: 0xa9ab9a, stone: 0xc8cfcb, dark: 0x66807a, trail: 0xdcd8c6, wet: 0x587267, grass: 0x84ac86, grassDry: 0xb2bd92, grassDensity: 0.5, grassClump: 0.85, rockBias: -0.15 },
+  kinh_ho_dao: {
+    moss: 0x8aa596,
+    soil: 0xa9ab9a,
+    stone: 0xc8cfcb,
+    dark: 0x66807a,
+    trail: 0xdcd8c6,
+    wet: 0x587267,
+    grass: 0x84ac86,
+    grassDry: 0xb2bd92,
+    grassDensity: 0.5,
+    grassClump: 0.85,
+    rockBias: -0.15,
+  },
   // Lôi Vân: đá phiến sẫm cháy sấm, cỏ khô thưa
-  loi_van_dao: { moss: 0x78796b, soil: 0x6e655a, stone: 0x585a62, dark: 0x3a3c44, trail: 0x8f8778, wet: 0x4d4f52, grass: 0x8a8d62, grassDry: 0xa59a62, grassDensity: 0.2, grassClump: 0.8, rockBias: 0.22 },
+  loi_van_dao: {
+    moss: 0x78796b,
+    soil: 0x6e655a,
+    stone: 0x585a62,
+    dark: 0x3a3c44,
+    trail: 0x8f8778,
+    wet: 0x4d4f52,
+    grass: 0x8a8d62,
+    grassDry: 0xa59a62,
+    grassDensity: 0.2,
+    grassClump: 0.8,
+    rockBias: 0.22,
+  },
   // Kình Ngư Đài: đất tẩy trắng như xương, gió quét
-  kinh_ngu_dai: { moss: 0x8fa3a0, soil: 0xbab4a2, stone: 0xe0dccd, dark: 0x7a8a92, trail: 0xe2dccb, wet: 0x78898a, grass: 0x95aba0, grassDry: 0xc0c3a6, grassDensity: 0.42, grassClump: 0.65, rockBias: 0.08 },
-  tieu_dao: { moss: 0xa3ad8a, soil: 0xb3a688, stone: 0xc3bfb0, dark: 0x7b8068, trail: 0xd2c9b3, wet: 0x7f8c78, grass: 0x9bb078, grassDry: 0xbfbb8c, grassDensity: 0.5, grassClump: 0.5, rockBias: 0 },
+  kinh_ngu_dai: {
+    moss: 0x8fa3a0,
+    soil: 0xbab4a2,
+    stone: 0xe0dccd,
+    dark: 0x7a8a92,
+    trail: 0xe2dccb,
+    wet: 0x78898a,
+    grass: 0x95aba0,
+    grassDry: 0xc0c3a6,
+    grassDensity: 0.42,
+    grassClump: 0.65,
+    rockBias: 0.08,
+  },
+  tieu_dao: {
+    moss: 0xa3ad8a,
+    soil: 0xb3a688,
+    stone: 0xc3bfb0,
+    dark: 0x7b8068,
+    trail: 0xd2c9b3,
+    wet: 0x7f8c78,
+    grass: 0x9bb078,
+    grassDry: 0xbfbb8c,
+    grassDensity: 0.5,
+    grassClump: 0.5,
+    rockBias: 0,
+  },
 };
 
 export interface VhIsland {
@@ -101,7 +185,16 @@ export function vanHaiArt(def: TerrainDef): VhArt {
   if (hit) return hit;
   const seed = def.seed;
   const isleFeats = def.features.filter((f) => f.id.startsWith('isl_'));
-  const islands: VhIsland[] = isleFeats.map((f) => ({ id: f.id.slice(4), kind: kindOf(f.id), x: f.x, z: f.z, r: f.flatR, y: f.y, pal: VH_PALETTES[kindOf(f.id)], trail: new Float32Array(0) }));
+  const islands: VhIsland[] = isleFeats.map((f) => ({
+    id: f.id.slice(4),
+    kind: kindOf(f.id),
+    x: f.x,
+    z: f.z,
+    r: f.flatR,
+    y: f.y,
+    pal: VH_PALETTES[kindOf(f.id)],
+    trail: new Float32Array(0),
+  }));
   const edge = def.islands?.[0]?.edge ?? 12;
   const inIsle = (x: number, z: number, pad = 0): VhIsland | null => {
     for (const i of islands) if ((x - i.x) ** 2 + (z - i.z) ** 2 < (i.r + pad) ** 2) return i;
@@ -124,7 +217,10 @@ export function vanHaiArt(def: TerrainDef): VhArt {
     }
     for (const b of def.bridges ?? []) {
       if (b.id.startsWith('thang_')) continue; // chân thang mây là vách đảo, không dẫn lối mòn tới đó
-      for (const [x, z] of [[b.ax, b.az], [b.bx, b.bz]] as const) {
+      for (const [x, z] of [
+        [b.ax, b.az],
+        [b.bx, b.bz],
+      ] as const) {
         if (inIsle(x, z, 22) === i && Math.hypot(x - i.x, z - i.z) > i.r - 30) wobble(pts, hub.x, hub.z, x, z, ph + x * 0.01);
       }
     }

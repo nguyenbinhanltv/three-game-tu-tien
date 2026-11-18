@@ -36,7 +36,8 @@ export const SETS = {
         tris: '5000',
         bones: 'spine1/spine2 (thân), upperarm L/R, forearm L/R, neck. Choàng sau gắn spine2 và shoulder. Trọng số lấy từ thân nền',
         spring: 'Tay áo: 2 chuỗi × 3 xương mỗi bên. Choàng dài sau: 3 chuỗi × 4 xương. Vạt xẻ tà hai bên: 1 chuỗi × 2 xương mỗi bên',
-        notes: 'Một mảnh liền, lụa dày KHÔNG xuyên sáng. Choàng dài là mảnh vải riêng thả từ vai tới đất. Viền phân thân mờ chỉ là thêu chỉ nhạt (texture), không dựng thành hình thứ hai. Mở thân dưới để lớp dưới thấy bên trong.',
+        notes:
+          'Một mảnh liền, lụa dày KHÔNG xuyên sáng. Choàng dài là mảnh vải riêng thả từ vai tới đất. Viền phân thân mờ chỉ là thêu chỉ nhạt (texture), không dựng thành hình thứ hai. Mở thân dưới để lớp dưới thấy bên trong.',
       },
       lop_duoi: {
         name: 'Lớp dưới',
@@ -52,7 +53,8 @@ export const SETS = {
         tris: '1500',
         bones: 'clavicle/shoulder L và R (cứng, không co giãn); một mảnh có hai nửa đối xứng',
         spring: 'Không. Mảnh cứng',
-        notes: 'Hai nửa đối xứng gửi cùng một ảnh (dựng cặp là đúng). Sừng trăng cao hơn vai không quá 14 cm. Ngọc tím sao là vật liệu phát sáng riêng.',
+        notes:
+          'Hai nửa đối xứng gửi cùng một ảnh (dựng cặp là đúng). Sừng trăng cao hơn vai không quá 14 cm. Ngọc tím sao là vật liệu phát sáng riêng.',
       },
       dai_tua: {
         name: 'Đai và tua',
@@ -97,15 +99,18 @@ export const SETS = {
       'Thép đen rèn thủ công, bề mặt nhám (giáp thân, vai) · đá thành cổ xám sần (mảng ốp và váy giáp) · vàng cổ xỉn chạm khắc (viền, khóa cổng, quan) · vải len mực đá dày (lớp trong, choàng) · da thuộc tối (đai, ủng) · tinh thạch tím sao nhỏ (nhãn mắt khóa cổng)',
     silhouette:
       'a heavy royal guardian of an ancient fortress city: huge pauldrons shaped like crenellated city wall battlements with an arched gate niche carved on the front of each, a dark-steel breastplate with an old-gold gate-arch relief and a central portcullis grid pattern, a long heavy ink-stone cape from the shoulders to the ground with an old-gold border and a faint ghost-double outline stitched outside its edge, a tiered armored skirt of overlapping stone-wall segments like tower tiers to the knees, thick bracers, a broad belt with a gate-lock clasp in old gold, heavy grey greaves-boots, and a battlement crown-helm with two small hanging lantern drops',
-    motif: 'crenellated battlements, arched city gates, portcullis grids and tiered tower roofs, engraved in old gold on dark steel and ancient grey stone, with a faint doubled (ghost twin) outline along the cape edge',
+    motif:
+      'crenellated battlements, arched city gates, portcullis grids and tiered tower roofs, engraved in old gold on dark steel and ancient grey stone, with a faint doubled (ghost twin) outline along the cape edge',
     pieces: {
       ao_ngoai: {
         name: 'Áo ngoài (giáp thân + choàng dài)',
         look: 'a heavy royal chest armor over a thick ink-stone wool tunic: a dark-steel breastplate with an old-gold gate-arch relief and a portcullis grid pattern at the center, old-gold edging, a high stone-grey collar, short wide sleeves, and a long heavy ink-stone cape reaching the ground from two gold clasp plates at the shoulders with an old-gold border and a faint ghost-double outline stitched outside its edge, no skirt included',
         tris: '5000',
-        bones: 'spine1/spine2 (giáp ngực cứng gắn spine2), upperarm L/R (tay áo ngắn), neck. Choàng gắn spine2/shoulder. Trọng số từ thân nền',
+        bones:
+          'spine1/spine2 (giáp ngực cứng gắn spine2), upperarm L/R (tay áo ngắn), neck. Choàng gắn spine2/shoulder. Trọng số từ thân nền',
         spring: 'Choàng dài: 3 chuỗi × 4 xương (nặng, biên độ nhỏ). Vạt vải dưới giáp ngực: 1 chuỗi × 2 xương',
-        notes: 'Giáp ngực là khối cứng, tunic dưới là phần mềm. Choàng là vải len dày riêng, không xuyên sáng. Hoa văn cổng thành phải nổi khối thật, không chỉ là họa tiết. Để nửa dưới thân hở cho lớp dưới.',
+        notes:
+          'Giáp ngực là khối cứng, tunic dưới là phần mềm. Choàng là vải len dày riêng, không xuyên sáng. Hoa văn cổng thành phải nổi khối thật, không chỉ là họa tiết. Để nửa dưới thân hở cho lớp dưới.',
       },
       lop_duoi: {
         name: 'Lớp dưới (váy giáp tầng tháp)',
@@ -166,7 +171,8 @@ export const SETS = {
       'Lụa mực đêm xanh bóng nhẹ (đạo bào) · voan mỏng xuyên sáng điểm sao vàng (choàng và dải lụa, tối đa 2 mảnh trong suốt cho cả bộ) · lụa ngà cổ thêu ấn kho (lớp lót) · vàng cổ chạm khắc (viền, khóa đai, trâm) · ngọc lục thần tàng (thẻ ngọc, hạt tua) · sơn mài đen viền vàng (hộp báu nhỏ) · tinh thạch tím sao nhỏ',
     silhouette:
       'a regal alchemist-sage look of a sealed treasury hall: a wide ink-night-blue robe with very wide sleeves and ivory-antique inner robe, a long translucent star-gauze mantle sprinkled with tiny old-gold stars falling from the shoulders to the ground with a faint ghost-double outline stitched outside its edge, old-gold treasure-seal embroidery (lock-and-key seal patterns and jade tablet motifs) on hem and cuffs, light old-gold shoulder pieces shaped like open scroll-lanterns with hanging jade strips, an ivory sash belt with a gold clasp and a hanging small black-lacquer sealed treasure casket, a jade tablet pendant and a small elixir gourd, soft ankle boots with gold trim, and a gold diadem with a front curtain of short hanging jade-bead strands',
-    motif: 'treasury seal patterns (lock-and-key seals, jade tablets, scroll frames) and tiny star dots, embroidered in old-gold and jade-green thread, with a faint doubled (ghost twin) outline along the mantle edge',
+    motif:
+      'treasury seal patterns (lock-and-key seals, jade tablets, scroll frames) and tiny star dots, embroidered in old-gold and jade-green thread, with a faint doubled (ghost twin) outline along the mantle edge',
     pieces: {
       ao_ngoai: {
         name: 'Áo ngoài (đạo bào + choàng sao)',
@@ -174,7 +180,8 @@ export const SETS = {
         tris: '5000',
         bones: 'spine1/spine2, upperarm L/R, forearm L/R, neck. Choàng sao gắn spine2 và shoulder',
         spring: 'Tay áo rộng: 3 chuỗi × 3 xương mỗi bên. Choàng sao: 2 đuôi × 5 xương. Vạt sau: 2 chuỗi × 3 xương',
-        notes: 'Mảnh XUYÊN SÁNG thứ nhất của bộ (choàng sao). Dựng choàng là lớp mỏng riêng; worker dùng alpha-test hoặc dither. Đạo bào lụa thì đặc.',
+        notes:
+          'Mảnh XUYÊN SÁNG thứ nhất của bộ (choàng sao). Dựng choàng là lớp mỏng riêng; worker dùng alpha-test hoặc dither. Đạo bào lụa thì đặc.',
       },
       lop_duoi: {
         name: 'Lớp dưới',
@@ -198,7 +205,8 @@ export const SETS = {
         tris: '1400',
         bones: 'hips/spine (đai cứng). Hộp báu, thẻ ngọc và hồ lô neo ở đai',
         spring: 'Dải lụa: 1 chuỗi × 5 xương. Hộp báu, thẻ ngọc và hồ lô: 2 chuỗi × 3 xương. Tua: 1 chuỗi × 3 xương',
-        notes: 'Mảnh XUYÊN SÁNG thứ hai (dải lụa) và là mảnh cuối được phép trong suốt cho cả bộ. Hộp báu dựng riêng một phần mesh để dễ gắn xương.',
+        notes:
+          'Mảnh XUYÊN SÁNG thứ hai (dải lụa) và là mảnh cuối được phép trong suốt cho cả bộ. Hộp báu dựng riêng một phần mesh để dễ gắn xương.',
       },
       ung: {
         name: 'Ủng (cặp)',
@@ -232,7 +240,8 @@ export const SWORD = {
       tris: '2500', // lớp ngân sách weapon: tối đa 3000 (assets/budgets.json); cùng mức faceLimit của Kiếm Liệt Mạch
       bones: 'prop gắn bone `dtl_sword` (xương cầm kiếm); điểm gốc tại giữa chuôi, trục dọc theo lưỡi. Phát sáng là vật liệu riêng',
       spring: 'Không',
-      notes: 'Tinh thể thể hiện bằng khối đặc tối màu có rãnh vân; KHÔNG dùng trong suốt thật. Chấm sao, nhãn cầu sao và tia linh khí tách thành mặt nạ phát sáng để worker điều khiển. Tia linh khí là các sợi kim loại cong dựng cứng quanh chắn (không phải hạt). Dạng gốc (#119) giữ cho +0…+9; dạng cuối thay lúc cường hóa +10. Dùng chung cho Kiếm tu, Hộ pháp, Đan sư.',
+      notes:
+        'Tinh thể thể hiện bằng khối đặc tối màu có rãnh vân; KHÔNG dùng trong suốt thật. Chấm sao, nhãn cầu sao và tia linh khí tách thành mặt nạ phát sáng để worker điều khiển. Tia linh khí là các sợi kim loại cong dựng cứng quanh chắn (không phải hạt). Dạng gốc (#119) giữ cho +0…+9; dạng cuối thay lúc cường hóa +10. Dùng chung cho Kiếm tu, Hộ pháp, Đan sư.',
     },
     vo: {
       name: 'Vỏ kiếm',

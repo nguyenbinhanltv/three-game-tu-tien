@@ -44,7 +44,15 @@ describe('bảng hit-stop (7.3)', () => {
     expect(hitStopOf(c({ victimIsMe: true, byMe: false })).target).toBe(0.04);
   });
   it('chỉ mức trên cùng được vượt 70 ms; không mức nào vượt trần 90 ms', () => {
-    const all: Partial<HitCtx>[] = [{}, { combo3: true }, { power: 3 }, { crit: true }, { crit: true, heavy: true }, { ult: true }, { heavy: true, victimIsMe: true }];
+    const all: Partial<HitCtx>[] = [
+      {},
+      { combo3: true },
+      { power: 3 },
+      { crit: true },
+      { crit: true, heavy: true },
+      { ult: true },
+      { heavy: true, victimIsMe: true },
+    ];
     for (const o of all) {
       const r = hitStopOf(c(o));
       expect(r.target).toBeLessThanOrEqual(HIT_STOP_CAP);
@@ -107,7 +115,10 @@ describe('rung camera theo mức (7.3)', () => {
 describe('CameraShake có hướng', async () => {
   const store = new Map<string, string>();
   beforeAll(() => {
-    (globalThis as { localStorage?: unknown }).localStorage = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) };
+    (globalThis as { localStorage?: unknown }).localStorage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+    };
   });
   const { CameraShake, SHAKE } = await import('../camera/shake');
   const p = new THREE.Vector3();

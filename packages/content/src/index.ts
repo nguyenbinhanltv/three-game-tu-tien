@@ -1,4 +1,14 @@
-import { clampTier, isEquipSlot, majorRealmOf, registerTerrain, resolveSkill, type CloneMethodDef, type FxTimeline, type ResolvedSkill, type TerrainDef } from '@dtl/shared';
+import {
+  clampTier,
+  isEquipSlot,
+  majorRealmOf,
+  registerTerrain,
+  resolveSkill,
+  type CloneMethodDef,
+  type FxTimeline,
+  type ResolvedSkill,
+  type TerrainDef,
+} from '@dtl/shared';
 import type {
   ArtifactDef,
   PillQualityCfg,
@@ -191,7 +201,14 @@ import equipSetItemsJson from '../data/equipment/setItems.json';
 import forgeJson from '../data/equipment/forge.json';
 
 /** Mẫu trang bị chỉ để rơi (chưa có icon trong atlas, dùng iconFallback) nằm ở data/equipment/templates.json. */
-export const ITEMS = [...(itemsJson as ItemDef[]), ...(equipTemplatesJson as ItemDef[]), ...(equipSetItemsJson as ItemDef[]), ...(methodsJson.items as ItemDef[]), ...(artifactsJson.items as ItemDef[]), ...(alchemyJson.items as ItemDef[])];
+export const ITEMS = [
+  ...(itemsJson as ItemDef[]),
+  ...(equipTemplatesJson as ItemDef[]),
+  ...(equipSetItemsJson as ItemDef[]),
+  ...(methodsJson.items as ItemDef[]),
+  ...(artifactsJson.items as ItemDef[]),
+  ...(alchemyJson.items as ItemDef[]),
+];
 export const MONSTERS = monstersJson as unknown as MonsterDef[];
 /** 6 chiêu chung (ô 1–6 trên thanh chiêu). Chiêu công pháp nằm riêng ở `METHOD_SKILLS`. */
 export const SKILLS = skillsJson as SkillDef[];
@@ -279,7 +296,57 @@ export const CREDIT_LICENSE_URL: Record<string, string> = {
   'GeneralUser-GS-2.0': 'https://github.com/mrbumpy409/GeneralUser-GS/blob/main/LICENSE.txt',
 };
 /** Key pose cho công cụ tư thế IK (client nướng thành AnimationClip). Thêm tệp mới trong data/poses thì khai báo ở đây. */
-export const POSES = [poseKiemThuJson, poseChemNgangJson, posePhiKiemJson, poseKiemKhiTramJson, poseHoTheJson, poseThienKiemVuJson, poseHoiNguyenJson, poseLoiDinhJson, poseNguKiemJson, poseNguKhongJson, poseNiemChuJson, poseTamThienJson, poseRutKiemJson, poseTraKiemJson, poseKiemAnhJson, poseVanKiemJson, poseTranSonJson, poseKimCuongJson, poseXuanPhongJson, poseHoiThienJson, posePhiKiem2Json, posePhiKiem3Json, posePhiKiemHpJson, posePhiKiem2HpJson, posePhiKiem3HpJson, posePhiKiemDsJson, posePhiKiem2DsJson, posePhiKiem3DsJson, poseKiemKhiTramHpJson, poseKiemKhiTramDsJson, poseHoanhKiemJson, poseThuanDiTramJson, poseThienKiemHoaHinhJson, poseThietQuyenJson, poseDanHoaJson, poseKiemVuJson, poseKiemDanJson, posePhanAnhKiemAnhJson, poseKimChungJson, poseSonNhacJson, poseAnhThietThanJson, poseThuanDiHoTheJson, poseThienKimPhapTuongJson, poseMocLinhJson, poseDuocVuJson, poseNgungDanJson, poseAnhDuocHoaThanJson, poseThuanDiCuuVienJson, poseThienDanPhapGioiJson] as unknown as PoseDef[];
+export const POSES = [
+  poseKiemThuJson,
+  poseChemNgangJson,
+  posePhiKiemJson,
+  poseKiemKhiTramJson,
+  poseHoTheJson,
+  poseThienKiemVuJson,
+  poseHoiNguyenJson,
+  poseLoiDinhJson,
+  poseNguKiemJson,
+  poseNguKhongJson,
+  poseNiemChuJson,
+  poseTamThienJson,
+  poseRutKiemJson,
+  poseTraKiemJson,
+  poseKiemAnhJson,
+  poseVanKiemJson,
+  poseTranSonJson,
+  poseKimCuongJson,
+  poseXuanPhongJson,
+  poseHoiThienJson,
+  posePhiKiem2Json,
+  posePhiKiem3Json,
+  posePhiKiemHpJson,
+  posePhiKiem2HpJson,
+  posePhiKiem3HpJson,
+  posePhiKiemDsJson,
+  posePhiKiem2DsJson,
+  posePhiKiem3DsJson,
+  poseKiemKhiTramHpJson,
+  poseKiemKhiTramDsJson,
+  poseHoanhKiemJson,
+  poseThuanDiTramJson,
+  poseThienKiemHoaHinhJson,
+  poseThietQuyenJson,
+  poseDanHoaJson,
+  poseKiemVuJson,
+  poseKiemDanJson,
+  posePhanAnhKiemAnhJson,
+  poseKimChungJson,
+  poseSonNhacJson,
+  poseAnhThietThanJson,
+  poseThuanDiHoTheJson,
+  poseThienKimPhapTuongJson,
+  poseMocLinhJson,
+  poseDuocVuJson,
+  poseNgungDanJson,
+  poseAnhDuocHoaThanJson,
+  poseThuanDiCuuVienJson,
+  poseThienDanPhapGioiJson,
+] as unknown as PoseDef[];
 
 function index<T extends { id: string }>(list: T[]): Map<string, T> {
   const m = new Map<string, T>();
@@ -314,10 +381,72 @@ export const NPC = index(NPCS);
 export const QUEST = index(QUESTS);
 export const POSE = index(POSES);
 /** Dòng thời gian hiệu ứng theo chiêu (VFX-V0): `data/fx/<id chiêu>.json`. Chiêu không có thì dùng đường hiệu ứng cũ. */
-export const FX_TIMELINES = [fxKiemKhiTramJson, fxPhiKiemJson, fx_fx_blink, fx_fx_dotpha_hn, fx_fx_dotpha_kd, fx_fx_dotpha_na, fx_fx_dotpha_tc, fx_fx_fly_on, fx_fx_kiep_hn, fx_fx_kiep_kd, fx_fx_kiep_na, fx_fx_kiep_tc, fx_fx_soul_in, fx_fx_soul_out, fx_skl_anh_duoc_hoa_than, fx_skl_anh_thiet_than, fx_skl_dan_hoa_phong_tran, fx_skl_dich_son_xung, fx_skl_duoc_vu, fx_skl_hoanh_kiem_pha_mach, fx_skl_hoi_nguyen_thuat, fx_skl_hoi_thien_dan_lo, fx_skl_hoi_xuan_quyet, fx_skl_kiem_anh_bo, fx_skl_kiem_dan_ban_menh, fx_skl_kiem_vu_tam_diep, fx_skl_kim_chung_tran, fx_skl_kim_cuong_bat_hoai, fx_skl_linh_khi_ho_the, fx_skl_loi_dinh_nhat_kiem, fx_skl_luu_huong_bo, fx_skl_moc_linh_tran, fx_skl_nghich_kiem_chuyen_phong, fx_skl_ngung_dan_ho_the, fx_skl_phan_anh_kiem_anh, fx_skl_phi_kiem_truy_hon, fx_skl_son_nhac_hoa_than, fx_skl_thien_dan_phap_gioi, fx_skl_thien_kiem_hoa_hinh, fx_skl_thien_kiem_vu, fx_skl_thien_kim_phap_tuong, fx_skl_thiet_bich_xung, fx_skl_thiet_quyen_chan_dia, fx_skl_thuan_di_cuu_vien, fx_skl_thuan_di_ho_the, fx_skl_thuan_di_tram, fx_skl_tran_son_an, fx_skl_van_kiem_quy_tong] as unknown as FxTimeline[];
+export const FX_TIMELINES = [
+  fxKiemKhiTramJson,
+  fxPhiKiemJson,
+  fx_fx_blink,
+  fx_fx_dotpha_hn,
+  fx_fx_dotpha_kd,
+  fx_fx_dotpha_na,
+  fx_fx_dotpha_tc,
+  fx_fx_fly_on,
+  fx_fx_kiep_hn,
+  fx_fx_kiep_kd,
+  fx_fx_kiep_na,
+  fx_fx_kiep_tc,
+  fx_fx_soul_in,
+  fx_fx_soul_out,
+  fx_skl_anh_duoc_hoa_than,
+  fx_skl_anh_thiet_than,
+  fx_skl_dan_hoa_phong_tran,
+  fx_skl_dich_son_xung,
+  fx_skl_duoc_vu,
+  fx_skl_hoanh_kiem_pha_mach,
+  fx_skl_hoi_nguyen_thuat,
+  fx_skl_hoi_thien_dan_lo,
+  fx_skl_hoi_xuan_quyet,
+  fx_skl_kiem_anh_bo,
+  fx_skl_kiem_dan_ban_menh,
+  fx_skl_kiem_vu_tam_diep,
+  fx_skl_kim_chung_tran,
+  fx_skl_kim_cuong_bat_hoai,
+  fx_skl_linh_khi_ho_the,
+  fx_skl_loi_dinh_nhat_kiem,
+  fx_skl_luu_huong_bo,
+  fx_skl_moc_linh_tran,
+  fx_skl_nghich_kiem_chuyen_phong,
+  fx_skl_ngung_dan_ho_the,
+  fx_skl_phan_anh_kiem_anh,
+  fx_skl_phi_kiem_truy_hon,
+  fx_skl_son_nhac_hoa_than,
+  fx_skl_thien_dan_phap_gioi,
+  fx_skl_thien_kiem_hoa_hinh,
+  fx_skl_thien_kiem_vu,
+  fx_skl_thien_kim_phap_tuong,
+  fx_skl_thiet_bich_xung,
+  fx_skl_thiet_quyen_chan_dia,
+  fx_skl_thuan_di_cuu_vien,
+  fx_skl_thuan_di_ho_the,
+  fx_skl_thuan_di_tram,
+  fx_skl_tran_son_an,
+  fx_skl_van_kiem_quy_tong,
+] as unknown as FxTimeline[];
 export const FX_TIMELINE = new Map(FX_TIMELINES.map((f) => [f.skill, f]));
 /** Dòng thời gian hiệu ứng của quái/tinh anh/boss (VFX-V5): `data/fx/mon_*.json`, khóa theo loại sự kiện (mon_hit, mon_strike, mon_boom_circle...). Màu theo ngũ hành lúc chạy. */
-export const MON_FX_TIMELINES = [fx_mon_bolt_impact, fx_mon_bolt_muzzle, fx_mon_boom_circle, fx_mon_boom_cone, fx_mon_boom_line, fx_mon_cast, fx_mon_death, fx_mon_hit, fx_mon_strike, fx_mon_warn_cone, fx_mon_warn_line, fx_mon_warn] as unknown as FxTimeline[];
+export const MON_FX_TIMELINES = [
+  fx_mon_bolt_impact,
+  fx_mon_bolt_muzzle,
+  fx_mon_boom_circle,
+  fx_mon_boom_cone,
+  fx_mon_boom_line,
+  fx_mon_cast,
+  fx_mon_death,
+  fx_mon_hit,
+  fx_mon_strike,
+  fx_mon_warn_cone,
+  fx_mon_warn_line,
+  fx_mon_warn,
+] as unknown as FxTimeline[];
 export const MON_FX = new Map(MON_FX_TIMELINES.map((f) => [f.skill, f]));
 export const ROOT = index(ROOTS);
 export const ARTIFACT = index(ARTIFACTS);
@@ -342,7 +471,10 @@ export const SET = index(SETS);
 /** Áo mặc thật theo bộ trang bị: id bộ → mảnh asset (`<mảnh>_nam|nu`), xem docs/sets-retarget. */
 export const OUTFITS = Object.fromEntries(Object.entries(outfitsJson).filter(([k]) => k !== '$comment')) as Record<string, string[]>;
 /** CHR-PROTO (`?chr=v2`): vùng thân nền bị che theo mảnh áo (docs/chr-v2). */
-export const OUTFIT_COVERS = Object.fromEntries(Object.entries(outfitCoversJson).filter(([k]) => k !== '$comment')) as Record<string, string[]>;
+export const OUTFIT_COVERS = Object.fromEntries(Object.entries(outfitCoversJson).filter(([k]) => k !== '$comment')) as Record<
+  string,
+  string[]
+>;
 export const FORGE = forgeJson as ForgeRecipe[];
 export const FORGE_BY_ID = index(FORGE);
 
@@ -388,17 +520,44 @@ export function itemName(id: string, plus?: number): string {
 /** Model kiếm mặc định (không đeo vũ khí, vũ khí lạ): kiếm Thanh Phong. */
 export const SWORD_MODEL_DEFAULT = 'prop_kiem_thanh_phong';
 /** Model theo phẩm (`rarity` 0..4) cho vũ khí chưa khai báo `model`: gần nhất theo phẩm. */
-const SWORD_MODEL_BY_RARITY = ['prop_kiem_thiet', 'prop_kiem_thanh_phong', 'prop_kiem_han_quang', 'prop_kiem_han_giao', 'prop_kiem_tram_ta'];
+const SWORD_MODEL_BY_RARITY = [
+  'prop_kiem_thiet',
+  'prop_kiem_thanh_phong',
+  'prop_kiem_han_quang',
+  'prop_kiem_han_giao',
+  'prop_kiem_tram_ta',
+];
 /** Kiếm bậc mới (E2): Liệt Mạch (bậc 2) đã gắn vật phẩm `itm_liet_mach_kiem`; Kính Quang (bậc 3) và Tinh Khuyết (bậc 4) đã nhập model, chờ E3/E4 thêm vật phẩm. */
-export const SWORD_MODELS_TIER = ['prop_kiem_liet_mach', 'prop_kiem_kinh_quang', 'prop_kiem_tinh_khuyet', 'prop_kiem_liet_mach_cuoi', 'prop_kiem_tinh_khuyet_cuoi', 'prop_kiem_kinh_quang_cuoi'];
+export const SWORD_MODELS_TIER = [
+  'prop_kiem_liet_mach',
+  'prop_kiem_kinh_quang',
+  'prop_kiem_tinh_khuyet',
+  'prop_kiem_liet_mach_cuoi',
+  'prop_kiem_tinh_khuyet_cuoi',
+  'prop_kiem_kinh_quang_cuoi',
+];
 /** Dạng cuối khi cường hóa +10 (`glowStage` = 2): model kiếm → model dạng cuối (T-5). Kiếm chưa có dạng cuối giữ model cũ. */
-export const SWORD_FINAL: Record<string, string> = { prop_kiem_liet_mach: 'prop_kiem_liet_mach_cuoi', prop_kiem_tinh_khuyet: 'prop_kiem_tinh_khuyet_cuoi', prop_kiem_kinh_quang: 'prop_kiem_kinh_quang_cuoi' };
+export const SWORD_FINAL: Record<string, string> = {
+  prop_kiem_liet_mach: 'prop_kiem_liet_mach_cuoi',
+  prop_kiem_tinh_khuyet: 'prop_kiem_tinh_khuyet_cuoi',
+  prop_kiem_kinh_quang: 'prop_kiem_kinh_quang_cuoi',
+};
 /** Vỏ kiếm đeo lưng khi mặc áo bộ mô-đun: dùng chung tạm cho mọi kiếm chưa có vỏ riêng. */
 export const SCABBARD_DEFAULT = 'prop_vo_kiem_liet_mach';
 /** Vỏ riêng theo model kiếm (cả dạng gốc và dạng cuối dùng chung một vỏ); kiếm không có tên ở đây dùng `SCABBARD_DEFAULT`. */
-export const SCABBARD_OF: Record<string, string> = { prop_kiem_tinh_khuyet: 'prop_vo_kiem_tinh_khuyet', prop_kiem_tinh_khuyet_cuoi: 'prop_vo_kiem_tinh_khuyet', prop_kiem_kinh_quang: 'prop_vo_kiem_kinh_quang', prop_kiem_kinh_quang_cuoi: 'prop_vo_kiem_kinh_quang' };
+export const SCABBARD_OF: Record<string, string> = {
+  prop_kiem_tinh_khuyet: 'prop_vo_kiem_tinh_khuyet',
+  prop_kiem_tinh_khuyet_cuoi: 'prop_vo_kiem_tinh_khuyet',
+  prop_kiem_kinh_quang: 'prop_vo_kiem_kinh_quang',
+  prop_kiem_kinh_quang_cuoi: 'prop_vo_kiem_kinh_quang',
+};
 /** Màu hào quang cường hóa theo model kiếm (ưu tiên hơn màu của bộ): Tinh Khuyết là tím sao, Kính Quang là lam băng, không phải xanh ngọc của kiếm thấp. */
-export const SWORD_GLOW_TINT: Record<string, string> = { prop_kiem_tinh_khuyet: '#9B84F2', prop_kiem_tinh_khuyet_cuoi: '#9B84F2', prop_kiem_kinh_quang: '#8FD8F0', prop_kiem_kinh_quang_cuoi: '#8FD8F0' };
+export const SWORD_GLOW_TINT: Record<string, string> = {
+  prop_kiem_tinh_khuyet: '#9B84F2',
+  prop_kiem_tinh_khuyet_cuoi: '#9B84F2',
+  prop_kiem_kinh_quang: '#8FD8F0',
+  prop_kiem_kinh_quang_cuoi: '#8FD8F0',
+};
 export function scabbardOf(swordModel?: string): string {
   return (swordModel && SCABBARD_OF[swordModel]) || SCABBARD_DEFAULT;
 }
@@ -473,10 +632,15 @@ export function tierBar(methodId: string | undefined): SkillDef[] {
   if (!methodId) return [];
   const tt = thanThongSkill(methodId);
   const tt10 = thanThong10Skill(methodId);
-  return METHOD_SKILLS.filter((s) => s.method === methodId && s.unlock >= TIER_MIN_UNLOCK && !s.locked && s !== tt && s !== tt10).sort((a, b) => a.unlock - b.unlock);
+  return METHOD_SKILLS.filter((s) => s.method === methodId && s.unlock >= TIER_MIN_UNLOCK && !s.locked && s !== tt && s !== tt10).sort(
+    (a, b) => a.unlock - b.unlock,
+  );
 }
 
 /** Chiêu `skill` đã gộp cấp chiêu và biến thức theo trạng thái công pháp server gửi (null = chưa có: cấp 1, không biến thức). */
-export function resolveBarSkill(m: { lv: Record<string, number>; vr: Record<string, 'a' | 'b'> } | null | undefined, skill: SkillDef): ResolvedSkill {
+export function resolveBarSkill(
+  m: { lv: Record<string, number>; vr: Record<string, 'a' | 'b'> } | null | undefined,
+  skill: SkillDef,
+): ResolvedSkill {
   return resolveSkill(skill, m?.lv[skill.id] ?? 1, VARIANTS[skill.id], m?.vr[skill.id]);
 }

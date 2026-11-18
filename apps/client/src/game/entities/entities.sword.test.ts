@@ -34,7 +34,23 @@ const testCache = () =>
   });
 
 const player = (wp: string): PState => ({
-  name: 'Kiem', x: 0, y: 0, z: 0, yaw: 0, vy: 0, gr: true, fl: 0, lv: 15, hp: 100, mhp: 100, mp: 10, mmp: 10, seq: 0, wp, g: 'm', dye: APPEARANCE.defaultDye,
+  name: 'Kiem',
+  x: 0,
+  y: 0,
+  z: 0,
+  yaw: 0,
+  vy: 0,
+  gr: true,
+  fl: 0,
+  lv: 15,
+  hp: 100,
+  mhp: 100,
+  mp: 10,
+  mmp: 10,
+  seq: 0,
+  wp,
+  g: 'm',
+  dye: APPEARANCE.defaultDye,
 });
 
 let EntityManager: typeof EM;

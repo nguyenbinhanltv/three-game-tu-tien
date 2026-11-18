@@ -74,7 +74,9 @@ export function AssetViewer() {
             const res = await fetch(`${assetBaseUrl()}manifest.json`, { cache: 'no-cache' });
             if (!res.ok) throw new Error(`HTTP ${res.status} manifest.json`);
             const man = (await res.json()) as Manifest;
-            const ids = Object.keys(man.assets).filter((k) => k.startsWith('boss_')).sort();
+            const ids = Object.keys(man.assets)
+              .filter((k) => k.startsWith('boss_'))
+              .sort();
             if (!alive) return;
             setBossIds(ids);
             const want = params.get('id');
@@ -112,7 +114,10 @@ export function AssetViewer() {
           const seek = params.has('t') && Number.isFinite(t);
           void load(async () => {
             const res = v.loadPoseFixture();
-            i = Math.max(0, res.clips.findIndex((c) => c.name === poseClipName(params.get('pose') ?? '')));
+            i = Math.max(
+              0,
+              res.clips.findIndex((c) => c.name === poseClipName(params.get('pose') ?? '')),
+            );
             v.playClip(i);
             if (seek) v.seek(t);
             return res;

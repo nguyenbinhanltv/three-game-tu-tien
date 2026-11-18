@@ -199,7 +199,11 @@ export class NpcSkins {
       (lib) => {
         try {
           if (this.disposed) return;
-          const clips = retargetClips(lib.scene, lib.animations.filter((c) => c.name === 'walk'), t.handle.scene);
+          const clips = retargetClips(
+            lib.scene,
+            lib.animations.filter((c) => c.name === 'walk'),
+            t.handle.scene,
+          );
           const ref = (HUMAN_CLIPS.walk.refSpeed ?? 0.978) * (3 / (HUMAN_CLIPS.run.refSpeed ?? 3.09));
           m.addClips(clips, { walk: 'walk' }, { walk: ref });
         } finally {

@@ -78,7 +78,8 @@ const REACH_SLACK = 1.03;
 /** Bả vai nhấc thêm khi tay giơ cao hơn vai (m). */
 const SHOULDER_LIFT = 0.06;
 
-const isVec = (v: unknown): v is PoseVec => Array.isArray(v) && v.length === 3 && v.every((x) => typeof x === 'number' && Number.isFinite(x));
+const isVec = (v: unknown): v is PoseVec =>
+  Array.isArray(v) && v.length === 3 && v.every((x) => typeof x === 'number' && Number.isFinite(x));
 const len = (v: PoseVec) => Math.hypot(v[0], v[1], v[2]);
 const sub = (a: PoseVec, b: PoseVec): PoseVec => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 
@@ -90,7 +91,11 @@ export function validatePose(p: PoseDef): string[] {
   if (typeof p.id !== 'string' || !/^[a-z0-9_]+$/.test(p.id)) e('id không hợp lệ');
   if (!(p.duration > 0 && p.duration <= 10)) e('duration phải trong (0, 10] giây');
   if (typeof p.loop !== 'boolean') e('loop phải là true/false');
-  if (p.hit !== undefined && !(Array.isArray(p.hit) && p.hit.length === 2 && p.hit[0] >= 0 && p.hit[0] < p.hit[1] && p.hit[1] <= p.duration)) e('hit phải là [từ, tới] trong clip');
+  if (
+    p.hit !== undefined &&
+    !(Array.isArray(p.hit) && p.hit.length === 2 && p.hit[0] >= 0 && p.hit[0] < p.hit[1] && p.hit[1] <= p.duration)
+  )
+    e('hit phải là [từ, tới] trong clip');
   if (!Array.isArray(p.keys) || p.keys.length === 0) {
     e('cần ít nhất một key');
     return errs;
@@ -121,7 +126,8 @@ export function validatePose(p: PoseDef): string[] {
     }
     if (k.hips) {
       if (k.hips.pos !== undefined && !isVec(k.hips.pos)) e(`${kAt}: hips.pos phải là [x, y, z]`);
-      if (k.hips.rot !== undefined && (!isVec(k.hips.rot) || k.hips.rot.some((a) => Math.abs(a) > MAX_DEG))) e(`${kAt}: hips.rot không hợp lệ`);
+      if (k.hips.rot !== undefined && (!isVec(k.hips.rot) || k.hips.rot.some((a) => Math.abs(a) > MAX_DEG)))
+        e(`${kAt}: hips.rot không hợp lệ`);
       if (isVec(k.hips.pos)) hipsPos = k.hips.pos;
     }
     if (isVec(k.sword) && isVec(k.edge)) {
@@ -130,7 +136,10 @@ export function validatePose(p: PoseDef): string[] {
     }
     // Tầm với theo người tham chiếu: vai và khớp háng đi theo hông đã dời (bỏ qua xoay thân; ngồi thiền hạ hông ~0,7m).
     const arm = (POSE_REF.upperArm + POSE_REF.foreArm) * REACH_SLACK;
-    for (const [f, side] of [['handR', -1], ['handL', 1]] as const) {
+    for (const [f, side] of [
+      ['handR', -1],
+      ['handL', 1],
+    ] as const) {
       const v = k[f];
       if (!isVec(v)) continue;
       const s: PoseVec = [POSE_REF.shoulder[0] * side + hipsPos[0], POSE_REF.shoulder[1] + hipsPos[1], POSE_REF.shoulder[2] + hipsPos[2]];
@@ -139,7 +148,10 @@ export function validatePose(p: PoseDef): string[] {
       if (len(sub(v, s)) > reach) e(`${kAt}: ${f} ngoài tầm với (${len(sub(v, s)).toFixed(2)}m > ${reach.toFixed(2)}m)`);
     }
     const leg = (POSE_REF.thigh + POSE_REF.shin) * REACH_SLACK;
-    for (const [f, side] of [['footR', -1], ['footL', 1]] as const) {
+    for (const [f, side] of [
+      ['footR', -1],
+      ['footL', 1],
+    ] as const) {
       const v = k[f];
       if (!isVec(v)) continue;
       if (v[1] < 0) e(`${kAt}: ${f} nhấc âm (chân xuyên đất)`);
@@ -171,7 +183,12 @@ export const POSE_MIN_WINDUP = 0.15;
  * Kiểm pose gắn với một skill: có, một lần, dài không quá `maxDuration` (GCD), có `hit` và nhịp chuẩn bị đủ dài,
  * ít nhất 5 key (chuẩn bị, dồn lực, ra đòn, dư âm, về thế).
  */
-export function validateSkillPose(skillId: string, poseId: string | undefined, poses: ReadonlyMap<string, PoseDef>, maxDuration: number): string[] {
+export function validateSkillPose(
+  skillId: string,
+  poseId: string | undefined,
+  poses: ReadonlyMap<string, PoseDef>,
+  maxDuration: number,
+): string[] {
   const at = `skill ${skillId}`;
   if (!poseId) return [`${at}: thiếu pose`];
   const p = poses.get(poseId);
@@ -180,7 +197,8 @@ export function validateSkillPose(skillId: string, poseId: string | undefined, p
   if (p.loop) errs.push(`${at}: pose ${poseId} phải là một lần (loop: false)`);
   if (p.duration > maxDuration + 1e-6) errs.push(`${at}: pose ${poseId} dài ${p.duration}s, quá GCD ${maxDuration}s`);
   if (!p.hit) errs.push(`${at}: pose ${poseId} cần hit [ra đòn, hết đòn]`);
-  else if (p.hit[0] < POSE_MIN_WINDUP) errs.push(`${at}: pose ${poseId} ra đòn ở ${p.hit[0]}s, cần ≥ ${POSE_MIN_WINDUP}s để có nhịp chuẩn bị`);
+  else if (p.hit[0] < POSE_MIN_WINDUP)
+    errs.push(`${at}: pose ${poseId} ra đòn ở ${p.hit[0]}s, cần ≥ ${POSE_MIN_WINDUP}s để có nhịp chuẩn bị`);
   if (p.keys.length < 5) errs.push(`${at}: pose ${poseId} cần ít nhất 5 key (chuẩn bị, dồn lực, ra đòn, dư âm, về thế)`);
   return errs;
 }

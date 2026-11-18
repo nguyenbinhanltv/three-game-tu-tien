@@ -1,6 +1,17 @@
 import { groundAt } from '@dtl/shared';
 import { describe, expect, it } from 'vitest';
-import { bossIntroPath, minBossDist, sightBlocked, Cutscene, pathParam, phaseShiftPath, SECT_CUTSCENE, SECT_PATH, samplePath, type Vec3 } from './cutscene';
+import {
+  bossIntroPath,
+  minBossDist,
+  sightBlocked,
+  Cutscene,
+  pathParam,
+  phaseShiftPath,
+  SECT_CUTSCENE,
+  SECT_PATH,
+  samplePath,
+  type Vec3,
+} from './cutscene';
 
 const END_P: Vec3 = { x: 2048, y: 156.4, z: 2100 };
 const END_L: Vec3 = { x: 2048, y: 151.6, z: 2088 };

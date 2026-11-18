@@ -75,7 +75,16 @@ export default function boss() {
   }
 
   // ----- nhị: chủ đề -----
-  const THEME = ['0~:1 1:1/2 2:1/2 3:1 2:1', '1:2 0:1 -1:1', '0:1/2 1:1/2 2:1 3:1 4:1', '3~:4', '5:1 4:1 3:1 2:1', '3:2 2:1 1:1', '2:1 1:1/2 0:1/2 -1:1 0:1', '0~:4'].join(' | ');
+  const THEME = [
+    '0~:1 1:1/2 2:1/2 3:1 2:1',
+    '1:2 0:1 -1:1',
+    '0:1/2 1:1/2 2:1 3:1 4:1',
+    '3~:4',
+    '5:1 4:1 3:1 2:1',
+    '3:2 2:1 1:1',
+    '2:1 1:1/2 0:1/2 -1:1 0:1',
+    '0~:4',
+  ].join(' | ');
   erhu.phrase(s.bar(8), G, THEME, { vel: 100, vib: 1, legato: 0.95 });
   erhu.phrase(s.bar(24), G, THEME, { oct: 1, vel: 96, vib: 1, legato: 0.95 });
   // E: nhị đối đáp với sáo, mỗi bên 2 ô
@@ -84,14 +93,19 @@ export default function boss() {
     dizi.phrase(s.bar(34 + i * 4), G, '7:1/2 6:1/2 5:1/2 6:1/2 7:2 | 8:1 7:1 5:2', { vel: 88 });
   });
   // F: nhị giữ dài dồn
-  erhu.phrase(s.bar(40), G, ['3~:4', '4:4', '5~:4', '4:2 3:2', '2~:4', '3:4', '4:2 5:2', '6>:4'].join(' | '), { vel: 96, vib: 1, legato: 1 });
+  erhu.phrase(s.bar(40), G, ['3~:4', '4:4', '5~:4', '4:2 3:2', '2~:4', '3:4', '4:2 5:2', '6>:4'].join(' | '), {
+    vel: 96,
+    vib: 1,
+    legato: 1,
+  });
 
   // ----- C: dây vê cao, đàn gảy vê ở D -----
   for (let b = 16; b < 24; b += 2) {
     const r = ROOT[chordAt(b)] + 36;
     trem.chord(s.bar(b), [r, r + 7, r + 12], 8, 74 + (b - 16) * 3);
   }
-  for (let b = 24; b < 32; b++) pipa.phrase(s.bar(b), G, b % 2 ? '2*:2 1*:2' : '0*:2 2*:2', { vel: 74, trem: 8, transpose: ROOT[chordAt(b)] - n('G2') });
+  for (let b = 24; b < 32; b++)
+    pipa.phrase(s.bar(b), G, b % 2 ? '2*:2 1*:2' : '0*:2 2*:2', { vel: 74, trem: 8, transpose: ROOT[chordAt(b)] - n('G2') });
 
   return s;
 }

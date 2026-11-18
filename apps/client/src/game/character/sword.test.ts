@@ -17,7 +17,15 @@ import { nodeGltfLoader } from '../core/gltfTestLoader';
 // M3-2 (rút/tra kiếm) và M3-10 (lò xo vạt áo) trên model thật Thanh Phong.
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
-const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
+const anim = (o: Partial<AnimState> = {}): AnimState => ({
+  speed: 0,
+  flying: false,
+  meditating: false,
+  dead: false,
+  casting: false,
+  airborne: false,
+  ...o,
+});
 const MALE = { g: 'm', dye: APPEARANCE.defaultDye };
 const DT = 1 / 60;
 
@@ -64,7 +72,11 @@ describe('rút / tra kiếm (M3-2)', () => {
     expect(sword).toBeTruthy();
     expect(sword.parent?.name).toMatch(/spine2$/i);
     expect(m.swordDrawn).toBe(false);
-    const names = m.actionOf('idle')?.getClip().tracks.map((t) => t.name) ?? [];
+    const names =
+      m
+        .actionOf('idle')
+        ?.getClip()
+        .tracks.map((t) => t.name) ?? [];
     expect(names.length).toBeGreaterThan(0);
     expect(names.some((n) => n.startsWith('dtl_'))).toBe(false);
     m.dispose();
@@ -94,7 +106,9 @@ describe('rút / tra kiếm (M3-2)', () => {
     // Đổi đúng lúc tay tới chuôi, không phải ngay khi bị đánh.
     expect(at).toBeGreaterThanOrEqual(POSE_SWORD_SWAP.rut_kiem - 2 * DT);
     // Lúc đổi, chuôi trong tay gần chỗ chuôi trên lưng (bàn tay đã tới chuôi): không nhảy xa.
-    console.info(`[M3-2] rút: chuôi nhảy ${(jump * 100).toFixed(1)} cm lúc đổi socket; chuôi trên lưng ${backGrip.toArray().map((x) => x.toFixed(2))}`);
+    console.info(
+      `[M3-2] rút: chuôi nhảy ${(jump * 100).toFixed(1)} cm lúc đổi socket; chuôi trên lưng ${backGrip.toArray().map((x) => x.toFixed(2))}`,
+    );
     expect(jump).toBeLessThan(0.15);
     run(m, anim(), 0.5);
     // Tâm chuôi cách cổ tay ~8 cm (lòng bàn tay).

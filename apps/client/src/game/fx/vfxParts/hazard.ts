@@ -62,7 +62,7 @@ export function trailPool(v: Vfx, x: number, z: number, r: number, delay: number
           m.fxA.z = 0;
           const flick = 0.7 + 0.3 * Math.sin(k * dur * 9 + ph) * Math.sin(k * dur * 5.3 + ph * 0.6);
           // Tắt dần ở 1,5 giây cuối để người chơi biết sắp hết.
-          m.fxOpacity = Math.min(1, k * 10) * Math.min(1, (1 - k) * dur / 1.5) * flick * 0.85;
+          m.fxOpacity = Math.min(1, k * 10) * Math.min(1, ((1 - k) * dur) / 1.5) * flick * 0.85;
         },
         () => v.drop(m),
       );
@@ -71,7 +71,19 @@ export function trailPool(v: Vfx, x: number, z: number, r: number, delay: number
 }
 
 /** Vùng nguy hiểm tròn báo trước trên mặt đất (pháp trận), rồi đánh xuống. */
-export function hazard(v: Vfx, x: number, z: number, r: number, delay: number, kind: string, seed?: number, flash = 0, boss = false, hot = false, quiet?: () => boolean): void {
+export function hazard(
+  v: Vfx,
+  x: number,
+  z: number,
+  r: number,
+  delay: number,
+  kind: string,
+  seed?: number,
+  flash = 0,
+  boss = false,
+  hot = false,
+  quiet?: () => boolean,
+): void {
   const y = groundAt(x, z);
   const style = hazardStyle(kind, boss);
   const color = kind === 'lightning' ? (hot ? HOT_BOLT : (HAZARD_COLORS[kind] ?? style.color)) : style.color;

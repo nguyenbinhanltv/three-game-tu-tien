@@ -59,7 +59,8 @@ export function pathPolylines(): P[][] {
     const pts: P[] = [];
     for (let i = 0; i <= STEPS; i++) {
       const t = i / STEPS;
-      const off = (Math.sin(t * Math.PI * 3 + r.seed * 1.7) * 0.6 + Math.sin(t * Math.PI * 7 + r.seed) * 0.25) * r.bend * Math.sin(t * Math.PI);
+      const off =
+        (Math.sin(t * Math.PI * 3 + r.seed * 1.7) * 0.6 + Math.sin(t * Math.PI * 7 + r.seed) * 0.25) * r.bend * Math.sin(t * Math.PI);
       pts.push({ x: r.from.x + dx * t + nx * off, z: r.from.z + dz * t + nz * off });
     }
     return pts;
@@ -80,7 +81,8 @@ export function distToPaths(x: number, z: number, lines: P[][], max = PATH_RANGE
     for (let i = 0; i < line.length - 1; i++) {
       const a = line[i];
       const b = line[i + 1];
-      if (x < Math.min(a.x, b.x) - max || x > Math.max(a.x, b.x) + max || z < Math.min(a.z, b.z) - max || z > Math.max(a.z, b.z) + max) continue;
+      if (x < Math.min(a.x, b.x) - max || x > Math.max(a.x, b.x) + max || z < Math.min(a.z, b.z) - max || z > Math.max(a.z, b.z) + max)
+        continue;
       const d = segDist(x, z, a, b);
       if (d < best) best = d;
     }

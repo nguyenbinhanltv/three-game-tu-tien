@@ -64,7 +64,10 @@ function setup(level = 8) {
     char.recalc();
     char.hp = char.mhp;
     char.mp = char.mmp;
-    const client = { sessionId: name + nextAcc, send: (type: string, msg: unknown) => sent.push({ type, msg: { to: name, ...(msg as object) } }) };
+    const client = {
+      sessionId: name + nextAcc,
+      send: (type: string, msg: unknown) => sent.push({ type, msg: { to: name, ...(msg as object) } }),
+    };
     const p = sim.addPlayer(client as never, char, true, 's' + nextAcc);
     p.move.x = X;
     p.move.z = Z;
@@ -90,7 +93,13 @@ function setup(level = 8) {
   return { sim, sent, p, join, mon, fresh };
 }
 
-const ledgerOf = (charId: number) => sqlite.prepare("SELECT kind, ref, delta, reason, idem FROM ledger WHERE char_id = ? AND reason LIKE 'skillup:%'").all(charId) as { kind: string; ref: string; delta: number; reason: string }[];
+const ledgerOf = (charId: number) =>
+  sqlite.prepare("SELECT kind, ref, delta, reason, idem FROM ledger WHERE char_id = ? AND reason LIKE 'skillup:%'").all(charId) as {
+    kind: string;
+    ref: string;
+    delta: number;
+    reason: string;
+  }[];
 
 describe('chọn và đổi công pháp', () => {
   it('chưa tới Ngưng Khí 5 thì không chọn được; tới rồi thì chọn ở đâu cũng được', () => {
@@ -126,7 +135,10 @@ describe('chọn và đổi công pháp', () => {
     sim.onMethod(p, { method: 'bat_dong_kim_than', r: 'sw-000001' });
     expect(p.char.meta.method).toBe('bat_dong_kim_than');
     expect(p.char.gold).toBeLessThan(gold);
-    const rows = sqlite.prepare("SELECT kind, delta FROM ledger WHERE char_id = ? AND reason = 'method:switch'").all(p.char.id) as { kind: string; delta: number }[];
+    const rows = sqlite.prepare("SELECT kind, delta FROM ledger WHERE char_id = ? AND reason = 'method:switch'").all(p.char.id) as {
+      kind: string;
+      delta: number;
+    }[];
     expect(rows).toEqual([{ kind: 'gold', delta: p.char.gold - gold }]);
   });
   it('không đổi khi đang giao chiến, thiếu tiền thì không đổi', () => {
@@ -373,7 +385,10 @@ describe('nâng cấp chiêu và biến thức', () => {
     fresh(p);
     sim.onSkill(p, { id: 'skl_phi_kiem', t: m.id });
     expect(hitsOn()).toBe(3);
-    const fx = sent.filter((x) => x.type === S.FX).map((x) => x.msg as { t: string; v?: string; lv?: number }).pop()!;
+    const fx = sent
+      .filter((x) => x.type === S.FX)
+      .map((x) => x.msg as { t: string; v?: string; lv?: number })
+      .pop()!;
     expect(fx).toMatchObject({ t: 'sword', v: 'twin', lv: 3 });
   });
   it('đổi biến thức không xóa hồi chiêu đang chạy', () => {
@@ -390,7 +405,11 @@ describe('nâng cấp chiêu và biến thức', () => {
   });
   it('meta hỏng hoặc có id lạ được làm sạch khi nạp', () => {
     const char = Character.create(nextAcc++, 'meta' + nextAcc);
-    char.meta = { method: 'xyz', skillLv: { skl_phi_kiem: 99, khong_co: 3, skl_hoi_nguyen_thuat: -2 }, skillVar: { skl_phi_kiem: 'z' as never, skl_thien_kiem_vu: 'b' } } as never;
+    char.meta = {
+      method: 'xyz',
+      skillLv: { skl_phi_kiem: 99, khong_co: 3, skl_hoi_nguyen_thuat: -2 },
+      skillVar: { skl_phi_kiem: 'z' as never, skl_thien_kiem_vu: 'b' },
+    } as never;
     // lưu rồi nạp lại đi qua sanitize
     char.save();
     const again = Character.load(char.id)!;
@@ -466,7 +485,9 @@ describe('soát netcode: lỗ hổng đã vá', () => {
 });
 
 describe('hỗ trợ đồng đội không can thiệp độ kiếp/tâm ma', () => {
-  const mark = (o: Ent, k: 'trib' | 'trial') => ((o as unknown as Record<string, unknown>)[k] = k === 'trib' ? { endAt: Date.now() + 1e6, nextAt: 0, n: 0 } : { until: Date.now() + 1e6 });
+  const mark = (o: Ent, k: 'trib' | 'trial') =>
+    ((o as unknown as Record<string, unknown>)[k] =
+      k === 'trib' ? { endAt: Date.now() + 1e6, nextAt: 0, n: 0 } : { until: Date.now() + 1e6 });
   for (const k of ['trib', 'trial'] as const) {
     it(`Xuân Phong Hóa Vũ và Hồi Thiên bỏ qua người đang ${k}`, () => {
       const { sim, p, join, fresh } = setup(10);
@@ -564,8 +585,12 @@ describe('bí tịch: nguồn và luật đổi biến thức (3-6)', () => {
         sim.onSkill(p, { id, t: m.id });
         // Lôi Đình A bỏ niệm chú; B niệm lâu hơn bản gốc.
         if (id === 'skl_loi_dinh_nhat_kiem') expect(p.casting === null, `${id}:${v}`).toBe(v === 'a');
-        if (p.casting) sim.now += 3000, (sim as unknown as { finishCast(p: Ent): void }).finishCast(p);
-        const fx = sent.filter((x) => x.type === S.FX).map((x) => x.msg as { v?: string }).filter((x) => x.v === vars[v].fx).pop();
+        if (p.casting) ((sim.now += 3000), (sim as unknown as { finishCast(p: Ent): void }).finishCast(p));
+        const fx = sent
+          .filter((x) => x.type === S.FX)
+          .map((x) => x.msg as { v?: string })
+          .filter((x) => x.v === vars[v].fx)
+          .pop();
         expect(fx, `${id}:${v}`).toBeDefined();
         tags.add(`${id}:${vars[v].fx}`);
         sent.length = 0;
@@ -593,7 +618,9 @@ describe('bí tịch: nguồn và luật đổi biến thức (3-6)', () => {
     // Thiếu nguyên liệu: không ra thêm.
     sim.onCraft(p, { id: 'rcp_bi_tich', n: 1, r: 'cr-000002' });
     expect(cnt(p, SCROLL)).toBe(1);
-    const rows = sqlite.prepare("SELECT kind, ref, delta FROM ledger WHERE char_id = ? AND reason = 'craft:rcp_bi_tich'").all(p.char.id) as { kind: string; ref: string; delta: number }[];
+    const rows = sqlite
+      .prepare("SELECT kind, ref, delta FROM ledger WHERE char_id = ? AND reason = 'craft:rcp_bi_tich'")
+      .all(p.char.id) as { kind: string; ref: string; delta: number }[];
     expect(rows.find((r) => r.ref === SCROLL)?.delta).toBe(1);
   });
 });

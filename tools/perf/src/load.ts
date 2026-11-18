@@ -93,7 +93,8 @@ function serveDist(): Promise<http.Server> {
       if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) file = path.join(DIST, 'index.html');
       const ext = path.extname(file);
       const headers: Record<string, string> = { 'content-type': MIME[ext] ?? 'application/octet-stream' };
-      headers['cache-control'] = url.pathname.startsWith('/assets/') && !url.pathname.endsWith('manifest.json') ? 'public, max-age=31536000, immutable' : 'no-cache';
+      headers['cache-control'] =
+        url.pathname.startsWith('/assets/') && !url.pathname.endsWith('manifest.json') ? 'public, max-age=31536000, immutable' : 'no-cache';
       let body: Buffer = fs.readFileSync(file);
       if (GZIP.has(ext) && /\bgzip\b/.test(String(req.headers['accept-encoding'] ?? ''))) {
         let z = gz.get(file);
@@ -298,7 +299,15 @@ async function runLogin(browser: Browser): Promise<LoginRun> {
     await page.waitForFunction(() => window.__load.marks.backdropLit !== undefined, undefined, { timeout: 60_000, polling: 100 });
     await sleep(500);
     const t = await readTiming(page);
-    return { fcp: t.fcp, html: t.html, js: t.js, jsRun: t.L.marks.jsRun, loginForm: t.L.marks.loginForm, backdropLit: t.L.marks.backdropLit, longFrames: t.L.long.length };
+    return {
+      fcp: t.fcp,
+      html: t.html,
+      js: t.js,
+      jsRun: t.L.marks.jsRun,
+      loginForm: t.L.marks.loginForm,
+      backdropLit: t.L.marks.backdropLit,
+      longFrames: t.L.long.length,
+    };
   } finally {
     await ctx.close().catch(() => undefined);
   }
@@ -309,14 +318,22 @@ async function runGame(browser: Browser, i: number): Promise<GameRun> {
   const name = `Load_${Date.now().toString(36).slice(-5)}${i}`;
   const gm = (cmd: string) => page.evaluate((m) => window.__game!.send('chat', { m }), '/gm ' + cmd);
   try {
-    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&cine=0&auto=${name}${rendererQ}${env('LOAD_QUERY')}`, { waitUntil: 'load', timeout: 120_000 });
+    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&cine=0&auto=${name}${rendererQ}${env('LOAD_QUERY')}`, {
+      waitUntil: 'load',
+      timeout: 120_000,
+    });
     await page.waitForFunction(() => window.__load.marks.titleGone !== undefined, undefined, { timeout: 120_000, polling: 100 });
     const backend = await page.evaluate(() => (window.__game!.renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL2'));
     // Chờ mọi GLB đang nạp xong (tối đa 30 s) để biết thời điểm và thứ tự về.
     const glbDeadline = Date.now() + 30_000;
     let last = -1;
     while (Date.now() < glbDeadline) {
-      const n = await page.evaluate(() => (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).filter((r) => r.name.endsWith('.glb') && r.responseEnd > 0).length);
+      const n = await page.evaluate(
+        () =>
+          (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).filter(
+            (r) => r.name.endsWith('.glb') && r.responseEnd > 0,
+          ).length,
+      );
       if (n === last && n > 0) break;
       last = n;
       await sleep(1500);
@@ -357,7 +374,12 @@ async function runGame(browser: Browser, i: number): Promise<GameRun> {
       glb,
       loadingStalls: { count: before.length, maxMs: Math.max(0, ...before.map((l) => l[1])), list: before },
       loadStats,
-      playStalls: { count: after.length, maxMs: Math.max(0, ...after.map((l) => l[1])), totalMs: after.reduce((a, l) => a + l[1], 0), list: after },
+      playStalls: {
+        count: after.length,
+        maxMs: Math.max(0, ...after.map((l) => l[1])),
+        totalMs: after.reduce((a, l) => a + l[1], 0),
+        list: after,
+      },
       stallFreeAt: lastLong ? lastLong[0] + lastLong[1] : 0,
       playFrameFn: t.L.longFrameFn.filter(([s]) => s >= m.titleGone),
       frameFn: t.L.longFrameFn,
@@ -379,7 +401,10 @@ const sec = (ms: number) => (Number.isFinite(ms) && ms >= 0 ? (ms / 1000).toFixe
 
 function previous(): { login?: LoginRun[]; game?: GameRun[]; file: string } | null {
   if (!fs.existsSync(OUT_DIR)) return null;
-  const files = fs.readdirSync(OUT_DIR).filter((f) => /^load-.*\.json$/.test(f)).sort();
+  const files = fs
+    .readdirSync(OUT_DIR)
+    .filter((f) => /^load-.*\.json$/.test(f))
+    .sort();
   for (let i = files.length - 1; i >= 0; i--) {
     try {
       const j = JSON.parse(fs.readFileSync(path.join(OUT_DIR, files[i]), 'utf8'));
@@ -407,7 +432,9 @@ async function main(): Promise<void> {
       if (SCENARIOS.includes('login')) {
         const r = await runLogin(browser);
         login.push(r);
-        console.log(`[load] login #${i + 1}: FCP ${sec(r.fcp)}, JS ${sec(r.js)}, form ${sec(r.loginForm)}, cảnh nền 3D ${sec(r.backdropLit)}`);
+        console.log(
+          `[load] login #${i + 1}: FCP ${sec(r.fcp)}, JS ${sec(r.js)}, form ${sec(r.loginForm)}, cảnh nền 3D ${sec(r.backdropLit)}`,
+        );
       }
       if (SCENARIOS.includes('game')) {
         const r = await runGame(browser, i);
@@ -459,15 +486,23 @@ async function main(): Promise<void> {
   }
   if (game.length) {
     console.log('  thứ tự GLB về (lượt cuối):');
-    for (const g of game[game.length - 1].glb) console.log(`    ${g.name.padEnd(44)} ${String(g.kb).padStart(6)} KB  ${sec(g.start)} → ${sec(g.end)}`);
+    for (const g of game[game.length - 1].glb)
+      console.log(`    ${g.name.padEnd(44)} ${String(g.kb).padStart(6)} KB  ${sec(g.start)} → ${sec(g.end)}`);
     const pf = game[game.length - 1].playFrameFn;
-    if (pf.length) console.log('  Game.frame() > 50 ms sau khi vào (lượt cuối):', pf.map(([s, d, p]) => `${sec(s)}:${d}ms ${JSON.stringify(p)}`).join(', '));
+    if (pf.length)
+      console.log(
+        '  Game.frame() > 50 ms sau khi vào (lượt cuối):',
+        pf.map(([s, d, p]) => `${sec(s)}:${d}ms ${JSON.stringify(p)}`).join(', '),
+      );
   }
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const day = new Date().toISOString().slice(0, 10);
   let file = path.join(OUT_DIR, `load-${day}.json`);
   if (fs.existsSync(file)) file = path.join(OUT_DIR, `load-${day}_${new Date().toTimeString().slice(0, 8).replace(/:/g, '')}.json`);
-  fs.writeFileSync(file, JSON.stringify({ date: new Date().toISOString(), mbps: MBPS, latency: LATENCY, renderer: RENDERER, runs: RUNS, login, game }, null, 2));
+  fs.writeFileSync(
+    file,
+    JSON.stringify({ date: new Date().toISOString(), mbps: MBPS, latency: LATENCY, renderer: RENDERER, runs: RUNS, login, game }, null, 2),
+  );
   console.log(`\n[load] lưu ${path.relative(ROOT, file)}`);
   const fail = game.some((r) => !(r.firstFrameAfterJs < TARGET_FIRST_FRAME_MS));
   process.exitCode = fail ? 1 : 0;

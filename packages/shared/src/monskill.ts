@@ -36,7 +36,13 @@ export function coneGeom(x: number, z: number, yaw: number, r: number, halfDeg: 
 }
 
 /** Đáp điểm của lao tới: đi từ (x, z) theo `yaw` tối đa `len`, `ok(x, z)` false thì dừng ở bước trước (bước 0,5 m). */
-export function chargeEnd(x: number, z: number, yaw: number, len: number, ok: (x: number, z: number) => boolean): { x: number; z: number; len: number } {
+export function chargeEnd(
+  x: number,
+  z: number,
+  yaw: number,
+  len: number,
+  ok: (x: number, z: number) => boolean,
+): { x: number; z: number; len: number } {
   const fx = Math.sin(yaw);
   const fz = Math.cos(yaw);
   let d = 0;
@@ -61,7 +67,14 @@ export function leapPos(fx: number, fz: number, tx: number, tz: number, at: numb
  * `n` điểm quanh (tx, tz), cách `spread` mét, đều góc, bắt đầu từ góc `a0`. Điểm đầu tiên là chỗ quái trồi lên.
  * `ok(x, z)` loại chỗ không đứng được (nước, vách): thử xoay thêm vài lần, hết cách thì dồn về chỗ mục tiêu.
  */
-export function burrowSpots(tx: number, tz: number, n: number, spread: number, a0: number, ok: (x: number, z: number) => boolean): { x: number; z: number }[] {
+export function burrowSpots(
+  tx: number,
+  tz: number,
+  n: number,
+  spread: number,
+  a0: number,
+  ok: (x: number, z: number) => boolean,
+): { x: number; z: number }[] {
   const out: { x: number; z: number }[] = [];
   for (let i = 0; i < n; i++) {
     let spot = { x: tx, z: tz };

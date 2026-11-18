@@ -32,7 +32,8 @@ export class MarkerSystem {
     if (now - (this.cmdAt.get(p.sid) ?? 0) < MARK_GAP_MS) return;
     this.cmdAt.set(p.sid, now);
     if (m.clear === true) this.marks.delete(p.sid);
-    else if (validMark(m.x, m.z, this.bounds)) this.marks.set(p.sid, { x: Math.round(m.x * 10) / 10, z: Math.round((m.z as number) * 10) / 10, at: now });
+    else if (validMark(m.x, m.z, this.bounds))
+      this.marks.set(p.sid, { x: Math.round(m.x * 10) / 10, z: Math.round((m.z as number) * 10) / 10, at: now });
     else return;
     this.sync();
   }

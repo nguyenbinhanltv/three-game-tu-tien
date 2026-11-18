@@ -65,7 +65,14 @@ export function breathOf(t: number, still: boolean): number {
 }
 
 /** Góc quay đầu/cúi đầu (rad) tới điểm nhìn, đã giới hạn: yaw ±`maxYaw` quanh hướng thân, pitch ±`maxPitch`. */
-export function lookAngles(dx: number, dy: number, dz: number, facing: number, maxYaw = 1.0, maxPitch = 0.4): { yaw: number; pitch: number } {
+export function lookAngles(
+  dx: number,
+  dy: number,
+  dz: number,
+  facing: number,
+  maxYaw = 1.0,
+  maxPitch = 0.4,
+): { yaw: number; pitch: number } {
   const d = Math.hypot(dx, dz);
   if (d < 0.5) return { yaw: 0, pitch: 0 };
   let yaw = Math.atan2(dx, dz) - facing;

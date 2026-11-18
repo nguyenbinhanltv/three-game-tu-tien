@@ -30,8 +30,32 @@ export const FIXTURE_LEVEL: LevelDef = {
   ],
   nodes: [],
   zones: [
-    { id: 'tn_a', lvMin: 16, lvMax: 20, color: '#6a8f4a', music: 'wild', poly: [[280, 300], [480, 300], [480, 700], [280, 700]] },
-    { id: 'tn_b', lvMin: 20, lvMax: 24, color: '#8f6a4a', music: 'wild', poly: [[540, 300], [740, 300], [740, 700], [540, 700]] },
+    {
+      id: 'tn_a',
+      lvMin: 16,
+      lvMax: 20,
+      color: '#6a8f4a',
+      music: 'wild',
+      poly: [
+        [280, 300],
+        [480, 300],
+        [480, 700],
+        [280, 700],
+      ],
+    },
+    {
+      id: 'tn_b',
+      lvMin: 20,
+      lvMax: 24,
+      color: '#8f6a4a',
+      music: 'wild',
+      poly: [
+        [540, 300],
+        [740, 300],
+        [740, 700],
+        [540, 700],
+      ],
+    },
   ],
   camps: [
     { id: 'tn_a1', zone: 'tn_a', mon: 'mon_thach_vien', x: 340, z: 380, count: 4, radius: 20, levelMin: 16, levelMax: 18, respawn: 60 },

@@ -4,7 +4,9 @@
   display: flex;
   /* #root đặt pointer-events: none cho HUD game; viewer cần nhận chuột. */
   pointer-events: auto;
-  font: 13px/1.45 system-ui, sans-serif;
+  font:
+    13px/1.45 system-ui,
+    sans-serif;
   color: #e7e3d8;
   background: #1b2128;
 }
@@ -139,10 +141,41 @@
 }
 
 /* Trang xem chiêu (?show=skill) */
-.skill-panel select { max-width: 100%; }
-.skill-track { margin: 8px 0; }
-.skill-track input[type="range"] { width: 100%; }
-.skill-marks { position: relative; height: 12px; margin-top: -4px; }
-.skill-marks i { position: absolute; top: 0; width: 1px; height: 10px; background: #d8b36a; }
-.skill-marks b { position: absolute; top: 6px; height: 4px; background: rgba(216, 90, 70, 0.8); }
-.skill-probe { margin: 0; padding: 6px 8px; background: #11161c; border: 1px solid #3a4450; font: 12px/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; }
+.skill-panel select {
+  max-width: 100%;
+}
+.skill-track {
+  margin: 8px 0;
+}
+.skill-track input[type='range'] {
+  width: 100%;
+}
+.skill-marks {
+  position: relative;
+  height: 12px;
+  margin-top: -4px;
+}
+.skill-marks i {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 10px;
+  background: #d8b36a;
+}
+.skill-marks b {
+  position: absolute;
+  top: 6px;
+  height: 4px;
+  background: rgba(216, 90, 70, 0.8);
+}
+.skill-probe {
+  margin: 0;
+  padding: 6px 8px;
+  background: #11161c;
+  border: 1px solid #3a4450;
+  font:
+    12px/1.5 ui-monospace,
+    Consolas,
+    monospace;
+  white-space: pre-wrap;
+}

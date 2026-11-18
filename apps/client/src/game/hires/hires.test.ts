@@ -6,7 +6,15 @@ import { ByteBucket, FrameIdle, type HiresCandidate, hiresPolicy, networkAllows,
 import { HiresStreamer } from './streamer';
 
 const MB = 1048576;
-const cand = (key: string, dist: number, width = 2048, gpu = 10 * MB, bytes = MB): HiresCandidate => ({ key, assetId: key, dist, file: key, width, bytes, gpuBytes: gpu });
+const cand = (key: string, dist: number, width = 2048, gpu = 10 * MB, bytes = MB): HiresCandidate => ({
+  key,
+  assetId: key,
+  dist,
+  file: key,
+  width,
+  bytes,
+  gpuBytes: gpu,
+});
 
 describe('hiresPolicy', () => {
   it('Thấp/Vừa tắt, Cao tầng 1, Cực cao tầng 2', () => {
@@ -150,7 +158,20 @@ describe('AssetCache.applyHires', () => {
     scene.add(new THREE.Mesh(new THREE.BoxGeometry(), mat));
     const manifest: Manifest = {
       version: 1,
-      assets: { boss_x: { id: 'boss_x', file: 'boss_x.glb', bytes: 1, triangles: 1, skinned: false, ktx2: false, lods: [], hires: [{ mat: 'm1', slots: ['map', 'normalMap'], file: 'hi/boss_x.map.ktx2', width: 2048, height: 2048, bytes: 10, gpuBytes: 5 * MB }] } },
+      assets: {
+        boss_x: {
+          id: 'boss_x',
+          file: 'boss_x.glb',
+          bytes: 1,
+          triangles: 1,
+          skinned: false,
+          ktx2: false,
+          lods: [],
+          hires: [
+            { mat: 'm1', slots: ['map', 'normalMap'], file: 'hi/boss_x.map.ktx2', width: 2048, height: 2048, bytes: 10, gpuBytes: 5 * MB },
+          ],
+        },
+      },
     };
     const hi = new THREE.Texture();
     hi.addEventListener('dispose', () => disposed.push('hi'));
@@ -265,7 +286,18 @@ function fakeCache(srcMat: THREE.MeshStandardMaterial, hi: THREE.Texture): Asset
   scene.add(new THREE.Mesh(new THREE.BoxGeometry(), srcMat));
   const manifest: Manifest = {
     version: 1,
-    assets: { mon_x: { id: 'mon_x', file: 'mon_x.glb', bytes: 1, triangles: 1, skinned: false, ktx2: false, lods: [], hires: [{ mat: 'm1', slots: ['map'], file: 'hi/mon_x.ktx2', width: 2048, height: 2048, bytes: 1, gpuBytes: MB }] } },
+    assets: {
+      mon_x: {
+        id: 'mon_x',
+        file: 'mon_x.glb',
+        bytes: 1,
+        triangles: 1,
+        skinned: false,
+        ktx2: false,
+        lods: [],
+        hires: [{ mat: 'm1', slots: ['map'], file: 'hi/mon_x.ktx2', width: 2048, height: 2048, bytes: 1, gpuBytes: MB }],
+      },
+    },
   };
   return new AssetCache({
     base: '/a/',

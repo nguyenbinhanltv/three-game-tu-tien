@@ -1,17 +1,9 @@
 // Bãi quái theo cụm (M-2): cụm 3–4 con giữ đội hình quanh tâm bãi, quái đánh xa nếu bãi có; cả cụm tái sinh cùng lúc sau khi bị dọn,
 // thời gian hồi và số con theo số người trong vùng. Sim chỉ gọi `onKill`, `tick`; mọi luật số học ở packages/shared/src/spawnrules.ts.
 
-import {
-  campMeleeCount,
-  campRespawnSec,
-  formationSlots,
-  MS_DEAD,
-  type CampDef,
-  type SpawnDef,
-} from '@dtl/shared';
+import { campMeleeCount, campRespawnSec, formationSlots, MS_DEAD, type CampDef, type SpawnDef } from '@dtl/shared';
 import type { CampRt, MonEnt } from './entities';
 export type { CampRt };
-
 
 export interface CampHost {
   now(): number;
@@ -126,4 +118,3 @@ function hash01(s: string): number {
   }
   return ((h >>> 0) % 100000) / 100000;
 }
-

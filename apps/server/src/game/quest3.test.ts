@@ -22,12 +22,23 @@ let acc = 9950;
 function setup(levelId: string, level: number) {
   const sent: { type: string; msg: unknown }[] = [];
   const host = { broadcast: () => {} };
-  const sim = new GameSim(new WorldState(), host as never, { levelId, roomName: 'test', spawn: { x: 1024, z: 1036 }, respawn: { x: 1024, z: 1036 }, persistPosition: false });
+  const sim = new GameSim(new WorldState(), host as never, {
+    levelId,
+    roomName: 'test',
+    spawn: { x: 1024, z: 1036 },
+    respawn: { x: 1024, z: 1036 },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'q3' + acc);
   char.level = level;
   char.recalc();
   char.hp = char.mhp;
-  const p = sim.addPlayer({ sessionId: 's' + acc, send: (type: string, msg: unknown) => sent.push({ type, msg }) } as never, char, true, 's' + acc);
+  const p = sim.addPlayer(
+    { sessionId: 's' + acc, send: (type: string, msg: unknown) => sent.push({ type, msg }) } as never,
+    char,
+    true,
+    's' + acc,
+  );
   sim.now = 1_000_000;
   const atNpc = (id: string) => {
     p.move.x = NPC.get(id)!.x;
@@ -57,7 +68,9 @@ describe('dữ liệu chương 3', () => {
     const xp = [...QUEST.values()].filter((q) => q.id.startsWith('q3_')).reduce((n, q) => n + q.rewards.xp, 0);
     expect(xp / stage).toBeGreaterThan(0.12);
     expect(xp / stage).toBeLessThan(0.16);
-    for (const q of QUEST.values()) if (/^[qs]3_/.test(q.id)) expect(q.rewards.xp).toBeLessThanOrEqual(xpNeed(Math.max(q.minLevel ?? KET_DAN_LEVEL, KET_DAN_LEVEL)) * 0.2);
+    for (const q of QUEST.values())
+      if (/^[qs]3_/.test(q.id))
+        expect(q.rewards.xp).toBeLessThanOrEqual(xpNeed(Math.max(q.minLevel ?? KET_DAN_LEVEL, KET_DAN_LEVEL)) * 0.2);
   });
 
   it('mục tiêu dùng loại sẵn có (touch/escort cho phụ E3-H2); scan từ Kết Đan; dungeon có tên', () => {

@@ -80,7 +80,12 @@ export interface FxMeshEvent extends FxBase {
   /** Hình `burst`: thêm vạch chéo ngang-dọc kiểu tia lửa va chạm (EdgeFlux "clash"), dùng cho đòn kim loại trúng đích. */
   cross?: boolean;
   /** Bay từ gốc sang `to` trong `dur` (phi kiếm lao, kiếm khí bay): gốc → đích, đơn vị mét hoặc theo neo. */
-  move?: { to: FxAnchor; ahead?: number; ease?: 'out' | 'in' | 'linear'; /** Dịch đích (khác `offset` của điểm xuất phát), ví dụ rơi thẳng từ trên cao. */ offset?: [number, number, number] };
+  move?: {
+    to: FxAnchor;
+    ahead?: number;
+    ease?: 'out' | 'in' | 'linear';
+    /** Dịch đích (khác `offset` của điểm xuất phát), ví dụ rơi thẳng từ trên cao. */ offset?: [number, number, number];
+  };
   /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh). */
   card?: 'arhat' | 'phoenix' | 'ghost';
   /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */
@@ -186,7 +191,17 @@ export interface FxSoundEvent extends FxBase {
   gain?: number;
 }
 
-export type FxEvent = FxMeshEvent | FxParticleEvent | FxDecalEvent | FxTrailEvent | FxHitstopEvent | FxShakeEvent | FxFlashEvent | FxSoundEvent | FxBoltEvent | FxCameraEvent;
+export type FxEvent =
+  | FxMeshEvent
+  | FxParticleEvent
+  | FxDecalEvent
+  | FxTrailEvent
+  | FxHitstopEvent
+  | FxShakeEvent
+  | FxFlashEvent
+  | FxSoundEvent
+  | FxBoltEvent
+  | FxCameraEvent;
 
 export interface FxTimeline {
   /** id chiêu (khớp `skills.json`/`methods.json`). */
@@ -223,7 +238,8 @@ export function fxDrawCount(events: readonly FxEvent[]): number {
   for (const e of events) {
     if (e.type === 'mesh') {
       if (e.shape !== 'gust') groups.add(e.shape);
-      if (e.shadow !== false && (e.shape === 'crescent' || e.shape === 'ripple' || e.shape === 'helix' || e.shape === 'ribbon')) groups.add(e.shape + ':shadow');
+      if (e.shadow !== false && (e.shape === 'crescent' || e.shape === 'ripple' || e.shape === 'helix' || e.shape === 'ribbon'))
+        groups.add(e.shape + ':shadow');
     } else if (e.type === 'decal') groups.add('decal:' + e.tex);
     else if (e.type === 'trail') groups.add('trail');
     else if (e.type === 'bolt') bolts++;
@@ -279,9 +295,12 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (e.type === 'hitstop' && !(e.ms >= 40 && e.ms <= 80)) errs.push(`${p}: hitstop ${e.ms} ms ngoài 40–80`);
       if (e.type === 'shake' && !(e.level >= 0 && e.level <= 0.6)) errs.push(`${p}: rung ${e.level} ngoài 0–0,6`);
       if (e.type === 'flash' && !(e.amount >= 0 && e.amount <= 0.3)) errs.push(`${p}: chớp ${e.amount} ngoài 0–0,3`);
-      if (e.type === 'camera' && !(e.pull >= 0 && e.pull <= 0.4 && e.dur > 0 && e.dur <= 4)) errs.push(`${p}: camera pull=${e.pull} dur=${e.dur} ngoài (0–0,4, ≤ 4 s)`);
-      if (e.type === 'bolt' && !(e.scale === undefined || (e.scale > 0 && e.scale <= 4))) errs.push(`${p}: bolt scale=${e.scale} ngoài (0, 4]`);
-      if (e.type === 'bolt' && !(e.thick === undefined || (e.thick > 0 && e.thick <= 6))) errs.push(`${p}: bolt thick=${e.thick} ngoài (0, 6]`);
+      if (e.type === 'camera' && !(e.pull >= 0 && e.pull <= 0.4 && e.dur > 0 && e.dur <= 4))
+        errs.push(`${p}: camera pull=${e.pull} dur=${e.dur} ngoài (0–0,4, ≤ 4 s)`);
+      if (e.type === 'bolt' && !(e.scale === undefined || (e.scale > 0 && e.scale <= 4)))
+        errs.push(`${p}: bolt scale=${e.scale} ngoài (0, 4]`);
+      if (e.type === 'bolt' && !(e.thick === undefined || (e.thick > 0 && e.thick <= 6)))
+        errs.push(`${p}: bolt thick=${e.thick} ngoài (0, 6]`);
       if (e.type === 'particles' && !(e.n > 0 && e.n <= 400)) errs.push(`${p}: hạt n=${e.n} ngoài (0, 400]`);
     }
   }
@@ -296,10 +315,11 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
     }
   }
   // Tia sét: tối đa 4 tia mỗi đòn (mỗi tia một draw call riêng, không gộp).
-  for (const c of combos) for (const v of vars) {
-    const n = fxEventsFor(tl, c, v).filter((e) => e.type === 'bolt').length;
-    if (n > 4) errs.push(`${p}: ${n} tia sét > 4 (đòn ${c}${v ? ', biến thức ' + v : ''})`);
-  }
+  for (const c of combos)
+    for (const v of vars) {
+      const n = fxEventsFor(tl, c, v).filter((e) => e.type === 'bolt').length;
+      if (n > 4) errs.push(`${p}: ${n} tia sét > 4 (đòn ${c}${v ? ', biến thức ' + v : ''})`);
+    }
   if (tl.trigger === 'fx' && !tl.fxKind) errs.push(`${p}: trigger fx thiếu fxKind`);
   return errs;
 }

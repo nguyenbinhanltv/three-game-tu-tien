@@ -1,5 +1,27 @@
 import * as THREE from 'three/webgpu';
-import { abs, cameraViewMatrix, cos, float, floor, instancedBufferAttribute, int, length, max, min, mix, positionGeometry, sin, smoothstep, step, texture, uniform, uniformArray, uv, vec2, vec3 } from 'three/tsl';
+import {
+  abs,
+  cameraViewMatrix,
+  cos,
+  float,
+  floor,
+  instancedBufferAttribute,
+  int,
+  length,
+  max,
+  min,
+  mix,
+  positionGeometry,
+  sin,
+  smoothstep,
+  step,
+  texture,
+  uniform,
+  uniformArray,
+  uv,
+  vec2,
+  vec3,
+} from 'three/tsl';
 import { FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
 import { heightAt, levelTerrain } from '../../base/levelCtx';
 import { vanHaiArt } from './vanHaiArt';
@@ -169,7 +191,6 @@ function ochreTuftAt(x: number, z: number, h: number, slope: number, r: number, 
   return true;
 }
 
-
 const C_STAR = new THREE.Color(0x9fb8c0);
 const C_STAR_DEEP = new THREE.Color(0x56807f);
 /**
@@ -183,7 +204,9 @@ function tkTuftAt(x: number, z: number, h: number, slope: number, r: number, out
   const pick = hash01(Math.floor(x * 3.7), Math.floor(z * 3.7), 829);
   const card = pick < 0.5 ? 0 : pick < 0.75 ? 1 : pick < 0.9 ? 2 : 3;
   const n = fbm(x * 0.03, z * 0.03, 2, 20261116 + 5);
-  _c.copy(C_STAR_DEEP).lerp(C_STAR, Math.max(0, Math.min(1, 0.45 + n * 0.8))).multiplyScalar(0.8 + r2 * 0.32);
+  _c.copy(C_STAR_DEEP)
+    .lerp(C_STAR, Math.max(0, Math.min(1, 0.45 + n * 0.8)))
+    .multiplyScalar(0.8 + r2 * 0.32);
   out[o] = x;
   out[o + 1] = h - 0.03;
   out[o + 2] = z;
@@ -229,7 +252,9 @@ function vanHaiTuftAt(x: number, z: number, h: number, slope: number, r: number,
   const pick = hash01(Math.floor(x * 3.7), Math.floor(z * 3.7), 829);
   const card = dry > 0.55 && pick < 0.6 ? 0 : pick < 0.62 ? 2 : pick < 0.9 ? 1 : 0;
   const bloom = isl.kind === 'hub' && td < 9 && hash01(Math.floor(x * 0.4), Math.floor(z * 0.4), 839) < 0.35;
-  _c.setHex(P.grass).lerp(_g2.setHex(P.grassDry), dry).multiplyScalar((0.82 + r2 * 0.36) * 1.5);
+  _c.setHex(P.grass)
+    .lerp(_g2.setHex(P.grassDry), dry)
+    .multiplyScalar((0.82 + r2 * 0.36) * 1.5);
   if (bloom) _c.lerp(_g2.setHex(0xf3dde6), 0.65); // vài cụm hoa nhạt ven lối
   out[o] = x;
   out[o + 1] = h - 0.03;
@@ -265,7 +290,16 @@ export function buildGrassChunk(cx: number, cz: number, spacing: number, style: 
       const x = x0 + (i + 0.1 + hash01(gx, gz, 701) * 0.8) * step;
       const z = z0 + (j + 0.1 + hash01(gx, gz, 709) * 0.8) * step;
       const h = sampleHeight(x0, z0, x, z);
-      if ((style === 'cards' ? (levelTerrain().def.islands ? vanHaiTuftAt : levelTerrain().id === 'thien_khuyet' ? tkTuftAt : ochreTuftAt) : grassTuftAt)(x, z, h, _slope, hash01(gx, gz, 719), tmp, k * 8)) k++;
+      if (
+        (style === 'cards'
+          ? levelTerrain().def.islands
+            ? vanHaiTuftAt
+            : levelTerrain().id === 'thien_khuyet'
+              ? tkTuftAt
+              : ochreTuftAt
+          : grassTuftAt)(x, z, h, _slope, hash01(gx, gz, 719), tmp, k * 8)
+      )
+        k++;
     }
   }
   return tmp.slice(0, k * 8);

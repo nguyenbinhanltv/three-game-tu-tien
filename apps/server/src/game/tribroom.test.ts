@@ -83,10 +83,21 @@ function mkSim(levelId = HOME_LEVEL, host: Record<string, unknown> = {}) {
   const lv = content.LEVELS[levelId];
   const spawn = lv.dungeon?.spawn ?? lv.spawn ?? { x: X, z: Z };
   const h = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg, to: '*' }), ...host };
-  const sim = new GameSim(new WorldState(), h as never, { levelId, roomName: levelId, spawn, respawn: spawn, persistPosition: !lv.dungeon });
+  const sim = new GameSim(new WorldState(), h as never, {
+    levelId,
+    roomName: levelId,
+    spawn,
+    respawn: spawn,
+    persistPosition: !lv.dungeon,
+  });
   const join = (name: string, level: number, bk = level): Ent => {
     const char = mkChar(name, level, bk);
-    const p = sim.addPlayer({ sessionId: 'c' + acc++, send: (type: string, msg: unknown) => sent.push({ type, msg, to: char.name }) } as never, char, true, 's' + acc);
+    const p = sim.addPlayer(
+      { sessionId: 'c' + acc++, send: (type: string, msg: unknown) => sent.push({ type, msg, to: char.name }) } as never,
+      char,
+      true,
+      's' + acc,
+    );
     p.move.x = X;
     p.move.z = Z;
     p.move.y = groundAt(X, Z);
@@ -212,7 +223,9 @@ describe('kiếp mới: cờ enabled, GM và pha chung', () => {
     // pha 3: tia khóa mệnh r 9 m, báo 3 s
     const before = hazards().length;
     run(p, 31);
-    const big = hazards().slice(before).filter((h) => h.big);
+    const big = hazards()
+      .slice(before)
+      .filter((h) => h.big);
     expect(big.length).toBe(1);
     expect(big[0].r).toBe(9);
     expect(big[0].delay).toBe(3);
@@ -249,7 +262,9 @@ describe('kiếp mới: cờ enabled, GM và pha chung', () => {
     run(p, 19);
     const before = hazards().length;
     run(p, 5);
-    const fire = hazards().slice(before).filter((h) => h.kind === 'fire');
+    const fire = hazards()
+      .slice(before)
+      .filter((h) => h.kind === 'fire');
     expect(fire.length).toBeGreaterThanOrEqual(2);
     for (const h of fire) {
       expect(h.sh).toBe('rect');
@@ -385,7 +400,13 @@ describe('room độ kiếp riêng', () => {
     const lv = content.LEVELS[levelId];
     const spawn = lv.dungeon?.spawn ?? lv.spawn ?? { x: X, z: Z };
     room.broadcast = (type: string, msg: unknown) => sent.push({ type, msg, to: '*' });
-    room.sim = new GameSim(new WorldState(), room as never, { levelId, roomName: levelId, spawn, respawn: spawn, persistPosition: !lv.dungeon });
+    room.sim = new GameSim(new WorldState(), room as never, {
+      levelId,
+      roomName: levelId,
+      spawn,
+      respawn: spawn,
+      persistPosition: !lv.dungeon,
+    });
     room.aoi = new (await Aoi())(room.sim);
     room.clients = { getById: () => undefined };
     room.markers = { drop() {}, sync() {} };
@@ -393,14 +414,26 @@ describe('room độ kiếp riêng', () => {
     room.clock = { setTimeout: (fn: () => void) => timers.push(fn), setInterval: () => undefined };
     Object.defineProperty(room, 'roomName', { value: levelId });
     Object.assign(room, { startedAny: false, startPending: 0, idleSince: 0, createdAt: Date.now(), sentBack: new Map() });
-    const client = (name: string) => ({ sessionId: 'sid' + acc++, send: (type: string, msg: unknown) => sent.push({ type, msg, to: name }) });
+    const client = (name: string) => ({
+      sessionId: 'sid' + acc++,
+      send: (type: string, msg: unknown) => sent.push({ type, msg, to: name }),
+    });
     const join = (char: InstanceType<typeof Character>, auth: Record<string, unknown> = {}): Ent => {
       const c = client(char.name);
-      (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(c, {}, { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true, ...auth });
+      (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(
+        c,
+        {},
+        { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true, ...auth },
+      );
       return [...room.sim.players.values()].find((p) => p.char.id === char.id)!;
     };
     const runTimers = () => timers.splice(0).forEach((f) => f());
-    return { room: room as unknown as InstanceType<Rooms['GameRoom']> & { sim: InstanceType<typeof GameSim>; director(): void }, sim: room.sim, join, runTimers };
+    return {
+      room: room as unknown as InstanceType<Rooms['GameRoom']> & { sim: InstanceType<typeof GameSim>; director(): void },
+      sim: room.sim,
+      join,
+      runTimers,
+    };
   }
 
   /** onJoin nạp lại nhân vật từ DB: đặt cấp/tu vi sau khi vào. */
@@ -413,7 +446,10 @@ describe('room độ kiếp riêng', () => {
     return p;
   };
 
-  const TribAuth = () => rooms.TribulationRoom as unknown as { onAuth(t: string, o: unknown): Promise<{ charId: number; trib?: { key: string; id?: string }; spawn: unknown }> };
+  const TribAuth = () =>
+    rooms.TribulationRoom as unknown as {
+      onAuth(t: string, o: unknown): Promise<{ charId: number; trib?: { key: string; id?: string }; spawn: unknown }>;
+    };
   const Home = () => rooms.WorldRoom as unknown as { onAuth(t: string, o: unknown): Promise<{ charId: number }> };
 
   it('tên room và level: tribulation / do_kiep, không phải bí cảnh có đợt quái', () => {
@@ -482,7 +518,11 @@ describe('room độ kiếp riêng', () => {
     expect(transfer.tickets.has(p.char.id, TRIB_LEVEL)).toBe(true);
     transfer.tickets.clear();
     p.s.fl |= PF_DEAD;
-    (w.room as unknown as { enterTribulationRoom(p: Ent, d: unknown, f: boolean): boolean }).enterTribulationRoom(p, tribDef('hoa_than'), false);
+    (w.room as unknown as { enterTribulationRoom(p: Ent, d: unknown, f: boolean): boolean }).enterTribulationRoom(
+      p,
+      tribDef('hoa_than'),
+      false,
+    );
     expect(transfer.tickets.has(p.char.id, TRIB_LEVEL)).toBe(false);
   });
 
@@ -655,7 +695,11 @@ describe('room độ kiếp riêng', () => {
     }
     const party = { members: [lead, high, low].map((m) => m.char.id), leader: lead.char.id };
     for (const m of [lead, high, low]) (parties as unknown as { byChar: Map<number, unknown> }).byChar.set(m.char.id, party);
-    (w.room as unknown as { enterTribulationRoom(p: Ent, d: unknown, f: boolean): boolean }).enterTribulationRoom(lead, tribDef('anh_bien'), true);
+    (w.room as unknown as { enterTribulationRoom(p: Ent, d: unknown, f: boolean): boolean }).enterTribulationRoom(
+      lead,
+      tribDef('anh_bien'),
+      true,
+    );
     expect(transfer.tickets.has(lead.char.id, level)).toBe(true);
     expect(transfer.tickets.has(high.char.id, level)).toBe(true);
     expect(transfer.tickets.has(low.char.id, level)).toBe(false);

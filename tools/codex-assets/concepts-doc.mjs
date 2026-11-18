@@ -25,12 +25,14 @@ const RIG = {
   quadruped: 'Có xương, **quadruped**: Tripo rig quadruped, sau đó `tools/blender/anim_quadruped.py` (thư viện clip chung quái bốn chân)',
   biped: 'Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py`',
   human: 'Có xương, **người**: Tripo rig biped; dùng chung clip `anim_human_base` (retarget theo tên xương, `game/character/animLib.ts`)',
-  serpent: 'Xương **serpent** theo đốt: xuất GLB tĩnh nằm trục +Z, worker E-2 dựng xương đốt bằng `tools/blender/anim_serpent.py` (không cần rig trên Tripo)',
+  serpent:
+    'Xương **serpent** theo đốt: xuất GLB tĩnh nằm trục +Z, worker E-2 dựng xương đốt bằng `tools/blender/anim_serpent.py` (không cần rig trên Tripo)',
   float: '**Không xương**: bay/lơ lửng bằng transform thủ tục; nếu muốn vỗ cánh, tách cánh thành mesh riêng gắn gốc',
   none: 'Không xương (mesh tĩnh)',
 };
 const TRIPO_SUFFIX = {
-  creature: 'semi-realistic stylized game asset, Chinese fantasy cultivation world, painterly PBR texture, believable anatomy, clean readable silhouette, neutral standing pose, plain background, no base, no ground, no text',
+  creature:
+    'semi-realistic stylized game asset, Chinese fantasy cultivation world, painterly PBR texture, believable anatomy, clean readable silhouette, neutral standing pose, plain background, no base, no ground, no text',
   grass: 'game-ready foliage card clump, stylized semi-realistic, alpha cutout blades, no ground, no base, no text',
   env: 'semi-realistic stylized game prop, weathered PBR texture, clean readable silhouette, plain background, no ground plane, no text',
   gear: 'semi-realistic stylized game item, clean readable silhouette, fine PBR detail, plain background, no stand, no hand, no text',
@@ -40,24 +42,37 @@ const kind = (c) => (['elite', 'boss', 'mon'].includes(c) ? 'creature' : c);
 const face = (tris) => (/^\d+$/.test(tris) ? Number(tris) : null);
 const dirOf = (a) => (a.dir === 'chr' ? 'chr' : a.dir);
 const dest = (id, a) => `<DTL_ASSET_SOURCE>/${dirOf(a)}/${id}/`;
-const GRASS_NOTE = 'Cỏ KHÔNG dựng 3D trên Tripo. Worker E-2 làm **thẻ cỏ alpha instanced** (atlas 512², tấm cắt cắt chéo, alpha cutout) từ ảnh concept này, nạp qua `game/grass.ts`; bạn không cần làm gì với mục này.';
+const GRASS_NOTE =
+  'Cỏ KHÔNG dựng 3D trên Tripo. Worker E-2 làm **thẻ cỏ alpha instanced** (atlas 512², tấm cắt cắt chéo, alpha cutout) từ ảnh concept này, nạp qua `game/grass.ts`; bạn không cần làm gì với mục này.';
 const tripoPrompt = (a) => `${a.look}. ${TRIPO_SUFFIX[kind(a.cat)]}.`;
 const tripoParams = (a) => {
   if (a.cat === 'grass') return 'Không dựng trên Tripo (thẻ cỏ alpha do worker làm từ ảnh concept).';
   if (a.cat === 'set') return 'Không dựng trên Tripo (dùng recolor + phụ kiện thủ tục của hệ 3-4); ảnh chỉ để chốt màu và hình khối.';
   const f = face(a.tris);
   const tex = a.tex.split('/')[0];
-  return `model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount ${f ?? a.tris}, quad tắt, GLB`
-    + `; texture mục tiêu base color ${tex}${a.tex.includes('/') ? ` / normal ${a.tex.split('/')[1]} / ORM ${a.tex.split('/')[2]}` : ''}`;
+  return (
+    `model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount ${f ?? a.tris}, quad tắt, GLB` +
+    `; texture mục tiêu base color ${tex}${a.tex.includes('/') ? ` / normal ${a.tex.split('/')[1]} / ORM ${a.tex.split('/')[2]}` : ''}`
+  );
 };
 const pipeline = (id, a) => {
-  if (a.cat === 'grass') return 'Worker cắt ảnh concept thành atlas thẻ cỏ alpha (`apps/client/public/`), instancing ở `game/grass.ts`; không có GLB, không `meta.json` Tripo.';
-  if (a.cat === 'set') return 'Không import GLB. Tham chiếu cho `recolorSet` và `setAccessories.ts` (xem `docs/set-accessories/README.md`).';
+  if (a.cat === 'grass')
+    return 'Worker cắt ảnh concept thành atlas thẻ cỏ alpha (`apps/client/public/`), instancing ở `game/grass.ts`; không có GLB, không `meta.json` Tripo.';
+  if (a.cat === 'set')
+    return 'Không import GLB. Tham chiếu cho `recolorSet` và `setAccessories.ts` (xem `docs/set-accessories/README.md`).';
   const d = dirOf(a);
-  const post = { quadruped: 'anim_quadruped.py', biped: 'anim_biped_extra.py', human: 'anim_human_base (retarget)', serpent: 'anim_serpent.py', float: '(không)', none: '(không)' }[a.rig];
+  const post = {
+    quadruped: 'anim_quadruped.py',
+    biped: 'anim_biped_extra.py',
+    human: 'anim_human_base (retarget)',
+    serpent: 'anim_serpent.py',
+    float: '(không)',
+    none: '(không)',
+  }[a.rig];
   return `\`${d}/${id}/tripo/raw_v01.glb\` (dựng hình), \`lowpoly_v01.glb\` (nếu Retopo), \`rig_v01.glb\` (nếu có xương) → \`assets/source/${d}/${id}/meta.json\` (\`import.kind: "tripo"\`, \`import.source\`, \`size\`, \`yaw\`, \`post: ${post}\`) → \`pnpm assets:build\` → \`pnpm assets:validate\` (ngân sách tam giác/texture) → khai báo trong \`assets/budgets.json\`/lớp ngân sách \`${budgetClass(a)}\`.`;
 };
-const budgetClass = (a) => a.budget ?? ({ elite: 'monster', mon: 'monster', boss: 'boss', grass: 'prop', env: 'prop', gear: 'weapon' }[a.cat] ?? 'prop');
+const budgetClass = (a) =>
+  a.budget ?? { elite: 'monster', mon: 'monster', boss: 'boss', grass: 'prop', env: 'prop', gear: 'weapon' }[a.cat] ?? 'prop';
 
 const ids = Object.keys(data);
 const sorted = [...ids].sort((x, y) => data[x].prio - data[y].prio || (data[x].map > data[y].map ? 1 : -1));
@@ -101,9 +116,12 @@ for (const p of [1, 2, 3, 4, 5, 6]) {
     md += `| Vai trò | ${a.role} |\n| Bản đồ | ${MAP[a.map]} |\n| Kích thước trong game | ${a.size} |\n`;
     md += `| Tam giác (Polycount LOD0) | ${a.tris} |\n| Texture (base color / normal / ORM) | ${a.tex} |\n| Xương | ${RIG[a.rig]} |\n`;
     md += `| Thư mục đích | \`${dest(id, a)}\` (\`concept/\`, \`tripo/\`) |\n| Tripo | ${tripoParams(a)} |\n\n`;
-    md += a.cat === 'grass' ? `**Không dựng trên Tripo.** ${GRASS_NOTE}
+    md +=
+      a.cat === 'grass'
+        ? `**Không dựng trên Tripo.** ${GRASS_NOTE}
 
-` : `**Prompt Tripo (tiếng Anh):**\n\n\`\`\`text\n${tripoPrompt(a)}\n\`\`\`\n\n`;
+`
+        : `**Prompt Tripo (tiếng Anh):**\n\n\`\`\`text\n${tripoPrompt(a)}\n\`\`\`\n\n`;
     md += `**Ghi chú pipeline:** ${a.notes}\n\n**Import:** ${pipeline(id, a)}\n\n`;
   }
 }

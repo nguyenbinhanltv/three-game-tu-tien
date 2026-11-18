@@ -177,7 +177,11 @@ export class SpringBones {
         if (c < cosMax) {
           _axis.copy(_dir).addScaledVector(_rest, -c);
           if (_axis.lengthSq() < 1e-10) _dir.copy(_rest);
-          else _dir.copy(_rest).multiplyScalar(cosMax).addScaledVector(_axis.normalize(), Math.sqrt(1 - cosMax * cosMax));
+          else
+            _dir
+              .copy(_rest)
+              .multiplyScalar(cosMax)
+              .addScaledVector(_axis.normalize(), Math.sqrt(1 - cosMax * cosMax));
         }
         if (outLen > 1e-5) {
           const inward = -(_dir.dot(_out) - _rest.dot(_out));
@@ -188,7 +192,16 @@ export class SpringBones {
         if (this.colliders.length) {
           let hit = false;
           for (let ci = 0; ci < this.colliders.length; ci++) {
-            if (pushOutCapsule(b.p, this.capA[ci], this.capB[ci], this.colliders[ci].fixed ? this.colliders[ci].r : this.colliders[ci].r * rScale, _out)) hit = true;
+            if (
+              pushOutCapsule(
+                b.p,
+                this.capA[ci],
+                this.capB[ci],
+                this.colliders[ci].fixed ? this.colliders[ci].r : this.colliders[ci].r * rScale,
+                _out,
+              )
+            )
+              hit = true;
           }
           if (hit) {
             _dir.subVectors(b.p, _head).normalize();

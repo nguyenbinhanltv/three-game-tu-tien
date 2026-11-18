@@ -25,7 +25,11 @@ export async function runDashaoi(_ctx: Ctx): Promise<void> {
     g.room.send(C.SKILL, { id: 'skl_kiem_anh_bo' });
     await W(400);
     const p1 = pos();
-    check('lướt khi chưa theo công pháp bị từ chối', msgs.some((m) => m.k === 'sys.no_method') && Math.hypot(p1.x - p0.x, p1.z - p0.z) < 0.5, `${JSON.stringify(msgs.map((m) => m.k))} di chuyển ${Math.hypot(p1.x - p0.x, p1.z - p0.z).toFixed(2)} m`);
+    check(
+      'lướt khi chưa theo công pháp bị từ chối',
+      msgs.some((m) => m.k === 'sys.no_method') && Math.hypot(p1.x - p0.x, p1.z - p0.z) < 0.5,
+      `${JSON.stringify(msgs.map((m) => m.k))} di chuyển ${Math.hypot(p1.x - p0.x, p1.z - p0.z).toFixed(2)} m`,
+    );
     g.room.send(C.METHOD, { method: 'lac_kiem_quyet' });
     await W(500);
     await chat('/gm cd');
@@ -38,7 +42,15 @@ export async function runDashaoi(_ctx: Ctx): Promise<void> {
     check('spam lướt chỉ ra một lần (≤ 8,5 m)', moved <= 8.5, `${moved.toFixed(2)} m`);
     // Lệnh rác (kiểu sai, id mảng, mục tiêu đối tượng) không làm sập, không làm di chuyển thêm.
     await W(700);
-    for (const bad of [{ id: ['skl_kiem_anh_bo'] }, { id: 'skl_kiem_anh_bo', t: { $gt: '' } }, { id: 'skl_kiem_anh_bo', t: 12345 }, { id: { toString: 1 } }, null, 7]) g.room.send(C.SKILL, bad as never);
+    for (const bad of [
+      { id: ['skl_kiem_anh_bo'] },
+      { id: 'skl_kiem_anh_bo', t: { $gt: '' } },
+      { id: 'skl_kiem_anh_bo', t: 12345 },
+      { id: { toString: 1 } },
+      null,
+      7,
+    ])
+      g.room.send(C.SKILL, bad as never);
     await W(500);
     const q2 = pos();
     check('lệnh lướt rác bị bỏ qua (còn hồi chiêu), không di chuyển thêm', Math.hypot(q2.x - q1.x, q2.z - q1.z) < 0.5);
@@ -65,7 +77,11 @@ export async function runDashaoi(_ctx: Ctx): Promise<void> {
       await W(500);
     }
     const q4 = pos();
-    check('lướt ở mép bản đồ không ra ngoài', q4.x >= 0 && q4.z >= 0 && q4.x <= 4096 && q4.z <= 4096, `${q4.x.toFixed(1)}, ${q4.z.toFixed(1)}`);
+    check(
+      'lướt ở mép bản đồ không ra ngoài',
+      q4.x >= 0 && q4.z >= 0 && q4.x <= 4096 && q4.z <= 4096,
+      `${q4.x.toFixed(1)}, ${q4.z.toFixed(1)}`,
+    );
     await g.room.leave(true);
   }
 
@@ -75,8 +91,10 @@ export async function runDashaoi(_ctx: Ctx): Promise<void> {
     const A = await join('kt_aoi_a');
     const B = await join('kt_aoi_b');
     type Ent = { x: number; z: number; hp?: number; t?: string };
-    const mons = (g: { room: Room }) => new Map([...(g.room.state as unknown as { monsters: Map<string, Ent> }).monsters].filter(([, m]) => !!m.t));
-    const plrs = (g: { room: Room }) => new Map([...(g.room.state as unknown as { players: Map<string, Ent & { name?: string }> }).players].filter(([, p]) => !!p.name));
+    const mons = (g: { room: Room }) =>
+      new Map([...(g.room.state as unknown as { monsters: Map<string, Ent> }).monsters].filter(([, m]) => !!m.t));
+    const plrs = (g: { room: Room }) =>
+      new Map([...(g.room.state as unknown as { players: Map<string, Ent & { name?: string }> }).players].filter(([, p]) => !!p.name));
     const chat = async (g: { room: Room }, m: string) => {
       g.room.send(C.CHAT, { m });
       await W(1000);
@@ -84,16 +102,28 @@ export async function runDashaoi(_ctx: Ctx): Promise<void> {
     await chat(A, '/gm tp thung_lung');
     await chat(B, '/gm tp ho');
     await W(900);
-    const total = ((await (await fetch(HTTP + '/health')).json()) as { rooms: { monsters: number }[] }).rooms.reduce((n, r) => n + r.monsters, 0);
+    const total = ((await (await fetch(HTTP + '/health')).json()) as { rooms: { monsters: number }[] }).rooms.reduce(
+      (n, r) => n + r.monsters,
+      0,
+    );
     const me = plrs(A).get(A.init.sid)!;
     let worst = 0;
     for (const m of mons(A).values()) worst = Math.max(worst, Math.hypot(m.x - me.x, m.z - me.z) - (m.t?.startsWith('boss_') ? 330 : 190));
-    check('AOI: client chỉ nhận quái trong tầm (không quái ngoài AOI_OUT)', mons(A).size > 0 && worst <= 5, `${mons(A).size}/${total} quái, vượt tầm ${worst.toFixed(0)} m`);
+    check(
+      'AOI: client chỉ nhận quái trong tầm (không quái ngoài AOI_OUT)',
+      mons(A).size > 0 && worst <= 5,
+      `${mons(A).size}/${total} quái, vượt tầm ${worst.toFixed(0)} m`,
+    );
     check('AOI: số quái nhận được ít hơn nửa tổng số', total > 100 && mons(A).size < total / 2, `${mons(A).size}/${total}`);
-    check('AOI: thấy chính mình, không thấy người ở xa', plrs(A).has(A.init.sid) && !plrs(A).has(B.init.sid) && !plrs(B).has(A.init.sid), `A thấy ${plrs(A).size} người`);
+    check(
+      'AOI: thấy chính mình, không thấy người ở xa',
+      plrs(A).has(A.init.sid) && !plrs(A).has(B.init.sid) && !plrs(B).has(A.init.sid),
+      `A thấy ${plrs(A).size} người`,
+    );
     // Vẫn đánh được quái trong tầm: chọn con gần nhất trong state, bắn phi kiếm, máu giảm.
     let nearest: [string, Ent] | undefined;
-    for (const e of mons(A).entries()) if (!nearest || Math.hypot(e[1].x - me.x, e[1].z - me.z) < Math.hypot(nearest[1].x - me.x, nearest[1].z - me.z)) nearest = e;
+    for (const e of mons(A).entries())
+      if (!nearest || Math.hypot(e[1].x - me.x, e[1].z - me.z) < Math.hypot(nearest[1].x - me.x, nearest[1].z - me.z)) nearest = e;
     if (nearest) {
       const [id, m0] = nearest;
       await chat(A, `/gm tp ${Math.round(m0.x)} ${Math.round(m0.z) - 4}`);
@@ -129,7 +159,11 @@ export async function runDashaoi(_ctx: Ctx): Promise<void> {
         await W(1500);
         const st = again.state as unknown as { monsters: Map<string, Ent> };
         const n = [...st.monsters.values()].filter((m) => !!m.t).length;
-        check('AOI: nối lại sau khi mất kết nối vẫn thấy quái trong tầm, không lỗi giải mã', n > 0 && decodeErr === 0, `${n} quái, ${decodeErr} lỗi refId`);
+        check(
+          'AOI: nối lại sau khi mất kết nối vẫn thấy quái trong tầm, không lỗi giải mã',
+          n > 0 && decodeErr === 0,
+          `${n} quái, ${decodeErr} lỗi refId`,
+        );
         A.room = again;
       } catch (e) {
         check('AOI: nối lại sau khi mất kết nối vẫn thấy quái trong tầm, không lỗi giải mã', false, String((e as Error).message ?? e));
@@ -146,5 +180,4 @@ export async function runDashaoi(_ctx: Ctx): Promise<void> {
     await A.room.leave(true);
     await B.room.leave(true);
   }
-
 }

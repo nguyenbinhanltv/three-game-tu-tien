@@ -36,10 +36,23 @@ const ROWS: Row[] = [];
 const basic = SK.get('skl_phi_kiem') as SkillDef;
 for (const voice of POSE_VOICES) {
   const method = { kt: 'lac_kiem_quyet', hp: 'bat_dong_kim_than', ds: 'thanh_moc_dan_kinh' }[voice];
-  basic.combo!.hits.forEach((h, i) => ROWS.push({ id: poseIdFor('phi_kiem', { combo: i, method }), skill: basic.id, voice, nine: true, hitAt: h.hitAt, swing: true }));
-  ROWS.push({ id: poseIdFor('kiem_khi_tram', { method }), skill: 'skl_kiem_khi_tram', voice, nine: true, hitAt: SK.get('skl_kiem_khi_tram')!.hitAt![0], swing: true });
+  basic.combo!.hits.forEach((h, i) =>
+    ROWS.push({ id: poseIdFor('phi_kiem', { combo: i, method }), skill: basic.id, voice, nine: true, hitAt: h.hitAt, swing: true }),
+  );
+  ROWS.push({
+    id: poseIdFor('kiem_khi_tram', { method }),
+    skill: 'skl_kiem_khi_tram',
+    voice,
+    nine: true,
+    hitAt: SK.get('skl_kiem_khi_tram')!.hitAt![0],
+    swing: true,
+  });
 }
-for (const [id, skill] of [['thien_kiem_vu', 'skl_thien_kiem_vu'], ['kiem_anh', 'skl_phi_kiem_truy_hon'], ['van_kiem', 'skl_van_kiem_quy_tong']] as const)
+for (const [id, skill] of [
+  ['thien_kiem_vu', 'skl_thien_kiem_vu'],
+  ['kiem_anh', 'skl_phi_kiem_truy_hon'],
+  ['van_kiem', 'skl_van_kiem_quy_tong'],
+] as const)
   ROWS.push({ id, skill, voice: 'kt', nine: true, hitAt: SK.get(skill)!.hitAt![0], swing: true });
 for (const [id, skill, voice] of [
   ['loi_dinh', 'skl_loi_dinh_nhat_kiem', 'kt'],
@@ -52,7 +65,10 @@ for (const [id, skill, voice] of [
 ] as const)
   ROWS.push({ id, skill, voice, nine: false, hitAt: SK.get(skill)!.hitAt![0], swing: false });
 
-const RANGE: Record<PoseVoice, { drop: [number, number]; twist: [number, number]; reachZ: [number, number]; hold: number; over: [number, number] }> = {
+const RANGE: Record<
+  PoseVoice,
+  { drop: [number, number]; twist: [number, number]; reachZ: [number, number]; hold: number; over: [number, number] }
+> = {
   kt: { drop: [0.06, 0.1], twist: [35, 45], reachZ: [0.75, 2], hold: 0.05, over: [0.14, 0.16] },
   hp: { drop: [0.16, 0.22], twist: [20, 25], reachZ: [0.45, 0.6], hold: 0.08, over: [0.04, 0.06] },
   ds: { drop: [0.02, 0.05], twist: [20, 30], reachZ: [0.5, 0.65], hold: 0.06, over: [0.09, 0.11] },
@@ -197,7 +213,9 @@ describe('K-5: ba giọng đo được', () => {
     });
   }
   it('ba giọng khác nhau rõ rệt ở cùng một đòn', () => {
-    const [kt, hp, ds] = (['kt', 'hp', 'ds'] as const).map((v) => measure(ROWS.find((r) => r.skill === 'skl_kiem_khi_tram' && r.voice === v)!));
+    const [kt, hp, ds] = (['kt', 'hp', 'ds'] as const).map((v) =>
+      measure(ROWS.find((r) => r.skill === 'skl_kiem_khi_tram' && r.voice === v)!),
+    );
     expect(hp.drop).toBeGreaterThan(kt.drop * 1.8);
     expect(kt.drop).toBeGreaterThan(ds.drop * 1.8);
     expect(kt.twist).toBeGreaterThan(ds.twist);

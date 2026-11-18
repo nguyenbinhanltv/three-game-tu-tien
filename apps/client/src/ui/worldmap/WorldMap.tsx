@@ -11,7 +11,24 @@ import { difficultyTone, formatCountdown, npcFunction, npcQuestMark } from '../m
 import { bossSprite, eliteSprite, flagSprite, mateSprite, nodeSprite, npcSprite, selfSprite, teleSprite } from '../minimap/sprites';
 import { closePanel, useUI } from '../store';
 import './worldmap.css';
-import { campSpots, clampView, fitView, type LabelBox, placeLabels, type Layer, LAYERS, type MapView, panBy, parseLayers, pick, screenToWorld, soloSpawns, worldToScreen, zoneInfos, zoomAt } from './model';
+import {
+  campSpots,
+  clampView,
+  fitView,
+  type LabelBox,
+  placeLabels,
+  type Layer,
+  LAYERS,
+  type MapView,
+  panBy,
+  parseLayers,
+  pick,
+  screenToWorld,
+  soloSpawns,
+  worldToScreen,
+  zoneInfos,
+  zoomAt,
+} from './model';
 
 const W = 660;
 const H = 560;
@@ -172,7 +189,10 @@ export function WorldMap() {
           w,
           h: 30,
           name,
-          lvText: (zi.zone.lvMin === zi.zone.lvMax ? t('ui.mm.zone_lv1', { a: zi.zone.lvMin }) : t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax })),
+          lvText:
+            zi.zone.lvMin === zi.zone.lvMax
+              ? t('ui.mm.zone_lv1', { a: zi.zone.lvMin })
+              : t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax }),
           lvColor: lv < zi.zone.lvMin ? '#b3402c' : lv > zi.zone.lvMax ? '#5d6466' : '#3d6b36',
         });
       }
@@ -221,13 +241,25 @@ export function WorldMap() {
           ctx.lineWidth = 1;
           ctx.strokeStyle = '#2a1f16';
           ctx.stroke();
-          out.push({ x: c.x, y: c.y, r: dot + 2, title: monsterName(sp.mon), sub: sp.lvMin === sp.lvMax ? t('ui.mm.level', { n: sp.lvMin }) : t('ui.wm.level_range', { a: sp.lvMin, b: sp.lvMax }) });
+          out.push({
+            x: c.x,
+            y: c.y,
+            r: dot + 2,
+            title: monsterName(sp.mon),
+            sub: sp.lvMin === sp.lvMax ? t('ui.mm.level', { n: sp.lvMin }) : t('ui.wm.level_range', { a: sp.lvMin, b: sp.lvMax }),
+          });
         }
         for (const s of LV.solo) {
           const c = P(s.x, s.z);
           if (!inView(c)) continue;
           put(s.boss ? bossSprite(false, dpr) : eliteSprite(false, dpr), c.x, c.y);
-          out.push({ x: c.x, y: c.y, r: s.boss ? 11 : 8, title: monsterName(s.id), sub: t('ui.mm.level', { n: s.lvMax }) + ` · ${s.boss ? t('ui.mm.boss') : t('ui.mm.elite')}` });
+          out.push({
+            x: c.x,
+            y: c.y,
+            r: s.boss ? 11 : 8,
+            title: monsterName(s.id),
+            sub: t('ui.mm.level', { n: s.lvMax }) + ` · ${s.boss ? t('ui.mm.boss') : t('ui.mm.elite')}`,
+          });
         }
       }
       // NPC (dấu nhiệm vụ chỉ khi lớp nhiệm vụ bật).
@@ -239,7 +271,14 @@ export function WorldMap() {
           const qm = L.quest ? npcQuestMark(n.id, QUESTS, st.quests, lv) : '';
           if (!L.npc && !qm) continue;
           put(npcSprite(npcFunction(n), qm, dpr), c.x, c.y, -6);
-          out.push({ x: c.x, y: c.y, r: 9, title: t(`npc.${n.id}.name`), sub: t(`ui.mm.fn.${npcFunction(n)}`), desc: qm ? t(`ui.mm.q.${qm}`) : undefined });
+          out.push({
+            x: c.x,
+            y: c.y,
+            r: 9,
+            title: t(`npc.${n.id}.name`),
+            sub: t(`ui.mm.fn.${npcFunction(n)}`),
+            desc: qm ? t(`ui.mm.q.${qm}`) : undefined,
+          });
         }
       }
       // Truyền Tống Trận: đã mở bấm để dịch chuyển, chưa mở thì mờ.
@@ -283,7 +322,13 @@ export function WorldMap() {
         const c = P(m.x, m.z);
         if (!inView(c)) continue;
         put(flagSprite(m.own, dpr), c.x, c.y, -5);
-        out.push({ x: c.x, y: c.y, r: 10, title: m.own ? t('ui.wm.mark_own') : t('ui.wm.mark_of', { name: m.name }), sub: m.own ? t('ui.wm.mark_remove') : undefined });
+        out.push({
+          x: c.x,
+          y: c.y,
+          r: 10,
+          title: m.own ? t('ui.wm.mark_own') : t('ui.wm.mark_of', { name: m.name }),
+          sub: m.own ? t('ui.wm.mark_remove') : undefined,
+        });
       }
       const me = P(g.renderPos.x, g.renderPos.z);
       ctx.save();
@@ -296,7 +341,9 @@ export function WorldMap() {
       const m = mouse.current;
       if (m && !drag.current?.moved) {
         const h = pick(out, m.x, m.y, 8);
-        setHover((cur) => (h ? (cur && cur.hit.title === h.title && cur.hit.sub === h.sub ? cur : { hit: h, x: m.cx, y: m.cy }) : cur ? null : cur));
+        setHover((cur) =>
+          h ? (cur && cur.hit.title === h.title && cur.hit.sub === h.sub ? cur : { hit: h, x: m.cx, y: m.cy }) : cur ? null : cur,
+        );
       } else setHover((cur) => (cur ? null : cur));
     };
     raf = requestAnimationFrame(tick);
@@ -376,7 +423,14 @@ export function WorldMap() {
         <div className="wm-side">
           <div className="wm-layers" role="group" aria-label={t('ui.wm.layers')}>
             {LAYERS.map((l) => (
-              <button key={l} type="button" className="wm-chip" data-on={layers[l]} aria-pressed={layers[l]} onClick={(e) => (toggle(l), e.detail > 0 && e.currentTarget.blur())}>
+              <button
+                key={l}
+                type="button"
+                className="wm-chip"
+                data-on={layers[l]}
+                aria-pressed={layers[l]}
+                onClick={(e) => (toggle(l), e.detail > 0 && e.currentTarget.blur())}
+              >
                 {t(`ui.wm.layer.${l}`)}
               </button>
             ))}
@@ -434,7 +488,11 @@ export function WorldMap() {
                   <button type="button" className="wm-zone-head" onClick={() => focusZone(zi.cx, zi.cz)}>
                     <i style={{ background: zi.zone.color }} />
                     <span className="wm-zone-name">{t(`zone.${zi.zone.id}`)}</span>
-                    <span className="wm-zone-lv">{(zi.zone.lvMin === zi.zone.lvMax ? t('ui.mm.zone_lv1', { a: zi.zone.lvMin }) : t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax }))}</span>
+                    <span className="wm-zone-lv">
+                      {zi.zone.lvMin === zi.zone.lvMax
+                        ? t('ui.mm.zone_lv1', { a: zi.zone.lvMin })
+                        : t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax })}
+                    </span>
                   </button>
                   <Row label={t('ui.wm.row.mon')}>{zi.monsters.map((m) => `${monsterName(m.id)} (${m.lvMin}–${m.lvMax})`).join(', ')}</Row>
                   {zi.elites.length > 0 && <Row label={t('ui.wm.row.elite')}>{zi.elites.map((m) => monsterName(m.id)).join(', ')}</Row>}
@@ -447,7 +505,12 @@ export function WorldMap() {
       </div>
       {hover &&
         createPortal(
-          <div className="k-tip mm-tip" role="tooltip" data-show="true" style={{ left: Math.min(hover.x + 14, window.innerWidth - 240), top: hover.y + 16 }}>
+          <div
+            className="k-tip mm-tip"
+            role="tooltip"
+            data-show="true"
+            style={{ left: Math.min(hover.x + 14, window.innerWidth - 240), top: hover.y + 16 }}
+          >
             <div className="k-tip-edge">
               <div className="k-tip-in">
                 <TipCard title={hover.hit.title} sub={hover.hit.sub} desc={hover.hit.desc} lines={hover.hit.lines} />
@@ -467,4 +530,3 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
     </div>
   );
 }
-

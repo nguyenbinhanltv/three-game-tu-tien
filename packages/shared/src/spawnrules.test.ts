@@ -48,11 +48,17 @@ describe('hồi sinh cụm theo số người', () => {
 
 describe('đội hình cụm', () => {
   it('con thường đứng đều trên vòng quanh tâm, không chồng nhau, nằm trong bán kính bãi', () => {
-    for (const [r, n] of [[18, 3], [25, 4], [30, 6], [18, 4]] as const) {
+    for (const [r, n] of [
+      [18, 3],
+      [25, 4],
+      [30, 6],
+      [18, 4],
+    ] as const) {
       const { melee } = formationSlots(100, 200, r, n, 0.7, false);
       expect(melee).toHaveLength(n);
       for (const s of melee) expect(Math.hypot(s.x - 100, s.z - 200)).toBeLessThanOrEqual(r);
-      for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) expect(Math.hypot(melee[i].x - melee[j].x, melee[i].z - melee[j].z)).toBeGreaterThan(3);
+      for (let i = 0; i < n; i++)
+        for (let j = i + 1; j < n; j++) expect(Math.hypot(melee[i].x - melee[j].x, melee[i].z - melee[j].z)).toBeGreaterThan(3);
     }
   });
   it('quái đánh xa đứng phía sau, gần tâm hơn vòng; cùng phase thì cùng đội hình', () => {

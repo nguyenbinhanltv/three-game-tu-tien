@@ -1,6 +1,36 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { type Room } from 'colyseus.js';
-import { applyInvMsg, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type EscortMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_PAD, type TeleMsg, type DmgMsg, type FxMsg, type HazardMsg, type BoltEndMsg, type BoltMsg, type InitMsg, type InvMsg, type QuestView, ROOM_DUNGEON, S, type SysMsg, type TransferMsg, type MethodMsg, type SpiritScanMsg, type SpiritStateMsg, type SoulStateMsg, type CloneStateMsg } from '@dtl/shared';
+import {
+  applyInvMsg,
+  type BossTimerMsg,
+  type CdMsg,
+  type CharView,
+  type ChatMsg,
+  type DuelMsg,
+  type EscortMsg,
+  type InviteMsg,
+  type MarkMsg,
+  type PartyMsg,
+  TELE_PAD,
+  type TeleMsg,
+  type DmgMsg,
+  type FxMsg,
+  type HazardMsg,
+  type BoltEndMsg,
+  type BoltMsg,
+  type InitMsg,
+  type InvMsg,
+  type QuestView,
+  ROOM_DUNGEON,
+  S,
+  type SysMsg,
+  type TransferMsg,
+  type MethodMsg,
+  type SpiritScanMsg,
+  type SpiritStateMsg,
+  type SoulStateMsg,
+  type CloneStateMsg,
+} from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { MONSTER, t } from '@dtl/content';
 import { minimapHooks } from '../../ui/minimap/model';
@@ -111,20 +141,46 @@ export function bindRoom(eng: Game, room: Room): void {
   room.onMessage(S.DMG, (m: DmgMsg) => onDmg(eng, m));
   room.onMessage(S.HAZARD, (m: HazardMsg) => {
     if (eng.monFx?.lab) return;
-    if (import.meta.env.DEV) (eng.hazardLog ??= []).push({ k: m.kind, mv: m.mv, sh: m.sh ?? 'circle', src: m.src ?? '', boss: isBossSrc(eng, m.src), t: eng.view.monsters.get(m.src ?? '')?.t ?? '', x: m.x, z: m.z, r: m.r, yaw: m.yaw, w: m.w, big: m.big, px: eng.cur.x, pz: eng.cur.z });
+    if (import.meta.env.DEV)
+      (eng.hazardLog ??= []).push({
+        k: m.kind,
+        mv: m.mv,
+        sh: m.sh ?? 'circle',
+        src: m.src ?? '',
+        boss: isBossSrc(eng, m.src),
+        t: eng.view.monsters.get(m.src ?? '')?.t ?? '',
+        x: m.x,
+        z: m.z,
+        r: m.r,
+        yaw: m.yaw,
+        w: m.w,
+        big: m.big,
+        px: eng.cur.x,
+        pz: eng.cur.z,
+      });
     if (import.meta.env.DEV && eng.hazardLog && eng.hazardLog.length > 200) eng.hazardLog.shift();
     // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
     if (m.sh && eng.vfx) {
       if (Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90) telegraph(eng.vfx, m, isBossSrc(eng, m.src));
       // Vạch pháp trận cũ giữ nguyên; boss thêm nhấp nháy dọc vạch (`mon_warn_line|cone`, V5).
       eng.monFx?.warn(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
-    }
-    else if (m.mv === 'trail') eng.vfx?.trailPool(m.x, m.z, m.r, m.delay, m.dur ?? 8);
+    } else if (m.mv === 'trail') eng.vfx?.trailPool(m.x, m.z, m.r, m.delay, m.dur ?? 8);
     else if (m.mv === 'pool') eng.vfx?.venomPool(m.x, m.z, m.r, m.delay, m.dur ?? 6, m.kind);
     else {
       const hsrc = m.src ? eng.ents?.monsters.get(m.src) : undefined;
       eng.monFx?.warn(m, hsrc);
-      eng.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, lightningFlash(eng, m), isBossSrc(eng, m.src), m.hot, hsrc ? () => !eng.disposed && !!eng.monFx?.boom(m, eng.ents?.monsters.get(m.src ?? '') ?? hsrc) : undefined);
+      eng.vfx?.hazard(
+        m.x,
+        m.z,
+        m.r,
+        m.delay,
+        m.kind,
+        m.sd,
+        lightningFlash(eng, m),
+        isBossSrc(eng, m.src),
+        m.hot,
+        hsrc ? () => !eng.disposed && !!eng.monFx?.boom(m, eng.ents?.monsters.get(m.src ?? '') ?? hsrc) : undefined,
+      );
     }
     // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).
     if (m.src) eng.ents?.monsters.get(m.src)?.model.bossMove?.(m.sh ? 'sweep' : 'slam', m.delay);
@@ -133,7 +189,8 @@ export function bindRoom(eng: Game, room: Room): void {
     const vol = volumeAt(eng, m.x, m.z);
     const bsrc = m.src ? eng.ents?.monsters.get(m.src) : undefined;
     // Vùng tròn: `Vfx.hazard` tự gọi `boom` lúc nổ và chỉ bỏ hình cũ khi nó thật sự phát; vùng chữ nhật/nón (telegraph) gọi ở đây.
-    if (bsrc && m.sh) setTimeout(() => (eng.disposed ? 0 : eng.monFx?.boom(m, eng.ents?.monsters.get(m.src ?? '') ?? bsrc)), m.delay * 1000);
+    if (bsrc && m.sh)
+      setTimeout(() => (eng.disposed ? 0 : eng.monFx?.boom(m, eng.ents?.monsters.get(m.src ?? '') ?? bsrc)), m.delay * 1000);
     setTimeout(() => {
       sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
       shakeForHazard(eng, m);
@@ -177,7 +234,19 @@ export function bindRoom(eng: Game, room: Room): void {
   // Nguyên anh (E3-K): chỉ hiển thị; server quyết định.
   room.onMessage(S.SOUL_STATE, (m: SoulStateMsg) => {
     const now = performance.now();
-    set({ soul: { open: m.open, k: m.k, until: m.left > 0 ? now + m.left : 0, bx: m.bx, by: m.by, bz: m.bz, to: m.to ?? null, cdUntil: m.cd > 0 ? now + m.cd : 0, deathCdUntil: m.dcd > 0 ? now + m.dcd : 0 } });
+    set({
+      soul: {
+        open: m.open,
+        k: m.k,
+        until: m.left > 0 ? now + m.left : 0,
+        bx: m.bx,
+        by: m.by,
+        bz: m.bz,
+        to: m.to ?? null,
+        cdUntil: m.cd > 0 ? now + m.cd : 0,
+        deathCdUntil: m.dcd > 0 ? now + m.dcd : 0,
+      },
+    });
   });
   // Phân thân thần niệm (E4-K): chỉ hiển thị; server quyết định.
   room.onMessage(S.CLONE_STATE, (m: CloneStateMsg) => {

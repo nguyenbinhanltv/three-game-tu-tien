@@ -92,7 +92,8 @@ export class SteleHold {
         this.offNoted = true;
         this.h.sysAll('sys.xt_stele_off', undefined, 'bad');
       }
-      for (const p of this.h.players()) if (!this.h.isDead(p) && !this.h.isGhost(p)) this.h.damagePlayer(p, Math.max(1, Math.round(p.s.mhp * d.press * dt)), 'xt_press');
+      for (const p of this.h.players())
+        if (!this.h.isDead(p) && !this.h.isGhost(p)) this.h.damagePlayer(p, Math.max(1, Math.round(p.s.mhp * d.press * dt)), 'xt_press');
     } else this.offNoted = false;
     for (const i of dueReinforce(this.held, this.done, d.reinforce)) {
       const g = d.reinforce[i];

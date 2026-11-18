@@ -15,7 +15,6 @@ export interface Channel {
   node: MediaElementAudioSourceNode | null;
 }
 
-
 /** Mức gió tổng hợp (trước bus ambient); chỉnh theo âm môi trường file ở level -22 dB. */
 export const WIND_GAIN = 0.35;
 
@@ -24,8 +23,6 @@ export function ramp(g: GainNode, to: number, t: number, dur: number): void {
   g.gain.setValueAtTime(g.gain.value, t);
   g.gain.linearRampToValueAtTime(to, t + dur);
 }
-
-
 
 /**
  * Gió tổng hợp: nhiễu 4 giây lặp → thông dải → thông thấp có tần số cắt và âm lượng thở theo 2 LFO chậm.
@@ -95,14 +92,17 @@ export class SynthWind {
     if (!this.on) return;
     this.on = false;
     ramp(this.g, 0, this.c.currentTime, fade);
-    setTimeout(() => {
-      if (this.on) return;
-      for (const n of this.nodes) {
-        n.stop();
-        n.disconnect();
-      }
-      this.nodes = [];
-    }, fade * 1000 + 150);
+    setTimeout(
+      () => {
+        if (this.on) return;
+        for (const n of this.nodes) {
+          n.stop();
+          n.disconnect();
+        }
+        this.nodes = [];
+      },
+      fade * 1000 + 150,
+    );
   }
 }
 

@@ -12,7 +12,9 @@ const opt = (n) => (args.includes(n) ? args[args.indexOf(n) + 1] : undefined);
 const input = opt('--in');
 const name = opt('--name');
 if (!input || !name || !/^ext_[a-z0-9_]+$/.test(name)) {
-  console.error('Dùng: node tools/blender/run-ext-clip.mjs --in <file.fbx|glb> --name ext_<id chiêu> [--out ra.glb] [--trim a:b] [--keep-root-motion]');
+  console.error(
+    'Dùng: node tools/blender/run-ext-clip.mjs --in <file.fbx|glb> --name ext_<id chiêu> [--out ra.glb] [--trim a:b] [--keep-root-motion]',
+  );
   process.exit(2);
 }
 const blender = findBlender();

@@ -62,12 +62,13 @@ function setup() {
     names.push(char.name);
     return p;
   };
-  const last = (to: Ent, type: string) => [...sent].reverse().find((s) => s.type === type && s.to === to.char.name)?.msg as Record<string, unknown> | undefined;
+  const last = (to: Ent, type: string) =>
+    [...sent].reverse().find((s) => s.type === type && s.to === to.char.name)?.msg as Record<string, unknown> | undefined;
   const sys = (to: Ent) => sent.filter((s) => s.type === S.SYS && s.to === to.char.name).map((s) => (s.msg as { k: string }).k);
   const inv = (a: Ent, b: Ent) => parties.command(a, { a: 'inv', n: b.char.name });
   const team = (...ps: Ent[]) => {
     for (const q of ps.slice(1)) {
-      parties.now = () => Date.now() + 10_000 * (nextAcc++);
+      parties.now = () => Date.now() + 10_000 * nextAcc++;
       inv(ps[0], q);
       parties.command(q, { a: 'acc', id: ps[0].char.id });
     }

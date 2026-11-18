@@ -1,5 +1,27 @@
 // Pháp bảo phụ và đan tăng sức (P3-8): kích hoạt, nạp linh khí, nội tại, Ngưng Đan Lô
-import { artifactLevelMods, BONDED_ARTIFACT_ID, bondedLevel, furnaceHeal, type ArtifactDef, artifactQiGain, drainMp, DRAIN_MAX_TARGETS, mergeBuff, sealPosture, sealStun, shieldAmount, type DmgMsg, type FxMsg, MF_STUN, MS_ATTACK, MS_CHASE, PF_SHIELD, S, SKILL_MSG_PER_SEC, type SysMsg } from '@dtl/shared';
+import {
+  artifactLevelMods,
+  BONDED_ARTIFACT_ID,
+  bondedLevel,
+  furnaceHeal,
+  type ArtifactDef,
+  artifactQiGain,
+  drainMp,
+  DRAIN_MAX_TARGETS,
+  mergeBuff,
+  sealPosture,
+  sealStun,
+  shieldAmount,
+  type DmgMsg,
+  type FxMsg,
+  MF_STUN,
+  MS_ATTACK,
+  MS_CHASE,
+  PF_SHIELD,
+  S,
+  SKILL_MSG_PER_SEC,
+  type SysMsg,
+} from '@dtl/shared';
 import { ARTIFACT, itemName, t } from '@dtl/content';
 import type { PlayerEnt, MonEnt, SimHost } from '../entities';
 import { DuelSystem } from '../duel';
@@ -44,7 +66,11 @@ export class ArtifactSystem {
   }
 
   /** Dùng đan tăng sức: đặt buff theo luật làm mới (không cộng dồn), lưu trong meta. */
-  applyPillBuff(p: PlayerEnt, def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } }, potency: number): void {
+  applyPillBuff(
+    p: PlayerEnt,
+    def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } },
+    potency: number,
+  ): void {
     const b = def.use?.buff;
     if (!b) return;
     const c = p.char;
@@ -54,8 +80,15 @@ export class ArtifactSystem {
     c.meta.buffs[b.kind] = mergeBuff(c.meta.buffs[b.kind], m, now + b.sec * 1000 * potency, now);
     c.recalc();
     p.mth.dirty = true;
-    if (b.kind === 'ward') this.c.sys(p, 'sys.ward_buff', { item: itemName(def.id), n: Math.round(m * 100), s: Math.round(b.sec * potency) }, 'good');
-    else this.c.sys(p, 'sys.pill_buff', { item: itemName(def.id), what: t('ui.pill.buff.' + b.kind), n: Math.round(m * 100), m: Math.round((b.sec * potency) / 60) }, 'good');
+    if (b.kind === 'ward')
+      this.c.sys(p, 'sys.ward_buff', { item: itemName(def.id), n: Math.round(m * 100), s: Math.round(b.sec * potency) }, 'good');
+    else
+      this.c.sys(
+        p,
+        'sys.pill_buff',
+        { item: itemName(def.id), what: t('ui.pill.buff.' + b.kind), n: Math.round(m * 100), m: Math.round((b.sec * potency) / 60) },
+        'good',
+      );
     this.c.fx({ t: 'potion', src: p.sid });
   }
 
@@ -164,7 +197,8 @@ export class ArtifactSystem {
         // Ngưng Đan Lô: hồi khí huyết cho bản thân và đồng đội trong tầm (đồng đội cần cùng tổ đội, cùng room, còn sống).
         const who = new Set<PlayerEnt>([p]);
         for (const o of parties.matesInRoom(c.id, this.c.host)) {
-          if (o !== p && !this.c.isDead(o) && this.c.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= def.radius) who.add(o);
+          if (o !== p && !this.c.isDead(o) && this.c.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= def.radius)
+            who.add(o);
         }
         for (const o of who) {
           const n = furnaceHeal(def, lv, o.char.mhp);

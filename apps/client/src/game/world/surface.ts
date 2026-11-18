@@ -46,7 +46,8 @@ export function surfaceAt(x: number, z: number, level: 'van_lam' | 'kiem_trung' 
   if (h < WATER_Y - 0.05 && inLakeWater(x, z)) return 'water';
   for (const r of WOOD_ZONES) if (inRect(r, x, z)) return 'wood';
   // Khớp ngưỡng của groundMask.maskPixel (kênh G): sân tông môn và bệ cổng bí cảnh.
-  if ((featureWeight(SECT, x, z) - 0.8) * 9 > 0.5 || (featureWeight(PORTAL_PAD, x, z) - 0.88) * 12 > 0.5 || inRect(STAIRS, x, z)) return 'stone';
+  if ((featureWeight(SECT, x, z) - 0.8) * 9 > 0.5 || (featureWeight(PORTAL_PAD, x, z) - 0.88) * 12 > 0.5 || inRect(STAIRS, x, z))
+    return 'stone';
   // Cát (kênh B > 0,5): (WATER_Y + 2,6 − h) / 1,8 > 0,5.
   if (featureWeight(LAKE, x, z) > 0 && h < WATER_Y + 1.7) return 'sand';
   const sx = (heightAt(x + 1.5, z) - heightAt(x - 1.5, z)) / 3;

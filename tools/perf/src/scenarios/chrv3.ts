@@ -12,7 +12,18 @@ import { centerClip, snap } from '../lib/shot';
 import type { Scenario } from '../lib/scenario';
 
 /** `v3`/`v3b` = Lạc Kiếm v3b (mặc định của ?chr=v3), `v3a` = bản v3 cũ (`?v3model=a`). `v3raw` = v3 không bảng màu (`?v3pal=0`), để so trước/sau chỉnh màu. */
-const QUERY: Record<string, Record<string, string>> = { v1: {}, v2: { chr: 'v2' }, v3: { chr: 'v3' }, v3b: { chr: 'v3' }, v3a: { chr: 'v3', v3model: 'a' }, v3a0: { chr: 'v3', armfit: '0' }, v3a5: { chr: 'v3', armfit: '5' }, v3new: { chr: 'v3' }, v3nok5: { chr: 'v3', k5: '0' }, v3raw: { chr: 'v3', v3pal: '0' } };
+const QUERY: Record<string, Record<string, string>> = {
+  v1: {},
+  v2: { chr: 'v2' },
+  v3: { chr: 'v3' },
+  v3b: { chr: 'v3' },
+  v3a: { chr: 'v3', v3model: 'a' },
+  v3a0: { chr: 'v3', armfit: '0' },
+  v3a5: { chr: 'v3', armfit: '5' },
+  v3new: { chr: 'v3' },
+  v3nok5: { chr: 'v3', k5: '0' },
+  v3raw: { chr: 'v3', v3pal: '0' },
+};
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 
 export default {
@@ -33,14 +44,31 @@ export default {
             const mtag = `${tag}-${method}`;
             const rec = path.join(r.out, `_rec-${mtag}`);
             const t1 = Date.now();
-            const { page, ctx } = await r.open({ name: `V3k${g}${v}${method.slice(0, 3)}`, viewport: [960, 600], quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/, video: rec });
+            const { page, ctx } = await r.open({
+              name: `V3k${g}${v}${method.slice(0, 3)}`,
+              viewport: [960, 600],
+              quality: 'high',
+              look: { g },
+              query: QUERY[v] ?? {},
+              hide: 'hud',
+              warnings: /models|chr_v3|clip/,
+              video: rec,
+            });
             await gm(page, 'level 24', 1500);
             await gm(page, 'god on', 1000);
             await gm(page, `method ${method} 8`, 1200);
             await gm(page, 'killall', 700);
             await gm(page, 'tp 2048 2088', 1500);
-            if (v.startsWith('v3')) await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
-            else await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.dirHits === true, undefined, { timeout: 60_000, polling: 300 });
+            if (v.startsWith('v3'))
+              await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+                timeout: 60_000,
+                polling: 300,
+              });
+            else
+              await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.dirHits === true, undefined, {
+                timeout: 60_000,
+                polling: 300,
+              });
             await sleep(3500); // chờ nguồn pose K-5 nướng/retarget
             const cf = () => cam(page, { yaw: 0.5, pitch: 0.08, dist: 3.6 });
             await cf();
@@ -63,7 +91,21 @@ export default {
             if (vid) {
               const raw = await vid.path();
               const dst = path.join(r.out, `${mtag}.webm`);
-              const cut = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-ss', Math.max(0, (t0 - t1) / 1000 - 0.5).toFixed(2), '-i', raw, '-c:v', 'libvpx', '-b:v', '1.5M', '-an', dst]);
+              const cut = spawnSync(FFMPEG, [
+                '-y',
+                '-loglevel',
+                'error',
+                '-ss',
+                Math.max(0, (t0 - t1) / 1000 - 0.5).toFixed(2),
+                '-i',
+                raw,
+                '-c:v',
+                'libvpx',
+                '-b:v',
+                '1.5M',
+                '-an',
+                dst,
+              ]);
               if (cut.status !== 0) fs.copyFileSync(raw, dst);
             }
             fs.rmSync(rec, { recursive: true, force: true });
@@ -71,10 +113,22 @@ export default {
           }
         };
         const slide = async () => {
-          const { page, ctx } = await r.open({ name: `V3s${g}${v}`, viewport: [640, 400], quality: 'medium', look: { g }, query: { ...(QUERY[v] ?? {}), ...(process.env.JOG ? { jog: process.env.JOG } : {}) }, hide: 'hud', warnings: /models|chr_v3|clip/ });
+          const { page, ctx } = await r.open({
+            name: `V3s${g}${v}`,
+            viewport: [640, 400],
+            quality: 'medium',
+            look: { g },
+            query: { ...(QUERY[v] ?? {}), ...(process.env.JOG ? { jog: process.env.JOG } : {}) },
+            hide: 'hud',
+            warnings: /models|chr_v3|clip/,
+          });
           await gm(page, 'god on', 1000);
           await gm(page, 'tp 2048 2088', 1500);
-          if (v.startsWith('v3')) await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+          if (v.startsWith('v3'))
+            await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+              timeout: 60_000,
+              polling: 300,
+            });
           await sleep(1500);
           // Chuỗi JS thuần: tsx chèn `__name` vào hàm đặt tên trong evaluate(() => ...) làm trang lỗi.
           await page.evaluate(`(() => {
@@ -112,18 +166,33 @@ export default {
             const run = w.speeds.filter((x) => x > 0.5);
             return { frames: w.samples.length, runSpeedMean: run.reduce((a, b) => a + b, 0) / Math.max(1, run.length), slideMedian: q(w.samples, 0.5), slideP90: q(w.samples, 0.9) };
           })()`)) as unknown;
-          fs.writeFileSync(path.join(r.out, `slide-${tag}${process.env.JOG ? '-jog' + process.env.JOG : ''}.json`), JSON.stringify(res, null, 1));
+          fs.writeFileSync(
+            path.join(r.out, `slide-${tag}${process.env.JOG ? '-jog' + process.env.JOG : ''}.json`),
+            JSON.stringify(res, null, 1),
+          );
           console.log(`[shots:chrv3] slide ${tag}: ${JSON.stringify(res)}`);
           await ctx.close();
         };
         const stills = async () => {
           // Ảnh cận mặt: phiên riêng, camera đặt ngay sau khi vào game (trong phiên quay, nhân vật đã bị `level`/di chuyển nên hướng nhìn lệch).
-          const still = await r.open({ name: `V3c${g}${v}`, viewport: [800, 500], quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/ });
+          const still = await r.open({
+            name: `V3c${g}${v}`,
+            viewport: [800, 500],
+            quality: 'high',
+            look: { g },
+            query: QUERY[v] ?? {},
+            hide: 'hud',
+            warnings: /models|chr_v3|clip/,
+          });
           await gm(still.page, 'god on', 1000);
           await gm(still.page, 'set set_lac_kiem', 1200);
           await gm(still.page, 'killall', 800);
           await gm(still.page, 'tp 2048 2088', 1500);
-          if (v.startsWith('v3')) await still.page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+          if (v.startsWith('v3'))
+            await still.page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+              timeout: 60_000,
+              polling: 300,
+            });
           await sleep(2500);
           // Không `level`/di chuyển trước khi chụp: ngay sau khi vào, nhân vật quay mặt về camera yaw 0 (hướng thấy mặt).
           await cam(still.page, { yaw: Number(process.env.STILL_YAW ?? 0), pitch: 0.12, dist: 1.25 });
@@ -155,11 +224,23 @@ export default {
           // sau khi quay đủ biến thể thì cắt từng đoạn theo mốc rồi ghép trái/phải: cùng clip, cùng thời điểm dù trang nào đó khựng.
           const [at0, at1] = (process.env.SIX_AT ?? '2048 2088').split(' ');
           const rec = path.join(r.out, `_rec-${tag}`);
-          const { page, ctx } = await r.open({ name: `V3w${g}${v}`, viewport: [800, 600], quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/, video: rec });
+          const { page, ctx } = await r.open({
+            name: `V3w${g}${v}`,
+            viewport: [800, 600],
+            quality: 'high',
+            look: { g },
+            query: QUERY[v] ?? {},
+            hide: 'hud',
+            warnings: /models|chr_v3|clip/,
+            video: rec,
+          });
           await gm(page, 'god on', 1000);
           await gm(page, 'killall', 700);
           await gm(page, `tp ${at0} ${at1}`, 1500);
-          await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+          await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+            timeout: 60_000,
+            polling: 300,
+          });
           await sleep(2500);
           // Nhãn: biến thể + clip đang phát thật (đòn một lần nếu có, không thì clip nền) + có track vạt nướng hay không; `__mark` ghi mốc.
           await page.evaluate(`(() => {
@@ -174,8 +255,14 @@ export default {
               d.textContent = '${v === 'v3new' ? 'GỘP: 16° + HỆ SỐ BUÔNG' : v === 'v3a5' ? 'MAIN: 5°' : 'KHÔNG BÙ TAY'} · ' + (m.shot ? m.shot.getClip().name : m.baseName);
             }, 100);
           })()`);
-          const view = (side: boolean) => cam(page, { yaw: side ? Number(process.env.SIX_YAW_SIDE ?? -1.75) : Number(process.env.SIX_YAW ?? -0.7), pitch: 0.0, dist: 1.7 });
-          const shot = (name: string, rate: number) => page.evaluate(`(() => { const g = window.__game; g.ents.players.get(g.sid).model.oneShot('${name}', ${rate}); })()`);
+          const view = (side: boolean) =>
+            cam(page, {
+              yaw: side ? Number(process.env.SIX_YAW_SIDE ?? -1.75) : Number(process.env.SIX_YAW ?? -0.7),
+              pitch: 0.0,
+              dist: 1.7,
+            });
+          const shot = (name: string, rate: number) =>
+            page.evaluate(`(() => { const g = window.__game; g.ents.players.get(g.sid).model.oneShot('${name}', ${rate}); })()`);
           const tStart = Date.now();
           const spec: { name: string; ms: number }[] = [];
           // Một đoạn = hai góc; mỗi góc lặp `act` mỗi `period` ms (đòn một lần) trong `ms`.
@@ -229,7 +316,13 @@ export default {
           if (v === vs[vs.length - 1]) {
             // Ghép từng đoạn: [video biến thể 1 | video biến thể 2], cắt theo mốc của từng video.
             const tgs = vs.map((x) => `${g === 'm' ? 'nam' : 'nu'}-${x}`);
-            const meta = tgs.map((t) => JSON.parse(fs.readFileSync(path.join(r.out, `_marks-${t}.json`), 'utf8')) as { at: { name: string; sec: number }[]; spec: { name: string; ms: number }[] });
+            const meta = tgs.map(
+              (t) =>
+                JSON.parse(fs.readFileSync(path.join(r.out, `_marks-${t}.json`), 'utf8')) as {
+                  at: { name: string; sec: number }[];
+                  spec: { name: string; ms: number }[];
+                },
+            );
             const inputs = tgs.flatMap((t) => ['-i', path.join(r.out, `_raw-${t}.webm`)]);
             const parts: string[] = [];
             const n = meta[0].spec.length;
@@ -243,22 +336,56 @@ export default {
             }
             const cat = `${Array.from({ length: n }, (_, k) => `[s${k}]`).join('')}concat=n=${n}:v=1:a=0[out]`;
             const dst = path.join(r.out, `${g === 'm' ? 'nam' : 'nu'}-6clip-so-sanh.webm`);
-            const res = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', ...inputs, '-filter_complex', [...parts, cat].join(';'), '-map', '[out]', '-c:v', 'libvpx', '-b:v', '3M', '-an', dst], { encoding: 'utf8' });
+            const res = spawnSync(
+              FFMPEG,
+              [
+                '-y',
+                '-loglevel',
+                'error',
+                ...inputs,
+                '-filter_complex',
+                [...parts, cat].join(';'),
+                '-map',
+                '[out]',
+                '-c:v',
+                'libvpx',
+                '-b:v',
+                '3M',
+                '-an',
+                dst,
+              ],
+              { encoding: 'utf8' },
+            );
             console.log(res.status === 0 ? `[shots:chrv3] ${path.basename(dst)}` : `[shots:chrv3] ghép lỗi: ${res.stderr}`);
           }
           continue;
         }
         if (process.argv.includes('--sit')) {
           // Ảnh đả tọa (Z) cận cảnh, không có quái xung quanh (ngồi thiền chỉ vào được khi ngoài giao chiến).
-          const { page, ctx } = await r.open({ name: `V3d${g}${v}`, viewport: [800, 560], quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/ });
+          const { page, ctx } = await r.open({
+            name: `V3d${g}${v}`,
+            viewport: [800, 560],
+            quality: 'high',
+            look: { g },
+            query: QUERY[v] ?? {},
+            hide: 'hud',
+            warnings: /models|chr_v3|clip/,
+          });
           await gm(page, 'god on', 1000);
           await gm(page, 'set set_lac_kiem', 1200);
           await gm(page, 'tp 2048 2088', 1500);
-          if (v.startsWith('v3')) await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+          if (v.startsWith('v3'))
+            await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+              timeout: 60_000,
+              polling: 300,
+            });
           await sleep(4500);
           await page.keyboard.press('KeyZ');
           await sleep(3000);
-          for (const [k, yaw] of [['truoc', 0.5], ['canh', 1.6]] as const) {
+          for (const [k, yaw] of [
+            ['truoc', 0.5],
+            ['canh', 1.6],
+          ] as const) {
             await cam(page, { yaw, pitch: 0.12, dist: 2.7 });
             await sleep(900);
             await snap(page, r.out, `${tag}-datoa-${k}.jpg`, { clip: centerClip(800, 560, 440, 440) });
@@ -279,14 +406,31 @@ export default {
           continue;
         }
         const t0 = Date.now();
-        const { ctx, page } = await r.open({ name: `V3${g}${v}`, viewport, quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/, video: dir });
+        const { ctx, page } = await r.open({
+          name: `V3${g}${v}`,
+          viewport,
+          quality: 'high',
+          look: { g },
+          query: QUERY[v] ?? {},
+          hide: 'hud',
+          warnings: /models|chr_v3|clip/,
+          video: dir,
+        });
         await gm(page, 'level 12', 1500);
         await gm(page, 'god on', 1200);
         await gm(page, 'set set_lac_kiem', 1200);
         await gm(page, 'killall', 800);
         await gm(page, 'tp 2048 2088', 1500);
-        if (v.startsWith('v3')) await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
-        else if (v !== 'v1' || true) await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.dirHits === true, undefined, { timeout: 60_000, polling: 300 });
+        if (v.startsWith('v3'))
+          await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+            timeout: 60_000,
+            polling: 300,
+          });
+        else if (v !== 'v1' || true)
+          await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.dirHits === true, undefined, {
+            timeout: 60_000,
+            polling: 300,
+          });
         // Camera 3/4 gần, đặt lại trước mỗi pha (camera theo khu có thể kéo xa).
         const frame = () => cam(page, { yaw: 0.5, pitch: 0.08, dist: 3.4 });
         await frame();
@@ -341,7 +485,21 @@ export default {
           const raw = await vid.path();
           const dst = path.join(r.out, `${tag}.webm`);
           const ss = Math.max(0, (tScene - t0) / 1000 - 0.3);
-          const cut = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-ss', ss.toFixed(2), '-i', raw, '-c:v', 'libvpx', '-b:v', '1.5M', '-an', dst]);
+          const cut = spawnSync(FFMPEG, [
+            '-y',
+            '-loglevel',
+            'error',
+            '-ss',
+            ss.toFixed(2),
+            '-i',
+            raw,
+            '-c:v',
+            'libvpx',
+            '-b:v',
+            '1.5M',
+            '-an',
+            dst,
+          ]);
           if (cut.status !== 0) fs.copyFileSync(raw, dst);
         }
         fs.rmSync(dir, { recursive: true, force: true });

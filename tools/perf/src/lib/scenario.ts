@@ -51,7 +51,7 @@ export async function runScenario(sc: Scenario): Promise<void> {
     reportErrors(tag, errors);
     console.log(`[${tag}] xong, ảnh ở ${out}`);
   } catch (e) {
-    console.error(`[${tag}] lỗi:`, e instanceof Error ? e.stack ?? e.message : e);
+    console.error(`[${tag}] lỗi:`, e instanceof Error ? (e.stack ?? e.message) : e);
     process.exitCode = 1;
   } finally {
     await browser?.close().catch(() => undefined);

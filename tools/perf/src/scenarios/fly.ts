@@ -16,7 +16,13 @@ export default {
     const level = opt('--level', 'thien_khuyet');
     requireLevel(level);
     const pts = levelPoints(level);
-    const names = opt('--route', pts.filter((p) => /^(zone|poi)_/.test(p.name)).map((p) => p.name).join(',')).split(',');
+    const names = opt(
+      '--route',
+      pts
+        .filter((p) => /^(zone|poi)_/.test(p.name))
+        .map((p) => p.name)
+        .join(','),
+    ).split(',');
     const route = names.map((n) => pts.find((p) => p.name === n)).filter((p): p is NonNullable<typeof p> => !!p);
     if (route.length < 2) throw new Error('cần ít nhất 2 điểm trong --route');
     const secs = Number(opt('--secs', '9'));

@@ -43,7 +43,8 @@ export function sanitizeArtifactMeta(meta: ArtifactMeta): void {
   if (meta.buffs && typeof meta.buffs === 'object') {
     for (const k of PILL_BUFF_KINDS) {
       const b = meta.buffs[k];
-      if (b && typeof b.m === 'number' && typeof b.until === 'number' && b.m > 0 && b.m <= 0.5 && Number.isFinite(b.until)) buffs[k] = { m: b.m, until: b.until };
+      if (b && typeof b.m === 'number' && typeof b.until === 'number' && b.m > 0 && b.m <= 0.5 && Number.isFinite(b.until))
+        buffs[k] = { m: b.m, until: b.until };
     }
   }
   meta.buffs = buffs;

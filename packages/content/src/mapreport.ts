@@ -107,18 +107,31 @@ interface ZoneRow {
 }
 const polyOrDiscs: { id: string; lv: string; area: number; has: (x: number, z: number) => boolean }[] = [];
 if (zones.length) {
-  for (const z of zones) polyOrDiscs.push({ id: z.id, lv: `${z.lvMin}–${z.lvMax}`, area: polyArea(z.poly), has: (x, zz) => inPoly(z.poly, x, zz) });
+  for (const z of zones)
+    polyOrDiscs.push({ id: z.id, lv: `${z.lvMin}–${z.lvMax}`, area: polyArea(z.poly), has: (x, zz) => inPoly(z.poly, x, zz) });
 } else {
   // Bố cục cũ chưa có vùng: mỗi điểm sinh quái thường là một "vùng" hình đĩa.
   for (const [i, sp] of level.spawns.entries()) {
     if (kindOf(sp.mon) !== 'normal') continue;
-    polyOrDiscs.push({ id: `spawn${i}_${sp.mon.replace('mon_', '')}`, lv: `${sp.levelMin}–${sp.levelMax}`, area: Math.PI * sp.radius ** 2, has: (x, z) => (x - sp.x) ** 2 + (z - sp.z) ** 2 <= sp.radius ** 2 });
+    polyOrDiscs.push({
+      id: `spawn${i}_${sp.mon.replace('mon_', '')}`,
+      lv: `${sp.levelMin}–${sp.levelMax}`,
+      area: Math.PI * sp.radius ** 2,
+      has: (x, z) => (x - sp.x) ** 2 + (z - sp.z) ** 2 <= sp.radius ** 2,
+    });
   }
 }
 const zoneRows: ZoneRow[] = polyOrDiscs.map((z) => {
   const inside = mons.filter((m) => z.has(m.x, m.z));
   const n = inside.filter((m) => m.kind === 'normal').length;
-  return { id: z.id, lv: z.lv, areaKm2: z.area / 1e6, normal: n, elite: inside.filter((m) => m.kind === 'elite').length, densityPerKm2: n / (z.area / 1e6) };
+  return {
+    id: z.id,
+    lv: z.lv,
+    areaKm2: z.area / 1e6,
+    normal: n,
+    elite: inside.filter((m) => m.kind === 'elite').length,
+    densityPerKm2: n / (z.area / 1e6),
+  };
 });
 
 // ---- khoảng cách giữa các vùng ----
@@ -146,7 +159,8 @@ if (zones.length) {
     }
 } else {
   for (const [i, sp] of level.spawns.entries()) {
-    if (kindOf(sp.mon) === 'normal') sectToZone.push({ zone: `spawn${i}_${sp.mon.replace('mon_', '')}`, m: Math.hypot(sp.x - HUB.x, sp.z - HUB.z) });
+    if (kindOf(sp.mon) === 'normal')
+      sectToZone.push({ zone: `spawn${i}_${sp.mon.replace('mon_', '')}`, m: Math.hypot(sp.x - HUB.x, sp.z - HUB.z) });
   }
   const boss = level.spawns.find((s) => kindOf(s.mon) === 'boss');
   if (boss) sectToZone.push({ zone: boss.mon, m: Math.hypot(boss.x - HUB.x, boss.z - HUB.z) });
@@ -182,7 +196,13 @@ function coverage(step: number, inArea: (x: number, z: number) => boolean) {
     for (let x = PLAY.x0; x <= PLAY.x1; x += step) if (isLand(x, z) && inArea(x, z)) ds.push(nearest(x, z));
   ds.sort((a, b) => a - b);
   const pick = (p: number) => ds[Math.min(ds.length - 1, Math.floor(p * ds.length))] ?? NaN;
-  return { points: ds.length, within35: ds.filter((d) => d <= 35).length / Math.max(1, ds.length), p50: pick(0.5), p95: pick(0.95), max: ds[ds.length - 1] ?? NaN };
+  return {
+    points: ds.length,
+    within35: ds.filter((d) => d <= 35).length / Math.max(1, ds.length),
+    p50: pick(0.5),
+    p95: pick(0.95),
+    max: ds[ds.length - 1] ?? NaN,
+  };
 }
 const hasZones = zones.length > 0;
 const covHunt = coverage(12, (x, z) => (hasZones ? zones.some((zn) => inPoly(zn.poly, x, z)) : polyOrDiscs.some((d) => d.has(x, z))));
@@ -238,12 +258,18 @@ const out: string[] = [];
 out.push(`# Báo cáo bản đồ ${LEVEL_ID} (${hasZones ? 'zones + camps' : 'bố cục cũ: điểm sinh quái dạng đĩa'})`);
 const playW = PLAY.x1 - PLAY.x0;
 const playH = PLAY.z1 - PLAY.z0;
-out.push(`Vùng đo: ${PLAY.x0}..${PLAY.x1} × ${PLAY.z0}..${PLAY.z1} (${(playW / 1000).toFixed(2)} × ${(playH / 1000).toFixed(2)} km = ${((playW * playH) / 1e6).toFixed(2)} km²)`);
+out.push(
+  `Vùng đo: ${PLAY.x0}..${PLAY.x1} × ${PLAY.z0}..${PLAY.z1} (${(playW / 1000).toFixed(2)} × ${(playH / 1000).toFixed(2)} km = ${((playW * playH) / 1e6).toFixed(2)} km²)`,
+);
 out.push('');
 out.push('## Quái');
-out.push(`Quái thường ${normal.length}, tinh anh ${mons.filter((m) => m.kind === 'elite').length}, boss ${mons.filter((m) => m.kind === 'boss').length}; bãi/điểm sinh ${spawnDefs.length}${camps.length ? ` (camps ${camps.length}, cụm ${f1(camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0) / camps.length)} con/camp)` : ''}`);
+out.push(
+  `Quái thường ${normal.length}, tinh anh ${mons.filter((m) => m.kind === 'elite').length}, boss ${mons.filter((m) => m.kind === 'boss').length}; bãi/điểm sinh ${spawnDefs.length}${camps.length ? ` (camps ${camps.length}, cụm ${f1(camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0) / camps.length)} con/camp)` : ''}`,
+);
 const hunt = polyOrDiscs.reduce((a, z) => a + z.area, 0) / 1e6;
-out.push(`Diện tích vùng săn (tổng ${hasZones ? 'zones' : 'đĩa spawn, trùng lặp có thể tính đôi'}): ${hunt.toFixed(3)} km² → ${f1(normal.length / hunt)} quái/km²; ${f1((hunt * 1e6) / Math.max(1, normal.length))} m² mỗi quái`);
+out.push(
+  `Diện tích vùng săn (tổng ${hasZones ? 'zones' : 'đĩa spawn, trùng lặp có thể tính đôi'}): ${hunt.toFixed(3)} km² → ${f1(normal.length / hunt)} quái/km²; ${f1((hunt * 1e6) / Math.max(1, normal.length))} m² mỗi quái`,
+);
 out.push('');
 out.push('| vùng | cấp | km² | quái thường | tinh anh | quái/km² |');
 out.push('|---|---|---|---|---|---|');
@@ -251,7 +277,9 @@ for (const r of zoneRows) out.push(`| ${r.id} | ${r.lv} | ${r.areaKm2.toFixed(3)
 out.push('');
 out.push('## Khoảng cách');
 if (IS_VL) out.push(`Tông môn → cổng bí cảnh: ${f1(portalM)} m; cổng → tâm Kiếm Trủng: ${f1(ktM)} m`);
-out.push(`${IS_VL ? 'Tông môn' : 'Tâm vùng chơi'} → tâm vùng/điểm sinh: ` + sectToZone.map((s) => `${s.zone} ${Math.round(s.m)} m`).join(', '));
+out.push(
+  `${IS_VL ? 'Tông môn' : 'Tâm vùng chơi'} → tâm vùng/điểm sinh: ` + sectToZone.map((s) => `${s.zone} ${Math.round(s.m)} m`).join(', '),
+);
 if (gaps.length) {
   out.push('');
   out.push('| vùng A | vùng B | tâm–tâm (m) | mép–mép (m) |');
@@ -260,20 +288,43 @@ if (gaps.length) {
 }
 out.push('');
 out.push('## Độ phủ: khoảng cách tới quái thường gần nhất (mục tiêu ≤ 35 m)');
-out.push(`Trong vùng săn (${covHunt.points} điểm, lưới 12 m): ≤35 m ${pct(covHunt.within35)}, p50 ${f1(covHunt.p50)} m, p95 ${f1(covHunt.p95)} m, max ${f1(covHunt.max)} m`);
+out.push(
+  `Trong vùng săn (${covHunt.points} điểm, lưới 12 m): ≤35 m ${pct(covHunt.within35)}, p50 ${f1(covHunt.p50)} m, p95 ${f1(covHunt.p95)} m, max ${f1(covHunt.max)} m`,
+);
 if (!IS_VL && camps.length) {
   const cc = campCoverage(level);
-  out.push(`Chuẩn bản đồ mở rộng: khoảng cách tới MÉP cụm gần nhất trong vùng săn (${cc.points} điểm, lưới 12 m): ≤${COVER_EDGE_MAX} m ${pct(cc.within)}, p50 ${f1(cc.p50)} m, p95 ${f1(cc.p95)} m, max ${f1(cc.max)} m; chuẩn level p95 ≤ ${(COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).p95}, max ≤ ${(COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).max} ${cc.p95 <= (COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).p95 && cc.max <= (COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).max ? '(ĐẠT)' : '(KHÔNG ĐẠT)'}`);
+  out.push(
+    `Chuẩn bản đồ mở rộng: khoảng cách tới MÉP cụm gần nhất trong vùng săn (${cc.points} điểm, lưới 12 m): ≤${COVER_EDGE_MAX} m ${pct(cc.within)}, p50 ${f1(cc.p50)} m, p95 ${f1(cc.p95)} m, max ${f1(cc.max)} m; chuẩn level p95 ≤ ${(COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).p95}, max ≤ ${(COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).max} ${cc.p95 <= (COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).p95 && cc.max <= (COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).max ? '(ĐẠT)' : '(KHÔNG ĐẠT)'}`,
+  );
 }
-out.push(`Cả vùng chơi, chỗ đi được (${covAll.points} điểm, lưới 24 m): ≤35 m ${pct(covAll.within35)}, p50 ${f1(covAll.p50)} m, p95 ${f1(covAll.p95)} m, max ${f1(covAll.max)} m`);
+out.push(
+  `Cả vùng chơi, chỗ đi được (${covAll.points} điểm, lưới 24 m): ≤35 m ${pct(covAll.within35)}, p50 ${f1(covAll.p50)} m, p95 ${f1(covAll.p95)} m, max ${f1(covAll.max)} m`,
+);
 out.push('');
 out.push('## Chỗ kẹt (đẩy 8 hướng theo stepMove, 2 s mỗi hướng, cần thoát ≥ 6 m)');
-out.push(`Đã quét ${stuck.checked} điểm quanh vật cản/ranh + tâm bãi, NPC, cổng, điểm đặt tên: ${stuck.stuck.length} chỗ kẹt${stuck.stuck.length ? ': ' + stuck.stuck.slice(0, 12).map((p) => `(${p[0]}, ${p[1]})`).join(' ') : ''}`);
+out.push(
+  `Đã quét ${stuck.checked} điểm quanh vật cản/ranh + tâm bãi, NPC, cổng, điểm đặt tên: ${stuck.stuck.length} chỗ kẹt${
+    stuck.stuck.length
+      ? ': ' +
+        stuck.stuck
+          .slice(0, 12)
+          .map((p) => `(${p[0]}, ${p[1]})`)
+          .join(' ')
+      : ''
+  }`,
+);
 console.log(out.join('\n'));
 
 const jsonOut = opt('--json');
 if (jsonOut) {
-  fs.writeFileSync(abs(jsonOut), JSON.stringify({ play: PLAY, normal: normal.length, zones: zoneRows, gaps, covHunt, covAll, stuck: stuck.stuck, portalM, sectToZone }, null, 1));
+  fs.writeFileSync(
+    abs(jsonOut),
+    JSON.stringify(
+      { play: PLAY, normal: normal.length, zones: zoneRows, gaps, covHunt, covAll, stuck: stuck.stuck, portalM, sectToZone },
+      null,
+      1,
+    ),
+  );
 }
 
 // ---- ảnh nhìn từ trên xuống ----
@@ -299,7 +350,7 @@ if (pngOut) {
       const h = hs[j * SIZE + i];
       const hx = hs[j * SIZE + Math.min(SIZE - 1, i + 1)] - hs[j * SIZE + Math.max(0, i - 1)];
       const hz = hs[Math.min(SIZE - 1, j + 1) * SIZE + i] - hs[Math.max(0, j - 1) * SIZE + i];
-      const shade = Math.max(0.35, Math.min(1.35, 1 + (-(hx * 0.7) - hz * 0.7) / (sx * 2) * 0.9));
+      const shade = Math.max(0.35, Math.min(1.35, 1 + ((-(hx * 0.7) - hz * 0.7) / (sx * 2)) * 0.9));
       let r: number, g: number, bl: number;
       if (h < WATER_Y - 0.5) [r, g, bl] = [70, 120, 150];
       else if (h < WATER_Y + 2) [r, g, bl] = [214, 200, 150];
@@ -317,7 +368,8 @@ if (pngOut) {
   const toPx = (x: number, z: number): [number, number] => [Math.round((x - b.x0) / sx), Math.round((z - b.z0) / sz)];
   const dot = (x: number, z: number, rad: number, c: [number, number, number], a = 1) => {
     const [ci, cj] = toPx(x, z);
-    for (let dj = -rad; dj <= rad; dj++) for (let di = -rad; di <= rad; di++) if (di * di + dj * dj <= rad * rad) put(ci + di, cj + dj, c[0], c[1], c[2], a);
+    for (let dj = -rad; dj <= rad; dj++)
+      for (let di = -rad; di <= rad; di++) if (di * di + dj * dj <= rad * rad) put(ci + di, cj + dj, c[0], c[1], c[2], a);
   };
   const line = (x0: number, z0: number, x1: number, z1: number, c: [number, number, number]) => {
     const n = Math.ceil(Math.hypot(x1 - x0, z1 - z0) / sx);
@@ -335,8 +387,19 @@ if (pngOut) {
       line(p[0], p[1], q[0], q[1], col);
     }
   }
-  if (!zones.length) for (const sp of level.spawns) if (kindOf(sp.mon) === 'normal') for (let k = 0; k < 90; k++) dot(sp.x + Math.cos((k / 90) * 6.283) * sp.radius, sp.z + Math.sin((k / 90) * 6.283) * sp.radius, 1, [255, 240, 120]);
-  for (const m of mons) dot(m.x, m.z, m.kind === 'normal' ? 1 : 3, m.kind === 'normal' ? [250, 250, 250] : m.kind === 'elite' ? [255, 210, 40] : [255, 60, 60], m.kind === 'normal' ? 0.85 : 1);
+  if (!zones.length)
+    for (const sp of level.spawns)
+      if (kindOf(sp.mon) === 'normal')
+        for (let k = 0; k < 90; k++)
+          dot(sp.x + Math.cos((k / 90) * 6.283) * sp.radius, sp.z + Math.sin((k / 90) * 6.283) * sp.radius, 1, [255, 240, 120]);
+  for (const m of mons)
+    dot(
+      m.x,
+      m.z,
+      m.kind === 'normal' ? 1 : 3,
+      m.kind === 'normal' ? [250, 250, 250] : m.kind === 'elite' ? [255, 210, 40] : [255, 60, 60],
+      m.kind === 'normal' ? 0.85 : 1,
+    );
   dot(HUB.x, HUB.z, 5, [255, 255, 255]);
   if (IS_VL) dot(PORTAL_POS.x, PORTAL_POS.z, 4, [120, 220, 255]);
   // PNG tối giản (RGB 8 bit, không lọc).
@@ -368,6 +431,14 @@ if (pngOut) {
   ihdr.writeUInt32BE(SIZE, 4);
   ihdr[8] = 8;
   ihdr[9] = 2;
-  fs.writeFileSync(abs(pngOut), Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]));
+  fs.writeFileSync(
+    abs(pngOut),
+    Buffer.concat([
+      Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      chunk('IHDR', ihdr),
+      chunk('IDAT', zlib.deflateSync(raw)),
+      chunk('IEND', Buffer.alloc(0)),
+    ]),
+  );
   console.log(`\nẢnh: ${pngOut}`);
 }

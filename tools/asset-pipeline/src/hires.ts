@@ -145,7 +145,8 @@ export async function buildHires(entry: ManifestEntry, toktx: string, outDir: st
         if (fit) args.push('--resize', `${w}x${h}`);
         args.push(output, input);
         const r = runToktx(toktx, args);
-        if (r.status !== 0 || !fs.existsSync(output)) throw new Error(`toktx lỗi (${entry.id}/${mat}/${b.slot}): ${(r.stdout + r.stderr).trim()}`);
+        if (r.status !== 0 || !fs.existsSync(output))
+          throw new Error(`toktx lỗi (${entry.id}/${mat}/${b.slot}): ${(r.stdout + r.stderr).trim()}`);
         const bytes = fs.readFileSync(output);
         const tag = slotsOfTex.map((x) => x.replace('Texture', '')).join('-');
         const file = `hi/${entry.id}.${tag}.${crypto.createHash('sha1').update(bytes).digest('hex').slice(0, 10)}.ktx2`;
@@ -173,7 +174,11 @@ export async function buildHires(entry: ManifestEntry, toktx: string, outDir: st
 async function main() {
   const args = process.argv.slice(2);
   const dry = args.includes('--dry');
-  const only = args.find((a) => a.startsWith('--only='))?.slice(7).split(',') ?? (args.includes('--only') ? args[args.indexOf('--only') + 1]?.split(',') : undefined);
+  const only =
+    args
+      .find((a) => a.startsWith('--only='))
+      ?.slice(7)
+      .split(',') ?? (args.includes('--only') ? args[args.indexOf('--only') + 1]?.split(',') : undefined);
   const toktx = findToktx();
   if (!toktx) throw new Error('thiếu toktx (xem assets/README.md, mục "Cài toktx")');
   const outDir = DEFAULTS.outDir;
@@ -193,7 +198,9 @@ async function main() {
     const g = list.reduce((a, x) => a + x.gpuBytes, 0);
     total += b;
     gpu += g;
-    console.log(`[hires] ${entry.id}: ${list.map((x) => `${x.mat}/${x.slots[0]} ${x.width}`).join(', ')} (+${(b / 1048576).toFixed(1)} MB tải, +${(g / 1048576).toFixed(0)} MB GPU)`);
+    console.log(
+      `[hires] ${entry.id}: ${list.map((x) => `${x.mat}/${x.slots[0]} ${x.width}`).join(', ')} (+${(b / 1048576).toFixed(1)} MB tải, +${(g / 1048576).toFixed(0)} MB GPU)`,
+    );
   }
   // Dọn tệp hi/ không còn được manifest tham chiếu (chỉ thư mục hi/, không đụng nguồn).
   if (!dry && !only) {
@@ -202,7 +209,9 @@ async function main() {
     if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir)) if (!keep.has(`hi/${f}`)) fs.unlinkSync(path.join(dir, f));
   }
   if (!dry) fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\n');
-  console.log(`[hires] tổng +${(total / 1048576).toFixed(1)} MB tải nền, +${(gpu / 1048576).toFixed(0)} MB GPU nếu nạp hết${dry ? ' (chạy thử)' : ''} — ${rel(manifestFile)}`);
+  console.log(
+    `[hires] tổng +${(total / 1048576).toFixed(1)} MB tải nền, +${(gpu / 1048576).toFixed(0)} MB GPU nếu nạp hết${dry ? ' (chạy thử)' : ''} — ${rel(manifestFile)}`,
+  );
 }
 
 if (process.argv[1] && /hires\.[tj]s$/.test(process.argv[1])) await main();

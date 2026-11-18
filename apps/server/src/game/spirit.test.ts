@@ -1,5 +1,15 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { groundAt, MS_DEAD, PF_DEAD, S, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, type SpiritScanMsg, type SpiritStateMsg } from '@dtl/shared';
+import {
+  groundAt,
+  MS_DEAD,
+  PF_DEAD,
+  S,
+  SPIRIT_CD_MS,
+  SPIRIT_CHANNEL_MS,
+  SPIRIT_MP,
+  type SpiritScanMsg,
+  type SpiritStateMsg,
+} from '@dtl/shared';
 
 // Thần thức (E2-E): server quyết định mở khóa, giữ 2,5 giây, hủy, tốn linh lực và hồi chiêu, kết quả quét.
 process.env.DB_FILE = ':memory:';
@@ -34,14 +44,23 @@ function setup(level = 20) {
   vi.setSystemTime(1_000_000);
   const sent: Sent[] = [];
   const host = { broadcast: () => {} };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   const join = (name: string, lv = level): Ent => {
     const char = Character.create(nextAcc++, name + nextAcc);
     char.level = lv;
     char.recalc();
     char.hp = char.mhp;
     char.mp = char.mmp;
-    const client = { sessionId: name + nextAcc, send: (type: string, msg: unknown) => sent.push({ type, msg: { to: name, ...(msg as object) } }) };
+    const client = {
+      sessionId: name + nextAcc,
+      send: (type: string, msg: unknown) => sent.push({ type, msg: { to: name, ...(msg as object) } }),
+    };
     const p = sim.addPlayer(client as never, char, true, 's' + nextAcc);
     p.move.x = X;
     p.move.z = Z;
