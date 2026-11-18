@@ -674,6 +674,11 @@
 }
 /* tên thư pháp: dải lụa giấy dọc ở khoảng trống bên phải nhân vật (không đè cột ô), chữ mực đen nét bút lông, dấu triện đỏ cảnh giới bên dưới */
 .hoatruc-name {
+  --cell: 7cqh;
+  /* nét chính = color, quầng loang = text-decoration-color (đọc bởi TierLayers.tsx khi vẽ canvas) */
+  color: var(--u-ink-0);
+  text-decoration-color: color-mix(in srgb, var(--u-gold) 55%, var(--u-ink-0));
+  font-family: var(--u-font-thuphap);
   position: absolute;
   right: 66px;
   top: 6cqh;
@@ -682,7 +687,7 @@
   align-items: center;
   gap: 1cqh;
   padding: 1.6cqh 0.9cqh 1.2cqh;
-  max-height: 64cqh;
+  max-height: 66cqh;
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--u-giay) 90%, transparent),
@@ -695,6 +700,8 @@
   pointer-events: none;
 }
 .hoatruc-name[data-big='1'] {
+  color: var(--u-gold-text);
+  text-decoration-color: var(--u-gold);
   right: 58px;
   top: 4cqh;
   padding: 2cqh 1.3cqh 1.6cqh;
@@ -703,25 +710,13 @@
     inset 0 0 0 1.5px var(--u-gold),
     0 0 18px color-mix(in srgb, var(--u-gold) 70%, transparent);
 }
-.hoatruc-name[data-big='1'] .hoatruc-name-t {
-  font-size: 7cqh;
-  -webkit-text-stroke: 0.6px var(--u-gold);
-  color: var(--u-gold-text);
-  text-shadow: 0 0 10px var(--u-gold);
+.hoatruc-name[style*='--cols: 2'] {
+  --cell: 5.6cqh;
 }
-.hoatruc-name-t {
-  writing-mode: vertical-rl;
-  font-family: var(--u-font-thuphap);
-  font-size: 5.2cqh;
-  line-height: 1.1;
-  letter-spacing: 0.04em;
-  color: var(--u-ink-0);
-  -webkit-text-stroke: 0.6px var(--u-ink-0);
-  filter: url(#hoatruc-muc);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-height: 50cqh;
-  white-space: nowrap;
+.hoatruc-name-c {
+  display: block;
+  height: calc(var(--rows) * var(--cell));
+  width: auto;
 }
 .hoatruc-name-seal {
   padding: 0.5cqh 0.6cqh;
@@ -828,15 +823,4 @@
   .hoatruc[data-tier='4'] .hoatruc-set {
     opacity: 0.55;
   }
-  .hoatruc-name-t {
-    font-size: 7.6cqh;
-    -webkit-text-stroke: 0.8px var(--u-ink-0);
-  }
-  .hoatruc-name[data-big='1'] .hoatruc-name-t {
-    font-size: 9cqh;
-    -webkit-text-stroke: 0.8px var(--u-gold);
-  }
-  .hoatruc-name {
-    top: 3cqh;
-  }
-}
+  
