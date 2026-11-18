@@ -45,6 +45,7 @@ export function Settings() {
   const reduceMotion = useReduceMotion();
   const fxQ = useUI((s) => s.fxQuality);
   const hitStop = useUI((s) => s.hitStop);
+  const realmAura = useUI((s) => s.realmAura);
   const offscreen = useUI((s) => s.offscreen);
   const chapterCards = useUI((s) => s.chapterCards);
   const [mute, setMute] = useState(isMuted());
@@ -116,6 +117,8 @@ export function Settings() {
       />
       <div className="k-dim">{t('ui.settings.fx_quality_hint')}</div>
       <Segmented label={t('ui.settings.hit_stop')} value={hitStop} onChange={(on) => Game.current?.setHitStop(on)} options={onOff} />
+      <Segmented label={t('ui.settings.realm_aura')} value={realmAura} onChange={(on) => Game.current?.setRealmAura(on)} options={onOff} />
+      <div className="k-dim">{t('ui.settings.realm_aura_hint')}</div>
       <Divider label={t('ui.settings.offscreen')} />
       <Segmented label={t('ui.settings.offscreen')} value={offscreen} onChange={(on) => Game.current?.setOffscreen(on)} options={onOff} />
       <div className="k-dim">{t('ui.settings.offscreen_hint')}</div>

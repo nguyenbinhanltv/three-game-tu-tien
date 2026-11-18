@@ -7,6 +7,7 @@ import { FLAGS } from '../../base/flags';
  */
 const KEY = 'dtl.fxQuality';
 const KEY_STOP = 'dtl.hitStop';
+const KEY_AURA = 'dtl.realmAura';
 
 const isQ = (v: unknown): v is FxQuality => typeof v === 'string' && v in FX_QUALITY_TIER;
 
@@ -22,7 +23,15 @@ function readQuality(): FxQuality {
 let quality: FxQuality = readQuality();
 let hitStop = typeof localStorage === 'undefined' || localStorage.getItem(KEY_STOP) !== '0';
 
+let realmAura = FLAGS.aura && (typeof localStorage === 'undefined' || localStorage.getItem(KEY_AURA) !== '0');
+
 export const fxQuality = (): FxQuality => quality;
+/** Hào quang cảnh giới trên nhân vật (RFX-1): công tắc trong Cài đặt; `?aura=0` ép tắt. */
+export const realmAuraOn = (): boolean => realmAura;
+export function setRealmAuraOn(on: boolean): void {
+  realmAura = on;
+  if (typeof localStorage !== 'undefined') localStorage.setItem(KEY_AURA, on ? '1' : '0');
+}
 export function setFxQuality(q: FxQuality): void {
   quality = q;
   if (typeof localStorage !== 'undefined') localStorage.setItem(KEY, q);
