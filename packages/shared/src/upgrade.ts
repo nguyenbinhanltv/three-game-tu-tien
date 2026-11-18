@@ -149,16 +149,16 @@ export function isQuality(v: unknown): v is Quality {
 
 // ---------- Thăng Bậc (E2-F) ----------
 
-/** Nguyên liệu Thăng Bậc theo bậc ĐÍCH (chỉ số 2..4). */
-export const PROMOTE_MAT: readonly (string | null)[] = [null, null, 'itm_mach_tinh_phien', 'itm_kinh_hoa_sa', 'itm_tinh_quang_mac'];
+/** Nguyên liệu Thăng Bậc theo bậc ĐÍCH (chỉ số 2..5). */
+export const PROMOTE_MAT: readonly (string | null)[] = [null, null, 'itm_mach_tinh_phien', 'itm_kinh_hoa_sa', 'itm_tinh_quang_mac', 'itm_tan_giac'];
 export const PROMOTE_MAT_COUNT = 20;
 /** Thu nhập ước một giờ ở chương đích (linh thạch, `docs/EXPANSION_DESIGN.md` 7.5); phí Thăng Bậc = 0,4 × số này. */
-export const TIER_INCOME_HOUR: readonly number[] = [0, 0, 6000, 7400, 8800];
+export const TIER_INCOME_HOUR: readonly number[] = [0, 0, 6000, 7400, 8800, 10200];
 export const PROMOTE_GOLD_FRAC = 0.4;
 /** Thăng Bậc trừ chừng này cấp cường hóa (tối thiểu +0). */
 export const PROMOTE_ENHANCE_LOSS = 3;
 /** Cấp vật phẩm tối thiểu của món sau Thăng Bậc (đầu chương đích). */
-export const TIER_MIN_ILVL: readonly number[] = [1, 1, 17, 21, 25];
+export const TIER_MIN_ILVL: readonly number[] = [1, 1, 17, 21, 25, 29];
 
 /** Món có Thăng Bậc được không: bậc đích đã mở (`TIER_OPEN`). */
 export function promoteOpen(fromTier: number): boolean {

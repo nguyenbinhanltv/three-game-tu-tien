@@ -1,0 +1,373 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "mon_u_anh_cot_loc",
+  "type": "mon",
+  "budgetClass": "monster",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 9000,
+    "texture": 1024
+  },
+  "sculpt": {
+    "source": "mon/mon_u_anh_cot_loc/online/source.glb",
+    "out": "mon/mon_u_anh_cot_loc/rig/rig_v01.glb",
+    "yaw": 0,
+    "faces": 9000,
+    "texture": 2048,
+    "bones": [
+      [
+        "spine_0",
+        null,
+        [
+          0.0,
+          0.3,
+          0.46
+        ],
+        [
+          0.0,
+          0.05,
+          0.45
+        ]
+      ],
+      [
+        "spine_1",
+        "spine_0",
+        [
+          0.0,
+          0.05,
+          0.45
+        ],
+        [
+          0.0,
+          -0.15,
+          0.5
+        ]
+      ],
+      [
+        "spine_2",
+        "spine_1",
+        [
+          0.0,
+          -0.15,
+          0.5
+        ],
+        [
+          0.0,
+          -0.2,
+          0.52
+        ]
+      ],
+      [
+        "neck",
+        "spine_2",
+        [
+          0.0,
+          -0.2,
+          0.52
+        ],
+        [
+          0.0,
+          -0.3,
+          0.72
+        ]
+      ],
+      [
+        "head",
+        "neck",
+        [
+          0.0,
+          -0.3,
+          0.72
+        ],
+        [
+          0.0,
+          -0.41,
+          0.66
+        ]
+      ],
+      [
+        "tail_0",
+        "spine_0",
+        [
+          0.0,
+          0.38,
+          0.52
+        ],
+        [
+          0.0,
+          0.41,
+          0.5
+        ]
+      ],
+      [
+        "tail_1",
+        "tail_0",
+        [
+          0.0,
+          0.41,
+          0.5
+        ],
+        [
+          0.0,
+          0.42,
+          0.46
+        ]
+      ],
+      [
+        "tail_2",
+        "tail_1",
+        [
+          0.0,
+          0.42,
+          0.46
+        ],
+        [
+          0.0,
+          0.42,
+          0.42
+        ]
+      ],
+      [
+        "leg_fl_0",
+        "spine_2",
+        [
+          0.07,
+          -0.17,
+          0.42
+        ],
+        [
+          0.07,
+          -0.17,
+          0.22
+        ]
+      ],
+      [
+        "leg_fl_1",
+        "leg_fl_0",
+        [
+          0.07,
+          -0.17,
+          0.22
+        ],
+        [
+          0.07,
+          -0.17,
+          0.08
+        ]
+      ],
+      [
+        "leg_fl_2",
+        "leg_fl_1",
+        [
+          0.07,
+          -0.17,
+          0.08
+        ],
+        [
+          0.07,
+          -0.2,
+          0.0
+        ]
+      ],
+      [
+        "leg_hl_0",
+        "spine_0",
+        [
+          0.07,
+          0.25,
+          0.45
+        ],
+        [
+          0.07,
+          0.31,
+          0.34
+        ]
+      ],
+      [
+        "leg_hl_1",
+        "leg_hl_0",
+        [
+          0.07,
+          0.31,
+          0.34
+        ],
+        [
+          0.07,
+          0.37,
+          0.27
+        ]
+      ],
+      [
+        "leg_hl_2",
+        "leg_hl_1",
+        [
+          0.07,
+          0.37,
+          0.27
+        ],
+        [
+          0.07,
+          0.34,
+          0.12
+        ]
+      ],
+      [
+        "leg_hl_3",
+        "leg_hl_2",
+        [
+          0.07,
+          0.34,
+          0.12
+        ],
+        [
+          0.07,
+          0.3,
+          0.02
+        ]
+      ],
+      [
+        "leg_fr_0",
+        "spine_2",
+        [
+          -0.07,
+          -0.17,
+          0.42
+        ],
+        [
+          -0.07,
+          -0.17,
+          0.22
+        ]
+      ],
+      [
+        "leg_fr_1",
+        "leg_fr_0",
+        [
+          -0.07,
+          -0.17,
+          0.22
+        ],
+        [
+          -0.07,
+          -0.17,
+          0.08
+        ]
+      ],
+      [
+        "leg_fr_2",
+        "leg_fr_1",
+        [
+          -0.07,
+          -0.17,
+          0.08
+        ],
+        [
+          -0.07,
+          -0.2,
+          0.0
+        ]
+      ],
+      [
+        "leg_hr_0",
+        "spine_0",
+        [
+          -0.07,
+          0.25,
+          0.45
+        ],
+        [
+          -0.07,
+          0.31,
+          0.34
+        ]
+      ],
+      [
+        "leg_hr_1",
+        "leg_hr_0",
+        [
+          -0.07,
+          0.31,
+          0.34
+        ],
+        [
+          -0.07,
+          0.37,
+          0.27
+        ]
+      ],
+      [
+        "leg_hr_2",
+        "leg_hr_1",
+        [
+          -0.07,
+          0.37,
+          0.27
+        ],
+        [
+          -0.07,
+          0.34,
+          0.12
+        ]
+      ],
+      [
+        "leg_hr_3",
+        "leg_hr_2",
+        [
+          -0.07,
+          0.34,
+          0.12
+        ],
+        [
+          -0.07,
+          0.3,
+          0.02
+        ]
+      ]
+    ],
+    "limit": {
+      "head": [
+        "neck"
+      ],
+      "neck": [
+        "head",
+        "spine"
+      ],
+      "leg_fl": [
+        "spine"
+      ],
+      "leg_fr": [
+        "spine"
+      ],
+      "leg_hl": [
+        "spine"
+      ],
+      "leg_hr": [
+        "spine"
+      ],
+      "tail": [
+        "spine"
+      ]
+    }
+  },
+  "license": {
+    "source": "\"Shadow Stag - Bone-Antlered Dark Fantasy\" của Pigcraft trên Sketchfab, CC BY 4.0. Đã chỉnh sửa: giảm lưới 1,93 triệu → 9 nghìn tam giác, trải UV và nướng lại texture, dựng xương + trọng số (tools/blender/sculpt_rig.py), clip thủ tục (tools/blender/anim_quadruped.py)",
+    "owner": "Pigcraft (https://sketchfab.com/s8819296)",
+    "date": "2026-11-18",
+    "url": "https://sketchfab.com/3d-models/shadow-stag-bone-antlered-dark-fantasy-607bb5705fcd431bb09faec790fa4692",
+    "spdx": "CC-BY-4.0"
+  },
+  "import": {
+    "kind": "external",
+    "source": "mon/mon_u_anh_cot_loc/rig/rig_v01.glb",
+    "size": {
+      "height": 2.6
+    },
+    "orient": "none",
+    "yaw": 0,
+    "quadruped": {
+      "attack": "gore"
+    },
+    "post": "tools/blender/anim_quadruped.py"
+  }
+}

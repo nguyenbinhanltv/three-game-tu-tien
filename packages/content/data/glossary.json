@@ -171,6 +171,28 @@
     "itm_co_thanh_ho_uyen": "Cổ Thành Hộ Uyển",
     "itm_da_hanh_van_ngoa": "Dạ Hành Vân Ngoa",
     "itm_tinh_van_dai_lung": "Tinh Văn Đai Lưng",
+    "itm_tkh_dao_bao": "Trấn Khích Kiếm Y",
+    "itm_tkh_ho_uyen": "Trấn Khích Hộ Uyển",
+    "itm_tkh_dai_lung": "Trấn Khích Đai Lưng",
+    "itm_tkh_van_ngoa": "Trấn Khích Vân Ngoa",
+    "itm_tkh_trang_suc": "Trấn Khích Phát Quan",
+    "itm_tth_dao_bao": "Tẫn Thiết Hộ Giáp",
+    "itm_tth_ho_uyen": "Tẫn Thiết Hộ Uyển",
+    "itm_tth_dai_lung": "Tẫn Thiết Đai Lưng",
+    "itm_tth_van_ngoa": "Tẫn Thiết Vân Ngoa",
+    "itm_tth_trang_suc": "Tẫn Thiết Phát Quan",
+    "itm_tqd_dao_bao": "Tịnh Quang Đan Bào",
+    "itm_tqd_ngoc_boi": "Tịnh Quang Ngọc Bội",
+    "itm_tqd_dai_lung": "Tịnh Quang Đai Lưng",
+    "itm_tqd_gioi_chi": "Tịnh Quang Giới Chỉ",
+    "itm_tqd_trang_suc": "Tịnh Quang Phát Quan",
+    "itm_gioi_quang_kiem": "Giới Quang Kiếm",
+    "itm_gioi_quang_dao_bao": "Giới Quang Đạo Bào",
+    "itm_tran_gioi_ho_uyen": "Trấn Giới Hộ Uyển",
+    "itm_bac_hoang_van_ngoa": "Bắc Hoang Vân Ngoa",
+    "itm_gioi_van_dai_lung": "Giới Văn Đai Lưng",
+    "itm_hoa_than_ngoc_boi": "Hóa Thần Ngọc Bội",
+    "itm_nguyen_quang_gioi_chi": "Nguyên Quang Giới Chỉ",
     "itm_than_tang_ngoc_boi": "Thần Tàng Ngọc Bội",
     "itm_thu_linh_gioi_chi": "Thủ Linh Giới Chỉ"
   },
@@ -206,7 +228,10 @@
     "set_luu_ly": "Lưu Ly Đan Y",
     "set_tinh_khuyet": "Tinh Khuyết Kiếm Bào",
     "set_co_thanh": "Cổ Thành Huyền Giáp",
-    "set_than_tang": "Thần Tàng Đan Bào"
+    "set_than_tang": "Thần Tàng Đan Bào",
+    "set_tran_khich": "Trấn Khích Kiếm Y",
+    "set_tan_thiet": "Tẫn Thiết Hộ Giáp",
+    "set_tinh_dan_bao": "Tịnh Quang Đan Bào"
   },
   "party": {
     "name": "Tổ đội",
@@ -349,7 +374,9 @@
     "itm_pha_canh_dan_3": "Vân Phá Cảnh Đan",
     "itm_tinh_quang_mac": "Tinh Quang Mặc",
     "itm_than_tang_ngoc": "Thần Tàng Ngọc",
-    "itm_co_thanh_phien": "Cổ Thành Phiến"
+    "itm_co_thanh_phien": "Cổ Thành Phiến",
+    "itm_tan_giac": "Tẫn Giác",
+    "itm_tinh_vu": "Tịnh Quang Vũ"
   },
   "stationNpcs": {
     "npc_to_van_ngu": "Tô Vãn Ngư",
@@ -392,5 +419,9 @@
     "phong_an_mon_1": "Môn phong ấn thứ nhất",
     "phong_an_mon_2": "Môn phong ấn thứ hai",
     "phong_an_mon_3": "Môn phong ấn thứ ba"
+  },
+  "divucMonsters": {
+    "mon_liet_hoa_ma_nguu": "Liệt Hỏa Ma Ngưu",
+    "mon_u_anh_cot_loc": "U Ảnh Cốt Lộc"
   }
 }

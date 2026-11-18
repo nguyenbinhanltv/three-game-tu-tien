@@ -22,12 +22,12 @@ export const SOCKETS_BY_QUALITY: readonly number[] = [0, 0, 1, 2, 2];
 
 // ---------- bậc trang bị (E2-F) ----------
 
-/** Bậc trang bị gắn với chương: 1 Vân Lam, 2 Đoạn Mạch, 3 Vân Hải, 4 Thiên Khuyết (`docs/EXPANSION_DESIGN.md` 7.1). */
-export const MAX_TIER = 4;
+/** Bậc trang bị gắn với chương: 1 Vân Lam, 2 Đoạn Mạch, 3 Vân Hải, 4 Thiên Khuyết (`docs/EXPANSION_DESIGN.md` 7.1), 5 Hóa Thần sơ kỳ (cấp 28, E4-F; `docs/DIVUC_DESIGN.md` 7). */
+export const MAX_TIER = 5;
 /** Hệ số nhân dòng chính theo bậc (khớp `REALM_MUL` để phần trang bị trong sức mạnh tổng giữ ~30%). Chỉ số 0 không dùng. */
-export const TIER_MUL: readonly number[] = [1, 1, 1.6, 2.5, 3.8];
-/** Bậc cao nhất đang chơi được (E-S4: bậc 4 mở); bậc trên có dữ liệu nhưng bị khóa (Thăng Bậc từ chối). */
-export const TIER_OPEN = 4;
+export const TIER_MUL: readonly number[] = [1, 1, 1.6, 2.5, 3.8, 5.5];
+/** Bậc cao nhất đang chơi được (E4-F: bậc 5 mở); bậc trên có dữ liệu nhưng bị khóa (Thăng Bậc từ chối). */
+export const TIER_OPEN = 5;
 /** Số lỗ khảm tối đa của bậc ≥ 3. */
 export const MAX_SOCKETS = 3;
 

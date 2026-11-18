@@ -64,5 +64,7 @@
   {"id": "itm_tinh_quang_mac", "kind": "material", "stack": 99, "price": 0, "sell": 70, "rarity": 3, "icon": "itm_tinh_quang_mac", "iconFallback": "🖋️"},
   {"id": "itm_than_tang_ngoc", "kind": "material", "stack": 99, "price": 0, "sell": 150, "rarity": 3, "icon": "itm_than_tang_ngoc", "iconFallback": "🔮"},
   {"id": "itm_co_thanh_phien", "kind": "material", "stack": 20, "price": 0, "sell": 400, "rarity": 3, "icon": "itm_co_thanh_phien", "iconFallback": "🧱"},
-  {"id": "itm_pha_an_phu", "kind": "consumable", "stack": 20, "price": 0, "sell": 80, "rarity": 3, "icon": "itm_pha_an_phu", "iconFallback": "📿", "use": {"cd": 3, "seal": true}}
+  {"id": "itm_pha_an_phu", "kind": "consumable", "stack": 20, "price": 0, "sell": 80, "rarity": 3, "icon": "itm_pha_an_phu", "iconFallback": "📿", "use": {"cd": 3, "seal": true}},
+  {"id": "itm_tan_giac", "kind": "material", "stack": 99, "price": 0, "sell": 90, "rarity": 3, "icon": "itm_tan_giac", "iconFallback": "🦴"},
+  {"id": "itm_tinh_vu", "kind": "material", "stack": 20, "price": 0, "sell": 450, "rarity": 3, "icon": "itm_tinh_vu", "iconFallback": "🪶"}
 ]

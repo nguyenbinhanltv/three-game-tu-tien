@@ -148,6 +148,10 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   // DV-B (chương 5, thử pipeline): bản điêu khắc CC BY giảm lưới + rig bằng tools/blender/sculpt_rig.py. Chưa đặt vào bản đồ
   // (không có `level`): chỉ nạp khi xuất hiện (/gm spawn). Lông đen nên nâng sáng nền và viền than hồng để đọc được trong bóng.
   boss_tam_thu_nguc_khuyen: { asset: 'boss_tam_thu_nguc_khuyen', clips: { ...CHANT_BOSS_CLIPS, walk: 'walk' }, refSpeed: 8.9, legs: 'quad', tint: '#ffffff', rim: 0.3, lift: 0.35, metalness: 0.35, lazy: true, moves: { slam: { clip: 'slam', impact: 1.0 } } },
+  // DV-2 đợt 1 (chương 5, Dị Vực): bản điêu khắc CC BY giảm lưới + rig bằng tools/blender/sculpt_rig.py + anim_quadruped.py (attack `gore`).
+  // Chưa đặt vào bản đồ (không `level`): chỉ nạp khi xuất hiện (/gm spawn). Lông đen nên nâng sáng nền để đọc được trong bóng.
+  mon_liet_hoa_ma_nguu: { asset: 'mon_liet_hoa_ma_nguu', clips: WOLF_CLIPS, refSpeed: 4.4, legs: 'quad', tint: '#ffffff', rim: 0.3, lift: 0.25, lazy: true },
+  mon_u_anh_cot_loc: { asset: 'mon_u_anh_cot_loc', clips: WOLF_CLIPS, refSpeed: 4.5, legs: 'quad', tint: '#ffffff', rim: 0.2, lift: 0.3, lazy: true },
   boss_dia_mach_long: { asset: 'boss_dia_mach_long', clips: BOSS_CLIPS, refSpeed: 9.0, legs: 'quad', tint: '#ffffff', rim: 0.12, lift: 0.2, lazy: true, level: 'doan_mach', moves: QUAD_MOVES },
   // Thôn Mạch Ngô Công Vương (Phục Mạch Quật): ngô công 14 m, xương chuỗi, tinh thạch sáng theo accent.
   boss_thon_mach_ngo_cong_vuong: { asset: 'boss_thon_mach_ngo_cong_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 4.6, legs: 'none', tint: '#ffffff', rim: 0.35, lift: 0.2, metalness: 0, lazy: true, level: 'phuc_mach', moves: SERPENT_MOVES },
