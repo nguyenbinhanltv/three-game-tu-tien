@@ -238,7 +238,7 @@ export default {
     for (const g of list('--genders', 'm,f')) {
       for (const pass of ['slow', 'real'] as const) {
         const slow = pass === 'slow' ? SLOW : 1;
-        const { ctx, page } = await r.open({ name: `V${g}${pass[0]}`, viewport: [1100, 900], quality: 'high', look: { g }, hide: 'hud', query: { quiet: 1, fxq: FXQ, slowmo: pass === 'slow' ? SLOW : undefined }, extra: opt('--query', '') });
+        const { ctx, page } = await r.open({ name: `V${g}${pass[0]}`, viewport: [1100, 900], quality: opt('--quality', 'high'), look: { g }, hide: 'hud', query: { quiet: 1, fxq: FXQ, slowmo: pass === 'slow' ? SLOW : undefined }, extra: opt('--query', '') });
         const method = async (id: string) => {
           await gm(page, `method ${id} 5`, 1400);
           if (LEVEL >= 16) await gm(page, 'skills max', 1500);

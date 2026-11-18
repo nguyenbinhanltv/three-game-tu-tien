@@ -12,6 +12,7 @@ import { DECAL_CRACK, DECAL_RUNE, DECAL_SCORCH, DECAL_SMOKE, DECAL_STRIKE } from
 import { bladeVisible } from '../render/vfx/bladeTrail';
 import type { SkillEvent } from './character/view';
 import { particleScale } from './fxSettings';
+import { densitySize } from '../render/vfx/particles';
 import type { Vfx } from './vfx';
 
 export interface FxTarget {
@@ -447,14 +448,17 @@ export class FxRunner {
   private particles(c: Cast, ev: FxParticleEvent, tgt: FxTarget | null): void {
     const yaw = this.aim(c, tgt);
     const p = this.anchor(c, ev.at ?? 'target', ev.offset, yaw, tgt, _a);
-    const n = Math.max(1, Math.round(ev.n * particleScale(this.env.quality(), c.mine)));
+    // Preset đồ họa cao hơn: thêm hạt cho chiêu của mình (Cao hiệu ứng), hạt nhỏ lại để không lóa; trần 1.500 hạt mỗi sự kiện.
+    const q = this.env.quality();
+    const dens = q === 'high' && c.mine ? this.v.particles.density : 1;
+    const n = Math.min(1500, Math.max(1, Math.round(ev.n * particleScale(q, c.mine) * dens)));
     const fx = Math.sin(yaw);
     const fz = Math.cos(yaw);
     const color = toneOf(c.pal, ev.tone ?? (ev.kind === 'shard' ? 'core' : ev.kind === 'dust' ? 'body' : 'rim'));
     const layer = ev.kind === 'dust' ? 'dust' : 'glow';
     const dir = ev.back ? -1 : 1;
     const pm = Math.sqrt(c.mul);
-    const psz = ev.size * pm;
+    const psz = ev.size * pm * densitySize(dens);
     for (let i = 0; i < n; i++) {
       const ang = Math.random() * Math.PI * 2;
       const el = (Math.random() - 0.35) * Math.PI * 0.5;
