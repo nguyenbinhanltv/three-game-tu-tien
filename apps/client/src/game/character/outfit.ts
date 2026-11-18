@@ -61,7 +61,7 @@ export function dressedIndex(mesh: THREE.SkinnedMesh, keep: (key: string) => boo
   }
   const out: number[] = [];
   for (let t = 0; t < idx.length; t += 3) {
-    if (keepVertex[idx[t]] && keepVertex[idx[t + 1]] && keepVertex[idx[t + 2]]) out.push(idx[t], idx[t + 1], idx[t + 2]);
+    if (keepVertex[idx[t]!] && keepVertex[idx[t + 1]!] && keepVertex[idx[t + 2]!]) out.push(idx[t]!, idx[t + 1]!, idx[t + 2]!);
   }
   if (out.length === idx.length) return null;
   return idx instanceof Uint32Array ? Uint32Array.from(out) : Uint16Array.from(out);
@@ -98,8 +98,8 @@ export function remapSkin(garment: THREE.SkinnedMesh, target: readonly { name: s
       out[i * 4 + c] = j;
       weights[i * 4 + c] = w;
     }
-    const sum = weights[i * 4] + weights[i * 4 + 1] + weights[i * 4 + 2] + weights[i * 4 + 3];
-    if (sum > 0) for (let c = 0; c < 4; c++) weights[i * 4 + c] /= sum;
+    const sum = weights[i * 4]! + weights[i * 4 + 1]! + weights[i * 4 + 2]! + weights[i * 4 + 3]!;
+    if (sum > 0) for (let c = 0; c < 4; c++) weights[i * 4 + c]! /= sum;
   }
   const r = new THREE.BufferGeometry();
   for (const [name, attr] of Object.entries(g.attributes)) if (name !== 'skinIndex' && name !== 'skinWeight') r.setAttribute(name, attr);
@@ -134,7 +134,7 @@ export function extendSkeleton(base: THREE.Skeleton, parts: readonly THREE.Skele
   for (const sk of parts) {
     sk.bones.forEach((b, i) => {
       if (exact.has(b.name) || key.has(boneKey(b.name)) || pending.some((p) => p.b.name === b.name)) return;
-      pending.push({ b, inv: sk.boneInverses[i] });
+      pending.push({ b, inv: sk.boneInverses[i]! });
     });
   }
   if (!pending.length) return null;

@@ -45,10 +45,10 @@ export function vertexRegions(si: ArrayLike<number>, sw: ArrayLike<number>, bone
     let best = -1;
     let bw = 0;
     for (let c = 0; c < 4; c++) {
-      const w = sw[i * 4 + c];
+      const w = sw[i * 4 + c]!;
       if (w > bw) {
         bw = w;
-        best = si[i * 4 + c];
+        best = si[i * 4 + c]!;
       }
     }
     const r = best >= 0 ? boneRegion[best] : null;
@@ -66,11 +66,11 @@ export function maskIndex(index: ArrayLike<number>, region: Int8Array, covered: 
   for (const r of covered) hide[BODY_REGIONS.indexOf(r)] = 1;
   const out: number[] = [];
   for (let t = 0; t < index.length; t += 3) {
-    const a = region[index[t]];
-    const b = region[index[t + 1]];
-    const c = region[index[t + 2]];
+    const a = region[index[t]!]!;
+    const b = region[index[t + 1]!]!;
+    const c = region[index[t + 2]!]!;
     if (a >= 0 && b >= 0 && c >= 0 && hide[a] && hide[b] && hide[c]) continue;
-    out.push(index[t], index[t + 1], index[t + 2]);
+    out.push(index[t]!, index[t + 1]!, index[t + 2]!);
   }
   if (out.length === index.length) return null;
   const big = (index as { BYTES_PER_ELEMENT?: number }).BYTES_PER_ELEMENT === 4;

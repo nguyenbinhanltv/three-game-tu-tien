@@ -255,7 +255,7 @@ function pauldron(
     add(c, bone, L.kind, g);
   }
   // Viền ở mép lớp ngoài cùng.
-  const base = o.layers[0];
+  const base = o.layers[0]!;
   const rr = Math.sin(base.theta) * R * base.k;
   const rimC = sh.center
     .clone()
@@ -264,7 +264,7 @@ function pauldron(
   add(c, bone, o.rimKind, put(ringGeo(rr, 0.006 * c.h * 1.3, o.facets * 2), o.rim, { pos: rimC, dir: u, scale: 1 }).rotateX(0));
   if (o.scales) {
     // Vảy chồng: mỗi tầng một vòng vảy lục giác nhọn (góc cực θ, số vảy n, cỡ k·R) nghiêng xuống phía mép như ngói.
-    const base = o.layers[0];
+    const base = o.layers[0]!;
     const c0 = sh.center
       .clone()
       .addScaledVector(u, base.lift * R)
@@ -289,7 +289,7 @@ function pauldron(
     }
   }
   if (o.stud) {
-    const top = sh.center.clone().addScaledVector(u, (o.layers[o.layers.length - 1].lift + o.layers[o.layers.length - 1].k) * R + 0.004);
+    const top = sh.center.clone().addScaledVector(u, (o.layers[o.layers.length - 1]!.lift + o.layers[o.layers.length - 1]!.k) * R + 0.004);
     add(c, bone, 'hard', put(sphereGeo(6), o.stud, { pos: top, scale: 0.012 * c.h }));
   }
   if (o.spikes) {
@@ -899,13 +899,13 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
 };
 
 // Bộ bậc 4 (SETS-4): phụ kiện thủ tục dùng lại hình của bộ bậc 3 cùng nhánh (đổi màu theo `paletteOf`); áo mô-đun T-5/T-6 là hình chính, đây chỉ là đường dự phòng/LOD xa.
-BUILDERS.set_tinh_khuyet = BUILDERS.set_kinh_quang;
-BUILDERS.set_co_thanh = BUILDERS.set_van_kinh;
-BUILDERS.set_than_tang = BUILDERS.set_luu_ly;
+BUILDERS.set_tinh_khuyet = BUILDERS.set_kinh_quang!;
+BUILDERS.set_co_thanh = BUILDERS.set_van_kinh!;
+BUILDERS.set_than_tang = BUILDERS.set_luu_ly!;
 // Bậc 5 (E4-F): tạm dùng lại hình bậc 4 cùng nhánh, nhuộm tro + lam (`paletteOf`); model toàn thân v3 là việc sau.
-BUILDERS.set_tran_khich = BUILDERS.set_tinh_khuyet;
-BUILDERS.set_tan_thiet = BUILDERS.set_co_thanh;
-BUILDERS.set_tinh_dan_bao = BUILDERS.set_than_tang;
+BUILDERS.set_tran_khich = BUILDERS.set_tinh_khuyet!;
+BUILDERS.set_tan_thiet = BUILDERS.set_co_thanh!;
+BUILDERS.set_tinh_dan_bao = BUILDERS.set_than_tang!;
 
 /** Ô nào của bộ nào có phụ kiện (cho test và tài liệu). */
 export function accessorySlots(setId: string): EquipSlot[] {
@@ -1036,22 +1036,22 @@ export class AttachedRibbons {
     this.t += dt;
     const step = Math.min(dt, 1 / 30);
     for (let i = 0; i < this.list.length; i++) {
-      const r = this.list[i];
+      const r = this.list[i]!;
       const bw = boneWorld(r.bone);
       if (!bw) continue;
       // Lò xo: góc đích theo vận tốc (gió thổi ngược hướng chạy) + dao động nhẹ lúc đứng.
       const target = Math.min(0.36, speed * r.gain * 1.5) + 0.03 * Math.sin(this.t * 1.7 + i);
-      const acc = 90 * (target - this.ang[i]) - 7 * this.vel[i];
-      this.vel[i] += acc * step;
-      this.ang[i] = Math.max(0, Math.min(0.7, this.ang[i] + this.vel[i] * step));
+      const acc = 90 * (target - this.ang[i]!) - 7 * this.vel[i]!;
+      this.vel[i]! += acc * step;
+      this.ang[i] = Math.max(0, Math.min(0.7, this.ang[i]! + this.vel[i]! * step));
       const p = r.pivot;
       // M = xươngHiệnTại · xươngIdle⁻¹ · T(pivot) · Rx(góc) · T(−pivot)
       this._pv
         .makeTranslation(p.x, p.y, p.z)
-        .multiply(this._r.makeRotationX(this.ang[i]))
+        .multiply(this._r.makeRotationX(this.ang[i]!))
         .multiply(this._m.makeTranslation(-p.x, -p.y, -p.z));
-      this.objects[i].matrix.copy(bw).multiply(this.restInv[i]).multiply(this._pv);
-      this.objects[i].matrixWorldNeedsUpdate = true;
+      this.objects[i]!.matrix.copy(bw).multiply(this.restInv[i]!).multiply(this._pv);
+      this.objects[i]!.matrixWorldNeedsUpdate = true;
     }
   }
 

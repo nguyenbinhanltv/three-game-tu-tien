@@ -119,7 +119,7 @@ function fixtureMesh(bones: Map<string, THREE.Bone>, world: Map<string, THREE.Ve
     const g = new THREE.BoxGeometry(w, len, d);
     g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), pb.clone().sub(pa).normalize()));
     g.translate((pa.x + pb.x) / 2, (pa.y + pb.y) / 2, (pa.z + pb.z) / 2);
-    const n = g.attributes.position.count;
+    const n = g.attributes.position!.count;
     g.setAttribute(
       'skinIndex',
       new THREE.Uint16BufferAttribute(
@@ -169,15 +169,15 @@ function mergeGeometries(list: THREE.BufferGeometry[]): THREE.BufferGeometry {
   const index: number[] = [];
   let base = 0;
   for (const g of list) {
-    for (const n of names) arrays[n].push(...Array.from(g.attributes[n].array as ArrayLike<number>));
+    for (const n of names) arrays[n]!.push(...Array.from(g.attributes[n]!.array as ArrayLike<number>));
     for (const i of Array.from(g.index!.array)) index.push(i + base);
-    base += g.attributes.position.count;
+    base += g.attributes.position!.count;
     g.dispose();
   }
-  out.setAttribute('position', new THREE.Float32BufferAttribute(arrays.position, 3));
-  out.setAttribute('normal', new THREE.Float32BufferAttribute(arrays.normal, 3));
-  out.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(arrays.skinIndex, 4));
-  out.setAttribute('skinWeight', new THREE.Float32BufferAttribute(arrays.skinWeight, 4));
+  out.setAttribute('position', new THREE.Float32BufferAttribute(arrays.position!, 3));
+  out.setAttribute('normal', new THREE.Float32BufferAttribute(arrays.normal!, 3));
+  out.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(arrays.skinIndex!, 4));
+  out.setAttribute('skinWeight', new THREE.Float32BufferAttribute(arrays.skinWeight!, 4));
   out.setIndex(index);
   return out;
 }

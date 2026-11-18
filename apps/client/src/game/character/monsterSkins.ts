@@ -219,9 +219,9 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   // Clip đều thủ tục (tools/blender/anim_biped_extra.py `import.mon`, anim_quadruped.py, anim_creature.py). refSpeed ≈ 0,9 ×
   // naturalSpeed trong báo cáo import (cùng tỉ lệ như các thú trên).
   // Đoạn Mạch Cổ Cốc (E-2). Ba tinh anh (E2-B) lấy skin từ ELITE_SKINS_NEW (trước đó chưa gộp nên trong game vẫn là model khối).
-  elite_liet_cot_bao: { ...ELITE_SKINS_NEW.elite_liet_cot_bao, level: 'doan_mach' },
-  elite_ho_mach_khoi_tuong: { ...ELITE_SKINS_NEW.elite_ho_mach_khoi_tuong, level: 'doan_mach' },
-  elite_xich_sa_ngo_cong: { ...ELITE_SKINS_NEW.elite_xich_sa_ngo_cong, level: 'doan_mach' },
+  elite_liet_cot_bao: { ...ELITE_SKINS_NEW.elite_liet_cot_bao!, level: 'doan_mach' },
+  elite_ho_mach_khoi_tuong: { ...ELITE_SKINS_NEW.elite_ho_mach_khoi_tuong!, level: 'doan_mach' },
+  elite_xich_sa_ngo_cong: { ...ELITE_SKINS_NEW.elite_xich_sa_ngo_cong!, level: 'doan_mach' },
   mon_mach_thuong_ho_ve: {
     asset: 'mon_mach_thuong_ho_ve',
     clips: GUARD_CLIPS,
@@ -259,8 +259,8 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
     level: 'doan_mach',
   },
   // Vân Hải Phù Đảo (E-3). Vân Hạc, Kim Thiền, Vân Hạc Vương và Kình Vương bay: client nâng thân theo `hover` của quái trong monsters.json (game/hover.ts, không nằm trong skin).
-  elite_van_hac_vuong: { ...ELITE_SKINS_NEW.elite_van_hac_vuong, level: 'van_hai' },
-  elite_loi_van_su_vuong: { ...ELITE_SKINS_NEW.elite_loi_van_su_vuong, level: 'van_hai' },
+  elite_van_hac_vuong: { ...ELITE_SKINS_NEW.elite_van_hac_vuong!, level: 'van_hai' },
+  elite_loi_van_su_vuong: { ...ELITE_SKINS_NEW.elite_loi_van_su_vuong!, level: 'van_hai' },
   mon_van_hac: { asset: 'mon_van_hac', clips: WOLF_CLIPS, refSpeed: 2.7, legs: 'none', tint: '#ffffff', lazy: true, level: 'van_hai' },
   mon_kinh_linh: {
     asset: 'mon_kinh_linh',
@@ -329,9 +329,9 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
     level: 'thien_khuyet',
   },
   // Tinh anh Thiên Khuyết (E4-B): skin E-1b trong ELITE_SKINS_NEW.
-  elite_thach_tuong_dai_tuong: { ...ELITE_SKINS_NEW.elite_thach_tuong_dai_tuong, level: 'thien_khuyet' },
-  elite_da_minh_loc_vuong: { ...ELITE_SKINS_NEW.elite_da_minh_loc_vuong, level: 'thien_khuyet' },
-  elite_cot_kiem_thong_linh: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh, level: 'thien_khuyet' },
+  elite_thach_tuong_dai_tuong: { ...ELITE_SKINS_NEW.elite_thach_tuong_dai_tuong!, level: 'thien_khuyet' },
+  elite_da_minh_loc_vuong: { ...ELITE_SKINS_NEW.elite_da_minh_loc_vuong!, level: 'thien_khuyet' },
+  elite_cot_kiem_thong_linh: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh!, level: 'thien_khuyet' },
   // ---- Boss mở rộng (E-2/E-3/E-4): asset đã nhập, chưa có quái trong monsters.json; thêm quái cùng id là chạy. Nạp lười theo
   // màn (id màn là dự kiến của E-2..E-4, đổi `level` cho khớp LevelDef khi có). refSpeed (m/s ở scale 1, model theo kích thước thật)
   // tính từ sải chân của clip run (docs/boss-import/README.md). Đòn lớn khớp tools/blender/anim_{quadruped,serpent,biped_extra}.py.
@@ -450,7 +450,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
     moves: BIPED_MOVES,
   },
   // Kính Diện Ma Quân (mini-boss đợt 2 Kính Nguyệt Cung): skin tinh anh E-1b.
-  elite_kinh_dien_ma_quan: { ...ELITE_SKINS_NEW.elite_kinh_dien_ma_quan, level: 'kinh_nguyet' },
+  elite_kinh_dien_ma_quan: { ...ELITE_SKINS_NEW.elite_kinh_dien_ma_quan!, level: 'kinh_nguyet' },
   // Thiên Khuyết Thủ Linh: tượng thần đá 8 m, kích thước lớn nên bước chậm.
   boss_thien_khuyet_thu_linh: {
     asset: 'boss_thien_khuyet_thu_linh',
@@ -504,7 +504,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
     lazy: true,
     level: 'than_tang',
   },
-  elite_tt_cot_kiem: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh, level: 'than_tang' },
+  elite_tt_cot_kiem: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh!, level: 'than_tang' },
   // Phân thân thần niệm: cùng model với boss, nhạt hơn và nhỏ hơn.
   mon_tt_phan_than: {
     asset: 'boss_vo_dien_than_quan',
@@ -530,7 +530,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
     level: 'xich_tan_khich',
     moves: BIPED_MOVES,
   },
-  boss_tu_nhan_ma_tuong: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh, tint: '#b89098', level: 'xich_tan_khich' },
+  boss_tu_nhan_ma_tuong: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh!, tint: '#b89098', level: 'xich_tan_khich' },
   boss_tu_quang_duc_chu: {
     asset: 'boss_vo_dien_than_quan',
     clips: CHANT_BOSS_CLIPS,
@@ -916,9 +916,9 @@ export class MonsterSkins {
     let src: THREE.Material | null = null;
     t.handle.scene.traverse((o) => {
       const mesh = o as THREE.Mesh;
-      if (!src && mesh.isMesh) src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+      if (!src && mesh.isMesh) src = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) ?? null;
     });
-    m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0];
+    m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0]!;
     m.color.multiply(new THREE.Color(s.tint));
     if (s.metalness !== undefined) m.metalness = s.metalness;
     if (s.roughness) m.roughness = Math.min(1, Math.max(0, m.roughness + s.roughness));

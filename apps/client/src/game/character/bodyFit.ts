@@ -83,7 +83,7 @@ const LEG = new Set(['leftupleg', 'leftleg', 'rightupleg', 'rightleg']);
 function pct(a: number[], q: number): number {
   if (!a.length) return 0;
   const s = [...a].sort((x, y) => x - y);
-  return s[Math.min(s.length - 1, Math.max(0, Math.round(q * (s.length - 1))))];
+  return s[Math.min(s.length - 1, Math.max(0, Math.round(q * (s.length - 1))))]!;
 }
 
 function tubeFit(verts: Vert[], bone: string, from: THREE.Vector3, to: THREE.Vector3, t0: number, t1: number): TubeFit {
