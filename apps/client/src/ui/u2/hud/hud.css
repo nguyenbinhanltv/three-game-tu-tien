@@ -550,8 +550,9 @@
 .u2h-utility {
   position: absolute;
   right: calc(var(--h-skills-w) + 8px);
-  bottom: 0;
-  width: var(--h-util-w);
+  bottom: -16px; /* cùng đáy với hàng Q/F/Z */
+  width: max-content;
+  max-width: var(--h-util-w);
   display: flex;
   flex-direction: column-reverse;
   align-items: flex-end;
@@ -561,9 +562,21 @@
 .u2h-utility > * {
   pointer-events: auto;
 }
-.u2h-extras {
+.u2h-slots {
   display: flex;
-  gap: var(--u-sp-1);
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 10px; /* cùng bước 66 px với hàng Q/F/Z (ô 56 + hở 10) */
+}
+.u2h-extras {
+  display: contents;
+}
+.u2h-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--u-sp-2);
 }
 .u2h-extras .sep {
   display: none;
@@ -572,8 +585,8 @@
   display: block;
 }
 .u2hud .u2h-tier .skill {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
 }
 /* ô tiện ích dùng lớp `.skill` cũ: ép về cùng hình bát giác 56 px của kit */
 .u2hud .u2h-utility .skill {

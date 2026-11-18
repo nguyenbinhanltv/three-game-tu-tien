@@ -41,6 +41,7 @@ const HUD: HudScene[] = [
     wait: 6000,
     cam: { dist: 14, pitch: 0.35 },
   },
+  { id: 'truc_co', query: { realm: 'tc2', at: 'tong_mon' }, gm: ['kit 2 kiem +5 m', 'level 20'], wait: 3000 },
   { id: 'dem', query: { realm: 'nk12', at: 'tong_mon', mood: 'night' } },
 ];
 

@@ -75,18 +75,18 @@
     inset 0 0 0 5px var(--u-gold-line);
   font-family: var(--u-font-body);
 }
-/* nền sơn thủy mờ: tranh phủ nửa dưới, tan dần lên trên, nằm dưới nội dung */
+/* dải sơn thủy ở đáy bảng: tranh rõ nhưng KHÔNG nằm dưới chữ (thân bảng chừa 56 px), nên không ảnh hưởng độ đọc; tan lên phía trên vào giấy */
 :root:root .u2-win .k-panel-in::before {
   content: '';
   position: absolute;
-  inset: 0;
-  pointer-events: none;
+  inset: auto 5px 5px 5px; /* ghi đè inset: 0 của kit */
+  height: 64px;
   z-index: 0;
-  mix-blend-mode: multiply;
-  background: url('./tex/sonthuy.webp') center bottom / cover no-repeat;
-  opacity: 0.4;
-  -webkit-mask-image: linear-gradient(180deg, transparent 18%, var(--u-ink-0) 100%);
-  mask-image: linear-gradient(180deg, transparent 18%, var(--u-ink-0) 100%);
+  pointer-events: none;
+  background: url('./tex/sonthuy.webp') center 50% / cover no-repeat;
+  opacity: 1;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, var(--u-ink-0) 38%);
+  mask-image: linear-gradient(180deg, transparent 0%, var(--u-ink-0) 38%);
 }
 :root:root .u2-win .k-panel-in > * {
   position: relative;
@@ -187,7 +187,8 @@
 
 /* ───────── thân và chữ ───────── */
 :root:root .u2-win .k-panel-body {
-  padding: var(--u-sp-4) var(--u-sp-5) var(--u-sp-5);
+  margin-bottom: 60px; /* chừa dải sơn thủy ở đáy */
+  padding: var(--u-sp-4) var(--u-sp-5) var(--u-sp-3);
   scrollbar-color: var(--u-scroll) transparent;
 }
 :root:root .u2-win .k-divider > span {
