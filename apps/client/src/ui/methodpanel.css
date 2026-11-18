@@ -1,5 +1,6 @@
 /* ---------- bảng Công pháp (3-5) ---------- */
 .mp-cards {
+  flex: none;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
@@ -35,6 +36,7 @@
   color: var(--k-text-dim);
 }
 .mp-detail {
+  flex: none;
   --mc: var(--k-jade);
   padding: 8px 10px;
   border: 1px solid var(--k-edge-dim);
@@ -53,9 +55,14 @@
 .mp-skills {
   display: grid;
   gap: 8px;
-  max-height: 340px;
+  /* danh sách chiêu chiếm phần còn lại của bảng (cuộn bên trong), không bị ép còn một dòng */
+  flex: 1 0 160px;
+  align-content: start;
   overflow: auto;
   padding-right: 4px;
+}
+.mp-skill {
+  flex: none;
 }
 .mp-skill {
   padding: 6px 8px;
@@ -137,6 +144,12 @@
 .mp-foot {
   margin-top: 6px;
   text-align: right;
+}
+.mp-foot {
+  flex: none;
+  font-size: var(--u-fs-1);
+  line-height: 1.35;
+  margin: 0;
 }
 
 /* ---------- thanh chiêu 8 ô: ô công pháp, vòng sạc, kiếm ý ---------- */
@@ -338,4 +351,29 @@
   border: 1px solid currentColor;
   border-radius: 3px;
   font-weight: 600;
+}
+
+/* Màn thấp (≤ 800 px): gọn phần đầu để danh sách chiêu còn chỗ (cuộn bên trong) */
+@media (max-height: 800px) {
+  .mp-detail > .k-dim:first-child {
+    display: none;
+  }
+  .mp-card {
+    padding: 4px 8px;
+  }
+  .mp-card-role {
+    display: none;
+  }
+  .mp-passive {
+    display: none; /* nội tại xem lại ở màn cao hơn hoặc trong tooltip chiêu */
+  }
+  .mp-pick {
+    margin-top: 0;
+  }
+  .mp-skills {
+    flex-basis: 140px;
+  }
+  .mp-foot:nth-last-of-type(-n + 2) {
+    display: none;
+  }
 }
