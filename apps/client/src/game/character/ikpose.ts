@@ -391,7 +391,7 @@ export class IkRig {
     h.updateWorldMatrix(true, false);
     const b = this.bones;
     b.hips!.updateWorldMatrix(true, false);
-    for (let i = 0; i < 6; i++) this.legPre[i].copy(this.legBones[i].quaternion);
+    for (let i = 0; i < 6; i++) this.legPre[i]!.copy(this.legBones[i]!.quaternion);
     const dy = { R: dyR, L: dyL };
     for (const side of ['R', 'L'] as const) {
       const up = b[`upLeg${side}`]!;
@@ -404,7 +404,7 @@ export class IkRig {
       _tgt.y += dy[side];
       solveLeg(up, mid, foot, _tgt, this.feetKnee[side], this.feetQ[side]);
     }
-    for (let i = 0; i < 6; i++) this.legPost[i].copy(this.legBones[i].quaternion);
+    for (let i = 0; i < 6; i++) this.legPost[i]!.copy(this.legBones[i]!.quaternion);
     this.legIk = true;
   }
 
@@ -417,7 +417,8 @@ export class IkRig {
   private undoLegIk(): void {
     if (!this.legIk) return;
     this.legIk = false;
-    for (let i = 0; i < 6; i++) if (this.legBones[i].quaternion.equals(this.legPost[i])) this.legBones[i].quaternion.copy(this.legPre[i]);
+    for (let i = 0; i < 6; i++)
+      if (this.legBones[i]!.quaternion.equals(this.legPost[i]!)) this.legBones[i]!.quaternion.copy(this.legPre[i]!);
   }
 
   /** Chỗ gắn kiếm trong hệ cục bộ xương tay phải: model kiếm mũi +Z, lưỡi ±X, gốc ở giữa chuôi (lòng bàn tay). */
@@ -618,7 +619,7 @@ export function resolveKeys(def: PoseDef): Resolved[] {
     kneeL: k.kneeL,
   });
   const raw = def.keys.map(pick);
-  const fields = Object.keys(raw[0]) as Field[];
+  const fields = Object.keys(raw[0]!) as Field[];
   const first: Partial<Record<Field, PoseVec>> = {};
   for (const r of raw) for (const f of fields) first[f] ??= r[f];
   const defaults: Partial<Record<Field, PoseVec>> = {
@@ -631,7 +632,7 @@ export function resolveKeys(def: PoseDef): Resolved[] {
   const cur: Partial<Record<Field, PoseVec>> = {};
   for (const f of fields) cur[f] = first[f] ?? defaults[f];
   return def.keys.map((k, i) => {
-    for (const f of fields) if (raw[i][f]) cur[f] = raw[i][f];
+    for (const f of fields) if (raw[i]![f]) cur[f] = raw[i]![f];
     return { ...(cur as PoseSample), t: k.t, ease: k.ease ?? 'inOut' };
   });
 }
@@ -679,13 +680,13 @@ function arcHand(a: PoseVec, b: PoseVec, u: number, side: 1 | -1): PoseVec {
 /** Giá trị nội suy ở thời điểm t (giây). */
 export function samplePose(def: PoseDef, keys: Resolved[], t: number): PoseSample {
   let i = 0;
-  while (i + 1 < keys.length && keys[i + 1].t <= t) i++;
-  const a = keys[i];
+  while (i + 1 < keys.length && keys[i + 1]!.t <= t) i++;
+  const a = keys[i]!;
   let b: Resolved | undefined = keys[i + 1];
   let span = b ? b.t - a.t : 0;
   // Clip lặp: đoạn cuối nối về key đầu ở t = duration.
   if (!b && def.loop && def.duration > a.t + 1e-6) {
-    b = { ...keys[0], t: def.duration, ease: 'inOut' };
+    b = { ...keys[0]!, t: def.duration, ease: 'inOut' };
     span = def.duration - a.t;
   }
   if (!b || span <= 0) return a;
@@ -736,7 +737,7 @@ export function bakePose(def: PoseDef, rig: IkRig, o: BakeOpts = {}): THREE.Anim
   for (let i = 0; i <= n; i++) times.push(Math.min(def.duration, i / fps));
   for (const k of keys) times.push(k.t);
   times.sort((x, y) => x - y);
-  const uniq = times.filter((t, i) => i === 0 || t - times[i - 1] > 1e-4);
+  const uniq = times.filter((t, i) => i === 0 || t - times[i - 1]! > 1e-4);
 
   const bones = rig.tracked;
   const quats = bones.map(() => [] as number[]);
@@ -745,10 +746,10 @@ export function bakePose(def: PoseDef, rig: IkRig, o: BakeOpts = {}): THREE.Anim
     rig.apply(samplePose(def, keys, t));
     bones.forEach((b, j) => {
       const q = b.quaternion;
-      const out = quats[j];
+      const out = quats[j]!;
       // Giữ dấu liên tục để nội suy và phép additive không đi đường vòng.
       const L = out.length;
-      const flip = L >= 4 && out[L - 4] * q.x + out[L - 3] * q.y + out[L - 2] * q.z + out[L - 1] * q.w < 0 ? -1 : 1;
+      const flip = L >= 4 && out[L - 4]! * q.x + out[L - 3]! * q.y + out[L - 2]! * q.z + out[L - 1]! * q.w < 0 ? -1 : 1;
       out.push(q.x * flip, q.y * flip, q.z * flip, q.w * flip);
     });
     const hp = rig.bones.hips!.position;
@@ -756,7 +757,7 @@ export function bakePose(def: PoseDef, rig: IkRig, o: BakeOpts = {}): THREE.Anim
   }
   rig.reset();
 
-  const tracks: THREE.KeyframeTrack[] = bones.map((b, j) => new THREE.QuaternionKeyframeTrack(`${b.name}.quaternion`, uniq, quats[j]));
+  const tracks: THREE.KeyframeTrack[] = bones.map((b, j) => new THREE.QuaternionKeyframeTrack(`${b.name}.quaternion`, uniq, quats[j]!));
   tracks.push(new THREE.VectorKeyframeTrack(`${rig.bones.hips!.name}.position`, uniq, hipsPos));
   return new THREE.AnimationClip(o.name ?? poseClipName(def.id), def.duration, tracks);
 }

@@ -95,4 +95,4 @@ export const UAL_NPC_IDLES: readonly string[] = ['ual_idle_fold', 'ual_idle_talk
 /** Tên clip của thư viện, theo bảng. */
 const HUMAN_CLIP_NAMES = Object.keys(HUMAN_CLIPS);
 /** Tên clip của một thư viện. */
-export const clipNamesOf = (lib: HumanLib): string[] => HUMAN_CLIP_NAMES.filter((n) => HUMAN_CLIPS[n].lib === lib);
+export const clipNamesOf = (lib: HumanLib): string[] => HUMAN_CLIP_NAMES.filter((n) => HUMAN_CLIPS[n]!.lib === lib);

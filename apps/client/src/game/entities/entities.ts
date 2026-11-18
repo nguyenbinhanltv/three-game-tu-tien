@@ -450,7 +450,7 @@ export class EntityManager {
         v.mvz += ((v.z - prev.z) / dt - v.mvz) * kv;
       }
       h.push({ t: this.time, x: v.x, z: v.z });
-      while (h.length > 1 && this.time - h[0].t > HIST_SEC) h.shift();
+      while (h.length > 1 && this.time - h[0]!.t > HIST_SEC) h.shift();
       const lookMon = isLocal && targetId ? this.monsters.get(targetId) : undefined;
       v.model.update(dt, {
         lookAt: lookMon ? { x: lookMon.x, y: lookMon.y + 1.2, z: lookMon.z } : undefined,
@@ -612,7 +612,7 @@ export class EntityManager {
       }
       g.visible = s.on;
       if (s.on) {
-        const glow = g.children[1];
+        const glow = g.children[1]!;
         const pulse = 1 + Math.sin(this.time * 3 + s.x) * 0.18;
         glow.scale.set(0.55 * pulse, 0.75 * pulse, 0.55 * pulse);
       }
@@ -744,8 +744,8 @@ export class EntityManager {
     for (let i = 0; i < n; i++) {
       const v = mons[i];
       if (!v) continue;
-      v.sepX += (bodies[i].ox - v.sepX) * k;
-      v.sepZ += (bodies[i].oz - v.sepZ) * k;
+      v.sepX += (bodies[i]!.ox - v.sepX) * k;
+      v.sepZ += (bodies[i]!.oz - v.sepZ) * k;
     }
   }
 
@@ -911,7 +911,7 @@ export class EntityManager {
     const v = this.players.get(sid);
     if (!v || !v.hist.length) return null;
     const want = this.time - sec;
-    let best = v.hist[0];
+    let best = v.hist[0]!;
     for (const e of v.hist) if (e.t <= want) best = e;
     return best;
   }
@@ -1009,7 +1009,7 @@ export class EntityManager {
     if (!list.length) return '';
     list.sort((a, b) => a.d - b.d);
     const i = list.findIndex((e) => e.id === current);
-    return list[(i + 1) % list.length].id;
+    return list[(i + 1) % list.length]!.id;
   }
 
   /** Giới tính nhân vật của mình ('m' | 'f') theo trạng thái server; UI dùng để báo món giới hạn giới tính. */

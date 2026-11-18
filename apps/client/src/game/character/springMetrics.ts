@@ -46,14 +46,14 @@ function segDist(p: THREE.Vector3, a: THREE.Vector3, b: THREE.Vector3): number {
 
 /** Giao hai tam giác (Möller 1997), bỏ qua đồng phẳng. */
 export function triTri(a: THREE.Vector3[], b: THREE.Vector3[]): boolean {
-  const n2 = new THREE.Vector3().crossVectors(b[1].clone().sub(b[0]), b[2].clone().sub(b[0]));
-  const d2 = -n2.dot(b[0]);
+  const n2 = new THREE.Vector3().crossVectors(b[1]!.clone().sub(b[0]!), b[2]!.clone().sub(b[0]!));
+  const d2 = -n2.dot(b[0]!);
   const da = a.map((p) => n2.dot(p) + d2);
-  if ((da[0] > 0 && da[1] > 0 && da[2] > 0) || (da[0] < 0 && da[1] < 0 && da[2] < 0)) return false;
-  const n1 = new THREE.Vector3().crossVectors(a[1].clone().sub(a[0]), a[2].clone().sub(a[0]));
-  const d1 = -n1.dot(a[0]);
+  if ((da[0]! > 0 && da[1]! > 0 && da[2]! > 0) || (da[0]! < 0 && da[1]! < 0 && da[2]! < 0)) return false;
+  const n1 = new THREE.Vector3().crossVectors(a[1]!.clone().sub(a[0]!), a[2]!.clone().sub(a[0]!));
+  const d1 = -n1.dot(a[0]!);
   const db = b.map((p) => n1.dot(p) + d1);
-  if ((db[0] > 0 && db[1] > 0 && db[2] > 0) || (db[0] < 0 && db[1] < 0 && db[2] < 0)) return false;
+  if ((db[0]! > 0 && db[1]! > 0 && db[2]! > 0) || (db[0]! < 0 && db[1]! < 0 && db[2]! < 0)) return false;
   const dir = new THREE.Vector3().crossVectors(n1, n2);
   if (dir.lengthSq() < 1e-18) return false;
   const ax =
@@ -63,8 +63,8 @@ export function triTri(a: THREE.Vector3[], b: THREE.Vector3[]): boolean {
     const out: number[] = [];
     for (let i = 0; i < 3; i++) {
       const j = (i + 1) % 3;
-      if (d[i] === 0) out.push(p[i]);
-      if ((d[i] > 0 && d[j] < 0) || (d[i] < 0 && d[j] > 0)) out.push(p[i] + ((p[j] - p[i]) * d[i]) / (d[i] - d[j]));
+      if (d[i] === 0) out.push(p[i]!);
+      if ((d[i]! > 0 && d[j]! < 0) || (d[i]! < 0 && d[j]! > 0)) out.push(p[i]! + ((p[j]! - p[i]!) * d[i]!) / (d[i]! - d[j]!));
     }
     return out.length >= 2 ? [Math.min(...out), Math.max(...out)] : null;
   };
@@ -120,15 +120,15 @@ export function meshInfo(mesh: THREE.SkinnedMesh): MeshInfo {
     let sk = 0;
     for (let k = 0; k < 4; k++) {
       const w = sw.getComponent(i, k);
-      const nm = names[si.getComponent(i, k)];
+      const nm = names[si.getComponent(i, k)]!;
       if (w > bw) {
         bw = w;
         best = si.getComponent(i, k);
       }
       if (nm.startsWith('dtl_o_skirt')) sk += w;
     }
-    regionBase.push(regionOf(names[best]));
-    domBone.push(names[best]);
+    regionBase.push(regionOf(names[best]!));
+    domBone.push(names[best]!);
     skirtW.push(sk);
   }
   const ib = g.getIndex();
@@ -145,7 +145,7 @@ export function robeMask(rest: Posed, info: MeshInfo): { mask: boolean[]; height
   const caps = CAPS.filter(([a]) => !a.startsWith('upperarm') && !a.startsWith('lowerarm') && a !== 'spine_03');
   const mask = rest.verts.map((v, i) => {
     const inside = caps.some(([a, b, r]) => segDist(v, rest.bones.get(a)!, rest.bones.get(b)!) < r * kc);
-    return (v.y >= zlo && v.y <= zhi && !inside) || (info.skirtW[i] > 0.01 && v.y >= zlo);
+    return (v.y >= zlo && v.y <= zhi && !inside) || (info.skirtW[i]! > 0.01 && v.y >= zlo);
   });
   return { mask, height };
 }
@@ -153,16 +153,16 @@ export function robeMask(rest: Posed, info: MeshInfo): { mask: boolean[]; height
 function regionsFor(rest: Posed, info: MeshInfo, mask: boolean[]): Region[] {
   const sgn = rest.bones.get('thigh_l')!.x > 0 ? 1 : -1;
   const cx = rest.bones.get('pelvis')!.x;
-  return info.regionBase.map((r, i) => (mask[i] ? (((rest.verts[i].x - cx) * sgn > 0 ? 'leg_l' : 'leg_r') as Region) : r));
+  return info.regionBase.map((r, i) => (mask[i] ? (((rest.verts[i]!.x - cx) * sgn > 0 ? 'leg_l' : 'leg_r') as Region) : r));
 }
 
 /** Số cặp tam giác chồng nhau (không chung đỉnh) giữa các vùng. */
 export function overlapCount(p: Posed, info: MeshInfo, regions: Region[], byPair?: Record<string, number>): number {
   const tris: Record<Region, number[][]> = { arm_l: [], arm_r: [], leg_l: [], leg_r: [], torso: [] };
   for (let t = 0; t < info.index.length; t += 3) {
-    const f = [info.index[t], info.index[t + 1], info.index[t + 2]];
+    const f = [info.index[t]!, info.index[t + 1]!, info.index[t + 2]!];
     const cnt: Partial<Record<Region, number>> = {};
-    for (const v of f) cnt[regions[v]] = (cnt[regions[v]] ?? 0) + 1;
+    for (const v of f) cnt[regions[v]!] = (cnt[regions[v]!] ?? 0) + 1;
     for (const r of Object.keys(cnt) as Region[]) if ((cnt[r] ?? 0) >= 2) tris[r].push(f);
   }
   const cell = 0.04;
@@ -173,7 +173,7 @@ export function overlapCount(p: Posed, info: MeshInfo, regions: Region[], byPair
     if (g) return g;
     g = new Map();
     tris[r].forEach((f, i) => {
-      const box = new THREE.Box3().setFromPoints(f.map((v) => p.verts[v]));
+      const box = new THREE.Box3().setFromPoints(f.map((v) => p.verts[v]!));
       for (let x = Math.floor(box.min.x / cell); x <= Math.floor(box.max.x / cell); x++)
         for (let y = Math.floor(box.min.y / cell); y <= Math.floor(box.max.y / cell); y++)
           for (let z = Math.floor(box.min.z / cell); z <= Math.floor(box.max.z / cell); z++) {
@@ -192,7 +192,7 @@ export function overlapCount(p: Posed, info: MeshInfo, regions: Region[], byPair
     const gb = gridOf(rb);
     const seen = new Set<number>();
     tris[ra].forEach((fa, ia) => {
-      const A = fa.map((v) => p.verts[v]);
+      const A = fa.map((v) => p.verts[v]!);
       const box = new THREE.Box3().setFromPoints(A);
       seen.clear();
       for (let x = Math.floor(box.min.x / cell); x <= Math.floor(box.max.x / cell); x++)
@@ -201,12 +201,12 @@ export function overlapCount(p: Posed, info: MeshInfo, regions: Region[], byPair
             for (const ib of gb.get(`${x},${y},${z}`) ?? []) {
               if (seen.has(ib)) continue;
               seen.add(ib);
-              const fb = tris[rb][ib];
+              const fb = tris[rb][ib]!;
               if (fb.some((v) => fa.includes(v))) continue;
               if (
                 triTri(
                   A,
-                  fb.map((v) => p.verts[v]),
+                  fb.map((v) => p.verts[v]!),
                 )
               ) {
                 total++;
@@ -263,9 +263,9 @@ export function diagnose(p: Posed, rest: Posed, info: MeshInfo, regions: Region[
   // tay×thân: các đỉnh của tam giác chồng
   const tris: Record<Region, number[][]> = { arm_l: [], arm_r: [], leg_l: [], leg_r: [], torso: [] };
   for (let t = 0; t < info.index.length; t += 3) {
-    const f = [info.index[t], info.index[t + 1], info.index[t + 2]];
+    const f = [info.index[t]!, info.index[t + 1]!, info.index[t + 2]!];
     const cnt: Partial<Record<Region, number>> = {};
-    for (const v of f) cnt[regions[v]] = (cnt[regions[v]] ?? 0) + 1;
+    for (const v of f) cnt[regions[v]!] = (cnt[regions[v]!] ?? 0) + 1;
     for (const r of Object.keys(cnt) as Region[]) if ((cnt[r] ?? 0) >= 2) tris[r].push(f);
   }
   for (const [ra, rb] of [
@@ -276,21 +276,21 @@ export function diagnose(p: Posed, rest: Posed, info: MeshInfo, regions: Region[
     const bb = new Map<string, number>();
     const ha: number[] = [];
     for (const fa of tris[ra]) {
-      const A = fa.map((v) => p.verts[v]);
+      const A = fa.map((v) => p.verts[v]!);
       const box = new THREE.Box3().setFromPoints(A).expandByScalar(0.0);
       for (const fb of tris[rb]) {
-        const B = fb.map((v) => p.verts[v]);
+        const B = fb.map((v) => p.verts[v]!);
         if (!box.intersectsBox(new THREE.Box3().setFromPoints(B))) continue;
         if (fb.some((v) => fa.includes(v))) continue;
         if (!triTri(A, B)) continue;
-        for (const v of fa) ba.set(info.domBone[v], (ba.get(info.domBone[v]) ?? 0) + 1);
-        for (const v of fb) bb.set(info.domBone[v], (bb.get(info.domBone[v]) ?? 0) + 1);
-        ha.push(A[0].y / height);
+        for (const v of fa) ba.set(info.domBone[v]!, (ba.get(info.domBone[v]!) ?? 0) + 1);
+        for (const v of fb) bb.set(info.domBone[v]!, (bb.get(info.domBone[v]!) ?? 0) + 1);
+        ha.push(A[0]!.y / height);
       }
     }
     ha.sort((a, b) => a - b);
     out.push(
-      `${ra}×${rb}: ${ha.length} cặp; xương trội bên tay [${top(ba)}], bên thân [${top(bb)}]; cao (tỉ lệ) ${ha.length ? `${ha[0].toFixed(2)}..${ha[ha.length - 1].toFixed(2)} trung vị ${ha[ha.length >> 1].toFixed(2)}` : '-'}`,
+      `${ra}×${rb}: ${ha.length} cặp; xương trội bên tay [${top(ba)}], bên thân [${top(bb)}]; cao (tỉ lệ) ${ha.length ? `${ha[0]!.toFixed(2)}..${ha[ha.length - 1]!.toFixed(2)} trung vị ${ha[ha.length >> 1]!.toFixed(2)}` : '-'}`,
     );
   }
   // đỉnh vào viên nang
@@ -299,10 +299,10 @@ export function diagnose(p: Posed, rest: Posed, info: MeshInfo, regions: Region[
   const hits = new Map<string, number>();
   for (let i = 0; i < p.verts.length; i++) {
     for (const [a, b, r] of capsDef) {
-      const nowIn = segDist(p.verts[i], p.bones.get(a)!, p.bones.get(b)!) < r * kc * 0.9;
-      const wasIn = segDist(rest.verts[i], rest.bones.get(a)!, rest.bones.get(b)!) < r * kc * 0.9;
+      const nowIn = segDist(p.verts[i]!, p.bones.get(a)!, p.bones.get(b)!) < r * kc * 0.9;
+      const wasIn = segDist(rest.verts[i]!, rest.bones.get(a)!, rest.bones.get(b)!) < r * kc * 0.9;
       if (nowIn && !wasIn) {
-        const kind = mask[i] ? 'vạt' : /sleeve|lowerarm|upperarm|hand|clav/.test(info.domBone[i]) ? 'tay/tay áo' : 'khác';
+        const kind = mask[i] ? 'vạt' : /sleeve|lowerarm|upperarm|hand|clav/.test(info.domBone[i]!) ? 'tay/tay áo' : 'khác';
         hits.set(`${a}→${b} ${kind}`, (hits.get(`${a}→${b} ${kind}`) ?? 0) + 1);
       }
     }
