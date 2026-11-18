@@ -166,7 +166,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, [charImg, reduce]);
+  }, [charImg, reduce, swap]);
 
   const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
