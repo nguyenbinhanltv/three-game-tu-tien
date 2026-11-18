@@ -65,6 +65,7 @@ export function makeTerrain(def: TerrainDef): Terrain {
   const islands = def.islands?.length ? def.islands : undefined;
   const bridges = def.bridges?.length ? def.bridges : undefined;
   const ponds = def.ponds?.length ? def.ponds : undefined;
+  const canyon = def.canyon;
 
   /**
    * Khoảng cách tới tâm khu, méo bằng nhiễu thấp tần số (±~20 %, biên độ nhiễu thực ~0,3): mép khu (bãi bằng, bờ hồ) là một hình lồi lõm như
@@ -130,6 +131,24 @@ export function makeTerrain(def: TerrainDef): Terrain {
     const dx = Math.abs(x - play.cx);
     const dz = Math.abs(z - play.cz);
     return Math.sqrt(Math.sqrt(dx * dx * dx * dx + dz * dz * dz * dz));
+  }
+
+  /** Độ cao cộng thêm của hẻm núi tại (x, z): 0 trên sàn, `wallH` trên cao nguyên, vách đứng ở giữa, gân đá dọc vách. */
+  function canyonRise(x: number, z: number): number {
+    const c = canyon!;
+    const dx = Math.abs(x - c.cx);
+    const dz = Math.abs(z - c.cz);
+    // Mép vách uốn lượn theo z (và x), nên hẻm không thẳng như hộp.
+    const wob = (fbm(z * 0.035, x * 0.02, 2, seed + 401) - 0.0) * c.wobble;
+    const hw = c.halfW + wob;
+    const hl = c.halfL + (fbm(x * 0.03, z * 0.02, 2, seed + 419) - 0.0) * c.wobble;
+    const r = Math.pow(Math.pow(dx / hw, 3) + Math.pow(dz / hl, 3), 1 / 3);
+    const m = Math.max(0, r - 1) * Math.min(hw, hl);
+    if (m <= 0) return 0;
+    const t = smoothstep(0, c.rise, m);
+    // Gân đá: sống đá nhô khỏi vách (chỉ trên dốc), cao nguyên có gồ nhẹ.
+    const rib = ridged(x * 0.05, z * 0.05, 3, seed + 433) * c.rib;
+    return c.wallH * t + rib * smoothstep(0, c.rise * 0.6, m) * (0.35 + 0.65 * t);
   }
 
   /** Mặt cầu: gần dải thì độ cao kéo về mặt cầu nếu mặt cầu cao hơn (đầu cầu trùng mặt đảo nên liền mạch). Mép dải dốc đứng nên cầu như bức tường nhìn từ sàn mây. */
@@ -206,6 +225,8 @@ export function makeTerrain(def: TerrainDef): Terrain {
       }
     }
 
+    if (canyon) h += canyonRise(x, z);
+
     if (bridges && withDeck) h = withBridges(h, x, z);
 
     // Ranh vùng chơi: ngay sau chân vách địa hình dựng đứng lên, đi tới đó gặp vách.
@@ -266,14 +287,14 @@ export function makeTerrain(def: TerrainDef): Terrain {
     return out;
   }
 
-  return { id: def.id, def, size: def.size, margin: def.margin, colliders: def.colliders, playWall, playBounds, blockRise: !!islands, heightAt, surfaceAt, groundAt, inWater, biomeAt, featureWeight, playDist, clampPlay };
+  return { id: def.id, def, size: def.size, margin: def.margin, colliders: def.colliders, playWall, playBounds, blockRise: !!islands || !!canyon, heightAt, surfaceAt, groundAt, inWater, biomeAt, featureWeight, playDist, clampPlay };
 }
 
 // ---- Đăng ký theo level ----
 
 const REGISTRY = new Map<string, Terrain>();
 /** Level dùng chung địa hình với level khác (bí cảnh Kiếm Trủng nằm trên bản đồ Vân Lam). */
-const TERRAIN_ALIAS: Record<string, string> = { kiem_trung: 'van_lam', do_kiep: 'van_lam', phuc_mach: 'van_lam', kinh_nguyet: 'van_lam', than_tang: 'van_lam', xich_tan_khich: 'van_lam' };
+const TERRAIN_ALIAS: Record<string, string> = { kiem_trung: 'van_lam', do_kiep: 'van_lam', phuc_mach: 'van_lam', kinh_nguyet: 'van_lam', than_tang: 'van_lam' };
 
 /** Đăng ký (hoặc thay) địa hình của một level. Trả địa hình đã dựng. */
 export function registerTerrain(def: TerrainDef): Terrain {

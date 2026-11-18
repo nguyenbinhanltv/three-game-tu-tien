@@ -1,30 +1,24 @@
 {
-  "mood": "rift",
+  "mood": "rift_pit",
   "glb": [],
   "ground": {
-    "set": "terrain-ochre",
+    "set": "terrain-ash",
     "mask": "neutral"
   },
   "music": [
-    "dungeon",
-    "dungeon_boss"
+    "dungeon_rift",
+    "dungeon_rift_boss"
   ],
   "features": {
     "sect": false,
     "portals": true,
-    "lanterns": true,
+    "lanterns": false,
     "lake": false,
     "clouds": false,
     "grass": false,
-    "trees": "none",
+    "trees": "scatter",
     "beacons": false,
     "vegetation": false
   },
-  "minimap": "van_lam",
-  "cave": {
-    "x": 1520,
-    "z": 1300,
-    "r": 94,
-    "h": 46
-  }
+  "minimap": "van_lam"
 }

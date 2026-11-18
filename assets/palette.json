@@ -178,6 +178,16 @@
         "shadowAmount": 0.45, "highlightAmount": 0.24, "fogScatter": 0.8,
         "blackLift": "#221A28", "contrast": 1.12, "saturation": 0.62, "exposure": 1.15
       },
+      "rift_pit": {
+        "label": "Xích Tẫn Khích — đáy hẻm than hồng",
+        "sunColor": "#D2602C", "sunIntensity": 1.5, "sunElevationDeg": 9,
+        "skyColor": "#5E4A5C", "skyIntensity": 0.8,
+        "fogColor": "#6A4E50", "fogDensity": 0.0026, "heightFogTop": 38, "heightFogBoost": 2.6,
+        "fogHaze": 0.0032, "fogHazeStart": 30, "rim": 0.8,
+        "shadowTint": "#2E2030", "highlightTint": "#E8905A", "splitBalance": -0.14,
+        "shadowAmount": 0.5, "highlightAmount": 0.26, "fogScatter": 0.9,
+        "blackLift": "#1C1219", "contrast": 1.14, "saturation": 0.66, "exposure": 1.12
+      },
       "ochre_night": {
         "label": "Đoạn Mạch — đêm",
         "sunColor": "#8FA3BF", "sunIntensity": 1.1, "sunElevationDeg": 33,

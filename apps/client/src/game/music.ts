@@ -92,6 +92,7 @@ const STYLES: Record<MusicTrack, Style> = {
   forest: { root: 392.0, scale: GONG, bpm: 92, density: 0.4, span: 10, gain: 0.45, drone: 0.06, sustain: 0.995 },
   lake: { root: 261.63, scale: YU, bpm: 60, density: 0.24, span: 8, gain: 0.5, drone: 0.14, sustain: 0.998 },
   dungeon: { root: 220.0, scale: YU, bpm: 58, density: 0.2, span: 7, gain: 0.5, drone: 0.16, bell: 0.15, sustain: 0.997 },
+  dungeon_rift: { root: 164.81, scale: YU, bpm: 52, density: 0.18, span: 7, gain: 0.5, drone: 0.2, bell: 0.15, sustain: 0.998 },
   combat: {
     root: 246.94,
     scale: YU,
@@ -125,6 +126,18 @@ const STYLES: Record<MusicTrack, Style> = {
     drum: [1, 0, 0.4, 0, 0.8, 0, 0.4, 0.4, 1, 0, 0.4, 0, 0.8, 0.4, 0.6, 0.6],
     bell: 0.3,
     sustain: 0.992,
+  },
+  dungeon_rift_boss: {
+    root: 164.81,
+    scale: YU,
+    bpm: 108,
+    density: 0.5,
+    span: 9,
+    gain: 0.55,
+    drone: 0.2,
+    drum: [1, 0, 0.4, 0, 0.8, 0, 0.5, 0.3, 1, 0, 0.4, 0, 0.8, 0.4, 0.6, 0.5],
+    bell: 0.25,
+    sustain: 0.993,
   },
   tribulation: {
     root: 174.61,

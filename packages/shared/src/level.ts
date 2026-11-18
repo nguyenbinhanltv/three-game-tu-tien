@@ -200,6 +200,12 @@ export interface TerrainDef {
   fakeIslands?: IslandDef[];
   /** Mặt nước, độ lội tối đa, đĩa nước của hồ. */
   water?: { y: number; wade: number; lake?: { x: number; z: number; r: number } };
+  /**
+   * Hẻm núi (DV-3K, phó bản Xích Tẫn Khích): sàn phẳng hình chữ nhật bo tròn nửa rộng `halfW` (x) × nửa dài `halfL` (z) quanh (`cx`, `cz`), vách dựng lên `wallH` m
+   * trong `rise` m (dốc hơn `MAX_SLOPE_UP` nên chặn leo, xem `blockRise`), mép vách uốn lượn `wobble` m, gân đá `rib` m; ngoài vách là cao nguyên phẳng ở `wallH`.
+   * Cộng vào độ cao nền (`natural.level` là cao độ sàn).
+   */
+  canyon?: { cx: number; cz: number; halfW: number; halfL: number; wallH: number; rise: number; wobble: number; rib: number };
   /** Ranh vùng chơi: ô vuông bo tròn quanh tâm, vách dựng lên sau `half - 10`. */
   play?: { cx: number; cz: number; half: number; wallH: number };
   /** Biome theo khu, ưu tiên từ trên xuống; mặc định 'wild'. */
