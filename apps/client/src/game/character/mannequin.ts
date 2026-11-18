@@ -13,11 +13,15 @@ import { lodLevel, mixerInterval } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
+import { applySkinLook, SKIN_LOOKS } from './skinLook';
 import { applyV3Palette } from './v3Palette';
 import { breathOf, flinchOf, leanOf, locoMix, lookAngles, LOCO, swingRate, turnLagOf, xfade } from './mannequinAnim';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import type { AnimState, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
 import { FLAGS } from '../../base/flags';
+import { logger } from '../../base/log';
+
+const modelsLog = logger('models');
 
 /** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
 export const CHR_V3 = FLAGS.chr === 'v3';
@@ -65,6 +69,8 @@ export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_crimson: 'chr_v3_crimson_nam',
   set_skin_kings_demon: 'chr_v3_kings_demon_nu',
   set_skin_noxavyra: 'chr_v3_noxavyra_nu',
+  set_skin_korvaden: 'chr_v3_korvaden_nam',
+  set_skin_shadow_wolf: 'chr_v3_shadow_wolf_nam',
 };
 /** Skin chỉ có bản v3 (v1/v2 không có asset `set_skin_<tên>_<giới>`: bỏ qua, hiện trang phục thường). Varkessa có cả v1. */
 export const V3_ONLY_SKINS: ReadonlySet<string> = new Set([
@@ -72,6 +78,8 @@ export const V3_ONLY_SKINS: ReadonlySet<string> = new Set([
   'set_skin_crimson',
   'set_skin_noxavyra',
   'set_skin_kings_demon',
+  'set_skin_shadow_wolf',
+  'set_skin_korvaden',
 ]);
 /**
  * Model v3 theo bộ trang bị đang mặc (`PlayerLook.set`, id trong sets.json): bộ có model riêng dùng `chr_v3_<bộ>_<nam|nu>`.
@@ -153,6 +161,8 @@ function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
 export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
   if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
+  const look = SKIN_LOOKS[handle.id];
+  if (look) for (const m of mats) applySkinLook(m, look);
   const box = new THREE.Box3().setFromObject(handle.scene);
   // Độ cao hông của nhân vật so với bộ xương mẫu của thư viện: chỉ kênh vị trí của pelvis bị nhân theo tỉ lệ.
   const a = restPos(handle.scene, 'pelvis');
@@ -1048,13 +1058,13 @@ export class MannequinPlayers {
           this.poseSrc = new PoseSource(h.scene);
           this.ensurePoses();
         } catch (err) {
-          console.warn('[models] không dựng được nguồn pose K-5 cho v3', err);
+          modelsLog.warn('không dựng được nguồn pose K-5 cho v3', err);
           h.release();
           this.poseSrc = 'failed';
         }
       },
       (err) => {
-        console.warn('[models] không nạp được nguồn pose K-5 cho v3', err);
+        modelsLog.warn('không nạp được nguồn pose K-5 cho v3', err);
         this.poseSrc = 'failed';
       },
     );
@@ -1074,12 +1084,12 @@ export class MannequinPlayers {
           this.tpl.set(id, mannequinTemplate(h, lib));
           this.ensurePoses();
         } catch (err) {
-          console.warn(`[models] không dựng được ${id}`, err);
+          modelsLog.warn(`không dựng được ${id}`, err);
           this.tpl.set(id, 'failed');
         }
       },
       (err) => {
-        console.warn(`[models] không nạp được ${id} (v3)`, err);
+        modelsLog.warn(`không nạp được ${id} (v3)`, err);
         this.tpl.set(id, 'failed');
       },
     );

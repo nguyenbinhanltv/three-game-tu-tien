@@ -11,7 +11,15 @@ const NO_FF = OTHERS.filter((f) => f !== 'fonts.css'); // fonts.css khai @font-f
 const COLOR = /#[0-9a-fA-F]{3,8}\b|\b(rgb|hsl)a?\(/;
 
 /** CSS của các bảng đã chuyển sang Kit 2.0 (đường dẫn tính từ `ui/`): không màu cứng, danh sách tăng dần theo từng PR U2-3. */
-const MIGRATED = ['bag/bag.css', 'character/character.css', 'methodpanel.css', 'party.css', 'worldmap/worldmap.css', 'upgrade.css'];
+const MIGRATED = [
+  'bag/bag.css',
+  'character/character.css',
+  'methodpanel.css',
+  'party.css',
+  'worldmap/worldmap.css',
+  'upgrade.css',
+  'character/hoatruc.css',
+];
 
 describe('u2 token', () => {
   it('CSS bảng đã chuyển không có màu cứng và chỉ dùng biến --u-*/--k-* đã khai báo', () => {
@@ -19,6 +27,7 @@ describe('u2 token', () => {
       const c = readFileSync(join(DIR, '..', f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
       expect(c, f).not.toMatch(COLOR);
       const declared = new Set([...readFileSync(join(DIR, 'tokens.css'), 'utf8').matchAll(/(--u-[a-z0-9-]+)\s*:/g)].map((m) => m[1]));
+      for (const m of readFileSync(join(DIR, 'u2.css'), 'utf8').matchAll(/@property\s+(--u-[a-z0-9-]+)/g)) declared.add(m[1]); // biến hoạt ảnh chung
       for (const m of c.matchAll(/var\((--u-[a-z0-9-]+)/g)) expect(declared.has(m[1]!), `${f}: ${m[1]}`).toBe(true);
     }
   });

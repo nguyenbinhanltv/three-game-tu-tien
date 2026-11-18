@@ -14,7 +14,7 @@
 // Quy ước: trạng thái của cơ chế nằm ở `tr.mech[<id>]` (chỉ server giữ). Mọi lệnh phím (X, G) phải qua `GameSim.rateOk` và kiểm trạng thái kiếp ở server.
 
 import { METHOD, SKILL } from '@dtl/content';
-import { PF_DEAD, TRIB_MECHANIC_IDS, tribDef, type TribDef, type TribPhaseDef } from '@dtl/shared';
+import { PF_DEAD, TRIB_MECHANIC_IDS, tribDef, type TribDef, type TribPhaseDef, at } from '@dtl/shared';
 import type { PlayerEnt } from './entities';
 import type { TribState } from './tribtypes';
 import type { TribHost } from './tribhost';
@@ -122,7 +122,7 @@ registerMechanic('dan_tran', {
       sweeps: 0,
     };
     (c.tr.mech ??= {}).dan_tran = st;
-    const len = c.phase.end - (c.phaseIdx > 0 ? c.def.phases[c.phaseIdx - 1].end : 0);
+    const len = c.phase.end - (c.phaseIdx > 0 ? at(c.def.phases, c.phaseIdx - 1, 'phases').end : 0);
     c.host.fx({ t: 'dantran', src: c.p.sid, x: st.x, z: st.z, r: cfg.r, d: len, pg: 0 });
     c.host.sys(c.p, 'sys.dan_tran_start', undefined, 'info');
   },
@@ -200,7 +200,7 @@ registerMechanic('tia_xich', {
     const st = c.tr.mech?.tia_xich as { at: number } | undefined;
     if (!cfg || !st || c.now < st.at || (c.p.s.fl & PF_DEAD) !== 0) return;
     // Nhịp dày dần: chu kỳ co từ `every` xuống còn 70% về cuối pha.
-    const phaseStart = c.phaseIdx > 0 ? c.def.phases[c.phaseIdx - 1].end : 0;
+    const phaseStart = c.phaseIdx > 0 ? at(c.def.phases, c.phaseIdx - 1, 'phases').end : 0;
     const k = Math.min(1, Math.max(0, (c.elapsed - phaseStart) / Math.max(1, c.phase.end - phaseStart)));
     st.at = c.now + cfg.every * (1 - 0.3 * k) * 1000;
     const yaw = Math.random() * Math.PI;

@@ -25,6 +25,7 @@ import type { PlayerEnt } from './entities';
 import type { TribHost } from './tribhost';
 import { registerMechanic, type TribMechCtx } from './tribmech';
 
+import { at } from '@dtl/shared';
 const ELEM_HAZARD: Record<(typeof ELEMENTS)[number], HazardKind> = {
   kim: 'lightning',
   moc: 'spirit',
@@ -70,7 +71,7 @@ function markSeals(host: TribHost, now: number, st: NguHanhState, cfg: TribNguHa
       0.2,
       0,
       false,
-      ELEM_HAZARD[ELEMENTS[i]],
+      ELEM_HAZARD[at(ELEMENTS, i)],
       '',
       0,
       false,
@@ -106,7 +107,7 @@ registerMechanic('ngu_hanh', {
     if (c.now < st.at) return;
     const idx = nguHanhIndex(st.n++);
     st.at = c.now + cfg.every * 1000;
-    const e = ELEMENTS[idx];
+    const e = at(ELEMENTS, idx, 'ELEMENTS');
     const seal = tribSealPos(st, cfg.ring, nguHanhSealFor(idx));
     // Tia kiếp quét cả sân và luôn trúng chủ kiếp dù đứng ngoài sân (`reach`: rời sân không bỏ qua được cơ chế); ai đứng trong trận môn khắc chế hành này lúc nổ giảm `cut` (cờ `ke`).
     c.host.addHazard(
@@ -229,7 +230,7 @@ registerMechanic('phan_than', {
     const rel = (c.now - st.t0) / 1000;
     const h = c.host;
     // Tia quét: vạch dài qua tâm sân, hướng ngẫu nhiên.
-    if (cfg.sweeps && st.sweeps < cfg.sweeps.length && rel >= cfg.sweeps[st.sweeps]) {
+    if (cfg.sweeps && st.sweeps < cfg.sweeps.length && rel >= at(cfg.sweeps, st.sweeps, 'sweeps')) {
       st.sweeps++;
       const yaw = Math.random() * Math.PI;
       const fx = Math.sin(yaw);
@@ -250,7 +251,9 @@ registerMechanic('phan_than', {
       const pool = [0, 1, 2, 3, 4].filter((i) => i !== TRIB_LINK_SEAL);
       for (let k = pool.length - 1; k > 0; k--) {
         const j = Math.floor(Math.random() * (k + 1));
-        [pool[k], pool[j]] = [pool[j], pool[k]];
+        const pk = pool[k] ?? 0;
+        pool[k] = pool[j] ?? 0;
+        pool[j] = pk;
       }
       for (const i of pool.slice(0, cfg.pillars ?? 3)) {
         const s = tribSealPos(ctr, ng.ring, i);

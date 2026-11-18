@@ -1,6 +1,6 @@
 // Prop bày của Đoạn Mạch Cổ Cốc (E2-A). SINH BẰNG tools/maps/gen-doan-mach.mjs: sửa ở đó rồi chạy lại.
 // Dùng asset sẵn có làm chỗ đứng; khi PROP_LIB (#118) vào thì thay theo docs/e2-map/README.md.
-import type { HandProp } from './props';
+import type { HandProp } from './props.types';
 
 export const DOAN_MACH_PROPS: readonly HandProp[] = [
   { id: 'prop_mach_tinh_tru', x: 1279, z: 1199, yaw: 0, s: 1, r: 1.6 },

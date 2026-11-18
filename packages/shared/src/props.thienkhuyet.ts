@@ -1,6 +1,6 @@
 // Prop bày của Thiên Khuyết Cổ Thành (E4-A). SINH BẰNG tools/maps/gen-thien-khuyet.mjs: sửa ở đó rồi chạy lại.
 // Va chạm của cổng/tượng/trụ nằm ở `terrain.colliders` (thien_khuyet.terrain.json), tính từ PROP_LIB theo vị trí và xoay.
-import type { HandProp } from './props';
+import type { HandProp } from './props.types';
 
 export const THIEN_KHUYET_PROPS: readonly HandProp[] = [
   { id: 'prop_cong_thanh_vo', x: 1024, z: 924, yaw: 0, s: 1 },

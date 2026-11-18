@@ -1,6 +1,6 @@
 // Room bí cảnh (R-7, tách từ rooms.ts).
 import { ServerError } from 'colyseus';
-import { MS_DEAD, PF_DEAD, type DungeonDef, type WaveDef, dungeonRoomName } from '@dtl/shared';
+import { MS_DEAD, PF_DEAD, type DungeonDef, type WaveDef, dungeonRoomName, at } from '@dtl/shared';
 import { LEVELS, MONSTER, monsterName, t } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import { Character } from '../game/character';
@@ -22,7 +22,7 @@ export class DungeonRoom extends GameRoom {
   private revives = new Map<number, number>();
 
   private get def(): DungeonDef {
-    return LEVELS[this.levelId].dungeon!;
+    return at(LEVELS, this.levelId).dungeon!;
   }
 
   private get dname(): string {
@@ -162,7 +162,7 @@ export class DungeonRoom extends GameRoom {
       return;
     }
     if (this.wave === (this.def.lockAt ?? 2)) this.lock();
-    this.spawnWave(waves[this.wave - 1]);
+    this.spawnWave(at(waves, this.wave - 1, 'waves'));
   }
 
   /** Đợt phong ấn đang chạy (E4-C, Thần Tàng Điện). */
@@ -190,7 +190,7 @@ export class DungeonRoom extends GameRoom {
           const g = def.reinforce;
           const mon = MONSTER.get(g.mon);
           const d = def.doors[i];
-          if (!mon) return;
+          if (!mon || !d) return;
           for (let k = 0; k < g.n; k++) {
             const a = (k / Math.max(1, g.n)) * Math.PI * 2;
             this.sim.spawnMonster(mon, g.level, d.x + Math.cos(a) * 4, d.z + Math.sin(a) * 4, null);

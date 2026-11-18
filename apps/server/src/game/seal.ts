@@ -5,6 +5,7 @@
 import { PF_DEAD, type WaveDef } from '@dtl/shared';
 import type { PlayerEnt } from './entities';
 
+import { at } from '@dtl/shared';
 export type SealsDef = NonNullable<WaveDef['seals']>;
 
 /** Cửa đóng gần nhất (theo chỗ đứng của cửa, không phải trận môn) trong `r` m; -1 nếu không có. */
@@ -26,7 +27,7 @@ export function nearestClosed(def: SealsDef, open: readonly boolean[], x: number
 export function barrierPush(def: SealsDef, open: readonly boolean[], x: number, z: number): { x: number; z: number } | null {
   for (let i = 0; i < def.doors.length; i++) {
     if (open[i]) continue;
-    const d = def.doors[i];
+    const d = at(def.doors, i);
     const dist = Math.hypot(x - d.gx, z - d.gz);
     if (dist >= def.bar) continue;
     const dx = d.x - d.gx;
@@ -86,7 +87,8 @@ export class SealSystem {
     this.open[i] = true;
     this.lastProgress = this.h.now();
     this.h.sysAll('sys.seal_open', { n: i + 1, m: this.count, t: this.def.doors.length }, 'good');
-    this.h.marker(this.def.doors[i].x, this.def.doors[i].z, 4, 20, true);
+    const door = this.def.doors[i];
+    if (door) this.h.marker(door.x, door.z, 4, 20, true);
     this.h.onOpen(i, this.count);
     if (this.all) this.h.sysAll('sys.seal_all', undefined, 'good');
   }

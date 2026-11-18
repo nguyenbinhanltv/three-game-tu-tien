@@ -10,6 +10,9 @@ import { HUMAN_CLIPS } from './humanClips';
 import { SkinnedCharacter } from './skinned';
 import type { CharState, ClipMap } from './states';
 import { type CharacterView, legacyModelsRequested } from './view';
+import { logger } from '../../base/log';
+
+const modelsLog = logger('models');
 
 /** NPC dùng model có xương: asset và tốc độ phát riêng. */
 interface NpcSkin {
@@ -181,7 +184,7 @@ export class NpcSkins {
           };
           step();
         },
-        (err) => console.warn('[models] không nạp được clip UAL cho NPC', err),
+        (err) => modelsLog.warn('không nạp được clip UAL cho NPC', err),
       );
     }, 2500);
   }
@@ -210,7 +213,7 @@ export class NpcSkins {
           lib.release();
         }
       },
-      (err) => console.warn('[models] không nạp được clip đi bộ cho NPC', err),
+      (err) => modelsLog.warn('không nạp được clip đi bộ cho NPC', err),
     );
   }
 
@@ -251,7 +254,7 @@ export class NpcSkins {
         try {
           this.templates.set(asset, templateOf(handle, lib));
         } catch (err) {
-          console.warn(`[models] không dựng được ${asset}, dùng model khối`, err);
+          modelsLog.warn(`không dựng được ${asset}, dùng model khối`, err);
           handle.release();
           lib.release();
           this.templates.set(asset, 'failed');
@@ -259,7 +262,7 @@ export class NpcSkins {
       },
       (err) => {
         if (this.disposed) return;
-        console.warn(`[models] không nạp được ${asset}, dùng model khối`, err);
+        modelsLog.warn(`không nạp được ${asset}, dùng model khối`, err);
         this.templates.set(asset, 'failed');
       },
     );

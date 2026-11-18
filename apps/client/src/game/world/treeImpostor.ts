@@ -5,6 +5,9 @@ import { withSightFade } from './occlusion';
 import { assetBaseUrl } from '../core/assets';
 import atlas from '../core/impostors.json';
 import type { PropInstance } from './propScatter';
+import { logger } from '../../base/log';
+
+const treesLog = logger('trees');
 
 /**
  * Impostor cho cây xa (P2-A4b): hai tấm cắt chéo (góc nhìn bake từ +Z và +X) lấy từ một atlas chung (cả 5 loài, bake bằng
@@ -102,7 +105,7 @@ export class ImpostorLayer {
         this.material = withSightFade(m);
       },
       undefined,
-      (e) => console.warn('[trees] không nạp được atlas impostor, bỏ qua', e),
+      (e) => treesLog.warn('không nạp được atlas impostor, bỏ qua', e),
     );
   }
 

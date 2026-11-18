@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { C, EQUIP_SLOTS, wearableBy, type WearSlot } from '@dtl/shared';
-import { ITEM, itemName, realmName, t } from '@dtl/content';
+import { ITEM, itemName, realmName, SETS, swordModelOf, t } from '@dtl/content';
 import { Game, reqId } from '../../game/engine';
 import { gearQuality, pctText } from '../gear';
 import { Button, ProgressBar } from '../kit';
@@ -11,35 +11,14 @@ import { breakInfo } from './breakthrough';
 import { dropFromDrag } from '../bag/Bag';
 import { useBagDrag } from '../bag/dnd';
 import { itemKindOk } from '../bag/model';
-import { Preview3D } from './Preview3D';
+import { HoaTruc } from './HoaTruc';
+import { pickPortrait } from './portraitPick';
+import './hoatruc.css';
 import { statRows, type StatId } from './stats';
 
 const BOARD_LEFT: WearSlot[] = ['weapon', 'bracer', 'belt', 'ring', 'head'];
 /** Ô thứ 10 `skin` là ô ngoại hình: đổi hình toàn thân, không có chỉ số. */
 const BOARD_RIGHT: WearSlot[] = ['robe', 'boots', 'jade', 'artifact', 'skin'];
-
-/** Hình bóng 2D dự phòng khi xem trước 3D không dùng được. */
-function Silhouette({ q }: { q: number }) {
-  return (
-    <div className="equip-figure" data-q={q} aria-hidden="true">
-      <svg viewBox="0 0 80 160" width="100%" height="100%">
-        <defs>
-          <radialGradient id="eqglow" cx="50%" cy="45%" r="55%">
-            <stop offset="0%" stopColor="currentColor" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-        <ellipse cx="40" cy="80" rx="38" ry="74" fill="url(#eqglow)" />
-        <path
-          d="M40 18c7 0 11 5 11 11s-4 12-11 12-11-6-11-12 4-11 11-11zm-17 30c6-4 12-6 17-6s11 2 17 6l9 40-10 4 2 50H44l-4-34-4 34H22l2-50-10-4z"
-          fill="rgba(20,32,46,0.92)"
-          stroke="currentColor"
-          strokeWidth="1.2"
-        />
-      </svg>
-    </div>
-  );
-}
 
 /** 9 ô trang bị + ô skin quanh xem trước nhân vật. Thả đồ từ túi lên ô để mặc; chọn ô để xem chi tiết và tháo. */
 function EquipBoard() {
@@ -47,6 +26,16 @@ function EquipBoard() {
   const [sel, setSel] = useState<WearSlot | null>(null);
   const drag = useBagDrag((d) => d.drag);
   const g = Game.current;
+  const level = useUI((s) => s.char?.level ?? 1);
+  const worn = EQUIP_SLOTS.flatMap((es) => (equip[es] ? [equip[es]!.id] : []));
+  const pick = pickPortrait({
+    sets: SETS,
+    worn,
+    gender: g?.myGender() ?? '',
+    level,
+    swordModel: equip.weapon ? swordModelOf(equip.weapon.id) : undefined,
+    hasWeapon: !!equip.weapon,
+  });
   const best = EQUIP_SLOTS.reduce((m, es) => (equip[es] ? Math.max(m, gearQuality(equip[es]!)) : m), -1);
   // Thả được khi đúng loại ô VÀ nhân vật của mình mặc được món đó (giới hạn giới tính); server vẫn là bên quyết định.
   const canDrop = (id: string, es: WearSlot) => itemKindOk((x) => ITEM.get(x), id, es) && wearableBy(ITEM.get(id), g?.myGender() ?? '');
@@ -81,9 +70,8 @@ function EquipBoard() {
     <div className="equip-board">
       <div className="equip-board-grid">
         <div className="equip-col">{BOARD_LEFT.map(cell)}</div>
-        <div className="equip-stage" data-q={best}>
-          <Preview3D fallback={<Silhouette q={best} />} />
-        </div>
+        <HoaTruc q={Math.max(0, best)} pick={pick} />
+        <div className="equip-spacer" />
         <div className="equip-col">{BOARD_RIGHT.map(cell)}</div>
       </div>
       {item && sel ? (

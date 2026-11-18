@@ -1,0 +1,341 @@
+{
+ "id": "skin_korvaden",
+ "source": "D:/claude-tmp/skin3/korv/source/KORVADEN  The Runebound Axemaster.glb",
+ "out": "chr/skin_korvaden/prep/rig_v01.glb",
+ "yaw": -40,
+ "view": {
+  "scale": 2.4,
+  "center": [
+   0,
+   0,
+   0
+  ]
+ },
+ "triangles": 22000,
+ "bake": {
+  "size": 2048,
+  "cage": 0.012,
+  "ray": 0.03
+ },
+ "roughness": 0.6,
+ "$comment": "Cấu hình skin_prep.py cho KORVADEN The Runebound Axemaster (Atahan3D, CC BY 4.0). Cao 1,9, thế khom: yaw -40 để thân hướng -Y. Khớp đo từ ảnh chiếu 500 px/đơn vị (view.scale 2.4): x=(px-600)/500, z=(600-py)/500, y=-(px_canh-600)/500. Hai rìu dính nắm tay: cắt bằng các dải mỏng trước/sau nắm tay rồi xóa các đảo rời.",
+ "cut": {
+  "fill": false,
+  "minIsland": 0,
+  "bands": [
+   {
+    "min": [
+     -0.5,
+     -0.14,
+     -0.1
+    ],
+    "max": [
+     -0.3,
+     -0.09,
+     0.1
+    ]
+   },
+   {
+    "min": [
+     -0.5,
+     0.17,
+     0.05
+    ],
+    "max": [
+     -0.3,
+     0.22,
+     0.2
+    ]
+   },
+   {
+    "min": [
+     0.4,
+     -0.345,
+     -0.15
+    ],
+    "max": [
+     0.64,
+     -0.305,
+     0.1
+    ]
+   },
+   {
+    "min": [
+     0.45,
+     0.07,
+     -0.05
+    ],
+    "max": [
+     0.8,
+     0.11,
+     0.2
+    ]
+   }
+  ],
+  "islands": [
+   {
+    "min": [
+     -0.7,
+     -1.1,
+     -0.55
+    ],
+    "max": [
+     -0.3,
+     -0.12,
+     0.05
+    ]
+   },
+   {
+    "min": [
+     -0.5,
+     0.2,
+     0.0
+    ],
+    "max": [
+     -0.3,
+     0.65,
+     0.3
+    ]
+   },
+   {
+    "min": [
+     0.3,
+     -1.1,
+     -0.55
+    ],
+    "max": [
+     0.8,
+     -0.31,
+     0.1
+    ]
+   },
+   {
+    "min": [
+     0.4,
+     0.1,
+     -0.05
+    ],
+    "max": [
+     0.8,
+     0.65,
+     0.3
+    ]
+   }
+  ]
+ },
+ "joints": {
+  "Hips": [
+   0.02,
+   -0.14,
+   0.12
+  ],
+  "Spine": [
+   0.03,
+   -0.14,
+   0.2
+  ],
+  "Spine1": [
+   0.04,
+   -0.14,
+   0.3
+  ],
+  "Spine2": [
+   0.05,
+   -0.13,
+   0.42
+  ],
+  "Neck": [
+   0.06,
+   -0.1,
+   0.6
+  ],
+  "Head": [
+   0.04,
+   -0.1,
+   0.66
+  ],
+  "HeadTop": [
+   0.04,
+   -0.1,
+   0.9
+  ],
+  "RightArm": [
+   -0.22,
+   0.0,
+   0.54
+  ],
+  "RightForeArm": [
+   -0.41,
+   0.14,
+   0.27
+  ],
+  "RightHand": [
+   -0.42,
+   0.02,
+   0.06
+  ],
+  "RightHandEnd": [
+   -0.42,
+   -0.04,
+   -0.03
+  ],
+  "LeftArm": [
+   0.32,
+   -0.1,
+   0.52
+  ],
+  "LeftForeArm": [
+   0.54,
+   -0.05,
+   0.24
+  ],
+  "LeftHand": [
+   0.55,
+   -0.2,
+   0.02
+  ],
+  "LeftHandEnd": [
+   0.55,
+   -0.25,
+   -0.06
+  ],
+  "RightUpLeg": [
+   -0.11,
+   -0.1,
+   0.06
+  ],
+  "RightLeg": [
+   -0.27,
+   0.0,
+   -0.26
+  ],
+  "RightFoot": [
+   -0.34,
+   0.18,
+   -0.78
+  ],
+  "RightToeBase": [
+   -0.33,
+   0.08,
+   -0.9
+  ],
+  "RightToeEnd": [
+   -0.33,
+   0.02,
+   -0.94
+  ],
+  "LeftUpLeg": [
+   0.13,
+   -0.15,
+   0.06
+  ],
+  "LeftLeg": [
+   0.4,
+   -0.28,
+   -0.32
+  ],
+  "LeftFoot": [
+   0.52,
+   -0.18,
+   -0.8
+  ],
+  "LeftToeBase": [
+   0.52,
+   -0.33,
+   -0.9
+  ],
+  "LeftToeEnd": [
+   0.52,
+   -0.42,
+   -0.94
+  ]
+ },
+ "stray": {
+  "Shoulder": 0.25,
+  "Arm": 0.2,
+  "ForeArm": 0.22,
+  "Hand": 0.16
+ },
+ "zones": [
+  {
+   "name": "ao_choang_tren",
+   "box": {
+    "min": [
+     -9,
+     0.14,
+     -0.45
+    ],
+    "max": [
+     9,
+     9,
+     0.62
+    ]
+   },
+   "blend": {
+    "axis": 1,
+    "from": 0.12,
+    "width": 0.04
+   },
+   "bones": [
+    {
+     "bone": "Hips",
+     "z": -0.35
+    },
+    {
+     "bone": "Spine2",
+     "z": 0.45
+    }
+   ]
+  },
+  {
+   "name": "ao_choang_duoi",
+   "box": {
+    "min": [
+     -9,
+     0.4,
+     -0.95
+    ],
+    "max": [
+     9,
+     9,
+     -0.45
+    ]
+   },
+   "blend": {
+    "axis": 1,
+    "from": 0.38,
+    "width": 0.04
+   },
+   "bones": [
+    {
+     "bone": "Hips"
+    }
+   ]
+  },
+  {
+   "name": "mu_sung",
+   "box": {
+    "min": [
+     -0.4,
+     -9,
+     0.64
+    ],
+    "max": [
+     0.5,
+     0.14,
+     9
+    ]
+   },
+   "blend": {
+    "axis": 2,
+    "from": 0.62,
+    "width": 0.04
+   },
+   "bones": [
+    {
+     "bone": "Head"
+    }
+   ]
+  }
+ ]
+}

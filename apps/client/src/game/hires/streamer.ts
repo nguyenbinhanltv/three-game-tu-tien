@@ -8,6 +8,9 @@ import {
   pickNext,
   planEviction,
 } from './policy';
+import { logger } from '../../base/log';
+
+const hiresLog = logger('hires');
 
 /** Phần của AssetCache mà bộ lập lịch cần (thay được khi test). */
 export interface HiresHost {
@@ -110,7 +113,7 @@ export class HiresStreamer {
         if (next.bytes > 100 * 1024 && next.bytes / sec < SLOW_BPS) this.pausedUntil = this.now() + SLOW_PAUSE_MS;
       })
       .catch((e) => {
-        console.warn('[hires] tải texture lỗi:', next.file, e);
+        hiresLog.warn('tải texture lỗi:', next.file, e);
         this.skip.add(next.key);
         this.pausedUntil = this.now() + SLOW_PAUSE_MS;
       })

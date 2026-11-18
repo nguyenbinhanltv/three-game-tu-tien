@@ -9,9 +9,10 @@ process.env.DB_FILE = ':memory:';
 
 import { CHARGE_MAX, groundAt, METHOD_UNLOCK_LEVEL, MS_DEAD, levelSpawns, type MonsterDef } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 const arg = (name: string, def: string) => {
   const i = process.argv.indexOf('--' + name);
-  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : def;
+  return (i >= 0 ? process.argv[i + 1] : undefined) || def;
 };
 const RUNS = Number(arg('runs', '6'));
 const LEVELS = arg('levels', '4,10,15,20,28').split(',').map(Number);
@@ -60,10 +61,13 @@ function gearFor(level: number): Record<string, string> {
 /** Quái thường hợp cấp: bãi gần cấp nhất trong mọi level (cùng cách chọn của sim.ts). `extra`: cấp quái ngoại suy vì cấp thử vượt mọi bãi hiện có. */
 function pickMon(level: number): { def: MonsterDef; mlv: number; extra: boolean } {
   if (FORCE_MON) return { def: MONSTER.get(FORCE_MON)!, mlv: level, extra: true };
-  const sp = Object.values(LV)
-    .flatMap((l) => levelSpawns(l))
-    .filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite)
-    .sort((a, b) => Math.abs((a.levelMin + a.levelMax) / 2 - level) - Math.abs((b.levelMin + b.levelMax) / 2 - level))[0];
+  const sp = at(
+    Object.values(LV)
+      .flatMap((l) => levelSpawns(l))
+      .filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite)
+      .sort((a, b) => Math.abs((a.levelMin + a.levelMax) / 2 - level) - Math.abs((b.levelMin + b.levelMax) / 2 - level)),
+    0,
+  );
   // Ngoài khoảng cấp cao nhất của mọi quái hiện có: ngoại suy cấp quái = cấp thử; còn lại kẹp vào khoảng cấp của bãi.
   const top = Math.max(
     ...Object.values(LV)

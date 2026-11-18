@@ -1,6 +1,6 @@
 // Kiểu dữ liệu nội dung game và trạng thái nhân vật, dùng chung client/server.
 
-import type { ItemInst } from './items';
+import type { ItemInst } from './itemtypes';
 
 /**
  * Tám ô trang bị (Phase 3-1): pháp kiếm, đạo bào, hộ uyển, vân ngoa, đai lưng, ngọc bội, giới chỉ, pháp bảo phụ.

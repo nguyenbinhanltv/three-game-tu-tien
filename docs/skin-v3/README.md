@@ -62,10 +62,36 @@ Hai katana là một khối liền với nắm tay. Cắt: hộp cho lưỡi + t
 - Tóc là thẻ alpha 26k tam giác, hệ số màu đen: nướng thành **vỏ tóc đặc màu đen** (mất sợi tóc).
 - Váy dài ôm chân là một ống liền, không tách chân: khi chạy/ngự kiếm váy căng như vải thun (đuôi váy phía sau đi theo hông/chân). Xuyên thân Sitting 1107, Roll 652, Jog 398/116, Death 666.
 
-### Korvaden: bỏ qua
+### Korvaden: bỏ qua (đợt 2; đã làm ở đợt 3 bên dưới)
 Thế khom chiến đấu (chân dạng rộng, thân nghiêng, hai tay gập ra trước giữ rìu) cộng hai rìu dính tay chéo thân và áo choàng rách bất đối xứng khổng lồ dính lưng. Đưa về chữ A cần sửa tư thế bằng tay (không đo khớp từ ảnh chiếu thẳng được) và cắt rìu bằng capsule trong không gian 3D chéo; không đạt chất lượng nếu làm vội. Chưa có asset/item nào của Korvaden trong PR này. Nguồn nếu làm sau: https://sketchfab.com/3d-models/56b55945548942f28359c76820b4e910 (Atahan3D, CC BY 4.0; zip không metadata, tự ghi meta.json).
 
 ### Chung
 - Chưa có xương lò xo (tóc Noxavyra dài tới hông, vạt váy Kings Demon): `MannequinCharacter` chưa mô phỏng chuỗi `dtl_o_*`.
 - `pnpm shots skinv3 --ids itm_skin_noxavyra,itm_skin_kings_demon --out <thư mục tuyệt đối>`; ảnh từ chối: `pnpm shots skin --refuse --genders m --ids itm_skin_noxavyra,itm_skin_kings_demon`. Tờ khung 8 tư thế: `chr_v3.py ... --sheet <thư mục>`.
 - Kiểm: `pnpm typecheck`, `pnpm test` (server 725, client 765), `pnpm content:check`, `pnpm assets:validate` (0 lỗi).
+
+## Đợt 3: Dạ Lang Chiến Tướng (Shadow Wolf) và Phù Văn Phủ Tướng (Korvaden)
+
+Noxavyra (`itm_skin_noxavyra`) đã vào từ đợt 2 nên không làm lại. Hai skin nam mới, cùng CC BY 4.0 (giấy phép đã kiểm: `asset.extras` trong GLB Shadow Wolf; Korvaden là zip không có extras, theo báo cáo `danh-gia-assets-online-2.md`).
+
+| Vật phẩm | Giới | Asset v3 | Nguồn (CC BY 4.0) | Tam giác LOD0/1/2 | GLB |
+| --- | --- | --- | --- | --- | --- |
+| `itm_skin_shadow_wolf` Dạ Lang Chiến Tướng | nam | `chr_v3_shadow_wolf_nam` | "Shadow Wolf Warlord Knight", Pigcraft, https://sketchfab.com/3d-models/shadow-wolf-warlord-knight-2838faddd383439cb0c067402cb4c61f | 21.928 / 10.964 / 4.381 | 5,2 MB |
+| `itm_skin_korvaden` Phù Văn Phủ Tướng | nam | `chr_v3_korvaden_nam` | "KORVADEN // The Runebound Axemaster", Atahan3D, https://sketchfab.com/3d-models/56b55945548942f28359c76820b4e910 | 21.988 / 10.993 / 4.371 | 5,6 MB |
+
+### Thay đổi `skin_prep.py`
+- `yaw` (độ, quanh Z): model nguồn không quay mặt về -Y. Shadow Wolf quay +X nên `yaw -90`; Korvaden thế khom, thân quay chéo nên `yaw -40` (ảnh chiếu trước khi đó gần chính diện).
+
+### Shadow Wolf
+Đại kiếm cầm tay trái, chéo thân. Tìm trục kiếm bằng PCA trên các đỉnh phía trước thân (trục `c=(-0,093; -0,192; -0,274)`, hướng `(-0,644; -0,537; -0,545)`), cắt hai capsule dọc lưỡi + một capsule chuôi, rồi xóa các đảo rời (móng chắn tay, núm chuôi); nắm tay giữ nguyên. Áo choàng đi theo Spine/Spine2 (vùng `ao_choang`), đầu sói theo Head (vùng `dau_soi`). Trọng số lùi về theo khoảng cách (bone heat bỏ 11k đỉnh vì lưới nhiều mảnh). Xuyên thân (chỉ số tương đối của `chr_v3.py`): Idle 616, Jog 342/279, Sword 349/23, Sitting 590, Death 1203, Roll 64, Hit_Chest 580.
+
+### Korvaden
+Thế khom chân dạng rộng, hai tay giữ rìu. Quay thân (`yaw -40`), đo 24 khớp 3D từ ảnh chiếu trước + cạnh (500 px/đơn vị), để `chr_v3.py` đặt lại tư thế nghỉ theo Mannequin (hướng xương giữ như Mannequin, nên chân dạng và tay gập duỗi về chữ A). Hai rìu cắt bằng **dải mỏng** (`cut.bands`) ngay trước và sau mỗi nắm tay (cán đi theo trục Y của thân sau khi quay), rồi xóa các đảo rời (`cut.islands`): lưỡi rìu và núm cán. Áo choàng vá giữ nguyên, đi theo Spine/Spine2 từ z ≥ -0,2; phần đuôi áo dưới đó theo xương chân gần nhất nên có thể kéo nhẹ ở động tác ngồi/lăn. Xuyên thân: Idle 759, Jog 91/137, Sword 484/231, Sitting 458, Death 419, Roll 568, Hit_Chest 632.
+
+### Chung
+- `pnpm shots skinv3 --ids itm_skin_shadow_wolf,itm_skin_korvaden --size 1280x720 --dist 2.8 --out <thư mục tuyệt đối>` (và `1920x1080`): kịch bản nay chụp thêm `-chay`, `-chieu`, `-nhanvat` (bảng Nhân vật, phím C) và có `--dist`.
+- Icon hai skin: tờ `s_skin_tokens_2` (Codex, cùng họ ấn bài trang phục của bộ U2-I) trong `tools/icons/v2/sheets.v2.json`, cắt bằng `slice_qc.py`, đóng atlas `pnpm icons:build`.
+- Sáng hình: texture nướng của hai skin rất tối nên `skinLook.ts` (`SKIN_LOOKS`, gắn ở `mannequinTemplate`) nâng albedo, kéo kim loại/nhám, nâng sáng nền, viền fresnel nhẹ và phát sáng theo texel bão hòa (mắt sói đỏ, rune lam). Chỉnh số ở bảng đó.
+- Áo choàng Korvaden: nửa dưới nay đi theo Hips (vùng `ao_choang_duoi`, chỉ phía sau y ≥ 0,4 để không kéo cẳng chân sau), hết méo như xếp nếp khi chạy. Vẫn chưa có xương lò xo.
+- Chưa có xương lò xo (áo choàng cả hai skin cứng theo cột sống/hông). Tên hiển thị đang chờ duyệt lore.
+- Kiểm: `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm assets:validate` (0 lỗi), `pnpm lint`, `node tools/docs/check-paths.mjs`.

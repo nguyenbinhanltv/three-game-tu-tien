@@ -33,6 +33,7 @@ import {
 import { CLONE_MOVES, METHOD, SKILL } from '@dtl/content';
 import type { MonEnt, PlayerEnt } from './entities';
 
+import { at } from '@dtl/shared';
 export interface CloneHost {
   now(): number;
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
@@ -321,8 +322,8 @@ export class CloneSystem {
 
   private act(p: PlayerEnt, c: Clone, now: number): void {
     for (let i = 0; i < c.moves.length; i++) {
-      const mv = c.moves[i];
-      if (mv.kind === 'finale' || now < c.next[i]) continue;
+      const mv = at(c.moves, i);
+      if (mv.kind === 'finale' || now < (c.next[i] ?? 0)) continue;
       c.next[i] = now + (mv.cd ?? 2) * 1000;
       if (mv.kind === 'echo') {
         const last = this.last.get(p.sid);

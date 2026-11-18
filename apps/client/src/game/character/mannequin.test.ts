@@ -50,6 +50,8 @@ describe('v3AssetOf (chọn asset v3 theo giới + skin)', () => {
     expect(v3AssetOf('m', 'set_skin_crimson')).toBe('chr_v3_crimson_nam');
     expect(v3AssetOf('f', 'set_skin_noxavyra')).toBe('chr_v3_noxavyra_nu');
     expect(v3AssetOf('f', 'set_skin_kings_demon')).toBe('chr_v3_kings_demon_nu');
+    expect(v3AssetOf('m', 'set_skin_korvaden')).toBe('chr_v3_korvaden_nam');
+    expect(v3AssetOf('m', 'set_skin_shadow_wolf')).toBe('chr_v3_shadow_wolf_nam');
   });
   it('skin sai giới hoặc không có bản v3 thì về model theo bộ (không bộ: Đồ Đệ Tử)', () => {
     expect(v3AssetOf('m', 'set_skin_duskrella')).toBe('chr_v3_de_tu_nam');

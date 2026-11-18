@@ -22,6 +22,7 @@ import {
 import { QUEST, t } from '@dtl/content';
 import type { PlayerEnt } from './entities';
 
+import { at } from '@dtl/shared';
 export interface QuestObjHost {
   now(): number;
   level(): LevelDef;
@@ -50,7 +51,7 @@ function openObjectives(p: PlayerEnt, type: ObjectiveDef['type']): ObjectiveDef[
   for (const id in p.char.quests.active) {
     const q = QUEST.get(id);
     const prog = p.char.quests.active[id];
-    if (!q) continue;
+    if (!q || !prog) continue;
     q.objectives.forEach((o, i) => {
       if (o.type === type && (prog[i] ?? 0) < o.count) out.push(o);
     });
@@ -114,7 +115,7 @@ export class QuestObjSystem {
       let c = m.get(id);
       if (!c) m.set(id, (c = { def, walk: escortStart(def), sent: '' }));
       const dist = Math.hypot(p.move.x - c.walk.x, p.move.z - c.walk.z);
-      const atStart = c.walk.seg === 0 && Math.hypot(c.walk.x - def.path[0][0], c.walk.z - def.path[0][1]) < 0.5;
+      const atStart = c.walk.seg === 0 && Math.hypot(c.walk.x - at(def.path, 0)[0], c.walk.z - at(def.path, 0)[1]) < 0.5;
       if (dist > ESCORT_LOST_R && !atStart) {
         // Bỏ rơi quá xa: người đồng hành quay về đầu đường, làm lại. Đã đứng sẵn ở đầu đường thì không báo lại (tránh spam).
         c.walk = escortStart(def);

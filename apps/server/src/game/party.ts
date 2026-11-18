@@ -225,7 +225,7 @@ export class PartyManager {
     const list = this.pending(target);
     const i = list.findIndex((x) => x.from === from);
     if (i < 0) return null;
-    return list.splice(i, 1)[0];
+    return list.splice(i, 1)[0] ?? null;
   }
 
   private accept(p: PlayerEnt, rawId: unknown): void {
@@ -275,7 +275,7 @@ export class PartyManager {
     }
     if (party.members.length <= 1) return this.disband(party);
     if (party.leader === charId) {
-      party.leader = party.members[0];
+      party.leader = party.members[0] ?? party.leader;
       const nl = this.reg.get(party.leader)?.p;
       this.broadcastMsg(party, 'party.new_leader', { name: nl?.char.name ?? '' });
     }

@@ -1,6 +1,6 @@
 // Room bản đồ thế giới (R-7, tách từ rooms.ts).
 import { ServerError } from 'colyseus';
-import { HOME_LEVEL, PF_DEAD, SPAWN_POINT, TELE_PARTY_R, worldRoomName } from '@dtl/shared';
+import { HOME_LEVEL, PF_DEAD, SPAWN_POINT, TELE_PARTY_R, worldRoomName, at } from '@dtl/shared';
 import { LEVELS, realmName, t } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import { parties } from '../game/party';
@@ -39,12 +39,12 @@ export class WorldRoom extends GameRoom {
   }
 
   simOptions(): SimOptions {
-    const spawn = LEVELS[this.levelId].spawn ?? SPAWN_POINT;
+    const spawn = at(LEVELS, this.levelId).spawn ?? SPAWN_POINT;
     return { levelId: this.levelId, roomName: worldRoomName(this.levelId), spawn, respawn: spawn, persistPosition: true };
   }
 
   override onPortal(p: PlayerEnt): void {
-    const portal = (LEVELS[this.levelId].portals ?? []).find((q) => (p.move.x - q.x) ** 2 + (p.move.z - q.z) ** 2 <= q.r * q.r);
+    const portal = (at(LEVELS, this.levelId).portals ?? []).find((q) => (p.move.x - q.x) ** 2 + (p.move.z - q.z) ** 2 <= q.r * q.r);
     if (!portal) return this.sim.sys(p, 'sys.too_far', undefined, 'bad');
     const d = LEVELS[portal.to]?.dungeon;
     if (!d) return;
