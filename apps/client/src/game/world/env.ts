@@ -98,7 +98,7 @@ export class Environment {
       this.group.remove(this.cloudSea.group);
       this.cloudSea.dispose();
       this.cloudSea = new CloudSea();
-      this.cloudSea.setQuality(this.preset);
+      this.cloudSea.setQuality(baseOf(this.preset)); // biển mây mới dựng lại theo mức hiện tại (Cực cao dùng như Cao)
       this.group.add(this.cloudSea.group);
       this.seaFor = terrainId;
     }

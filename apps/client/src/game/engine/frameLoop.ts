@@ -614,7 +614,7 @@ export function watchGpuDevice(eng: Game): void {
   });
 }
 
-/** Một lần/giây: nghẽn thì hạ preset một bậc (Cực cao → Cao → Vừa) và báo; bị khóa hoặc ở Vừa/Thấp thì thôi. */
+/** Một lần/giây: nghẽn ở Cực cao thì hạ xuống Cao và báo; Cao/Vừa/Thấp là lựa chọn của người chơi nên không tự hạ; bị khóa cũng thôi. */
 function autoQualityTick(eng: Game, now: number): void {
   if (!eng.started || now - eng.autoAt < 1000) return;
   eng.autoAt = now;
