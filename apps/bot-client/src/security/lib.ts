@@ -116,7 +116,8 @@ export async function withServer(env: Record<string, string>, fn: (http: string)
   const http = `http://127.0.0.1:${port}`;
   try {
     let up = false;
-    for (let i = 0; i < 60 && !up && child.exitCode === null; i++) {
+    // 120 × 0,5 s = 60 s: lần đầu `tsx` biên dịch lạnh, hoặc máy đang chạy server/trình duyệt khác thì 30 s không đủ.
+    for (let i = 0; i < 120 && !up && child.exitCode === null; i++) {
       await W(500);
       up = await fetch(http + '/health').then(
         (r) => r.ok,
@@ -124,8 +125,10 @@ export async function withServer(env: Record<string, string>, fn: (http: string)
       );
     }
     if (!up)
-      throw new Error(`server tạm không lên (${JSON.stringify(env)}):
-${log.slice(-800)}`);
+      throw new Error(
+        `server tạm không lên sau 60 s (${JSON.stringify(env)}; ${child.exitCode === null ? 'tiến trình vẫn chạy, có thể khởi động chậm' : 'thoát mã ' + child.exitCode}):
+${log.slice(-800)}`,
+      );
     await fn(http);
   } finally {
     child.kill();
