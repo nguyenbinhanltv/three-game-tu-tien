@@ -108,21 +108,6 @@ for (const s of SETS) {
     list.push({ name: `${s.id}_${g}_apose`, tier: s.tier, after: `${s.id}_${g}_pose`, prompt: apose(s, g) });
   }
 }
-const PT = {
-  huyen_vu:
-    'a colossal spiritual avatar ("Dharma image") of the Black Tortoise Xuanwu: a giant armoured tortoise with a luminous jade-and-dark-blue carapace with gold filigree, a serpent coiled around its body rising up, the HEAD OF THE TORTOISE LARGE AND CLEARLY VISIBLE at the upper left looking toward the right with a calm wise face, and the serpent head raised at the upper right; translucent luminous with ethereal wispy edges, glowing from within as if made of light',
-  chu_tuoc:
-    'a colossal spiritual avatar ("Dharma image") of the Vermilion Bird Zhuque: a giant fiery phoenix with wings spread wide, long flowing tail feathers of flame, the HEAD OF THE BIRD LARGE AND CLEARLY VISIBLE at the upper left with a sharp beak and crest, turned toward the right, feathers in luminous vermilion, gold and white-hot orange with gold filigree, translucent luminous with ethereal wispy edges, glowing from within as if made of light',
-  kiem_long:
-    'a colossal spiritual avatar ("Dharma image"): a colossal straight jade sword point-down at the center with a translucent jade DRAGON spiraling around the blade, the DRAGON HEAD LARGE AND CLEARLY VISIBLE at the upper left turned toward the right with open jaws, long whiskers, mane and horns, scales and the sword rendered in luminous translucent jade-green and white with gold filigree edges, glowing from within as if made of light, wispy ethereal edges',
-};
-for (const [k, d] of Object.entries(PT))
-  list.push({
-    name: `phap_tuong_${k}`,
-    tier: 'kd',
-    prompt: `Use case: stylized-concept. ONE huge ghostly ${d}. Wide vertical portrait 3:4, the avatar fills the frame, the big head near the top. Style: ${STYLE}. Background: ${MAGENTA}. ${NOTEXT}`,
-  });
-
 const dir = path.join(source, 'portrait', 'thien_giai');
 fs.mkdirSync(dir, { recursive: true });
 const has = (n) => fs.existsSync(path.join(dir, `${n}.png`));
