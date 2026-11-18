@@ -5,7 +5,7 @@
 //   node tools/audio/levels.mjs --write   ghi docs/audio/levels.md
 //   node tools/audio/levels.mjs --check   kiểm các quy tắc cân âm (thoát mã 1 nếu lệch), không ghi gì
 //
-// "Độ to hiệu dụng" = độ to của file × mức trộn của bus (apps/client/src/game/audioMix.json) × gain của mục trong manifest,
+// "Độ to hiệu dụng" = độ to của file × mức trộn của bus (apps/client/src/game/audio/audioMix.json) × gain của mục trong manifest,
 // tức mức khi các thanh trượt người chơi ở 100%. SFX đo bằng độ to ngắn hạn lớn nhất (khối 100 ms: "độ to khi đánh"),
 // nhạc và âm môi trường đo tích hợp trên cả bài/vòng lặp. Cần ffmpeg (xem common.mjs).
 
@@ -15,7 +15,7 @@ import { decode, FFMPEG_HELP, findFfmpeg, HERE, ROOT } from './common.mjs';
 import { loudness, momentaryMax } from './loopcore.mjs';
 
 const OUT = path.join(ROOT, 'apps/client/public/audio');
-const MIX = JSON.parse(fs.readFileSync(path.join(ROOT, 'apps/client/src/game/audioMix.json'), 'utf8')).bus;
+const MIX = JSON.parse(fs.readFileSync(path.join(ROOT, 'apps/client/src/game/audio/audioMix.json'), 'utf8')).bus;
 const DOC = path.join(ROOT, 'docs/audio/levels.md');
 
 /** Nhóm SFX để so sánh theo vai trò. */
@@ -107,7 +107,7 @@ export function report(r) {
     'Các số so sánh giữa SFX và nhạc là gần đúng (hai cách đo khác nhau), dùng để giữ tỉ lệ, không phải mức tuyệt đối khi nghe.',
     '',
   );
-  L.push('## Mức trộn bus (`apps/client/src/game/audioMix.json`)', '');
+  L.push('## Mức trộn bus (`apps/client/src/game/audio/audioMix.json`)', '');
   L.push(table(Object.entries(MIX).map(([b, g]) => [`\`${b}\``, String(g), `${f1(db(g))} dB`]), ['Bus', 'Hệ số', 'dB']), '');
   L.push(
     'Chuỗi tín hiệu: nguồn → (panner) → bus → master. Nhạc đi thêm hai tầng hạ nhạc: `duck()` ngắn (sấm, đột phá, sting, phá chú) và `duckHold()` giữ lâu (hội thoại NPC, lời boss, thẻ chương); hai tầng nhân với nhau.',

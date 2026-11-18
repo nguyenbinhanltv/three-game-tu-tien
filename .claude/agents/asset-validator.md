@@ -15,7 +15,7 @@ Việc cần làm cho các asset được giao:
    - số trong manifest (tam giác từng LOD, cạnh texture, số xương) so với `assets/budgets.json`; lớp có `lods` thì đủ mức `_lod<k>`
    - nhân vật hình người dùng `rig_human_base` (thư viện clip `anim_human_base`); quái/boss có rig riêng theo loài, kèm bảng clip trong `game/character/monsterSkins.ts`
    - asset Tripo có khối `import` trong `meta.json` (`import_tripo.py`), chiều cao raw/build lệch dưới 1%
-   - code client nạp asset qua `assets.acquire` (`apps/client/src/game/assets.ts`) và có `release()` tương ứng, không `new GLTFLoader()` riêng
+   - code client nạp asset qua `assets.acquire` (`apps/client/src/game/core/assets.ts`) và có `release()` tương ứng, không `new GLTFLoader()` riêng
    - asset sinh thủ tục có kèm script + seed trong repo
    - asset bên thứ ba có dòng trong `assets/LICENSES.md` với nguồn và giấy phép
 3. Ảnh xem trước tự động (`assets/build/previews/`) chưa có. Nếu người gọi đưa ảnh chụp (ví dụ từ trang `?viewer=asset&file=...`), mở ảnh và nhận xét: có lỗi hiển thị rõ (mặt ngược, thiếu texture, sai tỉ lệ so với nhân vật cao 1,7m), có hợp hướng hình ảnh không theo checklist mục 9 của `docs/art-bible.md` (v3: bán tả thực, PBR cách điệu, màu gần bảng màu tâm trạng `assets/palette.json`, không cel-shading, base color không có bóng gắt nướng sẵn).

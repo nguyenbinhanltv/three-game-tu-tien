@@ -1,6 +1,6 @@
 import { type MouseEvent as RMouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { areaKey, biomeAt } from '../../game/levelCtx';
+import { areaKey, biomeAt } from '../../game/core/levelCtx';
 import { LEVELS, t } from '@dtl/content';
 import { Game } from '../../game/engine';
 import { TipCard, Tooltip } from '../kit';
@@ -8,7 +8,7 @@ import { Cartouche, type MapMotif } from '../ngj';
 import { togglePanel, useUI } from '../store';
 import { uiScale } from '../uiScale';
 import { ancientMap } from './ancient';
-import { levelAssets } from '../../game/levelCtx';
+import { levelAssets } from '../../game/core/levelCtx';
 import { drawMinimap, type HitPt } from './draw';
 import { buildFrame } from './marks';
 import { backingScale, clampZoom, screenToWorld, DEFAULT_ZOOM, formatCountdown, type Mark, nearestIndex, type View, zoneStatus, ZOOM_SPANS } from './model';

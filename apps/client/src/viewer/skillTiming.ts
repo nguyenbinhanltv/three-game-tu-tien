@@ -1,7 +1,7 @@
 import type { PoseDef, SkillDef } from '@dtl/shared';
 import { GCD } from '@dtl/shared';
 import { METHOD_SKILLS, POSE, SKILLS } from '@dtl/content';
-import { MAX_HOLD } from '../game/skillPose';
+import { MAX_HOLD } from '../game/combat/skillPose';
 
 /** Bảng thời gian một chiêu (K-1): pose, nhịp vung, và lúc server áp sát thương so với lúc hình trúng. */
 interface SkillTiming {

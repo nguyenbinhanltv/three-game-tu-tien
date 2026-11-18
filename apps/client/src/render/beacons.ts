@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { abs, clamp, dot, float, length, mix, normalize, normalView, positionView, sin, smoothstep, time, uv, vec3 } from 'three/tsl';
-import { heightAt } from '../game/levelCtx';
+import { heightAt } from '../game/core/levelCtx';
 import { beaconParams } from './atmosphere';
 import { FX_MAX_HDR } from './materials/vfx';
 

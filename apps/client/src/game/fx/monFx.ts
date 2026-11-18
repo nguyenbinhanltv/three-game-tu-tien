@@ -1,0 +1,179 @@
+// Hiệu ứng của quái / tinh anh / boss (VFX-V5): phát dòng thời gian `data/fx/mon_*.json` bằng `FxRunner.startAt` tại điểm đúng
+// (chân quái, người bị đánh, tâm vùng nổ). Màu theo ngũ hành của quái (`mon_<elem>` ở render/vfx/palette.ts), bảng "nguy hiểm"
+// tách khỏi bảng "của ta". Chỉ là lớp hình: ai trúng, sát thương, hồi chiêu vẫn do server quyết định (HazardMsg/DmgMsg/BoltMsg không đổi).
+// Ngân sách: bỏ qua khi xa (> MON_FX_DIST) hoặc khi lưới FX sống quá nhiều (đám đông).
+
+import { MON_FX, MONSTER } from '@dtl/content';
+import type { FxTimeline, HazardMsg } from '@dtl/shared';
+import { monPaletteKey } from '../../render/vfx/palette';
+import { groundAt } from '../core/levelCtx';
+import type { FxCaster, FxRunner, FxTarget } from './fxTimeline';
+import { OTHERS_FX_LIVE_MAX } from './fxBudget';
+
+/** Xa hơn mức này (m, tới camera) thì không phát FX quái. */
+const MON_FX_DIST = 60;
+/** Khoảng giãn tối thiểu giữa hai lần cùng loại của một quái (giây): quái bị đánh liên tục không sinh hạt liên tục. */
+const MON_HIT_GAP = 0.12;
+const MON_STRIKE_GAP = 0.3;
+
+/** Hệ ngũ hành theo loại vùng khi không biết quái thả vùng. */
+const ELEM_OF_KIND: Record<string, string> = { fire: 'hoa', frost: 'thuy', lightning: 'kim', spirit: 'moc' };
+
+/** Hệ số cỡ theo chiều cao quái (m): thằn lằn nhỏ ≈ 0,8, người ≈ 1, boss 2–3. */
+export function monScale(height: number): number {
+  return Number.isFinite(height) ? Math.min(3, Math.max(0.7, height / 1.7)) : 1;
+}
+
+/** Hệ số cỡ của vùng nổ theo bán kính: tính cho `mon_boom_circle`/`mon_warn` (cỡ gốc 4 m) và đường/nón (cỡ gốc 8 m). */
+export function hazardMul(r: number, base: number): number {
+  return Math.min(4, Math.max(0.5, r / base));
+}
+
+interface MonLike {
+  id: string;
+  s: { t: string };
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  model: { height: number };
+}
+
+interface MonFxEnv {
+  camera(): { position: { x: number; z: number } };
+  live(): number;
+}
+
+export class MonFx {
+  private last = new Map<string, number>();
+  /** Phòng quay (dev, `tools/perf shots:vfx`): bỏ FX/đạn/vùng thật từ server để cảnh quay sạch; lời gọi tổng hợp đặt `bypass`. */
+  lab = false;
+  bypass = false;
+  /** Nhật ký dev: `__game.monFx.log`. */
+  readonly log: { key: string; id: string; at: number }[] = [];
+
+  constructor(
+    private runner: FxRunner,
+    private env: MonFxEnv,
+  ) {}
+
+  private near(x: number, z: number): boolean {
+    if (this.lab && !this.bypass) return false;
+    const c = this.env.camera().position;
+    return Math.hypot(x - c.x, z - c.z) <= MON_FX_DIST && this.env.live() < OTHERS_FX_LIVE_MAX;
+  }
+
+  private gap(key: string, id: string, gap: number): boolean {
+    const k = key + id;
+    const now = performance.now() / 1000;
+    const prev = this.last.get(k);
+    if (prev !== undefined && now - prev < gap) return false;
+    this.last.set(k, now);
+    if (this.last.size > 256) for (const [kk, at] of this.last) if (now - at > 5) this.last.delete(kk);
+    return true;
+  }
+
+  private tl(key: string): FxTimeline | undefined {
+    return MON_FX.get(key);
+  }
+
+  private note(key: string, id: string): void {
+    if (!import.meta.env.DEV) return;
+    this.log.push({ key, id, at: performance.now() });
+    if (this.log.length > 200) this.log.shift();
+  }
+
+  private actorOf(m: { x: number; y: number; z: number; yaw: number }): FxCaster {
+    return { x: m.x, y: m.y, z: m.z, yaw: m.yaw, model: {} };
+  }
+
+  private bossOf(m: MonLike | undefined): boolean {
+    return !!m && !!MONSTER.get(m.s.t)?.boss;
+  }
+
+  /** Bảng màu theo hệ của quái; boss dùng bảng ma khí (viền vàng kim, accent đỏ thẫm). */
+  private elemOf(m: MonLike): string {
+    return monPaletteKey(MONSTER.get(m.s.t)?.elem, this.bossOf(m));
+  }
+
+  /** Biến thức `boss` của timeline (sự kiện thêm cho boss). */
+  private variantOf(m: MonLike | undefined): string | undefined {
+    return this.bossOf(m) ? 'boss' : undefined;
+  }
+
+
+  /** Quái bị đánh (sát thương lên quái). `victim` = chân quái; chest = 55% chiều cao. */
+  hit(m: MonLike): void {
+    const tl = this.tl('mon_hit');
+    if (!tl || !this.near(m.x, m.z) || !this.gap('hit', m.id, MON_HIT_GAP)) return;
+    const tgt: FxTarget = { x: m.x, y: m.y, z: m.z, chest: m.model.height * 0.55 };
+    this.runner.startAt(tl, { actor: this.actorOf(m), palette: this.elemOf(m), tgt, mul: Math.min(1.6, monScale(m.model.height)) });
+    this.note('mon_hit', m.id);
+  }
+
+  /** Quái đánh trúng người/vật: vệt chém ở người bị đánh. */
+  strike(m: MonLike, dst: { x: number; y: number; z: number }): void {
+    const tl = this.tl('mon_strike');
+    if (!tl || !this.near(dst.x, dst.z) || !this.gap('strike', m.id, MON_STRIKE_GAP)) return;
+    const yaw = Math.atan2(dst.x - m.x, dst.z - m.z);
+    const tgt: FxTarget = { x: dst.x, y: dst.y, z: dst.z, chest: 1.1 };
+    this.runner.startAt(tl, { actor: this.actorOf({ ...m, yaw }), palette: this.elemOf(m), tgt, mul: Math.min(2.2, monScale(m.model.height)), variant: this.variantOf(m) });
+    this.note('mon_strike', m.id);
+  }
+
+  /** Quái niệm/tụ lực (cờ chant bật). */
+  cast(m: MonLike): void {
+    const tl = this.tl('mon_cast');
+    if (!tl || !this.near(m.x, m.z) || !this.gap('cast', m.id, 0.5)) return;
+    this.runner.startAt(tl, { actor: this.actorOf({ ...m, y: m.y }), palette: this.elemOf(m), tgt: null, mul: monScale(m.model.height), variant: this.variantOf(m) });
+    this.note('mon_cast', m.id);
+  }
+
+  /** Quái gục: tan thành hạt. */
+  death(m: MonLike): void {
+    const tl = this.tl('mon_death');
+    if (!tl || !this.near(m.x, m.z)) return;
+    const h = m.model.height;
+    const a = this.actorOf({ ...m, y: m.y + h * 0.5 });
+    this.runner.startAt(tl, { actor: { ...a, y: m.y + h * 0.5 }, palette: this.elemOf(m), tgt: null, mul: Math.min(this.bossOf(m) ? 2.2 : 1.5, monScale(h)), variant: this.variantOf(m) });
+    this.note('mon_death', m.id);
+  }
+
+  /** Hệ của vùng: theo quái thả vùng, không có thì theo loại vùng. */
+  private hazardPalette(h: HazardMsg, src: MonLike | undefined): string {
+    return src ? this.elemOf(src) : monPaletteKey(ELEM_OF_KIND[h.kind]);
+  }
+
+  /** Vạch báo vùng tròn của quái: triện văn đỏ tồn tại đúng tới lúc nổ. Chỉ khi quái thả vùng (không phải thiên kiếp). */
+  warn(h: HazardMsg, src: MonLike | undefined): void {
+    if (!src || !(h.r > 0) || !(h.delay > 0) || !this.near(h.x, h.z)) return;
+    const boss = this.bossOf(src);
+    // Vùng tròn: mọi quái; đường/nón: chỉ boss (nhấp nháy dọc vạch, vạch pháp trận cũ vẫn chạy).
+    const key = !h.sh ? 'mon_warn' : boss ? (h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone') : undefined;
+    const tl = key ? this.tl(key) : undefined;
+    if (!tl || !key) return;
+    const y = groundAt(h.x, h.z);
+    this.runner.startAt(tl, { actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} }, palette: this.hazardPalette(h, src), tgt: null, area: { x: h.x, z: h.z, r: h.r }, mul: hazardMul(h.r, key === 'mon_warn' ? 4 : 8), delay: h.delay, variant: this.variantOf(src) });
+    this.note(key, src.id);
+  }
+
+  /** Vùng nổ (đúng lúc hết `delay`). Tròn → gai + vết nứt; chữ nhật → gai nối tiếp; nón → lưỡi liềm quét. */
+  boom(h: HazardMsg, src: MonLike | undefined): boolean {
+    if (!src || h.mv === 'pull' || h.mv === 'pool' || h.mv === 'trail' || h.mv === 'summon') return false;
+    const key = h.sh === 'rect' ? 'mon_boom_line' : h.sh === 'cone' ? 'mon_boom_cone' : 'mon_boom_circle';
+    const tl = this.tl(key);
+    if (!tl || !this.near(h.x, h.z)) return false;
+    const y = groundAt(h.x, h.z);
+    this.runner.startAt(tl, { actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} }, palette: this.hazardPalette(h, src), tgt: null, area: { x: h.x, z: h.z, r: h.r }, mul: hazardMul(h.r, key === 'mon_boom_circle' ? 4 : 8), variant: this.variantOf(src) });
+    this.note(key, src.id);
+    return true;
+  }
+
+  /** Đạn bắn ra (quanh miệng quái) hoặc tan (va chạm tại x, z). */
+  bolt(kind: string, x: number, y: number, z: number, yaw: number, end: boolean): void {
+    const tl = this.tl(end ? 'mon_bolt_impact' : 'mon_bolt_muzzle');
+    if (!tl || !this.near(x, z)) return;
+    const tgt: FxTarget | null = end ? { x, y, z, chest: 0.5 } : null;
+    this.runner.startAt(tl, { actor: { x, y, z, yaw, model: {} }, palette: monPaletteKey(ELEM_OF_KIND[kind]), tgt });
+  }
+}

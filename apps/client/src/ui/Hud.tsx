@@ -7,7 +7,7 @@ import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { realmStageOf, ARTIFACT_MAX_LEVEL, artifactLevelMods, BAR_SIZE, CLONE_UNLOCK_LEVEL, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, ELEMENTS, elemCounterOf, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThong10Skill, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
-import { trackedQuestId } from '../game/offscreen';
+import { trackedQuestId } from '../game/entities/offscreen';
 import { artifactLines } from './gear';
 import { Corners, RingSweep, SealNumeral, SysIcon, type SysIconName } from './ngj';
 import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './kit';

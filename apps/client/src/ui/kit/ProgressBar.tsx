@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { HpTrail } from '../../game/hpTrail';
+import { HpTrail } from '../../game/entities/hpTrail';
 
 /**
  * Đoạn trễ của thanh: chạy bằng requestAnimationFrame và ghi thẳng `style.width`, không re-render React

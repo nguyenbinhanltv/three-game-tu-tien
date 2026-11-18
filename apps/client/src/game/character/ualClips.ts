@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { HUMAN_CLIPS, UAL_STATES } from './humanClips';
 import type { CharState, ClipMap } from './states';
-import { FLAGS } from '../flags';
+import { FLAGS } from '../core/flags';
 
 /** `?ual=0` tắt clip UAL, về clip K-3 cũ (so ảnh/video trước-sau). */
 export const UAL_ENABLED = FLAGS.ual;

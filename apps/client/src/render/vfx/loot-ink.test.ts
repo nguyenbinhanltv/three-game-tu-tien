@@ -4,8 +4,8 @@ import { FxPool } from '../materials/vfx';
 import { INK_DEATH, INK_HIT, inkEvict, inkPhase, MAX_INK } from './ink';
 import { gearLootTier, lootColor, lootPulse, BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootDuration, lootHop, lootTier } from './loot';
 import { SIGIL_GEO } from './sigil';
-import { bellPartials } from '../../game/lootBell';
-import { flyPoint } from '../../game/lootFly';
+import { bellPartials } from '../../game/audio/lootBell';
+import { flyPoint } from '../../game/fx/lootFly';
 
 describe('lootTier (M4-6)', () => {
   it('ba bậc theo rarity, rarity 2 và 3 cùng bậc cao nhất', () => {

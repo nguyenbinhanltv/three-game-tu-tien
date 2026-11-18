@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GCD } from '@dtl/shared';
-import { isSkillViewer, showAssetId } from '../game/testParams';
-import { MAX_HOLD } from '../game/skillPose';
+import { isSkillViewer, showAssetId } from '../game/core/testParams';
+import { MAX_HOLD } from '../game/combat/skillPose';
 import { allSkillTimings, skillForId } from './skillTiming';
 
 describe('bảng thời gian chiêu (K-1)', () => {

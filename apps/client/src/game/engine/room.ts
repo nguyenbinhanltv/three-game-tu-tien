@@ -1,17 +1,17 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { type Room } from 'colyseus.js';
 import { applyInvMsg, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type EscortMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_PAD, type TeleMsg, type DmgMsg, type FxMsg, type HazardMsg, type BoltEndMsg, type BoltMsg, type InitMsg, type InvMsg, type QuestView, ROOM_DUNGEON, S, type SysMsg, type TransferMsg, type MethodMsg, type SpiritScanMsg, type SpiritStateMsg, type SoulStateMsg, type CloneStateMsg } from '@dtl/shared';
-import { groundAt } from '../levelCtx';
+import { groundAt } from '../core/levelCtx';
 import { MONSTER, t } from '@dtl/content';
 import { minimapHooks } from '../../ui/minimap/model';
-import { visibleView } from '../aoiView';
+import { visibleView } from '../net/aoiView';
 import { pushLog, set, useUI } from '../../ui/store';
-import { sfx } from '../audio';
+import { sfx } from '../audio/audio';
 import { BOLT_VIEW_DIST, boltAge } from '../../render/vfx/projectile';
-import { EntityManager, type WorldView } from '../entities';
-import { MapVis } from '../mapVis';
-import { telegraph } from '../telegraph';
-import { HAZARD_COLORS } from '../vfx';
+import { EntityManager, type WorldView } from '../entities/entities';
+import { MapVis } from '../world/mapVis';
+import { telegraph } from '../fx/telegraph';
+import { HAZARD_COLORS } from '../fx/vfx';
 import { isWorldRoom, levelOfInit } from './common';
 import { isBossSrc, lightningFlash, monFlagFx, monsterInk, onDmg, onSys, resetSound, shakeForHazard, volumeAt } from './fxMsgs';
 import type { Game } from '../engine';

@@ -1,12 +1,12 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { MS_ATTACK, MS_CHASE, MS_DEAD, PF_DEAD, SPAWN_POINT } from '@dtl/shared';
-import { groundAt } from '../levelCtx';
+import { groundAt } from '../core/levelCtx';
 import { hasString, MONSTER, monsterName, t } from '@dtl/content';
 import { get, set } from '../../ui/store';
-import { chapterSting, duckHold } from '../audio';
-import { CHAPTER, type ChapterKind } from '../chapter';
-import { BOSS_CUTSCENE, BOSS_CUTSCENE_RANGE, bossIntroPath, DAN_CUTSCENE, danTranPath, minBossDist, PHASE_CUTSCENE, phaseShiftPath, SECT_CUTSCENE, type Waypoint } from '../cutscene';
-import { type PState } from '../entities';
+import { chapterSting, duckHold } from '../audio/audio';
+import { CHAPTER, type ChapterKind } from '../camera/chapter';
+import { BOSS_CUTSCENE, BOSS_CUTSCENE_RANGE, bossIntroPath, DAN_CUTSCENE, danTranPath, minBossDist, PHASE_CUTSCENE, phaseShiftPath, SECT_CUTSCENE, type Waypoint } from '../camera/cutscene';
+import { type PState } from '../entities/entities';
 import { postParams } from '../../render/post';
 import { _cineEndL, _cineEndP, _cineFwd, _cineL, _cineP, _v } from './common';
 import type { Game } from '../engine';

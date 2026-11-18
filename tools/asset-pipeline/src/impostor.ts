@@ -1,5 +1,5 @@
 // Bake impostor cây xa (P2-A4b): chạy tools/blender/bake_impostor.py trên GLB thô, đổi sang WebP (sharp), đặt tên theo
-// hash nội dung, ghi apps/client/public/assets/impostor/<id>.<hash>.webp và apps/client/src/game/impostors.json.
+// hash nội dung, ghi apps/client/public/assets/impostor/<id>.<hash>.webp và apps/client/src/game/core/impostors.json.
 //   pnpm assets:impostor [--size 256]  (luôn bake đủ các loài để ghép atlas)
 import { spawnSync } from 'node:child_process';
 import crypto from 'node:crypto';
@@ -11,7 +11,7 @@ import { findBlender } from '../../blender/find-blender.mjs';
 
 const root = path.resolve(import.meta.dirname, '../../..');
 const outDir = path.join(root, 'apps/client/public/assets/impostor');
-const indexFile = path.join(root, 'apps/client/src/game/impostors.json');
+const indexFile = path.join(root, 'apps/client/src/game/core/impostors.json');
 const TREES = ['prop_co_thu', 'prop_thong_co', 'prop_soi_nui', 'prop_anh_dao', 'prop_phong_do'];
 
 const args = process.argv.slice(2);

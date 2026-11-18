@@ -5,7 +5,7 @@ import { itemName, LEVELS, monsterName, NPCS, QUESTS, t } from '@dtl/content';
 import { Game } from '../../game/engine';
 import { Button, Divider, PanelWindow, ProgressBar, TipCard } from '../kit';
 import { ancientMap, mipFor } from '../minimap/ancient';
-import { levelAssets, levelTerrain } from '../../game/levelCtx';
+import { levelAssets, levelTerrain } from '../../game/core/levelCtx';
 import { questOverlay } from '../minimap/marks';
 import { difficultyTone, formatCountdown, npcFunction, npcQuestMark } from '../minimap/model';
 import { bossSprite, eliteSprite, flagSprite, mateSprite, nodeSprite, npcSprite, selfSprite, teleSprite } from '../minimap/sprites';

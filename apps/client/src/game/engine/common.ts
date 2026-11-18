@@ -1,12 +1,12 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
 import { type InitMsg, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL } from '@dtl/shared';
-import { knownLevel } from '../levelCtx';
+import { knownLevel } from '../core/levelCtx';
 import { type Appearance } from '@dtl/shared';
 import { METHOD_SKILLS, SKILLS } from '@dtl/content';
-import { type Vec3 } from '../cutscene';
+import { type Vec3 } from '../camera/cutscene';
 import { type GroundLevel } from '../../render/materials/ground';
-import { FLAGS } from '../flags';
+import { FLAGS } from '../core/flags';
 
 export interface LoginOptions {
   token?: string;

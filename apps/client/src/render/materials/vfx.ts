@@ -9,7 +9,7 @@ import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
 import { burstNodes, cardNodes, crystalNodes, decalNodes, toonNodes } from '../vfx/stylized';
 import { trailNodes } from '../vfx/trail';
-import { FLAGS } from '../../game/flags';
+import { FLAGS } from '../../game/core/flags';
 
 /**
  * Material hiệu ứng (VFX) dùng chung, viết bằng TSL.

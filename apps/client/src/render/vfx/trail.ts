@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { abs, clamp, exp, float, max, min, mix, pow, smoothstep, step, time, uv, vec2, vec3 } from 'three/tsl';
 import { PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
-import { groundAt } from '../../game/levelCtx';
+import { groundAt } from '../../game/core/levelCtx';
 import { vnoise, type FxUniforms } from './common';
 import type { Particles } from './particles';
 import type { FxKind, FxMesh } from '../materials/vfx';

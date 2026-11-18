@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { type AssetCache, type AssetHandle } from '../assets';
+import { type AssetCache, type AssetHandle } from '../core/assets';
 
 /** Thư viện clip dùng chung cho nhân vật người rig Mixamo (M2-3): tools/blender/export_anim_lib.py, không mesh. */
 export const HUMAN_ANIM_LIB = 'anim_human_base';

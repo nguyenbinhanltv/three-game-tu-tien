@@ -7,7 +7,7 @@ import { buildMixamoFixture } from './mixamoFixture';
 import { bakePoseLibrary } from './poseLib';
 import { overlayWeight, SkinnedCharacter } from './skinned';
 import type { AnimState, CharacterView } from './view';
-import { FX_LEAD, releaseAt, SkillPoses } from '../skillPose';
+import { FX_LEAD, releaseAt, SkillPoses } from '../combat/skillPose';
 
 const dist = (a: PoseVec, b: PoseVec) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 const STILL: AnimState = { speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false };
