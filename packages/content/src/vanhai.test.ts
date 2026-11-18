@@ -5,7 +5,8 @@ import { campCoverage, COVER_BY_LEVEL } from './coverage';
 import { LEVELS } from './index';
 import { checkLevel } from './levelcheck';
 
-const lv = LEVELS.van_hai;
+import { at } from '@dtl/shared';
+const lv = at(LEVELS, 'van_hai');
 const tr = terrainOf(lv);
 
 describe('van_hai', () => {
@@ -136,7 +137,7 @@ describe('van_hai: chặn leo vách đảo và thành cầu (đảo và cầu th
       maxY = Math.max(maxY, s.y);
       near = Math.min(near, nearSeg(s.x, s.z));
     }
-    return [maxY, near];
+    return [maxY, near] as [number, number];
   };
 
   it('đi dọc từng cầu từ đảo này sang đảo kia: không bị chặn nhầm ở chỗ nối', () => {

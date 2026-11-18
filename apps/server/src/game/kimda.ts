@@ -6,7 +6,7 @@
 //  - Kim dạ (Ma Hậu, `kd.night`): sàn tối, chỉ vòng quanh các bia là sáng, ngoài vòng mất khí huyết; boss dập luân phiên từng bia, bia trống quá lâu cũng tắt.
 // Cấu hình ở `monsters.json` (`kd`), kiểu `MonsterKimDa`. Hàm thuần và lớp `KimDaSystem` có test ở kimda.test.ts.
 
-import { MS_DEAD, MS_IDLE, MS_RETURN, type FxMsg, type MonsterKimDa } from '@dtl/shared';
+import { MS_DEAD, MS_IDLE, MS_RETURN, type FxMsg, type MonsterKimDa, at } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from './entities';
 
 export interface Pt {
@@ -226,7 +226,7 @@ export class KimDaSystem {
     if (now >= this.nightNext) {
       const lit = st.map((s, i) => ({ s, i })).filter((o) => o.s.dark <= now);
       if (lit.length > 0) {
-        const pick = lit.find((o) => o.i > this.nightSmashAt - 1) ?? lit[0];
+        const pick = lit.find((o) => o.i > this.nightSmashAt - 1) ?? at(lit, 0, 'lit');
         this.nightSmashAt = pick.i + 1;
         const s = pick.s;
         this.h.smash(m, s.x, s.z, s.r, cfg.warn, cfg.mul);

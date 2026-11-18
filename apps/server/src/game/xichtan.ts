@@ -8,6 +8,7 @@
 import { MS_DEAD, type MonsterRift, type WaveDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from './entities';
 
+import { at } from '@dtl/shared';
 type SteleDef = NonNullable<WaveDef['steles']>;
 
 /** Có người còn sống (không phải nguyên anh xuất khiếu) trong vòng bán kính `r` quanh (x, z) không. */
@@ -32,7 +33,7 @@ export function stepStele(held: number, empty: number, dt: number, has: boolean,
 /** Các mốc tiếp viện `at` mà tiến độ vừa vượt qua (chưa phát: `done`). */
 export function dueReinforce(held: number, done: number, list: readonly { at: number }[]): number[] {
   const out: number[] = [];
-  for (let i = done; i < list.length; i++) if (held >= list[i].at) out.push(i);
+  for (let i = done; i < list.length; i++) if (held >= at(list, i).at) out.push(i);
   return out;
 }
 
@@ -97,6 +98,7 @@ export class SteleHold {
     } else this.offNoted = false;
     for (const i of dueReinforce(this.held, this.done, d.reinforce)) {
       const g = d.reinforce[i];
+      if (!g) continue;
       this.done = i + 1;
       for (let k = 0; k < g.n; k++) {
         const a = (k / Math.max(1, g.n)) * Math.PI * 2;

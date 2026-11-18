@@ -48,6 +48,7 @@ import { methodDefMul, methodOf, sanitizeMethodMeta, type MethodMeta } from './m
 import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta } from './artifact';
 import { log } from '../log';
 
+import { at } from '@dtl/shared';
 export interface CharMeta extends MethodMeta, ArtifactMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
   dungeonDay?: string;
@@ -506,12 +507,12 @@ export class Character {
         }
         if (idem) {
           if (rows.length === 0) rows.push({ charId: this.id, kind: 'noop', ref: '', delta: 0, reason, ts });
-          rows[0].idem = idem;
+          at(rows, 0).idem = idem;
         }
         if (rows.length) tx.insert(ledger).values(rows).run();
         for (let i = 0; i < INV_SIZE; i++) {
-          const a = this.inv[i];
-          const b = d.inv[i];
+          const a = this.inv[i] ?? null;
+          const b = d.inv[i] ?? null;
           if (sameSlot(a, b)) continue;
           if (b) {
             const inst = b.inst ? JSON.stringify(b.inst) : null;
@@ -629,6 +630,7 @@ export class Character {
       const q = QUEST.get(id);
       if (!q) continue;
       const prog = this.quests.active[id];
+      if (!prog) continue;
       const was = this.questComplete(id);
       let changed = false;
       q.objectives.forEach((o, i) => {

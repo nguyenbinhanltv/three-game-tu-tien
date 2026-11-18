@@ -86,6 +86,7 @@ import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg } from './artifact';
 import { log } from '../log';
 
+import { at } from '@dtl/shared';
 const INTERACT_RANGE = 9;
 
 export class GameSim {
@@ -818,7 +819,9 @@ export class GameSim {
     public host: SimHost,
     public opts: SimOptions,
   ) {
-    this.level = LEVELS[opts.levelId];
+    const level = LEVELS[opts.levelId];
+    if (!level) throw new Error(`level không tồn tại: ${opts.levelId}`);
+    this.level = level;
     this.terrain = terrainOf(this.level);
     state.level = opts.levelId;
     // Quái đứng lẻ (tinh anh, boss): từng con hồi sinh riêng. Bãi quái: theo cụm (M-2).
@@ -968,7 +971,7 @@ export class GameSim {
     prof.begin();
     for (const p of this.players.values()) this.tickPlayer(p, dt);
     prof.lap('players');
-    for (let i = this.monsters.length - 1; i >= 0; i--) this.tickMonster(this.monsters[i], dt);
+    for (let i = this.monsters.length - 1; i >= 0; i--) this.tickMonster(at(this.monsters, i), dt);
     prof.lap('monsters');
     this.tickHazards();
     prof.lap('hazards');
@@ -1036,7 +1039,7 @@ export class GameSim {
   tickP95(): number {
     if (!this.tickSamples.length) return 0;
     const a = [...this.tickSamples].sort((x, y) => x - y);
-    return a[Math.floor(a.length * 0.95)];
+    return a[Math.floor(a.length * 0.95)] ?? 0;
   }
 
   // ---------- di chuyển ----------

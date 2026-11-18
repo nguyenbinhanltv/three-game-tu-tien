@@ -81,6 +81,11 @@ def import_high():
     # Bỏ quan hệ cha (nút gốc Sketchfab có xoay/scale) rồi áp transform để tọa độ đỉnh = tọa độ thế giới.
     bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    # `yaw` (độ, quanh Z): model nguồn không quay mặt về -Y (Shadow Wolf quay +X → yaw -90).
+    if CFG.get('yaw'):
+        high.rotation_mode = 'XYZ'
+        high.rotation_euler = (0, 0, math.radians(float(CFG['yaw'])))
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
     for o in [o for o in bpy.data.objects if o.type != 'MESH']:
         bpy.data.objects.remove(o, do_unlink=True)
     bpy.ops.object.mode_set(mode='EDIT')

@@ -38,3 +38,4 @@ export * from './tribulation';
 export * from './propLib';
 export * from './fxtimeline';
 export * from './chapters';
+export * from './arr';

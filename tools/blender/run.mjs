@@ -126,6 +126,20 @@ const procedural = [
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'chr_v3_kings_demon_nu', '--height', '1.8'],
   },
+  {
+    id: 'chr_v3_korvaden_nam',
+    script: 'tools/blender/chr_v3.py',
+    source: 'chr/skin_korvaden/prep/rig_v01.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'chr_v3_korvaden_nam', '--height', '2.0'],
+  },
+  {
+    id: 'chr_v3_shadow_wolf_nam',
+    script: 'tools/blender/chr_v3.py',
+    source: 'chr/skin_shadow_wolf/prep/rig_v01.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'chr_v3_shadow_wolf_nam', '--height', '1.9'],
+  },
   // Quái hai chân Dị Vực (DV-2 đợt 2): bản điêu khắc CC BY → `skin_prep.py --stage bake` (cấu hình tools/blender/skins/dv2_*.json) → lưới thấp
   // không xương `mon/<id>/prep/bake.glb` (thư mục nguồn ngoài repo hoặc thư mục làm việc: `DTL_ASSET_SOURCE=<thư mục>`) → chr_v3.py đặt lên xương Mannequin.
   // Hai con không chữ A khai mốc `--landmarks` và vùng cứng `--bind` (vũ khí/khiên/áo choàng đi theo một xương).

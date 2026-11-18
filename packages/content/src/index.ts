@@ -577,7 +577,7 @@ export function swordModelOf(itemId: string | undefined, glowStage = 0): string 
 function swordBaseModelOf(itemId: string | undefined): string {
   const it = itemId ? ITEM.get(itemId) : undefined;
   if (!it || it.kind !== 'weapon') return SWORD_MODEL_DEFAULT;
-  return it.model ?? SWORD_MODEL_BY_RARITY[Math.max(0, Math.min(SWORD_MODEL_BY_RARITY.length - 1, it.rarity))];
+  return it.model ?? SWORD_MODEL_BY_RARITY[Math.max(0, Math.min(SWORD_MODEL_BY_RARITY.length - 1, it.rarity))] ?? SWORD_MODEL_DEFAULT;
 }
 
 export function monsterName(id: string): string {
