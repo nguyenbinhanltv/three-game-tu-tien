@@ -502,7 +502,8 @@
   top: 2px;
   color: var(--k-gold);
 }
-.k-slot .content-icon {
+.k-slot .content-icon,
+.k-slot .sys-glyph {
   width: 70%;
   height: 70%;
 }

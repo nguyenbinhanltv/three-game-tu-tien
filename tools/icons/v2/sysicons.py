@@ -1,0 +1,114 @@
+"""75 icon hệ thống nét vàng (lưới 48). Dùng: python tools/icons/v2/sysicons.py [thư mục ra]: ghi SVG từng icon, sprite.svg, danh-muc.json.
+Bản chạy trong game là `apps/client/src/ui/u2/sysGlyphs.ts` (cùng đường nét): sửa ở đây thì sinh lại tệp đó."""
+import json, io, os, glob, shutil
+import sys
+OUT = (sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "svg-out")) + "/"
+os.makedirs(OUT, exist_ok=True)
+# (id, tên, nhóm, path nét, [path tô tùy chọn])
+I = []
+def add(id, name, grp, d, f=""): I.append((id, name, grp, d, f))
+# --- hub / hệ thống (12)
+add("hud_thien", "Đả tọa", "hub", "M18 11 A6 6 0 1 0 30 11 A6 6 0 1 0 18 11 M24 17 V29 M12 31 Q24 24 36 31 M12 40 Q24 34 36 40 M14 40 Q24 44 34 40")
+add("hud_ngu_kiem", "Ngự kiếm", "hub", "M9 39 L37 11 M31 11 H38 V18 M34 14 L40 8 M6 28 q5 -1 8 -6 M12 42 q6 -3 10 -9", "M10 40 L35 13 L37 15 L12 42 Z")
+add("hud_tui", "Túi", "hub", "M14 17 Q14 7 24 7 Q34 7 34 17 M11 17 H37 L41 41 H7 Z M16 24 Q24 31 32 24", "M11 17 H37 L41 41 H7 Z")
+add("hud_nhan_vat", "Nhân vật", "hub", "M18 14 A6 6 0 1 0 30 14 A6 6 0 1 0 18 14 M10 42 Q10 24 24 24 Q38 24 38 42 Z", "M10 42 Q10 24 24 24 Q38 24 38 42 Z")
+add("hud_cong_phap", "Công pháp", "hub", "M8 24 A16 16 0 1 0 40 24 A16 16 0 1 0 8 24 M24 8 A8 8 0 0 1 24 24 A8 8 0 0 0 24 40 M22 16 A2 2 0 1 0 26 16 A2 2 0 1 0 22 16 M22 32 A2 2 0 1 0 26 32 A2 2 0 1 0 22 32", "M24 8 A8 8 0 0 1 24 24 A8 8 0 0 0 24 40 A16 16 0 0 1 24 8 Z")
+add("hud_to_doi", "Tổ đội", "hub", "M10 17 A4 4 0 1 0 18 17 A4 4 0 1 0 10 17 M30 17 A4 4 0 1 0 38 17 A4 4 0 1 0 30 17 M20 12 A4 4 0 1 0 28 12 A4 4 0 1 0 20 12 M5 40 Q5 25 14 25 Q23 25 23 40 M25 40 Q25 25 34 25 Q43 25 43 40 M15 42 Q15 20 24 20 Q33 20 33 42")
+add("hud_nhiem_vu", "Nhiệm vụ", "hub", "M10 12 Q10 8 14 8 H34 Q38 8 38 12 V36 Q38 40 34 40 H14 Q10 40 10 36 Z M16 16 H32 M16 22 H26", "M27 27 H37 V37 H27 Z")
+add("hud_tro_giup", "Trợ giúp", "hub", "M8 24 A16 16 0 1 0 40 24 A16 16 0 1 0 8 24 M19 19 Q19 13 24 13 Q30 13 30 18 Q30 22 24 24 V28 M24 33 V35")
+add("hud_cai_dat", "Cài đặt", "hub", "M24 4 V10 M24 38 V44 M4 24 H10 M38 24 H44 M10 10 L14 14 M34 34 L38 38 M38 10 L34 14 M10 38 L14 34 M18 24 A6 6 0 1 0 30 24 A6 6 0 1 0 18 24 M13 24 A11 11 0 1 0 35 24 A11 11 0 1 0 13 24")
+add("hud_than_thuc", "Thần thức", "hub", "M2 24 Q24 8 46 24 Q24 40 2 24 Z M17 24 A7 7 0 1 0 31 24 A7 7 0 1 0 17 24 M24 3 V8 M11 7 L14 11 M37 7 L34 11 M8 38 Q24 46 40 38", "M21.5 24 A2.5 2.5 0 1 0 26.5 24 A2.5 2.5 0 1 0 21.5 24 Z M2 24 Q24 8 46 24 Q24 40 2 24 Z")
+add("hud_nguyen_anh", "Nguyên anh", "hub", "M19 15 A5 5 0 1 0 29 15 A5 5 0 1 0 19 15 M21.6 8 A2.4 2.4 0 1 0 26.4 8 A2.4 2.4 0 1 0 21.6 8 M24 5 V3 M16 41 Q15 27 24 26 Q33 27 32 41 M11 42 H37 M17 31 L11 37 M31 31 L37 37 M12 20 Q6 28 10 38 M36 20 Q42 28 38 38", "M16 41 Q15 27 24 26 Q33 27 32 41 Z M19 15 A5 5 0 1 0 29 15 A5 5 0 1 0 19 15 Z")
+add("hud_hanh_trinh", "Hành trình", "hub", "M3 36 L15 14 L25 31 L31 22 L45 38 M12 46 Q24 38 20 42 Q34 40 36 44 M36 8 V18 M36 8 L43 11 L36 14", "M15 14 L25 31 H3 Z")
+# --- dấu & tiền tệ (5)
+add("mark_nhan", "Có nhiệm vụ", "dau", "M24 6 V28 M24 36 V40")
+add("mark_xong", "Hoàn thành", "dau", "M8 26 L20 38 L40 12")
+add("cur_linh_thach", "Linh thạch", "tien", "M24 5 L37 18 L24 43 L11 18 Z M11 18 H37 M24 5 L18 18 L24 43 M24 5 L30 18 L24 43", "M24 5 L37 18 H11 Z")
+add("cur_linh_thach_trung", "Linh thạch trung", "tien", "M16 6 L26 16 L16 36 L6 16 Z M6 16 H26 M16 6 L12 16 L16 36 M32 12 L42 22 L32 42 L22 22 Z M22 22 H42")
+add("cur_linh_thach_thuong", "Linh thạch thượng", "tien", "M24 3 L32 11 L24 29 L16 11 Z M10 16 L18 24 L10 42 L2 24 Z M38 16 L46 24 L38 42 L30 24 Z M16 11 H32 M2 24 H18 M30 24 H46")
+# --- buff/debuff (22)
+add("st_atk_up", "Tăng công", "trang_thai", "M24 4 V30 M18 12 L24 4 L30 12 M14 30 H34 M24 30 V42 M21 42 H27", "M22 8 H26 V30 H22 Z")
+add("st_def_up", "Tăng thủ", "trang_thai", "M24 6 L40 12 V26 Q40 38 24 44 Q8 38 8 26 V12 Z M17 26 L24 18 L31 26")
+add("st_crit_up", "Tăng bạo", "trang_thai", "M24 4 L28 18 L42 14 L32 26 L44 34 L28 32 L24 44 L20 32 L4 34 L16 26 L6 14 L20 18 Z", "M24 14 L27 22 L35 22 L29 27 L31 35 L24 30 L17 35 L19 27 L13 22 L21 22 Z")
+add("st_speed_up", "Tăng tốc", "trang_thai", "M6 18 H28 M2 26 H24 M10 34 H32 M30 12 L44 24 L30 36")
+add("st_regen", "Hồi phục", "trang_thai", "M24 8 V40 M8 24 H40 M6 24 A18 18 0 1 0 42 24 A18 18 0 1 0 6 24")
+add("st_ward", "Thế thân/khiên", "trang_thai", "M6 38 A18 18 0 0 1 42 38 Z M24 14 V38 M14 28 H34", "M6 38 A18 18 0 0 1 42 38 Z")
+add("st_echo", "Đồng vọng", "trang_thai", "M24 15 L33 24 L24 33 L15 24 Z M13 14 Q6 24 13 34 M7 9 Q-3 24 7 39 M35 14 Q42 24 35 34 M41 9 Q51 24 41 39", "M24 15 L33 24 L24 33 L15 24 Z")
+add("st_domain", "Lĩnh vực", "trang_thai", "M4 24 A20 20 0 1 0 44 24 A20 20 0 1 0 4 24 M14 14 H34 V34 H14 Z M24 4 V14 M24 34 V44")
+add("st_reflect", "Phản đòn", "trang_thai", "M8 24 H40 M16 16 L8 24 L16 32 M32 16 L40 24 L32 32 M24 10 V38")
+add("st_taunt", "Khiêu khích", "trang_thai", "M24 8 V28 M24 36 V38 M8 12 L14 16 M40 12 L34 16 M6 26 H12 M42 26 H36")
+add("st_sensed", "Bị thần thức", "trang_thai", "M3 24 Q24 8 45 24 Q24 40 3 24 Z M20 24 A4 4 0 1 0 28 24 A4 4 0 1 0 20 24 M24 4 V9 M10 8 L13 12 M38 8 L35 12")
+add("st_stun", "Choáng", "trang_thai", "M17 32 A7 7 0 1 0 31 32 A7 7 0 1 0 17 32 M10 12 L11.5 16 L16 16 L12.5 19 L14 23 L10 20.5 L6 23 L7.5 19 L4 16 L8.5 16 Z M30 6 L31.5 10 L36 10 L32.5 13 L34 17 L30 14.5 L26 17 L27.5 13 L24 10 L28.5 10 Z M40 20 L41 23 L44 23 L41.7 25 L42.5 28 L40 26.2 L37.5 28 L38.3 25 L36 23 L39 23 Z")
+add("st_broken", "Mất thế", "trang_thai", "M24 5 L40 11 V25 Q40 38 24 44 Q8 38 8 25 V11 Z M24 11 L20 22 L28 28 L22 42")
+add("st_weak", "Suy yếu", "trang_thai", "M24 6 V34 M14 26 L24 38 L34 26 M12 43 H36")
+add("st_burrow", "Độn thổ", "trang_thai", "M4 38 Q24 14 44 38 M24 4 V20 M18 14 L24 20 L30 14")
+add("st_chant", "Niệm chú", "trang_thai", "M6 24 q4 -10 8 0 t8 0 t8 0 t8 0 M6 34 q4 -10 8 0 t8 0 t8 0 M10 14 q4 -6 8 0 t8 0")
+add("st_burn", "Thiêu đốt", "trang_thai", "M24 4 Q14 16 18 26 Q12 24 12 32 Q12 44 24 44 Q36 44 36 32 Q36 20 24 4 Z M24 26 Q20 32 24 38 Q28 32 24 26", "M24 26 Q20 32 24 38 Q28 32 24 26")
+add("st_poison", "Trúng độc", "trang_thai", "M24 4 Q10 24 14 34 Q18 44 24 44 Q30 44 34 34 Q38 24 24 4 Z M19 30 h3 M27 30 h3 M21 37 h6")
+add("st_slow", "Làm chậm", "trang_thai", "M12 6 H36 M12 42 H36 M14 6 Q14 22 24 24 Q34 22 34 6 M14 42 Q14 26 24 24 Q34 26 34 42")
+add("st_bleed", "Chảy máu", "trang_thai", "M24 6 Q12 24 14 32 Q16 40 24 40 Q32 40 34 32 Q36 24 24 6 Z M38 28 q4 4 2 10")
+add("st_silence", "Câm lặng", "trang_thai", "M8 24 Q24 12 40 24 Q24 36 8 24 Z M8 40 L40 8")
+add("st_bound", "Trói buộc", "trang_thai", "M10 18 a6 6 0 0 1 8 -4 l6 6 a6 6 0 0 1 -8 8 M38 30 a6 6 0 0 1 -8 4 l-6 -6 a6 6 0 0 1 8 -8")
+# --- nhãn / giao diện (25)
+add("ui_cap", "Cấp", "nhan", "M8 40 L24 8 L40 40 M14 28 H34")
+add("ui_khoa", "Khóa", "nhan", "M14 22 V16 A10 10 0 1 1 34 16 V22 M10 22 H38 V40 H10 Z M24 28 V34", "M10 22 H38 V40 H10 Z")
+add("ui_moi", "Mới", "nhan", "M24 6 V14 M24 34 V42 M6 24 H14 M34 24 H42 M12 12 L18 18 M30 30 L36 36 M36 12 L30 18 M12 36 L18 30")
+add("ui_da_qua", "Đã qua", "nhan", "M6 24 A18 18 0 1 0 42 24 A18 18 0 1 0 6 24 M14 25 L22 33 L35 16")
+add("ui_goi_y", "Gợi ý", "nhan", "M24 4 A12 12 0 0 1 32 26 V32 H16 V26 A12 12 0 0 1 24 4 M18 38 H30 M20 43 H28")
+add("ui_nguy_hiem", "Nguy hiểm", "nhan", "M24 5 L44 40 H4 Z M24 18 V30 M24 35 V36")
+add("ui_boss", "Boss", "nhan", "M10 22 A14 14 0 1 1 38 22 V32 H10 Z M16 32 V40 M22 32 V40 M26 32 V40 M32 32 V40 M14 22 A3 3 0 1 0 20 22 A3 3 0 1 0 14 22 M28 22 A3 3 0 1 0 34 22 A3 3 0 1 0 28 22")
+add("ui_pho_ban", "Phó bản", "nhan", "M8 42 V16 Q8 6 24 6 Q40 6 40 16 V42 M14 42 V18 Q14 12 24 12 Q34 12 34 18 V42 M4 42 H44")
+add("ui_do_kiep", "Độ kiếp", "nhan", "M28 4 L12 26 H22 L18 44 L36 20 H26 Z", "M28 4 L12 26 H22 L18 44 L36 20 H26 Z")
+add("ui_the_gioi", "Thế giới", "nhan", "M6 24 A18 18 0 1 0 42 24 A18 18 0 1 0 6 24 M6 24 H42 M24 6 Q14 24 24 42 Q34 24 24 6")
+add("ui_truyen_tong", "Truyền tống", "nhan", "M24 6 A18 18 0 1 0 42 24 M42 24 L36 18 M42 24 L36 30 M24 14 A10 10 0 1 0 34 24")
+add("ui_danh_dau", "Đánh dấu", "nhan", "M24 44 Q10 28 10 18 A14 14 0 1 1 38 18 Q38 28 24 44 Z M18 18 A6 6 0 1 0 30 18 A6 6 0 1 0 18 18")
+add("ui_chat", "Trò chuyện", "nhan", "M6 10 H42 V32 H22 L12 42 V32 H6 Z M14 18 H34 M14 24 H28")
+add("ui_tim", "Tìm", "nhan", "M8 20 A12 12 0 1 0 32 20 A12 12 0 1 0 8 20 M29 29 L42 42")
+add("ui_sap_xep", "Sắp xếp", "nhan", "M16 40 V8 M10 14 L16 8 L22 14 M32 8 V40 M26 34 L32 40 L38 34")
+add("ui_dong", "Đóng", "nhan", "M12 12 L36 36 M36 12 L12 36")
+add("ui_len", "Lên", "nhan", "M24 40 V8 M12 20 L24 8 L36 20")
+add("ui_xuong", "Xuống", "nhan", "M24 8 V40 M12 28 L24 40 L36 28")
+add("ui_them", "Thêm", "nhan", "M24 8 V40 M8 24 H40")
+add("ui_bot", "Bớt", "nhan", "M8 24 H40")
+add("ui_canh_bao", "Cảnh báo", "nhan", "M6 24 A18 18 0 1 0 42 24 A18 18 0 1 0 6 24 M24 14 V27 M24 33 V34")
+add("ui_thong_tin", "Thông tin", "nhan", "M6 24 A18 18 0 1 0 42 24 A18 18 0 1 0 6 24 M24 22 V34 M24 14 V15")
+add("ui_sao", "Yêu thích", "nhan", "M24 5 L29 18 L43 18 L32 27 L36 41 L24 33 L12 41 L16 27 L5 18 L19 18 Z")
+add("ui_lam_moi", "Làm mới", "nhan", "M38 24 A14 14 0 1 1 30 11 M30 5 V12 H37")
+add("ui_thu_gon", "Thu gọn", "nhan", "M10 18 L24 32 L38 18")
+# --- hệ thống mở rộng (11)
+add("sys_cua_hang", "Cửa hàng", "he_thong", "M6 18 L10 6 H38 L42 18 Z M8 18 V40 H40 V18 M20 40 V28 H28 V40")
+add("sys_ren", "Rèn", "he_thong", "M6 30 H36 L32 24 H12 Z M14 30 V40 M28 30 V40 M10 40 H32 M34 12 L42 20 M30 16 L38 8")
+add("sys_luyen_dan", "Luyện đan", "he_thong", "M11 20 H37 V31 Q37 39 24 39 Q11 39 11 31 Z M9 20 H39 M14 39 V44 M34 39 V44 M24 4 q-6 7 0 11 q6 -5 0 -11")
+add("sys_cuong_hoa", "Cường hóa", "he_thong", "M24 40 V10 M14 20 L24 10 L34 20 M10 42 H38 M36 26 V38 M30 32 H42")
+add("sys_thang_bac", "Thăng bậc", "he_thong", "M10 28 L24 14 L38 28 M10 40 L24 26 L38 40")
+add("sys_kham", "Khảm ngọc", "he_thong", "M6 26 A18 12 0 1 0 42 26 A18 12 0 1 0 6 26 M24 6 L31 13 L24 24 L17 13 Z")
+add("sys_auto", "Tự động", "he_thong", "M38 18 A14 14 0 0 0 12 16 M12 8 V16 H20 M10 30 A14 14 0 0 0 36 32 M36 40 V32 H28")
+add("sys_am_thanh", "Âm thanh", "he_thong", "M6 18 H14 L24 8 V40 L14 30 H6 Z M30 18 Q36 24 30 30 M34 12 Q46 24 34 36")
+add("sys_nhac", "Nhạc", "he_thong", "M18 38 A5 5 0 1 0 28 38 A5 5 0 1 0 18 38 M28 38 V10 L40 14 V18 L28 14")
+add("sys_thu", "Thư", "he_thong", "M5 10 H43 V38 H5 Z M5 10 L24 26 L43 10")
+add("sys_ban_be", "Đạo hữu", "he_thong", "M24 40 Q4 26 8 14 Q14 6 24 16 Q34 6 40 14 Q44 26 24 40 Z")
+IDS = [i[0] for i in I]
+def svg(d, f, size=48, stroke="#e2b955", sw=1.9, fill="#e2b955", gid=""):
+    fl = f'<path d="{f}" fill="{fill}" fill-opacity=".22" stroke="none"/>' if f else ""
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="{size}" height="{size}">{fl}<path d="{d}" fill="none" stroke="{stroke}" stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+for id, name, grp, d, f in I:
+    io.open(OUT + id + ".svg", "w", encoding="utf-8").write(svg(d, f))
+# sprite
+sp = '<svg xmlns="http://www.w3.org/2000/svg" style="display:none">' + "".join(f'<symbol id="{id}" viewBox="0 0 48 48">' + (f'<path d="{f}" fill="currentColor" fill-opacity=".22" stroke="none"/>' if f else "") + f'<path d="{d}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>' for id, name, grp, d, f in I) + "</svg>"
+io.open(OUT + "sprite.svg", "w", encoding="utf-8").write(sp)
+json.dump([{"id": i[0], "ten": i[1], "nhom": i[2]} for i in I], io.open(OUT + "danh-muc.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+# Tệp chạy trong game: python tools/icons/v2/sysicons.py <thư mục ra> <đường dẫn sysGlyphs.ts> (đối số 2 tùy chọn).
+if len(sys.argv) > 2:
+    lines = [f"  {id}: [{json.dumps(d)}{', ' + json.dumps(f) if f else ''}]," for id, name, grp, d, f in I]
+    NL = chr(10)
+    head = NL.join(
+        [
+            "/**",
+            " * 75 icon hệ thống nét vàng (U2-I): lưới 48×48, `[nét, vùng tô nhẹ?]`, màu theo `currentColor`.",
+            " * SINH TỪ `tools/icons/v2/sysicons.py` (đối số 2 = đường dẫn tệp này): sửa bản vẽ ở đó rồi chạy lại, không sửa tay.",
+            " */",
+            "export const SYS_GLYPHS: Record<string, readonly [string, string?]> = {",
+        ]
+    )
+    io.open(sys.argv[2], "w", encoding="utf-8", newline=NL).write(head + NL + NL.join(lines) + NL + "};" + NL)
+print(len(I), "icon SVG;", os.path.getsize(OUT + "sprite.svg") // 1024, "KB sprite")

@@ -91,9 +91,10 @@ const seen = new Set();
 for (const def of [...defs, ...extras.map((id) => ({ id, icon: id }))]) {
   if (seen.has(def.icon)) continue;
   seen.add(def.icon);
-  // Tranh Codex mới (2d/icons) thắng bản cũ (icons/, kể cả render Blender của 28 icon trang bị).
+  // Thứ tự ưu tiên: bộ icon U2-I (2d/icons-v2/png256, đã căn giữa, không viền) > tranh Codex đợt 1 (2d/icons) > bản cũ (icons/, kể cả render Blender).
+  const v3 = path.join(source, '2d', 'icons-v2', 'png256', `${def.icon}.png`);
   const v2 = path.join(source, '2d', 'icons', `${def.icon}.png`);
-  const file = fs.existsSync(v2) ? v2 : path.join(source, 'icons', `${def.icon}.png`);
+  const file = fs.existsSync(v3) ? v3 : fs.existsSync(v2) ? v2 : path.join(source, 'icons', `${def.icon}.png`);
   // Chưa có tranh gốc: không chiếm ô, client dùng emoji `iconFallback`.
   if (!fs.existsSync(file)) {
     console.log(`Bỏ qua (chưa có PNG): ${def.icon}`);
@@ -125,7 +126,7 @@ for (const name of sheetNames) {
   sheets[name] = { file, sha256, bytes: data.length, columns, rows };
   if (name === 'items') webp = data;
 }
-const manifest = { version: 3, tileSize: size, sheets, icons };
+const manifest = { version: 4, tileSize: size, sheets, icons };
 fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
 for (const old of fs.readdirSync(out)) {
   if (/^icons(-[a-z]+)?\.[a-f0-9]{10}\.(webp|ktx2)$/.test(old) && !keep.has(old)) fs.unlinkSync(path.join(out, old));
