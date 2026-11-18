@@ -4,71 +4,13 @@
 // (test băm `trib.golden.test.ts`).
 
 import { PF_DEAD, type FxMsg, shadowStats, tribDef, tribGapAt, tribPhaseIndex, type HazardGeom, type HazardKind, type HazardMsg, type TribDef, type TribId, type TribPhaseDef } from '@dtl/shared';
-import type { MonEnt, PlayerEnt } from './sim';
+import type { MonEnt, PlayerEnt } from './entities';
 import { runMechanic, soulActive, soulOut, tamCanhHit, type TribMechCtx } from './tribmech';
 import { cloneAbsorb, cloneOut } from './tribnhan';
 import { riftFinal, tribCleanup } from './tribanh';
-
-/** Trạng thái một lần độ kiếp của một người (chỉ server giữ; client chỉ nhận cờ PF_TRIBULATION và vùng đã báo). */
-export interface TribState {
-  /** Kiếp nào; thiếu = Trúc Cơ (test cũ dựng trạng thái không có trường này). */
-  id?: TribId;
-  endAt: number;
-  nextAt: number;
-  /** Số đợt đã phát. */
-  n: number;
-  /** Tia khóa mệnh của pha cuối đã thả. */
-  fin: boolean;
-  /** Số đan hồi phục đã dùng. */
-  pills: number;
-  /** Pha hiện tại (đổi pha thì chạy `enter`/`exit` của cơ chế). */
-  pi?: number;
-  /** Mốc thả bóng tâm ma kế tiếp. */
-  shadowAt?: number;
-  /** Mốc ô lửa kế tiếp và tâm lưới (đặt lúc vào pha lửa đầu tiên). */
-  hoaAt?: number;
-  anchor?: { x: number; z: number };
-  /** Chỗ cho cơ chế riêng giữ trạng thái (khóa = id cơ chế). Chỉ server giữ. */
-  mech?: Record<string, unknown>;
-}
-
-export interface GuardCfg {
-  share: number;
-  max: number;
-  r: number;
-}
-
-/** Tham số thêm của vùng nguy hiểm: kiểu vạch (`pool` = dấu hiệu), thời gian tồn tại, trận môn khắc chế (người đứng trong đó giảm `cut`, cờ `ke`). */
-export interface HazardExtra {
-  mv?: HazardMsg['mv'];
-  dur?: number;
-  seal?: { x: number; z: number; r: number; cut: number };
-  /** Luôn trúng chủ kiếp bất kể vị trí (không né bằng cách rời sân). */
-  reach?: boolean;
-}
-
-export interface TribHost {
-  now(): number;
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardKind, src: string, atk?: number, lock?: boolean, grp?: number, guard?: GuardCfg, cut?: { mul: number; max: number }, hot?: boolean, extra?: HazardExtra): void;
-  /** Gây sát thương cho `p` (đã tính giảm; `ke` = đứng đúng trận môn khắc chế). */
-  damage(p: PlayerEnt, n: number, ke?: 1 | -1): void;
-  fx(m: FxMsg): void;
-  isDead(p: PlayerEnt): boolean;
-  nextGrp(): number;
-  sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string): void;
-  spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }, o?: { dyaw?: number; level?: number }): MonEnt | null;
-  /** Bóng tâm ma còn sống của `p`. */
-  aliveShadows(p: PlayerEnt): number;
-  /** Một bóng tâm ma còn sống của `p` (null nếu không còn). */
-  shadowOf(p: PlayerEnt): MonEnt | null;
-  /** Kết thúc kiếp (thành công khi hết giờ). */
-  end(p: PlayerEnt, success: boolean): void;
-  /** Nhật Thực Kiếp: gọi quái kiếp trước mặt người độ kiếp (null nếu không dựng được), gỡ quái, làm quái mất thế, hồi máu người. */
-  spawnBoss(p: PlayerEnt, id: string, dist: number): MonEnt | null;
-  removeMonster(m: MonEnt): void;
-  stunMonster(m: MonEnt, sec: number): void;
-  heal(p: PlayerEnt, n: number): void;
-}
+import type { GuardCfg, TribState } from './tribtypes';
+import type { HazardExtra, TribHost } from './tribhost';
+export type { GuardCfg, TribState, HazardExtra, TribHost };
 
 export class TribSystem {
   constructor(private h: TribHost) {}

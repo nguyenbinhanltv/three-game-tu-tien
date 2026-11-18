@@ -47,7 +47,7 @@ import {
 } from '@dtl/shared';
 import { ENHANCE_ORE, FORGE_BY_ID, ITEM, ITEM_SYS, itemTier, NPC, promoteTarget, t } from '@dtl/content';
 import type { InvDraft } from './character';
-import type { PlayerEnt } from './sim';
+import type { PlayerEnt } from './entities';
 
 /** Phần sim mà hệ nâng cấp cần mượn (sim.ts truyền vào). */
 export interface UpgradeHost {

@@ -8,7 +8,7 @@ import { DUNGEON_QUEST_TARGET } from '../game/dungeonquest';
 import { MirrorPuzzle } from '../game/mirrorpuzzle';
 import { SealSystem } from '../game/seal';
 import { RiftVeins, SteleHold } from '../game/xichtan';
-import { type MonEnt, type PlayerEnt, type SimOptions } from '../game/sim';
+import type { MonEnt, PlayerEnt, SimOptions } from '../game/entities';
 import { tickets } from '../transfer';
 import { GameRoom, today, type JoinAuth } from './base';
 

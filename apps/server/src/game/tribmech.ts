@@ -15,8 +15,9 @@
 
 import { METHOD, SKILL } from '@dtl/content';
 import { PF_DEAD, TRIB_MECHANIC_IDS, tribDef, type TribDef, type TribPhaseDef } from '@dtl/shared';
-import type { PlayerEnt } from './sim';
-import type { TribHost, TribState } from './trib';
+import type { PlayerEnt } from './entities';
+import type { TribState } from './tribtypes';
+import type { TribHost } from './tribhost';
 
 export interface TribMechCtx {
   /** Cổng vào sim (hành động server). */
