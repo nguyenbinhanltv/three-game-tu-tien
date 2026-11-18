@@ -1,6 +1,7 @@
 import { LEVELS } from '@dtl/content';
 import { scatterVanHai } from './vanHaiScatter';
 import { scatterThienKhuyet } from './thienKhuyetArt';
+import { type BhScatterCtx, riftPath, scatterBacHoang } from './bacHoangArt';
 export { scatterVanHai };
 import { padsOfLevel, propsOf, terrainOf, COLLIDERS, DUNGEON_EXIT, featureWeight, FOREST, HAND_PROPS, hash01, heightAt, ISLAND_R, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, SUOI, VACH, VALLEY, WATER_Y, WORLD_SIZE } from '@dtl/shared';
 
@@ -297,6 +298,7 @@ export function allProps(level = 'van_lam'): PropInstance[] {
     if (level === 'doan_mach') list.push(...scatterDoanMach(list));
     if (level === 'van_hai') list.push(...scatterVanHai(list));
     if (level === 'thien_khuyet') list.push(...scatterTk(list));
+    if (level === 'bac_hoang') list.push(...scatterBh(list));
     levelCache.set(level, list);
   }
   return list;
@@ -351,6 +353,36 @@ export function scatterDoanMach(placed: readonly PropInstance[]): PropInstance[]
     }
   }
   return out;
+}
+
+/** Ngữ cảnh rải của Bắc Hoang (DV-3I): vòng cấm quanh trạm, cụm quái, điểm đáng chú ý, điểm hái, prop đặt tay; dùng cho đá/cột đổ và cây chết. */
+export function bhCtx(placed: readonly { x: number; z: number }[]): BhScatterCtx {
+  const L = LEVELS.bac_hoang;
+  const tr = terrainOf('bac_hoang');
+  const clear: Circle[] = [
+    { x: L.spawn?.x ?? 1024, z: L.spawn?.z ?? 1036, r: 70 },
+    ...(L.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: 6 })),
+    ...L.spawns.filter((sp) => sp.radius > 4).map((sp) => ({ x: sp.x, z: sp.z, r: sp.radius + 4 })),
+    ...(L.pois ?? []).map((p) => ({ x: p.x, z: p.z, r: 14 })),
+    ...L.nodes.map((n) => ({ x: n.x, z: n.z, r: 6 })),
+    ...placed.map((p) => ({ x: p.x, z: p.z, r: 5 })),
+  ];
+  return { def: tr.def, bounds: tr.playBounds, heightAt: (x, z) => tr.heightAt(x, z), clear, colliders: tr.colliders, path: riftPath(tr.def) };
+}
+
+/** Đá tro, cột đổ, kiếm gãy ở Bắc Hoang (DV-3I): phần tính ở `bacHoangArt.ts`. */
+function scatterBh(placed: readonly PropInstance[]): PropInstance[] {
+  const tr = terrainOf('bac_hoang');
+  return scatterBacHoang(bhCtx(placed)).map((r) => ({
+    id: r.id,
+    x: r.x,
+    y: tr.heightAt(r.x, r.z) - r.sink,
+    z: r.z,
+    yaw: r.yaw,
+    s: r.s,
+    lean: r.lean,
+    tint: r.tint,
+  }));
 }
 
 /** Đá vỡ, cột đổ, tượng nghiêng ở Thiên Khuyết (E4-I): vòng cấm như Đoạn Mạch, phần tính ở `thienKhuyetArt.ts`. */
