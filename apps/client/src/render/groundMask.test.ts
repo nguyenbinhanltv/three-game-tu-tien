@@ -12,14 +12,15 @@ describe('groundMask', () => {
   const lines = pathPolylines();
   it('đường mòn nối các khu và liền mạch', () => {
     expect(lines.length).toBeGreaterThanOrEqual(4);
-    for (const l of lines) for (let i = 1; i < l.length; i++) expect(Math.hypot(l[i].x - l[i - 1].x, l[i].z - l[i - 1].z)).toBeLessThan(60);
+    for (const l of lines)
+      for (let i = 1; i < l.length; i++) expect(Math.hypot(l[i]!.x - l[i - 1]!.x, l[i]!.z - l[i - 1]!.z)).toBeLessThan(60);
   });
   it('khoảng cách tới đường mòn: 0 trên đường, Infinity ở xa', () => {
-    expect(distToPaths(lines[0][5].x, lines[0][5].z, lines)).toBeLessThan(0.01);
+    expect(distToPaths(lines[0]![5]!.x, lines[0]![5]!.z, lines)).toBeLessThan(0.01);
     expect(distToPaths(10, 10, lines)).toBe(Infinity);
   });
   it('R ≈ 0,5 trên tim đường (ô 4 m nên lệch nhẹ), thấp hẳn ngoài đường', () => {
-    const p = lines[1][10];
+    const p = lines[1]![10]!;
     expect(px(p.x, p.z)[0]).toBeGreaterThan(100);
     expect(px(p.x + 60, p.z + 60)[0]).toBeLessThan(60);
   });

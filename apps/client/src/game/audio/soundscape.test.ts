@@ -19,7 +19,7 @@ describe('buildSources / pickActive', () => {
     const a = pickActive(src, SECT.x, 2100);
     const lamps = a.filter((x) => x.s.kind === 'lantern');
     expect(lamps.length).toBe(KINDS.lantern.cap);
-    for (let i = 1; i < lamps.length; i++) expect(lamps[i].d).toBeGreaterThanOrEqual(lamps[i - 1].d);
+    for (let i = 1; i < lamps.length; i++) expect(lamps[i]!.d).toBeGreaterThanOrEqual(lamps[i - 1]!.d);
     expect(a.every((x) => x.d <= KINDS[x.s.kind].range)).toBe(true);
   });
   it('ở xa thì không có nguồn nào', () => {
@@ -51,8 +51,8 @@ describe('makeCrackle', () => {
   });
   it('vòng lặp liền mạch: bước nhảy ở điểm nối không lớn hơn bước nhảy thường thấy', () => {
     let maxStep = 0;
-    for (let i = 1; i < a.length; i++) maxStep = Math.max(maxStep, Math.abs(a[i] - a[i - 1]));
-    expect(Math.abs(a[0] - a[a.length - 1])).toBeLessThanOrEqual(maxStep);
+    for (let i = 1; i < a.length; i++) maxStep = Math.max(maxStep, Math.abs(a[i]! - a[i - 1]!));
+    expect(Math.abs(a[0]! - a[a.length - 1]!)).toBeLessThanOrEqual(maxStep);
   });
 });
 
@@ -144,7 +144,7 @@ describe('Soundscape', () => {
     expect(f.bells.length).toBe(0);
     sc.update(SECT.x, 2100, BELL_FIRST[1] + 1);
     expect(f.bells.length).toBe(1);
-    expect(f.bells[0].volume).toBe(KINDS.bell.gain);
+    expect(f.bells[0]!.volume).toBe(KINDS.bell.gain);
     sc.update(SECT.x, 2100, BELL_FIRST[1] + 2);
     expect(f.bells.length).toBe(1);
     sc.update(100, 100, 200);

@@ -99,8 +99,8 @@ describe('AssetCache', () => {
 
   it('progress cộng byte theo manifest và theo onBytes của loader', async () => {
     const m = manifestOf('arch_a', 'arch_b');
-    m.assets.arch_a.bytes = 100;
-    m.assets.arch_b.bytes = 300;
+    m.assets.arch_a!.bytes = 100;
+    m.assets.arch_b!.bytes = 300;
     let finishB: (() => void) | null = null;
     const cache = new AssetCache({
       fetchManifest: async () => m,
@@ -131,7 +131,7 @@ describe('AssetCache', () => {
       concurrency: 1,
       fetchManifest: async () => manifestOf('first', 'far', 'near', 'mid'),
       load: async (url) => {
-        order.push(url.split('.')[0]);
+        order.push(url.split('.')[0]!);
         if (url.startsWith('first')) await gate;
         return fakeGltf([]);
       },
@@ -157,23 +157,23 @@ describe('AssetCache', () => {
     let unblock!: () => void;
     const gate = new Promise<void>((r) => (unblock = r));
     const m = manifestOf('first', 'chr', 'arch', 'mon', 'fx');
-    m.assets.chr.bytes = 50;
+    m.assets.chr!.bytes = 50;
     const cache = new AssetCache({
       base: '',
       concurrency: 1,
       fetchManifest: async () => m,
       fetchBytes: async (url, onBytes) => {
-        fetched.push(url.split('.')[0]);
+        fetched.push(url.split('.')[0]!);
         if (url.startsWith('first')) await gate;
         onBytes(50);
         return new ArrayBuffer(8);
       },
       parse: async (_d, url) => {
-        parsed.push(url.split('.')[0]);
+        parsed.push(url.split('.')[0]!);
         return fakeGltf([]);
       },
       load: async (url) => {
-        loaded.push(url.split('.')[0]);
+        loaded.push(url.split('.')[0]!);
         return fakeGltf([]);
       },
     });
@@ -213,7 +213,7 @@ describe('AssetCache', () => {
       concurrency: 1,
       fetchManifest: async () => manifestOf('fx', 'chr'),
       load: async (url) => {
-        order.push(url.split('.')[0]);
+        order.push(url.split('.')[0]!);
         return fakeGltf([]);
       },
     });
@@ -268,7 +268,7 @@ describe('AssetCache', () => {
 
   it('parse được arch_sect thật (meshopt + quantize) bằng loader chung', async () => {
     const m = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
-    const a = m.assets.arch_sect;
+    const a = m.assets.arch_sect!;
     expect(a).toBeDefined();
     const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, a.file));
     const loader = nodeGltfLoader();
@@ -280,7 +280,7 @@ describe('AssetCache', () => {
       const mesh = o as THREE.Mesh;
       if (!mesh.isMesh || (o.userData.lod ?? 0) > 0) return;
       const g = mesh.geometry;
-      tris += (g.index ? g.index.count : g.attributes.position.count) / 3;
+      tris += (g.index ? g.index.count : g.attributes.position!.count) / 3;
       expect(g.attributes.color).toBeDefined();
       mats.add(mesh.material as THREE.MeshStandardMaterial);
     });

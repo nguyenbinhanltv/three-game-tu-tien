@@ -34,7 +34,7 @@ describe('bướm trang trí (DV-C)', () => {
     const px = wingPixels(32);
     expect(px.length).toBe(32 * 32 * 4);
     let solid = 0;
-    for (let i = 3; i < px.length; i += 4) if (px[i] > 127) solid++;
+    for (let i = 3; i < px.length; i += 4) if (px[i]! > 127) solid++;
     // Cánh phủ 25–60% ô vuông: đủ thấy, không thành tấm chữ nhật.
     expect(solid / (32 * 32)).toBeGreaterThan(0.25);
     expect(solid / (32 * 32)).toBeLessThan(0.7);
@@ -50,14 +50,14 @@ describe('bướm trang trí (DV-C)', () => {
   });
 
   it('rải theo ô: xác định, gần nhất trước, không quá giới hạn, bỏ chỗ không hợp', () => {
-    const cfg = BUTTERFLY_LEVELS.van_lam;
+    const cfg = BUTTERFLY_LEVELS.van_lam!;
     const all = () => true;
     const a = spotsNear(2048, 2400, cfg, 48, all);
     const b = spotsNear(2048, 2400, cfg, 48, all);
     expect(a).toEqual(b);
     expect(a.length).toBeGreaterThan(6);
     expect(a.length).toBeLessThanOrEqual(48);
-    for (let i = 1; i < a.length; i++) expect(a[i].d2).toBeGreaterThanOrEqual(a[i - 1].d2);
+    for (let i = 1; i < a.length; i++) expect(a[i]!.d2).toBeGreaterThanOrEqual(a[i - 1]!.d2);
     expect(new Set(a.map((s) => s.id)).size).toBe(a.length);
     // Mọi con trong tầm 20 m + nửa ô.
     for (const s of a) expect(Math.sqrt(s.d2)).toBeLessThan(32);

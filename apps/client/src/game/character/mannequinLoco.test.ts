@@ -43,7 +43,7 @@ describe('MannequinCharacter: dừng chạy không nhảy tư thế', () => {
     const after = acts.map((a) => a.getEffectiveWeight());
     // Walk ≈ 0 trước khi dừng: sau khi dừng nó chỉ được giảm, không nhảy lên ~1.
     expect(before[0]).toBeLessThan(0.05);
-    expect(after[0]).toBeLessThanOrEqual(before[0] + 0.02);
-    expect(after[1]).toBeLessThanOrEqual(before[1] + 0.05);
+    expect(after[0]).toBeLessThanOrEqual(before[0]! + 0.02);
+    expect(after[1]).toBeLessThanOrEqual(before[1]! + 0.05);
   });
 });

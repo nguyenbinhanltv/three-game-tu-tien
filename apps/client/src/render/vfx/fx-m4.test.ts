@@ -44,7 +44,7 @@ describe('boltShape', () => {
   it('thân chính cắm đúng điểm đánh, đỉnh ở trên cao; không tràn bộ đệm', () => {
     for (let s = 1; s < 40; s++) {
       const b = boltShape(s * 7919);
-      const last = (b.strands[0].count - 1) * 4;
+      const last = (b.strands[0]!.count - 1) * 4;
       expect(b.pts[last]).toBeCloseTo(0);
       expect(b.pts[last + 1]).toBeCloseTo(0);
       expect(b.pts[last + 2]).toBeCloseTo(0);
@@ -107,7 +107,7 @@ describe('mật độ hạt theo preset', () => {
     expect(PARTICLE_DENSITY.low).toBe(1);
     expect(PARTICLE_DENSITY.medium).toBe(1);
     expect(PARTICLE_DENSITY.high).toBeGreaterThan(1);
-    expect(PARTICLE_DENSITY.ultra).toBeGreaterThan(PARTICLE_DENSITY.high);
+    expect(PARTICLE_DENSITY.ultra).toBeGreaterThan(PARTICLE_DENSITY.high!);
     const p = new Particles();
     p.setQuality('ultra');
     expect(p.density).toBe(PARTICLE_DENSITY.ultra);
@@ -128,8 +128,8 @@ describe('Particles', () => {
       for (let i = 0; i < 40000; i++) p.emit(i & 1 ? 'glow' : 'dust', 0, 0, 0, 0, 1, 0, 5, 0.1, 0.1, 0xffffff);
       p.update(0.1);
       const n = p.aliveCount();
-      expect(n.total).toBeLessThanOrEqual(PARTICLE_BUDGET[q]);
-      expect(n.total).toBeGreaterThan(PARTICLE_BUDGET[q] * 0.9);
+      expect(n.total).toBeLessThanOrEqual(PARTICLE_BUDGET[q]!);
+      expect(n.total).toBeGreaterThan(PARTICLE_BUDGET[q]! * 0.9);
     }
   });
   it('số instance vẽ bám theo hạt có thể còn sống, không phải cả ngân sách', () => {
@@ -161,6 +161,6 @@ describe('Particles', () => {
     expect(p.aliveCount().glow).toBe(0);
     for (let i = 0; i < 20000; i++) p.emit('glow', 0, 0, 0, 0, 0, 0, 5, 0.1, 0.1, 0xffffff);
     p.setQuality('low');
-    expect(p.aliveCount().total).toBeLessThanOrEqual(PARTICLE_BUDGET.low);
+    expect(p.aliveCount().total).toBeLessThanOrEqual(PARTICLE_BUDGET.low!);
   });
 });

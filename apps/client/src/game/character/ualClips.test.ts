@@ -103,7 +103,7 @@ describe('UAL: thư viện anim_human_ual', () => {
       expect(c.duration, c.name).toBeGreaterThan(0.25);
       expect(c.duration, c.name).toBeLessThan(4);
       for (const t of c.tracks) expect(t.values.every(Number.isFinite), `${c.name}/${t.name}`).toBe(true);
-      if (HUMAN_CLIPS[c.name].loop) {
+      if (HUMAN_CLIPS[c.name]!.loop) {
         let worst = 0;
         for (const t of c.tracks) {
           if (!t.name.endsWith('.quaternion')) continue;

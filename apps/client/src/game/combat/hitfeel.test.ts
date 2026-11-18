@@ -30,7 +30,7 @@ function peakShake(cls: keyof typeof HIT_FEEL, o: { heavy?: boolean }): number {
 describe('hit feel theo hạng thân (P2-E1)', () => {
   it('quái nhỏ giật lùi nhiều hơn vừa, lớn, boss', () => {
     const k = (['small', 'medium', 'large', 'boss'] as const).map((c) => peakKnock(c, {}));
-    for (let i = 1; i < k.length; i++) expect(k[i]).toBeLessThan(k[i - 1]);
+    for (let i = 1; i < k.length; i++) expect(k[i]).toBeLessThan(k[i - 1]!);
     // Boss gần như không lùi (< 2 cm đòn thường), sói nhỏ lùi rõ (> 20 cm).
     expect(k[3]).toBeLessThan(0.02);
     expect(k[0]).toBeGreaterThan(0.2);

@@ -22,7 +22,7 @@ describe('đường cảnh mở đầu', () => {
     const p = z3();
     const l = z3();
     samplePath(SECT_PATH, END_P, END_L, 0, p, l);
-    expect(p).toEqual(SECT_PATH[0].p);
+    expect(p).toEqual(SECT_PATH[0]!.p);
     samplePath(SECT_PATH, END_P, END_L, 1, p, l);
     expect(p.x).toBeCloseTo(END_P.x);
     expect(p.y).toBeCloseTo(END_P.y);
@@ -126,14 +126,14 @@ describe('đường cảnh boss (P2-B2/B3)', () => {
     const player: Vec3 = { x: 100, y: 10, z: 130 };
     const base = bossIntroPath(boss, 0, 2.4, player, flat, []);
     // Đặt cột chắn đúng giữa camera đầu tiên và boss.
-    const w = base[0].p;
+    const w = base[0]!.p;
     const pillar = [{ x: (w.x + boss.x) / 2, z: (w.z + boss.z) / 2, r: 3.4 }];
     expect(sightBlocked(w.x, w.z, boss.x, boss.z, pillar)).toBe(true);
     const moved = bossIntroPath(boss, 0, 2.4, player, flat, pillar);
     for (const m of moved) expect(sightBlocked(m.p.x, m.p.z, boss.x, boss.z, pillar)).toBe(false);
     const cam: Vec3 = { x: 100, y: 14, z: 88 };
     const p0 = phaseShiftPath(cam, boss, boss, 0, 2, flat, []);
-    const q = p0[2].p;
+    const q = p0[2]!.p;
     const pillar2 = [{ x: (q.x + boss.x) / 2, z: (q.z + boss.z) / 2, r: 3.4 }];
     const p1 = phaseShiftPath(cam, boss, boss, 0, 2, flat, pillar2);
     for (const m of p1.slice(1)) expect(sightBlocked(m.p.x, m.p.z, boss.x, boss.z, pillar2)).toBe(false);
@@ -148,8 +148,8 @@ describe('đường cảnh boss (P2-B2/B3)', () => {
     const cam: Vec3 = { x: 100, y: 14, z: 112 };
     const look: Vec3 = { x: 100, y: 11, z: 100 };
     const path = phaseShiftPath(cam, look, boss, 0, 2, flat);
-    expect(path[0].p).toEqual(cam);
-    expect(path[0].look).toEqual(look);
+    expect(path[0]!.p).toEqual(cam);
+    expect(path[0]!.look).toEqual(look);
     expect(path).toHaveLength(3);
   });
 
@@ -157,10 +157,10 @@ describe('đường cảnh boss (P2-B2/B3)', () => {
     // Boss nhìn về +z (yaw 0); camera đang ở sau lưng (z nhỏ hơn).
     const cam: Vec3 = { x: 100, y: 14, z: 88 };
     const path = phaseShiftPath(cam, boss, boss, 0, 2, flat);
-    const last = path[path.length - 1].p;
+    const last = path[path.length - 1]!.p;
     expect(last.z).toBeGreaterThan(boss.z + 4);
     // Điểm giữa cách boss ít nhất bán kính an toàn.
-    expect(Math.hypot(path[1].p.x - boss.x, path[1].p.z - boss.z)).toBeGreaterThan(8);
+    expect(Math.hypot(path[1]!.p.x - boss.x, path[1]!.p.z - boss.z)).toBeGreaterThan(8);
     for (const w of path.slice(1)) expect(w.look.y).toBeGreaterThan(boss.y);
   });
 
@@ -190,7 +190,7 @@ describe('danTranPath (E2-D)', () => {
     const c = { x: 100, y: 5, z: 100 };
     const p = danTranPath(cam, look, c, ground);
     expect(p.length).toBe(3);
-    expect(p[0].p).toEqual(cam);
+    expect(p[0]!.p).toEqual(cam);
     for (const w of p.slice(1)) {
       expect(w.p.y).toBeGreaterThan(ground(w.p.x, w.p.z) + 1);
       expect(Math.hypot(w.p.x - c.x, w.p.z - c.z)).toBeGreaterThan(8);

@@ -49,7 +49,7 @@ describe('boss mở rộng (asset Tripo nhập E-2/E-3/E-4)', () => {
 
   it('MONSTER_SKINS: nạp lười, khớp clip đòn lớn, đúng màn', () => {
     for (const [id, spec] of Object.entries(NEW_BOSSES)) {
-      const s = MONSTER_SKINS[id];
+      const s = MONSTER_SKINS[id]!;
       expect(s, id).toBeTruthy();
       expect(s.lazy, id).toBe(true);
       expect(s.level, id).toBe(spec.level);

@@ -45,7 +45,7 @@ function cache(): AssetCache {
 describe('quái hai chân Mannequin (DV-2 đợt 2)', () => {
   it('ba quái khai `mannequin`, không IK chân, có level và đủ dữ liệu', () => {
     for (const id of IDS) {
-      const s = MONSTER_SKINS[id];
+      const s = MONSTER_SKINS[id]!;
       expect(s?.mannequin, id).toBe(true);
       expect(s.legs).toBe('none');
       expect(s.level).toBe('bac_hoang');
@@ -68,9 +68,9 @@ describe('quái hai chân Mannequin (DV-2 đợt 2)', () => {
       new THREE.VectorKeyframeTrack('pelvis.quaternion', [0], [0, 0, 0, 1]),
     ]);
     const out = pelvisScaledClips(mk(2), mk(1), [clip]);
-    expect(Array.from(out[0].tracks[0].values)).toEqual([0, 2, 0, 0, 4, 0]);
-    expect(Array.from(clip.tracks[0].values)).toEqual([0, 1, 0, 0, 2, 0]);
-    expect(Array.from(out[0].tracks[1].values)).toEqual([0, 0, 0, 1]);
+    expect(Array.from(out[0]!.tracks[0]!.values)).toEqual([0, 2, 0, 0, 4, 0]);
+    expect(Array.from(clip.tracks[0]!.values)).toEqual([0, 1, 0, 0, 2, 0]);
+    expect(Array.from(out[0]!.tracks[1]!.values)).toEqual([0, 0, 0, 1]);
   });
 
   it('dựng thật từ GLB đã build: mọi clip trong ClipMap/moves có trong thư viện UAL, chạy được các trạng thái', async () => {
@@ -79,7 +79,7 @@ describe('quái hai chân Mannequin (DV-2 đợt 2)', () => {
     for (const _id of IDS) skins.preloadLazy('bac_hoang');
     for (const id of IDS) for (let i = 0; i < 400 && skins.pending(MONSTER.get(id)!); i++) await new Promise((r) => setTimeout(r, 10));
     for (const id of IDS) {
-      const s = MONSTER_SKINS[id];
+      const s = MONSTER_SKINS[id]!;
       const m = skins.create(MONSTER.get(id)!);
       expect(m, id).toBeInstanceOf(SkinnedMonster);
       // chạy đứng, chạy, đánh, trúng đòn, chết: không ném lỗi
@@ -94,7 +94,7 @@ describe('quái hai chân Mannequin (DV-2 đợt 2)', () => {
         // Kiếm rời là mesh con của `inner`, mỗi khung chép ma trận xương cổ tay phải (`dtl_sword`).
         const hand = sm.rig.getObjectByName('dtl_sword');
         expect(hand, id).toBeTruthy();
-        const blade = sm.root.children[0].children.find((c) => (c as THREE.Mesh).isMesh && !(c as THREE.SkinnedMesh).isSkinnedMesh);
+        const blade = sm.root.children[0]!.children.find((c) => (c as THREE.Mesh).isMesh && !(c as THREE.SkinnedMesh).isSkinnedMesh);
         expect(blade, id).toBeTruthy();
         expect(blade!.matrixAutoUpdate).toBe(false);
       }

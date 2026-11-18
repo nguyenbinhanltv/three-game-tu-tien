@@ -43,9 +43,9 @@ describe('hạt môi trường theo vùng', () => {
         ps.update(1 / 60);
       }
       alive[q] = ps.aliveCount().total;
-      expect(alive[q]).toBeLessThan(PARTICLE_BUDGET[q] * 0.15);
+      expect(alive[q]).toBeLessThan(PARTICLE_BUDGET[q]! * 0.15);
     }
-    expect(alive.low).toBeLessThan(alive.high);
+    expect(alive.low).toBeLessThan(alive.high!);
     expect(alive.low).toBeGreaterThan(0);
   });
 });

@@ -159,7 +159,7 @@ describe('vệt kiếm Catmull-Rom (EdgeFlux)', () => {
     let prev = -1;
     for (let q = 0; q <= 5 * BLADE_SUB; q++) {
       expect(UV[q * 4]).toBeGreaterThanOrEqual(prev);
-      prev = UV[q * 4];
+      prev = UV[q * 4]!;
     }
   });
   it('dưới hai mẫu thì không vẽ', () => {
