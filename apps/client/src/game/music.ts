@@ -84,6 +84,7 @@ const STYLES: Record<MusicTrack, Style> = {
   sect: { root: 293.66, scale: GONG, bpm: 66, density: 0.32, span: 9, gain: 0.5, drone: 0.1, bell: 0.25, sustain: 0.997 },
   wild: { root: 329.63, scale: GONG, bpm: 84, density: 0.42, span: 10, gain: 0.48, drone: 0.08, sustain: 0.996 },
   wild_ochre: { root: 293.66, scale: GONG, bpm: 68, density: 0.3, span: 9, gain: 0.46, drone: 0.1, sustain: 0.997 },
+  wild_night: { root: 220.0, scale: GONG, bpm: 60, density: 0.26, span: 9, gain: 0.46, drone: 0.12, bell: 0.2, sustain: 0.997 },
   wild_cloud: { root: 392.0, scale: GONG, bpm: 72, density: 0.34, span: 10, gain: 0.46, drone: 0.08, bell: 0.2, sustain: 0.997 },
   forest: { root: 392.0, scale: GONG, bpm: 92, density: 0.4, span: 10, gain: 0.45, drone: 0.06, sustain: 0.995 },
   lake: { root: 261.63, scale: YU, bpm: 60, density: 0.24, span: 8, gain: 0.5, drone: 0.14, sustain: 0.998 },
