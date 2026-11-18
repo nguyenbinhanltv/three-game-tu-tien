@@ -138,9 +138,9 @@
       "id": "anim_ual_native",
       "class": "anim",
       "source": "assets/build/raw/anim_ual_native.glb",
-      "file": "anim_ual_native.87c5685448.glb",
-      "bytes": 2277904,
-      "rawBytes": 2897252,
+      "file": "anim_ual_native.2cd66621a5.glb",
+      "bytes": 2644092,
+      "rawBytes": 3323892,
       "triangles": 0,
       "rawTriangles": 0,
       "lod0Cap": 0,
@@ -185,6 +185,13 @@
         "NinjaJump_Idle_Loop",
         "NinjaJump_Land",
         "Idle_FoldArms_Loop",
+        "Walk_Formal_Loop",
+        "Sword_Regular_A_Rec",
+        "Sword_Regular_B_Rec",
+        "Slide_Start",
+        "Slide_Loop",
+        "Slide_Exit",
+        "Walk_Carry_Loop",
         "Zombie_Idle_Loop",
         "Zombie_Walk_Fwd_Loop",
         "Zombie_Scratch",
@@ -2558,6 +2565,156 @@
           "height": 1.8654,
           "depth": 0.8275,
           "minY": 0.0405
+        }
+      }
+    },
+    "chr_v3b2_lac_kiem_nam": {
+      "id": "chr_v3b2_lac_kiem_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3b2_lac_kiem_nam.glb",
+      "file": "chr_v3b2_lac_kiem_nam.3dced6e317.glb",
+      "bytes": 3586344,
+      "rawBytes": 3717396,
+      "triangles": 23999,
+      "rawTriangles": 23999,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 123,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "ancient_warrior_clothing_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "ancient_warrior_clothing_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "ancient_warrior_clothing_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 23999
+        },
+        {
+          "level": 1,
+          "triangles": 11993,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4799,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.0438,
+          "height": 1.8406,
+          "depth": 0.3344,
+          "minY": 0.0007
+        },
+        "build": {
+          "width": 2.0438,
+          "height": 1.8406,
+          "depth": 0.3344,
+          "minY": 0.0007
+        }
+      }
+    },
+    "chr_v3b2_lac_kiem_nu": {
+      "id": "chr_v3b2_lac_kiem_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3b2_lac_kiem_nu.glb",
+      "file": "chr_v3b2_lac_kiem_nu.d9d5a9da6f.glb",
+      "bytes": 3430764,
+      "rawBytes": 3403104,
+      "triangles": 23999,
+      "rawTriangles": 23999,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 123,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "female_character_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "female_character_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "female_character_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 23999
+        },
+        {
+          "level": 1,
+          "triangles": 11999,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4798,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.8982,
+          "height": 1.7009,
+          "depth": 0.3216,
+          "minY": 0.0003
+        },
+        "build": {
+          "width": 1.8982,
+          "height": 1.7009,
+          "depth": 0.3216,
+          "minY": 0.0003
         }
       }
     },

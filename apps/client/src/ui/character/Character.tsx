@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { realmName, t } from '@dtl/content';
-import { Tabs } from '../kit';
 import { type RailTab, TabRail } from '../ngj';
 import { closePanel, useUI } from '../store';
 import { Window } from '../windows/common';

@@ -14,20 +14,36 @@ import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } f
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
 import { applyV3Palette } from './v3Palette';
-import { lowerBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
+import { breathOf, flinchOf, leanOf, locoMix, lookAngles, LOCO, swingRate, turnLagOf, xfade } from './mannequinAnim';
+import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import type { AnimState, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
 import { FLAGS } from '../../base/flags';
 
 /** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
 export const CHR_V3 = FLAGS.chr === 'v3';
-const V3_LIB = 'anim_ual_native';
+/** `?v3anim=0` về hệ animation cũ (một clip chạy, crossfade 0,16 s, không lớp phụ) để so video trước/sau. */
+export const V3_ANIM = FLAGS.v3Anim;
+export const V3_LIB = 'anim_ual_native';
 /** Asset theo giới tính: Lạc Kiếm Môn Phục v3 (N-3), model Tripo toàn thân đặt lên xương Mannequin (chr_v3.py). */
-const V3_MODELS_A = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
+export const V3_MODELS_A = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
 /** Bản v3b: vạt xẻ hai bên đối xứng (concept v3b), là bản mặc định của `?chr=v3`; `?v3model=a` về bản v3 cũ để so ảnh. */
-const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu' } as const;
-export const V3_MODELS = FLAGS.v3ModelA ? V3_MODELS_A : V3_MODELS_B;
+export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu' } as const;
+/** Bản v3b2: cùng model v3b, vạt 12 chuỗi lò xo; cùng với cải tiến lò xo ở client (gấu cứng hơn, viên nang tay, vạt nằm lên đùi khi ngồi) là mặc định của `?chr=v3`; `?v3model=b` về v3b để so. */
+export const V3_MODELS_B2 = { m: 'chr_v3b2_lac_kiem_nam', f: 'chr_v3b2_lac_kiem_nu' } as const;
+const V3_PICK = FLAGS.v3Model;
+export const V3_MODELS = V3_PICK === 'a' ? V3_MODELS_A : V3_PICK === 'b' ? V3_MODELS_B : V3_MODELS_B2;
+/** Asset dùng lò xo v2 (`chr_v3b2_*`): hệ số cứng gấu vạt, viên nang tay, phình viên nang khi ngồi. */
+export const isSpring2 = (assetId: string | undefined): boolean => !!assetId?.startsWith('chr_v3b2_');
+/** Độ cứng của xương gấu vạt (khớp thứ hai của chuỗi `dtl_o_skirt_<k>_<l>`) so với khớp gốc. */
+export const HEM_STIFF = 1.7;
+/** Hệ số phình viên nang thân khi ngồi/đả tọa: vạt nằm lên trên đùi thay vì lún xuống. */
+export const SIT_COLLIDER_SCALE = 1.3;
+/** Thông số lò xo v2 (sửa được lúc chạy chỉ để quét tham số trong `springMetrics.test.ts`). */
+export const SPRING2 = { hemStiff: HEM_STIFF, sitScale: SIT_COLLIDER_SCALE, arms: true, rMul: 1.3 };
+/** Thông số riêng của vạt ở lò xo v2: góc lệch tối đa hẹp (12°) vì vạt nay do lò xo + va chạm điều khiển phần lớn (share 0,8): lệch rộng làm hai nửa vạt chéo nhau khi chạy. Tóc và tay áo giữ `V3_SPRING`. */
+export const V3_SKIRT_SPRING2: SpringParams = { stiffness: 130, drag: 8, maxAngle: 12, maxInward: 8 };
 /** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. */
-const V3_SKINS: Readonly<Record<string, string>> = {
+export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_varkessa: 'chr_v3_varkessa_nu',
   set_skin_duskrella: 'chr_v3_duskrella_nu',
   set_skin_crimson: 'chr_v3_crimson_nam',
@@ -84,9 +100,9 @@ function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
   return o ? o.position.clone() : null;
 }
 
-function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
+export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
-  if (/^chr_v3b?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
+  if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   const box = new THREE.Box3().setFromObject(handle.scene);
   // Độ cao hông của nhân vật so với bộ xương mẫu của thư viện: chỉ kênh vị trí của pelvis bị nhân theo tỉ lệ.
   const a = restPos(handle.scene, 'pelvis');
@@ -104,17 +120,35 @@ function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemp
   return { handle, lib, height, bank: null, clips };
 }
 
+/** Bù góc dang vai/tay (rad) theo model khi áp clip UAL: tay áo rộng của Tripo bị tay clip ép xuyên; đo/chỉnh bằng `chrv3 --pen`. `?armfit=<độ>` ghi đè. */
+export const ARM_FIT: Record<string, number> = {};
+export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
+
 const IDENT = new THREE.Matrix4();
+const _w = new THREE.Quaternion();
+const _pw = new THREE.Quaternion();
+const _ax = new THREE.Vector3();
+const _fwd = new THREE.Vector3(0, 0, 1);
+const _rgt = new THREE.Vector3(1, 0, 0);
+const _up = new THREE.Vector3(0, 1, 0);
+/** Xoay xương quanh trục THẾ GIỚI `axis` một góc `ang` (cộng thêm lên tư thế mixer vừa đặt). Cần ma trận thế giới của cha mới. */
+function rotateWorld(bone: THREE.Object3D | null, axis: THREE.Vector3, ang: number): void {
+  if (!bone || !bone.parent || Math.abs(ang) < 1e-5) return;
+  bone.parent.getWorldQuaternion(_pw);
+  _w.setFromAxisAngle(axis, ang);
+  // q_local' = inv(parentW) · R · parentW · q_local
+  bone.quaternion.premultiply(_pw).premultiply(_w).premultiply(_pw.invert());
+}
 const _tq = new THREE.Quaternion();
 const _tq2 = new THREE.Quaternion();
 /** Lò xo v3 (vạt dài + tóc): cứng vừa, cản nhiều, góc lệch hẹp để vạt không xé/xuyên khi ngồi, lăn, chém (N-4). */
-const V3_SPRING: SpringParams = { stiffness: 130, drag: 8, maxAngle: 30, maxInward: 8 };
+export const V3_SPRING: SpringParams = { stiffness: 130, drag: 8, maxAngle: 30, maxInward: 8 };
 
 /**
  * Viên nang va chạm cho vạt/tay áo (N-6): hông (pelvis → spine_01), đùi (thigh → calf), cẳng (calf → foot), bán kính theo chiều cao.
  * Khi ngồi/đả tọa đùi nằm ngang nên vạt trước bị đẩy lên phủ trên đùi thay vì xuyên xuống.
  */
-function colliderDefs(rig: THREE.Object3D, height: number): SpringCollider[] {
+export function colliderDefs(rig: THREE.Object3D, height: number, arms = false, rMul = 1): SpringCollider[] {
   const k = height / 1.8;
   const spec: [string, string, number][] = [['pelvis', 'spine_01', 0.11]];
   for (const sd of ['l', 'r']) spec.push([`thigh_${sd}`, `calf_${sd}`, 0.085], [`calf_${sd}`, `foot_${sd}`, 0.06]);
@@ -122,7 +156,17 @@ function colliderDefs(rig: THREE.Object3D, height: number): SpringCollider[] {
   for (const [a, b, r] of spec) {
     const na = rig.getObjectByName(a);
     const nb = rig.getObjectByName(b);
-    if (na && nb) out.push({ a: na, b: nb, r: r * k });
+    if (na && nb) out.push({ a: na, b: nb, r: r * k * rMul });
+  }
+  if (arms) {
+    // Tay (cánh tay, cẳng tay): vạt không xuyên tay khi chém/xoay; không phình khi ngồi.
+    for (const sd of ['l', 'r']) {
+      for (const [a, b, r] of [[`upperarm_${sd}`, `lowerarm_${sd}`, 0.05], [`lowerarm_${sd}`, `hand_${sd}`, 0.04]] as [string, string, number][]) {
+        const na = rig.getObjectByName(a);
+        const nb = rig.getObjectByName(b);
+        if (na && nb) out.push({ a: na, b: nb, r: r * k, fixed: true });
+      }
+    }
   }
   return out;
 }
@@ -130,7 +174,7 @@ function colliderDefs(rig: THREE.Object3D, height: number): SpringCollider[] {
 /** Xương twist (chr_v3.py): `<limb>_twist_<l|r>` là con của `<limb>_<l|r>`; trục xoắn = hướng tới xương con chính của limb. */
 const TWIST_NEXT: Record<string, string> = { upperarm: 'lowerarm', lowerarm: 'hand', thigh: 'calf' };
 /** Hệ số xoay ngược của xương twist so với góc xoắn của xương cha (đỉnh gần đầu xương chỉ xoắn ~1/3, gần cuối xoắn đủ). */
-const TWIST_COUNTER = -0.8;
+export const TWIST_COUNTER = -0.8;
 
 interface Twist {
   limb: THREE.Object3D;
@@ -201,6 +245,10 @@ export class MannequinCharacter implements CharacterView {
   /** Nghe sự kiện chiêu (VFX, âm, rung camera theo `hitAt`), engine gắn vào. */
   onSkillEvent: ((e: SkillEvent) => void) | null = null;
   private springs: SpringBones | null = null;
+  private spring2 = false;
+  /** Lò xo vạt riêng của asset v2 (null với v3/v3b: vạt nằm chung trong `springs`). */
+  private skirtSprings: SpringBones | null = null;
+  private colScale = 1;
   private twists: Twist[] = [];
   private lodLevel = 0;
   /** Kiếm: vỏ trên lưng (`dtl_scabbard`) khi nghỉ, nắm tay (`dtl_sword`) khi giao chiến. */
@@ -213,11 +261,41 @@ export class MannequinCharacter implements CharacterView {
   private drawn = false;
   /** Đòn nối tiếp sau đòn hiện tại (ngã → đứng dậy). */
   private chain: string | null = null;
+  private frozenMix = new Map<THREE.AnimationAction, number>();
+  private swingBase = 0;
+  private locoCycles = 1;
+  private shadow = false;
   private weights = new Map<THREE.AnimationAction, number>();
+  /** Thời gian crossfade của cặp clip nền hiện tại (xfade). */
+  private fadeDur = FADE;
+  /** Clip đi bộ/chạy nhanh chạy cùng clip chạy (trộn theo tốc độ, chung pha). */
+  private companions: THREE.AnimationAction[] = [];
+  private loco = false;
+  private locoPhase = 0;
+  private mix = { walk: 0, jog: 1, sprint: 0 };
+  /** Đòn UAL dự phòng chỉ nửa trên khi đang chạy; chân theo clip nền (nửa dưới). */
+  private shotUpper = false;
+  private shotLower: THREE.AnimationAction | null = null;
+  private shotLowerSrc: THREE.AnimationAction | null = null;
+  private shotLowerW = 0;
+  // Lớp phụ sau mixer (A/C): nghiêng khi rẽ, xoay tại chỗ, thở, nhìn mục tiêu, giật khi trúng đòn, bù tay.
+  private bones: Record<string, THREE.Object3D | null> = {};
+  private lastYaw = NaN;
+  private yawRate = 0;
+  private lean = 0;
+  private turnLag = 0;
+  private lookYaw = 0;
+  private lookPitch = 0;
+  private flinch = { amp: 0, age: 9 };
+  private clock = Math.random() * 10;
+  private side = 1;
+  private armFit = 0;
   private disposed = false;
 
   constructor(private tpl: MannequinTemplate, shadow = false, sword: SwordTemplate | null = null) {
     this.height = tpl.height;
+    this.shadow = shadow;
+    this.spring2 = isSpring2(tpl.handle.id);
     this.rig = cloneSkinned(tpl.handle.scene);
     const meshes: THREE.Mesh[] = [];
     this.rig.traverse((o) => {
@@ -235,9 +313,15 @@ export class MannequinCharacter implements CharacterView {
     this.rig.traverse((o) => {
       if (!(o as THREE.Bone).isBone || !o.name.startsWith('dtl_o_')) return;
       const child = o.children.find((c) => (c as THREE.Bone).isBone);
-      defs.push({ bone: o.name, tailLocal: (child ?? o).position.clone() });
+      defs.push({ bone: o.name, tailLocal: (child ?? o).position.clone(), ...(this.spring2 && /^dtl_o_skirt_\d+_[1-9]$/.test(o.name) && { stiff: SPRING2.hemStiff }) });
     });
-    if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs, V3_SPRING, colliderDefs(this.rig, tpl.height));
+    if (this.spring2) {
+      // Lò xo v2: vạt tách riêng (góc hẹp, gấu cứng hơn, viên nang tay + đùi phình khi ngồi); tóc và tay áo như cũ.
+      const skirt = defs.filter((d) => d.bone.startsWith('dtl_o_skirt_'));
+      const rest = defs.filter((d) => !d.bone.startsWith('dtl_o_skirt_'));
+      if (rest.length && !shadow) this.springs = new SpringBones(this.rig, rest, V3_SPRING, colliderDefs(this.rig, tpl.height));
+      if (skirt.length && !shadow) this.skirtSprings = new SpringBones(this.rig, skirt, V3_SKIRT_SPRING2, colliderDefs(this.rig, tpl.height, SPRING2.arms, SPRING2.rMul));
+    } else if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs, V3_SPRING, colliderDefs(this.rig, tpl.height));
     for (const sd of ['l', 'r']) {
       for (const [limb, next] of Object.entries(TWIST_NEXT)) {
         const L = this.rig.getObjectByName(`${limb}_${sd}`);
@@ -246,6 +330,13 @@ export class MannequinCharacter implements CharacterView {
         if (!L || !tw || !child) continue;
         this.twists.push({ limb: L, tw, axis: child.position.clone().normalize(), restLimb: L.quaternion.clone(), restTw: tw.quaternion.clone() });
       }
+    }
+    for (const n of ['spine_01', 'spine_02', 'spine_03', 'neck_01', 'head', 'upperarm_l', 'upperarm_r', 'clavicle_l', 'clavicle_r']) this.bones[n] = this.rig.getObjectByName(n) ?? null;
+    {
+      const th = this.rig.getObjectByName('thigh_l');
+      this.rig.updateMatrixWorld(true);
+      if (th) this.side = Math.sign(th.getWorldPosition(new THREE.Vector3()).sub(this.rig.getWorldPosition(new THREE.Vector3())).x) || 1;
+      this.armFit = ARM_FIT[tpl.handle.id] ?? ARM_FIT_DEFAULT;
     }
     this.scabbard = this.rig.getObjectByName('dtl_scabbard') ?? null;
     this.hand = this.rig.getObjectByName('dtl_sword') ?? null;
@@ -310,10 +401,35 @@ export class MannequinCharacter implements CharacterView {
     if (this.baseName === name) return;
     const next = this.action(name);
     if (!next) return;
+    this.fadeDur = V3_ANIM ? xfade(this.baseName, name) : FADE;
+    // Chạy: kèm clip đi bộ + chạy nhanh, trộn theo tốc độ (companions chia trọng số nền với clip chạy).
+    for (const c of this.companions) if (!this.companions.includes(next)) this.weights.set(c, this.weights.get(c) ?? 0);
+    // Rời chạy: chốt hệ số trộn của từng action để lúc mờ dần vẫn nhân đúng (không nhảy tư thế ở khung chuyển).
+    this.frozenMix.clear();
+    if (this.loco && this.base) {
+      this.frozenMix.set(this.base, this.mix.jog);
+      this.frozenMix.set(this.companions[0], this.mix.walk);
+      this.frozenMix.set(this.companions[1], this.mix.sprint);
+    }
+    this.companions = [];
+    this.loco = V3_ANIM && name === LOCO.jog.clip;
+    if (this.loco) {
+      for (const k of [LOCO.walk.clip, LOCO.sprint.clip]) {
+        const c = this.action(k);
+        if (!c) continue;
+        c.setLoop(THREE.LoopRepeat, Infinity);
+        c.reset().play();
+        c.timeScale = 0;
+        c.setEffectiveWeight(0);
+        this.weights.set(c, this.base ? 0 : 1);
+        this.companions.push(c);
+      }
+    }
     const loop = /Loop$|Idle$/.test(name);
     next.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity);
     next.clampWhenFinished = !loop;
     next.reset().play();
+    if (this.loco) next.timeScale = 0;
     // Trọng số nền tự quản (không dùng crossFadeTo): three chuẩn hóa theo tổng trọng số, nên khi có đòn một lần
     // clip nền phải về 0 để đòn đủ biên độ (xem `blendBases`).
     next.setEffectiveWeight(this.base ? 0 : 1);
@@ -331,22 +447,45 @@ export class MannequinCharacter implements CharacterView {
       const ts = Math.max(0.1, Math.abs(sh.timeScale));
       gate = (sh.getClip().duration - sh.time) / ts < FADE * 0.75 ? 1 : 0;
     }
-    const step = dt / FADE;
+    const step = dt / this.fadeDur;
+    const mixOf = (a: THREE.AnimationAction): number => {
+      if (!this.loco) return 1;
+      if (a === this.base) return this.mix.jog;
+      const i = this.companions.indexOf(a);
+      return i === 0 ? this.mix.walk : i === 1 ? this.mix.sprint : 1;
+    };
     for (const [a, w] of [...this.weights]) {
-      const target = a === this.base ? gate : 0;
+      const live = a === this.base || this.companions.includes(a);
+      const target = live ? gate : 0;
       const nw = w < target ? Math.min(target, w + step) : Math.max(target, w - step * 2);
       this.weights.set(a, nw);
-      a.setEffectiveWeight(nw);
-      if (nw <= 0 && a !== this.base) {
+      a.setEffectiveWeight(live ? nw * mixOf(a) : nw * (this.frozenMix.get(a) ?? 1));
+      if (nw <= 0 && !live) {
         a.stop();
         this.weights.delete(a);
       }
     }
+    // Chân của đòn nửa trên: theo clip nền hiện tại, đúng lúc nền bị hạ trọng số thì chân thay vào.
+    if (this.shotLower) {
+      const want = this.shotUpper && this.shot ? 1 - gate : 0;
+      this.shotLowerW = want > this.shotLowerW ? Math.min(want, this.shotLowerW + step) : Math.max(want, this.shotLowerW - step * 2);
+      this.shotLower.setEffectiveWeight(this.shotLowerW);
+      if (this.shotLowerW <= 0 && !this.shot) {
+        this.shotLower.stop();
+        this.shotLower = null;
+        this.shotLowerSrc = null;
+      }
+    }
   }
 
-  private oneShot(name: string, rate = 1): boolean {
-    const a = this.action(name);
+  private oneShot(name: string, rate = 1, upper = false): boolean {
+    let a = this.action(name);
     if (!a) return false;
+    this.shotUpper = false;
+    if (upper && V3_ANIM && this.base) {
+      a = this.mixer.clipAction(upperBodyOf(this.tpl.clips.get(name)!));
+      this.shotUpper = true;
+    }
     if (this.shot) this.shot.fadeOut(0.08);
     a.setLoop(THREE.LoopOnce, 1);
     a.clampWhenFinished = false;
@@ -360,7 +499,9 @@ export class MannequinCharacter implements CharacterView {
     if (this.dead) return;
     this.attacks++;
     this.combatT = COMBAT_HOLD;
-    this.oneShot(SWING[this.swing++ % SWING.length], 1.6);
+    const moving = !!this.lastAnim && this.lastAnim.speed > 0.3 && !this.perfBlocked();
+    this.swingBase = 1.6;
+    this.oneShot(SWING[this.swing++ % SWING.length], 1.6, moving);
   }
 
   /**
@@ -527,6 +668,7 @@ export class MannequinCharacter implements CharacterView {
   hitReact(o: HitOpts): void {
     this.hit.react(o);
     if (this.dead) return;
+    if (V3_ANIM) this.flinch = { amp: o.heavy ? 0.26 : o.crit ? 0.18 : 0.12, age: -(o.delay ?? 0) };
     if (!this.shot && !o.noFlash) this.oneShot(o.heavy ? 'Hit_Knockback' : 'Hit_Chest', o.heavy ? 1.2 : 1.4);
   }
 
@@ -559,12 +701,25 @@ export class MannequinCharacter implements CharacterView {
     const rawName = baseClipOf({ ...a, combat: a.combat || this.combatT > 0 });
     const name = this.baseFor(a, rawName);
     this.play(name);
-    if (this.base && name === 'Jog_Fwd_Loop') this.base.timeScale = jogRate(a.speed);
+    this.syncShotLower();
+    if (this.loco) {
+      // Trộn đi/chạy/chạy nhanh theo tốc độ thật; pha chung nên chân trụ không trượt khi đổi nhịp.
+      const m = locoMix(a.speed);
+      const k = Math.min(1, realDt * 12);
+      this.mix.walk += (m.walk - this.mix.walk) * k;
+      this.mix.jog += (m.jog - this.mix.jog) * k;
+      this.mix.sprint += (m.sprint - this.mix.sprint) * k;
+      this.locoCycles = m.cycles;
+    } else if (this.base && name === 'Jog_Fwd_Loop') this.base.timeScale = jogRate(a.speed);
     else if (this.base) this.base.timeScale = 1;
+    // Đòn UAL dự phòng: anticipation (kéo lại chậm rồi bung nhanh qua điểm trúng).
+    if (V3_ANIM && this.shot && this.swingBase > 0 && SWING.some((n) => this.shot!.getClip().name === n || this.shot!.getClip().name === `${n}|upper`)) {
+      this.shot.timeScale = swingRate(this.shot.time / this.shot.getClip().duration, this.swingBase);
+    }
     // Bước chân: đếm theo pha chu kỳ chạy (hai bước mỗi chu kỳ).
     if (name === 'Jog_Fwd_Loop' && this.base) {
       const len = this.base.getClip().duration;
-      const ph = (this.base.time / len) % 1;
+      const ph = (this.loco ? this.locoPhase : this.base.time / len) % 1;
       if ((ph >= 0.5) !== (this.lastPhase >= 0.5)) this.steps++;
       this.lastPhase = ph;
     }
@@ -572,21 +727,126 @@ export class MannequinCharacter implements CharacterView {
     this.acc += dt;
     if (this.interval > 0 && this.acc < this.interval) return;
     this.blendBases(this.acc);
+    if (this.loco && this.base) this.syncLoco(this.acc);
     this.mixer.update(this.acc);
     for (const t of this.twists) {
       _tq.copy(t.restLimb).invert().multiply(t.limb.quaternion);
       t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
     }
+    if (V3_ANIM && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
     const drawNow = this.combatT > 0 || !!a.combat;
     if (drawNow !== this.drawn) this.mountBlade(drawNow);
     // Lò xo vạt: chỉ LOD0 và trong khung nhìn; ma trận thế giới của xương phải mới (root vừa được đặt vị trí).
-    if (this.springs) {
+    if (this.springs || this.skirtSprings) {
       if (this.lodLevel === 0 && this.inner.visible) {
         this.root.updateMatrixWorld(true);
-        this.springs.update(this.acc, IDENT);
-      } else this.springs.reset();
+        const sit = this.spring2 && (this.baseName === 'Sitting_Idle_Loop' || this.baseName === 'pose_tam_thien');
+        this.colScale += ((sit ? SPRING2.sitScale : 1) - this.colScale) * Math.min(1, this.acc * 6);
+        this.springs?.update(this.acc, IDENT);
+        this.skirtSprings?.update(this.acc, IDENT, this.colScale);
+      } else {
+        this.springs?.reset();
+        this.skirtSprings?.reset();
+      }
     }
     this.acc = 0;
+  }
+
+  /** Khóa pha ba clip chạy và chân của đòn nửa trên; tạo/giữ clip nửa dưới khi đang đánh nửa trên. */
+  private syncLoco(dt: number): void {
+    this.locoPhase = (this.locoPhase + this.locoCycles * dt) % 1;
+    for (const act of [this.base!, ...this.companions]) {
+      act.timeScale = 0;
+      act.time = this.locoPhase * act.getClip().duration;
+    }
+    const lb = this.perf?.lowerBase;
+    if (lb) {
+      lb.timeScale = 0;
+      lb.time = this.locoPhase * lb.getClip().duration;
+    }
+  }
+
+  private syncShotLower(): void {
+    if (!(this.shotUpper && this.shot && this.base)) return;
+    if (this.shotLowerSrc !== this.base) {
+      this.shotLower?.stop();
+      const lb = this.mixer.clipAction(lowerBodyOf(this.base.getClip()));
+      lb.setLoop(THREE.LoopRepeat, Infinity);
+      lb.reset();
+      lb.play();
+      lb.setEffectiveWeight(0);
+      this.shotLower = lb;
+      this.shotLowerSrc = this.base;
+      this.shotLowerW = 0;
+    }
+    const lb = this.shotLower!;
+    lb.timeScale = this.loco ? 0 : this.base.timeScale;
+    if (this.loco) lb.time = this.locoPhase * lb.getClip().duration;
+    else lb.time = this.base.time;
+  }
+
+  /** Lớp phụ sau mixer (xương chỉnh thêm trên tư thế clip): nghiêng khi rẽ, xoay tại chỗ, thở, nhìn mục tiêu, giật khi trúng đòn, bù dang tay. */
+  private procedural(dt: number, a: AnimState): void {
+    this.clock += dt;
+    const b = this.bones;
+    const y = this.root.rotation.y;
+    if (Number.isFinite(this.lastYaw) && dt > 1e-3) {
+      let d = y - this.lastYaw;
+      while (d > Math.PI) d -= 2 * Math.PI;
+      while (d < -Math.PI) d += 2 * Math.PI;
+      this.yawRate += (Math.max(-8, Math.min(8, d / dt)) - this.yawRate) * Math.min(1, dt * 10);
+    }
+    this.lastYaw = y;
+    const free = !a.dead && !a.meditating && !a.flying && !a.sky && !a.airborne;
+    const sinY = Math.sin(y);
+    const cosY = Math.cos(y);
+    const fwd = _ax.set(sinY, 0, cosY).clone();
+    const rgt = new THREE.Vector3(cosY, 0, -sinY);
+    const k = Math.min(1, dt * 8);
+    const perfW = this.perf ? 0.4 : 1;
+    // Nghiêng khi rẽ lúc chạy; xoay tại chỗ thì thân trên trễ so với chân.
+    const leanT = free && !this.perf && !this.shotUpper ? leanOf(this.yawRate, a.speed) : 0;
+    this.lean += (leanT - this.lean) * k;
+    const lagT = free && a.speed < 0.3 && !this.perf ? turnLagOf(this.yawRate) : 0;
+    this.turnLag += (lagT - this.turnLag) * k;
+    const ls = -this.lean * this.side;
+    rotateWorld(b.spine_01 ?? null, fwd, ls * 0.4);
+    rotateWorld(b.spine_02 ?? null, fwd, ls * 0.3);
+    rotateWorld(b.spine_03 ?? null, fwd, ls * 0.3);
+    rotateWorld(b.spine_02 ?? null, _up, -this.turnLag * 0.5);
+    rotateWorld(b.spine_03 ?? null, _up, -this.turnLag * 0.5);
+    // Thở (cộng thêm, chỉ biên độ nhỏ).
+    if (free) rotateWorld(b.spine_03 ?? null, rgt, breathOf(this.clock, a.speed < 0.3));
+    // Giật nhẹ khi trúng đòn: thân ngửa ra sau rồi về.
+    const f = this.flinch;
+    f.age += dt;
+    if (f.age >= 0 && f.age < 0.5 && !a.dead) {
+      const fl = flinchOf(f.amp, f.age);
+      rotateWorld(b.spine_02 ?? null, rgt, -fl * 0.5);
+      rotateWorld(b.spine_03 ?? null, rgt, -fl * 0.5);
+      rotateWorld(b.head ?? null, rgt, fl * 0.4);
+    }
+    // Nhìn mục tiêu: quay đầu/cổ tới điểm nhìn, giới hạn góc.
+    let ty = 0;
+    let tp = 0;
+    if (free && !a.casting && a.lookAt) {
+      const la = lookAngles(a.lookAt.x - this.root.position.x, a.lookAt.y - (this.root.position.y + this.height * 0.9), a.lookAt.z - this.root.position.z, y);
+      ty = la.yaw;
+      tp = la.pitch;
+    }
+    this.lookYaw += (ty - this.lookYaw) * Math.min(1, dt * 6);
+    this.lookPitch += (tp - this.lookPitch) * Math.min(1, dt * 6);
+    rotateWorld(b.spine_03 ?? null, _up, this.lookYaw * 0.15 * perfW);
+    rotateWorld(b.neck_01 ?? null, _up, this.lookYaw * 0.3);
+    rotateWorld(b.head ?? null, _up, this.lookYaw * 0.55);
+    rotateWorld(b.neck_01 ?? null, rgt, this.lookPitch * 0.3);
+    rotateWorld(b.head ?? null, rgt, this.lookPitch * 0.5);
+    // Bù dang tay/vai theo model (tay áo rộng không bị tay clip ép xuyên).
+    if (free && !a.casting && this.armFit) {
+      const fit = this.armFit * perfW;
+      rotateWorld(b.upperarm_l ?? null, fwd, fit * this.side);
+      rotateWorld(b.upperarm_r ?? null, fwd, -fit * this.side);
+    }
   }
 
   bladePoints(base: THREE.Vector3, tip: THREE.Vector3): boolean {

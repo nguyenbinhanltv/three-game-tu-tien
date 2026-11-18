@@ -1,4 +1,5 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
+import { FLAGS } from '../../base/flags';
 import { MS_ATTACK, MS_CHASE, MS_DEAD, PF_DEAD, SPAWN_POINT } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { hasString, MONSTER, monsterName, t } from '@dtl/content';
@@ -27,7 +28,7 @@ export function chapter(eng: Game, kind: ChapterKind, sting = true): void {
 
 /** Cảnh mở đầu chỉ chạy khi đứng gần điểm hồi sinh (đường camera dựng cho sân tông môn) , người chơi chưa tắt thẻ chương trong Cài đặt và không tắt bằng `?cine=0`. */
 export function canCine(eng: Game, x: number, z: number): boolean {
-  return get().chapterCards && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
+  return get().chapterCards && FLAGS.cinematics && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
 }
 
 export function startCine(eng: Game): void {
@@ -43,7 +44,7 @@ export function startCine(eng: Game): void {
 export function canBossCine(eng: Game, me: PState | undefined): boolean {
   if (!me || !eng.started || eng.cine.active || eng.snapToServer) return false;
   if ((me.fl & PF_DEAD) !== 0 || get().phase !== 'game') return false;
-  return get().chapterCards;
+  return get().chapterCards && FLAGS.cinematics;
 }
 
 export function beginBossCine(eng: Game, kind: 'boss' | 'phase' | 'dan', path: readonly Waypoint[], prof: { dur: number; out: number }, info: { name: string; title?: string; text: string }): void {

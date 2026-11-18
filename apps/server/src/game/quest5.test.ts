@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { MAX_LEVEL, TOUCH_R, questSpot } from '@dtl/shared';
-import { LEVELS, NPC, QUEST } from '@dtl/content';
+import { LEVELS, MONSTER, NPC, QUEST } from '@dtl/content';
 
 // Nhiệm vụ chương 5 Bắc Hoang (DV3-H): chuỗi q5_*, phụ s5_*, trận mở bằng nhiệm vụ kiểm cấp, nhiệm vụ chờ dữ liệu bị khóa theo cấp.
 process.env.DB_FILE = ':memory:';
@@ -63,9 +63,10 @@ describe('dữ liệu chương 5', () => {
   it('nhiệm vụ mở trận không cho nhận sớm hơn cấp vào level đích', () => {
     expect(QUEST.get('q5_bac_hanh')!.minLevel).toBeGreaterThanOrEqual(BH.minLevel!);
   });
-  it('nhiệm vụ trỏ tới quái/phó bản/kiếp chưa có đều bị khóa bằng cấp > MAX_LEVEL', () => {
-    for (const id of ['s5_cham_ba']) {
-      expect(QUEST.get(id)!.minLevel!, id).toBeGreaterThan(MAX_LEVEL);
+  it('mọi nhiệm vụ làm được ở trần cấp: minLevel <= MAX_LEVEL, mục tiêu kill có quái thật (s5_cham_ba nhắm tinh anh ngoài bản đồ)', () => {
+    for (const q of ch5()) {
+      expect(q.minLevel ?? 1, q.id).toBeLessThanOrEqual(MAX_LEVEL);
+      for (const o of q.objectives) if (o.type === 'kill') expect(MONSTER.get(o.target ?? ''), `${q.id}/${o.target}`).toBeTruthy();
     }
   });
 });

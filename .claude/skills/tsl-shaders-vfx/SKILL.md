@@ -121,7 +121,7 @@ Checklist trước khi báo xong:
 
 Lệnh:
 
-- `pnpm shots vfx --out <thư mục tuyệt đối> --skills <id,...>`: webm chậm 0,25× + tốc độ thật và dãy khung, nam/nữ, tắt tiếng. Thêm `--old` (hình cũ), `--perf` (draw call/tam giác/ms), `--crowd 50` (sân đông), `--skills mon:<loại>[:<id quái>]`, `--skills scene_<tên>`. Đặt `--out` ngoài repo hoặc ở artifacts; repo chỉ giữ tối đa 5 ảnh WebP then chốt (`pnpm docs:check`).
+- `pnpm shots vfx --out <thư mục tuyệt đối> --skills <id,...>`: webm chậm 0,25× + tốc độ thật và dãy khung, nam/nữ, tắt tiếng. Thêm `--perf` (draw call/tam giác/ms), `--crowd 50` (sân đông), `--skills mon:<loại>[:<id quái>]`, `--skills scene_<tên>`. Đặt `--out` ngoài repo hoặc ở artifacts; repo chỉ giữ tối đa 5 ảnh WebP then chốt (`pnpm docs:check`).
 - `pnpm bench:client`, `pnpm bench:crowd`, `pnpm bench:switch` (skill `perf-budget`).
 - `pnpm test` (có `phases.test.ts`, `fxShapes.test.ts`, `fxTimeline.test.ts`, `fxBudget.test.ts`, `fxBatch.test.ts`), `pnpm content:check`.
 - Sau khi sửa VFX: gọi subagent `vfx-reviewer`.

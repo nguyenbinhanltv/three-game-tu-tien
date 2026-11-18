@@ -100,3 +100,17 @@ export function lowerBodyOf(clip: THREE.AnimationClip): THREE.AnimationClip {
   }
   return c;
 }
+
+const UPPER_EXCLUDE = /^(pelvis|thigh|calf|foot|ball)/;
+const upperCache = new WeakMap<THREE.AnimationClip, THREE.AnimationClip>();
+/** Clip chỉ giữ kênh nửa thân trên (cột sống, tay, đầu, xương phụ): đòn chém khi vừa chạy, chân vẫn theo clip chạy (v3 animation). */
+export function upperBodyOf(clip: THREE.AnimationClip): THREE.AnimationClip {
+  let c = upperCache.get(clip);
+  if (!c) {
+    c = clip.clone();
+    c.tracks = c.tracks.filter((t) => !UPPER_EXCLUDE.test(t.name.slice(0, t.name.lastIndexOf('.'))));
+    c.name = `${clip.name}|upper`;
+    upperCache.set(clip, c);
+  }
+  return c;
+}
