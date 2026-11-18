@@ -7,32 +7,36 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
 
 const ORDER: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40, silent: 99 };
 
-function parse(v: string | undefined): LogLevel {
+export function parseLogLevel(v: string | undefined): LogLevel {
   const s = (v ?? '').trim().toLowerCase();
   return s in ORDER ? (s as LogLevel) : 'info';
 }
 
-let threshold = ORDER[parse(process.env.LOG_LEVEL)];
+/** Đọc lười ở lần log đầu: `config.ts` nạp `.env.local`/`.env` sau khi module này chạy, nên không đọc `LOG_LEVEL` lúc nạp module. */
+let threshold: number | null = null;
+function cur(): number {
+  return (threshold ??= ORDER[parseLogLevel(process.env.LOG_LEVEL)]);
+}
 
 export function setLogLevel(level: LogLevel): void {
   threshold = ORDER[level];
 }
 
 export function logLevel(): LogLevel {
-  return (Object.keys(ORDER) as LogLevel[]).find((k) => ORDER[k] === threshold) ?? 'info';
+  return (Object.keys(ORDER) as LogLevel[]).find((k) => ORDER[k] === cur()) ?? 'info';
 }
 
 export const log = {
   debug: (...args: unknown[]): void => {
-    if (threshold <= ORDER.debug) console.debug(...args);
+    if (cur() <= ORDER.debug) console.debug(...args);
   },
   info: (...args: unknown[]): void => {
-    if (threshold <= ORDER.info) console.log(...args);
+    if (cur() <= ORDER.info) console.log(...args);
   },
   warn: (...args: unknown[]): void => {
-    if (threshold <= ORDER.warn) console.warn(...args);
+    if (cur() <= ORDER.warn) console.warn(...args);
   },
   error: (...args: unknown[]): void => {
-    if (threshold <= ORDER.error) console.error(...args);
+    if (cur() <= ORDER.error) console.error(...args);
   },
 };
