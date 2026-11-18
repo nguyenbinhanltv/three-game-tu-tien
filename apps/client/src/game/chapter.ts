@@ -6,7 +6,7 @@
 
 export type ChapterKind = 'sect' | 'dungeon' | 'trib' | 'ascend' | 'ascend_kd' | 'ascend_na' | 'ascend_hn' | 'ascend_ab' | 'ch2' | 'ch3' | 'ch4' | 'ch5' | 'fly';
 
-export interface ChapterPreset {
+interface ChapterPreset {
   /** Thẻ hiện bao lâu (ms). */
   card: number;
   /** Khung camera: nhân khoảng cách, cộng góc ngẩng (rad), tổng thời gian (giây). */

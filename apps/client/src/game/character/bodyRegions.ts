@@ -6,7 +6,7 @@ import { boneKey } from './ikpose';
  * ẩn tam giác thuộc các vùng đó → hết xuyên mesh, bớt tam giác. Vùng suy từ xương trội của từng đỉnh (không cần thuộc tính riêng nên
  * sống sót qua meshopt/quantize). Hàm thuần, không đụng engine.
  */
-export type BodyRegion = 'head' | 'neck' | 'chest' | 'belly' | 'upperArm' | 'forearm' | 'hand' | 'thigh' | 'calf' | 'foot';
+type BodyRegion = 'head' | 'neck' | 'chest' | 'belly' | 'upperArm' | 'forearm' | 'hand' | 'thigh' | 'calf' | 'foot';
 
 export const BODY_REGIONS: readonly BodyRegion[] = ['head', 'neck', 'chest', 'belly', 'upperArm', 'forearm', 'hand', 'thigh', 'calf', 'foot'];
 

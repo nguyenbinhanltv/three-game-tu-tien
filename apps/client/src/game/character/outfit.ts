@@ -16,7 +16,7 @@ export function bodyKeep(key: string): boolean {
 }
 
 /** Tên xương → chỉ số trong skeleton (theo tên nguyên văn, thiếu thì theo `boneKey`). */
-export function jointIndex(bones: readonly { name: string }[]): { exact: Map<string, number>; key: Map<string, number> } {
+function jointIndex(bones: readonly { name: string }[]): { exact: Map<string, number>; key: Map<string, number> } {
   const exact = new Map<string, number>();
   const key = new Map<string, number>();
   bones.forEach((b, i) => {

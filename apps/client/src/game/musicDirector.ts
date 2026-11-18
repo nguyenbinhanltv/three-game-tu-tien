@@ -28,7 +28,7 @@ export type MusicTrack =
   | 'tribulation'
   | 'meditate';
 
-export const MUSIC_TRACKS: readonly MusicTrack[] = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'wild_ash', 'wild_rift', 'forest', 'lake', 'dungeon', 'dungeon_rift', 'combat', 'boss', 'dungeon_boss', 'dungeon_rift_boss', 'tribulation', 'meditate'];
+const MUSIC_TRACKS: readonly MusicTrack[] = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'wild_ash', 'wild_rift', 'forest', 'lake', 'dungeon', 'dungeon_rift', 'combat', 'boss', 'dungeon_boss', 'dungeon_rift_boss', 'tribulation', 'meditate'];
 
 export interface MusicInput {
   /** Đang ở room bí cảnh (Kiếm Trủng) thay vì bản đồ thế giới. */
@@ -57,7 +57,7 @@ export interface MusicChange {
 
 export const COMBAT_ENTER = 0.6;
 export const COMBAT_EXIT = 6;
-export const BOSS_ENTER = 0.3;
+const BOSS_ENTER = 0.3;
 export const BOSS_EXIT = 9;
 export const REGION_DWELL = 2.5;
 export const MIN_HOLD = 3;
@@ -277,7 +277,7 @@ export class MusicDirector {
 }
 
 /** Crossfade: vào giao tranh nhanh, rời giao tranh và đổi vùng chậm. */
-export function fadeFor(from: MusicTrack | null, to: MusicTrack): number {
+function fadeFor(from: MusicTrack | null, to: MusicTrack): number {
   if (from === null) return 2;
   if (to === 'tribulation') return 1;
   if (PRIORITY[to] > PRIORITY[from] && PRIORITY[to] >= 2) return 1.2;
@@ -288,8 +288,8 @@ export function fadeFor(from: MusicTrack | null, to: MusicTrack): number {
 // ---------- âm môi trường theo vùng (M4-12) ----------
 
 /** Id âm môi trường trong manifest.ambient (tools/audio/sounds.json). */
-export type AmbientId = 'wind' | 'forest' | 'stream' | 'night' | 'cave';
-export const AMBIENT_IDS: readonly AmbientId[] = ['wind', 'forest', 'stream', 'night', 'cave'];
+type AmbientId = 'wind' | 'forest' | 'stream' | 'night' | 'cave';
+const AMBIENT_IDS: readonly AmbientId[] = ['wind', 'forest', 'stream', 'night', 'cave'];
 
 /**
  * Âm môi trường cho vùng: Kiếm Trủng/bí cảnh là gió hang; ven hồ luôn có nước vỗ (kể cả đêm);

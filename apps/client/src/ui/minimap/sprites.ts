@@ -6,8 +6,8 @@ import type { NpcFn, QuestMark, Tone } from './model';
 const INK = '#2a1f16';
 const GOLD = '#ffd54a';
 
-export const TONE_COLOR: Record<Tone, string> = { gray: '#9aa0a3', white: '#f4f1e8', yellow: '#ffd23f', red: '#e0412f' };
-export const NPC_COLOR: Record<NpcFn, string> = { trade: '#ffd54a', alchemy: '#7fd18b', smith: '#f08a3c', root: '#b992e8', quest: '#f1ead8' };
+const TONE_COLOR: Record<Tone, string> = { gray: '#9aa0a3', white: '#f4f1e8', yellow: '#ffd23f', red: '#e0412f' };
+const NPC_COLOR: Record<NpcFn, string> = { trade: '#ffd54a', alchemy: '#7fd18b', smith: '#f08a3c', root: '#b992e8', quest: '#f1ead8' };
 
 export interface Sprite {
   cv: HTMLCanvasElement;

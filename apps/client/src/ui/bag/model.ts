@@ -71,9 +71,9 @@ export function firstEmptyIn(inv: readonly InvSlot[], page: number): number {
   return -1;
 }
 
-export type DropTarget = { kind: 'cell'; slot: number } | { kind: 'page'; page: number } | { kind: 'equip'; slot: WearSlot };
+type DropTarget = { kind: 'cell'; slot: number } | { kind: 'page'; page: number } | { kind: 'equip'; slot: WearSlot };
 
-export type DropCmd =
+type DropCmd =
   | { cmd: 'move'; a: number; b: number }
   | { cmd: 'equip'; slot: number }
   | { cmd: 'split'; slot: number; to: number; max: number }

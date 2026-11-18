@@ -4,7 +4,7 @@ import { type Equipment, type InvItem, type InvSlot, isEquipSlot, type ItemDef, 
 import { ENHANCE_ORE, FORGE, ITEM, ITEM_SOURCES, itemName, itemTier, monsterName, NPC, NPCS, promoteTarget, RECIPES, SET, t } from '@dtl/content';
 import { powerDelta, wornIds } from './gear';
 
-export interface InfoLine {
+interface InfoLine {
   text: string;
   tone?: 'good' | 'bad' | 'dim' | 'set';
 }
@@ -62,7 +62,7 @@ export function belowLevel(level: number, def: ItemDef | undefined): boolean {
   return !!def && (def.reqLevel ?? 1) > level;
 }
 
-export function isLocked(item: InvItem): boolean {
+function isLocked(item: InvItem): boolean {
   return !!(item as InvItem & { lk?: true }).lk;
 }
 
@@ -88,7 +88,7 @@ export function itemHints(item: InvItem, def: ItemDef, equip: Equipment, level: 
 }
 
 /** Số ô túi còn trống. */
-export function freeSlots(inv: readonly InvSlot[]): number {
+function freeSlots(inv: readonly InvSlot[]): number {
   return inv.reduce((s, x) => s + (x ? 0 : 1), 0);
 }
 
@@ -101,6 +101,6 @@ export function bagLow(inv: readonly InvSlot[]): number | null {
 }
 
 /** Tên NPC (dùng ở UI khác nếu cần). */
-export function npcLabel(id: string): string {
+function npcLabel(id: string): string {
   return NPC.get(id) ? npcName(id) : id;
 }

@@ -27,7 +27,7 @@ interface Zone extends ZoneCam {
   outer: number;
 }
 
-export const ZONES: readonly Zone[] = [
+const ZONES: readonly Zone[] = [
   // Sân tông môn: quảng trường rộng, nhiều kiến trúc cao.
   { id: 'sect', x: SECT.x, z: SECT.z, inner: SECT.flatR + 10, outer: SECT.flatR + 90, distMul: 1.25, pitchAdd: 0.04, fov: 58 },
   // Kiếm Trủng: lòng chảo hẹp, vách đá bao quanh.
@@ -48,7 +48,7 @@ function smooth(x: number): number {
 }
 
 /** Trọng số 0..1 của một vùng tại (x,z). */
-export function zoneWeight(z: Pick<Zone, 'x' | 'z' | 'inner' | 'outer'>, x: number, zz: number): number {
+function zoneWeight(z: Pick<Zone, 'x' | 'z' | 'inner' | 'outer'>, x: number, zz: number): number {
   const d = Math.hypot(x - z.x, zz - z.z);
   return 1 - smooth((d - z.inner) / Math.max(1e-6, z.outer - z.inner));
 }

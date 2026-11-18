@@ -81,7 +81,7 @@ interface Cast {
 }
 
 /** Tùy chọn phát một timeline tại điểm bất kỳ (FX của quái, V5). */
-export interface FxAtOpts {
+interface FxAtOpts {
   actor: FxCaster;
   palette: string;
   tgt?: FxTarget | null;
@@ -123,7 +123,7 @@ const sstep = (a: number, b: number, x: number) => {
 };
 
 /** Số decal sống tối đa cùng lúc (mỗi decal một lưới; chiêu của người khác chỉ khi còn chỗ). */
-export const DECAL_MAX = 6;
+const DECAL_MAX = 6;
 
 /** Mốc (giây từ bấm) của từng sự kiện trong một đòn: mỗi mốc trúng một bản cho sự kiện neo `hit`. */
 export function scheduleEvents(events: readonly FxEvent[], hitAt: readonly number[], tier: 0 | 1 | 2): { at: number; ev: FxEvent; hit: number }[] {

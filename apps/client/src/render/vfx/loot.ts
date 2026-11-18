@@ -19,7 +19,7 @@ import { vnoise, type FxUniforms } from './common';
 
 export type LootTier = 0 | 1 | 2 | 3 | 4;
 
-export interface LootTierSpec {
+interface LootTierSpec {
   /** Màu sRGB hex của viên đồ và cột sáng. */
   color: number;
   /** Cao (m) và bán kính (m) của cột sáng. */
@@ -44,7 +44,7 @@ export const LOOT_TIERS: readonly LootTierSpec[] = [
 ];
 
 /** Huyền phẩm dùng bậc 2 nhưng đổi sang lam (màu phẩm trong qualities.json). */
-export const LOOT_HUYEN_COLOR = 0x6fb4f0;
+const LOOT_HUYEN_COLOR = 0x6fb4f0;
 
 /** Bậc cột sáng của trang bị theo phẩm 0..4. */
 export function gearLootTier(q: number): LootTier {

@@ -86,14 +86,14 @@ export function hitPitch(combo3: boolean, rnd: number = Math.random()): number {
 
 /** Tiếng vung nhỏ hơn tiếng trúng 6 dB, phát trước `hitAt` 80 ms. */
 export const WHOOSH_GAIN = 0.5;
-export const WHOOSH_LEAD = 0.08;
+const WHOOSH_LEAD = 0.08;
 
 /** Giây từ lúc nhận tin tới lúc phát tiếng vung (`hitIn` = giây còn lại tới `hitAt`), không âm. */
 export function whooshDelay(hitIn: number): number {
   return Math.max(0, hitIn - WHOOSH_LEAD);
 }
 
-export type Material = 'flesh' | 'stone' | 'metal';
+type Material = 'flesh' | 'stone' | 'metal';
 
 /** Chất liệu thân quái để chọn lớp âm: vượn đá/thổ là đá, hệ kim là kim khí, còn lại là thịt. */
 export function materialOf(def: Pick<MonsterDef, 'model' | 'elem'> | undefined): Material {
@@ -103,7 +103,7 @@ export function materialOf(def: Pick<MonsterDef, 'model' | 'elem'> | undefined):
   return 'flesh';
 }
 
-export interface Layer {
+interface Layer {
   /** Tên SFX có sẵn trong manifest (không thêm asset mới). */
   sfx: 'hit' | 'crit' | 'impact' | 'block' | 'cast';
   /** Âm lượng tương đối so với tiếng trúng chính (1). */

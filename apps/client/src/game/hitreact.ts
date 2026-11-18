@@ -11,7 +11,7 @@ import { HIT_STOP_CAP, hitStopOf } from './hitjuice';
  */
 
 /** Trần khựng (K-7): 90 ms. Bảng theo cấp đòn nằm ở `hitjuice.ts` (`hitStopOf`). */
-export const HIT_STOP_MAX = HIT_STOP_CAP;
+const HIT_STOP_MAX = HIT_STOP_CAP;
 
 // Chớp trúng đòn là màu phẳng không đổ bóng: trắng tinh thì che mất hình nhân vật (art bible mục 5, 8), nên dùng màu kem/vàng dịu
 // (≈ 60% độ sáng, hậu kỳ nâng lên cream) và chớp ngắn (`FLASH_MAX`); vẫn đủ rõ để đọc đòn mà còn thấy dáng người.

@@ -65,7 +65,7 @@ function getDepthTexture(): THREE.DataTexture {
   return depthTex;
 }
 
-export const waterParams = {
+const waterParams = {
   shallow: uniform(new THREE.Color(0x4fb3aa)),
   mid: uniform(new THREE.Color(0x1c7f8c)),
   deep: uniform(new THREE.Color(0x0a3644)),

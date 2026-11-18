@@ -6,9 +6,9 @@ import type { CharState } from './states';
  * (lệch hướng, độ khép vòng, tốc độ nền, độ trượt chân). Máy trạng thái game (K-4) dùng bảng này; test `humanClips.test.ts` giữ bảng
  * khớp GLB. K-3 chưa nối các clip này vào game, trừ bộ cũ (idle, run, attack, hit_light, death).
  */
-export type HumanLib = 'base' | 'k3' | 'ual';
+type HumanLib = 'base' | 'k3' | 'ual';
 
-export interface HumanClipInfo {
+interface HumanClipInfo {
   /** Thư viện chứa clip: `base` = anim_human_base (nạp cùng nhân vật), `k3` = anim_human_k3, `ual` = anim_human_ual (nạp lười). */
   lib: HumanLib;
   /** Clip UAL còn được đặt thêm dưới các tên này, đè clip cùng tên của thư viện cũ (death, hit_light, knockdown...). */
@@ -89,6 +89,6 @@ export const UAL_STATES: Partial<Record<CharState, string>> = { jump: 'ual_jump_
 export const UAL_NPC_IDLES: readonly string[] = ['ual_idle_fold', 'ual_idle_talk', 'ual_interact', 'ual_yes', 'ual_no'];
 
 /** Tên clip của thư viện, theo bảng. */
-export const HUMAN_CLIP_NAMES = Object.keys(HUMAN_CLIPS);
+const HUMAN_CLIP_NAMES = Object.keys(HUMAN_CLIPS);
 /** Tên clip của một thư viện. */
 export const clipNamesOf = (lib: HumanLib): string[] => HUMAN_CLIP_NAMES.filter((n) => HUMAN_CLIPS[n].lib === lib);

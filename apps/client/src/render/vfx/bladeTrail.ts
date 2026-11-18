@@ -19,10 +19,10 @@ export const BLADE_PTS = (BLADE_SEG - 1) * BLADE_SUB + 1;
 /** Tuổi tối đa của một mẫu (giây). */
 export const BLADE_LIFE = 0.22;
 /** Cửa sổ lấy mẫu quanh `hitAt` (giây). */
-export const BLADE_BEFORE = 0.1;
-export const BLADE_AFTER = 0.08;
+const BLADE_BEFORE = 0.1;
+const BLADE_AFTER = 0.08;
 /** Người khác chỉ vẽ vệt kiếm trong khoảng này (m). */
-export const BLADE_NEAR_OTHERS = 25;
+const BLADE_NEAR_OTHERS = 25;
 
 /** Cửa sổ lấy mẫu [bắt đầu, kết thúc] (giây từ lúc bấm) của một mốc trúng. */
 export function bladeWindow(hitAt: number): [number, number] {

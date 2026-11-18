@@ -11,7 +11,7 @@ import { FX_MAX_HDR } from './materials/vfx';
  * Cường độ theo thời điểm trong ngày (`beaconParams`, atmosphere.ts): yếu ban ngày, rõ ban đêm. Đỉnh HDR giữ dưới
  * `BEACON_MAX_HDR`, không lóa.
  */
-export const BEACON_MAX_HDR = Math.min(2.2, FX_MAX_HDR);
+const BEACON_MAX_HDR = Math.min(2.2, FX_MAX_HDR);
 const R_BOTTOM = 5.2;
 const R_TOP = 2.6;
 /** Quầng mềm quanh lõi: nón rộng gấp chừng này, mờ nhiều, để cột thấy được từ 150–300 m ban đêm. */
@@ -19,7 +19,7 @@ const HALO_SCALE = 3;
 const SEGS = 18;
 const RINGS = 8;
 
-export interface BeaconPoint {
+interface BeaconPoint {
   x: number;
   z: number;
   /** Cao cột (m). */
@@ -27,7 +27,7 @@ export interface BeaconPoint {
 }
 
 /** Vỏ nón cao 1, uv.x quanh trục, uv.y theo chiều cao; tỉ lệ y theo từng cột qua ma trận instance. */
-export function beaconGeometry(): THREE.BufferGeometry {
+function beaconGeometry(): THREE.BufferGeometry {
   const pos: number[] = [];
   const nrm: number[] = [];
   const uvs: number[] = [];
@@ -58,7 +58,7 @@ export function beaconGeometry(): THREE.BufferGeometry {
   return g;
 }
 
-export function beaconMaterial(halo = false): THREE.MeshBasicNodeMaterial {
+function beaconMaterial(halo = false): THREE.MeshBasicNodeMaterial {
   const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
   const h = uv().y;
   const around = uv().x;

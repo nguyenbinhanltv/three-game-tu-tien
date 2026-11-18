@@ -5,7 +5,7 @@
 export const HOVER_LOW = 0.3;
 /** Biên độ nhấp nhô (m) khi đang ở độ cao đầy đủ, và chu kỳ (s). */
 export const HOVER_BOB = 0.28;
-export const HOVER_BOB_PERIOD = 3.6;
+const HOVER_BOB_PERIOD = 3.6;
 
 /** Độ cao đích (m): chết thì hạ hẳn xuống đất, lộ yếu điểm / choáng thì hạ thấp, còn lại bay đủ cao. */
 export function hoverTarget(hover: number, dead: boolean, low: boolean): number {

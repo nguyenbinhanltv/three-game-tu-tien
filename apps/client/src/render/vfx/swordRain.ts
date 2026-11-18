@@ -70,7 +70,7 @@ const uRain = uniform(new THREE.Color(0x9fe0ff));
  * 1 ma trận và mọi instance sau đó đọc chung ma trận ấy (mọi thanh kiếm chồng một chỗ). Nên `count`
  * giữ cố định bằng sức chứa, còn số vẽ thật đi qua `geometry.instanceCount` (renderer ưu tiên nó).
  */
-export function instancedGeometry(src: THREE.BufferGeometry): THREE.InstancedBufferGeometry {
+function instancedGeometry(src: THREE.BufferGeometry): THREE.InstancedBufferGeometry {
   const g = new THREE.InstancedBufferGeometry();
   g.setIndex(src.index);
   for (const k of Object.keys(src.attributes)) g.setAttribute(k, src.getAttribute(k));

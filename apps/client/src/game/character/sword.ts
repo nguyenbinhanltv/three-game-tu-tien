@@ -13,12 +13,12 @@ export interface SwordExtras {
 }
 
 /** Xương lò xo (biped_parts.py `skirt_springs`): đuôi xương lúc nghỉ, tọa độ glTF hệ của asset. */
-export interface SpringExtras {
+interface SpringExtras {
   bone: string;
   tail: number[];
 }
 
-export interface PartExtras {
+interface PartExtras {
   sword?: SwordExtras;
   /** Model kiếm riêng (prop_kiem_*, `swordModel.ts`): số đo theo trục mũi. */
   blade?: Record<string, number>;

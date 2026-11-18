@@ -25,7 +25,7 @@ import {
  * Hàm thuần (không đụng GPU) để test được.
  */
 export const MASK_RES = 1024;
-export const PATH_RANGE = 10;
+const PATH_RANGE = 10;
 export const PATH_HALF_WIDTH = 1.7;
 
 interface P {
