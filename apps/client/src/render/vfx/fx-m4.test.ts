@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fxSeed } from '@dtl/shared';
 import { seededRandom, seedOr } from './common';
 import { BOLT_MAX_PTS, boltPhase, boltShape } from './lightning';
-import { PARTICLE_BUDGET, Particles } from './particles';
+import { PARTICLE_BUDGET, PARTICLE_DENSITY, Particles, densitySize } from './particles';
 import { RAIN_SWORDS, rainLayout, SwordRainFx } from './swordRain';
 
 describe('seededRandom', () => {
@@ -102,12 +102,30 @@ describe('SwordRainFx', () => {
   });
 });
 
+describe('mật độ hạt theo preset', () => {
+  it('Thấp/Vừa giữ nguyên, Cao/Cực cao tăng dần', () => {
+    expect(PARTICLE_DENSITY.low).toBe(1);
+    expect(PARTICLE_DENSITY.medium).toBe(1);
+    expect(PARTICLE_DENSITY.high).toBeGreaterThan(1);
+    expect(PARTICLE_DENSITY.ultra).toBeGreaterThan(PARTICLE_DENSITY.high);
+    const p = new Particles();
+    p.setQuality('ultra');
+    expect(p.density).toBe(PARTICLE_DENSITY.ultra);
+    p.setQuality('medium');
+    expect(p.density).toBe(1);
+  });
+  it('tổng diện tích hạt (n × size²) tăng không quá 25% ở Cực cao (chống lóa)', () => {
+    for (const d of Object.values(PARTICLE_DENSITY)) expect(d * densitySize(d) ** 2).toBeLessThanOrEqual(1.25);
+    expect(densitySize(1)).toBe(1);
+  });
+});
+
 describe('Particles', () => {
   it('số hạt sống không vượt ngân sách preset', () => {
-    for (const q of ['low', 'medium', 'high']) {
+    for (const q of ['low', 'medium', 'high', 'ultra']) {
       const p = new Particles();
       p.setQuality(q);
-      for (let i = 0; i < 30000; i++) p.emit(i & 1 ? 'glow' : 'dust', 0, 0, 0, 0, 1, 0, 5, 0.1, 0.1, 0xffffff);
+      for (let i = 0; i < 40000; i++) p.emit(i & 1 ? 'glow' : 'dust', 0, 0, 0, 0, 1, 0, 5, 0.1, 0.1, 0xffffff);
       p.update(0.1);
       const n = p.aliveCount();
       expect(n.total).toBeLessThanOrEqual(PARTICLE_BUDGET[q]);
