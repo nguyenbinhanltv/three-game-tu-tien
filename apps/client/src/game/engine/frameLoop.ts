@@ -578,14 +578,14 @@ export function pickRenderer(eng: Game, param: string | null): boolean {
   try {
     stored = localStorage.getItem(RENDERER_KEY);
   } catch {
-    /* bỏ qua */
+    /* localStorage bị chặn: coi như chưa lưu lựa chọn backend */
   }
   const c = rendererChoice(param, stored);
   if (c.storage === 'clear') {
     try {
       localStorage.removeItem(RENDERER_KEY);
     } catch {
-      /* bỏ qua */
+      /* localStorage bị chặn: không xóa được, lần sau tự chọn lại */
     }
   }
   return c.forceWebGL;

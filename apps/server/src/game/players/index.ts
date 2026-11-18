@@ -14,6 +14,7 @@ import { SkillFlow } from '../skillflow';
 import { DuelSystem } from '../duel';
 import { QuestObjSystem } from '../questobj';
 import { SoulSystem } from '../soul';
+import { log } from '../../log';
 
 const INPUT_BUDGET_MAX = 0.3;
 const FLY_MP_PER_SEC = 1.5;
@@ -167,7 +168,7 @@ export class PlayerSystem {
     try {
       c.save();
     } catch (e) {
-      console.error('[save] lỗi lưu nhân vật', c.name, e);
+      log.error('[save] lỗi lưu nhân vật', c.name, e);
     }
   }
 

@@ -10,6 +10,7 @@ import { installHttpRateLimit } from './ratelimit';
 import { dungeonRoomName, ROOM_TRIBULATION, TRIB_LEVEL, tribRoomNameOf, worldRoomName } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
 import { activeRooms, defineDungeon, defineTribulation, defineWorld, onlineCount, TribulationRoom } from './rooms';
+import { log } from './log';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -112,17 +113,17 @@ for (const lv of Object.values(LEVELS)) {
 }
 
 await gameServer.listen(config.port);
-console.log(`[server] Đạp Thiên Lộ chạy ở cổng ${config.port}`);
-console.log(
+log.info(`[server] Đạp Thiên Lộ chạy ở cổng ${config.port}`);
+log.info(
   `[server] giới hạn /matchmake + websocket: ${rl.burst > 0 ? `${rl.burst} dồn, ${rl.perMin}/phút mỗi IP` : 'TẮT'}` +
     `${rl.trustProxy ? ', tin X-Forwarded-For' : ''}${rl.exempt.size ? `, miễn: ${[...rl.exempt].join(' ')}` : ''}`,
 );
-console.log(`[server] đăng nhập dev: ${config.devBypass ? 'BẬT (chỉ dùng khi phát triển)' : 'tắt'}; Google: ${config.googleClientId ? 'đã cấu hình' : 'chưa cấu hình'}`);
+log.info(`[server] đăng nhập dev: ${config.devBypass ? 'BẬT (chỉ dùng khi phát triển)' : 'tắt'}; Google: ${config.googleClientId ? 'đã cấu hình' : 'chưa cấu hình'}`);
 
 setInterval(() => {
   for (const r of activeRooms) {
     if (r.sim.players.size > 0) {
-      console.log(`[metric] room=${r.roomName} players=${r.sim.players.size} monsters=${r.sim.monsters.length} tick_ms_p95=${r.sim.tickP95().toFixed(2)}`);
+      log.info(`[metric] room=${r.roomName} players=${r.sim.players.size} monsters=${r.sim.monsters.length} tick_ms_p95=${r.sim.tickP95().toFixed(2)}`);
     }
   }
 }, 30_000).unref();
@@ -131,23 +132,23 @@ let closing = false;
 async function shutdown() {
   if (closing) return;
   closing = true;
-  console.log('[server] đang lưu và tắt…');
+  log.info('[server] đang lưu và tắt…');
   for (const r of activeRooms) r.sim.saveAll();
   try {
     await gameServer.gracefullyShutdown(false);
-  } catch {
-    /* bỏ qua */
+  } catch (e) {
+    log.warn('[server] tắt Colyseus không gọn (tiếp tục thoát):', e);
   }
   sqlite.close();
   process.exit(0);
 }
 // Lỗi lọt lưới: ghi log, lưu mọi nhân vật, và tiếp tục chạy thay vì để cả nhóm rớt mạng.
 process.on('uncaughtException', (e) => {
-  console.error('[server] uncaughtException:', e);
+  log.error('[server] uncaughtException:', e);
   for (const r of activeRooms) r.sim.saveAll();
 });
 process.on('unhandledRejection', (e) => {
-  console.error('[server] unhandledRejection:', e);
+  log.error('[server] unhandledRejection:', e);
 });
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
