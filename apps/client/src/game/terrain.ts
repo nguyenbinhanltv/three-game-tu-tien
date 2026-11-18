@@ -37,6 +37,8 @@ let T = levelTerrain();
 let VL = T.id === 'van_lam';
 /** Level dùng bảng màu đất son (Đoạn Mạch, E2-I). */
 let OCHRE = T.id === 'doan_mach';
+/** Level dùng bảng tro (Bắc Hoang, DV-1): hoang nguyên tro bên này, đất tro than bên kia vết nứt. */
+let ASH = T.id === 'bac_hoang';
 /** Level sân đá phiến thành cổ (Thiên Khuyết, E4-I). */
 let SLATE = T.id === 'thien_khuyet';
 const _tk: [number, number, number] = [0, 0, 0];
@@ -56,6 +58,28 @@ const C_OCHRE_RED = col(0x9f8068);
 const C_SANDSTONE = col(0xa09078);
 const C_SANDSTONE_DARK = col(0x7d6e5c);
 /** Đất son cốc đứt mạch: ngả vàng đất khô ↔ đỏ gạch theo nhiễu, dốc lộ sa thạch (không tuyết: art bible). */
+// Bảng phụ Dị vực (assets/palette.json riftColors): tro bay, tro than, huyết sậm, than hồng.
+const C_ASH_LIGHT = col(0x8c8580);
+const C_ASH_WARM = col(0x7a706a);
+const C_ASH_DARK = col(0x2a2426);
+const C_ASH_BLOOD = col(0x6e1f24);
+const C_ASH_ROCK = col(0x4a4446);
+/** Đất tro: nền tro bay, ngả tro than và huyết sậm dần về phía bắc (bên kia Giới Khích, z < tâm − 60), lòng khe tối. */
+function ashColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
+  const n = fbm(x * 0.012, z * 0.012, 3, T.def.seed + 300);
+  out.copy(C_ASH_LIGHT).lerp(C_ASH_WARM, Math.min(1, Math.abs(n) * 1.1)).multiplyScalar(0.92 + n * 0.14);
+  const zo = z - T.size / 2;
+  const north = Math.min(1, Math.max(0, (-60 - zo) / 130));
+  if (north > 0) {
+    out.lerp(C_ASH_DARK, north * 0.62);
+    if (n > 0.12) out.lerp(C_ASH_BLOOD, north * Math.min(1, (n - 0.12) * 3) * 0.55);
+  }
+  const trough = Math.min(1, Math.max(0, (66 - h) / 8)); // lòng Giới Khích thấp hơn nền ~14 m
+  if (trough > 0) out.lerp(C_ASH_DARK, trough * 0.85);
+  const slope = 1 - ny;
+  if (slope > 0.12) out.lerp(C_ASH_ROCK, Math.min(1, (slope - 0.12) * 4.5));
+}
+
 function ochreColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
   const n = fbm(x * 0.013, z * 0.013, 2, T.def.seed + 300);
   out.copy(C_OCHRE).lerp(n > 0 ? C_OCHRE_DRY : C_OCHRE_RED, Math.min(1, Math.abs(n) * 0.9)).multiplyScalar(0.94 + n * 0.12);
@@ -169,6 +193,7 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
     return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
   }
   if (OCHRE) return ochreColor(x, z, h, ny, out);
+  if (ASH) return ashColor(x, z, h, ny, out);
   if (!isVanLam()) return genericColor(x, z, h, ny, out);
   const wSect = featureWeight(SECT, x, z);
   const wValley = featureWeight(VALLEY, x, z);
@@ -203,7 +228,7 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
 
 /** Trọng số vùng cho shader mặt đất: x rừng, y đất khô, z đất chết Kiếm Trủng, w dự phòng. */
 function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
-  if (OCHRE || SLATE) {
+  if (OCHRE || SLATE || ASH) {
     // Một lớp nền duy nhất: ở preset Vừa/Thấp lớp nền chọn cứng theo ngưỡng nên mảng đất/đất nứt hiện thành vệt mép gắt (E2-I); biến thiên màu do màu đỉnh (`ochreColor`) lo.
     o[k] = o[k + 1] = o[k + 2] = o[k + 3] = 0;
     return;
@@ -478,6 +503,7 @@ export class Terrain {
     T = levelTerrain();
     VL = T.id === 'van_lam';
     OCHRE = T.id === 'doan_mach';
+    ASH = T.id === 'bac_hoang';
     SLATE = T.id === 'thien_khuyet';
     const COARSE_N = this.COARSE_N;
     const g = buildTileGeometry(0, 0, this.size, COARSE_N, 0);

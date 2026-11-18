@@ -7,7 +7,7 @@ import { SysIcon, type SysIconName } from './icons';
 
 export type Material = 'lacquer' | 'paper';
 export type CornerKind = 'star' | 'moon' | 'sun' | 'plain' | 'cloud';
-export type MapMotif = 'van_lam' | 'doan_mach' | 'van_hai' | 'thien_khuyet';
+export type MapMotif = 'van_lam' | 'doan_mach' | 'van_hai' | 'thien_khuyet' | 'bac_hoang';
 
 /* ───────── góc hoa văn ───────── */
 
@@ -113,6 +113,15 @@ function Motif({ map }: { map: MapMotif }) {
           <path className="ngj-m-far" d="M0 38V26h6v-3h6v3h6v6h8V20h6v-4h6v4h6v8h8v-5h6v15z" />
           <path className="ngj-m-near" d="M-2 40V33h10v-4h8v5h12v-3h10v3h14v6z" />
           <path className="ngj-m-line" d="M24 38v-8M40 38v-10M32 20v6" />
+        </>
+      );
+    case 'bac_hoang':
+      return (
+        <>
+          <path className="ngj-m-sun" d="M50 8a6 6 0 1 0 0 11 4.6 4.6 0 1 1 0-11z" />
+          <path className="ngj-m-far" d="M0 38V31h14l4-5 4 5h12l3-9 3 9h24v7z" />
+          <path className="ngj-m-near" d="M0 40V35h26l4 5zM36 40l4-5h24v5z" />
+          <path className="ngj-m-line" d="M32 12l-3 9 4 6-4 7 3 6" />
         </>
       );
   }

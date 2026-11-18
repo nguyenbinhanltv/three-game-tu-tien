@@ -433,6 +433,10 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     const lv = LEVELS[level];
     if (!lv || lv.dungeon || level === this.levelId) return false;
     if (spawn && !this.validSpawn(level, spawn)) return false;
+    if (lv.minLevel && p.char.level < lv.minLevel) {
+      this.sim.sys(p, 'sys.dungeon_level', { realm: realmName(lv.minLevel), name: t('map.' + level) }, 'bad');
+      return false;
+    }
     if (!o.force) {
       const why = this.sim.leaveBlocker(p, o.combat);
       if (why) {
@@ -446,6 +450,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       for (const m of parties.matesInRoom(p.char.id, this)) {
         if (m === p || m.char.id === p.char.id) continue;
         if (Math.hypot(m.move.x - p.move.x, m.move.z - p.move.z) > TELE_PARTY_R || this.sim.leaveBlocker(m, o.combat)) continue;
+        if (lv.minLevel && m.char.level < lv.minLevel) continue;
         tickets.issue(m.char.id, level, spawn);
         this.sendTransfer(m, level);
       }
