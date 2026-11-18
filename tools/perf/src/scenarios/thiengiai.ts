@@ -9,12 +9,12 @@ export default {
   name: 'thiengiai',
   desc: 'Thiên Giai Hoa Trúc: bộ Liệt Mạch qua tầng Kết Đan/Nguyên Anh/Hóa Thần (kiếm tu); --gender m|f, --video 1',
   usage:
-    '[--size 1920x1080] [--gender m|f] [--video 1] [--set set_<id>] [--levels 20,24] [--ui 0.8|1|1.4: cỡ giao diện ở Cài đặt] [--method lac_kiem_quyet|bat_dong_kim_than|thanh_moc_dan_kinh] [--only 20|24|28|32: chỉ một tầng, quay ~9 s để ghép video chia ba màn]',
+    '[--size 1920x1080] [--gender m|f] [--video 1] [--set set_<id>] [--levels 20,24] [--ui 0.8|1|1.4: cỡ giao diện ở Cài đặt] [--name <tiền tố đạo hiệu, vd Lạc Vân để thử tên nhiều chữ>] [--method lac_kiem_quyet|bat_dong_kim_than|thanh_moc_dan_kinh] [--only 20|24|28|32: chỉ một tầng, quay ~9 s để ghép video chia ba màn]',
   async run(r) {
     const [w, h] = opt('--size', '1920x1080').split('x').map(Number) as [number, number];
     const g = opt('--gender', 'm');
     const { page } = await r.open({
-      name: 'Tg',
+      name: opt('--name', 'Tg'),
       quality: 'high',
       viewport: [w, h],
       seenIntro: true,
