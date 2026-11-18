@@ -1,62 +1,62 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
 import { C, type DmgMsg, FLY_UNLOCK_LEVEL, type FxMsg, type InitMsg, type MoveInput, type MoveState, PF_DEAD, PF_MEDITATING, SECT, ROOM_WORLD, S, type TransferMsg, type SkillDef, CHARGE_MAX, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg } from '@dtl/shared';
-import { knownLevel, levelAssets, levelId, sameLayout, setActiveLevel } from './levelCtx';
+import { knownLevel, levelAssets, levelId, sameLayout, setActiveLevel } from '../base/levelCtx';
 import { FX_TIMELINE, ARTIFACT, METHOD, realmName, skillBar, thanThong10Skill, thanThongSkill, tierBar, SKILL, VARIANTS, t } from '@dtl/content';
-import { visibleView } from './aoiView';
+import { visibleView } from './net/aoiView';
 import { get, pushLog, pushToast, set, type TargetInfo } from '../ui/store';
-import { BlankWatch, canFallback, RENDERER_KEY } from './gpuGuard';
-import { ColliderViz } from './debugColliders';
-import { duckHold, type Sfx, sfx } from './audio';
-import { rememberLevel } from './bootArt';
-import { FootstepDriver } from './footsteps';
-import { Soundscape } from './soundscape';
-import { CamFrame, type ChapterKind } from './chapter';
-import { DeathFx } from './deathFx';
-import { Cutscene } from './cutscene';
-import { LootFly } from './lootFly';
-import { EntityManager, type PState, type WorldView } from './entities';
-import { Environment } from './env';
-import { AmbientParticles } from './ambient';
-import { Butterflies } from './butterflies';
-import { Grass, GRASS_PUSH_SLOTS, type Pusher } from './grass';
+import { BlankWatch, canFallback, RENDERER_KEY } from './core/gpuGuard';
+import { ColliderViz } from './debug/debugColliders';
+import { duckHold, type Sfx, sfx } from './audio/audio';
+import { rememberLevel } from './world/bootArt';
+import { FootstepDriver } from './audio/footsteps';
+import { Soundscape } from './audio/soundscape';
+import { CamFrame, type ChapterKind } from './camera/chapter';
+import { DeathFx } from './fx/deathFx';
+import { Cutscene } from './camera/cutscene';
+import { LootFly } from './fx/lootFly';
+import { EntityManager, type PState, type WorldView } from './entities/entities';
+import { Environment } from './world/env';
+import { AmbientParticles } from './world/ambient';
+import { Butterflies } from './world/butterflies';
+import { Grass, GRASS_PUSH_SLOTS, type Pusher } from './world/grass';
 import { setHeightFog } from '../render/atmosphere';
 import { type RiftVeil } from '../render/riftVeil';
-import { DeadTrees } from './deadTrees';
+import { DeadTrees } from './world/deadTrees';
 import { type EclipseSun } from '../render/eclipse';
 import { Beacons } from '../render/beacons';
 import { PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { createWorldMaterial } from '../render/materials/world';
 import { GRADING_DEFAULT, type GradingName } from '../render/grading';
-import { MusicController } from './music';
-import { withOccluderFade } from './occlusion';
+import { MusicController } from './audio/music';
+import { withOccluderFade } from './world/occlusion';
 import { LanternLights } from '../render/lanternLights';
-import { PropLayer } from './props';
-import { type AssetHandle, assets } from './assets';
-import { prefetchWorldAssets } from './preload';
-import { renderMinimap, Terrain } from './terrain';
-import { MapVis } from './mapVis';
-import { SoulVis } from './soulVis';
-import { CloneVis } from './cloneVis';
-import { loadGroundTextures, type GroundTextures } from './groundTextures';
-import { BASE_ZONE, type ZoneCam } from './camZones';
-import { DamageNumbers, Vfx } from './vfx';
-import { OffscreenIndicators } from './offscreen';
-import { CameraShake } from './shake';
+import { PropLayer } from './world/props';
+import { type AssetHandle, assets } from './core/assets';
+import { prefetchWorldAssets } from './core/preload';
+import { renderMinimap, Terrain } from './world/terrain';
+import { MapVis } from './world/mapVis';
+import { SoulVis } from './fx/soulVis';
+import { CloneVis } from './fx/cloneVis';
+import { loadGroundTextures, type GroundTextures } from '../base/groundTextures';
+import { BASE_ZONE, type ZoneCam } from './camera/camZones';
+import { DamageNumbers, Vfx } from './fx/vfx';
+import { OffscreenIndicators } from './entities/offscreen';
+import { CameraShake } from './camera/shake';
 import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
-import { SkillPoses } from './skillPose';
-import { SkillFx } from './skillFx';
-import { MonFx } from './monFx';
-import { variantFor } from './fxTimeline';
-import { fxQuality, hitStopOn, setFxQuality, setHitStopOn } from './fxSettings';
+import { SkillPoses } from './combat/skillPose';
+import { SkillFx } from './fx/skillFx';
+import { MonFx } from './fx/monFx';
+import { variantFor } from './fx/fxTimeline';
+import { fxQuality, hitStopOn, setFxQuality, setHitStopOn } from './fx/fxSettings';
 import { type FxQuality } from '@dtl/shared';
 import { type SkillEvent } from './character/view';
-import { HitQueue, SwingGuard, type HitSoundLog } from './hitjuice';
-import { debugAllowed, readTestParams } from './testParams';
-import { CharPreview } from './charPreview';
-import { currentSearch, FLAGS } from './flags';
+import { HitQueue, SwingGuard, type HitSoundLog } from './combat/hitjuice';
+import { debugAllowed, readTestParams } from './core/testParams';
+import { CharPreview } from './camera/charPreview';
+import { currentSearch, FLAGS } from '../base/flags';
 import { LoginOptions, QUALITY, isWebGPU, isWorldRoom, levelOfInit, levelOfRoom, serverUrl } from './engine/common';
 import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from './engine/frameLoop';
 import { handleFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
@@ -1012,7 +1012,7 @@ export class Game {
     try {
       localStorage.setItem(RENDERER_KEY, 'webgl2');
     } catch {
-      /* bỏ qua */
+      /* localStorage bị chặn: chỉ lùi WebGL2 cho phiên này */
     }
     pushToast(t('sys.gpu_fallback'), 'bad');
     setTimeout(() => location.reload(), 2500);
@@ -1163,7 +1163,7 @@ export class Game {
     try {
       this.room.leave(true);
     } catch {
-      /* bỏ qua */
+      /* room đã đóng sẵn */
     }
     if (Game.current === this) Game.current = null;
     setActiveLevel('van_lam');

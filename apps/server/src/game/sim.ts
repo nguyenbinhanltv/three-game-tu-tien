@@ -86,6 +86,7 @@ import { parties } from './party';
 import { InventorySystem } from './inventory';
 import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg } from './artifact';
+import { log } from '../log';
 
 
 const INTERACT_RANGE = 9;
@@ -868,7 +869,7 @@ export class GameSim {
       this.soul.sendState(p);
       this.clone.sendState(p);
       this.questEvent(p, 'level', undefined, c.level);
-      console.log(`[level] ${c.name}: ${before} → ${c.level}`);
+      log.info(`[level] ${c.name}: ${before} → ${c.level}`);
     }
   }
 

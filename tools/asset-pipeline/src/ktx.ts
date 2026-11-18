@@ -58,7 +58,7 @@ const EXT: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', '
  * - màu sRGB (base color, emissive): ETC1S chất lượng cao (q192) vì là thứ nhìn thấy trực tiếp;
  * - dữ liệu tuyến tính khác (ORM): ETC1S mức vừa.
  * Client: WebGL2 chuyển mã mọi thứ sang BC7; WebGPU (three r178 không có BC7) nén ETC1S thành BC1/BC3 và giải UASTC ra RGBA8,
- * xem `GameKtx2Loader` ở apps/client/src/game/assets.ts.
+ * xem `GameKtx2Loader` ở apps/client/src/game/core/assets.ts.
  */
 export function encodeArgs(normal: boolean, srgb: boolean): string[] {
   if (normal) return ['--encode', 'uastc', '--uastc_quality', '2', '--uastc_rdo_l', '1.0', '--zcmp', '18'];

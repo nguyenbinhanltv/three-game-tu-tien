@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { type Appearance, genderEnabled, type Gender, HAIRS, isRootId, parseAppearance, type RootId, validName } from '@dtl/shared';
 import { APPEARANCE, t } from '@dtl/content';
-import { assets } from '../game/assets';
-import { playMusic, sfx, unlockAudio } from '../game/audio';
-import { TitleBackdrop } from '../game/backdrop';
-import { lastZoneArt, setBootArt } from '../game/bootArt';
+import { assets } from '../game/core/assets';
+import { playMusic, sfx, unlockAudio } from '../game/audio/audio';
+import { TitleBackdrop } from '../game/world/backdrop';
+import { lastZoneArt, setBootArt } from '../game/world/bootArt';
 import { applyUiArt } from './Art';
 import { CHR_V2_ON } from '../game/character/playerSkins';
 import { Game } from '../game/engine';
-import { prefetchManifest } from '../game/preload';
+import { prefetchManifest } from '../game/core/preload';
 import { Hud } from './Hud';
 import { RootPicker } from './Realm';
 import { Corners } from './ngj';
 import { Portrait } from './Art';
 import { get, type Phase, set, useUI } from './store';
-import { FLAGS, urlParams } from '../game/flags';
+import { FLAGS, urlParams } from '../base/flags';
 
 const GOOGLE_CLIENT_ID = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_GOOGLE_CLIENT_ID ?? '';
 const IS_LOCAL = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname) || window.location.hostname.endsWith('.localhost');
@@ -171,7 +171,6 @@ function Login() {
   useEffect(() => {
     const auto = FLAGS.auto;
     if (auto && DEV_LOGIN && validName(auto) && !needName) Game.connect({ dev: auto.trim(), ap: initialLook(), rt: initialRoot() ?? undefined });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const onToken = (tk: string) => {
     setToken(tk);

@@ -4,12 +4,12 @@ import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { APPEARANCE, SKILLS } from '@dtl/content';
-import { performOpts } from '../skillPose';
-import { AssetCache, type Manifest } from '../assets';
-import { Humanoid } from '../models';
+import { performOpts } from '../combat/skillPose';
+import { AssetCache, type Manifest } from '../core/assets';
+import { Humanoid } from '../core/models';
 import { PLAYER_SKINS, PlayerSkins, SkinnedPlayer } from './playerSkins';
 import type { AnimState } from './view';
-import { nodeGltfLoader } from '../gltfTestLoader';
+import { nodeGltfLoader } from '../core/gltfTestLoader';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;

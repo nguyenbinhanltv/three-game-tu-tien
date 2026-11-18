@@ -1,5 +1,5 @@
 import palette from '../../../../assets/palette.json';
-import { FLAGS } from '../game/flags';
+import { FLAGS } from '../base/flags';
 
 /**
  * Thông số ánh sáng, sương và chỉnh màu: đọc thẳng từ khối `grading` của assets/palette.json

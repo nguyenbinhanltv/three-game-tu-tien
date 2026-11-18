@@ -46,6 +46,7 @@ import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT, SETS } from '@dtl/content';
 import { characters, db, items, ledger, rootForName } from '../db';
 import { methodDefMul, methodOf, sanitizeMethodMeta, type MethodMeta } from './method';
 import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta } from './artifact';
+import { log } from '../log';
 
 export interface CharMeta extends MethodMeta, ArtifactMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
@@ -366,7 +367,7 @@ export class Character {
       for (const id of dropped) d.bump(id, -1);
       return true;
     });
-    if (!ok) console.error('[load] không dọn được món sai ô của nhân vật', this.id, this.txFail);
+    if (!ok) log.error('[load] không dọn được món sai ô của nhân vật', this.id, this.txFail);
     return ok;
   }
 
@@ -512,7 +513,7 @@ export class Character {
         this.txFail = 'dup';
       } else {
         this.txFail = 'db';
-        console.error('[tx] lỗi ghi DB:', reason, msg);
+        log.error('[tx] lỗi ghi DB:', reason, msg);
       }
       return false;
     }
@@ -631,7 +632,7 @@ function parseStoredInst(itemId: string, raw: string | null): ItemInst | null {
   if (!isEquipSlot(kind)) return null;
   try {
     const inst = parseInst(ITEM_SYS, kind, JSON.parse(raw));
-    if (!inst) console.warn('[load] inst trong túi bị bác, về chỉ số mẫu:', itemId);
+    if (!inst) log.warn('[load] inst trong túi bị bác, về chỉ số mẫu:', itemId);
     return inst;
   } catch {
     return null;
@@ -653,22 +654,22 @@ function sanitizeEquip(raw: unknown, gender: string): { equip: Equipment; stray:
     if (!e || typeof e.id !== 'string') continue;
     const kind = ITEM.get(e.id)?.kind;
     if (!kind) {
-      console.warn('[load] bỏ trang bị có mẫu không còn tồn tại:', e.id);
+      log.warn('[load] bỏ trang bị có mẫu không còn tồn tại:', e.id);
       dropped.push(e.id);
       continue;
     }
     // Skin ở ô có chỉ số: không bao giờ hợp lệ (ô đó sẽ vào tính chỉ số, nâng cấp): trả về túi.
     if (!isEquipSlot(kind)) {
-      console.warn('[load] món không phải trang bị nằm ở ô có chỉ số, trả về túi:', e.id, 'ở', k);
+      log.warn('[load] món không phải trang bị nằm ở ô có chỉ số, trả về túi:', e.id, 'ở', k);
       stray.push({ id: e.id, n: 1 });
       continue;
     }
-    if (kind !== k) console.warn('[load] trang bị lệch ô (giữ nguyên):', e.id, 'ở', k);
+    if (kind !== k) log.warn('[load] trang bị lệch ô (giữ nguyên):', e.id, 'ở', k);
     const it: InvItem = { id: e.id, n: 1 };
     if (e.plus && e.plus > 0) it.plus = Math.min(e.plus | 0, MAX_ENHANCE);
     const inst = e.inst ? parseInst(ITEM_SYS, k, e.inst) : null;
     if (inst) it.inst = inst;
-    else if (e.inst) console.warn('[load] inst trang bị bị bác, về chỉ số mẫu:', e.id, k);
+    else if (e.inst) log.warn('[load] inst trang bị bị bác, về chỉ số mẫu:', e.id, k);
     out[k] = it;
   }
   // Ô ngoại hình: chỉ giữ món còn tồn tại và đúng loại; không có plus/inst (skin không có chỉ số).
@@ -680,7 +681,7 @@ function sanitizeEquip(raw: unknown, gender: string): { equip: Equipment; stray:
     if (def?.kind === k && wearableBy(def, gender)) out[k] = { id: e.id, n: 1 };
     else if (def) {
       // Món khác loại hoặc sai giới nằm ở ô skin: trả về túi, giữ cấp cường hóa và dòng đã roll nếu là trang bị.
-      console.warn('[load] món không hợp lệ ở ô ngoại hình (sai loại hoặc sai giới), trả về túi:', e.id);
+      log.warn('[load] món không hợp lệ ở ô ngoại hình (sai loại hoặc sai giới), trả về túi:', e.id);
       const it: InvItem = { id: e.id, n: 1 };
       if (isEquipSlot(def.kind)) {
         if (e.plus && e.plus > 0) it.plus = Math.min(e.plus | 0, MAX_ENHANCE);
@@ -689,7 +690,7 @@ function sanitizeEquip(raw: unknown, gender: string): { equip: Equipment; stray:
       }
       stray.push(it);
     } else {
-      console.warn('[load] bỏ món ở ô ngoại hình có mẫu không còn tồn tại:', e.id);
+      log.warn('[load] bỏ món ở ô ngoại hình có mẫu không còn tồn tại:', e.id);
       dropped.push(e.id);
     }
   }

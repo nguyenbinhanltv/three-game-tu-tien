@@ -10,6 +10,7 @@ import { DuelSystem } from '../duel';
 import { CloneSystem } from '../clone';
 import { DomainSystem } from '../domain';
 import { parties } from '../party';
+import { log } from '../../log';
 
 /** Phần GameSim mà hệ độ kiếp cần. */
 export interface TribulationCtx {
@@ -223,7 +224,7 @@ export class TribulationSystem {
       this.c.questEvent(p, 'breakthrough', def.id, 1);
       this.c.questEvent(p, 'level', undefined, c.level);
       this.c.savePlayer(p);
-      console.log(`[trib] ${c.name} đạt ${realmName(c.level)} (kiếp ${def.id})`);
+      log.info(`[trib] ${c.name} đạt ${realmName(c.level)} (kiếp ${def.id})`);
     } else {
       const lost = c.loseXp(def.failXpLoss);
       if (!silent) this.c.sys(p, lost > 0 ? 'sys.trib_fail' : 'sys.trib_fail_free', { n: lost }, 'bad');

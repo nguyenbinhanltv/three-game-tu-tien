@@ -118,7 +118,7 @@ async function probe(page: Page): Promise<Probe> {
       out.webgl2.renderer = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
       out.webgl2.compressed = (gl.getSupportedExtensions() ?? []).filter((e) => /compressed|compression/.test(e)).sort();
     }
-    // Cùng bảng MIME và thứ tự chọn với apps/client/src/game/audio.ts.
+    // Cùng bảng MIME và thứ tự chọn với apps/client/src/game/audio/audio.ts.
     const MIME: Record<string, string[]> = {
       webm: ['audio/webm; codecs="opus"'],
       ogg: ['audio/ogg; codecs="opus"', 'audio/ogg; codecs="vorbis"'],
@@ -304,7 +304,7 @@ async function runGame(browser: Browser, label: string, outDir: string, preset: 
 async function checkAssets(page: Page): Promise<Assets> {
   const samples = KTX2_SAMPLES.map((f) => ({ file: f, b64: fs.readFileSync(path.join(FIXTURES, f)).toString('base64') }));
   return page.evaluate(async (samples) => {
-    const A = await import(/* @vite-ignore */ '/src/game/assets.ts' as string);
+    const A = await import(/* @vite-ignore */ '/src/game/core/assets.ts' as string);
     const g = window.__game!;
     const out: Assets = { glb: [], ktx2: [] };
     const cache = new A.AssetCache();

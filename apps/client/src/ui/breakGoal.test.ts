@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { breakGoal } from './breakGoal';
 import { uiScaleFor } from './uiScale';
-import { keepMonsterTarget } from '../game/targetRange';
+import { keepMonsterTarget } from '../game/combat/targetRange';
 
 describe('mốc đột phá trên khung nhân vật', () => {
   const c = (level: number, bk: number, full = false) => ({ level, bk, xp: full ? 100 : 40, xpNeed: 100 });

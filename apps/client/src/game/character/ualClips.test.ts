@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
+import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../core/assets';
 import { HUMAN_UAL_LIB, retargetClips } from './animLib';
 import { clipNamesOf, HUMAN_CLIPS } from './humanClips';
 

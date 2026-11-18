@@ -1,19 +1,19 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
 import { C, caveBoundOf, TELE_CAST_MS, cloneMoveState, canFlyAt, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type MoveCtx, type MoveInput, type MoveState, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_TRIBULATION, STEP, stepMove, type SkillDef, CHARGE_MAX, needsTarget, PF_SOUL, SOUL_RANGE, SOUL_SCOUT, skyFlightUnlocked, domainRadius } from '@dtl/shared';
-import { groundAt, levelId, levelTerrain } from '../levelCtx';
+import { groundAt, levelId, levelTerrain } from '../../base/levelCtx';
 import { LEVELS, MONSTER, resolveBarSkill, SKILLS, t } from '@dtl/content';
 import { get, pushLog, pushToast, set } from '../../ui/store';
-import { frameStats, RENDER_FAIL_LIMIT, RENDERER_KEY, rendererChoice } from '../gpuGuard';
-import { setListener } from '../audio';
-import { type PState } from '../entities';
-import { monsterPushRadius, pickPushers } from '../grass';
+import { frameStats, RENDER_FAIL_LIMIT, RENDERER_KEY, rendererChoice } from '../core/gpuGuard';
+import { setListener } from '../audio/audio';
+import { type PState } from '../entities/entities';
+import { monsterPushRadius, pickPushers } from '../world/grass';
 import { postParams } from '../../render/post';
-import { updateOcclusion } from '../occlusion';
-import { assets } from '../assets';
-import { BASE_ZONE, easeZoneCam, zoneCamera } from '../camZones';
+import { updateOcclusion } from '../world/occlusion';
+import { assets } from '../core/assets';
+import { BASE_ZONE, easeZoneCam, zoneCamera } from '../camera/camZones';
 import { isHeld } from '../../input/bindings';
-import { ULT_FOV, ultFovAt } from '../hitjuice';
+import { ULT_FOV, ultFovAt } from '../combat/hitjuice';
 import { SLOWMO, _camFocus, _shakeLook, _shakePos, _v, isWebGPU } from './common';
 import { runCine } from './cine';
 import { applyDmg, ensureCloneVis, updateSoulVis } from './fxMsgs';
@@ -578,14 +578,14 @@ export function pickRenderer(eng: Game, param: string | null): boolean {
   try {
     stored = localStorage.getItem(RENDERER_KEY);
   } catch {
-    /* bỏ qua */
+    /* localStorage bị chặn: coi như chưa lưu lựa chọn backend */
   }
   const c = rendererChoice(param, stored);
   if (c.storage === 'clear') {
     try {
       localStorage.removeItem(RENDERER_KEY);
     } catch {
-      /* bỏ qua */
+      /* localStorage bị chặn: không xóa được, lần sau tự chọn lại */
     }
   }
   return c.forceWebGL;
