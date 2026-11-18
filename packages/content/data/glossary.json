@@ -396,7 +396,8 @@
     "itm_than_tang_ngoc": "Thần Tàng Ngọc",
     "itm_co_thanh_phien": "Cổ Thành Phiến",
     "itm_tan_giac": "Tẫn Giác",
-    "itm_tinh_vu": "Tịnh Quang Vũ"
+    "itm_tinh_vu": "Tịnh Quang Vũ",
+    "itm_kim_da_mien": "Kim Dạ Miện Phiến"
   },
   "stationNpcs": {
     "npc_to_van_ngu": "Tô Vãn Ngư",
@@ -473,6 +474,7 @@
     "boss_tan_hoa_kiem_co": "Tẫn Hỏa Kiếm Cơ",
     "boss_kim_da_ma_hau": "Kim Dạ Ma Hậu",
     "boss_thu_khich_duc_chu": "Thủ Khích Dực Chủ",
-    "mon_kim_da_bong": "Bóng Kim Dạ"
+    "mon_kim_da_bong": "Bóng Kim Dạ",
+    "mon_kd_bong_mac_ca": "Bóng Mặc Cả"
   }
 }

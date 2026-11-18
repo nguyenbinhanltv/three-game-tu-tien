@@ -201,6 +201,9 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_tan_chung: { asset: 'mon_tan_chung', clips: MQ_ZOMBIE_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.2, lift: 0.3, lazy: true, level: 'bac_hoang', moves: MQ_ZOMBIE_MOVES, mannequin: true },
   mon_giac_kiem_trong_binh: { asset: 'mon_giac_kiem_trong_binh', clips: MQ_SHIELD_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, metalness: 0, palette: { dark: '#2e2c3a', light: '#d2c4a6', glow: '#d9a93e' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
   elite_hoi_giac_cu_thu: { asset: 'elite_hoi_giac_cu_thu', clips: MQ_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, palette: { dark: '#34303a', light: '#cdbfb2', glow: '#ff5a3a' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
+  // Kim Dạ Cung (DV-3E): hai quái mới dùng lại lưới DV-2 đợt 2, đổi màu theo bảng rift_* (Châm Bà: vải liệm nhạt; Huyết Giác: đỏ máu + kim dát).
+  mon_kd_trien_bo_cham_ba: { asset: 'mon_tan_chung', clips: MQ_ZOMBIE_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#e6d6b4', rim: 0.25, lift: 0.3, lazy: true, level: 'kim_da_cung', moves: MQ_ZOMBIE_MOVES, mannequin: true },
+  elite_kd_huyet_giac_ma_tuong: { asset: 'elite_hoi_giac_cu_thu', clips: MQ_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.35, palette: { dark: '#3a1a20', light: '#d8c0a0', glow: '#e0b44a' }, lazy: true, level: 'kim_da_cung', moves: MQ_MOVES, mannequin: true },
   // DV-2 đợt 3 (boss hình người Dị Vực, docs/dv2-mon/README.md): xương Mannequin + clip UAL. Kiếm Cơ cầm kiếm Tẫn Hỏa rời (`weapon`).
   boss_tan_hoa_kiem_co: { asset: 'boss_tan_hoa_kiem_co', clips: { ...MQ_CLIPS, cast: 'Idle_Loop' }, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.35, palette: { dark: '#3c2c26', light: '#f0d2b0', glow: '#ff7a30' }, lift: 0.3, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true, weapon: { asset: 'prop_kiem_tan_hoa', scale: 1.5 } },
   // DV-2 đợt 4: Thủ Khích Dực Chủ (Aetherion Nemesis), bốn cánh bằng chuỗi xương; texture tự có màu tím nên không đổi bảng màu, chỉ nâng sáng để đọc ở 12–24 m.
@@ -208,6 +211,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   boss_kim_da_ma_hau: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.5, lift: 0.45, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
   // Bóng của Ma Hậu (decoy `mirror.decoys`): cùng model, mờ và ngả vàng dát.
   mon_kim_da_bong: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffe0a0', rim: 0.5, lift: 0.3, ghost: 0.55, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
+  mon_kd_bong_mac_ca: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffe0a0', rim: 0.5, lift: 0.3, ghost: 0.55, lazy: true, level: 'kim_da_cung', moves: MQ_MOVES, mannequin: true },
 };
 
 interface Template {

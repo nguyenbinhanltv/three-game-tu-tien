@@ -506,7 +506,11 @@ const level = {
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
   pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 80 })),
   // Cổng vào Xích Tẫn Khích (DV-3D), cách poi cong_xich_tan_khich 18 m về phía tâm bản đồ.
-  portals: [{ x: W(337), z: W(-387), r: 12, to: 'xich_tan_khich' }],
+  portals: [
+    { x: W(337), z: W(-387), r: 12, to: 'xich_tan_khich' },
+    // Cổng vào Kim Dạ Cung (DV-3E), cách poi cong_kim_da_cung 18 m về phía tâm bản đồ.
+    { x: W(-337), z: W(-393), r: 12, to: 'kim_da_cung' },
+  ],
   // Vị trí năm Trấn Giới Bia (cơ chế giới áp/thắp bia là DV3-C; nhiệm vụ `touch` dùng các điểm này).
   spots: [...STELES, ...EXTRA_SPOTS].map((b) => ({ id: b.id, zone: b.zone, x: W(b.off[0]), z: W(b.off[1]) })),
   escorts: ESCORTS,
