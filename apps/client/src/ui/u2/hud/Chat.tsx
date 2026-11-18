@@ -10,6 +10,7 @@ import { blurAfterPointer } from './common';
 import { CHAT_MIN, chatLimits, designArea } from './layout';
 import { useHudMode } from './hudVars';
 import { Fold } from './QuestChat';
+import { itemQuality } from './chatItem';
 
 const CHAT_IDLE_MS = 12_000;
 
@@ -38,8 +39,7 @@ function lineBody(l: Line): ReactNode {
   const name = def ? itemName(def.id) : '';
   const at = name ? l.text.indexOf(name) : -1;
   if (!def || at < 0) return l.text;
-  // Trang bị đã roll có phẩm riêng (0..4 = Phàm..Thiên) thì lấy phẩm đó, còn lại theo `rarity` của mẫu.
-  const q = l.item?.q !== undefined ? l.item.q + 1 : def.rarity;
+  const q = itemQuality(l.item?.q, def.rarity);
   const desc = t(`item.${def.id}.desc`);
   return (
     <>
