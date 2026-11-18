@@ -1111,16 +1111,15 @@ async function main() {
     // c. Giao chiến thật (tự đánh một con sói): bắt đầu niệm rồi ra chiêu thì lượt niệm bị hủy; đang giao chiến thì không bắt đầu niệm được.
     await sayT(ta.room, 'tp 2048 2088');
     await sayT(ta.room, 'tele all');
-    // Không phụ thuộc thời gian: `/gm spawn` đặt sói cách người gọi 8 m và nó đuổi người gọi, nên để tài khoản `tb` gọi sói còn `ta` đứng xa.
-    // `ta` ở A, sói ở W = A + (20, 0) (ngoài tầm aggro 12 m, trong tầm 26 m của skl_phi_kiem); `tb` ở W − 8·(sin yaw, cos yaw) với yaw 0, tức A + (20, −8),
-    // và bất tử nên sói chỉ đuổi `tb` (đi ra xa `ta`). Mỗi tài khoản có giới hạn chat riêng nên không vướng 800 ms giữa hai lệnh.
-    await sayT(tb.room, 'god on');
-    await sayT(tb.room, `tp ${(2048 + 20).toFixed(1)} ${(2088 - 8).toFixed(1)}`);
-    tb.room.send(C.INPUT, { s: 5000, mx: 0, mz: 0, yaw: 0, f: 0 });
-    await W(400);
-    await sayT(tb.room, 'spawn mon_soi_xam 1');
+    // Không phụ thuộc thời gian: `/gm spawn` đặt sói cách người gọi 8 m, ở p + 8·(sin yaw, cos yaw), và nó đuổi người gọi; nên để tài khoản `tb` gọi sói còn `ta` đứng xa.
+    // Sói cần ở W = A + (20, 0) (cách `ta` ở A 20 m: ngoài tầm aggro 12 m, trong tầm 26 m của skl_phi_kiem). Yaw của `tb` đọc từ state (input đứng yên không đổi yaw),
+    // rồi đặt `tb` ở W − 8·(sin yaw, cos yaw) trước khi gọi. `tb` bất tử nên sói chỉ đuổi `tb`. Mỗi tài khoản có giới hạn chat riêng nên không vướng 800 ms.
     const WX = 2048 + 20;
     const WZ = 2088;
+    const tbYaw = mp(tb.room, tb.init.sid).yaw;
+    await sayT(tb.room, 'god on');
+    await sayT(tb.room, `tp ${(WX - Math.sin(tbYaw) * 8).toFixed(1)} ${(WZ - Math.cos(tbYaw) * 8).toFixed(1)}`);
+    await sayT(tb.room, 'spawn mon_soi_xam 1');
     const here = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
     const wolf = [...(ta.room.state as { monsters: Map<string, M> }).monsters.entries()].filter(([, m]) => m.t === 'mon_soi_xam' && m.st !== MS_DEAD).sort((x, y) => Math.hypot(x[1].x - WX, x[1].z - WZ) - Math.hypot(y[1].x - WX, y[1].z - WZ))[0];
     if (!wolf) check('dựng được sói để thử giao chiến', false);
