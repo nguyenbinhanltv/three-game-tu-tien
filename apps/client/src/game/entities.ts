@@ -1,79 +1,28 @@
-import { currentSearch } from './flags';
 import { monFlagEdge, monHidden, type MonFlagEdge } from './monFlags';
 import * as THREE from 'three/webgpu';
 import { uiScale } from '../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
-import { locoDirOf, inSkyBand, PF_SOUL, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
+import { locoDirOf, inSkyBand, PF_SOUL, MF_CHANT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
 import { groundAt } from './levelCtx';
-import { swordOverride } from './testParams';
 import { gatesOf, type Gate } from './gates';
-import { APPEARANCE, ITEM, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';
+import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t } from '@dtl/content';
 import { hoverBob, hoverTarget, stepHover } from './hover';
-import { bodyRadiusOf, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
+import { BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
-import { hashName as hashStr, legacyAppearance, type EscortMsg, type QuestView } from '@dtl/shared';
+import { hashName as hashStr, type EscortMsg, type QuestView } from '@dtl/shared';
 import { LABELS, type Label } from './labelBatch';
-import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
-import { type AnimState, type CharacterView, type MonsterView, type SkillEvent } from './character/view';
+import { buildNode, disposeLabel, makeLabel } from './models';
+import { type AnimState, type CharacterView, type SkillEvent } from './character/view';
 import { MonsterSkins } from './character/monsterSkins';
 import { NPC_SKINS, NpcSkins } from './character/npcSkins';
 import { type PlayerLook, PlayerSkins } from './character/playerSkins';
-import { BAR_ALLY, BAR_BOSS, BAR_ENEMY, HeadBars } from './headBars';
-import { HpTrail } from './hpTrail';
+import { HeadBars } from './headBars';
 import type { StopPair } from './hitjuice';
 import { ArtifactVis } from './artifactVis';
+import { PState, MState, PlayerVis, MonVis, lookOf } from './entityVis';
+export { MonVis, PlayerVis } from './entityVis';
+export type { MState, PState } from './entityVis';
 
-export interface PState {
-  name: string;
-  x: number;
-  y: number;
-  z: number;
-  yaw: number;
-  vy: number;
-  gr: boolean;
-  fl: number;
-  lv: number;
-  hp: number;
-  mhp: number;
-  mp: number;
-  mmp: number;
-  seq: number;
-  wp: string;
-  /** Bậc phát sáng của vũ khí (0/1/2); server cũ chưa gửi thì undefined. */
-  wg?: number;
-  /** Ngoại hình: giới tính, id màu áo (appearance.json). Server cũ chưa gửi thì undefined. */
-  g?: string;
-  dye?: string;
-  /** Kiểu tóc nhân vật nền v2. */
-  hr?: string;
-  /** id vật phẩm skin đang mặc (ô ngoại hình); server cũ chưa gửi thì undefined. */
-  sn?: string;
-  /** Bộ trang bị đang nhuộm áo/ánh kiếm (id bộ); '' hoặc thiếu = không. */
-  sk?: string;
-  /** Mã phụ kiện hình dáng của đồ bộ (`accessoryCode`); '' hoặc thiếu = không. */
-  sa?: string;
-  /** id pháp bảo phụ đang đeo (P3-8); '' hoặc thiếu = không. */
-  art?: string;
-  /** id công pháp đang tu (chọn giọng động tác, K-5); '' hoặc thiếu = chưa chọn. */
-  mt?: string;
-}
-export interface MState {
-  t: string;
-  x: number;
-  y: number;
-  z: number;
-  yaw: number;
-  hp: number;
-  mhp: number;
-  lv: number;
-  st: number;
-  /** Cờ MF_* và thời điểm server (ms) hết trạng thái đó. */
-  mf?: number;
-  ce?: number;
-  /** Boss: pha hiện tại (0 = pha đầu) và thanh phá thế 0–100. */
-  ph?: number;
-  pz?: number;
-}
 export interface NState {
   t: string;
   x: number;
@@ -88,210 +37,11 @@ export interface WorldView {
   nodes: Map<string, NState>;
 }
 
-const SWORD_FORCED = swordOverride(currentSearch(), SWORD_MODELS);
-
-/** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
-function lookOf(s: PState): PlayerLook {
-  const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye, ...(s.hr ? { hair: s.hr } : {}) } : legacyAppearance(APPEARANCE, s.name)), w: SWORD_FORCED ?? swordModelOf(s.wp, s.wg ?? 0) };
-  const look: PlayerLook = s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
-  const skin = s.sn ? ITEM.get(s.sn)?.skin : undefined;
-  const full = s.sa ? { ...look, acc: s.sa } : look;
-  return skin ? { ...full, skin } : full;
-}
-
 function angleLerp(a: number, b: number, k: number): number {
   let d = b - a;
   while (d > Math.PI) d -= Math.PI * 2;
   while (d < -Math.PI) d += Math.PI * 2;
   return a + d * k;
-}
-
-/** Thanh trên đầu còn hiện bao lâu (giây) sau lần cuối máu đổi. */
-const COMBAT_LINGER = 6;
-/** Tốc độ hiện/ẩn thanh (độ mờ mỗi giây). */
-const BAR_FADE = 6;
-
-/**
- * Trạng thái hiển thị thanh trên đầu của một thực thể: đoạn trễ, lúc hết giao chiến, độ mờ.
- * Chỉ hiện khi đang giao chiến (máu vừa đổi, quái đang đuổi/đánh) hoặc đang là mục tiêu.
- */
-class BarState {
-  trail = new HpTrail(1);
-  alpha = 0;
-  private lastHp = -1;
-  private combatUntil = 0;
-  constructor(
-    public width: number,
-    public kind: number,
-  ) {}
-  /** Trả về độ mờ (0 thì không vẽ). */
-  tick(hp: number, mhp: number, engaged: boolean, dead: boolean, dt: number, time: number): number {
-    const frac = mhp > 0 ? hp / mhp : 0;
-    if (this.lastHp >= 0 && hp !== this.lastHp) this.combatUntil = time + COMBAT_LINGER;
-    this.lastHp = hp;
-    const show = !dead && (engaged || time < this.combatUntil);
-    if (show && this.alpha <= 0) this.trail.reset(frac);
-    this.alpha = Math.max(0, Math.min(1, this.alpha + (show ? BAR_FADE : -BAR_FADE) * dt));
-    if (dead) this.alpha = 0;
-    this.trail.update(frac, dt);
-    return this.alpha;
-  }
-}
-
-export class PlayerVis {
-  model: CharacterView;
-  /** Ngoại hình model đang dựng (đổi thì dựng lại). */
-  look: PlayerLook;
-  /** Đang dùng model khối tạm trong lúc asset model mới còn nạp. */
-  skinPending: boolean;
-  label: Label;
-  bar = new BarState(1.3, BAR_ALLY);
-  x = 0;
-  y = 0;
-  z = 0;
-  yaw = 0;
-  speed = 0;
-  fl = 0;
-  lv = 0;
-  /** Pháp bảo phụ đang đeo (nạp lười khi có `s.art`). */
-  art: ArtifactVis | null = null;
-  /** Bản mệnh pháp bảo Ngưng Đan Lô (từ Kết Đan, cấp 20; E2-E). */
-  lo: ArtifactVis | null = null;
-  /** Công pháp đang tu (từ `s.mt`): chọn giọng động tác của chiêu. */
-  mt = '';
-  /** Vận tốc hiển thị đã làm mượt (m/s) để suy ra đi lùi/ngang so với hướng nhìn (K-4). */
-  mvx = 0;
-  mvz = 0;
-  /** Vị trí vài chục khung gần nhất (để lướt hiển thị biết xuất phát từ đâu, K-4). */
-  hist: { t: number; x: number; z: number }[] = [];
-  /** Chuyển sự kiện chiêu của model ra ngoài (engine/VFX/âm thanh/camera đăng ký). */
-  onSkillEvent: ((sid: string, e: SkillEvent) => void) | null = null;
-  bindEvents(): void {
-    this.model.onSkillEvent = (e) => this.onSkillEvent?.(this.sid, e);
-  }
-  constructor(
-    public sid: string,
-    public s: PState,
-    public local: boolean,
-    skins: PlayerSkins,
-  ) {
-    this.look = lookOf(s);
-    this.model = skins.create(this.look);
-    this.skinPending = skins.pending(this.look);
-    this.label = makeLabel(s.name, local ? '#bfe8ff' : '#ffffff', realmTag(s.lv), realmTagColor(s.lv));
-    this.lv = s.lv;
-    this.label.position.y = labelY(this.model);
-    this.model.root.add(this.label);
-    this.x = s.x;
-    this.y = s.y;
-    this.z = s.z;
-    this.yaw = s.yaw;
-    this.bindEvents();
-  }
-  refreshLabel() {
-    this.model.root.remove(this.label);
-    disposeLabel(this.label);
-    this.label = makeLabel(this.s.name, this.local ? '#bfe8ff' : '#ffffff', realmTag(this.s.lv), realmTagColor(this.s.lv));
-    this.label.position.y = labelY(this.model);
-    this.model.root.add(this.label);
-    this.lv = this.s.lv;
-  }
-  /** Thay model (asset nạp xong, đổi màu áo): giữ nhãn, chỗ trong cảnh; hit-stop/giật lùi dở dang bỏ đi. */
-  swapModel(next: CharacterView, look: PlayerLook): void {
-    const parent = this.model.root.parent;
-    this.model.root.remove(this.label);
-    this.model.root.removeFromParent();
-    this.model.dispose();
-    this.model = next;
-    this.bindEvents();
-    this.look = look;
-    this.label.position.y = labelY(next);
-    next.root.add(this.label);
-    parent?.add(next.root);
-  }
-  dispose() {
-    disposeLabel(this.label);
-    this.art?.dispose();
-    this.lo?.dispose();
-    this.model.dispose();
-  }
-}
-
-/** Nhãn tên trên đầu: model khối cao 1,95 m giữ chỗ cũ (2,55); model có xương theo chiều cao thật. */
-function labelY(m: CharacterView): number {
-  return m instanceof Humanoid ? 2.55 : m.height + 0.75;
-}
-
-export class MonVis {
-  model: MonsterView;
-  /** Đang dùng model khối tạm trong lúc asset model mới còn nạp. */
-  skinPending: boolean;
-  label: Label | null = null;
-  bar: BarState;
-  /** Độ cao tâm thanh trên đầu so với chân (m, đã tính scale). */
-  barY: number;
-  x: number;
-  y: number;
-  z: number;
-  yaw: number;
-  speed = 0;
-  lv = -1;
-  wasAttack = false;
-  /** Cờ `mf` ở khung trước (E1-E: phát hiện bật/tắt phản đòn, yếu điểm, chui đất). */
-  mf0 = 0;
-  /** Độ cao bay lơ lửng đang hiển thị (m, `MonsterDef.hover`, xem `hover.ts`). */
-  hover = 0;
-  /** Độ lệch tách thân đang hiển thị (P2-E2, chỉ trình bày) và bán kính thân. */
-  sepX = 0;
-  sepZ = 0;
-  readonly radius: number;
-  constructor(
-    public id: string,
-    public s: MState,
-    skins: MonsterSkins,
-  ) {
-    const def = MONSTER.get(s.t)!;
-    this.model = skins.create(def);
-    this.skinPending = skins.pending(def);
-    this.bar = new BarState(def.boss ? 3 : 1.5, def.boss ? BAR_BOSS : BAR_ENEMY);
-    this.barY = this.model.height + 0.35 * def.scale;
-    this.radius = bodyRadiusOf(def);
-    this.x = s.x;
-    this.y = s.y;
-    this.z = s.z;
-    this.yaw = s.yaw;
-  }
-  /** Asset model mới nạp xong: thay model khối tạm bằng model mới (giữ nhãn, vị trí). */
-  swapModel(next: MonsterView, myLevel: number): void {
-    const parent = this.model.root.parent;
-    if (this.label) this.model.root.remove(this.label);
-    this.model.root.removeFromParent();
-    this.model.dispose();
-    this.model = next;
-    this.barY = next.height + 0.35 * next.def.scale;
-    parent?.add(next.root);
-    this.refreshLabel(myLevel);
-  }
-  refreshLabel(myLevel: number) {
-    if (this.label) {
-      this.model.root.remove(this.label);
-      disposeLabel(this.label);
-    }
-    const def = this.model.def;
-    const d = this.s.lv - myLevel;
-    const color = def.boss ? '#ffb347' : def.elite ? '#7fd4ff' : d >= 3 ? '#ff6b5e' : d >= 1 ? '#ffd166' : d <= -5 ? '#9aa3ad' : '#f2f2f2';
-    this.label = makeLabel(def.elite ? `${monsterName(def.id)} · ${t('ui.monster.elite')}` : monsterName(def.id), color, t('ui.level_short', { n: this.s.lv }), '#c9d4de');
-    this.label.position.y = this.model.height / def.scale + 0.95;
-    this.label.scale.multiplyScalar(1 / def.scale);
-    if (def.boss) this.label.scale.multiplyScalar(1.8);
-    else if (def.elite) this.label.scale.multiplyScalar(1.25);
-    this.model.root.add(this.label);
-    this.lv = this.s.lv;
-  }
-  dispose() {
-    if (this.label) disposeLabel(this.label);
-    this.model.dispose();
-  }
 }
 
 interface NpcVis {
@@ -368,16 +118,6 @@ const LABEL_FADE = { full: 45, none: 70 };
 function labelOpacity(dist: number, keep: boolean): number {
   if (keep) return 1;
   return Math.max(0, Math.min(1, (LABEL_FADE.none - dist) / (LABEL_FADE.none - LABEL_FADE.full)));
-}
-
-/** Dòng cảnh giới trên bảng tên người chơi: `[Ngưng Khí tầng 9]`. */
-function realmTag(level: number): string {
-  return t('ui.nameplate.realm', { realm: realmName(level) });
-}
-
-/** Màu dòng cảnh giới theo đại cảnh giới: Ngưng Khí vải ngà, Trúc Cơ kim quang (art bible mục 4: attire_ivory, spirit_gold). */
-function realmTagColor(level: number): string {
-  return level >= TRUC_CO_LEVEL ? '#ffde96' : '#e6ddcb';
 }
 
 interface LodEntry {
