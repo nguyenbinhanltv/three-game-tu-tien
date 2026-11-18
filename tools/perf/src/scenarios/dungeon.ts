@@ -8,7 +8,7 @@ import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
 
 /** Thứ tự màu cột gương trong tin hệ thống của đố ba gương (E3-M) ↔ chỉ số điểm trong `puzzle.points`. */
-const COLORS = ['Lam', 'Đỏ', 'Vàng'];
+const COLORS = ['Lam', 'Đỏ', 'Vàng', 'Tím'];
 
 export default {
   name: 'dungeon',
@@ -142,6 +142,19 @@ export default {
         }
         log[`${tag}-khe`] = { hit };
         await shot(`${tag}-khe-phan`, 600);
+      }
+      const night = MONSTER.get(lead)?.kd?.night;
+      if (night) {
+        // Kim dạ (DV-3E): boss ở pha 3, đứng trong vòng bia sáng, chờ boss dập bia, rồi bước ra ngoài vòng cho thấy giới áp.
+        await gm(page, 'hurt 30', 900);
+        await gm(page, 'heal', 600);
+        const s0 = night.steles[0];
+        await gm(page, `tp ${s0.x} ${s0.z}`, 900);
+        await cam(page, { pitch: 0.55, dist: 30, yaw: 0 });
+        for (let i = 0; i < 6; i++) await shot(`${tag}-kim-da-${i}`, 2500);
+        await gm(page, `tp ${s0.x} ${s0.z + 30}`, 900);
+        await shot(`${tag}-kim-da-ngoai-vong`, 1500);
+        log[`${tag}-kim-da`] = { text: /Sảnh chìm vào bóng tối/.test(await page.evaluate(() => document.body.innerText)) };
       }
       // Không dịch chuyển đi xa lúc dọn: quái mất mục tiêu sẽ bỏ đuổi và miễn sát thương (evade), killall không hạ được.
       await gm(page, 'hurt 1', 900);

@@ -80,7 +80,7 @@ function veilMaterial(strength: number): THREE.MeshBasicNodeMaterial {
 }
 
 /** Lòng khe: dải phủ đáy, gân sáng như vỉa than (nhiễu hai tầng), mép tan, ngả tím về phía bắc. */
-function floorMaterial(): THREE.MeshBasicNodeMaterial {
+function floorMaterial(k = 1, endFade = false): THREE.MeshBasicNodeMaterial {
   const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
   const across = uv().x.mul(2).sub(1); // −1..1 ngang khe
   const p = positionWorld.xz;
@@ -96,12 +96,31 @@ function floorMaterial(): THREE.MeshBasicNodeMaterial {
   const dist = length(positionView);
   const near = mix(float(0.55), float(1), smoothstep(8, 70, dist));
   mat.colorNode = col;
-  mat.opacityNode = clamp(inten.mul(near).mul(1.1), 0, 1);
+  const ends = endFade ? smoothstep(0, 0.12, uv().y).mul(smoothstep(1, 0.88, uv().y)) : float(1); // uv.y = vị trí dọc vết nứt (chỉ khi `endFade`)
+  mat.opacityNode = clamp(inten.mul(near).mul(ends).mul(1.1 * k), 0, 1);
   return mat;
 }
 
 /** Dựng ba lớp. `heightAt` lấy mặt đất thật để dải lòng khe nằm sát đáy (khe có nếp gấp ±3 m). */
-export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number, z: number) => number): RiftVeil {
+export interface RiftVeilOpts {
+  /** Chiều cao màn dọc (m); mặc định `RIFT_VEIL_HEIGHT`. */
+  height?: number;
+  /** Có dựng các sườn chéo ngang khe không (mặc định có). */
+  ribs?: boolean;
+  /** Nửa bề ngang dải lòng khe (m); mặc định 17. */
+  floorHalf?: number;
+  /** Nhân độ đậm màn dọc (mặc định 1). */
+  strength?: number;
+  /** Nhân độ đậm dải lòng khe (mặc định 1). */
+  floorStrength?: number;
+  /** Dải lòng khe tan dần ở hai đầu (vết nứt ngắn trong phó bản); mặc định không. */
+  endFade?: boolean;
+}
+
+export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number, z: number) => number, opts: RiftVeilOpts = {}): RiftVeil {
+  const H = opts.height ?? RIFT_VEIL_HEIGHT;
+  const floorHalf = opts.floorHalf ?? 17;
+  const k = opts.strength ?? 1;
   const group = new THREE.Group();
   group.name = 'rift-veil';
   const geos: THREE.BufferGeometry[] = [];
@@ -119,10 +138,11 @@ export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number,
 
   // Màn dọc: mép tan ở hai đầu khe.
   const fade = (i: number, n: number): number => sstep(0, 1.6, Math.min(i, n - 1 - i));
-  add(sheet(path, (i) => path[i].y - 4, RIFT_VEIL_HEIGHT, [0, 0.015, 0.06, 0.16, 0.32, 0.55, 0.8, 1], fade), veilMaterial(0.8), 0.45, 5);
+  add(sheet(path, (i) => path[i].y - 4, H, [0, 0.015, 0.06, 0.16, 0.32, 0.55, 0.8, 1], fade), veilMaterial(0.8 * k), 0.45, 5);
 
   // Sườn chéo: mỗi 30 m một tấm ngang khe (±30 m), nối thành một lưới (tổng ≤ 14 tấm × 5 cột): ghép bằng một BufferGeometry gộp.
   const ribPos: number[] = [];
+  const withRibs = opts.ribs !== false;
   const ribUv: number[] = [];
   const ribEdge: number[] = [];
   const ribIdx: number[] = [];
@@ -130,7 +150,7 @@ export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number,
   const COLS = 5;
   const RIB_H = 150;
   let vtx = 0;
-  for (let i = 0; i < path.length; i += 1) {
+  for (let i = 0; withRibs && i < path.length; i += 1) {
     const a = path[Math.max(0, i - 1)];
     const b = path[Math.min(path.length - 1, i + 1)];
     let tx = b.x - a.x;
@@ -164,7 +184,8 @@ export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number,
   rg.setAttribute('aEdge', new THREE.Float32BufferAttribute(ribEdge, 1));
   rg.setIndex(ribIdx);
   rg.computeBoundingSphere();
-  add(rg, veilMaterial(0.5), 0.35, 4);
+  if (withRibs) add(rg, veilMaterial(0.5), 0.35, 4);
+  else rg.dispose();
 
   // Lòng khe: lưới dọc khe, 7 cột ngang (±16 m), 4 hàng mỗi đoạn 30 m; y theo mặt đất thật.
   const fp: number[] = [];
@@ -185,13 +206,13 @@ export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number,
     }
   const last = path[path.length - 1];
   pts.push({ x: last.x, z: last.z, nx: pts[pts.length - 1].nx, nz: pts[pts.length - 1].nz });
-  for (const q of pts)
+  for (const [qi, q] of pts.entries())
     for (let c = 0; c < FC; c++) {
-      const k = (c / (FC - 1)) * 2 - 1;
-      const x = q.x + q.nx * k * 17;
-      const z = q.z + q.nz * k * 17;
+      const kk = (c / (FC - 1)) * 2 - 1;
+      const x = q.x + q.nx * kk * floorHalf;
+      const z = q.z + q.nz * kk * floorHalf;
       fp.push(x, heightAt(x, z) + 0.45, z);
-      fu.push(c / (FC - 1), 0);
+      fu.push(c / (FC - 1), qi / Math.max(1, pts.length - 1));
     }
   for (let r = 0; r + 1 < pts.length; r++)
     for (let c = 0; c + 1 < FC; c++) {
@@ -204,7 +225,7 @@ export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number,
   fg.setAttribute('uv', new THREE.Float32BufferAttribute(fu, 2));
   fg.setIndex(fi);
   fg.computeBoundingSphere();
-  add(fg, floorMaterial(), 0.5, 3);
+  add(fg, floorMaterial(opts.floorStrength ?? 1, opts.endFade), 0.5, 3);
 
   return {
     group,

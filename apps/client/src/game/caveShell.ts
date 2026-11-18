@@ -15,6 +15,60 @@ export interface CaveDef {
   h: number;
 }
 
+/**
+ * Bảng màu cung điện: `moon` là cung gương lam bạc (Kính Nguyệt Cung, Thần Tàng Điện); `gilt` là cung dát vàng của triều Kim Dạ
+ * (DV-3E, bảng `rift_*`: kim dát `rift_gilt` trên nền đen tím, đèn tím).
+ */
+export type PalaceKind = 'moon' | 'gilt';
+interface PalaceTheme {
+  wall: number;
+  pillar: number;
+  roof: number;
+  moon: number;
+  floor: [string, string, string];
+  line: string;
+  refl: string;
+  glow: string;
+  stone0: [number, number, number];
+  stone1: [number, number, number];
+  metal: [number, number, number];
+  metalDim: [number, number, number];
+  glass: (k: number, v: number) => [number, number, number];
+}
+const PALACE: Record<PalaceKind, PalaceTheme> = {
+  moon: {
+    wall: 0x6f86a8,
+    pillar: 0xb8cdea,
+    roof: 0x070b16,
+    moon: 0x9fb8e0,
+    floor: ['#1b2a42', '#111a2c', '#0a101c'],
+    line: 'rgba(150,185,230,0.14)',
+    refl: 'rgba(184,205,234,',
+    glow: 'rgba(207,224,255,',
+    stone0: [0.3, 0.38, 0.52],
+    stone1: [0.09, 0.12, 0.2],
+    metal: [0.42, 0.52, 0.7],
+    metalDim: [0.3, 0.38, 0.52],
+    glass: (k, v) => [0.12 + 0.3 * (0.5 - v * 0.5) + 0.06 * k, 0.2 + 0.4 * (0.5 - v * 0.5), 0.34 + 0.5 * (0.5 - v * 0.5)],
+  },
+  gilt: {
+    wall: 0x8a6a34,
+    pillar: 0xe0b44a,
+    roof: 0x0a0610,
+    moon: 0x9a68d0,
+    floor: ['#22142c', '#160c1e', '#0b0610'],
+    line: 'rgba(184,146,58,0.2)',
+    refl: 'rgba(224,180,74,',
+    glow: 'rgba(160,110,224,',
+    stone0: [0.36, 0.27, 0.2],
+    stone1: [0.12, 0.07, 0.14],
+    metal: [0.74, 0.56, 0.22],
+    metalDim: [0.46, 0.34, 0.15],
+    // Tấm màn nhung tím thẫm, mép trên tối, chân thấp ánh vàng ấm.
+    glass: (k, v) => [0.16 + 0.3 * (0.5 - v * 0.5) + 0.06 * k, 0.07 + 0.16 * (0.5 - v * 0.5), 0.22 + 0.3 * (0.5 - v * 0.5)],
+  },
+};
+
 const hash = (a: number, b: number): number => {
   const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
   return s - Math.floor(s);
@@ -35,8 +89,8 @@ function vnoise(x: number, y: number): number {
 }
 const fbm = (x: number, y: number): number => vnoise(x, y) * 0.55 + vnoise(x * 2.1, y * 2.1) * 0.3 + vnoise(x * 4.3, y * 4.3) * 0.15;
 
-export function buildCaveShell(def: CaveDef, groundY: number, palace = false): THREE.Mesh {
-  if (palace) return buildPalaceShell(def, groundY);
+export function buildCaveShell(def: CaveDef, groundY: number, palace: false | PalaceKind = false): THREE.Mesh {
+  if (palace) return buildPalaceShell(def, groundY, PALACE[palace]);
   const geo = new THREE.SphereGeometry(1, 144, 40, 0, Math.PI * 2, 0, Math.PI / 2);
   const pos = geo.attributes.position as THREE.BufferAttribute;
   const col = new Float32Array(pos.count * 3);
@@ -80,15 +134,15 @@ export function buildCaveShell(def: CaveDef, groundY: number, palace = false): T
  * Cung gương (E3-M): cùng nửa quả cầu úp nhưng vách nhẵn có hàng cột sáng bạc, trần xanh đen có lỗ trăng nhỏ ở đỉnh. Màu theo đỉnh (một draw call),
  * sáng ở chân vách rồi tắt dần lên cao; cường độ giữ thấp (art bible v3: tông trầm, không lóa che nhân vật).
  */
-function buildPalaceShell(def: CaveDef, groundY: number): THREE.Mesh {
+function buildPalaceShell(def: CaveDef, groundY: number, th: PalaceTheme): THREE.Mesh {
   const geo = new THREE.SphereGeometry(1, 144, 40, 0, Math.PI * 2, 0, Math.PI / 2);
   const pos = geo.attributes.position as THREE.BufferAttribute;
   const col = new Float32Array(pos.count * 3);
   const c = new THREE.Color();
-  const wall = new THREE.Color(0x6f86a8);
-  const pillar = new THREE.Color(0xb8cdea);
-  const roof = new THREE.Color(0x070b16);
-  const moon = new THREE.Color(0x9fb8e0);
+  const wall = new THREE.Color(th.wall);
+  const pillar = new THREE.Color(th.pillar);
+  const roof = new THREE.Color(th.roof);
+  const moon = new THREE.Color(th.moon);
   for (let i = 0; i < pos.count; i++) {
     const nx = pos.getX(i);
     const ny = pos.getY(i);
@@ -122,7 +176,8 @@ function buildPalaceShell(def: CaveDef, groundY: number): THREE.Mesh {
  * Sàn gương giả (E3-M): đĩa phẳng nằm sát mặt đất, vẽ sẵn lên một ảnh canvas: mặt đá đen bóng, vân vòng và tấm ghép tỏa tia, vệt phản chiếu
  * của hàng cột và một quầng trăng mờ lệch tâm. KHÔNG phản chiếu thật (không render lần hai, không SSR), nên một draw call và một texture 1024².
  */
-export function buildMirrorFloor(def: CaveDef, groundAt: (x: number, z: number) => number): THREE.Mesh {
+export function buildMirrorFloor(def: CaveDef, groundAt: (x: number, z: number) => number, kind: PalaceKind = 'moon'): THREE.Mesh {
+  const th = PALACE[kind];
   const N = 1024;
   const cv = document.createElement('canvas');
   cv.width = N;
@@ -130,13 +185,13 @@ export function buildMirrorFloor(def: CaveDef, groundAt: (x: number, z: number) 
   const g = cv.getContext('2d')!;
   const h = N / 2;
   const base = g.createRadialGradient(h, h, 0, h, h, h);
-  base.addColorStop(0, '#1b2a42');
-  base.addColorStop(0.6, '#111a2c');
-  base.addColorStop(1, '#0a101c');
+  base.addColorStop(0, th.floor[0]);
+  base.addColorStop(0.6, th.floor[1]);
+  base.addColorStop(1, th.floor[2]);
   g.fillStyle = base;
   g.fillRect(0, 0, N, N);
   // Tấm ghép tỏa tia và vân vòng (đá lát gương).
-  g.strokeStyle = 'rgba(150,185,230,0.14)';
+  g.strokeStyle = th.line;
   g.lineWidth = 2;
   for (let i = 0; i < 24; i++) {
     const a = (i / 24) * Math.PI * 2;
@@ -158,8 +213,8 @@ export function buildMirrorFloor(def: CaveDef, groundAt: (x: number, z: number) 
     const x1 = h + Math.cos(a) * h * 0.45;
     const y1 = h + Math.sin(a) * h * 0.45;
     const gr = g.createLinearGradient(x0, y0, x1, y1);
-    gr.addColorStop(0, 'rgba(184,205,234,0.26)');
-    gr.addColorStop(1, 'rgba(184,205,234,0)');
+    gr.addColorStop(0, th.refl + '0.26)');
+    gr.addColorStop(1, th.refl + '0)');
     g.strokeStyle = gr;
     g.lineWidth = 14;
     g.beginPath();
@@ -169,8 +224,8 @@ export function buildMirrorFloor(def: CaveDef, groundAt: (x: number, z: number) 
   }
   // Quầng trăng phản chiếu, lệch tâm.
   const mg = g.createRadialGradient(h + 90, h - 70, 0, h + 90, h - 70, 150);
-  mg.addColorStop(0, 'rgba(207,224,255,0.38)');
-  mg.addColorStop(1, 'rgba(207,224,255,0)');
+  mg.addColorStop(0, th.glow + '0.38)');
+  mg.addColorStop(1, th.glow + '0)');
   g.fillStyle = mg;
   g.fillRect(0, 0, N, N);
   const tex = new THREE.CanvasTexture(cv);
@@ -194,7 +249,8 @@ export function buildMirrorFloor(def: CaveDef, groundAt: (x: number, z: number) 
  * gương ngả lam, sáng ở chân tối dần lên trần) và gờ sàn bạc. TẤT CẢ gộp một lưới màu theo đỉnh (một draw call, vài nghìn tam giác), tất định.
  * Không đèn, không texture: sáng tối vẽ sẵn vào màu đỉnh, tông trầm để không lóa che nhân vật.
  */
-export function buildPalaceHall(def: CaveDef, groundAt: (x: number, z: number) => number): THREE.Mesh {
+export function buildPalaceHall(def: CaveDef, groundAt: (x: number, z: number) => number, kind: PalaceKind = 'moon'): THREE.Mesh {
+  const th = PALACE[kind];
   const pos: number[] = [];
   const col: number[] = [];
   const idx: number[] = [];
@@ -206,10 +262,10 @@ export function buildPalaceHall(def: CaveDef, groundAt: (x: number, z: number) =
   };
   const quad = (a: number, b: number, c: number, d: number) => idx.push(a, b, c, a, c, d);
   const C = (r: number, g: number, b: number) => new THREE.Color(r, g, b);
-  const stone0 = C(0.3, 0.38, 0.52);
-  const stone1 = C(0.09, 0.12, 0.2);
-  const silver = C(0.42, 0.52, 0.7);
-  const silverDim = C(0.3, 0.38, 0.52);
+  const stone0 = C(...th.stone0);
+  const stone1 = C(...th.stone1);
+  const silver = C(...th.metal);
+  const silverDim = C(...th.metalDim);
   /** Khối chữ nhật quay theo hướng ngoài (yaw), đáy y0 màu c0 → đỉnh y1 màu c1. */
   const box = (cx: number, cz: number, ang: number, w: number, d: number, y0: number, y1: number, c0: THREE.Color, c1: THREE.Color) => {
     const tx = -Math.sin(ang);
@@ -266,7 +322,7 @@ export function buildPalaceHall(def: CaveDef, groundAt: (x: number, z: number) =
     };
     ring(5.6, 14, 17, 0.4, () => silver); // khung bạc
     // Mặt gương: sáng ở chân (phản sàn), tối dần lên trần; một dải sáng chéo bằng cách lệch màu theo cạnh.
-    ring(4.8, 13.2, 17, 0.7, (k, v) => C(0.12 + 0.3 * (0.5 - v * 0.5) + 0.06 * k, 0.2 + 0.4 * (0.5 - v * 0.5), 0.34 + 0.5 * (0.5 - v * 0.5)));
+    ring(4.8, 13.2, 17, 0.7, (k, v) => C(...th.glass(k, v)));
   }
   // Gờ sàn bạc: vành mỏng bám địa hình quanh ranh sàn gương, và vành trong sáng hơn.
   const band = (r0: number, r1: number, c: THREE.Color) => {

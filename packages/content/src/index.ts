@@ -50,6 +50,7 @@ import thienKhuyetTerrainJson from '../data/levels/thien_khuyet.terrain.json';
 import thienKhuyetAssetsJson from '../data/levels/thien_khuyet.assets.json';
 import bacHoangJson from '../data/levels/bac_hoang.json';
 import bacHoangTerrainJson from '../data/levels/bac_hoang.terrain.json';
+import xichTanTerrainJson from '../data/levels/xich_tan_khich.terrain.json';
 import bacHoangAssetsJson from '../data/levels/bac_hoang.assets.json';
 import doKiepJson from '../data/levels/do_kiep.json';
 import doKiepBhJson from '../data/levels/do_kiep_bac_hoang.json';
@@ -61,6 +62,8 @@ import thanTangJson from '../data/levels/than_tang.json';
 import thanTangAssetsJson from '../data/levels/than_tang.assets.json';
 import xichTanKhichJson from '../data/levels/xich_tan_khich.json';
 import xichTanKhichAssetsJson from '../data/levels/xich_tan_khich.assets.json';
+import kimDaCungJson from '../data/levels/kim_da_cung.json';
+import kimDaCungAssetsJson from '../data/levels/kim_da_cung.assets.json';
 import doKiepAssetsJson from '../data/levels/do_kiep.assets.json';
 import doKiepBhAssetsJson from '../data/levels/do_kiep_bac_hoang.assets.json';
 import glossaryJson from '../data/glossary.json';
@@ -218,11 +221,13 @@ export const LEVELS: Record<string, LevelDef> = {
   kinh_nguyet: kinhNguyetJson as LevelDef,
   than_tang: thanTangJson as LevelDef,
   xich_tan_khich: xichTanKhichJson as LevelDef,
+  kim_da_cung: kimDaCungJson as LevelDef,
 };
 // Địa hình dữ liệu hóa của bản đồ mở rộng (E2-A): đăng ký khi nạp @dtl/content để server, client và công cụ cùng thấy `terrainOf('doan_mach')`.
 registerTerrain(doanMachTerrainJson as unknown as TerrainDef);
 registerTerrain(thienKhuyetTerrainJson as unknown as TerrainDef); // E4-A: cao nguyên thành cổ
 registerTerrain(bacHoangTerrainJson as unknown as TerrainDef); // DV-1: hoang nguyên tro, khe Giới Khích
+registerTerrain(xichTanTerrainJson as unknown as TerrainDef); // DV-3K: hẻm núi phó bản Xích Tẫn Khích
 registerTerrain(vanHaiTerrainJson as unknown as TerrainDef); // E3-A/E3-N: đảo nổi, cầu xích, sàn mây
 /** Asset client theo level (`levels/<id>.assets.json`, E1-D). */
 export const LEVEL_ASSETS: Record<string, LevelAssets> = {
@@ -238,6 +243,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   kinh_nguyet: kinhNguyetAssetsJson as LevelAssets,
   than_tang: thanTangAssetsJson as LevelAssets,
   xich_tan_khich: xichTanKhichAssetsJson as LevelAssets,
+  kim_da_cung: kimDaCungAssetsJson as LevelAssets,
 };
 /** Năm linh căn ngũ hành (P3-7). */
 export const ROOTS = rootsJson as RootDef[];

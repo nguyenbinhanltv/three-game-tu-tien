@@ -524,7 +524,8 @@ function checkEquipLoot(id: string, l: LootDef) {
   if (!want && l.src !== 'common' && l.src !== 'dungeon') err(`loot ${id}: quái thường có src 'common' hoặc 'dungeon'`);
   if (!l.src) return;
   const rolls = l.equip ?? [];
-  if (!rolls.length) err(`loot ${id}: thiếu bảng rơi trang bị (equip)`);
+  // Bóng không cho xp (xpMul 0, bóng gương/bóng mặc cả) được để trống để khỏi bị farm.
+  if (!rolls.length && MONSTER.get(id)?.xpMul !== 0) err(`loot ${id}: thiếu bảng rơi trang bị (equip)`);
   const slots = droppableSlots(ITEM_SYS, ITEMS);
   rolls.forEach((r, i) => {
     const w = `loot ${id}/equip[${i}]`;
@@ -627,6 +628,25 @@ for (const m of MONSTERS) {
     if (!(rf.burn >= 1 && rf.burn <= 5 && rf.weak >= 3 && rf.veins.length >= 2)) err(`monster ${m.id}: rift: 1–5 tầng cháy, mất thế ≥ 3 s, ≥ 2 khe`);
     if (!m.phases?.[rf.phase - 1]?.ai?.chant && !m.ai?.chant) err(`monster ${m.id}: rift cần chú (ai.chant) từ pha ${rf.phase}`);
     for (const v of rf.veins) if (!(v.r >= 3 && v.r <= 10)) err(`monster ${m.id}: khe mạch r 3–10 m`);
+  }
+  if (m.kd) {
+    const k = m.kd;
+    const nph = (m.phases?.length ?? 0) + 1;
+    if (k.mend && !(k.mend.cd >= 3 && k.mend.r >= 4 && k.mend.pct > 0 && k.mend.pct <= 0.2)) err(`monster ${m.id}: kd.mend cd ≥ 3 s, r ≥ 4 m, pct ∈ (0; 20%]`);
+    if (k.twin && !(k.twin.mul > 1 && k.twin.mul <= 2.5)) err(`monster ${m.id}: kd.twin.mul ∈ (1; 2,5]`);
+    if (k.bargain) {
+      if (!m.boss || !m.ai?.chant && !m.phases?.some((ph) => ph.ai?.chant)) err(`monster ${m.id}: kd.bargain cần boss có chú (ai.chant)`);
+      if (!(Number.isInteger(k.bargain.phase) && k.bargain.phase >= 0 && k.bargain.phase < nph)) err(`monster ${m.id}: kd.bargain.phase ngoài số pha`);
+      if (!MONSTER.get(k.bargain.mon)) err(`monster ${m.id}: kd.bargain.mon ${k.bargain.mon} không tồn tại`);
+      if (!(k.bargain.sep >= 10 && k.bargain.pen > 0 && k.bargain.pen <= 0.4)) err(`monster ${m.id}: kd.bargain sep ≥ 10 m, pen ∈ (0; 40%]`);
+    }
+    if (k.night) {
+      const n = k.night;
+      if (!m.boss) err(`monster ${m.id}: chỉ boss mới có kd.night`);
+      if (!(Number.isInteger(n.phase) && n.phase >= 0 && n.phase < nph)) err(`monster ${m.id}: kd.night.phase ngoài số pha`);
+      if (!(n.steles.length >= 2 && n.steles.every((s) => s.r >= 4 && s.r <= 12))) err(`monster ${m.id}: kd.night cần ≥ 2 bia, r 4–12 m`);
+      if (!(n.press > 0 && n.press <= 0.06 && n.cd >= 8 && n.warn >= 1.5 && n.mul > 0 && n.dur >= 3 && n.grace >= 3)) err(`monster ${m.id}: kd.night press ∈ (0; 6%], cd ≥ 8 s, warn ≥ 1,5 s, dur ≥ 3 s, grace ≥ 3 s`);
+    }
   }
   const ps = m.posture;
   if (ps) {
@@ -756,8 +776,7 @@ for (const n of NPCS) {
 // Mục tiêu chương 5 chưa có dữ liệu (DV3-B/D/E/L chưa vào): nhiệm vụ trỏ tới chúng phải khóa bằng minLevel > MAX_LEVEL
 // (cấp 29+ chưa mở nên không ai nhận được), để khỏi có nhiệm vụ nhận được mà không bao giờ xong. Gỡ id khỏi bảng khi dữ liệu thật vào.
 const PENDING_OBJ: Record<string, readonly string[]> = {
-  kill: ['elite_trien_bo_cham_ba', 'boss_thu_khich_duc_chu', 'elite_huyet_giac_ma_tuong'],
-  dungeon: ['kim_da_cung'],
+  kill: ['elite_trien_bo_cham_ba'],
 };
 for (const q of QUESTS) {
   needStr(`quest.${q.id}.name`);
@@ -828,9 +847,9 @@ for (const lv of Object.values(LEVELS)) {
   const as = LEVEL_ASSETS[lv.id];
   if (!as) err(`level ${lv.id}: thiếu levels/${lv.id}.assets.json`);
   else {
-    const known = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'wild_ash', 'wild_rift', 'forest', 'lake', 'dungeon', 'dungeon_boss', 'combat', 'boss', 'tribulation', 'meditate'];
+    const known = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'wild_ash', 'wild_rift', 'forest', 'lake', 'dungeon', 'dungeon_boss', 'dungeon_rift', 'dungeon_rift_boss', 'combat', 'boss', 'tribulation', 'meditate'];
     for (const m of as.music) if (!known.includes(m)) err(`level ${lv.id}: assets.music không biết bài ${m}`);
-    if (!['default', 'dawn', 'day', 'night', 'ochre', 'ochre_night', 'cloud_dawn', 'cloud', 'cloud_night', 'tk_dawn', 'tk', 'tk_night', 'ash_dawn', 'rift'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
+    if (!['default', 'dawn', 'day', 'night', 'ochre', 'ochre_night', 'cloud_dawn', 'cloud', 'cloud_night', 'tk_dawn', 'tk', 'tk_night', 'ash_dawn', 'rift', 'rift_pit'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
     if (as.minimap && !existsSync(new URL(`../../../apps/client/public/map/${as.minimap}.json`, import.meta.url))) err(`level ${lv.id}: thiếu nền minimap public/map/${as.minimap}.json (pnpm minimap:build --level ${lv.id})`);
   }
 }
@@ -913,7 +932,8 @@ for (const lv of Object.values(LEVELS)) {
     }
     if (wv.puzzle) {
       const pz = wv.puzzle;
-      if (pz.points.length !== 3) err(`${ww}: đố gương cần đúng 3 điểm`);
+      if (pz.points.length < 3 || pz.points.length > 4) err(`${ww}: đố gương/đèn cần 3–4 điểm`);
+      if (pz.msg !== undefined && !hasString(`sys.${pz.msg}_puzzle`)) err(`${ww}: thiếu chuỗi sys.${pz.msg}_puzzle`);
       for (const pt of pz.points) if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${ww}: cột gương (${pt.x}, ${pt.z}) ngoài bản đồ`);
       if (!(pz.secs >= 10 && pz.secs <= 60)) err(`${ww}: đố gương secs phải trong [10; 60]`);
       if (!MONSTER.get(pz.wrong.mon)) err(`${ww}: quái phạt ${pz.wrong.mon} không tồn tại`);

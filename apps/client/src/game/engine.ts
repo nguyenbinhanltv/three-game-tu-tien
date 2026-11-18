@@ -35,6 +35,7 @@ import { skyTopOf } from '../render/sky';
 import { buildEclipseSun, type EclipseSun } from '../render/eclipse';
 import { DeadTrees } from './deadTrees';
 import { deadTreeSpots, KIEP_BH, riftBlend, riftPath } from './bacHoangArt';
+import { XICH_LEVEL, xichCracks, type XichAccent } from './xichArt';
 import { bhCtx } from './propScatter';
 import { Beacons } from '../render/beacons';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline, postParams } from '../render/post';
@@ -148,7 +149,7 @@ const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: 
 };
 
 /** Hệ số đèn thật theo thời điểm: buổi sớm vừa phải, đêm đậm. */
-const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8, ochre_dawn: 1, ochre: 0.6, ochre_night: 1.8, cloud_dawn: 1, cloud: 0.6, cloud_night: 1.8, tk_dawn: 1, tk: 0.6, tk_night: 1.8, ash_dawn: 1, rift: 1.2 };
+const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8, ochre_dawn: 1, ochre: 0.6, ochre_night: 1.8, cloud_dawn: 1, cloud: 0.6, cloud_night: 1.8, tk_dawn: 1, tk: 0.6, tk_night: 1.8, ash_dawn: 1, rift: 1.2, rift_pit: 1.4 };
 
 /** Hiệu ứng của chính mình → nhạc ngắn trong manifest.music (tools/audio/compose/sting_*.mjs). */
 const STINGS: Record<string, string> = { levelup: 'sting_levelup', ascend: 'sting_breakthrough', death: 'sting_death' };
@@ -410,6 +411,7 @@ export class Game {
   private mirrorDiscVer = 0;
   private mirrorVeilVer = 0;
   private mirrorPillarVer: number[] = [];
+  private kdSteleVer: number[] = [];
   /** Nguyên anh xuất khiếu đang hiện (E3-L): theo sid chủ kiếp. */
   private soulVfx = new Map<string, { stop(): void }>();
   /** Thế thân thần niệm của Thiên Nhân Kiếp (E4-D), theo sid chủ kiếp. */
@@ -988,6 +990,53 @@ export class Game {
     }
   }
 
+  /** Xích Tẫn Khích (DV-3K): vết nứt phát sáng trên sàn hẻm (3 vết × 2 draw call), đèn nhấn quanh bia giữ và ba khe mạch. `?xichart=0` tắt để so ảnh. */
+  private xichRifts: RiftVeil[] = [];
+
+  private buildXich(id: string, q: (typeof QUALITY)[string]): void {
+    if (new URLSearchParams(location.search).get('xichart') === '0') return;
+    const T = levelTerrain();
+    const paths = xichCracks(T.def, (x, z) => heightAt(x, z));
+    for (const p of paths) {
+      const v = buildRiftVeil(p, (x, z) => heightAt(x, z), { height: 7, ribs: false, floorHalf: 3, strength: 0.22, floorStrength: 0.6, endFade: true });
+      this.scene.add(v.group);
+      this.xichRifts.push(v);
+    }
+    const lv = LEVELS[id]?.dungeon;
+    const c = lv?.center ?? { x: T.def.canyon?.cx ?? 0, z: T.def.canyon?.cz ?? 0 };
+    // Bia giữ ở tâm: than hồng; ba khe mạch (đúng chỗ khe của boss cuối): ngọc lam, đối màu với than hồng.
+    const acc: XichAccent[] = [
+      { x: c.x, z: c.z, color: 0xff6a35, k: 1.4 },
+      { x: c.x + 19, z: c.z + 11, color: 0x4fc9d0, k: 1.3 },
+      { x: c.x - 19, z: c.z + 11, color: 0x4fc9d0, k: 1.3 },
+      { x: c.x, z: c.z - 22, color: 0x4fc9d0, k: 1.3 },
+    ];
+    const pts = acc.map((a) => ({ x: a.x, y: heightAt(a.x, a.z) + 4.5, z: a.z, color: a.color, k: a.k }));
+    // Quầng giả: bia giữ than hồng; khe mạch ngọc lam lớn hơn, hai tầng (sát đất và lơ lửng) để điểm nhấn lạnh đọc được từ xa.
+    const halos = createLanternHalos(pts.slice(0, 1), 6, 0xff7a45);
+    const jade = acc.slice(1).flatMap((a2) => [1.6, 5.5].map((dy) => ({ x: a2.x, y: heightAt(a2.x, a2.z) + dy, z: a2.z })));
+    const jadeGlow = buildCrystalGlow(jade);
+    // Ngọn lửa than hồng trên các trụ đá dọc chân vách (cách một trụ), thay đèn lồng kiểu Vân Lam.
+    const flames = propsOf(id)
+      .filter((q) => q.id === 'prop_tru_da_khac_van')
+      .filter((_, i) => i % 2 === 0)
+      .map((q) => ({ x: q.x, y: heightAt(q.x, q.z) + 3.4 * q.s, z: q.z }));
+    const flameHalos = createLanternHalos(flames, 3.2, 0xff5a28);
+    this.scene.add(halos, jadeGlow, flameHalos);
+    this.levelObjs.push(halos, jadeGlow, flameHalos);
+    this.lanterns = new LanternLights(this.scene, pts, 4, 34);
+    this.lanterns.setEnabled(q.lights && isWebGPU(this.renderer));
+    this.lanterns.setIntensityScale(LANTERN_LIGHT[this.levelMood] ?? 1);
+  }
+
+  private disposeXich(): void {
+    for (const v of this.xichRifts) {
+      this.scene.remove(v.group);
+      v.dispose();
+    }
+    this.xichRifts = [];
+  }
+
   /** Mood Bắc Hoang theo vị trí: 0 ở nửa nam (`ash_dawn`) → 1 ở ba vùng bắc (`rift`), đổi dần quanh Khích Giai. Chỉnh uniform, không biên dịch lại. */
   private updateRiftMood(dt: number, z: number): void {
     this.riftMoodAcc += dt;
@@ -1096,7 +1145,7 @@ export class Game {
       // Vân Lam: đèn lồng tông môn; level khác: đèn đá bày trong `propsOf` (E2-C).
       const pts = id === 'van_lam' || id === 'kiem_trung' ? SECT_LANTERNS : propsOf(id).filter((p) => p.id === 'prop_den_da').map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
       // Cung gương: quầng đèn nhỏ, màu lạnh, không vào bloom (đèn đá không cháy trắng).
-      const halos = levelAssets(id).palace ? createLanternHalos(pts, 1.3, 0xb8cdee) : createLanternHalos(pts);
+      const halos = levelAssets(id).palace ? createLanternHalos(pts, 1.3, levelAssets(id).palace === 'gilt' ? 0xd8a64a : 0xb8cdee) : createLanternHalos(pts);
       this.scene.add(halos);
       this.levelObjs.push(halos);
       this.lanterns = new LanternLights(this.scene, pts);
@@ -1106,20 +1155,22 @@ export class Game {
     const cave = levelAssets(id).cave;
     if (cave) {
       // Phó bản hang (E2-C): vách + trần tối che chân trời, tinh thể mạch phát sáng lam lục (hai draw call).
-      const palace = !!levelAssets(id).palace;
+      const palaceAsset = levelAssets(id).palace;
+      const palace: false | 'moon' | 'gilt' = palaceAsset ? (palaceAsset === 'gilt' ? 'gilt' : 'moon') : false;
       const shell = buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
       const glow = buildCrystalGlow(propsOf(id).filter((p) => p.id === 'prop_mach_tinh_tru').map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 1.8, z: p.z })));
       this.scene.add(shell, glow);
       this.levelObjs.push(shell, glow);
       if (palace) {
         // Cung gương (E3-M): sàn gương giả phủ lòng chảo (một draw call, không phản chiếu thật).
-        const floor = buildMirrorFloor({ ...cave, r: cave.r - 2 }, heightAt);
-        const hall = buildPalaceHall(cave, heightAt);
+        const floor = buildMirrorFloor({ ...cave, r: cave.r - 2 }, heightAt, palace);
+        const hall = buildPalaceHall(cave, heightAt, palace);
         this.scene.add(floor, hall);
         this.levelObjs.push(floor, hall);
       }
     }
     if (id === 'bac_hoang' || id === KIEP_BH) this.buildBacHoang();
+    if (id === XICH_LEVEL) this.buildXich(id, q);
     if (F.sect) void this.loadSectModel(q.shadows);
   }
 
@@ -1164,6 +1215,7 @@ export class Game {
   private unloadLevel(): void {
     this.cloneVis?.clear();
     this.disposeBacHoang();
+    this.disposeXich();
     const drop = (o: THREE.Object3D | null | undefined) => o && this.scene.remove(o);
     if (this.terrain) {
       drop(this.terrain.group);
@@ -2551,7 +2603,15 @@ export class Game {
         const n = m.n ?? 0;
         const ver = (this.mirrorPillarVer[n] = (this.mirrorPillarVer[n] ?? 0) + 1);
         if ((m.d ?? 0) <= 0) break;
-        v.mirrorPillar(m.x ?? 0, m.z ?? 0, [0x5aa8ff, 0xe0584a, 0xe8c15a][n] ?? 0xffffff, m.d ?? 20, m.pg === 1, () => this.mirrorPillarVer[n] === ver);
+        v.mirrorPillar(m.x ?? 0, m.z ?? 0, [0x5aa8ff, 0xe0584a, 0xe8c15a, 0xb078e8][n] ?? 0xffffff, m.d ?? 20, m.pg === 1, () => this.mirrorPillarVer[n] === ver);
+        break;
+      }
+      case 'kd_stele': {
+        // Bia của pha Kim dạ (DV-3E): cột sáng + vòng quanh bia; pg 1 sáng (kim dát), 0 tắt (tím thẫm); d = 0 gỡ. Mỗi lần nhận tin thay hình cũ.
+        const n = m.n ?? 0;
+        const ver = (this.kdSteleVer[n] = (this.kdSteleVer[n] ?? 0) + 1);
+        if ((m.d ?? 0) <= 0) break;
+        v.kdStele(m.x ?? 0, m.z ?? 0, m.r ?? 8, m.d ?? 3, m.pg === 1, () => this.kdSteleVer[n] === ver);
         break;
       }
       case 'mirror_veil': {
@@ -4067,6 +4127,7 @@ export class Game {
     this.ground?.dispose();
     this.lanterns?.dispose();
     this.disposeBacHoang();
+    this.disposeXich();
     for (const o of this.levelObjs) {
       const m = o as THREE.Mesh;
       m.geometry?.dispose();

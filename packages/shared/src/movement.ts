@@ -181,6 +181,21 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
     }
   }
 
+  // Hẻm núi (DV-3K): ép vào sàn hẻm cả khi ngự kiếm/ngự không, để không bay lên cao nguyên rồi đáp xuống ngoài vách (mép vách uốn lượn ≤ ±wobble/2).
+  const cy = terrain.def.canyon;
+  if (cy) {
+    // Cùng dạng siêu elip bậc 3 với `canyonRise` (góc hẻm bo tròn), thu nhỏ `wobble * 0.7` để chừa mép vách uốn lượn.
+    const mx = cy.halfW - cy.wobble * 0.7;
+    const mz = cy.halfL - cy.wobble * 0.7;
+    const ex = s.x - cy.cx;
+    const ez = s.z - cy.cz;
+    const r = Math.cbrt(Math.abs(ex / mx) ** 3 + Math.abs(ez / mz) ** 3);
+    if (r > 1) {
+      s.x = cy.cx + ex / r;
+      s.z = cy.cz + ez / r;
+    }
+  }
+
   const gh = ctx.ghost;
   if (gh) {
     const dx = s.x - gh.x;
