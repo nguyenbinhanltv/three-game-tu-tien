@@ -5,7 +5,7 @@ import { SealNumeral, SYS_ICON_NAMES, SysIcon } from './icons';
 import { setReduceMotion, useReduceMotion } from './motion';
 
 const SHAPES: SlotShape[] = ['diamond', 'round', 'octagon'];
-const MAPS = ['van_lam', 'doan_mach', 'van_hai', 'thien_khuyet'] as const;
+const MAPS = ['van_lam', 'doan_mach', 'van_hai', 'thien_khuyet', 'bac_hoang'] as const;
 const CORNERS: CornerKind[] = ['star', 'moon', 'sun', 'plain', 'cloud'];
 const RAIL: RailTab[] = [
   { id: 'bag', label: t('ui.ngj.rail.bag'), icon: 'bag' },

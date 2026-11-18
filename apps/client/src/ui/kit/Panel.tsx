@@ -85,7 +85,7 @@ export function Divider({ label }: { label?: ReactNode }) {
   );
 }
 
-const MOTIFS: string[] = ['van_lam', 'doan_mach', 'van_hai', 'thien_khuyet'];
+const MOTIFS: string[] = ['van_lam', 'doan_mach', 'van_hai', 'thien_khuyet', 'bac_hoang'];
 
 /**
  * Cửa sổ nằm giữa màn hình (Panel + Header + phần thân cuộn). `width` tính bằng px.

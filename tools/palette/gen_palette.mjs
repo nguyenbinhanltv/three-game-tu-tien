@@ -146,6 +146,16 @@ if (grade) {
   if (!(st[1] > st[0] && st[2] > st[0])) errors.push(`grading.presets.${pal.grading.default}.shadowTint phải ngả ngọc lam (G, B > R)`);
 }
 
+// Bảng phụ Dị vực (riftColors): ngoài LUT, chỉ kiểm hex/id/trùng.
+const riftIds = new Set();
+for (const c of pal.riftColors?.colors ?? []) {
+  if (!/^rift_[a-z0-9_]+$/.test(c.id)) errors.push(`riftColors: id ${c.id} phải bắt đầu rift_`);
+  if (riftIds.has(c.id) || byId.has(c.id)) errors.push(`riftColors: trùng id ${c.id}`);
+  riftIds.add(c.id);
+  try { hexToRgb(c.hex); } catch (e) { errors.push(`${c.id}: ${e.message}`); }
+}
+if (pal.riftColors && riftIds.size !== 8) errors.push(`riftColors cần đúng 8 màu, đang có ${riftIds.size}`);
+
 if (errors.length) {
   console.error('palette SAI:\n  - ' + errors.join('\n  - '));
   process.exit(1);
