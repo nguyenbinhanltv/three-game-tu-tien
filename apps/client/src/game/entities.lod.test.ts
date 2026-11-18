@@ -142,7 +142,9 @@ describe('EntityManager: LOD theo camera (M3-9)', () => {
     for (let i = 0; i < 30; i++) em.update(1 / 60, view, local, '', 1);
     cases.forEach((c, i) => {
       const t = c.m.actionOf('idle')!.time;
-      if (c.moves) expect(t).toBeGreaterThan(t0[i]);
+      // Clip idle lặp: t0 có thể sát cuối clip (phụ thuộc thời gian nạp), nên đo phần tiến lên theo modulo độ dài clip.
+      const dur = c.m.actionOf('idle')!.getClip().duration;
+      if (c.moves) expect((t - t0[i] + dur) % dur).toBeGreaterThan(0);
       else expect(t).toBe(t0[i]);
     });
     em.dispose();
