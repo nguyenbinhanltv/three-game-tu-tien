@@ -165,7 +165,8 @@ function NameScroll({ big }: { big: boolean }) {
       ref={host}
       className="hoatruc-name"
       data-big={big ? '1' : undefined}
-      style={{ '--rows': rows, '--cols': cols.length } as CSSProperties}
+      data-cols={cols.length}
+      style={{ '--rows': rows } as CSSProperties}
     >
       <canvas ref={cv} className="hoatruc-name-c" role="img" aria-label={name} />
       <span className="hoatruc-name-seal">{realmName(char.level)}</span>

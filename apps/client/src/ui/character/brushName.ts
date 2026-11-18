@@ -81,7 +81,7 @@ export function brushGlyphMask(word: string, family: string, seed: number): { a:
   cv.height = CH;
   const c = cv.getContext('2d', { willReadFrequently: true });
   if (!c) return empty();
-  c.fillStyle = '#000';
+  c.fillStyle = 'black';
   c.textAlign = 'center';
   c.textBaseline = 'alphabetic';
   // cỡ chữ lớn nhất vừa ô theo bề ngang (tiếng dài như "Nguyệt", "Thượng" tự co lại)
@@ -170,7 +170,7 @@ export function renderBrushName(name: string, tone: BrushTone, family: string, c
 function rgb(css: string): [number, number, number] {
   const c = document.createElement('canvas').getContext('2d');
   if (!c) return [20, 17, 13];
-  c.fillStyle = '#000';
+  c.fillStyle = 'black';
   c.fillStyle = css;
   c.fillRect(0, 0, 1, 1);
   const d = c.getImageData(0, 0, 1, 1).data;
