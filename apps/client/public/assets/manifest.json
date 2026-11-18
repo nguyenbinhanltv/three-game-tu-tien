@@ -2010,63 +2010,6 @@
         }
       }
     },
-    "chr_v3_v2_nam": {
-      "id": "chr_v3_v2_nam",
-      "class": "player_v3",
-      "source": "assets/build/raw/chr_v3_v2_nam.glb",
-      "file": "chr_v3_v2_nam.11598c2935.glb",
-      "bytes": 732492,
-      "rawBytes": 643332,
-      "triangles": 9294,
-      "rawTriangles": 9294,
-      "lod0Cap": 24000,
-      "skinned": true,
-      "quantized": false,
-      "bones": 68,
-      "animations": [],
-      "ktx2": true,
-      "textures": [
-        {
-          "name": "chr_v2_nam_color",
-          "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
-          "slots": [
-            "baseColorTexture"
-          ]
-        }
-      ],
-      "lods": [
-        {
-          "level": 0,
-          "triangles": 9294
-        },
-        {
-          "level": 1,
-          "triangles": 4647,
-          "target": 4647
-        },
-        {
-          "level": 2,
-          "triangles": 1858,
-          "target": 1859
-        }
-      ],
-      "dims": {
-        "raw": {
-          "width": 1.75,
-          "height": 1.8359,
-          "depth": 0.3405,
-          "minY": 0.0239
-        },
-        "build": {
-          "width": 1.75,
-          "height": 1.8359,
-          "depth": 0.3405,
-          "minY": 0.0239
-        }
-      }
-    },
     "chr_v3_varkessa_nu": {
       "id": "chr_v3_varkessa_nu",
       "class": "player_v3",
@@ -12004,6 +11947,156 @@
           "height": 1.6695,
           "depth": 0.4174,
           "minY": 0
+        }
+      }
+    },
+    "chr_v3_lac_kiem_nam": {
+      "id": "chr_v3_lac_kiem_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_lac_kiem_nam.glb",
+      "file": "chr_v3_lac_kiem_nam.d2905ac64f.glb",
+      "bytes": 3599908,
+      "rawBytes": 3636100,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 84,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "503ae7b0-c992-4254-aede-11bfb7fd7719_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "503ae7b0-c992-4254-aede-11bfb7fd7719_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "503ae7b0-c992-4254-aede-11bfb7fd7719_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11992,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4800,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.9249,
+          "height": 1.8381,
+          "depth": 0.444,
+          "minY": 0.0022
+        },
+        "build": {
+          "width": 1.9249,
+          "height": 1.8381,
+          "depth": 0.444,
+          "minY": 0.0022
+        }
+      }
+    },
+    "chr_v3_lac_kiem_nu": {
+      "id": "chr_v3_lac_kiem_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_lac_kiem_nu.glb",
+      "file": "chr_v3_lac_kiem_nu.76df639577.glb",
+      "bytes": 3443560,
+      "rawBytes": 3449180,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 84,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "4860c3ef-c1af-435c-baab-c092de33d892_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "4860c3ef-c1af-435c-baab-c092de33d892_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "4860c3ef-c1af-435c-baab-c092de33d892_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11998,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4800,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.8646,
+          "height": 1.6973,
+          "depth": 0.3453,
+          "minY": 0.0038
+        },
+        "build": {
+          "width": 1.8646,
+          "height": 1.6973,
+          "depth": 0.3453,
+          "minY": 0.0038
         }
       }
     }

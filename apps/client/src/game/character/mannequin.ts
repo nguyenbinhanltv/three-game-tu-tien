@@ -4,20 +4,24 @@
 // Đây là bản thử pipeline: không đổi mặc định, không đụng v1/v2.
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
+import { SWORD_MODEL_DEFAULT } from '@dtl/content';
 import type { MonsterDef } from '@dtl/shared';
 import type { AssetCache, AssetHandle } from '../assets';
 import { HitReact, type HitOpts } from '../hitreact';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { lodLevel, mixerInterval } from './skinned';
+import { SpringBones, type SpringDef } from './spring';
+import { partExtras } from './sword';
+import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
 import type { AnimState, CharacterView, MonsterView, PerformOpts } from './view';
 
 const search = typeof location === 'undefined' ? '' : location.search;
 /** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
 export const CHR_V3 = new URLSearchParams(search).get('chr') === 'v3';
 export const V3_LIB = 'anim_ual_native';
-/** Asset theo giới tính (bản thử N-0: nam = thân v2 trên Mannequin, nữ = skin Varkessa). */
-export const V3_MODELS = { m: 'chr_v3_v2_nam', f: 'chr_v3_varkessa_nu' } as const;
-/** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. Varkessa nữ chính là model nữ mặc định. */
+/** Asset theo giới tính: Lạc Kiếm Môn Phục v3 (N-3), model Tripo toàn thân đặt lên xương Mannequin (chr_v3.py). */
+export const V3_MODELS = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
+/** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. */
 export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_varkessa: 'chr_v3_varkessa_nu',
   set_skin_duskrella: 'chr_v3_duskrella_nu',
@@ -78,6 +82,7 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
   return { handle, lib, height: box.max.y - Math.max(box.min.y, 0), clips };
 }
 
+const IDENT = new THREE.Matrix4();
 let shadowMat: THREE.MeshStandardNodeMaterial | null = null;
 function shadowMaterial(): THREE.MeshStandardNodeMaterial {
   if (!shadowMat) {
@@ -90,9 +95,11 @@ export class MannequinCharacter implements CharacterView {
   readonly root = new THREE.Group();
   readonly hit: HitReact;
   readonly height: number;
-  readonly hasSword = false;
   /** Cờ nhận diện cho kịch bản quay video (tools/perf/src/scenarios/chrv3.ts). */
   readonly v3 = true;
+  get hasSword(): boolean {
+    return !!this.blade;
+  }
   grounded = true;
   steps = 0;
   attacks = 0;
@@ -110,12 +117,22 @@ export class MannequinCharacter implements CharacterView {
   private swing = 0;
   private lastPhase = 0;
   private dead = false;
+  private springs: SpringBones | null = null;
+  private lodLevel = 0;
+  /** Kiếm: vỏ trên lưng (`dtl_scabbard`) khi nghỉ, nắm tay (`dtl_sword`) khi giao chiến. */
+  private blade: THREE.Mesh | null = null;
+  private bladeLen = 0;
+  private scabbard: THREE.Object3D | null = null;
+  private hand: THREE.Object3D | null = null;
+  private qScab = new THREE.Quaternion();
+  private qHand = new THREE.Quaternion();
+  private drawn = false;
   /** Đòn nối tiếp sau đòn hiện tại (ngã → đứng dậy). */
   private chain: string | null = null;
   private weights = new Map<THREE.AnimationAction, number>();
   private disposed = false;
 
-  constructor(private tpl: MannequinTemplate, shadow = false) {
+  constructor(private tpl: MannequinTemplate, shadow = false, sword: SwordTemplate | null = null) {
     this.height = tpl.height;
     this.rig = cloneSkinned(tpl.handle.scene);
     const meshes: THREE.Mesh[] = [];
@@ -130,6 +147,29 @@ export class MannequinCharacter implements CharacterView {
     });
     for (let i = 0; i < this.lods.length; i++) this.lods[i] ??= [];
     this.applyLod(0);
+    const defs: SpringDef[] = [];
+    this.rig.traverse((o) => {
+      if (!(o as THREE.Bone).isBone || !o.name.startsWith('dtl_o_')) return;
+      const child = o.children.find((c) => (c as THREE.Bone).isBone);
+      defs.push({ bone: o.name, tailLocal: (child ?? o).position.clone() });
+    });
+    if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs);
+    this.scabbard = this.rig.getObjectByName('dtl_scabbard') ?? null;
+    this.hand = this.rig.getObjectByName('dtl_sword') ?? null;
+    if (sword && !shadow && this.scabbard && this.hand) {
+      this.rig.updateMatrixWorld(true);
+      // Hướng mũi kiếm lúc nghỉ (không gian xương): vỏ chéo xuống lưng, cầm tay thì lưỡi hướng lên; mesh kiếm có mũi +Y, chuôi ở gốc.
+      const align = (bone: THREE.Object3D, dir: THREE.Vector3, out: THREE.Quaternion): void => {
+        const qb = bone.getWorldQuaternion(new THREE.Quaternion()).invert();
+        out.copy(qb).multiply(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize()));
+      };
+      align(this.scabbard, new THREE.Vector3(-0.12, -0.55, -0.1), this.qScab);
+      align(this.hand, new THREE.Vector3(0, 1, 0), this.qHand);
+      this.blade = sword.mesh.clone();
+      this.blade.frustumCulled = false;
+      this.bladeLen = sword.info.len;
+      this.mountBlade(false);
+    }
     this.inner.add(this.rig);
     this.root.add(this.inner);
     this.mixer = new THREE.AnimationMixer(this.rig);
@@ -143,6 +183,15 @@ export class MannequinCharacter implements CharacterView {
     });
     this.play('Idle_Loop');
     this.mixer.update(0);
+  }
+
+  private mountBlade(drawn: boolean): void {
+    if (!this.blade) return;
+    this.drawn = drawn;
+    const bone = drawn ? this.hand : this.scabbard;
+    bone?.add(this.blade);
+    this.blade.position.set(0, 0, 0);
+    this.blade.quaternion.copy(drawn ? this.qHand : this.qScab);
   }
 
   private applyLod(level: number): void {
@@ -233,6 +282,7 @@ export class MannequinCharacter implements CharacterView {
   setView(v: { dist: number; inView: boolean; allowLod0: boolean; self?: boolean }): void {
     const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length);
     this.applyLod(level);
+    this.lodLevel = level;
     this.interval = mixerInterval(level, v.inView, !!v.self);
     this.inner.visible = v.inView;
   }
@@ -265,17 +315,31 @@ export class MannequinCharacter implements CharacterView {
     if (this.interval > 0 && this.acc < this.interval) return;
     this.blendBases(this.acc);
     this.mixer.update(this.acc);
+    const drawNow = this.combatT > 0 || !!a.combat;
+    if (drawNow !== this.drawn) this.mountBlade(drawNow);
+    // Lò xo vạt: chỉ LOD0 và trong khung nhìn; ma trận thế giới của xương phải mới (root vừa được đặt vị trí).
+    if (this.springs) {
+      if (this.lodLevel === 0 && this.inner.visible) {
+        this.root.updateMatrixWorld(true);
+        this.springs.update(this.acc, IDENT);
+      } else this.springs.reset();
+    }
     this.acc = 0;
   }
 
-  bladePoints(): boolean {
-    return false;
+  bladePoints(base: THREE.Vector3, tip: THREE.Vector3): boolean {
+    if (!this.blade || !this.drawn) return false;
+    this.blade.updateWorldMatrix(true, false);
+    base.setFromMatrixPosition(this.blade.matrixWorld);
+    tip.set(0, this.bladeLen, 0).applyMatrix4(this.blade.matrixWorld);
+    return true;
   }
 
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
     this.hit.reset();
+    this.blade?.removeFromParent();
     this.mixer.stopAllAction();
     this.mixer.uncacheRoot(this.rig);
     const sk = new Set<THREE.Skeleton>();
@@ -291,6 +355,7 @@ export class MannequinCharacter implements CharacterView {
 /** Nạp và dựng nhân vật v3; PlayerSkins gọi khi `?chr=v3`. Trả null khi asset chưa nạp xong (bên gọi dùng đường cũ). */
 export class MannequinPlayers {
   private tpl = new Map<string, MannequinTemplate | 'loading' | 'failed'>();
+  private swords = new Map<string, SwordTemplate | 'loading' | 'failed'>();
   private disposed = false;
   constructor(private cache: AssetCache) {}
 
@@ -318,6 +383,32 @@ export class MannequinPlayers {
     );
   }
 
+  /** Mẫu kiếm `id` (prop_kiem_*), nạp lười; null khi chưa xong hoặc lỗi. */
+  private sword(id: string): SwordTemplate | null {
+    const cur = this.swords.get(id);
+    if (cur) return typeof cur === 'string' ? null : cur;
+    this.swords.set(id, 'loading');
+    this.cache.acquire(id, { priority: 20 }).then(
+      (h) => {
+        const tpl = this.disposed ? null : swordTemplateOf(h.scene, partExtras(h.scene), () => h.release());
+        if (!tpl) {
+          h.release();
+          this.swords.set(id, 'failed');
+          return;
+        }
+        for (const m of adoptGltfMaterials(h.scene)) {
+          m.metalness = SWORD_METALNESS;
+          m.roughness = SWORD_ROUGHNESS;
+          const tint = SWORD_TINT[id];
+          if (tint) m.color.setRGB(tint[0], tint[1], tint[2]);
+        }
+        this.swords.set(id, tpl);
+      },
+      () => this.swords.set(id, 'failed'),
+    );
+    return null;
+  }
+
   private get(g: string, skin?: string): MannequinTemplate | null {
     const id = v3AssetOf(g, skin);
     this.load(id);
@@ -325,9 +416,9 @@ export class MannequinPlayers {
     return t && typeof t !== 'string' ? t : null;
   }
 
-  create(g: string, skin?: string): CharacterView | null {
+  create(g: string, skin?: string, w?: string): CharacterView | null {
     const t = this.get(g, skin);
-    return t ? new MannequinCharacter(t) : null;
+    return t ? new MannequinCharacter(t, false, this.sword(w ?? SWORD_MODEL_DEFAULT)) : null;
   }
 
   createShadow(g: string, def: MonsterDef, skin?: string): MonsterView | null {
@@ -335,8 +426,10 @@ export class MannequinPlayers {
     return t ? (Object.assign(new MannequinCharacter(t, true), { def }) as unknown as MonsterView) : null;
   }
 
-  pending(g: string, skin?: string): boolean {
-    return this.get(g, skin) === null && this.tpl.get(v3AssetOf(g, skin)) !== 'failed';
+  pending(g: string, skin?: string, w?: string): boolean {
+    if (this.get(g, skin) === null && this.tpl.get(v3AssetOf(g, skin)) !== 'failed') return true;
+    this.sword(w ?? SWORD_MODEL_DEFAULT);
+    return this.swords.get(w ?? SWORD_MODEL_DEFAULT) === 'loading';
   }
 
   dispose(): void {
@@ -347,5 +440,7 @@ export class MannequinPlayers {
       t.lib.release();
     }
     this.tpl.clear();
+    for (const t of this.swords.values()) if (typeof t === 'object') t.release();
+    this.swords.clear();
   }
 }
