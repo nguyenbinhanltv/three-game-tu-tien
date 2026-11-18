@@ -1,6 +1,6 @@
 {
   "$schema": "../../../meta.schema.json",
-  "id": "chr_v3_v2_nam",
+  "id": "chr_v3_lac_kiem_nu",
   "type": "chr",
   "budgetClass": "player_v3",
   "itemId": null,
@@ -14,7 +14,7 @@
     "seed": null
   },
   "license": {
-    "source": "Thân nền v2 (MakeHuman CC0 + đầu/tóc Tripo của người dùng, xem chr_v2_nam) đặt lên bộ xương UE5 Mannequin bằng tools/blender/chr_v3.py (N-0, bản thử pipeline)",
+    "source": "Tripo web app (image→3D, người dùng dựng) từ concept Codex Lạc Kiếm Môn Phục v3 (nữ); đặt lên xương UE5 Mannequin bằng tools/blender/chr_v3.py",
     "owner": "dự án",
     "date": "2026-11-18"
   }

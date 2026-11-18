@@ -1,0 +1,28 @@
+{
+  "$comment": "Xương lò xo cho Lạc Kiếm Môn Phục v3 (chr_v3.py --springs). Số theo PHẦN CHIỀU CAO. `robe`: vạt đạo bào bám hông ở giữa, bám đùi ra ngoài; `groups`: chuỗi lò xo thả từ hông (vạt). Tóc: chưa có (đỉnh tóc không tách được bằng bộ lọc hình học, xem docs/chr-v3).",
+  "groups": [
+    {
+      "name": "skirt",
+      "parent": "pelvis",
+      "axis": "angle",
+      "zMin": 0.24,
+      "zMax": 0.5,
+      "minRadius": 0.09,
+      "count": 8,
+      "links": 2,
+      "share": 0.6,
+      "domRegion": [
+        "torso",
+        "leg"
+      ]
+    }
+  ],
+  "robe": {
+    "zMin": 0.22,
+    "zMax": 0.52,
+    "minRadius": 0.09,
+    "xInner": 0.03,
+    "xOuter": 0.12,
+    "outerShare": 0.7
+  }
+}
