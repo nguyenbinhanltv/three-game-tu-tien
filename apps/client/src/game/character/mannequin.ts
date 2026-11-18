@@ -5,7 +5,7 @@
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
-import { POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/shared';
+import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/shared';
 import type { AssetCache, AssetHandle } from '../assets';
 import { HitReact, type HitOpts } from '../hitreact';
 import { adoptGltfMaterials } from '../../render/materials/world';
@@ -191,6 +191,8 @@ export class MannequinCharacter implements CharacterView {
     fired: number;
     env: number;
     recovered?: boolean;
+    /** Đã hủy (phá niệm/lướt/di chuyển): không phát thêm `hit`, tắt dần nhanh. */
+    cancelled?: boolean;
   } | null = null;
   private pendingPerform: { id: string; left: number; o: PerformOpts } | null = null;
   /** Nghe sự kiện chiêu (VFX, âm, rung camera theo `hitAt`), engine gắn vào. */
@@ -381,7 +383,7 @@ export class MannequinCharacter implements CharacterView {
   }
 
   private startPerform(id: string, pose: MqPose, o: PerformOpts): void {
-    this.stopPerform();
+    this.abortPerform();
     const act = (clip: THREE.AnimationClip) => {
       const x = this.mixer.clipAction(clip);
       x.setLoop(THREE.LoopOnce, 1);
@@ -405,6 +407,13 @@ export class MannequinCharacter implements CharacterView {
     if (this.shot) this.shot.fadeOut(0.05);
     this.attacks++;
     this.combatT = COMBAT_HOLD;
+  }
+
+  /** Dừng chiêu đang phát giữa chừng (chiêu mới đè, chết, bay): báo `cancel` nếu còn đòn chưa ra, `end` nếu đã ra hết, để VFX/hàng đợi sát thương dọn đúng. */
+  private abortPerform(): void {
+    const p = this.perf;
+    if (p && !p.cancelled && p.timing) this.emit(p.fired < p.timing.hitAt.length ? 'cancel' : 'end', p.fired);
+    this.stopPerform();
   }
 
   private stopPerform(): void {
@@ -436,12 +445,12 @@ export class MannequinCharacter implements CharacterView {
     const p = this.perf;
     if (!p) return;
     if (a.dead || a.flying || a.airborne) {
-      this.stopPerform();
+      this.abortPerform();
       return;
     }
     p.t += dt;
     const tm = p.timing;
-    if (tm) {
+    if (tm && !p.cancelled) {
       while (p.fired < tm.hitAt.length && p.t >= tm.hitAt[p.fired]) this.emit('hit', p.fired++);
       if (p.fired >= tm.hitAt.length && p.t >= tm.hitAt[tm.hitAt.length - 1] + 1e-3 && p.env > 0 && !p.recovered) {
         p.recovered = true;
@@ -449,7 +458,7 @@ export class MannequinCharacter implements CharacterView {
       }
     }
     if (p.t >= p.end) {
-      this.emit('end', tm ? tm.hitAt.length : 0);
+      if (!p.cancelled) this.emit('end', tm ? tm.hitAt.length : 0);
       this.stopPerform();
       return;
     }
@@ -486,16 +495,23 @@ export class MannequinCharacter implements CharacterView {
 
   cancelPerform(): void {
     this.pendingPerform = null;
-    this.stopPerform();
+    const p = this.perf;
+    // Đã ra đòn rồi thì để động tác chạy hết (hiệu ứng đã phóng), như SkinnedCharacter.
+    if (p && !p.cancelled && p.t < (p.pose.def.hit?.[0] ?? 0)) {
+      p.cancelled = true;
+      p.end = Math.min(p.end, p.t + 0.18);
+      this.emit('cancel', p.fired);
+    }
   }
 
   /** Di chuyển/lướt hủy phần thu về nếu đã qua mốc hủy trong dữ liệu chiêu (K-4). */
   cancelRecovery(kind: 'move' | 'dash'): boolean {
     const p = this.perf;
     const tm = p?.timing;
-    if (!p || !tm) return false;
-    if (p.t < (kind === 'move' ? tm.cancelMove : tm.cancelDash)) return false;
+    if (!p || !tm || p.cancelled || !canCancel(tm, p.t, kind)) return false;
+    p.cancelled = true;
     p.end = Math.min(p.end, p.t + 0.12);
+    this.emit('cancel', p.fired);
     return true;
   }
 
