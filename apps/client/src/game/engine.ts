@@ -34,6 +34,7 @@ import { buildRiftVeil, type RiftVeil } from '../render/riftVeil';
 import { skyTopOf } from '../render/sky';
 import { DeadTrees } from './deadTrees';
 import { deadTreeSpots, riftBlend, riftPath } from './bacHoangArt';
+import { XICH_LEVEL, xichCracks, type XichAccent } from './xichArt';
 import { bhCtx } from './propScatter';
 import { Beacons } from '../render/beacons';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline, postParams } from '../render/post';
@@ -144,7 +145,7 @@ const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: 
 };
 
 /** Hệ số đèn thật theo thời điểm: buổi sớm vừa phải, đêm đậm. */
-const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8, ochre_dawn: 1, ochre: 0.6, ochre_night: 1.8, cloud_dawn: 1, cloud: 0.6, cloud_night: 1.8, tk_dawn: 1, tk: 0.6, tk_night: 1.8, ash_dawn: 1, rift: 1.2 };
+const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8, ochre_dawn: 1, ochre: 0.6, ochre_night: 1.8, cloud_dawn: 1, cloud: 0.6, cloud_night: 1.8, tk_dawn: 1, tk: 0.6, tk_night: 1.8, ash_dawn: 1, rift: 1.2, rift_pit: 1.4 };
 
 /** Hiệu ứng của chính mình → nhạc ngắn trong manifest.music (tools/audio/compose/sting_*.mjs). */
 const STINGS: Record<string, string> = { levelup: 'sting_levelup', ascend: 'sting_breakthrough', death: 'sting_death' };
@@ -974,6 +975,53 @@ export class Game {
     this.scene.add(this.deadTrees.group);
   }
 
+  /** Xích Tẫn Khích (DV-3K): vết nứt phát sáng trên sàn hẻm (3 vết × 2 draw call), đèn nhấn quanh bia giữ và ba khe mạch. `?xichart=0` tắt để so ảnh. */
+  private xichRifts: RiftVeil[] = [];
+
+  private buildXich(id: string, q: (typeof QUALITY)[string]): void {
+    if (new URLSearchParams(location.search).get('xichart') === '0') return;
+    const T = levelTerrain();
+    const paths = xichCracks(T.def, (x, z) => heightAt(x, z));
+    for (const p of paths) {
+      const v = buildRiftVeil(p, (x, z) => heightAt(x, z), { height: 7, ribs: false, floorHalf: 3, strength: 0.22, floorStrength: 0.6, endFade: true });
+      this.scene.add(v.group);
+      this.xichRifts.push(v);
+    }
+    const lv = LEVELS[id]?.dungeon;
+    const c = lv?.center ?? { x: T.def.canyon?.cx ?? 0, z: T.def.canyon?.cz ?? 0 };
+    // Bia giữ ở tâm: than hồng; ba khe mạch (đúng chỗ khe của boss cuối): ngọc lam, đối màu với than hồng.
+    const acc: XichAccent[] = [
+      { x: c.x, z: c.z, color: 0xff6a35, k: 1.4 },
+      { x: c.x + 19, z: c.z + 11, color: 0x4fc9d0, k: 1.3 },
+      { x: c.x - 19, z: c.z + 11, color: 0x4fc9d0, k: 1.3 },
+      { x: c.x, z: c.z - 22, color: 0x4fc9d0, k: 1.3 },
+    ];
+    const pts = acc.map((a) => ({ x: a.x, y: heightAt(a.x, a.z) + 4.5, z: a.z, color: a.color, k: a.k }));
+    // Quầng giả: bia giữ than hồng; khe mạch ngọc lam lớn hơn, hai tầng (sát đất và lơ lửng) để điểm nhấn lạnh đọc được từ xa.
+    const halos = createLanternHalos(pts.slice(0, 1), 6, 0xff7a45);
+    const jade = acc.slice(1).flatMap((a2) => [1.6, 5.5].map((dy) => ({ x: a2.x, y: heightAt(a2.x, a2.z) + dy, z: a2.z })));
+    const jadeGlow = buildCrystalGlow(jade);
+    // Ngọn lửa than hồng trên các trụ đá dọc chân vách (cách một trụ), thay đèn lồng kiểu Vân Lam.
+    const flames = propsOf(id)
+      .filter((q) => q.id === 'prop_tru_da_khac_van')
+      .filter((_, i) => i % 2 === 0)
+      .map((q) => ({ x: q.x, y: heightAt(q.x, q.z) + 3.4 * q.s, z: q.z }));
+    const flameHalos = createLanternHalos(flames, 3.2, 0xff5a28);
+    this.scene.add(halos, jadeGlow, flameHalos);
+    this.levelObjs.push(halos, jadeGlow, flameHalos);
+    this.lanterns = new LanternLights(this.scene, pts, 4, 34);
+    this.lanterns.setEnabled(q.lights && isWebGPU(this.renderer));
+    this.lanterns.setIntensityScale(LANTERN_LIGHT[this.levelMood] ?? 1);
+  }
+
+  private disposeXich(): void {
+    for (const v of this.xichRifts) {
+      this.scene.remove(v.group);
+      v.dispose();
+    }
+    this.xichRifts = [];
+  }
+
   /** Mood Bắc Hoang theo vị trí: 0 ở nửa nam (`ash_dawn`) → 1 ở ba vùng bắc (`rift`), đổi dần quanh Khích Giai. Chỉnh uniform, không biên dịch lại. */
   private updateRiftMood(dt: number, z: number): void {
     this.riftMoodAcc += dt;
@@ -1087,6 +1135,7 @@ export class Game {
       }
     }
     if (id === 'bac_hoang') this.buildBacHoang();
+    if (id === XICH_LEVEL) this.buildXich(id, q);
     if (F.sect) void this.loadSectModel(q.shadows);
   }
 
@@ -1130,6 +1179,7 @@ export class Game {
   private unloadLevel(): void {
     this.cloneVis?.clear();
     this.disposeBacHoang();
+    this.disposeXich();
     const drop = (o: THREE.Object3D | null | undefined) => o && this.scene.remove(o);
     if (this.terrain) {
       drop(this.terrain.group);
@@ -3996,6 +4046,7 @@ export class Game {
     this.ground?.dispose();
     this.lanterns?.dispose();
     this.disposeBacHoang();
+    this.disposeXich();
     for (const o of this.levelObjs) {
       const m = o as THREE.Mesh;
       m.geometry?.dispose();

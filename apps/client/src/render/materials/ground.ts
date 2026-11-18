@@ -54,6 +54,12 @@ const groundParams = {
 const SNOW = vec3(0.26, 0.27, 0.22);
 const TOMB_TINT = vec3(0.6, 0.58, 0.7);
 
+/** Phá lặp texture (DV-3K, hẻm Xích Tẫn Khích): thêm mẫu thứ hai xoay + tỉ lệ khác, trộn theo nhiễu thế giới, và nhân sáng tối quy mô lớn. Terrain bật trước khi dựng shader. */
+let breakTiling = false;
+export function setGroundTileBreak(on: boolean): void {
+  breakTiling = on;
+}
+
 /** Gắn node shader vào `mat`. Gọi lại khi đổi preset (đổi cấu hình, `needsUpdate`). */
 export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: GroundTextures, level: GroundLevel): void {
   const hi = level === 'high';
@@ -114,6 +120,18 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   } else {
     baseUvA = p.div(baseScale);
     base = A(baseUvA, baseLayer);
+  }
+  if (breakTiling) {
+    // Hai tỉ lệ + xoay ~0,9 rad (không thẳng hàng lưới 6 m), trộn theo nhiễu thế giới và khoảng cách; thêm vệt sáng tối ~230 m và ~40 m.
+    const ca2 = cos(0.9);
+    const sa2 = sin(0.9);
+    const pr2 = vec2(p.x.mul(ca2).sub(p.y.mul(sa2)), p.x.mul(sa2).add(p.y.mul(ca2)));
+    const second = A(pr2.div(19).add(0.37), hi ? L.grass : baseLayer);
+    const k2 = clamp(smoothstep(0.25, 0.75, noise2).mul(0.5).add(0.25), 0, 1);
+    base = mix(base, second, k2);
+    const big = texture(tex.mask, p.mul(0.0043).add(0.31)).a;
+    const mid = texture(tex.mask, p.mul(0.021).add(0.57)).a;
+    base = base.mul(float(0.72).add(big.mul(0.5)).add(mid.sub(0.5).mul(0.22)));
   }
   // Sân lát đá có mạch vữa tương phản cao: từ ~20 m hoặc khi nhìn lướt thì hòa về màu đỉnh lưới, nếu không sinh vân ô/sọc kẻ ô (P2-E4).
   const pavFar = max(smoothstep(20, 75, dist), smoothstep(0.35, 0.08, ndv)).mul(0.88).mul(step(0.5, pav));

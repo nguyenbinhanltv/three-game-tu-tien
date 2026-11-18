@@ -54,6 +54,12 @@ export function autoTrails(zones: { lvMin: number; poly: [number, number][] }[],
 export function minimapBounds(levelId: string): { x0: number; z0: number; size: number } {
   const tr = terrainOf(levelId);
   const play = tr.def.play;
+  const cy = tr.def.canyon;
+  if (cy) {
+    // Phó bản hẻm núi: chỉ phủ hẻm + 70 m quanh tâm.
+    const half = Math.max(cy.halfW, cy.halfL) + 70;
+    return { x0: cy.cx - half, z0: cy.cz - half, size: half * 2 };
+  }
   if (!play) return { x0: 0, z0: 0, size: tr.size };
   const half = play.half + 100;
   return { x0: play.cx - half, z0: play.cz - half, size: half * 2 };

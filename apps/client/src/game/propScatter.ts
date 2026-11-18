@@ -2,6 +2,7 @@ import { LEVELS } from '@dtl/content';
 import { scatterVanHai } from './vanHaiScatter';
 import { scatterThienKhuyet } from './thienKhuyetArt';
 import { type BhScatterCtx, riftPath, scatterBacHoang } from './bacHoangArt';
+import { scatterXich, XICH_LEVEL, xichCracks } from './xichArt';
 import { padsOfLevel, propsOf, terrainOf, COLLIDERS, DUNGEON_EXIT, featureWeight, FOREST, HAND_PROPS, hash01, heightAt, ISLAND_R, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, SUOI, VACH, VALLEY, WATER_Y, WORLD_SIZE } from '@dtl/shared';
 
 /**
@@ -295,6 +296,7 @@ export function allProps(level = 'van_lam'): PropInstance[] {
     if (level === 'van_hai') list.push(...scatterVanHai(list));
     if (level === 'thien_khuyet') list.push(...scatterTk(list));
     if (level === 'bac_hoang') list.push(...scatterBh(list));
+    if (level === XICH_LEVEL) list.push(...scatterXichProps(list));
     levelCache.set(level, list);
   }
   return list;
@@ -428,4 +430,26 @@ export function nearPropTree(x: number, z: number): boolean {
     }
   }
   return false;
+}
+
+/** Đá dung nham nguội, cột đổ, kiếm gãy trong hẻm Xích Tẫn Khích (DV-3K): phần tính ở `xichArt.ts`; vòng cấm quanh bia, cổng vào/ra, khe mạch, prop đặt tay. */
+function scatterXichProps(placed: readonly PropInstance[]): PropInstance[] {
+  const L = LEVELS[XICH_LEVEL];
+  const tr = terrainOf(XICH_LEVEL);
+  const d = L.dungeon;
+  const clear = [
+    ...(d ? [{ x: d.spawn.x, z: d.spawn.z, r: 9 }, { x: d.exit.x, z: d.exit.z, r: 9 }, { x: d.center.x, z: d.center.z, r: 16 }] : []),
+    ...placed.map((p) => ({ x: p.x, z: p.z, r: 4 })),
+  ];
+  const cracks = xichCracks(tr.def, (x, z) => tr.heightAt(x, z));
+  return scatterXich({ def: tr.def, heightAt: (x, z) => tr.heightAt(x, z), clear, cracks }).map((r) => ({
+    id: r.id,
+    x: r.x,
+    y: tr.heightAt(r.x, r.z) - r.sink,
+    z: r.z,
+    yaw: r.yaw,
+    s: r.s,
+    lean: r.lean,
+    tint: r.tint,
+  }));
 }

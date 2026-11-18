@@ -17,7 +17,7 @@ export class LanternLights {
 
   constructor(
     scene: THREE.Scene,
-    private points: readonly { x: number; y: number; z: number }[],
+    private points: readonly { x: number; y: number; z: number; /** Màu riêng của điểm (0xRRGGBB); mặc định vàng ấm. */ color?: number; /** Hệ số cường độ riêng. */ k?: number }[],
     max = 8,
     readonly baseIntensity = 22,
   ) {
@@ -65,8 +65,9 @@ export class LanternLights {
       used.add(best);
       const p = this.points[best];
       l.position.set(p.x, p.y, p.z);
+      if (p.color !== undefined) l.color.setHex(p.color);
       const fade = 1 - THREE.MathUtils.smoothstep(Math.sqrt(bd), FADE_NEAR, FADE_FAR);
-      l.intensity = this.baseIntensity * this.k * fade;
+      l.intensity = this.baseIntensity * this.k * (p.k ?? 1) * fade;
     }
   }
 

@@ -849,9 +849,9 @@ for (const lv of Object.values(LEVELS)) {
   const as = LEVEL_ASSETS[lv.id];
   if (!as) err(`level ${lv.id}: thiếu levels/${lv.id}.assets.json`);
   else {
-    const known = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'wild_ash', 'wild_rift', 'forest', 'lake', 'dungeon', 'dungeon_boss', 'combat', 'boss', 'tribulation', 'meditate'];
+    const known = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'wild_ash', 'wild_rift', 'forest', 'lake', 'dungeon', 'dungeon_boss', 'dungeon_rift', 'dungeon_rift_boss', 'combat', 'boss', 'tribulation', 'meditate'];
     for (const m of as.music) if (!known.includes(m)) err(`level ${lv.id}: assets.music không biết bài ${m}`);
-    if (!['default', 'dawn', 'day', 'night', 'ochre', 'ochre_night', 'cloud_dawn', 'cloud', 'cloud_night', 'tk_dawn', 'tk', 'tk_night', 'ash_dawn', 'rift'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
+    if (!['default', 'dawn', 'day', 'night', 'ochre', 'ochre_night', 'cloud_dawn', 'cloud', 'cloud_night', 'tk_dawn', 'tk', 'tk_night', 'ash_dawn', 'rift', 'rift_pit'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
     if (as.minimap && !existsSync(new URL(`../../../apps/client/public/map/${as.minimap}.json`, import.meta.url))) err(`level ${lv.id}: thiếu nền minimap public/map/${as.minimap}.json (pnpm minimap:build --level ${lv.id})`);
   }
 }
