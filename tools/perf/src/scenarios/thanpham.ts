@@ -9,10 +9,13 @@ import { centerClip, snap } from '../lib/shot';
 export default {
   name: 'thanpham',
   desc: 'Thần phẩm: cột sáng rơi đồ, thông báo toàn phòng, ô túi + tooltip (so với Thiên phẩm)',
-  usage: '[--size 1280x800] [--item itm_thanh_phong_kiem]',
+  usage: '[--size 1280x800] [--item itm_thanh_phong_kiem] [--name "Thanh Phong Kiếm"]',
   async run(r) {
     const [vw, vh] = size('1280x800');
     const item = opt('--item', 'itm_thanh_phong_kiem');
+    // Server gửi TÊN món và tên phẩm đã dịch (`itemName`, `t('ui.quality.N')`); tin dựng ở đây theo đúng khuôn đó.
+    const name = opt('--name', 'Thanh Phong Kiếm');
+    const quals = ['Phàm phẩm', 'Linh phẩm', 'Huyền phẩm', 'Địa phẩm', 'Thiên phẩm', 'Thần phẩm'];
     const { ctx, page } = await r.open({ name: 'Than', viewport: [vw, vh], dpr: 1, quality: 'high', extra: '', warnings: /models/ });
     await gm(page, 'level 15', 1600);
     await gm(page, 'god on', 1200);
@@ -27,12 +30,12 @@ export default {
     console.log(`[shots:thanpham] nguồn rơi: ${src || '(không có)'}`);
     const send = (q: number, text: boolean) =>
       page.evaluate(
-        ([s, i, qq, withText]) => {
+        ([s, i, qq, withText, nm, ql]) => {
           const g = window.__game as unknown as { room: { onMessageHandlers: { emit(k: string, m: unknown): void } } };
-          g.room.onMessageHandlers.emit('sys', { k: 'sys.loot_gear', p: { item: i, quality: '' }, t: 'loot', i, src: s, q: qq });
-          if (withText) g.room.onMessageHandlers.emit('sys', { k: 'sys.loot_than', p: { name: 'Đạo hữu', item: i }, t: 'good' });
+          g.room.onMessageHandlers.emit('sys', { k: 'sys.loot_gear', p: { item: nm, quality: ql }, t: 'loot', i, src: s, q: qq });
+          if (withText) g.room.onMessageHandlers.emit('sys', { k: 'sys.loot_than', p: { name: 'Đạo hữu', item: nm }, t: 'good' });
         },
-        [src, item, q, text] as const,
+        [src, item, q, text, name, quals[q]] as const,
       );
     await send(4, false);
     await snap(page, r.out, 'drop-thien.jpg', { wait: 1800 });
