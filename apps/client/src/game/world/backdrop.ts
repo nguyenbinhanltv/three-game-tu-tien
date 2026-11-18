@@ -11,6 +11,9 @@ import { MODEL_MAT } from '../core/models';
 import { buildSect, SECT_LANTERNS } from './sect';
 import { Terrain } from './terrain';
 import { FLAGS } from '../../base/flags';
+import { logger } from '../../base/log';
+
+const titleLog = logger('title');
 
 /**
  * Cảnh nền màn tiêu đề: thế giới thủ tục sẵn có (trời, mây, địa hình, Lạc Kiếm Tông dựng bằng
@@ -139,7 +142,7 @@ export class TitleBackdrop {
         old.dispose();
       }
     } catch (e) {
-      console.warn('[title] không tải được arch_sect, giữ kiến trúc dựng bằng code:', e);
+      titleLog.warn('không tải được arch_sect, giữ kiến trúc dựng bằng code:', e);
     }
   }
 

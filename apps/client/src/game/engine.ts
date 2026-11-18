@@ -106,6 +106,11 @@ import {
   unloadLevel,
 } from './engine/levelLoad';
 import { applyInit, bindRoom, rebind } from './engine/room';
+import { logger } from '../base/log';
+
+const levelLog = logger('level');
+const engineLog = logger('engine');
+const gpuLog = logger('gpu');
 export { reqId } from './engine/common';
 
 export class Game {
@@ -168,7 +173,7 @@ export class Game {
           // Để tiện gỡ lỗi từ console của trình duyệt.
           (window as unknown as { __game?: Game }).__game = g;
           g.start().catch((err) => {
-            console.error(err);
+            engineLog.error(err);
             set({ phase: 'error', error: t('ui.err.webgl') + ' ' + String(err?.message ?? err) });
           });
         }
@@ -492,7 +497,7 @@ export class Game {
       const room = await Game.join(m.room, m.options);
       await Game.enter(room);
     } catch (e) {
-      console.error(e);
+      engineLog.error(e);
       try {
         const room = await Game.join(ROOM_WORLD);
         await Game.enter(room);
@@ -730,14 +735,14 @@ export class Game {
               newSet.set,
             ).then(
               (t) => (swap.t = t),
-              (e) => console.warn('[level] bộ texture mặt đất:', e),
+              (e) => levelLog.warn('bộ texture mặt đất:', e),
             )
           : Promise.resolve(),
         this.music.preloadLevel(A.music),
         this.ground && maskKind && !newSet
           ? this.ground.prepareMask(maskKind).then(
               (c) => (commitMask = c),
-              (e) => console.warn('[level] mặt nạ mặt đất:', e),
+              (e) => levelLog.warn('mặt nạ mặt đất:', e),
             )
           : Promise.resolve(),
       ]);
@@ -1083,13 +1088,13 @@ export class Game {
       // Đã ở WebGL2 mà vẫn lỗi: nạp lại không giúp gì, chỉ báo một lần.
       if (!this.fellBack) {
         this.fellBack = true;
-        console.error('[gpu] lỗi vẽ trên WebGL2:', why);
+        gpuLog.error('lỗi vẽ trên WebGL2:', why);
         pushToast(t('sys.gpu_failed'), 'bad');
       }
       return;
     }
     this.fellBack = true;
-    console.warn('[gpu] lùi WebGL2:', why);
+    gpuLog.warn('lùi WebGL2:', why);
     try {
       localStorage.setItem(RENDERER_KEY, 'webgl2');
     } catch {
