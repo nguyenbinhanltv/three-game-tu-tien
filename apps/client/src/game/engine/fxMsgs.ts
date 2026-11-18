@@ -45,6 +45,9 @@ import { DASH_LOOKBACK, HIT_CTX_TTL, HIT_WAIT, KNOCKDOWN_FRAC, QUIET, SKILL_INFO
 import { chapter, danCine, phaseCine, skipCine } from './cine';
 import { bossSay, pruneRareLoot } from './hudSync';
 import type { Game } from '../engine';
+import { logger } from '../../base/log';
+
+const audioLog = logger('audio');
 
 /**
  * Sự kiện chiêu của máy trạng thái (K-4) → tiếng vung đặt lịch theo đồng hồ AudioContext, và xả hàng chờ đúng khung `hit`:
@@ -1031,7 +1034,7 @@ export function volumeAt(eng: Game, x: number, z: number): number {
 export function resetSound(eng: Game, world: boolean): void {
   eng.scape?.dispose();
   const log = (msg: string) => {
-    if (import.meta.env.DEV) console.info(`[audio] ${msg}`);
+    if (import.meta.env.DEV) audioLog.debug(`${msg}`);
   };
   eng.steps = new FootstepDriver(world ? 'van_lam' : 'kiem_trung', (name, vol, at) => sfx(name, vol, at, false), log);
   eng.scape = world ? new Soundscape(buildSources(SECT_LANTERNS), audioSpatialApi(), log) : null;

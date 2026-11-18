@@ -28,6 +28,9 @@ import type { ClipMap } from './states';
 import { ELITE_SKINS_NEW } from './eliteSkins';
 import { MQ_CLIPS, MQ_LIB, MQ_MOVES, MQ_SHIELD_CLIPS, MQ_ZOMBIE_CLIPS, MQ_ZOMBIE_MOVES, pelvisScaledClips } from './mannequinMonster';
 import { type BossMoveKind, legacyModelsRequested, type MonsterView } from './view';
+import { logger } from '../../base/log';
+
+const modelsLog = logger('models');
 
 /** Quái dùng model có xương: asset, bảng clip, tông màu (nhân vào texture màu, không thêm texture). */
 /** Lò xo cánh: cứng hơn vạt áo, góc lệch hẹp (cánh lớn không được quật quanh thân). */
@@ -862,7 +865,7 @@ export class MonsterSkins {
       },
       (err) => {
         if (this.disposed) return;
-        console.warn(`[models] không nạp được ${id}, dùng model khối`, err);
+        modelsLog.warn(`không nạp được ${id}, dùng model khối`, err);
         this.templates.set(id, 'failed');
       },
     );
@@ -899,7 +902,7 @@ export class MonsterSkins {
       try {
         await warm(tmp);
       } catch (e) {
-        console.warn(`[models] biên dịch trước ${mid} lỗi:`, e);
+        modelsLog.warn(`biên dịch trước ${mid} lỗi:`, e);
       } finally {
         scene.traverse((o) => (o as THREE.SkinnedMesh).skeleton?.dispose());
       }

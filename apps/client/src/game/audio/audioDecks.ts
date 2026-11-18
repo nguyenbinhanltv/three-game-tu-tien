@@ -1,4 +1,7 @@
 import type { Manifest } from './audio';
+import { logger } from '../../base/log';
+
+const audioLog = logger('audio');
 
 const DEV = (import.meta as unknown as { env: { DEV: boolean } }).env.DEV;
 
@@ -85,7 +88,7 @@ export class SynthWind {
       this.nodes = [src, lfo1, lfo2];
     }
     ramp(this.g, WIND_GAIN, c.currentTime, fade);
-    if (DEV) console.info('[audio] ambient: gió tổng hợp');
+    if (DEV) audioLog.debug('ambient: gió tổng hợp');
   }
 
   stop(fade: number): void {
@@ -189,11 +192,11 @@ export class StreamDeck {
     el.addEventListener('error', () => {
       // Kênh đã bị thả hoặc đã đổi bài (release() xóa src cũng bắn 'error'): bỏ qua.
       if (ch.el !== el || this.playing !== id) return;
-      console.warn('[audio] không phát được', urls[tried]);
+      audioLog.warn('không phát được', urls[tried]);
       tried++;
       if (tried < urls.length) {
         el.src = urls[tried];
-        el.play().catch((err) => console.warn('[audio] play() bị từ chối', urls[tried], err));
+        el.play().catch((err) => audioLog.warn('play() bị từ chối', urls[tried], err));
         return;
       }
       this.wind?.start(fade);
@@ -206,8 +209,8 @@ export class StreamDeck {
     ch.g.gain.cancelScheduledValues(t);
     ch.g.gain.setValueAtTime(0, t);
     ramp(ch.g, entry.gain ?? 1, t, fade);
-    if (DEV) console.info(`[audio] ${this.kind}: ${id} (${url})`);
-    el.play().catch((err) => console.warn('[audio] play() bị từ chối', url, err));
+    if (DEV) audioLog.debug(`${this.kind}: ${id} (${url})`);
+    el.play().catch((err) => audioLog.warn('play() bị từ chối', url, err));
   }
 
   private release(ch: Channel, el: HTMLAudioElement): void {

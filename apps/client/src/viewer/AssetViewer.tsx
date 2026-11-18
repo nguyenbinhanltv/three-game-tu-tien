@@ -8,6 +8,9 @@ import { isBossViewer, isSkillViewer, SHOW_ALIASES, showAssetId } from '../game/
 import { SkillPanel } from './SkillPanel';
 import { skillForId } from './skillTiming';
 import { currentSearch, urlParams } from '../base/flags';
+import { logger } from '../base/log';
+
+const viewerLog = logger('viewer');
 
 const BASE_URL = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL;
 /** Chỉ nhận đường dẫn tương đối cùng origin tới .glb/.gltf, không có "..". */
@@ -49,7 +52,7 @@ export function AssetViewer() {
       // Khung lưới giữ nguyên (scene tự áp lại cho model mới); xương luôn tạo mới ở trạng thái ẩn.
       setOpts((o) => ({ ...o, skeleton: false }));
     } catch (e) {
-      console.error('[viewer]', e);
+      viewerLog.error(e);
       setError(t('viewer.err.load', { name, msg: e instanceof Error ? e.message : String(e) }));
     } finally {
       setStatus('');

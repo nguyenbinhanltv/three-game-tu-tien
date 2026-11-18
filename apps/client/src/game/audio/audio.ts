@@ -37,6 +37,9 @@ import { gongPartials } from '../camera/chapter';
 import MIX from './audioMix.json';
 import { FLAGS } from '../../base/flags';
 import { ramp, StreamDeck, type DeckEnv } from './audioDecks';
+import { logger } from '../../base/log';
+
+const audioLog = logger('audio');
 
 /** Âm có bản tổng hợp dự phòng (dùng khi không có manifest). */
 type SynthSfx =
@@ -261,7 +264,7 @@ function decode(url: string): Promise<AudioBuffer | null> {
         // decodeAudioData làm hỏng ArrayBuffer gốc nên giải mã trên bản sao.
         return await c.decodeAudioData(raw.slice(0));
       } catch {
-        console.warn('[audio] không giải mã được', url);
+        audioLog.warn('không giải mã được', url);
         return null;
       }
     });
@@ -723,16 +726,16 @@ export function playSting(id: string, volume = 1): boolean {
   };
   el.addEventListener('ended', release, { once: true });
   el.addEventListener('error', () => {
-    console.warn('[audio] không phát được sting', id, url);
+    audioLog.warn('không phát được sting', id, url);
     release();
   });
   el.play()
     .then(() => duck(0.6, Math.max(0.5, (Number.isFinite(el.duration) ? el.duration : 4) - 1), 1.2))
     .catch((err) => {
-      console.warn('[audio] play() sting bị từ chối', id, err);
+      audioLog.warn('play() sting bị từ chối', id, err);
       release();
     });
-  if (DEV) console.info(`[audio] sting: ${id}`);
+  if (DEV) audioLog.debug(`sting: ${id}`);
   return true;
 }
 
@@ -789,7 +792,7 @@ function emit(name: Sfx, volume: number, at: { x: number; z: number } | undefine
   }
   if (DEV && !logged.has(name + useFile)) {
     logged.add(name + useFile);
-    console.info(`[audio] ${name}: ${useFile ? 'file' : 'tổng hợp'}`);
+    audioLog.info(`${name}: ${useFile ? 'file' : 'tổng hợp'}`);
   }
 }
 
@@ -1049,7 +1052,7 @@ export async function decodeMusic(urls: string[]): Promise<AudioBuffer | null> {
       if (!r.ok) continue;
       return await c.decodeAudioData(await r.arrayBuffer());
     } catch {
-      console.warn('[audio] không giải mã được stem', u);
+      audioLog.warn('không giải mã được stem', u);
     }
   }
   return null;

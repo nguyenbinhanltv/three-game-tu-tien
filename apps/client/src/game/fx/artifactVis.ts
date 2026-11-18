@@ -7,6 +7,9 @@ import type { ArtifactKind } from '@dtl/shared';
 import { ARTIFACT } from '@dtl/content';
 import { assets, type AssetHandle } from '../core/assets';
 import { adoptGltfMaterials } from '../../render/materials/world';
+import { logger } from '../../base/log';
+
+const artifactLog = logger('artifact');
 
 /** Tư thế trong khung nhân vật: x = bên trái, y = lên, z = phía trước (trùng quy ước import Tripo). */
 interface ArtPose {
@@ -168,7 +171,7 @@ export class ArtifactVis {
         this.pivot.add(h.scene);
         this.seeded = false;
       })
-      .catch((e) => console.warn(`[artifact] không nạp được ${def.asset}`, e));
+      .catch((e) => artifactLog.warn(`không nạp được ${def.asset}`, e));
   }
 
   /** Kích hoạt: bay quanh người trong `sec` giây. */
