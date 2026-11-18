@@ -29,6 +29,7 @@ import {
 } from 'three/tsl';
 import { hash21, vnoise, type FxUniforms, type N } from './common';
 import { cardTexture } from './cards';
+import { artAtlas, ART_COUNT } from './art';
 
 /**
  * Thư viện shader TSL "vẽ tay, 2D trong 3D" (VFX-V0). Mọi hiệu ứng chiêu mới ghép từ các mảnh này:
@@ -466,10 +467,17 @@ export function cardNodes(U: FxUniforms): { color: N; opacity: N } {
   const ta = texture(cardTexture('arhat'), q);
   const tp = texture(cardTexture('phoenix'), q);
   const tg = texture(cardTexture('ghost'), q);
-  const t = select(which.greaterThan(1.5), tg, mix(ta, tp, step(0.5, which)));
+  const base012 = select(which.greaterThan(1.5), tg, mix(ta, tp, step(0.5, which)));
+  const ti = texture(cardTexture('infant'), q);
+  const t = select(which.greaterThan(4.5), ti, base012);
   const tier = t.r;
   const acc = t.g;
-  const accent = select(which.greaterThan(1.5), vec3(0.62, 0.92, 1.0), mix(vec3(1.0, 0.78, 0.3), vec3(0.92, 0.2, 0.1), step(0.5, which)));
+  const accent012 = select(
+    which.greaterThan(1.5),
+    vec3(0.62, 0.92, 1.0),
+    mix(vec3(1.0, 0.78, 0.3), vec3(0.92, 0.2, 0.1), step(0.5, which)),
+  );
+  const accent = select(which.greaterThan(4.5), vec3(0.5, 0.95, 0.75), accent012);
   const base = ramp3(tier, body.mul(body).mul(0.42), body, rim, 0.3, 0.72, 0.05);
   const accCol = ramp3(tier, accent.mul(0.35), accent, mix(accent, vec3(1, 1, 1), 0.35), 0.3, 0.72, 0.05);
   const lit = mix(base, accCol, acc);
@@ -480,6 +488,41 @@ export function cardNodes(U: FxUniforms): { color: N; opacity: N } {
   const e = n.mul(0.7).add(fromBottom.mul(0.3));
   const alive = dissolve(e, erode, 0.07);
   const edge = one.sub(smoothstep(erode, erode.add(0.1), e)).mul(step(0.02, erode));
-  const color = min(lit.add(rim.mul(edge.mul(0.9))), U.maxHdr);
-  return { color, opacity: U.opacity.mul(t.a).mul(reveal).mul(alive) };
+  // Pháp tướng Hóa Thần (thẻ 3, 4): `fxK` là giờ (giây), gợn sóng sáng chạy từ chân lên đầu (RFX-1).
+  const isPhantom = step(4.5, which);
+  const wave = sin(q.y.mul(34).sub(U.k.mul(7)))
+    .mul(0.5)
+    .add(0.5);
+  const waveMul = one.sub(isPhantom.mul(0.22)).add(isPhantom.mul(wave).mul(0.22));
+  const color = min(lit.add(rim.mul(edge.mul(0.9))).add(rim.mul(isPhantom.mul(wave).mul(0.16))), U.maxHdr);
+  return { color, opacity: U.opacity.mul(t.a).mul(reveal).mul(alive).mul(waveMul) };
+}
+
+/**
+ * `art` (RFX-1 v3): tranh pháp tướng vẽ tay (Kiếm long ngọc / Huyền vũ / Chu tước, `public/hoa-truc/`) lấy từ một atlas, quay mặt về camera.
+ * `fxA` = (mọc từ dưới lên 0..1,2, -, seed, tranh 0|1|2), `fxB.xyz` = màu viền, `fxK` = giờ (giây). Mờ dần ở viền (vignette), gợn sóng sáng chạy
+ * từ chân lên đầu, ánh viền theo độ trong (fresnel giả: nét mảnh sáng hơn), phát sáng nhẹ; màu gốc của tranh giữ nguyên.
+ */
+export function artNodes(U: FxUniforms): { color: N; opacity: N } {
+  const q = uv();
+  const idx = U.a.w;
+  const reveal0 = U.a.x;
+  const one = float(1);
+  const t = texture(artAtlas(), vec2(q.x.add(idx).div(ART_COUNT), q.y));
+  const p = q.sub(0.5).mul(2);
+  const edge = one.sub(smoothstep(0.6, 1.0, max(abs(p.x), abs(p.y))));
+  const wave = sin(q.y.mul(26).sub(U.k.mul(5)))
+    .mul(0.5)
+    .add(0.5);
+  const thin = one.sub(smoothstep(0.35, 0.95, t.a));
+  const rim = U.b.xyz;
+  const lit = t.rgb
+    .mul(U.color)
+    .mul(float(0.88).add(wave.mul(0.3)))
+    .add(rim.mul(wave.mul(0.1).add(thin.mul(0.35))));
+  const color = min(lit.mul(1.12), U.maxHdr);
+  const reveal = one.sub(smoothstep(reveal0.sub(0.12), reveal0, q.y));
+  // Ngưỡng alpha: bỏ lớp sương alpha thấp của ảnh gốc (nếu không lớp bóng sẫm lộ thành hình chữ nhật).
+  const alpha = smoothstep(0.1, 0.45, t.a);
+  return { color, opacity: U.opacity.mul(alpha).mul(edge).mul(reveal) };
 }
