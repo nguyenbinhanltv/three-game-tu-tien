@@ -12,6 +12,6 @@ Tái thiết kế mỹ thuật Lạc Kiếm Tông (bản đồ `van_lam`). Chia 
 - Sương trắng-lam (`fogColor`) thay sương vàng-xám, mật độ thấp, `fogHaze` bậc một cho núi xa xếp lớp; nắng thấp hơn (bình minh 13°, hoàng hôn 8°) cho bóng dài; bóng nhuốm ngọc lam, vùng sáng ấm.
 - `render/godRays.ts`: tia sáng xuyên mây, một `InstancedMesh` (+1 draw call), khai báo bằng `godRays` trong `*.assets.json` (`x, z, r, count`). Cường độ theo mood (`GOD_RAY_INTENSITY`): bình minh/hoàng hôn rõ, trưa nhẹ, đêm vệt trăng. Trục dải dựng dốc hơn hướng nắng (nắng thấp thì dải nằm ngang, trông như tấm phẳng).
 - Chụp ảnh: `pnpm shots lackiem --out <thư mục tuyệt đối> [--tag truoc|sau] [--perf 1] [--video 1]` (6 góc × 4 thời điểm × 1080p/720p). Muốn so "trước": chạy cùng lệnh ở bản main (nhưng main không có `dusk`).
-- Hiệu năng (preset Cao, 1080p, 6 góc × 3 thời điểm): draw call +1…+3, tam giác không đổi, khung 8–9 ms như trước.
+- Hiệu năng (preset Cao, 1080p, 6 góc × 4 thời điểm): draw call +1…+3 so với main, tam giác không đổi, khung 8–9 ms (đỉnh lẻ 13–17 ms là nhiễu đo, không lặp lại ở góc đó).
 
 Ảnh/video duyệt PR để ở artifact phiên (không commit).

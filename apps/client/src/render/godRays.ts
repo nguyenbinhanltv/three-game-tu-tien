@@ -5,6 +5,7 @@ import {
   clamp,
   cross,
   dot,
+  exp,
   float,
   length,
   mix,
@@ -44,9 +45,9 @@ export interface GodRayArea {
   count: number;
 }
 
-const MAX_OPACITY = 0.6;
+const MAX_OPACITY = 0.3;
 /** Nhân chung sau các hệ số mờ (mép, chân/đỉnh, lung linh, hướng nhìn, xa/gần) vốn nhân nhau còn ~5–15%. */
-const OPACITY_GAIN = 1.8;
+const OPACITY_GAIN = 1.6;
 
 /** Xorshift32 nhỏ, cho vị trí cố định theo seed (cùng kết quả mỗi lần dựng). */
 function rng(seed: number): () => number {
@@ -80,19 +81,20 @@ function rayMaterial(): THREE.MeshBasicNodeMaterial {
   const world = center.add(axis.mul(prm.x.mul(t))).add(side.mul(prm.y.mul(widthK).mul(uv().x.sub(0.5))));
   mat.positionNode = world;
 
-  const across = float(1).sub(uv().x.sub(0.5).abs().mul(2)); // 1 giữa dải, 0 ở mép
-  const edge = smoothstep(0, 0.55, across).pow(1.2);
-  const along = smoothstep(0, 0.22, t).mul(float(1).sub(smoothstep(0.55, 1, t)));
-  const shimmer = sin(time.mul(0.35).add(prm.z).add(t.mul(3.2)))
+  const across = uv().x.sub(0.5).abs().mul(2); // 0 giữa dải, 1 ở mép
+  // Mép Gauss (không có cạnh cứng), chân và đỉnh tắt hẳn về 0 nên không lộ đầu tấm phẳng.
+  const edge = exp(across.mul(across).mul(-5));
+  const along = smoothstep(0, 0.4, t).mul(float(1).sub(smoothstep(0.4, 1, t)));
+  const shimmer = sin(time.mul(0.3).add(prm.z).add(t.mul(2.4)))
     .mul(0.5)
     .add(0.5)
-    .mul(0.35)
-    .add(0.65);
-  const toDir = normalize(center.add(axis.mul(prm.x.mul(0.5))).sub(cameraPosition));
-  // Nhìn về phía mặt trời thì đậm (dải nằm ngược sáng); quay lưng vẫn còn một phần.
-  const facing = smoothstep(-0.3, 0.85, dot(toDir, axis)).mul(0.6).add(0.4);
+    .mul(0.4)
+    .add(0.6);
+  // Chỉ hiện khi nhìn về phía mặt trời (hướng nhìn gần hướng nắng thật); quay đi thì tắt.
+  const viewDir = normalize(center.add(axis.mul(prm.x.mul(0.4))).sub(cameraPosition));
+  const facing = smoothstep(0.3, 0.92, dot(viewDir, skyParams.sunDir));
   const dist = length(toCam);
-  const nearFade = smoothstep(18, 90, dist);
+  const nearFade = smoothstep(30, 140, dist);
   const farFade = float(1).sub(smoothstep(900, 1800, dist).mul(0.6));
   mat.opacityNode = clamp(
     edge.mul(along).mul(shimmer).mul(facing).mul(nearFade).mul(farFade).mul(prm.w).mul(godRayParams.intensity).mul(OPACITY_GAIN),
@@ -120,8 +122,8 @@ export class GodRays {
       const x = area.x + Math.cos(a) * rr;
       const z = area.z + Math.sin(a) * rr;
       center.set([x, heightAt(x, z) - 6, z], i * 3);
-      const len = 90 + rand() * 130;
-      const wid = 7 + rand() * 24;
+      const len = 120 + rand() * 160;
+      const wid = 5 + rand() * 12;
       params.set([len, wid, rand() * 6.28, 0.45 + rand() * 0.55], i * 4);
     }
     geo.setAttribute('iCenter', new THREE.InstancedBufferAttribute(center, 3));
