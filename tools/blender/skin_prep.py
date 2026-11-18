@@ -88,6 +88,8 @@ def import_high():
     bpy.ops.mesh.remove_doubles(threshold=1e-5)
     bpy.ops.object.mode_set(mode='OBJECT')
     REPORT['sourceTriangles'] = tri_count(high)
+    bb = [high.matrix_world @ Vector(c) for c in high.bound_box]
+    REPORT['bbox'] = [[round(min(v[i] for v in bb), 4) for i in range(3)], [round(max(v[i] for v in bb), 4) for i in range(3)]]
     log(f'nguồn: {REPORT["sourceTriangles"]} tam giác, {len(high.data.vertices)} đỉnh sau khi hàn')
     return high
 
@@ -134,7 +136,8 @@ def cut_weapon(high):
             kill.extend(comp)
             removed.append(len(comp))
     bmesh.ops.delete(bm, geom=kill, context='VERTS')
-    holes = bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=0)
+    # `cut.fill: false` khi vũ khí là mảnh rời (không cần vá) và model có mép hở thật (áo choàng rách) không được vá.
+    holes = bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=0) if cut.get('fill', True) else {'faces': []}
     bmesh.ops.triangulate(bm, faces=holes['faces'])
     bm.to_mesh(high.data)
     bm.free()
@@ -162,7 +165,9 @@ def render_views(tag, obj, textured=True):
     obj.hide_render = False
     cam_data = bpy.data.cameras.new('cam')
     cam_data.type = 'ORTHO'
-    cam_data.ortho_scale = 2.0
+    view = CFG.get('view') or {}
+    cam_data.ortho_scale = float(view.get('scale', 2.0))  # `view.scale`/`view.center`: model có đơn vị khác Varkessa
+    ctr = view.get('center', [0, 0, 0])
     cam_data.clip_end = 50
     cam = bpy.data.objects.new('cam', cam_data)
     scene.collection.objects.link(cam)
@@ -176,7 +181,7 @@ def render_views(tag, obj, textured=True):
         scene.world = bpy.data.worlds.new('w')
     scene.world.color = (0.3, 0.32, 0.35)
     for view, loc, rot in (('truoc', (0, -10, 0), (90, 0, 0)), ('canh', (-10, 0, 0), (90, 0, -90)), ('sau', (0, 10, 0), (90, 0, 180))):
-        cam.location = loc
+        cam.location = (loc[0] if loc[0] else ctr[0], loc[1] if loc[1] else ctr[1], ctr[2]) if view else loc
         cam.rotation_euler = tuple(math.radians(a) for a in rot)
         scene.render.filepath = os.path.join(PREVIEW, f'{tag}_{view}.png')
         bpy.ops.render.render(write_still=True)

@@ -190,6 +190,12 @@ for (const it of ITEMS) {
   needStr(`item.${it.id}.desc`);
   if (isEquipSlot(it.kind) && it.stack !== 1) err(`item ${it.id}: trang bị phải stack = 1`);
   if (it.price > 0 && it.sell >= it.price) err(`item ${it.id}: giá bán >= giá mua (lỗ hổng kiếm tiền vô hạn)`);
+  if (it.kind === 'skin') {
+    const want = (GLOSSARY.skins as Record<string, string>)[it.id];
+    if (!want) err(`skin ${it.id}: thiếu trong glossary.skins`);
+    else if (t(`item.${it.id}.name`) !== want) err(`skin ${it.id}: tên lệch glossary.skins ("${want}")`);
+    if (!it.gender) err(`skin ${it.id}: thiếu gender (m|f): mỗi skin chỉ có model cho một giới`);
+  }
 }
 // ---- nâng cấp trang bị (Phase 3-3): ngọc, tẩy luyện thạch, linh trần, hộ phù ----
 {
@@ -795,7 +801,7 @@ for (const lv of Object.values(LEVELS)) {
   else {
     const known = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'forest', 'lake', 'dungeon', 'dungeon_boss', 'combat', 'boss', 'tribulation', 'meditate'];
     for (const m of as.music) if (!known.includes(m)) err(`level ${lv.id}: assets.music không biết bài ${m}`);
-    if (!['default', 'dawn', 'day', 'night', 'ochre', 'ochre_night', 'cloud_dawn', 'cloud', 'cloud_night', 'tk_dawn', 'tk', 'tk_night'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
+    if (!['default', 'dawn', 'day', 'night', 'ochre', 'ochre_night', 'cloud_dawn', 'cloud', 'cloud_night', 'tk_dawn', 'tk', 'tk_night', 'ash_dawn', 'rift'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
     if (as.minimap && !existsSync(new URL(`../../../apps/client/public/map/${as.minimap}.json`, import.meta.url))) err(`level ${lv.id}: thiếu nền minimap public/map/${as.minimap}.json (pnpm minimap:build --level ${lv.id})`);
   }
 }

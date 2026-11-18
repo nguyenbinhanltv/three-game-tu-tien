@@ -35,5 +35,12 @@
   { "id": "tk_binh_khi", "level": "thien_khuyet", "x": 1464, "z": 904, "note": "Kho Giáo, Binh Khí Khố (cấp 25–26)" },
   { "id": "tk_dien_tien", "level": "thien_khuyet", "x": 1044, "z": 270, "note": "Cổng Thần Tàng Điện, Điện Tiền Quảng Trường (cấp 26–27)" },
   { "id": "tk_mo_dao", "level": "thien_khuyet", "x": 964, "z": 1504, "note": "Cổ Thành Thất Lộ, Mộ Đạo (cấp 24–26)" },
-  { "id": "tk_boss", "level": "thien_khuyet", "x": 990, "z": 1548, "note": "Mộ Đạo, đấu trường trống 30 m phía đông nam Thiên Khuyết Thủ Linh (964, 1530), xa cột linh quang của điểm Cổ Thành Thất Lộ" }
+  { "id": "tk_boss", "level": "thien_khuyet", "x": 990, "z": 1548, "note": "Mộ Đạo, đấu trường trống 30 m phía đông nam Thiên Khuyết Thủ Linh (964, 1530), xa cột linh quang của điểm Cổ Thành Thất Lộ" },
+  { "id": "bh_tram", "level": "bac_hoang", "x": 1024, "z": 1544, "note": "Vọng Bắc Trạm, điểm vào Bắc Hoang Tẫn Nguyên (cấp 28–31)" },
+  { "id": "bh_han_hoi", "level": "bac_hoang", "x": 1374, "z": 1254, "note": "Diệt Mạch Khẩu, Hàn Hôi Nguyên (cấp 28)" },
+  { "id": "bh_kho_loc", "level": "bac_hoang", "x": 684, "z": 1214, "note": "Tàn Mạch Nhãn, Khô Lộc Lâm (cấp 28–29)" },
+  { "id": "bh_khich_giai", "level": "bac_hoang", "x": 1024, "z": 874, "note": "Giới Khích, miệng nam; Tam Thủ Ngục Khuyển ở gần (cấp 29)" },
+  { "id": "bh_xich_tan", "level": "bac_hoang", "x": 1374, "z": 624, "note": "Cổng Xích Tẫn Khích, Xích Tẫn Bình (cấp 29–30)" },
+  { "id": "bh_kim_da", "level": "bac_hoang", "x": 674, "z": 614, "note": "Cổng Kim Dạ Cung, Kim Dạ Ngoại Uyển (cấp 30–31)" },
+  { "id": "bh_tran_gioi", "level": "bac_hoang", "x": 1084, "z": 554, "note": "Trấn Giới Bia, Trấn Giới Đài (cấp 31)" }
 ]
