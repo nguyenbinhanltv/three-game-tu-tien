@@ -208,14 +208,16 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
   const centerY = top.y + 0.9;
   const ring: number[][] = [];
   for (let k = 0; k <= RINGS; k++) {
-    const t = k / RINGS;
+    // Lưới không đều (không ra gạch đều): vòng lệch nhịp, góc từng đỉnh lệch, rồi xê dịch từng đỉnh.
+    const t = k === 0 || k === RINGS ? k / RINGS : (k + (hash(k, 3, 1, seed) - 0.5) * 0.7) / RINGS;
     const row: number[] = [];
     for (let s = 0; s < SEG; s++) {
-      const a = (s / SEG) * Math.PI * 2;
+      const a = ((s + (hash(s, k, 2, seed) - 0.5) * 0.8) / SEG) * Math.PI * 2;
       const r = k === 0 ? radius(a, 0) : radius(a, t);
       const y = top.y - isl.depth * Math.pow(t, 0.95) * (0.92 + 0.16 * fbm3(a * 2 + seed, t * 3, 4.2, seed + 9, 2)) - (k === 0 ? 0 : 0);
-      const cx = top.x + Math.cos(a) * r;
-      const cz = top.z + Math.sin(a) * r;
+      const jr = 1 + (hash(s, k, 5, seed) - 0.5) * 0.08 * Math.min(1, k / 2);
+      const cx = top.x + Math.cos(a) * r * jr;
+      const cz = top.z + Math.sin(a) * r * jr;
       // Màu: mép trên đất nâu, rồi đá nâu xám → xanh xám; mảng rêu theo nhiễu.
       const moss = fbm3(cx * 0.07, y * 0.09, cz * 0.07, seed + 3, 3);
       if (t < 0.07) tmp.copy(EARTH).lerp(GRASS_A, 0.35);
@@ -227,7 +229,7 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
       const lum = strata * (0.88 + 0.24 * fbm3(cx * 0.2, y * 0.2, cz * 0.2, seed + 5, 2));
       // Lớp đá xen kẽ ấm (sa thạch) / lạnh (đá xanh); chân đảo tối dần (bóng đổ).
       if (Math.sin(y * 0.62 + moss * 4) > 0.2 && t > 0.06) tmp.lerp(ROCK_TOP, 0.3);
-      tmp.multiplyScalar(lum * (1 - t * 0.32));
+      tmp.multiplyScalar(lum * (1 - t * 0.32) * (0.9 + 0.2 * hash(s, k, 7, seed)));
       row.push(m.vert(cx, y, cz, tmp));
     }
     ring.push(row);
