@@ -37,6 +37,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Lint (luật ranh giới, R-9)
+        run: pnpm lint
+
       - name: Test
         run: pnpm test
 

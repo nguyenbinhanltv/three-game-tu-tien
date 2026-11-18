@@ -5,8 +5,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-import { fbm, hash01, inPoly, SECT, PORTAL_POS, mulberry32, terrainOf } from '../../../packages/shared/src/index';
-import { ensureLevel } from '../../../packages/content/src/fixtures';
+import { fbm, hash01, inPoly, SECT, PORTAL_POS, mulberry32, terrainOf } from '@dtl/shared';
+import { ensureLevel } from '@dtl/content/fixtures';
 import { ROOT } from './config.js';
 
 export const MAP_HALF = 1200; // phủ SECT ± 1200 m (vùng chơi ±1100 m + lề)
