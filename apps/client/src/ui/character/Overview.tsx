@@ -27,6 +27,7 @@ function EquipBoard() {
   const drag = useBagDrag((d) => d.drag);
   const g = Game.current;
   const level = useUI((s) => s.char?.level ?? 1);
+  const methodId = useUI((s) => s.method?.method);
   const worn = EQUIP_SLOTS.flatMap((es) => (equip[es] ? [equip[es]!.id] : []));
   const pick = pickPortrait({
     sets: SETS,
@@ -35,6 +36,7 @@ function EquipBoard() {
     level,
     swordModel: equip.weapon ? swordModelOf(equip.weapon.id) : undefined,
     hasWeapon: !!equip.weapon,
+    method: methodId,
   });
   const best = EQUIP_SLOTS.reduce((m, es) => (equip[es] ? Math.max(m, gearQuality(equip[es]!)) : m), -1);
   // Thả được khi đúng loại ô VÀ nhân vật của mình mặc được món đó (giới hạn giới tính); server vẫn là bên quyết định.

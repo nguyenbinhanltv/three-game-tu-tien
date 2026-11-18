@@ -2,10 +2,12 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { t } from '@dtl/content';
 import { InkStroke } from '../u2';
 import { useReduceMotion } from '../ngj';
+import { motionAt } from './hoaMotion';
+import { TierBack, TierFront, tierUrl } from './TierLayers';
 import type { PortraitPick } from './portraitPick';
 
 /** Đường dẫn tranh (nạp lười khi mở bảng, không nằm trong tải đầu). */
-const url = (name: string): string => `${import.meta.env.BASE_URL}hoa-truc/${name}.webp`;
+const url = tierUrl;
 
 const cache = new Map<string, Promise<HTMLImageElement | null>>();
 function load(name: string): Promise<HTMLImageElement | null> {
@@ -22,29 +24,10 @@ function load(name: string): Promise<HTMLImageElement | null> {
   return p;
 }
 
+/** Gió linh khí mạnh dần theo tầng cảnh giới (tay áo, voan, tóc bay mạnh hơn). */
+const AMP = [1, 1.35, 1.6, 1.9, 2.2] as const;
 const COLS = 10;
 const ROWS = 26;
-const sm = (a: number, b: number, x: number): number => {
-  const k = Math.max(0, Math.min(1, (x - a) / (b - a)));
-  return k * k * (3 - 2 * k);
-};
-
-/**
- * Bản đồ vùng chuyển động của tranh (không rig): u = 0..1 ngang, v = 0..1 từ đỉnh tóc xuống gót.
- * Trả độ lệch (dx, dy) theo px tại thời điểm `t` giây: ngực phập phồng, tay áo và vạt đung đưa, tóc/dải lụa bay nhẹ ở mép.
- */
-export function motionAt(u: number, v: number, t: number): [number, number] {
-  const edge = sm(0.45, 1, Math.abs(u - 0.5) * 2);
-  const breath = Math.sin(t * 1.5) * (sm(0.12, 0.3, v) * (1 - sm(0.42, 0.55, v)));
-  const hair = (1 - sm(0.1, 0.62, v)) * edge * (0.4 + 0.6 * sm(0, 0.15, v));
-  const sleeve = sm(0.22, 0.34, v) * (1 - sm(0.52, 0.66, v)) * edge;
-  const skirt = sm(0.5, 0.62, v) * (0.35 + 0.65 * edge) * (0.3 + 0.7 * v);
-  const dx =
-    Math.sin(t * 1.7 + v * 5 + u * 2) * 1.9 * hair + Math.sin(t * 1.25 + u * 4) * 2.1 * sleeve + Math.sin(t * 1.05 + v * 3.2) * 2.8 * skirt;
-  const dy = breath * -1.3 + Math.sin(t * 1.25 + u * 3) * 0.9 * sleeve;
-  return [dx, dy];
-}
-
 const PARTICLES = Array.from({ length: 16 }, (_, i) => ({
   left: ((i * 53) % 97) + 1,
   delay: -((i * 1.7) % 11),
@@ -127,7 +110,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
       const k = cv.width / size.w;
       ctx.setTransform(k, 0, 0, k, 0, 0);
       ctx.clearRect(0, 0, size.w, size.h);
-      const ih = size.h * 0.99;
+      const ih = size.h * (pick.tier >= 2 ? 0.88 : 0.99);
       const iw = (charImg.width / charImg.height) * ih;
       const ox = (size.w - iw) / 2 + (still || reduce ? 0 : m.sx * 12);
       const oy = size.h - ih - size.h * 0.004 + (still || reduce ? 0 : m.sy * 5);
@@ -140,7 +123,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
         const sh = charImg.height / ROWS;
         for (let r = 0; r < ROWS; r++) {
           for (let c = 0; c < COLS; c++) {
-            const [dx, dy] = motionAt((c + 0.5) / COLS, (r + 0.5) / ROWS, tsec);
+            const [dx, dy] = motionAt((c + 0.5) / COLS, (r + 0.5) / ROWS, tsec, AMP[pick.tier]);
             // mỗi ô nới 1 px để không hở khe giữa các ô
             ctx.drawImage(charImg, c * sw, r * sh, sw, sh, ox + c * tw + dx - 0.5, oy + r * th + dy - 0.5, tw + 1, th + 1);
           }
@@ -166,7 +149,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, [charImg, reduce, swap]);
+  }, [charImg, reduce, swap, pick.tier]);
 
   const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -184,6 +167,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
       className="hoatruc"
       data-q={q}
       data-full={pick.full ? '1' : undefined}
+      data-tier={pick.tier || undefined}
       data-reduce={reduce ? '1' : undefined}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
@@ -197,6 +181,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
           style={{ backgroundImage: `url(${url(pick.realm)})` }}
         />
         <div className="hoatruc-aura" />
+        <TierBack pick={pick} />
         {pick.sword && (
           // Kiếm đeo sau lưng: chỉ chuôi + tay nắm + đốc kiếm (tranh vẽ) nhô qua vai, thân kiếm nằm trong bao (khối vẽ bằng CSS, màu/ánh sáng theo kiếm)
           <div
@@ -214,6 +199,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
         <div className="hoatruc-char" key={'c' + swap} data-swap={swap > 0 ? '1' : undefined}>
           {failed ? <div className="hoatruc-miss" /> : <canvas ref={canvas} />}
         </div>
+        <TierFront pick={pick} />
         <div className="hoatruc-mist" ref={(el) => void (layers.current.mist = el)}>
           <i className="hoatruc-fog f1" />
           <i className="hoatruc-fog f2" />

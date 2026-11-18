@@ -72,8 +72,10 @@ def main() -> None:
     ui = json.loads((ROOT / 'packages/content/data/i18n/vi.ui.json').read_text(encoding='utf-8'))
     title = sorted({ord(c) for c in ui['ui.title']} | {0x20})
     build(fetch('charm/Charm-Bold.ttf'), OUT / 'dtl-title.woff2', title)
+    # Thư pháp (Thiên Giai Hoa Trúc): Mansalva (nét bút lông/marker, SIL OFL) đủ Latin + tiếng Việt cho tên đạo hiệu người chơi.
+    build(fetch('mansalva/Mansalva-Regular.ttf'), OUT / 'dtl-thu-phap.woff2', sorted(set(LATIN + VIET)))
     build(fetch('alegreyasc/AlegreyaSC-Bold.ttf'), OUT / 'dtl-display.woff2', sorted(set(LATIN + VIET)))
-    for name in ('charm', 'alegreyasc'):
+    for name in ('charm', 'alegreyasc', 'mansalva'):
         (OUT / f'OFL-{name}.txt').write_bytes(fetch(f'{name}/OFL.txt').read_bytes())
 
 

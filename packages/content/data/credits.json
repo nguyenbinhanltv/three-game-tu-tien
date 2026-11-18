@@ -413,6 +413,17 @@
       ]
     },
     {
+      "id": "font_mansalva",
+      "kind": "font",
+      "title": "Mansalva",
+      "author": "The Mansalva Project Authors",
+      "url": "https://github.com/carolinashort/mansalva",
+      "license": "OFL-1.1",
+      "mods": [
+        "subset"
+      ]
+    },
+    {
       "id": "generaluser",
       "kind": "music",
       "title": "GeneralUser GS v2.0.3 (soundfont render nhạc nền tự soạn)",
