@@ -28,6 +28,15 @@ export const HIRES_CLASSES = new Set(['monster', 'monster_mq', 'elite', 'elite_m
 export const HIRES_MAX_COLOR = 4096;
 export const HIRES_MAX_DATA = 2048;
 
+/**
+ * Chỉ bậc cao cho texture MÀU của boss và tinh anh (nhìn gần, ít bản sao). Quái thường không làm bậc cao (nhiều bản, nhỏ trên màn hình);
+ * normal/ORM không làm (normal 2048 chiếm 19 MB riêng của boss, bản trong GLB 1024 đủ ở khoảng cách chơi). Giảm tệp rời 66 → ~15 MB.
+ */
+export function hiresWanted(cls: string, slots: string[]): boolean {
+  if (!/^(boss|elite)(_mq)?$/.test(cls)) return false;
+  return slots.length > 0 && slots.every((s) => s === 'baseColorTexture');
+}
+
 /** Tên thuộc tính vật liệu three tương ứng slot glTF (khớp cách GLTFLoader gán). */
 export const THREE_SLOTS: Record<string, string[]> = {
   baseColorTexture: ['map'],
@@ -130,6 +139,7 @@ export async function buildHires(entry: ManifestEntry, toktx: string, outDir: st
         if (ssz[0] === 0) continue;
         // Mọi slot dùng chung một texture (ORM): gom thành một tệp.
         const slotsOfTex = sslots.filter((x) => x.tex === s.tex).map((x) => x.slot);
+        if (!hiresWanted(entry.class, slotsOfTex)) continue;
         const side = hiresSide(spec, slotsOfTex, Math.max(...ssz), Math.max(...bsz));
         if (!side) continue;
         done.add(s.tex);
