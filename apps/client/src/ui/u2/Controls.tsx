@@ -24,11 +24,21 @@ export interface TabDef {
 
 /** Tab hình thang. `role=tablist`; mũi tên trái/phải đổi tab. */
 export function Tabs({ tabs, value, onChange, label }: { tabs: TabDef[]; value: string; onChange: (id: string) => void; label?: string }) {
-  const move = (dir: number, from: number) => {
+  const go = (idx: number, list: HTMLElement) => {
+    const next = tabs[idx]!;
+    onChange(next.id);
+    (list.children[idx] as HTMLElement | undefined)?.focus(); // roving tabindex: focus theo tab mới
+  };
+  const step = (dir: number, from: number, list: HTMLElement) => {
     for (let i = 1; i <= tabs.length; i++) {
-      const next = tabs[(((from + dir * i) % tabs.length) + tabs.length) % tabs.length]!;
-      if (!next.disabled) return onChange(next.id);
+      const idx = (((from + dir * i) % tabs.length) + tabs.length) % tabs.length;
+      if (!tabs[idx]!.disabled) return go(idx, list);
     }
+  };
+  const edge = (last: boolean, list: HTMLElement) => {
+    const order = tabs.map((_, i) => i);
+    const idx = (last ? order.reverse() : order).find((i) => !tabs[i]!.disabled);
+    if (idx !== undefined) go(idx, list);
   };
   return (
     <div className="u2-tabs" role="tablist" aria-label={label}>
@@ -43,8 +53,13 @@ export function Tabs({ tabs, value, onChange, label }: { tabs: TabDef[]; value: 
           disabled={tab.disabled}
           onClick={() => onChange(tab.id)}
           onKeyDown={(e) => {
-            if (e.key === 'ArrowRight') move(1, i);
-            else if (e.key === 'ArrowLeft') move(-1, i);
+            const list = e.currentTarget.parentElement!;
+            if (e.key === 'ArrowRight') step(1, i, list);
+            else if (e.key === 'ArrowLeft') step(-1, i, list);
+            else if (e.key === 'Home') edge(false, list);
+            else if (e.key === 'End') edge(true, list);
+            else return;
+            e.preventDefault();
           }}
         >
           {tab.label}

@@ -20,18 +20,21 @@ export function Tooltip({ title, sub, rarity, children, tip, open }: { title: Re
 /** Hộp thoại giữa màn: nền tối, Escape đóng, focus vào nút đầu, trả focus khi đóng. */
 export function Dialog({ title, children, confirmLabel, cancelLabel, onConfirm, onCancel }: { title: ReactNode; children: ReactNode; confirmLabel?: string; cancelLabel?: string; onConfirm: () => void; onCancel: () => void }) {
   const box = useRef<HTMLDivElement>(null);
+  // onCancel hay là arrow inline: giữ trong ref để effect chỉ chạy lúc mở/đóng (không giành lại focus mỗi lần cha render).
+  const cancelRef = useRef(onCancel);
+  cancelRef.current = onCancel;
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
     box.current?.querySelector<HTMLElement>('.u2-dialog__foot button')?.focus();
     const key = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
+      if (e.key === 'Escape') cancelRef.current();
     };
     window.addEventListener('keydown', key);
     return () => {
       window.removeEventListener('keydown', key);
       prev?.focus?.();
     };
-  }, [onCancel]);
+  }, []);
   return (
     <div className="u2 u2-scrim" onMouseDown={(e) => e.target === e.currentTarget && onCancel()}>
       <div className="u2-dialog" role="dialog" aria-modal="true" ref={box}>
