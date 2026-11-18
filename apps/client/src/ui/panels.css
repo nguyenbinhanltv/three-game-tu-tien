@@ -2,7 +2,6 @@
  * Các bảng và HUD dựng bằng ui/kit (P2-C2/C3/C4). Màu, góc vát và cỡ chữ lấy từ biến --k-* (tokens.css);
  * khung vát vẽ bằng clip-path như kit. Ở đây chỉ có phần bố cục riêng của từng bảng.
  */
-
 /* ---------- khối con dùng chung trong bảng ---------- */
 .k-card {
   display: flex;
@@ -94,7 +93,6 @@
   color: var(--k-bronze-hi);
   border-radius: 0;
 }
-
 /* ---------- túi đồ ---------- */
 .equip-row {
   display: flex;
@@ -134,7 +132,6 @@
 .bag-grid .k-slot[data-size] {
   --k-slot-size: 100%;
 }
-
 /* ---------- nhân vật ---------- */
 .stats {
   display: grid;
@@ -185,7 +182,6 @@
   border-left-color: var(--k-q3);
   background: var(--u-wash-tim);
 }
-
 /* ---------- nhiệm vụ, đối thoại ---------- */
 .quest-title {
   font: 700 15px var(--k-font-serif);
@@ -281,7 +277,6 @@
 .craft-btns .k-btn {
   align-self: stretch;
 }
-
 /* ---------- hướng dẫn, bản đồ ---------- */
 .help-table {
   width: 100%;
@@ -312,7 +307,6 @@
 .credits a {
   color: var(--k-bronze-hi);
 }
-
 /* ---------- khung nhân vật, khung mục tiêu ---------- */
 .frame {
   --corner: var(--k-bronze);
@@ -387,7 +381,6 @@
   color: var(--k-bronze-hi);
   white-space: nowrap;
 }
-
 /* ---------- bản đồ nhỏ ---------- */
 .right-col {
   position: absolute;
@@ -450,7 +443,6 @@
   color: var(--k-text);
   text-shadow: 0 1px 2px #000;
 }
-
 /* ---------- theo dõi nhiệm vụ: chữ trên nền mờ tắt dần, không có khung để không che cảnh ---------- */
 .tracker {
   width: 100%;
@@ -499,7 +491,6 @@
   font-weight: 600;
   text-shadow: 0 1px 2px #000;
 }
-
 /* ---------- thanh chiêu ---------- */
 .skillbar {
   position: absolute;
@@ -698,72 +689,7 @@
 .k-btn.bag-pulse {
   animation: bag-pulse 0.42s ease-out;
 }
-
 /* ---------- chat ---------- */
-.chat {
-  position: absolute;
-  left: 14px;
-  bottom: 14px;
-  width: 360px;
-  pointer-events: auto;
-}
-.chat-log {
-  height: 150px;
-  overflow-y: auto;
-  padding: 6px 10px;
-  border: 1px solid var(--k-edge-dim);
-  border-bottom: 0;
-  background: linear-gradient(180deg, rgba(14, 23, 34, 0.42), rgba(14, 23, 34, 0.62));
-  font-size: 12.5px;
-  line-height: 1.5;
-  scrollbar-width: thin;
-  scrollbar-color: var(--k-edge-dim) transparent;
-  user-select: text;
-}
-.chat.open .chat-log {
-  background: linear-gradient(180deg, rgba(14, 23, 34, 0.82), rgba(14, 23, 34, 0.92));
-}
-.chat-line {
-  color: var(--k-text);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
-  overflow-wrap: anywhere;
-}
-.chat-line.good {
-  color: var(--k-gold);
-}
-.chat-line.bad {
-  color: var(--k-cinnabar-hi);
-}
-.chat-line.loot {
-  color: #8fe0a8;
-}
-.chat-line.xp {
-  color: #c4b4ff;
-}
-.chat-line.info {
-  color: var(--k-text-dim);
-}
-.chat-line.chat b {
-  color: var(--k-bronze-hi);
-}
-.chat-input {
-  width: 100%;
-  padding: 6px 10px;
-  border: 1px solid var(--k-edge-dim);
-  background: rgba(14, 23, 34, 0.7);
-  color: var(--k-text);
-  font: 13px var(--k-font-body);
-  outline: none;
-  user-select: text;
-}
-.chat-input::placeholder {
-  color: var(--k-text-dim);
-}
-.chat-input:focus {
-  border-color: var(--k-bronze-hi);
-  background: rgba(14, 23, 34, 0.94);
-}
-
 /* ---------- cắt cảnh: thẻ chương ẩn toàn bộ HUD, thoại boss chỉ ẩn phần không cần khi đang đánh ---------- */
 .hud > * {
   transition: opacity 0.25s ease-out;
@@ -785,14 +711,12 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
   opacity: 0;
   pointer-events: none;
 }
-
 @media (max-height: 760px) {
   /* Màn thấp: túi đồ 8 cột (4 hàng) để phần chi tiết vật phẩm còn nằm trong khung nhìn. */
   .bag-grid {
     grid-template-columns: repeat(8, 1fr);
   }
 }
-
 /* ---------- vừa màn hình nhỏ (≥1100px) ---------- */
 @media (max-width: 1366px) {
   /* Hàng nút dưới thanh chiêu rút còn icon + phím để không đè khung chat. */
@@ -806,20 +730,8 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
   .target-frame {
     width: 240px;
   }
-  .chat {
-    width: 320px;
-  }
-  .chat-log {
-    height: 120px;
-  }
 }
 @media (max-width: 1100px) {
-  .chat {
-    width: 280px;
-  }
-  .chat-log {
-    height: 100px;
-  }
   .skill {
     width: 50px;
     height: 50px;
@@ -834,7 +746,6 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
     display: none;
   }
 }
-
 /* ---------- bảng trang bị 8 ô (3-2) ---------- */
 .equip-board-grid {
   display: grid;
@@ -879,7 +790,6 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
   margin-top: var(--k-s2);
   text-align: center;
 }
-
 /* ---------- pháp bảo phụ (P3-8): ô riêng cuối thanh chiêu, hàng đan tăng sức ---------- */
 .art-slot .art-lv {
   position: absolute;
@@ -936,7 +846,6 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
 .craft-chance[data-support='1'] {
   color: #7dffa0;
 }
-
 /* ---------- Chân dung Codex (nạp lười, hiện dần khi tải xong) ---------- */
 .portrait {
   display: block;
@@ -983,7 +892,6 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
 .npc-portrait:not(.ready) {
   display: none;
 }
-
 /* ---------- phóng HUD theo màn hình (ui/uiScale.ts) ----------
  * Bố cục thiết kế ở 1920×1080; màn lớn hơn thì `--ui-scale` > 1 và từng khối HUD phóng đều bằng `zoom`.
  * Không phóng: các lớp phủ cả màn hình dùng vw/vh (cảnh điện ảnh, thẻ chương, lời boss, letterbox).
@@ -1001,7 +909,6 @@ body > .k-tip {
   zoom: 1;
   --s: 1;
 }
-
 /* ---------- khung cửa sổ nhiều cái (TD-B, ui/windows/Panels.tsx) ----------
  * Vị trí `left/top` theo đơn vị thiết kế (bên trong zoom); thanh tiêu đề kéo được. */
 .win-host {

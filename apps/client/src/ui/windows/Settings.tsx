@@ -7,6 +7,7 @@ import { Button, Divider, PanelWindow, Segmented, Slider } from '../kit';
 import { setReduceMotion, useReduceMotion } from '../ngj';
 import { closePanel, openPanel, set, setHudPref, useUI } from '../store';
 import { setUiScaleUser, uiScaleUser } from '../uiScale';
+import { setTouchPref, useTouchState, type TouchPref } from '../../input/touchMode';
 
 /** Thanh trượt âm lượng cho master và từng bus; thả tay thì phát thử một âm trên bus đó. */
 function VolumeSlider({ k }: { k: VolumeKey }) {
@@ -49,6 +50,7 @@ export function Settings() {
   const chapterCards = useUI((s) => s.chapterCards);
   const [mute, setMute] = useState(isMuted());
   const skillLayout = useUI((s) => s.skillLayout);
+  const touchPref = useTouchState((s) => s.pref);
   const [uiMul, setUiMul] = useState(() =>
     [0.8, 1, 1.2, 1.4].reduce((a, b) => (Math.abs(b - uiScaleUser()) < Math.abs(a - uiScaleUser()) ? b : a)),
   );
@@ -66,6 +68,14 @@ export function Settings() {
         options={['mouse', 'turn', 'strafe'].map((m) => ({ value: m, label: t('ui.settings.controls.' + m) }))}
       />
       <div className="k-dim">{t('ui.settings.controls_hint.' + controls)}</div>
+      <Divider label={t('ui.settings.touch')} />
+      <Segmented
+        label={t('ui.settings.touch')}
+        value={touchPref}
+        onChange={(m: TouchPref) => setTouchPref(m)}
+        options={(['auto', 'on', 'off'] as const).map((m) => ({ value: m, label: t('ui.settings.touch.' + m) }))}
+      />
+      <div className="k-dim">{t('ui.settings.touch_hint')}</div>
       <Divider label={t('ui.settings.quality')} />
       <Segmented
         label={t('ui.settings.quality')}

@@ -61,9 +61,12 @@ import { ChapterMap } from './chapters/ChapterMap';
 import { JadeRing } from './u2/patterns';
 import './u2/boot/trib.css';
 import { PlayerCard, BossCard, TargetCastBar } from './u2/hud/Frames';
-import { QuestTrack, ChatBox } from './u2/hud/QuestChat';
+import { QuestTrack } from './u2/hud/QuestChat';
+import { ChatBox } from './u2/hud/Chat';
 import { SkillBanner } from './u2/hud/SkillBanner';
 import { SkillCluster } from './u2/hud/SkillCluster';
+import { TouchControls } from './u2/touch/TouchControls';
+import './u2/touch/touch.css';
 import { blurAfterPointer, useNow } from './u2/hud/common';
 import { hudVars, useHudMode } from './u2/hud/hudVars';
 
@@ -398,6 +401,7 @@ export function Hud() {
   const skillLayout = useUI((s) => s.skillLayout);
   const questCollapsed = useUI((s) => s.questCollapsed);
   const chatCollapsed = useUI((s) => s.chatCollapsed);
+  const chatSize = useUI((s) => s.chatSize);
   const mode = useHudMode();
   return (
     <div
@@ -405,7 +409,7 @@ export function Hud() {
       data-cut={cut}
       data-mode={mode}
       data-skills={skillLayout}
-      style={hudVars(mode, { skillLayout, questCollapsed, chatCollapsed })}
+      style={hudVars(mode, { skillLayout, questCollapsed, chatCollapsed, chatSize })}
     >
       <TribBars />
       <PlayerCard />
@@ -429,11 +433,11 @@ export function Hud() {
       <TrialBanner />
       <BagWarn />
       {mouseLook && <div className="crosshair" />}
-      {controls === 'mouse' && !mouseLook && !npc && !panel && !dead && <LockHint />}
+      {controls === 'mouse' && mode !== 'touch' && !mouseLook && !npc && !panel && !dead && <LockHint />}
       {hint && !npc && <div className="hint">{hint}</div>}
       <CastBar />
       <SkillBanner />
-      <SkillCluster layout={skillLayout} utility={<UtilityRow />} />
+      {mode === 'touch' ? <TouchControls /> : <SkillCluster layout={skillLayout} utility={<UtilityRow />} />}
       <ChatBox />
       <Panels />
       {npc && <NpcDialog npcId={npc} />}

@@ -325,6 +325,8 @@ export class Game {
   fxPull: { amt: number; dur: number; t: number } | null = null;
   /** Động tác chiêu (M3-4): dự đoán khi bấm phím, khớp lúc ra đòn với hiệu ứng. */
   skillPoses = new SkillPoses();
+  /** Cần ảo cảm ứng (U2-6): ý định di chuyển thay WASD, null khi thả. */
+  touchMove: { mx: number; mz: number } | null = null;
   dragging = false;
   dragMoved = 0;
   lastPX = 0;

@@ -539,6 +539,11 @@ export function buildInput(eng: Game): MoveInput {
     if (isHeld(k, 'forward')) mz += 1;
     if (isHeld(k, 'back')) mz -= 1;
     if (eng.autorun && mz === 0) mz = 1;
+    // Cần ảo (U2-6) thay WASD: cùng ý định (mx, mz theo hướng camera), server chuẩn hóa và quyết định.
+    if (eng.touchMove && (eng.touchMove.mx !== 0 || eng.touchMove.mz !== 0)) {
+      mx = eng.touchMove.mx;
+      mz = eng.touchMove.mz;
+    }
     if (isHeld(k, 'up')) f |= eng.wantFly ? IN_UP : IN_JUMP;
     if (isHeld(k, 'down')) f |= IN_DOWN;
   }

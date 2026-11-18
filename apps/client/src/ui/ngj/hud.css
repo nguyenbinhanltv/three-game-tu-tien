@@ -22,12 +22,6 @@
 :root:root .hud .frame {
   position: absolute;
 }
-:root:root .hud .chat {
-  position: absolute;
-  background: none;
-  border: 0;
-  box-shadow: none;
-}
 /* vân sơn mài: texture lặp phủ lên nền trong suốt */
 :root:root .hud :is(.frame, .skill-row, .tracker, .boss-bar)::before,
 :root:root .hud .chat::before {
@@ -41,9 +35,6 @@
   opacity: 0.5;
   border-radius: inherit;
   pointer-events: none;
-}
-:root:root .hud .chat::before {
-  inset: 0 0 auto 0;
 }
 :root:root .hud .frame::after {
   display: none;
@@ -390,49 +381,6 @@
   box-shadow: 0 0 6px var(--ngj-gold);
 }
 /* ───────── chat ───────── */
-:root:root .hud .chat-log {
-  border: 1px solid var(--ngj-gold);
-  border-bottom: 0;
-  border-radius: 3px 3px 0 0;
-  background: var(--ngj-hud-bg-soft);
-  box-shadow:
-    inset 0 0 0 3px rgba(30, 23, 18, 0.78),
-    inset 0 0 0 4px rgba(201, 164, 92, 0.4);
-  padding: 8px 14px;
-  scrollbar-color: rgba(201, 164, 92, 0.5) transparent;
-}
-:root:root .hud .chat.open .chat-log {
-  background: var(--ngj-hud-bg);
-}
-:root:root .hud .chat-input {
-  border: 1px solid var(--ngj-gold);
-  border-radius: 0 0 3px 3px;
-  background: rgba(20, 15, 11, 0.9);
-  color: var(--ngj-ivory);
-  padding: 7px 14px;
-}
-:root:root .hud .chat-input:focus {
-  border-color: var(--ngj-gold-hi);
-  background: rgba(20, 15, 11, 0.97);
-}
-:root:root .hud .chat-line {
-  color: var(--ngj-ivory);
-}
-:root:root .hud .chat-line.good {
-  color: var(--ngj-gold-hi);
-}
-:root:root .hud .chat-line.bad {
-  color: var(--ngj-crimson-hi);
-}
-:root:root .hud .chat-line.loot {
-  color: #9fd9a0;
-}
-:root:root .hud .chat-line.info {
-  color: rgba(237, 227, 204, 0.62);
-}
-:root:root .hud .chat-line.say b {
-  color: var(--ngj-gold);
-}
 /* ───────── thông báo (toast) ───────── */
 :root:root .hud .toast {
   padding: 8px 22px;
@@ -564,8 +512,3 @@
   color: var(--ngj-crimson-hi);
 }
 /* cửa sổ hẹp (≤ 1500 px, ví dụ 1366×768): thanh chức năng chỉ còn icon + phím để không xuống dòng/đè khung chat */
-@media (max-width: 1500px) {
-  :root:root .hud .chat {
-    width: 300px;
-  }
-}

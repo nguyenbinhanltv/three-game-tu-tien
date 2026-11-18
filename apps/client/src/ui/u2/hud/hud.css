@@ -338,7 +338,7 @@
   color: var(--u-gold);
 }
 
-/* ───────── BL: chat thu gọn được ───────── */
+/* ───────── BL: chat "Truyền Âm Gian" (U2-7b): tab kênh, vùng cuộn riêng + ô nhập riêng, góc kéo giãn, thu gọn thành thẻ ngọc ───────── */
 .u2h-chat {
   left: var(--h-safe);
   bottom: var(--h-safe);
@@ -351,29 +351,85 @@
 .u2h-chat[data-idle='1'] {
   opacity: 0.6;
 }
-.u2h-chat[data-collapsed='1'] {
-  grid-template-rows: auto;
-  height: 32px;
-}
-.u2h-chat[data-collapsed='1'] .u2h-chat-log,
-.u2h-chat[data-collapsed='1'] .u2h-chat-input {
-  display: none;
+.u2h-chat[data-idle='1']:hover,
+.u2h-chat[data-idle='1']:focus-within {
+  opacity: 1;
 }
 .u2h-chat-head {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--u-sp-1);
+  min-width: 0;
+  padding: var(--u-sp-2) var(--u-sp-3) 0 var(--u-sp-3);
+  border-bottom: var(--u-line-1) solid var(--u-gold-line);
   cursor: pointer;
 }
-.u2h-chat-last {
-  flex: 1;
+.u2h-chat-tabs {
+  display: flex;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+.u2h-chat-tab {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--u-sp-1);
+  padding: var(--u-sp-1) 6px var(--u-sp-2);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   white-space: nowrap;
-  font-family: var(--u-font-body);
-  font-size: var(--u-fs-2);
+  color: var(--u-chu-dim);
+  cursor: pointer;
+}
+.u2h-chat-tab:hover {
+  color: var(--u-gold-hi);
+}
+.u2h-chat-tab[data-on='1'] {
+  color: var(--u-ngoc-hi);
+  border-bottom-color: var(--u-ngoc-hi);
+}
+.u2h-tabn,
+.u2h-unread {
+  min-width: 16px;
+  padding: 2px 5px;
+  border-radius: 9px;
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 1;
   letter-spacing: 0;
-  text-transform: none;
-  font-weight: 400;
-  color: var(--u-chu);
+  text-align: center;
+  color: var(--u-son-text);
+  background: var(--u-son);
+}
+.u2h-chat-head .u2h-fold {
+  align-self: center;
+}
+.u2h-chat-grip {
+  position: absolute;
+  z-index: 2;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  color: var(--u-gold);
+  cursor: nesw-resize;
+  touch-action: none;
+}
+.u2h-chat-grip svg {
+  width: 11px;
+  height: 11px;
+}
+.u2h-chat-grip:hover {
+  color: var(--u-gold-hi);
 }
 .u2h-chat-log {
   /* Vùng cuộn riêng phía trên ô nhập: tự cuộn xuống cuối (ChatBox), dòng dài xuống hàng, không bao giờ đè lên ô nhập. */
@@ -387,7 +443,7 @@
   scrollbar-width: thin;
 }
 .u2h-chat-input {
-  /* Ô nhập có nền riêng, tách khỏi danh sách bằng vạch kim. */
+  /* Ô nhập có nền riêng, tách khỏi danh sách bằng một vạch kim. */
   min-width: 0;
   margin: 0;
   padding: var(--u-sp-2) var(--u-sp-4) var(--u-sp-3);
@@ -403,6 +459,125 @@
 .u2h-chat-input:focus {
   border-top-color: var(--u-gold);
   font-style: normal;
+}
+/* dòng tin: người chơi (tên màu theo kênh) và hệ thống (icon + màu theo loại) */
+.u2h-chat .chat-line {
+  color: var(--u-chu);
+  text-shadow: 0 1px 2px var(--u-ink-0);
+}
+.u2h-chat .chat-line.say .who {
+  font-weight: 600;
+  color: var(--u-ngoc-hi);
+}
+.u2h-chat .chat-line.party .who {
+  color: var(--u-q2);
+}
+.u2h-chat .chat-line.sys {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--u-sp-1);
+}
+.u2h-chat .chat-line.sys .sys-icon,
+.u2h-chat .chat-line.sys svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--u-gold);
+}
+.u2h-chat .chat-line.good {
+  color: var(--u-gold-hi);
+}
+.u2h-chat .chat-line.bad,
+.u2h-chat .chat-line.sys[data-ch='combat'] {
+  color: var(--u-son-hi);
+}
+.u2h-chat .chat-line.info {
+  color: var(--u-chu-dim);
+}
+.u2h-chat .chat-line.xp {
+  color: var(--u-q3);
+}
+.u2h-chat .chat-line.loot {
+  color: var(--u-ngoc-hi);
+}
+.u2h-chat-item {
+  font-weight: 600;
+  border-bottom: 1px dotted currentColor;
+  cursor: help;
+  color: var(--u-q1);
+}
+.u2h-chat-item[data-q='0'] {
+  color: var(--u-q0);
+}
+.u2h-chat-item[data-q='2'] {
+  color: var(--u-q2);
+}
+.u2h-chat-item[data-q='3'] {
+  color: var(--u-q3);
+}
+.u2h-chat-item[data-q='4'] {
+  color: var(--u-q4);
+}
+.u2h-chat-item[data-q='5'] {
+  color: var(--u-q5);
+}
+/* thu gọn: thẻ ngọc mảnh chạy dòng tin mới nhất + số tin chưa đọc */
+.u2h-chat-mini {
+  grid-template-rows: auto;
+  height: 34px;
+}
+.u2h-chat-pill {
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--u-sp-2);
+  padding: 0 var(--u-sp-3);
+  border: var(--u-line-1) solid var(--u-ngoc);
+  border-radius: 17px;
+  background: linear-gradient(90deg, var(--u-ngoc-lo), var(--u-ink-veil) 40%);
+  color: var(--u-chu);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--u-sh-hud);
+}
+.u2h-chat-pill:hover {
+  border-color: var(--u-ngoc-hi);
+}
+.u2h-bead {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--u-ngoc-text), var(--u-ngoc-hi) 40%, var(--u-ngoc-lo));
+  box-shadow: 0 0 8px var(--u-ngoc-hi);
+}
+.u2h-pill-title {
+  flex: none;
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--u-gold);
+}
+.u2h-chat-last {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: var(--u-font-body);
+  font-size: var(--u-fs-2);
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--u-chu);
+  mask-image: linear-gradient(90deg, var(--u-ink-0) 88%, transparent);
+}
+.u2h-chat-last b {
+  color: var(--u-ngoc-hi);
+  font-weight: 600;
 }
 
 /* ───────── BR: Kiếm Luân (cụm kỹ năng) ───────── */

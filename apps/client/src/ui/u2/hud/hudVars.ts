@@ -1,9 +1,10 @@
 import { type CSSProperties, useEffect, useState } from 'react';
 import { uiScale } from '../../uiScale';
+import { useTouchMode } from '../../../input/touchMode';
 import {
   BOSS_H,
   BOSS_MAX_W,
-  CHAT_COLLAPSED_H,
+  designArea,
   hudBoxes,
   modeOf,
   QUEST_COLLAPSED_H,
@@ -16,13 +17,14 @@ import {
 
 /** Chế độ HUD đang dùng (compact khi hệ số UI < 0,95): đổi khi `ui/uiScale.ts` áp hệ số mới. */
 export function useHudMode(): HudMode {
-  const [mode, setMode] = useState<HudMode>(() => modeOf(uiScale()));
+  const touch = useTouchMode();
+  const [mode, setMode] = useState<HudMode>(() => modeOf(uiScale(), touch));
   useEffect(() => {
-    const on = () => setMode(modeOf(uiScale()));
+    const on = () => setMode(modeOf(uiScale(), touch));
     window.addEventListener('dtl:uiscale', on);
     on();
     return () => window.removeEventListener('dtl:uiscale', on);
-  }, []);
+  }, [touch]);
   return mode;
 }
 
@@ -31,9 +33,13 @@ export function useHudMode(): HudMode {
  * Đơn vị thiết kế (px trước khi nhân `zoom: var(--ui-scale)`).
  */
 export function hudVars(mode: HudMode, o: HudOpts = {}): CSSProperties {
-  const m = mode === 'touch' ? 'standard' : mode;
+  if (mode === 'touch') return {}; // bố cục cảm ứng nằm hết trong `u2/touch/touch.css`
+  const m = mode;
   const z = SIZES[m];
   const b = hudBoxes(1920, 1080, m, o);
+  // Chat theo kích thước người chơi kéo, kẹp theo vùng thiết kế hiện tại (không đè cụm kỹ năng).
+  const area = designArea(window.innerWidth, window.innerHeight, uiScale());
+  const chat = hudBoxes(area.W, area.H, m, o).chat;
   const v: Record<string, string> = {
     '--h-safe': SAFE + 'px',
     '--h-tl-w': z.tl.w + 'px',
@@ -43,8 +49,8 @@ export function hudVars(mode: HudMode, o: HudOpts = {}): CSSProperties {
     '--h-map-w': z.mapW + 'px',
     '--h-quest-w': z.questW + 'px',
     '--h-quest-h': (o.questCollapsed ? QUEST_COLLAPSED_H : z.questH) + 'px',
-    '--h-chat-w': z.chatW + 'px',
-    '--h-chat-h': (o.chatCollapsed ? CHAT_COLLAPSED_H : z.chatH) + 'px',
+    '--h-chat-w': chat.w + 'px',
+    '--h-chat-h': chat.h + 'px',
     '--h-boss-max': BOSS_MAX_W + 'px',
     '--h-boss-h': BOSS_H + 'px',
     '--h-side': Math.max(z.tl.w, z.hubW) + 'px',
