@@ -3,6 +3,7 @@ import { abs, cameraViewMatrix, cos, float, floor, instancedBufferAttribute, int
 import { FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
 import { heightAt, levelTerrain } from './levelCtx';
 import { vanHaiArt } from './vanHaiArt';
+import { tkGrassDensity } from './thienKhuyetArt';
 import type { N } from '../render/vfx/common';
 
 /**
@@ -169,6 +170,31 @@ function ochreTuftAt(x: number, z: number, h: number, slope: number, r: number, 
 }
 
 
+const C_STAR = new THREE.Color(0x9fb8c0);
+const C_STAR_DEEP = new THREE.Color(0x56807f);
+/**
+ * Cỏ sao Thiên Khuyết (E4-I): thẻ cỏ xanh lam sẫm của atlas `grass-night`, thưa, thành đám, chỉ lọt qua kẽ đá (không trên sân lát/đại lộ, mật độ ở `tkGrassDensity`).
+ * Thẻ 0 (cỏ sao, có hoa) chủ đạo; màu trộn giữa xanh ngọc xỉn và lam nhạt như phủ sương đêm.
+ */
+function tkTuftAt(x: number, z: number, h: number, slope: number, r: number, out: Float32Array, o: number): boolean {
+  if (r > tkGrassDensity(levelTerrain().def, x, z, slope)) return false;
+  if (nearCollider(x, z, 1.2)) return false;
+  const r2 = hash01(Math.floor(x * 7.3), Math.floor(z * 7.3), 811);
+  const pick = hash01(Math.floor(x * 3.7), Math.floor(z * 3.7), 829);
+  const card = pick < 0.5 ? 0 : pick < 0.75 ? 1 : pick < 0.9 ? 2 : 3;
+  const n = fbm(x * 0.03, z * 0.03, 2, 20261116 + 5);
+  _c.copy(C_STAR_DEEP).lerp(C_STAR, Math.max(0, Math.min(1, 0.45 + n * 0.8))).multiplyScalar(0.8 + r2 * 0.32);
+  out[o] = x;
+  out[o + 1] = h - 0.03;
+  out[o + 2] = z;
+  out[o + 3] = r2 * Math.PI * 2 + card * 10;
+  out[o + 4] = 0.7 + hash01(Math.floor(x * 5.1), Math.floor(z * 5.1), 823) * 0.5 + Math.max(0, n) * 0.3;
+  out[o + 5] = _c.r;
+  out[o + 6] = _c.g;
+  out[o + 7] = _c.b;
+  return true;
+}
+
 /**
  * Cỏ Vân Hải (E3-I): thẻ cỏ (atlas dùng chung với Đoạn Mạch, thẻ `van_hai` là chủ đạo) mọc THÀNH ĐÁM theo nhiễu, mật độ và màu theo bản sắc từng đảo
  * (`vanHaiArt`): rậm quanh hồ gương và trên Tùng Đài, thưa trên Thạch Quy/Lôi Vân, không mọc trên lối mòn, đá lộ, lòng hồ hay sát mép đảo.
@@ -239,7 +265,7 @@ export function buildGrassChunk(cx: number, cz: number, spacing: number, style: 
       const x = x0 + (i + 0.1 + hash01(gx, gz, 701) * 0.8) * step;
       const z = z0 + (j + 0.1 + hash01(gx, gz, 709) * 0.8) * step;
       const h = sampleHeight(x0, z0, x, z);
-      if ((style === 'cards' ? (levelTerrain().def.islands ? vanHaiTuftAt : ochreTuftAt) : grassTuftAt)(x, z, h, _slope, hash01(gx, gz, 719), tmp, k * 8)) k++;
+      if ((style === 'cards' ? (levelTerrain().def.islands ? vanHaiTuftAt : levelTerrain().id === 'thien_khuyet' ? tkTuftAt : ochreTuftAt) : grassTuftAt)(x, z, h, _slope, hash01(gx, gz, 719), tmp, k * 8)) k++;
     }
   }
   return tmp.slice(0, k * 8);

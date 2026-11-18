@@ -14,6 +14,7 @@ export type MusicTrack =
   | 'wild'
   | 'wild_ochre'
   | 'wild_cloud'
+  | 'wild_night'
   | 'forest'
   | 'lake'
   | 'dungeon'
@@ -23,7 +24,7 @@ export type MusicTrack =
   | 'tribulation'
   | 'meditate';
 
-export const MUSIC_TRACKS: readonly MusicTrack[] = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'forest', 'lake', 'dungeon', 'combat', 'boss', 'dungeon_boss', 'tribulation', 'meditate'];
+export const MUSIC_TRACKS: readonly MusicTrack[] = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'forest', 'lake', 'dungeon', 'combat', 'boss', 'dungeon_boss', 'tribulation', 'meditate'];
 
 export interface MusicInput {
   /** Đang ở room bí cảnh (Kiếm Trủng) thay vì bản đồ thế giới. */
@@ -92,6 +93,7 @@ const PRIORITY: Record<MusicTrack, number> = {
   wild: 0,
   wild_ochre: 0,
   wild_cloud: 0,
+  wild_night: 0,
   forest: 0,
   lake: 0,
   dungeon: 0,
@@ -106,6 +108,7 @@ export function regionTrack(dungeon: boolean, biome: Biome, level?: string): Mus
   if (dungeon) return 'dungeon';
   if (level === 'doan_mach' && biome === 'wild') return 'wild_ochre';
   if (level === 'van_hai' && biome === 'wild') return 'wild_cloud';
+  if (level === 'thien_khuyet' && biome === 'wild') return 'wild_night';
   switch (biome) {
     case 'sect':
       return 'sect';

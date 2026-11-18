@@ -40,9 +40,24 @@ export const OCHRE_LAYERS = [
   { layer: 'gravel', ph: 'gravelly_sand', author: 'Dario Barresi', tint: [1.04, 0.93, 0.8] },
 ] as const;
 
+/**
+ * Bộ slate cho Thiên Khuyết Cổ Thành (E4-I): sân đá phiến/đá lát cổ ngả xanh lam đêm, rêu thưa, đá vỡ; cùng thứ tự lớp, ra `public/terrain-slate/`,
+ * nạp lười khi vào level (`levels/thien_khuyet.assets.json` `ground.set`). `tint` kéo màu về xám lam (đã hạ bão hòa ở `modulate`).
+ */
+export const SLATE_LAYERS = [
+  { layer: 'grass', ph: 'monastery_stone_floor', author: 'Amal Kumar', tint: [0.95, 1.0, 1.04] },
+  { layer: 'dirt', ph: 'rock_path', author: 'Amal Kumar', tint: [0.95, 0.99, 1.03] },
+  { layer: 'forest', ph: 'mossy_cobblestone', author: 'Sơn Nguyễn', tint: [0.88, 1.0, 0.98] },
+  { layer: 'rock', ph: 'slate_floor_02', author: 'Dimitrios Savva', tint: [0.95, 1.0, 1.06] },
+  { layer: 'cliff', ph: 'rock_face_03', author: 'Rob Tuytel', tint: [0.92, 0.97, 1.04] },
+  { layer: 'sand', ph: 'gravelly_sand', author: 'Dario Barresi', tint: [0.94, 0.98, 1.02] },
+  { layer: 'paving', ph: 'patterned_slate_tiles', author: 'Dimitrios Savva', tint: [0.95, 1.0, 1.06] },
+  { layer: 'gravel', ph: 'rocky_gravel', author: 'Dario Barresi, Dimitrios Savva', tint: [0.94, 0.98, 1.02] },
+] as const;
+
 const SRC = process.env.DTL_ASSET_SOURCE ? path.resolve(process.env.DTL_ASSET_SOURCE, 'texture') : path.resolve(ROOT, '..', 'dtl-asset-source', 'texture');
 const SET = process.argv.includes('--set') ? process.argv[process.argv.indexOf('--set') + 1] : 'terrain';
-const OUT = path.join(ROOT, 'apps', 'client', 'public', SET === 'ochre' ? 'terrain-ochre' : 'terrain');
+const OUT = path.join(ROOT, 'apps', 'client', 'public', SET === 'ochre' ? 'terrain-ochre' : SET === 'slate' ? 'terrain-slate' : 'terrain');
 const SIZE = 1024;
 
 async function fetchBuf(url: string): Promise<Buffer> {
@@ -86,7 +101,7 @@ async function main(): Promise<void> {
   await mkdir(OUT, { recursive: true });
   const written = new Map<string, string>();
   const manifest: { layer: string; ph: string; a: string; n: string }[] = [];
-  const layers: readonly { layer: string; ph: string; author: string; tint?: readonly number[] }[] = SET === 'ochre' ? OCHRE_LAYERS : LAYERS;
+  const layers: readonly { layer: string; ph: string; author: string; tint?: readonly number[] }[] = SET === 'ochre' ? OCHRE_LAYERS : SET === 'slate' ? SLATE_LAYERS : LAYERS;
   for (const L of layers) {
     const [diff, nor, rough] = await Promise.all([source(L.ph, 'Diffuse'), source(L.ph, 'nor_gl'), source(L.ph, 'Rough')]);
     let img = sharp(diff).resize(SIZE, SIZE).removeAlpha();
@@ -102,7 +117,7 @@ async function main(): Promise<void> {
     manifest.push(entry);
     console.log(`[terrain] ${L.layer} (${L.ph}): a ${(ar.length / 1024) | 0} KB, n ${(n.length / 1024) | 0} KB`);
   }
-  if (SET === 'ochre') {
+  if (SET !== 'terrain') {
     await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify({ size: SIZE, layers: manifest }, null, 2) + '\n');
     return;
   }

@@ -48,7 +48,8 @@
         "pose"
       ],
       "assets": [
-        "set_skin_varkessa_nu"
+        "set_skin_varkessa_nu",
+        "chr_v3_varkessa_nu"
       ]
     },
     {
@@ -62,14 +63,15 @@
         "retarget"
       ],
       "assets": [
-        "anim_human_ual"
+        "anim_human_ual",
+        "anim_ual_native"
       ]
     },
     {
       "id": "polyhaven",
       "kind": "texture",
-      "title": "Poly Haven (leafy_grass, brown_mud_leaves_01, forrest_ground_01, rocky_terrain_02, rock_face, coast_sand_rocks_02, cobblestone_floor_04, gravelly_sand, dry_ground_rocks, red_laterite_soil_stones, sandstone_cracks, rock_face_03, aerial_sand)",
-      "author": "Poly Haven (Charlotte Baglioni, Rob Tuytel, Amal Kumar, Greg Zaal, Dario Barresi…)",
+      "title": "Poly Haven (leafy_grass, brown_mud_leaves_01, forrest_ground_01, rocky_terrain_02, rock_face, coast_sand_rocks_02, cobblestone_floor_04, gravelly_sand, dry_ground_rocks, red_laterite_soil_stones, sandstone_cracks, rock_face_03, aerial_sand, monastery_stone_floor, rock_path, mossy_cobblestone, slate_floor_02, patterned_slate_tiles, rocky_gravel)",
+      "author": "Poly Haven (Charlotte Baglioni, Rob Tuytel, Amal Kumar, Greg Zaal, Dario Barresi, Dimitrios Savva, Sơn Nguyễn…)",
       "url": "https://polyhaven.com/textures",
       "license": "CC0-1.0",
       "mods": [

@@ -281,6 +281,23 @@ Bộ ochre cho `doan_mach`, cũng từ [Poly Haven](https://polyhaven.com/textur
 
 Thẻ cỏ alpha (`apps/client/public/grass-ochre/`) dựng từ ảnh concept của dự án `docs/asset-concepts/prop_co_*.webp` bằng `pnpm assets:grass-cards` (không dùng Tripo).
 
+### Texture mặt đất Thiên Khuyết Cổ Thành (E4-I)
+
+Bộ slate cho `thien_khuyet`, cũng từ [Poly Haven](https://polyhaven.com/textures), **CC0-1.0**; đổi sắc (giảm bão hòa, ngả xám lam đêm) bằng `pnpm --filter @dtl/asset-pipeline exec tsx src/terrain-textures.ts --set slate`, ra `apps/client/public/terrain-slate/` (nạp lười khi vào level).
+
+| Lớp | Poly Haven | Tác giả | Giấy phép |
+| --- | --- | --- | --- |
+| nền (đá lát cổ) | [monastery_stone_floor](https://polyhaven.com/a/monastery_stone_floor) | Amal Kumar | CC0-1.0 |
+| đất (lối đá) | [rock_path](https://polyhaven.com/a/rock_path) | Amal Kumar | CC0-1.0 |
+| nền rêu | [mossy_cobblestone](https://polyhaven.com/a/mossy_cobblestone) | Sơn Nguyễn | CC0-1.0 |
+| đá | [slate_floor_02](https://polyhaven.com/a/slate_floor_02) | Dimitrios Savva | CC0-1.0 |
+| vách đá | [rock_face_03](https://polyhaven.com/a/rock_face_03) | Rob Tuytel | CC0-1.0 |
+| cát | [gravelly_sand](https://polyhaven.com/a/gravelly_sand) | Dario Barresi | CC0-1.0 |
+| lát đá | [patterned_slate_tiles](https://polyhaven.com/a/patterned_slate_tiles) | Dimitrios Savva | CC0-1.0 |
+| sỏi | [rocky_gravel](https://polyhaven.com/a/rocky_gravel) | Dario Barresi, Dimitrios Savva | CC0-1.0 |
+
+Thẻ cỏ sao (`apps/client/public/grass-night/`) dựng từ ảnh concept của dự án `docs/asset-concepts/prop_co_*.webp` bằng `pnpm assets:grass-cards --set night` (không dùng Tripo).
+
 <!-- audio:begin (sinh bởi tools/audio/build.mjs, đừng sửa tay) -->
 
 ### Âm thanh (SFX, âm môi trường)
@@ -362,6 +379,7 @@ Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằn
 | `combat` | Giao Phong | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/combat.mjs` |
 | `wild` | Vân Lam Sơn Mạch | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild.mjs` |
 | `wild_ochre` | Đoạn Mạch Cổ Cốc | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild_ochre.mjs` |
+| `wild_night` | Thiên Khuyết Cổ Thành | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_night.mjs` |
 | `wild_cloud` | Vân Hải Phù Đảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/wild_cloud.mjs` |
 | `forest` | Rừng Linh Thảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/forest.mjs` |
 | `lake` | Hồ Sương Mù | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/lake.mjs` |
@@ -566,3 +584,6 @@ Bản thử, không thay nhân vật trong game (`?chr=v2`, docs/chr-v2). Thân 
 | `set_liet_mach_kiem_y_v2_nu` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |
 | `set_kinh_quang_kiem_y_v2_nam` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |
 | `set_kinh_quang_kiem_y_v2_nu` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |
+| `anim_ual_native` | Thư viện 37 clip UAL cho nhân vật v3, GIỮ tên xương UE5 Mannequin (phát trực tiếp, không chuyển clip): Quaternius Universal Animation Library 1 + 2 bản Standard, **CC0 1.0** (https://quaternius.com), gói bằng `tools/blender/anim_ual_native.py`; nguồn ở `../dtl-asset-source/anim/ual/SOURCE.md` | Quaternius | CC0-1.0 | 2026-11-18 | Không bắt buộc ghi công (vẫn ghi ở màn Ghi công) |
+| `chr_v3_v2_nam` | Thân nền v2 (MakeHuman CC0 + đầu/tóc Tripo của người dùng, xem `chr_v2_nam`) đặt lên bộ xương UE5 Mannequin bằng `tools/blender/chr_v3.py` (bản thử pipeline N-0) | dự án + CC0-1.0 | 2026-11-18 | xem meta.json |
+| `chr_v3_varkessa_nu` | Sketchfab: "VARKESSA // The Infernal Emberblade" của **Atahan3D** (https://sketchfab.com/Atahan3D), bản đã sửa của `set_skin_varkessa_nu`, đặt lên bộ xương UE5 Mannequin bằng `tools/blender/chr_v3.py` (bản thử pipeline N-0) | CC-BY-4.0 | 2026-11-18 | **Phải ghi công** (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/): "VARKESSA // The Infernal Emberblade" by Atahan3D, https://sketchfab.com/3d-models/varkessa-the-infernal-emberblade-13c07cff4b884037a08b7463df5bc996. Đã sửa: bỏ đại kiếm dính tay, giảm tam giác, nướng lại texture, dựng xương và trọng số, đổi tư thế nghỉ sang UE5 Mannequin |

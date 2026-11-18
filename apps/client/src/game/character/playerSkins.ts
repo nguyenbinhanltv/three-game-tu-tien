@@ -26,6 +26,7 @@ import { SwordGlow } from '../swordGlow';
 import { partExtras, stripPartTracks, SwordSocket, type SwordSocketDef, swordSocketDef } from './sword';
 import { type BladeMount, bladeLocal, cutOldSword, glowDims, type OldSwordSpan, SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, type SwordTemplate, swordTemplateOf } from './swordModel';
 import type { CharState, ClipMap } from './states';
+import { CHR_V3, MannequinPlayers } from './mannequin';
 import { type AnimState, type CharacterView, legacyModelsRequested, legacySwordsRequested, type MonsterView, type PerformOpts } from './view';
 
 /** Ngoại hình hiển thị của một người chơi (từ schema server: `g`, `dye`). */
@@ -271,10 +272,16 @@ export class PlayerSkins {
     private cache: AssetCache = assets,
     readonly legacy = legacyModelsRequested(),
     private legacySwords = legacySwordsRequested(),
-  ) {}
+  ) {
+    this.v3 = CHR_V3 ? new MannequinPlayers(cache) : null;
+  }
+
+  /** `?chr=v3` (N-0): nhân vật Mannequin nguyên khối, null khi tắt. */
+  private v3: MannequinPlayers | null;
 
   preload(): void {
     if (this.legacy) return;
+    if (this.v3) this.v3.create(APPEARANCE.defaultGender);
     // Giới tính mặc định nạp sớm; giới tính khác nạp khi có người chơi đó xuất hiện (`create`), khỏi tải thừa ~2,5 MB.
     const id = modelOf(APPEARANCE.defaultGender);
     if (id && PLAYER_SKINS[id]) this.load(id);
@@ -282,6 +289,7 @@ export class PlayerSkins {
 
   /** Người chơi này sẽ có model mới nhưng asset đang nạp (tạm model khối, nạp xong thì đổi). */
   pending(look: PlayerLook): boolean {
+    if (this.v3 && !this.legacy) return this.v3.pending(look.g);
     const id = modelOf(look.g, look.hair);
     if (this.legacy || !id) return false;
     // Kiếm riêng còn nạp: tạm cầm kiếm mặc định, nạp xong thì entities dựng lại (cùng cơ chế với asset nhân vật).
@@ -342,6 +350,10 @@ export class PlayerSkins {
   }
 
   create(look: PlayerLook): CharacterView {
+    if (this.v3 && !this.legacy) {
+      const v = this.v3.create(look.g);
+      if (v) return v;
+    }
     const dye = dyeOf(look.dye, look.set);
     const id = modelOf(look.g, look.hair);
     const skin = id ? PLAYER_SKINS[id] : undefined;
@@ -367,6 +379,10 @@ export class PlayerSkins {
    * Trả null nếu asset chưa nạp hoặc đang `?models=legacy` (bên gọi dùng model quái dự phòng).
    */
   createShadow(look: PlayerLook, def: MonsterDef): MonsterView | null {
+    if (this.v3 && !this.legacy) {
+      const v = this.v3.createShadow(look.g, def);
+      if (v) return v;
+    }
     const id = modelOf(look.g, look.hair);
     const skin = id ? PLAYER_SKINS[id] : undefined;
     if (!id || !skin || this.legacy) return null;
@@ -728,6 +744,7 @@ export class PlayerSkins {
 
   dispose(): void {
     this.disposed = true;
+    this.v3?.dispose();
     for (const t of this.templates.values()) {
       if (typeof t === 'string') continue;
       t.handle.release();
