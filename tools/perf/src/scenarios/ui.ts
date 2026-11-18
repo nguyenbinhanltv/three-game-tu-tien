@@ -41,6 +41,7 @@ const HUD: HudScene[] = [
     wait: 6000,
     cam: { dist: 14, pitch: 0.35 },
   },
+  { id: 'truc_co', query: { realm: 'tc2', at: 'tong_mon' }, gm: ['kit 2 kiem +5 m', 'level 20'], wait: 3000 },
   { id: 'dem', query: { realm: 'nk12', at: 'tong_mon', mood: 'night' } },
 ];
 
@@ -51,6 +52,8 @@ interface Panel {
   npc?: [number, number];
   /** Bấm tab thứ n của bảng trước khi chụp. */
   tab?: number;
+  /** Bấm nút có chữ này (regex) trước khi chụp, ví dụ mở Ghi công từ Cài đặt. */
+  click?: string;
 }
 const PANELS: Panel[] = [
   { id: 'nhan-vat', key: 'c' },
@@ -60,6 +63,7 @@ const PANELS: Panel[] = [
   { id: 'nhiem-vu', key: 'l' },
   { id: 'to-doi', key: 'p' },
   { id: 'cai-dat', key: 'o' },
+  { id: 'ghi-cong', key: 'o', click: 'Ghi công' },
   { id: 'tro-giup', key: 'h' },
   { id: 'npc-hoi-thoai', npc: [2048, 2034] },
   { id: 'cua-hang', npc: [2004, 2068], tab: 1 },
@@ -152,12 +156,18 @@ async function panels(r: Run, variants: string[], sizes: string[], only: string[
           .nth(p.tab)
           .click()
           .catch(() => undefined);
+      if (p.click)
+        await page
+          .getByRole('button', { name: new RegExp(p.click) })
+          .first()
+          .click()
+          .catch(() => undefined);
       await sleep(900);
       await snapSizes(page, r.out, `bang-${p.id}-${variant}`, sizes, 900);
       // Đóng: Escape, nút đóng của hội thoại NPC nếu còn, rồi bấm lại phím nếu bảng vẫn mở (phím là bật/tắt).
       await page.keyboard.press('Escape');
       await page
-        .locator('.k-close')
+        .locator('.k-close, .u2-close')
         .first()
         .click({ timeout: 800 })
         .catch(() => undefined);

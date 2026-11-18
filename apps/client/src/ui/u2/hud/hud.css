@@ -508,6 +508,33 @@
   clip-path: none;
   border-radius: 50%;
 }
+/* chiêu tối thượng đang tụ lực: icon mờ (mọi ô, không riêng đòn chính) */
+.u2h-skill[data-state='charging'] .u2-frame__in > * {
+  filter: saturate(0.45) brightness(0.8);
+}
+.u2h-charge {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(var(--u-gold-hi) calc(var(--cd, 0) * 360deg), var(--u-gold-line) 0);
+  -webkit-mask: radial-gradient(circle, transparent calc(50% - 5px), var(--u-ink-0) calc(50% - 4px));
+  mask: radial-gradient(circle, transparent calc(50% - 5px), var(--u-ink-0) calc(50% - 4px));
+}
+.u2h-charge-n {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  z-index: 2;
+  font-family: var(--u-font-head);
+  font-weight: 800;
+  font-size: var(--u-fs-1);
+  line-height: 1;
+  color: var(--u-gold-text);
+  -webkit-text-stroke: 2px var(--u-ink-0);
+  paint-order: stroke fill;
+}
 .u2h-cell[data-main] .u2-frame {
   --qc: var(--u-gold-lo);
   background: var(--u-gold);
@@ -550,8 +577,9 @@
 .u2h-utility {
   position: absolute;
   right: calc(var(--h-skills-w) + 8px);
-  bottom: 0;
-  width: var(--h-util-w);
+  bottom: -16px; /* cùng đáy với hàng Q/F/Z */
+  width: max-content;
+  max-width: var(--h-util-w);
   display: flex;
   flex-direction: column-reverse;
   align-items: flex-end;
@@ -561,9 +589,21 @@
 .u2h-utility > * {
   pointer-events: auto;
 }
-.u2h-extras {
+.u2h-slots {
   display: flex;
-  gap: var(--u-sp-1);
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 10px; /* cùng bước 66 px với hàng Q/F/Z (ô 56 + hở 10) */
+}
+.u2h-extras {
+  display: contents;
+}
+.u2h-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--u-sp-2);
 }
 .u2h-extras .sep {
   display: none;
@@ -572,8 +612,8 @@
   display: block;
 }
 .u2hud .u2h-tier .skill {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
 }
 /* ô tiện ích dùng lớp `.skill` cũ: ép về cùng hình bát giác 56 px của kit */
 .u2hud .u2h-utility .skill {

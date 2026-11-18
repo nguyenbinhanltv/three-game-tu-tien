@@ -55,6 +55,38 @@
   --u-chu: #efe6d0; /* chữ trên nền tối */
   --u-chu-dim: #bfae87;
 
+  /* ── Ngọc Thanh (celadon) cho nền sơn thủy, bảng sáng, màn tĩnh ── */
+  --u-thanh-0: #f3f6f1;
+  --u-thanh-1: #dfe9e3;
+  --u-thanh-2: #bcd2cc;
+  --u-thanh-3: #8fb3ad;
+  --u-thanh-4: #5f8f8a;
+  --u-thanh-5: #3a6663;
+  --u-thanh-6: #223f40;
+
+  /* ── Bảng giấy (cửa sổ lớn): thẻ, hàng, ô nhập nổi nhẹ trên giấy ngà ── */
+  --u-card: rgba(255, 250, 235, 0.55);
+  --u-card-hi: rgba(255, 250, 235, 0.78);
+  --u-card-line: rgba(164, 127, 58, 0.55);
+  --u-card-edge: rgba(255, 250, 235, 0.6);
+  --u-wash-ngoc: rgba(47, 143, 127, 0.14);
+  --u-wash-ngoc-2: rgba(47, 143, 127, 0.28);
+  --u-wash-gold: rgba(164, 127, 58, 0.18);
+  --u-wash-tim: rgba(120, 70, 170, 0.1);
+  --u-scroll: rgba(122, 95, 44, 0.55);
+  /* chữ nhấn đậm trên giấy (đạt AA): vàng nâu, phẩm chất, trạng thái */
+  --u-gold-ink: #6b4d1c;
+  --u-ok-ink: #22633a;
+  --u-bad-ink: #8f2a21;
+  --u-info-ink: #145877;
+  --u-ngoc-ink: #145f53;
+  --u-q0-ink: #4a4f52;
+  --u-q1-ink: #356a22;
+  --u-q2-ink: #215a8a;
+  --u-q3-ink: #5f35b3;
+  --u-q4-ink: #744b00;
+  --u-q5-ink: #8f1450;
+
   /* ── Phẩm chất vật phẩm ── */
   --u-q0: #8f9a98;
   --u-q1: #7ea25a;

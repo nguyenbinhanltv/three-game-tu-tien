@@ -99,7 +99,7 @@ export function skillBox(W: number, H: number, layout: SkillLayout = 'arc'): Box
   return { x: W - SAFE - w, y: H - SAFE - h, w, h };
 }
 
-export const UTILITY = { w: 268, h: 112 } as const;
+export const UTILITY = { w: 600, h: 112 } as const;
 
 /** Hộp ô tiện ích: ngay bên trái cụm cung, sát mép dưới (kiểu bar: chiếm dải trên của hộp skills nên không có hộp riêng). */
 export function utilityBox(skills: Box, layout: SkillLayout): Box {

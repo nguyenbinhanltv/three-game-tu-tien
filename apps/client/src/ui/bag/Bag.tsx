@@ -271,7 +271,7 @@ export function Bag() {
     ? inv.reduce((n, it) => (it && matchesFilter(it, ITEM.get(it.id), itemName(it.id, it.plus), gearQuality(it), filter) ? n + 1 : n), 0)
     : 0;
   return (
-    <Window title={t('ui.bag')} sub={t('ui.bag.count', { used, max: INV_SIZE })} onClose={() => closePanel('bag')} cls="bag" width={520}>
+    <Window title={t('ui.bag')} sub={t('ui.bag.count', { used, max: INV_SIZE })} onClose={() => closePanel('bag')} cls="bag" width={560}>
       <Tabs
         label={t('ui.bag.tabs')}
         value={filter.tab}

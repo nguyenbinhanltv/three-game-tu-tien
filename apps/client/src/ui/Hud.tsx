@@ -453,90 +453,96 @@ function UtilityRow() {
   const tier = tierBar(method?.method);
   return (
     <>
-      {stackKind && (
-        <div className="stack-pips" aria-label={t(`ui.method.stacks.${stackKind}`)}>
-          <span>{t(`ui.method.stacks.${stackKind}`)}</span>
-          {Array.from({ length: pas?.max ?? 5 }, (_, i) => (
-            <i key={i} className={i < (method?.stacks ?? 0) ? 'on' : ''} />
-          ))}
-        </div>
-      )}
-      {char.level >= CLONE_UNLOCK_LEVEL && (
-        <div className={'clone-chip' + (now < clone.until ? ' on' : '')} data-testid="clone-chip" aria-label={t('ui.clone.title')}>
-          <span className="clone-key">G</span>
-          {now < clone.until
-            ? t('ui.clone.left', { n: Math.ceil((clone.until - now) / 1000) })
-            : now < clone.cdUntil
-              ? t('ui.clone.cd', { n: Math.ceil((clone.cdUntil - now) / 1000) })
-              : t('ui.clone.title')}
-        </div>
-      )}
-      <div className="u2h-extras">
-        <ArtifactSlot />
-        <BondedSlot />
-        <SpiritSlot />
-        <SoulSlot />
-      </div>
-      {tier.length > 0 && (
-        <div className="u2h-extras u2h-tier" aria-label={t('ui.skill.tier_row')}>
-          {tier.map((sk, j) => {
-            const rs = resolveBarSkill(method, sk);
-            const locked = char.level < sk.unlock;
-            const ready = Math.max(cds[sk.id] ?? 0, gcdAt);
-            const left = Math.max(0, ready - now);
-            const total = (cds[sk.id] ?? 0) > gcdAt ? Math.max(1, rs.cd) * 1000 : 1000;
-            const noMp = !locked && mp < sk.mp;
-            const state = locked ? 'locked' : airborne ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
-            const lv = method?.lv[sk.id] ?? 1;
-            const vr = method?.vr[sk.id];
-            const lines = [
-              { text: t('ui.skill.tier_key', { n: j + 1 }) },
-              ...(lv > 1 ? [{ text: t('ui.skill.level_tag', { n: lv }) }] : []),
-              ...(vr && VARIANTS[sk.id] ? [{ text: t('ui.skill.variant_tag', { name: t(`skill.${sk.id}.var.${vr}.name`) }) }] : []),
-              ...(sk.mp ? [{ text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined }] : []),
-              ...(rs.cd ? [{ text: t('ui.skill.cd', { n: rs.cd }) }] : []),
-            ];
-            return (
-              <Tooltip
-                key={sk.id}
-                content={
-                  <TipCard
-                    title={t(`skill.${sk.id}.name`)}
-                    sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined}
-                    lines={lines}
-                    desc={t(`skill.${sk.id}.desc`)}
-                  />
-                }
-              >
-                <button
-                  type="button"
-                  className="skill"
-                  data-state={state}
-                  data-method="1"
-                  aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`}
-                  onClick={(e) => {
-                    Game.current?.useSkill(BAR_SIZE + 2 + j);
-                    blurAfterPointer(e);
-                  }}
+      <div className="u2h-slots">
+        {tier.length > 0 && (
+          <div className="u2h-extras u2h-tier" aria-label={t('ui.skill.tier_row')}>
+            {tier.map((sk, j) => {
+              // Chiêu bậc cao chưa mở thì ẩn (không vẽ ô khóa): chỉ hiện những ô đã dùng được.
+              if (char.level < sk.unlock) return null;
+              const rs = resolveBarSkill(method, sk);
+              const locked = char.level < sk.unlock;
+              const ready = Math.max(cds[sk.id] ?? 0, gcdAt);
+              const left = Math.max(0, ready - now);
+              const total = (cds[sk.id] ?? 0) > gcdAt ? Math.max(1, rs.cd) * 1000 : 1000;
+              const noMp = !locked && mp < sk.mp;
+              const state = locked ? 'locked' : airborne ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
+              const lv = method?.lv[sk.id] ?? 1;
+              const vr = method?.vr[sk.id];
+              const lines = [
+                { text: t('ui.skill.tier_key', { n: j + 1 }) },
+                ...(lv > 1 ? [{ text: t('ui.skill.level_tag', { n: lv }) }] : []),
+                ...(vr && VARIANTS[sk.id] ? [{ text: t('ui.skill.variant_tag', { name: t(`skill.${sk.id}.var.${vr}.name`) }) }] : []),
+                ...(sk.mp ? [{ text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined }] : []),
+                ...(rs.cd ? [{ text: t('ui.skill.cd', { n: rs.cd }) }] : []),
+              ];
+              return (
+                <Tooltip
+                  key={sk.id}
+                  content={
+                    <TipCard
+                      title={t(`skill.${sk.id}.name`)}
+                      sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined}
+                      lines={lines}
+                      desc={t(`skill.${sk.id}.desc`)}
+                    />
+                  }
                 >
-                  <span className="skill-icon">
-                    <ContentIcon def={sk} />
-                  </span>
-                  <span className="skill-key">⇧{j + 1}</span>
-                  {!locked && left > 80 && (
-                    <>
-                      <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
-                      {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
-                    </>
-                  )}
-                  {locked && <span className="skill-lock">🔒</span>}
-                </button>
-              </Tooltip>
-            );
-          })}
+                  <button
+                    type="button"
+                    className="skill"
+                    data-state={state}
+                    data-method="1"
+                    aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`}
+                    onClick={(e) => {
+                      Game.current?.useSkill(BAR_SIZE + 2 + j);
+                      blurAfterPointer(e);
+                    }}
+                  >
+                    <span className="skill-icon">
+                      <ContentIcon def={sk} />
+                    </span>
+                    <span className="skill-key">⇧{j + 1}</span>
+                    {!locked && left > 80 && (
+                      <>
+                        <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
+                        {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
+                      </>
+                    )}
+                    {locked && <span className="skill-lock">🔒</span>}
+                  </button>
+                </Tooltip>
+              );
+            })}
+          </div>
+        )}
+        <div className="u2h-extras">
+          <ArtifactSlot />
+          <BondedSlot />
+          <SpiritSlot />
+          <SoulSlot />
         </div>
-      )}
-      <BuffRow />
+      </div>
+      <div className="u2h-chips">
+        {stackKind && (
+          <div className="stack-pips" aria-label={t(`ui.method.stacks.${stackKind}`)}>
+            <span>{t(`ui.method.stacks.${stackKind}`)}</span>
+            {Array.from({ length: pas?.max ?? 5 }, (_, i) => (
+              <i key={i} className={i < (method?.stacks ?? 0) ? 'on' : ''} />
+            ))}
+          </div>
+        )}
+        {char.level >= CLONE_UNLOCK_LEVEL && (
+          <div className={'clone-chip' + (now < clone.until ? ' on' : '')} data-testid="clone-chip" aria-label={t('ui.clone.title')}>
+            <span className="clone-key">G</span>
+            {now < clone.until
+              ? t('ui.clone.left', { n: Math.ceil((clone.until - now) / 1000) })
+              : now < clone.cdUntil
+                ? t('ui.clone.cd', { n: Math.ceil((clone.cdUntil - now) / 1000) })
+                : t('ui.clone.title')}
+          </div>
+        )}
+        <BuffRow />
+      </div>
     </>
   );
 }
