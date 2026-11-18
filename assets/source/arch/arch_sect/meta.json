@@ -3,6 +3,6 @@
   "id": "arch_sect",
   "type": "arch",
   "status": "in_game",
-  "procedural": { "script": "tools/blender/build_sect.py", "seed": 20261112 },
-  "license": { "source": "Tự sinh bằng script tools/blender/build_sect.py", "owner": "dự án", "date": "2026-11-12" }
+  "procedural": { "script": "tools/blender/thien_cong_sect.py", "seed": 20261112 },
+  "license": { "source": "Tự sinh bằng bộ kit tools/blender/thien_cong_kit.py + thien_cong_sect.py (MAP-1)", "owner": "dự án", "date": "2026-11-12" }
 }

@@ -215,11 +215,11 @@
       "id": "arch_sect",
       "class": "arch",
       "source": "assets/build/raw/arch_sect.glb",
-      "file": "arch_sect.12ea7e0188.glb",
-      "bytes": 192096,
-      "rawBytes": 704604,
-      "triangles": 10058,
-      "rawTriangles": 10058,
+      "file": "arch_sect.b5c85b1b34.glb",
+      "bytes": 1384408,
+      "rawBytes": 6129248,
+      "triangles": 74570,
+      "rawTriangles": 74570,
       "lod0Cap": 300000,
       "skinned": false,
       "quantized": true,
@@ -253,26 +253,35 @@
           "slots": [
             "baseColorTexture"
           ]
+        },
+        {
+          "name": "arch_sect_jade",
+          "mimeType": "image/ktx2",
+          "width": 256,
+          "height": 256,
+          "slots": [
+            "baseColorTexture"
+          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 10058
+          "triangles": 74570
         }
       ],
       "dims": {
         "raw": {
-          "width": 119.5885,
-          "height": 22.6,
-          "depth": 141.6009,
-          "minY": 0
+          "width": 121.4266,
+          "height": 41.08,
+          "depth": 184.3822,
+          "minY": -1.16
         },
         "build": {
-          "width": 119.5961,
-          "height": 22.5925,
-          "depth": 141.6009,
-          "minY": 0.0037
+          "width": 121.4209,
+          "height": 41.0776,
+          "depth": 184.3822,
+          "minY": -1.1588
         }
       }
     },

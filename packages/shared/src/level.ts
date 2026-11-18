@@ -82,6 +82,11 @@ export const COLLIDERS: CircleCollider[] = [
   { x: 2040, z: 2128, r: 1.6 }, // Trụ cổng trái
   { x: 2056, z: 2128, r: 1.6 }, // Trụ cổng phải
   { x: 2048, z: 2066, r: 2.4 }, // Lư hương giữa sân
+  { x: 2008, z: 1996, r: 6 }, // Lầu hai tầng trái (MAP-1)
+  { x: 2088, z: 1996, r: 6 }, // Lầu hai tầng phải
+  { x: 2048, z: 1955, r: 6.5 }, // Tháp Kiếm bảy tầng
+  { x: 2018, z: 2078, r: 1.2 }, // Bia khắc trái
+  { x: 2078, z: 2078, r: 1.2 }, // Bia khắc phải
   { x: 2048, z: 1700, r: 3.2 }, // Cổng bí cảnh (khối đá)
   { x: 1520, z: 1300, r: 3.4 }, // Cự kiếm giữa Kiếm Trủng
   ...PROP_COLLIDERS, // Prop điểm nhấn có va chạm (cổ thụ, tượng thú, lư hương)
