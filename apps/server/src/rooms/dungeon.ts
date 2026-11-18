@@ -231,9 +231,12 @@ export class DungeonRoom extends GameRoom {
       healMonster: (m, n) => {
         m.s.hp = Math.min(m.s.mhp, m.s.hp + n);
       },
-      spawn: (mon, level, x, z) => {
+      spawn: (mon, level, x, z, owner) => {
         const def = MONSTER.get(mon);
-        return def ? sim.spawnMonster(def, level, x, z, null) : null;
+        if (!def) return null;
+        const e = sim.spawnMonster(def, level, x, z, null);
+        e.minionOf = owner.id;
+        return e;
       },
       // Gỡ lặng lẽ (cùng cách gỡ bóng giả của gương): không qua đường giết nên không rơi đồ, không tính hạ.
       despawn: (m) => {

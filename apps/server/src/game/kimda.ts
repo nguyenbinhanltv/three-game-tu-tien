@@ -6,8 +6,8 @@
 //  - Kim dạ (Ma Hậu, `kd.night`): sàn tối, chỉ vòng quanh các bia là sáng, ngoài vòng mất khí huyết; boss dập luân phiên từng bia, bia trống quá lâu cũng tắt.
 // Cấu hình ở `monsters.json` (`kd`), kiểu `MonsterKimDa`. Hàm thuần và lớp `KimDaSystem` có test ở kimda.test.ts.
 
-import { MS_DEAD, type FxMsg, type MonsterKimDa } from '@dtl/shared';
-import type { MonEnt, PlayerEnt } from './sim';
+import { MS_DEAD, MS_IDLE, MS_RETURN, type FxMsg, type MonsterKimDa } from '@dtl/shared';
+import type { MonEnt, PlayerEnt } from './entities';
 
 export interface Pt {
   x: number;
@@ -45,7 +45,8 @@ export interface KimDaHost {
   damagePlayer(p: PlayerEnt, n: number, src: string): void;
   healMonster(m: MonEnt, n: number): void;
   /** Gọi một quái (bóng niệm chú) đứng ở (x, z). */
-  spawn(mon: string, level: number, x: number, z: number): MonEnt | null;
+  /** `owner` là boss gọi nó: quái đệ tử (`minionOf`) không rơi đồ, không tu vi, không tính hạ. */
+  spawn(mon: string, level: number, x: number, z: number, owner: MonEnt): MonEnt | null;
   /** Gỡ quái ngay, không rơi đồ, không tính hạ. */
   despawn(m: MonEnt): void;
   marker(x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost'): void;
@@ -66,7 +67,7 @@ export class KimDaSystem {
   private mendAt = new Map<string, number>();
   private mendSaid = false;
   private twinPeak = new Map<string, number>();
-  private enraged = new Set<string>();
+  private enraged = new Map<string, number>();
   private bargainStart = 0;
   private bargainEnd = 0;
   private shadow: MonEnt | null = null;
@@ -90,7 +91,7 @@ export class KimDaSystem {
     this.last = now;
     const mons = this.h.monsters();
     for (const m of mons) {
-      if (m.state === MS_DEAD) continue;
+      if (m.state === MS_DEAD || m.state === MS_RETURN) continue;
       const kd = m.def.kd;
       if (!kd) continue;
       if (kd.mend) this.tickMend(m, kd.mend, now, mons);
@@ -128,9 +129,19 @@ export class KimDaSystem {
 
   // ---------- Tinh anh đôi ----------
   private tickTwin(mons: readonly MonEnt[]): void {
+    // Con về chỗ cũ (bỏ đuổi, wipe): trả sức đánh gốc, đếm lại từ đầu.
+    for (const [id, atk0] of [...this.enraged]) {
+      const m = mons.find((x) => x.id === id);
+      if (!m) this.enraged.delete(id);
+      else if (m.state === MS_RETURN || m.state === MS_IDLE) {
+        m.atk = atk0;
+        this.enraged.delete(id);
+        this.twinPeak.delete(m.def.id);
+      }
+    }
     const alive = new Map<string, MonEnt[]>();
     for (const m of mons) {
-      if (!m.def.kd?.twin || m.state === MS_DEAD) continue;
+      if (!m.def.kd?.twin || m.state === MS_DEAD || m.state === MS_RETURN) continue;
       const a = alive.get(m.def.id) ?? [];
       a.push(m);
       alive.set(m.def.id, a);
@@ -141,7 +152,7 @@ export class KimDaSystem {
       if (list.length >= peak || peak < 2) continue;
       for (const m of list) {
         if (this.enraged.has(m.id)) continue;
-        this.enraged.add(m.id);
+        this.enraged.set(m.id, m.atk);
         m.atk = Math.round(m.atk * m.def.kd!.twin!.mul);
         this.h.sysAll('sys.kd_twin_rage', undefined, 'bad');
       }
@@ -151,12 +162,19 @@ export class KimDaSystem {
   // ---------- Mặc cả ----------
   private tickBargain(m: MonEnt, cfg: NonNullable<MonsterKimDa['bargain']>, now: number): void {
     if (this.bargainEnd && now >= this.bargainEnd) this.resolveBargain();
+    // Chú của boss bị ngắt (choáng) trước khi xong: chú kép tan, bóng gỡ, không phạt.
+    else if (this.bargainEnd && !m.chant && m.stunUntil > now) {
+      if (this.shadow) this.h.despawn(this.shadow);
+      this.shadow = null;
+      this.bargainEnd = 0;
+      this.h.sysAll('sys.kd_bargain_ok', undefined, 'good');
+    }
     if (m.phase < cfg.phase || !m.chant || m.chant.startAt === this.bargainStart) return;
     this.bargainStart = m.chant.startAt;
     this.bargainEnd = m.chant.endAt;
     if (this.shadow) this.h.despawn(this.shadow);
     const at = shadowSpot({ x: m.s.x, z: m.s.z }, this.h.center(), cfg.sep);
-    this.shadow = this.h.spawn(cfg.mon, m.level, at.x, at.z);
+    this.shadow = this.h.spawn(cfg.mon, m.level, at.x, at.z, m);
     this.h.marker(at.x, at.z, 4, Math.max(1, (m.chant.endAt - now) / 1000), 'fire');
     this.h.sysAll('sys.kd_bargain', undefined, 'info');
   }
@@ -235,7 +253,7 @@ export class KimDaSystem {
    */
   private cleanup(mons: readonly MonEnt[]): void {
     const now = this.h.now();
-    const live = (m: MonEnt) => m.state !== MS_DEAD && m.evadeUntil <= now;
+    const live = (m: MonEnt) => m.state !== MS_DEAD && m.state !== MS_RETURN && m.evadeUntil <= now;
     if (this.night) {
       const ph = mons.find((m) => m.id === this.nightWho)?.def.kd?.night?.phase ?? 0;
       if (!mons.some((m) => m.id === this.nightWho && live(m) && m.phase >= ph)) {

@@ -11,7 +11,7 @@ Theo `docs/DIVUC_DESIGN.md` mục 5.2, cùng khuôn với Xích Tẫn Khích (DV
 | 3 | 2 Huyết Giác Ma Tướng (tinh anh đôi) | `kd.twin`: một con chết thì con kia nổi giận (sát thương ×1,6) |
 | 4 | Hành lang đèn | Đố **bốn** cột đèn (tổng quát hóa `MirrorPuzzle`: 3–4 điểm, khóa tin `kd_lamp`); sai/hết giờ: 4 trọng binh; giải xong: Ma Hậu giảm 15% sát thương (`bossDmgMul`) |
 | 5 | **Tẫn Hỏa Kiếm Cơ** (boss phụ) | Vệt lửa Tẫn Hỏa do AI quái (`MonsterTrail`, #235) làm; không có cơ chế riêng ở `kimda.ts` (bản `kd.trail` đã gỡ để khỏi sát thương đôi) |
-| 6 | **Kim Dạ Ma Hậu** (boss) | Pha 1: slam + chú + triệu thị vệ (đã có). Pha 2 (65%) **Mặc cả** (`kd.bargain`): mỗi lần niệm chú có thêm Bóng Kim Dạ niệm chú ở phía đối diện sảnh (cách ≥ 18 m); chú xong mà bóng còn sống thì cả đội mất 20% khí huyết tối đa. Pha 3 (30%) **Kim dạ** (`kd.night`): chỉ hai vòng bia sáng, ngoài vòng mất 4%/s; Ma Hậu dập luân phiên từng bia (báo 2,2 s, bia tắt 7 s), bia không người giữ quá 6 s cũng tắt |
+| 6 | **Kim Dạ Ma Hậu** (boss) | Pha 1: slam + chú + triệu thị vệ (đã có). Pha 2 (65%) **Mặc cả** (`kd.bargain`): mỗi lần niệm chú có thêm Bóng Kim Dạ niệm chú ở phía đối diện sảnh (cách ≥ 18 m); chú xong mà bóng còn sống thì cả đội mất 20% khí huyết tối đa; ngắt được chú của bà thì cả hai chú tan, không phạt. Bóng là đệ tử của boss (`minionOf`): không tu vi, không rơi đồ, không tính hạ. Pha 3 (30%) **Kim dạ** (`kd.night`): chỉ hai vòng bia sáng, ngoài vòng mất 4%/s; Ma Hậu dập luân phiên từng bia (báo 2,2 s, bia tắt 7 s), bia không người giữ quá 6 s cũng tắt |
 
 - Cổng: Kim Dạ Ngoại Uyển trên Bắc Hoang, cách poi `cong_kim_da_cung` 18 m về tâm bản đồ (`levels/bac_hoang.json` `portals`, và `tools/maps/gen-bac-hoang.mjs`).
 - Kiến trúc cung điện (thủ tục, một lớp `palace: 'gilt'` ở `kim_da_cung.assets.json`): vỏ cung, sàn đá tím thẫm vân kim dát, hàng cột + gờ ngang + tấm màn nhung treo giữa các cột, quầng đèn vàng (`apps/client/src/game/caveShell.ts`, bảng màu `PALACE.gilt`: `rift_gilt` trên nền đen tím). Prop bày: vòng cột, hành lang đèn kép, hai bia Kim dạ, ngai + tượng canh, bốn đèn đố (`shared/src/props.kimda.ts`).
@@ -42,3 +42,7 @@ Mã: `apps/server/src/game/kimda.ts` (`KimDaSystem`, hàm thuần `inAny|shadowS
 ## Ảnh và video
 
 Không commit. Sinh lại bằng `pnpm shots dungeon --level kim_da_cung --video 1 --out <thư mục tuyệt đối>` (WebGPU, tắt tiếng, tự tắt server); bản lưu ở thư mục artifact của phiên.
+
+## Dọn khi boss rời trận
+
+`KimDaSystem.cleanup` dọn bia Kim dạ và bóng mặc cả khi Ma Hậu chết, rút lui về pha trước, đang `evadeUntil` hoặc `MS_RETURN` (leash/wipe); tinh anh đôi cuồng nộ mà về chỗ thì trả sức đánh gốc và đếm lại. Test ở `kimda.test.ts`.

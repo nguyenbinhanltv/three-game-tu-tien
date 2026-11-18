@@ -1607,7 +1607,7 @@
   "sys.kd_lamp_puzzle_ok": "Hành lang đèn sáng đủ bốn màu. Sát thương của Kim Dạ Ma Hậu giảm {n}%.",
   "sys.kd_lamp_puzzle_bad": "Sai thứ tự! Đèn tắt, quái từ bóng tối tràn ra.",
   "sys.kd_lamp_puzzle_time": "Hết giờ! Đèn tắt, quái từ bóng tối tràn ra.",
-  "sys.kd_bargain": "Ma Hậu niệm chú, bóng của bà niệm chú thứ hai ở đầu bên kia sảnh! Ngắt chú của bà VÀ hạ bóng trước khi chú xong.",
+  "sys.kd_bargain": "Ma Hậu niệm chú, bóng của bà niệm chú thứ hai ở đầu bên kia sảnh! Ngắt chú của bà (cả hai chú tan) hoặc hạ bóng trước khi chú xong.",
   "sys.kd_bargain_ok": "Cả hai chú đều bị phá. Ma Hậu nhíu mày: giá của bà không được nhận.",
   "sys.kd_bargain_bad": "Chú thứ hai của bóng đã xong! Cả đội bị Tẫn khí cuốn lấy.",
   "sys.kd_night": "Ma Hậu tắt hết đèn. Sảnh chìm vào bóng tối, chỉ hai vòng bia còn sáng: ra khỏi vòng mất {press}% khí huyết mỗi giây. Chia hai nhóm giữ hai bia!",

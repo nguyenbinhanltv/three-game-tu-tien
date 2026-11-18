@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { MS_CHASE, MS_DEAD, type FxMsg } from '@dtl/shared';
+import { MS_CHASE, MS_DEAD, MS_RETURN, type FxMsg } from '@dtl/shared';
 
 // DV-3E: Kim Dạ Cung. Dữ liệu đợt, hàm thuần, KimDaSystem với host giả (Châm Bà, tinh anh đôi, mặc cả, Kim dạ),
 // và một lượt DungeonRoom thật đi qua sáu đợt (kể cả đố đèn 4 cột).
@@ -107,6 +107,7 @@ interface FakeMon {
   phase: number;
   stunUntil: number;
   evadeUntil: number;
+  minionOf?: string;
   chant: { startAt: number; endAt: number } | null;
   s: { x: number; z: number; hp: number; mhp: number; st: number };
   removeAt: number;
@@ -128,10 +129,11 @@ function mk(mons: FakeMon[], center = { x: 0, z: 0 }) {
       log.heal += n;
       m.s.hp = Math.min(m.s.mhp, m.s.hp + n);
     },
-    spawn: (id, level, x, z) => {
+    spawn: (id, level, x, z, owner) => {
       log.spawned.push(id);
       const e = mon('sp' + log.spawned.length, { id }, x, z, 5);
       e.level = level;
+      e.minionOf = (owner as never as FakeMon).id;
       mons.push(e);
       return e as never;
     },
@@ -311,6 +313,67 @@ describe('KimDaSystem với host giả', () => {
     boss.evadeUntil = t.now + 10000;
     adv(0.25);
     expect(sh.state).toBe(MS_DEAD);
+  });
+
+  it('bóng mặc cả là đệ tử của boss (không thưởng, không tính hạ)', () => {
+    const boss = maHau();
+    boss.phase = 1;
+    const { adv, mons, t } = mk([boss]);
+    boss.chant = { startAt: t.now, endAt: t.now + 3000 };
+    adv(0.25);
+    expect(mons[1].minionOf).toBe('mh');
+  });
+
+  it('chú của boss bị ngắt giữa chừng: bóng gỡ, không phạt, không phạt lần sau cho chú cũ', () => {
+    const boss = maHau();
+    boss.phase = 1;
+    const { adv, log, mons, t } = mk([boss]);
+    boss.chant = { startAt: t.now, endAt: t.now + 3000 };
+    adv(0.25);
+    const sh = mons[1];
+    boss.chant = null;
+    boss.stunUntil = t.now + 5000;
+    adv(4);
+    expect(sh.state).toBe(MS_DEAD);
+    expect(log.dmg.filter((d) => d.src === 'kd_bargain')).toHaveLength(0);
+    expect(log.say).not.toContain('sys.kd_bargain_bad');
+  });
+
+  it('boss về chỗ (MS_RETURN, leash/wipe): bia Kim dạ và bóng mặc cả dọn ngay', () => {
+    const boss = maHau();
+    boss.phase = 2;
+    const { adv, sys, log, mons, t } = mk([boss]);
+    adv(1);
+    expect(sys.litCount()).toBe(2);
+    boss.state = MS_RETURN;
+    adv(0.25);
+    expect(sys.litCount()).toBe(-1);
+    boss.state = MS_CHASE;
+    boss.phase = 1;
+    boss.chant = { startAt: t.now, endAt: t.now + 3000 };
+    adv(0.25);
+    const sh = mons[1];
+    boss.state = MS_RETURN;
+    adv(0.25);
+    expect(sh.state).toBe(MS_DEAD);
+    adv(4);
+    expect(log.dmg.filter((d) => d.src === 'kd_bargain')).toHaveLength(0);
+  });
+
+  it('tinh anh đôi cuồng nộ rồi về chỗ: trả sức đánh gốc, đếm lại', () => {
+    const e1 = mon('e1', { id: 'twin', kd: { twin: { mul: 1.5 } } });
+    const e2 = mon('e2', { id: 'twin', kd: { twin: { mul: 1.5 } } });
+    const { adv } = mk([e1, e2]);
+    adv(1);
+    e1.state = MS_DEAD;
+    adv(1);
+    expect(e2.atk).toBe(150);
+    e2.state = MS_RETURN;
+    adv(0.25);
+    expect(e2.atk).toBe(100);
+    e2.state = MS_CHASE;
+    adv(2);
+    expect(e2.atk).toBe(100);
   });
 
   it('Kim dạ dừng khi boss chết: gỡ cột bia, bóng', () => {
