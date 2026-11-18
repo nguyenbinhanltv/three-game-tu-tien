@@ -35,3 +35,15 @@ describe('v3AssetOf (chọn asset v3 theo giới + skin)', () => {
     expect(v3AssetOf('f', 'set_skin_khong_co')).toBe(V3_MODELS.f);
   });
 });
+
+describe('twist (N-4)', () => {
+  it('tách góc xoắn quanh trục xương, bỏ phần swing', async () => {
+    const { twistAngle } = await import('./mannequin');
+    const THREE = await import('three');
+    const axis = new THREE.Vector3(0, 1, 0);
+    expect(twistAngle(new THREE.Quaternion().setFromAxisAngle(axis, 0.8), axis)).toBeCloseTo(0.8, 5);
+    expect(twistAngle(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0.8), axis)).toBeCloseTo(0, 5);
+    const both = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0.6).multiply(new THREE.Quaternion().setFromAxisAngle(axis, -0.5));
+    expect(twistAngle(both, axis)).toBeCloseTo(-0.5, 1);
+  });
+});

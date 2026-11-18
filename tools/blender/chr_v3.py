@@ -371,6 +371,37 @@ def REGION_OF(n):
 # ---------- trọng số ----------
 V = np.array([BODY.matrix_world @ v.co for v in BODY.data.vertices], float).reshape(-1, 3)
 NV = len(V)
+
+
+def vertex_texel_rgb():
+    """Màu sRGB (0-1) của texture màu tại mỗi đỉnh (trung bình UV các loop); None nếu không tìm thấy texture."""
+    img = None
+    for mat in BODY.data.materials:
+        if mat and mat.node_tree:
+            for n in mat.node_tree.nodes:
+                if n.type == 'BSDF_PRINCIPLED' and n.inputs['Base Color'].links:
+                    src = n.inputs['Base Color'].links[0].from_node
+                    if src.type == 'TEX_IMAGE' and src.image:
+                        img = src.image
+    uvl = BODY.data.uv_layers.active
+    if img is None or uvl is None:
+        return None
+    small = img.copy()
+    small.scale(256, 256)
+    px = np.array(small.pixels[:], np.float32).reshape(256, 256, 4)[:, :, :3]
+    bpy.data.images.remove(small)
+    acc = np.zeros((NV, 3))
+    cnt = np.zeros(NV)
+    for loop in BODY.data.loops:
+        u, v = uvl.data[loop.index].uv
+        acc[loop.vertex_index] += px[int(np.clip(v, 0, 0.9999) * 256), int(np.clip(u % 1.0, 0, 0.9999) * 256)]
+        cnt[loop.vertex_index] += 1
+    return acc / np.maximum(cnt, 1)[:, None]
+
+
+TEXEL = vertex_texel_rgb()
+# Tóc: tối và trung tính (lam của quần/ủng/viền có b − r lớn hơn).
+HAIRV = None if TEXEL is None else ((TEXEL @ np.array([0.299, 0.587, 0.114])) < 0.17) & ((TEXEL[:, 2] - TEXEL[:, 0]) < 0.045)
 W = np.zeros((NV, len(DEF)), float)
 use_src = bool(src_groups)
 if use_src:
@@ -490,6 +521,33 @@ add_bone('dtl_scabbard', 'spine_03', H['spine_03'] + np.array([0, 0.10 * height 
 add_bone('dtl_head_acc', 'Head', top - np.array([0, 0, 0.06]), top + np.array([0, 0, 0.06]))
 n_spring = 0
 COLS = list(DEF)
+# Xương twist (UAL không có): mỗi cẳng/đùi có `<x>_twist_<l|r>` (con của xương gốc, đặt ở 1/2 đoạn, cùng hướng và roll). Client đặt xoay của nó
+# = -0,8 × góc xoắn của xương cha quanh trục xương, nên đỉnh gần đầu xương chỉ xoắn khoảng 1/3, đỉnh gần cuối xoắn đủ: bớt "kẹo xoắn" ở vai/khuỷu/hông.
+TWIST_OF = {'upperarm': 'lowerarm', 'lowerarm': 'hand', 'thigh': 'calf'}
+N_TWIST = 0
+for sd in 'lr':
+    for limb in TWIST_OF:
+        L = f'{limb}_{sd}'
+        a, b = Fp_HEAD[L], Fp_TAIL[L]
+        mid = (a + b) / 2
+        add_bone(f'{limb}_twist_{sd}', L, mid, mid + (b - a) * 0.3, T[L]['roll'])
+        COLS.append(f'{limb}_twist_{sd}')
+        N_TWIST += 1
+Wt = np.hstack([W, np.zeros((NV, N_TWIST))])
+for sd in 'lr':
+    for limb in TWIST_OF:
+        L = f'{limb}_{sd}'
+        col = COLS.index(f'{limb}_twist_{sd}')
+        a, b = Fp_HEAD[L], Fp_TAIL[L]
+        ab = b - a
+        for vi in np.where(W[:, IDX[L]] > 0.3)[0]:
+            t = float(np.clip((VP[vi] - a) @ ab / max(ab @ ab, 1e-9), 0, 1))
+            share = 0.85 * (1 - t) ** 0.8
+            mv = Wt[vi, IDX[L]] * share
+            Wt[vi, IDX[L]] -= mv
+            Wt[vi, col] += mv
+W = Wt
+REP['twist_bones'] = N_TWIST
 if SPRINGS:
     # Cấu hình: {"groups":[{"name":"skirt","parent":"pelvis","axis":"angle|x","zMin":0.16,"zMax":0.5,"minRadius":0.09,"count":8,"links":2,
     #   "domRegion":["torso","leg"],"yMinRel":0.0,"xAbsMax":0.12}]}; z, bán kính, y, x tính theo PHẦN CHIỀU CAO (mặc định, "frac": false = mét).
@@ -513,7 +571,7 @@ if SPRINGS:
             W[i, IDX['calf_' + sd]] = wgt * 0.5 * lowk
             n_rb += 1
         log(f'vạt áo: {n_rb} đỉnh bám hông/đùi theo khoảng cách ngang')
-    domreg = np.array([REGION_OF(DEF[i]) for i in W.argmax(axis=1)])
+    domreg = np.array([REGION_OF(COLS[i]) for i in W.argmax(axis=1)])
     Wx = W.copy()
     for g in SP['groups']:
         f = height if g.get('frac', True) else 1.0
@@ -521,6 +579,7 @@ if SPRINGS:
         regs = g.get('domRegion')
         sel = np.array([i for i in range(NV) if zlo <= VP[i][2] <= zhi and math.hypot(VP[i][0] - cx, VP[i][1] - cy) >= rmin
                         and (regs is None or domreg[i] in regs)
+                        and (g.get('tex') != 'hair' or (HAIRV is not None and HAIRV[i]))
                         and VP[i][1] - cy >= g.get('yMinRel', -9.0) * f and abs(VP[i][0] - cx) <= g.get('xAbsMax', 9.0) * f], int)
         if len(sel) == 0:
             log(f"lò xo {g['name']}: không có đỉnh nào (y rel max {float((VP[:, 1] - cy).max()):.3f}, ngưỡng {g.get('yMinRel', -9.0) * f:.3f})")
@@ -666,7 +725,7 @@ for n in DEF:
     else:
         REGION[n] = 'torso'
 for _n in COLS:
-    REGION.setdefault(_n, 'torso')
+    REGION.setdefault(_n, REGION_OF(_n))
 dom = np.array([REGION[COLS[i]] for i in W.argmax(axis=1)])
 PAIRS = [('arm_l', 'torso'), ('arm_r', 'torso'), ('arm_l', 'arm_r'), ('leg_l', 'leg_r'), ('arm_l', 'leg_l'), ('arm_r', 'leg_r')]
 

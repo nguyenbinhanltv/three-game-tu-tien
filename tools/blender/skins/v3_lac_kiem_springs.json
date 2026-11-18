@@ -1,5 +1,5 @@
 {
-  "$comment": "Xương lò xo cho Lạc Kiếm Môn Phục v3 (chr_v3.py --springs). Số theo PHẦN CHIỀU CAO. `robe`: vạt đạo bào bám hông ở giữa, bám đùi ra ngoài; `groups`: chuỗi lò xo thả từ hông (vạt). Tóc: chưa có (đỉnh tóc không tách được bằng bộ lọc hình học, xem docs/chr-v3).",
+  "$comment": "Xương lò xo Lạc Kiếm Môn Phục v3 (chr_v3.py --springs). Số theo PHẦN CHIỀU CAO. `robe`: vạt bám hông ở giữa, bám đùi ra ngoài; `groups`: vạt (skirt) và tóc sau lưng (hair, chọn đỉnh theo màu texel tối trung tính: `tex: hair`).",
   "groups": [
     {
       "name": "skirt",
@@ -15,14 +15,27 @@
         "torso",
         "leg"
       ]
+    },
+    {
+      "name": "hair",
+      "parent": "spine_03",
+      "axis": "x",
+      "zMin": 0.45,
+      "zMax": 0.86,
+      "yMinRel": 0.04,
+      "xAbsMax": 0.1,
+      "count": 3,
+      "links": 3,
+      "tex": "hair",
+      "share": 0.9
     }
   ],
   "robe": {
     "zMin": 0.22,
     "zMax": 0.52,
     "minRadius": 0.09,
-    "xInner": 0.03,
-    "xOuter": 0.12,
-    "outerShare": 0.7
+    "xInner": 0.04,
+    "xOuter": 0.15,
+    "outerShare": 0.5
   }
 }
