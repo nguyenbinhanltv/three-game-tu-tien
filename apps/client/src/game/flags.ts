@@ -60,7 +60,6 @@ export interface Flags {
   bhArt: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
   butterflies: boolean;
-  ngj: boolean;
 }
 
 /** Mô tả từng tham số, để người sau biết cờ nào còn sống. */
@@ -91,7 +90,6 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   xichart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Xích Tẫn Khích' },
   bhart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Bắc Hoang' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
-  ngj: { scope: 'diag', doc: '=0 HUD cũ (sẽ gỡ R-4c)' },
   god: { scope: 'test', doc: 'bất tử (server kiểm lại, xem testParams.ts)' },
   at: { scope: 'test', doc: 'vào ở điểm đặt tên hoặc x,z (testParams.ts)' },
   realm: { scope: 'test', doc: 'đặt cảnh giới lúc vào (testParams.ts)' },
@@ -147,7 +145,6 @@ export function readFlags(search: string): Flags {
     xichArt: !off(q.get('xichart')),
     cinematics: !off(q.get('cine')),
     butterflies: !off(q.get('bf')),
-    ngj: !off(q.get('ngj')),
   };
 }
 

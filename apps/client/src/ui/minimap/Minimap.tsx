@@ -4,7 +4,7 @@ import { areaKey, biomeAt } from '../../game/levelCtx';
 import { LEVELS, t } from '@dtl/content';
 import { Game } from '../../game/engine';
 import { TipCard, Tooltip } from '../kit';
-import { Cartouche, type MapMotif, ngjHud as NGJ } from '../ngj';
+import { Cartouche, type MapMotif } from '../ngj';
 import { togglePanel, useUI } from '../store';
 import { uiScale } from '../uiScale';
 import { ancientMap } from './ancient';
@@ -151,7 +151,7 @@ export function Minimap() {
   return (
     <div className="minimap-wrap">
       <div ref={box} className="minimap" onClick={() => togglePanel('map')}>
-        {NGJ && <span className="ngj-mm-ring" aria-hidden="true" />}
+        <span className="ngj-mm-ring" aria-hidden="true" />
         <canvas
           ref={ref}
           style={{ width: SIZE, height: SIZE }}
@@ -206,16 +206,9 @@ export function Minimap() {
           {rx}, {rz}
         </div>
       </div>
-      {NGJ ? (
-        <div className="minimap-foot ngj-mm-foot" data-status={zs.status} title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}>
-          <Cartouche map={MOTIFS.includes(level as MapMotif) ? (level as MapMotif) : 'van_lam'} material="lacquer" size="s" title={<><span className="ngj-mm-name">{zoneName}</span>{zoneLv && <span className="minimap-foot-lv">{zoneLv}</span>}</>} />
-        </div>
-      ) : (
-        <div className="minimap-foot" data-status={zs.status} title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}>
-          <span className="minimap-foot-name">{zoneName}</span>
-          {zoneLv && <span className="minimap-foot-lv">{zoneLv}</span>}
-        </div>
-      )}
+      <div className="minimap-foot ngj-mm-foot" data-status={zs.status} title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}>
+        <Cartouche map={MOTIFS.includes(level as MapMotif) ? (level as MapMotif) : 'van_lam'} material="lacquer" size="s" title={<><span className="ngj-mm-name">{zoneName}</span>{zoneLv && <span className="minimap-foot-lv">{zoneLv}</span>}</>} />
+      </div>
       {hover &&
         tip &&
         createPortal(
