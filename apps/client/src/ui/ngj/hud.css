@@ -3,7 +3,6 @@
  * Mọi quy tắc nằm dưới `:root:root` (`:root:root` giữ độ ưu tiên (0,2,0) cũ so với styles.css/tutien.css).
  * Giữ nguyên bố cục, kích thước ô, hành vi và phím tắt: chỉ thay vỏ.
  */
-
 :root:root {
   --ngj-hud-bg: rgba(30, 23, 18, 0.9);
   --ngj-hud-bg-soft: rgba(30, 23, 18, 0.78);
@@ -11,7 +10,6 @@
     inset 0 0 0 3px rgba(30, 23, 18, 0.9), inset 0 0 0 4px rgba(201, 164, 92, 0.55), inset 0 0 18px rgba(201, 164, 92, 0.1),
     0 4px 14px rgba(0, 0, 0, 0.35);
 }
-
 /* ───────── khối sơn mài chung ───────── */
 :root:root .hud :is(.frame, .skill-row, .tracker, .chat, .boss-bar) {
   position: relative;
@@ -77,7 +75,6 @@
   bottom: -2px;
   right: -2px;
 }
-
 /* ───────── thanh đo có đầu mút ───────── */
 :root:root .gauge {
   --cut: 0px;
@@ -158,104 +155,11 @@
 :root:root .gauge-fill::after {
   background: rgba(255, 244, 214, 0.9);
 }
-
 /* ───────── khung nhân vật ───────── */
-:root:root .hud .player-frame.ngj-pf {
-  display: grid;
-  grid-template-columns: 68px 1fr;
-  column-gap: 14px;
-  width: 372px;
-  padding: 12px 18px 12px 12px;
-  align-items: start;
-}
-:root:root .ngj-pf > :not(.ngj-pf-portrait):not(.ngj-corner) {
-  grid-column: 2;
-  min-width: 0;
-}
-.ngj-pf-portrait {
-  display: none;
-}
-:root:root .ngj-pf-portrait {
-  grid-column: 1;
-  grid-row: 1 / span 5;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  justify-items: center;
-  align-self: center;
-  width: 68px;
-  height: 76px;
-  padding: 8px 0 5px;
-  color: var(--ngj-gold-hi);
-  background: radial-gradient(circle at 50% 35%, #3b2d21, #1a130e 85%);
-  clip-path: polygon(30% 0, 70% 0, 100% 22%, 100% 78%, 70% 100%, 30% 100%, 0 78%, 0 22%);
-  position: relative;
-  z-index: 1;
-}
 /* viền vàng của thoi: vẽ bằng lớp phủ (clip-path cắt mất border) */
-:root:root .ngj-pf-portrait::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, var(--ngj-gold-hi), var(--ngj-gold-lo));
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box exclude,
-    linear-gradient(#000 0 0);
-  mask:
-    linear-gradient(#000 0 0) content-box exclude,
-    linear-gradient(#000 0 0);
-  padding: 2px;
-  clip-path: inherit;
-  pointer-events: none;
-}
-:root:root .ngj-pf-portrait .ngj-sysicon {
-  color: var(--ngj-gold-hi);
-}
-.ngj-pf-seal {
-  display: inline-flex;
-  color: var(--ngj-gold-hi);
-  line-height: 1;
-}
 /* chân dung: phủ kín ô bát giác, lấy phần khuôn mặt; số triện nằm trên dải tối ở đáy */
-:root:root .ngj-pf-portrait .ngj-pf-face {
-  position: absolute;
-  inset: 3px;
-  width: calc(100% - 6px);
-  height: calc(100% - 6px);
-  object-fit: cover;
-  object-position: 50% 24%;
-  clip-path: inherit;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-:root:root .ngj-pf-portrait .ngj-pf-face.ready {
-  opacity: 1;
-}
-:root:root .ngj-pf-portrait:has(.ngj-pf-face.ready) .ngj-pf-seal {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 3px;
-  justify-content: center;
-  padding: 2px 0 1px;
-  background: linear-gradient(0deg, rgba(20, 15, 11, 0.9), rgba(20, 15, 11, 0));
-  z-index: 1;
-}
-:root:root .ngj-pf-portrait:has(.ngj-pf-face.ready) .ngj-sysicon {
-  display: none;
-}
 :root:root .hud .frame-head {
   margin-bottom: 3px;
-}
-:root:root .ngj-pf .gauge {
-  height: 18px;
-  margin-top: 6px;
-}
-:root:root .ngj-pf .gauge.xp {
-  height: 11px;
-  margin-top: 8px;
-}
-:root:root .ngj-pf .gauge-text {
-  font-size: 11.5px;
 }
 :root:root .hud .frame-name {
   font: 700 17px var(--ngj-font-title);
@@ -289,7 +193,6 @@
 :root:root .hud .target-frame[data-kind='player'] {
   border-color: var(--ngj-q1);
 }
-
 /* ───────── thanh chiêu: ô bát giác, viền theo nhánh công pháp ───────── */
 :root:root .hud .skillbar {
   gap: 7px;
@@ -366,67 +269,13 @@
 :root:root .stack-pips {
   color: var(--ngj-gold-hi);
 }
-
 /* ───────── thanh chức năng dưới ───────── */
 :root:root .action-row.ngj-sys {
   gap: 8px;
 }
-.ngj-sysbtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 30px;
-  padding: 0 8px 0 3px;
-  border: 1px solid var(--ngj-gold);
-  border-radius: 15px;
-  background: var(--ngj-hud-bg);
-  color: var(--ngj-ivory);
-  font: 600 12px var(--ngj-font-body);
-  cursor: pointer;
-  box-shadow:
-    inset 0 0 0 2px rgba(30, 23, 18, 0.9),
-    inset 0 0 0 3px rgba(201, 164, 92, 0.4),
-    0 2px 8px rgba(0, 0, 0, 0.35);
-  transition:
-    filter var(--ngj-dur),
-    border-color var(--ngj-dur);
-}
-.ngj-sysbtn:hover {
-  filter: brightness(1.2);
-  border-color: var(--ngj-gold-hi);
-}
-.ngj-sysbtn:focus-visible {
-  outline: 2px solid var(--ngj-jade-hi);
-  outline-offset: 1px;
-}
-.ngj-sysbtn[aria-pressed='true'] {
-  background: linear-gradient(180deg, rgba(201, 164, 92, 0.3), rgba(30, 23, 18, 0.9));
-  border-color: var(--ngj-gold-hi);
-}
-.ngj-sysbtn-ring {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 35%, #3b2d21, #17110c);
-  box-shadow: 0 0 0 1px var(--ngj-gold-lo);
-}
-.ngj-sysbtn kbd {
-  min-width: 15px;
-  padding: 1px 4px;
-  border-radius: 3px;
-  background: rgba(201, 164, 92, 0.18);
-  border: 1px solid rgba(201, 164, 92, 0.55);
-  color: var(--ngj-gold-hi);
-  font: 700 10px var(--ngj-font-body);
-  text-align: center;
-}
-.ngj-sysbtn.bag-pulse,
 .k-btn.bag-pulse {
   animation: bag-pulse 0.42s ease-out;
 }
-
 /* ───────── bản đồ nhỏ: vòng la bàn mảnh + bảng tên theo bản đồ ───────── */
 :root:root .minimap {
   clip-path: none;
@@ -513,7 +362,6 @@
 :root:root .ngj-mm-foot[data-status='high'] .minimap-foot-lv {
   color: var(--ngj-crimson-hi);
 }
-
 /* ───────── theo dõi nhiệm vụ ───────── */
 :root:root .hud .tracker {
   text-align: left;
@@ -523,22 +371,6 @@
 }
 :root:root .hud .tracker:hover {
   opacity: 1;
-}
-.ngj-tracker-head {
-  display: none;
-}
-:root:root .ngj-tracker-head {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin: 0 0 6px;
-  padding-bottom: 5px;
-  font: 600 13px var(--ngj-font-title);
-  letter-spacing: 0.12em;
-  color: var(--ngj-gold-hi);
-  border-bottom: 1px solid transparent;
-  border-image: linear-gradient(90deg, transparent, rgba(201, 164, 92, 0.85), transparent) 1;
 }
 :root:root .hud .tracker-title {
   font: 700 13px var(--ngj-font-title);
@@ -557,7 +389,6 @@
   background: var(--ngj-gold-hi);
   box-shadow: 0 0 6px var(--ngj-gold);
 }
-
 /* ───────── chat ───────── */
 :root:root .hud .chat-log {
   border: 1px solid var(--ngj-gold);
@@ -602,7 +433,6 @@
 :root:root .hud .chat-line.chat b {
   color: var(--ngj-gold);
 }
-
 /* ───────── thông báo (toast) ───────── */
 :root:root .hud .toast {
   padding: 8px 22px;
@@ -635,7 +465,6 @@
   color: var(--ngj-crimson-hi);
   border-color: var(--ngj-crimson);
 }
-
 /* ───────── thanh máu boss ───────── */
 :root:root .hud .boss-bar {
   padding: 8px 26px 12px;
@@ -664,14 +493,12 @@
   clip-path: polygon(14% 0, 86% 0, 100% 12%, 100% 88%, 86% 100%, 14% 100%, 0 88%, 0 12%);
   filter: drop-shadow(0 0 0 1px var(--ngj-gold));
 }
-
 /* ───────── nhóm buff, thanh niệm ───────── */
 :root:root .buff-chip {
   background: var(--ngj-hud-bg);
   border-color: var(--ngj-gold-lo);
   color: var(--ngj-ivory);
 }
-
 /* ───────── tooltip chung (HUD và bảng) ───────── */
 :root:root .k-tip {
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
@@ -736,18 +563,8 @@
 :root:root .k-tip-line.bad {
   color: var(--ngj-crimson-hi);
 }
-
 /* cửa sổ hẹp (≤ 1500 px, ví dụ 1366×768): thanh chức năng chỉ còn icon + phím để không xuống dòng/đè khung chat */
-.ngj-sysbtn-label {
-  white-space: nowrap;
-}
 @media (max-width: 1500px) {
-  :root:root .ngj-sysbtn-label {
-    display: none;
-  }
-  :root:root .ngj-sysbtn {
-    padding-right: 6px;
-  }
   :root:root .hud .chat {
     width: 300px;
   }

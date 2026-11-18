@@ -8,12 +8,10 @@
   --ngj-gold-hi: #f0d78e;
   --ngj-gold-lo: #7a5f2c;
   --ngj-ivory: #ede3cc; /* giấy ngà */
-  --ngj-ivory-lo: #d9ccae;
   --ngj-jade: #3e9c8f; /* mây tường vân */
   --ngj-jade-hi: #7fe3d0;
   --ngj-jade-lo: #24594f;
   --ngj-lacquer: #1e1712; /* sơn mài huyền */
-  --ngj-lacquer-hi: #2c2119;
   --ngj-ink: #2a2118; /* chữ trên giấy */
   --ngj-ink-dim: #574a34;
   --ngj-crimson: #b9382e;
@@ -29,20 +27,9 @@
 
   /* nét và khoảng cách */
   --ngj-line: 1.5px;
-  --ngj-line-thin: 1px;
-  --ngj-gap: 4px;
-  --ngj-s1: 4px;
-  --ngj-s2: 8px;
-  --ngj-s3: 12px;
-  --ngj-s4: 16px;
-  --ngj-s5: 24px;
-  --ngj-radius: 6px;
-  --ngj-cut: 9px; /* góc cắt bát giác của sơn mài */
 
   /* bóng và ánh sáng */
   --ngj-glow-gold: 0 0 10px rgba(201, 164, 92, 0.28);
-  --ngj-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
-  --ngj-inset-gold: inset 0 0 0 1px rgba(201, 164, 92, 0.55);
 
   /* chữ */
   --ngj-font-title: var(--font-display, 'DTL Display'), var(--serif, Georgia, serif);
