@@ -6,18 +6,21 @@
 import { lookSet, setStatuses, type SetDef } from '@dtl/shared';
 
 /** Bộ có tranh riêng (bước 1). Bộ khác chưa có tranh thì rơi về đồ đệ tử. */
-export type OutfitArt = 'lac_kiem' | 'de_tu' | 'liet_mach' | 'dia_giap' | 'phuc_mach' | 'than_tang';
+export type OutfitArt = 'lac_kiem' | 'de_tu' | 'liet_mach' | 'dia_giap' | 'phuc_mach' | 'kinh_quang' | 'van_kinh' | 'luu_ly';
 export type RealmArt = 'nk' | 'tc' | 'kd' | 'na' | 'ht' | 'ab';
 /** Đạo (theo vai trò công pháp): kiếm tu / hộ pháp / đan sư. */
 export type DaoArt = 'kiem' | 'ho_phap' | 'dan_su';
 export type SwordArt = 'thanh_phong' | 'han_quang';
 
-/** Bộ có tranh riêng: id bộ → tên tranh (apps/client/public/hoa-truc/<tên>_<nam|nu>.webp). Bộ khác rơi về đồ đệ tử; CHỈ thêm bộ khi `.webp` của nó đã vào repo (Nguyên Anh/Hóa Thần thêm ở PR sau). */
+/** Bộ có tranh riêng: id bộ → tên tranh (apps/client/public/hoa-truc/<tên>_<nam|nu>.webp). Bộ khác rơi về đồ đệ tử; CHỈ thêm bộ khi `.webp` của nó đã vào repo (Hóa Thần thêm ở PR sau). */
 const SET_ART: Record<string, OutfitArt> = {
   set_lac_kiem: 'lac_kiem',
   set_liet_mach: 'liet_mach',
   set_dia_giap: 'dia_giap',
   set_phuc_mach: 'phuc_mach',
+  set_kinh_quang: 'kinh_quang',
+  set_van_kinh: 'van_kinh',
+  set_luu_ly: 'luu_ly',
 };
 
 export interface PortraitPick {

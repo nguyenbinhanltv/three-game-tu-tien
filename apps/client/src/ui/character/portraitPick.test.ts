@@ -47,7 +47,7 @@ describe('Thiên Giai: tầng cảnh giới', () => {
   });
 });
 
-describe('Thiên Giai: bộ Kết Đan và bộ chưa có tranh', () => {
+describe('Thiên Giai: bộ Kết Đan, Nguyên Anh và bộ chưa có tranh', () => {
   it('Địa Giáp / Phục Mạch có tranh riêng theo giới tính', () => {
     for (const [id, art] of [
       ['set_dia_giap', 'dia_giap'],
@@ -58,10 +58,21 @@ describe('Thiên Giai: bộ Kết Đan và bộ chưa có tranh', () => {
       expect(pickPortrait({ ...base, level: 20, worn: set.pieces, gender: 'f' }).char).toBe(art + '_nu');
     }
   });
-  it('bộ chưa có tranh (Kính Quang…) rơi về đồ đệ tử, không trỏ tới tệp chưa có', () => {
-    const set = SETS.find((s) => s.id === 'set_kinh_quang')!;
-    expect(pickPortrait({ ...base, level: 24, worn: set.pieces }).char).toBe('de_tu_nam');
-    expect(pickPortrait({ ...base, level: 24, worn: set.pieces, gender: 'f' }).char).toBe('de_tu_nu');
+  it('Kính Quang / Vân Kinh / Lưu Ly (Nguyên Anh) có tranh riêng theo giới tính', () => {
+    for (const [id, art] of [
+      ['set_kinh_quang', 'kinh_quang'],
+      ['set_van_kinh', 'van_kinh'],
+      ['set_luu_ly', 'luu_ly'],
+    ] as const) {
+      const set = SETS.find((s) => s.id === id)!;
+      expect(pickPortrait({ ...base, level: 24, worn: set.pieces }).char).toBe(art + '_nam');
+      expect(pickPortrait({ ...base, level: 24, worn: set.pieces, gender: 'f' }).char).toBe(art + '_nu');
+    }
+  });
+  it('bộ chưa có tranh (Tinh Khuyết…) rơi về đồ đệ tử, không trỏ tới tệp chưa có', () => {
+    const set = SETS.find((s) => s.id === 'set_tinh_khuyet')!;
+    expect(pickPortrait({ ...base, level: 28, worn: set.pieces }).char).toBe('de_tu_nam');
+    expect(pickPortrait({ ...base, level: 28, worn: set.pieces, gender: 'f' }).char).toBe('de_tu_nu');
   });
 });
 
