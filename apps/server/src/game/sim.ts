@@ -1,96 +1,37 @@
 
 import type { Client } from 'colyseus';
 import {
-  artifactLevelMods,
-  BONDED_ARTIFACT_ID,
-  bondedLevel,
-  furnaceHeal,
-  type ArtifactDef,
-  artifactQiGain,
-  drainMp,
-  DRAIN_MAX_TARGETS,
-  mergeBuff,
-  sealPosture,
-  sealStun,
-  shieldAmount,
-  boltLift,
-  chargeFromTaken,
   bottleneckReady,
   type CdMsg,
   CHAT_MAX_LEN,
   DUEL_DAMAGE_MUL,
-  RESONANCE_DEF,
   COMBAT_REGEN_DELAY,
   computeDamage,
-  DEATH_XP_LOSS,
   type DmgMsg,
+  type MoveInput,
   caveBoundOf,
   type DungeonReward,
-  wearableBy,
-  glowStage,
-  lookSet,
-  accessoryCode,
   reduceDamage,
-  rollEquipDrops,
-  type Quality,
-  FLY_UNLOCK_LEVEL,
   type FxMsg,
-  elemDamageMul,
-  elemCounter,
-  STAT_CAPS,
-  counterMul,
-  MAX_LEVEL,
-  hazardHit,
-  HP_REGEN_IDLE,
-  HP_REGEN_MEDITATE,
   type HazardGeom,
   type HazardMsg,
-  IN_FLY,
-  IN_JUMP,
-  type InitMsg,
   type InvMsg,
-  type InvSlot,
   type LevelDef,
-  meditateXpPerSec,
-  MF_STUN,
   type MonsterCaster,
   type MonsterChant,
   type MonsterDef,
-  type MoveInput,
-  type MoveState,
-  type PhaseRules,
   MS_ATTACK,
-  MS_CHASE,
   MS_DEAD,
   MS_RETURN,
-  MP_REGEN_COMBAT,
-  MP_REGEN_IDLE,
-  MP_REGEN_MEDITATE,
   PF_DEAD,
-  PF_FLYING,
   PF_MEDITATING,
   PF_SHIELD,
-  PF_TRIBULATION,
-  PROTOCOL_VERSION,
   S,
-  SKILL_MSG_PER_SEC,
   type SkillDef,
   SPAWN_POINT,
-  canFlyAt,
-  freeFlight,
   type SpawnDef,
-  STEP,
-  stepMove,
   type SysMsg,
-  tribDef,
-  tribForLevel,
   type TribDef,
-  bottleneckBlocked,
-  buffMag,
-  TRUC_CO_FREE_FLY_ALT,
-  SOUL_DEATH_HP,
-  skyFlightUnlocked,
-  vulnerableDamage,
   WATER_Y,
   xpNeed,
   planDash,
@@ -102,38 +43,40 @@ import {
   terrainOf,
   type Terrain,
 } from '@dtl/shared';
-import { TribSystem, type GuardCfg, type TribState } from './trib';
-import { ARTIFACT, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, nextMajorRealmName, NPC, QUESTS, realmName, SETS, t, METHOD } from '@dtl/content';
+import { TribSystem, type GuardCfg } from './trib';
+import { LEVELS, MONSTER, monsterName, NPC, QUESTS, realmName, t, METHOD } from '@dtl/content';
 
 import { PLACES } from '@dtl/content/places';
-import { MonS, NodeS, PlayerS, type WorldState } from '../state';
+import { NodeS, type WorldState } from '../state';
 import { type Character } from './character';
 
 import type { TestFlags } from '../testflags';
+import type { PlayerEnt, MonEnt, Hazard, Bolt, SimHost, SimOptions, NodeEnt } from './entities';
+export type { Bolt, Hazard, MonEnt, NodeEnt, PlayerEnt, SimHost, SimOptions, Stomp, StrikeCtx, Summon, TransferOpts } from './entities';
+import { ArtifactSystem, type ArtifactCtx } from './artifacts';
+import { DeathSystem, type DeathCtx } from './death';
+import { TribulationSystem, type TribulationCtx } from './tribulation';
+import { PlayerSystem, type PlayerCtx, SAVE_INTERVAL } from './players';
 import { GmSystem } from './gm';
 import { CombatSystem, type CombatCtx } from './combat';
 import { MonsterSystem, type MonsterCtx } from './monsters';
 import { EconomySystem, type EconomyCtx } from './economy';
-import { TAUNT_BOSS_MUL, visualSeed } from './combat/consts';
-import { MethodRt, passiveOf, resolveFor } from './method';
+import { TAUNT_BOSS_MUL } from './combat/consts';
+import { resolveFor } from './method';
 
 
-/** Kiếm đan bản mệnh (E2-G): mỗi người một bộ, nhịp đánh theo `every`. */
-export interface Summon { sid: string; until: number; nextAt: number; every: number; count: number; range: number; power: number; markFirst: boolean; elem?: string }
-/** Giậm của Sơn Nhạc Hóa Thân (E2-G). */
-export interface Stomp { sid: string; until: number; nextAt: number; every: number; r: number; power: number }
 /** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
 const METHOD_SEND_MS = 250;
 import { RealmSystem } from './realm';
-import { MonSkills, type MonSkillRt } from './monskill';
+import { MonSkills } from './monskill';
 import { MonZones } from './monzone';
-import { CampSystem, type CampRt } from './camps';
-import { empowerDeadlines, SkillFlow } from './skillflow';
+import { CampSystem } from './camps';
+import { empowerDeadlines } from './skillflow';
 import { DuelSystem } from './duel';
 import { TeleportSystem } from './teleport';
 import { QuestObjSystem } from './questobj';
 import { SpiritSystem } from './spirit';
-import { MirrorSystem, wardMul } from './mirror';
+import { MirrorSystem } from './mirror';
 import { ThanTangSystem } from './thantang';
 import { SoulSystem } from './soul';
 import { CloneSystem } from './clone';
@@ -141,237 +84,10 @@ import { DomainSystem } from './domain';
 import { parties } from './party';
 import { InventorySystem } from './inventory';
 import { UpgradeSystem } from './upgrade';
-import { artifactMsg, buffsMsg, equippedArtifact, feedQi, progressOf } from './artifact';
+import { artifactMsg, buffsMsg } from './artifact';
 
 
 const INTERACT_RANGE = 9;
-const INPUT_BUDGET_MAX = 0.3;
-const FLY_MP_PER_SEC = 1.5;
-const SAVE_INTERVAL = 30_000;
-
-export interface PlayerEnt {
-  sid: string;
-  client: Client;
-  char: Character;
-  s: PlayerS;
-  /** Tài khoản thử (đăng nhập thử khi server bật AUTH_DEV_BYPASS): được dùng lệnh GM và tham số kiểm thử. */
-  dev: boolean;
-  /** `?god` / `/gm god`: vẫn nhận đòn (số sát thương, khựng) nhưng không mất máu. Chỉ bật cho `dev`. */
-  god: boolean;
-  move: MoveState;
-  inputs: MoveInput[];
-  budget: number;
-  lastInputAt: number;
-  lastYaw: number;
-  lastFlags: number;
-  gcdAt: number;
-  cds: Map<string, number>;
-  itemCdAt: number;
-  /** Mặc/tháo đồ: tối thiểu 200 ms giữa hai lần (mỗi lần là một giao dịch DB + dòng ledger). */
-  equipCdAt: number;
-  /** Ảnh túi client đang có (để gửi delta `S.INV`). */
-  invSent?: InvSlot[];
-  casting: { skill: SkillDef; target: string; endAt: number } | null;
-  /** Đòn chờ `hitAt`, chuỗi đánh thường, cửa sổ cường hóa, lướt (K-2). */
-  flow: SkillFlow;
-  shield: { amount: number; until: number } | null;
-  lastCombatAt: number;
-  /** Lần đổi biến thức gần nhất (giờ server, ms): giãn các lần đổi. Không lưu DB. */
-  variantAt: number;
-  /** Cửa sổ miễn vùng nổ của quái: hết lúc `until` (ms), đã nhận `taken` (xem hazardHit). */
-  hazardWin: { until: number; taken: number };
-  meditating: boolean;
-  xpAcc: number;
-  /** Giây đả tọa tích lũy chưa báo cho nhiệm vụ `meditate` (dẫn khí nhập thể). */
-  medAcc: number;
-  /** `fin`: đã thả tia cuối (pha 3); `pills`: số đan hồi phục đã dùng trong kiếp này. */
-  trib: TribState | null;
-  /** Thử thách tâm ma đang chạy (P3-7): hết giờ `endAt`, bóng `monId`, chỗ bắt đầu (x, z). Xem `game/realm.ts`. */
-  trial: { endAt: number; monId: string; x: number; z: number } | null;
-  warnAt: number;
-  chatAt: number;
-  msgWindowAt: number;
-  msgCount: number;
-  /** Cửa sổ 1 giây đếm lệnh dùng skill (chống spam, riêng với giới hạn message chung). */
-  skillWindowAt: number;
-  skillCount: number;
-  /** Trạng thái công pháp (kiếm ý/thế, vòng sạc, giảm sát thương). */
-  mth: MethodRt;
-  saveAt: number;
-  /** Không nhận vật phẩm rơi (đã hết lượt thưởng bí cảnh hôm nay). */
-  noLoot: boolean;
-  /** Bị server đá (spam): không giữ chỗ chờ kết nối lại. */
-  kicked: boolean;
-  connected: boolean;
-}
-
-export interface MonEnt {
-  id: string;
-  def: MonsterDef;
-  s: MonS;
-  level: number;
-  atk: number;
-  defn: number;
-  homeX: number;
-  homeZ: number;
-  spawn: SpawnDef | null;
-  /** Cụm (bãi quái) mà con này thuộc về (M-2); hồi sinh do cụm quản. */
-  camp?: CampRt;
-  state: number;
-  target: string;
-  attackAt: number;
-  respawnAt: number;
-  removeAt: number;
-  thinkAt: number;
-  wanderAt: number;
-  wx: number;
-  wz: number;
-  unreachableSince: number;
-  /** Trước thời điểm này quái miễn sát thương (đang bỏ đuổi về chỗ). */
-  evadeUntil: number;
-  abilityAt: number;
-  threat: Map<string, number>;
-  /** sid chủ của quái riêng (bóng tâm ma): chỉ đánh và bị đánh bởi người này, không rơi đồ/tu vi. '' = quái thường. */
-  owner: string;
-  /** Ô cận chiến: giữ tới lúc này; không được giành lại trước `slotCdAt`. */
-  slotUntil: number;
-  slotCdAt: number;
-  /** sid người chơi có ô cận chiến mà quái này đang giữ ('' = không giữ). */
-  slotSid: string;
-  /** Chiều đi vòng ngoài (±1). */
-  orbitSign: number;
-  /** Đòn thứ hai của chuỗi đòn đôi (0 = không có). */
-  comboAt: number;
-  comboTarget: string;
-  /** Đang đọc chú (quái đánh xa). */
-  cast: { endAt: number } | null;
-  castReadyAt: number;
-  /** Boss đang niệm chú (ngắt được sau đoạn hộ chú); `chantAt`: lúc được niệm lần tới (0 = chưa hẹn). */
-  chant: { startAt: number; endAt: number; lastAt?: number } | null;
-  chantAt: number;
-  /** Bị ngắt chú hoặc mất thế: choáng tới lúc này, nhận thêm sát thương. */
-  stunUntil: number;
-  /** Pha boss (0 = pha đầu) và bộ chiêu/nhịp của pha đó (quái thường luôn ở pha 0). */
-  phase: number;
-  rules: PhaseRules;
-  /** Thanh phá thế 0–1 và lúc trúng đòn gần nhất (ms). */
-  posture: number;
-  lastHitAt: number;
-  /** Chiêu chém vùng: lúc được ra tiếp (0 = chưa hẹn); đang đứng yên khóa hướng tới `windUntil`. */
-  sweepAt: number;
-  windUntil: number;
-  /** Nguyên tắc quái mở rộng (E1-E, game/monskill.ts). */
-  mx: MonSkillRt;
-  /** Đệ tử do quái `minionOf` gọi: không rơi đồ, không tu vi. */
-  minionOf?: string;
-  /** Dấu ấn của người chơi `sid` (Kiếm Ảnh Phân Quang): sát thương của người đó nhân (1 + mul) tới `until`. */
-  mark?: { sid: string; until: number; mul: number };
-  /** Bị khiêu khích: buộc nhắm người `sid` tới `until` (ms). */
-  taunt?: { sid: string; until: number };
-  /** Bị làm chậm (đòn bạo kích của bộ Hàn Giao Lân): tốc độ đuổi nhân `mul` tới `until`. */
-  slow?: { until: number; mul: number };
-  /** Mộc độc của Hồi Xuân Quyết (đan sư): mỗi giây gây `per` sát thương tới `until`. */
-  poison?: { sid: string; until: number; nextAt: number; per: number };
-}
-
-interface NodeEnt {
-  id: string;
-  s: NodeS;
-  respawn: number;
-  respawnAt: number;
-}
-
-export interface Hazard extends HazardGeom {
-  at: number;
-  /**
-   * Sát thương cố định, phần trăm khí huyết tối đa nếu pct = true,
-   * hoặc hệ số nhân với `atk` qua computeDamage nếu atk > 0.
-   */
-  dmg: number;
-  pct: boolean;
-  atk: number;
-  /** Quái thả vùng (null = thiên kiếp). */
-  mon: MonEnt | null;
-  /** Tia cuối độ kiếp: khóa mệnh (trúng chủ kiếp dù đứng ngoài vòng), đan phòng ngự giảm sát thương. */
-  lock?: boolean;
-  /** Nhóm vòng cùng một vạch lôi võng: một người chỉ trúng một lần mỗi nhóm trong cùng nhịp nổ. */
-  grp?: number;
-  /** Tia khóa mệnh có hộ pháp: người đứng trong `r` mét chắn thay `share` sát thương (chia đều, tối đa `max` người). */
-  guard?: GuardCfg;
-  /** Giảm sát thương của tia khóa mệnh theo mức buff phòng ngự (`final.defMul`/`defMaxCut` của kiếp). */
-  cut?: { mul: number; max: number };
-  /** Trận môn khắc chế (Thiên Nhân Kiếp): ai đứng trong vòng này lúc nổ giảm `cut` và nhận cờ `ke`. */
-  seal?: { x: number; z: number; r: number; cut: number };
-  /** Luôn trúng chủ kiếp dù đứng ngoài vòng (không né bằng cách rời sân); người khác vẫn xét vị trí. Khác `lock`: không có giảm sát thương theo đan. */
-  reach?: boolean;
-  /** Nguồn: id quái, hoặc sid người độ kiếp. Thiên kiếp trúng cả người ngoài đứng trong vòng, nhưng không giết họ (xem `tickHazards`). */
-  src: string;
-}
-
-/** Đạn đánh xa của quái đang bay (D1). Vị trí tính lại từ gốc + thời gian, không tích lũy sai số. */
-export interface Bolt {
-  id: number;
-  x0: number;
-  z0: number;
-  yaw: number;
-  v: number;
-  r: number;
-  /** Độ nâng theo độ cao mục tiêu lúc bắn (boltLift). */
-  lift: number;
-  /** Giờ server (ms) lúc phát và lúc hết hạn. */
-  t0: number;
-  endAt: number;
-  /** Vị trí ở tick trước (để quét đoạn). */
-  px: number;
-  pz: number;
-  atk: number;
-  mul: number;
-  mon: MonEnt;
-}
-
-
-export interface SimHost {
-  broadcast(type: string, msg: unknown): void;
-  /** Gửi cho cả phòng trừ các phiên trong `except` (AOI: người ở xa không nhận). Không có thì lùi về `broadcast`. */
-  broadcastExcept?(type: string, msg: unknown, except: ReadonlySet<string>): void;
-  /** Bí cảnh: gọi khi một quái không hồi sinh bị hạ. */
-  onMonsterKilled?(m: MonEnt): void;
-  /**
-   * Chuyển người chơi sang bản đồ khác (E1-B): room kiểm điều kiện, cấp vé một lần, lưu nhân vật rồi báo client vào room mới.
-   * Trả false nếu bị chặn (đã báo lý do cho người chơi). Không có (test) thì từ chối.
-   */
-  transferLevel?(p: PlayerEnt, level: string, spawn: { x: number; z: number } | null, o?: TransferOpts): boolean;
-  /** Độ kiếp ở room riêng (E1-F): cấp vé cho người độ kiếp và đồng đội trong tầm, báo client đổi room. false = bị chặn. */
-  enterTribulationRoom?(p: PlayerEnt, def: TribDef, force: boolean): boolean;
-  /** Một lần độ kiếp vừa kết thúc (thành công hoặc không). Room độ kiếp dùng để đóng phòng. */
-  onTribulationEnd?(p: PlayerEnt, def: TribDef, success: boolean): void;
-}
-
-export interface TransferOpts {
-  /** Chặn khi đang giao chiến (Truyền Tống). */
-  combat?: boolean;
-  /** Người dẫn tổ đội kéo theo đồng đội cùng room, trong tầm. */
-  party?: boolean;
-  /** Bỏ qua kiểm điều kiện (lệnh GM / tham số kiểm thử của tài khoản thử). */
-  force?: boolean;
-}
-
-export interface SimOptions {
-  levelId: string;
-  roomName: string;
-  /** Điểm xuất hiện mặc định. */
-  spawn: { x: number; z: number };
-  /** Chết thì hồi sinh tại đây. */
-  respawn: { x: number; z: number };
-  /** Có lưu vị trí khi rời room không (bí cảnh thì không). */
-  persistPosition: boolean;
-}
-
-/** Ngữ cảnh một lần áp chiêu: đòn thứ mấy của chuỗi đánh thường, hệ số nhân (combo, cường hóa). */
-export interface StrikeCtx {
-  combo?: number;
-  mul?: number;
-}
 
 export class GameSim {
   now = Date.now();
@@ -619,6 +335,112 @@ export class GameSim {
     sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
     get terrain() { return s.terrain; },
     tryInterrupt: (p, mon, extraStun) => s.tryInterrupt(p, mon, extraStun),
+    warn: (p, k, params) => s.warn(p, k, params),
+  }))(this));
+
+  /** Pháp bảo phụ và đan tăng sức (P3-8) (R-7): xem `game/artifacts/`. */
+  private readonly artSys = new ArtifactSystem(((s: GameSim): ArtifactCtx => ({
+    addPosture: (m, n) => s.addPosture(m, n),
+    airborne: (p) => s.airborne(p),
+    canAssist: (p, o) => s.canAssist(p, o),
+    get duel() { return s.duel; },
+    emit: (type, payload) => s.emit(type, payload),
+    fx: (m) => s.fx(m),
+    get host() { return s.host; },
+    isDead: (p) => s.isDead(p),
+    monstersNear: (x, z, r, except) => s.monstersNear(x, z, r, except),
+    get now() { return s.now; },
+    sendCd: (p) => s.sendCd(p),
+    setFlag: (p, flag, on) => s.setFlag(p, flag, on),
+    setMonFlags: (m, mf, ce) => s.setMonFlags(m, mf, ce),
+    sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
+    tryInterrupt: (p, mon, extraStun) => s.tryInterrupt(p, mon, extraStun),
+    warn: (p, k, params) => s.warn(p, k, params),
+  }))(this));
+
+  /** Chết và hồi sinh của người chơi (R-7) (R-7): xem `game/death/`. */
+  private readonly deathSys = new DeathSystem(((s: GameSim): DeathCtx => ({
+    abortStrike: (p, refund, notify) => s.abortStrike(p, refund, notify),
+    addStack: (p, max, decay) => s.addStack(p, max, decay),
+    get bossDmgMul() { return s.bossDmgMul; },
+    get clone() { return s.clone; },
+    damageMonster: (mon, dmg, p, crit, hv, heavy, ke, dot) => s.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot),
+    get domain() { return s.domain; },
+    get duel() { return s.duel; },
+    emit: (type, payload) => s.emit(type, payload),
+    endTribulation: (p, success, silent) => s.endTribulation(p, success, silent),
+    fx: (m) => s.fx(m),
+    gainCharge: (p, n) => s.gainCharge(p, n),
+    giveXp: (p, n, announce) => s.giveXp(p, n, announce),
+    isDead: (p) => s.isDead(p),
+    get mirror() { return s.mirror; },
+    get monById() { return s.monById; },
+    get now() { return s.now; },
+    get opts() { return s.opts; },
+    get realm() { return s.realm; },
+    setFlag: (p, flag, on) => s.setFlag(p, flag, on),
+    setMeditating: (p, on) => s.setMeditating(p, on),
+    get soul() { return s.soul; },
+    sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
+    get terrain() { return s.terrain; },
+    get tribSys() { return s.tribSys; },
+    warn: (p, k, params) => s.warn(p, k, params),
+  }))(this));
+
+  /** Độ kiếp phía sim (R-7) (R-7): xem `game/tribulation/`. */
+  private readonly tribHub = new TribulationSystem(((s: GameSim): TribulationCtx => ({
+    get clone() { return s.clone; },
+    damageMonster: (mon, dmg, p, crit, hv, heavy, ke, dot) => s.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot),
+    damagePlayer: (p, dmg, src, hv, ke) => s.damagePlayer(p, dmg, src, hv, ke),
+    get domain() { return s.domain; },
+    get duel() { return s.duel; },
+    emit: (type, payload) => s.emit(type, payload),
+    fx: (m) => s.fx(m),
+    get host() { return s.host; },
+    isDead: (p) => s.isDead(p),
+    get level() { return s.level; },
+    get now() { return s.now; },
+    get players() { return s.players; },
+    questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
+    get realm() { return s.realm; },
+    savePlayer: (p) => s.savePlayer(p),
+    setFlag: (p, flag, on) => s.setFlag(p, flag, on),
+    setMeditating: (p, on) => s.setMeditating(p, on),
+    setMonState: (m, st) => s.setMonState(m, st),
+    spawnMonster: (def, level, x, z, spawn) => s.spawnMonster(def, level, x, z, spawn),
+    sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
+    sysAll: (k, params, type) => s.sysAll(k, params, type),
+    get tribSys() { return s.tribSys; },
+    warn: (p, k, params) => s.warn(p, k, params),
+  }))(this));
+
+  /** Vòng đời và tick người chơi (R-7) (R-7): xem `game/players/`. */
+  private readonly plSys = new PlayerSystem(((s: GameSim): PlayerCtx => ({
+    cancelCast: (p) => s.cancelCast(p),
+    get combat() { return s.combat; },
+    get duel() { return s.duel; },
+    endTribulation: (p, success, silent) => s.endTribulation(p, success, silent),
+    finishCast: (p) => s.finishCast(p),
+    giveXp: (p, n, announce) => s.giveXp(p, n, announce),
+    isDead: (p) => s.isDead(p),
+    get level() { return s.level; },
+    get monSys() { return s.monSys; },
+    get now() { return s.now; },
+    get opts() { return s.opts; },
+    get players() { return s.players; },
+    questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
+    get questObj() { return s.questObj; },
+    get realm() { return s.realm; },
+    resolvePending: (p) => s.resolvePending(p),
+    sendCd: (p) => s.sendCd(p),
+    setFlag: (p, flag, on) => s.setFlag(p, flag, on),
+    setMeditating: (p, on) => s.setMeditating(p, on),
+    get soul() { return s.soul; },
+    get state() { return s.state; },
+    sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
+    get terrain() { return s.terrain; },
+    tickTribulation: (p) => s.tickTribulation(p),
+    get tribSys() { return s.tribSys; },
     warn: (p, k, params) => s.warn(p, k, params),
   }))(this));
 
@@ -937,181 +759,15 @@ export class GameSim {
 
   // ---------- người chơi vào/ra ----------
 
-  addPlayer(client: Client, char: Character, dev: boolean, session: string, noLoot = false): PlayerEnt {
-    const s = new PlayerS();
-    s.name = char.name;
-    s.g = char.appearance.g;
-    s.dye = char.appearance.dye;
-    s.hr = char.appearance.hair ?? '';
-    let x = this.opts.spawn.x;
-    let z = this.opts.spawn.z;
-    let y = 0;
-    if (this.opts.persistPosition && char.room === this.opts.levelId && char.x > 1 && char.z > 1) {
-      x = char.x;
-      z = char.z;
-      y = char.y;
-    }
-    if (char.hp <= 0) {
-      // Rời game lúc đang trọng thương: tỉnh lại ở điểm hồi sinh, không đứng dậy tại chỗ.
-      x = this.opts.respawn.x;
-      z = this.opts.respawn.z;
-      y = 0;
-      char.hp = Math.round(char.mhp * 0.5);
-    }
-    const g = this.terrain.groundAt(x, z);
-    if (!(y >= g)) y = g;
-    if (y > g + 3) y = g; // không lưu trạng thái đang bay
-    char.room = this.opts.levelId;
-    char.charDirty = char.invDirty = char.questDirty = true;
-    const p: PlayerEnt = {
-      sid: client.sessionId,
-      client,
-      char,
-      s,
-      dev,
-      god: false,
-      move: { x, y, z, vy: 0, grounded: true, flying: false },
-      inputs: [],
-      budget: 0,
-      lastInputAt: this.now,
-      lastYaw: 0,
-      lastFlags: 0,
-      gcdAt: 0,
-      cds: new Map(),
-      itemCdAt: 0,
-      equipCdAt: 0,
-      casting: null,
-      flow: new SkillFlow(),
-      shield: null,
-      lastCombatAt: 0,
-      variantAt: -1e9,
-      hazardWin: { until: 0, taken: 0 },
-      meditating: false,
-      xpAcc: 0,
-      trib: null,
-      medAcc: 0,
-      trial: null,
-      warnAt: 0,
-      chatAt: 0,
-      msgWindowAt: this.now,
-      msgCount: 0,
-      skillWindowAt: this.now,
-      skillCount: 0,
-      mth: new MethodRt(),
-      saveAt: this.now + SAVE_INTERVAL,
-      noLoot,
-      connected: true,
-      kicked: false,
-    };
-    this.syncPublic(p);
-    this.state.players.set(p.sid, s);
-    this.players.set(p.sid, p);
-    const init: InitMsg = {
-      sid: p.sid,
-      protocol: PROTOCOL_VERSION,
-      room: this.opts.roomName,
-      char: char.view(),
-      inv: char.inv,
-      equip: char.equip,
-      quests: char.quests,
-      serverTime: Date.now(),
-      dev,
-      session,
-    };
-    client.send(S.INIT, init);
-    char.charDirty = char.invDirty = char.questDirty = false;
-    this.sendCd(p);
-    return p;
-  }
-
-  removePlayer(sid: string): void {
-    this.combat.echoes.delete(sid);
-    const p = this.players.get(sid);
-    if (!p) return;
-    if (p.trib) this.endTribulation(p, false, true);
-    this.realm.onLeave(p);
-    this.duel.onGone(p);
-    this.questObj.drop(p);
-    this.savePlayer(p);
-    this.monSys.meleeSlot.delete(sid);
-    this.monSys.slotWait.delete(sid);
-    this.players.delete(sid);
-    this.state.players.delete(sid);
-  }
-
-  savePlayer(p: PlayerEnt): void {
-    const c = p.char;
-    if (this.opts.persistPosition) {
-      // Đang xuất khiếu thám thính: lưu chỗ thân xác, không phải chỗ nguyên anh (có thể trong tường/giữa không).
-      const at = this.soul.bodyOf(p) ?? p.move;
-      c.x = at.x;
-      c.y = at.y;
-      c.z = at.z;
-      c.room = this.opts.levelId;
-    }
-    try {
-      c.save();
-    } catch (e) {
-      console.error('[save] lỗi lưu nhân vật', c.name, e);
-    }
-  }
-
-  saveAll(): void {
-    for (const p of this.players.values()) this.savePlayer(p);
-  }
-
-  private syncPublic(p: PlayerEnt): void {
-    const s = p.s;
-    const c = p.char;
-    const m = p.move;
-    if (s.x !== m.x) s.x = m.x;
-    if (s.y !== m.y) s.y = m.y;
-    if (s.z !== m.z) s.z = m.z;
-    if (s.vy !== m.vy) s.vy = m.vy;
-    if (s.gr !== m.grounded) s.gr = m.grounded;
-    const hp = Math.max(0, Math.ceil(c.hp));
-    const mp = Math.max(0, Math.floor(c.mp));
-    if (s.hp !== hp) s.hp = hp;
-    if (s.mhp !== c.mhp) s.mhp = c.mhp;
-    if (s.mp !== mp) s.mp = mp;
-    if (s.mmp !== c.mmp) s.mmp = c.mmp;
-    if (s.lv !== c.level) s.lv = c.level;
-    const wp = c.equip.weapon?.id ?? '';
-    if (s.wp !== wp) s.wp = wp;
-    const wg = glowStage(c.equip.weapon?.plus ?? 0);
-    if (s.wg !== wg) s.wg = wg;
-    const sk = lookSet(c.stats.sets)?.id ?? '';
-    if (s.sk !== sk) s.sk = sk;
-    const sa = accessoryCode(SETS, c.equip);
-    if (s.sa !== sa) s.sa = sa;
-    // Skin sai giới (đổi giới tính bằng GM sau khi mặc) không được hiển thị; món vẫn nằm ở ô, tháo ra bình thường.
-    const skinId = c.equip.skin?.id ?? '';
-    const sn = skinId && wearableBy(ITEM.get(skinId), c.appearance.g) ? skinId : '';
-    if (s.sn !== sn) s.sn = sn;
-    const art = c.equip.artifact?.id ?? '';
-    if (s.art !== art) s.art = art;
-    const mt = c.meta.method ?? '';
-    if (s.mt !== mt) s.mt = mt;
-    this.setFlag(p, PF_FLYING, m.flying);
-  }
-
-  /** Giới hạn tần suất message. Trả về false nếu phải bỏ message này. */
-  rateOk(p: PlayerEnt): boolean {
-    if (this.now - p.msgWindowAt >= 1000) {
-      p.msgWindowAt = this.now;
-      p.msgCount = 0;
-    }
-    p.msgCount++;
-    if (p.msgCount > 400) {
-      p.kicked = true;
-      p.client.leave(4002);
-      return false;
-    }
-    return p.msgCount <= 90;
-  }
-
-  // ---------- vòng tick ----------
-
+  addPlayer(client: Client, char: Character, dev: boolean, session: string, noLoot = false): PlayerEnt { return this.plSys.addPlayer(client, char, dev, session, noLoot); }
+  onInput(p: PlayerEnt, m: unknown): void { return this.plSys.onInput(p, m); }
+  rateOk(p: PlayerEnt): boolean { return this.plSys.rateOk(p); }
+  removePlayer(sid: string): void { return this.plSys.removePlayer(sid); }
+  saveAll(): void { return this.plSys.saveAll(); }
+  savePlayer(p: PlayerEnt): void { return this.plSys.savePlayer(p); }
+  private tickPlayer(p: PlayerEnt, dt: number): void { return this.plSys.tickPlayer(p, dt); }
+  private syncPublic(p: PlayerEnt): void { return this.plSys.syncPublic(p); }
+  private applyInput(p: PlayerEnt, inp: MoveInput): void { return this.plSys.applyInput(p, inp); }
   tick(dtMs: number): void {
     const t0 = performance.now();
     this.now = Date.now();
@@ -1173,111 +829,6 @@ export class GameSim {
 
   // ---------- di chuyển ----------
 
-  onInput(p: PlayerEnt, m: unknown): void {
-    const i = m as Partial<MoveInput> | null;
-    if (!i || typeof i !== 'object') return;
-    const { s, mx, mz, yaw, f } = i;
-    if (!Number.isInteger(s) || !Number.isFinite(mx) || !Number.isFinite(mz) || !Number.isFinite(yaw) || !Number.isInteger(f)) return;
-    if ((s as number) <= p.s.seq && p.inputs.length === 0 && (s as number) !== 0) return;
-    p.inputs.push({
-      s: (s as number) >>> 0,
-      mx: Math.max(-1, Math.min(1, mx as number)),
-      mz: Math.max(-1, Math.min(1, mz as number)),
-      yaw: yaw as number,
-      f: (f as number) & 15,
-    });
-    p.lastInputAt = this.now;
-  }
-
-  private canFly(p: PlayerEnt): boolean {
-    return !this.isDead(p) && !p.trib && (this.soul.isScouting(p) || canFlyAt(p.char.level, p.char.mp, p.move.x, p.move.y, p.move.z));
-  }
-
-  private applyInput(p: PlayerEnt, inp: MoveInput): void {
-    const dead = this.isDead(p);
-    const active = inp.mx !== 0 || inp.mz !== 0 || (inp.f & IN_JUMP) !== 0 || ((inp.f & IN_FLY) !== 0 && !p.move.flying);
-    if (active && !dead) {
-      if (p.meditating) this.setMeditating(p, false);
-      if (p.casting && (inp.mx !== 0 || inp.mz !== 0)) this.cancelCast(p);
-    }
-    const canFly = this.canFly(p);
-    const wasFlying = p.move.flying;
-    const px = p.move.x;
-    const pz = p.move.z;
-    const ghost = this.soul.ghostOf(p);
-    stepMove(p.move, inp, { canFly, frozen: dead || this.tribSys.soulFrozen(p), speedMul: 1, terrain: this.terrain, bound: caveBoundOf(this.level), sky: skyFlightUnlocked(p.char.level), ghost });
-    if (p.move.flying && !wasFlying && !ghost) {
-      this.questEvent(p, 'fly', undefined, 1);
-    }
-    if ((inp.f & IN_FLY) !== 0 && !canFly && !dead && !p.trib && !ghost) {
-      if (p.char.level < FLY_UNLOCK_LEVEL) this.warn(p, 'sys.fly_locked', { realm: realmName(FLY_UNLOCK_LEVEL) });
-      else if (wasFlying) this.sys(p, 'sys.fly_no_mp', undefined, 'bad');
-    }
-    const dx = p.move.x - px;
-    const dz = p.move.z - pz;
-    if (dx * dx + dz * dz > 1e-5 && !p.casting) p.s.yaw = Math.atan2(dx, dz);
-    p.s.seq = inp.s;
-    p.lastYaw = inp.yaw;
-    p.lastFlags = inp.f;
-  }
-
-  private tickPlayer(p: PlayerEnt, dt: number): void {
-    const c = p.char;
-    p.budget = Math.min(p.budget + dt, INPUT_BUDGET_MAX);
-    let applied = false;
-    while (p.inputs.length > 0 && p.budget >= STEP - 1e-4) {
-      this.applyInput(p, p.inputs.shift()!);
-      p.budget -= STEP;
-      applied = true;
-    }
-    if (p.inputs.length > 10) p.inputs.splice(0, p.inputs.length - 3);
-    const falling = !p.move.grounded && !p.move.flying;
-    if (!applied && p.budget >= STEP && (this.now - p.lastInputAt > 200 || (falling && p.budget >= STEP * 2))) {
-      // Client im lặng (tab ẩn, mất mạng) hoặc cố gửi thưa lúc đang rơi: server tự chạy bước trung tính
-      // để trọng lực luôn tác dụng theo giờ thật.
-      this.applyInput(p, { s: p.s.seq, mx: 0, mz: 0, yaw: p.lastYaw, f: p.lastFlags & IN_FLY });
-      p.budget -= STEP;
-    }
-
-    this.realm.tick(p);
-    const dead = this.isDead(p);
-    if (!dead) {
-      if (p.move.flying && !this.soul.isScouting(p) && !freeFlight(c.level, p.move.x, p.move.y, p.move.z)) {
-        c.mp -= FLY_MP_PER_SEC * dt;
-        if (c.mp < 0) c.mp = 0;
-      }
-      const inCombat = this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000;
-      const hpRate = p.meditating ? HP_REGEN_MEDITATE : inCombat ? 0 : HP_REGEN_IDLE;
-      const mpRate = p.move.flying ? 0 : p.meditating ? MP_REGEN_MEDITATE : inCombat ? MP_REGEN_COMBAT : MP_REGEN_IDLE;
-      if (c.hp < c.mhp && hpRate > 0) c.hp = Math.min(c.mhp, c.hp + c.mhp * hpRate * dt);
-      if (c.mp < c.mmp && mpRate > 0) c.mp = Math.min(c.mmp, c.mp + c.mmp * mpRate * dt);
-      if (p.meditating) {
-        p.medAcc += dt;
-        if (p.medAcc >= 1) {
-          const k = Math.floor(p.medAcc);
-          p.medAcc -= k;
-          this.questEvent(p, 'meditate', undefined, k);
-        }
-        p.xpAcc += meditateXpPerSec(c.level) * dt;
-        if (p.xpAcc >= 1) {
-          const n = Math.floor(p.xpAcc);
-          p.xpAcc -= n;
-          this.giveXp(p, n, false);
-        }
-      }
-      if (p.casting && this.now >= p.casting.endAt) this.finishCast(p);
-      if (p.flow.pending && this.now >= p.flow.pending.at) this.resolvePending(p);
-      if (p.shield && this.now >= p.shield.until) {
-        p.shield = null;
-        this.setFlag(p, PF_SHIELD, false);
-      }
-      if (p.trib) this.tickTribulation(p);
-    }
-    this.syncPublic(p);
-  }
-
-  // ---------- tu vi ----------
-
   giveXp(p: PlayerEnt, n: number, announce = true): void {
     if (n <= 0) return;
     const c = p.char;
@@ -1316,218 +867,26 @@ export class GameSim {
     p.client.send(S.CD, m);
   }
 
-  private abortStrike(p: PlayerEnt, refund: boolean, notify = true): void {
-    return this.combat.abortStrike(p, refund, notify);
-  }
-
-  private addStack(p: PlayerEnt, max: number, decay: number): void {
-    return this.combat.addStack(p, max, decay);
-  }
-
-  private aggroMonster(mon: MonEnt, p: PlayerEnt, assist = false): void {
-    return this.combat.aggroMonster(mon, p, assist);
-  }
-
-  private airborne(p: PlayerEnt): boolean {
-    return this.combat.airborne(p);
-  }
-
-  private canAssist(p: PlayerEnt, o: PlayerEnt): boolean {
-    return this.combat.canAssist(p, o);
-  }
-
-  private cancelCast(p: PlayerEnt): void {
-    return this.combat.cancelCast(p);
-  }
-
-  private finishCast(p: PlayerEnt): void {
-    return this.combat.finishCast(p);
-  }
-
-  private gainCharge(p: PlayerEnt, n: number): void {
-    return this.combat.gainCharge(p, n);
-  }
-
-  private liveStacks(p: PlayerEnt): number {
-    return this.combat.liveStacks(p);
-  }
-
-  private monstersNear(x: number, z: number, r: number, except?: MonEnt): MonEnt[] {
-    return this.combat.monstersNear(x, z, r, except);
-  }
-
-  private resolvePending(p: PlayerEnt): void {
-    return this.combat.resolvePending(p);
-  }
-
-  private tickMethods(): void {
-    return this.combat.tickMethods();
-  }
-
-  onSkill(p: PlayerEnt, msg: unknown): void {
-    return this.combat.onSkill(p, msg);
-  }
-
-  private onDash(p: PlayerEnt, skill: SkillDef, targetId: string): void {
-    return this.combat.onDash(p, skill, targetId);
-  }
-
+  private abortStrike(p: PlayerEnt, refund: boolean, notify = true): void { return this.combat.abortStrike(p, refund, notify); }
+  private addStack(p: PlayerEnt, max: number, decay: number): void { return this.combat.addStack(p, max, decay); }
+  private aggroMonster(mon: MonEnt, p: PlayerEnt, assist = false): void { return this.combat.aggroMonster(mon, p, assist); }
+  private airborne(p: PlayerEnt): boolean { return this.combat.airborne(p); }
+  private canAssist(p: PlayerEnt, o: PlayerEnt): boolean { return this.combat.canAssist(p, o); }
+  private cancelCast(p: PlayerEnt): void { return this.combat.cancelCast(p); }
+  private finishCast(p: PlayerEnt): void { return this.combat.finishCast(p); }
+  private gainCharge(p: PlayerEnt, n: number): void { return this.combat.gainCharge(p, n); }
+  private liveStacks(p: PlayerEnt): number { return this.combat.liveStacks(p); }
+  private monstersNear(x: number, z: number, r: number, except?: MonEnt): MonEnt[] { return this.combat.monstersNear(x, z, r, except); }
+  private resolvePending(p: PlayerEnt): void { return this.combat.resolvePending(p); }
+  private tickMethods(): void { return this.combat.tickMethods(); }
+  onSkill(p: PlayerEnt, msg: unknown): void { return this.combat.onSkill(p, msg); }
+  private onDash(p: PlayerEnt, skill: SkillDef, targetId: string): void { return this.combat.onDash(p, skill, targetId); }
   // ---------- pháp bảo phụ và đan tăng sức (P3-8) ----------
 
-  /** Hạ quái: nạp linh khí vào pháp bảo đang đeo. Lên cấp thì tính lại chỉ số (nội tại) và báo. */
-  private feedArtifact(p: PlayerEnt, mon: MonEnt): void {
-    const def = equippedArtifact(p.char.equip);
-    if (!def) return;
-    const n = artifactQiGain({ boss: !!mon.def.boss, elite: !!mon.def.elite, monLevel: mon.level, playerLevel: p.char.level });
-    if (n <= 0) return;
-    const lv = feedQi(p.char.meta, def.id, n);
-    p.mth.dirty = true;
-    if (lv !== null) {
-      p.char.recalc();
-      this.sys(p, 'sys.art_level', { item: itemName(def.id), lv }, 'good');
-    }
-  }
-
-  /** Dùng đan tăng sức: đặt buff theo luật làm mới (không cộng dồn), lưu trong meta. */
-  private applyPillBuff(p: PlayerEnt, def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } }, potency: number): void {
-    const b = def.use?.buff;
-    if (!b) return;
-    const c = p.char;
-    const now = Date.now();
-    const m = b.pct * potency;
-    c.meta.buffs ??= {};
-    c.meta.buffs[b.kind] = mergeBuff(c.meta.buffs[b.kind], m, now + b.sec * 1000 * potency, now);
-    c.recalc();
-    p.mth.dirty = true;
-    if (b.kind === 'ward') this.sys(p, 'sys.ward_buff', { item: itemName(def.id), n: Math.round(m * 100), s: Math.round(b.sec * potency) }, 'good');
-    else this.sys(p, 'sys.pill_buff', { item: itemName(def.id), what: t('ui.pill.buff.' + b.kind), n: Math.round(m * 100), m: Math.round((b.sec * potency) / 60) }, 'good');
-    this.fx({ t: 'potion', src: p.sid });
-  }
-
-  /** Kích hoạt pháp bảo phụ đang đeo. Server quyết định hết: hồi chiêu, linh lực, mục tiêu, hiệu ứng. */
-  onArtifact(p: PlayerEnt): void {
-    if (!this.artifactGate(p)) return;
-    const def = equippedArtifact(p.char.equip);
-    if (!def) return this.warn(p, 'sys.art_none');
-    this.fireArtifact(p, def, progressOf(p.char.meta, def.id).lv);
-  }
-
-  /** Bản mệnh pháp bảo Ngưng Đan Lô (E2-E): có từ Kết Đan, không tháo, cấp theo cấp của chủ (không tốn vật phẩm, không đụng túi/ledger). */
-  onBonded(p: PlayerEnt): void {
-    if (!this.artifactGate(p)) return;
-    const lv = bondedLevel(p.char.level);
-    const def = ARTIFACT.get(BONDED_ARTIFACT_ID);
-    if (lv < 1 || !def) return this.warn(p, 'sys.bonded_locked');
-    this.fireArtifact(p, def, lv);
-  }
-
-  /** Giới hạn tần suất và điều kiện chung cho mọi pháp bảo (chết, tỉ thí, độ kiếp/tâm ma). */
-  private artifactGate(p: PlayerEnt): boolean {
-    if (this.now - p.skillWindowAt >= 1000) {
-      p.skillWindowAt = this.now;
-      p.skillCount = 0;
-    }
-    if (++p.skillCount > SKILL_MSG_PER_SEC) return false;
-    if (this.isDead(p)) {
-      this.warn(p, 'sys.dead');
-      return false;
-    }
-    if (this.duel.inDuel(p)) {
-      this.warn(p, 'duel.no_items');
-      return false;
-    }
-    // Đang độ kiếp hoặc tâm ma: không dùng pháp bảo (cùng luật với đan/trang bị).
-    if (p.trib || p.trial) {
-      this.warn(p, 'sys.busy');
-      return false;
-    }
-    return true;
-  }
-
-  private fireArtifact(p: PlayerEnt, def: ArtifactDef, lv: number): void {
-    const c = p.char;
-    if (this.airborne(p)) return this.warn(p, 'sys.cannot_while_flying');
-    if ((p.cds.get(def.skill) ?? 0) > this.now) return this.warn(p, 'sys.cooldown');
-    if (c.mp < def.mp) return this.warn(p, 'sys.not_enough_mp');
-    const near = this.monstersNear(p.move.x, p.move.z, def.radius);
-    const tag: Partial<FxMsg> = { s: def.id, c: def.color, lv };
-    switch (def.kind) {
-      case 'drain': {
-        const targets = near.slice(0, DRAIN_MAX_TARGETS);
-        if (!targets.length) return this.warn(p, 'sys.art_no_target');
-        let got = 0;
-        for (const mon of targets) {
-          got += drainMp(def, lv, c.mmp, !!mon.def.elite);
-          this.fx({ t: 'artdrain', src: mon.id, dst: p.sid, ...tag });
-        }
-        c.mp = Math.min(c.mmp, c.mp + got);
-        this.fx({ t: 'art', src: p.sid, r: def.radius, d: 1.2, ...tag });
-        this.sys(p, 'sys.art_drain', { n: got }, 'good');
-        break;
-      }
-      case 'seal': {
-        // Chỉ ảnh hưởng quái đang giao chiến; quái đang rảnh không bị kéo vào trận.
-        const engaged = near.filter((m) => m.state === MS_CHASE || m.state === MS_ATTACK);
-        if (!engaged.length) return this.warn(p, 'sys.art_no_target');
-        const stunSec = sealStun(def, lv);
-        for (const mon of engaged) {
-          if (this.now < mon.evadeUntil) continue;
-          if (mon.def.boss) {
-            // Boss không choáng thẳng: cộng mạnh thanh phá thế và ngắt chú nếu đúng cửa sổ.
-            this.tryInterrupt(p, mon);
-            this.addPosture(mon, sealPosture(def, lv));
-          } else {
-            mon.cast = null;
-            mon.windUntil = 0;
-            mon.comboAt = 0;
-            mon.stunUntil = Math.max(mon.stunUntil, this.now + stunSec * 1000);
-            this.setMonFlags(mon, MF_STUN, mon.stunUntil);
-          }
-          this.fx({ t: 'artseal', src: p.sid, dst: mon.id, ...tag });
-        }
-        this.fx({ t: 'art', src: p.sid, r: def.radius, d: 1.2, ...tag });
-        this.sys(p, 'sys.art_seal', { n: engaged.length }, 'good');
-        break;
-      }
-      case 'shield': {
-        const dur = def.duration ?? 4;
-        const who = new Set<PlayerEnt>([p]);
-        for (const o of parties.matesInRoom(c.id, this.host)) {
-          if (o !== p && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= def.radius) who.add(o);
-        }
-        for (const o of who) {
-          const amount = shieldAmount(def, lv, o.char.mhp);
-          if (o.shield && o.shield.amount > amount && o.shield.until > this.now) continue;
-          o.shield = { amount, until: this.now + dur * 1000 };
-          this.setFlag(o, PF_SHIELD, true);
-        }
-        this.fx({ t: 'art', src: p.sid, r: def.radius, d: dur, ...tag });
-        this.sys(p, 'sys.art_shield', { n: who.size }, 'good');
-        break;
-      }
-      case 'heal': {
-        // Ngưng Đan Lô: hồi khí huyết cho bản thân và đồng đội trong tầm (đồng đội cần cùng tổ đội, cùng room, còn sống).
-        const who = new Set<PlayerEnt>([p]);
-        for (const o of parties.matesInRoom(c.id, this.host)) {
-          if (o !== p && !this.isDead(o) && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= def.radius) who.add(o);
-        }
-        for (const o of who) {
-          const n = furnaceHeal(def, lv, o.char.mhp);
-          o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
-          this.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
-          this.fx({ t: 'artheal', src: o.sid, ...tag });
-        }
-        this.fx({ t: 'art', src: p.sid, r: def.radius, d: 1.4, ...tag });
-        this.sys(p, 'sys.art_heal', { n: who.size }, 'good');
-        break;
-      }
-    }
-    c.mp -= def.mp;
-    p.cds.set(def.skill, this.now + def.cd * 1000 * artifactLevelMods(lv).cdMul);
-    p.lastCombatAt = this.now;
-    this.sendCd(p);
-  }
-
+  private applyPillBuff(p: PlayerEnt, def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } }, potency: number): void { return this.artSys.applyPillBuff(p, def, potency); }
+  private feedArtifact(p: PlayerEnt, mon: MonEnt): void { return this.artSys.feedArtifact(p, mon); }
+  onArtifact(p: PlayerEnt): void { return this.artSys.onArtifact(p); }
+  onBonded(p: PlayerEnt): void { return this.artSys.onBonded(p); }
   /** Đòn đánh lên đối thủ tỉ thí: sát thương giảm (đấu tập), không xuống dưới 1 máu, không cho kiếm ý/sạc, không thưởng gì. */
   private duelStrike(p: PlayerEnt, o: PlayerEnt, powers: number[], elemMul: number): void {
     for (const power of powers) {
@@ -1553,42 +912,15 @@ export class GameSim {
     }
   }
 
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, mv?: HazardMsg['mv'], hot = false, dur = 0, seal?: Hazard['seal'], reach = false): void {
-    return this.monSys.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, mv, hot, dur, seal, reach);
-  }
-
-  private addPosture(m: MonEnt, n: number): void {
-    return this.monSys.addPosture(m, n);
-  }
-
-  bossTimers(): BossTimerMsg {
-    return this.monSys.bossTimers();
-  }
-
-  private checkPhase(m: MonEnt): void {
-    return this.monSys.checkPhase(m);
-  }
-
-  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv, ke: 0 | 1 | -1 = 0, dot = false): void {
-    return this.monSys.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot);
-  }
-
-  delayBosses(): void {
-    return this.monSys.delayBosses();
-  }
-
-  private fireBolts(m: MonEnt, c: MonsterCaster, yaw: number, lift = 0): void {
-    return this.monSys.fireBolts(m, c, yaw, lift);
-  }
-
-  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): void {
-    return this.monSys.hitMonster(p, mon, basePower, mul, elem);
-  }
-
-  private homeDist(m: MonEnt): number {
-    return this.monSys.homeDist(m);
-  }
-
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, mv?: HazardMsg['mv'], hot = false, dur = 0, seal?: Hazard['seal'], reach = false): void { return this.monSys.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, mv, hot, dur, seal, reach); }
+  private addPosture(m: MonEnt, n: number): void { return this.monSys.addPosture(m, n); }
+  bossTimers(): BossTimerMsg { return this.monSys.bossTimers(); }
+  private checkPhase(m: MonEnt): void { return this.monSys.checkPhase(m); }
+  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv, ke: 0 | 1 | -1 = 0, dot = false): void { return this.monSys.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot); }
+  delayBosses(): void { return this.monSys.delayBosses(); }
+  private fireBolts(m: MonEnt, c: MonsterCaster, yaw: number, lift = 0): void { return this.monSys.fireBolts(m, c, yaw, lift); }
+  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): void { return this.monSys.hitMonster(p, mon, basePower, mul, elem); }
+  private homeDist(m: MonEnt): number { return this.monSys.homeDist(m); }
   /** Gột xong (DV-3D, Xích Tẫn Khích): hủy vùng boss đã thả rồi hạ boss qua đường giết chung (cùng tu vi, rơi đồ, nhiệm vụ như bị đánh chết). */
   purifyMonster(mon: MonEnt): void {
     if (mon.state === MS_DEAD) return;
@@ -1597,393 +929,40 @@ export class GameSim {
     this.killMonster(mon);
   }
 
-  private killMonster(mon: MonEnt): void {
-    return this.monSys.killMonster(mon);
-  }
-
-  nextHazardGrp(): number {
-    return this.monSys.nextHazardGrp();
-  }
-
-  private releaseChant(m: MonEnt, c: MonsterChant): void {
-    return this.monSys.releaseChant(m, c);
-  }
-
-  private removeMonster(m: MonEnt): void {
-    return this.monSys.removeMonster(m);
-  }
-
-  private resetAi(m: MonEnt): void {
-    return this.monSys.resetAi(m);
-  }
-
-  private respawnMonster(m: MonEnt, at?: { x: number; z: number }): void {
-    return this.monSys.respawnMonster(m, at);
-  }
-
-  sendBossTimers(p?: PlayerEnt): void {
-    return this.monSys.sendBossTimers(p);
-  }
-
-  private setMonFlags(m: MonEnt, mf: number, ce: number): void {
-    return this.monSys.setMonFlags(m, mf, ce);
-  }
-
-  private setMonState(m: MonEnt, st: number): void {
-    return this.monSys.setMonState(m, st);
-  }
-
-  private spawnFromDef(sp: SpawnDef): MonEnt | null {
-    return this.monSys.spawnFromDef(sp);
-  }
-
-  spawnMonster(def: MonsterDef, level: number, x: number, z: number, spawn: SpawnDef | null): MonEnt {
-    return this.monSys.spawnMonster(def, level, x, z, spawn);
-  }
-
-  stagger(m: MonEnt, sec: number): void {
-    return this.monSys.stagger(m, sec);
-  }
-
-  private tickBolts(): void {
-    return this.monSys.tickBolts();
-  }
-
-  private tickHazards(): void {
-    return this.monSys.tickHazards();
-  }
-
-  private tickMonster(m: MonEnt, dt: number): void {
-    return this.monSys.tickMonster(m, dt);
-  }
-
-  private tryInterrupt(p: PlayerEnt, mon: MonEnt, extraStun = 0): void {
-    return this.monSys.tryInterrupt(p, mon, extraStun);
-  }
-
-  /**
-   * Thưởng hoàn thành phó bản (E2-C): một transaction (vàng, nguyên liệu, trang bị đã roll) với khóa idem `key`
-   * (chứa id nhân vật và ngày) và ghi ledger; khóa đã dùng thì giao dịch bị từ chối và không phát gì (kể cả tu vi).
-   * Tu vi `xpPct` của chặng hiện tại chỉ cộng sau khi giao dịch lưu thành công. Trả true nếu đã phát.
-   */
-  grantDungeonReward(p: PlayerEnt, r: DungeonReward, key: string, label: string): boolean {
-    if (p.noLoot || this.isDead(p)) return false;
-    const gold = r.gold[0] + Math.floor(Math.random() * (r.gold[1] - r.gold[0] + 1));
-    const gear = rollEquipDrops(r.equip as unknown as Parameters<typeof rollEquipDrops>[0], ITEM_SYS, ITEMS, r.level, Math.random);
-    const got: { id: string; n: number }[] = [];
-    for (const d of r.items) {
-      if (Math.random() < d.chance) got.push({ id: d.item, n: d.min + Math.floor(Math.random() * (d.max - d.min + 1)) });
-    }
-    const kept: { id: string; n: number }[] = [];
-    const keptGear: { id: string; q: Quality; ilvl: number }[] = [];
-    let full = false;
-    const saved = p.char.tx('dungeon:' + label, key, (d) => {
-      d.addGold(gold);
-      for (const g of gear) {
-        if (d.freeSlots() > 0 && d.addRolled(g.id, g.ilvl, g.q)) keptGear.push(g);
-        else full = true;
-      }
-      for (const g of got) {
-        if (d.roomFor(g.id) >= g.n && d.add(g.id, g.n)) kept.push(g);
-        else full = true;
-      }
-      return true;
-    });
-    if (!saved) return false;
-    const xp = Math.max(1, Math.round(xpNeed(p.char.level) * r.xpPct));
-    this.giveXp(p, xp, false);
-    this.sys(p, 'sys.dungeon_reward', { name: t('dungeon.' + label + '.name'), xp }, 'good');
-    if (gold > 0) this.sys(p, 'sys.gold', { n: gold }, 'loot');
-    for (const g of kept) this.sys(p, 'sys.loot', { item: itemName(g.id), n: g.n }, 'loot', { i: g.id });
-    for (const g of keptGear) this.sys(p, 'sys.loot_gear', { item: itemName(g.id), quality: t('ui.quality.' + g.q) }, 'loot', { i: g.id, q: g.q });
-    if (full) this.warn(p, 'sys.inv_full');
-    return true;
-  }
-
-  damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false, ke?: 1 | -1): void {
-    if (this.isDead(p) || this.soul.isScouting(p)) return;
-    const c = p.char;
-    let n = Math.max(1, Math.round(dmg));
-    // Định Thần Phù (E3-M): giảm sát thương "gương" (quái `glass`, boss gương, bóng tâm ma trong cung).
-    if (src) {
-      const ward = buffMag(c.meta.buffs, 'ward', Date.now());
-      if (ward > 0) {
-        const a = this.monById.get(src);
-        if (a && (a.def.glass || a.def.mirror || (a.owner && this.mirror.active()))) n = Math.max(1, Math.round(n * wardMul(ward)));
-      }
-    }
-    if (src && this.bossDmgMul !== 1 && this.monById.get(src)?.def.boss) n = Math.max(1, Math.round(n * this.bossDmgMul));
-    if (this.now < p.mth.guardUntil) n = reduceDamage(n, p.mth.guardReduce);
-    // Lĩnh vực hộ pháp (E4-K) giảm sát thương; phân thân hộ pháp gánh một phần sát thương quái ở gần nó.
-    const dRed = this.domain.reduce(p);
-    if (dRed > 0) n = reduceDamage(n, dRed);
-    n = Math.max(1, this.clone.absorb(p, n, src));
-    // Kim Chung Trấn (E2-G): phản một phần sát thương (sau khi giảm) về quái đánh mình.
-    if (this.now < p.mth.reflectUntil && src) {
-      const attacker = this.monById.get(src);
-      if (attacker && attacker.state !== MS_DEAD && !(attacker.owner && attacker.owner !== p.sid)) this.damageMonster(attacker, Math.max(1, Math.round(n * p.mth.reflectMul)), p);
-    }
-    if (parties.resonance(p)) n = Math.max(1, Math.round(n * (1 - RESONANCE_DEF)));
-    if (p.shield) {
-      const absorbed = Math.min(p.shield.amount, n);
-      p.shield.amount -= absorbed;
-      // Bộ Huyền Giáp Hộ Pháp (4 món): phản một phần sát thương khiên đã đỡ về quái đánh mình.
-      const reflect = c.stats.setFx.shieldReflect;
-      if (reflect > 0 && absorbed > 0 && src) {
-        const attacker = this.monById.get(src);
-        if (attacker && attacker.state !== MS_DEAD && !(attacker.owner && attacker.owner !== p.sid)) {
-          this.damageMonster(attacker, Math.max(1, Math.round(absorbed * reflect)), p);
-        }
-      }
-      n -= absorbed;
-      if (p.shield.amount <= 0) {
-        p.shield = null;
-        this.setFlag(p, PF_SHIELD, false);
-      }
-    }
-    p.lastCombatAt = this.now;
-    if (p.meditating) this.setMeditating(p, false);
-    if (n <= 0) {
-      this.emit(S.DMG, { dst: p.sid, n: 0, src } satisfies DmgMsg);
-      return;
-    }
-    if (!p.god) c.hp -= n;
-    if (src && c.meta.method) {
-      this.gainCharge(p, chargeFromTaken(n, c.mhp));
-      const pas = passiveOf(c.meta);
-      if (pas?.kind === 'the') this.addStack(p, pas.max ?? 5, pas.decay ?? 8);
-    }
-    const msg: DmgMsg = { dst: p.sid, n, src };
-    if (hv) msg.hv = true;
-    if (ke) msg.ke = ke;
-    this.emit(S.DMG, msg);
-    // Tâm cảnh (E3-L): bị Tâm Ma Ảnh của chính mình đánh trúng thì giảm.
-    if (p.trib && src && this.monById.get(src)?.owner === p.sid) this.tribSys.noteHit(p, 'hurt');
-    if (c.hp <= 0) this.killPlayer(p);
-  }
-
-  private killPlayer(p: PlayerEnt): void {
-    this.duel.onGone(p, true);
-    this.clone.drop(p);
-    const c = p.char;
-    c.hp = 0;
-    p.casting = null;
-    this.abortStrike(p, false, false);
-    p.flow.reset();
-    p.shield = null;
-    p.meditating = false;
-    p.s.fl = PF_DEAD;
-    if (p.trib) {
-      this.endTribulation(p, false, false);
-    } else if (p.trial) {
-      // Chết trong thử thách tâm ma: thua ngay, không mất tu vi (đúng lời hứa của UI), đợi 60 giây thử lại.
-      this.realm.failTrial(p, 'dead');
-    } else if (!this.soul.onDeath(p)) {
-      const lost = c.loseXp(DEATH_XP_LOSS);
-      this.sys(p, lost > 0 ? 'sys.died' : 'sys.died_free', { n: lost }, 'bad');
-    }
-    this.fx({ t: 'death', src: p.sid });
-  }
-
-  onRespawn(p: PlayerEnt): void {
-    if (!this.isDead(p)) return;
-    const c = p.char;
-    const soulWake = this.soul.consumeDeath(p);
-    const { x, z } = this.opts.respawn;
-    p.move = { x, y: this.terrain.groundAt(x, z), z, vy: 0, grounded: true, flying: false };
-    p.inputs.length = 0;
-    c.hp = Math.round(c.mhp * (soulWake ? SOUL_DEATH_HP : 0.5));
-    c.mp = Math.round(c.mmp * 0.5);
-    p.s.fl = 0;
-    p.lastCombatAt = 0;
-    p.hazardWin = { until: 0, taken: 0 };
-    this.sys(p, soulWake ? 'sys.respawned_soul' : 'sys.respawned', undefined, 'info');
-    this.fx({ t: 'respawn', src: p.sid });
-  }
-
-  // ---------- quái ----------
-
-  /**
-   * Hộ pháp chắn thay một phần tia khóa mệnh (E1-F): trả phần đã chuyển đi. Hộ pháp không chết vì kiếp của người khác (dừng ở 1 khí huyết).
-   * Chỉ người CÙNG TỔ ĐỘI với chủ kiếp mới làm hộ pháp (người lạ đứng gần không bị kéo vào chịu sát thương). Ở room độ kiếp riêng chỉ có người
-   * vào bằng vé (cùng tổ đội), nên cùng luật.
-   */
-  private pickGuards(h: Hazard): PlayerEnt[] {
-    const g = h.guard!;
-    const owner = this.players.get(h.src);
-    if (!owner || !owner.trib) return [];
-    const d = (o: PlayerEnt) => Math.hypot(o.move.x - owner.move.x, o.move.z - owner.move.z);
-    return [...this.players.values()]
-      .filter((o) => o !== owner && !o.trib && !this.isDead(o) && d(o) <= g.r && parties.same(owner.char.id, o.char.id))
-      .sort((a, b) => d(a) - d(b))
-      .slice(0, g.max);
-  }
-
-  /** Giảm sát thương tia khóa mệnh: theo hazard, thiếu thì theo `final` của kiếp người trúng đang độ. */
-  private lockCut(h: Hazard, p: PlayerEnt): { mul: number; max: number } {
-    if (h.cut) return h.cut;
-    const f = tribDef(p.trib?.id).phases.find((ph) => ph.final)?.final;
-    return f ? { mul: f.defMul, max: f.defMaxCut } : { mul: 0, max: 0 };
-  }
-
-  private shareToGuards(owner: PlayerEnt, n: number, h: Hazard): number {
-    const guards = this.pickGuards(h);
-    if (guards.length === 0) return 0;
-    const part = n * h.guard!.share;
-    let moved = 0;
-    for (const o of guards) {
-      const each = Math.min(part / guards.length, o.char.hp - 1);
-      if (each <= 0) continue;
-      this.damagePlayer(o, each, h.src, true);
-      moved += each;
-    }
-    return moved;
-  }
-
-  // ---------- đạn đánh xa (D1) ----------
-
-  /**
-   * Độ kiếp từ đại viên mãn (15 Ngưng Khí, 19 Trúc Cơ, 23 Kết Đan, 27 Nguyên Anh): kiếp theo `tribulations.json` (E1-F).
-   * Kiếp chạy ở room thế giới (Trúc Cơ, Kết Đan) hoặc room riêng (Nguyên Anh, Hóa Thần; tổ đội vào cùng).
-   * `force` (lệnh GM / tham số kiểm thử) bỏ qua cờ `enabled` và vật phẩm đột phá.
-   */
-  onBreakthrough(p: PlayerEnt, force = false): void {
-    const c = p.char;
-    if (this.duel.inDuel(p)) return this.warn(p, 'duel.busy');
-    if (this.isDead(p) || p.trib || this.level.dungeon) return this.warn(p, 'sys.trib_not_now');
-    const def = tribForLevel(c.level);
-    if (!def) return this.warn(p, c.level >= MAX_LEVEL ? 'sys.max_level' : 'sys.trib_need_xp');
-    if (c.xp < xpNeed(c.level)) return this.warn(p, 'sys.trib_need_xp');
-    // Bình cảnh đại viên mãn phải vượt (tâm ma hoặc Phá Cảnh Đan) trước khi độ kiếp.
-    if (bottleneckBlocked(c.level, c.bk)) return this.warn(p, 'sys.bk_blocked');
-    if (!def.enabled && !force) return this.warn(p, 'sys.trib_locked');
-    const item = def.item;
-    if (item && !force && !c.inv.some((it) => it?.id === item && !it.lk)) return this.warn(p, 'sys.trib_need_pill', { item: itemName(item) });
-    if (def.room === 'tribulation') {
-      // Room riêng: room thế giới chỉ kiểm điều kiện rồi cấp vé; vật phẩm bị tiêu khi vào tới nơi (beginTribulation).
-      if (!this.host.enterTribulationRoom?.(p, def, force)) this.warn(p, 'sys.trib_not_now');
-      return;
-    }
-    // GM (force) vẫn tiêu vật phẩm nếu đang có, để sổ cái giống đường người chơi thật.
-    this.beginTribulation(p, def, !!item && c.inv.some((it) => it?.id === item && !it.lk));
-  }
-
-  /** Bắt đầu kiếp `def` cho `p` ngay trong room này. `consume`: tiêu vật phẩm đột phá. false nếu thiếu vật phẩm. */
-  beginTribulation(p: PlayerEnt, def: TribDef, consume: boolean): boolean {
-    const c = p.char;
-    this.clone.drop(p);
-    const item = def.item;
-    if (consume && item && !c.tx('tribulation', null, (d) => d.remove(item, 1))) {
-      this.warn(p, 'sys.trib_need_pill', { item: itemName(item) });
-      return false;
-    }
-    if (p.meditating) this.setMeditating(p, false);
-    p.trib = { id: def.id, endAt: this.now + def.duration * 1000, nextAt: this.now + def.firstDelay * 1000, n: 0, fin: false, pills: 0 };
-    this.setFlag(p, PF_TRIBULATION, true);
-    this.sysAll('sys.trib_start', { name: c.name }, 'info');
-    this.fx({ t: 'tribstart', src: p.sid, d: def.duration, sd: visualSeed(), tb: def.id });
-    return true;
-  }
-
-  // ---------- bình cảnh, linh căn (P3-7; phần luật ở game/realm.ts) ----------
-
-  onBottleneck(p: PlayerEnt, msg: unknown): void {
-    this.realm.onBottleneck(p, msg);
-  }
-
-  onChangeRoot(p: PlayerEnt, msg: unknown): void {
-    this.realm.onChangeRoot(p, msg);
-  }
-
-  /** Bóng tâm ma của `p`: quái riêng, đứng trước mặt người chơi, đuổi đúng người đó. */
-  spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }, o: { dyaw?: number; level?: number } = {}): MonEnt | null {
-    const def = MONSTER.get('mon_tam_ma');
-    if (!def) return null;
-    const yaw = p.s.yaw + (o.dyaw ?? 0);
-    const x = p.move.x + Math.sin(yaw) * 7;
-    const z = p.move.z + Math.cos(yaw) * 7;
-    const m = this.spawnMonster(def, o.level ?? p.char.level, x, z, null);
-    m.owner = p.sid;
-    m.atk = st.atk;
-    m.defn = st.def;
-    m.s.mhp = st.hp;
-    m.s.hp = st.hp;
-    m.target = p.sid;
-    this.setMonState(m, MS_CHASE);
-    return m;
-  }
-
-  /** Xuất khiếu trong Tam Trọng Kiếp (E3-L; E3-K nối phím X thật vào đây). */
-  onTribSoul(p: PlayerEnt): void {
-    if (p.trib) this.tribSys.soul(p);
-  }
-
-  /** Phân thân thần niệm trong Thiên Nhân Kiếp (E4-D): thế thân của kiếp, không phải phân thân của E4-K. */
-  onTribClone(p: PlayerEnt): void {
-    if (p.trib) this.tribSys.clone(p);
-  }
-
-  /** Phím G (E4-K): trong kiếp là thế thân của kiếp, ngoài kiếp là phân thân thần niệm. */
-  onClone(p: PlayerEnt, msg: unknown): void {
-    if (p.trib) this.tribSys.clone(p);
-    else this.clone.command(p, msg);
-  }
-
-  /** Phân thân đánh quái bằng chỉ số của chủ: không cộng kiếm ý/vòng sạc, không đánh người (tỉ thí). */
-  private cloneHit(p: PlayerEnt, mon: MonEnt, power: number, skill: SkillDef | undefined): void {
-    if (mon.state === MS_DEAD || (mon.owner && mon.owner !== p.sid) || this.now < mon.evadeUntil) return;
-    const elem = skill?.elem;
-    const ke = elemCounter(elem, mon.def.elem);
-    const mk = mon.mark;
-    const pw = mk && mk.sid === p.sid && this.now < mk.until ? power * (1 + mk.mul) : power;
-    const em = elemDamageMul(p.char.stats.elemDmg, elem);
-    const crit0 = Math.min(STAT_CAPS.critRate, p.char.stats.critRate + this.domain.critAdd(p));
-    const { dmg, crit } = computeDamage(p.char.atk, pw * em * counterMul(ke), mon.defn, Math.random(), Math.random(), crit0, p.char.stats.critMul);
-    this.damageMonster(mon, vulnerableDamage(dmg, this.now < mon.stunUntil), p, crit, false, false, ke);
-  }
-
-  /** Hồi `n` khí huyết (kẹp theo tối đa, tính hồi phục nhận vào) và báo số. */
-  private healPlayer(p: PlayerEnt, n: number): void {
-    const amt = Math.max(1, Math.round(n * (1 + p.char.stats.healRecv)));
-    p.char.hp = Math.min(p.char.mhp, p.char.hp + amt);
-    this.emit(S.DMG, { dst: p.sid, n: amt, heal: true } satisfies DmgMsg);
-  }
-
-  private tickTribulation(p: PlayerEnt): void {
-    this.tribSys.tick(p);
-  }
-
-  private endTribulation(p: PlayerEnt, success: boolean, silent: boolean): void {
-    const c = p.char;
-    const def = tribDef(p.trib?.id);
-    const elapsed = p.trib ? def.duration - (p.trib.endAt - this.now) / 1000 : 0;
-    p.trib = null;
-    this.setFlag(p, PF_TRIBULATION, false);
-    if (success) {
-      c.level = def.to;
-      c.xp = 0;
-      c.recalc();
-      c.hp = c.mhp;
-      c.mp = c.mmp;
-      this.sysAll('sys.trib_ok', { name: c.name, realm: nextMajorRealmName(def.from) }, 'good');
-      this.fx({ t: 'ascend', src: p.sid, tb: def.id });
-      if (def.id === 'truc_co') this.sys(p, 'sys.tc_fly_hint', { n: TRUC_CO_FREE_FLY_ALT }, 'info');
-      this.questEvent(p, 'breakthrough', def.id, 1);
-      this.questEvent(p, 'level', undefined, c.level);
-      this.savePlayer(p);
-      console.log(`[trib] ${c.name} đạt ${realmName(c.level)} (kiếp ${def.id})`);
-    } else {
-      const lost = c.loseXp(def.failXpLoss);
-      if (!silent) this.sys(p, lost > 0 ? 'sys.trib_fail' : 'sys.trib_fail_free', { n: lost }, 'bad');
-      // Trụ qua nửa đầu: hoàn vật phẩm đột phá (chỉ khi chết trong lôi kiếp, không hoàn khi thoát game giữa chừng).
-      const item = def.item;
-      if (!silent && item && elapsed >= def.refundAfter && c.tx('tribulation:refund', null, (d) => d.add(item, 1))) this.sys(p, 'sys.trib_refund', { item: itemName(item) }, 'info');
-    }
-    this.host.onTribulationEnd?.(p, def, success);
-  }
-
-  // ---------- đả tọa, hái thuốc ----------
-
+  private killMonster(mon: MonEnt): void { return this.monSys.killMonster(mon); }
+  nextHazardGrp(): number { return this.monSys.nextHazardGrp(); }
+  private releaseChant(m: MonEnt, c: MonsterChant): void { return this.monSys.releaseChant(m, c); }
+  private removeMonster(m: MonEnt): void { return this.monSys.removeMonster(m); }
+  private resetAi(m: MonEnt): void { return this.monSys.resetAi(m); }
+  private respawnMonster(m: MonEnt, at?: { x: number; z: number }): void { return this.monSys.respawnMonster(m, at); }
+  sendBossTimers(p?: PlayerEnt): void { return this.monSys.sendBossTimers(p); }
+  private setMonFlags(m: MonEnt, mf: number, ce: number): void { return this.monSys.setMonFlags(m, mf, ce); }
+  private setMonState(m: MonEnt, st: number): void { return this.monSys.setMonState(m, st); }
+  private spawnFromDef(sp: SpawnDef): MonEnt | null { return this.monSys.spawnFromDef(sp); }
+  spawnMonster(def: MonsterDef, level: number, x: number, z: number, spawn: SpawnDef | null): MonEnt { return this.monSys.spawnMonster(def, level, x, z, spawn); }
+  stagger(m: MonEnt, sec: number): void { return this.monSys.stagger(m, sec); }
+  private tickBolts(): void { return this.monSys.tickBolts(); }
+  private tickHazards(): void { return this.monSys.tickHazards(); }
+  private tickMonster(m: MonEnt, dt: number): void { return this.monSys.tickMonster(m, dt); }
+  private tryInterrupt(p: PlayerEnt, mon: MonEnt, extraStun = 0): void { return this.monSys.tryInterrupt(p, mon, extraStun); }
+  damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false, ke?: 1 | -1): void { return this.deathSys.damagePlayer(p, dmg, src, hv, ke); }
+  grantDungeonReward(p: PlayerEnt, r: DungeonReward, key: string, label: string): boolean { return this.deathSys.grantDungeonReward(p, r, key, label); }
+  onRespawn(p: PlayerEnt): void { return this.deathSys.onRespawn(p); }
+  beginTribulation(p: PlayerEnt, def: TribDef, consume: boolean): boolean { return this.tribHub.beginTribulation(p, def, consume); }
+  private cloneHit(p: PlayerEnt, mon: MonEnt, power: number, skill: SkillDef | undefined): void { return this.tribHub.cloneHit(p, mon, power, skill); }
+  private endTribulation(p: PlayerEnt, success: boolean, silent: boolean): void { return this.tribHub.endTribulation(p, success, silent); }
+  private healPlayer(p: PlayerEnt, n: number): void { return this.tribHub.healPlayer(p, n); }
+  private lockCut(h: Hazard, p: PlayerEnt): { mul: number; max: number } { return this.tribHub.lockCut(h, p); }
+  onBottleneck(p: PlayerEnt, msg: unknown): void { return this.tribHub.onBottleneck(p, msg); }
+  onBreakthrough(p: PlayerEnt, force = false): void { return this.tribHub.onBreakthrough(p, force); }
+  onChangeRoot(p: PlayerEnt, msg: unknown): void { return this.tribHub.onChangeRoot(p, msg); }
+  onClone(p: PlayerEnt, msg: unknown): void { return this.tribHub.onClone(p, msg); }
+  onTribClone(p: PlayerEnt): void { return this.tribHub.onTribClone(p); }
+  onTribSoul(p: PlayerEnt): void { return this.tribHub.onTribSoul(p); }
+  private pickGuards(h: Hazard): PlayerEnt[] { return this.tribHub.pickGuards(h); }
+  private shareToGuards(owner: PlayerEnt, n: number, h: Hazard): number { return this.tribHub.shareToGuards(owner, n, h); }
+  spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }, o: { dyaw?: number; level?: number } = {}): MonEnt | null { return this.tribHub.spawnShadow(p, st, o); }
+  private tickTribulation(p: PlayerEnt): void { return this.tribHub.tickTribulation(p); }
   private setMeditating(p: PlayerEnt, on: boolean): void {
     p.meditating = on;
     this.setFlag(p, PF_MEDITATING, on);
@@ -1998,74 +977,23 @@ export class GameSim {
     if (p.char.quests.active.q_dan_khi && !p.char.questComplete('q_dan_khi')) this.sys(p, 'sys.dan_khi_start', undefined, 'info');
   }
 
-  private idem(p: PlayerEnt, r: unknown): string | null | undefined {
-    return this.ecoSys.idem(p, r);
-  }
-
-  private invMsg(p: PlayerEnt): InvMsg {
-    return this.ecoSys.invMsg(p);
-  }
-
-  onBuy(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onBuy(p, msg);
-  }
-
-  onCraft(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onCraft(p, msg);
-  }
-
-  onEnhance(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onEnhance(p, msg);
-  }
-
-  onEquip(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onEquip(p, msg);
-  }
-
-  onGather(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onGather(p, msg);
-  }
-
-  onMethod(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onMethod(p, msg);
-  }
-
-  onMoveItem(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onMoveItem(p, msg);
-  }
-
-  onQuest(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onQuest(p, msg);
-  }
-
-  onSell(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onSell(p, msg);
-  }
-
-  onSkillUp(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onSkillUp(p, msg);
-  }
-
-  onSkillVar(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onSkillVar(p, msg);
-  }
-
-  onTalk(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onTalk(p, msg);
-  }
-
-  onUnequip(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onUnequip(p, msg);
-  }
-
-  onUpgrade(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onUpgrade(p, msg);
-  }
-
-  onUse(p: PlayerEnt, msg: unknown): void {
-    return this.ecoSys.onUse(p, msg);
-  }
-
+  private idem(p: PlayerEnt, r: unknown): string | null | undefined { return this.ecoSys.idem(p, r); }
+  private invMsg(p: PlayerEnt): InvMsg { return this.ecoSys.invMsg(p); }
+  onBuy(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onBuy(p, msg); }
+  onCraft(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onCraft(p, msg); }
+  onEnhance(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onEnhance(p, msg); }
+  onEquip(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onEquip(p, msg); }
+  onGather(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onGather(p, msg); }
+  onMethod(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onMethod(p, msg); }
+  onMoveItem(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onMoveItem(p, msg); }
+  onQuest(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onQuest(p, msg); }
+  onSell(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onSell(p, msg); }
+  onSkillUp(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onSkillUp(p, msg); }
+  onSkillVar(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onSkillVar(p, msg); }
+  onTalk(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onTalk(p, msg); }
+  onUnequip(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onUnequip(p, msg); }
+  onUpgrade(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onUpgrade(p, msg); }
+  onUse(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onUse(p, msg); }
   onChat(p: PlayerEnt, msg: unknown): void {
     let text = (msg as { m?: unknown } | null)?.m;
     if (typeof text !== 'string') return;

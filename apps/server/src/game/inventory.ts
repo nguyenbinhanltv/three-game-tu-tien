@@ -7,7 +7,7 @@
 import { INV_SIZE, planSort } from '@dtl/shared';
 import { ITEM, itemName } from '@dtl/content';
 import type { InvItem } from '@dtl/shared';
-import type { PlayerEnt } from './sim';
+import type { PlayerEnt } from './entities';
 
 export interface InventoryHost {
   now(): number;

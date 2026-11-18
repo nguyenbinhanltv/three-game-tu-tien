@@ -6,7 +6,7 @@
 // Cấu hình: `WaveDef.steles` (levels/xich_tan_khich.json), `MonsterDef.rift` (monsters.json). Hàm thuần có test ở xichtan.test.ts.
 
 import { MS_DEAD, type MonsterRift, type WaveDef } from '@dtl/shared';
-import type { MonEnt, PlayerEnt } from './sim';
+import type { MonEnt, PlayerEnt } from './entities';
 
 type SteleDef = NonNullable<WaveDef['steles']>;
 

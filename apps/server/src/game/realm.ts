@@ -16,7 +16,7 @@ import {
   type FxMsg,
 } from '@dtl/shared';
 import { nextMajorRealmName, NPC, realmName, t } from '@dtl/content';
-import type { MonEnt, PlayerEnt } from './sim';
+import type { MonEnt, PlayerEnt } from './entities';
 
 /** Phần sim mà hệ bình cảnh cần mượn (sim.ts truyền vào, không import ngược để tránh vòng). */
 export interface RealmHost {
