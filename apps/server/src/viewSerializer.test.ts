@@ -4,6 +4,7 @@ import { Decoder, Encoder, StateView } from '@colyseus/schema';
 import { PlayerS, WorldState } from './state';
 import { installViewPatchFix } from './viewSerializer';
 
+import { at } from '@dtl/shared';
 // Thứ tự trong file này là chủ đích: các ca "gốc" chạy trước khi cài bản vá (cài là vĩnh viễn trong tiến trình test).
 const ORIGINAL = (SchemaSerializer.prototype as unknown as { applyPatches: unknown }).applyPatches;
 
@@ -75,7 +76,7 @@ function crowd(nClients: number, perClient: number, bufferSize: number) {
       const id = `o${i}_${k}`;
       state.players.set(id, mkPlayer(id));
       c.view.add(state.players.get(id)!);
-      seen[i].push(id);
+      at(seen, i).push(id);
     }
   });
   apply();
@@ -86,7 +87,7 @@ function crowd(nClients: number, perClient: number, bufferSize: number) {
 function check(res: ReturnType<typeof crowd>): number {
   let bad = 0;
   res.clients.forEach((c, i) => {
-    for (const id of res.seen[i]) {
+    for (const id of at(res.seen, i)) {
       const p = c.dec.state.players.get(id);
       if (!p || p.name !== id || p.wp !== 'weapon_' + id || p.mt !== 'method_' + id) bad++;
     }

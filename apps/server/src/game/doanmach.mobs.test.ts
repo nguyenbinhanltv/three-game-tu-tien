@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { groundAt, type HazardMsg, MF_BURROW, MF_REFLECT, MF_WEAK, MS_CHASE, S, VALLEY } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // E2-B: quái, tinh anh, boss của Đoạn Mạch Cổ Cốc dùng bảy kiểu chiêu của E1-E bằng dữ liệu thật trong monsters.json.
 // Mỗi con: chiêu đặc trưng ra đúng vạch, trúng/né theo vị trí lúc nổ. Dữ liệu: rơi đồ chỉ ở loot.json.
 process.env.DB_FILE = ':memory:';
@@ -80,7 +81,7 @@ const hp = (p: { char: { hp: number } }) => p.char.hp;
 
 describe('dữ liệu Đoạn Mạch', () => {
   it('mọi quái trong level có định nghĩa, cấp 16–19, có bảng rơi, không `drops` trong monsters.json', () => {
-    const spawns = SH.levelSpawns(C.LEVELS.doan_mach);
+    const spawns = SH.levelSpawns(at(C.LEVELS, 'doan_mach'));
     const ids = new Set(spawns.map((s) => s.mon));
     expect([...ids].sort()).toEqual(
       [
@@ -116,9 +117,9 @@ describe('dữ liệu Đoạn Mạch', () => {
     expect(ai('boss_dia_mach_long').line).toMatchObject({ r: 30, w: 4, delay: 2 });
     const ph = C.MONSTER.get('boss_dia_mach_long')!.phases!;
     expect(ph).toHaveLength(3);
-    expect(ph[0].ai!.sweep).toBeTruthy();
-    expect(ph[1].ai!.reveal).toBeTruthy();
-    expect(ph[2].ai!.chant).toMatchObject({ r: 14 });
+    expect(at(ph, 0).ai!.sweep).toBeTruthy();
+    expect(at(ph, 1).ai!.reveal).toBeTruthy();
+    expect(at(ph, 2).ai!.chant).toMatchObject({ r: 14 });
   });
 });
 

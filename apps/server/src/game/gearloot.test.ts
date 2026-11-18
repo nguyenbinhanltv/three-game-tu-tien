@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { groundAt, INV_SIZE, mulberry32, rollEquipDrops, S, type SysMsg, VALLEY } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // Rơi trang bị (3-2): phân bố theo nguồn, roll ở server, mặc/tháo có idempotency + ledger.
 process.env.DB_FILE = ':memory:';
 
@@ -66,7 +67,7 @@ describe('bảng rơi trang bị theo nguồn (server)', () => {
     let drops = 0;
     for (let i = 0; i < N; i++) {
       for (const d of rollEquipDrops(loot.lootOf(monId).equip, content.ITEM_SYS, content.ITEMS, lvl, rng)) {
-        q[d.q]++;
+        q[d.q] = (q[d.q] ?? 0) + 1;
         drops++;
       }
     }
@@ -75,7 +76,7 @@ describe('bảng rơi trang bị theo nguồn (server)', () => {
 
   it('quái thường: chỉ Phàm/Linh, tỉ lệ thấp', () => {
     const { q, drops } = dist('mon_yeu_lang', 6);
-    expect(q[2] + q[3] + q[4]).toBe(0);
+    expect(at(q, 2) + at(q, 3) + at(q, 4)).toBe(0);
     expect(drops / N).toBeGreaterThan(0.03);
     expect(drops / N).toBeLessThan(0.08);
   });
@@ -83,19 +84,19 @@ describe('bảng rơi trang bị theo nguồn (server)', () => {
   it('tinh anh: ít nhất một món mỗi lần, chủ yếu Huyền, không Thiên', () => {
     const { q, drops } = dist('elite_cu_nham_vien', 13);
     expect(drops / N).toBeGreaterThan(1.3);
-    expect(q[2]).toBeGreaterThan(q[3]);
-    expect(q[2]).toBeGreaterThan(q[0]);
+    expect(q[2]).toBeGreaterThan(at(q, 3));
+    expect(q[2]).toBeGreaterThan(at(q, 0));
     expect(q[4]).toBe(0);
   });
 
   it('boss: luôn rơi, Hàn Giao có Thiên phẩm hiếm, boss bí cảnh không Phàm/Linh/Thiên ở món chính', () => {
     const han = dist('boss_han_giao', 15);
     expect(han.drops / N).toBeGreaterThan(1.9);
-    expect(han.q[4] / han.drops).toBeGreaterThan(0.02);
-    expect(han.q[4] / han.drops).toBeLessThan(0.15);
+    expect(at(han.q, 4) / han.drops).toBeGreaterThan(0.02);
+    expect(at(han.q, 4) / han.drops).toBeLessThan(0.15);
     const khoi = dist('boss_kiem_khoi', 15);
     expect(khoi.drops).toBe(N);
-    expect(khoi.q[0] + khoi.q[1] + khoi.q[4]).toBe(0);
+    expect(at(khoi.q, 0) + at(khoi.q, 1) + at(khoi.q, 4)).toBe(0);
   });
 
   it('ilvl bám cấp quái ±1 và mẫu theo cảnh giới (không rơi kiếm gỗ ở cấp 15)', () => {
@@ -188,7 +189,7 @@ describe('rơi và mặc/tháo trong sim', () => {
       idem: string;
     }[];
     expect(led.map((l) => l.idem)).toEqual([`${c.id}:req-aaaa`, `${c.id}:req-bbbb`]);
-    expect(led[1].reason).toContain('equip:weapon:');
+    expect(at(led, 1).reason).toContain('equip:weapon:');
     expect(Character.load(c.id).equip.weapon).toEqual(c.equip.weapon);
   });
 

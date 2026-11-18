@@ -13,6 +13,7 @@ import {
   VALLEY,
 } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // Đạn đánh xa (D1): server mô phỏng và phán định theo vị trí người chơi server giữ.
 // DB trong bộ nhớ: sim.ts kéo theo character.ts → db.ts.
 process.env.DB_FILE = ':memory:';
@@ -80,7 +81,7 @@ describe('đạn đánh xa: server phán định', () => {
     const { sim, sent, fire } = setup();
     sim.now = 1_000_000;
     fire(0);
-    const [b] = of<BoltMsg>(sent, S.BOLT);
+    const b = at(of<BoltMsg>(sent, S.BOLT), 0);
     expect(b).toMatchObject({ yaw: 0, v: 10, r: 0.55, t: 1_000_000, kind: 'fire' });
     expect(b.life).toBeCloseTo((14 * 1.6) / 10);
     expect(b).not.toHaveProperty('dmg');
@@ -94,7 +95,7 @@ describe('đạn đánh xa: server phán định', () => {
     for (let t = 50; t <= 1500; t += 50) tickTo(1_000_000 + t);
     const ends = of<BoltEndMsg>(sent, S.BOLT_END);
     expect(ends).toHaveLength(1);
-    expect(ends[0].hit).toBe('p1');
+    expect(at(ends, 0).hit).toBe('p1');
     expect(p.char.hp).toBeLessThan(1000);
     expect(sim.bolts).toHaveLength(0);
   });
@@ -124,14 +125,14 @@ describe('đạn đánh xa: server phán định', () => {
     p.move.y += FLY_MIN_CLEAR + 0.3;
     sim.now = 1_000_000;
     fire(0, FLY_MIN_CLEAR + 0.3);
-    expect(of<BoltMsg>(sent, S.BOLT)[0].h).toBeCloseTo(FLY_MIN_CLEAR + 0.3);
+    expect(at(of<BoltMsg>(sent, S.BOLT), 0).h).toBeCloseTo(FLY_MIN_CLEAR + 0.3);
     for (let t = 50; t <= 1500; t += 50) tickTo(1_000_000 + t);
     expect(p.char.hp).toBeLessThan(1000);
   });
 
   it('không trúng người đứng sau vật cản dù tick dài', () => {
     const { sim, mon, p, fire, tickTo } = setup();
-    const c = COLLIDERS[COLLIDERS.length - 1]; // cự kiếm Kiếm Trủng
+    const c = at(COLLIDERS, COLLIDERS.length - 1); // cự kiếm Kiếm Trủng
     mon.s.x = c.x;
     mon.s.z = c.z - c.r - 3;
     p.move.x = c.x;
@@ -162,7 +163,7 @@ describe('đạn đánh xa: server phán định', () => {
     tickTo(1_000_150);
     const ends = of<BoltEndMsg>(sent, S.BOLT_END);
     expect(ends).toHaveLength(1);
-    expect(ends[0].hit).toBeUndefined();
+    expect(at(ends, 0).hit).toBeUndefined();
     for (let t = 200; t <= 2000; t += 50) tickTo(1_000_000 + t);
     expect(p.char.hp).toBe(1000);
   });
@@ -188,7 +189,7 @@ describe('đạn đánh xa: server phán định', () => {
     const dmg = of<{ dst: string; n: number }>(sent, S.DMG).filter((d) => d.dst === 'p1');
     expect(dmg).toHaveLength(6);
     expect(dmg.filter((d) => d.n > 0)).toHaveLength(1);
-    expect(1000 - p.char.hp).toBe(dmg[0].n);
+    expect(1000 - p.char.hp).toBe(at(dmg, 0).n);
   });
 
   it('giới hạn số đạn đang bay trong room', () => {

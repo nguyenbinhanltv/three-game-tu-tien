@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { type HazardMsg, MS_CHASE, S, trailSpots } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // DV-2 đợt 4: vệt lửa Tẫn Hỏa Kiếm Cơ (`trail` của line/charge) và neo hồi máu của Thủ Khích Dực Chủ (`anchor`).
 process.env.DB_FILE = ':memory:';
 
@@ -23,7 +24,7 @@ const DT = 50;
 type Private = { tickHazards(): void };
 
 function setup(monId: string, lv = 31) {
-  const sp = SH.levelSpawns(C.LEVELS.bac_hoang).find((s) => s.mon === monId)!;
+  const sp = SH.levelSpawns(at(C.LEVELS, 'bac_hoang')).find((s) => s.mon === monId)!;
   const X = sp.x;
   const Z = sp.z;
   const sent: { type: string; msg: unknown }[] = [];
@@ -77,11 +78,11 @@ describe('trailSpots (hàm thuần)', () => {
   it('chia đều dọc vạch, theo hướng yaw, tối đa 8 vũng, ít nhất 1', () => {
     const a = trailSpots(0, 0, 0, 14, 1.8);
     expect(a.length).toBe(6);
-    expect(a[0].z).toBeGreaterThan(0);
-    expect(a[a.length - 1].z).toBeLessThan(14);
+    expect(at(a, 0).z).toBeGreaterThan(0);
+    expect(at(a, a.length - 1).z).toBeLessThan(14);
     expect(a.every((p) => Math.abs(p.x) < 1e-9)).toBe(true);
     expect(trailSpots(0, 0, Math.PI / 2, 40, 1).length).toBe(8);
-    expect(trailSpots(0, 0, Math.PI / 2, 40, 1)[0].x).toBeGreaterThan(0);
+    expect(at(trailSpots(0, 0, Math.PI / 2, 40, 1), 0).x).toBeGreaterThan(0);
     expect(trailSpots(5, 5, 0, 1, 4)).toHaveLength(1);
   });
 });

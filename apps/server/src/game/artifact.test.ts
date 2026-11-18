@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { groundAt, MS_CHASE, MS_DEAD, MF_STUN, PF_SHIELD, S, type MethodMsg } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // Pháp bảo phụ và đan (Phase 3-8): server quyết định hồi chiêu, hiệu ứng, linh khí, phẩm đan, buff.
 process.env.DB_FILE = ':memory:';
 
@@ -179,7 +180,7 @@ describe('linh khí và cấp pháp bảo', () => {
     p.mth.sentAt = 0;
     sim.tick(50);
     const msgs = sent.filter((s) => s.type === S.METHOD).map((s) => s.msg as MethodMsg);
-    const last = msgs[msgs.length - 1];
+    const last = at(msgs, msgs.length - 1);
     expect(last.art?.id).toBe(AN);
     expect(last.art?.lv).toBe(1);
   });
@@ -210,7 +211,7 @@ describe('đan: phẩm chất và buff', () => {
       .prepare("SELECT kind, ref, delta, reason FROM ledger WHERE char_id = ? AND reason LIKE 'craft:rcp_hoi_xuan_dan%'")
       .all(p.char.id) as { kind: string; ref: string; delta: number; reason: string }[];
     expect(rows.find((r) => r.kind === 'item' && r.ref === 'itm_hoi_xuan_dan')?.delta).toBe(20);
-    expect(rows[0].reason).toMatch(/roll=pill:[012]{20}/);
+    expect(at(rows, 0).reason).toMatch(/roll=pill:[012]{20}/);
     // Cùng khóa idem thì không luyện lần nữa.
     sim.onCraft(p, { id: 'rcp_hoi_xuan_dan', n: 20, r: 'cr-pill-01' });
     let again = 0;

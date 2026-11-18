@@ -25,6 +25,7 @@
 
 ## `noUncheckedIndexedAccess` (CLEAN-2)
 
-- Bật theo từng gói trong `tsconfig.json` của gói (`compilerOptions.noUncheckedIndexedAccess`): **`packages/shared` và `packages/content` đã bật**; còn `apps/server`, `apps/client`, `apps/bot-client`, `tools/*` (bật từng gói một, mỗi gói một PR). Đo số lỗi còn lại của một gói: `cd <gói> && pnpm exec tsc -p tsconfig.json --noUncheckedIndexedAccess` (lỗi nằm trong `packages/shared/src` không tính vì gói đó đã sạch).
+- Bật theo từng gói trong `tsconfig.json` của gói (`compilerOptions.noUncheckedIndexedAccess`): **`packages/shared`, `packages/content` và `apps/server` đã bật**; còn `apps/client`, `apps/bot-client`, `tools/*` (bật từng gói một, mỗi gói một PR). Đo số lỗi còn lại của một gói: `cd <gói> && pnpm exec tsc -p tsconfig.json --noUncheckedIndexedAccess` (lỗi nằm trong `packages/shared/src` không tính vì gói đó đã sạch).
 - Cách xử lý, không dùng `!` hàng loạt: chỗ thiếu phần tử là bình thường thì kiểm `=== undefined` (`continue`/`??`) tại chỗ; chỗ chỉ số luôn hợp lệ theo dữ liệu/hằng số (bảng cấu hình, tuple) dùng `at(arr, i, 'tên')` của `packages/shared/src/arr.ts` (ném `RangeError` rõ ràng thay vì `undefined` âm thầm), cả trong test. Vòng nóng giữ phép kiểm rẻ (`?? 0`), không đổi thứ tự gọi RNG.
+- `missing('tên')` (cùng file) làm mặc định cho destructuring khi thiếu phần tử: `const [a = missing('a')] = list`.
 - `at()` nay nhận cả bảng khóa chuỗi (`at(LEVELS, 'van_lam')`) và được export từ `@dtl/shared` (`import { at } from '@dtl/shared'`). Với gói còn nhiều lỗi, có thể dùng codemod dựa TypeScript API (bọc `a[i]`/`REC.key` bị cờ bằng `at()`), rồi sửa tay phần còn lại (gán `a[i] -= x`, destructuring, kiểu khai báo).

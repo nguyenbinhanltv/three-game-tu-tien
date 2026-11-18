@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { groundAt, MF_BROKEN, MS_CHASE, MS_DEAD, PF_DEAD, S, type FxMsg, type TransferMsg } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // E4-C: Thần Tàng Điện. Dữ liệu đợt, vé, đợt phong ấn (xuất khiếu / Phá Ấn Phù / vùng chặn), Vô Diện Thần Quân
 // (sáu tay, ngũ hành, phân thân, vòng đá + Phản hồi), thưởng một lần mỗi ngày.
 process.env.DB_FILE = ':memory:';
@@ -47,7 +48,7 @@ interface Sent {
 const sent: Sent[] = [];
 let acc = 61000;
 const LV = 'than_tang';
-const DEF = () => content.LEVELS[LV];
+const DEF = () => at(content.LEVELS, LV);
 const keys = (p: Ent) =>
   sent.filter((s) => s.type === S.SYS && (s.to === p.char.name || s.to === '*')).map((s) => (s.msg as { k: string }).k);
 const fxs = (t: string) => sent.filter((s) => s.type === S.FX && (s.msg as FxMsg).t === t).map((s) => s.msg as FxMsg);
@@ -76,7 +77,7 @@ type TestRoom = InstanceType<Rooms['GameRoom']> & {
 async function mkRoom(levelId: string, cls: { prototype: object }) {
   const { Aoi } = await import('../aoi');
   const room = Object.create(cls.prototype) as Record<string, unknown> & { sim: InstanceType<typeof GameSim> };
-  const lv = content.LEVELS[levelId];
+  const lv = at(content.LEVELS, levelId);
   const spawn = lv.dungeon?.spawn ?? lv.spawn!;
   room.broadcast = (type: string, msg: unknown) => sent.push({ type, msg, to: '*' });
   room.sim = new GameSim(new WorldState(), room as never, {
@@ -123,17 +124,17 @@ describe('dữ liệu Thần Tàng Điện', () => {
     const d = DEF().dungeon!;
     expect(d.minLevel).toBe(26);
     expect(d.waves).toHaveLength(6);
-    const tally = (i: number) => d.waves[i].mons.map((m) => `${m.id}×${m.n}`);
+    const tally = (i: number) => at(d.waves, i).mons.map((m) => `${m.id}×${m.n}`);
     expect(tally(0)).toEqual(['mon_tt_cot_ve×10']);
     expect(tally(1)).toEqual(['mon_tt_thach_tuong×4', 'mon_tt_chien_ma×2']);
     expect(tally(2)).toEqual(['elite_tt_cot_kiem×1']);
-    expect(d.waves[3].seals!.doors).toHaveLength(3);
+    expect(at(d.waves, 3).seals!.doors).toHaveLength(3);
     // 6 con ban đầu + 4 con mỗi cửa mở = 6 + 3×4 = 18 (≥ 14 theo thiết kế).
-    expect(d.waves[3].mons[0].n + 3 * d.waves[3].seals!.reinforce.n).toBeGreaterThanOrEqual(14);
+    expect(at(at(d.waves, 3).mons, 0).n + 3 * at(d.waves, 3).seals!.reinforce.n).toBeGreaterThanOrEqual(14);
     expect(tally(4)).toEqual(['mon_tt_thach_tuong×6', 'mon_tt_cot_ve×4', 'elite_tt_cot_kiem×1']);
     expect(tally(5)).toEqual(['boss_vo_dien_than_quan×1']);
     expect(d.returnLevel).toBe('thien_khuyet');
-    expect(content.LEVELS.thien_khuyet.portals?.[0].to).toBe(LV);
+    expect(at(content.LEVELS, 'thien_khuyet').portals?.[0]?.to).toBe(LV);
   });
 
   it('boss: hpMul 120, xpMul 30, cấp 27, ba pha; cơ chế bật theo pha', () => {
@@ -168,7 +169,7 @@ describe('hàm thuần', () => {
   });
   it('handYaws chia đều và xoay 45° mỗi lần', () => {
     const a = tt.handYaws(0, 6, 0, 45);
-    expect(a[1] - a[0]).toBeCloseTo(Math.PI / 3);
+    expect(at(a, 1) - at(a, 0)).toBeCloseTo(Math.PI / 3);
     expect(tt.handYaws(0, 6, 1, 45)[0]).toBeCloseTo(Math.PI / 4);
   });
   it('gathered: cả đội gần nhau thì đúng; một người đứng xa thì sai; một mình thì sai', () => {
@@ -205,8 +206,8 @@ describe('hàm thuần', () => {
     expect(p2.z).toBeCloseTo(10);
   });
   it('nearestClosed / barrierPush bỏ qua cửa đã mở', () => {
-    const def = DEF().dungeon!.waves[3].seals!;
-    const d = def.doors[0];
+    const def = at(DEF().dungeon!.waves, 3).seals!;
+    const d = at(def.doors, 0);
     expect(seal.nearestClosed(def, [false, false, false], d.x, d.z, def.phuR)).toBe(0);
     expect(seal.nearestClosed(def, [true, false, false], d.x, d.z, def.phuR)).toBe(-1);
     expect(seal.barrierPush(def, [false, false, false], d.gx, d.gz)).not.toBeNull();
@@ -220,7 +221,7 @@ describe('vào bí cảnh', () => {
   it('cổng ở Thiên Khuyết: đủ cấp 26 mới có vé, room riêng dungeon-than_tang', async () => {
     const r = await mkRoom('thien_khuyet', rooms.defineWorld('thien_khuyet'));
     const p = prime(r.join(mkChar('ttcong', 26)), 26);
-    const portal = content.LEVELS.thien_khuyet.portals![0];
+    const portal = at(at(content.LEVELS, 'thien_khuyet').portals!, 0);
     place(p, portal.x, portal.z);
     (r.room as unknown as { sendTransfer: (p: Ent, to: string, o?: unknown) => void }).sendTransfer = (_p, to, o) =>
       void sent.push({ type: S.TRANSFER, msg: { level: to, options: o }, to: p.char.name });
@@ -273,10 +274,10 @@ describe('đợt phong ấn', () => {
 
   it('thân xác bị chặn ngoài hốc; nguyên anh xuất khiếu chạm trận môn thì mở cửa và quái kéo tới', async () => {
     const { r, p, alive } = await toSealWave();
-    const d = DEF().dungeon!.waves[3].seals!.doors[0];
+    const d = at(at(DEF().dungeon!.waves, 3).seals!.doors, 0);
     place(p, d.gx, d.gz);
     r.room.seals!.tick();
-    expect(Math.hypot(p.move.x - d.gx, p.move.z - d.gz)).toBeGreaterThan(DEF().dungeon!.waves[3].seals!.bar);
+    expect(Math.hypot(p.move.x - d.gx, p.move.z - d.gz)).toBeGreaterThan(at(DEF().dungeon!.waves, 3).seals!.bar);
     expect(keys(p)).toContain('sys.seal_barrier');
     expect(r.room.seals!.isOpen(0)).toBe(false);
     // Xuất khiếu: soul.isScouting trả true thì không bị chặn và chạm trận môn là mở.
@@ -309,7 +310,7 @@ describe('đợt phong ấn', () => {
     use('pap-0');
     expect(count()).toBe(3);
     expect(keys(p)).toContain('sys.seal_need');
-    const doors = DEF().dungeon!.waves[3].seals!.doors;
+    const doors = at(DEF().dungeon!.waves, 3).seals!.doors;
     doors.forEach((d, i) => {
       place(p, d.x, d.z);
       adv(5000);
@@ -335,15 +336,15 @@ describe('đợt phong ấn', () => {
       d.add('itm_pha_an_phu', 3);
       return true;
     });
-    const doors = DEF().dungeon!.waves[3].seals!.doors;
+    const doors = at(DEF().dungeon!.waves, 3).seals!.doors;
     const slot = () => p.char.inv.findIndex((i) => i?.id === 'itm_pha_an_phu');
     const use = (k: string) => (r.sim as unknown as { onUse(p: Ent, m: unknown): void }).onUse(p, { slot: slot(), r: k });
-    place(p, doors[0].x, doors[0].z);
+    place(p, at(doors, 0).x, at(doors, 0).z);
     use('same-key');
     expect(r.room.seals!.count).toBe(1);
     adv(5000);
     r.sim.now += 5000;
-    place(p, doors[1].x, doors[1].z);
+    place(p, at(doors, 1).x, at(doors, 1).z);
     use('same-key');
     expect(r.room.seals!.count).toBe(1);
   });
@@ -397,14 +398,14 @@ describe('Vô Diện Thần Quân (ThanTangSystem)', () => {
     expect(volley()).toHaveLength(6);
     expect(volley().every((h) => h.dmg === 0)).toBe(true);
     // Tay đầu nhắm thẳng người gần nhất; khe giữa hai tay cách trục 30°, nón rộng 22° nên 30° là an toàn.
-    const base = volley()[0].yaw;
+    const base = at(volley(), 0).yaw;
     const hp0 = p.char.hp;
     place(p, c.x + Math.sin(base + Math.PI / 6) * 8, c.z + Math.cos(base + Math.PI / 6) * 8);
     adv(1400);
     expect(p.char.hp).toBe(hp0);
     // Lượt sau xoay thêm 45°; đứng đúng trục tay đầu của lượt đó thì trúng.
     adv(9600);
-    const next = volley()[0].yaw;
+    const next = at(volley(), 0).yaw;
     expect(next).not.toBeCloseTo(base);
     place(p, c.x + Math.sin(next) * 8, c.z + Math.cos(next) * 8);
     adv(1400);

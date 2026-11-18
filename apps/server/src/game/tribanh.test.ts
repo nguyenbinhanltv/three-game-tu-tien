@@ -18,6 +18,7 @@ import {
 } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
 
+import { at } from '@dtl/shared';
 // Nhật Thực Kiếp (DV-3K, Anh Biến): dẫn lôi thắp năm Trấn Giới Bia, Nhật Thực Dực Chủ dập bia, tia cuối đánh vào khe khi đủ bia, vật phẩm, lên cấp 32.
 process.env.DB_FILE = ':memory:';
 
@@ -41,8 +42,8 @@ const Z = 2040;
 let acc = 7700;
 const ITEM = 'itm_anh_bien_lo';
 const DEF = tribDef('anh_bien');
-const DL = DEF.phases[0].danLoi!;
-const CTR = LEVELS[tribLevelOf(DEF)].dungeon!.center;
+const DL = at(DEF.phases, 0).danLoi!;
+const CTR = at(LEVELS, tribLevelOf(DEF)).dungeon!.center;
 
 function setup(withItem = true) {
   const sent: { type: string; msg: unknown }[] = [];
@@ -116,7 +117,7 @@ describe('Nhật Thực Kiếp: dữ liệu và hàm thuần', () => {
     expect(tribLevelOf(DEF)).toBe('do_kiep_bac_hoang');
     expect(tribRoomNameOf('do_kiep_bac_hoang')).toBe('tribulation-do_kiep_bac_hoang');
     expect(tribRoomNameOf('do_kiep')).toBe('tribulation');
-    expect(LEVELS.do_kiep_bac_hoang.tribulation).toBe(true);
+    expect(at(LEVELS, 'do_kiep_bac_hoang').tribulation).toBe(true);
     expect(peakGated(31)).toBe(false);
     expect(parseRealmCode('ab')).toBe(32);
     expect(parseRealmCode('ht4')).toBe(31);
@@ -175,7 +176,7 @@ describe('Nhật Thực Kiếp: chạy hết một lượt', () => {
     lightAll(t);
     t.run(26);
     expect(t.bosses()).toHaveLength(1);
-    const boss = t.bosses()[0];
+    const boss = at(t.bosses(), 0);
     // Giữ hắn không mất thế để chú dập bia xong: đưa người độ kiếp tránh xa chỗ tia rơi (tia nhắm đúng chỗ đứng lúc bắn) rồi dịch chuyển mỗi nhịp.
     const litBefore = mech.litCount(t.st());
     t.run(64, (s) => {
@@ -194,7 +195,7 @@ describe('Nhật Thực Kiếp: chạy hết một lượt', () => {
     t.begin();
     t.goto(CTR);
     t.run(26);
-    const boss = t.bosses()[0];
+    const boss = at(t.bosses(), 0);
     boss.chant = { startAt: 0, endAt: 1e12 };
     let seen = false;
     t.run(36, () => {
@@ -283,16 +284,16 @@ describe('Anh Biến: nạp nhân vật và sổ cái', () => {
       }[];
     const spent = rows().filter((r) => r.reason === 'tribulation');
     expect(spent).toHaveLength(1);
-    expect(spent[0].idem).toMatch(new RegExp(`^trib:anh_bien:${t.char.id}:`));
-    expect(spent[0].delta).toBe(-1);
+    expect(at(spent, 0).idem).toMatch(new RegExp(`^trib:anh_bien:${t.char.id}:`));
+    expect(at(spent, 0).delta).toBe(-1);
     t.run(50);
     const end = (t.sim as unknown as { endTribulation(p: Ent, ok: boolean, silent: boolean): void }).endTribulation.bind(t.sim);
     end(t.p, false, false);
     end(t.p, false, false); // lần hai: không còn kiếp, không hoàn nữa
     const refunds = rows().filter((r) => r.reason === 'tribulation:refund');
     expect(refunds).toHaveLength(1);
-    expect(refunds[0].idem).toMatch(new RegExp(`^trib-refund:anh_bien:${t.char.id}:`));
-    expect(refunds[0].delta).toBe(1);
+    expect(at(refunds, 0).idem).toMatch(new RegExp(`^trib-refund:anh_bien:${t.char.id}:`));
+    expect(at(refunds, 0).delta).toBe(1);
     expect(t.count()).toBe(1);
   });
 });

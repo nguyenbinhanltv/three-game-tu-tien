@@ -18,6 +18,7 @@ import {
   type HazardMsg,
 } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // Thiên Nhân Kiếp (E4-D): ngũ hành lôi + trận môn (cờ `ke`), phân thân thần niệm (G), mạch nối thiên phạt, thế thân chắn tia lớn, vật phẩm.
 process.env.DB_FILE = ':memory:';
 
@@ -42,7 +43,7 @@ const Z = 2040;
 let acc = 9900;
 const ITEM = 'itm_hoa_than_lo';
 const DEF = tribDef('hoa_than');
-const NG = DEF.phases[0].nguHanh!;
+const NG = at(DEF.phases, 0).nguHanh!;
 
 function setup(withItem = true) {
   const sent: { type: string; msg: unknown }[] = [];
@@ -326,7 +327,7 @@ describe('Thiên Nhân Kiếp: cân bằng bản đầu', () => {
     t.run(81, (s) => {
       low = Math.min(low, t.char.hp / t.char.mhp);
       const all = t.hazards();
-      for (; seen < all.length; seen++) pend.push({ g: all[seen], at: s + all[seen].delay });
+      for (; seen < all.length; seen++) pend.push({ g: at(all, seen), at: s + at(all, seen).delay });
       if (s < 0.5) return; // tâm trận môn đặt ở chỗ đứng lúc vào kiếp
       let want: { x: number; z: number };
       let must = false;

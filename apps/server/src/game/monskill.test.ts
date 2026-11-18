@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { groundAt, type HazardMsg, MF_BURROW, MF_REFLECT, MF_WEAK, MS_CHASE, type MonsterAi, S, VALLEY } from '@dtl/shared';
 
+import { at, missing } from '@dtl/shared';
 // Nguyên tắc quái mở rộng (E1-E): server phán định theo vị trí người chơi lúc vạch nổ.
 // DB trong bộ nhớ: sim.ts kéo theo character.ts → db.ts.
 process.env.DB_FILE = ':memory:';
@@ -94,7 +95,7 @@ describe('line: đường thẳng', () => {
     const { sim, p, run, hazards } = setup(LINE);
     const q = makePlayer(sim, 'p2', X + 4, Z + 8);
     run(DT);
-    const [h] = hazards();
+    const [h = missing('thiếu vạch')] = hazards();
     expect(h).toMatchObject({ sh: 'rect', mv: 'line', r: 12, w: 2, delay: 1.2 });
     expect(hp(p)).toBe(1000);
     run(1300);
@@ -138,7 +139,7 @@ describe('charge: lao tới', () => {
     p.move.z = Z + 10;
     const q = makePlayer(sim, 'p2', X + 5, Z + 6);
     run(DT);
-    const [h] = hazards();
+    const [h = missing('thiếu vạch')] = hazards();
     expect(h).toMatchObject({ sh: 'rect', mv: 'charge', delay: 1 });
     expect(h.r).toBeGreaterThan(5);
     run(1100);
@@ -183,7 +184,7 @@ describe('leap: nhảy đập', () => {
   it('khóa chỗ mục tiêu đứng lúc bắt đầu: ở lại chỗ đó thì trúng, quái đáp đúng vạch', () => {
     const { mon, p, run, hazards } = setup(LEAP);
     run(DT);
-    const [h] = hazards();
+    const [h = missing('thiếu vạch')] = hazards();
     expect(h).toMatchObject({ mv: 'leap', r: 3.5, x: X, z: Z + 8 });
     run(1200);
     expect(hp(p)).toBeLessThan(1000);
@@ -255,7 +256,7 @@ describe('burrow: chui đất', () => {
     const { sim, p, run, hazards } = setup(BURROW);
     const q = makePlayer(sim, 'p2', X, Z + 8);
     run(DT);
-    const [h0] = hazards();
+    const [h0 = missing('thiếu vạch')] = hazards();
     p.move.x = h0.x;
     p.move.z = h0.z;
     run(2200);
@@ -266,7 +267,7 @@ describe('burrow: chui đất', () => {
   it('trồi ở vạch đầu, gỡ cờ, đánh vạch quạt về phía mục tiêu rồi mới đánh thường được; lại nhận sát thương', () => {
     const { sim, mon, p, run, hazards } = setup(BURROW);
     run(DT);
-    const [h0] = hazards();
+    const [h0 = missing('thiếu vạch')] = hazards();
     p.move.x = X + 20; // chạy khỏi mọi vạch tròn
     p.move.z = Z + 8;
     run(2100);
@@ -283,7 +284,7 @@ describe('burrow: chui đất', () => {
   it('vạch quạt trúng người đứng trong quạt lúc nổ, không trúng người đứng ngoài góc', () => {
     const { sim, p, run, hazards } = setup(BURROW);
     run(DT);
-    const [h0] = hazards();
+    const [h0 = missing('thiếu vạch')] = hazards();
     p.move.x = h0.x + 9; // chạy khỏi vạch tròn, vẫn ở gần chỗ trồi
     p.move.z = h0.z;
     run(2100);
@@ -349,8 +350,8 @@ describe('summon: gọi đệ tử', () => {
     const hs = hazards();
     expect(hs).toHaveLength(2);
     expect(hs.every((h) => h.mv === 'summon')).toBe(true);
-    p.move.x = hs[0].x;
-    p.move.z = hs[0].z;
+    p.move.x = at(hs, 0).x;
+    p.move.z = at(hs, 0).z;
     expect(sim.monsters.filter((m) => m.minionOf)).toHaveLength(0);
     run(1300);
     const kids = sim.monsters.filter((m) => m.minionOf);

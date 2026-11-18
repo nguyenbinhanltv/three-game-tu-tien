@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { MAX_LEVEL, TOUCH_R, questSpot } from '@dtl/shared';
 import { LEVELS, MONSTER, NPC, QUEST } from '@dtl/content';
 
+import { at } from '@dtl/shared';
 // Nhiệm vụ chương 5 Bắc Hoang (DV3-H): chuỗi q5_*, phụ s5_*, trận mở bằng nhiệm vụ kiểm cấp, nhiệm vụ chờ dữ liệu bị khóa theo cấp.
 process.env.DB_FILE = ':memory:';
 
@@ -15,7 +16,7 @@ beforeAll(async () => {
   ({ Character } = await import('./character'));
 });
 
-const BH = LEVELS.bac_hoang;
+const BH = at(LEVELS, 'bac_hoang');
 let acc = 9970;
 
 function setup(level = 28, levelId = 'bac_hoang') {
@@ -103,9 +104,9 @@ describe('nhận và chạm', () => {
     const s = questSpot(BH, 'mach_nhan_1')!;
     t.at(s.x + TOUCH_R + 3, s.z);
     t.step();
-    expect(t.char.quests.active.s5_buom_mach[0]).toBe(0);
+    expect(at(t.char.quests.active, 's5_buom_mach')[0]).toBe(0);
     t.at(s.x, s.z);
     t.step();
-    expect(t.char.quests.active.s5_buom_mach[0]).toBe(1);
+    expect(at(t.char.quests.active, 's5_buom_mach')[0]).toBe(1);
   });
 });

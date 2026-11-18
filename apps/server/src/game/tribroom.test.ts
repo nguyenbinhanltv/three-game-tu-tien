@@ -22,6 +22,7 @@ import {
   type TransferMsg,
 } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // E1-F: độ kiếp theo dữ liệu. Khung cho ba kiếp mới (pha chung lôi/hỏa/tâm ma, hộ pháp chắn, hook cơ chế), room độ kiếp riêng
 // (vé có khóa, tổ đội cùng vào, về nơi cũ khi xong) và độ kiếp Trúc Cơ không đổi (bản chuẩn băm ở trib.golden.test.ts).
 process.env.DB_FILE = ':memory:';
@@ -80,7 +81,7 @@ function mkChar(name: string, level: number, bk = level) {
 
 /** Sim độc lập (không Colyseus). `host` bổ sung hook độ kiếp. */
 function mkSim(levelId = HOME_LEVEL, host: Record<string, unknown> = {}) {
-  const lv = content.LEVELS[levelId];
+  const lv = at(content.LEVELS, levelId);
   const spawn = lv.dungeon?.spawn ?? lv.spawn ?? { x: X, z: Z };
   const h = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg, to: '*' }), ...host };
   const sim = new GameSim(new WorldState(), h as never, {
@@ -133,7 +134,7 @@ describe('dữ liệu tribulations.json', () => {
       const d = TRIB_DEFS[id];
       expect(d.to).toBe(d.from + 1);
       expect(d.phases.at(-1)!.end).toBe(d.duration);
-      for (let i = 1; i < d.phases.length; i++) expect(d.phases[i].end).toBeGreaterThan(d.phases[i - 1].end);
+      for (let i = 1; i < d.phases.length; i++) expect(at(d.phases, i).end).toBeGreaterThan(at(d.phases, i - 1).end);
     }
     expect(TRIB_IDS.map((i) => TRIB_DEFS[i].duration).sort((a, b) => a - b)).toEqual([40, 55, 65, 80, 90]);
     expect(TRIB_DEFS.nguyen_anh.room).toBe('tribulation');
@@ -227,8 +228,8 @@ describe('kiếp mới: cờ enabled, GM và pha chung', () => {
       .slice(before)
       .filter((h) => h.big);
     expect(big.length).toBe(1);
-    expect(big[0].r).toBe(9);
-    expect(big[0].delay).toBe(3);
+    expect(at(big, 0).r).toBe(9);
+    expect(at(big, 0).delay).toBe(3);
     expect(p.trib).toBeNull();
     expect(p.char.level).toBe(20);
   });
@@ -282,7 +283,7 @@ describe('kiếp mới: cờ enabled, GM và pha chung', () => {
     run(p, 44);
     const shadows = sim.monsters.filter((m) => m.owner === p.sid);
     expect(shadows.length).toBe(1);
-    expect(shadows[0].s.lv).toBe(25);
+    expect(at(shadows, 0).s.lv).toBe(25);
   });
 
   it('tia cuối Hóa Thần: hộ pháp trong 12 m chắn thay 25% (chia đều, tối đa 2), chủ kiếp chịu phần còn lại', () => {
@@ -313,7 +314,7 @@ describe('kiếp mới: cờ enabled, GM và pha chung', () => {
     expect(lock.r).toBe(11);
     expect(lock.delay).toBe(4);
     run(owner, 4.3, false);
-    const lost = (g: Ent, i: number) => hp0[i] - g.char.hp;
+    const lost = (g: Ent, i: number) => at(hp0, i) - g.char.hp;
     expect(lost(g1, 0)).toBeGreaterThan(0);
     expect(lost(g2, 1)).toBeGreaterThan(0);
     expect(lost(far, 2)).toBe(0);
@@ -372,7 +373,7 @@ describe('hộ pháp chỉ nhận đồng đội', () => {
 
 describe('hằng số theo kiếp đọc từ dữ liệu', () => {
   it('giảm sát thương tia khóa mệnh (cut) lấy từ final của kiếp, không phải hằng Trúc Cơ', () => {
-    const fin = TRIB_DEFS.hoa_than.phases[2].final!;
+    const fin = at(TRIB_DEFS.hoa_than.phases, 2).final!;
     const old = { ...fin };
     fin.defMul = 7;
     fin.defMaxCut = 0.33;
@@ -397,7 +398,7 @@ describe('room độ kiếp riêng', () => {
   /** Dựng room (không qua Colyseus) đủ để `onJoin`, `afterJoin`, `director`. */
   async function mkRoom(levelId: string, cls: { prototype: object }) {
     const room = Object.create(cls.prototype) as Record<string, unknown> & { sim: InstanceType<typeof GameSim> };
-    const lv = content.LEVELS[levelId];
+    const lv = at(content.LEVELS, levelId);
     const spawn = lv.dungeon?.spawn ?? lv.spawn ?? { x: X, z: Z };
     room.broadcast = (type: string, msg: unknown) => sent.push({ type, msg, to: '*' });
     room.sim = new GameSim(new WorldState(), room as never, {
@@ -454,8 +455,8 @@ describe('room độ kiếp riêng', () => {
 
   it('tên room và level: tribulation / do_kiep, không phải bí cảnh có đợt quái', () => {
     expect(rooms.roomNameOf(TRIB_LEVEL)).toBe(ROOM_TRIBULATION);
-    expect(content.LEVELS[TRIB_LEVEL].tribulation).toBe(true);
-    expect(content.LEVELS[TRIB_LEVEL].dungeon!.waves).toEqual([]);
+    expect(at(content.LEVELS, TRIB_LEVEL).tribulation).toBe(true);
+    expect(at(content.LEVELS, TRIB_LEVEL).dungeon!.waves).toEqual([]);
   });
 
   it('onAuth: cần vé có khóa room; khóa sai hoặc không vé bị từ chối; vé dùng một lần', async () => {
@@ -537,7 +538,7 @@ describe('room độ kiếp riêng', () => {
     expect(owner.trib?.id).toBe('nguyen_anh');
     expect(guard.trib).toBeNull();
     // sân độ kiếp đặt người ở điểm vào của `do_kiep`
-    const d = content.LEVELS[TRIB_LEVEL].dungeon!;
+    const d = at(content.LEVELS, TRIB_LEVEL).dungeon!;
     expect(Math.hypot(owner.move.x - d.spawn.x, owner.move.z - d.spawn.z)).toBeLessThan(1);
     // đang độ kiếp: không rời được bằng đường thường
     expect(arena.sim.leaveBlocker(owner)).toBe('sys.tele_busy');
@@ -562,7 +563,7 @@ describe('room độ kiếp riêng', () => {
     expect(transfer.tickets.has(owner.char.id, HOME_LEVEL)).toBe(false);
     now += rooms.TribulationRoom.LINGER_MS + 100;
     arena.room.director();
-    const d = content.LEVELS[TRIB_LEVEL].dungeon!;
+    const d = at(content.LEVELS, TRIB_LEVEL).dungeon!;
     for (const p of [owner, guard]) {
       const back = transfer.tickets.take(p.char.id, d.returnLevel)!;
       expect(back.spawn).toEqual(d.returnSpawn);
@@ -640,7 +641,7 @@ describe('room độ kiếp riêng', () => {
     const reload = Character.load(owner.char.id);
     expect(arena.room.resumeTarget(reload)).toBeNull(); // chính sân không dẫn ai đi
     const home = await mkRoom(HOME_LEVEL, rooms.WorldRoom);
-    expect(home.room.resumeTarget(reload)).toEqual({ level: HOME_LEVEL, spawn: content.LEVELS[TRIB_LEVEL].dungeon!.returnSpawn });
+    expect(home.room.resumeTarget(reload)).toEqual({ level: HOME_LEVEL, spawn: at(content.LEVELS, TRIB_LEVEL).dungeon!.returnSpawn });
   });
 
   it('vật phẩm đột phá bị tiêu khi tới sân, không phải lúc rời; thiếu vật phẩm thì mọi người bị đưa về', async () => {

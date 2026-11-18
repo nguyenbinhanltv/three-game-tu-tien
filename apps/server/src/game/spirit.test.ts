@@ -11,6 +11,7 @@ import {
   type SpiritStateMsg,
 } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // Thần thức (E2-E): server quyết định mở khóa, giữ 2,5 giây, hủy, tốn linh lực và hồi chiêu, kết quả quét.
 process.env.DB_FILE = ':memory:';
 
@@ -101,7 +102,7 @@ describe('thần thức', () => {
     advance(600);
     expect(scans()).toHaveLength(1);
     expect(Math.abs(p.char.mp - (p.char.mmp - SPIRIT_MP))).toBeLessThan(15); // trừ hồi tự nhiên
-    const last = states()[states().length - 1];
+    const last = at(states(), states().length - 1);
     expect(last.cd).toBeGreaterThan(SPIRIT_CD_MS - 500);
     // Đang hồi chiêu: vận lại không được.
     sim.spirit.command(p, { on: true });
@@ -190,21 +191,21 @@ describe('thần thức', () => {
 
   it('điểm hái còn mọc lộ ra, điểm đã hái thì không; phạm vi 80 m từ trung kỳ', () => {
     const { sim, p, advance, scans } = setup(21);
-    const node = [...sim.nodes.values()][0];
+    const node = at([...sim.nodes.values()], 0);
     p.move.x = node.s.x + 70;
     p.move.z = node.s.z;
     p.move.y = groundAt(p.move.x, p.move.z);
     node.s.on = true;
     sim.spirit.command(p, { on: true });
     advance(SPIRIT_CHANNEL_MS + 200);
-    expect(scans()[0].r).toBe(80);
-    expect(scans()[0].hits.some((h) => h.k === 'node' && Math.abs(h.x - node.s.x) < 0.2)).toBe(true);
+    expect(at(scans(), 0).r).toBe(80);
+    expect(at(scans(), 0).hits.some((h) => h.k === 'node' && Math.abs(h.x - node.s.x) < 0.2)).toBe(true);
     advance(SPIRIT_CD_MS);
     node.s.on = false;
     node.respawnAt = Infinity;
     sim.spirit.command(p, { on: true });
     advance(SPIRIT_CHANNEL_MS + 200);
-    expect(scans()[1].hits.some((h) => h.k === 'node' && Math.abs(h.x - node.s.x) < 0.2)).toBe(false);
+    expect(at(scans(), 1).hits.some((h) => h.k === 'node' && Math.abs(h.x - node.s.x) < 0.2)).toBe(false);
   });
 
   it('số điểm trả về bị chặn trần, boss được giữ (gọi trực tiếp quét, không tick để quái khỏi giao chiến)', () => {

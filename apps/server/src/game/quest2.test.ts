@@ -12,6 +12,7 @@ import {
 } from '@dtl/shared';
 import { LEVELS, NPC, QUEST } from '@dtl/content';
 
+import { at } from '@dtl/shared';
 // Nhiệm vụ chương 2 (E2-H): chuỗi q2_*, mục tiêu touch/scan/escort do server chấm, mở trận bằng nhiệm vụ, thưởng một lần (tx + ledger).
 process.env.DB_FILE = ':memory:';
 
@@ -26,7 +27,7 @@ beforeAll(async () => {
 });
 
 let acc = 9900;
-const DM = LEVELS.doan_mach;
+const DM = at(LEVELS, 'doan_mach');
 
 function setup(levelId = 'doan_mach', level = 18) {
   const sent: { type: string; msg: unknown }[] = [];
@@ -133,14 +134,14 @@ describe('touch', () => {
     const spot = questSpot(DM, 'mach_tinh_tru')!;
     t.at(spot.x + TOUCH_R + 3, spot.z);
     t.step();
-    expect(t.char.quests.active.q2_mach_tinh[1]).toBe(0);
+    expect(at(t.char.quests.active, 'q2_mach_tinh')[1]).toBe(0);
     t.at(spot.x + 2, spot.z);
     t.p.move.flying = true;
     t.step();
-    expect(t.char.quests.active.q2_mach_tinh[1]).toBe(0);
+    expect(at(t.char.quests.active, 'q2_mach_tinh')[1]).toBe(0);
     t.p.move.flying = false;
     t.step();
-    expect(t.char.quests.active.q2_mach_tinh[1]).toBe(1);
+    expect(at(t.char.quests.active, 'q2_mach_tinh')[1]).toBe(1);
   });
 
   it('s2_kiem_gay: năm điểm, mỗi điểm một lần', () => {
@@ -194,7 +195,7 @@ describe('scan (qua thần thức E2-E)', () => {
 });
 
 describe('escort', () => {
-  const def = DM.escorts![0];
+  const def = at(DM.escorts!, 0);
   const start = (): T => {
     const t = setup('doan_mach', 17);
     t.char.quests.done.push('q2_thu_ha_son');
@@ -215,7 +216,7 @@ describe('escort', () => {
 
   it('hàm thuần: đi nửa đường chưa tới, đi hết thì done', () => {
     let w = escortStart(def);
-    const len = def.path.slice(1).reduce((n, [x, z], i) => n + Math.hypot(x - def.path[i][0], z - def.path[i][1]), 0);
+    const len = def.path.slice(1).reduce((n, [x, z], i) => n + Math.hypot(x - at(def.path, i)[0], z - at(def.path, i)[1]), 0);
     w = escortAdvance(def, w, len / 2);
     expect(w.done).toBe(false);
     w = escortAdvance(def, w, len);
@@ -233,28 +234,28 @@ describe('escort', () => {
 
   it('người nhận đứng xa thì người đồng hành đứng đợi, không tiến', () => {
     const t = start();
-    t.at(def.path[0][0] + ESCORT_FOLLOW_R + 30, def.path[0][1]);
+    t.at(at(def.path, 0)[0] + ESCORT_FOLLOW_R + 30, at(def.path, 0)[1]);
     for (let i = 0; i < 40; i++) t.step(250);
     const last = t.esc().at(-1)!;
     expect(last.st).toBe(2);
-    expect(Math.hypot(last.x - def.path[0][0], last.z - def.path[0][1])).toBeLessThan(0.5);
+    expect(Math.hypot(last.x - at(def.path, 0)[0], last.z - at(def.path, 0)[1])).toBeLessThan(0.5);
   });
 
   it('bỏ quá xa thì quay về đầu đường, báo cho người chơi', () => {
     const t = start();
     walk(t, 20);
     const mid = walkOf(t)!;
-    expect(Math.hypot(mid.x - def.path[0][0], mid.z - def.path[0][1])).toBeGreaterThan(20);
-    t.at(def.path[0][0] + 1500, def.path[0][1]);
+    expect(Math.hypot(mid.x - at(def.path, 0)[0], mid.z - at(def.path, 0)[1])).toBeGreaterThan(20);
+    t.at(at(def.path, 0)[0] + 1500, at(def.path, 0)[1]);
     t.step();
     expect(t.sys()).toContain('sys.escort_lost');
     const back = walkOf(t)!;
-    expect(Math.hypot(back.x - def.path[0][0], back.z - def.path[0][1])).toBeLessThan(1);
+    expect(Math.hypot(back.x - at(def.path, 0)[0], back.z - at(def.path, 0)[1])).toBeLessThan(1);
   });
 
   it('đứng xa điểm đầu quá ESCORT_LOST_R qua nhiều nhịp: chỉ báo mất dấu tối đa một lần', () => {
     const t = start();
-    t.at(def.path[0][0] + 1500, def.path[0][1]);
+    t.at(at(def.path, 0)[0] + 1500, at(def.path, 0)[1]);
     for (let i = 0; i < 40; i++) {
       t.step(250);
       t.sim.now += 1000;

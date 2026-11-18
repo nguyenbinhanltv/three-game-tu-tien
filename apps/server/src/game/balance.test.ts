@@ -12,6 +12,7 @@ import {
   type DmgMsg,
 } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // Cân bằng 3-10: khắc chế ngũ hành (cờ `ke` do server tính), nội tại ba công pháp, hoàn Trúc Cơ Đan khi độ kiếp.
 process.env.DB_FILE = ':memory:';
 
@@ -208,10 +209,10 @@ describe('thang 28 cấp', () => {
     expect(MAX_LEVEL).toBe(32);
     for (let i = 1; i < rows.length; i++) {
       for (const k of ['hp', 'atk', 'def'] as const) {
-        expect(rows[i].p[k], `người ${k} cấp ${rows[i].level}`).toBeGreaterThan(rows[i - 1].p[k]);
-        expect(rows[i].m[k], `quái ${k} cấp ${rows[i].level}`).toBeGreaterThan(rows[i - 1].m[k]);
+        expect(at(rows, i).p[k], `người ${k} cấp ${at(rows, i).level}`).toBeGreaterThan(at(rows, i - 1).p[k]);
+        expect(at(rows, i).m[k], `quái ${k} cấp ${at(rows, i).level}`).toBeGreaterThan(at(rows, i - 1).m[k]);
       }
-      expect(xpNeed(rows[i].level), `xpNeed cấp ${rows[i].level}`).toBeGreaterThan(0);
+      expect(xpNeed(at(rows, i).level), `xpNeed cấp ${at(rows, i).level}`).toBeGreaterThan(0);
     }
   });
 
@@ -227,8 +228,8 @@ describe('thang 28 cấp', () => {
   it('qua mốc cảnh giới (16, 20, 24, 28) không có bước nhảy độ khó: số đòn hạ quái lệch < 25%', () => {
     for (const lv of [16, 20, 24, 28]) {
       expect(realmMul(lv)).toBeGreaterThan(realmMul(lv - 1));
-      const a = rows[lv - 2].hitsToKill;
-      const b = rows[lv - 1].hitsToKill;
+      const a = at(rows, lv - 2).hitsToKill;
+      const b = at(rows, lv - 1).hitsToKill;
       expect(Math.abs(b / a - 1), `cấp ${lv - 1} → ${lv}`).toBeLessThan(0.25);
     }
   });

@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { DUEL_ARENA, DUEL_COUNTDOWN_MS, groundAt, INVITE_PENDING_MAX, MS_DEAD, PARTY_MAX, PARTY_OFFLINE_GRACE_MS, S } from '@dtl/shared';
 
+import { at, missing } from '@dtl/shared';
 // Tổ đội và tỉ thí (P3-9): server quyết định lời mời, chia tu vi/đồ, cộng hưởng, tỉ thí, và chặn đánh đồng đội.
 process.env.DB_FILE = ':memory:';
 
@@ -69,8 +70,8 @@ function setup() {
   const team = (...ps: Ent[]) => {
     for (const q of ps.slice(1)) {
       parties.now = () => Date.now() + 10_000 * nextAcc++;
-      inv(ps[0], q);
-      parties.command(q, { a: 'acc', id: ps[0].char.id });
+      inv(at(ps, 0), q);
+      parties.command(q, { a: 'acc', id: at(ps, 0).char.id });
     }
     parties.now = () => Date.now();
   };
@@ -80,7 +81,9 @@ function setup() {
 describe('lập tổ đội', () => {
   it('mời, nhận lời, tối đa 4 người', () => {
     const { join, team, inv, sys } = setup();
-    const [a, b, c, d, e] = ['a', 'b', 'c', 'd', 'e'].map((n) => join(n));
+    const [a = missing('a'), b = missing('b'), c = missing('c'), d = missing('d'), e = missing('e')] = ['a', 'b', 'c', 'd', 'e'].map((n) =>
+      join(n),
+    );
     team(a, b, c, d);
     expect(parties.partyOf(a.char.id)!.members.length).toBe(PARTY_MAX);
     parties.now = () => Date.now() + 99_000;
@@ -252,8 +255,8 @@ describe('chia tu vi, đồ, nhiệm vụ khi hạ quái', () => {
     c.move.x = X + 500;
     const xp0 = [a, b, c].map((p) => p.char.xp);
     kill(sim, a);
-    expect(a.char.xp).toBeGreaterThan(xp0[0]);
-    expect(b.char.xp).toBeGreaterThan(xp0[1]);
+    expect(a.char.xp).toBeGreaterThan(at(xp0, 0));
+    expect(b.char.xp).toBeGreaterThan(at(xp0, 1));
     expect(c.char.xp).toBe(xp0[2]);
   });
 

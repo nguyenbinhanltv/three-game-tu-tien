@@ -5,6 +5,7 @@ import Database from 'better-sqlite3';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { INV_SIZE } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // DB trong bộ nhớ cho các module kéo theo db.ts.
 process.env.DB_FILE = ':memory:';
 
@@ -125,8 +126,8 @@ describe('trang bị đã roll: lưu, ledger, idempotency', () => {
       delta: number;
     }[];
     expect(led).toHaveLength(1);
-    expect(led[0].delta).toBe(1);
-    expect(led[0].reason).toMatch(/^test:roll roll=\d+:q4:il12$/);
+    expect(at(led, 0).delta).toBe(1);
+    expect(at(led, 0).reason).toMatch(/^test:roll roll=\d+:q4:il12$/);
     expect(Character.load(c.id).inv[slot]).toEqual(c.inv[slot]);
 
     // Mặc vào ô: chỉ số lấy từ dòng chính × dòng phụ.
@@ -146,7 +147,7 @@ describe('trang bị đã roll: lưu, ledger, idempotency', () => {
     expect(inst.gems).toHaveLength(3);
     const led = sqlite.prepare("SELECT reason FROM ledger WHERE char_id = ? AND kind = 'item'").all(c.id) as { reason: string }[];
     expect(led).toHaveLength(1);
-    expect(led[0].reason).toMatch(/^test:roll roll=\d+:q5:il12$/);
+    expect(at(led, 0).reason).toMatch(/^test:roll roll=\d+:q5:il12$/);
     expect(Character.load(c.id).inv[slot]).toEqual(c.inv[slot]);
     expect(c.tx('test:roll', 'than-2', (d) => d.addRolled('itm_thanh_phong_kiem', 12, 6 as 0))).toBe(false);
   });

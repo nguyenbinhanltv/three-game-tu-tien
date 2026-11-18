@@ -12,6 +12,7 @@ import {
   type FxMsg,
 } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // E4-K: phân thân thần niệm (thực thể phụ có chủ do server giữ), lĩnh vực, ô chiêu 10. Server quyết định hết.
 process.env.DB_FILE = ':memory:';
 
@@ -439,12 +440,12 @@ describe('tải: 50 người cùng gọi phân thân', () => {
     const w = world();
     const methods = ['lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh'];
     const ps: Ent[] = [];
-    for (let i = 0; i < 50; i++) ps.push(w.join(28, methods[i % 3], (i % 10) * 4));
+    for (let i = 0; i < 50; i++) ps.push(w.join(28, at(methods, i % 3), (i % 10) * 4));
     for (let i = 0; i < 40; i++) w.mon(X + (i % 10) * 4 + 3, Z + 6 + Math.floor(i / 10) * 3, 5_000_000);
     for (const p of ps) {
       p.gcdAt = 0;
       p.cds.clear();
-      if (methods.indexOf(p.char.meta.method!) === 0) w.sim.onSkill(p, { id: 'skl_phi_kiem', t: [...w.sim.monsters][0].id });
+      if (methods.indexOf(p.char.meta.method!) === 0) w.sim.onSkill(p, { id: 'skl_phi_kiem', t: at([...w.sim.monsters], 0).id });
     }
     w.advance(600);
     for (const p of ps) w.sim.onClone(p, {});

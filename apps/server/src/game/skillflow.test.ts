@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { DASH_MIN_GAP_MS, groundAt, MS_DEAD, PF_DEAD, S, WORLD_MARGIN, type CdMsg, type FxMsg } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // K-2: server áp sát thương tại hitAt, chuỗi đánh thường, cường hóa, lướt có kiểm đường, hủy chiêu, chống spam.
 process.env.DB_FILE = ':memory:';
 
@@ -92,7 +93,7 @@ describe('server áp sát thương tại hitAt', () => {
     const sk = SKILL.get('skl_kiem_khi_tram')!;
     expect(m.s.hp).toBe(m.s.mhp);
     expect(p.flow.pending).not.toBeNull();
-    expect(p.flow.pending!.at - sim.now).toBeCloseTo(sk.hitAt![0] * 1000, 0);
+    expect(p.flow.pending!.at - sim.now).toBeCloseTo(at(sk.hitAt!, 0) * 1000, 0);
     expect(p.char.mp).toBe(mp0 - sk.mp);
     expect(p.cds.get(sk.id)).toBeGreaterThan(sim.now);
     resolve();
