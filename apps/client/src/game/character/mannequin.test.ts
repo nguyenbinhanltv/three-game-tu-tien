@@ -15,8 +15,8 @@ describe('baseClipOf (v3, clip UAL)', () => {
     expect(baseClipOf(st({ flying: true }))).toBe('NinjaJump_Idle_Loop');
     expect(baseClipOf(st({ dead: true, speed: 3, flying: true }))).toBe('Death01');
   });
-  it('tốc độ chạy tham chiếu của UAL khớp số đo (5,36 m/s)', () => {
-    expect(JOG_SPEED).toBeCloseTo(5.36, 2);
+  it('tốc độ chân trụ tham chiếu khớp số đo trong game (5,4 m/s)', () => {
+    expect(JOG_SPEED).toBeCloseTo(5.4, 2);
   });
 });
 
@@ -49,5 +49,15 @@ describe('twist (N-4)', () => {
     expect(twistAngle(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0.8), axis)).toBeCloseTo(0, 5);
     const both = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0.6).multiply(new THREE.Quaternion().setFromAxisAngle(axis, -0.5));
     expect(twistAngle(both, axis)).toBeCloseTo(-0.5, 1);
+  });
+});
+
+describe('jogRate (chống trượt chân)', () => {
+  it('phát theo tốc độ chạy / 5,4 và kẹp trong [0,4; 2]', async () => {
+    const { jogRate, JOG_SPEED } = await import('./mannequin');
+    expect(jogRate(JOG_SPEED)).toBeCloseTo(1, 5);
+    expect(jogRate(JOG_SPEED * 1.3)).toBeCloseTo(1.3, 5);
+    expect(jogRate(0.1)).toBe(0.4);
+    expect(jogRate(100)).toBe(2);
   });
 });
