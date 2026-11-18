@@ -1042,11 +1042,18 @@ def _(b):
 
 @part('prop_chau_cay', 'prop')
 def _(b):
-    b.box(0, 0.4, 0, 1.6, 0.8, 1.6, JADE_SHADE)
-    b.box(0, 0.82, 0, 1.4, 0.06, 1.4, paint(0x3F6B3A, 'stone'))
-    b.cylinder(0, 0.85, 0, 0.12, 1.8, TIMBER_D, 6, 0.06)
-    b.cylinder(0, 2.0, 0, 0.9, 0.9, paint(0x3E8C5A, 'stone'), 8, 0.2)
-    b.cylinder(0.5, 1.6, 0.2, 0.5, 0.5, PLUM, 6, 0.1)
+    # Chậu ngọc tròn thuôn + tùng cảnh cắt tỉa tầng mây (thân uốn, ba tầng tán tròn nhiều sắc lục).
+    b.cylinder(0, 0, 0, 0.95, 0.12, JADE_SHADE, 16, 0.85, smooth=False)
+    b.cylinder(0, 0.12, 0, 0.85, 0.7, JADE, 16, 1.0)
+    b.cylinder(0, 0.82, 0, 1.04, 0.1, JADE_SHADE, 16)
+    b.cylinder(0, 0.92, 0, 0.9, 0.04, paint(0x4a6b3a, 'stone'), 16)
+    for k in range(5):
+        a = k * 0.5
+        b.cylinder(math.sin(a) * 0.1, 0.95 + k * 0.38, math.cos(a) * 0.08, 0.13 - k * 0.012, 0.4, TIMBER_D, 8, 0.11 - k * 0.012)
+    for k, (r, hh, col, ox) in enumerate([(0.95, 0.38, paint(0x2f7f5c, 'stone'), -0.25), (0.78, 0.34, paint(0x4aa06a, 'stone'), 0.3), (0.6, 0.3, paint(0x7fbf72, 'stone'), -0.05)]):
+        y = 1.55 + k * 0.52
+        b.cylinder(ox, y, 0.05 * k, r, hh, col, 14, r * 0.78)
+        b.cylinder(ox, y + hh, 0.05 * k, r * 0.78, 0.1, col, 14, r * 0.5)
 
 
 @part('prop_bat_quai', 'prop')

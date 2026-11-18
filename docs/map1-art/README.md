@@ -32,5 +32,6 @@ Tái thiết kế mỹ thuật Lạc Kiếm Tông (bản đồ `van_lam`). Chia 
 - Mặt đất: `render/groundMask.ts` `sectPaving` chỉ lát đại lộ, bát quái, sân chính điện/đình/sơn môn; phần còn lại của đỉnh là cỏ ngọc (`terrain.ts` `C_GRASS_SECT`). Mặt nạ dựng lại bằng `pnpm assets:terrain`; `surface.ts` (tiếng bước chân) dùng cùng hàm.
 - Va chạm: tường rào ngói hai bên sơn môn có chuỗi vòng r 0,8 (`SECT_WALL` ở `shared/src/level.ts`), chừa lối giữa hai trụ cổng phụ.
 - Camera chụp: `window.__game.freeCam = {x,y,z,tx,ty,tz,fov}` (chỉ khi URL có `?debug`), dùng bởi `pnpm shots lackiem` (6 góc cố định, không bị địa hình đẩy camera).
-- Đo (preset Cao, 1080p): draw call đỉnh 185 (góc trên cao), tam giác ≤ 1,08 triệu; dưới ngân sách 300 draw call / 1–2 triệu tam giác. Khung bị chặn ở ~8,3 ms trong Chrome headless nên số ms không phân biệt được.
+- Đo (preset Cao, 1080p): draw call đỉnh 185 (góc trên cao), tam giác đỉnh ~1,48 triệu (góc trên cao nhìn cả đảo); dưới ngân sách 300 draw call / 1–2 triệu tam giác. Khung bị chặn ở ~8,3 ms trong Chrome headless nên số ms không phân biệt được.
 - Chưa làm: LOD cho `arch_sect`, thác/đảo có va chạm (đi bộ được), hoàng hôn còn hơi hồng.
+- Vòng chỉnh theo duyệt v2: Kiếm Đài dùng mesh kiếm thật (lưỡi đùn vát cạnh + rãnh, tay nắm sừng, chuôi quấn, đầu chuôi), đảo dựng low-poly flat shading với bậc đá, nhũ đá, rễ, dây leo điểm lá; cỏ và vách núi đổi sắc theo mảng/tầng (`terrain.ts`); sương bình minh/trưa giảm ~40%; hoàng hôn cam-vàng (`lk_dusk`).

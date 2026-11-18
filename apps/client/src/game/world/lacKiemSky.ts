@@ -136,14 +136,47 @@ const JADE = C(0xe3ece6);
 const JADE_SHADE = C(0xb9cbc2);
 const JADE_GREEN = C(0x6fb59a);
 const TRUNK = C(0x5a4333);
-const LEAF_A = C(0x3f9a6a);
-const LEAF_B = C(0x7fc07a);
-const BLOSSOM = C(0xe08a9a);
+
+// ---------- ống thuôn và khối tròn gồ ghề ----------
+
+/** Ống thuôn qua chuỗi điểm: bán kính `radii[i]` tại `pts[i]`, `sides` cạnh, màu theo `colorAt(t)`. */
+function tube(m: Mesher, pts: THREE.Vector3[], radii: number[], sides: number, colorAt: (t: number) => THREE.Color): void {
+  let prev: number[] = [];
+  const last = pts.length - 1;
+  for (let i = 0; i <= last; i++) {
+    const c = colorAt(i / last);
+    const row: number[] = [];
+    for (let j = 0; j < sides; j++) {
+      const b = (j / sides) * Math.PI * 2;
+      row.push(m.vert(pts[i].x + Math.cos(b) * radii[i], pts[i].y, pts[i].z + Math.sin(b) * radii[i], c));
+    }
+    if (prev.length) for (let j = 0; j < sides; j++) m.quad(prev[j], row[j], row[(j + 1) % sides], prev[(j + 1) % sides]);
+    prev = row;
+  }
+}
+
+const _ico = new THREE.IcosahedronGeometry(1, 1);
+
+/** Khối tròn méo theo nhiễu (tán cây, cụm lá): ico chia một lần, đỉnh chung dịch cùng nhau nên không rách. */
+function blob(m: Mesher, c: THREE.Vector3, rx: number, ry: number, rz: number, color: THREE.Color, seed: number): void {
+  const p = _ico.getAttribute('position');
+  const tmp = new THREE.Color();
+  const base: number[] = [];
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i);
+    const y = p.getY(i);
+    const z = p.getZ(i);
+    const n = 0.78 + 0.5 * fbm3(x * 1.7 + seed, y * 1.7, z * 1.7, seed, 2);
+    tmp.copy(color).multiplyScalar(0.8 + 0.3 * (y * 0.5 + 0.5));
+    base.push(m.vert(c.x + x * rx * n, c.y + y * ry * n, c.z + z * rz * n, tmp));
+  }
+  for (let i = 0; i < p.count; i += 3) m.tri(base[i], base[i + 1], base[i + 2]);
+}
 
 // ---------- thân đảo ----------
 
-const SEG = 44;
-const RINGS = 16;
+const SEG = 72;
+const RINGS = 28;
 
 /** Toạ độ thế giới của tâm mặt trên đảo. */
 export function islandTop(isl: SkyIsland): THREE.Vector3 {
@@ -162,10 +195,14 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
   const rand = rng(seed);
   const tmp = new THREE.Color();
   const radius = (a: number, t: number) => {
-    const n = fbm3(Math.cos(a) * 1.6 + seed, Math.sin(a) * 1.6, t * 2.4, seed, 3);
-    // Mép trên hơi vát, thân phình rồi thu nhọn về mũi đá.
+    const n = fbm3(Math.cos(a) * 2.1 + seed, Math.sin(a) * 2.1, t * 2.8, seed, 3);
+    // Mép trên hơi vát, thân phình rồi thu nhọn về mũi đá; bậc đá (ledge) theo độ cao, gân dọc thân.
     const shape = Math.pow(Math.max(0, 1 - Math.pow(t, 1.35)), 0.62) * (1 + 0.1 * Math.sin(t * 3.1));
-    return R * shape * (0.82 + 0.4 * n);
+    const f = (t * 6.5 + 0.35 * fbm3(a * 1.3 + seed, t * 2, 1.1, seed + 2, 2)) % 1;
+    const ledge = 1 + 0.09 * Math.pow(f, 2.2) - 0.03;
+    const rib = 1 + 0.07 * Math.sin(a * 9 + seed) * fbm3(a * 3 + seed, t * 4, 2.2, seed + 6, 2) * Math.min(1, t * 4);
+    const crag = 1 + 0.11 * (fbm3(Math.cos(a) * 5.5 + seed, Math.sin(a) * 5.5, t * 7.5, seed + 4, 3) - 0.5) * Math.min(1, t * 6);
+    return R * shape * (0.74 + 0.6 * n) * ledge * rib * crag;
   };
   // Mặt trên: quạt từ tâm (hơi gồ) ra mép; màu cỏ loang.
   const centerY = top.y + 0.9;
@@ -186,9 +223,11 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
       else tmp.copy(ROCK_MID).lerp(ROCK_LOW, Math.min(1, (t - 0.4) / 0.5));
       if (moss > 0.62 && t < 0.5) tmp.lerp(MOSS, Math.min(0.6, (moss - 0.62) * 3) * (1 - t * 1.4));
       // Vân đá xếp tầng: dải sáng tối ngang theo độ cao, lệch theo nhiễu (vách đá trầm tích).
-      const strata = 0.9 + 0.14 * Math.sin(y * 0.62 + fbm3(cx * 0.05, y * 0.05, cz * 0.05, seed + 8, 2) * 5);
+      const strata = 0.86 + 0.28 * Math.sin(y * 0.62 + fbm3(cx * 0.05, y * 0.05, cz * 0.05, seed + 8, 2) * 5);
       const lum = strata * (0.88 + 0.24 * fbm3(cx * 0.2, y * 0.2, cz * 0.2, seed + 5, 2));
-      tmp.multiplyScalar(lum);
+      // Lớp đá xen kẽ ấm (sa thạch) / lạnh (đá xanh); chân đảo tối dần (bóng đổ).
+      if (Math.sin(y * 0.62 + moss * 4) > 0.2 && t > 0.06) tmp.lerp(ROCK_TOP, 0.3);
+      tmp.multiplyScalar(lum * (1 - t * 0.32));
       row.push(m.vert(cx, y, cz, tmp));
     }
     ring.push(row);
@@ -229,63 +268,114 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
     m.quad(grassRing[s], inner[s], inner[s2], grassRing[s2]);
     m.tri(inner[s], ctr, inner[s2]);
   }
-  // Rễ cây và nhũ đá buông xuống từ thân (cong ra ngoài rồi rũ xuống).
-  const nRoots = Math.round(R * 0.5);
+  const col = (hex: number) => C(hex);
+  // Nhũ đá nhọn treo dưới thân: nhiều cỡ, nghiêng nhẹ, đá phân lớp tối dần về mũi.
+  const nStal = Math.round(R * 1.3);
+  for (let i = 0; i < nStal; i++) {
+    const a = rand() * Math.PI * 2;
+    const t0 = 0.28 + rand() * 0.6;
+    const r0 = radius(a, t0) * (0.7 + rand() * 0.25);
+    const len = isl.depth * (0.12 + rand() * 0.38) * (rand() < 0.12 ? 1.8 : 1);
+    const w0 = (0.7 + rand() * 1.6) * (R / 40 + 0.6);
+    const sx = top.x + Math.cos(a) * r0;
+    const sz = top.z + Math.sin(a) * r0;
+    const sy = top.y - isl.depth * Math.pow(t0, 0.95) + 1.5;
+    const lean = (rand() - 0.5) * 3;
+    const pts: THREE.Vector3[] = [];
+    const rad: number[] = [];
+    for (let k = 0; k <= 5; k++) {
+      const q = k / 5;
+      pts.push(new THREE.Vector3(sx + lean * q, sy - len * q, sz + lean * 0.5 * q));
+      rad.push(w0 * Math.pow(1 - q, 0.85) + 0.03);
+    }
+    tube(m, pts, rad, 6, (q) =>
+      ROCK_MID.clone()
+        .lerp(ROCK_LOW, 0.3 + q * 0.7)
+        .multiplyScalar(0.85 + rand() * 0.2),
+    );
+  }
+  // Rễ cây khổng lồ bám thân đảo, cong ra ngoài rồi rũ xuống.
+  const nRoots = Math.round(R * 0.4);
   for (let i = 0; i < nRoots; i++) {
     const a = rand() * Math.PI * 2;
-    const t0 = 0.12 + rand() * 0.38;
+    const t0 = 0.08 + rand() * 0.3;
     const r0 = radius(a, t0);
-    const len = isl.depth * (0.25 + rand() * 0.55);
-    const w0 = 0.5 + rand() * 0.9;
+    const len = isl.depth * (0.25 + rand() * 0.5);
+    const w0 = 0.22 + rand() * 0.45;
+    const sx = top.x + Math.cos(a) * r0 * 0.96;
+    const sz = top.z + Math.sin(a) * r0 * 0.96;
+    const sy = top.y - isl.depth * Math.pow(t0, 0.95);
+    const bend = (rand() - 0.5) * 8;
+    const pts: THREE.Vector3[] = [];
+    const rad: number[] = [];
+    for (let k = 0; k <= 7; k++) {
+      const q = k / 7;
+      pts.push(
+        new THREE.Vector3(
+          sx + Math.cos(a) * (q * q * 5 + bend * q) + Math.sin(a) * bend * 0.4 * q,
+          sy - len * q,
+          sz + Math.sin(a) * (q * q * 5 + bend * q) - Math.cos(a) * bend * 0.4 * q,
+        ),
+      );
+      rad.push(w0 * (1 - q) * (1 - q * 0.4) + 0.03);
+    }
+    tube(m, pts, rad, 5, (q) => ROOT.clone().lerp(ROCK_MID, q * 0.35));
+  }
+  // Dây leo rủ xuống từ mép đảo, điểm cụm lá; mảng rêu dày ở chân vách trên.
+  const nVines = Math.round(R * 0.9);
+  const VINE = col(0x3d7a3e);
+  const VINE_LEAF = col(0x6fb25a);
+  for (let i = 0; i < nVines; i++) {
+    const a = rand() * Math.PI * 2;
+    const t0 = rand() * 0.1;
+    const r0 = radius(a, t0) * (0.92 + rand() * 0.08);
+    const len = 7 + rand() * 24 * (rand() < 0.2 ? 1.6 : 1);
     const sx = top.x + Math.cos(a) * r0;
     const sz = top.z + Math.sin(a) * r0;
     const sy = top.y - isl.depth * Math.pow(t0, 0.95);
-    const bend = (rand() - 0.5) * 8;
-    const steps = 6;
-    let prev: number[] = [];
-    for (let k = 0; k <= steps; k++) {
-      const q = k / steps;
-      const w = w0 * (1 - q) * (1 - q * 0.4) + 0.02;
-      const cx = sx + Math.cos(a) * (q * q * 5 + bend * q) + Math.sin(a) * bend * 0.4 * q;
-      const cy = sy - len * q;
-      const cz = sz + Math.sin(a) * (q * q * 5 + bend * q) - Math.cos(a) * bend * 0.4 * q;
-      tmp.copy(ROOT).lerp(ROCK_MID, q * 0.4);
-      const row: number[] = [];
-      for (let j = 0; j < 5; j++) {
-        const b = (j / 5) * Math.PI * 2;
-        row.push(m.vert(cx + Math.cos(b) * w, cy, cz + Math.sin(b) * w, tmp));
-      }
-      if (prev.length) for (let j = 0; j < 5; j++) m.quad(prev[j], row[j], row[(j + 1) % 5], prev[(j + 1) % 5]);
-      prev = row;
+    const segs = Math.max(4, Math.round(len / 2));
+    const pts: THREE.Vector3[] = [];
+    const rad: number[] = [];
+    const sway = (rand() - 0.5) * 1.6;
+    for (let k = 0; k <= segs; k++) {
+      const q = k / segs;
+      pts.push(new THREE.Vector3(sx + Math.cos(a) * q * 1.2 + Math.sin(q * 5 + i) * sway * 0.4, sy - len * q, sz + Math.sin(a) * q * 1.2));
+      rad.push(0.11 * (1 - q * 0.5));
     }
+    tube(m, pts, rad, 4, (q) => VINE.clone().lerp(ROOT, q * 0.3));
+    for (let k = 2; k <= segs; k += 3) blob(m, pts[k], 0.55, 0.38, 0.55, VINE_LEAF, seed + i * 7 + k);
   }
-  // Rừng nhỏ trên mặt đảo: thân + hai tầng tán, chừa vùng giữa cho công trình/đài.
-  const nTrees = Math.round(R * 0.55);
+  // Rừng nhỏ trên mặt đảo: thân tapered + ba cụm tán tròn nhiều sắc xanh (chừa vùng giữa cho công trình/đài).
+  const nTrees = Math.round(R * 0.5);
+  const greens = [col(0x3f9a6a), col(0x5cae6a), col(0x7fbf72), col(0x2f7f5c), col(0x9acb6a)];
   for (let i = 0; i < nTrees; i++) {
     const a = rand() * Math.PI * 2;
-    const rr = R * (0.7 + rand() * 0.2) * (radius(a, 0) / R);
+    const rr = R * (0.72 + rand() * 0.2) * (radius(a, 0) / R);
     const x = top.x + Math.cos(a) * rr;
     const z = top.z + Math.sin(a) * rr;
     const y = top.y + bumpy(x, z) + 0.15;
-    const h = 2.5 + rand() * 3.2;
-    const blossom = rand() < 0.28;
-    const trunk = new THREE.Vector3(x, y + h * 0.5, z);
-    m.box(
-      trunk,
-      new THREE.Vector3(0.25, h * 0.5, 0.25),
-      new THREE.Vector3(1, 0, 0),
-      new THREE.Vector3(0, 1, 0),
-      new THREE.Vector3(0, 0, 1),
-      TRUNK,
-    );
+    const h = 3.2 + rand() * 4;
+    const lean = (rand() - 0.5) * 0.9;
+    const tp: THREE.Vector3[] = [];
+    const tr: number[] = [];
+    for (let k = 0; k <= 4; k++) {
+      const q = k / 4;
+      tp.push(new THREE.Vector3(x + lean * q * q * h * 0.25, y + h * q, z));
+      tr.push(0.32 * (1 - q * 0.65));
+    }
+    tube(m, tp, tr, 6, (q) => TRUNK.clone().multiplyScalar(0.8 + q * 0.3));
+    const g = greens[Math.floor(rand() * greens.length)];
     for (let k = 0; k < 3; k++) {
-      const lc = blossom ? BLOSSOM.clone().lerp(LEAF_B, k * 0.2) : LEAF_A.clone().lerp(LEAF_B, 0.2 + k * 0.3 + rand() * 0.2);
-      const s = (3.2 - k * 0.8) * (0.8 + rand() * 0.5);
-      const cy = y + h * (0.62 + k * 0.2);
-      const rot = rand() * Math.PI;
-      const u = new THREE.Vector3(Math.cos(rot), 0, Math.sin(rot));
-      const w = new THREE.Vector3(-Math.sin(rot), 0, Math.cos(rot));
-      m.box(new THREE.Vector3(x, cy, z), new THREE.Vector3(s, s * 0.45, s * 0.9), u, new THREE.Vector3(0, 1, 0), w, lc);
+      const s = (2.6 - k * 0.5) * (0.85 + rand() * 0.5);
+      blob(
+        m,
+        new THREE.Vector3(x + lean * h * 0.25 + (rand() - 0.5) * 1.6, y + h * (0.78 + k * 0.17), z + (rand() - 0.5) * 1.6),
+        s,
+        s * 0.78,
+        s,
+        g,
+        seed + i * 13 + k,
+      );
     }
   }
 }
@@ -414,46 +504,83 @@ function mistMaterial(): THREE.MeshBasicNodeMaterial {
 // ---------- kiếm Kiếm Đài ----------
 
 function swordGeometry(): THREE.BufferGeometry {
-  const parts: THREE.BufferGeometry[] = [];
-  // Lưỡi: kim tự tháp dẹt, mũi hướng xuống (cắm đất), bề mặt cao 1.
-  const blade = new THREE.CylinderGeometry(0.2, 0.0, 1, 4, 1).toNonIndexed();
-  blade.rotateY(Math.PI / 4);
-  blade.scale(1, 1, 0.3);
-  blade.translate(0, 0.5, 0);
-  parts.push(blade);
-  const guard = new THREE.BoxGeometry(0.62, 0.07, 0.17).toNonIndexed();
-  guard.translate(0, 1.0, 0);
-  parts.push(guard);
-  const grip = new THREE.BoxGeometry(0.075, 0.34, 0.075).toNonIndexed();
-  grip.translate(0, 1.2, 0);
-  parts.push(grip);
-  const pommel = new THREE.BoxGeometry(0.14, 0.1, 0.14).toNonIndexed();
-  pommel.translate(0, 1.42, 0);
-  parts.push(pommel);
+  const parts: { g: THREE.BufferGeometry; c: THREE.Color }[] = [];
+  const steel = new THREE.Color(1, 1, 1);
+  const dark = new THREE.Color(0.62, 0.66, 0.72);
+  const gold = new THREE.Color(0.9, 0.7, 0.3);
+  const wood = new THREE.Color(0.32, 0.2, 0.13);
+  // Lưỡi thon, mũi hướng xuống (cắm đất), cao 1: mặt cắt đùn có vát cạnh; rãnh giữa là dải sẫm nổi nhẹ hai mặt.
+  const shape = new THREE.Shape();
+  shape.moveTo(0, 0);
+  shape.lineTo(0.052, 0.085);
+  shape.lineTo(0.06, 0.2);
+  shape.lineTo(0.06, 0.985);
+  shape.lineTo(-0.06, 0.985);
+  shape.lineTo(-0.06, 0.2);
+  shape.lineTo(-0.052, 0.085);
+  shape.closePath();
+  const blade = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.012,
+    bevelEnabled: true,
+    bevelThickness: 0.009,
+    bevelSize: 0.012,
+    bevelSegments: 1,
+    curveSegments: 1,
+  });
+  blade.translate(0, 0, -0.006);
+  parts.push({ g: blade.toNonIndexed(), c: steel });
+  const fuller = new THREE.BoxGeometry(0.024, 0.74, 0.036);
+  fuller.translate(0, 0.55, 0);
+  parts.push({ g: fuller.toNonIndexed(), c: dark });
+  // Tay nắm: thanh ngang có sừng vẫy lên ở hai đầu và gờ giữa.
+  const guard = new THREE.BoxGeometry(0.3, 0.032, 0.05);
+  guard.translate(0, 0.998, 0);
+  parts.push({ g: guard.toNonIndexed(), c: gold });
+  for (const sx of [-1, 1]) {
+    const horn = new THREE.ConeGeometry(0.022, 0.1, 5);
+    horn.rotateZ(sx * -0.45);
+    horn.translate(sx * 0.158, 1.04, 0);
+    parts.push({ g: horn.toNonIndexed(), c: gold });
+  }
+  const boss = new THREE.CylinderGeometry(0.03, 0.03, 0.05, 8);
+  boss.rotateX(Math.PI / 2);
+  boss.translate(0, 0.998, 0);
+  parts.push({ g: boss.toNonIndexed(), c: gold });
+  // Chuôi quấn dây (ba đai vàng) và đầu chuôi tròn có tua.
+  const grip = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 8);
+  grip.translate(0, 1.165, 0);
+  parts.push({ g: grip.toNonIndexed(), c: wood });
+  for (const y of [1.07, 1.165, 1.26]) {
+    const ring = new THREE.CylinderGeometry(0.026, 0.026, 0.012, 8);
+    ring.translate(0, y, 0);
+    parts.push({ g: ring.toNonIndexed(), c: gold });
+  }
+  const pommel = new THREE.IcosahedronGeometry(0.036, 0);
+  pommel.translate(0, 1.34, 0);
+  parts.push({ g: pommel.toNonIndexed(), c: gold });
+  const tassel = new THREE.ConeGeometry(0.014, 0.16, 5);
+  tassel.rotateX(Math.PI);
+  tassel.translate(0, 1.4 - 0.08, 0.0);
+  tassel.translate(0.0, -0.04, 0);
+  parts.push({ g: tassel.toNonIndexed(), c: new THREE.Color(0.75, 0.2, 0.2) });
   const pos: number[] = [];
   const nor: number[] = [];
-  const col: number[] = [];
-  const tint = [
-    new THREE.Color(1, 1, 1),
-    new THREE.Color(0.8, 0.62, 0.3),
-    new THREE.Color(0.35, 0.22, 0.14),
-    new THREE.Color(0.8, 0.62, 0.3),
-  ];
-  parts.forEach((g, i) => {
+  const colr: number[] = [];
+  for (const { g, c } of parts) {
     g.computeVertexNormals();
     const p = g.getAttribute('position');
     const n = g.getAttribute('normal');
     for (let k = 0; k < p.count; k++) {
       pos.push(p.getX(k), p.getY(k), p.getZ(k));
       nor.push(n.getX(k), n.getY(k), n.getZ(k));
-      col.push(tint[i].r, tint[i].g, tint[i].b);
+      colr.push(c.r, c.g, c.b);
     }
     g.dispose();
-  });
+  }
   const out = new THREE.BufferGeometry();
   out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   out.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
-  out.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  out.setAttribute('color', new THREE.Float32BufferAttribute(colr, 3));
   return out;
 }
 
@@ -476,7 +603,7 @@ export class LacKiemSkyScene {
       const [p0, p1] = bridgeEnds(sky, br.from, br.to);
       buildBridge(body, glow, p0, p1);
     }
-    const bodyMat = createWorldMaterial({ vertexColors: true, roughness: 0.92, side: THREE.DoubleSide });
+    const bodyMat = createWorldMaterial({ vertexColors: true, roughness: 0.92, side: THREE.DoubleSide, flatShading: true });
     const bodyMesh = new THREE.Mesh(body.geometry(), bodyMat);
     bodyMesh.name = 'sky-islands';
     bodyMesh.castShadow = true;
@@ -585,11 +712,11 @@ export class LacKiemSkyScene {
           const rj = rr + (r() - 0.5) * dai.r * 0.05;
           const s = (7.5 - k * 0.55 + r() * 3.2) * (k === 0 ? 1.15 : 1);
           dummy.position.set(top.x + Math.cos(a) * rj, top.y + 0.9, top.z + Math.sin(a) * rj);
-          const lean = 0.06 + k * 0.025;
+          const lean = 0.1 + k * 0.03;
           // Nghiêng ra ngoài theo bán kính + dao động nhỏ.
-          dummy.rotation.set(Math.sin(a) * lean + (r() - 0.5) * 0.12, a + (r() - 0.5) * 0.3, -Math.cos(a) * lean + (r() - 0.5) * 0.12);
+          dummy.rotation.set(Math.sin(a) * lean + (r() - 0.5) * 0.5, a + (r() - 0.5) * 1.2, -Math.cos(a) * lean + (r() - 0.5) * 0.5);
           dummy.rotation.order = 'YXZ';
-          dummy.scale.set(s * (0.85 + r() * 0.3), s, s * (0.85 + r() * 0.3));
+          dummy.scale.setScalar(s);
           dummy.updateMatrix();
           mesh.setMatrixAt(placed, dummy.matrix);
           const q = r();
