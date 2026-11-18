@@ -68,7 +68,7 @@ describe('dữ liệu Kim Dạ Cung', () => {
 
   it('Ma Hậu: pha 2 mặc cả, pha 3 Kim dạ khớp hai bia; Kiếm Cơ có vệt lửa; hai Huyết Giác là đôi', () => {
     const boss = content.MONSTER.get('boss_kim_da_ma_hau')!;
-    expect(boss.kd!.bargain).toMatchObject({ phase: 1, mon: 'mon_kim_da_bong' });
+    expect(boss.kd!.bargain).toMatchObject({ phase: 1, mon: 'mon_kd_bong_mac_ca' });
     expect(boss.kd!.night!.phase).toBe(2);
     expect(boss.kd!.night!.steles).toHaveLength(2);
     expect(boss.phases).toHaveLength(2);
@@ -116,11 +116,12 @@ interface FakeMon {
   atk: number;
   phase: number;
   stunUntil: number;
+  evadeUntil: number;
   chant: { startAt: number; endAt: number } | null;
   s: { x: number; z: number; hp: number; mhp: number; st: number };
   removeAt: number;
 }
-const mon = (id: string, def: FakeMon['def'], x = 0, z = 0, hp = 100): FakeMon => ({ id, def: { ...def, id: def.id ?? id }, state: MS_CHASE, level: 28, atk: 100, phase: 0, stunUntil: 0, chant: null, s: { x, z, hp, mhp: 100, st: MS_CHASE }, removeAt: 0 });
+const mon = (id: string, def: FakeMon['def'], x = 0, z = 0, hp = 100): FakeMon => ({ id, def: { ...def, id: def.id ?? id }, state: MS_CHASE, level: 28, atk: 100, phase: 0, stunUntil: 0, evadeUntil: 0, chant: null, s: { x, z, hp, mhp: 100, st: MS_CHASE }, removeAt: 0 });
 
 function mk(mons: FakeMon[], center = { x: 0, z: 0 }) {
   const t = { now: 100000 };
@@ -326,6 +327,54 @@ describe('KimDaSystem với host giả', () => {
     expect(log.say).not.toContain('sys.kd_stele_out');
     adv(3);
     expect(log.say).toContain('sys.kd_stele_out');
+  });
+
+  it('Kiếm Cơ chết thì vệt lửa tắt ngay, không gây thêm sát thương', () => {
+    const kc = mon('kc', { id: 'kc', boss: true, kd: { trail: { r: 3, dur: 8, step: 4, dps: 0.05 } } });
+    const { adv, log, hazards, pl } = mk([kc]);
+    hazards.push({ mon: kc, dmg: 1.5, x: 0, z: 0, r: 8, sh: 'rect', yaw: 0 });
+    adv(1);
+    hazards.length = 0;
+    adv(0.25);
+    pl[0].move = { x: 0, z: 8 };
+    kc.state = MS_DEAD;
+    adv(0.25);
+    log.dmg.length = 0;
+    adv(2);
+    expect(log.dmg).toHaveLength(0);
+  });
+
+  it('Ma Hậu chết giữa chú mặc cả thì bóng bị gỡ, không phạt đội', () => {
+    const boss = maHau();
+    boss.phase = 1;
+    const { adv, log, mons, t } = mk([boss]);
+    boss.chant = { startAt: t.now, endAt: t.now + 3000 };
+    adv(0.25);
+    const sh = mons[1];
+    boss.state = MS_DEAD;
+    adv(4);
+    expect(sh.state).toBe(MS_DEAD);
+    expect(log.dmg.filter((d) => d.src === 'kd_bargain')).toHaveLength(0);
+  });
+
+  it('boss rút lui về pha trước hoặc bỏ đuổi: Kim dạ và bóng mặc cả bị dọn', () => {
+    const boss = maHau();
+    boss.phase = 2;
+    const { adv, log, sys, t, mons } = mk([boss]);
+    adv(1);
+    expect(sys.litCount()).toBe(2);
+    boss.phase = 0;
+    adv(0.25);
+    expect(sys.litCount()).toBe(-1);
+    expect(log.fx.filter((f) => f.t === 'kd_stele' && f.d === 0)).toHaveLength(2);
+    boss.phase = 1;
+    boss.chant = { startAt: t.now, endAt: t.now + 3000 };
+    adv(0.25);
+    const sh = mons[1];
+    expect(sh.state).not.toBe(MS_DEAD);
+    boss.evadeUntil = t.now + 10000;
+    adv(0.25);
+    expect(sh.state).toBe(MS_DEAD);
   });
 
   it('Kim dạ dừng khi boss chết: gỡ cột bia, bóng', () => {

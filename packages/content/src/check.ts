@@ -513,7 +513,8 @@ function checkEquipLoot(id: string, l: LootDef) {
   if (!want && l.src !== 'common' && l.src !== 'dungeon') err(`loot ${id}: quái thường có src 'common' hoặc 'dungeon'`);
   if (!l.src) return;
   const rolls = l.equip ?? [];
-  if (!rolls.length) err(`loot ${id}: thiếu bảng rơi trang bị (equip)`);
+  // Bóng không cho xp (xpMul 0, bóng gương/bóng mặc cả) được để trống để khỏi bị farm.
+  if (!rolls.length && MONSTER.get(id)?.xpMul !== 0) err(`loot ${id}: thiếu bảng rơi trang bị (equip)`);
   const slots = droppableSlots(ITEM_SYS, ITEMS);
   rolls.forEach((r, i) => {
     const w = `loot ${id}/equip[${i}]`;

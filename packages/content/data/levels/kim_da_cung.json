@@ -19,8 +19,8 @@
     "minLevel": 28,
     "returnLevel": "bac_hoang",
     "returnSpawn": {
-      "x": 1356,
-      "z": 644
+      "x": 687,
+      "z": 650
     },
     "bound": 90,
     "private": true,

@@ -121,7 +121,7 @@ export class KimDaSystem {
     }
     this.tickTwin(mons);
     this.tickPools(now, dt);
-    this.stopNightIfBossGone(mons);
+    this.cleanup(mons);
   }
 
   // ---------- Châm Bà ----------
@@ -282,14 +282,29 @@ export class KimDaSystem {
     }
   }
 
-  private stopNightIfBossGone(mons: readonly MonEnt[]): void {
-    if (!this.night) return;
-    if (mons.some((m) => m.id === this.nightWho && m.state !== MS_DEAD)) return;
-    this.night.forEach((s, i) => this.h.fx({ t: 'kd_stele', n: i, x: s.x, z: s.z, r: s.r, d: 0, pg: 0 }));
-    this.night = null;
-    this.pools = [];
-    if (this.shadow) this.h.despawn(this.shadow);
-    this.shadow = null;
+  /**
+   * Dọn khi chủ cơ chế không còn (chết, rút lui về pha trước, bỏ đuổi): bia/bóng mặc cả theo Ma Hậu, vệt lửa theo Kiếm Cơ.
+   * Mỗi thứ dọn độc lập (Kiếm Cơ chết thì vệt lửa tắt dù Ma Hậu chưa xuất hiện; Ma Hậu chết thì bóng mặc cả không còn chặn đợt).
+   */
+  private cleanup(mons: readonly MonEnt[]): void {
+    const now = this.h.now();
+    const live = (m: MonEnt) => m.state !== MS_DEAD && m.evadeUntil <= now;
+    if (this.night) {
+      const ph = mons.find((m) => m.id === this.nightWho)?.def.kd?.night?.phase ?? 0;
+      if (!mons.some((m) => m.id === this.nightWho && live(m) && m.phase >= ph)) {
+        this.night.forEach((s, i) => this.h.fx({ t: 'kd_stele', n: i, x: s.x, z: s.z, r: s.r, d: 0, pg: 0 }));
+        this.night = null;
+      }
+    }
+    if (this.shadow || this.bargainEnd) {
+      const boss = mons.find((m) => m.def.kd?.bargain && live(m) && m.phase >= m.def.kd.bargain.phase);
+      if (!boss) {
+        if (this.shadow) this.h.despawn(this.shadow);
+        this.shadow = null;
+        this.bargainEnd = 0;
+      }
+    }
+    if (this.pools.length > 0 && !mons.some((m) => m.def.kd?.trail && m.state !== MS_DEAD)) this.pools = [];
   }
 
   /** Số bia đang sáng (test). */

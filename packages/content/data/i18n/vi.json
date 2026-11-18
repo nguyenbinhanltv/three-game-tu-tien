@@ -930,6 +930,8 @@
   "mon.boss_kim_da_ma_hau.say.2": "Tắt hết đèn đi. Triều của ta quen với bóng tối hơn các ngươi nghĩ.",
   "mon.boss_kim_da_ma_hau.say.dead": "Vậy là… không chia được. Ngọn đèn cuối này, các ngươi giữ lấy.",
   "mon.mon_kim_da_bong": "Bóng Kim Dạ",
+  "mon.mon_kd_bong_mac_ca": "Bóng Mặc Cả",
+  "mon.mon_kd_bong_mac_ca.title": "Bóng niệm chú thứ hai của Ma Hậu; hạ nó trước khi chú xong",
   "mon.mon_kim_da_bong.title": "Bóng của Ma Hậu, niệm chú thay bà ở đầu bên kia sảnh",
   "mon.boss_thien_khuyet_thu_linh": "Thiên Khuyết Thủ Linh",
   "mon.boss_thien_khuyet_thu_linh.title": "Tượng thần giữ Mộ Đạo, làm đúng lời dặn từ thuở trước",

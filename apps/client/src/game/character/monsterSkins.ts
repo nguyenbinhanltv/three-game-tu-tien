@@ -203,6 +203,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   boss_kim_da_ma_hau: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.5, lift: 0.45, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
   // Bóng của Ma Hậu (decoy `mirror.decoys`): cùng model, mờ và ngả vàng dát.
   mon_kim_da_bong: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffe0a0', rim: 0.5, lift: 0.3, ghost: 0.55, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
+  mon_kd_bong_mac_ca: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffe0a0', rim: 0.5, lift: 0.3, ghost: 0.55, lazy: true, level: 'kim_da_cung', moves: MQ_MOVES, mannequin: true },
 };
 
 interface Template {
