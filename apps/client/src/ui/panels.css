@@ -35,15 +35,15 @@
 }
 .item-name[data-q='1'],
 .reward-item[data-q='1'] {
-  color: #a6d27f;
+  color: var(--u-q1-ink);
 }
 .item-name[data-q='2'],
 .reward-item[data-q='2'] {
-  color: #86c3ee;
+  color: var(--u-q2-ink);
 }
 .item-name[data-q='3'],
 .reward-item[data-q='3'] {
-  color: #c9a8ff;
+  color: var(--u-q3-ink);
 }
 .item-name[data-q='4'] {
   color: #ffd45a;
@@ -195,8 +195,20 @@
   color: var(--k-text);
   font-size: 13px;
 }
+.quest-mark,
+.quest-dot {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+}
+.quest-dot {
+  box-sizing: border-box;
+  border: 1.5px solid var(--u-gold-lo);
+  transform: rotate(45deg) scale(0.6);
+}
 .quest-obj.ok {
-  color: #8fe0a8;
+  color: var(--u-ok-ink);
 }
 .rewards {
   display: flex;
@@ -839,7 +851,7 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
   min-height: 200px;
   display: grid;
   place-items: center;
-  color: var(--k-edge-dim, #6a7a86);
+  color: var(--k-edge-dim);
   max-height: 260px;
 }
 .equip-figure[data-q='0'] {
@@ -892,7 +904,7 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
   inset: 0;
   transform-origin: left;
   transform: scaleX(var(--p, 0));
-  background: var(--mc, #c9a2ff);
+  background: var(--mc);
 }
 .buff-row {
   display: flex;

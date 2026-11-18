@@ -1,4 +1,5 @@
 import { QUEST, QUESTS, t } from '@dtl/content';
+import { UiIcon } from '../ContentIcon';
 import { objectiveText } from '../objective';
 import { closePanel, useUI } from '../store';
 import { RewardLine, Window } from './common';
@@ -29,7 +30,8 @@ export function Quests() {
               const count = o.type === 'kill' || o.type === 'gather' || o.type === 'craft' ? ` ${cur}/${o.count}` : '';
               return (
                 <div key={i} className={'quest-obj' + (ok ? ' ok' : '')}>
-                  {ok ? '✔' : '○'} {objectiveText(o)}
+                  {ok ? <UiIcon id="mark_xong" fallback="✔" className="quest-mark" /> : <i className="quest-dot" aria-hidden="true" />}{' '}
+                  {objectiveText(o)}
                   {count}
                 </div>
               );

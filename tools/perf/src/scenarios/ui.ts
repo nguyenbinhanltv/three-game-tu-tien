@@ -63,6 +63,7 @@ const PANELS: Panel[] = [
   { id: 'cong-phap', key: 'k' },
   { id: 'nhiem-vu', key: 'l' },
   { id: 'to-doi', key: 'p' },
+  { id: 'ban-do', key: 'm' },
   { id: 'cai-dat', key: 'o' },
   { id: 'ghi-cong', key: 'o', click: 'Ghi công' },
   { id: 'tro-giup', key: 'h' },
@@ -144,6 +145,12 @@ async function panels(r: Run, variants: string[], sizes: string[], only: string[
     const { ctx, page } = await open(r, `Pan${variant[0]}`, variant, { realm: 'nk12', at: 'tong_mon' });
     await sleep(2500);
     for (const c of BAG) await gm(page, c);
+    // Nhận một nhiệm vụ để bảng Nhiệm vụ và khung theo dõi có chữ.
+    await tp(page, 2048, 2034);
+    await sleep(2000);
+    await page.evaluate(() => window.__game!.send('q', { a: 'accept', id: 'q_dan_khi' }));
+    await tp(page, 2048, 2088);
+    await sleep(1500);
     for (const p of PANELS.filter((x) => !only.length || only.includes(x.id))) {
       if (p.npc) {
         await tp(page, ...p.npc);

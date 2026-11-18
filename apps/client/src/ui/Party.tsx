@@ -39,7 +39,7 @@ export function PartyFrame() {
     <div className="pty-frame" data-res={party.res ? '1' : undefined}>
       {party.res && (
         <div className="pty-res" title={t('ui.party.res_tip')}>
-          ☯ {t('ui.party.res')}
+          <UiIcon id="hud_to_doi" fallback="☯" className="inline" /> {t('ui.party.res')}
         </div>
       )}
       {party.members.map((m) => (
@@ -48,7 +48,7 @@ export function PartyFrame() {
             <span className="pty-name">
               {m.lead && (
                 <i className="pty-crown" title={t('ui.party.leader')}>
-                  ♛
+                  <UiIcon id="ui_sao" fallback="♛" className="inline" />
                 </i>
               )}
               {m.name || '…'}
@@ -164,7 +164,11 @@ export function PartyPanel() {
             {party.members.map((m) => (
               <div key={m.id} className="pty-li">
                 <span className="pty-name">
-                  {m.lead && <i className="pty-crown">♛</i>}
+                  {m.lead && (
+                    <i className="pty-crown" title={t('ui.party.leader')}>
+                      <UiIcon id="ui_sao" fallback="♛" className="inline" />
+                    </i>
+                  )}
                   {m.name || '…'}
                 </span>
                 <RoleTag role={m.role} />

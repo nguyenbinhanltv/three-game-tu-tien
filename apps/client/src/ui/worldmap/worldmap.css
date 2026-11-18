@@ -8,7 +8,7 @@
   position: relative;
   flex: none;
   border: 2px solid var(--k-edge-dim);
-  background: #2a2218;
+  background: var(--u-ink-2);
 }
 .wm-main canvas {
   display: block;
@@ -26,7 +26,7 @@
   font-size: 11px;
   color: var(--k-text);
   text-align: center;
-  background: linear-gradient(0deg, rgba(14, 10, 6, 0.82), transparent);
+  background: linear-gradient(0deg, var(--u-ink-veil), transparent);
   pointer-events: none;
 }
 .wm-side {
@@ -46,7 +46,7 @@
   padding: 3px 9px;
   font: 600 12px var(--k-font-body);
   color: var(--k-text-dim);
-  background: rgba(24, 17, 10, 0.7);
+  background: var(--u-ink-veil);
   border: 1px solid var(--k-edge-dim);
   border-radius: 12px;
   cursor: pointer;
@@ -54,7 +54,7 @@
 .wm-chip[data-on='true'] {
   color: var(--k-gold);
   border-color: var(--k-gold);
-  background: rgba(104, 74, 28, 0.55);
+  background: color-mix(in srgb, var(--u-gold-lo) 55%, transparent);
 }
 .wm-actions {
   display: flex;
@@ -67,8 +67,8 @@
   padding: 6px 8px;
   font-size: 12px;
   color: var(--k-text);
-  background: rgba(20, 44, 52, 0.6);
-  border: 1px solid #4ea6ba;
+  background: color-mix(in srgb, var(--u-ngoc-lo) 60%, transparent);
+  border: 1px solid var(--u-ngoc);
 }
 .wm-cd {
   color: var(--k-text-dim);
@@ -86,12 +86,12 @@
   font-size: 12px;
   line-height: 1.45;
   color: var(--k-text);
-  background: rgba(14, 23, 34, 0.55);
+  background: var(--u-card);
   border-left: 3px solid var(--k-edge-dim);
 }
 .wm-zone[data-here='true'] {
   border-left-color: var(--k-gold);
-  background: rgba(60, 46, 22, 0.55);
+  background: var(--u-wash-gold);
 }
 .wm-zone-head {
   display: flex;
@@ -110,7 +110,7 @@
   width: 10px;
   height: 10px;
   border-radius: 2px;
-  border: 1px solid #2a1f16;
+  border: 1px solid var(--u-ink-2);
 }
 .wm-zone-name {
   font: 700 13px var(--k-font-title);
@@ -121,10 +121,10 @@
   font-size: 11px;
 }
 .wm-zone[data-status='low'] .wm-zone-lv {
-  color: #ff8a6e;
+  color: var(--u-son-hi);
 }
 .wm-zone[data-status='high'] .wm-zone-lv {
-  color: #aab3b4;
+  color: var(--u-muc-dim);
 }
 .wm-row b {
   color: var(--k-text-dim);
