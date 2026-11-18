@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FOREST, KIEM_TRUNG, LAKE, SECT, VALLEY } from '@dtl/shared';
-import { AmbientParticles, ambientRates } from './ambient';
+import { AmbientParticles, ambientRates, ambientScaleFor } from './ambient';
 import { PARTICLE_BUDGET, Particles } from '../../render/vfx/particles';
 
 describe('hạt môi trường theo vùng', () => {
@@ -47,5 +47,15 @@ describe('hạt môi trường theo vùng', () => {
     }
     expect(alive.low).toBeLessThan(alive.high);
     expect(alive.low).toBeGreaterThan(0);
+  });
+});
+
+describe('hạt môi trường theo preset', () => {
+  it('sương `mist` (mảng billboard mờ to) không bao giờ vượt mức Vừa; hạt nhỏ sắc nét tăng theo preset', () => {
+    for (const q of ['low', 'medium', 'high', 'ultra']) expect(ambientScaleFor('mist', q)).toBeLessThanOrEqual(1);
+    expect(ambientScaleFor('mist', 'low')).toBeLessThan(1);
+    expect(ambientScaleFor('mote', 'high')).toBeGreaterThan(ambientScaleFor('mote', 'medium'));
+    expect(ambientScaleFor('mote', 'ultra')).toBeGreaterThan(ambientScaleFor('mote', 'high'));
+    expect(ambientScaleFor('jade', 'ultra')).toBeLessThanOrEqual(2);
   });
 });
