@@ -1153,3 +1153,9 @@ kbd {
     display: none;
   }
 }
+
+/* Icon họa số U2-I không có viền: nền mực vuông của tranh tan dần ra rìa tròn để không lộ ô vuông trong khung tròn/bát giác. */
+.content-icon:not(.fallback):not(.sys) {
+  -webkit-mask-image: radial-gradient(closest-side, #000 86%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 86%, transparent 100%);
+}
