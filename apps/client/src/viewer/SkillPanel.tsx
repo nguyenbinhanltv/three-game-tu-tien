@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { METHOD_SKILLS, POSE, SKILLS, skillName, t } from '@dtl/content';
 import { POSE_VOICES, VOICED_POSES, type PoseVoice } from '@dtl/shared';
-import { poseOf } from '../game/skillPose';
+import { poseOf } from '../game/combat/skillPose';
 import { poseClipName } from '../game/character/ikpose';
 import { timingOf } from './skillTiming';
 import type { ViewerScene } from './scene';
-import { urlParams } from '../game/flags';
+import { urlParams } from '../base/flags';
 
 const s2 = (n: number) => n.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const ALL = [...SKILLS, ...METHOD_SKILLS].filter((s) => s.pose);

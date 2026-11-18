@@ -385,7 +385,7 @@ function previous(): { login?: LoginRun[]; game?: GameRun[]; file: string } | nu
       const j = JSON.parse(fs.readFileSync(path.join(OUT_DIR, files[i]), 'utf8'));
       if (j.mbps === MBPS && j.renderer === RENDERER) return { ...j, file: files[i] };
     } catch {
-      /* bỏ qua */
+      /* file kết quả cũ hỏng: bỏ qua, xét file kế */
     }
   }
   return null;

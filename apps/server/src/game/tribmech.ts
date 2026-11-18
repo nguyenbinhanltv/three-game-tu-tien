@@ -18,6 +18,7 @@ import { PF_DEAD, TRIB_MECHANIC_IDS, tribDef, type TribDef, type TribPhaseDef } 
 import type { PlayerEnt } from './entities';
 import type { TribState } from './tribtypes';
 import type { TribHost } from './tribhost';
+import { log } from '../log';
 
 export interface TribMechCtx {
   /** Cổng vào sim (hành động server). */
@@ -56,7 +57,7 @@ for (const id of TRIB_MECHANIC_IDS) {
     enter(c) {
       if (warned.has(id)) return;
       warned.add(id);
-      console.log(`[trib] cơ chế "${id}" (kiếp ${c.def.id}, pha ${c.phase.id}) chưa cài: chạy pha chung`);
+      log.info(`[trib] cơ chế "${id}" (kiếp ${c.def.id}, pha ${c.phase.id}) chưa cài: chạy pha chung`);
     },
   });
 }
@@ -345,7 +346,7 @@ export function runMechanic(id: string | undefined, hook: keyof TribMechanic, c:
   if (!m) {
     if (!warned.has(id)) {
       warned.add(id);
-      console.warn(`[trib] cơ chế "${id}" không có trong registry`);
+      log.warn(`[trib] cơ chế "${id}" không có trong registry`);
     }
     return;
   }

@@ -48,6 +48,21 @@ export interface ManifestLod {
   target?: number;
 }
 
+/** Bậc texture cao tải nền (tools/asset-pipeline/src/hires.ts). */
+export interface HiresEntry {
+  /** Tên vật liệu glTF (client khớp theo `material.name`). */
+  mat: string;
+  /** Thuộc tính vật liệu three nhận texture. */
+  slots: string[];
+  /** Tệp KTX2 rời, tương đối thư mục asset (`hi/...`). */
+  file: string;
+  width: number;
+  height: number;
+  bytes: number;
+  /** Ước lượng bộ nhớ GPU của texture bậc cao (byte, cộng dồn với bản trong GLB). */
+  gpuBytes: number;
+}
+
 export interface ManifestEntry {
   id: string;
   class: string;
@@ -70,6 +85,8 @@ export interface ManifestEntry {
   ktx2: boolean;
   textures: TextureInfo[];
   lods: ManifestLod[];
+  /** Bậc texture cao, chỉ có sau `pnpm assets:hires`. */
+  hires?: HiresEntry[];
   /** Hộp bao LOD0 ở tư thế nghỉ, đo trước và sau tối ưu (validate.ts so lại). */
   dims: { raw: Dims | null; build: Dims | null };
 }

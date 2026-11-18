@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { rateLimitFromEnv } from './ratelimit';
+import { log } from './log';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const SERVER_ROOT = path.resolve(here, '..');
@@ -26,7 +27,7 @@ const wantDevBypass = process.env.AUTH_DEV_BYPASS === '1';
 // hoặc khi đã cấu hình đăng nhập Google, kể cả khi lỡ mang theo file .env.local.
 const devBypassBlocked = process.env.NODE_ENV === 'production' || googleClientId !== '';
 if (wantDevBypass && devBypassBlocked) {
-  console.warn('[config] AUTH_DEV_BYPASS=1 bị bỏ qua vì đang ở production hoặc đã cấu hình GOOGLE_CLIENT_ID.');
+  log.warn('[config] AUTH_DEV_BYPASS=1 bị bỏ qua vì đang ở production hoặc đã cấu hình GOOGLE_CLIENT_ID.');
 }
 
 export const config = {

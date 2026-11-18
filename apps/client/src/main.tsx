@@ -1,9 +1,11 @@
 import { createRoot } from 'react-dom/client';
 import { App } from './ui/App';
 import './styles.css';
+import './styles2.css';
 import { installUiScale } from './ui/uiScale';
-import { urlParams } from './game/flags';
+import { urlParams } from './base/flags';
 import { installMotion } from './ui/ngj/motion';
+import { startHires } from './game/hires';
 
 const root = document.getElementById('root')!;
 
@@ -29,4 +31,5 @@ if (q.get('viewer') === 'asset' || q.has('show')) {
   installUiScale();
   installMotion();
   createRoot(root).render(<App />);
+  startHires();
 }

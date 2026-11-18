@@ -16,6 +16,7 @@ import { WorldState } from '../state';
 import { readTestFlags, testAccess } from '../testflags';
 import { tickets, type Ticket } from '../transfer';
 import { randomUUID } from 'node:crypto';
+import { log } from '../log';
 
 export interface JoinAuth extends AuthResult {
   charId: number;
@@ -130,7 +131,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
         try {
           handler(p, msg);
         } catch (e) {
-          console.error(`[room] lỗi xử lý message "${type}" của ${p.char.name}:`, e);
+          log.error(`[room] lỗi xử lý message "${type}" của ${p.char.name}:`, e);
         }
       });
     };
@@ -205,7 +206,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       if (Character.nameTaken(name)) throw new ServerError(ERR_NAME_TAKEN, 'name_taken');
       // Ngoại hình chỉ nhận lúc tạo nhân vật; id lạ / giới tính chưa mở thì dùng mặc định (không báo lỗi).
       charId = Character.create(auth.accountId, name, parseAppearance(APPEARANCE, o.ap), isRootId(o.rt) ? o.rt : null).id;
-      console.log(`[auth] tạo nhân vật mới: ${name}`);
+      log.info(`[auth] tạo nhân vật mới: ${name}`);
     }
     const session = sessionAuth(o.session) ? (o.session as string) : issueSession(auth);
     return { ...auth, charId, session };
@@ -294,12 +295,12 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.sim.soul.sendState(p);
     this.sim.clone.sendState(p);
     ensurePartyTick();
-    console.log(`[join] ${char.name} vào ${this.roomName} (${this.sim.players.size} người)`);
+    log.info(`[join] ${char.name} vào ${this.roomName} (${this.sim.players.size} người)`);
     this.afterJoin(p);
     // M1-10: ?god / ?at=<địa điểm>. Server kiểm quyền; tài khoản thật bị từ chối và được báo.
     const tf = readTestFlags(options, auth.dev, config.devBypass);
     if (tf.kind === 'denied') {
-      console.warn(`[join] ${char.name} xin tham số kiểm thử (?god/?at/?realm/?tribulation) nhưng không phải tài khoản thử: từ chối`);
+      log.warn(`[join] ${char.name} xin tham số kiểm thử (?god/?at/?realm/?tribulation) nhưng không phải tài khoản thử: từ chối`);
       this.sim.sys(p, 'sys.test_denied', undefined, 'bad');
     } else if (tf.kind === 'bad_place') {
       this.sim.sys(p, 'sys.gm', { m: `at ${tf.id}? ${this.sim.placeIds().join(' | ')}` }, 'info');
@@ -353,7 +354,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.markers.drop(p);
     this.aoi.detach(sid);
     this.sim.removePlayer(sid);
-    console.log(`[leave] ${p.char.name} rời ${this.roomName}`);
+    log.info(`[leave] ${p.char.name} rời ${this.roomName}`);
   }
 
   beforeRemove(_sid: string): void {}

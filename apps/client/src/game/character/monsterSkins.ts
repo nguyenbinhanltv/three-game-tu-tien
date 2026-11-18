@@ -3,8 +3,8 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { color, dot, float, materialColor, mix, normalView, positionViewDirection, pow, saturate, smoothstep, texture, vec3, vec4 } from 'three/tsl';
 import type { MonsterDef } from '@dtl/shared';
 import { MONSTER } from '@dtl/content';
-import { type AssetCache, type AssetHandle, assets } from '../assets';
-import { MonsterModel } from '../models';
+import { type AssetCache, type AssetHandle, assets } from '../core/assets';
+import { MonsterModel } from '../core/models';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { type BossMove, SkinnedMonster } from './skinned';
 import type { SpringParams } from './spring';
@@ -290,6 +290,7 @@ export class MonsterSkins {
     const t = s && !this.legacy ? this.templates.get(s.asset) : undefined;
     if (!s || !t || typeof t === 'string') return new MonsterModel(def);
     const scene = cloneSkinned(t.handle.scene);
+    assets.trackInstance(s.asset, scene); // vị trí thật của con quái cho thứ tự nạp texture bậc cao (game/hires)
     const mat = this.material(def, s, t);
     scene.traverse((o) => {
       const m = o as THREE.Mesh;

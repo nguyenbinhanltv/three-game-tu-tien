@@ -2,7 +2,7 @@
 import { C, PF_DEAD, BAR_SIZE, CLONE_UNLOCK_LEVEL } from '@dtl/shared';
 import { t } from '@dtl/content';
 import { closeTopPanel, get, pushToast, set, togglePanel, useUI } from '../../ui/store';
-import { unlockAudio } from '../audio';
+import { unlockAudio } from '../audio/audio';
 import { budgetPixelRatio } from '../../render/post';
 import { isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../../input/bindings';
 import { QUALITY, WEBGL2_MAX_PIXELS, isWebGPU } from './common';
@@ -97,7 +97,7 @@ export function bindInput(eng: Game): void {
     try {
       c.releasePointerCapture(e.pointerId);
     } catch {
-      /* bỏ qua */
+      /* con trỏ không còn được giữ (đã nhả hoặc sự kiện cũ) */
     }
     if (eng.dragMoved <= 4 && e.button === 0) onClick(eng, e.clientX, e.clientY);
   });

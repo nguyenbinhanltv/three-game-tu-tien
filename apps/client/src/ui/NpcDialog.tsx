@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { C, sellPrice } from '@dtl/shared';
 import { hasString, ITEM, itemName, METHOD, NPC, PILL_QUALITY, QUESTS, realmName, RECIPES, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
-import { objectiveText } from './Hud';
+import { objectiveText } from './objective';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './windows/common';
 import { Button, Divider, Tabs } from './kit';
 import { RootTab } from './Realm';

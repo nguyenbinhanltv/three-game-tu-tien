@@ -1,5 +1,5 @@
 import { QUEST, QUESTS, t } from '@dtl/content';
-import { objectiveText } from '../Hud';
+import { objectiveText } from '../objective';
 import { closePanel, useUI } from '../store';
 import { RewardLine, Window } from './common';
 

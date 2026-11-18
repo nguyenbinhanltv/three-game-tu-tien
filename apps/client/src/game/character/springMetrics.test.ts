@@ -3,10 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { AssetCache, type Manifest } from '../assets';
-import { nodeGltfLoader } from '../gltfTestLoader';
-import { MannequinCharacter, mannequinTemplate, SPRING2, V3_LIB, V3_SKIRT_SPRING2 } from './mannequin';
-import { meshInfo, overlapCount, pose, regionsFor, robeMask, score, capInside, triTri, type PoseScore } from './springMetrics';
+import { AssetCache, type Manifest } from '../core/assets';
+import { nodeGltfLoader } from '../core/gltfTestLoader';
+import { ARM_FIT, MannequinCharacter, mannequinTemplate, SPRING2, V3_LIB, V3_SKIRT_SPRING2 } from './mannequin';
+import { diagnose, geometryRegions, meshInfo, overlapCount, pose, regionsFor, robeMask, score, capInside, triTri, type PoseScore } from './springMetrics';
 import type { AnimState } from './view';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
@@ -50,6 +50,7 @@ describe.skipIf(!OUT)('đo xuyên thân của vạt với lò xo mô phỏng th�
     const tune = JSON.parse(process.env.SPRING_TUNE ?? '{}') as Record<string, number | boolean>;
     for (const k of ['hemStiff', 'sitScale', 'arms', 'rMul'] as const) if (tune[k] !== undefined) (SPRING2 as Record<string, unknown>)[k] = tune[k];
     for (const k of ['stiffness', 'drag', 'maxAngle', 'maxInward'] as const) if (tune[k] !== undefined) V3_SKIRT_SPRING2[k] = tune[k] as number;
+    const armFitDeg = typeof tune.armFit === 'number' ? tune.armFit : null; // quét góc ARM_FIT (độ) cho mọi asset đo
     const ids = (process.env.SPRING_ASSETS ?? 'chr_v3b_lac_kiem_nam,chr_v3b_lac_kiem_nu').split(',');
     const result: Record<string, { poses: PoseScore[]; pen: number; cap: number }> = {};
     const lib = await cache.acquire(V3_LIB);
@@ -60,12 +61,15 @@ describe.skipIf(!OUT)('đo xuyên thân của vạt với lò xo mô phỏng th�
       const info = meshInfo(restMesh);
       const rest = pose(restMesh);
       const { mask, height } = robeMask(rest, info);
+      // Chia vùng theo hình học (mặc định, so được giữa các asset); SPRING_PART=weights dùng xương trội như `chr_v3.py`.
+      if (process.env.SPRING_PART !== 'weights') info.regionBase = geometryRegions(rest, height);
       const regions = regionsFor(rest, info, mask);
       const restPen = overlapCount(rest, info, regions);
       const restCap = capInside(rest, height);
       const poses: PoseScore[] = [];
       for (const [clip, t] of POSES) {
         const handle = await cache.acquire(id);
+        if (armFitDeg !== null) ARM_FIT[id] = (armFitDeg * Math.PI) / 180;
         const m = new MannequinCharacter(mannequinTemplate(handle, lib));
         const mm = m as unknown as { baseFor: () => string; base: THREE.AnimationAction; lods: THREE.SkinnedMesh[][] };
         mm.baseFor = () => clip;
@@ -77,6 +81,9 @@ describe.skipIf(!OUT)('đo xuyên thân của vạt với lò xo mô phỏng th�
         for (let s = 0; s < Math.round(total * 60); s++) m.update(1 / 60, anim);
         m.root.updateMatrixWorld(true);
         const posed = pose(mm.lods[0][0]);
+        if (process.env.SPRING_DIAG && /Idle_Loop|Sitting|Sword_Attack|Roll|Jog_Fwd_Loop@?/.test(clip) && [0, 0.35, 0.25, 0.4].includes(t)) {
+          console.log(`[diag] ${id} ${clip}@${t}: ` + diagnose(posed, rest, info, regions, mask, height).join(' || '));
+        }
         if (process.env.SPRING_PAIRS) {
           const bp: Record<string, number> = {};
           const rp: Record<string, number> = {};
@@ -103,8 +110,10 @@ describe.skipIf(!process.env.SPRING_CPU)('CPU 50 nhân vật: lò xo cũ so vớ
     const lib = await cache.acquire(V3_LIB);
     const ids = (process.env.SPRING_ASSETS ?? 'chr_v3b_lac_kiem_nam,chr_v3b2_lac_kiem_nam').split(',');
     const res: Record<string, number[]> = {};
+
     for (let round = 0; round < 3; round++) {
       for (const id of ids) {
+        if (process.env.SPRING_CPU_ARM === 'off') ARM_FIT[id] = 0;
         const chars: MannequinCharacter[] = [];
         for (let i = 0; i < 50; i++) chars.push(new MannequinCharacter(mannequinTemplate(await cache.acquire(id), lib)));
         const anim: AnimState = { speed: 5.4, flying: false, meditating: false, dead: false, casting: false, airborne: false };

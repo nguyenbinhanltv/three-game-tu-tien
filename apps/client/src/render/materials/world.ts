@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { float, mix, normalView, normalWorld, positionViewDirection } from 'three/tsl';
 import { rimParams } from '../atmosphere';
 import { skyParams } from '../sky';
+import { registerDerived } from './derived';
 
 /**
  * Material PBR cách điệu dùng chung cho thế giới (địa hình, cây, kiến trúc, nhân vật, quái) và sau
@@ -51,6 +52,7 @@ export function adoptGltfMaterials(
       }),
     );
     made.set(src, m);
+    registerDerived(src, m);
     return m;
   };
   root.traverse((o) => {
