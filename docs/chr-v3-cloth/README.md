@@ -12,26 +12,28 @@ Bật bằng `?chr=v3&cloth=1` (asset `chr_v3b_cloth_nam|nu`); mặc định `?c
 ## Client (`game/character/mannequin.ts`)
 `MannequinTemplate.cloth` (clip `cloth_*` lấy từ `handle.animations`); `retargetCloth()` chọn track theo clip đang chiếm (đòn một lần nếu có track, không thì clip nền), phát đồng bộ giờ và timeScale (chạy theo tốc độ), trọng số vạt riêng (`blendCloth`, cộng/trừ cùng tốc độ để tổng bằng 1, vạt vẫn theo clip nền khi đang ra chiêu K-5). `SpringBones` của xương `dtl_o_cloth_*` (V3_SPRING) chỉ chạy khi không có track nướng (pose K-5, clip chưa nướng); tóc/tay áo vẫn lò xo như cũ. Test: `mannequinCloth.test.ts`.
 
-## Số đo (nam; nữ ở phần sau)
+## Số đo (sau khi sửa lỗi A-pose, asset dựng lại ngày 18/11 16:23–16:26)
 | | Lò xo (v3b) | Nướng vải |
 | --- | --- | --- |
-| GLB (KB) | 3.498 | 5.191 (+1.693: track vạt ~830 KB giải nén, thêm xương, trọng số) |
+| GLB nam / nữ (KB) | 3.498 / 3.346 | 4.007 / 3.857 (+509 / +511; track vạt 14 clip × 60 kênh xoay ≈ 388 KB giải nén) |
 | Xương | 115 | 159 |
-| Xuyên thân, cặp mặt chồng (12 tư thế, tổng) | 1.645 | 7.685 (tệ hơn) |
-| Đỉnh vải trong viên nang (12 tư thế, tổng) | 12.491 | 11.160 (−11%) |
-| CPU khung p50 / p95, 50 bot, WebGPU, Vừa | 15 / 35,8 ms (45,1 fps) | 18,6 / 39,2 ms (38,9 fps) |
+| Xuyên thân, cặp mặt chồng (12 tư thế, tổng) nam / nữ | 1.645 / 1.810 | 7.685 / 12.206 (tệ hơn ×4,7 / ×6,7) |
+| Đỉnh vải trong viên nang (12 tư thế, tổng) nam / nữ | 12.491 / 17.940 | 11.160 / 15.253 (−11% / −15%) |
+| CPU khung p50 / p95, 50 bot, WebGPU, Vừa (lượt 2, máy yên) | 9,8 / 16,7 ms (74 fps) | 7,1 / 12,2 ms (103 fps) |
 
-Nữ: cặp mặt chồng 1.810 → 12.206, đỉnh trong viên nang 17.940 → 15.253 (−15%).
-Cả hai phép đo "xuyên thân" dùng cùng cách phân vùng (vạt chia trái/phải theo vị trí đỉnh, không theo trọng số) trước và sau; **không so được trực tiếp với con số 2058 của `chr_v3.py`** (cách phân vùng khác). "Trước" = LBS thuần (lò xo vạt chưa mô phỏng). Sai số khớp xương so với sim: 53–120 mm trung bình (nam) nhưng vạt cứng theo hông lệch 117–403 mm, nên khớp giảm sai số 2–3 lần mà chưa đủ sát.
-
-CPU: một lần đo mỗi bản trên máy đang chạy nhiều phiên khác (số nhiễu), chưa đo v1/v2 để so; cả hai bản đều vượt trần 8 ms của môi trường này. Chênh lệch +3,6 ms p50 tới từ 12 chuỗi × 5 xương (+44 xương/nhân vật) và `AnimationMixer` thêm một action vạt.
+- **Sửa lỗi A-pose**: bản đầu xuất action với `export_force_sampling`, mỗi clip `cloth_*` mang 477 kênh (297 kênh của mọi xương khác ở tư thế nghỉ) nên đè lên clip UAL và nhân vật bật A-pose, tay gấp lạ (nữ). Nay chỉ xuất 60 kênh xoay xương vạt mỗi clip (nội suy tuyến tính), xóa action `A_TPose` thừa; client lọc thêm chỉ lấy kênh `dtl_o_cloth_*`. GLB nhỏ đi 1,2 MB (5.191 → 4.007 KB nam). Các số xuyên thân đo trong Blender bằng cách đặt thẳng xoay xương nên không bị ảnh hưởng bởi lỗi này.
+- Cả hai phép đo "xuyên thân" dùng cùng cách phân vùng (vạt chia trái/phải theo vị trí đỉnh, không theo trọng số) trước và sau; **không so được trực tiếp với con số 2058 của `chr_v3.py`**. "Trước" = LBS thuần (lò xo vạt chưa mô phỏng). Sai số khớp xương so với sim: 53–120 mm trung bình, vạt cứng theo hông lệch 117–403 mm.
+- **CPU không phân biệt được**: lượt 1 (asset còn lỗi, máy bận) nướng vải chậm hơn (p50 15 → 18,6 ms, p95 35,8 → 39,2 ms); lượt 2 (asset đã sửa, máy yên) nướng vải lại nhanh hơn (9,8 → 7,1 ms), trong khi số draw call/tam giác của hai lượt cũng khác nhau (191/1.111k so với 173/989k): nhiễu lớn hơn chênh lệch. Mỗi nhân vật thêm 44 xương và một action vạt; chưa đo lặp đủ để kết luận. Cả hai lượt đều vượt trần 8 ms ở p95 trong môi trường này.
 
 ## Lỗi và giới hạn (nói thẳng)
-- **Cặp mặt chồng tăng mạnh** (nam ×4,7, nữ ×6,7): sim không biết lưới Tripo hai lớp và tay áo, va chạm tự thân 2 mm chỉ đủ để sim ổn định, vạt vẫn xuyên nhau/xuyên đùi ở quy mô nhỏ; đỉnh nằm trong viên nang chỉ giảm 11–15%. Mức xuyên nặng nhất: Jog, chém, ngồi, nữ ngã (Death01 nữ 43 → 4.703).
-- Xương chuỗi cứng (12 chuỗi × 5 khớp, không giãn) không biểu diễn được vải co/giãn: khi lăn úp hoặc chém xoay mạnh thấy gai nhọn/tấm cứng giữa hai chuỗi (đã thử 10 → 12 chuỗi). Ngồi: vạt trước rủ như tấm thẳng trước ống chân.
-- Chưa nướng: đả tọa K-5, ngự kiếm, niệm chú K-5 (lò xo như cũ); không có nút chuyển mượt giữa track nướng và lò xo (xương về tư thế nghỉ rồi lò xo chạy tiếp, giật nhẹ).
-- Track nướng nằm trong GLB nhân vật (+~0,8 MB), chưa tách asset nạp lười.
-- Nướng một lần tốn 20–27 phút mỗi giới (va chạm tự thân; không có tự thân chỉ ~4 phút nhưng sim kém ổn), nên không đưa vào `assets:build` mặc định (job chỉ chạy khi `--only chr_v3b_cloth_<giới>` hoặc thiếu GLB thô).
+- **Cặp mặt chồng tăng mạnh**: sim không biết lưới Tripo hai lớp và tay áo; va chạm tự thân 2 mm chỉ đủ để sim ổn định, vạt vẫn xuyên nhau/xuyên đùi ở quy mô nhỏ; đỉnh trong viên nang chỉ giảm 11–15%. Nặng nhất: Jog, chém, ngồi, nữ ngã (Death01 nữ 43 → 4.703).
+- **Nhìn bằng mắt (video, tờ khung)**: Idle và chém xoay đẹp hơn lò xo (vạt rủ dài, bay theo đòn). Nhưng khi **chạy** (clip dùng nhiều nhất) gấu vạt có gai nhọn/mảnh cứng xanh-trắng; lăn úp và chém xoay mạnh có tấm cứng giữa hai chuỗi; ngồi thì vạt trước rủ như tấm thẳng. Xương chuỗi cứng (12 × 5 khớp, không giãn) không biểu diễn được vải co/giãn (đã thử 10 → 12 chuỗi).
+- Chưa nướng: đả tọa K-5, ngự kiếm, niệm chú K-5 (lò xo như cũ); chuyển giữa track nướng và lò xo giật nhẹ.
+- Track nằm trong GLB nhân vật (+~0,4 MB), chưa tách asset nạp lười.
+- Nướng một lần 9–27 phút mỗi giới tùy tải máy (va chạm tự thân); mỗi bộ trang phục dài mới phải nướng lại và chỉnh lại thông số: chi phí lặp lại cao. Không nằm trong `assets:build` mặc định (job chạy khi `--only chr_v3b_cloth_<giới>` hoặc thiếu GLB thô).
+
+## Ý kiến của worker: nên quay về lò xo + cải tiến
+Nên **không tiếp hướng nướng vải** ở dạng này, quay về lò xo v3b và cải tiến: (1) xuyên thân (cặp mặt) tệ hơn 4–7 lần và lỗi nhìn thấy được ở clip chạy; (2) chi phí cố định: +44 xương mỗi nhân vật, +0,5 MB, nướng lại 10–25 phút cho mỗi giới × mỗi bộ trang phục và không phủ được K-5/ngự kiếm/đả tọa (vẫn cần lò xo làm dự phòng, tức giữ cả hai hệ); (3) lợi ích nhìn thấy chỉ ở Idle và vài đòn. Việc đáng làm với lò xo: bật viên nang tay cho vạt, thêm vài chuỗi giữa trước/sau, tăng cứng ở gấu để bớt rách khi lăn, thử `pushOutCapsule` theo tư thế ngồi (đả tọa riêng cho đồ dài). Nếu muốn giữ nướng vải thì chỉ nên làm cho vài clip cảnh điện ảnh (idle, chém xoay) chứ không thay lò xo.
 
 ## Quay
-`pnpm shots chrv3 --variants v3nok5,v3cloth --genders m,f --cloth6 --out <thư mục>` (đặt `FFMPEG=` đường dẫn ffmpeg-static): 6 clip UAL liên tiếp — đứng, chạy, chém A/B/C, lăn ×2, ngồi, ngã — camera thấp chếch sau; `v3nok5` = lò xo, `v3cloth` = nướng vải. Dựng bằng `cloth_bake.py` có `--sheet <dir>` (tờ khung trước/sau, `SHEET_POSES`/`SHEET_AZ` tùy chỉnh).
+`pnpm shots chrv3 --variants v3nok5,v3cloth --genders m,f --cloth6 --out <thư mục>` (đặt `FFMPEG=` đường dẫn ffmpeg-static; `CLOTH_AT="x z"`, `CLOTH_YAW`/`CLOTH_YAW_SIDE` đổi điểm đứng/góc camera): Idle, chạy, chém, xoay chém, lăn, ngồi, ngã; mỗi đoạn hai góc (3/4 và ngang), camera sát hông–gối, nhãn tên clip thật trên khung. Mỗi biến thể quay riêng và ghi mốc đầu từng đoạn; video ghép trái/phải cắt theo mốc nên cùng clip cùng thời điểm (quay song song thì trang nặng khựng làm lệch vài giây). `v3nok5` = lò xo, `v3cloth` = nướng vải. Dựng bằng `cloth_bake.py` có `--sheet <dir>` (tờ khung trước/sau, `SHEET_POSES`/`SHEET_AZ` tùy chỉnh).

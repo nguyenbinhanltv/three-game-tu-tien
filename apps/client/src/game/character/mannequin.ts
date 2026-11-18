@@ -110,7 +110,12 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
   }
   const height = box.max.y - Math.max(box.min.y, 0);
   const cloth = new Map<string, THREE.AnimationClip>();
-  for (const c of handle.animations) if (c.name.startsWith('cloth_')) cloth.set(c.name.slice(6), c);
+  // Chỉ giữ kênh của xương vạt nướng: clip lỡ mang kênh của xương khác (tư thế nghỉ) sẽ đè clip UAL và đưa nhân vật về A-pose.
+  for (const c of handle.animations) {
+    if (!c.name.startsWith('cloth_')) continue;
+    const tracks = c.tracks.filter((t) => t.name.startsWith('dtl_o_cloth_'));
+    if (tracks.length) cloth.set(c.name.slice(6), tracks.length === c.tracks.length ? c : new THREE.AnimationClip(c.name, c.duration, tracks));
+  }
   return { handle, lib, height, bank: null, clips, cloth };
 }
 

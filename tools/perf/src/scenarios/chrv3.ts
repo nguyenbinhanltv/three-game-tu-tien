@@ -150,51 +150,102 @@ export default {
           await still.ctx.close();
         };
         if (process.argv.includes('--cloth6')) {
-          // Vạt nướng (cloth bake): 6 clip UAL liên tiếp, camera thấp chếch sau để thấy vạt. So `v3nok5` (lò xo) với `v3cloth` (nướng); k5=0 để mọi clip là UAL.
+          // Vạt nướng (cloth bake): từng clip UAL hai góc camera (3/4 sau, ngang), camera sát hông-gối, nhãn tên clip trên khung. So `v3nok5` (lò xo) với
+          // `v3cloth` (nướng); k5=0 để mọi clip là UAL. Mỗi biến thể quay riêng (nhẹ máy) và ghi mốc đầu từng đoạn (đồng hồ trong trang, quy về đuôi video);
+          // sau khi quay đủ biến thể thì cắt từng đoạn theo mốc rồi ghép trái/phải: cùng clip, cùng thời điểm dù trang nào đó khựng.
+          const [at0, at1] = (process.env.CLOTH_AT ?? '2048 2088').split(' ');
           const rec = path.join(r.out, `_rec-${tag}`);
-          const t1 = Date.now();
           const { page, ctx } = await r.open({ name: `V3w${g}${v}`, viewport: [800, 600], quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/, video: rec });
           await gm(page, 'god on', 1000);
           await gm(page, 'killall', 700);
-          await gm(page, 'tp 2048 2088', 1500);
+          await gm(page, `tp ${at0} ${at1}`, 1500);
           await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
           await sleep(2500);
-          const low = () => cam(page, { yaw: 0.7, pitch: 0.02, dist: 2.3 });
-          await low();
-          const t0 = Date.now();
-          const model = (fn: string, arg = '') => page.evaluate(`(() => { const g = window.__game; g.ents.players.get(g.sid).model.${fn}(${arg}); })()`);
-          await sleep(3000); // 1. đứng
-          await page.keyboard.down('KeyW'); // 2. chạy
-          await sleep(3200);
+          // Nhãn: biến thể + clip đang phát thật (đòn một lần nếu có, không thì clip nền) + có track vạt nướng hay không; `__mark` ghi mốc.
+          await page.evaluate(`(() => {
+            const d = document.createElement('div');
+            d.style.cssText = 'position:fixed;left:8px;top:8px;z-index:99999;color:#fff;background:rgba(0,0,0,.65);font:15px monospace;padding:5px 8px;border-radius:4px';
+            document.body.appendChild(d);
+            const g = window.__game;
+            window.__marks = [];
+            window.__mark = (n) => window.__marks.push([n, Date.now()]);
+            setInterval(() => {
+              const m = g.ents.players.get(g.sid).model;
+              d.textContent = '${v === 'v3cloth' ? 'NƯỚNG VẢI' : 'LÒ XO'} · ' + (m.shotName || m.baseName) + (m.clothTarget ? ' · track vạt' : '');
+            }, 100);
+          })()`);
+          const view = (side: boolean) => cam(page, { yaw: side ? Number(process.env.CLOTH_YAW_SIDE ?? -1.75) : Number(process.env.CLOTH_YAW ?? -0.7), pitch: 0.0, dist: 1.7 });
+          const shot = (name: string, rate: number) => page.evaluate(`(() => { const g = window.__game; g.ents.players.get(g.sid).model.oneShot('${name}', ${rate}); })()`);
+          const tStart = Date.now();
+          const spec: { name: string; ms: number }[] = [];
+          // Một đoạn = hai góc; mỗi góc lặp `act` mỗi `period` ms (đòn một lần) trong `ms`.
+          const seg = async (name: string, act: (() => Promise<unknown>) | null, ms: number, period = ms) => {
+            for (const side of [false, true]) {
+              const label = `${name}${side ? ' (ngang)' : ' (3/4)'}`;
+              spec.push({ name: label, ms });
+              await view(side);
+              await page.evaluate(`window.__mark(${JSON.stringify(label)})`);
+              const t0 = Date.now();
+              do {
+                if (act) await act();
+                await sleep(Math.max(50, Math.min(period, ms - (Date.now() - t0))));
+              } while (act && Date.now() - t0 < ms - 60);
+              if (!act) await sleep(Math.max(0, ms - (Date.now() - t0)));
+            }
+          };
+          await seg('Idle', null, 2200);
+          await page.keyboard.down('KeyW');
+          await seg('Chạy', null, 2000);
           await page.keyboard.up('KeyW');
-          await sleep(900);
-          await low();
-          for (let i = 0; i < 3; i++) { // 3. chém A, B, C (Sword_Regular_*)
-            await model('attack');
-            await sleep(1500);
-          }
-          await sleep(500);
-          for (let i = 0; i < 2; i++) { // 4. lăn
-            await model('oneShot', "'Roll'");
-            await sleep(1700);
-          }
-          await page.keyboard.press('KeyZ'); // 5. ngồi (Sitting_Idle_Loop khi k5=0)
-          await sleep(3500);
+          await sleep(800);
+          await seg('Chém', () => shot('Sword_Regular_A', 1.6), 2000, 1000);
+          await seg('Xoay chém', () => shot('Sword_Regular_C', 1.6), 3600, 1800);
+          await seg('Lăn', () => shot('Roll', 1), 4400, 2200);
+          await page.keyboard.press('KeyZ'); // ngồi (Sitting_Idle_Loop khi k5=0)
+          await seg('Ngồi', null, 2400);
           await page.keyboard.press('KeyW');
           await sleep(900);
-          await gm(page, 'die', 4200); // 6. ngã (Death01)
-          await page.evaluate(() => window.__game!.send('resp', {}));
-          await sleep(1200);
+          await view(false);
+          await page.evaluate(`window.__mark('Ngã (3/4)')`);
+          spec.push({ name: 'Ngã (3/4)', ms: 2000 });
+          await gm(page, 'die', 4000);
+          const elapsed = (Date.now() - tStart) / 1000;
+          const marks = (await page.evaluate(`({ marks: window.__marks, now: Date.now() })`)) as { marks: [string, number][]; now: number };
           const vid = page.video();
           await ctx.close();
           if (vid) {
             const raw = await vid.path();
-            const dst = path.join(r.out, `${tag}-6clip.webm`);
-            const cut = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-ss', Math.max(0, (t0 - t1) / 1000 - 0.3).toFixed(2), '-i', raw, '-c:v', 'libvpx', '-b:v', '2M', '-an', dst]);
-            if (cut.status !== 0) fs.copyFileSync(raw, dst);
+            const probe = spawnSync(FFMPEG, ['-i', raw], { encoding: 'utf8' });
+            const m = /Duration: (\d+):(\d+):([\d.]+)/.exec(`${probe.stderr}`);
+            const total = m ? Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) : elapsed + 20;
+            // Giây (trong video thô) của từng mốc, quy từ đuôi video: total - (now - tMark).
+            const at = marks.marks.map(([n, t]) => ({ name: n, sec: total - (marks.now - t) / 1000 }));
+            fs.copyFileSync(raw, path.join(r.out, `_raw-${tag}.webm`));
+            fs.writeFileSync(path.join(r.out, `_marks-${tag}.json`), JSON.stringify({ at, spec }, null, 1));
+            console.log(`[shots:chrv3] ${tag}: ${at.length} mốc, ${elapsed.toFixed(1)} s`);
           }
           fs.rmSync(rec, { recursive: true, force: true });
-          console.log(`[shots:chrv3] ${tag}-6clip.webm`);
+          const vs = list('--variants', 'v3nok5,v3cloth');
+          if (v === vs[vs.length - 1]) {
+            // Ghép từng đoạn: [video biến thể 1 | video biến thể 2], cắt theo mốc của từng video.
+            const tgs = vs.map((x) => `${g === 'm' ? 'nam' : 'nu'}-${x}`);
+            const meta = tgs.map((t) => JSON.parse(fs.readFileSync(path.join(r.out, `_marks-${t}.json`), 'utf8')) as { at: { name: string; sec: number }[]; spec: { name: string; ms: number }[] });
+            const inputs = tgs.flatMap((t) => ['-i', path.join(r.out, `_raw-${t}.webm`)]);
+            const parts: string[] = [];
+            const n = meta[0].spec.length;
+            for (let k = 0; k < n; k++) {
+              const len = meta[0].spec[k].ms / 1000;
+              const lbl = tgs.map((_, vi) => {
+                const a = meta[vi].at[k].sec;
+                return `[${vi}:v]trim=start=${a.toFixed(3)}:end=${(a + len).toFixed(3)},setpts=PTS-STARTPTS,fps=25[c${k}_${vi}]`;
+              });
+              parts.push(...lbl, `${tgs.map((_, vi) => `[c${k}_${vi}]`).join('')}hstack=inputs=${tgs.length}[s${k}]`);
+            }
+            const cat = `${Array.from({ length: n }, (_, k) => `[s${k}]`).join('')}concat=n=${n}:v=1:a=0[out]`;
+            const dst = path.join(r.out, `${g === 'm' ? 'nam' : 'nu'}-6clip-so-sanh.webm`);
+            const res = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', ...inputs, '-filter_complex', [...parts, cat].join(';'), '-map', '[out]', '-c:v', 'libvpx', '-b:v', '3M', '-an', dst], { encoding: 'utf8' });
+            console.log(res.status === 0 ? `[shots:chrv3] ${path.basename(dst)}` : `[shots:chrv3] ghép lỗi: ${res.stderr}`);
+          }
           continue;
         }
         if (process.argv.includes('--sit')) {

@@ -729,6 +729,15 @@ for name, b in BAKED.items():
             pb.keyframe_insert('rotation_quaternion', frame=f - b['f0'])
 for n in list(ACTIONS):
     bpy.data.actions.remove(ACTIONS[n])
+for a_ in list(bpy.data.actions):  # action thừa (vd. A_TPose của thư viện UAL): chỉ giữ cloth_*
+    if not a_.name.startswith('cloth_'):
+        bpy.data.actions.remove(a_)
+for a_ in bpy.data.actions:
+    for fc in fcurves_of(a_):
+        for kp in fc.keyframe_points:
+            kp.interpolation = 'LINEAR'
+        if not fc.data_path.startswith('pose.bones["dtl_o_cloth_'):
+            log(f'CẢNH BÁO: action {a_.name} có kênh ngoài xương vạt: {fc.data_path}')
 assign(None)
 for pb in ARM.pose.bones:
     pb.location, pb.rotation_quaternion = (0, 0, 0), (1, 0, 0, 0)
@@ -745,6 +754,6 @@ if not NO_EXPORT:
     SC.frame_start, SC.frame_end = 0, 600
     bpy.ops.export_scene.gltf(
         filepath=OUT, export_format='GLB', export_yup=True, export_skins=True, export_animations=True, export_animation_mode='ACTIONS',
-        export_optimize_animation_size=True, export_force_sampling=True, export_extras=True, use_selection=False,
+        export_optimize_animation_size=True, export_force_sampling=False, export_extras=True, use_selection=False,
     )
     log(f'xuất {OUT} {os.path.getsize(OUT) // 1024} KB, tổng {time.time() - T0:.0f}s')
