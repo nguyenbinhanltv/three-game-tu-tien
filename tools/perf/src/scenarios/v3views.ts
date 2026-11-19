@@ -185,6 +185,21 @@ export default {
         const rows: SheetRow[] = [];
         for (let i = 0; i < cells.length; i += 5) rows.push({ label: i === 0 ? `${S.label} (${gname}) · ${asset}` : '', cells: cells.slice(i, i + 5) });
         await sheet(ctx, path.join(r.out, `${tag}-chuyendong.png`), rows, { cell: 300, ratio: 1.39 });
+        const bones = await page.evaluate(() => {
+          const g = window.__game!;
+          const m = g.ents.players.get(g.sid).model;
+          const y0 = m.root.position.y;
+          const out: Record<string, number[]> = {};
+          for (const n of ['pelvis', 'spine_03', 'neck_01', 'Head', 'dtl_scabbard', 'hand_l']) {
+            const o = m.rig.getObjectByName(n);
+            if (o) {
+              const v = o.getWorldPosition(new (o.position.constructor as new () => { x: number; y: number; z: number; sub: (v: unknown) => unknown })() as never) as unknown as { x: number; y: number; z: number };
+              out[n] = [Math.round((v.y - y0) * 100) / 100];
+            }
+          }
+          return out;
+        });
+        console.log(`[shots:v3views] ${tag} xương (cao so với chân, m): ${JSON.stringify(bones)}`);
         const cst = await page.evaluate(() => {
           const g = window.__game!;
           return g.ents.players.get(g.sid).model.cloth?.stats ?? null;

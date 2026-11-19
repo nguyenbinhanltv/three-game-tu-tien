@@ -3,6 +3,7 @@
 // (sửa lỗi bóng T-pose). Chưa có: pose IK chiêu K-5, kiếm gắn tay, phụ kiện bộ đồ, K-3 (đi lùi/ngang), IK chân.
 // Đây là bản thử pipeline: không đổi mặc định, không đụng v1/v2.
 import * as THREE from 'three/webgpu';
+import { texture } from 'three/tsl';
 import { ClothRig } from './thienY';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
@@ -194,9 +195,26 @@ function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
   return o ? o.position.clone() : null;
 }
 
+/** Asset dựng bằng `chr_v3.py --keep-original` (lưới/texture gốc Tripo): vật liệu cần chỉnh cho hợp ánh sáng game. */
+export const KEEP_ORIGINAL_ASSETS: ReadonlySet<string> = new Set(['chr_v3_tinh_khuyet_nu']);
+
+/**
+ * Tripo gán roughness thấp cho tóc (≈0,24) và metallic mặc định 1 (glTF khi thiếu hệ số): dưới nắng + env của game, da/tóc bóng như nhựa/cao su.
+ * Nâng sàn roughness lên 0,55 (map G × 0,45 + 0,55, giữ vi biến thiên), giảm metalness hệ số về 0,5 (vàng trang sức vẫn kim loại), giảm env.
+ * Màu (baseColor) giữ nguyên, đã là sRGB do GLTFLoader/KTX2Loader.
+ */
+function tuneTripoMaterial(m: THREE.MeshStandardNodeMaterial): void {
+  if (m.roughnessMap) m.roughnessNode = texture(m.roughnessMap).g.mul(0.45).add(0.55);
+  else m.roughness = Math.max(m.roughness, 0.6);
+  m.metalness = 0.5;
+  m.envMapIntensity = 0.55;
+  m.needsUpdate = true;
+}
+
 export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
   if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
+  if (KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const m of mats) tuneTripoMaterial(m);
   const look = SKIN_LOOKS[handle.id];
   if (look) for (const m of mats) applySkinLook(m, look);
   const box = new THREE.Box3().setFromObject(handle.scene);
@@ -404,6 +422,8 @@ export class MannequinCharacter implements CharacterView {
   private scabbard: THREE.Object3D | null = null;
   private hand: THREE.Object3D | null = null;
   private qScab = new THREE.Quaternion();
+  /** Dịch kiếm đeo lưng (không gian xương vỏ): hạ chuôi xuống ngang vai thay vì lên tới đỉnh đầu với model cao/tóc búi cao. */
+  private posScab = new THREE.Vector3();
   private qHand = new THREE.Quaternion();
   private drawn = false;
   /** Đòn nối tiếp sau đòn hiện tại (ngã → đứng dậy). */
@@ -557,6 +577,11 @@ export class MannequinCharacter implements CharacterView {
         out.copy(qb).multiply(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize()));
       };
       align(this.scabbard, new THREE.Vector3(-0.12, -0.55, -0.1), this.qScab);
+      if (KEEP_ORIGINAL_ASSETS.has(tpl.handle.id)) {
+        // chuôi đang ở ~đỉnh đầu (1,75 m): hạ 0,3 m × tỉ lệ cao theo trục thế giới
+        const qb = this.scabbard.getWorldQuaternion(new THREE.Quaternion()).invert();
+        this.posScab.set(0, -0.3 * (tpl.height / 1.7), 0).applyQuaternion(qb);
+      }
       align(this.hand, new THREE.Vector3(0, 1, 0), this.qHand);
       this.blade = sword.mesh.clone();
       this.blade.frustumCulled = false;
@@ -584,7 +609,8 @@ export class MannequinCharacter implements CharacterView {
     this.drawn = drawn;
     const bone = drawn ? this.hand : this.scabbard;
     bone?.add(this.blade);
-    this.blade.position.set(0, 0, 0);
+    if (drawn) this.blade.position.set(0, 0, 0);
+    else this.blade.position.copy(this.posScab);
     this.blade.quaternion.copy(drawn ? this.qHand : this.qScab);
   }
 
