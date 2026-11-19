@@ -276,6 +276,78 @@
         "shadowTint": "#0B1A34", "highlightTint": "#FFB869", "splitBalance": -0.2,
         "blackLift": "#0C1A2E", "contrast": 1.1, "saturation": 0.9, "exposure": 1.2
       },
+      "bh_dawn": {
+        "label": "Bắc Hoang — bình minh tuyết (bên này khe)",
+        "sunColor": "#FFDCE8", "sunIntensity": 2.4, "sunElevationDeg": 6,
+        "skyColor": "#8C9AD0", "skyIntensity": 0.9,
+        "fogColor": "#A6B0DA", "fogDensity": 0.00054, "heightFogTop": 70, "heightFogBoost": 1.8,
+        "fogHaze": 0.00132, "fogHazeStart": 80, "fogScatter": 0.9, "rim": 0.7,
+        "shadowTint": "#3C4470", "highlightTint": "#FFE3EE", "splitBalance": 0.1,
+        "blackLift": "#22203C", "contrast": 1.2, "saturation": 0.8, "exposure": 1.0
+      },
+      "bh_day": {
+        "label": "Bắc Hoang — ngày tuyết",
+        "sunColor": "#EEF3FF", "sunIntensity": 2.6, "sunElevationDeg": 14,
+        "skyColor": "#AFC3DE", "skyIntensity": 0.95,
+        "fogColor": "#B4C2E4", "fogDensity": 0.00042, "heightFogTop": 70, "heightFogBoost": 1.5,
+        "fogHaze": 0.00108, "fogHazeStart": 100, "fogScatter": 0.8, "rim": 0.5,
+        "shadowTint": "#46507A", "highlightTint": "#FFF4F4", "splitBalance": 0.05,
+        "blackLift": "#16162E", "contrast": 1.15, "saturation": 0.8, "exposure": 0.98
+      },
+      "bh_dusk": {
+        "label": "Bắc Hoang — hoàng hôn tím tuyết",
+        "sunColor": "#F0A8C8", "sunIntensity": 2.2, "sunElevationDeg": 4,
+        "skyColor": "#8A78B0", "skyIntensity": 0.85,
+        "fogColor": "#9C8CBC", "fogDensity": 0.00072, "heightFogTop": 65, "heightFogBoost": 1.9,
+        "fogHaze": 0.00156, "fogHazeStart": 70, "fogScatter": 0.9, "rim": 0.8,
+        "shadowTint": "#3A3068", "highlightTint": "#FFB8D8", "splitBalance": 0.15,
+        "blackLift": "#120E2A", "contrast": 1.25, "saturation": 0.8, "exposure": 1.02
+      },
+      "bh_night": {
+        "label": "Bắc Hoang — đêm cực quang",
+        "sunColor": "#C0CCEC", "sunIntensity": 1.6, "sunElevationDeg": 30,
+        "skyColor": "#2A3260", "skyIntensity": 1.0,
+        "fogColor": "#161C3E", "fogDensity": 0.00066, "heightFogTop": 65, "heightFogBoost": 2.0,
+        "fogHaze": 0.00108, "fogHazeStart": 80, "fogScatter": 0.35, "rim": 1.0,
+        "shadowTint": "#141A40", "highlightTint": "#A8C8FF", "splitBalance": -0.2,
+        "blackLift": "#0A0E24", "contrast": 1.12, "saturation": 0.7, "exposure": 1.1
+      },
+      "bhr_dawn": {
+        "label": "Bắc Hoang — bên kia khe, bình minh tím",
+        "sunColor": "#B98CE8", "sunIntensity": 1.9, "sunElevationDeg": 5,
+        "skyColor": "#4A3A78", "skyIntensity": 0.9,
+        "fogColor": "#5A4A82", "fogDensity": 0.00132, "heightFogTop": 60, "heightFogBoost": 2.3,
+        "fogHaze": 0.00168, "fogHazeStart": 50, "fogScatter": 0.85, "rim": 0.9,
+        "shadowTint": "#140C26", "highlightTint": "#D0A8FF", "splitBalance": -0.1,
+        "blackLift": "#160E2C", "contrast": 1.18, "saturation": 0.85, "exposure": 1.1
+      },
+      "bhr_day": {
+        "label": "Bắc Hoang — bên kia khe, ngày tím mờ",
+        "sunColor": "#D8CAF4", "sunIntensity": 2.0, "sunElevationDeg": 10,
+        "skyColor": "#5E5090", "skyIntensity": 0.9,
+        "fogColor": "#70629C", "fogDensity": 0.00114, "heightFogTop": 60, "heightFogBoost": 2.1,
+        "fogHaze": 0.0015, "fogHazeStart": 55, "fogScatter": 0.8, "rim": 0.7,
+        "shadowTint": "#18102E", "highlightTint": "#E6D8FF", "splitBalance": -0.05,
+        "blackLift": "#1A1232", "contrast": 1.15, "saturation": 0.82, "exposure": 1.08
+      },
+      "bhr_dusk": {
+        "label": "Bắc Hoang — bên kia khe, hoàng hôn độc",
+        "sunColor": "#C878E0", "sunIntensity": 1.8, "sunElevationDeg": 3,
+        "skyColor": "#3C2262", "skyIntensity": 0.9,
+        "fogColor": "#4C3078", "fogDensity": 0.00156, "heightFogTop": 58, "heightFogBoost": 2.4,
+        "fogHaze": 0.0018, "fogHazeStart": 45, "fogScatter": 0.9, "rim": 1.0,
+        "shadowTint": "#0E0820", "highlightTint": "#E090FF", "splitBalance": -0.15,
+        "blackLift": "#120A26", "contrast": 1.22, "saturation": 0.88, "exposure": 1.12
+      },
+      "bhr_night": {
+        "label": "Bắc Hoang — bên kia khe, đêm tím độc",
+        "sunColor": "#7E6AD0", "sunIntensity": 1.4, "sunElevationDeg": 26,
+        "skyColor": "#160C34", "skyIntensity": 1.0,
+        "fogColor": "#1E1240", "fogDensity": 0.00144, "heightFogTop": 58, "heightFogBoost": 2.3,
+        "fogHaze": 0.00168, "fogHazeStart": 50, "fogScatter": 0.3, "rim": 1.1,
+        "shadowTint": "#08041A", "highlightTint": "#B080FF", "splitBalance": -0.25,
+        "blackLift": "#0C0620", "contrast": 1.15, "saturation": 0.85, "exposure": 1.3
+      },
       "dm_dawn": {
         "label": "Đoạn Mạch — bình minh phong đỏ",
         "sunColor": "#FFB070", "sunIntensity": 2.9, "sunElevationDeg": 12, "skyColor": "#D9B49A",

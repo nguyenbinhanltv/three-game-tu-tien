@@ -1104,6 +1104,14 @@ for (const lv of Object.values(LEVELS)) {
         'ash_dawn',
         'rift',
         'rift_pit',
+        'bh_dawn',
+        'bh_day',
+        'bh_dusk',
+        'bh_night',
+        'bhr_dawn',
+        'bhr_day',
+        'bhr_dusk',
+        'bhr_night',
       ].includes(as.mood)
     )
       err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);

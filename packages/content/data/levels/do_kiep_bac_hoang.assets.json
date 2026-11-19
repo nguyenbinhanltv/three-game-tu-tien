@@ -1,5 +1,5 @@
 {
-  "mood": "rift",
+  "mood": "bhr_dusk",
   "glb": [],
   "ground": { "set": "terrain-ash", "mask": "neutral" },
   "music": ["wild_rift", "tribulation"],
