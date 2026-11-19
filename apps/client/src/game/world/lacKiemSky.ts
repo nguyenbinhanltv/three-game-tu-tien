@@ -81,11 +81,16 @@ class Mesher {
   }
 
   tri(a: number, b: number, c: number): void {
-    this.idx.push(a, b, c);
+    if (this.flip) this.idx.push(a, c, b);
+    else this.idx.push(a, b, c);
   }
 
+  /** Đảo thứ tự đỉnh của mọi mặt ghi sau (lưới đá: thứ tự dựng cho pháp tuyến hướng vào trong, vật liệu PBR FrontSide cần hướng ra). */
+  flip = false;
+
   quad(a: number, b: number, c: number, d: number): void {
-    this.idx.push(a, b, c, a, c, d);
+    if (this.flip) this.idx.push(a, d, c, a, c, b);
+    else this.idx.push(a, b, c, a, c, d);
   }
 
   /** Như `quad`/`tri` nhưng bỏ qua khi có chỉ số thiếu (đỉnh chưa dựng), thay cho khẳng định không-undefined. */
@@ -705,6 +710,7 @@ export class LacKiemSkyScene {
     // Thân đá (vật liệu PBR chiếu ba mặt phẳng sau khi nạp texture; trước đó là màu đỉnh flat shading), cỏ + rễ + dây + cầu (màu đỉnh, trơn),
     // tán lá bằng thẻ alpha (hiện sau khi nạp atlas) và phần phát sáng (đèn ngọc, dải mây dưới cầu).
     const rockM = new Mesher();
+    rockM.flip = true; // pháp tuyến đá hướng ra ngoài (xem Mesher.flip)
     const propM = new Mesher();
     const cardM = new CardMesher();
     const glow = new Mesher();
