@@ -3,6 +3,7 @@ import archTk from '../data/colliders/arch_thien_khuyet.boxes.json';
 import archKt from '../data/colliders/arch_kiem_trung.boxes.json';
 import archKn from '../data/colliders/arch_kinh_nguyet.boxes.json';
 import archPm from '../data/colliders/arch_phuc_mach.boxes.json';
+import archTt from '../data/colliders/arch_than_tang.boxes.json';
 import archSect from '../data/colliders/arch_sect.boxes.json';
 import libJson from '../data/colliders/lib.json';
 import extraLib from '../data/colliders/extra-lib.json';
@@ -78,6 +79,7 @@ export const ARCH_BY_LEVEL: Record<string, ArchFile[]> = {
   thien_khuyet: [archTk as unknown as ArchFile],
   kiem_trung: [archKt as unknown as ArchFile],
   phuc_mach: [archPm as unknown as ArchFile],
+  than_tang: [archTt as unknown as ArchFile],
   kinh_nguyet: [archKn as unknown as ArchFile],
 };
 
