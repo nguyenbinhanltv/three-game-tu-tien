@@ -5,47 +5,56 @@
       {
         "name": "dinh_lu_dong",
         "vi": "Đỉnh lư đồng",
-        "collider": 1
+        "collider": 1,
+        "foot": 0.956
       },
       {
         "name": "gia_kiem",
         "vi": "Giá kiếm",
-        "collider": 1
+        "collider": 1,
+        "foot": 1.4
       },
       {
         "name": "bia_khac",
         "vi": "Bia khắc chữ",
-        "collider": 0.8
+        "collider": 0.8,
+        "foot": 0.85
       },
       {
         "name": "co_phuong",
         "vi": "Cờ phướn",
-        "collider": 0.35
+        "collider": 0.35,
+        "foot": 0.7806
       },
       {
         "name": "lo_luyen_dan",
         "vi": "Lò luyện đan",
-        "collider": 1.1
+        "collider": 1.1,
+        "foot": 1.263
       },
       {
         "name": "chuong_dong",
         "vi": "Chuông đồng",
-        "collider": 1.4
+        "collider": 1.4,
+        "foot": 1.65
       },
       {
         "name": "trong",
         "vi": "Trống",
-        "collider": 1
+        "collider": 1,
+        "foot": 0.82
       },
       {
         "name": "den_da",
         "vi": "Đèn đá",
-        "collider": 0.3
+        "collider": 0.3,
+        "foot": 0.62
       },
       {
         "name": "lu_huong",
         "vi": "Lư hương",
-        "collider": 0.6
+        "collider": 0.6,
+        "foot": 0.626
       },
       {
         "name": "ban_ghe_da",
@@ -56,7 +65,8 @@
             0,
             1
           ]
-        ]
+        ],
+        "foot": 1.5046
       }
     ],
     "cho_lang": [
@@ -74,22 +84,26 @@
             0.2,
             0.85
           ]
-        ]
+        ],
+        "foot": 1.6
       },
       {
         "name": "vo_ruou",
         "vi": "Vò rượu",
-        "collider": 1.1
+        "collider": 1.1,
+        "foot": 0.9671
       },
       {
         "name": "gio_thuoc",
         "vi": "Giỏ thuốc",
-        "collider": 0.0
+        "collider": 0.0,
+        "foot": 0.5
       },
       {
         "name": "long_den_giay",
         "vi": "Lồng đèn giấy",
-        "collider": 0.2
+        "collider": 0.2,
+        "foot": 0.54
       },
       {
         "name": "xe_keo",
@@ -105,12 +119,14 @@
             1.4,
             0.45
           ]
-        ]
+        ],
+        "foot": 1.5552
       },
       {
         "name": "thung_go",
         "vi": "Thùng gỗ",
-        "collider": 0.9
+        "collider": 0.9,
+        "foot": 1.22
       },
       {
         "name": "hang_rao_tre",
@@ -131,17 +147,99 @@
             0,
             0.45
           ]
-        ]
+        ],
+        "foot": 1.59
       },
       {
         "name": "gieng_nuoc",
         "vi": "Giếng nước",
-        "collider": 1.0
+        "collider": 1.0,
+        "foot": 1.1
       },
       {
         "name": "lu_nuoc",
         "vi": "Lu nước",
-        "collider": 0.7
+        "collider": 0.7,
+        "foot": 0.66
+      }
+    ],
+    "hoang_da": [
+      {
+        "name": "da_linh_khi",
+        "vi": "Đá linh khí",
+        "collider": 1.5,
+        "foot": 1.5919
+      },
+      {
+        "name": "tre",
+        "vi": "Tre",
+        "collider": 0.9,
+        "foot": 2.17
+      },
+      {
+        "name": "cay_co_thu",
+        "vi": "Cây cổ thụ uốn lượn",
+        "collider": 1.0,
+        "foot": 4.879
+      },
+      {
+        "name": "linh_thao",
+        "vi": "Linh thảo phát sáng",
+        "collider": 0.0,
+        "foot": 0.6443
+      },
+      {
+        "name": "nam_phat_sang",
+        "vi": "Nấm phát sáng",
+        "collider": 0.0,
+        "foot": 0.5434
+      },
+      {
+        "name": "mo_co",
+        "vi": "Mộ cổ",
+        "collider": [
+          [
+            0,
+            0,
+            1.2
+          ]
+        ],
+        "foot": 1.6553
+      },
+      {
+        "name": "cot_da_do",
+        "vi": "Cột đá đỏ",
+        "collider": [
+          [
+            0,
+            0,
+            0.6
+          ],
+          [
+            1.4,
+            1.2,
+            0.4
+          ]
+        ],
+        "foot": 1.4679
+      },
+      {
+        "name": "re_cay",
+        "vi": "Rễ cây",
+        "collider": [
+          [
+            0,
+            0,
+            0.9
+          ]
+        ],
+        "foot": 3.4535
+      },
+      {
+        "name": "kho_go",
+        "vi": "Khô gỗ",
+        "collider": 0.0,
+        "foot": 1.9431
       }
     ]
   }
