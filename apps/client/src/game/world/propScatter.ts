@@ -332,7 +332,12 @@ export function allProps(level = 'van_lam'): PropInstance[] {
   const all = allPropsRaw(level);
   if (FLAGS.tcProps) return all;
   let l = noTcCache.get(level);
-  if (!l) noTcCache.set(level, (l = all.filter((p) => !p.id.startsWith('prop_tc_'))));
+  if (!l) {
+    // Nhận diện instance PROP-1 theo nguồn (id + toạ độ trong THIEN_CONG_PROPS), không theo tiền tố id: món `ext` dùng asset có sẵn (prop_duong_xi, prop_lau, prop_da_nam…).
+    const src = level === 'kiem_trung' ? 'van_lam' : level === 'do_kiep_bac_hoang' ? 'bac_hoang' : level;
+    const tc = new Set((THIEN_CONG_PROPS[src] ?? []).map((p) => `${p.id}|${p.x}|${p.z}`));
+    noTcCache.set(level, (l = all.filter((p) => !tc.has(`${p.id}|${p.x}|${p.z}`))));
+  }
   return l;
 }
 const noTcCache = new Map<string, PropInstance[]>();
