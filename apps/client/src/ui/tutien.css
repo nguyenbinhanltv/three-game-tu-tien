@@ -144,7 +144,7 @@
 /* Lớp `kiep`, không phải `trib`: thanh nằm trong hộp `.trib` và không được ăn quy tắc định vị của hộp. */
 .gauge.kiep {
   --cut: 6px;
-  --fill: linear-gradient(180deg, var(--u-x-hefe3ff) 0%, var(--u-q3) 48%, var(--u-x-h5b3f95) 100%);
+  --fill: linear-gradient(180deg, var(--u-x-hefe3ff) 0%, var(--u-x-hb48cff) 48%, var(--u-x-h5b3f95) 100%);
   height: 15px;
 }
 .gauge.dan {
