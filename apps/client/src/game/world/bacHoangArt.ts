@@ -91,7 +91,7 @@ export function bhGroundColor(
   const north = riftBlend(z - def.size / 2);
   // Nền: tuyết trắng ngả lam, đám đất đá đen lộ ra theo nhiễu thấp tần (tuyết mỏng, gió quét).
   let c = hex(SNOW.snow, 1.75 + n * 0.25);
-  c = lerp3(c, hex(SNOW.rock, 1.4), Math.min(0.7, Math.max(0, -n * 1.6 + 0.2)));
+  c = lerp3(c, hex(SNOW.rock, 1.4), Math.min(0.4, Math.max(0, -n * 0.9 + 0.1)));
   // Gió thổi tuyết thành vệt lam nhạt.
   c = lerp3(c, hex(SNOW.shade, 1.5), Math.min(0.2, Math.max(0, m) * 0.5));
   // Vệt gió: dải kéo dài theo hướng gió (x), sáng tối xen kẽ như tuyết bị quét.
@@ -110,7 +110,7 @@ export function bhGroundColor(
   }
   // Mạng nứt: đường mảnh (nhiễu gần 0), đen ở nửa nam, tím sáng ở nửa bắc (màu đỉnh; phần phát sáng thật do `riftVeil`).
   const crack = 1 - Math.min(1, Math.abs(fbm(x * 0.022 + 9, z * 0.022 - 4, 3, def.seed + 612)) * 9);
-  if (crack > 0.35) c = lerp3(c, lerp3(hex(SNOW.rock, 0.5), hex(RIFT.violet, 0.8), north), Math.min(0.55, (crack - 0.35) * 1.2));
+  if (crack > 0.35) c = lerp3(c, lerp3(hex(SNOW.rock, 0.5), hex(RIFT.violet, 0.8), north), Math.min(0.22, (crack - 0.35) * 0.5));
   // Gần khe: băng nứt, ánh tím dần lên mép.
   if (path.length > 1) {
     const { d } = riftDist(path, x, z);
