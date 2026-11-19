@@ -1,14 +1,10 @@
 // Stylelint (U2-9): CSS của client chỉ dùng token --u-* ; mã màu (hex/rgb/hsl/hwb/lab/oklch…) chỉ nằm ở
-// apps/client/src/ui/u2/tokens.css. Chạy trong `pnpm lint`. File cũ chưa dọn nằm ở LEGACY_CSS (danh sách chỉ co, xoá dòng khi dọn xong;
-// PR cuối của U2-9 làm rỗng). Không thêm file mới vào đó.
+// apps/client/src/ui/u2/tokens.css. Chạy trong `pnpm lint`.
 
 /** Miễn trừ vĩnh viễn, có lý do. */
 const EXEMPT_CSS = [
   'apps/client/src/ui/u2/tokens.css', // nguồn token duy nhất
 ];
-
-/** Miễn trừ tạm: đã rỗng (U2-9). Không thêm file vào đây. */
-const LEGACY_CSS = [];
 
 export default {
   ignoreFiles: ['**/node_modules/**', '**/dist/**', 'apps/client/public/**', 'docs/**', 'assets/**'],
@@ -21,7 +17,7 @@ export default {
   },
   overrides: [
     {
-      files: [...EXEMPT_CSS, ...LEGACY_CSS],
+      files: [...EXEMPT_CSS],
       rules: { 'color-no-hex': null, 'function-disallowed-list': null },
     },
   ],

@@ -254,6 +254,8 @@
 
 /* ── U2-9: màu chuyển từ CSS cũ (tên theo giá trị; gộp dần vào token ngữ nghĩa) ── */
 :root {
+  --u-x-hfff3c6: #fff3c6; /* điểm sáng thanh cast/độ kiếp (trùng giá trị --u-son-text nhưng khác nghĩa) */
+  --u-x-hb48cff: #b48cff; /* màu độ kiếp (trùng giá trị --u-q3 nhưng khác nghĩa) */
   --u-x-h0d1420: #0d1420;
   --u-x-rgba-14-21-34-0-86: rgba(14, 21, 34, 0.86);
   --u-x-h121b2b: #121b2b;

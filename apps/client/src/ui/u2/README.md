@@ -6,14 +6,14 @@ Nền tảng: token, font, họa tiết, thành phần và trang xem. Chưa thay
 - Token (MỘT nguồn): `tokens.css`, tiền tố `--u-*`. Màu hex/rgba **chỉ** ở file này. `fonts.css` khai `@font-face`.
 - Thành phần: `Panel`/`PanelTitle`/`CloseButton`, `Tabs`, `Button`, `Badge`, `Bar`, `Slot`/`IconFrame`, `Tooltip`, `Dialog`, `Toasts`, `SkillButton`, `InkBanner`; họa tiết SVG ở `patterns.tsx`. Import từ `ui/u2`.
 - Quy tắc hình: HUD = sơn mài tối; mọi cửa sổ = giấy ngà; mọi ô/nút/nhãn cùng họ hình vát (`clip-path`), không `border-radius` trừ vòng tròn.
-- Khóa: ESLint (`eslint.config.mjs`, `UI_STYLE_RULES`) cấm hex/rgb trong chuỗi và `style={{color:'…'}}` ở `apps/client/src/ui`; `LEGACY_UI_STYLE` liệt kê file cũ chưa chuyển (chỉ được xóa dòng). `tokens.test.ts` kiểm CSS của kit. `node tools/ui/contrast.mjs` kiểm WCAG AA token mới.
+- Khóa: ESLint (`eslint.config.mjs`, `UI_STYLE_RULES`) cấm hex/rgb trong chuỗi và `style={{color:'…'}}` ở `apps/client/src/ui`; `CANVAS_UI_STYLE` miễn trừ vĩnh viễn 3 file canvas 2D (minimap/draw, minimap/sprites, worldmap/WorldMap). `tokens.test.ts` kiểm CSS của kit. `node tools/ui/contrast.mjs` kiểm WCAG AA token mới.
 - Font: `python tools/fonts/subset_u2.py <thư mục TTF>` (xem docstring); 177 KB woff2 tổng.
 
 ## Miễn trừ có chủ ý: `win/` và `shell/`
 
 Quy tắc "hex/rgba chỉ ở `tokens.css`" áp cho MỌI file CSS của client (kể cả `win/panel.css`, `shell/*.css`, `styles*.css`, `viewer.css`): Stylelint chặn trong `pnpm lint`. Màu chuyển từ CSS cũ nằm ở khối cuối `tokens.css` dưới tên `--u-x-<giá trị>` (giữ nguyên giá trị, hình không đổi); khi sửa file nào thì gộp dần `--u-x-*` vào token ngữ nghĩa. Công cụ: `node tools/ui/tokenize-css.mjs <file.css>…`.
 
-**Lint (U2-9):** `pnpm lint` chạy thêm Stylelint (`stylelint.config.mjs`, `LEGACY_CSS` đã rỗng, đừng thêm). TSX/TS có luật ESLint tương ứng (`UI_STYLE_RULES`).
+**Lint (U2-9):** `pnpm lint` chạy thêm Stylelint (`stylelint.config.mjs`; chỉ `tokens.css` được viết màu). Đã hết miễn trừ tạm. Khi dùng lại token có sẵn cho một màu viết cứng, kiểm NGHĨA của token (focus, lỗi, phẩm chất vật phẩm, chữ trên nền son…) chứ không chỉ giá trị: nếu khác nghĩa thì dùng `--u-x-*` riêng.
 
 ## Token của bộ cũ (U2-8)
 
