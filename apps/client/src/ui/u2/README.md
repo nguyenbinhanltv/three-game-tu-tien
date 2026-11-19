@@ -13,6 +13,8 @@ Nền tảng: token, font, họa tiết, thành phần và trang xem. Chưa thay
 
 Quy tắc "hex/rgba chỉ ở `tokens.css`" áp cho các file CSS nằm thẳng trong `u2/`. Hai thư mục con **chưa theo** quy tắc đó: `win/panel.css` và `shell/{hud,screens,ornament}.css` là CSS của bộ cũ dời vào (U2-8), còn nhiều màu cứng; `tokens.test.ts` không quét thư mục con. Đừng coi màu cứng ở đó là hợp lệ cho file mới; chuyển dần từng file sang `--u-*` rồi đưa vào danh sách kiểm.
 
+**Lint (U2-9):** `pnpm lint` chạy thêm Stylelint (`stylelint.config.mjs`) cấm hex/rgb/hsl… trong mọi `apps/client/src/**/*.css` ngoài `tokens.css`; file cũ chưa dọn nằm ở `LEGACY_CSS` trong config (chỉ được xoá dòng). TSX/TS đã có luật ESLint tương ứng (`UI_STYLE_RULES`).
+
 ## Token của bộ cũ (U2-8)
 
 Bộ kit cũ (`ui/kit`, `ui/ngj`, biến `--k-*`/`--ngj-*`) đã gỡ. Giá trị của nó nằm ở `tokens.css`, **giữ nguyên** để hình không đổi:
