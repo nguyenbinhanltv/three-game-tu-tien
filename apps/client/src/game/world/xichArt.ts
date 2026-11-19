@@ -102,9 +102,7 @@ export function xichGroundColor(
     // Bục quanh bia giữ ở tâm: tro xương sáng hơn, vòng đá nung mảnh ngoài rìa.
     const dc = Math.hypot(x - c.cx, z - c.cz);
     const slab = 1 - smoothstep(8, 11.5, dc);
-    if (slab > 0) col = lerp3(col, hex(XK.bone, 0.5 + m * 0.12), slab * 0.6);
-    const ring = 1 - Math.min(1, Math.abs(dc - 13.5) / 0.5);
-    if (ring > 0) col = lerp3(col, hex(XK.glow, 0.8), ring * 0.4);
+    if (slab > 0) col = lerp3(col, hex(XK.ash, 0.7 + m * 0.2), slab * 0.35);
   }
   if (rel > 1.5) {
     // Vách bazan đen có tầng gỉ đỏ theo độ cao (≈ 3 m); chân vách ám khói; gờ đỉnh ánh đỏ nắng thấp.

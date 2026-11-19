@@ -26,7 +26,7 @@ import { KiemTrungArt } from '../world/kiemTrungArt';
 import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
 import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../world/kinhNguyetArt';
 import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
-import { XichTanArt } from '../world/xichTanArt';
+import { XichTanArt, xkMaterialFor } from '../world/xichTanArt';
 import { buildGildedSky, KD_DOME, KimDaArt } from '../world/kimDaArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
@@ -146,7 +146,14 @@ export function buildXich(eng: Game, id: string, q: (typeof QUALITY)[string]): v
   // Quầng giả: bia giữ than hồng; khe mạch ngọc lam lớn hơn, hai tầng (sát đất và lơ lửng) để điểm nhấn lạnh đọc được từ xa.
   const halos = createLanternHalos(pts.slice(0, 1), 6, 0xff7a45);
   const jade = acc.slice(1).flatMap((a2) => [1.6, 5.5].map((dy) => ({ x: a2.x, y: heightAt(a2.x, a2.z) + dy, z: a2.z })));
-  const jadeGlow = buildCrystalGlow(jade);
+  // DUN-1 PR6: cầu ngọc lam to chói đổi thành lửa xanh nhạt nhỏ (đối màu than hồng vẫn đọc được là khe mạch của boss cuối), chỉ tầng sát đất.
+  const jadeGlow = levelAssets(id).xichTanArt
+    ? createLanternHalos(
+        jade.filter((_, i) => i % 2 === 0),
+        2.4,
+        0x8fc4de,
+      )
+    : buildCrystalGlow(jade);
   // Ngọn lửa than hồng trên các trụ đá dọc chân vách (cách một trụ), thay đèn lồng kiểu Vân Lam.
   const flames = propsOf(id)
     .filter((q) => q.id === 'prop_tru_da_khac_van')
@@ -711,6 +718,7 @@ export async function loadXkModel(eng: Game, shadows: boolean): Promise<void> {
     enabled: () => !!levelAssets(levelId()).xichTanArt,
     origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
     prefix: 'xk',
+    material: xkMaterialFor,
   });
 }
 

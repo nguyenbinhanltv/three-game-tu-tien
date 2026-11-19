@@ -132,3 +132,13 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Tượng**: bỏ tượng võ sĩ prop cũ, dùng lại **thần tướng chạm khắc của Thần Tàng** (giáp, mũ trụ, đại kiếm; đổi bảng màu bazan ấm + chữ hổ phách) đứng trước thềm ngai và hai bên lối vào.
 - **Ngân sách (preset Cao)**: ~172 draw call, ~0,79M tam giác.
 - **Còn lại**: vũng nước còn là các vệt tối nhỏ (phản chiếu yếu), mặt hồ hơi tối; tượng nhìn từ trên còn "cột đen"; chưa va chạm (đợi COL-1).
+
+### PR 6 vòng 2 (góp ý duyệt): cột bazan, phiến dung nham, khe rộng, lửa xanh
+
+- **Cột bazan** viết lại: 4–8 cột lục giác cao thấp lệch (2–13 m), đỉnh vỡ (mặt cắt xiên + răng cưa), cột gãy kèm mảnh vỡ nằm cạnh; cụm đặt lệch ngẫu nhiên dọc chân vách (không còn tường đều), cỡ 0,5–1,55×, thêm vài cụm lẻ trên sàn. Vật liệu client `xkMaterialFor` cho `_obs`: đá đen nhám có thớ (nhiễu kéo dọc), vết nứt mảnh phát sáng đỏ than ở chân cột, tro xám phủ mặt hướng lên.
+- **Phiến vỏ dung nham** thay bục bát giác: sáu bảy phiến dày 0,35 m có mép bo, khe 0,2–0,4 m nhìn xuống lớp dung nham **gradient phát sáng** (lõi vàng cam → mép đỏ thẫm, màu đỉnh bake ở Blender, vật liệu `_ember` thay bằng emissive nhấp nháy), viền đá vỡ nhô lên. Bục tâm màu đất đổi từ xương trắng sang tro xám.
+- **Khe dung nham** thành rãnh rộng (nửa rộng 0,3–1,5 m, gờ đá cao ×2,2): lõi vàng-cam phát sáng (`DungeonFx` `core`) mờ ra mép đỏ thẫm; 150 hạt than/tro bốc lên từ các khe (`PointsMaterial` cộng sáng).
+- **Quả cầu xanh lam** (khe mạch ngọc lam của boss cuối) đổi thành quầng lửa xanh nhạt nhỏ hơn (chỉ tầng sát đất). Vòng trắng ở bục tâm của địa hình đã bỏ.
+- Vòng trắng xám lớn trong ảnh chụp là **vòng thần thức/lãnh vực của nhân vật thử cảnh giới Hóa Thần** (VFX của game, `game/fx`), không thuộc cảnh bí cảnh; để nguyên.
+- Chưa làm: sương nóng gợn (heat haze) — cần hậu kỳ biến dạng khung, ngoài phạm vi PR này.
+- **Ngân sách (preset Cao)**: ~158 draw call, ~0,49M tam giác.

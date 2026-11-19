@@ -37,6 +37,10 @@ export interface DungeonFxConfig {
     pathW?: number;
     /** Khoảng cách tới camera (m) khe mờ hết → hiện đủ (mặc định 14 → 34). */
     fade?: [number, number];
+    /** Màu lõi phát sáng (vàng-cam) ở giữa khe, mờ dần ra `floor` (đỏ thẫm) ở mép; mặc định không có lõi. */
+    core?: [number, number, number];
+    /** Hệ số độ cao gờ đá hai bên (mặc định 1 = 0,2 m). */
+    lip?: number;
   };
   mist?: { a: [number, number, number]; b: [number, number, number]; innerR: number; outerR: number; opacity: number };
   ring?: { rgb: string; mote: number };
@@ -110,7 +114,7 @@ export class DungeonFx {
         for (const [u, h] of PROFILE) {
           const px = x + nx * w * u;
           const pz = z + nz * w * u;
-          row.push(px, heightAt(px, pz) + 0.05 + h * Math.min(1, w * 1.4), pz);
+          row.push(px, heightAt(px, pz) + 0.05 + h * (k.lip ?? 1) * Math.min(1, w * 1.4), pz);
         }
         rows.push(row);
         dir += (rand() - 0.5) * 0.9;
@@ -138,7 +142,7 @@ export class DungeonFx {
         for (const [u, h] of PROFILE) {
           const px = pt.x + nx * w * u;
           const pz = pt.z + nz * w * u;
-          row.push(px, heightAt(px, pz) + 0.05 + h * Math.min(1, w * 1.4), pz);
+          row.push(px, heightAt(px, pz) + 0.05 + h * (k.lip ?? 1) * Math.min(1, w * 1.4), pz);
         }
         rows.push(row);
       }
@@ -177,10 +181,10 @@ export class DungeonFx {
     const mat = createWorldMaterial({ transparent: true, depthWrite: false, roughness: 0.9, side: THREE.DoubleSide });
     mat.colorNode = mix(vec3(0.02, 0.025, 0.035), rock, isLip);
     const gw = k.glowW ?? 0.7;
-    mat.emissiveNode = vec3(...k.floor)
+    const edgeGlow = vec3(...k.floor)
       .mul(smoothstep(gw, 0.0, u))
-      .mul(smoothstep(gw, 0.0, u))
-      .mul(pulse);
+      .mul(smoothstep(gw, 0.0, u));
+    mat.emissiveNode = (k.core ? edgeGlow.add(vec3(...k.core).mul(smoothstep(gw * 0.55, 0.0, u).pow(1.5))) : edgeGlow).mul(pulse);
     // gần camera (< ~14–34 m) khe mờ dần: không bao giờ thành dải to chắn khung hình khi camera sát mặt đất
     const nearFade = smoothstep(k.fade?.[0] ?? 14, k.fade?.[1] ?? 34, positionWorld.sub(cameraPosition).length());
     mat.opacityNode = smoothstep(1.35, 1.05, u).mul(nearFade);

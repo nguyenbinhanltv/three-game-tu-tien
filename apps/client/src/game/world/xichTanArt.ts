@@ -1,7 +1,10 @@
 import * as THREE from 'three/webgpu';
+import { float, mix, normalWorld, positionLocal, positionWorld, smoothstep, texture, time, vec2, vec3, vertexColor } from 'three/tsl';
 import { LEVELS } from '@dtl/content';
+import { hash01 } from '@dtl/shared';
 import { heightAt, levelTerrain } from '../../base/levelCtx';
 import { createLanternHalos } from '../../render/atmosphere';
+import { getCloudNoise } from '../../render/noiseTex';
 import { DungeonFx } from './dungeonFx';
 import { xichCracks } from './xichArt';
 
@@ -35,10 +38,58 @@ export function xkKeepOut(x: number, z: number, minR: number): boolean {
   return Math.hypot(dx, dz) < minR || (Math.abs(dx) < 9 && dz > 34);
 }
 
+/**
+ * Vật liệu thay cho glTF của GLB `arch_xich_tan`:
+ *  - `_obs` (cột bazan): đá đen nhám có thớ (nhiễu theo toạ độ thế giới kéo dọc), vết nứt mảnh phát sáng đỏ than ở chân cột (theo độ cao cục bộ), tro xám phủ mặt hướng lên (pháp tuyến);
+ *  - `_ember` (dung nham trong khe/phiến/miệng phun): phát sáng theo màu đỉnh (gradient vàng cam → đỏ thẫm bake trong Blender), nhấp nháy rất chậm.
+ * Vật liệu khác giữ nguyên.
+ */
+export function xkMaterialFor(name: string): THREE.Material | null {
+  if (name.endsWith('_ember')) {
+    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9, metalness: 0, name });
+    const wp = positionWorld;
+    const flick = float(0.9).add(
+      texture(getCloudNoise(), wp.xz.mul(0.08).add(time.mul(0.03)))
+        .g.sub(0.5)
+        .mul(0.3),
+    );
+    m.colorNode = vec3(0.02, 0.01, 0.008);
+    m.emissiveNode = vertexColor().mul(1.15).mul(flick);
+    return m;
+  }
+  if (name.endsWith('_obs')) {
+    const nz = getCloudNoise();
+    const wp = positionWorld;
+    const grain = texture(nz, vec2(wp.x.add(wp.z).mul(1.7), wp.y.mul(0.35))).g;
+    const fine = texture(nz, vec2(wp.x.sub(wp.z).mul(5.0), wp.y.mul(1.1))).b;
+    const crackN = texture(nz, vec2(wp.x.add(wp.z).mul(0.9), wp.y.mul(0.25)).add(0.37))
+      .a.sub(0.5)
+      .abs();
+    const crack = smoothstep(0.016, 0.0, crackN);
+    const ny = normalWorld.y;
+    const ash = smoothstep(0.55, 0.88, ny);
+    const base = vertexColor().mul(float(0.65).add(grain.mul(0.5)).add(fine.mul(0.18)));
+    const withAsh = mix(base, vec3(0.42, 0.4, 0.38).mul(float(0.7).add(fine.mul(0.5))), ash.mul(0.85));
+    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.82, metalness: 0.05, name });
+    m.colorNode = withAsh.mul(float(1).sub(crack.mul(0.6)));
+    // ánh đỏ dung nham trong vết nứt, mạnh ở chân cột (độ cao cục bộ < ~3 m) và tắt dần lên đỉnh
+    const low = smoothstep(7.0, 0.0, positionLocal.y);
+    m.emissiveNode = vec3(1.0, 0.36, 0.1).mul(crack).mul(low).mul(float(1).sub(ash)).mul(0.6);
+    return m;
+  }
+  return null;
+}
+
+const EMBER_N = 150;
+
 export class XichTanArt {
   readonly group = new THREE.Group();
   private readonly fx: DungeonFx;
   private readonly disposables: { dispose(): void }[] = [];
+  private embers: THREE.Points | null = null;
+  private readonly emberSeed: number[] = [];
+  private readonly emberSrc: { x: number; z: number }[] = [];
+  private t = 0;
 
   constructor() {
     this.group.name = 'xich-tan-art';
@@ -54,14 +105,16 @@ export class XichTanArt {
         count: 16,
         rMin: 24,
         rMax: 72,
-        floor: [1.0, 0.36, 0.1],
+        floor: [0.55, 0.1, 0.03],
+        core: [1.0, 0.62, 0.2],
+        lip: 2.2,
         halo: [0.5, 0.16, 0.04],
         rock: [0.1, 0.08, 0.07],
-        w0: 0.16,
-        w1: 0.34,
-        glowW: 0.5,
+        w0: 0.32,
+        w1: 0.6,
+        glowW: 0.62,
         paths,
-        pathW: 0.55,
+        pathW: 1.05,
         fade: [24, 52],
       },
       mist: { a: [0.1, 0.075, 0.065], b: [0.3, 0.22, 0.18], innerR: 24, outerR: 80, opacity: 0.3 },
@@ -71,10 +124,49 @@ export class XichTanArt {
     const halos = createLanternHalos(pts, 4.5, 0xff6a2a);
     this.group.add(halos);
     this.disposables.push(halos.geometry, halos.material as THREE.Material);
+    // hạt than/tro bốc lên từ các khe (lấy mẫu dọc ba đường chính), cộng sáng, cập nhật trên CPU
+    for (const path of paths) for (let i = 0; i < path.length; i += 1) this.emberSrc.push({ x: path[i]!.x, z: path[i]!.z });
+    for (let i = 0; i < EMBER_N; i++) this.emberSeed.push(hash01(i, 1, 7701), hash01(i, 2, 7701), hash01(i, 3, 7701), hash01(i, 4, 7701));
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(EMBER_N * 3), 3));
+    g.boundingSphere = new THREE.Sphere(new THREE.Vector3(CENTER.x, heightAt(CENTER.x, CENTER.z) + 8, CENTER.z), 120);
+    const m = new THREE.PointsMaterial({
+      color: 0xff9a50,
+      size: 0.34,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    this.embers = new THREE.Points(g, m);
+    this.embers.name = 'xk-embers';
+    this.embers.frustumCulled = false;
+    this.group.add(this.embers);
+    this.disposables.push(g, m);
+    this.updateEmbers();
+  }
+
+  private updateEmbers(): void {
+    if (!this.embers || !this.emberSrc.length) return;
+    const a = this.embers.geometry.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < EMBER_N; i++) {
+      const s0 = this.emberSeed[i * 4]!;
+      const s1 = this.emberSeed[i * 4 + 1]!;
+      const s2 = this.emberSeed[i * 4 + 2]!;
+      const s3 = this.emberSeed[i * 4 + 3]!;
+      const src = this.emberSrc[Math.floor(s0 * this.emberSrc.length) % this.emberSrc.length]!;
+      const life = (this.t * (0.07 + 0.08 * s1) + s2) % 1;
+      const x = src.x + (s1 - 0.5) * 3 + Math.sin(this.t * 0.6 + s3 * 6) * 0.8 * life;
+      const z = src.z + (s3 - 0.5) * 3 + Math.cos(this.t * 0.5 + s1 * 6) * 0.8 * life;
+      a.setXYZ(i, x, heightAt(src.x, src.z) + 0.4 + life * (3 + 6 * s2), z);
+    }
+    a.needsUpdate = true;
   }
 
   update(dt: number): void {
+    this.t += dt;
     this.fx.update(dt);
+    this.updateEmbers();
   }
 
   dispose(): void {

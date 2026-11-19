@@ -1192,11 +1192,11 @@
       "id": "arch_xich_tan",
       "class": "arch",
       "source": "assets/build/raw/arch_xich_tan.glb",
-      "file": "arch_xich_tan.2765fbe620.glb",
-      "bytes": 12628124,
-      "rawBytes": 10831628,
-      "triangles": 76581,
-      "rawTriangles": 76581,
+      "file": "arch_xich_tan.31cb50a794.glb",
+      "bytes": 12636980,
+      "rawBytes": 10869940,
+      "triangles": 80084,
+      "rawTriangles": 80084,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -1289,21 +1289,21 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 76581
+          "triangles": 80084
         }
       ],
       "dims": {
         "raw": {
-          "width": 93.6053,
-          "height": 15.5714,
-          "depth": 155.164,
-          "minY": -0.8087
+          "width": 93.1668,
+          "height": 19.9018,
+          "depth": 161.6105,
+          "minY": -0.9089
         },
         "build": {
-          "width": 93.6049,
-          "height": 15.5713,
-          "depth": 155.1641,
-          "minY": -0.8086
+          "width": 93.1669,
+          "height": 19.9018,
+          "depth": 161.6102,
+          "minY": -0.9089
         }
       }
     },
