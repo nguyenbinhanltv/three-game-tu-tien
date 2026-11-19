@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { abs, atan2, attribute, clamp, float, floor, fract, length, mix, sin, smoothstep, step, time, uniform, uv, vec3 } from 'three/tsl';
+import { abs, atan, attribute, clamp, float, floor, fract, length, mix, sin, smoothstep, step, time, uniform, uv, vec3 } from 'three/tsl';
 
 /**
  * Cổ trận khắc vào vách đá (MAP-2 Đoạn Mạch): tấm phẳng dán lên vách, vẽ bằng shader TSL (không texture): vòng ngoài, vòng giữa,
@@ -31,7 +31,7 @@ export function runeMaterial(): THREE.MeshBasicNodeMaterial {
   const phase = attribute('iPhase', 'float');
   const p = uv().sub(0.5);
   const d = length(p).mul(2);
-  const a = atan2(p.y, p.x)
+  const a = atan(p.y, p.x)
     .div(Math.PI * 2)
     .add(0.5); // 0..1 quanh tâm
   const seg = floor(a.mul(8));
