@@ -7,9 +7,10 @@ import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferG
 import { clamp, cameraPosition, float, instanceIndex, mix, normalView, normalWorld, positionWorld, smoothstep, texture, time, vec2, vec3, vertexColor } from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
 import { skyParams } from '../../render/sky';
-import { bridgeDeckY, type BridgeDef, hash01, type IslandDef, type Terrain } from '@dtl/shared';
+import { bridgeDeckY, type BridgeDef, hash01, type IslandDef, type Terrain, type TerrainDef } from '@dtl/shared';
 import type { SpiritScan } from '../../ui/store';
 import { pondMaterial } from '../../render/pondWater';
+import { billowPlan } from './billows';
 import { vanHaiArt, type VhIsland, type VhKind } from './vanHaiArt';
 
 const PLANK = 0.9;
@@ -58,7 +59,7 @@ export class SkyIslands {
       const art = vanHaiArt(def);
       for (const isl of def.islands) this.buildSkirt(isl, def.voidFloor, art.islandAt(isl.x, isl.z));
       this.buildFloorMist(def.voidFloor, def.size);
-      this.buildBillows(def.voidFloor, def.size);
+      this.buildBillows(def.voidFloor, def.size, def);
       this.buildBanks(art.islands, def.voidFloor);
       this.buildDebris(art.islands);
       this.buildFalls(art.islands, def.voidFloor);
@@ -346,7 +347,7 @@ export class SkyIslands {
    * Biển mây cuộn (một InstancedMesh): các khối mây phình dẹt trải trên sàn mây, có sáng/tối theo hướng mặt (đỉnh sáng, hông và đáy lam xám), mép tan mờ, vân
    * mây chuyển động chậm; mờ dần khi camera ở gần (không che nhân vật đi trên sàn mây).
    */
-  private buildBillows(floor: number, size: number): void {
+  private buildBillows(floor: number, size: number, def: TerrainDef): void {
     const N = 900;
     const geo = this.track(new THREE.IcosahedronGeometry(1, 1));
     const mat = this.track(new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false }));
@@ -363,16 +364,11 @@ export class SkyIslands {
     const im = new THREE.InstancedMesh(geo, mat, N);
     const m4 = new THREE.Matrix4();
     const q = new THREE.Quaternion();
-    for (let i = 0; i < N; i++) {
-      const x = hash01(i, 11, 801) * size;
-      const z = hash01(i, 13, 803) * size;
-      const tower = i % 7 === 0; // mây tháp: khối cao, tạo chiều sâu và đường chân mây gồ ghề
-      const rr = tower ? 90 + hash01(i, 17, 805) * 80 : 40 + hash01(i, 17, 805) * 90;
-      const y = tower ? floor - 8 + hash01(i, 19, 807) * 10 : floor + 1 + hash01(i, 19, 807) * 26;
-      q.setFromEuler(new THREE.Euler(0, hash01(i, 23, 809) * 6.28, 0));
-      m4.compose(new THREE.Vector3(x, y, z), q, new THREE.Vector3(rr * (1 + hash01(i, 29, 811) * 0.7), rr * (tower ? 0.85 : 0.5), rr));
+    billowPlan(size, floor, def.islands ?? [], def.bridges ?? [], N).forEach((b, i) => {
+      q.setFromEuler(new THREE.Euler(0, b.yaw, 0));
+      m4.compose(new THREE.Vector3(b.x, b.y, b.z), q, new THREE.Vector3(b.sx, b.sy, b.sz));
       im.setMatrixAt(i, m4);
-    }
+    });
     im.instanceMatrix.needsUpdate = true;
     im.frustumCulled = false;
     im.renderOrder = -5;
