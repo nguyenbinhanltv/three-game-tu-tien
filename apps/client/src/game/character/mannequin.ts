@@ -948,7 +948,8 @@ export class MannequinCharacter implements CharacterView {
     if (this.dead) return;
     this.dashOff = { fx: fromX, fz: fromZ, t: 0, dur: Math.max(0.1, dur) };
     this.cancelRecovery('dash');
-    if (this.perf) return;
+    // Chiêu còn sống mà chưa bị hủy thì giữ động tác chiêu; dash-cancel (đã hủy thu về, tắt dần 0,12 s) thì vẫn lăn.
+    if (this.perf && !this.perf.cancelled) return;
     const len = this.tpl.clips.get('Roll')?.duration ?? 0;
     if (len > 0) this.oneShot('Roll', Math.min(3, Math.max(1, len / this.dashOff.dur)));
   }

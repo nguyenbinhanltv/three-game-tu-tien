@@ -116,6 +116,40 @@ describe('swingSeconds / ualHit.json', () => {
   });
 });
 
+describe('lướt hủy thu về chiêu (A4)', () => {
+  it('chiêu đã qua mốc cho phép hủy: dashFrom hủy thu về và vẫn phát Roll; chiêu chưa tới mốc thì giữ động tác chiêu', () => {
+    for (const cancelAt of [0.2, 0.9]) {
+      const { m } = fake();
+      run(m, 0.3);
+      const priv = m as unknown as { mixer: THREE.AnimationMixer; perf: unknown; shot: THREE.AnimationAction | null };
+      const act = priv.mixer.clipAction(new THREE.AnimationClip('p', 1, []));
+      priv.perf = {
+        id: 'p',
+        pose: { def: { duration: 1, hit: [0.1] } },
+        upper: act,
+        lower: act,
+        lowerBase: null,
+        t: 0.5,
+        end: 1,
+        timing: { hitAt: [0.1], end: 1, cancelMove: cancelAt, cancelDash: cancelAt },
+        skill: 's',
+        combo: -1,
+        fired: 1,
+        env: 1,
+      };
+      m.dashFrom(0, 0, 0.3);
+      const perf = priv.perf as { cancelled?: boolean };
+      if (cancelAt < 0.5) {
+        expect(perf.cancelled).toBe(true);
+        expect(priv.shot?.getClip().name).toBe('Roll');
+      } else {
+        expect(perf.cancelled).toBeUndefined();
+        expect(priv.shot).toBeNull();
+      }
+    }
+  });
+});
+
 describe('lướt hiển thị (A4)', () => {
   it('dashFrom: hình xuất phát ở chỗ cũ rồi trượt về chỗ thật, phát clip Roll, hết thì về 0', () => {
     const { m } = fake();
