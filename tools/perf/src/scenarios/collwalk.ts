@@ -44,7 +44,8 @@ export default {
     await skipCutscene(page, 10);
     await gm(page, 'killall', 900);
     await page.evaluate(() => window.__game!.setDebugColliders(true));
-    const pos = () => page.evaluate(() => ({ x: window.__game!.renderPos.x, y: window.__game!.renderPos.y, z: window.__game!.renderPos.z }));
+    const pos = () =>
+      page.evaluate(() => ({ x: window.__game!.renderPos.x, y: window.__game!.renderPos.y, z: window.__game!.renderPos.z }));
     const run = async (ms: number) => {
       await page.keyboard.down('KeyW');
       await sleep(ms);
@@ -52,7 +53,9 @@ export default {
     };
     const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
     const t = terrainOf(LEVEL);
-    const clearAt = (x: number, z: number) => Math.abs(t.groundAt(x, z) - t.groundAt(x + 1, z)) < 1.5 && !shapes.some((s) => s.k === 'cyl' && Math.hypot(s.x - x, s.z - z) < s.r + 1);
+    const clearAt = (x: number, z: number) =>
+      Math.abs(t.groundAt(x, z) - t.groundAt(x + 1, z)) < 1.5 &&
+      !shapes.some((s) => s.k === 'cyl' && Math.hypot(s.x - x, s.z - z) < s.r + 1);
     // Hiệu chỉnh hướng đi theo yaw camera (như kịch bản `fly`).
     const probe = async (yaw: number) => {
       await cam(page, { yaw, pitch: 0.3, dist: 14 });

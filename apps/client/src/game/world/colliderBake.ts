@@ -33,8 +33,7 @@ export interface ExtraInst {
 
 /** Hàm rải riêng theo level (COL-B). Chạy với địa hình của level đó đang hoạt động. */
 const EXTRA: Record<string, () => ExtraInst[]> = {
-  doan_mach: () =>
-    mapleSpots().map((t) => ({ id: 'x_maple_trunk', x: t.x, z: t.z, y: heightAt(t.x, t.z) - 0.15, yaw: t.rot, s: t.s })),
+  doan_mach: () => mapleSpots().map((t) => ({ id: 'x_maple_trunk', x: t.x, z: t.z, y: heightAt(t.x, t.z) - 0.15, yaw: t.rot, s: t.s })),
 };
 
 export function extraInstances(level: string): ExtraInst[] {
