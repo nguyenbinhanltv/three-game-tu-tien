@@ -1288,6 +1288,8 @@ export class Game {
     this.sectMesh?.geometry.dispose();
     this.sectAsset?.handle.release();
     this.tkAsset?.handle.release();
+    for (const m of this.tkAsset?.mats ?? []) m.dispose();
+    this.tkAsset = null;
     for (const m of this.sectAsset?.mats ?? []) m.dispose();
     this.sectAsset = null;
     this.sectMat.dispose();

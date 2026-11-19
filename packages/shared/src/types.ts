@@ -956,9 +956,10 @@ export interface ThienKhuyetSky {
   statue: { x: number; z: number; yaw: number; size: number };
   /** Trận pháp cổ trên mặt quảng trường. */
   array: { x: number; z: number; r: number };
-  /** Số mảnh đá trời lơ lửng và số cột ngọc vỡ rải dọc đại lộ. */
+  /** Số mảnh đá trời lơ lửng. */
   shards: number;
-  pillars: number;
+  /** Cột son dọc đại lộ: vị trí và độ cao đất thật `y` (sinh bằng `tools/perf/src/tk-pillars.ts`; GLB nướng cột nên cần `y` có sẵn). */
+  pillars: { x: number; z: number; y: number; kind: 'gay' | 'dung' | 'do' }[];
 }
 
 /** Loại công trình trên đảo nổi (script Blender chọn mảnh kit theo loại). */

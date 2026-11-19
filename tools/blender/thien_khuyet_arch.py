@@ -115,72 +115,81 @@ def stair_pt(s, u):
 # Chân thang nằm trên lối đi (đại lộ, điểm nhiệm vụ) mà thang không có va chạm: bỏ mọi bậc thấp hơn mức này (m so với mặt quảng trường),
 # thang bắt đầu lơ lửng trên tầm đầu người; người chơi đi qua bên dưới.
 MIN_Y = 18.0
+STEP_RUN = 1.1  # bước tiến mỗi bậc (m); bậc cao ~0,2 m theo độ dốc xoắn
+STAIR_W = 4.2  # bề ngang thang (m)
+SEG_STEPS = 64  # số bậc mỗi đoạn treo
+GAP_STEPS = 4  # khe vỡ giữa hai đoạn
 
 
 def build_stair(b, s, rnd):
+    """Bậc thang nhỏ (rộng ~4 m) xoắn dài lên trời, chia thành các đoạn treo giữa mây, lan can ngọc chạy dọc, đèn đá, đáy đá thô thon như thuyền."""
     length = s['turns'] * math.tau * (s['r0'] + s['r1']) / 2
-    n = int(round(length / 2.4))
-    rise = (s['y1'] - s['y0']) / n
-    wid = s['width']
-    prev = None
+    n = int(round(length / STEP_RUN))
+    wid = STAIR_W
+    seg_len = SEG_STEPS + GAP_STEPS
+    pts = []  # (i, a, x, z, y, yaw) của các bậc có thật
     for i in range(n):
-        u = (i + 0.5) / n
-        a, r, x, z, y = stair_pt(s, u)
-        if y < MIN_Y:
+        a, r, x, z, y = stair_pt(s, (i + 0.5) / n)
+        if y < MIN_Y or i % seg_len >= SEG_STEPS:
+            pts.append(None)
             continue
-        yaw = math.atan2(-math.cos(a), -math.sin(a))
-        miss = i > 14 and i < n - 8 and rnd.random() < 0.05
-        if not miss:
-            sk = wid * (1.0 - 0.06 * rnd.random())
-            col = kit.JADE if i % 2 == 0 else kit.JADE_SHADE
-            start = len(b.verts)
-            # bậc: tấm dày, mép trước vát; thân treo bên dưới
-            b.box(x, y - rise * 1.5, z, 2.55, rise * 3.0 + 0.2, sk, col, yaw=yaw)
-            if i % 3 == 0:
-                tx, tz = -math.sin(a), math.cos(a)
-                nx, nz = math.cos(a), math.sin(a)
-                b.box(x - tx * 1.3, y + rise * 0.05, z - tz * 1.3, 0.14, 0.1, sk * 0.96, GOLD_LIT if i % 15 == 0 else kit.GILD, yaw=yaw)
-            if rnd.random() < 0.07:  # bậc mẻ góc
-                xform(b, start, (x, y, z), rnd.uniform(-0.08, 0.08), 0, rnd.uniform(-0.12, 0.12))
-        # thân thang treo (đá thô, mỗi 4 bậc): dày dần rồi thu nhọn
-        if i % 4 == 0:
-            th = 5.0 + 3.0 * math.sin(i * 0.31) + rnd.uniform(0, 2)
-            start = len(b.verts)
-            b.box(x, y - rise * 3 - th / 2, z, 9.6, th, wid * 0.86, STONE_DK, yaw=yaw)
-            xform(b, start, (x, y, z), rnd.uniform(-0.1, 0.1), 0, rnd.uniform(-0.12, 0.12))
-            for k in range(2):  # nhũ đá dưới thân
-                a2 = rnd.uniform(0, math.tau)
-                start = len(b.verts)
-                b.cylinder(x + math.cos(a2) * 2, y - rise * 3 - th - 4.0, z + math.sin(a2) * 2, 0.15, 5 + rnd.random() * 4, STONE_DK, 6, 1.0)
-                xform(b, start, (x, y - rise * 3 - th, z), math.pi, 0, 0)
-        # đèn đá hai bên mỗi 18 bậc
-        if i % 18 == 9:
+        pts.append((a, x, z, y, math.atan2(-math.cos(a), -math.sin(a))))
+    for i, p in enumerate(pts):
+        if not p:
+            if i % seg_len == SEG_STEPS and i > 0 and pts[i - 1]:  # mảnh vỡ trôi ở khe
+                a, x, z, y, yaw = pts[i - 1]
+                rubble(b, x + math.sin(a) * 2.5, y + rnd.uniform(-1.0, 1.0), z - math.cos(a) * 2.5, 4, 0.7, rnd, 2.0)
+            continue
+        a, x, z, y, yaw = p
+        col = kit.JADE if i % 2 == 0 else kit.JADE_SHADE
+        b.box(x, y - 0.18, z, STEP_RUN * 1.03, 0.36, wid, col, yaw=yaw)
+        if i % 10 == 0:  # gờ vàng ở mép bậc
+            b.box(x - math.sin(a) * 0.0, y + 0.02, z, 0.1, 0.05, wid * 1.02, kit.GILD, yaw=yaw)
+        if i % 36 == 18:  # đèn đá hai bên
             for sd in (-1, 1):
-                lx = x + math.cos(a) * sd * wid * 0.56
-                lz = z + math.sin(a) * sd * wid * 0.56
-                b.place('prop_den_da', lx, y, lz, yaw=0.0, scale=1.0)
-        prev = (x, z, y)
-    # lan can ngọc theo đường cong: mỗi đoạn 5 bậc, có đoạn gãy (chỉ còn trụ), có đoạn đổ
-    seg = 5
-    for i in range(0, n - seg, seg):
-        for sd in (-1, 1):
-            u0, u1 = i / n, (i + seg) / n
-            a0_, r0_, x0, z0, y0 = stair_pt(s, u0)
-            a1_, r1_, x1, z1, y1 = stair_pt(s, u1)
-            if y0 < MIN_Y:
-                continue
-            off = wid * 0.53 * sd
-            p0 = (x0 + math.cos(a0_) * off, z0 + math.sin(a0_) * off)
-            p1 = (x1 + math.cos(a1_) * off, z1 + math.sin(a1_) * off)
-            q = rnd.random()
-            ym = (y0 + y1) / 2
-            if q < 0.72:
-                b.balustrade(p0[0], p0[1], p1[0], p1[1], y=ym + 0.1, h=1.0, post=4.0)
-            elif q < 0.9:
-                b.box(p0[0], ym + 0.5, p0[1], 0.3, 1.0, 0.3, kit.JADE_SHADE)
-                rubble(b, (p0[0] + p1[0]) / 2, ym, (p0[1] + p1[1]) / 2, 3, 0.9, rnd, 1.5)
-            if i % 25 == 0:
-                b.place('cot_vuong_ngoc', p0[0], ym, p0[1], scale=0.8)
+                b.place('prop_den_da', x + math.cos(a) * sd * (wid / 2 + 0.5), y, z + math.sin(a) * sd * (wid / 2 + 0.5), scale=0.8)
+    # đáy đá treo của từng đoạn: thân thuyền thon hai đầu + nhũ đá
+    nseg = n // seg_len + 1
+    for g in range(nseg):
+        idx = [i for i in range(g * seg_len, min(n, g * seg_len + SEG_STEPS)) if pts[i]]
+        if len(idx) < 6:
+            continue
+        for k in range(0, len(idx) - 1, 3):
+            i = idx[k]
+            a, x, z, y, yaw = pts[i]
+            f = k / (len(idx) - 1)
+            th = 0.8 + 3.2 * math.sin(math.pi * f) ** 0.8 + rnd.uniform(0, 0.6)
+            w = wid * (0.55 + 0.4 * math.sin(math.pi * f))
+            start = len(b.verts)
+            b.box(x, y - 0.36 - th / 2, z, STEP_RUN * 3.4, th, w, STONE_DK, yaw=yaw)
+            xform(b, start, (x, y, z), rnd.uniform(-0.04, 0.04), 0, rnd.uniform(-0.05, 0.05))
+        # nhũ đá hai đầu và giữa
+        for f in (0.1, 0.5, 0.9):
+            i = idx[int(f * (len(idx) - 1))]
+            a, x, z, y, yaw = pts[i]
+            start = len(b.verts)
+            b.cylinder(x, y - 6.0 - rnd.random() * 4, z, 0.1, 6 + rnd.random() * 5, STONE_DK, 6, 0.9)
+            xform(b, start, (x, y - 4.0, z), math.pi, 0, 0, d=(0, -6.0, 0))
+    # lan can ngọc chạy dọc hai bên: mỗi mảnh 6 bậc, bỏ 8% mảnh (gãy), trụ ngọc đầu mỗi đoạn
+    for g in range(nseg):
+        idx = [i for i in range(g * seg_len, min(n, g * seg_len + SEG_STEPS)) if pts[i]]
+        for k in range(0, len(idx) - 6, 6):
+            i0, i1 = idx[k], idx[k + 6]
+            a0_, x0, z0, y0, _ = pts[i0]
+            a1_, x1, z1, y1, _ = pts[i1]
+            for sd in (-1, 1):
+                off = (wid / 2 + 0.12) * sd
+                p0 = (x0 + math.cos(a0_) * off, z0 + math.sin(a0_) * off)
+                p1 = (x1 + math.cos(a1_) * off, z1 + math.sin(a1_) * off)
+                if rnd.random() < 0.08:
+                    b.box(p0[0], y0 + 0.5, p0[1], 0.26, 1.0, 0.26, kit.JADE_SHADE)
+                    continue
+                b.balustrade(p0[0], p0[1], p1[0], p1[1], y=(y0 + y1) / 2 - 0.08, h=0.95, post=5.0, cloud=False)
+        for end in (0, len(idx) - 1):
+            if idx:
+                a, x, z, y, _ = pts[idx[end]]
+                for sd in (-1, 1):
+                    b.place('cot_vuong_ngoc', x + math.cos(a) * sd * (wid / 2 + 0.12), y - 0.2, z + math.sin(a) * sd * (wid / 2 + 0.12), scale=0.7)
 
 
 # ---------- Cổng Tiên Vỡ ----------
@@ -291,41 +300,164 @@ def build_palace(b, isl, rnd, big):
 # ---------- cột dọc đại lộ ----------
 
 
-def build_avenue_pillars(b, n, rnd):
-    placed = 0
-    guard = 0
-    while placed < n and guard < 600:
-        guard += 1
-        side = -1 if rnd.random() < 0.5 else 1
-        z = 470 + rnd.random() * 600
-        x = 1034 + side * (46 + rnd.random() * 40) + (z - 470) * 0.004
-        if math.hypot(x - 1144, z - 684) < 50:
-            continue
-        lx, _, lz = loc(x, 0, z)
-        ly = -1.2
-        q = rnd.random()
-        b.box(lx, ly + 0.6, lz, 3.6, 1.6, 3.6, kit.JADE_SHADE)
-        if q < 0.5:
-            broken_column(b, lx, ly + 1.4, lz, 0.9, 3 + rnd.random() * 9, rnd)
-        elif q < 0.8:
-            b.place('cot_dau_cung', lx, ly + 1.4, lz, scale=1.6)
+def build_avenue_pillars(b, pillars, rnd):
+    """Cột son dọc đại lộ ở vị trí/độ cao đất thật trong dữ liệu (`tools/perf/src/tk-pillars.ts`), chân bệ chìm 0,6 m để bám đất dốc."""
+    for p in pillars:
+        lx, ly, lz = loc(p['x'], p['y'], p['z'])
+        b.box(lx, ly + 0.2, lz, 3.6, 1.6, 3.6, kit.JADE_SHADE)
+        g = ly + 1.0
+        if p['kind'] == 'gay':
+            broken_column(b, lx, g, lz, 0.9, 3 + rnd.random() * 9, rnd)
+        elif p['kind'] == 'dung':
+            b.place('cot_dau_cung', lx, g, lz, scale=1.6)
         else:
             start = len(b.verts)
-            b.place('cot_rong', lx, ly + 1.4, lz, scale=1.5)
-            xform(b, start, (lx, ly + 1.4, lz), math.pi / 2 - 0.1, rnd.uniform(0, 6), 0, d=(0, 1.0, 0))
+            b.place('cot_rong', lx, g, lz, scale=1.5)
+            xform(b, start, (lx, g, lz), math.pi / 2 - 0.1, rnd.uniform(0, 6), 0, d=(0, 1.0, 0))
         if rnd.random() < 0.25:
-            b.place('prop_den_da', lx + 3, ly + 1.4, lz + 2, scale=1.2)
-        placed += 1
+            b.place('prop_den_da', lx + 3, g, lz + 2, scale=1.2)
 
 
-# ---------- tượng thần khổng lồ gãy đổ ----------
+# ---------- tượng thần khổng lồ gãy đổ: lưới điêu khắc procedural (mặt cong chia nhỏ + nhiễu + nếp giáp) ----------
+
+
+def _hash3(ix, iy, iz, seed):
+    h = (ix * 374761393 + iy * 668265263 + iz * 2147483647 + seed * 1274126177) & 0xFFFFFFFF
+    h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
+    return ((h ^ (h >> 16)) & 0xFFFFFFFF) / 4294967296.0
+
+
+def vnoise3(x, y, z, seed=0):
+    xi, yi, zi = math.floor(x), math.floor(y), math.floor(z)
+    fx, fy, fz = x - xi, y - yi, z - zi
+
+    def s(t):
+        return t * t * (3 - 2 * t)
+
+    sx, sy, sz = s(fx), s(fy), s(fz)
+
+    def c(dx, dy, dz):
+        return _hash3(xi + dx, yi + dy, zi + dz, seed)
+
+    def lerp(a, b_, t):
+        return a + (b_ - a) * t
+
+    return lerp(
+        lerp(lerp(c(0, 0, 0), c(1, 0, 0), sx), lerp(c(0, 1, 0), c(1, 1, 0), sx), sy),
+        lerp(lerp(c(0, 0, 1), c(1, 0, 1), sx), lerp(c(0, 1, 1), c(1, 1, 1), sx), sy),
+        sz,
+    )
+
+
+def fbm3(x, y, z, seed=0, octaves=3):
+    a, f, tot, norm = 0.5, 1.0, 0.0, 0.0
+    for o in range(octaves):
+        tot += a * vnoise3(x * f, y * f, z * f, seed + o * 17)
+        norm += a
+        a *= 0.5
+        f *= 2.1
+    return tot / norm
+
+
+SAND = (0.58, 0.46, 0.33)  # đá cam thạch ấm (tuyến tính)
+SAND_DK = (0.28, 0.2, 0.14)
+MOSS_LIN = (0.12, 0.26, 0.07)
+
+
+def sculpt_color(pos, nrm, gold=False, seed=3):
+    """Màu một mặt: cam thạch loang, vệt nứt tối, rêu bám mặt ngửa/lõm, vàng kim ở chi tiết viền."""
+    if gold:
+        return kit.GILD
+    x, y, z = pos
+    base = fbm3(x * 0.35, y * 0.35, z * 0.35, seed, 3)
+    t = 0.75 + 0.5 * base
+    rgb = [c * t for c in SAND]
+    crack = abs(fbm3(x * 0.5 + 9, y * 0.5, z * 0.5, seed + 5, 2) - 0.5)
+    if crack < 0.018:
+        rgb = [c * 0.35 + d * 0.65 for c, d in zip(rgb, SAND_DK)]
+    moss = fbm3(x * 0.22 + 3, y * 0.22, z * 0.22, seed + 9, 3)
+    k = 0.0
+    if moss > 0.5:
+        k = min(0.85, (moss - 0.5) * 3.2) * (0.35 + 0.65 * max(0.0, nrm[1]))
+    if k > 0.01:
+        rgb = [c * (1 - k) + m * k for c, m in zip(rgb, MOSS_LIN)]
+    return bs.Paint(tuple(rgb), 'stone')
+
+
+def surface(b, f, nu, nv, center, hole=None, gold_at=None):
+    """Lưới điêu khắc: f(u, v) → điểm; u quanh (0..1), v dọc (0..1); `center(v)` = điểm trên trục để định chiều pháp tuyến ra ngoài."""
+    grid = [[f((i % nu) / nu, j / nv) for j in range(nv + 1)] for i in range(nu + 1)]
+    for i in range(nu):
+        for j in range(nv):
+            q = [grid[i][j], grid[i + 1][j], grid[i + 1][j + 1], grid[i][j + 1]]
+            dq = []
+            for p in q:  # bỏ đỉnh trùng ở cực
+                if not dq or math.dist(p, dq[-1]) > 1e-6:
+                    dq.append(p)
+            if len(dq) > 1 and math.dist(dq[0], dq[-1]) < 1e-6:
+                dq.pop()
+            if len(dq) < 3:
+                continue
+            c = [sum(p[k] for p in dq) / len(dq) for k in range(3)]
+            if hole and hole(c):
+                continue
+            n = bs.newell(dq)
+            ctr = center((j + 0.5) / nv)
+            if (c[0] - ctr[0]) * n[0] + (c[1] - ctr[1]) * n[1] + (c[2] - ctr[2]) * n[2] < 0:
+                dq.reverse()
+                n = (-n[0], -n[1], -n[2])
+            ln = math.sqrt(n[0] ** 2 + n[1] ** 2 + n[2] ** 2) or 1.0
+            b.face(dq, sculpt_color(c, (n[0] / ln, n[1] / ln, n[2] / ln), gold=bool(gold_at and gold_at(c))), True)
+
+
+def ellipsoid(b, c, r, nu=22, nv=14, v0=0.0, v1=1.0, e=1.0, amp=0.08, seed=1, hole=None, gold_at=None, ridge=None):
+    """Mặt cầu/siêu cầu méo: bán kính r=(rx, ry, rz), số mũ e (>1 = vuông), nhiễu `amp`, `ridge(x,y,z)` = hệ số nếp giáp nhân vào bán kính."""
+
+    def f(u, v):
+        pv = (v0 + (v1 - v0) * v) * math.pi
+        th = u * math.tau
+        dx, dy, dz = math.sin(pv) * math.cos(th), math.cos(pv), math.sin(pv) * math.sin(th)
+        if e > 1.0:
+            q = 2.0 / e
+            dx, dy, dz = (math.copysign(abs(t) ** q, t) for t in (dx, dy, dz))
+        x, y, z = c[0] + dx * r[0], c[1] + dy * r[1], c[2] + dz * r[2]
+        k = 1.0 + amp * (fbm3(x * 0.6, y * 0.6, z * 0.6, seed, 3) - 0.5) * 2
+        if ridge:
+            k *= ridge(x, y, z)
+        return (c[0] + (x - c[0]) * k, c[1] + (y - c[1]) * k, c[2] + (z - c[2]) * k)
+
+    surface(b, f, nu, nv, lambda v: c, hole, gold_at)
+
+
+def tube(b, a, bpt, r0, r1, nu=14, nv=8, ridges=0, amp=0.07, seed=1, hole=None, gold_at=None, bulge=0.0):
+    """Ống thon từ a đến b: bán kính r0 → r1, nếp vòng `ridges`, phình giữa `bulge`, nhiễu đá."""
+    ax = [bpt[k] - a[k] for k in range(3)]
+    L = math.sqrt(sum(t * t for t in ax)) or 1.0
+    ax = [t / L for t in ax]
+    ref = (1.0, 0.0, 0.0) if abs(ax[0]) < 0.9 else (0.0, 1.0, 0.0)
+    e1 = [ax[1] * ref[2] - ax[2] * ref[1], ax[2] * ref[0] - ax[0] * ref[2], ax[0] * ref[1] - ax[1] * ref[0]]
+    n1 = math.sqrt(sum(t * t for t in e1)) or 1.0
+    e1 = [t / n1 for t in e1]
+    e2 = [ax[1] * e1[2] - ax[2] * e1[1], ax[2] * e1[0] - ax[0] * e1[2], ax[0] * e1[1] - ax[1] * e1[0]]
+
+    def f(u, v):
+        th = u * math.tau
+        rad = r0 + (r1 - r0) * v
+        rad *= 1.0 + bulge * math.sin(math.pi * v)
+        if ridges:
+            rad *= 1.0 + 0.06 * math.sin(v * ridges * math.pi * 2) ** 2
+        base = [a[k] + (bpt[k] - a[k]) * v for k in range(3)]
+        p = [base[k] + (e1[k] * math.cos(th) + e2[k] * math.sin(th)) * rad for k in range(3)]
+        k_ = 1.0 + amp * (fbm3(p[0] * 0.6, p[1] * 0.6, p[2] * 0.6, seed, 3) - 0.5) * 2
+        return tuple(base[k] + (p[k] - base[k]) * k_ for k in range(3))
+
+    surface(b, f, nu, nv, lambda v: tuple(a[k] + (bpt[k] - a[k]) * v for k in range(3)), hole, gold_at)
 
 
 def build_statue(b, st, rnd):
-    """Thần tướng giáp trụ cao ~`size` m dựng đứng rồi cho đổ: thân nghiêng, đầu và cánh tay phải rời ra, đại đao cắm bên cạnh."""
+    """Thần tướng giáp trụ cao ~`size` m dựng đứng rồi cho đổ ngửa: lưới điêu khắc cam thạch nứt rêu phủ, giáp lá xếp tầng, vai giáp ba lớp
+    viền vàng, mũ trụ mào vàng có mặt và hộ nhĩ, hai tay (phải gãy rời), đại đao cắm bên cạnh."""
     S = st['size'] / 64.0
-    J, JS, G, V = kit.JADE, kit.JADE_SHADE, kit.GILD, kit.VERMILION
-    # Chân (hai ống giáp có ống quyển vàng) + đai lưng.
     parts = {}
 
     def seg(name, fn):
@@ -333,53 +465,90 @@ def build_statue(b, st, rnd):
         fn()
         parts[name] = (start, len(b.verts))
 
+    def P(x, y, z):
+        return (x * S, y * S, z * S)
+
+    def lames(y0, period):  # nếp giáp lá ngang mặt trước
+        return lambda x, y, z: 1.0 + (0.05 * max(0.0, math.sin((y / S - y0) * period)) if z > 0 else 0.0)
+
     def legs():
         for sx in (-1, 1):
-            b.cylinder(sx * 5 * S, 0, 0, 3.6 * S, 26 * S, J, 14, 3.0 * S)
-            b.cylinder(sx * 5 * S, 0, 0, 3.9 * S, 5 * S, G, 14, 3.9 * S)  # ủng vàng
-            b.box(sx * 5 * S, 27 * S, 0, 8 * S, 3 * S, 8 * S, JS)  # đầu gối giáp
-            b.box(sx * 5 * S, 14 * S, 3.1 * S, 1.6 * S, 18 * S, 1.2 * S, G)
+            tube(b, P(sx * 4.6, 29, 0), P(sx * 4.6, 16, 0.5), 3.7 * S, 2.9 * S, ridges=2, seed=11 + sx)
+            ellipsoid(b, P(sx * 4.6, 15.4, 1.3), P(3.4, 2.7, 3.2), seed=21, gold_at=lambda c: abs(c[1] - 15.4 * S) < 0.55 * S and c[2] > 1.3 * S)
+            tube(b, P(sx * 4.6, 14.6, 0.4), P(sx * 4.6, 3.2, 0), 2.7 * S, 2.3 * S, ridges=4, bulge=0.1, seed=31 + sx)
+            ellipsoid(b, P(sx * 4.6, 1.3, 2.4), P(2.7, 1.5, 4.4), seed=41)
 
     def torso():
-        b.box(0, 30 * S, 0, 17 * S, 4 * S, 9 * S, V)  # đai lưng son
-        b.box(0, 32.5 * S, 0, 18 * S, 2 * S, 9.4 * S, G)
-        b.cylinder(0, 33 * S, 0, 8.4 * S, 14 * S, J, 18, 10.2 * S)  # thân giáp loe lên vai
-        for k in range(6):  # giáp lá xếp tầng
-            b.box(0, (34 + k * 2.2) * S, 4.4 * S, (13 - k * 0.2) * S, 1.9 * S, 1.0 * S, JS if k % 2 else J)
-        b.box(0, 40 * S, 5.0 * S, 5 * S, 5 * S, 0.8 * S, G)  # hộ tâm kính vàng
+        ellipsoid(b, P(0, 30, 0), P(8.3, 4.3, 5.5), seed=51)  # chậu
+        ellipsoid(b, P(0, 32.6, 0), P(9.0, 1.2, 6.1), seed=52, amp=0.03, gold_at=lambda c: True)  # đai lưng vàng
         for sx in (-1, 1):
-            for k in range(3):  # vai giáp ba lớp
-                b.cylinder(sx * 11 * S, (46 + k * 1.6) * S, 0, (6.0 - k * 0.7) * S, 1.6 * S, JS if k % 2 else J, 14, (5.5 - k * 0.7) * S)
-            b.box(sx * 11 * S, 46.5 * S, 0, 11 * S, 0.4 * S, 6 * S, G)
-        b.cylinder(0, 47 * S, 0, 3.4 * S, 3 * S, JS, 12, 2.6 * S)  # cổ
+            for k in range(4):  # giáp váy treo
+                ellipsoid(b, P(sx * (3.0 + k * 2.1), 26.2 - abs(k - 1.5) * 0.3, 5.0 - k * 0.35), P(1.2, 3.8, 0.7), nu=14, nv=10, seed=60 + k)
+        ellipsoid(
+            b,
+            P(0, 41.5, 0),
+            P(8.9, 9.7, 5.7),
+            e=2.6,
+            nu=28,
+            nv=20,
+            seed=71,
+            ridge=lames(33, 2.9),
+            gold_at=lambda c: abs(c[0]) < 2.4 * S and abs(c[1] - 43 * S) < 2.4 * S and c[2] > 4.6 * S,
+        )
+        for sx in (-1, 1):  # vai giáp ba lớp
+            for k, (ry, rr) in enumerate(((3.9, 6.3), (2.9, 5.5), (2.2, 4.5))):
+                ellipsoid(b, P(sx * 11.9, 47.0 + k * 2.4, 0), P(rr, ry, rr), v0=0.0, v1=0.62, nu=20, nv=10, seed=80 + k + sx)
+            ellipsoid(b, P(sx * 11.9, 49.9, 0), P(2.2, 0.9, 2.2), nu=14, nv=8, seed=88, gold_at=lambda c: True)
+        tube(b, P(0, 49, 0), P(0, 52.5, 0), 3.3 * S, 2.8 * S, nu=14, nv=4, seed=91)
 
     def head():
-        b.cylinder(0, 0, 0, 3.4 * S, 6.5 * S, J, 18, 3.2 * S)
-        b.cylinder(0, 5.4 * S, 0, 3.7 * S, 3 * S, G, 18, 3.0 * S)  # mũ trụ vàng
-        b.cylinder(0, 7.8 * S, 0, 2.6 * S, 1.2 * S, JS, 14, 0.4 * S)
-        for k in range(5):  # mào lông
-            b.box(0, (8 + k * 0.4) * S, (-1.6 + k * 0.8) * S, 0.5 * S, (4.5 - abs(k - 2) * 0.8) * S, 0.5 * S, V)
-        b.box(0, 3.2 * S, 3.1 * S, 3.2 * S, 0.6 * S, 0.5 * S, JS)  # tấm che mặt
+        def face(x, y, z):
+            k = 1.0
+            if z > 0:
+                if abs(x) < 0.55 * S and 0.0 < (y - 55 * S) < 2.0 * S:
+                    k += 0.06
+                if abs(abs(x) - 1.5 * S) < 0.7 * S and abs(y - 56.0 * S) < 0.28 * S:
+                    k -= 0.07
+            return k
+
+        ellipsoid(b, P(0, 55.2, 0.6), P(3.3, 4.3, 3.5), nu=24, nv=18, seed=101, amp=0.03, ridge=face)
+        ellipsoid(b, P(0, 56.8, -0.1), P(4.1, 3.9, 4.2), v0=0.0, v1=0.56, nu=24, nv=12, seed=102, amp=0.04)
+        ellipsoid(b, P(0, 61.0, -0.4), P(0.55, 2.2, 4.4), nu=14, nv=12, seed=103, amp=0.02, gold_at=lambda c: True)  # mào vàng
         for sx in (-1, 1):
-            b.box(sx * 3.5 * S, 4.4 * S, 0.8 * S, 0.8 * S, 3.0 * S, 2.4 * S, G)  # hộ nhĩ
+            ellipsoid(b, P(sx * 3.5, 54.0, 1.0), P(0.9, 2.7, 2.4), nu=14, nv=10, seed=104 + sx, gold_at=lambda c: abs(c[1] - 52.6 * S) < 0.3 * S)
 
     def arm_left():
-        b.cylinder(-11 * S, 30 * S, 0, 2.6 * S, 16 * S, J, 12, 2.9 * S)
-        b.cylinder(-11 * S, 28 * S, 0, 3.0 * S, 3 * S, G, 12, 2.6 * S)
-        b.box(-11 * S, 27 * S, 0, 4.0 * S, 4.5 * S, 4 * S, JS)
+        tube(b, P(-11.9, 46.2, 0), P(-13.4, 36.0, 1.6), 3.2 * S, 2.7 * S, ridges=2, seed=111)
+        ellipsoid(b, P(-13.5, 35.4, 1.7), P(3.0, 2.6, 3.0), seed=112, gold_at=lambda c: abs(c[1] - 35.4 * S) < 0.5 * S)
+        tube(b, P(-13.5, 34.6, 1.8), P(-12.3, 25.2, 5.6), 2.7 * S, 2.1 * S, ridges=5, bulge=0.12, seed=113)
+        ellipsoid(b, P(-12.1, 23.6, 6.1), P(1.9, 2.7, 1.5), seed=114)
 
     def arm_right():
-        b.cylinder(0, 0, 0, 2.6 * S, 15 * S, J, 12, 2.9 * S)
-        b.cylinder(0, 12 * S, 0, 3.0 * S, 3 * S, G, 12, 2.6 * S)
-        b.box(0, -2.0 * S, 0, 4.2 * S, 4.5 * S, 4 * S, JS)
+        tube(b, P(11.9, 46.2, 0), P(13.4, 36.0, 1.6), 3.2 * S, 2.7 * S, ridges=2, seed=121)
+        ellipsoid(b, P(13.5, 35.4, 1.7), P(3.0, 2.6, 3.0), seed=122, gold_at=lambda c: abs(c[1] - 35.4 * S) < 0.5 * S)
+        # cẳng tay gãy cụt: miệng lởm chởm
+        tube(
+            b,
+            P(13.5, 34.6, 1.8),
+            P(12.3, 28.0, 4.6),
+            2.7 * S,
+            2.3 * S,
+            ridges=3,
+            seed=123,
+            hole=lambda c: fbm3(c[0] * 0.8 / S, c[1] * 0.8 / S, c[2] * 0.8 / S, 5, 2) > 0.5 and c[1] < 29.6 * S,
+        )
+
+    def forearm_right():
+        tube(b, P(0, 0, 0), P(0, 10.5, 0), 2.3 * S, 2.1 * S, ridges=4, seed=131, bulge=0.1)
+        ellipsoid(b, P(0, 11.6, 0), P(1.9, 2.7, 1.5), seed=132)
 
     seg('legs', legs)
     seg('torso', torso)
     seg('head', head)
     seg('arm_l', arm_left)
     seg('arm_r', arm_right)
+    seg('farm_r', forearm_right)
 
-    # Đổ: thân + chân nghiêng nằm ngả (chúi 82°), nghiêng bên 0.18.
     def bring(name, rx, rz, ry, d, piv=(0, 0, 0)):
         s0, s1 = parts[name]
         cx_, sx_ = math.cos(rx), math.sin(rx)
@@ -394,20 +563,15 @@ def build_statue(b, st, rnd):
             b.verts[i] = bs.P(x + piv[0] + d[0], y + piv[1] + d[1], z + piv[2] + d[2])
 
     fall = -1.43
-    bring('legs', fall, 0.0, 0.0, (0, 0, 0))
-    # Thân đổ quanh gốc (0,0,0); đầu rời, nằm lăn cạnh vai; tay phải rời nằm xa.
-    for name in ('torso',):
+    for name in ('legs', 'torso', 'arm_l', 'arm_r'):
         bring(name, fall, 0.0, 0.0, (0, 0, 0))
-    bring('arm_l', fall, 0.0, 0.0, (0, 0, 0))
     bring('head', -1.2, 0.5, 0.4, (-4 * S, 3.0 * S, -50 * S))
-    bring('arm_r', -1.5, 0.0, 0.9, (22 * S, 2.6 * S, -38 * S))
-    # Đại đao cắm nghiêng cạnh tượng, vết nứt phát sáng.
+    bring('farm_r', -1.5, 0.0, 0.9, (24 * S, 2.4 * S, -34 * S))
     start = len(b.verts)
     b.sword_planted(0, 0, 0.0, 48 * S, 4.6 * S, yaw=0.0)
     xform(b, start, (0, 0, 0), 0.0, 0.0, 0.32, d=(20 * S, 0, -6 * S))
-    # Bệ đá vỡ dưới chân tượng + đá vụn quanh.
-    rubble(b, 0, 0.0, -20 * S, 24, 3.4 * S, rnd, 36 * S)
-    for k in range(10):  # nứt phát sáng trên giáp
+    rubble(b, 0, 0.0, -20 * S, 26, 3.4 * S, rnd, 36 * S)
+    for k in range(12):  # nứt phát sáng vàng trên giáp
         b.box(rnd.uniform(-5, 5) * S, 0.2 * S + rnd.uniform(1, 9) * S, rnd.uniform(-34, -4) * S, 0.2 * S, 0.2 * S, rnd.uniform(2, 6) * S, GOLD_LIT)
 
 
