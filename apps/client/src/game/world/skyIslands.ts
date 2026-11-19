@@ -449,11 +449,12 @@ export class SkyIslands {
     base.colorSpace = THREE.SRGBColorSpace;
     const geo = this.track(new THREE.PlaneGeometry(size * 1.15, size * 1.15));
     geo.rotateX(-Math.PI / 2);
-    // mặt sàn mây: phủ lên mặt đất texture của sàn (sàn mây đi được, không được lộ ra đất), xanh thẫm có vân mây trắng chuyển động;
+    // mặt sàn mây: phủ lên mặt đất texture của sàn (đúng cao độ `floor`) (sàn mây đi được, không được lộ ra đất), xanh thẫm có vân mây trắng chuyển động;
     // các khe giữa khối mây thấy lớp này tối hơn đỉnh mây trắng nên biển mây có chiều sâu
     const abyssGeo = this.track(new THREE.PlaneGeometry(size * 1.6, size * 1.6));
     abyssGeo.rotateX(-Math.PI / 2);
-    const abyssMat = this.track(new THREE.MeshBasicNodeMaterial());
+    // trùng đúng mặt địa hình của sàn mây (floor): `polygonOffset` để luôn thắng độ sâu ở mọi khoảng cách (đặt cao hơn 0,2 m sẽ z-fight từ xa > 1 km)
+    const abyssMat = this.track(new THREE.MeshBasicNodeMaterial({ polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 }));
     const cn = getCloudNoise();
     const wxz = vec2(positionWorld.x, positionWorld.z);
     const sw = texture(cn, wxz.mul(0.0035).add(vec2(time.mul(0.0015), 0)))
@@ -461,7 +462,7 @@ export class SkyIslands {
       .add(texture(cn, wxz.mul(0.011).sub(vec2(0, time.mul(0.003)))).g.mul(0.4));
     abyssMat.colorNode = mix(vec3(0.3, 0.45, 0.72), mix(skyParams.horizon, vec3(1, 1, 1), 0.5), smoothstep(0.25, 0.8, sw));
     const abyss = new THREE.Mesh(abyssGeo, abyssMat);
-    abyss.position.set(size / 2, floor + 0.2, size / 2);
+    abyss.position.set(size / 2, floor, size / 2);
     abyss.renderOrder = -9;
     abyss.frustumCulled = false;
     abyss.name = 'cloud-floor';
