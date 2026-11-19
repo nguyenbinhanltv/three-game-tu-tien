@@ -19,7 +19,9 @@ FOOT = ('ball_l', 'ball_r')
 DIRS = {'Fwd': Vector((0, -1, 0)), 'Bwd': Vector((0, 1, 0)), 'StrafeL': Vector((1, 0, 0)), 'StrafeR': Vector((-1, 0, 0))}
 # Bàn chân bù bao nhiêu phần góc xoay hông khi đi ngang (0 = mũi chân theo hông, 1 = mũi chân luôn hướng tới).
 FOOT_COUNTER = 0.4
-STRAFE_YAW = math.radians(90)
+STRAFE_YAW = math.radians(float(__import__('os').environ.get('DTL_STRAFE_YAW', '90')))
+# Đi ngang bớt khom: xoay ngược phần ngả thân của clip chạy tới (0 = giữ nguyên, 1 = đứng thẳng).
+STRAFE_UPRIGHT = float(__import__('os').environ.get('DTL_STRAFE_UP', '0.6'))
 
 
 class Rig:
@@ -179,7 +181,7 @@ def build(arm, acts):
         write_action(arm, rig, nm, bwd, frames)
         made.append(nm)
         for tag, th in (('StrafeL', STRAFE_YAW), ('StrafeR', -STRAFE_YAW)):
-            st = [yaw_sample(rig, s, th, FOOT_COUNTER) for s in fwd]
+            st = [pitch_spine(rig, yaw_sample(rig, s, th, FOOT_COUNTER), -lean * STRAFE_UPRIGHT) for s in fwd]
             nm = f'{band}_{tag}_Loop'
             report[nm] = measure(rig, st, DIRS[tag])
             write_action(arm, rig, nm, st, frames)

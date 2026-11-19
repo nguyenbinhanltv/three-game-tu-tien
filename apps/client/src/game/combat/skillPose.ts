@@ -110,7 +110,11 @@ export class SkillPoses {
     const done = pose
       ? model.perform?.(pose, { ...performOpts(skill, extra.n, extra.gap), from: Math.max(0, releaseAt(skill, pose) - FX_LEAD) })
       : false;
-    if (!done && ATTACK_FX.has(fx)) model.attack();
+    if (!done && ATTACK_FX.has(fx)) {
+      // Cùng quy ước `perform`: combo chuẩn hóa (-1 nếu không phải chuỗi) và `kb` theo mốc thời gian của đòn.
+      const po = performOpts(skill, extra.n, extra.gap);
+      model.attack({ skill: skill.id, combo: po.combo, kb: !!po.timing?.kb });
+    }
     return 0;
   }
 
