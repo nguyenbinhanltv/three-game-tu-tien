@@ -221,11 +221,11 @@ ${Object.entries(SWORD.items)
 
 Cho mỗi mảnh:
 
-1. Mở ảnh nửa chính diện \`<DTL_ASSET_SOURCE>/<chr|prop>/<id bộ>/concept/outfit_<id>_v01_front.png\` (đã cắt sẵn; nửa 3/4 là \`..._34.png\`, ảnh nguyên là \`..._v01.png\`).
+1. Mở ảnh nửa chính diện \`<DTL_ASSET_SOURCE>/<3d/nhan-vat|3d/vu-khi>/<id bộ>/concept/outfit_<id>_v01_front.png\` (đã cắt sẵn; nửa 3/4 là \`..._34.png\`, ảnh nguyên là \`..._v01.png\`).
 2. Tripo web → **Image to 3D**, tải ảnh lên. Thiết lập: model **H3.1**, texture **Detailed**, **PBR** bật, **Smart Low-poly** bật, **Polycount** theo bảng tam giác của mảnh, không quad, **không rig** (pipeline T-5 tự gắn xương).
 3. Dán prompt tiếng Anh của mảnh (trong [ket-dan/prompts.md](ket-dan/prompts.md), mục từng mảnh) vào ô mô tả thêm nếu có.
 4. Kiểm kết quả: xoay đủ mọi hướng. **Làm lại** nếu: mảnh là một tấm mỏng không có chiều dày; dính liền với người hoặc ma-nơ-canh; thủng ở đáy hoặc cổ tay; hoa văn bị nhòe thành loang; vai giáp hay ủng lệch trái phải. Tripo cho phép thử lại nên chọn phương án tốt nhất.
-5. Tải **GLB** về, lưu: \`<DTL_ASSET_SOURCE>/<chr|prop>/<id bộ>/tripo/raw_<mảnh>_v01.glb\` (ví dụ \`chr/set_liet_mach_kiem_y/tripo/raw_ao_ngoai_v01.glb\`; kiếm: \`prop/prop_kiem_liet_mach/tripo/raw_cuoi_v01.glb\`, \`raw_vo_v01.glb\`). Lưu thêm task id Tripo vào file \`.txt\` cạnh GLB (để tải lại được).
+5. Tải **GLB** về, lưu: \`<DTL_ASSET_SOURCE>/<3d/nhan-vat|3d/vu-khi>/<id bộ>/tripo/raw_<mảnh>_v01.glb\` (ví dụ \`chr/set_liet_mach_kiem_y/tripo/raw_ao_ngoai_v01.glb\`; kiếm: \`prop/prop_kiem_liet_mach/tripo/raw_cuoi_v01.glb\`, \`raw_vo_v01.glb\`). Lưu thêm task id Tripo vào file \`.txt\` cạnh GLB (để tải lại được).
 6. Báo mình khi xong từng bộ; mình chạy pipeline T-5 (căn thân nền, trọng số xương, lồng đệm, xương lò xo, LOD, shader nhuộm 3 kênh) và gửi ảnh duyệt.
 
 Id bộ và thư mục nguồn: ${Object.values(SETS)

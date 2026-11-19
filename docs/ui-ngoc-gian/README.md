@@ -4,7 +4,7 @@
 
 Chỉ có **ảnh duyệt**, chưa sửa dòng code client nào. UI-1 trở đi chỉ làm sau khi bạn duyệt. Kế hoạch: mục 3 và 6 của "Kế hoạch trùng tu giao diện".
 
-Ảnh gốc (PNG, ~1672×941, 16:9) ở `D:/METAGRIT/dtl-asset-source/2d/ui/ui/ngoc-gian/` kèm `<id>.prompt.txt`; ở đây là bản WebP nén, mockup đã phóng lên 1920×1080 (cố tình để duyệt bố cục, chưa phải ảnh xuất cuối). Sinh bằng Codex: `node tools/codex-assets/ui-ngoc-gian-gen.mjs [id…] [--jobs 2] [--force]` (không Tripo, không API key). Ảnh tham khảo thương mại của bạn chỉ để học nguyên lý, không đưa vào repo, không đưa vào prompt.
+Ảnh gốc (PNG, ~1672×941, 16:9) ở `D:/METAGRIT/dtl-asset-source/2d/ui/ngoc-gian/` kèm `<id>.prompt.txt`; ở đây là bản WebP nén, mockup đã phóng lên 1920×1080 (cố tình để duyệt bố cục, chưa phải ảnh xuất cuối). Sinh bằng Codex: `node tools/codex-assets/ui-ngoc-gian-gen.mjs [id…] [--jobs 2] [--force]` (không Tripo, không API key). Ảnh tham khảo thương mại của bạn chỉ để học nguyên lý, không đưa vào repo, không đưa vào prompt.
 
 ## Token
 

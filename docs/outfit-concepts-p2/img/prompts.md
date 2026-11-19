@@ -9,7 +9,7 @@
 
 ![kinh_quang_ao_ngoai](kinh_quang_ao_ngoai.webp)
 
-- **Lưu GLB:** `chr/set_kinh_quang_kiem_y/tripo/raw_ao_ngoai_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_kinh_quang_kiem_y/tripo/raw_ao_ngoai_v01.glb`
 - **Xương gắn vào:** spine1/spine2 (thân), upperarm L/R, forearm L/R, cổ áo gắn neck. Trọng số lấy từ thân nền
 - **Xương lò xo:** Tay áo voan: 2 chuỗi × 4 xương mỗi bên (nửa dưới tay áo). Vạt sau: 3 chuỗi × 3 xương. Vạt xẻ tà hai bên: 1 chuỗi × 2 xương mỗi bên
 - **Lưu ý khi dựng:** Đây là mảnh XUYÊN SÁNG thứ nhất của bộ: nửa dưới tay áo là lớp voan mỏng riêng (dựng như vải mỏng đặc, worker đổi sang alpha-test hoặc dither). Thân áo lụa đặc. Mở thân dưới (hở) cho lớp dưới thấy bên trong.
@@ -24,7 +24,7 @@ A long white-silver outer swordsman coat: crossed high collar with mirror-blue l
 
 ![kinh_quang_lop_duoi](kinh_quang_lop_duoi.webp)
 
-- **Lưu GLB:** `chr/set_kinh_quang_kiem_y/tripo/raw_lop_duoi_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_kinh_quang_kiem_y/tripo/raw_lop_duoi_v01.glb`
 - **Xương gắn vào:** pelvis/hips, thigh L/R, calf L/R. Trọng số từ thân nền
 - **Xương lò xo:** Vạt dưới trước và sau: 2 chuỗi × 2 xương
 - **Lưu ý khi dựng:** Quần và vạt trong tối giản để áo ngoài là điểm nhấn. Phủ kín đùi tới bắp chân để cắt vùng ẩn của thân nền. Đặc, không xuyên sáng.
@@ -39,7 +39,7 @@ Wide-leg trousers in plain pale mirror-blue linen with a long white inner under-
 
 ![kinh_quang_vai_giap](kinh_quang_vai_giap.webp)
 
-- **Lưu GLB:** `chr/set_kinh_quang_kiem_y/tripo/raw_vai_giap_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_kinh_quang_kiem_y/tripo/raw_vai_giap_v01.glb`
 - **Xương gắn vào:** clavicle/shoulder L và R (cứng, không co giãn); một mảnh có hai nửa đối xứng
 - **Xương lò xo:** Không. Mảnh cứng
 - **Lưu ý khi dựng:** Hai nửa đối xứng, chỉ cần dựng một cặp. Bạc đánh bóng như gương: worker bật phản chiếu giả. Mép lam băng là vật liệu phát sáng riêng.
@@ -54,7 +54,7 @@ A matching pair of polished silver mirror pauldrons: each a fan of overlapping l
 
 ![kinh_quang_dai_tua](kinh_quang_dai_tua.webp)
 
-- **Lưu GLB:** `chr/set_kinh_quang_kiem_y/tripo/raw_dai_tua_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_kinh_quang_kiem_y/tripo/raw_dai_tua_v01.glb`
 - **Xương gắn vào:** đai: hips/spine (cứng, quấn quanh eo). Tua: neo ở đai
 - **Xương lò xo:** Tua: 2 chuỗi × 4 xương. Dải thắt nút: 1 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Đai là vòng kín quanh eo, dày ~2 cm để pipeline lồng đệm. Tua và dải để rời mesh gắn xương lò xo. Gương tròn ở khóa là điểm nhận diện của bộ.
@@ -69,7 +69,7 @@ A mirror-blue sash belt wrapped twice with a round polished silver mirror disc c
 
 ![kinh_quang_ung](kinh_quang_ung.webp)
 
-- **Lưu GLB:** `chr/set_kinh_quang_kiem_y/tripo/raw_ung_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_kinh_quang_kiem_y/tripo/raw_ung_v01.glb`
 - **Xương gắn vào:** foot L/R, toe L/R, calf L/R (cứng; ống ủng bám bắp chân)
 - **Xương lò xo:** Không
 - **Lưu ý khi dựng:** Đế phẳng, đặt chân đúng trục xương chân. Miệng ủng đủ rộng để lớp dưới chui vào.
@@ -84,7 +84,7 @@ A pair of tall white leather riding boots reaching below the knee, polished silv
 
 ![kinh_quang_trang_suc_dau](kinh_quang_trang_suc_dau.webp)
 
-- **Lưu GLB:** `chr/set_kinh_quang_kiem_y/tripo/raw_trang_suc_dau_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_kinh_quang_kiem_y/tripo/raw_trang_suc_dau_v01.glb`
 - **Xương gắn vào:** head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện)
 - **Xương lò xo:** Dải ruy băng sau: 1 chuỗi × 3 xương mỗi dải
 - **Lưu ý khi dựng:** Chỉ có quan, trâm, dải. KHÔNG có đầu, tóc hay mặt: tóc thuộc model nhân vật gốc. Gọn trong vòng tròn ~8 cm nhìn từ trên xuống.
@@ -102,7 +102,7 @@ A slim polished silver hair crown (guan) holding a topknot: a small tapered silv
 
 ![van_kinh_ao_ngoai](van_kinh_ao_ngoai.webp)
 
-- **Lưu GLB:** `chr/set_van_kinh_thiet_giap/tripo/raw_ao_ngoai_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_van_kinh_thiet_giap/tripo/raw_ao_ngoai_v01.glb`
 - **Xương gắn vào:** spine1/spine2 (giáp ngực cứng gắn spine2), upperarm L/R (tay áo ngắn), neck. Trọng số từ thân nền
 - **Xương lò xo:** Gần như không: 1 chuỗi × 2 xương cho vạt vải dưới giáp ngực. Giáp ngực cứng
 - **Lưu ý khi dựng:** Giáp ngực là khối cứng, vải tunic bên dưới là phần mềm. Để nửa dưới thân hở cho lớp dưới. Vảy phải là khối nổi thật, không phải họa tiết. Đặc hoàn toàn.
@@ -117,7 +117,7 @@ A heavy guardian chest armor over a thick cloud-white wool tunic: a half-breastp
 
 ![van_kinh_lop_duoi](van_kinh_lop_duoi.webp)
 
-- **Lưu GLB:** `chr/set_van_kinh_thiet_giap/tripo/raw_lop_duoi_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_van_kinh_thiet_giap/tripo/raw_lop_duoi_v01.glb`
 - **Xương gắn vào:** pelvis/hips, thigh L/R. Các tầng váy gắn pelvis, trọng số mềm về thigh
 - **Xương lò xo:** Mỗi tầng váy 1 xương treo (3 tầng × 2 bên, tổng ~8 xương), biên độ nhỏ cho giáp nặng
 - **Lưu ý khi dựng:** Các tầng váy là tấm cứng chồng lên nhau, khoảng hở nhỏ giữa tầng để xương xoay. Không xuyên sáng.
@@ -132,7 +132,7 @@ A tiered armored skirt: three overlapping rows of blue-grey steel scale plates w
 
 ![van_kinh_vai_giap](van_kinh_vai_giap.webp)
 
-- **Lưu GLB:** `chr/set_van_kinh_thiet_giap/tripo/raw_vai_giap_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_van_kinh_thiet_giap/tripo/raw_vai_giap_v01.glb`
 - **Xương gắn vào:** clavicle/shoulder L/R (cứng); tầng dưới nối upperarm L/R
 - **Xương lò xo:** Không. Tầng dưới có 1 xương xoay nhẹ theo cánh tay
 - **Lưu ý khi dựng:** Vai to nhất ba bộ bậc 3, đỉnh cao hơn vai ~15 cm. Kiểm tra không đâm vào cổ khi giơ tay, để pipeline tạo lồng đệm.
@@ -147,7 +147,7 @@ A matching pair of huge shoulder guards built from overlapping blue-grey steel w
 
 ![van_kinh_dai_tua](van_kinh_dai_tua.webp)
 
-- **Lưu GLB:** `chr/set_van_kinh_thiet_giap/tripo/raw_dai_tua_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_van_kinh_thiet_giap/tripo/raw_dai_tua_v01.glb`
 - **Xương gắn vào:** hips/spine (cứng). Tua và charm neo ở đai
 - **Xương lò xo:** Tua và charm: 2 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Đai dày 3 cm vì giáp nặng. Đầu kình ngư ở khóa là điểm nhận diện bộ.
@@ -162,7 +162,7 @@ A broad grey-blue leather belt with a large cold-silver stylized whale-head clas
 
 ![van_kinh_ung](van_kinh_ung.webp)
 
-- **Lưu GLB:** `chr/set_van_kinh_thiet_giap/tripo/raw_ung_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_van_kinh_thiet_giap/tripo/raw_ung_v01.glb`
 - **Xương gắn vào:** foot L/R, toe L/R, calf L/R (cứng)
 - **Xương lò xo:** Không
 - **Lưu ý khi dựng:** Ủng nặng nhưng ống không được to hơn bắp chân quá 30% để vừa dáng hai giới.
@@ -177,7 +177,7 @@ A pair of heavy grey-blue boots with blue-grey steel scale-plated shins, cold si
 
 ![van_kinh_trang_suc_dau](van_kinh_trang_suc_dau.webp)
 
-- **Lưu GLB:** `chr/set_van_kinh_thiet_giap/tripo/raw_trang_suc_dau_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_van_kinh_thiet_giap/tripo/raw_trang_suc_dau_v01.glb`
 - **Xương gắn vào:** head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện)
 - **Xương lò xo:** Không
 - **Lưu ý khi dựng:** Chỉ có vòng quan và vây, để hở mặt và tóc. Vây ngắn, hướng ra sau, không vượt quá 12 cm.
@@ -195,7 +195,7 @@ A cold-steel helm-crown (circlet style, open face, no visor): a band with cold s
 
 ![luu_ly_ao_ngoai](luu_ly_ao_ngoai.webp)
 
-- **Lưu GLB:** `chr/set_luu_ly_dan_y/tripo/raw_ao_ngoai_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_luu_ly_dan_y/tripo/raw_ao_ngoai_v01.glb`
 - **Xương gắn vào:** spine1/spine2, upperarm L/R, forearm L/R, neck. Voan choàng gắn spine2 và shoulder
 - **Xương lò xo:** Tay áo rộng: 3 chuỗi × 3 xương mỗi bên. Voan choàng: 2 đuôi × 4 xương. Vạt sau: 2 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Đây là mảnh XUYÊN SÁNG thứ nhất của bộ (voan choàng). Dựng voan thành lớp mỏng riêng; worker dùng alpha-test hoặc dither. Phần đạo bào lụa thì đặc.
@@ -210,7 +210,7 @@ A wide white alchemist robe with crossed collar and very wide flowing sleeves, a
 
 ![luu_ly_lop_duoi](luu_ly_lop_duoi.webp)
 
-- **Lưu GLB:** `chr/set_luu_ly_dan_y/tripo/raw_lop_duoi_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_luu_ly_dan_y/tripo/raw_lop_duoi_v01.glb`
 - **Xương gắn vào:** pelvis/hips, thigh L/R, calf L/R
 - **Xương lò xo:** Vạt trước và sau: 2 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Vạt dài tới mắt cá, hai lớp (lam ngắn hơn trắng). Cả hai đặc, không xuyên sáng.
@@ -225,7 +225,7 @@ A long pale glass-blue under-robe skirt with a soft wrap front, a white inner he
 
 ![luu_ly_vai_giap](luu_ly_vai_giap.webp)
 
-- **Lưu GLB:** `chr/set_luu_ly_dan_y/tripo/raw_vai_giap_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_luu_ly_dan_y/tripo/raw_vai_giap_v01.glb`
 - **Xương gắn vào:** clavicle/shoulder L/R (cứng)
 - **Xương lò xo:** Chuỗi hạt lưu ly: 1 chuỗi × 3 xương mỗi bên
 - **Lưu ý khi dựng:** Vai của đan sư nhẹ nhất ba bộ: chỉ làm điểm nhấn, đỉnh không cao hơn vai quá 6 cm.
@@ -240,7 +240,7 @@ A light decorative shoulder piece pair: curved silver filigree shoulder caps sha
 
 ![luu_ly_dai_tua](luu_ly_dai_tua.webp)
 
-- **Lưu GLB:** `chr/set_luu_ly_dan_y/tripo/raw_dai_tua_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_luu_ly_dan_y/tripo/raw_dai_tua_v01.glb`
 - **Xương gắn vào:** hips/spine (đai cứng). Hồ lô và túi neo ở đai
 - **Xương lò xo:** Dải lụa: 1 chuỗi × 5 xương. Hồ lô và túi: 2 chuỗi × 3 xương. Tua: 1 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Đây là mảnh XUYÊN SÁNG thứ hai (dải lụa) và là mảnh cuối cùng được phép trong suốt cho cả bộ. Hồ lô lưu ly dựng đặc màu lam nhạt (worker làm bóng như thủy tinh), phần mesh riêng để gắn xương.
@@ -255,7 +255,7 @@ A pale glass-blue sash belt with a small silver clasp, a long thin translucent w
 
 ![luu_ly_ung](luu_ly_ung.webp)
 
-- **Lưu GLB:** `chr/set_luu_ly_dan_y/tripo/raw_ung_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_luu_ly_dan_y/tripo/raw_ung_v01.glb`
 - **Xương gắn vào:** foot L/R, toe L/R, calf L/R (cứng)
 - **Xương lò xo:** Không
 - **Lưu ý khi dựng:** Ủng thấp, nhẹ nhất ba bộ. Không có ống cao.
@@ -270,7 +270,7 @@ A pair of soft ankle-high ivory-white cloth-and-leather boots with silver trim b
 
 ![luu_ly_trang_suc_dau](luu_ly_trang_suc_dau.webp)
 
-- **Lưu GLB:** `chr/set_luu_ly_dan_y/tripo/raw_trang_suc_dau_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_luu_ly_dan_y/tripo/raw_trang_suc_dau_v01.glb`
 - **Xương gắn vào:** head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện)
 - **Xương lò xo:** Chuỗi hạt: 2 chuỗi × 3 xương. Dải sau: 1 chuỗi × 3 xương mỗi dải
 - **Lưu ý khi dựng:** Chỉ quan, trâm và dây; không có đầu hay tóc. Hạt nhỏ, tổng không quá 12 hạt để giữ tam giác.
@@ -290,7 +290,7 @@ Dạng gốc dùng model #119 có sẵn (`prop_kiem_kinh_quang`), giữ nguyên 
 
 ![kiem_kinh_quang_cuoi](kiem_kinh_quang_cuoi.webp)
 
-- **Lưu GLB:** `prop/prop_kiem_kinh_quang/tripo/raw_cuoi_v01.glb`
+- **Lưu GLB:** `3d/vu-khi/prop_kiem_kinh_quang/tripo/raw_cuoi_v01.glb`
 - **Gắn vào:** prop gắn bone `dtl_sword` (xương cầm kiếm); điểm gốc tại giữa chuôi, trục dọc theo lưỡi. Phát sáng là vật liệu riêng
 - **Xương lò xo:** Không
 - **Lưu ý khi dựng:** Lưỡi bạc gương là khối đặc có độ dày thật, mép xuyên sáng lạnh chỉ là viền mảnh dựng đặc (worker làm phát sáng bằng vật liệu riêng); KHÔNG dùng trong suốt thật. Chắn hình cánh mỏng phải có độ dày. Dạng gốc (#119) vẫn giữ cho +0…+9; dạng cuối thay lúc cường hóa +10.
@@ -303,7 +303,7 @@ A single the final awakened form of a mirror sword: a SINGLE long slender double
 
 ![kiem_kinh_quang_vo](kiem_kinh_quang_vo.webp)
 
-- **Lưu GLB:** `prop/prop_kiem_kinh_quang/tripo/raw_vo_v01.glb`
+- **Lưu GLB:** `3d/vu-khi/prop_kiem_kinh_quang/tripo/raw_vo_v01.glb`
 - **Gắn vào:** prop gắn ổ cắm lưng (`dtl_scabbard_back`, tạo bởi T-1/T-2); khi rút kiếm thì vỏ ở lại lưng
 - **Xương lò xo:** Dây tua: 1 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Vỏ dài vừa khớp lưỡi dạng gốc (#119), kín hoàn toàn. Cửa vỏ ở ngang vai khi đeo chéo lưng.
