@@ -112,6 +112,11 @@ def stair_pt(s, u):
     return a, r, math.cos(a) * r, math.sin(a) * r, s['y0'] - CY + (s['y1'] - s['y0']) * u
 
 
+# Chân thang nằm trên lối đi (đại lộ, điểm nhiệm vụ) mà thang không có va chạm: bỏ mọi bậc thấp hơn mức này (m so với mặt quảng trường),
+# thang bắt đầu lơ lửng trên tầm đầu người; người chơi đi qua bên dưới.
+MIN_Y = 18.0
+
+
 def build_stair(b, s, rnd):
     length = s['turns'] * math.tau * (s['r0'] + s['r1']) / 2
     n = int(round(length / 2.4))
@@ -121,6 +126,8 @@ def build_stair(b, s, rnd):
     for i in range(n):
         u = (i + 0.5) / n
         a, r, x, z, y = stair_pt(s, u)
+        if y < MIN_Y:
+            continue
         yaw = math.atan2(-math.cos(a), -math.sin(a))
         miss = i > 14 and i < n - 8 and rnd.random() < 0.05
         if not miss:
@@ -160,6 +167,8 @@ def build_stair(b, s, rnd):
             u0, u1 = i / n, (i + seg) / n
             a0_, r0_, x0, z0, y0 = stair_pt(s, u0)
             a1_, r1_, x1, z1, y1 = stair_pt(s, u1)
+            if y0 < MIN_Y:
+                continue
             off = wid * 0.53 * sd
             p0 = (x0 + math.cos(a0_) * off, z0 + math.sin(a0_) * off)
             p1 = (x1 + math.cos(a1_) * off, z1 + math.sin(a1_) * off)
