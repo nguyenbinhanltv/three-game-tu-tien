@@ -88,6 +88,17 @@ class Mesher {
     this.idx.push(a, b, c, a, c, d);
   }
 
+  /** Như `quad`/`tri` nhưng bỏ qua khi có chỉ số thiếu (đỉnh chưa dựng), thay cho khẳng định không-undefined. */
+  quadIf(a?: number, b?: number, c?: number, d?: number): void {
+    if (a === undefined || b === undefined || c === undefined || d === undefined) return;
+    this.quad(a, b, c, d);
+  }
+
+  triIf(a?: number, b?: number, c?: number): void {
+    if (a === undefined || b === undefined || c === undefined) return;
+    this.tri(a, b, c);
+  }
+
   /** Hộp có xoay: tâm, nửa kích thước, các trục địa phương (u, v, w đơn vị). */
   box(c: THREE.Vector3, h: THREE.Vector3, u: THREE.Vector3, v: THREE.Vector3, w: THREE.Vector3, color: THREE.Color): void {
     const corner = (sx: number, sy: number, sz: number) =>
@@ -146,12 +157,15 @@ function tube(m: Mesher, pts: THREE.Vector3[], radii: number[], sides: number, c
   const last = pts.length - 1;
   for (let i = 0; i <= last; i++) {
     const c = colorAt(i / last);
+    const pt = pts[i];
+    if (!pt) continue;
+    const rad = radii[i] ?? 0;
     const row: number[] = [];
     for (let j = 0; j < sides; j++) {
       const b = (j / sides) * Math.PI * 2;
-      row.push(m.vert(pts[i]!.x + Math.cos(b) * radii[i]!, pts[i]!.y, pts[i]!.z + Math.sin(b) * radii[i]!, c));
+      row.push(m.vert(pt.x + Math.cos(b) * rad, pt.y, pt.z + Math.sin(b) * rad, c));
     }
-    if (prev.length) for (let j = 0; j < sides; j++) m.quad(prev[j]!, row[j]!, row[(j + 1) % sides]!, prev[(j + 1) % sides]!);
+    if (prev.length) for (let j = 0; j < sides; j++) m.quadIf(prev[j], row[j], row[(j + 1) % sides], prev[(j + 1) % sides]);
     prev = row;
   }
 }
@@ -171,7 +185,7 @@ function blob(m: Mesher, c: THREE.Vector3, rx: number, ry: number, rz: number, c
     tmp.copy(color).multiplyScalar(0.8 + 0.3 * (y * 0.5 + 0.5));
     base.push(m.vert(c.x + x * rx * n, c.y + y * ry * n, c.z + z * rz * n, tmp));
   }
-  for (let i = 0; i < p.count; i += 3) m.tri(base[i]!, base[i + 1]!, base[i + 2]!);
+  for (let i = 0; i < p.count; i += 3) m.triIf(base[i], base[i + 1], base[i + 2]);
 }
 
 // ---------- tán lá bằng thẻ (alpha) ----------
@@ -318,12 +332,13 @@ function buildIsland(rock: Mesher, prop: Mesher, cards: CardMesher, isl: SkyIsla
   for (let k = 0; k < RINGS; k++)
     for (let s = 0; s < SEG; s++) {
       const s2 = (s + 1) % SEG;
-      m.quad(ring[k]![s]!, ring[k + 1]![s]!, ring[k + 1]![s2]!, ring[k]![s2]!);
+      m.quadIf(ring[k]?.[s], ring[k + 1]?.[s], ring[k + 1]?.[s2], ring[k]?.[s2]);
     }
   // Mũi đá đáy.
   const tipLen = isl.depth * 0.28;
   const tip = m.vert(top.x, top.y - isl.depth - tipLen, top.z, ROCK_LOW);
-  for (let s = 0; s < SEG; s++) m.tri(ring[RINGS]![s]!, tip, ring[RINGS]![(s + 1) % SEG]!);
+  const lastRing = ring[RINGS];
+  if (lastRing) for (let s = 0; s < SEG; s++) m.triIf(lastRing[s], tip, lastRing[(s + 1) % SEG]);
   // Mặt cỏ: vành ngoài (lệch cao thấp) + tâm.
   const grassRing: number[] = [];
   const bumpy = (x: number, z: number) => 0.55 * fbm3(x * 0.09, 0.3, z * 0.09, seed + 11, 3);
@@ -348,8 +363,8 @@ function buildIsland(rock: Mesher, prop: Mesher, cards: CardMesher, isl: SkyIsla
   const ctr = prop.vert(top.x, centerY - 0.2, top.z, GRASS_B);
   for (let s = 0; s < SEG; s++) {
     const s2 = (s + 1) % SEG;
-    prop.quad(grassRing[s]!, inner[s]!, inner[s2]!, grassRing[s2]!);
-    prop.tri(inner[s]!, ctr, inner[s2]!);
+    prop.quadIf(grassRing[s], inner[s], inner[s2], grassRing[s2]);
+    prop.triIf(inner[s], ctr, inner[s2]);
   }
   const col = (hex: number) => C(hex);
   // Nhũ đá nhọn treo dưới thân: nhiều cỡ, nghiêng nhẹ, đá phân lớp tối dần về mũi.
@@ -359,7 +374,7 @@ function buildIsland(rock: Mesher, prop: Mesher, cards: CardMesher, isl: SkyIsla
     const t0 = 0.28 + rand() * 0.6;
     const r0 = radius(a, t0) * (0.7 + rand() * 0.25);
     const len = isl.depth * (0.12 + rand() * 0.38) * (rand() < 0.12 ? 1.8 : 1);
-    const w0 = (0.7 + rand() * 1.6) * (R / 40 + 0.6);
+    const w0 = (0.7 + rand() * 1.6) * (R / 120 + 0.8);
     const sx = top.x + Math.cos(a) * r0;
     const sz = top.z + Math.sin(a) * r0;
     const sy = top.y - isl.depth * Math.pow(t0, 0.95) + 1.5;
@@ -426,10 +441,13 @@ function buildIsland(rock: Mesher, prop: Mesher, cards: CardMesher, isl: SkyIsla
       rad.push(0.11 * (1 - q * 0.5));
     }
     tube(prop, pts, rad, 4, (q) => VINE.clone().lerp(ROOT, q * 0.3));
-    for (let k = 2; k <= segs; k += 3) blob(prop, pts[k]!, 0.55, 0.38, 0.55, VINE_LEAF, seed + i * 7 + k);
+    for (let k = 2; k <= segs; k += 3) {
+      const pk = pts[k];
+      if (pk) blob(prop, pk, 0.55, 0.38, 0.55, VINE_LEAF, seed + i * 7 + k);
+    }
   }
   // Rừng nhỏ trên mặt đảo: thân tapered (tô màu đỉnh) + tán bằng thẻ lá alpha theo loài của đảo (chừa vùng giữa cho công trình/đài).
-  const nTrees = Math.round(R * 0.5);
+  const nTrees = Math.round(R * (isl.kind === 'kiem_dai' ? 0.22 : 0.5)); // Kiếm Đài: ít cây để kiếm là điểm nhìn chính
   const kinds = ISLAND_TREES[isl.id] ?? ['pine', 'maple', 'pine'];
   const tints: Record<CrownKind, THREE.Color> = { pine: C(0xd8ffd8), maple: C(0xfff0e0), bamboo: C(0xe8ffd0), peach: C(0xffffff) };
   for (let i = 0; i < nTrees; i++) {
@@ -675,8 +693,8 @@ function swordGeometry(): THREE.BufferGeometry {
 export class LacKiemSkyScene {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
-  private rockMesh!: THREE.Mesh;
-  private cardMesh!: THREE.Mesh;
+  private rockMesh: THREE.Mesh;
+  private cardMesh: THREE.Mesh;
   private dead = false;
 
   constructor(sky: LacKiemSky) {
@@ -768,7 +786,11 @@ export class LacKiemSkyScene {
         const b = falls.vert(cx + sideX * w, y, zc + sideZ * w, white);
         rows.push([a, b]);
       }
-      for (let k = 0; k < segs; k++) falls.quad(rows[k]![0], rows[k]![1], rows[k + 1]![1], rows[k + 1]![0]);
+      for (let k = 0; k < segs; k++) {
+        const r0 = rows[k];
+        const r1 = rows[k + 1];
+        if (r0 && r1) falls.quad(r0[0], r0[1], r1[1], r1[0]);
+      }
       // Vết uv: u theo bề ngang, v từ chân (0) lên đỉnh (1): dựng lại uv sau.
       const mistMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mistMaterial());
       mistMesh.position.set(rim.x + toward.x * 6, endY + 6, rim.z + toward.y * 6);
@@ -822,7 +844,7 @@ export class LacKiemSkyScene {
       let placed = 0;
       for (let k = 0; k < rings && placed < sky.swords; k++) {
         const rr = dai.r * (0.42 + (0.5 * k) / (rings - 1));
-        const count = k === rings - 1 ? sky.swords - placed : Math.round((sky.swords * weights[k]!) / wsum);
+        const count = k === rings - 1 ? sky.swords - placed : Math.round((sky.swords * (weights[k] ?? 0)) / wsum);
         for (let j = 0; j < count && placed < sky.swords; j++, placed++) {
           const a = ((j + r() * 0.6) / count) * Math.PI * 2 + k * 0.37;
           const rj = rr + (r() - 0.5) * dai.r * 0.05;
