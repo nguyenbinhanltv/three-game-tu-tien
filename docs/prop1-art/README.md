@@ -35,3 +35,4 @@ Bật/tắt: `?tc=0` ẩn hình (so ảnh trước/sau, đo); vòng va chạm v�
 
 - PR1 (#325): hạ tầng + `tong_mon`. PR2: `cho_lang` (chợ Sơn Môn bày tay hai dãy sạp trên thềm phẳng trước cổng, thôn, đoàn buôn bỏ lại). Món nhỏ (vò rượu, giỏ thuốc, thùng gỗ, lu nước, lồng đèn, rào tre) chỉ bày một biến thể và dùng ít vật liệu để giữ draw call; lưới ô prop lệch nửa ô (`props.ts`) để trục sân x = 2048 không tách mỗi loại prop thành nhiều InstancedMesh.
 - Bộ sinh duyệt theo thứ tự nhóm, nên bật thêm nhóm không đổi toạ độ nhóm trước (kiểm bằng `gen-thien-cong.ts --check` và so với file của PR trước).
+- PR3: `hoang_da` (đá linh khí, tre, cổ thụ thẻ alpha, linh thảo/nấm phát sáng, mô cổ, cột đá đổ, rễ cây, khúc gỗ). Rải theo cụm (`clusters` trong cảnh) để lùm cây/bãi đá đông ở từng chỗ. Kích thước chân (`foot`) nằm trong `prop_tc_items.json` (bộ sinh không còn đọc file build không commit) và bộ sinh tránh tâm bãi quái, vùng quanh điểm đáng chú ý (`levelcheck`).
