@@ -7,7 +7,7 @@ export const SETS = {
     name: 'Kính Quang Kiếm Y',
     method: 'Kiếm tu',
     element: 'Kim (gương, ánh bạc)',
-    dir: 'chr',
+    dir: '3d/nhan-vat',
     srcId: 'set_kinh_quang_kiem_y',
     ref: 'ref-04 (áo khoác dài nền sáng, lót đậm, viền kim loại) và ref-01/02 (tay áo voan xuyên sáng); dáng tham chiếu: mẫu #119 Kính Quang',
     palette: [
@@ -83,7 +83,7 @@ export const SETS = {
     name: 'Vân Kình Thiết Giáp',
     method: 'Hộ pháp',
     element: 'Thủy/Kim (kình ngư trong biển mây)',
-    dir: 'chr',
+    dir: '3d/nhan-vat',
     srcId: 'set_van_kinh_thiet_giap',
     ref: 'ref-05 (dáng nặng, vai to, váy nhiều tầng) nhưng bằng thép lạnh và vảy kình ngư biển mây; kế thừa khối nặng của Địa Long ở bậc 2',
     palette: [
@@ -153,7 +153,7 @@ export const SETS = {
     name: 'Lưu Ly Đan Y',
     method: 'Đan sư',
     element: 'Thủy (lưu ly trong suốt)',
-    dir: 'chr',
+    dir: '3d/nhan-vat',
     srcId: 'set_luu_ly_dan_y',
     ref: 'ref-01 và ref-06 (lớp voan, tay áo lụa mỏng, dải lụa) ở bậc 3: lưu ly trong như thủy tinh',
     palette: [
@@ -227,7 +227,7 @@ export const SWORD = {
   id: 'kinh_quang',
   short: 'Kính Quang Kiếm',
   name: 'Kính Quang Kiếm (dạng cuối +10 và vỏ kiếm)',
-  dir: 'prop',
+  dir: '3d/vu-khi',
   srcId: 'prop_kiem_kinh_quang',
   base: 'Dạng gốc dùng model #119 có sẵn (`prop_kiem_kinh_quang`), giữ nguyên cho +0…+9. Concept này chỉ là dạng cuối +10 và vỏ. Một kiếm chung cho cả ba công pháp (đã chốt 16/11).',
   colors:

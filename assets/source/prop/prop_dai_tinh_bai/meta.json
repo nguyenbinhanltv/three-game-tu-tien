@@ -10,7 +10,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "prop/prop_dai_tinh_bai/tripo/raw_v01.glb",
+    "source": "3d/kien-truc/prop_dai_tinh_bai/tripo/raw_v01.glb",
     "size": {
       "width": 8
     },

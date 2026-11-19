@@ -69,10 +69,10 @@ Chỉ chạy khi đã có duyệt cho đợt đó (runbook mục 5). Luôn `--dr
 
 ```bash
 # 1. Báo giá (không tải lên, không tốn credit)
-tripo make "$SRC/prop/prop_lo_dan/concept_34.png" \
+tripo make "$SRC/3d/prop/prop_lo_dan/concept_34.png" \
   --model v3.1 -n 1 \
   -p face_limit=4000 -p smart_low_poly=true -p texture_quality=detailed -p pbr=true \
-  --name prop_lo_dan_v01 -o "$SRC/prop/prop_lo_dan/tripo" \
+  --name prop_lo_dan_v01 -o "$SRC/3d/prop/prop_lo_dan/tripo" \
   --dry-run --json
 
 # 2. Chạy thật: cùng lệnh, bỏ --dry-run, thêm --no-open (CHỈ khi đã được duyệt)

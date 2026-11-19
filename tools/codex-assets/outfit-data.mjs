@@ -14,7 +14,7 @@ export const SETS = {
     name: 'Liệt Mạch Kiếm Y',
     method: 'Kiếm tu',
     element: 'Thổ/Kim (mạch đất nứt)',
-    dir: 'chr',
+    dir: '3d/nhan-vat',
     srcId: 'set_liet_mach_kiem_y',
     ref: 'ref-04 (áo khoác dài nền sáng, lót đậm, viền kim loại chạm, vai nhọn)',
     palette: [
@@ -88,7 +88,7 @@ export const SETS = {
     name: 'Địa Long Hộ Giáp',
     method: 'Hộ pháp',
     element: 'Thổ',
-    dir: 'chr',
+    dir: '3d/nhan-vat',
     srcId: 'set_dia_long_ho_giap',
     ref: 'ref-05 (dáng nặng, vai to, váy nhiều tầng), nhưng bằng vảy đá thay lông vũ',
     palette: [
@@ -158,7 +158,7 @@ export const SETS = {
     name: 'Phục Mạch Đan Bào',
     method: 'Đan sư',
     element: 'Mộc',
-    dir: 'chr',
+    dir: '3d/nhan-vat',
     srcId: 'set_phuc_mach_dan_bao',
     ref: 'ref-01 và ref-06 (lớp voan, tay áo lụa mỏng), hồ lô bên hông',
     palette: [
@@ -229,7 +229,7 @@ export const SETS = {
 
 export const SWORD = {
   name: 'Kiếm Liệt Mạch (dạng cuối +10 và vỏ kiếm)',
-  dir: 'prop',
+  dir: '3d/vu-khi',
   srcId: 'prop_kiem_liet_mach',
   base: 'Dạng gốc dùng model #119 có sẵn (`prop_kiem_liet_mach`). Concept này chỉ là dạng cuối và vỏ.',
   items: {

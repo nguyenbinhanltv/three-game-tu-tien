@@ -2,7 +2,7 @@
  "$comment": "Cấu hình skin_prep.py cho Crimson Death Knight - Dual Falchions (Pigcraft, CC BY 4.0). Model cao 0,98 (gốc dưới chân, x=0). Khớp đo từ ảnh chiếu 1000 px/đơn vị (view.scale 1.2, center z 0.49): x=(px-600)/1000, z=0.49+(600-py)/1000, y=-(px_canh-600)/1000. Hai đao dính nắm tay và liền một mảnh với găng: cắt bằng hộp, không vá lỗ (fill false).",
  "id": "skin_crimson",
  "source": "D:/claude-tmp/skin2-work/crimson_death_knight_-_dual_falchions.glb",
- "out": "chr/skin_crimson/prep/rig_v01.glb",
+ "out": "3d/skin/skin_crimson/prep/rig_v01.glb",
  "view": {
   "scale": 1.2,
   "center": [

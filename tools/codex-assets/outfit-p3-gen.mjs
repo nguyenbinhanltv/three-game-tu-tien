@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Sinh ảnh concept trang phục bậc 4 (P3-concept) bằng Codex (codex exec + công cụ ảnh tích hợp, không Tripo, không API key).
 // Dùng: node tools/codex-assets/outfit-p3-gen.mjs [id…|tinh_khuyet|co_thanh|than_tang|kiem] [--jobs 3] [--force]
-// Ra: <DTL_ASSET_SOURCE>/2d/outfit_p3/<id>.png + <id>.prompt.txt (không đụng 2d/outfit của T-3).
+// Ra: <DTL_ASSET_SOURCE>/2d/concept/outfit_p3/<id>.png + <id>.prompt.txt (không đụng 2d/outfit của T-3).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,7 +37,7 @@ const ids = sel.length
       ),
     ]
   : Object.keys(all);
-const outDir = path.join(source, '2d', 'outfit_p3');
+const outDir = path.join(source, '2d', 'concept', 'outfit_p3');
 fs.mkdirSync(outDir, { recursive: true });
 const todo = ids.filter((id) => force || !fs.existsSync(path.join(outDir, `${id}.png`)));
 console.log(`outfit_p3: ${todo.length}/${ids.length} ảnh, ${jobs} luồng → ${outDir}`);

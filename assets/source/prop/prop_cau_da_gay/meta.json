@@ -10,7 +10,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "prop/prop_cau_da_gay/tripo/raw_v01.glb",
+    "source": "3d/kien-truc/prop_cau_da_gay/tripo/raw_v01.glb",
     "size": {
       "longest": 14
     },

@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "chr/chr_npc_thiet_lao/tripo/rig_v01.glb",
+    "source": "3d/nhan-vat/chr_npc_thiet_lao/tripo/rig_v01.glb",
     "size": {
       "height": 1.7
     },

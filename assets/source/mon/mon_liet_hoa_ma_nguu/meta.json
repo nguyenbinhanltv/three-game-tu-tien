@@ -10,8 +10,8 @@
     "texture": 1024
   },
   "sculpt": {
-    "source": "mon/mon_liet_hoa_ma_nguu/online/source.glb",
-    "out": "mon/mon_liet_hoa_ma_nguu/rig/rig_v01.glb",
+    "source": "3d/quai/mon_liet_hoa_ma_nguu/online/source.glb",
+    "out": "3d/quai/mon_liet_hoa_ma_nguu/rig/rig_v01.glb",
     "yaw": 51.5,
     "faces": 9000,
     "texture": 2048,
@@ -392,7 +392,7 @@
   },
   "import": {
     "kind": "external",
-    "source": "mon/mon_liet_hoa_ma_nguu/rig/rig_v01.glb",
+    "source": "3d/quai/mon_liet_hoa_ma_nguu/rig/rig_v01.glb",
     "size": {
       "height": 2.0
     },

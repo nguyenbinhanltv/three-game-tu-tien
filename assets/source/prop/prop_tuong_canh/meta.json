@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "prop/prop_tuong_canh/tripo/raw_v01.glb",
+    "source": "3d/prop/prop_tuong_canh/tripo/raw_v01.glb",
     "size": {
       "height": 1.8
     },

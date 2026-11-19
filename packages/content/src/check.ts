@@ -1096,6 +1096,7 @@ for (const lv of Object.values(LEVELS)) {
         'kt',
         'pm',
         'kn',
+        'tt',
         'lk_dawn',
         'lk_day',
         'lk_dusk',

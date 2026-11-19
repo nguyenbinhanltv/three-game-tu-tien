@@ -6,8 +6,9 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 | --- | --- | --- |
 | 1 | Kiếm Trủng (`kiem_trung`) | đã merge (#327) |
 | 2 | Phục Mạch Quật (`phuc_mach`) | đã duyệt hình (#328) |
-| 3 | Kính Nguyệt Cung (`kinh_nguyet`) | PR này |
-| tiếp | Thần Tàng, Kim Dạ Cung, Xích Tẫn Khích, Độ Kiếp (+ Bắc Hoang) | chưa làm |
+| 3 | Kính Nguyệt Cung (`kinh_nguyet`) | đã duyệt hình (#330) |
+| 4 | Thần Tàng Điện (`than_tang`) | PR này |
+| tiếp | Kim Dạ Cung, Xích Tẫn Khích, Độ Kiếp (+ Bắc Hoang) | chưa làm |
 
 ## PR 1: Kiếm Trủng — nghĩa địa kiếm cổ
 
@@ -79,3 +80,27 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Khung gương**: khung bạc/đồng mảnh (0,07 m) bằng vật liệu `frame` (phát sáng nhẹ) thay nét đen dày; mặt bên mảnh vỡ sáng bạc.
 - **Tia trăng volumetric nhẹ** từ hai khe hở trần (mờ, mép mềm); vũng sáng trăng ở tâm trận làm bằng shader sàn (nón volumetric ở giữa bị cắt cạnh khi nhìn từ trên xuống nên không dùng).
 - **Còn lại**: phản chiếu vòng gương trên sàn đọc như một vòng sáng khá rõ; tường vẫn chưa có phù điêu mây-trăng lớn (chỉ huy hiệu nhỏ); rèm lụa còn hơi răng cưa ở nếp.
+
+## PR 4: Thần Tàng Điện — điện tàng cổ đen tím nạm vàng
+
+- **Bảng màu** `tt` (đen tím + vàng nhạt, exposure 0,85, bão hòa 0,88, một thời điểm). Vòm nan vàng `buildVaultDome` (shader TSL: 16 nan, 4 vành, ô hộp tối, giếng sáng vàng ở đỉnh, tối ở chân vòm).
+- **Sàn obsidian khảm vàng** `buildVaultFloor` (shader TSL, bám `heightAt + 0,08`): vân đá, soi tím vàng theo Fresnel, bốn vòng vàng mảnh (r 20/46/64/90), sao tám cánh trong r 20, **ba đường vàng toả ra đúng ba hướng cửa phong ấn** (200°/270°/340°), vũng sáng vàng ở tâm và trước ba điểm chạm cửa; tối dần ra góc.
+- **GLB Blender** `arch_than_tang` (`tools/blender/than_tang_arch.py`; nhịp tường quay vào trong, `yaw = a + π/2`): 16 nhịp tường (cột sáo cẩm thạch đen tím đai vàng, hốc vòm viền vàng có đèn dầu, diềm vàng, mái cong, hai phướn tím thêu vàng có mặt nạ trống), **ba cửa phong ấn khổng lồ** (khung đá, lanh tô vòm, đĩa ấn vàng nhiều vòng + tám nan + chữ phát sáng tím, xích) ở r 76 đúng ba hướng `seals.doors`, mặt nạ vô diện khổng lồ phía bắc, 13 tượng võ sĩ không mặt cầm đại kiếm (hai hàng dọc lối vào + vành), 18 đống kim ngân + rương + bình ngọc tím, 7 đèn chùm vàng treo trần. Bỏ vòng cột đá khắc vân cũ (r 76–80) đè lên cửa; tượng võ sĩ và bia đá canh cửa có sẵn (props) giữ nguyên.
+- `DungeonFx`: sương tím vàng thấp. Sàn/hall cũ của cung gương không còn dùng ở bí cảnh này.
+- **Ngân sách (preset Cao)**: ~120 draw call, ~0,44M tam giác.
+- **Còn lại**: tượng võ sĩ còn thô (khối), đống kim ngân phẳng một màu vàng, tấm cửa phong ấn đen phẳng, vạch báo boss tím trên sàn tím kém tương phản (vạch báo là của game, không đổi); chưa khai báo va chạm cho vật rắn (đợi API COL-1).
+
+### PR 4 vòng 2 (góp ý duyệt): bỏ sàn tím phẳng, vàng PBR, tượng chạm khắc, chiều sâu ánh sáng
+
+- **Sàn đá đen bóng**: nền gần đen, vân tím + vân vàng mảnh (ba họ vân), vết mòn (xước dài + mảng nhám), phản chiếu ấm vàng quanh vũng sáng và lạnh tím ở xa theo Fresnel; vòng trận **mảnh** (0,06–0,1 m) phát sáng vàng mềm, vạch chia nhỏ, chấm, sao tám cánh, ba đường có hạt dọc tới ba cửa; vũng sáng dưới 11 lư lửa, ở tâm và trước ba cửa; góc tối thật (tối dần từ r 26).
+- **Vàng PBR cổ** (`ttMaterialFor` thay `arch_sect_gold`): metalness 1, roughness 0,3 (tăng ở rãnh khắc), loang theo vị trí, khắc chìm hai họ đường, phản chiếu môi trường giả (tím sẫm ↔ vàng ấm) + viền Fresnel. Áp cho mọi vật vàng (bánh xe pháp luân, khung, đai, kim ngân).
+- **Thần tướng chạm khắc** (viết lại `statue`): bệ ba tầng có dải phù văn tím phát sáng, giáp ống + che gối, váy giáp năm tấm, ngực giáp có sống vàng + đai khóa, giáp vai ba lớp có gai, ống tay đai vàng, mũ trụ liền mặt nạ trơn có mào vàng + hai sừng cong, áo choàng, đại kiếm có rãnh phù văn, chắn vàng đầu thú.
+- **Kim ngân**: gò tiền khắc, thỏi vàng xếp chồng, chén, ngọc đỏ/tím/lục, rương đai vàng, cuộn lụa. **Lư lửa** đồng vàng ba chân với ngọn lửa tím-vàng (14 cái vòng r 90). **Tường**: dải huy chương tròn khắc hoa sen, tấm ốp phù điêu hai bên hốc, chuỗi đèn lồng giăng giữa cột, đinh tán và viền khung trên cửa phong ấn.
+- **Ánh sáng**: ba tia sáng vàng nhạt từ giếng sáng vòm, sương tím thấp đậm hơn, exposure 0,82.
+- **Ngân sách (preset Cao)**: ~158 draw call, ~0,85M tam giác.
+- **Còn lại**: tượng vẫn thô ở độ phân giải khối (chưa có normal map hoa văn thật); bệ tượng nhìn từ trên còn "bàn cờ" vàng; vòng trận r 64 vạch chia còn đọc như đoạn rời ở góc nhìn lướt; sàn vẫn thiên tím xanh ở vùng xa.
+
+### PR 4 vòng 3 (review code): vạch báo boss đọc rõ trên sàn
+
+- Sàn trong vùng đánh (r < ~64, chuyển dần tới r 72) đổi sang **đá xám đen ánh vàng ấm**, sáng hơn (nền 0,075–0,15 thay 0,008–0,026), gần như bỏ vân tím; vành ngoài giữ đen tím. Không đổi vạch báo của game.
+- Kiểm bằng `pnpm shots dungeonart --level than_tang --battle 1 --perf 1`: ảnh `90-boss-chieu` và `91-boss-pha-cuoi` (1080p). **Kết quả**: vạch báo tím/hồng (hình quạt, vòng chữ triện) nay tách rõ khỏi nền xám ấm — mép, vành chữ và các dải đồng tâm đều đọc được, không còn chìm vào nền tím như trước. Hạn chế: bloom/sương tím của hậu kỳ vẫn ngả nền hơi hồng-tím nên độ tương phản màu (không phải độ sáng) chưa tối đa; nền vẫn thiên lạnh ở các góc xa trong vùng đánh.

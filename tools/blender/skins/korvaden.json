@@ -1,7 +1,7 @@
 {
  "id": "skin_korvaden",
  "source": "D:/claude-tmp/skin3/korv/source/KORVADEN  The Runebound Axemaster.glb",
- "out": "chr/skin_korvaden/prep/rig_v01.glb",
+ "out": "3d/skin/skin_korvaden/prep/rig_v01.glb",
  "yaw": -40,
  "view": {
   "scale": 2.4,

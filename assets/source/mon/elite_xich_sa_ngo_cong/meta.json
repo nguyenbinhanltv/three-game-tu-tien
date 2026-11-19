@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/elite_xich_sa_ngo_cong/tripo/raw_v01.glb",
+    "source": "3d/quai/elite_xich_sa_ngo_cong/tripo/raw_v01.glb",
     "size": {
       "longest": 6
     },

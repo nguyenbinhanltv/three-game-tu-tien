@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // CHR-PROTO: dựng thân v2 (chr_base_v2.py) + đầu/tóc Tripo (chr_v2_head.py) cho cả bốn kiểu, ghi rig_v01.glb vào nguồn asset.
 //   node tools/blender/build-chr-v2.mjs [--only nam|nu] [--style a|b]
-// Nguồn: <DTL_ASSET_SOURCE>/chr/chr_base_v2/tripo/raw_{head,hair}_*_v01.glb. Ra: <nguồn>/chr/<id>/tripo/rig_v01.glb với id
+// Nguồn: <DTL_ASSET_SOURCE>/3d/nhan-vat/chr_base_v2/tripo/raw_{head,hair}_*_v01.glb. Ra: <nguồn>/chr/<id>/tripo/rig_v01.glb với id
 // chr_v2_<giới> (tóc A) và chr_v2_hb_<giới> (tóc B). Sau đó: `node tools/blender/run.mjs --only <id> --force` + optimize.
 // LƯU Ý: đổi tư thế nghỉ/hình thể thân thì PHẢI dựng lại bốn áo `set_*_v2_*` (run.mjs --force + optimize), nếu không tay áo lệch tay khi chạy.
 import fs from 'node:fs';
@@ -20,7 +20,7 @@ const onlyStyle = flag('--style');
 const blender = findBlender();
 if (!blender) throw new Error('không thấy Blender');
 const tmp = path.join(process.env.TEMP ?? os.tmpdir(), 'chr_v2_build');
-const tripo = path.join(source, 'chr/chr_base_v2/tripo');
+const tripo = path.join(source, '3d/nhan-vat/chr_base_v2/tripo');
 
 /** Tham số khớp tóc từng kiểu (chr_v2_head.py --cfg): split = ngưỡng phía sau/trước tâm đầu khi đẩy tóc ra khỏi thân. */
 const CFG = {
@@ -62,7 +62,7 @@ for (const sex of ['nam', 'nu']) {
       { stdio: 'inherit' },
     );
     if (r.status !== 0) process.exit(r.status ?? 1);
-    const dst = path.join(source, 'chr', id, 'tripo');
+    const dst = path.join(source, '3d', 'nhan-vat', id, 'tripo');
     fs.mkdirSync(dst, { recursive: true });
     fs.copyFileSync(path.join(out, 'rig_v01.glb'), path.join(dst, 'rig_v01.glb'));
     console.log(`[build-chr-v2] ${id} → ${dst}`);

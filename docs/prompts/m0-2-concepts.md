@@ -6,11 +6,11 @@ Mục tiêu M0-2: có 5 bộ concept được duyệt để chạy thử Tripo �
 
 | # | Asset id | Thư mục nguồn | Ảnh cần | Kênh Tripo (M0-3) | Báo giá dự kiến mỗi lần thử |
 | --- | --- | --- | --- | --- | --- |
-| 1 | `chr_de_tu_nam` | `chr/chr_de_tu_nam/` | trước, bên, sau | web app: multiview + rig + 3 clip | khoảng 105 (50 + rig 25 + 3 × 10) |
-| 2 | `mon_soi_xam` | `mon/mon_soi_xam/` | bên, trước, sau | web app: multiview + rig + 3 clip | khoảng 105 |
-| 3 | `prop_lo_dan` | `prop/prop_lo_dan/` | 3/4 | CLI: image→3D | 50 |
-| 4 | `prop_linh_thao` | `prop/prop_linh_thao/` | 3/4 | CLI: image→3D | 50 |
-| 5 | `prop_phi_kiem` | `prop/prop_phi_kiem/` | 3/4 | CLI: image→3D | 50 |
+| 1 | `chr_de_tu_nam` | `3d/nhan-vat/chr_de_tu_nam/` | trước, bên, sau | web app: multiview + rig + 3 clip | khoảng 105 (50 + rig 25 + 3 × 10) |
+| 2 | `mon_soi_xam` | `3d/quai/mon_soi_xam/` | bên, trước, sau | web app: multiview + rig + 3 clip | khoảng 105 |
+| 3 | `prop_lo_dan` | `3d/prop/prop_lo_dan/` | 3/4 | CLI: image→3D | 50 |
+| 4 | `prop_linh_thao` | `3d/prop/prop_linh_thao/` | 3/4 | CLI: image→3D | 50 |
+| 5 | `prop_phi_kiem` | `3d/vu-khi/prop_phi_kiem/` | 3/4 | CLI: image→3D | 50 |
 
 Báo giá theo bảng giá API (`make --dry-run`); giá trên web app chưa kiểm chứng. Thư mục nguồn tính từ `DTL_ASSET_SOURCE` (runbook mục 2). Mỗi đối tượng sinh 3–4 phương án cho ảnh đầu tiên, người dùng chọn một, rồi mới sửa ra các góc còn lại.
 
