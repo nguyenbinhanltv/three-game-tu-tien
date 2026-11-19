@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import { NodeIO } from '@gltf-transform/core';
 import sharp from 'sharp';
-import { fitThienY, THIEN_Y_ATLAS, type ClothGrid, type V3 } from '@dtl/shared';
+import { fitThienY, THIEN_Y_ATLAS, THIEN_Y_SHEER, type ClothGrid, type V3 } from '@dtl/shared';
 
 const args = process.argv.slice(2);
 const opt = (k: string, d = '') => (args.includes(k) ? (args[args.indexOf(k) + 1] ?? d) : d);
@@ -161,8 +161,8 @@ function gridGeom(g: ClothGrid): { pos: Float32Array; nrm: Float32Array } {
   return { pos: g.rest, nrm };
 }
 
-const SLEEVE_SHIFT = Number(opt('--sleeve-shift', '0.035'));
-const SLEEVE_DROP = Number(opt('--sleeve-drop', '0.08'));
+const SLEEVE_SHIFT = Number(opt('--sleeve-shift', '0'));
+const SLEEVE_DROP = Number(opt('--sleeve-drop', '0'));
 const out = Buffer.alloc(SIZE * SIZE * 4, 255);
 for (const g of grids) {
   const reg = THIEN_Y_ATLAS[g.id];
@@ -203,7 +203,9 @@ for (const g of grids) {
       out[o] = acc[0]! / wsum;
       out[o + 1] = acc[1]! / wsum;
       out[o + 2] = acc[2]! / wsum;
-      out[o + 3] = 255;
+      // alpha: lớp đặc 255; voan/tay áo trong suốt theo hệ số, mờ dần về mép dưới (v → 1) để mép tự do nhẹ như voan
+      const sh = THIEN_Y_SHEER[g.id];
+      out[o + 3] = sh === undefined ? 255 : Math.round(255 * sh * (1 - 0.65 * Math.max(0, (v - 0.75) / 0.25)));
     }
 }
 // Texel rơi ra ngoài hình bóng (màu nền xám) hoặc là da: thay bằng màu trung bình của voan cùng ô atlas.

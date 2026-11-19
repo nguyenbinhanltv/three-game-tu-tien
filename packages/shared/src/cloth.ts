@@ -49,11 +49,13 @@ export interface RowPin {
   w: number[];
 }
 
-function makeGrid(id: string, nu: number, nv: number, wrap: boolean, rest: Float32Array, pin: RowPin): ClothGrid {
+function makeGrid(id: string, nu: number, nv: number, wrap: boolean, rest: Float32Array, pin: RowPin, boneAt?: (r: number, c: number) => string): ClothGrid {
   const { uv, index } = gridTopology(nu, nv, wrap);
   const pinW = new Float32Array(nu * nv);
   for (let r = 0; r < nv; r++) for (let c = 0; c < nu; c++) pinW[r * nu + c]! = pin.w[r] ?? 0;
-  return { id, nu, nv, wrap, rest, uv, index, pinBone: new Array<string>(nu * nv).fill(pin.bone), pinW };
+  const pinBone = new Array<string>(nu * nv).fill(pin.bone);
+  if (boneAt) for (let r = 0; r < nv; r++) for (let c = 0; c < nu; c++) pinBone[r * nu + c] = boneAt(r, c);
+  return { id, nu, nv, wrap, rest, uv, index, pinBone, pinW };
 }
 
 /** Một hàng vòng elip của váy: tâm (cx, cz), nửa trục x `a`, nửa trục z `b`, ở độ cao `y`. */
@@ -142,6 +144,7 @@ export function panelGrid(
   pin: RowPin,
   widen = 1,
   dir: V3 = [0, -1, 0],
+  boneAt?: (r: number, c: number) => string,
 ): ClothGrid {
   const rest = new Float32Array(nu * nv * 3);
   const mid: [number, number, number] = [(p0[0]! + p1[0]!) / 2, (p0[1]! + p1[1]!) / 2, (p0[2]! + p1[2]!) / 2];
@@ -157,7 +160,7 @@ export function panelGrid(
       }
     }
   }
-  return makeGrid(id, nu, nv, false, rest, pin);
+  return makeGrid(id, nu, nv, false, rest, pin, boneAt);
 }
 
 /** Viên nang va chạm (hệ thế giới): đoạn a→b bán kính r. */
@@ -244,7 +247,7 @@ export class ClothSim {
    * Một bước. `target`: vị trí skin của vị trí nghỉ theo xương (chỉ đọc ở đỉnh có pinW > 0). `caps`: viên nang (hệ thế giới).
    * `wind`: gia tốc gió (m/s²) cộng thêm.
    */
-  step(dt: number, target: Float32Array, caps: readonly Capsule[], wind: V3 = [0, 0, 0]): void {
+  step(dt: number, target: Float32Array, caps: readonly Capsule[], wind: V3 = [0, 0, 0], floorY = -1e9): void {
     const { pos, prev, grid, params } = this;
     const pinW = grid.pinW;
     const g = params.gravity * dt * dt;
@@ -306,8 +309,9 @@ export class ClothSim {
         pos[kj + 2]! -= dz * cj;
       }
       if (it === params.iterations - 1 && params.tether > 0) this.applyTether(target);
-      if (it === params.iterations - 1 || caps.length > 0) this.collide(caps);
+      if (it === params.iterations - 1) this.collide(caps);
     }
+    if (floorY > -1e8) for (let i = 0; i < this.n; i++) if (pos[3 * i + 1]! < floorY) pos[3 * i + 1] = floorY;
   }
 
   /** Kéo đỉnh về trong bán kính neo quanh vị trí skin theo xương (`target` cho MỌI đỉnh). */

@@ -1,13 +1,25 @@
 // Thiên Y: đo hình dạng vải từ lưới Tripo cũ (tách riêng bằng chr_v3.py --split-cloth) và dựng các lưới vải mới khớp hình bóng đó.
 // Dùng chung cho client (mô phỏng) và công cụ bake texture (chiếu 4 ảnh multiview), nên cùng một hình học nghỉ.
-import { type ClothGrid, type SkirtRing, type V3, skirtGrid, sleeveGrid } from './cloth';
+import { type ClothGrid, panelGrid, type SkirtRing, type V3, skirtGrid } from './cloth';
 
 /** Ô atlas (u0, v0, u1, v1) của từng lưới trong texture gộp (v = 0 ở trên, như UV của lưới). */
 export const THIEN_Y_ATLAS: Record<string, readonly [number, number, number, number]> = {
-  skirt: [0, 0, 0.5, 1],
-  sleeve_l: [0.5, 0, 1, 0.5],
-  sleeve_r: [0.5, 0.5, 1, 1],
+  skirt_out: [0, 0, 0.5, 0.5],
+  skirt_mid: [0, 0.5, 0.5, 1],
+  skirt_in: [0.5, 0, 1, 0.5],
+  sleeve_l: [0.5, 0.5, 0.75, 1],
+  sleeve_r: [0.75, 0.5, 1, 1],
 };
+
+/** Lưới trong suốt (voan, tay áo): alpha theo `alpha`, mép dưới mờ dần. Lớp còn lại đặc. */
+export const THIEN_Y_SHEER: Record<string, number> = { skirt_out: 0.8, sleeve_l: 0.85, sleeve_r: 0.85 };
+
+/** Ba lớp váy xếp tầng: trong (ngà, ngắn), giữa (sao xanh lam), ngoài (voan tím, rộng + dài nhất). */
+const SKIRT_LAYERS = [
+  { id: 'skirt_in', scale: 0.62, len: 0.8 },
+  { id: 'skirt_mid', scale: 0.82, len: 0.92 },
+  { id: 'skirt_out', scale: 1.0, len: 1.0 },
+] as const;
 
 export interface ThienYInput {
   /** Vị trí nghỉ của xương (toạ độ mesh) theo tên. */
@@ -46,68 +58,62 @@ export function fitThienY(inp: ThienYInput, opt: ThienYOptions = {}): ClothGrid[
   const yTop = Math.min(pct(ys, 0.985), pel[1] + 0.07 * height);
   const yBot = Math.max(pct(ys, 0.005), 0.05 * height);
   const rows = opt.skirtRows ?? 12;
-  const rings: SkirtRing[] = [];
-  for (let r = 0; r < rows; r++) {
-    const y = yTop - ((yTop - yBot) * r) / (rows - 1);
-    const band = ((yTop - yBot) / (rows - 1)) * 0.75;
-    const xs: number[] = [], zs: number[] = [];
-    for (let i = 0; i < skirtPts.length; i += 3) {
-      if (Math.abs(skirtPts[i + 1]! - y) < band) {
-        xs.push(skirtPts[i]!);
-        zs.push(skirtPts[i + 2]!);
+  const ringsOf = (pts: ArrayLike<number>): SkirtRing[] => {
+    const rr: SkirtRing[] = [];
+    for (let r = 0; r < rows; r++) {
+      const y = yTop - ((yTop - yBot) * r) / (rows - 1);
+      const band = ((yTop - yBot) / (rows - 1)) * 0.75;
+      const xs: number[] = [], zs: number[] = [];
+      for (let i = 0; i < pts.length; i += 3) {
+        if (Math.abs(pts[i + 1]! - y) < band) {
+          xs.push(pts[i]!);
+          zs.push(pts[i + 2]!);
+        }
       }
+      if (xs.length < 8) {
+        const prev = rr[rr.length - 1];
+        rr.push(prev ? { ...prev, y } : { y, cx: pel[0], cz: pel[2], a: 0.14 * k, b: 0.1 * k });
+        continue;
+      }
+      const x0 = pct(xs, 0.04), x1 = pct(xs, 0.96), z0 = pct(zs, 0.04), z1 = pct(zs, 0.96);
+      rr.push({ y, cx: (x0 + x1) / 2, cz: (z0 + z1) / 2, a: Math.max((x1 - x0) / 2, 0.1 * k), b: Math.max((z1 - z0) / 2, 0.08 * k) });
     }
-    if (xs.length < 8) {
-      const prev = rings[rings.length - 1];
-      rings.push(prev ? { ...prev, y } : { y, cx: pel[0], cz: pel[2], a: 0.14 * k, b: 0.1 * k });
-      continue;
+    for (let r = 1; r < rr.length; r++) {
+      const p0 = rr[r - 1]!;
+      const c = rr[r]!;
+      c.a = Math.max(c.a, p0.a * 0.98);
+      c.b = Math.max(c.b, p0.b * 0.98);
     }
-    const x0 = pct(xs, 0.04), x1 = pct(xs, 0.96), z0 = pct(zs, 0.04), z1 = pct(zs, 0.96);
-    rings.push({ y, cx: (x0 + x1) / 2, cz: (z0 + z1) / 2, a: Math.max((x1 - x0) / 2, 0.1 * k), b: Math.max((z1 - z0) / 2, 0.08 * k) });
+    return rr;
+  };
+  const rings = ringsOf(skirtPts);
+  // Lớp ngoài cùng theo TOÀN BỘ hình bóng (váy + voan treo từ tay): phần rộng nhất của tranh nằm ở voan.
+  const all = new Float32Array(skirtPts.length + sleevePts.l.length + sleevePts.r.length);
+  for (let i = 0; i < skirtPts.length; i++) all[i] = skirtPts[i]!;
+  for (let i = 0; i < sleevePts.l.length; i++) all[skirtPts.length + i] = sleevePts.l[i]!;
+  for (let i = 0; i < sleevePts.r.length; i++) all[skirtPts.length + sleevePts.l.length + i] = sleevePts.r[i]!;
+  const ringsAll = ringsOf(all);
+  for (const L of SKIRT_LAYERS) {
+    const yHem = yTop - (yTop - yBot) * L.len;
+    const base = L.id === 'skirt_out' ? ringsAll : rings;
+    const lr: SkirtRing[] = base.map((R, r) => ({ y: yTop - ((yTop - yHem) * r) / (rows - 1), cx: R.cx, cz: R.cz, a: R.a * L.scale, b: R.b * L.scale }));
+    out.push(skirtGrid(L.id, lr, opt.skirtCols ?? 28, { bone: 'pelvis', w: [1, 0.7, 0.35, 0.12] }));
   }
-  for (let r = 1; r < rings.length; r++) {
-    const p0 = rings[r - 1]!;
-    const c = rings[r]!;
-    c.a = Math.max(c.a, p0.a * 0.98);
-    c.b = Math.max(c.b, p0.b * 0.98);
-  }
-  out.push(skirtGrid('skirt', rings, opt.skirtCols ?? 28, { bone: 'pelvis', w: [1, 0.7, 0.35, 0.12] }));
 
-  // ---- tay áo: ống từ khuỷu qua cổ tay, kéo dài rủ xuống ----
+  // ---- tay áo: tấm vải hở treo từ bắp tay, mép trên theo cánh tay, mép dưới tự do, rộng dần về gấu ----
   for (const sd of ['l', 'r'] as const) {
     const flat = sleevePts[sd];
-    const pts: number[][] = [];
-    for (let i = 0; i < flat.length; i += 3) pts.push([flat[i]!, flat[i + 1]!, flat[i + 2]!]);
-    if (pts.length < 20) continue;
-    const el = joint(`lowerarm_${sd}`);
-    const wr = joint(`hand_${sd}`);
-    const ax = [wr[0] - el[0], wr[1] - el[1], wr[2] - el[2]];
-    const len = Math.hypot(ax[0]!, ax[1]!, ax[2]!) || 1;
-    const d = [ax[0]! / len, ax[1]! / len, ax[2]! / len];
-    const bins = 8;
-    const radii: number[] = [];
-    const tMax = 2.2;
-    for (let b = 0; b < bins; b++) {
-      const lo = -0.1 + ((tMax + 0.1) * b) / bins, hi = -0.1 + ((tMax + 0.1) * (b + 1)) / bins;
-      const rr: number[] = [];
-      for (const p of pts) {
-        const rel = [p[0]! - el[0], p[1]! - el[1], p[2]! - el[2]];
-        const t = (rel[0]! * d[0]! + rel[1]! * d[1]! + rel[2]! * d[2]!) / len;
-        if (t < lo || t >= hi) continue;
-        const perp = [rel[0]! - d[0]! * t * len, rel[1]! - d[1]! * t * len, rel[2]! - d[2]! * t * len];
-        rr.push(Math.hypot(perp[0]!, perp[1]!, perp[2]!));
-      }
-      radii.push(rr.length >= 5 ? pct(rr, 0.85) : NaN);
-    }
-    for (let b = 0; b < bins; b++) if (Number.isNaN(radii[b]!)) radii[b] = radii[b - 1] ?? 0.07 * k;
-    const radius = (t: number) => {
-      const f = Math.min(Math.max(((t + 0.1) / (tMax + 0.1)) * bins - 0.5, 0), bins - 1);
-      const i0 = Math.floor(f), i1 = Math.min(i0 + 1, bins - 1);
-      const v = radii[i0]! + (radii[i1]! - radii[i0]!) * (f - i0);
-      return Math.min(Math.max(v, 0.04 * k), 0.14 * k);
-    };
+    if (flat.length < 60) continue;
+    const ysl: number[] = [];
+    for (let i = 1; i < flat.length; i += 3) ysl.push(flat[i]!);
+    const sh = joint(`upperarm_${sd}`), el = joint(`lowerarm_${sd}`), wr = joint(`hand_${sd}`);
+    const p0: V3 = [sh[0] + (el[0] - sh[0]) * 0.35, sh[1] + (el[1] - sh[1]) * 0.35, sh[2] + (el[2] - sh[2]) * 0.35];
+    const p1: V3 = [wr[0] + (wr[0] - el[0]) * 0.25, wr[1] + (wr[1] - el[1]) * 0.25, wr[2] + (wr[2] - el[2]) * 0.25];
+    const top = (p0[1] + p1[1]) / 2;
+    const drop = Math.max((top - pct(ysl, 0.03)) * 0.92, 0.2 * k);
+    const nuS = opt.sleeveCols ?? 12;
     out.push(
-      sleeveGrid(`sleeve_${sd}`, el, wr, radius, opt.sleeveCols ?? 14, opt.sleeveRows ?? 10, tMax - 1, { bone: `lowerarm_${sd}`, w: [1, 0.85, 0.55, 0.25, 0.08] }, [0, 0, 1]),
+      panelGrid(`sleeve_${sd}`, p0, p1, drop, nuS, opt.sleeveRows ?? 10, { bone: `upperarm_${sd}`, w: [1, 0.55, 0.2] }, 1.8, [0, -1, 0], (_r, c) => (c < nuS / 2 ? `upperarm_${sd}` : `lowerarm_${sd}`)),
     );
   }
   return out;

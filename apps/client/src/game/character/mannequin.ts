@@ -385,6 +385,7 @@ export class MannequinCharacter implements CharacterView {
   private sleeveSprings: SpringBones | null = null;
   /** Vải mô phỏng Thiên Y (null nếu tắt hoặc model không có vải cũ tách riêng). */
   cloth: ClothRig | null = null;
+  private clothSit = 0;
   private colScale = 1;
   private twists: Twist[] = [];
   private lodLevel = 0;
@@ -1109,7 +1110,9 @@ export class MannequinCharacter implements CharacterView {
     if (this.cloth) {
       const on = this.lodLevel === 0 && this.inner.visible;
       this.cloth.setActive(on);
-      if (on) this.cloth.update(this.acc);
+      const sitNow = this.baseName === 'Sitting_Idle_Loop' || this.baseName === 'pose_tam_thien';
+      this.clothSit += ((sitNow ? 1 : 0) - this.clothSit) * Math.min(1, this.acc * 6);
+      if (on) this.cloth.update(this.acc, this.clothSit, !!(this.springs || this.skirtSprings || this.sleeveSprings));
     }
     this.acc = 0;
   }
