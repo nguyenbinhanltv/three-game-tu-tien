@@ -2,7 +2,7 @@
  "$comment": "Cấu hình skin_prep.py cho Kings Demon (Wilson/neilhancart, CC BY-NC 4.0: chỉ dùng khi game không thương mại). Model Maya cao 2,4 (sừng) gốc dưới chân, 8 vật liệu/19 ảnh: nướng cả tám về một atlas (skin_prep gộp mọi vật liệu nguồn). Vật liệu lambert19 (Hairdet) alpha 0: bỏ. Tóc là thẻ alpha (26k tam giác, màu hệ số đen × alpha): nướng thành vỏ tóc đặc. Váy dài ôm chân, không tách chân: trọng số theo xương, chân kéo váy.",
  "id": "skin_kings_demon",
  "source": "C:/Users/PC/AppData/Local/Temp/skin3-work/src/kings_demon.glb",
- "out": "chr/skin_kings_demon/prep/rig_v01.glb",
+ "out": "3d/skin/skin_kings_demon/prep/rig_v01.glb",
  "view": {
   "scale": 2.6,
   "center": [

@@ -25,6 +25,7 @@ import { DoanMachArt } from '../world/doanMachArt';
 import { KiemTrungArt } from '../world/kiemTrungArt';
 import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
 import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../world/kinhNguyetArt';
+import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { VanHaiWow } from '../world/vanHaiWow';
@@ -328,11 +329,13 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     // Kiếm Trủng (DUN-1): huyệt kiếm cao, có ô trời mở; level khác giữ vỏ hang cũ.
     const shell = levelAssets(id).kiemTrungArt
       ? buildSwordCaveShell(cave, heightAt(cave.x, cave.z))
-      : levelAssets(id).kinhNguyetArt
-        ? buildMoonDomeShell(cave, heightAt(cave.x, cave.z))
-        : levelAssets(id).phucMachArt
-          ? buildMineCaveShell(cave, heightAt(cave.x, cave.z), PM_OCULI)
-          : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
+      : levelAssets(id).thanTangArt
+        ? buildVaultDome(cave, heightAt(cave.x, cave.z))
+        : levelAssets(id).kinhNguyetArt
+          ? buildMoonDomeShell(cave, heightAt(cave.x, cave.z))
+          : levelAssets(id).phucMachArt
+            ? buildMineCaveShell(cave, heightAt(cave.x, cave.z), PM_OCULI)
+            : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
     const glow = buildCrystalGlow(
       propsOf(id)
         .filter((p) => p.id === 'prop_mach_tinh_tru')
@@ -340,7 +343,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     );
     eng.scene.add(shell, glow);
     eng.levelObjs.push(shell, glow);
-    if (palace && !levelAssets(id).kinhNguyetArt) {
+    if (palace && !levelAssets(id).kinhNguyetArt && !levelAssets(id).thanTangArt) {
       // Cung gương (E3-M): sàn gương giả phủ lòng chảo (một draw call, không phản chiếu thật).
       const floor = buildMirrorFloor({ ...cave, r: cave.r - 2 }, heightAt, palace);
       const hall = buildPalaceHall(cave, heightAt, palace);
@@ -362,7 +365,12 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     // Lạc Kiếm (MAP-1 bản B): cây Tripo (tán đĩa phẳng) thay bằng cây thẻ alpha (cardForest.ts); PropLayer giữ phần còn lại (đèn, bia, đá…).
     const cardTrees = !!levelAssets(id).lacKiemSky;
     // Kính Nguyệt (DUN-1 PR3): đá trôi xám đen lạc tông với điện ngọc trắng, bỏ khỏi cảnh (prop chỉ để nhìn, không va chạm).
-    const dropIds = levelAssets(id).kinhNguyetArt ? new Set(['prop_da_troi']) : null;
+    // Thần Tàng (DUN-1 PR4): vòng cột đá khắc vân cũ (r 76–80) đè lên ba cửa phong ấn mới, bỏ.
+    const dropIds = levelAssets(id).kinhNguyetArt
+      ? new Set(['prop_da_troi'])
+      : levelAssets(id).thanTangArt
+        ? new Set(['prop_tru_da_khac_van'])
+        : null;
     const shown = dropIds ? all.filter((p) => !dropIds.has(p.id)) : all;
     eng.props = new PropLayer(undefined, cardTrees ? shown.filter((p) => !CARD_TREE_IDS.has(p.id)) : shown);
     if (cardTrees) {
@@ -419,6 +427,11 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.phucMachArt = new PhucMachArt();
     eng.scene.add(eng.phucMachArt.group);
     void loadPmModel(eng, q.shadows);
+  }
+  if (levelAssets(id).thanTangArt) {
+    eng.thanTangArt = new ThanTangArt();
+    eng.scene.add(eng.thanTangArt.group);
+    void loadTtModel(eng, q.shadows);
   }
   if (levelAssets(id).kinhNguyetArt) {
     eng.kinhNguyetArt = new KinhNguyetArt();
@@ -503,6 +516,11 @@ export function unloadLevel(eng: Game): void {
     eng.tkAsset.handle.release();
     for (const m of eng.tkAsset.mats) m.dispose();
     eng.tkAsset = null;
+  }
+  if (eng.thanTangArt) {
+    drop(eng.thanTangArt.group);
+    eng.thanTangArt.dispose();
+    eng.thanTangArt = null;
   }
   if (eng.kinhNguyetArt) {
     drop(eng.kinhNguyetArt.group);
@@ -651,6 +669,25 @@ export async function loadKtModel(eng: Game, shadows: boolean): Promise<void> {
     enabled: () => !!levelAssets(levelId()).kiemTrungArt,
     origin: { x: KIEM_TRUNG.x, y: KIEM_TRUNG.y, z: KIEM_TRUNG.z },
     prefix: 'kt',
+  });
+}
+
+/**
+ * Nạp cảnh Thần Tàng Điện dựng bằng Blender (asset `arch_than_tang`): tường hốc vòm + phướn, ba cửa phong ấn, tượng võ sĩ, đống kim ngân, mặt nạ, đèn chùm (`tt_ceil_*` treo trần).
+ * Sàn bám `heightAt` (phẳng ±3 m tới r 110): vật đặt theo mặt bằng tâm (`flat`).
+ */
+export async function loadTtModel(eng: Game, shadows: boolean): Promise<void> {
+  const c = LEVELS.than_tang!.dungeon!.center;
+  await loadDungeonModel(eng, shadows, {
+    asset: 'arch_than_tang',
+    enabled: () => !!levelAssets(levelId()).thanTangArt,
+    origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
+    prefix: 'tt',
+    ceiling: TT_DOME,
+    flat: ['tt_bay', 'tt_gate', 'tt_statue', 'tt_hoard', 'tt_mask', 'tt_brazier'],
+    flatDy: 0.05,
+    material: ttMaterialFor,
+    noShadow: /bay|mask|chandelier/,
   });
 }
 

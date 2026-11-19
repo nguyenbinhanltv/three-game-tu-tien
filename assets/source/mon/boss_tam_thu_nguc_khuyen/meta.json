@@ -10,8 +10,8 @@
     "texture": 2048
   },
   "sculpt": {
-    "source": "boss/boss_tam_thu_nguc_khuyen/online/source.glb",
-    "out": "boss/boss_tam_thu_nguc_khuyen/rig/rig_v01.glb",
+    "source": "3d/boss/boss_tam_thu_nguc_khuyen/online/source.glb",
+    "out": "3d/boss/boss_tam_thu_nguc_khuyen/rig/rig_v01.glb",
     "yaw": -14.4,
     "faces": 36000,
     "texture": 2048,
@@ -91,7 +91,7 @@
   },
   "import": {
     "kind": "external",
-    "source": "boss/boss_tam_thu_nguc_khuyen/rig/rig_v01.glb",
+    "source": "3d/boss/boss_tam_thu_nguc_khuyen/rig/rig_v01.glb",
     "size": {
       "height": 3.4
     },

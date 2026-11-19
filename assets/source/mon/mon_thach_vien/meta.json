@@ -11,32 +11,32 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/mon_thach_vien/tripo/anim_idle_v01.glb",
+    "source": "3d/quai/mon_thach_vien/tripo/anim_idle_v01.glb",
     "size": {
       "height": 1.45
     },
     "orient": "thigh",
     "clips": [
       {
-        "source": "mon/mon_thach_vien/tripo/anim_idle_v01.glb",
+        "source": "3d/quai/mon_thach_vien/tripo/anim_idle_v01.glb",
         "name": "idle",
         "end": 7.0,
         "loop": true
       },
       {
-        "source": "mon/mon_thach_vien/tripo/anim_run_v01.glb",
+        "source": "3d/quai/mon_thach_vien/tripo/anim_run_v01.glb",
         "name": "run",
         "recenter": true,
         "loop": true
       },
       {
-        "source": "mon/mon_thach_vien/tripo/anim_attack_v01.glb",
+        "source": "3d/quai/mon_thach_vien/tripo/anim_attack_v01.glb",
         "name": "attack",
         "start": 1.25,
         "end": 2.9
       },
       {
-        "source": "mon/mon_thach_vien/tripo/anim_death_v01.glb",
+        "source": "3d/quai/mon_thach_vien/tripo/anim_death_v01.glb",
         "name": "death",
         "end": 2.3
       }

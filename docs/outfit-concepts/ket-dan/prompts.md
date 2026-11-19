@@ -7,14 +7,14 @@ Ngân sách mỗi nhân vật ≤ 18k tam giác (thân nền 6k + các mảnh �
 
 ## Liệt Mạch Kiếm Y (Kiếm tu, Thổ/Kim (mạch đất nứt))
 
-Tổng tam giác 6 mảnh: **11700**. Thư mục lưu: `<DTL_ASSET_SOURCE>/chr/set_liet_mach_kiem_y/tripo/`.
+Tổng tam giác 6 mảnh: **11700**. Thư mục lưu: `<DTL_ASSET_SOURCE>/3d/nhan-vat/set_liet_mach_kiem_y/tripo/`.
 
 ### Áo ngoài · `liet_mach_ao_ngoai`
 
 ![liet_mach_ao_ngoai](liet_mach_ao_ngoai.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **5000** · không quad · không rig
-- **Lưu GLB:** `chr/set_liet_mach_kiem_y/tripo/raw_ao_ngoai_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_ao_ngoai_v01.glb`
 - **Xương gắn vào:** spine1/spine2 (thân), upperarm L/R, forearm L/R, cổ áo gắn neck. Trọng số lấy từ thân nền
 - **Xương lò xo:** Tay áo: 2 chuỗi × 3 xương mỗi bên (cổ tay trở ra). Vạt sau: 3 chuỗi × 3 xương. Vạt xẻ tà hai bên: 1 chuỗi × 2 xương mỗi bên
 - **Lưu ý khi dựng:** Một mảnh liền, mặt ngoài lụa dày KHÔNG xuyên sáng. Phần lót cinnabar là lớp riêng thấy được ở cổ tay và xẻ tà. Mở thân dưới (hở) để lớp dưới thấy bên trong.
@@ -30,7 +30,7 @@ A long ivory outer swordsman coat (dao pao): crossed collar, wide sleeves with c
 ![liet_mach_lop_duoi](liet_mach_lop_duoi.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **2000** · không quad · không rig
-- **Lưu GLB:** `chr/set_liet_mach_kiem_y/tripo/raw_lop_duoi_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_lop_duoi_v01.glb`
 - **Xương gắn vào:** pelvis/hips, thigh L/R, calf L/R. Trọng số từ thân nền
 - **Xương lò xo:** Vạt dưới trước và sau: 2 chuỗi × 2 xương (nhẹ, để vạt áo ngoài lướt lên)
 - **Lưu ý khi dựng:** Quần và vạt áo trong tối giản để áo ngoài là điểm nhấn. Cần phủ kín đùi tới bắp chân để cắt vùng ẩn của thân nền.
@@ -46,7 +46,7 @@ Wide-leg trousers in plain dark cinnabar-brown linen, with a front-and-back long
 ![liet_mach_vai_giap](liet_mach_vai_giap.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1500** · không quad · không rig
-- **Lưu GLB:** `chr/set_liet_mach_kiem_y/tripo/raw_vai_giap_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_vai_giap_v01.glb`
 - **Xương gắn vào:** clavicle/shoulder L và R (cứng, không co giãn); một mảnh có hai nửa đối xứng
 - **Xương lò xo:** Không. Mảnh cứng
 - **Lưu ý khi dựng:** Hai nửa đối xứng gửi cùng một ảnh (chỉ cần dựng một bên rồi lật). Vân hổ phách đặt làm vật liệu riêng (mặt nạ phát sáng) để worker bật theo cấp cường hóa.
@@ -62,7 +62,7 @@ A matching pair of angular bronze shoulder armor plates (pauldrons) shaped like 
 ![liet_mach_dai_tua](liet_mach_dai_tua.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1200** · không quad · không rig
-- **Lưu GLB:** `chr/set_liet_mach_kiem_y/tripo/raw_dai_tua_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_dai_tua_v01.glb`
 - **Xương gắn vào:** đai: hips/spine (cứng, quấn quanh eo). Tua: neo ở đai
 - **Xương lò xo:** Tua: 2 chuỗi × 4 xương. Dải thắt nút: 1 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Đai là vòng kín quanh eo, độ dày ~2 cm, để pipeline lồng đệm. Tua và dải để rời mesh để gắn xương lò xo.
@@ -78,7 +78,7 @@ A wide cinnabar leather belt with a large rectangular bronze buckle plate engrav
 ![liet_mach_ung](liet_mach_ung.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1300** · không quad · không rig
-- **Lưu GLB:** `chr/set_liet_mach_kiem_y/tripo/raw_ung_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_ung_v01.glb`
 - **Xương gắn vào:** foot L/R, toe L/R, calf L/R (cứng; ống ủng bám bắp chân)
 - **Xương lò xo:** Không
 - **Lưu ý khi dựng:** Đế phẳng, đặt chân đúng trục xương chân. Phần miệng ủng đủ rộng để lớp dưới chui vào.
@@ -94,7 +94,7 @@ A pair of tall cinnabar leather riding boots reaching below the knee, bronze-cap
 ![liet_mach_trang_suc_dau](liet_mach_trang_suc_dau.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **700** · không quad · không rig
-- **Lưu GLB:** `chr/set_liet_mach_kiem_y/tripo/raw_trang_suc_dau_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_trang_suc_dau_v01.glb`
 - **Xương gắn vào:** head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện)
 - **Xương lò xo:** Dải ruy băng sau: 1 chuỗi × 3 xương mỗi dải
 - **Lưu ý khi dựng:** Chỉ có quan, trâm, dải. KHÔNG có đầu, tóc hay mặt: tóc thuộc model nhân vật gốc. Tâm quan đặt ở đỉnh đầu, nhìn từ trên xuống phải gọn trong vòng tròn đường kính ~8 cm.
@@ -108,14 +108,14 @@ A slim bronze hair crown (guan) that holds a topknot: a small tapered bronze cap
 
 ## Địa Long Hộ Giáp (Hộ pháp, Thổ)
 
-Tổng tam giác 6 mảnh: **12900**. Thư mục lưu: `<DTL_ASSET_SOURCE>/chr/set_dia_long_ho_giap/tripo/`.
+Tổng tam giác 6 mảnh: **12900**. Thư mục lưu: `<DTL_ASSET_SOURCE>/3d/nhan-vat/set_dia_long_ho_giap/tripo/`.
 
 ### Áo ngoài (giáp thân) · `dia_long_ao_ngoai`
 
 ![dia_long_ao_ngoai](dia_long_ao_ngoai.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **5000** · không quad · không rig
-- **Lưu GLB:** `chr/set_dia_long_ho_giap/tripo/raw_ao_ngoai_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_ao_ngoai_v01.glb`
 - **Xương gắn vào:** spine1/spine2 (giáp ngực cứng gắn spine2), upperarm L/R (tay áo ngắn), neck. Trọng số từ thân nền
 - **Xương lò xo:** Gần như không: 1 chuỗi × 2 xương cho vạt vải dưới giáp ngực. Giáp ngực cứng
 - **Lưu ý khi dựng:** Giáp ngực là khối cứng, vải tunic bên dưới là phần mềm. Để nửa dưới thân hở cho lớp dưới. Vảy phải là khối nổi thật, không phải họa tiết.
@@ -131,7 +131,7 @@ A heavy guardian chest armor over a thick dark jade-green tunic: a half-breastpl
 ![dia_long_lop_duoi](dia_long_lop_duoi.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **2000** · không quad · không rig
-- **Lưu GLB:** `chr/set_dia_long_ho_giap/tripo/raw_lop_duoi_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_lop_duoi_v01.glb`
 - **Xương gắn vào:** pelvis/hips, thigh L/R. Các tầng váy gắn pelvis, trọng số mềm về thigh
 - **Xương lò xo:** Mỗi tầng váy 1 xương treo (3 tầng × 2 bên, tổng ~8 xương), biên độ nhỏ cho giáp nặng
 - **Lưu ý khi dựng:** Các tầng váy là tấm cứng đặt chồng lên nhau, có khoảng hở nhỏ giữa tầng để xương xoay. Không dùng vải xuyên sáng.
@@ -147,7 +147,7 @@ A tiered armored skirt: three overlapping rows of dark jade scale plates with ol
 ![dia_long_vai_giap](dia_long_vai_giap.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **2200** · không quad · không rig
-- **Lưu GLB:** `chr/set_dia_long_ho_giap/tripo/raw_vai_giap_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_vai_giap_v01.glb`
 - **Xương gắn vào:** clavicle/shoulder L/R (cứng); tầng dưới nối upperarm L/R
 - **Xương lò xo:** Không. Tầng dưới có 1 xương xoay nhẹ theo cánh tay
 - **Lưu ý khi dựng:** Vai to nhất trong ba bộ, đỉnh cao hơn vai ~15 cm. Kiểm tra không đâm vào cổ khi giơ tay, để pipeline tạo lồng đệm.
@@ -163,7 +163,7 @@ A matching pair of huge shoulder guards built from overlapping stone dragon scal
 ![dia_long_dai_tua](dia_long_dai_tua.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1500** · không quad · không rig
-- **Lưu GLB:** `chr/set_dia_long_ho_giap/tripo/raw_dai_tua_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_dai_tua_v01.glb`
 - **Xương gắn vào:** hips/spine (cứng). Tua và charm neo ở đai
 - **Xương lò xo:** Tua và charm: 2 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Đai dày 3 cm vì giáp nặng. Đầu rồng ở khóa là điểm nhận diện bộ.
@@ -179,7 +179,7 @@ A broad dark leather belt with a large old-gold dragon-head clasp, studded stone
 ![dia_long_ung](dia_long_ung.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1500** · không quad · không rig
-- **Lưu GLB:** `chr/set_dia_long_ho_giap/tripo/raw_ung_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_ung_v01.glb`
 - **Xương gắn vào:** foot L/R, toe L/R, calf L/R (cứng)
 - **Xương lò xo:** Không
 - **Lưu ý khi dựng:** Ủng nặng nhưng ống không được to hơn bắp chân quá 30% để vừa dáng hai giới.
@@ -195,7 +195,7 @@ A pair of heavy stone-grey boots with dark jade scale-plated shins, old gold tri
 ![dia_long_trang_suc_dau](dia_long_trang_suc_dau.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **700** · không quad · không rig
-- **Lưu GLB:** `chr/set_dia_long_ho_giap/tripo/raw_trang_suc_dau_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_trang_suc_dau_v01.glb`
 - **Xương gắn vào:** head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện)
 - **Xương lò xo:** Không
 - **Lưu ý khi dựng:** Chỉ có vòng quan và sừng, để hở mặt và tóc. Sừng ngắn, hướng ra sau, không vượt quá 12 cm.
@@ -209,14 +209,14 @@ A stone-grey helm-crown (circlet style, open face, no visor): a band with old go
 
 ## Phục Mạch Đan Bào (Đan sư, Mộc)
 
-Tổng tam giác 6 mảnh: **11800**. Thư mục lưu: `<DTL_ASSET_SOURCE>/chr/set_phuc_mach_dan_bao/tripo/`.
+Tổng tam giác 6 mảnh: **11800**. Thư mục lưu: `<DTL_ASSET_SOURCE>/3d/nhan-vat/set_phuc_mach_dan_bao/tripo/`.
 
 ### Áo ngoài (đạo bào + voan choàng) · `phuc_mach_ao_ngoai`
 
 ![phuc_mach_ao_ngoai](phuc_mach_ao_ngoai.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **5000** · không quad · không rig
-- **Lưu GLB:** `chr/set_phuc_mach_dan_bao/tripo/raw_ao_ngoai_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_ao_ngoai_v01.glb`
 - **Xương gắn vào:** spine1/spine2, upperarm L/R, forearm L/R, neck. Voan choàng gắn spine2 và shoulder
 - **Xương lò xo:** Tay áo rộng: 3 chuỗi × 3 xương mỗi bên. Voan choàng: 2 đuôi × 4 xương. Vạt sau: 2 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Đây là mảnh XUYÊN SÁNG thứ nhất của bộ (voan). Dựng voan là lớp mỏng riêng; worker dùng alpha-test hoặc dither. Phần đạo bào lụa thì đặc.
@@ -232,7 +232,7 @@ A wide ivory alchemist robe with crossed collar and very wide flowing sleeves, a
 ![phuc_mach_lop_duoi](phuc_mach_lop_duoi.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **2000** · không quad · không rig
-- **Lưu GLB:** `chr/set_phuc_mach_dan_bao/tripo/raw_lop_duoi_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_lop_duoi_v01.glb`
 - **Xương gắn vào:** pelvis/hips, thigh L/R, calf L/R
 - **Xương lò xo:** Vạt trước và sau: 2 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Vạt dài tới mắt cá, hai lớp (xanh ngọc ngắn hơn ngà). Cả hai đặc, không xuyên sáng.
@@ -248,7 +248,7 @@ A long pale jade-green under-robe skirt with a soft wrap front, an ivory inner h
 ![phuc_mach_vai_giap](phuc_mach_vai_giap.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1500** · không quad · không rig
-- **Lưu GLB:** `chr/set_phuc_mach_dan_bao/tripo/raw_vai_giap_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_vai_giap_v01.glb`
 - **Xương gắn vào:** clavicle/shoulder L/R (cứng)
 - **Xương lò xo:** Chuỗi hạt ngọc: 1 chuỗi × 3 xương mỗi bên
 - **Lưu ý khi dựng:** Vai của đan sư nhẹ nhất ba bộ: chỉ làm điểm nhấn, đỉnh không cao hơn vai quá 6 cm.
@@ -264,7 +264,7 @@ A light decorative shoulder piece pair: curved silver filigree leaf-shaped shoul
 ![phuc_mach_dai_tua](phuc_mach_dai_tua.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1400** · không quad · không rig
-- **Lưu GLB:** `chr/set_phuc_mach_dan_bao/tripo/raw_dai_tua_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_dai_tua_v01.glb`
 - **Xương gắn vào:** hips/spine (đai cứng). Hồ lô và túi neo ở đai
 - **Xương lò xo:** Dải lụa: 1 chuỗi × 5 xương. Hồ lô và túi: 2 chuỗi × 3 xương. Tua: 1 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Đây là mảnh XUYÊN SÁNG thứ hai (dải lụa mỏng) và cũng là mảnh cuối cùng được phép trong suốt cho cả bộ. Hồ lô dựng riêng một phần mesh để dễ gắn xương.
@@ -280,7 +280,7 @@ A pale jade sash belt with a small silver clasp, a long thin silk ribbon tied in
 ![phuc_mach_ung](phuc_mach_ung.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1200** · không quad · không rig
-- **Lưu GLB:** `chr/set_phuc_mach_dan_bao/tripo/raw_ung_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_ung_v01.glb`
 - **Xương gắn vào:** foot L/R, toe L/R, calf L/R (cứng)
 - **Xương lò xo:** Không
 - **Lưu ý khi dựng:** Ủng thấp, nhẹ nhất ba bộ. Không có ống cao.
@@ -296,7 +296,7 @@ A pair of soft ankle-high ivory cloth-and-leather boots with silver trim bands a
 ![phuc_mach_trang_suc_dau](phuc_mach_trang_suc_dau.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **700** · không quad · không rig
-- **Lưu GLB:** `chr/set_phuc_mach_dan_bao/tripo/raw_trang_suc_dau_v01.glb`
+- **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_trang_suc_dau_v01.glb`
 - **Xương gắn vào:** head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện)
 - **Xương lò xo:** Chuỗi hạt: 2 chuỗi × 3 xương. Dải sau: 1 chuỗi × 3 xương mỗi dải
 - **Lưu ý khi dựng:** Chỉ trâm, kẹp và dây; không có đầu hay tóc. Hạt ngọc nhỏ, tổng không quá 12 hạt để giữ tam giác.
@@ -317,7 +317,7 @@ Dạng gốc dùng model #119 có sẵn (`prop_kiem_liet_mach`). Concept này ch
 ![kiem_liet_mach_cuoi](kiem_liet_mach_cuoi.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **4000** · không quad · không rig
-- **Lưu GLB:** `prop/prop_kiem_liet_mach/tripo/raw_cuoi_v01.glb`
+- **Lưu GLB:** `3d/vu-khi/prop_kiem_liet_mach/tripo/raw_cuoi_v01.glb`
 - **Gắn vào:** prop gắn bone `dtl_sword` (xương cầm kiếm); điểm gốc tại giữa chuôi, trục dọc theo lưỡi. Phát sáng là vật liệu riêng
 - **Xương lò xo:** Không
 - **Lưu ý khi dựng:** Tinh thể thể hiện bằng khối đặc tối màu có rãnh vân; KHÔNG dùng trong suốt thật. Vân hổ phách tách thành mặt nạ phát sáng để worker điều khiển. Dạng gốc (#119) vẫn giữ cho +0…+9; dạng cuối thay lúc cường hóa +10.
@@ -331,7 +331,7 @@ A single the final awakened form of an earth-vein sword: a long slender double-e
 ![kiem_liet_mach_vo](kiem_liet_mach_vo.webp)
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1500** · không quad · không rig
-- **Lưu GLB:** `prop/prop_kiem_liet_mach/tripo/raw_vo_v01.glb`
+- **Lưu GLB:** `3d/vu-khi/prop_kiem_liet_mach/tripo/raw_vo_v01.glb`
 - **Gắn vào:** prop gắn ổ cắm lưng (`dtl_scabbard_back`, tạo bởi T-1/T-2); khi rút kiếm thì vỏ ở lại lưng
 - **Xương lò xo:** Dây tua: 1 chuỗi × 3 xương
 - **Lưu ý khi dựng:** Vỏ dài vừa khớp lưỡi dạng gốc (#119), kín hoàn toàn. Cửa vỏ ở ngang vai khi đeo chéo lưng.

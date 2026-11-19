@@ -189,4 +189,4 @@ No text, letters, watermark, circular borders, ink brush ring, cartoon, purple b
 Entire object inside frame. Purple only as a tiny accent under 5%.
 ```
 
-Sinh bằng công cụ ảnh tích hợp Codex, mỗi icon một lần gọi riêng. Phi Kiếm đầu tiên dùng cùng bảng màu/khung/ánh sáng, có núi sương mờ phía sau. PNG gốc ở `<DTL_ASSET_SOURCE>/icons/<id>.png`; atlas 128px/ô phục vụ UI 48–64px. `pnpm icons:build` tái đóng gói; `pnpm icons:check` kiểm atlas và manifest. Trang duyệt trình bày 48px, 64px, 128px.
+Sinh bằng công cụ ảnh tích hợp Codex, mỗi icon một lần gọi riêng. Phi Kiếm đầu tiên dùng cùng bảng màu/khung/ánh sáng, có núi sương mờ phía sau. PNG gốc ở `<DTL_ASSET_SOURCE>/2d/icon/v1/<id>.png`; atlas 128px/ô phục vụ UI 48–64px. `pnpm icons:build` tái đóng gói; `pnpm icons:check` kiểm atlas và manifest. Trang duyệt trình bày 48px, 64px, 128px.

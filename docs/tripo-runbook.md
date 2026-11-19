@@ -40,7 +40,7 @@ File lớn (ảnh concept, GLB thô, GLB rig, animation) nằm **ngoài repo**. 
 
 | Nơi | Đường dẫn | Chứa | Commit? |
 | --- | --- | --- | --- |
-| Thư mục nguồn | `DTL_ASSET_SOURCE`, `../dtl-asset-source/` (đã chốt; thư mục cạnh thư mục repo gốc, không nằm trong repo) | ảnh concept, GLB tải từ Tripo, nhật ký CLI thô | không. Người dùng tự sao lưu (ổ khác hoặc cloud) |
+| Thư mục nguồn | `DTL_ASSET_SOURCE`, `../dtl-asset-source/` (đã chốt; thư mục cạnh thư mục repo gốc, không nằm trong repo) | ảnh concept, GLB tải từ Tripo, nhật ký CLI thô (cây `3d/`, `2d/`, `anim/`, `audio/`… xem `assets/README.md`) | không. Người dùng tự sao lưu (ổ khác hoặc cloud) |
 | Metadata trong repo | `assets/source/<loại>/<asset_id>/meta.json` | prompt, task id, credit, trạng thái | có |
 | Nhật ký đợt CLI | `assets/source/_batches/<YYYY-MM-DD>-<tên-đợt>.json` | báo giá, người duyệt, hạn mức, usage | có |
 | Build | `assets/build/`, `apps/client/public/assets/` | GLB đã tối ưu (M2) | theo pipeline M2 |
@@ -65,7 +65,7 @@ Cấu trúc trong thư mục nguồn (giống hệt cấu trúc `assets/source/`
 
 ## 3. Đặt tên
 
-- **Asset id**: tiền tố loại + tên không dấu `snake_case`, trùng id trong `packages/content` khi có. Tiền tố theo `blender-pipeline`: `chr_` (người), `mon_` (quái), boss dùng id game không thêm tiền tố (ví dụ `boss_kiem_khoi`) nhưng vẫn đặt trong thư mục `mon/`, `prop_` (prop, vũ khí, phi kiếm, đồ rơi). Prop không bắt buộc trùng id vật phẩm (ví dụ `prop_linh_thao` ứng với vật phẩm `itm_linh_thao`); ghi id vật phẩm vào trường `itemId` của `meta.json`. Ví dụ: `chr_de_tu_nam`, `chr_de_tu_nu`, `mon_soi_xam`, `prop_lo_dan`, `prop_linh_thao`, `prop_phi_kiem`.
+- **Asset id**: tiền tố loại + tên không dấu `snake_case`, trùng id trong `packages/content` khi có. Tiền tố theo `blender-pipeline`: `chr_` (người), `mon_` (quái), boss dùng id game không thêm tiền tố (ví dụ `boss_kiem_khoi`) nhưng vẫn đặt trong thư mục `3d/quai`, `prop_` (prop, vũ khí, phi kiếm, đồ rơi). Prop không bắt buộc trùng id vật phẩm (ví dụ `prop_linh_thao` ứng với vật phẩm `itm_linh_thao`); ghi id vật phẩm vào trường `itemId` của `meta.json`. Ví dụ: `chr_de_tu_nam`, `chr_de_tu_nu`, `mon_soi_xam`, `prop_lo_dan`, `prop_linh_thao`, `prop_phi_kiem`.
 - **Thư mục loại**: `chr`, `mon`, `prop`.
 - **Ảnh concept**: `concept_<góc>_v<NN>.png` cho mọi phương án; bản duyệt chép thành `concept_<góc>.png`. Góc: `front`, `left`, `back`, `right`, `34` (3/4 cho prop).
 - **File Tripo**: `raw_v<NN>.glb` (dựng hình), `lowpoly_v<NN>.glb` (lưới đã hạ về Polycount bằng **Retopo** trên web, chưa rig), `rig_v<NN>.glb`, `anim_<clip>_v<NN>.glb` (clip: `idle`, `idle_combat`, `walk`, `run`, `jump`, `hit_light`, `hit_heavy`, `death`, `meditate`, `cast`, `draw`, `sheathe`, `attack` (đòn đánh chính: người chém, quái cắn)). `NN` tăng theo mỗi lần thử, không ghi đè.
@@ -152,10 +152,10 @@ Với **mỗi** prop, chạy đúng lệnh sẽ chạy thật, thêm `--dry-run`
 
 ```bash
 SRC="${DTL_ASSET_SOURCE:-../dtl-asset-source}"   # nên đặt DTL_ASSET_SOURCE thành đường dẫn tuyệt đối
-tripo make "$SRC/prop/prop_lo_dan/concept_34.png" \
+tripo make "$SRC/3d/prop/prop_lo_dan/concept_34.png" \
   --model v3.1 -n 1 \
   -p face_limit=4000 -p smart_low_poly=true -p texture_quality=detailed -p pbr=true \
-  --name prop_lo_dan_v01 -o "$SRC/prop/prop_lo_dan/tripo" \
+  --name prop_lo_dan_v01 -o "$SRC/3d/prop/prop_lo_dan/tripo" \
   --dry-run --json
 ```
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // HOA TRÚC (bước 1): tranh vẽ tĩnh toàn thân theo bộ trang phục cho bảng Nhân vật + nền cảnh giới + lớp kiếm riêng.
-// Ra: <DTL_ASSET_SOURCE>/portrait/hoa_truc/<tên>.png (+ .prompt.txt). Chỉ THÊM file mới (--force để vẽ lại).
+// Ra: <DTL_ASSET_SOURCE>/2d/hoa-truc/hoa_truc/<tên>.png (+ .prompt.txt). Chỉ THÊM file mới (--force để vẽ lại).
 // Dùng: node tools/codex-assets/hoa-truc-gen.mjs [--jobs 3] [--force] [--only a,b]. Codex tích hợp công cụ ảnh; KHÔNG dùng Tripo.
 // Ảnh tham chiếu trang phục: concept nhân vật v3 đã duyệt (set_lac_kiem v3b, set_de_tu v3) để tranh khớp đúng trang phục.
 import fs from 'node:fs';
@@ -50,7 +50,7 @@ for (const o of Object.keys(OUTFIT)) {
     const name = `${o}_${g}`;
     jobsList.push({
       name,
-      ref: path.join(source, 'chr', REF[name]),
+      ref: path.join(source, '3d', 'nhan-vat', REF[name]),
       prompt: `Use case: stylized-concept. ONE full-length character painting for the character sheet of a Chinese cultivation game. Subject: ${WHO[g]}, wearing ${OUTFIT[o]}. Standing relaxed and dignified in a gentle three-quarter pose (body turned slightly to the left of the image, face turned toward the viewer), arms relaxed at the sides with empty hands, NO weapon, NO sword on the back, NO props. Sleeves, sash ends and hair fall naturally with slight ease so cloth areas read clearly. Whole figure from the top of the hair to the soles of the boots inside the frame with 4% margin. Portrait 2:3. Style: ${STYLE}. Background: ${CHROMA}. ${NOTEXT}`,
     });
   }
@@ -78,7 +78,7 @@ for (const [k, d] of Object.entries(SWORD)) {
   });
 }
 
-const dir = path.join(source, 'portrait', 'hoa_truc');
+const dir = path.join(source, '2d', 'hoa-truc', 'hoa_truc');
 fs.mkdirSync(dir, { recursive: true });
 const queue = jobsList.filter((t) => (!only.length || only.includes(t.name)) && (force || !fs.existsSync(path.join(dir, `${t.name}.png`))));
 console.log(`${queue.length}/${jobsList.length} ảnh, ${jobs} luồng → ${dir}`);

@@ -7,8 +7,8 @@
   font:
     13px/1.45 system-ui,
     sans-serif;
-  color: #e7e3d8;
-  background: #1b2128;
+  color: var(--u-x-he7e3d8);
+  background: var(--u-x-h1b2128);
 }
 .viewer-host {
   position: relative;
@@ -25,13 +25,13 @@
   width: 340px;
   overflow-y: auto;
   padding: 14px 16px;
-  background: rgba(20, 26, 33, 0.96);
-  border-left: 1px solid #3a4450;
+  background: var(--u-x-rgba-20-26-33-0-96);
+  border-left: 1px solid var(--u-x-h3a4450);
 }
 .viewer-panel h1 {
   margin: 0 0 10px;
   font-size: 17px;
-  color: #d8b36a;
+  color: var(--u-x-hd8b36a);
 }
 .viewer-panel h2 {
   margin: 14px 0 6px;
@@ -43,7 +43,7 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #9fb0bf;
+  color: var(--u-x-h9fb0bf);
 }
 .viewer-panel dl {
   display: grid;
@@ -52,7 +52,7 @@
   margin: 0;
 }
 .viewer-panel dt {
-  color: #9fb0bf;
+  color: var(--u-x-h9fb0bf);
 }
 .viewer-panel dd {
   margin: 0;
@@ -62,7 +62,7 @@
 }
 .viewer-big {
   font-weight: 600;
-  color: #fff;
+  color: var(--u-x-hfff);
 }
 .viewer-ext {
   font-size: 11px;
@@ -72,9 +72,9 @@
 .viewer-file {
   display: inline-block;
   padding: 6px 12px;
-  border: 1px solid #d8b36a;
+  border: 1px solid var(--u-x-hd8b36a);
   border-radius: 4px;
-  color: #d8b36a;
+  color: var(--u-x-hd8b36a);
   cursor: pointer;
 }
 .viewer-file input {
@@ -83,13 +83,13 @@
 .viewer-hint {
   margin: 6px 0;
   font-size: 12px;
-  color: #8592a0;
+  color: var(--u-x-h8592a0);
 }
 .viewer-status {
-  color: #bfe8ff;
+  color: var(--u-x-hbfe8ff);
 }
 .viewer-error {
-  color: #ff8a7a;
+  color: var(--u-x-hff8a7a);
   word-break: break-word;
 }
 .viewer-tex {
@@ -100,7 +100,7 @@
 }
 .viewer-tex td {
   padding: 2px 4px;
-  border-bottom: 1px solid #2c3540;
+  border-bottom: 1px solid var(--u-x-h2c3540);
 }
 .viewer-tex td:first-child {
   max-width: 110px;
@@ -122,9 +122,9 @@
 }
 .viewer-panel select,
 .viewer-panel button {
-  background: #26303a;
-  color: #e7e3d8;
-  border: 1px solid #3a4450;
+  background: var(--u-x-h26303a);
+  color: var(--u-x-he7e3d8);
+  border: 1px solid var(--u-x-h3a4450);
   border-radius: 3px;
   padding: 3px 6px;
 }
@@ -137,7 +137,7 @@
   margin-top: 14px;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
-  color: #bfe8ff;
+  color: var(--u-x-hbfe8ff);
 }
 
 /* Trang xem chiêu (?show=skill) */
@@ -160,19 +160,19 @@
   top: 0;
   width: 1px;
   height: 10px;
-  background: #d8b36a;
+  background: var(--u-x-hd8b36a);
 }
 .skill-marks b {
   position: absolute;
   top: 6px;
   height: 4px;
-  background: rgba(216, 90, 70, 0.8);
+  background: var(--u-x-rgba-216-90-70-0-8);
 }
 .skill-probe {
   margin: 0;
   padding: 6px 8px;
-  background: #11161c;
-  border: 1px solid #3a4450;
+  background: var(--u-x-h11161c);
+  border: 1px solid var(--u-x-h3a4450);
   font:
     12px/1.5 ui-monospace,
     Consolas,

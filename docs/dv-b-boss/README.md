@@ -11,7 +11,7 @@ Gói DV-B của `docs/DIVUC_DESIGN.md` (chương 5, Bắc Hoang Dị Vực). M�
 | Giấy phép | CC BY 4.0 (đọc từ `asset.extras` trong GLB) |
 | Nguồn | https://sketchfab.com/3d-models/gorethrax-the-infernal-three-headed-hound-90f3e2338d6f41b8a94f376fbc3db3e4 |
 | Đã chỉnh sửa | giảm lưới, trải UV, nướng lại texture, dựng xương + trọng số, thêm clip |
-| File gốc | `../dtl-asset-source/boss/boss_tam_thu_nguc_khuyen/online/source.glb` (bản chép, không sửa `assets-online/`) |
+| File gốc | `../dtl-asset-source/3d/boss/boss_tam_thu_nguc_khuyen/online/source.glb` (bản chép, không sửa `assets-online/`) |
 
 Ghi công ở ba nơi: `assets/source/mon/boss_tam_thu_nguc_khuyen/meta.json` (`license.spdx`, `owner`, `url`), `assets/LICENSES.md`, và file này. **Chưa có màn Ghi công trong game** (gói DV1-B): cần xong trước khi boss này vào bản chơi chung với bạn bè.
 
@@ -27,7 +27,7 @@ pnpm assets:validate --only boss_tam_thu_nguc_khuyen
 1. **`tools/blender/sculpt_rig.py`** (mới), cấu hình ở khối `sculpt` của `meta.json`:
    - `--stage mesh`: gộp 9 mesh, Decimate (collapse) 979.664 → 36.000 tam giác, bỏ mảnh rời nhỏ, Smart UV Project, nướng Cycles từ lưới gốc sang lưới thấp: base color và ORM bằng pass EMIT (pass DIFFUSE ra màu đen với vật liệu kim loại), normal bằng pass NORMAL (gồm cả normal map gốc). Texture gốc chỉ 1024², nướng ra 2048² rồi `import_tripo.py` hạ về ngân sách lớp boss (màu 1536², dữ liệu 1024²). Map phát sáng tách từ phần đỏ rực của base color (khe nứt, mắt, đuôi lửa: 3,1% điểm ảnh) vì nguồn không có map phát sáng. Màu/ORM/phát sáng lưu JPEG, normal PNG. Kết quả giữ ở `assets/build/sculpt/<id>_low.blend`.
    - `--stage rig`: xoay `yaw` −14,4° (bản điêu khắc đứng chéo), dựng 28 xương theo `sculpt.bones` (tọa độ đọc từ ảnh chiếu trực giao có lưới 0,1), trọng số theo khoảng cách tới đoạn xương (tối đa 4 xương, làm mượt theo cạnh 3 vòng). `sculpt.limit` khai chuỗi hàng xóm để đỉnh đầu trái không ăn cổ giữa, bàn chân trước không ăn chân sau. Không dùng Automatic Weights của Blender (lưới nhiều mảnh xuyên nhau, heat solve hay hỏng).
-   - Xuất `../dtl-asset-source/boss/<id>/rig/rig_v01.glb`: từ đây đi đường nhập `import.kind: "external"` (model nguồn ngoài, cùng bước chuẩn hóa `import_tripo.py`, bắt buộc có `license.spdx` + `license.url`).
+   - Xuất `../dtl-asset-source/3d/boss/<id>/rig/rig_v01.glb`: từ đây đi đường nhập `import.kind: "external"` (model nguồn ngoài, cùng bước chuẩn hóa `import_tripo.py`, bắt buộc có `license.spdx` + `license.url`).
 2. **`tools/blender/anim_quadruped.py`** (mở rộng, hành vi của quái cũ không đổi):
    - Rig đã mang tên vai trò (`spine_0`, `leg_fl_0`…) thì bỏ bước đổi tên (`layout: named`).
    - `import.quadruped.heads`: cổ/đầu phụ mượn góc của cổ/đầu chính, nhân hệ số (`z` âm = soi gương), nên mọi clip cũ tự chạy cho cả ba đầu.

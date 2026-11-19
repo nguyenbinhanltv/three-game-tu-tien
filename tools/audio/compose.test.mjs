@@ -1,5 +1,5 @@
 // Test nhạc tự soạn: thư viện soạn (compose/lib.mjs), giới hạn đỉnh vòng tròn (loopcore.limitPeaks), render vòng lặp
-// (compose/render.mjs, cần soundfont ở <DTL_ASSET_SOURCE>/audio/sf2/, thiếu thì bỏ qua) và mọi bài compose khai báo
+// (compose/render.mjs, cần soundfont ở <DTL_ASSET_SOURCE>/audio/nhac/sf2/, thiếu thì bỏ qua) và mọi bài compose khai báo
 // trong music.json đều nạp được, đúng cấu trúc tối thiểu.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

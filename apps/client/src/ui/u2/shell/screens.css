@@ -14,8 +14,8 @@
   box-shadow:
     0 0 0 1px var(--u-h-gold),
     inset 0 0 0 3px var(--u-h-ivory),
-    inset 0 0 0 4px rgba(201, 164, 92, 0.75),
-    0 18px 50px rgba(20, 30, 36, 0.35);
+    inset 0 0 0 4px var(--u-x-rgba-201-164-92-0-75),
+    0 18px 50px var(--u-x-rgba-20-30-36-0-35);
   backdrop-filter: none;
   color: var(--u-h-ink);
   width: min(92vw, 460px);
@@ -43,7 +43,7 @@
   right: -5px;
 }
 :root:root .ts-card.ngj-card.ts-loading {
-  background: url('./tex/paper.webp') rgba(237, 227, 204, 0.9);
+  background: url('./tex/paper.webp') var(--u-x-rgba-237-227-204-0-9);
   background-blend-mode: multiply;
 }
 @media (max-height: 800px) {
@@ -58,18 +58,18 @@
 :root:root .ngj-card .login-form label {
   font-family: var(--u-p-font-serif, Georgia, serif);
   font-weight: 700;
-  color: #6b4d1c;
+  color: var(--u-gold-ink);
   letter-spacing: 0.03em;
 }
 :root:root .ngj-card .login-form input {
-  background: rgba(255, 250, 235, 0.8);
+  background: var(--u-x-rgba-255-250-235-0-8);
   border: 1px solid var(--u-h-gold);
   border-radius: 3px;
   color: var(--u-h-ink);
 }
 :root:root .ngj-card .login-form input:focus {
   border-color: var(--u-h-jade);
-  box-shadow: 0 0 0 2px rgba(62, 156, 143, 0.25);
+  box-shadow: 0 0 0 2px var(--u-x-rgba-62-156-143-0-25);
 }
 :root:root .ngj-card .login-hint,
 :root:root .ngj-card .look-name,
@@ -77,7 +77,7 @@
   color: var(--u-h-ink-dim);
 }
 :root:root .ngj-card .login-error {
-  color: #8f2a21;
+  color: var(--u-bad-ink);
 }
 
 /* nút chính: vàng sơn, góc vát, như NgjButton primary */
@@ -87,10 +87,10 @@
   font-family: var(--u-p-font-serif, Georgia, serif);
   font-weight: 700;
   letter-spacing: 0.04em;
-  background: linear-gradient(180deg, #f0d78e, #c9a45c 55%, #a47f3a);
+  background: linear-gradient(180deg, var(--u-h-gold-hi), var(--u-h-gold) 55%, var(--u-x-ha47f3a));
   box-shadow:
-    inset 0 0 0 1px rgba(255, 244, 210, 0.7),
-    inset 0 -2px 0 rgba(122, 95, 44, 0.6);
+    inset 0 0 0 1px var(--u-x-rgba-255-244-210-0-7),
+    inset 0 -2px 0 var(--u-x-rgba-122-95-44-0-6);
   clip-path: polygon(
     8px 0,
     calc(100% - 8px) 0,
@@ -120,9 +120,9 @@
   justify-items: center;
   padding: 0 0 6px;
   overflow: hidden;
-  border: 2px solid rgba(164, 127, 58, 0.7);
+  border: 2px solid var(--u-x-rgba-164-127-58-0-7);
   border-radius: 8px;
-  background: rgba(255, 250, 235, 0.55);
+  background: var(--u-card);
   color: var(--u-h-ink);
   font-family: var(--u-p-font-serif, Georgia, serif);
   font-weight: 700;
@@ -138,10 +138,10 @@
 }
 :root:root .ngj-card .look-gender.sel {
   border-color: var(--u-h-jade);
-  background: rgba(62, 156, 143, 0.16);
+  background: var(--u-x-rgba-62-156-143-0-16);
   box-shadow:
-    0 0 0 2px rgba(62, 156, 143, 0.35),
-    0 0 14px rgba(62, 156, 143, 0.35);
+    0 0 0 2px var(--u-x-rgba-62-156-143-0-35),
+    0 0 14px var(--u-x-rgba-62-156-143-0-35);
 }
 :root:root .ngj-card .look-gender.sel .look-face {
   filter: none;
@@ -161,10 +161,10 @@
   position: relative;
   height: 12px;
   margin: 6px 10px 0;
-  background: #120d0a;
+  background: var(--u-x-h120d0a);
   border: 1.5px solid var(--u-h-gold);
   border-radius: 3px;
-  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 2px 3px var(--u-x-rgba-0-0-0-0-6);
   overflow: visible;
 }
 :root:root .ngj-card .ts-bar-fill {
@@ -192,7 +192,7 @@
   height: 10px;
   margin-top: -5px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #d6fff4, var(--u-h-jade) 65%, var(--u-h-jade-lo));
+  background: radial-gradient(circle at 35% 30%, var(--u-x-hd6fff4), var(--u-h-jade) 65%, var(--u-h-jade-lo));
   box-shadow: 0 0 0 1px var(--u-h-gold);
 }
 :root:root .ngj-card .ts-line {
@@ -202,7 +202,7 @@
 
 /* ───────── băng chuyền chọn công pháp ───────── */
 .ngj-car {
-  --mc: #c9a45c;
+  --mc: var(--u-h-gold);
   position: fixed;
   inset: 0;
   z-index: 90;
@@ -211,7 +211,7 @@
   grid-template-rows: auto 1fr auto;
   color: var(--u-h-ivory);
   font-family: var(--u-h-font-body);
-  background: radial-gradient(ellipse at 45% 55%, #2c2119 0%, #1e1712 55%, #120d0a 100%);
+  background: radial-gradient(ellipse at 45% 55%, var(--u-x-h2c2119) 0%, var(--u-h-lacquer) 55%, var(--u-x-h120d0a) 100%);
   animation: ngj-car-in 0.3s var(--u-ease) both;
   overflow: hidden;
 }
@@ -232,7 +232,7 @@
   position: absolute;
   left: 0;
   top: 0;
-  border: 1px solid rgba(201, 164, 92, 0.32);
+  border: 1px solid var(--u-x-rgba-201-164-92-0-32);
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
@@ -244,18 +244,18 @@
   width: 78vmin;
   height: 78vmin;
   border-style: dashed;
-  border-color: rgba(201, 164, 92, 0.22);
+  border-color: var(--u-x-rgba-201-164-92-0-22);
   animation: ngj-spin 90s linear infinite;
 }
 .ngj-car-rings i:nth-child(3) {
   width: 108vmin;
   height: 108vmin;
-  border-color: rgba(201, 164, 92, 0.2);
+  border-color: var(--u-x-rgba-201-164-92-0-2);
 }
 .ngj-car-rings i:nth-child(4) {
   width: 142vmin;
   height: 142vmin;
-  border-color: rgba(201, 164, 92, 0.14);
+  border-color: var(--u-x-rgba-201-164-92-0-14);
 }
 @keyframes ngj-spin {
   to {
@@ -277,9 +277,9 @@
   color: var(--u-h-gold-hi);
   border: 1px solid var(--u-h-gold);
   box-shadow:
-    inset 0 0 0 3px #1e1712,
-    inset 0 0 0 4px rgba(201, 164, 92, 0.55);
-  background: rgba(30, 23, 18, 0.9);
+    inset 0 0 0 3px var(--u-h-lacquer),
+    inset 0 0 0 4px var(--u-x-rgba-201-164-92-0-55);
+  background: var(--u-x-rgba-30-23-18-0-9);
   clip-path: polygon(
     14px 0,
     calc(100% - 14px) 0,
@@ -299,14 +299,14 @@
   height: 38px;
   border-radius: 50%;
   border: 1px solid var(--u-h-gold);
-  background: rgba(30, 23, 18, 0.9);
+  background: var(--u-x-rgba-30-23-18-0-9);
   color: var(--u-h-gold-hi);
   font-size: 22px;
   cursor: pointer;
   z-index: 3;
 }
 .ngj-car-close:hover {
-  background: rgba(201, 164, 92, 0.2);
+  background: var(--u-x-rgba-201-164-92-0-2);
 }
 .ngj-car-seal {
   position: absolute;
@@ -315,11 +315,11 @@
   z-index: 2;
   color: var(--u-h-gold);
   padding: 12px 10px;
-  border: 1px solid rgba(201, 164, 92, 0.7);
-  background: rgba(30, 23, 18, 0.75);
+  border: 1px solid var(--u-x-rgba-201-164-92-0-7);
+  background: var(--u-x-rgba-30-23-18-0-75);
   box-shadow:
-    inset 0 0 0 3px #1e1712,
-    inset 0 0 0 4px rgba(201, 164, 92, 0.4);
+    inset 0 0 0 3px var(--u-h-lacquer),
+    inset 0 0 0 4px var(--u-x-rgba-201-164-92-0-4);
 }
 .ngj-car-rail {
   grid-column: 1;
@@ -336,7 +336,7 @@
   padding: 8px 0;
   border: 0;
   background: transparent;
-  color: rgba(237, 227, 204, 0.5);
+  color: var(--u-x-rgba-237-227-204-0-5);
   font: 600 17px var(--u-p-font-serif, Georgia, serif);
   letter-spacing: 0.1em;
   cursor: pointer;
@@ -371,15 +371,15 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(201, 164, 92, 0.6);
-  background: rgba(30, 23, 18, 0.8);
+  border: 1px solid var(--u-x-rgba-201-164-92-0-6);
+  background: var(--u-x-rgba-30-23-18-0-8);
   color: var(--u-h-gold-hi);
   font-size: 26px;
   line-height: 1;
   cursor: pointer;
 }
 .ngj-car-arrow:hover {
-  background: rgba(201, 164, 92, 0.2);
+  background: var(--u-x-rgba-201-164-92-0-2);
 }
 .ngj-car-card {
   position: relative;
@@ -394,7 +394,7 @@
   border: 0;
   cursor: pointer;
   color: var(--u-h-ivory);
-  background: linear-gradient(180deg, #4a3a22, #2a2014 70%);
+  background: linear-gradient(180deg, var(--u-x-h4a3a22), var(--u-x-h2a2014) 70%);
   clip-path: polygon(
     14px 0,
     calc(100% - 14px) 0,
@@ -416,7 +416,7 @@
   position: absolute;
   inset: 3px;
   clip-path: inherit;
-  background: radial-gradient(circle at 50% 30%, #3b2d21, #1a130e 80%);
+  background: radial-gradient(circle at 50% 30%, var(--u-x-h3b2d21), var(--u-x-h1a130e) 80%);
 }
 .ngj-car-card > * {
   position: relative;
@@ -428,7 +428,7 @@
   opacity: 1;
   filter: none;
   cursor: default;
-  background: linear-gradient(180deg, #f0d78e, #a47f3a);
+  background: linear-gradient(180deg, var(--u-h-gold-hi), var(--u-x-ha47f3a));
   animation: ngj-car-pop var(--u-dur-open) var(--u-ease) both;
 }
 /* thẻ đang chọn: ruột giấy ngà tường vân, chữ mực (như mockup) */
@@ -441,24 +441,24 @@
   content: '';
   position: absolute;
   inset: 9px;
-  border: 1px solid rgba(164, 127, 58, 0.7);
+  border: 1px solid var(--u-x-rgba-164-127-58-0-7);
   clip-path: inherit;
   pointer-events: none;
   z-index: 1;
 }
 .ngj-car-card[data-pos='cur'] .ngj-car-card-name {
-  color: #6b4d1c;
+  color: var(--u-gold-ink);
   font-size: clamp(16px, 2.2vmin, 26px);
 }
 .ngj-car-card[data-pos='cur'] .ngj-car-card-role {
   color: var(--u-h-ink-dim);
 }
 .ngj-car-card[data-pos='cur'] .ngj-car-card-emblem {
-  background: radial-gradient(circle, rgba(255, 250, 235, 0.9), rgba(62, 156, 143, 0.12));
+  background: radial-gradient(circle, var(--u-x-rgba-255-250-235-0-9), var(--u-x-rgba-62-156-143-0-12));
   border-color: var(--u-h-jade);
 }
 .ngj-car-card[data-pos='cur'] .ngj-car-card-emblem .content-icon {
-  filter: drop-shadow(0 1px 2px rgba(30, 23, 18, 0.5));
+  filter: drop-shadow(0 1px 2px var(--u-x-rgba-30-23-18-0-5));
 }
 .ngj-car-stage:has(.ngj-car-card[data-pos='cur']) {
   filter: drop-shadow(0 0 26px color-mix(in srgb, var(--mc) 45%, transparent));
@@ -493,7 +493,7 @@
 }
 .ngj-car-card-role {
   font-size: clamp(11px, 1.3vmin, 14px);
-  color: rgba(237, 227, 204, 0.7);
+  color: var(--u-x-rgba-237-227-204-0-7);
 }
 .ngj-car-tag {
   position: absolute !important;
@@ -511,11 +511,11 @@
   align-self: center;
   margin-right: 36px;
   padding: 22px 24px 24px;
-  background: rgba(30, 23, 18, 0.9);
+  background: var(--u-x-rgba-30-23-18-0-9);
   border: 1px solid var(--u-h-gold);
   box-shadow:
-    inset 0 0 0 3px rgba(30, 23, 18, 0.9),
-    inset 0 0 0 4px rgba(201, 164, 92, 0.5);
+    inset 0 0 0 3px var(--u-x-rgba-30-23-18-0-9),
+    inset 0 0 0 4px var(--u-x-rgba-201-164-92-0-5);
   z-index: 2;
   display: flex;
   flex-direction: column;
@@ -528,7 +528,7 @@
   letter-spacing: 0.05em;
 }
 .ngj-car-role {
-  color: color-mix(in srgb, var(--mc) 60%, #ede3cc);
+  color: color-mix(in srgb, var(--mc) 60%, var(--u-h-ivory));
   font-size: 13px;
   letter-spacing: 0.08em;
 }
@@ -536,7 +536,7 @@
   margin: 0;
   font-size: 13.5px;
   line-height: 1.55;
-  color: rgba(237, 227, 204, 0.88);
+  color: var(--u-x-rgba-237-227-204-0-88);
 }
 .ngj-car-passive b {
   color: var(--u-h-gold-hi);
@@ -557,7 +557,7 @@
   text-align: center;
   padding: 0 0 22px;
   font-size: 12.5px;
-  color: rgba(237, 227, 204, 0.5);
+  color: var(--u-x-rgba-237-227-204-0-5);
   letter-spacing: 0.06em;
   position: relative;
   z-index: 2;
@@ -584,18 +584,18 @@
   width: 40vmin;
   height: 40vmin;
   border-radius: 50%;
-  border: 3px solid rgba(255, 236, 170, 0.95);
+  border: 3px solid var(--u-x-rgba-255-236-170-0-95);
   box-shadow:
-    0 0 30px 4px rgba(240, 215, 142, 0.7),
-    inset 0 0 30px rgba(240, 215, 142, 0.35);
+    0 0 30px 4px var(--u-x-rgba-240-215-142-0-7),
+    inset 0 0 30px var(--u-x-rgba-240-215-142-0-35);
   transform: translate(-50%, -50%) scale(0.1);
   opacity: 0;
   animation: ngj-ring var(--dur, 3000ms) cubic-bezier(0.15, 0.6, 0.25, 1) forwards;
 }
 .ngj-sweep-ring.r2 {
   animation-delay: 0.35s;
-  border-color: rgba(127, 227, 208, 0.8);
-  box-shadow: 0 0 22px rgba(127, 227, 208, 0.45);
+  border-color: var(--u-x-rgba-127-227-208-0-8);
+  box-shadow: 0 0 22px var(--u-x-rgba-127-227-208-0-45);
 }
 .ngj-sweep-ring.r3 {
   animation-delay: 0.7s;
@@ -624,14 +624,14 @@
 }
 .ngj-sweep-crack path {
   fill: none;
-  stroke: #fff4d2;
+  stroke: var(--u-x-hfff4d2);
   stroke-width: 1.1;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   opacity: 0;
-  filter: drop-shadow(0 0 1.2px #f0d78e) drop-shadow(0 0 3px #c9a45c);
+  filter: drop-shadow(0 0 1.2px var(--u-h-gold-hi)) drop-shadow(0 0 3px var(--u-h-gold));
   animation: ngj-crack calc(var(--dur, 3000ms) * 0.7) ease-out forwards;
 }
 @keyframes ngj-crack {
@@ -658,7 +658,7 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: radial-gradient(circle, #fff4d2, #f0d78e 60%, transparent);
+  background: radial-gradient(circle, var(--u-x-hfff4d2), var(--u-h-gold-hi) 60%, transparent);
   opacity: 0;
   transform: translate(-50%, -50%);
   animation: ngj-mote calc(var(--dur, 3000ms) * 0.8) ease-out forwards;

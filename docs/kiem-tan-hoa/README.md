@@ -7,7 +7,7 @@ Asset kiếm cho boss chương 5 **Tẫn Hỏa Kiếm Cơ** (quyết định ng�
 - "Sword of Miracle Free" của **Art_workshop** (https://sketchfab.com/art_workshop), https://sketchfab.com/3d-models/sword-of-miracle-free-a163029fb3d74626bbb1711bd8840c46
 - Giấy phép: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Dòng ghi công nằm ở `assets/LICENSES.md` và `assets/source/prop/prop_kiem_tan_hoa/meta.json` (`license.spdx`, `license.url`). Nếu sau này game có màn ghi công, phải đưa dòng này vào.
 - Đã sửa so với bản gốc: gộp lưới, bỏ hai lưới ngọc trong suốt, giảm tam giác, hạ texture, bỏ map kim loại.
-- File gốc (8,7 MB) ở `../dtl-asset-source/prop/prop_kiem_tan_hoa/sketchfab/sword_of_miracle_free.glb`, không commit.
+- File gốc (8,7 MB) ở `../dtl-asset-source/3d/vu-khi/prop_kiem_tan_hoa/sketchfab/sword_of_miracle_free.glb`, không commit.
 
 ## Số đo
 

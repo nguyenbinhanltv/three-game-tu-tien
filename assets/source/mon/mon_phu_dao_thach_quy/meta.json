@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/mon_phu_dao_thach_quy/tripo/rig_v01.glb",
+    "source": "3d/quai/mon_phu_dao_thach_quy/tripo/rig_v01.glb",
     "size": {
       "depth": 2.6
     },

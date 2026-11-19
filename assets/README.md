@@ -6,7 +6,7 @@ Nơi chứa dữ liệu nhẹ về asset 3D và cấu hình pipeline. File ngu�
 
 | Đường dẫn | Chứa | Commit? |
 | --- | --- | --- |
-| `DTL_ASSET_SOURCE` = `../dtl-asset-source/` (cạnh thư mục repo gốc, đã chốt) | ảnh concept, GLB tải từ Tripo, `.blend`, nhật ký CLI thô. Cấu trúc giống `assets/source/` | không, người dùng tự sao lưu |
+| `DTL_ASSET_SOURCE` = `../dtl-asset-source/` (cạnh thư mục repo gốc, đã chốt) | ảnh concept, GLB tải từ Tripo, `.blend`, nhật ký CLI thô. Cây (dọn 2026-11-19, ASSET-CLEAN): `3d/{nhan-vat,quai,boss,vu-khi,kien-truc,prop,skin}/<asset_id>/{concept,tripo,rig,prep,online}`, `2d/{icon,chan-dung,hoa-truc,concept,ui,nen}`, `anim/`, `audio/{nhac,sfx}`, `vfx/goc/`, `texture/`, `tools/`. Mỗi thư mục cấp 2 có `README.md`, gốc có `LICENSES.md`; nhật ký sắp xếp `_nhat-ky-sap-xep.csv` + `hoan-tac.mjs`; file loại bỏ ở `../dtl-asset-source-luu-tru/` | không, người dùng tự sao lưu |
 | `assets/source/<loại>/<asset_id>/meta.json` | hồ sơ asset theo [`meta.schema.json`](meta.schema.json): concept, các lần sinh Tripo, credit, giấy phép | có |
 | `assets/source/_batches/*.json` | nhật ký đợt Tripo CLI (`docs/tripo-runbook.md` mục 5.5) | có |
 | `assets/build/raw/<asset_id>.glb` | **đầu vào pipeline**: GLB thô do Blender xuất (`tools/blender/run.mjs`): script thủ tục hoặc `import_tripo.py` chuẩn hóa GLB Tripo | không (sinh lại được) |
@@ -59,7 +59,7 @@ GLB Tripo cao đúng 1 m, gốc ở tâm khối, mặt trước thường nhìn 
 ```json
 "import": {
   "kind": "tripo",
-  "source": "prop/prop_lo_dan/tripo/raw_v01.glb",
+  "source": "3d/prop/prop_lo_dan/tripo/raw_v01.glb",
   "size": { "height": 1.2 },
   "yaw": -90,
   "sockets": [{ "name": "socket_fx_top", "position": [0, 1.22, 0] }]
@@ -114,7 +114,7 @@ Sau đó chạy subagent `asset-validator` để soát bằng mắt những gì 
 
 SFX và âm môi trường không đi qua pipeline GLB mà qua `pnpm audio:build` (`tools/audio/build.mjs`):
 
-- Khai báo trong `tools/audio/sounds.json`: gói nguồn (thư mục trong `../dtl-asset-source/sfx/`, tác giả, link, giấy phép; **chỉ nhận CC0-1.0**), từng âm với các biến thể (âm combat 3 biến thể, có thể trộn nhiều lớp, đổi tốc độ, cắt đoạn), nhóm sprite, bus, ducking.
+- Khai báo trong `tools/audio/sounds.json`: gói nguồn (thư mục trong `../dtl-asset-source/audio/sfx/`, tác giả, link, giấy phép; **chỉ nhận CC0-1.0**), từng âm với các biến thể (âm combat 3 biến thể, có thể trộn nhiều lớp, đổi tốc độ, cắt đoạn), nhóm sprite, bus, ducking.
 - Xử lý: giải mã 48 kHz, cắt lặng, chuẩn hóa theo RMS đoạn to nhất (đỉnh ≤ -1 dBFS), ghép sprite theo nhóm; mã hóa WebM/Opus (48 kbps) và M4A/AAC dự phòng cho Safari; tên file theo hash nội dung. Kết quả xác định nên build lại không làm đổi byte.
 - Âm môi trường: chồng lớp lặp ở nhiều tốc độ, đường bao âm lượng ngẫu nhiên có seed, nối vòng bằng crossfade; dài 40–60 giây. Lệnh in chỉ số điểm nối và độ lặp chu kỳ để soát.
 - Đầu ra: `apps/client/public/audio/sfx/`, `amb/`, `manifest.json` (giữ nguyên mục `music`), và khối giữa `<!-- audio:begin -->`…`<!-- audio:end -->` trong `LICENSES.md`.

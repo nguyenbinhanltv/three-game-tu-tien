@@ -43,6 +43,14 @@ const VIEWS: Record<string, View[]> = {
     { name: '05-kiem-tran', at: [0, 6], look: [0, -1], pitch: 0.5, dist: 30 },
     { name: '06-vanh-cu-kiem', at: [40, 40], look: [0.6, -0.8], pitch: 0.04, dist: 8 },
   ],
+  than_tang: [
+    { name: '01-vao', at: [0, 64], look: [0, -1], pitch: 0.18, dist: 12 },
+    { name: '02-toan-canh', at: [0, 40], look: [0, -1], pitch: 0.55, dist: 80 },
+    { name: '03-mat-na-bac', at: [0, 16], look: [0, -1], pitch: 0.1, dist: 10 },
+    { name: '04-cua-phong-an', at: [-34, 0], look: [-0.94, -0.34], pitch: 0.1, dist: 10 },
+    { name: '05-san-vang', at: [0, 6], look: [0, -1], pitch: 0.5, dist: 30 },
+    { name: '06-tuong-da', at: [30, 36], look: [0.7, -0.7], pitch: 0.18, dist: 8 },
+  ],
   kinh_nguyet: [
     { name: '01-vao', at: [0, 64], look: [0, -1], pitch: 0.18, dist: 12 },
     { name: '02-toan-canh', at: [0, 40], look: [0, -1], pitch: 0.55, dist: 80 },

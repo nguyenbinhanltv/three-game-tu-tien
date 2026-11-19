@@ -10,8 +10,8 @@
     "texture": 1024
   },
   "sculpt": {
-    "source": "mon/mon_u_anh_cot_loc/online/source.glb",
-    "out": "mon/mon_u_anh_cot_loc/rig/rig_v01.glb",
+    "source": "3d/quai/mon_u_anh_cot_loc/online/source.glb",
+    "out": "3d/quai/mon_u_anh_cot_loc/rig/rig_v01.glb",
     "yaw": 0,
     "faces": 9000,
     "texture": 2048,
@@ -359,7 +359,7 @@
   },
   "import": {
     "kind": "external",
-    "source": "mon/mon_u_anh_cot_loc/rig/rig_v01.glb",
+    "source": "3d/quai/mon_u_anh_cot_loc/rig/rig_v01.glb",
     "size": {
       "height": 2.6
     },

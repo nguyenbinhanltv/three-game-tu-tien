@@ -27,7 +27,7 @@ và mục `hires` trong `manifest.json` (`mat`, `slots`, `file`, `width`, `bytes
 - `assets:build` ghi lại manifest và làm mất mục `hires`: chạy lại `pnpm assets:hires`.
 
 ## HIRES-2: bản 4096 cho boss — không làm được (đo 2026-11-19)
-Đã đo texture gốc (màu/normal/ORM) của 12 boss trong `../dtl-asset-source/boss/*` (`tripo/raw_v01.glb`, riêng `boss_tam_thu_nguc_khuyen` là `rig/rig_v01.glb` và `online/source.glb`).
+Đã đo texture gốc (màu/normal/ORM) của 12 boss trong `../dtl-asset-source/3d/boss/*` (`tripo/raw_v01.glb`, riêng `boss_tam_thu_nguc_khuyen` là `rig/rig_v01.glb` và `online/source.glb`).
 **Không boss nào có nguồn 4096**: 11 boss màu/normal/ORM đều 2048², `boss_tam_thu_nguc_khuyen` màu 2048² (rig) hoặc 1024² (online). Bản hires 2048 hiện có đã là cỡ nguồn.
 Theo quy tắc không upscale giả chi tiết, **bỏ qua cả 12 boss**; không thêm tệp nào, không đổi manifest/client. 3 boss `boss_mq` (`boss_kim_da_ma_hau`, `boss_tan_hoa_kiem_co`, `boss_thu_khich_duc_chu`) không có nguồn ngoài nên không có hires.
 Muốn có 4096 phải tạo lại boss ở độ phân giải cao hơn từ Tripo (tạo lại/tinh chỉnh texture 4K) rồi thêm nguồn vào `dtl-asset-source`; khi đó còn phải nâng trần cho boss trong `hiresSide` (hiện `min(textureLimit × 2, HIRES_MAX_COLOR, srcSide)` chặn boss ở 2× ngân sách lớp = 2048, nên có nguồn 4096 `assets:hires` vẫn ra 2048; bỏ/đổi hệ số ×2 hoặc thêm bậc 4096 riêng), cộng bậc 4096 riêng cạnh bậc 2048 trong manifest/`policy.ts` Cực cao (ngân sách ước +19 MB).

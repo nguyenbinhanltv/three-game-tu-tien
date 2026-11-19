@@ -18,7 +18,7 @@ Kiểu `wind` mới nằm trong `warmKinds`, không gộp instanced (như `trail
 
 ## Âm thanh (CC0, gói `elem` trong `tools/audio/sounds.json`)
 
-20 file WAV từ sampler của SquigglyFish chép vào `<dtl-asset-source>/sfx/godot-elemental-sampler/` (kho nguồn, không commit), đóng vào sprite `sfx_magic`:
+20 file WAV từ sampler của SquigglyFish chép vào `<dtl-asset-source>/audio/sfx/godot-elemental-sampler/` (kho nguồn, không commit), đóng vào sprite `sfx_magic`:
 
 - `thunder` (sét của quái, Lôi Đình Nhất Kiếm, thiên lôi độ kiếp qua hazard `lightning`): thêm ba biến thể `lightning_strike` chồng lớp với sấm có sẵn.
 - `loi_cast`: `lightning_cast`, gắn vào `skl_loi_dinh_nhat_kiem` (sự kiện `sound`).

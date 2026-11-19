@@ -29,7 +29,7 @@ const items = build3();
 const docDir = path.join(root, 'docs/outfit-concepts-p2');
 const imgDir = path.join(docDir, 'img');
 fs.mkdirSync(imgDir, { recursive: true });
-const srcImgDir = path.join(source, '2d/outfit3');
+const srcImgDir = path.join(source, '2d/concept/outfit3');
 const PIECES = ['ao_ngoai', 'lop_duoi', 'vai_giap', 'dai_tua', 'ung', 'trang_suc_dau'];
 const SOLID = new Set(['lop_duoi', 'vai_giap', 'dai_tua', 'ung', 'trang_suc_dau']);
 const specOf = (id) => (items[id].kind === 'sword' ? SWORD.items[items[id].piece] : SETS[items[id].set].pieces[items[id].piece]);
@@ -104,7 +104,7 @@ for (const iid of Object.keys(SWORD.items)) {
   const it = SWORD.items[iid];
   const id = `kiem_${SWORD.id}_${iid}`;
   T.push(
-    `### ${it.name} · \`${id}\`\n\n![${id}](${id}.webp)\n\n- **Lưu GLB:** \`prop/${SWORD.srcId}/tripo/raw_${iid}_v01.glb\`\n- **Gắn vào:** ${it.bones}\n- **Xương lò xo:** ${it.spring}\n- **Lưu ý khi dựng:** ${it.notes}\n\n\`\`\`text\n${tripoPrompt(id)}\n\`\`\`\n`,
+    `### ${it.name} · \`${id}\`\n\n![${id}](${id}.webp)\n\n- **Lưu GLB:** \`3d/vu-khi/${SWORD.srcId}/tripo/raw_${iid}_v01.glb\`\n- **Gắn vào:** ${it.bones}\n- **Xương lò xo:** ${it.spring}\n- **Lưu ý khi dựng:** ${it.notes}\n\n\`\`\`text\n${tripoPrompt(id)}\n\`\`\`\n`,
   );
 }
 fs.writeFileSync(path.join(imgDir, 'prompts.md'), T.join('\n'));
@@ -223,8 +223,8 @@ Lưu ý riêng: **Kính Quang** nửa dưới tay áo là voan (xuyên sáng th�
 
 ## Kiếm · ${SWORD.short} (dạng cuối +10 và vỏ)
 
-Ảnh trong: \`D:\\METAGRIT\\dtl-asset-source\\prop\\${SWORD.srcId}\\concept\\\`
-Lưu vào: \`D:\\METAGRIT\\dtl-asset-source\\prop\\${SWORD.srcId}\\tripo\\\`
+Ảnh trong: \`D:\\METAGRIT\\dtl-asset-source\\3d\\vu-khi\\${SWORD.srcId}\\concept\\\`
+Lưu vào: \`D:\\METAGRIT\\dtl-asset-source\\3d\\vu-khi\\${SWORD.srcId}\\tripo\\\`
 
 | Mảnh | Ảnh tải lên | Chế độ | Số mặt | Lưu thành |
 | --- | --- | --- | --- | --- |

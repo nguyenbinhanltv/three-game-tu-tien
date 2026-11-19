@@ -1,6 +1,6 @@
 # Dựng trang phục vừa thân nền v2 trên Tripo HD (tân thủ, Lạc Kiếm, Liệt Mạch)
 
-Người dùng dựng trên **Tripo web** (không dùng API/credit), từ ảnh concept sinh bằng Codex (`node tools/codex-assets/chr-outfit-gen.mjs`). Ảnh nằm ở `D:\METAGRIT\dtl-asset-source\chr\<thư mục bộ>\concept\` với tiền tố `v2_` (chỉ thêm file mới, không đụng ảnh cũ). Thiết kế vừa thân v2: người cao ráo (~8 đầu), vai hẹp, áo ôm thân vừa phải, **không phồng**. Tạo hình gốc của dự án, tham khảo phong cách bộ v1 (đạo bào dài cổ giao lĩnh, đai, tay áo rộng, giáp vai).
+Người dùng dựng trên **Tripo web** (không dùng API/credit), từ ảnh concept sinh bằng Codex (`node tools/codex-assets/chr-outfit-gen.mjs`). Ảnh nằm ở `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\<thư mục bộ>\concept\` với tiền tố `v2_` (chỉ thêm file mới, không đụng ảnh cũ). Thiết kế vừa thân v2: người cao ráo (~8 đầu), vai hẹp, áo ôm thân vừa phải, **không phồng**. Tạo hình gốc của dự án, tham khảo phong cách bộ v1 (đạo bào dài cổ giao lĩnh, đai, tay áo rộng, giáp vai).
 
 ## Cách dựng mỗi mảnh
 
@@ -8,7 +8,7 @@ Người dùng dựng trên **Tripo web** (không dùng API/credit), từ ảnh 
 2. Upload ảnh theo bảng. Mảnh **không có thân**: ảnh mảnh riêng (`v2_piece_<mảnh>.png`) là đầu vào chính; ba ảnh toàn thân (`v2_front/back/side.png`, tư thế A) dùng để đối chiếu dáng, hoặc làm ảnh **Front / Back / Left** nếu dựng cả bộ một khối để thử.
 3. Cài đặt: **Texture** bật (Detailed), **PBR** bật, **Smart Low-poly** bật, **Topology Triangle**, quad tắt, **Polycount** theo bảng. Không bật tự rig.
 4. **Tư thế A**: áo ngoài dựng với hai tay áo buông chếch khỏi thân khoảng **35°** (không phải T, không ép sát thân), khuôn ống mở dưới (rỗng), không có người bên trong. Meta cần `fitPose.armDown` ≈ 55 (bộ v1 dùng 70, tay áo sát hơn).
-5. Tải **GLB** (có texture), đặt tên `raw_<mảnh>_v01.glb`, lưu vào `D:\METAGRIT\dtl-asset-source\chr\<thư mục bộ>\tripo\`. Báo lại để Claude nhập (`outfit_build.py`, `outfit.player = chr_v2_*`, dựng cả nam và nữ).
+5. Tải **GLB** (có texture), đặt tên `raw_<mảnh>_v01.glb`, lưu vào `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\<thư mục bộ>\tripo\`. Báo lại để Claude nhập (`outfit_build.py`, `outfit.player = chr_v2_*`, dựng cả nam và nữ).
 6. Xoay kiểm: tay áo không dính thân, vạt không bít kín, không phồng quá hai lần bề ngang thân; quá ba lần thử không đạt thì báo để sửa concept.
 
 ## Bảng mảnh
@@ -42,7 +42,7 @@ Báo tên mảnh đã lưu. Claude nhập bằng `tools/blender/outfit_build.py`
 
 ## Ảnh xem trước
 
-`tan-thu-*.webp`, `lac-kiem-*.webp`, `liet-mach-*.webp` (trước/sau/nghiêng và từng mảnh) trong thư mục này. Ảnh gốc PNG: `../dtl-asset-source/chr/<bộ>/concept/v2_*.png` (bộ: `set_de_tu`, `set_lac_kiem`, `set_liet_mach_kiem_y`).
+`tan-thu-*.webp`, `lac-kiem-*.webp`, `liet-mach-*.webp` (trước/sau/nghiêng và từng mảnh) trong thư mục này. Ảnh gốc PNG: `../dtl-asset-source/3d/nhan-vat/<bộ>/concept/v2_*.png` (bộ: `set_de_tu`, `set_lac_kiem`, `set_liet_mach_kiem_y`).
 
 ## Ảnh then chốt
 

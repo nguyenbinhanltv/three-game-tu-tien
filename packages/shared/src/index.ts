@@ -4,6 +4,7 @@ export * from './props';
 export { THIEN_CONG_PROPS, thienCongColliders, type TcProp } from './props.thiencong';
 export * from './trails';
 export * from './terrain';
+export * from './collision';
 export * from './movement';
 export * from './formulas';
 export * from './combat';
