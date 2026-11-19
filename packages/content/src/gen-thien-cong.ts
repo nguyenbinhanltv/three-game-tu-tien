@@ -227,7 +227,7 @@ for (const levelId of Object.keys(SCENES)) {
               const cd = r0 + rand() * (r1 - r0);
               x = Math.round((c.x + Math.cos(ca) * cd) * 10) / 10;
               z = Math.round((c.z + Math.sin(ca) * cd) * 10) / 10;
-            } else if (sc.clusters) {
+            } else if (sc.clusters && (!sc.clusterGroups || sc.clusterGroups.includes(g))) {
               // Rải theo cụm (lùm cây, bãi đá...): tâm cụm cố định theo cảnh, mỗi món chọn một cụm; cảnh đông ở từng chỗ thay vì loãng khắp vùng.
               const cc = clusterCentres(si, sc);
               const c = cc[(k + tries) % cc.length]!;

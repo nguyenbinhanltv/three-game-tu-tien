@@ -24,6 +24,8 @@ export interface Scene {
   nearR?: [number, number];
   /** Rải theo cụm: số cụm (tâm cố định theo cảnh) và bán kính cụm (m, mặc định 22). */
   clusters?: number;
+  /** Chỉ các nhóm này rải theo cụm (mặc định mọi nhóm); nhóm khác trong cùng cảnh rải đều như trước để giữ nguyên toạ độ đã duyệt. */
+  clusterGroups?: string[];
   clusterR?: number;
   /** Hàm loại điểm theo bố cục riêng (hành lang đường đi…). */
   avoid?: (x: number, z: number) => boolean;
@@ -570,6 +572,7 @@ export const SCENES: Record<string, Scene[]> = {
   bac_hoang: [
     {
       note: 'Hàn Hối Nguyên',
+      clusterGroups: ['di_vuc'],
       clusters: 9,
       clusterR: 12,
       at: [1294, 1394],
@@ -591,6 +594,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Khô Lộc Lâm',
+      clusterGroups: ['di_vuc'],
       clusters: 9,
       clusterR: 12,
       at: [771, 1363],
@@ -612,6 +616,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Khích Giải',
+      clusterGroups: ['di_vuc'],
       clusters: 8,
       clusterR: 12,
       at: [1000, 881],
@@ -621,6 +626,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Xích Tẫn Bình',
+      clusterGroups: ['di_vuc'],
       clusters: 8,
       clusterR: 12,
       at: [1500, 598],
@@ -630,6 +636,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Kim Đa Ngoại Uyên',
+      clusterGroups: ['di_vuc'],
       clusters: 8,
       clusterR: 12,
       at: [593, 620],
@@ -639,6 +646,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Trấn Giới Đài',
+      clusterGroups: ['di_vuc'],
       clusters: 8,
       clusterR: 12,
       at: [1028, 475],
