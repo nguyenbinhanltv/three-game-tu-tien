@@ -326,6 +326,16 @@ function onPlayWall(pos: Float32Array, a: number, d: number): boolean {
   const cz = (pos[a * 3 + 2]! + pos[d * 3 + 2]!) / 2;
   return T.playDist(cx, cz) > T.playWall - 12;
 }
+/** Điểm nằm trên vành dốc bên ngoài mép đảo (r + 2 … r + edge + 10): váy đá (skyIslands.ts) thay thế, địa hình không dựng để khỏi lòi tam giác ra ngoài váy. */
+function onIslandBevel(x: number, z: number): boolean {
+  const isl = T.def.islands;
+  if (!isl) return false;
+  for (const i of isl) {
+    const d = Math.hypot(x - i.x, z - i.z);
+    if (d > i.r + 2 && d < i.r + i.edge + 10) return true;
+  }
+  return false;
+}
 function quadSpan(pos: Float32Array, a: number, b: number, c: number, d: number): number {
   const ya = pos[a * 3 + 1]!;
   const yb = pos[b * 3 + 1]!;
@@ -384,7 +394,12 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
       const b = a + 1;
       const c = a + n1;
       const d = c + 1;
-      if (cliff < Infinity && quadSpan(pos, a, b, c, d) > cliff && !onPlayWall(pos, a, d)) continue; // vách đảo: bỏ mặt đứng, `skyIslands.ts` dựng khối đá treo
+      if (
+        cliff < Infinity &&
+        !onPlayWall(pos, a, d) &&
+        (quadSpan(pos, a, b, c, d) > cliff || onIslandBevel((pos[a * 3]! + pos[d * 3]!) / 2, (pos[a * 3 + 2]! + pos[d * 3 + 2]!) / 2))
+      )
+        continue; // vách đảo: bỏ mặt đứng, `skyIslands.ts` dựng khối đá treo
       idx.push(a, c, b, b, c, d);
     }
   }
@@ -558,6 +573,23 @@ export class Terrain {
     this.group.add(this.coarse);
   }
 
+  // Level đảo nổi: viền rủ ngắn (1,2 m: đủ che khe nứt giữa ô khác LOD trên mặt đảo phẳng); viền dài 17 m thò ra khỏi thân đá của váy thành các tam giác dán trên vách (POLISH-1).
+  private voidTile = new Map<number, boolean>();
+  /** Ô chỉ gồm sàn mây (mọi mẫu độ cao bằng `voidFloor`, không có đảo/cầu): chỉ ở level đảo nổi. */
+  private isVoidTile(tx: number, tz: number): boolean {
+    const floor = T.def.voidFloor;
+    if (floor === undefined || !T.def.islands) return false;
+    const key = tz * this.NT + tx;
+    const have = this.voidTile.get(key);
+    if (have !== undefined) return have;
+    let v = true;
+    const N = 16;
+    for (let j = 0; j <= N && v; j++)
+      for (let i = 0; i <= N && v; i++) if (heightAt(tx * TILE + (i / N) * TILE, tz * TILE + (j / N) * TILE) > floor + 0.5) v = false;
+    this.voidTile.set(key, v);
+    return v;
+  }
+
   private desiredRes(d: number): number {
     return d <= 1 ? 64 : 32;
   }
@@ -595,8 +627,13 @@ export class Terrain {
           }
           if (ring <= NEAR_R) {
             const res = this.desiredRes(ring);
+            if (t.res !== res && this.isVoidTile(tx, tz)) {
+              // Level đảo nổi: ô chỉ có sàn mây phẳng không dựng lưới mịn (lưới thô đã vẽ sàn; mặt sàn lại bị mặt vực/mây che): bớt ~nửa số draw call địa hình.
+              t.res = res;
+              continue;
+            }
             if (t.res !== res) {
-              const geo = buildTileGeometry(tx * TILE, tz * TILE, TILE, res, (TILE / res) * 1.5 + 5);
+              const geo = buildTileGeometry(tx * TILE, tz * TILE, TILE, res, T.def.islands ? 1.2 : (TILE / res) * 1.5 + 5);
               if (t.mesh) {
                 this.group.remove(t.mesh);
                 t.mesh.geometry.dispose();
@@ -656,7 +693,13 @@ export class Terrain {
         const b = a + 1;
         const c = a + n1;
         const d = c + 1;
-        if (cpos && quadSpan(cpos, a, b, c, d) > CLIFF_SKIP && !onPlayWall(cpos, a, d)) continue;
+        if (
+          cpos &&
+          !onPlayWall(cpos, a, d) &&
+          (quadSpan(cpos, a, b, c, d) > CLIFF_SKIP ||
+            onIslandBevel((cpos[a * 3]! + cpos[d * 3]!) / 2, (cpos[a * 3 + 2]! + cpos[d * 3 + 2]!) / 2))
+        )
+          continue;
         idx[o++] = a;
         idx[o++] = c;
         idx[o++] = b;

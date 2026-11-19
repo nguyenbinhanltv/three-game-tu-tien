@@ -173,7 +173,7 @@ export class SkyIslands {
       list.forEach((m4, i) => im.setMatrixAt(i, m4));
       im.instanceMatrix.needsUpdate = true;
       im.frustumCulled = false;
-      im.castShadow = true;
+      im.castShadow = false; // không đổ bóng: bớt draw call ở pass bóng (mỗi vật đổ bóng vẽ lại theo từng tầng bóng);
       im.name = `island-satellite-${nm}`;
       this.group.add(im);
     }
@@ -384,7 +384,7 @@ export class SkyIslands {
       list.forEach((mm, i) => im.setMatrixAt(i, mm));
       im.instanceMatrix.needsUpdate = true;
       im.frustumCulled = false;
-      im.castShadow = true;
+      im.castShadow = false;
       im.receiveShadow = true;
       im.name = name;
       this.group.add(im);
@@ -915,7 +915,7 @@ export class SkyIslands {
     const merged = this.track(mergeGeometries(parts, false));
     for (const p of parts) p.dispose();
     const mesh = new THREE.Mesh(merged, this.track(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, metalness: 0 })));
-    mesh.castShadow = true;
+    mesh.castShadow = false;
     mesh.frustumCulled = false;
     mesh.name = 'whale-ribs';
     this.group.add(mesh);
@@ -976,7 +976,7 @@ export class SkyIslands {
     mesh.position.set(f.x, f.y, f.z);
     mesh.name = 'fake-island';
     mesh.userData.trees = trees;
-    mesh.castShadow = true;
+    mesh.castShadow = false;
     mesh.receiveShadow = true;
     this.group.add(mesh);
     const glowMat = this.track(
