@@ -1091,6 +1091,7 @@ for (const lv of Object.values(LEVELS)) {
         'cloud_night',
         'tk_dawn',
         'tk',
+        'tk_dusk',
         'tk_night',
         'lk_dawn',
         'lk_day',

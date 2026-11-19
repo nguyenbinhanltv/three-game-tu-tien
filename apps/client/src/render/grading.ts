@@ -49,6 +49,7 @@ export type GradingName =
   | 'cloud_night'
   | 'tk_dawn'
   | 'tk'
+  | 'tk_dusk'
   | 'tk_night'
   | 'lk_dawn'
   | 'lk_day'
@@ -107,6 +108,7 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   cloud_night: parse(raw.presets.cloud_night),
   tk_dawn: parse(raw.presets.tk_dawn),
   tk: parse(raw.presets.tk),
+  tk_dusk: parse(raw.presets.tk_dusk),
   tk_night: parse(raw.presets.tk_night),
   lk_dawn: parse(raw.presets.lk_dawn),
   lk_day: parse(raw.presets.lk_day),
@@ -155,7 +157,7 @@ export function moodVariant(base: GradingName, tod: TimeOfDay): GradingName {
   if (base.startsWith('ochre')) return t === 'dawn' ? 'ochre_dawn' : t === 'night' ? 'ochre_night' : 'ochre';
   if (base.startsWith('cloud')) return t === 'dawn' ? 'cloud_dawn' : t === 'night' ? 'cloud_night' : 'cloud';
   if (base === 'ash_dawn' || base === 'rift' || base === 'rift_pit') return base; // Bắc Hoang (DV-1): mood cố định theo nửa bản đồ, không đổi theo giờ
-  if (base.startsWith('tk')) return t === 'dawn' ? 'tk_dawn' : t === 'night' ? 'tk_night' : 'tk';
+  if (base.startsWith('tk')) return tod === 'dusk' ? 'tk_dusk' : t === 'dawn' ? 'tk_dawn' : t === 'night' ? 'tk_night' : 'tk';
   return t;
 }
 
