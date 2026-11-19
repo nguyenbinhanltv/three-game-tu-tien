@@ -200,9 +200,9 @@
       "tk_dawn": {
         "label": "Thiên Khuyết — rạng đông tím vàng",
         "sunColor": "#FFBE78", "sunIntensity": 3.0, "sunElevationDeg": 12,
-        "skyColor": "#9A86C4", "skyIntensity": 0.85,
-        "fogColor": "#A794C4", "fogDensity": 0.0003, "heightFogTop": 70, "heightFogBoost": 1.4,
-        "fogHaze": 0.001, "fogHazeStart": 110, "fogScatter": 1.0, "rim": 0.7,
+        "skyColor": "#9A86C4", "skyIntensity": 0.7,
+        "fogColor": "#A794C4", "fogDensity": 0.0002, "heightFogTop": 70, "heightFogBoost": 1.4,
+        "fogHaze": 0.0007, "fogHazeStart": 110, "fogScatter": 1.0, "rim": 0.7,
         "shadowTint": "#32226E", "highlightTint": "#FFCB6E", "splitBalance": 0.1,
         "shadowAmount": 0.65, "highlightAmount": 0.4,
         "blackLift": "#1E1440", "contrast": 1.22, "saturation": 1.1, "exposure": 1.0
@@ -210,31 +210,32 @@
       "tk": {
         "label": "Thiên Khuyết — trưa tím, nắng vàng kim",
         "sunColor": "#FFE2A0", "sunIntensity": 4.0, "sunElevationDeg": 40,
-        "skyColor": "#8C86CE", "skyIntensity": 0.8,
-        "fogColor": "#A79CD2", "fogDensity": 0.0002, "heightFogTop": 60, "heightFogBoost": 1.3,
-        "fogHaze": 0.0007, "fogHazeStart": 140, "fogScatter": 0.7, "rim": 0.5,
+        "skyColor": "#9890C4", "skyIntensity": 0.65,
+        "fogColor": "#A79CD2", "fogDensity": 0.00014, "heightFogTop": 60, "heightFogBoost": 1.3,
+        "fogHaze": 0.0005, "fogHazeStart": 140, "fogScatter": 0.7, "rim": 0.5,
         "shadowTint": "#3A2A80", "highlightTint": "#FFD67A", "splitBalance": 0.0,
         "shadowAmount": 0.6, "highlightAmount": 0.3,
         "blackLift": "#1B1540", "contrast": 1.24, "saturation": 1.1, "exposure": 1.0
       },
       "tk_dusk": {
         "label": "Thiên Khuyết — hoàng hôn tím vàng",
-        "sunColor": "#FFB540", "sunIntensity": 5.4, "sunElevationDeg": 9,
-        "skyColor": "#7A5EB8", "skyIntensity": 0.6,
-        "fogColor": "#B488BE", "fogDensity": 0.00038, "heightFogTop": 80, "heightFogBoost": 1.6,
-        "fogHaze": 0.0012, "fogHazeStart": 90, "fogScatter": 2.0, "rim": 0.8,
-        "shadowTint": "#3A2C7A", "highlightTint": "#FFBE48", "splitBalance": 0.08,
-        "shadowAmount": 0.45, "highlightAmount": 0.55,
-        "blackLift": "#21143E", "contrast": 1.28, "saturation": 1.1, "exposure": 1.0
+        "sunColor": "#FFB540", "sunIntensity": 6, "sunElevationDeg": 9,
+        "skyColor": "#8F7CB6", "skyIntensity": 0.5,
+        "fogColor": "#B592B8", "fogDensity": 0.00024, "heightFogTop": 80, "heightFogBoost": 1.6,
+        "fogHaze": 0.0008, "fogHazeStart": 90, "fogScatter": 1.6, "rim": 0.8,
+        "shadowTint": "#2E2468", "highlightTint": "#FFBE48", "splitBalance": 0.08,
+        "shadowAmount": 0.45, "highlightAmount": 0.6,
+        "blackLift": "#21143E", "contrast": 1.28, "saturation": 1.05, "exposure": 1.0
       },
       "tk_night": {
         "label": "Thiên Khuyết — đêm tím, trận pháp vàng kim",
-        "sunColor": "#B4ACF0", "sunIntensity": 1.6, "sunElevationDeg": 38,
-        "skyColor": "#3E3280", "skyIntensity": 1.0,
-        "fogColor": "#241A4A", "fogDensity": 0.0007, "heightFogTop": 70, "heightFogBoost": 2.0,
+        "sunColor": "#B8B0E0", "sunIntensity": 1.9, "sunElevationDeg": 38,
+        "skyColor": "#4E4468", "skyIntensity": 0.6,
+        "fogColor": "#241C3C", "fogDensity": 0.0007, "heightFogTop": 70, "heightFogBoost": 2.0,
         "fogHaze": 0.001, "fogHazeStart": 80, "fogScatter": 0.4, "rim": 1.0,
-        "shadowTint": "#140C38", "highlightTint": "#F6C65E", "splitBalance": -0.2,
-        "blackLift": "#150E34", "contrast": 1.12, "saturation": 0.9, "exposure": 1.25
+        "shadowTint": "#2A1F4A", "highlightTint": "#F6C65E", "splitBalance": -0.2,
+        "shadowAmount": 0.3, "highlightAmount": 0.25,
+        "blackLift": "#1A1626", "contrast": 1.12, "saturation": 0.82, "exposure": 1.12
       },
       "lk_dawn": {
         "label": "Lạc Kiếm — bình minh vàng ngọc",

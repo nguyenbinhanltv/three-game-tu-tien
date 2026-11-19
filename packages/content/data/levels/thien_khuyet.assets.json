@@ -20,6 +20,20 @@
     "vegetation": false
   },
   "godRays": { "x": 1044, "z": 520, "r": 640, "count": 70 },
+  "thienKhuyetSky": {
+    "islands": [
+      { "id": "cong_tien", "x": 1044, "z": 300, "y": 300, "r": 78, "depth": 110, "kind": "cong" },
+      { "id": "cung_dong", "x": 1520, "z": 600, "y": 215, "r": 56, "depth": 90, "kind": "cung" },
+      { "id": "cung_tay", "x": 700, "z": 500, "y": 235, "r": 62, "depth": 100, "kind": "cung" },
+      { "id": "cung_xa", "x": 1260, "z": 160, "y": 330, "r": 44, "depth": 76, "kind": "cung" },
+      { "id": "cung_nam", "x": 1460, "z": 820, "y": 190, "r": 48, "depth": 80, "kind": "cung" }
+    ],
+    "stair": { "cx": 1044, "cz": 374, "r0": 170, "r1": 120, "turns": 1.35, "y0": 80, "y1": 296, "a0": 1.57, "width": 16 },
+    "statue": { "x": 1400, "z": 400, "yaw": 2.5, "size": 150 },
+    "array": { "x": 1044, "z": 374, "r": 100 },
+    "shards": 90,
+    "pillars": 26
+  },
   "minimap": "thien_khuyet",
   "grassCards": "grass-night"
 }

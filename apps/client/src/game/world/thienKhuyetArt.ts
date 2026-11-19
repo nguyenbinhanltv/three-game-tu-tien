@@ -5,17 +5,19 @@ import { fbm, hash01, smoothstep, type TerrainDef } from '@dtl/shared';
 /** Màu hex 0xRRGGBB. */
 const TK_COLORS = {
   /** Nền sân đá phiến cổ: xám lam đêm. */
-  slate: 0x8b949e,
+  slate: 0x7d72a0,
   /** Đá lát sáng hơn (sân, đại lộ). */
-  paving: 0xaab2bb,
+  paving: 0xa699c0,
   /** Rêu sao: ngọc lam xỉn, mọc ở chỗ trũng ẩm. */
-  moss: 0x6a847f,
+  moss: 0x8c7650,
   /** Đá nứt tối. */
-  dark: 0x4b5967,
+  dark: 0x453a6e,
   /** Vách dốc lộ đá. */
-  cliff: 0x646e7b,
+  cliff: 0x54448a,
   /** Đất bụi trộn đá vụn ở Mộ Đạo. */
-  grave: 0x6c6f7d,
+  grave: 0x62567e,
+  /** Vỉa vàng kim trong vách đá. */
+  vein: 0xc79a46,
 } as const;
 
 /** Trọng số "mặt lát đá" 0..1 quanh các bệ phẳng (đại lộ = chuỗi bệ `dl_*`, quảng trường, trạm, đài điểm đáng chú ý). Lõi phẳng = 1, mờ dần ra ngoài ~0,45·flatR. */
@@ -55,7 +57,14 @@ export function tkGroundColor(def: TerrainDef, x: number, z: number, ny: number,
   const paved = pavedWeight(def, x, z);
   if (paved > 0) c = lerp(c, hex(TK_COLORS.paving, 0.94 + m * 0.12), Math.min(0.85, paved * 0.9));
   const slope = 1 - ny;
-  if (slope > 0.12) c = lerp(c, hex(TK_COLORS.cliff, 0.9 + n * 0.2), Math.min(1, (slope - 0.12) * 4.5));
+  if (slope > 0.12) {
+    const k = Math.min(1, (slope - 0.12) * 4.5);
+    c = lerp(c, hex(TK_COLORS.cliff, 0.9 + n * 0.2), k);
+    // Vách: vân đá tầng tím đậm xen vỉa vàng kim mảnh (dải ngang theo toạ độ, lệch theo nhiễu).
+    const band = 0.5 + 0.5 * Math.sin((x + z * 0.7) * 0.09 + n * 5 + m * 3);
+    c = lerp(c, hex(TK_COLORS.dark, 0.8), k * Math.max(0, 0.65 - band) * 0.9);
+    c = lerp(c, hex(TK_COLORS.vein, 1.0), k * Math.pow(Math.max(0, band - 0.86) / 0.14, 2) * 0.7);
+  }
   out[0] = c[0];
   out[1] = c[1];
   out[2] = c[2];
