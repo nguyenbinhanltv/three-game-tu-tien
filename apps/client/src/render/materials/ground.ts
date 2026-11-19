@@ -69,6 +69,15 @@ export function setGroundStrata(on: boolean): void {
   strata = on;
 }
 
+/**
+ * Vân vách sa thạch xám-đỏ (MAP-2 Đoạn Mạch): tầng ngang theo độ cao + khe dọc như `strata`, nhưng không đổi ngưỡng tuyết
+ * và ngả xám-đỏ thay vì lam nhạt. Tắt ở level khác.
+ */
+let redStrata = false;
+export function setGroundRedStrata(on: boolean): void {
+  redStrata = on;
+}
+
 /** Gắn node shader vào `mat`. Gọi lại khi đổi preset (đổi cấu hình, `needsUpdate`). */
 export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: GroundTextures, level: GroundLevel): void {
   const hi = level === 'high';
@@ -181,15 +190,30 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   col = mix(col, vc.mul(0.62), smoothstep(0.3, 0.06, ndv).mul(0.55));
   // Vân đá sơn thủy (MAP-1), tính theo điểm ảnh nên không phụ thuộc độ thô của lưới xa: tầng ngang theo độ cao + khe dọc theo
   // nhiễu kéo dài; vách và đá lộ ngả lam nhạt dần theo độ cao. Áp sau khi hòa về màu đỉnh lưới ở xa.
-  if (strata) {
+  if (strata || redStrata) {
     const rockish = max(cliffW, rockW.mul(0.7));
     const band = sin(h.mul(0.13).add(macro.mul(5)).add(noise2.mul(4)))
       .mul(0.5)
       .add(0.5);
     const fissure = texture(tex.mask, vec2(p.x.add(p.y).mul(0.0011), h.mul(0.00018))).a;
-    const strataMul = float(0.7).add(band.mul(0.5)).sub(float(1).sub(fissure).mul(0.45));
+    const strataMul = float(0.7)
+      .add(band.mul(0.5))
+      .sub(
+        float(1)
+          .sub(fissure)
+          .mul(redStrata ? 0.12 : 0.45),
+      );
     col = col.mul(mix(float(1), strataMul, rockish));
-    col = mix(col, col.mul(vec3(0.82, 0.94, 1.1)), rockish.mul(smoothstep(140, 300, h)).mul(0.6));
+    if (redStrata) {
+      // tầng đỏ gạch xen xám đá: đáy ấm, tầng sáng nhạt ngả xám
+      const band2 = sin(h.mul(0.5).add(noise2.mul(6)).add(macro.mul(3)))
+        .mul(0.5)
+        .add(0.5);
+      const tone = mix(vec3(0.55, 0.33, 0.28), vec3(0.72, 0.66, 0.64), band.mul(0.6).add(band2.mul(0.4)));
+      col = mix(col, col.mul(tone).mul(1.5), rockish.mul(0.85));
+    } else {
+      col = mix(col, col.mul(vec3(0.82, 0.94, 1.1)), rockish.mul(smoothstep(140, 300, h)).mul(0.6));
+    }
   }
   mat.vertexColors = false;
   mat.colorNode = col;

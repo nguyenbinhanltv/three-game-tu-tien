@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { texture, positionWorld, vertexColor, mix as tmix } from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
 import { createWorldMaterial } from '../../render/materials/world';
-import { applyGroundShader, clearGroundShader, setGroundStrata, setGroundTileBreak, type GroundLevel } from '../../render/materials/ground';
+import { applyGroundShader, clearGroundShader, setGroundRedStrata, setGroundStrata, setGroundTileBreak, type GroundLevel } from '../../render/materials/ground';
 import type { GroundTextures } from '../../base/groundTextures';
 import {
   COLLIDERS,
@@ -654,6 +654,7 @@ export class Terrain {
   setGround(tex: GroundTextures | null, level: GroundLevel): void {
     setGroundTileBreak(XICH);
     setGroundStrata(isVanLam());
+    setGroundRedStrata(T.id === 'doan_mach');
     if (tex) applyGroundShader(this.material, tex, level);
     else clearGroundShader(this.material);
   }
