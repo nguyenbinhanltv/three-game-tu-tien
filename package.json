@@ -30,6 +30,8 @@
     "shots": "pnpm --filter @dtl/perf run shots --",
     "check:black": "pnpm --filter @dtl/perf run check:black",
     "assets:terrain": "pnpm --filter @dtl/asset-pipeline exec tsx src/terrain-textures.ts",
+    "assets:sect-textures": "pnpm --filter @dtl/asset-pipeline exec tsx src/sect-textures.ts",
+    "assets:sky-textures": "pnpm --filter @dtl/asset-pipeline exec tsx src/sky-textures.ts",
     "assets:grass-cards": "pnpm --filter @dtl/asset-pipeline exec tsx src/grass-cards.ts",
     "assets:hires": "pnpm --filter @dtl/asset-pipeline exec tsx src/hires.ts",
     "assets:validate": "pnpm --filter @dtl/asset-pipeline run validate",
