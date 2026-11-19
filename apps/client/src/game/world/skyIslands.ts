@@ -177,8 +177,8 @@ export class SkyIslands {
     const prof: [number, number][] = [
       [r - 4, -0.02],
       [r + 3, -0.1],
-      [r + 6.5, -1.2],
-      [r + 7.5, -4],
+      [r + 4.5, -1.2],
+      [r + 5.5, -4],
       [r + 6, -9],
       [r + 2, -15],
       [r - 5, -22],
@@ -266,13 +266,14 @@ export class SkyIslands {
       const band = hash01(Math.floor(y / 2.6), seed, 61);
       rock
         .copy(B)
-        .lerp(ROCK_BLUE, 0.35 + 0.25 * band)
+        .lerp(ROCK_BLUE, 0.28 + 0.2 * band)
         .lerp(OCHRE, band > 0.72 ? 0.35 : 0)
         .lerp(D, depth * 0.8)
-        .multiplyScalar(0.8 + band * 0.4);
-      // mặt ngửa ở sát mép đảo phủ rêu và đất
-      if (y > -6) rock.lerp(A, Math.min(1, (y + 6) / 5));
-      else if (ny > 0.55) rock.lerp(A, (ny - 0.55) * 1.4 * (1 - depth));
+        .multiplyScalar(1.1 * (0.8 + band * 0.45));
+      // chỉ một vành cỏ mỏng ở mép (không còn khối xanh dày); dưới đó là vách đá, rêu loang ở mặt ngửa
+      if (y > -1.4) rock.lerp(A, Math.min(1, (y + 1.4) / 1.4));
+      else if (ny > 0.6 && hash01(Math.floor(y / 1.7), Math.floor(Math.atan2(pos.getZ(i), pos.getX(i)) * 6), seed) > 0.45)
+        rock.lerp(A, (ny - 0.6) * 1.3 * (1 - depth));
       col.push(rock.r, rock.g, rock.b);
     }
     lathe.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
@@ -281,7 +282,7 @@ export class SkyIslands {
     const ROOT = new THREE.Color(0x5b4a38);
     // nhũ đá nhọn rủ xuống từ thân đảo
     const DK = new THREE.Color(pal ? pal.dark : 0x4e4b48).multiplyScalar(0.75);
-    const spikes = Math.round((6 + r / 22) * SK.spikes);
+    const spikes = Math.round((6 + r / 22) * SK.spikes * 1.7);
     for (let i = 0; i < spikes; i++) {
       const a = hash01(i, seed, 97) * Math.PI * 2;
       const rr = r * (0.45 + hash01(i, seed, 103) * 0.45);
@@ -299,11 +300,11 @@ export class SkyIslands {
       sp.setAttribute('color', new THREE.Float32BufferAttribute(sc, 3));
       parts.push(sp);
     }
-    const roots = Math.round((10 + r / 14) * SK.roots);
+    const roots = Math.round((10 + r / 14) * SK.roots * 1.9);
     for (let i = 0; i < roots; i++) {
       const a = hash01(i, seed, 71) * Math.PI * 2;
       const depthAt = -(2 + hash01(i, seed, 79) * 16);
-      const len = Math.min((12 + hash01(i, seed, 73) * 26) * (SK.roots > 1 ? 1.4 : 1), isl.y + depthAt - floor - 8);
+      const len = Math.min((14 + hash01(i, seed, 73) * 34) * (SK.roots > 1 ? 1.4 : 1.15), isl.y + depthAt - floor - 8);
       const rr = r + 6.8 + depthAt * -0.12 - (depthAt < -9 ? 6 : 0);
       const cone = new THREE.ConeGeometry(0.28 + hash01(i, seed, 83) * 0.3, len, 5, 1, true).toNonIndexed();
       cone.rotateX(Math.PI); // mũi chúc xuống
@@ -444,9 +445,20 @@ export class SkyIslands {
     base.colorSpace = THREE.SRGBColorSpace;
     const geo = this.track(new THREE.PlaneGeometry(size * 1.15, size * 1.15));
     geo.rotateX(-Math.PI / 2);
+    // vực sâu dưới sàn mây: lộ qua khe giữa các đám mây, xanh thẫm dần về đáy (sàn mây đi được là mặt phẳng vô hình ở đây)
+    const abyssGeo = this.track(new THREE.PlaneGeometry(size * 1.6, size * 1.6));
+    abyssGeo.rotateX(-Math.PI / 2);
+    const abyssMat = this.track(new THREE.MeshBasicNodeMaterial());
+    abyssMat.colorNode = mix(vec3(0.07, 0.17, 0.38), skyParams.horizon.mul(0.55), 0.3);
+    const abyss = new THREE.Mesh(abyssGeo, abyssMat);
+    abyss.position.set(size / 2, floor - 34, size / 2);
+    abyss.renderOrder = -9;
+    abyss.frustumCulled = false;
+    abyss.name = 'cloud-abyss';
+    this.group.add(abyss);
     const layers: [number, number, number][] = [
-      [0.25, 0.2, 11],
-      [0.9, 0.13, 7],
+      [0.25, 0.12, 11],
+      [0.9, 0.08, 7],
     ];
     layers.forEach(([dy, op, rep], i) => {
       const t = this.track(base.clone());

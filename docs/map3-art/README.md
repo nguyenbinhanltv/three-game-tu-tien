@@ -30,3 +30,9 @@ Chân đảo (`skyIslands.ts` `buildSkirt`): lưới 112 cạnh dùng chung đ�
 Chụp ảnh: `window.__game.vanHaiWow.freeze(giây)` giữ đồng hồ để cá nằm trong khung (kịch bản `vanhai` tự gọi); `--probe 1` in danh sách mesh.
 
 Chưa làm: cây thẻ alpha thay bonsai tùng (cần asset cây mới), normal map đá bake từ Blender, LOD mõm đá.
+
+## PR3: mép đảo và biển mây
+
+- Mép đảo: vành cỏ chỉ còn dày ~1,4 m (trước ~6 m, trông như khối xanh tròn); dưới là vách đá phân tầng lam xám/nâu đất, rêu loang theo mảng ở mặt ngửa; nhũ đá ×1,7, rễ ×1,9 và dài hơn; gờ đảo bớt loe (`r + 4,5`).
+- Biển mây: `billowPlan` chừa ~25% diện tích làm khe hở, khối nhỏ dần về mép khe (bờ mây mềm); khe lộ vực xanh thẫm (`cloud-abyss`, mặt phẳng ở sàn mây − 34 m); hai lớp sương sát sàn nhạt bớt (0,12 / 0,08) để biển bớt phẳng trắng. Test `billows.test.ts` thêm: đủ 900 khối, có ô lưới 100 m trống.
+- Đo (preset Cao, 1080p): draw call 145–216, tam giác 0,82–1,04 triệu, khung ~8,4 ms (góc `bienmay`, `tungdai`, `trencao`).
