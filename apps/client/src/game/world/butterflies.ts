@@ -48,7 +48,8 @@ interface ButterflyLevel {
 export const BUTTERFLY_LEVELS: Record<string, ButterflyLevel> = {
   // Ngọc lam của mạch, ngà, hồng hoa đào, vàng nắng sớm (art bible: spirit_jade, attire_ivory, leaf_blossom, air_sun_dawn).
   van_lam: { density: 0.3, flock: [2, 4], palette: ['#7fe3d0', '#e6ddcb', '#e9b4c0', '#f2c47e'] },
-  kiem_trung: { density: 0.3, flock: [2, 4], palette: ['#7fe3d0', '#e6ddcb', '#e9b4c0', '#f2c47e'] },
+  // Nghĩa địa kiếm (DUN-1): vài con ngài linh phát sáng lam nhạt, không phải bướm hoa.
+  kiem_trung: { density: 0.1, flock: [1, 3], palette: ['#cfe6ff', '#a8c8ee', '#e4eef8', '#b9e7f2'], glow: true },
   // Hẻm đá khô: thưa, màu đất son và rơm.
   doan_mach: { density: 0.12, flock: [1, 3], palette: ['#d9a25a', '#e6ddcb', '#c97b4a', '#f2c47e'] },
   // Đảo mây: trắng, lam nhạt.

@@ -46,6 +46,7 @@ import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
 import realmaura from './scenarios/realmaura';
 import xichkhe from './scenarios/xichkhe';
+import dungeonart from './scenarios/dungeonart';
 
 const SCENARIOS: Scenario[] = [
   points,
@@ -84,6 +85,7 @@ const SCENARIOS: Scenario[] = [
   divuc,
   flyover,
   xichkhe,
+  dungeonart,
   hires,
   quality,
   realmaura,

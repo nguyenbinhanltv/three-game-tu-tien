@@ -39,14 +39,13 @@ describe('levelCtx (E1-D)', () => {
     expect(heightAt(2300, 2300)).toBe(before);
   });
 
-  it('thế giới ↔ Kiếm Trủng đi nhánh nhanh (không dựng lại), level thử thì không', () => {
-    expect(sameLayout('van_lam', 'kiem_trung')).toBe(true);
-    expect(sameLayout('kiem_trung', 'van_lam')).toBe(true);
+  it('Kiếm Trủng có mỹ thuật riêng (DUN-1) nên đổi qua lại với thế giới phải dựng lại cảnh', () => {
+    // Trước DUN-1 hai level cùng bố cục nên đi nhánh nhanh; nay Kiếm Trủng có mood `kt`, đất `terrain-slate`, huyệt kiếm: không dùng chung cảnh.
+    expect(sameLayout('van_lam', 'kiem_trung')).toBe(false);
+    expect(sameLayout('kiem_trung', 'van_lam')).toBe(false);
     expect(sameLayout('van_lam', TEST_LEVEL)).toBe(false);
-    // Hai file assets chỉ được khác nhau ở nhạc (và minimap): thêm khác biệt khác sẽ làm bí cảnh dựng lại cả cảnh mỗi lần vào/ra.
-    const { music: _m1, minimap: _a, ...vl } = LEVEL_ASSETS.van_lam!;
-    const { music: _m2, minimap: _b, ...kt } = LEVEL_ASSETS.kiem_trung!;
-    expect(kt).toEqual(vl);
+    expect(levelAssets('kiem_trung').kiemTrungArt).toBe(true);
+    expect(levelAssets('kiem_trung').cave).toBeDefined();
   });
 
   it('level lạ không có assets thì báo lỗi rõ', () => {

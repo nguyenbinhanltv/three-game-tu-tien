@@ -39,6 +39,7 @@ export const GOD_RAY_INTENSITY: Record<string, number> = {
   tk: 0.6,
   tk_dusk: 1.2,
   tk_night: 0.3,
+  kt: 0.85,
   dm_dawn: 1.1,
   dm_day: 0.55,
   dm_dusk: 1.3,

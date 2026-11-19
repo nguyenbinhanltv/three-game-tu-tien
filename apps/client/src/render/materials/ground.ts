@@ -69,6 +69,12 @@ export function setGroundStrata(on: boolean): void {
   strata = on;
 }
 
+/** Bí cảnh không có tuyết (Kiếm Trủng, DUN-1): đỉnh núi xa giữ màu đá thay vì phủ SNOW sáng. Terrain bật trước khi dựng shader. */
+let noSnow = false;
+export function setGroundNoSnow(on: boolean): void {
+  noSnow = on;
+}
+
 /**
  * Vân vách sa thạch xám-đỏ (MAP-2 Đoạn Mạch): tầng ngang theo độ cao + khe dọc như `strata`, nhưng không đổi ngưỡng tuyết
  * và ngả xám-đỏ thay vì lam nhạt. Tắt ở level khác.
@@ -192,7 +198,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   col = mix(col, rockCol.mul(float(0.9).add(macro.mul(0.2))), rockW);
   col = mix(col, cliff.mul(float(0.9).add(macro.mul(0.2))), cliffW);
   col = col.mul(groundParams.gain);
-  col = mix(col, SNOW.mul(float(0.85).add(macro.mul(0.3))), snowW.mul(0.9));
+  col = mix(col, SNOW.mul(float(0.85).add(macro.mul(0.3))), noSnow ? float(0) : snowW.mul(0.9));
   // Xa thì texture nhỏ hơn điểm ảnh (mipmap mảng texture không đủ) sinh vân ô vuông: hòa dần về màu đỉnh lưới.
   col = mix(col, vc.mul(0.62), smoothstep(70, 230, dist).mul(0.9));
   // Nhìn lướt (góc giữa tia nhìn và mặt gần song song): texture bị nén mạnh theo một phương nên sinh vân ô lưới, hòa dần về

@@ -237,6 +237,16 @@
         "shadowAmount": 0.3, "highlightAmount": 0.25,
         "blackLift": "#1A1626", "contrast": 1.12, "saturation": 0.82, "exposure": 1.12
       },
+      "kt": {
+        "label": "Kiếm Trủng — nghĩa địa kiếm, thép lam lạnh, sương thấp",
+        "sunColor": "#E6E8EE", "sunIntensity": 2.2, "sunElevationDeg": 52,
+        "skyColor": "#5A6C80", "skyIntensity": 0.9,
+        "fogColor": "#46586C", "fogDensity": 0.0011, "heightFogTop": 14, "heightFogBoost": 2.6,
+        "fogHaze": 0.0008, "fogHazeStart": 90, "fogScatter": 0.55, "rim": 1.1,
+        "shadowTint": "#2C3644", "highlightTint": "#EEF4FA", "splitBalance": -0.1,
+        "shadowAmount": 0.3, "highlightAmount": 0.3,
+        "blackLift": "#202833", "contrast": 1.22, "saturation": 0.8, "exposure": 1.12
+      },
       "vh_dawn": {
         "label": "Vân Hải — bình minh lam bạc",
         "sunColor": "#FFD2B0", "sunIntensity": 3.2, "sunElevationDeg": 12,
