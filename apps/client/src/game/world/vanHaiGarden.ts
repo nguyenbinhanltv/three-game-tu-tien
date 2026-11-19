@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { LEVELS } from '@dtl/content';
 import { fbm, hash01, propsOf, type TerrainDef, type Terrain } from '@dtl/shared';
 import { createWorldMaterial } from '../../render/materials/world';
 import { vanHaiArt, type VhIsland } from './vanHaiArt';
@@ -122,6 +123,8 @@ export function vanHaiTreeSpots(terrain: Terrain): VhTreeSpot[] {
   const spots = def.features.filter((f) => f.id.startsWith('pad_') || f.id.startsWith('poi_'));
   const bridgeEnds: [number, number][] = [];
   for (const b of def.bridges ?? []) bridgeEnds.push([b.ax, b.az], [b.bx, b.bz]);
+  // Tâm bãi quái và nút thu thập: giữ trống 3 m để thân cây không đè chỗ quái đứng/người nhặt (COL-B, `map:report`).
+  const keepClear = [...(LEVELS.van_hai?.camps ?? []), ...(LEVELS.van_hai?.nodes ?? [])];
   const out: VhTreeSpot[] = [];
   for (const isl of art.islands) {
     if (isl.kind === 'hub') continue; // sân Phù Đảo Các để trống (quảng trường, NPC)
@@ -139,6 +142,7 @@ export function vanHaiTreeSpots(terrain: Terrain): VhTreeSpot[] {
       if (spots.some((sp) => Math.hypot(sp.x - x, sp.z - z) < 12)) continue;
       if (bridgeEnds.some(([bx, bz]) => Math.hypot(bx - x, bz - z) < 14)) continue;
       if (props.some((p) => Math.hypot(p.x - x, p.z - z) < 5)) continue;
+      if (keepClear.some((c) => Math.hypot(c.x - x, c.z - z) < 3)) continue;
       if (terrain.colliders.some((c) => Math.hypot(c.x - x, c.z - z) < c.r + 3)) continue;
       const y = terrain.heightAt(x, z);
       if (!Number.isFinite(y)) continue;
