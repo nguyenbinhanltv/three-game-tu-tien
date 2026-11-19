@@ -347,7 +347,7 @@
             0.8
           ]
         ],
-        "foot": 2.7199
+        "foot": 2.7813
       },
       {
         "name": "cot_ta_mau_tim",
@@ -359,11 +359,11 @@
         "name": "tinh_the_tim",
         "vi": "Tinh thể tím",
         "collider": 1.2,
-        "foot": 1.3868
+        "foot": 2.2327
       },
       {
         "name": "chan_dong_do_nat",
-        "vi": "Chân đồng đổ nát phương Tây",
+        "vi": "Tượng chiến binh Dị Vực gãy",
         "collider": [
           [
             -0.6,
@@ -376,13 +376,13 @@
             1.0
           ]
         ],
-        "foot": 1.6047
+        "foot": 1.864
       },
       {
         "name": "co_rach",
-        "vi": "Cờ rách",
+        "vi": "Cờ chiến Dị Vực rách",
         "collider": 0.4,
-        "foot": 1.2508
+        "foot": 1.2234
       }
     ]
   }
