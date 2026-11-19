@@ -18,13 +18,14 @@ interface View {
   fov?: number;
 }
 
-/** Sáu góc máy: trạm, đường ra bia mạch, vực cầu đá gãy, mộ cổ, vách đứt mạch, toàn cảnh. `eye/at` = [x, dy, z]. */
+/** Sáu góc máy: trạm, bia mạch, cầu đá gãy, mộ cổ, vách đứt mạch, cầu treo (MAP-2), toàn cảnh. `eye/at` = [x, dy, z]. */
 export const VIEWS: View[] = [
   { name: 'tram', eye: [1024, 6, 1070], at: [1024, 10, 980], fov: 56 },
   { name: 'machtinh', eye: [1240, 5, 1150], at: [1279, 9, 1199], fov: 58 },
   { name: 'cauda', eye: [1470, 8, 1010], at: [1504, 6, 974], fov: 60 },
   { name: 'congmo', eye: [630, 6, 980], at: [584, 10, 944], fov: 58 },
   { name: 'vachdut', eye: [1030, 10, 540], at: [1044, 40, 484], fov: 60 },
+  { name: 'cautreo', eye: [925, 12, 1524], at: [970, -2, 1524], fov: 62 },
   { name: 'toancanh', eye: [1500, 160, 1560], at: [950, 20, 950], fov: 58 },
 ];
 
