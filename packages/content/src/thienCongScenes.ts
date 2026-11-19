@@ -253,7 +253,7 @@ export const SCENES: Record<string, Scene[]> = {
       rMin: 24,
       face: 'center',
       fixed: [
-        { name: 'tran_do_khac_san', dx: 0, dz: 24, yaw: 0, s: 1.1 },
+        { name: 'tran_do_khac_san', dx: 0, dz: -12, yaw: 0, s: 1.0 },
         { name: 'cot_tran', dx: 11.0, dz: 3.4, yaw: 1.27, s: 1.0 },
         { name: 'cot_tran', dx: 2.6, dz: 11.2, yaw: 0.22, s: 1.0, v2: true },
         { name: 'cot_tran', dx: -8.4, dz: 7.8, yaw: -0.82, s: 1.0 },

@@ -1161,7 +1161,7 @@ export const THIEN_CONG_PROPS: Record<string, readonly TcProp[]> = {
     { id: 'prop_tc_kho_go', x: 2090.8, z: 2396.4, yaw: 0.7, s: 1.06 },
     { id: 'prop_tc_kho_go', x: 2081.5, z: 2372, yaw: 2.53, s: 0.95 },
     { id: 'prop_tc_kho_go', x: 2063.9, z: 2373.6, yaw: 1.97, s: 1.06 },
-    { id: 'prop_tc_tran_do_khac_san', x: 2048, z: 1774, yaw: 0, s: 1.1 },
+    { id: 'prop_tc_tran_do_khac_san', x: 2048, z: 1738, yaw: 0, s: 1 },
     { id: 'prop_tc_cot_tran', x: 2059, z: 1753.4, yaw: 1.27, s: 1, col: [[2059, 1753.4, 0.7]] },
     { id: 'prop_tc_cot_tran_2', x: 2050.6, z: 1761.2, yaw: 0.22, s: 1, col: [[2050.6, 1761.2, 0.7]] },
     { id: 'prop_tc_cot_tran', x: 2039.6, z: 1757.8, yaw: -0.82, s: 1, col: [[2039.6, 1757.8, 0.7]] },
