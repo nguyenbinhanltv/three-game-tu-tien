@@ -928,6 +928,8 @@ export interface LevelAssets {
   kinhNguyetArt?: boolean;
   /** Cảnh Thần Tàng Điện (DUN-1 PR4, client `game/world/thanTangArt.ts` + GLB `arch_than_tang`): điện tàng đen tím nạm vàng. Chỉ để nhìn. */
   thanTangArt?: boolean;
+  /** Cảnh Xích Tẫn Khích (DUN-1 PR6, client `game/world/xichTanArt.ts` + GLB `arch_xich_tan`): hẻm núi lửa tàn đỏ-đen. Chỉ để nhìn. */
+  xichTanArt?: boolean;
   /** Cảnh Kim Dạ Cung (DUN-1 PR5, client `game/world/kimDaArt.ts` + GLB `arch_kim_da`): cung dát vàng đêm lồng đèn. Chỉ để nhìn. */
   kimDaArt?: boolean;
   /**
