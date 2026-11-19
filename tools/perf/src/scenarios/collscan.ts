@@ -12,7 +12,7 @@ import { sleep } from '../lib/devserver';
 import { cam, enterLevel, gm, skipCutscene, tp, waitLevel } from '../lib/game';
 import { requireLevel } from '../lib/levelpoints';
 import type { Scenario } from '../lib/scenario';
-import { settleMs, snap, writeJson } from '../lib/shot';
+import { settleMs, sheet, snap, writeJson } from '../lib/shot';
 import { classify, type Item, summarize } from './collscan.lib';
 
 const LEVEL = opt('--level', 'van_lam');
@@ -57,12 +57,13 @@ export default {
     const pts = grid(LEVEL, step).slice(0, num('--limit', 400));
     const walking = flag('--walk');
     const videoDir = path.join(r.out, 'video');
-    if (walking) fs.mkdirSync(videoDir, { recursive: true });
+    const video = walking && flag('--video');
+    if (video) fs.mkdirSync(videoDir, { recursive: true });
     const { ctx, page } = await r.open({
       name: 'CollScan',
       viewport: size('1280x720'),
       warnings: true,
-      video: walking ? videoDir : undefined,
+      video: video ? videoDir : undefined,
     });
     await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(dg0 ? (dg0.minLevel ?? 0) + 2 : 27, requireLevel(LEVEL).minLevel ?? 0)}`);
     await gm(page, 'god on');
@@ -97,26 +98,49 @@ export default {
       await sleep(1200);
       await page.keyboard.down('KeyW');
       if (flag('--up')) await page.keyboard.down('Space');
+      // Contact sheet 3x3: 9 khung đều nhau trong lúc giữ W, chú thích toạ độ + cao độ (đọc được leo bậc, chặn tường/cây mà không cần xem video).
+      const frames: { img: Buffer; caption: string }[] = [];
       let maxY = -Infinity;
-      for (let t = 0; t < secs * 1000; t += 250) {
-        await sleep(250);
-        maxY = Math.max(maxY, await page.evaluate(() => window.__game!.renderPos.y));
+      const total = secs * 1000;
+      for (let k = 0; k < 9; k++) {
+        await sleep(total / 9);
+        const at = await page.evaluate(() => ({
+          x: window.__game!.renderPos.x,
+          y: window.__game!.renderPos.y,
+          z: window.__game!.renderPos.z,
+        }));
+        maxY = Math.max(maxY, at.y);
+        frames.push({
+          img: await page.screenshot(),
+          caption: `${((k + 1) * secs) / 9 > 0 ? (((k + 1) * secs) / 9).toFixed(1) : '0'} s · x ${at.x.toFixed(1)} z ${at.z.toFixed(1)} · cao ${at.y.toFixed(2)}`,
+        });
       }
       console.log(`[walk] cao nhất ${maxY.toFixed(2)}`);
       await page.keyboard.up('KeyW');
       await page.keyboard.up('Space');
-      await sleep(800);
+      await sleep(500);
       const end = await page.evaluate(() => ({
         x: window.__game!.renderPos.x,
         y: window.__game!.renderPos.y,
         z: window.__game!.renderPos.z,
       }));
       console.log(`[walk] ${opt('--name', 'walk')}: (${wx}, ${wz}) → (${end.x.toFixed(1)}, ${end.y.toFixed(1)}, ${end.z.toFixed(1)})`);
-      await ctx.close(); // đóng context mới ghi xong file video
-      const vids = fs.readdirSync(videoDir).filter((f) => f.endsWith('.webm'));
-      const newest = vids.map((f) => ({ f, t: fs.statSync(path.join(videoDir, f)).mtimeMs })).sort((a, b) => b.t - a.t)[0];
+      await sheet(
+        ctx,
+        path.join(r.out, `${LEVEL}-${opt('--name', 'walk')}-sheet.png`),
+        [0, 1, 2].map((row) => ({
+          label: row === 0 ? `${LEVEL} · ${opt('--name', 'walk')} · bắt đầu (${wx}, ${wz})` : '',
+          cells: frames.slice(row * 3, row * 3 + 3),
+        })),
+        { cell: 420, ratio: 9 / 16 },
+      );
+      await ctx.close(); // đóng context (mới ghi xong file video nếu có `--video`)
+      const vids = !video ? [] : fs.readdirSync(videoDir).filter((f) => f.endsWith('.webm'));
+      const newest = !video
+        ? undefined
+        : vids.map((f) => ({ f, t: fs.statSync(path.join(videoDir, f)).mtimeMs })).sort((a, b) => b.t - a.t)[0];
       if (newest) fs.renameSync(path.join(videoDir, newest.f), path.join(r.out, `${LEVEL}-${opt('--name', 'walk')}.webm`));
-      fs.rmSync(videoDir, { recursive: true, force: true });
+      if (video) fs.rmSync(videoDir, { recursive: true, force: true });
       return;
     }
     if (flag('--at')) {

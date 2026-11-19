@@ -56,6 +56,7 @@ export type GradingName =
   | 'kn'
   | 'tt'
   | 'xk'
+  | 'dk'
   | 'kd'
   | 'lk_dawn'
   | 'lk_day'
@@ -121,6 +122,7 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   kn: parse(raw.presets.kn),
   tt: parse(raw.presets.tt),
   xk: parse(raw.presets.xk),
+  dk: parse(raw.presets.dk),
   kd: parse(raw.presets.kd),
   lk_dawn: parse(raw.presets.lk_dawn),
   lk_day: parse(raw.presets.lk_day),
@@ -161,6 +163,7 @@ export function moodVariant(base: GradingName, tod: TimeOfDay): GradingName {
   if (base === 'kn') return 'kn';
   if (base === 'tt') return 'tt';
   if (base === 'xk') return 'xk';
+  if (base === 'dk') return 'dk';
   if (base === 'kd') return 'kd';
   // Lạc Kiếm (MAP-1): bộ bốn thời điểm riêng, có hoàng hôn.
   if (base.startsWith('lk')) return `lk_${tod}` as GradingName;

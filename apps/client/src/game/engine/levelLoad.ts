@@ -27,6 +27,7 @@ import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMach
 import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../world/kinhNguyetArt';
 import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
 import { XichTanArt, xkMaterialFor } from '../world/xichTanArt';
+import { DoKiepArt, dkMaterialFor } from '../world/doKiepArt';
 import { buildGildedSky, KD_DOME, KimDaArt } from '../world/kimDaArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
@@ -448,6 +449,11 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.xichTanArt.group);
     void loadXkModel(eng, q.shadows);
   }
+  if (levelAssets(id).doKiepArt) {
+    eng.doKiepArt = new DoKiepArt({ lights: q.lights && isWebGPU(eng.renderer), hazardActive: () => eng.vfx.hazards.length > 0 });
+    eng.scene.add(eng.doKiepArt.group);
+    void loadDkModel(eng, q.shadows);
+  }
   if (levelAssets(id).kimDaArt) {
     eng.kimDaArt = new KimDaArt();
     eng.scene.add(eng.kimDaArt.group);
@@ -546,6 +552,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.xichTanArt.group);
     eng.xichTanArt.dispose();
     eng.xichTanArt = null;
+  }
+  if (eng.doKiepArt) {
+    drop(eng.doKiepArt.group);
+    eng.doKiepArt.dispose();
+    eng.doKiepArt = null;
   }
   if (eng.kimDaArt) {
     drop(eng.kimDaArt.group);
@@ -719,6 +730,21 @@ export async function loadXkModel(eng: Game, shadows: boolean): Promise<void> {
     origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
     prefix: 'xk',
     material: xkMaterialFor,
+  });
+}
+
+/**
+ * Nạp cảnh Độ Kiếp dựng bằng Blender (asset `arch_do_kiep`): đài lát đá khảm bát quái, tám lôi trụ, đỉnh đồng, vết sét cháy, tảng đá nung, tùng cháy.
+ * Mỗi vật đặt theo `heightAt` tại chỗ (sân phẳng tới r 78, xa hơn là sườn núi).
+ */
+export async function loadDkModel(eng: Game, shadows: boolean): Promise<void> {
+  const c = LEVELS.do_kiep!.dungeon!.center;
+  await loadDungeonModel(eng, shadows, {
+    asset: 'arch_do_kiep',
+    enabled: () => !!levelAssets(levelId()).doKiepArt,
+    origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
+    prefix: 'dk',
+    material: dkMaterialFor,
   });
 }
 
