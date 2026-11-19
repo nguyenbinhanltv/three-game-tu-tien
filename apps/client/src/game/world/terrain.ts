@@ -77,12 +77,15 @@ function isVanLam(): boolean {
   return VL;
 }
 
-const C_OCHRE = col(0xb2a082);
-const C_OCHRE_DRY = col(0xc4b08e);
-const C_OCHRE_RED = col(0x9f8068);
-const C_SANDSTONE = col(0xa09078);
-const C_SANDSTONE_DARK = col(0x7d6e5c);
-/** Đất son cốc đứt mạch: ngả vàng đất khô ↔ đỏ gạch theo nhiễu, dốc lộ sa thạch (không tuyết: art bible). */
+// MAP-2: bảng màu Đoạn Mạch đỏ son + vàng thu (đất vàng thu, thảm lá phong đỏ, sa thạch nâu đỏ).
+const C_OCHRE = col(0xbd9a5c);
+const C_OCHRE_DRY = col(0xd3b068);
+const C_OCHRE_RED = col(0x94503a);
+const C_SANDSTONE = col(0x9c6c4c);
+const C_SANDSTONE_DARK = col(0x6c4434);
+const C_MAPLE_LITTER = col(0xa83c26);
+const C_MAPLE_GOLD = col(0xe0a64a);
+/** Đất vàng thu ↔ đỏ gạch theo nhiễu, thảm lá phong rụng thành mảng đỏ/vàng, dốc lộ sa thạch nâu đỏ (không tuyết: art bible). */
 // Màu đất Bắc Hoang (bảng phụ `rift_*`): `bacHoangArt.ts` `bhGroundColor`.
 
 function ochreColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
@@ -91,7 +94,14 @@ function ochreColor(x: number, z: number, h: number, ny: number, out: THREE.Colo
     .copy(C_OCHRE)
     .lerp(n > 0 ? C_OCHRE_DRY : C_OCHRE_RED, Math.min(1, Math.abs(n) * 0.9))
     .multiplyScalar(0.94 + n * 0.12);
+  // thảm lá phong: mảng lớn (~60 m) đỏ son, lẫn đốm vàng, chỉ ở chỗ bằng
+  const m = fbm(x * 0.017 + 71, z * 0.017 - 33, 3, T.def.seed + 517);
   const slope = 1 - ny;
+  if (m > 0.14) {
+    const k = Math.min(1, (m - 0.14) * 3) * Math.max(0, 1 - slope * 5);
+    const fleck = fbm(x * 0.18, z * 0.18, 2, T.def.seed + 529);
+    out.lerp(fleck > 0.1 ? C_MAPLE_GOLD : C_MAPLE_LITTER, k * 0.55);
+  }
   if (slope > 0.12) out.lerp(n > 0 ? C_SANDSTONE : C_SANDSTONE_DARK, Math.min(1, (slope - 0.12) * 4.5));
   const w = T.def.water;
   if (w && h < w.y + 2.2) out.lerp(C_SAND, Math.min(1, (w.y + 2.2 - h) / 1.6));
