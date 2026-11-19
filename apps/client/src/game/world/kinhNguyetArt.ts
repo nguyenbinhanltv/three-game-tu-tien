@@ -319,41 +319,50 @@ export class KinhNguyetArt {
   readonly group = new THREE.Group();
   private readonly fx: DungeonFx;
   private readonly disposables: { dispose(): void }[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private reflectorNode: any = null;
 
   /** `reflect`: phản chiếu phẳng thật của sàn (một lần vẽ cảnh thêm, nửa độ phân giải); tắt ở preset Thấp/WebGL2. */
   constructor(opts: { reflect: boolean; hideInReflection?: THREE.Object3D } = { reflect: false }) {
     this.group.name = 'kinh-nguyet-art';
     let planar = undefined;
     if (opts.reflect) {
-      const rf = reflector({ resolution: 0.5, bounces: false });
+      const rf = reflector({ resolution: 0.4, bounces: false });
       rf.target.rotateX(-Math.PI / 2);
       rf.target.position.set(CENTER.x, heightAt(CENTER.x, CENTER.z) + 0.08, CENTER.z);
       this.group.add(rf.target);
       planar = rf;
+      this.reflectorNode = rf;
       // lượt vẽ phản chiếu không có MRT bloom nên vật liệu VFX (`fx-*`) và các vật `MeshBasicMaterial` thường (vòng chân nhân vật, dấu cổng) không biên dịch được:
       // ẩn nhóm VFX, nhãn tên (`label-batch`), mọi `Sprite` và các mesh đó trong đúng lượt này
       const hide = opts.hideInReflection;
       const base = rf.reflector;
       const before = base.updateBefore.bind(base);
+      // Danh sách vật cần ẩn được quét lại mỗi ~0,5 s (không `traverse` mỗi khung); vật mới sinh ra có thể lọt vào phản chiếu tối đa nửa giây.
+      let hidden: THREE.Object3D[] = [];
+      let sweepAt = 0;
       base.updateBefore = (frame: Parameters<typeof before>[0]) => {
         const scene = this.group.parent;
-        const hidden: THREE.Object3D[] = [];
-        scene?.traverse((o) => {
-          if (
-            o.visible &&
-            (o === hide ||
+        const now = performance.now();
+        if (now >= sweepAt) {
+          sweepAt = now + 500;
+          hidden = [];
+          scene?.traverse((o) => {
+            if (
+              o === hide ||
               o.name === 'label-batch' ||
               (o as THREE.Sprite).isSprite ||
-              (o as THREE.Mesh).material?.constructor === THREE.MeshBasicMaterial)
-          ) {
-            o.visible = false;
-            hidden.push(o);
-          }
-        });
+              (o as THREE.Mesh).material?.constructor === THREE.MeshBasicMaterial
+            )
+              hidden.push(o);
+          });
+        }
+        const was = hidden.map((o) => o.visible);
+        for (const o of hidden) o.visible = false;
         try {
           before(frame);
         } finally {
-          for (const o of hidden) o.visible = true;
+          hidden.forEach((o, k) => (o.visible = was[k]!));
         }
       };
     }
@@ -416,6 +425,12 @@ export class KinhNguyetArt {
   }
 
   dispose(): void {
+    if (this.reflectorNode) {
+      // render target riêng của phản chiếu phẳng (HalfFloat + depth) phải giải phóng khi rời level
+      this.group.remove(this.reflectorNode.target);
+      this.reflectorNode.dispose();
+      this.reflectorNode = null;
+    }
     this.fx.dispose();
     for (const d of this.disposables) d.dispose();
     this.disposables.length = 0;

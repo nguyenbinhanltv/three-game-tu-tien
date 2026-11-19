@@ -207,3 +207,9 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 
 - Lượt vẽ phản chiếu ẩn thêm **nhãn tên** (`InstancedMesh` `label-batch`, nay có `name`) và mọi `THREE.Sprite`; nhãn tên/HUD 3D không còn lộn ngược trên sàn.
 - Cường độ phản chiếu giảm ~40–45% (hệ số nền 0,38 → 0,15, fresnel 0,5 → 0,3, trần sáng 0,7 → 0,6) và mờ dần theo khoảng cách tới camera (50 → 150 m, giảm tối đa 50%), nên vân đá đọc được; phản chiếu mạnh ở vùng giữa và khi nhìn xiên.
+
+### Polish — Kính Nguyệt vòng 4 (review code): giải phóng render target, đo trong trận
+
+- `KinhNguyetArt.dispose()` gỡ `rf.target` khỏi group và gọi `reflector.dispose()` (giải phóng render target HalfFloat + depth); trước đó mỗi lần vào/ra level rò một render target. Hook ẩn vật trong lượt phản chiếu không `traverse` mỗi khung nữa: danh sách (nhãn tên, sprite, `MeshBasicMaterial` thường, nhóm VFX) quét lại mỗi ~0,5 s.
+- Độ phân giải phản chiếu 0,5 → 0,4. Phản chiếu chỉ bật ở preset có đèn (Cao/Cực cao) và WebGPU.
+- **Đo (`pnpm shots dungeonart --level kinh_nguyet --battle 1 --perf 1`, preset Cao, 1080p)**: cảnh trống 194–236 draw call, ~0,81–0,86M tam giác, 9–10 ms/khung; **đang đánh boss Chân Quân**: 205 draw call, ~0,97M tam giác, 9,4 ms/khung. Một lần đo trước khi hạ độ phân giải ra 257 draw call, 16,7 ms (ồn do chụp ảnh cùng lúc); chưa có số "không phản chiếu" cùng preset Cao để so riêng.
