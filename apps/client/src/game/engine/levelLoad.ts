@@ -17,6 +17,7 @@ import { bhCtx } from '../world/propScatter';
 import { Beacons } from '../../render/beacons';
 import { GodRays } from '../../render/godRays';
 import { LacKiemGarden } from '../world/lacKiemGarden';
+import { DoanMachArt } from '../world/doanMachArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { applyGrading, markBloom } from '../../render/post';
@@ -341,6 +342,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.thienKhuyetSky.group);
     void loadTkModel(eng, q.shadows);
   }
+  if (levelAssets(id).doanMachArt) {
+    eng.doanMachArt = new DoanMachArt();
+    eng.scene.add(eng.doanMachArt.group);
+  }
   const gr = levelAssets(id).godRays;
   if (gr) {
     eng.godRays = new GodRays(gr);
@@ -424,6 +429,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.thienKhuyetSky.group);
     eng.thienKhuyetSky.dispose();
     eng.thienKhuyetSky = null;
+  }
+  if (eng.doanMachArt) {
+    drop(eng.doanMachArt.group);
+    eng.doanMachArt.dispose();
+    eng.doanMachArt = null;
   }
   if (eng.lacKiemGarden) {
     drop(eng.lacKiemGarden.group);

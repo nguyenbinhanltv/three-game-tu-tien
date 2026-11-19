@@ -15,9 +15,9 @@
     "maskLo": -0.5,
     "maskHi": 0.2,
     "edge": {
-      "amp": 120,
-      "r0": 300,
-      "r1": 20
+      "amp": 210,
+      "r0": 252,
+      "r1": 110
     }
   },
   "features": [
@@ -580,6 +580,20 @@
       "outerR": 120,
       "round": true,
       "detail": 2
+    }
+  ],
+  "bridges": [
+    {
+      "id": "cau_treo_sa_lun",
+      "ax": 970,
+      "az": 1500,
+      "ay": 75.2,
+      "bx": 970,
+      "bz": 1548,
+      "by": 75.4,
+      "halfW": 1.25,
+      "sag": 2.4,
+      "own": true
     }
   ],
   "play": {

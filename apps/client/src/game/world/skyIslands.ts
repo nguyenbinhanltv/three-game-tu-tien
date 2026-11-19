@@ -62,7 +62,8 @@ export class SkyIslands {
       this.buildStorm(art.islands);
       this.buildWhaleRibs(art.islands);
     }
-    if (def.bridges?.length) this.buildBridges(def.bridges, terrain);
+    const chains = (def.bridges ?? []).filter((b) => !b.own);
+    if (chains.length) this.buildBridges(chains, terrain);
     for (const f of def.fakeIslands ?? []) this.buildFake(f);
     parent.add(this.group);
   }

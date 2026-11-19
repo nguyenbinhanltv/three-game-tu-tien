@@ -918,6 +918,8 @@ export interface LevelAssets {
   palace?: boolean | 'moon' | 'gilt';
   /** Tia sáng xuyên mây (MAP-1, render/godRays.ts): vùng rải tâm (x, z) bán kính `r`, `count` dải. Bỏ trống = không có. */
   godRays?: { x: number; z: number; r: number; count: number };
+  /** Cảnh Đoạn Mạch (MAP-2, client `game/world/doanMachArt.ts`): rừng phong, cổ trận khắc vách, cầu treo. Chỉ để nhìn. */
+  doanMachArt?: boolean;
   /**
    * Cảnh Lạc Kiếm trên không (MAP-1, chỉ để nhìn, không có va chạm): đảo nổi quanh tông môn, cầu mây, thác, Kiếm Đài.
    * Toạ độ tương đối tâm tông môn (`SECT`): `x`, `z` mét; `y` là cao độ MẶT TRÊN đảo tính từ `SECT.y` (m).
