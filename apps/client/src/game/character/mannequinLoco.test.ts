@@ -96,4 +96,12 @@ describe('MannequinCharacter: đi lùi / ngang / chéo (A1)', () => {
   it('tốc độ chạy nhanh dùng clip hướng của dải chạy nhanh', () => {
     expect(run(Math.PI, 9).Sprint_Bwd_Loop).toBeGreaterThan(0.95);
   });
+  it('đi ngang rồi quay lại đi thẳng: clip ngang/lùi về đúng 0 (mixer bỏ qua), không tụt dần mãi', () => {
+    const m = fakeDir();
+    for (let i = 0; i < 60; i++) m.update(1 / 60, anim({ speed: 5.36, moveAngle: Math.PI / 2 }));
+    for (let i = 0; i < 120; i++) m.update(1 / 60, anim({ speed: 5.36, moveAngle: 0 }));
+    const w = weightsByName(m);
+    for (const [name, v] of Object.entries(w)) if (name !== 'Jog_Fwd_Loop') expect(v).toBe(0);
+    expect(w.Jog_Fwd_Loop).toBeCloseTo(1, 3);
+  });
 });

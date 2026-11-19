@@ -158,6 +158,17 @@ export function baseClipOf(a: AnimState): string {
   return a.combat ? 'Sword_Idle' : 'Idle_Loop';
 }
 
+/** Kẹp trọng số < 1e-3 về 0 rồi chuẩn hóa tổng về 1 (tại chỗ). */
+function snapMix<T extends object>(w: T): void {
+  const r = w as Record<string, number>;
+  let sum = 0;
+  for (const k of Object.keys(r)) {
+    if (r[k]! < 1e-3) r[k] = 0;
+    sum += r[k]!;
+  }
+  if (sum > 0) for (const k of Object.keys(r)) r[k] = r[k]! / sum;
+}
+
 export interface MannequinTemplate {
   /** Pose chiêu K-5 retarget sang model này (null tới khi nguồn pose nạp xong). */
   bank: MannequinPoseBank | null;
@@ -889,6 +900,9 @@ export class MannequinCharacter implements CharacterView {
       this.mix.sprint += (m.sprint - this.mix.sprint) * k;
       const dm = dirMix(a.moveAngle ?? 0);
       for (const d of ['f', 'b', 'l', 'r'] as const) this.dir[d] += (dm[d] - this.dir[d]) * k;
+      // Làm mượt chỉ tiệm cận 0: kẹp giá trị nhỏ về đúng 0 (three bỏ qua action trọng số 0) rồi chuẩn hóa lại tổng = 1.
+      snapMix(this.mix);
+      snapMix(this.dir);
       this.locoCycles = m.cycles;
     } else if (this.base && name === 'Jog_Fwd_Loop') this.base.timeScale = jogRate(a.speed);
     else if (this.base) this.base.timeScale = 1;
