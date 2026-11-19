@@ -241,6 +241,7 @@ function stuckScan(): { checked: number; stuck: [number, number][] } {
     for (let x = PLAY.x0; x <= PLAY.x1; x += 4) {
       if (!near(x, z) && !nearEdge(x, z)) continue;
       if (!isLand(x, z)) continue;
+      if (blockedAt(col, x, z, groundAt(x, z), 0.05)) continue; // tâm nằm trong thân vật rắn (tường, bậc dày): không phải chỗ người đứng được
       checked++;
       if (!escapes(x, z)) stuck.push([x, z]);
     }

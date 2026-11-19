@@ -339,6 +339,30 @@
    "y1": 11.59
   }
  ],
+ "prop_tc_chan_dong_do_nat": [
+  {
+   "k": "box",
+   "x": 0.22,
+   "z": 0.31,
+   "hx": 1.77,
+   "hz": 1.15,
+   "y0": 0,
+   "y1": 3.04,
+   "walk": false
+  }
+ ],
+ "prop_tc_chan_dong_do_nat_2": [
+  {
+   "k": "box",
+   "x": 0.37,
+   "z": 0.13,
+   "hx": 1.91,
+   "hz": 1.32,
+   "y0": 0,
+   "y1": 3.44,
+   "walk": false
+  }
+ ],
  "prop_tc_chuong_dong": [
   {
    "k": "cyl",
@@ -385,6 +409,30 @@
    "walk": false
   }
  ],
+ "prop_tc_co_rach": [
+  {
+   "k": "box",
+   "x": 0.72,
+   "z": 0,
+   "hx": 1.16,
+   "hz": 0.75,
+   "y0": 0,
+   "y1": 4.35,
+   "walk": false
+  }
+ ],
+ "prop_tc_co_rach_2": [
+  {
+   "k": "box",
+   "x": 0.72,
+   "z": 0,
+   "hx": 1.16,
+   "hz": 0.75,
+   "y0": 0,
+   "y1": 4.35,
+   "walk": false
+  }
+ ],
  "prop_tc_cot_da_do": [
   {
    "k": "cyl",
@@ -403,6 +451,26 @@
    "r": 1.06,
    "y0": 0,
    "y1": 3.56
+  }
+ ],
+ "prop_tc_cot_ta_mau_tim": [
+  {
+   "k": "cyl",
+   "x": 0.02,
+   "z": 0,
+   "r": 1,
+   "y0": 0,
+   "y1": 5.04
+  }
+ ],
+ "prop_tc_cot_ta_mau_tim_2": [
+  {
+   "k": "cyl",
+   "x": 0.02,
+   "z": 0,
+   "r": 1,
+   "y0": 0,
+   "y1": 6.04
   }
  ],
  "prop_tc_cot_tran": [
@@ -925,6 +993,30 @@
    "walk": false
   }
  ],
+ "prop_tc_tinh_the_tim": [
+  {
+   "k": "box",
+   "x": 0.14,
+   "z": -0.03,
+   "hx": 2.08,
+   "hz": 2.12,
+   "y0": 0,
+   "y1": 2.6,
+   "walk": false
+  }
+ ],
+ "prop_tc_tinh_the_tim_2": [
+  {
+   "k": "box",
+   "x": -0.01,
+   "z": -0.02,
+   "hx": 2.83,
+   "hz": 2.76,
+   "y0": 0,
+   "y1": 3.6,
+   "walk": false
+  }
+ ],
  "prop_tc_tran_do_khac_san": [],
  "prop_tc_tran_do_khac_san_2": [],
  "prop_tc_tre": [
@@ -1036,6 +1128,30 @@
    "hz": 0.04,
    "y0": 0,
    "y1": 3.18,
+   "walk": false
+  }
+ ],
+ "prop_tc_xuong_cu_thu": [
+  {
+   "k": "box",
+   "x": 0.82,
+   "z": 0.07,
+   "hx": 2.64,
+   "hz": 0.75,
+   "y0": 0,
+   "y1": 1.79,
+   "walk": false
+  }
+ ],
+ "prop_tc_xuong_cu_thu_2": [
+  {
+   "k": "box",
+   "x": 0.82,
+   "z": 0.07,
+   "hx": 2.64,
+   "hz": 0.75,
+   "y0": 0,
+   "y1": 1.79,
    "walk": false
   }
  ],

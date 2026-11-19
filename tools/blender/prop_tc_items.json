@@ -325,6 +325,65 @@
         "collider": 0.0,
         "foot": 0.4
       }
+    ],
+    "di_vuc": [
+      {
+        "name": "xuong_cu_thu",
+        "vi": "Xương cự thú thu nhỏ",
+        "collider": [
+          [
+            -1.0,
+            0,
+            0.5
+          ],
+          [
+            0.4,
+            0,
+            0.5
+          ],
+          [
+            2.6,
+            0.2,
+            0.8
+          ]
+        ],
+        "foot": 2.7813
+      },
+      {
+        "name": "cot_ta_mau_tim",
+        "vi": "Cột tà màu tím",
+        "collider": 0.8,
+        "foot": 1.1096
+      },
+      {
+        "name": "tinh_the_tim",
+        "vi": "Tinh thể tím",
+        "collider": 1.2,
+        "foot": 2.2327
+      },
+      {
+        "name": "chan_dong_do_nat",
+        "vi": "Tượng chiến binh Dị Vực gãy",
+        "collider": [
+          [
+            -0.6,
+            0,
+            1.0
+          ],
+          [
+            0.6,
+            0,
+            1.0
+          ]
+        ],
+        "foot": 1.864
+      },
+      {
+        "name": "co_rach",
+        "vi": "Cờ chiến Dị Vực rách",
+        "collider": 0.4,
+        "foot": 1.2234
+      }
     ]
   }
 }

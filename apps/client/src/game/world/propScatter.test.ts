@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COLLIDERS, FOREST, HAND_PROPS, heightAt, PROP_COLLIDERS, SECT, VALLEY, WATER_Y } from '@dtl/shared';
+import { COLLIDERS_LAYOUT, FOREST, HAND_PROPS, heightAt, PROP_COLLIDERS, SECT, VALLEY, WATER_Y } from '@dtl/shared';
 import { allProps, KIEM_GAY, nearPropTree, TREE_IDS } from './propScatter';
 import atlas from '../core/impostors.json';
 import { PROP_CFG } from './props';
@@ -34,7 +34,7 @@ describe('bố cục prop (P2-A4)', () => {
     for (const p of scattered) {
       if (p.id !== 'prop_lau') expect(p.y, `${p.id} ${p.x},${p.z}`).toBeGreaterThan(WATER_Y + 1.2);
       expect(Math.abs(p.x - SECT.x) < 9 && p.z >= 2136 && p.z < 2400, `${p.id} nằm trên sơn đạo`).toBe(false);
-      for (const c of COLLIDERS) expect(Math.hypot(p.x - c.x, p.z - c.z), `${p.id} chạm collider`).toBeGreaterThan(c.r);
+      for (const c of COLLIDERS_LAYOUT) expect(Math.hypot(p.x - c.x, p.z - c.z), `${p.id} chạm collider`).toBeGreaterThan(c.r);
     }
   });
 
@@ -44,7 +44,7 @@ describe('bố cục prop (P2-A4)', () => {
     expect(PROP_COLLIDERS.length).toBeLessThanOrEqual(20);
     for (const c of PROP_COLLIDERS) expect(c.r).toBeLessThanOrEqual(2.4);
     for (const h of HAND_PROPS.filter((p) => !p.r)) {
-      for (const c of COLLIDERS) expect(Math.hypot(h.x - c.x, h.z - c.z), `${h.id} ${h.x},${h.z}`).toBeGreaterThan(c.r * 0.5);
+      for (const c of COLLIDERS_LAYOUT) expect(Math.hypot(h.x - c.x, h.z - c.z), `${h.id} ${h.x},${h.z}`).toBeGreaterThan(c.r * 0.5);
     }
   });
 
@@ -91,7 +91,7 @@ describe('bố cục prop (P2-A4)', () => {
     it('không có cây đè lên lối đi tông môn–sơn đạo hoặc quá gần collider', () => {
       for (const p of trees.filter((t) => !HAND_PROPS.some((h) => h.x === t.x && h.z === t.z))) {
         expect(Math.abs(p.x - SECT.x) < 9 && p.z >= 2136 && p.z < 2400, `${p.id} ${p.x},${p.z} trên sơn đạo`).toBe(false);
-        for (const c of COLLIDERS) expect(Math.hypot(p.x - c.x, p.z - c.z), `${p.id} chạm collider`).toBeGreaterThan(c.r + 2);
+        for (const c of COLLIDERS_LAYOUT) expect(Math.hypot(p.x - c.x, p.z - c.z), `${p.id} chạm collider`).toBeGreaterThan(c.r + 2);
       }
     });
   });

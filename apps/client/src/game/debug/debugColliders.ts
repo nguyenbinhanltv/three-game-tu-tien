@@ -7,7 +7,7 @@ export type VizKind = 'circle' | 'block' | 'walk' | 'pass';
 const KIND_COLOR: Record<VizKind, number> = { circle: 0xff5ad1, block: 0x33e6ff, walk: 0x59ff66, pass: 0xffe64d };
 const KINDS = Object.keys(KIND_COLOR) as VizKind[];
 /** Số hình 3D tối đa vẽ cùng lúc (cấp bộ đệm một lần). */
-const MAX_SHAPES = 1200;
+const MAX_SHAPES = 4000;
 const SHAPE_VERTS = 24 + 16 * 4; // hộp: 12 cạnh; trụ: hai vòng 16 đoạn + 4 gân (đủ chỗ cho cả hai)
 
 /** Hình 3D nằm trong tầm vẽ quanh (x, z), tính cả cỡ. */
@@ -166,7 +166,9 @@ export class ColliderViz {
     const circles = collidersNear(terrain.colliders, x, z).slice(0, MAX_CIRCLES);
     const cArr = this.layers.circle.pos.array as Float32Array;
     for (const c of circles) at.circle = writeCollider(cArr, at.circle, c, groundAt);
-    const shapes = shapesNear(collisionOf(lv).shapes, x, z).slice(0, MAX_SHAPES);
+    const shapes = shapesNear(collisionOf(lv).shapes, x, z)
+      .sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z))
+      .slice(0, MAX_SHAPES);
     const room = { block: 0, walk: 0, pass: 0 };
     for (const sh of shapes) {
       const k = shapeKind(sh) as Exclude<VizKind, 'circle'>;

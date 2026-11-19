@@ -7,8 +7,9 @@ describe('collider prop theo level (COL-1 / C-2)', () => {
     for (const level of ['van_lam', 'doan_mach', 'van_hai', 'thien_khuyet', 'bac_hoang']) {
       expect(collisionOf(level).size, level).toBeGreaterThan(50);
     }
-    // Kiếm Trủng là level riêng (khóa theo levelId) nhưng cùng danh sách prop với Vân Lam.
-    expect(collisionOf('kiem_trung').size).toBe(collisionOf('van_lam').size);
+    // Kiếm Trủng là level riêng (khóa theo levelId): cùng danh sách prop với Vân Lam nhưng không có kiến trúc tông môn của Vân Lam.
+    expect(collisionOf('kiem_trung').size).toBeGreaterThan(50);
+    expect(collisionOf('kiem_trung').size).toBeLessThan(collisionOf('van_lam').size);
     expect(collisionOf('kiem_trung')).not.toBe(collisionOf('van_lam'));
   });
 
