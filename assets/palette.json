@@ -270,12 +270,12 @@
       "tt": {
         "label": "Thần Tàng Điện — điện tàng đen tím nạm vàng",
         "sunColor": "#E8DCC4", "sunIntensity": 1.5, "sunElevationDeg": 56,
-        "skyColor": "#3A2E58", "skyIntensity": 0.55,
-        "fogColor": "#1C1630", "fogDensity": 0.001, "heightFogTop": 12, "heightFogBoost": 2.0,
+        "skyColor": "#46424E", "skyIntensity": 0.55,
+        "fogColor": "#1C1824", "fogDensity": 0.001, "heightFogTop": 12, "heightFogBoost": 2.0,
         "fogHaze": 0.0008, "fogHazeStart": 80, "fogScatter": 0.5, "rim": 1.0,
-        "shadowTint": "#120C26", "highlightTint": "#F4D27E", "splitBalance": -0.05,
-        "shadowAmount": 0.4, "highlightAmount": 0.3,
-        "blackLift": "#120E1E", "contrast": 1.22, "saturation": 0.88, "exposure": 0.85
+        "shadowTint": "#16121C", "highlightTint": "#F4D27E", "splitBalance": -0.05,
+        "shadowAmount": 0.38, "highlightAmount": 0.3,
+        "blackLift": "#14111A", "contrast": 1.22, "saturation": 0.5, "exposure": 0.9
       },
       "xk": {
         "label": "Xích Tẫn Khích — hẻm núi lửa tàn, mặt trời đỏ thấp, khói than",
