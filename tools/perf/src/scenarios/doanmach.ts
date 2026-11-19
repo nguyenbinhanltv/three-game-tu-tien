@@ -28,8 +28,14 @@ export const VIEWS: View[] = [
   { name: 'toancanh', eye: [1500, 160, 1560], at: [950, 20, 950], fov: 58 },
 ];
 
+function doanMachTerrain() {
+  const lv = LEVELS.doan_mach;
+  if (!lv) throw new Error('thiếu level doan_mach');
+  return terrainOf(lv);
+}
+
 const eyeAt = (v: View, p: 'eye' | 'at') => {
-  const t = terrainOf(LEVELS.doan_mach!);
+  const t = doanMachTerrain();
   const [x, dy, z] = v[p];
   return { x, y: t.heightAt(x, z) + dy, z };
 };
@@ -50,7 +56,8 @@ export default {
       const a = eyeAt(v, 'at');
       return page.evaluate(
         (c) => {
-          window.__game!.freeCam = { x: c.e.x, y: c.e.y, z: c.e.z, tx: c.a.x, ty: c.a.y, tz: c.a.z, fov: c.fov };
+          const g = window.__game;
+          if (g) g.freeCam = { x: c.e.x, y: c.e.y, z: c.e.z, tx: c.a.x, ty: c.a.y, tz: c.a.z, fov: c.fov };
         },
         { e, a, fov: v.fov },
       );
@@ -102,7 +109,7 @@ export default {
       await hideUi(page, 'hud');
       await tp(page, 1024, 1060);
       const secs = num('--secs', 45);
-      const t = terrainOf(LEVELS.doan_mach!);
+      const t = doanMachTerrain();
       const t0 = Date.now();
       while ((Date.now() - t0) / 1000 < secs) {
         const u = (Date.now() - t0) / 1000 / secs;
@@ -114,7 +121,8 @@ export default {
         const z = 1024 + Math.cos(a) * R;
         await page.evaluate(
           (c) => {
-            window.__game!.freeCam = { x: c.x, y: c.y, z: c.z, tx: 1024, ty: c.ty, tz: 1024, fov: 58 };
+            const g = window.__game;
+            if (g) g.freeCam = { x: c.x, y: c.y, z: c.z, tx: 1024, ty: c.ty, tz: 1024, fov: 58 };
           },
           { x, z, y: t.heightAt(x, z) + h, ty: t.heightAt(1024, 1024) + 15 },
         );
