@@ -93,6 +93,7 @@ class LabelBatch {
     this.mesh.count = 0;
     this.mesh.frustumCulled = false;
     this.mesh.renderOrder = 5;
+    this.mesh.name = 'label-batch';
     this.mesh.raycast = () => {};
     this.mesh.visible = false;
   }

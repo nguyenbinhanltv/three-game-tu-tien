@@ -265,7 +265,7 @@
         "fogHaze": 0.0007, "fogHazeStart": 80, "fogScatter": 0.5, "rim": 1.0,
         "shadowTint": "#2A3350", "highlightTint": "#F2F0E6", "splitBalance": 0.0,
         "shadowAmount": 0.3, "highlightAmount": 0.25,
-        "blackLift": "#1A2034", "contrast": 1.14, "saturation": 0.62, "exposure": 0.92
+        "blackLift": "#141A2C", "contrast": 1.2, "saturation": 0.66, "exposure": 0.8
       },
       "tt": {
         "label": "Thần Tàng Điện — điện tàng đen tím nạm vàng",
