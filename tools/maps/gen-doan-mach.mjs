@@ -575,7 +575,7 @@ const terrain = {
     maskOct: 2,
     maskLo: -0.5,
     maskHi: 0.2,
-    edge: { amp: 210, r0: 252, r1: 110 } // MAP-2: vách dựng đứng, chỉ ngoài vùng chơi (mép chơi ở cách rìa thế giới 244 m),
+    edge: { amp: 210, r0: 252, r1: 110 }, // MAP-2: vách dựng đứng, chỉ ngoài vùng chơi (mép chơi ở cách rìa thế giới 244 m),
   },
   features: [
     ...chain,
