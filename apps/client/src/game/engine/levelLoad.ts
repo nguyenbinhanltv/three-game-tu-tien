@@ -24,6 +24,7 @@ import { LacKiemGarden } from '../world/lacKiemGarden';
 import { DoanMachArt } from '../world/doanMachArt';
 import { KiemTrungArt } from '../world/kiemTrungArt';
 import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
+import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../world/kinhNguyetArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { VanHaiWow } from '../world/vanHaiWow';
@@ -311,7 +312,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
             .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
     // Cung gương: quầng đèn nhỏ, màu lạnh, không vào bloom (đèn đá không cháy trắng).
     const halos = levelAssets(id).palace
-      ? createLanternHalos(pts, 1.3, levelAssets(id).palace === 'gilt' ? 0xd8a64a : 0xb8cdee)
+      ? createLanternHalos(pts, 1.3, levelAssets(id).palace === 'gilt' ? 0xd8a64a : levelAssets(id).kinhNguyetArt ? 0xffc47a : 0xb8cdee)
       : createLanternHalos(pts);
     eng.scene.add(halos);
     eng.levelObjs.push(halos);
@@ -327,9 +328,11 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     // Kiếm Trủng (DUN-1): huyệt kiếm cao, có ô trời mở; level khác giữ vỏ hang cũ.
     const shell = levelAssets(id).kiemTrungArt
       ? buildSwordCaveShell(cave, heightAt(cave.x, cave.z))
-      : levelAssets(id).phucMachArt
-        ? buildMineCaveShell(cave, heightAt(cave.x, cave.z), PM_OCULI)
-        : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
+      : levelAssets(id).kinhNguyetArt
+        ? buildMoonDomeShell(cave, heightAt(cave.x, cave.z))
+        : levelAssets(id).phucMachArt
+          ? buildMineCaveShell(cave, heightAt(cave.x, cave.z), PM_OCULI)
+          : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
     const glow = buildCrystalGlow(
       propsOf(id)
         .filter((p) => p.id === 'prop_mach_tinh_tru')
@@ -337,7 +340,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     );
     eng.scene.add(shell, glow);
     eng.levelObjs.push(shell, glow);
-    if (palace) {
+    if (palace && !levelAssets(id).kinhNguyetArt) {
       // Cung gương (E3-M): sàn gương giả phủ lòng chảo (một draw call, không phản chiếu thật).
       const floor = buildMirrorFloor({ ...cave, r: cave.r - 2 }, heightAt, palace);
       const hall = buildPalaceHall(cave, heightAt, palace);
@@ -358,7 +361,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     const all = allProps(levelId());
     // Lạc Kiếm (MAP-1 bản B): cây Tripo (tán đĩa phẳng) thay bằng cây thẻ alpha (cardForest.ts); PropLayer giữ phần còn lại (đèn, bia, đá…).
     const cardTrees = !!levelAssets(id).lacKiemSky;
-    eng.props = new PropLayer(undefined, cardTrees ? all.filter((p) => !CARD_TREE_IDS.has(p.id)) : all);
+    // Kính Nguyệt (DUN-1 PR3): đá trôi xám đen lạc tông với điện ngọc trắng, bỏ khỏi cảnh (prop chỉ để nhìn, không va chạm).
+    const dropIds = levelAssets(id).kinhNguyetArt ? new Set(['prop_da_troi']) : null;
+    const shown = dropIds ? all.filter((p) => !dropIds.has(p.id)) : all;
+    eng.props = new PropLayer(undefined, cardTrees ? shown.filter((p) => !CARD_TREE_IDS.has(p.id)) : shown);
     if (cardTrees) {
       void loadSkyTextures().then((tex) => {
         if (!tex || eng.disposed || eng.cardForest || levelId() !== id) return;
@@ -413,6 +419,11 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.phucMachArt = new PhucMachArt();
     eng.scene.add(eng.phucMachArt.group);
     void loadPmModel(eng, q.shadows);
+  }
+  if (levelAssets(id).kinhNguyetArt) {
+    eng.kinhNguyetArt = new KinhNguyetArt();
+    eng.scene.add(eng.kinhNguyetArt.group);
+    void loadKnModel(eng, q.shadows);
   }
   const gr = levelAssets(id).godRays;
   if (gr) {
@@ -492,6 +503,11 @@ export function unloadLevel(eng: Game): void {
     eng.tkAsset.handle.release();
     for (const m of eng.tkAsset.mats) m.dispose();
     eng.tkAsset = null;
+  }
+  if (eng.kinhNguyetArt) {
+    drop(eng.kinhNguyetArt.group);
+    eng.kinhNguyetArt.dispose();
+    eng.kinhNguyetArt = null;
   }
   if (eng.phucMachArt) {
     drop(eng.phucMachArt.group);
@@ -639,6 +655,25 @@ export async function loadKtModel(eng: Game, shadows: boolean): Promise<void> {
 }
 
 /**
+ * Nạp cảnh Kính Nguyệt Cung dựng bằng Blender (asset `arch_kinh_nguyet`): hàng cột + vòm gương, vòng gương trăng, mảnh gương, dây chuông treo trần (`kn_ceil_*`).
+ * Sàn sảnh phẳng ±3 m tới r 110 nên mọi vật đặt theo mặt bằng tâm (`flat`), không theo `heightAt` từng chỗ. Gương thay vật liệu emissive (`knMaterialFor`).
+ */
+export async function loadKnModel(eng: Game, shadows: boolean): Promise<void> {
+  const c = LEVELS.kinh_nguyet!.dungeon!.center;
+  await loadDungeonModel(eng, shadows, {
+    asset: 'arch_kinh_nguyet',
+    enabled: () => !!levelAssets(levelId()).kinhNguyetArt,
+    origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
+    prefix: 'kn',
+    ceiling: KN_DOME,
+    flat: ['kn_bay', 'kn_ring', 'kn_basin', 'kn_shard', 'kn_float', 'kn_frag'],
+    flatDy: 0.05,
+    material: knMaterialFor,
+    noShadow: /bay|ring|chime|float/,
+  });
+}
+
+/**
  * Nạp cảnh Phục Mạch Quật dựng bằng Blender (asset `arch_phuc_mach`): cụm mạch tinh, cột đá, khung chống gỗ, cửa hầm + ray + xe, nhũ đá và mạch tinh treo
  * trần (object `pm_ceil_*` đặt y theo độ cao vòm hang). Gốc GLB = tâm hầm.
  */
@@ -667,6 +702,8 @@ interface DungeonModelOpts {
   ceiling?: { r: number; h: number };
   /** Tiền tố tên object đặt ở mặt bằng tâm (y = gốc − 4 m, chân vách chìm dưới địa hình dốc), không theo `heightAt` tại chỗ. */
   flat?: string[];
+  /** Độ dời y của vật `flat` so với gốc GLB (mặc định −4 m cho vách chìm; ~0 cho vật đặt trên sàn phẳng). */
+  flatDy?: number;
   /** Tên lưới không đổ bóng (vách/trần hang chặn nắng của đèn trời: nếu đổ bóng thì cả sàn tối đen). */
   noShadow?: RegExp;
   /** Thay vật liệu glTF theo tên (trả null = giữ nguyên). Vật liệu mới được giải phóng cùng asset. */
@@ -710,7 +747,7 @@ async function loadDungeonModel(eng: Game, shadows: boolean, o: DungeonModelOpts
       const wx = o.origin.x + ch.position.x;
       const wz = o.origin.z + ch.position.z;
       if (o.flat?.some((f) => ch.name.startsWith(f))) {
-        ch.position.y -= 4;
+        ch.position.y += o.flatDy ?? -4;
       } else if (o.ceiling && ch.name.startsWith(`${o.prefix}_ceil_`)) {
         const r = Math.hypot(ch.position.x, ch.position.z);
         const dome = o.ceiling.h * Math.sqrt(Math.max(0, 1 - (r / o.ceiling.r) ** 2));
