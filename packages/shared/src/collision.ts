@@ -76,6 +76,8 @@ export interface BodyState {
 
 export class CollisionSet {
   readonly shapes: Shape[] = [];
+  /** Bán kính bao (xz) từng hình, song song `shapes`: lọc thô trước khi xét chính xác. */
+  private readonly ext: number[] = [];
   private readonly grid = new Map<number, number[]>();
   private mark: Int32Array = new Int32Array(0);
   private stamp = 0;
@@ -89,6 +91,7 @@ export class CollisionSet {
       const i = this.shapes.length;
       this.shapes.push(s);
       const e = shapeExtent(s);
+      this.ext.push(e);
       const c0 = Math.floor((s.x - e) / CELL);
       const c1 = Math.floor((s.x + e) / CELL);
       const d0 = Math.floor((s.z - e) / CELL);
@@ -106,14 +109,28 @@ export class CollisionSet {
 
   clear(): void {
     this.shapes.length = 0;
+    this.ext.length = 0;
     this.grid.clear();
     this.mark.fill(0);
     this.stamp = 0;
   }
 
-  /** Gọi `fn` cho mỗi hình có ô lưới chạm vòng (x, z, r), mỗi hình một lần. */
+  /** Gọi `fn` cho mỗi hình có ô lưới chạm vòng (x, z, r), mỗi hình một lần. (Đường nóng dùng `gather`, không cấp phát closure.) */
   near(x: number, z: number, r: number, fn: (s: Shape) => void): void {
-    if (!this.shapes.length) return;
+    const n = this.gather(x, z, r);
+    const hits = this.buf.slice(0, n);
+    for (let i = 0; i < n; i++) fn(hits[i]!);
+  }
+
+  /** Mảng dùng lại cho `gather` (đừng giữ tham chiếu qua lần gọi kế). */
+  private readonly buf: Shape[] = [];
+
+  /**
+   * Gom hình có ô lưới chạm vòng (x, z, r) vào `this.buf` (mỗi hình một lần), trả số hình. Không cấp phát: đường nóng của `stepMove` và quái.
+   * Lọc thô theo bán kính bao (`ext`) trước khi trả.
+   */
+  private gather(x: number, z: number, r: number): number {
+    if (!this.shapes.length) return 0;
     // Bộ đếm quấn trong Int32: về 0 thì xóa dấu để không bao giờ trùng giá trị cũ (server chạy nhiều ngày).
     this.stamp = (this.stamp + 1) | 0;
     if (this.stamp === 0) {
@@ -121,6 +138,8 @@ export class CollisionSet {
       this.stamp = 1;
     }
     const stamp = this.stamp;
+    const buf = this.buf;
+    let n = 0;
     const c0 = Math.floor((x - r) / CELL);
     const c1 = Math.floor((x + r) / CELL);
     const d0 = Math.floor((z - r) / CELL);
@@ -129,13 +148,19 @@ export class CollisionSet {
       for (let cz = d0; cz <= d1; cz++) {
         const a = this.grid.get(cellKey(cx, cz));
         if (!a) continue;
-        for (let n = 0; n < a.length; n++) {
-          const i = a[n]!;
+        for (let k = 0; k < a.length; k++) {
+          const i = a[k]!;
           if (this.mark[i] === stamp) continue;
           this.mark[i] = stamp;
-          fn(this.shapes[i]!);
+          const s = this.shapes[i]!;
+          const dx = x - s.x;
+          const dz = z - s.z;
+          const rr = this.ext[i]! + r;
+          if (dx * dx + dz * dz > rr * rr) continue; // ngoài bán kính bao
+          buf[n++] = s;
         }
       }
+    return n;
   }
 
   /**
@@ -144,18 +169,20 @@ export class CollisionSet {
    */
   standY(x: number, z: number, maxTop: number): number {
     let best = -Infinity;
-    this.near(x, z, 0.01, (s) => {
-      if (s.k !== 'box' || s.walk === false) return;
+    const n = this.gather(x, z, 0.01);
+    for (let i = 0; i < n; i++) {
+      const s = this.buf[i]!;
+      if (s.k !== 'box' || s.walk === false) continue;
       const dx = x - s.x;
       const dz = z - s.z;
       const c = Math.cos(s.yaw);
       const sn = Math.sin(s.yaw);
       const lx = c * dx - sn * dz;
       const lz = sn * dx + c * dz;
-      if (lx < -s.hx || lx > s.hx || lz < -s.hz || lz > s.hz) return;
+      if (lx < -s.hx || lx > s.hx || lz < -s.hz || lz > s.hz) continue;
       const top = boxTop(s, lz);
       if (top <= maxTop && top > best) best = top;
-    });
+    }
     return best;
   }
 
@@ -163,12 +190,14 @@ export class CollisionSet {
   ceilingAt(x: number, z: number, y: number, r: number, flying = false): number {
     let best = Infinity;
     const head = y + BODY_H;
-    this.near(x, z, r, (s) => {
-      if (s.y0 < head - 1e-3 || s.y0 >= best) return;
-      if (flying && s.fly === 'pass') return; // ngự kiếm xuyên tán lá cả khi bay thẳng lên (giống `push`)
-      if (s.y0 > head + 8) return;
+    const n = this.gather(x, z, r);
+    for (let i = 0; i < n; i++) {
+      const s = this.buf[i]!;
+      if (s.y0 < head - 1e-3 || s.y0 >= best) continue;
+      if (flying && s.fly === 'pass') continue; // ngự kiếm xuyên tán lá cả khi bay thẳng lên (giống `push`)
+      if (s.y0 > head + 8) continue;
       if (footprintDist(s, x, z) < r) best = s.y0;
-    });
+    }
     return best;
   }
 
@@ -179,11 +208,13 @@ export class CollisionSet {
   segmentBlockedAt(ax: number, az: number, bx: number, bz: number, r: number, y: number): number {
     if (!this.shapes.length) return -1;
     const len = Math.hypot(bx - ax, bz - az);
+    const m = this.gather((ax + bx) / 2, (az + bz) / 2, len / 2 + r);
     const cands: Shape[] = [];
-    this.near((ax + bx) / 2, (az + bz) / 2, len / 2 + r, (s) => {
-      if (s.fly === 'pass' || y < s.y0 - r || y > shapeMaxTop(s) + r) return;
+    for (let i = 0; i < m; i++) {
+      const s = this.buf[i]!;
+      if (s.fly === 'pass' || y < s.y0 - r || y > shapeMaxTop(s) + r) continue;
       cands.push(s);
-    });
+    }
     if (!cands.length) return -1;
     const n = Math.max(1, Math.ceil(len / 0.6));
     for (let k = 0; k <= n; k++) {
@@ -203,16 +234,18 @@ export class CollisionSet {
     let moved = false;
     for (let it = 0; it < 2; it++) {
       let any = false;
-      this.near(p.x, p.z, r, (s) => {
-        if (p.flying && s.fly === 'pass') return;
+      const n = this.gather(p.x, p.z, r);
+      for (let i = 0; i < n; i++) {
+        const s = this.buf[i]!;
+        if (p.flying && s.fly === 'pass') continue;
         const y = p.y;
-        if (y + BODY_H <= s.y0 || y >= shapeMaxTop(s)) return;
+        if (y + BODY_H <= s.y0 || y >= shapeMaxTop(s)) continue;
         if (s.k === 'cyl') {
           const dx = p.x - s.x;
           const dz = p.z - s.z;
           const rr = s.r + r;
           const d2 = dx * dx + dz * dz;
-          if (d2 >= rr * rr) return;
+          if (d2 >= rr * rr) continue;
           if (d2 < 1e-8) {
             p.x = s.x + rr;
           } else {
@@ -221,7 +254,7 @@ export class CollisionSet {
             p.z = s.z + (dz / d) * rr;
           }
           any = true;
-          return;
+          continue;
         }
         const dx = p.x - s.x;
         const dz = p.z - s.z;
@@ -234,9 +267,9 @@ export class CollisionSet {
         let nx = lx - qx;
         let nz = lz - qz;
         const d2 = nx * nx + nz * nz;
-        if (d2 >= r * r) return;
+        if (d2 >= r * r) continue;
         // Leo lên được: đỉnh tại điểm gần nhất không cao hơn chân quá STEP_UP.
-        if (!p.flying && s.walk !== false && y >= boxTop(s, qz) - (p.grounded ? STEP_UP : 0) - 1e-3) return;
+        if (!p.flying && s.walk !== false && y >= boxTop(s, qz) - (p.grounded ? STEP_UP : 0) - 1e-3) continue;
         let px: number;
         let pz: number;
         if (d2 > 1e-10) {
@@ -260,7 +293,7 @@ export class CollisionSet {
         p.x += c * px + sn * pz;
         p.z += -sn * px + c * pz;
         any = true;
-      });
+      }
       if (!any) break;
       moved = true;
     }
