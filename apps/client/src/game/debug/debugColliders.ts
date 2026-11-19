@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { type CircleCollider, shapeMaxTop, type Shape } from '@dtl/shared';
+import { type CircleCollider, collisionOf, shapeMaxTop, type Shape } from '@dtl/shared';
 import { groundAt, levelId, levelTerrain } from '../../base/levelCtx';
 
 /** Loại hiển thị, mỗi loại một màu (và một `LineSegments`): vòng tròn cũ hồng; hộp/trụ chặn cyan; mặt đi được lục; xuyên được khi ngự kiếm (tán lá, đồ nhỏ) vàng. (`vertexColors` không chạy trên WebGPU nên tách theo màu.) */
@@ -73,7 +73,7 @@ export function writeShape(out: Float32Array, at: number, s: Shape): number {
  * Khung va chạm cho bảng gỡ lỗi F3: vẽ các hình tròn collider tĩnh mà `stepMove` (dùng chung client/server) đang chặn,
  * ngay trên mặt đất, kèm một cọc đứng ở tâm để thấy từ xa. Chỉ là lớp hiển thị: không đổi va chạm, không gửi gì lên server.
  *
- * Một `LineSegments` (1 draw call) cho mọi collider (vòng tròn cũ + hộp xoay/trụ/mặt đi được của `Terrain.collision`, COL-1) trong `RANGE` mét quanh người chơi; dựng lại khi đi quá `REBUILD` mét.
+ * Một `LineSegments` (1 draw call) cho mọi collider (vòng tròn cũ + hộp xoay/trụ/mặt đi được của `collisionOf(levelId)`, COL-1) trong `RANGE` mét quanh người chơi; dựng lại khi đi quá `REBUILD` mét.
  * Bộ đệm cấp một lần theo sức chứa, vẽ bằng `setDrawRange` (không thay buffer sau khi đã vẽ; chỉ `needsUpdate` + update range).
  */
 const RANGE = 220;
@@ -166,7 +166,7 @@ export class ColliderViz {
     const circles = collidersNear(terrain.colliders, x, z).slice(0, MAX_CIRCLES);
     const cArr = this.layers.circle.pos.array as Float32Array;
     for (const c of circles) at.circle = writeCollider(cArr, at.circle, c, groundAt);
-    const shapes = shapesNear(terrain.collision.shapes, x, z).slice(0, MAX_SHAPES);
+    const shapes = shapesNear(collisionOf(lv).shapes, x, z).slice(0, MAX_SHAPES);
     const room = { block: 0, walk: 0, pass: 0 };
     for (const sh of shapes) {
       const k = shapeKind(sh) as Exclude<VizKind, 'circle'>;

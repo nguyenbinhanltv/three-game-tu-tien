@@ -33,6 +33,8 @@ import type {
   RecipeDef,
   SkillDef,
 } from '@dtl/shared';
+import './colliders'; // COL-1: đăng ký va chạm 3D theo level khi nạp content (client và server cùng dữ liệu)
+export { COLLIDER_LIB, INST_BY_LEVEL, propShapesOf } from './colliders';
 import creditsJson from '../data/credits.json';
 import itemsJson from '../data/items.json';
 import monstersJson from '../data/monsters.json';

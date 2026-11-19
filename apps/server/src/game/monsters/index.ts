@@ -4,6 +4,9 @@ import {
   BOLT_MAX_LIFE,
   BOLT_MAX_LIVE,
   boltBlockedAt,
+  BOLT_HEIGHT,
+  type CollisionSet,
+  slideOut,
   boltLift,
   type BoltEndMsg,
   boltHits,
@@ -131,11 +134,21 @@ export interface MonsterCtx {
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src' | 'q'>): void;
   sysAll(k: string, params?: Record<string, string | number>, type?: string): void;
   readonly terrain: Terrain;
+  /** Hình va chạm 3D của level (COL-1): quái trượt khỏi vật rắn, đạn bị chặn, không đặt chỗ trong vật rắn. */
+  readonly collision: CollisionSet;
   readonly than: ThanTangSystem;
   readonly tribSys: TribSystem;
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
   readonly zones: MonZones;
 }
+
+/** Bán kính thân quái khi trượt khỏi vật rắn (m). */
+const MON_RADIUS = 0.7;
+/** Quái bị vật rắn giữ lại liên tục chừng này mà không tiến gần mục tiêu ≥ `BLOCK_PROGRESS` m thì coi là không với tới (bỏ đuổi, hồi đầy, miễn sát thương). */
+const BLOCK_STALL_MS = 4000;
+const BLOCK_PROGRESS = 1;
+/** Hai lần trượt cách nhau quá chừng này thì không còn là "liên tục". */
+const BLOCK_GAP_MS = 600;
 
 export class MonsterSystem {
   constructor(private readonly c: MonsterCtx) {}
@@ -595,6 +608,9 @@ export class MonsterSystem {
       wx: x,
       wz: z,
       unreachableSince: 0,
+      slideSince: 0,
+      slideLast: 0,
+      slideD0: 0,
       evadeUntil: 0,
       abilityAt: 0,
       threat: new Map(),
@@ -688,6 +704,16 @@ export class MonsterSystem {
     this.c.state.monsters.delete(m.id);
   }
 
+  /**
+   * Quái bị vật rắn (cây, đá, tường, phiến đá người đang đứng trên) giữ lại liên tục ≥ `BLOCK_STALL_MS` mà vẫn ngoài tầm đánh và không tiến gần mục tiêu
+   * ≥ `BLOCK_PROGRESS` m: coi là không với tới, dùng chung nhánh `unreachableSince` → `evadeUntil` (không đứng ép vật mãi cho người đánh xa an toàn).
+   */
+  private blockedStall(m: MonEnt, d: number, reach: number): boolean {
+    if (!m.slideSince || this.c.now - m.slideLast > BLOCK_GAP_MS) return false;
+    if (d <= reach) return false;
+    return this.c.now - m.slideSince > BLOCK_STALL_MS && d > m.slideD0 - BLOCK_PROGRESS;
+  }
+
   moveToward(m: MonEnt, tx: number, tz: number, speed: number, dt: number): number {
     const dx = tx - m.s.x;
     const dz = tz - m.s.z;
@@ -700,6 +726,16 @@ export class MonsterSystem {
     m.s.x = nx;
     m.s.z = nz;
     m.s.y = this.c.terrain.groundAt(nx, nz);
+    // Không xuyên cây/đá/tường thấy được: trượt ra khỏi hình rắn (rẻ, không pathfinding; kẹt thì cơ chế bỏ đuổi `evadeUntil` lo).
+    if (slideOut(this.c.collision, m.s, m.s.y, MON_RADIUS)) {
+      m.s.y = this.c.terrain.groundAt(m.s.x, m.s.z);
+      // Ghi nhận đang bị vật rắn giữ lại (xem `blockedStall`): trượt liên tục, mốc đầu và khoảng cách lúc đó.
+      if (!m.slideSince || this.c.now - m.slideLast > BLOCK_GAP_MS) {
+        m.slideSince = this.c.now;
+        m.slideD0 = d;
+      }
+      m.slideLast = this.c.now;
+    }
     m.s.yaw = Math.atan2(dx, dz);
     return d - step;
   }
@@ -998,14 +1034,16 @@ export class MonsterSystem {
     }
     if (m.comboAt && this.c.now >= m.comboAt) this.resolveCombo(m);
     const reach = def.attackRange + 0.4;
-    const reachable = dy < 3.5 + def.scale * 1.5;
+    const stalled = this.blockedStall(m, d, reach);
+    const reachable = dy < 3.5 + def.scale * 1.5 && !stalled;
     if (!reachable) {
       if (!m.unreachableSince) m.unreachableSince = this.c.now;
-      if (this.c.now - m.unreachableSince > 5000) {
+      if (stalled || this.c.now - m.unreachableSince > 5000) {
         // Mục tiêu đứng ở chỗ không với tới: bỏ đuổi, hồi đầy và miễn sát thương một lúc.
         m.target = '';
         m.threat.clear();
         m.unreachableSince = 0;
+        m.slideSince = 0;
         m.s.hp = m.s.mhp;
         this.setPhase(m, 0);
         m.evadeUntil = this.c.now + 6000;
@@ -1260,7 +1298,7 @@ export class MonsterSystem {
       const t = Math.min(this.c.now, b.endAt);
       boltXZ(b.x0, b.z0, b.yaw, b.v, (t - b.t0) / 1000, _bp);
       // Vật cản trên đường quét: rút ngắn đoạn tới chỗ chạm trước khi xét người (không trúng người sau tường).
-      const bt = boltBlockedAt(b.px, b.pz, _bp.x, _bp.z, b.r);
+      const bt = boltBlockedAt(b.px, b.pz, _bp.x, _bp.z, b.r, this.c.collision, this.c.terrain.groundAt(b.px, b.pz) + BOLT_HEIGHT + b.lift);
       if (bt >= 0) {
         _bp.x = b.px + (_bp.x - b.px) * bt;
         _bp.z = b.pz + (_bp.z - b.pz) * bt;
