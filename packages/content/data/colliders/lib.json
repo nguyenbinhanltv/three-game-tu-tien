@@ -240,6 +240,30 @@
    "walk": false
   }
  ],
+ "prop_tc_bia_tran": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 0.71,
+   "hz": 0.38,
+   "y0": 0,
+   "y1": 3.02,
+   "walk": false
+  }
+ ],
+ "prop_tc_bia_tran_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 0.71,
+   "hz": 0.38,
+   "y0": 0,
+   "y1": 3.42,
+   "walk": false
+  }
+ ],
  "prop_tc_cay_co_thu": [
   {
    "k": "cyl",
@@ -324,6 +348,26 @@
    "r": 1.06,
    "y0": 0,
    "y1": 3.56
+  }
+ ],
+ "prop_tc_cot_tran": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.74,
+   "y0": 0,
+   "y1": 4.25
+  }
+ ],
+ "prop_tc_cot_tran_2": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.74,
+   "y0": 0,
+   "y1": 4.25
   }
  ],
  "prop_tc_da_linh_khi": [
@@ -554,6 +598,26 @@
    "walk": true
   }
  ],
+ "prop_tc_linh_thach": [
+  {
+   "k": "cyl",
+   "x": 0.14,
+   "z": 0.12,
+   "r": 0.66,
+   "y0": 0,
+   "y1": 1.9
+  }
+ ],
+ "prop_tc_linh_thach_2": [
+  {
+   "k": "cyl",
+   "x": -0.09,
+   "z": 0.12,
+   "r": 0.96,
+   "y0": 0,
+   "y1": 2.2
+  }
+ ],
  "prop_tc_linh_thao": [
   {
    "k": "cyl",
@@ -758,6 +822,30 @@
    "walk": false
   }
  ],
+ "prop_tc_te_dan": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0.53,
+   "hx": 2.38,
+   "hz": 2.87,
+   "y0": 0,
+   "y1": 2.16,
+   "walk": false
+  }
+ ],
+ "prop_tc_te_dan_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0.53,
+   "hx": 2.38,
+   "hz": 2.87,
+   "y0": 0,
+   "y1": 2.16,
+   "walk": false
+  }
+ ],
  "prop_tc_thung_go": [
   {
    "k": "box",
@@ -782,6 +870,8 @@
    "walk": false
   }
  ],
+ "prop_tc_tran_do_khac_san": [],
+ "prop_tc_tran_do_khac_san_2": [],
  "prop_tc_tre": [
   {
    "k": "cyl",
@@ -867,6 +957,30 @@
    "hz": 1.62,
    "y0": 0,
    "y1": 1.51,
+   "walk": false
+  }
+ ],
+ "prop_tc_xich_bua": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 4.38,
+   "hz": 0.04,
+   "y0": 0,
+   "y1": 3.18,
+   "walk": false
+  }
+ ],
+ "prop_tc_xich_bua_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 4.38,
+   "hz": 0.04,
+   "y0": 0,
+   "y1": 3.18,
    "walk": false
   }
  ],
