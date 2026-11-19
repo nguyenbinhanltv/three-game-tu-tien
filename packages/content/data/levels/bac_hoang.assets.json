@@ -1,5 +1,5 @@
 {
-  "mood": "ash_dawn",
+  "mood": "bh_dawn",
   "glb": [],
   "ground": { "set": "terrain-ash", "mask": "neutral" },
   "music": ["wild_ash", "wild_rift"],

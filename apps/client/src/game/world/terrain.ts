@@ -659,7 +659,7 @@ export class Terrain {
 
   /** Bật shader mặt đất PBR khi bộ texture đã nạp; gọi lại khi đổi preset. */
   setGround(tex: GroundTextures | null, level: GroundLevel): void {
-    setGroundTileBreak(XICH);
+    setGroundTileBreak(XICH || ASH);
     setGroundStrata(isVanLam());
     setGroundRedStrata(T.id === 'doan_mach');
     if (tex) applyGroundShader(this.material, tex, level);

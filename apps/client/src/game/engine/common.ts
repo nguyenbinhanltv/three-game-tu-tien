@@ -164,9 +164,21 @@ export const LANTERN_LIGHT: Record<string, number> = {
   dm_day: 0.6,
   dm_dusk: 1.3,
   dm_night: 1.8,
+  vh_dawn: 1,
+  vh_day: 0.6,
+  vh_dusk: 1.3,
+  vh_night: 1.8,
   ash_dawn: 1,
   rift: 1.2,
   rift_pit: 1.4,
+  bh_dawn: 1,
+  bh_day: 0.6,
+  bh_dusk: 1.3,
+  bh_night: 1.8,
+  bhr_dawn: 1.2,
+  bhr_day: 0.9,
+  bhr_dusk: 1.4,
+  bhr_night: 1.9,
 };
 
 /** Hiệu ứng của chính mình → nhạc ngắn trong manifest.music (tools/audio/compose/sting_*.mjs). */

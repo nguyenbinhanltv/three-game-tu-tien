@@ -712,7 +712,7 @@ export class Game {
   /** Các lớp đặc thù level (halo đèn…) đã dựng, để `unloadLevel` gỡ đúng. */
   levelObjs: THREE.Object3D[] = [];
   levelMood: GradingName = GRADING_DEFAULT;
-  /** Bắc Hoang (DV-3I): vệt nứt phát sáng, cây chết, và mood trộn theo vị trí giữa `ash_dawn` và `rift`. */
+  /** Bắc Hoang (DV-3I): vệt nứt phát sáng, cây chết, và mood trộn theo vị trí giữa `bh_<giờ>` và `bhr_<giờ>`. */
   rift: RiftVeil | null = null;
   deadTrees: DeadTrees | null = null;
   riftMood = false;

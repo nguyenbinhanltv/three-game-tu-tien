@@ -58,9 +58,21 @@ export type GradingName =
   | 'dm_day'
   | 'dm_dusk'
   | 'dm_night'
+  | 'vh_dawn'
+  | 'vh_day'
+  | 'vh_dusk'
+  | 'vh_night'
   | 'ash_dawn'
   | 'rift'
-  | 'rift_pit';
+  | 'rift_pit'
+  | 'bh_dawn'
+  | 'bh_day'
+  | 'bh_dusk'
+  | 'bh_night'
+  | 'bhr_dawn'
+  | 'bhr_day'
+  | 'bhr_dusk'
+  | 'bhr_night';
 /** Thời điểm trong ngày (`?mood=`); level có bộ mood riêng (Đoạn Mạch: `ochre*`) đổi theo. */
 export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 
@@ -104,17 +116,40 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   dm_day: parse(raw.presets.dm_day),
   dm_dusk: parse(raw.presets.dm_dusk),
   dm_night: parse(raw.presets.dm_night),
+  vh_dawn: parse(raw.presets.vh_dawn),
+  vh_day: parse(raw.presets.vh_day),
+  vh_dusk: parse(raw.presets.vh_dusk),
+  vh_night: parse(raw.presets.vh_night),
   ash_dawn: parse(raw.presets.ash_dawn),
   rift: parse(raw.presets.rift),
   rift_pit: parse(raw.presets.rift_pit),
+  bh_dawn: parse(raw.presets.bh_dawn),
+  bh_day: parse(raw.presets.bh_day),
+  bh_dusk: parse(raw.presets.bh_dusk),
+  bh_night: parse(raw.presets.bh_night),
+  bhr_dawn: parse(raw.presets.bhr_dawn),
+  bhr_day: parse(raw.presets.bhr_day),
+  bhr_dusk: parse(raw.presets.bhr_dusk),
+  bhr_night: parse(raw.presets.bhr_night),
 };
+
+/** Thời điểm của mood Bắc Hoang `bh_*`/`bhr_*` (mặc định bình minh). */
+export function bhTod(name: string): TimeOfDay {
+  const t = name.slice(name.indexOf('_') + 1);
+  return t === 'day' || t === 'dusk' || t === 'night' ? t : 'dawn';
+}
 
 /** Tên mood của level theo thời điểm trong ngày: `ochre` + night → `ochre_night`. */
 export function moodVariant(base: GradingName, tod: TimeOfDay): GradingName {
   // Lạc Kiếm (MAP-1): bộ bốn thời điểm riêng, có hoàng hôn.
   if (base.startsWith('lk')) return `lk_${tod}` as GradingName;
+  // Bắc Hoang (MAP-5): bốn thời điểm, hai nửa bản đồ (`bh_*` bên này khe, `bhr_*` bên kia khe).
+  if (base.startsWith('bhr_')) return `bhr_${tod}` as GradingName;
+  if (base.startsWith('bh_')) return `bh_${tod}` as GradingName;
   // Đoạn Mạch (MAP-2): bộ bốn thời điểm riêng (đỏ son + vàng thu).
   if (base.startsWith('dm_')) return `dm_${tod}` as GradingName;
+  // Vân Hải (MAP-3): bộ bốn thời điểm riêng xanh lam + bạc, có hoàng hôn.
+  if (base.startsWith('vh')) return `vh_${tod}` as GradingName;
   // Level khác chưa có hoàng hôn riêng: lấy sắc bình minh (ấm, nắng thấp).
   const t: 'dawn' | 'day' | 'night' = tod === 'dusk' ? 'dawn' : tod;
   if (base.startsWith('ochre')) return t === 'dawn' ? 'ochre_dawn' : t === 'night' ? 'ochre_night' : 'ochre';
