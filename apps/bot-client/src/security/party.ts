@@ -1,7 +1,7 @@
 // Bài kiểm tra bảo mật: Tổ đội, tỉ thí, pháp bảo phụ và đan (P3-8, P3-9) (R-7, tách từ security-check.ts).
 import { type Room } from 'colyseus.js';
 import { applyInvMsg, C, type InvMsg, type InvSlot, S } from '@dtl/shared';
-import { W, check, health, join, type Ctx, type P, type CharV } from './lib';
+import { W, check, health, join, type Ctx, type P, type CharV, waitUntil } from './lib';
 
 export async function runParty(_ctx: Ctx): Promise<void> {
   // 16. Tổ đội và tỉ thí (P3-9): server giữ lời mời, chặn spam, không cho đánh đồng đội ngoài tỉ thí, tỉ thí không thưởng.
@@ -183,6 +183,7 @@ export async function runParty(_ctx: Ctx): Promise<void> {
       g.room.send(C.ARTIFACT, bad);
       await W(150);
     }
+    await waitUntil(() => has('sys.art_none'));
     check(
       'kích hoạt pháp bảo khi chưa đeo bị từ chối',
       has('sys.art_none') && !artId,
