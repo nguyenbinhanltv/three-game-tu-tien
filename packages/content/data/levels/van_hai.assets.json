@@ -1,9 +1,10 @@
 {
-  "mood": "cloud_dawn",
+  "mood": "vh_dawn",
   "glb": [],
   "ground": false,
   "music": ["wild_cloud"],
   "features": { "sect": false, "portals": false, "lanterns": true, "lake": false, "clouds": true, "grass": true, "trees": "scatter", "beacons": true, "vegetation": false },
   "grassCards": "grass-ochre",
-  "minimap": "van_hai"
+  "minimap": "van_hai",
+  "godRays": { "x": 1024, "z": 1024, "r": 560, "count": 70 }
 }

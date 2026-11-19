@@ -54,6 +54,10 @@ export type GradingName =
   | 'lk_day'
   | 'lk_dusk'
   | 'lk_night'
+  | 'vh_dawn'
+  | 'vh_day'
+  | 'vh_dusk'
+  | 'vh_night'
   | 'ash_dawn'
   | 'rift'
   | 'rift_pit';
@@ -96,6 +100,10 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   lk_day: parse(raw.presets.lk_day),
   lk_dusk: parse(raw.presets.lk_dusk),
   lk_night: parse(raw.presets.lk_night),
+  vh_dawn: parse(raw.presets.vh_dawn),
+  vh_day: parse(raw.presets.vh_day),
+  vh_dusk: parse(raw.presets.vh_dusk),
+  vh_night: parse(raw.presets.vh_night),
   ash_dawn: parse(raw.presets.ash_dawn),
   rift: parse(raw.presets.rift),
   rift_pit: parse(raw.presets.rift_pit),
@@ -105,6 +113,8 @@ export const GRADING: Record<GradingName, GradingPreset> = {
 export function moodVariant(base: GradingName, tod: TimeOfDay): GradingName {
   // Lạc Kiếm (MAP-1): bộ bốn thời điểm riêng, có hoàng hôn.
   if (base.startsWith('lk')) return `lk_${tod}` as GradingName;
+  // Vân Hải (MAP-3): bộ bốn thời điểm riêng xanh lam + bạc, có hoàng hôn.
+  if (base.startsWith('vh')) return `vh_${tod}` as GradingName;
   // Level khác chưa có hoàng hôn riêng: lấy sắc bình minh (ấm, nắng thấp).
   const t: 'dawn' | 'day' | 'night' = tod === 'dusk' ? 'dawn' : tod;
   if (base.startsWith('ochre')) return t === 'dawn' ? 'ochre_dawn' : t === 'night' ? 'ochre_night' : 'ochre';
