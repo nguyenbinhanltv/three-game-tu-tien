@@ -1,27 +1,37 @@
 {
-  "mood": "lk_day",
-  "glb": ["arch_sect"],
-  "ground": { "set": "terrain-lk", "mask": "manifest" },
-  "music": ["dungeon", "dungeon_boss"],
-  "features": { "sect": true, "portals": true, "lanterns": true, "lake": true, "clouds": true, "grass": true, "trees": "scatter", "beacons": true, "vegetation": true },
-  "godRays": { "x": 2048, "z": 2048, "r": 520, "count": 70 },
-  "lacKiemSky": {
-    "islands": [
-      { "id": "kiem_dai", "x": -165, "z": 140, "y": 36, "r": 58, "depth": 84, "kind": "kiem_dai" },
-      { "id": "dinh_dong", "x": 230, "z": 30, "y": 34, "r": 38, "depth": 66, "kind": "dinh", "fall": true },
-      { "id": "thap_nam", "x": 205, "z": 150, "y": 54, "r": 26, "depth": 52, "kind": "thap" },
-      { "id": "dinh_tay", "x": -270, "z": 40, "y": 34, "r": 30, "depth": 56, "kind": "dinh_luc", "fall": true },
-      { "id": "dien_xa", "x": 345, "z": -60, "y": 64, "r": 34, "depth": 64, "kind": "dien" }
-    ],
-    "bridges": [
-      { "from": "sect", "to": "kiem_dai" },
-      { "from": "sect", "to": "dinh_dong" },
-      { "from": "dinh_dong", "to": "thap_nam" },
-      { "from": "kiem_dai", "to": "dinh_tay" },
-      { "from": "dinh_dong", "to": "dien_xa" }
-    ],
-    "fallEndY": 98,
-    "swords": 380
+  "mood": "kt",
+  "glb": [],
+  "ground": {
+    "set": "terrain-slate",
+    "mask": "neutral"
   },
-  "minimap": "van_lam"
+  "music": [
+    "dungeon",
+    "dungeon_boss"
+  ],
+  "features": {
+    "sect": false,
+    "portals": true,
+    "lanterns": false,
+    "lake": false,
+    "clouds": false,
+    "grass": false,
+    "trees": "scatter",
+    "beacons": false,
+    "vegetation": false
+  },
+  "godRays": {
+    "x": 1520,
+    "z": 1250,
+    "r": 120,
+    "count": 46
+  },
+  "kiemTrungArt": true,
+  "minimap": "van_lam",
+  "cave": {
+    "x": 1520,
+    "z": 1300,
+    "r": 170,
+    "h": 110
+  }
 }

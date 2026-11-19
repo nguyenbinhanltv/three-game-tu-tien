@@ -2,8 +2,8 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { C } from '@dtl/shared';
 import { ITEM, itemName, t } from '@dtl/content';
 import { Game } from '../../../game/engine';
-import { TipCard, Tooltip } from '../../kit';
-import { SysIcon, type SysIconName } from '../../ngj';
+import { TipCard, Tooltip } from '../win';
+import { SysIcon, type SysIconName } from '../shell';
 import { CHAT_TABS, type ChatChannel, type ChatTab, set, setChatSize, setChatTab, setHudPref, useUI } from '../../store';
 import { uiScale } from '../../uiScale';
 import { blurAfterPointer } from './common';
@@ -11,6 +11,7 @@ import { CHAT_MIN, chatLimits, designArea } from './layout';
 import { useHudMode } from './hudVars';
 import { Fold } from './QuestChat';
 import { itemQuality } from './chatItem';
+import { TouchChatSheet } from '../touch/TouchChat';
 
 const CHAT_IDLE_MS = 12_000;
 
@@ -56,7 +57,7 @@ function lineBody(l: Line): ReactNode {
   );
 }
 
-function ChatLine({ l }: { l: Line }) {
+export function ChatLine({ l }: { l: Line }) {
   if (l.type === 'chat' || l.type === 'party') {
     return (
       // Không dùng lớp `chat` (trùng khung chat cũ, có viền/định vị): tin thế giới là `world`, tổ đội là `party`.
@@ -72,6 +73,21 @@ function ChatLine({ l }: { l: Line }) {
       <span>{lineBody(l)}</span>
     </div>
   );
+}
+
+/** Gửi một dòng chat hoặc lệnh /moi /p /tithi /roi: chỉ là ý định, server kiểm mọi điều kiện (dùng chung PC và cảm ứng). */
+export function sendChatText(text: string): void {
+  const m = text.trim();
+  const cmd = /^\/(moi|p|tithi|roi)(?:\s+(.*))?$/i.exec(m);
+  if (cmd) {
+    const arg = (cmd[2] ?? '').trim();
+    const g = Game.current;
+    const c = cmd[1]!.toLowerCase();
+    if (c === 'moi' && arg) g?.send(C.PARTY, { a: 'inv', n: arg });
+    else if (c === 'p' && arg) g?.send(C.PARTY, { a: 'say', m: arg });
+    else if (c === 'tithi' && arg) g?.send(C.DUEL, { a: 'inv', n: arg });
+    else if (c === 'roi') g?.send(C.PARTY, { a: 'leave' });
+  } else if (m) Game.current?.send(C.CHAT, { m });
 }
 
 /**
@@ -144,17 +160,7 @@ export function ChatBox() {
   }, [open]);
 
   const submit = () => {
-    const m = text.trim();
-    const cmd = /^\/(moi|p|tithi|roi)(?:\s+(.*))?$/i.exec(m);
-    if (cmd) {
-      const arg = (cmd[2] ?? '').trim();
-      const g = Game.current;
-      const c = cmd[1]!.toLowerCase();
-      if (c === 'moi' && arg) g?.send(C.PARTY, { a: 'inv', n: arg });
-      else if (c === 'p' && arg) g?.send(C.PARTY, { a: 'say', m: arg });
-      else if (c === 'tithi' && arg) g?.send(C.DUEL, { a: 'inv', n: arg });
-      else if (c === 'roi') g?.send(C.PARTY, { a: 'leave' });
-    } else if (m) Game.current?.send(C.CHAT, { m });
+    sendChatText(text);
     setText('');
     set({ chatOpen: false });
     inputRef.current?.blur();
@@ -191,34 +197,47 @@ export function ChatBox() {
   };
 
   const last = log[log.length - 1];
+  const [sheet, setSheet] = useState(false);
+  // Cảm ứng: `collapsed` luôn true nên mốc "đã xem" không chạy; khi tấm chat mở (và có tin mới lúc đang mở) coi như đã đọc hết mọi kênh.
+  useEffect(() => {
+    if (!sheet) return;
+    setSeen({ all: lastId, world: lastId, party: lastId, system: lastId, combat: lastId });
+  }, [sheet, lastId]);
   const expand = (e: React.MouseEvent<HTMLElement>) => {
+    if (mode === 'touch') {
+      setSheet(true); // cảm ứng: mở tấm chat có bàn phím ảo thay vì khung PC
+      return;
+    }
     setHudPref('chatCollapsed', false);
     blurAfterPointer(e);
   };
 
   if (collapsed) {
     return (
-      <section className="u2h-zone u2h-chat u2h-chat-mini" data-collapsed="1" aria-label={t('ui.chat.title')}>
-        <button type="button" className="u2h-chat-pill" onClick={expand} aria-label={t('ui.hud.expand')}>
-          <span className="u2h-bead" aria-hidden="true" />
-          <span className="u2h-pill-title">{t('ui.chat.title')}</span>
-          <span className="u2h-chat-last">
-            {last ? (
-              <>
-                {last.from ? <b>{last.from}: </b> : null}
-                {last.text}
-              </>
-            ) : (
-              t('ui.chat.empty')
-            )}
-          </span>
-          {unread.all > 0 && (
-            <span className="u2h-unread" aria-label={t('ui.chat.unread', { n: unread.all })}>
-              {unread.all > 99 ? '99+' : unread.all}
+      <>
+        <section className="u2h-zone u2h-chat u2h-chat-mini" data-collapsed="1" aria-label={t('ui.chat.title')}>
+          <button type="button" className="u2h-chat-pill" onClick={expand} aria-label={t('ui.hud.expand')}>
+            <span className="u2h-bead" aria-hidden="true" />
+            <span className="u2h-pill-title">{t('ui.chat.title')}</span>
+            <span className="u2h-chat-last">
+              {last ? (
+                <>
+                  {last.from ? <b>{last.from}: </b> : null}
+                  {last.text}
+                </>
+              ) : (
+                t('ui.chat.empty')
+              )}
             </span>
-          )}
-        </button>
-      </section>
+            {unread.all > 0 && (
+              <span className="u2h-unread" aria-label={t('ui.chat.unread', { n: unread.all })}>
+                {unread.all > 99 ? '99+' : unread.all}
+              </span>
+            )}
+          </button>
+        </section>
+        {sheet && <TouchChatSheet onClose={() => setSheet(false)} />}
+      </>
     );
   }
 

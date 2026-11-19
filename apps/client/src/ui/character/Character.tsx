@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { realmName, t } from '@dtl/content';
-import { Tabs } from '../kit';
+import { Tabs } from '../u2/win';
 import { closePanel, useUI } from '../store';
 import { Window } from '../windows/common';
 import { Attributes } from './Attributes';

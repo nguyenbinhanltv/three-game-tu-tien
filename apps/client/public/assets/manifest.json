@@ -211,6 +211,152 @@
         "build": null
       }
     },
+    "arch_kiem_trung": {
+      "id": "arch_kiem_trung",
+      "class": "arch",
+      "source": "assets/build/raw/arch_kiem_trung.glb",
+      "file": "arch_kiem_trung.bdb13fc676.glb",
+      "bytes": 9533776,
+      "rawBytes": 9265292,
+      "triangles": 218420,
+      "rawTriangles": 218420,
+      "lod0Cap": 600000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "plastered_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_plaster",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "plastered_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "dark_wood_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_wood",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_wood_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_steel",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 218420
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 323.6142,
+          "height": 50.8414,
+          "depth": 325.1849,
+          "minY": -4.6994
+        },
+        "build": {
+          "width": 323.615,
+          "height": 50.8414,
+          "depth": 325.1853,
+          "minY": -4.6994
+        }
+      }
+    },
     "arch_sect": {
       "id": "arch_sect",
       "class": "arch",
@@ -433,12 +579,12 @@
       "id": "arch_thien_khuyet",
       "class": "arch",
       "source": "assets/build/raw/arch_thien_khuyet.glb",
-      "file": "arch_thien_khuyet.d80e80db2c.glb",
-      "bytes": 5046104,
-      "rawBytes": 24417672,
-      "triangles": 273112,
-      "rawTriangles": 273112,
-      "lod0Cap": 300000,
+      "file": "arch_thien_khuyet.255f8e3b4d.glb",
+      "bytes": 14732164,
+      "rawBytes": 28633140,
+      "triangles": 260935,
+      "rawTriangles": 260935,
+      "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
       "bones": 0,
@@ -446,60 +592,177 @@
       "ktx2": true,
       "textures": [
         {
-          "name": "arch_sect_stone",
+          "name": "plastered_stone_wall_nor_gl_2k",
           "mimeType": "image/ktx2",
-          "width": 256,
-          "height": 256,
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_plaster",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
           "slots": [
             "baseColorTexture"
+          ]
+        },
+        {
+          "name": "plastered_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_lacquer",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "lacquered_cherry_wood_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "dark_wood_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
           ]
         },
         {
           "name": "arch_sect_wood",
           "mimeType": "image/ktx2",
-          "width": 256,
-          "height": 256,
+          "width": 1024,
+          "height": 1024,
           "slots": [
             "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_wood_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "ceramic_roof_01_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
           ]
         },
         {
           "name": "arch_sect_tile",
           "mimeType": "image/ktx2",
-          "width": 256,
-          "height": 256,
+          "width": 2048,
+          "height": 2048,
           "slots": [
             "baseColorTexture"
           ]
         },
         {
+          "name": "ceramic_roof_01_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "marble_rock_01_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
           "name": "arch_sect_jade",
           "mimeType": "image/ktx2",
-          "width": 256,
-          "height": 256,
+          "width": 2048,
+          "height": 2048,
           "slots": [
             "baseColorTexture"
+          ]
+        },
+        {
+          "name": "marble_rock_01_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_steel",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
           ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 273112
+          "triangles": 260935
         }
       ],
       "dims": {
         "raw": {
           "width": 895.5503,
-          "height": 332.1443,
+          "height": 332.087,
           "depth": 926.1588,
-          "minY": -7.5443
+          "minY": -7.487
         },
         "build": {
           "width": 895.5196,
-          "height": 332.1634,
+          "height": 332.1131,
           "depth": 926.1588,
-          "minY": -7.541
+          "minY": -7.4907
         }
       }
     },

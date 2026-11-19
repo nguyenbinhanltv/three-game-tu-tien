@@ -9,25 +9,19 @@ Nền tảng: token, font, họa tiết, thành phần và trang xem. Chưa thay
 - Khóa: ESLint (`eslint.config.mjs`, `UI_STYLE_RULES`) cấm hex/rgb trong chuỗi và `style={{color:'…'}}` ở `apps/client/src/ui`; `LEGACY_UI_STYLE` liệt kê file cũ chưa chuyển (chỉ được xóa dòng). `tokens.test.ts` kiểm CSS của kit. `node tools/ui/contrast.mjs` kiểm WCAG AA token mới.
 - Font: `python tools/fonts/subset_u2.py <thư mục TTF>` (xem docstring); 177 KB woff2 tổng.
 
-## Bảng ánh xạ biến cũ → `--u-*`
+## Miễn trừ có chủ ý: `win/` và `shell/`
 
-| Cũ | Mới |
-| --- | --- |
-| `--ngj-lacquer`, `--k-night-0` | `--u-ink-1` (HUD), `--u-ink-0` (sâu nhất) |
-| `--ngj-lacquer-hi`, `--k-night-2` | `--u-ink-2` |
-| `--ngj-gold`, `--k-bronze` | `--u-gold` |
-| `--ngj-gold-hi`, `--k-bronze-hi`, `--k-gold` | `--u-gold-hi` / `--u-gold-text` (chữ) |
-| `--ngj-gold-lo`, `--k-bronze-lo` | `--u-gold-lo` |
-| `--ngj-ivory`, `--k-paper` | `--u-giay` (nền giấy), `--u-chu` (chữ trên tối) |
-| `--ngj-ivory-lo`, `--k-paper-2` | `--u-giay-lo` |
-| `--ngj-ink`, `--k-text-ink` | `--u-muc` |
-| `--ngj-ink-dim`, `--k-text-ink-dim` | `--u-muc-dim` |
-| `--k-text`, `--k-text-dim` | `--u-chu`, `--u-chu-dim` |
-| `--ngj-jade`, `--k-jade`, `--k-ngoc` | `--u-ngoc` / `--u-ngoc-hi` |
-| `--ngj-jade-lo` | `--u-ngoc-lo` |
-| `--ngj-crimson`, `--k-cinnabar` | `--u-son` |
-| `--ngj-crimson-hi`, `--k-cinnabar-hi` | `--u-son-hi` |
-| `--ngj-q0…q4`, `--k-q0…q4` | `--u-q0…q4` (giữ giá trị) |
-| `--ngj-line` | `--u-line-2` |
-| `--k-cut-s/m/l` | `--u-cut-s/m/l` (6/9/12 px) |
-| `--ngj-font-title|body`, `--font-display` | `--u-font-head|body|display` |
+Quy tắc "hex/rgba chỉ ở `tokens.css`" áp cho các file CSS nằm thẳng trong `u2/`. Hai thư mục con **chưa theo** quy tắc đó: `win/panel.css` và `shell/{hud,screens,ornament}.css` là CSS của bộ cũ dời vào (U2-8), còn nhiều màu cứng; `tokens.test.ts` không quét thư mục con. Đừng coi màu cứng ở đó là hợp lệ cho file mới; chuyển dần từng file sang `--u-*` rồi đưa vào danh sách kiểm.
+
+## Token của bộ cũ (U2-8)
+
+Bộ kit cũ (`ui/kit`, `ui/ngj`, biến `--k-*`/`--ngj-*`) đã gỡ. Giá trị của nó nằm ở `tokens.css`, **giữ nguyên** để hình không đổi:
+
+| Nhóm | Nằm ở | Ghi chú |
+| --- | --- | --- |
+| `--u-p-*` | khối "chuyển từ bộ khung cửa sổ cũ" | màu/cỡ dùng bởi `ui/u2/win` và CSS các bảng; `win.css` ghi đè lại cho nền giấy ngà |
+| `--u-h-*` | khối "chuyển từ Ngọc Giản" | sơn mài, giấy ngà, vàng cổ của HUD và màn tĩnh (`ui/u2/shell`) |
+| khoảng cách, nét, chuyển động, phẩm chất | dùng thẳng `--u-sp-N`, `--u-line-2`, `--u-ease`, `--u-dur-fast`, `--u-dur-open`, `--u-cut-l`, `--u-q0…q5` | giá trị trùng |
+
+Việc còn lại (không bắt buộc): gộp dần `--u-p-*`/`--u-h-*` vào token U2 gốc (`--u-gold`, `--u-giay`…), mỗi lần một nhóm kèm ảnh so sánh `tools/ui/compare.mjs`.
+Khóa: `tokens.test.ts` cấm quay lại `--k-*`/`--ngj-*` hoặc tạo lại `ui/kit`, `ui/ngj`.

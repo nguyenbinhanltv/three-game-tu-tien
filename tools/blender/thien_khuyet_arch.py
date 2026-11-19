@@ -507,7 +507,14 @@ def build_statue(b, st, rnd):
         return (x * S, y * S, z * S)
 
     def lames(y0, period):  # nếp giáp lá ngang mặt trước
-        return lambda x, y, z: 1.0 + (0.05 * max(0.0, math.sin((y / S - y0) * period)) if z > 0 else 0.0)
+        def f(x, y, z):
+            k = 1.0
+            if z > 0:
+                k += 0.09 * max(0.0, math.sin((y / S - y0) * period)) ** 0.7  # nếp giáp lá nổi, mép dưới vát
+                k += 0.05 * math.exp(-((x / S) ** 2) / 1.2)  # sống ngực giữa
+            return k
+
+        return f
 
     def legs():
         for sx in (-1, 1):
@@ -527,33 +534,59 @@ def build_statue(b, st, rnd):
             P(0, 41.5, 0),
             P(8.9, 9.7, 5.7),
             e=2.6,
-            nu=28,
-            nv=20,
+            nu=44,
+            nv=32,
             seed=71,
-            ridge=lames(33, 2.9),
+            ridge=lames(33, 3.6),
             gold_at=lambda c: abs(c[0]) < 2.4 * S and abs(c[1] - 43 * S) < 2.4 * S and c[2] > 4.6 * S,
         )
         for sx in (-1, 1):  # vai giáp ba lớp
             for k, (ry, rr) in enumerate(((3.9, 6.3), (2.9, 5.5), (2.2, 4.5))):
-                ellipsoid(b, P(sx * 11.9, 47.0 + k * 2.4, 0), P(rr, ry, rr), v0=0.0, v1=0.62, nu=20, nv=10, seed=80 + k + sx)
+                y0 = 47.0 + k * 2.4
+                ellipsoid(
+                    b,
+                    P(sx * 11.9, y0, 0),
+                    P(rr, ry, rr),
+                    v0=0.0,
+                    v1=0.62,
+                    nu=32,
+                    nv=14,
+                    seed=80 + k + sx,
+                    ridge=lambda x, y, z, rr=rr, sx=sx: 1.0 + 0.05 * max(0.0, math.sin(math.atan2(z, x - sx * 11.9 * S) * 7)),
+                    gold_at=lambda c, y0=y0: c[1] < (y0 + 0.18) * S,
+                )
+                spike = P(sx * (11.9 + rr * 0.55), y0 + ry * 0.9, 0)
+                tube(b, spike, (spike[0] + sx * 1.2 * S, spike[1] + 3.6 * S, spike[2]), 0.9 * S, 0.05 * S, nu=8, nv=4, amp=0.02, gold_at=lambda c: True)
             ellipsoid(b, P(sx * 11.9, 49.9, 0), P(2.2, 0.9, 2.2), nu=14, nv=8, seed=88, gold_at=lambda c: True)
         tube(b, P(0, 49, 0), P(0, 52.5, 0), 3.3 * S, 2.8 * S, nu=14, nv=4, seed=91)
 
     def head():
         def face(x, y, z):
             k = 1.0
-            if z > 0:
-                if abs(x) < 0.55 * S and 0.0 < (y - 55 * S) < 2.0 * S:
-                    k += 0.06
-                if abs(abs(x) - 1.5 * S) < 0.7 * S and abs(y - 56.0 * S) < 0.28 * S:
-                    k -= 0.07
+            xs, ys, zs = x / S, y / S, z / S
+            if zs > 0.6:
+                ax = abs(xs)
+                if ax < 0.6 and 54.6 < ys < 57.4:
+                    k += 0.14 * math.exp(-((ys - 55.6) ** 2) / 0.9) * math.exp(-(ax**2) / 0.25)  # sống mũi
+                if 56.3 < ys < 57.0 and 0.5 < ax < 2.6:
+                    k += 0.07  # gò mày
+                if abs(ys - 56.0) < 0.3 and 0.9 < ax < 2.2:
+                    k -= 0.12  # hốc mắt
+                if abs(ys - 53.1) < 0.18 and ax < 1.6:
+                    k -= 0.08  # khe miệng
+                if ys < 53.0 and ax < 1.5:
+                    k += 0.05 * math.exp(-((ys - 52.0) ** 2) / 0.8)  # cằm
+                if 53.6 < ys < 55.0 and 1.7 < ax < 3.0:
+                    k += 0.04  # gò má
             return k
 
-        ellipsoid(b, P(0, 55.2, 0.6), P(3.3, 4.3, 3.5), nu=24, nv=18, seed=101, amp=0.03, ridge=face)
-        ellipsoid(b, P(0, 56.8, -0.1), P(4.1, 3.9, 4.2), v0=0.0, v1=0.56, nu=24, nv=12, seed=102, amp=0.04)
-        ellipsoid(b, P(0, 61.0, -0.4), P(0.55, 2.2, 4.4), nu=14, nv=12, seed=103, amp=0.02, gold_at=lambda c: True)  # mào vàng
+        ellipsoid(b, P(0, 55.2, 0.6), P(3.3, 4.3, 3.5), nu=52, nv=40, seed=101, amp=0.025, ridge=face)
+        ellipsoid(b, P(0, 56.8, -0.1), P(4.1, 3.9, 4.2), v0=0.0, v1=0.56, nu=36, nv=14, seed=102, amp=0.04)
+        ellipsoid(b, P(0, 60.4, -0.6), P(0.5, 2.6, 4.8), nu=18, nv=14, seed=103, amp=0.02, gold_at=lambda c: True)  # mào vàng
+        tube(b, P(0, 61.5, -4.2), P(0, 58.5, -8.5), 1.0 * S, 0.1 * S, nu=10, nv=5, amp=0.02, gold_at=lambda c: True)  # tua mào phía sau
         for sx in (-1, 1):
-            ellipsoid(b, P(sx * 3.5, 54.0, 1.0), P(0.9, 2.7, 2.4), nu=14, nv=10, seed=104 + sx, gold_at=lambda c: abs(c[1] - 52.6 * S) < 0.3 * S)
+            ellipsoid(b, P(sx * 3.5, 54.0, 1.0), P(0.9, 2.7, 2.4), nu=16, nv=12, seed=104 + sx, gold_at=lambda c: abs(c[1] - 52.6 * S) < 0.3 * S)
+            tube(b, P(sx * 3.9, 58.6, 0.2), P(sx * 6.4, 63.0, -0.6), 0.7 * S, 0.05 * S, nu=8, nv=5, amp=0.02, gold_at=lambda c: True)  # sừng/cánh mũ
 
     def arm_left():
         tube(b, P(-11.9, 46.2, 0), P(-13.4, 36.0, 1.6), 3.2 * S, 2.7 * S, ridges=2, seed=111)
@@ -617,11 +650,11 @@ def build_statue(b, st, rnd):
 def build_all():
     data = build_data()
     rnd = random.Random(20261119)
+    # Ba object: thang (1100 bậc, không vát mép để giữ ngân sách tam giác), kiến trúc (cổng, tiên cung, cột; có vát mép), tượng.
+    stair = new_builder(seed=4, moss=0.5)
+    build_stair(stair, data['stair'], rnd)
     main = new_builder(seed=3, moss=0.7)
-    # bậc thang xoắn
-    build_stair(main, data['stair'], rnd)
-    islands = data['islands']
-    for isl in islands:
+    for isl in data['islands']:
         if isl['kind'] == 'cong':
             build_gate(main, isl, rnd)
         else:
@@ -629,16 +662,16 @@ def build_all():
     build_avenue_pillars(main, data['pillars'], rnd)
     statue = new_builder(seed=5, moss=0.4)
     build_statue(statue, data['statue'], rnd)
-    return main, statue, data
+    return stair, main, statue, data
 
 
 def run(out):
     bs.make_textures()
-    main, statue, data = build_all()
+    stair, main, statue, data = build_all()
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    keys, images = ts.materials_for([main, statue])
-    for name, b in (('tk_main', main), ('tk_statue', statue)):
-        mesh = ts.make_mesh(name, b, keys, images)
+    keys, images = ts.materials_for([stair, main, statue])
+    for name, b, bevel in (('tk_stair', stair, False), ('tk_main', main, True), ('tk_statue', statue, True)):
+        mesh = ts.make_mesh(name, b, keys, images, bevel=bevel)
         obj = bpy.data.objects.new(name, mesh)
         bpy.context.scene.collection.objects.link(obj)
         if name == 'tk_statue':
@@ -647,7 +680,7 @@ def run(out):
             obj.rotation_euler = (0.0, 0.0, -st['yaw'])
     ts.export_glb(out)
     size, prims, tris, doc = bs.inspect(out)
-    print(f'[thien_khuyet] {out}: {size / 1024:.0f} KB, {len(main.faces) + len(statue.faces)} mặt, {tris} tam giác, {len(prims)} primitive ({", ".join(keys)})')
+    print(f'[thien_khuyet] {out}: {size / 1024:.0f} KB, {len(stair.faces) + len(main.faces) + len(statue.faces)} mặt, {tris} tam giác, {len(prims)} primitive ({", ".join(keys)})')
 
 
 if __name__ == '__main__':

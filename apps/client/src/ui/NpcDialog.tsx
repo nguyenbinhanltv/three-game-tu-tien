@@ -6,7 +6,7 @@ import { hasString, ITEM, itemName, METHOD, NPC, PILL_QUALITY, QUESTS, realmName
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './objective';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './windows/common';
-import { Button, Divider, Tabs } from './kit';
+import { Button, Divider, Tabs } from './u2/win';
 import { RootTab } from './Realm';
 import { EnhanceTab, ForgeTab, GemTab, PromoteTab, RefineTab, SalvageTab } from './UpgradeTabs';
 import { set, useUI } from './store';

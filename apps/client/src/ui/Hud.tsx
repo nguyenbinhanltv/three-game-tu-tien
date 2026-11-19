@@ -1,7 +1,7 @@
 import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import './tutien.css';
-import './ngj/hud.css';
+import './u2/shell/hud.css';
 import './u2/hud/hud.css';
 import { type CSSProperties, useEffect } from 'react';
 import {
@@ -46,8 +46,8 @@ import {
 import { Portrait, useArtUrl } from './Art';
 import { Game } from '../game/engine';
 import { artifactLines } from './gear';
-import { Corners, RingSweep } from './ngj';
-import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './kit';
+import { Corners, RingSweep } from './u2/shell';
+import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './u2/win';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { DuelBanner, InviteStack, PartyFrame } from './Party';
@@ -425,8 +425,9 @@ export function Hud() {
       <div className="u2h-zone u2h-tr">
         <HubBar />
         <Minimap />
-        <QuestTrack />
+        {mode !== 'touch' && <QuestTrack />}
       </div>
+      {mode === 'touch' && <QuestTrack />}
       <ChapterMap />
       <Toasts />
       <Tribulation />
