@@ -132,7 +132,14 @@ export class ColliderViz {
       const pos = new THREE.BufferAttribute(new Float32Array(cap * 3), 3);
       geo.setAttribute('position', pos);
       geo.setDrawRange(0, 0);
-      const mat = new THREE.LineBasicMaterial({ color: KIND_COLOR[kind], transparent: true, opacity: 0.95, depthTest: false, fog: false, toneMapped: false });
+      const mat = new THREE.LineBasicMaterial({
+        color: KIND_COLOR[kind],
+        transparent: true,
+        opacity: 0.95,
+        depthTest: false,
+        fog: false,
+        toneMapped: false,
+      });
       const lines = new THREE.LineSegments(geo, mat);
       lines.frustumCulled = false;
       lines.renderOrder = 9;

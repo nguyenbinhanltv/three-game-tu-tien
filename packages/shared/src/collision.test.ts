@@ -54,7 +54,8 @@ describe('va chạm 3D', () => {
 
   it('leo chuỗi bậc cao 0,4 m mỗi bậc, rồi đứng trên bệ', () => {
     const steps: Shape[] = [];
-    for (let i = 0; i < 6; i++) steps.push({ k: 'box', x: X, z: Z - 6 - i * 1.2, hx: 3, hz: 0.6, yaw: 0, y0: G - 1, y1: G + 0.4 * (i + 1) });
+    for (let i = 0; i < 6; i++)
+      steps.push({ k: 'box', x: X, z: Z - 6 - i * 1.2, hx: 3, hz: 0.6, yaw: 0, y0: G - 1, y1: G + 0.4 * (i + 1) });
     steps.push({ k: 'box', x: X, z: Z - 18, hx: 6, hz: 6, yaw: 0, y0: G - 1, y1: G + 2.4 });
     setup(steps);
     const s = fresh();

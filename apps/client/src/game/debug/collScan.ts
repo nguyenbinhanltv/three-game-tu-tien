@@ -104,7 +104,17 @@ function push(out: ScanItem[], path: string, i: number, bb: THREE.Box3, m: THREE
   const b = opts.box;
   if (b && (x < b.x0 || x > b.x1 || z < b.z0 || z > b.z1)) return;
   const r = (n: number): number => Math.round(n * 100) / 100;
-  out.push({ path, i, x: r(x), z: r(z), y0: r(_box.min.y), y1: r(_box.max.y), w: r(_box.max.x - _box.min.x), d: r(_box.max.z - _box.min.z), tris });
+  out.push({
+    path,
+    i,
+    x: r(x),
+    z: r(z),
+    y0: r(_box.min.y),
+    y1: r(_box.max.y),
+    w: r(_box.max.x - _box.min.x),
+    d: r(_box.max.z - _box.min.z),
+    tris,
+  });
 }
 
 /** Cấu trúc cảnh rút gọn (tên, loại, số con, instance) tới độ sâu `depth`: để chỉnh bộ lọc/tên nhóm của công cụ quét. */

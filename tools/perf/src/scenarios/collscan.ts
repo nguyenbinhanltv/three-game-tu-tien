@@ -23,7 +23,8 @@ function grid(level: string, step: number): { x: number; z: number }[] {
     const half = (dg.bound ?? 120) * 0.9;
     const out: { x: number; z: number }[] = [{ x: dg.spawn.x, z: dg.spawn.z }];
     for (let x = dg.center.x - half; x <= dg.center.x + half; x += step)
-      for (let z = dg.center.z - half; z <= dg.center.z + half; z += step) if (Math.hypot(x - dg.center.x, z - dg.center.z) <= half) out.push({ x, z });
+      for (let z = dg.center.z - half; z <= dg.center.z + half; z += step)
+        if (Math.hypot(x - dg.center.x, z - dg.center.z) <= half) out.push({ x, z });
     return out;
   }
   const b = t.playBounds;
@@ -96,7 +97,10 @@ export default {
       for (const it of items) seen.set(`${it.path}|${it.i}|${it.x}|${it.z}|${it.y0}`, it);
     }
     const t = terrainOf(LEVEL);
-    const rep = summarize(LEVEL, classify([...seen.values()], t.colliders as CircleCollider[], t.collision.shapes as Shape[], footprintDist, t.groundAt));
+    const rep = summarize(
+      LEVEL,
+      classify([...seen.values()], t.colliders as CircleCollider[], t.collision.shapes as Shape[], footprintDist, t.groundAt),
+    );
     writeJson(r.out, `collscan-${LEVEL}.json`, rep);
     console.log(`[collscan] ${LEVEL}: ${rep.total} vật, cần va chạm ${rep.needs}, đã phủ ${rep.covered}, thiếu ${rep.missing}`);
     for (const g of rep.groups.slice(0, 15)) console.log(`  ${String(g.missing).padStart(5)} / ${String(g.n).padStart(5)}  ${g.group}`);
