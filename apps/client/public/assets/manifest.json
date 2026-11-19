@@ -429,6 +429,80 @@
         }
       }
     },
+    "arch_thien_khuyet": {
+      "id": "arch_thien_khuyet",
+      "class": "arch",
+      "source": "assets/build/raw/arch_thien_khuyet.glb",
+      "file": "arch_thien_khuyet.d80e80db2c.glb",
+      "bytes": 5046104,
+      "rawBytes": 24417672,
+      "triangles": 273112,
+      "rawTriangles": 273112,
+      "lod0Cap": 300000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 256,
+          "height": 256,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_wood",
+          "mimeType": "image/ktx2",
+          "width": 256,
+          "height": 256,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_tile",
+          "mimeType": "image/ktx2",
+          "width": 256,
+          "height": 256,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_jade",
+          "mimeType": "image/ktx2",
+          "width": 256,
+          "height": 256,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 273112
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 895.5503,
+          "height": 332.1443,
+          "depth": 926.1588,
+          "minY": -7.5443
+        },
+        "build": {
+          "width": 895.5196,
+          "height": 332.1634,
+          "depth": 926.1588,
+          "minY": -7.541
+        }
+      }
+    },
     "boss_dia_mach_long": {
       "id": "boss_dia_mach_long",
       "class": "boss",

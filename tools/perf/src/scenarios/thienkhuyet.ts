@@ -21,7 +21,11 @@ export const VIEWS: View[] = [
   { name: 'tram', eye: [1024, 90, 1110], at: [1030, 96, 800], fov: 58 },
   { name: 'dailo', eye: [1030, 86, 760], at: [1043, 104, 330], fov: 58 },
   { name: 'quangtruong', eye: [1044, 90, 560], at: [1044, 112, 244], fov: 60 },
-  { name: 'cong', eye: [1100, 84, 380], at: [1044, 104, 236], fov: 55 },
+  { name: 'cong', eye: [1044, 230, 560], at: [1044, 335, 300], fov: 60 },
+  { name: 'bacthang', eye: [1230, 100, 520], at: [1044, 200, 330], fov: 60 },
+  { name: 'tuong2', eye: [880, 90, 600], at: [830, 50, 490], fov: 62 },
+  { name: 'tuong', eye: [1010, 120, 640], at: [830, 55, 490], fov: 64 },
+  { name: 'cung', eye: [1180, 130, 620], at: [1520, 215, 600], fov: 58 },
   { name: 'trencao', eye: [1300, 280, 900], at: [1040, 90, 380], fov: 56 },
   { name: 'phongxa', eye: [1024, 140, 1180], at: [1024, 330, -300], fov: 66 },
 ];

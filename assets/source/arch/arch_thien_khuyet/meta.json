@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "arch_thien_khuyet",
+  "type": "arch",
+  "status": "in_game",
+  "procedural": { "script": "tools/blender/thien_khuyet_arch.py", "seed": 20261119 },
+  "license": { "source": "Tự sinh bằng bộ kit tools/blender/thien_cong_kit.py (bảng màu Thiên Khuyết) + thien_khuyet_arch.py (MAP-4)", "owner": "dự án", "date": "2026-11-19" }
+}

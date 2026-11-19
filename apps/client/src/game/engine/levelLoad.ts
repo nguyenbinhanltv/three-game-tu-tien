@@ -23,6 +23,7 @@ import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
 import { DoanMachArt } from '../world/doanMachArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
+import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { VanHaiWow } from '../world/vanHaiWow';
 import { VanHaiGarden } from '../world/vanHaiGarden';
 import { applyGrading, markBloom } from '../../render/post';
@@ -373,6 +374,12 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.lacKiemGarden = new LacKiemGarden();
     eng.scene.add(eng.lacKiemGarden.group);
   }
+  const tkSky = levelAssets(id).thienKhuyetSky;
+  if (tkSky) {
+    eng.thienKhuyetSky = new ThienKhuyetSkyScene(tkSky, heightAt);
+    eng.scene.add(eng.thienKhuyetSky.group);
+    void loadTkModel(eng, q.shadows);
+  }
   if (id === 'van_hai') {
     eng.vanHaiWow = new VanHaiWow(terrainOf(id).def);
     eng.scene.add(eng.vanHaiWow.group);
@@ -456,6 +463,17 @@ export function unloadLevel(eng: Game): void {
     eng.beacons.dispose();
     eng.beacons = null;
   }
+  if (eng.tkAsset) {
+    drop(eng.tkAsset.handle.scene);
+    eng.tkAsset.handle.release();
+    for (const m of eng.tkAsset.mats) m.dispose();
+    eng.tkAsset = null;
+  }
+  if (eng.thienKhuyetSky) {
+    drop(eng.thienKhuyetSky.group);
+    eng.thienKhuyetSky.dispose();
+    eng.thienKhuyetSky = null;
+  }
   if (eng.cardForest) {
     drop(eng.cardForest.group);
     eng.cardForest.dispose();
@@ -533,6 +551,37 @@ export async function loadSectModel(eng: Game, shadows: boolean): Promise<void> 
     if (!eng.started && !isWebGPU(eng.renderer)) await precompile(eng);
   } catch (e) {
     assetLog.warn('không tải được arch_sect, dùng kiến trúc dựng bằng code:', e);
+  }
+}
+
+/**
+ * Nạp kiến trúc Thiên Khuyết dựng bằng Blender (asset `arch_thien_khuyet`: bậc thang xoắn, Cổng Tiên Vỡ, tiên cung, cột, tượng thần).
+ * Gốc GLB = tâm quảng trường; object `tk_statue` hạ theo độ cao đất tại chỗ tượng. Lỗi thì chỉ thiếu phần kiến trúc.
+ */
+export async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
+  try {
+    await assets.attach(eng.renderer);
+    const handle = await assets.acquire('arch_thien_khuyet', { pos: { x: TK_ORIGIN.x, z: TK_ORIGIN.z } });
+    const sky = levelAssets(levelId()).thienKhuyetSky;
+    if (eng.disposed || !sky || eng.tkAsset) {
+      handle.release();
+      return;
+    }
+    const root = handle.scene;
+    eng.tkAsset = { handle, mats: adoptGltfMaterials(root, withOccluderFade) };
+    root.position.set(TK_ORIGIN.x, TK_ORIGIN.y, TK_ORIGIN.z);
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      m.castShadow = shadows;
+      m.receiveShadow = shadows;
+      m.frustumCulled = false;
+    });
+    const statue = root.getObjectByName('tk_statue');
+    if (statue) statue.position.y += heightAt(sky.statue.x, sky.statue.z) - TK_ORIGIN.y - 5; // cộng dồn: node đã có phép dịch lượng tử hóa
+    eng.scene.add(root);
+  } catch (e) {
+    assetLog.warn('không tải được arch_thien_khuyet:', e);
   }
 }
 
