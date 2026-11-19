@@ -33,7 +33,6 @@ interface View {
 /** Góc nhìn đặt tay theo cụm điểm nhấn đã duyệt (cổng sân, kiếm đài, đường chính, trước Chính điện của Lạc Kiếm Tông). */
 const EXTRA: Record<string, { group: string; view: View }[]> = {
   van_lam: [
-    { group: 'hoang_da', view: { name: 'van_lam-hoang_da-rung', x: 2452, z: 2022, yaw: Math.PI / 2, n: 1, pitch: 0.6, dist: 20 } },
     { group: 'hoang_da', view: { name: 'van_lam-hoang_da-suoi', x: 2390, z: 2466, yaw: Math.PI, n: 1 } },
     { group: 'cho_lang', view: { name: 'van_lam-cho_lang-cho', x: 2048, z: 2172, yaw: 0, n: 1 } },
     { group: 'cho_lang', view: { name: 'van_lam-cho_lang-cho_xa', x: 2060, z: 2185, yaw: 0.35, n: 1 } },
@@ -95,6 +94,29 @@ function viewAround(level: string, group: string, name: string, cx: number, cz: 
   return { name, x: mx - Math.sin(bestYaw) * 9, z: mz - Math.cos(bestYaw) * 9, yaw: bestYaw, n: best };
 }
 
+/** Góc nhìn vào điểm (cx, cz) mà người chơi và camera (đứng sau 18 m) không dính tán cây to/trúc: thử 24 hướng × vài khoảng cách, chọn chỗ thoáng nhất. */
+function viewClear(level: string, name: string, cx: number, cz: number, blockers: string[]): View | null {
+  const bl = (THIEN_CONG_PROPS[level] ?? []).filter((p) => blockers.includes(nameOf(p.id)));
+  const tooClose = (x: number, z: number, r: number) => bl.filter((p) => Math.hypot(p.x - x, p.z - z) < r).length;
+  let best: View | null = null;
+  let bestScore = 1e9;
+  for (let k = 0; k < 24; k++) {
+    const yaw = (k / 24) * Math.PI * 2;
+    for (const d of [9, 12, 15]) {
+      const px = cx - Math.sin(yaw) * d;
+      const pz = cz - Math.cos(yaw) * d;
+      const camX = px - Math.sin(yaw) * 14;
+      const camZ = pz - Math.cos(yaw) * 14;
+      const score = tooClose(px, pz, 6) * 10 + tooClose(camX, camZ, 7) * 10 + tooClose((px + camX) / 2, (pz + camZ) / 2, 5) * 5;
+      if (score < bestScore) {
+        bestScore = score;
+        best = { name, x: px, z: pz, yaw, n: 1, pitch: 1.0, dist: 26 }; // nhìn chéo từ trên cao: camera nằm trên tán tre/cổ thụ
+      }
+    }
+  }
+  return best;
+}
+
 export default {
   name: 'propstc',
   desc: 'Ảnh trước/sau + đo draw call/tam giác cho bộ prop PROP-1 (mỗi level × nhóm)',
@@ -117,6 +139,9 @@ export default {
               viewAround(level, 'hoang_da', 'doan_mach-hoang_da-sa_thach', 1323, 1287),
               viewAround(level, 'hoang_da', 'doan_mach-hoang_da-hoang_sa', 903, 1388),
             ].filter((v): v is View => !!v)
+          : []),
+        ...(level === 'van_lam' && groups.includes('hoang_da')
+          ? [viewClear(level, 'van_lam-hoang_da-rung', 2470, 2022, ['tre', 'cay_co_thu'])].filter((v): v is View => !!v)
           : []),
         ...(EXTRA[level] ?? []).filter((e) => groups.includes(e.group)).map((e) => e.view),
       ];
