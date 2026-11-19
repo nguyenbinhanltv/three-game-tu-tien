@@ -216,11 +216,11 @@ export default {
         ];
         // A1: đi lùi / đi ngang / chéo khi nhân vật nhìn mục tiêu. Khóa hướng mặt của nhân vật (chỉ trong trang, không đổi mã game) về phía
         // camera, camera đặt trước mặt: phím theo camera nên W = lùi, S = tiến, D = sang trái nhân vật, A = sang phải (góc đo được in ra log).
-        const lockFacing = () =>
+        const lockFacing = (off = 0) =>
           page.evaluate(
-            `(() => { const g = window.__game; const f = g.camYaw; Object.defineProperty(g, 'facing', { configurable: true, get() { return f; }, set() {} }); })()`,
+            `(() => { const g = window.__game; const f = g.camYaw + ${off}; Object.defineProperty(g, 'facing', { configurable: true, get() { return f; }, set() {} }); })()`,
           );
-        const locoSit = (name: string, keys: string[], slash = false): Sit => ({
+        const locoSit = (name: string, keys: string[], slash = false, off = 0): Sit => ({
           name,
           prep: async () => {
             await gm(page, 'killall', 800);
@@ -232,7 +232,7 @@ export default {
               );
             }
             await cam(page, { yaw: 0.9, pitch: 0.3, dist: 3.6 });
-            await lockFacing();
+            await lockFacing(off);
             await sleep(300);
           },
           cam: async () => void (await sleep(1)),
@@ -253,6 +253,9 @@ export default {
           locoSit('chéo lùi-trái', ['KeyW', 'KeyD']),
           locoSit('chéo lùi-phải', ['KeyW', 'KeyA']),
           locoSit('lùi + chém', ['KeyW'], true),
+          // Nhìn ngang (camera vuông góc hướng đi, thấy rõ chân chạm đất): mặt quay về phía phím D, nên D = tiến, A = lùi.
+          locoSit('lùi (nhìn ngang)', ['KeyA'], false, Math.PI / 2),
+          locoSit('tiến (nhìn ngang, mốc)', ['KeyD'], false, Math.PI / 2),
         ];
         const pick = list('--sit', '')[0];
         const chosen = (group === 'base' ? sits : group === 'loco' ? locoSits : [...sits, ...locoSits]).filter(
