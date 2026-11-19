@@ -77,6 +77,16 @@ if (!templates[group]) {
   console.error('Nhóm: icons | portraits | loading | ui | concepts | outfit | outfit3');
   process.exit(1);
 }
+const GROUP_DIR = {
+  icons: 'icon/v1',
+  portraits: 'chan-dung/portraits',
+  loading: 'nen/loading',
+  layers: 'nen/layers',
+  ui: 'ui/ui',
+  concepts: 'concept/quai-prop',
+  outfit: 'concept/outfit',
+  outfit3: 'concept/outfit3',
+}; // nhóm → thư mục dưới 2d/ (cây nguồn mới)
 const all =
   group === 'outfit'
     ? buildOutfit()
@@ -87,15 +97,6 @@ const todo = (ids.length ? ids : Object.keys(all)).filter((id) => {
   if (!all[id]) throw new Error(`Không có chủ thể: ${id}`);
   return force || !fs.existsSync(path.join(source, '2d', GROUP_DIR[group] ?? group, `${id}.png`));
 });
-const GROUP_DIR = {
-  icons: 'icon/v1',
-  portraits: 'chan-dung/portraits',
-  loading: 'nen/loading',
-  layers: 'nen/layers',
-  ui: 'ui/ui',
-  concepts: 'concept/quai-prop',
-  outfit: 'concept/outfit',
-}; // nhóm → thư mục dưới 2d/ (cây nguồn mới)
 const outDir = path.join(source, '2d', GROUP_DIR[group] ?? group);
 fs.mkdirSync(outDir, { recursive: true });
 console.log(`${group}: ${todo.length}/${Object.keys(all).length} ảnh, ${jobs} luồng → ${outDir}`);

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Sinh 28 icon trang bị: Blender dựng vật thể (render_equipment.py) rồi ghép lên nền + khung đồng cùng họ icon M4-7
 // (nền ngọc lam sương, nắng sớm vàng góc trên trái, khung đồng vuông vát góc thụt 5%).
-// Ra: <DTL_ASSET_SOURCE>/2d/icon/v1/<id>.png (1024×1024). Sau đó chạy `pnpm icons:build`.
+// Ra: <DTL_ASSET_SOURCE>/2d/icon/legacy/<id>.png (1024×1024). Sau đó chạy `pnpm icons:build`.
 // Dùng: node tools/icons/equipment.mjs [id ...]
 import fs from 'node:fs';
 import os from 'node:os';
