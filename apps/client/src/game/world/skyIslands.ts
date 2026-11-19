@@ -25,10 +25,12 @@ import { skyParams } from '../../render/sky';
 import { bridgeDeckY, type BridgeDef, hash01, type IslandDef, type Terrain, type TerrainDef } from '@dtl/shared';
 import type { SpiritScan } from '../../ui/store';
 import { pondMaterial } from '../../render/pondWater';
+import { logger } from '../../base/log';
 import { assets, type AssetHandle } from '../core/assets';
 import { billowPlan } from './billows';
 import { vanHaiArt, type VhIsland, type VhKind } from './vanHaiArt';
 
+const islandsLog = logger('skyIslands');
 const PLANK = 0.9;
 const RAIL_H = 1.15;
 const POST_EVERY = 6;
@@ -309,7 +311,7 @@ export class SkyIslands {
         f.mesh.geometry = this.track(merged);
       }
     } catch (e) {
-      console.warn('[skyIslands] không nạp được khối đá Blender, giữ chân đảo thủ tục', e);
+      islandsLog.warn('không nạp được khối đá Blender, giữ chân đảo thủ tục', e);
     }
   }
 
