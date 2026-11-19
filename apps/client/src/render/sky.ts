@@ -109,6 +109,14 @@ const TOP: Record<string, number> = {
   ash_dawn: 0x8a99a3,
   rift: 0x241634,
   rift_pit: 0x4a4668,
+  bh_dawn: 0x8e9cc0,
+  bh_day: 0x6f90c0,
+  bh_dusk: 0x4a3c78,
+  bh_night: 0x0a0f2a,
+  bhr_dawn: 0x2c2058,
+  bhr_day: 0x3a2e70,
+  bhr_dusk: 0x20103e,
+  bhr_night: 0x08041c,
 };
 
 /** Màu đỉnh trời của preset (để trộn mood theo vị trí). */
