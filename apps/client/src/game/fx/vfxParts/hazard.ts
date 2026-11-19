@@ -114,8 +114,7 @@ export function hazard(
       if (!stack.fx) return;
       if (quiet?.()) return;
       if (kind === 'lightning') {
-        // Mỗi đòn sét chớp sáng cả cảnh (tối thiểu 0,3) và tia dày hơn (DUN-1 PR7).
-        v.lightning(x, y, z, hot ? HOT_BOLT_CORE : 0xe2d4ff, 1.2, seed, Math.max(flash, 0.3) * stack.dim, 1.5);
+        v.lightning(x, y, z, hot ? HOT_BOLT_CORE : 0xe2d4ff, 1.2, seed, flash * stack.dim);
       } else if (kind !== 'frost') {
         _a.set(x, y + 0.5, z);
         v.burst(_a, color, r * 1.1, 0.45);

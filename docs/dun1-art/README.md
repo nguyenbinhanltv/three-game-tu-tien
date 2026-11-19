@@ -173,8 +173,7 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 
 - **Mood `dk`**: nền tối sâu (nắng 0,7, trời 0,5, sương gần đen, blackLift ~đen, tương phản 1,5). Điểm sáng thay cho ánh đồng đều: **đầu mỗi lôi trụ phát quầng trắng-tím**, phù văn trụ/đài (`_volt`, `_rune`) sáng nền mạnh hơn và bừng theo chớp, **bốn đèn điểm cam** ở lò lửa rọi sàn và chân trụ.
 - **Xoáy mây** thấy được trong ảnh toàn cảnh (02: camera hạ thấp, nhìn ngang qua đài) và ảnh `07-xoay-may`; có **tia chớp chạy trong mây** (đường vân sáng mảnh, chỉ hiện lúc chớp).
-- **Tia sét** (`render/vfx/lightning.ts`, dùng chung): thân dày 0,22 → 0,38, nhánh 0,12 → 0,2, tối đa 7 nhánh rẽ (trước 5). Sét thiên kiếp (vùng báo `lightning` + tia quét) **luôn chớp toàn cảnh** (`post.flash` tối thiểu 0,3, tắt ~0,25 s) và dày ×1,5. Sân độ kiếp đọc `postParams.flash` để mây/biển mây/đá/phù văn bừng cùng chớp và đèn điểm trên đài đồng bộ; `DoKiepArt.strike()` dùng cho kịch bản chụp.
-- **Vòng chỉ báo AOE** (`render/vfx/sigil.ts`, chung mọi bí cảnh): nền phủ giảm một nửa (0,3 → 0,15), sọc chảy ra ngoài và vệt đã quét giảm một nửa; viền, phù văn và vạch tiến độ giữ nguyên.
+- **Tia sét và vòng chỉ báo AOE**: ban đầu vòng 3 đổi hằng số dùng chung (`lightning.ts`, `hazard.ts`, `telegraph.ts`, `sigil.ts`); **đã hoàn nguyên ở vòng 5** theo review (thông số gameplay/chống lóa chốt ở K-6, ảnh hưởng mọi level). Muốn sét dày hơn, chớp mỗi đòn hoặc nền vạch báo nhạt hơn thì làm PR VFX riêng có ảnh so sánh nhiều level (`pnpm shots mons`).
 - **Ảnh**: `02-toan-canh` (đổi góc), `07-xoay-may`, `95-set-danh` (chụp 70 ms sau khi gọi chớp).
 
 ### PR 7 vòng 4 (review code): chớp trang trí không lẫn với sét thật, đèn điểm theo chất lượng
@@ -183,3 +182,8 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Chớp trang trí thưa** (7–15 s một lần, trước 2,2–5,5 s) và **tạm dừng khi có vùng báo sét** (`eng.vfx.hazards.length > 0`, tới khi hết), nên vạch báo đang đếm ngược không bị loé và người chơi không nhầm với sét thật.
 - **Đèn điểm ấm ở bốn lò lửa** chỉ tạo khi `q.lights && isWebGPU` (như `LanternLights`); preset Thấp và WebGL2 không có đèn, vẫn còn quầng giả.
 - Ảnh `95-set-danh` mô phỏng sét thật (`strike()` + `post.flash(0,3)`) ở sân đang kiếp: sàn tối, chỉ nổi phù văn/khảm, sét và lò.
+
+### PR 7 vòng 5 (review code): hoàn nguyên thay đổi VFX dùng chung
+
+- Hoàn nguyên `render/vfx/sigil.ts`, `render/vfx/lightning.ts`, `game/fx/vfxParts/hazard.ts`, `game/fx/telegraph.ts` về như `main`: PR này chỉ chạm cảnh `do_kiep` (`doKiepArt.ts`, GLB, palette `dk`, dữ liệu level, kịch bản chụp).
+- Chớp ngẫu nhiên chỉ còn ảnh hưởng trời (xoáy mây, biển mây), thưa và dừng khi có hazard; không đèn điểm chớp trên đài; đèn lò chỉ khi `q.lights && isWebGPU` (xem vòng 4).
