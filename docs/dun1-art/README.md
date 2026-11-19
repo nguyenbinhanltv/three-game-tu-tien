@@ -219,3 +219,10 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Giảm tím**: mood `tt` bão hòa 0,88 → 0,5, trời/sương/bóng/blackLift chuyển từ chàm sang xám trung tính; cẩm thạch GLB (`marble`) từ đen tím sang đen xám ngả tím nhạt, áo choàng tượng và biểu ngữ sang đỏ rượu sẫm; sương thấp (`DungeonFx.mist`) xám ấm. Vẫn giữ phù văn rune tím làm điểm nhấn nhỏ.
 - **Bệ tượng**: bỏ các ô vuông rune (đọc như bàn cờ đen-vàng); bậc giữa quấn **dải hồi văn** vàng sẫm (9 đơn vị mỗi mặt, nét ngang/sổ so le) kèm đường rune mảnh liền phía trên; mặt bậc dưới có hàng **cánh sen đá** nghiêng (10 cánh mỗi mặt); bốn góc có đinh vàng tròn. `plinth_carving` trong `tools/blender/than_tang_arch.py`.
 - **Ngân sách (Cao)**: 143–158 draw call, ~0,94–0,99M tam giác (GLB 438k → 487k tam giác), 8,4–9,9 ms/khung.
+
+## Polish — Kiếm Trủng: khe nứt có chiều sâu
+
+- **Vấn đề**: khe nứt (`DungeonFx.cracks`) dùng cấu hình mặc định nên nhìn gần là dải xanh sáng phẳng, lõi trắng bè như dòng nước.
+- **Cấu hình mới** (`kiemTrungArt.ts`): 40 khe (trước 34); đáy khe xanh chàm sẫm hơn, lõi sáng xanh nhạt rất hẹp (`core` + `glowW` 0,3) thay dải trắng rộng; **gờ đá nổi hai bên ×3** (`lip`); nửa rộng 0,28–0,88 m (hẹp hơn); đá hai bên cùng tông sàn; mờ dần theo khoảng cách camera 22 → 50 m để không đè lên người chơi. Quầng cộng sáng ngoài giữ nhẹ.
+- **Công cụ**: kịch bản `dungeonart` thêm `--nearcrack 1` (tự tìm khe gần điểm tâm + 60 m phía nam, thêm góc `08-khe-nut-can`), và góc `07-khe-nut-gan`.
+- **Còn lại**: các gò mộ vòm (`grave`) trên sàn còn tô một màu phẳng (low-poly), vòng "kiếm trận" khắc sàn là các dải mờ phẳng; chưa động tới GLB nên không phải sinh lại collider.
