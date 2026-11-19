@@ -226,6 +226,8 @@ export class Game {
   thienKhuyetSky: ThienKhuyetSkyScene | null = null;
   /** GLB kiến trúc Thiên Khuyết (MAP-4). */
   tkAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
+  /** GLB cảnh Kiếm Trủng (cự kiếm, vành núi đá, mộ, bia, xương…), DUN-1. */
+  ktAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
   /** Vân Hải (MAP-3): thuyền tiên, cá kình mây, cầu vòng linh khí, hải đăng. */
   vanHaiWow: VanHaiWow | null = null;
   vanHaiGarden: VanHaiGarden | null = null;
@@ -1356,6 +1358,9 @@ export class Game {
     this.tkAsset?.handle.release();
     for (const m of this.tkAsset?.mats ?? []) m.dispose();
     this.tkAsset = null;
+    this.ktAsset?.handle.release();
+    for (const m of this.ktAsset?.mats ?? []) m.dispose();
+    this.ktAsset = null;
     for (const m of this.sectAsset?.mats ?? []) m.dispose();
     this.sectAsset = null;
     this.sectMat.dispose();

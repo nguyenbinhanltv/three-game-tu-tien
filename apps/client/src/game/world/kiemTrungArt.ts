@@ -1,8 +1,9 @@
 import * as THREE from 'three/webgpu';
-import { attribute, float, uniform, vec3 } from 'three/tsl';
+import { float, mix, positionWorld, smoothstep, texture, time, uniform, vec2, vec3 } from 'three/tsl';
 import { fbm, hash01, KIEM_TRUNG } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { createWorldMaterial } from '../../render/materials/world';
+import { getCloudNoise } from '../../render/noiseTex';
 
 /**
  * Cảnh Kiếm Trủng (DUN-1, bí cảnh đầu tiên; chỉ để nhìn, KHÔNG va chạm, không đổi vùng boss/đợt quái/cổng):
@@ -46,6 +47,12 @@ const KT = {
   dark: hex(0x434a54),
   /** Sàn đài chiến: đá đen bóng, hơi lam. */
   floor: hex(0x4a525e),
+  /** Rêu xanh xỉn. */
+  moss: hex(0x4e6a44),
+  /** Đất đỏ rỉ. */
+  soil: hex(0x7a4d38),
+  /** Ánh lam kiếm khí. */
+  glow: hex(0x5a9ec8),
 };
 
 /** Màu đất Kiếm Trủng (RGB 0..1, viết vào `out`): đá xám lam, mảng tro trắng, vệt rỉ, vách tối; lòng đài chiến sẫm và mịn hơn. */
@@ -66,6 +73,13 @@ export function ktGroundColor(x: number, z: number, ny: number, out: [number, nu
     const ring = Math.pow(Math.max(0, 1 - Math.abs(d - 56) / 1.1), 2);
     c = lerp3(c, KT.ash, ring * 0.6);
   }
+  // Vệt rêu thành đám ở chỗ ẩm (nhiễu thấp tần số vừa), đất đỏ rỉ thành mảng lớn quanh các gò, ánh lam kiếm khí quanh vòng trận.
+  const mo = fbm(x * 0.021 + 40, z * 0.021, 2, SEED + 411);
+  c = lerp3(c, KT.moss, Math.min(0.7, Math.max(0, mo - 0.08) * 2.6) * (1 - arena * 0.8));
+  const rd = fbm(x * 0.009 - 20, z * 0.009 + 5, 2, SEED + 457);
+  c = lerp3(c, KT.soil, Math.min(0.65, Math.max(0, rd - 0.02) * 2.0) * (1 - arena * 0.6));
+  const glowRing = Math.exp(-(((d - 59) / 7) ** 2));
+  c = lerp3(c, KT.glow, glowRing * 0.28);
   const slope = 1 - ny;
   if (slope > 0.12) c = lerp3(c, KT.dark, Math.min(1, (slope - 0.12) * 4.2));
   const k = 0.92 + f * 0.14;
@@ -145,8 +159,6 @@ const STEEL_DK: [number, number, number] = [0.3, 0.33, 0.39];
 const RUST: [number, number, number] = [0.46, 0.27, 0.17];
 const BRONZE: [number, number, number] = [0.4, 0.31, 0.18];
 const LEATHER: [number, number, number] = [0.22, 0.17, 0.15];
-/** Màu nền của rãnh khí rất tối: ánh xanh đến từ `emissiveNode`, không bị nắng đẩy cháy trắng. */
-const RUNE: [number, number, number] = [0.02, 0.05, 0.07];
 
 /** Kiếm nguyên cắm lưỡi xuống đất: chỉ thấy phần lưỡi sát chuôi, tấm chắn, chuôi và đầu chuôi. Cao 1 đơn vị, gốc ở mặt đất. */
 function plantedSword(): THREE.BufferGeometry {
@@ -165,31 +177,6 @@ function brokenBlade(): THREE.BufferGeometry {
   prism(p, 0.12, 0.024, 0.1, 0.022, -0.05, 0.62, RUST, STEEL);
   prism(p, 0.1, 0.022, 0.06, 0.018, 0.62, 0.88, STEEL, STEEL_DK, 0, 0.02, 0.1);
   prism(p, 0.04, 0.016, 0.0, 0.012, 0.88, 1.0, STEEL_DK, STEEL, 0, -0.03, 0.04);
-  return toGeometry(p);
-}
-
-/**
- * Cự kiếm (cao 1 đơn vị, nhân theo `s`): `broken` = lưỡi gãy chổng trời (thân thon, đỉnh vát lệch); ngược lại là kiếm cắm lưỡi xuống với tấm chắn rộng,
- * chuôi quấn và đầu chuôi nhô lên trời. Cả hai có rãnh khí xanh phát sáng chạy dọc lưỡi (thuộc tính `glow`, vào bloom) và vệt rỉ ở chân.
- */
-function giantSword(broken: boolean): THREE.BufferGeometry {
-  const p: Part = { pos: [], col: [], glow: [] };
-  if (broken) {
-    prism(p, 0.12, 0.03, 0.1, 0.028, -0.05, 0.4, RUST, STEEL_DK);
-    prism(p, 0.1, 0.028, 0.096, 0.026, 0.4, 0.66, STEEL_DK, STEEL);
-    prism(p, 0.096, 0.026, 0.06, 0.02, 0.66, 0.88, STEEL, STEEL_DK, 0, 0.022, 0.12);
-    prism(p, 0.04, 0.016, 0.0, 0.01, 0.88, 1.0, STEEL_DK, STEEL, 0, -0.03, 0.05);
-    prism(p, 0.014, 0.034, 0.012, 0.03, 0.06, 0.78, RUNE, RUNE, 1); // rãnh khí (nhô hai mặt)
-  } else {
-    prism(p, 0.075, 0.024, 0.08, 0.026, -0.05, 0.28, RUST, STEEL_DK);
-    prism(p, 0.08, 0.026, 0.076, 0.024, 0.28, 0.44, STEEL_DK, STEEL);
-    prism(p, 0.1, 0.034, 0.1, 0.034, 0.42, 0.46, STEEL, STEEL_DK); // gờ chân chắn
-    prism(p, 0.34, 0.05, 0.3, 0.046, 0.44, 0.49, BRONZE, BRONZE); // tấm chắn rộng
-    prism(p, 0.05, 0.05, 0.042, 0.042, 0.49, 0.78, LEATHER, LEATHER); // chuôi
-    prism(p, 0.09, 0.09, 0.06, 0.06, 0.78, 0.84, BRONZE, STEEL_DK); // đầu chuôi
-    prism(p, 0.016, 0.044, 0.012, 0.04, 0.05, 0.4, RUNE, RUNE, 1);
-    prism(p, 0.018, 0.052, 0.018, 0.052, 0.5, 0.74, RUNE, RUNE, 1); // vạch khí trên chuôi
-  }
   return toGeometry(p);
 }
 
@@ -247,37 +234,6 @@ export function planSmallSwords(countWhole = 640, countBroken = 520): KtSword[] 
       tiltZ: (rand() - 0.5) * 2 * tilt,
       kind,
     });
-  }
-  return out;
-}
-
-export interface KtGiant {
-  x: number;
-  z: number;
-  /** Chiều cao (m). */
-  h: number;
-  yaw: number;
-  lean: number;
-  leanYaw: number;
-  broken: boolean;
-}
-
-/** Cự kiếm: một thanh khổng lồ ở rìa bắc (điểm nhìn từ cổng vào), còn lại rải thành vành ngoài; tất định, tránh lối vào. */
-export function planGiants(): KtGiant[] {
-  const rand = rng(SEED + 7);
-  const out: KtGiant[] = [];
-  // Cự kiếm bắc: đối diện lối vào, cao 62 m, lưỡi nguyên.
-  out.push({ x: C.x - 6, z: C.z - 122, h: 62, yaw: 0.4, lean: 0.05, leanYaw: 0.5, broken: false });
-  out.push({ x: C.x + 52, z: C.z - 108, h: 38, yaw: 1.1, lean: 0.1, leanYaw: 2.9, broken: true });
-  out.push({ x: C.x - 64, z: C.z - 100, h: 44, yaw: 2.4, lean: 0.12, leanYaw: 0.3, broken: true });
-  for (let i = 0; i < 15; i++) {
-    const a = (i / 15) * Math.PI * 2 + (rand() - 0.5) * 0.3;
-    const r = 96 + rand() * 40;
-    const x = C.x + Math.cos(a) * r;
-    const z = C.z + Math.sin(a) * r;
-    if (swordKeepOut(x, z, 80)) continue;
-    if (out.some((g) => Math.hypot(g.x - x, g.z - z) < 28)) continue;
-    out.push({ x, z, h: 14 + rand() * 24, yaw: rand() * 6.28, lean: 0.04 + rand() * 0.16, leanYaw: rand() * 6.28, broken: rand() < 0.55 });
   }
   return out;
 }
@@ -360,8 +316,9 @@ export class KiemTrungArt {
       brokenBlade(),
       'kt-blades',
     );
-    this.addGiants(planGiants());
     this.addSigil();
+    this.addCracks();
+    this.addMist();
   }
 
   private addSmall(list: KtSword[], geo: THREE.BufferGeometry, name: string): void {
@@ -396,47 +353,6 @@ export class KiemTrungArt {
     this.disposables.push(geo, mat);
   }
 
-  private addGiants(list: KtGiant[]): void {
-    const whole = list.filter((g) => !g.broken);
-    const broken = list.filter((g) => g.broken);
-    const mat = createWorldMaterial({ vertexColors: true, roughness: 0.46, metalness: 0.5 });
-    // Rãnh khí: chỉ phần `glow` phát sáng, nhịp thở chậm; vào bloom.
-    mat.emissiveNode = attribute('glow', 'float')
-      .mul(vec3(0.2, 0.55, 0.85))
-      .mul(this.pulse)
-      .mul(float(0.85));
-    this.disposables.push(mat);
-    for (const [geo, items] of [
-      [giantSword(false), whole],
-      [giantSword(true), broken],
-    ] as const) {
-      const mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, items.length));
-      mesh.count = items.length;
-      const m = new THREE.Matrix4();
-      const q = new THREE.Quaternion();
-      const e = new THREE.Euler();
-      items.forEach((g, i) => {
-        // Nghiêng theo hướng `leanYaw`: quay yaw → nghiêng quanh trục ngang.
-        e.set(0, g.leanYaw, 0, 'YXZ');
-        q.setFromEuler(e);
-        const lean = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), g.lean);
-        const spin = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), g.yaw);
-        q.multiply(lean).multiply(spin);
-        // Mặt thanh kiếm quay: hình học rộng theo x, mỏng theo z, cao 1 → nhân h.
-        m.compose(new THREE.Vector3(g.x, heightAt(g.x, g.z) - 1.5, g.z), q, new THREE.Vector3(g.h, g.h, g.h));
-        mesh.setMatrixAt(i, m);
-      });
-      mesh.instanceMatrix.needsUpdate = true;
-      mesh.name = 'kt-giants';
-      mesh.frustumCulled = false;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      this.group.add(mesh);
-      this.meshes.push(mesh);
-      this.disposables.push(geo);
-    }
-  }
-
   private addSigil(): void {
     const tex = sigilTexture();
     const R = 66;
@@ -451,7 +367,7 @@ export class KiemTrungArt {
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
-      opacity: 0.16,
+      opacity: 0.34,
       polygonOffset: true,
       polygonOffsetFactor: -2,
     });
@@ -462,6 +378,132 @@ export class KiemTrungArt {
     mesh.renderOrder = 1;
     this.group.add(mesh);
     this.disposables.push(geo, mat, tex);
+  }
+
+  /** Khe nứt dưới đất: vài chục vệt gấp khúc đen, giữa có đường khí lam mảnh (hai lưới, bám địa hình); chừa khu giữa và lối vào. */
+  private addCracks(): void {
+    const rand = rng(SEED + 31);
+    const dark: number[] = [];
+    const glow: number[] = [];
+    const push = (arr: number[], x: number, z: number, nx: number, nz: number, w: number) => {
+      arr.push(
+        x + nx * w,
+        heightAt(x + nx * w, z + nz * w) + 0.07,
+        z + nz * w,
+        x - nx * w,
+        heightAt(x - nx * w, z - nz * w) + 0.07,
+        z - nz * w,
+      );
+    };
+    const idx: number[][] = [[], []];
+    let made = 0;
+    for (let tries = 0; tries < 400 && made < 22; tries++) {
+      const a = rand() * Math.PI * 2;
+      const r = 36 + rand() * 80;
+      let x = C.x + Math.cos(a) * r;
+      let z = C.z + Math.sin(a) * r;
+      if (swordKeepOut(x, z, 32)) continue;
+      let dir = rand() * Math.PI * 2;
+      const len = 14 + rand() * 38;
+      const steps = Math.round(len / 2.2);
+      const base = [dark.length / 3, glow.length / 3];
+      let ok = true;
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const w = 0.12 + 0.75 * Math.sin(Math.PI * Math.min(1, t * 1.15)) * (0.6 + 0.4 * rand());
+        const nx = -Math.sin(dir);
+        const nz = Math.cos(dir);
+        if (swordKeepOut(x, z, 30)) {
+          ok = false;
+          break;
+        }
+        push(dark, x, z, nx, nz, w);
+        push(glow, x, z, nx, nz, w * 0.22);
+        dir += (rand() - 0.5) * 0.9;
+        x += Math.cos(dir) * 2.2;
+        z += Math.sin(dir) * 2.2;
+      }
+      if (!ok) {
+        dark.length = base[0]! * 3;
+        glow.length = base[1]! * 3;
+        continue;
+      }
+      for (const [k, arr] of [dark, glow].entries()) {
+        const b0 = base[k]!;
+        const n = arr.length / 3;
+        for (let v = b0; v + 3 < n; v += 2) idx[k]!.push(v, v + 1, v + 2, v + 1, v + 3, v + 2);
+      }
+      made++;
+    }
+    const build = (arr: number[], ix: number[], mat: THREE.Material, name: string, order: number) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+      g.setIndex(ix);
+      g.computeBoundingSphere();
+      const m = new THREE.Mesh(g, mat);
+      m.name = name;
+      m.frustumCulled = false;
+      m.renderOrder = order;
+      this.group.add(m);
+      this.disposables.push(g, mat);
+    };
+    build(
+      dark,
+      idx[0]!,
+      new THREE.MeshBasicMaterial({
+        color: 0x06080c,
+        transparent: true,
+        opacity: 0.88,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -3,
+        side: THREE.DoubleSide,
+      }),
+      'kt-cracks',
+      1,
+    );
+    build(
+      glow,
+      idx[1]!,
+      new THREE.MeshBasicMaterial({
+        color: 0x3aa6e0,
+        transparent: true,
+        opacity: 0.55,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        side: THREE.DoubleSide,
+      }),
+      'kt-cracks-glow',
+      2,
+    );
+  }
+
+  /** Sương lạnh đọng thấp: một đĩa mỏng cách đất ~1 m, đục dần từ vành đài chiến ra ngoài và theo mảng nhiễu trôi chậm (đậm ở vành, trong suốt ở đài chiến). */
+  private addMist(): void {
+    const R = 160;
+    const geo = new THREE.RingGeometry(18, R, 96, 48).rotateX(-Math.PI / 2);
+    const p = geo.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < p.count; i++) p.setY(i, heightAt(C.x + p.getX(i), C.z + p.getZ(i)) + 1.1);
+    geo.computeBoundingSphere();
+    const nz = getCloudNoise();
+    const w = positionWorld.xz;
+    const wind = vec2(time.mul(0.012), time.mul(0.006));
+    const a = texture(nz, w.mul(1 / 83).add(wind)).a;
+    const b = texture(nz, w.mul(1 / 31).sub(wind.mul(1.7))).g;
+    const dens = smoothstep(0.38, 0.8, a.mul(0.65).add(b.mul(0.45)));
+    const rr = w.sub(vec2(C.x, C.z)).length();
+    const ring = smoothstep(34, 80, rr).mul(float(1).sub(smoothstep(120, 160, rr).mul(0.6)));
+    const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, fog: false });
+    mat.colorNode = mix(vec3(0.46, 0.55, 0.66), vec3(0.74, 0.82, 0.9), b);
+    mat.opacityNode = dens.mul(ring).mul(0.42);
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.name = 'kt-mist';
+    mesh.frustumCulled = false;
+    mesh.renderOrder = 4;
+    this.group.add(mesh);
+    this.disposables.push(geo, mat);
   }
 
   update(dt: number): void {

@@ -1,6 +1,6 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
-import { terrainOf, propsOf, SECT, tribDef } from '@dtl/shared';
+import { KIEM_TRUNG, terrainOf, propsOf, SECT, tribDef } from '@dtl/shared';
 import { heightAt, levelAssets, levelId, levelTerrain } from '../../base/levelCtx';
 import { LEVELS } from '@dtl/content';
 import { get } from '../../ui/store';
@@ -397,6 +397,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   if (levelAssets(id).kiemTrungArt) {
     eng.kiemTrungArt = new KiemTrungArt({ reduced: q.heightFog === false });
     eng.scene.add(eng.kiemTrungArt.group);
+    void loadKtModel(eng, q.shadows);
   }
   const gr = levelAssets(id).godRays;
   if (gr) {
@@ -476,6 +477,12 @@ export function unloadLevel(eng: Game): void {
     eng.tkAsset.handle.release();
     for (const m of eng.tkAsset.mats) m.dispose();
     eng.tkAsset = null;
+  }
+  if (eng.ktAsset) {
+    drop(eng.ktAsset.handle.scene);
+    eng.ktAsset.handle.release();
+    for (const m of eng.ktAsset.mats) m.dispose();
+    eng.ktAsset = null;
   }
   if (eng.thienKhuyetSky) {
     drop(eng.thienKhuyetSky.group);
@@ -595,6 +602,63 @@ export async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
     eng.scene.add(root);
   } catch (e) {
     assetLog.warn('không tải được arch_thien_khuyet:', e);
+  }
+}
+
+/**
+ * Nạp cảnh Kiếm Trủng dựng bằng Blender (asset `arch_kiem_trung`: cự kiếm, vành núi đá, mộ, bia, cột gãy, bậc đá, xương, giáp vụn, vòng kiếm trận).
+ * Gốc GLB = tâm đài chiến; mỗi object `kt_*` có gốc ở chân vật nên hạ y theo `heightAt` tại chỗ vật (cộng dồn). Lỗi thì chỉ thiếu phần trang trí.
+ */
+export async function loadKtModel(eng: Game, shadows: boolean): Promise<void> {
+  try {
+    await assets.attach(eng.renderer);
+    const handle = await assets.acquire('arch_kiem_trung', { pos: { x: KIEM_TRUNG.x, z: KIEM_TRUNG.z } });
+    if (eng.disposed || !levelAssets(levelId()).kiemTrungArt || eng.ktAsset) {
+      handle.release();
+      return;
+    }
+    const root = handle.scene;
+    eng.ktAsset = { handle, mats: adoptGltfMaterials(root) };
+    root.position.set(KIEM_TRUNG.x, KIEM_TRUNG.y, KIEM_TRUNG.z);
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      m.castShadow = shadows;
+      m.receiveShadow = shadows;
+      m.frustumCulled = false;
+    });
+    // Object nằm trực tiếp dưới gốc; GLTF đổi hệ trục (x, -z → z) nên lấy toạ độ thế giới từ vị trí đã nạp.
+    for (const o of root.children) {
+      const wx = KIEM_TRUNG.x + o.position.x;
+      const wz = KIEM_TRUNG.z + o.position.z;
+      o.position.y += heightAt(wx, wz) - KIEM_TRUNG.y - 0.15;
+    }
+    // Gộp mọi vật dùng chung lưới + vật liệu thành một InstancedMesh (254 object × vài primitive sẽ là ~1.100 draw call nếu để nguyên).
+    root.updateMatrixWorld(true);
+    const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+    const groups = new Map<string, { mesh: THREE.Mesh; mats: THREE.Matrix4[] }>();
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      const key = `${m.geometry.uuid}|${(m.material as THREE.Material).uuid}`;
+      const g = groups.get(key) ?? { mesh: m, mats: [] };
+      g.mats.push(new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld));
+      groups.set(key, g);
+    });
+    root.clear();
+    for (const { mesh, mats } of groups.values()) {
+      const im = new THREE.InstancedMesh(mesh.geometry, mesh.material, mats.length);
+      mats.forEach((mt, i) => im.setMatrixAt(i, mt));
+      im.instanceMatrix.needsUpdate = true;
+      im.castShadow = shadows;
+      im.receiveShadow = shadows;
+      im.frustumCulled = false;
+      im.name = `kt-${mesh.name || 'part'}`;
+      root.add(im);
+    }
+    eng.scene.add(root);
+  } catch (e) {
+    assetLog.warn('không tải được arch_kiem_trung:', e);
   }
 }
 

@@ -37,7 +37,7 @@ interface View {
 const VIEWS: Record<string, View[]> = {
   kiem_trung: [
     { name: '01-vao', at: [0, 64], look: [0, -1], pitch: 0.18, dist: 12 },
-    { name: '02-toan-canh', at: [0, 30], look: [0, -1], pitch: 0.78, dist: 80 },
+    { name: '02-toan-canh', at: [0, 52], look: [0, -1], pitch: 0.5, dist: 105 },
     { name: '03-cu-kiem-bac', at: [0, 16], look: [0, -1], pitch: 0.06, dist: 10 },
     { name: '04-nghia-dia-kiem', at: [-48, 22], look: [-1, -0.3], pitch: 0.08, dist: 9 },
     { name: '05-kiem-tran', at: [0, 6], look: [0, -1], pitch: 0.5, dist: 30 },

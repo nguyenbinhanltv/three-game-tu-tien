@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { KIEM_TRUNG } from '@dtl/shared';
-import { ktGroundColor, planGiants, planSmallSwords, swordKeepOut } from './kiemTrungArt';
+import { ktGroundColor, planSmallSwords, swordKeepOut } from './kiemTrungArt';
 
 describe('Kiếm Trủng (DUN-1)', () => {
   it('rải kiếm tất định và đủ số lượng', () => {
@@ -17,17 +17,6 @@ describe('Kiếm Trủng (DUN-1)', () => {
       expect(Math.abs(s.x - KIEM_TRUNG.x) < 9 && s.z > KIEM_TRUNG.z).toBe(false);
     }
     expect(swordKeepOut(KIEM_TRUNG.x, KIEM_TRUNG.z + 40, 26)).toBe(true);
-  });
-
-  it('cự kiếm nằm trong vòm hang (r 170, h 110) và cách xa lối vào', () => {
-    const g = planGiants();
-    expect(g.length).toBeGreaterThanOrEqual(6);
-    for (const k of g) {
-      const r = Math.hypot(k.x - KIEM_TRUNG.x, k.z - KIEM_TRUNG.z);
-      expect(r).toBeLessThan(150);
-      // chiều cao vòm tại bán kính r: h * sqrt(1 - (r/R)^2)
-      expect(k.h).toBeLessThan(110 * Math.sqrt(1 - (r / 170) ** 2));
-    }
   });
 
   it('màu đất hợp lệ 0..1', () => {

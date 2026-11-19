@@ -239,7 +239,7 @@
       },
       "kt": {
         "label": "Kiếm Trủng — nghĩa địa kiếm, thép lam lạnh, sương thấp",
-        "sunColor": "#E6E8EE", "sunIntensity": 2.2, "sunElevationDeg": 66,
+        "sunColor": "#E6E8EE", "sunIntensity": 2.2, "sunElevationDeg": 52,
         "skyColor": "#5A6C80", "skyIntensity": 0.9,
         "fogColor": "#46586C", "fogDensity": 0.0011, "heightFogTop": 14, "heightFogBoost": 2.6,
         "fogHaze": 0.0008, "fogHazeStart": 90, "fogScatter": 0.55, "rim": 1.1,

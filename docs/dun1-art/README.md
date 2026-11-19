@@ -12,17 +12,18 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Bảng màu**: mood `kt` (một thời điểm cố định, `assets/palette.json`): xám lam thép lạnh, nắng trắng lạnh từ cao (sườn đá xa tối hơn sàn, không phủ sáng), cặn rỉ nâu đỏ, sương lạnh thấp (`heightFog`), `fogDensity` 0,0011. `moodVariant('kt') = 'kt'`.
 - **Huyệt kiếm** (`buildSwordCaveShell`, `game/world/caveShell.ts`): vòm hang cao r 170 / h 110 (một draw call, màu theo đỉnh), vỉa tầng + nhũ đá, ô trời mở ở đỉnh. Bật bằng khối `cave` trong `kiem_trung.assets.json` + `kiemTrungArt: true`. Địa hình giữ nguyên (cao nguyên phẳng `KIEM_TRUNG`, r phẳng 78), vòm chỉ che chân trời nên không đổi đi lại/va chạm.
 - **Đất**: bộ texture `terrain-slate` (Poly Haven CC0), màu đỉnh `ktGroundColor` (đá xám lam, mảng tro, vệt rỉ dày dần ra vành, sàn đài chiến sẫm), `setGroundNoSnow` (không phủ tuyết ở đỉnh), vách `setGroundRedStrata` tông xám lam tối.
-- **Cảnh** `game/world/kiemTrungArt.ts` (cờ `kiemTrungArt`, chỉ để nhìn, không va chạm, tất định):
-  - ~1.160 kiếm nhỏ cắm đất: kiếm nguyên cắm lưỡi xuống (tấm chắn đồng, chuôi quấn) + lưỡi gãy lởm chởm; mỗi loại một `InstancedMesh`; chừa khu giữa r < 26, lối từ cổng (dải 9 m phía nam) — hàm `swordKeepOut`, có test.
-  - 18 cự kiếm cao 14–62 m (`planGiants`): một thanh 62 m ở rìa bắc đối diện lối vào (điểm nhìn đầu tiên), vành ngoài còn lại; vật liệu PBR (kim loại 0,5, nhám 0,46), rãnh khí xanh phát sáng (`emissiveNode`, nhịp thở chậm). Cao hơn vòm là test đỏ (`kiemTrungArt.test.ts`).
-  - Kiếm trận khắc sàn đài chiến (vòng + tám thanh kiếm tỏa ra, canvas 1024², cộng sáng, độ đục 0,16 — đủ mờ để vạch báo của boss vẫn đọc rõ nhất).
-  - Tia sáng `godRays` rọi qua ô trời mở (`GOD_RAY_INTENSITY.kt`); bướm hoa thay bằng ngài linh lam nhạt phát sáng (`butterflies.ts`).
+- **Cảnh dựng bằng Blender** `arch_kiem_trung` (`tools/blender/kiem_trung_arch.py`, bộ dựng tông môn + kit, texture thủ tục; gốc = tâm đài chiến, mỗi vật một object `kt_*` gốc ở chân, client `loadKtModel` hạ y theo `heightAt` rồi gộp mọi vật cùng lưới+vật liệu thành `InstancedMesh`, ~75 draw call): 
+  - cự kiếm (4 biến thể, 18 thanh cao 14–62 m): lưỡi có sống, rãnh máu, mẻ/rỉ, phù văn xanh đứt đoạn (vật liệu `rune` phát sáng dưới ngưỡng bloom), tấm chắn sừng cong, chuôi quấn xích + vòng đồng, dải bùa chú treo, đầu chuôi; chân cắm vào khối đá nứt vỡ, đất trồi, khe nứt có khí lam; bản gãy có mảnh lưỡi rơi bên chân;
+  - vành núi đá nhiều tầng 70 mỏm (`spire`, ba lớp xa dần ngả lam nhạt, phiến nhô như mái đá) thay cho chân trời phẳng;
+  - 44 nấm mộ có bia + kiếm gãy, 20 bia, 16 cột gãy (kèm đoạn đổ), 4 bậc đá vỡ, 44 đống xương (lồng ngực, sọ, giáo gãy), 36 bộ giáp vụn (mũ, khiên, giáp lá), vòng 8 kiếm trận nhỏ phát khí quanh đài chiến;
+  - tất cả chừa khu giữa r < 30 và lối vào, không va chạm.
+- **Cảnh thủ tục** `game/world/kiemTrungArt.ts` (cờ `kiemTrungArt`): ~1.160 kiếm nhỏ cắm đất (2 `InstancedMesh`), kiếm trận khắc sàn (canvas, độ đục 0,34), 22 khe nứt đen có đường khí lam (bám địa hình), sương lạnh thấp đọng quanh vành (đĩa TSL, trong suốt ở đài chiến), `ktGroundColor` có mảng rêu, đất đỏ rỉ, ánh lam quanh vòng trận.
 - **Gỡ**: kiến trúc tông môn và đảo bay Lạc Kiếm (`sect`, `arch_sect`, `lacKiemSky`) không còn dựng trong bí cảnh (không ai thấy được từ đây, tốn ~1M tam giác).
-- **Ngân sách (preset Cao, `--perf 1`)**: 64–72 draw call, ~0,42–0,45M tam giác (trước: 105–111 draw call, ~1,41M), khung ~8,3 ms (headless). Dưới 1,8M tam giác.
+- **Ngân sách (preset Cao, `--perf 1`)**: ~195–206 draw call, ~0,88–0,94M tam giác (trước: 105–111 draw call, ~1,41M), khung ~8,4 ms (headless). File `arch_kiem_trung` ~9 MB (nạp lười khi vào bí cảnh).
 - **Chụp**: kịch bản mới `pnpm shots dungeonart --level <id> --out <thư mục tuyệt đối> [--tag truoc|sau] [--sizes 720p,1080p] [--views a,b] [--battle 1] [--perf 1] [--video 1]`: các điểm nhìn của level (bảng `VIEWS` trong `tools/perf/src/scenarios/dungeonart.ts`, level chưa khai báo dùng bộ chung), cảnh chiến đấu boss (`--battle 1`: gọi boss cuối bằng GM, vạch báo + pha cuối), video đi một lượt. Ảnh/video để ở artifact phiên, không commit.
 
 ## Chưa làm / ghi chú
 
-- Cự kiếm là khối lăng trụ thủ tục (chưa có mesh Blender chi tiết: tấm chắn cong, khắc vân); PR sau có thể thay bằng kit Blender/PROP-1 khi PROP-1 merge.
+- Chưa dùng bộ đồ trang trí PROP-1 (chưa merge). Mỏm đá còn hơi "quân cờ" (chồng phiến), có thể thay bằng sculpt chi tiết hơn.
 - Ô trời mở là màu đỉnh, chưa có mặt trăng/mây thật; chùm tia sáng đã đủ gợi.
 - Tông ngoài sảnh giữ cho phiên bản sau: đài chiến vẫn là cao nguyên Vân Lam cũ (chỉ đổi màu/texture), chưa dựng vành đá bao.
