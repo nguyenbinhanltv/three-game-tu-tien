@@ -258,14 +258,14 @@
         "blackLift": "#1A1612", "contrast": 1.22, "saturation": 0.82, "exposure": 1.02
       },
       "kn": {
-        "label": "Kính Nguyệt Cung — điện gương, trăng bạc, chàm sâu",
-        "sunColor": "#CFE0FF", "sunIntensity": 2.3, "sunElevationDeg": 60,
-        "skyColor": "#222E52", "skyIntensity": 0.7,
-        "fogColor": "#121A30", "fogDensity": 0.0011, "heightFogTop": 14, "heightFogBoost": 2.2,
-        "fogHaze": 0.0008, "fogHazeStart": 80, "fogScatter": 0.6, "rim": 1.1,
-        "shadowTint": "#0E1830", "highlightTint": "#DCE8FF", "splitBalance": -0.1,
-        "shadowAmount": 0.35, "highlightAmount": 0.3,
-        "blackLift": "#101830", "contrast": 1.2, "saturation": 0.8, "exposure": 0.95
+        "label": "Kính Nguyệt Cung — điện ngọc trắng đêm trăng bạc",
+        "sunColor": "#E4EAFF", "sunIntensity": 1.5, "sunElevationDeg": 58,
+        "skyColor": "#7C88A4", "skyIntensity": 0.55,
+        "fogColor": "#3A4560", "fogDensity": 0.0009, "heightFogTop": 12, "heightFogBoost": 2.0,
+        "fogHaze": 0.0007, "fogHazeStart": 80, "fogScatter": 0.5, "rim": 1.0,
+        "shadowTint": "#2A3350", "highlightTint": "#F2F0E6", "splitBalance": 0.0,
+        "shadowAmount": 0.3, "highlightAmount": 0.25,
+        "blackLift": "#1A2034", "contrast": 1.14, "saturation": 0.62, "exposure": 0.92
       },
       "vh_dawn": {
         "label": "Vân Hải — bình minh lam bạc",

@@ -60,3 +60,13 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - `DungeonFx` dùng lại (sương bạc thấp). Sàn/hall/vỏ cũ của cung gương (`buildMirrorFloor`, `buildPalaceHall`) chỉ còn dùng cho Thần Tàng.
 - **Ngân sách (preset Cao)**: ~110 draw call, ~0,39M tam giác (trước 61 / 0,29M). File `arch_kinh_nguyet` ~6 MB.
 - **Còn lại**: gương còn giống tinh thể phẳng xanh (chưa có phản chiếu giả theo hướng nhìn); tổng thể còn một tông xanh chàm, thiếu điểm ấm; hàng cột còn lộ phần cột texture gạch đá.
+
+### PR 3 vòng 2 (góp ý duyệt): bỏ navy phẳng, cung điện bạc trắng
+
+- **Bảng màu** `kn` đổi sang bạc/trắng ngà/lam nhạt, độ bão hòa 0,62, sương xám lam; không phủ navy toàn khung.
+- **Bầu trời** (`skyColor`, hàm TSL dùng chung): chân trời bạc xám → thiên đỉnh chàm, trăng tròn lớn + quầng ở phía bắc (cao ~29° từ tâm), mây mỏng trôi chậm, sao. Cả vòm, sàn, hồ và gương đều dùng hàm này.
+- **Sàn cẩm thạch** (`reflectiveSurface('marble')`): vân đá (nhiễu), nhám thấp, soi bầu trời theo Fresnel (hướng phản xạ lật qua mặt phẳng ngang) — là phản chiếu bầu trời, không phản chiếu vật thể (không SSR/planar); vũng sáng trăng; tối dần ra góc. **Vòng trận mảnh**: vạch bạc 0,16 m + quầng mềm, 72 vạch chia, 9 cánh hoa mảnh. Ba **hồ nước tĩnh** (`buildPond`) soi bầu trời + gợn.
+- **Gương** (`knMaterialFor`): phản chiếu bầu trời theo pháp tuyến lắc nhẹ (gương đồng mài tay) + vệt sáng chéo theo toạ độ thế giới + fresnel; khung bạc, hoa văn mây cuộn và trăng khuyết trên vòm; mảnh gương vỡ có cạnh nhọn (6–8 cạnh, gai xen kẽ).
+- **Tường/hàng cột** ngọc trắng xám (vật liệu `jade` có texture cẩm thạch), tường sau + trụ ốp + gờ, mái cong ngói lam bạc (hai đầu vút), rèm lụa bạc có nếp sóng. Cột thấp lại (24 m + vòm 10 m) để thấy bầu trời trên mái.
+- **Bỏ đá trôi xám đen** (`prop_da_troi`) khỏi cảnh Kính Nguyệt (lọc ở `levelLoad`, prop chỉ để nhìn).
+- **Còn lại**: gương chưa phản chiếu vật thể thật (chỉ bầu trời); tường còn khá phẳng/đơn điệu; chưa thấy rõ trăng và mây từ góc nhìn chiến đấu (bị mái che); tương phản sáng-tối mới ở vũng sáng và góc tối của sàn.

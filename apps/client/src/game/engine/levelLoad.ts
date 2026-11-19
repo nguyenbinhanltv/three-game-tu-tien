@@ -361,7 +361,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     const all = allProps(levelId());
     // Lạc Kiếm (MAP-1 bản B): cây Tripo (tán đĩa phẳng) thay bằng cây thẻ alpha (cardForest.ts); PropLayer giữ phần còn lại (đèn, bia, đá…).
     const cardTrees = !!levelAssets(id).lacKiemSky;
-    eng.props = new PropLayer(undefined, cardTrees ? all.filter((p) => !CARD_TREE_IDS.has(p.id)) : all);
+    // Kính Nguyệt (DUN-1 PR3): đá trôi xám đen lạc tông với điện ngọc trắng, bỏ khỏi cảnh (prop chỉ để nhìn, không va chạm).
+    const dropIds = levelAssets(id).kinhNguyetArt ? new Set(['prop_da_troi']) : null;
+    const shown = dropIds ? all.filter((p) => !dropIds.has(p.id)) : all;
+    eng.props = new PropLayer(undefined, cardTrees ? shown.filter((p) => !CARD_TREE_IDS.has(p.id)) : shown);
     if (cardTrees) {
       void loadSkyTextures().then((tex) => {
         if (!tex || eng.disposed || eng.cardForest || levelId() !== id) return;

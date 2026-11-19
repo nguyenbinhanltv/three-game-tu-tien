@@ -22,12 +22,13 @@ from kiem_trung_arch import C, blob, mix, new_b, rod, tbox  # noqa: E402
 from thien_khuyet_arch import fbm3  # noqa: E402
 
 bs.MATERIALS['glass'] = Mat(0.08, 0.2, None, 1.0, False, 0.0, (0xBFD8FF, 0.5))
+bs.MATERIALS['silk'] = Mat(0.32, 0.12, None, 1.0, False, 0.0)
 bs.MATERIALS['jade'] = bs.MATERIALS.get('jade', Mat(0.55, 0.0, 'jade', 3.0, True, 0.04))
 
 SEED = 20261119
 DOME_R, DOME_H = 135.0, 80.0
-JADE = C(0xC9D2E2)
-JADE_DK = C(0x7C879C)
+JADE = C(0xC4CBD9)
+JADE_DK = C(0x7A8499)
 SILVER = C(0xAEB9C8)
 SILVER_DK = C(0x5E6878)
 INDIGO = C(0x1B2744)
@@ -42,7 +43,7 @@ def jade_col(seed, dark=0.0):
         n = fbm3(pos[0] * 0.5, pos[1] * 0.5, pos[2] * 0.5, seed, 3)
         rgb = mix(JADE, JADE_DK, 0.25 + 0.5 * n + dark)
         rgb = tuple(c * (0.8 + 0.3 * fbm3(pos[0] * 2, pos[1] * 2, pos[2] * 2, seed + 4, 2)) for c in rgb)
-        return Paint(tuple(rgb), 'stone')
+        return Paint(tuple(rgb), 'jade')
 
     return fn
 
@@ -70,8 +71,8 @@ def poly_glass(b, pts, inside):
 def bay(b, seed):
     """Một nhịp (rộng W) quay mặt vào tâm: hai nửa cột ở hai mép (mỗi cột chia cho nhịp kề), vòm nhọn, khung bạc và mặt gương phát sáng; z+ hướng vào tâm sảnh."""
     W = 34.0
-    H = 30.0
-    rise = 13.0
+    H = 24.0
+    rise = 10.0
     for sx in (-1, 1):
         x0 = sx * W / 2
         # đế bậc, thân sáo, đầu cột cánh sen
@@ -93,9 +94,9 @@ def bay(b, seed):
                     k2 = (j + 1) % sides
                     n_ = fbm3(j, q * 4, seed, seed + 7, 2)
                     rgb = mix(mix(JADE, JADE_DK, 0.2 + 0.4 * n_), C(0xDFE8F5), 0.25 * (1 - q))
-                    b.poly([prev[j], prev[k2], ring[k2], ring[j]], (x0, y, 0), Paint(tuple(rgb), 'stone'))
+                    b.poly([prev[j], prev[k2], ring[k2], ring[j]], (x0, y, 0), Paint(tuple(rgb), 'jade'))
             prev = ring
-        b.poly(prev, (x0, 0, 0), Paint(JADE, 'stone'))
+        b.poly(prev, (x0, 0, 0), Paint(JADE, 'jade'))
         for k in range(8):  # cánh sen ở đầu cột
             a = k / 8 * math.tau
             blob(b, (x0 + math.cos(a) * 1.9, H - 0.6, math.sin(a) * 1.9), (0.9, 1.4, 0.7), jade_col(seed + 20 + k), nu=8, nv=5, seed=seed + 30 + k, rot=a)
@@ -117,11 +118,11 @@ def bay(b, seed):
         for zz in (1.1, -1.1):
             pass
         q = [(outer[i][0], outer[i][1], 1.1), (outer[i + 1][0], outer[i + 1][1], 1.1), (inner[i + 1][0], inner[i + 1][1], 1.1), (inner[i][0], inner[i][1], 1.1)]
-        b.poly(q, (0, H, 0), Paint(mix(JADE, JADE_DK, 0.15), 'stone'))
+        b.poly(q, (0, H, 0), Paint(mix(JADE, JADE_DK, 0.15), 'jade'))
         q2 = [(outer[i][0], outer[i][1], -1.1), (outer[i][0], outer[i][1], 1.1), (inner[i][0], inner[i][1], 1.1), (inner[i][0], inner[i][1], -1.1)]
-        b.poly(q2, (0, H, 0), Paint(mix(JADE, JADE_DK, 0.3), 'stone'))
+        b.poly(q2, (0, H, 0), Paint(mix(JADE, JADE_DK, 0.3), 'jade'))
         q3 = [(outer[i][0], outer[i][1], -1.1), (outer[i + 1][0], outer[i + 1][1], -1.1), (outer[i + 1][0], outer[i + 1][1], 1.1), (outer[i][0], outer[i][1], 1.1)]
-        b.poly(q3, (0, H + 20, 0), Paint(mix(JADE, C(0xFFFFFF), 0.2), 'stone'))
+        b.poly(q3, (0, H + 20, 0), Paint(mix(JADE, C(0xFFFFFF), 0.2), 'jade'))
     # khung bạc quanh mép trong vòm + mặt gương
     inn = [arch_pt(i / N, 1.4) for i in range(N + 1)]
     for i in range(N):
@@ -140,8 +141,59 @@ def bay(b, seed):
     poly_glass(b, [(right[0], right[1], -0.2), (right[0], base_y, -0.2), ctr], (0, ctr[1], -5))
     poly_glass(b, [(left[0], base_y, -0.2), ctr, (right[0], base_y, -0.2)], (0, ctr[1], -5))
     tbox(b, (0, base_y - 0.2, 0.3), (W - 5.2, 0.6, 1.4), SILV_D)  # ngưỡng bạc dưới gương
-    # chạm trăng khuyết ở đỉnh vòm
-    blob(b, (0, H + rise + 1.2, 1.3), (1.1, 1.1, 0.5), lambda p, n: SILV, nu=10, nv=6)
+    # chạm trăng khuyết ở đỉnh vòm: vòng cung 250° bằng ống bạc + hạt ngọc ở giữa
+    cx_, cy_ = 0.0, H + rise + 3.0
+    cres = [(cx_ + math.cos(a) * 1.9, cy_ + math.sin(a) * 1.9, 1.3) for a in [math.radians(-125 + k * 250 / 10) for k in range(11)]]
+    for a_, c_ in zip(cres, cres[1:]):
+        rod(b, a_, c_, 0.28, 0.2, lambda p, n: SILV, nu=6, nv=1, amp=0.0)
+    blob(b, (0.5, cy_ + 0.2, 1.3), (0.5, 0.5, 0.5), lambda p, n: Paint(C(0xF3E9C4), 'metal'), nu=8, nv=5)
+    # hoa văn mây cuộn dọc khung trong vòm: cứ mỗi ~3 điểm một cụm cuộn (đĩa + hai cuộn nhỏ)
+    for i in range(2, N - 1, 3):
+        px, py = inn[i]
+        blob(b, (px, py, 1.25), (0.55, 0.55, 0.3), lambda p, n: SILV, nu=8, nv=5)
+        blob(b, (px + 0.55, py - 0.2, 1.25), (0.3, 0.3, 0.2), lambda p, n: SILV_D, nu=6, nv=4)
+        blob(b, (px - 0.5, py + 0.25, 1.25), (0.26, 0.26, 0.2), lambda p, n: SILV_D, nu=6, nv=4)
+    # tường sau ngọc trắng (lấp sau gương và hai bên vòm) + gờ ngang
+    top = H + rise + 2.2
+    tbox(b, (0, top / 2 - 0.2, -2.4), (W - 4.0, top, 1.3), Paint(mix(JADE, JADE_DK, 0.1), 'jade'))
+    for yy in (6.0, 15.0, 24.0):
+        tbox(b, (0, yy, -1.6), (W - 3.4, 0.5, 0.5), Paint(mix(JADE, JADE_DK, 0.3), 'jade'))
+    # trụ ốp nổi chia tường thành ô: bốn trụ đứng + khung ô hai bên gương
+    for sx in (-1, 1):
+        for off in (W / 2 - 3.2, W / 2 - 6.2):
+            tbox(b, (sx * off, (top - 2) / 2 + 2, -1.35), (0.9, top - 4, 0.6), Paint(mix(JADE, C(0xFFFFFF), 0.1), 'jade'))
+    # mái cong (hiên): dải ngói lam bạc chạy ngang đỉnh, hai đầu cong vút; sống mái bạc
+    roof = Paint(C(0x7E94B8), 'plaster')
+    n_seg = 16
+    for i in range(n_seg):
+        t0, t1 = i / n_seg, (i + 1) / n_seg
+        x0r, x1r = -W / 2 - 1.4 + t0 * (W + 2.8), -W / 2 - 1.4 + t1 * (W + 2.8)
+        y0r = top + 0.2 + 3.4 * abs(2 * t0 - 1) ** 2.6
+        y1r = top + 0.2 + 3.4 * abs(2 * t1 - 1) ** 2.6
+        slope = math.atan2(y1r - y0r, x1r - x0r)
+        mx, my = (x0r + x1r) / 2, (y0r + y1r) / 2
+        tbox(b, (mx, my, 0.4), (math.dist((x0r, y0r), (x1r, y1r)) + 0.1, 0.7, 5.2), roof, rz=slope, rx=-0.12)
+        tbox(b, (mx, my + 0.55, 2.6), (math.dist((x0r, y0r), (x1r, y1r)) + 0.1, 0.35, 0.4), SILV, rz=slope)
+    # rèm lụa bạc rủ hai bên vòm: dải vải có nếp sóng
+    for sx in (-1, 1):
+        for off in (0.0, 3.0):
+            xc = sx * (W / 2 - 3.4 - off)
+            cw, rows = 2.4, 14
+            for r_ in range(rows):
+                y_a = H - 1.0 - r_ * ((H - 6.0) / rows)
+                y_b = y_a - (H - 6.0) / rows
+                for c_ in range(5):
+                    xa = xc - cw / 2 + c_ * cw / 5
+                    xb = xa + cw / 5
+                    za = 0.9 + 0.42 * math.sin(c_ * 1.3 + r_ * 0.35 + sx)
+                    zb = 0.9 + 0.42 * math.sin((c_ + 1) * 1.3 + r_ * 0.35 + sx)
+                    za2 = 0.9 + 0.42 * math.sin(c_ * 1.3 + (r_ + 1) * 0.35 + sx)
+                    zb2 = 0.9 + 0.42 * math.sin((c_ + 1) * 1.3 + (r_ + 1) * 0.35 + sx)
+                    sh = 0.55 + 0.4 * (0.5 + 0.5 * math.sin(c_ * 1.3 + 1.0))
+                    col = Paint(mix(C(0x8A97B2), C(0xF2F4FA), sh), 'silk')
+                    b.poly([(xa, y_a, za), (xb, y_a, zb), (xb, y_b, zb2), (xa, y_b, za2)], (xc, y_a, -4), col)
+            tbox(b, (xc, 5.4, 0.9), (cw + 0.3, 0.3, 0.35), Paint(C(0xE3D6A2), 'metal'))  # tua vàng nhạt chân rèm
+            tbox(b, (xc, H - 0.8, 0.9), (cw + 0.5, 0.35, 0.5), SILV)
 
 
 # ---------- vòng gương trăng ----------
@@ -195,30 +247,31 @@ def moon_ring(b, seed):
 
 
 def shard(b, seed, big=True):
-    """Mảnh gương hình thoi dài (cao ~8, rộng ~3): khung bạc nổi quanh, mặt gương phát sáng, mũi nhọn hai đầu; gốc ở tâm mảnh."""
+    """Mảnh gương vỡ: đa giác 6–8 cạnh, bán kính xen kẽ gai nhọn (mũi dài ở hai đầu), dẹt mỏng; cạnh bạc sắc, hai mặt gương phản chiếu, khung bạc mảnh."""
     rnd = random.Random(seed)
-    h = 4.2
-    w = 1.5 + rnd.uniform(-0.2, 0.3)
-    pts = [(0, -h * 0.85, 0), (w, -h * 0.2, 0), (w * 0.85, h * 0.6, 0), (0, h, 0), (-w * 0.85, h * 0.6, 0), (-w, -h * 0.2, 0)]
-    th = 0.22
+    n = rnd.randint(6, 8)
+    h = 4.4
+    pts = []
+    for i in range(n):
+        a_ = i / n * math.tau + rnd.uniform(-0.15, 0.15)
+        spike = 1.0 if i % 2 == 0 else 0.5
+        rr = (1.0 + rnd.uniform(-0.15, 0.25)) * spike
+        pts.append((math.cos(a_) * rr * 1.35, math.sin(a_) * rr * h * (1.0 if abs(math.sin(a_)) > 0.5 else 0.7), 0.0))
+    th = 0.12
     front = [(x, y, th) for x, y, _ in pts]
     back = [(x, y, -th) for x, y, _ in pts]
     c = (0, 0, 0)
-    # mặt trước/sau là gương, cạnh là bạc
     for face, zz in ((front, th), (back, -th)):
         mid = [(x * 0.5, y * 0.5, zz) for x, y, _ in face]
-        for i in range(len(pts)):
-            j = (i + 1) % len(pts)
+        for i in range(n):
+            j = (i + 1) % n
             poly_glass(b, [(0, 0, zz), mid[i], mid[j]], (0, 0, -zz * 5))
             poly_glass(b, [mid[i], face[i], face[j], mid[j]], (0, 0, -zz * 5))
-    for i in range(len(pts)):
-        j = (i + 1) % len(pts)
+    for i in range(n):
+        j = (i + 1) % n
         b.poly([front[i], front[j], back[j], back[i]], c, SILV)
-    # khung nổi
-    for i in range(len(pts)):
-        j = (i + 1) % len(pts)
-        a, b2 = pts[i], pts[j]
-        tbox(b, ((a[0] + b2[0]) / 2, (a[1] + b2[1]) / 2, th + 0.04), (math.dist(a[:2], b2[:2]) * 1.02, 0.14, 0.2), SILV_D, rz=math.atan2(b2[1] - a[1], b2[0] - a[0]))
+        a_, b_ = pts[i], pts[j]
+        tbox(b, ((a_[0] + b_[0]) / 2, (a_[1] + b_[1]) / 2, th + 0.04), (math.dist(a_[:2], b_[:2]) * 1.02, 0.1, 0.14), SILV_D, rz=math.atan2(b_[1] - a_[1], b_[0] - a_[0]))
 
 
 def chime(b, seed):
