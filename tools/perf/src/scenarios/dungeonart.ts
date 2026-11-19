@@ -43,6 +43,14 @@ const VIEWS: Record<string, View[]> = {
     { name: '05-kiem-tran', at: [0, 6], look: [0, -1], pitch: 0.5, dist: 30 },
     { name: '06-vanh-cu-kiem', at: [40, 40], look: [0.6, -0.8], pitch: 0.04, dist: 8 },
   ],
+  phuc_mach: [
+    { name: '01-vao', at: [0, 64], look: [0, -1], pitch: 0.18, dist: 12 },
+    { name: '02-toan-canh', at: [0, 52], look: [0, -1], pitch: 0.5, dist: 105 },
+    { name: '03-mach-tinh-bac', at: [0, 16], look: [0, -1], pitch: 0.06, dist: 10 },
+    { name: '04-cua-ham', at: [-40, 30], look: [-1, -0.2], pitch: 0.08, dist: 9 },
+    { name: '05-mach-san', at: [0, 6], look: [0, -1], pitch: 0.5, dist: 30 },
+    { name: '06-tran-ham', at: [40, 40], look: [0.6, -0.8], pitch: 0.3, dist: 8 },
+  ],
 };
 const FALLBACK: View[] = [
   { name: '01-vao', at: [0, 52], look: [0, -1], pitch: 0.2, dist: 12 },
@@ -83,7 +91,9 @@ export default {
     await gm(page, 'god on');
     await enterLevel(page, dg.returnLevel);
     await tp(page, dg.returnSpawn.x, dg.returnSpawn.z);
+    await sleep(1500);
     await tp(page, portal.x, portal.z);
+    await sleep(1500);
     await page.keyboard.press('KeyE');
     await waitLevel(page, id);
     await skipCutscene(page, 10);
