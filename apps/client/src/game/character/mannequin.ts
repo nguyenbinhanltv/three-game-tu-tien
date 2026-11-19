@@ -19,6 +19,7 @@ import {
   breathOf,
   dirMix,
   type DirMix,
+  flinchDirOf,
   flinchOf,
   leanOf,
   LOCO,
@@ -28,11 +29,14 @@ import {
   locoMix,
   lookAngles,
   swingRate,
+  swingSeconds,
   turnLagOf,
   xfade,
 } from './mannequinAnim';
+import { MqFeet } from './mannequinFeet';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
-import type { AnimState, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
+import UAL_HIT from './ualHit.json';
+import type { AnimState, AttackOpts, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
 import { FLAGS } from '../../base/flags';
 import { logger } from '../../base/log';
 
@@ -346,6 +350,18 @@ export class MannequinCharacter implements CharacterView {
     /** Đã hủy (phá niệm/lướt/di chuyển): không phát thêm `hit`, tắt dần nhanh. */
     cancelled?: boolean;
   } | null = null;
+  /** Đòn UAL dự phòng đang phát và mốc chém của nó (sự kiện `hitAt`, NV3-A3). */
+  private atk: {
+    act: THREE.AnimationAction;
+    hit: number;
+    dur: number;
+    t: number;
+    fired: boolean;
+    rec: boolean;
+    skill: string;
+    combo: number;
+    kb: boolean;
+  } | null = null;
   private pendingPerform: { id: string; left: number; o: PerformOpts } | null = null;
   /** Nghe sự kiện chiêu (VFX, âm, rung camera theo `hitAt`), engine gắn vào. */
   onSkillEvent: ((e: SkillEvent) => void) | null = null;
@@ -380,6 +396,8 @@ export class MannequinCharacter implements CharacterView {
   private mix = { walk: 0, jog: 1, sprint: 0 };
   /** Trọng số bốn hướng đi (làm mượt) và dải/hướng của từng action đi-chạy (A1: đi lùi, đi ngang, chéo). */
   private dir: DirMix = { f: 1, b: 0, l: 0, r: 0 };
+  /** Chân bám đất + bước chân khi xoay tại chỗ (A2); null với bóng hoặc asset thiếu xương chân. */
+  private feet: MqFeet | null = null;
   private lowerPick: THREE.AnimationAction | null = null;
   private locoKey = new Map<THREE.AnimationAction, { band: LocoBand; dir: LocoDirKey }>();
   /** Đòn UAL dự phòng chỉ nửa trên khi đang chạy; chân theo clip nền (nửa dưới). */
@@ -395,7 +413,9 @@ export class MannequinCharacter implements CharacterView {
   private turnLag = 0;
   private lookYaw = 0;
   private lookPitch = 0;
-  private flinch = { amp: 0, age: 9 };
+  private flinch = { amp: 0, age: 9, pitch: -1, roll: 0 };
+  /** Lướt hiển thị (NV3-A4): hình xuất phát ở (fx, fz) thế giới rồi trượt về chỗ thật trong `dur` giây. */
+  private dashOff: { fx: number; fz: number; t: number; dur: number } | null = null;
   private clock = Math.random() * 10;
   private side = 1;
   private armFit = 0;
@@ -497,6 +517,7 @@ export class MannequinCharacter implements CharacterView {
       this.bladeLen = sword.info.len;
       this.mountBlade(false);
     }
+    if (V3_ANIM && !shadow && FLAGS.v3Feet) this.feet = MqFeet.from(this.rig, this.root, tpl.height);
     this.inner.add(this.rig);
     this.root.add(this.inner);
     this.mixer = new THREE.AnimationMixer(this.rig);
@@ -673,13 +694,87 @@ export class MannequinCharacter implements CharacterView {
     return true;
   }
 
-  attack(): void {
+  attack(o: AttackOpts = {}): void {
     if (this.dead) return;
     this.attacks++;
     this.combatT = COMBAT_HOLD;
     const moving = !!this.lastAnim && this.lastAnim.speed > 0.3 && !this.perfBlocked();
     this.swingBase = 1.6;
-    this.oneShot(SWING[this.swing++ % SWING.length]!, 1.6, moving);
+    const clip = SWING[this.swing++ % SWING.length]!;
+    if (!this.oneShot(clip, 1.6, moving)) return;
+    this.endAtk();
+    // Đòn dự phòng cũng phát sự kiện chiêu để VFX/sát thương/tiếng khớp khung chém (mốc từ tools/blender/ual_hit_times.py).
+    const h = (UAL_HIT as Record<string, { hit: number; dur: number }>)[clip];
+    if (!h || !this.shot) return;
+    this.atk = {
+      act: this.shot,
+      hit: h.hit,
+      dur: h.dur,
+      t: 0,
+      fired: false,
+      rec: false,
+      skill: o.skill ?? '',
+      combo: o.combo ?? -1,
+      kb: !!o.kb,
+    };
+    const hitIn = V3_ANIM ? swingSeconds(0, h.hit, h.dur, this.swingBase) : h.hit / this.swingBase;
+    this.emitAtk('windup', 0, hitIn);
+  }
+
+  /** Cộng độ lệch lướt vào `inner` (hệ nhân vật): nội suy từ điểm xuất phát tới vị trí thật của root, đúng dù gói vị trí mới tới trước hay sau. */
+  private applyDash(realDt: number): void {
+    const d = this.dashOff;
+    if (!d) return;
+    d.t += realDt;
+    if (d.t >= d.dur) {
+      this.dashOff = null;
+      return;
+    }
+    const x = d.t / d.dur;
+    const k = 1 - x * x * (3 - 2 * x);
+    let dx = d.fx - this.root.position.x;
+    let dz = d.fz - this.root.position.z;
+    const len = Math.hypot(dx, dz);
+    if (len > 14) {
+      dx = (dx / len) * 14;
+      dz = (dz / len) * 14;
+    }
+    const yaw = this.root.rotation.y;
+    this.inner.position.x += (dx * Math.cos(yaw) - dz * Math.sin(yaw)) * k;
+    this.inner.position.z += (dx * Math.sin(yaw) + dz * Math.cos(yaw)) * k;
+  }
+
+  private emitAtk(kind: SkillEvent['kind'], index: number, hitIn?: number): void {
+    const k = this.atk;
+    if (!k) return;
+    this.onSkillEvent?.({ kind, skill: k.skill, index, combo: k.combo, t: k.t, kb: k.kb, ...(hitIn !== undefined && { hitIn }) });
+  }
+
+  /** Kết thúc theo dõi đòn dự phòng: `cancel` nếu chưa tới khung chém, `end` nếu đã qua. */
+  private endAtk(): void {
+    const k = this.atk;
+    if (!k) return;
+    this.emitAtk(k.fired ? 'end' : 'cancel', k.fired ? 1 : 0);
+    this.atk = null;
+  }
+
+  /** Phát `hit` đúng lúc clip đòn dự phòng qua mốc chém (đồng hồ clip nên đứng theo hit-stop), `recovery` giữa phần thu về. */
+  private updateAtk(dt: number): void {
+    const k = this.atk;
+    if (!k) return;
+    if (this.shot !== k.act || this.perf) {
+      this.endAtk();
+      return;
+    }
+    k.t += dt;
+    const ct = k.act.time;
+    if (!k.fired && ct >= k.hit) {
+      k.fired = true;
+      this.emitAtk('hit', 0);
+    } else if (k.fired && !k.rec && ct >= k.hit + (k.dur - k.hit) * 0.5) {
+      k.rec = true;
+      this.emitAtk('recovery', 1);
+    }
   }
 
   /**
@@ -848,6 +943,17 @@ export class MannequinCharacter implements CharacterView {
     return true;
   }
 
+  /** Lướt hiển thị: hình xuất phát từ (fromX, fromZ) rồi trượt về chỗ thật trong `dur` giây; phát clip lăn UAL co vừa thời gian lướt. */
+  dashFrom(fromX: number, fromZ: number, dur: number): void {
+    if (this.dead) return;
+    this.dashOff = { fx: fromX, fz: fromZ, t: 0, dur: Math.max(0.1, dur) };
+    this.cancelRecovery('dash');
+    // Chiêu còn sống mà chưa bị hủy thì giữ động tác chiêu; dash-cancel (đã hủy thu về, tắt dần 0,12 s) thì vẫn lăn.
+    if (this.perf && !this.perf.cancelled) return;
+    const len = this.tpl.clips.get('Roll')?.duration ?? 0;
+    if (len > 0) this.oneShot('Roll', Math.min(3, Math.max(1, len / this.dashOff.dur)));
+  }
+
   knockdown(): void {
     if (this.dead) return;
     this.chain = this.tpl.clips.has('LayToIdle') ? 'LayToIdle' : null;
@@ -857,7 +963,12 @@ export class MannequinCharacter implements CharacterView {
   hitReact(o: HitOpts): void {
     this.hit.react(o);
     if (this.dead) return;
-    if (V3_ANIM) this.flinch = { amp: o.heavy ? 0.26 : o.crit ? 0.18 : 0.12, age: -(o.delay ?? 0) };
+    if (V3_ANIM)
+      this.flinch = {
+        amp: o.heavy ? 0.26 : o.crit ? 0.18 : 0.12,
+        age: -(o.delay ?? 0),
+        ...flinchDirOf(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0),
+      };
     if (!this.shot && !o.noFlash) this.oneShot(o.heavy ? 'Hit_Knockback' : 'Hit_Chest', o.heavy ? 1.2 : 1.4);
   }
 
@@ -876,6 +987,8 @@ export class MannequinCharacter implements CharacterView {
   update(realDt: number, a: AnimState): void {
     const dt = this.hit.update(realDt);
     this.inner.position.x = this.hit.shake;
+    this.inner.position.z = 0;
+    this.applyDash(realDt);
     this.combatT = a.combat ? COMBAT_HOLD : Math.max(0, this.combatT - realDt);
     if (a.dead && !this.dead) {
       // Chết: bỏ đòn đang phát và đòn nối tiếp, để Death01 phát trọn.
@@ -886,6 +999,7 @@ export class MannequinCharacter implements CharacterView {
     this.dead = a.dead;
     this.lastAnim = a;
     this.updatePerform(dt, a);
+    this.updateAtk(dt);
     this.grounded = !(a.flying || a.airborne || a.sky);
     const rawName = baseClipOf({ ...a, combat: a.combat || this.combatT > 0 });
     const name = this.baseFor(a, rawName);
@@ -933,6 +1047,13 @@ export class MannequinCharacter implements CharacterView {
       t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
     }
     if (V3_ANIM && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
+    if (this.feet) {
+      if (this.lodLevel === 0 && this.inner.visible) {
+        const active = this.grounded && !a.dead && !a.meditating && this.baseName !== 'Sitting_Idle_Loop';
+        // Khóa chân chỉ khi đứng yên thật: đòn/chiêu/trúng đòn có chân tự di chuyển trong clip.
+        this.feet.update(this.acc, { active, standing: a.speed < 0.3 && !this.perf && !this.shot });
+      } else this.feet.release();
+    }
     const drawNow = this.combatT > 0 || !!a.combat;
     if (drawNow !== this.drawn) this.mountBlade(drawNow);
     // Lò xo vạt: chỉ LOD0 và trong khung nhìn; ma trận thế giới của xương phải mới (root vừa được đặt vị trí).
@@ -1022,9 +1143,14 @@ export class MannequinCharacter implements CharacterView {
     f.age += dt;
     if (f.age >= 0 && f.age < 0.5 && !a.dead) {
       const fl = flinchOf(f.amp, f.age);
-      rotateWorld(b.spine_02 ?? null, rgt, -fl * 0.5);
-      rotateWorld(b.spine_03 ?? null, rgt, -fl * 0.5);
-      rotateWorld(b.head ?? null, rgt, fl * 0.4);
+      // Theo hướng đòn: bị đẩy ra sau thì ngửa, về trước thì cúi, sang bên thì nghiêng (trước đây luôn ngửa).
+      const pf = f.pitch * fl;
+      const rl = -f.roll * fl * 0.7 * this.side;
+      rotateWorld(b.spine_02 ?? null, rgt, pf * 0.5);
+      rotateWorld(b.spine_03 ?? null, rgt, pf * 0.5);
+      rotateWorld(b.head ?? null, rgt, -pf * 0.4);
+      rotateWorld(b.spine_02 ?? null, fwd, rl * 0.5);
+      rotateWorld(b.spine_03 ?? null, fwd, rl * 0.5);
     }
     // Nhìn mục tiêu: quay đầu/cổ tới điểm nhìn, giới hạn góc.
     let ty = 0;

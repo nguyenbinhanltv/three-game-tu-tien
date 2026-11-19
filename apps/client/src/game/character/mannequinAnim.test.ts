@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { breathOf, dirMix, flinchOf, leanOf, locoClipName, locoMix, lookAngles, LOCO, swingRate, turnLagOf, xfade } from './mannequinAnim';
+import {
+  breathOf,
+  dirMix,
+  flinchDirOf,
+  flinchOf,
+  leanOf,
+  locoClipName,
+  locoMix,
+  lookAngles,
+  LOCO,
+  swingRate,
+  turnLagOf,
+  xfade,
+} from './mannequinAnim';
 
 describe('mannequinAnim', () => {
   it('locoMix: tổng trọng số 1, đi → chạy → chạy nhanh', () => {
@@ -35,6 +48,14 @@ describe('mannequinAnim', () => {
     expect(locoClipName('jog', 'b')).toBe('Jog_Bwd_Loop');
     expect(locoClipName('walk', 'l')).toBe('Walk_StrafeL_Loop');
     expect(locoClipName('sprint', 'r')).toBe('Sprint_StrafeR_Loop');
+  });
+  it('flinchDirOf: đòn từ trước → ngửa, từ sau → cúi, từ trái → đẩy sang phải', () => {
+    expect(flinchDirOf(0, 0, -1).pitch).toBeCloseTo(-1);
+    expect(flinchDirOf(0, 0, 1).pitch).toBeCloseTo(1);
+    expect(flinchDirOf(0, 1, 0).roll).toBeCloseTo(1);
+    expect(flinchDirOf(0, -1, 0).roll).toBeCloseTo(-1);
+    expect(flinchDirOf(Math.PI / 2, -1, 0)).toEqual({ pitch: expect.closeTo(-1, 5), roll: expect.closeTo(0, 5) });
+    expect(flinchDirOf(0, 0, 0)).toEqual({ pitch: -1, roll: 0 });
   });
   it('xfade: chết nhanh, ngồi chậm, dừng chậm hơn xuất phát', () => {
     expect(xfade('Jog_Fwd_Loop', 'Death01')).toBeLessThan(0.1);

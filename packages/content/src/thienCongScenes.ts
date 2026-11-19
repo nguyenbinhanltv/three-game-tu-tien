@@ -19,6 +19,9 @@ export interface Scene {
   flat?: number;
   /** Bày tay: (dx, dz) từ tâm cảnh, yaw (0 = mặt trước +z), tỉ lệ, `v2` = biến thể 2. */
   fixed?: { name: string; dx: number; dz: number; yaw?: number; s?: number; v2?: boolean }[];
+  /** Chọn tâm là các prop đặt tay (id) của level, mỗi món đặt cách tâm trong [nearR[0], nearR[1]] m: tinh thể/cột trận mọc quanh trụ đổ, tàn tích thay vì đứng lẻ giữa bãi. */
+  nearBase?: string[];
+  nearR?: [number, number];
   /** Rải theo cụm: số cụm (tâm cố định theo cảnh) và bán kính cụm (m, mặc định 22). */
   clusters?: number;
   clusterR?: number;
@@ -248,11 +251,35 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Bệ cổng bí cảnh: trận đồ + cột trận',
-      at: [2048, 1735],
-      r: 50,
+      at: [2048, 1750],
+      r: 22,
       rMin: 20,
       face: 'center',
-      items: { tran_do_khac_san: 1, cot_tran: 4, bia_tran: 2, linh_thach: 4 },
+      fixed: [
+        { name: 'cot_tran', dx: 12.0, dz: 0.0, yaw: -1.57, s: 1.0 },
+        { name: 'linh_thach', dx: 17.0, dz: 0.0, yaw: 0.0, s: 1.0, v2: true },
+        { name: 'cot_tran', dx: 8.5, dz: 8.5, yaw: -2.36, s: 1.0, v2: true },
+        { name: 'linh_thach', dx: 12.0, dz: 12.0, yaw: 0.79, s: 1.0 },
+        { name: 'cot_tran', dx: -8.5, dz: 8.5, yaw: 2.36, s: 1.0, v2: true },
+        { name: 'linh_thach', dx: -12.0, dz: 12.0, yaw: 2.36, s: 1.0 },
+        { name: 'cot_tran', dx: -12.0, dz: 0.0, yaw: 1.57, s: 1.0 },
+        { name: 'linh_thach', dx: -17.0, dz: 0.0, yaw: 3.14, s: 1.0, v2: true },
+        { name: 'cot_tran', dx: -8.5, dz: -8.5, yaw: 0.79, s: 1.0, v2: true },
+        { name: 'linh_thach', dx: -12.0, dz: -12.0, yaw: 3.93, s: 1.0 },
+        { name: 'cot_tran', dx: 8.5, dz: -8.5, yaw: -0.79, s: 1.0, v2: true },
+        { name: 'linh_thach', dx: 12.0, dz: -12.0, yaw: 5.5, s: 1.0 },
+        { name: 'xich_bua', dx: 10.2, dz: 4.2, yaw: -1.96, s: 1.0 },
+        { name: 'den_da', dx: 14.8, dz: 6.1, yaw: 0, s: 1.0 },
+        { name: 'xich_bua', dx: -10.2, dz: 4.2, yaw: 1.96, s: 1.0, v2: true },
+        { name: 'den_da', dx: -14.8, dz: 6.1, yaw: 0, s: 1.0 },
+        { name: 'xich_bua', dx: -10.2, dz: -4.2, yaw: 1.18, s: 1.0 },
+        { name: 'den_da', dx: -14.8, dz: -6.1, yaw: 0, s: 1.0 },
+        { name: 'xich_bua', dx: 10.2, dz: -4.2, yaw: -1.18, s: 1.0, v2: true },
+        { name: 'den_da', dx: 14.8, dz: -6.1, yaw: 0, s: 1.0 },
+        { name: 'bia_tran', dx: -24, dz: -6, yaw: 0.9, s: 1.0 },
+        { name: 'bia_tran', dx: 24, dz: -6, yaw: -0.9, s: 1.0, v2: true },
+      ],
+      items: { linh_thach: 2, den_da: 2 },
     },
     {
       note: 'Miếu Đổ Thanh Phong: tế đàn',
@@ -496,13 +523,15 @@ export const SCENES: Record<string, Scene[]> = {
       items: { dinh_lu_dong: 2, co_phuong: 4, lu_huong: 2, den_da: 4 },
     },
     {
-      note: 'Đại lộ: trận đồ',
+      note: 'Đại lộ: trận pháp bên hàng trụ khắc vân đổ',
+      nearBase: ['prop_tru_da_khac_van'],
+      nearR: [3, 7],
       at: [1055, 865],
       r: 150,
       rMin: 40,
       face: 'center',
       flat: 9,
-      items: { tran_do_khac_san: 2, cot_tran: 6, te_dan: 1, bia_tran: 2, linh_thach: 5 },
+      items: { cot_tran: 4, bia_tran: 2, linh_thach: 12, xich_bua: 3 },
     },
     {
       note: 'Lâm Sao Viên',
