@@ -114,3 +114,11 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Ánh sáng**: quầng đèn lồng (`createLanternHalos`) cho 20 cột + 4 đèn đố, hai tia trăng vàng nhạt, sương hổ phách thấp; vật phát sáng (đèn lồng, cửa sổ) vật liệu emissive.
 - **Ngân sách (preset Cao)**: ~110 draw call, ~0,67M tam giác.
 - **Còn lại**: tượng võ sĩ/bia đá là prop cũ (thô); đỉnh đồng nhìn từ xa hơi giống nồi; chưa có normal map hoa văn thật; cây vàng chết còn đơn giản; chưa khai báo va chạm (đợi API COL-1).
+
+### PR 5 vòng 2 (góp ý duyệt): sân có lát đá, điểm nhấn, tượng chạm khắc
+
+- **Sân lát đá**: phiến bazan 3,2 m xếp so le, mạch đá tối mảnh, mỗi phiến một sắc; **vũng nước mưa** (mảng đen bóng không đều, soi ánh đèn), **cánh hoa/lá vàng rơi** (chấm nhỏ theo ô 1,3 m), **thảm đỏ viền vàng** từ cửa nam tới thềm ngai (chỉ ngoài vùng đánh r > ~46–58). Vòng trận chỉ còn hai vòng liền MẢNH (r 46, 64) + hoa sen ngắn ở tâm; **bỏ các vạch thẳng trắng dài và vòng vạch chia đứt nét**.
+- **Điểm nhấn trong sân** (GLB, ngoài vùng đánh, chừa hành lang nam): hai hồ nước (vành đá 30 phiến, lá sen, mặt nước soi trời hổ phách) có **cầu vòm đá lan can son** bắc qua; hai **bệ hương** (nền ba bậc, lư hương than đỏ + hương, hai chân đèn) hai bên ngai; bốn **cây quế kim tuyết** (thân đen xoắn, tán lá sẫm lốm đốm hoa vàng, năm đèn lồng treo cành) ở bốn góc; mười **đèn đá thấp** thành vòng r 32 và hai hàng dọc thảm.
+- **Tượng**: bỏ tượng võ sĩ prop cũ, dùng lại **thần tướng chạm khắc của Thần Tàng** (giáp, mũ trụ, đại kiếm; đổi bảng màu bazan ấm + chữ hổ phách) đứng trước thềm ngai và hai bên lối vào.
+- **Ngân sách (preset Cao)**: ~172 draw call, ~0,79M tam giác.
+- **Còn lại**: vũng nước còn là các vệt tối nhỏ (phản chiếu yếu), mặt hồ hơi tối; tượng nhìn từ trên còn "cột đen"; chưa va chạm (đợi COL-1).

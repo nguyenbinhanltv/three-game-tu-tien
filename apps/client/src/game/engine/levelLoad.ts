@@ -373,7 +373,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     const dropIds = levelAssets(id).kinhNguyetArt
       ? new Set(['prop_da_troi'])
       : levelAssets(id).kimDaArt
-        ? new Set(['prop_tru_da_khac_van'])
+        ? new Set(['prop_tru_da_khac_van', 'prop_tuong_da_vo_si'])
         : levelAssets(id).thanTangArt
           ? new Set(['prop_tru_da_khac_van'])
           : null;
@@ -700,7 +700,20 @@ export async function loadKdModel(eng: Game, shadows: boolean): Promise<void> {
     origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
     prefix: 'kd',
     ceiling: KD_DOME,
-    flat: ['kd_bay', 'kd_throne', 'kd_post', 'kd_censer', 'kd_tree', 'kd_string'],
+    flat: [
+      'kd_bay',
+      'kd_throne',
+      'kd_post',
+      'kd_censer',
+      'kd_tree',
+      'kd_string',
+      'kd_pondrim',
+      'kd_bridge',
+      'kd_altar',
+      'kd_osman',
+      'kd_lowlantern',
+      'kd_statue',
+    ],
     flatDy: 0.05,
     material: ttMaterialFor,
     noShadow: /bay|throne|string/,

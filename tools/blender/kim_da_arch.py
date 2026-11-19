@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_sect as bs  # noqa: E402
 import kiem_trung_arch as kta  # noqa: E402
 import thien_cong_sect as ts  # noqa: E402
+import than_tang_arch as tta  # noqa: E402  (tái dùng tượng thần tướng chạm khắc, đổi sang bazan ấm + chữ hổ phách)
 from build_sect import Mat, Paint  # noqa: E402
 from kiem_trung_arch import C, blob, mix, new_b, rod, tbox  # noqa: E402
 from thien_khuyet_arch import fbm3  # noqa: E402
@@ -29,6 +30,7 @@ bs.MATERIALS['glow'] = Mat(0.9, 0.0, None, 1.0, False, 0.0, (0xFFB45A, 0.9))
 bs.MATERIALS['blk'] = Mat(0.3, 0.12, None, 1.0, False, 0.0)
 
 SEED = 20261119
+PONDS = [(-58.0, -4.0, 9.5), (58.0, -4.0, 9.5)]  # (x, z, bán kính) khớp `PONDS` ở kimDaArt.ts
 DOME_R, DOME_H = 135.0, 80.0
 POSTS, POST_R = 22, 84.0  # cột đèn quanh sảnh: khớp `lanternPosts()` ở kimDaArt.ts
 
@@ -294,6 +296,28 @@ def dead_tree(b, seed):
 
 def build_variants():
     v = {}
+    # tượng thần tướng chạm khắc (viết ở than_tang_arch.statue), đổi bảng màu sang bazan ấm + chữ phù văn hổ phách
+    tta.marble = lambda seed, lift=0.0: basalt(seed, lift)
+    tta.RUNE = Paint(C(0xE8A040), 'glow')
+    for i in range(2):
+        b = new_b(1160 + i)
+        tta.statue(b, 1160 + i * 7)
+        v[f'statue{i}'] = b
+    b = new_b(1170)
+    low_lantern(b, 1170)
+    v['lowlantern'] = b
+    b = new_b(1171)
+    incense_altar(b, 1171)
+    v['altar'] = b
+    b = new_b(1172)
+    osmanthus(b, 1172)
+    v['osman'] = b
+    b = new_b(1173)
+    bridge(b, 1173)
+    v['bridge'] = b
+    b = new_b(1174)
+    pond_rim(b, 1174)
+    v['pondrim'] = b
     for i in range(2):
         b = new_b(1100 + i)
         bay(b, 1100 + i * 13)
@@ -316,6 +340,138 @@ def build_variants():
         dead_tree(b, 1150 + i * 5)
         v[f'tree{i}'] = b
     return v
+
+
+def low_lantern(b, seed):
+    """Đèn đá thấp ~1,8 m: bệ, trụ, hộp lửa phát sáng có cửa sổ, mái cong, bảo châu."""
+    stone = lambda off=0: basalt(seed + off, 0.1)
+    for k in range(2):
+        tbox(b, (0, 0.2 + k * 0.4, 0), (1.5 - 0.4 * k, 0.4, 1.5 - 0.4 * k), bp(seed + k, 0.1))
+    rod(b, (0, 0.8, 0), (0, 1.15, 0), 0.2, 0.17, stone(2), nu=8, nv=2, amp=0.0)
+    tbox(b, (0, 1.3, 0), (0.95, 0.12, 0.95), bp(seed + 3, 0.12))
+    tbox(b, (0, 1.65, 0), (0.62, 0.55, 0.62), GLOW)
+    for sx in (-1, 1):
+        tbox(b, (sx * 0.34, 1.65, 0), (0.1, 0.6, 0.7), bp(seed + 4, 0.1))
+        tbox(b, (0, 1.65, sx * 0.34), (0.7, 0.6, 0.1), bp(seed + 5, 0.1))
+    tbox(b, (0, 2.05, 0), (1.15, 0.14, 1.15), bp(seed + 6, 0.12), rx=0.0)
+    tbox(b, (0, 2.22, 0), (0.7, 0.18, 0.7), bp(seed + 7, 0.12))
+    blob(b, (0, 2.46, 0), (0.17, 0.2, 0.17), lambda p, n: GOLD, nu=8, nv=5)
+
+
+def incense_altar(b, seed):
+    """Bệ hương: nền đá ba bậc có bậc lên, bàn đá khắc, lư hương đồng lớn có than đỏ + hương cắm, hai chân đèn nhỏ hai bên, bát nước đồng."""
+    for k in range(3):
+        tbox(b, (0, 0.3 + k * 0.6, 0), (9.0 - 1.8 * k, 0.6, 6.0 - 1.2 * k), bp(seed + k, 0.1))
+        tbox(b, (0, 0.62 + k * 0.6, 0), (9.2 - 1.8 * k, 0.08, 6.2 - 1.2 * k), GOLD_DK)
+    for k in range(3):
+        tbox(b, (0, 0.2 + k * 0.2, 3.6 + (2 - k) * 0.7), (4.0, 0.3, 0.8), bp(seed + 10 + k, 0.08))
+    tbox(b, (0, 2.2, -0.2), (4.2, 0.5, 2.0), bp(seed + 20, 0.14))
+    for sx in (-1, 1):
+        tbox(b, (sx * 1.7, 1.75, -0.2), (0.5, 0.9, 1.6), bp(seed + 21, 0.1))
+    # lư hương
+    for k in range(3):
+        a = k / 3 * math.tau
+        rod(b, (math.cos(a) * 0.8, 2.45, math.sin(a) * 0.8 - 0.2), (math.cos(a) * 0.5, 3.0, math.sin(a) * 0.5 - 0.2), 0.15, 0.1, lambda p, n: GOLD_DK, nu=6, nv=2, amp=0.0)
+    blob(b, (0, 3.5, -0.2), (1.05, 0.7, 1.05), lambda p, n: GOLD, nu=14, nv=7)
+    band(b, 0, 3.3, -0.2, 1.08, 0.14)
+    blob(b, (0, 4.05, -0.2), (0.85, 0.16, 0.85), lambda p, n: LANT_R, nu=10, nv=4)
+    for k in range(9):
+        a = k / 9 * math.tau
+        tbox(b, (math.cos(a) * 0.5, 4.5, math.sin(a) * 0.5 - 0.2), (0.05, 0.9, 0.05), Paint(C(0x6A1812), 'silk'), rx=0.06 * math.sin(a), rz=0.06 * math.cos(a))
+        blob(b, (math.cos(a) * 0.5 * 1.0, 4.98, math.sin(a) * 0.5 - 0.2), (0.07, 0.07, 0.07), lambda p, n: LANT, nu=4, nv=3)
+    for sx in (-1, 1):
+        rod(b, (sx * 3.4, 1.9, 0.6), (sx * 3.4, 3.4, 0.6), 0.14, 0.1, lambda p, n: GOLD_DK, nu=6, nv=2, amp=0.0)
+        lantern(b, sx * 3.4, 3.9, 0.6, 0.55, red=(sx > 0))
+
+
+def osmanthus(b, seed):
+    """Cây quế kim tuyết: thân đen xoắn, tán nhiều cụm lá xanh sẫm lốm đốm hoa vàng, hoa vàng rụng quanh gốc, năm đèn lồng treo cành, vòng đá quanh gốc."""
+    rnd = random.Random(seed)
+    for k in range(10):
+        a = k / 10 * math.tau
+        blob(b, (math.cos(a) * 2.2, 0.35, math.sin(a) * 2.2), (0.85, 0.4, 0.7), lambda p, n: Paint(C(0x4A4038), "jade"), nu=8, nv=4, rot=a)
+    pts = [(0.0, 0.0, 0.0)]
+    x = z = 0.0
+    for i in range(1, 6):
+        x += rnd.uniform(-0.4, 0.4)
+        z += rnd.uniform(-0.4, 0.4)
+        pts.append((x, i * 1.35, z))
+    for i in range(5):
+        rod(b, pts[i], pts[i + 1], 0.7 - 0.1 * i, 0.7 - 0.1 * (i + 1), lambda p, n: BLK, nu=8, nv=2, seed=seed + i, amp=0.14)
+    branches = []
+    for k in range(7):
+        a = k / 7 * math.tau + rnd.uniform(-0.3, 0.3)
+        base = pts[rnd.randint(3, 5)]
+        L = rnd.uniform(2.8, 4.2)
+        end = (base[0] + math.cos(a) * L, base[1] + rnd.uniform(0.8, 1.8), base[2] + math.sin(a) * L)
+        rod(b, base, end, 0.26, 0.1, lambda p, n: BLK, nu=6, nv=2, amp=0.1)
+        branches.append((base, end))
+    # tán lá
+    for k in range(14):
+        base, end = branches[k % len(branches)]
+        t = rnd.uniform(0.55, 1.0)
+        c = tuple(base[i] + (end[i] - base[i]) * t for i in range(3))
+        rr = rnd.uniform(1.2, 2.1)
+        green = Paint(mix(C(0x2A3A22), C(0x44582E), rnd.random()), 'plaster')
+        blob(b, (c[0], c[1] + 0.4, c[2]), (rr, rr * 0.7, rr), lambda p, n, g=green: g, nu=10, nv=6, seed=seed + k, amp=0.3)
+        for q in range(7):  # hoa vàng lốm đốm
+            fa, fe = rnd.uniform(0, math.tau), rnd.uniform(0.1, 1.0)
+            blob(b, (c[0] + math.cos(fa) * rr * 0.9, c[1] + 0.4 + math.sin(fe) * rr * 0.65, c[2] + math.sin(fa) * rr * 0.9), (0.12, 0.12, 0.12), lambda p, n: GOLD, nu=4, nv=3)
+    # đèn lồng treo
+    for k in range(5):
+        base, end = branches[(k * 2) % len(branches)]
+        t = rnd.uniform(0.6, 0.95)
+        c = tuple(base[i] + (end[i] - base[i]) * t for i in range(3))
+        b.box(c[0], c[1] - 0.6, c[2], 0.04, 1.2, 0.04, GOLD_DK)
+        lantern(b, c[0], c[1] - 1.7, c[2], 0.7, red=(k % 2 == 0))
+    for k in range(40):  # hoa rụng
+        tbox(b, (rnd.uniform(-3.6, 3.6), 0.04, rnd.uniform(-3.6, 3.6)), (0.14, 0.02, 0.1), Paint(mix(C(0xE8C468), C(0xC9962A), rnd.random()), 'gold'), yaw=rnd.uniform(0, 3))
+
+
+def bridge(b, seed):
+    """Cầu đá vòm nhỏ (dài 20 m dọc trục z, rộng 4): mặt vòm lên 1,4 m, thành đá + lan can sơn son có trụ vàng, hai đèn đá cuối cầu; qua hồ bán kính ~9,5."""
+    N = 14
+    L = 20.0
+    for i in range(N):
+        t0, t1 = i / N, (i + 1) / N
+        z0, z1 = -L / 2 + t0 * L, -L / 2 + t1 * L
+        y0 = 0.15 + 1.4 * math.sin(t0 * math.pi)
+        y1 = 0.15 + 1.4 * math.sin(t1 * math.pi)
+        zm, ym = (z0 + z1) / 2, (y0 + y1) / 2
+        ln = math.dist((z0, y0), (z1, y1)) + 0.05
+        sl = math.atan2(y1 - y0, z1 - z0)
+        tbox(b, (0, ym - 0.35, zm), (4.0, 0.7, ln), bp(seed + i, 0.1), rx=-sl)
+        tbox(b, (0, ym + 0.02, zm), (3.0, 0.08, ln), GOLD_DK, rx=-sl)
+        for sx in (-1, 1):
+            tbox(b, (sx * 1.95, ym + 0.65, zm), (0.14, 0.14, ln), Paint(C(0x8E1F18), 'silk'), rx=-sl)
+            tbox(b, (sx * 1.95, ym + 0.2, zm), (0.12, 0.5, ln * 0.2), Paint(C(0x8E1F18), 'silk'), rx=-sl)
+    for sx in (-1, 1):
+        for z in (-L / 2, -L / 4, 0, L / 4, L / 2):
+            y = 0.15 + 1.4 * math.sin((z / L + 0.5) * math.pi)
+            rod(b, (sx * 1.95, y, z), (sx * 1.95, y + 1.1, z), 0.12, 0.1, lambda p, n: GOLD_DK, nu=6, nv=2, amp=0.0)
+            blob(b, (sx * 1.95, y + 1.2, z), (0.14, 0.14, 0.14), lambda p, n: GOLD, nu=6, nv=4)
+        for z in (-L / 2 - 0.8, L / 2 + 0.8):
+            tbox(b, (sx * 2.6, 0.3, z), (1.2, 0.6, 1.2), bp(seed + 30, 0.1))
+            lantern(b, sx * 2.6, 1.6, z, 0.55, red=(sx > 0))
+
+
+def pond_rim(b, seed):
+    """Vành đá hồ (tâm gốc, bán kính ngoài 9,5 m): các phiến đá xếp vòng cao 0,45 m, hoa văn mép vàng thưa, vài lá sen (đĩa phẳng) trong lòng."""
+    rnd = random.Random(seed)
+    n = 30
+    for i in range(n):
+        a = i / n * math.tau
+        rr = 9.5
+        tbox(b, (math.cos(a) * rr, 0.22, math.sin(a) * rr), (2.2, 0.45, 1.3), bp(seed + i, 0.08 + 0.1 * rnd.random()), yaw=-a)
+        if i % 3 == 0:
+            blob(b, (math.cos(a) * rr, 0.48, math.sin(a) * rr), (0.14, 0.14, 0.14), lambda p, n: GOLD, nu=6, nv=4)
+    for k in range(7):
+        a = rnd.uniform(0, math.tau)
+        d = rnd.uniform(1.0, 7.0)
+        r = rnd.uniform(0.7, 1.3)
+        m = 14
+        pts = [(math.cos(a) * d + math.cos(j / m * math.tau) * r, 0.12, math.sin(a) * d + math.sin(j / m * math.tau) * r) for j in range(m)]
+        b.poly(pts, (0, -2, 0), Paint(mix(C(0x2F3F26), C(0x3E5230), rnd.random()), 'plaster'))
 
 
 def keep_out(x, z, min_r=30.0):
@@ -372,6 +528,30 @@ def run(out):
             continue
         put('tree', f'tree{rnd.randrange(3)}', x, z, yaw=rnd.uniform(0, 6.28), scale=rnd.uniform(0.9, 1.5))
         got += 1
+    # --- điểm nhấn trong sân (đều ngoài vùng đánh r < ~42 và ngoài hành lang |x| < 10 phía nam) ---
+    # hai hồ + cầu vòm bắc qua mỗi hồ (trục z), vành đá quanh hồ
+    for (px, pz, pr) in PONDS:
+        put('pondrim', 'pondrim', px, pz)
+        put('bridge', 'bridge', px, pz, yaw=0.0)
+    # hai bệ hương hai bên ngai (r ~ 36, hai bên thảm), nhìn vào tâm
+    for sx in (-1, 1):
+        put('altar', 'altar', sx * 24.0, -34.0, yaw=-sx * 0.35, scale=1.0)
+    # bốn cây quế kim tuyết ở bốn góc sân trong, đèn treo
+    for (px, pz) in ((-44.0, 40.0), (44.0, 40.0), (-44.0, -42.0), (44.0, -42.0)):
+        put('osman', 'osman', px, pz, yaw=rnd.uniform(0, 6.28), scale=1.15)
+    # đèn đá thấp: vòng r 30 chừa lối nam, cách đều, + hai bên thảm đỏ phía nam
+    for i in range(10):
+        a = (i + 0.5) / 10 * math.tau
+        if skip(a) or abs(math.atan2(math.sin(a + math.pi / 2), math.cos(a + math.pi / 2))) < 0.5:
+            continue
+        put('lowlantern', 'lowlantern', math.cos(a) * 32, math.sin(a) * 32, yaw=a)
+    for k in range(6):
+        for sx in (-1, 1):
+            put('lowlantern', 'lowlantern', sx * 4.6, 46.0 + k * 7.0, yaw=0.0)
+    # thần tướng canh trước thềm ngai (thay tượng prop cũ) và hai bên lối vào
+    for sx in (-1, 1):
+        put('statue', f'statue{(sx + 1) // 2}', sx * 12.0, -40.0, yaw=0.0, scale=0.62)
+        put('statue', f'statue{(sx + 1) // 2}', sx * 15.0, 60.0, yaw=math.pi, scale=0.6)
     ts.export_glb(out)
     size, prims, tris, doc = bs.inspect(out)
     print(f'[kim_da] {out}: {size / 1024:.0f} KB, {n_obj} vật, {tris} tam giác, {len(prims)} primitive ({", ".join(keys)})')
