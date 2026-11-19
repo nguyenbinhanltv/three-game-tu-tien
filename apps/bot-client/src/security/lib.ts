@@ -12,6 +12,15 @@ import { defaultServerHttp } from '../target';
 export const HTTP = process.argv[2] ?? defaultServerHttp();
 export const WS = HTTP.replace(/^http/, 'ws');
 export const W = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/**
+ * Chờ tới khi `cond()` đúng (tối đa `ms`, mặc định 5 s, thăm dò 25 ms), trả kết quả cuối. Dùng thay `W(cố định)` ở bài kiểm tra "server đã xử lý lệnh":
+ * ngủ cố định 150–500 ms làm bài hỏng chập chờn khi máy/CI đang tải (server chưa kịp phản hồi), còn bài đúng thì thoát sớm.
+ */
+export async function waitUntil(cond: () => boolean, ms = 5000): Promise<boolean> {
+  const t0 = Date.now();
+  while (!cond() && Date.now() - t0 < ms) await W(25);
+  return cond();
+}
 /** Số mục HỎNG (dùng chung giữa các nhóm bài). */
 export const stats = { failed: 0 };
 

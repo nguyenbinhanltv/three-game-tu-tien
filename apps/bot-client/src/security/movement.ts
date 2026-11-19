@@ -1,7 +1,7 @@
 // Bài kiểm tra bảo mật: Ngự kiếm/ra chiêu khi lơ lửng, rơi, ngắt chú boss, chết và hồi sinh (R-7, tách từ security-check.ts).
 import { type Room } from 'colyseus.js';
 import { C, IN_FLY, IN_UP, MF_CHANT, MF_STUN, MS_DEAD, S } from '@dtl/shared';
-import { W, check, join, type Ctx, type P, type M } from './lib';
+import { W, check, join, type Ctx, type P, type M, waitUntil } from './lib';
 
 export async function runMovement(ctx: Ctx): Promise<void> {
   const { room, me, mons, gm } = ctx;
@@ -61,7 +61,9 @@ export async function runMovement(ctx: Ctx): Promise<void> {
     await say(a.room, 'killall');
     await say(a.room, 'spawn boss_han_giao');
     const am = () => (a.room.state as { monsters: Map<string, M & { mf?: number }> }).monsters;
-    const boss = [...am().entries()].filter(([, m]) => m.t === 'boss_han_giao' && m.st !== MS_DEAD).pop();
+    const findBoss = () => [...am().entries()].filter(([, m]) => m.t === 'boss_han_giao' && m.st !== MS_DEAD).pop();
+    await waitUntil(() => findBoss() !== undefined, 8000); // quái mới gọi tới client sau một nhịp đồng bộ trạng thái
+    const boss = findBoss();
     const mf = () => am().get(boss?.[0] ?? '')?.mf ?? 0;
     let guardMsg = '';
     a.room.onMessage(S.SYS, (m: { k: string }) => {
