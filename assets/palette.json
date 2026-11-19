@@ -287,6 +287,16 @@
         "shadowAmount": 0.4, "highlightAmount": 0.32,
         "blackLift": "#150F0E", "contrast": 1.22, "saturation": 0.78, "exposure": 0.95
       },
+      "dk": {
+        "label": "Độ Kiếp — Thiên Lôi Đài, mây bão xanh thẫm, ánh sét lạnh, đỉnh đồng vàng",
+        "sunColor": "#D8E4FF", "sunIntensity": 2.1, "sunElevationDeg": 46,
+        "skyColor": "#98A6BC", "skyIntensity": 1.4,
+        "fogColor": "#4A5A70", "fogDensity": 0.0013, "heightFogTop": 30, "heightFogBoost": 1.8,
+        "fogHaze": 0.0011, "fogHazeStart": 70, "fogScatter": 0.5, "rim": 1.2,
+        "shadowTint": "#0A1620", "highlightTint": "#FFC080", "splitBalance": 0.05,
+        "shadowAmount": 0.4, "highlightAmount": 0.42,
+        "blackLift": "#18222E", "contrast": 1.2, "saturation": 0.8, "exposure": 1.3
+      },
       "kd": {
         "label": "Kim Dạ Cung — cung dát vàng đêm lồng đèn",
         "sunColor": "#FFD9A0", "sunIntensity": 1.5, "sunElevationDeg": 54,

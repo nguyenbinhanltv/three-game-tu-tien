@@ -1316,6 +1316,71 @@
         }
       }
     },
+    "arch_do_kiep": {
+      "id": "arch_do_kiep",
+      "class": "arch",
+      "source": "assets/build/raw/arch_do_kiep.glb",
+      "file": "arch_do_kiep.a4f63eb22d.glb",
+      "bytes": 5387580,
+      "rawBytes": 4753712,
+      "triangles": 28538,
+      "rawTriangles": 28538,
+      "lod0Cap": 600000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "marble_rock_01_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_jade",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "marble_rock_01_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 28538
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 147.9841,
+          "height": 14.9047,
+          "depth": 129.1608,
+          "minY": -2.0245
+        },
+        "build": {
+          "width": 147.9839,
+          "height": 14.9048,
+          "depth": 129.1611,
+          "minY": -2.0246
+        }
+      }
+    },
     "boss_dia_mach_long": {
       "id": "boss_dia_mach_long",
       "class": "boss",
