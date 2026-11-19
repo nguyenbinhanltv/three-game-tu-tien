@@ -205,23 +205,32 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       const nA = texture(tex.mask, vec2(u.mul(0.0057), h.mul(0.0019))).a; // mảng lớn, kéo dài theo chiều dọc
       const nB = texture(tex.mask, vec2(u.mul(0.017).add(0.4), h.mul(0.009))).a;
       const nC = texture(tex.mask, vec2(u.mul(0.061), h.mul(0.037))).a; // hạt mịn
-      const bandA = sin(h.mul(0.06).add(nA.mul(16)))
+      const bandA = sin(h.mul(0.045).add(nA.mul(5)))
         .mul(0.5)
         .add(0.5);
-      const bandB = sin(h.mul(0.29).add(nB.mul(18)).add(nC.mul(3)))
+      const bandB = sin(h.mul(0.16).add(nA.mul(6)))
         .mul(0.5)
         .add(0.5);
-      const mixTone = smoothstep(0.25, 0.75, bandA.mul(0.3).add(nB.mul(0.7)));
-      let tone: Node = mix(vec3(0.46, 0.25, 0.2), vec3(0.58, 0.52, 0.5), mixTone);
-      tone = tone.mul(float(0.72).add(nC.mul(0.56))).mul(float(0.9).add(bandB.mul(0.14)));
+      // vệt loang dọc (nước chảy lâu năm): kéo dài theo chiều cao, phá nhịp tầng ngang
+      const streak = texture(tex.mask, vec2(u.mul(0.043).add(0.17), h.mul(0.0014))).a;
+      const mixTone = smoothstep(0.25, 0.75, bandA.mul(0.25).add(nB.mul(0.45)).add(streak.mul(0.3)));
+      let tone: Node = mix(vec3(0.4, 0.2, 0.16), vec3(0.58, 0.52, 0.5), mixTone);
+      tone = tone
+        .mul(float(0.72).add(nC.mul(0.56)))
+        .mul(float(0.93).add(bandB.mul(0.1)))
+        .mul(float(0.66).add(streak.mul(0.7)));
       // khe nứt dọc: đường tối mảnh nơi nA gần 0,5
       const crack = smoothstep(0.045, 0.0, nA.sub(0.5).abs()).mul(smoothstep(0.2, 0.8, nB));
       tone = tone.mul(float(1).sub(crack.mul(0.6)));
       // gờ đá: mép trên mỗi tầng sáng, ngay dưới tối
-      tone = tone.mul(float(1).add(smoothstep(0.92, 1, bandB).mul(0.18))).mul(float(1).sub(smoothstep(0.12, 0, bandB).mul(0.3)));
+      // chỉ ở vài tầng (nA cao): gờ không chạy đều khắp vách
+      const ledgeOn = smoothstep(0.35, 0.6, nA);
+      tone = tone
+        .mul(float(1).add(smoothstep(0.92, 1, bandB).mul(0.2).mul(ledgeOn)))
+        .mul(float(1).sub(smoothstep(0.12, 0, bandB).mul(0.3).mul(ledgeOn)));
       // giữ chút chi tiết của texture gốc nhưng không để nó lộ khung lặp
       const detail = float(0.7).add(luminance(col).mul(0.5));
-      col = mix(col, tone.mul(detail).mul(1.15), rockish.mul(0.92));
+      col = mix(col, tone.mul(detail).mul(1.05), rockish.mul(0.92));
     } else {
       col = col.mul(mix(float(1), strataMul, rockish));
       col = mix(col, col.mul(vec3(0.82, 0.94, 1.1)), rockish.mul(smoothstep(140, 300, h)).mul(0.6));

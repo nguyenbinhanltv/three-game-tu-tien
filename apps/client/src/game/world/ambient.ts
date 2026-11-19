@@ -80,7 +80,7 @@ export function ambientRates(x: number, z: number, above: number, out?: AmbientR
   // MAP-2: hẻm núi lá phong, lá đỏ/cam/vàng bay chéo theo gió, dày hơn khi đứng thấp.
   if (level === 'doan_mach') {
     r.mote = 6;
-    r.maple = 30 * Math.max(0.15, Math.min(1, 1 - (above - 10) / 30));
+    r.maple = 6 * Math.max(0.15, Math.min(1, 1 - (above - 10) / 30));
     return r;
   }
   // Vân Hải (E3-H): không dùng tỉ lệ hạt của Vân Lam (sương/lá/phấn hoa theo toạ độ Vân Lam). Mảng sương `mist` là billboard 3–5 m, trên đảo hiện
