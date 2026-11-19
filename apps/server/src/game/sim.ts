@@ -1,7 +1,11 @@
 import { TickProf } from './tickprof';
 import type { Client } from 'colyseus';
 import {
+  blockedAt,
+  STEP_UP,
   bottleneckReady,
+  collisionOf,
+  type CollisionSet,
   type CdMsg,
   CHAT_MAX_LEN,
   DUEL_DAMAGE_MUL,
@@ -100,6 +104,8 @@ export class GameSim {
   level: LevelDef;
   /** Địa hình của level (E1-A); Vân Lam giống hệt `groundAt`/`heightAt` toàn cục. */
   readonly terrain: Terrain;
+  /** Hình va chạm 3D của level này (`collisionOf(levelId)`). */
+  readonly collision: CollisionSet;
   private nextId = 1;
   tickMs = 0;
   /** Profiler theo hệ (TICK_PROF=1), xem game/tickprof.ts. */
@@ -156,7 +162,8 @@ export class GameSim {
     canStand: (x, z) =>
       this.terrain.heightAt(x, z) > WATER_Y + 0.3 &&
       this.terrain.playDist(x, z) < this.terrain.playWall - 4 &&
-      !this.terrain.colliders.some((c) => (c.x - x) ** 2 + (c.z - z) ** 2 < c.r * c.r),
+      !this.terrain.colliders.some((c) => (c.x - x) ** 2 + (c.z - z) ** 2 < c.r * c.r) &&
+      !blockedAt(this.collision, x, z, this.terrain.groundAt(x, z), 0.8),
     hazard: (g, delay, mul, kind, m, mv) => this.addHazard(g, delay, mul, false, kind, m.id, m.atk, false, 0, undefined, undefined, mv),
     trail: (m, x, z, yaw, len, cfg, delay) => this.zones.addTrail(m as MonEnt, x, z, yaw, len, cfg, delay),
     damagePlayer: (p, n, src) => this.damagePlayer(p as PlayerEnt, n, src, true),
@@ -188,13 +195,18 @@ export class GameSim {
     },
     drag: (p, dx, dz, dist) => {
       const e = p as PlayerEnt;
-      const plan = planDash(e.move, { x: dx, z: dz }, dist, undefined, { terrain: this.terrain, bound: caveBoundOf(this.level) });
+      const plan = planDash(e.move, { x: dx, z: dz }, dist, undefined, {
+        terrain: this.terrain,
+        bound: caveBoundOf(this.level),
+        collision: this.collision,
+      });
       if (plan.dist <= 0) return 0;
       if (e.meditating) this.setMeditating(e, false);
       if (e.casting) this.cancelCast(e);
       e.move.x = plan.x;
       e.move.z = plan.z;
-      e.move.y = this.terrain.groundAt(plan.x, plan.z);
+      // Mặt đứng hiệu dụng (gồm bậc/phiến đá đi được), không chỉ heightmap: khỏi đặt người vào trong hộp rồi giật khi `push` đẩy ra.
+      e.move.y = Math.max(this.terrain.groundAt(plan.x, plan.z), this.collision.standY(plan.x, plan.z, e.move.y + STEP_UP));
       e.move.vy = 0;
       e.move.grounded = true;
       e.inputs.length = 0;
@@ -367,6 +379,9 @@ export class GameSim {
       },
       sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
       sysAll: (k, params, type) => s.sysAll(k, params, type),
+      get collision() {
+        return s.collision;
+      },
       get terrain() {
         return s.terrain;
       },
@@ -823,6 +838,7 @@ export class GameSim {
     if (!level) throw new Error(`level không tồn tại: ${opts.levelId}`);
     this.level = level;
     this.terrain = terrainOf(this.level);
+    this.collision = collisionOf(this.level);
     state.level = opts.levelId;
     // Quái đứng lẻ (tinh anh, boss): từng con hồi sinh riêng. Bãi quái: theo cụm (M-2).
     for (const sp of this.level.spawns) {
@@ -853,6 +869,7 @@ export class GameSim {
       const r = Math.sqrt(Math.random()) * radius;
       const x = cx + Math.cos(a) * r;
       const z = cz + Math.sin(a) * r;
+      if (blockedAt(this.collision, x, z, this.terrain.groundAt(x, z), 0.8)) continue; // không đặt quái trong cây/đá/tường (COL-1)
       if (allowWater || this.terrain.heightAt(x, z) > WATER_Y + 0.5) return { x, z };
     }
     return { x: cx, z: cz };

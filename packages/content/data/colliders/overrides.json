@@ -1,0 +1,9 @@
+{
+  "prop_truc": [{ "k": "box", "x": 0, "z": 0, "hx": 1, "hz": 0.7, "y0": 0, "y1": 7, "walk": false, "fly": "pass" }],
+  "prop_cau_da_gay": "none",
+  "prop_cau_may": "none",
+  "prop_cong_khai_mach": "none",
+  "prop_cong_thanh_vo": "none",
+  "prop_kinh_ho_dai": "none",
+  "prop_den_long_troi": "none"
+}

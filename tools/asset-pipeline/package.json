@@ -10,7 +10,8 @@
     "impostor": "tsx src/impostor.ts",
     "minimap": "tsx src/minimap.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "colliders": "tsx src/collider.ts"
   },
   "dependencies": {
     "@dtl/content": "workspace:*",

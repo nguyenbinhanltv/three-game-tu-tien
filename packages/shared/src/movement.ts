@@ -1,4 +1,4 @@
-import { BODY_H, STEP_UP } from './collision';
+import { BODY_H, type CollisionSet, STEP_UP } from './collision';
 import { FLY_UNLOCK_LEVEL, TRUC_CO_LEVEL } from './formulas';
 import { SKY_ALT, SKY_SPEED_MUL, SOUL_ALT, SOUL_UNLOCK_LEVEL } from './soul';
 import { type Terrain, VAN_LAM } from './terrain';
@@ -68,6 +68,8 @@ export interface MoveCtx {
   speedMul: number;
   /** Địa hình của level đang đứng (E1-A); thiếu thì Vân Lam. */
   terrain?: Terrain;
+  /** Hình va chạm 3D của level đang đứng (`collisionOf(levelId)`); thiếu thì `terrain.collision` (rỗng). */
+  collision?: CollisionSet;
   /** Vách hang của phó bản (E2-C, `DungeonDef.bound`): đẩy ngược về trong vòng tròn này mỗi bước, cả khi bay; client và server cùng truyền. */
   bound?: { x: number; z: number; r: number };
   /** Từ Nguyên Anh (ngự không): bay trong `SKY_ALT` so với mặt đất thì chậm hơn ngự kiếm `1 - SKY_SPEED_MUL`. */
@@ -102,7 +104,7 @@ function groundSlope(groundAt: (x: number, z: number) => number, x: number, z: n
 export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = STEP): void {
   const terrain = ctx.terrain ?? VAN_LAM;
   const groundAt = terrain.groundAt;
-  const col3d = ctx.ghost ? undefined : terrain.collision;
+  const col3d = ctx.ghost ? undefined : (ctx.collision ?? terrain.collision);
   let mx = ctx.frozen ? 0 : i.mx;
   let mz = ctx.frozen ? 0 : i.mz;
   const len = Math.sqrt(mx * mx + mz * mz);
