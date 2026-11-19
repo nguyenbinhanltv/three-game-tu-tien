@@ -67,12 +67,12 @@
 }
 /* ───────── Cartouche ───────── */
 .ngj-cart {
-  --ngj-c-h: 44px;
+  --u-h-c-h: 44px;
   position: relative;
   display: inline-flex;
   align-items: center;
   min-width: 260px;
-  height: var(--ngj-c-h);
+  height: var(--u-h-c-h);
   padding: 0 28px 0 112px;
   border-radius: 14px / 22px;
   font-family: var(--ngj-font-title);
@@ -84,13 +84,13 @@
   overflow: hidden;
 }
 .ngj-cart[data-size='s'] {
-  --ngj-c-h: 32px;
+  --u-h-c-h: 32px;
   min-width: 190px;
   padding-left: 84px;
   font-size: 13px;
 }
 .ngj-cart[data-size='l'] {
-  --ngj-c-h: 58px;
+  --u-h-c-h: 58px;
   min-width: 340px;
   padding-left: 140px;
   font-size: 22px;
