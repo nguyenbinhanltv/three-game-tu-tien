@@ -23,6 +23,7 @@ import {
   type SpawnDef,
   type ZoneDef,
 } from '@dtl/shared';
+import { reachability } from './connect';
 import { LEVELS, MONSTER, NPCS } from './index';
 import { campCoverage, COVER_BY_LEVEL, COVER_EDGE_MAX, DEFAULT_COVER } from './coverage';
 import { PLACES } from './places';
@@ -264,6 +265,12 @@ function stuckScan(): { checked: number; stuck: [number, number][] } {
   return { checked, stuck };
 }
 const stuck = stuckScan();
+// Khoang kín trong công trình (người chơi không thể vào) không phải bẫy: bỏ điểm kẹt trong vùng tông môn mà không tới được từ điểm hồi sinh (BFS bằng chính stepMove).
+if (IS_VL && stuck.stuck.length) {
+  const box = { x0: 1900, z0: 1930, x1: 2200, z1: 2150 };
+  const reach = reachability(LEVEL_ID, SPAWN_POINT, box, 1);
+  stuck.stuck = stuck.stuck.filter(([x, z]) => !(x > box.x0 && x < box.x1 && z > box.z0 && z < box.z1) || reach(x, z));
+}
 
 // ---- in ----
 const f1 = (n: number) => (Number.isFinite(n) ? n.toFixed(1) : '> 770');

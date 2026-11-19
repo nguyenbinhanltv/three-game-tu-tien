@@ -56,6 +56,19 @@ describe('archcollider: hộp rắn, bậc thang, mái', () => {
   });
 });
 
+describe('archcollider: thềm bậc sâu 0,5 m (cùng ô với mặt đứng bậc kế)', () => {
+  it('8 bậc sâu 0,5 m cao 0,25 m: mọi bậc là hộp walk, leo được tới thềm trên', () => {
+    const tris: Tri[] = [];
+    for (let i = 0; i < 8; i++) tris.push(...box(10, 0, 10 + i * 0.5, 14, 0.25 * (i + 1), 10.5 + i * 0.5));
+    // thềm 2 m x 4 m ở trên cùng, thân điện chặn phía sau
+    tris.push(...box(10, 0, 14, 14, 2, 16), ...box(10, 0, 16, 14, 8, 17));
+    const b = buildArchBoxes(tris, flat);
+    for (let i = 0; i < 8; i++) expect(cover(b, 12, 10.25 + i * 0.5, 0.25 * (i + 1), 1), `bậc ${i}`).toBe(true);
+    expect(cover(b, 12, 15, 2, 1)).toBe(true); // thềm đỉnh đứng được
+    expect(cover(b, 12, 16.5, 4, 0)).toBe(true); // thân điện chặn
+  });
+});
+
 describe('archcollider: khối lơ lửng', () => {
   it('sàn/mái cách đất 5 m không nối với đất: đi dưới gầm được, không hộp chặn', () => {
     const b = buildArchBoxes(box(10, 5, 10, 14, 5.3, 14), flat);
