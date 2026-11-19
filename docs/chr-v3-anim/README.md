@@ -136,3 +136,11 @@ Hông hạ ~7,6 cm trên dốc. Giới hạn: chưa tính bàn chân nghiêng th
 Mốc chém: thời điểm tay cầm kiếm (`hand_r`, không gian armature) nhanh nhất trong clip, tính bằng `tools/blender/ual_hit_times.py` → `apps/client/src/game/character/ualHit.json` (chạy lại khi đổi clip `SWING`): Sword_Regular_A 0,217/0,433 s, B 0,25/0,533, C 0,65/2,0, Sword_Attack 0,383/1,533. Test `mannequinAttack.test.ts` kiểm thứ tự sự kiện, hit tới sau ~`hitIn`, cancel khi chết, đòn liên tiếp, mốc nằm trong clip và clip có trong GLB.
 
 Đo trong game (`pnpm shots chrv3anim --group hit`, WebGPU, độ trễ windup → hit so với `hitIn`): đòn A 162 ms vs 147 ms, đòn B 182 vs 174, đòn C 600 vs 551 ms (lệch ≤ 1 khung ở đòn ngắn, 49 ms ở clip dài 2 s).
+
+
+## NV3-A4: lấp chỗ hở K-3 trên Mannequin + bảng thay clip Tripo
+
+- Bảng từng clip Tripo → UAL/thủ tục/trạng thái: `docs/chr-v3-anim/thay-clip-tripo.md` (test `thayTripo.test.ts` giữ đủ mọi clip).
+- **Lướt (Q)**: `MannequinCharacter.dashFrom` (trước đây v3 không có): hình xuất phát ở chỗ cũ rồi trượt về chỗ thật (đúng dù gói vị trí tới trước hay sau), phát UAL `Roll` co vừa thời gian lướt, hủy thu về chiêu (`cancelRecovery('dash')`).
+- **Trúng đòn có hướng**: thay `hit_front/l/r/back` của K-3 bằng giật thân theo hướng đòn (`flinchDirOf`): từ trước → ngửa, từ sau → cúi, từ bên → nghiêng; clip nền vẫn UAL `Hit_Chest`/`Hit_Knockback`. Trước đây v3 luôn ngửa ra sau bất kể hướng.
+- K-5: người chơi v3 đã chạy pose K-5 trên Mannequin (nướng trên rig Mixamo mẫu `chr_v2_nam` rồi retarget). Nướng thẳng trên Mannequin chưa làm (cần hiệu chuẩn hướng kiếm/trục bàn tay vì rest A-pose; `IkRig` giả định T-pose), ghi cho bước C.

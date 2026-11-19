@@ -30,7 +30,7 @@ function fake(): { m: MannequinCharacter; ev: SkillEvent[] } {
       new THREE.QuaternionKeyframeTrack('spine_02.quaternion', [0, dur], [0, 0, 0, 1, 0, 0, 0.1, 0.995]),
     ]);
   const clips = new Map<string, THREE.AnimationClip>();
-  for (const n of ['Idle_Loop', 'Jog_Fwd_Loop', 'Walk_Loop', 'Sprint_Loop', 'Hit_Chest']) clips.set(n, clip(n, 1));
+  for (const n of ['Idle_Loop', 'Jog_Fwd_Loop', 'Walk_Loop', 'Sprint_Loop', 'Hit_Chest', 'Roll']) clips.set(n, clip(n, 1));
   for (const [n, h] of Object.entries(UAL_HIT)) clips.set(n, clip(n, h.dur));
   const tpl = { bank: null, height: 1.8, clips, handle: { scene } } as unknown as MannequinTemplate;
   const m = new MannequinCharacter(tpl);
@@ -107,5 +107,21 @@ describe('swingSeconds / ualHit.json', () => {
       expect(h.hit).toBeGreaterThan(0);
       expect(h.hit).toBeLessThan(h.dur);
     }
+  });
+});
+
+describe('lướt hiển thị (A4)', () => {
+  it('dashFrom: hình xuất phát ở chỗ cũ rồi trượt về chỗ thật, phát clip Roll, hết thì về 0', () => {
+    const { m } = fake();
+    run(m, 0.3);
+    m.root.position.set(5, 0, 0);
+    m.dashFrom(0, 0, 0.3); // chỗ thật cách chỗ xuất phát 5 m theo +X, nhân vật nhìn +Z (yaw 0): lệch ngang = −5 m (bên phải)
+    m.update(1 / 60, anim());
+    expect(Math.abs((m as unknown as { inner: THREE.Object3D }).inner.position.x)).toBeGreaterThan(3);
+    run(m, 0.2);
+    expect(Math.abs((m as unknown as { inner: THREE.Object3D }).inner.position.x)).toBeLessThan(2);
+    run(m, 0.3);
+    expect((m as unknown as { inner: THREE.Object3D }).inner.position.x).toBeCloseTo(0, 5);
+    expect((m as unknown as { inner: THREE.Object3D }).inner.position.z).toBeCloseTo(0, 5);
   });
 });
