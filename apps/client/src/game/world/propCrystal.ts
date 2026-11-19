@@ -10,12 +10,14 @@ export function propCrystal(m: THREE.MeshStandardNodeMaterial): THREE.MeshStanda
   const isVein = m.name.endsWith('_tcvein');
   if (!isVein && !m.name.endsWith('_tccrystal')) return m;
   const vc = vertexColor();
-  const fres = pow(float(1).sub(normalView.dot(positionViewDirection).abs()), 2.4);
-  m.roughness = isVein ? 0.16 : 0.1;
+  const fres = pow(float(1).sub(normalView.dot(positionViewDirection).abs()), 2.2);
+  // Độ sáng đỉnh (0 chân → 1 mũi): lõi nóng ở mũi (pha trắng cùng sắc), chân vẫn phát sáng nhẹ nên không phẳng một màu.
+  const lum = vc.dot(vec3(0.3, 0.5, 0.2)).mul(2.2).clamp(0, 1);
+  const core = vc.mul(float(1).add(lum.mul(lum).mul(0.9)));
+  const rim = vc.normalize().mul(fres).mul(isVein ? 0.7 : 0.55);
+  m.roughness = isVein ? 0.12 : 0.08;
   m.metalness = isVein ? 0.05 : 0.3;
   m.colorNode = vc.mul(isVein ? 0.3 : 0.55);
-  m.emissiveNode = isVein
-    ? vc.mul(1.05).add(vec3(0.3, 0.6, 0.55).mul(vc).mul(fres).mul(1.4))
-    : vc.mul(0.25).add(vec3(0.3, 0.6, 0.55).mul(vc).mul(fres).mul(1.1));
+  m.emissiveNode = isVein ? core.mul(0.9).add(rim) : vc.mul(0.5).add(rim);
   return m;
 }

@@ -161,12 +161,13 @@ export default {
           renderer: opt('--renderer', 'webgpu'),
           quality: 'high',
           viewport: [w, h],
-          extra: mode === 'truoc' ? 'tc=0' : '',
+          extra: `${mode === 'truoc' ? 'tc=0&' : ''}mood=${opt('--mood', 'day')}&aura=0`,
           warnings: true,
         });
-        await gm(page, `level ${level === 'van_lam' ? 15 : Math.max(27, lv.minLevel ?? 0)}`);
+        await gm(page, `level ${level === 'van_lam' ? 15 : Math.max(27, lv.minLevel ?? 0)}`); // cảnh giới thấp: không hào quang/pháp tướng che prop
         await gm(page, 'god on');
         if (level !== 'van_lam') await enterLevel(page, level);
+        if (level === 'bac_hoang') await gm(page, 'level 15', 1500); // vào xong mới hạ cảnh giới: không pháp tướng che prop
         for (const v of views) {
           await tp(page, v.x, v.z);
           await gm(page, 'killall', 1500);

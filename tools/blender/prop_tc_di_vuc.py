@@ -77,8 +77,14 @@ def _(b, v):
             b.face([(math.cos(t0) * r0, y0, math.sin(t0) * r0), (math.cos(u0) * r1, y1, math.sin(u0) * r1), (math.cos(u1) * r1, y1, math.sin(u1) * r1), (math.cos(t1) * r0, y0, math.sin(t1) * r0)], DROCK, False)
         a = a0 + 0.3
         t = (i + 1) / n
-        col = bs.Paint(tuple(lo[c] * (1 - t) + hi[c] * t for c in range(3)), 'tcvein')
-        b.box(math.cos(a) * (r0 - 0.03), (y0 + y1) / 2, math.sin(a) * (r0 - 0.03), 0.06, (y1 - y0) * 1.05, 0.05, col, yaw=-a)
+        # Khe nứt lõm: hai gờ đá nhô ở mép, giữa là rãnh sâu tối có ánh tím yếu (không phải thanh phẳng dán lên).
+        for sgn in (-1, 1):
+            aa = a + sgn * 0.17
+            b.box(math.cos(aa) * (r0 + 0.02), (y0 + y1) / 2, math.sin(aa) * (r0 + 0.02), 0.1, (y1 - y0) * 0.95, 0.09, DROCK_L, yaw=-aa)
+        deep = bs.Paint(tuple(lo[c] * (0.5 + 0.6 * t) for c in range(3)), 'tcvein')
+        b.box(math.cos(a) * (r0 - 0.14), (y0 + y1) / 2, math.sin(a) * (r0 - 0.14), 0.1, (y1 - y0) * 1.0, 0.1, deep, yaw=-a)
+        if i % 2 == 1:  # tinh thể mọc ra từ khe, nghiêng ra ngoài
+            crystal_prism(b, math.cos(a) * (r0 - 0.08), math.sin(a) * (r0 - 0.08), math.cos(a) * 0.9, math.sin(a) * 0.9, 0.42 + 0.05 * i, 0.07, (i * 0.37) % 1.0, 0.8, random.Random(i + 40 * v), CRYS_VIOLET, y0=(y0 + y1) / 2 - 0.05)
     b.cylinder(0, 0, 0, 0.95, 0.3, DROCK_L, 7, 0.75)
     for k in range(7):
         a = k / 7 * math.tau
