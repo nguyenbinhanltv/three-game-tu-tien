@@ -122,7 +122,7 @@ export function buildSwordCaveShell(def: CaveDef, groundY: number): THREE.Mesh {
     c.copy(rock).multiplyScalar((0.32 + 0.8 * n) * (0.55 + 0.45 * band) * (0.6 + 0.5 * rib) * (0.25 + 0.85 * lit));
     c.lerp(dark, Math.min(1, ny * 0.9));
     // Quầng lạnh sát chân vách (khí lạnh từ sàn), thay cho mạch sáng (nhiễu giá trị tạo ô).
-    
+
     c.lerp(vein, Math.exp(-ny * 14) * 0.22);
     // Ô trời mở: quầng sáng lạnh quanh đỉnh.
     const open = Math.max(0, (ny - 0.935) / 0.065);

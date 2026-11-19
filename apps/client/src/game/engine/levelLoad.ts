@@ -317,7 +317,9 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     const palaceAsset = levelAssets(id).palace;
     const palace: false | 'moon' | 'gilt' = palaceAsset ? (palaceAsset === 'gilt' ? 'gilt' : 'moon') : false;
     // Kiếm Trủng (DUN-1): huyệt kiếm cao, có ô trời mở; level khác giữ vỏ hang cũ.
-    const shell = levelAssets(id).kiemTrungArt ? buildSwordCaveShell(cave, heightAt(cave.x, cave.z)) : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
+    const shell = levelAssets(id).kiemTrungArt
+      ? buildSwordCaveShell(cave, heightAt(cave.x, cave.z))
+      : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
     const glow = buildCrystalGlow(
       propsOf(id)
         .filter((p) => p.id === 'prop_mach_tinh_tru')

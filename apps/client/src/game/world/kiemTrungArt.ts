@@ -109,7 +109,14 @@ function prism(
     [w1 / 2 + tilt, y1 + capSlant, t1 / 2],
     [-w1 / 2 + tilt, y1, t1 / 2],
   ] as const;
-  const tri = (a: readonly number[], ca: [number, number, number], b: readonly number[], cb: [number, number, number], c: readonly number[], cc: [number, number, number]) => {
+  const tri = (
+    a: readonly number[],
+    ca: [number, number, number],
+    b: readonly number[],
+    cb: [number, number, number],
+    c: readonly number[],
+    cc: [number, number, number],
+  ) => {
     p.pos.push(...a, ...b, ...c);
     p.col.push(...ca, ...cb, ...cc);
     p.glow.push(glow, glow, glow);
@@ -343,8 +350,16 @@ export class KiemTrungArt {
   constructor(opts: { reduced?: boolean } = {}) {
     this.group.name = 'kiem-trung-art';
     const small = planSmallSwords(opts.reduced ? 320 : 640, opts.reduced ? 260 : 520);
-    this.addSmall(small.filter((s) => s.kind === 'whole'), plantedSword(), 'kt-swords');
-    this.addSmall(small.filter((s) => s.kind === 'broken'), brokenBlade(), 'kt-blades');
+    this.addSmall(
+      small.filter((s) => s.kind === 'whole'),
+      plantedSword(),
+      'kt-swords',
+    );
+    this.addSmall(
+      small.filter((s) => s.kind === 'broken'),
+      brokenBlade(),
+      'kt-blades',
+    );
     this.addGiants(planGiants());
     this.addSigil();
   }
@@ -386,7 +401,10 @@ export class KiemTrungArt {
     const broken = list.filter((g) => g.broken);
     const mat = createWorldMaterial({ vertexColors: true, roughness: 0.46, metalness: 0.5 });
     // Rãnh khí: chỉ phần `glow` phát sáng, nhịp thở chậm; vào bloom.
-    mat.emissiveNode = attribute('glow', 'float').mul(vec3(0.2, 0.55, 0.85)).mul(this.pulse).mul(float(0.85));
+    mat.emissiveNode = attribute('glow', 'float')
+      .mul(vec3(0.2, 0.55, 0.85))
+      .mul(this.pulse)
+      .mul(float(0.85));
     this.disposables.push(mat);
     for (const [geo, items] of [
       [giantSword(false), whole],
