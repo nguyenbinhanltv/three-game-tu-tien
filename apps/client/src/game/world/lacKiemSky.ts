@@ -148,9 +148,9 @@ function tube(m: Mesher, pts: THREE.Vector3[], radii: number[], sides: number, c
     const row: number[] = [];
     for (let j = 0; j < sides; j++) {
       const b = (j / sides) * Math.PI * 2;
-      row.push(m.vert(pts[i].x + Math.cos(b) * radii[i], pts[i].y, pts[i].z + Math.sin(b) * radii[i], c));
+      row.push(m.vert(pts[i]!.x + Math.cos(b) * radii[i]!, pts[i]!.y, pts[i]!.z + Math.sin(b) * radii[i]!, c));
     }
-    if (prev.length) for (let j = 0; j < sides; j++) m.quad(prev[j], row[j], row[(j + 1) % sides], prev[(j + 1) % sides]);
+    if (prev.length) for (let j = 0; j < sides; j++) m.quad(prev[j]!, row[j]!, row[(j + 1) % sides]!, prev[(j + 1) % sides]!);
     prev = row;
   }
 }
@@ -170,7 +170,7 @@ function blob(m: Mesher, c: THREE.Vector3, rx: number, ry: number, rz: number, c
     tmp.copy(color).multiplyScalar(0.8 + 0.3 * (y * 0.5 + 0.5));
     base.push(m.vert(c.x + x * rx * n, c.y + y * ry * n, c.z + z * rz * n, tmp));
   }
-  for (let i = 0; i < p.count; i += 3) m.tri(base[i], base[i + 1], base[i + 2]);
+  for (let i = 0; i < p.count; i += 3) m.tri(base[i]!, base[i + 1]!, base[i + 2]!);
 }
 
 // ---------- thân đảo ----------
@@ -237,12 +237,12 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
   for (let k = 0; k < RINGS; k++)
     for (let s = 0; s < SEG; s++) {
       const s2 = (s + 1) % SEG;
-      m.quad(ring[k][s], ring[k + 1][s], ring[k + 1][s2], ring[k][s2]);
+      m.quad(ring[k]![s]!, ring[k + 1]![s]!, ring[k + 1]![s2]!, ring[k]![s2]!);
     }
   // Mũi đá đáy.
   const tipLen = isl.depth * 0.28;
   const tip = m.vert(top.x, top.y - isl.depth - tipLen, top.z, ROCK_LOW);
-  for (let s = 0; s < SEG; s++) m.tri(ring[RINGS][s], tip, ring[RINGS][(s + 1) % SEG]);
+  for (let s = 0; s < SEG; s++) m.tri(ring[RINGS]![s]!, tip, ring[RINGS]![(s + 1) % SEG]!);
   // Mặt cỏ: vành ngoài (lệch cao thấp) + tâm.
   const grassRing: number[] = [];
   const bumpy = (x: number, z: number) => 0.55 * fbm3(x * 0.09, 0.3, z * 0.09, seed + 11, 3);
@@ -267,8 +267,8 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
   const ctr = m.vert(top.x, centerY - 0.2, top.z, GRASS_B);
   for (let s = 0; s < SEG; s++) {
     const s2 = (s + 1) % SEG;
-    m.quad(grassRing[s], inner[s], inner[s2], grassRing[s2]);
-    m.tri(inner[s], ctr, inner[s2]);
+    m.quad(grassRing[s]!, inner[s]!, inner[s2]!, grassRing[s2]!);
+    m.tri(inner[s]!, ctr, inner[s2]!);
   }
   const col = (hex: number) => C(hex);
   // Nhũ đá nhọn treo dưới thân: nhiều cỡ, nghiêng nhẹ, đá phân lớp tối dần về mũi.
@@ -345,7 +345,7 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
       rad.push(0.11 * (1 - q * 0.5));
     }
     tube(m, pts, rad, 4, (q) => VINE.clone().lerp(ROOT, q * 0.3));
-    for (let k = 2; k <= segs; k += 3) blob(m, pts[k], 0.55, 0.38, 0.55, VINE_LEAF, seed + i * 7 + k);
+    for (let k = 2; k <= segs; k += 3) blob(m, pts[k]!, 0.55, 0.38, 0.55, VINE_LEAF, seed + i * 7 + k);
   }
   // Rừng nhỏ trên mặt đảo: thân tapered + ba cụm tán tròn nhiều sắc xanh (chừa vùng giữa cho công trình/đài).
   const nTrees = Math.round(R * 0.5);
@@ -375,7 +375,7 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
         s,
         s * 0.78,
         s,
-        g,
+        g!,
         seed + i * 13 + k,
       );
     }
@@ -654,7 +654,7 @@ export class LacKiemSkyScene {
         const b = falls.vert(cx + sideX * w, y, zc + sideZ * w, white);
         rows.push([a, b]);
       }
-      for (let k = 0; k < segs; k++) falls.quad(rows[k][0], rows[k][1], rows[k + 1][1], rows[k + 1][0]);
+      for (let k = 0; k < segs; k++) falls.quad(rows[k]![0], rows[k]![1], rows[k + 1]![1], rows[k + 1]![0]);
       // Vết uv: u theo bề ngang, v từ chân (0) lên đỉnh (1): dựng lại uv sau.
       const mistMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mistMaterial());
       mistMesh.position.set(rim.x + toward.x * 6, endY + 6, rim.z + toward.y * 6);
@@ -708,7 +708,7 @@ export class LacKiemSkyScene {
       let placed = 0;
       for (let k = 0; k < rings && placed < sky.swords; k++) {
         const rr = dai.r * (0.42 + (0.5 * k) / (rings - 1));
-        const count = k === rings - 1 ? sky.swords - placed : Math.round((sky.swords * weights[k]) / wsum);
+        const count = k === rings - 1 ? sky.swords - placed : Math.round((sky.swords * weights[k]!) / wsum);
         for (let j = 0; j < count && placed < sky.swords; j++, placed++) {
           const a = ((j + r() * 0.6) / count) * Math.PI * 2 + k * 0.37;
           const rj = rr + (r() - 0.5) * dai.r * 0.05;
