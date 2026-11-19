@@ -1467,8 +1467,9 @@ if SHEET:
 if DBG_FACES:
     set_pose(None, 0)
     dbg_faces('c_nghi_tex_xuong', height, hide=LODS[1:])
-    set_pose('Idle_Loop', 0.0)
-    dbg_faces('d_idle', height, hide=LODS[1:])
+    for _t in (0.0, 0.25, 0.5, 0.75):
+        set_pose('Idle_Loop', _t)
+        dbg_faces(f'd_idle{int(_t * 100)}', height, hide=LODS[1:])
     set_pose(None, 0)
 
 # ---------- xuất ----------

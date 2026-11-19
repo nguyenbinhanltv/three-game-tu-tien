@@ -259,6 +259,8 @@ export const ARM_FIT: Record<string, number> = {
 };
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
 
+/** `?v3off=proc,feet,twist,cloth` tắt từng hệ phụ của v3 để cô lập lỗi hình (chẩn đoán). */
+const V3_OFF = new Set((typeof location !== 'undefined' ? (new URLSearchParams(location.search).get('v3off') ?? '') : '').split(',').filter(Boolean));
 const IDENT = new THREE.Matrix4();
 const _w = new THREE.Quaternion();
 const _pw = new THREE.Quaternion();
@@ -456,6 +458,8 @@ export class MannequinCharacter implements CharacterView {
   private shotLowerW = 0;
   // Lớp phụ sau mixer (A/C): nghiêng khi rẽ, xoay tại chỗ, thở, nhìn mục tiêu, giật khi trúng đòn, bù tay.
   private bones: Record<string, THREE.Object3D | null> = {};
+  /** Xương đầu của Mannequin (tên 'Head' viết hoa: `bones.head` không bao giờ tìm thấy). */
+  private headBone: THREE.Object3D | null = null;
   private lastYaw = NaN;
   private yawRate = 0;
   private lean = 0;
@@ -570,6 +574,7 @@ export class MannequinCharacter implements CharacterView {
       if (th) this.side = Math.sign(th.getWorldPosition(new THREE.Vector3()).sub(this.rig.getWorldPosition(new THREE.Vector3())).x) || 1;
       this.armFit = ARM_FIT[tpl.handle.id] ?? ARM_FIT_DEFAULT;
     }
+    this.headBone = this.rig.getObjectByName('Head') ?? null;
     this.scabbard = this.rig.getObjectByName('dtl_scabbard') ?? null;
     this.hand = this.rig.getObjectByName('dtl_sword') ?? null;
     if (sword && !shadow && this.scabbard && this.hand) {
@@ -1117,12 +1122,12 @@ export class MannequinCharacter implements CharacterView {
     this.blendBases(this.acc);
     if (this.loco && this.base) this.syncLoco(this.acc);
     this.mixer.update(this.acc);
-    for (const t of this.twists) {
+    for (const t of V3_OFF.has('twist') ? [] : this.twists) {
       _tq.copy(t.restLimb).invert().multiply(t.limb.quaternion);
       t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
     }
-    if (V3_ANIM && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
-    if (this.feet) {
+    if (V3_ANIM && !V3_OFF.has('proc') && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
+    if (this.feet && !V3_OFF.has('feet')) {
       if (this.lodLevel === 0 && this.inner.visible) {
         const active = this.grounded && !a.dead && !a.meditating && this.baseName !== 'Sitting_Idle_Loop';
         // Khóa chân chỉ khi đứng yên thật: đòn/chiêu/trúng đòn có chân tự di chuyển trong clip.
@@ -1256,6 +1261,12 @@ export class MannequinCharacter implements CharacterView {
     rotateWorld(b.head ?? null, _up, this.lookYaw * 0.55);
     rotateWorld(b.neck_01 ?? null, rgt, this.lookPitch * 0.3);
     rotateWorld(b.head ?? null, rgt, this.lookPitch * 0.5);
+    // Model giữ gốc Tripo: đầu thẳng ở A-pose, nhưng clip Idle của UAL (dáng Mannequin) cúi đầu ~13°: ngửa đầu bù lại (cổ 40%, đầu 60%) khi đứng/đi.
+    if (free && KEEP_ORIGINAL_ASSETS.has(this.tpl.handle.id)) {
+      const lift = Number(new URLSearchParams(location.search).get('headlift') ?? 0.23);
+      rotateWorld(b.neck_01 ?? null, rgt, -lift * 0.4);
+      rotateWorld(this.headBone, rgt, -lift * 0.6);
+    }
     // Bù dang tay/vai theo model (tay áo rộng không bị tay clip ép xuyên).
     // Hệ số theo độ buông của tay (hướng vai→khuỷu, 0 khi cách phương thẳng đứng hơn 60°, 1 khi buông thẳng): tay giơ/chém không bị dạng thêm, chỉ tay buông sát thân mới cần chừa.
     if (free && !a.casting && this.armFit) {

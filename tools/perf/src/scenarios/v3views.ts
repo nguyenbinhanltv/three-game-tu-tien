@@ -105,6 +105,21 @@ export default {
           await sleep(900);
           fs.writeFileSync(path.join(r.out, `${tag}-${nm}.png`), await page.screenshot());
         }
+        await page.setViewportSize({ width: 2000, height: 2000 });
+        await cam(page, { yaw: base + yFront, pitch: 0.0, dist: 2.4 });
+        await sleep(1200);
+        fs.writeFileSync(path.join(r.out, `${tag}-facefar.png`), await page.screenshot());
+        const dbg = await page.evaluate(() => {
+          const g = window.__game!;
+          const m = g.ents.players.get(g.sid).model;
+          const hd = m.rig.getObjectByName('Head');
+          const nk = m.rig.getObjectByName('neck_01');
+          const V = m.rig.position.constructor as new () => { x: number; y: number; z: number };
+          const h = hd!.getWorldPosition(new V() as never) as unknown as { x: number; y: number; z: number };
+          const n = nk!.getWorldPosition(new V() as never) as unknown as { x: number; y: number; z: number };
+          return { clip: (m as unknown as { baseName?: string }).baseName, headY: Math.round(h.y * 100) / 100, neckY: Math.round(n.y * 100) / 100, dz: Math.round((h.z - n.z) * 100) / 100, camPitch: g.camPitch };
+        });
+        console.log(`[shots:v3views] ${tag} dbg: ${JSON.stringify(dbg)}`);
         await page.setViewportSize({ width: 1280, height: 720 });
 
         // (2) tờ chuyển động.
