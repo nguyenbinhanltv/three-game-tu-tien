@@ -3,9 +3,11 @@
 //   pnpm shots collscan --level van_lam --out <thư mục tuyệt đối> [--step 240] [--limit 400] [--shots 6] [--dry]
 // Ra: collscan-<level>.json (đếm + nhóm + danh sách thiếu) và ảnh `<level>-miss<N>.png` (khung va chạm F3 bật) cho các nhóm thiếu nhiều nhất.
 import '@dtl/content';
+import { LEVELS } from '@dtl/content';
 import { type CircleCollider, footprintDist, type Shape, terrainOf } from '@dtl/shared';
 import { flag, num, opt } from '../lib/env';
-import { cam, enterLevel, gm, tp } from '../lib/game';
+import { sleep } from '../lib/devserver';
+import { cam, enterLevel, gm, skipCutscene, tp, waitLevel } from '../lib/game';
 import { requireLevel } from '../lib/levelpoints';
 import type { Scenario } from '../lib/scenario';
 import { settleMs, snap, writeJson } from '../lib/shot';
@@ -15,6 +17,15 @@ const LEVEL = opt('--level', 'van_lam');
 
 function grid(level: string, step: number): { x: number; z: number }[] {
   const t = terrainOf(level);
+  const dg = LEVELS[level]?.dungeon;
+  if (dg) {
+    // Bí cảnh: lưới quanh tâm, trong vách hang (`bound`, mặc định 120 m).
+    const half = (dg.bound ?? 120) * 0.9;
+    const out: { x: number; z: number }[] = [{ x: dg.spawn.x, z: dg.spawn.z }];
+    for (let x = dg.center.x - half; x <= dg.center.x + half; x += step)
+      for (let z = dg.center.z - half; z <= dg.center.z + half; z += step) if (Math.hypot(x - dg.center.x, z - dg.center.z) <= half) out.push({ x, z });
+    return out;
+  }
   const b = t.playBounds;
   const pts: { x: number; z: number }[] = [];
   for (let x = b.x0 + step / 2; x < b.x1; x += step)
@@ -39,11 +50,26 @@ export default {
   async run(r) {
     requireLevel(LEVEL);
     const step = num('--step', 240);
+    const dg0 = LEVELS[LEVEL]?.dungeon;
     const pts = grid(LEVEL, step).slice(0, num('--limit', 400));
     const { ctx, page } = await r.open({ name: 'CollScan', viewport: [1280, 720], warnings: true });
-    await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(27, requireLevel(LEVEL).minLevel ?? 0)}`);
+    await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(dg0 ? (dg0.minLevel ?? 0) + 2 : 27, requireLevel(LEVEL).minLevel ?? 0)}`);
     await gm(page, 'god on');
-    if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
+    const dg = LEVELS[LEVEL]?.dungeon;
+    if (dg) {
+      // Bí cảnh: vào bằng cổng thật ở level cha (vé một lần).
+      const portal = LEVELS[dg.returnLevel]?.portals?.find((p) => p.to === LEVEL);
+      if (!portal) throw new Error(`level ${LEVEL} không có cổng vào`);
+      if (dg.returnLevel !== 'van_lam') await enterLevel(page, dg.returnLevel);
+      await tp(page, dg.returnSpawn.x, dg.returnSpawn.z);
+      await sleep(1500);
+      await tp(page, portal.x, portal.z);
+      await sleep(1500);
+      await page.keyboard.press('KeyE');
+      await waitLevel(page, LEVEL);
+      await skipCutscene(page, 10);
+      await gm(page, 'god on', 1000);
+    } else if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
     if (flag('--tree')) {
       await tp(page, num('--tx', 2048), num('--tz', 2040));
       await new Promise((res) => setTimeout(res, 1500));
