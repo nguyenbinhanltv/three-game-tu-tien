@@ -240,6 +240,10 @@ export default {
       await resetHazards(page);
       const got = await waitHazard(page, 25_000);
       await snapSizes(page, r.out, `${tag}-90-boss-chieu`, sizes, 300);
+      if (flag('--perf')) {
+        perf['battle-boss'] = await perfSample(page);
+        writeJson(r.out, 'perf.json', perf);
+      }
       await gm(page, 'hurt 30', 900);
       await gm(page, 'heal', 600);
       await snapSizes(page, r.out, `${tag}-91-boss-pha-cuoi`, sizes, 1200);
