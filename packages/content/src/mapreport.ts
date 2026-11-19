@@ -266,10 +266,32 @@ function stuckScan(): { checked: number; stuck: [number, number][] } {
 }
 const stuck = stuckScan();
 // Khoang kín trong công trình (người chơi không thể vào) không phải bẫy: bỏ điểm kẹt trong vùng tông môn mà không tới được từ điểm hồi sinh (BFS bằng chính stepMove).
-if (IS_VL && stuck.stuck.length) {
-  const box = { x0: 1900, z0: 1930, x1: 2200, z1: 2150 };
-  const reach = reachability(LEVEL_ID, SPAWN_POINT, box, 1);
-  stuck.stuck = stuck.stuck.filter(([x, z]) => !(x > box.x0 && x < box.x1 && z > box.z0 && z < box.z1) || reach(x, z));
+{
+  // Vân Lam: vùng tông môn từ điểm hồi sinh; bí cảnh: vùng quanh tâm hang từ điểm vào.
+  const dg = LEVELS[LEVEL_ID]?.dungeon;
+  const area = IS_VL
+    ? { box: { x0: 1900, z0: 1930, x1: 2200, z1: 2150 }, from: SPAWN_POINT }
+    : dg
+      ? {
+          box: {
+            x0: dg.center.x - (dg.bound ?? 200),
+            z0: dg.center.z - (dg.bound ?? 200),
+            x1: dg.center.x + (dg.bound ?? 200),
+            z1: dg.center.z + (dg.bound ?? 200),
+          },
+          from: dg.spawn,
+        }
+      : null;
+  if (area && stuck.stuck.length) {
+    const reach = reachability(LEVEL_ID, area.from, area.box, 1);
+    const { box } = area;
+    // Điểm trong vùng chỉ là bẫy thật nếu tới được từ điểm vào nhưng KHÔNG quay lại được điểm vào (BFS từ chính điểm đó); thoát 8 hướng thẳng là phép thử quá chặt ở vách/hốc.
+    stuck.stuck = stuck.stuck.filter(([x, z]) => {
+      if (!(x > box.x0 && x < box.x1 && z > box.z0 && z < box.z1)) return true;
+      if (!reach(x, z)) return false;
+      return !reachability(LEVEL_ID, { x, z }, box, 1)(area.from.x, area.from.z);
+    });
+  }
 }
 
 // ---- in ----
