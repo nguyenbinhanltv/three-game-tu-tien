@@ -226,3 +226,10 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **`cave_wall` viết lại** (`tools/blender/phuc_mach_arch.py`): tầng cao thấp bất kỳ (3,5–10,5 m), mỗi tầng 1–4 khối rộng hẹp khác nhau, độ nhô vào/ra lệch mạnh (45% tầng nhô thêm 3,5–5 m như mái đua), thớ đá mỗi khối một mức, khe tối chỉ ở ~40% số tầng, 2–4 vết nứt dọc, 1–3 trụ đá lớn nhô từ chân và đá lở nhiều hơn. **8 biến thể** (trước 3), mỗi đoạn đặt thêm xoay ±5° và giãn ×0,9–1,15 nên không thấy lặp.
 - **Ngân sách (Cao)**: 243–262 draw call (như trước, dưới trần 300), ~1,0–1,06M tam giác; GLB 445k → 456k tam giác, ~9 MB.
 - **Còn lại**: vách vẫn là cùng bảng màu nâu sa thạch; chưa có rêu/nước rỉ hay thạch nhũ phủ vách.
+
+## Polish — Kiếm Trủng: khe nứt có chiều sâu
+
+- **Vấn đề**: khe nứt (`DungeonFx.cracks`) dùng cấu hình mặc định nên nhìn gần là dải xanh sáng phẳng, lõi trắng bè như dòng nước.
+- **Cấu hình mới** (`kiemTrungArt.ts`): 40 khe (trước 34); đáy khe xanh chàm sẫm hơn, lõi sáng xanh nhạt rất hẹp (`core` + `glowW` 0,3) thay dải trắng rộng; **gờ đá nổi hai bên ×3** (`lip`); nửa rộng 0,28–0,88 m (hẹp hơn); đá hai bên cùng tông sàn; mờ dần theo khoảng cách camera 22 → 50 m để không đè lên người chơi. Quầng cộng sáng ngoài giữ nhẹ.
+- **Công cụ**: kịch bản `dungeonart` thêm `--nearcrack 1` (tự tìm khe gần điểm tâm + 60 m phía nam, thêm góc `08-khe-nut-can`), và góc `07-khe-nut-gan`.
+- **Còn lại**: các gò mộ vòm (`grave`) trên sàn còn tô một màu phẳng (low-poly), vòng "kiếm trận" khắc sàn là các dải mờ phẳng; chưa động tới GLB nên không phải sinh lại collider.
