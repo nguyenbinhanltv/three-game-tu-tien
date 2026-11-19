@@ -3,7 +3,7 @@
 import type { Page } from 'playwright';
 import { opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
-import { gm } from '../lib/game';
+import { gm, tp } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
 
@@ -70,6 +70,51 @@ export default {
       res.touchMode = await page.evaluate(() => document.documentElement.dataset.touch ?? '');
       res.hudMode = await page.evaluate(() => document.querySelector('.hud')?.getAttribute('data-mode') ?? '');
       await shot('01-hud', 1200);
+
+      // Ô tiện ích (hotbar phụ), khung nhiệm vụ gọn, tấm chat có bàn phím ảo; không có nút nào chồng lên nhau.
+      await gm(page, 'level 20');
+      await sleep(1200);
+      await tp(page, 2048, 2034);
+      await sleep(1500);
+      await page.evaluate(() => window.__game!.send('q', { a: 'accept', id: 'q_dan_khi' }));
+      await sleep(600);
+      await tp(page, 2048, 2088);
+      await sleep(800);
+      res.utility = await page.locator('[data-testid="touch-utility"] button').count();
+      res.questBox = await page.locator('.u2h-quest').count();
+      res.questFoldPx = await page
+        .locator('.u2h-quest .u2h-fold')
+        .evaluate((el) => [el.getBoundingClientRect().width, el.getBoundingClientRect().height])
+        .catch(() => null);
+      await shot('01b-tien-ich', 300);
+      res.overlaps = await page.evaluate(() => {
+        const sel = ['.u2t-ubtn', '.u2t-btn:not(.u2t-ubtn)', '.u2h-tl', '.u2h-quest', '.u2h-tr', '.u2h-chat'];
+        const els = sel
+          .flatMap((s) => [...document.querySelectorAll(s)].map((el) => ({ s, el, b: el.getBoundingClientRect() })))
+          .filter((x) => x.b.width > 0);
+        const out: string[] = [];
+        for (let i = 0; i < els.length; i++)
+          for (let j = i + 1; j < els.length; j++) {
+            const a = els[i]!;
+            const b = els[j]!;
+            if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+            const w = Math.min(a.b.right, b.b.right) - Math.max(a.b.left, b.b.left);
+            const h = Math.min(a.b.bottom, b.b.bottom) - Math.max(a.b.top, b.b.top);
+            if (w > 2 && h > 2) out.push(`${a.s}×${b.s} ${Math.round(w)}x${Math.round(h)}`);
+          }
+        return out;
+      });
+      await page.locator('.u2h-chat-pill').tap();
+      await sleep(500);
+      res.chatSheet = (await page.locator('[data-testid="touch-chat"]').count()) > 0;
+      await page.locator('[data-testid="touch-chat-input"]').fill('xin chao');
+      await shot('01c-chat-ban-phim', 200);
+      await page.locator('[data-testid="touch-chat-send"]').tap();
+      await sleep(600);
+      res.chatSent = await page.locator('.u2t-chat-log .chat-line', { hasText: 'xin chao' }).count();
+      await page.locator('[data-testid="touch-chat-close"]').tap();
+      await sleep(300);
+      res.chatClosed = (await page.locator('[data-testid="touch-chat"]').count()) === 0;
 
       // Cần ảo: kéo lên (tiến) từ nửa trái màn hình; vị trí đổi.
       const p0 = await page.evaluate(() => ({ x: window.__game!.cur.x, z: window.__game!.cur.z }));

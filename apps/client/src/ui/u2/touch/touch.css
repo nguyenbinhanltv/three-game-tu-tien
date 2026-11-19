@@ -243,17 +243,35 @@ html[data-touch] .k-tip {
 .hud.u2hud[data-mode='touch'] .u2h-tr .mm2 .mm2-ribbon {
   display: none;
 }
-/* nhiệm vụ mở bằng nút L trên Ngọc Đái; chat chỉ còn dòng cuối, không bấm được (không có bàn phím) */
+/* nhiệm vụ: khung gọn dưới chân dung, chỉ nhiệm vụ đang theo dõi (mũi tên thu/mở ≥ 44 px); chat: thẻ chạm được, mở tấm chat có bàn phím ảo */
 .hud.u2hud[data-mode='touch'] .u2h-quest {
-  display: none;
+  position: fixed;
+  left: var(--t-l);
+  top: calc(var(--t-t) + 104px);
+  width: min(230px, calc(100vw - 2 * var(--t-l) - 160px));
+  min-height: 0;
+  padding-bottom: var(--u-sp-2);
+  font-size: var(--u-fs-1);
+  pointer-events: auto;
+}
+.hud.u2hud[data-mode='touch'] .u2h-quest .u2h-fold {
+  min-width: 44px;
+  min-height: 44px;
+  margin: -12px -12px -12px 0;
+}
+.hud.u2hud[data-mode='touch'] .u2h-quest[data-collapsed='1'] {
+  height: 34px;
 }
 .hud.u2hud[data-mode='touch'] .u2h-chat {
   left: var(--t-l);
   bottom: var(--t-chat-y);
   width: min(300px, calc(100vw - 2 * var(--t-l) - 160px));
-  height: 32px;
-  pointer-events: none;
+  height: 44px;
   grid-template-rows: auto;
+}
+.hud.u2hud[data-mode='touch'] .u2h-chat .u2h-chat-pill {
+  min-height: 44px;
+  pointer-events: auto;
 }
 .hud.u2hud[data-mode='touch'] .u2h-chat .u2h-chat-log,
 .hud.u2hud[data-mode='touch'] .u2h-chat .u2h-chat-input,
@@ -368,4 +386,128 @@ html[data-touch] .win-host .u2-close {
   max-width: 60vw;
   z-index: 20;
   pointer-events: none;
+}
+
+/* ───────── ô tiện ích (hotbar phụ): hàng nút cạnh bản đồ nhỏ, không đè cụm đánh ───────── */
+.u2t-util {
+  position: absolute;
+  top: calc(var(--t-t) + 52px);
+  right: calc(var(--t-r) + 140px);
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: var(--u-sp-2);
+  max-width: calc(100vw - 2 * var(--t-l) - 340px);
+  pointer-events: none;
+}
+.u2t-ubtn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  --sz: 48px;
+}
+.u2t-ubtn[data-state='nomp'],
+.u2t-ubtn[data-state='air'] {
+  opacity: 0.55;
+}
+.u2t-ubtn[data-state='charging'] .u2-frame {
+  background: var(--u-gold-hi);
+}
+.u2t-ubtn[data-state='empty'] {
+  opacity: 0.7;
+}
+@media (orientation: portrait) {
+  .u2t-util {
+    top: calc(var(--t-t) + 150px);
+    right: var(--t-r);
+    max-width: calc(100vw - 2 * var(--t-l));
+  }
+}
+
+/* ───────── tấm chat cảm ứng (bàn phím ảo): cao bằng visualViewport, nằm trên bàn phím ───────── */
+.u2t-chat {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: var(--u-z-dialog);
+  display: flex;
+  align-items: flex-end;
+  padding: var(--t-t) var(--t-r) 0 var(--t-l);
+  background: var(--u-ink-scrim);
+  pointer-events: auto;
+}
+.u2t-chat-sheet {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 560px;
+  max-height: 100%;
+  min-height: 0;
+  height: min(100%, 360px);
+  margin-bottom: var(--t-b);
+}
+.u2t-chat-head {
+  display: flex;
+  align-items: center;
+  gap: var(--u-sp-2);
+}
+.u2t-chat-tabs {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+}
+.u2t-chat-tab,
+.u2t-chat-close,
+.u2t-chat-send {
+  appearance: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--u-sp-3);
+  border: 0;
+  background: none;
+  color: var(--u-chu-dim);
+  font-family: var(--u-font-head);
+  font-size: var(--u-fs-2);
+  white-space: nowrap;
+}
+.u2t-chat-tab[data-on='1'] {
+  color: var(--u-gold-text);
+  box-shadow: inset 0 -2px 0 var(--u-gold);
+}
+.u2t-chat-close {
+  font-size: var(--u-fs-5);
+}
+.u2t-chat-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--u-sp-2) var(--u-sp-3);
+  font-size: var(--u-fs-2);
+  touch-action: pan-y;
+}
+.u2t-chat-row {
+  display: flex;
+  gap: var(--u-sp-2);
+  padding: var(--u-sp-2);
+  border-top: var(--u-line-1) solid var(--u-gold-line);
+}
+.u2t-chat-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--u-sp-3);
+  border: var(--u-line-1) solid var(--u-gold-line);
+  background: var(--u-ink-0);
+  color: var(--u-chu);
+  font-family: var(--u-font-body);
+}
+.u2t-chat-input:focus {
+  outline: var(--u-line-2) solid var(--u-focus);
+}
+.u2t-chat-send {
+  background: var(--u-son);
+  color: var(--u-son-text);
 }
