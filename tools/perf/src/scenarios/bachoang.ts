@@ -41,16 +41,35 @@ export default {
     for (const size of list('--sizes', '1920x1080,1280x720')) {
       const viewport = size.split('x').map(Number) as [number, number];
       for (const mood of list('--moods', 'dawn,day,dusk,night')) {
-        const { ctx, page } = await r.open({ name: `Bh${mood[0]}${viewport[1]}`, quality: preset, viewport, query: { mood }, seenIntro: true, hide: 'hud', warnings: true });
+        const { ctx, page } = await r.open({
+          name: `Bh${mood[0]}${viewport[1]}`,
+          quality: preset,
+          viewport,
+          query: { mood },
+          seenIntro: true,
+          hide: 'hud',
+          warnings: true,
+        });
         await gm(page, 'level 30');
         await gm(page, 'god on');
         await enterLevel(page, 'bac_hoang');
         for (const v of views) {
           await tp(page, v.stand[0], v.stand[1]);
           await gm(page, 'killall', 600);
-          await page.evaluate((a) => {
-            window.__game!.freeCam = { x: a.v.eye[0], y: a.v.eye[1], z: a.v.eye[2], tx: a.v.at[0], ty: a.v.at[1], tz: a.v.at[2], fov: a.v.fov };
-          }, { v });
+          await page.evaluate(
+            (a) => {
+              window.__game!.freeCam = {
+                x: a.v.eye[0],
+                y: a.v.eye[1],
+                z: a.v.eye[2],
+                tx: a.v.at[0],
+                ty: a.v.at[1],
+                tz: a.v.at[2],
+                fov: a.v.fov,
+              };
+            },
+            { v },
+          );
           const stem = `${tag}-${viewport[1]}p-${mood}-${v.name}`;
           await snap(page, r.out, `${stem}.png`, { wait: settleMs() });
           if (flag('--perf') && viewport[1] === 1080) perf[stem] = await perfSample(page);
@@ -62,7 +81,15 @@ export default {
     if (flag('--video')) {
       const dir = path.join(r.out, 'video');
       fs.mkdirSync(dir, { recursive: true });
-      const { ctx, page } = await r.open({ name: 'BhVideo', quality: preset, viewport: [1280, 720], query: { mood: opt('--vmood', 'dusk') }, seenIntro: true, hide: 'hud', video: dir });
+      const { ctx, page } = await r.open({
+        name: 'BhVideo',
+        quality: preset,
+        viewport: [1280, 720],
+        query: { mood: opt('--vmood', 'dusk') },
+        seenIntro: true,
+        hide: 'hud',
+        video: dir,
+      });
       await gm(page, 'level 30');
       await gm(page, 'god on');
       await enterLevel(page, 'bac_hoang');

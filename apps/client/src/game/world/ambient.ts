@@ -258,7 +258,20 @@ export class AmbientParticles {
       case 'ember': {
         if (isBh()) {
           // Bắc Hoang: tàn sáng tím từ khe nứt, bốc lên rồi tan.
-          ps.emit('glow', x, floorY + R() * 3, z, (R() - 0.5) * 0.3, 0.4 + R() * 0.35, (R() - 0.5) * 0.3, 2.5 + R() * 2, 0.07, 0.02, COLOR.rift, 0.8);
+          ps.emit(
+            'glow',
+            x,
+            floorY + R() * 3,
+            z,
+            (R() - 0.5) * 0.3,
+            0.4 + R() * 0.35,
+            (R() - 0.5) * 0.3,
+            2.5 + R() * 2,
+            0.07,
+            0.02,
+            COLOR.rift,
+            0.8,
+          );
           break;
         }
         // Đốm lửa nhỏ, ấm, bay lên chậm rồi tắt.
@@ -301,7 +314,23 @@ export class AmbientParticles {
         if (isBh()) {
           // Bão tuyết nhẹ: bông tuyết nhỏ rơi nghiêng theo gió, lẫn vài hạt lấp lánh.
           if (R() < 0.05) ps.emit('glow', x, y, z, 0, -0.1, 0, 1.5 + R(), 0.1, 0.03, COLOR.sword, 0.6);
-          else ps.emit('dust', x, y + 4, z, 1.4 + R() * 1.2, -(0.9 + R() * 0.8), 0.4 + R() * 0.5, 5 + R() * 2, 0.07, 0.05, COLOR.snow, 0.85, 0.2, 0.5);
+          else
+            ps.emit(
+              'dust',
+              x,
+              y + 4,
+              z,
+              1.4 + R() * 1.2,
+              -(0.9 + R() * 0.8),
+              0.4 + R() * 0.5,
+              5 + R() * 2,
+              0.07,
+              0.05,
+              COLOR.snow,
+              0.85,
+              0.2,
+              0.5,
+            );
           break;
         }
         if (R() < 0.06) {
