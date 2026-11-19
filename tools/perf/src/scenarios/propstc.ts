@@ -25,12 +25,15 @@ interface View {
   z: number;
   yaw: number;
   n: number;
+  pitch?: number;
+  dist?: number;
 }
 
 /** Cụm dày nhất của một nhóm trong level: chọn tâm (số prop cùng nhóm trong 22 m nhiều nhất) rồi hướng nhìn có nhiều prop nhất phía trước. */
 /** Góc nhìn đặt tay theo cụm điểm nhấn đã duyệt (cổng sân, kiếm đài, đường chính, trước Chính điện của Lạc Kiếm Tông). */
 const EXTRA: Record<string, { group: string; view: View }[]> = {
   van_lam: [
+    { group: 'hoang_da', view: { name: 'van_lam-hoang_da-suoi', x: 2390, z: 2466, yaw: Math.PI, n: 1 } },
     { group: 'cho_lang', view: { name: 'van_lam-cho_lang-cho', x: 2048, z: 2172, yaw: 0, n: 1 } },
     { group: 'cho_lang', view: { name: 'van_lam-cho_lang-cho_xa', x: 2060, z: 2185, yaw: 0.35, n: 1 } },
     { group: 'tong_mon', view: { name: 'van_lam-tong_mon-cong', x: 2048, z: 2092, yaw: Math.PI, n: 1 } },
@@ -68,6 +71,52 @@ function viewFor(level: string, group: string): View | null {
   return { name: `${level}-${group}`, x: cx - Math.sin(bestYaw) * 8, z: cz - Math.cos(bestYaw) * 8, yaw: bestYaw, n: bestCount };
 }
 
+/** Góc nhìn vào cụm prop của nhóm quanh (cx, cz) trong bán kính rad: đứng cách tâm cụm 9 m, hướng nhìn có nhiều prop phía trước nhất. */
+function viewAround(level: string, group: string, name: string, cx: number, cz: number, rad = 40): View | null {
+  const ps = (THIEN_CONG_PROPS[level] ?? []).filter((p) => groupOf.get(nameOf(p.id)) === group && Math.hypot(p.x - cx, p.z - cz) < rad);
+  if (ps.length < 3) return null;
+  const mx = ps.reduce((a, q) => a + q.x, 0) / ps.length;
+  const mz = ps.reduce((a, q) => a + q.z, 0) / ps.length;
+  let bestYaw = 0;
+  let best = -1;
+  for (let k = 0; k < 24; k++) {
+    const yaw = (k / 24) * Math.PI * 2;
+    const px = mx - Math.sin(yaw) * 9;
+    const pz = mz - Math.cos(yaw) * 9;
+    const cnt = ps.filter((q) => {
+      const dx = q.x - px;
+      const dz = q.z - pz;
+      const d = Math.hypot(dx, dz);
+      return d > 2 && d < 26 && Math.cos(Math.atan2(dx, dz) - yaw) > 0.75;
+    }).length;
+    if (cnt > best) [bestYaw, best] = [yaw, cnt];
+  }
+  return { name, x: mx - Math.sin(bestYaw) * 9, z: mz - Math.cos(bestYaw) * 9, yaw: bestYaw, n: best };
+}
+
+/** Góc nhìn vào điểm (cx, cz) mà người chơi và camera (đứng sau 18 m) không dính tán cây to/trúc: thử 24 hướng × vài khoảng cách, chọn chỗ thoáng nhất. */
+function viewClear(level: string, name: string, cx: number, cz: number, blockers: string[]): View | null {
+  const bl = (THIEN_CONG_PROPS[level] ?? []).filter((p) => blockers.includes(nameOf(p.id)));
+  const tooClose = (x: number, z: number, r: number) => bl.filter((p) => Math.hypot(p.x - x, p.z - z) < r).length;
+  let best: View | null = null;
+  let bestScore = 1e9;
+  for (let k = 0; k < 24; k++) {
+    const yaw = (k / 24) * Math.PI * 2;
+    for (const d of [9, 12, 15]) {
+      const px = cx - Math.sin(yaw) * d;
+      const pz = cz - Math.cos(yaw) * d;
+      const camX = px - Math.sin(yaw) * 14;
+      const camZ = pz - Math.cos(yaw) * 14;
+      const score = tooClose(px, pz, 6) * 10 + tooClose(camX, camZ, 7) * 10 + tooClose((px + camX) / 2, (pz + camZ) / 2, 5) * 5;
+      if (score < bestScore) {
+        bestScore = score;
+        best = { name, x: px, z: pz, yaw, n: 1, pitch: 1.0, dist: 26 }; // nhìn chéo từ trên cao: camera nằm trên tán tre/cổ thụ
+      }
+    }
+  }
+  return best;
+}
+
 export default {
   name: 'propstc',
   desc: 'Ảnh trước/sau + đo draw call/tam giác cho bộ prop PROP-1 (mỗi level × nhóm)',
@@ -85,6 +134,15 @@ export default {
       const lv = requireLevel(level);
       const views = [
         ...groups.map((g) => viewFor(level, g)).filter((v): v is View => !!v && v.n > 0),
+        ...(level === 'doan_mach' && groups.includes('hoang_da')
+          ? [
+              viewAround(level, 'hoang_da', 'doan_mach-hoang_da-sa_thach', 1323, 1287),
+              viewAround(level, 'hoang_da', 'doan_mach-hoang_da-hoang_sa', 903, 1388),
+            ].filter((v): v is View => !!v)
+          : []),
+        ...(level === 'van_lam' && groups.includes('hoang_da')
+          ? [viewClear(level, 'van_lam-hoang_da-rung', 2470, 2022, ['tre', 'cay_co_thu'])].filter((v): v is View => !!v)
+          : []),
         ...(EXTRA[level] ?? []).filter((e) => groups.includes(e.group)).map((e) => e.view),
       ];
       if (!views.length) continue;
@@ -103,7 +161,7 @@ export default {
         for (const v of views) {
           await tp(page, v.x, v.z);
           await gm(page, 'killall', 1200);
-          await cam(page, { yaw: v.yaw, pitch: 0.22, dist: 11 });
+          await cam(page, { yaw: v.yaw, pitch: v.pitch ?? 0.42, dist: v.dist ?? 16 }); // cao và xa hơn: tránh camera chui vào tán cây to
           await snap(page, r.out, `${v.name}-${mode}-${w}x${h}.png`, { wait: settleMs() });
           perf[`${v.name}-${mode}`] = await perfSample(page);
         }

@@ -7,7 +7,8 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 | 1 | Kiếm Trủng (`kiem_trung`) | đã merge (#327) |
 | 2 | Phục Mạch Quật (`phuc_mach`) | đã duyệt hình (#328) |
 | 3 | Kính Nguyệt Cung (`kinh_nguyet`) | đã duyệt hình (#330) |
-| 4 | Thần Tàng Điện (`than_tang`) | PR này |
+| 4 | Thần Tàng Điện (`than_tang`) | đã duyệt hình (#336) |
+| 5 | Kim Dạ Cung (`kim_da_cung`) | đã duyệt hình (#341) |
 | 6 | Xích Tẫn Khích (`xich_tan_khich`) | PR này |
 | tiếp | Độ Kiếp (+ Bắc Hoang) | chưa làm |
 
@@ -115,3 +116,19 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Kiểm tra vạch báo**: `pnpm shots dungeonart --level xich_tan_khich --battle 1` — vạch tím/hồng của boss đọc rõ trên nền nâu đen (ảnh `90-boss-chieu`).
 - **Ngân sách (preset Cao)**: ~157 draw call, ~0,48M tam giác (trước 70 / 0,33M).
 - **Còn lại**: mặt đất vẫn là texture `terrain-ash` ngả nâu đỏ như rơm (chưa có bộ texture đá bazan riêng); mảng vỏ dung nham còn hình "hoa" tỏa khe; cột bazan còn sắc cạnh một khối; quầng sáng lớn ở góc dưới ảnh boss là quầng ngọn lửa cột prop cũ (không đổi); chưa va chạm (đợi COL-1).
+## PR 5: Kim Dạ Cung — cung dát vàng đêm lồng đèn (áp chuẩn từ vòng 1)
+
+- **Bảng màu** `kd` (đen than ấm + vàng đồng + cam đèn lồng, bão hòa 0,82, exposure 0,9; KHÔNG tím). Trời đêm vàng (`buildGildedSky`/`goldenSky`): chân trời hổ phách tối, trăng vàng nhạt lớn + quầng, mây hổ phách, sao.
+- **Sàn đá bazan đen bóng** (`buildGildedFloor`, shader TSL, bám `heightAt + 0,08`): nền đen ấm trung tính, vân nâu vàng mảnh, xước + mảng mòn; **vùng đánh (r < ~64) sáng hơn, xám ấm** để vạch báo của game đọc rõ (ảnh boss kiểm: vạch tím/hồng tách rõ khỏi nền); khảm vàng MẢNH (0,06–0,1 m) phát sáng mềm: 4 vòng, vạch chia, hoa sen 16 cánh, tia mảnh; vũng sáng ấm dưới mỗi cột đèn, bốn đèn đố, giữa sảnh và ngai; phản chiếu ấm Fresnel.
+- **GLB Blender** `arch_kim_da` (`tools/blender/kim_da_arch.py`; nhịp quay vào trong): 16 nhịp tường (cột sơn đen đai vàng + cánh sen, cửa sổ hoa cách khung vàng phát sáng ấm, mái cong ngói đen sống vàng hai đầu vút, hàng 11 đèn lồng cam/son treo hiên, rèm lụa son viền vàng), ngai vàng ở bắc (bệ ba tầng + bậc, ngai tay vịn đầu thú, bình phong đen khắc mặt trời vàng 24 tia, chân đèn), 20 cột đèn nhiều tầng quanh sảnh (r 84) có dây đèn lồng giăng giữa các cột, 8 đỉnh đồng ba chân có than đỏ, 12 cây vàng chết (vườn chết). Vàng dùng vật liệu PBR cổ của Thần Tàng (`ttMaterialFor`: metalness 1, nhám 0,3, khắc chìm, loang). Bỏ hàng cột đá khắc vân cũ (r 70–74) đè nhịp tường mới.
+- **Ánh sáng**: quầng đèn lồng (`createLanternHalos`) cho 20 cột + 4 đèn đố, hai tia trăng vàng nhạt, sương hổ phách thấp; vật phát sáng (đèn lồng, cửa sổ) vật liệu emissive.
+- **Ngân sách (preset Cao)**: ~110 draw call, ~0,67M tam giác.
+- **Còn lại**: tượng võ sĩ/bia đá là prop cũ (thô); đỉnh đồng nhìn từ xa hơi giống nồi; chưa có normal map hoa văn thật; cây vàng chết còn đơn giản; chưa khai báo va chạm (đợi API COL-1).
+
+### PR 5 vòng 2 (góp ý duyệt): sân có lát đá, điểm nhấn, tượng chạm khắc
+
+- **Sân lát đá**: phiến bazan 3,2 m xếp so le, mạch đá tối mảnh, mỗi phiến một sắc; **vũng nước mưa** (mảng đen bóng không đều, soi ánh đèn), **cánh hoa/lá vàng rơi** (chấm nhỏ theo ô 1,3 m), **thảm đỏ viền vàng** từ cửa nam tới thềm ngai (chỉ ngoài vùng đánh r > ~46–58). Vòng trận chỉ còn hai vòng liền MẢNH (r 46, 64) + hoa sen ngắn ở tâm; **bỏ các vạch thẳng trắng dài và vòng vạch chia đứt nét**.
+- **Điểm nhấn trong sân** (GLB, ngoài vùng đánh, chừa hành lang nam): hai hồ nước (vành đá 30 phiến, lá sen, mặt nước soi trời hổ phách) có **cầu vòm đá lan can son** bắc qua; hai **bệ hương** (nền ba bậc, lư hương than đỏ + hương, hai chân đèn) hai bên ngai; bốn **cây quế kim tuyết** (thân đen xoắn, tán lá sẫm lốm đốm hoa vàng, năm đèn lồng treo cành) ở bốn góc; mười **đèn đá thấp** thành vòng r 32 và hai hàng dọc thảm.
+- **Tượng**: bỏ tượng võ sĩ prop cũ, dùng lại **thần tướng chạm khắc của Thần Tàng** (giáp, mũ trụ, đại kiếm; đổi bảng màu bazan ấm + chữ hổ phách) đứng trước thềm ngai và hai bên lối vào.
+- **Ngân sách (preset Cao)**: ~172 draw call, ~0,79M tam giác.
+- **Còn lại**: vũng nước còn là các vệt tối nhỏ (phản chiếu yếu), mặt hồ hơi tối; tượng nhìn từ trên còn "cột đen"; chưa va chạm (đợi COL-1).

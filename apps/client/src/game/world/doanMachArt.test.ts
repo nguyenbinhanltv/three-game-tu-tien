@@ -43,8 +43,11 @@ describe('Đoạn Mạch (MAP-2): cây phong, cổ trận, cầu treo', () => {
       ...t.colliders.map((p) => ({ what: 'vật cản', p, r: p.r + 3 })),
       ...t.def.features.filter((f) => f.id.startsWith('rb_')).map((p) => ({ what: 'lòng sông ' + p.id, p, r: p.flatR * 0.9 })),
     ];
+    // Gom vi phạm rồi so một lần (bộ vật cản nay có hàng nghìn vòng của prop PROP-1: expect từng cặp làm test quá 5 s trên CI).
+    const near: string[] = [];
     for (const s of trees)
-      for (const k of keepAway) expect(dist(s, k.p), `${k.what} (${k.p.x},${k.p.z})`).toBeGreaterThanOrEqual(k.r - 1e-6);
+      for (const k of keepAway) if (dist(s, k.p) < k.r - 1e-6) near.push(`cây (${s.x},${s.z}) sát ${k.what} (${k.p.x},${k.p.z})`);
+    expect(near).toEqual([]);
     // đường hộ tống: dải đệm 14 m dọc từng đoạn
     for (const e of lv.escorts ?? []) {
       for (let i = 0; i + 1 < e.path.length; i++) {
