@@ -7,6 +7,7 @@ import {
   clearGroundShader,
   setGroundRedStrata,
   setGroundStrata,
+  setGroundNoSnow,
   setGroundTileBreak,
   type GroundLevel,
 } from '../../render/materials/ground';
@@ -27,7 +28,7 @@ import {
   WATER_Y,
 } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
-import { levelTerrain } from '../../base/levelCtx';
+import { levelId, levelTerrain } from '../../base/levelCtx';
 import { col, G, GeoBuilder, mat } from '../core/geo';
 import { withSightFade } from './occlusion';
 import { sectPaving } from '../../render/groundMask';
@@ -36,6 +37,7 @@ import { vanHaiArt, type VhPalette } from './vanHaiArt';
 import { tkGroundColor } from './thienKhuyetArt';
 import { bhGroundColor, riftPath, type RiftPt } from './bacHoangArt';
 import { xichCracks, xichGroundColor } from './xichArt';
+import { ktGroundColor } from './kiemTrungArt';
 
 const TILE = 256;
 const NEAR_R = 3;
@@ -73,6 +75,8 @@ let ASH = T.id === 'bac_hoang';
 let SLATE = T.id === 'thien_khuyet';
 /** Level phó bản hẻm núi Xích Tẫn Khích (DV-3K): bảng màu đất riêng theo `TerrainDef.canyon`. */
 let XICH = T.def.canyon !== undefined && T.id === 'xich_tan_khich';
+/** Bí cảnh Kiếm Trủng (DUN-1): dùng địa hình Vân Lam nhưng bảng màu đất riêng (xám lam, tro, rỉ). */
+let KT = false;
 let XICH_CRACKS: RiftPt[][] = [];
 const _tk: [number, number, number] = [0, 0, 0];
 const _bh: [number, number, number] = [0, 0, 0];
@@ -214,6 +218,10 @@ function genericColor(x: number, z: number, h: number, ny: number, out: THREE.Co
 
 /** Màu mặt đất theo vị trí, độ cao và độ dốc. */
 function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
+  if (KT) {
+    ktGroundColor(x, z, ny, _tk);
+    return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
+  }
   if (SLATE) {
     tkGroundColor(T.def, x, z, ny, _tk);
     return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
@@ -283,7 +291,7 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
 
 /** Trọng số vùng cho shader mặt đất: x rừng, y đất khô, z đất chết Kiếm Trủng, w dự phòng. */
 function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
-  if (OCHRE || SLATE || ASH) {
+  if (OCHRE || SLATE || ASH || KT) {
     // Một lớp nền duy nhất: ở preset Vừa/Thấp lớp nền chọn cứng theo ngưỡng nên mảng đất/đất nứt hiện thành vệt mép gắt (E2-I); biến thiên màu do màu đỉnh (`ochreColor`) lo.
     o[k] = o[k + 1] = o[k + 2] = o[k + 3] = 0;
     return;
@@ -510,6 +518,7 @@ export class Terrain {
     ASH = T.id === 'bac_hoang';
     BH_PATH = ASH ? riftPath(T.def) : [];
     SLATE = T.id === 'thien_khuyet';
+    KT = levelId() === 'kiem_trung';
     XICH = T.def.canyon !== undefined && T.id === 'xich_tan_khich';
     XICH_CRACKS = XICH ? xichCracks(T.def, (x, z) => T.heightAt(x, z)) : [];
     const COARSE_N = this.COARSE_N;
@@ -661,10 +670,16 @@ export class Terrain {
   setGround(tex: GroundTextures | null, level: GroundLevel): void {
     setGroundTileBreak(XICH || ASH);
     setGroundStrata(isVanLam());
+    setGroundNoSnow(KT);
     setGroundRedStrata(
-      T.id === 'doan_mach' || T.id === 'thien_khuyet',
+      T.id === 'doan_mach' || T.id === 'thien_khuyet' || KT,
       // Thiên Khuyết (MAP-4): vách xám ấm ↔ nâu cát, khe nứt có vỉa vàng kim; vân từ nhiễu theo tọa độ dọc vách (hết ô caro).
-      T.id === 'thien_khuyet' ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18] } : undefined,
+      T.id === 'thien_khuyet'
+        ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18] }
+        : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
+          KT
+          ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }
+          : undefined,
     );
     if (tex) applyGroundShader(this.material, tex, level);
     else clearGroundShader(this.material);

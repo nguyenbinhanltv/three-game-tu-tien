@@ -157,6 +157,7 @@ export const LANTERN_LIGHT: Record<string, number> = {
   tk: 0.6,
   tk_dusk: 1.3,
   tk_night: 1.8,
+  kt: 1.2,
   lk_dawn: 1,
   lk_day: 0.6,
   lk_dusk: 1.3,

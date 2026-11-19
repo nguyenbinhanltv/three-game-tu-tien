@@ -22,6 +22,7 @@ import { CARD_TREE_IDS, CardForest } from '../world/cardForest';
 import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
 import { DoanMachArt } from '../world/doanMachArt';
+import { KiemTrungArt } from '../world/kiemTrungArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { VanHaiWow } from '../world/vanHaiWow';
@@ -33,7 +34,7 @@ import { withOccluderFade } from '../world/occlusion';
 import { LanternLights } from '../../render/lanternLights';
 import { buildMoonGate, buildPortalDisc, buildSect, moonMirrorTexture, SECT_LANTERNS } from '../world/sect';
 import { gatesToDraw } from '../world/gates';
-import { buildCaveShell, buildCrystalGlow, buildMirrorFloor, buildPalaceHall } from '../world/caveShell';
+import { buildCaveShell, buildCrystalGlow, buildMirrorFloor, buildPalaceHall, buildSwordCaveShell } from '../world/caveShell';
 import { PropLayer } from '../world/props';
 import { allProps } from '../world/propScatter';
 import { assets } from '../core/assets';
@@ -315,7 +316,8 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     // Phó bản hang (E2-C): vách + trần tối che chân trời, tinh thể mạch phát sáng lam lục (hai draw call).
     const palaceAsset = levelAssets(id).palace;
     const palace: false | 'moon' | 'gilt' = palaceAsset ? (palaceAsset === 'gilt' ? 'gilt' : 'moon') : false;
-    const shell = buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
+    // Kiếm Trủng (DUN-1): huyệt kiếm cao, có ô trời mở; level khác giữ vỏ hang cũ.
+    const shell = levelAssets(id).kiemTrungArt ? buildSwordCaveShell(cave, heightAt(cave.x, cave.z)) : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
     const glow = buildCrystalGlow(
       propsOf(id)
         .filter((p) => p.id === 'prop_mach_tinh_tru')
@@ -389,6 +391,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   if (levelAssets(id).doanMachArt) {
     eng.doanMachArt = new DoanMachArt();
     eng.scene.add(eng.doanMachArt.group);
+  }
+  if (levelAssets(id).kiemTrungArt) {
+    eng.kiemTrungArt = new KiemTrungArt({ reduced: q.heightFog === false });
+    eng.scene.add(eng.kiemTrungArt.group);
   }
   const gr = levelAssets(id).godRays;
   if (gr) {
@@ -483,6 +489,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.doanMachArt.group);
     eng.doanMachArt.dispose();
     eng.doanMachArt = null;
+  }
+  if (eng.kiemTrungArt) {
+    drop(eng.kiemTrungArt.group);
+    eng.kiemTrungArt.dispose();
+    eng.kiemTrungArt = null;
   }
   if (eng.lacKiemGarden) {
     drop(eng.lacKiemGarden.group);

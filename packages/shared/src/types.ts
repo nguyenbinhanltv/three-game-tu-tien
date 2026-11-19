@@ -920,6 +920,8 @@ export interface LevelAssets {
   godRays?: { x: number; z: number; r: number; count: number };
   /** Cảnh Đoạn Mạch (MAP-2, client `game/world/doanMachArt.ts`): rừng phong, cổ trận khắc vách, cầu treo. Chỉ để nhìn. */
   doanMachArt?: boolean;
+  /** Cảnh Kiếm Trủng (DUN-1, client `game/world/kiemTrungArt.ts`): ngàn kiếm gãy cắm đất, cự kiếm, kiếm trận khắc sàn. Chỉ để nhìn. */
+  kiemTrungArt?: boolean;
   /**
    * Cảnh Lạc Kiếm trên không (MAP-1, chỉ để nhìn, không có va chạm): đảo nổi quanh tông môn, cầu mây, thác, Kiếm Đài.
    * Toạ độ tương đối tâm tông môn (`SECT`): `x`, `z` mét; `y` là cao độ MẶT TRÊN đảo tính từ `SECT.y` (m).
