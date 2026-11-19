@@ -459,6 +459,7 @@ export class PropLayer {
         im.instanceMatrix = new THREE.InstancedBufferAttribute(mat, 16);
         im.instanceColor = new THREE.InstancedBufferAttribute(col, 3);
         im.boundingSphere = sphere;
+        im.name = id; // nhãn cho công cụ quét va chạm (`collScan`)
         im.matrixAutoUpdate = false;
         im.castShadow = shadow && k < 1;
         im.receiveShadow = this.shadows;
@@ -536,6 +537,7 @@ export class PropLayer {
         const im = new THREE.InstancedMesh(lm.geometry, lm.material, n);
         // Mỗi InstancedMesh một bản ma trận riêng (vài chục byte): dùng chung một thuộc tính giữa các mesh làm WebGPU vẽ lệch.
         im.instanceMatrix = new THREE.InstancedBufferAttribute(arr.slice(), 16);
+        im.name = c.id; // nhãn cho công cụ quét va chạm (`collScan`)
         // Sắc độ theo instance (đá vỡ Thiên Khuyết, E4-I): chỉ ô có prop nhuộm mới tốn thêm 12 byte/instance.
         if (tinted) im.instanceColor = new THREE.InstancedBufferAttribute(colArr.slice(), 3);
         im.matrixAutoUpdate = false;

@@ -18,7 +18,7 @@ const CLIENT_IMPORT_EXCEPTIONS = ['tools/asset-pipeline/src/terrain-textures.ts'
 /**
  * U2-1: giao diện chỉ dùng token của UI Kit 2.0 (`apps/client/src/ui/u2/tokens.css`). Cấm hex/rgb/hsl viết thẳng trong chuỗi
  * và `style={{ color: '…' }}` với màu/font/viền cứng (giá trị `var(--u-…)` hoặc biểu thức tính được thì cho qua).
- * File cũ chưa chuyển nằm ở LEGACY_UI_STYLE (danh sách co dần theo U2-2…U2-4, rỗng ở U2-5); file mới không được thêm vào đó.
+ * Canvas 2D nằm ở CANVAS_UI_STYLE (miễn trừ vĩnh viễn, có lý do); file khác không được thêm vào đó.
  */
 const STYLE_PROPS =
   '/^(color|background|backgroundColor|backgroundImage|borderColor|border|borderTop|borderBottom|borderLeft|borderRight|outline|fill|stroke|boxShadow|textShadow|fontFamily|borderRadius|filter)$/';
@@ -35,10 +35,12 @@ const UI_STYLE_RULES = {
     },
   ],
 };
-/** File UI cũ chưa chuyển sang Kit 2.0 (sinh bằng eslint ở U2-1; chỉ được xóa dòng, không thêm). */
-const LEGACY_UI_STYLE = [
-  'apps/client/src/ui/character/Overview.tsx',
-  'apps/client/src/ui/minimap/draw.ts', // canvas 2D: màu vẽ tay, chuyển ở U2-2 (minimap)
+/**
+ * Miễn trừ vĩnh viễn (U2-9): canvas 2D vẽ bằng ctx.fillStyle/strokeStyle, không dùng được var(--u-*) trực tiếp.
+ * Màu vẽ tay ở đây là dữ liệu của bản vẽ (minimap, bản đồ lớn), không phải style giao diện. Không thêm file khác vào đây.
+ */
+const CANVAS_UI_STYLE = [
+  'apps/client/src/ui/minimap/draw.ts',
   'apps/client/src/ui/minimap/sprites.ts',
   'apps/client/src/ui/worldmap/WorldMap.tsx',
 ];
@@ -146,7 +148,7 @@ export default tseslint.config(
   },
   {
     files: ['apps/client/src/ui/**/*.{ts,tsx}'],
-    ignores: [...TESTS, ...LEGACY_UI_STYLE],
+    ignores: [...TESTS, ...CANVAS_UI_STYLE],
     rules: UI_STYLE_RULES,
   },
 );
