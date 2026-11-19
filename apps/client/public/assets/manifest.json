@@ -10587,8 +10587,8 @@
       "id": "prop_tc_bia_tran",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_bia_tran.glb",
-      "file": "prop_tc_bia_tran.4ebc93778c.glb",
-      "bytes": 924484,
+      "file": "prop_tc_bia_tran.8e683a6091.glb",
+      "bytes": 924476,
       "rawBytes": 13703216,
       "triangles": 1131,
       "rawTriangles": 1131,
@@ -11697,8 +11697,8 @@
       "id": "prop_tc_cot_tran",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_cot_tran.glb",
-      "file": "prop_tc_cot_tran.33c3a6bba9.glb",
-      "bytes": 920956,
+      "file": "prop_tc_cot_tran.342c695ffc.glb",
+      "bytes": 921724,
       "rawBytes": 13670224,
       "triangles": 1170,
       "rawTriangles": 1170,
@@ -11771,12 +11771,12 @@
         },
         {
           "level": 1,
-          "triangles": 418,
+          "triangles": 444,
           "target": 468
         },
         {
           "level": 2,
-          "triangles": 136,
+          "triangles": 138,
           "target": 176
         }
       ],
@@ -11799,8 +11799,8 @@
       "id": "prop_tc_cot_tran_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_cot_tran_2.glb",
-      "file": "prop_tc_cot_tran_2.ba14c96f0f.glb",
-      "bytes": 921556,
+      "file": "prop_tc_cot_tran_2.0c44b445b8.glb",
+      "bytes": 922328,
       "rawBytes": 13671620,
       "triangles": 1181,
       "rawTriangles": 1181,
@@ -11873,12 +11873,12 @@
         },
         {
           "level": 1,
-          "triangles": 422,
+          "triangles": 448,
           "target": 472
         },
         {
           "level": 2,
-          "triangles": 136,
+          "triangles": 138,
           "target": 177
         }
       ],

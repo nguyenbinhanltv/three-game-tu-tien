@@ -73,7 +73,7 @@ def _hex_pillar(b, r, h, base_h, color, groove):
         if k == 1:
             continue
         a = (k + 0.5) / 6 * math.tau
-        b.box(math.cos(a) * r * 0.9, base_h + (h - base_h) * 0.5, math.sin(a) * r * 0.97, 0.05, (h - base_h) * 0.8, 0.05, groove, yaw=-a)
+        b.box(math.cos(a) * r * 0.8, base_h + (h - base_h) * 0.5, math.sin(a) * r * 0.8, 0.05, (h - base_h) * 0.8, 0.05, groove, yaw=-a)
 
 
 @item('cot_tran')
@@ -87,7 +87,7 @@ def _(b, v):
             continue
         a = (k + 0.5) / 6 * math.tau
         for j in range(3):
-            b.box(math.cos(a) * 0.46, 1.1 + j * 0.8, math.sin(a) * 0.46, 0.03, 0.3, 0.03, glow, yaw=-a)
+            b.box(math.cos(a) * 0.395, 1.1 + j * 0.8, math.sin(a) * 0.395, 0.03, 0.3, 0.03, glow, yaw=-a)
     set_text_res(1)
     b.text('Trận' if not v else 'Phong', 0, 2.3, 0.45, 0.5, 0.0, GOLD_TXT, fit_w=0.5, fit_h=0.5)
     set_text_res(2)
