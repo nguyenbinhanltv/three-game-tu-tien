@@ -33,7 +33,7 @@ describe('thông đường Lạc Kiếm Tông', () => {
 
 // COL-B/COL-A2: bí cảnh Phục Mạch Quật / Kính Nguyệt Cung / Kiếm Trủng / Kim Dạ Cung (collider kiến trúc từ GLB): đi bộ từ điểm vào tới lối ra và tâm hầm (nơi giao chiến).
 describe('thông đường bí cảnh (COL-B)', () => {
-  for (const level of ['phuc_mach', 'kinh_nguyet', 'kiem_trung', 'kim_da_cung']) {
+  for (const level of ['phuc_mach', 'kinh_nguyet', 'kiem_trung', 'than_tang', 'kim_da_cung']) {
     it(`${level}: từ điểm vào tới lối ra và tâm hầm`, () => {
       const dg = LEVELS[level]!.dungeon!;
       const b = dg.bound ?? 90;

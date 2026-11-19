@@ -42,6 +42,7 @@ const VIEWS: Record<string, View[]> = {
     { name: '04-nghia-dia-kiem', at: [-48, 22], look: [-1, -0.3], pitch: 0.08, dist: 9 },
     { name: '05-kiem-tran', at: [0, 6], look: [0, -1], pitch: 0.5, dist: 30 },
     { name: '06-vanh-cu-kiem', at: [40, 40], look: [0.6, -0.8], pitch: 0.04, dist: 8 },
+    { name: '07-khe-nut-gan', at: [30, 36], look: [0.6, -0.8], pitch: 0.55, dist: 7 },
   ],
   xich_tan_khich: [
     { name: '01-vao', at: [0, 56], look: [0, -1], pitch: 0.2, dist: 12 },
@@ -190,6 +191,13 @@ export default {
       await gm(page, `trib ${opt('--trib', 'hoa_than')}`, 500);
       await waitLevel(page, id, 2500);
     };
+    if (flag('--nearcrack')) {
+      // Khe nứt gần: lấy đỉnh của `dungeon-cracks` gần điểm (tâm + 0, +36) nhất và đứng cách đó vài m (chụp cận cảnh khe nứt, không cần biết toạ độ ngẫu nhiên).
+      const hit = (await page.evaluate(
+        `(() => { const g = window.__game; let best = null, bd = 1e9; g.scene.traverse((o) => { if (o.name !== 'dungeon-cracks' || !o.geometry) return; const p = o.geometry.attributes.position; for (let i = 0; i < p.count; i += 3) { const x = p.getX(i), z = p.getZ(i); const d = Math.hypot(x - ${c.x}, z - ${c.z + 60}); if (d < bd) { bd = d; best = [x, z]; } } }); return best; })()`,
+      )) as [number, number] | null;
+      if (hit) views.push({ name: '08-khe-nut-can', at: [hit[0] - c.x + 2, hit[1] - c.z + 6], look: [0, -1], pitch: 0.4, dist: 7 });
+    }
     for (const v of views) {
       if (trib) await reenter();
       // Quái chết để lại vết mực trên đất (tính năng của game, tan sau 11 s): chờ tan hết trước khi chụp.
