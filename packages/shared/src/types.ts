@@ -918,10 +918,49 @@ export interface LevelAssets {
   palace?: boolean | 'moon' | 'gilt';
   /** Tia sáng xuyên mây (MAP-1, render/godRays.ts): vùng rải tâm (x, z) bán kính `r`, `count` dải. Bỏ trống = không có. */
   godRays?: { x: number; z: number; r: number; count: number };
+  /**
+   * Cảnh Lạc Kiếm trên không (MAP-1, chỉ để nhìn, không có va chạm): đảo nổi quanh tông môn, cầu mây, thác, Kiếm Đài.
+   * Toạ độ tương đối tâm tông môn (`SECT`): `x`, `z` mét; `y` là cao độ MẶT TRÊN đảo tính từ `SECT.y` (m).
+   * Client dựng thân đảo, cầu, thác, kiếm (game/world/lacKiemSky.ts); script Blender đặt công trình trên đảo từ cùng dữ liệu.
+   */
+  lacKiemSky?: LacKiemSky;
   /** Tên ảnh minimap trong `public/map/` (không đuôi). */
   minimap: string;
   /** Thư mục atlas thẻ cỏ alpha trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục của Vân Lam. */
   grassCards?: string;
+}
+
+/** Loại công trình trên đảo nổi (script Blender chọn mảnh kit theo loại). */
+export type SkyIslandKind = 'kiem_dai' | 'dinh' | 'dinh_luc' | 'thap' | 'dien';
+
+export interface SkyIsland {
+  id: string;
+  x: number;
+  z: number;
+  /** Cao độ mặt trên so với `SECT.y` (m). */
+  y: number;
+  /** Bán kính mặt trên (m). */
+  r: number;
+  /** Chiều sâu từ mặt trên tới mũi đá đáy (m). */
+  depth: number;
+  kind: SkyIslandKind;
+  /** Có thác đổ từ mép đảo xuống biển mây. */
+  fall?: boolean;
+}
+
+/** Cầu mây nối hai đảo, hoặc nối sân tông môn (`sect`) với một đảo. */
+export interface SkyBridge {
+  from: string;
+  to: string;
+}
+
+export interface LacKiemSky {
+  islands: SkyIsland[];
+  bridges: SkyBridge[];
+  /** Cao độ tuyệt đối (m) nơi thác tan vào biển mây. */
+  fallEndY: number;
+  /** Số thanh kiếm cắm quanh Kiếm Đài (InstancedMesh, một draw call). */
+  swords: number;
 }
 
 /** Điểm phụ của nhiệm vụ (E2-H). Tên ở i18n `spot.<id>.name`. */

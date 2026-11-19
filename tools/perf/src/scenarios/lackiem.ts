@@ -6,28 +6,26 @@ import path from 'node:path';
 import { SECT } from '@dtl/shared';
 import { sleep } from '../lib/devserver';
 import { flag, list, num, opt } from '../lib/env';
-import { cam, gm, hideUi, perfSample, skipCutscene, tp } from '../lib/game';
+import { gm, hideUi, perfSample, skipCutscene, tp } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { settleMs, snap, writeJson } from '../lib/shot';
 
 interface View {
   name: string;
-  x: number;
-  z: number;
-  yaw: number;
-  pitch: number;
-  dist: number;
+  /** Mắt máy (toạ độ thế giới; x/z tương đối tâm tông môn, y tương đối SECT.y) và điểm nhìn. */
+  eye: [number, number, number];
+  at: [number, number, number];
+  fov?: number;
 }
 
-/** Quy ước yaw (xem points.ts): 0 nhìn về bắc (-z), π nhìn về nam, -π/2 nhìn về tây, π/2 về đông. */
+/** Sáu góc máy cố định (camera tự do `__game.freeCam`, chỉ có tác dụng khi URL có `?debug=1`): không bị địa hình đẩy camera. */
 export const VIEWS: View[] = [
-  { name: 'cong', x: SECT.x, z: SECT.z + 90, yaw: 0, pitch: 0.2, dist: 14 },
-  { name: 'san', x: SECT.x, z: SECT.z + 30, yaw: 0, pitch: 0.16, dist: 12 },
-  { name: 'nang', x: SECT.x - 40, z: SECT.z + 20, yaw: 2.2, pitch: 0.3, dist: 14 },
-  { name: 'tay', x: SECT.x + 70, z: SECT.z + 10, yaw: -1.2, pitch: 0.22, dist: 16 },
-  { name: 'sondao', x: SECT.x, z: SECT.z + 250, yaw: 0, pitch: 0.25, dist: 16 },
-  { name: 'rung', x: 2300, z: 2090, yaw: -1.57, pitch: 0.2, dist: 16 },
-  { name: 'trencao', x: 2200, z: 2250, yaw: 0, pitch: 1.2, dist: 700 },
+  { name: 'cong', eye: [0, 7, 112], at: [0, 8, 60], fov: 55 },
+  { name: 'san', eye: [0, 9, 62], at: [0, 8, -20], fov: 58 },
+  { name: 'kiemdai', eye: [-62, 24, 76], at: [-170, 34, 150], fov: 60 },
+  { name: 'dong', eye: [60, 42, 64], at: [235, 30, 30], fov: 60 },
+  { name: 'trencao', eye: [270, 120, -240], at: [-60, 25, 70], fov: 56 },
+  { name: 'phongxa', eye: [20, 26, -100], at: [-40, 80, -700], fov: 64 },
 ];
 
 export default {
@@ -57,9 +55,22 @@ export default {
         await gm(page, 'god on');
         await gm(page, 'killall', 1200);
         for (const v of views) {
-          await tp(page, v.x, v.z);
+          await tp(page, SECT.x, SECT.z + 40);
           await gm(page, 'killall', 600);
-          await cam(page, v);
+          await page.evaluate(
+            (a) => {
+              window.__game!.freeCam = {
+                x: a.s[0] + a.v.eye[0],
+                y: a.s[1] + a.v.eye[1],
+                z: a.s[2] + a.v.eye[2],
+                tx: a.s[0] + a.v.at[0],
+                ty: a.s[1] + a.v.at[1],
+                tz: a.s[2] + a.v.at[2],
+                fov: a.v.fov,
+              };
+            },
+            { s: [SECT.x, SECT.y, SECT.z], v },
+          );
           const stem = `${tag}-${viewport[1]}p-${mood}-${v.name}`;
           await snap(page, r.out, `${stem}.png`, { wait: settleMs() });
           if (flag('--perf') && viewport[1] === 1080) perf[stem] = await perfSample(page);
@@ -88,13 +99,25 @@ export default {
       const secs = num('--secs', 45);
       const t0 = Date.now();
       while ((Date.now() - t0) / 1000 < secs) {
-        const t = (Date.now() - t0) / 1000;
-        // Vòng quanh tông môn, dần xa ra rồi lên cao: yaw quay đủ một vòng.
-        await cam(page, {
-          yaw: (t / secs) * Math.PI * 2,
-          pitch: 0.18 + 0.5 * Math.sin((t / secs) * Math.PI),
-          dist: 14 + 90 * Math.sin((t / secs) * Math.PI),
-        });
+        const u = (Date.now() - t0) / 1000 / secs;
+        // Một vòng quanh tông môn: bán kính 120 → 330 → 150 m, độ cao 25 → 120 → 35 m, nhìn vào chính điện/cự kiếm.
+        const R = 150 + 180 * Math.sin(u * Math.PI) - 30 * u;
+        const h = 25 + 95 * Math.sin(u * Math.PI);
+        const a = u * Math.PI * 2 + Math.PI;
+        await page.evaluate(
+          (c) => {
+            window.__game!.freeCam = {
+              x: c.x + Math.sin(c.a) * c.R,
+              y: c.y + c.h,
+              z: c.z + Math.cos(c.a) * c.R,
+              tx: c.x,
+              ty: c.y + 20,
+              tz: c.z - 20,
+              fov: 58,
+            };
+          },
+          { x: SECT.x, y: SECT.y, z: SECT.z, a, R, h },
+        );
         await sleep(100);
       }
       const video = page.video();

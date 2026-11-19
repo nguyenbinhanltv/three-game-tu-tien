@@ -92,6 +92,23 @@ export function distToPaths(x: number, z: number, lines: P[][], max = PATH_RANGE
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
+/** Mép mềm: 1 trong `a`, 0 ngoài `b` (a < b). */
+const soft = (v: number, a: number, b: number) => clamp01((b - v) / (b - a));
+
+/**
+ * Chỗ lát đá của sân tông môn (MAP-1): chỉ đại lộ, vòng bát quái, sân chính điện, sân hai đình và sân sơn môn (toạ độ tương đối tâm
+ * tông môn, khớp `tools/blender/thien_cong_sect.py`). Phần còn lại của đỉnh núi là cỏ, đất và rêu thay cho lát đá phủ kín.
+ */
+export function sectPaving(lx: number, lz: number): number {
+  const ax = Math.abs(lx);
+  const avenue = Math.min(soft(ax, 7.5, 10), soft(Math.abs(lz - 26), 56, 60));
+  const bagua = soft(Math.hypot(lx, lz - 18), 11, 14);
+  const hall = Math.min(soft(ax, 22, 26), soft(Math.abs(lz + 44), 17, 21));
+  const dinh = soft(Math.hypot(ax - 52, lz - 4), 9, 12);
+  const gate = Math.min(soft(ax, 17, 21), soft(Math.abs(lz - 80), 6, 9));
+  return Math.max(avenue, bagua, hall, dinh, gate);
+}
+
 /** Điểm ảnh (i, j) của mặt nạ → RGBA 0..255. */
 export function maskPixel(i: number, j: number, lines: P[][], out: Uint8ClampedArray, o: number): void {
   const x = ((i + 0.5) / MASK_RES) * WORLD_SIZE;
@@ -100,9 +117,8 @@ export function maskPixel(i: number, j: number, lines: P[][], out: Uint8ClampedA
   const d = distToPaths(x, z, lines);
   out[o] = Number.isFinite(d) ? clamp01(0.5 + (PATH_HALF_WIDTH - d) / (2 * PATH_RANGE)) * 255 : 0;
   // G: sân lát đá.
-  const wSect = featureWeight(SECT, x, z);
   const wPad = featureWeight(PORTAL_PAD, x, z);
-  out[o + 1] = clamp01(Math.max((wSect - 0.8) * 9, (wPad - 0.88) * 12)) * 255;
+  out[o + 1] = clamp01(Math.max(sectPaving(x - SECT.x, z - SECT.z), (wPad - 0.88) * 12)) * 255;
   // B: cát ven hồ (chỉ gần hồ mới tốn heightAt).
   let sand = 0;
   if (featureWeight(LAKE, x, z) > 0) {

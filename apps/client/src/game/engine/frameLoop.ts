@@ -1,4 +1,5 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
+import { FLAGS } from '../../base/flags';
 import { downgradeOf, getGpuHint, setGpuHint, suggestQuality } from '../../base/quality';
 import * as THREE from 'three/webgpu';
 import {
@@ -356,6 +357,16 @@ export function updateCamera(eng: Game, dt: number): void {
     cy = Math.max(ty + (cy - ty) * k, groundAt(cx, cz) + 0.7 - (4 - i) * 0.5);
   }
   eng.shake.update(dt, _shakePos, _shakeLook);
+  const fc = FLAGS.debug ? eng.freeCam : null;
+  if (fc) {
+    eng.camera.position.set(fc.x, fc.y, fc.z);
+    eng.camera.lookAt(fc.tx, fc.ty, fc.tz);
+    if (fc.fov && Math.abs(eng.camera.fov - fc.fov) > 0.01) {
+      eng.camera.fov = fc.fov;
+      eng.camera.updateProjectionMatrix();
+    }
+    return;
+  }
   eng.camera.position.set(cx + _shakePos.x, cy + _shakePos.y, cz + _shakePos.z);
   eng.camera.lookAt(tx + _shakeLook.x, ty + _shakeLook.y, tz + _shakeLook.z);
   const dfx = eng.deathFx.update(dt, ((eng.me()?.fl ?? 0) & PF_DEAD) !== 0);
@@ -390,6 +401,7 @@ export function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
   pickPushers(eng.pushSelf, pool, eng.pushers, 40, n);
   eng.grass.update(dt, rp, eng.pushers, eng.started ? 1 : 6);
   eng.props?.update(dt, rp.x, rp.z);
+  eng.lacKiemSky?.update(eng.camera);
 }
 
 /**
