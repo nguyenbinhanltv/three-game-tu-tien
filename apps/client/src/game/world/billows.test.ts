@@ -8,11 +8,18 @@ const plan = billowPlan(def.size, def.voidFloor ?? 0, def.islands ?? [], def.bri
 
 describe('biển mây Vân Hải: khối mây không nhô qua đảo và cầu', () => {
   it('đủ 900 khối và có khe hở: có ô lưới 100 m không bị khối nào phủ', () => {
-    expect(plan.length).toBe(900);
+    expect(plan.length).toBeGreaterThanOrEqual(900);
     let empty = 0;
     for (let gx = 0; gx < def.size; gx += 100)
       for (let gz = 0; gz < def.size; gz += 100) if (!plan.some((b) => Math.hypot(b.x - gx, b.z - gz) < b.sx)) empty++;
     expect(empty).toBeGreaterThan(8);
+  });
+
+  it('mỗi đảo thật có vòng mây cuộn ôm chân (≥ r/8 khối trong 1,2 r quanh tâm, thấp hơn đáy mặt đảo)', () => {
+    for (const isl of def.islands ?? []) {
+      const ring = plan.filter((b) => Math.hypot(b.x - isl.x, b.z - isl.z) < isl.r * 1.2 && b.y + b.sy < isl.y - 20);
+      expect(ring.length).toBeGreaterThanOrEqual(Math.floor(isl.r / 8));
+    }
   });
 
   it('đọc được đảo và cầu', () => {
