@@ -39,6 +39,7 @@ type Vec = { x: number; y: number; z: number; [method: string]: any };
 export interface GameDebug {
   frames: number;
   sid: string;
+  targetId: string;
   camYaw: number;
   camPitch: number;
   camDist: number;
