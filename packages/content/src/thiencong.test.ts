@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { basePropsOf, THIEN_CONG_PROPS, terrainOf, thienCongColliders } from '@dtl/shared';
+import { basePropsOf, THIEN_CONG_PROPS, TRAILS, terrainOf, thienCongColliders } from '@dtl/shared';
 import { LEVELS } from './index';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -44,6 +44,26 @@ describe('thiên công khai vật (PROP-1)', () => {
         expect(Math.hypot(c.x - s.x, c.z - s.z), 'vòng va chạm trong điểm tinh anh').toBeGreaterThan(s.radius + c.r);
       for (const p of lv.portals ?? []) expect(Math.hypot(c.x - p.x, c.z - p.z), 'vòng va chạm chặn cổng').toBeGreaterThan(p.r + c.r);
       expect(Math.hypot(c.x - (lv.spawn?.x ?? 0), c.z - (lv.spawn?.z ?? 0)), 'vòng va chạm chặn điểm xuất hiện').toBeGreaterThan(6 + c.r);
+    }
+  });
+  it('van_lam: vật rắn của nhóm trận pháp / Dị Vực chừa đường mòn (mép vòng va chạm cách trục đường ≥ 4 m)', () => {
+    const NEW =
+      /^prop_tc_(tran_do_khac_san|cot_tran|te_dan|bia_tran|linh_thach|xich_bua|xuong_cu_thu|cot_ta_mau_tim|tinh_the_tim|chan_dong_do_nat|co_rach)(_2)?$/;
+    const segDist = (px: number, pz: number, ax: number, az: number, bx: number, bz: number) => {
+      const l2 = (bx - ax) ** 2 + (bz - az) ** 2 || 1;
+      const u = Math.max(0, Math.min(1, ((px - ax) * (bx - ax) + (pz - az) * (bz - az)) / l2));
+      return Math.hypot(px - (ax + (bx - ax) * u), pz - (az + (bz - az) * u));
+    };
+    for (const p of THIEN_CONG_PROPS.van_lam ?? []) {
+      if (!NEW.test(p.id)) continue;
+      for (const [x, z, r] of p.col ?? []) {
+        for (const t of TRAILS) {
+          for (let i = 0; i + 1 < t.length; i++) {
+            const d = segDist(x, z, t[i]![0], t[i]![1], t[i + 1]![0], t[i + 1]![1]);
+            expect(d - r, `${p.id} (${x}, ${z}) chắn đường mòn`).toBeGreaterThanOrEqual(4 - 1e-6);
+          }
+        }
+      }
     }
   });
 });

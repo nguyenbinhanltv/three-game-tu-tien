@@ -28,7 +28,7 @@ import { campCoverage, COVER_BY_LEVEL, COVER_EDGE_MAX, DEFAULT_COVER } from './c
 import { PLACES } from './places';
 import { ensureLevel, FIXTURE_ID } from './fixtures';
 
-import { at } from '@dtl/shared';
+import { at, blockedAt, collisionOf } from '@dtl/shared';
 const args = process.argv.slice(2);
 const opt = (k: string): string | undefined => {
   const i = args.indexOf(k);
@@ -216,7 +216,7 @@ const covAll = coverage(24, () => true);
 
 // ---- quét chỗ kẹt: đẩy 8 hướng theo luật stepMove ----
 const DIRS = Array.from({ length: 8 }, (_, i) => (i * Math.PI) / 4);
-const ctx: MoveCtx = { canFly: false, frozen: false, speedMul: 1, terrain };
+const ctx: MoveCtx = { canFly: false, frozen: false, speedMul: 1, terrain, collision: collisionOf(LEVEL_ID) };
 function escapes(x: number, z: number): boolean {
   const g = groundAt(x, z);
   for (const yaw of DIRS) {
@@ -229,7 +229,13 @@ function escapes(x: number, z: number): boolean {
 function stuckScan(): { checked: number; stuck: [number, number][] } {
   const stuck: [number, number][] = [];
   let checked = 0;
-  const near = (x: number, z: number) => COLLIDERS.some((c) => (x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 8) ** 2);
+  const col = collisionOf(LEVEL_ID);
+  const nearShape = (x: number, z: number): boolean => {
+    let hit = false;
+    col.near(x, z, 8, () => (hit = true));
+    return hit;
+  };
+  const near = (x: number, z: number) => nearShape(x, z) || COLLIDERS.some((c) => (x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 8) ** 2);
   const nearEdge = (x: number, z: number) => x < PLAY.x0 + 12 || x > PLAY.x1 - 12 || z < PLAY.z0 + 12 || z > PLAY.z1 - 12;
   for (let z = PLAY.z0; z <= PLAY.z1; z += 4)
     for (let x = PLAY.x0; x <= PLAY.x1; x += 4) {
@@ -249,7 +255,8 @@ function stuckScan(): { checked: number; stuck: [number, number][] } {
   for (const [name, x, z] of pts) {
     if (name.startsWith('camp') || name.startsWith('place')) {
       // tâm bãi/điểm đặt tên không được nằm trong collider hay nước sâu
-      if (COLLIDERS.some((c) => (x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 0.6) ** 2)) stuck.push([x, z]);
+      if (COLLIDERS.some((c) => (x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 0.6) ** 2) || blockedAt(col, x, z, groundAt(x, z), 0.6))
+        stuck.push([x, z]);
     }
     if (!escapes(x, z)) stuck.push([x, z]);
   }
