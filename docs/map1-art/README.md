@@ -36,3 +36,41 @@ Tái thiết kế mỹ thuật Lạc Kiếm Tông (bản đồ `van_lam`). Chia 
 - Chưa làm: LOD cho `arch_sect`, thác/đảo có va chạm (đi bộ được), hoàng hôn còn hơi hồng.
 - Vòng chỉnh theo duyệt v2: Kiếm Đài dùng mesh kiếm thật (lưỡi đùn vát cạnh + rãnh, tay nắm sừng, chuôi quấn, đầu chuôi), đảo dựng low-poly flat shading với bậc đá, nhũ đá, rễ, dây leo điểm lá; cỏ và vách núi đổi sắc theo mảng/tầng (`terrain.ts`); sương bình minh/trưa giảm ~40%; hoàng hôn cam-vàng (`lk_dusk`).
 - Vân đá sơn thủy và ngưỡng tuyết 340–420 m chỉ bật cho Vân Lam/Kiếm Trủng qua `setGroundStrata(isVanLam())` (`render/materials/ground.ts`, gọi ở `Terrain.setGround`); các level khác giữ ngưỡng tuyết 252–312 m và không có vân (như trước MAP-1).
+
+## PR 3: bản B tả thực (hướng đã chọn cho cả bộ bản đồ)
+
+Người dùng chọn phong cách B (bản tả thực, điện ảnh). Giữ bảng màu đã duyệt (ngọc lục, trắng mây, mai son), đảo bay, cầu mây, thác, Kiếm Đài.
+
+- **Vật liệu PBR kiến trúc** (`tools/blender/thien_cong_kit.py`, `PBR_SOURCES`): ngọc ← `marble_rock_01`, đá ← `japanese_stone_wall`, vữa ← `plastered_stone_wall`, ngói ← `ceramic_roof_01`, sơn son ← `lacquered_cherry_wood`, gỗ ← `dark_wood` (Poly Haven CC0, credit ở `assets/LICENSES.md`). Ảnh màu đổi sang độ sáng rồi nhân màu đỉnh (giữ đúng bảng màu), kèm normal (OpenGL) + độ nhám, nướng vào `arch_sect.glb` (2K cho ngọc/đá/ngói, 1K cho gỗ/vữa, nhám 512). Mép đá/gỗ vát 2 đoạn (5 cm). Nguồn ảnh: `pnpm assets:sect-textures` (ngoài repo); thiếu nguồn thì script quay về texture thủ tục. Ngân sách lớp `arch` nâng lên 2048 px / 600k tam giác (`assets/budgets.json`).
+- **Đá vách đảo nổi** (`game/world/skyAssets.ts` `rockMaterial`): albedo + normal + nhám `cliff_side` chiếu ba mặt phẳng, nhân màu đỉnh (tầng đá ấm/lạnh, rêu), hết flat shading. Texture ở `public/sky/` (`pnpm assets:sky-textures`).
+- **Cây**: tán bằng thẻ lá alpha (atlas 4×2 ô 512: tùng, phong, trúc, đào, sồi + vỏ cây đặc, vẽ bằng SVG ở `sky-textures.ts`), thân tapered; loài theo đảo (`ISLAND_TREES`). Lá trúc trong vườn cũng là thẻ (`lacKiemGarden.ts`). Thay các khối tán cũ.
+- **Phông xa** (`render/farRidges.ts`): mặt núi lưới 480×16 có mỏm/hốc/gờ, sáng tối theo pháp tuyến hướng nắng, vân tầng + khe dọc, mây cuộn giữa sườn trôi chậm, ngả lam nhạt dần theo lớp.
+- **Ánh sáng**: bóng PCF mềm (`shadowMap.type`, `shadow.radius`), tăng ánh sáng nền để bóng không đen kịt, bão hòa ngày giảm; GTAO, bloom, ACES, sương theo độ cao đã có sẵn từ trước.
+- **Thác**: thêm bọt trắng đục ở chân; sương chân thác lớn hơn.
+- **Cỏ**: tăng mật độ preset Cao (tầm 48 m, giãn 0,8) và Cực cao (66 m, 0,62), trần 100k bụi.
+- Không làm ở PR này: texture mặt đất 2K (bộ `terrain` dùng chung với các level khác và VRAM 8 lớp × 2K ≈ 180 MB), phản chiếu mặt nước thác, mây thể tích, cây thẻ cho núi xa.
+
+### Vòng chỉnh theo duyệt bản B (#305)
+
+- **Mặt đất 2K** riêng Vân Lam/Kiếm Trủng: bộ `terrain-lk` (`pnpm assets:terrain --set lackiem`, màu 2048², pháp tuyến/nhám 1024², cùng 8 lớp Poly Haven của bộ gốc, trộn theo độ dốc/độ cao/đường mòn như cũ); các level khác vẫn dùng `terrain` 1024². VRAM màu 8 lớp ≈ 180 MB (chỉ khi ở Vân Lam). Cỏ 3D mọc cả ở đỉnh tông môn (chỗ không lát đá, không công trình: `grass.ts`).
+- **Cây thẻ alpha thay cây Tripo** (`game/world/cardForest.ts`): `prop_thong_co`, `prop_co_thu`, `prop_soi_nui`, `prop_anh_dao`, `prop_phong_do` dựng từ thân uốn + thẻ lá (pháp tuyến tán hướng ra cho khối mềm), gộp theo ô 256 m, cắt theo khung nhìn, ẩn khi xa quá 1,1 km, không đổ bóng; `PropLayer` bỏ các id này ở level có `lacKiemSky`. Tùng chậu hai bên đại lộ: thân Blender + tán thẻ (`lacKiemGarden.ts`).
+- **Cự kiếm giữa sân** (`thien_cong_kit.py` `blade_loft`/`sword_planted`): lưỡi tiết diện thoi có sống nổi, thép PBR (`metal_plate`) vát mép, chữ "万剑归宗" khắc nổi vàng.
+- **Chữ Việt thư pháp** (`KB.text`): font Charm Bold (OFL, cùng font gốc của bộ nét cọ tên đạo hiệu #297, ở `../dtl-asset-source/font`) → biển cổng "Lạc Kiếm Tông", hoành phi chính điện "Thiên Kiếm Điện", thân cự kiếm "Vạn Kiếm Quy Tông" (mỗi tiếng một hàng); chữ là mesh vàng khắc nổi trên nền gỗ sơn mực; không có font thì bỏ qua chữ. Không còn chữ Hán trong cảnh (game tiếng Việt).
+- **Sân lát đá**: đại lộ là từng tấm 2,9 × 3,9 m trên nền mạch tối, cao thấp lệch nhẹ, vát mép; bậc ngoài cổng (client `sect.ts`) cũng hai tấm có khe và gờ rêu.
+
+### Vòng chỉnh theo duyệt #305 lần 3
+
+- Chữ Việt thay chữ Hán (xem mục "Chữ Việt thư pháp"); chữ dùng vật liệu vàng phát sáng nhẹ (`GILD_TEXT`) vì kim loại không có env map nên tối.
+- **Giảm tam giác** (mục tiêu đỉnh ≤ 1,7 triệu): cây thẻ có LOD (ô trong 300 m dùng mẫu đầy đủ, xa hơn dùng mẫu ~33% thẻ lá/thân 3 đoạn, ẩn quá 800 m), phông xa lưới 360×12, kiếm Kiếm Đài bớt chi tiết, kiến trúc vát mép 1 đoạn (pass bóng vẽ lại cả `arch_sect`), cỏ preset Cao tầm 48 m giãn 0,8. Đỉnh đo được 1,66 triệu (góc trên cao, preset Cao 1080p; trước vòng này 1,96 triệu), trung bình các góc 1,22–1,66 triệu; draw call đỉnh 188.
+- **Núi xa**: vân đá/vệt khe áp cả sườn cỏ dốc (không chỉ vách đá), cộng nhiễu vĩ mô hai tầng theo khoảng cách ở shader mặt đất (chỉ Vân Lam, sau cờ `setGroundStrata`) nên chỗ chỉ còn màu đỉnh lưới không còn mịn đều.
+
+### Bộ nhớ texture mặt đất theo preset (review #305)
+
+- `resolveGroundSet` (`base/groundTextures.ts`): bộ 2K `terrain-lk` chỉ nạp ở **Cao/Cực cao**; **Thấp/Vừa** nạp bộ `terrain` 1024² (cùng mặt nạ). Đổi preset lúc chơi: `Game.syncGroundSet` nạp bộ đúng, thay rồi giải phóng bộ cũ. Sau khi tải lên GPU, `DataArrayTexture.onUpdate` bỏ mảng nguồn khỏi heap JS.
+- VRAM tính toán (RGBA8 + mip): bộ 2K màu 8 × 2048² ≈ 179 MB + pháp tuyến 8 × 1024² ≈ 45 MB ≈ 224 MB; bộ 1024² ≈ 45 + 11 ≈ 56 MB. Cộng GLB/KTX2 kiến trúc, cây, mây, hậu kỳ vẫn dưới ngân sách 512 MB texture (số `textures` của renderer: 105 ở Cao, 103 ở Vừa).
+- Đo heap JS (`performance.memory.usedJSHeapSize`, Chrome headless, Vân Lam, góc sân, 1080p, `pnpm shots lackiem --perf 1 --preset <p>`): Cao **443 MB** sau khi bỏ mảng nguồn so với **627 MB** nếu giữ (−184 MB); Vừa 510 MB (số đo thô, còn lẫn heap của game và tab thử, không so sánh trực tiếp với Cao). WebGL2 Cao 581 MB. `perfSample` ghi thêm `heapMB`.
+
+### Chữ biển và bậc cổng (vòng 4)
+
+- `KB.text` nhận `fit_w`/`fit_h`/`bold`: chữ co giãn đồng dạng để chiếm ~70% bề ngang tấm (biển cổng 4,8/6,8 m, hoành phi 4,05/5,8 m, thân kiếm 1,6 m), làm đậm nét bằng offset đường viền (`cu.offset`), nền biển sơn son sẫm + viền vàng dày để tương phản.
+- Bậc ngoài cổng (`sect.ts`): ba tấm mỗi bậc cao thấp lệch trên nền mạch tối, màu đá ngọc trầm, gờ vát tối ở mép, rêu bám mạch.
