@@ -466,6 +466,7 @@
   gap: var(--u-sp-1);
 }
 .u2h-chat .chat-line.sys .sys-icon,
+.u2t-chat-log .chat-line.sys .sys-icon,
 .u2h-chat .chat-line.sys svg {
   flex: none;
   margin-top: 3px;
@@ -475,6 +476,7 @@
   color: var(--u-gold-hi);
 }
 .u2h-chat .chat-line.bad,
+.u2t-chat-log .chat-line.bad,
 .u2h-chat .chat-line.sys[data-ch='combat'] {
   color: var(--u-son-hi);
 }

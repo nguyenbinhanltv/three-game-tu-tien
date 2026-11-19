@@ -425,8 +425,9 @@ export function Hud() {
       <div className="u2h-zone u2h-tr">
         <HubBar />
         <Minimap />
-        <QuestTrack />
+        {mode !== 'touch' && <QuestTrack />}
       </div>
+      {mode === 'touch' && <QuestTrack />}
       <ChapterMap />
       <Toasts />
       <Tribulation />

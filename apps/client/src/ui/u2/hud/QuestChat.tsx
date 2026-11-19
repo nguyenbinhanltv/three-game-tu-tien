@@ -4,6 +4,7 @@ import { objectiveText } from '../../objective';
 import { setHudPref, setTrackQuest, useUI } from '../../store';
 import { SysIcon } from '../shell';
 import { blurAfterPointer } from './common';
+import { useHudMode } from './hudVars';
 
 /** Mũi tên thu/mở (dùng chung với Chat.tsx) của khối có thể thu gọn. */
 export function Fold({ open, onClick, label }: { open: boolean; onClick: (e: React.MouseEvent<HTMLElement>) => void; label: string }) {
@@ -28,17 +29,25 @@ export function QuestTrack() {
   const quests = useUI((s) => s.quests);
   const track = useUI((s) => s.trackQuest);
   const collapsed = useUI((s) => s.questCollapsed);
-  const ids = Object.keys(quests.active);
-  if (!ids.length) return null;
+  const touch = useHudMode() === 'touch';
+  const all = Object.keys(quests.active);
+  if (!all.length) return null;
   // Nhiệm vụ đang theo dõi (chỉ báo ngoài màn hình trỏ tới): ghim bằng cú nhấp; mặc định nhiệm vụ đầu tiên có đích.
   // Cùng hàm với engine để chấm và chỉ báo luôn cùng một nhiệm vụ.
   const tracked = trackedQuestId(quests, track);
+  // Cảm ứng: chỉ nhiệm vụ đang theo dõi (khung gọn); các nhiệm vụ khác xem ở bảng Nhiệm vụ.
+  const ids = touch
+    ? all
+        .filter((id) => id === tracked)
+        .concat(all.filter((id) => id !== tracked))
+        .slice(0, 1)
+    : all;
   return (
     <section className="u2h-zone u2h-quest u2h-card" data-collapsed={collapsed ? '1' : undefined} aria-label={t('ui.quests')}>
       <header className="u2h-card-head">
         <SysIcon name="quest" size={16} />
         <span>{t('ui.quests')}</span>
-        {collapsed && <span className="u2h-count">{ids.length}</span>}
+        {collapsed && <span className="u2h-count">{all.length}</span>}
         <Fold
           open={!collapsed}
           label={t(collapsed ? 'ui.hud.expand' : 'ui.hud.collapse')}
