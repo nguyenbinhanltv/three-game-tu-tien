@@ -6,7 +6,7 @@ import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { basePropsOf, TELE_PADS, thienCongColliders, terrainOf, WATER_Y, type HandProp } from '@dtl/shared';
+import { TRAILS, basePropsOf, TELE_PADS, thienCongColliders, terrainOf, WATER_Y, type HandProp } from '@dtl/shared';
 import { LEVELS, NPCS } from './index';
 import { SCENES, sectAxis, type Scene } from './thienCongScenes';
 
@@ -102,6 +102,17 @@ for (const levelId of Object.keys(SCENES)) {
     ),
     { x: L.spawn?.x ?? 0, z: L.spawn?.z ?? 0, r: 9 },
   ];
+  /** Hành lang đường mòn (chỉ Vân Lam có `TRAILS` vẽ tay): các nhóm sinh từ PR4 trở đi (tran_phap, di_vuc) chừa 4 m mỗi bên trục đường; nhóm cũ giữ nguyên toạ độ đã duyệt. */
+  const trailBlock: Circle[] = [];
+  if (levelId === 'van_lam')
+    for (const tr2 of TRAILS)
+      for (let i = 0; i + 1 < tr2.length; i++) {
+        const [ax, az] = tr2[i]!;
+        const [bx, bz] = tr2[i + 1]!;
+        const n2 = Math.ceil(Math.hypot(bx - ax, bz - az) / 2);
+        for (let k = 0; k <= n2; k++) trailBlock.push({ x: ax + ((bx - ax) * k) / n2, z: az + ((bz - az) * k) / n2, r: 4 });
+      }
+  const NEW_GROUPS = new Set(['tran_phap', 'di_vuc']);
   const campCentres: Circle[] = (L.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: 1.9 }));
   const campDiscs: Circle[] = (L.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: c.radius + 2 }));
   const poiSpots = L.pois ?? [];
@@ -155,6 +166,13 @@ for (const levelId of Object.keys(SCENES)) {
           z: Math.round((z + (-dx * sy + dz * cy) * sc2) * 10) / 10,
           r: Math.round(r * sc2 * 100) / 100,
         }));
+      }
+      if (
+        NEW_GROUPS.has(group) &&
+        ((prop.col ?? [{ x, z, r: 0.5 }]).some((c) => near(trailBlock, c.x, c.z, c.r)) || near(trailBlock, x, z, 0.5))
+      ) {
+        miss.push(`bày tay ${f.name} (${x}, ${z}) chắn đường mòn`);
+        continue;
       }
       if (near(anyBlock, x, z, inf.foot * sc2 * 0.6) || (prop.col ?? []).some((c) => near(anyBlock, c.x, c.z, c.r))) {
         miss.push(`bày tay ${f.name} (${x}, ${z}) đè trận truyền tống/cổng/điểm đặc biệt`);
@@ -244,6 +262,7 @@ for (const levelId of Object.keys(SCENES)) {
             if (slope > 0.8 + foot * 0.3) continue;
             if (near(anyBlock, x, z, foot)) continue;
             if (solid && near(monBlock, x, z, foot)) continue;
+            if (NEW_GROUPS.has(g) && near(trailBlock, x, z, foot)) continue;
             if (near(campCentres, x, z, 0)) continue; // levelcheck: tâm bãi quái không được đè prop (cả prop không va chạm)
             if (poiSpots.some((q) => (x - q.x) ** 2 + (z - q.z) ** 2 <= 15 ** 2) && near(campDiscs, x, z, 0)) continue; // prop quanh điểm đáng chú ý phải cách mép bãi ≥ 2 m
             if (spots.some((p) => (x - p.x) ** 2 + (z - p.z) ** 2 < (p.r + foot + 0.5) ** 2)) continue;
