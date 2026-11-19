@@ -661,7 +661,11 @@ export class Terrain {
   setGround(tex: GroundTextures | null, level: GroundLevel): void {
     setGroundTileBreak(XICH || ASH);
     setGroundStrata(isVanLam());
-    setGroundRedStrata(T.id === 'doan_mach');
+    setGroundRedStrata(
+      T.id === 'doan_mach' || T.id === 'thien_khuyet',
+      // Thiên Khuyết (MAP-4): vách xám ấm ↔ nâu cát, khe nứt có vỉa vàng kim; vân từ nhiễu theo tọa độ dọc vách (hết ô caro).
+      T.id === 'thien_khuyet' ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18] } : undefined,
+    );
     if (tex) applyGroundShader(this.material, tex, level);
     else clearGroundShader(this.material);
   }

@@ -74,8 +74,18 @@ export function setGroundStrata(on: boolean): void {
  * và ngả xám-đỏ thay vì lam nhạt. Tắt ở level khác.
  */
 let redStrata = false;
-export function setGroundRedStrata(on: boolean): void {
+/** Hai màu vách (tối ↔ sáng) và vỉa nứt tùy chọn của vân vách theo nhiễu (không dùng khung texture 11 m, nên không ra ô caro). */
+export interface CliffTones {
+  lo: [number, number, number];
+  hi: [number, number, number];
+  /** Màu vỉa chạy theo khe nứt (vàng kim Thiên Khuyết); bỏ trống = khe chỉ tối đi. */
+  vein?: [number, number, number];
+}
+const RED_TONES: CliffTones = { lo: [0.4, 0.2, 0.16], hi: [0.58, 0.52, 0.5] };
+let cliffTones: CliffTones = RED_TONES;
+export function setGroundRedStrata(on: boolean, tones: CliffTones = RED_TONES): void {
   redStrata = on;
+  cliffTones = tones;
 }
 
 /** Gắn node shader vào `mat`. Gọi lại khi đổi preset (đổi cấu hình, `needsUpdate`). */
@@ -223,7 +233,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       // vệt loang dọc (nước chảy lâu năm): kéo dài theo chiều cao, phá nhịp tầng ngang
       const streak = texture(tex.mask, vec2(u.mul(0.043).add(0.17), h.mul(0.0014))).a;
       const mixTone = smoothstep(0.25, 0.75, bandA.mul(0.25).add(nB.mul(0.45)).add(streak.mul(0.3)));
-      let tone: Node = mix(vec3(0.4, 0.2, 0.16), vec3(0.58, 0.52, 0.5), mixTone);
+      let tone: Node = mix(vec3(...cliffTones.lo), vec3(...cliffTones.hi), mixTone);
       tone = tone
         .mul(float(0.72).add(nC.mul(0.56)))
         .mul(float(0.93).add(bandB.mul(0.1)))
@@ -231,6 +241,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       // khe nứt dọc: đường tối mảnh nơi nA gần 0,5
       const crack = smoothstep(0.045, 0.0, nA.sub(0.5).abs()).mul(smoothstep(0.2, 0.8, nB));
       tone = tone.mul(float(1).sub(crack.mul(0.6)));
+      if (cliffTones.vein) tone = mix(tone, vec3(...cliffTones.vein), crack.mul(0.85));
       // gờ đá: mép trên mỗi tầng sáng, ngay dưới tối
       // chỉ ở vài tầng (nA cao): gờ không chạy đều khắp vách
       const ledgeOn = smoothstep(0.35, 0.6, nA);

@@ -74,7 +74,6 @@ export class SkyIslands {
       for (const isl of def.islands) this.buildSkirt(isl, def.voidFloor, art.islandAt(isl.x, isl.z));
       this.buildFloorMist(def.voidFloor, def.size);
       this.buildBillows(def.voidFloor, def.size, def);
-      this.buildBanks(art.islands, def.voidFloor);
       this.buildDebris(art.islands);
       this.buildFalls(art.islands, def.voidFloor);
       this.buildPonds(def.ponds ?? [], terrain);
@@ -177,8 +176,8 @@ export class SkyIslands {
     const prof: [number, number][] = [
       [r - 4, -0.02],
       [r + 3, -0.1],
-      [r + 6.5, -1.2],
-      [r + 7.5, -4],
+      [r + 4.5, -1.2],
+      [r + 5.5, -4],
       [r + 6, -9],
       [r + 2, -15],
       [r - 5, -22],
@@ -191,10 +190,10 @@ export class SkyIslands {
       [0.01, -86],
     ];
     // bản sắc dáng đảo: Thạch Quy phình rộng như mai rùa, Kình Ngư thon dài, Lôi Vân nhọn lởm chởm
-    const lathe0 = new THREE.LatheGeometry(
-      prof.map(([x, y]) => new THREE.Vector2(x < r ? x * (x < r * 0.9 ? SK.belly : 1) : x, y * SK.len)),
-      112,
-    );
+    // lấy mẫu lại profile bằng spline (56 vòng): profile 14 điểm quá thưa nên dịch chuyển chỉ làm bầu, không tạo được gờ tầng
+    const base = prof.map(([x, y]) => new THREE.Vector2(x < r ? x * (x < r * 0.9 ? SK.belly : 1) : x, y * SK.len));
+    const smooth = new THREE.SplineCurve(base).getSpacedPoints(56).map((p) => new THREE.Vector2(Math.max(0.01, p.x), p.y));
+    const lathe0 = new THREE.LatheGeometry(smooth, 96);
     lathe0.deleteAttribute('uv');
     lathe0.deleteAttribute('normal');
     const lathe = mergeVertices(lathe0, 1e-3); // dùng chung đỉnh để pháp tuyến mịn (không lộ mặt phẳng low-poly)
@@ -204,8 +203,10 @@ export class SkyIslands {
     const rock = new THREE.Color();
     const pal = vi?.pal;
     const A = new THREE.Color(pal ? pal.moss : 0x7a8460).lerp(new THREE.Color(pal ? pal.soil : 0x7a8460), 0.5).multiplyScalar(1.3 * 0.84); // khớp màu rìa mặt đảo (terrain.ts islandColor)
-    const B = new THREE.Color(pal ? pal.stone : 0x8e8a7e).multiplyScalar(0.92); // đá sáng
-    const D = new THREE.Color(pal ? pal.dark : 0x4e4b48).multiplyScalar(0.8); // đá tối ở mũi
+    const B = new THREE.Color(0x8d857a); // đá xám ấm (PBR, không pha lam)
+    const MID = new THREE.Color(0x6b5a4a); // đá nâu
+    const D = new THREE.Color(0x3d3834); // đá tối ở mũi
+    const MOSS = new THREE.Color(0x56703f);
     const seed = Math.floor(isl.x * 3.1 + isl.z * 1.7);
     // nhiễu 3D tất định (giá trị nội suy) cho vách đá: ba tầng ridged, gờ tầng nhô ra như đá trầm tích
     const nz = (x: number, y: number, z: number, sd: number): number => {
@@ -238,8 +239,7 @@ export class SkyIslands {
       }
       return sum;
     };
-    const ROCK_BLUE = new THREE.Color(0x6f89aa);
-    const OCHRE = new THREE.Color(0xa8896a);
+    const OCHRE = new THREE.Color(0xa58b68);
     for (let i = 0; i < pos.count; i++) {
       let x = pos.getX(i);
       let y = pos.getY(i);
@@ -247,10 +247,11 @@ export class SkyIslands {
       const depth = Math.min(1, -y / (86 * SK.len));
       const rad = Math.hypot(x, z) || 1;
       const rid = ridged(x * 0.045 + seed, y * 0.07, z * 0.045);
-      const ledgeT = y / 6.5 + nz(x * 0.03, y * 0.01, z * 0.03, 710) * 1.4;
-      const ledge = Math.pow(ledgeT - Math.floor(ledgeT), 2.4); // tăng dần rồi gãy: gờ nhô ra từng tầng
+      const ledgeT = y / 4.4 + nz(x * 0.03, y * 0.01, z * 0.03, 710) * 1.6;
+      const ledge = Math.pow(ledgeT - Math.floor(ledgeT), 2.2); // tăng dần rồi gãy: gờ nhô ra từng tầng
+      const fine = nz(x * 0.22 + seed, y * 0.35, z * 0.22, 730) - 0.5; // gồ ghề mịn trên vách
       const groove = nz(Math.atan2(z, x) * 5 + seed, y * 0.05, 3.3, 720) - 0.5;
-      const push = ((rid - 0.45) * 15 + ledge * 4 + groove * 6) * SK.amp * (0.15 + depth * 0.95) * (y > -0.5 ? 0.4 : 1); // mép đảo gồ ghề, không còn vành tròn đều
+      const push = ((rid - 0.45) * 17 + ledge * 6 + groove * 7 + fine * 3.2) * SK.amp * (0.3 + depth * 0.9) * (y > -0.5 ? 0.4 : 1); // mép đảo gồ ghề, không còn vành tròn đều
       x += (x / rad) * push;
       z += (z / rad) * push;
       y += (rid - 0.4) * 3 * depth;
@@ -262,17 +263,18 @@ export class SkyIslands {
       const y = pos.getY(i);
       const depth = Math.min(1, -y / (86 * SK.len));
       const ny = nor.getY(i);
-      // vân tầng đá: mỗi lớp ~2,6 m một sắc (lam xám ↔ nâu đất), tối dần xuống mũi
-      const band = hash01(Math.floor(y / 2.6), seed, 61);
+      // vân tầng đá: mỗi lớp ~1,6 m một sắc (xám ấm ↔ nâu ↔ nâu vàng), tối dần xuống mũi
+      const band = hash01(Math.floor(y / 1.6), seed, 61);
       rock
         .copy(B)
-        .lerp(ROCK_BLUE, 0.35 + 0.25 * band)
-        .lerp(OCHRE, band > 0.72 ? 0.35 : 0)
-        .lerp(D, depth * 0.8)
-        .multiplyScalar(0.8 + band * 0.4);
-      // mặt ngửa ở sát mép đảo phủ rêu và đất
-      if (y > -6) rock.lerp(A, Math.min(1, (y + 6) / 5));
-      else if (ny > 0.55) rock.lerp(A, (ny - 0.55) * 1.4 * (1 - depth));
+        .lerp(MID, band * 0.7)
+        .lerp(OCHRE, band > 0.75 ? 0.45 : 0)
+        .lerp(D, depth * 0.75)
+        .multiplyScalar(0.72 + band * 0.55);
+      // chỉ một vành cỏ mỏng ở mép; dưới đó là vách đá, rêu loang theo mảng ở mặt ngửa
+      if (y > -1.4) rock.lerp(A, Math.min(1, (y + 1.4) / 1.4));
+      else if (ny > 0.55 && hash01(Math.floor(y / 1.7), Math.floor(Math.atan2(pos.getZ(i), pos.getX(i)) * 6), seed) > 0.4)
+        rock.lerp(MOSS, Math.min(0.85, (ny - 0.55) * 1.8) * (1 - depth * 0.6));
       col.push(rock.r, rock.g, rock.b);
     }
     lathe.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
@@ -281,7 +283,7 @@ export class SkyIslands {
     const ROOT = new THREE.Color(0x5b4a38);
     // nhũ đá nhọn rủ xuống từ thân đảo
     const DK = new THREE.Color(pal ? pal.dark : 0x4e4b48).multiplyScalar(0.75);
-    const spikes = Math.round((6 + r / 22) * SK.spikes);
+    const spikes = Math.round((6 + r / 22) * SK.spikes * 1.7);
     for (let i = 0; i < spikes; i++) {
       const a = hash01(i, seed, 97) * Math.PI * 2;
       const rr = r * (0.45 + hash01(i, seed, 103) * 0.45);
@@ -299,11 +301,11 @@ export class SkyIslands {
       sp.setAttribute('color', new THREE.Float32BufferAttribute(sc, 3));
       parts.push(sp);
     }
-    const roots = Math.round((10 + r / 14) * SK.roots);
+    const roots = Math.round((10 + r / 14) * SK.roots * 1.9);
     for (let i = 0; i < roots; i++) {
       const a = hash01(i, seed, 71) * Math.PI * 2;
       const depthAt = -(2 + hash01(i, seed, 79) * 16);
-      const len = Math.min((12 + hash01(i, seed, 73) * 26) * (SK.roots > 1 ? 1.4 : 1), isl.y + depthAt - floor - 8);
+      const len = Math.min((14 + hash01(i, seed, 73) * 34) * (SK.roots > 1 ? 1.4 : 1.15), isl.y + depthAt - floor - 8);
       const rr = r + 6.8 + depthAt * -0.12 - (depthAt < -9 ? 6 : 0);
       const cone = new THREE.ConeGeometry(0.28 + hash01(i, seed, 83) * 0.3, len, 5, 1, true).toNonIndexed();
       cone.rotateX(Math.PI); // mũi chúc xuống
@@ -325,26 +327,7 @@ export class SkyIslands {
     mesh.name = 'island-skirt';
     mesh.frustumCulled = false;
     this.group.add(mesh);
-    // sương ôm chân đảo: hai vành mờ ở lưng chừng thân đá
-    const ringMat = this.track(
-      new THREE.MeshBasicMaterial({
-        map: this.mistRing(),
-        transparent: true,
-        opacity: 0.8,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-        color: 0xf2f5f4,
-      }),
-    );
-    const geo = this.track(new THREE.CircleGeometry(r / 0.7, 48));
-    for (const dy of [-30, -42]) {
-      const ring = new THREE.Mesh(geo, ringMat);
-      ring.rotation.x = -Math.PI / 2;
-      ring.position.set(isl.x, Math.max(floor + 20, isl.y + dy), isl.z);
-      ring.renderOrder = -6;
-      ring.frustumCulled = false;
-      this.group.add(ring);
-    }
+    // (vành sương phẳng ở chân đảo đã gỡ: nhìn ngang tầm chúng thành vệt trắng cắt ngang chân đảo; thay bằng vòng mây cuộn trong `billowPlan`)
   }
 
   private rock: THREE.MeshStandardNodeMaterial | null = null;
@@ -367,7 +350,6 @@ export class SkyIslands {
    * mây chuyển động chậm; mờ dần khi camera ở gần (không che nhân vật đi trên sàn mây).
    */
   private buildBillows(floor: number, size: number, def: TerrainDef): void {
-    const N = 900;
     const geo = this.track(new THREE.IcosahedronGeometry(1, 1));
     const mat = this.track(new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false }));
     const noise = getCloudNoise();
@@ -376,14 +358,17 @@ export class SkyIslands {
     const swirl = texture(noise, vec2(wp.x.mul(0.012).add(time.mul(0.006)), wp.z.mul(0.012).add(wp.y.mul(0.02)))).a;
     const shadow = mix(skyParams.top, vec3(0.2, 0.32, 0.62), 0.75).mul(0.36);
     const light = mix(skyParams.horizon, vec3(1.0, 0.98, 0.95), 0.5).mul(0.95);
-    mat.colorNode = mix(shadow, light, lit.mul(0.8).add(swirl.mul(0.2)));
+    // phần thấp của khối tối hơn (chiều sâu): chân mây sát vực xám lam, đỉnh trắng sáng
+    const h = smoothstep(floor - 40, floor + 45, wp.y);
+    mat.colorNode = mix(shadow, light, lit.mul(0.8).add(swirl.mul(0.2))).mul(float(0.55).add(h.mul(0.45)));
     const facing = normalView.z.abs();
     const near = smoothstep(40, 170, wp.sub(cameraPosition).length());
     mat.opacityNode = clamp(facing.pow(1.0).mul(float(0.3).add(swirl.mul(0.7))), 0, 0.72).mul(near);
-    const im = new THREE.InstancedMesh(geo, mat, N);
+    const plan = billowPlan(size, floor, def.islands ?? [], def.bridges ?? [], 900);
+    const im = new THREE.InstancedMesh(geo, mat, plan.length);
     const m4 = new THREE.Matrix4();
     const q = new THREE.Quaternion();
-    billowPlan(size, floor, def.islands ?? [], def.bridges ?? [], N).forEach((b, i) => {
+    plan.forEach((b, i) => {
       q.setFromEuler(new THREE.Euler(0, b.yaw, 0));
       m4.compose(new THREE.Vector3(b.x, b.y, b.z), q, new THREE.Vector3(b.sx, b.sy, b.sz));
       im.setMatrixAt(i, m4);
@@ -393,26 +378,6 @@ export class SkyIslands {
     im.renderOrder = -5;
     im.name = 'cloud-billows';
     this.group.add(im);
-  }
-
-  private mistTex: THREE.CanvasTexture | null = null;
-  /** Vành sương: trong suốt ở tâm và ngoài rìa, dày ở khoảng 0,7 bán kính (đúng chân đảo). Dùng chung. */
-  private mistRing(): THREE.CanvasTexture {
-    if (this.mistTex) return this.mistTex;
-    const c = document.createElement('canvas');
-    c.width = c.height = 256;
-    const g = c.getContext('2d')!;
-    const grd = g.createRadialGradient(128, 128, 0, 128, 128, 128);
-    grd.addColorStop(0, 'rgba(255,255,255,0)');
-    grd.addColorStop(0.55, 'rgba(255,255,255,0.05)');
-    grd.addColorStop(0.72, 'rgba(255,255,255,0.7)');
-    grd.addColorStop(0.86, 'rgba(255,255,255,0.28)');
-    grd.addColorStop(1, 'rgba(255,255,255,0)');
-    g.fillStyle = grd;
-    g.fillRect(0, 0, 256, 256);
-    this.mistTex = this.track(new THREE.CanvasTexture(c));
-    this.mistTex.colorSpace = THREE.SRGBColorSpace;
-    return this.mistTex;
   }
 
   /** Sương sát mặt sàn mây: hai mặt phẳng mờ có nhiễu (gợn mây) phủ cả bản đồ, cao hơn sàn 0,25 m và 0,9 m (dưới đầu gối: người chơi quanh 15–20 m phải nhìn rõ nhân vật và mặt sàn). */
@@ -444,9 +409,27 @@ export class SkyIslands {
     base.colorSpace = THREE.SRGBColorSpace;
     const geo = this.track(new THREE.PlaneGeometry(size * 1.15, size * 1.15));
     geo.rotateX(-Math.PI / 2);
+    // mặt sàn mây: phủ lên mặt đất texture của sàn (đúng cao độ `floor`) (sàn mây đi được, không được lộ ra đất), xanh thẫm có vân mây trắng chuyển động;
+    // các khe giữa khối mây thấy lớp này tối hơn đỉnh mây trắng nên biển mây có chiều sâu
+    const abyssGeo = this.track(new THREE.PlaneGeometry(size * 1.6, size * 1.6));
+    abyssGeo.rotateX(-Math.PI / 2);
+    // trùng đúng mặt địa hình của sàn mây (floor): `polygonOffset` để luôn thắng độ sâu ở mọi khoảng cách (đặt cao hơn 0,2 m sẽ z-fight từ xa > 1 km)
+    const abyssMat = this.track(new THREE.MeshBasicNodeMaterial({ polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 }));
+    const cn = getCloudNoise();
+    const wxz = vec2(positionWorld.x, positionWorld.z);
+    const sw = texture(cn, wxz.mul(0.0035).add(vec2(time.mul(0.0015), 0)))
+      .a.mul(0.6)
+      .add(texture(cn, wxz.mul(0.011).sub(vec2(0, time.mul(0.003)))).g.mul(0.4));
+    abyssMat.colorNode = mix(vec3(0.3, 0.45, 0.72), mix(skyParams.horizon, vec3(1, 1, 1), 0.5), smoothstep(0.25, 0.8, sw));
+    const abyss = new THREE.Mesh(abyssGeo, abyssMat);
+    abyss.position.set(size / 2, floor, size / 2);
+    abyss.renderOrder = -9;
+    abyss.frustumCulled = false;
+    abyss.name = 'cloud-floor';
+    this.group.add(abyss);
     const layers: [number, number, number][] = [
-      [0.25, 0.2, 11],
-      [0.9, 0.13, 7],
+      [0.25, 0.12, 11],
+      [0.9, 0.08, 7],
     ];
     layers.forEach(([dy, op, rep], i) => {
       const t = this.track(base.clone());
@@ -494,56 +477,6 @@ export class SkyIslands {
     this.puff = this.track(new THREE.CanvasTexture(c));
     this.puff.colorSpace = THREE.SRGBColorSpace;
     return this.puff;
-  }
-
-  /**
-   * Tầng mây quanh chân đảo và giữa các đảo (một InstancedMesh): đĩa mây ngang ở nhiều độ cao giữa sàn mây và đáy đảo, nhìn từ mép đảo xuống thấy lớp lớp
-   * có chiều sâu thay vì một mặt phẳng; ở ngay trên sàn mây (≥ 16 m) không có đĩa nào nên không che người đi dưới đó.
-   */
-  private buildBanks(islands: VhIsland[], floor: number): void {
-    const list: THREE.Matrix4[] = [];
-    const cols: THREE.Color[] = [];
-    const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
-    for (const isl of islands) {
-      const n = isl.r > 100 ? 9 : 4;
-      for (let i = 0; i < n; i++) {
-        const a = hash01(i, Math.floor(isl.x), 311) * Math.PI * 2;
-        const rr = isl.r * (0.85 + hash01(i, Math.floor(isl.z), 313) * 0.7);
-        const y = floor + 16 + hash01(i, Math.floor(isl.x + isl.z), 317) * Math.max(8, isl.y - 40 - floor - 16);
-        const sc = (isl.r > 100 ? 70 : 34) * (0.7 + hash01(i, Math.floor(isl.z), 319) * 0.9);
-        list.push(
-          new THREE.Matrix4().compose(
-            new THREE.Vector3(isl.x + Math.cos(a) * rr, y, isl.z + Math.sin(a) * rr),
-            q,
-            new THREE.Vector3(sc, sc, 1),
-          ),
-        );
-        // dưới đảo ngả lam xám, gần mặt sàn ngả ngà ấm (nắng bình minh hắt lên)
-        cols.push(new THREE.Color().setHSL(0.52 - 0.04 * hash01(i, 5, 321), 0.18, 0.8 + 0.12 * ((y - floor) / (isl.y - floor))));
-      }
-    }
-    const geo = this.track(new THREE.PlaneGeometry(2, 2));
-    const mat = this.track(
-      new THREE.MeshBasicMaterial({
-        map: this.puffTex(),
-        transparent: true,
-        opacity: 0.55,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-        fog: true,
-      }),
-    );
-    const im = new THREE.InstancedMesh(geo, mat, list.length);
-    list.forEach((m, i) => {
-      im.setMatrixAt(i, m);
-      im.setColorAt(i, cols[i]!);
-    });
-    im.instanceMatrix.needsUpdate = true;
-    if (im.instanceColor) im.instanceColor.needsUpdate = true;
-    im.frustumCulled = false;
-    im.renderOrder = -6;
-    im.name = 'cloud-banks';
-    this.group.add(im);
   }
 
   /** Đá trôi: mảnh đá lơ lửng quanh mỗi đảo (một InstancedMesh, tĩnh), cho cảm giác đảo đang vỡ dần vì mạch tinh đã bị rút. */

@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { atan, clamp, float, mix, positionWorld, smoothstep, sin, texture, time, uv, vec2, vec3, vertexColor } from 'three/tsl';
+import { atan, bumpMap, clamp, float, mix, positionWorld, smoothstep, sin, texture, time, uv, vec2, vec3, vertexColor } from 'three/tsl';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { ThienKhuyetSky, TkIsland } from '@dtl/shared';
 import { createWorldMaterial } from '../../render/materials/world';
@@ -261,6 +261,71 @@ function stalactites(parts: Parts, isl: TkIsland, seed: number): void {
   }
 }
 
+/** Ống thon theo đường cong `pts` (bán kính `r0` → ~0): rễ cây đá và dây leo rủ từ mép đảo. */
+function taperedTube(pts: THREE.Vector3[], r0: number, radial: number, segs: number): THREE.BufferGeometry {
+  const curve = new THREE.CatmullRomCurve3(pts);
+  const g = new THREE.TubeGeometry(curve, segs, r0, radial, false);
+  const p = g.getAttribute('position');
+  for (let i = 0; i <= segs; i++) {
+    const c = curve.getPoint(i / segs);
+    const k = Math.pow(1 - i / segs, 0.9) + 0.04;
+    for (let j = 0; j <= radial; j++) {
+      const idx = i * (radial + 1) + j;
+      p.setXYZ(idx, c.x + (p.getX(idx) - c.x) * k, c.y + (p.getY(idx) - c.y) * k, c.z + (p.getZ(idx) - c.z) * k);
+    }
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+/** Rễ cây đá bám thân đảo (cong ra ngoài rồi rũ xuống) và dây leo xanh rủ từ mép, như đảo Lạc Kiếm. */
+function roots(parts: Parts, isl: TkIsland, seed: number): void {
+  const rand = tkRng(seed + 55);
+  const nR = Math.round(isl.r * 0.45);
+  for (let i = 0; i < nR; i++) {
+    const a = rand() * Math.PI * 2;
+    const t0 = 0.04 + rand() * 0.22;
+    const r0 = islandRadius(isl, seed, a, t0) * 0.97;
+    const sx = isl.x + Math.cos(a) * r0;
+    const sz = isl.z + Math.sin(a) * r0;
+    const sy = isl.y - isl.depth * Math.pow(t0, 0.9);
+    const len = isl.depth * (0.25 + rand() * 0.5);
+    const bend = (rand() - 0.5) * 9;
+    const pts: THREE.Vector3[] = [];
+    for (let k = 0; k <= 5; k++) {
+      const q = k / 5;
+      pts.push(
+        new THREE.Vector3(
+          sx + Math.cos(a) * (q * q * 5 + bend * q) - Math.sin(a) * bend * 0.4 * q,
+          sy - len * q,
+          sz + Math.sin(a) * (q * q * 5 + bend * q) + Math.cos(a) * bend * 0.4 * q,
+        ),
+      );
+    }
+    parts.add(
+      'stone',
+      taperedTube(pts, 0.35 + rand() * 0.6, 6, 12),
+      new THREE.Matrix4(),
+      BARK.clone().lerp(ROCK_MID, rand() * 0.4),
+      0.1,
+      seed + i,
+    );
+  }
+  const nV = Math.round(isl.r * 0.9);
+  for (let i = 0; i < nV; i++) {
+    const a = rand() * Math.PI * 2;
+    const r0 = islandRadius(isl, seed, a, 0.0) * 0.98;
+    const sx = isl.x + Math.cos(a) * r0;
+    const sz = isl.z + Math.sin(a) * r0;
+    const len = 8 + rand() * 24;
+    const sway = (rand() - 0.5) * 3;
+    const pts = [0, 1, 2, 3, 4].map(
+      (k) => new THREE.Vector3(sx + Math.cos(a) * k * 0.4 + sway * (k / 4), isl.y - (len * k) / 4, sz + Math.sin(a) * k * 0.4),
+    );
+    parts.add('leaf', taperedTube(pts, 0.14 + rand() * 0.1, 4, 8), new THREE.Matrix4(), rand() < 0.5 ? LEAF_A : LEAF_B, 0.15, seed + i + 7);
+  }
+}
+
 /** Cây xanh trên đảo: thân nâu, tán ba khối tròn mượt (ico chia nhỏ), mọc ở vành cỏ ngoài. */
 function trees(parts: Parts, isl: TkIsland, seed: number): void {
   const rand = tkRng(seed + 77);
@@ -300,6 +365,9 @@ function stoneMaterial(roughness = 0.82): THREE.MeshStandardNodeMaterial {
   const b = texture(noise, vec2(p.x.mul(0.31), p.y.mul(0.31))).b;
   const c = texture(noise, vec2(p.z.mul(0.31), p.y.mul(0.19))).g;
   mat.colorNode = vertexColor().mul(mix(0.74, 1.22, a.mul(0.5).add(b.mul(0.3)).add(c.mul(0.2))));
+  // Nhám bề mặt đá: pháp tuyến lệch theo nhiễu chiếu chéo (vân nứt, gờ tầng), tạo khối đá thật thay vì mặt nhẵn như đất sét.
+  const bumpUv = vec2(p.x.add(p.z).mul(0.23), p.y.mul(0.31));
+  mat.normalNode = bumpMap(texture(noise, bumpUv.mul(2.3)), float(1.4));
   return mat;
 }
 
@@ -396,6 +464,7 @@ export class ThienKhuyetSkyScene {
       const seed = 2113 + i * 131;
       bodyGeos.push(islandGeometry(isl, seed));
       stalactites(parts, isl, seed);
+      roots(parts, isl, seed);
       trees(parts, isl, seed);
     });
     const rock = bodyGeos.map((g) => (g.index ? g.toNonIndexed() : g));
