@@ -457,9 +457,9 @@ function arrayMaterial(): THREE.MeshBasicNodeMaterial {
 
 /** Phông núi xa nhiều lớp sau vách bao quanh (POLISH-1): tím xám nhạt dần, chân chìm trong sương; tâm trùng tâm vùng chơi (`thien_khuyet.terrain.json` play). */
 const TK_RIDGES: RidgeLayer[] = [
-  { radius: 1250, amp: 1250, base: 110, color: 0x3a2f4c, haze: 0.16, seed: 7, freq: 6, sharp: 2.3 },
-  { radius: 1900, amp: 1650, base: 100, color: 0x54466e, haze: 0.34, seed: 17, freq: 8, sharp: 2.1 },
-  { radius: 2700, amp: 2200, base: 90, color: 0x7a6b94, haze: 0.56, seed: 31, freq: 10, sharp: 1.9 },
+  { radius: 1250, amp: 1150, base: 150, color: 0x2f2640, haze: 0.1, seed: 7, freq: 20, sharp: 1.7 },
+  { radius: 1900, amp: 1500, base: 130, color: 0x4a3d62, haze: 0.3, seed: 17, freq: 27, sharp: 1.6 },
+  { radius: 2700, amp: 1900, base: 110, color: 0x6c5f88, haze: 0.5, seed: 31, freq: 36, sharp: 1.5 },
 ];
 
 export class ThienKhuyetSkyScene {
