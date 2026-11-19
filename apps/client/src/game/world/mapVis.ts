@@ -90,7 +90,7 @@ export class MapVis {
     // Level đảo nổi (E3-N): cầu xích và đảo giả.
     if (padLevel) {
       const tr = terrainOf(padLevel);
-      if (tr.def.bridges?.length || tr.def.fakeIslands?.length) this.sky = new SkyIslands(this.group, tr);
+      if (tr.def.bridges?.some((b) => !b.own) || tr.def.fakeIslands?.length) this.sky = new SkyIslands(this.group, tr);
     }
     this.castRing = new THREE.Mesh(this.geo.cast, this.mat.cast);
     this.castRing.rotation.x = -Math.PI / 2;
