@@ -217,11 +217,14 @@ export default {
         await snapSizes(page, r.out, `${tag}-9${i}-kiep-${sec}s`, sizes, 200);
       }
       // Khung đúng lúc sét đánh: gọi chớp ngay rồi chụp sau 70 ms (chớp tắt trong ~0,25 s), mỗi cỡ một lần.
+      await reenter();
+      await gm(page, `tp ${c.x} ${c.z}`, 600);
+      await cam(page, { yaw: yawTo(0, -1), pitch: 0.42, dist: 26 });
       for (const sz of sizes) {
         const [width, height] = UI_SIZES[sz] ?? UI_SIZES['1080p'];
         await page.setViewportSize({ width, height });
         await sleep(700);
-        await page.evaluate('window.__game?.doKiepArt?.strike()');
+        await page.evaluate('window.__game?.doKiepArt?.strike(); window.__game?.post?.flash(0.3)');
         await sleep(70);
         await snap(page, r.out, `${tag}-95-set-danh-${sz}.jpg`, { wait: 0 });
       }

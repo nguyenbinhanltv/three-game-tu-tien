@@ -176,3 +176,10 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Tia sét** (`render/vfx/lightning.ts`, dùng chung): thân dày 0,22 → 0,38, nhánh 0,12 → 0,2, tối đa 7 nhánh rẽ (trước 5). Sét thiên kiếp (vùng báo `lightning` + tia quét) **luôn chớp toàn cảnh** (`post.flash` tối thiểu 0,3, tắt ~0,25 s) và dày ×1,5. Sân độ kiếp đọc `postParams.flash` để mây/biển mây/đá/phù văn bừng cùng chớp và đèn điểm trên đài đồng bộ; `DoKiepArt.strike()` dùng cho kịch bản chụp.
 - **Vòng chỉ báo AOE** (`render/vfx/sigil.ts`, chung mọi bí cảnh): nền phủ giảm một nửa (0,3 → 0,15), sọc chảy ra ngoài và vệt đã quét giảm một nửa; viền, phù văn và vạch tiến độ giữ nguyên.
 - **Ảnh**: `02-toan-canh` (đổi góc), `07-xoay-may`, `95-set-danh` (chụp 70 ms sau khi gọi chớp).
+
+### PR 7 vòng 4 (review code): chớp trang trí không lẫn với sét thật, đèn điểm theo chất lượng
+
+- **Bỏ đèn điểm chớp treo trên đài** (từng rọi sáng cả sàn đấu). Hai uniform tách riêng: `skyU` (xoáy mây, biển mây, tia trong mây: gồm chớp trang trí) và `flashU` (phù văn, khảm, đá vụn: chỉ theo `postParams.flash`, tức sét thật của kiếp). Sàn đấu không bao giờ loé vì chớp trang trí.
+- **Chớp trang trí thưa** (7–15 s một lần, trước 2,2–5,5 s) và **tạm dừng khi có vùng báo sét** (`eng.vfx.hazards.length > 0`, tới khi hết), nên vạch báo đang đếm ngược không bị loé và người chơi không nhầm với sét thật.
+- **Đèn điểm ấm ở bốn lò lửa** chỉ tạo khi `q.lights && isWebGPU` (như `LanternLights`); preset Thấp và WebGL2 không có đèn, vẫn còn quầng giả.
+- Ảnh `95-set-danh` mô phỏng sét thật (`strike()` + `post.flash(0,3)`) ở sân đang kiếp: sàn tối, chỉ nổi phù văn/khảm, sét và lò.

@@ -57,8 +57,10 @@ const PILLARS: readonly { x: number; z: number; broken: boolean }[] = Array.from
 /** Cao đầu thu lôi (m trên mặt sân): 9,2 + 3,45. */
 const TIP_Y = 12.65;
 
-/** Chớp sét dùng chung: 0..~1,4 (vật liệu `_rune`/`_volt`/xoáy mây/biển mây đọc cùng giá trị). */
+/** Chớp của tia sét THẬT (`postParams.flash`, 0..~1,2): vật liệu `_rune`/`_volt`/đá vụn đọc giá trị này, không bao giờ do chớp trang trí. */
 const flashU = uniform(0);
+/** Chớp trên cao (xoáy mây, biển mây, tia trong mây): gồm chớp trang trí; sàn đấu và vật liệu dưới đất KHÔNG đọc cái này. */
+const skyU = uniform(0);
 
 /** Vùng cấm đặt hiệu ứng ngẫu nhiên: quanh đài và lối vào phía nam. */
 export function dkKeepOut(x: number, z: number, minR: number): boolean {
@@ -121,8 +123,8 @@ export class DoKiepArt {
   private readonly seeds: number[] = [];
   private t = 0;
   private readonly y0: number;
-  private readonly light: THREE.PointLight;
-  private nextStrike = 1.5;
+  private readonly hazardActive: () => boolean;
+  private nextStrike = 4;
   private strikeAt = -10;
   private rain: THREE.LineSegments;
   private readonly rainSeed: number[] = [];
@@ -132,7 +134,12 @@ export class DoKiepArt {
   private readonly debrisSeed: number[] = [];
   private readonly tmp = new THREE.Object3D();
 
-  constructor() {
+  /**
+   * `lights`: bật đèn điểm ấm ở lò lửa (chỉ khi preset có đèn và đang chạy WebGPU, như `LanternLights`).
+   * `hazardActive`: true khi có vùng báo của kiếp đang đếm ngược; lúc đó chớp trang trí tạm dừng để không lẫn với sét thật.
+   */
+  constructor(opts: { lights: boolean; hazardActive: () => boolean }) {
+    this.hazardActive = opts.hazardActive;
     this.group.name = 'do-kiep-art';
     this.y0 = heightAt(CENTER.x, CENTER.z);
     this.fx = new DungeonFx({
@@ -155,16 +162,12 @@ export class DoKiepArt {
     const tipHalos = createLanternHalos(tipPts, 8, 0xc8b4ff);
     this.group.add(tipHalos);
     this.disposables.push(tipHalos.geometry, tipHalos.material as THREE.Material);
-    // lò lửa ấm: bốn đèn điểm cam rọi sàn và chân trụ
-    for (const [dx, dz] of CAULDRONS) {
+    // lò lửa ấm: bốn đèn điểm cam rọi sàn và chân trụ (chỉ khi đủ điều kiện, như đèn lồng)
+    for (const [dx, dz] of opts.lights ? CAULDRONS : []) {
       const wl = new THREE.PointLight(0xff8a3c, 420, 26, 2);
       wl.position.set(CENTER.x + dx, this.y0 + 4.2, CENTER.z + dz);
       this.group.add(wl);
     }
-    // đèn chớp: một đèn điểm tím-trắng treo trên đài, cường độ theo `flashU`
-    this.light = new THREE.PointLight(0xc4b0ff, 0, 220, 1.2);
-    this.light.position.set(CENTER.x, this.y0 + 32, CENTER.z);
-    this.group.add(this.light);
 
     this.buildVortex();
     this.buildCloudSea();
@@ -259,8 +262,8 @@ export class DoKiepArt {
       const col = mix(vec3(0.015, 0.012, 0.035), vec3(0.2, 0.14, 0.34), n.mul(n));
       const eye = smoothstep(0.32, 0.0, r);
       const baseCol = col
-        .add(vec3(0.55, 0.42, 1.0).mul(eye.mul(float(0.25).add(flashU.mul(1.6)))))
-        .add(vec3(0.5, 0.45, 0.8).mul(flashU.mul(0.35)).mul(n));
+        .add(vec3(0.55, 0.42, 1.0).mul(eye.mul(float(0.25).add(skyU.mul(1.6)))))
+        .add(vec3(0.5, 0.45, 0.8).mul(skyU.mul(0.35)).mul(n));
       // tia chớp chạy trong mây: đường vân sáng mảnh (đỉnh nhiễu) chỉ hiện lúc chớp
       const ridge = float(1).sub(
         smoothstep(
@@ -271,8 +274,8 @@ export class DoKiepArt {
             .abs(),
         ),
       );
-      m.colorNode = baseCol.add(vec3(0.85, 0.75, 1.0).mul(ridge.mul(flashU).mul(3.0)));
-      m.opacityNode = body.add(ridge.mul(flashU).mul(0.9)).clamp(0, 1).mul(opacity);
+      m.colorNode = baseCol.add(vec3(0.85, 0.75, 1.0).mul(ridge.mul(skyU).mul(3.0)));
+      m.opacityNode = body.add(ridge.mul(skyU).mul(0.9)).clamp(0, 1).mul(opacity);
       const mesh = new THREE.Mesh(geo, m);
       mesh.position.set(CENTER.x, y, CENTER.z);
       mesh.renderOrder = 5;
@@ -296,7 +299,7 @@ export class DoKiepArt {
     const n = a.mul(0.6).add(b.mul(0.4));
     const rr = length(wp.xz.sub(vec2(CENTER.x, CENTER.z)));
     const col = mix(vec3(0.035, 0.04, 0.08), vec3(0.2, 0.2, 0.3), smoothstep(0.35, 0.8, n));
-    m.colorNode = col.add(vec3(0.5, 0.45, 0.8).mul(flashU.mul(0.4)).mul(float(0.4).add(n)));
+    m.colorNode = col.add(vec3(0.5, 0.45, 0.8).mul(skyU.mul(0.4)).mul(float(0.4).add(n)));
     m.opacityNode = smoothstep(78.0, 100.0, rr).mul(0.96);
     const mesh = new THREE.Mesh(geo, m);
     mesh.position.set(CENTER.x, this.y0 + 0.35, CENTER.z);
@@ -308,17 +311,20 @@ export class DoKiepArt {
 
   private updateAll(dt: number): void {
     const t = this.t;
-    // nhịp chớp: cách 2,2–5,5 s, hai lần loé liền (0 và +0,2 s)
+    // chớp trang trí (chỉ trên cao): thưa, 7–15 s một lần, loé kép; tạm dừng khi có vùng báo sét của kiếp
     if (t >= this.nextStrike) {
-      this.strikeAt = t;
-      this.nextStrike = t + 2.2 + hash01(Math.floor(t * 10), 7, 8801) * 3.3;
+      if (this.hazardActive()) this.nextStrike = t + 1;
+      else {
+        this.strikeAt = t;
+        this.nextStrike = t + 7 + hash01(Math.floor(t * 10), 7, 8801) * 8;
+      }
     }
     const s = t - this.strikeAt;
     const f = s < 0 ? 0 : Math.max(Math.exp(-s / 0.09), s > 0.2 ? 0.75 * Math.exp(-(s - 0.2) / 0.13) : 0);
-    // chớp riêng + chớp do tia sét của kiếp (`postParams.flash`, đã ép sáng toàn màn hình) cùng điều khiển uniform dùng chung
-    const fp = Math.max(f, postParams.flash.value * 1.2);
-    flashU.value = fp;
-    this.light.intensity = fp * 4500;
+    // sàn: chỉ chớp do tia sét thật của kiếp; trời: thêm chớp trang trí
+    const real = postParams.flash.value * 1.2;
+    flashU.value = real;
+    skyU.value = Math.max(f, real);
 
     // hạt điện bốc dọc tám lôi trụ
     if (this.motes) {

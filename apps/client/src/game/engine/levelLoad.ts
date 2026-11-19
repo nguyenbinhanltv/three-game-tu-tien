@@ -450,7 +450,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     void loadXkModel(eng, q.shadows);
   }
   if (levelAssets(id).doKiepArt) {
-    eng.doKiepArt = new DoKiepArt();
+    eng.doKiepArt = new DoKiepArt({ lights: q.lights && isWebGPU(eng.renderer), hazardActive: () => eng.vfx.hazards.length > 0 });
     eng.scene.add(eng.doKiepArt.group);
     void loadDkModel(eng, q.shadows);
   }
