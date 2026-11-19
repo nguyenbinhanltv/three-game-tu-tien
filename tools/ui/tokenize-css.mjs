@@ -2,9 +2,7 @@
 // Dùng: node tools/ui/tokenize-css.mjs <file.css>…  — màu trùng token có sẵn dùng lại token đó; màu còn lại thành
 // token mới `--u-x-<giá trị>` ghi vào khối cuối ui/u2/tokens.css (gộp dần vào token ngữ nghĩa sau).
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
-const req = createRequire(new URL('../../node_modules/.pnpm/postcss@8.5.32/node_modules/postcss/package.json', import.meta.url));
-const postcss = req('postcss');
+import postcss from 'postcss';
 const TOK = 'apps/client/src/ui/u2/tokens.css';
 const COLOR = /#[0-9a-fA-F]{3,8}\b|\b(?:rgb|hsl)a?\([^()]*\)/g;
 const HEAD = '/* ── U2-9: màu chuyển từ CSS cũ (tên theo giá trị; gộp dần vào token ngữ nghĩa) ── */';
