@@ -7,17 +7,17 @@
 /* ───────── thẻ đăng nhập / tải: giấy ngà tường vân ───────── */
 :root:root .ts-card.ngj-card {
   position: relative;
-  background: url('./tex/paper.webp') var(--ngj-ivory);
+  background: url('./tex/paper.webp') var(--u-h-ivory);
   background-blend-mode: multiply;
-  border: 3px solid var(--ngj-jade);
+  border: 3px solid var(--u-h-jade);
   border-radius: 14px;
   box-shadow:
-    0 0 0 1px var(--ngj-gold),
-    inset 0 0 0 3px var(--ngj-ivory),
+    0 0 0 1px var(--u-h-gold),
+    inset 0 0 0 3px var(--u-h-ivory),
     inset 0 0 0 4px rgba(201, 164, 92, 0.75),
     0 18px 50px rgba(20, 30, 36, 0.35);
   backdrop-filter: none;
-  color: var(--ngj-ink);
+  color: var(--u-h-ink);
   width: min(92vw, 460px);
   padding: 22px 34px 26px;
 }
@@ -52,29 +52,29 @@
   }
 }
 :root:root .ngj-card .login-tag {
-  color: var(--ngj-ink-dim);
-  font-family: var(--k-font-serif, Georgia, serif);
+  color: var(--u-h-ink-dim);
+  font-family: var(--u-p-font-serif, Georgia, serif);
 }
 :root:root .ngj-card .login-form label {
-  font-family: var(--k-font-serif, Georgia, serif);
+  font-family: var(--u-p-font-serif, Georgia, serif);
   font-weight: 700;
   color: #6b4d1c;
   letter-spacing: 0.03em;
 }
 :root:root .ngj-card .login-form input {
   background: rgba(255, 250, 235, 0.8);
-  border: 1px solid var(--ngj-gold);
+  border: 1px solid var(--u-h-gold);
   border-radius: 3px;
-  color: var(--ngj-ink);
+  color: var(--u-h-ink);
 }
 :root:root .ngj-card .login-form input:focus {
-  border-color: var(--ngj-jade);
+  border-color: var(--u-h-jade);
   box-shadow: 0 0 0 2px rgba(62, 156, 143, 0.25);
 }
 :root:root .ngj-card .login-hint,
 :root:root .ngj-card .look-name,
 :root:root .ngj-card .look-key {
-  color: var(--ngj-ink-dim);
+  color: var(--u-h-ink-dim);
 }
 :root:root .ngj-card .login-error {
   color: #8f2a21;
@@ -83,8 +83,8 @@
 /* nút chính: vàng sơn, góc vát, như NgjButton primary */
 :root:root .ngj-card .btn.primary {
   border: 0;
-  color: var(--ngj-ink);
-  font-family: var(--k-font-serif, Georgia, serif);
+  color: var(--u-h-ink);
+  font-family: var(--u-p-font-serif, Georgia, serif);
   font-weight: 700;
   letter-spacing: 0.04em;
   background: linear-gradient(180deg, #f0d78e, #c9a45c 55%, #a47f3a);
@@ -123,8 +123,8 @@
   border: 2px solid rgba(164, 127, 58, 0.7);
   border-radius: 8px;
   background: rgba(255, 250, 235, 0.55);
-  color: var(--ngj-ink);
-  font-family: var(--k-font-serif, Georgia, serif);
+  color: var(--u-h-ink);
+  font-family: var(--u-p-font-serif, Georgia, serif);
   font-weight: 700;
 }
 :root:root .ngj-card .look-gender .look-face {
@@ -137,7 +137,7 @@
   filter: saturate(0.85);
 }
 :root:root .ngj-card .look-gender.sel {
-  border-color: var(--ngj-jade);
+  border-color: var(--u-h-jade);
   background: rgba(62, 156, 143, 0.16);
   box-shadow:
     0 0 0 2px rgba(62, 156, 143, 0.35),
@@ -147,13 +147,13 @@
   filter: none;
 }
 :root:root .ngj-card .look-dye {
-  border: 2px solid var(--ngj-ivory);
-  box-shadow: 0 0 0 1px var(--ngj-gold-lo);
+  border: 2px solid var(--u-h-ivory);
+  box-shadow: 0 0 0 1px var(--u-h-gold-lo);
 }
 :root:root .ngj-card .look-dye.sel {
   box-shadow:
-    0 0 0 2px var(--ngj-gold),
-    0 0 8px var(--ngj-gold);
+    0 0 0 2px var(--u-h-gold),
+    0 0 8px var(--u-h-gold);
 }
 
 /* thanh tiến độ tải: đầu mút thoi vàng và hạt ngọc */
@@ -162,13 +162,13 @@
   height: 12px;
   margin: 6px 10px 0;
   background: #120d0a;
-  border: 1.5px solid var(--ngj-gold);
+  border: 1.5px solid var(--u-h-gold);
   border-radius: 3px;
   box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6);
   overflow: visible;
 }
 :root:root .ngj-card .ts-bar-fill {
-  background: linear-gradient(180deg, var(--ngj-jade-hi), var(--ngj-jade) 55%, var(--ngj-jade-lo));
+  background: linear-gradient(180deg, var(--u-h-jade-hi), var(--u-h-jade) 55%, var(--u-h-jade-lo));
   border-radius: 2px;
 }
 :root:root .ngj-card .ts-bar::before {
@@ -179,9 +179,9 @@
   width: 9px;
   height: 9px;
   margin-top: -4.5px;
-  background: var(--ngj-gold-hi);
+  background: var(--u-h-gold-hi);
   transform: rotate(45deg);
-  box-shadow: 0 0 0 1px var(--ngj-gold-lo);
+  box-shadow: 0 0 0 1px var(--u-h-gold-lo);
 }
 :root:root .ngj-card .ts-bar::after {
   content: '';
@@ -192,12 +192,12 @@
   height: 10px;
   margin-top: -5px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #d6fff4, var(--ngj-jade) 65%, var(--ngj-jade-lo));
-  box-shadow: 0 0 0 1px var(--ngj-gold);
+  background: radial-gradient(circle at 35% 30%, #d6fff4, var(--u-h-jade) 65%, var(--u-h-jade-lo));
+  box-shadow: 0 0 0 1px var(--u-h-gold);
 }
 :root:root .ngj-card .ts-line {
-  color: var(--ngj-ink);
-  font-family: var(--k-font-serif, Georgia, serif);
+  color: var(--u-h-ink);
+  font-family: var(--u-p-font-serif, Georgia, serif);
 }
 
 /* ───────── băng chuyền chọn công pháp ───────── */
@@ -209,10 +209,10 @@
   display: grid;
   grid-template-columns: 120px 1fr 360px;
   grid-template-rows: auto 1fr auto;
-  color: var(--ngj-ivory);
-  font-family: var(--ngj-font-body);
+  color: var(--u-h-ivory);
+  font-family: var(--u-h-font-body);
   background: radial-gradient(ellipse at 45% 55%, #2c2119 0%, #1e1712 55%, #120d0a 100%);
-  animation: ngj-car-in 0.3s var(--ngj-ease) both;
+  animation: ngj-car-in 0.3s var(--u-ease) both;
   overflow: hidden;
 }
 @keyframes ngj-car-in {
@@ -272,10 +272,10 @@
 }
 .ngj-car-title span {
   padding: 9px 56px;
-  font: 700 22px var(--k-font-serif, Georgia, serif);
+  font: 700 22px var(--u-p-font-serif, Georgia, serif);
   letter-spacing: 0.12em;
-  color: var(--ngj-gold-hi);
-  border: 1px solid var(--ngj-gold);
+  color: var(--u-h-gold-hi);
+  border: 1px solid var(--u-h-gold);
   box-shadow:
     inset 0 0 0 3px #1e1712,
     inset 0 0 0 4px rgba(201, 164, 92, 0.55);
@@ -298,9 +298,9 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 1px solid var(--ngj-gold);
+  border: 1px solid var(--u-h-gold);
   background: rgba(30, 23, 18, 0.9);
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
   font-size: 22px;
   cursor: pointer;
   z-index: 3;
@@ -313,7 +313,7 @@
   left: 34px;
   top: 84px;
   z-index: 2;
-  color: var(--ngj-gold);
+  color: var(--u-h-gold);
   padding: 12px 10px;
   border: 1px solid rgba(201, 164, 92, 0.7);
   background: rgba(30, 23, 18, 0.75);
@@ -337,13 +337,13 @@
   border: 0;
   background: transparent;
   color: rgba(237, 227, 204, 0.5);
-  font: 600 17px var(--k-font-serif, Georgia, serif);
+  font: 600 17px var(--u-p-font-serif, Georgia, serif);
   letter-spacing: 0.1em;
   cursor: pointer;
   position: relative;
 }
 .ngj-car-roman[aria-selected='true'] {
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
 }
 .ngj-car-roman[aria-selected='true']::before {
   content: '';
@@ -353,9 +353,9 @@
   width: 9px;
   height: 9px;
   margin-top: -4.5px;
-  background: var(--ngj-gold-hi);
+  background: var(--u-h-gold-hi);
   transform: rotate(45deg);
-  box-shadow: 0 0 10px var(--ngj-gold);
+  box-shadow: 0 0 10px var(--u-h-gold);
 }
 .ngj-car-stage {
   grid-column: 2;
@@ -373,7 +373,7 @@
   border-radius: 50%;
   border: 1px solid rgba(201, 164, 92, 0.6);
   background: rgba(30, 23, 18, 0.8);
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
   font-size: 26px;
   line-height: 1;
   cursor: pointer;
@@ -393,7 +393,7 @@
   padding: 14px 10px;
   border: 0;
   cursor: pointer;
-  color: var(--ngj-ivory);
+  color: var(--u-h-ivory);
   background: linear-gradient(180deg, #4a3a22, #2a2014 70%);
   clip-path: polygon(
     14px 0,
@@ -408,8 +408,8 @@
   opacity: 0.45;
   filter: saturate(0.7);
   transition:
-    transform var(--ngj-dur-open) var(--ngj-ease),
-    opacity var(--ngj-dur-open);
+    transform var(--u-dur-open) var(--u-ease),
+    opacity var(--u-dur-open);
 }
 .ngj-car-card::before {
   content: '';
@@ -429,12 +429,12 @@
   filter: none;
   cursor: default;
   background: linear-gradient(180deg, #f0d78e, #a47f3a);
-  animation: ngj-car-pop var(--ngj-dur-open) var(--ngj-ease) both;
+  animation: ngj-car-pop var(--u-dur-open) var(--u-ease) both;
 }
 /* thẻ đang chọn: ruột giấy ngà tường vân, chữ mực (như mockup) */
 .ngj-car-card[data-pos='cur']::before {
   inset: 4px;
-  background: url('./tex/paper.webp') var(--ngj-ivory);
+  background: url('./tex/paper.webp') var(--u-h-ivory);
   background-blend-mode: multiply;
 }
 .ngj-car-card[data-pos='cur']::after {
@@ -451,11 +451,11 @@
   font-size: clamp(16px, 2.2vmin, 26px);
 }
 .ngj-car-card[data-pos='cur'] .ngj-car-card-role {
-  color: var(--ngj-ink-dim);
+  color: var(--u-h-ink-dim);
 }
 .ngj-car-card[data-pos='cur'] .ngj-car-card-emblem {
   background: radial-gradient(circle, rgba(255, 250, 235, 0.9), rgba(62, 156, 143, 0.12));
-  border-color: var(--ngj-jade);
+  border-color: var(--u-h-jade);
 }
 .ngj-car-card[data-pos='cur'] .ngj-car-card-emblem .content-icon {
   filter: drop-shadow(0 1px 2px rgba(30, 23, 18, 0.5));
@@ -486,9 +486,9 @@
   height: 82%;
 }
 .ngj-car-card-name {
-  font: 700 clamp(14px, 1.7vmin, 21px) var(--k-font-serif, Georgia, serif);
+  font: 700 clamp(14px, 1.7vmin, 21px) var(--u-p-font-serif, Georgia, serif);
   letter-spacing: 0.05em;
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
   text-align: center;
 }
 .ngj-car-card-role {
@@ -500,9 +500,9 @@
   top: 12px;
   right: 12px;
   padding: 1px 8px;
-  font: 700 11px var(--ngj-font-body);
-  background: var(--ngj-gold);
-  color: var(--ngj-ink);
+  font: 700 11px var(--u-h-font-body);
+  background: var(--u-h-gold);
+  color: var(--u-h-ink);
   clip-path: polygon(4px 0, calc(100% - 4px) 0, 100% 50%, calc(100% - 4px) 100%, 4px 100%, 0 50%);
 }
 .ngj-car-info {
@@ -512,7 +512,7 @@
   margin-right: 36px;
   padding: 22px 24px 24px;
   background: rgba(30, 23, 18, 0.9);
-  border: 1px solid var(--ngj-gold);
+  border: 1px solid var(--u-h-gold);
   box-shadow:
     inset 0 0 0 3px rgba(30, 23, 18, 0.9),
     inset 0 0 0 4px rgba(201, 164, 92, 0.5);
@@ -523,8 +523,8 @@
 }
 .ngj-car-info h3 {
   margin: 0;
-  font: 700 22px var(--k-font-serif, Georgia, serif);
-  color: var(--ngj-gold-hi);
+  font: 700 22px var(--u-p-font-serif, Georgia, serif);
+  color: var(--u-h-gold-hi);
   letter-spacing: 0.05em;
 }
 .ngj-car-role {
@@ -539,7 +539,7 @@
   color: rgba(237, 227, 204, 0.88);
 }
 .ngj-car-passive b {
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
 }
 .ngj-car-skills {
   display: flex;
