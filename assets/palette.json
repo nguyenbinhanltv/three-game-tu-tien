@@ -328,7 +328,7 @@
         "sunColor": "#EEF3FF", "sunIntensity": 2.6, "sunElevationDeg": 14,
         "skyColor": "#AFC3DE", "skyIntensity": 0.95,
         "fogColor": "#B4C2E4", "fogDensity": 0.00042, "heightFogTop": 70, "heightFogBoost": 1.5,
-        "fogHaze": 0.00108, "fogHazeStart": 100, "fogScatter": 0.8, "rim": 0.5,
+        "fogHaze": 0.0006, "fogHazeStart": 140, "fogScatter": 0.8, "rim": 0.5,
         "shadowTint": "#46507A", "highlightTint": "#FFF4F4", "splitBalance": 0.05,
         "blackLift": "#16162E", "contrast": 1.15, "saturation": 0.8, "exposure": 0.98
       },
@@ -363,8 +363,8 @@
         "label": "Bắc Hoang — bên kia khe, ngày tím mờ",
         "sunColor": "#D8CAF4", "sunIntensity": 2.0, "sunElevationDeg": 10,
         "skyColor": "#5E5090", "skyIntensity": 0.9,
-        "fogColor": "#70629C", "fogDensity": 0.00114, "heightFogTop": 60, "heightFogBoost": 2.1,
-        "fogHaze": 0.0015, "fogHazeStart": 55, "fogScatter": 0.8, "rim": 0.7,
+        "fogColor": "#70629C", "fogDensity": 0.0008, "heightFogTop": 60, "heightFogBoost": 2.1,
+        "fogHaze": 0.0009, "fogHazeStart": 80, "fogScatter": 0.8, "rim": 0.7,
         "shadowTint": "#18102E", "highlightTint": "#E6D8FF", "splitBalance": -0.05,
         "blackLift": "#1A1232", "contrast": 1.15, "saturation": 0.82, "exposure": 1.08
       },
