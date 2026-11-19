@@ -16,6 +16,7 @@ import {
   positionViewDirection,
   positionWorld,
   pow,
+  reflector,
   sin,
   smoothstep,
   texture,
@@ -123,10 +124,10 @@ export function knMaterialFor(name: string): THREE.Material | null {
   const glint = vec3(0.85, 0.92, 1.0).mul(streak).mul(0.9);
   m.emissiveNode = refl
     .mul(vec3(0.85, 0.9, 1.0))
-    .mul(0.75)
-    .add(glint)
-    .add(vec3(0.6, 0.72, 1.0).mul(fres).mul(0.5))
-    .add(vertexColorStreak());
+    .mul(0.5)
+    .add(glint.mul(0.6))
+    .add(vec3(0.6, 0.72, 1.0).mul(fres).mul(0.3))
+    .add(vertexColorStreak().mul(0.6));
   return m;
 }
 
@@ -165,6 +166,8 @@ function reflectiveSurface(
   geo: THREE.BufferGeometry,
   centerX: number,
   centerZ: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  planar?: any,
 ): THREE.Mesh {
   const nz = getCloudNoise();
   const w = positionWorld.xz.sub(vec2(centerX, centerZ));
@@ -177,8 +180,8 @@ function reflectiveSurface(
   const cosT = clamp(v.y.negate(), 0, 1);
   const fres = pow(float(1).sub(cosT), 3.0);
   const rd = vec3(v.x, v.y.negate().add(0.02), v.z);
-  // trăng trong phản chiếu giảm còn ~35% (bản gốc cháy thành mảng trắng lớn trên sàn)
-  const refl = skyColor(rd, 0.35);
+  // trăng KHÔNG nằm trong phản chiếu sàn/hồ (đĩa trăng phản chiếu thành vũng trắng đặc có mép cứng trên sàn): chỉ còn trời + mây
+  const refl = skyColor(rd, kind === 'water' ? 0.35 : 0);
   // phản chiếu phẳng của vòng gương trăng: cắt tia phản xạ với mặt phẳng z = RING.z (tương đối tâm sảnh), trúng đĩa/vành thì lấy màu gương
   // cao độ tâm sảnh tính lúc dựng (Kính Nguyệt đã là level hoạt động), không lúc import module (khi level hiện tại có thể có địa hình khác)
   const centerY = heightAt(CENTER.x, CENTER.z);
@@ -197,9 +200,10 @@ function reflectiveSurface(
     .add(0.5);
   const ringDisc = mix(vec3(0.1, 0.14, 0.26), vec3(0.8, 0.86, 1.0), glint.pow(3.0)).mul(0.6);
   const ringRefl = ringDisc
-    .mul(smoothstep(RING.r - 0.5, RING.r - 1.8, dRing))
-    .add(vec3(0.95, 0.86, 0.62).mul(smoothstep(1.3, 0.0, abs(dRing.sub(RING.r + 0.8)))))
-    .mul(ringValid);
+    .mul(smoothstep(RING.r + 1.5, RING.r - 4.5, dRing))
+    .add(vec3(0.95, 0.86, 0.62).mul(smoothstep(3.2, 0.0, abs(dRing.sub(RING.r + 0.8))).mul(0.35)))
+    .mul(ringValid)
+    .mul(kind === 'water' ? 1 : 0.45);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let col: any;
   const edgeDark = float(1).sub(smoothstep(40.0, 100.0, r).mul(0.8));
@@ -210,7 +214,7 @@ function reflectiveSurface(
       .mul(0.5)
       .add(smoothstep(0.02, 0.0, vein2).mul(0.25));
     const tone = texture(nz, w.mul(1 / 23)).b;
-    const stone = mix(vec3(0.24, 0.26, 0.32), vec3(0.46, 0.46, 0.5), tone).mul(float(1).sub(veins.mul(0.5)));
+    const stone = mix(vec3(0.16, 0.18, 0.24), vec3(0.4, 0.4, 0.45), tone).mul(float(1).sub(veins.mul(0.5)));
     const ang = atan(w.y, w.x);
     const soft = (rad: number, wd: number) => exp(abs(r.sub(rad)).div(wd).pow(2).negate());
     const thin = (rad: number, wd: number) => smoothstep(wd, 0.0, abs(r.sub(rad)));
@@ -219,8 +223,14 @@ function reflectiveSurface(
     const petals = smoothstep(0.035, 0.0, abs(sin(ang.mul(4.5))))
       .mul(smoothstep(21, 26, r))
       .mul(smoothstep(56, 50, r));
-    const line = thin(57, 0.16).add(thin(59.6, 0.1)).add(thin(20, 0.14)).add(thin(40, 0.08)).add(ticks.mul(0.7)).add(petals.mul(0.5));
-    const glow = soft(57, 2.4).add(soft(59.6, 1.6)).add(soft(20, 1.6)).mul(0.18);
+    const line = thin(57, 0.16)
+      .add(thin(59.6, 0.1))
+      .add(thin(20, 0.14))
+      .add(thin(40, 0.08))
+      .add(ticks.mul(0.3))
+      .add(petals.mul(0.5))
+      .mul(0.65);
+    const glow = soft(57, 2.4).add(soft(59.6, 1.6)).add(soft(20, 1.6)).mul(0.1);
     const silver = vec3(0.78, 0.86, 1.0)
       .mul(line)
       .add(vec3(0.55, 0.68, 1.0).mul(glow));
@@ -244,15 +254,28 @@ function reflectiveSurface(
           .negate(),
       ).mul(0.6),
     );
-    const lightMul = float(0.28)
-      .add(pools.mul(0.6))
+    const lightMul = float(0.22)
+      .add(pools.mul(0.42))
       .add(exp(length(w).div(16).pow(2).negate()).mul(0.14));
     col = stone
       .mul(lightMul)
       .mul(edgeDark)
-      .add(refl.mul(fres.mul(0.95).add(0.16)).mul(edgeDark))
+      .add(refl.mul(fres.mul(1.25).add(0.08)).mul(edgeDark))
       .add(ringRefl.mul(fres.mul(0.8).add(0.14)).mul(edgeDark))
       .add(silver);
+    if (planar) {
+      // phản chiếu thật (mảnh gương, cột, đèn): mạnh ở vùng giữa (nhẵn, roughness thấp), mờ dần ra mép điện; thớ đá cắt bớt phản chiếu; fresnel tăng khi nhìn xiên
+      const mid = float(1).sub(smoothstep(25.0, 95.0, r).mul(0.75));
+      const far = float(1).sub(smoothstep(50.0, 150.0, length(positionWorld.sub(cameraPosition))).mul(0.5));
+      const k = fres
+        .mul(0.3)
+        .add(0.15)
+        .mul(mid)
+        .mul(far)
+        .mul(float(1).sub(veins.mul(0.8)))
+        .clamp(0, 0.85);
+      col = mix(col, planar.rgb.min(0.6), k);
+    }
   } else {
     const base = vec3(0.025, 0.04, 0.075);
     col = base.add(refl.mul(fres.mul(0.75).add(0.22))).add(ringRefl.mul(fres.mul(0.7).add(0.4)));
@@ -267,14 +290,15 @@ function reflectiveSurface(
 }
 
 /** Sàn cẩm thạch phản chiếu (đĩa r 112 bám `heightAt` + 0,08 m). */
-export function buildMirrorFloorKn(): THREE.Mesh {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function buildMirrorFloorKn(planar?: any): THREE.Mesh {
   const R = 112;
   const geo = new THREE.RingGeometry(0.01, R, 128, 48).rotateX(-Math.PI / 2);
   const p = geo.attributes.position as THREE.BufferAttribute;
   // bám đúng địa hình (+0,08 m) như sàn cũ: người chơi/quái đứng theo `heightAt` nên sàn không được cao hơn mặt đất thật
   for (let i = 0; i < p.count; i++) p.setY(i, heightAt(CENTER.x + p.getX(i), CENTER.z + p.getZ(i)) + 0.08);
   geo.computeBoundingSphere();
-  const mesh = reflectiveSurface('marble', R, geo, CENTER.x, CENTER.z);
+  const mesh = reflectiveSurface('marble', R, geo, CENTER.x, CENTER.z, planar);
   mesh.name = 'kn-mirror-floor';
   return mesh;
 }
@@ -295,10 +319,54 @@ export class KinhNguyetArt {
   readonly group = new THREE.Group();
   private readonly fx: DungeonFx;
   private readonly disposables: { dispose(): void }[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private reflectorNode: any = null;
 
-  constructor() {
+  /** `reflect`: phản chiếu phẳng thật của sàn (một lần vẽ cảnh thêm, nửa độ phân giải); tắt ở preset Thấp/WebGL2. */
+  constructor(opts: { reflect: boolean; hideInReflection?: THREE.Object3D } = { reflect: false }) {
     this.group.name = 'kinh-nguyet-art';
-    const floor = buildMirrorFloorKn();
+    let planar = undefined;
+    if (opts.reflect) {
+      const rf = reflector({ resolution: 0.4, bounces: false });
+      rf.target.rotateX(-Math.PI / 2);
+      rf.target.position.set(CENTER.x, heightAt(CENTER.x, CENTER.z) + 0.08, CENTER.z);
+      this.group.add(rf.target);
+      planar = rf;
+      this.reflectorNode = rf;
+      // lượt vẽ phản chiếu không có MRT bloom nên vật liệu VFX (`fx-*`) và các vật `MeshBasicMaterial` thường (vòng chân nhân vật, dấu cổng) không biên dịch được:
+      // ẩn nhóm VFX, nhãn tên (`label-batch`), mọi `Sprite` và các mesh đó trong đúng lượt này
+      const hide = opts.hideInReflection;
+      const base = rf.reflector;
+      const before = base.updateBefore.bind(base);
+      // Danh sách vật cần ẩn được quét lại mỗi ~0,5 s (không `traverse` mỗi khung); vật mới sinh ra có thể lọt vào phản chiếu tối đa nửa giây.
+      let hidden: THREE.Object3D[] = [];
+      let sweepAt = 0;
+      base.updateBefore = (frame: Parameters<typeof before>[0]) => {
+        const scene = this.group.parent;
+        const now = performance.now();
+        if (now >= sweepAt) {
+          sweepAt = now + 500;
+          hidden = [];
+          scene?.traverse((o) => {
+            if (
+              o === hide ||
+              o.name === 'label-batch' ||
+              (o as THREE.Sprite).isSprite ||
+              (o as THREE.Mesh).material?.constructor === THREE.MeshBasicMaterial
+            )
+              hidden.push(o);
+          });
+        }
+        const was = hidden.map((o) => o.visible);
+        for (const o of hidden) o.visible = false;
+        try {
+          before(frame);
+        } finally {
+          hidden.forEach((o, k) => (o.visible = was[k]!));
+        }
+      };
+    }
+    const floor = buildMirrorFloorKn(planar);
     this.group.add(floor);
     this.disposables.push(floor.geometry, floor.material as THREE.Material);
     // ba hồ nước tĩnh (r 9–12): bắc (trước vòng gương trăng) và hai bên, tránh khu giữa và lối vào
@@ -357,6 +425,12 @@ export class KinhNguyetArt {
   }
 
   dispose(): void {
+    if (this.reflectorNode) {
+      // render target riêng của phản chiếu phẳng (HalfFloat + depth) phải giải phóng khi rời level
+      this.group.remove(this.reflectorNode.target);
+      this.reflectorNode.dispose();
+      this.reflectorNode = null;
+    }
     this.fx.dispose();
     for (const d of this.disposables) d.dispose();
     this.disposables.length = 0;

@@ -187,3 +187,29 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 
 - Hoàn nguyên `render/vfx/sigil.ts`, `render/vfx/lightning.ts`, `game/fx/vfxParts/hazard.ts`, `game/fx/telegraph.ts` về như `main`: PR này chỉ chạm cảnh `do_kiep` (`doKiepArt.ts`, GLB, palette `dk`, dữ liệu level, kịch bản chụp).
 - Chớp ngẫu nhiên chỉ còn ảnh hưởng trời (xoáy mây, biển mây), thưa và dừng khi có hazard; không đèn điểm chớp trên đài; đèn lò chỉ khi `q.lights && isWebGPU` (xem vòng 4).
+
+## Polish — Kính Nguyệt: giảm cháy sáng (vòng 1)
+
+- Gương trăng (`knMaterialFor`): phát sáng giảm (phản chiếu trời ×0,5, vệt chéo ×0,6, viền ×0,3, vệt bake ×0,6) nên không còn cháy thành mảng trắng.
+- Sàn cẩm thạch (`reflectiveSurface`): đá tối hơn (tương phản thớ rõ hơn), vũng sáng trăng và ánh nền giảm, phản chiếu hướng trời nghiêng theo fresnel mạnh hơn (bóng loáng xa/cận), vạch trận và chấm chia (72) mờ ~35–70%, quầng bạc quanh vòng ×0,55.
+- Mood `kn`: exposure 0,92 → 0,8, tương phản 1,14 → 1,2.
+- **Còn lại**: sàn vẫn chưa phản chiếu thật cột/gương (chỉ phản chiếu trời và vòng gương trăng, không có planar reflection); vũng tròn trắng quanh nhân vật thử và vòng ở bắc không thuộc shader sàn (không ẩn được bằng `kn-moonbeam`/`dungeon-*`), nguồn chưa xác định.
+
+### Polish — Kính Nguyệt vòng 2 (góp ý duyệt): bỏ đĩa trăng đặc, sàn phản chiếu thật, đèn lồng ấm
+
+- **Đĩa/vòng trắng đặc** trên sàn là **phản chiếu của đĩa trăng và vòng gương trăng** trong shader sàn (ẩn sàn là hết; không phải cột sáng hay vòng cảnh giới): sàn nay chỉ phản chiếu trời + mây (không trăng), phản chiếu vòng gương trăng mềm hơn nhiều (gradient rộng, viền vàng ×0,35, ×0,45 trên sàn). Hồ nước vẫn soi trăng.
+- **Sàn phản chiếu thật** (`reflector` của TSL, nửa độ phân giải, `KinhNguyetArt({ reflect })`): thấy mảnh gương, cột, đèn, vòng gương trăng trên sàn; mạnh ở vùng giữa (nhẵn), mờ dần ra mép điện, thớ đá cắt bớt, fresnel tăng khi nhìn xiên, độ sáng phản chiếu bị chặn ở 0,7. Chỉ bật khi `q.lights && WebGPU` (preset Thấp/WebGL2 giữ sàn cũ). Lượt vẽ phản chiếu không có MRT bloom nên ẩn nhóm VFX và các `MeshBasicMaterial` thường (vòng chân nhân vật, dấu cổng) trong đúng lượt đó (nếu không: lỗi WGSL).
+- **Đèn lồng ấm**: quầng 1,3 → 3,6 m, cường độ đèn điểm ×0,35 → ×0,9 (chỉ level có `kinhNguyetArt`).
+- **Chi phí**: ~195–214 draw call (trước ~150) do vẽ cảnh thêm cho phản chiếu; vẫn dưới 300.
+- **Còn lại**: cột sáng trăng volumetric mới là nón mờ sẵn có; vòng sáng nhỏ quanh chân nhân vật thử là vòng chân (aura chung) nên giữ nguyên.
+
+### Polish — Kính Nguyệt vòng 3 (góp ý duyệt): bỏ nhãn tên khỏi phản chiếu, giảm độ gương
+
+- Lượt vẽ phản chiếu ẩn thêm **nhãn tên** (`InstancedMesh` `label-batch`, nay có `name`) và mọi `THREE.Sprite`; nhãn tên/HUD 3D không còn lộn ngược trên sàn.
+- Cường độ phản chiếu giảm ~40–45% (hệ số nền 0,38 → 0,15, fresnel 0,5 → 0,3, trần sáng 0,7 → 0,6) và mờ dần theo khoảng cách tới camera (50 → 150 m, giảm tối đa 50%), nên vân đá đọc được; phản chiếu mạnh ở vùng giữa và khi nhìn xiên.
+
+### Polish — Kính Nguyệt vòng 4 (review code): giải phóng render target, đo trong trận
+
+- `KinhNguyetArt.dispose()` gỡ `rf.target` khỏi group và gọi `reflector.dispose()` (giải phóng render target HalfFloat + depth); trước đó mỗi lần vào/ra level rò một render target. Hook ẩn vật trong lượt phản chiếu không `traverse` mỗi khung nữa: danh sách (nhãn tên, sprite, `MeshBasicMaterial` thường, nhóm VFX) quét lại mỗi ~0,5 s.
+- Độ phân giải phản chiếu 0,5 → 0,4. Phản chiếu chỉ bật ở preset có đèn (Cao/Cực cao) và WebGPU.
+- **Đo (`pnpm shots dungeonart --level kinh_nguyet --battle 1 --perf 1`, preset Cao, 1080p)**: cảnh trống 194–236 draw call, ~0,81–0,86M tam giác, 9–10 ms/khung; **đang đánh boss Chân Quân**: 205 draw call, ~0,97M tam giác, 9,4 ms/khung. Một lần đo trước khi hạ độ phân giải ra 257 draw call, 16,7 ms (ồn do chụp ảnh cùng lúc); chưa có số "không phản chiếu" cùng preset Cao để so riêng.
