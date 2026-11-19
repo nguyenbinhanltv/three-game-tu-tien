@@ -41,7 +41,7 @@ export interface CharacterView {
   /** Phản ứng trúng đòn (hit-stop, chớp, giật lùi, rung). */
   readonly hit: HitReact;
   /** Ra đòn (một lần). */
-  attack(): void;
+  attack(o?: AttackOpts): void;
   /**
    * Phát động tác của một chiêu (pose id, M3-4). Trả false nếu model không có động tác này (gọi `attack()` thay);
    * true nếu đã nhận, kể cả khi bỏ qua vì đang bay/trên không/chết (server không cho ra chiêu). Muốn biết động tác
@@ -106,6 +106,13 @@ export interface SkillEvent {
   kb: boolean;
   /** Chỉ ở `windup`: số giây (đồng hồ animation) còn lại tới mốc `hitAt` đầu tiên, để lên lịch tiếng vung (K-7). */
   hitIn?: number;
+}
+
+/** Đòn dự phòng (clip của asset, không có pose chiêu): thông tin để phát sự kiện `windup`/`hit` đúng khung (NV3-A3). */
+export interface AttackOpts {
+  skill?: string;
+  combo?: number;
+  kb?: boolean;
 }
 
 export interface PerformOpts {

@@ -57,7 +57,7 @@ const PEN_INSTALL = `(() => {
 export default {
   name: 'chrv3anim',
   desc: 'Animation nhân vật v3: video cũ | mới ghép theo mốc từng tình huống (3,5 s, toàn thân, hai góc) + đo tay xuyên thân',
-  usage: '[--genders m,f] [--variants old,new,noarm] [--group all|base|loco] [--sit <tên chứa>] [--size 960x600] [--nopen]',
+  usage: '[--genders m,f] [--variants old,new,noarm] [--group all|base|loco|feet|hit] [--sit <tên chứa>] [--size 960x600] [--nopen]',
   async run(r) {
     const viewport = size('960x600');
     const variants = list('--variants', 'old,new');
@@ -67,6 +67,8 @@ export default {
     for (const g of genders) {
       const gname = g === 'm' ? 'nam' : 'nu';
       for (const v of variants) {
+        // Nhóm `feet` (A2): bản "cũ" = tắt IK chân (`?v3feet=0`), vẫn dùng hệ animation mới.
+        const oldQ: Record<string, string> = group === 'feet' ? { chr: 'v3', v3feet: '0' } : { chr: 'v3', v3anim: '0' };
         const tag = `${gname}-${v}`;
         const t0 = Date.now();
         const { ctx, page } = await r.open({
@@ -74,7 +76,7 @@ export default {
           viewport,
           quality: 'high',
           look: { g },
-          query: QUERY[v] ?? {},
+          query: v === 'old' ? oldQ : (QUERY[v] ?? {}),
           hide: 'hud',
           warnings: /models|chr_v3|clip/,
           video: path.join(r.out, `_rec-${tag}`),
@@ -257,10 +259,118 @@ export default {
           locoSit('lùi (nhìn ngang)', ['KeyA'], false, Math.PI / 2),
           locoSit('tiến (nhìn ngang, mốc)', ['KeyD'], false, Math.PI / 2),
         ];
+        // A2: xoay tại chỗ (hướng mặt quay đều 360° trong 3,5 s, ghi đè trong trang) và đứng trên dốc (chân hai bên chênh độ cao).
+        const spinFacing = () =>
+          page.evaluate(
+            `(() => { const g = window.__game; const f0 = g.camYaw; const t0 = performance.now(); Object.defineProperty(g, 'facing', { configurable: true, get() { return f0 + Math.min(1, (performance.now() - t0) / 3500) * Math.PI * 2; }, set() {} }); })()`,
+          );
+        const findSlope = () =>
+          page.evaluate(
+            `(async () => { const m = await import('/src/base/levelCtx.ts'); const g = window.__game; let best = null;
+              for (let i = 0; i < 576; i++) { const x = g.cur.x - 84 + (i % 24) * 7, z = g.cur.z - 84 + Math.floor(i / 24) * 7;
+                const d = 1.0, gx = (m.groundAt(x + d, z) - m.groundAt(x - d, z)) / (2 * d), gz = (m.groundAt(x, z + d) - m.groundAt(x, z - d)) / (2 * d);
+                const gr = Math.hypot(gx, gz); const d2 = 3, gx2 = (m.groundAt(x + d2, z) - m.groundAt(x - d2, z)) / (2 * d2), gz2 = (m.groundAt(x, z + d2) - m.groundAt(x, z - d2)) / (2 * d2);
+                const ok = gr > 0.3 && gr < 1.2 && Math.abs(Math.hypot(gx2, gz2) - gr) < 0.08;
+                if (ok && (!best || gr > best.gr)) best = { x: Math.round(x), z: Math.round(z), gr, az: Math.atan2(gx, gz) }; }
+              return best; })()`,
+          ) as Promise<{ x: number; z: number; gr: number; az: number } | null>;
+        // Độ cao cổ chân so với mặt đất ngay dưới nó (m), trung bình nhiều mẫu: chân bám đất thì hai chân bằng nhau và bằng giá trị trên đất phẳng.
+        const ankleClear = () =>
+          page.evaluate(
+            `(async () => { const m = await import('/src/base/levelCtx.ts'); const g = window.__game; const md = g.ents.players.get(g.sid).model; const P = md.rig.position.constructor; const o = { l: 0, r: 0 };
+              for (let i = 0; i < 8; i++) { await new Promise((r) => setTimeout(r, 120)); md.rig.updateMatrixWorld(true);
+                for (const s of ['l', 'r']) { const p = md.rig.getObjectByName('foot_' + s).getWorldPosition(new P()); o[s] += (p.y - m.groundAt(p.x, p.z)) / 8; } }
+              const f = md.feet; o.dbg = f ? { w: f.w, ik: f.ik, hip: f.hip, pin: f.pin, lod: md.lodLevel, vis: md.inner.visible, gr: md.grounded } : 'no feet'; return o; })()`,
+          ) as Promise<{ l: number; r: number; dbg?: unknown }>;
+        const feetSits: Sit[] = [
+          {
+            name: 'xoay tại chỗ (360° trong 3,5 s)',
+            prep: async () => {
+              await gm(page, 'killall', 800);
+              await gm(page, 'tp 2048 2088', 1500);
+              await cam(page, { yaw: 0.9, pitch: 0.25, dist: 3.6 });
+              await spinFacing();
+              await sleep(200);
+            },
+            cam: async () => void (await sleep(1)),
+            run: async () => void (await sleep(DUR)),
+          },
+          {
+            name: 'đứng trên đất phẳng (mốc)',
+            prep: async () => {
+              await gm(page, 'tp 2048 2088', 1800);
+              await page.evaluate(
+                `(() => { const g = window.__game; g.camYaw = 0.9; g.camPitch = 0.12; g.camDist = g.camDistCur = 3.4; const f = g.camYaw; Object.defineProperty(g, 'facing', { configurable: true, get() { return f; }, set() {} }); })()`,
+              );
+              await sleep(600);
+            },
+            cam: async () => void (await sleep(1)),
+            run: async () => {
+              const c = await ankleClear();
+              console.log(`[shots:chrv3anim] ${tag} · phẳng: cổ chân cách đất trái ${c.l.toFixed(3)} phải ${c.r.toFixed(3)} m`);
+              await sleep(DUR - 1100);
+            },
+          },
+          {
+            name: 'đứng trên dốc',
+            prep: async () => {
+              await gm(page, 'killall', 800);
+              let sl = await findSlope();
+              for (let i = 0; i < 8 && !sl; i++) sl = await findSlope();
+              if (sl) {
+                console.log(`[shots:chrv3anim] dốc ${sl.x},${sl.z} độ dốc ${sl.gr.toFixed(2)}`);
+                await gm(page, `tp ${sl.x} ${sl.z}`, 2500);
+                // Mặt quay dọc đường đồng mức (hai chân khác độ cao), camera đối diện.
+                await page.evaluate(
+                  `(() => { const g = window.__game; g.camYaw = ${sl.az + Math.PI / 2}; g.camPitch = 0.12; g.camDist = g.camDistCur = 3.4; const f = g.camYaw; Object.defineProperty(g, 'facing', { configurable: true, get() { return f; }, set() {} }); })()`,
+                );
+              }
+              await sleep(800);
+            },
+            cam: async () => void (await sleep(1)),
+            run: async () => {
+              const c = await ankleClear();
+              console.log(
+                `[shots:chrv3anim] ${tag} · dốc: cổ chân cách đất trái ${c.l.toFixed(3)} phải ${c.r.toFixed(3)} m (chênh ${Math.abs(c.l - c.r).toFixed(3)}) ${JSON.stringify(c.dbg)}`,
+              );
+              await sleep(DUR - 1100);
+            },
+          },
+        ];
+        // A3: đòn UAL dự phòng (không pose chiêu) phát windup/hit/recovery/end; đo trễ windup→hit so với hitIn rồi in ra log.
+        const hitSits: Sit[] = [
+          {
+            name: 'đòn dự phòng (hitAt)',
+            prep: async () => {
+              await gm(page, 'killall', 800);
+              await gm(page, 'tp 2048 2088', 1500);
+              await cam(page, { yaw: 0.9, pitch: 0.2, dist: 3.4 });
+            },
+            cam: async () => void (await sleep(1)),
+            run: async () => {
+              const res = await page.evaluate(
+                `(async () => { const g = window.__game; const md = g.ents.players.get(g.sid).model; const out = [];
+                  const old = md.onSkillEvent; md.onSkillEvent = (e) => { out.push({ k: e.kind, t: +performance.now().toFixed(0), hitIn: e.hitIn, skill: e.skill, combo: e.combo }); old && old(e); };
+                  for (let i = 0; i < 3; i++) { md.attack({ skill: 'skl_phi_kiem' }); await new Promise((r) => setTimeout(r, 900)); }
+                  md.onSkillEvent = old; return out; })()`,
+              );
+              console.log(`[shots:chrv3anim] ${tag} · sự kiện đòn dự phòng: ${JSON.stringify(res)}`);
+              await sleep(300);
+            },
+          },
+        ];
         const pick = list('--sit', '')[0];
-        const chosen = (group === 'base' ? sits : group === 'loco' ? locoSits : [...sits, ...locoSits]).filter(
-          (x) => !pick || x.name.includes(pick),
-        );
+        const chosen = (
+          group === 'base'
+            ? sits
+            : group === 'loco'
+              ? locoSits
+              : group === 'feet'
+                ? feetSits
+                : group === 'hit'
+                  ? hitSits
+                  : [...sits, ...locoSits]
+        ).filter((x) => !pick || x.name.includes(pick));
         const marks: { name: string; at: number }[] = [];
         await hold(FRONT, 350); // quay mặt về phía camera
         await sleep(700);
