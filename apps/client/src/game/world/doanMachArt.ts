@@ -3,6 +3,7 @@ import { LEVELS, NPCS } from '@dtl/content';
 import { bridgeDeckY, type BridgeDef } from '@dtl/shared';
 import { heightAt, levelTerrain } from '../../base/levelCtx';
 import { runeMaterial } from '../../render/runeWall';
+import { MapleLeaves } from '../../render/mapleLeaves';
 import { createWorldMaterial } from '../../render/materials/world';
 
 /**
@@ -149,7 +150,7 @@ export interface RuneSpot {
 }
 
 /** Điểm khắc cổ trận: vách dốc quay vào vùng chơi, có nền thấp trước mặt, cách nhau ≥ 45 m. */
-export function runeSpots(max = 90): RuneSpot[] {
+export function runeSpots(max = 130): RuneSpot[] {
   const t = levelTerrain();
   const b = t.playBounds;
   const rand = rng(SEED + 7);
@@ -165,7 +166,7 @@ export function runeSpots(max = 90): RuneSpot[] {
       const y = heightAt(x, z);
       // phải có nền thấp trong tầm nhìn: điểm cách 60 m về phía tâm thấp hơn ít nhất 14 m
       if (heightAt(x + toC.x * 60, z + toC.y * 60) > y - 14) continue;
-      cand.push({ pos: new THREE.Vector3(x, y, z), normal: n, size: 22 + rand() * 14 });
+      cand.push({ pos: new THREE.Vector3(x, y, z), normal: n, size: 28 + rand() * 16 });
     }
   }
   for (let i = cand.length - 1; i > 0; i--) {
@@ -180,7 +181,7 @@ export function runeSpots(max = 90): RuneSpot[] {
   const out: RuneSpot[] = [];
   for (const c of cand) {
     if (out.length >= max) break;
-    if (out.every((o) => o.pos.distanceToSquared(c.pos) > 45 * 45)) out.push(c);
+    if (out.every((o) => o.pos.distanceToSquared(c.pos) > 38 * 38)) out.push(c);
   }
   return out;
 }
@@ -508,6 +509,7 @@ function bridgeGeometry(b: BridgeDef): THREE.BufferGeometry {
 export class DoanMachArt {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
+  private leaves: MapleLeaves | null = null;
 
   constructor() {
     this.group.name = 'doanMachArt';
@@ -575,6 +577,10 @@ export class DoanMachArt {
       this.disposables.push(geo, mat, mesh);
     }
 
+    // Lá phong bay quanh camera (GPU, 1 draw call).
+    this.leaves = new MapleLeaves();
+    this.group.add(this.leaves.mesh);
+
     // Cầu treo (nếu level khai báo cầu `own`).
     const br = ownBridge();
     if (br) {
@@ -589,7 +595,14 @@ export class DoanMachArt {
     }
   }
 
+  /** Mỗi khung: lá phong bám theo camera. */
+  update(cam: THREE.Vector3): void {
+    this.leaves?.update(cam, heightAt(cam.x, cam.z));
+  }
+
   dispose(): void {
+    this.leaves?.dispose();
+    this.leaves = null;
     for (const d of this.disposables) d.dispose();
     this.disposables = [];
   }
