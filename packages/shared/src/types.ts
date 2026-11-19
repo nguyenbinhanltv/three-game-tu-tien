@@ -924,6 +924,8 @@ export interface LevelAssets {
   kiemTrungArt?: boolean;
   /** Cảnh Phục Mạch Quật (DUN-1 PR2, client `game/world/phucMachArt.ts` + GLB `arch_phuc_mach`): hầm mỏ cũ, mạch tinh, cột sa thạch. Chỉ để nhìn. */
   phucMachArt?: boolean;
+  /** Cảnh Kính Nguyệt Cung (DUN-1 PR3, client `game/world/kinhNguyetArt.ts` + GLB `arch_kinh_nguyet`): điện gương trăng bạc. Chỉ để nhìn. */
+  kinhNguyetArt?: boolean;
   /**
    * Cảnh Lạc Kiếm trên không (MAP-1, chỉ để nhìn, không có va chạm): đảo nổi quanh tông môn, cầu mây, thác, Kiếm Đài.
    * Toạ độ tương đối tâm tông môn (`SECT`): `x`, `z` mét; `y` là cao độ MẶT TRÊN đảo tính từ `SECT.y` (m).
