@@ -101,7 +101,7 @@ for (const levelId of Object.keys(SCENES)) {
   const lvSeed = SEED + [...levelId].reduce((a, c) => a * 31 + c.charCodeAt(0), 7);
   let rand = rng(lvSeed);
   const placed: TcProp[] = [];
-  const spots: (Circle & { solid: boolean })[] = [];
+  const spots: (Circle & { solid: boolean; g: string })[] = [];
   const list: TcProp[] = [];
   const miss: string[] = [];
   // Duyệt theo thứ tự nhóm rồi cảnh, mỗi (cảnh, món) một dòng số ngẫu nhiên riêng: bật thêm nhóm chỉ thêm prop, không xê dịch prop của nhóm trước (PR chia theo nhóm).
@@ -133,8 +133,14 @@ for (const levelId of Object.keys(SCENES)) {
         miss.push(`bày tay ${f.name} (${x}, ${z}) đè vật cản`);
         continue;
       }
+      const footF = inf.foot * sc2;
+      const clash = spots.find((p) => p.g !== group && (x - p.x) ** 2 + (z - p.z) ** 2 < (p.r + footF + 0.5) ** 2); // như nhánh rải: không xuyên prop của NHÓM TRƯỚC (prop cùng nhóm đã duyệt từ PR trước nên giữ nguyên)
+      if (clash) {
+        miss.push(`bày tay ${f.name} (${x}, ${z}) xuyên prop đã đặt ở (${clash.x}, ${clash.z})`);
+        continue;
+      }
       list.push(prop);
-      spots.push({ x, z, r: inf.foot * sc2, solid: !!prop.col });
+      spots.push({ x, z, r: inf.foot * sc2, solid: !!prop.col, g: group });
       placed.push(prop);
     }
   };
@@ -205,7 +211,7 @@ for (const levelId of Object.keys(SCENES)) {
               prop.col = cols;
             }
             list.push(prop);
-            spots.push({ x, z, r: foot, solid });
+            spots.push({ x, z, r: foot, solid, g });
             placed.push(prop);
             ok = true;
           }

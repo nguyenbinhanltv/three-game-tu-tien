@@ -150,6 +150,61 @@ def _bevel_hard_edges(bm, width=0.04, angle=math.radians(35), mats=(), segments=
 
 ts.bevel_hard_edges = _bevel_hard_edges
 
+# ---------- men gốm + đan tre/mây (PROP-1 PR2) ----------
+bs.MATERIALS['glaze'] = Mat(0.16, 0.0, None, 1.0, False, 0.06)  # men gốm: trơn bóng, jitter màu theo mặt = men rạn nhẹ
+kit.PBR_SOURCES['weave'] = ('weave', 0.8, 512, 512)  # chỗ giữ: nguồn do `_install_weave` sinh, không có trên Poly Haven
+bs.MATERIALS['weave'] = Mat(0.85, 0.0, 'weave', 0.8, True, 0.03)
+
+
+def _install_weave():
+    """Texture đan nan (đan lóng đôi): luma + normal + roughness sinh bằng numpy, ghi PNG tạm để vật liệu nạp như PBR thật."""
+    import bpy
+    import tempfile
+
+    n = 512
+    cell = 64
+    yy, xx = np.mgrid[0:n, 0:n]
+    ci, cj = xx // cell, yy // cell
+    fx, fy = (xx % cell) / cell, (yy % cell) / cell
+    horiz = (ci + cj) % 2 == 0
+    prof = lambda t: np.sin(np.clip(t, 0, 1) * math.pi) ** 0.6  # noqa: E731
+    strip = np.where(horiz, prof(fy * 2 % 1.0), prof(fx * 2 % 1.0))  # hai nan song song mỗi ô
+    gap = np.where(horiz, np.abs(fy - 0.5) > 0.47, np.abs(fx - 0.5) > 0.47)
+    h = np.clip(strip - 0.35 * gap, 0, 1)
+    gy, gx = np.gradient(h)
+    nx, ny = -gx * 14.0, -gy * 14.0
+    nz = np.ones_like(h)
+    ln = np.sqrt(nx * nx + ny * ny + nz * nz)
+    nrm = np.stack([nx / ln * 0.5 + 0.5, ny / ln * 0.5 + 0.5, nz / ln * 0.5 + 0.5, np.ones_like(h)], axis=-1).astype(np.float32)
+    rough = np.repeat((0.7 + 0.25 * (1 - h))[..., None], 4, axis=-1).astype(np.float32)
+    rough[..., 3] = 1.0
+    luma = np.clip(0.62 + 0.36 * h, 0, 1)
+    d = tempfile.gettempdir()
+    paths = {}
+    for name, arr in (('normal', nrm), ('rough', rough)):
+        img = bpy.data.images.new(f'prop_tc_weave_{name}', n, n, alpha=False)
+        img.pixels.foreach_set(arr.ravel())
+        img.filepath_raw = os.path.join(d, f'prop_tc_weave_{name}.png')
+        img.file_format = 'PNG'
+        img.save()
+        paths[name] = img.filepath_raw
+        bpy.data.images.remove(img)
+    bs.TEXTURES['weave'] = luma.astype(np.float32)
+    lin = np.where(luma <= 0.04045, luma / 12.92, ((luma + 0.055) / 1.055) ** 2.4)
+    bs.TEX_GAIN['weave'] = 1.0 / float(lin.mean())
+    kit.PBR_FILES['weave'] = paths
+
+
+_prev_mt = bs.make_textures
+
+
+def _make_textures_weave():
+    _prev_mt()
+    _install_weave()
+
+
+bs.make_textures = _make_textures_weave
+
 # ---------- bảng màu ----------
 STONE_L = paint(0xB8B9AE, 'stone')
 STONE_M = paint(0x9A9C92, 'stone')
@@ -552,3 +607,18 @@ def arch_outline(w, h, seg=10, rect=0.0):
         pts.append((r * math.cos(a), h - r + r * math.sin(a)))
     pts.append((-r, h - r))
     return pts
+
+
+def spoked_wheel(b, cx, cy, cz, r, w, color, band, spokes=8, seg=20):
+    """Bánh xe có nan hoa, vành gỗ và đai sắt (band) bọc ngoài vành, quay quanh trục x."""
+
+    def ring(rr, xo):
+        return [(cx + xo, cy + math.cos(i / seg * math.tau) * rr, cz + math.sin(i / seg * math.tau) * rr) for i in range(seg + 1)]
+
+    tube(b, ring(r - 0.04, 0.0), w * 0.5, color, 6, sub=1, cap=False)  # vành gỗ
+    for xo in (-w * 0.35, w * 0.35):  # đai sắt hai mép vành
+        tube(b, ring(r + 0.0, xo), 0.016, band, 4, sub=1, cap=False)
+    lathe_x(b, [(0.0, -w * 0.9), (0.11, -w * 0.9), (0.12, 0.0), (0.11, w * 0.9), (0.0, w * 0.9)], color, 8, cx, cy, cz)
+    for k in range(spokes):
+        a = k / spokes * math.tau
+        tube(b, [(cx, cy + math.cos(a) * 0.08, cz + math.sin(a) * 0.08), (cx, cy + math.cos(a) * (r - 0.06), cz + math.sin(a) * (r - 0.06))], 0.03, color, 4, sub=1, cap=True)
