@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // THIÊN GIAI HOA TRÚC (hàng loạt): tranh nhân vật 8 bộ bậc cao × nam/nữ + bản A-pose sạch cho Tripo + pháp tướng Hộ pháp/Đan sư.
-// Ra: <DTL_ASSET_SOURCE>/portrait/thien_giai/<bộ>_<nam|nu>_pose.png, _apose.png, phap_tuong_*.png (+ .prompt.txt). Chỉ THÊM file (--force để vẽ lại).
+// Ra: <DTL_ASSET_SOURCE>/2d/hoa-truc/thien_giai/<bộ>_<nam|nu>_pose.png, _apose.png, phap_tuong_*.png (+ .prompt.txt). Chỉ THÊM file (--force để vẽ lại).
 // Dùng: node tools/codex-assets/thien-giai-bo-gen.mjs [--jobs 5] [--force] [--only a,b] [--tier kd|na|ht]. Codex tích hợp công cụ ảnh; KHÔNG dùng Tripo.
 // Phong cách tham khảo của người dùng chỉ để lấy PHONG CÁCH (voan, kim tuyến, tóc/lụa bay), không vẽ lại nhân vật nào, không chữ Hán/logo.
 import fs from 'node:fs';
@@ -100,15 +100,15 @@ const apose = (s, g) =>
 
 const list = [];
 for (const s of SETS) {
-  const concept = path.join(source, 'chr', s.dir, 'concept', 'concept_34_v01.png');
-  const piece = path.join(source, 'chr', s.dir, 'concept', `outfit_${s.piece}_ao_ngoai_v01_front.png`);
+  const concept = path.join(source, '3d', 'nhan-vat', s.dir, 'concept', 'concept_34_v01.png');
+  const piece = path.join(source, '3d', 'nhan-vat', s.dir, 'concept', `outfit_${s.piece}_ao_ngoai_v01_front.png`);
   const refs = [fs.existsSync(concept) && concept, fs.existsSync(piece) && piece].filter(Boolean);
   for (const g of Object.keys(WHO)) {
     list.push({ name: `${s.id}_${g}_pose`, tier: s.tier, refs, prompt: pose(s, g) });
     list.push({ name: `${s.id}_${g}_apose`, tier: s.tier, after: `${s.id}_${g}_pose`, prompt: apose(s, g) });
   }
 }
-const dir = path.join(source, 'portrait', 'thien_giai');
+const dir = path.join(source, '2d', 'hoa-truc', 'thien_giai');
 fs.mkdirSync(dir, { recursive: true });
 const has = (n) => fs.existsSync(path.join(dir, `${n}.png`));
 const queue = list.filter(

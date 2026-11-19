@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "external",
-    "source": "prop/prop_kiem_tan_hoa/sketchfab/sword_of_miracle_free.glb",
+    "source": "3d/vu-khi/prop_kiem_tan_hoa/sketchfab/sword_of_miracle_free.glb",
     "size": {
       "longest": 0.82
     },

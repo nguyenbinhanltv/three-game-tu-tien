@@ -2,7 +2,7 @@
  "$comment": "Cấu hình skin_prep.py cho Noxavyra the Crimson Twinblade (Atahan3D, CC BY 4.0). Model chuẩn hóa vào hộp ±1 (cao 2,0, gốc ở giữa người: chân z=-1), mặt trước -Y, x trái nhân vật dương. Khớp đo bằng lát cắt lưới (tools: tâm chân/thân theo z). Hai katana là một đường thẳng cán→mũi (kashira (±0.175,0.31,0.14) → mũi (±0.99,-0.385,-0.51)) dính liền nắm tay: cắt bằng hai capsule (cán phía sau nắm tay, tsuba + lưỡi phía ngoài), chừa nắm tay.",
  "id": "skin_noxavyra",
  "source": "C:/Users/PC/AppData/Local/Temp/skin3-work/src/noxavyra.glb",
- "out": "chr/skin_noxavyra/prep/rig_v01.glb",
+ "out": "3d/skin/skin_noxavyra/prep/rig_v01.glb",
  "view": {
   "scale": 2.2,
   "center": [

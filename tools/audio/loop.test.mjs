@@ -112,7 +112,7 @@ const FF = findFfmpeg();
 test('loop.mjs: chạy thật trên MP3 sinh bằng ffmpeg', { skip: FF ? false : 'không có ffmpeg (đặt FFMPEG=)' }, () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dtl-loop-test-'));
   try {
-    const srcDir = path.join(tmp, 'src', 'audio', 'music');
+    const srcDir = path.join(tmp, 'src', 'audio', 'nhac');
     fs.mkdirSync(srcDir, { recursive: true });
     // Nhạc mẫu chỉ bằng ffmpeg: dây gảy đổi nốt theo phách (chu kỳ 8 phách = 4,8 s), trống đầu ô nhịp, drone; lặng 2,5 s đầu, tắt dần 8 s cuối.
     const b = 'floor(t/0.6)';

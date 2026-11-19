@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // THIÊN GIAI hướng A: LỚP NỀN + LỚP HIỆU ỨNG dùng chung theo cảnh giới (nhân vật vẫn là tranh theo bộ trang phục, cảnh giới chỉ CHỒNG hiệu ứng).
-// Ra: <DTL_ASSET_SOURCE>/portrait/thien_giai_lop/<tên>.png (+ .prompt.txt). Chỉ THÊM file (--force để vẽ lại).
+// Ra: <DTL_ASSET_SOURCE>/2d/hoa-truc/thien_giai_lop/<tên>.png (+ .prompt.txt). Chỉ THÊM file (--force để vẽ lại).
 // Dùng: node tools/codex-assets/thien-giai-lop-gen.mjs [--jobs 6] [--force] [--only a,b]. Codex tích hợp công cụ ảnh; KHÔNG dùng Tripo.
 // Chỉ lấy PHONG CÁCH poster donghua tiên hiệp cao cấp; không sao chép IP, không chữ Hán thật (phù văn tự tạo), không logo.
 import fs from 'node:fs';
@@ -112,7 +112,7 @@ const LIST = [
   },
 ];
 
-const dir = path.join(source, 'portrait', 'thien_giai_lop');
+const dir = path.join(source, '2d', 'hoa-truc', 'thien_giai_lop');
 fs.mkdirSync(dir, { recursive: true });
 const has = (n) => fs.existsSync(path.join(dir, `${n}.png`));
 const queue = LIST.filter((t) => (!only.length || only.includes(t.name)) && (force || !has(t.name)));

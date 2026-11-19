@@ -10,7 +10,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "prop/prop_cong_thanh_vo/tripo/raw_v01.glb",
+    "source": "3d/kien-truc/prop_cong_thanh_vo/tripo/raw_v01.glb",
     "size": {
       "height": 14
     },

@@ -1,7 +1,7 @@
 {
  "$comment": "Tẫn Hỏa Kiếm Cơ (DV-2 đợt 3): Protector Nemesis (Atahan3D, CC BY) bỏ đại kiếm xanh dính tay (kiếm Tẫn Hỏa gắn rời bằng xương tay), nướng thấp tam giác. Chạy: blender -b --factory-startup --python tools/blender/skin_prep.py -- tools/blender/skins/dv2_protector.json <thư mục làm việc> --stage bake [--preview <ảnh>]. Tọa độ: hệ Blender của lưới nguồn (Z lên, mặt trước -Y, trái nhân vật +X).",
  "id": "dv2_protector",
- "source": "D:/METAGRIT/dtl-asset-source/assets-online/protector_nemesis__the_fallen_seraph.glb",
+ "source": "D:/METAGRIT/dtl-asset-source/3d/skin/goc-online/protector_nemesis__the_fallen_seraph.glb",
  "out": "dv2_protector/bake.glb",
  "triangles": 24000,
  "view": {

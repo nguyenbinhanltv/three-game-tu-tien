@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/elite_cot_kiem_thong_linh/tripo/rig_v01.glb",
+    "source": "3d/quai/elite_cot_kiem_thong_linh/tripo/rig_v01.glb",
     "size": {
       "height": 2.8
     },

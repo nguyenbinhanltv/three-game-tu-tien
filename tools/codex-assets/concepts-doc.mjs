@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Dựng docs/ASSET_CONCEPTS.md và bản HTML xem ảnh + prompt từ tools/codex-assets/concepts.json.
 // Dùng: node tools/codex-assets/concepts-doc.mjs [--html <đường dẫn .html>]
-// Ảnh WebP nằm ở docs/asset-concepts/<id>.webp (nén từ <DTL_ASSET_SOURCE>/2d/concepts/<id>.png).
+// Ảnh WebP nằm ở docs/asset-concepts/<id>.webp (nén từ <DTL_ASSET_SOURCE>/2d/concept/quai-prop/<id>.png).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -86,12 +86,12 @@ Bản 1 · 2026-11-16 · đi kèm \`docs/EXPANSION_DESIGN.md\`.
 
 **${ids.length} asset** người dùng tự dựng trên **Tripo web** (kênh web app trong \`docs/tripo-runbook.md\`; không dùng credit CLI). **Mục cỏ (ưu tiên 4) không dựng trên Tripo**: worker làm thẻ cỏ alpha instanced từ ảnh concept. Mỗi mục còn lại có ảnh concept sinh bằng Codex (\`node tools/codex-assets/gen.mjs concepts [id…]\`, không tốn credit Tripo), prompt Tripo tiếng Anh theo \`docs/art-bible.md\` v3 (bán tả thực điện ảnh, sương sớm), số tam giác/texture, xương, tên file và thư mục đích trong \`<DTL_ASSET_SOURCE>/\`, ghi chú pipeline. Thiết kế là gốc của dự án, không chép game/truyện có sẵn.
 
-Bản HTML xem ảnh + prompt có nút sao chép: \`huong-dan-concept-asset.html\` (thư mục artifact của phiên). Ảnh gốc PNG (3:2) nằm ở \`<DTL_ASSET_SOURCE>/2d/concepts/<id>.png\` kèm \`<id>.prompt.txt\` (prompt sinh ảnh); ảnh nén WebP trong repo: \`docs/asset-concepts/<id>.webp\`.
+Bản HTML xem ảnh + prompt có nút sao chép: \`huong-dan-concept-asset.html\` (thư mục artifact của phiên). Ảnh gốc PNG (3:2) nằm ở \`<DTL_ASSET_SOURCE>/2d/concept/quai-prop/<id>.png\` kèm \`<id>.prompt.txt\` (prompt sinh ảnh); ảnh nén WebP trong repo: \`docs/asset-concepts/<id>.webp\`.
 
 ## Cách dùng một mục (quy trình rút gọn)
 
 1. Mở ảnh concept (\`docs/asset-concepts/<id>.webp\`).
-2. Tripo web → **Image to 3D** (model **H3.1**), dùng **ảnh PNG gốc** \`<DTL_ASSET_SOURCE>/2d/concepts/<id>.png\` (không dùng bản WebP nén); **nếu giao diện có ô mô tả/prompt phụ thì dán prompt Tripo của mục vào đó**, nếu không có ô thì chỉ cần ảnh. Thiết lập theo dòng "Tripo" của mục (Texture Detailed, PBR bật, Smart Low-poly bật, Polycount theo mục, quad tắt).
+2. Tripo web → **Image to 3D** (model **H3.1**), dùng **ảnh PNG gốc** \`<DTL_ASSET_SOURCE>/2d/concept/quai-prop/<id>.png\` (không dùng bản WebP nén); **nếu giao diện có ô mô tả/prompt phụ thì dán prompt Tripo của mục vào đó**, nếu không có ô thì chỉ cần ảnh. Thiết lập theo dòng "Tripo" của mục (Texture Detailed, PBR bật, Smart Low-poly bật, Polycount theo mục, quad tắt).
 3. Chọn bản tốt nhất; nếu lưới nặng, dùng **Retopo** về đúng Polycount. Với asset **có xương**: rig theo cột "Xương" (cùng preset với quái/NPC hiện có, \`docs/prompts/tripo.md\` mục 2). Không mua animation: clip thủ tục đã có (\`anim_quadruped\`, \`anim_biped_extra\`, \`anim_serpent\`, \`anim_human_base\`).
 4. Tải **GLB** về thư mục đích (cột "Thư mục"): \`tripo/raw_v01.glb\` (dựng hình), \`lowpoly_v01.glb\`, \`rig_v01.glb\`; chép ảnh concept đã duyệt vào \`concept/concept_34_v01.png\` (đúng quy ước đặt tên ở \`docs/tripo-runbook.md\` mục 3). Tăng \`NN\` khi thử lại.
 5. Báo cho Claude/worker: worker tạo \`assets/source/<loại>/<id>/meta.json\`, chạy \`tools/blender/import_tripo.py\` và \`pnpm assets:build\`.

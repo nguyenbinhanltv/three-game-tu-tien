@@ -160,8 +160,8 @@ Thư mục nguồn: **`D:\METAGRIT\dtl-asset-source\`**. Bài học từ Kết �
 
 ## Bộ 1 · Kính Quang Kiếm Y (Kiếm tu)
 
-Ảnh trong: `D:\METAGRIT\dtl-asset-source\chr\set_kinh_quang_kiem_y\concept\`
-Lưu vào: `D:\METAGRIT\dtl-asset-source\chr\set_kinh_quang_kiem_y\tripo\`
+Ảnh trong: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_kinh_quang_kiem_y\concept\`
+Lưu vào: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_kinh_quang_kiem_y\tripo\`
 
 | # | Mảnh | Ảnh tải lên | Chế độ | Số mặt | Lưu thành |
 | --- | --- | --- | --- | --- | --- |
@@ -175,8 +175,8 @@ Lưu vào: `D:\METAGRIT\dtl-asset-source\chr\set_kinh_quang_kiem_y\tripo\`
 
 ## Bộ 2 · Vân Kình Thiết Giáp (Hộ pháp)
 
-Ảnh trong: `D:\METAGRIT\dtl-asset-source\chr\set_van_kinh_thiet_giap\concept\`
-Lưu vào: `D:\METAGRIT\dtl-asset-source\chr\set_van_kinh_thiet_giap\tripo\`
+Ảnh trong: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_van_kinh_thiet_giap\concept\`
+Lưu vào: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_van_kinh_thiet_giap\tripo\`
 
 | # | Mảnh | Ảnh tải lên | Chế độ | Số mặt | Lưu thành |
 | --- | --- | --- | --- | --- | --- |
@@ -190,8 +190,8 @@ Lưu vào: `D:\METAGRIT\dtl-asset-source\chr\set_van_kinh_thiet_giap\tripo\`
 
 ## Bộ 3 · Lưu Ly Đan Y (Đan sư)
 
-Ảnh trong: `D:\METAGRIT\dtl-asset-source\chr\set_luu_ly_dan_y\concept\`
-Lưu vào: `D:\METAGRIT\dtl-asset-source\chr\set_luu_ly_dan_y\tripo\`
+Ảnh trong: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_luu_ly_dan_y\concept\`
+Lưu vào: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_luu_ly_dan_y\tripo\`
 
 | # | Mảnh | Ảnh tải lên | Chế độ | Số mặt | Lưu thành |
 | --- | --- | --- | --- | --- | --- |
@@ -207,8 +207,8 @@ Lưu ý riêng: **Kính Quang** nửa dưới tay áo là voan (xuyên sáng th�
 
 ## Kiếm · Kính Quang Kiếm (dạng cuối +10 và vỏ)
 
-Ảnh trong: `D:\METAGRIT\dtl-asset-source\prop\prop_kiem_kinh_quang\concept\`
-Lưu vào: `D:\METAGRIT\dtl-asset-source\prop\prop_kiem_kinh_quang\tripo\`
+Ảnh trong: `D:\METAGRIT\dtl-asset-source\3d\vu-khi\prop_kiem_kinh_quang\concept\`
+Lưu vào: `D:\METAGRIT\dtl-asset-source\3d\vu-khi\prop_kiem_kinh_quang\tripo\`
 
 | Mảnh | Ảnh tải lên | Chế độ | Số mặt | Lưu thành |
 | --- | --- | --- | --- | --- |

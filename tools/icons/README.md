@@ -1,7 +1,7 @@
 # Icon skill / vật phẩm M4-7
 
 - Prompt chung: `docs/prompts/codex.md` mục 9; chủ thể: `subjects.json`.
-- PNG nguồn: `<DTL_ASSET_SOURCE>/icons/<id>.png` (mặc định cạnh repo gốc, không cạnh worktree). Mỗi icon được sinh riêng bằng công cụ ảnh tích hợp Codex; không cần API key.
+- PNG nguồn: `<DTL_ASSET_SOURCE>/2d/icon/v1/<id>.png` (mặc định cạnh repo gốc, không cạnh worktree). Mỗi icon được sinh riêng bằng công cụ ảnh tích hợp Codex; không cần API key.
 - `pnpm icons:build`: thu ảnh về 128×128, ghép 8×4 ô thành atlas WebP quality 90, hash tên file. Chỉ xóa các atlas cũ do script này quản lý.
 - Có `toktx` trong `TOKTX`, PATH hoặc thư mục KTX-Software mặc định: xuất thêm KTX2 UASTC sRGB. Không có thì ghi rõ và giữ WebP. UI DOM dùng WebP.
 - `pnpm icons:check`: kiểm hash/dung lượng/kích thước atlas, ID, ô không trùng và nguồn trong LICENSES. Chạy cùng `pnpm content:check`, không cần PNG nguồn trong CI.
@@ -15,4 +15,4 @@
 
 ## Bộ icon U2-I (2026-11-18)
 
-Atlas hiện tại do `pnpm icons:build` đóng từ **PNG 256 px của bộ U2-I** (`<DTL_ASSET_SOURCE>/2d/icons-v2/png256/`, ưu tiên cao nhất), icon không có viền (khung do `ui/u2` vẽ bằng mã). Cách sinh (tờ 3×2 mỗi lượt Codex), cắt/QC, 75 icon hệ thống SVG và dấu ấn bộ: `tools/icons/v2/README.md`. Icon hệ thống có SVG (`hud_*`, `mark_*`, `cur_*`, `st_*`, `ui_*`, `sys_*`) được `UiIcon` vẽ thẳng từ `ui/u2/sysGlyphs.ts`, không qua atlas.
+Atlas hiện tại do `pnpm icons:build` đóng từ **PNG 256 px của bộ U2-I** (`<DTL_ASSET_SOURCE>/2d/icon/v2/png256/`, ưu tiên cao nhất), icon không có viền (khung do `ui/u2` vẽ bằng mã). Cách sinh (tờ 3×2 mỗi lượt Codex), cắt/QC, 75 icon hệ thống SVG và dấu ấn bộ: `tools/icons/v2/README.md`. Icon hệ thống có SVG (`hud_*`, `mark_*`, `cur_*`, `st_*`, `ui_*`, `sys_*`) được `UiIcon` vẽ thẳng từ `ui/u2/sysGlyphs.ts`, không qua atlas.

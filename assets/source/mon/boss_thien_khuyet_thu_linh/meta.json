@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "boss/boss_thien_khuyet_thu_linh/tripo/rig_v01.glb",
+    "source": "3d/boss/boss_thien_khuyet_thu_linh/tripo/rig_v01.glb",
     "size": {
       "height": 8
     },

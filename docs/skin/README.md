@@ -28,7 +28,7 @@
 
 Model nguồn (Sketchfab) là lưới triệu tam giác, không xương, vũ khí dính liền tay, không ở tư thế chữ T. Hai bước:
 
-1. **`tools/blender/skin_prep.py`** (chạy tay một lần, vài phút; cấu hình `tools/blender/skins/<tên>.json`): gộp + hàn → cắt vũ khí (`cut`) → giảm lưới (`triangles`) → UV mới → nướng màu (EMIT) và normal từ bản cao sang bản thấp → dựng xương tên Mixamo theo **dáng của chính model** (`joints`, đo từ ảnh chiếu thẳng) → trọng số tự động (bone heat; lỗi thì theo khoảng cách) → dọn trọng số lạc (`stray`) và cắt mặt bắc cầu tay ↔ hông/chân → ép vùng không có xương riêng (`zones`: đuôi theo hông, tóc theo đầu/ngực, sừng theo đầu) → xuất `chr/<skin>/prep/rig_v01.glb` vào kho nguồn.
+1. **`tools/blender/skin_prep.py`** (chạy tay một lần, vài phút; cấu hình `tools/blender/skins/<tên>.json`): gộp + hàn → cắt vũ khí (`cut`) → giảm lưới (`triangles`) → UV mới → nướng màu (EMIT) và normal từ bản cao sang bản thấp → dựng xương tên Mixamo theo **dáng của chính model** (`joints`, đo từ ảnh chiếu thẳng) → trọng số tự động (bone heat; lỗi thì theo khoảng cách) → dọn trọng số lạc (`stray`) và cắt mặt bắc cầu tay ↔ hông/chân → ép vùng không có xương riêng (`zones`: đuôi theo hông, tóc theo đầu/ngực, sừng theo đầu) → xuất `3d/nhan-vat/<skin>/prep/rig_v01.glb` vào kho nguồn.
 
    ```
    blender --background --factory-startup --python tools/blender/skin_prep.py -- \

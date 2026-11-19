@@ -34,7 +34,7 @@ Theo mẫu E2-F (`docs/e2f-gear/`). Phạm vi: bậc 3 (Vân Hải, `reqLevel` 2
 
 ## Icon (Codex, không tốn credit)
 
-27 icon mới (`tools/codex-assets/icons.json`, vẽ bằng `node tools/codex-assets/gen.mjs icons <id…>`; PNG nguồn ở `../dtl-asset-source/2d/icons/`), thêm hàng LICENSES, `pnpm icons:build` rồi `pnpm icons:check`: **168/168 có tranh, 0 emoji dự phòng**. Ảnh: `icons-grid.webp`.
+27 icon mới (`tools/codex-assets/icons.json`, vẽ bằng `node tools/codex-assets/gen.mjs icons <id…>`; PNG nguồn ở `../dtl-asset-source/2d/icon/v1/`), thêm hàng LICENSES, `pnpm icons:build` rồi `pnpm icons:check`: **168/168 có tranh, 0 emoji dự phòng**. Ảnh: `icons-grid.webp`.
 
 ## Kinh tế và cân bằng (`pnpm sim:progress`)
 

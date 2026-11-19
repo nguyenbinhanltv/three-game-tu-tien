@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "boss/boss_van_hai_kinh_vuong/tripo/raw_v01.glb",
+    "source": "3d/boss/boss_van_hai_kinh_vuong/tripo/raw_v01.glb",
     "size": {
       "depth": 18
     },

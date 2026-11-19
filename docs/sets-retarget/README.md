@@ -19,7 +19,7 @@ Kế hoạch tổng: thân nền nam/nữ + các mảnh rời (áo ngoài, vai/g
 ## Dựng một mảnh mới (người dùng dựng trên Tripo, worker chạy pipeline)
 
 1. **Mảnh dựng ở tư thế nghỉ của thân nền** (chữ T, tay dang ngang, như `chr_kiem_tu_*`), đứng đúng chỗ trên thân 1,75 m (hoặc dùng `anchor`). Ma-nơ-canh có sẵn xương Mixamo (`rig_v01.glb`, tay thả cũng được) dùng `mode: rig`; mảnh rời không xương (`raw_v01.glb`) dùng `transfer` hoặc `rigid`.
-2. Đặt GLB nguồn vào `dtl-asset-source/chr/<mảnh>/tripo/` (thư mục chỉ-đọc ngoài repo; từ worktree đặt `DTL_ASSET_SOURCE=<đường dẫn>`).
+2. Đặt GLB nguồn vào `dtl-asset-source/3d/nhan-vat/<mảnh>/tripo/` (thư mục chỉ-đọc ngoài repo; từ worktree đặt `DTL_ASSET_SOURCE=<đường dẫn>`).
 3. Tạo `assets/source/chr/<mảnh>_<nam|nu>/meta.json` (mẫu: `set_liet_mach_kiem_y_nam`): `budgetClass: "outfit"`, `import.kind: "tripo"`, `source`, `size` (**kích thước thật của mảnh**, mét: `import_tripo` scale theo đó; mảnh không phải cả người thì đo chiều cao mảnh, không để 1,75), `orient` (`thigh` khi có xương đùi, `none` khi không), `post: "tools/blender/retarget_set.py"`, khối `retarget` (bảng dưới). Thêm dòng `assets/LICENSES.md`.
 4. `node tools/blender/run.mjs --only chr_kiem_tu_nam --force` (và `_nu`) để có GLB thô thân nền, rồi `node tools/blender/run.mjs --only <mảnh>_nam` và `pnpm assets:build --only <mảnh>_nam`; `pnpm assets:validate`.
 5. Thêm mảnh vào `outfits.json`; `?outfit=<mảnh>` ép mảnh cho mọi bộ đang mặc (xem thử trước khi có bộ).

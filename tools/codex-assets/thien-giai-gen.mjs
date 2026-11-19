@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // THIÊN GIAI HOA TRÚC (thử: bộ Liệt Mạch): tranh nhân vật phong cách "tiên giới" nhiều lớp voan + kim tuyến, A-pose sạch cho Tripo,
 // nền cảnh giới Kết Đan/Nguyên Anh/Hóa Thần, pháp tướng kiếm long ngọc, Nguyên Anh, phi kiếm.
-// Ra: <DTL_ASSET_SOURCE>/portrait/thien_giai/<tên>.png (+ .prompt.txt). Chỉ THÊM file (--force để vẽ lại).
+// Ra: <DTL_ASSET_SOURCE>/2d/hoa-truc/thien_giai/<tên>.png (+ .prompt.txt). Chỉ THÊM file (--force để vẽ lại).
 // Dùng: node tools/codex-assets/thien-giai-gen.mjs [--jobs 4] [--force] [--only a,b]. Codex tích hợp công cụ ảnh; KHÔNG dùng Tripo.
 // Ảnh tham khảo phong cách của người dùng chỉ để lấy PHONG CÁCH (voan, kim tuyến, tóc/lụa bay), không vẽ lại nhân vật nào, không chữ Hán/logo.
 import fs from 'node:fs';
@@ -44,7 +44,7 @@ const list = [];
 for (const g of Object.keys(WHO)) {
   list.push({
     name: `liet_mach_${g}_pose`,
-    ref: path.join(source, 'chr/set_liet_mach_kiem_y/concept/concept_34_v01.png'),
+    ref: path.join(source, '3d/nhan-vat/set_liet_mach_kiem_y/concept/concept_34_v01.png'),
     prompt: posePrompt(g),
   });
   list.push({ name: `liet_mach_${g}_apose`, after: `liet_mach_${g}_pose`, prompt: aposePrompt(g) });
@@ -67,7 +67,7 @@ list.push({
   prompt: `Use case: stylized-concept. ONE slender straight jian flying sword, pale jade-white blade with a luminous cyan edge and a faint trailing wisp of spiritual light behind the hilt, small gold guard, dark jade grip, shown vertical with the blade pointing UP, centered, occupying 90% of the frame height. Portrait 1:4 tall narrow canvas. Style: ${STYLE}. Background: ${MAGENTA}. ${NOTEXT}`,
 });
 
-const dir = path.join(source, 'portrait', 'thien_giai');
+const dir = path.join(source, '2d', 'hoa-truc', 'thien_giai');
 fs.mkdirSync(dir, { recursive: true });
 const has = (n) => fs.existsSync(path.join(dir, `${n}.png`));
 const queue = list.filter((t) => (!only.length || only.includes(t.name)) && (force || !has(t.name)));

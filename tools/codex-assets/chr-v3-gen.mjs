@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // CHR-V3 / V3B (N-1): concept NHÂN VẬT NGUYÊN KHỐI CÓ MẶT cho bộ thử Lạc Kiếm Môn Phục, nam và nữ, trước/sau/nghiêng, tư thế chữ A.
-// Ra: <DTL_ASSET_SOURCE>/chr/set_lac_kiem/concept/v3_<nam|nu>_<front|back|side>.png + .prompt.txt (chỉ THÊM file mới, không ghi đè).
+// Ra: <DTL_ASSET_SOURCE>/3d/nhan-vat/set_lac_kiem/concept/v3_<nam|nu>_<front|back|side>.png + .prompt.txt (chỉ THÊM file mới, không ghi đè).
 // Dùng: node tools/codex-assets/chr-v3-gen.mjs [--jobs 3] [--force]. Codex tích hợp công cụ ảnh, không dùng Tripo API/credit.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -46,7 +46,7 @@ Style: ${STYLE}
 Render: neutral soft even studio lighting from the front, no strong shadows, no color cast, plain flat light grey seamless background (#D8D8D8), no floor scenery, no floor shadow, single subject only.
 ${NOTEXT}`;
 
-const dir = path.join(source, 'chr', 'set_lac_kiem', 'concept');
+const dir = path.join(source, '3d', 'nhan-vat', 'set_lac_kiem', 'concept');
 fs.mkdirSync(dir, { recursive: true });
 const todo = [];
 for (const g of Object.keys(WHO)) for (const v of Object.keys(VIEW)) todo.push({ name: `${TAG}_${g}_${v}`, prompt: A(prompt(g, v)) });

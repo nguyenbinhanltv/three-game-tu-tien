@@ -2,7 +2,7 @@
   "$comment": "MẪU HỘ PHÁP / GIÁP (áo giáp ngắn tới gối, tấm giáp trước/sau tách đôi, tay áo ngắn + hộ uyển): vạt cao hơn bắp chân, ít chuỗi lò xo, không lò xo tay áo; số cần chỉnh theo model thật (đo bằng springMetrics).",
   "set": "ten_bo",
   "name": "Tên Bộ",
-  "raw": "chr/set_ten_bo/tripo/raw_v3_ten_bo_{g}.glb",
+  "raw": "3d/nhan-vat/set_ten_bo/tripo/raw_v3_ten_bo_{g}.glb",
   "height": {
     "nam": 1.84,
     "nu": 1.7
