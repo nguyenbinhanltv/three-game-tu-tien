@@ -143,4 +143,17 @@ describe('file hộp kiến trúc khớp GLB', () => {
     });
     expect(r.status, r.stderr).toBe(0);
   }, 120_000);
+
+  it('arch_xich_tan.boxes.json không cũ so với GLB và địa hình (bí cảnh, COL-C)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const args =
+      '--id arch_xich_tan --origin 1520,59.81419698223804,1300 --level xich_tan_khich --cell 1 --region 1422,1202,1618,1398 --place dungeon --prefix xk --check'.split(
+        ' ',
+      );
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/archcollider.cli.ts', ...args], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
 });
