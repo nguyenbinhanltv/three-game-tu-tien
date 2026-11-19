@@ -18,6 +18,7 @@ import { Beacons } from '../../render/beacons';
 import { GodRays } from '../../render/godRays';
 import { LacKiemGarden } from '../world/lacKiemGarden';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
+import { VanHaiWow } from '../world/vanHaiWow';
 import { applyGrading, markBloom } from '../../render/post';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../../render/grading';
@@ -331,6 +332,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.lacKiemGarden = new LacKiemGarden();
     eng.scene.add(eng.lacKiemGarden.group);
   }
+  if (id === 'van_hai') {
+    eng.vanHaiWow = new VanHaiWow(terrainOf(id).def);
+    eng.scene.add(eng.vanHaiWow.group);
+  }
   const gr = levelAssets(id).godRays;
   if (gr) {
     eng.godRays = new GodRays(gr);
@@ -408,6 +413,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.lacKiemGarden.group);
     eng.lacKiemGarden.dispose();
     eng.lacKiemGarden = null;
+  }
+  if (eng.vanHaiWow) {
+    drop(eng.vanHaiWow.group);
+    eng.vanHaiWow.dispose();
+    eng.vanHaiWow = null;
   }
   if (eng.lacKiemSky) {
     drop(eng.lacKiemSky.group);

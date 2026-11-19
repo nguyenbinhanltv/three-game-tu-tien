@@ -15,6 +15,8 @@ interface View {
   eye: [number, number, number];
   at: [number, number, number];
   fov?: number;
+  /** Giây đồng hồ của `vanHaiWow` (thuyền, cá kình) cố định khi chụp, để cá nằm trong khung; ảnh "trước" không có các vật này. */
+  wow?: number;
 }
 
 /** Tâm Phù Đảo Các (khớp `islands[0]` ở `van_hai.terrain.json`). */
@@ -22,12 +24,14 @@ const HUB = { x: 1024, z: 1024, y: 124 };
 
 /** Sáu góc máy cố định (camera tự do `__game.freeCam`, chỉ có tác dụng khi URL có `?debug=1`): không bị địa hình đẩy camera. */
 export const VIEWS: View[] = [
-  { name: 'hub', eye: [0, 134, 70], at: [0, 128, -10], fov: 58 },
-  { name: 'bienmay', eye: [-120, 150, 30], at: [-500, 100, 140], fov: 64 },
-  { name: 'cau', eye: [-70, 132, 30], at: [-150, 126, 60], fov: 60 },
-  { name: 'tungdai', eye: [-380, 150, 170], at: [-360, 130, 168], fov: 62 },
-  { name: 'trencao', eye: [420, 330, -300], at: [-40, 110, 60], fov: 58 },
-  { name: 'phongxa', eye: [0, 140, -60], at: [-500, 120, -700], fov: 66 },
+  { name: 'hub', wow: 200, eye: [0, 134, 70], at: [0, 128, -10], fov: 58 },
+  { name: 'bienmay', wow: 569, eye: [-120, 150, 30], at: [-500, 100, 140], fov: 64 },
+  { name: 'cau', wow: 300, eye: [-70, 132, 30], at: [-150, 126, 60], fov: 60 },
+  { name: 'tungdai', wow: 450, eye: [-380, 150, 170], at: [-360, 130, 168], fov: 62 },
+  { name: 'trencao', wow: 700, eye: [420, 330, -300], at: [-40, 110, 60], fov: 58 },
+  { name: 'haidang', wow: 100, eye: [150, 146, -96], at: [210, 142, -168], fov: 62 },
+  { name: 'kinh', wow: 569, eye: [0, 150, 0], at: [-594, 250, 176], fov: 62 },
+  { name: 'phongxa', wow: 914, eye: [0, 140, -60], at: [-500, 120, -700], fov: 66 },
 ];
 
 export default {
@@ -62,6 +66,7 @@ export default {
           await gm(page, 'killall', 600);
           await page.evaluate(
             (a) => {
+              window.__game!.vanHaiWow?.freeze(a.v.wow ?? null);
               window.__game!.freeCam = {
                 x: a.s[0] + a.v.eye[0],
                 y: a.v.eye[1],
@@ -74,6 +79,18 @@ export default {
             },
             { s: [HUB.x, HUB.y, HUB.z], v },
           );
+          if (flag('--probe')) {
+            console.log(
+              JSON.stringify(
+                await page.evaluate(() =>
+                  window.__game!.vanHaiWow?.group.children.map((c) => {
+                    const m = c as unknown as { geometry?: { attributes: { position: { count: number } }; boundingSphere?: { radius: number } | null }; count?: number };
+                    return [c.name, m.geometry?.attributes.position.count, m.count, c.visible, c.position.x | 0, c.position.y | 0, c.position.z | 0];
+                  }),
+                ),
+              ),
+            );
+          }
           const stem = `${tag}-${viewport[1]}p-${mood}-${v.name}`;
           await snap(page, r.out, `${stem}.png`, { wait: settleMs() });
           if (flag('--perf') && viewport[1] === 1080) perf[stem] = await perfSample(page);

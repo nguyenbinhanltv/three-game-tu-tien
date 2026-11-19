@@ -61,6 +61,7 @@ import { Beacons } from '../render/beacons';
 import type { GodRays } from '../render/godRays';
 import type { LacKiemGarden } from './world/lacKiemGarden';
 import type { LacKiemSkyScene } from './world/lacKiemSky';
+import type { VanHaiWow } from './world/vanHaiWow';
 import { PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { createWorldMaterial } from '../render/materials/world';
@@ -214,6 +215,8 @@ export class Game {
   godRays: GodRays | null = null;
   /** Đảo nổi, cầu mây, thác, Kiếm Đài (MAP-1). */
   lacKiemSky: LacKiemSkyScene | null = null;
+  /** Vân Hải (MAP-3): thuyền tiên, cá kình mây, cầu vòng linh khí, hải đăng. */
+  vanHaiWow: VanHaiWow | null = null;
   /** Vườn hoa, lùm trúc, đá rêu quanh tông môn (MAP-1). */
   lacKiemGarden: LacKiemGarden | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
