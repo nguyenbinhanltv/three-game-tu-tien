@@ -390,26 +390,33 @@ function pillarStoneGeometry(): THREE.BufferGeometry {
 
 function pillarRuneGeometry(): THREE.BufferGeometry {
   // Ba vòng phù văn (ống hở) quanh thân + vòng trận trên mặt đất; uv.x quanh vòng, uv.y dọc.
-  const g: THREE.BufferGeometry[] = [];
+  const pos: number[] = [];
+  const nrm: number[] = [];
+  const uvs: number[] = [];
   for (const [y, r0, r1, h] of [
     [2.2, 1.42, 1.5, 0.9],
     [4.6, 1.22, 1.3, 1.1],
     [7.0, 1.02, 1.1, 0.8],
   ] as const) {
-    g.push(place(new THREE.CylinderGeometry(r0, r1, h, 24, 1, true), 0, y, 0));
-  }
-  return g.reduce((a, b) => {
-    // gộp có uv
-    const m = new THREE.BufferGeometry();
-    const pa = a.toNonIndexed();
-    const pb = b.toNonIndexed();
-    for (const name of ['position', 'uv'] as const) {
-      const A = pa.getAttribute(name).array as ArrayLike<number>;
-      const B = pb.getAttribute(name).array as ArrayLike<number>;
-      m.setAttribute(name, new THREE.Float32BufferAttribute(Array.from(A).concat(Array.from(B)), name === 'uv' ? 2 : 3));
+    const cyl = place(new THREE.CylinderGeometry(r0, r1, h, 24, 1, true), 0, y, 0);
+    const flat = cyl.index ? cyl.toNonIndexed() : cyl; // CylinderGeometry luôn có chỉ mục; chỉ gọi khi có
+    for (const [src, dst] of [
+      ['position', pos],
+      ['normal', nrm],
+      ['uv', uvs],
+    ] as const) {
+      const arr = flat.getAttribute(src).array;
+      for (let i = 0; i < arr.length; i++) dst.push(arr[i]!);
     }
-    return m;
-  });
+    if (flat !== cyl) flat.dispose();
+    cyl.dispose();
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  out.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
+  out.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  out.computeBoundingSphere();
+  return out;
 }
 
 function runeMaterial(): THREE.MeshBasicNodeMaterial {
