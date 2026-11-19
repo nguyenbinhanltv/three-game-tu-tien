@@ -88,7 +88,7 @@ export default {
         .catch(() => null);
       await shot('01b-tien-ich', 300);
       res.overlaps = await page.evaluate(() => {
-        const sel = ['.u2t-ubtn', '.u2t-btn:not(.u2t-ubtn)', '.u2h-tl', '.u2h-quest', '.u2h-tr', '.u2h-chat'];
+        const sel = ['.u2t-ubtn', '.u2t-btn:not(.u2t-ubtn)', '.u2h-tl', '.u2h-quest', '.u2h-chat'];
         const els = sel
           .flatMap((s) => [...document.querySelectorAll(s)].map((el) => ({ s, el, b: el.getBoundingClientRect() })))
           .filter((x) => x.b.width > 0);

@@ -44,7 +44,7 @@ html[data-touch] .k-tip {
   --t-ax: calc(max(var(--t-inset), env(safe-area-inset-right)) + 42px);
   --t-ay: calc(max(var(--t-inset), env(safe-area-inset-bottom)) + 42px);
   --h-safe: 8px;
-  --t-chat-y: 186px; /* đáy dòng chat cách đáy màn hình */
+  --t-chat-y: 150px; /* đáy dòng chat cách đáy màn hình */
 }
 
 /* ───────── lớp điều khiển ───────── */
@@ -245,14 +245,32 @@ html[data-touch] .k-tip {
 }
 /* nhiệm vụ: khung gọn dưới chân dung, chỉ nhiệm vụ đang theo dõi (mũi tên thu/mở ≥ 44 px); chat: thẻ chạm được, mở tấm chat có bàn phím ảo */
 .hud.u2hud[data-mode='touch'] .u2h-quest {
-  position: fixed;
+  position: absolute;
   left: var(--t-l);
-  top: calc(var(--t-t) + 104px);
+  top: calc(var(--t-t) + 102px);
   width: min(230px, calc(100vw - 2 * var(--t-l) - 160px));
   min-height: 0;
   padding-bottom: var(--u-sp-2);
   font-size: var(--u-fs-1);
   pointer-events: auto;
+}
+.hud.u2hud[data-mode='touch'] .u2h-quest .u2h-q-title,
+.hud.u2hud[data-mode='touch'] .u2h-quest .u2h-q-obj {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hud.u2hud[data-mode='touch'] .u2h-quest .u2h-q-title {
+  font-size: var(--u-fs-2);
+  line-height: var(--u-lh-tight);
+}
+.hud.u2hud[data-mode='touch'] .u2h-quest .u2h-q-obj,
+.hud.u2hud[data-mode='touch'] .u2h-quest .u2h-q-turnin {
+  font-size: var(--u-fs-1);
+  line-height: var(--u-lh-tight);
+}
+.hud.u2hud[data-mode='touch'] .u2h-quest .u2h-card-head {
+  min-height: 28px;
 }
 .hud.u2hud[data-mode='touch'] .u2h-quest .u2h-fold {
   min-width: 44px;
@@ -419,9 +437,13 @@ html[data-touch] .win-host .u2-close {
 }
 @media (orientation: portrait) {
   .u2t-util {
-    top: calc(var(--t-t) + 150px);
+    top: calc(var(--t-t) + 168px);
     right: var(--t-r);
     max-width: calc(100vw - 2 * var(--t-l));
+  }
+  /* màn dọc: hub xuống hai hàng, nhiệm vụ nằm dưới hàng tiện ích */
+  .hud.u2hud[data-mode='touch'] .u2h-quest {
+    top: calc(var(--t-t) + 230px);
   }
 }
 
