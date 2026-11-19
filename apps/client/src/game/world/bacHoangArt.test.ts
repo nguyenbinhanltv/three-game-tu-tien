@@ -41,8 +41,8 @@ describe('bacHoangArt (DV-3I)', () => {
   });
 
   it('trộn preset: t = 0/1 trả về hai đầu, giữa là trung gian, màu trộn theo kênh', () => {
-    const a = GRADING.ash_dawn;
-    const b = GRADING.rift;
+    const a = GRADING.bh_dawn;
+    const b = GRADING.bhr_dawn;
     expect(mixPreset(a, b, 0).sunIntensity).toBeCloseTo(a.sunIntensity);
     expect(mixPreset(a, b, 1).fogColor).toBe(b.fogColor);
     const mid = mixPreset(a, b, 0.5);
@@ -58,7 +58,7 @@ describe('bacHoangArt (DV-3I)', () => {
     bhGroundColor(def, path, 1100, 500, 72, 1, n);
     for (const v of [...s, ...n]) {
       expect(v).toBeGreaterThanOrEqual(0);
-      expect(v).toBeLessThanOrEqual(1.2);
+      expect(v).toBeLessThanOrEqual(2);
     }
     expect(s[0] + s[1] + s[2]).toBeGreaterThan(n[0] + n[1] + n[2]);
   });

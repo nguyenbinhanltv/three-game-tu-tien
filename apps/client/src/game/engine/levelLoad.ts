@@ -22,7 +22,7 @@ import { LacKiemGarden } from '../world/lacKiemGarden';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { applyGrading, markBloom } from '../../render/post';
 import { adoptGltfMaterials } from '../../render/materials/world';
-import { GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../../render/grading';
+import { bhTod, GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../../render/grading';
 import { withOccluderFade } from '../world/occlusion';
 import { LanternLights } from '../../render/lanternLights';
 import { buildMoonGate, buildPortalDisc, buildSect, moonMirrorTexture, SECT_LANTERNS } from '../world/sect';
@@ -77,7 +77,7 @@ export function buildBacHoang(eng: Game): void {
   const T = levelTerrain();
   eng.riftMood = true;
   eng.riftMoodT = -1;
-  eng.rift = buildRiftVeil(riftPath(T.def), (x, z) => heightAt(x, z));
+  eng.rift = buildRiftVeil(riftPath(T.def), (x, z) => heightAt(x, z), { violet: true });
   eng.scene.add(eng.rift.group);
   eng.deadTrees = new DeadTrees(deadTreeSpots(bhCtx(propsOf('bac_hoang')), 700), (x, z) => heightAt(x, z));
   eng.scene.add(eng.deadTrees.group);
@@ -140,7 +140,7 @@ export function disposeXich(eng: Game): void {
   eng.xichRifts = [];
 }
 
-/** Mood Bắc Hoang theo vị trí: 0 ở nửa nam (`ash_dawn`) → 1 ở ba vùng bắc (`rift`), đổi dần quanh Khích Giai. Chỉnh uniform, không biên dịch lại. */
+/** Mood Bắc Hoang theo vị trí: 0 ở nửa nam (`bh_<giờ>`) → 1 ở ba vùng bắc (`bhr_<giờ>`), đổi dần quanh Khích Giai. Chỉnh uniform, không biên dịch lại. */
 export function updateRiftMood(eng: Game, dt: number, z: number): void {
   eng.riftMoodAcc += dt;
   if (eng.riftMoodAcc < 0.2 && eng.riftMoodT >= 0) return;
@@ -148,7 +148,10 @@ export function updateRiftMood(eng: Game, dt: number, z: number): void {
   const t = riftBlend(z - levelTerrain().def.size / 2);
   if (Math.abs(t - eng.riftMoodT) < 0.01) return;
   eng.riftMoodT = t;
-  const p = mixPreset(GRADING.ash_dawn, GRADING.rift, t);
+  const tod = bhTod(moodOf(eng, levelId()));
+  const near: GradingName = `bh_${tod}`;
+  const far: GradingName = `bhr_${tod}`;
+  const p = mixPreset(GRADING[near], GRADING[far], t);
   if (levelId() === KIEP_BH) {
     // Sân Nhật Thực Kiếp: sương mỏng hơn, tương phản và tối hơn để thấy rõ bia, boss và đĩa nhật thực (lần quay đầu bị sương hồng làm đục).
     p.fogDensity *= 0.4;
@@ -157,7 +160,7 @@ export function updateRiftMood(eng: Game, dt: number, z: number): void {
     p.contrast *= 1.12;
     p.exposure *= 0.88;
   }
-  tuneAtmosphere(eng.scene, eng.env, p, t > 0.5 ? 'rift' : 'ash_dawn', mixHex(skyTopOf('ash_dawn'), skyTopOf('rift'), t));
+  tuneAtmosphere(eng.scene, eng.env, p, t > 0.5 ? far : near, mixHex(skyTopOf(near), skyTopOf(far), t));
   applyGrading(p);
 }
 
