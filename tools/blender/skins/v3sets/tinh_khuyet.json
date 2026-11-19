@@ -7,7 +7,11 @@
     "nam": 1.84,
     "nu": 1.7
   },
-  "bindA": true,
+  "bindA": [
+    "nu"
+  ],
+  "tris": 23000,
+  "splitCloth": true,
   "groups": [
     {
       "name": "skirt",

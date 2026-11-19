@@ -3,6 +3,7 @@
 // (sửa lỗi bóng T-pose). Chưa có: pose IK chiêu K-5, kiếm gắn tay, phụ kiện bộ đồ, K-3 (đi lùi/ngang), IK chân.
 // Đây là bản thử pipeline: không đổi mặc định, không đụng v1/v2.
 import * as THREE from 'three/webgpu';
+import { ClothRig } from './thienY';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/shared';
@@ -72,11 +73,16 @@ export const SPRING2 = { hemStiff: HEM_STIFF, sitScale: SIT_COLLIDER_SCALE, arms
 /** Chỉnh riêng vạt theo bộ (khóa = tiền tố id asset): bộ có vạt dài/rộng hơn Lạc Kiếm cần góc lệch hẹp hơn, gấu cứng hơn, viên nang đùi lớn hơn. */
 export interface SkirtTune {
   spring?: Partial<SpringParams>;
+  /** Có khóa này thì chuỗi lò xo tay áo (`dtl_o_sleeve_*`) tách ra nhóm riêng với thông số hẹp/cứng hơn (voan tay áo rộng không văng thành mảng khi giơ tay). */
+  sleeve?: Partial<SpringParams>;
   hemStiff?: number;
   rMul?: number;
 }
+/** Kiếm tu bậc cao (NV3-B, bản thử `tinh_khuyet_nu`): tay áo voan rộng + vạt dài. Tay áo: cứng hơn, cản mạnh, góc hẹp; viên nang đùi lớn hơn để vạt không sụp khi ngồi. */
+const KIEM_TU_TUNE: SkirtTune = { rMul: 1.7, hemStiff: 2.0, sleeve: { stiffness: 260, drag: 14, maxAngle: 12, maxInward: 5 } };
 export const SKIRT_TUNE: Record<string, SkirtTune> = {
   chr_v3_dan_tam_: { rMul: 1.5 },
+  chr_v3_tinh_khuyet_nu: KIEM_TU_TUNE, // bản thử bind A-pose; các model Kiếm tu khác chưa áp (chờ duyệt)
 };
 const skirtTuneOf = (id: string): SkirtTune | undefined => Object.entries(SKIRT_TUNE).find(([k]) => id.startsWith(k))?.[1];
 /** Thông số riêng của vạt ở lò xo v2: góc lệch tối đa hẹp (12°) vì vạt nay do lò xo + va chạm điều khiển phần lớn (share 0,8): lệch rộng làm hai nửa vạt chéo nhau khi chạy. Tóc và tay áo giữ `V3_SPRING`. */
@@ -223,11 +229,11 @@ export const ARM_FIT: Record<string, number> = {
   chr_v3_dan_tam_nam: (16 * Math.PI) / 180,
   chr_v3_dan_tam_nu: (16 * Math.PI) / 180,
   // Kiếm tu bậc cao (NV3-B, bind A-pose `--bind-a`): lưới không bị ép sang T nên không cần bù góc dang (0); chỉnh lại sau khi đo `springMetrics`.
-  chr_v3_kinh_quang_nam: 0,
-  chr_v3_kinh_quang_nu: 0,
-  chr_v3_liet_mach_nam: 0,
-  chr_v3_liet_mach_nu: 0,
-  chr_v3_tinh_khuyet_nam: 0,
+  chr_v3_kinh_quang_nam: (16 * Math.PI) / 180,
+  chr_v3_kinh_quang_nu: (16 * Math.PI) / 180,
+  chr_v3_liet_mach_nam: (16 * Math.PI) / 180,
+  chr_v3_liet_mach_nu: (16 * Math.PI) / 180,
+  chr_v3_tinh_khuyet_nam: (16 * Math.PI) / 180,
   chr_v3_tinh_khuyet_nu: 0,
 };
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
@@ -376,6 +382,9 @@ export class MannequinCharacter implements CharacterView {
   private spring2 = false;
   /** Lò xo vạt riêng của asset v2 (null với v3/v3b: vạt nằm chung trong `springs`). */
   private skirtSprings: SpringBones | null = null;
+  private sleeveSprings: SpringBones | null = null;
+  /** Vải mô phỏng Thiên Y (null nếu tắt hoặc model không có vải cũ tách riêng). */
+  cloth: ClothRig | null = null;
   private colScale = 1;
   private twists: Twist[] = [];
   private lodLevel = 0;
@@ -449,6 +458,20 @@ export class MannequinCharacter implements CharacterView {
       meshes.push(m);
     });
     for (let i = 0; i < this.lods.length; i++) this.lods[i] ??= [];
+    // Thiên Y: mesh vải cũ tách riêng (`*_oldskirt`, `*_oldsleeve`) do chr_v3.py --split-cloth; có `?cloth=1` thì thay bằng vải mô phỏng, không thì hiện như thường.
+    const oldCloth = meshes.filter((m) => /_old(skirt|sleeve)/.test(m.name));
+    if (FLAGS.cloth && !shadow && oldCloth.length) {
+      try {
+        // Texture đã bake (tools/asset-pipeline/src/thienybake.ts) nếu có; chưa có thì vải màu trơn.
+        const map = new THREE.TextureLoader().load(`/thien_y/${tpl.handle.id}.png`, undefined, undefined, () => undefined);
+        map.colorSpace = THREE.SRGBColorSpace;
+        map.flipY = false;
+        this.cloth = new ClothRig(this.rig, this.root, tpl.height, oldCloth, { map });
+        this.lods[0] = (this.lods[0] ?? []).filter((m) => !oldCloth.includes(m));
+      } catch (e) {
+        console.warn('thienY: bỏ qua vải mô phỏng:', e instanceof Error ? e.message : e);
+      }
+    }
     this.applyLod(0);
     const defs: SpringDef[] = [];
     this.rig.traverse((o) => {
@@ -462,9 +485,14 @@ export class MannequinCharacter implements CharacterView {
     });
     if (this.spring2) {
       // Lò xo v2: vạt tách riêng (góc hẹp, gấu cứng hơn, viên nang tay + đùi phình khi ngồi); tóc và tay áo như cũ.
+      const tune = skirtTuneOf(tpl.handle.id);
+      const isSleeve = (n: string) => n.startsWith('dtl_o_sleeve_');
       const skirt = defs.filter((d) => d.bone.startsWith('dtl_o_skirt_'));
-      const rest = defs.filter((d) => !d.bone.startsWith('dtl_o_skirt_'));
+      const sleeve = tune?.sleeve ? defs.filter((d) => isSleeve(d.bone)) : [];
+      const rest = defs.filter((d) => !d.bone.startsWith('dtl_o_skirt_') && !(tune?.sleeve && isSleeve(d.bone)));
       if (rest.length && !shadow) this.springs = new SpringBones(this.rig, rest, V3_SPRING, colliderDefs(this.rig, tpl.height));
+      if (sleeve.length && !shadow)
+        this.sleeveSprings = new SpringBones(this.rig, sleeve, { ...V3_SPRING, ...tune!.sleeve }, colliderDefs(this.rig, tpl.height));
       if (skirt.length && !shadow)
         this.skirtSprings = new SpringBones(
           this.rig,
@@ -1064,17 +1092,24 @@ export class MannequinCharacter implements CharacterView {
     const drawNow = this.combatT > 0 || !!a.combat;
     if (drawNow !== this.drawn) this.mountBlade(drawNow);
     // Lò xo vạt: chỉ LOD0 và trong khung nhìn; ma trận thế giới của xương phải mới (root vừa được đặt vị trí).
-    if (this.springs || this.skirtSprings) {
+    if (this.springs || this.skirtSprings || this.sleeveSprings) {
       if (this.lodLevel === 0 && this.inner.visible) {
         this.root.updateMatrixWorld(true);
         const sit = this.spring2 && (this.baseName === 'Sitting_Idle_Loop' || this.baseName === 'pose_tam_thien');
         this.colScale += ((sit ? SPRING2.sitScale : 1) - this.colScale) * Math.min(1, this.acc * 6);
         this.springs?.update(this.acc, IDENT);
+        this.sleeveSprings?.update(this.acc, IDENT);
         this.skirtSprings?.update(this.acc, IDENT, this.colScale);
       } else {
         this.springs?.reset();
+        this.sleeveSprings?.reset();
         this.skirtSprings?.reset();
       }
+    }
+    if (this.cloth) {
+      const on = this.lodLevel === 0 && this.inner.visible;
+      this.cloth.setActive(on);
+      if (on) this.cloth.update(this.acc);
     }
     this.acc = 0;
   }

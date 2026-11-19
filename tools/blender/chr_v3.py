@@ -1038,6 +1038,46 @@ BODY.matrix_parent_inverse = Matrix.Identity(4)
 am = BODY.modifiers.new('Armature', 'ARMATURE')
 am.object = ARM
 
+if '--split-cloth' in argv:
+    # Thiên Y (NV3-B): tách phần VẢI cũ của lưới Tripo thành hai mesh riêng (`<id>_oldskirt`, `<id>_oldsleeve`, vẫn skin theo xương) để client ẩn khi bật
+    # mô phỏng vải mới (?cloth=1) mà không mất model gốc. Váy cũ = mặt ở dải z 0,10–0,56 H không thuộc voan tay áo, trừ dải trang sức trước giữa
+    # (ngọc bội, dải tua); tay áo = đỉnh `SLEEVE` (geodesic).
+    cxs, cys = float(H['pelvis'][0]), float(H['pelvis'][1])
+    zlo, zhi = 0.10 * height, 0.56 * height
+    ornament = (np.abs(VP[:, 0] - cxs) < 0.075 * height) & (VP[:, 1] < cys - 0.02 * height)
+    slv = SLEEVE if 'SLEEVE' in globals() else np.zeros(NV, bool)
+    vcls = np.zeros(NV, int)
+    vcls[(VP[:, 2] > zlo) & (VP[:, 2] < zhi) & ~ornament] = 1
+    vcls[slv] = 2
+    face_cls = []
+    for p_ in BODY.data.polygons:
+        c_ = [int(vcls[v_]) for v_ in p_.vertices]
+        face_cls.append(2 if c_.count(2) >= 2 else 1 if c_.count(1) >= 2 else 0)
+    n_sep = {}
+    orig_data = BODY.data
+    for cid, nm in ((1, 'oldskirt'), (2, 'oldsleeve'), (0, None)):
+        if nm is None:
+            ob = BODY
+            ob.data = orig_data
+        else:
+            ob = BODY.copy()
+            ob.data = orig_data.copy()
+            ob.name = f'{ID}_{nm}'
+            ob.data.name = f'{ID}_{nm}'
+            bpy.context.collection.objects.link(ob)
+        bm_ = bmesh.new()
+        bm_.from_mesh(ob.data)
+        bm_.faces.ensure_lookup_table()
+        kill = [f_ for f_ in bm_.faces if face_cls[f_.index] != cid]
+        bmesh.ops.delete(bm_, geom=kill, context='FACES')
+        loose = [v_ for v_ in bm_.verts if not v_.link_faces]
+        bmesh.ops.delete(bm_, geom=loose, context='VERTS')
+        bm_.to_mesh(ob.data)
+        bm_.free()
+        n_sep[nm or 'hard'] = len(ob.data.polygons)
+    log(f'tách vải cũ (số mặt): {n_sep}')
+    REP['split_cloth'] = n_sep
+
 # ---------- 5. LOD, texture ----------
 LODS = [BODY]
 for lvl, ratio in ((1, 0.5), (2, 0.2)):

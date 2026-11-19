@@ -47,7 +47,7 @@ export default {
           viewport: [1280, 720],
           quality: 'high',
           look: { g },
-          query: { chr: 'v3' },
+          query: { chr: 'v3', ...(env('V3_CLOTH', '') === '1' ? { cloth: '1' } : {}) }, // V3_CLOTH=1: vải mô phỏng Thiên Y
           hide: 'hud',
           warnings: /models|chr_v3|clip/,
         });
@@ -72,8 +72,7 @@ export default {
         await page.evaluate(() => {
           const g = window.__game!;
           const ent = g.ents.players.get(g.sid);
-          ent.labelKeep = true; // engine giữ trạng thái nhãn thay vì bật lại mỗi khung
-          ent.label.visible = false; // nhãn tên che nhân vật
+          ent.model.root.remove(ent.label); // nhãn tên che nhân vật: gỡ khỏi cây cảnh (engine chỉ gắn lại khi đổi tên)
         });
         // (1) đứng 4 góc, 720p + 1080p. Camera gần, chiều cao nhân vật vừa khung.
         const facing = await page.evaluate(() => window.__game!.facing as number);
@@ -177,6 +176,11 @@ export default {
         const rows: SheetRow[] = [];
         for (let i = 0; i < cells.length; i += 5) rows.push({ label: i === 0 ? `${S.label} (${gname}) · ${asset}` : '', cells: cells.slice(i, i + 5) });
         await sheet(ctx, path.join(r.out, `${tag}-chuyendong.png`), rows, { cell: 300, ratio: 1.39 });
+        const cst = await page.evaluate(() => {
+          const g = window.__game!;
+          return g.ents.players.get(g.sid).model.cloth?.stats ?? null;
+        });
+        console.log(`[shots:v3views] ${tag} vải mô phỏng: ${cst ? `${cst.verts} đỉnh, ${cst.ms.toFixed(3)} ms/khung (trung bình trượt)` : 'tắt'}`);
         await ctx.close();
         console.log(`[shots:v3views] ${tag} xong`);
       }

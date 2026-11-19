@@ -46,6 +46,8 @@ export interface Flags {
   v3Palette: boolean;
   /** `?ual=0` tắt clip UAL. */
   ual: boolean;
+  /** `?cloth=1` bật vải mô phỏng (Thiên Y) cho model v3 có mesh vải cũ tách riêng. */
+  cloth: boolean;
   /** `?renderer=webgl2|webgpu|auto` (xem `rendererChoice`). */
   renderer: string | null;
   /** `?gputime=1` bật timestamp query (chỉ công cụ đo). */
@@ -96,6 +98,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   armfit: { scope: 'test', doc: 'góc bù dang tay v3 (độ)' },
   v3pal: { scope: 'test', doc: '=0 tắt nhuộm v3' },
   ual: { scope: 'test', doc: '=0 tắt clip UAL' },
+  cloth: { scope: 'test', doc: '=1 vải mô phỏng Thiên Y (model v3 có vải cũ tách riêng)' },
   renderer: { scope: 'diag', doc: 'webgl2|webgpu|auto' },
   gputime: { scope: 'diag', doc: '=1 timestamp query (công cụ đo)' },
   slowmo: { scope: 'diag', doc: 'chậm hiển thị (dev)' },
@@ -157,6 +160,7 @@ export function readFlags(search: string): Flags {
     armFit: q.get('armfit') === null || Number.isNaN(Number(q.get('armfit'))) ? null : Number(q.get('armfit')),
     v3Palette: !off(q.get('v3pal')),
     ual: !off(q.get('ual')),
+    cloth: q.get('cloth') === '1',
     renderer: q.get('renderer'),
     gpuTime: q.get('gputime') === '1',
     slowmo: Math.min(1, Math.max(0.05, Number(q.get('slowmo')) || 1)),

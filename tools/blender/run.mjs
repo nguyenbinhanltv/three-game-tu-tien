@@ -277,6 +277,8 @@ const procedural = [
  * của chr_v3.py (`robe`, `groups`, `limbs`, `smooth`) vừa khai `set` (id bộ), `raw` (GLB Tripo, `{g}` = nam|nu, đường dẫn trong DTL_ASSET_SOURCE) và `height` theo giới (m).
  * Mỗi giới ra một job `chr_v3_<set>_<giới>`; thiếu GLB nguồn thì bỏ qua có cảnh báo (như job khác). meta.json + dòng LICENSES: `node tools/blender/v3-newset.mjs <set>`.
  */
+/** `bindA` trong cấu hình bộ: `true` (mọi giới) hoặc danh sách giới (`["nu"]`): lưới giữ tư thế A, xem docs/chr-v3/README.md (NV3-B). */
+const bindA = (cfg, g) => (Array.isArray(cfg.bindA) ? cfg.bindA.includes(g) : !!cfg.bindA);
 function v3SetEntries() {
   const dir = path.join(root, 'tools/blender/skins/v3sets');
   if (!fs.existsSync(dir)) return [];
@@ -291,7 +293,7 @@ function v3SetEntries() {
         script: 'tools/blender/chr_v3.py',
         source: String(cfg.raw).replace('{g}', g),
         template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
-        extra: ['--id', id, '--auto', '--height', String(h), '--springs', `repo:tools/blender/skins/v3sets/${f}`, ...(cfg.bindA ? ['--bind-a'] : [])],
+        extra: ['--id', id, '--auto', '--height', String(h), '--springs', `repo:tools/blender/skins/v3sets/${f}`, ...(bindA(cfg, g) ? ['--bind-a', ...(cfg.tris ? ['--tris', String(cfg.tris)] : []), ...(cfg.splitCloth ? ['--split-cloth'] : [])] : [])],
       });
     }
   }
