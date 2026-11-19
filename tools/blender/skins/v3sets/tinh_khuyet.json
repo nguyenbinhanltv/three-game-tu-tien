@@ -1,0 +1,66 @@
+{
+  "$comment": "Tinh Khuyết Kiếm Bào v3: dựng từ mẫu _template_ao_dai.",
+  "set": "tinh_khuyet",
+  "name": "Tinh Khuyết Kiếm Bào",
+  "raw": "3d/nhan-vat/set_tinh_khuyet_kiem_bao/tripo/raw_v3_tinh_khuyet_{g}.glb",
+  "height": {
+    "nam": 1.84,
+    "nu": 1.7
+  },
+  "groups": [
+    {
+      "name": "skirt",
+      "parent": "pelvis",
+      "axis": "angle",
+      "zMin": 0.24,
+      "zMax": 0.5,
+      "minRadius": 0.09,
+      "count": 12,
+      "links": 2,
+      "share": 0.8,
+      "domRegion": [
+        "torso",
+        "leg"
+      ]
+    },
+    {
+      "name": "hair",
+      "parent": "spine_03",
+      "axis": "x",
+      "zMin": 0.45,
+      "zMax": 0.86,
+      "yMinRel": 0.04,
+      "xAbsMax": 0.1,
+      "count": 3,
+      "links": 3,
+      "tex": "hair",
+      "share": 0.5
+    }
+  ],
+  "robe": {
+    "zMin": 0.22,
+    "zMax": 0.52,
+    "minRadius": 0.09,
+    "xInner": 0.04,
+    "xOuter": 0.1,
+    "outerShare": 0.5,
+    "front": 0.9,
+    "back": 0.45,
+    "pow": 0.7,
+    "calf": 0.4
+  },
+  "limbs": [
+    {
+      "name": "sleeve",
+      "limb": [
+        "lowerarm_l",
+        "lowerarm_r"
+      ],
+      "tMin": 0.3,
+      "minRadius": 0.035,
+      "count": 4,
+      "links": 2,
+      "share": 0.7
+    }
+  ]
+}

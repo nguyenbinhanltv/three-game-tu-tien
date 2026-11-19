@@ -36,6 +36,7 @@ import ual from './scenarios/ual';
 import chrv3 from './scenarios/chrv3';
 import chrv3anim from './scenarios/chrv3anim';
 import v3sets from './scenarios/v3sets';
+import v3views from './scenarios/v3views';
 import skinv3 from './scenarios/skinv3';
 import hoatruc from './scenarios/hoatruc';
 import thiengiai from './scenarios/thiengiai';
@@ -85,6 +86,7 @@ const SCENARIOS: Scenario[] = [
   chrv3,
   chrv3anim,
   v3sets,
+  v3views,
   skinv3,
   divuc,
   flyover,

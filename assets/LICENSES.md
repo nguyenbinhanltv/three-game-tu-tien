@@ -734,6 +734,12 @@ Bản thử, không thay nhân vật trong game (`?chr=v2`, docs/chr-v2). Thân 
 | `chr_v3_de_tu_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Đồ Đệ Tử (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-18 | xem meta.json |
 | `chr_v3_huyen_giap_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Huyền Giáp Hộ Pháp (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-18 | xem meta.json |
 | `chr_v3_huyen_giap_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Huyền Giáp Hộ Pháp (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-18 | xem meta.json |
+| `chr_v3_kinh_quang_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Kính Quang Kiếm Y (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
+| `chr_v3_kinh_quang_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Kính Quang Kiếm Y (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
+| `chr_v3_liet_mach_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Liệt Mạch Kiếm Y (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
+| `chr_v3_liet_mach_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Liệt Mạch Kiếm Y (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
+| `chr_v3_tinh_khuyet_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Tinh Khuyết Kiếm Bào (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
+| `chr_v3_tinh_khuyet_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Tinh Khuyết Kiếm Bào (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
 
 
 ## VFX viết lại bằng TSL từ gói bên ngoài (2026-11-18)

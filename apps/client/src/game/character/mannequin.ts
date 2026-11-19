@@ -109,13 +109,13 @@ export const V3_OWN_SETS: Readonly<Record<string, string>> = {
   set_de_tu: 'de_tu',
   set_huyen_giap: 'huyen_giap',
   set_dan_tam: 'dan_tam',
+  set_kinh_quang: 'kinh_quang',
+  set_liet_mach: 'liet_mach',
+  set_tinh_khuyet: 'tinh_khuyet',
 };
 const V3_BRANCH_FALLBACK: Readonly<Record<string, string>> = {
   set_lac_kiem: 'lac_kiem',
   set_han_giao: 'lac_kiem',
-  set_liet_mach: 'lac_kiem',
-  set_kinh_quang: 'lac_kiem',
-  set_tinh_khuyet: 'lac_kiem',
   set_tran_khich: 'lac_kiem',
   set_dia_giap: 'huyen_giap',
   set_van_kinh: 'huyen_giap',
@@ -222,6 +222,13 @@ export const ARM_FIT: Record<string, number> = {
   chr_v3_huyen_giap_nu: (20 * Math.PI) / 180,
   chr_v3_dan_tam_nam: (16 * Math.PI) / 180,
   chr_v3_dan_tam_nu: (16 * Math.PI) / 180,
+  // Kiếm tu bậc cao (NV3-B): tay áo rộng voan như Lạc Kiếm v3b2; chỉnh lại sau khi đo `springMetrics`.
+  chr_v3_kinh_quang_nam: (16 * Math.PI) / 180,
+  chr_v3_kinh_quang_nu: (16 * Math.PI) / 180,
+  chr_v3_liet_mach_nam: (16 * Math.PI) / 180,
+  chr_v3_liet_mach_nu: (16 * Math.PI) / 180,
+  chr_v3_tinh_khuyet_nam: (16 * Math.PI) / 180,
+  chr_v3_tinh_khuyet_nu: (16 * Math.PI) / 180,
 };
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
 

@@ -39,7 +39,10 @@ describe('v3AssetOf (chọn asset v3 theo giới + skin)', () => {
     expect(v3AssetOf('f', undefined, 'set_lac_kiem')).toBe(V3_MODELS.f);
     expect(v3AssetOf('m', undefined, 'set_dia_giap')).toBe('chr_v3_huyen_giap_nam');
     expect(v3AssetOf('f', undefined, 'set_luu_ly')).toBe('chr_v3_dan_tam_nu');
-    expect(v3AssetOf('m', undefined, 'set_tinh_khuyet')).toBe(V3_MODELS.m);
+    expect(v3AssetOf('m', undefined, 'set_tinh_khuyet')).toBe('chr_v3_tinh_khuyet_nam');
+    expect(v3AssetOf('f', undefined, 'set_kinh_quang')).toBe('chr_v3_kinh_quang_nu');
+    expect(v3AssetOf('m', undefined, 'set_liet_mach')).toBe('chr_v3_liet_mach_nam');
+    expect(v3AssetOf('m', undefined, 'set_han_giao')).toBe(V3_MODELS.m);
     expect(v3AssetOf('m', undefined, 'set_khong_co')).toBe(V3_MODELS.m);
   });
   it('skin đè bộ trang bị', () => {
