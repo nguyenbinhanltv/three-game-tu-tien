@@ -48,9 +48,11 @@ import vfx from './scenarios/vfx';
 import realmaura from './scenarios/realmaura';
 import xichkhe from './scenarios/xichkhe';
 import dungeonart from './scenarios/dungeonart';
+import collscan from './scenarios/collscan';
 
 const SCENARIOS: Scenario[] = [
   points,
+  collscan,
   propstc,
   lackiem,
   thienkhuyet,

@@ -127,4 +127,24 @@ describe('va chạm 3D', () => {
     expect(n).toBe(0);
     expect(c.standY(100, 100, 5 + STEP_UP)).toBe(5);
   });
+
+  it('ngân sách: stepMove với 3000 hình xoay, 100 người, rẻ (< 20 µs/bước trung bình)', () => {
+    const shapes: Shape[] = [];
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 3000; i++)
+      shapes.push(
+        rnd() < 0.5
+          ? { k: 'cyl', x: 1000 + rnd() * 2200, z: 1000 + rnd() * 2200, r: 0.5, y0: 0, y1: 300 }
+          : { k: 'box', x: 1000 + rnd() * 2200, z: 1000 + rnd() * 2200, hx: 3, hz: 2, yaw: rnd() * 6, y0: 0, y1: 300 },
+      );
+    setup(shapes);
+    const ps = Array.from({ length: 100 }, (_, i) => ({ x: 1500 + i * 10, y: 0, z: 1800, vy: 0, grounded: true, flying: false }));
+    const t0 = performance.now();
+    const N = 200;
+    for (let n = 0; n < N; n++) for (const p of ps) stepMove(p, { s: n, mx: 0.5, mz: 1, yaw: n * 0.03, f: 0 }, ctx);
+    const per = ((performance.now() - t0) * 1000) / (N * ps.length);
+    console.log(`stepMove 3000 hình: ${per.toFixed(2)} µs/bước → 100 người/tick ≈ ${((per * 100) / 1000).toFixed(2)} ms`);
+    expect(per).toBeLessThan(20);
+  });
 });
