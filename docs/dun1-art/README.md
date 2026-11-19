@@ -148,3 +148,10 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Cột bazan**: vật liệu `_obs` viết lại — hạt mịn đẳng hướng (bỏ thớ kéo dọc gây vân gỗ), vết nứt THẲNG/GÓC CẠNH (hai họ đường thẳng chéo theo toạ độ thế giới, chỉ ở vài ô), ánh đỏ chỉ trong khe nứt và chân cột, mặt hướng lên và đỉnh gãy phủ tro xám; màu nền đá xanh đen sẫm hơn. Trong GLB, bỏ vệt dung nham dọc, thay bằng 1–3 khe thẳng nghiêng mảnh trên mặt cột.
 - **Bệ trung tâm** (`dais`): ba tầng đá vỡ (cao 0,16/0,32/0,48 m) quanh bia giữ, vết nứt tỏa từ tâm thành 7–9 mảng, khe dung nham gradient (sáng gần tâm, tối ra ngoài), vành dung nham dưới chân, đá vỡ nghiêng ở mép, mảnh vụn chỉ ở viền ngoài; phiến vỏ dung nham rải sàn giảm còn 7 mảng nhỏ, chỉ ở r > 30. **Bệ thấp (≤ 0,5 m) vì chỉ để nhìn, không va chạm** và người chơi đứng/đánh ngay trên đó (chân lún tối đa 0,5 m ở tầng giữa); chưa nâng cao theo yêu cầu "nhô cao" cho tới khi COL-1 cho phép khai báo mặt đi được.
 - **Vòng trắng xám lớn**: có trong ảnh chụp cả bản gốc (main, chưa có mỹ thuật DUN-1) lẫn mọi bí cảnh khác, tâm gần chỗ nhân vật thử đứng (1520, 1330), không phải `RingGeometry` thuộc cảnh. Thử ẩn mọi `RingGeometry` bán kính trong ≥ 0,98 (lãnh vực `cloneVis`, `scan`) và `?aura=0` đều không hết; chưa tìm ra nguồn. Cần người nắm hệ VFX/hậu kỳ xác định (ứng viên: viền vùng phủ bóng/ánh sáng, hoặc lớp hậu kỳ).
+
+## Polish — Kính Nguyệt: giảm cháy sáng (vòng 1)
+
+- Gương trăng (`knMaterialFor`): phát sáng giảm (phản chiếu trời ×0,5, vệt chéo ×0,6, viền ×0,3, vệt bake ×0,6) nên không còn cháy thành mảng trắng.
+- Sàn cẩm thạch (`reflectiveSurface`): đá tối hơn (tương phản thớ rõ hơn), vũng sáng trăng và ánh nền giảm, phản chiếu hướng trời nghiêng theo fresnel mạnh hơn (bóng loáng xa/cận), vạch trận và chấm chia (72) mờ ~35–70%, quầng bạc quanh vòng ×0,55.
+- Mood `kn`: exposure 0,92 → 0,8, tương phản 1,14 → 1,2.
+- **Còn lại**: sàn vẫn chưa phản chiếu thật cột/gương (chỉ phản chiếu trời và vòng gương trăng, không có planar reflection); vũng tròn trắng quanh nhân vật thử và vòng ở bắc không thuộc shader sàn (không ẩn được bằng `kn-moonbeam`/`dungeon-*`), nguồn chưa xác định.

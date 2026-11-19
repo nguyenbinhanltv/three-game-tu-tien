@@ -123,10 +123,10 @@ export function knMaterialFor(name: string): THREE.Material | null {
   const glint = vec3(0.85, 0.92, 1.0).mul(streak).mul(0.9);
   m.emissiveNode = refl
     .mul(vec3(0.85, 0.9, 1.0))
-    .mul(0.75)
-    .add(glint)
-    .add(vec3(0.6, 0.72, 1.0).mul(fres).mul(0.5))
-    .add(vertexColorStreak());
+    .mul(0.5)
+    .add(glint.mul(0.6))
+    .add(vec3(0.6, 0.72, 1.0).mul(fres).mul(0.3))
+    .add(vertexColorStreak().mul(0.6));
   return m;
 }
 
@@ -210,7 +210,7 @@ function reflectiveSurface(
       .mul(0.5)
       .add(smoothstep(0.02, 0.0, vein2).mul(0.25));
     const tone = texture(nz, w.mul(1 / 23)).b;
-    const stone = mix(vec3(0.24, 0.26, 0.32), vec3(0.46, 0.46, 0.5), tone).mul(float(1).sub(veins.mul(0.5)));
+    const stone = mix(vec3(0.16, 0.18, 0.24), vec3(0.4, 0.4, 0.45), tone).mul(float(1).sub(veins.mul(0.5)));
     const ang = atan(w.y, w.x);
     const soft = (rad: number, wd: number) => exp(abs(r.sub(rad)).div(wd).pow(2).negate());
     const thin = (rad: number, wd: number) => smoothstep(wd, 0.0, abs(r.sub(rad)));
@@ -219,8 +219,14 @@ function reflectiveSurface(
     const petals = smoothstep(0.035, 0.0, abs(sin(ang.mul(4.5))))
       .mul(smoothstep(21, 26, r))
       .mul(smoothstep(56, 50, r));
-    const line = thin(57, 0.16).add(thin(59.6, 0.1)).add(thin(20, 0.14)).add(thin(40, 0.08)).add(ticks.mul(0.7)).add(petals.mul(0.5));
-    const glow = soft(57, 2.4).add(soft(59.6, 1.6)).add(soft(20, 1.6)).mul(0.18);
+    const line = thin(57, 0.16)
+      .add(thin(59.6, 0.1))
+      .add(thin(20, 0.14))
+      .add(thin(40, 0.08))
+      .add(ticks.mul(0.3))
+      .add(petals.mul(0.5))
+      .mul(0.65);
+    const glow = soft(57, 2.4).add(soft(59.6, 1.6)).add(soft(20, 1.6)).mul(0.1);
     const silver = vec3(0.78, 0.86, 1.0)
       .mul(line)
       .add(vec3(0.55, 0.68, 1.0).mul(glow));
@@ -244,13 +250,13 @@ function reflectiveSurface(
           .negate(),
       ).mul(0.6),
     );
-    const lightMul = float(0.28)
-      .add(pools.mul(0.6))
+    const lightMul = float(0.22)
+      .add(pools.mul(0.42))
       .add(exp(length(w).div(16).pow(2).negate()).mul(0.14));
     col = stone
       .mul(lightMul)
       .mul(edgeDark)
-      .add(refl.mul(fres.mul(0.95).add(0.16)).mul(edgeDark))
+      .add(refl.mul(fres.mul(1.25).add(0.08)).mul(edgeDark))
       .add(ringRefl.mul(fres.mul(0.8).add(0.14)).mul(edgeDark))
       .add(silver);
   } else {
