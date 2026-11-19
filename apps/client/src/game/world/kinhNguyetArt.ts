@@ -228,13 +228,13 @@ function reflectiveSurface(
   return mesh;
 }
 
-/** Sàn cẩm thạch phản chiếu (đĩa r 112 bám địa hình, phẳng ±3 m). */
+/** Sàn cẩm thạch phản chiếu (đĩa r 112 bám `heightAt` + 0,08 m). */
 export function buildMirrorFloorKn(): THREE.Mesh {
   const R = 112;
   const geo = new THREE.RingGeometry(0.01, R, 128, 48).rotateX(-Math.PI / 2);
   const p = geo.attributes.position as THREE.BufferAttribute;
-  const cy = heightAt(CENTER.x, CENTER.z);
-  for (let i = 0; i < p.count; i++) p.setY(i, Math.max(cy + 0.08, heightAt(CENTER.x + p.getX(i), CENTER.z + p.getZ(i)) + 0.08));
+  // bám đúng địa hình (+0,08 m) như sàn cũ: người chơi/quái đứng theo `heightAt` nên sàn không được cao hơn mặt đất thật
+  for (let i = 0; i < p.count; i++) p.setY(i, heightAt(CENTER.x + p.getX(i), CENTER.z + p.getZ(i)) + 0.08);
   geo.computeBoundingSphere();
   const mesh = reflectiveSurface('marble', R, geo, CENTER.x, CENTER.z);
   mesh.name = 'kn-mirror-floor';
@@ -245,7 +245,7 @@ export function buildMirrorFloorKn(): THREE.Mesh {
 export function buildPond(x: number, z: number, rad: number): THREE.Mesh {
   const geo = new THREE.CircleGeometry(rad, 48).rotateX(-Math.PI / 2);
   const p = geo.attributes.position as THREE.BufferAttribute;
-  for (let i = 0; i < p.count; i++) p.setY(i, Math.max(heightAt(CENTER.x, CENTER.z), heightAt(x + p.getX(i), z + p.getZ(i))) + 0.14);
+  for (let i = 0; i < p.count; i++) p.setY(i, heightAt(x + p.getX(i), z + p.getZ(i)) + 0.14);
   geo.computeBoundingSphere();
   const mesh = reflectiveSurface('water', 200, geo, x, z);
   mesh.name = 'kn-pond';

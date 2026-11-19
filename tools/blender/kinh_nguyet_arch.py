@@ -75,6 +75,8 @@ def bay(b, seed):
     rise = 10.0
     for sx in (-1, 1):
         x0 = sx * W / 2
+        # chân tảng chìm sâu 3 m: sàn bám địa hình (thấp hơn mặt phẳng tâm tới ~1,3 m ở r 100) nên cột không được lơ lửng
+        tbox(b, (x0, -1.4, 0), (4.6, 3.2, 4.6), Paint(mix(JADE, JADE_DK, 0.3), 'jade'))
         # đế bậc, thân sáo, đầu cột cánh sen
         for k, (rw, hh) in enumerate(((3.6, 0.7), (3.0, 0.6))):
             blob(b, (x0, 0.35 + k * 0.7, 0), (rw, hh, rw), jade_col(seed + k), nu=14, nv=4, e=2.4, amp=0.04, seed=seed + k)
