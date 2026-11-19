@@ -168,3 +168,11 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Đài**: tối và cháy xém hơn (16 mảng muội đen, khe nứt điện gấp khúc), vết sét cháy có khe điện; vòng vàng giữ nhưng mờ hơn.
 - **Vòng trận đỏ/xanh chỉ báo** (hazard của kiếp, VFX game dùng chung mọi bí cảnh) **chưa hạ độ đậm**: đổi sẽ ảnh hưởng độ đọc ở mọi level; cần quyết định riêng.
 - **Ngân sách (Cao)**: 148–158 draw call, ~0,27–0,29M tam giác, khung ~9–11 ms trên máy chụp.
+
+### PR 7 vòng 3 (góp ý duyệt): ánh sáng — nền gần đen, điểm sáng, sét dày, chớp toàn cảnh
+
+- **Mood `dk`**: nền tối sâu (nắng 0,7, trời 0,5, sương gần đen, blackLift ~đen, tương phản 1,5). Điểm sáng thay cho ánh đồng đều: **đầu mỗi lôi trụ phát quầng trắng-tím**, phù văn trụ/đài (`_volt`, `_rune`) sáng nền mạnh hơn và bừng theo chớp, **bốn đèn điểm cam** ở lò lửa rọi sàn và chân trụ.
+- **Xoáy mây** thấy được trong ảnh toàn cảnh (02: camera hạ thấp, nhìn ngang qua đài) và ảnh `07-xoay-may`; có **tia chớp chạy trong mây** (đường vân sáng mảnh, chỉ hiện lúc chớp).
+- **Tia sét** (`render/vfx/lightning.ts`, dùng chung): thân dày 0,22 → 0,38, nhánh 0,12 → 0,2, tối đa 7 nhánh rẽ (trước 5). Sét thiên kiếp (vùng báo `lightning` + tia quét) **luôn chớp toàn cảnh** (`post.flash` tối thiểu 0,3, tắt ~0,25 s) và dày ×1,5. Sân độ kiếp đọc `postParams.flash` để mây/biển mây/đá/phù văn bừng cùng chớp và đèn điểm trên đài đồng bộ; `DoKiepArt.strike()` dùng cho kịch bản chụp.
+- **Vòng chỉ báo AOE** (`render/vfx/sigil.ts`, chung mọi bí cảnh): nền phủ giảm một nửa (0,3 → 0,15), sọc chảy ra ngoài và vệt đã quét giảm một nửa; viền, phù văn và vạch tiến độ giữ nguyên.
+- **Ảnh**: `02-toan-canh` (đổi góc), `07-xoay-may`, `95-set-danh` (chụp 70 ms sau khi gọi chớp).

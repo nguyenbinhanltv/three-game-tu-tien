@@ -164,12 +164,12 @@ export function sigilNodes(U: FxUniforms) {
     .mul(one.sub(filled))
     .mul(smoothstep(0.05, 0.6, d));
 
-  const L0 = borderL.add(innerLine).add(runes.mul(0.85)).add(front).add(stripe.mul(0.32)).add(filled.mul(0.04));
+  const L0 = borderL.add(innerLine).add(runes.mul(0.85)).add(front).add(stripe.mul(0.16)).add(filled.mul(0.02));
   // Nháy 80 ms cuối chỉ làm sáng viền và vạch tiến độ, không phủ thêm lên nền.
   const L = L0.add(flash.mul(borderL.add(front).mul(0.9).mul(inside)));
   const b = clamp(L.mul(0.95), 0, 0.95);
-  // Nền ≤ 0,35 (K-6) để vẫn đọc được chân nhân vật.
-  const wash = inside.mul(0.3);
+  // Nền ≤ 0,15 (giảm một nửa ở DUN-1 PR7; trước K-6 ≤ 0,35) để vẫn đọc được chân nhân vật.
+  const wash = inside.mul(0.15);
   const A = b.add(wash.mul(one.sub(b)));
   const hot = one.add(urg.mul(0.5)).add(front.mul(0.4)).add(flash.mul(0.5));
   const bright = min(U.color.mul(hot), U.maxHdr);

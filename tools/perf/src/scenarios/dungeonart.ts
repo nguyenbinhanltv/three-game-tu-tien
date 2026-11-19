@@ -21,7 +21,7 @@ import {
   waitLevel,
 } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
-import { snapSizes, writeJson } from '../lib/shot';
+import { snap, snapSizes, UI_SIZES, writeJson } from '../lib/shot';
 
 interface View {
   name: string;
@@ -53,7 +53,7 @@ const VIEWS: Record<string, View[]> = {
   ],
   do_kiep: [
     { name: '01-vao', at: [0, 52], look: [0, -1], pitch: 0.2, dist: 12 },
-    { name: '02-toan-canh', at: [0, 30], look: [0, -1], pitch: 0.55, dist: 80 },
+    { name: '02-toan-canh', at: [0, 52], look: [0, -1], pitch: 0.2, dist: 62 },
     { name: '03-dai-giua', at: [0, 10], look: [0, -1], pitch: 0.4, dist: 20 },
     { name: '04-loi-tru', at: [-26, 26], look: [-0.7, -0.7], pitch: 0.12, dist: 10 },
     { name: '05-dinh-dong', at: [10, 22], look: [0.7, -0.7], pitch: 0.14, dist: 9 },
@@ -215,6 +215,15 @@ export default {
         const wait = sec * 1000 - (Date.now() - t0);
         if (wait > 0) await sleep(wait);
         await snapSizes(page, r.out, `${tag}-9${i}-kiep-${sec}s`, sizes, 200);
+      }
+      // Khung đúng lúc sét đánh: gọi chớp ngay rồi chụp sau 70 ms (chớp tắt trong ~0,25 s), mỗi cỡ một lần.
+      for (const sz of sizes) {
+        const [width, height] = UI_SIZES[sz] ?? UI_SIZES['1080p'];
+        await page.setViewportSize({ width, height });
+        await sleep(700);
+        await page.evaluate('window.__game?.doKiepArt?.strike()');
+        await sleep(70);
+        await snap(page, r.out, `${tag}-95-set-danh-${sz}.jpg`, { wait: 0 });
       }
     } else if (flag('--battle')) {
       // Cảnh chiến đấu boss: gọi boss cuối bằng GM ngay trước mặt, đứng sát đài chiến, chụp lúc nó ra chiêu (vạch báo) rồi lúc nó vào pha máu thấp.

@@ -21,6 +21,7 @@ import { hash01 } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { createLanternHalos } from '../../render/atmosphere';
 import { getCloudNoise } from '../../render/noiseTex';
+import { postParams } from '../../render/post';
 import { DungeonFx } from './dungeonFx';
 
 /**
@@ -78,7 +79,7 @@ export function dkMaterialFor(name: string): THREE.Material | null {
     const n = texture(getCloudNoise(), positionWorld.xz.mul(0.05).add(time.mul(0.02))).g;
     const slow = float(0.5).add(sin(time.mul(0.9).add(n.mul(6))).mul(0.12));
     m.colorNode = vec3(0.04, 0.035, 0.03);
-    m.emissiveNode = vertexColor().mul(slow.add(flashU.mul(0.9)));
+    m.emissiveNode = vertexColor().mul(slow.mul(1.5).add(flashU.mul(1.4)));
     return m;
   }
   if (name.endsWith('_volt')) {
@@ -86,7 +87,7 @@ export function dkMaterialFor(name: string): THREE.Material | null {
     const n = texture(getCloudNoise(), positionWorld.xz.mul(0.4).add(time.mul(0.15))).g;
     const crawl = float(0.55).add(sin(time.mul(3.0).add(n.mul(10))).mul(0.3));
     m.colorNode = vec3(0.05, 0.04, 0.08);
-    m.emissiveNode = vertexColor().mul(crawl.add(flashU.mul(3.5)));
+    m.emissiveNode = vertexColor().mul(crawl.mul(1.5).add(flashU.mul(4.5)));
     return m;
   }
   if (name.endsWith('_jade')) {
@@ -149,6 +150,17 @@ export class DoKiepArt {
     this.group.add(halos);
     this.disposables.push(halos.geometry, halos.material as THREE.Material);
 
+    // đầu thu lôi phát sáng trắng-tím
+    const tipPts = PILLARS.filter((p) => !p.broken).map((p) => ({ x: CENTER.x + p.x, y: this.y0 + TIP_Y - 0.2, z: CENTER.z + p.z }));
+    const tipHalos = createLanternHalos(tipPts, 8, 0xc8b4ff);
+    this.group.add(tipHalos);
+    this.disposables.push(tipHalos.geometry, tipHalos.material as THREE.Material);
+    // lò lửa ấm: bốn đèn điểm cam rọi sàn và chân trụ
+    for (const [dx, dz] of CAULDRONS) {
+      const wl = new THREE.PointLight(0xff8a3c, 420, 26, 2);
+      wl.position.set(CENTER.x + dx, this.y0 + 4.2, CENTER.z + dz);
+      this.group.add(wl);
+    }
     // đèn chớp: một đèn điểm tím-trắng treo trên đài, cường độ theo `flashU`
     this.light = new THREE.PointLight(0xc4b0ff, 0, 220, 1.2);
     this.light.position.set(CENTER.x, this.y0 + 32, CENTER.z);
@@ -246,10 +258,21 @@ export class DoKiepArt {
         .mul(smoothstep(0.03, 0.2, r));
       const col = mix(vec3(0.015, 0.012, 0.035), vec3(0.2, 0.14, 0.34), n.mul(n));
       const eye = smoothstep(0.32, 0.0, r);
-      m.colorNode = col
+      const baseCol = col
         .add(vec3(0.55, 0.42, 1.0).mul(eye.mul(float(0.25).add(flashU.mul(1.6)))))
         .add(vec3(0.5, 0.45, 0.8).mul(flashU.mul(0.35)).mul(n));
-      m.opacityNode = body.mul(opacity);
+      // tia chớp chạy trong mây: đường vân sáng mảnh (đỉnh nhiễu) chỉ hiện lúc chớp
+      const ridge = float(1).sub(
+        smoothstep(
+          0.0,
+          0.03,
+          texture(nz, uv.mul(1.7).add(vec2(0.11, 0.53)))
+            .r.sub(0.5)
+            .abs(),
+        ),
+      );
+      m.colorNode = baseCol.add(vec3(0.85, 0.75, 1.0).mul(ridge.mul(flashU).mul(3.0)));
+      m.opacityNode = body.add(ridge.mul(flashU).mul(0.9)).clamp(0, 1).mul(opacity);
       const mesh = new THREE.Mesh(geo, m);
       mesh.position.set(CENTER.x, y, CENTER.z);
       mesh.renderOrder = 5;
@@ -292,8 +315,10 @@ export class DoKiepArt {
     }
     const s = t - this.strikeAt;
     const f = s < 0 ? 0 : Math.max(Math.exp(-s / 0.09), s > 0.2 ? 0.75 * Math.exp(-(s - 0.2) / 0.13) : 0);
-    flashU.value = f;
-    this.light.intensity = f * 5200;
+    // chớp riêng + chớp do tia sét của kiếp (`postParams.flash`, đã ép sáng toàn màn hình) cùng điều khiển uniform dùng chung
+    const fp = Math.max(f, postParams.flash.value * 1.2);
+    flashU.value = fp;
+    this.light.intensity = fp * 4500;
 
     // hạt điện bốc dọc tám lôi trụ
     if (this.motes) {
@@ -373,6 +398,12 @@ export class DoKiepArt {
       this.debris.setMatrixAt(i, this.tmp.matrix);
     }
     this.debris.instanceMatrix.needsUpdate = true;
+  }
+
+  /** Gọi một tia chớp ngay (kịch bản chụp ảnh, và có thể nối vào tia sét kiếp). */
+  strike(): void {
+    this.strikeAt = this.t;
+    this.nextStrike = Math.max(this.nextStrike, this.t + 2.5);
   }
 
   update(dt: number): void {

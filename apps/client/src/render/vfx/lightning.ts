@@ -61,7 +61,7 @@ export interface BoltShape {
 }
 
 const MAIN_SEGS = 32;
-const MAX_BRANCH = 5;
+const MAX_BRANCH = 7;
 const BRANCH_SEGS = 10;
 export const BOLT_MAX_PTS = MAIN_SEGS + 1 + MAX_BRANCH * (BRANCH_SEGS + 1);
 
@@ -98,7 +98,7 @@ export function boltShape(seed: number, h = 62, spread = 7, scale = 1, out?: Bol
     }
     amp *= 0.62;
   }
-  shape.strands.push({ start: 0, count: MAIN_SEGS + 1, width: 0.22 * scale });
+  shape.strands.push({ start: 0, count: MAIN_SEGS + 1, width: 0.38 * scale });
   let n = MAIN_SEGS + 1;
   // Nhánh rẽ: rẽ ra từ nửa trên của thân, đi xiên xuống, ngắn dần.
   const branches = 2 + Math.floor(rnd() * (MAX_BRANCH - 1));
@@ -124,7 +124,7 @@ export function boltShape(seed: number, h = 62, spread = 7, scale = 1, out?: Bol
       z += (dz * 0.75 + (rnd() - 0.5) * 0.9) * segLen;
       y -= (0.55 + rnd() * 0.5) * segLen;
     }
-    shape.strands.push({ start, count: BRANCH_SEGS + 1, width: (0.12 - b * 0.012) * scale });
+    shape.strands.push({ start, count: BRANCH_SEGS + 1, width: (0.2 - b * 0.015) * scale });
   }
   shape.n = n;
   return shape;
