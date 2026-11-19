@@ -3,13 +3,17 @@ import { t } from '@dtl/content';
 import { CHAT_TABS, type ChatTab, setChatTab, useUI } from '../../store';
 import { ChatLine, sendChatText } from '../hud/Chat';
 
-/** Cao vùng nhìn thấy (thu lại khi bàn phím ảo hiện): đặt vào `--t-vvh` để tấm chat luôn nằm trên bàn phím. */
-function useVisualViewportHeight(): number {
-  const [h, setH] = useState(() => window.visualViewport?.height ?? window.innerHeight);
+/**
+ * Vùng nhìn thấy (thu lại khi bàn phím ảo hiện): cao `height` và lệch `top` (iOS Safari cuộn layout viewport lên khi mở bàn phím,
+ * `offsetTop` > 0) để tấm `position: fixed` luôn nằm đúng phần không bị bàn phím che.
+ */
+function useVisualViewport(): { height: number; top: number } {
+  const read = () => ({ height: window.visualViewport?.height ?? window.innerHeight, top: window.visualViewport?.offsetTop ?? 0 });
+  const [v, setV] = useState(read);
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
-    const on = () => setH(vv.height);
+    const on = () => setV(read());
     vv.addEventListener('resize', on);
     vv.addEventListener('scroll', on);
     return () => {
@@ -17,7 +21,7 @@ function useVisualViewportHeight(): number {
       vv.removeEventListener('scroll', on);
     };
   }, []);
-  return h;
+  return v;
 }
 
 /**
@@ -27,7 +31,7 @@ function useVisualViewportHeight(): number {
 export function TouchChatSheet({ onClose }: { onClose: () => void }) {
   const log = useUI((s) => s.log);
   const tab = useUI((s) => s.chatTab);
-  const vvh = useVisualViewportHeight();
+  const vv = useVisualViewport();
   const [text, setText] = useState('');
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,14 +42,20 @@ export function TouchChatSheet({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [lines, vvh]);
+  }, [lines, vv.height]);
   const send = () => {
     if (text.trim()) sendChatText(text);
     setText('');
     inputRef.current?.focus(); // giữ bàn phím mở để nói tiếp
   };
   return (
-    <div className="u2t-chat" style={{ height: vvh }} data-testid="touch-chat" role="dialog" aria-label={t('ui.chat.title')}>
+    <div
+      className="u2t-chat"
+      style={{ height: vv.height, top: vv.top }}
+      data-testid="touch-chat"
+      role="dialog"
+      aria-label={t('ui.chat.title')}
+    >
       <div className="u2t-chat-sheet u2h-card">
         <header className="u2t-chat-head">
           <div className="u2t-chat-tabs" role="tablist">

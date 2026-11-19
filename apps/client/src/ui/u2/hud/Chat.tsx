@@ -198,6 +198,11 @@ export function ChatBox() {
 
   const last = log[log.length - 1];
   const [sheet, setSheet] = useState(false);
+  // Cảm ứng: `collapsed` luôn true nên mốc "đã xem" không chạy; khi tấm chat mở (và có tin mới lúc đang mở) coi như đã đọc hết mọi kênh.
+  useEffect(() => {
+    if (!sheet) return;
+    setSeen({ all: lastId, world: lastId, party: lastId, system: lastId, combat: lastId });
+  }, [sheet, lastId]);
   const expand = (e: React.MouseEvent<HTMLElement>) => {
     if (mode === 'touch') {
       setSheet(true); // cảm ứng: mở tấm chat có bàn phím ảo thay vì khung PC
