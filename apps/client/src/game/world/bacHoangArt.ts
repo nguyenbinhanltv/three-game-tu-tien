@@ -15,6 +15,9 @@ export const RIFT = {
   bone: 0xcfc6b4,
 } as const;
 
+/** MAP-5: bảng tuyết trắng + đen + tím độc cho đất (nhân với texture nên là màu giữa). */
+const SNOW = { snow: 0xe6ecf6, shade: 0x9aa8d0, rock: 0x1c1a26 } as const;
+
 /** Một điểm trên đường tâm Giới Khích (tọa độ thế giới), nam → bắc. */
 export interface RiftPt {
   x: number;
@@ -55,7 +58,7 @@ export function riftDist(path: readonly RiftPt[], x: number, z: number): { d: nu
 }
 
 /**
- * Mức "bên kia vết nứt" 0..1 theo vị trí: 0 ở nửa nam (tro sớm, `ash_dawn`), 1 ở ba vùng bắc (`rift`); chuyển dần trong ~110 m quanh Khích Giai
+ * Mức "bên kia vết nứt" 0..1 theo vị trí: 0 ở nửa nam (tuyết, `bh_*`), 1 ở ba vùng bắc (tím độc, `bhr_*`); chuyển dần trong ~110 m quanh Khích Giai
  * (z lệch tâm −120 → −250: Khích Giai còn là bên này, miệng khe ở −190). `zo` = z − nửa kích thước bản đồ.
  */
 export function riftBlend(zo: number): number {
@@ -86,29 +89,35 @@ export function bhGroundColor(
   const n = fbm(x * 0.011, z * 0.011, 3, def.seed + 300);
   const m = fbm(x * 0.04, z * 0.04, 2, def.seed + 331);
   const north = riftBlend(z - def.size / 2);
-  // Nền: tro bay xám ấm, đám tro than đậm theo nhiễu thấp tần (đất cháy).
-  let c = hex(RIFT.ashLight, 0.84 + n * 0.2);
-  c = lerp3(c, hex(RIFT.ash, 1.5), Math.min(0.7, Math.max(0, -n * 1.4 + 0.15)));
-  // Bên kia: sẫm dần, vệt huyết sậm theo nhiễu mịn.
+  // Nền: tuyết trắng ngả lam, đám đất đá đen lộ ra theo nhiễu thấp tần (tuyết mỏng, gió quét).
+  let c = hex(SNOW.snow, 1.75 + n * 0.25);
+  c = lerp3(c, hex(SNOW.rock, 1.4), Math.min(0.4, Math.max(0, -n * 0.9 + 0.1)));
+  // Gió thổi tuyết thành vệt lam nhạt.
+  c = lerp3(c, hex(SNOW.shade, 1.5), Math.min(0.2, Math.max(0, m) * 0.5));
+  // Vệt gió: dải kéo dài theo hướng gió (x), sáng tối xen kẽ như tuyết bị quét.
+  const wind = fbm(x * 0.006 + z * 0.0015, z * 0.055, 2, def.seed + 377);
+  c = lerp3(c, hex(SNOW.shade, 1.3), Math.min(0.3, Math.max(0, wind) * 0.9));
+  c = lerp3(c, hex(SNOW.snow, 2.1), Math.min(0.25, Math.max(0, -wind) * 0.7));
+  // Bên kia: tuyết nhuốm tím độc, đá đen tuyền, vệt tím sậm theo nhiễu mịn.
   if (north > 0) {
-    c = lerp3(c, hex(RIFT.ash, 1.35), north * 0.55);
-    c = lerp3(c, hex(RIFT.blood, 0.85), north * Math.min(0.3, Math.max(0, m - 0.05) * 1.0));
-    // Mỗi vùng bên kia một màu chủ (design 4.2): Xích Tẫn Bình (đông) ngả than hồng, Kim Dạ Ngoại Uyển (tây) ngả kim dát khô.
+    c = lerp3(c, hex(SNOW.shade, 0.75), north * 0.5);
+    c = lerp3(c, hex(RIFT.violetDeep, 1.1), north * Math.min(0.5, Math.max(0, m - 0.02) * 1.6));
+    // Mỗi vùng bên kia một màu chủ: Xích Tẫn Bình (đông) ngả tím than, Kim Dạ Ngoại Uyển (tây) ngả kim dát khô.
     const east = smoothstep(def.size / 2 + 60, def.size / 2 + 260, x);
     const west = smoothstep(def.size / 2 - 60, def.size / 2 - 260, x);
-    if (east > 0) c = lerp3(c, hex(RIFT.ember, 0.55 + m * 0.2), north * east * 0.2);
-    if (west > 0) c = lerp3(c, hex(RIFT.gilt, 0.7 + m * 0.2), north * west * 0.45);
+    if (east > 0) c = lerp3(c, hex(RIFT.violet, 0.5 + m * 0.2), north * east * 0.22);
+    if (west > 0) c = lerp3(c, hex(RIFT.gilt, 0.7 + m * 0.2), north * west * 0.3);
   }
-  // Mạng nứt: đường mảnh (nhiễu gần 0), tối ở nửa nam, hồng sẫm ở nửa bắc.
+  // Mạng nứt: đường mảnh (nhiễu gần 0), đen ở nửa nam, tím sáng ở nửa bắc (màu đỉnh; phần phát sáng thật do `riftVeil`).
   const crack = 1 - Math.min(1, Math.abs(fbm(x * 0.022 + 9, z * 0.022 - 4, 3, def.seed + 612)) * 9);
-  if (crack > 0.35) c = lerp3(c, lerp3(hex(RIFT.ash, 0.6), hex(RIFT.ember, 0.75), north), Math.min(0.55, (crack - 0.35) * 1.2));
-  // Gần khe: nóng dần, than hồng ánh lên mép (màu đỉnh; phần phát sáng thật do `riftVeil`).
+  if (crack > 0.35) c = lerp3(c, lerp3(hex(SNOW.rock, 0.5), hex(RIFT.violet, 0.8), north), Math.min(0.22, (crack - 0.35) * 0.5));
+  // Gần khe: băng nứt, ánh tím dần lên mép.
   if (path.length > 1) {
     const { d } = riftDist(path, x, z);
     const heat = 1 - smoothstep(14, 70, d);
-    if (heat > 0) c = lerp3(c, hex(RIFT.ember, 0.7 + m * 0.3), heat * 0.2);
+    if (heat > 0) c = lerp3(c, hex(RIFT.violet, 0.75 + m * 0.3), heat * 0.3);
   }
-  // Sân trạm/trận/bia phẳng sáng hơn một chút (xương/tro bay), không phát sáng.
+  // Sân trạm/trận/bia phẳng sáng hơn một chút (tuyết nén), không phát sáng.
   let flat = 0;
   for (const f of def.features) {
     if (f.id.startsWith('khe_')) continue;
@@ -120,10 +129,10 @@ export function bhGroundColor(
     const v = 1 - smoothstep(f.flatR * 0.9, r1, Math.sqrt(d2));
     if (v > flat) flat = v;
   }
-  if (flat > 0) c = lerp3(c, hex(RIFT.bone, 0.78 + m * 0.1), Math.min(0.45, flat * 0.5));
+  if (flat > 0) c = lerp3(c, hex(SNOW.snow, 1.9 + m * 0.1), Math.min(0.45, flat * 0.5));
   const slope = 1 - ny;
-  if (slope > 0.12) c = lerp3(c, hex(RIFT.ash, 1.7), Math.min(1, (slope - 0.12) * 4.5));
-  if (h < 66) c = lerp3(c, hex(RIFT.ash, 0.7), Math.min(0.8, (66 - h) / 8)); // lòng khe
+  if (slope > 0.12) c = lerp3(c, hex(SNOW.rock, 1.5), Math.min(1, (slope - 0.12) * 4.5)); // tuyết không bám sườn dốc: lộ đá đen
+  if (h < 66) c = lerp3(c, hex(RIFT.violetDeep, 1.0), Math.min(0.8, (66 - h) / 8)); // lòng khe
   out[0] = c[0];
   out[1] = c[1];
   out[2] = c[2];
