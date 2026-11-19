@@ -18,8 +18,8 @@ const ctx = {
 };
 
 describe('bacHoangArt (DV-3I)', () => {
-  it('đường tâm khe: 14 điểm sắp từ nam lên bắc, cách nhau 30 m', () => {
-    expect(path.length).toBe(14);
+  it('đường tâm khe: 10 điểm sắp từ nam lên bắc, cách nhau 30 m', () => {
+    expect(path.length).toBe(10);
     for (let i = 1; i < path.length; i++) expect(path[i]!.z).toBeLessThan(path[i - 1]!.z);
     expect(riftDist(path, path[5]!.x, path[5]!.z).d).toBeLessThan(0.01);
     expect(riftDist(path, path[5]!.x + 40, path[5]!.z).d).toBeGreaterThan(30);

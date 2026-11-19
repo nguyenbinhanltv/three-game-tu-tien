@@ -8,6 +8,8 @@ import { Butterflies, BUTTERFLY_LEVELS } from '../world/butterflies';
 import { Grass } from '../world/grass';
 import { applyAtmosphere, createLanternHalos, setHeightFog, tuneAtmosphere } from '../../render/atmosphere';
 import { buildRiftVeil } from '../../render/riftVeil';
+import { Aurora, AURORA_BY_TOD } from '../../render/aurora';
+import { BhWonders } from '../world/bhWonders';
 import { skyTopOf } from '../../render/sky';
 import { DeadTrees } from '../world/deadTrees';
 import { deadTreeSpots, KIEP_BH, riftBlend, riftPath } from '../world/bacHoangArt';
@@ -82,6 +84,14 @@ export function buildBacHoang(eng: Game): void {
   eng.scene.add(eng.rift.group);
   eng.deadTrees = new DeadTrees(deadTreeSpots(bhCtx(propsOf('bac_hoang')), 700), (x, z) => heightAt(x, z));
   eng.scene.add(eng.deadTrees.group);
+  if (levelId() === 'bac_hoang') {
+    eng.bhWonders = new BhWonders(riftPath(T.def), (x, z) => heightAt(x, z), { detail: get().quality !== 'low' });
+    eng.scene.add(eng.bhWonders.group);
+    if (get().quality !== 'low') {
+      eng.aurora = new Aurora();
+      eng.scene.add(eng.aurora.mesh);
+    }
+  }
   if (levelId() === KIEP_BH) {
     // Nhật thực: đĩa đen vành lửa treo trên khe Giới Khích, phía bắc-đông sân (chỗ camera mặc định ngẩng lên thấy được, không dưới khung HUD).
     const c = LEVELS[KIEP_BH]!.dungeon!.center;
@@ -163,6 +173,7 @@ export function updateRiftMood(eng: Game, dt: number, z: number): void {
   }
   tuneAtmosphere(eng.scene, eng.env, p, t > 0.5 ? far : near, mixHex(skyTopOf(near), skyTopOf(far), t));
   applyGrading(p);
+  eng.aurora?.setIntensity(AURORA_BY_TOD[tod], t);
 }
 
 /** Nhật thực của Nhật Thực Kiếp: từ pha Nhật thực (25 s) trời tối đen có vành lửa; trước đó chỉ là quầng mờ. Ngoài sân kiếp thì tắt. */
@@ -178,6 +189,16 @@ export function updateEclipse(eng: Game, dt: number): void {
 }
 
 export function disposeBacHoang(eng: Game): void {
+  if (eng.bhWonders) {
+    eng.scene.remove(eng.bhWonders.group);
+    eng.bhWonders.dispose();
+    eng.bhWonders = null;
+  }
+  if (eng.aurora) {
+    eng.scene.remove(eng.aurora.mesh);
+    eng.aurora.dispose();
+    eng.aurora = null;
+  }
   if (eng.rift) {
     eng.scene.remove(eng.rift.group);
     eng.rift.dispose();
