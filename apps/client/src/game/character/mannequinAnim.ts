@@ -2,12 +2,47 @@
 // theo tốc độ thật (khóa pha để không trượt chân), nghiêng khi rẽ, thở, nhìn mục tiêu giới hạn góc, giật nhẹ khi trúng đòn,
 // anticipation của đòn UAL dự phòng. Không đụng three: để test được trong Node.
 
-/** Tốc độ gốc (m/s) và độ dài chu kỳ (m) đo từ root motion của UAL1 `_RM` (Walk 1,3 m/1,333 s; Jog 5,0 m/0,933 s; Sprint 5,5 m/0,667 s). */
+/**
+ * Tốc độ gốc (m/s) và độ dài sải (m mỗi chu kỳ) của ba clip đi/chạy/chạy nhanh. Sải đo từ quãng đường bàn chân trụ của
+ * chính clip (`tools/blender/ual_loco.py`, `measure`; docs/chr-v3-anim/README.md), khớp với bản dựng đi lùi/ngang cùng họ.
+ */
 export const LOCO = {
-  walk: { clip: 'Walk_Loop', speed: 0.97, stride: 1.3 },
-  jog: { clip: 'Jog_Fwd_Loop', speed: 5.36, stride: 5.0 },
-  sprint: { clip: 'Sprint_Loop', speed: 8.25, stride: 5.5 },
+  walk: { clip: 'Walk_Loop', speed: 0.97, stride: 1.24 },
+  jog: { clip: 'Jog_Fwd_Loop', speed: 5.36, stride: 5.5 },
+  sprint: { clip: 'Sprint_Loop', speed: 8.25, stride: 5.94 },
 } as const;
+
+export type LocoBand = keyof typeof LOCO;
+export type LocoDirKey = 'f' | 'b' | 'l' | 'r';
+
+/** Tên clip theo dải tốc độ và hướng (đi lùi/ngang dựng thủ tục, tools/blender/ual_loco.py). */
+export function locoClipName(band: LocoBand, dir: LocoDirKey): string {
+  if (dir === 'f') return LOCO[band].clip;
+  const b = band === 'walk' ? 'Walk' : band === 'jog' ? 'Jog' : 'Sprint';
+  return `${b}_${dir === 'b' ? 'Bwd' : dir === 'l' ? 'StrafeL' : 'StrafeR'}_Loop`;
+}
+
+export interface DirMix {
+  f: number;
+  b: number;
+  l: number;
+  r: number;
+}
+
+/**
+ * Trọng số bốn hướng (tới, lùi, trái, phải) theo góc đi `angle` so với hướng nhìn (0 = tới, +π/2 = trái): chiếu lên bốn trục
+ * rồi chuẩn hóa, nên chéo 45° là trộn 50/50 hai clip kề nhau (cả bốn clip chung một pha chân). Tổng = 1.
+ */
+export function dirMix(angle: number): DirMix {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  const f = Math.max(0, c);
+  const b = Math.max(0, -c);
+  const l = Math.max(0, s);
+  const r = Math.max(0, -s);
+  const sum = f + b + l + r || 1;
+  return { f: f / sum, b: b / sum, l: l / sum, r: r / sum };
+}
 
 const smooth = (x: number): number => {
   const t = Math.min(1, Math.max(0, x));

@@ -84,6 +84,17 @@ export function locoDirOf(yaw: number, vx: number, vz: number): LocoDir {
   return l > 0 ? 'left' : 'right';
 }
 
+/**
+ * Góc hướng đi so với hướng nhìn `yaw` (rad, trong (−π, π]): 0 = đi thẳng tới, +π/2 = sang trái, −π/2 = sang phải, ±π = lùi.
+ * Cùng quy ước với `locoDirOf` nhưng liên tục, cho trộn 8 hướng.
+ */
+export function locoAngleOf(yaw: number, vx: number, vz: number): number {
+  if (Math.hypot(vx, vz) < 1e-6) return 0;
+  const f = vx * Math.sin(yaw) + vz * Math.cos(yaw);
+  const l = vx * Math.cos(yaw) - vz * Math.sin(yaw);
+  return Math.atan2(l, f);
+}
+
 /** Hướng đòn tới so với người bị đánh. */
 export type HitDir = 'front' | 'back' | 'left' | 'right';
 

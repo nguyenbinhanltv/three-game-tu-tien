@@ -15,7 +15,22 @@ import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
 import { applySkinLook, SKIN_LOOKS } from './skinLook';
 import { applyV3Palette } from './v3Palette';
-import { breathOf, flinchOf, leanOf, locoMix, lookAngles, LOCO, swingRate, turnLagOf, xfade } from './mannequinAnim';
+import {
+  breathOf,
+  dirMix,
+  type DirMix,
+  flinchOf,
+  leanOf,
+  LOCO,
+  locoClipName,
+  type LocoBand,
+  type LocoDirKey,
+  locoMix,
+  lookAngles,
+  swingRate,
+  turnLagOf,
+  xfade,
+} from './mannequinAnim';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import type { AnimState, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
 import { FLAGS } from '../../base/flags';
@@ -352,6 +367,10 @@ export class MannequinCharacter implements CharacterView {
   private loco = false;
   private locoPhase = 0;
   private mix = { walk: 0, jog: 1, sprint: 0 };
+  /** Trọng số bốn hướng đi (làm mượt) và dải/hướng của từng action đi-chạy (A1: đi lùi, đi ngang, chéo). */
+  private dir: DirMix = { f: 1, b: 0, l: 0, r: 0 };
+  private lowerPick: THREE.AnimationAction | null = null;
+  private locoKey = new Map<THREE.AnimationAction, { band: LocoBand; dir: LocoDirKey }>();
   /** Đòn UAL dự phòng chỉ nửa trên khi đang chạy; chân theo clip nền (nửa dưới). */
   private shotUpper = false;
   private shotLower: THREE.AnimationAction | null = null;
@@ -530,15 +549,19 @@ export class MannequinCharacter implements CharacterView {
     // Rời chạy: chốt hệ số trộn của từng action để lúc mờ dần vẫn nhân đúng (không nhảy tư thế ở khung chuyển).
     this.frozenMix.clear();
     if (this.loco && this.base) {
-      this.frozenMix.set(this.base, this.mix.jog);
-      this.frozenMix.set(this.companions[0]!, this.mix.walk);
-      this.frozenMix.set(this.companions[1]!, this.mix.sprint);
+      this.frozenMix.set(this.base, this.locoW(this.base));
+      for (const c of this.companions) this.frozenMix.set(c, this.locoW(c));
     }
     this.companions = [];
+    this.locoKey.clear();
     this.loco = V3_ANIM && name === LOCO.jog.clip;
     if (this.loco) {
-      for (const k of [LOCO.walk.clip, LOCO.sprint.clip]) {
-        const c = this.action(k);
+      this.locoKey.set(next, { band: 'jog', dir: 'f' });
+      // Thứ tự cố định: đi, chạy nhanh, rồi lùi/ngang của từng dải (thiếu clip trong asset thì bỏ qua, quay về clip tới).
+      const want: [LocoBand, LocoDirKey][] = [['walk', 'f'], ['sprint', 'f']];
+      for (const band of ['jog', 'walk', 'sprint'] as const) for (const d of ['b', 'l', 'r'] as const) want.push([band, d]);
+      for (const [band, d] of want) {
+        const c = this.action(locoClipName(band, d));
         if (!c) continue;
         c.setLoop(THREE.LoopRepeat, Infinity);
         c.reset().play();
@@ -546,6 +569,7 @@ export class MannequinCharacter implements CharacterView {
         c.setEffectiveWeight(0);
         this.weights.set(c, this.base ? 0 : 1);
         this.companions.push(c);
+        this.locoKey.set(c, { band, dir: d });
       }
     }
     const loop = /Loop$|Idle$/.test(name);
@@ -561,6 +585,28 @@ export class MannequinCharacter implements CharacterView {
     this.baseName = name;
   }
 
+  /** Clip cho chân khi chỉ nửa trên đang đánh: clip đi-chạy trội nhất (có trễ để không đổi qua lại ở chéo 45°). */
+  private lowerSrc(): THREE.AnimationAction | null {
+    if (!this.base || !this.loco) return this.base;
+    let best = this.lowerPick && (this.lowerPick === this.base || this.companions.includes(this.lowerPick)) ? this.lowerPick : this.base;
+    let bw = this.locoW(best) + 0.15;
+    for (const c of [this.base, ...this.companions]) {
+      const w = this.locoW(c);
+      if (w > bw) {
+        best = c;
+        bw = w;
+      }
+    }
+    this.lowerPick = best;
+    return best;
+  }
+
+  /** Trọng số của một action đi/chạy = dải tốc độ × hướng. */
+  private locoW(a: THREE.AnimationAction): number {
+    const k = this.locoKey.get(a);
+    return k ? this.mix[k.band] * this.dir[k.dir] : 1;
+  }
+
   /** Hòa clip nền: clip hiện tại về 1 (về 0 khi đang có đòn, trừ ~0,12 s cuối để khỏi rơi về tư thế nghỉ), clip cũ tắt dần. */
   private blendBases(dt: number): void {
     let gate = 1;
@@ -571,12 +617,7 @@ export class MannequinCharacter implements CharacterView {
       gate = (sh.getClip().duration - sh.time) / ts < FADE * 0.75 ? 1 : 0;
     }
     const step = dt / this.fadeDur;
-    const mixOf = (a: THREE.AnimationAction): number => {
-      if (!this.loco) return 1;
-      if (a === this.base) return this.mix.jog;
-      const i = this.companions.indexOf(a);
-      return i === 0 ? this.mix.walk : i === 1 ? this.mix.sprint : 1;
-    };
+    const mixOf = (a: THREE.AnimationAction): number => (this.loco ? this.locoW(a) : 1);
     for (const [a, w] of [...this.weights]) {
       const live = a === this.base || this.companions.includes(a);
       const target = live ? gate : 0;
@@ -745,12 +786,13 @@ export class MannequinCharacter implements CharacterView {
     p.upper.setEffectiveWeight(p.env);
     p.lower.setEffectiveWeight(moving ? 0 : p.env);
     // Đang đi: chân giữ clip chạy (chỉ kênh nửa dưới của clip nền hiện tại).
-    if (moving && !p.lowerBase && this.base) {
-      const lb = this.mixer.clipAction(lowerBodyOf(this.base.getClip()));
+    const src = this.lowerSrc();
+    if (moving && !p.lowerBase && src) {
+      const lb = this.mixer.clipAction(lowerBodyOf(src.getClip()));
       lb.setLoop(THREE.LoopRepeat, Infinity);
       lb.reset();
-      lb.time = this.base.time;
-      lb.timeScale = this.base.timeScale;
+      lb.time = src.time;
+      lb.timeScale = src.timeScale;
       lb.play();
       p.lowerBase = lb;
     }
@@ -842,6 +884,8 @@ export class MannequinCharacter implements CharacterView {
       this.mix.walk += (m.walk - this.mix.walk) * k;
       this.mix.jog += (m.jog - this.mix.jog) * k;
       this.mix.sprint += (m.sprint - this.mix.sprint) * k;
+      const dm = dirMix(a.moveAngle ?? 0);
+      for (const d of ['f', 'b', 'l', 'r'] as const) this.dir[d] += (dm[d] - this.dir[d]) * k;
       this.locoCycles = m.cycles;
     } else if (this.base && name === 'Jog_Fwd_Loop') this.base.timeScale = jogRate(a.speed);
     else if (this.base) this.base.timeScale = 1;
@@ -906,21 +950,22 @@ export class MannequinCharacter implements CharacterView {
 
   private syncShotLower(): void {
     if (!(this.shotUpper && this.shot && this.base)) return;
-    if (this.shotLowerSrc !== this.base) {
+    const src = this.lowerSrc()!;
+    if (this.shotLowerSrc !== src) {
       this.shotLower?.stop();
-      const lb = this.mixer.clipAction(lowerBodyOf(this.base.getClip()));
+      const lb = this.mixer.clipAction(lowerBodyOf(src.getClip()));
       lb.setLoop(THREE.LoopRepeat, Infinity);
       lb.reset();
       lb.play();
       lb.setEffectiveWeight(0);
       this.shotLower = lb;
-      this.shotLowerSrc = this.base;
+      this.shotLowerSrc = src;
       this.shotLowerW = 0;
     }
     const lb = this.shotLower!;
-    lb.timeScale = this.loco ? 0 : this.base.timeScale;
+    lb.timeScale = this.loco ? 0 : src.timeScale;
     if (this.loco) lb.time = this.locoPhase * lb.getClip().duration;
-    else lb.time = this.base.time;
+    else lb.time = src.time;
   }
 
   /** Lớp phụ sau mixer (xương chỉnh thêm trên tư thế clip): nghiêng khi rẽ, xoay tại chỗ, thở, nhìn mục tiêu, giật khi trúng đòn, bù dang tay. */

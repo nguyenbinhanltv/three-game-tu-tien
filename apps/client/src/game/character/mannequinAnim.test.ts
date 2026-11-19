@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { breathOf, flinchOf, leanOf, locoMix, lookAngles, swingRate, turnLagOf, xfade } from './mannequinAnim';
+import { breathOf, dirMix, flinchOf, leanOf, locoClipName, locoMix, lookAngles, LOCO, swingRate, turnLagOf, xfade } from './mannequinAnim';
 
 describe('mannequinAnim', () => {
   it('locoMix: tổng trọng số 1, đi → chạy → chạy nhanh', () => {
@@ -13,9 +13,28 @@ describe('mannequinAnim', () => {
     expect(locoMix(9).sprint).toBe(1);
   });
   it('locoMix: chu kỳ/giây tăng theo tốc độ và bám tốc độ gốc của clip', () => {
-    expect(locoMix(5.36).cycles).toBeCloseTo(5.36 / 5.0, 2);
-    expect(locoMix(8.25).cycles).toBeCloseTo(8.25 / 5.5, 2);
+    expect(locoMix(5.36).cycles).toBeCloseTo(5.36 / LOCO.jog.stride, 2);
+    expect(locoMix(8.25).cycles).toBeCloseTo(8.25 / LOCO.sprint.stride, 2);
     expect(locoMix(7.2).cycles).toBeGreaterThan(locoMix(5.4).cycles);
+  });
+  it('dirMix: bốn hướng chính cho đúng clip, chéo 45° trộn 50/50, tổng 1', () => {
+    expect(dirMix(0)).toEqual({ f: 1, b: 0, l: 0, r: 0 });
+    expect(dirMix(Math.PI / 2).l).toBeCloseTo(1);
+    expect(dirMix(-Math.PI / 2).r).toBeCloseTo(1);
+    expect(dirMix(Math.PI).b).toBeCloseTo(1);
+    const d = dirMix(Math.PI / 4);
+    expect(d.f).toBeCloseTo(0.5);
+    expect(d.l).toBeCloseTo(0.5);
+    for (let a = -Math.PI; a <= Math.PI; a += 0.1) {
+      const m = dirMix(a);
+      expect(m.f + m.b + m.l + m.r).toBeCloseTo(1, 6);
+    }
+  });
+  it('locoClipName khớp tên clip dựng bởi tools/blender/ual_loco.py', () => {
+    expect(locoClipName('jog', 'f')).toBe('Jog_Fwd_Loop');
+    expect(locoClipName('jog', 'b')).toBe('Jog_Bwd_Loop');
+    expect(locoClipName('walk', 'l')).toBe('Walk_StrafeL_Loop');
+    expect(locoClipName('sprint', 'r')).toBe('Sprint_StrafeR_Loop');
   });
   it('xfade: chết nhanh, ngồi chậm, dừng chậm hơn xuất phát', () => {
     expect(xfade('Jog_Fwd_Loop', 'Death01')).toBeLessThan(0.1);
