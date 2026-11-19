@@ -584,6 +584,8 @@ const terrain = {
     ...POIS.map((p) => flat('poi_' + p.id, p.off, ZONES.find((z) => z.id === p.zone).floor - Math.hypot(...p.off) * 0.012, 20, 55)),
     flat('boss', BOSS.off, ZONES.find((z) => z.id === 'tuyet_bich').floor - 7, 42, 120, { detail: 2 }),
   ],
+  // MAP-2: cầu treo qua khe cát lún (Hoang Sa Huyệt); client dựng lưới riêng (`own`), độ cao mặt cầu dùng chung `bridgeDeckY`.
+  bridges: [{ id: 'cau_treo_sa_lun', ax: 970, az: 1500, ay: 75.2, bx: 970, bz: 1548, by: 75.4, halfW: 1.25, sag: 2.4, own: true }],
   play: { cx: C, cz: C, half: HALF, wallH: 260 },
   colliders: props.filter((p) => p.r).map((p) => ({ x: p.x, z: p.z, r: Math.round(p.r * 100) / 100 })),
 };

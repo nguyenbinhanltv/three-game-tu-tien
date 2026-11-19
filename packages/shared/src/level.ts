@@ -197,6 +197,8 @@ export interface BridgeDef {
   halfW: number;
   /** Độ võng giữa nhịp (m). */
   sag: number;
+  /** Client dựng cầu riêng (MAP-2 Đoạn Mạch: cầu treo ở `game/world/doanMachArt.ts`): `SkyIslands` không dựng cầu xích cho cầu này. */
+  own?: boolean;
 }
 
 export interface TerrainDef {

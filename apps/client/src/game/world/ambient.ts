@@ -76,7 +76,7 @@ export function ambientRates(x: number, z: number, above: number, out?: AmbientR
   // MAP-2: hẻm núi lá phong, lá đỏ/cam/vàng bay chéo theo gió, dày hơn khi đứng thấp.
   if (level === 'doan_mach') {
     r.mote = 6;
-    r.maple = 22 * Math.max(0.15, Math.min(1, 1 - (above - 10) / 30));
+    r.maple = 30 * Math.max(0.15, Math.min(1, 1 - (above - 10) / 30));
     return r;
   }
   // Vân Hải (E3-H): không dùng tỉ lệ hạt của Vân Lam (sương/lá/phấn hoa theo toạ độ Vân Lam). Mảng sương `mist` là billboard 3–5 m, trên đảo hiện
@@ -243,7 +243,7 @@ export class AmbientParticles {
         const y = floorY + 1.5 + R() * 7;
         const q = R();
         const c = q < 0.5 ? COLOR.mapleRed : q < 0.8 ? COLOR.mapleOrange : COLOR.mapleGold;
-        ps.emit('dust', x, y, z, 1.4 + R() * 1.4, -0.25 - R() * 0.2, 0.5 + R() * 0.8, 6 + R() * 3, 0.26, 0.22, c, 0.95, 1.6, 1.7);
+        ps.emit('dust', x, y, z, 1.4 + R() * 1.4, -0.25 - R() * 0.2, 0.5 + R() * 0.8, 6 + R() * 3, 0.3, 0.26, c, 0.95, 1.6, 1.7);
         break;
       }
       case 'jade': {

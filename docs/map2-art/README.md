@@ -15,8 +15,13 @@ Tái thiết kế mỹ thuật Đoạn Mạch (chương 2, `doan_mach`) theo pho
 
 ## PR 2: hẻm núi, cây phong, cổ trận, cầu treo
 
-- Địa hình: `edge` của `doan_mach.terrain.json` (và `gen-doan-mach.mjs`) từ `{amp 120, r0 300, r1 20}` thành `{amp 210, r0 252, r1 110}`: vách dựng đứng cao ~200 m, **chỉ ngoài vùng chơi** (mép chơi cách rìa thế giới 244 m nên độ cao trong vùng chơi không đổi); `map:report`: 0 chỗ kẹt.
-- Vân vách sa thạch xám-đỏ theo điểm ảnh: `setGroundRedStrata` (`render/materials/ground.ts`), chỉ bật cho `doan_mach` (tầng ngang theo độ cao hai tần số, không đổi ngưỡng tuyết của Vân Lam).
-- `game/world/doanMachArt.ts` (cờ `doanMachArt` trong `doan_mach.assets.json`; chỉ để nhìn, không va chạm): rừng phong theo mảng (tối đa 820 cây, 3 sắc đỏ/cam/vàng, tán 7 khối méo + pháp tuyến mịn, thân chung; 4 draw call), cổ trận khắc trên vách (tối đa 56 tấm, 1 draw call, shader `render/runeWall.ts`: vòng, tám quẻ, nhịp sáng; cường độ theo mood `RUNE_INTENSITY`: đêm rực, hoàng hôn rõ, ngày le lói), cầu treo gỗ + dây thừng + cột đỏ qua khe cát lún (970,1500)→(970,1548) (1 draw call).
-- Sương ngày/bình minh giảm (`dm_day`, `dm_dawn`) để vách và tầng đá không bị che bệt.
-- Chưa làm: thác nhỏ đổ xuống khe, cây dày bằng thẻ lá (cards) có LOD, bo viền/chuẩn hóa vách bằng mesh Blender (vách hiện là lưới địa hình + shader).
+- Địa hình: `edge` của `doan_mach.terrain.json` (và `gen-doan-mach.mjs`) từ `{amp 120, r0 300, r1 20}` thành `{amp 210, r0 252, r1 110}`: vách dựng đứng cao ~200 m ngoài vùng chơi. **Lưu ý**: công thức cũ đã nâng địa hình ở dải cách rìa thế giới 254–300 m, dải này nằm trong vùng đi được (`playWall` = 770 nên người chơi tới chỗ cách rìa 254 m; tại 254 m cũ nâng ~8,6 m). Với `r0 = 252` dải đó về 0, tức mặt đất ven vùng chơi (~46 m) **hạ tới ~8,6 m** trên cả server lẫn client. `map:report`: 0 chỗ kẹt, độ phủ đạt chuẩn.
+- Cầu treo là cầu đi được thật: `TerrainDef.bridges` (`cau_treo_sa_lun`, cờ `own`: `SkyIslands` không dựng cầu xích; `halfW` 1,25, `sag` 2,4) sinh từ `gen-doan-mach.mjs`, mặt cầu `bridgeDeckY` dùng chung server/client, lưới cầu ở `game/world/doanMachArt.ts` bám cùng đường võng.
+- Vân vách sa thạch xám-đỏ theo điểm ảnh: `setGroundRedStrata` (`render/materials/ground.ts`), chỉ bật cho `doan_mach`; không dùng khung texture 11 m (lặp thành ô caro) mà dựng từ nhiễu theo tọa độ dọc vách và độ cao: tầng méo, hai thang đỏ gạch ↔ xám, khe nứt dọc, gờ đá.
+- `game/world/doanMachArt.ts` (cờ `doanMachArt`; chỉ để nhìn, không va chạm):
+  - Rừng phong thẻ lá alpha (tối đa 700 cây + 3 cây lớn điểm nhìn, ba sắc đỏ/cam/vàng; thân + tán 42 thẻ vẽ lá phong năm thùy bằng canvas, pháp tuyến hướng ra ngoài; 4 draw call). **Vùng cấm trồng** (hàm `exclusions`, có test): lõi lòng sông `rb_*` (0,9 `flatR`), trạm, cổng (`portals`), điểm nhiệm vụ (`spots`), điểm đáng chú ý, NPC, nút thu thập, trại quái, điểm hồi sinh, đường hộ tống (đệm 14 m), cầu, vật cản.
+  - Cổ trận khắc vách (tối đa 90 tấm, 1 draw call, `render/runeWall.ts`: vòng, tám quẻ, nhịp sáng; cường độ theo mood `RUNE_INTENSITY`).
+  - Cầu treo gỗ + dây thừng + cột đỏ (1 draw call).
+- Lá phong bay (`AmbientKind` `maple`) to hơn, dày hơn PR1.
+- Sương ngày/bình minh giảm (`dm_day`, `dm_dawn`) để vách không bị che bệt.
+- Chưa làm: thác nhỏ đổ xuống khe, cây thẻ lá có LOD, bo viền vách bằng mesh Blender, thay mô hình cây khô (`prop_cay_goc_kho` là prop dùng chung, có va chạm).

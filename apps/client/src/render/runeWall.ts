@@ -9,10 +9,10 @@ import { abs, atan, attribute, clamp, float, floor, fract, length, mix, sin, smo
 export const runeParams = { intensity: uniform(0.4) };
 
 export const RUNE_INTENSITY: Record<string, number> = {
-  dm_dawn: 0.45,
-  dm_day: 0.2,
-  dm_dusk: 0.8,
-  dm_night: 1.6,
+  dm_dawn: 0.6,
+  dm_day: 0.35,
+  dm_dusk: 0.9,
+  dm_night: 1.5,
 };
 
 const band = (x: ReturnType<typeof float>, c: number, w: number) => float(1).sub(smoothstep(0, w, abs(x.sub(c))));
