@@ -267,6 +267,16 @@
         "shadowAmount": 0.3, "highlightAmount": 0.25,
         "blackLift": "#1A2034", "contrast": 1.14, "saturation": 0.62, "exposure": 0.92
       },
+      "tt": {
+        "label": "Thần Tàng Điện — điện tàng đen tím nạm vàng",
+        "sunColor": "#E8DCC4", "sunIntensity": 1.5, "sunElevationDeg": 56,
+        "skyColor": "#3A2E58", "skyIntensity": 0.55,
+        "fogColor": "#1C1630", "fogDensity": 0.001, "heightFogTop": 12, "heightFogBoost": 2.0,
+        "fogHaze": 0.0008, "fogHazeStart": 80, "fogScatter": 0.5, "rim": 1.0,
+        "shadowTint": "#120C26", "highlightTint": "#F4D27E", "splitBalance": -0.05,
+        "shadowAmount": 0.4, "highlightAmount": 0.3,
+        "blackLift": "#120E1E", "contrast": 1.22, "saturation": 0.88, "exposure": 0.85
+      },
       "vh_dawn": {
         "label": "Vân Hải — bình minh lam bạc",
         "sunColor": "#FFD2B0", "sunIntensity": 3.2, "sunElevationDeg": 12,
