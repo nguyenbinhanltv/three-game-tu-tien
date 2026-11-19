@@ -216,6 +216,7 @@ export function runFrame(eng: Game): void {
   setListener(rp.x, rp.z, eng.camYaw);
   eng.env.update(dt, eng.camera, rp);
   if (eng.riftMood) updateRiftMood(eng, dt, rp.z);
+  eng.aurora?.update(eng.camera.position);
   updateEclipse(eng, dt);
   eng.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
   if (me) eng.ambient.update(dt, eng.camera.position, rp);
@@ -403,6 +404,7 @@ export function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
   eng.props?.update(dt, rp.x, rp.z);
   eng.lacKiemSky?.update(eng.camera);
   eng.thienKhuyetSky?.update(performance.now() / 1000);
+  eng.doanMachArt?.update(eng.camera.position);
   eng.cardForest?.update(eng.camera.position.x, eng.camera.position.z);
 }
 

@@ -25,6 +25,7 @@ import {
 import { WATER_Y } from '@dtl/shared';
 import { DEPTH_DESATURATE, type GradingPreset } from './grading';
 import { GOD_RAY_INTENSITY, godRayParams } from './godRays';
+import { LEAF_LIGHT, leafParams } from './mapleLeaves';
 import { RUNE_INTENSITY, runeParams } from './runeWall';
 import { markBloom } from './post';
 import { applySkyPreset, skyParams } from './sky';
@@ -131,6 +132,7 @@ export function tuneAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPrese
   beaconParams.intensity.value = BEACON_INTENSITY[name] ?? BEACON_INTENSITY.day!;
   godRayParams.intensity.value = GOD_RAY_INTENSITY[name] ?? 0;
   runeParams.intensity.value = RUNE_INTENSITY[name] ?? 0;
+  leafParams.light.value = LEAF_LIGHT[name] ?? 1;
 
   // Vòm trời (render/sky.ts): chân trời trùng màu sương để không lộ mép, quầng nắng theo sắc vùng sáng.
   applySkyPreset(name, p.fogColor, p.highlightTint, p.sunColor, skyTop);

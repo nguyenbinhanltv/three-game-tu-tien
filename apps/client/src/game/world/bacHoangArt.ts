@@ -100,8 +100,8 @@ export function bhGroundColor(
   c = lerp3(c, hex(SNOW.snow, 2.1), Math.min(0.25, Math.max(0, -wind) * 0.7));
   // Bên kia: tuyết nhuốm tím độc, đá đen tuyền, vệt tím sậm theo nhiễu mịn.
   if (north > 0) {
-    c = lerp3(c, hex(SNOW.shade, 0.75), north * 0.5);
-    c = lerp3(c, hex(RIFT.violetDeep, 1.1), north * Math.min(0.5, Math.max(0, m - 0.02) * 1.6));
+    c = lerp3(c, hex(SNOW.shade, 1.0), north * 0.3);
+    c = lerp3(c, hex(RIFT.violetDeep, 1.1), north * Math.min(0.3, Math.max(0, m - 0.02) * 1.0));
     // Mỗi vùng bên kia một màu chủ: Xích Tẫn Bình (đông) ngả tím than, Kim Dạ Ngoại Uyển (tây) ngả kim dát khô.
     const east = smoothstep(def.size / 2 + 60, def.size / 2 + 260, x);
     const west = smoothstep(def.size / 2 - 60, def.size / 2 - 260, x);
@@ -132,7 +132,12 @@ export function bhGroundColor(
   if (flat > 0) c = lerp3(c, hex(SNOW.snow, 1.9 + m * 0.1), Math.min(0.45, flat * 0.5));
   const slope = 1 - ny;
   if (slope > 0.12) c = lerp3(c, hex(SNOW.rock, 1.5), Math.min(1, (slope - 0.12) * 4.5)); // tuyết không bám sườn dốc: lộ đá đen
-  if (h < 66) c = lerp3(c, hex(RIFT.violetDeep, 1.0), Math.min(0.8, (66 - h) / 8)); // lòng khe
+  // Lòng khe sâu: vách tối, ánh tím từ đáy hắt lên (đậm ở đáy, tan dần lên mép)
+  if (h < 66) {
+    c = lerp3(c, hex(RIFT.violetDeep, 1.0), Math.min(0.85, (66 - h) / 10));
+    const up = Math.min(1, Math.max(0, (62 - h) / 22));
+    c = lerp3(c, hex(RIFT.violet, 1.9), up * 0.55);
+  }
   out[0] = c[0];
   out[1] = c[1];
   out[2] = c[2];
@@ -143,7 +148,7 @@ export function bhAmbient(path: readonly RiftPt[], x: number, z: number, def: Te
   const north = riftBlend(z - def.size / 2);
   const { d } = path.length > 1 ? riftDist(path, x, z) : { d: 999 };
   const near = 1 - smoothstep(20, 160, d);
-  return { ash: 9 + north * 10, ember: 1.2 + north * 3 + near * 12, mote: 2 };
+  return { ash: 16 + north * 8, ember: 1.2 + north * 3 + near * 12, mote: 2 };
 }
 
 export interface BhRock {

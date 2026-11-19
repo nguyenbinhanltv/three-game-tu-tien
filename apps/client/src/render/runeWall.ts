@@ -1,5 +1,23 @@
 import * as THREE from 'three/webgpu';
-import { abs, atan, attribute, clamp, float, floor, fract, length, mix, sin, smoothstep, step, time, uniform, uv, vec3 } from 'three/tsl';
+import {
+  abs,
+  atan,
+  attribute,
+  clamp,
+  exp,
+  float,
+  floor,
+  fract,
+  length,
+  mix,
+  sin,
+  smoothstep,
+  step,
+  time,
+  uniform,
+  uv,
+  vec3,
+} from 'three/tsl';
 
 /**
  * Cổ trận khắc vào vách đá (MAP-2 Đoạn Mạch): tấm phẳng dán lên vách, vẽ bằng shader TSL (không texture): vòng ngoài, vòng giữa,
@@ -9,10 +27,10 @@ import { abs, atan, attribute, clamp, float, floor, fract, length, mix, sin, smo
 export const runeParams = { intensity: uniform(0.4) };
 
 export const RUNE_INTENSITY: Record<string, number> = {
-  dm_dawn: 0.6,
-  dm_day: 0.35,
-  dm_dusk: 0.9,
-  dm_night: 1.5,
+  dm_dawn: 0.7,
+  dm_day: 0.4,
+  dm_dusk: 1.1,
+  dm_night: 1.7,
 };
 
 const band = (x: ReturnType<typeof float>, c: number, w: number) => float(1).sub(smoothstep(0, w, abs(x.sub(c))));
@@ -56,7 +74,12 @@ export function runeMaterial(): THREE.MeshBasicNodeMaterial {
   const pulse = sin(time.mul(0.7).add(phase)).mul(0.5).add(0.5).mul(0.45).add(0.55);
   const rim = smoothstep(0.35, 0.95, d);
   const col = mix(vec3(1.0, 0.78, 0.32), vec3(1.0, 0.28, 0.1), rim);
-  mat.colorNode = col.mul(shape).mul(pulse).mul(runeParams.intensity).mul(1.9);
-  mat.opacityNode = clamp(shape.mul(pulse).mul(runeParams.intensity).mul(1.4), 0, 1);
+  // Quầng sáng đỏ-vàng tỏa quanh nét khắc (đá quanh trận được chiếu sáng), phai dần ra mép tấm.
+  const halo = exp(d.mul(d).mul(-5))
+    .mul(float(1).sub(smoothstep(0.7, 1, d)))
+    .mul(0.32);
+  const glow = clamp(shape.add(halo), 0, 1.4);
+  mat.colorNode = col.mul(glow).mul(pulse).mul(runeParams.intensity).mul(1.9);
+  mat.opacityNode = clamp(glow.mul(pulse).mul(runeParams.intensity).mul(1.4), 0, 1);
   return mat;
 }
