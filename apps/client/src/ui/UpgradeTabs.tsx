@@ -1,5 +1,5 @@
 // Nâng cấp trang bị Phase 3-3 ở Thiết lão: cường hóa (Hộ Phù), khảm/tháo/ghép ngọc, tẩy luyện, phân giải.
-// Dùng bộ khung `ui/kit`. Client chỉ chọn món/ngọc/dòng và gửi ý định; xác suất và kết quả do server quyết định.
+// Dùng bộ khung `ui/u2/win`. Client chỉ chọn món/ngọc/dòng và gửi ý định; xác suất và kết quả do server quyết định.
 import './upgrade.css';
 import { useState } from 'react';
 import {
@@ -36,7 +36,7 @@ import { ENHANCE_ORE, FORGE, ITEM, itemName, itemTier, promoteTarget, SET, t } f
 import { ContentIcon, UiIcon } from './ContentIcon';
 import { Game, reqId } from '../game/engine';
 import { affixText, gearQuality, setLines } from './gear';
-import { Button, Divider } from './kit';
+import { Button, Divider } from './u2/win';
 import { ItemIcon, statLines } from './windows/common';
 import { useUI } from './store';
 

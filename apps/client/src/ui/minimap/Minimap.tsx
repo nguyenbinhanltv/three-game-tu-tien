@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { areaKey, biomeAt, levelAssets, levelTerrain } from '../../base/levelCtx';
 import { LEVELS, t } from '@dtl/content';
 import { Game } from '../../game/engine';
-import { TipCard, Tooltip } from '../kit';
+import { TipCard, Tooltip } from '../u2/win';
 import { togglePanel, useUI } from '../store';
 import { uiScale } from '../uiScale';
 import { useHudMode } from '../u2/hud/hudVars';

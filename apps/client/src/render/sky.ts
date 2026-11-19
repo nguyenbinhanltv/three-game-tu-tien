@@ -103,6 +103,7 @@ const TOP: Record<string, number> = {
   tk: 0x5a62b8,
   tk_dusk: 0x3d2a7a,
   tk_night: 0x0c0a24,
+  kt: 0x35495f,
   lk_dawn: 0x6fb0d0,
   lk_day: 0x3f8fd0,
   lk_dusk: 0x5a76a8,

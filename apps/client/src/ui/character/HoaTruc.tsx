@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { t } from '@dtl/content';
 import { InkStroke } from '../u2';
-import { useReduceMotion } from '../ngj';
+import { useReduceMotion } from '../u2/shell';
 import { motionAt } from './hoaMotion';
 import { TierBack, TierFront, tierUrl } from './TierLayers';
 import type { PortraitPick } from './portraitPick';

@@ -1,4 +1,4 @@
-/* Nâng cấp trang bị (P3-3): khảm ngọc, tẩy luyện, phân giải. Dựa trên biến --k-* của ui/kit. */
+/* Nâng cấp trang bị (P3-3): khảm ngọc, tẩy luyện, phân giải. Dựa trên biến --u-* (u2/tokens.css). */
 .upg-mats {
   display: flex;
   gap: 14px;

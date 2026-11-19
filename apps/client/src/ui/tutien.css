@@ -1,16 +1,16 @@
 /*
  * Lớp hoàn thiện HUD tu tiên (PR C, 2026-11-16). Nạp sau panels.css nhưng TRƯỚC styles.css (main.tsx import App trước styles.css),
  * nên quy tắc nào ghi đè styles.css phải có tiền tố `.hud` / `.dmg-layer` để thắng độ ưu tiên.
- * Ngôn ngữ: nền mực bán trong suốt (--k-ink-bg, #0D1117 ở 80%), viền kim (--k-bronze, #C8A96E), điểm nhấn ngọc
- * (--k-ngoc, #38BDF8); tiêu đề và cảnh giới dùng font có chân, chỉ số dùng sans. Xem docs/art-bible.md mục 7.
+ * Ngôn ngữ: nền mực bán trong suốt (--u-p-ink-bg, #0D1117 ở 80%), viền kim (--u-p-bronze, #C8A96E), điểm nhấn ngọc
+ * (--u-p-ngoc, #38BDF8); tiêu đề và cảnh giới dùng font có chân, chỉ số dùng sans. Xem docs/art-bible.md mục 7.
  */
 /* ---------- khung nhân vật / mục tiêu ---------- */
 .hud .frame {
-  background: var(--k-ink-bg);
+  background: var(--u-p-ink-bg);
   border-color: rgba(200, 169, 110, 0.45);
 }
 .frame-realm[data-tier='tc'] {
-  color: var(--k-gold);
+  color: var(--u-p-gold);
   text-shadow: 0 0 6px rgba(255, 222, 150, 0.45);
 }
 .frame-xp-row {
@@ -25,9 +25,9 @@
 /* Mốc kế tiếp: một dòng mờ dưới thanh tu vi, để người mới biết đang đi tới đâu. */
 .frame-next {
   margin-top: 3px;
-  font: 400 10.5px var(--k-font-serif);
-  letter-spacing: var(--k-track-label);
-  color: var(--k-text-dim);
+  font: 400 10.5px var(--u-p-font-serif);
+  letter-spacing: var(--u-p-track-label);
+  color: var(--u-p-text-dim);
   text-align: right;
 }
 /* Nút Đột Phá: chỉ hiện khi đủ tu vi ở bình cảnh hoặc ở tầng 15 viên mãn; quầng kim quang thở chậm. */
@@ -38,7 +38,7 @@
 .break-btn .k-btn-in {
   min-height: 20px;
   padding: 0 9px;
-  font: 700 11.5px var(--k-font-serif);
+  font: 700 11.5px var(--u-p-font-serif);
   letter-spacing: 0.08em;
 }
 .frame.can-break {
@@ -53,7 +53,7 @@
     filter: drop-shadow(0 0 7px rgba(255, 222, 150, 0.95)) brightness(1.12);
   }
 }
-/* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/ngj/motion.ts). */
+/* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/u2/shell/motion.ts). */
 :root[data-reduce-motion='true'] .break-btn {
   animation: none;
   filter: drop-shadow(0 0 4px rgba(255, 222, 150, 0.8));
@@ -102,15 +102,15 @@
   mask: radial-gradient(circle, transparent 0 calc(71% - 4px), #000 calc(71% - 3.5px) 71%, transparent calc(71% + 0.5px));
 }
 .skill-cd-text {
-  font: 700 18px var(--k-font-serif);
-  color: var(--k-gold);
+  font: 700 18px var(--u-p-font-serif);
+  color: var(--u-p-gold);
 }
 /* ---------- độ kiếp ---------- */
 .hud .trib {
   top: 132px;
   min-width: 300px;
   padding: 8px 18px 10px;
-  background: var(--k-ink-bg);
+  background: var(--u-p-ink-bg);
   border: 1px solid rgba(200, 169, 110, 0.6);
   border-radius: 0;
   clip-path: polygon(
@@ -123,11 +123,11 @@
     0 calc(100% - 8px),
     0 8px
   );
-  color: var(--k-text);
+  color: var(--u-p-text);
 }
 .hud .trib-title {
-  font: 700 18px var(--k-font-title);
-  letter-spacing: var(--k-track-title);
+  font: 700 18px var(--u-p-font-title);
+  letter-spacing: var(--u-p-track-title);
   color: #d9c2ff; /* thiên lôi spirit_thunder nhạt: tím chỉ ở chữ tiêu đề và thanh đếm */
   margin-bottom: 6px;
 }
@@ -196,9 +196,9 @@
 }
 .trib-phase-name {
   margin-top: 3px;
-  font: 400 11px var(--k-font-serif);
+  font: 400 11px var(--u-p-font-serif);
   letter-spacing: 0.08em;
-  color: var(--k-text-dim);
+  color: var(--u-p-text-dim);
   white-space: nowrap;
 }
 .trib-phase.on .trib-phase-name {
@@ -206,8 +206,8 @@
 }
 .trib-hint {
   margin-top: 5px;
-  font: 400 12px var(--k-font-serif);
-  color: var(--k-text-dim);
+  font: 400 12px var(--u-p-font-serif);
+  color: var(--u-p-text-dim);
 }
 /* ---------- gợi ý khóa chuột: tự mờ ---------- */
 .hud .hint.lock {
@@ -225,7 +225,7 @@
 /* ---------- chat: thu gọn khi không dùng ---------- */
 /* ---------- bảng nhân vật: khối độ kiếp ---------- */
 .trib-box {
-  border-left: 2px solid var(--k-gold);
+  border-left: 2px solid var(--u-p-gold);
 }
 /* ---------- phẩm chất: viền ô dày hơn, quầng trong theo phẩm, khấc góc ----------
  * Phàm xám, Linh lục, Huyền lam, Địa tím, Thiên kim. Ở cỡ ô 48 px viền 1,5 px của ba phẩm giữa khó phân biệt,
@@ -256,19 +256,19 @@
   pointer-events: none;
 }
 .k-slot[data-q='1'] {
-  --qc: var(--k-q1);
+  --qc: var(--u-p-q1);
 }
 .k-slot[data-q='2'] {
-  --qc: var(--k-q2);
+  --qc: var(--u-p-q2);
 }
 .k-slot[data-q='3'] {
-  --qc: var(--k-q3);
+  --qc: var(--u-p-q3);
 }
 .k-slot[data-q='4'] {
-  --qc: var(--k-q4);
+  --qc: var(--u-p-q4);
 }
 .k-slot[data-q='5'] {
-  --qc: var(--k-q5);
+  --qc: var(--u-q5);
 }
 /* ---------- số sát thương (lớp DOM trên cảnh) ----------
  * Ba cấp đọc được trong nháy mắt: đòn thường (ngà, nhỏ), bạo kích (kim, lớn, nảy), mình trúng đòn (son đỏ).
@@ -277,7 +277,7 @@
  */
 .dmg-layer .dmg {
   --s: var(--ui-scale, 1);
-  font: 800 calc(19px * var(--s)) var(--k-font-body, var(--sans));
+  font: 800 calc(19px * var(--s)) var(--u-p-font-body, var(--sans));
   font-variant-numeric: tabular-nums;
   -webkit-text-stroke: calc(0.6px * var(--s)) rgba(8, 12, 20, 0.9);
   paint-order: stroke fill;
@@ -290,7 +290,7 @@
 }
 .dmg-layer .dmg.crit {
   color: #ffd45a;
-  font: 900 calc(30px * var(--s)) var(--k-font-serif, var(--serif));
+  font: 900 calc(30px * var(--s)) var(--u-p-font-serif, var(--serif));
   letter-spacing: 0.02em;
   text-shadow:
     0 0 10px rgba(255, 170, 40, 0.7),

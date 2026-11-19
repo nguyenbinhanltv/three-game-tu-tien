@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { isSysIcon, SysIcon } from './ngj/icons';
+import { isSysIcon, SysIcon } from './u2/shell/icons';
 import { SysGlyph, isSysGlyph } from './u2/SysGlyph';
 import { SetMark, emblemOf } from './u2/SetMark';
 

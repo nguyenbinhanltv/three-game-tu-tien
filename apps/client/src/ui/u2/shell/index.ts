@@ -3,11 +3,20 @@
  * nút, ô thoi/tròn/bát giác, thanh có đầu mút, tab dọc, chú giải, icon hệ thống nét vàng, chữ triện, giảm chuyển động.
  * Trang xem `?ui=ngj` đã gỡ ở U2-5b; kit mới xem ở `?ui=kit` (`ui/u2`).
  */
-import './tokens.css';
-import './ngj.css';
+import './ornament.css';
 import './screens.css';
 
-export { Corners, Cartouche, RingSweep, NgjButton, NgjSlot, OrnateCorner, type CornerKind, type MapMotif, type SlotShape } from './ngj';
+export {
+  Corners,
+  Cartouche,
+  RingSweep,
+  NgjButton,
+  NgjSlot,
+  OrnateCorner,
+  type CornerKind,
+  type MapMotif,
+  type SlotShape,
+} from './ornament';
 export { isSysIcon, SealNumeral, SYS_ICON_NAMES, SysIcon, type SysIconName } from './icons';
 export { installMotion, setReduceMotion, useReduceMotion } from './motion';
 export { MethodCarousel } from './MethodCarousel';

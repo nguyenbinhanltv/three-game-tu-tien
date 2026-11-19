@@ -1,4 +1,4 @@
-/* Tổ đội và tỉ thí (P3-9). Màu theo biến --k-* của bộ khung UI. */
+/* Tổ đội và tỉ thí (P3-9). Màu theo biến --u-* (u2/tokens.css). */
 .pty-frame {
   position: absolute;
   left: 14px;
@@ -12,11 +12,11 @@
 .pty-row {
   padding: 5px 9px 6px;
   background: var(--u-ink-veil);
-  border: 1px solid var(--k-edge-dim);
-  border-left: 3px solid var(--k-bronze);
+  border: 1px solid var(--u-p-edge-dim);
+  border-left: 3px solid var(--u-p-bronze);
 }
 .pty-row.me {
-  border-left-color: var(--k-bronze-hi);
+  border-left-color: var(--u-p-bronze-hi);
 }
 .pty-row.dead {
   opacity: 0.55;
@@ -42,7 +42,7 @@
 }
 .pty-crown {
   font-style: normal;
-  color: var(--k-bronze-hi);
+  color: var(--u-p-bronze-hi);
   margin-right: 3px;
 }
 .pty-lv {
@@ -79,7 +79,7 @@
   font-size: 11px;
   padding: 1px 8px;
   color: var(--u-gold-text);
-  border: 1px solid var(--k-bronze-hi);
+  border: 1px solid var(--u-p-bronze-hi);
   background: var(--u-ink-2);
 }
 
@@ -98,10 +98,10 @@
   min-width: 280px;
   padding: 8px 12px;
   background: var(--u-ink-veil);
-  border: 1px solid var(--k-bronze);
+  border: 1px solid var(--u-p-bronze);
 }
 .pty-invite[data-kind='duel'] {
-  border-color: var(--k-cinnabar-hi);
+  border-color: var(--u-p-cinnabar-hi);
 }
 .pty-invite-title {
   margin-bottom: 6px;
@@ -134,7 +134,7 @@
   align-items: center;
   padding: 4px 12px;
   background: var(--u-ink-veil);
-  border: 1px solid var(--k-cinnabar-hi);
+  border: 1px solid var(--u-p-cinnabar-hi);
   pointer-events: auto;
 }
 .duel-big {

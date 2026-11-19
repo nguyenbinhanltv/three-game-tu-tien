@@ -7,15 +7,15 @@
   margin: 8px 0;
 }
 .mp-card {
-  --mc: var(--k-jade);
+  --mc: var(--u-p-jade);
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 8px 10px;
   text-align: left;
-  color: var(--k-text);
+  color: var(--u-p-text);
   background: var(--u-card-hi);
-  border: 1px solid var(--k-edge-dim);
+  border: 1px solid var(--u-p-edge-dim);
   border-left: 3px solid var(--mc);
   cursor: pointer;
   font: inherit;
@@ -29,17 +29,17 @@
   color: var(--mc);
 }
 .mp-card-name {
-  font: 600 15px var(--k-font-serif);
+  font: 600 15px var(--u-p-font-serif);
 }
 .mp-card-role {
   font-size: 11px;
-  color: var(--k-text-dim);
+  color: var(--u-p-text-dim);
 }
 .mp-detail {
   flex: none;
-  --mc: var(--k-jade);
+  --mc: var(--u-p-jade);
   padding: 8px 10px;
-  border: 1px solid var(--k-edge-dim);
+  border: 1px solid var(--u-p-edge-dim);
   border-left: 3px solid var(--mc);
   background: var(--u-card);
   display: grid;
@@ -66,7 +66,7 @@
 }
 .mp-skill {
   padding: 6px 8px;
-  border: 1px solid var(--k-edge-dim);
+  border: 1px solid var(--u-p-edge-dim);
   background: var(--u-card);
 }
 .mp-skill[data-ult='1'] {
@@ -90,7 +90,7 @@
 }
 .mp-facts {
   font-size: 11px;
-  color: var(--k-gold);
+  color: var(--u-p-gold);
 }
 .mp-pips {
   display: inline-flex;
@@ -100,15 +100,15 @@
   width: 8px;
   height: 8px;
   transform: rotate(45deg);
-  border: 1px solid var(--k-bronze);
+  border: 1px solid var(--u-p-bronze);
   background: transparent;
 }
 .mp-pips i.on {
-  background: var(--k-gold);
-  border-color: var(--k-gold);
+  background: var(--u-p-gold);
+  border-color: var(--u-p-gold);
 }
 .mp-up .ok {
-  color: var(--k-jade);
+  color: var(--u-p-jade);
   font-size: 12px;
 }
 .mp-vars {
@@ -120,19 +120,19 @@
 }
 .mp-var {
   padding: 3px 10px;
-  color: var(--k-text);
+  color: var(--u-p-text);
   font: inherit;
   font-size: 12px;
   background: var(--u-card-hi);
-  border: 1px solid var(--k-edge-dim);
+  border: 1px solid var(--u-p-edge-dim);
   cursor: pointer;
 }
 .mp-var b {
-  color: var(--k-gold);
+  color: var(--u-p-gold);
 }
 .mp-var.picked {
-  border-color: var(--k-jade);
-  box-shadow: inset 0 0 10px -3px var(--k-jade);
+  border-color: var(--u-p-jade);
+  box-shadow: inset 0 0 10px -3px var(--u-p-jade);
 }
 .mp-var:disabled {
   opacity: 0.45;
@@ -162,7 +162,7 @@
 }
 .skill-row .sep {
   width: 1px;
-  background: var(--k-edge-dim);
+  background: var(--u-p-edge-dim);
   margin: 4px 0;
 }
 .skill[data-method='1'] {
@@ -212,12 +212,12 @@
   position: absolute;
   right: 3px;
   bottom: 1px;
-  font: 700 10px var(--k-font-body);
-  color: var(--k-text);
+  font: 700 10px var(--u-p-font-body);
+  color: var(--u-p-text);
   text-shadow: 0 1px 2px var(--u-ink-0);
 }
 .stack-pips {
-  --mc: var(--k-gold);
+  --mc: var(--u-p-gold);
   display: flex;
   gap: 5px;
   align-items: center;
@@ -252,7 +252,7 @@
 }
 .ult-card-name {
   margin-top: -18vh;
-  font: 700 clamp(22px, 3.2vw, 38px) var(--k-font-serif);
+  font: 700 clamp(22px, 3.2vw, 38px) var(--u-p-font-serif);
   letter-spacing: 0.18em;
   color: color-mix(in srgb, var(--mc) 70%, var(--u-gold-text));
   text-shadow:
@@ -285,7 +285,7 @@
     transform: scale(0.98);
   }
 }
-/* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/ngj/motion.ts). */
+/* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/u2/shell/motion.ts). */
 :root[data-reduce-motion='true'] .skill[data-state='ultready'] {
   animation: none;
   filter: brightness(1.3);

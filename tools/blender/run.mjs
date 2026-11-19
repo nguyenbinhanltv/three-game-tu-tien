@@ -48,6 +48,7 @@ const procedural = [
   { id: 'arch_thien_khuyet', script: 'tools/blender/thien_khuyet_arch.py' },
   // PROP-1 "Thiên Công Khai Vật": mỗi nhóm một lần chạy Blender, ghi mọi món × 2 biến thể cạnh GLB đích (id đầu nhóm). Danh mục: prop_tc_items.json.
   ...propTcJobs(),
+  { id: 'arch_kiem_trung', script: 'tools/blender/kiem_trung_arch.py' },
   // Lưới Tripo v02 (task 70d2072c), tô màu theo vùng bằng script vì texture Tripo mất màu (M0-3).
   { id: 'prop_phi_kiem', script: 'tools/blender/recolor_phi_kiem.py', source: 'prop/prop_phi_kiem/tripo/raw_v02.glb' },
   // Thư viện clip Quaternius UAL1+UAL2 (CC0): `source` = UAL1, `source2` = UAL2 (truyền `--src2`), xem anim_human_ual.py.

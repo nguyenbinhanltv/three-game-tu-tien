@@ -1,5 +1,5 @@
 /*
- * Các bảng và HUD dựng bằng ui/kit (P2-C2/C3/C4). Màu, góc vát và cỡ chữ lấy từ biến --k-* (tokens.css);
+ * Các bảng và HUD dựng bằng ui/u2/win (P2-C2/C3/C4). Màu, góc vát và cỡ chữ lấy từ biến --u-* (u2/tokens.css);
  * khung vát vẽ bằng clip-path như kit. Ở đây chỉ có phần bố cục riêng của từng bảng.
  */
 /* ---------- khối con dùng chung trong bảng ---------- */
@@ -9,14 +9,14 @@
   gap: 4px;
   padding: 9px 12px;
   background: var(--u-card);
-  border-left: 2px solid var(--k-edge-dim);
+  border-left: 2px solid var(--u-p-edge-dim);
   line-height: 1.5;
 }
 .k-card.ready {
-  border-left-color: var(--k-gold);
+  border-left-color: var(--u-p-gold);
 }
 .k-card.offer {
-  border-left-color: var(--k-bronze);
+  border-left-color: var(--u-p-bronze);
 }
 .k-card .k-btn {
   align-self: flex-start;
@@ -26,11 +26,11 @@
   color: var(--u-ok-ink);
 }
 .k-panel .bad {
-  color: var(--k-cinnabar-hi);
+  color: var(--u-p-cinnabar-hi);
 }
 .item-name {
-  font: 700 15px var(--k-font-serif);
-  color: var(--k-text);
+  font: 700 15px var(--u-p-font-serif);
+  color: var(--u-p-text);
 }
 .item-name[data-q='1'],
 .reward-item[data-q='1'] {
@@ -53,50 +53,50 @@
   text-shadow: none;
 }
 .item-stat {
-  color: var(--k-sword);
+  color: var(--u-p-sword);
 }
 .item-stat.good {
-  color: var(--k-jade);
+  color: var(--u-p-jade);
 }
 .item-stat.set {
   color: var(--u-q4-ink);
   text-shadow: none;
 }
 .item-stat.bad {
-  color: var(--k-cinnabar-hi);
+  color: var(--u-p-cinnabar-hi);
 }
 .item-stat.dim {
   margin-top: 4px;
   font-size: 12px;
-  color: var(--k-text-dim);
+  color: var(--u-p-text-dim);
 }
 .item-req {
   font-size: 12.5px;
-  color: var(--k-bronze-hi);
+  color: var(--u-p-bronze-hi);
 }
 .item-desc {
-  font: italic 12.5px var(--k-font-serif);
-  color: var(--k-text-dim);
+  font: italic 12.5px var(--u-p-font-serif);
+  color: var(--u-p-text-dim);
 }
 .item-actions {
   display: flex;
-  gap: var(--k-s2);
+  gap: var(--u-sp-2);
 }
 .item-actions:empty {
   display: none;
 }
 .k-panel kbd {
-  font: 600 10px var(--k-font-body);
+  font: 600 10px var(--u-p-font-body);
   padding: 0 4px;
   background: var(--u-card);
-  border: 1px solid var(--k-edge-dim);
-  color: var(--k-bronze-hi);
+  border: 1px solid var(--u-p-edge-dim);
+  color: var(--u-p-bronze-hi);
   border-radius: 0;
 }
 /* ---------- túi đồ ---------- */
 .equip-row {
   display: flex;
-  gap: var(--k-s3);
+  gap: var(--u-sp-3);
   align-items: flex-start;
   flex-wrap: wrap;
 }
@@ -111,14 +111,14 @@
 .equip-label {
   margin-top: 3px;
   font-size: 11px;
-  letter-spacing: var(--k-track-label);
-  color: var(--k-text-dim);
+  letter-spacing: var(--u-p-track-label);
+  color: var(--u-p-text-dim);
 }
 .gold {
   margin-left: auto;
   text-align: right;
-  font: 700 18px var(--k-font-serif);
-  color: var(--k-gold);
+  font: 700 18px var(--u-p-font-serif);
+  color: var(--u-p-gold);
 }
 .bag-grid {
   display: grid;
@@ -130,13 +130,13 @@
   width: 100%;
 }
 .bag-grid .k-slot[data-size] {
-  --k-slot-size: 100%;
+  --slot-size: 100%;
 }
 /* ---------- nhân vật ---------- */
 .stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0 var(--k-s4);
+  gap: 0 var(--u-sp-4);
   margin: 0;
 }
 .stat-cell {
@@ -147,13 +147,13 @@
   border-bottom: 1px solid var(--u-wash-gold);
 }
 .stat-cell dt {
-  color: var(--k-text-dim);
-  letter-spacing: var(--k-track-label);
+  color: var(--u-p-text-dim);
+  letter-spacing: var(--u-p-track-label);
 }
 .stat-cell dd {
   margin: 0;
-  font: 700 15px var(--k-font-serif);
-  color: var(--k-text);
+  font: 700 15px var(--u-p-font-serif);
+  color: var(--u-p-text);
 }
 .skill-list {
   display: flex;
@@ -176,19 +176,19 @@
 }
 .skill-item-name i {
   font-weight: 400;
-  color: var(--k-text-dim);
+  color: var(--u-p-text-dim);
 }
 .trib-box {
-  border-left-color: var(--k-q3);
+  border-left-color: var(--u-p-q3);
   background: var(--u-wash-tim);
 }
 /* ---------- nhiệm vụ, đối thoại ---------- */
 .quest-title {
-  font: 700 15px var(--k-font-serif);
-  color: var(--k-gold);
+  font: 700 15px var(--u-p-font-serif);
+  color: var(--u-p-gold);
 }
 .quest-desc {
-  color: var(--k-text);
+  color: var(--u-p-text);
   font-size: 13px;
 }
 .quest-mark,
@@ -211,10 +211,10 @@
   flex-wrap: wrap;
   gap: 4px 12px;
   font-size: 12.5px;
-  color: var(--k-text-dim);
+  color: var(--u-p-text-dim);
 }
 .rewards b {
-  color: var(--k-bronze-hi);
+  color: var(--u-p-bronze-hi);
   font-weight: 600;
 }
 .reward-item {
@@ -228,8 +228,8 @@
   height: 1.5em;
 }
 .npc-greet {
-  font: italic 15px var(--k-font-serif);
-  color: var(--k-text);
+  font: italic 15px var(--u-p-font-serif);
+  color: var(--u-p-text);
   padding: 2px 4px 4px;
 }
 .npc-quests,
@@ -237,7 +237,7 @@
 .shop-list {
   display: flex;
   flex-direction: column;
-  gap: var(--k-s2);
+  gap: var(--u-sp-2);
 }
 .shop-row {
   flex-direction: row;
@@ -290,7 +290,7 @@
 .help-table td:first-child {
   white-space: nowrap;
   font-weight: 600;
-  color: var(--k-bronze-hi);
+  color: var(--u-p-bronze-hi);
 }
 .k-window.map canvas {
   display: block;
@@ -305,17 +305,17 @@
   line-height: 1.5;
 }
 .credits a {
-  color: var(--k-bronze-hi);
+  color: var(--u-p-bronze-hi);
 }
 /* ---------- khung nhân vật, khung mục tiêu ---------- */
 .frame {
-  --corner: var(--k-bronze);
+  --corner: var(--u-p-bronze);
   position: absolute;
   top: 14px;
   width: 270px;
   padding: 8px 12px 9px;
   background: linear-gradient(180deg, rgba(26, 41, 56, 0.82), rgba(14, 23, 34, 0.86));
-  border: 1px solid var(--k-edge-dim);
+  border: 1px solid var(--u-p-edge-dim);
   pointer-events: auto;
 }
 /* Mốc đồng thau ở hai góc chéo: cùng ngôn ngữ vát với bảng, nhưng nhẹ để không che cảnh. */
@@ -349,10 +349,10 @@
   padding: 6px 12px 8px;
 }
 .target-frame[data-kind='mon'] {
-  --corner: var(--k-cinnabar-hi);
+  --corner: var(--u-p-cinnabar-hi);
 }
 .target-frame[data-kind='player'] {
-  --corner: var(--k-q1);
+  --corner: var(--u-p-q1);
 }
 .target-frame.below-boss {
   top: 124px;
@@ -365,20 +365,20 @@
   margin-bottom: 4px;
 }
 .frame-name {
-  font: 700 16px var(--k-font-serif);
+  font: 700 16px var(--u-p-font-serif);
   letter-spacing: 0.02em;
-  color: var(--k-gold);
+  color: var(--u-p-gold);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-shadow: 0 1px 2px #000;
 }
 .target-frame .frame-name {
-  color: var(--k-text);
+  color: var(--u-p-text);
 }
 .frame-realm {
-  font: 600 12px var(--k-font-serif);
-  color: var(--k-bronze-hi);
+  font: 600 12px var(--u-p-font-serif);
+  color: var(--u-p-bronze-hi);
   white-space: nowrap;
 }
 /* ---------- bản đồ nhỏ ---------- */
@@ -398,7 +398,7 @@
   width: 180px;
   height: 180px;
   padding: 2px;
-  background: var(--k-edge);
+  background: var(--u-p-edge);
   clip-path: polygon(
     var(--cut) 0,
     calc(100% - var(--cut)) 0,
@@ -440,7 +440,7 @@
   right: 9px;
   bottom: 6px;
   font-size: 10px;
-  color: var(--k-text);
+  color: var(--u-p-text);
   text-shadow: 0 1px 2px #000;
 }
 /* ---------- theo dõi nhiệm vụ: chữ trên nền mờ tắt dần, không có khung để không che cảnh ---------- */
@@ -449,7 +449,7 @@
   padding: 4px 10px 6px 18px;
   text-align: right;
   background: linear-gradient(270deg, rgba(14, 23, 34, 0.55), rgba(14, 23, 34, 0));
-  border-right: 2px solid var(--k-edge-dim);
+  border-right: 2px solid var(--u-p-edge-dim);
   font-size: 12px;
   line-height: 1.4;
   opacity: 0.88;
@@ -465,13 +465,13 @@
   margin-top: 7px;
 }
 .tracker-title {
-  font: 700 13px var(--k-font-serif);
+  font: 700 13px var(--u-p-font-serif);
   letter-spacing: 0.04em;
-  color: var(--k-gold);
+  color: var(--u-p-gold);
   text-shadow: 0 1px 2px #000;
 }
 .tracker-obj {
-  color: var(--k-text);
+  color: var(--u-p-text);
   text-shadow: 0 1px 2px #000;
 }
 .tracker-quest.tracked .tracker-title::before {
@@ -480,14 +480,14 @@
   width: 6px;
   height: 6px;
   margin: 0 6px 2px 0;
-  background: var(--k-gold);
+  background: var(--u-p-gold);
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 .tracker-obj.ok {
   color: #8fe0a8;
 }
 .tracker-turnin {
-  color: var(--k-gold);
+  color: var(--u-p-gold);
   font-weight: 600;
   text-shadow: 0 1px 2px #000;
 }
@@ -508,7 +508,7 @@
   gap: 7px;
   padding: 7px 9px;
   background: linear-gradient(180deg, rgba(26, 41, 56, 0.82), rgba(14, 23, 34, 0.88));
-  border: 1px solid var(--k-edge-dim);
+  border: 1px solid var(--u-p-edge-dim);
 }
 .skill-row .k-tip-host {
   display: block;
@@ -524,7 +524,7 @@
 }
 .skill {
   --cut: 7px;
-  --edge: linear-gradient(180deg, var(--k-bronze-hi), var(--k-bronze) 50%, var(--k-bronze-lo));
+  --edge: linear-gradient(180deg, var(--u-p-bronze-hi), var(--u-p-bronze) 50%, var(--u-p-bronze-lo));
   position: relative;
   display: block;
   width: 56px;
@@ -548,7 +548,7 @@
   content: '';
   position: absolute;
   inset: 1.5px;
-  background: radial-gradient(circle at 50% 35%, #2a4160, var(--k-night-0) 90%);
+  background: radial-gradient(circle at 50% 35%, #2a4160, var(--u-p-night-0) 90%);
   clip-path: polygon(
     6px 0,
     calc(100% - 6px) 0,
@@ -559,13 +559,13 @@
     0 calc(100% - 6px),
     0 6px
   );
-  transition: filter var(--k-dur) var(--k-ease);
+  transition: filter var(--u-dur-fast) var(--u-ease);
 }
 .skill:hover::before {
   filter: brightness(1.3);
 }
 .skill:focus-visible {
-  --edge: linear-gradient(180deg, #d9fff6, var(--k-jade) 50%, #3a9d8c);
+  --edge: linear-gradient(180deg, #d9fff6, var(--u-p-jade) 50%, #3a9d8c);
   outline: none;
 }
 .skill-icon {
@@ -573,7 +573,7 @@
   inset: 1.5px;
   display: grid;
   place-items: center;
-  transition: filter var(--k-dur) var(--k-ease);
+  transition: filter var(--u-dur-fast) var(--u-ease);
 }
 .skill-icon .content-icon,
 .skill-icon .sys-glyph {
@@ -584,8 +584,8 @@
   position: absolute;
   left: 5px;
   top: 3px;
-  font: 700 11px var(--k-font-body);
-  color: var(--k-gold);
+  font: 700 11px var(--u-p-font-body);
+  color: var(--u-p-gold);
   text-shadow:
     0 1px 2px #000,
     0 0 3px #000;
@@ -612,8 +612,8 @@
   inset: 0;
   display: grid;
   place-items: center;
-  font: 700 20px var(--k-font-serif);
-  color: var(--k-text);
+  font: 700 20px var(--u-p-font-serif);
+  color: var(--u-p-text);
   text-shadow:
     0 1px 3px #000,
     0 0 6px #000;
@@ -639,7 +639,7 @@
   right: 8px;
   top: 50%;
   height: 2px;
-  background: var(--k-cinnabar-hi);
+  background: var(--u-p-cinnabar-hi);
   opacity: 0.8;
   transform: rotate(-35deg);
   pointer-events: none;
@@ -653,7 +653,7 @@
 }
 /* Tự đánh (phím 1): viền kim quang, lòng sáng nhẹ. */
 .skill.auto {
-  --edge: linear-gradient(180deg, #fff1c4, var(--k-gold) 50%, #b08a3e);
+  --edge: linear-gradient(180deg, #fff1c4, var(--u-p-gold) 50%, #b08a3e);
 }
 .skill.auto::before {
   box-shadow: inset 0 0 10px 2px rgba(255, 222, 150, 0.35);
@@ -674,7 +674,7 @@
     filter: brightness(1.45);
   }
 }
-/* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/ngj/motion.ts). */
+/* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/u2/shell/motion.ts). */
 :root[data-reduce-motion='true'] .skill.queued {
   animation: none;
   filter: brightness(1.3);
@@ -750,19 +750,19 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
 .equip-board-grid {
   display: grid;
   grid-template-columns: 58px 1fr 58px;
-  gap: var(--k-s3);
+  gap: var(--u-sp-3);
   align-items: stretch;
 }
 .equip-col {
   display: flex;
   flex-direction: column;
-  gap: var(--k-s2);
+  gap: var(--u-sp-2);
 }
 .equip-figure {
   min-height: 200px;
   display: grid;
   place-items: center;
-  color: var(--k-edge-dim);
+  color: var(--u-p-edge-dim);
   max-height: 260px;
 }
 .equip-figure[data-q='0'] {
@@ -787,7 +787,7 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
   max-height: 240px;
 }
 .equip-hint {
-  margin-top: var(--k-s2);
+  margin-top: var(--u-sp-2);
   text-align: center;
 }
 /* ---------- pháp bảo phụ (P3-8): ô riêng cuối thanh chiêu, hàng đan tăng sức ---------- */
@@ -827,7 +827,7 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
   gap: 4px;
   padding: 1px 6px 1px 2px;
   background: rgba(14, 23, 34, 0.82);
-  border: 1px solid var(--k-edge-dim);
+  border: 1px solid var(--u-p-edge-dim);
   font-size: 11px;
   color: #f2e8cf;
 }
@@ -850,7 +850,7 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
 .portrait {
   display: block;
   object-fit: cover;
-  border: 1px solid var(--k-bronze);
+  border: 1px solid var(--u-p-bronze);
   border-radius: 3px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
   opacity: 0;

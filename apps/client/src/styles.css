@@ -954,7 +954,7 @@ kbd {
     filter: none;
   }
 }
-/* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/ngj/motion.ts). */
+/* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/u2/shell/motion.ts). */
 :root[data-reduce-motion='true'] .death-panel {
   animation-duration: 0.01s;
 }
@@ -1066,9 +1066,9 @@ kbd {
   height: 24px;
   padding: 0 4px;
   font: inherit;
-  color: var(--k-text, #e6ddcb);
-  background: var(--k-night-0, #0e1722);
-  border: 1px solid var(--k-edge-dim, rgba(174, 139, 73, 0.4));
+  color: var(--u-p-text, #e6ddcb);
+  background: var(--u-p-night-0, #0e1722);
+  border: 1px solid var(--u-p-edge-dim, rgba(174, 139, 73, 0.4));
   border-radius: 3px;
 }
 .debug-note {
@@ -1110,7 +1110,7 @@ kbd {
   flex-shrink: 0;
   vertical-align: -0.28em;
   overflow: visible;
-  color: var(--ngj-gold, #c9a45c);
+  color: var(--u-h-gold, #c9a45c);
 }
 .sys-glyph__line {
   fill: none;
@@ -1143,7 +1143,7 @@ kbd {
   height: 30%;
   border-radius: 50%;
   background: #0b0908;
-  box-shadow: 0 0 0 1.5px var(--ngj-gold, #c9a45c);
+  box-shadow: 0 0 0 1.5px var(--u-h-gold, #c9a45c);
   display: grid;
   place-items: center;
   color: var(--set-c, #f0d78e);
