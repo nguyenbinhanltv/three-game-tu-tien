@@ -46,7 +46,9 @@ export function dkMaterialFor(name: string): THREE.Material | null {
     const slow = float(0.75).add(sin(time.mul(0.9).add(n.mul(6))).mul(0.18));
     // chớp: cạnh sắc, rơi nhanh (chu kỳ 9 s)
     const ph = time.mul(0.111).fract();
-    const flash = smoothstep(0.0, 0.03, ph).mul(smoothstep(0.16, 0.03, ph)).mul(1.4);
+    const flash = smoothstep(0.0, 0.03, ph)
+      .mul(smoothstep(0.16, 0.03, ph))
+      .mul(1.4);
     m.colorNode = vec3(0.04, 0.035, 0.03);
     m.emissiveNode = vertexColor().mul(slow.add(flash).mul(0.55));
     return m;
@@ -95,7 +97,14 @@ export class DoKiepArt {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(MOTE_N * 3), 3));
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(CENTER.x, heightAt(CENTER.x, CENTER.z) + 10, CENTER.z), 90);
-    const m = new THREE.PointsMaterial({ color: 0xbcd8ff, size: 0.3, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending });
+    const m = new THREE.PointsMaterial({
+      color: 0xbcd8ff,
+      size: 0.3,
+      transparent: true,
+      opacity: 0.8,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
     this.motes = new THREE.Points(g, m);
     this.motes.name = 'dk-motes';
     this.motes.frustumCulled = false;
