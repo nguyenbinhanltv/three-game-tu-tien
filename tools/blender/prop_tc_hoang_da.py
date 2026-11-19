@@ -23,7 +23,7 @@ def _(b, v):
         crystal(b, x, 0.7 + k * 0.05, z, 0.13, h, glow, (tx, tz))
     for k in range(6):
         a = k / 6 * math.tau
-        ellipsoid(b, math.cos(a) * 1.2, 0.1, math.sin(a) * 1.1, 0.3, 0.13, 0.28, MOSS, 6, 3)
+        ellipsoid(b, math.cos(a) * 1.2, 0.1, math.sin(a) * 1.1, 0.3, 0.13, 0.28, MOSS, 9, 3)
 
 
 @item('tre')
@@ -67,38 +67,57 @@ def _(b, v):
         leaf_cluster(b, pts[4][0] + rng.uniform(-1.8, 1.8), pts[4][1] + rng.uniform(-0.8, 1.2), pts[4][2] + rng.uniform(-1.8, 1.8), 1.7, crown if t % 3 else LEAF_Y, seed=100 + t, n=4)
 
 
+def _moss_patch(b, x, z, r, rng):
+    """Mảng rêu nhấp nhô thay đĩa bát giác: vài chỏm rêu lệch tâm, hai tông."""
+    for k in range(5):
+        a = rng.uniform(0, math.tau)
+        d = rng.uniform(0.0, r * 0.6)
+        ellipsoid(b, x + math.cos(a) * d, 0.04, z + math.sin(a) * d, rng.uniform(0.18, 0.32) * r, 0.07, rng.uniform(0.16, 0.3) * r, MOSS if k % 2 else MOSS_L, 8, 3)
+
+
 @item('linh_thao')
 def _(b, v):
-    # Linh thảo phát sáng: cụm lá dài cong, hoa/nụ phát sáng ở ngọn, nền cỏ rêu.
+    # Linh thảo phát sáng: cụm lá dài cong (thẻ lá alpha + lá thon), ba nụ sen phát sáng nhiều cánh, rêu loang chân.
     rng = random.Random(31 + v)
     glow = GLOW_Y if v else GLOW_G
-    ellipsoid(b, 0, 0.02, 0, 0.55, 0.08, 0.5, MOSS, 8, 3)
-    for k in range(9 if v else 7):
-        a = k / 7 * math.tau + rng.uniform(-0.3, 0.3)
-        L = rng.uniform(0.5, 0.95)
-        pts = [(math.cos(a) * 0.05, 0.03, math.sin(a) * 0.05), (math.cos(a) * L * 0.5, L * 0.55, math.sin(a) * L * 0.5), (math.cos(a) * L * 0.95, L * 0.7, math.sin(a) * L * 0.95)]
-        tube(b, pts, [0.03, 0.025, 0.004], MOSS_L, 3, sub=2)
+    _moss_patch(b, 0, 0, 0.7, rng)
+    for k in range(8):
+        a = k / 8 * math.tau + rng.uniform(-0.3, 0.3)
+        L = rng.uniform(0.55, 0.95)
+        pts = [(math.cos(a) * 0.05, 0.03, math.sin(a) * 0.05), (math.cos(a) * L * 0.5, L * 0.6, math.sin(a) * L * 0.5), (math.cos(a) * L * 0.95, L * 0.7, math.sin(a) * L * 0.95)]
+        tube(b, pts, [0.035, 0.03, 0.004], MOSS_L, 4, sub=2)
+    for k in range(4):
+        leaf_cluster(b, math.cos(k * 1.6) * 0.3, 0.3, math.sin(k * 1.6) * 0.3, 0.45, LEAF_G if k % 2 else LEAF_D, seed=k + 40, n=3)
     for k in range(3):
         a = k * 2.1
         x, z = math.cos(a) * 0.12, math.sin(a) * 0.12
-        tube(b, [(x, 0.03, z), (x * 2, 0.5, z * 2), (x * 2.5, 0.8 + k * 0.1, z * 2.5)], 0.014, MOSS_L, 3, sub=2)
-        ellipsoid(b, x * 2.5, 0.88 + k * 0.1, z * 2.5, 0.12, 0.14, 0.12, glow, 7, 4)
+        top = (x * 2.5, 0.86 + k * 0.1, z * 2.5)
+        tube(b, [(x, 0.03, z), (x * 2, 0.5, z * 2), top], 0.014, MOSS_L, 4, sub=2)
+        for p in range(7):  # cánh sen
+            pa = p / 7 * math.tau
+            ellipsoid(b, top[0] + math.cos(pa) * 0.07, top[1] + 0.03, top[2] + math.sin(pa) * 0.07, 0.045, 0.1, 0.03, glow, 6, 3, yaw=-pa)
+        ellipsoid(b, top[0], top[1] + 0.02, top[2], 0.05, 0.07, 0.05, glow, 8, 4)
 
 
 @item('nam_phat_sang')
 def _(b, v):
-    # Nấm phát sáng: cụm nấm lớn nhỏ, mũ phát sáng, thân trắng, rêu.
+    # Nấm phát sáng: cụm nấm mũ tròn mượt có tán nấm xếp lớp, thân cong, đốm sáng, rêu loang chân.
     rng = random.Random(41 + v)
     cap = GLOW_P if v else GLOW_B
-    ellipsoid(b, 0, 0.02, 0, 0.6, 0.08, 0.55, MOSS, 8, 3)
-    for k in range(7):
+    _moss_patch(b, 0, 0, 0.75, rng)
+    for k in range(6):
         a = rng.uniform(0, math.tau)
         rr = rng.uniform(0.0, 0.4)
         s = rng.uniform(0.5, 1.3)
         x, z = math.cos(a) * rr, math.sin(a) * rr
-        tube(b, [(x, 0, z), (x + 0.03 * s, 0.25 * s, z), (x, 0.5 * s, z)], [0.06 * s, 0.045 * s, 0.05 * s], STEM, 5, sub=2)
-        lathe(b, [(0.0, 0.5 * s), (0.28 * s, 0.5 * s), (0.3 * s, 0.56 * s), (0.2 * s, 0.7 * s), (0.0, 0.74 * s)], cap if k % 3 else CAP_Y, 9, x, z, cap_top=False)
-        lathe(b, [(0.28 * s, 0.5 * s), (0.04 * s, 0.5 * s)], STEM, 9, x, z, cap_top=False)
+        lean = rng.uniform(-0.08, 0.08)
+        tube(b, [(x, 0, z), (x + lean * s, 0.25 * s, z), (x + lean * s * 1.5, 0.5 * s, z)], [0.065 * s, 0.045 * s, 0.05 * s], STEM, 7, sub=3)
+        cx = x + lean * s * 1.5
+        lathe(b, [(0.0, 0.5 * s), (0.2 * s, 0.49 * s), (0.34 * s, 0.53 * s), (0.36 * s, 0.6 * s), (0.28 * s, 0.7 * s), (0.14 * s, 0.77 * s), (0.0, 0.79 * s)], cap if k % 3 else CAP_Y, 14, cx, z, cap_top=False)
+        lathe(b, [(0.34 * s, 0.52 * s), (0.1 * s, 0.5 * s), (0.0, 0.5 * s)], STEM, 14, cx, z, cap_top=False)  # mặt dưới có phiến
+        for d in range(5):  # đốm
+            da = d / 5 * math.tau + k
+            ellipsoid(b, cx + math.cos(da) * 0.16 * s, 0.7 * s, z + math.sin(da) * 0.16 * s, 0.035 * s, 0.02 * s, 0.035 * s, STEM, 5, 2)
 
 
 @item('mo_co')
@@ -144,7 +163,7 @@ def _(b, v):
         top = rng.uniform(1.8, 2.8)
         tube(b, [(math.cos(a) * 0.3, top, math.sin(a) * 0.3), (math.cos(a) * r1 * 0.6, top * 0.85, math.sin(a) * r1 * 0.6), (math.cos(a) * r1, top * 0.45, math.sin(a) * r1), (math.cos(a + 0.2) * r2, 0.05, math.sin(a + 0.2) * r2)], [0.28, 0.3, 0.22, 0.08], BARK if k % 2 else BARK_L, 6, sub=3)
     tube(b, [(0, 3.0, 0), (0.1, 1.5, 0.05), (0, 0, 0)], [0.45, 0.55, 0.7], BARK, 8, sub=2)
-    ellipsoid(b, 0, 0.12, 0, 1.0, 0.18, 1.0, MOSS, 8, 3)
+    ellipsoid(b, 0, 0.12, 0, 1.0, 0.18, 1.0, MOSS, 12, 3)
     for k in range(5):
         ellipsoid(b, rng.uniform(-1.8, 1.8), 0.05, rng.uniform(-1.8, 1.8), 0.4, 0.15, 0.35, MOSS_L, 6, 3)
 

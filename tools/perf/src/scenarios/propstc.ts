@@ -31,6 +31,8 @@ interface View {
 /** Góc nhìn đặt tay theo cụm điểm nhấn đã duyệt (cổng sân, kiếm đài, đường chính, trước Chính điện của Lạc Kiếm Tông). */
 const EXTRA: Record<string, { group: string; view: View }[]> = {
   van_lam: [
+    { group: 'hoang_da', view: { name: 'van_lam-hoang_da-rung', x: 2392, z: 2112, yaw: Math.PI / 2, n: 1 } },
+    { group: 'hoang_da', view: { name: 'van_lam-hoang_da-suoi', x: 2390, z: 2478, yaw: 0, n: 1 } },
     { group: 'cho_lang', view: { name: 'van_lam-cho_lang-cho', x: 2048, z: 2172, yaw: 0, n: 1 } },
     { group: 'cho_lang', view: { name: 'van_lam-cho_lang-cho_xa', x: 2060, z: 2185, yaw: 0.35, n: 1 } },
     { group: 'tong_mon', view: { name: 'van_lam-tong_mon-cong', x: 2048, z: 2092, yaw: Math.PI, n: 1 } },

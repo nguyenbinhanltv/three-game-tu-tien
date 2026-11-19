@@ -186,13 +186,13 @@
         "name": "linh_thao",
         "vi": "Linh thảo phát sáng",
         "collider": 0.0,
-        "foot": 0.6443
+        "foot": 0.8086
       },
       {
         "name": "nam_phat_sang",
         "vi": "Nấm phát sáng",
         "collider": 0.0,
-        "foot": 0.5434
+        "foot": 0.4846
       },
       {
         "name": "mo_co",
