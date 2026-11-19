@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "prop/prop_kiem_thiet/tripo/raw_v01.glb",
+    "source": "3d/vu-khi/prop_kiem_thiet/tripo/raw_v01.glb",
     "size": {
       "longest": 0.95
     },

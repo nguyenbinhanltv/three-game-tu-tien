@@ -44,7 +44,7 @@ assets             README, LICENSES.md, budgets.json, palette.json, meta.schema.
 docs               art-bible.md (nguồn chuẩn về hình ảnh, v3), handbook/ (sổ tay theo chủ đề, xem dưới), tripo-runbook.md, perf-report.md, compat.md, audio/, <hạng mục>/ (README ghi chú; ảnh duyệt PR để ở artifact phiên, không commit)
 ```
 
-Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source` (xem `assets/README.md`).
+Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source` (cây thư mục 3d, 2d, anim, audio, vfx, texture; xem `assets/README.md`).
 
 ## Sổ tay (docs/handbook/)
 

@@ -12,7 +12,7 @@ Bộ đầu tiên của bậc 4, dựng từ 6 mảnh Tripo (concept P3, PR #154
 
 ## Cấu hình (`assets/source/chr/set_tinh_khuyet_kiem_bao_{nam,nu}/meta.json`)
 
-- Nguồn: `chr/set_tinh_khuyet_kiem_bao/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb`. `raw_v01.glb`/`rig_v01.glb` của #119 không đụng.
+- Nguồn: `3d/nhan-vat/set_tinh_khuyet_kiem_bao/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb`. `raw_v01.glb`/`rig_v01.glb` của #119 không đụng.
 - Bảng màu: chính `#1E2335` mực đêm, phụ `#D9CFB6` ngà trăng, viền `#B89B56` vàng cổ, vân sáng `#8E80D8` tím sao (chấm sao, nhãn sao). `gain` 1,5 (mực đêm sẫm nên nâng sáng texture để không đen kịt dưới ánh game).
 - Mặc định `PIECE_DEFAULTS` đủ dùng, không cần chỉnh `fit` từng mảnh: áo ngoài kéo dài chạm bắp chân, choàng dài là phần đuôi áo có 8 xương lò xo.
 
@@ -53,7 +53,7 @@ Bản ảnh đầu có hai điểm lạ: (1) một khối gai xanh đen nằm đ
 
 # Thần Tàng Đan Bào (T-6b, Đan sư bậc 4)
 
-Mảnh Tripo `chr/set_than_tang_dan_bao/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb` → `set_than_tang_dan_bao_{nam,nu}` (LOD0 11399 / LOD1 4560 / LOD2 1702 nam, 11401 / 4556 / 1698 nữ; 18 xương lò xo), `outfits.json` `set_than_tang`. Bộ vật phẩm `set_than_tang` cũng chưa có trong `sets.json` (bậc 4 khóa): ảnh ép áo bằng `?outfit=set_than_tang_dan_bao`.
+Mảnh Tripo `3d/nhan-vat/set_than_tang_dan_bao/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb` → `set_than_tang_dan_bao_{nam,nu}` (LOD0 11399 / LOD1 4560 / LOD2 1702 nam, 11401 / 4556 / 1698 nữ; 18 xương lò xo), `outfits.json` `set_than_tang`. Bộ vật phẩm `set_than_tang` cũng chưa có trong `sets.json` (bậc 4 khóa): ảnh ép áo bằng `?outfit=set_than_tang_dan_bao`.
 
 Bảng màu: chính `#212A38` mực đêm xanh, phụ `#DCD2B8` ngà cổ, viền `#BC9C58` vàng cổ, nhấn `#6DB4A0` lục ngọc; `gain` 1,5.
 
@@ -88,7 +88,7 @@ Sửa thêm sau review: `gain` 1,5 → 1,2 (lớp dưới ngà bị cháy trắn
 
 # Cổ Thành Huyền Giáp (T-6c, Hộ pháp bậc 4)
 
-Mảnh Tripo `chr/set_co_thanh_huyen_giap/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb` → `set_co_thanh_huyen_giap_{nam,nu}` (LOD0 12698 tam giác, 18 xương lò xo), `outfits.json` `set_co_thanh`. Bộ vật phẩm `set_co_thanh` cũng chưa có trong `sets.json` (bậc 4 khóa): ảnh ép áo bằng `?outfit=set_co_thanh_huyen_giap`.
+Mảnh Tripo `3d/nhan-vat/set_co_thanh_huyen_giap/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb` → `set_co_thanh_huyen_giap_{nam,nu}` (LOD0 12698 tam giác, 18 xương lò xo), `outfits.json` `set_co_thanh`. Bộ vật phẩm `set_co_thanh` cũng chưa có trong `sets.json` (bậc 4 khóa): ảnh ép áo bằng `?outfit=set_co_thanh_huyen_giap`.
 
 Giáp nặng nên cấu hình theo Địa Long: giáp thân thu 0,82 bề ngang, vai `shoulder_span+0.13`, mão nhỏ; bảng màu chính `#262B38` mực đá đêm, phụ `#6F6A5E` đá cổ thành, viền `#BA9A55` vàng cổ, nhấn `#E2BE62` vàng đèn lồng; `gain` 1,3 (1,7 làm cả bộ ngả vàng đồng).
 
@@ -120,7 +120,7 @@ Giới hạn: ba mảnh này nhẵn và đơn sắc hơn ba mảnh có texture (
 
 # Kính Quang Kiếm Y (T-6d, Kiếm tu bậc 3, bộ cũ nhất thay bản tạm #119)
 
-Mảnh Tripo `chr/set_kinh_quang_kiem_y/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb` (không đụng `raw_v01.glb`/`rig_v01.glb` của #119) → `set_kinh_quang_kiem_y_{nam,nu}` thay hẳn bản tạm retarget (`outfits.json` `set_kinh_quang` đã trỏ sẵn đúng id asset). LOD0 11459 / LOD1 4584 / LOD2 1717 (nam), 11461 / 4584 / 1713 (nữ); 18 xương lò xo. Bộ này **đã có vật phẩm** (`set_kinh_quang`, 4 món trong `sets.json`), nên ảnh chụp mặc thật bằng `/gm set set_kinh_quang`, không ép áo.
+Mảnh Tripo `3d/nhan-vat/set_kinh_quang_kiem_y/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb` (không đụng `raw_v01.glb`/`rig_v01.glb` của #119) → `set_kinh_quang_kiem_y_{nam,nu}` thay hẳn bản tạm retarget (`outfits.json` `set_kinh_quang` đã trỏ sẵn đúng id asset). LOD0 11459 / LOD1 4584 / LOD2 1717 (nam), 11461 / 4584 / 1713 (nữ); 18 xương lò xo. Bộ này **đã có vật phẩm** (`set_kinh_quang`, 4 món trong `sets.json`), nên ảnh chụp mặc thật bằng `/gm set set_kinh_quang`, không ép áo.
 
 Bảng màu (bậc 3): chính `#ECEFF1` trắng bạc, phụ `#5E8FA8` lam gương, viền `#BFC8CF` bạc lạnh, nhấn `#8FD8E8` lam băng; `gain` 1,0.
 

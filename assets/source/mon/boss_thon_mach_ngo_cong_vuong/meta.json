@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "boss/boss_thon_mach_ngo_cong_vuong/tripo/raw_v01.glb",
+    "source": "3d/boss/boss_thon_mach_ngo_cong_vuong/tripo/raw_v01.glb",
     "size": {
       "depth": 14
     },

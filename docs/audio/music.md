@@ -14,7 +14,7 @@ pnpm music:check                          # liệt kê bài đã có/thiếu
 pnpm audio:test                           # test hậu kỳ + thư viện soạn nhạc + chỗ nối vòng
 ```
 
-Lần build đầu tự tải soundfont (32 MB) về `../dtl-asset-source/audio/sf2/GeneralUser-GS-v2.0.3.sf2` từ commit ghim của repo gốc và kiểm SHA-256; sai checksum thì dừng. Bản WAV (float 32-bit, trước chuẩn hóa) và MIDI một vòng của mỗi bài được ghi vào `../dtl-asset-source/audio/music/compose/` để nghe hoặc mở bằng phần mềm soạn nhạc (MuseScore, Reaper…). Các file này không commit.
+Lần build đầu tự tải soundfont (32 MB) về `../dtl-asset-source/audio/nhac/sf2/GeneralUser-GS-v2.0.3.sf2` từ commit ghim của repo gốc và kiểm SHA-256; sai checksum thì dừng. Bản WAV (float 32-bit, trước chuẩn hóa) và MIDI một vòng của mỗi bài được ghi vào `../dtl-asset-source/audio/nhac/compose/` để nghe hoặc mở bằng phần mềm soạn nhạc (MuseScore, Reaper…). Các file này không commit.
 
 Sau khi build, commit: `apps/client/public/audio/music/*`, `apps/client/public/audio/manifest.json`, `assets/LICENSES.md`, script trong `tools/audio/compose/` và `tools/audio/music.json` nếu có đổi.
 
@@ -90,7 +90,7 @@ xiao.phrase(s.bar(8), D, '3:2 4:1 5:1 | 4~:3 3:1', { vel: 84, vib: 1.5 });
 - Nhạc có humanize (lệch thời gian/lực nhẹ) theo `seed` cố định, nên build lại ra cùng bản.
 - Bài mới: thêm script, thêm mục `"compose": true` trong `tools/audio/music.json`, thêm id vào máy trạng thái nếu là bài vùng/trạng thái.
 
-Nghe nhanh một bài sau khi build: mở `../dtl-asset-source/audio/music/compose/<id>.wav`, hoặc trong game (`pnpm dev`, mở **không** có `?mute=1`) và gõ `__music.state()` trong console. `?music=<id>` (chỉ khi chạy dev) phát thẳng một bài sau thao tác đầu tiên.
+Nghe nhanh một bài sau khi build: mở `../dtl-asset-source/audio/nhac/compose/<id>.wav`, hoặc trong game (`pnpm dev`, mở **không** có `?mute=1`) và gõ `__music.state()` trong console. `?music=<id>` (chỉ khi chạy dev) phát thẳng một bài sau thao tác đầu tiên.
 
 ## 4. Vòng lặp và hậu kỳ
 
@@ -112,4 +112,4 @@ Nghe nhanh một bài sau khi build: mở `../dtl-asset-source/audio/music/compo
 
 ## 6. Suno (tùy chọn, nếu sau này có gói trả phí)
 
-Đường hậu kỳ nhạc từ file vẫn còn: bỏ `"compose": true` của một bài, đặt `<id>.mp3` vào `../dtl-asset-source/audio/music/`, đặt `by`/`license`/`url` của Suno cho bài đó trong `music.json`, rồi `pnpm music:build --only <id> --preview`. `loop.mjs` dò nhịp và điểm vòng, crossfade, chuẩn hóa như trước. Prompt từng bài và cách chọn bản: `docs/audio/suno-prompts.md`.
+Đường hậu kỳ nhạc từ file vẫn còn: bỏ `"compose": true` của một bài, đặt `<id>.mp3` vào `../dtl-asset-source/audio/nhac/`, đặt `by`/`license`/`url` của Suno cho bài đó trong `music.json`, rồi `pnpm music:build --only <id> --preview`. `loop.mjs` dò nhịp và điểm vòng, crossfade, chuẩn hóa như trước. Prompt từng bài và cách chọn bản: `docs/audio/suno-prompts.md`.

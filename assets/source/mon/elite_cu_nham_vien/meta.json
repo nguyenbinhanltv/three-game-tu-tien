@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/elite_cu_nham_vien/tripo/rig_v01.glb",
+    "source": "3d/quai/elite_cu_nham_vien/tripo/rig_v01.glb",
     "size": {
       "height": 1.8
     },

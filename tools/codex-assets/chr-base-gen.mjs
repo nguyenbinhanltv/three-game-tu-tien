@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // CHR-PROTO: concept đầu trọc + mảnh tóc cho nhân vật nền v2 (người dùng dựng trên Tripo web).
-// Dùng: node tools/codex-assets/chr-base-gen.mjs [id…] [--jobs 3] [--force]. Ra: <DTL_ASSET_SOURCE>/chr/chr_base_v2/concept/<id>.png + .prompt.txt
+// Dùng: node tools/codex-assets/chr-base-gen.mjs [id…] [--jobs 3] [--force]. Ra: <DTL_ASSET_SOURCE>/3d/nhan-vat/chr_base_v2/concept/<id>.png + .prompt.txt
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -56,7 +56,7 @@ const all = {
     "women's hair style B: high twin-tail style gathered at the crown into one tight bun with a long tail trailing down the back to the waist, blunt side-swept bangs, two long face-framing locks to the chest",
   ),
 };
-const outDir = path.join(source, 'chr/chr_base_v2/concept');
+const outDir = path.join(source, '3d/nhan-vat/chr_base_v2/concept');
 fs.mkdirSync(outDir, { recursive: true });
 const todo = (ids.length ? ids : Object.keys(all)).filter((id) => force || !fs.existsSync(path.join(outDir, `${id}.png`)));
 const runOne = (id) =>

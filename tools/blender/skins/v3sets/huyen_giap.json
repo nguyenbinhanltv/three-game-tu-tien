@@ -2,7 +2,7 @@
   "$comment": "Huyền Giáp Hộ Pháp v3: dựng từ mẫu _template_giap.",
   "set": "huyen_giap",
   "name": "Huyền Giáp Hộ Pháp",
-  "raw": "chr/set_huyen_giap/tripo/raw_v3_huyen_giap_{g}.glb",
+  "raw": "3d/nhan-vat/set_huyen_giap/tripo/raw_v3_huyen_giap_{g}.glb",
   "height": {
     "nam": 1.86,
     "nu": 1.72

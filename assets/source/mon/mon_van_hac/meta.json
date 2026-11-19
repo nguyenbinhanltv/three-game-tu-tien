@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/mon_van_hac/tripo/rig_v01.glb",
+    "source": "3d/quai/mon_van_hac/tripo/rig_v01.glb",
     "size": {
       "width": 3.2
     },
