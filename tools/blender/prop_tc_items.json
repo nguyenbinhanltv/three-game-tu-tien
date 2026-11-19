@@ -346,17 +346,20 @@
             0.2,
             0.8
           ]
-        ]
+        ],
+        "foot": 2.7199
       },
       {
         "name": "cot_ta_mau_tim",
         "vi": "Cột tà màu tím",
-        "collider": 0.8
+        "collider": 0.8,
+        "foot": 1.1096
       },
       {
         "name": "tinh_the_tim",
         "vi": "Tinh thể tím",
-        "collider": 1.2
+        "collider": 1.2,
+        "foot": 1.3868
       },
       {
         "name": "chan_dong_do_nat",
@@ -372,12 +375,14 @@
             0,
             1.0
           ]
-        ]
+        ],
+        "foot": 1.6047
       },
       {
         "name": "co_rach",
         "vi": "Cờ rách",
-        "collider": 0.4
+        "collider": 0.4,
+        "foot": 1.2508
       }
     ]
   }

@@ -10,7 +10,7 @@ CRYS_VIOLET = (0x140824, 0x8E6CC8)  # tím trầm: chân gần đen → lõi tí
 CLOTH_RIP = paint(0x4E1A28, 'cloth')
 CLOTH_RIP_D = paint(0x2E1018, 'cloth')
 EYE = paint(0x120E14, 'darkrock')
-BRONZE_GREEN = paint(0x3F7B66, 'metal')
+BRONZE_GREEN = paint(0x7A5C34, 'metal')  # đồng cổ: lib tự phủ patina xanh theo mặt ngửa/chỗ thấp
 
 
 @item('xuong_cu_thu')
