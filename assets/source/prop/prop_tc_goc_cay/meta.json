@@ -1,0 +1,21 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_tc_goc_cay",
+  "type": "prop",
+  "budgetClass": "prop",
+  "itemId": null,
+  "status": "in_game",
+  "budget": {
+    "faceLimit": 5000,
+    "texture": 512
+  },
+  "procedural": {
+    "script": "tools/blender/prop_tc.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Tự sinh bằng bộ kit tools/blender/thien_cong_kit.py + prop_tc_hoang_da.py (PROP-1, nhóm hoang_da, \"Gốc cây mục\"); texture PBR Poly Haven CC0",
+    "owner": "dự án",
+    "date": "2026-11-19"
+  }
+}

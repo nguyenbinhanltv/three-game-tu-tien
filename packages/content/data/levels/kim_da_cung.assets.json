@@ -1,5 +1,5 @@
 {
-  "mood": "rift",
+  "mood": "kd",
   "glb": [],
   "ground": {
     "set": "terrain-ochre",
@@ -12,7 +12,7 @@
   "features": {
     "sect": false,
     "portals": true,
-    "lanterns": true,
+    "lanterns": false,
     "lake": false,
     "clouds": false,
     "grass": false,
@@ -24,8 +24,9 @@
   "cave": {
     "x": 1520,
     "z": 1300,
-    "r": 94,
-    "h": 46
+    "r": 135,
+    "h": 80
   },
-  "palace": "gilt"
+  "palace": "gilt",
+  "kimDaArt": true
 }

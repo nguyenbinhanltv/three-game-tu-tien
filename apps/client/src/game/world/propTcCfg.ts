@@ -47,6 +47,8 @@ export const TC_NAMES: Record<string, Cfg> = {
   cot_da_do: LARGE,
   re_cay: LARGE,
   kho_go: { range: 200, lod: [30, 80], decor: true },
+  goc_cay: { range: 220, lod: [30, 80], decor: true },
+  da_reu: MEDIUM,
   // trận pháp
   tran_do_khac_san: BEACON,
   cot_tran: BEACON,
