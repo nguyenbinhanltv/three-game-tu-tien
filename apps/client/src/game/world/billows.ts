@@ -26,13 +26,7 @@ function segDist(px: number, pz: number, b: BridgeDef): number {
  * Vị trí và cỡ các khối mây (hàm thuần, có test). Khối có hình chiếu (bán kính ngang `sx`) chồng lên đảo thật hoặc cầu thì đỉnh
  * (`y + sy`) bị kẹp dưới `min(đảo.y) − BILLOW_MARGIN`; mây tháp cao chỉ ở chỗ trống (không chồng đảo/cầu), nơi chồng thì thành khối thường.
  */
-export function billowPlan(
-  size: number,
-  floor: number,
-  islands: readonly IslandDef[],
-  bridges: readonly BridgeDef[],
-  n: number,
-): Billow[] {
+export function billowPlan(size: number, floor: number, islands: readonly IslandDef[], bridges: readonly BridgeDef[], n: number): Billow[] {
   const lowest = islands.reduce((m, i) => Math.min(m, i.y), Infinity);
   const ceiling = lowest - BILLOW_MARGIN;
   const out: Billow[] = [];

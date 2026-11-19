@@ -57,5 +57,4 @@ describe('Vân Hải: điểm nhấn trên trời (MAP-3)', () => {
       for (const f of def.fakeIslands ?? []) expect(Math.hypot(tw.x - f.x, tw.z - f.z)).toBeGreaterThan(f.r + 30);
     }
   });
-
 });

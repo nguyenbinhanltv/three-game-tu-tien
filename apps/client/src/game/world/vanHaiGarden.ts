@@ -27,7 +27,7 @@ function canopyTexture(): THREE.CanvasTexture {
     const x = S / 2 + Math.cos(a) * rr * S * 1.0;
     const y = S / 2 + Math.sin(a) * rr * S * 0.8 - S * 0.02;
     const r = S * (0.045 + hash01(i, 3, 505) * 0.05);
-    const up = 1 - (y / S);
+    const up = 1 - y / S;
     const shade = Math.round(255 * Math.min(1, 0.68 + 0.32 * up * (0.75 + hash01(i, 4, 507) * 0.5)));
     g.fillStyle = `rgb(${shade},${shade},${shade})`;
     g.beginPath();

@@ -56,7 +56,14 @@ export function shipPose(p: ShipPlan, t: number): Pose {
   const dx = -p.a * Math.sin(f) * Math.sign(p.w);
   const dz = p.b * Math.cos(f) * Math.sign(p.w);
   const bob = Math.sin(t * 0.55 + p.phase * 3);
-  return { x, y: p.y + 5 * Math.sin(t * 0.12 + p.phase) + bob * 0.9, z, yaw: Math.atan2(dx, dz), roll: bob * 0.05, pitch: Math.sin(t * 0.4 + p.phase) * 0.025 };
+  return {
+    x,
+    y: p.y + 5 * Math.sin(t * 0.12 + p.phase) + bob * 0.9,
+    z,
+    yaw: Math.atan2(dx, dz),
+    roll: bob * 0.05,
+    pitch: Math.sin(t * 0.4 + p.phase) * 0.025,
+  };
 }
 
 export interface WhalePlan {
@@ -82,7 +89,14 @@ export function whalePose(p: WhalePlan, t: number): Pose {
   const z = p.cz + p.r * Math.sin(f);
   // bơi theo chiều tăng f: tiếp tuyến (-sin, cos)
   const yaw = Math.atan2(-Math.sin(f), Math.cos(f));
-  return { x, y: p.y + 14 * Math.sin(t * 0.09 + p.phase * 2), z, yaw, roll: 0.06 * Math.sin(t * 0.17), pitch: 0.07 * Math.cos(t * 0.09 + p.phase * 2) };
+  return {
+    x,
+    y: p.y + 14 * Math.sin(t * 0.09 + p.phase * 2),
+    z,
+    yaw,
+    roll: 0.06 * Math.sin(t * 0.17),
+    pitch: 0.07 * Math.cos(t * 0.09 + p.phase * 2),
+  };
 }
 
 /** Điểm quanh một đảo thật theo hướng tới (tx, tz), lùi `inset` vào trong mép. */
@@ -349,7 +363,7 @@ function shipHull(): { hull: THREE.BufferGeometry; lanterns: THREE.BufferGeometr
     for (let k = 0; k < 5; k++) {
       const z = -4.2 + k * 2.3;
       const l = new THREE.SphereGeometry(0.22, 6, 5);
-      l.translate(s * 2.2 * Math.pow(Math.sin(Math.PI * Math.pow((z / HULL_L + 0.5), 0.8)), 0.6), railY(z) - 0.15, z);
+      l.translate(s * 2.2 * Math.pow(Math.sin(Math.PI * Math.pow(z / HULL_L + 0.5, 0.8)), 0.6), railY(z) - 0.15, z);
       lan.push(l);
     }
   }
@@ -483,7 +497,14 @@ function whaleMaterial(): THREE.MeshBasicNodeMaterial {
   const swirl = texture(noise, vec2(p.x.mul(6).add(p.z.mul(3.4)).add(time.mul(0.02)), p.y.mul(6).add(p.z.mul(2.2)))).a;
   const fres = float(1).sub(normalView.z.abs());
   // nếp bụng (sọc dọc) và mạch linh quang chạy dọc thân
-  const pleats = p.x.mul(190).sin().mul(0.5).add(0.5).mul(belly).mul(smoothstep(0.34, 0.12, p.z.abs())).mul(0.12);
+  const pleats = p.x
+    .mul(190)
+    .sin()
+    .mul(0.5)
+    .add(0.5)
+    .mul(belly)
+    .mul(smoothstep(0.34, 0.12, p.z.abs()))
+    .mul(0.12);
   const veins = p.z.mul(70).sub(time.mul(0.8)).add(p.y.mul(40)).sin().abs().oneMinus().pow(14).mul(0.9);
   const base = mix(vec3(0.16, 0.38, 0.7), vec3(0.85, 0.94, 1.0), belly.mul(0.8).add(swirl.mul(0.25)));
   mat.colorNode = base
@@ -557,7 +578,12 @@ function rainbowGeometry(arcs: Arc[]): THREE.BufferGeometry {
 }
 
 function rainbowMaterial(): THREE.MeshBasicNodeMaterial {
-  const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+  const mat = new THREE.MeshBasicNodeMaterial({
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+  });
   const u = uv();
   const across = float(1).sub(u.y.sub(0.5).abs().mul(2)).pow(0.9);
   const flow = u.x.sub(time.mul(0.5)).mul(0.9).sin().mul(0.5).add(0.5);
@@ -699,7 +725,12 @@ function beamGeometry(): THREE.BufferGeometry {
 }
 
 function beamMaterial(): THREE.MeshBasicNodeMaterial {
-  const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+  const mat = new THREE.MeshBasicNodeMaterial({
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+  });
   const u = uv();
   const across = float(1).sub(u.y.sub(0.5).abs().mul(2)).pow(1.4);
   const along = smoothstep(0.0, 0.08, u.x).mul(float(1).sub(u.x).pow(1.3));

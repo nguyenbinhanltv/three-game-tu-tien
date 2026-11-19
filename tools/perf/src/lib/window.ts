@@ -47,7 +47,15 @@ export interface GameDebug {
   /** Vân Hải (MAP-3, `game/world/vanHaiWow.ts`): `freeze(giây)` giữ đồng hồ thuyền/cá để chụp ảnh; `group.children` để `--probe` liệt kê mesh. */
   vanHaiWow: {
     freeze(t: number | null): void;
-    group: { children: { name: string; visible: boolean; position: Vec; geometry?: { attributes: { position: { count: number } } }; count?: number }[] };
+    group: {
+      children: {
+        name: string;
+        visible: boolean;
+        position: Vec;
+        geometry?: { attributes: { position: { count: number } } };
+        count?: number;
+      }[];
+    };
   } | null;
   shownLevel: string;
   cur: Vec & { yaw: number };
