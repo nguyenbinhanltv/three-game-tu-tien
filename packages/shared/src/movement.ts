@@ -222,24 +222,31 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
 
   let ground = groundAt(s.x, s.z);
   // Mặt đi được (bậc, cầu, sàn, đỉnh đảo bay) trong tầm bước: nâng mặt đứng hiệu dụng.
+  const reach = s.y + (s.grounded ? STEP_UP : 0.02);
+  const terrainGround = ground;
+  let onSurface3d = false;
   if (col3d && col3d.size) {
-    const top = col3d.standY(s.x, s.z, s.y + (s.grounded ? STEP_UP : 0.02));
-    if (top > ground) ground = top;
+    const top = col3d.standY(s.x, s.z, reach);
+    if (top > ground) {
+      ground = top;
+      onSurface3d = true;
+    }
   }
 
   // Level đảo nổi (E3-N): chặn leo vách đảo và thành cầu. Không cho bước vào chỗ mặt đất dốc hơn `MAX_SLOPE_UP` (độ dốc đi lên lớn nhất quanh chỗ mới, không phụ
   // thuộc hướng đi hay tốc độ nên đi chéo/chạy chậm không lách được) trừ khi đang đi xuống (mặt đất mới thấp hơn chỗ cũ: rơi khỏi mép, bước xuống).
   // So mặt đất cũ với mới chứ không so với độ cao người nên nhảy cũng không leo được. Không áp khi ngự kiếm.
-  if (
-    terrain.blockRise &&
-    !s.flying &&
-    (s.x !== px || s.z !== pz) &&
-    ground >= groundAt(px, pz) - 1e-3 &&
-    groundSlope(groundAt, s.x, s.z) > MAX_SLOPE_UP
-  ) {
-    s.x = px;
-    s.z = pz;
-    ground = groundAt(s.x, s.z);
+  // Đứng trên mặt 3D (cầu, sàn) thì bỏ kiểm dốc của heightmap (heightmap dưới cầu có thể là vách), và so với mặt đứng hiệu dụng CŨ (gồm mặt 3D) chứ không chỉ heightmap.
+  if (terrain.blockRise && !s.flying && (s.x !== px || s.z !== pz) && !onSurface3d) {
+    let prevGround = groundAt(px, pz);
+    if (col3d && col3d.size) prevGround = Math.max(prevGround, col3d.standY(px, pz, reach));
+    if (terrainGround >= prevGround - 1e-3 && groundSlope(groundAt, s.x, s.z) > MAX_SLOPE_UP) {
+      s.x = px;
+      s.z = pz;
+      ground = groundAt(s.x, s.z);
+      // Về chỗ cũ: tính lại mặt đứng gồm cả mặt 3D (đang đứng trên cầu thì không rơi xuyên).
+      if (col3d && col3d.size) ground = Math.max(ground, col3d.standY(s.x, s.z, reach));
+    }
   }
 
   if (s.flying) {
@@ -251,7 +258,7 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
     if (s.y > FLY_MAX_ALT) s.y = FLY_MAX_ALT;
     if (gh && s.y > ground + SOUL_ALT) s.y = ground + SOUL_ALT;
     if (col3d && col3d.size && vy > 0) {
-      const ceil = col3d.ceilingAt(s.x, s.z, s.y - vy * dt, PLAYER_RADIUS * 0.6);
+      const ceil = col3d.ceilingAt(s.x, s.z, s.y - vy * dt, PLAYER_RADIUS * 0.6, true);
       if (s.y + BODY_H > ceil) s.y = ceil - BODY_H;
     }
     s.grounded = false;

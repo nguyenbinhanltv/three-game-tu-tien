@@ -148,4 +148,52 @@ describe('va chạm 3D', () => {
     console.log(`stepMove 3000 hình: ${per.toFixed(2)} µs/bước → 100 người/tick ≈ ${((per * 100) / 1000).toFixed(2)} ms`);
     expect(per).toBeLessThan(20);
   });
+
+  it('ngự kiếm bay thẳng lên xuyên tán lá (fly:pass) nhưng đội đầu vào đáy khối chặn', () => {
+    setup([
+      { k: 'cyl', x: X, z: Z, r: 3, y0: G + 4, y1: G + 9, fly: 'pass' },
+      { k: 'box', x: X + 20, z: Z, hx: 3, hz: 3, yaw: 0, y0: G + 30, y1: G + 34 },
+    ]);
+    const s = { x: X, y: G + 1.6, z: Z, vy: 0, grounded: false, flying: true };
+    for (let i = 0; i < 60; i++) stepMove(s, inp(0, 0, IN_FLY | IN_UP), ctx);
+    expect(s.y).toBeGreaterThan(G + 12);
+    const t = { x: X + 20, y: G + 1.6, z: Z, vy: 0, grounded: false, flying: true };
+    for (let i = 0; i < 60; i++) stepMove(t, inp(0, 0, IN_FLY | IN_UP), ctx);
+    expect(t.y + 1.8).toBeLessThanOrEqual(G + 30 + 1e-6);
+  });
+
+  it('bộ đếm stamp quấn Int32 không làm truy vấn lặp hình', () => {
+    const c = new CollisionSet();
+    c.add([{ k: 'box', x: 100, z: 100, hx: 40, hz: 1, yaw: 0, y0: 0, y1: 5 }]);
+    (c as unknown as { stamp: number }).stamp = 2147483646;
+    for (let k = 0; k < 4; k++) {
+      let n = 0;
+      c.near(100, 100, 30, () => n++);
+      expect(n).toBe(1);
+    }
+    c.clear();
+    expect((c as unknown as { stamp: number }).stamp).toBe(0);
+  });
+
+  it('level blockRise: cầu hộp bắc qua mép vách đảo vẫn đi được, không rơi xuyên', () => {
+    const IS = registerTerrain({
+      ...VAN_LAM_TERRAIN,
+      id: 'col_rise',
+      colliders: [],
+      features: [],
+      biomes: [],
+      islands: [{ x: 2048, z: 2048, r: 20, edge: 6, y: 200 }],
+      voidFloor: 100,
+    });
+    expect(IS.blockRise).toBe(true);
+    const ic = { canFly: false, frozen: false, speedMul: 1, terrain: IS };
+    IS.collision.clear();
+    // Sàn cầu phẳng ở cao độ mặt đảo, nhô ra khỏi mép đảo trên vực.
+    IS.collision.add([{ k: 'box', x: 2048 + 45, z: 2048, hx: 30, hz: 2, yaw: 0, y0: 199, y1: 200.2 }]);
+    const s: MoveState = { x: 2048 + 8, y: IS.groundAt(2048 + 8, 2048), z: 2048, vy: 0, grounded: true, flying: false };
+    for (let i = 0; i < 90; i++) stepMove(s, { s: i, mx: 0, mz: 1, yaw: -Math.PI / 2, f: 0 }, ic);
+    expect(s.x).toBeGreaterThan(2048 + 35);
+    expect(s.y).toBeCloseTo(200.2, 2);
+    expect(s.grounded).toBe(true);
+  });
 });

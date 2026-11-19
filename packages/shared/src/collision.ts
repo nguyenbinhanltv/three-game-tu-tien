@@ -107,12 +107,20 @@ export class CollisionSet {
   clear(): void {
     this.shapes.length = 0;
     this.grid.clear();
+    this.mark.fill(0);
+    this.stamp = 0;
   }
 
   /** Gọi `fn` cho mỗi hình có ô lưới chạm vòng (x, z, r), mỗi hình một lần. */
   near(x: number, z: number, r: number, fn: (s: Shape) => void): void {
     if (!this.shapes.length) return;
-    const stamp = ++this.stamp;
+    // Bộ đếm quấn trong Int32: về 0 thì xóa dấu để không bao giờ trùng giá trị cũ (server chạy nhiều ngày).
+    this.stamp = (this.stamp + 1) | 0;
+    if (this.stamp === 0) {
+      this.mark.fill(0);
+      this.stamp = 1;
+    }
+    const stamp = this.stamp;
     const c0 = Math.floor((x - r) / CELL);
     const c1 = Math.floor((x + r) / CELL);
     const d0 = Math.floor((z - r) / CELL);
@@ -151,12 +159,13 @@ export class CollisionSet {
     return best;
   }
 
-  /** Đáy thấp nhất của khối nằm ngay trên đầu tại (x, z) (chân `y`): chặn đầu khi nhảy/bay lên. `Infinity` nếu trống. */
-  ceilingAt(x: number, z: number, y: number, r: number): number {
+  /** Đáy thấp nhất của khối nằm ngay trên đầu tại (x, z) (chân `y`): chặn đầu khi nhảy/bay lên (`flying`: bỏ qua hình `fly:'pass'`). `Infinity` nếu trống. */
+  ceilingAt(x: number, z: number, y: number, r: number, flying = false): number {
     let best = Infinity;
     const head = y + BODY_H;
     this.near(x, z, r, (s) => {
       if (s.y0 < head - 1e-3 || s.y0 >= best) return;
+      if (flying && s.fly === 'pass') return; // ngự kiếm xuyên tán lá cả khi bay thẳng lên (giống `push`)
       if (s.y0 > head + 8) return;
       if (footprintDist(s, x, z) < r) best = s.y0;
     });
