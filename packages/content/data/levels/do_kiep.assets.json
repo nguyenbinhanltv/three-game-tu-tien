@@ -1,8 +1,9 @@
 {
-  "mood": "default",
-  "glb": ["arch_sect"],
-  "ground": { "set": "terrain", "mask": "manifest" },
+  "mood": "dk",
+  "glb": [],
+  "ground": { "set": "terrain-ochre", "mask": "neutral" },
   "music": ["dungeon", "tribulation"],
-  "features": { "sect": true, "portals": true, "lanterns": true, "lake": true, "clouds": true, "grass": true, "trees": "scatter", "beacons": true, "vegetation": true },
-  "minimap": "van_lam"
+  "features": { "sect": false, "portals": true, "lanterns": false, "lake": false, "clouds": true, "grass": false, "trees": "none", "beacons": false, "vegetation": false },
+  "minimap": "van_lam",
+  "doKiepArt": true
 }

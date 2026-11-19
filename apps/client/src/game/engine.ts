@@ -70,6 +70,7 @@ import type { PhucMachArt } from './world/phucMachArt';
 import type { KinhNguyetArt } from './world/kinhNguyetArt';
 import type { ThanTangArt } from './world/thanTangArt';
 import type { XichTanArt } from './world/xichTanArt';
+import type { DoKiepArt } from './world/doKiepArt';
 import type { KimDaArt } from './world/kimDaArt';
 import type { LacKiemSkyScene } from './world/lacKiemSky';
 import type { ThienKhuyetSkyScene } from './world/thienKhuyetSky';
@@ -247,6 +248,7 @@ export class Game {
   kinhNguyetArt: KinhNguyetArt | null = null;
   thanTangArt: ThanTangArt | null = null;
   xichTanArt: XichTanArt | null = null;
+  doKiepArt: DoKiepArt | null = null;
   kimDaArt: KimDaArt | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
   butterflies: Butterflies | null = null;
