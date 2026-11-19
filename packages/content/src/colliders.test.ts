@@ -50,4 +50,14 @@ describe('collider prop theo level (COL-1 / C-2)', () => {
     expect(shapes.length).toBeGreaterThan(1000);
     for (const s of shapes) expect(s).toMatchObject({ k: 'cyl', fly: 'pass' });
   });
+
+  it('Bắc Hoang: cây chết, băng ven khe và cột tà trận có hình; Sân Nhật Thực Kiếp dùng chung (COL-C)', () => {
+    for (const level of ['bac_hoang', 'do_kiep_bac_hoang']) {
+      const tags = new Map<string, number>();
+      for (const s of propShapesOf(level)) tags.set(s.tag ?? '', (tags.get(s.tag ?? '') ?? 0) + 1);
+      expect(tags.get('x_bh_dead_tree'), level).toBeGreaterThan(100);
+      expect(tags.get('x_bh_ice'), level).toBeGreaterThan(10);
+      expect(tags.get('x_bh_pillar'), level).toBe(12); // 6 cột × (đế + thân)
+    }
+  });
 });

@@ -1,9 +1,11 @@
 import { LEVELS } from '@dtl/content';
 import { levelId, setActiveLevel, heightAt } from '../../base/levelCtx';
-import { LEAN_MIN, terrainOf } from '@dtl/shared';
+import { LEAN_MIN, propsOf, terrainOf } from '@dtl/shared';
 import { mapleSpots } from './doanMachArt';
 import { vanHaiTreeSpots } from './vanHaiGarden';
-import { allProps } from './propScatter';
+import { deadTreeSpots, riftPath } from './bacHoangArt';
+import { iceSpots, PILLAR_SPOTS } from './bhWonders';
+import { allProps, bhCtx } from './propScatter';
 
 /**
  * Bake vị trí prop đã rải (`allProps`: điểm nhấn + prop Thiên Công + rải tự động) ra JSON gọn theo level để server (không import client)
@@ -35,7 +37,21 @@ export interface ExtraInst {
 }
 
 /** Hàm rải riêng theo level (COL-B). Chạy với địa hình của level đó đang hoạt động. */
+/** Bắc Hoang: cây chết, tinh thể băng ven khe, cột tà trận (cột đã có vòng tròn cũ nhưng không có hình 3D). Sân Nhật Thực Kiếp dùng chung địa hình. */
+function bacHoangExtra(): ExtraInst[] {
+  const tr = terrainOf('bac_hoang');
+  const out: ExtraInst[] = [];
+  for (const t of deadTreeSpots(bhCtx(propsOf('bac_hoang')), 700))
+    out.push({ id: 'x_bh_dead_tree', x: t.x, z: t.z, y: tr.heightAt(t.x, t.z), yaw: t.yaw, s: t.s });
+  for (const t of iceSpots(riftPath(tr.def), 7))
+    out.push({ id: 'x_bh_ice', x: t.x, z: t.z, y: tr.heightAt(t.x, t.z) - 0.1, yaw: t.yaw, s: t.s });
+  for (const t of PILLAR_SPOTS) out.push({ id: 'x_bh_pillar', x: t.x, z: t.z, y: tr.heightAt(t.x, t.z), yaw: 0, s: t.s });
+  return out;
+}
+
 const EXTRA: Record<string, () => ExtraInst[]> = {
+  bac_hoang: bacHoangExtra,
+  do_kiep_bac_hoang: bacHoangExtra,
   doan_mach: () => mapleSpots().map((t) => ({ id: 'x_maple_trunk', x: t.x, z: t.z, y: heightAt(t.x, t.z) - 0.15, yaw: t.rot, s: t.s })),
   van_hai: () => vanHaiTreeSpots(terrainOf('van_hai')).map((t) => ({ id: 'x_vh_trunk', x: t.x, z: t.z, y: t.y, yaw: t.yaw, s: t.s })),
 };
