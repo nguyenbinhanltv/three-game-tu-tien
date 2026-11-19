@@ -4,20 +4,20 @@
  * Giữ nguyên bố cục, kích thước ô, hành vi và phím tắt: chỉ thay vỏ.
  */
 :root:root {
-  --ngj-hud-bg: rgba(30, 23, 18, 0.9);
-  --ngj-hud-bg-soft: rgba(30, 23, 18, 0.78);
-  --ngj-hud-shadow:
+  --u-h-hud-bg: rgba(30, 23, 18, 0.9);
+  --u-h-hud-bg-soft: rgba(30, 23, 18, 0.78);
+  --u-h-hud-shadow:
     inset 0 0 0 3px rgba(30, 23, 18, 0.9), inset 0 0 0 4px rgba(201, 164, 92, 0.55), inset 0 0 18px rgba(201, 164, 92, 0.1),
     0 4px 14px rgba(0, 0, 0, 0.35);
 }
 /* ───────── khối sơn mài chung ───────── */
 :root:root .hud :is(.frame, .skill-row, .tracker, .chat, .boss-bar) {
   position: relative;
-  background: var(--ngj-hud-bg);
-  border: 1px solid var(--ngj-gold);
+  background: var(--u-h-hud-bg);
+  border: 1px solid var(--u-h-gold);
   border-radius: 3px;
-  box-shadow: var(--ngj-hud-shadow);
-  color: var(--ngj-ivory);
+  box-shadow: var(--u-h-hud-shadow);
+  color: var(--u-h-ivory);
 }
 :root:root .hud .frame {
   position: absolute;
@@ -73,8 +73,8 @@
   margin-top: 5px;
   clip-path: none;
   border-radius: 3px;
-  background: linear-gradient(180deg, var(--ngj-gold-hi), var(--ngj-gold) 50%, var(--ngj-gold-lo));
-  --fill: linear-gradient(180deg, var(--ngj-crimson-hi) 0%, var(--ngj-crimson) 55%, #6f2620 100%);
+  background: linear-gradient(180deg, var(--u-h-gold-hi), var(--u-h-gold) 50%, var(--u-h-gold-lo));
+  --fill: linear-gradient(180deg, var(--u-h-crimson-hi) 0%, var(--u-h-crimson) 55%, #6f2620 100%);
 }
 :root:root .gauge-in {
   inset: 1.5px;
@@ -92,9 +92,9 @@
   width: 8px;
   height: 8px;
   margin-top: -4px;
-  background: var(--ngj-gold-hi);
+  background: var(--u-h-gold-hi);
   transform: rotate(45deg);
-  box-shadow: 0 0 0 1px var(--ngj-gold-lo);
+  box-shadow: 0 0 0 1px var(--u-h-gold-lo);
   z-index: 2;
 }
 :root:root .gauge::after {
@@ -106,18 +106,18 @@
   height: 9px;
   margin-top: -4.5px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #d6fff4, var(--ngj-jade) 65%, var(--ngj-jade-lo));
-  box-shadow: 0 0 0 1px var(--ngj-gold);
+  background: radial-gradient(circle at 35% 30%, #d6fff4, var(--u-h-jade) 65%, var(--u-h-jade-lo));
+  box-shadow: 0 0 0 1px var(--u-h-gold);
   z-index: 2;
 }
 :root:root .gauge.mp {
-  --fill: linear-gradient(180deg, var(--ngj-jade-hi) 0%, var(--ngj-jade) 50%, var(--ngj-jade-lo) 100%);
+  --fill: linear-gradient(180deg, var(--u-h-jade-hi) 0%, var(--u-h-jade) 50%, var(--u-h-jade-lo) 100%);
 }
 :root:root .gauge.hp.ally {
   --fill: linear-gradient(180deg, #b6dc96 0%, #6aa05f 50%, #2f5f3f 100%);
 }
 :root:root .gauge.xp {
-  --fill: linear-gradient(180deg, var(--ngj-gold-hi) 0%, var(--ngj-gold) 55%, var(--ngj-gold-lo) 100%);
+  --fill: linear-gradient(180deg, var(--u-h-gold-hi) 0%, var(--u-h-gold) 55%, var(--u-h-gold-lo) 100%);
   height: 10px;
   margin-top: 7px;
 }
@@ -141,7 +141,7 @@
   height: 13px;
 }
 :root:root .gauge-text {
-  font-family: var(--ngj-font-body);
+  font-family: var(--u-h-font-body);
 }
 :root:root .gauge-fill::after {
   background: rgba(255, 244, 214, 0.9);
@@ -153,36 +153,36 @@
   margin-bottom: 3px;
 }
 :root:root .hud .frame-name {
-  font: 700 17px var(--ngj-font-title);
+  font: 700 17px var(--u-h-font-title);
   letter-spacing: 0.05em;
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
 }
 :root:root .hud .frame-realm {
-  font: 600 12.5px var(--ngj-font-title);
-  color: var(--ngj-ivory);
+  font: 600 12.5px var(--u-h-font-title);
+  color: var(--u-h-ivory);
   letter-spacing: 0.04em;
 }
 :root:root .hud .frame-realm[data-tier='tc'] {
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
   text-shadow: 0 0 6px rgba(240, 215, 142, 0.45);
 }
 :root:root .hud .frame-next {
   color: rgba(237, 227, 204, 0.6);
 }
 :root:root .hud .frame.can-break {
-  border-color: var(--ngj-gold-hi);
+  border-color: var(--u-h-gold-hi);
 }
 :root:root .hud .target-frame {
   width: 290px;
 }
 :root:root .hud .target-frame .frame-name {
-  color: var(--ngj-ivory);
+  color: var(--u-h-ivory);
 }
 :root:root .hud .target-frame[data-kind='mon'] {
-  border-color: var(--ngj-crimson-hi);
+  border-color: var(--u-h-crimson-hi);
 }
 :root:root .hud .target-frame[data-kind='player'] {
-  border-color: var(--ngj-q1);
+  border-color: var(--u-q1);
 }
 /* ───────── thanh chiêu: ô bát giác, viền theo nhánh công pháp ───────── */
 :root:root .hud .skillbar {
@@ -198,7 +198,7 @@
 }
 :root:root .skill {
   --cut: 14px;
-  --mcol: var(--mc, var(--ngj-gold));
+  --mcol: var(--mc, var(--u-h-gold));
   --edge: linear-gradient(
     180deg,
     color-mix(in srgb, var(--mcol) 55%, #f6e3a8),
@@ -239,11 +239,11 @@
 :root:root .skill-key {
   left: 8px;
   top: 5px;
-  font: 700 11px var(--ngj-font-body);
-  color: var(--ngj-gold-hi);
+  font: 700 11px var(--u-h-font-body);
+  color: var(--u-h-gold-hi);
 }
 :root:root .skill-cd-text {
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
 }
 :root:root .skill[data-state='locked'] {
   --edge: linear-gradient(180deg, #8a8575, #4d4a40);
@@ -252,13 +252,13 @@
   --edge: linear-gradient(180deg, rgba(201, 164, 92, 0.7), rgba(122, 95, 44, 0.6));
 }
 :root:root .skill.auto {
-  --edge: linear-gradient(180deg, #fff1c4, var(--ngj-gold-hi) 50%, var(--ngj-gold));
+  --edge: linear-gradient(180deg, #fff1c4, var(--u-h-gold-hi) 50%, var(--u-h-gold));
 }
 :root:root .skill:focus-visible {
-  --edge: linear-gradient(180deg, #d9fff6, var(--ngj-jade-hi) 50%, var(--ngj-jade));
+  --edge: linear-gradient(180deg, #d9fff6, var(--u-h-jade-hi) 50%, var(--u-h-jade));
 }
 :root:root .stack-pips {
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
 }
 /* ───────── thanh chức năng dưới ───────── */
 :root:root .action-row.ngj-sys {
@@ -278,29 +278,29 @@
   opacity: 1;
 }
 :root:root .hud .tracker-title {
-  font: 700 13px var(--ngj-font-title);
-  color: var(--ngj-gold-hi);
+  font: 700 13px var(--u-h-font-title);
+  color: var(--u-h-gold-hi);
 }
 :root:root .hud .tracker-obj {
-  color: var(--ngj-ivory);
+  color: var(--u-h-ivory);
 }
 :root:root .hud .tracker-obj.ok {
   color: #9fd9a0;
 }
 :root:root .hud .tracker-turnin {
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
 }
 :root:root .hud .tracker-quest.tracked .tracker-title::before {
-  background: var(--ngj-gold-hi);
-  box-shadow: 0 0 6px var(--ngj-gold);
+  background: var(--u-h-gold-hi);
+  box-shadow: 0 0 6px var(--u-h-gold);
 }
 /* ───────── chat ───────── */
 /* ───────── thông báo (toast) ───────── */
 :root:root .hud .toast {
   padding: 8px 22px;
-  border: 1px solid var(--ngj-gold);
+  border: 1px solid var(--u-h-gold);
   border-radius: 3px;
-  background: var(--ngj-hud-bg);
+  background: var(--u-h-hud-bg);
   box-shadow:
     inset 0 0 0 2px rgba(30, 23, 18, 0.9),
     inset 0 0 0 3px rgba(201, 164, 92, 0.45),
@@ -315,27 +315,27 @@
     0 calc(100% - 9px),
     0 9px
   );
-  font: 600 14px var(--ngj-font-title);
+  font: 600 14px var(--u-h-font-title);
   letter-spacing: 0.04em;
-  color: var(--ngj-ivory);
+  color: var(--u-h-ivory);
 }
 :root:root .hud .toast.good {
-  color: var(--ngj-gold-hi);
-  border-color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
+  border-color: var(--u-h-gold-hi);
 }
 :root:root .hud .toast.bad {
-  color: var(--ngj-crimson-hi);
-  border-color: var(--ngj-crimson);
+  color: var(--u-h-crimson-hi);
+  border-color: var(--u-h-crimson);
 }
 /* ───────── thanh máu boss ───────── */
 :root:root .hud .boss-bar {
   padding: 8px 26px 12px;
-  background: var(--ngj-hud-bg);
+  background: var(--u-h-hud-bg);
 }
 :root:root .hud .boss-name {
-  font: 700 22px var(--ngj-font-title);
+  font: 700 22px var(--u-h-font-title);
   letter-spacing: 0.08em;
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
   text-shadow:
     0 1px 2px #000,
     0 0 12px rgba(185, 56, 46, 0.5);
@@ -347,19 +347,19 @@
   color: rgba(237, 227, 204, 0.8);
 }
 :root:root .hud .boss-mark {
-  background: var(--ngj-gold-hi);
+  background: var(--u-h-gold-hi);
 }
 :root:root .hud .boss-portrait {
   left: -50px;
   top: 2px;
   clip-path: polygon(14% 0, 86% 0, 100% 12%, 100% 88%, 86% 100%, 14% 100%, 0 88%, 0 12%);
-  filter: drop-shadow(0 0 0 1px var(--ngj-gold));
+  filter: drop-shadow(0 0 0 1px var(--u-h-gold));
 }
 /* ───────── nhóm buff, thanh niệm ───────── */
 :root:root .buff-chip {
-  background: var(--ngj-hud-bg);
-  border-color: var(--ngj-gold-lo);
-  color: var(--ngj-ivory);
+  background: var(--u-h-hud-bg);
+  border-color: var(--u-h-gold-lo);
+  color: var(--u-h-ivory);
 }
 /* ───────── tooltip chung (HUD và bảng) ───────── */
 :root:root .k-tip {
@@ -374,9 +374,9 @@
   padding: 11px 15px;
   background: url('./tex/lacquer.webp') rgba(30, 23, 18, 0.97);
   background-blend-mode: soft-light;
-  border: 1px solid var(--ngj-gold);
+  border: 1px solid var(--u-h-gold);
   border-radius: 3px;
-  color: var(--ngj-ivory);
+  color: var(--u-h-ivory);
   box-shadow:
     inset 0 0 0 3px rgba(30, 23, 18, 0.97),
     inset 0 0 0 4px rgba(201, 164, 92, 0.5);
@@ -392,8 +392,8 @@
   );
 }
 :root:root .k-tip-title {
-  font-family: var(--ngj-font-title);
-  color: var(--ngj-gold-hi);
+  font-family: var(--u-h-font-title);
+  color: var(--u-h-gold-hi);
   padding-bottom: 5px;
   margin-bottom: 4px;
   border-bottom: 1px solid transparent;
@@ -409,7 +409,7 @@
   color: #cfb3ff;
 }
 :root:root .k-tip-title[data-q='4'] {
-  color: var(--ngj-q4);
+  color: var(--u-q4);
 }
 :root:root .k-tip-title[data-q='5'] {
   color: #ff8fbb;
@@ -420,9 +420,9 @@
   color: rgba(237, 227, 204, 0.62);
 }
 :root:root .k-tip-line.good {
-  color: var(--ngj-jade-hi);
+  color: var(--u-h-jade-hi);
 }
 :root:root .k-tip-line.bad {
-  color: var(--ngj-crimson-hi);
+  color: var(--u-h-crimson-hi);
 }
 /* cửa sổ hẹp (≤ 1500 px, ví dụ 1366×768): thanh chức năng chỉ còn icon + phím để không xuống dòng/đè khung chat */
