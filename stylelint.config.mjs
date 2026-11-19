@@ -7,21 +7,8 @@ const EXEMPT_CSS = [
   'apps/client/src/ui/u2/tokens.css', // nguồn token duy nhất
 ];
 
-/** Miễn trừ tạm (U2-9 PR1): sẽ gỡ dần ở PR2..n. */
-const LEGACY_CSS = [
-  'apps/client/src/styles.css',
-  'apps/client/src/styles2.css',
-  'apps/client/src/ui/minimap.css',
-  'apps/client/src/ui/panels.css',
-  'apps/client/src/ui/realm.css',
-  'apps/client/src/ui/tutien.css',
-  'apps/client/src/ui/u2/boot/boot.css',
-  'apps/client/src/ui/u2/shell/hud.css',
-  'apps/client/src/ui/u2/shell/ornament.css',
-  'apps/client/src/ui/u2/shell/screens.css',
-  'apps/client/src/ui/u2/win/panel.css',
-  'apps/client/src/viewer/viewer.css', // công cụ debug, miễn trừ có thể giữ lại ở PR cuối
-];
+/** Miễn trừ tạm: đã rỗng (U2-9). Không thêm file vào đây. */
+const LEGACY_CSS = [];
 
 export default {
   ignoreFiles: ['**/node_modules/**', '**/dist/**', 'apps/client/public/**', 'docs/**', 'assets/**'],

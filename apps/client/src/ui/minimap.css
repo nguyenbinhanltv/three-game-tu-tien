@@ -10,7 +10,7 @@
   border-radius: 50%;
   pointer-events: auto;
   cursor: pointer;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.55));
+  filter: drop-shadow(0 4px 10px var(--u-x-rgba-0-0-0-0-55));
 }
 .mm2-disc canvas {
   display: block;
@@ -72,7 +72,7 @@
   background: linear-gradient(180deg, var(--u-son-lo), var(--u-ink-1));
   border-top: var(--u-line-1) solid var(--u-gold);
   border-bottom: var(--u-line-1) solid var(--u-gold-lo);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 5px 10px var(--u-x-rgba-0-0-0-0-5);
   clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%, 12px 50%);
   transform-origin: 50% 0;
   animation: mm2-unroll 0.7s var(--u-ease) both;
