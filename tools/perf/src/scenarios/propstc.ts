@@ -146,11 +146,11 @@ export default {
           : []),
         ...(level === 'bac_hoang' && groups.includes('di_vuc')
           ? [
-              viewAround(level, 'di_vuc', 'bac_hoang-di_vuc-rift', 1000, 881, 70),
-              viewAround(level, 'di_vuc', 'bac_hoang-di_vuc-trai', 1500, 598, 80),
+              viewAround(level, 'di_vuc', 'bac_hoang-di_vuc-rift', 1000, 881, 28),
+              viewAround(level, 'di_vuc', 'bac_hoang-di_vuc-trai', 1500, 598, 28),
             ]
               .filter((v): v is View => !!v)
-              .map((v) => ({ ...v, pitch: 0.65, dist: 22 }))
+              .map((v) => ({ ...v, pitch: 0.5, dist: 13 }))
           : []),
         ...(EXTRA[level] ?? []).filter((e) => groups.includes(e.group)).map((e) => e.view),
       ];
