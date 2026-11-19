@@ -1,4 +1,6 @@
 import { LEVELS } from '@dtl/content';
+import { levelId, setActiveLevel, heightAt } from '../../base/levelCtx';
+import { mapleSpots } from './doanMachArt';
 import { allProps } from './propScatter';
 
 /**
@@ -18,11 +20,40 @@ export const INST_ALIAS: Record<string, string> = { kiem_trung: 'van_lam' };
 const r2 = (v: number): number => Math.round(v * 100) / 100;
 const r3 = (v: number): number => Math.round(v * 1000) / 1000;
 
+/** Instance collider không phải prop GLB: cây/đồ dựng riêng của từng level (id `x_*` có hình ở `data/colliders/extra-lib.json`). */
+export interface ExtraInst {
+  id: string;
+  x: number;
+  z: number;
+  y: number;
+  yaw: number;
+  s: number;
+  sy?: number;
+}
+
+/** Hàm rải riêng theo level (COL-B). Chạy với địa hình của level đó đang hoạt động. */
+const EXTRA: Record<string, () => ExtraInst[]> = {
+  doan_mach: () => mapleSpots().map((t) => ({ id: 'x_maple_trunk', x: t.x, z: t.z, y: heightAt(t.x, t.z) - 0.15, yaw: t.rot, s: t.s })),
+};
+
+export function extraInstances(level: string): ExtraInst[] {
+  const fn = EXTRA[level];
+  if (!fn) return [];
+  const prev = levelId();
+  setActiveLevel(level);
+  try {
+    return fn();
+  } finally {
+    setActiveLevel(prev);
+  }
+}
+
 export function bakeLevel(level: string): InstFile {
   const ids: string[] = [];
   const idx = new Map<string, number>();
   const p: number[][] = [];
-  for (const it of allProps(level)) {
+  const items = [...allProps(level), ...extraInstances(level)];
+  for (const it of items) {
     let k = idx.get(it.id);
     if (k === undefined) {
       k = ids.length;
