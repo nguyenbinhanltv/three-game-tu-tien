@@ -65,6 +65,7 @@ import type { CardForest } from './world/cardForest';
 import type { LacKiemGarden } from './world/lacKiemGarden';
 import type { DoanMachArt } from './world/doanMachArt';
 import type { LacKiemSkyScene } from './world/lacKiemSky';
+import type { ThienKhuyetSkyScene } from './world/thienKhuyetSky';
 import type { VanHaiWow } from './world/vanHaiWow';
 import type { VanHaiGarden } from './world/vanHaiGarden';
 import { PostPipeline, postParams } from '../render/post';
@@ -220,6 +221,10 @@ export class Game {
   godRays: GodRays | null = null;
   /** Đảo nổi, cầu mây, thác, Kiếm Đài (MAP-1). */
   lacKiemSky: LacKiemSkyScene | null = null;
+  /** Tiên cung đổ nát, bậc thang lên trời, tượng thần, trận pháp của Thiên Khuyết (MAP-4). */
+  thienKhuyetSky: ThienKhuyetSkyScene | null = null;
+  /** GLB kiến trúc Thiên Khuyết (MAP-4). */
+  tkAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
   /** Vân Hải (MAP-3): thuyền tiên, cá kình mây, cầu vòng linh khí, hải đăng. */
   vanHaiWow: VanHaiWow | null = null;
   vanHaiGarden: VanHaiGarden | null = null;
@@ -1346,6 +1351,9 @@ export class Game {
     postParams.inkDesat.value = 0;
     this.sectMesh?.geometry.dispose();
     this.sectAsset?.handle.release();
+    this.tkAsset?.handle.release();
+    for (const m of this.tkAsset?.mats ?? []) m.dispose();
+    this.tkAsset = null;
     for (const m of this.sectAsset?.mats ?? []) m.dispose();
     this.sectAsset = null;
     this.sectMat.dispose();

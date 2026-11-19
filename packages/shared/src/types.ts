@@ -926,10 +926,42 @@ export interface LevelAssets {
    * Client dựng thân đảo, cầu, thác, kiếm (game/world/lacKiemSky.ts); script Blender đặt công trình trên đảo từ cùng dữ liệu.
    */
   lacKiemSky?: LacKiemSky;
+  /** Cảnh Thiên Khuyết trên trời và quảng trường (MAP-4, chỉ để nhìn, không va chạm): xem `ThienKhuyetSky`. */
+  thienKhuyetSky?: ThienKhuyetSky;
   /** Tên ảnh minimap trong `public/map/` (không đuôi). */
   minimap: string;
   /** Thư mục atlas thẻ cỏ alpha trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục của Vân Lam. */
   grassCards?: string;
+}
+
+/** Đảo tiên cung nổi của Thiên Khuyết (toạ độ thế giới tuyệt đối; `y` là cao độ mặt trên). */
+export interface TkIsland {
+  id: string;
+  x: number;
+  z: number;
+  y: number;
+  r: number;
+  depth: number;
+  /** `cong`: bệ Cổng Tiên Vỡ cuối bậc thang; `cung`: tiên cung đổ nát (cột, mái, vòm). */
+  kind: 'cong' | 'cung';
+}
+
+/**
+ * Cảnh Thiên Khuyết (MAP-4, game/world/thienKhuyetSky.ts): đảo tiên cung đổ nát, bậc thang xoắn lên trời tới Cổng Tiên Vỡ,
+ * tượng thần khổng lồ gãy đổ, cột ngọc vỡ, mảnh đá trời, trận pháp cổ trên quảng trường. Toạ độ thế giới tuyệt đối. Không va chạm.
+ */
+export interface ThienKhuyetSky {
+  islands: TkIsland[];
+  /** Bậc thang xoắn quanh quảng trường: tâm (cx, cz), bán kính đầu/cuối, số vòng, cao độ đầu/cuối, góc đầu (rad), bề ngang. */
+  stair: { cx: number; cz: number; r0: number; r1: number; turns: number; y0: number; y1: number; a0: number; width: number };
+  /** Tượng thần đổ: vị trí chân, hướng (rad), cỡ (m, chiều dài thân). */
+  statue: { x: number; z: number; yaw: number; size: number };
+  /** Trận pháp cổ trên mặt quảng trường. */
+  array: { x: number; z: number; r: number };
+  /** Số mảnh đá trời lơ lửng. */
+  shards: number;
+  /** Cột son dọc đại lộ: vị trí và độ cao đất thật `y` (sinh bằng `tools/perf/src/tk-pillars.ts`; GLB nướng cột nên cần `y` có sẵn). */
+  pillars: { x: number; z: number; y: number; kind: 'gay' | 'dung' | 'do' }[];
 }
 
 /** Loại công trình trên đảo nổi (script Blender chọn mảnh kit theo loại). */
