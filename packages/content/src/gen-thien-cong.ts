@@ -156,6 +156,10 @@ for (const levelId of Object.keys(SCENES)) {
           r: Math.round(r * sc2 * 100) / 100,
         }));
       }
+      if (near(anyBlock, x, z, inf.foot * sc2 * 0.6) || (prop.col ?? []).some((c) => near(anyBlock, c.x, c.z, c.r))) {
+        miss.push(`bày tay ${f.name} (${x}, ${z}) đè trận truyền tống/cổng/điểm đặc biệt`);
+        continue;
+      }
       if ((prop.col ?? []).some((c) => near(monBlock, c.x, c.z, c.r)) || near(campCentres, x, z, 0)) {
         miss.push(`bày tay ${f.name} (${x}, ${z}) nằm trong bãi quái/tâm bãi`);
         continue;
