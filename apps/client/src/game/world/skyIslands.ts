@@ -4,7 +4,7 @@
 
 import * as THREE from 'three/webgpu';
 import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { clamp, cameraPosition, float, instanceIndex, mix, normalView, normalWorld, positionWorld, smoothstep, texture, time, vec2, vec3, vertexColor } from 'three/tsl';
+import { clamp, cameraPosition, float, mix, normalView, normalWorld, positionWorld, smoothstep, texture, time, vec2, vec3, vertexColor } from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
 import { skyParams } from '../../render/sky';
 import { bridgeDeckY, type BridgeDef, hash01, type IslandDef, type Terrain, type TerrainDef } from '@dtl/shared';
