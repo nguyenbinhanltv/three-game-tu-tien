@@ -233,7 +233,8 @@ export class PropLayer {
         trees.push(p);
         continue;
       }
-      const k = `${p.id}|${Math.floor(p.x / CHUNK)}|${Math.floor(p.z / CHUNK)}`;
+      // Lưới ô lệch nửa ô: tâm Lạc Kiếm Tông (x = 2048) và trục đại lộ không còn nằm đúng ranh ô, nên mỗi loại prop không bị tách làm 2–4 InstancedMesh (draw call).
+      const k = `${p.id}|${Math.floor((p.x + CHUNK / 2) / CHUNK)}|${Math.floor((p.z + CHUNK / 2) / CHUNK)}`;
       let c = buckets.get(k);
       if (!c) {
         c = {

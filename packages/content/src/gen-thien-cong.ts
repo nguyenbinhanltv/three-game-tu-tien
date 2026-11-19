@@ -26,6 +26,8 @@ const ONLY = opt('--level');
 const SEED = 20261119;
 /** Hệ số mật độ cho số lượng rải ngẫu nhiên của `thienCongScenes.ts` (duyệt ảnh: bản đầu quá thưa, trước/sau không phân biệt được). */
 const DENSITY = 2.2;
+/** Món nhỏ/rẻ chỉ bày một biến thể: mỗi id × LOD × vật liệu là một InstancedMesh, nên bớt id để cảnh đông (chợ) không vượt 300 draw call. */
+const SINGLE = new Set(['vo_ruou', 'gio_thuoc', 'thung_go', 'lu_nuoc', 'long_den_giay', 'hang_rao_tre']);
 
 const groupOf = new Map<string, string>();
 const info = new Map<string, { collider: [number, number, number][]; foot: number }>();
@@ -99,7 +101,7 @@ for (const levelId of Object.keys(SCENES)) {
   const lvSeed = SEED + [...levelId].reduce((a, c) => a * 31 + c.charCodeAt(0), 7);
   let rand = rng(lvSeed);
   const placed: TcProp[] = [];
-  const spots: (Circle & { solid: boolean })[] = [];
+  const spots: (Circle & { solid: boolean; g: string })[] = [];
   const list: TcProp[] = [];
   const miss: string[] = [];
   // Duyệt theo thứ tự nhóm rồi cảnh, mỗi (cảnh, món) một dòng số ngẫu nhiên riêng: bật thêm nhóm chỉ thêm prop, không xê dịch prop của nhóm trước (PR chia theo nhóm).
@@ -108,101 +110,113 @@ for (const levelId of Object.keys(SCENES)) {
     (a, b) => order.indexOf(groupOf.get(a.name) ?? '') - order.indexOf(groupOf.get(b.name) ?? ''),
   );
   // Bày tay (dx, dz tính từ tâm cảnh): cụm điểm nhấn dọc đường chính, quanh kiếm đài, trước điện… Không rải ngẫu nhiên, chỉ kiểm bản đồ.
-  for (const { sc, f } of SCENES[levelId]!.flatMap((sc) => (sc.fixed ?? []).map((f) => ({ sc, f })))) {
-    const g = groupOf.get(f.name);
-    if (!g || !GROUPS.includes(g)) continue;
-    const inf = info.get(f.name)!;
-    const x = Math.round((sc.at[0] + f.dx) * 10) / 10;
-    const z = Math.round((sc.at[1] + f.dz) * 10) / 10;
-    const sc2 = f.s ?? 1;
-    const prop: TcProp = { id: `prop_tc_${f.name}${f.v2 ? '_2' : ''}`, x, z, yaw: f.yaw ?? 0, s: sc2 };
-    if (inf.collider.length) {
-      const cy = Math.cos(prop.yaw);
-      const sy = Math.sin(prop.yaw);
-      prop.col = inf.collider.map(([dx, dz, r]) => ({
-        x: Math.round((x + (dx * cy + dz * sy) * sc2) * 10) / 10,
-        z: Math.round((z + (-dx * sy + dz * cy) * sc2) * 10) / 10,
-        r: Math.round(r * sc2 * 100) / 100,
-      }));
+  const placeFixed = (group: string) => {
+    for (const { sc, f } of SCENES[levelId]!.flatMap((sc) => (sc.fixed ?? []).map((f) => ({ sc, f })))) {
+      const g = groupOf.get(f.name);
+      if (!g || g !== group || !GROUPS.includes(g)) continue;
+      const inf = info.get(f.name)!;
+      const x = Math.round((sc.at[0] + f.dx) * 10) / 10;
+      const z = Math.round((sc.at[1] + f.dz) * 10) / 10;
+      const sc2 = f.s ?? 1;
+      const prop: TcProp = { id: `prop_tc_${f.name}${f.v2 && !SINGLE.has(f.name) ? '_2' : ''}`, x, z, yaw: f.yaw ?? 0, s: sc2 };
+      if (inf.collider.length) {
+        const cy = Math.cos(prop.yaw);
+        const sy = Math.sin(prop.yaw);
+        prop.col = inf.collider.map(([dx, dz, r]) => ({
+          x: Math.round((x + (dx * cy + dz * sy) * sc2) * 10) / 10,
+          z: Math.round((z + (-dx * sy + dz * cy) * sc2) * 10) / 10,
+          r: Math.round(r * sc2 * 100) / 100,
+        }));
+      }
+      const hit = (prop.col ?? [{ x, z, r: 0.5 }]).find((c) => near(solidBlock, c.x, c.z, c.r));
+      if (hit) {
+        miss.push(`bày tay ${f.name} (${x}, ${z}) đè vật cản`);
+        continue;
+      }
+      const footF = inf.foot * sc2;
+      const clash = spots.find((p) => p.g !== group && (x - p.x) ** 2 + (z - p.z) ** 2 < (p.r + footF + 0.5) ** 2); // như nhánh rải: không xuyên prop của NHÓM TRƯỚC (prop cùng nhóm đã duyệt từ PR trước nên giữ nguyên)
+      if (clash) {
+        miss.push(`bày tay ${f.name} (${x}, ${z}) xuyên prop đã đặt ở (${clash.x}, ${clash.z})`);
+        continue;
+      }
+      list.push(prop);
+      spots.push({ x, z, r: inf.foot * sc2, solid: !!prop.col, g: group });
+      placed.push(prop);
     }
-    const hit = (prop.col ?? [{ x, z, r: 0.5 }]).find((c) => near(solidBlock, c.x, c.z, c.r));
-    if (hit) {
-      miss.push(`bày tay ${f.name} (${x}, ${z}) đè vật cản`);
-      continue;
-    }
-    list.push(prop);
-    spots.push({ x, z, r: inf.foot * sc2, solid: !!prop.col });
-    placed.push(prop);
-  }
-  for (const { sc, si, name, n } of jobs) {
-    const h0 = tr.heightAt(sc.at[0], sc.at[1]);
-    const lo = sc.rMin ?? 0;
-    {
-      const g = groupOf.get(name);
-      if (!g) continue; // món của nhóm chưa có trong danh mục (PR chia theo nhóm)
-      if (!GROUPS.includes(g)) continue;
-      rand = rng(lvSeed + si * 7919 + [...name].reduce((a, c) => a * 31 + c.charCodeAt(0), 3));
-      const inf = info.get(name)!;
-      const solid = inf.collider.length > 0;
-      for (let k = 0; k < Math.round(n * DENSITY); k++) {
-        let ok = false;
-        for (let tries = 0; tries < 160 && !ok; tries++) {
-          const a = rand() * Math.PI * 2;
-          const d = Math.sqrt(lo * lo + rand() * (sc.r * sc.r - lo * lo));
-          const x = Math.round((sc.at[0] + Math.cos(a) * d) * 10) / 10;
-          const z = Math.round((sc.at[1] + Math.sin(a) * d) * 10) / 10;
-          const s = Math.round(((sc.scale?.[0] ?? 0.9) + rand() * ((sc.scale?.[1] ?? 1.15) - (sc.scale?.[0] ?? 0.9))) * 100) / 100;
-          const foot = inf.foot * s;
-          if (x < B.x0 + 10 || x > B.x1 - 10 || z < B.z0 + 10 || z > B.z1 - 10) continue;
-          const h = tr.heightAt(x, z);
-          if (sky ? sc.flat === undefined || Math.abs(h - h0) > sc.flat : tr.groundAt(x, z) < WATER_Y + 1.2 || h < WATER_Y + 1.2) continue;
-          if (sc.flat !== undefined && Math.abs(h - h0) > sc.flat) continue;
-          if (sc.avoid?.(x, z) || (levelId === 'van_lam' && sectAxis(x, z))) continue; // không chiếm đường chính (propScatter.test kiểm)
-          // độ dốc quanh chân
-          const q = Math.max(0.8, foot);
-          let slope = 0;
-          for (const [dx, dz] of [
-            [q, 0],
-            [-q, 0],
-            [0, q],
-            [0, -q],
-          ] as const)
-            slope = Math.max(slope, Math.abs(tr.heightAt(x + dx, z + dz) - h));
-          if (slope > 0.8 + foot * 0.3) continue;
-          if (near(anyBlock, x, z, foot)) continue;
-          if (solid && near(monBlock, x, z, foot)) continue;
-          if (spots.some((p) => (x - p.x) ** 2 + (z - p.z) ** 2 < (p.r + foot + 0.5) ** 2)) continue;
-          const yaw =
-            sc.face === 'center'
-              ? Math.atan2(sc.at[0] - x, sc.at[1] - z)
-              : sc.face === 'out'
-                ? Math.atan2(x - sc.at[0], z - sc.at[1])
-                : rand() * Math.PI * 2;
-          const v2 = rand() < 0.5;
-          const prop: TcProp = {
-            id: `prop_tc_${name}${v2 ? '_2' : ''}`,
-            x,
-            z,
-            yaw: Math.round((yaw + (sc.face === 'random' ? 0 : (rand() - 0.5) * 0.3)) * 100) / 100,
-            s,
-          };
-          if (solid) {
-            const cy = Math.cos(prop.yaw);
-            const sy = Math.sin(prop.yaw);
-            const cols = inf.collider.map(([dx, dz, r]) => ({
-              x: Math.round((x + (dx * cy + dz * sy) * s) * 10) / 10,
-              z: Math.round((z + (-dx * sy + dz * cy) * s) * 10) / 10,
-              r: Math.round(r * s * 100) / 100,
-            }));
-            if (cols.some((c) => near(monBlock, c.x, c.z, c.r) || near(anyBlock, c.x, c.z, c.r))) continue;
-            prop.col = cols;
+  };
+  for (const group of order) {
+    placeFixed(group);
+    for (const { sc, si, name, n } of jobs.filter((j) => groupOf.get(j.name) === group)) {
+      const h0 = tr.heightAt(sc.at[0], sc.at[1]);
+      const lo = sc.rMin ?? 0;
+      {
+        const g = groupOf.get(name);
+        if (!g) continue; // món của nhóm chưa có trong danh mục (PR chia theo nhóm)
+        if (!GROUPS.includes(g)) continue;
+        rand = rng(lvSeed + si * 7919 + [...name].reduce((a, c) => a * 31 + c.charCodeAt(0), 3));
+        const inf = info.get(name)!;
+        const solid = inf.collider.length > 0;
+        for (let k = 0; k < Math.round(n * DENSITY); k++) {
+          let ok = false;
+          for (let tries = 0; tries < 160 && !ok; tries++) {
+            const a = rand() * Math.PI * 2;
+            const d = Math.sqrt(lo * lo + rand() * (sc.r * sc.r - lo * lo));
+            const x = Math.round((sc.at[0] + Math.cos(a) * d) * 10) / 10;
+            const z = Math.round((sc.at[1] + Math.sin(a) * d) * 10) / 10;
+            const s = Math.round(((sc.scale?.[0] ?? 0.9) + rand() * ((sc.scale?.[1] ?? 1.15) - (sc.scale?.[0] ?? 0.9))) * 100) / 100;
+            const foot = inf.foot * s;
+            if (x < B.x0 + 10 || x > B.x1 - 10 || z < B.z0 + 10 || z > B.z1 - 10) continue;
+            const h = tr.heightAt(x, z);
+            if (sky ? sc.flat === undefined || Math.abs(h - h0) > sc.flat : tr.groundAt(x, z) < WATER_Y + 1.2 || h < WATER_Y + 1.2)
+              continue;
+            if (sc.flat !== undefined && Math.abs(h - h0) > sc.flat) continue;
+            if (sc.avoid?.(x, z) || (levelId === 'van_lam' && sectAxis(x, z))) continue; // không chiếm đường chính (propScatter.test kiểm)
+            // độ dốc quanh chân
+            const q = Math.max(0.8, foot);
+            let slope = 0;
+            for (const [dx, dz] of [
+              [q, 0],
+              [-q, 0],
+              [0, q],
+              [0, -q],
+            ] as const)
+              slope = Math.max(slope, Math.abs(tr.heightAt(x + dx, z + dz) - h));
+            if (slope > 0.8 + foot * 0.3) continue;
+            if (near(anyBlock, x, z, foot)) continue;
+            if (solid && near(monBlock, x, z, foot)) continue;
+            if (spots.some((p) => (x - p.x) ** 2 + (z - p.z) ** 2 < (p.r + foot + 0.5) ** 2)) continue;
+            const yaw =
+              sc.face === 'center'
+                ? Math.atan2(sc.at[0] - x, sc.at[1] - z)
+                : sc.face === 'out'
+                  ? Math.atan2(x - sc.at[0], z - sc.at[1])
+                  : rand() * Math.PI * 2;
+            const v2 = rand() < 0.5 && !SINGLE.has(name);
+            const prop: TcProp = {
+              id: `prop_tc_${name}${v2 ? '_2' : ''}`,
+              x,
+              z,
+              yaw: Math.round((yaw + (sc.face === 'random' ? 0 : (rand() - 0.5) * 0.3)) * 100) / 100,
+              s,
+            };
+            if (solid) {
+              const cy = Math.cos(prop.yaw);
+              const sy = Math.sin(prop.yaw);
+              const cols = inf.collider.map(([dx, dz, r]) => ({
+                x: Math.round((x + (dx * cy + dz * sy) * s) * 10) / 10,
+                z: Math.round((z + (-dx * sy + dz * cy) * s) * 10) / 10,
+                r: Math.round(r * s * 100) / 100,
+              }));
+              if (cols.some((c) => near(monBlock, c.x, c.z, c.r) || near(anyBlock, c.x, c.z, c.r))) continue;
+              prop.col = cols;
+            }
+            list.push(prop);
+            spots.push({ x, z, r: foot, solid, g });
+            placed.push(prop);
+            ok = true;
           }
-          list.push(prop);
-          spots.push({ x, z, r: foot, solid });
-          placed.push(prop);
-          ok = true;
+          if (!ok) miss.push(`${sc.note}: ${name}`);
         }
-        if (!ok) miss.push(`${sc.note}: ${name}`);
       }
     }
   }
