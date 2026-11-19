@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { METHOD_SKILLS, SKILLS } from '@dtl/content';
-import { canCancel, hitDirOf, hitsPassed, locoDirOf, lungeOffset, skillPhaseAt, skillTiming } from '@dtl/shared';
+import { canCancel, hitDirOf, hitsPassed, locoAngleOf, locoDirOf, lungeOffset, skillPhaseAt, skillTiming } from '@dtl/shared';
 import type { SkillDef } from '@dtl/shared';
 
 const sk = (id: string) => [...SKILLS, ...METHOD_SKILLS].find((s) => s.id === id) as SkillDef;
@@ -59,6 +59,14 @@ describe('hướng', () => {
     expect(locoDirOf(0, -1, 0)).toBe('right');
     expect(locoDirOf(Math.PI / 2, 1, 0)).toBe('forward');
     expect(locoDirOf(Math.PI / 2, 0, -1)).toBe('left');
+  });
+  it('locoAngleOf liên tục, cùng quy ước locoDirOf', () => {
+    expect(locoAngleOf(0, 0, 1)).toBeCloseTo(0);
+    expect(locoAngleOf(0, 1, 0)).toBeCloseTo(Math.PI / 2);
+    expect(locoAngleOf(0, -1, 0)).toBeCloseTo(-Math.PI / 2);
+    expect(Math.abs(locoAngleOf(0, 0, -1))).toBeCloseTo(Math.PI);
+    expect(locoAngleOf(Math.PI / 2, 0, -1)).toBeCloseTo(Math.PI / 2);
+    expect(locoAngleOf(0, 0, 0)).toBe(0);
   });
   it('hitDirOf: kẻ địch ở trước thì đòn đẩy về sau → front', () => {
     expect(hitDirOf(0, 0, -1)).toBe('front');
