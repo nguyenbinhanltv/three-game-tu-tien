@@ -33,7 +33,10 @@ const slug = (c) =>
 let tokCss = fs.readFileSync(TOK, 'utf8');
 const byKey = new Map(); // khoá màu -> tên token
 const root = postcss.parse(tokCss);
+// Token mang nghĩa riêng (vòng focus bàn phím…) không được dùng lại chỉ vì trùng giá trị: đổi token đó sẽ âm thầm đổi chỗ dùng khác.
+const NO_REUSE = new Set(['--u-focus']);
 root.walkDecls(/^--u-/, (d) => {
+  if (NO_REUSE.has(d.prop)) return;
   if (!/^(#[0-9a-f]+|rgba?\([^()]*\))$/i.test(d.value.trim())) return;
   const k = norm(d.value);
   if (k && !byKey.has(k)) byKey.set(k, d.prop);

@@ -312,7 +312,7 @@
   font-size: calc(22px * var(--s));
 }
 .dmg-layer .dmg.heal {
-  color: var(--u-focus);
+  color: var(--u-h-jade-hi);
   font-size: calc(18px * var(--s));
 }
 .dmg-layer .dmg.other {

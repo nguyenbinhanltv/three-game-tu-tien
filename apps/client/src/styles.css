@@ -117,7 +117,7 @@ body {
   --c: var(--u-x-h5cb8ff);
 }
 .offs[data-k='gather'] {
-  --c: var(--u-focus);
+  --c: var(--u-h-jade-hi);
 }
 /* Đồ rơi quý (M4-6) đang nằm ngoài khung nhìn: kim quang như cột sáng. */
 .offs[data-k='loot'] {
@@ -153,7 +153,7 @@ body {
   will-change: transform, opacity;
 }
 .loot-fly.t1 {
-  --c: var(--u-focus);
+  --c: var(--u-h-jade-hi);
 }
 .loot-fly.t2 {
   --c: var(--u-p-gold);
