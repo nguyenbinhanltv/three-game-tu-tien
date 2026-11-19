@@ -158,3 +158,13 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Ngân sách (preset Cao)**: 129–141 draw call, ~0,23M tam giác (cũ: 91 / 0,74M; giảm do tắt cây/cỏ).
 - **Công cụ**: `pnpm shots dungeonart --level do_kiep --trib hoa_than --battle 1 --at 8,24,44` vào bằng `/gm trib`, tự vào lại khi kiếp kết thúc giữa chừng, chụp ba mốc kiếp.
 - **Còn lại**: phiến đài còn phẳng (chưa normal map hoa văn), tảng đá nung còn tròn như trứng, nền xa vẫn là sườn núi Vân Lam; chưa va chạm (đợi COL-1). Console có 1 lỗi `Object3D.add ... undefined` có sẵn trong màn kiếp (vẫn xảy ra khi tắt `doKiepArt`), không thuộc PR này.
+
+### PR 7 vòng 2 (góp ý duyệt): đỉnh núi giữa biển mây giông, chớp sét, trụ thu lôi
+
+- **Bối cảnh**: biển mây tím-xám phủ ngoài r 78 (che sườn dốc, chỉ đỉnh núi xa nhô lên) + 16 cột đá nhọn xa cao tới ~90 m mọc từ biển mây (`spire`, karst); **xoáy mây giông đen tím** hai lớp đĩa quay ngược chiều trên đài (mắt bão ở giữa bừng theo chớp). Mood `dk` tối hơn: tương phản 1,35, bão hòa 0,68, nền đen tím, điểm ấm duy nhất là đỉnh đồng.
+- **Chớp sét theo nhịp** (2,2–5,5 s, hai lần loé cách 0,2 s): một uniform `flashU` dùng chung cho xoáy mây, biển mây, vật liệu `_rune`/`_volt`/đá vụn, cộng một đèn điểm tím-trắng trên đài (cường độ HDR cho bloom bắt). Mưa (420 vệt), hạt điện dọc lôi trụ, hồ quang giữa các đầu thu lôi kề nhau.
+- **Đá**: tảng tròn trắng thay bằng **đá vỡ cháy xám** (5–8 phiến góc cạnh nghiêng chồng, mặt trên cháy đen, khe nứt điện tím-trắng chạy dọc phiến, đá vụn quanh chân); **28 mảnh đá vụn bay lơ lửng** quanh đài (xoay chậm, nhích lên xuống, vết nứt điện phát sáng mạnh lên theo chớp).
+- **Lôi trụ**: thân đá sẫm khắc phù văn điện (vạch ngang + nét sổ ở tám mặt, hai vòng đai phát điện), đầu thu lôi sắt đen + cầu điện tím-trắng, **dây xích 34 mắt** từ thân trụ võng về mép đài (bỏ xích ở trụ dời khỏi lối vào).
+- **Đài**: tối và cháy xém hơn (16 mảng muội đen, khe nứt điện gấp khúc), vết sét cháy có khe điện; vòng vàng giữ nhưng mờ hơn.
+- **Vòng trận đỏ/xanh chỉ báo** (hazard của kiếp, VFX game dùng chung mọi bí cảnh) **chưa hạ độ đậm**: đổi sẽ ảnh hưởng độ đọc ở mọi level; cần quyết định riêng.
+- **Ngân sách (Cao)**: 148–158 draw call, ~0,27–0,29M tam giác, khung ~9–11 ms trên máy chụp.

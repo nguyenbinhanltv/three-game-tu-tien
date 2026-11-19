@@ -108,7 +108,7 @@ const TOP: Record<string, number> = {
   kn: 0x18233f,
   tt: 0x120c26,
   xk: 0x3a2018,
-  dk: 0x1a2236,
+  dk: 0x0c0a1c,
   kd: 0x1c120a,
   lk_dawn: 0x6fb0d0,
   lk_day: 0x3f8fd0,

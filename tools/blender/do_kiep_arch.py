@@ -23,6 +23,7 @@ from thien_khuyet_arch import fbm3  # noqa: E402
 
 bs.MATERIALS['rune'] = Mat(0.6, 0.0, None, 1.0, False, 0.0, (0xFFC860, 0.75))
 bs.MATERIALS['bronze'] = Mat(0.45, 0.8, None, 1.0, False, 0.0)
+bs.MATERIALS['volt'] = Mat(0.5, 0.0, None, 1.0, False, 0.0, (0xB89CFF, 0.9))
 bs.MATERIALS['char'] = Mat(0.95, 0.0, None, 1.0, False, 0.0)
 
 SEED = 20261120
@@ -33,13 +34,18 @@ def gold(t=0.6):
     return Paint(mix(C(0xD08A20), C(0xFFE9B0), max(0.0, min(1.0, t))), 'rune')
 
 
+def volt(t=0.6):
+    """Vết nứt/phù văn phát điện tím-trắng: t 0 tím thẫm → 1 trắng. Màu đỉnh làm phát sáng (client thay vật liệu `volt`)."""
+    return Paint(mix(C(0x7A4CFF), C(0xF2EAFF), max(0.0, min(1.0, t))), 'volt')
+
+
 def granite(seed, lift=0.0):
     """Hoa cương xám lạnh có đốm, chân ngả tối; không phải bê tông phẳng."""
 
     def fn(pos, nrm):
         n = fbm3(pos[0] * 0.45, pos[1] * 0.45, pos[2] * 0.45, seed, 3)
         sp = fbm3(pos[0] * 2.2, pos[1] * 2.2, pos[2] * 2.2, seed + 5, 2)
-        rgb = mix(C(0x6E7480), C(0xC4C8D0), 0.2 + 0.5 * n + 0.18 * sp + lift)
+        rgb = mix(C(0x363A46), C(0x8A909C), 0.2 + 0.5 * n + 0.18 * sp + lift)
         low = max(0.0, 1.0 - max(pos[1], 0.0) / 2.0)
         rgb = mix(rgb, C(0x242830), low * 0.35)
         return Paint(tuple(rgb), 'jade')
@@ -51,8 +57,9 @@ def gp(seed, lift=0.0):
     return granite(seed, lift)((0, 0, 0), (0, 1, 0))
 
 
-BRONZE = Paint(C(0x6B4A24), 'bronze')
-BRONZE_LT = Paint(C(0xA8793A), 'bronze')
+BRONZE = Paint(C(0x3E3A3A), 'bronze')
+BRONZE_LT = Paint(C(0x6E6866), 'bronze')
+IRON = Paint(C(0x23252C), 'bronze')
 SOOT = Paint(C(0x16151A), 'char')
 
 
@@ -99,6 +106,20 @@ def paving(b, seed):
                 am = a + (s0 + s1) / 2
                 ln = (s1 - s0) * R_
                 tbox(b, (math.cos(am) * R_, 0.4, math.sin(am) * R_), (0.42, 0.05, ln), gold(0.3), yaw=-am + math.pi / 2)
+    # vết cháy xém và nứt điện trên mặt đài: mảng đen mỏng + khe tím-trắng gấp khúc
+    for i in range(16):
+        a = rnd.uniform(0, math.tau)
+        d = rnd.uniform(3.0, 19.0)
+        cx, cz = math.cos(a) * d, math.sin(a) * d
+        tbox(b, (cx, 0.43, cz), (rnd.uniform(1.6, 3.6), 0.03, rnd.uniform(1.4, 3.0)), SOOT, yaw=rnd.uniform(0, 6.28))
+        yaw = rnd.uniform(0, 6.28)
+        px, pz = cx, cz
+        for k in range(rnd.randint(3, 6)):
+            yaw += rnd.uniform(-0.9, 0.9)
+            ln = rnd.uniform(0.6, 1.6)
+            nx, nz = px + math.cos(yaw) * ln, pz + math.sin(yaw) * ln
+            tbox(b, ((px + nx) / 2, 0.45, (pz + nz) / 2), (ln, 0.03, 0.07), volt(rnd.uniform(0.35, 0.9)), yaw=-yaw)
+            px, pz = nx, nz
     # nền ngoài vòng 20: tấm đá rời rạc thưa dần ra r 26, nứt vỡ
     for i in range(46):
         a = rnd.uniform(0, math.tau)
@@ -143,12 +164,23 @@ def pillar(b, seed, broken=False):
             ang = ph + (j + 0.5) / 8 * math.tau
             r0 = 1.05 * (1.0 - 0.28 * t[0]) * 1.02
             tbox(b, (math.cos(ang) * r0, yy, math.sin(ang) * r0), (0.5, 0.5, 0.12), gp(seed + 40 + j, 0.12), yaw=-ang + math.pi / 2)
-        # vòng khảm vàng
+        # vòng phù văn điện
         for j in range(16):
             a0, a1 = j / 16 * math.tau, (j + 1) / 16 * math.tau
             rr = 1.05 * (1.0 - 0.28 * t[0]) + 0.04
             quad = [(math.cos(a0) * rr, yy - 0.5, math.sin(a0) * rr), (math.cos(a1) * rr, yy - 0.5, math.sin(a1) * rr), (math.cos(a1) * rr, yy - 0.38, math.sin(a1) * rr), (math.cos(a0) * rr, yy - 0.38, math.sin(a0) * rr)]
-            b.poly(quad, (0, yy, 0), gold(0.2))
+            b.poly(quad, (0, yy, 0), volt(0.3))
+    # phù văn khắc dọc tám mặt thân: cột ba bốn vạch ngắn xen nét sổ, phát sáng điện
+    for j in range(8):
+        ang = ph + (j + 0.5) / 8 * math.tau
+        for q_ in range(5):
+            yy = 2.2 + q_ * (H - 3.4) / 5.0
+            if broken and yy > H - 0.6:
+                continue
+            rr = 1.05 * (1.0 - 0.28 * (yy - 1.5) / (H - 1.5)) + 0.03
+            wd = 0.34 if q_ % 2 == 0 else 0.18
+            tbox(b, (math.cos(ang) * rr, yy, math.sin(ang) * rr), (wd, 0.07, 0.05), volt(0.25 + 0.5 * rnd.random()), yaw=-ang + math.pi / 2)
+            tbox(b, (math.cos(ang) * rr, yy + 0.16, math.sin(ang) * rr), (0.05, 0.3, 0.05), volt(0.3), yaw=-ang + math.pi / 2)
     if broken:
         # mảnh gãy nằm cạnh + mặt cháy
         tbox(b, (2.4, 0.6, 1.0), (1.5, 1.3, 1.5), gp(seed + 77), rz=0.7, yaw=0.5)
@@ -156,12 +188,12 @@ def pillar(b, seed, broken=False):
         blob(b, (0, H + 0.05, 0), (0.9, 0.12, 0.9), lambda p, n: SOOT, nu=10, nv=3, v0=0.0, v1=0.5)
         return
     # đỉnh thu lôi đồng
-    tbox(b, (0, H + 0.2, 0), (1.0, 0.4, 1.0), BRONZE, yaw=0.39)
-    rod(b, (0, H + 0.3, 0), (0, H + 3.3, 0), 0.28, 0.04, lambda p, n: BRONZE_LT, nu=8, nv=5, amp=0.0)
+    tbox(b, (0, H + 0.2, 0), (1.0, 0.4, 1.0), IRON, yaw=0.39)
+    rod(b, (0, H + 0.3, 0), (0, H + 3.3, 0), 0.28, 0.04, lambda p, n: IRON, nu=8, nv=5, amp=0.0)
     for k in range(3):  # ba nhánh cong
         a = k / 3 * math.tau
-        rod(b, (0, H + 0.9, 0), (math.cos(a) * 0.9, H + 2.0, math.sin(a) * 0.9), 0.07, 0.03, lambda p, n: BRONZE_LT, nu=6, nv=2, amp=0.0)
-    blob(b, (0, H + 3.45, 0), (0.22, 0.22, 0.22), lambda p, n: gold(0.95), nu=8, nv=6)
+        rod(b, (0, H + 0.9, 0), (math.cos(a) * 0.9, H + 2.0, math.sin(a) * 0.9), 0.07, 0.03, lambda p, n: IRON, nu=6, nv=2, amp=0.0)
+    blob(b, (0, H + 3.45, 0), (0.26, 0.26, 0.26), lambda p, n: volt(0.95), nu=8, nv=6)
 
 
 def cauldron(b, seed):
@@ -195,25 +227,56 @@ def scorch(b, seed):
         ln = rnd.uniform(2.0, 6.5)
         wd = rnd.uniform(0.2, 0.55)
         tbox(b, (math.cos(a) * (R0 + ln / 2 - 0.4), 0.045, math.sin(a) * (R0 + ln / 2 - 0.4)), (ln, 0.06, wd), SOOT, yaw=-a)
-        tbox(b, (math.cos(a) * (R0 + ln * 0.35), 0.075, math.sin(a) * (R0 + ln * 0.35)), (ln * 0.5, 0.03, wd * 0.25), Paint(C(0x3A3A44), 'char'), yaw=-a)
+        tbox(b, (math.cos(a) * (R0 + ln * 0.35), 0.075, math.sin(a) * (R0 + ln * 0.35)), (ln * 0.55, 0.03, wd * 0.22), volt(rnd.uniform(0.4, 0.9)), yaw=-a)
     for k in range(3):
         a = rnd.uniform(0, math.tau)
         d = rnd.uniform(0, 0.7)
-        rod(b, (math.cos(a) * d, 0.0, math.sin(a) * d), (math.cos(a) * d * 1.2 + rnd.uniform(-0.3, 0.3), rnd.uniform(0.5, 1.0), math.sin(a) * d * 1.2 + rnd.uniform(-0.3, 0.3)), 0.08, 0.02, lambda p, n: gold(0.9), nu=5, nv=2, amp=0.0)
+        rod(b, (math.cos(a) * d, 0.0, math.sin(a) * d), (math.cos(a) * d * 1.2 + rnd.uniform(-0.3, 0.3), rnd.uniform(0.5, 1.0), math.sin(a) * d * 1.2 + rnd.uniform(-0.3, 0.3)), 0.08, 0.02, lambda p, n: volt(0.9), nu=5, nv=2, amp=0.0)
 
 
 def crag(b, seed):
-    """Tảng đá nung nứt sát ven đài: khối hoa cương cao 1,5–3 m, mặt cháy nám phía trên, vài vân vàng chảy trong khe."""
+    """Đá vỡ cháy xém bị sét đánh: 5–8 phiến/khối góc cạnh nghiêng chồng nhau cao 1–4 m, mặt trên cháy đen, vết nứt điện tím-trắng chạy dọc phiến, đá vụn góc cạnh quanh chân."""
     rnd = random.Random(seed)
-    for k in range(rnd.randint(2, 4)):
+    for k in range(rnd.randint(5, 8)):
         a = rnd.uniform(0, math.tau)
-        d = rnd.uniform(0, 2.0)
-        sx, sy, sz = rnd.uniform(1.4, 2.6), rnd.uniform(1.2, 3.0), rnd.uniform(1.2, 2.4)
-        blob(b, (math.cos(a) * d, sy * 0.4, math.sin(a) * d), (sx, sy, sz), lambda p, n, s=seed + k: (SOOT if n[1] > 0.7 and fbm3(p[0], p[1], p[2], 9, 2) > 0.5 else granite(s, -0.3)(p, n)), nu=10, nv=7, e=1.7, amp=0.28, seed=seed + k, v0=0.0, v1=0.8)
-    for k in range(3):
+        d = rnd.uniform(0, 2.4)
+        h = rnd.uniform(1.0, 4.0)
+        w = rnd.uniform(0.7, 1.6)
+        t = rnd.uniform(0.5, 1.3)
+        cx, cz = math.cos(a) * d, math.sin(a) * d
+        rx, rz, yaw = rnd.uniform(-0.45, 0.45), rnd.uniform(-0.45, 0.45), rnd.uniform(0, 3.1)
+        tbox(b, (cx, h * 0.45, cz), (w, h, t), granite(seed + k, -0.1)((cx, h * 0.5, cz), (1, 0, 0)), rx=rx, rz=rz, yaw=yaw)
+        tbox(b, (cx, h * 0.95, cz), (w * 0.9, 0.12, t * 0.9), SOOT, rx=rx, rz=rz, yaw=yaw)  # mặt cháy đen
+        if rnd.random() < 0.8:  # khe điện chạy dọc phiến
+            tbox(b, (cx + math.cos(yaw) * w * 0.52, h * 0.5, cz - math.sin(yaw) * w * 0.52), (0.06, h * 0.8, 0.05), volt(rnd.uniform(0.4, 0.9)), rx=rx, rz=rz + rnd.uniform(-0.3, 0.3), yaw=yaw)
+    for k in range(7):
         a = rnd.uniform(0, math.tau)
-        d = rnd.uniform(1.0, 3.0)
-        tbox(b, (math.cos(a) * d, 0.09, math.sin(a) * d), (rnd.uniform(1.0, 2.0), 0.05, 0.1), gold(0.35), yaw=rnd.uniform(0, 3.1))
+        d = rnd.uniform(1.8, 3.6)
+        tbox(b, (math.cos(a) * d, 0.18, math.sin(a) * d), (rnd.uniform(0.3, 0.8), rnd.uniform(0.25, 0.5), rnd.uniform(0.3, 0.7)), granite(seed + 50 + k, -0.2)((0, 0.2, 0), (0, 1, 0)), rx=rnd.uniform(-0.6, 0.6), rz=rnd.uniform(-0.6, 0.6), yaw=a)
+
+
+def chain(b, seed):
+    """Dây xích từ trụ về đài, dọc trục -x dài 15 m: từ (0, 4.6) võng xuống (−15, 0.5); mắt xích nhỏ xen kẽ ngang/dọc; hai đầu có vòng neo."""
+    N = 34
+    L = 15.0
+    top, bot = 4.6, 0.55
+    for i in range(N):
+        q = i / (N - 1)
+        x = -q * L
+        y = top + (bot - top) * q - 2.2 * math.sin(math.pi * q) * 0.0 - 1.1 * math.sin(math.pi * q)
+        y = max(y, 0.35)
+        tbox(b, (x, y, 0.0), (0.34, 0.12, 0.12), IRON, rz=0.0, rx=(0.0 if i % 2 == 0 else math.pi / 2))
+    tbox(b, (-0.5, top, 0.0), (0.5, 0.5, 0.5), IRON, yaw=0.0)
+    tbox(b, (-L, bot, 0.0), (0.6, 0.35, 0.6), IRON)
+    for k in range(4):  # mắt xích có điện chạy qua
+        q = (k + 0.5) / 4
+        x = -q * L
+        y = max(top + (bot - top) * q - 1.1 * math.sin(math.pi * q), 0.35)
+        tbox(b, (x, y + 0.01, 0.0), (0.2, 0.05, 0.05), volt(0.8))
+
+
+def spire(b, seed):
+    kta.karst(b, 55.0, 9.0, 0.55, seed)
 
 
 def stump(b, seed):
@@ -254,6 +317,13 @@ def build_variants():
         b = new_b(1450 + i)
         crag(b, 1450 + i * 9)
         v[f'crag{i}'] = b
+    b = new_b(1470)
+    chain(b, 1470)
+    v['chain'] = b
+    for i in range(3):
+        b = new_b(1480 + i)
+        spire(b, 1480 + i * 13)
+        v[f'spire{i}'] = b
     for i in range(3):
         b = new_b(1460 + i)
         stump(b, 1460 + i * 4)
@@ -284,11 +354,16 @@ def run(out):
     for k in range(8):
         a = k / 8 * math.tau + 0.2
         x, z = math.cos(a) * 36, math.sin(a) * 36
-        if not free(x, z, 3):
+        moved = not free(x, z, 3)
+        if moved:
             x = math.copysign(12.0, x)
             z = 40.0
         broken = k in (2, 5)
         put('pillar', ('bpillar%d' % rnd.randrange(2)) if broken else ('pillar%d' % rnd.randrange(2)), x, z, yaw=rnd.uniform(0, 6.28))
+        ang = math.atan2(z, x)
+        dist = math.hypot(x, z)
+        if not moved:
+            put('chain', 'chain', x, z, yaw=ang - math.pi, scale=(dist - 21.0) / 15.0)
     # bốn đỉnh đồng ở r 28 trên hai đường chéo
     for (x, z) in ((-20, -20), (20, -20), (-20, 20), (20, 20)):
         put('cauldron', 'cauldron', x * 1.02, z * 1.02, yaw=rnd.uniform(0, 6.28), scale=1.05)
@@ -321,6 +396,11 @@ def run(out):
             continue
         put('stump', f'stump{rnd.randrange(3)}', x, z, yaw=rnd.uniform(0, 6.28), scale=rnd.uniform(0.9, 1.3))
         got += 1
+    # cột đá nhọn xa mọc từ biển mây, r 118–175
+    for k in range(16):
+        a = k / 16 * math.tau + rnd.uniform(-0.15, 0.15)
+        d = rnd.uniform(118, 178)
+        put('spire', f'spire{rnd.randrange(3)}', math.cos(a) * d, math.sin(a) * d, yaw=rnd.uniform(0, 6.28), scale=rnd.uniform(0.8, 1.6))
     ts.export_glb(out)
     size, prims, tris, doc = bs.inspect(out)
     print(f'[do_kiep] {out}: {size / 1024:.0f} KB, {n_obj} vật, {tris} tam giác, {len(prims)} primitive ({", ".join(keys)})')

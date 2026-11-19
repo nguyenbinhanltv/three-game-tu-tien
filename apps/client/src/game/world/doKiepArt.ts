@@ -1,5 +1,21 @@
 import * as THREE from 'three/webgpu';
-import { float, mix, normalWorld, positionWorld, smoothstep, sin, texture, time, vec3, vertexColor } from 'three/tsl';
+import {
+  atan,
+  float,
+  length,
+  mix,
+  normalWorld,
+  positionLocal,
+  positionWorld,
+  sin,
+  smoothstep,
+  texture,
+  time,
+  uniform,
+  vec2,
+  vec3,
+  vertexColor,
+} from 'three/tsl';
 import { LEVELS } from '@dtl/content';
 import { hash01 } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
@@ -8,10 +24,10 @@ import { getCloudNoise } from '../../render/noiseTex';
 import { DungeonFx } from './dungeonFx';
 
 /**
- * Cảnh Độ Kiếp (DUN-1 PR7; chỉ để nhìn, không đổi kịch bản kiếp/vòng trận môn/điểm đứng): Thiên Lôi Đài trên đỉnh núi dưới mây bão.
- * GLB Blender `arch_do_kiep` (đài lát đá khảm bát quái sát mặt sân, tám lôi trụ đỉnh thu lôi đồng, bốn đỉnh đồng than hồng, vết sét cháy, tảng đá nung, tùng cháy)
- * nạp ở `engine/levelLoad.ts` `loadDkModel`. File này dựng phần động: vật liệu đá/khảm vàng, sương thấp, vòng cổng ra, quầng đỉnh đồng, hạt điện bốc quanh lôi trụ,
- * và nhịp "chớp" chậm làm khảm vàng sáng bừng như bị trời lay.
+ * Cảnh Độ Kiếp (DUN-1 PR7; chỉ để nhìn, không đổi kịch bản kiếp/vòng trận môn/điểm đứng): Thiên Lôi Đài trên đỉnh núi, giữa biển mây giông.
+ * GLB Blender `arch_do_kiep` (đài lát đá cháy xém khảm bát quái và nứt điện, tám lôi trụ khắc phù văn + xích nối về đài, bốn đỉnh đồng, đá vỡ cháy bị sét, cột đá nhọn xa)
+ * nạp ở `engine/levelLoad.ts` `loadDkModel`. File này dựng phần động: chớp sét theo nhịp (uniform dùng chung cho vật liệu + một đèn điểm), xoáy mây giông đen tím ngay trên đài,
+ * biển mây phủ ngoài vành đài, mưa, hồ quang giữa các đầu trụ, đá vụn bay lơ lửng quanh đài, sương thấp, vòng cổng ra, quầng đỉnh đồng.
  */
 
 const SEED = 20261120;
@@ -26,6 +42,23 @@ const CAULDRONS: readonly [number, number][] = [
   [20.4, 20.4],
 ];
 
+/** Tám lôi trụ (khớp vòng lặp trụ ở Blender: r 36 từ góc 0,2 rad; trụ chắn lối vào dời sang (±12, 40)); `broken` = trụ gãy, không có đầu thu lôi. */
+const PILLARS: readonly { x: number; z: number; broken: boolean }[] = Array.from({ length: 8 }, (_, k) => {
+  const a = (k / 8) * Math.PI * 2 + 0.2;
+  let x = Math.cos(a) * 36;
+  let z = Math.sin(a) * 36;
+  if (Math.abs(x) < 11 && z > 24) {
+    x = Math.sign(x) * 12;
+    z = 40;
+  }
+  return { x, z, broken: k === 2 || k === 5 };
+});
+/** Cao đầu thu lôi (m trên mặt sân): 9,2 + 3,45. */
+const TIP_Y = 12.65;
+
+/** Chớp sét dùng chung: 0..~1,4 (vật liệu `_rune`/`_volt`/xoáy mây/biển mây đọc cùng giá trị). */
+const flashU = uniform(0);
+
 /** Vùng cấm đặt hiệu ứng ngẫu nhiên: quanh đài và lối vào phía nam. */
 export function dkKeepOut(x: number, z: number, minR: number): boolean {
   const dx = x - CENTER.x;
@@ -35,22 +68,25 @@ export function dkKeepOut(x: number, z: number, minR: number): boolean {
 
 /**
  * Vật liệu thay cho glTF của GLB `arch_do_kiep`:
- *  - `_rune` (khảm vàng bát quái, than hồng trong đỉnh, cầu điện): phát sáng theo màu đỉnh, nhấp nhô chậm rồi "chớp" mạnh ngắn theo chu kỳ ~9 s;
- *  - `_jade` (hoa cương): thớ đá nhiễu theo toạ độ thế giới, mặt hướng lên đậm lạnh hơn (mưa ẩm), chân tối.
+ *  - `_rune` (khảm vàng bát quái, than hồng trong đỉnh): phát sáng nhấp nhô chậm, bừng theo chớp;
+ *  - `_volt` (vết nứt/phù văn điện tím-trắng): sáng yếu, bừng mạnh theo chớp (HDR để bloom bắt);
+ *  - `_jade` (đá cháy xém): thớ nhiễu theo toạ độ thế giới, mặt ngửa phủ muội đen.
  */
 export function dkMaterialFor(name: string): THREE.Material | null {
   if (name.endsWith('_rune')) {
     const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.55, metalness: 0.2, name });
-    const wp = positionWorld;
-    const n = texture(getCloudNoise(), wp.xz.mul(0.05).add(time.mul(0.02))).g;
-    const slow = float(0.75).add(sin(time.mul(0.9).add(n.mul(6))).mul(0.18));
-    // chớp: cạnh sắc, rơi nhanh (chu kỳ 9 s)
-    const ph = time.mul(0.111).fract();
-    const flash = smoothstep(0.0, 0.03, ph)
-      .mul(smoothstep(0.16, 0.03, ph))
-      .mul(1.4);
+    const n = texture(getCloudNoise(), positionWorld.xz.mul(0.05).add(time.mul(0.02))).g;
+    const slow = float(0.5).add(sin(time.mul(0.9).add(n.mul(6))).mul(0.12));
     m.colorNode = vec3(0.04, 0.035, 0.03);
-    m.emissiveNode = vertexColor().mul(slow.add(flash).mul(0.55));
+    m.emissiveNode = vertexColor().mul(slow.add(flashU.mul(0.9)));
+    return m;
+  }
+  if (name.endsWith('_volt')) {
+    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.4, metalness: 0, name });
+    const n = texture(getCloudNoise(), positionWorld.xz.mul(0.4).add(time.mul(0.15))).g;
+    const crawl = float(0.55).add(sin(time.mul(3.0).add(n.mul(10))).mul(0.3));
+    m.colorNode = vec3(0.05, 0.04, 0.08);
+    m.emissiveNode = vertexColor().mul(crawl.add(flashU.mul(3.5)));
     return m;
   }
   if (name.endsWith('_jade')) {
@@ -58,16 +94,23 @@ export function dkMaterialFor(name: string): THREE.Material | null {
     const wp = positionWorld;
     const fine = texture(nz, wp.xz.mul(1.7).add(wp.y.mul(1.1))).g;
     const speck = texture(nz, wp.xy.mul(6.0).add(wp.z.mul(2.6))).b;
-    const up = smoothstep(0.55, 0.95, normalWorld.y);
-    const base = vertexColor().mul(float(0.72).add(fine.mul(0.36)).add(speck.mul(0.14)));
-    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.78, metalness: 0.02, name });
-    m.colorNode = mix(base, base.mul(vec3(0.84, 0.9, 1.05)), up.mul(0.6));
+    const soot = smoothstep(0.55, 0.95, normalWorld.y).mul(smoothstep(0.35, 0.7, texture(nz, wp.xz.mul(0.3)).a));
+    const base = vertexColor().mul(float(0.7).add(fine.mul(0.38)).add(speck.mul(0.16)));
+    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.8, metalness: 0.02, name });
+    m.colorNode = mix(base, base.mul(0.35), soot.mul(0.7));
     return m;
   }
   return null;
 }
 
-const MOTE_N = 140;
+const MOTE_N = 120;
+const RAIN_N = 420;
+const DEBRIS_N = 28;
+const ARCS = (() => {
+  const tips = PILLARS.filter((p) => !p.broken);
+  return tips.map((p, i) => [p, tips[(i + 1) % tips.length]!] as const);
+})();
+const ARC_SEG = 10;
 
 export class DoKiepArt {
   readonly group = new THREE.Group();
@@ -76,32 +119,53 @@ export class DoKiepArt {
   private motes: THREE.Points | null = null;
   private readonly seeds: number[] = [];
   private t = 0;
+  private readonly y0: number;
+  private readonly light: THREE.PointLight;
+  private nextStrike = 1.5;
+  private strikeAt = -10;
+  private rain: THREE.LineSegments;
+  private readonly rainSeed: number[] = [];
+  private arcs: THREE.LineSegments;
+  private arcClock = 0;
+  private debris: THREE.InstancedMesh;
+  private readonly debrisSeed: number[] = [];
+  private readonly tmp = new THREE.Object3D();
 
   constructor() {
     this.group.name = 'do-kiep-art';
+    this.y0 = heightAt(CENTER.x, CENTER.z);
     this.fx = new DungeonFx({
       cx: CENTER.x,
       cz: CENTER.z,
       exit: DG.exit,
       seed: SEED,
       keepOut: dkKeepOut,
-      mist: { a: [0.12, 0.14, 0.2], b: [0.34, 0.4, 0.55], innerR: 30, outerR: 90, opacity: 0.22 },
-      ring: { rgb: '188,212,255', mote: 0xbcd4ff },
+      mist: { a: [0.07, 0.07, 0.11], b: [0.22, 0.2, 0.32], innerR: 30, outerR: 90, opacity: 0.2 },
+      ring: { rgb: '188,170,255', mote: 0xbcaaff },
     });
     this.group.add(this.fx.group);
     const pts = CAULDRONS.map(([dx, dz]) => ({ x: CENTER.x + dx, y: heightAt(CENTER.x + dx, CENTER.z + dz) + 3.6, z: CENTER.z + dz }));
-    const halos = createLanternHalos(pts, 9, 0xff8a3a);
+    const halos = createLanternHalos(pts, 9, 0xff7a30);
     this.group.add(halos);
     this.disposables.push(halos.geometry, halos.material as THREE.Material);
+
+    // đèn chớp: một đèn điểm tím-trắng treo trên đài, cường độ theo `flashU`
+    this.light = new THREE.PointLight(0xc4b0ff, 0, 220, 1.2);
+    this.light.position.set(CENTER.x, this.y0 + 32, CENTER.z);
+    this.group.add(this.light);
+
+    this.buildVortex();
+    this.buildCloudSea();
+
     for (let i = 0; i < MOTE_N; i++) this.seeds.push(hash01(i, 1, 9901), hash01(i, 2, 9901), hash01(i, 3, 9901), hash01(i, 4, 9901));
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(MOTE_N * 3), 3));
-    g.boundingSphere = new THREE.Sphere(new THREE.Vector3(CENTER.x, heightAt(CENTER.x, CENTER.z) + 10, CENTER.z), 90);
+    g.boundingSphere = new THREE.Sphere(new THREE.Vector3(CENTER.x, this.y0 + 10, CENTER.z), 90);
     const m = new THREE.PointsMaterial({
-      color: 0xbcd8ff,
-      size: 0.3,
+      color: 0xcdbfff,
+      size: 0.34,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.85,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
     });
@@ -110,35 +174,216 @@ export class DoKiepArt {
     this.motes.frustumCulled = false;
     this.group.add(this.motes);
     this.disposables.push(g, m);
-    this.updateMotes();
+
+    // mưa: các vệt dài 1,6 m rơi nghiêng trong trụ r 62 quanh đài
+    const rg = new THREE.BufferGeometry();
+    rg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(RAIN_N * 6), 3));
+    rg.boundingSphere = new THREE.Sphere(new THREE.Vector3(CENTER.x, this.y0 + 20, CENTER.z), 90);
+    for (let i = 0; i < RAIN_N; i++) this.rainSeed.push(hash01(i, 1, 5501), hash01(i, 2, 5501), hash01(i, 3, 5501));
+    const rm = new THREE.LineBasicMaterial({
+      color: 0xaab4e8,
+      transparent: true,
+      opacity: 0.28,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    this.rain = new THREE.LineSegments(rg, rm);
+    this.rain.frustumCulled = false;
+    this.rain.name = 'dk-rain';
+    this.group.add(this.rain);
+    this.disposables.push(rg, rm);
+
+    // hồ quang giữa các đầu thu lôi kề nhau
+    const ag = new THREE.BufferGeometry();
+    ag.setAttribute('position', new THREE.BufferAttribute(new Float32Array(ARCS.length * ARC_SEG * 6), 3));
+    ag.boundingSphere = new THREE.Sphere(new THREE.Vector3(CENTER.x, this.y0 + 12, CENTER.z), 60);
+    const am = new THREE.LineBasicMaterial({
+      color: 0xd8ccff,
+      transparent: true,
+      opacity: 1,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    this.arcs = new THREE.LineSegments(ag, am);
+    this.arcs.frustumCulled = false;
+    this.arcs.name = 'dk-arcs';
+    this.group.add(this.arcs);
+    this.disposables.push(ag, am);
+
+    // đá vụn bay lơ lửng quanh đài, xoay chậm và nhích lên xuống
+    const dgeo = new THREE.IcosahedronGeometry(1, 0);
+    const dmat = new THREE.MeshStandardNodeMaterial({ roughness: 0.85, metalness: 0 });
+    const dn = texture(getCloudNoise(), positionWorld.xz.mul(0.9).add(positionWorld.y.mul(0.6))).g;
+    dmat.colorNode = vec3(0.1, 0.1, 0.13).mul(float(0.7).add(dn.mul(0.6)));
+    const crack = smoothstep(0.58, 0.62, dn).mul(smoothstep(0.66, 0.62, dn));
+    dmat.emissiveNode = vec3(0.62, 0.45, 1.0).mul(crack.mul(float(0.6).add(flashU.mul(1.6))));
+    this.debris = new THREE.InstancedMesh(dgeo, dmat, DEBRIS_N);
+    this.debris.name = 'dk-debris';
+    this.debris.frustumCulled = false;
+    for (let i = 0; i < DEBRIS_N; i++) this.debrisSeed.push(hash01(i, 1, 3301), hash01(i, 2, 3301), hash01(i, 3, 3301), hash01(i, 4, 3301));
+    this.group.add(this.debris);
+    this.disposables.push(dgeo, dmat);
+
+    this.updateAll(0);
   }
 
-  /** Hạt điện lơ lửng bốc dọc tám lôi trụ (r 36) rồi tan; cập nhật trên CPU. */
-  private updateMotes(): void {
-    if (!this.motes) return;
-    const a = this.motes.geometry.attributes.position as THREE.BufferAttribute;
-    for (let i = 0; i < MOTE_N; i++) {
-      const s0 = this.seeds[i * 4]!;
-      const s1 = this.seeds[i * 4 + 1]!;
-      const s2 = this.seeds[i * 4 + 2]!;
-      const s3 = this.seeds[i * 4 + 3]!;
-      const ang = Math.floor(s0 * 8) * (Math.PI / 4) + 0.2;
-      const life = (this.t * (0.09 + 0.07 * s1) + s2) % 1;
-      const x = CENTER.x + Math.cos(ang) * 36 + (s1 - 0.5) * 3 + Math.sin(this.t * 0.7 + s3 * 6) * 0.9;
-      const z = CENTER.z + Math.sin(ang) * 36 + (s3 - 0.5) * 3 + Math.cos(this.t * 0.6 + s1 * 6) * 0.9;
-      a.setXYZ(i, x, heightAt(CENTER.x, CENTER.z) + 1 + life * 11, z);
+  /** Xoáy mây giông đen tím trên đài: hai lớp đĩa quay ngược chiều, mắt bão ở giữa bừng theo chớp. */
+  private buildVortex(): void {
+    const mk = (radius: number, y: number, spin: number, density: number, opacity: number) => {
+      const geo = new THREE.CircleGeometry(radius, 64);
+      geo.rotateX(Math.PI / 2);
+      const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false });
+      const p = positionLocal.xz;
+      const r = length(p).div(radius);
+      const ang = atan(p.y, p.x).div(Math.PI * 2);
+      const uv = vec2(ang.mul(3).add(r.mul(1.6)).add(time.mul(spin)), r.mul(1.3).sub(time.mul(0.012)));
+      const nz = getCloudNoise();
+      const n = texture(nz, uv)
+        .g.mul(0.6)
+        .add(texture(nz, uv.mul(2.3).add(vec2(0.37, time.mul(-0.01)))).b.mul(0.4));
+      const body = smoothstep(density, density + 0.3, n)
+        .mul(smoothstep(1.0, 0.55, r))
+        .mul(smoothstep(0.03, 0.2, r));
+      const col = mix(vec3(0.015, 0.012, 0.035), vec3(0.2, 0.14, 0.34), n.mul(n));
+      const eye = smoothstep(0.32, 0.0, r);
+      m.colorNode = col
+        .add(vec3(0.55, 0.42, 1.0).mul(eye.mul(float(0.25).add(flashU.mul(1.6)))))
+        .add(vec3(0.5, 0.45, 0.8).mul(flashU.mul(0.35)).mul(n));
+      m.opacityNode = body.mul(opacity);
+      const mesh = new THREE.Mesh(geo, m);
+      mesh.position.set(CENTER.x, y, CENTER.z);
+      mesh.renderOrder = 5;
+      mesh.frustumCulled = false;
+      this.group.add(mesh);
+      this.disposables.push(geo, m);
+    };
+    mk(230, this.y0 + 72, 0.012, 0.3, 0.95);
+    mk(150, this.y0 + 50, -0.02, 0.38, 0.85);
+  }
+
+  /** Biển mây phủ ngoài vành đài (che sườn dốc, chỉ đỉnh núi xa nhô lên): nền tím-xám tối, sáng loé theo chớp. */
+  private buildCloudSea(): void {
+    const geo = new THREE.RingGeometry(78, 520, 96, 1);
+    geo.rotateX(-Math.PI / 2);
+    const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, fog: false });
+    const wp = positionWorld;
+    const nz = getCloudNoise();
+    const a = texture(nz, wp.xz.mul(0.006).add(vec2(time.mul(0.004), 0))).g;
+    const b = texture(nz, wp.xz.mul(0.017).add(vec2(0, time.mul(-0.006)))).b;
+    const n = a.mul(0.6).add(b.mul(0.4));
+    const rr = length(wp.xz.sub(vec2(CENTER.x, CENTER.z)));
+    const col = mix(vec3(0.035, 0.04, 0.08), vec3(0.2, 0.2, 0.3), smoothstep(0.35, 0.8, n));
+    m.colorNode = col.add(vec3(0.5, 0.45, 0.8).mul(flashU.mul(0.4)).mul(float(0.4).add(n)));
+    m.opacityNode = smoothstep(78.0, 100.0, rr).mul(0.96);
+    const mesh = new THREE.Mesh(geo, m);
+    mesh.position.set(CENTER.x, this.y0 + 0.35, CENTER.z);
+    mesh.renderOrder = 2;
+    mesh.frustumCulled = false;
+    this.group.add(mesh);
+    this.disposables.push(geo, m);
+  }
+
+  private updateAll(dt: number): void {
+    const t = this.t;
+    // nhịp chớp: cách 2,2–5,5 s, hai lần loé liền (0 và +0,2 s)
+    if (t >= this.nextStrike) {
+      this.strikeAt = t;
+      this.nextStrike = t + 2.2 + hash01(Math.floor(t * 10), 7, 8801) * 3.3;
     }
-    a.needsUpdate = true;
+    const s = t - this.strikeAt;
+    const f = s < 0 ? 0 : Math.max(Math.exp(-s / 0.09), s > 0.2 ? 0.75 * Math.exp(-(s - 0.2) / 0.13) : 0);
+    flashU.value = f;
+    this.light.intensity = f * 5200;
+
+    // hạt điện bốc dọc tám lôi trụ
+    if (this.motes) {
+      const a = this.motes.geometry.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < MOTE_N; i++) {
+        const s0 = this.seeds[i * 4]!;
+        const s1 = this.seeds[i * 4 + 1]!;
+        const s2 = this.seeds[i * 4 + 2]!;
+        const s3 = this.seeds[i * 4 + 3]!;
+        const pl = PILLARS[Math.floor(s0 * 8)]!;
+        const life = (t * (0.09 + 0.07 * s1) + s2) % 1;
+        a.setXYZ(
+          i,
+          CENTER.x + pl.x + (s1 - 0.5) * 3 + Math.sin(t * 0.7 + s3 * 6) * 0.9,
+          this.y0 + 1 + life * 11,
+          CENTER.z + pl.z + (s3 - 0.5) * 3 + Math.cos(t * 0.6 + s1 * 6) * 0.9,
+        );
+      }
+      a.needsUpdate = true;
+    }
+
+    // mưa
+    const ra = this.rain.geometry.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < RAIN_N; i++) {
+      const ang = this.rainSeed[i * 3]! * Math.PI * 2;
+      const rad = Math.sqrt(this.rainSeed[i * 3 + 1]!) * 62;
+      const y = 44 - ((t * (30 + 12 * this.rainSeed[i * 3 + 2]!) + this.rainSeed[i * 3 + 2]! * 44) % 44);
+      const x = CENTER.x + Math.cos(ang) * rad + y * 0.12;
+      const z = CENTER.z + Math.sin(ang) * rad;
+      ra.setXYZ(i * 2, x, this.y0 + y, z);
+      ra.setXYZ(i * 2 + 1, x + 0.2, this.y0 + y + 1.6, z);
+    }
+    ra.needsUpdate = true;
+
+    // hồ quang: dựng lại ~14 lần/giây, chỉ hiện quanh lúc chớp và thỉnh thoảng
+    this.arcClock += dt;
+    const arcsOn = f > 0.15 || Math.sin(t * 1.7) > 0.35;
+    this.arcs.visible = arcsOn;
+    if (arcsOn && this.arcClock > 0.07) {
+      this.arcClock = 0;
+      const aa = this.arcs.geometry.attributes.position as THREE.BufferAttribute;
+      let w = 0;
+      for (const [p, q] of ARCS) {
+        let px = CENTER.x + p.x;
+        let py = this.y0 + TIP_Y;
+        let pz = CENTER.z + p.z;
+        for (let k = 1; k <= ARC_SEG; k++) {
+          const u = k / ARC_SEG;
+          const jit = k === ARC_SEG ? 0 : 1.6;
+          const nx = CENTER.x + p.x + (q.x - p.x) * u + (Math.random() - 0.5) * jit;
+          const ny = this.y0 + TIP_Y + Math.sin(u * Math.PI) * 3.2 + (Math.random() - 0.5) * jit;
+          const nz = CENTER.z + p.z + (q.z - p.z) * u + (Math.random() - 0.5) * jit;
+          aa.setXYZ(w++, px, py, pz);
+          aa.setXYZ(w++, nx, ny, nz);
+          px = nx;
+          py = ny;
+          pz = nz;
+        }
+      }
+      aa.needsUpdate = true;
+    }
+
+    // đá vụn lơ lửng
+    for (let i = 0; i < DEBRIS_N; i++) {
+      const s0 = this.debrisSeed[i * 4]!;
+      const s1 = this.debrisSeed[i * 4 + 1]!;
+      const s2 = this.debrisSeed[i * 4 + 2]!;
+      const s3 = this.debrisSeed[i * 4 + 3]!;
+      const ang = s0 * Math.PI * 2 + t * 0.03 * (0.5 + s3);
+      const rad = 9 + s1 * 36;
+      const y = this.y0 + 4 + s2 * 14 + Math.sin(t * 0.4 + s3 * 9) * 0.8;
+      this.tmp.position.set(CENTER.x + Math.cos(ang) * rad, y, CENTER.z + Math.sin(ang) * rad);
+      this.tmp.rotation.set(t * 0.15 * s0 + s3 * 6, t * 0.12 * s1 + s2 * 6, s0 * 2);
+      const sc = 0.3 + s3 * s3 * 1.0;
+      this.tmp.scale.set(sc * (0.8 + s0 * 0.5), sc, sc * (0.7 + s1 * 0.6));
+      this.tmp.updateMatrix();
+      this.debris.setMatrixAt(i, this.tmp.matrix);
+    }
+    this.debris.instanceMatrix.needsUpdate = true;
   }
 
   update(dt: number): void {
     this.t += dt;
     this.fx.update(dt);
-    this.updateMotes();
+    this.updateAll(dt);
   }
 
   dispose(): void {
     this.fx.dispose();
+    this.debris.dispose();
     for (const d of this.disposables) d.dispose();
     this.disposables.length = 0;
   }

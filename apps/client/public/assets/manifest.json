@@ -1320,11 +1320,11 @@
       "id": "arch_do_kiep",
       "class": "arch",
       "source": "assets/build/raw/arch_do_kiep.glb",
-      "file": "arch_do_kiep.a4f63eb22d.glb",
-      "bytes": 5387580,
-      "rawBytes": 4753712,
-      "triangles": 28538,
-      "rawTriangles": 28538,
+      "file": "arch_do_kiep.d25413e485.glb",
+      "bytes": 11216772,
+      "rawBytes": 10533048,
+      "triangles": 50194,
+      "rawTriangles": 50194,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -1358,26 +1358,53 @@
           "slots": [
             "metallicRoughnessTexture"
           ]
+        },
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 28538
+          "triangles": 50194
         }
       ],
       "dims": {
         "raw": {
-          "width": 147.9841,
-          "height": 14.9047,
-          "depth": 129.1608,
-          "minY": -2.0245
+          "width": 324.4251,
+          "height": 88.5711,
+          "depth": 349.5111,
+          "minY": -5.688
         },
         "build": {
-          "width": 147.9839,
-          "height": 14.9048,
-          "depth": 129.1611,
-          "minY": -2.0246
+          "width": 324.4249,
+          "height": 88.5711,
+          "depth": 349.5082,
+          "minY": -5.688
         }
       }
     },

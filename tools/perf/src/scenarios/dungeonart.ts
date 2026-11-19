@@ -58,6 +58,7 @@ const VIEWS: Record<string, View[]> = {
     { name: '04-loi-tru', at: [-26, 26], look: [-0.7, -0.7], pitch: 0.12, dist: 10 },
     { name: '05-dinh-dong', at: [10, 22], look: [0.7, -0.7], pitch: 0.14, dist: 9 },
     { name: '06-vet-set', at: [0, 40], look: [0, -1], pitch: 0.45, dist: 25 },
+    { name: '07-xoay-may', at: [0, 30], look: [0, -1], pitch: -0.3, dist: 8 },
   ],
   kim_da_cung: [
     { name: '01-vao', at: [0, 64], look: [0, -1], pitch: 0.18, dist: 12 },
