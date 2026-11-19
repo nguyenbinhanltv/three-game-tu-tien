@@ -7,6 +7,8 @@ interface Cfg {
   shadow?: boolean;
   /** Vải đung đưa theo gió: shader đọc trọng số ở UV.x của material `cloth` (0 mép treo → 1 đầu tự do). */
   sway?: boolean;
+  /** Vật liệu tinh thể (gradient màu đỉnh + fresnel): `propCrystal`. */
+  crystal?: boolean;
 }
 
 const SMALL: Cfg = { range: 150, lod: [20, 55], decor: true };
@@ -54,7 +56,8 @@ export const TC_NAMES: Record<string, Cfg> = {
   cot_tran: BEACON,
   te_dan: LARGE,
   bia_tran: MEDIUM,
-  linh_thach: BEACON,
+  linh_thach: { ...BEACON, crystal: true },
+  xich_bua: { range: 260, lod: [40, 100] },
   // Dị Vực
   xuong_cu_thu: LARGE,
   cot_ta_mau_tim: BEACON,

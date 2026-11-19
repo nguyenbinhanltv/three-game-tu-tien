@@ -3,7 +3,7 @@
 import math
 
 from build_sect import Mat, paint
-from prop_tc_lib import BRONZE, BRONZE_D, GILD, GREEN_BR, INK_TEXT, ROCK_D, ROCK_M, STONE_D, STONE_L, STONE_M, bs, crystal, ellipsoid, flat_ring, item, lathe, rock, set_text_res, tube
+from prop_tc_lib import BRONZE, BRONZE_D, GILD, GREEN_BR, INK_TEXT, ROCK_D, ROCK_M, STONE_D, STONE_L, STONE_M, bs, CRYS_ICE, CRYS_JADE, crystal_cluster, ellipsoid, flat_ring, item, lathe, rock, set_text_res, tube
 
 bs.MATERIALS['glow_amber'] = Mat(0.6, 0.0, None, 1.0, False, 0.0, (0xE58A1F, 1.1))
 bs.MATERIALS['glow_jade2'] = Mat(0.6, 0.0, None, 1.0, False, 0.0, (0x0E8F62, 0.55))
@@ -14,6 +14,8 @@ AZURE = paint(0x1B52B0, 'glow_azure')
 GROOVE = paint(0x2C2F2B, 'stone')  # rãnh khắc chìm (tối)
 SLATE = paint(0x3B3F44, 'stone')
 GOLD_TXT = paint(0xD2A24A, 'metal')
+DYE_PAPER = paint(0xD9B24E, 'cloth')
+DYE_PAPER_B = paint(0x2E4263, 'cloth')
 
 
 def _ring(b, cx, y, cz, r0, r1, color, seg=36, skip=0):
@@ -88,8 +90,11 @@ def _(b, v):
         a = (k + 0.5) / 6 * math.tau
         for j in range(3):
             b.box(math.cos(a) * 0.395, 1.1 + j * 0.8, math.sin(a) * 0.395, 0.03, 0.3, 0.03, glow, yaw=-a)
-    set_text_res(1)
-    b.text('Trận' if not v else 'Phong', 0, 2.3, 0.45, 0.5, 0.0, GOLD_TXT, fit_w=0.5, fit_h=0.5)
+    set_text_res(2)
+    words = ('Trận', 'Pháp') if not v else ('Phong', 'Ấn')
+    b.box(0, 2.0, 0.41, 0.56, 1.7, 0.012, SLATE)  # tấm đá sẫm khắc chữ (chữ nằm chìm trên mặt tối)
+    b.text(words[0], 0, 2.55, 0.425, 0.6, 0.0, GOLD_TXT, fit_w=0.46, fit_h=0.55)
+    b.text(words[1], 0, 1.75, 0.425, 0.6, 0.0, GOLD_TXT, fit_w=0.46, fit_h=0.55)
     set_text_res(2)
     lathe(b, [(0.5, h), (0.62, h + 0.05), (0.62, h + 0.16), (0.42, h + 0.22)], STONE_M, 6, smooth=False)
     ellipsoid(b, 0, h + 0.55, 0, 0.3, 0.3, 0.3, BRONZE, 12, 6)
@@ -151,12 +156,28 @@ def _(b, v):
 
 @item('linh_thach')
 def _(b, v):
-    # Linh thạch: cụm tinh thể ngọc lục / lam đậm bão hòa mọc từ nền đá tối, một trụ lớn nghiêng giữa, quanh là trụ nhỏ, rêu rải chân.
-    glow = JADE_GLOW if not v else AZURE
-    rock(b, 0, 0, 0, 0.95, ROCK_D, seed=7 + v, squash=0.5, seg=9, rings=4)
-    rock(b, 0.7, 0, 0.5, 0.45, ROCK_M, seed=11 + v, squash=0.6, seg=7, rings=3)
-    crystal(b, 0, 0.2, 0, 0.3, 1.8, glow, (0.1, 0.0), sides=6)
-    for k in range(7):
-        a = k / 7 * math.tau + 0.3
-        h = 0.7 + 0.5 * ((k * 5) % 3) / 2
-        crystal(b, math.cos(a) * 0.58, 0.1, math.sin(a) * 0.58, 0.12, h, glow, (math.cos(a) * 0.35, math.sin(a) * 0.35), sides=5)
+    # Linh thạch: cụm tinh thể gradient (chân tối → lõi sáng, fresnel ở client) mọc từ đống đá tối, trụ giữa cao, trụ bên nghiêng, mảnh vụn quanh gốc.
+    crystal_cluster(b, 1.9 if not v else 2.2, 700 + v * 17, CRYS_JADE if not v else CRYS_ICE, rock_color=ROCK_D)
+
+
+@item('xich_bua')
+def _(b, v):
+    # Dây xích bùa nối hai trụ trận (dài 9,2 m, cao ~3,1 m): xích sắt võng, năm lá bùa giấy vàng vạch đỏ + chữ Việt thư pháp rủ xuống; v: bùa xanh chàm.
+    L = 9.2
+    n = 14
+    pts = [(-L / 2 + L * i / n, 3.15 - 0.9 * math.sin(math.pi * i / n) ** 1.2, 0.0) for i in range(n + 1)]
+    tube(b, pts, 0.028, SLATE, 5, sub=2)
+    for i in range(1, n):  # mắt xích: hạt nhỏ xen kẽ
+        if i % 2:
+            ellipsoid(b, pts[i][0], pts[i][1], 0.0, 0.05, 0.035, 0.05, GOLD_TXT, 6, 3)
+    paper = DYE_PAPER if not v else DYE_PAPER_B
+    for k in range(5):
+        t0 = (k + 0.5) / 5
+        i = int(t0 * n)
+        x, y = pts[i][0], pts[i][1]
+        h = 0.62
+        b.box(x, y - h / 2 - 0.02, 0.0, 0.2, h, 0.012, paper)
+        b.box(x, y - h / 2 - 0.02, 0.008, 0.035, h * 0.8, 0.006, INK_TEXT)
+        set_text_res(1)
+        b.text('Phù' if k % 2 else 'Trận', x, y - h * 0.55, 0.016, 0.3, 0.0, INK_TEXT, fit_w=0.16, fit_h=0.2)
+        set_text_res(2)

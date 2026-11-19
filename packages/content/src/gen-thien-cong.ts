@@ -198,7 +198,18 @@ for (const levelId of Object.keys(SCENES)) {
           for (let tries = 0; tries < 160 && !ok; tries++) {
             let x: number;
             let z: number;
-            if (sc.clusters) {
+            if (sc.nearBase) {
+              const cs = basePropsOf(levelId).filter(
+                (q) => sc.nearBase!.includes(q.id) && Math.hypot(q.x - sc.at[0], q.z - sc.at[1]) <= sc.r,
+              );
+              if (!cs.length) break;
+              const c = cs[(k * 7 + tries) % cs.length]!;
+              const ca = rand() * Math.PI * 2;
+              const [r0, r1] = sc.nearR ?? [3, 8];
+              const cd = r0 + rand() * (r1 - r0);
+              x = Math.round((c.x + Math.cos(ca) * cd) * 10) / 10;
+              z = Math.round((c.z + Math.sin(ca) * cd) * 10) / 10;
+            } else if (sc.clusters) {
               // Rải theo cụm (lùm cây, bãi đá...): tâm cụm cố định theo cảnh, mỗi món chọn một cụm; cảnh đông ở từng chỗ thay vì loãng khắp vùng.
               const cc = clusterCentres(si, sc);
               const c = cc[(k + tries) % cc.length]!;
