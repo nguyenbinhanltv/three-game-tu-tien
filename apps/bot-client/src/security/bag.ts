@@ -1,6 +1,6 @@
 // Bài kiểm tra bảo mật: Túi đồ 120 ô (TD-A) (R-7, tách từ security-check.ts).
 import { applyInvMsg, C, type InvMsg, type InvSlot, S } from '@dtl/shared';
-import { W, check, health, join, type Ctx } from './lib';
+import { W, check, health, join, type Ctx, waitUntil } from './lib';
 
 export async function runBag(_ctx: Ctx): Promise<void> {
   // 15. Túi đồ 120 ô (TD-A): ô ngoài phạm vi, kiểu lạ, spam sắp xếp, tách số âm, khóa bán/gộp.
@@ -76,7 +76,7 @@ export async function runBag(_ctx: Ctx): Promise<void> {
     // Khóa rồi cố bán: không bán được, vẫn còn.
     const s2 = inv.findIndex((x) => x?.id === 'itm_linh_thao');
     g.room.send(C.INV_LOCK, { slot: s2, on: true });
-    await W(300);
+    await waitUntil(() => inv[s2]?.lk === true);
     check('khóa ô được ghi nhận', inv[s2]?.lk === true);
     await chat('/gm tp 2006 2066');
     const gold0 = gold;

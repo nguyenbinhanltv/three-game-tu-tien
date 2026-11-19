@@ -1,6 +1,6 @@
 // Bài kiểm tra bảo mật: Trang bị, công pháp, bí tịch/biến thức, nâng cấp trang bị (P3-2…P3-6) (R-7, tách từ security-check.ts).
 import { applyInvMsg, C, type InvMsg, type InvSlot, S } from '@dtl/shared';
-import { W, check, health, join, type Ctx } from './lib';
+import { W, check, health, join, type Ctx, waitUntil } from './lib';
 
 export async function runGear(_ctx: Ctx): Promise<void> {
   // 14. Trang bị (3-2): client chỉ gửi ô túi + khóa idempotency; không giả được dòng chính/phụ, không mặc đồ không có, không spam.
@@ -20,7 +20,8 @@ export async function runGear(_ctx: Ctx): Promise<void> {
     await say('/gm level 15');
     await say('/gm roll itm_thanh_phong_kiem 0 12');
     await say('/gm roll itm_dao_bao 0 5');
-    await W(300);
+    await waitUntil(() => inv.some((x) => x?.id === 'itm_thanh_phong_kiem'));
+    await W(200);
     const slot = inv.findIndex((x) => x?.id === 'itm_thanh_phong_kiem');
     // Thiếu khóa idempotency, ô ngoài khoảng, ô trống, kiểu sai, thêm trường giả: đều không làm gì.
     for (const bad of [
@@ -49,7 +50,8 @@ export async function runGear(_ctx: Ctx): Promise<void> {
       inst: { q: 4, ilvl: 99, main: { atk: 99999 }, affixes: [], gems: [], bound: false },
       id: 'itm_tram_ta_kiem',
     });
-    await W(500);
+    await waitUntil(() => !!equip.weapon);
+    await W(200);
     check(
       'inst giả từ client bị bỏ qua khi mặc đồ',
       equip.weapon?.id === 'itm_thanh_phong_kiem' && equip.weapon?.inst?.q === 0,
