@@ -142,3 +142,9 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - Vòng trắng xám lớn trong ảnh chụp là **vòng thần thức/lãnh vực của nhân vật thử cảnh giới Hóa Thần** (VFX của game, `game/fx`), không thuộc cảnh bí cảnh; để nguyên.
 - Chưa làm: sương nóng gợn (heat haze) — cần hậu kỳ biến dạng khung, ngoài phạm vi PR này.
 - **Ngân sách (preset Cao)**: ~158 draw call, ~0,49M tam giác.
+
+### PR 6 vòng 3 (góp ý duyệt): cột không còn vân gỗ, bệ đá vỡ ở tâm
+
+- **Cột bazan**: vật liệu `_obs` viết lại — hạt mịn đẳng hướng (bỏ thớ kéo dọc gây vân gỗ), vết nứt THẲNG/GÓC CẠNH (hai họ đường thẳng chéo theo toạ độ thế giới, chỉ ở vài ô), ánh đỏ chỉ trong khe nứt và chân cột, mặt hướng lên và đỉnh gãy phủ tro xám; màu nền đá xanh đen sẫm hơn. Trong GLB, bỏ vệt dung nham dọc, thay bằng 1–3 khe thẳng nghiêng mảnh trên mặt cột.
+- **Bệ trung tâm** (`dais`): ba tầng đá vỡ (cao 0,16/0,32/0,48 m) quanh bia giữ, vết nứt tỏa từ tâm thành 7–9 mảng, khe dung nham gradient (sáng gần tâm, tối ra ngoài), vành dung nham dưới chân, đá vỡ nghiêng ở mép, mảnh vụn chỉ ở viền ngoài; phiến vỏ dung nham rải sàn giảm còn 7 mảng nhỏ, chỉ ở r > 30. **Bệ thấp (≤ 0,5 m) vì chỉ để nhìn, không va chạm** và người chơi đứng/đánh ngay trên đó (chân lún tối đa 0,5 m ở tầng giữa); chưa nâng cao theo yêu cầu "nhô cao" cho tới khi COL-1 cho phép khai báo mặt đi được.
+- **Vòng trắng xám lớn**: có trong ảnh chụp cả bản gốc (main, chưa có mỹ thuật DUN-1) lẫn mọi bí cảnh khác, tâm gần chỗ nhân vật thử đứng (1520, 1330), không phải `RingGeometry` thuộc cảnh. Thử ẩn mọi `RingGeometry` bán kính trong ≥ 0,98 (lãnh vực `cloneVis`, `scan`) và `?aura=0` đều không hết; chưa tìm ra nguồn. Cần người nắm hệ VFX/hậu kỳ xác định (ứng viên: viền vùng phủ bóng/ánh sáng, hoặc lớp hậu kỳ).

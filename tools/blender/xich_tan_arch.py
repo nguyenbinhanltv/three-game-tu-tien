@@ -59,7 +59,7 @@ def rp(seed, lift=0.0):
 def hexcol(seed, h, y, lift=0.0):
     """Cột lục giác: bazan đen xanh bóng, sáng dần theo mặt và chân tối khói."""
     n = fbm3(h * 0.7, y * 0.3, seed, seed + 3, 2)
-    rgb = mix(C(0x3E434C), C(0x78808E), 0.2 + 0.6 * n + lift)
+    rgb = mix(C(0x25282E), C(0x4A505C), 0.2 + 0.6 * n + lift)
     return Paint(tuple(rgb), 'obs')
 
 
@@ -107,10 +107,13 @@ def basalt_cluster(b, seed):
         for j in range(sides):  # khe than hồng quanh chân cột
             ang = ph + (j + 0.5) / sides * math.tau
             tbox(b, (cx + math.cos(ang) * (r + 0.05), 0.14, cz + math.sin(ang) * (r + 0.05)), (0.62, 0.22, 0.12), lava(0.55 + 0.4 * rnd.random()), yaw=-ang)
-        if i % 2 == 0:  # vệt dung nham dọc một khe, sáng ở chân tối dần lên
-            ang = ph + math.pi / sides
-            for q in range(4):
-                tbox(b, (cx + math.cos(ang) * (r + 0.03), h * (0.12 + 0.18 * q), cz + math.sin(ang) * (r + 0.03)), (0.09, h * 0.17, 0.09), lava(0.85 - 0.22 * q), yaw=-ang)
+        # vết nứt THẲNG góc cạnh: hai ba khe mảnh nghiêng trên mặt cột (không cong), phát sáng ở lõi khe
+        for _ in range(rnd.randint(1, 3)):
+            j = rnd.randrange(sides)
+            ang = ph + (j + 0.5) / sides * math.tau
+            yy = rnd.uniform(0.18, 0.75) * h
+            ln = rnd.uniform(0.9, 2.6)
+            tbox(b, (cx + math.cos(ang) * (r + 0.02), yy, cz + math.sin(ang) * (r + 0.02)), (0.07, ln, 0.05), lava(rnd.uniform(0.6, 0.95)), yaw=-ang, rx=0.0, rz=rnd.choice((-1, 1)) * rnd.uniform(0.25, 0.7))
         if broken and rnd.random() < 0.7:  # mảnh vỡ nằm cạnh chân
             a = rnd.uniform(0, math.tau)
             tbox(b, (cx + math.cos(a) * (r + 1.0), 0.45, cz + math.sin(a) * (r + 1.0)), (rnd.uniform(0.9, 1.6), rnd.uniform(0.7, 1.3), rnd.uniform(0.9, 1.6)), hexcol(seed + i, 5, 1, 0.05), rx=rnd.uniform(-0.5, 0.5), rz=rnd.uniform(-0.5, 0.5), yaw=a)
@@ -185,6 +188,59 @@ def crust_plate(b, seed):
         a = rnd.uniform(0, math.tau)
         d = rnd.uniform(4.2, 5.2)
         tbox(b, (math.cos(a) * d, 0.3, math.sin(a) * d), (rnd.uniform(0.5, 1.2), rnd.uniform(0.4, 0.9), rnd.uniform(0.5, 1.2)), Paint(mix(C(0x2A2320), C(0x4A3E38), rnd.random()), 'jade'), rx=rnd.uniform(-0.5, 0.5), rz=rnd.uniform(-0.5, 0.5), yaw=a)
+
+
+def dais(b, seed):
+    """Bệ đá vỡ nhô cao ở tâm hẻm (bán kính 9 m, cao 0,9–1,8 m): ba bậc đá vỡ không đều ôm nhau; mặt bệ nứt TỎA TỪ TÂM thành 7 mảng (khe 0,25–0,5 m rộng dần ra ngoài) có dung nham gradient bên dưới; vài khối đá vỡ nghiêng ở mép; mảnh vụn chỉ rải ở viền ngoài. Quanh chân là vành dung nham mảnh. Chừa khoảng giữa trống cho bia giữ (r 2)."""
+    rnd = random.Random(seed)
+    # vành dung nham dưới chân bệ
+    N = 36
+    for i in range(N):
+        a0, a1 = i / N * math.tau, (i + 1) / N * math.tau
+        r0, r1 = 8.6, 9.6
+        quad = [(math.cos(a0) * r0, 0.05, math.sin(a0) * r0), (math.cos(a1) * r0, 0.05, math.sin(a1) * r0), (math.cos(a1) * r1, 0.05, math.sin(a1) * r1), (math.cos(a0) * r1, 0.05, math.sin(a0) * r1)]
+        b.poly(quad, (0, -2, 0), lava(0.35 + 0.4 * rnd.random()))
+    tiers = ((8.4, 0.16), (6.2, 0.32), (3.6, 0.48))  # thấp (≤ 0,5 m): bệ chỉ để nhìn, không va chạm, người chơi đứng và đánh trên đó
+    for ti, (R_, H_) in enumerate(tiers):
+        n = 7 + ti
+        ph = rnd.uniform(0, 1)
+        for i in range(n):
+            a0 = ph + i / n * math.tau
+            a1 = ph + (i + 1) / n * math.tau
+            gap = (0.3 + 0.12 * ti) / max(R_, 1.0)  # khe rộng dần ra ngoài
+            rin = (0.0 if ti == len(tiers) - 1 else tiers[ti + 1][0] - 0.2) + (1.6 if ti == len(tiers) - 1 else 0.0)
+            hh = H_ + rnd.uniform(-0.1, 0.18)
+            outer = [(math.cos(a) * R_ * (1 + rnd.uniform(-0.04, 0.04)), hh, math.sin(a) * R_ * (1 + rnd.uniform(-0.04, 0.04))) for a in (a0 + gap, (a0 + a1) / 2, a1 - gap)]
+            innerp = [(math.cos(a) * rin, hh + 0.05, math.sin(a) * rin) for a in (a1 - gap, a0 + gap)]
+            top = outer + innerp
+            shade = mix(C(0x2A2422), C(0x544842), rnd.random())
+            b.poly(top, (0, -2, 0), Paint(tuple(shade), 'jade'))
+            # thành đứng thô + khe sáng dung nham (màu đỉnh gradient đỏ thẫm → vàng cam ở đáy khe)
+            for q0, q1 in zip(top, top[1:] + top[:1]):
+                low = (q0[0], max(0.0, hh - 0.16 - rnd.uniform(0, 0.08)), q0[2])
+                low1 = (q1[0], max(0.0, hh - 0.16 - rnd.uniform(0, 0.08)), q1[2])
+                b.poly([q0, q1, low1, low], (0, 0, 0), Paint(mix(tuple(shade), C(0x7A2A14), 0.4), 'jade'))
+            for a in (a0, ):
+                # khe giữa hai mảng: dải dung nham chạy từ trong ra ngoài, sáng ở trong (gần tâm) tối ra ngoài
+                steps = 5
+                for k in range(steps):
+                    t0, t1 = k / steps, (k + 1) / steps
+                    r0_, r1_ = rin + (R_ - rin) * t0, rin + (R_ - rin) * t1
+                    w0 = 0.12 + 0.16 * t0 + 0.04 * ti
+                    w1 = 0.12 + 0.16 * t1 + 0.04 * ti
+                    nx, nz = -math.sin(a), math.cos(a)
+                    p0 = (math.cos(a) * r0_, 0.2 * (ti + 1), math.sin(a) * r0_)
+                    p1 = (math.cos(a) * r1_, 0.2 * (ti + 1), math.sin(a) * r1_)
+                    quad = [(p0[0] + nx * w0, p0[1], p0[2] + nz * w0), (p0[0] - nx * w0, p0[1], p0[2] - nz * w0), (p1[0] - nx * w1, p1[1], p1[2] - nz * w1), (p1[0] + nx * w1, p1[1], p1[2] + nz * w1)]
+                    b.poly(quad, (0, -2, 0), lava(1.0 - 0.7 * t0 - 0.12 * ti))
+    # đá vỡ nghiêng ở mép bệ + mảnh vụn chỉ ở viền ngoài
+    for k in range(9):
+        a = rnd.uniform(0, math.tau)
+        tbox(b, (math.cos(a) * rnd.uniform(8.6, 9.6), 0.5, math.sin(a) * rnd.uniform(8.6, 9.6)), (rnd.uniform(0.8, 1.6), rnd.uniform(0.7, 1.4), rnd.uniform(0.8, 1.6)), Paint(mix(C(0x2A2320), C(0x4A3E38), rnd.random()), 'jade'), rx=rnd.uniform(-0.6, 0.6), rz=rnd.uniform(-0.6, 0.6), yaw=a)
+    for k in range(16):
+        a = rnd.uniform(0, math.tau)
+        d = rnd.uniform(9.4, 11.6)
+        tbox(b, (math.cos(a) * d, 0.15, math.sin(a) * d), (rnd.uniform(0.25, 0.6), rnd.uniform(0.15, 0.35), rnd.uniform(0.25, 0.6)), Paint(mix(C(0x2A2320), C(0x4A3E38), rnd.random()), 'jade'), rx=rnd.uniform(-0.5, 0.5), rz=rnd.uniform(-0.5, 0.5), yaw=a)
 
 
 def vent(b, seed):
@@ -286,6 +342,9 @@ def build_variants():
         b = new_b(1220 + i)
         crust_plate(b, 1220 + i * 7)
         v[f'crust{i}'] = b
+    b = new_b(1225)
+    dais(b, 1225)
+    v['dais'] = b
     b = new_b(1230)
     vent(b, 1230)
     v['vent'] = b
@@ -359,13 +418,14 @@ def run(out):
             continue
         put('spike', f'spike{rnd.randrange(3)}', x, z, yaw=rnd.uniform(0, 6.28), scale=rnd.uniform(0.8, 1.4))
         got += 1
-    # Mảng vỏ dung nham nguội nứt (phẳng, sát đất).
+    # Bệ đá vỡ ở tâm hẻm (quanh bia giữ) + vài mảng vỏ dung nham nguội xa tâm (r > 30).
+    put('dais', 'dais', 0.0, 0.0, yaw=0.3)
     got = 0
-    while got < 16:
+    while got < 7:
         x, z = rnd.uniform(-34, 34), rnd.uniform(-72, 60)
-        if not free(x, z, 6):
+        if math.hypot(x, z) < 30 or not free(x, z, 6):
             continue
-        put('crust', f'crust{rnd.randrange(3)}', x, z, yaw=rnd.uniform(0, 6.28), scale=rnd.uniform(0.9, 1.7))
+        put('crust', f'crust{rnd.randrange(3)}', x, z, yaw=rnd.uniform(0, 6.28), scale=rnd.uniform(0.7, 1.1))
         got += 1
     # Miệng phun than quanh sàn.
     got = 0

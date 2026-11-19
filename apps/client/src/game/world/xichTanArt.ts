@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { float, mix, normalWorld, positionLocal, positionWorld, smoothstep, texture, time, vec2, vec3, vertexColor } from 'three/tsl';
+import { float, fract, mix, normalWorld, positionLocal, positionWorld, smoothstep, texture, time, vec3, vertexColor } from 'three/tsl';
 import { LEVELS } from '@dtl/content';
 import { hash01 } from '@dtl/shared';
 import { heightAt, levelTerrain } from '../../base/levelCtx';
@@ -58,23 +58,31 @@ export function xkMaterialFor(name: string): THREE.Material | null {
     return m;
   }
   if (name.endsWith('_obs')) {
+    // Đá bazan đen nhám: hạt mịn đẳng hướng (không kéo dọc nên không ra thớ gỗ), vết nứt THẲNG/GÓC CẠNH: hai họ đường thẳng chéo nhau theo toạ độ thế giới (|fract| tam giác,
+    // chỉ hiện ở vài ô), ánh đỏ chỉ nằm trong khe nứt và chân cột; mặt hướng lên và đỉnh gãy phủ tro xám.
     const nz = getCloudNoise();
     const wp = positionWorld;
-    const grain = texture(nz, vec2(wp.x.add(wp.z).mul(1.7), wp.y.mul(0.35))).g;
-    const fine = texture(nz, vec2(wp.x.sub(wp.z).mul(5.0), wp.y.mul(1.1))).b;
-    const crackN = texture(nz, vec2(wp.x.add(wp.z).mul(0.9), wp.y.mul(0.25)).add(0.37))
-      .a.sub(0.5)
+    const fine = texture(nz, wp.xz.mul(2.2).add(wp.y.mul(1.3))).g;
+    const speck = texture(nz, wp.xy.mul(7.0).add(wp.z.mul(3.0))).b;
+    const lineA = fract(wp.y.mul(0.9).add(wp.x.mul(0.45)))
+      .sub(0.5)
       .abs();
-    const crack = smoothstep(0.016, 0.0, crackN);
-    const ny = normalWorld.y;
-    const ash = smoothstep(0.55, 0.88, ny);
-    const base = vertexColor().mul(float(0.65).add(grain.mul(0.5)).add(fine.mul(0.18)));
-    const withAsh = mix(base, vec3(0.42, 0.4, 0.38).mul(float(0.7).add(fine.mul(0.5))), ash.mul(0.85));
-    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.82, metalness: 0.05, name });
-    m.colorNode = withAsh.mul(float(1).sub(crack.mul(0.6)));
-    // ánh đỏ dung nham trong vết nứt, mạnh ở chân cột (độ cao cục bộ < ~3 m) và tắt dần lên đỉnh
-    const low = smoothstep(7.0, 0.0, positionLocal.y);
-    m.emissiveNode = vec3(1.0, 0.36, 0.1).mul(crack).mul(low).mul(float(1).sub(ash)).mul(0.6);
+    const lineB = fract(wp.y.mul(0.7).sub(wp.z.mul(0.6)).add(0.31))
+      .sub(0.5)
+      .abs();
+    const cell = texture(nz, wp.xz.mul(0.35).add(wp.y.mul(0.22))).a;
+    const crackMask = smoothstep(0.62, 0.78, cell);
+    const crack = smoothstep(0.018, 0.0, lineA.min(lineB)).mul(crackMask);
+    const ash = smoothstep(0.5, 0.85, normalWorld.y);
+    const base = vertexColor().mul(float(0.7).add(fine.mul(0.35)).add(speck.mul(0.15)));
+    const withAsh = mix(base, vec3(0.4, 0.39, 0.38).mul(float(0.75).add(speck.mul(0.45))), ash.mul(0.9));
+    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.88, metalness: 0.04, name });
+    m.colorNode = withAsh.mul(float(1).sub(crack.mul(0.7)));
+    const low = smoothstep(6.0, 0.0, positionLocal.y);
+    m.emissiveNode = vec3(1.0, 0.34, 0.08)
+      .mul(crack)
+      .mul(float(0.35).add(low.mul(0.9)))
+      .mul(float(1).sub(ash));
     return m;
   }
   return null;
