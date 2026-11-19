@@ -383,6 +383,15 @@ export class MannequinCharacter implements CharacterView {
   /** Lò xo vạt riêng của asset v2 (null với v3/v3b: vạt nằm chung trong `springs`). */
   private skirtSprings: SpringBones | null = null;
   private sleeveSprings: SpringBones | null = null;
+  /** Số suất LOD0 mà nhân vật này chiếm (entities.applyLodBudget): LOD0 gốc Tripo ~100k tam giác tính 3 suất (≈ ≤4 người LOD0 trong ngân sách 12). */
+  get lod0Cost(): number {
+    let tris = 0;
+    for (const m of this.lods[0] ?? []) {
+      const g = m.geometry;
+      tris += (g.index ? g.index.count : g.getAttribute('position').count) / 3;
+    }
+    return Math.max(1, Math.ceil(tris / 33000));
+  }
   /** Vải mô phỏng Thiên Y (null nếu tắt hoặc model không có vải cũ tách riêng). */
   cloth: ClothRig | null = null;
   private clothSit = 0;

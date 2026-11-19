@@ -4657,14 +4657,14 @@
     },
     "chr_v3_tinh_khuyet_nu": {
       "id": "chr_v3_tinh_khuyet_nu",
-      "class": "player_v3",
+      "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_tinh_khuyet_nu.glb",
-      "file": "chr_v3_tinh_khuyet_nu.0481f14be5.glb",
-      "bytes": 4521620,
-      "rawBytes": 4383608,
-      "triangles": 23000,
-      "rawTriangles": 23000,
-      "lod0Cap": 24000,
+      "file": "chr_v3_tinh_khuyet_nu.fc94bdaf42.glb",
+      "bytes": 12161568,
+      "rawBytes": 16141088,
+      "triangles": 99438,
+      "rawTriangles": 99438,
+      "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
       "bones": 115,
@@ -4674,8 +4674,8 @@
         {
           "name": "fantasy_female_character_3d_model_normal",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "normalTexture"
           ]
@@ -4683,8 +4683,8 @@
         {
           "name": "fantasy_female_character_3d_model_basecolor",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "baseColorTexture"
           ]
@@ -4692,8 +4692,8 @@
         {
           "name": "fantasy_female_character_3d_model_rm",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -4702,31 +4702,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 23000
+          "triangles": 99438
         },
         {
           "level": 1,
-          "triangles": 11498,
-          "target": 11500
+          "triangles": 23998,
+          "target": 24000
         },
         {
           "level": 2,
-          "triangles": 4890,
-          "target": 4600
+          "triangles": 7991,
+          "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.7566,
-          "height": 1.69,
-          "depth": 0.463,
-          "minY": 0.0111
+          "width": 1.7573,
+          "height": 1.6893,
+          "depth": 0.4902,
+          "minY": 0.0107
         },
         "build": {
-          "width": 1.7566,
-          "height": 1.69,
-          "depth": 0.463,
-          "minY": 0.0111
+          "width": 1.7573,
+          "height": 1.6893,
+          "depth": 0.4902,
+          "minY": 0.0107
         }
       }
     },

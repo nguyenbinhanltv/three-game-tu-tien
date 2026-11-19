@@ -2,12 +2,12 @@
   "$schema": "../../../meta.schema.json",
   "id": "chr_v3_tinh_khuyet_nu",
   "type": "chr",
-  "budgetClass": "player_v3",
+  "budgetClass": "player_v3_hi",
   "itemId": null,
   "status": "imported",
   "budget": {
-    "faceLimit": 24000,
-    "texture": 2048
+    "faceLimit": 110000,
+    "texture": 4096
   },
   "procedural": {
     "script": "tools/blender/chr_v3.py",

@@ -10,8 +10,8 @@
   "bindA": [
     "nu"
   ],
-  "tris": 23000,
   "splitCloth": true,
+  "keepOriginal": true,
   "groups": [
     {
       "name": "skirt",

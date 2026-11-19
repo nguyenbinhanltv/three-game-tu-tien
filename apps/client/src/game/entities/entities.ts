@@ -812,7 +812,8 @@ export class EntityManager {
       }
       if (!e.model.setView) continue;
       // Người mặc áo bộ mô-đun nhiều draw call hơn ở LOD0 (thân, áo, kiếm, vỏ, bóng): tính hai suất để cả đám đông ≤ 300 draw.
-      const cost = (e.model as { dressed?: boolean }).dressed ? 2 : 1;
+      const m = e.model as { dressed?: boolean; lod0Cost?: number };
+      const cost = m.lod0Cost !== undefined && m.lod0Cost > 2 ? m.lod0Cost : m.dressed ? 2 : 1;
       const allow = e.local || (e.inView && lod0 + cost <= LOD0_MAX);
       if (allow) lod0 += cost;
       e.model.setView({ dist: e.local ? 0 : e.d, inView: e.local || e.inView, allowLod0: allow, self: e.local });

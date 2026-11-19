@@ -98,6 +98,15 @@ export default {
         }
         await page.setViewportSize({ width: 1280, height: 720 });
 
+        // (1b) cận mặt + bàn tay trong game (so với render Blender của GLB gốc: `chr_v3.py --debug-faces`).
+        await page.setViewportSize({ width: 960, height: 960 });
+        for (const [nm, dist, pitch, yawAdd] of [['face', 0.62, -0.02, 0], ['face34', 0.62, -0.02, 0.5], ['hand', 0.9, 0.35, 0]] as const) {
+          await cam(page, { yaw: base + yFront + yawAdd, pitch, dist });
+          await sleep(900);
+          fs.writeFileSync(path.join(r.out, `${tag}-${nm}.png`), await page.screenshot());
+        }
+        await page.setViewportSize({ width: 1280, height: 720 });
+
         // (2) tờ chuyển động.
         const hold = async (keys: string[], ms: number) => {
           for (const k of keys) await page.keyboard.down(k);
