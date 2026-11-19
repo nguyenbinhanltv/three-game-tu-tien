@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sleep } from '../lib/devserver';
 import { list, size } from '../lib/env';
-import { cam, faceMonster, gm } from '../lib/game';
+import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 
 const DUR = 3500;
