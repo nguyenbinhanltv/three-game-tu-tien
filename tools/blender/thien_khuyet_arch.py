@@ -359,8 +359,8 @@ def fbm3(x, y, z, seed=0, octaves=3):
     return tot / norm
 
 
-SAND = (0.58, 0.46, 0.33)  # đá cam thạch ấm (tuyến tính)
-SAND_DK = (0.28, 0.2, 0.14)
+SAND = (0.36, 0.3, 0.24)  # đá cam thạch ấm (tuyến tính)
+SAND_DK = (0.16, 0.13, 0.1)
 MOSS_LIN = (0.12, 0.26, 0.07)
 
 
@@ -381,7 +381,7 @@ def sculpt_color(pos, nrm, gold=False, seed=3):
         k = min(0.85, (moss - 0.5) * 3.2) * (0.35 + 0.65 * max(0.0, nrm[1]))
     if k > 0.01:
         rgb = [c * (1 - k) + m * k for c, m in zip(rgb, MOSS_LIN)]
-    return bs.Paint(tuple(rgb), 'stone')
+    return bs.Paint(tuple(rgb), 'jade')
 
 
 def surface(b, f, nu, nv, center, hole=None, gold_at=None):
@@ -452,6 +452,44 @@ def tube(b, a, bpt, r0, r1, nu=14, nv=8, ridges=0, amp=0.07, seed=1, hole=None, 
         return tuple(base[k] + (p[k] - base[k]) * k_ for k in range(3))
 
     surface(b, f, nu, nv, lambda v: tuple(a[k] + (bpt[k] - a[k]) * v for k in range(3)), hole, gold_at)
+
+
+def jian(b, x0, y0, z0, length, S):
+    """Kiếm thẳng cổ phong cắm mũi xuống: mũi tại (x0, y0, z0), chuôi hướng lên. Lưỡi tiết diện thoi có sống nổi, hơi thon về mũi."""
+    N = 10
+    w0, t0 = 1.5 * S, 0.34 * S
+    rings = []
+    for i in range(N + 1):
+        t = i / N
+        y = y0 + length * t
+        if t < 0.1:  # mũi nhọn
+            k = t / 0.1
+        else:
+            k = 1.0 - 0.28 * (t - 0.1) / 0.9
+        w, th = w0 * k, t0 * (0.45 + 0.55 * k)
+        rings.append([(x0 - w, y, z0), (x0, y, z0 + th), (x0 + w, y, z0), (x0, y, z0 - th)])
+    for i in range(N):
+        for j in range(4):
+            q = [rings[i][j], rings[i][(j + 1) % 4], rings[i + 1][(j + 1) % 4], rings[i + 1][j]]
+            q = [p for n_, p in enumerate(q) if n_ == 0 or math.dist(p, q[n_ - 1]) > 1e-6]
+            if len(q) < 3:
+                continue
+            c = [x0, q[0][1], z0]
+            b.poly(q, c, kit.BLADE if j % 2 == 0 else kit.BLADE_D)
+    top = y0 + length
+    b.box(x0, y0 + length * 0.55, z0, 0.1 * S, length * 0.8, 0.12 * S, GOLD_LIT)  # rãnh khắc phát sáng dọc lưỡi (nhỏ)
+    # hộ thủ: đĩa tròn dẹt vàng + hai tai cuộn
+    b.cylinder(x0, top, z0, 2.6 * S, 0.45 * S, kit.GILD, 18, 2.5 * S)
+    for sx in (-1, 1):
+        b.box(x0 + sx * 3.0 * S, top + 0.2 * S, z0, 1.0 * S, 0.5 * S, 0.5 * S, kit.GILD)
+    # chuôi quấn dây, vòng vàng, đuôi kiếm
+    b.cylinder(x0, top + 0.45 * S, z0, 0.55 * S, 7.5 * S, kit.TIMBER_D, 10, 0.5 * S)
+    for k in range(5):
+        b.cylinder(x0, top + (1.2 + k * 1.4) * S, z0, 0.6 * S, 0.22 * S, kit.GILD, 10)
+    b.cylinder(x0, top + 7.9 * S, z0, 1.0 * S, 0.9 * S, kit.GILD, 12, 0.5 * S)
+    # tua đỏ rủ từ đuôi kiếm
+    for k in range(4):
+        b.box(x0 + 0.5 * S, top + (6.8 - k * 1.7) * S, z0 + 0.4 * S, 0.5 * S, 1.7 * S, 0.22 * S, kit.VERMILION)
 
 
 def build_statue(b, st, rnd):
@@ -567,9 +605,10 @@ def build_statue(b, st, rnd):
         bring(name, fall, 0.0, 0.0, (0, 0, 0))
     bring('head', -1.2, 0.5, 0.4, (-4 * S, 3.0 * S, -50 * S))
     bring('farm_r', -1.5, 0.0, 0.9, (24 * S, 2.4 * S, -34 * S))
+    # Kiếm cổ phong (jian): lưỡi thẳng hai lưỡi có sống, hộ thủ đĩa vàng, chuôi quấn, đuôi kiếm có tua đỏ; cắm xiên cạnh tượng.
     start = len(b.verts)
-    b.sword_planted(0, 0, 0.0, 48 * S, 4.6 * S, yaw=0.0)
-    xform(b, start, (0, 0, 0), 0.0, 0.0, 0.32, d=(20 * S, 0, -6 * S))
+    jian(b, 0.0, 0.0, 0.0, 46 * S, S)
+    xform(b, start, (0, 0, 0), 0.12, 0.0, 0.26, d=(18 * S, -3.0 * S, -8 * S))
     rubble(b, 0, 0.0, -20 * S, 26, 3.4 * S, rnd, 36 * S)
     for k in range(12):  # nứt phát sáng vàng trên giáp
         b.box(rnd.uniform(-5, 5) * S, 0.2 * S + rnd.uniform(1, 9) * S, rnd.uniform(-34, -4) * S, 0.2 * S, 0.2 * S, rnd.uniform(2, 6) * S, GOLD_LIT)
