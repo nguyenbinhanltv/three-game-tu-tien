@@ -28,6 +28,7 @@ import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../wo
 import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
 import { XichTanArt, xkMaterialFor } from '../world/xichTanArt';
 import { DoKiepArt, dkMaterialFor } from '../world/doKiepArt';
+import { LacKiemFar } from '../world/lacKiemFar';
 import { buildGildedSky, KD_DOME, KimDaArt } from '../world/kimDaArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
@@ -455,6 +456,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.xichTanArt.group);
     void loadXkModel(eng, q.shadows);
   }
+  if (levelAssets(id).lacKiemFar) {
+    eng.lacKiemFar = new LacKiemFar(() => (eng.scene.fog as THREE.Fog | null)?.color ?? null);
+    eng.scene.add(eng.lacKiemFar.group);
+  }
   if (levelAssets(id).doKiepArt) {
     eng.doKiepArt = new DoKiepArt({ lights: q.lights && isWebGPU(eng.renderer), hazardActive: () => eng.vfx.hazards.length > 0 });
     eng.scene.add(eng.doKiepArt.group);
@@ -558,6 +563,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.xichTanArt.group);
     eng.xichTanArt.dispose();
     eng.xichTanArt = null;
+  }
+  if (eng.lacKiemFar) {
+    drop(eng.lacKiemFar.group);
+    eng.lacKiemFar.dispose();
+    eng.lacKiemFar = null;
   }
   if (eng.doKiepArt) {
     drop(eng.doKiepArt.group);

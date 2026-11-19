@@ -28,7 +28,7 @@ def giant_sword(b, x, z):
     b.cylinder(x, 0.95, z, 2.5, 0.08, kit.JADE_GREEN, 20)
     b.sword_planted(x, z, 1.1, 11.5, 2.3, yaw=0.0)
     for i, word in enumerate(('Vạn', 'Kiếm', 'Quy', 'Tông')):  # chữ khắc nổi vàng dọc thân kiếm (Vạn Kiếm Quy Tông), mỗi tiếng một hàng
-        b.text(word, x, 1.1 + 3.4 + i * 1.75, z + 0.17, 0.85, 0.1, kit.GILD_TEXT, fit_w=1.6, fit_h=1.15, bold=0.04)
+        b.text(word, x, 1.1 + 3.4 + i * 1.75, z + 0.17, 0.85, 0.1, kit.GILD_TEXT, fit_w=1.6, fit_h=1.15, bold=0.05, unslant=kit.UNSLANT)
     for k in range(6):  # đá chèn quanh chân kiếm
         a = k / 6 * math.tau
         b.box(x + math.cos(a) * 1.9, 1.15, z + math.sin(a) * 1.9, 0.9, 0.55, 0.9, kit.JADE_SHADE, yaw=-a)

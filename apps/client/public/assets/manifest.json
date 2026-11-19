@@ -792,11 +792,11 @@
       "id": "arch_sect",
       "class": "arch",
       "source": "assets/build/raw/arch_sect.glb",
-      "file": "arch_sect.8da4e5de4e.glb",
-      "bytes": 19361756,
-      "rawBytes": 35627644,
-      "triangles": 279104,
-      "rawTriangles": 279104,
+      "file": "arch_sect.66e5d35c33.glb",
+      "bytes": 19378064,
+      "rawBytes": 35890348,
+      "triangles": 280746,
+      "rawTriangles": 280746,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -988,7 +988,7 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 279104
+          "triangles": 280746
         }
       ],
       "dims": {
