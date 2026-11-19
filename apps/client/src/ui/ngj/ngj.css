@@ -1,25 +1,25 @@
 /* Bộ giao diện "Ngọc Giản Kim Văn" (UI-1). Token ở tokens.css. Không dùng JS theo khung: toàn CSS tĩnh + SVG. */
 .ngj-line-gold {
   fill: none;
-  stroke: var(--ngj-gold);
-  stroke-width: var(--ngj-line);
+  stroke: var(--u-h-gold);
+  stroke-width: var(--u-line-2);
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .ngj-fill-gold {
-  fill: var(--ngj-gold-hi);
+  fill: var(--u-h-gold-hi);
   stroke: none;
 }
 .ngj-fill-jade {
-  fill: var(--ngj-jade);
+  fill: var(--u-h-jade);
 }
 .ngj-fill-bead {
-  fill: var(--ngj-jade-hi);
-  stroke: var(--ngj-gold);
+  fill: var(--u-h-jade-hi);
+  stroke: var(--u-h-gold);
   stroke-width: 1;
 }
 .ngj-sysicon {
-  color: var(--ngj-gold);
+  color: var(--u-h-gold);
   flex: none;
 }
 /* icon hệ thống đóng vai icon vật phẩm thiếu trong atlas (ContentIcon 'sys:<tên>') */
@@ -29,7 +29,7 @@
 }
 .ngj-seal {
   display: inline-flex;
-  color: var(--ngj-gold);
+  color: var(--u-h-gold);
   vertical-align: middle;
 }
 .ngj-seal svg {
@@ -75,10 +75,10 @@
   height: var(--c-h);
   padding: 0 28px 0 112px;
   border-radius: 14px / 22px;
-  font-family: var(--ngj-font-title);
+  font-family: var(--u-h-font-title);
   letter-spacing: 0.06em;
   box-shadow:
-    0 0 0 1px var(--ngj-gold),
+    0 0 0 1px var(--u-h-gold),
     inset 0 0 0 3px transparent,
     inset 0 0 0 4px rgba(201, 164, 92, 0.6);
   overflow: hidden;
@@ -99,16 +99,16 @@
   font-size: 17px;
 }
 .ngj-cart[data-mat='paper'] {
-  color: var(--ngj-ink);
-  background: url('./tex/paper.webp') var(--ngj-ivory);
+  color: var(--u-h-ink);
+  background: url('./tex/paper.webp') var(--u-h-ivory);
   background-blend-mode: multiply;
-  border: 2px solid var(--ngj-jade);
+  border: 2px solid var(--u-h-jade);
 }
 .ngj-cart[data-mat='lacquer'] {
-  color: var(--ngj-gold-hi);
-  background: url('./tex/lacquer.webp') var(--ngj-lacquer);
+  color: var(--u-h-gold-hi);
+  background: url('./tex/lacquer.webp') var(--u-h-lacquer);
   background-blend-mode: soft-light;
-  border: 2px solid var(--ngj-gold-lo);
+  border: 2px solid var(--u-h-gold-lo);
 }
 .ngj-cart-motif {
   position: absolute;
@@ -157,10 +157,10 @@
   --m-line: #3e9c8f;
 }
 .ngj-cart[data-mat='lacquer'] {
-  --m-sun: var(--ngj-gold);
+  --m-sun: var(--u-h-gold);
   --m-far: rgba(201, 164, 92, 0.28);
   --m-near: rgba(201, 164, 92, 0.5);
-  --m-line: var(--ngj-gold-hi);
+  --m-line: var(--u-h-gold-hi);
 }
 .ngj-m-sun {
   fill: var(--m-sun);
@@ -187,14 +187,14 @@
   border: 0;
   background: none;
   cursor: pointer;
-  font-family: var(--ngj-font-title);
+  font-family: var(--u-h-font-title);
   font-size: 15px;
   letter-spacing: 0.05em;
-  color: var(--ngj-lacquer);
+  color: var(--u-h-lacquer);
   filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.5));
   transition:
-    filter var(--ngj-dur),
-    transform var(--ngj-dur);
+    filter var(--u-dur-fast),
+    transform var(--u-dur-fast);
 }
 .ngj-btn-in {
   display: inline-flex;
@@ -226,26 +226,26 @@
     inset 0 -2px 0 rgba(122, 95, 44, 0.6);
 }
 .ngj-btn[data-variant='secondary'] .ngj-btn-in {
-  color: var(--ngj-ivory);
+  color: var(--u-h-ivory);
   background: linear-gradient(180deg, rgba(62, 156, 143, 0.32), rgba(36, 89, 79, 0.5));
   box-shadow:
-    inset 0 0 0 1.5px var(--ngj-jade),
+    inset 0 0 0 1.5px var(--u-h-jade),
     inset 0 0 12px rgba(127, 227, 208, 0.12);
 }
 .ngj-btn[data-variant='ghost'] .ngj-btn-in {
-  color: var(--ngj-gold-hi);
+  color: var(--u-h-gold-hi);
   background: rgba(30, 23, 18, 0.35);
   box-shadow: inset 0 0 0 1px rgba(201, 164, 92, 0.75);
 }
 .ngj-btn:hover:not(:disabled) {
-  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.5)) brightness(1.1) drop-shadow(var(--ngj-glow-gold));
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.5)) brightness(1.1) drop-shadow(var(--u-h-glow-gold));
 }
 .ngj-btn:active:not(:disabled) {
   transform: translateY(1px);
 }
 .ngj-btn:focus-visible {
   outline: none;
-  filter: drop-shadow(0 0 0 transparent) drop-shadow(0 0 3px var(--ngj-jade-hi)) drop-shadow(0 0 6px var(--ngj-jade-hi));
+  filter: drop-shadow(0 0 0 transparent) drop-shadow(0 0 3px var(--u-h-jade-hi)) drop-shadow(0 0 6px var(--u-h-jade-hi));
 }
 .ngj-btn:disabled {
   cursor: not-allowed;
@@ -253,7 +253,7 @@
 }
 /* ───────── Slot ───────── */
 .ngj-slot {
-  --q: var(--ngj-gold);
+  --q: var(--u-h-gold);
   position: relative;
   width: 56px;
   height: 56px;
@@ -272,22 +272,22 @@
   height: 76px;
 }
 .ngj-slot[data-q='0'] {
-  --q: var(--ngj-q0);
+  --q: var(--u-q0);
 }
 .ngj-slot[data-q='1'] {
-  --q: var(--ngj-q1);
+  --q: var(--u-q1);
 }
 .ngj-slot[data-q='2'] {
-  --q: var(--ngj-q2);
+  --q: var(--u-q2);
 }
 .ngj-slot[data-q='3'] {
-  --q: var(--ngj-q3);
+  --q: var(--u-q3);
 }
 .ngj-slot[data-q='4'] {
-  --q: var(--ngj-q4);
+  --q: var(--u-q4);
 }
 .ngj-slot[data-q='5'] {
-  --q: var(--ngj-q5);
+  --q: var(--u-q5);
 }
 .ngj-slot-fill {
   position: absolute;
@@ -313,13 +313,13 @@
 }
 .ngj-slot-ring path {
   fill: none;
-  stroke: var(--ngj-gold);
+  stroke: var(--u-h-gold);
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
   stroke-width: 1.5px;
   transition:
-    stroke var(--ngj-dur),
-    filter var(--ngj-dur);
+    stroke var(--u-dur-fast),
+    filter var(--u-dur-fast);
 }
 .ngj-slot[data-q] .ngj-slot-ring path {
   stroke: var(--q);
@@ -342,13 +342,13 @@
   filter: none;
 }
 .ngj-slot:hover:not(:disabled):not([data-empty='true']) .ngj-slot-ring path {
-  stroke: var(--ngj-gold-hi);
+  stroke: var(--u-h-gold-hi);
 }
 .ngj-slot[data-selected] .ngj-slot-ring path,
 .ngj-slot:focus-visible .ngj-slot-ring path {
-  stroke: var(--ngj-gold-hi);
+  stroke: var(--u-h-gold-hi);
   stroke-width: 2.4px;
-  filter: drop-shadow(0 0 4px var(--ngj-gold-hi)) drop-shadow(0 0 9px var(--ngj-gold));
+  filter: drop-shadow(0 0 4px var(--u-h-gold-hi)) drop-shadow(0 0 9px var(--u-h-gold));
 }
 .ngj-slot:focus-visible {
   outline: none;
