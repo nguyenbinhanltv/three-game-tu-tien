@@ -435,6 +435,14 @@ GRASS = C(0x8A8247)
 GRASS_DK = C(0x6E6A40)
 
 
+def kta_stone_col(seed):
+    def fn(pos, nrm):
+        n = fbm3(pos[0] * 2.0, pos[1] * 2.0, pos[2] * 2.0, seed, 3)
+        return Paint(tuple(c * (0.7 + 0.5 * n) for c in C(0x6E7480)), 'stone')
+
+    return fn
+
+
 def grave(b, seed):
     """Gò đất phủ cỏ khô (đất nâu sẫm, đỉnh vàng úa, chùm cỏ dựng), bia đá nghiêng sứt mép, kiếm gãy cắm đầu gò, vài nén hương."""
     rnd = random.Random(seed)
@@ -450,13 +458,18 @@ def grave(b, seed):
         rgb = mix(rgb, C(0x5E636B), low * 0.7)
         return Paint(tuple(c * (0.75 + 0.4 * n) for c in rgb), 'earth')
 
-    blob(b, (0, 0.5 * s, 0), (2.5 * s, 1.0 * s, 1.85 * s), mound, nu=18, nv=9, seed=seed, v0=0.0, v1=0.5, amp=0.22)
-    blob(b, (0, 0.05 * s, 0), (3.6 * s, 0.22 * s, 2.7 * s), mound, nu=18, nv=4, seed=seed + 3, v0=0.0, v1=0.5, amp=0.25)  # váng đất loe ra, mép lẫn vào nền
-    for k in range(18):
+    blob(b, (0, 0.5 * s, 0), (2.5 * s, 1.0 * s, 1.85 * s), mound, nu=28, nv=14, seed=seed, v0=0.0, v1=0.5, amp=0.34)
+    # đá chìm lộ nửa thân quanh gò + vết đất sạt: phá vòm trơn
+    for k in range(7):
         a = rnd.uniform(0, math.tau)
-        d = rnd.uniform(0.0, 1.0) ** 0.6
+        d = rnd.uniform(0.55, 1.05)
+        blob(b, (math.cos(a) * 2.3 * s * d, 0.35 * s * (1.0 - 0.5 * d), math.sin(a) * 1.7 * s * d), (rnd.uniform(0.25, 0.55) * s, rnd.uniform(0.18, 0.4) * s, rnd.uniform(0.25, 0.5) * s), kta_stone_col(seed + 30 + k), nu=8, nv=5, e=1.8, amp=0.3, seed=seed + 31 + k)
+    blob(b, (0, 0.05 * s, 0), (3.6 * s, 0.22 * s, 2.7 * s), mound, nu=18, nv=4, seed=seed + 3, v0=0.0, v1=0.5, amp=0.25)  # váng đất loe ra, mép lẫn vào nền
+    for k in range(70):
+        a = rnd.uniform(0, math.tau)
+        d = rnd.uniform(0.0, 1.05) ** 0.6
         x, z = math.cos(a) * 2.1 * s * d, math.sin(a) * 1.55 * s * d
-        h_ = rnd.uniform(0.35, 0.8)
+        h_ = rnd.uniform(0.3, 0.95)
         y = 1.1 * s * max(0.0, 1.0 - d * d) ** 0.5
         tbox(b, (x, y + h_ / 2 - 0.05, z), (0.05, h_, 0.015), Paint(mix(GRASS, GRASS_DK, rnd.random()), 'plaster'),
              rx=rnd.uniform(-0.35, 0.35), rz=rnd.uniform(-0.35, 0.35), yaw=a)
