@@ -24,7 +24,7 @@ Không đụng file lò xo vạt/asset vật lý của worker -176 (`spring.ts`,
 - ~~Đi lùi / đi ngang~~: đã làm ở NV3-A1 (mục dưới).
 - **Rẽ tại chỗ bằng bước chân** (xoay chân): vẫn chỉ xoắn thân trên. Đã thử bake clip bước tại chỗ từ Walk (chân phải đi tới, chân trái đi lùi, biên độ 0,2–0,5): chân trụ trượt gấp 3–20 lần quãng cần có (xoay quanh hông bán kính ~0,1 m chỉ cần ~0,3 m/chu kỳ), nên bỏ. Làm bằng IK khóa chân trong game ở NV3-A2 (chân đứng yên trong thế giới khi thân xoay, vượt ~40° thì nhấc chân bước tới vị trí mới).
 - **Đi bộ**: trong game tốc độ chạy cố định 7 m/s (`RUN_SPEED`), nên clip đi chỉ hiện khi bị làm chậm (< ~2,4 m/s); logic có test thuần, chưa có tình huống quay riêng.
-- **Đồng bộ VFX với khung clip cho đòn UAL dự phòng**: đòn dự phòng không phát sự kiện `hitAt` (chỉ chiêu K-5 mới có); chưa thêm.
+- ~~Đồng bộ VFX với khung clip cho đòn UAL dự phòng~~: đã làm ở NV3-A3 (mục dưới).
 - **Hệ số bù tay là hằng số theo model, chỉnh bằng mắt + số đo**: chưa tính tự động theo độ rộng ống tay từng model.
 
 ## Số đo
@@ -127,3 +127,12 @@ Chạy sau mixer, chỉ LOD0 trong khung nhìn, đứng trên đất (không ch�
 | nữ, dốc, IK bật | 0,140 | 0,132 | **0,007** |
 
 Hông hạ ~7,6 cm trên dốc. Giới hạn: chưa tính bàn chân nghiêng theo mặt dốc (giữ hướng clip); bậc thang đợi COL-1; bước chân khi xoay chưa có clip nâng đầu gối riêng (chỉ cung cổ chân).
+
+
+## NV3-A3: sự kiện `hitAt` cho đòn UAL dự phòng
+
+`MannequinCharacter.attack(o?: AttackOpts)` (khi `perform()` trả false: pose chiêu chưa nướng xong/không có) giờ phát cùng bộ sự kiện như chiêu K-5: `windup` (kèm `hitIn`, tính bằng tích phân `swingRate` nên đúng cả phần kéo lại chậm/bung nhanh) → `hit` đúng khung clip qua mốc chém → `recovery` giữa phần thu về → `end`; đòn bị chết/đòn khác đè trước khung chém thì `cancel`, không có `hit`. Nhờ đó `onSwingEvent` (tiếng vung, hit-stop, xả hàng chờ sát thương, rung camera) và timeline FX bám đúng khung như chiêu K-5. `skillPose.onFx` truyền `skill`/`combo` vào `attack()`.
+
+Mốc chém: thời điểm tay cầm kiếm (`hand_r`, không gian armature) nhanh nhất trong clip, tính bằng `tools/blender/ual_hit_times.py` → `apps/client/src/game/character/ualHit.json` (chạy lại khi đổi clip `SWING`): Sword_Regular_A 0,217/0,433 s, B 0,25/0,533, C 0,65/2,0, Sword_Attack 0,383/1,533. Test `mannequinAttack.test.ts` kiểm thứ tự sự kiện, hit tới sau ~`hitIn`, cancel khi chết, đòn liên tiếp, mốc nằm trong clip và clip có trong GLB.
+
+Đo trong game (`pnpm shots chrv3anim --group hit`, WebGPU, độ trễ windup → hit so với `hitIn`): đòn A 162 ms vs 147 ms, đòn B 182 vs 174, đòn C 600 vs 551 ms (lệch ≤ 1 khung ở đòn ngắn, 49 ms ở clip dài 2 s).

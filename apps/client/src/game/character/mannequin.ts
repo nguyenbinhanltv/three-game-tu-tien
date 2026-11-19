@@ -28,12 +28,14 @@ import {
   locoMix,
   lookAngles,
   swingRate,
+  swingSeconds,
   turnLagOf,
   xfade,
 } from './mannequinAnim';
 import { MqFeet } from './mannequinFeet';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
-import type { AnimState, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
+import UAL_HIT from './ualHit.json';
+import type { AnimState, AttackOpts, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
 import { FLAGS } from '../../base/flags';
 import { logger } from '../../base/log';
 
@@ -346,6 +348,18 @@ export class MannequinCharacter implements CharacterView {
     recovered?: boolean;
     /** Đã hủy (phá niệm/lướt/di chuyển): không phát thêm `hit`, tắt dần nhanh. */
     cancelled?: boolean;
+  } | null = null;
+  /** Đòn UAL dự phòng đang phát và mốc chém của nó (sự kiện `hitAt`, NV3-A3). */
+  private atk: {
+    act: THREE.AnimationAction;
+    hit: number;
+    dur: number;
+    t: number;
+    fired: boolean;
+    rec: boolean;
+    skill: string;
+    combo: number;
+    kb: boolean;
   } | null = null;
   private pendingPerform: { id: string; left: number; o: PerformOpts } | null = null;
   /** Nghe sự kiện chiêu (VFX, âm, rung camera theo `hitAt`), engine gắn vào. */
@@ -677,13 +691,64 @@ export class MannequinCharacter implements CharacterView {
     return true;
   }
 
-  attack(): void {
+  attack(o: AttackOpts = {}): void {
     if (this.dead) return;
     this.attacks++;
     this.combatT = COMBAT_HOLD;
     const moving = !!this.lastAnim && this.lastAnim.speed > 0.3 && !this.perfBlocked();
     this.swingBase = 1.6;
-    this.oneShot(SWING[this.swing++ % SWING.length]!, 1.6, moving);
+    const clip = SWING[this.swing++ % SWING.length]!;
+    if (!this.oneShot(clip, 1.6, moving)) return;
+    this.endAtk();
+    // Đòn dự phòng cũng phát sự kiện chiêu để VFX/sát thương/tiếng khớp khung chém (mốc từ tools/blender/ual_hit_times.py).
+    const h = (UAL_HIT as Record<string, { hit: number; dur: number }>)[clip];
+    if (!h || !this.shot) return;
+    this.atk = {
+      act: this.shot,
+      hit: h.hit,
+      dur: h.dur,
+      t: 0,
+      fired: false,
+      rec: false,
+      skill: o.skill ?? '',
+      combo: o.combo ?? this.swing % SWING.length,
+      kb: !!o.kb,
+    };
+    const hitIn = V3_ANIM ? swingSeconds(0, h.hit, h.dur, this.swingBase) : h.hit / this.swingBase;
+    this.emitAtk('windup', 0, hitIn);
+  }
+
+  private emitAtk(kind: SkillEvent['kind'], index: number, hitIn?: number): void {
+    const k = this.atk;
+    if (!k) return;
+    this.onSkillEvent?.({ kind, skill: k.skill, index, combo: k.combo, t: k.t, kb: k.kb, ...(hitIn !== undefined && { hitIn }) });
+  }
+
+  /** Kết thúc theo dõi đòn dự phòng: `cancel` nếu chưa tới khung chém, `end` nếu đã qua. */
+  private endAtk(): void {
+    const k = this.atk;
+    if (!k) return;
+    this.emitAtk(k.fired ? 'end' : 'cancel', k.fired ? 1 : 0);
+    this.atk = null;
+  }
+
+  /** Phát `hit` đúng lúc clip đòn dự phòng qua mốc chém (đồng hồ clip nên đứng theo hit-stop), `recovery` giữa phần thu về. */
+  private updateAtk(dt: number): void {
+    const k = this.atk;
+    if (!k) return;
+    if (this.shot !== k.act || this.perf) {
+      this.endAtk();
+      return;
+    }
+    k.t += dt;
+    const ct = k.act.time;
+    if (!k.fired && ct >= k.hit) {
+      k.fired = true;
+      this.emitAtk('hit', 0);
+    } else if (k.fired && !k.rec && ct >= k.hit + (k.dur - k.hit) * 0.5) {
+      k.rec = true;
+      this.emitAtk('recovery', 1);
+    }
   }
 
   /**
@@ -890,6 +955,7 @@ export class MannequinCharacter implements CharacterView {
     this.dead = a.dead;
     this.lastAnim = a;
     this.updatePerform(dt, a);
+    this.updateAtk(dt);
     this.grounded = !(a.flying || a.airborne || a.sky);
     const rawName = baseClipOf({ ...a, combat: a.combat || this.combatT > 0 });
     const name = this.baseFor(a, rawName);

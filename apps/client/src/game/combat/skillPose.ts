@@ -110,7 +110,7 @@ export class SkillPoses {
     const done = pose
       ? model.perform?.(pose, { ...performOpts(skill, extra.n, extra.gap), from: Math.max(0, releaseAt(skill, pose) - FX_LEAD) })
       : false;
-    if (!done && ATTACK_FX.has(fx)) model.attack();
+    if (!done && ATTACK_FX.has(fx)) model.attack({ skill: skill.id, combo: extra.n });
     return 0;
   }
 

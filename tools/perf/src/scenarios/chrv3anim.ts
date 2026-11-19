@@ -57,7 +57,7 @@ const PEN_INSTALL = `(() => {
 export default {
   name: 'chrv3anim',
   desc: 'Animation nhân vật v3: video cũ | mới ghép theo mốc từng tình huống (3,5 s, toàn thân, hai góc) + đo tay xuyên thân',
-  usage: '[--genders m,f] [--variants old,new,noarm] [--group all|base|loco|feet] [--sit <tên chứa>] [--size 960x600] [--nopen]',
+  usage: '[--genders m,f] [--variants old,new,noarm] [--group all|base|loco|feet|hit] [--sit <tên chứa>] [--size 960x600] [--nopen]',
   async run(r) {
     const viewport = size('960x600');
     const variants = list('--variants', 'old,new');
@@ -337,9 +337,39 @@ export default {
             },
           },
         ];
+        // A3: đòn UAL dự phòng (không pose chiêu) phát windup/hit/recovery/end; đo trễ windup→hit so với hitIn rồi in ra log.
+        const hitSits: Sit[] = [
+          {
+            name: 'đòn dự phòng (hitAt)',
+            prep: async () => {
+              await gm(page, 'killall', 800);
+              await gm(page, 'tp 2048 2088', 1500);
+              await cam(page, { yaw: 0.9, pitch: 0.2, dist: 3.4 });
+            },
+            cam: async () => void (await sleep(1)),
+            run: async () => {
+              const res = await page.evaluate(
+                `(async () => { const g = window.__game; const md = g.ents.players.get(g.sid).model; const out = [];
+                  const old = md.onSkillEvent; md.onSkillEvent = (e) => { out.push({ k: e.kind, t: +performance.now().toFixed(0), hitIn: e.hitIn, skill: e.skill, combo: e.combo }); old && old(e); };
+                  for (let i = 0; i < 3; i++) { md.attack({ skill: 'skl_phi_kiem' }); await new Promise((r) => setTimeout(r, 900)); }
+                  md.onSkillEvent = old; return out; })()`,
+              );
+              console.log(`[shots:chrv3anim] ${tag} · sự kiện đòn dự phòng: ${JSON.stringify(res)}`);
+              await sleep(300);
+            },
+          },
+        ];
         const pick = list('--sit', '')[0];
         const chosen = (
-          group === 'base' ? sits : group === 'loco' ? locoSits : group === 'feet' ? feetSits : [...sits, ...locoSits]
+          group === 'base'
+            ? sits
+            : group === 'loco'
+              ? locoSits
+              : group === 'feet'
+                ? feetSits
+                : group === 'hit'
+                  ? hitSits
+                  : [...sits, ...locoSits]
         ).filter((x) => !pick || x.name.includes(pick));
         const marks: { name: string; at: number }[] = [];
         await hold(FRONT, 350); // quay mặt về phía camera
