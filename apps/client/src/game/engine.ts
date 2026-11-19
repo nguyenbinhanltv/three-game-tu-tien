@@ -66,6 +66,8 @@ import type { LacKiemGarden } from './world/lacKiemGarden';
 import type { DoanMachArt } from './world/doanMachArt';
 import type { LacKiemSkyScene } from './world/lacKiemSky';
 import type { ThienKhuyetSkyScene } from './world/thienKhuyetSky';
+import type { VanHaiWow } from './world/vanHaiWow';
+import type { VanHaiGarden } from './world/vanHaiGarden';
 import { PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { createWorldMaterial } from '../render/materials/world';
@@ -223,6 +225,9 @@ export class Game {
   thienKhuyetSky: ThienKhuyetSkyScene | null = null;
   /** GLB kiến trúc Thiên Khuyết (MAP-4). */
   tkAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
+  /** Vân Hải (MAP-3): thuyền tiên, cá kình mây, cầu vòng linh khí, hải đăng. */
+  vanHaiWow: VanHaiWow | null = null;
+  vanHaiGarden: VanHaiGarden | null = null;
   /** Vườn hoa, lùm trúc, đá rêu quanh tông môn (MAP-1). */
   lacKiemGarden: LacKiemGarden | null = null;
   /** Cây thẻ alpha thay cây Tripo ở Lạc Kiếm (MAP-1 bản B). */

@@ -24,6 +24,8 @@ import { LacKiemGarden } from '../world/lacKiemGarden';
 import { DoanMachArt } from '../world/doanMachArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
+import { VanHaiWow } from '../world/vanHaiWow';
+import { VanHaiGarden } from '../world/vanHaiGarden';
 import { applyGrading, markBloom } from '../../render/post';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { bhTod, GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../../render/grading';
@@ -378,6 +380,12 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.thienKhuyetSky.group);
     void loadTkModel(eng, q.shadows);
   }
+  if (id === 'van_hai') {
+    eng.vanHaiWow = new VanHaiWow(terrainOf(id).def);
+    eng.scene.add(eng.vanHaiWow.group);
+    eng.vanHaiGarden = new VanHaiGarden(terrainOf(id));
+    eng.scene.add(eng.vanHaiGarden.group);
+  }
   if (levelAssets(id).doanMachArt) {
     eng.doanMachArt = new DoanMachArt();
     eng.scene.add(eng.doanMachArt.group);
@@ -480,6 +488,16 @@ export function unloadLevel(eng: Game): void {
     drop(eng.lacKiemGarden.group);
     eng.lacKiemGarden.dispose();
     eng.lacKiemGarden = null;
+  }
+  if (eng.vanHaiGarden) {
+    drop(eng.vanHaiGarden.group);
+    eng.vanHaiGarden.dispose();
+    eng.vanHaiGarden = null;
+  }
+  if (eng.vanHaiWow) {
+    drop(eng.vanHaiWow.group);
+    eng.vanHaiWow.dispose();
+    eng.vanHaiWow = null;
   }
   if (eng.lacKiemSky) {
     drop(eng.lacKiemSky.group);
