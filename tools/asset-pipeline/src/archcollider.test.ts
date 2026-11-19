@@ -120,6 +120,30 @@ describe('file hộp kiến trúc khớp GLB', () => {
     expect(r.status, r.stderr).toBe(0);
   }, 120_000);
 
+  it('arch_thien_khuyet.boxes.json không cũ so với GLB và địa hình (COL-C)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const args =
+      '--id arch_thien_khuyet --origin 1044,80,374 --level thien_khuyet --shift tk_statue:-2.5798564656485 --cell 1 --check'.split(' ');
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/archcollider.cli.ts', ...args], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
+
+  it('arch_than_tang.boxes.json không cũ so với GLB và địa hình (bí cảnh, COL-C)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const args = (
+      '--id arch_than_tang --origin 1520,149.92207108842044,1300 --level than_tang --cell 1 --region 1422,1202,1618,1398 --place dungeon ' +
+      '--prefix tt --flat tt_bay,tt_gate,tt_statue,tt_hoard,tt_mask,tt_brazier --flatDy 0.05 --dome 135,80 --check'
+    ).split(' ');
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/archcollider.cli.ts', ...args], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
+
   it('arch_xich_tan.boxes.json không cũ so với GLB và địa hình (bí cảnh, COL-C)', async () => {
     const { spawnSync } = await import('node:child_process');
     const args =

@@ -1,8 +1,10 @@
 import { instantiateShapes, type LocalShape, registerCollision, type Shape } from '@dtl/shared';
+import archTk from '../data/colliders/arch_thien_khuyet.boxes.json';
 import archKt from '../data/colliders/arch_kiem_trung.boxes.json';
 import archKn from '../data/colliders/arch_kinh_nguyet.boxes.json';
 import archPm from '../data/colliders/arch_phuc_mach.boxes.json';
 import archXk from '../data/colliders/arch_xich_tan.boxes.json';
+import archTt from '../data/colliders/arch_than_tang.boxes.json';
 import archSect from '../data/colliders/arch_sect.boxes.json';
 import libJson from '../data/colliders/lib.json';
 import extraLib from '../data/colliders/extra-lib.json';
@@ -58,7 +60,7 @@ export function propShapesOf(level: string, lib: Record<string, LocalShape[]> = 
     const id = f.ids[r[0]!]!;
     const local = lib[id];
     if (!local?.length) continue;
-    instantiateShapes(local, { x: r[1]!, z: r[2]!, y: r[3]!, yaw: r[4]!, s: r[5]!, sy: r[6] }, out, id);
+    instantiateShapes(local, { x: r[1]!, z: r[2]!, y: r[3]!, yaw: r[4]!, s: r[5]!, sy: r[6], lean: r[7] }, out, id);
   }
   return out;
 }
@@ -75,9 +77,11 @@ export interface ArchFile {
 }
 export const ARCH_BY_LEVEL: Record<string, ArchFile[]> = {
   van_lam: [archSect as unknown as ArchFile],
+  thien_khuyet: [archTk as unknown as ArchFile],
   kiem_trung: [archKt as unknown as ArchFile],
   phuc_mach: [archPm as unknown as ArchFile],
   xich_tan_khich: [archXk as unknown as ArchFile],
+  than_tang: [archTt as unknown as ArchFile],
   kinh_nguyet: [archKn as unknown as ArchFile],
 };
 
