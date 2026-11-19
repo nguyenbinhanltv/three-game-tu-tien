@@ -2,7 +2,7 @@ import { SPAWN_POINT, TELE_PADS } from '@dtl/shared';
 import { describe, expect, it } from 'vitest';
 import { ARCH_BY_LEVEL } from './colliders';
 import { reachability } from './connect';
-import { NPCS } from './index';
+import { LEVELS, NPCS } from './index';
 
 // COL-1: collider mới không được bịt lối tới NPC / trận truyền tống trong tông môn (đi bộ từ điểm hồi sinh, theo đúng luật `stepMove`).
 describe('thông đường Lạc Kiếm Tông', () => {
@@ -29,4 +29,18 @@ describe('thông đường Lạc Kiếm Tông', () => {
     expect(solids.length).toBeGreaterThan(3);
     expect(solids.filter((s) => reach(s.x, s.z)).length / solids.length).toBeLessThan(0.5);
   }, 120_000);
+});
+
+// COL-B: bí cảnh Phục Mạch Quật / Kính Nguyệt Cung (collider kiến trúc từ GLB): đi bộ từ điểm vào tới lối ra và tâm hầm (nơi giao chiến).
+describe('thông đường bí cảnh (COL-B)', () => {
+  for (const level of ['phuc_mach', 'kinh_nguyet']) {
+    it(`${level}: từ điểm vào tới lối ra và tâm hầm`, () => {
+      const dg = LEVELS[level]!.dungeon!;
+      const b = dg.bound ?? 90;
+      const box = { x0: dg.center.x - b, z0: dg.center.z - b, x1: dg.center.x + b, z1: dg.center.z + b };
+      const reach = reachability(level, dg.spawn, box, 2);
+      expect(reach(dg.exit.x, dg.exit.z), 'lối ra').toBe(true);
+      expect(reach(dg.center.x, dg.center.z), 'tâm hầm').toBe(true);
+    }, 120_000);
+  }
 });
