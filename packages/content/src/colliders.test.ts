@@ -41,4 +41,13 @@ describe('collider prop theo level (COL-1 / C-2)', () => {
     for (const s of shapes) expect(s).toMatchObject({ k: 'cyl', fly: undefined });
     expect(shapes.some((s) => s.k === 'cyl' && s.r > 1.4)).toBe(true); // cây lớn điểm nhìn
   });
+  it('Vân Hải: mỗi cây vườn có trụ thân mảnh, ngự kiếm bay xuyên (COL-B)', () => {
+    const f = INST_BY_LEVEL.van_hai!;
+    const k = f.ids.indexOf('x_vh_trunk');
+    expect(k).toBeGreaterThanOrEqual(0);
+    const shapes = propShapesOf('van_hai').filter((s) => s.tag === 'x_vh_trunk');
+    expect(shapes.length).toBe(f.p.filter((r) => r[0] === k).length);
+    expect(shapes.length).toBeGreaterThan(1000);
+    for (const s of shapes) expect(s).toMatchObject({ k: 'cyl', fly: 'pass' });
+  });
 });

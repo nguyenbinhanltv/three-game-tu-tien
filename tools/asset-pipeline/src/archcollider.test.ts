@@ -93,4 +93,30 @@ describe('file hộp kiến trúc khớp GLB', () => {
     );
     expect(r.status, r.stderr).toBe(0);
   }, 60_000);
+
+  it('arch_phuc_mach.boxes.json không cũ so với GLB và địa hình (bí cảnh, COL-B)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const args = (
+      '--id arch_phuc_mach --origin 1520,149.92207108842044,1300 --level phuc_mach --place dungeon --prefix pm --flat pm_wall_ ' +
+      '--flatDy -4 --dome 135,75 --cell 1 --region 1422,1202,1618,1398 --check'
+    ).split(' ');
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/archcollider.cli.ts', ...args], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
+
+  it('arch_kinh_nguyet.boxes.json không cũ so với GLB và địa hình (bí cảnh, COL-B)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const args = (
+      '--id arch_kinh_nguyet --origin 1520,149.92207108842044,1300 --level kinh_nguyet --place dungeon --prefix kn ' +
+      '--flat kn_bay,kn_ring,kn_basin,kn_shard,kn_float,kn_frag --flatDy 0.05 --dome 135,80 --cell 1 --region 1422,1202,1618,1398 --check'
+    ).split(' ');
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/archcollider.cli.ts', ...args], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
 });
