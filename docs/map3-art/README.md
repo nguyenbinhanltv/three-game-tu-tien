@@ -14,15 +14,19 @@ Tái thiết kế mỹ thuật Vân Hải (level `van_hai`, chương 3). Bảng 
 - Đăng ký mood mới ở: `render/grading.ts`, `render/sky.ts` (màu đỉnh trời), `render/atmosphere.ts` (quầng đèn, cột linh quang), `engine/common.ts` (đèn lồng), `content/src/check.ts`.
 - Chụp ảnh: `pnpm shots vanhai --out <thư mục tuyệt đối> [--tag truoc|sau] [--perf 1] [--video 1]` (6 góc × 4 thời điểm × 1080p/720p). Cổng khác khi chạy song song: `PORT=… CLIENT_PORT=…`. Ảnh "trước" chụp ở worktree sạch của `main` với cùng kịch bản.
 
-## PR2: điểm wow (`vanHaiWow.ts`)
+## PR2: điểm wow (`vanHaiWow.ts`) và đảo/biển mây
 
-Chỉ để nhìn, không va chạm, không qua mạng. Vị trí suy từ `terrainOf('van_hai')` (đảo thật, đảo giả). Hàm tư thế thuần theo thời gian (có test `vanHaiWow.test.ts`).
+Chỉ để nhìn, không va chạm, không qua mạng. Hàm tư thế thuần theo thời gian (test `vanHaiWow.test.ts`). **Không đặt gì trên đảo giả** (`fakeIslands` là bẫy, chỉ thần thức V lộ ra): tháp và cầu vòng chỉ ở đảo thật và mõm đá.
 
 | Vật | Mô tả | Draw call |
 | --- | --- | --- |
-| Thuyền tiên | 4 thuyền lượn elip quanh Phù Đảo Các cao hơn đỉnh đảo ≥ 20 m; thân loft mịn (lacquer lam + bạc), 2 buồm lửa TSL | 2 (InstancedMesh) |
-| Cá kình băng mây | mẹ 150 m + con 54 m bơi vòng r 700–760 m; thân mây bán trong suốt, uốn đuôi trong shader | 2 |
-| Cầu vòng linh khí | vòm sáng bạc–lam nối Phù Đảo Các/đảo thật với từng đảo giả, dải sáng chạy dọc | 1 |
-| Hải đăng, tháp canh | tháp trên 4 đảo giả; 4 mõm đá nhô khỏi biển mây (cách đảo > 300 m) có tháp canh; đèn + chùm tia xoay (mạnh về đêm, theo `beaconParams`) | 3 |
+| Thuyền tiên | 5 thuyền (dài ~34–38 m) lượn sát từng đảo, cao hơn mặt đảo ≥ 30 m: thân cong đầu rồng, lầu ba tầng mái cong đầu đao, buồm cánh đôi phát sáng (vàng lửa → lam bạc), đèn lồng treo | 3 (InstancedMesh) |
+| Cá kình băng mây | mẹ 420 m (r 700 m, y 345) + con 150 m (r 640 m, y 305); thân mây bán trong suốt có đầu, vây, đuôi, nếp bụng, mạch linh quang, uốn đuôi trong shader, bụi sáng lấp lánh; bụng luôn cao hơn đỉnh cột buồm mọi thuyền (test) | 4 |
+| Cầu vòng linh khí | vòm sáng dựng đứng (không có mặt ngang) nối mép đảo thật gần nhất với từng mõm đá | 1 |
+| Vọng nguyệt lâu | 6 mõm đá nhô khỏi biển mây (cách đảo > 150 m, cách mép bản đồ ≥ 260 m vì vách mép cao 210 m) có tháp tám cạnh năm tầng mái cong, đèn linh quang + chùm tia xoay (mạnh về đêm, theo `beaconParams`) | 3 |
 
-Chụp ảnh: `window.__game.vanHaiWow.freeze(giây)` giữ đồng hồ để cá nằm trong khung (kịch bản `vanhai` tự gọi).
+Chân đảo (`skyIslands.ts` `buildSkirt`): lưới 112 cạnh dùng chung đỉnh (pháp tuyến mịn, hết low-poly), vách đá ridged + gờ tầng nhô ra, vân tầng lam xám/nâu đất, rêu ở mặt ngửa, vật liệu đá có hạt theo toạ độ thế giới. Biển mây khối (`buildBillows`): 520 khối mây phình dẹt sáng/tối theo hướng mặt, vân chuyển động, mờ khi camera gần. Mặt đất Vân Hải dùng bộ texture `terrain` (`ground` trong `van_hai.assets.json`) và cỏ thẻ mặc định (xanh).
+
+Chụp ảnh: `window.__game.vanHaiWow.freeze(giây)` giữ đồng hồ để cá nằm trong khung (kịch bản `vanhai` tự gọi); `--probe 1` in danh sách mesh.
+
+Chưa làm: cây thẻ alpha thay bonsai tùng (cần asset cây mới), normal map đá bake từ Blender, LOD mõm đá.

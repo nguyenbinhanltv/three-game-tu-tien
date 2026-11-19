@@ -29,8 +29,8 @@ export const VIEWS: View[] = [
   { name: 'cau', wow: 300, eye: [-70, 132, 30], at: [-150, 126, 60], fov: 60 },
   { name: 'tungdai', wow: 450, eye: [-380, 150, 170], at: [-360, 130, 168], fov: 62 },
   { name: 'trencao', wow: 700, eye: [420, 330, -300], at: [-40, 110, 60], fov: 58 },
-  { name: 'haidang', wow: 100, eye: [150, 146, -96], at: [210, 142, -168], fov: 62 },
-  { name: 'kinh', wow: 569, eye: [0, 150, 0], at: [-594, 250, 176], fov: 62 },
+  { name: 'laucanh', wow: 100, eye: [70, 205, -400], at: [6, 195, -694], fov: 62 },
+  { name: 'kinh', wow: 569, eye: [0, 150, 0], at: [-672, 345, 198], fov: 62 },
   { name: 'phongxa', wow: 914, eye: [0, 140, -60], at: [-500, 120, -700], fov: 66 },
 ];
 

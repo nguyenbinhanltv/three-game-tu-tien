@@ -10,13 +10,13 @@ describe('Vân Hải: điểm nhấn trên trời (MAP-3)', () => {
     expect((def.fakeIslands ?? []).length).toBeGreaterThan(2);
   });
 
-  it('thuyền bay cao hơn đỉnh mọi đảo ≥ 20 m và hướng mũi liên tục', () => {
+  it('thuyền bay cao hơn đỉnh mọi đảo ≥ 25 m và hướng mũi liên tục', () => {
     const top = Math.max(...(def.islands ?? []).map((i) => i.y));
     for (const s of SHIPS) {
       let prev = shipPose(s, 0).yaw;
       for (let t = 0; t <= 600; t += 1) {
         const p = shipPose(s, t);
-        expect(p.y).toBeGreaterThan(top + 20);
+        expect(p.y).toBeGreaterThan(top + 25);
         let d = Math.abs(p.yaw - prev);
         if (d > Math.PI) d = Math.PI * 2 - d;
         expect(d).toBeLessThan(0.1);
@@ -25,28 +25,37 @@ describe('Vân Hải: điểm nhấn trên trời (MAP-3)', () => {
     }
   });
 
-  it('cá kình bơi cao hơn đỉnh mọi đảo ≥ 60 m (kể cả khi đuôi uốn) và cao hơn đỉnh cột buồm thuyền', () => {
+  it('bụng cá kình luôn cao hơn đỉnh cột buồm của mọi thuyền (kể cả sóng đuôi) và cao hơn đảo ≥ 60 m', () => {
     const top = Math.max(...(def.islands ?? []).map((i) => i.y));
+    let mastTop = 0;
+    for (const s of SHIPS) {
+      for (let t = 0; t < 3600; t += 2) mastTop = Math.max(mastTop, shipPose(s, t).y + 13.5 * s.scale);
+    }
     for (const w of WHALES) {
-      for (let t = 0; t < 1800; t += 10) expect(whalePose(w, t).y - w.length * 0.1).toBeGreaterThan(top + 60);
+      // bán kính thân ≈ 0,12 chiều dài; sóng đuôi biên độ 0,05 chiều dài; nhịp lên xuống ±14 m
+      const belly = (t: number) => whalePose(w, t).y - 0.12 * w.length - 0.05 * w.length;
+      for (let t = 0; t < 3600; t += 2) {
+        expect(belly(t)).toBeGreaterThan(mastTop + 15);
+        expect(belly(t)).toBeGreaterThan(top + 60);
+      }
     }
   });
 
-  it('cầu vòng nối mỗi đảo giả với đảo thật gần nhất, hai đầu trong mép', () => {
+  it('cầu vòng chỉ nối đảo thật với mõm đá, không chạm đảo giả; tháp chỉ ở mõm đá', () => {
     const arcs = rainbowArcs(def);
-    expect(arcs.length).toBe((def.fakeIslands ?? []).length);
+    expect(arcs.length).toBe(STACKS.length);
     for (const a of arcs) {
-      expect(a.rise).toBeGreaterThan(20);
-      expect(Math.hypot(a.bx - a.ax, a.bz - a.az)).toBeGreaterThan(30);
+      expect(a.rise).toBeGreaterThan(50);
+      expect(Math.hypot(a.bx - a.ax, a.bz - a.az)).toBeGreaterThan(100);
+      for (const f of def.fakeIslands ?? []) {
+        expect(Math.hypot(a.ax - f.x, a.az - f.z)).toBeGreaterThan(f.r + 30);
+        expect(Math.hypot(a.bx - f.x, a.bz - f.z)).toBeGreaterThan(f.r + 30);
+      }
+    }
+    for (const tw of towersOf(def)) {
+      expect(tw.stack).toBe(true);
+      for (const f of def.fakeIslands ?? []) expect(Math.hypot(tw.x - f.x, tw.z - f.z)).toBeGreaterThan(f.r + 30);
     }
   });
 
-  it('mõm đá cách mọi đảo thật > 300 m và nằm trong bản đồ; mỗi đảo giả có một hải đăng', () => {
-    for (const s of STACKS) {
-      expect(s.x).toBeGreaterThan(0);
-      expect(s.x).toBeLessThan(def.size);
-      for (const i of def.islands ?? []) expect(Math.hypot(s.x - i.x, s.z - i.z) - i.r).toBeGreaterThan(300);
-    }
-    expect(towersOf(def).length).toBe((def.fakeIslands ?? []).length + STACKS.length);
-  });
 });

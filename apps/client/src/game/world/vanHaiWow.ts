@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { clamp, float, mix, normalView, positionLocal, smoothstep, texture, time, uv, vec2, vec3 } from 'three/tsl';
+import { clamp, float, instanceIndex, mix, normalView, positionLocal, smoothstep, texture, time, uv, vec2, vec3 } from 'three/tsl';
 import { fbm, hash01, type TerrainDef } from '@dtl/shared';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { createWorldMaterial } from '../../render/materials/world';
@@ -10,9 +10,9 @@ import { getCloudNoise } from '../../render/noiseTex';
  * Điểm nhấn Vân Hải (MAP-3), chỉ để nhìn, không va chạm, không mạng:
  *  - thuyền tiên buồm lửa lượn quanh các đảo (2 draw call cho mọi thuyền: thân + buồm, `InstancedMesh`),
  *  - cá kình băng mây khổng lồ bơi ngang trời, trên cao hơn mọi đảo (thân mây bán trong suốt, uốn đuôi trong shader; hai con: mẹ và con),
- *  - cầu vòng linh khí nối Phù Đảo Các với các đảo giả (một mesh cộng sáng, dải bạc–lam chạy dọc),
- *  - hải đăng trên đảo giả và tháp canh trên mõm đá nhô khỏi biển mây (một mesh đá, một đèn, một chùm tia xoay).
- * Mọi vị trí suy từ `TerrainDef` (đảo thật, đảo giả) nên không cần dữ liệu riêng; hàm tư thế là hàm thuần của thời gian.
+ *  - cầu vòng linh khí dựng đứng nối mép đảo thật với mõm đá (một mesh cộng sáng, dải bạc–lam chạy dọc),
+ *  - vọng nguyệt lâu trên mõm đá nhô khỏi biển mây (không đặt trên đảo giả: đảo giả là bẫy) (một mesh đá, một đèn, một chùm tia xoay).
+ * Vị trí suy từ `TerrainDef` (đảo thật) và danh sách mõm đá; không đụng đảo giả; hàm tư thế là hàm thuần của thời gian.
  */
 
 // ---------- hàm thuần (có test) ----------
@@ -39,12 +39,13 @@ interface ShipPlan {
   scale: number;
 }
 
-/** Bốn thuyền, quỹ đạo elip lệch tâm quanh Phù Đảo Các; cao hơn mặt đảo ≥ 30 m để không cắm vào cây/đỉnh. */
+/** Năm thuyền tiên, mỗi thuyền lượn quanh một đảo (sát đảo, cao hơn mặt đảo ≥ 30 m để không cắm vào cây/đỉnh). */
 export const SHIPS: ShipPlan[] = [
-  { cx: 1024, cz: 1024, a: 360, b: 250, w: 0.026, phase: 0.2, y: 182, scale: 1.7 },
-  { cx: 900, cz: 900, a: 520, b: 330, w: -0.02, phase: 2.4, y: 198, scale: 2.1 },
-  { cx: 1200, cz: 1180, a: 300, b: 420, w: 0.017, phase: 4.1, y: 174, scale: 1.5 },
-  { cx: 760, cz: 1300, a: 250, b: 190, w: -0.03, phase: 5.2, y: 188, scale: 1.3 },
+  { cx: 1024, cz: 1024, a: 175, b: 150, w: 0.05, phase: 0.2, y: 178, scale: 2.4 },
+  { cx: 1420, cz: 1132, a: 250, b: 215, w: -0.04, phase: 2.4, y: 182, scale: 2.7 },
+  { cx: 664, cz: 1192, a: 255, b: 225, w: 0.037, phase: 4.1, y: 177, scale: 2.5 },
+  { cx: 1552, cz: 604, a: 245, b: 225, w: -0.036, phase: 1.1, y: 186, scale: 2.6 },
+  { cx: 568, cz: 568, a: 250, b: 230, w: 0.04, phase: 5.2, y: 180, scale: 2.4 },
 ];
 
 export function shipPose(p: ShipPlan, t: number): Pose {
@@ -69,10 +70,10 @@ export interface WhalePlan {
   length: number;
 }
 
-/** Cá mẹ bơi vòng lớn trên cao, cao hơn thuyền và mọi đảo (chu vi ~3,9 km, một vòng ~29 phút); cá con theo sau, lệch vào trong. */
+/** Cá mẹ (420 m) bơi vòng lớn trên cao, bụng luôn cao hơn đỉnh cột buồm của mọi thuyền (test `vanHaiWow.test.ts`); cá con (150 m) theo sau, lệch vào trong. Một vòng ~29 phút. */
 export const WHALES: WhalePlan[] = [
-  { cx: 1024, cz: 1024, r: 620, y: 260, w: 0.0036, phase: 0.8, length: 150 },
-  { cx: 1024, cz: 1024, r: 580, y: 240, w: 0.0036, phase: 0.8 - 0.19, length: 54 },
+  { cx: 1024, cz: 1024, r: 700, y: 345, w: 0.0036, phase: 0.8, length: 420 },
+  { cx: 1024, cz: 1024, r: 640, y: 305, w: 0.0036, phase: 0.8 - 0.2, length: 150 },
 ];
 
 export function whalePose(p: WhalePlan, t: number): Pose {
@@ -104,28 +105,25 @@ export interface Arc {
 }
 
 /**
- * Cầu vòng linh khí: từ Phù Đảo Các tới các đảo giả, và từ đảo thật gần mỗi đảo giả xa (chưa được nối) tới nó.
- * Đầu nào ở đảo thật cách tâm đảo `r - 6` (trong mép), đầu ở đảo giả đặt trên mặt đảo.
+ * Cầu vòng linh khí: vòm sáng dựng đứng (không có mặt ngang, không giống lối đi) từ mép đảo thật gần nhất tới đỉnh từng mõm đá.
+ * Không bao giờ chạm đảo giả (đảo giả là bẫy, chỉ thần thức mới lộ). Đầu ở đảo thật cách tâm đảo `r - 6`.
  */
 export function rainbowArcs(def: TerrainDef): Arc[] {
   const real = (def.islands ?? []).map((i) => ({ x: i.x, z: i.z, r: i.r, y: i.y }));
-  const fakes = def.fakeIslands ?? [];
   const arcs: Arc[] = [];
-  for (const f of fakes) {
-    // đảo thật gần nhất
+  for (const s of STACKS) {
     let best = real[0];
     let bd = Infinity;
     for (const r of real) {
-      const d = Math.hypot(r.x - f.x, r.z - f.z) - r.r;
+      const d = Math.hypot(r.x - s.x, r.z - s.z) - r.r;
       if (d < bd) {
         bd = d;
         best = r;
       }
     }
     if (!best) continue;
-    const [ax, az] = rimToward(best, f.x, f.z, 6);
-    const [bx, bz] = rimToward({ x: f.x, z: f.z, r: f.r }, best.x, best.z, 6);
-    arcs.push({ ax, ay: best.y + 1.5, az, bx, by: f.y + 1.5, bz, rise: 26 + bd * 0.12 });
+    const [ax, az] = rimToward(best, s.x, s.z, 6);
+    arcs.push({ ax, ay: best.y + 1.5, az, bx: s.x, by: s.top + 6, bz: s.z, rise: 60 + bd * 0.14 });
   }
   return arcs;
 }
@@ -140,18 +138,20 @@ export interface Tower {
   stack: boolean;
 }
 
-/** Mõm đá nhô khỏi biển mây, cách mọi đảo thật > 300 m (người chơi trên sàn mây không đụng vào chân). */
+/** Mõm đá nhô khỏi biển mây: cách mọi đảo thật > 150 m và cách mép bản đồ ≥ 260 m (vách mép cao 210 m, dốc xuống sàn mây trong ~200 m). */
 export const STACKS: { x: number; z: number; top: number }[] = [
-  { x: 160, z: 160, top: 168 },
-  { x: 1950, z: 200, top: 176 },
-  { x: 1900, z: 1560, top: 160 },
-  { x: 300, z: 1900, top: 172 },
+  { x: 300, z: 300, top: 168 },
+  { x: 1790, z: 300, top: 176 },
+  { x: 1760, z: 1560, top: 160 },
+  { x: 300, z: 1790, top: 172 },
+  { x: 1030, z: 330, top: 180 },
+  { x: 1560, z: 1790, top: 176 },
 ];
 
 export function towersOf(def: TerrainDef): Tower[] {
-  const out: Tower[] = (def.fakeIslands ?? []).map((f) => ({ x: f.x, y: f.y, z: f.z, h: 24, stack: false }));
-  for (const s of STACKS) out.push({ x: s.x, y: s.top, z: s.z, h: 16, stack: true });
-  return out;
+  // Chỉ đặt trên mõm đá (không đặt trên đảo giả: đảo giả là bẫy, tháp đứng đó sẽ lộ ra và không mờ theo thần thức).
+  void def;
+  return STACKS.map((s) => ({ x: s.x, y: s.top, z: s.z, h: 30, stack: true }));
 }
 
 // ---------- dựng lưới ----------
@@ -220,80 +220,175 @@ function loft(zs: number[], rings: [number, number][][], closeEnds: boolean): TH
   return g;
 }
 
-// --- thuyền tiên (mũi +z, dài ~14, hệ trục cục bộ trước khi nhân tỉ lệ) ---
+// --- thuyền tiên: thân cong đầu rồng, lầu ba tầng mái cong, buồm cánh đôi phát sáng, đèn lồng (mũi +z, dài ~14 trước khi nhân tỉ lệ) ---
 
 const HULL_L = 14;
+const GOLD = 0xd8c48a;
+const SILVER = 0xdde7f0;
+const GLAZE = 0x2a6bb4;
+const LACQ = 0x1b3a68;
+const WHITE = 0xeef3f8;
 
-function shipHull(): THREE.BufferGeometry {
-  const N = 22;
-  const K = 11;
+/** Mái đình cong: tám cạnh, lõm ở giữa rồi hất đầu đao ở mép. `r` bán kính mép, `h` cao. Đáy y = 0. */
+function pagodaRoof(r: number, h: number, sides = 8): THREE.BufferGeometry {
+  const prof = [
+    new THREE.Vector2(0.01, h),
+    new THREE.Vector2(r * 0.22, h * 0.84),
+    new THREE.Vector2(r * 0.5, h * 0.48),
+    new THREE.Vector2(r * 0.8, h * 0.17),
+    new THREE.Vector2(r * 1.0, h * 0.06),
+    new THREE.Vector2(r * 1.14, h * 0.4),
+    new THREE.Vector2(r * 1.08, h * 0.02),
+    new THREE.Vector2(r * 0.7, 0),
+    new THREE.Vector2(0.01, 0),
+  ];
+  const g = new THREE.LatheGeometry(prof, sides);
+  paint(g, (x, y, z) => (Math.hypot(x, z) > r * 0.97 || y < h * 0.03 ? C(SILVER) : y > h * 0.9 ? C(GOLD) : C(GLAZE)));
+  return g.toNonIndexed();
+}
+
+function railY(z: number): number {
+  const t = z / HULL_L;
+  return 0.5 + 2.6 * Math.pow(Math.max(0, 2 * t), 2.2) + 1.9 * Math.pow(Math.max(0, -2 * t), 2.2);
+}
+
+function shipHull(): { hull: THREE.BufferGeometry; lanterns: THREE.BufferGeometry } {
+  const N = 26;
+  const K = 13;
   const zs: number[] = [];
   const rings: [number, number][][] = [];
   for (let i = 0; i <= N; i++) {
     const t = i / N;
     const z = (t - 0.5) * HULL_L;
-    // bề ngang: nhọn ở mũi, bầu ở giữa, vuông hơn ở đuôi; mũi/đuôi hất cao (sheer)
-    const hw = 2.1 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.78)), 0.62) + 0.02;
-    const deckY = 0.5 + 1.5 * Math.pow(Math.abs(2 * t - 1), 2.4) * (t > 0.5 ? 1.15 : 0.8);
-    const depth = 1.7 * Math.pow(Math.sin(Math.PI * Math.min(1, t * 0.95 + 0.04)), 0.7);
+    const hw = 2.3 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.8)), 0.6) + 0.02;
+    // mũi và đuôi hất cao như thuyền rồng
+    const deckY = railY(z);
+    const depth = 1.9 * Math.pow(Math.sin(Math.PI * Math.min(1, t * 0.96 + 0.03)), 0.7);
     const ring: [number, number][] = [];
     for (let j = 0; j < K; j++) {
       const th = -Math.PI / 2 + (j / (K - 1)) * Math.PI;
       ring.push([Math.sin(th) * hw, deckY - depth * Math.cos(th) * (0.25 + 0.75 * Math.cos(th * 0.5) ** 0.5)]);
     }
-    // vành thân cao hơn boong một chút (be thuyền)
     rings.push(ring);
     zs.push(z);
   }
-  const hull = loft(zs, rings, true);
-  paint(hull, (_x, y) => (y > 0.5 ? C(0xcfe0ee) : y > 0.05 ? C(0x3a6aa0) : C(0x1c3556)));
-  const parts: THREE.BufferGeometry[] = [hull];
-  // boong lót ván nhạt
-  const deck = new THREE.BoxGeometry(2.9, 0.1, 9.4);
-  deck.translate(0, 0.52, -0.2);
+  const body = loft(zs, rings, true);
+  paint(body, (_x, y, z) => {
+    const rail = railY(z);
+    if (y > rail - 0.16) return C(GOLD);
+    if (y > rail - 0.9) return C(SILVER);
+    return y > -0.2 ? C(0x2c5a96) : C(LACQ);
+  });
+  const parts: THREE.BufferGeometry[] = [body];
+  const lan: THREE.BufferGeometry[] = [];
+  const deck = new THREE.BoxGeometry(3.3, 0.12, 10.6);
+  deck.translate(0, 0.54, -0.3);
   parts.push(paint(deck, () => C(0xd9c9a6)));
-  // lầu đuôi và mái cong
-  const cabin = new THREE.BoxGeometry(2.3, 1.3, 2.8);
-  cabin.translate(0, 1.15, -4.7);
-  parts.push(paint(cabin, () => C(0xe7eef4)));
-  const roof = new THREE.ConeGeometry(1.95, 0.85, 4);
-  roof.rotateY(Math.PI / 4);
-  roof.translate(0, 2.2, -4.7);
-  parts.push(paint(roof, () => C(0x2c5f8e)));
-  // cột buồm, xà ngang
-  for (const mz of [1.8, -1.2]) {
-    const mast = new THREE.CylinderGeometry(0.09, 0.14, 12.4, 8);
-    mast.translate(0, 6.7, mz);
-    parts.push(paint(mast, () => C(0x6b7c8c)));
-    const yard = new THREE.CylinderGeometry(0.06, 0.06, 7.2, 6);
-    yard.rotateZ(Math.PI / 2);
-    yard.translate(0, 12.4, mz);
-    parts.push(paint(yard, () => C(0xaebdcb)));
+  // lầu ba tầng: thân tám cạnh trắng, cột lam, mái cong; đèn lồng treo ở đầu đao
+  const tiers: [number, number, number, number][] = [
+    [0.55, 1.6, 2.3, 1.15],
+    [2.55, 1.35, 1.75, 0.95],
+    [4.3, 1.1, 1.2, 0.8],
+  ];
+  const cz = -1.6;
+  for (const [y0, bh, br, rh] of tiers) {
+    const bodyG = new THREE.CylinderGeometry(br, br * 1.04, bh, 8, 1);
+    bodyG.rotateY(Math.PI / 8);
+    bodyG.translate(0, y0 + bh / 2, cz);
+    parts.push(paint(bodyG, () => C(WHITE)));
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2 + Math.PI / 8;
+      const pil = new THREE.CylinderGeometry(0.1, 0.1, bh, 6);
+      pil.translate(Math.cos(a) * br * 1.02, y0 + bh / 2, cz + Math.sin(a) * br * 1.02);
+      parts.push(paint(pil, () => C(0x2d5da0)));
+    }
+    const roof = pagodaRoof(br * 1.55, rh);
+    roof.translate(0, y0 + bh, cz);
+    parts.push(roof);
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2 + Math.PI / 8;
+      const s = new THREE.SphereGeometry(0.2, 6, 5);
+      s.translate(Math.cos(a) * br * 1.55 * 1.12, y0 + bh - 0.35, cz + Math.sin(a) * br * 1.55 * 1.12);
+      lan.push(s);
+    }
   }
-  // mũi: đầu rồng cách điệu bằng một nón bạc nhỏ
-  const prow = new THREE.ConeGeometry(0.28, 1.2, 7);
-  prow.rotateX(Math.PI / 2);
-  prow.translate(0, 2.0, HULL_L / 2 + 0.3);
-  parts.push(paint(prow, () => C(0xe8f0f6)));
-  return mergeColored(parts);
+  const fin = new THREE.ConeGeometry(0.16, 1.5, 6);
+  fin.translate(0, 4.3 + 1.1 + 0.8 + 0.5, cz);
+  parts.push(paint(fin, () => C(GOLD)));
+  // cột buồm ở mũi + cổ rồng cong và đầu rồng
+  const mast = new THREE.CylinderGeometry(0.1, 0.17, 11.5, 8);
+  mast.translate(0, 6.2, 3.1);
+  parts.push(paint(mast, () => C(SILVER)));
+  const neck = new THREE.TubeGeometry(
+    new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, 2.2, 6.6),
+      new THREE.Vector3(0, 3.4, 7.7),
+      new THREE.Vector3(0, 5.0, 8.1),
+      new THREE.Vector3(0, 6.1, 7.4),
+      new THREE.Vector3(0, 6.3, 6.5),
+    ]),
+    16,
+    0.3,
+    8,
+  );
+  parts.push(paint(neck, (_x, y) => (y > 5 ? C(GOLD) : C(SILVER))));
+  const head = new THREE.ConeGeometry(0.42, 1.5, 8);
+  head.rotateX(-Math.PI / 2.6);
+  head.translate(0, 6.0, 6.0);
+  parts.push(paint(head, () => C(GOLD)));
+  for (const s of [-1, 1]) {
+    const horn = new THREE.ConeGeometry(0.1, 1.5, 5);
+    horn.rotateX(-Math.PI / 3);
+    horn.rotateZ(s * 0.35);
+    horn.translate(s * 0.35, 6.8, 6.3);
+    parts.push(paint(horn, () => C(SILVER)));
+    // đèn lồng treo dọc mạn thuyền
+    for (let k = 0; k < 5; k++) {
+      const z = -4.2 + k * 2.3;
+      const l = new THREE.SphereGeometry(0.22, 6, 5);
+      l.translate(s * 2.2 * Math.pow(Math.sin(Math.PI * Math.pow((z / HULL_L + 0.5), 0.8)), 0.6), railY(z) - 0.15, z);
+      lan.push(l);
+    }
+  }
+  const lanterns = mergeColored(lan.map((g) => paint(g, () => C(0xffffff))));
+  return { hull: mergeColored(parts), lanterns };
 }
 
-/** Hai tấm buồm cong phồng gió; uv.x ngang, uv.y từ chân (0) lên đỉnh (1). */
+/** Hai cặp cánh buồm phát sáng như cánh phượng: quạt xòe ra hai bên và lên cao. uv.x ngang quạt, uv.y từ gốc (0) tới mút (1). */
 function shipSails(): THREE.BufferGeometry {
   const parts: THREE.BufferGeometry[] = [];
-  for (const [mz, w, h] of [
-    [1.8, 6.6, 9.4],
-    [-1.2, 5.6, 8],
+  for (const [side, px, py, pz, len, a0, a1] of [
+    [-1, 0, 3.2, 3.1, 9.2, -0.1, 1.15],
+    [1, 0, 3.2, 3.1, 9.2, -0.1, 1.15],
+    [-1, 0, 2.4, -3.6, 5.2, 0.05, 1.0],
+    [1, 0, 2.4, -3.6, 5.2, 0.05, 1.0],
   ] as const) {
-    const g = new THREE.PlaneGeometry(w, h, 8, 10);
-    const pos = g.getAttribute('position');
-    for (let i = 0; i < pos.count; i++) {
-      const u = pos.getX(i) / w + 0.5;
-      const v = pos.getY(i) / h + 0.5;
-      pos.setZ(i, mz + 0.9 * Math.sin(Math.PI * u) * Math.sin(Math.PI * (0.15 + v * 0.8)));
-      pos.setY(i, 2.9 + v * h);
+    const U = 8;
+    const V = 14;
+    const pos: number[] = [];
+    const uvs: number[] = [];
+    const idx: number[] = [];
+    for (let j = 0; j <= V; j++) {
+      const v = j / V;
+      const a = a0 + (a1 - a0) * v;
+      // mép ngoài lượn sóng (răng cưa mềm kiểu cánh)
+      const tipLen = len * (0.82 + 0.18 * Math.abs(Math.cos(v * Math.PI * 3.5)));
+      for (let i = 0; i <= U; i++) {
+        const u = i / U;
+        const r = u * tipLen;
+        pos.push(px + side * Math.cos(a) * r * 0.78, py + Math.sin(a) * r, pz - 0.9 * Math.sin(Math.PI * u) * Math.sin(Math.PI * v));
+        uvs.push(v, u);
+      }
     }
-    g.computeVertexNormals();
+    for (let j = 0; j < V; j++)
+      for (let i = 0; i < U; i++) {
+        const a = j * (U + 1) + i;
+        idx.push(a, a + 1, a + U + 1, a + 1, a + U + 2, a + U + 1);
+      }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    g.setIndex(idx);
     parts.push(g);
   }
   return mergeGeometries(parts, false);
@@ -303,59 +398,69 @@ function sailMaterial(): THREE.MeshBasicNodeMaterial {
   const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide });
   const noise = getCloudNoise();
   const u = uv();
-  const flame = texture(noise, vec2(u.x.mul(1.5), u.y.mul(1.2).sub(time.mul(0.22)))).g;
-  const edge = smoothstep(0.0, 0.1, u.x).mul(smoothstep(0.0, 0.1, u.x.oneMinus()));
-  const top = smoothstep(0.0, 0.2, u.y.oneMinus().add(flame.sub(0.5).mul(0.5)));
-  // sắc lửa: gốc cam đỏ, giữa vàng, mép trên trắng ấm (HDR vừa phải, dưới ngưỡng chói của bloom)
-  const col = mix(vec3(1.5, 0.52, 0.16), vec3(1.7, 1.15, 0.5), u.y.pow(0.8)).mul(float(0.82).add(flame.mul(0.4)));
+  const flame = texture(noise, vec2(u.x.mul(1.4), u.y.mul(1.6).sub(time.mul(0.25)))).g;
+  const ribs = u.x.mul(14).sin().mul(0.5).add(0.5).pow(3).mul(0.35);
+  const edge = smoothstep(0.0, 0.08, u.x).mul(smoothstep(0.0, 0.08, u.x.oneMinus()));
+  const tip = smoothstep(0.0, 0.25, u.y.oneMinus().add(flame.sub(0.5).mul(0.6)));
+  // gốc vàng lửa → mút lam bạc; gân cánh sáng hơn
+  const col = mix(vec3(1.9, 1.15, 0.45), vec3(0.55, 1.15, 1.9), u.y.pow(1.1)).mul(float(0.8).add(flame.mul(0.4)).add(ribs));
   mat.colorNode = col;
-  mat.opacityNode = clamp(edge.mul(top).mul(float(0.55).add(flame.mul(0.45))), 0, 0.92);
+  mat.opacityNode = clamp(edge.mul(tip).mul(float(0.5).add(flame.mul(0.4)).add(ribs)), 0, 0.9);
   return mat;
 }
 
 // --- cá kình băng mây (mũi +z, thân dài 1 đơn vị = `length`) ---
 
 function whaleGeometry(): THREE.BufferGeometry {
-  const N = 40;
-  const K = 16;
+  const N = 64;
+  const K = 22;
   const zs: number[] = [];
   const rings: [number, number][][] = [];
-  const R = 0.12;
+  const R = 0.105;
   for (let i = 0; i <= N; i++) {
     const t = i / N; // 0 đầu → 1 đuôi
     let r: number;
-    if (t < 0.28) r = R * Math.pow(Math.sin((t / 0.28) * Math.PI * 0.5), 0.5);
-    else r = R * Math.pow(1 - (t - 0.28) / 0.72, 1.25) + 0.012;
+    if (t < 0.22) r = R * Math.pow(Math.sin((t / 0.22) * Math.PI * 0.5), 0.42);
+    else if (t < 0.5) r = R * (1 - 0.1 * ((t - 0.22) / 0.28));
+    else r = R * 0.9 * Math.pow(1 - (t - 0.5) / 0.5, 1.35) + 0.01;
     const ring: [number, number][] = [];
     for (let j = 0; j < K; j++) {
       const a = (j / (K - 1)) * Math.PI * 2;
-      // ngang rộng hơn cao; bụng nở hơn lưng
-      const belly = Math.sin(a) < 0 ? 1.1 : 0.9;
-      ring.push([Math.cos(a) * r, Math.sin(a) * r * 0.86 * belly]);
+      const belly = Math.sin(a) < 0 ? 1.12 : 0.92;
+      ring.push([Math.cos(a) * r * 1.05, Math.sin(a) * r * 0.82 * belly]);
     }
     rings.push(ring);
     zs.push(0.5 - t);
   }
   const body = loft(zs, rings, true);
   const parts: THREE.BufferGeometry[] = [body];
-  // vây đuôi nằm ngang: hai thùy
+  // vây đuôi nằm ngang hai thùy rộng
   const fl = new THREE.Shape();
-  fl.moveTo(0, 0.02);
-  fl.bezierCurveTo(0.05, 0.02, 0.13, 0.0, 0.17, -0.06);
-  fl.bezierCurveTo(0.12, -0.02, 0.06, -0.06, 0, -0.045);
-  fl.bezierCurveTo(-0.06, -0.06, -0.12, -0.02, -0.17, -0.06);
-  fl.bezierCurveTo(-0.13, 0.0, -0.05, 0.02, 0, 0.02);
-  const fluke = new THREE.ShapeGeometry(fl, 10);
-  fluke.rotateX(Math.PI / 2); // đưa từ mặt xy sang xz, thùy hướng ra sau (-z)
-  fluke.translate(0, 0, -0.5 + 0.02);
+  fl.moveTo(0, 0.03);
+  fl.bezierCurveTo(0.08, 0.03, 0.2, 0.0, 0.27, -0.1);
+  fl.bezierCurveTo(0.19, -0.03, 0.09, -0.08, 0, -0.06);
+  fl.bezierCurveTo(-0.09, -0.08, -0.19, -0.03, -0.27, -0.1);
+  fl.bezierCurveTo(-0.2, 0.0, -0.08, 0.03, 0, 0.03);
+  const fluke = new THREE.ShapeGeometry(fl, 12);
+  fluke.rotateX(Math.PI / 2);
+  fluke.translate(0, 0, -0.5 + 0.03);
   parts.push(fluke);
-  // hai vây ngực
+  // vây lưng
+  const dor = new THREE.Shape();
+  dor.moveTo(0, 0);
+  dor.quadraticCurveTo(0.012, 0.06, 0.07, 0.085);
+  dor.quadraticCurveTo(0.02, 0.04, 0.045, 0);
+  const dorsal = new THREE.ShapeGeometry(dor, 8);
+  dorsal.rotateY(Math.PI / 2);
+  dorsal.translate(0, R * 0.7, -0.12);
+  parts.push(dorsal);
+  // hai vây ngực dài
   for (const s of [-1, 1]) {
-    const fin = new THREE.SphereGeometry(1, 10, 8);
-    fin.scale(0.012, 0.05, 0.09);
-    fin.rotateZ(s * 0.9);
-    fin.rotateY(s * 0.25);
-    fin.translate(s * 0.1, -0.075, 0.27);
+    const fin = new THREE.SphereGeometry(1, 12, 8);
+    fin.scale(0.012, 0.045, 0.17);
+    fin.rotateZ(s * 0.95);
+    fin.rotateY(s * 0.35);
+    fin.translate(s * 0.115, -0.075, 0.27);
     parts.push(fin);
   }
   const m = mergeColored(parts);
@@ -369,16 +474,42 @@ function whaleMaterial(): THREE.MeshBasicNodeMaterial {
   const p = positionLocal;
   // uốn thân: biên độ tăng về đuôi (z âm), sóng chạy từ đầu về đuôi
   const tail = smoothstep(0.15, -0.5, p.z);
-  const wave = p.z.mul(14).add(time.mul(1.4)).sin().mul(tail).mul(0.045);
+  const wave = p.z.mul(11).add(time.mul(1.1)).sin().mul(tail).mul(0.05);
   mat.positionNode = vec3(p.x.add(wave.mul(0.25)), p.y.add(wave), p.z);
-  const belly = smoothstep(0.7, -0.7, p.y.mul(9));
-  const swirl = texture(noise, vec2(p.x.mul(5).add(p.z.mul(3.2)).add(time.mul(0.02)), p.y.mul(5).add(p.z.mul(2)))).a;
+  const belly = smoothstep(0.5, -0.9, p.y.mul(9));
+  const swirl = texture(noise, vec2(p.x.mul(6).add(p.z.mul(3.4)).add(time.mul(0.02)), p.y.mul(6).add(p.z.mul(2.2)))).a;
   const fres = float(1).sub(normalView.z.abs());
-  // lưng lam thẫm → bụng bạc; vân mây xoáy trên thân; mép sáng bạc
-  const base = mix(vec3(0.2, 0.42, 0.7), vec3(0.82, 0.92, 1.0), belly.mul(0.8).add(swirl.mul(0.25)));
-  mat.colorNode = base.add(vec3(0.5, 0.65, 0.8).mul(fres.pow(2.2)).mul(0.7));
-  mat.opacityNode = clamp(float(0.34).add(swirl.mul(0.3)).add(fres.pow(1.8).mul(0.5)), 0, 0.82);
+  // nếp bụng (sọc dọc) và mạch linh quang chạy dọc thân
+  const pleats = p.x.mul(190).sin().mul(0.5).add(0.5).mul(belly).mul(smoothstep(0.34, 0.12, p.z.abs())).mul(0.12);
+  const veins = p.z.mul(70).sub(time.mul(0.8)).add(p.y.mul(40)).sin().abs().oneMinus().pow(14).mul(0.9);
+  const base = mix(vec3(0.16, 0.38, 0.7), vec3(0.85, 0.94, 1.0), belly.mul(0.8).add(swirl.mul(0.25)));
+  mat.colorNode = base
+    .add(vec3(0.5, 0.7, 0.9).mul(fres.pow(2.0)).mul(0.9))
+    .sub(vec3(pleats))
+    .add(vec3(0.5, 1.1, 1.6).mul(veins));
+  mat.opacityNode = clamp(float(0.42).add(swirl.mul(0.3)).add(fres.pow(1.6).mul(0.45)).add(veins.mul(0.3)), 0, 0.9);
   return mat;
+}
+
+/** Bụi linh quang lấp lánh quanh thân cá (con của lưới cá, nên theo tỉ lệ thân dài 1). */
+function whaleDust(count: number): THREE.InstancedMesh {
+  const g = new THREE.TetrahedronGeometry(0.0034, 0);
+  const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+  const tw = time.mul(1.7).add(instanceIndex.toFloat().mul(2.37)).sin().mul(0.5).add(0.5).pow(2);
+  mat.colorNode = vec3(1.3, 1.7, 2.2);
+  mat.opacityNode = tw.mul(0.9);
+  const m = new THREE.InstancedMesh(g, mat, count);
+  const mtx = new THREE.Matrix4();
+  for (let i = 0; i < count; i++) {
+    const t = hash01(i, 3, 901);
+    const z = 0.52 - t * 1.25; // dài hơn thân: vệt bụi kéo ra sau đuôi
+    const a = hash01(i, 5, 903) * Math.PI * 2;
+    const rr = (0.05 + 0.13 * hash01(i, 7, 905)) * (t < 0.8 ? 1 : 1.6);
+    mtx.makeTranslation(Math.cos(a) * rr, Math.sin(a) * rr * 0.8, z);
+    m.setMatrixAt(i, mtx);
+  }
+  m.frustumCulled = false;
+  return m;
 }
 
 // --- cầu vòng linh khí ---
@@ -392,8 +523,8 @@ function rainbowGeometry(arcs: Arc[]): THREE.BufferGeometry {
     const len = Math.hypot(a.bx - a.ax, a.bz - a.az) || 1;
     const sx = -(a.bz - a.az) / len; // ngang
     const sz = (a.bx - a.ax) / len;
-    for (const mode of [0, 1]) {
-      // mode 0: dải nằm ngang như mặt cầu; mode 1: dải đứng (nhìn ngang thấy mặt)
+    for (const mode of [1]) {
+      // chỉ dải đứng (không có mặt ngang để không trông như cầu đi được)
       const base = pos.length / 3;
       for (let i = 0; i <= SEG; i++) {
         const t = i / SEG;
@@ -484,36 +615,54 @@ function spireGeometry(s: { x: number; z: number; top: number }, seed: number): 
   return g;
 }
 
+/** Vọng nguyệt lâu: đài tám cạnh ba bậc, năm tầng thu nhỏ dần, mỗi tầng mái cong đầu đao; đèn linh quang đặt trên đỉnh (`lamp`). */
 function towerGeometry(t: Tower): { stone: THREE.BufferGeometry; lamp: THREE.Vector3 } {
-  const h = t.h;
-  const pts: THREE.Vector2[] = [
-    new THREE.Vector2(0.01, 0),
-    new THREE.Vector2(4.6, 0),
-    new THREE.Vector2(4.2, 0.9),
-    new THREE.Vector2(3.4, 1.6),
-    new THREE.Vector2(3.0, 3),
-    new THREE.Vector2(2.2, h * 0.9),
-    new THREE.Vector2(2.9, h * 0.9 + 0.5),
-    new THREE.Vector2(2.9, h),
-    new THREE.Vector2(2.3, h + 0.5),
-    new THREE.Vector2(2.2, h + 2.6),
-    new THREE.Vector2(3.1, h + 3.0),
-    new THREE.Vector2(2.1, h + 3.7),
-    new THREE.Vector2(0.9, h + 5.6),
-    new THREE.Vector2(0.01, h + 6.6),
-  ];
-  const body = new THREE.LatheGeometry(pts, 12);
-  const bands = Math.max(3, Math.round(h / 5));
-  paint(body, (_x, y) => {
-    if (y > h + 3.0) return C(0x2c5f8e);
-    if (y > h + 0.5) return C(0xe8f0f6);
-    if (y > h) return C(0xa8bccd);
-    const k = Math.floor((y / h) * bands * 2);
-    return k % 2 === 0 ? C(0xe3ecf2) : C(0x4a7fb0);
-  });
-  const stone = mergeColored([body]);
+  const parts: THREE.BufferGeometry[] = [];
+  let y = 0;
+  for (const [r, h] of [
+    [7.2, 0.9],
+    [6.2, 0.9],
+    [5.2, 0.9],
+  ] as const) {
+    const g = new THREE.CylinderGeometry(r, r * 1.05, h, 8);
+    g.rotateY(Math.PI / 8);
+    g.translate(0, y + h / 2, 0);
+    parts.push(paint(g, () => C(SILVER)));
+    y += h;
+  }
+  const tiers = 5;
+  const th = (t.h - y - 3) / tiers;
+  for (let i = 0; i < tiers; i++) {
+    const R = 3.6 * (1 - i * 0.12);
+    const bh = th * 0.62;
+    const body = new THREE.CylinderGeometry(R, R * 1.03, bh, 8);
+    body.rotateY(Math.PI / 8);
+    body.translate(0, y + bh / 2, 0);
+    parts.push(paint(body, () => C(WHITE)));
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2 + Math.PI / 8;
+      const pil = new THREE.CylinderGeometry(0.18, 0.18, bh, 6);
+      pil.translate(Math.cos(a) * R * 1.02, y + bh / 2, Math.sin(a) * R * 1.02);
+      parts.push(paint(pil, () => C(0x2d5da0)));
+    }
+    const roof = pagodaRoof(R * 1.6, th * 0.5);
+    roof.translate(0, y + bh, 0);
+    parts.push(roof);
+    y += th;
+  }
+  // đỉnh: đài đèn tám cạnh + nón vàng
+  const cage = new THREE.CylinderGeometry(1.5, 1.8, 2.2, 8, 1, true);
+  cage.translate(0, y + 1.1, 0);
+  parts.push(paint(cage, () => C(SILVER)));
+  const cap = pagodaRoof(2.8, 1.8);
+  cap.translate(0, y + 2.2, 0);
+  parts.push(cap);
+  const fin = new THREE.ConeGeometry(0.22, 2.4, 6);
+  fin.translate(0, y + 4.2 + 1.0, 0);
+  parts.push(paint(fin, () => C(GOLD)));
+  const stone = mergeColored(parts);
   stone.translate(t.x, t.y, t.z);
-  return { stone, lamp: new THREE.Vector3(t.x, t.y + h + 1.7, t.z) };
+  return { stone, lamp: new THREE.Vector3(t.x, t.y + y + 1.1, t.z) };
 }
 
 function beamGeometry(): THREE.BufferGeometry {
@@ -563,6 +712,7 @@ export class VanHaiWow {
   private disposables: { dispose(): void }[] = [];
   private hulls: THREE.InstancedMesh;
   private sails: THREE.InstancedMesh;
+  private lanterns: THREE.InstancedMesh;
   private whales: THREE.Mesh[] = [];
   private beams: THREE.InstancedMesh | null = null;
   private lamps: THREE.Vector3[] = [];
@@ -583,7 +733,8 @@ export class VanHaiWow {
     };
 
     // Thuyền tiên
-    const hullGeo = track(shipHull());
+    const parts = shipHull();
+    const hullGeo = track(parts.hull);
     const hullMat = track(createWorldMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.15 }));
     this.hulls = new THREE.InstancedMesh(hullGeo, hullMat, SHIPS.length);
     this.hulls.name = 'van-hai-ships';
@@ -596,6 +747,13 @@ export class VanHaiWow {
     this.sails.frustumCulled = false;
     this.sails.renderOrder = 4;
     this.group.add(this.hulls, this.sails);
+    const lanGeo = track(parts.lanterns);
+    const lanMat = track(new THREE.MeshBasicNodeMaterial());
+    lanMat.colorNode = vec3(2.0, 1.25, 0.55);
+    this.lanterns = new THREE.InstancedMesh(lanGeo, lanMat, SHIPS.length);
+    this.lanterns.name = 'van-hai-ship-lanterns';
+    this.lanterns.frustumCulled = false;
+    this.group.add(this.lanterns);
 
     // Cá kình băng mây
     const wg = track(whaleGeometry());
@@ -605,6 +763,8 @@ export class VanHaiWow {
       m.frustumCulled = false;
       m.renderOrder = 3;
       m.scale.setScalar(w.length);
+      if (w.length > 300) m.add(whaleDust(700));
+      else m.add(whaleDust(260));
       this.whales.push(m);
       this.group.add(m);
     }
@@ -684,7 +844,9 @@ export class VanHaiWow {
       const pose = shipPose(p, t);
       this.place(this.hulls, i, pose, p.scale);
       this.place(this.sails, i, pose, p.scale);
+      this.place(this.lanterns, i, pose, p.scale);
     });
+    this.lanterns.instanceMatrix.needsUpdate = true;
     this.hulls.instanceMatrix.needsUpdate = true;
     this.sails.instanceMatrix.needsUpdate = true;
     WHALES.forEach((p, i) => {
