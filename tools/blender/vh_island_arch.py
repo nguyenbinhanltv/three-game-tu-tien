@@ -318,6 +318,12 @@ def island(name, R, amp, belly, spikes, roots, dk, seed, fake=False, seg=96, nr=
     tip = M.vert((cxl + (rnd.random() - 0.5) * 6 * ss, -D - 0.16 * D, czl + (rnd.random() - 0.5) * 6 * ss))
     for j in range(seg):
         M.tri(idx[-1][j], idx[-1][(j + 1) % seg], tip)
+    if not (fake or sat):
+        # vành mặt đảo nối mép vách (R+10) với mép địa hình (R-3): không để hở rãnh tối giữa địa hình và váy; chìm 0,4 m dưới mặt đảo nên địa hình che khi cao hơn
+        inner = [M.vert((math.cos(j / seg * math.tau) * (R - 3.0), -0.4, math.sin(j / seg * math.tau) * (R - 3.0))) for j in range(seg)]
+        for j in range(seg):
+            j2 = (j + 1) % seg
+            M.quad(inner[j], inner[j2], idx[0][j2], idx[0][j])
     if fake or sat:  # mặt cỏ trên: vài vòng đồng tâm gồ nhẹ
         top_r = idx[0]
         grid = [[M.vert((M.v[i][0], 0.0, M.v[i][2])) for i in top_r]]
