@@ -6,8 +6,8 @@
   background: rgba(70, 30, 110, 0.24);
 }
 .bk-title {
-  font: 700 15px var(--k-font-serif);
-  color: var(--k-gold);
+  font: 700 15px var(--u-p-font-serif);
+  color: var(--u-p-gold);
 }
 .bk-actions {
   display: flex;
@@ -28,7 +28,7 @@
   border-radius: 999px;
   background: rgba(24, 12, 42, 0.82);
   color: #e6c6ff;
-  font: 700 14px var(--k-font-serif);
+  font: 700 14px var(--u-p-font-serif);
   letter-spacing: 0.04em;
   pointer-events: none;
   box-shadow: 0 0 18px rgba(176, 75, 255, 0.45);
@@ -44,7 +44,7 @@
 }
 .root-name {
   font-weight: 700;
-  color: var(--k-gold);
+  color: var(--u-p-gold);
 }
 .root-glyph {
   flex: none;
@@ -54,7 +54,7 @@
   height: 36px;
   padding: 0 6px;
   border-radius: 18px;
-  font: 700 15px var(--k-font-serif);
+  font: 700 15px var(--u-p-font-serif);
   color: #fff;
   background: #555;
 }
@@ -96,7 +96,7 @@
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 6px;
   color: #fff;
-  font: 700 14px var(--k-font-serif);
+  font: 700 14px var(--u-p-font-serif);
   background: rgba(255, 255, 255, 0.08);
   cursor: pointer;
 }
