@@ -20,6 +20,8 @@ const GOLD = 0xffd27a;
 
 /** Cổng cần vẽ (đĩa sáng) ở level. Vân Lam và Kiếm Trủng dùng chung cảnh nên cả hai đĩa luôn hiện (hành vi cũ). */
 export function gatesToDraw(level: string): Gate[] {
+  // Kiếm Trủng (DUN-1): chỉ vẽ cổng ra, là vòng trận phẳng mờ trên nền (vòng hoa văn + hạt do `kiemTrungArt.ts` dựng); đĩa vàng đứng cũ bị cháy sáng.
+  if (level === 'kiem_trung') return [{ id: 'exit', ...DUNGEON_EXIT, color: 0x9fd8ff, opacity: 0.16, flat: true }];
   if (level === 'van_lam' || level === 'kiem_trung')
     return [
       { id: 'portal', ...PORTAL_POS, color: BLUE, to: 'kiem_trung' },

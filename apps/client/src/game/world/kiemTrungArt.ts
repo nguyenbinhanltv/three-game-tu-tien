@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
-import { float, mix, positionWorld, smoothstep, texture, time, uniform, vec2, vec3 } from 'three/tsl';
-import { fbm, hash01, KIEM_TRUNG } from '@dtl/shared';
+import { attribute, float, mix, positionWorld, sin, smoothstep, texture, time, uniform, vec2, vec3 } from 'three/tsl';
+import { DUNGEON_EXIT, fbm, hash01, KIEM_TRUNG } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { createWorldMaterial } from '../../render/materials/world';
 import { getCloudNoise } from '../../render/noiseTex';
@@ -301,6 +301,8 @@ export class KiemTrungArt {
   private readonly meshes: THREE.InstancedMesh[] = [];
   private readonly disposables: { dispose(): void }[] = [];
   private readonly pulse = uniform(1);
+  private motes: THREE.Points | null = null;
+  private readonly moteSeed: number[] = [];
   private t = 0;
 
   constructor(opts: { reduced?: boolean } = {}) {
@@ -319,6 +321,7 @@ export class KiemTrungArt {
     this.addSigil();
     this.addCracks();
     this.addSteps();
+    this.addExitRing();
     this.addMist();
   }
 
@@ -381,22 +384,16 @@ export class KiemTrungArt {
     this.disposables.push(geo, mat, tex);
   }
 
-  /** Khe nứt dưới đất: vài chục vệt gấp khúc đen, giữa có đường khí lam mảnh (hai lưới, bám địa hình); chừa khu giữa và lối vào. */
+  /**
+   * Khe nứt lõm: dải gấp khúc bám địa hình, shader theo ngang khe (`across` -1..1): giữa là ánh lam mềm ở đáy (nhấp nháy rất chậm), ngoài đó là
+   * vách khe tối dần, rồi một gờ đá xám sáng mảnh ở mép, mép ngoài tan mềm (alpha), KHÔNG có viền đen đặc. Thêm một dải cộng sáng rộng hơn cho quầng.
+   * Chừa khu giữa (r < 24) và lối vào.
+   */
   private addCracks(): void {
     const rand = rng(SEED + 31);
-    const dark: number[] = [];
-    const glow: number[] = [];
-    const push = (arr: number[], x: number, z: number, nx: number, nz: number, w: number) => {
-      arr.push(
-        x + nx * w,
-        heightAt(x + nx * w, z + nz * w) + 0.07,
-        z + nz * w,
-        x - nx * w,
-        heightAt(x - nx * w, z - nz * w) + 0.07,
-        z - nz * w,
-      );
-    };
-    const idx: number[][] = [[], []];
+    const pos: number[] = [];
+    const across: number[] = [];
+    const idx: number[] = [];
     let made = 0;
     for (let tries = 0; tries < 400 && made < 34; tries++) {
       const a = rand() * Math.PI * 2;
@@ -407,78 +404,82 @@ export class KiemTrungArt {
       let dir = rand() * Math.PI * 2;
       const len = 14 + rand() * 38;
       const steps = Math.round(len / 2.2);
-      const base = [dark.length / 3, glow.length / 3];
+      const base = pos.length / 3;
+      const ps: number[] = [];
       let ok = true;
       for (let i = 0; i <= steps; i++) {
         const t = i / steps;
-        const w = 0.12 + 0.75 * Math.sin(Math.PI * Math.min(1, t * 1.15)) * (0.6 + 0.4 * rand());
+        const w = 0.3 + 0.95 * Math.sin(Math.PI * Math.min(1, t * 1.1)) * (0.6 + 0.4 * rand());
         const nx = -Math.sin(dir);
         const nz = Math.cos(dir);
         if (swordKeepOut(x, z, 20)) {
           ok = false;
           break;
         }
-        push(dark, x, z, nx, nz, w);
-        push(glow, x, z, nx, nz, w * 0.3);
+        const lx = x + nx * w;
+        const lz = z + nz * w;
+        const rx = x - nx * w;
+        const rz = z - nz * w;
+        ps.push(lx, heightAt(lx, lz) + 0.07, lz, rx, heightAt(rx, rz) + 0.07, rz);
         dir += (rand() - 0.5) * 0.9;
         x += Math.cos(dir) * 2.2;
         z += Math.sin(dir) * 2.2;
       }
-      if (!ok) {
-        dark.length = base[0]! * 3;
-        glow.length = base[1]! * 3;
-        continue;
+      if (!ok) continue;
+      for (let i = 0; i * 6 < ps.length; i++) {
+        pos.push(ps[i * 6]!, ps[i * 6 + 1]!, ps[i * 6 + 2]!, ps[i * 6 + 3]!, ps[i * 6 + 4]!, ps[i * 6 + 5]!);
+        across.push(-1, 1);
       }
-      for (const [k, arr] of [dark, glow].entries()) {
-        const b0 = base[k]!;
-        const n = arr.length / 3;
-        for (let v = b0; v + 3 < n; v += 2) idx[k]!.push(v, v + 1, v + 2, v + 1, v + 3, v + 2);
+      const n = ps.length / 6;
+      for (let v = 0; v + 1 < n; v++) {
+        const o = base + v * 2;
+        idx.push(o, o + 1, o + 2, o + 1, o + 3, o + 2);
       }
       made++;
     }
-    const build = (arr: number[], ix: number[], mat: THREE.Material, name: string, order: number) => {
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
-      g.setIndex(ix);
-      g.computeBoundingSphere();
-      const m = new THREE.Mesh(g, mat);
-      m.name = name;
-      m.frustumCulled = false;
-      m.renderOrder = order;
-      this.group.add(m);
-      this.disposables.push(g, mat);
-    };
-    build(
-      dark,
-      idx[0]!,
-      new THREE.MeshBasicMaterial({
-        color: 0x06080c,
-        transparent: true,
-        opacity: 0.88,
-        depthWrite: false,
-        polygonOffset: true,
-        polygonOffsetFactor: -3,
-        side: THREE.DoubleSide,
-      }),
-      'kt-cracks',
-      1,
-    );
-    build(
-      glow,
-      idx[1]!,
-      new THREE.MeshBasicMaterial({
-        color: 0x3aa6e0,
-        transparent: true,
-        opacity: 0.8,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-        polygonOffset: true,
-        polygonOffsetFactor: -4,
-        side: THREE.DoubleSide,
-      }),
-      'kt-cracks-glow',
-      2,
-    );
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('across', new THREE.Float32BufferAttribute(across, 1));
+    geo.setIndex(idx);
+    geo.computeBoundingSphere();
+    const u = attribute('across', 'float').abs();
+    const pulse = float(0.88).add(sin(time.mul(0.8).add(positionWorld.x.mul(0.05))).mul(0.12));
+    // thân khe: đáy lam sáng mềm → vách tối → gờ đá xám mảnh → tan ra ngoài
+    const floorGlow = smoothstep(0.55, 0.0, u);
+    const wall = vec3(0.16, 0.22, 0.3);
+    const lip = smoothstep(0.62, 0.78, u).mul(smoothstep(1.0, 0.86, u));
+    const col = mix(wall, vec3(0.2, 0.6, 1.0).mul(0.95).mul(pulse), floorGlow.mul(floorGlow));
+    const body = new THREE.MeshBasicNodeMaterial({
+      transparent: true,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -3,
+      side: THREE.DoubleSide,
+    });
+    body.colorNode = mix(col, vec3(0.33, 0.37, 0.43), lip.mul(0.85));
+    body.opacityNode = smoothstep(1.0, 0.6, u).mul(0.9);
+    const mesh = new THREE.Mesh(geo, body);
+    mesh.name = 'kt-cracks';
+    mesh.frustumCulled = false;
+    mesh.renderOrder = 1;
+    this.group.add(mesh);
+    // quầng ánh lam cộng sáng quanh khe (cùng lưới, phóng ngang rộng hơn bằng alpha theo `across`)
+    const halo = new THREE.MeshBasicNodeMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      polygonOffset: true,
+      polygonOffsetFactor: -4,
+      side: THREE.DoubleSide,
+    });
+    halo.colorNode = vec3(0.1, 0.38, 0.7).mul(pulse);
+    halo.opacityNode = smoothstep(0.9, 0.0, u).mul(0.38);
+    const mesh2 = new THREE.Mesh(geo, halo);
+    mesh2.name = 'kt-cracks-glow';
+    mesh2.frustumCulled = false;
+    mesh2.renderOrder = 2;
+    this.group.add(mesh2);
+    this.disposables.push(geo, body, halo);
   }
 
   /**
@@ -551,8 +552,113 @@ export class KiemTrungArt {
     this.disposables.push(geo, mat);
   }
 
+  /**
+   * Cổng ra: vòng trận phát sáng nằm trên nền (viền kép, tám nét triện, vòng giữa mờ), cộng sáng nhẹ (độ đục 0,5), kèm hạt linh quang bay lên từ vòng.
+   * Thay đĩa vàng dẹt cũ (bị cháy sáng). Không đổi vị trí/bán kính tương tác của cổng.
+   */
+  private addExitRing(): void {
+    const N = 512;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = N;
+    const g = cv.getContext('2d')!;
+    const h = N / 2;
+    const rg = g.createRadialGradient(h, h, 0, h, h, h);
+    rg.addColorStop(0, 'rgba(120,200,255,0.16)');
+    rg.addColorStop(0.7, 'rgba(120,200,255,0.06)');
+    rg.addColorStop(1, 'rgba(120,200,255,0)');
+    g.fillStyle = rg;
+    g.fillRect(0, 0, N, N);
+    const ring = (r: number, w: number, a: number) => {
+      g.strokeStyle = `rgba(170,225,255,${a})`;
+      g.lineWidth = w;
+      g.beginPath();
+      g.arc(h, h, r, 0, Math.PI * 2);
+      g.stroke();
+    };
+    ring(h * 0.94, 5, 0.7);
+    ring(h * 0.84, 2, 0.5);
+    ring(h * 0.5, 2, 0.35);
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2;
+      const r0 = h * (i % 2 ? 0.86 : 0.7);
+      const r1 = h * 0.93;
+      g.strokeStyle = 'rgba(190,235,255,0.6)';
+      g.lineWidth = i % 2 ? 2 : 4;
+      g.beginPath();
+      g.moveTo(h + Math.cos(a) * r0, h + Math.sin(a) * r0);
+      g.lineTo(h + Math.cos(a) * r1, h + Math.sin(a) * r1);
+      g.stroke();
+    }
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const R = 5.4;
+    const geo = new THREE.RingGeometry(0.01, R, 48, 6).rotateX(-Math.PI / 2);
+    const p = geo.attributes.position as THREE.BufferAttribute;
+    const uv = geo.attributes.uv as THREE.BufferAttribute;
+    for (let i = 0; i < p.count; i++) {
+      p.setY(i, heightAt(DUNGEON_EXIT.x + p.getX(i), DUNGEON_EXIT.z + p.getZ(i)) + 0.14);
+      uv.setXY(i, 0.5 + p.getX(i) / (2 * R), 0.5 + p.getZ(i) / (2 * R));
+    }
+    geo.computeBoundingSphere();
+    const mat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.5,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(DUNGEON_EXIT.x, 0, DUNGEON_EXIT.z);
+    mesh.name = 'kt-exit-ring';
+    mesh.frustumCulled = false;
+    mesh.renderOrder = 2;
+    this.group.add(mesh);
+    this.disposables.push(geo, mat, tex);
+    // hạt linh quang bay lên
+    const n = 36;
+    const arr = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) this.moteSeed.push(hash01(i, 1, 6601), hash01(i, 2, 6601), hash01(i, 3, 6601));
+    const pg = new THREE.BufferGeometry();
+    pg.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+    pg.boundingSphere = new THREE.Sphere(
+      new THREE.Vector3(DUNGEON_EXIT.x, heightAt(DUNGEON_EXIT.x, DUNGEON_EXIT.z) + 3, DUNGEON_EXIT.z),
+      12,
+    );
+    const pm = new THREE.PointsMaterial({
+      color: 0xbfe6ff,
+      size: 0.28,
+      transparent: true,
+      opacity: 0.8,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    this.motes = new THREE.Points(pg, pm);
+    this.motes.name = 'kt-exit-motes';
+    this.motes.frustumCulled = false;
+    this.group.add(this.motes);
+    this.disposables.push(pg, pm);
+    this.updateMotes();
+  }
+
+  private updateMotes(): void {
+    if (!this.motes) return;
+    const a = this.motes.geometry.attributes.position as THREE.BufferAttribute;
+    const gy = heightAt(DUNGEON_EXIT.x, DUNGEON_EXIT.z);
+    for (let i = 0; i < a.count; i++) {
+      const s0 = this.moteSeed[i * 3]!;
+      const s1 = this.moteSeed[i * 3 + 1]!;
+      const s2 = this.moteSeed[i * 3 + 2]!;
+      const ph = (this.t * (0.12 + 0.1 * s2) + s0) % 1;
+      const ang = s1 * Math.PI * 2 + this.t * 0.2;
+      const r = 1.2 + 3.6 * s2;
+      a.setXYZ(i, DUNGEON_EXIT.x + Math.cos(ang) * r, gy + 0.3 + ph * 5.5, DUNGEON_EXIT.z + Math.sin(ang) * r);
+    }
+    a.needsUpdate = true;
+  }
+
   update(dt: number): void {
     this.t += dt;
+    this.updateMotes();
     this.pulse.value = 1.05 + 0.35 * Math.sin(this.t * 0.9);
   }
 

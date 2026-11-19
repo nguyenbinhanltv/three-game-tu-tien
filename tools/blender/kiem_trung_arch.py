@@ -23,6 +23,7 @@ from thien_khuyet_arch import fbm3  # noqa: E402
 bs.UV_ORIGIN, bs.UV_RANGE = 200.0, 420
 
 # Rãnh khí/phù văn: phát sáng xanh dưới ngưỡng bloom (1,0) để không cháy trắng.
+bs.MATERIALS['earth'] = Mat(0.97, 0.0, None, 1.0, False, 0.0)  # đất: chỉ màu đỉnh, không texture đan ô
 bs.MATERIALS['rune'] = Mat(0.5, 0.0, None, 1.0, False, 0.0, (0x4FB8F0, 0.95))
 bs.MATERIALS['steel'] = Mat(0.5, 0.18, None, 1.0, False, 0.0)
 bs.MATERIALS['metal'] = Mat(0.55, 0.2, None, 1.0, False, 0.0)
@@ -173,7 +174,7 @@ def soil_col(seed):
         rgb = tuple(c * (0.75 + 0.5 * n) for c in rgb)
         if nrm[1] > 0.6 and n > 0.55:
             rgb = mix(rgb, MOSS, 0.55)
-        return Paint(tuple(rgb), 'stone')
+        return Paint(tuple(rgb), 'earth')
 
     return fn
 
@@ -439,13 +440,18 @@ def grave(b, seed):
     s = rnd.uniform(0.9, 1.3)
 
     def mound(pos, nrm):
-        n = fbm3(pos[0] * 2, pos[1] * 2, pos[2] * 2, seed, 3)
-        rgb = mix(SOIL, GRASS_DK, min(1.0, max(0.0, nrm[1] * 1.1 - 0.15)) * 0.55)
-        rgb = mix(rgb, GRASS, max(0.0, n - 0.45) * 1.6)
-        return Paint(tuple(c * (0.7 + 0.5 * n) for c in rgb), 'stone')
+        n = fbm3(pos[0] * 1.6, pos[1] * 1.6, pos[2] * 1.6, seed, 3)
+        m = fbm3(pos[0] * 5, pos[1] * 5, pos[2] * 5, seed + 7, 2)
+        rgb = mix(C(0x6B6258), C(0x5A544E), n)  # đất nâu xám
+        # cỏ khô thưa: chỉ vài đám vàng xám, phần lớn là đất trần; chân gò hòa về màu nền
+        rgb = mix(rgb, C(0x8C8660), max(0.0, m - 0.62) * 2.2 * max(0.0, nrm[1]))
+        low = max(0.0, 1.0 - pos[1] / (0.5 * s))
+        rgb = mix(rgb, C(0x5E636B), low * 0.7)
+        return Paint(tuple(c * (0.75 + 0.4 * n) for c in rgb), 'earth')
 
-    blob(b, (0, 0.55 * s, 0), (2.3 * s, 1.15 * s, 1.7 * s), mound, nu=16, nv=9, seed=seed, v0=0.0, v1=0.5, amp=0.18)
-    for k in range(46):
+    blob(b, (0, 0.5 * s, 0), (2.5 * s, 1.0 * s, 1.85 * s), mound, nu=18, nv=9, seed=seed, v0=0.0, v1=0.5, amp=0.22)
+    blob(b, (0, 0.05 * s, 0), (3.6 * s, 0.22 * s, 2.7 * s), mound, nu=18, nv=4, seed=seed + 3, v0=0.0, v1=0.5, amp=0.25)  # váng đất loe ra, mép lẫn vào nền
+    for k in range(18):
         a = rnd.uniform(0, math.tau)
         d = rnd.uniform(0.0, 1.0) ** 0.6
         x, z = math.cos(a) * 2.1 * s * d, math.sin(a) * 1.55 * s * d
