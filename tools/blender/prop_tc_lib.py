@@ -7,6 +7,7 @@
 
 import math
 import os
+import random
 import struct
 import sys
 
@@ -39,6 +40,8 @@ kit._find_pbr = _find_pbr
 for _k, _c, _e in (('glow_g', 0x66FFA8, 1.5), ('glow_b', 0x66C8FF, 1.5), ('glow_p', 0xB070FF, 1.7), ('glow_y', 0xFFD070, 1.4), ('glow_r', 0xFF6A3A, 1.5)):
     bs.MATERIALS[_k] = Mat(0.7, 0.0, None, 1.0, False, 0.0, (_c, _e))
 bs.MATERIALS['glow_dim'] = Mat(0.7, 0.0, None, 1.0, False, 0.0, (0x59C98A, 0.5))  # ánh xanh lục mờ (mép nấm, nấm linh chi)
+bs.MATERIALS['tcvein'] = Mat(0.3, 0.0, None, 1.0, False, 0.0)  # tinh thể sáng: client đọc gradient màu đỉnh làm phát sáng + fresnel (propCrystal.ts)
+bs.MATERIALS['tccrystal'] = Mat(0.18, 0.1, None, 1.0, False, 0.0)  # tinh thể kính sẫm: chỉ bắt viền
 bs.MATERIALS['leaf'] = Mat(0.85, 0.0, None, 1.0, False, 0.0)
 bs.MATERIALS['blade'] = Mat(0.22, 0.65, None, 1.0, False, 0.0)  # thép: không texture, nhám thấp, kim loại vừa (cảnh chưa có env map)
 bs.MATERIALS['cloth'] = Mat(0.95, 0.0, None, 1.0, False, 0.0, (0xFFD8B0, 0.06))  # vải, giấy, rơm: chỉ màu đỉnh; phát sáng rất nhẹ (vải mỏng thấu sáng, mặt quay lưng nắng không đen)
@@ -624,3 +627,57 @@ def spoked_wheel(b, cx, cy, cz, r, w, color, band, spokes=8, seg=20):
     for k in range(spokes):
         a = k / spokes * math.tau
         tube(b, [(cx, cy + math.cos(a) * 0.08, cz + math.sin(a) * 0.08), (cx, cy + math.cos(a) * (r - 0.06), cz + math.sin(a) * (r - 0.06))], 0.03, color, 4, sub=1, cap=True)
+
+
+# ---------- tinh thể gradient (kiểu Phục Mạch v2) ----------
+
+CRYS_JADE = (0x07261F, 0x62CFA6)  # (chân tối, lõi sáng): ngọc lục trầm
+CRYS_ICE = (0x0C2434, 0x8DD0EA)  # lam băng nhạt
+
+
+def crystal_prism(b, ox, oz, dx, dz, h, r, ph, glow_ratio, rnd, pal, y0=0.0):
+    """Lăng trụ lục giác co dần về mũi qua nhiều vòng; màu đỉnh là gradient chân tối → lõi sáng ở mũi, mặt xen kẽ 'tcvein' (sáng) và 'tccrystal' (kính sẫm)."""
+    sides = 6
+    rings = [(0.0, 1.0), (0.05, 1.0), (0.3, 0.97), (0.55, 0.9), (0.75, 0.78), (0.9, 0.55), (1.0, 0.0)]
+    lo, hi = bs.srgb(pal[0]), bs.srgb(pal[1])
+    prev = None
+    for q, rk in rings:
+        ring = []
+        for j in range(sides):
+            ang = ph + j / sides * math.tau
+            ring.append((ox + dx * q * h + math.cos(ang) * r * rk, y0 + q * h - 0.05 * h, oz + dz * q * h + math.sin(ang) * r * rk))
+        if prev:
+            for j in range(sides):
+                k2 = (j + 1) % sides
+                glow = rnd.random() < glow_ratio
+                t = q ** 1.3
+                a0, a1 = (0.35, 1.0) if glow else (0.12, 0.45)
+                col = bs.Paint(tuple((lo[i] * (1 - t) + hi[i] * t) * (a0 + (a1 - a0) * t) / max(a1, 1e-3) * (1.0 if glow else 0.6) for i in range(3)), 'tcvein' if glow else 'tccrystal')
+                b.poly([prev[j], prev[k2], ring[k2], ring[j]], (ox, y0, oz), col)
+        prev = ring
+
+
+def crystal_cluster(b, H, seed, pal, cx=0.0, cz=0.0, glow_ratio=0.62, rock_color=None):
+    """Cụm tinh thể mọc từ đống đá: trụ giữa cao nhất, các trụ bên nghiêng ra với cao/dày khác nhau, và nhiều mảnh vụn quanh gốc."""
+    rnd = random.Random(seed)
+    rc = rock_color or ROCK_D
+    for k in range(4):
+        a = rnd.uniform(0, math.tau)
+        d = rnd.uniform(0.1, 0.32) * H
+        rock(b, cx + math.cos(a) * d, 0, cz + math.sin(a) * d, rnd.uniform(0.12, 0.2) * H, rc, seed=seed + k, squash=0.6, seg=7, rings=3)
+    n = rnd.randint(6, 9)
+    for c in range(n):
+        if c == 0:
+            a, lean, h, r, ox, oz = 0.0, rnd.uniform(-0.05, 0.05), H, 0.085 * H, 0.0, 0.0
+        else:
+            a = c / (n - 1) * math.tau + rnd.uniform(-0.3, 0.3)
+            d = rnd.uniform(0.06, 0.26) * H
+            ox, oz = math.cos(a) * d, math.sin(a) * d
+            lean = rnd.uniform(0.15, 0.6)
+            h = H * rnd.uniform(0.18, 0.85)
+            r = 0.055 * H * rnd.uniform(0.5, 1.3)
+        crystal_prism(b, cx + ox, cz + oz, math.cos(a) * lean, math.sin(a) * lean, h, r, rnd.uniform(0, 1), glow_ratio, rnd, pal)
+    for k in range(14):  # mảnh vụn quanh gốc
+        a = rnd.uniform(0, math.tau)
+        d = rnd.uniform(0.15, 0.5) * H
+        crystal_prism(b, cx + math.cos(a) * d, cz + math.sin(a) * d, rnd.uniform(-0.5, 0.5), rnd.uniform(-0.5, 0.5), rnd.uniform(0.05, 0.14) * H, rnd.uniform(0.012, 0.028) * H, rnd.uniform(0, 1), 0.7, rnd, pal)

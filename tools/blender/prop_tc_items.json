@@ -281,6 +281,50 @@
         "ext": "prop_da_dung",
         "foot": 1.4285
       }
+    ],
+    "tran_phap": [
+      {
+        "name": "tran_do_khac_san",
+        "vi": "Trận đồ khắc sàn",
+        "collider": 0.0,
+        "foot": 3.4
+      },
+      {
+        "name": "cot_tran",
+        "vi": "Cột trận",
+        "collider": 0.7,
+        "foot": 0.925
+      },
+      {
+        "name": "te_dan",
+        "vi": "Tế đàn",
+        "collider": [
+          [
+            0,
+            0,
+            2.3
+          ]
+        ],
+        "foot": 3.0177
+      },
+      {
+        "name": "bia_tran",
+        "vi": "Bia trận",
+        "collider": 0.7,
+        "foot": 0.75
+      },
+      {
+        "name": "linh_thach",
+        "vi": "Linh thạch",
+        "collider": 0.9,
+        "foot": 0.9598
+      },
+      {
+        "name": "xich_bua",
+        "vi": "Dây xích bùa",
+        "collider": 0.0,
+        "foot": 0.4
+      }
     ]
   }
 }
