@@ -25,6 +25,18 @@ const clipsHelper = path.join(root, 'tools/blender/tripo_clips.py');
 /** Phần phụ nhân vật người (kiếm rút/tra, vá lưng, lò xo vạt áo), anim_biped_extra.py nạp bằng runpy. */
 const partsHelper = path.join(root, 'tools/blender/biped_parts.py');
 
+/** Job PROP-1: id đầu nhóm là file đích; phụ thuộc thêm danh mục, thư viện và mọi script nhóm (job chạy lại khi một trong số đó đổi). */
+function propTcJobs() {
+  const dir = path.join(root, 'tools/blender');
+  const groups = JSON.parse(fs.readFileSync(path.join(dir, 'prop_tc_items.json'), 'utf8')).groups;
+  return Object.entries(groups).map(([g, items]) => ({
+    id: `prop_tc_${items[0].name}`,
+    script: 'tools/blender/prop_tc.py',
+    extra: ['--group', g],
+    extraDeps: ['prop_tc_items.json', 'prop_tc_lib.py', `prop_tc_${g}.py`, 'thien_cong_kit.py'].map((f) => path.join(dir, f)),
+  }));
+}
+
 /**
  * id: asset id (tên file trong assets/build/raw/).
  * legacy: bản chép thêm của GLB thô. Client đã nạp arch_sect qua manifest (M2-8); bản này chỉ còn làm đầu vào
@@ -34,6 +46,8 @@ const partsHelper = path.join(root, 'tools/blender/biped_parts.py');
 const procedural = [
   { id: 'arch_sect', script: 'tools/blender/thien_cong_sect.py', legacy: 'apps/client/public/assets/sect.glb' },
   { id: 'arch_thien_khuyet', script: 'tools/blender/thien_khuyet_arch.py' },
+  // PROP-1 "Thiên Công Khai Vật": mỗi nhóm một lần chạy Blender, ghi mọi món × 2 biến thể cạnh GLB đích (id đầu nhóm). Danh mục: prop_tc_items.json.
+  ...propTcJobs(),
   { id: 'arch_kiem_trung', script: 'tools/blender/kiem_trung_arch.py' },
   // Lưới Tripo v02 (task 70d2072c), tô màu theo vùng bằng script vì texture Tripo mất màu (M0-3).
   { id: 'prop_phi_kiem', script: 'tools/blender/recolor_phi_kiem.py', source: 'prop/prop_phi_kiem/tripo/raw_v02.glb' },
@@ -293,7 +307,7 @@ const sourceRoot = () => (assetSource === undefined ? (assetSource = findAssetSo
 function proceduralJobs() {
   const jobs = [];
   for (const j of [...procedural, ...v3SetEntries()].filter((p) => !only || p.id === only)) {
-    const deps = [path.join(root, j.script)];
+    const deps = [path.join(root, j.script), ...(j.extraDeps ?? [])];
     const args = [out(j.id)];
     if (j.source) {
       const src = sourceRoot() ? path.join(sourceRoot(), j.source) : null;
@@ -325,6 +339,7 @@ function proceduralJobs() {
         args.push('--src2', src2);
       }
     }
+    if (!j.source && j.extra) args.push(...j.extra);
     jobs.push({ ...j, args, deps });
   }
   return jobs;

@@ -1,0 +1,63 @@
+{
+  "$comment": "Danh mục PROP-1 'Thiên Công Khai Vật'. Mỗi mục sinh 2 asset: prop_tc_<name> và prop_tc_<name>_2 (biến thể). collider = bán kính va chạm (m, 0 = đi xuyên được) trước khi nhân tỉ lệ bày; height = chiều cao chuẩn (m) để rải; vi = tên hiển thị trong ảnh duyệt.",
+  "groups": {
+    "tong_mon": [
+      {
+        "name": "dinh_lu_dong",
+        "vi": "Đỉnh lư đồng",
+        "collider": 1
+      },
+      {
+        "name": "gia_kiem",
+        "vi": "Giá kiếm",
+        "collider": 1
+      },
+      {
+        "name": "bia_khac",
+        "vi": "Bia khắc chữ",
+        "collider": 0.8
+      },
+      {
+        "name": "co_phuong",
+        "vi": "Cờ phướn",
+        "collider": 0.35
+      },
+      {
+        "name": "lo_luyen_dan",
+        "vi": "Lò luyện đan",
+        "collider": 1.1
+      },
+      {
+        "name": "chuong_dong",
+        "vi": "Chuông đồng",
+        "collider": 1.4
+      },
+      {
+        "name": "trong",
+        "vi": "Trống",
+        "collider": 1
+      },
+      {
+        "name": "den_da",
+        "vi": "Đèn đá",
+        "collider": 0.3
+      },
+      {
+        "name": "lu_huong",
+        "vi": "Lư hương",
+        "collider": 0.6
+      },
+      {
+        "name": "ban_ghe_da",
+        "vi": "Bàn ghế đá",
+        "collider": [
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      }
+    ]
+  }
+}

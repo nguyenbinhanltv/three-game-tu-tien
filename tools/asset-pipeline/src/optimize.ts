@@ -232,7 +232,11 @@ async function addLod(doc: Document, level: number, target: number): Promise<num
       let lodMesh = meshMap.get(mesh);
       if (!lodMesh) {
         lodMesh = doc.createMesh(`${mesh.getName()}_lod${level}`).setExtras({ ...mesh.getExtras(), lod: level });
-        for (const prim of mesh.listPrimitives()) lodMesh.addPrimitive(simplifyPrimitive(prim.clone(), { simplifier, ratio, error }));
+        for (const prim of mesh.listPrimitives()) {
+          const simp = simplifyPrimitive(prim.clone(), { simplifier, ratio, error });
+          // Chi tiết phẳng nhỏ (chữ khắc, họa tiết) có thể bị rút về 0 tam giác ở LOD xa: bỏ primitive rỗng (mã hóa meshopt không nhận mảng đỉnh rỗng).
+          if ((simp.getIndices()?.getCount() ?? 0) >= 3) lodMesh.addPrimitive(simp);
+        }
         meshMap.set(mesh, lodMesh);
         created.meshes.push(lodMesh);
       }

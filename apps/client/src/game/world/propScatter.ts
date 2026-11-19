@@ -1,4 +1,5 @@
 import { LEVELS } from '@dtl/content';
+import { FLAGS } from '../../base/flags';
 import { scatterVanHai } from './vanHaiScatter';
 import { scatterThienKhuyet } from './thienKhuyetArt';
 import { type BhScatterCtx, riftPath, scatterBacHoang } from './bacHoangArt';
@@ -13,6 +14,7 @@ import {
   featureWeight,
   FOREST,
   HAND_PROPS,
+  THIEN_CONG_PROPS,
   hash01,
   heightAt,
   ISLAND_R,
@@ -96,7 +98,8 @@ interface Opts {
 
 function build(): PropInstance[] {
   const out: PropInstance[] = [];
-  for (const h of HAND_PROPS) out.push({ id: h.id, x: h.x, y: heightAt(h.x, h.z), z: h.z, yaw: h.yaw, s: h.s });
+  for (const h of [...HAND_PROPS, ...(THIEN_CONG_PROPS.van_lam ?? [])])
+    out.push({ id: h.id, x: h.x, y: heightAt(h.x, h.z), z: h.z, yaw: h.yaw, s: h.s });
   const seeds = new Map<string, number>();
 
   /** Rải `n` prop `id` trong đĩa (cx, cz, R); `clusters` > 0 thì gom thành cụm bán kính `cr`. */
@@ -326,6 +329,15 @@ export const KIEM_GAY: readonly PropInstance[] = (() => {
 let cache: PropInstance[] | null = null;
 /** Mọi instance prop (điểm nhấn + rải). Tính một lần. */
 export function allProps(level = 'van_lam'): PropInstance[] {
+  const all = allPropsRaw(level);
+  if (FLAGS.tcProps) return all;
+  let l = noTcCache.get(level);
+  if (!l) noTcCache.set(level, (l = all.filter((p) => !p.id.startsWith('prop_tc_'))));
+  return l;
+}
+const noTcCache = new Map<string, PropInstance[]>();
+
+function allPropsRaw(level: string): PropInstance[] {
   if (level === 'van_lam' || level === 'kiem_trung') return (cache ??= build());
   // Bản đồ mở rộng (E2-A): prop đặt tay của level (`propsOf`), cao độ theo địa hình riêng; Đoạn Mạch (E2-I) thêm đá và cây khô rải tự động.
   // Sân Nhật Thực Kiếp: dùng cả bố cục prop của Bắc Hoang (cùng địa hình) và thêm năm Trấn Giới Bia bằng đá thật ở đúng chỗ bia của kiếp.
@@ -335,7 +347,7 @@ export function allProps(level = 'van_lam'): PropInstance[] {
       const tr = terrainOf(level);
       const def = tribDef('anh_bien');
       const c = LEVELS[level]!.dungeon!.center;
-      l = [...allProps('bac_hoang')];
+      l = [...allPropsRaw('bac_hoang')];
       for (let i = 0; i < 5; i++) {
         const s = tribSealPos(c, def.phases[0]!.danLoi!.ring, i);
         l.push({ id: 'prop_bia_da', x: s.x, y: tr.heightAt(s.x, s.z), z: s.z, yaw: Math.atan2(c.x - s.x, c.z - s.z) + Math.PI, s: 1.9 });

@@ -10,6 +10,7 @@ import { KINH_NGUYET_PROPS } from './props.kinhnguyet';
 import { THAN_TANG_PROPS } from './props.thantang';
 import { XICH_TAN_PROPS } from './props.xichtan';
 import { KIM_DA_PROPS } from './props.kimda';
+import { THIEN_CONG_PROPS } from './props.thiencong';
 
 export type { HandProp } from './props.types';
 import type { HandProp } from './props.types';
@@ -123,9 +124,15 @@ const PROP_LEVELS: Record<string, readonly HandProp[]> = {
   kim_da_cung: KIM_DA_PROPS,
 };
 
-/** Prop điểm nhấn của level (E1-A); level chưa có bố cục thì rỗng. */
-export function propsOf(levelId: string): readonly HandProp[] {
+/** Prop điểm nhấn đặt tay của level, chưa gồm bộ PROP-1 (bộ rải `gen-thien-cong.ts` đọc cái này để né). */
+export function basePropsOf(levelId: string): readonly HandProp[] {
   return PROP_LEVELS[levelId] ?? [];
+}
+
+/** Prop điểm nhấn của level (E1-A) + bộ "Thiên Công Khai Vật" (PROP-1); level chưa có bố cục thì rỗng. */
+export function propsOf(levelId: string): readonly HandProp[] {
+  const tc = THIEN_CONG_PROPS[levelId];
+  return tc?.length ? [...basePropsOf(levelId), ...tc] : basePropsOf(levelId);
 }
 
 /** Va chạm của prop điểm nhấn theo level. */
