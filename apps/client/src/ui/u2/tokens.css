@@ -185,6 +185,58 @@
   --u-z-toast: 800;
   --u-z-cine: 900;
 
+  /* ── Giá trị chuyển từ bộ khung cũ (--k-*): tên đổi, giá trị GIỮ NGUYÊN (U2-8) ── */
+  --u-p-night: #1a2938;
+  --u-p-night-2: #22364e;
+  --u-p-night-0: #0e1722;
+  --u-p-paper: #e6ddcb;
+  --u-p-ink-bg: rgba(13, 17, 23, 0.8);
+  --u-p-ink-bg-hi: rgba(22, 30, 42, 0.86);
+  --u-p-bronze: #c8a96e;
+  --u-p-bronze-hi: #ead29a;
+  --u-p-bronze-lo: #5e4620;
+  --u-p-edge: linear-gradient(180deg, var(--u-p-bronze-hi), var(--u-p-bronze) 45%, var(--u-p-bronze-lo));
+  --u-p-edge-dim: rgba(174, 139, 73, 0.4);
+  --u-p-text: #e6ddcb;
+  --u-p-text-dim: #a5b3b6;
+  --u-p-text-ink: #29292c;
+  --u-p-text-ink-dim: #5b564b;
+  --u-p-jade: #7fe3d0;
+  --u-p-gold: #ffde96;
+  --u-p-sword: #cff3ff;
+  --u-p-ngoc: #38bdf8;
+  --u-p-cinnabar-hi: #d9604f;
+  --u-p-q1: #7ea25a;
+  --u-p-q2: #5fa7d8;
+  --u-p-q3: #b48cff;
+  --u-p-q4: #f0b840;
+  --u-p-cut-s: 4px;
+  --u-p-cut-m: 7px;
+  --u-p-font-title: var(--font-display, 'DTL Display'), var(--serif, Georgia, serif);
+  --u-p-font-serif: var(--serif, Georgia, serif);
+  --u-p-font-body: var(--sans, 'Segoe UI', sans-serif);
+  --u-p-track-title: 0.14em;
+  --u-p-track-label: 0.06em;
+  --u-z-kit-tip: 60;
+  --u-z-kit-modal: 50;
+
+  /* ── Giá trị chuyển từ Ngọc Giản (--ngj-*): tên đổi, giá trị GIỮ NGUYÊN (U2-8) ── */
+  --u-h-gold: #c9a45c;
+  --u-h-gold-hi: #f0d78e;
+  --u-h-gold-lo: #7a5f2c;
+  --u-h-ivory: #ede3cc;
+  --u-h-jade: #3e9c8f;
+  --u-h-jade-hi: #7fe3d0;
+  --u-h-jade-lo: #24594f;
+  --u-h-lacquer: #1e1712;
+  --u-h-ink: #2a2118;
+  --u-h-ink-dim: #574a34;
+  --u-h-crimson: #b9382e;
+  --u-h-crimson-hi: #e4624f;
+  --u-h-glow-gold: 0 0 10px rgba(201, 164, 92, 0.28);
+  --u-h-font-title: var(--font-display, 'DTL Display'), var(--serif, Georgia, serif);
+  --u-h-font-body: var(--sans, 'Segoe UI', sans-serif);
+
   /* ── Phóng UI: ui/uiScale.ts ghi --ui-scale (1 tới 1920×1080); kit không tự phóng, chỉ đọc ── */
   --u-scale: var(--ui-scale, 1);
 }
