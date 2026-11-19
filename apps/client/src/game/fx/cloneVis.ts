@@ -7,7 +7,7 @@
 
 import * as THREE from 'three/webgpu';
 import { CLONE_SPEED } from '@dtl/shared';
-import { groundAt } from '../../base/levelCtx';
+import { groundAt, levelId } from '../../base/levelCtx';
 import { OTHERS_FX_DIST, OTHERS_FX_LIVE_MAX } from './fxBudget';
 import { paletteOf } from '../../render/vfx/palette';
 import type { FxMesh } from '../../render/materials/vfx';
@@ -27,6 +27,18 @@ const OTHERS_MUL = 0.6;
 const RING = new THREE.RingGeometry(0.9, 1, 48);
 const DISC = new THREE.CircleGeometry(1, 32);
 const DOMAIN_RING = new THREE.RingGeometry(0.985, 1, 96);
+/**
+ * Màu vòng lĩnh vực theo bí cảnh (DUN-1): vòng trắng xanh nhạt mặc định lạc tông với bảng màu từng bí cảnh (đỏ than ở Xích Tẫn Khích, vàng ở Kim Dạ...).
+ * Vòng là chỉ báo phạm vi của chiêu nên KHÔNG ẩn, chỉ đổi sắc.
+ */
+const DOMAIN_TINT: Record<string, number> = {
+  kiem_trung: 0x8fb8d8,
+  phuc_mach: 0x58d8b8,
+  kinh_nguyet: 0xc4d4ff,
+  than_tang: 0xe0b45a,
+  kim_da_cung: 0xf0b050,
+  xich_tan_khich: 0xe85a24,
+};
 const FB_HEAD = new THREE.SphereGeometry(0.17, 12, 8);
 const FB_BODY = new THREE.ConeGeometry(0.26, 0.95, 12, 1, true);
 
@@ -101,7 +113,7 @@ export class CloneVis {
       return;
     }
     if (!this.domain) {
-      this.domain = this.vfx.fx(DOMAIN_RING, 0xcfe6dc, 0.1, 'flat');
+      this.domain = this.vfx.fx(DOMAIN_RING, DOMAIN_TINT[levelId()] ?? 0xcfe6dc, 0.1, 'flat');
       this.domain.rotation.x = -Math.PI / 2;
     }
     this.domainR = at.r;
