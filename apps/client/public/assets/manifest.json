@@ -905,6 +905,98 @@
         }
       }
     },
+    "arch_kim_da": {
+      "id": "arch_kim_da",
+      "class": "arch",
+      "source": "assets/build/raw/arch_kim_da.glb",
+      "file": "arch_kim_da.a330721def.glb",
+      "bytes": 6873500,
+      "rawBytes": 6233152,
+      "triangles": 310758,
+      "rawTriangles": 310758,
+      "lod0Cap": 600000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "plastered_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_plaster",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "plastered_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "marble_rock_01_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_jade",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "marble_rock_01_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 310758
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 217.1153,
+          "height": 37.5734,
+          "depth": 214.4337,
+          "minY": -2.9
+        },
+        "build": {
+          "width": 217.1152,
+          "height": 37.5748,
+          "depth": 214.4335,
+          "minY": -2.9007
+        }
+      }
+    },
     "arch_thien_khuyet": {
       "id": "arch_thien_khuyet",
       "class": "arch",
