@@ -25,7 +25,12 @@ function norm(c) {
   let a = m[4] === undefined ? 1 : m[4].endsWith('%') ? parseFloat(m[4]) / 100 : parseFloat(m[4]);
   return `${+m[1]},${+m[2]},${+m[3]},${+a.toFixed(3)}`;
 }
-const slug = (c) => c.toLowerCase().replace(/^#/, 'h').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const slug = (c) =>
+  c
+    .toLowerCase()
+    .replace(/^#/, 'h')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 
 let tokCss = fs.readFileSync(TOK, 'utf8');
 const byKey = new Map(); // khoá màu -> tên token

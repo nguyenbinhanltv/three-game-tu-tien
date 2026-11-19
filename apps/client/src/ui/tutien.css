@@ -92,13 +92,23 @@
     var(--u-x-rgba-200-169-110-0-85) calc((1 - var(--p)) * 1turn),
     var(--u-x-rgba-200-169-110-0-16) 0
   );
-  -webkit-mask: radial-gradient(circle, transparent 0 calc(71% - 3.5px), var(--u-x-h000) calc(71% - 3px) calc(71% - 0.5px), transparent 71%);
+  -webkit-mask: radial-gradient(
+    circle,
+    transparent 0 calc(71% - 3.5px),
+    var(--u-x-h000) calc(71% - 3px) calc(71% - 0.5px),
+    transparent 71%
+  );
   mask: radial-gradient(circle, transparent 0 calc(71% - 3.5px), var(--u-x-h000) calc(71% - 3px) calc(71% - 0.5px), transparent 71%);
 }
 /* Vạch linh văn: 12 khấc tối cắt vành thành đốt. */
 .skill-sweep::after {
   background: repeating-conic-gradient(from -3deg, var(--u-x-rgba-6-10-18-0-9) 0 6deg, transparent 6deg 30deg);
-  -webkit-mask: radial-gradient(circle, transparent 0 calc(71% - 4px), var(--u-x-h000) calc(71% - 3.5px) 71%, transparent calc(71% + 0.5px));
+  -webkit-mask: radial-gradient(
+    circle,
+    transparent 0 calc(71% - 4px),
+    var(--u-x-h000) calc(71% - 3.5px) 71%,
+    transparent calc(71% + 0.5px)
+  );
   mask: radial-gradient(circle, transparent 0 calc(71% - 4px), var(--u-x-h000) calc(71% - 3.5px) 71%, transparent calc(71% + 0.5px));
 }
 .skill-cd-text {

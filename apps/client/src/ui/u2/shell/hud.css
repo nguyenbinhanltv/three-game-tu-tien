@@ -7,8 +7,8 @@
   --hud-bg: var(--u-x-rgba-30-23-18-0-9);
   --hud-bg-soft: var(--u-x-rgba-30-23-18-0-78);
   --hud-shadow:
-    inset 0 0 0 3px var(--u-x-rgba-30-23-18-0-9), inset 0 0 0 4px var(--u-x-rgba-201-164-92-0-55), inset 0 0 18px var(--u-x-rgba-201-164-92-0-1),
-    0 4px 14px var(--u-x-rgba-0-0-0-0-35);
+    inset 0 0 0 3px var(--u-x-rgba-30-23-18-0-9), inset 0 0 0 4px var(--u-x-rgba-201-164-92-0-55),
+    inset 0 0 18px var(--u-x-rgba-201-164-92-0-1), 0 4px 14px var(--u-x-rgba-0-0-0-0-35);
 }
 /* ───────── khối sơn mài chung ───────── */
 :root:root .hud :is(.frame, .skill-row, .tracker, .chat, .boss-bar) {

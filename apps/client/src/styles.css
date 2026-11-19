@@ -699,19 +699,34 @@ kbd {
   white-space: nowrap;
 }
 .gauge.mp {
-  --fill: linear-gradient(180deg, var(--u-x-h9cefdc) 0%, var(--u-x-h3fa3a4) 45%, var(--u-x-h1d5560) 100%); /* linh khí ngọc spirit_jade → nước ngọc */
+  --fill: linear-gradient(
+    180deg,
+    var(--u-x-h9cefdc) 0%,
+    var(--u-x-h3fa3a4) 45%,
+    var(--u-x-h1d5560) 100%
+  ); /* linh khí ngọc spirit_jade → nước ngọc */
 }
 .gauge.hp.ally {
   --fill: linear-gradient(180deg, var(--u-x-ha9d48a) 0%, var(--u-x-h5e9a5a) 45%, var(--u-x-h2a5a3c) 100%); /* cỏ nắng → lá */
 }
 .gauge.hp.boss {
   --cut: 11px;
-  --fill: linear-gradient(180deg, var(--u-x-he7735f) 0%, var(--u-x-ha83a33) 42%, var(--u-x-h4a2b5e) 100%); /* son đỏ chìm vào ma khí spirit_demonic */
+  --fill: linear-gradient(
+    180deg,
+    var(--u-x-he7735f) 0%,
+    var(--u-x-ha83a33) 42%,
+    var(--u-x-h4a2b5e) 100%
+  ); /* son đỏ chìm vào ma khí spirit_demonic */
   height: 20px;
 }
 .gauge.xp {
   --cut: 5px;
-  --fill: linear-gradient(180deg, var(--u-x-hffe7ad) 0%, var(--u-x-hd2ae62) 50%, var(--u-x-h8a6a2c) 100%); /* kim quang spirit_gold → đồng thau */
+  --fill: linear-gradient(
+    180deg,
+    var(--u-x-hffe7ad) 0%,
+    var(--u-x-hd2ae62) 50%,
+    var(--u-x-h8a6a2c) 100%
+  ); /* kim quang spirit_gold → đồng thau */
   height: 11px;
   margin-top: 6px;
 }
