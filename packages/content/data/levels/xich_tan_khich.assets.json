@@ -1,5 +1,5 @@
 {
-  "mood": "rift_pit",
+  "mood": "xk",
   "glb": [],
   "ground": {
     "set": "terrain-ash",
@@ -20,5 +20,6 @@
     "beacons": false,
     "vegetation": false
   },
-  "minimap": "xich_tan_khich"
+  "minimap": "xich_tan_khich",
+  "xichTanArt": true
 }
