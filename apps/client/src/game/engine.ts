@@ -1219,6 +1219,9 @@ export class Game {
     const want = resolveGroundSet(g.set, get().quality);
     if (want === this.ground.set) return;
     this.groundSwapping = true;
+    // Chốt trạng thái lúc bắt đầu: nạp 2K mất vài giây, trong lúc đó level/bộ texture có thể đã đổi (truyền tống).
+    const start = this.ground;
+    const lv = levelId();
     try {
       const self = this;
       const next = await loadGroundTextures(
@@ -1235,10 +1238,14 @@ export class Game {
         next.dispose();
         return;
       }
-      const old = this.ground;
-      this.ground = next;
-      applyGround(this);
-      old.dispose();
+      if (levelId() !== lv || this.ground !== start) {
+        next.dispose(); // bộ vừa nạp không còn khớp level/bộ hiện tại; vòng gọi lại bên dưới tính lại theo level mới
+      } else {
+        const old = this.ground;
+        this.ground = next;
+        applyGround(this);
+        old.dispose();
+      }
     } catch (e) {
       levelLog.warn('đổi bộ texture mặt đất theo preset:', e);
     } finally {
