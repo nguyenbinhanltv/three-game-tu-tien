@@ -16,6 +16,8 @@ interface View {
   eye: [number, number, number];
   at: [number, number, number];
   fov?: number;
+  /** Cao độ eye/at tính tương đối mặt đất tại điểm đứng (đo sau khi dịch chuyển). */
+  rel?: boolean;
 }
 
 export const VIEWS: View[] = [
@@ -23,6 +25,8 @@ export const VIEWS: View[] = [
   { name: 'khich', stand: [1024, 960], eye: [1000, 84, 1010], at: [1024, 66, 860], fov: 60 },
   { name: 'khoc', stand: [834, 1340], eye: [900, 80, 1420], at: [760, 74, 1220], fov: 58 },
   { name: 'tragioi', stand: [1084, 600], eye: [1060, 84, 650], at: [1084, 76, 540], fov: 56 },
+  { name: 'xac', stand: [1010, 1405], eye: [1010, 13, 1410], at: [1060, 8, 1330], fov: 62, rel: true },
+  { name: 'thu3', stand: [830, 700], eye: [800, 16, 700], at: [870, 6, 625], fov: 62, rel: true },
   { name: 'trencao', stand: [1024, 900], eye: [1180, 190, 1180], at: [1024, 70, 700], fov: 58 },
   { name: 'phongbac', stand: [1024, 420], eye: [1024, 90, 480], at: [1024, 120, 120], fov: 64 },
 ];
@@ -58,12 +62,13 @@ export default {
           await gm(page, 'killall', 600);
           await page.evaluate(
             (a) => {
+              const g0 = a.v.rel ? window.__game!.renderPos.y : 0;
               window.__game!.freeCam = {
                 x: a.v.eye[0],
-                y: a.v.eye[1],
+                y: g0 + a.v.eye[1],
                 z: a.v.eye[2],
                 tx: a.v.at[0],
-                ty: a.v.at[1],
+                ty: g0 + a.v.at[1],
                 tz: a.v.at[2],
                 fov: a.v.fov,
               };

@@ -1,0 +1,42 @@
+import { describe, expect, it } from 'vitest';
+import '@dtl/content';
+import { terrainOf } from '@dtl/shared';
+import { BEAST_SPOTS, PILLAR_SPOTS, beastSkeleton, crackGeometry } from './bhWonders';
+import { riftPath } from './bacHoangArt';
+
+const def = terrainOf('bac_hoang').def;
+const path = riftPath(def);
+
+describe('bhWonders (MAP-5 PR2)', () => {
+  it('bộ xương: có hình, kích thước cỡ cự thú (dài > 40 m, cao > 8 m), không NaN', () => {
+    const g = beastSkeleton();
+    g.computeBoundingBox();
+    const b = g.boundingBox!;
+    expect(b.max.x - b.min.x).toBeGreaterThan(40);
+    expect(b.max.y).toBeGreaterThan(8);
+    const p = g.getAttribute('position').array;
+    for (let i = 0; i < p.length; i += 997) expect(Number.isFinite(p[i])).toBe(true);
+    expect(g.getAttribute('position').count).toBeLessThan(120_000);
+  });
+
+  it('vết nứt: tất định, bám địa hình, nằm trong bản đồ', () => {
+    const h = (x: number, z: number) => 60 + Math.sin(x * 0.01) * 4 + z * 0;
+    const a = crackGeometry(path, h);
+    const b = crackGeometry(path, h);
+    expect(a.getAttribute('position').count).toBe(b.getAttribute('position').count);
+    expect(a.getAttribute('position').count).toBeGreaterThan(500);
+    const p = a.getAttribute('position');
+    for (let i = 0; i < p.count; i += 13) {
+      expect(p.getX(i)).toBeGreaterThan(0);
+      expect(p.getX(i)).toBeLessThan(def.size);
+    }
+  });
+
+  it('xác thú và cột tà trận đặt trong vùng chơi, cách trạm và các điểm đến', () => {
+    for (const s of [...BEAST_SPOTS, ...PILLAR_SPOTS]) {
+      expect(Math.abs(s.x - def.play!.cx)).toBeLessThan(def.play!.half);
+      expect(Math.abs(s.z - def.play!.cz)).toBeLessThan(def.play!.half);
+      expect(Math.hypot(s.x - 1024, s.z - 1544)).toBeGreaterThan(70);
+    }
+  });
+});

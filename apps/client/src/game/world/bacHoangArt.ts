@@ -143,7 +143,7 @@ export function bhAmbient(path: readonly RiftPt[], x: number, z: number, def: Te
   const north = riftBlend(z - def.size / 2);
   const { d } = path.length > 1 ? riftDist(path, x, z) : { d: 999 };
   const near = 1 - smoothstep(20, 160, d);
-  return { ash: 9 + north * 10, ember: 1.2 + north * 3 + near * 12, mote: 2 };
+  return { ash: 16 + north * 8, ember: 1.2 + north * 3 + near * 12, mote: 2 };
 }
 
 export interface BhRock {

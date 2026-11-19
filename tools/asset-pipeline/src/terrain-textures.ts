@@ -71,6 +71,21 @@ export const ASH_LAYERS = [
   { layer: 'gravel', ph: 'dry_riverbed_rock', author: 'Amal Kumar', tint: [0.94, 0.9, 0.88] },
 ] as const;
 
+/**
+ * Bộ snow cho Bắc Hoang (MAP-5 PR2, phong cách B): tuyết (nhiều biến thể), đá đen, vách đá lạnh. Cùng thứ tự lớp, ra `public/terrain-snow/`, nạp lười khi vào level
+ * (`levels/bac_hoang.assets.json` `ground.set`). Lớp tuyết không nhuộm (đã trắng); đá/vách kéo về đen lam bằng `tint`.
+ */
+export const SNOW_LAYERS = [
+  { layer: 'grass', ph: 'snow_02', author: 'Rob Tuytel' },
+  { layer: 'dirt', ph: 'snow_03', author: 'Rob Tuytel' },
+  { layer: 'forest', ph: 'snow_field_aerial', author: 'Rob Tuytel' },
+  { layer: 'rock', ph: 'dark_rock', author: 'Rob Tuytel', tint: [0.8, 0.82, 0.95] },
+  { layer: 'cliff', ph: 'rock_wall_08', author: 'Amal Kumar', tint: [0.78, 0.8, 0.95] },
+  { layer: 'sand', ph: 'snow_05', author: 'Rob Tuytel' },
+  { layer: 'paving', ph: 'volcanic_rock_tiles', author: 'Charlotte Baglioni', tint: [0.8, 0.82, 0.95] },
+  { layer: 'gravel', ph: 'snow_04', author: 'Rob Tuytel' },
+] as const;
+
 const SRC = process.env.DTL_ASSET_SOURCE
   ? path.resolve(process.env.DTL_ASSET_SOURCE, 'texture')
   : path.resolve(ROOT, '..', 'dtl-asset-source', 'texture');
@@ -80,7 +95,15 @@ const OUT = path.join(
   'apps',
   'client',
   'public',
-  SET === 'ochre' ? 'terrain-ochre' : SET === 'slate' ? 'terrain-slate' : SET === 'ash' ? 'terrain-ash' : 'terrain',
+  SET === 'ochre'
+    ? 'terrain-ochre'
+    : SET === 'slate'
+      ? 'terrain-slate'
+      : SET === 'ash'
+        ? 'terrain-ash'
+        : SET === 'snow'
+          ? 'terrain-snow'
+          : 'terrain',
 );
 const SIZE = 1024;
 
@@ -130,7 +153,7 @@ async function main(): Promise<void> {
   const written = new Map<string, string>();
   const manifest: { layer: string; ph: string; a: string; n: string }[] = [];
   const layers: readonly { layer: string; ph: string; author: string; tint?: readonly number[] }[] =
-    SET === 'ochre' ? OCHRE_LAYERS : SET === 'slate' ? SLATE_LAYERS : SET === 'ash' ? ASH_LAYERS : LAYERS;
+    SET === 'ochre' ? OCHRE_LAYERS : SET === 'slate' ? SLATE_LAYERS : SET === 'ash' ? ASH_LAYERS : SET === 'snow' ? SNOW_LAYERS : LAYERS;
   for (const L of layers) {
     const [diff, nor, rough] = await Promise.all([source(L.ph, 'Diffuse'), source(L.ph, 'nor_gl'), source(L.ph, 'Rough')]);
     let img = sharp(diff).resize(SIZE, SIZE).removeAlpha();

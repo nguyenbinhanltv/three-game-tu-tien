@@ -996,3 +996,7 @@ Sinh bằng công cụ ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (
 | `bac_hoang` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/loading/bac_hoang.png` |
 | `canh_tung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/layers/canh_tung.png` |
 | `suong` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/layers/suong.png` |
+
+## Texture mặt đất Bắc Hoang (MAP-5 PR2)
+
+Bộ snow cho `bac_hoang`, từ [Poly Haven](https://polyhaven.com/textures), **CC0-1.0**; đóng gói bằng `pnpm assets:terrain --set snow` ra `apps/client/public/terrain-snow/` (nạp lười khi vào level). Nguồn: `snow_02`, `snow_03`, `snow_04`, `snow_05`, `snow_field_aerial` (Rob Tuytel), `dark_rock` (Rob Tuytel), `rock_wall_08` (Amal Kumar), `volcanic_rock_tiles` (Charlotte Baglioni). Đá/vách đã kéo về đen lam bằng `tint`.

@@ -15,3 +15,12 @@ Tái thiết kế mỹ thuật Bắc Hoang Tẫn Nguyên (level `bac_hoang`, ch�
 - Chụp ảnh: `pnpm shots bachoang --out <thư mục tuyệt đối> [--tag truoc|sau] [--moods dawn,day,dusk,night] [--sizes 1920x1080,1280x720] [--views tram,khich,khoc,tragioi,trencao,phongbac|all] [--perf 1] [--video 1]`. Bản "trước": chạy cùng kịch bản với mã cũ (main chưa có `dusk`/giờ riêng nên chỉ có một ảnh mỗi góc).
 
 Ảnh/video duyệt PR để ở artifact phiên (không commit).
+
+## PR 2: điểm wow + vật liệu PBR
+
+- **Texture PBR tuyết/đá**: bộ `terrain-snow` (`pnpm assets:terrain --set snow`, Poly Haven CC0: `snow_02/03/04/05`, `snow_field_aerial`, `dark_rock`, `rock_wall_08`, `volcanic_rock_tiles`; albedo + pháp tuyến + độ nhám WebP 1K, ~2,5 MB nạp lười khi vào level). `bac_hoang.assets.json` `ground.set`; phá lặp texture bật cho Bắc Hoang. Sân độ kiếp `do_kiep_bac_hoang` giữ bộ `terrain-ash`.
+- `game/world/bhWonders.ts` (1 lớp `BhWonders`, chỉ để nhìn, không va chạm, vị trí tất định): xác cự thú cổ đại (4 cá thể, `InstancedMesh`, cột sống + xương sườn vòm + sọ sừng/răng, dựng bằng ống/ellipsoid mượt, vật liệu xương PBR nhám), cột tà trận ở các bia Trấn Giới Đài (trụ đá đen + 3 vòng phù văn tím TSL), tinh thể băng dọc mép khe (PBR bóng, ánh tím), mạng vết nứt dị vực phát sáng tím bám địa hình (một dải ribbon, TSL).
+- `render/aurora.ts`: cực quang ba rèm cong ở chân trời bắc (1 draw call, cộng sáng, bám camera), cường độ theo thời điểm (`AURORA_BY_TOD`: đêm 1, hoàng hôn 0,55, bình minh 0,25, ngày tắt), ngả tím bên kia khe. Preset thấp không dựng cực quang và giảm tinh thể băng.
+- Bão tuyết: hạt `ash` (bông tuyết) tăng mật độ 9 → 16.
+- Chụp: thêm góc `xac` (xác cự thú) và `thu3` vào `pnpm shots bachoang`; góc `rel` đo cao độ tương đối mặt đất.
+- Không đổi địa hình/va chạm/gameplay: khe vẫn sâu như cũ (nền khe y=58 so với mặt 72); "vực sâu" là hiệu ứng phát sáng, không đào thêm.

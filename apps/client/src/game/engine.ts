@@ -56,6 +56,8 @@ import { Grass, GRASS_PUSH_SLOTS, type Pusher } from './world/grass';
 import { setHeightFog } from '../render/atmosphere';
 import { type RiftVeil } from '../render/riftVeil';
 import { DeadTrees } from './world/deadTrees';
+import type { BhWonders } from './world/bhWonders';
+import type { Aurora } from '../render/aurora';
 import { type EclipseSun } from '../render/eclipse';
 import { Beacons } from '../render/beacons';
 import type { GodRays } from '../render/godRays';
@@ -713,6 +715,9 @@ export class Game {
   /** Bắc Hoang (DV-3I): vệt nứt phát sáng, cây chết, và mood trộn theo vị trí giữa `bh_<giờ>` và `bhr_<giờ>`. */
   rift: RiftVeil | null = null;
   deadTrees: DeadTrees | null = null;
+  /** Bắc Hoang (MAP-5 PR2): xác cự thú, cột tà trận, băng, vết nứt dị vực; cực quang. */
+  bhWonders: BhWonders | null = null;
+  aurora: Aurora | null = null;
   riftMood = false;
   riftMoodT = -1;
   riftMoodAcc = 0;
