@@ -3,6 +3,7 @@ import * as THREE from 'three/webgpu';
 import { uiScale } from '../../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from '../core/screenFit';
 import {
+  locoAngleOf,
   locoDirOf,
   inSkyBand,
   PF_SOUL,
@@ -455,6 +456,7 @@ export class EntityManager {
       v.model.update(dt, {
         lookAt: lookMon ? { x: lookMon.x, y: lookMon.y + 1.2, z: lookMon.z } : undefined,
         moveDir: v.speed > 0.3 ? locoDirOf(v.yaw, v.mvx, v.mvz) : undefined,
+        moveAngle: v.speed > 0.3 ? locoAngleOf(v.yaw, v.mvx, v.mvz) : undefined,
         speed: v.speed,
         flying: (s.fl & PF_FLYING) !== 0,
         // Ngự không (E3-K): Nguyên Anh bay trong 30 m so với mặt đất thì không cần kiếm.
