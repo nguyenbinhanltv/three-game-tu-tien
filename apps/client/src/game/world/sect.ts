@@ -1,6 +1,6 @@
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as THREE from 'three/webgpu';
-import { DUNGEON_EXIT, heightAt, KIEM_TRUNG, PORTAL_POS, SECT } from '@dtl/shared';
+import { DUNGEON_EXIT, hash01, heightAt, KIEM_TRUNG, PORTAL_POS, SECT } from '@dtl/shared';
 import { col, G, GeoBuilder, mat } from '../core/geo';
 import { heightAt as levelHeight } from '../../base/levelCtx';
 
@@ -16,9 +16,12 @@ const C_STEEL = col(0xc2ced6);
 const C_BRONZE = col(0x8a6b3c);
 const C_BLUE = col(0x27506e);
 const C_LAMP = col(0xffe2a0);
-const C_JADE = col(0xe3ece6);
-const C_JADE_SHADE = col(0xc2d2c9);
 const C_JADE_GREEN = col(0x6fb59a);
+const C_MOSS = col(0x5f7f4a);
+const C_STEP_A = col(0x9fb1a7);
+const C_STEP_B = col(0xb4c4bb);
+const C_STEP_C = col(0x8da097);
+const C_STEP_JOINT = col(0x3f4a45);
 
 const R2 = Math.SQRT2;
 
@@ -152,8 +155,23 @@ function buildStaticRest(b: GeoBuilder, cx: number): void {
   for (let i = 0; i < 26; i++) {
     const z = 2136 + i * 4.2;
     const gy = heightAt(cx, z);
-    b.add(G.box, mat(cx, gy - 0.3, z, 0, 0, 0, 7.5, 1.4, 4.4), i % 2 ? C_JADE_SHADE : C_JADE);
-    // Viền ngọc lục hai bên và gờ bậc (MAP-1).
+    // Bậc đá như đại lộ (MAP-1 bản B): nền mạch tối, ba tấm mỗi bậc cao thấp lệch, màu đá ngọc trầm (không trắng phẳng), gờ vát tối ở mép
+    // trước và rêu bám mạch; viền ngọc lục hai bên.
+    b.add(G.box, mat(cx, gy - 0.34, z, 0, 0, 0, 7.5, 1.4, 4.4), C_STEP_JOINT);
+    for (let k = 0; k < 3; k++) {
+      const h = hash01(i, k, 91);
+      const lift = h * 0.05;
+      const w = k === 1 ? 2.5 : 2.3;
+      const px = cx + (k - 1) * 2.45;
+      b.add(
+        G.box,
+        mat(px, gy + 0.38 + lift, z, 0, 0, 0, w - 0.12, 0.14, 4.18),
+        (i + k) % 3 === 0 ? C_STEP_C : (i + k) % 3 === 1 ? C_STEP_B : C_STEP_A,
+        0.04 + h * 0.06,
+      );
+      b.add(G.box, mat(px, gy + 0.3 + lift, z + 2.1, 0, 0, 0, w - 0.1, 0.2, 0.16), C_STEP_JOINT); // gờ vát tối ở mép trước
+      if (h > 0.55) b.add(G.box, mat(px, gy + 0.32 + lift, z - 2.06, 0, 0, 0, w - 0.3, 0.12, 0.12), C_MOSS); // rêu bám mạch
+    }
     for (const sx of [-1, 1]) b.add(G.box, mat(cx + sx * 3.95, gy + 0.55, z, 0, 0, 0, 0.7, 0.5, 4.4), C_JADE_GREEN);
   }
 

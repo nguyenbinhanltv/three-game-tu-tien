@@ -41,6 +41,7 @@ export class Environment {
       cam.bottom = -70;
       cam.near = 10;
       cam.far = 600;
+      this.sun.shadow.radius = 3;
       this.sun.shadow.bias = -0.0006;
       this.sun.shadow.normalBias = 0.6;
     }
