@@ -14,6 +14,8 @@ export const FEET = {
   stepAngle: 0.7,
   /** Hoặc khoảng cách ngang (m) giữa chỗ khóa và chỗ clip muốn. */
   stepDist: 0.3,
+  /** Chỗ khóa cách chân clip quá mức này (m) là thân đã nhảy xa: khóa lại, không bước. */
+  jump: 1,
   stepTime: 0.26,
   /** Độ nhấc bàn chân giữa bước (m). */
   lift: 0.07,
@@ -189,6 +191,13 @@ export class MqFeet {
       for (const l of this.legs) {
         l.plant.has = false;
         l.step = null;
+      }
+    }
+    // 2b. Thân nhảy xa khi đứng yên (tp, truyền tống, server sửa vị trí): khóa lại ngay tại chân của clip, không bước từ chỗ cũ.
+    if (this.planted && this.legs.some((l) => Math.hypot(l.plant.p.x - l.pos.x, l.plant.p.z - l.pos.z) > FEET.jump)) {
+      for (const l of this.legs) {
+        l.step = null;
+        this.plantAt(l, l.pos, l.quat, yaw, base);
       }
     }
     // 3. Bước chân: chân lệch nhiều nhất bước trước, mỗi lúc một chân.

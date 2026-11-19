@@ -111,6 +111,16 @@ describe('MqFeet', () => {
     expect(feet.stepping).toBe(0);
     expect(feet.planted).toBe(true);
   });
+  it('thân nhảy xa khi đứng yên (tp): khóa lại ngay tại chân clip, không bước từ chỗ cũ', () => {
+    const { root, feet } = rig();
+    for (let i = 0; i < 20; i++) feet.update(1 / 60, { active: true, standing: true }, flat);
+    root.position.x += 20;
+    for (let i = 0; i < 5; i++) feet.update(1 / 60, { active: true, standing: true }, flat);
+    root.updateMatrixWorld(true);
+    expect(feet.steps).toBe(0);
+    expect(feet.stepping).toBe(0);
+    for (const n of ['foot_l', 'foot_r']) expect(root.getObjectByName(n)!.getWorldPosition(new THREE.Vector3()).x).toBeGreaterThan(19.8);
+  });
   it('đang đi thì không khóa chân', () => {
     const { root, feet } = rig();
     for (let i = 0; i < 20; i++) feet.update(1 / 60, { active: true, standing: true }, flat);
