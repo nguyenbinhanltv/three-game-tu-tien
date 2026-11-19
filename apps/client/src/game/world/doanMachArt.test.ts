@@ -69,7 +69,7 @@ describe('Đoạn Mạch (MAP-2): cây phong, cổ trận, cầu treo', () => {
     expect(exclusions().length).toBeGreaterThan(200);
   });
 
-  it('cổ trận nằm trên vách dốc quay vào trong, cách nhau xa', () => {
+  it('cổ trận nằm trên vách dốc quay vào trong, cách nhau ≥ 38 m', () => {
     const r = runeSpots();
     expect(r.length).toBeGreaterThan(20);
     for (const s of r) {
@@ -81,7 +81,7 @@ describe('Đoạn Mạch (MAP-2): cây phong, cổ trận, cầu treo', () => {
         const p = r[i];
         const q = r[j];
         if (!p || !q) throw new Error('thiếu điểm cổ trận');
-        expect(p.pos.distanceTo(q.pos)).toBeGreaterThan(45);
+        expect(p.pos.distanceTo(q.pos)).toBeGreaterThan(38);
       }
     }
   });

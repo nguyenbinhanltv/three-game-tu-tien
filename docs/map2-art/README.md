@@ -26,3 +26,9 @@ Tái thiết kế mỹ thuật Đoạn Mạch (chương 2, `doan_mach`) theo pho
 - Lá phong bay (`AmbientKind` `maple`) to hơn, dày hơn PR1.
 - Sương ngày/bình minh giảm (`dm_day`, `dm_dawn`) để vách không bị che bệt.
 - Chưa làm: thác nhỏ đổ xuống khe, cây thẻ lá có LOD, bo viền vách bằng mesh Blender, thay mô hình cây khô (`prop_cay_goc_kho` là prop dùng chung, có va chạm).
+
+## PR 3: chỉnh nhỏ sau duyệt
+
+- Vách: bỏ phần méo tần số cao (`nB*18`) của tầng ngang (nguyên nhân sọc mảnh); thêm vệt loang dọc kéo theo chiều cao, gờ đá chỉ ở một số tầng, đỏ gạch ↔ xám rõ hơn. Vẫn tính theo điểm ảnh, chỉ `doan_mach`.
+- Lá phong bay là lá thật: `render/mapleLeaves.ts`, 360 thẻ lá phong năm thùy (alpha test, một `InstancedMesh`, một draw call), chuyển động hoàn toàn trên GPU (rơi, gió chéo, lắc, lật hai trục) trong hộp 70×26×70 m cuộn vòng quanh camera; màu đỏ/cam/vàng theo từng lá, độ sáng theo mood (`LEAF_LIGHT`: đêm tối đi). Hạt tròn `maple` ở `ambient.ts` giảm còn 6/s. `DoanMachArt.update(camera)` gọi mỗi khung ở `frameLoop.ts`.
+- Cổ trận: quầng sáng đỏ-vàng quanh nét khắc, cường độ đêm 1,7 (ngày 0,4), tối đa 130 tấm (cách nhau ≥ 38 m), lớn 28–44 m.

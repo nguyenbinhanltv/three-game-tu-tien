@@ -578,8 +578,15 @@ feats.push(flat('boss', BOSS.off, Y - 2, 44, 120, { detail: 1.2 }));
 feats.push(flat('boss_thu_khich', BOSS2.off, Y - 4, 44, 120, { detail: 1.2 }));
 feats.push(flat('boss_kiem_co', BOSS3.off, Y - 4, 44, 120, { detail: 1.2 }));
 feats.push(flat('boss_ma_hau', BOSS4.off, Y - 4, 44, 120, { detail: 1.2 }));
-for (let z = RIFT_Z0, i = 0; z >= RIFT_Z1; z -= 30, i++)
-  feats.push(flat(`khe_${i}`, [RX(z), z], Y - 14, 10, 56, { detail: 1.5, relief: { amp: 3, freq: 0.05, crease: true } }));
+// Vực sâu 34 m, khép dần về mặt sân ở 4 nút cuối; khe dừng cách Trấn Giới Đài (z −530, phẳng y 72) hơn 30 m.
+const KHE_LAST = 9;
+for (let z = RIFT_Z0, i = 0; i <= KHE_LAST; z -= 30, i++)
+  feats.push(
+    flat(`khe_${i}`, [RX(z), z], i <= 5 ? Y - 34 : Math.round(Y - 34 + (34 * (i - 5)) / 4), 10, 46, {
+      detail: 1.5,
+      relief: { amp: 5, freq: 0.05, crease: true },
+    }),
+  );
 const terrain = {
   id: 'bac_hoang',
   seed: SEED,

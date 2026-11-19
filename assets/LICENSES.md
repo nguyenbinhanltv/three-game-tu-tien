@@ -997,6 +997,10 @@ Sinh bằng công cụ ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (
 | `canh_tung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/layers/canh_tung.png` |
 | `suong` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/layers/suong.png` |
 
+## Texture mặt đất Bắc Hoang (MAP-5 PR2)
+
+Bộ snow cho `bac_hoang`, đóng gói bằng `pnpm assets:terrain --set snow` ra `apps/client/public/terrain-snow/` (nạp lười khi vào level). Năm lớp tuyết (`proc:powder|ripple|crust|drift|grit`) do chính dự án sinh thủ tục (không nguồn ngoài, không cần ghi công). Ba lớp còn lại từ [Poly Haven](https://polyhaven.com/textures), **CC0-1.0**: `dark_rock` (Rob Tuytel), `rock_wall_08` (Amal Kumar), `volcanic_rock_tiles` (Charlotte Baglioni); đã kéo về đen lam bằng `tint`.
+
 ## Lạc Kiếm Tông bản B tả thực (MAP-1)
 
 Texture PBR từ [Poly Haven](https://polyhaven.com/textures), giấy phép **CC0-1.0** (ghi để truy vết). Bản 2K gốc ở `../dtl-asset-source/texture/<id>/` (tải bằng `pnpm assets:sect-textures`). Kiến trúc: ảnh màu đổi sang độ sáng (xám) rồi nhân màu đỉnh theo bảng màu, cộng normal + độ nhám, nướng vào `arch_sect.glb` bằng `tools/blender/thien_cong_kit.py`. Đá vách đảo nổi và atlas tán lá đóng gói bằng `pnpm assets:sky-textures` ra `apps/client/public/sky/` (atlas lá tự vẽ bằng SVG, không dùng ảnh ngoài).
