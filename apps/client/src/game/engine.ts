@@ -64,6 +64,7 @@ import type { GodRays } from '../render/godRays';
 import type { CardForest } from './world/cardForest';
 import type { LacKiemGarden } from './world/lacKiemGarden';
 import type { DoanMachArt } from './world/doanMachArt';
+import type { KiemTrungArt } from './world/kiemTrungArt';
 import type { LacKiemSkyScene } from './world/lacKiemSky';
 import type { ThienKhuyetSkyScene } from './world/thienKhuyetSky';
 import type { VanHaiWow } from './world/vanHaiWow';
@@ -225,6 +226,8 @@ export class Game {
   thienKhuyetSky: ThienKhuyetSkyScene | null = null;
   /** GLB kiến trúc Thiên Khuyết (MAP-4). */
   tkAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
+  /** GLB cảnh Kiếm Trủng (cự kiếm, vành núi đá, mộ, bia, xương…), DUN-1. */
+  ktAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
   /** Vân Hải (MAP-3): thuyền tiên, cá kình mây, cầu vòng linh khí, hải đăng. */
   vanHaiWow: VanHaiWow | null = null;
   vanHaiGarden: VanHaiGarden | null = null;
@@ -233,6 +236,7 @@ export class Game {
   /** Cây thẻ alpha thay cây Tripo ở Lạc Kiếm (MAP-1 bản B). */
   cardForest: CardForest | null = null;
   doanMachArt: DoanMachArt | null = null;
+  kiemTrungArt: KiemTrungArt | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
   butterflies: Butterflies | null = null;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */
@@ -1354,6 +1358,9 @@ export class Game {
     this.tkAsset?.handle.release();
     for (const m of this.tkAsset?.mats ?? []) m.dispose();
     this.tkAsset = null;
+    this.ktAsset?.handle.release();
+    for (const m of this.ktAsset?.mats ?? []) m.dispose();
+    this.ktAsset = null;
     for (const m of this.sectAsset?.mats ?? []) m.dispose();
     this.sectAsset = null;
     this.sectMat.dispose();

@@ -89,6 +89,57 @@ function vnoise(x: number, y: number): number {
 }
 const fbm = (x: number, y: number): number => vnoise(x, y) * 0.55 + vnoise(x * 2.1, y * 2.1) * 0.3 + vnoise(x * 4.3, y * 4.3) * 0.15;
 
+/**
+ * Huyệt kiếm (DUN-1, Kiếm Trủng): vòm hang đá phiến xám lam rất cao, vách có vỉa tầng và nhũ đá, mạch kiếm khí xanh chạy dọc chân vách, đỉnh có ô
+ * trời mở (quầng sáng lạnh) để chùm tia rọi xuống. Một lưới màu theo đỉnh (một draw call), tất định.
+ */
+export function buildSwordCaveShell(def: CaveDef, groundY: number): THREE.Mesh {
+  const geo = new THREE.SphereGeometry(1, 160, 48, 0, Math.PI * 2, 0, Math.PI / 2);
+  const pos = geo.attributes.position as THREE.BufferAttribute;
+  const col = new Float32Array(pos.count * 3);
+  const c = new THREE.Color();
+  const rock = new THREE.Color(0x3c4651);
+  const dark = new THREE.Color(0x0b0f16);
+  const vein = new THREE.Color(0x4fb8e8);
+  const sky = new THREE.Color(0xa9c4de);
+  for (let i = 0; i < pos.count; i++) {
+    const nx = pos.getX(i);
+    const ny = pos.getY(i);
+    const nz = pos.getZ(i);
+    const ang = Math.atan2(nz, nx);
+    const n = fbm(Math.cos(ang) * 5.5 + ny * 9, Math.sin(ang) * 5.5 + ny * 9);
+    const rib = Math.abs(Math.sin(ang * 9 + n * 4));
+    const bump = 1 + (n - 0.5) * 0.22 - rib * 0.06;
+    // Ô trời mở ở đỉnh: bán kính nhỏ dần về đỉnh, vòm hơi hẹp lại trước khi mở.
+    const x = def.x + nx * def.r * bump;
+    const z = def.z + nz * def.r * bump;
+    const drop = ny > 0.5 && ny < 0.9 ? (fbm(nx * 7.3, nz * 7.3) - 0.5) * 14 * Math.sin(((ny - 0.5) / 0.4) * Math.PI) : 0;
+    const y = groundY + ny * def.h + drop;
+    pos.setXYZ(i, x, y, z);
+    // Vách: vỉa tầng ngang, sáng ở chân (ánh phản từ sàn lạnh) tối dần lên cao.
+    const band = 0.5 + 0.5 * Math.sin(ny * 46 + n * 8);
+    const lit = Math.exp(-ny * 2.6);
+    c.copy(rock).multiplyScalar((0.32 + 0.8 * n) * (0.55 + 0.45 * band) * (0.6 + 0.5 * rib) * (0.25 + 0.85 * lit));
+    c.lerp(dark, Math.min(1, ny * 0.9));
+    // Quầng lạnh sát chân vách (khí lạnh từ sàn), thay cho mạch sáng (nhiễu giá trị tạo ô).
+
+    c.lerp(vein, Math.exp(-ny * 14) * 0.22);
+    // Ô trời mở: quầng sáng lạnh quanh đỉnh.
+    const open = Math.max(0, (ny - 0.935) / 0.065);
+    c.lerp(sky, open * open);
+    col[i * 3] = c.r;
+    col[i * 3 + 1] = c.g;
+    col[i * 3 + 2] = c.b;
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.computeBoundingSphere();
+  const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false }));
+  mesh.name = 'sword-cave-shell';
+  mesh.frustumCulled = false;
+  mesh.renderOrder = -1;
+  return mesh;
+}
+
 export function buildCaveShell(def: CaveDef, groundY: number, palace: false | PalaceKind = false): THREE.Mesh {
   if (palace) return buildPalaceShell(def, groundY, PALACE[palace]);
   const geo = new THREE.SphereGeometry(1, 144, 40, 0, Math.PI * 2, 0, Math.PI / 2);

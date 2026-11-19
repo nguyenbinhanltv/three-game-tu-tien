@@ -51,6 +51,7 @@ export type GradingName =
   | 'tk'
   | 'tk_dusk'
   | 'tk_night'
+  | 'kt'
   | 'lk_dawn'
   | 'lk_day'
   | 'lk_dusk'
@@ -110,6 +111,7 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   tk: parse(raw.presets.tk),
   tk_dusk: parse(raw.presets.tk_dusk),
   tk_night: parse(raw.presets.tk_night),
+  kt: parse(raw.presets.kt),
   lk_dawn: parse(raw.presets.lk_dawn),
   lk_day: parse(raw.presets.lk_day),
   lk_dusk: parse(raw.presets.lk_dusk),
@@ -143,6 +145,8 @@ export function bhTod(name: string): TimeOfDay {
 
 /** Tên mood của level theo thời điểm trong ngày: `ochre` + night → `ochre_night`. */
 export function moodVariant(base: GradingName, tod: TimeOfDay): GradingName {
+  // Kiếm Trủng (DUN-1): một mood cố định (bí cảnh, không đổi theo giờ).
+  if (base === 'kt') return 'kt';
   // Lạc Kiếm (MAP-1): bộ bốn thời điểm riêng, có hoàng hôn.
   if (base.startsWith('lk')) return `lk_${tod}` as GradingName;
   // Bắc Hoang (MAP-5): bốn thời điểm, hai nửa bản đồ (`bh_*` bên này khe, `bhr_*` bên kia khe).
