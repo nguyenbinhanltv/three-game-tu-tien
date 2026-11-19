@@ -16,6 +16,9 @@ const C_STEEL = col(0xc2ced6);
 const C_BRONZE = col(0x8a6b3c);
 const C_BLUE = col(0x27506e);
 const C_LAMP = col(0xffe2a0);
+const C_JADE = col(0xe3ece6);
+const C_JADE_SHADE = col(0xc2d2c9);
+const C_JADE_GREEN = col(0x6fb59a);
 
 const R2 = Math.SQRT2;
 
@@ -149,7 +152,9 @@ function buildStaticRest(b: GeoBuilder, cx: number): void {
   for (let i = 0; i < 26; i++) {
     const z = 2136 + i * 4.2;
     const gy = heightAt(cx, z);
-    b.add(G.box, mat(cx, gy - 0.3, z, 0, 0, 0, 7.5, 1.4, 4.4), C_STONE);
+    b.add(G.box, mat(cx, gy - 0.3, z, 0, 0, 0, 7.5, 1.4, 4.4), i % 2 ? C_JADE_SHADE : C_JADE);
+    // Viền ngọc lục hai bên và gờ bậc (MAP-1).
+    for (const sx of [-1, 1]) b.add(G.box, mat(cx + sx * 3.95, gy + 0.55, z, 0, 0, 0, 0.7, 0.5, 4.4), C_JADE_GREEN);
   }
 
   // --- Cổng bí cảnh Kiếm Trủng ---

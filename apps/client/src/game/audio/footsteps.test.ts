@@ -73,7 +73,7 @@ function rig(level: 'van_lam' | 'kiem_trung' = 'van_lam') {
 describe('FootstepDriver', () => {
   it('mình đi trên sân đá phát step_stone, đúng nhịp', () => {
     const r = rig();
-    const me: P = { x: SECT.x, z: 2090, speed: 5, s: { fl: 0 } };
+    const me: P = { x: SECT.x - 20, z: SECT.z - 44, speed: 5, s: { fl: 0 } }; // sân chính điện (còn lát đá sau MAP-1; phần khác của đỉnh là cỏ)
     r.players.set('me', me);
     r.run(6, 5, me);
     expect(r.calls.length).toBeGreaterThan(8);
@@ -109,10 +109,11 @@ describe('FootstepDriver', () => {
   });
   it('giới hạn số nguồn: đông người quanh mình không vượt số bước mỗi khung và mỗi cửa sổ; mình luôn được phát', () => {
     const r = rig();
-    const me: P = { x: SECT.x, z: 2090, speed: 5, s: { fl: 0 } };
+    const me: P = { x: SECT.x - 20, z: SECT.z - 44, speed: 5, s: { fl: 0 } }; // sân chính điện (còn lát đá sau MAP-1; phần khác của đỉnh là cỏ)
     r.players.set('me', me);
-    for (let i = 0; i < 40; i++) r.players.set('o' + i, { x: SECT.x + (i % 8), z: 2092 + Math.floor(i / 8), speed: 5, s: { fl: 0 } });
-    for (let i = 0; i < 10; i++) r.monsters.set('m' + i, { x: SECT.x - 3 - i, z: 2086, speed: 5, s: { st: 1 } });
+    for (let i = 0; i < 40; i++)
+      r.players.set('o' + i, { x: SECT.x - 20 + (i % 8), z: SECT.z - 44 + 2 + Math.floor(i / 8), speed: 5, s: { fl: 0 } });
+    for (let i = 0; i < 10; i++) r.monsters.set('m' + i, { x: SECT.x - 23 - i, z: SECT.z - 44 - 4, speed: 5, s: { st: 1 } });
     let perFrameMax = 0;
     let before = 0;
     for (let f = 0; f < 600; f++) {

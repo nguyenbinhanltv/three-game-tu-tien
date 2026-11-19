@@ -59,6 +59,8 @@ import { DeadTrees } from './world/deadTrees';
 import { type EclipseSun } from '../render/eclipse';
 import { Beacons } from '../render/beacons';
 import type { GodRays } from '../render/godRays';
+import type { LacKiemGarden } from './world/lacKiemGarden';
+import type { LacKiemSkyScene } from './world/lacKiemSky';
 import { PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { createWorldMaterial } from '../render/materials/world';
@@ -210,6 +212,10 @@ export class Game {
   beacons: Beacons | null = null;
   /** Tia sáng xuyên mây (MAP-1). */
   godRays: GodRays | null = null;
+  /** Đảo nổi, cầu mây, thác, Kiếm Đài (MAP-1). */
+  lacKiemSky: LacKiemSkyScene | null = null;
+  /** Vườn hoa, lùm trúc, đá rêu quanh tông môn (MAP-1). */
+  lacKiemGarden: LacKiemGarden | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
   butterflies: Butterflies | null = null;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */
@@ -319,6 +325,8 @@ export class Game {
   camPitch = 0.38;
   camDist = 13;
   camDistCur = 13;
+  /** Camera tự do cho ảnh duyệt (chỉ có tác dụng khi URL có `?debug`): đặt từ Playwright/console, null = camera theo nhân vật. */
+  freeCam: { x: number; y: number; z: number; tx: number; ty: number; tz: number; fov?: number } | null = null;
   keys = new KeyState();
   skillQueue = new SkillQueue();
   ultCardId = 0;

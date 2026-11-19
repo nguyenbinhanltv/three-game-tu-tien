@@ -43,6 +43,7 @@ export interface GameDebug {
   camPitch: number;
   camDist: number;
   camDistCur: number;
+  freeCam: { x: number; y: number; z: number; tx: number; ty: number; tz: number; fov?: number } | null;
   shownLevel: string;
   cur: Vec & { yaw: number };
   renderPos: Vec;

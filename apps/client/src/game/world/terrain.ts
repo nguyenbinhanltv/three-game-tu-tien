@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { texture, positionWorld, vertexColor, mix as tmix } from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
 import { createWorldMaterial } from '../../render/materials/world';
-import { applyGroundShader, clearGroundShader, setGroundTileBreak, type GroundLevel } from '../../render/materials/ground';
+import { applyGroundShader, clearGroundShader, setGroundStrata, setGroundTileBreak, type GroundLevel } from '../../render/materials/ground';
 import type { GroundTextures } from '../../base/groundTextures';
 import {
   COLLIDERS,
@@ -23,6 +23,7 @@ import { LEVELS } from '@dtl/content';
 import { levelTerrain } from '../../base/levelCtx';
 import { col, G, GeoBuilder, mat } from '../core/geo';
 import { withSightFade } from './occlusion';
+import { sectPaving } from '../../render/groundMask';
 import { nearPropTree } from './propScatter';
 import { vanHaiArt, type VhPalette } from './vanHaiArt';
 import { tkGroundColor } from './thienKhuyetArt';
@@ -35,6 +36,11 @@ const COARSE_CELL = 32;
 const VEG_NEAR_R = 2;
 const VEG_FAR_R = 4;
 
+const C_GRASS_SECT = col(0x58a65c);
+const C_GRASS_GOLD = col(0xb7b45a);
+const C_GRASS_MOSS = col(0x3f7a47);
+const C_GRASS_FRESH = col(0x84c168);
+const C_ROCK_BLUE = col(0x7f95aa);
 const C_GRASS_VALLEY = col(0x86b45c);
 const C_GRASS_FOREST = col(0x4f8f4c);
 const C_GRASS_WILD = col(0x6f9d58);
@@ -216,20 +222,42 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
   if (wValley > 0) out.lerp(C_GRASS_VALLEY, Math.min(1, wValley * 1.4));
   if (wForest > 0) out.lerp(C_GRASS_FOREST, Math.min(1, wForest * 1.4));
   out.lerp(C_GRASS_DRY, Math.max(0, n) * 0.35);
+  // MAP-1: cỏ đổi sắc theo mảng (vàng nắng, xanh đậm có rêu, lục non) thay cho một xanh bão hòa đều; giảm bão hòa nhẹ.
+  const n2 = fbm(x * 0.045, z * 0.045, 2, TERRAIN_SEED + 410);
+  const n3 = fbm(x * 0.021 + 90, z * 0.021, 2, TERRAIN_SEED + 520);
+  out.lerp(C_GRASS_GOLD, Math.max(0, Math.min(1, (n2 - 0.05) * 2.2)) * 0.5);
+  out.lerp(C_GRASS_MOSS, Math.max(0, Math.min(1, (-n2 - 0.1) * 2.2)) * 0.45);
+  out.lerp(C_GRASS_FRESH, Math.max(0, Math.min(1, (n3 - 0.1) * 2.5)) * 0.4);
+  const lum = out.r * 0.3 + out.g * 0.59 + out.b * 0.11;
+  out.r += (lum - out.r) * 0.1;
+  out.g += (lum - out.g) * 0.1;
+  out.b += (lum - out.b) * 0.1;
   out.multiplyScalar(0.92 + n * 0.14);
 
-  // Dốc đứng lộ đá.
+  // Dốc đứng lộ đá: vân đá xếp tầng theo độ cao (vách trầm tích kiểu sơn thủy), càng cao càng ngả lam nhạt.
   const slope = 1 - ny;
-  if (slope > 0.12) out.lerp(n > 0 ? C_ROCK : C_ROCK_DARK, Math.min(1, (slope - 0.12) * 4.5));
-  // Tuyết trên đỉnh cao.
-  if (h > 250) out.lerp(C_SNOW, Math.min(1, (h - 250) / 60) * (slope < 0.45 ? 1 : 0.4));
+  if (slope > 0.12) {
+    const rock = n > 0 ? C_ROCK : C_ROCK_DARK;
+    out.lerp(rock, Math.min(1, (slope - 0.12) * 4.5));
+    const k = Math.min(1, (slope - 0.12) * 4.5);
+    // Dải tầng rộng (chu kỳ ~55 m, hợp lưới thô của ô xa) + vệt khe dọc theo nhiễu: vách sơn thủy có vân thay vì mảng phẳng.
+    const band = 0.5 + 0.5 * Math.sin(h * 0.115 + n * 4 + n2 * 3);
+    const streak = fbm(x * 0.05 + z * 0.021, z * 0.05 - x * 0.021, 2, TERRAIN_SEED + 640);
+    out.multiplyScalar(1 - k * (0.32 - band * 0.5 + Math.max(0, -streak) * 0.5));
+    out.lerp(C_ROCK_BLUE, k * Math.max(0, Math.min(1, (h - 150) / 170)) * 0.4);
+  }
+  // Tuyết chỉ ở các đỉnh rất cao, mỏng (không phủ trắng cả sườn núi gần).
+  if (h > 340) out.lerp(C_SNOW, Math.min(1, (h - 340) / 70) * (slope < 0.45 ? 0.75 : 0.3));
   // Bờ cát và lòng hồ.
   if (wLake > 0) {
     if (h < WATER_Y + 2.2) out.lerp(C_SAND, Math.min(1, (WATER_Y + 2.2 - h) / 1.6));
     if (h < WATER_Y - 1) out.lerp(C_LAKEBED, Math.min(1, (WATER_Y - 1 - h) / 5));
   }
   // Sân lát đá của tông môn và bệ cổng bí cảnh.
-  if (wSect > 0.82) out.lerp(C_STONE, Math.min(1, (wSect - 0.82) * 8));
+  // MAP-1: đỉnh núi tông môn phủ cỏ ngọc tươi; chỉ chỗ lát thật (đại lộ, sân, bát quái: `sectPaving`) mới ngả màu đá.
+  if (wSect > 0.5) out.lerp(C_GRASS_SECT, Math.min(0.85, (wSect - 0.5) * 3));
+  const paved = sectPaving(x - SECT.x, z - SECT.z);
+  if (paved > 0) out.lerp(C_STONE, paved);
   if (wPad > 0.9) out.lerp(C_STONE, Math.min(1, (wPad - 0.9) * 10));
   // Đất chết xám tím của Kiếm Trủng.
   const wTomb = featureWeight(KIEM_TRUNG, x, z);
@@ -615,6 +643,7 @@ export class Terrain {
   /** Bật shader mặt đất PBR khi bộ texture đã nạp; gọi lại khi đổi preset. */
   setGround(tex: GroundTextures | null, level: GroundLevel): void {
     setGroundTileBreak(XICH);
+    setGroundStrata(isVanLam());
     if (tex) applyGroundShader(this.material, tex, level);
     else clearGroundShader(this.material);
   }
