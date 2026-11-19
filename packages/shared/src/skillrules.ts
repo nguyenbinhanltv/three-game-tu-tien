@@ -91,7 +91,7 @@ export function planDash(
   dir: { x: number; z: number },
   dist: number,
   stopAt?: { x: number; z: number; r: number },
-  level?: Pick<MoveCtx, 'terrain' | 'bound'>,
+  level?: Pick<MoveCtx, 'terrain' | 'bound' | 'collision'>,
 ): DashPlan {
   const s = cloneMoveState(start);
   s.grounded = true;
@@ -100,7 +100,14 @@ export function planDash(
   const yaw = Math.atan2(-dir.x, -dir.z);
   const inp: MoveInput = { s: 0, mx: 0, mz: 1, yaw, f: 0 };
   // `level`: địa hình và vách hang của level đang đứng, để lướt không xuyên vách (E2-C).
-  const ctx: MoveCtx = { canFly: false, frozen: false, speedMul: DASH_SPEED / 7, terrain: level?.terrain, bound: level?.bound };
+  const ctx: MoveCtx = {
+    canFly: false,
+    frozen: false,
+    speedMul: DASH_SPEED / 7,
+    terrain: level?.terrain,
+    bound: level?.bound,
+    collision: level?.collision,
+  };
   const want = DASH_SPEED * DASH_STEP;
   let moved = 0;
   let blocked = false;
