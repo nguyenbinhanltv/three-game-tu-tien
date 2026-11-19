@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/elite_loi_van_su_vuong/tripo/rig_v01.glb",
+    "source": "3d/quai/elite_loi_van_su_vuong/tripo/rig_v01.glb",
     "size": {
       "depth": 3.2
     },

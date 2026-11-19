@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "external",
-    "source": "chr/skin_varkessa/prep/rig_v01.glb",
+    "source": "3d/skin/skin_varkessa/prep/rig_v01.glb",
     "size": {
       "height": 1.86
     },

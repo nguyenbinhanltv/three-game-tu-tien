@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // CHR-OUTFIT-V2: concept trang phục VỪA thân nền v2 (MakeHuman, cao ráo, vai hẹp) cho 3 bộ: đồ đệ tử tân thủ (set_de_tu), Lạc Kiếm (set_lac_kiem), Liệt Mạch (set_liet_mach_kiem_y).
-// Mỗi bộ: 3 ảnh toàn thân tư thế A (trước/sau/nghiêng) + ảnh từng mảnh (cho Tripo HD). Ra: <DTL_ASSET_SOURCE>/chr/<thư mục bộ>/concept/v2_<tên>.png + .prompt.txt (chỉ THÊM file mới).
+// Mỗi bộ: 3 ảnh toàn thân tư thế A (trước/sau/nghiêng) + ảnh từng mảnh (cho Tripo HD). Ra: <DTL_ASSET_SOURCE>/3d/nhan-vat/<thư mục bộ>/concept/v2_<tên>.png + .prompt.txt (chỉ THÊM file mới).
 // Dùng: node tools/codex-assets/chr-outfit-gen.mjs [bộ …] [--jobs 4] [--force] (bộ: de_tu | lac_kiem | liet_mach). Codex tích hợp công cụ ảnh, không dùng Tripo API/credit.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -106,7 +106,7 @@ ${NOTEXT}`;
 const todo = [];
 for (const [id, s] of Object.entries(SETS)) {
   if (want.length && !want.includes(id)) continue;
-  const dir = path.join(source, 'chr', s.dir, 'concept');
+  const dir = path.join(source, '3d', 'nhan-vat', s.dir, 'concept');
   fs.mkdirSync(dir, { recursive: true });
   for (const v of Object.keys(VIEW)) todo.push({ dir, name: `v2_${v}`, prompt: A(full(s, v)) });
   for (const k of Object.keys(s.pieces)) todo.push({ dir, name: `v2_piece_${k}`, prompt: A(piece(s, k)) });

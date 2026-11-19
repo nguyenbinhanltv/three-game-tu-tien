@@ -2,7 +2,7 @@
  "$comment": "Cấu hình skin_prep.py cho DUSKRELLA the Ashen Whisper (Atahan3D, CC BY 4.0). Cùng đơn vị/khung với Varkessa (cao ~1,9, gốc giữa thân). Khớp đo từ ảnh chiếu thẳng 600 px/đơn vị (x=(px-600)/600, z=(600-py)/600, y=-(px_canh-600)/600); không có vũ khí nên không cắt.",
  "id": "skin_duskrella",
  "source": "D:/claude-tmp/skin2-work/duskrella.glb",
- "out": "chr/skin_duskrella/prep/rig_v01.glb",
+ "out": "3d/skin/skin_duskrella/prep/rig_v01.glb",
  "triangles": 20000,
  "bake": {
   "size": 2048,

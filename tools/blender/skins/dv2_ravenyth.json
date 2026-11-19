@@ -1,7 +1,7 @@
 {
  "$comment": "Kim Dạ Ma Hậu (DV-2 đợt 3): Ravenyth, The Gilded Night Empress (Atahan3D, CC BY) nướng thấp tam giác, không vũ khí. Chạy: blender -b --factory-startup --python tools/blender/skin_prep.py -- tools/blender/skins/dv2_ravenyth.json <thư mục làm việc> --stage bake [--preview <ảnh>]. Sau đó chr_v3.py đặt lên xương Mannequin (mốc dv2_ravenyth_landmarks.json, vùng cứng dv2_ravenyth_bind.json).",
  "id": "dv2_ravenyth",
- "source": "D:/METAGRIT/dtl-asset-source/assets-online/ravenyth__the_gilded_night_empress.glb",
+ "source": "D:/METAGRIT/dtl-asset-source/3d/skin/goc-online/ravenyth__the_gilded_night_empress.glb",
  "out": "dv2_ravenyth/bake.glb",
  "triangles": 30000,
  "view": { "scale": 2.0, "center": [0, 0, 0] },

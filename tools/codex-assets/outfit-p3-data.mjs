@@ -14,7 +14,7 @@ export const SETS = {
     name: 'Tinh Khuyết Kiếm Bào',
     method: 'Kiếm tu',
     element: 'Kim/Thủy (sao đêm)',
-    dir: 'chr',
+    dir: '3d/nhan-vat',
     srcId: 'set_tinh_khuyet_kiem_bao',
     ref: 'ref-04 (áo khoác dài, lót đậm, vai nhọn) + mẫu #119 Tinh Khuyết làm tham chiếu dáng (bản tạm)',
     palette: [
@@ -86,7 +86,7 @@ export const SETS = {
     name: 'Cổ Thành Huyền Giáp',
     method: 'Hộ pháp',
     element: 'Thổ (cổ thành)',
-    dir: 'chr',
+    dir: '3d/nhan-vat',
     srcId: 'set_co_thanh_huyen_giap',
     ref: 'ref-05 (dáng nặng, vai to, váy nhiều tầng), nhưng là tường thành cổ thay vì lông vũ hay vảy',
     palette: [
@@ -158,7 +158,7 @@ export const SETS = {
     name: 'Thần Tàng Đan Bào',
     method: 'Đan sư',
     element: 'Mộc/Thủy (kho tàng, ngọc)',
-    dir: 'chr',
+    dir: '3d/nhan-vat',
     srcId: 'set_than_tang_dan_bao',
     ref: 'ref-01 và ref-06 (voan, tay áo lụa mỏng) nâng thành hoàng giả: vàng cổ, ngọc kho báu',
     palette: [
@@ -230,7 +230,7 @@ export const SETS = {
 
 export const SWORD = {
   name: 'Tinh Khuyết Kiếm (dạng cuối +10 và vỏ kiếm)',
-  dir: 'prop',
+  dir: '3d/vu-khi',
   srcId: 'prop_kiem_tinh_khuyet',
   base: 'Dạng gốc dùng model #119 có sẵn (`prop_kiem_tinh_khuyet`). Concept này chỉ là dạng cuối +10 và vỏ. Dùng chung cho cả ba công pháp (không làm kiếm riêng cho Hộ pháp/Đan sư).',
   items: {

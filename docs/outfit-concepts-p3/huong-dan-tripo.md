@@ -32,8 +32,8 @@
 
 ## Bộ 1 · Tinh Khuyết Kiếm Bào (Kiếm tu)
 
-Ảnh trong: `D:\METAGRIT\dtl-asset-source\chr\set_tinh_khuyet_kiem_bao\concept\`
-Lưu vào: `D:\METAGRIT\dtl-asset-source\chr\set_tinh_khuyet_kiem_bao\tripo\`
+Ảnh trong: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_tinh_khuyet_kiem_bao\concept\`
+Lưu vào: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_tinh_khuyet_kiem_bao\tripo\`
 
 | # | Mảnh | Ảnh tải lên | Chế độ | Số mặt | Lưu thành |
 | --- | --- | --- | --- | --- | --- |
@@ -48,8 +48,8 @@ Choàng dài và viền phân thân mờ: vải đặc, viền phân thân chỉ
 
 ## Bộ 2 · Cổ Thành Huyền Giáp (Hộ pháp)
 
-Ảnh trong: `D:\METAGRIT\dtl-asset-source\chr\set_co_thanh_huyen_giap\concept\`
-Lưu vào: `D:\METAGRIT\dtl-asset-source\chr\set_co_thanh_huyen_giap\tripo\`
+Ảnh trong: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_co_thanh_huyen_giap\concept\`
+Lưu vào: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_co_thanh_huyen_giap\tripo\`
 
 | # | Mảnh | Ảnh tải lên | Chế độ | Số mặt | Lưu thành |
 | --- | --- | --- | --- | --- | --- |
@@ -64,8 +64,8 @@ Vai giáp hình lỗ châu mai tường thành là khối nổi thật; nếu Tr
 
 ## Bộ 3 · Thần Tàng Đan Bào (Đan sư)
 
-Ảnh trong: `D:\METAGRIT\dtl-asset-source\chr\set_than_tang_dan_bao\concept\`
-Lưu vào: `D:\METAGRIT\dtl-asset-source\chr\set_than_tang_dan_bao\tripo\`
+Ảnh trong: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_than_tang_dan_bao\concept\`
+Lưu vào: `D:\METAGRIT\dtl-asset-source\3d\nhan-vat\set_than_tang_dan_bao\tripo\`
 
 | # | Mảnh | Ảnh tải lên | Chế độ | Số mặt | Lưu thành |
 | --- | --- | --- | --- | --- | --- |
@@ -80,8 +80,8 @@ Lưu vào: `D:\METAGRIT\dtl-asset-source\chr\set_than_tang_dan_bao\tripo\`
 
 ## Tinh Khuyết Kiếm (dạng cuối +10 và vỏ)
 
-Ảnh trong: `D:\METAGRIT\dtl-asset-source\prop\prop_kiem_tinh_khuyet\concept\`
-Lưu vào: `D:\METAGRIT\dtl-asset-source\prop\prop_kiem_tinh_khuyet\tripo\` (thư mục đã có file cũ `raw_v01.glb` của #119: **không ghi đè**, tên mới có hậu tố mảnh)
+Ảnh trong: `D:\METAGRIT\dtl-asset-source\3d\vu-khi\prop_kiem_tinh_khuyet\concept\`
+Lưu vào: `D:\METAGRIT\dtl-asset-source\3d\vu-khi\prop_kiem_tinh_khuyet\tripo\` (thư mục đã có file cũ `raw_v01.glb` của #119: **không ghi đè**, tên mới có hậu tố mảnh)
 
 | Mảnh | Ảnh tải lên | Chế độ | Số mặt | Lưu thành |
 | --- | --- | --- | --- | --- |

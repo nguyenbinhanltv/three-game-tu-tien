@@ -17,8 +17,8 @@ Nhạc tạo bằng **Suno gói Free**: chỉ dùng **phi thương mại**, Suno
 3. Bấm **Create**. Mỗi lượt ra 2 bản. Nghe cả hai, chọn bản theo mục 4 (năng lượng đều, không có đoạn lặng hay đổi không khí lớn ở giữa).
 4. Tải bản đã chọn: menu **⋯** → **Download** → **MP3 Audio**.
 5. Đổi tên thành `<id>.mp3` và đặt vào:
-   `D:\METAGRIT\dtl-asset-source\audio\music\<id>.mp3`
-   (tức `../dtl-asset-source/audio/music/` cạnh thư mục repo; tạo thư mục nếu chưa có). File này **không** commit.
+   `D:\METAGRIT\dtl-asset-source\audio\nhac\<id>.mp3`
+   (tức `../dtl-asset-source/audio/nhac/` cạnh thư mục repo; tạo thư mục nếu chưa có). File này **không** commit.
 6. Lấy link bài: **Share** → **Copy link**, dán vào trường `url` của bài trong `tools/audio/music.json`. Suno Free bắt buộc ghi nguồn, nên đừng bỏ qua.
 7. Chạy ở thư mục repo:
 

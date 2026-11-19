@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // THIÊN GIAI v3 (làm lại bản thử, nữ, bộ Liệt Mạch): ba tranh poster HOÀN TOÀN MỚI cho Nguyên Anh / Hóa Thần / Dị Biến, không chồng lớp lên tranh cũ.
-// Ra: <DTL_ASSET_SOURCE>/portrait/thien_giai_v3/<tên>.png (+ .prompt.txt). Chỉ THÊM file (--force để vẽ lại).
+// Ra: <DTL_ASSET_SOURCE>/2d/hoa-truc/thien_giai_v3/<tên>.png (+ .prompt.txt). Chỉ THÊM file (--force để vẽ lại).
 // Dùng: node tools/codex-assets/thien-giai-v3-gen.mjs [--force] [--only a,b]. Codex tích hợp công cụ ảnh; KHÔNG dùng Tripo.
 // Chỉ lấy PHONG CÁCH poster donghua tu tiên cao cấp; không sao chép nhân vật/IP nào, không chữ Hán thật, không logo.
 import fs from 'node:fs';
@@ -39,9 +39,9 @@ const LIST = [
   },
 ];
 
-const dir = path.join(source, 'portrait', 'thien_giai_v3');
+const dir = path.join(source, '2d', 'hoa-truc', 'thien_giai_v3');
 fs.mkdirSync(dir, { recursive: true });
-const ref = path.join(source, 'portrait', 'thien_giai', 'liet_mach_nu_pose.png');
+const ref = path.join(source, '2d', 'hoa-truc', 'thien_giai', 'liet_mach_nu_pose.png');
 const has = (n) => fs.existsSync(path.join(dir, `${n}.png`));
 const queue = LIST.filter((t) => (!only.length || only.includes(t.name)) && (force || !has(t.name)));
 console.log(`${queue.length}/${LIST.length} ảnh → ${dir}`);

@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/elite_da_minh_loc_vuong/tripo/rig_v01.glb",
+    "source": "3d/quai/elite_da_minh_loc_vuong/tripo/rig_v01.glb",
     "size": {
       "depth": 3
     },

@@ -10,7 +10,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "prop/prop_anh_ngoc_kinh/tripo/raw_v01.glb",
+    "source": "3d/vu-khi/prop_anh_ngoc_kinh/tripo/raw_v01.glb",
     "size": {
       "width": 0.35
     },

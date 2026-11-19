@@ -1,6 +1,6 @@
 # E2 · 3 bộ trang bị bậc mới: mẫu Tripo và quyết định cách dùng
 
-Nguồn: `chr/set_{liet_mach_kiem_y,kinh_quang_kiem_y,tinh_khuyet_kiem_bao}/tripo/{raw,rig}_v01.glb`. Mỗi file là **một ma-nơ-canh (cả thân, đầu trọc, tay trần) mặc nguyên bộ**, ~1900 tam giác, áo/choàng là các tấm vỏ mỏng, một atlas texture 2048². `rig_v01` có 35–43 xương Tripo riêng (không trùng `rig_human_base`).
+Nguồn: `3d/nhan-vat/set_{liet_mach_kiem_y,kinh_quang_kiem_y,tinh_khuyet_kiem_bao}/tripo/{raw,rig}_v01.glb`. Mỗi file là **một ma-nơ-canh (cả thân, đầu trọc, tay trần) mặc nguyên bộ**, ~1900 tam giác, áo/choàng là các tấm vỏ mỏng, một atlas texture 2048². `rig_v01` có 35–43 xương Tripo riêng (không trùng `rig_human_base`).
 
 **Đã nhập**: `assets/source/chr/set_*/meta.json` (tiền tố `set_`, lớp ngân sách `prop`, cao 1,75 m, LOD0 1855–1930 + 2 LOD, ~360 KB, không xương) làm mẫu trưng bày và tham chiếu hình khối/bảng màu. Ảnh turntable (trên trái: chính diện; phải, sau, trái): `set_*.webp`. Chưa nối vào game.
 

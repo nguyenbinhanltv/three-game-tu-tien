@@ -11,7 +11,7 @@ Ghi công: `packages/content/data/credits.json` (màn Ghi công), `assets/LICENS
 
 ## Quy trình
 
-1. Zip Sketchfab không có metadata: tự ghi `meta.json` (tác giả + URL). Giải nén vào thư mục tạm, không đụng kho `dtl-asset-source` ngoài việc thêm `chr/skin_<tên>/prep/rig_v01.glb`.
+1. Zip Sketchfab không có metadata: tự ghi `meta.json` (tác giả + URL). Giải nén vào thư mục tạm, không đụng kho `dtl-asset-source` ngoài việc thêm `3d/skin/skin_<tên>/prep/rig_v01.glb`.
 2. `skin_prep.py` (cấu hình `tools/blender/skins/duskrella.json`, `crimson.json`): giảm lưới, nướng màu + normal 2048, xương Mixamo đo từ ảnh chiếu, trọng số. Thêm hai tùy chọn: `view {scale, center}` (khung ảnh đo cho model khác đơn vị Varkessa; log in `bbox`) và `cut.fill: false` (không vá lỗ, cần khi model có mép hở thật như áo choàng rách).
 3. `pnpm assets:build --only chr_v3_duskrella_nu` / `chr_v3_crimson_nam` (job trong `tools/blender/run.mjs`, `chr_v3.py --height 1.8 / 1.9`, lớp `player_v3`, KTX2 2048).
 

@@ -1,8 +1,8 @@
 {
   "$comment": "Cấu hình skin_prep.py cho VARKESSA // The Infernal Emberblade (Atahan3D, CC BY 4.0). Tọa độ theo hệ Blender của model nguồn (Z lên, trước -Y, trái nhân vật +X), đơn vị của model (cao ~1,9). Khớp đo từ ảnh chiếu thẳng 600 px/đơn vị; khớp bên trái lấy chiều sâu (y) đối xứng với bên phải.",
   "id": "skin_varkessa",
-  "source": "assets-online/varkessa__the_infernal_emberblade.glb",
-  "out": "chr/skin_varkessa/prep/rig_v01.glb",
+  "source": "3d/skin/goc-online/varkessa__the_infernal_emberblade.glb",
+  "out": "3d/skin/skin_varkessa/prep/rig_v01.glb",
   "triangles": 20000,
   "bake": {
     "size": 2048,

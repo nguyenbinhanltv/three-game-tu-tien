@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // UI-0 "Ngọc Giản Kim Văn": sinh bảng phong cách + mockup UI bằng Codex (codex exec + công cụ ảnh tích hợp, không Tripo, không API key).
 // Dùng: node tools/codex-assets/ui-ngoc-gian-gen.mjs [id…] [--jobs 2] [--force]
-// Ra: <DTL_ASSET_SOURCE>/2d/ui-ngoc-gian/<id>.png + <id>.prompt.txt. Chỉ ảnh duyệt, không vào game.
+// Ra: <DTL_ASSET_SOURCE>/2d/ui/ngoc-gian/<id>.png + <id>.prompt.txt. Chỉ ảnh duyệt, không vào game.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -128,7 +128,7 @@ ${wide} ${TEXT_RULE}`,
   },
 };
 
-const outDir = path.join(source, '2d', 'ui-ngoc-gian');
+const outDir = path.join(source, '2d', 'ui', 'ngoc-gian');
 fs.mkdirSync(outDir, { recursive: true });
 const todo = (ids.length ? ids : Object.keys(S)).filter((id) => {
   if (!S[id]) throw new Error(`Không có: ${id}`);

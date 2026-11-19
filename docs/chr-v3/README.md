@@ -41,14 +41,14 @@ Thân mình vẫn còn xuyên ở ngồi, niệm chú một tay và chém: cần
 - Varkessa v3 5,9 MB (2048² KTX2) lớn hơn skin hiện có (2,1 MB, 1024²): bản thử, không dùng làm chuẩn ngân sách.
 
 ## N-1 concept và Tripo
-`pnpm`-ngoài: `node tools/codex-assets/chr-v3-gen.mjs` sinh `v3_<nam|nu>_<front|side|back>.png` + `.prompt.txt` vào `<dtl-asset-source>/chr/set_lac_kiem/concept/` (chỉ thêm file). Hướng dẫn dựng Tripo web (Multi-view, HD, PBR, không auto-rig, `raw_v3_nam.glb`/`raw_v3_nu.glb` vào `.../set_lac_kiem/tripo/`) ở artifact `huong-dan-tripo-nhan-vat-v3.md`.
+`pnpm`-ngoài: `node tools/codex-assets/chr-v3-gen.mjs` sinh `v3_<nam|nu>_<front|side|back>.png` + `.prompt.txt` vào `<dtl-asset-source>/3d/nhan-vat/set_lac_kiem/concept/` (chỉ thêm file). Hướng dẫn dựng Tripo web (Multi-view, HD, PBR, không auto-rig, `raw_v3_nam.glb`/`raw_v3_nu.glb` vào `.../set_lac_kiem/tripo/`) ở artifact `huong-dan-tripo-nhan-vat-v3.md`.
 
 ## Quay video so sánh
 `pnpm shots chrv3 --out <thư mục tuyệt đối>` (nam/nữ × `v2`/`v3`, cùng chuỗi: đứng, chạy, chém 3 đòn, trúng đòn nhẹ/nặng, ngã, đả tọa, chết/hồi sinh). Video ghép trái v2, phải v3 nằm ở artifact phiên (không commit).
 
 ## N-3: Lạc Kiếm Môn Phục v3 (model Tripo thật, `?chr=v3`)
 
-Hai model Tripo toàn thân của người dùng (`<dtl-asset-source>/chr/set_lac_kiem/tripo/raw_v3_nam.glb` 57,6k tam giác, `raw_v3_nu.glb` 57,9k): tay chếch rõ, khe giữa chân, mặt rõ: **không lỗi cần dựng lại**. Nhập bằng `chr_v3.py` (job `chr_v3_lac_kiem_nam|nu` trong `run.mjs`, `--auto --height 1.84|1.70 --springs tools/blender/skins/v3_lac_kiem_springs.json`); asset thử thân v2 đã bỏ (Varkessa v3 giữ làm skin, xem #214).
+Hai model Tripo toàn thân của người dùng (`<dtl-asset-source>/3d/nhan-vat/set_lac_kiem/tripo/raw_v3_nam.glb` 57,6k tam giác, `raw_v3_nu.glb` 57,9k): tay chếch rõ, khe giữa chân, mặt rõ: **không lỗi cần dựng lại**. Nhập bằng `chr_v3.py` (job `chr_v3_lac_kiem_nam|nu` trong `run.mjs`, `--auto --height 1.84|1.70 --springs tools/blender/skins/v3_lac_kiem_springs.json`); asset thử thân v2 đã bỏ (Varkessa v3 giữ làm skin, xem #214).
 
 - **Mốc tự động** (`--auto`, `estimate_landmarks`): tỉ lệ khớp lấy từ Mannequin co theo chiều cao, tay (đầu ngón) và chân (cổ chân, mũi chân) đo từ lưới. Đủ cho nhân vật ~8 đầu chữ A; GLB không xương không có nhóm đỉnh để chép nên trọng số theo khoảng cách tới đoạn xương.
 - **Vạt đạo bào** (`robe` trong cấu hình): ở giữa trước/sau bám hông, ra ngoài mới bám đùi cùng phía (tránh vạt bị xé khi hai chân tách); thêm 8 chuỗi × 2 xương lò xo `dtl_o_skirt_*` (trọng số chuyển 60% theo độ sâu). Client chạy `SpringBones` chung (`spring.ts`) cho mọi xương `dtl_o_*` ở LOD0.
@@ -84,7 +84,7 @@ Hai model Tripo toàn thân của người dùng (`<dtl-asset-source>/chr/set_la
 - **Lò xo tay áo** (`limbs` trong `v3_lac_kiem_springs.json`: `sleeve`, 4 chuỗi × 2 xương mỗi cẳng tay, từ 30% cẳng tay tới cổ tay, trọng số chuyển 70%); xương 99 → 115, ngân sách `player_v3` 128.
 - **Chống trượt chân (đo thật)**: `pnpm shots chrv3 --variants v3 --slide` đo tốc độ ngang (hệ thế giới) của chân thấp hơn khi chạy thẳng ~3,5 s, ghi `slide-*.json` (`JOG=<m/s>` đặt `?jog=` để quét). Quét `timeScale = tốc độ/JOG` (tốc độ chạy trong game ≈ 7,2 m/s): JOG 4,8 → trượt trung vị 1,4 m/s; **5,36 → 0,8**; 6,0 → 1,1; 6,8 → 1,9 (nam và nữ cùng hình chữ U). Số ước tính theo độ dài chân (4,3–4,7 m/s, đo analytic trong Blender) **sai** so với thực tế nên bỏ. `JOG_SPEED` = 5,4 (xấp xỉ giá trị trước đó 5,36: **không cải thiện được so với bản cũ, chỉ xác nhận bằng số đo là gần tối ưu**; còn dư ~0,8 m/s ≈ 10% tốc độ chạy do đo bằng rAF và dao động hông).
 - **Chưa làm**: chuyển tư thế chiêu K-5 sang Mannequin (bake offline). Pose K-5 là IK thủ tục trên xương Mixamo; cần chạy IK trong Node trên bộ xương Mixamo mẫu, bake clip rồi ánh xạ sang Mannequin: việc riêng, không nhét vào PR này. Tư thế ngồi riêng cho đồ dài (clip) cũng chưa làm.
-- **Concept v3b** (`chr-v3-gen.mjs --variant v3b`): áo dài tới bắp chân xẻ tà cao tới hông hai bên đối xứng, quần lam hẹp lộ ra, không mảng lệch; ảnh `v3b_*` trong `dtl-asset-source/chr/set_lac_kiem/concept/`, hướng dẫn Tripo ở artifacts phiên (`raw_v3b_nam|nu.glb`).
+- **Concept v3b** (`chr-v3-gen.mjs --variant v3b`): áo dài tới bắp chân xẻ tà cao tới hông hai bên đối xứng, quần lam hẹp lộ ra, không mảng lệch; ảnh `v3b_*` trong `dtl-asset-source/3d/nhan-vat/set_lac_kiem/concept/`, hướng dẫn Tripo ở artifacts phiên (`raw_v3b_nam|nu.glb`).
 
 ## N-7: tư thế chiêu K-5 trên Mannequin
 
@@ -125,7 +125,7 @@ Mỗi bộ trang bị là một model Tripo toàn thân (nam + nữ) nhập qua 
 
 ## N-9: ba bộ đầu dựng hàng loạt (Đồ Đệ Tử, Huyền Giáp Hộ Pháp, Đan Tâm Y Bát)
 
-Người dùng dựng 6 model Tripo theo concept v3 (`dtl-asset-source/chr/set_<bộ>/tripo/raw_v3_<bộ>_<nam|nu>.glb`). Nhập bằng `tools/blender/skins/v3sets/{de_tu,huyen_giap,dan_tam}.json` (mẫu `_template_de_tu|giap|ao_dai.json`) + `node tools/blender/v3-newset.mjs <bộ>`, dựng `assets:build --only chr_v3_<bộ>_<giới>` (cần `DTL_ASSET_SOURCE`), `assets:validate` 0 lỗi; mỗi model 24.000 tam giác LOD0, ~3,0-3,7 MB.
+Người dùng dựng 6 model Tripo theo concept v3 (`dtl-asset-source/3d/nhan-vat/set_<bộ>/tripo/raw_v3_<bộ>_<nam|nu>.glb`). Nhập bằng `tools/blender/skins/v3sets/{de_tu,huyen_giap,dan_tam}.json` (mẫu `_template_de_tu|giap|ao_dai.json`) + `node tools/blender/v3-newset.mjs <bộ>`, dựng `assets:build --only chr_v3_<bộ>_<giới>` (cần `DTL_ASSET_SOURCE`), `assets:validate` 0 lỗi; mỗi model 24.000 tam giác LOD0, ~3,0-3,7 MB.
 
 **Chọn bộ trong game**: `v3AssetOf(g, skin, set)` (`game/character/mannequin.ts`): skin đè tất cả; có bộ riêng (`V3_OWN_SETS`) dùng `chr_v3_<bộ>_<giới>`; bộ chưa có model riêng tạm dùng model cùng nhánh (kiếm tu → Lạc Kiếm, hộ pháp → Huyền Giáp, đan sư → Đan Tâm); không mặc bộ nào → Đồ Đệ Tử (trước đây là Lạc Kiếm). Lò xo v2 (`isSpring2`) áp cho cả ba bộ.
 
