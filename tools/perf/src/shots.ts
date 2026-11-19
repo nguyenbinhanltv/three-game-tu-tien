@@ -24,6 +24,7 @@ import map from './scenarios/map';
 import mons from './scenarios/mons';
 import outfit from './scenarios/outfit';
 import points from './scenarios/points';
+import propstc from './scenarios/propstc';
 import quest4 from './scenarios/quest4';
 import quest5 from './scenarios/quest5';
 import skin from './scenarios/skin';
@@ -49,6 +50,7 @@ import xichkhe from './scenarios/xichkhe';
 
 const SCENARIOS: Scenario[] = [
   points,
+  propstc,
   lackiem,
   thienkhuyet,
   bachoang,

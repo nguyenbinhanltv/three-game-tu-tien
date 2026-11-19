@@ -7,6 +7,7 @@ import { allProps, type PropInstance } from './propScatter';
 import { ImpostorLayer } from './treeImpostor';
 import { withSightFade } from './occlusion';
 import { logger } from '../../base/log';
+import { TC_PROP_CFG } from './propTcCfg';
 
 const propsLog = logger('props');
 
@@ -74,6 +75,8 @@ export const PROP_CFG: Record<string, PropCfg> = {
   prop_cong_thanh_vo: { range: 520, lod: [60, 150] },
   prop_tuong_da_vo_si: { range: 420, lod: [60, 140] },
   prop_den_long_troi: { range: 220, lod: [30, 80], decor: true },
+  // Thiên Công Khai Vật (PROP-1)
+  ...TC_PROP_CFG,
 };
 
 const CHUNK = 128;

@@ -1,6 +1,7 @@
 export * from './noise';
 export * from './level';
 export * from './props';
+export { THIEN_CONG_PROPS, thienCongColliders, type TcProp } from './props.thiencong';
 export * from './trails';
 export * from './terrain';
 export * from './movement';
