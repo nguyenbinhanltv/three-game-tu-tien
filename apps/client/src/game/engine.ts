@@ -76,7 +76,7 @@ import { renderMinimap, Terrain } from './world/terrain';
 import { MapVis } from './world/mapVis';
 import { SoulVis } from './fx/soulVis';
 import { CloneVis } from './fx/cloneVis';
-import { loadGroundTextures, type GroundTextures } from '../base/groundTextures';
+import { loadGroundTextures, resolveGroundSet, type GroundTextures } from '../base/groundTextures';
 import { BASE_ZONE, type ZoneCam } from './camera/camZones';
 import { DamageNumbers, Vfx } from './fx/vfx';
 import { OffscreenIndicators } from './entities/offscreen';
@@ -751,7 +751,8 @@ export class Game {
       const maskKind = A.ground ? A.ground.mask : null;
       let commitMask: () => void = () => undefined;
       // E2-I: level dùng bộ texture khác (Đoạn Mạch: ochre) thì nạp bộ mới trước, đổi sau khi gỡ địa hình cũ rồi giải phóng bộ cũ.
-      const newSet = A.ground && this.ground && this.ground.set !== A.ground.set ? A.ground : null;
+      const wantSet = A.ground ? resolveGroundSet(A.ground.set, get().quality) : null;
+      const newSet = A.ground && wantSet && this.ground && this.ground.set !== wantSet ? { mask: A.ground.mask, set: wantSet } : null;
       const swap: { t: GroundTextures | null } = { t: null };
       const self = this;
       await Promise.all([
@@ -1211,6 +1212,44 @@ export class Game {
     set({ camShake: on });
   }
 
+  /** Đổi preset lúc chạy có thể đổi bộ texture mặt đất (2K ↔ 1024² ở Vân Lam): nạp bộ đúng rồi thay, giải phóng bộ cũ. */
+  private async syncGroundSet(): Promise<void> {
+    const g = levelAssets(levelId()).ground;
+    if (!g || !this.ground || this.groundSwapping) return;
+    const want = resolveGroundSet(g.set, get().quality);
+    if (want === this.ground.set) return;
+    this.groundSwapping = true;
+    try {
+      const self = this;
+      const next = await loadGroundTextures(
+        import.meta.env.BASE_URL,
+        {
+          get aborted() {
+            return self.disposed;
+          },
+        },
+        g.mask,
+        want,
+      );
+      if (this.disposed) {
+        next.dispose();
+        return;
+      }
+      const old = this.ground;
+      this.ground = next;
+      applyGround(this);
+      old.dispose();
+    } catch (e) {
+      levelLog.warn('đổi bộ texture mặt đất theo preset:', e);
+    } finally {
+      this.groundSwapping = false;
+    }
+    // Preset có thể đổi tiếp trong lúc nạp.
+    void this.syncGroundSet();
+  }
+
+  private groundSwapping = false;
+
   setQuality(q: string): void {
     if (!isQuality(q)) return;
     localStorage.setItem('dtl.quality', q);
@@ -1220,6 +1259,7 @@ export class Game {
     setHeightFog(cfg.heightFog);
     this.env?.setQuality(q);
     applyGround(this);
+    void this.syncGroundSet();
     this.lanterns?.setEnabled(cfg.lights && isWebGPU(this.renderer));
     this.vfx?.particles.setQuality(q);
     this.grass?.setQuality(q, cfg.shadows && this.renderer.shadowMap.enabled);

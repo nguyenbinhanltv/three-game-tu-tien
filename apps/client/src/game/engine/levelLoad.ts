@@ -32,7 +32,7 @@ import { PropLayer } from '../world/props';
 import { allProps } from '../world/propScatter';
 import { assets } from '../core/assets';
 import { Terrain } from '../world/terrain';
-import { loadGroundTextures } from '../../base/groundTextures';
+import { loadGroundTextures, resolveGroundSet } from '../../base/groundTextures';
 import { FLAGS } from '../../base/flags';
 import { LANTERN_LIGHT, QUALITY, isWebGPU, isWorldRoom } from './common';
 import type { Game } from '../engine';
@@ -56,7 +56,7 @@ export async function loadGround(eng: Game): Promise<void> {
         },
       },
       g0 ? g0.mask : 'manifest',
-      g0 ? g0.set : 'terrain',
+      g0 ? resolveGroundSet(g0.set, get().quality) : 'terrain',
     );
     if (eng.disposed) {
       tex.dispose();
