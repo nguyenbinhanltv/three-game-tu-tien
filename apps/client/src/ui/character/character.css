@@ -4,12 +4,12 @@
 .char-settrain {
   display: flex;
   flex-direction: column;
-  gap: var(--k-s3);
-  margin-top: var(--k-s3);
+  gap: var(--u-sp-3);
+  margin-top: var(--u-sp-3);
 }
 
 .equip-cell[data-drop='ok'] .k-slot {
-  outline: 2px solid var(--k-gold);
+  outline: 2px solid var(--u-p-gold);
   outline-offset: 1px;
 }
 
@@ -40,17 +40,17 @@
   outline: none;
 }
 .attr-name {
-  color: var(--k-text-dim);
-  letter-spacing: var(--k-track-label);
+  color: var(--u-p-text-dim);
+  letter-spacing: var(--u-p-track-label);
 }
 .attr-val {
-  font: 700 15px var(--k-font-serif);
-  color: var(--k-text);
+  font: 700 15px var(--u-p-font-serif);
+  color: var(--u-p-text);
 }
 .attr-elems {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: var(--k-s2);
+  gap: var(--u-sp-2);
 }
 .attr-elem {
   display: flex;
@@ -62,7 +62,7 @@
   cursor: help;
 }
 .attr-elem.own {
-  border-color: var(--k-gold);
+  border-color: var(--u-p-gold);
   background: var(--u-wash-gold);
 }
 
@@ -71,10 +71,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--k-s3);
+  gap: var(--u-sp-3);
 }
 .method-name {
-  font: 700 15px var(--k-font-serif);
+  font: 700 15px var(--u-p-font-serif);
 }
 
 /* Tooltip: nhãn so sánh lực chiến, nhãn chưa đủ cấp */
@@ -94,7 +94,7 @@
   border-radius: 999px;
   background: var(--u-ink-veil);
   color: var(--u-gold-text);
-  font: 600 13px var(--k-font-serif);
+  font: 600 13px var(--u-p-font-serif);
   cursor: pointer;
   pointer-events: auto;
 }
@@ -106,7 +106,7 @@
 /* Gọn cho 1280×720: ô trang bị nhỏ lại, thanh khí huyết và linh lực đứng cạnh nhau */
 .char .equip-board-grid {
   grid-template-columns: 52px 1fr 52px;
-  gap: var(--k-s2);
+  gap: var(--u-sp-2);
 }
 .char .equip-col {
   gap: 4px;
@@ -128,7 +128,7 @@
 .attr-rows {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0 var(--k-s4);
+  gap: 0 var(--u-sp-4);
 }
 .attr-rows .k-tip-host,
 .attr-elems .k-tip-host {
