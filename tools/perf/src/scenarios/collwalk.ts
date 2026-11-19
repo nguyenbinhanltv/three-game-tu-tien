@@ -68,7 +68,8 @@ export default {
     await skipCutscene(page, 10);
     await gm(page, 'killall', 900);
     await page.evaluate(() => window.__game!.setDebugColliders(true));
-    const pos = () => page.evaluate(() => ({ x: window.__game!.renderPos.x, y: window.__game!.renderPos.y, z: window.__game!.renderPos.z }));
+    const pos = () =>
+      page.evaluate(() => ({ x: window.__game!.renderPos.x, y: window.__game!.renderPos.y, z: window.__game!.renderPos.z }));
     const run = async (ms: number) => {
       await page.keyboard.down('KeyW');
       await sleep(ms);
@@ -76,7 +77,8 @@ export default {
     };
     const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
     const t = terrainOf(LEVEL);
-    const clearAt = (x: number, z: number) => Math.abs(t.groundAt(x, z) - t.groundAt(x + 1, z)) < 1.5 && !shapes.some((s) => Math.abs(s.x - x) < 40 && sdist(s, x, z) < 1.2);
+    const clearAt = (x: number, z: number) =>
+      Math.abs(t.groundAt(x, z) - t.groundAt(x + 1, z)) < 1.5 && !shapes.some((s) => Math.abs(s.x - x) < 40 && sdist(s, x, z) < 1.2);
     // Hiệu chỉnh hướng đi theo yaw camera (như kịch bản `fly`).
     const probe = async (yaw: number) => {
       await cam(page, { yaw, pitch: 0.3, dist: 14 });
@@ -127,8 +129,17 @@ export default {
         }
         await page.keyboard.up('KeyW');
         const blocked = minD >= -0.05;
-        beats.push({ beat: 'bump', tag: s.tag, at: [s.x, s.z], size: s.k === 'cyl' ? s.r : [s.hx, s.hz], minDist: +minD.toFixed(2), blocked });
-        console.log(`[collwalk] bump ${s.tag} ${s.k} tại ${s.x.toFixed(0)},${s.z.toFixed(0)}: mép gần nhất ${minD.toFixed(2)} m (người cao ~0,4 m bán kính) ${blocked ? 'CHẶN' : 'XUYÊN!'}`);
+        beats.push({
+          beat: 'bump',
+          tag: s.tag,
+          at: [s.x, s.z],
+          size: s.k === 'cyl' ? s.r : [s.hx, s.hz],
+          minDist: +minD.toFixed(2),
+          blocked,
+        });
+        console.log(
+          `[collwalk] bump ${s.tag} ${s.k} tại ${s.x.toFixed(0)},${s.z.toFixed(0)}: mép gần nhất ${minD.toFixed(2)} m (người cao ~0,4 m bán kính) ${blocked ? 'CHẶN' : 'XUYÊN!'}`,
+        );
       }
       // Ngự kiếm bay lệch khỏi thân (cách mép 2,5 m) xuyên vùng tán: không bị chặn.
       const s0 = picks[0];
