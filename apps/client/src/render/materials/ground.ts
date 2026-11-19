@@ -69,6 +69,15 @@ export function setGroundStrata(on: boolean): void {
   strata = on;
 }
 
+/**
+ * Vân vách sa thạch xám-đỏ (MAP-2 Đoạn Mạch): tầng ngang theo độ cao + khe dọc như `strata`, nhưng không đổi ngưỡng tuyết
+ * và ngả xám-đỏ thay vì lam nhạt. Tắt ở level khác.
+ */
+let redStrata = false;
+export function setGroundRedStrata(on: boolean): void {
+  redStrata = on;
+}
+
 /** Gắn node shader vào `mat`. Gọi lại khi đổi preset (đổi cấu hình, `needsUpdate`). */
 export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: GroundTextures, level: GroundLevel): void {
   const hi = level === 'high';
@@ -181,20 +190,51 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   col = mix(col, vc.mul(0.62), smoothstep(0.3, 0.06, ndv).mul(0.55));
   // Vân đá sơn thủy (MAP-1), tính theo điểm ảnh nên không phụ thuộc độ thô của lưới xa: tầng ngang theo độ cao + khe dọc theo
   // nhiễu kéo dài; vách và đá lộ ngả lam nhạt dần theo độ cao. Áp sau khi hòa về màu đỉnh lưới ở xa.
-  if (strata) {
-    // Sườn dốc phủ cỏ cũng có vân (núi xa không còn mượt): trọng số theo độ dốc, cộng nhiễu vĩ mô theo khoảng cách (xa thì chỉ còn màu đỉnh lưới).
-    const rockish = max(max(cliffW, rockW.mul(0.7)), smoothstep(0.1, 0.3, slope).mul(0.6));
-    const farK = smoothstep(60, 380, dist).mul(0.9);
-    const macroA = texture(tex.mask, p.mul(0.0098)).a;
-    const macroB = texture(tex.mask, p.mul(0.0023).add(0.37)).a;
-    col = col.mul(mix(float(1), float(0.72).add(macroA.mul(0.34)).add(macroB.sub(0.5).mul(0.3)), farK));
+  if (strata || redStrata) {
+    // Sườn dốc phủ cỏ cũng có vân ở Vân Lam (núi xa không còn mượt): trọng số theo độ dốc; vách sa thạch MAP-2 giữ như cũ.
+    const base = max(cliffW, rockW.mul(0.7));
+    const rockish = strata ? max(base, smoothstep(0.1, 0.3, slope).mul(0.6)) : base;
+    if (strata) {
+      // Nhiễu vĩ mô theo khoảng cách (xa thì chỉ còn màu đỉnh lưới, nên thêm biến thiên để không mịn đều).
+      const farK = smoothstep(60, 380, dist).mul(0.9);
+      const macroA = texture(tex.mask, p.mul(0.0098)).a;
+      const macroB = texture(tex.mask, p.mul(0.0023).add(0.37)).a;
+      col = col.mul(mix(float(1), float(0.72).add(macroA.mul(0.34)).add(macroB.sub(0.5).mul(0.3)), farK));
+    }
     const band = sin(h.mul(0.13).add(macro.mul(5)).add(noise2.mul(4)))
       .mul(0.5)
       .add(0.5);
     const fissure = texture(tex.mask, vec2(p.x.add(p.y).mul(0.0011), h.mul(0.00018))).a;
     const strataMul = float(0.7).add(band.mul(0.5)).sub(float(1).sub(fissure).mul(0.45));
-    col = col.mul(mix(float(1), strataMul, rockish));
-    col = mix(col, col.mul(vec3(0.82, 0.94, 1.1)), rockish.mul(smoothstep(140, 300, h)).mul(0.6));
+    if (redStrata) {
+      // Vách sa thạch (MAP-2): không dùng khung texture 11 m (lặp thành ô caro); dựng vân từ nhiễu theo tọa độ dọc vách `u` (tiếp tuyến
+      // ngang của mặt) và độ cao: tầng ngang méo theo nhiễu, hai thang đỏ gạch ↔ xám đá, khe nứt dọc, gờ đá (mép sáng, bóng đổ dưới).
+      const tan = normalize(vec2(nGeo.z.negate(), nGeo.x).add(vec2(0.0001, 0)));
+      const u = dot(p, tan);
+      const nA = texture(tex.mask, vec2(u.mul(0.0057), h.mul(0.0019))).a; // mảng lớn, kéo dài theo chiều dọc
+      const nB = texture(tex.mask, vec2(u.mul(0.017).add(0.4), h.mul(0.009))).a;
+      const nC = texture(tex.mask, vec2(u.mul(0.061), h.mul(0.037))).a; // hạt mịn
+      const bandA = sin(h.mul(0.06).add(nA.mul(16)))
+        .mul(0.5)
+        .add(0.5);
+      const bandB = sin(h.mul(0.29).add(nB.mul(18)).add(nC.mul(3)))
+        .mul(0.5)
+        .add(0.5);
+      const mixTone = smoothstep(0.25, 0.75, bandA.mul(0.3).add(nB.mul(0.7)));
+      let tone: Node = mix(vec3(0.46, 0.25, 0.2), vec3(0.58, 0.52, 0.5), mixTone);
+      tone = tone.mul(float(0.72).add(nC.mul(0.56))).mul(float(0.9).add(bandB.mul(0.14)));
+      // khe nứt dọc: đường tối mảnh nơi nA gần 0,5
+      const crack = smoothstep(0.045, 0.0, nA.sub(0.5).abs()).mul(smoothstep(0.2, 0.8, nB));
+      tone = tone.mul(float(1).sub(crack.mul(0.6)));
+      // gờ đá: mép trên mỗi tầng sáng, ngay dưới tối
+      tone = tone.mul(float(1).add(smoothstep(0.92, 1, bandB).mul(0.18))).mul(float(1).sub(smoothstep(0.12, 0, bandB).mul(0.3)));
+      // giữ chút chi tiết của texture gốc nhưng không để nó lộ khung lặp
+      const detail = float(0.7).add(luminance(col).mul(0.5));
+      col = mix(col, tone.mul(detail).mul(1.15), rockish.mul(0.92));
+    } else {
+      col = col.mul(mix(float(1), strataMul, rockish));
+      col = mix(col, col.mul(vec3(0.82, 0.94, 1.1)), rockish.mul(smoothstep(140, 300, h)).mul(0.6));
+    }
   }
   mat.vertexColors = false;
   mat.colorNode = col;

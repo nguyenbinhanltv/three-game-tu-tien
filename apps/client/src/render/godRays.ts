@@ -35,10 +35,18 @@ export const GOD_RAY_INTENSITY: Record<string, number> = {
   lk_day: 0.5,
   lk_dusk: 1.15,
   lk_night: 0.22,
+  tk_dawn: 1,
+  tk: 0.6,
+  tk_dusk: 1.2,
+  tk_night: 0.3,
   dm_dawn: 1.1,
   dm_day: 0.55,
   dm_dusk: 1.3,
   dm_night: 0.2,
+  vh_dawn: 1.1,
+  vh_day: 0.55,
+  vh_dusk: 1.2,
+  vh_night: 0.3,
 };
 
 export interface GodRayArea {

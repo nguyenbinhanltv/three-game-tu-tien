@@ -198,32 +198,82 @@
         "blackLift": "#12161F", "contrast": 1.08, "saturation": 0.8, "exposure": 1.2
       },
       "tk_dawn": {
-        "label": "Thiên Khuyết — rạng đông trên thành cổ",
-        "sunColor": "#F2C58E", "sunIntensity": 1.9, "sunElevationDeg": 11,
-        "skyColor": "#8E9DB4", "skyIntensity": 0.9,
-        "fogColor": "#9AA9B8", "fogDensity": 0.0016, "heightFogTop": 50, "heightFogBoost": 2.0,
-        "fogHaze": 0.0028, "fogHazeStart": 45, "rim": 0.6,
-        "shadowTint": "#1E3F4C", "highlightTint": "#F2C47E", "splitBalance": 0.05,
-        "blackLift": "#17262F", "contrast": 1.08, "saturation": 0.86, "exposure": 1.02
+        "label": "Thiên Khuyết — rạng đông tím vàng",
+        "sunColor": "#FFBE78", "sunIntensity": 3.0, "sunElevationDeg": 12,
+        "skyColor": "#9A86C4", "skyIntensity": 0.85,
+        "fogColor": "#A794C4", "fogDensity": 0.0003, "heightFogTop": 70, "heightFogBoost": 1.4,
+        "fogHaze": 0.001, "fogHazeStart": 110, "fogScatter": 1.0, "rim": 0.7,
+        "shadowTint": "#32226E", "highlightTint": "#FFCB6E", "splitBalance": 0.1,
+        "shadowAmount": 0.65, "highlightAmount": 0.4,
+        "blackLift": "#1E1440", "contrast": 1.22, "saturation": 1.1, "exposure": 1.0
       },
       "tk": {
-        "label": "Thiên Khuyết — ban ngày",
-        "sunColor": "#EBD0A4", "sunIntensity": 2.5, "sunElevationDeg": 32,
-        "skyColor": "#8FA4BA", "skyIntensity": 0.75,
-        "fogColor": "#A9B6C2", "fogDensity": 0.0013, "heightFogTop": 40, "heightFogBoost": 1.7,
-        "fogHaze": 0.0024, "fogHazeStart": 55, "rim": 0.5,
-        "shadowTint": "#25444F", "highlightTint": "#F2C47E", "splitBalance": 0.0,
-        "shadowAmount": 0.55, "highlightAmount": 0.25, "fogScatter": 0.8,
-        "blackLift": "#17262F", "contrast": 1.1, "saturation": 0.8, "exposure": 0.97
+        "label": "Thiên Khuyết — trưa tím, nắng vàng kim",
+        "sunColor": "#FFE2A0", "sunIntensity": 4.0, "sunElevationDeg": 40,
+        "skyColor": "#8C86CE", "skyIntensity": 0.8,
+        "fogColor": "#A79CD2", "fogDensity": 0.0002, "heightFogTop": 60, "heightFogBoost": 1.3,
+        "fogHaze": 0.0007, "fogHazeStart": 140, "fogScatter": 0.7, "rim": 0.5,
+        "shadowTint": "#3A2A80", "highlightTint": "#FFD67A", "splitBalance": 0.0,
+        "shadowAmount": 0.6, "highlightAmount": 0.3,
+        "blackLift": "#1B1540", "contrast": 1.24, "saturation": 1.1, "exposure": 1.0
+      },
+      "tk_dusk": {
+        "label": "Thiên Khuyết — hoàng hôn tím vàng",
+        "sunColor": "#FFB540", "sunIntensity": 5.4, "sunElevationDeg": 9,
+        "skyColor": "#7A5EB8", "skyIntensity": 0.6,
+        "fogColor": "#B488BE", "fogDensity": 0.00038, "heightFogTop": 80, "heightFogBoost": 1.6,
+        "fogHaze": 0.0012, "fogHazeStart": 90, "fogScatter": 2.0, "rim": 0.8,
+        "shadowTint": "#3A2C7A", "highlightTint": "#FFBE48", "splitBalance": 0.08,
+        "shadowAmount": 0.45, "highlightAmount": 0.55,
+        "blackLift": "#21143E", "contrast": 1.28, "saturation": 1.1, "exposure": 1.0
       },
       "tk_night": {
-        "label": "Thiên Khuyết — đêm trăng lam",
-        "sunColor": "#BFCDE0", "sunIntensity": 1.5, "sunElevationDeg": 40,
-        "skyColor": "#3A4E5E", "skyIntensity": 1.0,
-        "fogColor": "#2B3943", "fogDensity": 0.0013, "heightFogTop": 46, "heightFogBoost": 2.0,
-        "fogHaze": 0.0018, "fogHazeStart": 55, "rim": 1.0,
-        "shadowTint": "#16293A", "highlightTint": "#F2C47E", "splitBalance": -0.18,
-        "blackLift": "#1B2D38", "contrast": 1.1, "saturation": 0.72, "exposure": 1.28
+        "label": "Thiên Khuyết — đêm tím, trận pháp vàng kim",
+        "sunColor": "#B4ACF0", "sunIntensity": 1.6, "sunElevationDeg": 38,
+        "skyColor": "#3E3280", "skyIntensity": 1.0,
+        "fogColor": "#241A4A", "fogDensity": 0.0007, "heightFogTop": 70, "heightFogBoost": 2.0,
+        "fogHaze": 0.001, "fogHazeStart": 80, "fogScatter": 0.4, "rim": 1.0,
+        "shadowTint": "#140C38", "highlightTint": "#F6C65E", "splitBalance": -0.2,
+        "blackLift": "#150E34", "contrast": 1.12, "saturation": 0.9, "exposure": 1.25
+      },
+      "vh_dawn": {
+        "label": "Vân Hải — bình minh lam bạc",
+        "sunColor": "#FFD2B0", "sunIntensity": 3.2, "sunElevationDeg": 12,
+        "skyColor": "#B4D0EC", "skyIntensity": 0.9,
+        "fogColor": "#C2D6EA", "fogDensity": 0.00022, "heightFogTop": 96, "heightFogBoost": 1.5,
+        "fogHaze": 0.001, "fogHazeStart": 110, "fogScatter": 0.85, "rim": 0.6,
+        "shadowTint": "#1F4D78", "highlightTint": "#FFD9C0", "splitBalance": 0.1,
+        "shadowAmount": 0.8, "highlightAmount": 0.3,
+        "blackLift": "#0E2A44", "contrast": 1.34, "saturation": 1.32, "exposure": 1.02
+      },
+      "vh_day": {
+        "label": "Vân Hải — trưa lam bạc",
+        "sunColor": "#FFF4E0", "sunIntensity": 4.2, "sunElevationDeg": 46,
+        "skyColor": "#92C0EC", "skyIntensity": 0.8,
+        "fogColor": "#B6D2EE", "fogDensity": 0.00016, "heightFogTop": 84, "heightFogBoost": 1.25,
+        "fogHaze": 0.0009, "fogHazeStart": 130, "fogScatter": 0.6, "rim": 0.45,
+        "shadowTint": "#245A8A", "highlightTint": "#FFEFD2", "splitBalance": 0.0,
+        "shadowAmount": 0.75, "highlightAmount": 0.25,
+        "blackLift": "#0C2840", "contrast": 1.36, "saturation": 1.36, "exposure": 1.0
+      },
+      "vh_dusk": {
+        "label": "Vân Hải — hoàng hôn tím lam",
+        "sunColor": "#FFC08A", "sunIntensity": 5.0, "sunElevationDeg": 10,
+        "skyColor": "#A4A8D0", "skyIntensity": 0.6,
+        "fogColor": "#C8B8D6", "fogDensity": 0.0003, "heightFogTop": 100, "heightFogBoost": 1.7,
+        "fogHaze": 0.0013, "fogHazeStart": 90, "fogScatter": 1.6, "rim": 0.7,
+        "shadowTint": "#3A4C92", "highlightTint": "#FFC08C", "splitBalance": 0.05,
+        "shadowAmount": 0.35, "highlightAmount": 0.45,
+        "blackLift": "#1C2850", "contrast": 1.36, "saturation": 1.3, "exposure": 1.0
+      },
+      "vh_night": {
+        "label": "Vân Hải — đêm trăng bạc",
+        "sunColor": "#C8D8F4", "sunIntensity": 1.7, "sunElevationDeg": 40,
+        "skyColor": "#2E4C84", "skyIntensity": 1.0,
+        "fogColor": "#1A2C4E", "fogDensity": 0.0005, "heightFogTop": 90, "heightFogBoost": 1.5,
+        "fogHaze": 0.0009, "fogHazeStart": 80, "fogScatter": 0.35, "rim": 1.0,
+        "shadowTint": "#0A1A38", "highlightTint": "#E4ECFF", "splitBalance": -0.2,
+        "blackLift": "#0A1A30", "contrast": 1.2, "saturation": 1.0, "exposure": 1.22
       },
       "lk_dawn": {
         "label": "Lạc Kiếm — bình minh vàng ngọc",
@@ -339,19 +389,19 @@
       "dm_dawn": {
         "label": "Đoạn Mạch — bình minh phong đỏ",
         "sunColor": "#FFB070", "sunIntensity": 2.9, "sunElevationDeg": 12, "skyColor": "#D9B49A",
-        "skyIntensity": 0.8, "fogColor": "#E6C3A6", "fogDensity": 0.00055, "heightFogTop": 70,
-        "heightFogBoost": 2.2, "fogHaze": 0.0018, "fogHazeStart": 100, "rim": 0.6,
+        "skyIntensity": 0.8, "fogColor": "#E6C3A6", "fogDensity": 0.00022, "heightFogTop": 70,
+        "heightFogBoost": 2.2, "fogHaze": 0.0007, "fogHazeStart": 180, "rim": 0.6,
         "shadowTint": "#4A3A52", "highlightTint": "#FFC088", "splitBalance": 0.1, "shadowAmount": 0.6,
-        "highlightAmount": 0.35, "fogScatter": 1.1, "blackLift": "#2A1A1E", "contrast": 1.22,
+        "highlightAmount": 0.35, "fogScatter": 1.1, "blackLift": "#2A1A1E", "contrast": 1.3,
         "saturation": 1.2, "exposure": 1.0
       },
       "dm_day": {
         "label": "Đoạn Mạch — ngày phong vàng",
         "sunColor": "#FFD79A", "sunIntensity": 3.2, "sunElevationDeg": 34, "skyColor": "#C8B596",
-        "skyIntensity": 0.75, "fogColor": "#E2C99E", "fogDensity": 0.00045, "heightFogTop": 60,
-        "heightFogBoost": 1.8, "fogHaze": 0.0016, "fogHazeStart": 120, "rim": 0.5,
+        "skyIntensity": 0.75, "fogColor": "#D8BC9C", "fogDensity": 0.00016, "heightFogTop": 40,
+        "heightFogBoost": 1.8, "fogHaze": 0.0006, "fogHazeStart": 200, "rim": 0.5,
         "shadowTint": "#4E4660", "highlightTint": "#FFD590", "splitBalance": 0.06, "shadowAmount": 0.6,
-        "highlightAmount": 0.3, "fogScatter": 0.9, "blackLift": "#26181A", "contrast": 1.2,
+        "highlightAmount": 0.3, "fogScatter": 0.9, "blackLift": "#26181A", "contrast": 1.3,
         "saturation": 1.18, "exposure": 1.0
       },
       "dm_dusk": {
