@@ -198,32 +198,43 @@
         "blackLift": "#12161F", "contrast": 1.08, "saturation": 0.8, "exposure": 1.2
       },
       "tk_dawn": {
-        "label": "Thiên Khuyết — rạng đông trên thành cổ",
-        "sunColor": "#F2C58E", "sunIntensity": 1.9, "sunElevationDeg": 11,
-        "skyColor": "#8E9DB4", "skyIntensity": 0.9,
-        "fogColor": "#9AA9B8", "fogDensity": 0.0016, "heightFogTop": 50, "heightFogBoost": 2.0,
-        "fogHaze": 0.0028, "fogHazeStart": 45, "rim": 0.6,
-        "shadowTint": "#1E3F4C", "highlightTint": "#F2C47E", "splitBalance": 0.05,
-        "blackLift": "#17262F", "contrast": 1.08, "saturation": 0.86, "exposure": 1.02
+        "label": "Thiên Khuyết — rạng đông tím vàng",
+        "sunColor": "#FFBE78", "sunIntensity": 3.0, "sunElevationDeg": 12,
+        "skyColor": "#9A86C4", "skyIntensity": 0.85,
+        "fogColor": "#A794C4", "fogDensity": 0.0003, "heightFogTop": 70, "heightFogBoost": 1.4,
+        "fogHaze": 0.001, "fogHazeStart": 110, "fogScatter": 1.0, "rim": 0.7,
+        "shadowTint": "#32226E", "highlightTint": "#FFCB6E", "splitBalance": 0.1,
+        "shadowAmount": 0.65, "highlightAmount": 0.4,
+        "blackLift": "#1E1440", "contrast": 1.22, "saturation": 1.1, "exposure": 1.0
       },
       "tk": {
-        "label": "Thiên Khuyết — ban ngày",
-        "sunColor": "#EBD0A4", "sunIntensity": 2.5, "sunElevationDeg": 32,
-        "skyColor": "#8FA4BA", "skyIntensity": 0.75,
-        "fogColor": "#A9B6C2", "fogDensity": 0.0013, "heightFogTop": 40, "heightFogBoost": 1.7,
-        "fogHaze": 0.0024, "fogHazeStart": 55, "rim": 0.5,
-        "shadowTint": "#25444F", "highlightTint": "#F2C47E", "splitBalance": 0.0,
-        "shadowAmount": 0.55, "highlightAmount": 0.25, "fogScatter": 0.8,
-        "blackLift": "#17262F", "contrast": 1.1, "saturation": 0.8, "exposure": 0.97
+        "label": "Thiên Khuyết — trưa tím, nắng vàng kim",
+        "sunColor": "#FFE2A0", "sunIntensity": 4.0, "sunElevationDeg": 40,
+        "skyColor": "#8C86CE", "skyIntensity": 0.8,
+        "fogColor": "#A79CD2", "fogDensity": 0.0002, "heightFogTop": 60, "heightFogBoost": 1.3,
+        "fogHaze": 0.0007, "fogHazeStart": 140, "fogScatter": 0.7, "rim": 0.5,
+        "shadowTint": "#3A2A80", "highlightTint": "#FFD67A", "splitBalance": 0.0,
+        "shadowAmount": 0.6, "highlightAmount": 0.3,
+        "blackLift": "#1B1540", "contrast": 1.24, "saturation": 1.1, "exposure": 1.0
+      },
+      "tk_dusk": {
+        "label": "Thiên Khuyết — hoàng hôn tím vàng",
+        "sunColor": "#FFB540", "sunIntensity": 5.4, "sunElevationDeg": 9,
+        "skyColor": "#7A5EB8", "skyIntensity": 0.6,
+        "fogColor": "#B488BE", "fogDensity": 0.00038, "heightFogTop": 80, "heightFogBoost": 1.6,
+        "fogHaze": 0.0012, "fogHazeStart": 90, "fogScatter": 2.0, "rim": 0.8,
+        "shadowTint": "#3A2C7A", "highlightTint": "#FFBE48", "splitBalance": 0.08,
+        "shadowAmount": 0.45, "highlightAmount": 0.55,
+        "blackLift": "#21143E", "contrast": 1.28, "saturation": 1.1, "exposure": 1.0
       },
       "tk_night": {
-        "label": "Thiên Khuyết — đêm trăng lam",
-        "sunColor": "#BFCDE0", "sunIntensity": 1.5, "sunElevationDeg": 40,
-        "skyColor": "#3A4E5E", "skyIntensity": 1.0,
-        "fogColor": "#2B3943", "fogDensity": 0.0013, "heightFogTop": 46, "heightFogBoost": 2.0,
-        "fogHaze": 0.0018, "fogHazeStart": 55, "rim": 1.0,
-        "shadowTint": "#16293A", "highlightTint": "#F2C47E", "splitBalance": -0.18,
-        "blackLift": "#1B2D38", "contrast": 1.1, "saturation": 0.72, "exposure": 1.28
+        "label": "Thiên Khuyết — đêm tím, trận pháp vàng kim",
+        "sunColor": "#B4ACF0", "sunIntensity": 1.6, "sunElevationDeg": 38,
+        "skyColor": "#3E3280", "skyIntensity": 1.0,
+        "fogColor": "#241A4A", "fogDensity": 0.0007, "heightFogTop": 70, "heightFogBoost": 2.0,
+        "fogHaze": 0.001, "fogHazeStart": 80, "fogScatter": 0.4, "rim": 1.0,
+        "shadowTint": "#140C38", "highlightTint": "#F6C65E", "splitBalance": -0.2,
+        "blackLift": "#150E34", "contrast": 1.12, "saturation": 0.9, "exposure": 1.25
       },
       "vh_dawn": {
         "label": "Vân Hải — bình minh lam bạc",

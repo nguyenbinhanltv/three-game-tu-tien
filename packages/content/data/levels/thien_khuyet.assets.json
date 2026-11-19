@@ -1,5 +1,5 @@
 {
-  "mood": "tk_night",
+  "mood": "tk_dusk",
   "glb": [],
   "ground": {
     "set": "terrain-slate",
@@ -19,6 +19,7 @@
     "beacons": true,
     "vegetation": false
   },
+  "godRays": { "x": 1044, "z": 520, "r": 640, "count": 70 },
   "minimap": "thien_khuyet",
   "grassCards": "grass-night"
 }
