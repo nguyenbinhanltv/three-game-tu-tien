@@ -92,6 +92,11 @@ function arrayTexture(data: Uint8Array, size: number, layers: number, srgb: bool
   t.minFilter = THREE.LinearMipmapLinearFilter;
   t.generateMipmaps = true;
   t.anisotropy = 8;
+  // Sau khi đã tải lên GPU thì bỏ mảng nguồn khỏi heap JS (mảng màu 2K ~134 MB): three chỉ cần `image.data` lúc upload.
+  t.onUpdate = () => {
+    (t.image as { data: unknown }).data = null;
+    t.onUpdate = null;
+  };
   t.needsUpdate = true;
   return t;
 }
@@ -101,6 +106,14 @@ function arrayTexture(data: Uint8Array, size: number, layers: number, srgb: bool
  * một (nhường khung hình giữa các lớp) rồi ghép vào 2 texture mảng, nên shader địa hình chỉ tốn 2 slot
  * texture. VRAM: albedo 8 × 1024² × 4 B + mip ≈ 43 MB, pháp tuyến 8 × 512² ≈ 11 MB.
  */
+/**
+ * Bộ texture mặt đất thật sự nạp theo preset: bộ 2K `terrain-lk` (Vân Lam/Kiếm Trủng, MAP-1 bản B) chỉ ở Cao/Cực cao; Thấp/Vừa dùng bộ gốc
+ * 1024² `terrain` (cùng mặt nạ), để máy yếu không gánh ~180 MB VRAM + bản sao heap của bản 2K.
+ */
+export function resolveGroundSet(set: string, quality: string): string {
+  return set === 'terrain-lk' && quality !== 'high' && quality !== 'ultra' ? 'terrain' : set;
+}
+
 export async function loadGroundTextures(
   base: string,
   signal?: { aborted: boolean },

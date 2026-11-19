@@ -39,6 +39,8 @@ VERMILION = paint(0xB5332D, 'lacquer')  # son mai (cột, cửa)
 VERMILION_DARK = paint(0x8E2824, 'lacquer')
 PLUM = paint(0xC24B5A, 'lacquer')  # mai son nhạt (diềm, phướn)
 INK = paint(0x1F2E3C, 'lacquer')  # hoành phi nền mực
+STONE_JOINT = paint(0x56625c, 'stone')  # mạch lát đá
+GILD_TEXT = paint(0xF4C85C, 'lamp')  # chữ vàng khắc nổi: dùng vật liệu phát sáng nhẹ (kim loại không có env map nên tối đen)
 GILD = paint(0xD2AA55, 'metal')
 BRONZE_D = paint(0x8E6C3A, 'metal')
 TIMBER = paint(0x8A6944, 'wood')
@@ -47,6 +49,92 @@ BLADE = paint(0xC9D4DA, 'steel')
 BLADE_D = paint(0x8FA0AA, 'steel')
 MOSS = (0.16, 0.30, 0.08)  # tuyến tính
 PAPER = paint(0xFFE3B0, 'lamp')
+
+# ---------- texture PBR thật (Poly Haven CC0, MAP-1 bản B) ----------
+#
+# Mỗi chất liệu lấy ảnh 2K: màu → độ sáng (luma, xám) để vẫn nhân với màu đỉnh theo bảng màu đã duyệt, cộng normal (OpenGL) và
+# độ nhám. Ảnh nguồn nằm ngoài repo (`pnpm assets:sect-textures` tải về ../dtl-asset-source/texture/<id>/); thiếu thì dùng texture thủ tục
+# cũ (bản dựng vẫn chạy được trên máy không có nguồn). Giữ UV chiếu theo thế giới như build_sect (cùng ô lặp `scale`).
+
+# khóa -> (id Poly Haven, mét/ô lặp, cạnh ảnh màu, cạnh ảnh pháp tuyến). Ngọc/đá/ngói 2K (thấy nhiều, gần), gỗ/vữa 1K; độ nhám 512.
+PBR_SOURCES = {
+    'jade': ('marble_rock_01', 4.0, 2048, 2048),
+    'stone': ('japanese_stone_wall', 4.0, 2048, 2048),
+    'plaster': ('plastered_stone_wall', 5.0, 1024, 1024),
+    'tile': ('ceramic_roof_01', 3.0, 2048, 1024),
+    'lacquer': ('lacquered_cherry_wood', 3.0, 1024, 1024),
+    'wood': ('dark_wood', 3.0, 1024, 1024),
+    'steel': ('metal_plate', 3.0, 1024, 1024),
+}
+PBR_ROUGH_SIZE = 512
+
+
+def _asset_source_dirs():
+    here = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.abspath(os.path.join(here, '..', '..'))
+    out = []
+    if os.environ.get('DTL_ASSET_SOURCE'):
+        out.append(os.path.join(os.environ['DTL_ASSET_SOURCE'], 'texture'))
+    out.append(os.path.join(root, '..', 'dtl-asset-source', 'texture'))
+    out.append(os.path.join(root, '..', '..', 'dtl-asset-source', 'texture'))
+    return [d for d in out if os.path.isdir(d)]
+
+
+def _find_pbr(ph, kind, size='2k'):
+    for d in _asset_source_dirs():
+        f = os.path.join(d, ph, f'{ph}_{kind}_{size}.jpg')
+        if os.path.exists(f):
+            return f
+    return None
+
+
+def _find_font():
+    for d in _asset_source_dirs():
+        f = os.path.join(os.path.dirname(d), 'font', 'Charm-Bold.ttf')
+        if os.path.exists(f):
+            return f
+    return None
+
+
+PBR_FILES = {}  # khóa chất liệu -> {'normal': path, 'rough': path}
+
+
+def _load_luma(path, size):
+    import bpy
+
+    img = bpy.data.images.load(path)
+    w, h = img.size
+    px = np.empty(w * h * 4, dtype=np.float32)
+    img.pixels.foreach_get(px)
+    bpy.data.images.remove(img)
+    px = px.reshape(h, w, 4)[..., :3]
+    # luma sRGB (ảnh JPG nạp ở không gian sRGB nên pixels là giá trị mã hóa)
+    luma = px[..., 0] * 0.2126 + px[..., 1] * 0.7152 + px[..., 2] * 0.0722
+    if w != size:
+        step = w // size
+        luma = luma.reshape(size, step, size, step).mean(axis=(1, 3))
+    # kéo dải sáng về quanh 0,85 như texture thủ tục cũ (màu đỉnh quyết định sắc, texture chỉ cho chi tiết)
+    lo, hi = np.percentile(luma, 2), np.percentile(luma, 98)
+    luma = np.clip((luma - lo) / max(hi - lo, 1e-4), 0, 1)
+    return 0.62 + 0.36 * luma
+
+
+def _install_pbr_textures():
+    for key, (ph, scale, albedo_size, _normal_size) in PBR_SOURCES.items():
+        d = _find_pbr(ph, 'Diffuse')
+        n = _find_pbr(ph, 'nor_gl')
+        r = _find_pbr(ph, 'Rough')
+        if not (d and n and r):
+            print(f'[thien_cong] thiếu texture nguồn {ph}: dùng texture thủ tục cho {key}')
+            continue
+        arr = _load_luma(d, albedo_size)
+        bs.TEXTURES[key] = arr
+        lin = np.where(arr <= 0.04045, arr / 12.92, ((arr + 0.055) / 1.055) ** 2.4)
+        bs.TEX_GAIN[key] = 1.0 / float(lin.mean())
+        PBR_FILES[key] = {'normal': n, 'rough': r}
+        old = bs.MATERIALS[key]
+        bs.MATERIALS[key] = old._replace(tex=key, scale=scale)
+
 
 # ---------- texture ngọc (vân mây + mạch), nạp vào hệ texture của build_sect ----------
 
@@ -68,7 +156,52 @@ def _make_textures():
     bs.TEX_GAIN['jade'] = 1.0 / float(lin.mean())
 
 
-bs.make_textures = _make_textures
+def _make_textures_pbr():
+    _make_textures()
+    _install_pbr_textures()
+
+
+bs.make_textures = _make_textures_pbr
+
+_orig_make_material = bs.make_material
+
+
+def _make_material(key, images):
+    """Vật liệu của build_sect + normal/roughness từ ảnh PBR (nếu có): cùng nút Mapping nên cùng ô lặp với albedo."""
+    import bpy
+
+    mat = _orig_make_material(key, images)
+    files = PBR_FILES.get(key)
+    if not files:
+        return mat
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    bsdf = next(n for n in nodes if n.type == 'BSDF_PRINCIPLED')
+    mapping = next(n for n in nodes if n.type == 'MAPPING')
+
+    def image_node(path, name, size=None):
+        key2 = f'{name}'
+        img = bpy.data.images.load(path)
+        img.name = key2
+        img.colorspace_settings.name = 'Non-Color'
+        if size and img.size[0] > size:
+            img.scale(size, size)
+        node = nodes.new('ShaderNodeTexImage')
+        node.image = img
+        links.new(mapping.outputs['Vector'], node.inputs['Vector'])
+        return node
+
+    normal_tex = image_node(files['normal'], f'arch_sect_{key}_n', PBR_SOURCES[key][3])
+    nmap = nodes.new('ShaderNodeNormalMap')
+    nmap.inputs['Strength'].default_value = 1.0
+    links.new(normal_tex.outputs['Color'], nmap.inputs['Color'])
+    links.new(nmap.outputs['Normal'], bsdf.inputs['Normal'])
+    rough_tex = image_node(files['rough'], f'arch_sect_{key}_r', PBR_ROUGH_SIZE)
+    links.new(rough_tex.outputs['Color'], bsdf.inputs['Roughness'])
+    return mat
+
+
+bs.make_material = _make_material
 
 # Đổi bảng màu của build_sect (pavilion, lantern, column, hip_roof… đọc biến toàn cục lúc gọi) sang bảng Lạc Kiếm mới.
 bs.PAVE, bs.STONE, bs.STONE_DARK = JADE, JADE_SHADE, paint(0xA9B7B0, 'jade')
@@ -320,24 +453,84 @@ class KB(bs.Builder):
         finally:
             bs.ROOF, bs.GOLD = ROOF_SAVE
 
-    def sword_planted(self, cx, cz, y0, length, width, thick=0.0, yaw=0.0):
-        """Kiếm cắm mũi xuống: lưỡi thon có rãnh giữa, tay nắm chạm hình sừng vẫy lên, chuôi quấn vàng, đầu chuôi tròn."""
-        w = width / 2
-        th = thick or max(0.12, width * 0.07)
-        outline = [(0.0, 0.0), (w * 0.8, length * 0.1), (w, length * 0.2), (w, length), (-w, length), (-w, length * 0.2), (-w * 0.8, length * 0.1)]
+    def text(self, body, x, y, z, size, depth, color, yaw=0.0, fit_w=None, fit_h=None, bold=0.0):
+        """Chữ Việt khắc nổi (font thư pháp Charm Bold, OFL, cùng font gốc của bộ nét cọ tên đạo hiệu #297; ở ../dtl-asset-source/font): chuỗi `body` căn giữa tại (x, y, z), mặt chữ hướng +z.
+        Không có font thì bỏ qua (bản dựng vẫn chạy)."""
+        import bmesh as _bm
+        import bpy
+
+        path = _find_font()
+        if not path:
+            return
+        cu = bpy.data.curves.new('txt', 'FONT')
+        cu.body = body
+        cu.font = bpy.data.fonts.load(path)
+        cu.size = size
+        cu.extrude = depth / 2
+        cu.align_x = 'CENTER'
+        cu.align_y = 'CENTER'
+        cu.offset = bold * size  # làm đậm nét (offset đường viền)
+        ob = bpy.data.objects.new('txt', cu)
+        bpy.context.scene.collection.objects.link(ob)
+        bpy.context.view_layer.update()
+        ev = ob.evaluated_get(bpy.context.evaluated_depsgraph_get())
+        me = ev.to_mesh()
+        bm = _bm.new()
+        bm.from_mesh(me)
+        _bm.ops.triangulate(bm, faces=bm.faces[:])
+        # Co/giãn đồng dạng để chữ chiếm `fit_w` theo chiều ngang (và không vượt `fit_h`), căn giữa theo hộp bao.
+        xs = [v.co.x for v in bm.verts]
+        ys = [v.co.y for v in bm.verts]
+        k = 1.0
+        if fit_w and xs:
+            k = fit_w / max(max(xs) - min(xs), 1e-6)
+            if fit_h and ys:
+                k = min(k, fit_h / max(max(ys) - min(ys), 1e-6))
+        mx = (max(xs) + min(xs)) / 2 if xs else 0.0
+        my = (max(ys) + min(ys)) / 2 if ys else 0.0
+        c, sn = math.cos(yaw), math.sin(yaw)
+        for f in bm.faces:
+            pts = [(x + (v.co.x - mx) * k * c + v.co.z * sn, y + (v.co.y - my) * k, z - (v.co.x - mx) * k * sn + v.co.z * c) for v in f.verts]
+            self.face(pts, color)
+        bm.free()
+        ev.to_mesh_clear()
+        bpy.data.objects.remove(ob)
+        bpy.data.curves.remove(cu)
+
+    def blade_loft(self, cx, cz, y0, length, width, thick, yaw=0.0):
+        """Lưỡi kiếm mũi xuống: tiết diện thoi (sống nổi giữa, mép sắc) loe dần từ mũi nhọn; vát cạnh tự nhiên, không phải tấm phẳng."""
+        n = 14
         c, sn = math.cos(yaw), math.sin(yaw)
 
         def at(x, y, z):
             return (cx + x * c + z * sn, y0 + y, cz - x * sn + z * c)
 
-        mid = at(0, length * 0.5, 0)
-        for zz in (-th, th):
-            self.poly([at(x, y, zz) for x, y in outline], mid, BLADE)
-        for i in range(len(outline)):
-            j = (i + 1) % len(outline)
-            self.poly([at(outline[i][0], outline[i][1], -th), at(outline[j][0], outline[j][1], -th), at(outline[j][0], outline[j][1], th), at(outline[i][0], outline[i][1], th)], mid, BLADE_D)
-        for zz in (-1, 1):  # rãnh giữa: dải thép sẫm chìm
-            self.poly([at(-w * 0.12, length * 0.14, zz * (th + 0.02)), at(w * 0.12, length * 0.14, zz * (th + 0.02)), at(w * 0.12, length * 0.97, zz * (th + 0.02)), at(-w * 0.12, length * 0.97, zz * (th + 0.02))], mid, BLADE_D)
+        secs = []
+        for k in range(n + 1):
+            q = k / n
+            t = min(1.0, q / 0.22)
+            wk = max(0.004, math.sin(t * math.pi / 2) ** 0.85)
+            secs.append((q * length, width / 2 * wk * (1 - 0.05 * q), thick * wk))
+        for (ya, wa, ta), (yb, wb, tb) in zip(secs, secs[1:]):
+            mid = at(0, (ya + yb) / 2, 0)
+            la, fa, ra, ba = at(-wa, ya, 0), at(0, ya, ta), at(wa, ya, 0), at(0, ya, -ta)
+            lb, fb, rb, bb = at(-wb, yb, 0), at(0, yb, tb), at(wb, yb, 0), at(0, yb, -tb)
+            self.poly([la, fa, fb, lb], mid, BLADE)
+            self.poly([fa, ra, rb, fb], mid, BLADE)
+            self.poly([ra, ba, bb, rb], mid, BLADE_D)
+            self.poly([ba, la, lb, bb], mid, BLADE_D)
+        yt, wt, tt = secs[-1]
+        self.poly([at(-wt, yt, 0), at(0, yt, tt), at(wt, yt, 0), at(0, yt, -tt)], at(0, yt - 1, 0), BLADE_D)
+
+    def sword_planted(self, cx, cz, y0, length, width, thick=0.0, yaw=0.0):
+        """Kiếm cắm mũi xuống: lưỡi thon có rãnh giữa, tay nắm chạm hình sừng vẫy lên, chuôi quấn vàng, đầu chuôi tròn."""
+        th = thick or max(0.12, width * 0.07)
+        c, sn = math.cos(yaw), math.sin(yaw)
+
+        def at(x, y, z):
+            return (cx + x * c + z * sn, y0 + y, cz - x * sn + z * c)
+
+        self.blade_loft(cx, cz, y0, length, width, th, yaw)
         gx, gy, gz = at(0, length + 0.15, 0)
         self.box(gx, gy, gz, width * 2.4, 0.3, th * 3.2, GILD, yaw=yaw)
         for s in (-1, 1):  # đầu tay nắm vẫy lên
@@ -697,9 +890,10 @@ def _(b):
 
 @part('hoanh_phi', 'tuong')
 def _(b):
-    b.box(0, 0, 0, 5.8, 1.3, 0.3, INK)
-    b.box(0, 0, 0.18, 5.4, 0.9, 0.08, GILD)
-    b.box(0, 0, 0.24, 4.2, 0.4, 0.05, INK)
+    b.box(0, 0, 0, 5.8, 1.3, 0.3, VERMILION_DARK)
+    for sy in (-1, 1):
+        b.box(0, sy * 0.58, 0.17, 5.8, 0.14, 0.08, GILD)
+    b.text('Thiên Kiếm Điện', 0, 0, 0.17, 0.62, 0.14, GILD_TEXT, fit_w=4.05, fit_h=0.85, bold=0.045)
     for sx in (-1, 1):
         b.box(sx * 3.0, 0, 0, 0.2, 1.5, 0.4, GILD)
 
@@ -885,8 +1079,13 @@ def _(b):
         b.curved_hip(sx * 11.9, 7.4, 0, 7.4, 2.4, 1.5, overhang=1.3, lift=0.9)
         b.dougong(sx * 8, 10.4, 0, 1.0)
     b.box(0, 9.4, 0, 17.5, 1.0, 1.1, VERMILION_DARK)
-    b.box(0, 7.2, 0, 6.8, 1.9, 0.4, INK)
-    b.box(0, 7.2, 0.24, 5.8, 1.1, 0.1, GILD)
+    # Biển hiệu: gỗ sơn son sẫm viền vàng dày, chữ "Lạc Kiếm Tông" vàng khắc nổi đậm chiếm ~70% bề ngang biển.
+    b.box(0, 7.2, 0, 6.8, 1.9, 0.4, VERMILION_DARK)
+    for sx in (-1, 1):
+        b.box(sx * 3.3, 7.2, 0.23, 0.26, 1.9, 0.12, GILD)
+    for sy in (-1, 1):
+        b.box(0, 7.2 + sy * 0.88, 0.23, 6.8, 0.26, 0.12, GILD)
+    b.text('Lạc Kiếm Tông', 0, 7.2, 0.21, 1.2, 0.2, GILD_TEXT, fit_w=4.8, fit_h=1.25, bold=0.045)
     b.curved_hip(0, 10.4, 0, 18, 3.2, 2.6, overhang=1.8, lift=1.3)
 
 
@@ -1050,10 +1249,10 @@ def _(b):
     for k in range(5):
         a = k * 0.5
         b.cylinder(math.sin(a) * 0.1, 0.95 + k * 0.38, math.cos(a) * 0.08, 0.13 - k * 0.012, 0.4, TIMBER_D, 8, 0.11 - k * 0.012)
-    for k, (r, hh, col, ox) in enumerate([(0.95, 0.38, paint(0x2f7f5c, 'stone'), -0.25), (0.78, 0.34, paint(0x4aa06a, 'stone'), 0.3), (0.6, 0.3, paint(0x7fbf72, 'stone'), -0.05)]):
-        y = 1.55 + k * 0.52
-        b.cylinder(ox, y, 0.05 * k, r, hh, col, 14, r * 0.78)
-        b.cylinder(ox, y + hh, 0.05 * k, r * 0.78, 0.1, col, 14, r * 0.5)
+    # Tán là thẻ lá alpha dựng ở client (game/world/lacKiemGarden.ts, cùng toạ độ chậu); ở đây chỉ chậu + thân tùng uốn.
+    for k in range(7):
+        ang = k * 0.45
+        b.cylinder(math.sin(ang) * 0.14 + k * 0.03, 0.95 + k * 0.3, math.cos(ang) * 0.1, 0.14 - k * 0.012, 0.34, TIMBER_D, 8, 0.12 - k * 0.012)
 
 
 @part('prop_bat_quai', 'prop')

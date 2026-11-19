@@ -165,6 +165,8 @@ export const perfSample = (page: Page) =>
       geometries: i.geometries,
       textures: i.textures,
       frameMs: Math.round(((performance.now() - t0) / Math.max(1, g.frames - f0)) * 100) / 100,
+      // Bộ nhớ heap JS (Chromium: `performance.memory`, đã làm tròn thô) và số texture/hình học GPU của renderer.
+      heapMB: Math.round(((performance as unknown as { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize ?? 0) / 1e6),
     };
   });
 

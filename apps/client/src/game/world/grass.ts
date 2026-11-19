@@ -23,6 +23,8 @@ import {
   vec2,
   vec3,
 } from 'three/tsl';
+import { blocked } from './lacKiemGarden';
+import { sectPaving } from '../../render/groundMask';
 import { FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
 import { heightAt, levelTerrain } from '../../base/levelCtx';
 import { vanHaiArt } from './vanHaiArt';
@@ -58,13 +60,13 @@ interface GrassPreset {
 export const GRASS_PRESETS: Record<string, GrassPreset> = {
   low: { radius: 0, spacing: 1 },
   medium: { radius: 32, spacing: 1.1 },
-  high: { radius: 46, spacing: 0.9 },
+  high: { radius: 48, spacing: 0.8 },
   // Cực cao: cỏ rộng và dày hơn (tầm 68 m, giãn 0,78 m; ~gấp 2 số bụi của Cao). Ô dựng mỗi khung vẫn theo `budget`, trần instance bên dưới.
-  ultra: { radius: 56, spacing: 0.84 },
+  ultra: { radius: 66, spacing: 0.62 },
 };
 
 /** Trần số instance (ứng với preset Cực cao), cấp phát một lần. */
-const MAX_INSTANCES = 50000;
+const MAX_INSTANCES = 100000;
 
 const C_SUN = new THREE.Color(0x7ea25a); // leaf_grass
 const C_DRY = new THREE.Color(0xb7ac74); // leaf_dry
@@ -127,7 +129,13 @@ function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, 
   if (h < WATER_Y + 2.2 || h > 240 || slope > 2.2) return false;
   const isl = levelTerrain().def;
   if (isl.islands && h < (isl.voidFloor ?? 0) + 40) return false; // không cỏ trên sàn mây và vách đảo
-  if (featureWeight(SECT, x, z) > 0.8 || featureWeight(PORTAL_PAD, x, z) > 0.8 || featureWeight(KIEM_TRUNG, x, z) > 0.12) return false;
+  // Đỉnh tông môn (MAP-1 bản B): có cỏ ở chỗ không lát đá và không có công trình/đại lộ (`blocked`, `sectPaving`).
+  if (
+    (featureWeight(SECT, x, z) > 0.8 && (sectPaving(x - SECT.x, z - SECT.z) > 0.02 || blocked(x - SECT.x, z - SECT.z))) ||
+    featureWeight(PORTAL_PAD, x, z) > 0.8 ||
+    featureWeight(KIEM_TRUNG, x, z) > 0.12
+  )
+    return false;
   const wValley = featureWeight(VALLEY, x, z);
   const wForest = featureWeight(FOREST, x, z);
   const wLake = featureWeight(LAKE, x, z);
