@@ -38,6 +38,7 @@ def _find_pbr(ph, kind, size='2k'):
 kit._find_pbr = _find_pbr
 for _k, _c, _e in (('glow_g', 0x66FFA8, 1.5), ('glow_b', 0x66C8FF, 1.5), ('glow_p', 0xB070FF, 1.7), ('glow_y', 0xFFD070, 1.4), ('glow_r', 0xFF6A3A, 1.5)):
     bs.MATERIALS[_k] = Mat(0.7, 0.0, None, 1.0, False, 0.0, (_c, _e))
+bs.MATERIALS['glow_dim'] = Mat(0.7, 0.0, None, 1.0, False, 0.0, (0x59C98A, 0.5))  # ánh xanh lục mờ (mép nấm, nấm linh chi)
 bs.MATERIALS['leaf'] = Mat(0.85, 0.0, None, 1.0, False, 0.0)
 bs.MATERIALS['blade'] = Mat(0.22, 0.65, None, 1.0, False, 0.0)  # thép: không texture, nhám thấp, kim loại vừa (cảnh chưa có env map)
 bs.MATERIALS['cloth'] = Mat(0.95, 0.0, None, 1.0, False, 0.0, (0xFFD8B0, 0.06))  # vải, giấy, rơm: chỉ màu đỉnh; phát sáng rất nhẹ (vải mỏng thấu sáng, mặt quay lưng nắng không đen)
@@ -249,6 +250,7 @@ BONE = paint(0xD8CFB8, 'stone')
 BLADE_STEEL = paint(0xB4C8DE, 'blade')
 kit.BLADE_D = paint(0x7C91AB, 'blade')  # mép lưỡi/sống kiếm của sword_up đọc biến này
 GLOW_G = paint(0x66FFA8, 'glow_g')
+GLOW_DIM = paint(0x59C98A, 'glow_dim')
 GLOW_B = paint(0x66C8FF, 'glow_b')
 GLOW_P = paint(0xB070FF, 'glow_p')
 GLOW_Y = paint(0xFFD070, 'glow_y')

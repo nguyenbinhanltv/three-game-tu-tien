@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { basePropsOf, TELE_PADS, thienCongColliders, terrainOf, WATER_Y, type HandProp } from '@dtl/shared';
 import { LEVELS, NPCS } from './index';
-import { SCENES, sectAxis } from './thienCongScenes';
+import { SCENES, sectAxis, type Scene } from './thienCongScenes';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const REAL_OUT = path.join(ROOT, 'packages/shared/src/props.thiencong.ts');
@@ -17,7 +17,7 @@ const CHECK = process.argv.includes('--check');
 const OUT = CHECK ? path.join(ROOT, 'packages/shared/src/props.thiencong.check.ts') : REAL_OUT;
 const ITEMS = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/blender/prop_tc_items.json'), 'utf8')).groups as Record<
   string,
-  { name: string; vi: string; collider: number | [number, number, number][] }[]
+  { name: string; vi: string; collider: number | [number, number, number][]; foot?: number; ext?: string }[]
 >;
 const args = process.argv.slice(2);
 const opt = (k: string) => (args.includes(k) ? args[args.indexOf(k) + 1] : undefined);
@@ -27,21 +27,29 @@ const SEED = 20261119;
 /** Hệ số mật độ cho số lượng rải ngẫu nhiên của `thienCongScenes.ts` (duyệt ảnh: bản đầu quá thưa, trước/sau không phân biệt được). */
 const DENSITY = 2.2;
 /** Món nhỏ/rẻ chỉ bày một biến thể: mỗi id × LOD × vật liệu là một InstancedMesh, nên bớt id để cảnh đông (chợ) không vượt 300 draw call. */
-const SINGLE = new Set(['vo_ruou', 'gio_thuoc', 'thung_go', 'lu_nuoc', 'long_den_giay', 'hang_rao_tre']);
+const SINGLE = new Set([
+  'linh_thao',
+  'nam_phat_sang',
+  'kho_go',
+  'vo_ruou',
+  'gio_thuoc',
+  'thung_go',
+  'lu_nuoc',
+  'long_den_giay',
+  'hang_rao_tre',
+]);
 
 const groupOf = new Map<string, string>();
+const extOf = new Map<string, string>();
+/** id asset của một món: món `ext` dùng asset có sẵn (không có biến thể), còn lại prop_tc_<tên>[_2]. */
+const idOf = (name: string, v2: boolean) => extOf.get(name) ?? `prop_tc_${name}${v2 ? '_2' : ''}`;
 const info = new Map<string, { collider: [number, number, number][]; foot: number }>();
-const REPORT: Record<string, { size: [number, number, number] }> = {};
-for (const g of Object.keys(ITEMS)) {
-  const f = path.join(ROOT, `assets/build/raw/prop_tc_${g}_report.json`);
-  if (fs.existsSync(f)) Object.assign(REPORT, JSON.parse(fs.readFileSync(f, 'utf8')));
-}
 for (const [g, list] of Object.entries(ITEMS)) {
   for (const it of list) {
     groupOf.set(it.name, g);
+    if (it.ext) extOf.set(it.name, it.ext);
     const col: [number, number, number][] = typeof it.collider === 'number' ? (it.collider > 0 ? [[0, 0, it.collider]] : []) : it.collider;
-    const rep = REPORT[`prop_tc_${it.name}`]?.size;
-    const foot = rep ? Math.max(rep[0], rep[2]) / 2 : (col[0]?.[2] ?? 0.5);
+    const foot = it.foot ?? col[0]?.[2] ?? 0.5; // nửa cạnh lớn nhất của hộp bao (m), lưu trong danh mục JSON để bộ sinh tất định, không phụ thuộc file build
     info.set(it.name, { collider: col, foot });
   }
 }
@@ -94,6 +102,9 @@ for (const levelId of Object.keys(SCENES)) {
     ),
     { x: L.spawn?.x ?? 0, z: L.spawn?.z ?? 0, r: 9 },
   ];
+  const campCentres: Circle[] = (L.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: 1.9 }));
+  const campDiscs: Circle[] = (L.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: c.radius + 2 }));
+  const poiSpots = L.pois ?? [];
   const monBlock: Circle[] = [
     ...(L.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: c.radius + 2 })),
     ...(L.spawns ?? []).map((s) => ({ x: s.x, z: s.z, r: s.radius + 3 })),
@@ -101,6 +112,8 @@ for (const levelId of Object.keys(SCENES)) {
   const lvSeed = SEED + [...levelId].reduce((a, c) => a * 31 + c.charCodeAt(0), 7);
   let rand = rng(lvSeed);
   const placed: TcProp[] = [];
+  /** Mọi vòng va chạm đã đặt (mọi nhóm): nhóm hoang dã giữ khe ≥ 3 m giữa các vòng để cụm dày không tạo túi kín nhốt người chơi (`map:report` quét chỗ kẹt). */
+  const allCols: Circle[] = [];
   const spots: (Circle & { solid: boolean; g: string })[] = [];
   const list: TcProp[] = [];
   const miss: string[] = [];
@@ -110,6 +123,21 @@ for (const levelId of Object.keys(SCENES)) {
     (a, b) => order.indexOf(groupOf.get(a.name) ?? '') - order.indexOf(groupOf.get(b.name) ?? ''),
   );
   // Bày tay (dx, dz tính từ tâm cảnh): cụm điểm nhấn dọc đường chính, quanh kiếm đài, trước điện… Không rải ngẫu nhiên, chỉ kiểm bản đồ.
+  const clusterCache = new Map<number, [number, number][]>();
+  const clusterCentres = (si: number, sc: Scene): [number, number][] => {
+    let c = clusterCache.get(si);
+    if (!c) {
+      const r2 = rng(lvSeed + si * 104729 + 17);
+      c = [];
+      for (let i = 0; i < sc.clusters!; i++) {
+        const a = r2() * Math.PI * 2;
+        const d = Math.sqrt((sc.rMin ?? 0) ** 2 + r2() * (sc.r ** 2 - (sc.rMin ?? 0) ** 2));
+        c.push([sc.at[0] + Math.cos(a) * d, sc.at[1] + Math.sin(a) * d]);
+      }
+      clusterCache.set(si, c);
+    }
+    return c;
+  };
   const placeFixed = (group: string) => {
     for (const { sc, f } of SCENES[levelId]!.flatMap((sc) => (sc.fixed ?? []).map((f) => ({ sc, f })))) {
       const g = groupOf.get(f.name);
@@ -118,7 +146,7 @@ for (const levelId of Object.keys(SCENES)) {
       const x = Math.round((sc.at[0] + f.dx) * 10) / 10;
       const z = Math.round((sc.at[1] + f.dz) * 10) / 10;
       const sc2 = f.s ?? 1;
-      const prop: TcProp = { id: `prop_tc_${f.name}${f.v2 && !SINGLE.has(f.name) ? '_2' : ''}`, x, z, yaw: f.yaw ?? 0, s: sc2 };
+      const prop: TcProp = { id: idOf(f.name, !!f.v2 && !SINGLE.has(f.name)), x, z, yaw: f.yaw ?? 0, s: sc2 };
       if (inf.collider.length) {
         const cy = Math.cos(prop.yaw);
         const sy = Math.sin(prop.yaw);
@@ -127,6 +155,10 @@ for (const levelId of Object.keys(SCENES)) {
           z: Math.round((z + (-dx * sy + dz * cy) * sc2) * 10) / 10,
           r: Math.round(r * sc2 * 100) / 100,
         }));
+      }
+      if ((prop.col ?? []).some((c) => near(monBlock, c.x, c.z, c.r)) || near(campCentres, x, z, 0)) {
+        miss.push(`bày tay ${f.name} (${x}, ${z}) nằm trong bãi quái/tâm bãi`);
+        continue;
       }
       const hit = (prop.col ?? [{ x, z, r: 0.5 }]).find((c) => near(solidBlock, c.x, c.z, c.r));
       if (hit) {
@@ -140,6 +172,7 @@ for (const levelId of Object.keys(SCENES)) {
         continue;
       }
       list.push(prop);
+      allCols.push(...(prop.col ?? []));
       spots.push({ x, z, r: inf.foot * sc2, solid: !!prop.col, g: group });
       placed.push(prop);
     }
@@ -159,10 +192,22 @@ for (const levelId of Object.keys(SCENES)) {
         for (let k = 0; k < Math.round(n * DENSITY); k++) {
           let ok = false;
           for (let tries = 0; tries < 160 && !ok; tries++) {
-            const a = rand() * Math.PI * 2;
-            const d = Math.sqrt(lo * lo + rand() * (sc.r * sc.r - lo * lo));
-            const x = Math.round((sc.at[0] + Math.cos(a) * d) * 10) / 10;
-            const z = Math.round((sc.at[1] + Math.sin(a) * d) * 10) / 10;
+            let x: number;
+            let z: number;
+            if (sc.clusters) {
+              // Rải theo cụm (lùm cây, bãi đá...): tâm cụm cố định theo cảnh, mỗi món chọn một cụm; cảnh đông ở từng chỗ thay vì loãng khắp vùng.
+              const cc = clusterCentres(si, sc);
+              const c = cc[(k + tries) % cc.length]!;
+              const ca = rand() * Math.PI * 2;
+              const cd = Math.sqrt(rand()) * (sc.clusterR ?? 22);
+              x = Math.round((c[0] + Math.cos(ca) * cd) * 10) / 10;
+              z = Math.round((c[1] + Math.sin(ca) * cd) * 10) / 10;
+            } else {
+              const a = rand() * Math.PI * 2;
+              const d = Math.sqrt(lo * lo + rand() * (sc.r * sc.r - lo * lo));
+              x = Math.round((sc.at[0] + Math.cos(a) * d) * 10) / 10;
+              z = Math.round((sc.at[1] + Math.sin(a) * d) * 10) / 10;
+            }
             const s = Math.round(((sc.scale?.[0] ?? 0.9) + rand() * ((sc.scale?.[1] ?? 1.15) - (sc.scale?.[0] ?? 0.9))) * 100) / 100;
             const foot = inf.foot * s;
             if (x < B.x0 + 10 || x > B.x1 - 10 || z < B.z0 + 10 || z > B.z1 - 10) continue;
@@ -184,6 +229,8 @@ for (const levelId of Object.keys(SCENES)) {
             if (slope > 0.8 + foot * 0.3) continue;
             if (near(anyBlock, x, z, foot)) continue;
             if (solid && near(monBlock, x, z, foot)) continue;
+            if (near(campCentres, x, z, 0)) continue; // levelcheck: tâm bãi quái không được đè prop (cả prop không va chạm)
+            if (poiSpots.some((q) => (x - q.x) ** 2 + (z - q.z) ** 2 <= 15 ** 2) && near(campDiscs, x, z, 0)) continue; // prop quanh điểm đáng chú ý phải cách mép bãi ≥ 2 m
             if (spots.some((p) => (x - p.x) ** 2 + (z - p.z) ** 2 < (p.r + foot + 0.5) ** 2)) continue;
             const yaw =
               sc.face === 'center'
@@ -193,7 +240,7 @@ for (const levelId of Object.keys(SCENES)) {
                   : rand() * Math.PI * 2;
             const v2 = rand() < 0.5 && !SINGLE.has(name);
             const prop: TcProp = {
-              id: `prop_tc_${name}${v2 ? '_2' : ''}`,
+              id: idOf(name, v2),
               x,
               z,
               yaw: Math.round((yaw + (sc.face === 'random' ? 0 : (rand() - 0.5) * 0.3)) * 100) / 100,
@@ -208,7 +255,10 @@ for (const levelId of Object.keys(SCENES)) {
                 r: Math.round(r * s * 100) / 100,
               }));
               if (cols.some((c) => near(monBlock, c.x, c.z, c.r) || near(anyBlock, c.x, c.z, c.r))) continue;
+              if (g === 'hoang_da' && cols.some((c) => allCols.some((o) => (c.x - o.x) ** 2 + (c.z - o.z) ** 2 < (c.r + o.r + 3) ** 2)))
+                continue;
               prop.col = cols;
+              allCols.push(...cols);
             }
             list.push(prop);
             spots.push({ x, z, r: foot, solid, g });
