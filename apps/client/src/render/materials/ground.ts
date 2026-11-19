@@ -256,11 +256,17 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
         // Khối đá xếp lệch, hai cỡ (khối lớn ~60–120 m + khối nhỏ ~20–40 m): cột theo tọa độ dọc vách (méo mạnh bởi nhiễu), bề cao tầng mỗi cột một kiểu,
         // màu từng khối khác nhau, khe tối quanh khối, mép trên khối sáng, vài khối chạy vỉa vàng ở khe.
         const layer = (su: number, wob: number, sh: number, k: number) => {
-          const ub = u.mul(su).add(nA.mul(wob)).add(nB.mul(wob * 0.35));
+          const ub = u
+            .mul(su)
+            .add(nA.mul(wob))
+            .add(nB.mul(wob * 0.35));
           const ci = floor(ub);
           const cf = fract(ub);
           const hb = fract(sin(ci.mul(127.1).add(k * 311.7)).mul(43758.5453));
-          const hy = h.mul(float(sh).mul(float(0.65).add(hb.mul(0.8)))).add(hb.mul(9)).add(nB.mul(1.2));
+          const hy = h
+            .mul(float(sh).mul(float(0.65).add(hb.mul(0.8))))
+            .add(hb.mul(9))
+            .add(nB.mul(1.2));
           const ri = floor(hy);
           const rf = fract(hy);
           const hr = fract(sin(ri.mul(91.7).add(ci.mul(17.3)).add(k)).mul(24634.6345));
@@ -271,8 +277,13 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
         const big = layer(0.0062, 2.4, 0.026, 1);
         const small = layer(0.022, 1.6, 0.055, 2);
         let blk: Node = mix(vec3(...cliffTones.lo), vec3(...cliffTones.hi), big.hr.mul(0.7).add(small.hr.mul(0.3)).mul(0.85).add(0.07));
-        blk = blk.mul(mix(vec3(1.18, 0.96, 0.78), vec3(0.82, 0.9, 1.1), big.hb)).mul(float(0.7).add(big.hr.mul(0.6))).mul(float(0.86).add(small.hb.mul(0.2))).mul(float(0.78).add(nC.mul(0.44)));
-        const gap = max(big.gap.mul(0.85), small.gap.mul(0.45));
+        blk = blk
+          .mul(mix(vec3(1.18, 0.96, 0.78), vec3(0.82, 0.9, 1.1), big.hb))
+          .mul(float(0.7).add(big.hr.mul(0.6)))
+          .mul(float(0.86).add(small.hb.mul(0.2)))
+          .mul(float(0.78).add(nC.mul(0.44)));
+        // xa thì khe mờ dần (đường kẻ thẳng dài thành ô lưới): chỉ còn mảng màu
+        const gap = max(big.gap.mul(0.85), small.gap.mul(0.45)).mul(float(1).sub(smoothstep(120, 650, dist).mul(0.75)));
         tone = mix(tone, blk, 0.82);
         tone = tone
           .mul(float(1).sub(gap.mul(0.7)))
