@@ -928,6 +928,8 @@ export interface LevelAssets {
   kinhNguyetArt?: boolean;
   /** Cảnh Thần Tàng Điện (DUN-1 PR4, client `game/world/thanTangArt.ts` + GLB `arch_than_tang`): điện tàng đen tím nạm vàng. Chỉ để nhìn. */
   thanTangArt?: boolean;
+  /** Cảnh Kim Dạ Cung (DUN-1 PR5, client `game/world/kimDaArt.ts` + GLB `arch_kim_da`): cung dát vàng đêm lồng đèn. Chỉ để nhìn. */
+  kimDaArt?: boolean;
   /**
    * Cảnh Lạc Kiếm trên không (MAP-1, chỉ để nhìn, không có va chạm): đảo nổi quanh tông môn, cầu mây, thác, Kiếm Đài.
    * Toạ độ tương đối tâm tông môn (`SECT`): `x`, `z` mét; `y` là cao độ MẶT TRÊN đảo tính từ `SECT.y` (m).
