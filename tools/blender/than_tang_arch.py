@@ -36,7 +36,7 @@ GOLD = Paint(C(0xDDB95C), 'gold')
 GOLD_DK = Paint(C(0x9A7430), 'gold')
 LAMP = Paint(C(0xFFC27A), 'lamp')
 RUNE = Paint(C(0x6B4BC8), 'rune')
-BANNER = Paint(C(0x4A2A78), 'silk')
+BANNER = Paint(C(0x4A2A3E), 'silk')
 IRON = Paint(C(0x3B3540), 'metal')
 
 
@@ -45,13 +45,13 @@ def dome_h(r):
 
 
 def marble(seed, lift=0.0):
-    """Cẩm thạch đen tím có vân sáng; `lift` làm sáng thêm."""
+    """Cẩm thạch đen xám ngả tím nhạt có vân sáng; `lift` làm sáng thêm."""
 
     def fn(pos, nrm):
         n = fbm3(pos[0] * 0.4, pos[1] * 0.4, pos[2] * 0.4, seed, 3)
         vein = max(0.0, 1.0 - abs(fbm3(pos[0] * 0.9 + 3, pos[1] * 0.9, pos[2] * 0.9, seed + 7, 2) - 0.5) * 16)
-        rgb = mix(C(0x2C2542), C(0x5A5074), 0.3 + 0.5 * n + lift)
-        rgb = mix(rgb, C(0xB8A8D8), vein * 0.35)
+        rgb = mix(C(0x2E2B36), C(0x5E5A68), 0.3 + 0.5 * n + lift)
+        rgb = mix(rgb, C(0xC8C0CC), vein * 0.35)
         return Paint(tuple(rgb), 'jade')
 
     return fn
@@ -246,6 +246,50 @@ def seal_gate(b, seed):
 # ---------- tượng võ sĩ không mặt ----------
 
 
+def plinth_carving(b, seed):
+    """Hoa văn khắc cho bệ tượng (thay các ô vuông rune): bậc giữa quấn dải hồi văn vàng sẫm (mỗi đơn vị 0,6 m: thanh trên, nét sổ, thanh giữa, nét sổ, thanh dưới) với một đường rune mảnh liền phía trên;
+    bậc dưới có hàng cánh sen đá nghiêng quanh chân bậc giữa; bốn góc bậc giữa có đinh vàng tròn."""
+    rnd = random.Random(seed + 91)
+    H2 = 3.3
+    T = 0.07
+
+    def fbox(side, u, y, w, h, col):
+        if side == 0:
+            tbox(b, (H2 + T / 2, y, u), (T, h, w), col)
+        elif side == 1:
+            tbox(b, (-H2 - T / 2, y, u), (T, h, w), col)
+        elif side == 2:
+            tbox(b, (u, y, H2 + T / 2), (w, h, T), col)
+        else:
+            tbox(b, (u, y, -H2 - T / 2), (w, h, T), col)
+
+    for side in range(4):
+        for i in range(9):
+            u0 = -2.7 + i * 0.6
+            fbox(side, u0 + 0.25, 2.05, 0.5, 0.07, GOLD_DK)
+            fbox(side, u0 + 0.5, 1.92, 0.07, 0.3, GOLD_DK)
+            fbox(side, u0 + 0.35, 1.8, 0.3, 0.07, GOLD_DK)
+            fbox(side, u0 + 0.2, 1.67, 0.07, 0.3, GOLD_DK)
+            fbox(side, u0 + 0.2, 1.55, 0.4, 0.07, GOLD_DK)
+        fbox(side, 0.0, 2.18, 6.2, 0.04, RUNE)
+        # cánh sen đá ở chân bậc giữa, trên mặt bậc dưới
+        for i in range(10):
+            u = -2.9 + i * 0.64
+            d = 3.62
+            lift = 0.0
+            if side < 2:
+                tbox(b, ((d if side == 0 else -d), 1.65, u), (0.1, 0.5, 0.46), SP_PET(seed + i), rz=(0.3 if side == 0 else -0.3))
+            else:
+                tbox(b, (u, 1.65, (d if side == 2 else -d)), (0.46, 0.5, 0.1), SP_PET(seed + i), rx=(-0.3 if side == 2 else 0.3))
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            blob(b, (sx * H2, 2.1, sz * H2), (0.2, 0.2, 0.2), lambda p, n: GOLD, nu=8, nv=5)
+
+
+def SP_PET(seed):
+    return mpaint(seed, lift=0.12)
+
+
 def statue(b, seed):
     """Thần tướng đá đen chạm khắc cao ~14 m: bệ ba tầng có dải phù văn tím phát sáng; giáp ống + che gối viền vàng; váy giáp năm tấm; ngực giáp có sống vàng, đai lưng có mặt khóa;
     giáp vai ba lớp có gai; tay giáp có đai vàng, nắm chuôi đại kiếm (lưỡi có rãnh phù văn, chắn vàng có đầu thú cách điệu); mũ trụ liền mặt nạ trơn, mào vàng, hai sừng cong; áo choàng sau lưng."""
@@ -256,10 +300,7 @@ def statue(b, seed):
     tbox(b, (0, 0.7, 0), (8.0, 1.4, 8.0), SP(1))
     tbox(b, (0, 1.8, 0), (6.6, 0.9, 6.6), SP(2))
     tbox(b, (0, 2.6, 0), (5.6, 0.7, 5.6), SP(3))
-    for k in range(5):
-        for side in (-1, 1):
-            tbox(b, (side * 3.34, 1.8, -2.0 + k * 1.0), (0.1, 0.5, 0.45), RUNE)
-            tbox(b, (-2.0 + k * 1.0, 1.8, side * 3.34), (0.45, 0.5, 0.1), RUNE)
+    plinth_carving(b, seed)
     for yy in (1.42, 2.28):
         tbox(b, (0, yy, 0), (8.1 if yy < 2 else 6.7, 0.1, 8.1 if yy < 2 else 6.7), GOLD)
     # chân: giáp ống, che gối, giày
@@ -297,7 +338,7 @@ def statue(b, seed):
             xb = xa + 0.78
             z_ = -1.7 - 0.12 * r_
             wob = 0.22 * math.sin(c_ * 1.3 + r_ * 0.5)
-            col = Paint(mix(C(0x241448), C(0x4C2C84), 0.35 + 0.4 * math.sin(c_ * 1.3) * 0.5 + 0.2 * r_ / 8), 'silk')
+            col = Paint(mix(C(0x20141C), C(0x4A2A3C), 0.35 + 0.4 * math.sin(c_ * 1.3) * 0.5 + 0.2 * r_ / 8), 'silk')
             b.poly([(xa, y_a, z_ + wob), (xb, y_a, z_ - wob), (xb, y_a - 1.2, z_ - 0.12 - wob), (xa, y_a - 1.2, z_ - 0.12 + wob)], (0, y_a, 3), col)
     tbox(b, (0, 13.0, -1.7), (5.0, 0.3, 0.3), GOLD)
     # giáp vai ba lớp có gai + gai

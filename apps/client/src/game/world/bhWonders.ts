@@ -686,7 +686,7 @@ function crackMaterial(): THREE.MeshBasicNodeMaterial {
   return mat;
 }
 
-/** Điểm tinh thể băng dọc mép khe (`per` điểm mỗi đoạn; chế độ thấp dùng 3, cao dùng 7; collider dùng 7: ở chất lượng thấp 4 trong 7 trụ băng vô hình nhưng nhỏ, xa khe 15–24 m). */
+/** Điểm tinh thể băng dọc mép khe (`per` điểm mỗi đoạn). Luôn vẽ đủ 7 ở mọi chất lượng để hình khớp collider (server quyết định va chạm, không phụ thuộc chất lượng đồ họa). */
 export function iceSpots(path: readonly RiftPt[], per: number): { x: number; z: number; s: number; yaw: number }[] {
   const spots: { x: number; z: number; s: number; yaw: number }[] = [];
   for (let i = 0; i + 1 < path.length; i++) {
@@ -783,7 +783,7 @@ export class BhWonders {
           emissiveIntensity: 0.9,
         }),
       );
-      const spots = iceSpots(path, opts.detail ? 7 : 3);
+      const spots = iceSpots(path, 7);
       const ice = new THREE.InstancedMesh(own(crystalGeometry()), iceMat, spots.length);
       ice.name = 'bh-ice';
       spots.forEach((s, i) => {
