@@ -1010,11 +1010,11 @@
       "id": "arch_than_tang",
       "class": "arch",
       "source": "assets/build/raw/arch_than_tang.glb",
-      "file": "arch_than_tang.60382c0b18.glb",
-      "bytes": 6303576,
-      "rawBytes": 7638696,
-      "triangles": 438064,
-      "rawTriangles": 438064,
+      "file": "arch_than_tang.e0310bd86d.glb",
+      "bytes": 6387912,
+      "rawBytes": 8264528,
+      "triangles": 486736,
+      "rawTriangles": 486736,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -1080,7 +1080,7 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 438064
+          "triangles": 486736
         }
       ],
       "dims": {
