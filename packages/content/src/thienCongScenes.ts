@@ -293,6 +293,17 @@ export const SCENES: Record<string, Scene[]> = {
     },
     { note: 'Linh Tuyền: linh thạch', at: [2414, 2443], r: 30, rMin: 8, face: 'random', items: { linh_thach: 3 } },
     { note: 'Bia Đá Vách Ngọc: trận đồ', at: [2419, 1795], r: 36, rMin: 12, face: 'center', items: { tran_do_khac_san: 1, linh_thach: 2 } },
+    {
+      note: 'Cỏ cây và đá quanh bệ cổng bí cảnh (quảng trường không còn trống, POLISH-1)',
+      clusters: 5,
+      clusterR: 10,
+      at: [2048, 1730],
+      r: 56,
+      face: 'random',
+      // chừa bệ trận (tâm 2048,1750, cột/bia tới ~25 m) và quanh cổng đá (2048,1708): ngoài ra mọc cỏ cây
+      avoid: (x, z) => Math.hypot(x - 2048, z - 1750) < 32 || Math.hypot(x - 2048, z - 1708) < 16,
+      items: { linh_thao: 7, nam_phat_sang: 5, kho_go: 3 },
+    },
   ],
   doan_mach: [
     {
