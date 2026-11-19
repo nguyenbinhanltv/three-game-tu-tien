@@ -124,6 +124,8 @@ export function scatterVanHai(placed: readonly PropInstance[]): PropInstance[] {
       for (const p of art.ponds) near = Math.min(near, Math.hypot(x - p.x, z - p.z) - p.r);
       const pick = vhPick(isl.kind, g, rock, pw, near, hash01(gx, gz, 5711), hash01(gx, gz, 5799));
       if (!pick) continue;
+      // cây tùng/thông Tripo tối màu thay bằng cây thẻ alpha tán dày (`vanHaiGarden.ts`)
+      if (pick.id === 'prop_tung_phu_dao' || pick.id === 'prop_thong_co') continue;
       let bad = false;
       for (const c of clear) if ((x - c.x) ** 2 + (z - c.z) ** 2 < c.r * c.r) bad = true;
       for (const c of tr.colliders) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 3) ** 2) bad = true;

@@ -65,6 +65,8 @@ import type { CardForest } from './world/cardForest';
 import type { LacKiemGarden } from './world/lacKiemGarden';
 import type { DoanMachArt } from './world/doanMachArt';
 import type { LacKiemSkyScene } from './world/lacKiemSky';
+import type { VanHaiWow } from './world/vanHaiWow';
+import type { VanHaiGarden } from './world/vanHaiGarden';
 import { PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { createWorldMaterial } from '../render/materials/world';
@@ -218,6 +220,9 @@ export class Game {
   godRays: GodRays | null = null;
   /** Đảo nổi, cầu mây, thác, Kiếm Đài (MAP-1). */
   lacKiemSky: LacKiemSkyScene | null = null;
+  /** Vân Hải (MAP-3): thuyền tiên, cá kình mây, cầu vòng linh khí, hải đăng. */
+  vanHaiWow: VanHaiWow | null = null;
+  vanHaiGarden: VanHaiGarden | null = null;
   /** Vườn hoa, lùm trúc, đá rêu quanh tông môn (MAP-1). */
   lacKiemGarden: LacKiemGarden | null = null;
   /** Cây thẻ alpha thay cây Tripo ở Lạc Kiếm (MAP-1 bản B). */
