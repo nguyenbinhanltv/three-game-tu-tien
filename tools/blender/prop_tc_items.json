@@ -192,7 +192,7 @@
         "name": "nam_phat_sang",
         "vi": "Nấm phát sáng",
         "collider": 0.0,
-        "foot": 0.8355
+        "foot": 0.8313
       },
       {
         "name": "mo_co",
@@ -233,7 +233,7 @@
             0.9
           ]
         ],
-        "foot": 2.9628
+        "foot": 2.635
       },
       {
         "name": "kho_go",
@@ -245,7 +245,7 @@
         "name": "goc_cay",
         "vi": "Gốc cây mục",
         "collider": 0.6,
-        "foot": 0.953
+        "foot": 0.8397
       },
       {
         "name": "da_reu",
