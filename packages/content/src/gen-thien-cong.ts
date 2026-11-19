@@ -112,6 +112,8 @@ for (const levelId of Object.keys(SCENES)) {
   const lvSeed = SEED + [...levelId].reduce((a, c) => a * 31 + c.charCodeAt(0), 7);
   let rand = rng(lvSeed);
   const placed: TcProp[] = [];
+  /** Mọi vòng va chạm đã đặt (mọi nhóm): nhóm hoang dã giữ khe ≥ 3 m giữa các vòng để cụm dày không tạo túi kín nhốt người chơi (`map:report` quét chỗ kẹt). */
+  const allCols: Circle[] = [];
   const spots: (Circle & { solid: boolean; g: string })[] = [];
   const list: TcProp[] = [];
   const miss: string[] = [];
@@ -170,6 +172,7 @@ for (const levelId of Object.keys(SCENES)) {
         continue;
       }
       list.push(prop);
+      allCols.push(...(prop.col ?? []));
       spots.push({ x, z, r: inf.foot * sc2, solid: !!prop.col, g: group });
       placed.push(prop);
     }
@@ -252,7 +255,10 @@ for (const levelId of Object.keys(SCENES)) {
                 r: Math.round(r * s * 100) / 100,
               }));
               if (cols.some((c) => near(monBlock, c.x, c.z, c.r) || near(anyBlock, c.x, c.z, c.r))) continue;
+              if (g === 'hoang_da' && cols.some((c) => allCols.some((o) => (c.x - o.x) ** 2 + (c.z - o.z) ** 2 < (c.r + o.r + 3) ** 2)))
+                continue;
               prop.col = cols;
+              allCols.push(...cols);
             }
             list.push(prop);
             spots.push({ x, z, r: foot, solid, g });
