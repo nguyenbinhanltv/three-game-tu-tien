@@ -30,7 +30,7 @@ function fake(): { m: MannequinCharacter; ev: SkillEvent[] } {
       new THREE.QuaternionKeyframeTrack('spine_02.quaternion', [0, dur], [0, 0, 0, 1, 0, 0, 0.1, 0.995]),
     ]);
   const clips = new Map<string, THREE.AnimationClip>();
-  for (const n of ['Idle_Loop', 'Jog_Fwd_Loop', 'Walk_Loop', 'Sprint_Loop', 'Hit_Chest']) clips.set(n, clip(n, 1));
+  for (const n of ['Idle_Loop', 'Jog_Fwd_Loop', 'Walk_Loop', 'Sprint_Loop', 'Hit_Chest', 'Roll']) clips.set(n, clip(n, 1));
   for (const [n, h] of Object.entries(UAL_HIT)) clips.set(n, clip(n, h.dur));
   const tpl = { bank: null, height: 1.8, clips, handle: { scene } } as unknown as MannequinTemplate;
   const m = new MannequinCharacter(tpl);
@@ -113,5 +113,55 @@ describe('swingSeconds / ualHit.json', () => {
       expect(h.hit).toBeGreaterThan(0);
       expect(h.hit).toBeLessThan(h.dur);
     }
+  });
+});
+
+describe('lướt hủy thu về chiêu (A4)', () => {
+  it('chiêu đã qua mốc cho phép hủy: dashFrom hủy thu về và vẫn phát Roll; chiêu chưa tới mốc thì giữ động tác chiêu', () => {
+    for (const cancelAt of [0.2, 0.9]) {
+      const { m } = fake();
+      run(m, 0.3);
+      const priv = m as unknown as { mixer: THREE.AnimationMixer; perf: unknown; shot: THREE.AnimationAction | null };
+      const act = priv.mixer.clipAction(new THREE.AnimationClip('p', 1, []));
+      priv.perf = {
+        id: 'p',
+        pose: { def: { duration: 1, hit: [0.1] } },
+        upper: act,
+        lower: act,
+        lowerBase: null,
+        t: 0.5,
+        end: 1,
+        timing: { hitAt: [0.1], end: 1, cancelMove: cancelAt, cancelDash: cancelAt },
+        skill: 's',
+        combo: -1,
+        fired: 1,
+        env: 1,
+      };
+      m.dashFrom(0, 0, 0.3);
+      const perf = priv.perf as { cancelled?: boolean };
+      if (cancelAt < 0.5) {
+        expect(perf.cancelled).toBe(true);
+        expect(priv.shot?.getClip().name).toBe('Roll');
+      } else {
+        expect(perf.cancelled).toBeUndefined();
+        expect(priv.shot).toBeNull();
+      }
+    }
+  });
+});
+
+describe('lướt hiển thị (A4)', () => {
+  it('dashFrom: hình xuất phát ở chỗ cũ rồi trượt về chỗ thật, phát clip Roll, hết thì về 0', () => {
+    const { m } = fake();
+    run(m, 0.3);
+    m.root.position.set(5, 0, 0);
+    m.dashFrom(0, 0, 0.3); // chỗ thật cách chỗ xuất phát 5 m theo +X, nhân vật nhìn +Z (yaw 0): lệch ngang = −5 m (bên phải)
+    m.update(1 / 60, anim());
+    expect(Math.abs((m as unknown as { inner: THREE.Object3D }).inner.position.x)).toBeGreaterThan(3);
+    run(m, 0.2);
+    expect(Math.abs((m as unknown as { inner: THREE.Object3D }).inner.position.x)).toBeLessThan(2);
+    run(m, 0.3);
+    expect((m as unknown as { inner: THREE.Object3D }).inner.position.x).toBeCloseTo(0, 5);
+    expect((m as unknown as { inner: THREE.Object3D }).inner.position.z).toBeCloseTo(0, 5);
   });
 });

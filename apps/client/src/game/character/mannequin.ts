@@ -19,6 +19,7 @@ import {
   breathOf,
   dirMix,
   type DirMix,
+  flinchDirOf,
   flinchOf,
   leanOf,
   LOCO,
@@ -412,7 +413,9 @@ export class MannequinCharacter implements CharacterView {
   private turnLag = 0;
   private lookYaw = 0;
   private lookPitch = 0;
-  private flinch = { amp: 0, age: 9 };
+  private flinch = { amp: 0, age: 9, pitch: -1, roll: 0 };
+  /** Lướt hiển thị (NV3-A4): hình xuất phát ở (fx, fz) thế giới rồi trượt về chỗ thật trong `dur` giây. */
+  private dashOff: { fx: number; fz: number; t: number; dur: number } | null = null;
   private clock = Math.random() * 10;
   private side = 1;
   private armFit = 0;
@@ -718,6 +721,29 @@ export class MannequinCharacter implements CharacterView {
     this.emitAtk('windup', 0, hitIn);
   }
 
+  /** Cộng độ lệch lướt vào `inner` (hệ nhân vật): nội suy từ điểm xuất phát tới vị trí thật của root, đúng dù gói vị trí mới tới trước hay sau. */
+  private applyDash(realDt: number): void {
+    const d = this.dashOff;
+    if (!d) return;
+    d.t += realDt;
+    if (d.t >= d.dur) {
+      this.dashOff = null;
+      return;
+    }
+    const x = d.t / d.dur;
+    const k = 1 - x * x * (3 - 2 * x);
+    let dx = d.fx - this.root.position.x;
+    let dz = d.fz - this.root.position.z;
+    const len = Math.hypot(dx, dz);
+    if (len > 14) {
+      dx = (dx / len) * 14;
+      dz = (dz / len) * 14;
+    }
+    const yaw = this.root.rotation.y;
+    this.inner.position.x += (dx * Math.cos(yaw) - dz * Math.sin(yaw)) * k;
+    this.inner.position.z += (dx * Math.sin(yaw) + dz * Math.cos(yaw)) * k;
+  }
+
   private emitAtk(kind: SkillEvent['kind'], index: number, hitIn?: number): void {
     const k = this.atk;
     if (!k) return;
@@ -917,6 +943,17 @@ export class MannequinCharacter implements CharacterView {
     return true;
   }
 
+  /** Lướt hiển thị: hình xuất phát từ (fromX, fromZ) rồi trượt về chỗ thật trong `dur` giây; phát clip lăn UAL co vừa thời gian lướt. */
+  dashFrom(fromX: number, fromZ: number, dur: number): void {
+    if (this.dead) return;
+    this.dashOff = { fx: fromX, fz: fromZ, t: 0, dur: Math.max(0.1, dur) };
+    this.cancelRecovery('dash');
+    // Chiêu còn sống mà chưa bị hủy thì giữ động tác chiêu; dash-cancel (đã hủy thu về, tắt dần 0,12 s) thì vẫn lăn.
+    if (this.perf && !this.perf.cancelled) return;
+    const len = this.tpl.clips.get('Roll')?.duration ?? 0;
+    if (len > 0) this.oneShot('Roll', Math.min(3, Math.max(1, len / this.dashOff.dur)));
+  }
+
   knockdown(): void {
     if (this.dead) return;
     this.chain = this.tpl.clips.has('LayToIdle') ? 'LayToIdle' : null;
@@ -926,7 +963,12 @@ export class MannequinCharacter implements CharacterView {
   hitReact(o: HitOpts): void {
     this.hit.react(o);
     if (this.dead) return;
-    if (V3_ANIM) this.flinch = { amp: o.heavy ? 0.26 : o.crit ? 0.18 : 0.12, age: -(o.delay ?? 0) };
+    if (V3_ANIM)
+      this.flinch = {
+        amp: o.heavy ? 0.26 : o.crit ? 0.18 : 0.12,
+        age: -(o.delay ?? 0),
+        ...flinchDirOf(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0),
+      };
     if (!this.shot && !o.noFlash) this.oneShot(o.heavy ? 'Hit_Knockback' : 'Hit_Chest', o.heavy ? 1.2 : 1.4);
   }
 
@@ -945,6 +987,8 @@ export class MannequinCharacter implements CharacterView {
   update(realDt: number, a: AnimState): void {
     const dt = this.hit.update(realDt);
     this.inner.position.x = this.hit.shake;
+    this.inner.position.z = 0;
+    this.applyDash(realDt);
     this.combatT = a.combat ? COMBAT_HOLD : Math.max(0, this.combatT - realDt);
     if (a.dead && !this.dead) {
       // Chết: bỏ đòn đang phát và đòn nối tiếp, để Death01 phát trọn.
@@ -1099,9 +1143,14 @@ export class MannequinCharacter implements CharacterView {
     f.age += dt;
     if (f.age >= 0 && f.age < 0.5 && !a.dead) {
       const fl = flinchOf(f.amp, f.age);
-      rotateWorld(b.spine_02 ?? null, rgt, -fl * 0.5);
-      rotateWorld(b.spine_03 ?? null, rgt, -fl * 0.5);
-      rotateWorld(b.head ?? null, rgt, fl * 0.4);
+      // Theo hướng đòn: bị đẩy ra sau thì ngửa, về trước thì cúi, sang bên thì nghiêng (trước đây luôn ngửa).
+      const pf = f.pitch * fl;
+      const rl = -f.roll * fl * 0.7 * this.side;
+      rotateWorld(b.spine_02 ?? null, rgt, pf * 0.5);
+      rotateWorld(b.spine_03 ?? null, rgt, pf * 0.5);
+      rotateWorld(b.head ?? null, rgt, -pf * 0.4);
+      rotateWorld(b.spine_02 ?? null, fwd, rl * 0.5);
+      rotateWorld(b.spine_03 ?? null, fwd, rl * 0.5);
     }
     // Nhìn mục tiêu: quay đầu/cổ tới điểm nhìn, giới hạn góc.
     let ty = 0;
