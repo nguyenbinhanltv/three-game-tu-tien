@@ -19,6 +19,9 @@ export interface Scene {
   flat?: number;
   /** Bày tay: (dx, dz) từ tâm cảnh, yaw (0 = mặt trước +z), tỉ lệ, `v2` = biến thể 2. */
   fixed?: { name: string; dx: number; dz: number; yaw?: number; s?: number; v2?: boolean }[];
+  /** Rải theo cụm: số cụm (tâm cố định theo cảnh) và bán kính cụm (m, mặc định 22). */
+  clusters?: number;
+  clusterR?: number;
   /** Hàm loại điểm theo bố cục riêng (hành lang đường đi…). */
   avoid?: (x: number, z: number) => boolean;
 }
@@ -153,6 +156,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Rừng Linh Thảo',
+      clusters: 10,
       at: [2451, 2112],
       r: 190,
       face: 'random',
@@ -160,6 +164,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Suối Thanh Khê',
+      clusters: 5,
       at: [2390, 2439],
       r: 100,
       face: 'random',
@@ -167,6 +172,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Vách Đá Ngọc',
+      clusters: 6,
       at: [2451, 1738],
       r: 110,
       face: 'random',
@@ -174,6 +180,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Hồ Sương Mù',
+      clusters: 7,
       at: [1513, 2233],
       r: 150,
       face: 'random',
@@ -181,6 +188,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Thung lũng Thanh Phong',
+      clusters: 6,
       at: [2045, 2461],
       r: 130,
       rMin: 60,
@@ -233,6 +241,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Sa Thạch Phá',
+      clusters: 8,
       at: [1323, 1287],
       r: 170,
       face: 'random',
@@ -240,6 +249,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Hoàng Sa Huyệt',
+      clusters: 8,
       at: [903, 1388],
       r: 170,
       face: 'random',
@@ -247,6 +257,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Cửu Mộ Khu',
+      clusters: 8,
       at: [647, 983],
       r: 170,
       face: 'random',
@@ -254,6 +265,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Tuyết Bích',
+      clusters: 8,
       at: [1058, 648],
       r: 170,
       face: 'random',
@@ -261,6 +273,7 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Khô Hà Đạo',
+      clusters: 8,
       at: [1399, 904],
       r: 170,
       face: 'random',

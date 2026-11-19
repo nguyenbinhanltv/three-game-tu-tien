@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { basePropsOf, TELE_PADS, thienCongColliders, terrainOf, WATER_Y, type HandProp } from '@dtl/shared';
 import { LEVELS, NPCS } from './index';
-import { SCENES, sectAxis } from './thienCongScenes';
+import { SCENES, sectAxis, type Scene } from './thienCongScenes';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const REAL_OUT = path.join(ROOT, 'packages/shared/src/props.thiencong.ts');
@@ -117,6 +117,21 @@ for (const levelId of Object.keys(SCENES)) {
     (a, b) => order.indexOf(groupOf.get(a.name) ?? '') - order.indexOf(groupOf.get(b.name) ?? ''),
   );
   // Bày tay (dx, dz tính từ tâm cảnh): cụm điểm nhấn dọc đường chính, quanh kiếm đài, trước điện… Không rải ngẫu nhiên, chỉ kiểm bản đồ.
+  const clusterCache = new Map<number, [number, number][]>();
+  const clusterCentres = (si: number, sc: Scene): [number, number][] => {
+    let c = clusterCache.get(si);
+    if (!c) {
+      const r2 = rng(lvSeed + si * 104729 + 17);
+      c = [];
+      for (let i = 0; i < sc.clusters!; i++) {
+        const a = r2() * Math.PI * 2;
+        const d = Math.sqrt((sc.rMin ?? 0) ** 2 + r2() * (sc.r ** 2 - (sc.rMin ?? 0) ** 2));
+        c.push([sc.at[0] + Math.cos(a) * d, sc.at[1] + Math.sin(a) * d]);
+      }
+      clusterCache.set(si, c);
+    }
+    return c;
+  };
   const placeFixed = (group: string) => {
     for (const { sc, f } of SCENES[levelId]!.flatMap((sc) => (sc.fixed ?? []).map((f) => ({ sc, f })))) {
       const g = groupOf.get(f.name);
@@ -166,10 +181,22 @@ for (const levelId of Object.keys(SCENES)) {
         for (let k = 0; k < Math.round(n * DENSITY); k++) {
           let ok = false;
           for (let tries = 0; tries < 160 && !ok; tries++) {
-            const a = rand() * Math.PI * 2;
-            const d = Math.sqrt(lo * lo + rand() * (sc.r * sc.r - lo * lo));
-            const x = Math.round((sc.at[0] + Math.cos(a) * d) * 10) / 10;
-            const z = Math.round((sc.at[1] + Math.sin(a) * d) * 10) / 10;
+            let x: number;
+            let z: number;
+            if (sc.clusters) {
+              // Rải theo cụm (lùm cây, bãi đá...): tâm cụm cố định theo cảnh, mỗi món chọn một cụm; cảnh đông ở từng chỗ thay vì loãng khắp vùng.
+              const cc = clusterCentres(si, sc);
+              const c = cc[(k + tries) % cc.length]!;
+              const ca = rand() * Math.PI * 2;
+              const cd = Math.sqrt(rand()) * (sc.clusterR ?? 22);
+              x = Math.round((c[0] + Math.cos(ca) * cd) * 10) / 10;
+              z = Math.round((c[1] + Math.sin(ca) * cd) * 10) / 10;
+            } else {
+              const a = rand() * Math.PI * 2;
+              const d = Math.sqrt(lo * lo + rand() * (sc.r * sc.r - lo * lo));
+              x = Math.round((sc.at[0] + Math.cos(a) * d) * 10) / 10;
+              z = Math.round((sc.at[1] + Math.sin(a) * d) * 10) / 10;
+            }
             const s = Math.round(((sc.scale?.[0] ?? 0.9) + rand() * ((sc.scale?.[1] ?? 1.15) - (sc.scale?.[0] ?? 0.9))) * 100) / 100;
             const foot = inf.foot * s;
             if (x < B.x0 + 10 || x > B.x1 - 10 || z < B.z0 + 10 || z > B.z1 - 10) continue;
