@@ -25,7 +25,7 @@ import { DoanMachArt } from '../world/doanMachArt';
 import { KiemTrungArt } from '../world/kiemTrungArt';
 import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
 import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../world/kinhNguyetArt';
-import { buildVaultDome, ThanTangArt, TT_DOME } from '../world/thanTangArt';
+import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { VanHaiWow } from '../world/vanHaiWow';
@@ -684,8 +684,9 @@ export async function loadTtModel(eng: Game, shadows: boolean): Promise<void> {
     origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
     prefix: 'tt',
     ceiling: TT_DOME,
-    flat: ['tt_bay', 'tt_gate', 'tt_statue', 'tt_hoard', 'tt_mask'],
+    flat: ['tt_bay', 'tt_gate', 'tt_statue', 'tt_hoard', 'tt_mask', 'tt_brazier'],
     flatDy: 0.05,
+    material: ttMaterialFor,
     noShadow: /bay|mask|chandelier/,
   });
 }

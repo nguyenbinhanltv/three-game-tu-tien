@@ -89,3 +89,13 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - `DungeonFx`: sương tím vàng thấp. Sàn/hall cũ của cung gương không còn dùng ở bí cảnh này.
 - **Ngân sách (preset Cao)**: ~120 draw call, ~0,44M tam giác.
 - **Còn lại**: tượng võ sĩ còn thô (khối), đống kim ngân phẳng một màu vàng, tấm cửa phong ấn đen phẳng, vạch báo boss tím trên sàn tím kém tương phản (vạch báo là của game, không đổi); chưa khai báo va chạm cho vật rắn (đợi API COL-1).
+
+### PR 4 vòng 2 (góp ý duyệt): bỏ sàn tím phẳng, vàng PBR, tượng chạm khắc, chiều sâu ánh sáng
+
+- **Sàn đá đen bóng**: nền gần đen, vân tím + vân vàng mảnh (ba họ vân), vết mòn (xước dài + mảng nhám), phản chiếu ấm vàng quanh vũng sáng và lạnh tím ở xa theo Fresnel; vòng trận **mảnh** (0,06–0,1 m) phát sáng vàng mềm, vạch chia nhỏ, chấm, sao tám cánh, ba đường có hạt dọc tới ba cửa; vũng sáng dưới 11 lư lửa, ở tâm và trước ba cửa; góc tối thật (tối dần từ r 26).
+- **Vàng PBR cổ** (`ttMaterialFor` thay `arch_sect_gold`): metalness 1, roughness 0,3 (tăng ở rãnh khắc), loang theo vị trí, khắc chìm hai họ đường, phản chiếu môi trường giả (tím sẫm ↔ vàng ấm) + viền Fresnel. Áp cho mọi vật vàng (bánh xe pháp luân, khung, đai, kim ngân).
+- **Thần tướng chạm khắc** (viết lại `statue`): bệ ba tầng có dải phù văn tím phát sáng, giáp ống + che gối, váy giáp năm tấm, ngực giáp có sống vàng + đai khóa, giáp vai ba lớp có gai, ống tay đai vàng, mũ trụ liền mặt nạ trơn có mào vàng + hai sừng cong, áo choàng, đại kiếm có rãnh phù văn, chắn vàng đầu thú.
+- **Kim ngân**: gò tiền khắc, thỏi vàng xếp chồng, chén, ngọc đỏ/tím/lục, rương đai vàng, cuộn lụa. **Lư lửa** đồng vàng ba chân với ngọn lửa tím-vàng (14 cái vòng r 90). **Tường**: dải huy chương tròn khắc hoa sen, tấm ốp phù điêu hai bên hốc, chuỗi đèn lồng giăng giữa cột, đinh tán và viền khung trên cửa phong ấn.
+- **Ánh sáng**: ba tia sáng vàng nhạt từ giếng sáng vòm, sương tím thấp đậm hơn, exposure 0,82.
+- **Ngân sách (preset Cao)**: ~158 draw call, ~0,85M tam giác.
+- **Còn lại**: tượng vẫn thô ở độ phân giải khối (chưa có normal map hoa văn thật); bệ tượng nhìn từ trên còn "bàn cờ" vàng; vòng trận r 64 vạch chia còn đọc như đoạn rời ở góc nhìn lướt; sàn vẫn thiên tím xanh ở vùng xa.

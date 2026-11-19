@@ -29,6 +29,7 @@ bs.MATERIALS['rune'] = Mat(0.5, 0.0, None, 1.0, False, 0.0, (0xB08CFF, 1.0))
 
 SEED = 20261119
 DOME_R, DOME_H = 135.0, 80.0
+BRAZIERS, BRAZIER_R = 14, 90.0
 DOOR_DEG = [200, 270, 340]  # khớp `seals.doors` (levels/than_tang.json) và props.thantang.ts
 
 GOLD = Paint(C(0xDDB95C), 'gold')
@@ -132,6 +133,44 @@ def bay(b, seed):
         mx, my = (x0r + x1r) / 2, (y0r + y1r) / 2
         tbox(b, (mx, my, 0.5), (math.dist((x0r, y0r), (x1r, y1r)) + 0.1, 0.8, 5.0), roof, rz=slope, rx=-0.12)
         tbox(b, (mx, my + 0.6, 2.8), (math.dist((x0r, y0r), (x1r, y1r)) + 0.1, 0.35, 0.4), GOLD, rz=slope)
+    # dado: dải huy chương tròn (vành vàng, lòng tím, hoa văn) dọc chân tường + gờ chân tường
+    tbox(b, (0, 2.0, -0.7), (W - 4.6, 0.5, 0.6), GOLD_DK)
+    for i in range(6):
+        mx_ = -12.5 + i * 5.0
+        if abs(mx_) < 4.0:
+            continue
+        for k in range(24):
+            a_ = k / 24 * math.tau
+            blob(b, (mx_ + math.cos(a_) * 1.6, 5.5 + math.sin(a_) * 1.6, -0.5), (0.2, 0.2, 0.2), lambda p, n: GOLD, nu=6, nv=4)
+        blob(b, (mx_, 5.5, -0.7), (1.45, 1.45, 0.25), lambda p, n: Paint(C(0x2A1850), 'jade'), nu=14, nv=6)
+        for k in range(8):  # cánh hoa sen khắc
+            a_ = k / 8 * math.tau
+            blob(b, (mx_ + math.cos(a_) * 0.75, 5.5 + math.sin(a_) * 0.75, -0.45), (0.34, 0.34, 0.16), lambda p, n: GOLD_DK, nu=6, nv=4)
+        blob(b, (mx_, 5.5, -0.4), (0.38, 0.38, 0.2), lambda p, n: RUNE, nu=8, nv=5)
+    # tấm ốp phù điêu hai bên hốc: khung vàng + hình ba vòng đồng tâm
+    for sx in (-1, 1):
+        for yy in (14.0, 26.0):
+            fx = sx * 15.9
+            tbox(b, (fx, yy, -0.8), (3.4, 6.2, 0.35), mpaint(seed + 40, lift=0.12))
+            for (ox, oy, w_, h_) in ((0, 3.1, 3.5, 0.18), (0, -3.1, 3.5, 0.18), (-1.7, 0, 0.18, 6.3), (1.7, 0, 0.18, 6.3)):
+                tbox(b, (fx + ox, yy + oy, -0.55), (w_, h_, 0.25), GOLD)
+            for rad in (1.2, 0.8):
+                for k in range(20):
+                    a_ = k / 20 * math.tau
+                    blob(b, (fx + math.cos(a_) * rad, yy + math.sin(a_) * rad, -0.5), (0.14, 0.14, 0.12), lambda p, n: GOLD_DK, nu=6, nv=4)
+            blob(b, (fx, yy, -0.45), (0.45, 0.45, 0.2), lambda p, n: Paint(C(0xE9D79A), 'gold'), nu=8, nv=5)
+    # chuỗi đèn lồng nhỏ giăng giữa hai cột (dây vàng võng + chín ngọn đèn + hai tua)
+    for zz in (2.6,):
+        pts = []
+        for i in range(13):
+            t = i / 12
+            pts.append((-W / 2 + 2.4 + t * (W - 4.8), H - 9.0 - 3.4 * (1 - (2 * t - 1) ** 2), zz))
+        for a_, c_ in zip(pts, pts[1:]):
+            tbox(b, ((a_[0] + c_[0]) / 2, (a_[1] + c_[1]) / 2, zz), (math.dist(a_[:2], c_[:2]) + 0.1, 0.12, 0.12), GOLD_DK, rz=math.atan2(c_[1] - a_[1], c_[0] - a_[0]))
+        for i in range(1, 12, 1):
+            x_, y_, z_ = pts[i]
+            blob(b, (x_, y_ - 0.55, z_), (0.36, 0.5, 0.36), lambda p, n: LAMP, nu=8, nv=5)
+            blob(b, (x_, y_ - 0.05, z_), (0.2, 0.12, 0.2), lambda p, n: GOLD, nu=6, nv=4)
     # phướn tím thêu vàng hai bên hốc: vải có nếp, viền vàng, tròn "vô diện" ở giữa
     for sx in (-1, 1):
         xc = sx * 11.8
@@ -177,6 +216,14 @@ def seal_gate(b, seed):
     tbox(b, (0, 10.0, -0.3), (11.6, 20.0, 1.2), mpaint(seed + 60, lift=-0.05))
     for yy in (4.0, 16.0):
         tbox(b, (0, yy, 0.45), (11.6, 0.5, 0.4), GOLD_DK)
+    # đinh tán + viền khung khắc trên tấm cửa
+    for rowy in (3.0, 17.0):
+        for k in range(9):
+            blob(b, (-4.6 + k * 1.15, rowy, 0.55), (0.22, 0.22, 0.16), lambda p, n: GOLD, nu=6, nv=4)
+    for sx in (-1, 1):
+        for k in range(10):
+            blob(b, (sx * 5.2, 3.0 + k * 1.55, 0.55), (0.2, 0.2, 0.14), lambda p, n: GOLD_DK, nu=6, nv=4)
+        tbox(b, (sx * 5.5, 10.0, 0.5), (0.35, 17.0, 0.28), GOLD_DK)
     # đĩa ấn
     cy = 10.5
     for rad, th in ((4.4, 0.28), (3.3, 0.22), (2.0, 0.2)):
@@ -200,59 +247,153 @@ def seal_gate(b, seed):
 
 
 def statue(b, seed):
-    """Tượng đá võ sĩ giáp trụ không mặt, đứng tấn cao ~13 m, hai tay chống đại kiếm cắm xuống; bệ vuông; giáp vai ba lớp viền vàng."""
+    """Thần tướng đá đen chạm khắc cao ~14 m: bệ ba tầng có dải phù văn tím phát sáng; giáp ống + che gối viền vàng; váy giáp năm tấm; ngực giáp có sống vàng, đai lưng có mặt khóa;
+    giáp vai ba lớp có gai; tay giáp có đai vàng, nắm chuôi đại kiếm (lưỡi có rãnh phù văn, chắn vàng có đầu thú cách điệu); mũ trụ liền mặt nạ trơn, mào vàng, hai sừng cong; áo choàng sau lưng."""
     rnd = random.Random(seed)
     S = lambda off=0: marble(seed + int(off), 0.05)  # hàm màu cho blob/rod
     SP = lambda off=0: mpaint(seed + int(off), lift=0.05)  # Paint cho tbox
-    tbox(b, (0, 0.8, 0), (7.0, 1.6, 7.0), SP(1))
-    tbox(b, (0, 1.9, 0), (5.6, 0.6, 5.6), SP(2))
-    for sx in (-1, 1):  # chân + giáp ống
-        blob(b, (sx * 1.2, 4.6, 0), (0.95, 2.6, 1.1), S(3), nu=10, nv=6, seed=seed + 1)
-        blob(b, (sx * 1.2, 7.4, 0), (1.25, 1.5, 1.3), S(4), nu=10, nv=6, seed=seed + 2)
-    blob(b, (0, 8.5, 0), (3.0, 0.9, 1.9), S(5), nu=12, nv=5, seed=seed + 3)  # váy giáp
-    blob(b, (0, 10.8, 0), (2.4, 2.7, 1.6), S(6), nu=14, nv=8, seed=seed + 4)  # thân
-    gold_band(b, 0, 9.0, 0, 2.2, 0.3)
-    for k in range(3):  # giáp vai nhiều lớp
-        for sx in (-1, 1):
-            blob(b, (sx * (2.9 + 0.12 * k), 12.8 - 0.55 * k, 0), (1.15 - 0.08 * k, 0.55, 1.3 - 0.08 * k), S(7 + k), nu=10, nv=5, seed=seed + 5 + k)
-            tbox(b, (sx * (2.9 + 0.12 * k), 12.45 - 0.55 * k, 0.9), (2.0, 0.1, 0.1), GOLD)
-    blob(b, (0, 13.8, 0), (1.0, 1.15, 0.95), S(11), nu=12, nv=8, seed=seed + 9)  # đầu trơn không mặt
-    blob(b, (0, 14.2, 0), (1.12, 0.8, 1.05), S(12), nu=12, nv=5, seed=seed + 10, v0=0.0, v1=0.55)  # mũ trụ
-    tbox(b, (0, 14.0, 0.55), (0.15, 2.0, 0.4), GOLD)  # sống mũ
-    # đại kiếm chống trước thân
-    tbox(b, (0, 4.5, 2.3), (0.9, 9.0, 0.25), Paint(C(0x7F7A92), 'metal'))
-    tbox(b, (0, 9.1, 2.3), (3.0, 0.4, 0.5), GOLD)
-    for sx in (-1, 1):  # cánh tay chống kiếm
-        rod(b, (sx * 2.6, 12.0, 0.2), (sx * 0.9, 9.6, 2.1), 0.65, 0.5, S(13), nu=8, nv=3)
-    tbox(b, (0, 9.6, 2.3), (0.45, 1.3, 0.45), IRON)
+    # bệ ba tầng + dải phù văn
+    tbox(b, (0, 0.7, 0), (8.0, 1.4, 8.0), SP(1))
+    tbox(b, (0, 1.8, 0), (6.6, 0.9, 6.6), SP(2))
+    tbox(b, (0, 2.6, 0), (5.6, 0.7, 5.6), SP(3))
+    for k in range(5):
+        for side in (-1, 1):
+            tbox(b, (side * 3.34, 1.8, -2.0 + k * 1.0), (0.1, 0.5, 0.45), RUNE)
+            tbox(b, (-2.0 + k * 1.0, 1.8, side * 3.34), (0.45, 0.5, 0.1), RUNE)
+    for yy in (1.42, 2.28):
+        tbox(b, (0, yy, 0), (8.1 if yy < 2 else 6.7, 0.1, 8.1 if yy < 2 else 6.7), GOLD)
+    # chân: giáp ống, che gối, giày
+    for sx in (-1, 1):
+        blob(b, (sx * 1.25, 5.0, 0), (0.95, 2.3, 1.05), S(3), nu=12, nv=7, seed=seed + 1)
+        tbox(b, (sx * 1.25, 4.1, 0.9), (1.5, 2.2, 0.28), SP(4))  # tấm ống chân
+        blob(b, (sx * 1.25, 6.9, 0.45), (1.0, 0.9, 0.7), S(5), nu=10, nv=6, seed=seed + 2)  # che gối
+        blob(b, (sx * 1.25, 6.9, 1.0), (0.45, 0.45, 0.2), lambda p, n: GOLD, nu=8, nv=5)
+        blob(b, (sx * 1.25, 7.9, 0), (1.2, 1.2, 1.2), S(6), nu=10, nv=6, seed=seed + 3)
+        blob(b, (sx * 1.25, 3.0, 0.6), (1.1, 0.5, 1.5), S(7), nu=10, nv=5, seed=seed + 4)
+        gold_band(b, sx * 1.25, 3.4, 0, 1.08, 0.18)
+    # váy giáp: năm tấm treo + hai tấm hông
+    for k in range(5):
+        a_ = (k - 2) * 0.33
+        tbox(b, (math.sin(a_) * 2.2, 8.2, math.cos(a_) * 1.55), (1.0, 2.0, 0.22), SP(10 + k), yaw=a_, rx=-0.06)
+        tbox(b, (math.sin(a_) * 2.2, 7.25, math.cos(a_) * 1.6), (1.04, 0.14, 0.26), GOLD, yaw=a_)
+    for sx in (-1, 1):
+        tbox(b, (sx * 2.6, 8.3, 0), (0.25, 2.0, 1.8), SP(15), rz=sx * 0.12)
+    # thân: ngực giáp, sống vàng, đai lưng
+    blob(b, (0, 10.9, 0), (2.5, 2.8, 1.65), S(16), nu=16, nv=10, seed=seed + 5)
+    tbox(b, (0, 10.9, 1.6), (0.22, 4.0, 0.3), GOLD)
+    for sx in (-1, 1):
+        blob(b, (sx * 1.15, 11.7, 1.4), (1.1, 0.9, 0.5), S(17), nu=10, nv=6, seed=seed + 6)
+        tbox(b, (sx * 1.15, 10.6, 1.55), (1.5, 0.14, 0.18), GOLD_DK)
+    for k in range(5):  # chạm vảy ngực
+        tbox(b, (0, 9.4 + k * 0.5, 1.5), (3.6 - k * 0.3, 0.1, 0.2), SP(18 + k))
+    gold_band(b, 0, 9.0, 0, 2.3, 0.32)
+    blob(b, (0, 9.2, 1.7), (0.85, 0.85, 0.35), lambda p, n: GOLD, nu=12, nv=6)  # mặt khóa đai
+    blob(b, (0, 9.2, 2.0), (0.4, 0.4, 0.2), lambda p, n: RUNE, nu=8, nv=5)
+    # áo choàng sau lưng
+    for r_ in range(8):
+        y_a = 13.0 - r_ * 1.2
+        for c_ in range(6):
+            xa = -2.3 + c_ * 0.78
+            xb = xa + 0.78
+            z_ = -1.7 - 0.12 * r_
+            wob = 0.22 * math.sin(c_ * 1.3 + r_ * 0.5)
+            col = Paint(mix(C(0x241448), C(0x4C2C84), 0.35 + 0.4 * math.sin(c_ * 1.3) * 0.5 + 0.2 * r_ / 8), 'silk')
+            b.poly([(xa, y_a, z_ + wob), (xb, y_a, z_ - wob), (xb, y_a - 1.2, z_ - 0.12 - wob), (xa, y_a - 1.2, z_ - 0.12 + wob)], (0, y_a, 3), col)
+    tbox(b, (0, 13.0, -1.7), (5.0, 0.3, 0.3), GOLD)
+    # giáp vai ba lớp có gai + gai
+    for sx in (-1, 1):
+        for k in range(3):
+            blob(b, (sx * (3.0 + 0.14 * k), 12.9 - 0.62 * k, 0), (1.25 - 0.08 * k, 0.6, 1.4 - 0.08 * k), S(30 + k), nu=12, nv=6, seed=seed + 7 + k)
+            tbox(b, (sx * (3.0 + 0.14 * k), 12.55 - 0.62 * k, 1.0), (2.2, 0.1, 0.1), GOLD)
+        blob(b, (sx * 3.6, 13.8, 0), (0.28, 0.9, 0.28), S(33), nu=8, nv=5, seed=seed + 12)  # gai vai
+        # tay: cánh tay trên, ống tay có đai vàng, găng
+        rod(b, (sx * 3.0, 12.2, 0.1), (sx * 1.7, 9.8, 2.3), 0.62, 0.52, S(34), nu=10, nv=4)
+        gold_band(b, sx * 2.35, 11.0, 1.2, 0.0, 0.0) if False else None
+        blob(b, (sx * 1.45, 9.55, 2.35), (0.62, 0.62, 0.62), S(35), nu=10, nv=6, seed=seed + 13)
+        b.cylinder(sx * 1.5, 9.1, 2.35, 0.66, 0.2, GOLD, 10)
+    # đầu: mũ trụ liền mặt nạ trơn, mào vàng, hai sừng cong, hộ cổ
+    blob(b, (0, 13.9, 0), (1.05, 1.25, 1.0), S(40), nu=14, nv=9, seed=seed + 14)
+    blob(b, (0, 14.4, 0), (1.16, 0.85, 1.1), S(41), nu=12, nv=6, seed=seed + 15, v0=0.0, v1=0.55)
+    tbox(b, (0, 14.7, 0.1), (0.16, 2.2, 1.5), GOLD)  # mào
+    tbox(b, (0, 13.5, 1.0), (1.2, 0.12, 0.2), GOLD_DK)  # gờ mày: không mắt không mũi
+    for sx in (-1, 1):
+        for k in range(6):
+            a0 = k / 6 * 1.0
+            rod(b, (sx * (1.0 + 0.5 * math.sin(a0 * 1.5)), 14.5 + 1.3 * a0, 0), (sx * (1.0 + 0.5 * math.sin((k + 1) / 6 * 1.5)), 14.5 + 1.3 * (k + 1) / 6, 0), 0.2 - 0.02 * k, 0.17 - 0.02 * k, lambda p, n: GOLD, nu=6, nv=1, amp=0.0)
+        blob(b, (sx * 1.15, 13.4, 0.3), (0.5, 0.8, 0.6), S(42), nu=8, nv=5, seed=seed + 16)  # hộ nhĩ
+    blob(b, (0, 12.9, 0), (1.5, 0.35, 1.4), S(43), nu=12, nv=4, seed=seed + 17)  # hộ cổ
+    # đại kiếm chống: lưỡi có rãnh phù văn, chắn vàng đầu thú, chuôi, đế tròn
+    tbox(b, (0, 5.2, 2.6), (1.0, 10.0, 0.24), Paint(C(0x8D88A2), 'metal'))
+    tbox(b, (0, 5.2, 2.74), (0.14, 8.6, 0.08), RUNE)
+    for sx in (-1, 1):
+        tbox(b, (sx * 1.0, 10.15, 2.6), (2.0, 0.38, 0.52), GOLD, rz=sx * 0.12)
+        blob(b, (sx * 2.1, 10.4, 2.6), (0.42, 0.5, 0.42), lambda p, n: GOLD, nu=8, nv=5)  # đầu thú cách điệu
+    tbox(b, (0, 10.6, 2.6), (0.42, 1.5, 0.42), IRON)
+    blob(b, (0, 11.5, 2.6), (0.45, 0.45, 0.45), lambda p, n: GOLD, nu=10, nv=6)
 
 
 # ---------- kim ngân ----------
 
 
 def hoard(b, seed):
+    """Kho báu: gò tiền vàng có khắc, thỏi vàng xếp chồng, chén vàng, ngọc đỏ/tím, rương đai vàng, bình ngọc tím, cuộn lụa tím."""
     rnd = random.Random(seed)
 
     def goldmound(pos, nrm):
         n = fbm3(pos[0] * 3, pos[1] * 3, pos[2] * 3, seed, 3)
-        return Paint(tuple(c * (0.7 + 0.6 * n) for c in C(0xD6AE50)), 'gold')
+        return Paint(tuple(c * (0.55 + 0.7 * n) for c in C(0xD6AE50)), 'gold')
 
-    blob(b, (0, 0.6, 0), (3.4, 1.3, 3.0), goldmound, nu=16, nv=8, seed=seed, v0=0.0, v1=0.5, amp=0.18)
-    for k in range(34):  # đồng tiền nổi
+    blob(b, (0, 0.6, 0), (3.4, 1.3, 3.0), goldmound, nu=16, nv=8, seed=seed, v0=0.0, v1=0.5, amp=0.22)
+    for k in range(70):  # đồng tiền nổi (nhiều cỡ, nghiêng)
         a = rnd.uniform(0, math.tau)
-        d = rnd.uniform(0, 2.6)
-        y = 1.2 * max(0.0, 1 - (d / 3.2) ** 2) + 0.15
-        tbox(b, (math.cos(a) * d, y, math.sin(a) * d), (0.55, 0.07, 0.55), Paint(mix(C(0xE8C468), C(0xA97E32), rnd.random()), 'gold'), rx=rnd.uniform(-0.6, 0.6), rz=rnd.uniform(-0.6, 0.6), yaw=a)
-    for k in range(4):  # thỏi vàng
-        tbox(b, (rnd.uniform(-2, 2), 1.1, rnd.uniform(-1.6, 1.6)), (0.9, 0.4, 0.45), GOLD, yaw=rnd.uniform(0, 3), rz=rnd.uniform(-0.3, 0.3))
+        d = rnd.uniform(0, 3.0)
+        y = 1.2 * max(0.0, 1 - (d / 3.4) ** 2) + 0.12
+        rr = rnd.uniform(0.35, 0.7)
+        tbox(b, (math.cos(a) * d, y, math.sin(a) * d), (rr, 0.07, rr), Paint(mix(C(0xEBCB74), C(0x9A7430), rnd.random()), 'gold'), rx=rnd.uniform(-0.9, 0.9), rz=rnd.uniform(-0.9, 0.9), yaw=a)
+    for k in range(10):  # ngọc
+        a = rnd.uniform(0, math.tau)
+        d = rnd.uniform(0.3, 2.4)
+        cc = rnd.choice((C(0xB0233A), C(0x6B3FD0), C(0x2FAE92)))
+        blob(b, (math.cos(a) * d, 1.2 * max(0.0, 1 - (d / 3.4) ** 2) + 0.3, math.sin(a) * d), (0.28, 0.34, 0.28), lambda p, n, cc=cc: Paint(cc, 'rune'), nu=6, nv=4)
+    # thỏi vàng xếp chồng (kim tự tháp)
+    for row, cnt in enumerate((4, 3, 2, 1)):
+        for k in range(cnt):
+            tbox(b, (4.4 + (k - (cnt - 1) / 2) * 1.1, 0.25 + row * 0.5, 1.6), (1.0, 0.45, 0.55), GOLD, yaw=0.15)
+    # chén vàng
+    for k in range(3):
+        x_, z_ = -4.0 + k * 0.9, 1.8 + 0.4 * k
+        b.cylinder(x_, 0.0, z_, 0.34, 0.5, GOLD, 10, 0.16)
+        b.cylinder(x_, 0.45, z_, 0.1, 0.35, GOLD_DK, 8)
+        blob(b, (x_, 0.95, z_), (0.5, 0.3, 0.5), lambda p, n: GOLD, nu=10, nv=5, v0=0.5, v1=1.0)
     # rương
-    tbox(b, (3.6, 0.8, -0.8), (2.6, 1.6, 1.8), Paint(C(0x3B2A22), 'wood'), yaw=0.3)
-    tbox(b, (3.6, 1.7, -0.8), (2.7, 0.35, 1.9), GOLD_DK, yaw=0.3)
+    tbox(b, (3.6, 0.8, -1.4), (2.8, 1.6, 1.9), Paint(C(0x2C1F25), 'wood'), yaw=0.3)
+    tbox(b, (3.6, 1.7, -1.4), (2.9, 0.38, 2.0), GOLD_DK, yaw=0.3)
     for sz in (-0.5, 0.5):
-        tbox(b, (3.6, 0.8, -0.8 + sz * 1.5), (2.7, 1.7, 0.16), GOLD, yaw=0.3)
-    # bình ngọc tím
-    blob(b, (-3.8, 1.3, 0.6), (0.9, 1.4, 0.9), lambda p, n: Paint(C(0x6A4BA0), 'jade'), nu=12, nv=8)
-    gold_band(b, -3.8, 1.9, 0.6, 0.75, 0.2)
+        tbox(b, (3.6, 0.8, -1.4 + sz * 1.6), (2.9, 1.7, 0.16), GOLD, yaw=0.3)
+    blob(b, (3.6, 1.1, -0.4), (0.3, 0.3, 0.18), lambda p, n: GOLD, nu=8, nv=5)
+    # bình ngọc tím + cuộn lụa
+    blob(b, (-3.8, 1.3, -1.0), (0.95, 1.5, 0.95), lambda p, n: Paint(C(0x5A3C98), 'jade'), nu=12, nv=8)
+    gold_band(b, -3.8, 1.9, -1.0, 0.8, 0.2)
+    for k in range(3):
+        rod(b, (-1.0 + k * 0.5, 0.35, -4.0), (-1.0 + k * 0.5, 0.35, -2.6), 0.3, 0.3, lambda p, n: Paint(C(0x4C2C84), 'silk'), nu=8, nv=1, amp=0.0)
+
+
+# ---------- lư lửa ----------
+
+
+def brazier(b, seed):
+    """Lư lửa đồng vàng: ba chân sư tử, bát khắc, đệm than, ngọn lửa tím-vàng phát sáng (xếp lớp), vòng đai vàng; cao ~5 m."""
+    for k in range(3):
+        a = k / 3 * math.tau
+        rod(b, (math.cos(a) * 1.6, 0.0, math.sin(a) * 1.6), (math.cos(a) * 0.7, 2.6, math.sin(a) * 0.7), 0.28, 0.2, lambda p, n: GOLD_DK, nu=8, nv=3, amp=0.0)
+        blob(b, (math.cos(a) * 1.7, 0.2, math.sin(a) * 1.7), (0.4, 0.25, 0.5), lambda p, n: GOLD, nu=8, nv=4)
+    blob(b, (0, 3.2, 0), (1.9, 0.9, 1.9), lambda p, n: GOLD_DK, nu=16, nv=7, v0=0.5, v1=1.0)
+    gold_band(b, 0, 3.0, 0, 1.95, 0.25)
+    gold_band(b, 0, 3.7, 0, 2.05, 0.2)
+    blob(b, (0, 3.75, 0), (1.5, 0.25, 1.5), lambda p, n: Paint(C(0x3A0A12), 'rune'), nu=12, nv=4)
+    for k, (dx, dz, h, r, cc) in enumerate(((0, 0, 2.6, 0.55, LAMP), (0.5, 0.3, 1.7, 0.4, RUNE), (-0.5, 0.2, 1.8, 0.42, RUNE), (0.1, -0.5, 1.5, 0.35, LAMP), (-0.2, 0.6, 1.3, 0.3, LAMP))):
+        blob(b, (dx, 3.9 + h / 2, dz), (r, h / 2, r), lambda p, n, cc=cc: cc, nu=8, nv=6)
+    blob(b, (0, 6.4, 0), (0.22, 0.45, 0.22), lambda p, n: LAMP, nu=6, nv=4)
 
 
 # ---------- đèn chùm ----------
@@ -331,6 +472,9 @@ def build_variants():
     b = new_b(1040)
     chandelier(b, 1040)
     v['chandelier'] = b
+    b = new_b(1045)
+    brazier(b, 1045)
+    v['brazier'] = b
     b = new_b(1050)
     faceless_mask(b, 1050)
     v['mask'] = b
@@ -374,7 +518,7 @@ def run(out):
         for sx in (-1, 1):
             put('statue', f'statue{rnd.randrange(3)}', sx * (20 + 2.0 * k), 38 + k * 11, yaw=-sx * 0.9, scale=0.8)
     got = 0
-    while got < 8:
+    while got < 8:  # vành tượng thưa
         a = rnd.uniform(0, math.tau)
         r = rnd.uniform(84, 94)
         x, z = math.cos(a) * r, math.sin(a) * r
@@ -392,6 +536,12 @@ def run(out):
             continue
         put('hoard', f'hoard{rnd.randrange(3)}', x, z, yaw=rnd.uniform(0, 6.28), scale=rnd.uniform(0.9, 1.5))
         got += 1
+    # Lư lửa vòng quanh điện (r = 90, bỏ cửa nam): vị trí tất định, khớp `brazierSpots()` ở `thanTangArt.ts` (vũng sáng trên sàn).
+    for i in range(BRAZIERS):
+        a = (i + 0.5) / BRAZIERS * math.tau
+        if abs(math.atan2(math.sin(a - math.pi / 2), math.cos(a - math.pi / 2))) < 0.2:
+            continue
+        put('brazier', 'brazier', math.cos(a) * BRAZIER_R, math.sin(a) * BRAZIER_R, yaw=a, scale=1.25)
     # Đèn chùm treo trần.
     for i in range(7):
         a = i / 7 * math.tau + 0.2
