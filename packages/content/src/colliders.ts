@@ -1,4 +1,5 @@
 import { instantiateShapes, type LocalShape, registerCollision, type Shape } from '@dtl/shared';
+import archSect from '../data/colliders/arch_sect.boxes.json';
 import libJson from '../data/colliders/lib.json';
 import bacHoang from '../data/colliders/bac_hoang.inst.json';
 import doKiepBacHoang from '../data/colliders/do_kiep_bac_hoang.inst.json';
@@ -56,3 +57,36 @@ export function propShapesOf(level: string, lib: Record<string, LocalShape[]> = 
 }
 
 for (const level of Object.keys(INST_BY_LEVEL)) registerCollision(level, propShapesOf(level));
+
+/**
+ * Kiến trúc dựng thành MỘT lưới gộp (arch_*): hộp trục thế giới sinh từ hình học GLB bằng `pnpm colliders:arch` (`tools/asset-pipeline/src/archcollider.ts`).
+ * [x0, z0, x1, z1, y0, y1, walk(1)|rắn(0)]. Khóa theo level đang dùng kiến trúc đó.
+ */
+export interface ArchFile {
+  id: string;
+  boxes: number[][];
+}
+export const ARCH_BY_LEVEL: Record<string, ArchFile[]> = {
+  van_lam: [archSect as unknown as ArchFile],
+};
+
+export function archShapesOf(level: string): Shape[] {
+  const out: Shape[] = [];
+  for (const f of ARCH_BY_LEVEL[level] ?? [])
+    for (const b of f.boxes)
+      out.push({
+        k: 'box',
+        x: (b[0]! + b[2]!) / 2,
+        z: (b[1]! + b[3]!) / 2,
+        hx: (b[2]! - b[0]!) / 2,
+        hz: (b[3]! - b[1]!) / 2,
+        yaw: 0,
+        y0: b[4]!,
+        y1: b[5]!,
+        walk: b[6] === 1,
+        tag: f.id,
+      });
+  return out;
+}
+
+for (const level of Object.keys(ARCH_BY_LEVEL)) registerCollision(level, archShapesOf(level));

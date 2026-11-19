@@ -13,7 +13,7 @@ import {
 } from '../../render/materials/ground';
 import type { GroundTextures } from '../../base/groundTextures';
 import {
-  COLLIDERS,
+  COLLIDERS_LAYOUT,
   fbm,
   featureWeight,
   FOREST,
@@ -983,7 +983,7 @@ export function createInkMap(n = 1536): InkBuilder {
     g.fillStyle = 'rgba(46, 38, 30, 0.82)';
     g.strokeStyle = 'rgba(46, 38, 30, 0.95)';
     g.lineWidth = Math.max(1, 2 * k);
-    for (const c of COLLIDERS) {
+    for (const c of COLLIDERS_LAYOUT) {
       g.beginPath();
       g.arc(c.x * k, c.z * k, Math.max(2.2, c.r * k * 1.25), 0, Math.PI * 2);
       g.fill();

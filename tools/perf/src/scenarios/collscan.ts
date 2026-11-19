@@ -2,10 +2,12 @@
 // báo cáo vật nào thiếu va chạm. Đi lưới qua vùng chơi (cảnh streaming theo vị trí người chơi), mỗi điểm gọi `__game.collScan`.
 //   pnpm shots collscan --level van_lam --out <thư mục tuyệt đối> [--step 240] [--limit 400] [--shots 6] [--dry]
 // Ra: collscan-<level>.json (đếm + nhóm + danh sách thiếu) và ảnh `<level>-miss<N>.png` (khung va chạm F3 bật) cho các nhóm thiếu nhiều nhất.
+import fs from 'node:fs';
+import path from 'node:path';
 import '@dtl/content';
 import { LEVELS } from '@dtl/content';
 import { type CircleCollider, collisionOf, footprintDist, type Shape, terrainOf } from '@dtl/shared';
-import { flag, num, opt } from '../lib/env';
+import { flag, num, opt, size } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { cam, enterLevel, gm, skipCutscene, tp, waitLevel } from '../lib/game';
 import { requireLevel } from '../lib/levelpoints';
@@ -53,7 +55,15 @@ export default {
     const step = num('--step', 240);
     const dg0 = LEVELS[LEVEL]?.dungeon;
     const pts = grid(LEVEL, step).slice(0, num('--limit', 400));
-    const { ctx, page } = await r.open({ name: 'CollScan', viewport: [1280, 720], warnings: true });
+    const walking = flag('--walk');
+    const videoDir = path.join(r.out, 'video');
+    if (walking) fs.mkdirSync(videoDir, { recursive: true });
+    const { ctx, page } = await r.open({
+      name: 'CollScan',
+      viewport: size('1280x720'),
+      warnings: true,
+      video: walking ? videoDir : undefined,
+    });
     await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(dg0 ? (dg0.minLevel ?? 0) + 2 : 27, requireLevel(LEVEL).minLevel ?? 0)}`);
     await gm(page, 'god on');
     const dg = LEVELS[LEVEL]?.dungeon;
@@ -76,6 +86,38 @@ export default {
       await new Promise((res) => setTimeout(res, 1500));
       const tree = await page.evaluate(() => window.__game!.collTree(3));
       console.log(tree.join(String.fromCharCode(10)));
+    }
+    if (walking) {
+      // Video đi thử có lớp F3: --walk x,z,giây[,yaw] [--name tên] [--fly 1] [--dist 9] [--pitch 0.35]. W tiến theo hướng camera (yaw 0 = về -z).
+      const [wx, wz, secs, yaw] = opt('--walk', '2048,2062,8,0').split(',').map(Number) as [number, number, number, number | undefined];
+      await tp(page, wx, wz);
+      await page.evaluate(() => window.__game!.setDebugColliders(true));
+      await cam(page, { yaw: yaw ?? 0, pitch: num('--pitch', 0.35), dist: num('--dist', 9) });
+      if (flag('--fly')) await page.evaluate(() => window.__game!.toggleFly());
+      await sleep(1200);
+      await page.keyboard.down('KeyW');
+      if (flag('--up')) await page.keyboard.down('Space');
+      let maxY = -Infinity;
+      for (let t = 0; t < secs * 1000; t += 250) {
+        await sleep(250);
+        maxY = Math.max(maxY, await page.evaluate(() => window.__game!.renderPos.y));
+      }
+      console.log(`[walk] cao nhất ${maxY.toFixed(2)}`);
+      await page.keyboard.up('KeyW');
+      await page.keyboard.up('Space');
+      await sleep(800);
+      const end = await page.evaluate(() => ({
+        x: window.__game!.renderPos.x,
+        y: window.__game!.renderPos.y,
+        z: window.__game!.renderPos.z,
+      }));
+      console.log(`[walk] ${opt('--name', 'walk')}: (${wx}, ${wz}) → (${end.x.toFixed(1)}, ${end.y.toFixed(1)}, ${end.z.toFixed(1)})`);
+      await ctx.close(); // đóng context mới ghi xong file video
+      const vids = fs.readdirSync(videoDir).filter((f) => f.endsWith('.webm'));
+      const newest = vids.map((f) => ({ f, t: fs.statSync(path.join(videoDir, f)).mtimeMs })).sort((a, b) => b.t - a.t)[0];
+      if (newest) fs.renameSync(path.join(videoDir, newest.f), path.join(r.out, `${LEVEL}-${opt('--name', 'walk')}.webm`));
+      fs.rmSync(videoDir, { recursive: true, force: true });
+      return;
     }
     if (flag('--at')) {
       // Ảnh một điểm (kiểm lớp phủ F3): --at x,z [--dist 60] [--pitch 1.1]
