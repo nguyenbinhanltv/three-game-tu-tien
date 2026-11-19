@@ -101,6 +101,54 @@ function foliageColor(isl: VhIsland, r: number): THREE.Color {
   return base.multiplyScalar(1.15);
 }
 
+export interface VhTreeSpot {
+  x: number;
+  z: number;
+  /** Cao độ đất tại gốc. */
+  y: number;
+  /** Tỉ lệ (thân cao 3,4·s, tán rộng 10,5·s). */
+  s: number;
+  yaw: number;
+  isl: VhIsland;
+  /** Độ lệch sắc tán 0..1. */
+  tone: number;
+}
+
+/** Điểm trồng cây vườn Vân Hải: hàm thuần theo địa hình (dựng cảnh và bake collider dùng chung, COL-B). */
+export function vanHaiTreeSpots(terrain: Terrain): VhTreeSpot[] {
+  const def: TerrainDef = terrain.def;
+  const art = vanHaiArt(def);
+  const props = propsOf('van_hai');
+  const spots = def.features.filter((f) => f.id.startsWith('pad_') || f.id.startsWith('poi_'));
+  const bridgeEnds: [number, number][] = [];
+  for (const b of def.bridges ?? []) bridgeEnds.push([b.ax, b.az], [b.bx, b.bz]);
+  const out: VhTreeSpot[] = [];
+  for (const isl of art.islands) {
+    if (isl.kind === 'hub') continue; // sân Phù Đảo Các để trống (quảng trường, NPC)
+    const want = Math.min(560, Math.round((isl.r * isl.r) / 95));
+    let placed = 0;
+    for (let k = 0; k < want * 6 && placed < want && out.length < MAX_TREES; k++) {
+      const a = hash01(k, Math.round(isl.x), 521) * Math.PI * 2;
+      const rr = Math.sqrt(hash01(k, Math.round(isl.z), 523)) * (isl.r - 8);
+      const x = isl.x + Math.cos(a) * rr;
+      const z = isl.z + Math.sin(a) * rr;
+      // lùm: chỉ nhận chỗ nhiễu cao, thưa dần ở chỗ thấp
+      const dens = fbm(x * 0.017, z * 0.017, 3, def.seed + 777);
+      if (hash01(k, Math.round(x), 525) > dens * 2.2 - 0.05) continue;
+      if (art.trailW(isl, x, z) > 0.2 || art.pondW(x, z) > 0) continue;
+      if (spots.some((sp) => Math.hypot(sp.x - x, sp.z - z) < 12)) continue;
+      if (bridgeEnds.some(([bx, bz]) => Math.hypot(bx - x, bz - z) < 14)) continue;
+      if (props.some((p) => Math.hypot(p.x - x, p.z - z) < 5)) continue;
+      if (terrain.colliders.some((c) => Math.hypot(c.x - x, c.z - z) < c.r + 3)) continue;
+      const y = terrain.heightAt(x, z);
+      if (!Number.isFinite(y)) continue;
+      out.push({ x, z, y, s: 0.8 + hash01(k, 9, 527) * 0.9, yaw: hash01(k, 11, 529) * 6.28, isl, tone: hash01(k, 13, 531) });
+      placed++;
+    }
+  }
+  return out;
+}
+
 export class VanHaiGarden {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
@@ -108,46 +156,20 @@ export class VanHaiGarden {
 
   constructor(terrain: Terrain) {
     this.group.name = 'vanHaiGarden';
-    const def: TerrainDef = terrain.def;
-    const art = vanHaiArt(def);
-    const props = propsOf('van_hai');
-    const spots = def.features.filter((f) => f.id.startsWith('pad_') || f.id.startsWith('poi_'));
-    const bridgeEnds: [number, number][] = [];
-    for (const b of def.bridges ?? []) bridgeEnds.push([b.ax, b.az], [b.bx, b.bz]);
+    const spots = vanHaiTreeSpots(terrain);
     const trunks: THREE.Matrix4[] = [];
     const crowns: THREE.Matrix4[] = [];
     const colors: THREE.Color[] = [];
     const q = new THREE.Quaternion();
     const e = new THREE.Euler();
-    for (const isl of art.islands) {
-      if (isl.kind === 'hub') continue; // sân Phù Đảo Các để trống (quảng trường, NPC)
-      const want = Math.min(560, Math.round((isl.r * isl.r) / 95));
-      let placed = 0;
-      for (let k = 0; k < want * 6 && placed < want && crowns.length < MAX_TREES; k++) {
-        const a = hash01(k, Math.round(isl.x), 521) * Math.PI * 2;
-        const rr = Math.sqrt(hash01(k, Math.round(isl.z), 523)) * (isl.r - 8);
-        const x = isl.x + Math.cos(a) * rr;
-        const z = isl.z + Math.sin(a) * rr;
-        // lùm: chỉ nhận chỗ nhiễu cao, thưa dần ở chỗ thấp
-        const dens = fbm(x * 0.017, z * 0.017, 3, def.seed + 777);
-        if (hash01(k, Math.round(x), 525) > dens * 2.2 - 0.05) continue;
-        if (art.trailW(isl, x, z) > 0.2 || art.pondW(x, z) > 0) continue;
-        if (spots.some((s) => Math.hypot(s.x - x, s.z - z) < 12)) continue;
-        if (bridgeEnds.some(([bx, bz]) => Math.hypot(bx - x, bz - z) < 14)) continue;
-        if (props.some((p) => Math.hypot(p.x - x, p.z - z) < 5)) continue;
-        if (terrain.colliders.some((c) => Math.hypot(c.x - x, c.z - z) < c.r + 3)) continue;
-        const y = terrain.heightAt(x, z);
-        if (!Number.isFinite(y)) continue;
-        const s = 0.8 + hash01(k, 9, 527) * 0.9;
-        const trunkH = 3.4 * s;
-        e.set(0, hash01(k, 11, 529) * 6.28, 0);
-        q.setFromEuler(e);
-        trunks.push(new THREE.Matrix4().compose(new THREE.Vector3(x, y + trunkH / 2 - 0.1, z), q, new THREE.Vector3(s, s, s)));
-        const cw = 10.5 * s;
-        crowns.push(new THREE.Matrix4().compose(new THREE.Vector3(x, y + trunkH + cw * 0.34, z), q, new THREE.Vector3(cw, cw, cw)));
-        colors.push(foliageColor(isl, hash01(k, 13, 531)));
-        placed++;
-      }
+    for (const t of spots) {
+      const trunkH = 3.4 * t.s;
+      e.set(0, t.yaw, 0);
+      q.setFromEuler(e);
+      trunks.push(new THREE.Matrix4().compose(new THREE.Vector3(t.x, t.y + trunkH / 2 - 0.1, t.z), q, new THREE.Vector3(t.s, t.s, t.s)));
+      const cw = 10.5 * t.s;
+      crowns.push(new THREE.Matrix4().compose(new THREE.Vector3(t.x, t.y + trunkH + cw * 0.34, t.z), q, new THREE.Vector3(cw, cw, cw)));
+      colors.push(foliageColor(t.isl, t.tone));
     }
     this.count = crowns.length;
     if (!this.count) return;

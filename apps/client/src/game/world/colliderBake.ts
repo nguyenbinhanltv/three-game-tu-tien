@@ -1,6 +1,8 @@
 import { LEVELS } from '@dtl/content';
 import { levelId, setActiveLevel, heightAt } from '../../base/levelCtx';
+import { terrainOf } from '@dtl/shared';
 import { mapleSpots } from './doanMachArt';
+import { vanHaiTreeSpots } from './vanHaiGarden';
 import { allProps } from './propScatter';
 
 /**
@@ -34,6 +36,7 @@ export interface ExtraInst {
 /** Hàm rải riêng theo level (COL-B). Chạy với địa hình của level đó đang hoạt động. */
 const EXTRA: Record<string, () => ExtraInst[]> = {
   doan_mach: () => mapleSpots().map((t) => ({ id: 'x_maple_trunk', x: t.x, z: t.z, y: heightAt(t.x, t.z) - 0.15, yaw: t.rot, s: t.s })),
+  van_hai: () => vanHaiTreeSpots(terrainOf('van_hai')).map((t) => ({ id: 'x_vh_trunk', x: t.x, z: t.z, y: t.y, yaw: t.yaw, s: t.s })),
 };
 
 export function extraInstances(level: string): ExtraInst[] {
