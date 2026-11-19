@@ -19,6 +19,11 @@ const [ox, oy, oz] = opt('--origin', '0,0,0').split(',').map(Number) as [number,
 const level = opt('--level', 'van_lam');
 const cell = Number(opt('--cell', '0.5'));
 const dungeon = opt('--place') === 'dungeon';
+/** `--shift tk_statue:-2.58,...`: dời y cố định cho object (node gốc) có tên bắt đầu bằng tiền tố, ở mọi chế độ. */
+const shifts = opt('--shift')
+  .split(',')
+  .filter(Boolean)
+  .map((x) => [x.split(':')[0]!, Number(x.split(':')[1])] as const);
 const prefix = opt('--prefix');
 const flat = opt('--flat').split(',').filter(Boolean);
 const flatDy = Number(opt('--flatDy', '-4'));
@@ -34,10 +39,13 @@ const doc = await (await createIO()).read(path.join(ROOT, 'apps/client/public/as
 
 /** Dời y của object (node con trực tiếp của gốc) theo cách client đặt bí cảnh; 0 nếu không phải chế độ `--place dungeon`. */
 function dyOf(node: { getParentNode(): unknown; getName(): string; getTranslation(): number[] }): number {
-  if (!dungeon) return 0;
+  if (!dungeon && !shifts.length) return 0;
   let top = node;
   for (let up = top.getParentNode() as typeof node | null; up; up = top.getParentNode() as typeof node | null) top = up;
   const name = top.getName();
+  const sh = shifts.find(([pre]) => name.startsWith(pre));
+  if (sh) return sh[1];
+  if (!dungeon) return 0;
   const [tx, , tz] = top.getTranslation() as [number, number, number];
   if (flat.some((f) => name.startsWith(f))) return flatDy;
   if (dome && name.startsWith(`${prefix}_ceil_`)) {

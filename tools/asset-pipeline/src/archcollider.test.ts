@@ -106,4 +106,15 @@ describe('file hộp kiến trúc khớp GLB', () => {
     });
     expect(r.status, r.stderr).toBe(0);
   }, 120_000);
+
+  it('arch_thien_khuyet.boxes.json không cũ so với GLB và địa hình (COL-C)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const args =
+      '--id arch_thien_khuyet --origin 1044,80,374 --level thien_khuyet --shift tk_statue:-2.5798564656485 --cell 1 --check'.split(' ');
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/archcollider.cli.ts', ...args], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
 });

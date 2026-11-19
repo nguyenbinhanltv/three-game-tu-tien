@@ -1,4 +1,5 @@
 import { instantiateShapes, type LocalShape, registerCollision, type Shape } from '@dtl/shared';
+import archTk from '../data/colliders/arch_thien_khuyet.boxes.json';
 import archPm from '../data/colliders/arch_phuc_mach.boxes.json';
 import archSect from '../data/colliders/arch_sect.boxes.json';
 import libJson from '../data/colliders/lib.json';
@@ -54,7 +55,7 @@ export function propShapesOf(level: string, lib: Record<string, LocalShape[]> = 
     const id = f.ids[r[0]!]!;
     const local = lib[id];
     if (!local?.length) continue;
-    instantiateShapes(local, { x: r[1]!, z: r[2]!, y: r[3]!, yaw: r[4]!, s: r[5]!, sy: r[6] }, out, id);
+    instantiateShapes(local, { x: r[1]!, z: r[2]!, y: r[3]!, yaw: r[4]!, s: r[5]!, sy: r[6], lean: r[7] }, out, id);
   }
   return out;
 }
@@ -71,6 +72,7 @@ export interface ArchFile {
 }
 export const ARCH_BY_LEVEL: Record<string, ArchFile[]> = {
   van_lam: [archSect as unknown as ArchFile],
+  thien_khuyet: [archTk as unknown as ArchFile],
   phuc_mach: [archPm as unknown as ArchFile],
 };
 
