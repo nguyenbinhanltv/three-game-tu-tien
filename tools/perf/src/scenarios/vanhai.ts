@@ -83,10 +83,15 @@ export default {
             console.log(
               JSON.stringify(
                 await page.evaluate(() =>
-                  window.__game!.vanHaiWow?.group.children.map((c) => {
-                    const m = c as unknown as { geometry?: { attributes: { position: { count: number } }; boundingSphere?: { radius: number } | null }; count?: number };
-                    return [c.name, m.geometry?.attributes.position.count, m.count, c.visible, c.position.x | 0, c.position.y | 0, c.position.z | 0];
-                  }),
+                  window.__game!.vanHaiWow?.group.children.map((c) => [
+                    c.name,
+                    c.geometry?.attributes.position.count,
+                    c.count,
+                    c.visible,
+                    c.position.x | 0,
+                    c.position.y | 0,
+                    c.position.z | 0,
+                  ]),
                 ),
               ),
             );
