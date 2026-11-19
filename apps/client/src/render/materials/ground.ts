@@ -23,6 +23,8 @@ import {
   uniform,
   vec2,
   vec3,
+  floor,
+  fract,
 } from 'three/tsl';
 import { WORLD_SIZE } from '@dtl/shared';
 import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
@@ -86,6 +88,8 @@ export interface CliffTones {
   hi: [number, number, number];
   /** Màu vỉa chạy theo khe nứt (vàng kim Thiên Khuyết); bỏ trống = khe chỉ tối đi. */
   vein?: [number, number, number];
+  /** Vách dựng từ khối đá xếp lệch (cột khối ngẫu nhiên × tầng lệch nhau, khe giữa các khối): hết dải ngang lặp (Thiên Khuyết, POLISH-1). */
+  blocks?: boolean;
 }
 const RED_TONES: CliffTones = { lo: [0.4, 0.2, 0.16], hi: [0.58, 0.52, 0.5] };
 let cliffTones: CliffTones = RED_TONES;
@@ -248,6 +252,34 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       const crack = smoothstep(0.045, 0.0, nA.sub(0.5).abs()).mul(smoothstep(0.2, 0.8, nB));
       tone = tone.mul(float(1).sub(crack.mul(0.6)));
       if (cliffTones.vein) tone = mix(tone, vec3(...cliffTones.vein), crack.mul(0.85));
+      if (cliffTones.blocks) {
+        // Khối đá xếp lệch, hai cỡ (khối lớn ~60–120 m + khối nhỏ ~20–40 m): cột theo tọa độ dọc vách (méo mạnh bởi nhiễu), bề cao tầng mỗi cột một kiểu,
+        // màu từng khối khác nhau, khe tối quanh khối, mép trên khối sáng, vài khối chạy vỉa vàng ở khe.
+        const layer = (su: number, wob: number, sh: number, k: number) => {
+          const ub = u.mul(su).add(nA.mul(wob)).add(nB.mul(wob * 0.35));
+          const ci = floor(ub);
+          const cf = fract(ub);
+          const hb = fract(sin(ci.mul(127.1).add(k * 311.7)).mul(43758.5453));
+          const hy = h.mul(float(sh).mul(float(0.65).add(hb.mul(0.8)))).add(hb.mul(9)).add(nB.mul(1.2));
+          const ri = floor(hy);
+          const rf = fract(hy);
+          const hr = fract(sin(ri.mul(91.7).add(ci.mul(17.3)).add(k)).mul(24634.6345));
+          const gw = float(0.03).add(hb.mul(0.05));
+          const gap = max(smoothstep(gw, 0, cf), smoothstep(float(1).sub(gw), 1, cf)).max(smoothstep(0.07, 0, rf));
+          return { hb, rf, hr, gap };
+        };
+        const big = layer(0.0062, 2.4, 0.026, 1);
+        const small = layer(0.022, 1.6, 0.055, 2);
+        let blk: Node = mix(vec3(...cliffTones.lo), vec3(...cliffTones.hi), big.hr.mul(0.7).add(small.hr.mul(0.3)).mul(0.85).add(0.07));
+        blk = blk.mul(mix(vec3(1.18, 0.96, 0.78), vec3(0.82, 0.9, 1.1), big.hb)).mul(float(0.7).add(big.hr.mul(0.6))).mul(float(0.86).add(small.hb.mul(0.2))).mul(float(0.78).add(nC.mul(0.44)));
+        const gap = max(big.gap.mul(0.85), small.gap.mul(0.45));
+        tone = mix(tone, blk, 0.82);
+        tone = tone
+          .mul(float(1).sub(gap.mul(0.7)))
+          .mul(float(1).add(smoothstep(0.86, 1, big.rf).mul(0.26)))
+          .mul(float(1).add(smoothstep(0.88, 1, small.rf).mul(0.1)));
+        if (cliffTones.vein) tone = mix(tone, vec3(...cliffTones.vein), big.gap.mul(smoothstep(0.6, 0.92, big.hb)).mul(0.32));
+      }
       // gờ đá: mép trên mỗi tầng sáng, ngay dưới tối
       // chỉ ở vài tầng (nA cao): gờ không chạy đều khắp vách
       const ledgeOn = smoothstep(0.35, 0.6, nA);

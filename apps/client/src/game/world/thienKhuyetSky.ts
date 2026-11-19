@@ -3,6 +3,7 @@ import { atan, bumpMap, clamp, float, mix, positionWorld, smoothstep, sin, textu
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { ThienKhuyetSky, TkIsland } from '@dtl/shared';
 import { createWorldMaterial } from '../../render/materials/world';
+import { FarRidges, type RidgeLayer } from '../../render/farRidges';
 import { getCloudNoise } from '../../render/noiseTex';
 
 /**
@@ -451,6 +452,13 @@ function arrayMaterial(): THREE.MeshBasicNodeMaterial {
 
 // ---------- cảnh ----------
 
+/** Phông núi xa nhiều lớp sau vách bao quanh (POLISH-1): tím xám nhạt dần, chân chìm trong sương; tâm trùng tâm vùng chơi (`thien_khuyet.terrain.json` play). */
+const TK_RIDGES: RidgeLayer[] = [
+  { radius: 1450, amp: 950, base: 140, color: 0x6d5f7c, haze: 0.42, seed: 7, freq: 6 },
+  { radius: 2200, amp: 1250, base: 120, color: 0x84779a, haze: 0.6, seed: 17, freq: 8 },
+  { radius: 3100, amp: 1600, base: 100, color: 0xa294b8, haze: 0.78, seed: 31, freq: 10 },
+];
+
 export class ThienKhuyetSkyScene {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
@@ -458,6 +466,9 @@ export class ThienKhuyetSkyScene {
 
   constructor(sky: ThienKhuyetSky, groundAt: (x: number, z: number) => number) {
     this.group.name = 'thienKhuyetSky';
+    const ridges = new FarRidges(1044, 884, TK_RIDGES);
+    this.group.add(ridges.group);
+    this.disposables.push(ridges);
     const parts = new Parts();
     const bodyGeos: THREE.BufferGeometry[] = [];
     sky.islands.forEach((isl, i) => {

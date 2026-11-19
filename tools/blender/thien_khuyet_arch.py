@@ -365,20 +365,24 @@ MOSS_LIN = (0.12, 0.26, 0.07)
 
 
 def sculpt_color(pos, nrm, gold=False, seed=3):
-    """Màu một mặt: cam thạch loang, vệt nứt tối, rêu bám mặt ngửa/lõm, vàng kim ở chi tiết viền."""
+    """Màu một mặt đá phong hóa: cam thạch ấm đổi sắc chậm theo mảng lớn, vân tầng ngang mảnh, vệt nước chảy dọc, khe nứt tối rõ, rêu chỉ ở mặt ngửa/lõm, vàng kim ở viền."""
     if gold:
         return kit.GILD
     x, y, z = pos
-    base = fbm3(x * 0.35, y * 0.35, z * 0.35, seed, 3)
-    t = 0.75 + 0.5 * base
+    big = fbm3(x * 0.12, y * 0.12, z * 0.12, seed, 2)
+    t = 0.92 + 0.14 * big
+    t *= 0.93 + 0.07 * math.sin(y * 1.3 + 3.0 * fbm3(x * 0.2, y * 0.05, z * 0.2, seed + 2, 2))  # vân tầng ngang
+    streak = fbm3(x * 0.9, y * 0.05, z * 0.9, seed + 4, 2)  # vệt nước chảy dọc
+    t *= 0.94 + 0.1 * streak
     rgb = [c * t for c in SAND]
-    crack = abs(fbm3(x * 0.5 + 9, y * 0.5, z * 0.5, seed + 5, 2) - 0.5)
-    if crack < 0.018:
-        rgb = [c * 0.35 + d * 0.65 for c, d in zip(rgb, SAND_DK)]
-    moss = fbm3(x * 0.22 + 3, y * 0.22, z * 0.22, seed + 9, 3)
+    crack = abs(fbm3(x * 0.45 + 9, y * 0.45, z * 0.45, seed + 5, 2) - 0.5)
+    if crack < 0.011:
+        k = 0.55
+        rgb = [c * (1 - k) + d * k for c, d in zip(rgb, SAND_DK)]
+    moss = fbm3(x * 0.18 + 3, y * 0.18, z * 0.18, seed + 9, 3)
     k = 0.0
-    if moss > 0.5:
-        k = min(0.85, (moss - 0.5) * 3.2) * (0.35 + 0.65 * max(0.0, nrm[1]))
+    if moss > 0.64 and nrm[1] > 0.45:
+        k = min(0.45, (moss - 0.64) * 3.0) * nrm[1]
     if k > 0.01:
         rgb = [c * (1 - k) + m * k for c, m in zip(rgb, MOSS_LIN)]
     return bs.Paint(tuple(rgb), 'jade')
@@ -510,7 +514,8 @@ def build_statue(b, st, rnd):
         def f(x, y, z):
             k = 1.0
             if z > 0:
-                k += 0.09 * max(0.0, math.sin((y / S - y0) * period)) ** 0.7  # nếp giáp lá nổi, mép dưới vát
+                ph = ((y / S - y0) * period / math.tau) % 1.0
+                k += 0.08 * ph**1.8  # nếp giáp lá xếp tầng: nhô dần rồi gãy ngang ở mép dưới (cạnh sắc)
                 k += 0.05 * math.exp(-((x / S) ** 2) / 1.2)  # sống ngực giữa
             return k
 
@@ -533,11 +538,12 @@ def build_statue(b, st, rnd):
             b,
             P(0, 41.5, 0),
             P(8.9, 9.7, 5.7),
-            e=2.6,
-            nu=44,
-            nv=32,
+            e=3.4,
+            nu=56,
+            nv=40,
             seed=71,
             ridge=lames(33, 3.6),
+            hole=lambda c: fbm3(c[0] * 0.8 / S, c[1] * 0.8 / S, c[2] * 0.8 / S, 17, 2) > 0.7 and c[0] < -3.0 * S and c[1] > 39 * S,  # mảng giáp vỡ lộ mép lởm chởm
             gold_at=lambda c: abs(c[0]) < 2.4 * S and abs(c[1] - 43 * S) < 2.4 * S and c[2] > 4.6 * S,
         )
         for sx in (-1, 1):  # vai giáp ba lớp
