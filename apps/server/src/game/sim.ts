@@ -2,6 +2,7 @@ import { TickProf } from './tickprof';
 import type { Client } from 'colyseus';
 import {
   blockedAt,
+  STEP_UP,
   bottleneckReady,
   collisionOf,
   type CollisionSet,
@@ -194,13 +195,18 @@ export class GameSim {
     },
     drag: (p, dx, dz, dist) => {
       const e = p as PlayerEnt;
-      const plan = planDash(e.move, { x: dx, z: dz }, dist, undefined, { terrain: this.terrain, bound: caveBoundOf(this.level) });
+      const plan = planDash(e.move, { x: dx, z: dz }, dist, undefined, {
+        terrain: this.terrain,
+        bound: caveBoundOf(this.level),
+        collision: this.collision,
+      });
       if (plan.dist <= 0) return 0;
       if (e.meditating) this.setMeditating(e, false);
       if (e.casting) this.cancelCast(e);
       e.move.x = plan.x;
       e.move.z = plan.z;
-      e.move.y = this.terrain.groundAt(plan.x, plan.z);
+      // Mặt đứng hiệu dụng (gồm bậc/phiến đá đi được), không chỉ heightmap: khỏi đặt người vào trong hộp rồi giật khi `push` đẩy ra.
+      e.move.y = Math.max(this.terrain.groundAt(plan.x, plan.z), this.collision.standY(plan.x, plan.z, e.move.y + STEP_UP));
       e.move.vy = 0;
       e.move.grounded = true;
       e.inputs.length = 0;

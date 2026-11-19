@@ -109,6 +109,10 @@ export interface MonEnt {
   wx: number;
   wz: number;
   unreachableSince: number;
+  /** Quái bị vật rắn giữ lại (COL-1): từ lúc bắt đầu trượt liên tục, lần trượt gần nhất, và khoảng cách tới mục tiêu lúc bắt đầu; kẹt lâu không tiến gần thì coi là không với tới. */
+  slideSince: number;
+  slideLast: number;
+  slideD0: number;
   /** Trước thời điểm này quái miễn sát thương (đang bỏ đuổi về chỗ). */
   evadeUntil: number;
   abilityAt: number;
