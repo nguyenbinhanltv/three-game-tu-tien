@@ -12,7 +12,7 @@
   "features": {
     "sect": false,
     "portals": true,
-    "lanterns": true,
+    "lanterns": false,
     "lake": false,
     "clouds": false,
     "grass": false,
