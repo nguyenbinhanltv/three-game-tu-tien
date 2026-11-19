@@ -1,0 +1,257 @@
+// Lõi va chạm 3D nhẹ (COL-1 / C-1), dùng chung client dự đoán + server quyết định. Bổ sung cho vòng tròn `COLLIDERS`:
+// - `box`: hộp xoay theo yaw (nhà, tường, cột vuông, bậc thang, bệ, thuyền, xác thú…), cao từ `y0` tới `y1` (độ cao tuyệt đối).
+// - `cyl`: trụ tròn (thân cây, cột tròn, tượng, tinh thể…).
+// - Mặt đi được (`walk`, mặc định của `box`): đỉnh hộp đứng được nếu cao hơn chân ≤ `STEP_UP`; có độ dốc dọc trục z cục bộ
+//   (`y1b`: cao độ đỉnh ở mép +z; dùng cho dốc, cầu, cầu thang mịn). Bước hụt khỏi mép thì rơi (stepMove xử lý).
+// - Khối lơ lửng: `y0` > mặt đất (đảo bay): đỉnh đứng được, đáy chặn đầu, đi/ nhảy từ dưới lên không xuyên.
+// - Ngự kiếm: `fly: 'block'` (mặc định: kiến trúc, đảo, vách) chặn; `fly: 'pass'` (tán lá, đồ nhỏ) bay xuyên.
+// Lưới băm không gian (ô 16 m) để mỗi bước chỉ xét vài hình. Hàm thuần, không phụ thuộc terrain/level.
+
+/** Chiều cao thân người chơi dùng cho va chạm (m). */
+export const BODY_H = 1.8;
+/** Bước lên được khi đỉnh mặt đi được cao hơn chân tối đa chừng này (m). */
+export const STEP_UP = 0.5;
+const CELL = 16;
+const OFF = 512;
+
+export interface ShapeBase {
+  x: number;
+  z: number;
+  /** Đáy và đỉnh, độ cao tuyệt đối (m). Đảo bay: `y0` là đáy đảo. */
+  y0: number;
+  y1: number;
+  /** Ngự kiếm: 'block' (mặc định) chặn; 'pass' bay xuyên (tán lá, đồ nhỏ). */
+  fly?: 'block' | 'pass';
+  /** Nhãn gỡ lỗi / báo cáo (vd. id prop, tên kiến trúc). */
+  tag?: string;
+}
+
+export interface BoxShape extends ShapeBase {
+  k: 'box';
+  /** Nửa kích thước theo trục cục bộ x, z (m). */
+  hx: number;
+  hz: number;
+  /** Góc quay quanh Y (radian), cùng quy ước Three.js (`rotation.y`). */
+  yaw: number;
+  /** Đỉnh đứng được (mặc định true). */
+  walk?: boolean;
+  /** Dốc: cao độ đỉnh ở mép +z cục bộ (mép -z là `y1`). Thiếu = đỉnh phẳng. */
+  y1b?: number;
+}
+
+export interface CylShape extends ShapeBase {
+  k: 'cyl';
+  r: number;
+}
+
+export type Shape = BoxShape | CylShape;
+
+/** Cao độ đỉnh của hộp tại tọa độ cục bộ `lz` (có dốc thì nội suy). */
+function boxTop(b: BoxShape, lz: number): number {
+  if (b.y1b === undefined) return b.y1;
+  const t = Math.max(0, Math.min(1, (lz + b.hz) / (2 * b.hz)));
+  return b.y1 + (b.y1b - b.y1) * t;
+}
+
+/** Đỉnh cao nhất của hình (dốc: max hai đầu). */
+export function shapeMaxTop(s: Shape): number {
+  return s.k === 'box' && s.y1b !== undefined ? Math.max(s.y1, s.y1b) : s.y1;
+}
+
+/** Bán kính bao ngoài trên mặt phẳng xz. */
+function shapeExtent(s: Shape): number {
+  return s.k === 'cyl' ? s.r : Math.hypot(s.hx, s.hz);
+}
+
+const cellKey = (cx: number, cz: number): number => (cx + OFF) * 1024 + (cz + OFF);
+
+export interface BodyState {
+  x: number;
+  y: number;
+  z: number;
+  flying: boolean;
+  /** Đang đứng trên đất: chỉ khi đó mới có bước-lên `STEP_UP` (nhảy không cộng thêm). */
+  grounded?: boolean;
+}
+
+export class CollisionSet {
+  readonly shapes: Shape[] = [];
+  private readonly grid = new Map<number, number[]>();
+  private mark: Int32Array = new Int32Array(0);
+  private stamp = 0;
+
+  get size(): number {
+    return this.shapes.length;
+  }
+
+  add(list: readonly Shape[]): void {
+    for (const s of list) {
+      const i = this.shapes.length;
+      this.shapes.push(s);
+      const e = shapeExtent(s);
+      const c0 = Math.floor((s.x - e) / CELL);
+      const c1 = Math.floor((s.x + e) / CELL);
+      const d0 = Math.floor((s.z - e) / CELL);
+      const d1 = Math.floor((s.z + e) / CELL);
+      for (let cx = c0; cx <= c1; cx++)
+        for (let cz = d0; cz <= d1; cz++) {
+          const k = cellKey(cx, cz);
+          const a = this.grid.get(k);
+          if (a) a.push(i);
+          else this.grid.set(k, [i]);
+        }
+    }
+    if (this.mark.length < this.shapes.length) this.mark = new Int32Array(this.shapes.length + 256);
+  }
+
+  clear(): void {
+    this.shapes.length = 0;
+    this.grid.clear();
+  }
+
+  /** Gọi `fn` cho mỗi hình có ô lưới chạm vòng (x, z, r), mỗi hình một lần. */
+  near(x: number, z: number, r: number, fn: (s: Shape) => void): void {
+    if (!this.shapes.length) return;
+    const stamp = ++this.stamp;
+    const c0 = Math.floor((x - r) / CELL);
+    const c1 = Math.floor((x + r) / CELL);
+    const d0 = Math.floor((z - r) / CELL);
+    const d1 = Math.floor((z + r) / CELL);
+    for (let cx = c0; cx <= c1; cx++)
+      for (let cz = d0; cz <= d1; cz++) {
+        const a = this.grid.get(cellKey(cx, cz));
+        if (!a) continue;
+        for (let n = 0; n < a.length; n++) {
+          const i = a[n]!;
+          if (this.mark[i] === stamp) continue;
+          this.mark[i] = stamp;
+          fn(this.shapes[i]!);
+        }
+      }
+  }
+
+  /**
+   * Cao độ đứng được lớn nhất của mọi mặt đi được dưới (x, z) mà đỉnh không cao hơn `maxTop` (cao độ chân + `STEP_UP`).
+   * Trả `-Infinity` nếu không có. Dùng điểm (không tính bán kính) nên bước ra mép thì rơi.
+   */
+  standY(x: number, z: number, maxTop: number): number {
+    let best = -Infinity;
+    this.near(x, z, 0.01, (s) => {
+      if (s.k !== 'box' || s.walk === false) return;
+      const dx = x - s.x;
+      const dz = z - s.z;
+      const c = Math.cos(s.yaw);
+      const sn = Math.sin(s.yaw);
+      const lx = c * dx - sn * dz;
+      const lz = sn * dx + c * dz;
+      if (lx < -s.hx || lx > s.hx || lz < -s.hz || lz > s.hz) return;
+      const top = boxTop(s, lz);
+      if (top <= maxTop && top > best) best = top;
+    });
+    return best;
+  }
+
+  /** Đáy thấp nhất của khối nằm ngay trên đầu tại (x, z) (chân `y`): chặn đầu khi nhảy/bay lên. `Infinity` nếu trống. */
+  ceilingAt(x: number, z: number, y: number, r: number): number {
+    let best = Infinity;
+    const head = y + BODY_H;
+    this.near(x, z, r, (s) => {
+      if (s.y0 < head - 1e-3 || s.y0 >= best) return;
+      if (s.y0 > head + 8) return;
+      if (footprintDist(s, x, z) < r) best = s.y0;
+    });
+    return best;
+  }
+
+  /**
+   * Đẩy thân trụ bán kính `r` tại `p` ra khỏi mọi hình chặn theo độ cao hiện tại; sửa `p.x/z`. Trả true nếu có đẩy.
+   * Hình không chặn khi: mặt đi được và chân đã ≥ đỉnh − STEP_UP (leo lên được, không khi ngự kiếm), ngự kiếm qua `fly:'pass'`,
+   * hoặc khoảng [y, y + BODY_H] không giao [y0, y1].
+   */
+  push(p: BodyState, r: number): boolean {
+    let moved = false;
+    for (let it = 0; it < 2; it++) {
+      let any = false;
+      this.near(p.x, p.z, r, (s) => {
+        if (p.flying && s.fly === 'pass') return;
+        const y = p.y;
+        if (y + BODY_H <= s.y0 || y >= shapeMaxTop(s)) return;
+        if (s.k === 'cyl') {
+          const dx = p.x - s.x;
+          const dz = p.z - s.z;
+          const rr = s.r + r;
+          const d2 = dx * dx + dz * dz;
+          if (d2 >= rr * rr) return;
+          if (d2 < 1e-8) {
+            p.x = s.x + rr;
+          } else {
+            const d = Math.sqrt(d2);
+            p.x = s.x + (dx / d) * rr;
+            p.z = s.z + (dz / d) * rr;
+          }
+          any = true;
+          return;
+        }
+        const dx = p.x - s.x;
+        const dz = p.z - s.z;
+        const c = Math.cos(s.yaw);
+        const sn = Math.sin(s.yaw);
+        const lx = c * dx - sn * dz;
+        const lz = sn * dx + c * dz;
+        const qx = lx < -s.hx ? -s.hx : lx > s.hx ? s.hx : lx;
+        const qz = lz < -s.hz ? -s.hz : lz > s.hz ? s.hz : lz;
+        let nx = lx - qx;
+        let nz = lz - qz;
+        const d2 = nx * nx + nz * nz;
+        if (d2 >= r * r) return;
+        // Leo lên được: đỉnh tại điểm gần nhất không cao hơn chân quá STEP_UP.
+        if (!p.flying && s.walk !== false && y >= boxTop(s, qz) - (p.grounded ? STEP_UP : 0) - 1e-3) return;
+        let px: number;
+        let pz: number;
+        if (d2 > 1e-10) {
+          const d = Math.sqrt(d2);
+          nx /= d;
+          nz /= d;
+          px = qx + nx * r - lx;
+          pz = qz + nz * r - lz;
+        } else {
+          // Tâm nằm trong hộp: đẩy ra mặt gần nhất.
+          const ox = s.hx - Math.abs(lx);
+          const oz = s.hz - Math.abs(lz);
+          if (ox < oz) {
+            px = (lx >= 0 ? 1 : -1) * (ox + r);
+            pz = 0;
+          } else {
+            px = 0;
+            pz = (lz >= 0 ? 1 : -1) * (oz + r);
+          }
+        }
+        p.x += c * px + sn * pz;
+        p.z += -sn * px + c * pz;
+        any = true;
+      });
+      if (!any) break;
+      moved = true;
+    }
+    return moved;
+  }
+}
+
+/** Khoảng cách từ (x, z) tới hình trên mặt phẳng xz (0 nếu trong hình). */
+export function footprintDist(s: Shape, x: number, z: number): number {
+  const dx = x - s.x;
+  const dz = z - s.z;
+  if (s.k === 'cyl') return Math.max(0, Math.hypot(dx, dz) - s.r);
+  const c = Math.cos(s.yaw);
+  const sn = Math.sin(s.yaw);
+  const lx = c * dx - sn * dz;
+  const lz = sn * dx + c * dz;
+  const ex = Math.max(0, Math.abs(lx) - s.hx);
+  const ez = Math.max(0, Math.abs(lz) - s.hz);
+  return Math.hypot(ex, ez);
+}
+
+/** Điểm (x, z, y) có nằm trong khối của hình không (dùng báo cáo phủ va chạm). */
+export function shapeCovers(s: Shape, x: number, z: number, margin = 0): boolean {
+  return footprintDist(s, x, z) <= margin;
+}

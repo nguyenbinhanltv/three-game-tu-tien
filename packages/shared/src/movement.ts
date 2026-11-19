@@ -1,3 +1,4 @@
+import { BODY_H, STEP_UP } from './collision';
 import { FLY_UNLOCK_LEVEL, TRUC_CO_LEVEL } from './formulas';
 import { SKY_ALT, SKY_SPEED_MUL, SOUL_ALT, SOUL_UNLOCK_LEVEL } from './soul';
 import { type Terrain, VAN_LAM } from './terrain';
@@ -101,6 +102,7 @@ function groundSlope(groundAt: (x: number, z: number) => number, x: number, z: n
 export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = STEP): void {
   const terrain = ctx.terrain ?? VAN_LAM;
   const groundAt = terrain.groundAt;
+  const col3d = ctx.ghost ? undefined : terrain.collision;
   let mx = ctx.frozen ? 0 : i.mx;
   let mz = ctx.frozen ? 0 : i.mz;
   const len = Math.sqrt(mx * mx + mz * mz);
@@ -114,7 +116,7 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
     s.flying = true;
     s.grounded = false;
     s.vy = 0;
-    const g = groundAt(s.x, s.z);
+    const g = Math.max(groundAt(s.x, s.z), col3d && col3d.size ? col3d.standY(s.x, s.z, s.y + (s.grounded ? STEP_UP : 0.02)) : -Infinity);
     if (s.y < g + FLY_MIN_CLEAR) s.y = g + FLY_MIN_CLEAR;
   } else if (!wantFly && s.flying) {
     s.flying = false;
@@ -131,8 +133,15 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
 
   const px = s.x;
   const pz = s.z;
-  s.x += dirX * speed * dt;
-  s.z += dirZ * speed * dt;
+  const mdx = dirX * speed * dt;
+  const mdz = dirZ * speed * dt;
+  // Chia nhỏ bước khi va chạm 3D để ngự kiếm (1,1 m/bước) không xuyên tường mỏng: mỗi đoạn ≤ ~0,4 m.
+  const subs = col3d && col3d.size ? Math.max(1, Math.ceil(Math.hypot(mdx, mdz) / 0.4)) : 1;
+  for (let k = 0; k < subs; k++) {
+    s.x += mdx / subs;
+    s.z += mdz / subs;
+    if (subs > 1 && col3d) col3d.push(s, PLAYER_RADIUS);
+  }
 
   // Va chạm với kiến trúc (chỉ khi ở gần mặt đất).
   const colliders = ctx.ghost ? [] : terrain.colliders;
@@ -152,6 +161,9 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
       }
     }
   }
+
+  // Va chạm 3D (hộp xoay, trụ, bậc, đảo bay): đẩy thân ra theo độ cao hiện tại; ngự kiếm xuyên `fly:'pass'`.
+  if (col3d && col3d.size) col3d.push(s, PLAYER_RADIUS);
 
   const lo = terrain.margin;
   const hi = terrain.size - terrain.margin;
@@ -209,6 +221,11 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
   }
 
   let ground = groundAt(s.x, s.z);
+  // Mặt đi được (bậc, cầu, sàn, đỉnh đảo bay) trong tầm bước: nâng mặt đứng hiệu dụng.
+  if (col3d && col3d.size) {
+    const top = col3d.standY(s.x, s.z, s.y + (s.grounded ? STEP_UP : 0.02));
+    if (top > ground) ground = top;
+  }
 
   // Level đảo nổi (E3-N): chặn leo vách đảo và thành cầu. Không cho bước vào chỗ mặt đất dốc hơn `MAX_SLOPE_UP` (độ dốc đi lên lớn nhất quanh chỗ mới, không phụ
   // thuộc hướng đi hay tốc độ nên đi chéo/chạy chậm không lách được) trừ khi đang đi xuống (mặt đất mới thấp hơn chỗ cũ: rơi khỏi mép, bước xuống).
@@ -233,6 +250,10 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
     if (s.y < ground + FLY_MIN_CLEAR) s.y = ground + FLY_MIN_CLEAR;
     if (s.y > FLY_MAX_ALT) s.y = FLY_MAX_ALT;
     if (gh && s.y > ground + SOUL_ALT) s.y = ground + SOUL_ALT;
+    if (col3d && col3d.size && vy > 0) {
+      const ceil = col3d.ceilingAt(s.x, s.z, s.y - vy * dt, PLAYER_RADIUS * 0.6);
+      if (s.y + BODY_H > ceil) s.y = ceil - BODY_H;
+    }
     s.grounded = false;
     return;
   }
@@ -241,7 +262,15 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
     if ((i.f & IN_JUMP) !== 0 && !ctx.frozen) {
       s.vy = JUMP_V;
       s.grounded = false;
+      const y0 = s.y;
       s.y += s.vy * dt;
+      if (col3d && col3d.size) {
+        const ceil = col3d.ceilingAt(s.x, s.z, y0, PLAYER_RADIUS * 0.6);
+        if (s.y + BODY_H > ceil) {
+          s.y = ceil - BODY_H;
+          s.vy = 0;
+        }
+      }
     } else if (s.y - ground > 1.2) {
       // Bước hụt khỏi vách: bắt đầu rơi.
       s.grounded = false;
@@ -253,7 +282,16 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
   } else {
     s.vy -= GRAVITY * dt;
     if (s.vy < -60) s.vy = -60;
+    const y0 = s.y;
     s.y += s.vy * dt;
+    if (col3d && col3d.size && s.vy > 0) {
+      // Đội đầu vào đáy khối lơ lửng: dừng bay lên.
+      const ceil = col3d.ceilingAt(s.x, s.z, y0, PLAYER_RADIUS * 0.6);
+      if (s.y + BODY_H > ceil) {
+        s.y = ceil - BODY_H;
+        s.vy = 0;
+      }
+    }
   }
   if (s.y <= ground) {
     s.y = ground;
