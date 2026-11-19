@@ -194,3 +194,11 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - Sàn cẩm thạch (`reflectiveSurface`): đá tối hơn (tương phản thớ rõ hơn), vũng sáng trăng và ánh nền giảm, phản chiếu hướng trời nghiêng theo fresnel mạnh hơn (bóng loáng xa/cận), vạch trận và chấm chia (72) mờ ~35–70%, quầng bạc quanh vòng ×0,55.
 - Mood `kn`: exposure 0,92 → 0,8, tương phản 1,14 → 1,2.
 - **Còn lại**: sàn vẫn chưa phản chiếu thật cột/gương (chỉ phản chiếu trời và vòng gương trăng, không có planar reflection); vũng tròn trắng quanh nhân vật thử và vòng ở bắc không thuộc shader sàn (không ẩn được bằng `kn-moonbeam`/`dungeon-*`), nguồn chưa xác định.
+
+### Polish — Kính Nguyệt vòng 2 (góp ý duyệt): bỏ đĩa trăng đặc, sàn phản chiếu thật, đèn lồng ấm
+
+- **Đĩa/vòng trắng đặc** trên sàn là **phản chiếu của đĩa trăng và vòng gương trăng** trong shader sàn (ẩn sàn là hết; không phải cột sáng hay vòng cảnh giới): sàn nay chỉ phản chiếu trời + mây (không trăng), phản chiếu vòng gương trăng mềm hơn nhiều (gradient rộng, viền vàng ×0,35, ×0,45 trên sàn). Hồ nước vẫn soi trăng.
+- **Sàn phản chiếu thật** (`reflector` của TSL, nửa độ phân giải, `KinhNguyetArt({ reflect })`): thấy mảnh gương, cột, đèn, vòng gương trăng trên sàn; mạnh ở vùng giữa (nhẵn), mờ dần ra mép điện, thớ đá cắt bớt, fresnel tăng khi nhìn xiên, độ sáng phản chiếu bị chặn ở 0,7. Chỉ bật khi `q.lights && WebGPU` (preset Thấp/WebGL2 giữ sàn cũ). Lượt vẽ phản chiếu không có MRT bloom nên ẩn nhóm VFX và các `MeshBasicMaterial` thường (vòng chân nhân vật, dấu cổng) trong đúng lượt đó (nếu không: lỗi WGSL).
+- **Đèn lồng ấm**: quầng 1,3 → 3,6 m, cường độ đèn điểm ×0,35 → ×0,9 (chỉ level có `kinhNguyetArt`).
+- **Chi phí**: ~195–214 draw call (trước ~150) do vẽ cảnh thêm cho phản chiếu; vẫn dưới 300.
+- **Còn lại**: cột sáng trăng volumetric mới là nón mờ sẵn có; vòng sáng nhỏ quanh chân nhân vật thử là vòng chân (aura chung) nên giữ nguyên.

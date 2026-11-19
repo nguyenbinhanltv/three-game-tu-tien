@@ -16,6 +16,7 @@ import {
   positionViewDirection,
   positionWorld,
   pow,
+  reflector,
   sin,
   smoothstep,
   texture,
@@ -165,6 +166,8 @@ function reflectiveSurface(
   geo: THREE.BufferGeometry,
   centerX: number,
   centerZ: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  planar?: any,
 ): THREE.Mesh {
   const nz = getCloudNoise();
   const w = positionWorld.xz.sub(vec2(centerX, centerZ));
@@ -177,8 +180,8 @@ function reflectiveSurface(
   const cosT = clamp(v.y.negate(), 0, 1);
   const fres = pow(float(1).sub(cosT), 3.0);
   const rd = vec3(v.x, v.y.negate().add(0.02), v.z);
-  // trăng trong phản chiếu giảm còn ~35% (bản gốc cháy thành mảng trắng lớn trên sàn)
-  const refl = skyColor(rd, 0.35);
+  // trăng KHÔNG nằm trong phản chiếu sàn/hồ (đĩa trăng phản chiếu thành vũng trắng đặc có mép cứng trên sàn): chỉ còn trời + mây
+  const refl = skyColor(rd, kind === 'water' ? 0.35 : 0);
   // phản chiếu phẳng của vòng gương trăng: cắt tia phản xạ với mặt phẳng z = RING.z (tương đối tâm sảnh), trúng đĩa/vành thì lấy màu gương
   // cao độ tâm sảnh tính lúc dựng (Kính Nguyệt đã là level hoạt động), không lúc import module (khi level hiện tại có thể có địa hình khác)
   const centerY = heightAt(CENTER.x, CENTER.z);
@@ -197,9 +200,10 @@ function reflectiveSurface(
     .add(0.5);
   const ringDisc = mix(vec3(0.1, 0.14, 0.26), vec3(0.8, 0.86, 1.0), glint.pow(3.0)).mul(0.6);
   const ringRefl = ringDisc
-    .mul(smoothstep(RING.r - 0.5, RING.r - 1.8, dRing))
-    .add(vec3(0.95, 0.86, 0.62).mul(smoothstep(1.3, 0.0, abs(dRing.sub(RING.r + 0.8)))))
-    .mul(ringValid);
+    .mul(smoothstep(RING.r + 1.5, RING.r - 4.5, dRing))
+    .add(vec3(0.95, 0.86, 0.62).mul(smoothstep(3.2, 0.0, abs(dRing.sub(RING.r + 0.8))).mul(0.35)))
+    .mul(ringValid)
+    .mul(kind === 'water' ? 1 : 0.45);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let col: any;
   const edgeDark = float(1).sub(smoothstep(40.0, 100.0, r).mul(0.8));
@@ -259,6 +263,17 @@ function reflectiveSurface(
       .add(refl.mul(fres.mul(1.25).add(0.08)).mul(edgeDark))
       .add(ringRefl.mul(fres.mul(0.8).add(0.14)).mul(edgeDark))
       .add(silver);
+    if (planar) {
+      // phản chiếu thật (mảnh gương, cột, đèn): mạnh ở vùng giữa (nhẵn, roughness thấp), mờ dần ra mép điện; thớ đá cắt bớt phản chiếu; fresnel tăng khi nhìn xiên
+      const mid = float(1).sub(smoothstep(25.0, 95.0, r).mul(0.75));
+      const k = fres
+        .mul(0.5)
+        .add(0.38)
+        .mul(mid)
+        .mul(float(1).sub(veins.mul(0.8)))
+        .clamp(0, 0.85);
+      col = mix(col, planar.rgb.min(0.7), k);
+    }
   } else {
     const base = vec3(0.025, 0.04, 0.075);
     col = base.add(refl.mul(fres.mul(0.75).add(0.22))).add(ringRefl.mul(fres.mul(0.7).add(0.4)));
@@ -273,14 +288,15 @@ function reflectiveSurface(
 }
 
 /** Sàn cẩm thạch phản chiếu (đĩa r 112 bám `heightAt` + 0,08 m). */
-export function buildMirrorFloorKn(): THREE.Mesh {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function buildMirrorFloorKn(planar?: any): THREE.Mesh {
   const R = 112;
   const geo = new THREE.RingGeometry(0.01, R, 128, 48).rotateX(-Math.PI / 2);
   const p = geo.attributes.position as THREE.BufferAttribute;
   // bám đúng địa hình (+0,08 m) như sàn cũ: người chơi/quái đứng theo `heightAt` nên sàn không được cao hơn mặt đất thật
   for (let i = 0; i < p.count; i++) p.setY(i, heightAt(CENTER.x + p.getX(i), CENTER.z + p.getZ(i)) + 0.08);
   geo.computeBoundingSphere();
-  const mesh = reflectiveSurface('marble', R, geo, CENTER.x, CENTER.z);
+  const mesh = reflectiveSurface('marble', R, geo, CENTER.x, CENTER.z, planar);
   mesh.name = 'kn-mirror-floor';
   return mesh;
 }
@@ -302,9 +318,38 @@ export class KinhNguyetArt {
   private readonly fx: DungeonFx;
   private readonly disposables: { dispose(): void }[] = [];
 
-  constructor() {
+  /** `reflect`: phản chiếu phẳng thật của sàn (một lần vẽ cảnh thêm, nửa độ phân giải); tắt ở preset Thấp/WebGL2. */
+  constructor(opts: { reflect: boolean; hideInReflection?: THREE.Object3D } = { reflect: false }) {
     this.group.name = 'kinh-nguyet-art';
-    const floor = buildMirrorFloorKn();
+    let planar = undefined;
+    if (opts.reflect) {
+      const rf = reflector({ resolution: 0.5, bounces: false });
+      rf.target.rotateX(-Math.PI / 2);
+      rf.target.position.set(CENTER.x, heightAt(CENTER.x, CENTER.z) + 0.08, CENTER.z);
+      this.group.add(rf.target);
+      planar = rf;
+      // lượt vẽ phản chiếu không có MRT bloom nên vật liệu VFX (`fx-*`) và các vật `MeshBasicMaterial` thường (vòng chân nhân vật, dấu cổng) không biên dịch được:
+      // ẩn nhóm VFX và các mesh đó trong đúng lượt này
+      const hide = opts.hideInReflection;
+      const base = rf.reflector;
+      const before = base.updateBefore.bind(base);
+      base.updateBefore = (frame: Parameters<typeof before>[0]) => {
+        const scene = this.group.parent;
+        const hidden: THREE.Object3D[] = [];
+        scene?.traverse((o) => {
+          if (o.visible && (o === hide || (o as THREE.Mesh).material?.constructor === THREE.MeshBasicMaterial)) {
+            o.visible = false;
+            hidden.push(o);
+          }
+        });
+        try {
+          before(frame);
+        } finally {
+          for (const o of hidden) o.visible = true;
+        }
+      };
+    }
+    const floor = buildMirrorFloorKn(planar);
     this.group.add(floor);
     this.disposables.push(floor.geometry, floor.material as THREE.Material);
     // ba hồ nước tĩnh (r 9–12): bắc (trước vòng gương trăng) và hai bên, tránh khu giữa và lối vào
