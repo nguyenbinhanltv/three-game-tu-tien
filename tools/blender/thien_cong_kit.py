@@ -453,7 +453,7 @@ class KB(bs.Builder):
         finally:
             bs.ROOF, bs.GOLD = ROOF_SAVE
 
-    def text(self, body, x, y, z, size, depth, color, yaw=0.0):
+    def text(self, body, x, y, z, size, depth, color, yaw=0.0, fit_w=None, fit_h=None, bold=0.0):
         """Chữ Việt khắc nổi (font thư pháp Charm Bold, OFL, cùng font gốc của bộ nét cọ tên đạo hiệu #297; ở ../dtl-asset-source/font): chuỗi `body` căn giữa tại (x, y, z), mặt chữ hướng +z.
         Không có font thì bỏ qua (bản dựng vẫn chạy)."""
         import bmesh as _bm
@@ -469,6 +469,7 @@ class KB(bs.Builder):
         cu.extrude = depth / 2
         cu.align_x = 'CENTER'
         cu.align_y = 'CENTER'
+        cu.offset = bold * size  # làm đậm nét (offset đường viền)
         ob = bpy.data.objects.new('txt', cu)
         bpy.context.scene.collection.objects.link(ob)
         bpy.context.view_layer.update()
@@ -477,9 +478,19 @@ class KB(bs.Builder):
         bm = _bm.new()
         bm.from_mesh(me)
         _bm.ops.triangulate(bm, faces=bm.faces[:])
+        # Co/giãn đồng dạng để chữ chiếm `fit_w` theo chiều ngang (và không vượt `fit_h`), căn giữa theo hộp bao.
+        xs = [v.co.x for v in bm.verts]
+        ys = [v.co.y for v in bm.verts]
+        k = 1.0
+        if fit_w and xs:
+            k = fit_w / max(max(xs) - min(xs), 1e-6)
+            if fit_h and ys:
+                k = min(k, fit_h / max(max(ys) - min(ys), 1e-6))
+        mx = (max(xs) + min(xs)) / 2 if xs else 0.0
+        my = (max(ys) + min(ys)) / 2 if ys else 0.0
         c, sn = math.cos(yaw), math.sin(yaw)
         for f in bm.faces:
-            pts = [(x + v.co.x * c + v.co.z * sn, y + v.co.y, z - v.co.x * sn + v.co.z * c) for v in f.verts]
+            pts = [(x + (v.co.x - mx) * k * c + v.co.z * sn, y + (v.co.y - my) * k, z - (v.co.x - mx) * k * sn + v.co.z * c) for v in f.verts]
             self.face(pts, color)
         bm.free()
         ev.to_mesh_clear()
@@ -879,10 +890,10 @@ def _(b):
 
 @part('hoanh_phi', 'tuong')
 def _(b):
-    b.box(0, 0, 0, 5.8, 1.3, 0.3, INK)
+    b.box(0, 0, 0, 5.8, 1.3, 0.3, VERMILION_DARK)
     for sy in (-1, 1):
         b.box(0, sy * 0.58, 0.17, 5.8, 0.14, 0.08, GILD)
-    b.text('Thiên Kiếm Điện', 0, 0, 0.17, 0.62, 0.12, GILD_TEXT)
+    b.text('Thiên Kiếm Điện', 0, 0, 0.17, 0.62, 0.14, GILD_TEXT, fit_w=4.05, fit_h=0.85, bold=0.045)
     for sx in (-1, 1):
         b.box(sx * 3.0, 0, 0, 0.2, 1.5, 0.4, GILD)
 
@@ -1068,13 +1079,13 @@ def _(b):
         b.curved_hip(sx * 11.9, 7.4, 0, 7.4, 2.4, 1.5, overhang=1.3, lift=0.9)
         b.dougong(sx * 8, 10.4, 0, 1.0)
     b.box(0, 9.4, 0, 17.5, 1.0, 1.1, VERMILION_DARK)
-    # Biển hiệu: gỗ sơn mực viền vàng, chữ "Lạc Kiếm Tông" khắc nổi vàng.
-    b.box(0, 7.2, 0, 6.8, 1.9, 0.4, INK)
+    # Biển hiệu: gỗ sơn son sẫm viền vàng dày, chữ "Lạc Kiếm Tông" vàng khắc nổi đậm chiếm ~70% bề ngang biển.
+    b.box(0, 7.2, 0, 6.8, 1.9, 0.4, VERMILION_DARK)
     for sx in (-1, 1):
-        b.box(sx * 3.3, 7.2, 0.22, 0.2, 1.9, 0.1, GILD)
+        b.box(sx * 3.3, 7.2, 0.23, 0.26, 1.9, 0.12, GILD)
     for sy in (-1, 1):
-        b.box(0, 7.2 + sy * 0.9, 0.22, 6.8, 0.2, 0.1, GILD)
-    b.text('Lạc Kiếm Tông', 0, 7.2, 0.22, 0.95, 0.14, GILD_TEXT)
+        b.box(0, 7.2 + sy * 0.88, 0.23, 6.8, 0.26, 0.12, GILD)
+    b.text('Lạc Kiếm Tông', 0, 7.2, 0.21, 1.2, 0.2, GILD_TEXT, fit_w=4.8, fit_h=1.25, bold=0.045)
     b.curved_hip(0, 10.4, 0, 18, 3.2, 2.6, overhang=1.8, lift=1.3)
 
 

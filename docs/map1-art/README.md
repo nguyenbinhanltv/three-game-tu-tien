@@ -69,3 +69,8 @@ Người dùng chọn phong cách B (bản tả thực, điện ảnh). Giữ b�
 - `resolveGroundSet` (`base/groundTextures.ts`): bộ 2K `terrain-lk` chỉ nạp ở **Cao/Cực cao**; **Thấp/Vừa** nạp bộ `terrain` 1024² (cùng mặt nạ). Đổi preset lúc chơi: `Game.syncGroundSet` nạp bộ đúng, thay rồi giải phóng bộ cũ. Sau khi tải lên GPU, `DataArrayTexture.onUpdate` bỏ mảng nguồn khỏi heap JS.
 - VRAM tính toán (RGBA8 + mip): bộ 2K màu 8 × 2048² ≈ 179 MB + pháp tuyến 8 × 1024² ≈ 45 MB ≈ 224 MB; bộ 1024² ≈ 45 + 11 ≈ 56 MB. Cộng GLB/KTX2 kiến trúc, cây, mây, hậu kỳ vẫn dưới ngân sách 512 MB texture (số `textures` của renderer: 105 ở Cao, 103 ở Vừa).
 - Đo heap JS (`performance.memory.usedJSHeapSize`, Chrome headless, Vân Lam, góc sân, 1080p, `pnpm shots lackiem --perf 1 --preset <p>`): Cao **443 MB** sau khi bỏ mảng nguồn so với **627 MB** nếu giữ (−184 MB); Vừa 510 MB (số đo thô, còn lẫn heap của game và tab thử, không so sánh trực tiếp với Cao). WebGL2 Cao 581 MB. `perfSample` ghi thêm `heapMB`.
+
+### Chữ biển và bậc cổng (vòng 4)
+
+- `KB.text` nhận `fit_w`/`fit_h`/`bold`: chữ co giãn đồng dạng để chiếm ~70% bề ngang tấm (biển cổng 4,8/6,8 m, hoành phi 4,05/5,8 m, thân kiếm 1,6 m), làm đậm nét bằng offset đường viền (`cu.offset`), nền biển sơn son sẫm + viền vàng dày để tương phản.
+- Bậc ngoài cổng (`sect.ts`): ba tấm mỗi bậc cao thấp lệch trên nền mạch tối, màu đá ngọc trầm, gờ vát tối ở mép, rêu bám mạch.
