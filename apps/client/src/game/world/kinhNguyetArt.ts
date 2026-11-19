@@ -39,7 +39,6 @@ import { DungeonFx } from './dungeonFx';
 
 const SEED = 20261119;
 const CENTER = LEVELS.kinh_nguyet!.dungeon!.center;
-const CENTER_Y = heightAt(CENTER.x, CENTER.z);
 
 /** Vòm điện (khớp `DOME_R/DOME_H` của `tools/blender/kinh_nguyet_arch.py`). */
 export const KN_DOME = { r: 135, h: 80 };
@@ -181,7 +180,9 @@ function reflectiveSurface(
   // trăng trong phản chiếu giảm còn ~35% (bản gốc cháy thành mảng trắng lớn trên sàn)
   const refl = skyColor(rd, 0.35);
   // phản chiếu phẳng của vòng gương trăng: cắt tia phản xạ với mặt phẳng z = RING.z (tương đối tâm sảnh), trúng đĩa/vành thì lấy màu gương
-  const relY = positionWorld.y.sub(CENTER_Y);
+  // cao độ tâm sảnh tính lúc dựng (Kính Nguyệt đã là level hoạt động), không lúc import module (khi level hiện tại có thể có địa hình khác)
+  const centerY = heightAt(CENTER.x, CENTER.z);
+  const relY = positionWorld.y.sub(centerY);
   const relZ = positionWorld.z.sub(CENTER.z);
   const rzc = rd.z.min(-0.02);
   const tHit = float(RING.z).sub(relZ).div(rzc);
