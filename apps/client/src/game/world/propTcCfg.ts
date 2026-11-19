@@ -5,6 +5,8 @@ interface Cfg {
   lod: [number, number];
   decor?: boolean;
   shadow?: boolean;
+  /** Vải đung đưa theo gió: shader đọc trọng số ở UV.x của material `cloth` (0 mép treo → 1 đầu tự do). */
+  sway?: boolean;
 }
 
 const SMALL: Cfg = { range: 150, lod: [20, 55], decor: true };
@@ -18,7 +20,7 @@ export const TC_NAMES: Record<string, Cfg> = {
   dinh_lu_dong: MEDIUM,
   gia_kiem: MEDIUM,
   bia_khac: MEDIUM,
-  co_phuong: { range: 300, lod: [40, 100] },
+  co_phuong: { range: 300, lod: [40, 100], sway: true },
   lo_luyen_dan: MEDIUM,
   chuong_dong: LARGE,
   trong: MEDIUM,

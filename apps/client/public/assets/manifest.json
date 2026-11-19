@@ -9586,8 +9586,8 @@
       "id": "prop_tc_ban_ghe_da",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_ban_ghe_da.glb",
-      "file": "prop_tc_ban_ghe_da.97f4c1c135.glb",
-      "bytes": 633500,
+      "file": "prop_tc_ban_ghe_da.a7c121b63e.glb",
+      "bytes": 633884,
       "rawBytes": 9813380,
       "triangles": 1720,
       "rawTriangles": 1720,
@@ -9661,8 +9661,8 @@
       "id": "prop_tc_ban_ghe_da_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_ban_ghe_da_2.glb",
-      "file": "prop_tc_ban_ghe_da_2.a0b9da24a6.glb",
-      "bytes": 629996,
+      "file": "prop_tc_ban_ghe_da_2.d4dc602ce3.glb",
+      "bytes": 629932,
       "rawBytes": 9804604,
       "triangles": 1730,
       "rawTriangles": 1730,
@@ -9736,11 +9736,11 @@
       "id": "prop_tc_bia_khac",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_bia_khac.glb",
-      "file": "prop_tc_bia_khac.a32482474a.glb",
-      "bytes": 1272024,
-      "rawBytes": 18502304,
-      "triangles": 4995,
-      "rawTriangles": 7558,
+      "file": "prop_tc_bia_khac.a6b794788c.glb",
+      "bytes": 1554404,
+      "rawBytes": 21915480,
+      "triangles": 3422,
+      "rawTriangles": 3422,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -9768,6 +9768,33 @@
         },
         {
           "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
           "mimeType": "image/ktx2",
           "width": 512,
           "height": 512,
@@ -9806,30 +9833,30 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4995
+          "triangles": 3422
         },
         {
           "level": 1,
-          "triangles": 1995,
-          "target": 1998
+          "triangles": 1365,
+          "target": 1369
         },
         {
           "level": 2,
-          "triangles": 746,
-          "target": 749
+          "triangles": 510,
+          "target": 513
         }
       ],
       "dims": {
         "raw": {
           "width": 1.7,
-          "height": 3.03,
+          "height": 3.16,
           "depth": 0.9,
           "minY": 0
         },
         "build": {
           "width": 1.7002,
-          "height": 3.03,
-          "depth": 0.9,
+          "height": 3.16,
+          "depth": 0.9001,
           "minY": 0
         }
       }
@@ -9838,11 +9865,11 @@
       "id": "prop_tc_bia_khac_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_bia_khac_2.glb",
-      "file": "prop_tc_bia_khac_2.7bc25772b4.glb",
-      "bytes": 1264508,
-      "rawBytes": 18289048,
-      "triangles": 4991,
-      "rawTriangles": 5462,
+      "file": "prop_tc_bia_khac_2.795a6e8018.glb",
+      "bytes": 1554740,
+      "rawBytes": 21913408,
+      "triangles": 3396,
+      "rawTriangles": 3396,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -9870,6 +9897,33 @@
         },
         {
           "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
           "mimeType": "image/ktx2",
           "width": 512,
           "height": 512,
@@ -9908,30 +9962,30 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4991
+          "triangles": 3396
         },
         {
           "level": 1,
-          "triangles": 1994,
-          "target": 1996
+          "triangles": 1353,
+          "target": 1358
         },
         {
           "level": 2,
-          "triangles": 748,
-          "target": 749
+          "triangles": 507,
+          "target": 509
         }
       ],
       "dims": {
         "raw": {
           "width": 1.7,
-          "height": 3.43,
+          "height": 3.56,
           "depth": 0.9,
           "minY": 0
         },
         "build": {
-          "width": 1.7001,
-          "height": 3.43,
-          "depth": 0.8999,
+          "width": 1.6998,
+          "height": 3.56,
+          "depth": 0.9001,
           "minY": 0
         }
       }
@@ -9940,11 +9994,11 @@
       "id": "prop_tc_chuong_dong",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_chuong_dong.glb",
-      "file": "prop_tc_chuong_dong.435bb8ab92.glb",
-      "bytes": 1126432,
-      "rawBytes": 12593400,
-      "triangles": 636,
-      "rawTriangles": 636,
+      "file": "prop_tc_chuong_dong.297fccc62a.glb",
+      "bytes": 1468052,
+      "rawBytes": 16533380,
+      "triangles": 1340,
+      "rawTriangles": 1340,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10023,35 +10077,62 @@
           "slots": [
             "metallicRoughnessTexture"
           ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 636
+          "triangles": 1340
         },
         {
           "level": 1,
-          "triangles": 251,
-          "target": 254
+          "triangles": 530,
+          "target": 536
         },
         {
           "level": 2,
-          "triangles": 91,
-          "target": 95
+          "triangles": 197,
+          "target": 201
         }
       ],
       "dims": {
         "raw": {
           "width": 3.3,
           "height": 3.6,
-          "depth": 2.5,
+          "depth": 2.506,
           "minY": 0
         },
         "build": {
           "width": 3.2998,
           "height": 3.6,
-          "depth": 2.4999,
+          "depth": 2.5061,
           "minY": 0
         }
       }
@@ -10060,11 +10141,11 @@
       "id": "prop_tc_chuong_dong_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_chuong_dong_2.glb",
-      "file": "prop_tc_chuong_dong_2.6714aac2ea.glb",
-      "bytes": 1126136,
-      "rawBytes": 12593364,
-      "triangles": 636,
-      "rawTriangles": 636,
+      "file": "prop_tc_chuong_dong_2.a7b6c2a9d6.glb",
+      "bytes": 1467832,
+      "rawBytes": 16533368,
+      "triangles": 1340,
+      "rawTriangles": 1340,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10143,35 +10224,62 @@
           "slots": [
             "metallicRoughnessTexture"
           ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 636
+          "triangles": 1340
         },
         {
           "level": 1,
-          "triangles": 252,
-          "target": 254
+          "triangles": 530,
+          "target": 536
         },
         {
           "level": 2,
-          "triangles": 93,
-          "target": 95
+          "triangles": 199,
+          "target": 201
         }
       ],
       "dims": {
         "raw": {
           "width": 4.125,
           "height": 4.4625,
-          "depth": 2.7125,
+          "depth": 2.711,
           "minY": 0
         },
         "build": {
           "width": 4.1253,
           "height": 4.4625,
-          "depth": 2.7126,
+          "depth": 2.711,
           "minY": 0
         }
       }
@@ -10180,11 +10288,11 @@
       "id": "prop_tc_co_phuong",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_co_phuong.glb",
-      "file": "prop_tc_co_phuong.fd5e7261f0.glb",
-      "bytes": 1133460,
-      "rawBytes": 12635728,
-      "triangles": 1084,
-      "rawTriangles": 1084,
+      "file": "prop_tc_co_phuong.7e950a2cd4.glb",
+      "bytes": 1428300,
+      "rawBytes": 16456260,
+      "triangles": 456,
+      "rawTriangles": 456,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10263,35 +10371,62 @@
           "slots": [
             "metallicRoughnessTexture"
           ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 1084
+          "triangles": 456
         },
         {
           "level": 1,
-          "triangles": 426,
-          "target": 434
+          "triangles": 174,
+          "target": 182
         },
         {
           "level": 2,
-          "triangles": 158,
-          "target": 163
+          "triangles": 64,
+          "target": 68
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.5,
-          "height": 5.14,
-          "depth": 0.5706,
+          "width": 1.5613,
+          "height": 5.5,
+          "depth": 0.5614,
           "minY": 0
         },
         "build": {
-          "width": 1.4998,
-          "height": 5.14,
-          "depth": 0.5704,
+          "width": 1.5612,
+          "height": 5.5,
+          "depth": 0.5613,
           "minY": 0
         }
       }
@@ -10300,11 +10435,11 @@
       "id": "prop_tc_co_phuong_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_co_phuong_2.glb",
-      "file": "prop_tc_co_phuong_2.a533a183cd.glb",
-      "bytes": 1143176,
-      "rawBytes": 12686060,
-      "triangles": 1792,
-      "rawTriangles": 1792,
+      "file": "prop_tc_co_phuong_2.7a138b8f2b.glb",
+      "bytes": 1432912,
+      "rawBytes": 16475076,
+      "triangles": 684,
+      "rawTriangles": 684,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10383,35 +10518,62 @@
           "slots": [
             "metallicRoughnessTexture"
           ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 1792
+          "triangles": 684
         },
         {
           "level": 1,
-          "triangles": 708,
-          "target": 717
+          "triangles": 266,
+          "target": 274
         },
         {
           "level": 2,
-          "triangles": 263,
-          "target": 269
+          "triangles": 98,
+          "target": 103
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.628,
-          "height": 5.14,
-          "depth": 0.5706,
+          "width": 1.6176,
+          "height": 5.5,
+          "depth": 0.5614,
           "minY": 0
         },
         "build": {
-          "width": 1.6278,
-          "height": 5.14,
-          "depth": 0.5704,
+          "width": 1.6176,
+          "height": 5.5,
+          "depth": 0.5613,
           "minY": 0
         }
       }
@@ -10420,8 +10582,8 @@
       "id": "prop_tc_den_da",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_den_da.glb",
-      "file": "prop_tc_den_da.2b442d882e.glb",
-      "bytes": 625788,
+      "file": "prop_tc_den_da.646e9b1495.glb",
+      "bytes": 625932,
       "rawBytes": 9829268,
       "triangles": 1550,
       "rawTriangles": 1550,
@@ -10495,8 +10657,8 @@
       "id": "prop_tc_den_da_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_den_da_2.glb",
-      "file": "prop_tc_den_da_2.c148d3799b.glb",
-      "bytes": 625644,
+      "file": "prop_tc_den_da_2.e134b08bb2.glb",
+      "bytes": 625424,
       "rawBytes": 9830248,
       "triangles": 1550,
       "rawTriangles": 1550,
@@ -10570,46 +10732,74 @@
       "id": "prop_tc_dinh_lu_dong",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_dinh_lu_dong.glb",
-      "file": "prop_tc_dinh_lu_dong.4158446ee2.glb",
-      "bytes": 63788,
-      "rawBytes": 182800,
-      "triangles": 3220,
-      "rawTriangles": 3220,
+      "file": "prop_tc_dinh_lu_dong.248c77e057.glb",
+      "bytes": 476872,
+      "rawBytes": 4766844,
+      "triangles": 5000,
+      "rawTriangles": 12306,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
       "bones": 0,
       "animations": [],
-      "ktx2": false,
-      "textures": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
       "lods": [
         {
           "level": 0,
-          "triangles": 3220
+          "triangles": 5000
         },
         {
           "level": 1,
-          "triangles": 1288,
-          "target": 1288
+          "triangles": 1990,
+          "target": 2000
         },
         {
           "level": 2,
-          "triangles": 482,
-          "target": 483
+          "triangles": 742,
+          "target": 750
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.1852,
-          "height": 2.91,
-          "depth": 1.9105,
-          "minY": 0
+          "width": 2.1459,
+          "height": 3.2346,
+          "depth": 2.1359,
+          "minY": -0.0346
         },
         "build": {
-          "width": 2.1853,
-          "height": 2.91,
-          "depth": 1.9106,
-          "minY": 0
+          "width": 2.1068,
+          "height": 3.2346,
+          "depth": 2.136,
+          "minY": -0.0346
         }
       }
     },
@@ -10617,46 +10807,74 @@
       "id": "prop_tc_dinh_lu_dong_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_dinh_lu_dong_2.glb",
-      "file": "prop_tc_dinh_lu_dong_2.0ab62464d0.glb",
-      "bytes": 71108,
-      "rawBytes": 202048,
-      "triangles": 3440,
-      "rawTriangles": 3440,
+      "file": "prop_tc_dinh_lu_dong_2.07d54ec557.glb",
+      "bytes": 469708,
+      "rawBytes": 4515040,
+      "triangles": 4999,
+      "rawTriangles": 9631,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
       "bones": 0,
       "animations": [],
-      "ktx2": false,
-      "textures": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
       "lods": [
         {
           "level": 0,
-          "triangles": 3440
+          "triangles": 4999
         },
         {
           "level": 1,
-          "triangles": 1512,
-          "target": 1376
+          "triangles": 1999,
+          "target": 2000
         },
         {
           "level": 2,
-          "triangles": 515,
-          "target": 516
+          "triangles": 746,
+          "target": 750
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.1852,
-          "height": 2.91,
-          "depth": 1.9105,
-          "minY": 0
+          "width": 1.9409,
+          "height": 3.2346,
+          "depth": 1.968,
+          "minY": -0.0346
         },
         "build": {
-          "width": 2.1853,
-          "height": 2.91,
-          "depth": 1.9106,
-          "minY": 0
+          "width": 1.8904,
+          "height": 3.2346,
+          "depth": 1.9224,
+          "minY": -0.0346
         }
       }
     },
@@ -10664,11 +10882,11 @@
       "id": "prop_tc_gia_kiem",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_gia_kiem.glb",
-      "file": "prop_tc_gia_kiem.9d3a75f71d.glb",
-      "bytes": 1060084,
-      "rawBytes": 4447352,
-      "triangles": 920,
-      "rawTriangles": 920,
+      "file": "prop_tc_gia_kiem.ad36f53df7.glb",
+      "bytes": 1940676,
+      "rawBytes": 18030200,
+      "triangles": 1032,
+      "rawTriangles": 1032,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10676,6 +10894,33 @@
       "animations": [],
       "ktx2": true,
       "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
         {
           "name": "arch_sect_lacquer",
           "mimeType": "image/ktx2",
@@ -10722,6 +10967,33 @@
           ]
         },
         {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
           "name": "metal_plate_nor_gl_2k",
           "mimeType": "image/ktx2",
           "width": 512,
@@ -10752,31 +11024,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 920
+          "triangles": 1032
         },
         {
           "level": 1,
-          "triangles": 366,
-          "target": 368
+          "triangles": 409,
+          "target": 413
         },
         {
           "level": 2,
-          "triangles": 135,
-          "target": 138
+          "triangles": 152,
+          "target": 155
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.7,
-          "height": 1.9703,
-          "depth": 0.9,
+          "width": 2.8,
+          "height": 2.08,
+          "depth": 1,
           "minY": 0
         },
         "build": {
-          "width": 2.7,
-          "height": 1.9702,
-          "depth": 0.8999,
-          "minY": 0.0001
+          "width": 2.8,
+          "height": 2.0801,
+          "depth": 0.9999,
+          "minY": 0
         }
       }
     },
@@ -10784,11 +11056,11 @@
       "id": "prop_tc_gia_kiem_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_gia_kiem_2.glb",
-      "file": "prop_tc_gia_kiem_2.6bfa214d96.glb",
-      "bytes": 1065616,
-      "rawBytes": 4461048,
-      "triangles": 1074,
-      "rawTriangles": 1074,
+      "file": "prop_tc_gia_kiem_2.dab128d036.glb",
+      "bytes": 1945484,
+      "rawBytes": 18045276,
+      "triangles": 1202,
+      "rawTriangles": 1202,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10796,6 +11068,33 @@
       "animations": [],
       "ktx2": true,
       "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
         {
           "name": "arch_sect_lacquer",
           "mimeType": "image/ktx2",
@@ -10842,6 +11141,33 @@
           ]
         },
         {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
           "name": "metal_plate_nor_gl_2k",
           "mimeType": "image/ktx2",
           "width": 512,
@@ -10872,31 +11198,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 1074
+          "triangles": 1202
         },
         {
           "level": 1,
-          "triangles": 427,
-          "target": 430
+          "triangles": 478,
+          "target": 481
         },
         {
           "level": 2,
-          "triangles": 159,
-          "target": 161
+          "triangles": 177,
+          "target": 180
         }
       ],
       "dims": {
         "raw": {
-          "width": 3.3,
-          "height": 1.9703,
-          "depth": 0.9,
+          "width": 3.4,
+          "height": 2.08,
+          "depth": 1,
           "minY": 0
         },
         "build": {
-          "width": 3.3,
-          "height": 1.9705,
-          "depth": 0.9001,
-          "minY": -0.0001
+          "width": 3.4,
+          "height": 2.08,
+          "depth": 1,
+          "minY": 0
         }
       }
     },
@@ -10904,11 +11230,11 @@
       "id": "prop_tc_lo_luyen_dan",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_lo_luyen_dan.glb",
-      "file": "prop_tc_lo_luyen_dan.9e220472d9.glb",
-      "bytes": 538760,
-      "rawBytes": 1653116,
-      "triangles": 2072,
-      "rawTriangles": 2072,
+      "file": "prop_tc_lo_luyen_dan.79148f82b7.glb",
+      "bytes": 1591332,
+      "rawBytes": 15663928,
+      "triangles": 4984,
+      "rawTriangles": 6578,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10917,6 +11243,60 @@
       "ktx2": true,
       "textures": [
         {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
           "name": "metal_plate_nor_gl_2k",
           "mimeType": "image/ktx2",
           "width": 512,
@@ -10947,30 +11327,30 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 2072
+          "triangles": 4984
         },
         {
           "level": 1,
-          "triangles": 826,
-          "target": 829
+          "triangles": 1990,
+          "target": 1994
         },
         {
           "level": 2,
-          "triangles": 308,
-          "target": 311
+          "triangles": 744,
+          "target": 748
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.3641,
-          "height": 2.95,
-          "depth": 1.9253,
+          "width": 2.526,
+          "height": 3.1,
+          "depth": 2.2727,
           "minY": 0
         },
         "build": {
-          "width": 2.3641,
-          "height": 2.95,
-          "depth": 1.9254,
+          "width": 2.5259,
+          "height": 3.1,
+          "depth": 2.2537,
           "minY": 0
         }
       }
@@ -10979,11 +11359,11 @@
       "id": "prop_tc_lo_luyen_dan_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_lo_luyen_dan_2.glb",
-      "file": "prop_tc_lo_luyen_dan_2.90a4daa657.glb",
-      "bytes": 538824,
-      "rawBytes": 1654584,
-      "triangles": 2096,
-      "rawTriangles": 2096,
+      "file": "prop_tc_lo_luyen_dan_2.b62d06f059.glb",
+      "bytes": 1592460,
+      "rawBytes": 15663564,
+      "triangles": 4984,
+      "rawTriangles": 6576,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10991,6 +11371,60 @@
       "animations": [],
       "ktx2": true,
       "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
         {
           "name": "metal_plate_nor_gl_2k",
           "mimeType": "image/ktx2",
@@ -11022,30 +11456,30 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 2096
+          "triangles": 4984
         },
         {
           "level": 1,
-          "triangles": 835,
-          "target": 838
+          "triangles": 1989,
+          "target": 1994
         },
         {
           "level": 2,
-          "triangles": 306,
-          "target": 314
+          "triangles": 742,
+          "target": 748
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.7063,
-          "height": 2.95,
-          "depth": 2.2111,
+          "width": 2.8918,
+          "height": 3.1,
+          "depth": 2.5555,
           "minY": 0
         },
         "build": {
-          "width": 2.7062,
-          "height": 2.95,
-          "depth": 2.2109,
+          "width": 2.8919,
+          "height": 3.1,
+          "depth": 2.538,
           "minY": 0
         }
       }
@@ -11054,11 +11488,11 @@
       "id": "prop_tc_lu_huong",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_lu_huong.glb",
-      "file": "prop_tc_lu_huong.252d1e5f7f.glb",
-      "bytes": 305468,
-      "rawBytes": 1655516,
-      "triangles": 2020,
-      "rawTriangles": 2020,
+      "file": "prop_tc_lu_huong.eeb0f77d1b.glb",
+      "bytes": 767336,
+      "rawBytes": 5830160,
+      "triangles": 4998,
+      "rawTriangles": 5744,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -11083,36 +11517,63 @@
           "slots": [
             "metallicRoughnessTexture"
           ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 2020
+          "triangles": 4998
         },
         {
           "level": 1,
-          "triangles": 807,
-          "target": 808
+          "triangles": 1998,
+          "target": 1999
         },
         {
           "level": 2,
-          "triangles": 301,
-          "target": 303
+          "triangles": 748,
+          "target": 750
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.8602,
-          "height": 1.4486,
-          "depth": 1.1933,
-          "minY": 0
+          "width": 1.3351,
+          "height": 1.466,
+          "depth": 1.3351,
+          "minY": -0.0174
         },
         "build": {
-          "width": 1.8602,
-          "height": 1.4487,
-          "depth": 1.1934,
-          "minY": -0.0001
+          "width": 1.335,
+          "height": 1.466,
+          "depth": 1.335,
+          "minY": -0.0174
         }
       }
     },
@@ -11120,11 +11581,11 @@
       "id": "prop_tc_lu_huong_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_lu_huong_2.glb",
-      "file": "prop_tc_lu_huong_2.1a02d8391a.glb",
-      "bytes": 306456,
-      "rawBytes": 1656092,
-      "triangles": 2036,
-      "rawTriangles": 2036,
+      "file": "prop_tc_lu_huong_2.da0c8b463c.glb",
+      "bytes": 766244,
+      "rawBytes": 5831372,
+      "triangles": 4997,
+      "rawTriangles": 5744,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -11149,36 +11610,63 @@
           "slots": [
             "metallicRoughnessTexture"
           ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 2036
+          "triangles": 4997
         },
         {
           "level": 1,
-          "triangles": 813,
-          "target": 814
+          "triangles": 1998,
+          "target": 1999
         },
         {
           "level": 2,
-          "triangles": 303,
-          "target": 305
+          "triangles": 741,
+          "target": 750
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.6306,
-          "height": 1.2326,
-          "depth": 1.0133,
-          "minY": 0
+          "width": 1.153,
+          "height": 1.25,
+          "depth": 1.153,
+          "minY": -0.0174
         },
         "build": {
-          "width": 1.6306,
-          "height": 1.2327,
-          "depth": 1.0133,
-          "minY": 0
+          "width": 1.153,
+          "height": 1.25,
+          "depth": 1.153,
+          "minY": -0.0174
         }
       }
     },
@@ -11186,9 +11674,9 @@
       "id": "prop_tc_trong",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_trong.glb",
-      "file": "prop_tc_trong.bcbfce0cc8.glb",
-      "bytes": 623000,
-      "rawBytes": 3051200,
+      "file": "prop_tc_trong.019aad91cb.glb",
+      "bytes": 935552,
+      "rawBytes": 6886340,
       "triangles": 2716,
       "rawTriangles": 2716,
       "lod0Cap": 5000,
@@ -11242,6 +11730,33 @@
           "slots": [
             "metallicRoughnessTexture"
           ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
         }
       ],
       "lods": [
@@ -11251,12 +11766,12 @@
         },
         {
           "level": 1,
-          "triangles": 1083,
+          "triangles": 1082,
           "target": 1086
         },
         {
           "level": 2,
-          "triangles": 408,
+          "triangles": 409,
           "target": 407
         }
       ],
@@ -11279,9 +11794,9 @@
       "id": "prop_tc_trong_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_trong_2.glb",
-      "file": "prop_tc_trong_2.2af927c5ac.glb",
-      "bytes": 620856,
-      "rawBytes": 3047640,
+      "file": "prop_tc_trong_2.b0e7c6f125.glb",
+      "bytes": 931412,
+      "rawBytes": 6883536,
       "triangles": 2668,
       "rawTriangles": 2668,
       "lod0Cap": 5000,
@@ -11335,6 +11850,33 @@
           "slots": [
             "metallicRoughnessTexture"
           ]
+        },
+        {
+          "name": "green_metal_rust_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_metal",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "green_metal_rust_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
         }
       ],
       "lods": [
@@ -11344,7 +11886,7 @@
         },
         {
           "level": 1,
-          "triangles": 1065,
+          "triangles": 1066,
           "target": 1067
         },
         {

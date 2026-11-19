@@ -24,6 +24,8 @@ bs.UV_ORIGIN, bs.UV_RANGE = 24.0, 48
 # ---------- vật liệu thêm ----------
 kit.PBR_SOURCES['rock'] = ('rock_boulder_cracked', 3.0, 1024, 1024)
 kit.PBR_SOURCES['darkrock'] = ('dark_rock', 3.0, 1024, 1024)
+kit.PBR_SOURCES['metal'] = ('green_metal_rust', 1.6, 2048, 2048)  # đồng cổ: vân rỗ, normal mòn, rỉ xanh (màu tô patina bằng màu đỉnh)
+bs.MATERIALS['metal'] = Mat(0.55, 0.5, 'metal', 1.6, True, 0.04)
 bs.MATERIALS['rock'] = Mat(0.92, 0.0, 'stone', 3.0, True, 0.03)
 bs.MATERIALS['darkrock'] = Mat(0.88, 0.0, 'stone', 3.0, True, 0.03)
 _old_find = kit._find_pbr
@@ -111,6 +113,23 @@ _src = textwrap.dedent(inspect.getsource(kit.KB.text)).replace('cu.extrude = dep
 _ns = dict(kit.__dict__)
 exec(_src, _ns)
 kit.KB.text = _ns['text']
+
+# ---------- patina cho đồng: rỉ xanh bám mặt ngửa, chỗ thấp, ngẫu nhiên; mép sáng lên (mòn) ----------
+VERDIGRIS = bs.srgb(0x3F8F7A)
+_orig_face = kit.KB.face
+
+
+def _face(self, pts, color, smooth=False):
+    if color.mat == 'metal' and getattr(self, 'patina', 0.0) > 0 and color.rgb[0] > color.rgb[2]:  # chỉ đồng/vàng (đỏ > lam), không đụng đồng đã rỉ sẵn
+        _, ny, _ = bs.newell(pts)
+        low = min(p[1] for p in pts)
+        t = self.rng.uniform(0.0, 0.35) + 0.4 * max(0.0, ny) + 0.25 * max(0.0, 1 - low / 1.2)
+        t = min(0.85, t * self.patina)
+        color = bs.Paint(tuple(c * (1 - t) + v * t for c, v in zip(color.rgb, VERDIGRIS)), color.mat)
+    _orig_face(self, pts, color, smooth)
+
+
+kit.KB.face = _face
 
 # ---------- bảng màu ----------
 STONE_L = paint(0xB8B9AE, 'stone')
@@ -370,7 +389,9 @@ def item(name):
 
 
 def new_b(seed):
-    return kit.new_builder(seed=seed, moss=0.5)
+    b = kit.new_builder(seed=seed, moss=0.5)
+    b.patina = 1.0
+    return b
 
 
 def patch_leaf_alpha(path):
@@ -414,3 +435,87 @@ def build_item(pid, name, v, seed, out_path):
     zs = [-v_[1] for v_ in b.verts]
     tris = sum(len(f) - 2 for f in b.faces)
     return {'tris': tris, 'size': [round(max(xs) - min(xs), 2), round(max(ys), 2), round(max(zs) - min(zs), 2)], 'keys': keys}
+
+
+# ---------- phù văn, hoa văn, vải ----------
+
+_GLYPHS = [
+    [(0, 0, 1, 0), (1, 0, 1, 1), (1, 1, 0, 1), (0, 1, 0, 2), (0, 2, 1, 2)],
+    [(0, 0, 0, 2), (0, 1, 1, 1), (1, 0, 1, 2), (0.5, 2, 1, 2)],
+    [(0, 0, 1, 0), (0.5, 0, 0.5, 2), (0, 1, 1, 1), (0, 2, 1, 2)],
+    [(0, 0, 1, 1), (1, 0, 0, 1), (0.5, 1, 0.5, 2), (0, 2, 1, 2)],
+    [(0, 0, 0, 2), (0, 0, 1, 0), (1, 0, 1, 1), (0, 1, 1, 1), (1, 1, 1, 2)],
+    [(0, 1, 1, 1), (0.5, 0, 0.5, 2), (0, 0, 0, 1), (1, 1, 1, 2), (0, 2, 0.5, 2)],
+    [(0, 0, 1, 0), (0, 0, 0, 2), (1, 0, 1, 2), (0, 1, 1, 1)],
+    [(0, 0, 0.5, 1), (1, 0, 0.5, 1), (0.5, 1, 0.5, 2), (0, 2, 1, 2), (0, 1, 0.3, 1.4)],
+]
+
+
+def rune(b, cx, cy, cz, w, h, color, seed=0, yaw=0.0, depth=0.03, thick=0.07, face='z'):
+    """Phù văn (một ô chữ góc cạnh) khắc/dát nổi trên mặt hướng +z (yaw quay quanh y); w × h mét, nét dày thick·w."""
+    g = _GLYPHS[seed % len(_GLYPHS)]
+    c, s = math.cos(yaw), math.sin(yaw)
+    for x0, y0, x1, y1 in g:
+        ax, ay = (x0 - 0.5) * w, (1 - y0 / 2.0 - 0.5) * h
+        bx, by = (x1 - 0.5) * w, (1 - y1 / 2.0 - 0.5) * h
+        L = math.hypot(bx - ax, by - ay)
+        if L < 1e-4:
+            continue
+        mx, my = (ax + bx) / 2, (ay + by) / 2
+        ang = math.atan2(by - ay, bx - ax)
+        tw = max(0.012, thick * w)
+        # nét = hộp mảnh xoay trong mặt phẳng chữ: dựng bằng 4 điểm rồi đùn depth
+        ux, uy = math.cos(ang) * (L / 2 + tw / 2), math.sin(ang) * (L / 2 + tw / 2)
+        vx, vy = -math.sin(ang) * tw / 2, math.cos(ang) * tw / 2
+        quad = [(mx - ux - vx, my - uy - vy), (mx + ux - vx, my + uy - vy), (mx + ux + vx, my + uy + vy), (mx - ux + vx, my - uy + vy)]
+
+        def P(x, y, z):
+            return (cx + x * c + z * s, cy + y, cz - x * s + z * c)
+
+        front = [P(x, y, depth) for x, y in quad]
+        back = [P(x, y, 0.0) for x, y in quad]
+        b.face(front, color)
+        for i in range(4):
+            j = (i + 1) % 4
+            b.face([back[i], back[j], front[j], front[i]], color)
+
+
+def rune_column(b, cx, y0, cz, w, h, n, color, seed=0, yaw=0.0, depth=0.03):
+    """Cột n phù văn xếp dọc từ y0 lên, tổng cao h."""
+    cell = h / n
+    for i in range(n):
+        rune(b, cx, y0 + h - cell * (i + 0.5), cz, w, cell * 0.8, color, seed + i * 3, yaw, depth)
+
+
+def meander(b, cy, r, h, color, n=24, depth=0.03):
+    """Đai hoa văn mây vuông (lôi văn) quanh thân tròn bán kính r tại độ cao cy: n ô, mỗi ô một khối chữ L nổi."""
+    for i in range(n):
+        a = (i + 0.5) / n * math.tau
+        x, z = math.cos(a) * (r + depth / 2), math.sin(a) * (r + depth / 2)
+        w = math.tau * r / n * 0.8
+        b.box(x, cy, z, depth, h * 0.9, w, color, yaw=-(a))
+        if i % 2:
+            b.box(x, cy + h * 0.3, z, depth * 1.4, h * 0.25, w * 0.55, color, yaw=-(a))
+
+
+def weight_uv(b, top, length):
+    """Gán trọng số lắc (0 ở mép treo, 1 ở đầu tự do) vào UV.x của mặt vừa thêm (vải không có texture nên UV rảnh); shader gió ở client đọc."""
+    pts = b.verts[-len(b.faces[-1]):]
+    # b.verts lưu toạ độ Blender (x, -z, y): độ cao = thành phần thứ ba
+    b.uvs[-1] = [(max(0.0, min(1.0, (top - v[2]) / length)), 0.0) for v in pts]
+
+
+def cloth_quad(b, pts, color, top, length):
+    b.face(pts, color)
+    weight_uv(b, top, length)
+
+
+def arch_outline(w, h, seg=10, rect=0.0):
+    """Viền cổng vòm: đáy rộng w, cao h (nửa trên là cung tròn)."""
+    r = w / 2
+    pts = [(-r, 0.0), (r, 0.0), (r, h - r)]
+    for i in range(1, seg):
+        a = i / seg * math.pi
+        pts.append((r * math.cos(a), h - r + r * math.sin(a)))
+    pts.append((-r, h - r))
+    return pts

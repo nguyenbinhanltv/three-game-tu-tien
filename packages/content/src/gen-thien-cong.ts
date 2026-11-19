@@ -6,12 +6,15 @@ import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { basePropsOf, TELE_PADS, terrainOf, WATER_Y, type HandProp } from '@dtl/shared';
+import { basePropsOf, TELE_PADS, thienCongColliders, terrainOf, WATER_Y, type HandProp } from '@dtl/shared';
 import { LEVELS, NPCS } from './index';
 import { SCENES, sectAxis } from './thienCongScenes';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const OUT = path.join(ROOT, 'packages/shared/src/props.thiencong.ts');
+const REAL_OUT = path.join(ROOT, 'packages/shared/src/props.thiencong.ts');
+/** `--check`: sinh ra file tạm rồi so với file thật (chạy lại phải ra y hệt; thoát 1 nếu lệch). */
+const CHECK = process.argv.includes('--check');
+const OUT = CHECK ? path.join(ROOT, 'packages/shared/src/props.thiencong.check.ts') : REAL_OUT;
 const ITEMS = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/blender/prop_tc_items.json'), 'utf8')).groups as Record<
   string,
   { name: string; vi: string; collider: number | [number, number, number][] }[]
@@ -21,6 +24,8 @@ const opt = (k: string) => (args.includes(k) ? args[args.indexOf(k) + 1] : undef
 const GROUPS = (opt('--groups') ?? Object.keys(ITEMS).join(',')).split(',');
 const ONLY = opt('--level');
 const SEED = 20261119;
+/** Hệ số mật độ cho số lượng rải ngẫu nhiên của `thienCongScenes.ts` (duyệt ảnh: bản đầu quá thưa, trước/sau không phân biệt được). */
+const DENSITY = 2.2;
 
 const groupOf = new Map<string, string>();
 const info = new Map<string, { collider: [number, number, number][]; foot: number }>();
@@ -70,8 +75,9 @@ for (const levelId of Object.keys(SCENES)) {
   const B = tr.playBounds;
   const sky = levelId === 'van_hai' || levelId === 'thien_khuyet';
   const base = basePropsOf(levelId);
+  const prevTc = new Set(thienCongColliders(levelId).map((c) => `${c.x},${c.z},${c.r}`));
   const solidBlock: Circle[] = [
-    ...tr.colliders.map((c) => ({ x: c.x, z: c.z, r: c.r })),
+    ...tr.colliders.filter((c) => !prevTc.has(`${c.x},${c.z},${c.r}`)).map((c) => ({ x: c.x, z: c.z, r: c.r })), // bỏ vòng va chạm của lần sinh trước (đã nằm trong địa hình)
     ...base.map((p) => ({ x: p.x, z: p.z, r: (p.r ?? 0) + 1.2 })),
   ];
   const anyBlock: Circle[] = [
@@ -101,6 +107,33 @@ for (const levelId of Object.keys(SCENES)) {
   const jobs = SCENES[levelId]!.flatMap((sc, si) => Object.entries(sc.items).map(([name, n]) => ({ sc, si, name, n }))).sort(
     (a, b) => order.indexOf(groupOf.get(a.name) ?? '') - order.indexOf(groupOf.get(b.name) ?? ''),
   );
+  // Bày tay (dx, dz tính từ tâm cảnh): cụm điểm nhấn dọc đường chính, quanh kiếm đài, trước điện… Không rải ngẫu nhiên, chỉ kiểm bản đồ.
+  for (const { sc, f } of SCENES[levelId]!.flatMap((sc) => (sc.fixed ?? []).map((f) => ({ sc, f })))) {
+    const g = groupOf.get(f.name);
+    if (!g || !GROUPS.includes(g)) continue;
+    const inf = info.get(f.name)!;
+    const x = Math.round((sc.at[0] + f.dx) * 10) / 10;
+    const z = Math.round((sc.at[1] + f.dz) * 10) / 10;
+    const sc2 = f.s ?? 1;
+    const prop: TcProp = { id: `prop_tc_${f.name}${f.v2 ? '_2' : ''}`, x, z, yaw: f.yaw ?? 0, s: sc2 };
+    if (inf.collider.length) {
+      const cy = Math.cos(prop.yaw);
+      const sy = Math.sin(prop.yaw);
+      prop.col = inf.collider.map(([dx, dz, r]) => ({
+        x: Math.round((x + (dx * cy + dz * sy) * sc2) * 10) / 10,
+        z: Math.round((z + (-dx * sy + dz * cy) * sc2) * 10) / 10,
+        r: Math.round(r * sc2 * 100) / 100,
+      }));
+    }
+    const hit = (prop.col ?? [{ x, z, r: 0.5 }]).find((c) => near(solidBlock, c.x, c.z, c.r));
+    if (hit) {
+      miss.push(`bày tay ${f.name} (${x}, ${z}) đè vật cản`);
+      continue;
+    }
+    list.push(prop);
+    spots.push({ x, z, r: inf.foot * sc2, solid: !!prop.col });
+    placed.push(prop);
+  }
   for (const { sc, si, name, n } of jobs) {
     const h0 = tr.heightAt(sc.at[0], sc.at[1]);
     const lo = sc.rMin ?? 0;
@@ -111,7 +144,7 @@ for (const levelId of Object.keys(SCENES)) {
       rand = rng(lvSeed + si * 7919 + [...name].reduce((a, c) => a * 31 + c.charCodeAt(0), 3));
       const inf = info.get(name)!;
       const solid = inf.collider.length > 0;
-      for (let k = 0; k < n; k++) {
+      for (let k = 0; k < Math.round(n * DENSITY); k++) {
         let ok = false;
         for (let tries = 0; tries < 160 && !ok; tries++) {
           const a = rand() * Math.PI * 2;
@@ -175,7 +208,7 @@ for (const levelId of Object.keys(SCENES)) {
   }
   out[levelId] = list;
   console.log(
-    `[tc] ${levelId}: ${list.length} prop (${list.filter((p) => p.col).length} có va chạm, ${list.reduce((a, p) => a + (p.col?.length ?? 0), 0)} vòng)${miss.length ? `, thiếu ${miss.length}: ${[...new Set(miss)].slice(0, 6).join('; ')}` : ''}`,
+    `[tc] ${levelId}: ${list.length} prop (${list.filter((p) => p.col).length} có va chạm, ${list.reduce((a, p) => a + (p.col?.length ?? 0), 0)} vòng)${miss.length ? `, thiếu ${miss.length}: ${[...new Set(miss)].slice(0, 40).join('; ')}` : ''}`,
   );
 }
 
@@ -211,4 +244,11 @@ export function thienCongColliders(levelId: string): { x: number; z: number; r: 
 `,
 );
 execSync(`pnpm exec prettier --write "${OUT}"`, { cwd: ROOT, stdio: 'ignore' }); // giữ khớp `pnpm format:check`
+if (CHECK) {
+  const norm = (f: string) => fs.readFileSync(f, 'utf8').replaceAll(String.fromCharCode(13), '');
+  const same = norm(OUT) === norm(REAL_OUT);
+  fs.rmSync(OUT);
+  console.log(same ? '[tc] --check: khớp, bộ sinh tất định' : '[tc] --check: LỆCH so với props.thiencong.ts, chạy lại bộ sinh');
+  process.exit(same ? 0 : 1);
+}
 console.log(`[tc] đã ghi ${path.relative(ROOT, OUT)}`);

@@ -1040,3 +1040,5 @@ Tác giả lấy từ API Poly Haven (`/info/<id>`) ngày 2026-11-19.
 
 Bổ sung (vòng chỉnh bản B): `metal_plate` ([Poly Haven](https://polyhaven.com/a/metal_plate), Rob Tuytel, CC0-1.0) cho thép cự kiếm; bộ mặt đất `terrain-lk` dùng cùng 8 texture Poly Haven CC0 của bộ `terrain` ở bản 2K; font [Charm Bold](https://fonts.google.com/specimen/Charm) (SIL OFL 1.1, giấy phép ở `apps/client/public/fonts/OFL-charm.txt`; bản TTF ở `../dtl-asset-source/font/`) chỉ dùng để dựng mesh chữ Việt trên biển hiệu và cự kiếm trong `arch_sect.glb`.
 
+Bổ sung (PROP-1 Thiên Công Khai Vật): `green_metal_rust` ([Poly Haven](https://polyhaven.com/a/green_metal_rust), Rob Tuytel, CC0-1.0) cho đồng cổ rỉ xanh của đỉnh lư, lò đan, chuông, lư hương (nướng luma + normal + roughness 512 vào từng prop); `rock_boulder_cracked` và `dark_rock` (đã ghi ở mục texture địa hình) cho đá nứt và đá đen. Tải bằng `pnpm assets:sect-textures green_metal_rust`.
+

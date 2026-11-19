@@ -28,6 +28,15 @@ interface View {
 }
 
 /** Cụm dày nhất của một nhóm trong level: chọn tâm (số prop cùng nhóm trong 22 m nhiều nhất) rồi hướng nhìn có nhiều prop nhất phía trước. */
+/** Góc nhìn đặt tay theo cụm điểm nhấn đã duyệt (cổng sân, kiếm đài, đường chính, trước Chính điện của Lạc Kiếm Tông). */
+const EXTRA: Record<string, { group: string; view: View }[]> = {
+  van_lam: [
+    { group: 'tong_mon', view: { name: 'van_lam-tong_mon-cong', x: 2048, z: 2092, yaw: Math.PI, n: 1 } },
+    { group: 'tong_mon', view: { name: 'van_lam-tong_mon-kiemdai', x: 2048, z: 2096, yaw: 0, n: 1 } },
+    { group: 'tong_mon', view: { name: 'van_lam-tong_mon-chinhdien', x: 2048, z: 2050, yaw: Math.PI, n: 1 } },
+  ],
+};
+
 function viewFor(level: string, group: string): View | null {
   const ps = (THIEN_CONG_PROPS[level] ?? []).filter((p) => groupOf.get(nameOf(p.id)) === group);
   if (!ps.length) return null;
@@ -72,7 +81,10 @@ export default {
     const perf: Record<string, unknown> = {};
     for (const level of levels) {
       const lv = requireLevel(level);
-      const views = groups.map((g) => viewFor(level, g)).filter((v): v is View => !!v && v.n > 0);
+      const views = [
+        ...groups.map((g) => viewFor(level, g)).filter((v): v is View => !!v && v.n > 0),
+        ...(EXTRA[level] ?? []).filter((e) => groups.includes(e.group)).map((e) => e.view),
+      ];
       if (!views.length) continue;
       for (const mode of ['truoc', 'sau'] as const) {
         const { ctx, page } = await r.open({
