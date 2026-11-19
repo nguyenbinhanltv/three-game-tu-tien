@@ -3,6 +3,8 @@
 # Đồng: PBR green_metal_rust + patina xanh theo mặt (prop_tc_lib), đai lôi văn và phù văn dát nổi; chữ là phù văn (không dùng chữ Latin nghiêng).
 import math
 
+from build_sect import paint
+
 from prop_tc_lib import (
     _GLYPHS,
     BLADE_STEEL,
@@ -42,6 +44,9 @@ from prop_tc_lib import (
     rune_column,
     tube,
 )
+
+GRIP_A = paint(0x6B4A30, 'cloth')  # chuôi quấn vải nâu (hai tông xen kẽ)
+GRIP_B = paint(0x4E3623, 'cloth')
 
 
 def _paw_legs(b, n, r, h, color, w=0.2):
@@ -114,7 +119,7 @@ def _(b, v):
         b.sword_up(x, 0.0, 0.62, 1.15, 0.12, tilt=tl, color=BLADE_STEEL, hilt=False)
         b.box(x, 0.62, 0.0, 0.2, 0.05, 0.12, GILD)
         for j in range(6):  # chuôi quấn vải: vòng dây đỏ/trắng xen kẽ
-            b.cylinder(x, 0.2 + j * 0.07, 0.0, 0.034, 0.06, CLOTH_R if j % 2 == 0 else CLOTH_W, 6)
+            b.cylinder(x, 0.2 + j * 0.07, 0.0, 0.034, 0.06, GRIP_A if j % 2 == 0 else GRIP_B, 6)
         ellipsoid(b, x, 0.14, 0.0, 0.05, 0.04, 0.05, GILD, 6, 3)
     b.box(0, 1.84, 0, w + 0.2, 0.08, 0.2, VERM)
 
@@ -137,9 +142,9 @@ def _(b, v):
     for dx in (-0.34, 0.34):
         b.box(dx, fy, 0.158, 0.03, fh - 0.06, 0.012, GILD)
     words = ('Lạc Kiếm', 'Kiếm Tâm') if not v else ('Đạp Thiên', 'Lộ')
-    set_text_res(3)
-    b.text(words[0], 0, 0.56 + h * 0.64, 0.158, 0.5, 0.045, INK_TEXT, fit_w=0.64, fit_h=0.5, bold=0.0)
-    b.text(words[1], 0, 0.56 + h * 0.34, 0.158, 0.5, 0.045, INK_TEXT, fit_w=0.64, fit_h=0.5, bold=0.0)
+    set_text_res(1)  # chữ khắc nổi mỏng + ít đoạn cong: mục tiêu lưới gốc ≤ 5000 tam giác để LOD0 không phải rút (review #325)
+    b.text(words[0], 0, 0.56 + h * 0.64, 0.158, 0.5, 0.0, INK_TEXT, fit_w=0.64, fit_h=0.5, bold=0.0)
+    b.text(words[1], 0, 0.56 + h * 0.34, 0.158, 0.5, 0.0, INK_TEXT, fit_w=0.64, fit_h=0.5, bold=0.0)
     set_text_res(2)
 
 
@@ -186,8 +191,8 @@ def _(b, v):
             yy = top - 1.2 - wi * 0.75
             xm = curve(dx, (top - yy) / L)
             n0 = len(b.faces)
-            b.text(word, xm, yy, th / 2 + 0.01, 0.5, 0.012, CLOTH_Y, fit_w=0.36, fit_h=0.5, bold=0.0)
-            b.text(word, xm, yy, -th / 2 - 0.01, 0.5, 0.012, CLOTH_Y, yaw=math.pi, fit_w=0.36, fit_h=0.5, bold=0.0)
+            b.text(word, xm, yy, th / 2 + 0.01, 0.5, 0.0, CLOTH_Y, fit_w=0.36, fit_h=0.5, bold=0.0)
+            b.text(word, xm, yy, -th / 2 - 0.01, 0.5, 0.0, CLOTH_Y, yaw=math.pi, fit_w=0.36, fit_h=0.5, bold=0.0)
             weight_from(b, n0, top, L)
         set_text_res(2)
 
@@ -242,9 +247,9 @@ def _(b, v):
                 return r1 + (r0 - r1) * (y - y1) / (y0 - y1)
         return prof[-1][0]
 
-    meander(b, 2.46 * s, rb(2.46 * s), 0.16, GILD, 18)
-    meander(b, 0.98 * s, rb(0.98 * s), 0.14, GILD, 18)
-    meander(b, 1.55 * s, rb(1.55 * s), 0.06, GILD, 18)
+    meander(b, 2.46 * s, rb(2.46 * s), 0.16, GILD, 14)
+    meander(b, 0.98 * s, rb(0.98 * s), 0.14, GILD, 14)
+    meander(b, 1.55 * s, rb(1.55 * s), 0.06, GILD, 12)
     for k in range(4):  # bốn ô núm 3×3 giữa các gờ đứng vàng
         a0 = k * math.pi / 2
         for dy in range(3):
@@ -252,7 +257,7 @@ def _(b, v):
             for dx in (-1, 0, 1):
                 a = a0 + dx * 0.3
                 rr = rb(y) + 0.02
-                ellipsoid(b, math.sin(a) * rr, y, math.cos(a) * rr, 0.05 * s, 0.05 * s, 0.05 * s, GILD, 6, 3)
+                ellipsoid(b, math.sin(a) * rr, y, math.cos(a) * rr, 0.05 * s, 0.05 * s, 0.05 * s, GILD, 5, 2)
         ar = a0 + math.pi / 4
         rr = rb(2.0 * s) + 0.012
         b.box(math.sin(ar) * rr, 2.0 * s, math.cos(ar) * rr, 0.025, 0.7 * s, 0.025, GILD, yaw=ar)

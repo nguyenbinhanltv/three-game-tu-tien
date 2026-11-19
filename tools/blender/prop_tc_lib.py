@@ -138,6 +138,18 @@ def _face(self, pts, color, smooth=False):
 
 kit.KB.face = _face
 
+# bevel_hard_edges của kit: khi không có vật liệu đá/ngọc/thép trong mảnh thì `mats` rỗng và hàm vát MỌI cạnh (làm tam giác phình gấp 3–4 lần
+# ở món chỉ có đồng/vải). Với prop chỉ vát khi có vật liệu cứng.
+_orig_bhe = ts.bevel_hard_edges
+
+
+def _bevel_hard_edges(bm, width=0.04, angle=math.radians(35), mats=(), segments=1):
+    if mats:
+        _orig_bhe(bm, width, angle, mats, segments)
+
+
+ts.bevel_hard_edges = _bevel_hard_edges
+
 # ---------- bảng màu ----------
 STONE_L = paint(0xB8B9AE, 'stone')
 STONE_M = paint(0x9A9C92, 'stone')
