@@ -56,7 +56,8 @@
     "docs:paths": "node tools/docs/check-paths.mjs",
     "colliders:lib": "pnpm --filter @dtl/asset-pipeline run colliders",
     "colliders:bake": "node tools/maps/bake-colliders.mjs",
-    "colliders:arch": "pnpm --filter @dtl/asset-pipeline run colliders:arch --"
+    "colliders:arch": "pnpm --filter @dtl/asset-pipeline run colliders:arch --",
+    "colliders:prop": "pnpm --filter @dtl/asset-pipeline run colliders:prop --"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
