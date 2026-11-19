@@ -1,4 +1,5 @@
 import { instantiateShapes, type LocalShape, registerCollision, type Shape } from '@dtl/shared';
+import archKd from '../data/colliders/arch_kim_da.boxes.json';
 import archTk from '../data/colliders/arch_thien_khuyet.boxes.json';
 import archKt from '../data/colliders/arch_kiem_trung.boxes.json';
 import archKn from '../data/colliders/arch_kinh_nguyet.boxes.json';
@@ -79,6 +80,7 @@ export const ARCH_BY_LEVEL: Record<string, ArchFile[]> = {
   van_lam: [archSect as unknown as ArchFile],
   thien_khuyet: [archTk as unknown as ArchFile],
   kiem_trung: [archKt as unknown as ArchFile],
+  kim_da_cung: [archKd as unknown as ArchFile],
   phuc_mach: [archPm as unknown as ArchFile],
   xich_tan_khich: [archXk as unknown as ArchFile],
   than_tang: [archTt as unknown as ArchFile],
