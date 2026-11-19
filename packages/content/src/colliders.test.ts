@@ -29,4 +29,15 @@ describe('collider prop theo level (COL-1 / C-2)', () => {
     expect(s!.x).toBeCloseTo(100, 6);
     expect(s!.z).toBeCloseTo(198, 6);
   });
+  it('Đoạn Mạch: mỗi cây phong có trụ thân chặn đi bộ, tán không có hình (COL-B)', () => {
+    const f = INST_BY_LEVEL.doan_mach!;
+    const k = f.ids.indexOf('x_maple_trunk');
+    expect(k).toBeGreaterThanOrEqual(0);
+    const rows = f.p.filter((r) => r[0] === k);
+    expect(rows.length).toBeGreaterThan(150);
+    const shapes = propShapesOf('doan_mach').filter((s) => s.tag === 'x_maple_trunk');
+    expect(shapes.length).toBe(rows.length);
+    for (const s of shapes) expect(s).toMatchObject({ k: 'cyl', fly: undefined });
+    expect(shapes.some((s) => s.k === 'cyl' && s.r > 1.4)).toBe(true); // cây lớn điểm nhìn
+  });
 });

@@ -1,5 +1,6 @@
 import { instantiateShapes, type LocalShape, registerCollision, type Shape } from '@dtl/shared';
 import libJson from '../data/colliders/lib.json';
+import extraLib from '../data/colliders/extra-lib.json';
 import bacHoang from '../data/colliders/bac_hoang.inst.json';
 import doKiepBacHoang from '../data/colliders/do_kiep_bac_hoang.inst.json';
 import doanMach from '../data/colliders/doan_mach.inst.json';
@@ -23,7 +24,8 @@ export interface InstFile {
   p: number[][];
 }
 
-export const COLLIDER_LIB = libJson as unknown as Record<string, LocalShape[]>;
+/** `lib.json` (sinh từ GLB) + `extra-lib.json` (hình ghi tay cho đồ dựng bằng mã: cây phong, thân cây vườn…, id `x_*`). */
+export const COLLIDER_LIB = { ...libJson, ...extraLib } as unknown as Record<string, LocalShape[]>;
 
 /** Level → file prop đã bake. `kiem_trung` dùng chung bố cục prop với `van_lam` (cùng bản đồ). */
 export const INST_BY_LEVEL: Record<string, InstFile> = {

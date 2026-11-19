@@ -20,7 +20,52 @@
    "y1": 2.4
   }
  ],
- "prop_cau_da_gay": [],
+ "prop_cau_da_gay": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": -5.25,
+   "hx": 2.1,
+   "hz": 1.75,
+   "y0": 2,
+   "y1": 2.62,
+   "y1b": 3.9,
+   "walk": true
+  },
+  {
+   "k": "box",
+   "x": 0,
+   "z": -1.75,
+   "hx": 2.1,
+   "hz": 1.75,
+   "y0": 2.8,
+   "y1": 3.9,
+   "y1b": 4.3,
+   "walk": true
+  },
+  {
+   "k": "box",
+   "x": 0,
+   "z": 1.75,
+   "hx": 2.1,
+   "hz": 1.75,
+   "y0": 2.8,
+   "y1": 4.3,
+   "y1b": 4.2,
+   "walk": true
+  },
+  {
+   "k": "box",
+   "x": 0,
+   "z": 5.25,
+   "hx": 2.1,
+   "hz": 1.75,
+   "y0": 2.2,
+   "y1": 4.2,
+   "y1b": 3.56,
+   "walk": true
+  }
+ ],
  "prop_cau_may": [],
  "prop_cay_goc_kho": [
   {
@@ -112,7 +157,17 @@
  ],
  "prop_den_long_troi": [],
  "prop_duong_xi": [],
- "prop_kiem_gay": [],
+ "prop_kiem_gay": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.25,
+   "y0": 0,
+   "y1": 1.8,
+   "fly": "pass"
+  }
+ ],
  "prop_kiem_han_giao": [],
  "prop_kiem_han_quang": [],
  "prop_kiem_kinh_quang": [],
