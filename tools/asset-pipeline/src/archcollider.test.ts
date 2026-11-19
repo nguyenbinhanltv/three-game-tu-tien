@@ -56,7 +56,6 @@ describe('archcollider: hộp rắn, bậc thang, mái', () => {
   });
 });
 
-<<<<<<< HEAD
 describe('archcollider: thềm bậc sâu 0,5 m (cùng ô với mặt đứng bậc kế)', () => {
   it('8 bậc sâu 0,5 m cao 0,25 m: mọi bậc là hộp walk, leo được tới thềm trên', () => {
     const tris: Tri[] = [];
@@ -70,8 +69,6 @@ describe('archcollider: thềm bậc sâu 0,5 m (cùng ô với mặt đứng b�
   });
 });
 
-=======
->>>>>>> origin/main
 describe('archcollider: khối lơ lửng', () => {
   it('sàn/mái cách đất 5 m không nối với đất: đi dưới gầm được, không hộp chặn', () => {
     const b = buildArchBoxes(box(10, 5, 10, 14, 5.3, 14), flat);

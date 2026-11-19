@@ -22,11 +22,8 @@ export interface ArchOpts {
 const STEP = 0.5;
 /** Cần khoảng trống chừng này phía trên mặt đứng (chiều cao thân người `BODY_H`). */
 const HEAD = 1.8;
-<<<<<<< HEAD
 /** Vùng thân người bắt đầu cao hơn mức đứng chừng này: mặt bậc kế tiếp và mặt đứng (riser) của bậc ≤ STEP rơi cùng ô không phải vật cản. */
 const BODY_LO = 0.6;
-=======
->>>>>>> origin/main
 const FLOOR_EPS = 0.15;
 const MAX_TOP = 60;
 
@@ -153,11 +150,7 @@ export function buildArchBoxes(tris: Iterable<Tri>, o: ArchOpts): ArchBox[] {
   };
   // Mức `y` đứng được: thân người không vướng, và mặt đầu tiên phía trên không phải mặt hướng LÊN (nếu là mặt lên thì mức đó nằm trong lòng khối đặc).
   const clearAbove = (arr: { y: number; f: number }[], y: number): boolean => {
-<<<<<<< HEAD
     if (arr.some((s) => s.y > y + BODY_LO && s.y <= y + HEAD)) return false;
-=======
-    if (arr.some((s) => s.y > y + 0.15 && s.y <= y + HEAD)) return false;
->>>>>>> origin/main
     const nxt = arr.find((s) => s.y > y + 0.05);
     return !nxt || nxt.f !== 0;
   };
@@ -221,11 +214,7 @@ export function buildArchBoxes(tris: Iterable<Tri>, o: ArchOpts): ArchBox[] {
     for (const l of reachedLv) {
       if (!l.ground) add(k, { walk: 1, y0: r1(g - 0.2), y1: r1(l.y) });
       // Thân người: mẫu trong [F + 0,3, F + HEAD].
-<<<<<<< HEAD
       const body = arr.filter((s) => s.y > l.y + BODY_LO && s.y <= l.y + HEAD);
-=======
-      const body = arr.filter((s) => s.y > l.y + 0.3 && s.y <= l.y + HEAD);
->>>>>>> origin/main
       if (body.length) {
         let top = Math.max(...body.map((s) => s.y));
         // Khối liền trên đó (khoảng hở < 1 m).
