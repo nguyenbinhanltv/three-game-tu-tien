@@ -39,3 +39,5 @@ Chưa làm: cây thẻ alpha thay bonsai tùng (cần asset cây mới), normal 
 - Mood `vh_*`: `shadowTint` bớt bão hòa (#3C5470…), `shadowAmount` 0,5 (0,3 hoàng hôn) để vùng tối của đá không bị ép về lam.
 - Kịch bản chụp: `tungdai` sửa góc (camera cắm xuống đất), thêm `chandao` (nhìn ngang chân đảo và mây cuộn).
 - Đo (preset Cao, 1080p): draw call 145–232, tam giác 0,91–1,17 triệu, khung ~8,4 ms (góc `bienmay`, `chandao`, `trencao`).
+- Gỡ vệt trắng ngang cắt chân đảo (góc `chandao`): đó là các đĩa mây phẳng nằm ngang (vành sương `mistRing` ở chân đảo và `cloud-banks`) bị nhìn đúng cạnh khi camera ngang tầm. Đã xóa cả hai; vòng mây cuộn và khối biển mây thay thế (draw call giảm ~40).
+- **TODO (PR4):** thân đảo vẫn là lathe (đối xứng xoay, xám đen nhẵn, chỉ có vệt sọc dọc). Làm đúng cách như Lạc Kiếm (#296/#305): mesh đảo dựng bằng Blender (`tools/blender/`, khối đá gồ ghề không đối xứng, vật liệu PBR chiếu ba mặt, nhũ đá và rễ là mesh thật), tối ưu qua `tools/asset-pipeline`, nạp thay `buildSkirt`.
