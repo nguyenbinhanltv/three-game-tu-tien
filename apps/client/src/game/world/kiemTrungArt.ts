@@ -75,7 +75,7 @@ export function ktGroundColor(x: number, z: number, ny: number, out: [number, nu
   }
   // Vệt rêu thành đám ở chỗ ẩm (nhiễu thấp tần số vừa), đất đỏ rỉ thành mảng lớn quanh các gò, ánh lam kiếm khí quanh vòng trận.
   const mo = fbm(x * 0.021 + 40, z * 0.021, 2, SEED + 411);
-  c = lerp3(c, KT.moss, Math.min(0.7, Math.max(0, mo - 0.08) * 2.6) * (1 - arena * 0.8));
+  c = lerp3(c, KT.moss, Math.min(0.7, Math.max(0, mo - 0.08) * 2.6) * (1 - arena * 0.45));
   const rd = fbm(x * 0.009 - 20, z * 0.009 + 5, 2, SEED + 457);
   c = lerp3(c, KT.soil, Math.min(0.65, Math.max(0, rd - 0.02) * 2.0) * (1 - arena * 0.6));
   const glowRing = Math.exp(-(((d - 59) / 7) ** 2));
@@ -318,6 +318,7 @@ export class KiemTrungArt {
     );
     this.addSigil();
     this.addCracks();
+    this.addSteps();
     this.addMist();
   }
 
@@ -397,12 +398,12 @@ export class KiemTrungArt {
     };
     const idx: number[][] = [[], []];
     let made = 0;
-    for (let tries = 0; tries < 400 && made < 22; tries++) {
+    for (let tries = 0; tries < 400 && made < 34; tries++) {
       const a = rand() * Math.PI * 2;
-      const r = 36 + rand() * 80;
+      const r = 24 + rand() * 90;
       let x = C.x + Math.cos(a) * r;
       let z = C.z + Math.sin(a) * r;
-      if (swordKeepOut(x, z, 32)) continue;
+      if (swordKeepOut(x, z, 24)) continue;
       let dir = rand() * Math.PI * 2;
       const len = 14 + rand() * 38;
       const steps = Math.round(len / 2.2);
@@ -413,12 +414,12 @@ export class KiemTrungArt {
         const w = 0.12 + 0.75 * Math.sin(Math.PI * Math.min(1, t * 1.15)) * (0.6 + 0.4 * rand());
         const nx = -Math.sin(dir);
         const nz = Math.cos(dir);
-        if (swordKeepOut(x, z, 30)) {
+        if (swordKeepOut(x, z, 20)) {
           ok = false;
           break;
         }
         push(dark, x, z, nx, nz, w);
-        push(glow, x, z, nx, nz, w * 0.22);
+        push(glow, x, z, nx, nz, w * 0.3);
         dir += (rand() - 0.5) * 0.9;
         x += Math.cos(dir) * 2.2;
         z += Math.sin(dir) * 2.2;
@@ -468,7 +469,7 @@ export class KiemTrungArt {
       new THREE.MeshBasicMaterial({
         color: 0x3aa6e0,
         transparent: true,
-        opacity: 0.55,
+        opacity: 0.8,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         polygonOffset: true,
@@ -478,6 +479,50 @@ export class KiemTrungArt {
       'kt-cracks-glow',
       2,
     );
+  }
+
+  /**
+   * Bậc thềm viền vòng trận (r ≈ 57): ba bậc đá thấp xếp lên dần ra phía ngoài (0,12 / 0,24 / 0,36 m), đá phiến có vệt rêu; chỉ là gờ thấp ở
+   * rìa (người chơi bước qua như bậc vỉa, không cản), nằm ngoài vùng đánh giữa đài. Một lưới xoay tròn bám địa hình, màu theo đỉnh.
+   */
+  private addSteps(): void {
+    const prof: [number, number][] = [];
+    const R0 = 57;
+    const tiers = 3;
+    for (let i = 0; i < tiers; i++) {
+      const r = R0 + i * 1.5;
+      const y = 0.12 * (i + 1);
+      prof.push([r, i === 0 ? -0.05 : 0.12 * i], [r, y], [r + 1.5, y]);
+    }
+    prof.push([R0 + tiers * 1.5, -0.05]);
+    const pts = prof.map(([r, y]) => new THREE.Vector2(r, y));
+    const geo = new THREE.LatheGeometry(pts, 192);
+    const p = geo.attributes.position as THREE.BufferAttribute;
+    const col = new Float32Array(p.count * 3);
+    const c = new THREE.Color();
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i);
+      const z = p.getZ(i);
+      p.setY(i, p.getY(i) + heightAt(C.x + x, C.z + z));
+      const n = fbm(x * 0.2, z * 0.2, 2, SEED + 61);
+      c.setRGB(0.3, 0.33, 0.38).multiplyScalar(0.75 + n * 0.4);
+      if (n > 0.1 && p.getY(i) > 0) c.lerp(new THREE.Color(0x4e6a44), Math.min(0.7, (n - 0.1) * 2.5));
+      col[i * 3] = c.r;
+      col[i * 3 + 1] = c.g;
+      col[i * 3 + 2] = c.b;
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    geo.computeVertexNormals();
+    geo.computeBoundingSphere();
+    const mat = createWorldMaterial({ vertexColors: true, roughness: 0.85, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(C.x, 0, C.z);
+    mesh.name = 'kt-steps';
+    mesh.frustumCulled = false;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    this.group.add(mesh);
+    this.disposables.push(geo, mat);
   }
 
   /** Sương lạnh đọng thấp: một đĩa mỏng cách đất ~1 m, đục dần từ vành đài chiến ra ngoài và theo mảng nhiễu trôi chậm (đậm ở vành, trong suốt ở đài chiến). */

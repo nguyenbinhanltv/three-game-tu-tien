@@ -54,6 +54,23 @@ def mix(a, b, t):
     return tuple(x * (1 - t) + y * t for x, y in zip(a, b))
 
 
+def tbox(b, c, size, col, rx=0.0, rz=0.0, yaw=0.0):
+    """Hộp nghiêng: kích thước (x, y, z), xoay rx quanh x, rz quanh z, yaw quanh y quanh tâm c."""
+    hx, hy, hz = size[0] / 2, size[1] / 2, size[2] / 2
+    pts = []
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            for sz in (-1, 1):
+                x, y, z = sx * hx, sy * hy, sz * hz
+                y, z = y * math.cos(rx) - z * math.sin(rx), y * math.sin(rx) + z * math.cos(rx)
+                x, y = x * math.cos(rz) - y * math.sin(rz), x * math.sin(rz) + y * math.cos(rz)
+                x, z = x * math.cos(yaw) + z * math.sin(yaw), -x * math.sin(yaw) + z * math.cos(yaw)
+                pts.append((c[0] + x, c[1] + y, c[2] + z))
+    # chỉ số (sx, sy, sz) -> 4*i + 2*j + k với i,j,k in {0,1}
+    for q in ((0, 1, 3, 2), (4, 5, 7, 6), (0, 1, 5, 4), (2, 3, 7, 6), (0, 2, 6, 4), (1, 3, 7, 5)):
+        b.poly([pts[i] for i in q], c, col)
+
+
 def new_b(seed):
     b = kit.new_builder(seed=seed, moss=0.0)
     return b
@@ -249,15 +266,17 @@ def giant_sword(b, H, broken, seed):
     yt, pt = rings[-1]
     cap = [(x, yt + (jag[j] if broken else 0.0), z) for j, (x, z) in enumerate(pt)]
     b.poly(cap, (0, yt - 1, 0), Paint(STEEL_DK, 'steel'))
-    # chi tiết phù văn: các khối nhỏ phát sáng dọc lưỡi (chữ triện cách điệu), hai mặt
+    # phù văn mảnh chạy dọc lưỡi: hai đường đứt đoạn hai bên rãnh giữa + nét triện ngang rất nhỏ, cả hai mặt
+    ytop = Lb * (1.28 if broken else 0.97)
     for side in (1, -1):
-        for k in range(7 if not broken else 5):
-            y = (0.1 + 0.11 * k) * Lb * 1.1 + rnd.uniform(-0.01, 0.01) * H
-            if y > (Lb * (1.28 if broken else 0.95)):
-                continue
-            wx = rnd.choice((-1, 1)) * 0.3 * W
-            b.box(wx, y, side * (T * 0.62), 0.1 * W, 0.03 * H, 0.01 * H, RUNE)
-            b.box(wx + 0.05 * W, y + 0.012 * H, side * (T * 0.62), 0.05 * W, 0.008 * H, 0.01 * H, RUNE)
+        for lx in (-0.34, 0.34):
+            y = 0.1 * H
+            while y < ytop - 0.05 * H:
+                seg = rnd.uniform(0.04, 0.09) * H
+                b.box(lx * W, y + seg / 2, side * (T * 0.66), 0.012 * W, seg, 0.004 * H, RUNE)
+                if rnd.random() < 0.6:
+                    b.box(lx * W, y + seg + 0.008 * H, side * (T * 0.66), 0.09 * W, 0.0035 * H, 0.004 * H, RUNE)
+                y += seg + rnd.uniform(0.03, 0.06) * H
     if broken:
         # mảnh lưỡi gãy nằm bên chân, chếch trên đất
         piece = Lb * 0.45
@@ -285,22 +304,20 @@ def guard_and_hilt(b, H, Lb, W, T, rnd, seed):
     G = 0.15 * H
     y = Lb
     bronze = metal_col(seed + 11, rust=0.45)
-    # tấm chắn cong sừng: hai cánh vẫy lên, tiết diện tròn thon
+    # tấm chắn ngang cong nhẹ như kiếm cổ: dầm thon về hai mũi, hơi vồng lên ở đầu mút
     for sx in (-1, 1):
-        a = (0.0, y, 0.0)
-        m = (sx * G * 0.55, y - 0.012 * H, 0.0)
-        e = (sx * G, y + 0.09 * H, 0.0)
-        rod(b, a, m, 0.032 * H, 0.026 * H, bronze, nu=8, nv=3, seed=seed)
-        rod(b, m, e, 0.026 * H, 0.014 * H, bronze, nu=8, nv=4, seed=seed + 1)
-        blob(b, e, (0.02 * H, 0.03 * H, 0.02 * H), bronze, nu=8, nv=5, seed=seed + 2)
-        # xích rủ từ đầu cánh xuống đất
-        cx, cz = e[0], 0.0
-        n = 6
-        for k in range(n):
-            t = k / n
-            lx = cx + sx * (0.02 * H + 0.04 * H * t)
-            ly = e[1] - t * 0.13 * H + 0.01 * H * math.sin(t * math.pi)
-            b.box(lx, ly, cz, 0.02 * H, 0.026 * H, 0.016 * H, CHAIN, yaw=(k % 2) * math.pi / 2)
+        pts = []
+        for k in range(6):
+            t = k / 5
+            pts.append((sx * G * t, y + 0.07 * H * t * t * 0.4 - 0.004 * H, 0.0))
+        for k in range(5):
+            r0 = 0.03 * H * (1 - 0.8 * (k / 5) ** 1.3)
+            r1 = 0.03 * H * (1 - 0.8 * ((k + 1) / 5) ** 1.3)
+            rod(b, pts[k], pts[k + 1], max(r0, 0.004 * H), max(r1, 0.004 * H), bronze, nu=8, nv=2, seed=seed + k)
+        cx = sx * G * 0.8
+        for k in range(5):
+            t = k / 5
+            b.box(cx, y - 0.01 * H - t * 0.09 * H, 0.0, 0.016 * H, 0.022 * H, 0.012 * H, CHAIN, yaw=(k % 2) * math.pi / 2)
     # bùa chú: dải giấy treo từ chắn, có chữ phát sáng
     for sx in (-0.45, -0.2, 0.2, 0.45):
         px = sx * G * 2 * 0.5
@@ -313,7 +330,12 @@ def guard_and_hilt(b, H, Lb, W, T, rnd, seed):
     rod(b, (0, y + 0.03 * H, 0), (0, y + 0.19 * H, 0), 0.02 * H, 0.017 * H, lambda p, n: Paint(tuple(c * (0.7 + 0.5 * fbm3(p[0] * 8, p[1] * 8, p[2] * 8, 6, 2)) for c in C(0x2A2220)), 'wood'), nu=8, nv=6)
     for k in range(7):
         b.cylinder(0, y + (0.04 + 0.022 * k) * H, 0, 0.022 * H, 0.008 * H, BRONZE, 8)
-    blob(b, (0, y + 0.215 * H, 0), (0.034 * H, 0.03 * H, 0.034 * H), bronze, nu=10, nv=7, seed=seed + 4)
+    # đầu chuôi hình vân mây (như ý): đĩa dẹt + ba thùy cuộn + gờ giữa
+    b.cylinder(0, y + 0.205 * H, 0, 0.034 * H, 0.014 * H, BRONZE, 14, 0.028 * H)
+    for k in range(3):
+        a_ = k / 3 * math.tau + 0.5
+        blob(b, (math.cos(a_) * 0.03 * H, y + 0.222 * H, math.sin(a_) * 0.03 * H), (0.022 * H, 0.012 * H, 0.022 * H), bronze, nu=8, nv=5, seed=seed + 5 + k)
+    blob(b, (0, y + 0.232 * H, 0), (0.016 * H, 0.014 * H, 0.016 * H), bronze, nu=8, nv=5, seed=seed + 9)
     # dây xích quấn quanh chuôi
     for k in range(9):
         t = k / 9
@@ -325,7 +347,7 @@ def plinth(b, H, rnd, seed):
     """Chân cắm vào khối đá nứt vỡ, đất đỏ trồi lên quanh gốc, khe nứt tối."""
     R = 0.11 * H
     soil = soil_col(seed + 20)
-    blob(b, (0, 0.0, 0), (R * 1.7, 0.045 * H, R * 1.7), soil, nu=20, nv=8, seed=seed + 21, v0=0.0, v1=0.5, amp=0.25)
+    blob(b, (0, 0.0, 0), (R * 1.7, 0.06 * H, R * 1.7), soil, nu=20, nv=8, seed=seed + 21, v0=0.0, v1=0.5, amp=0.3)
     for i in range(9):
         a = i / 9 * math.tau + rnd.uniform(-0.2, 0.2)
         d = R * rnd.uniform(0.55, 1.15)
@@ -350,47 +372,98 @@ def plinth(b, H, rnd, seed):
 # ---------- vành núi đá (shan-shui) ----------
 
 
-def spire(b, h, w, haze, seed):
-    """Mỏm đá góc cạnh nhiều tầng (sơn thủy): thân loe rộng, các phiến chồng lệch có nhô ngang, đỉnh gãy nhọn lệch, chân có bậc đá lớn."""
+def karst(b, h, w, haze, seed):
+    """Cụm trụ đá karst (sơn thủy): 3–5 trụ thẳng đứng sắc cạnh cao thấp khác nhau, tiết diện đa giác méo có thớ dọc (bán kính từng cạnh giữ nguyên
+    suốt chiều cao), thon dần, đỉnh vát lệch, mặt đá tối sáng xen kẽ theo thớ, chân có đá vụn góc cạnh."""
     rnd = random.Random(seed)
-    lean = rnd.uniform(-0.25, 0.25)
-    # chân loe: ba khối bậc đá lớn
-    for k in range(3):
+    cols = []
+    ncol = rnd.randint(3, 5)
+    for c in range(ncol):
         a = rnd.uniform(0, math.tau)
-        blob(b, (math.cos(a) * w * 0.8, 1.5, math.sin(a) * w * 0.8), (w * rnd.uniform(0.7, 1.0), 5.5, w * rnd.uniform(0.6, 0.9)),
-             rock_col(seed + 50 + k, haze=haze * 0.3, strata=0.8), nu=12, nv=6, e=2.4, amp=0.35, seed=seed + 60 + k, rot=a)
-    n = 6
-    y = -4.0
-    cx = cz = 0.0
-    for i in range(n):
-        q = i / n
-        sh = (h + 4) / n * rnd.uniform(0.7, 1.3)
-        wk = w * (1.0 - 0.62 * q) * rnd.uniform(0.82, 1.18)
-        cx += lean * sh + rnd.uniform(-0.1, 0.1) * wk
-        cz += rnd.uniform(-0.12, 0.12) * wk
-        blob(b, (cx, y + sh / 2, cz), (wk, sh / 2 + 1.5, wk * rnd.uniform(0.6, 0.95)), rock_col(seed + i * 5, haze=haze * (0.3 + 0.7 * q), strata=0.8, moss_amt=0.25),
-             nu=12, nv=6, e=2.6, amp=0.4, seed=seed + i, rot=rnd.uniform(0, 3))
-        if i in (1, 3):  # phiến nhô ngang như mái đá
-            blob(b, (cx + wk * rnd.choice((-0.7, 0.7)), y + sh * 0.9, cz), (wk * 0.9, sh * 0.2, wk * 0.5), rock_col(seed + i * 9, haze=haze * (0.3 + 0.7 * q), strata=1.1, moss_amt=0.1),
-                 nu=10, nv=5, e=2.8, amp=0.3, seed=seed + 30 + i, rot=rnd.uniform(0, 3))
-        y += sh * 0.86
-    # đỉnh gãy nhọn lệch
-    blob(b, (cx + lean * 3, y + 0.1 * h, cz), (w * 0.2, 0.2 * h, w * 0.17), rock_col(seed + 99, haze=haze, strata=0.8, moss_amt=0.0), nu=8, nv=6, e=1.4, amp=0.35, seed=seed + 98, v0=0.0, v1=0.6)
+        d = 0 if c == 0 else rnd.uniform(0.5, 1.3) * w
+        cols.append((math.cos(a) * d, math.sin(a) * d, h * (1.0 if c == 0 else rnd.uniform(0.35, 0.85)), w * rnd.uniform(0.38, 0.62) * (1.0 if c == 0 else 0.8), c))
+    for (cx, cz, ch, cr, ci) in cols:
+        sides = 9
+        rings = 11
+        grain = [rnd.uniform(0.72, 1.22) for _ in range(sides)]
+        lean = (rnd.uniform(-0.05, 0.05), rnd.uniform(-0.05, 0.05))
+        ph = rnd.uniform(0, 6.28)
+        prev = None
+        for i in range(rings + 1):
+            q = i / rings
+            y = -3.0 + (ch + 3.0) * q
+            taper = 1.0 - 0.55 * q ** 1.4
+            ledge = 0.9 + 0.1 * math.sin(q * 17 + ci)
+            ring = []
+            for j in range(sides):
+                ang = ph + j / sides * math.tau
+                rr = cr * taper * ledge * grain[j] * (1.0 + 0.1 * (fbm3(j * 3.1, q * 5, ci, seed, 2) - 0.5))
+                x = cx + lean[0] * y + math.cos(ang) * rr
+                z = cz + lean[1] * y + math.sin(ang) * rr
+                yy = y - (0.12 * ch * (0.5 + 0.5 * math.cos(ang - ph * 2)) if i == rings else 0.0)
+                ring.append((x, yy, z))
+            if prev:
+                for j in range(sides):
+                    k = (j + 1) % sides
+                    quad = [prev[j], prev[k], ring[k], ring[j]]
+                    mid = (cx, (prev[j][1] + ring[j][1]) / 2, cz)
+                    n_ = fbm3(j * 1.7, q * 4, ci, seed + 4, 2)
+                    base = ROCK[(j + ci) % 4]
+                    shade = 0.62 + 0.55 * (0.5 + 0.5 * math.sin(j * 2.1 + ci)) * (0.7 + 0.5 * n_)
+                    rgb = tuple(c_ * shade for c_ in base)
+                    low = max(0.0, 1.0 - max(y, 0.0) / (0.18 * ch))
+                    rgb = mix(rgb, RUST, low * 0.25 * n_)
+                    if j % 3 == 0 and q < 0.5:
+                        rgb = mix(rgb, MOSS, 0.25 * n_)
+                    rgb = mix(rgb, C(0x9FB4C8), haze * (0.3 + 0.7 * q))
+                    b.poly(quad, mid, Paint(tuple(rgb), 'stone'))
+            prev = ring
+        b.poly(prev, (cx, 0, cz), Paint(mix(ROCK[1], C(0x9FB4C8), haze), 'stone'))
+    for k in range(6):
+        a = rnd.uniform(0, math.tau)
+        d = rnd.uniform(0.9, 1.7) * w
+        tbox(b, (math.cos(a) * d, 0.6, math.sin(a) * d), (w * rnd.uniform(0.3, 0.6), w * rnd.uniform(0.3, 0.8), w * rnd.uniform(0.3, 0.6)),
+             Paint(mix(ROCK[k % 4], C(0x9FB4C8), haze * 0.5), 'stone'), rx=rnd.uniform(-0.5, 0.5), rz=rnd.uniform(-0.5, 0.5), yaw=a)
 
 
 # ---------- vật rải ----------
 
 
+GRASS = C(0x8A8247)
+GRASS_DK = C(0x6E6A40)
+
+
 def grave(b, seed):
+    """Gò đất phủ cỏ khô (đất nâu sẫm, đỉnh vàng úa, chùm cỏ dựng), bia đá nghiêng sứt mép, kiếm gãy cắm đầu gò, vài nén hương."""
     rnd = random.Random(seed)
-    s = rnd.uniform(0.9, 1.4)
-    blob(b, (0, 0.3 * s, 0), (2.4 * s, 0.9 * s, 1.6 * s), soil_col(seed), nu=14, nv=7, seed=seed, v0=0.0, v1=0.5, amp=0.2)
-    # bia nghiêng nửa vùi
-    b.box(0, 0.9 * s, -1.4 * s, 0.9 * s, 1.8 * s, 0.3 * s, Paint(C(0x6A7480), 'stone'), yaw=rnd.uniform(-0.3, 0.3))
-    for k in range(2):
-        b.box(rnd.uniform(-1, 1) * s, 0.5 * s, rnd.uniform(-0.2, 1) * s, 0.5 * s, 0.9 * s, 0.1 * s, PAPER)
-    # kiếm gãy cắm đầu mộ
-    b.box(0.2 * s, 0.9 * s, 0.4 * s, 0.14 * s, 1.8 * s, 0.05 * s, Paint(STEEL_DK, 'steel'), yaw=0.4)
+    s = rnd.uniform(0.9, 1.3)
+
+    def mound(pos, nrm):
+        n = fbm3(pos[0] * 2, pos[1] * 2, pos[2] * 2, seed, 3)
+        rgb = mix(SOIL, GRASS_DK, min(1.0, max(0.0, nrm[1] * 1.1 - 0.15)) * 0.55)
+        rgb = mix(rgb, GRASS, max(0.0, n - 0.45) * 1.6)
+        return Paint(tuple(c * (0.7 + 0.5 * n) for c in rgb), 'stone')
+
+    blob(b, (0, 0.55 * s, 0), (2.3 * s, 1.15 * s, 1.7 * s), mound, nu=16, nv=9, seed=seed, v0=0.0, v1=0.5, amp=0.18)
+    for k in range(46):
+        a = rnd.uniform(0, math.tau)
+        d = rnd.uniform(0.0, 1.0) ** 0.6
+        x, z = math.cos(a) * 2.1 * s * d, math.sin(a) * 1.55 * s * d
+        h_ = rnd.uniform(0.35, 0.8)
+        y = 1.1 * s * max(0.0, 1.0 - d * d) ** 0.5
+        tbox(b, (x, y + h_ / 2 - 0.05, z), (0.05, h_, 0.015), Paint(mix(GRASS, GRASS_DK, rnd.random()), 'plaster'),
+             rx=rnd.uniform(-0.35, 0.35), rz=rnd.uniform(-0.35, 0.35), yaw=a)
+    stone = Paint(C(0x76808C), 'stone')
+    tbox(b, (0.1 * s, 1.0 * s, -1.55 * s), (0.85 * s, 1.7 * s, 0.26 * s), stone, rx=0.12, rz=rnd.uniform(-0.28, 0.28), yaw=rnd.uniform(-0.3, 0.3))
+    tbox(b, (0.5 * s, 1.75 * s, -1.4 * s), (0.4 * s, 0.25 * s, 0.24 * s), stone, rx=0.5, rz=0.7)
+    for k in range(3):
+        b.box(0.1 * s, (0.7 + 0.3 * k) * s, -1.4 * s, 0.4 * s, 0.05 * s, 0.02 * s, Paint(C(0x242A32), 'stone'))
+    st = Paint(STEEL, 'steel')
+    tbox(b, (0.5 * s, 1.5 * s, 0.35 * s), (0.16 * s, 2.0 * s, 0.05 * s), st, rx=-0.15, rz=0.22)
+    tbox(b, (0.62 * s, 2.45 * s, 0.31 * s), (0.7 * s, 0.1 * s, 0.14 * s), Paint(BRONZE.rgb, 'metal'), rx=-0.15, rz=0.22)
+    tbox(b, (0.68 * s, 2.85 * s, 0.29 * s), (0.08 * s, 0.7 * s, 0.08 * s), Paint(LEATHER.rgb, 'wood'), rx=-0.15, rz=0.22)
+    for k in range(3):
+        b.box(rnd.uniform(-0.6, 0.2) * s, 1.0 * s, 0.9 * s + rnd.uniform(0, 0.4), 0.03, 0.3, 0.03, PAPER)
 
 
 def stele(b, seed):
@@ -460,6 +533,24 @@ def armor(b, seed):
         b.box(-1.2 + k * 0.25, 0.1, -0.8 + rnd.uniform(-0.2, 0.2), 0.34, 0.04, 0.22, Paint(mix(STEEL_DK, RUST, 0.7), 'metal'), yaw=rnd.uniform(0, 3))
 
 
+def shards(b, seed):
+    """Mảnh kiếm vụn nằm trên sàn: lưỡi gãy vài đoạn, mũi nhọn, chắn và chuôi rời, vài vệt khí xanh nơi mẻ."""
+    rnd = random.Random(seed)
+    for k in range(5):
+        x, z = rnd.uniform(-1.6, 1.6), rnd.uniform(-1.6, 1.6)
+        ln = rnd.uniform(0.5, 1.5)
+        w = rnd.uniform(0.1, 0.2)
+        yaw = rnd.uniform(0, 6.28)
+        col = Paint(mix(STEEL, RUST, rnd.uniform(0.1, 0.6)), 'steel')
+        tbox(b, (x, 0.03, z), (ln, 0.025, w), col, rx=rnd.uniform(-0.08, 0.08), rz=rnd.uniform(-0.1, 0.1), yaw=yaw)
+        px, pz = x + math.cos(yaw) * ln * 0.5, z - math.sin(yaw) * ln * 0.5
+        b.poly([(px, 0.04, pz), (px + math.cos(yaw) * w * 1.6, 0.04, pz - math.sin(yaw) * w * 1.6), (px - math.sin(yaw) * w * 0.5, 0.04, pz - math.cos(yaw) * w * 0.5)], (px, 0, pz), col)
+        if rnd.random() < 0.5:
+            b.box(x, 0.045, z, 0.02, 0.01, ln * 0.6, RUNE, yaw=yaw)
+    tbox(b, (rnd.uniform(-1, 1), 0.06, rnd.uniform(-1, 1)), (0.5, 0.06, 0.12), Paint(BRONZE.rgb, 'metal'), yaw=rnd.uniform(0, 3))
+    tbox(b, (rnd.uniform(-1, 1), 0.04, rnd.uniform(-1, 1)), (0.7, 0.07, 0.07), Paint(LEATHER.rgb, 'wood'), yaw=rnd.uniform(0, 3))
+
+
 def rune_blade(b, seed):
     """Kiếm trận nhỏ (vòng quanh đài chiến): lưỡi thép phát rãnh khí mảnh, tấm chắn, chuôi."""
     H = 5.0
@@ -515,7 +606,7 @@ def build_all():
     for hz in range(3):  # ba lớp xa dần: lớp xa nhạt và ngả lam (sương xa)
         for i in range(3):
             b = new_b(200 + i + hz * 10)
-            spire(b, 40.0, 9.0 + 2.5 * i, (0.0, 0.32, 0.55)[hz], 300 + i * 7)
+            karst(b, 40.0, 7.0 + 2.0 * i, (0.0, 0.34, 0.6)[hz], 300 + i * 7 + hz)
             variants[f'spire{hz}_{i}'] = b
     for i in range(3):
         b = new_b(400 + i)
@@ -543,6 +634,10 @@ def build_all():
     b = new_b(490)
     rune_blade(b, 490)
     variants['runeblade'] = b
+    for i in range(3):
+        b = new_b(495 + i)
+        shards(b, 495 + i)
+        variants[f'shards{i}'] = b
     return variants, rnd
 
 
@@ -579,7 +674,7 @@ def run(out):
             a = (i + rnd.uniform(0, 1)) / cnt * math.tau
             r = rnd.uniform(r0, r1)
             x, z = math.cos(a) * r, math.sin(a) * r
-            h = dome_h(r) * hf * rnd.uniform(0.6, 1.0)
+            h = dome_h(r) * hf * rnd.uniform(0.55, 1.2)
             put('spire', f'spire{ring}_{rnd.randrange(3)}', x, z, yaw=rnd.uniform(0, 6.28), scale=h / 40.0 * rnd.uniform(0.9, 1.1))
     # Vật rải quanh bãi kiếm.
     def scatter(kind, var_fmt, cnt, r_min, r_max, scale=(0.9, 1.3), nvar=3):
@@ -600,6 +695,16 @@ def run(out):
     scatter('steps', 'steps', 4, 52, 90, (1.0, 1.4))
     scatter('bones', 'bones{}', 44, 32, 108, (1.5, 2.4))
     scatter('armor', 'armor{}', 36, 32, 108, (1.6, 2.6))
+    # Mảnh kiếm vụn rải cả trong đài chiến (nằm sát đất, không cản).
+    got = 0
+    while got < 70:
+        a = rnd.uniform(0, math.tau)
+        r = 20 + 36 * math.sqrt(rnd.random())
+        x, z = math.cos(a) * r, math.sin(a) * r
+        if abs(x) < 8 and z > 0:
+            continue
+        put('shards', f'shards{rnd.randrange(3)}', x, z, yaw=rnd.uniform(0, 6.28), scale=rnd.uniform(0.9, 1.5))
+        got += 1
     # Vòng tám kiếm trận quanh đài chiến (khớp vòng khắc sàn r ≈ 59).
     for i in range(8):
         a = i / 8 * math.tau + math.pi / 8

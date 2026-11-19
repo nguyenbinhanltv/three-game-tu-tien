@@ -116,7 +116,9 @@ export default {
     const views = (VIEWS[id] ?? FALLBACK).filter((v) => !only.length || only.includes(v.name) || only.includes(v.name.slice(3)));
     const perf: Record<string, unknown> = {};
     for (const v of views) {
+      // Quái chết để lại vết mực trên đất (tính năng của game, tan sau 11 s): chờ tan hết trước khi chụp.
       await gm(page, 'killall', 700);
+      await sleep(11_500);
       await gm(page, `tp ${Math.round(c.x + v.at[0])} ${Math.round(c.z + v.at[1])}`, 1100);
       await cam(page, { yaw: yawTo(v.look[0], v.look[1]), pitch: v.pitch, dist: v.dist });
       await snapSizes(page, r.out, `${tag}-${v.name}`, sizes, 1300);
