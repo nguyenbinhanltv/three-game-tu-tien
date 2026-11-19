@@ -362,7 +362,12 @@ export interface Placement {
   yaw: number;
   s: number;
   sy?: number;
+  /** Nghiêng quanh trục ngang cục bộ x sau `yaw` (rad; cột đổ, tượng nghiêng). ≥ `LEAN_MIN` thì thân đổi thành hộp nằm dọc hướng đổ. */
+  lean?: number;
 }
+
+/** Từ góc nghiêng này trở lên hình đứng không còn đúng: thay bằng hộp nằm (cột đổ). */
+export const LEAN_MIN = 0.35;
 
 /**
  * Áp một bộ hình cục bộ lên một instance → hình thế giới. Quy ước quay giống `CollisionSet` (world = R(yaw)·local):
@@ -372,7 +377,31 @@ export function instantiateShapes(local: readonly LocalShape[], p: Placement, ou
   const c = Math.cos(p.yaw);
   const sn = Math.sin(p.yaw);
   const sy = p.s * (p.sy ?? 1);
+  const lean = p.lean && Math.abs(p.lean) >= LEAN_MIN ? Math.abs(p.lean) : 0;
   for (const l of local) {
+    if (lean) {
+      // Thân nghiêng: gốc ở chân, đầu trên đổ về +z cục bộ (sau yaw). Hộp nằm: dài L·sin(lean) + 2r dọc hướng đổ, rộng 2r, cao L·cos(lean) + 2r.
+      const r = (l.k === 'cyl' ? l.r : Math.max(l.hx, l.hz)) * p.s;
+      const len = (l.y1 - l.y0) * sy;
+      const run = len * Math.sin(lean);
+      const sgn = (p.lean ?? 0) < 0 ? -1 : 1;
+      const lx = l.x * p.s;
+      const lz = l.z * p.s + (sgn * run) / 2;
+      out.push({
+        k: 'box',
+        x: p.x + lx * c + lz * sn,
+        z: p.z + -lx * sn + lz * c,
+        hx: r,
+        hz: run / 2 + r,
+        yaw: p.yaw,
+        y0: p.y + l.y0 * sy,
+        y1: p.y + l.y0 * sy + len * Math.cos(lean) + 2 * r,
+        walk: false,
+        fly: l.fly,
+        tag,
+      });
+      continue;
+    }
     const x = p.x + (l.x * c + l.z * sn) * p.s;
     const z = p.z + (-l.x * sn + l.z * c) * p.s;
     const y0 = p.y + l.y0 * sy;
