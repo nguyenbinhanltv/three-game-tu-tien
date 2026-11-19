@@ -1,4 +1,5 @@
 import { LEVELS } from '@dtl/content';
+import { terrainOf } from '@dtl/shared';
 import type { BhSpot } from './bhWonders';
 
 /** Hình chữ nhật chiếm chỗ của một xác thú trong hệ thế giới (xoay theo yaw), cộng lề. Dài −40…+28 m, rộng ±12 m theo hệ cục bộ, nhân tỉ lệ `s`. */
@@ -21,5 +22,8 @@ export function bacHoangOccupied(): { id: string; x: number; z: number; r: numbe
   for (const s of lv.spots ?? []) out.push({ id: s.id, x: s.x, z: s.z, r: 8 });
   for (const p of lv.pois ?? []) out.push({ id: p.id, x: p.x, z: p.z, r: 10 });
   for (const e of lv.escorts ?? []) for (const [i, p] of e.path.entries()) out.push({ id: `${e.id}_${i}`, x: p[0], z: p[1], r: 6 });
+  // Đấu trường boss (sân phẳng flatR 44 m): thêm lề 12 m cho camera/chiêu lớn, không để xương nằm trong sân
+  for (const f of terrainOf('bac_hoang').def.features)
+    if (f.id.startsWith('boss')) out.push({ id: `arena_${f.id}`, x: f.x, z: f.z, r: f.flatR + 12 });
   return out;
 }
