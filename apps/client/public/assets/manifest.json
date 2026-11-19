@@ -11175,6 +11175,264 @@
         }
       }
     },
+    "prop_tc_chan_dong_do_nat": {
+      "id": "prop_tc_chan_dong_do_nat",
+      "class": "prop",
+      "source": "assets/build/raw/prop_tc_chan_dong_do_nat.glb",
+      "file": "prop_tc_chan_dong_do_nat.0d994c1979.glb",
+      "bytes": 1724336,
+      "rawBytes": 13888708,
+      "triangles": 2816,
+      "rawTriangles": 2816,
+      "lod0Cap": 5000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_steel",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_nor_gl_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_darkrock",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_Rough_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2816
+        },
+        {
+          "level": 1,
+          "triangles": 1123,
+          "target": 1126
+        },
+        {
+          "level": 2,
+          "triangles": 420,
+          "target": 422
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 3.728,
+          "height": 3.0411,
+          "depth": 2.413,
+          "minY": -0.05
+        },
+        "build": {
+          "width": 3.728,
+          "height": 3.0413,
+          "depth": 2.4131,
+          "minY": -0.0501
+        }
+      }
+    },
+    "prop_tc_chan_dong_do_nat_2": {
+      "id": "prop_tc_chan_dong_do_nat_2",
+      "class": "prop",
+      "source": "assets/build/raw/prop_tc_chan_dong_do_nat_2.glb",
+      "file": "prop_tc_chan_dong_do_nat_2.367476928c.glb",
+      "bytes": 1729320,
+      "rawBytes": 13901112,
+      "triangles": 3016,
+      "rawTriangles": 3016,
+      "lod0Cap": 5000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_steel",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_nor_gl_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_darkrock",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_Rough_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 3016
+        },
+        {
+          "level": 1,
+          "triangles": 1194,
+          "target": 1206
+        },
+        {
+          "level": 2,
+          "triangles": 447,
+          "target": 452
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 4.0276,
+          "height": 3.4411,
+          "depth": 2.7743,
+          "minY": -0.05
+        },
+        "build": {
+          "width": 4.0276,
+          "height": 3.441,
+          "depth": 2.7742,
+          "minY": -0.05
+        }
+      }
+    },
     "prop_tc_chuong_dong": {
       "id": "prop_tc_chuong_dong",
       "class": "prop",
@@ -11763,6 +12021,210 @@
         }
       }
     },
+    "prop_tc_co_rach": {
+      "id": "prop_tc_co_rach",
+      "class": "prop",
+      "source": "assets/build/raw/prop_tc_co_rach.glb",
+      "file": "prop_tc_co_rach.daca6cde65.glb",
+      "bytes": 1129128,
+      "rawBytes": 4151864,
+      "triangles": 2164,
+      "rawTriangles": 2164,
+      "lod0Cap": 5000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "metal_plate_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_steel",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_nor_gl_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_darkrock",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_Rough_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2164
+        },
+        {
+          "level": 1,
+          "triangles": 862,
+          "target": 866
+        },
+        {
+          "level": 2,
+          "triangles": 323,
+          "target": 325
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.4468,
+          "height": 4.3463,
+          "depth": 1.5762,
+          "minY": -0.05
+        },
+        "build": {
+          "width": 2.4467,
+          "height": 4.3463,
+          "depth": 1.5765,
+          "minY": -0.05
+        }
+      }
+    },
+    "prop_tc_co_rach_2": {
+      "id": "prop_tc_co_rach_2",
+      "class": "prop",
+      "source": "assets/build/raw/prop_tc_co_rach_2.glb",
+      "file": "prop_tc_co_rach_2.b2f224b3c0.glb",
+      "bytes": 1129028,
+      "rawBytes": 4151868,
+      "triangles": 2164,
+      "rawTriangles": 2164,
+      "lod0Cap": 5000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "metal_plate_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_steel",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_nor_gl_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_darkrock",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_Rough_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2164
+        },
+        {
+          "level": 1,
+          "triangles": 862,
+          "target": 866
+        },
+        {
+          "level": 2,
+          "triangles": 323,
+          "target": 325
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.4468,
+          "height": 4.3463,
+          "depth": 1.5762,
+          "minY": -0.05
+        },
+        "build": {
+          "width": 2.4467,
+          "height": 4.3463,
+          "depth": 1.5765,
+          "minY": -0.05
+        }
+      }
+    },
     "prop_tc_cot_da_do": {
       "id": "prop_tc_cot_da_do",
       "class": "prop",
@@ -11909,6 +12371,156 @@
           "width": 2.942,
           "height": 3.56,
           "depth": 2.3552,
+          "minY": -0.05
+        }
+      }
+    },
+    "prop_tc_cot_ta_mau_tim": {
+      "id": "prop_tc_cot_ta_mau_tim",
+      "class": "prop",
+      "source": "assets/build/raw/prop_tc_cot_ta_mau_tim.glb",
+      "file": "prop_tc_cot_ta_mau_tim.c702ee6dff.glb",
+      "bytes": 621824,
+      "rawBytes": 2558612,
+      "triangles": 1255,
+      "rawTriangles": 1255,
+      "lod0Cap": 5000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "dark_rock_nor_gl_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_darkrock",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_Rough_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 1255
+        },
+        {
+          "level": 1,
+          "triangles": 501,
+          "target": 502
+        },
+        {
+          "level": 2,
+          "triangles": 186,
+          "target": 188
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.2192,
+          "height": 5.045,
+          "depth": 2.2186,
+          "minY": -0.05
+        },
+        "build": {
+          "width": 2.2191,
+          "height": 5.045,
+          "depth": 2.2185,
+          "minY": -0.05
+        }
+      }
+    },
+    "prop_tc_cot_ta_mau_tim_2": {
+      "id": "prop_tc_cot_ta_mau_tim_2",
+      "class": "prop",
+      "source": "assets/build/raw/prop_tc_cot_ta_mau_tim_2.glb",
+      "file": "prop_tc_cot_ta_mau_tim_2.1adbe2c293.glb",
+      "bytes": 620700,
+      "rawBytes": 2558620,
+      "triangles": 1255,
+      "rawTriangles": 1255,
+      "lod0Cap": 5000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "dark_rock_nor_gl_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_darkrock",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_Rough_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 1255
+        },
+        {
+          "level": 1,
+          "triangles": 501,
+          "target": 502
+        },
+        {
+          "level": 2,
+          "triangles": 187,
+          "target": 188
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.24,
+          "height": 6.045,
+          "depth": 2.2147,
+          "minY": -0.05
+        },
+        "build": {
+          "width": 2.2398,
+          "height": 6.045,
+          "depth": 2.2147,
           "minY": -0.05
         }
       }
@@ -15609,6 +16221,156 @@
         }
       }
     },
+    "prop_tc_tinh_the_tim": {
+      "id": "prop_tc_tinh_the_tim",
+      "class": "prop",
+      "source": "assets/build/raw/prop_tc_tinh_the_tim.glb",
+      "file": "prop_tc_tinh_the_tim.5658c9fb8f.glb",
+      "bytes": 644060,
+      "rawBytes": 2636952,
+      "triangles": 2140,
+      "rawTriangles": 2140,
+      "lod0Cap": 5000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "dark_rock_nor_gl_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_darkrock",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_Rough_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2140
+        },
+        {
+          "level": 1,
+          "triangles": 854,
+          "target": 856
+        },
+        {
+          "level": 2,
+          "triangles": 318,
+          "target": 321
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 4.3876,
+          "height": 2.6,
+          "depth": 4.4653,
+          "minY": -0.13
+        },
+        "build": {
+          "width": 4.3873,
+          "height": 2.5998,
+          "depth": 4.4653,
+          "minY": -0.1299
+        }
+      }
+    },
+    "prop_tc_tinh_the_tim_2": {
+      "id": "prop_tc_tinh_the_tim_2",
+      "class": "prop",
+      "source": "assets/build/raw/prop_tc_tinh_the_tim_2.glb",
+      "file": "prop_tc_tinh_the_tim_2.db751cd30c.glb",
+      "bytes": 650680,
+      "rawBytes": 2654708,
+      "triangles": 2338,
+      "rawTriangles": 2338,
+      "lod0Cap": 5000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "dark_rock_nor_gl_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_darkrock",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_Rough_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2338
+        },
+        {
+          "level": 1,
+          "triangles": 932,
+          "target": 935
+        },
+        {
+          "level": 2,
+          "triangles": 349,
+          "target": 351
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 5.9631,
+          "height": 3.6,
+          "depth": 5.8042,
+          "minY": -0.18
+        },
+        "build": {
+          "width": 5.9631,
+          "height": 3.6001,
+          "depth": 5.8045,
+          "minY": -0.18
+        }
+      }
+    },
     "prop_tc_tran_do_khac_san": {
       "id": "prop_tc_tran_do_khac_san",
       "class": "prop",
@@ -16612,6 +17374,210 @@
           "height": 1.5713,
           "depth": 0.0765,
           "minY": 1.6101
+        }
+      }
+    },
+    "prop_tc_xuong_cu_thu": {
+      "id": "prop_tc_xuong_cu_thu",
+      "class": "prop",
+      "source": "assets/build/raw/prop_tc_xuong_cu_thu.glb",
+      "file": "prop_tc_xuong_cu_thu.04f35a6598.glb",
+      "bytes": 1322796,
+      "rawBytes": 12554864,
+      "triangles": 4996,
+      "rawTriangles": 5948,
+      "lod0Cap": 5000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_nor_gl_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_darkrock",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_Rough_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 4996
+        },
+        {
+          "level": 1,
+          "triangles": 1994,
+          "target": 1998
+        },
+        {
+          "level": 2,
+          "triangles": 746,
+          "target": 749
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 5.5626,
+          "height": 1.7887,
+          "depth": 1.5852,
+          "minY": -0.05
+        },
+        "build": {
+          "width": 5.5626,
+          "height": 1.7888,
+          "depth": 1.5851,
+          "minY": -0.05
+        }
+      }
+    },
+    "prop_tc_xuong_cu_thu_2": {
+      "id": "prop_tc_xuong_cu_thu_2",
+      "class": "prop",
+      "source": "assets/build/raw/prop_tc_xuong_cu_thu_2.glb",
+      "file": "prop_tc_xuong_cu_thu_2.10a67b9092.glb",
+      "bytes": 1322480,
+      "rawBytes": 12586764,
+      "triangles": 4996,
+      "rawTriangles": 6484,
+      "lod0Cap": 5000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_nor_gl_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_darkrock",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "dark_rock_Rough_1k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 4996
+        },
+        {
+          "level": 1,
+          "triangles": 1994,
+          "target": 1998
+        },
+        {
+          "level": 2,
+          "triangles": 746,
+          "target": 749
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 5.5626,
+          "height": 1.7887,
+          "depth": 1.5852,
+          "minY": -0.05
+        },
+        "build": {
+          "width": 5.5626,
+          "height": 1.7888,
+          "depth": 1.5851,
+          "minY": -0.05
         }
       }
     },

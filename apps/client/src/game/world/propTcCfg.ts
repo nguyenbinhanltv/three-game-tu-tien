@@ -60,10 +60,10 @@ export const TC_NAMES: Record<string, Cfg> = {
   xich_bua: { range: 260, lod: [40, 100] },
   // Dị Vực
   xuong_cu_thu: LARGE,
-  cot_ta_mau_tim: BEACON,
-  tinh_the_tim: BEACON,
+  cot_ta_mau_tim: { ...BEACON, crystal: true },
+  tinh_the_tim: { ...BEACON, crystal: true },
   chan_dong_do_nat: LARGE,
-  co_rach: MEDIUM,
+  co_rach: { ...MEDIUM, sway: true },
 };
 
 export const TC_PROP_CFG: Record<string, Cfg> = Object.fromEntries(

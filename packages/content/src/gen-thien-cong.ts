@@ -24,6 +24,8 @@ const opt = (k: string) => (args.includes(k) ? args[args.indexOf(k) + 1] : undef
 const GROUPS = (opt('--groups') ?? Object.keys(ITEMS).join(',')).split(',');
 const ONLY = opt('--level');
 const SEED = 20261119;
+/** Điểm cần thoáng theo level: [x, z, bán kính]. Đoạn Mạch (584, 926): đống củi + mộ cổ + đỉnh lư khép kín quanh điểm (cổng mộ). */
+const KEEP_CLEAR: Record<string, [number, number, number][]> = { doan_mach: [[584, 926, 6.5]] };
 /** Hệ số mật độ cho số lượng rải ngẫu nhiên của `thienCongScenes.ts` (duyệt ảnh: bản đầu quá thưa, trước/sau không phân biệt được). */
 const DENSITY = 2.2;
 /** Món nhỏ/rẻ chỉ bày một biến thể: mỗi id × LOD × vật liệu là một InstancedMesh, nên bớt id để cảnh đông (chợ) không vượt 300 draw call. */
@@ -227,7 +229,7 @@ for (const levelId of Object.keys(SCENES)) {
               const cd = r0 + rand() * (r1 - r0);
               x = Math.round((c.x + Math.cos(ca) * cd) * 10) / 10;
               z = Math.round((c.z + Math.sin(ca) * cd) * 10) / 10;
-            } else if (sc.clusters) {
+            } else if (sc.clusters && (!sc.clusterGroups || sc.clusterGroups.includes(g))) {
               // Rải theo cụm (lùm cây, bãi đá...): tâm cụm cố định theo cảnh, mỗi món chọn một cụm; cảnh đông ở từng chỗ thay vì loãng khắp vùng.
               const cc = clusterCentres(si, sc);
               const c = cc[(k + tries) % cc.length]!;
@@ -304,6 +306,10 @@ for (const levelId of Object.keys(SCENES)) {
       }
     }
   }
+  // Điểm cần trống (map:report báo kẹt khi prop rắn khép kín quanh điểm, COL-1): bỏ prop trong bán kính, KHÔNG dựng lại để không xê dịch prop khác.
+  const clear = KEEP_CLEAR[levelId] ?? [];
+  for (let i = list.length - 1; i >= 0; i--)
+    if (clear.some(([cx, cz, cr]) => Math.hypot(list[i]!.x - cx, list[i]!.z - cz) < cr)) list.splice(i, 1);
   out[levelId] = list;
   console.log(
     `[tc] ${levelId}: ${list.length} prop (${list.filter((p) => p.col).length} có va chạm, ${list.reduce((a, p) => a + (p.col?.length ?? 0), 0)} vòng)${miss.length ? `, thiếu ${miss.length}: ${[...new Set(miss)].slice(0, 40).join('; ')}` : ''}`,
