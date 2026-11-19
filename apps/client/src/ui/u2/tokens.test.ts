@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 // Khóa token của UI Kit 2.0: màu chỉ viết ở tokens.css; CSS còn lại chỉ var(--u-*), và mọi biến dùng đều đã khai báo.
 const DIR = __dirname;
 const css = (f: string) => readFileSync(join(DIR, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+// CHỦ Ý chỉ quét CSS ngay trong u2/ (không đệ quy): win/panel.css, shell/*.css là CSS cũ còn màu cứng, chưa theo quy tắc kit (xem README).
 const FILES = readdirSync(DIR).filter((f) => f.endsWith('.css'));
 const OTHERS = FILES.filter((f) => f !== 'tokens.css');
 const NO_FF = OTHERS.filter((f) => f !== 'fonts.css'); // fonts.css khai @font-face (nơi duy nhất có tên font thật)
