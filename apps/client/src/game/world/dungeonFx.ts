@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { attribute, float, mix, positionWorld, sin, smoothstep, texture, time, vec2, vec3 } from 'three/tsl';
+import { attribute, cameraPosition, float, mix, positionWorld, sin, smoothstep, texture, time, vec2, vec3 } from 'three/tsl';
 import { hash01 } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { createWorldMaterial } from '../../render/materials/world';
@@ -27,6 +27,11 @@ export interface DungeonFxConfig {
     floor: [number, number, number];
     halo: [number, number, number];
     rock: [number, number, number];
+    /** Nửa rộng khe (m): `w0` + `w1` × dạng chuông theo chiều dài (mặc định 0,35 + 0,9). */
+    w0?: number;
+    w1?: number;
+    /** Bề rộng vùng phát sáng ở đáy theo `|across|` (mặc định 0,7). */
+    glowW?: number;
   };
   mist?: { a: [number, number, number]; b: [number, number, number]; innerR: number; outerR: number; opacity: number };
   ring?: { rgb: string; mote: number };
@@ -84,7 +89,7 @@ export class DungeonFx {
       const r = k.rMin + rand() * (k.rMax - k.rMin);
       let x = cx + Math.cos(a) * r;
       let z = cz + Math.sin(a) * r;
-      if (keepOut(x, z, 24)) continue;
+      if (keepOut(x, z, k.rMin - 2)) continue;
       let dir = rand() * Math.PI * 2;
       const len = 14 + rand() * 38;
       const steps = Math.round(len / 2.2);
@@ -92,10 +97,10 @@ export class DungeonFx {
       let ok = true;
       for (let i = 0; i <= steps; i++) {
         const t = i / steps;
-        const w = 0.35 + 0.9 * Math.sin(Math.PI * Math.min(1, t * 1.1)) * (0.6 + 0.4 * rand());
+        const w = (k.w0 ?? 0.35) + (k.w1 ?? 0.9) * Math.sin(Math.PI * Math.min(1, t * 1.1)) * (0.6 + 0.4 * rand());
         const nx = -Math.sin(dir);
         const nz = Math.cos(dir);
-        if (keepOut(x, z, 20)) {
+        if (keepOut(x, z, k.rMin - 6)) {
           ok = false;
           break;
         }
@@ -139,11 +144,14 @@ export class DungeonFx {
     // thân khe PBR có đổ sáng thật (gờ nổi bắt nắng, lòng khe tối), đáy phát sáng mềm bằng emissive; mép ngoài tan mềm
     const mat = createWorldMaterial({ transparent: true, depthWrite: false, roughness: 0.9, side: THREE.DoubleSide });
     mat.colorNode = mix(vec3(0.02, 0.025, 0.035), rock, isLip);
+    const gw = k.glowW ?? 0.7;
     mat.emissiveNode = vec3(...k.floor)
-      .mul(smoothstep(0.7, 0.0, u))
-      .mul(smoothstep(0.7, 0.0, u))
+      .mul(smoothstep(gw, 0.0, u))
+      .mul(smoothstep(gw, 0.0, u))
       .mul(pulse);
-    mat.opacityNode = smoothstep(1.35, 1.05, u);
+    // gần camera (< ~14–34 m) khe mờ dần: không bao giờ thành dải to chắn khung hình khi camera sát mặt đất
+    const nearFade = smoothstep(14, 34, positionWorld.sub(cameraPosition).length());
+    mat.opacityNode = smoothstep(1.35, 1.05, u).mul(nearFade);
     mat.polygonOffset = true;
     mat.polygonOffsetFactor = -3;
     const mesh = new THREE.Mesh(geo, mat);
@@ -161,7 +169,7 @@ export class DungeonFx {
       side: THREE.DoubleSide,
     });
     halo.colorNode = vec3(...k.halo).mul(pulse);
-    halo.opacityNode = smoothstep(1.2, 0.0, u).mul(0.3);
+    halo.opacityNode = smoothstep(1.2, 0.0, u).mul(0.3).mul(nearFade);
     const mesh2 = new THREE.Mesh(geo, halo);
     mesh2.name = 'dungeon-cracks-glow';
     mesh2.frustumCulled = false;

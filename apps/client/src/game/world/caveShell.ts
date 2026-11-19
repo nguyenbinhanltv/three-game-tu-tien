@@ -144,7 +144,7 @@ export function buildSwordCaveShell(def: CaveDef, groundY: number): THREE.Mesh {
  * Vòm hầm mỏ (DUN-1 PR2, Phục Mạch Quật): sa thạch đỏ nâu phân tầng ngang, vách gồ, nhũ đá sa xuống ở trần, ánh đèn hắt ấm ở chân vách tắt dần
  * lên cao, vài mạch tinh lục lam chạy thành đường mảnh uốn (hàm sin theo góc và độ cao, không dùng nhiễu giá trị để khỏi vỡ ô). Một lưới màu theo đỉnh.
  */
-export function buildMineCaveShell(def: CaveDef, groundY: number): THREE.Mesh {
+export function buildMineCaveShell(def: CaveDef, groundY: number, lights: readonly { x: number; z: number }[] = []): THREE.Mesh {
   const geo = new THREE.SphereGeometry(1, 192, 56, 0, Math.PI * 2, 0, Math.PI / 2);
   const pos = geo.attributes.position as THREE.BufferAttribute;
   const col = new Float32Array(pos.count * 3);
@@ -152,6 +152,7 @@ export function buildMineCaveShell(def: CaveDef, groundY: number): THREE.Mesh {
   const rock = new THREE.Color(0x7a5436);
   const dark = new THREE.Color(0x120d0a);
   const vein = new THREE.Color(0x3fe0b4);
+  const sun = new THREE.Color(0xffd89a);
   for (let i = 0; i < pos.count; i++) {
     const nx = pos.getX(i);
     const ny = pos.getY(i);
@@ -173,6 +174,14 @@ export function buildMineCaveShell(def: CaveDef, groundY: number): THREE.Mesh {
     const w = Math.abs(Math.sin(ang * 5 + ny * 11 + Math.sin(ang * 3 + ny * 4) * 2));
     const v = Math.pow(Math.max(0, 1 - w * 14), 2) * Math.max(0, 1 - ny * 1.7);
     c.lerp(vein, v * 0.5);
+    c.multiplyScalar(0.62);
+    // khe hở trên trần: vệt sáng ấm quanh từng điểm rọi (chỉ ở phần cao của vòm)
+    if (ny > 0.78) {
+      for (const l of lights) {
+        const d = Math.hypot(x - l.x, z - l.z);
+        if (d < 7) c.lerp(sun, Math.pow(1 - d / 7, 0.8) * 0.95);
+      }
+    }
     col[i * 3] = c.r;
     col[i * 3 + 1] = c.g;
     col[i * 3 + 2] = c.b;

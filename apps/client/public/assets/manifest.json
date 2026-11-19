@@ -361,11 +361,11 @@
       "id": "arch_phuc_mach",
       "class": "arch",
       "source": "assets/build/raw/arch_phuc_mach.glb",
-      "file": "arch_phuc_mach.f59cc97a61.glb",
-      "bytes": 8253120,
-      "rawBytes": 8063848,
-      "triangles": 164762,
-      "rawTriangles": 164762,
+      "file": "arch_phuc_mach.668029390b.glb",
+      "bytes": 8942632,
+      "rawBytes": 10475004,
+      "triangles": 444980,
+      "rawTriangles": 444980,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -458,21 +458,21 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 164762
+          "triangles": 444980
         }
       ],
       "dims": {
         "raw": {
-          "width": 265.7636,
-          "height": 69.3598,
-          "depth": 269.627,
-          "minY": -33.4312
+          "width": 245.8793,
+          "height": 79.9321,
+          "depth": 255.5493,
+          "minY": -33.2875
         },
         "build": {
-          "width": 265.7636,
-          "height": 69.3598,
-          "depth": 269.6275,
-          "minY": -33.4312
+          "width": 245.8812,
+          "height": 79.9321,
+          "depth": 255.5496,
+          "minY": -33.2875
         }
       }
     },

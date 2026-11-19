@@ -45,7 +45,7 @@ const VIEWS: Record<string, View[]> = {
   ],
   phuc_mach: [
     { name: '01-vao', at: [0, 64], look: [0, -1], pitch: 0.18, dist: 12 },
-    { name: '02-toan-canh', at: [0, 52], look: [0, -1], pitch: 0.5, dist: 105 },
+    { name: '02-toan-canh', at: [0, 34], look: [0, -1], pitch: 0.66, dist: 62 },
     { name: '03-mach-tinh-bac', at: [0, 16], look: [0, -1], pitch: 0.06, dist: 10 },
     { name: '04-cua-ham', at: [-40, 30], look: [-1, -0.2], pitch: 0.08, dist: 9 },
     { name: '05-mach-san', at: [0, 6], look: [0, -1], pitch: 0.5, dist: 30 },
@@ -122,6 +122,16 @@ export default {
     const k = wrap(t1 - t0) >= 0 ? 1 : -1;
     const yawTo = (dx: number, dz: number) => k * wrap(Math.atan2(dz, dx) - t0);
 
+    const hide = list('--hide', '');
+    if (hide.length) {
+      // Gỡ lỗi hình: ẩn mọi đối tượng cảnh theo tên (vd. `--hide dungeon-cracks,pm-veins`) để biết thứ gì che khung hình.
+      await page.evaluate((names) => {
+        const g = window.__game as unknown as { scene: { traverse: (f: (o: { name: string; visible: boolean }) => void) => void } };
+        g.scene.traverse((o) => {
+          if (names.includes(o.name)) o.visible = false;
+        });
+      }, hide);
+    }
     const only = list('--views', '');
     const views = (VIEWS[id] ?? FALLBACK).filter((v) => !only.length || only.includes(v.name) || only.includes(v.name.slice(3)));
     const perf: Record<string, unknown> = {};

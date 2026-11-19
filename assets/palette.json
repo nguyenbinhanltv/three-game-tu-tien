@@ -251,7 +251,7 @@
         "label": "Phục Mạch Quật — hầm mỏ cũ, đất son tối, mạch tinh lam lục",
         "sunColor": "#FFD9A6", "sunIntensity": 2.0, "sunElevationDeg": 58,
         "skyColor": "#4A3A2C", "skyIntensity": 0.7,
-        "fogColor": "#3B2F25", "fogDensity": 0.0013, "heightFogTop": 10, "heightFogBoost": 2.2,
+        "fogColor": "#2A2018", "fogDensity": 0.0021, "heightFogTop": 10, "heightFogBoost": 2.2,
         "fogHaze": 0.0009, "fogHazeStart": 70, "fogScatter": 0.5, "rim": 1.0,
         "shadowTint": "#1C1814", "highlightTint": "#7FE8D0", "splitBalance": -0.05,
         "shadowAmount": 0.32, "highlightAmount": 0.3,

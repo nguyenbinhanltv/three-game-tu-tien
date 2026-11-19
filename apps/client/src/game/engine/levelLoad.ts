@@ -23,7 +23,7 @@ import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
 import { DoanMachArt } from '../world/doanMachArt';
 import { KiemTrungArt } from '../world/kiemTrungArt';
-import { PhucMachArt, PM_DOME } from '../world/phucMachArt';
+import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { VanHaiWow } from '../world/vanHaiWow';
@@ -328,7 +328,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     const shell = levelAssets(id).kiemTrungArt
       ? buildSwordCaveShell(cave, heightAt(cave.x, cave.z))
       : levelAssets(id).phucMachArt
-        ? buildMineCaveShell(cave, heightAt(cave.x, cave.z))
+        ? buildMineCaveShell(cave, heightAt(cave.x, cave.z), PM_OCULI)
         : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
     const glow = buildCrystalGlow(
       propsOf(id)
@@ -650,6 +650,9 @@ export async function loadPmModel(eng: Game, shadows: boolean): Promise<void> {
     origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
     prefix: 'pm',
     ceiling: PM_DOME,
+    flat: ['pm_wall_'],
+    noShadow: /wall|slab|stalac|ceil|pillar/,
+    material: pmMaterialFor,
   });
 }
 
@@ -662,6 +665,12 @@ interface DungeonModelOpts {
   prefix: string;
   /** Vòm hang: object `<prefix>_ceil_*` treo trần (y = cao độ vòm tại chỗ). */
   ceiling?: { r: number; h: number };
+  /** Tiền tố tên object đặt ở mặt bằng tâm (y = gốc − 4 m, chân vách chìm dưới địa hình dốc), không theo `heightAt` tại chỗ. */
+  flat?: string[];
+  /** Tên lưới không đổ bóng (vách/trần hang chặn nắng của đèn trời: nếu đổ bóng thì cả sàn tối đen). */
+  noShadow?: RegExp;
+  /** Thay vật liệu glTF theo tên (trả null = giữ nguyên). Vật liệu mới được giải phóng cùng asset. */
+  material?: (name: string) => THREE.Material | null;
 }
 
 /**
@@ -679,11 +688,30 @@ async function loadDungeonModel(eng: Game, shadows: boolean, o: DungeonModelOpts
     const root = handle.scene;
     eng.ktAsset = { handle, mats: adoptGltfMaterials(root) };
     root.position.set(o.origin.x, o.origin.y, o.origin.z);
+    if (o.material) {
+      const made = new Map<THREE.Material, THREE.Material>();
+      root.traverse((n) => {
+        const m = n as THREE.Mesh;
+        if (!m.isMesh) return;
+        const src = m.material as THREE.Material;
+        let rep = made.get(src);
+        if (!rep) {
+          const r = o.material!(src.name);
+          if (!r) return;
+          rep = r;
+          made.set(src, r);
+          eng.ktAsset!.mats.push(r);
+        }
+        m.material = rep;
+      });
+    }
     // Object nằm trực tiếp dưới gốc; GLTF đổi hệ trục (x, -z → z) nên lấy toạ độ thế giới từ vị trí đã nạp.
     for (const ch of root.children) {
       const wx = o.origin.x + ch.position.x;
       const wz = o.origin.z + ch.position.z;
-      if (o.ceiling && ch.name.startsWith(`${o.prefix}_ceil_`)) {
+      if (o.flat?.some((f) => ch.name.startsWith(f))) {
+        ch.position.y -= 4;
+      } else if (o.ceiling && ch.name.startsWith(`${o.prefix}_ceil_`)) {
         const r = Math.hypot(ch.position.x, ch.position.z);
         const dome = o.ceiling.h * Math.sqrt(Math.max(0, 1 - (r / o.ceiling.r) ** 2));
         ch.position.y += dome - 1.5;
@@ -707,7 +735,7 @@ async function loadDungeonModel(eng: Game, shadows: boolean, o: DungeonModelOpts
       const im = new THREE.InstancedMesh(mesh.geometry, mesh.material, mats.length);
       mats.forEach((mt, i) => im.setMatrixAt(i, mt));
       im.instanceMatrix.needsUpdate = true;
-      im.castShadow = shadows;
+      im.castShadow = shadows && !o.noShadow?.test(mesh.name);
       im.receiveShadow = shadows;
       im.frustumCulled = false;
       im.name = `${o.prefix}-${mesh.name || 'part'}`;

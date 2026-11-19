@@ -41,3 +41,12 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **`DungeonFx`** (`game/world/dungeonFx.ts`, tách từ Kiếm Trủng): khe nứt nay có mặt cắt thật — gờ đá nổi hai bên (0,2 m) bắt nắng, lòng khe tối, đáy phát sáng mềm — nên khi nhìn gần không còn là dải phẳng (góp ý duyệt PR1); Kiếm Trủng dùng lại.
 - **Ngân sách (preset Cao)**: ~250 draw call, ~0,72M tam giác (trước 69 draw call / 0,34M). File `arch_phuc_mach` ~8 MB (nạp lười).
 - **Chụp**: `pnpm shots dungeonart --level phuc_mach ...` (bảng `VIEWS` có 6 điểm riêng). Kịch bản nay chờ 1,5 s trước khi bấm E ở cổng (vào bí cảnh qua cổng thật từ Đoạn Mạch).
+
+### PR 2 vòng 2 (góp ý duyệt): hầm kín, tinh thể, khe nứt lõm, đường ray
+
+- **Hầm kín**: 40 đoạn vách hang liền khối (`cave_wall`, tầng phiến sa thạch nhô lệch, khe tối giữa tầng) quanh r≈114 + phiến đá trần treo + nhũ đá; ba khe hở trên trần (`PM_OCULI`) rọi tia sáng ấm (nón cộng sáng, mờ dần xuống nền) và vũng sáng ấm trên nền; dưới mỗi đèn đá có vũng sáng (đèn mỏ); vùng xa tối dần (`fogDensity` 0,0021, `HAZE` tối). Vách/trần/nhũ không đổ bóng (nếu đổ bóng thì nắng của đèn trời bị chặn, sàn tối đen).
+- **Tinh thể**: lăng trụ 7 vòng thu về mũi nhọn, màu đỉnh là gradient chân tối → lõi sáng; vật liệu client `pmMaterialFor` (emissive theo màu đỉnh + fresnel viền; mặt "kính" sẫm chỉ bắt viền), 7–12 tinh thể mỗi cụm cao thấp/dày mảnh khác nhau + 22 mảnh vụn quanh gốc; cụm nhỏ co giãn 0,5–2,0×.
+- **Khe nứt lõm** (`DungeonFx`): hẹp lại (nửa rộng 0,14 + 0,3 m), chỉ đặt r 60–104, và mờ dần theo khoảng cách tới camera (14→34 m) nên không bao giờ thành dải to cắt khung hình (ảnh boss). Nguyên nhân dải lơ lửng: khe phía nam nằm ngay sau camera. Kịch bản chụp có `--hide <tên,tên>` để ẩn đối tượng cảnh khi dò lỗi hình.
+- **Đường ray và đồ mỏ**: vòng ray r=72 (31 đoạn) nối các cửa hầm, 5 giá tời (khung chữ A, trống quấn dây, ròng rọc, thùng treo), 6 xe goòng trên ray, 46 cột chống gỗ dọc chân vách, đống quặng + thùng + xe; bỏ hàng khung gỗ chắn lối vào (camera sau lưng người chơi bị che).
+- **Ngân sách (preset Cao)**: ~250 draw call, ~1,06M tam giác; file `arch_phuc_mach` ~10 MB.
+- **Còn lại**: đống quặng còn tròn trịa như nấm đất; mạng mạch sàn hơi rộng; vách mới là phiến tròn xếp tầng (chưa triplanar).

@@ -22,12 +22,12 @@ from build_sect import Mat, Paint  # noqa: E402
 from kiem_trung_arch import C, blob, mix, new_b, rod, tbox  # noqa: E402
 from thien_khuyet_arch import fbm3  # noqa: E402
 
-bs.MATERIALS['vein'] = Mat(0.35, 0.0, None, 1.0, False, 0.0, (0x1FC49C, 0.6))
+bs.MATERIALS['vein'] = Mat(0.3, 0.0, None, 1.0, False, 0.0, (0x1FC49C, 0.25))  # client thay bằng vật liệu tinh thể (fresnel + gradient theo màu đỉnh)
 bs.MATERIALS['crystal'] = Mat(0.18, 0.1, None, 1.0, False, 0.0)
 
 # bảng màu sa thạch cho các hàm dùng chung của Kiếm Trủng (chúng đọc biến toàn cục lúc gọi)
 kta.ROCK[:] = [C(0x8A6444), C(0x6A4C34), C(0x9C7650), C(0x45342A)]
-kta.HAZE = C(0x7A5E48)
+kta.HAZE = C(0x140E0A)  # xa thì chìm vào tối (hang kín), không ngả sáng như ngoài trời
 kta.RUST = C(0x8A4E2E)
 kta.MOSS = C(0x5A5A34)
 kta.SOIL = C(0x5A4332)
@@ -46,6 +46,12 @@ IRONP = Paint(IRON, 'metal')
 
 SEED = 20261119
 DOME_R, DOME_H = 135.0, 75.0
+# Ba khe sáng trên trần (khớp OCULI trong client phucMachArt.ts): chừa phiến đá và nhũ đá quanh đó.
+OCULI = [(55 * math.cos(a), 55 * math.sin(a)) for a in (0.9, 2.9, 5.0)]
+
+
+def near_oculus(x, z, d=16.0):
+    return any(math.hypot(x - ox, z - oz) < d for ox, oz in OCULI)
 
 
 def dome_h(r):
@@ -55,48 +61,99 @@ def dome_h(r):
 # ---------- mạch tinh ----------
 
 
+def crystal_prism(b, ox, oz, dx, dz, h, r, ph, glow_ratio, rnd):
+    """Một tinh thể lăng trụ lục giác: tiết diện co dần về mũi nhọn qua nhiều vòng; màu đỉnh là gradient từ chân tối → lõi sáng ở mũi (client dùng màu đỉnh làm phát sáng),
+    mặt xen kẽ 'mạch' (phát sáng) và 'kính' (sẫm, chỉ bắt viền)."""
+    sides = 6
+    rings = [(0.0, 1.0), (0.05, 1.0), (0.3, 0.97), (0.55, 0.9), (0.75, 0.78), (0.9, 0.55), (1.0, 0.0)]
+    prev = None
+    for q, rk in rings:
+        ring = []
+        for j in range(sides):
+            ang = ph + j / sides * math.tau
+            ring.append((ox + dx * q * h + math.cos(ang) * r * rk, q * h - 0.05 * h, oz + dz * q * h + math.sin(ang) * r * rk))
+        if prev:
+            for j in range(sides):
+                k2 = (j + 1) % sides
+                glow = rnd.random() < glow_ratio
+                t = q ** 1.3
+                col = Paint(mix(C(0x0A3A32), C(0x7FFFE0), t), 'vein') if glow else Paint(mix(C(0x04201C), C(0x2F9C88), t), 'crystal')
+                b.poly([prev[j], prev[k2], ring[k2], ring[j]], (ox, 0, oz), col)
+        prev = ring
+
+
 def crystal_cluster(b, H, seed, glow_ratio=0.62):
-    """Cụm tinh thể lăng trụ lục giác nhọn đầu mọc từ đống đá: mặt xen kẽ phát sáng lam lục / kính sẫm; tinh thể giữa cao nhất, các tinh thể bên nghiêng ra ngoài."""
+    """Cụm tinh thể mọc từ đống đá: tinh thể giữa cao nhất, các tinh thể bên nghiêng ra ngoài với độ cao/độ dày rất khác nhau, và nhiều mảnh tinh thể vụn quanh gốc."""
     rnd = random.Random(seed)
-    # đế đá vụn
     for k in range(5):
         a = rnd.uniform(0, math.tau)
         d = rnd.uniform(0.1, 0.32) * H
         r = rnd.uniform(0.12, 0.22) * H
         blob(b, (math.cos(a) * d, r * 0.4, math.sin(a) * d), (r, r * 0.8, r * rnd.uniform(0.7, 1.0)), kta.rock_col(seed + k, strata=1.5, moss_amt=0.0), nu=10, nv=6, e=2.0, amp=0.3, seed=seed + 5 + k, rot=a)
-    n = rnd.randint(6, 9)
+    n = rnd.randint(7, 12)
     for c in range(n):
         if c == 0:
             a, lean, h, r = 0.0, rnd.uniform(-0.05, 0.05), H, 0.085 * H
             ox = oz = 0.0
         else:
             a = c / (n - 1) * math.tau + rnd.uniform(-0.3, 0.3)
-            d = rnd.uniform(0.08, 0.22) * H
+            d = rnd.uniform(0.06, 0.26) * H
             ox, oz = math.cos(a) * d, math.sin(a) * d
-            lean = rnd.uniform(0.2, 0.55)
-            h = H * rnd.uniform(0.35, 0.8)
-            r = 0.06 * H * rnd.uniform(0.7, 1.1)
-        dx, dz = math.cos(a) * lean, math.sin(a) * lean
-        sides = 6
-        ph = rnd.uniform(0, 1)
-        rings = [(0.0, 1.0), (0.12, 1.0), (0.8, 0.92), (1.0, 0.0)]  # (tỉ lệ cao, tỉ lệ bán kính)
-        prev = None
-        for q, rk in rings:
-            ring = []
-            for j in range(sides):
-                ang = ph + j / sides * math.tau
-                x = ox + dx * q * h + math.cos(ang) * r * rk
-                z = oz + dz * q * h + math.sin(ang) * r * rk
-                ring.append((x, q * h - 0.05 * H, z))
-            if prev:
-                for j in range(sides):
-                    k2 = (j + 1) % sides
-                    quad = [prev[j], prev[k2], ring[k2], ring[j]]
-                    mid = (ox, (prev[j][1] + ring[j][1]) / 2, oz)
-                    glow = (hash((c, j, seed)) % 100) / 100.0 < glow_ratio
-                    b.poly(quad, mid, VEIN if glow else CRYS)
-            prev = ring
+            lean = rnd.uniform(0.15, 0.6)
+            h = H * rnd.uniform(0.18, 0.85)
+            r = 0.055 * H * rnd.uniform(0.5, 1.3)
+        crystal_prism(b, ox, oz, math.cos(a) * lean, math.sin(a) * lean, h, r, rnd.uniform(0, 1), glow_ratio, rnd)
+    for k in range(22):  # mảnh vụn quanh gốc
+        a = rnd.uniform(0, math.tau)
+        d = rnd.uniform(0.12, 0.42) * H
+        crystal_prism(b, math.cos(a) * d, math.sin(a) * d, rnd.uniform(-0.5, 0.5), rnd.uniform(-0.5, 0.5), rnd.uniform(0.04, 0.13) * H, rnd.uniform(0.008, 0.02) * H, rnd.uniform(0, 1), 0.7, rnd)
     return b
+
+
+def cave_wall(b, seed):
+    """Một đoạn vách hang liền khối (rộng ~24 m, cao 48 m): các tầng phiến sa thạch chồng lệch có nhô ngang, khe tối giữa tầng, sẫm dần lên cao; ghép vòng quanh thành vách kín."""
+    rnd = random.Random(seed)
+    W = 24.0
+    rows = 8
+    for row in range(rows):
+        y0 = -4.0 + row * 6.4
+        nb = 3
+        for k in range(nb):
+            x = (k + 0.5) / nb * W - W / 2 + rnd.uniform(-1.5, 1.5)
+            out = rnd.uniform(-2.0, 1.5) + (1.5 if row % 3 == 1 else 0.0)  # +z hướng vào trong hang: tầng nhô ra
+            blob(b, (x, y0 + 3.4, out), (W / nb * rnd.uniform(0.62, 0.85), 3.9, rnd.uniform(4.5, 7.0)), kta.rock_col(seed + row * 7 + k, haze=0.1 + 0.05 * row, strata=1.6, moss_amt=0.0),
+                 nu=12, nv=6, e=2.7, amp=0.38, seed=seed + row * 5 + k, rot=rnd.uniform(0, 3))
+        # khe tối sau mỗi tầng
+        tbox(b, (0, y0 + 0.2, -3.0), (W, 0.6, 3.0), Paint(C(0x0A0705), 'earth'))
+    # khối chân vách + đá lở
+    for k in range(4):
+        blob(b, (rnd.uniform(-W / 2, W / 2), 1.2, rnd.uniform(2.5, 5.0)), (rnd.uniform(1.4, 3.0), 1.6, rnd.uniform(1.2, 2.4)), kta.rock_col(seed + 90 + k, moss_amt=0.0), nu=8, nv=5, e=2.0, amp=0.35, seed=seed + 95 + k)
+
+
+def ceil_slab(b, seed):
+    """Phiến đá trần treo (gốc ở trần, thân hướng xuống): dày 2–5 m, mép dưới lởm chởm, sẫm; ghép với nhũ đá làm trần hang nhiều lớp."""
+    rnd = random.Random(seed)
+    for k in range(3):
+        blob(b, (rnd.uniform(-5, 5), -1.8 - k * 0.9, rnd.uniform(-4, 4)), (rnd.uniform(8, 15) - k * 2, rnd.uniform(1.6, 3.0), rnd.uniform(6, 11) - k * 1.5),
+             kta.rock_col(seed + k, haze=0.15, strata=2.0, moss_amt=0.0), nu=12, nv=6, e=2.5, amp=0.4, seed=seed + k, v0=0.5, v1=1.0)
+
+
+def winch(b, seed):
+    """Giá tời: khung chữ A bằng gỗ, trống quấn dây thừng, ròng rọc, thùng quặng treo."""
+    rnd = random.Random(seed)
+    for sz in (-1, 1):
+        for sx in (-1, 1):
+            tbox(b, (sx * 1.6, 3.4, sz * 1.8), (0.4, 7.2, 0.4), TIMBER, rx=-sz * 0.25, rz=sx * 0.2)
+    tbox(b, (0, 6.6, 0), (3.6, 0.45, 0.45), TIMBER_D)
+    b.cylinder(0, 1.4, 0, 0.7, 2.6, TIMBER_D, 12)
+    tbox(b, (0, 1.6, 0), (0.12, 0.12, 3.8), IRONP, yaw=math.pi / 2)
+    for k in range(5):
+        b.cylinder(0, 1.5 + k * 0.42, 0, 0.74, 0.12, Paint(C(0x8A7A5A), 'plaster'), 10)
+    b.cylinder(0, 5.6, 0, 0.55, 0.3, IRONP, 12)
+    b.box(0, 3.4, 0.2, 0.05, 4.4, 0.05, Paint(C(0x8A7A5A), 'plaster'))
+    tbox(b, (0, 1.3, 0.2), (1.1, 0.9, 1.1), Paint(C(0x4A3F36), 'metal'))
+    for k in range(4):
+        blob(b, (rnd.uniform(-0.3, 0.3), 1.9, rnd.uniform(-0.3, 0.5)), (0.3, 0.22, 0.3), kta.rock_col(seed + k, moss_amt=0.0), nu=6, nv=4, e=1.8, amp=0.3, seed=seed + k)
 
 
 def stalactite(b, L, r, seed):
@@ -236,6 +293,20 @@ def build_variants():
     b = new_b(701)
     rails(b, 22.0, 701)
     v['rails'] = b
+    b = new_b(709)
+    rails(b, 14.5, 709)
+    v['rails14'] = b
+    for i in range(3):
+        b = new_b(750 + i)
+        cave_wall(b, 750 + i * 11)
+        v[f'wall{i}'] = b
+    for i in range(3):
+        b = new_b(760 + i)
+        ceil_slab(b, 760 + i * 7)
+        v[f'slab{i}'] = b
+    b = new_b(770)
+    winch(b, 770)
+    v['winch'] = b
     for i in range(2):
         b = new_b(702 + i)
         cart(b, 702 + i)
@@ -286,15 +357,21 @@ def run(out):
         big.append((x, z, 16 + rnd.uniform(0, 14), rnd.randrange(3)))
     for x, z, h, v in big:
         h = min(h, dome_h(math.hypot(x, z)) * 0.8)
-        put('crystal', f'crystal_big{v}', x, z, yaw=rnd.uniform(0, 6.28), scale=h / 40.0)
+        put('crystal', f'crystal_big{v}', x, z, yaw=rnd.uniform(0, 6.28), scale=h / 40.0 * rnd.uniform(0.85, 1.2))
     # Vành cột đá sa thạch ba lớp.
-    for ring, (r0, r1, cnt, hf) in enumerate(((100, 114, 22, 0.4), (114, 126, 26, 0.55), (126, 134, 20, 0.7))):
+    for ring, (r0, r1, cnt, hf) in enumerate(((94, 106, 16, 0.35), (106, 118, 14, 0.5))):
         for i in range(cnt):
             a = (i + rnd.uniform(0, 1)) / cnt * math.tau
             r = rnd.uniform(r0, r1)
             x, z = math.cos(a) * r, math.sin(a) * r
             h = dome_h(r) * hf * rnd.uniform(0.6, 1.2)
             put('pillar', f'pillar{ring}_{rnd.randrange(3)}', x, z, yaw=rnd.uniform(0, 6.28), scale=max(h, 8.0) / 40.0 * rnd.uniform(0.9, 1.1))
+    # Vách hang liền khối bao kín: 40 đoạn rộng 24 m quanh r ≈ 114, chân hạ cố định (client đặt y theo mặt bằng hầm), đỉnh chạm vòm.
+    for i in range(40):
+        a = i / 40 * math.tau
+        r = 114 + rnd.uniform(-2.5, 2.5)
+        h = dome_h(r) + 4.0
+        put('wall', f'wall{rnd.randrange(3)}', math.cos(a) * r, math.sin(a) * r, yaw=a + math.pi / 2, scale=h / 48.0)
     # Cửa hầm quanh vành, mỗi cửa có đường ray chạy vào + xe quặng.
     adits = []
     for i in range(5):
@@ -310,10 +387,36 @@ def run(out):
             put('rails', 'rails', math.cos(a) * rr, math.sin(a) * rr, yaw=a + math.pi / 2)
         rr = r - 30
         put('cart', f'cart{i % 2}', math.cos(a) * rr, math.sin(a) * rr, yaw=a + math.pi / 2)
-    # Khung chống gỗ dọc lối vào và quanh hầm.
+    # Đường ray vòng nối các cửa hầm (r = 72), nhánh ray từ mỗi cửa vào đã có ở trên; thêm xe goòng và giá tời bên đường ray.
+    ring_r = 72.0
+    nseg = 31
+    for k in range(nseg):
+        a = k / nseg * math.tau
+        x, z = math.cos(a) * ring_r, math.sin(a) * ring_r
+        if abs(x) < 12 and z > 0:
+            continue
+        put('rails', 'rails14', x, z, yaw=a)
     for k in range(5):
-        z = 40 + k * 11
-        put('frame', 'frame', 0.0, z, yaw=0.0, scale=1.0)
+        a = rnd.uniform(0, math.tau)
+        x, z = math.cos(a) * (ring_r + 2.5), math.sin(a) * (ring_r + 2.5)
+        if abs(x) < 16 and z > 0:
+            continue
+        put('winch', 'winch', x, z, yaw=a + math.pi / 2, scale=rnd.uniform(0.9, 1.3))
+    for k in range(6):
+        a = rnd.uniform(0, math.tau)
+        x, z = math.cos(a) * ring_r, math.sin(a) * ring_r
+        if abs(x) < 14 and z > 0:
+            continue
+        put('cart', f'cart{k % 2}', x, z, yaw=a)
+    # Cột chống dọc vách: khung gỗ xếp sát chân vách cách ~7 m, mở vào trong hang.
+    for k in range(46):
+        a = k / 46 * math.tau
+        x, z = math.cos(a) * 99, math.sin(a) * 99
+        if abs(x) < 14 and z > 0:
+            continue
+        put('frame', 'frame', x, z, yaw=a + math.pi / 2, scale=1.25)
+    # Khung chống gỗ dọc lối vào và quanh hầm.
+    # (không đặt khung gỗ trên lối vào: camera phía sau người chơi sẽ bị chắn)
     for i in range(10):
         a = rnd.uniform(0, math.tau)
         r = rnd.uniform(40, 86)
@@ -336,12 +439,21 @@ def run(out):
 
     scatter('ore', 'ore{}', 26, 34, 90, (1.0, 1.7))
     scatter('crates', 'crates{}', 18, 36, 90, (1.0, 1.5))
-    scatter('crystal', 'crystal_small{}', 40, 30, 92, (0.9, 1.6))
+    scatter('crystal', 'crystal_small{}', 52, 30, 92, (0.5, 2.0))
     scatter('bones', 'bones{}', 26, 32, 92, (1.4, 2.2))
+    # Phiến đá trần treo (client đặt y theo vòm), chừa quanh ba khe sáng.
+    for i in range(46):
+        a = rnd.uniform(0, math.tau)
+        r = 10 + 105 * math.sqrt(rnd.random())
+        if near_oculus(math.cos(a) * r, math.sin(a) * r):
+            continue
+        put('ceil_slab', f'slab{rnd.randrange(3)}', math.cos(a) * r, math.sin(a) * r, yaw=rnd.uniform(0, 6.28), scale=rnd.uniform(1.0, 2.2))
     # Treo trần: nhũ đá và cụm mạch tinh treo ngược (client đặt y theo vòm).
     for i in range(70):
         a = rnd.uniform(0, math.tau)
         r = 14 + 100 * math.sqrt(rnd.random())
+        if near_oculus(math.cos(a) * r, math.sin(a) * r):
+            continue
         put('ceil_stalac', f'stalac{rnd.randrange(4)}', math.cos(a) * r, math.sin(a) * r, yaw=rnd.uniform(0, 6.28), scale=rnd.uniform(0.9, 1.8))
     for i in range(16):
         a = rnd.uniform(0, math.tau)
