@@ -102,6 +102,8 @@ export class SkyIslands {
   private skirts: { isl: IslandDef; vi: VhIsland | null; mesh: THREE.Mesh }[] = [];
   private rockHandle: AssetHandle | null = null;
   private gone = false;
+  private debris: THREE.Object3D | null = null;
+  private oldFalls: THREE.Object3D | null = null;
   /** Cao độ mặt đảo (m): rêu chỉ ăn ở phần thân sát mặt đảo, thưa dần xuống mũi. */
   private islandTopY = 124;
 
@@ -139,7 +141,7 @@ export class SkyIslands {
     const q = new THREE.Quaternion();
     for (const isl of this.islandsDef) {
       if (isl.r < 60) continue;
-      const n = isl.r > 150 ? 4 : 2;
+      const n = isl.r > 150 ? 7 : 3;
       for (let i = 0; i < n; i++) {
         const h = (k: number) => hash01(Math.floor(isl.x) + i * 7, Math.floor(isl.z), 900 + k);
         const a = h(1) * Math.PI * 2;
@@ -187,6 +189,27 @@ export class SkyIslands {
         if (m.isMesh) geo.set(o.name, toFloatGeometry(m.geometry).applyMatrix4(m.matrixWorld));
       });
       for (const g of geo.values()) this.track(g);
+      // dải nước mảnh: chỉ cần position + uv (áp ma trận nút)
+      const fallSrc = new Map<string, THREE.BufferGeometry>();
+      h.scene.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh || !o.name.startsWith('vhfall_')) return;
+        const pa = m.geometry.attributes.position!;
+        const pf = new Float32Array(pa.count * 3);
+        for (let i = 0; i < pa.count; i++) pf.set([pa.getX(i), pa.getY(i), pa.getZ(i)], i * 3);
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.BufferAttribute(pf, 3));
+        if (m.geometry.index) g.setIndex(m.geometry.index.clone());
+        g.applyMatrix4(m.matrixWorld);
+        // pipeline bỏ uv của vật liệu không texture: tự sinh uv từ vị trí (u theo ngang, v theo độ sâu) cho dải nước cuộn
+        const q = g.attributes.position!;
+        const uf = new Float32Array(q.count * 2);
+        for (let i = 0; i < q.count; i++) uf.set([(q.getX(i) + q.getZ(i)) * 0.7, -q.getY(i) / 14], i * 2);
+        g.setAttribute('uv', new THREE.BufferAttribute(uf, 2));
+        fallSrc.set(o.name, g);
+      });
+      const baked: THREE.BufferGeometry[] = [];
+      const bakedFalls: THREE.BufferGeometry[] = [];
       for (const sk of this.skirts) {
         const src = geo.get(`vhrock_${sk.vi?.kind ?? 'tieu_dao'}`);
         if (!src) continue;
@@ -211,14 +234,58 @@ export class SkyIslands {
           }
         }
         const kr = sk.vi ? (ROCK_R[sk.vi.kind] ?? 207) : 40;
-        const mesh = new THREE.Mesh(g, sk.mesh.material);
-        mesh.scale.set(sk.isl.r / kr, 1, sk.isl.r / kr);
-        mesh.position.copy(sk.mesh.position);
-        mesh.name = 'island-skirt';
+        const sx = sk.isl.r / kr;
+        const bake = new THREE.Matrix4().compose(sk.mesh.position, new THREE.Quaternion(), new THREE.Vector3(sx, 1, sx));
+        const gi = g.index ? g.toNonIndexed() : g;
+        gi.applyMatrix4(bake);
+        baked.push(gi);
+        const fs = fallSrc.get(`vhfall_${sk.vi?.kind ?? 'tieu_dao'}`);
+        if (fs) {
+          const fg = fs.index ? fs.toNonIndexed() : fs.clone();
+          fg.applyMatrix4(bake);
+          bakedFalls.push(fg);
+        }
+      }
+      if (baked.length) {
+        // một mesh cho mọi chân đảo (draw call): thay chín mesh thủ tục
+        const merged = this.track(mergeGeometries(baked, false));
+        for (const b of baked) b.dispose();
+        const mesh = new THREE.Mesh(merged, this.skirts[0]!.mesh.material);
+        mesh.name = 'island-skirts';
+        mesh.frustumCulled = false;
         this.group.add(mesh);
-        this.group.remove(sk.mesh);
-        sk.mesh.geometry.dispose();
-        sk.mesh = mesh;
+        for (const sk of this.skirts) {
+          this.group.remove(sk.mesh);
+          sk.mesh.geometry.dispose();
+        }
+        this.skirts = [];
+      }
+      if (bakedFalls.length && this.fallTex) {
+        const fm = this.track(mergeGeometries(bakedFalls, false));
+        for (const b of bakedFalls) b.dispose();
+        const fmat = this.track(
+          new THREE.MeshBasicMaterial({
+            map: this.fallTex,
+            transparent: true,
+            opacity: 0.62,
+            depthWrite: false,
+            side: THREE.DoubleSide,
+            color: 0xf4f8f8,
+          }),
+        );
+        const fmesh = new THREE.Mesh(fm, fmat);
+        fmesh.name = 'island-waterfalls';
+        fmesh.frustumCulled = false;
+        fmesh.renderOrder = -4;
+        this.group.add(fmesh);
+        if (this.oldFalls) {
+          this.group.remove(this.oldFalls);
+          this.oldFalls = null;
+        }
+      }
+      if (this.debris) {
+        this.group.remove(this.debris); // đá trôi icosphere cũ: thay bằng đảo đá vệ tinh cùng bộ khối đá
+        this.debris = null;
       }
       this.buildSatellites(geo);
       for (const f of this.fakes) {
@@ -236,8 +303,8 @@ export class SkyIslands {
         f.mesh.geometry.dispose();
         f.mesh.geometry = this.track(merged);
       }
-    } catch {
-      /* chỉ thiếu phần chi tiết: giữ chân đảo thủ tục */
+    } catch (e) {
+      console.warn('[skyIslands] không nạp được khối đá Blender, giữ chân đảo thủ tục', e);
     }
   }
 
@@ -694,6 +761,7 @@ export class SkyIslands {
     if (im.instanceColor) im.instanceColor.needsUpdate = true;
     im.frustumCulled = false;
     im.name = 'island-debris';
+    this.debris = im;
     this.group.add(im);
   }
 
@@ -755,6 +823,7 @@ export class SkyIslands {
     mesh.frustumCulled = false;
     mesh.renderOrder = -5;
     mesh.name = 'cloud-falls';
+    this.oldFalls = mesh;
     this.group.add(mesh);
   }
 

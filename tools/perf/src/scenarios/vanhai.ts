@@ -98,6 +98,21 @@ export default {
               ),
             );
           }
+          if (flag('--draws')) {
+            // Đếm mesh đang vẽ theo nhóm cha (ước lượng draw call): `--draws 1` in 25 nhóm nhiều nhất.
+            const rows = await page.evaluate(`(() => {
+              const sc = window.__game.scene;
+              const agg = new Map();
+              function walk(o, top, depth) {
+                if (!o.visible) return;
+                if (o.isMesh || o.isLine || o.isPoints) agg.set(top, (agg.get(top) || 0) + (Array.isArray(o.material) ? o.material.length : 1));
+                for (const c of o.children) walk(c, depth === 0 ? c.name || c.type : depth === 1 && (top === 'mapVis' || top === 'Group' || top === 'skyIslands') ? top + '/' + (c.name || c.type) : top, depth + 1);
+              }
+              walk(sc, '', 0);
+              return [...agg.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25);
+            })()`);
+            console.log(`[draws ${v.name}] ` + JSON.stringify(rows));
+          }
           const stem = `${tag}-${viewport[1]}p-${mood}-${v.name}`;
           await snap(page, r.out, `${stem}.png`, { wait: settleMs() });
           if (flag('--perf') && viewport[1] === 1080) perf[stem] = await perfSample(page);

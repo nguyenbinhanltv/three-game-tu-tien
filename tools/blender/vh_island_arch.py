@@ -1,7 +1,10 @@
-# Chân đảo bay Vân Hải (POLISH-1): khối đá treo dưới đảo dựng bằng Blender, thay khối xoay (lathe) trong client.
-# Mỗi object tên `vhrock_<kind>` (kind = bản sắc đảo ở vanHaiArt.ts) hoặc `vhfake_<a|b>` (đảo giả, có mặt cỏ trên). Gốc = tâm mặt đảo (y = 0), nhìn xuống −y.
-# Dáng: thân phình ở mép rồi thu về mũi đá; vân tầng trầm tích (mỗi tầng một độ nhô riêng, gờ gãy, nứt dọc), thạch nhũ nhọn rủ xuống từ bụng, rễ cây
-# cong thòng dọc vách và rơi tự do. Màu đỉnh: đá xám ấm ↔ nâu ↔ nâu vàng theo tầng, rêu ở mặt ngửa, tối dần xuống mũi, vành cỏ ở mép trên.
+# Chân đảo bay Vân Hải (POLISH-1 v3): khối đá treo dưới đảo, dựng bằng Blender, thay khối xoay (lathe) trong client.
+# Mỗi object `vhrock_<kind>` (kind = bản sắc đảo ở vanHaiArt.ts), `vhfake_<a|b>` (đảo giả), `vhsat_<a|b|c>` (đá vệ tinh = cùng bộ khối đá thu nhỏ, có cỏ trên đỉnh),
+# `vhfall_<kind>` (dải nước mảnh, có UV để client cuộn). Gốc = tâm mặt đảo (y = 0), nhìn xuống −y.
+#
+# Dáng (theo góp ý v2): viền KHÔNG tròn đều (chu vi lồi lõm theo nhiễu, mũi đá nhô), vách đứng 8 m ngay dưới mép rồi thu dần; thân dưới là nón ngược LỆCH TÂM, cao ≥ bề rộng,
+# thu nhanh như sừng (phần nổi trên biển mây đã hẹp rõ) rồi kéo dài thành đuôi nhọn; mặt đá do nhiều lớp chồng (vân tầng ngang, mỗi tầng một độ nhô), khối vỡ kiểu Worley,
+# nứt dọc chữ V, ao tối ở khe; tảng đá treo; thạch nhũ NGẮN màu đá; rễ cây MẢNH nhiều nhánh buông thõng từ mép và dây leo xanh có lá (không cắm xuống mây); dải nước mảnh từ mép.
 #
 #   blender --background --python tools/blender/vh_island_arch.py -- assets/build/raw/arch_vh_island.glb
 #
@@ -12,20 +15,20 @@ import os
 import random
 import sys
 
-import bpy
 import bmesh
+import bpy
 
-SEED = 20261120
+SEED = 20261121
 
-# (R danh nghĩa, amp, belly, len, spikes, roots): khớp `SKIRT` ở skyIslands.ts
+# (R danh nghĩa, amp, belly, spikes, roots, dk = D/R): khớp `SKIRT` ở skyIslands.ts; D (độ sâu mũi) ≥ bề rộng 2R
 KINDS = {
-    'hub': (85.0, 1.0, 1.0, 1.0, 1.0, 1.0),
-    'tung_dai_dao': (207.0, 1.1, 1.0, 1.0, 0.7, 2.2),
-    'thach_quy_dao': (207.0, 0.8, 1.14, 0.78, 0.5, 0.3),
-    'kinh_ho_dao': (207.0, 0.65, 1.05, 0.9, 0.4, 1.2),
-    'loi_van_dao': (207.0, 1.9, 0.92, 1.05, 2.4, 0.3),
-    'kinh_ngu_dai': (207.0, 1.3, 0.9, 1.3, 1.4, 0.8),
-    'tieu_dao': (40.0, 1.2, 1.0, 0.9, 0.8, 1.0),
+    'hub': (85.0, 1.0, 1.0, 1.0, 1.0, 2.2),
+    'tung_dai_dao': (207.0, 1.1, 1.0, 0.7, 2.2, 2.0),
+    'thach_quy_dao': (207.0, 0.8, 1.14, 0.5, 0.5, 2.0),
+    'kinh_ho_dao': (207.0, 0.65, 1.05, 0.4, 1.2, 2.0),
+    'loi_van_dao': (207.0, 1.6, 0.92, 2.0, 0.5, 2.2),
+    'kinh_ngu_dai': (207.0, 1.3, 0.9, 1.2, 0.8, 2.4),
+    'tieu_dao': (40.0, 1.2, 1.0, 0.8, 1.0, 2.4),
 }
 
 
@@ -42,15 +45,16 @@ def mixc(a, b, t):
     return tuple(x * (1 - t) + y * t for x, y in zip(a, b))
 
 
-C_B = lin(0x8D857A)  # đá xám ấm
-C_MID = lin(0x6B5A4A)  # đá nâu
-C_OCHRE = lin(0xA58B68)
-C_D = lin(0x5A524A)  # đá tối ở mũi
-C_MOSS = lin(0x56703F)
+C_B = lin(0x9A9084)  # đá xám ấm
+C_MID = lin(0x76624E)  # đá nâu
+C_OCHRE = lin(0xA88F6A)
+C_D = lin(0x5E564D)  # đá sẫm ở đuôi (vẫn là màu đá, không đen)
+C_MOSS = lin(0x5C7840)
 C_GRASS = lin(0x7A8460)
-C_GRASS_FAKE = lin(0x6F9D58)
-C_ROOT = lin(0x3A2E24)
-C_ROOT_L = lin(0x5E4A36)
+C_ROOT = lin(0x4A3A2C)
+C_ROOT_L = lin(0x6A5238)
+C_VINE = lin(0x3F7A34)
+C_LEAF = lin(0x5E9A3E)
 
 
 def hsh(a, b, c, sd):
@@ -90,13 +94,31 @@ def ridged(x, y, z):
     return s
 
 
+def worley(x, y, z, sd):
+    """Khoảng cách tới điểm đặc trưng gần nhất (0..~1): mặt đá vỡ thành các khối/mặt phẳng."""
+    xi, yi, zi = math.floor(x), math.floor(y), math.floor(z)
+    best = 9.0
+    for a in (-1, 0, 1):
+        for b in (-1, 0, 1):
+            for c in (-1, 0, 1):
+                cx, cy, cz = xi + a, yi + b, zi + c
+                px = cx + hsh(cx, cy, cz, sd)
+                py = cy + hsh(cx, cy, cz, sd + 1)
+                pz = cz + hsh(cx, cy, cz, sd + 2)
+                d = (px - x) ** 2 + (py - y) ** 2 + (pz - z) ** 2
+                if d < best:
+                    best = d
+    return min(1.0, math.sqrt(best))
+
+
 class Mesh:
     def __init__(self):
-        self.v, self.f, self.c = [], [], []
+        self.v, self.f, self.tag = [], [], []
+        self.cur = 'rock'
 
-    def vert(self, p, col):
+    def vert(self, p):
         self.v.append(p)
-        self.c.append(col)
+        self.tag.append(self.cur)
         return len(self.v) - 1
 
     def quad(self, a, b, c, d):
@@ -106,32 +128,9 @@ class Mesh:
         self.f.append((a, b, c))
 
 
-def catmull(pts, n):
-    """Spline Catmull-Rom qua các điểm (r, y), lấy n mẫu đều theo tham số."""
-    out = []
-    m = len(pts) - 1
-    for k in range(n + 1):
-        t = k / n * m
-        i = min(int(t), m - 1)
-        u = t - i
-        p0, p1, p2, p3 = pts[max(i - 1, 0)], pts[i], pts[i + 1], pts[min(i + 2, m)]
-        out.append(tuple(0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * u + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * u * u + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * u**3) for j in range(2)))
-    return out
-
-
-# (hệ số sâu D/R) theo bản sắc: đảo là khối đá hình NÓN NGƯỢC, mũi nhọn sâu D = hệ số × R (~1–1,5× nửa bề rộng... đủ dốc để phần nổi trên biển mây đã thu hẹp rõ)
-DEPTHK = {'hub': 1.1, 'tung_dai_dao': 1.2, 'thach_quy_dao': 0.85, 'kinh_ho_dao': 1.0, 'loi_van_dao': 1.35, 'kinh_ngu_dai': 1.5, 'tieu_dao': 1.5}
-
-# hình nón ngược: (r/R, độ sâu/D); mép trên hơi phình (lip) rồi thu nhanh về mũi
-CONE = [
-    (0.97, 0.0), (1.015, 0.002), (1.03, 0.008), (1.035, 0.018), (1.0, 0.03), (0.9, 0.06), (0.78, 0.1), (0.66, 0.16), (0.55, 0.23), (0.45, 0.31),
-    (0.35, 0.42), (0.26, 0.55), (0.17, 0.7), (0.09, 0.85), (0.03, 0.95), (0.0, 1.0),
-]
-
-
-def blob(M, rnd, cx, cy, cz, rx, ry, rz, seed, lat=7, lon=10, flat_top=False):
-    """Tảng đá méo: cầu có nhiễu, đáy nhọn hơn."""
-    pole_t = M.vert((cx, cy + ry, cz), None)
+def blob(M, cx, cy, cz, rx, ry, rz, seed, lat=9, lon=13, flat_top=False):
+    """Tảng đá vỡ: cầu + nhiễu Worley (mặt phẳng/cạnh sắc) + chia tầng theo chiều cao, đáy nhọn; không phải icosphere trơn."""
+    pole_t = M.vert((cx, cy + ry, cz))
     rows = []
     for i in range(1, lat):
         v = i / lat * math.pi
@@ -139,14 +138,18 @@ def blob(M, rnd, cx, cy, cz, rx, ry, rz, seed, lat=7, lon=10, flat_top=False):
         for j in range(lon):
             u = j / lon * math.tau
             dx, dy, dz = math.sin(v) * math.cos(u), math.cos(v), math.sin(v) * math.sin(u)
-            k = 1.0 + (nz(dx * 2.3 + seed, dy * 2.3, dz * 2.3, 795) - 0.5) * 0.9
-            if dy < 0:
-                dy *= 1.0 + 0.5 * -dy
-            if flat_top and dy > 0.6:
-                dy = 0.6 + (dy - 0.6) * 0.3
-            row.append(M.vert((cx + dx * rx * k, cy + dy * ry * k, cz + dz * rz * k), None))
+            w = worley(dx * 1.7 + seed, dy * 1.7, dz * 1.7, 797)
+            k = 0.78 + 0.5 * w + (nz(dx * 3 + seed, dy * 3, dz * 3, 795) - 0.5) * 0.35
+            dy2 = dy
+            if dy2 < 0:
+                dy2 *= 1.0 + 0.55 * -dy2
+            q = round(dy2 * 4) / 4.0  # tầng ngang
+            dy2 = dy2 * 0.6 + q * 0.4
+            if flat_top and dy2 > 0.55:
+                dy2 = 0.55 + (dy2 - 0.55) * 0.25
+            row.append(M.vert((cx + dx * rx * k, cy + dy2 * ry * k, cz + dz * rz * k)))
         rows.append(row)
-    pole_b = M.vert((cx, cy - ry * 1.5, cz), None)
+    pole_b = M.vert((cx, cy - ry * 1.5, cz))
     for j in range(lon):
         M.tri(pole_t, rows[0][(j + 1) % lon], rows[0][j])
     for i in range(len(rows) - 1):
@@ -157,135 +160,174 @@ def blob(M, rnd, cx, cy, cz, rx, ry, rz, seed, lat=7, lon=10, flat_top=False):
         M.tri(pole_b, rows[-1][j], rows[-1][(j + 1) % lon])
 
 
-def spike(M, cx, cz, y0, length, wid, lean, i, nsd=7, nrr=7, dirx=1.0, dirz=0.0):
+def tube(M, pts, radii, nsd=5, tag='root'):
+    """Ống nhiều đoạn theo đường cong, bán kính từng điểm; khung xoay đơn giản quanh trục đoạn."""
+    M.cur = tag
+    prev = None
+    for q, p in enumerate(pts):
+        nxt = pts[min(q + 1, len(pts) - 1)]
+        prv = pts[max(q - 1, 0)]
+        t = [nxt[k] - prv[k] for k in range(3)]
+        ln = math.sqrt(sum(a * a for a in t)) or 1.0
+        t = [a / ln for a in t]
+        ref = (1.0, 0.0, 0.0) if abs(t[0]) < 0.9 else (0.0, 0.0, 1.0)
+        e1 = [t[1] * ref[2] - t[2] * ref[1], t[2] * ref[0] - t[0] * ref[2], t[0] * ref[1] - t[1] * ref[0]]
+        n1 = math.sqrt(sum(a * a for a in e1)) or 1.0
+        e1 = [a / n1 for a in e1]
+        e2 = [t[1] * e1[2] - t[2] * e1[1], t[2] * e1[0] - t[0] * e1[2], t[0] * e1[1] - t[1] * e1[0]]
+        ring = []
+        for s in range(nsd):
+            a = s / nsd * math.tau
+            ring.append(M.vert(tuple(p[k] + (e1[k] * math.cos(a) + e2[k] * math.sin(a)) * radii[q] for k in range(3))))
+        if prev:
+            for s in range(nsd):
+                s2 = (s + 1) % nsd
+                M.quad(prev[s], prev[s2], ring[s2], ring[s])
+        prev = ring
+    M.cur = 'rock'
+
+
+def spike(M, cx, cz, y0, length, wid, i, dirx=0.0, dirz=0.0, lean=0.0, nsd=6, nrr=5):
     prev = None
     for q in range(nrr + 1):
         t = q / nrr
-        w = wid * (1.0 - t) ** 0.85 * (1 + 0.35 * math.sin(t * 9 + i)) * (1.5 if q == 0 else 1.0)
+        w = wid * (1.0 - t) ** 0.9 * (1 + 0.3 * math.sin(t * 8 + i)) * (1.4 if q == 0 else 1.0)
         y = y0 - t * length
-        ox = cx + dirx * lean * (y0 - y)
-        oz = cz + dirz * lean * (y0 - y)
+        ox, oz = cx + dirx * lean * (y0 - y), cz + dirz * lean * (y0 - y)
         ring = []
         for s in range(nsd):
             th = s / nsd * math.tau
             nzv = 1 + 0.35 * (nz(math.cos(th) * 3 + i, y * 0.3, math.sin(th) * 3, 760) - 0.5)
-            ring.append(M.vert((ox + math.cos(th) * w * nzv, y, oz + math.sin(th) * w * nzv), None))
+            ring.append(M.vert((ox + math.cos(th) * w * nzv, y, oz + math.sin(th) * w * nzv)))
         if prev:
             for s in range(nsd):
                 s2 = (s + 1) % nsd
                 M.quad(prev[s], prev[s2], ring[s2], ring[s])
         prev = ring
         if q == nrr:
-            tipv = M.vert((ox, y - w * 0.8 - 0.5, oz), None)
+            tipv = M.vert((ox, y - w * 0.9 - 0.3, oz))
             for s in range(nsd):
                 M.tri(ring[s], ring[(s + 1) % nsd], tipv)
 
 
-def island(name, R, amp, belly, dk, spikes, roots, seed, fake=False, seg=96, nr=72):
+def make_object(name, M, cols, uvs=None, mat_name='vhrock'):
+    bm = bmesh.new()
+    bverts = [bm.verts.new((p[0], -p[2], p[1])) for p in M.v]
+    bm.verts.ensure_lookup_table()
+    faces = []
+    for f in M.f:
+        try:
+            faces.append(bm.faces.new([bverts[i] for i in f]))
+        except ValueError:
+            faces.append(None)
+    if uvs is None:
+        bmesh.ops.recalc_face_normals(bm, faces=[f for f in bm.faces])
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    ca = me.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
+    for v in me.vertices:
+        c = cols[v.index] if v.index < len(cols) else (0.5, 0.5, 0.5)
+        ca.data[v.index].color = (c[0], c[1], c[2], 1.0)
+    if uvs is not None:
+        uvl = me.uv_layers.new(name='UVMap')
+        for lp in me.loops:
+            uvl.data[lp.index].uv = uvs[lp.vertex_index]
+    for p in me.polygons:
+        p.use_smooth = True
+    mat = bpy.data.materials.get(mat_name) or bpy.data.materials.new(mat_name)
+    me.materials.append(mat)
+    ob = bpy.data.objects.new(name, me)
+    bpy.context.scene.collection.objects.link(ob)
+    return len(me.polygons)
+
+
+def island(name, R, amp, belly, spikes, roots, dk, seed, fake=False, seg=96, nr=84, sat=False, water=True):
     rnd = random.Random(seed)
     M = Mesh()
     D = dk * R
-    sf = max(0.35, R / 207.0)  # co các chi tiết lớn theo cỡ đảo
-    pts = [(dd, rr * (belly if rr < 0.9 else 1.0)) for rr, dd in CONE]
-
-    def r_at(dd):
-        # nội suy Hermite theo độ sâu (biến độc lập) nên đường biên không thể tự cắt/gập thành vạt như spline theo tham số
-        for k in range(len(pts) - 1):
-            if pts[k][0] <= dd <= pts[k + 1][0]:
-                x0, y0 = pts[k]
-                x1, y1 = pts[k + 1]
-                h = max(1e-6, x1 - x0)
-                t = (dd - x0) / h
-                m0 = (y1 - pts[k - 1][1]) / max(1e-6, x1 - pts[k - 1][0]) if k > 0 else (y1 - y0) / h
-                m1 = (pts[k + 2][1] - y0) / max(1e-6, pts[k + 2][0] - x0) if k + 2 < len(pts) else (y1 - y0) / h
-                v = (2 * t**3 - 3 * t**2 + 1) * y0 + (t**3 - 2 * t**2 + t) * h * m0 + (-2 * t**3 + 3 * t**2) * y1 + (t**3 - t**2) * h * m1
-                return min(max(v, min(y0, y1) - 0.04), max(y0, y1) + 0.04)
-        return pts[-1][1]
-
-    # mép trên: vành đá nhô ra (R+6 ở độ sâu 9 m) che phần vách địa hình rủ xuống từ mép đảo, rồi chuyển dần (m 10–26) sang thân nón
-    lipt = [(0.0, -4.0), (0.1, 3.0), (1.2, 4.5), (4.0, 5.5), (9.0, 6.0), (14.0, 3.0), (30.0, 3.0)]
-
-    def lip_r(m):
-        for k in range(len(lipt) - 1):
-            if lipt[k][0] <= m <= lipt[k + 1][0]:
-                t = (m - lipt[k][0]) / (lipt[k + 1][0] - lipt[k][0])
-                return R + lipt[k][1] * (1 - t) + lipt[k + 1][1] * t
-        return R + 3.0
-
-    sp = []
-    for k in range(nr + 1):
-        dd = (k / nr) ** 1.7
-        m = D * dd
-        if m <= 14.0:
-            rr = lip_r(m)
-        else:
-            # thân nón ngược: phần nổi trên biển mây (~40 m đầu) đã thu về ~22% bán kính (dốc rõ), phần còn lại thon dài về mũi nhọn sâu D
-            Hv = min(0.6 * D, 36.0 + 0.1 * R)
-            if m < 14.0 + Hv:
-                u = (m - 14.0) / Hv
-                rr = (R + 3.0) * (1.0 - 0.78 * u**0.85)
-            else:
-                u = (m - 14.0 - Hv) / max(1.0, D - 14.0 - Hv)
-                rr = (R + 3.0) * 0.22 * (1.0 - u**0.9)
-            rr *= 1.0 + (belly - 1.0) * math.sin(math.pi * min(1.0, (m - 14.0) / max(1.0, 14.0 + Hv + 30.0)))
-        sp.append((max(0.01, rr), -m))
-    sdh = seed % 997
+    sf = max(0.3, R / 207.0)
+    ss = max(0.4, sf**0.5)
+    sd = seed % 997
+    tau = (20.0 + 0.1 * R) * belly  # độ dài thu hẹp (nón như sừng): phần nổi trên biển mây đã hẹp rõ
+    phi = rnd.random() * math.tau
+    drift = 0.26 * R * (0.7 + 0.6 * rnd.random())  # lệch tâm của đuôi
     layer_off = {}
 
-    def layer_push(y):
-        k = int(math.floor(-y / 4.4))
+    def lay(k):
         if k not in layer_off:
-            layer_off[k] = (rnd.random() - 0.5) * 3.2
+            layer_off[k] = (rnd.random() - 0.5) * 2.0
         return layer_off[k]
 
-    rings = []
-    for (r0, y0) in sp:
-        ring = []
-        depth = min(1.0, -y0 / D)
-        taper = min(1.0, r0 / (0.3 * R))
+    def base_r(m):
+        if m <= 8.0:
+            return R + 3.0
+        return (R + 3.0) * (0.05 + 0.95 * math.exp(-(m - 8.0) / tau))
+
+    def surf(th, m):
+        """Điểm trên mặt thân ở góc th, độ sâu m → (x, z, r, ao)."""
+        rb = base_r(m)
+        w8 = min(1.0, max(0.0, (m - 8.0) / 30.0))
+        ramp = w8 * w8 * (3 - 2 * w8)
+        cth, sth = math.cos(th), math.sin(th)
+        # chu vi lồi lõm: nhiễu ba tầng + mũi đá nhô; giữ ≥ R+1 ở mép để không lộ vách địa hình
+        rim = 1.0 + 9.0 * nz(cth * 1.7 + sd, 0.5, sth * 1.7, 810) + 6.0 * nz(cth * 4.1 + sd, 1.5, sth * 4.1, 811) + 15.0 * max(0.0, nz(cth * 6.3 + sd, 2.5, sth * 6.3, 812) - 0.62) ** 1.2 * 4.0
+        rim *= ss
+        cx = cz = 0.0
+        if m > 8.0:
+            dv = 1.0 - math.exp(-(m - 8.0) / (1.6 * tau))
+            cx, cz = math.cos(phi) * drift * dv, math.sin(phi) * drift * dv
+        low = (nz(cth * 1.3 + sd, m / tau * 0.7, sth * 1.3, 790) - 0.5) * 2.0
+        r = rb * (1.0 + 0.34 * low * ramp) + rim * math.exp(-max(0.0, m - 8.0) / 22.0)
+        x, z = cx + cth * r, cz + sth * r
+        k = int(math.floor(m / 5.5))
+        ledge = ((m / 5.5) % 1.0) ** 2.5
+        wl = worley(x * 0.05 + sd, m * 0.07, z * 0.05, 820)
+        chunk = (wl - 0.42) * 0.16 * r * ramp
+        groove = max(0.0, 1.0 - abs(nz(th * 13.0 + sd, m * 0.03, 4.4, 830) - 0.5) * 7.0) ** 1.4
+        fine = (ridged(x * 0.05 + sd, m * 0.08, z * 0.05) - 0.45) * 5.0 * amp * ss
+        rr = r + (lay(k) * 0.06 * r + ledge * 0.03 * r) * (0.35 + 0.65 * ramp) + chunk - groove * 0.05 * r * (0.4 + ramp) + fine * (0.4 + 0.6 * ramp)
+        rr = max(0.6, rr)
+        x2, z2 = cx + cth * rr, cz + sth * rr
+        ao = max(0.0, min(1.0, 0.75 + (wl - 0.42) * 1.4 - groove * 0.6 - ledge * 0.15))
+        return x2, z2, rr, ao
+
+    ms = [0.0, 1.5, 3.2, 5.2, 7.0, 8.0]
+    nbody = nr
+    for k in range(1, nbody + 1):
+        ms.append(8.0 + (D - 8.0) * (k / nbody) ** 1.9)
+    aos = {}
+    idx = []
+    for m in ms:
+        row = []
         for j in range(seg):
             th = j / seg * math.tau
-            x0, z0 = math.cos(th) * r0, math.sin(th) * r0
-            rid = ridged(x0 * 0.045 + sdh, y0 * 0.07, z0 * 0.045)
-            ledge_t = y0 / 4.4 + nz(x0 * 0.03, y0 * 0.01, z0 * 0.03, 710) * 1.6
-            ledge = (ledge_t - math.floor(ledge_t)) ** 2.2
-            fine = nz(x0 * 0.22 + sdh, y0 * 0.35, z0 * 0.22, 730) - 0.5
-            groove = nz(th * 5.5 + sdh, y0 * 0.05, 3.3, 720) - 0.5
-            crack = max(0.0, 1.0 - abs(nz(th * 17.0 + sdh, y0 * 0.04, 8.1, 740) - 0.5) * 9.0)
-            # khối nhô/lõm lệch nhau: nhiễu tần rất thấp theo góc + độ sâu (vài khối lớn lồi hẳn, vài chỗ khoét vào)
-            big = (nz(math.cos(th) * 1.5 + sdh, depth * 3.2, math.sin(th) * 1.5, 790) - 0.5) * 2 * 0.22 * r0
-            mid = (nz(math.cos(th) * 4.0 + sdh, depth * 9.0, math.sin(th) * 4.0, 791) - 0.5) * 2 * 0.07 * r0
-            push = ((rid - 0.45) * 17 + ledge * 9 + groove * 7 + fine * 3.4 + layer_push(y0) * 2.6 - crack * 3.0) * amp * sf**0.5 * (0.3 + depth * 0.9)
-            ramp = min(1.0, depth / 0.08)
-            ramp = ramp * ramp * (3 - 2 * ramp)  # mép trên giữ tròn đều (khớp mặt đảo), nhô/lõm tăng dần khi xuống: không còn bậc nhô đột ngột thành vạt
-            push = (push + big + mid) * taper * ramp
-            r = max(0.01, r0 + push) if r0 > 0.02 else 0.01
-            yy = y0 + (rid - 0.4) * 3 * depth * sf
-            ring.append((math.cos(th) * r, yy, math.sin(th) * r, th, r, depth))
-        rings.append(ring)
-
-    def prof_r(y):
-        for k in range(len(sp) - 1):
-            if sp[k][1] >= y >= sp[k + 1][1]:
-                t = (sp[k][1] - y) / max(1e-6, sp[k][1] - sp[k + 1][1])
-                return sp[k][0] * (1 - t) + sp[k + 1][0] * t
-        return sp[-1][0]
-
-    idx = [[M.vert((x, y, z), None) for (x, y, z, th, r, depth) in ring] for ring in rings]
-    for k in range(len(rings) - 1):
+            x, z, rr, ao = surf(th, m)
+            vi = M.vert((x, -m, z))
+            aos[vi] = ao
+            row.append(vi)
+        idx.append(row)
+    for k in range(len(idx) - 1):
         for j in range(seg):
             j2 = (j + 1) % seg
             M.quad(idx[k][j], idx[k][j2], idx[k + 1][j2], idx[k + 1][j])
-    if fake:  # mặt cỏ trên: vài vòng đồng tâm gồ nhẹ, màu cỏ loang
-        top_r = rings[0]
-        grid = [[M.vert((x, 0.0, z), None) for (x, y, z, th, r, d) in top_r]]
+    # đuôi: kéo nhọn về một mũi chính lệch tâm
+    cxl = sum(M.v[i][0] for i in idx[-1]) / seg
+    czl = sum(M.v[i][2] for i in idx[-1]) / seg
+    tip = M.vert((cxl + (rnd.random() - 0.5) * 6 * ss, -D - 0.16 * D, czl + (rnd.random() - 0.5) * 6 * ss))
+    for j in range(seg):
+        M.tri(idx[-1][j], idx[-1][(j + 1) % seg], tip)
+    if fake or sat:  # mặt cỏ trên: vài vòng đồng tâm gồ nhẹ
+        top_r = idx[0]
+        grid = [[M.vert((M.v[i][0], 0.0, M.v[i][2])) for i in top_r]]
         for kk in (0.66, 0.33, 0.0):
             ringv = []
-            for j, (x, y, z, th, r, d) in enumerate(top_r):
-                h = (nz(x * 0.15 * (1 - kk) + seed, 0.5, z * 0.15 * (1 - kk), 770) - 0.5) * 2.4 + 0.5 * (1 - kk)
-                ringv.append(M.vert((x * kk, h, z * kk), None) if kk > 0 else None)
+            for j, i in enumerate(top_r):
+                x, z = M.v[i][0], M.v[i][2]
+                h = (nz(x * 0.15 * (1 - kk) + seed, 0.5, z * 0.15 * (1 - kk), 770) - 0.5) * 2.4 * ss + 0.5 * (1 - kk)
+                ringv.append(M.vert((x * kk, h, z * kk)) if kk > 0 else None)
             if kk == 0:
-                c = M.vert((0.0, 0.9, 0.0), None)
+                c = M.vert((0.0, 0.9, 0.0))
                 for j in range(seg):
                     M.tri(c, grid[-1][(j + 1) % seg], grid[-1][j])
             else:
@@ -293,126 +335,154 @@ def island(name, R, amp, belly, dk, spikes, roots, seed, fake=False, seg=96, nr=
                     j2 = (j + 1) % seg
                     M.quad(grid[-1][j], grid[-1][j2], ringv[j2], ringv[j])
                 grid.append(ringv)
-    ss = max(0.4, sf**0.5)
-    # ---- khối đá nhô ra từ thân (nửa chìm vào vách): sườn nón gồ ghề, mỗi nơi một kiểu ----
-    for i in range(int((9 + R / 20) * (0.5 if fake else 1.0))):
-        d = 0.12 + rnd.random() * 0.55
-        y = -D * d
-        a = rnd.random() * math.tau
-        rr = prof_r(y) * 0.97
-        sz = (11 + rnd.random() * 26) * ss
-        blob(M, rnd, math.cos(a) * rr, y, math.sin(a) * rr, sz * (0.8 + rnd.random() * 0.8), min(sz * (0.5 + rnd.random() * 0.6), -y * 0.6), sz * (0.8 + rnd.random() * 0.8), seed + i, flat_top=True)
-    # ---- tảng đá treo lủng lẳng bên ngoài, nối bằng dây đá ở trên ----
-    for i in range(int((4 + R / 40) * spikes * (0.6 if fake else 1.0)) + 2):
-        d = 0.10 + rnd.random() * 0.5
-        y = -D * d - 8 * ss
-        a = rnd.random() * math.tau
-        rr = prof_r(y) + (6 + rnd.random() * 12) * ss
-        sz = (6 + rnd.random() * 13) * ss
-        blob(M, rnd, math.cos(a) * rr, y - sz, math.sin(a) * rr, sz, sz * 1.1, sz * 0.9, seed + 50 + i, lat=6, lon=8)
-        spike(M, math.cos(a) * rr * 0.97, math.sin(a) * rr * 0.97, y + sz * 1.6 + 5 * ss, sz * 2 + 8 * ss, 0.9 * ss, 0.0, i + 200, nsd=6, nrr=4)
-    # ---- gai đá/thạch nhũ nhọn bám sườn nón (nghiêng vào trong theo độ dốc, không thành vây thẳng đứng chìa ra ngoài) ----
-    for i in range(int((10 + R / 18) * spikes * 1.5 * (0.5 if fake else 1.0))):
-        a = rnd.random() * math.tau
-        d = 0.14 + rnd.random() * 0.55
-        dy = -D * d
-        rr = prof_r(dy) * 0.96
-        slope = max(0.2, (prof_r(dy + 6) - prof_r(dy - 6)) / 12.0)  # độ co bán kính theo độ sâu
-        length = (20 + rnd.random() * 50 * amp) * ss * 1.4
-        wid = (1.6 + rnd.random() * 3.4) * ss
-        spike(M, math.cos(a) * rr, math.sin(a) * rr, dy, length, wid, min(1.2, slope * 0.85), i, dirx=-math.cos(a), dirz=-math.sin(a))
-    n_start = len(M.v)
+    n_body = len(M.v)
+    ncore = 0.5 if (fake or sat) else 1.0
 
-    # ---- rễ cây to buông từ mép, uốn cong rồi rơi tự do; thêm rễ phụ mảnh ----
-    def root(a, y0, length, rad0, out, wob, nsd=7, N=14):
-        r0 = prof_r(y0) * 0.99
-        prev = None
-        for q in range(N + 1):
-            t = q / N
-            rr = r0 + out * math.sin(min(1.0, t * 1.5) * math.pi / 2) * (1 - 0.3 * t)
-            th = a + 0.03 * math.sin(t * 5 + wob)
-            p = (math.cos(th) * rr, y0 - t * length, math.sin(th) * rr)
-            w = rad0 * (1 - t) ** 0.75 * (1.0 + 0.25 * math.sin(t * 7 + wob)) + 0.04
-            ring = [M.vert((p[0] + math.cos(s / nsd * math.tau) * w, p[1], p[2] + math.sin(s / nsd * math.tau) * w), None) for s in range(nsd)]
-            if prev:
-                for s in range(nsd):
-                    s2 = (s + 1) % nsd
-                    M.quad(prev[s], prev[s2], ring[s2], ring[s])
-            prev = ring
+    def at(th, m, push=0.0):
+        x, z, rr, ao = surf(th, m)
+        c, s = math.cos(th), math.sin(th)
+        return x + c * push, z + s * push, c, s
 
-    for i in range(int((5 + R / 45) * roots * (0.6 if fake else 1.0)) + 2):
+    # ---- tảng đá nửa chìm nhô ra sườn (mỗi chỗ một kiểu) ----
+    for i in range(int((6 + R / 24) * ncore)):
+        m = 12 + rnd.random() * 0.45 * D
+        th = rnd.random() * math.tau
+        x, z, c, s = at(th, m, -1.0)
+        sz = (6 + rnd.random() * 14) * ss * (0.6 + 0.4 * math.exp(-m / (1.2 * tau)) * 2)
+        blob(M, x, -m, z, sz * (0.8 + rnd.random() * 0.8), min(sz * (0.6 + rnd.random() * 0.6), m * 0.5), sz * (0.8 + rnd.random() * 0.8), seed + i, flat_top=True)
+    # ---- tảng đá treo lủng lẳng bên ngoài, nối bằng dây đá ----
+    for i in range(int((3 + R / 50) * spikes * ncore) + 1):
+        m = 16 + rnd.random() * 0.3 * D
+        th = rnd.random() * math.tau
+        x, z, c, s = at(th, m, (5 + rnd.random() * 9) * ss)
+        sz = (4 + rnd.random() * 9) * ss
+        blob(M, x, -m - sz, z, sz, sz * 1.1, sz * 0.9, seed + 50 + i, lat=8, lon=11)
+        x0, z0, _, _ = at(th, m - 2, -0.5)
+        spike(M, x0 + (x - x0) * 0.5, z0 + (z - z0) * 0.5, -m + 3 * ss, sz * 1.6 + 7 * ss, 0.7 * ss, i + 300)
+    # ---- mũi đá chính ở đáy (1–3) ----
+    for i in range(rnd.randint(1, 3)):
         a = rnd.random() * math.tau
-        root(a, -(1 + rnd.random() * 9) * ss, (40 + rnd.random() * 55) * ss * (1.2 if roots > 1 else 1.0), (2.0 + rnd.random() * 2.2) * (0.45 + 0.55 * sf**0.5), (2 + rnd.random() * 7) * ss, rnd.random() * 6)
-    for i in range(int((8 + R / 25) * roots * (0.6 if fake else 1.0))):
-        a = rnd.random() * math.tau
-        root(a, -(1 + rnd.random() * 16) * ss, (16 + rnd.random() * 34) * ss, (0.55 + rnd.random() * 0.6) * (0.5 + 0.5 * sf**0.5), (1 + rnd.random() * 5) * ss, rnd.random() * 6, nsd=6)
+        spike(M, cxl + math.cos(a) * 2.5 * ss * i, czl + math.sin(a) * 2.5 * ss * i, -D * 0.93, (0.25 + rnd.random() * 0.2) * D, (3.5 + rnd.random() * 3) * ss, i + 400, nsd=7, nrr=6)
+    # ---- thạch nhũ NGẮN màu đá, bám dưới các gờ tầng ----
+    for i in range(int((22 + R / 7) * spikes * 1.2 * ncore)):
+        th = rnd.random() * math.tau
+        m = 6 + rnd.random() * 0.35 * D
+        x, z, c, s = at(th, m, 0.0)
+        spike(M, x, z, -m, (3 + rnd.random() * 8) * ss, (0.5 + rnd.random() * 1.2) * ss, i, dirx=-c, dirz=-s, lean=0.25, nsd=5, nrr=4)
+    n_rock = len(M.v)
+    # ---- rễ cây MẢNH nhiều nhánh buông thõng mềm từ mép (không cắm xuống mây), dây leo xanh có lá ----
+    n_groups = int((4 + R / 30) * roots * (0.6 if (fake or sat) else 1.0)) + 1
+    for g in range(n_groups):
+        th = rnd.random() * math.tau
+        x0, z0, c, s = at(th, 0.5, -0.5)
+        L = (7 + rnd.random() * 15) * ss * 1.3
+        out = (0.8 + rnd.random() * 1.8) * ss
+        sway = rnd.random() * 6
+        N = 12
 
+        def path(t, L=L, out=out, sway=sway, x0=x0, z0=z0, c=c, s=s):
+            o = out * (1 - (1 - t) ** 2) + 0.35 * math.sin(t * 6 + sway) * t
+            return (x0 + c * o + (-s) * 0.25 * math.sin(t * 5 + sway * 1.3) * t, -0.5 - L * t, z0 + s * o + c * 0.25 * math.sin(t * 5 + sway * 1.3) * t)
+
+        pts = [path(q / N) for q in range(N + 1)]
+        rad = [(0.34 * (1 - q / N) ** 0.8 + 0.03) * ss**0.5 for q in range(N + 1)]
+        tube(M, pts, rad, nsd=5, tag='root')
+        for br in range(3 + rnd.randint(0, 2)):  # nhánh phụ
+            t0 = 0.2 + rnd.random() * 0.55
+            p0 = path(t0)
+            ang = rnd.random() * math.tau
+            bl = L * (0.25 + rnd.random() * 0.3)
+            bo = (0.8 + rnd.random() * 2.0) * ss
+            bp = []
+            for q in range(7):
+                t = q / 6
+                bp.append((p0[0] + math.cos(ang) * bo * (1 - (1 - t) ** 2), p0[1] - bl * t, p0[2] + math.sin(ang) * bo * (1 - (1 - t) ** 2)))
+            tube(M, bp, [(0.12 * (1 - q / 6) + 0.02) * ss**0.5 for q in range(7)], nsd=4, tag='root')
+    for g in range(int((2 + R / 70) * roots * (0.5 if (fake or sat) else 1.0)) + 1):
+        th = rnd.random() * math.tau
+        x0, z0, c, s = at(th, 0.5, -0.3)
+        L = (10 + rnd.random() * 16) * ss * 1.1
+        N = 14
+        wob = rnd.random() * 6
+        pts = [(x0 + c * (0.6 + 1.5 * math.sin(q / N * 1.6)) * ss + 0.9 * math.sin(q * 0.8 + wob), -0.5 - L * q / N, z0 + s * (0.6 + 1.5 * math.sin(q / N * 1.6)) * ss + 0.9 * math.cos(q * 0.7 + wob)) for q in range(N + 1)]
+        tube(M, pts, [0.09 * (1 - 0.4 * q / N) for q in range(N + 1)], nsd=4, tag='vine')
+        M.cur = 'leaf'
+        for q in range(2, N, 1):
+            if (q + g) % 2:
+                continue
+            p = pts[q]
+            a = rnd.random() * math.tau
+            lw = (0.7 + rnd.random() * 0.6) * ss**0.5
+            va = M.vert((p[0], p[1], p[2]))
+            vb = M.vert((p[0] + math.cos(a) * lw * 1.4, p[1] - lw * 0.6, p[2] + math.sin(a) * lw * 1.4))
+            vc = M.vert((p[0] + math.cos(a + 0.7) * lw, p[1] - lw * 1.4, p[2] + math.sin(a + 0.7) * lw))
+            M.tri(va, vb, vc)
+            M.tri(va, vc, vb)
+        M.cur = 'rock'
     # ---- màu đỉnh ----
-    bm = bmesh.new()
-    bverts = [bm.verts.new((p[0], -p[2], p[1])) for p in M.v]
-    bm.verts.ensure_lookup_table()
-    for f in M.f:
-        try:
-            bm.faces.new([bverts[i] for i in f])
-        except ValueError:
-            pass
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
-    bm.normal_update()
-    cols = {}
-    for i, v in enumerate(bm.verts):
-        gx, gy, gz = M.v[i]
-        ny = v.normal.z  # Blender z = glTF y
-        depth = min(1.0, -gy / D)
-        if i >= n_start:  # rễ
-            col = mixc(C_ROOT, C_ROOT_L, hsh(i // 7, 3, 5, seed) * 0.7)
-        elif gy > -0.4 and fake:
-            n = nz(gx * 0.12, 0.3, gz * 0.12, 780)
-            col = mixc(lin(0x3C6334), lin(0x66854A), n)
-            if hsh(int(gx * 0.5), int(gz * 0.5), 3, seed) > 0.93:
-                col = mixc(col, C_B, 0.8)
+    cols = []
+    for i, p in enumerate(M.v):
+        tg = M.tag[i]
+        gy = p[1]
+        if tg == 'root':
+            col = mixc(C_ROOT, C_ROOT_L, hsh(i // 9, 3, 5, seed))
+        elif tg == 'vine':
+            col = C_VINE
+        elif tg == 'leaf':
+            col = mixc(C_LEAF, C_VINE, hsh(i, 1, 2, seed))
         else:
-            band = hsh(int(math.floor(gy / 2.4)), seed % 997, 61, 5)
-            col = mixc(C_B, C_MID, band * 0.7)
-            if band > 0.75:
-                col = mixc(col, C_OCHRE, 0.45)
-            col = mixc(col, C_D, depth * 0.75)
-            k = 0.72 + band * 0.55
-            col = tuple(c * k for c in col)
+            depth = max(0.0, min(1.0, -gy / D))
+            band = hsh(int(math.floor(gy / 3.0)), sd, 61, 5)
+            col = mixc(C_B, C_MID, band * 0.75)
+            if band > 0.72:
+                col = mixc(col, C_OCHRE, 0.5)
+            col = mixc(col, C_D, depth**0.7 * 0.55)
+            col = tuple(c_ * (0.78 + band * 0.4) for c_ in col)
+            ao = aos.get(i, 0.8)
+            col = tuple(c_ * (0.55 + 0.45 * ao) for c_ in col)
             if gy > -1.4:
-                col = mixc(col, C_GRASS_FAKE if fake else C_GRASS, min(1.0, (gy + 1.4) / 1.4))
-            elif ny > 0.55 and hsh(int(math.floor(gy / 1.7)), int(math.atan2(gz, gx) * 6), seed, 9) > 0.4:
-                col = mixc(col, C_MOSS, min(0.85, (ny - 0.55) * 1.8) * (1 - depth * 0.6))
-        cols[v.index] = col
-    me = bpy.data.meshes.new(name)
-    bm.to_mesh(me)
-    ca = me.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
-    for v in me.vertices:
-        c = cols.get(v.index, (0.5, 0.5, 0.5))
-        ca.data[v.index].color = (c[0], c[1], c[2], 1.0)
-    for p in me.polygons:
-        p.use_smooth = True
-    bm.free()
-    mat = bpy.data.materials.get('vhrock') or bpy.data.materials.new('vhrock')
-    mat.use_nodes = True
-    me.materials.append(mat)
-    ob = bpy.data.objects.new(name, me)
-    bpy.context.scene.collection.objects.link(ob)
-    return len(me.polygons)
+                col = mixc(col, lin(0x6F9D58) if (fake or sat) else C_GRASS, min(1.0, (gy + 1.4) / 1.4))
+        cols.append(col)
+    tot = make_object(name, M, cols)
+    # ---- dải nước mảnh từ mép (đối tượng riêng, có UV để client cuộn) ----
+    if water and not sat and not fake and R > 60:
+        W = Mesh()
+        uvs = []
+        for g in range(2 if R < 150 else 3):
+            th = rnd.random() * math.tau
+            Lf = 34 + rnd.random() * 12
+            ns = 10
+            for q in range(ns + 1):
+                t = q / ns
+                m = 6.0 + (Lf) * t
+                x, z, c, s = at(th, min(m, 40.0), 0.8 + 3.0 * t * t)
+                wd = (0.5 + 0.7 * math.sin(math.pi * min(1.0, t * 1.2)) + 0.3) * ss
+                tx, tz = -s, c
+                W.vert((x + tx * wd, -m, z + tz * wd))
+                uvs.append((0.0, t * Lf / 14.0))
+                W.vert((x - tx * wd, -m, z - tz * wd))
+                uvs.append((1.0, t * Lf / 14.0))
+            base = len(W.v) - 2 * (ns + 1)
+            for q in range(ns):
+                a0 = base + 2 * q
+                W.quad(a0, a0 + 1, a0 + 3, a0 + 2)
+        make_object(name.replace('vhrock_', 'vhfall_'), W, [(1.0, 1.0, 1.0)] * len(W.v), uvs=uvs, mat_name='vhwater')
+    return tot
 
 
 def run(out):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     tot = 0
-    for i, (kind, (R, amp, belly, ln, spikes, roots)) in enumerate(KINDS.items()):
-        t = island(f'vhrock_{kind}', R, amp, belly, DEPTHK[kind], spikes, roots, SEED + i * 101, seg=96 if R > 100 else 72, nr=84 if R > 100 else 56)
+    for i, (kind, (R, amp, belly, spikes, roots, dk)) in enumerate(KINDS.items()):
+        t = island(f'vhrock_{kind}', R, amp, belly, spikes, roots, dk, SEED + i * 101, seg=88 if R > 100 else 64, nr=70 if R > 100 else 48)
         tot += t
         print(f'[vh_island] vhrock_{kind}: {t} mặt')
     for i, nm in enumerate(('a', 'b')):
-        t = island(f'vhfake_{nm}', 40.0, 1.1 + 0.3 * i, 1.0, 1.4 + 0.15 * i, 0.9, 0.6, SEED + 900 + i * 7, fake=True, seg=64, nr=44)
+        t = island(f'vhfake_{nm}', 40.0, 1.1 + 0.3 * i, 1.0, 0.9, 0.6, 2.2 + 0.2 * i, SEED + 900 + i * 7, fake=True, seg=56, nr=40)
         tot += t
         print(f'[vh_island] vhfake_{nm}: {t} mặt')
-    for i, (nm, R, dk) in enumerate((('a', 14.0, 1.5), ('b', 9.0, 1.7), ('c', 19.0, 1.3))):  # đảo đá nhỏ vệ tinh lơ lửng quanh đảo lớn (client rải bằng InstancedMesh)
-        t = island(f'vhsat_{nm}', R, 1.0, 1.0, dk, 0.6, 0.5, SEED + 1300 + i * 11, fake=True, seg=40, nr=30)
+    for i, (nm, R, dk) in enumerate((('a', 16.0, 2.4), ('b', 11.0, 2.8), ('c', 22.0, 2.2))):  # đá vệ tinh: cùng bộ khối đá đảo thu nhỏ, có cỏ trên đỉnh
+        t = island(f'vhsat_{nm}', R, 1.0, 1.0, 0.8, 0.8, dk, SEED + 1300 + i * 11, sat=True, seg=40, nr=30)
         tot += t
         print(f'[vh_island] vhsat_{nm}: {t} mặt')
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
