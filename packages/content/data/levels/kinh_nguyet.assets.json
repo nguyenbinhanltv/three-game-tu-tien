@@ -1,5 +1,5 @@
 {
-  "mood": "night",
+  "mood": "kn",
   "glb": [],
   "ground": false,
   "music": [
@@ -21,8 +21,9 @@
   "cave": {
     "x": 1520,
     "z": 1300,
-    "r": 94,
-    "h": 46
+    "r": 135,
+    "h": 80
   },
-  "palace": true
+  "palace": true,
+  "kinhNguyetArt": true
 }
