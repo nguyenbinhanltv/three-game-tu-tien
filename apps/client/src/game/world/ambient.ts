@@ -10,7 +10,7 @@ import type { Particles } from '../../render/vfx/particles';
  * đi từ sân tông môn xuống thung lũng hay vào rừng thì hạt đổi dần, không giật.
  */
 
-export type AmbientKind = 'mote' | 'pollen' | 'petal' | 'leaf' | 'mist' | 'jade' | 'ash' | 'ember';
+export type AmbientKind = 'mote' | 'pollen' | 'petal' | 'leaf' | 'mist' | 'jade' | 'ash' | 'ember' | 'maple';
 
 /** Số hạt mỗi giây ở preset Vừa, theo loại. */
 type AmbientRates = Record<AmbientKind, number>;
@@ -29,7 +29,7 @@ export function ambientScaleFor(kind: AmbientKind, preset: string): number {
   return preset === 'high' || preset === 'ultra' ? 0 : Math.min(s, 1);
 }
 
-const KINDS: AmbientKind[] = ['mote', 'pollen', 'petal', 'leaf', 'mist', 'jade', 'ash', 'ember'];
+const KINDS: AmbientKind[] = ['mote', 'pollen', 'petal', 'leaf', 'mist', 'jade', 'ash', 'ember', 'maple'];
 
 /** Màu (sRGB) theo bảng tâm trạng art bible v3 mục 4.1. */
 const COLOR = {
@@ -44,6 +44,9 @@ const COLOR = {
   stone: 0x7d786c, // stone: tro
   ember: 0xe8843a, // đốm lửa ấm từ đèn đá (phó bản hang)
   rock: 0x6b5a48, // bụi đá
+  mapleRed: 0xc23a22, // lá phong đỏ son (Đoạn Mạch, MAP-2)
+  mapleOrange: 0xe0742a,
+  mapleGold: 0xe6b84a,
   sword: 0xcff3ff, // spirit_sword: ánh kiếm gãy
   snow: 0xeaf1ff, // Bắc Hoang (MAP-5): bão tuyết nhẹ
   rift: 0xa27bff, // Bắc Hoang: tàn sáng tím thoát từ khe nứt dị vực
@@ -74,8 +77,10 @@ export function ambientRates(x: number, z: number, above: number, out?: AmbientR
     return r;
   }
   // Đoạn Mạch (E2-I): cốc khô, chỉ bụi nắng thưa; không phấn hoa, sương, lá xanh (các khu Vân Lam không có ở đây).
+  // MAP-2: hẻm núi lá phong, lá đỏ/cam/vàng bay chéo theo gió, dày hơn khi đứng thấp.
   if (level === 'doan_mach') {
     r.mote = 6;
+    r.maple = 22 * Math.max(0.15, Math.min(1, 1 - (above - 10) / 30));
     return r;
   }
   // Vân Hải (E3-H): không dùng tỉ lệ hạt của Vân Lam (sương/lá/phấn hoa theo toạ độ Vân Lam). Mảng sương `mist` là billboard 3–5 m, trên đảo hiện
@@ -132,8 +137,8 @@ let bhPathFor: unknown = null;
 
 export class AmbientParticles {
   private preset = 'medium';
-  private acc: AmbientRates = { mote: 0, pollen: 0, petal: 0, leaf: 0, mist: 0, jade: 0, ash: 0, ember: 0 };
-  private rates: AmbientRates = { mote: 0, pollen: 0, petal: 0, leaf: 0, mist: 0, jade: 0, ash: 0, ember: 0 };
+  private acc: AmbientRates = { mote: 0, pollen: 0, petal: 0, leaf: 0, mist: 0, jade: 0, ash: 0, ember: 0, maple: 0 };
+  private rates: AmbientRates = { mote: 0, pollen: 0, petal: 0, leaf: 0, mist: 0, jade: 0, ash: 0, ember: 0, maple: 0 };
   private sample = 0;
   enabled = true;
 
@@ -235,6 +240,14 @@ export class AmbientParticles {
         const y = floorY + 2 + R() * 6;
         const c = R() < 0.45 ? COLOR.leaf : R() < 0.6 ? COLOR.leafDry : COLOR.leafGrass;
         ps.emit('dust', x, y, z, (R() - 0.3) * 1.2, -0.2, (R() - 0.3) * 1.0, 6 + R() * 2, 0.22, 0.2, c, 0.95, 2.2, 1.3);
+        break;
+      }
+      case 'maple': {
+        // Lá phong: bay ngang theo gió tây bắc, rơi chậm, xoay theo lực cản cao.
+        const y = floorY + 1.5 + R() * 7;
+        const q = R();
+        const c = q < 0.5 ? COLOR.mapleRed : q < 0.8 ? COLOR.mapleOrange : COLOR.mapleGold;
+        ps.emit('dust', x, y, z, 1.4 + R() * 1.4, -0.25 - R() * 0.2, 0.5 + R() * 0.8, 6 + R() * 3, 0.26, 0.22, c, 0.95, 1.6, 1.7);
         break;
       }
       case 'jade': {
