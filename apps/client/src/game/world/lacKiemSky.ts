@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { clamp, exp, float, mix, smoothstep, sin, texture, time, uv, vec2, vec3 } from 'three/tsl';
 import { SECT, type LacKiemSky, type SkyIsland } from '@dtl/shared';
 import { createWorldMaterial } from '../../render/materials/world';
+import { FOLIAGE_TILE, foliageMaterial, loadSkyTextures, rockMaterial } from './skyAssets';
 import { FarRidges } from '../../render/farRidges';
 import { getCloudNoise } from '../../render/noiseTex';
 
@@ -124,14 +125,14 @@ class Mesher {
 }
 
 const C = (hex: number) => new THREE.Color(hex);
-const GRASS_A = C(0x5fae78);
-const GRASS_B = C(0x86c985);
+const GRASS_A = C(0x7cc47e);
+const GRASS_B = C(0xa6dc8c);
 const EARTH = C(0x8a7458);
 const ROCK_TOP = C(0x9a8b76);
 const ROCK_MID = C(0x7b8189);
 const ROCK_LOW = C(0x56667a);
 const MOSS = C(0x5c8f4e);
-const ROOT = C(0x4a3626);
+const ROOT = C(0x6a5440);
 const JADE = C(0xe3ece6);
 const JADE_SHADE = C(0xb9cbc2);
 const JADE_GREEN = C(0x6fb59a);
@@ -173,6 +174,85 @@ function blob(m: Mesher, c: THREE.Vector3, rx: number, ry: number, rz: number, c
   for (let i = 0; i < p.count; i += 3) m.tri(base[i]!, base[i + 1]!, base[i + 2]!);
 }
 
+// ---------- tán lá bằng thẻ (alpha) ----------
+
+/** Lưới các thẻ (quad) có uv trỏ vào atlas tán lá; màu đỉnh nhân màu ảnh để đổi sắc theo cây. */
+class CardMesher {
+  pos: number[] = [];
+  uv: number[] = [];
+  col: number[] = [];
+  idx: number[] = [];
+
+  /** Thẻ rộng `w`, cao `h`, tâm `c`, trục ngang `r` và dọc `u` (đơn vị), ô atlas `tile`. */
+  card(c: THREE.Vector3, r: THREE.Vector3, u: THREE.Vector3, w: number, h: number, tile: [number, number], color: THREE.Color): void {
+    const base = this.pos.length / 3;
+    const corners: [number, number][] = [
+      [-1, -1],
+      [1, -1],
+      [1, 1],
+      [-1, 1],
+    ];
+    for (const [sx, sy] of corners) {
+      this.pos.push(
+        c.x + r.x * w * 0.5 * sx + u.x * h * 0.5 * sy,
+        c.y + r.y * w * 0.5 * sx + u.y * h * 0.5 * sy,
+        c.z + r.z * w * 0.5 * sx + u.z * h * 0.5 * sy,
+      );
+      // v = 0 ở hàng trên của ô (texture không lật), nên đỉnh trên (sy = 1) lấy v nhỏ.
+      this.uv.push(tile[0] + (sx * 0.5 + 0.5) * 0.5, tile[1] + (0.5 - (sy * 0.5 + 0.5) * 0.5));
+      this.col.push(color.r, color.g, color.b);
+    }
+    this.idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  }
+
+  get count(): number {
+    return this.idx.length / 6;
+  }
+
+  geometry(): THREE.BufferGeometry {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(this.uv, 2));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
+    g.setIndex(this.idx);
+    g.computeVertexNormals();
+    g.computeBoundingSphere();
+    return g;
+  }
+}
+
+type CrownKind = 'pine' | 'maple' | 'bamboo' | 'peach';
+
+/** Loài cây theo đảo: Kiếm Đài tùng; đình Đông đào + tùng; tháp phong; đình Tây tùng + trúc; điện xa tùng + phong. */
+const ISLAND_TREES: Record<string, CrownKind[]> = {
+  kiem_dai: ['pine', 'pine', 'pine'],
+  dinh_dong: ['peach', 'peach', 'pine'],
+  thap_nam: ['maple', 'maple', 'pine'],
+  dinh_tay: ['pine', 'bamboo', 'bamboo'],
+  dien_xa: ['pine', 'maple', 'pine'],
+};
+
+/** Tán một cây: các thẻ lá xoè quanh tâm, nghiêng ngẫu nhiên (cành rủ với tùng, bụi dựng với trúc). */
+function crown(cards: CardMesher, c: THREE.Vector3, size: number, kind: CrownKind, tint: THREE.Color, rand: () => number): void {
+  const tile = FOLIAGE_TILE[kind];
+  const n = kind === 'bamboo' ? 7 : kind === 'pine' ? 15 : 13;
+  const col = new THREE.Color();
+  for (let i = 0; i < n; i++) {
+    const yaw = rand() * Math.PI * 2;
+    const tilt = kind === 'bamboo' ? (rand() - 0.5) * 0.5 : kind === 'pine' ? 0.25 + rand() * 0.45 : (rand() - 0.5) * 0.9;
+    const r = new THREE.Vector3(Math.cos(yaw), 0, Math.sin(yaw));
+    const up = new THREE.Vector3(Math.sin(yaw) * Math.sin(tilt), Math.cos(tilt), -Math.cos(yaw) * Math.sin(tilt)).normalize();
+    // Vị trí trong khối cầu dẹt quanh tâm tán; tùng xếp tầng (cao dần theo i).
+    const a = rand() * Math.PI * 2;
+    const rr = size * (0.15 + 0.5 * rand());
+    const y = kind === 'pine' ? (i / n - 0.4) * size * 1.6 : (rand() - 0.4) * size * 0.9;
+    const p = new THREE.Vector3(c.x + Math.cos(a) * rr, c.y + y, c.z + Math.sin(a) * rr);
+    const sz = size * (kind === 'bamboo' ? 0.95 : 0.9 + rand() * 0.5);
+    col.copy(tint).multiplyScalar(0.78 + rand() * 0.4);
+    cards.card(p, r, up, sz, sz * (kind === 'bamboo' ? 1.2 : 1), tile, col);
+  }
+}
+
 // ---------- thân đảo ----------
 
 const SEG = 72;
@@ -189,7 +269,8 @@ function rimPoint(isl: SkyIsland, dx: number, dz: number, k = 1): THREE.Vector3 
   return new THREE.Vector3(t.x + dx * isl.r * k, t.y, t.z + dz * isl.r * k);
 }
 
-function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
+function buildIsland(rock: Mesher, prop: Mesher, cards: CardMesher, isl: SkyIsland, seed: number): void {
+  const m = rock; // thân đá; phần cỏ, rễ, dây leo, thân cây ghi vào `prop` (tô màu đỉnh, không dán texture đá)
   const top = islandTop(isl);
   const R = isl.r;
   const rand = rng(seed);
@@ -252,7 +333,7 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
     const x = top.x + Math.cos(a) * r;
     const z = top.z + Math.sin(a) * r;
     tmp.copy(GRASS_A).lerp(GRASS_B, fbm3(x * 0.05, 1.5, z * 0.05, seed + 2, 2));
-    grassRing.push(m.vert(x, top.y + 0.08, z, tmp));
+    grassRing.push(prop.vert(x, top.y + 0.08, z, tmp));
   }
   const inner: number[] = [];
   const innerK = 0.62;
@@ -262,13 +343,13 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
     const x = top.x + Math.cos(a) * r;
     const z = top.z + Math.sin(a) * r;
     tmp.copy(GRASS_A).lerp(GRASS_B, fbm3(x * 0.05, 2.5, z * 0.05, seed + 4, 2));
-    inner.push(m.vert(x, top.y + bumpy(x, z) + 0.2, z, tmp));
+    inner.push(prop.vert(x, top.y + bumpy(x, z) + 0.2, z, tmp));
   }
-  const ctr = m.vert(top.x, centerY - 0.2, top.z, GRASS_B);
+  const ctr = prop.vert(top.x, centerY - 0.2, top.z, GRASS_B);
   for (let s = 0; s < SEG; s++) {
     const s2 = (s + 1) % SEG;
-    m.quad(grassRing[s]!, inner[s]!, inner[s2]!, grassRing[s2]!);
-    m.tri(inner[s]!, ctr, inner[s2]!);
+    prop.quad(grassRing[s]!, inner[s]!, inner[s2]!, grassRing[s2]!);
+    prop.tri(inner[s]!, ctr, inner[s2]!);
   }
   const col = (hex: number) => C(hex);
   // Nhũ đá nhọn treo dưới thân: nhiều cỡ, nghiêng nhẹ, đá phân lớp tối dần về mũi.
@@ -297,13 +378,13 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
     );
   }
   // Rễ cây khổng lồ bám thân đảo, cong ra ngoài rồi rũ xuống.
-  const nRoots = Math.round(R * 0.4);
+  const nRoots = Math.round(R * 0.2);
   for (let i = 0; i < nRoots; i++) {
     const a = rand() * Math.PI * 2;
     const t0 = 0.08 + rand() * 0.3;
     const r0 = radius(a, t0);
     const len = isl.depth * (0.25 + rand() * 0.5);
-    const w0 = 0.22 + rand() * 0.45;
+    const w0 = 0.16 + rand() * 0.3;
     const sx = top.x + Math.cos(a) * r0 * 0.96;
     const sz = top.z + Math.sin(a) * r0 * 0.96;
     const sy = top.y - isl.depth * Math.pow(t0, 0.95);
@@ -321,7 +402,7 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
       );
       rad.push(w0 * (1 - q) * (1 - q * 0.4) + 0.03);
     }
-    tube(m, pts, rad, 5, (q) => ROOT.clone().lerp(ROCK_MID, q * 0.35));
+    tube(prop, pts, rad, 5, (q) => ROOT.clone().lerp(ROCK_MID, q * 0.35));
   }
   // Dây leo rủ xuống từ mép đảo, điểm cụm lá; mảng rêu dày ở chân vách trên.
   const nVines = Math.round(R * 0.9);
@@ -344,41 +425,34 @@ function buildIsland(m: Mesher, isl: SkyIsland, seed: number): void {
       pts.push(new THREE.Vector3(sx + Math.cos(a) * q * 1.2 + Math.sin(q * 5 + i) * sway * 0.4, sy - len * q, sz + Math.sin(a) * q * 1.2));
       rad.push(0.11 * (1 - q * 0.5));
     }
-    tube(m, pts, rad, 4, (q) => VINE.clone().lerp(ROOT, q * 0.3));
-    for (let k = 2; k <= segs; k += 3) blob(m, pts[k]!, 0.55, 0.38, 0.55, VINE_LEAF, seed + i * 7 + k);
+    tube(prop, pts, rad, 4, (q) => VINE.clone().lerp(ROOT, q * 0.3));
+    for (let k = 2; k <= segs; k += 3) blob(prop, pts[k]!, 0.55, 0.38, 0.55, VINE_LEAF, seed + i * 7 + k);
   }
-  // Rừng nhỏ trên mặt đảo: thân tapered + ba cụm tán tròn nhiều sắc xanh (chừa vùng giữa cho công trình/đài).
+  // Rừng nhỏ trên mặt đảo: thân tapered (tô màu đỉnh) + tán bằng thẻ lá alpha theo loài của đảo (chừa vùng giữa cho công trình/đài).
   const nTrees = Math.round(R * 0.5);
-  const greens = [col(0x3f9a6a), col(0x5cae6a), col(0x7fbf72), col(0x2f7f5c), col(0x9acb6a)];
+  const kinds = ISLAND_TREES[isl.id] ?? ['pine', 'maple', 'pine'];
+  const tints: Record<CrownKind, THREE.Color> = { pine: C(0xd8ffd8), maple: C(0xfff0e0), bamboo: C(0xe8ffd0), peach: C(0xffffff) };
   for (let i = 0; i < nTrees; i++) {
     const a = rand() * Math.PI * 2;
     const rr = R * (0.72 + rand() * 0.2) * (radius(a, 0) / R);
     const x = top.x + Math.cos(a) * rr;
     const z = top.z + Math.sin(a) * rr;
     const y = top.y + bumpy(x, z) + 0.15;
-    const h = 3.2 + rand() * 4;
+    const kind = kinds[Math.floor(rand() * kinds.length)] ?? 'pine';
+    const h = (kind === 'bamboo' ? 4 : 4.5) + rand() * 4.5;
     const lean = (rand() - 0.5) * 0.9;
-    const tp: THREE.Vector3[] = [];
-    const tr: number[] = [];
-    for (let k = 0; k <= 4; k++) {
-      const q = k / 4;
-      tp.push(new THREE.Vector3(x + lean * q * q * h * 0.25, y + h * q, z));
-      tr.push(0.32 * (1 - q * 0.65));
+    if (kind !== 'bamboo') {
+      const tp: THREE.Vector3[] = [];
+      const tr: number[] = [];
+      for (let k = 0; k <= 4; k++) {
+        const q = k / 4;
+        tp.push(new THREE.Vector3(x + lean * q * q * h * 0.25, y + h * q, z));
+        tr.push(0.34 * (1 - q * 0.7));
+      }
+      tube(prop, tp, tr, 6, (q) => TRUNK.clone().multiplyScalar(0.8 + q * 0.3));
     }
-    tube(m, tp, tr, 6, (q) => TRUNK.clone().multiplyScalar(0.8 + q * 0.3));
-    const g = greens[Math.floor(rand() * greens.length)];
-    for (let k = 0; k < 3; k++) {
-      const s = (2.6 - k * 0.5) * (0.85 + rand() * 0.5);
-      blob(
-        m,
-        new THREE.Vector3(x + lean * h * 0.25 + (rand() - 0.5) * 1.6, y + h * (0.78 + k * 0.17), z + (rand() - 0.5) * 1.6),
-        s,
-        s * 0.78,
-        s,
-        g!,
-        seed + i * 13 + k,
-      );
-    }
+    const crownSize = (kind === 'bamboo' ? 3.2 : 3.4 + rand() * 1.6) * (R / 40 + 0.6);
+    crown(cards, new THREE.Vector3(x + lean * h * 0.25, y + h * (kind === 'bamboo' ? 0.55 : 0.85), z), crownSize, kind, tints[kind], rand);
   }
 }
 
@@ -480,8 +554,18 @@ function fallMaterial(): THREE.MeshBasicNodeMaterial {
   const edge = float(1).sub(u.x.sub(0.5).abs().mul(2)).pow(0.7);
   const fadeTop = smoothstep(0.0, 0.06, u.y.oneMinus());
   const fadeBot = smoothstep(0.0, 0.3, u.y);
-  mat.opacityNode = clamp(streak.mul(edge).mul(fadeTop).mul(fadeBot).mul(0.95).add(edge.mul(0.12).mul(fadeBot)), 0, 0.92);
-  mat.colorNode = mix(vec3(0.62, 0.86, 0.9), vec3(1, 1, 1), streak.mul(0.8));
+  const foam = smoothstep(0.35, 0.0, u.y).mul(
+    texture(noise, vec2(u.x.mul(7), u.y.mul(-3).add(flow.mul(2.4))))
+      .a.mul(0.9)
+      .add(0.3),
+  );
+  mat.opacityNode = clamp(
+    streak.mul(edge).mul(fadeTop).mul(fadeBot).mul(0.95).add(edge.mul(0.12).mul(fadeBot)).add(foam.mul(edge).mul(0.5)),
+    0,
+    0.95,
+  );
+  // Bọt trắng đục ở chân thác (v nhỏ): nhiễu cuộn nhanh, đậm dần xuống chân.
+  mat.colorNode = mix(mix(vec3(0.62, 0.86, 0.9), vec3(1, 1, 1), streak.mul(0.8)), vec3(1, 1, 1), clamp(foam, 0, 1));
   return mat;
 }
 
@@ -591,27 +675,57 @@ function swordGeometry(): THREE.BufferGeometry {
 export class LacKiemSkyScene {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
+  private rockMesh!: THREE.Mesh;
+  private cardMesh!: THREE.Mesh;
+  private dead = false;
 
   constructor(sky: LacKiemSky) {
     this.group.name = 'lacKiemSky';
     const ridges = new FarRidges(SECT.x, SECT.z);
     this.group.add(ridges.group);
     this.disposables.push(ridges);
-    // Thân đảo + cầu (một vật liệu, màu đỉnh) và phần phát sáng (đèn ngọc, dải mây dưới cầu).
-    const body = new Mesher();
+    // Thân đá (vật liệu PBR chiếu ba mặt phẳng sau khi nạp texture; trước đó là màu đỉnh flat shading), cỏ + rễ + dây + cầu (màu đỉnh, trơn),
+    // tán lá bằng thẻ alpha (hiện sau khi nạp atlas) và phần phát sáng (đèn ngọc, dải mây dưới cầu).
+    const rockM = new Mesher();
+    const propM = new Mesher();
+    const cardM = new CardMesher();
     const glow = new Mesher();
-    sky.islands.forEach((isl, i) => buildIsland(body, isl, 1013 + i * 97));
+    sky.islands.forEach((isl, i) => buildIsland(rockM, propM, cardM, isl, 1013 + i * 97));
     for (const br of sky.bridges) {
       const [p0, p1] = bridgeEnds(sky, br.from, br.to);
-      buildBridge(body, glow, p0, p1);
+      buildBridge(propM, glow, p0, p1);
     }
-    const bodyMat = createWorldMaterial({ vertexColors: true, roughness: 0.92, side: THREE.DoubleSide, flatShading: true });
-    const bodyMesh = new THREE.Mesh(body.geometry(), bodyMat);
-    bodyMesh.name = 'sky-islands';
-    bodyMesh.castShadow = true;
-    bodyMesh.receiveShadow = true;
-    bodyMesh.frustumCulled = false;
-    this.group.add(bodyMesh);
+    const rockMat0 = createWorldMaterial({ vertexColors: true, roughness: 0.92, side: THREE.DoubleSide, flatShading: true });
+    this.rockMesh = new THREE.Mesh(rockM.geometry(), rockMat0);
+    this.rockMesh.name = 'sky-rock';
+    this.rockMesh.castShadow = true;
+    this.rockMesh.receiveShadow = true;
+    this.rockMesh.frustumCulled = false;
+    this.group.add(this.rockMesh);
+    const propMat = createWorldMaterial({ vertexColors: true, roughness: 0.9, side: THREE.DoubleSide });
+    const propMesh = new THREE.Mesh(propM.geometry(), propMat);
+    propMesh.name = 'sky-props';
+    propMesh.castShadow = true;
+    propMesh.receiveShadow = true;
+    propMesh.frustumCulled = false;
+    this.group.add(propMesh);
+    this.cardMesh = new THREE.Mesh(cardM.geometry(), createWorldMaterial({ vertexColors: true }));
+    this.cardMesh.name = 'sky-foliage';
+    this.cardMesh.visible = false;
+    this.cardMesh.castShadow = true;
+    this.cardMesh.frustumCulled = false;
+    this.group.add(this.cardMesh);
+    this.disposables.push(this.rockMesh.geometry, rockMat0, propMesh.geometry, propMat, this.cardMesh.geometry);
+    void loadSkyTextures().then((tex) => {
+      if (!tex || this.dead) return;
+      const rm = rockMaterial(tex);
+      const fm = foliageMaterial(tex);
+      this.rockMesh.material = rm;
+      (this.cardMesh.material as THREE.Material).dispose();
+      this.cardMesh.material = fm;
+      this.cardMesh.visible = true;
+      this.disposables.push(rm, fm);
+    });
     const glowMat = new THREE.MeshBasicNodeMaterial({
       vertexColors: true,
       transparent: true,
@@ -624,7 +738,7 @@ export class LacKiemSkyScene {
     glowMesh.frustumCulled = false;
     glowMesh.renderOrder = 4;
     this.group.add(glowMesh);
-    this.disposables.push(bodyMesh.geometry, bodyMat, glowMesh.geometry, glowMat);
+    this.disposables.push(glowMesh.geometry, glowMat);
 
     // Thác và sương chân thác.
     const falls = new Mesher();
@@ -743,6 +857,7 @@ export class LacKiemSkyScene {
   }
 
   dispose(): void {
+    this.dead = true;
     for (const d of this.disposables) d.dispose();
     this.disposables = [];
   }

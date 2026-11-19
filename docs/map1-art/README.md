@@ -36,3 +36,16 @@ Tái thiết kế mỹ thuật Lạc Kiếm Tông (bản đồ `van_lam`). Chia 
 - Chưa làm: LOD cho `arch_sect`, thác/đảo có va chạm (đi bộ được), hoàng hôn còn hơi hồng.
 - Vòng chỉnh theo duyệt v2: Kiếm Đài dùng mesh kiếm thật (lưỡi đùn vát cạnh + rãnh, tay nắm sừng, chuôi quấn, đầu chuôi), đảo dựng low-poly flat shading với bậc đá, nhũ đá, rễ, dây leo điểm lá; cỏ và vách núi đổi sắc theo mảng/tầng (`terrain.ts`); sương bình minh/trưa giảm ~40%; hoàng hôn cam-vàng (`lk_dusk`).
 - Vân đá sơn thủy và ngưỡng tuyết 340–420 m chỉ bật cho Vân Lam/Kiếm Trủng qua `setGroundStrata(isVanLam())` (`render/materials/ground.ts`, gọi ở `Terrain.setGround`); các level khác giữ ngưỡng tuyết 252–312 m và không có vân (như trước MAP-1).
+
+## PR 3: bản B tả thực (hướng đã chọn cho cả bộ bản đồ)
+
+Người dùng chọn phong cách B (bản tả thực, điện ảnh). Giữ bảng màu đã duyệt (ngọc lục, trắng mây, mai son), đảo bay, cầu mây, thác, Kiếm Đài.
+
+- **Vật liệu PBR kiến trúc** (`tools/blender/thien_cong_kit.py`, `PBR_SOURCES`): ngọc ← `marble_rock_01`, đá ← `japanese_stone_wall`, vữa ← `plastered_stone_wall`, ngói ← `ceramic_roof_01`, sơn son ← `lacquered_cherry_wood`, gỗ ← `dark_wood` (Poly Haven CC0, credit ở `assets/LICENSES.md`). Ảnh màu đổi sang độ sáng rồi nhân màu đỉnh (giữ đúng bảng màu), kèm normal (OpenGL) + độ nhám, nướng vào `arch_sect.glb` (2K cho ngọc/đá/ngói, 1K cho gỗ/vữa, nhám 512). Mép đá/gỗ vát 2 đoạn (5 cm). Nguồn ảnh: `pnpm assets:sect-textures` (ngoài repo); thiếu nguồn thì script quay về texture thủ tục. Ngân sách lớp `arch` nâng lên 2048 px / 600k tam giác (`assets/budgets.json`).
+- **Đá vách đảo nổi** (`game/world/skyAssets.ts` `rockMaterial`): albedo + normal + nhám `cliff_side` chiếu ba mặt phẳng, nhân màu đỉnh (tầng đá ấm/lạnh, rêu), hết flat shading. Texture ở `public/sky/` (`pnpm assets:sky-textures`).
+- **Cây**: tán bằng thẻ lá alpha (atlas 2×2: tùng, phong, trúc, đào, vẽ bằng SVG ở `sky-textures.ts`), thân tapered; loài theo đảo (`ISLAND_TREES`). Lá trúc trong vườn cũng là thẻ (`lacKiemGarden.ts`). Thay các khối tán cũ.
+- **Phông xa** (`render/farRidges.ts`): mặt núi lưới 480×16 có mỏm/hốc/gờ, sáng tối theo pháp tuyến hướng nắng, vân tầng + khe dọc, mây cuộn giữa sườn trôi chậm, ngả lam nhạt dần theo lớp.
+- **Ánh sáng**: bóng PCF mềm (`shadowMap.type`, `shadow.radius`), tăng ánh sáng nền để bóng không đen kịt, bão hòa ngày giảm; GTAO, bloom, ACES, sương theo độ cao đã có sẵn từ trước.
+- **Thác**: thêm bọt trắng đục ở chân; sương chân thác lớn hơn.
+- **Cỏ**: tăng mật độ preset Cao (tầm 52 m, giãn 0,76) và Cực cao (66 m, 0,62), trần 100k bụi.
+- Không làm ở PR này: texture mặt đất 2K (bộ `terrain` dùng chung với các level khác và VRAM 8 lớp × 2K ≈ 180 MB), phản chiếu mặt nước thác, mây thể tích, cây thẻ cho núi xa.

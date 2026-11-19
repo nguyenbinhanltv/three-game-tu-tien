@@ -583,6 +583,8 @@ export class Game {
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     this.renderer.shadowMap.enabled = q.shadows;
+    // Bóng mềm (MAP-1 bản B): lọc PCF mềm thay vì cạnh cứng.
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     // Số liệu render đếm cho cả khung (mọi pass hậu kỳ), reset ở đầu frame(), kể cả khi bơm khung tay.
     this.renderer.info.autoReset = false;
     this.canvas = this.renderer.domElement;

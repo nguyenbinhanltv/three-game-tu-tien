@@ -1,5 +1,22 @@
 import * as THREE from 'three/webgpu';
-import { clamp, dot, float, mix, normalize, positionLocal, smoothstep, uniform, uv, vec3 } from 'three/tsl';
+import {
+  clamp,
+  dot,
+  float,
+  mix,
+  normalWorld,
+  normalize,
+  positionLocal,
+  sin,
+  smoothstep,
+  texture,
+  time,
+  uniform,
+  uv,
+  vec2,
+  vec3,
+} from 'three/tsl';
+import { getCloudNoise } from './noiseTex';
 import { skyParams } from './sky';
 
 /**
@@ -54,28 +71,60 @@ function ridge(a: number, layer: Layer): number {
   return Math.pow(h, 1.25);
 }
 
-const SEGS = 360;
+const SEGS = 480;
+const ROWS = 16;
 
+/** Nhiễu 2D tuần hoàn theo góc (cột) và không tuần hoàn theo hàng. */
+function noise2(t: number, v: number, period: number, seed: number): number {
+  const i = Math.floor(t);
+  const j = Math.floor(v);
+  const fx = t - i;
+  const fy = v - j;
+  const sx = fx * fx * (3 - 2 * fx);
+  const sy = fy * fy * (3 - 2 * fy);
+  const h = (a: number, b: number) => hash((((a % period) + period) % period) * 977 + b * 131, seed);
+  const a0 = h(i, j) + (h(i + 1, j) - h(i, j)) * sx;
+  const a1 = h(i, j + 1) + (h(i + 1, j + 1) - h(i, j + 1)) * sx;
+  return a0 + (a1 - a0) * sy;
+}
+
+/**
+ * Mặt núi có chiều sâu: lưới SEGS × ROWS, mỗi hàng dịch ra/vào theo nhiễu (mỏm đá, hốc, gờ), càng cao càng gồ ghề, nên đường sống
+ * và mặt núi có khối thật (shader tô sáng tối theo pháp tuyến hướng nắng) thay vì một tấm phẳng.
+ */
 function ringGeometry(layer: Layer): THREE.BufferGeometry {
   const pos: number[] = [];
   const uvs: number[] = [];
   const idx: number[] = [];
   for (let i = 0; i <= SEGS; i++) {
     const a = (i / SEGS) * Math.PI * 2;
-    const x = Math.cos(a) * layer.radius;
-    const z = Math.sin(a) * layer.radius;
     const top = layer.base + layer.amp * ridge(a, layer);
-    pos.push(x, layer.base, z, x, top, z);
-    uvs.push(i / SEGS, 0, i / SEGS, 1);
+    for (let j = 0; j <= ROWS; j++) {
+      const t = j / ROWS;
+      const period = Math.round(layer.freq * 7);
+      const tt = (i / SEGS) * period;
+      // Mỏm/hốc: nhiễu hai tần số, biên độ tăng dần theo độ cao; gờ ngang (tầng đá) theo hàng.
+      const crag =
+        (noise2(tt, t * 5, period, layer.seed + 5) - 0.5) * 2 + 0.5 * (noise2(tt * 3.1, t * 11, period * 4, layer.seed + 9) - 0.5) * 2;
+      const ledge = Math.sin(t * 16 + noise2(tt, 0, period, layer.seed + 2) * 6) * 0.04;
+      const r = layer.radius + (crag * 0.075 + ledge) * layer.radius * 0.25 * Math.pow(t, 0.8) * (layer.amp / 600);
+      const y = layer.base + (top - layer.base) * Math.pow(t, 0.92);
+      pos.push(Math.cos(a) * r, y, Math.sin(a) * r);
+      uvs.push(i / SEGS, t);
+    }
   }
-  for (let i = 0; i < SEGS; i++) {
-    const a = i * 2;
-    idx.push(a, a + 1, a + 3, a, a + 3, a + 2);
-  }
+  const stride = ROWS + 1;
+  for (let i = 0; i < SEGS; i++)
+    for (let j = 0; j < ROWS; j++) {
+      const a = i * stride + j;
+      const b = a + stride;
+      idx.push(a, b, b + 1, a, b + 1, a + 1);
+    }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   g.setIndex(idx);
+  g.computeVertexNormals();
   g.computeBoundingSphere();
   return g;
 }
@@ -84,20 +133,41 @@ function ridgeMaterial(layer: Layer): THREE.MeshBasicNodeMaterial {
   const mat = new THREE.MeshBasicNodeMaterial({ side: THREE.DoubleSide, fog: false, depthWrite: false });
   const rock = uniform(new THREE.Color(layer.color));
   const horizon = skyParams.horizon;
+  const noise = getCloudNoise();
   const lum = dot(horizon, vec3(0.3, 0.59, 0.11));
   const lit = clamp(lum.mul(1.7), 0.1, 1);
-  const v = uv().y;
-  // Đỉnh đậm hơn (đá), chân mờ vào mây; phía mặt trời ngả sắc ấm nhẹ.
+  const u = uv();
+  const v = u.y;
+  // Sáng tối theo pháp tuyến hướng nắng (mặt quay về mặt trời sáng, mặt khuất tối và lam hơn): cho núi có khối.
+  const nrm = normalize(normalWorld);
+  const sunDir = normalize(skyParams.sunDir);
+  const lam = clamp(dot(nrm, sunDir).mul(0.5).add(0.5), 0, 1);
+  // Vân đá: tầng ngang (theo độ cao + nhiễu) và khe dọc (nhiễu kéo dài theo chiều cao).
+  const n1 = texture(noise, vec2(u.x.mul(layer.freq * 5), v.mul(1.4))).g;
+  const strata = sin(v.mul(46).add(n1.mul(5)))
+    .mul(0.5)
+    .add(0.5);
+  const fissure = texture(noise, vec2(u.x.mul(layer.freq * 26), v.mul(0.9))).a;
+  const detail = float(0.78).add(strata.mul(0.22)).sub(float(1).sub(fissure).mul(0.28));
+  const cold = vec3(0.78, 0.9, 1.08);
+  const shade = mix(cold.mul(0.62), vec3(1.08, 1.0, 0.9), lam);
   const dir = normalize(vec3(positionLocal.x, 0, positionLocal.z));
   const sun = clamp(dot(dir, normalize(vec3(skyParams.sunDir.x, 0, skyParams.sunDir.z))), 0, 1).pow(4);
-  const body = mix(rock.mul(lit), skyParams.glow.mul(lit), sun.mul(0.28));
+  const body = mix(rock.mul(lit).mul(shade).mul(detail), skyParams.glow.mul(lit), sun.mul(0.22));
+  // Chân núi chìm trong mây; mây cuộn giữa sườn trôi chậm theo nhiễu.
+  const drift = texture(noise, vec2(u.x.mul(layer.freq * 3).add(time.mul(0.004)), v.mul(2.2))).a;
+  const rolling = smoothstep(0.45, 0.85, drift)
+    .mul(float(1).sub(smoothstep(0.25, 0.75, v)))
+    .mul(0.5);
   const haze = clamp(
-    float(layer.haze).add(
-      float(1)
-        .sub(smoothstep(0, 0.7, v))
-        .pow(1.4)
-        .mul(0.55),
-    ),
+    float(layer.haze)
+      .add(
+        float(1)
+          .sub(smoothstep(0, 0.7, v))
+          .pow(1.4)
+          .mul(0.5),
+      )
+      .add(rolling),
     0,
     0.97,
   );

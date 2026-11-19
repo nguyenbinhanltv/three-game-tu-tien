@@ -1,0 +1,16 @@
+{
+  "rock": {
+    "albedo": "rock.a.bae8cea7e9.webp",
+    "normal": "rock.n.ab28df44f1.webp",
+    "source": "cliff_side"
+  },
+  "foliage": {
+    "atlas": "foliage.c39d12cdce.webp",
+    "tiles": [
+      "pine",
+      "maple",
+      "bamboo",
+      "peach"
+    ]
+  }
+}

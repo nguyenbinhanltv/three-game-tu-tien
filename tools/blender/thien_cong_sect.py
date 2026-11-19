@@ -138,7 +138,7 @@ def build_sect():
 # ---------- xuất GLB ----------
 
 
-def bevel_hard_edges(bm, width=0.04, angle=math.radians(35), mats=()):
+def bevel_hard_edges(bm, width=0.04, angle=math.radians(35), mats=(), segments=1):
     edges = []
     for e in bm.edges:
         if len(e.link_faces) != 2:
@@ -148,7 +148,7 @@ def bevel_hard_edges(bm, width=0.04, angle=math.radians(35), mats=()):
         if e.calc_face_angle(0.0) >= angle:
             edges.append(e)
     if edges:
-        bmesh.ops.bevel(bm, geom=edges, offset=width, segments=1, affect='EDGES')
+        bmesh.ops.bevel(bm, geom=edges, offset=width, segments=segments, affect='EDGES')
 
 
 def make_mesh(name, builder, keys, images, bevel=True):
@@ -174,8 +174,8 @@ def make_mesh(name, builder, keys, images, bevel=True):
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
     if bevel:
         # Vát mép đá/ngọc (mép mòn, bắt sáng): chỉ giữa hai mặt cùng chất liệu đá.
-        stone = {keys.index(k) for k in ('jade', 'stone') if k in keys}
-        bevel_hard_edges(bm, 0.035, mats=stone)
+        stone = {keys.index(k) for k in ('jade', 'stone', 'plaster', 'lacquer', 'wood') if k in keys}
+        bevel_hard_edges(bm, 0.05, mats=stone, segments=2)
     bm.to_mesh(mesh)
     bm.free()
     return mesh

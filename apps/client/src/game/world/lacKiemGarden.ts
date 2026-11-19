@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { SECT } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { createWorldMaterial } from '../../render/materials/world';
+import { FOLIAGE_TILE, foliageMaterial, loadSkyTextures, type SkyTextures } from './skyAssets';
 
 /**
  * Mật độ chi tiết theo cụm quanh tông môn (MAP-1): vườn hoa, lùm trúc, đá rêu. Mỗi loại một InstancedMesh (ba draw call).
@@ -121,6 +122,9 @@ const PETALS = [0xf2a4b8, 0xffffff, 0xf7d36a, 0xe5708a, 0xc7a6f0, 0xffb089];
 export class LacKiemGarden {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
+  private bambooMats: THREE.Matrix4[] = [];
+  private bambooCols: THREE.Color[] = [];
+  private dead = false;
 
   constructor() {
     this.group.name = 'lacKiemGarden';
@@ -173,18 +177,6 @@ export class LacKiemGarden {
         node.translate(0, k * 3.3 + 3.3, 0);
         parts.push({ g: node, col: new THREE.Color(0.3, 0.5, 0.25) });
       }
-      // Lá trúc: các chùm lá thon (nón mảnh) xoè ra và rủ xuống ở năm đốt trên cùng.
-      for (let lvl = 0; lvl < 5; lvl++) {
-        const y = 6.6 + lvl * 0.85;
-        for (let j = 0; j < 7; j++) {
-          const leaf = new THREE.ConeGeometry(0.07, 1.25 - lvl * 0.06, 3);
-          leaf.translate(0, 0.62, 0);
-          leaf.rotateZ(1.75 + (j % 2) * 0.25);
-          leaf.rotateY((j / 7) * Math.PI * 2 + lvl * 0.9);
-          leaf.translate(0, y, 0);
-          parts.push({ g: leaf, col: new THREE.Color(0.4 + (j % 3) * 0.03, 0.76 - lvl * 0.03, 0.34) });
-        }
-      }
       const geo = merge(parts);
       const pts = scatter(BAMBOO, rand);
       const mat = createWorldMaterial({ vertexColors: true, roughness: 0.82, side: THREE.DoubleSide });
@@ -192,14 +184,18 @@ export class LacKiemGarden {
       mesh.name = 'garden-bamboo';
       mesh.frustumCulled = false;
       mesh.castShadow = true;
+      this.bambooMats = [];
+      this.bambooCols = [];
       pts.forEach((p, i) => {
         dummy.position.set(p.x, heightAt(p.x, p.z) - 0.1, p.z);
         dummy.rotation.set((rand() - 0.5) * 0.14, rand() * 6.28, (rand() - 0.5) * 0.14);
         dummy.scale.set(0.8 + rand() * 0.5, 0.75 + rand() * 0.55, 0.8 + rand() * 0.5);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
+        this.bambooMats.push(dummy.matrix.clone());
         color.setHSL(0.27 + rand() * 0.05, 0.4 + rand() * 0.2, 0.6 + rand() * 0.25);
         mesh.setColorAt(i, color);
+        this.bambooCols.push(color.clone());
       });
       mesh.count = pts.length;
       this.group.add(mesh);
@@ -241,9 +237,65 @@ export class LacKiemGarden {
       this.group.add(mesh);
       this.disposables.push(base, mat, mesh);
     }
+    this.startLeaves();
+  }
+
+  private startLeaves(): void {
+    void loadSkyTextures().then((tex) => {
+      if (tex) this.addLeaves(tex);
+    });
+  }
+
+  /** Lá trúc bằng thẻ alpha (hai thẻ chéo nhau ở năm tầng trên ngọn), dùng chung ma trận và màu với thân trúc; hiện sau khi nạp atlas. */
+  private addLeaves(tex: SkyTextures): void {
+    if (this.dead || !this.bambooMats.length) return;
+    const tile = FOLIAGE_TILE.bamboo;
+    const pos: number[] = [];
+    const uv: number[] = [];
+    const col: number[] = [];
+    const idx: number[] = [];
+    const quad = (cx: number, cy: number, cz: number, yaw: number, w: number, h: number, tilt: number) => {
+      const base = pos.length / 3;
+      const c = Math.cos(yaw);
+      const s = Math.sin(yaw);
+      for (const [sx, sy] of [
+        [-1, -1],
+        [1, -1],
+        [1, 1],
+        [-1, 1],
+      ] as const) {
+        const up = sy * h * 0.5;
+        pos.push(cx + c * sx * w * 0.5 + s * up * tilt, cy + up, cz + s * sx * w * 0.5 - c * up * tilt);
+        uv.push(tile[0] + (sx * 0.5 + 0.5) * 0.5, tile[1] + (0.5 - (sy * 0.5 + 0.5) * 0.5));
+        col.push(1, 1, 1);
+      }
+      idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+    };
+    for (let lvl = 0; lvl < 5; lvl++) {
+      const y = 6.6 + lvl * 0.85;
+      for (let k = 0; k < 3; k++) quad(0, y, 0, (k / 3) * Math.PI + lvl * 0.7, 3.4 - lvl * 0.25, 2.6, 0.25);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    geo.setIndex(idx);
+    geo.computeVertexNormals();
+    const mat = foliageMaterial(tex);
+    const mesh = new THREE.InstancedMesh(geo, mat, this.bambooMats.length);
+    mesh.name = 'garden-bamboo-leaves';
+    mesh.frustumCulled = false;
+    mesh.castShadow = true;
+    this.bambooMats.forEach((m, i) => {
+      mesh.setMatrixAt(i, m);
+      mesh.setColorAt(i, this.bambooCols[i]!);
+    });
+    this.group.add(mesh);
+    this.disposables.push(geo, mat, mesh);
   }
 
   dispose(): void {
+    this.dead = true;
     for (const d of this.disposables) d.dispose();
     this.disposables = [];
   }

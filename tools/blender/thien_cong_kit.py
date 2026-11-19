@@ -48,6 +48,83 @@ BLADE_D = paint(0x8FA0AA, 'steel')
 MOSS = (0.16, 0.30, 0.08)  # tuyến tính
 PAPER = paint(0xFFE3B0, 'lamp')
 
+# ---------- texture PBR thật (Poly Haven CC0, MAP-1 bản B) ----------
+#
+# Mỗi chất liệu lấy ảnh 2K: màu → độ sáng (luma, xám) để vẫn nhân với màu đỉnh theo bảng màu đã duyệt, cộng normal (OpenGL) và
+# độ nhám. Ảnh nguồn nằm ngoài repo (`pnpm assets:sect-textures` tải về ../dtl-asset-source/texture/<id>/); thiếu thì dùng texture thủ tục
+# cũ (bản dựng vẫn chạy được trên máy không có nguồn). Giữ UV chiếu theo thế giới như build_sect (cùng ô lặp `scale`).
+
+# khóa -> (id Poly Haven, mét/ô lặp, cạnh ảnh màu, cạnh ảnh pháp tuyến). Ngọc/đá/ngói 2K (thấy nhiều, gần), gỗ/vữa 1K; độ nhám 512.
+PBR_SOURCES = {
+    'jade': ('marble_rock_01', 4.0, 2048, 2048),
+    'stone': ('japanese_stone_wall', 4.0, 2048, 2048),
+    'plaster': ('plastered_stone_wall', 5.0, 1024, 1024),
+    'tile': ('ceramic_roof_01', 3.0, 2048, 1024),
+    'lacquer': ('lacquered_cherry_wood', 3.0, 1024, 1024),
+    'wood': ('dark_wood', 3.0, 1024, 1024),
+}
+PBR_ROUGH_SIZE = 512
+
+
+def _asset_source_dirs():
+    here = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.abspath(os.path.join(here, '..', '..'))
+    out = []
+    if os.environ.get('DTL_ASSET_SOURCE'):
+        out.append(os.path.join(os.environ['DTL_ASSET_SOURCE'], 'texture'))
+    out.append(os.path.join(root, '..', 'dtl-asset-source', 'texture'))
+    out.append(os.path.join(root, '..', '..', 'dtl-asset-source', 'texture'))
+    return [d for d in out if os.path.isdir(d)]
+
+
+def _find_pbr(ph, kind, size='2k'):
+    for d in _asset_source_dirs():
+        f = os.path.join(d, ph, f'{ph}_{kind}_{size}.jpg')
+        if os.path.exists(f):
+            return f
+    return None
+
+
+PBR_FILES = {}  # khóa chất liệu -> {'normal': path, 'rough': path}
+
+
+def _load_luma(path, size):
+    import bpy
+
+    img = bpy.data.images.load(path)
+    w, h = img.size
+    px = np.empty(w * h * 4, dtype=np.float32)
+    img.pixels.foreach_get(px)
+    bpy.data.images.remove(img)
+    px = px.reshape(h, w, 4)[..., :3]
+    # luma sRGB (ảnh JPG nạp ở không gian sRGB nên pixels là giá trị mã hóa)
+    luma = px[..., 0] * 0.2126 + px[..., 1] * 0.7152 + px[..., 2] * 0.0722
+    if w != size:
+        step = w // size
+        luma = luma.reshape(size, step, size, step).mean(axis=(1, 3))
+    # kéo dải sáng về quanh 0,85 như texture thủ tục cũ (màu đỉnh quyết định sắc, texture chỉ cho chi tiết)
+    lo, hi = np.percentile(luma, 2), np.percentile(luma, 98)
+    luma = np.clip((luma - lo) / max(hi - lo, 1e-4), 0, 1)
+    return 0.62 + 0.36 * luma
+
+
+def _install_pbr_textures():
+    for key, (ph, scale, albedo_size, _normal_size) in PBR_SOURCES.items():
+        d = _find_pbr(ph, 'Diffuse')
+        n = _find_pbr(ph, 'nor_gl')
+        r = _find_pbr(ph, 'Rough')
+        if not (d and n and r):
+            print(f'[thien_cong] thiếu texture nguồn {ph}: dùng texture thủ tục cho {key}')
+            continue
+        arr = _load_luma(d, albedo_size)
+        bs.TEXTURES[key] = arr
+        lin = np.where(arr <= 0.04045, arr / 12.92, ((arr + 0.055) / 1.055) ** 2.4)
+        bs.TEX_GAIN[key] = 1.0 / float(lin.mean())
+        PBR_FILES[key] = {'normal': n, 'rough': r}
+        old = bs.MATERIALS[key]
+        bs.MATERIALS[key] = old._replace(tex=key, scale=scale)
+
+
 # ---------- texture ngọc (vân mây + mạch), nạp vào hệ texture của build_sect ----------
 
 _orig_make_textures = bs.make_textures
@@ -68,7 +145,52 @@ def _make_textures():
     bs.TEX_GAIN['jade'] = 1.0 / float(lin.mean())
 
 
-bs.make_textures = _make_textures
+def _make_textures_pbr():
+    _make_textures()
+    _install_pbr_textures()
+
+
+bs.make_textures = _make_textures_pbr
+
+_orig_make_material = bs.make_material
+
+
+def _make_material(key, images):
+    """Vật liệu của build_sect + normal/roughness từ ảnh PBR (nếu có): cùng nút Mapping nên cùng ô lặp với albedo."""
+    import bpy
+
+    mat = _orig_make_material(key, images)
+    files = PBR_FILES.get(key)
+    if not files:
+        return mat
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    bsdf = next(n for n in nodes if n.type == 'BSDF_PRINCIPLED')
+    mapping = next(n for n in nodes if n.type == 'MAPPING')
+
+    def image_node(path, name, size=None):
+        key2 = f'{name}'
+        img = bpy.data.images.load(path)
+        img.name = key2
+        img.colorspace_settings.name = 'Non-Color'
+        if size and img.size[0] > size:
+            img.scale(size, size)
+        node = nodes.new('ShaderNodeTexImage')
+        node.image = img
+        links.new(mapping.outputs['Vector'], node.inputs['Vector'])
+        return node
+
+    normal_tex = image_node(files['normal'], f'arch_sect_{key}_n', PBR_SOURCES[key][3])
+    nmap = nodes.new('ShaderNodeNormalMap')
+    nmap.inputs['Strength'].default_value = 1.0
+    links.new(normal_tex.outputs['Color'], nmap.inputs['Color'])
+    links.new(nmap.outputs['Normal'], bsdf.inputs['Normal'])
+    rough_tex = image_node(files['rough'], f'arch_sect_{key}_r', PBR_ROUGH_SIZE)
+    links.new(rough_tex.outputs['Color'], bsdf.inputs['Roughness'])
+    return mat
+
+
+bs.make_material = _make_material
 
 # Đổi bảng màu của build_sect (pavilion, lantern, column, hip_roof… đọc biến toàn cục lúc gọi) sang bảng Lạc Kiếm mới.
 bs.PAVE, bs.STONE, bs.STONE_DARK = JADE, JADE_SHADE, paint(0xA9B7B0, 'jade')
