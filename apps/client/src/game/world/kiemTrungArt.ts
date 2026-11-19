@@ -483,21 +483,24 @@ export class KiemTrungArt {
   }
 
   /**
-   * Bậc thềm viền vòng trận (r ≈ 57): ba bậc đá thấp xếp lên dần ra phía ngoài (0,12 / 0,24 / 0,36 m), đá phiến có vệt rêu; chỉ là gờ thấp ở
-   * rìa (người chơi bước qua như bậc vỉa, không cản), nằm ngoài vùng đánh giữa đài. Một lưới xoay tròn bám địa hình, màu theo đỉnh.
+   * Bậc thềm viền vòng trận (r ≈ 57): ba bậc đá rất thấp xếp lên dần ra phía ngoài (0,035 / 0,07 / 0,105 m), đá phiến có vệt rêu. CHỈ ĐỂ NHÌN, không
+   * va chạm (nhân vật/quái đứng theo `heightAt`), nên bậc gần như phẳng (≤ ~0,1 m, chân lún không đáng kể) và chừa khe ở lối vào phía nam
+   * (dải |dx| < 9, dz > 0 như `swordKeepOut`, cung ~±0,2 rad quanh +z), nơi mọi người chơi đi từ cổng lên đài. Nằm ngoài vùng đánh giữa đài. Một lưới xoay tròn bám địa hình, màu theo đỉnh.
    */
   private addSteps(): void {
+    /** Nửa góc khe phía nam (phi = 0 ứng +z): asin(9 / 57) ≈ 0,16 rad, nới thành 0,2. */
+    const GAP = 0.2;
     const prof: [number, number][] = [];
     const R0 = 57;
     const tiers = 3;
     for (let i = 0; i < tiers; i++) {
       const r = R0 + i * 1.5;
-      const y = 0.12 * (i + 1);
-      prof.push([r, i === 0 ? -0.05 : 0.12 * i], [r, y], [r + 1.5, y]);
+      const y = 0.035 * (i + 1);
+      prof.push([r, i === 0 ? -0.05 : 0.035 * i], [r, y], [r + 1.5, y]);
     }
     prof.push([R0 + tiers * 1.5, -0.05]);
     const pts = prof.map(([r, y]) => new THREE.Vector2(r, y));
-    const geo = new THREE.LatheGeometry(pts, 192);
+    const geo = new THREE.LatheGeometry(pts, 192, GAP, Math.PI * 2 - 2 * GAP);
     const p = geo.attributes.position as THREE.BufferAttribute;
     const col = new Float32Array(p.count * 3);
     const c = new THREE.Color();
