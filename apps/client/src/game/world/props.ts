@@ -7,6 +7,8 @@ import { allProps, type PropInstance } from './propScatter';
 import { ImpostorLayer } from './treeImpostor';
 import { withSightFade } from './occlusion';
 import { logger } from '../../base/log';
+import { TC_PROP_CFG } from './propTcCfg';
+import { bannerSway } from './bannerSway';
 
 const propsLog = logger('props');
 
@@ -26,6 +28,8 @@ interface PropCfg {
   decor?: boolean;
   /** Đổ bóng (chỉ khi preset có bóng). */
   shadow?: boolean;
+  /** Vải đung đưa (PROP-1): xem `bannerSway`. */
+  sway?: boolean;
   /**
    * Cây (P2-A4b): LOD chọn theo từng cây (khoảng cách tới camera, không theo ô), mesh 3D chỉ ở ô cách camera < `TREE_START`,
    * xa hơn là impostor (`treeImpostor.ts`); mờ khi che giữa camera và nhân vật.
@@ -74,6 +78,8 @@ export const PROP_CFG: Record<string, PropCfg> = {
   prop_cong_thanh_vo: { range: 520, lod: [60, 150] },
   prop_tuong_da_vo_si: { range: 420, lod: [60, 140] },
   prop_den_long_troi: { range: 220, lod: [30, 80], decor: true },
+  // Thiên Công Khai Vật (PROP-1)
+  ...TC_PROP_CFG,
 };
 
 const CHUNK = 128;
@@ -489,7 +495,8 @@ export class PropLayer {
   }
 
   private templateOf(handle: AssetHandle): Template {
-    const mats = adoptGltfMaterials(handle.scene, handle.id && PROP_CFG[handle.id]?.tree ? withSightFade : undefined);
+    const cfg = handle.id ? PROP_CFG[handle.id] : undefined;
+    const mats = adoptGltfMaterials(handle.scene, cfg?.tree ? withSightFade : cfg?.sway ? bannerSway : undefined);
     handle.scene.updateMatrixWorld(true);
     const lods: LodMesh[][] = [];
     handle.scene.traverse((o) => {

@@ -64,6 +64,8 @@ export interface Flags {
   xichArt: boolean;
   /** `?bhart=0` tắt lớp mỹ thuật riêng Bắc Hoang (so ảnh, chương 5). */
   bhArt: boolean;
+  /** `?tc=0` ẩn bộ prop "Thiên Công Khai Vật" (PROP-1; so ảnh trước/sau, đo hiệu năng). Chỉ ẩn hình, va chạm vẫn còn. */
+  tcProps: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
   butterflies: boolean;
   /** `?touch=1|0` ép bật/tắt chế độ cảm ứng (U2-6; kiểm thử, ghi đè cài đặt). */
@@ -101,6 +103,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   cine: { scope: 'diag', doc: '=0 tắt cảnh mở đầu/boss (công cụ đo dùng)' },
   xichart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Xích Tẫn Khích' },
   bhart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Bắc Hoang' },
+  tc: { scope: 'diag', doc: '=0 ẩn bộ prop Thiên Công Khai Vật (PROP-1, so ảnh/đo)' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
   god: { scope: 'test', doc: 'bất tử (server kiểm lại, xem testParams.ts)' },
   at: { scope: 'test', doc: 'vào ở điểm đặt tên hoặc x,z (testParams.ts)' },
@@ -160,6 +163,7 @@ export function readFlags(search: string): Flags {
     bhArt: !off(q.get('bhart')),
     xichArt: !off(q.get('xichart')),
     cinematics: !off(q.get('cine')),
+    tcProps: !off(q.get('tc')),
     butterflies: !off(q.get('bf')),
   };
 }

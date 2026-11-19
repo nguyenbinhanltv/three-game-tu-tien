@@ -16,6 +16,7 @@ export const SECT_TEXTURES = {
   lacquered_cherry_wood: 'Jenelle van Heerden, Rico Cilliers',
   dark_wood: 'Dario Barresi, Dimitrios Savva, Rico Cilliers',
   metal_plate: 'Rob Tuytel',
+  green_metal_rust: 'Rob Tuytel',
   cliff_side: 'James Ray Cock, Jenelle van Heerden, Dario Barresi',
 } as const;
 

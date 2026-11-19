@@ -1,4 +1,5 @@
 import { fbm, lerp, ridged, smoothstep } from './noise';
+import { thienCongColliders } from './props.thiencong';
 import {
   type Biome,
   type CircleCollider,
@@ -327,7 +328,9 @@ const TERRAIN_ALIAS: Record<string, string> = {
 
 /** Đăng ký (hoặc thay) địa hình của một level. Trả địa hình đã dựng. */
 export function registerTerrain(def: TerrainDef): Terrain {
-  const t = makeTerrain(def);
+  // Va chạm của bộ prop PROP-1 (client và server cùng cộng ở đây để khớp nhau).
+  const extra = thienCongColliders(def.id);
+  const t = makeTerrain(extra.length ? { ...def, colliders: [...def.colliders, ...extra] } : def);
   REGISTRY.set(def.id, t);
   return t;
 }
