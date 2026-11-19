@@ -23,6 +23,7 @@ import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
 import { DoanMachArt } from '../world/doanMachArt';
 import { KiemTrungArt } from '../world/kiemTrungArt';
+import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { VanHaiWow } from '../world/vanHaiWow';
@@ -34,7 +35,14 @@ import { withOccluderFade } from '../world/occlusion';
 import { LanternLights } from '../../render/lanternLights';
 import { buildMoonGate, buildPortalDisc, buildSect, moonMirrorTexture, SECT_LANTERNS } from '../world/sect';
 import { gatesToDraw } from '../world/gates';
-import { buildCaveShell, buildCrystalGlow, buildMirrorFloor, buildPalaceHall, buildSwordCaveShell } from '../world/caveShell';
+import {
+  buildCaveShell,
+  buildCrystalGlow,
+  buildMirrorFloor,
+  buildMineCaveShell,
+  buildPalaceHall,
+  buildSwordCaveShell,
+} from '../world/caveShell';
 import { PropLayer } from '../world/props';
 import { allProps } from '../world/propScatter';
 import { assets } from '../core/assets';
@@ -319,7 +327,9 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     // Kiếm Trủng (DUN-1): huyệt kiếm cao, có ô trời mở; level khác giữ vỏ hang cũ.
     const shell = levelAssets(id).kiemTrungArt
       ? buildSwordCaveShell(cave, heightAt(cave.x, cave.z))
-      : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
+      : levelAssets(id).phucMachArt
+        ? buildMineCaveShell(cave, heightAt(cave.x, cave.z), PM_OCULI)
+        : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
     const glow = buildCrystalGlow(
       propsOf(id)
         .filter((p) => p.id === 'prop_mach_tinh_tru')
@@ -399,6 +409,11 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.kiemTrungArt.group);
     void loadKtModel(eng, q.shadows);
   }
+  if (levelAssets(id).phucMachArt) {
+    eng.phucMachArt = new PhucMachArt();
+    eng.scene.add(eng.phucMachArt.group);
+    void loadPmModel(eng, q.shadows);
+  }
   const gr = levelAssets(id).godRays;
   if (gr) {
     eng.godRays = new GodRays(gr);
@@ -477,6 +492,11 @@ export function unloadLevel(eng: Game): void {
     eng.tkAsset.handle.release();
     for (const m of eng.tkAsset.mats) m.dispose();
     eng.tkAsset = null;
+  }
+  if (eng.phucMachArt) {
+    drop(eng.phucMachArt.group);
+    eng.phucMachArt.dispose();
+    eng.phucMachArt = null;
   }
   if (eng.ktAsset) {
     drop(eng.ktAsset.handle.scene);
@@ -610,35 +630,100 @@ export async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
  * Gốc GLB = tâm đài chiến; mỗi object `kt_*` có gốc ở chân vật nên hạ y theo `heightAt` tại chỗ vật (cộng dồn). Lỗi thì chỉ thiếu phần trang trí.
  */
 export async function loadKtModel(eng: Game, shadows: boolean): Promise<void> {
+  await loadDungeonModel(eng, shadows, {
+    asset: 'arch_kiem_trung',
+    enabled: () => !!levelAssets(levelId()).kiemTrungArt,
+    origin: { x: KIEM_TRUNG.x, y: KIEM_TRUNG.y, z: KIEM_TRUNG.z },
+    prefix: 'kt',
+  });
+}
+
+/**
+ * Nạp cảnh Phục Mạch Quật dựng bằng Blender (asset `arch_phuc_mach`): cụm mạch tinh, cột đá, khung chống gỗ, cửa hầm + ray + xe, nhũ đá và mạch tinh treo
+ * trần (object `pm_ceil_*` đặt y theo độ cao vòm hang). Gốc GLB = tâm hầm.
+ */
+export async function loadPmModel(eng: Game, shadows: boolean): Promise<void> {
+  const c = LEVELS.phuc_mach!.dungeon!.center;
+  await loadDungeonModel(eng, shadows, {
+    asset: 'arch_phuc_mach',
+    enabled: () => !!levelAssets(levelId()).phucMachArt,
+    origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
+    prefix: 'pm',
+    ceiling: PM_DOME,
+    flat: ['pm_wall_'],
+    noShadow: /wall|slab|stalac|ceil|pillar/,
+    material: pmMaterialFor,
+  });
+}
+
+interface DungeonModelOpts {
+  asset: string;
+  enabled: () => boolean;
+  /** Gốc GLB trong thế giới (tâm bí cảnh). */
+  origin: { x: number; y: number; z: number };
+  /** Tiền tố tên object (`<prefix>_...`). */
+  prefix: string;
+  /** Vòm hang: object `<prefix>_ceil_*` treo trần (y = cao độ vòm tại chỗ). */
+  ceiling?: { r: number; h: number };
+  /** Tiền tố tên object đặt ở mặt bằng tâm (y = gốc − 4 m, chân vách chìm dưới địa hình dốc), không theo `heightAt` tại chỗ. */
+  flat?: string[];
+  /** Tên lưới không đổ bóng (vách/trần hang chặn nắng của đèn trời: nếu đổ bóng thì cả sàn tối đen). */
+  noShadow?: RegExp;
+  /** Thay vật liệu glTF theo tên (trả null = giữ nguyên). Vật liệu mới được giải phóng cùng asset. */
+  material?: (name: string) => THREE.Material | null;
+}
+
+/**
+ * Nạp GLB cảnh bí cảnh (mỗi vật một object có gốc ở chân): hạ y theo `heightAt` (hoặc treo trần), rồi gộp mọi vật dùng chung lưới + vật liệu thành một
+ * `InstancedMesh` (hàng trăm object × vài primitive sẽ là hàng nghìn draw call nếu để nguyên). Lỗi thì chỉ thiếu phần trang trí.
+ */
+async function loadDungeonModel(eng: Game, shadows: boolean, o: DungeonModelOpts): Promise<void> {
   try {
     await assets.attach(eng.renderer);
-    const handle = await assets.acquire('arch_kiem_trung', { pos: { x: KIEM_TRUNG.x, z: KIEM_TRUNG.z } });
-    if (eng.disposed || !levelAssets(levelId()).kiemTrungArt || eng.ktAsset) {
+    const handle = await assets.acquire(o.asset, { pos: { x: o.origin.x, z: o.origin.z } });
+    if (eng.disposed || !o.enabled() || eng.ktAsset) {
       handle.release();
       return;
     }
     const root = handle.scene;
     eng.ktAsset = { handle, mats: adoptGltfMaterials(root) };
-    root.position.set(KIEM_TRUNG.x, KIEM_TRUNG.y, KIEM_TRUNG.z);
-    root.traverse((o) => {
-      const m = o as THREE.Mesh;
-      if (!m.isMesh) return;
-      m.castShadow = shadows;
-      m.receiveShadow = shadows;
-      m.frustumCulled = false;
-    });
-    // Object nằm trực tiếp dưới gốc; GLTF đổi hệ trục (x, -z → z) nên lấy toạ độ thế giới từ vị trí đã nạp.
-    for (const o of root.children) {
-      const wx = KIEM_TRUNG.x + o.position.x;
-      const wz = KIEM_TRUNG.z + o.position.z;
-      o.position.y += heightAt(wx, wz) - KIEM_TRUNG.y - 0.15;
+    root.position.set(o.origin.x, o.origin.y, o.origin.z);
+    if (o.material) {
+      const made = new Map<THREE.Material, THREE.Material>();
+      root.traverse((n) => {
+        const m = n as THREE.Mesh;
+        if (!m.isMesh) return;
+        const src = m.material as THREE.Material;
+        let rep = made.get(src);
+        if (!rep) {
+          const r = o.material!(src.name);
+          if (!r) return;
+          rep = r;
+          made.set(src, r);
+          eng.ktAsset!.mats.push(r);
+        }
+        m.material = rep;
+      });
     }
-    // Gộp mọi vật dùng chung lưới + vật liệu thành một InstancedMesh (254 object × vài primitive sẽ là ~1.100 draw call nếu để nguyên).
+    // Object nằm trực tiếp dưới gốc; GLTF đổi hệ trục (x, -z → z) nên lấy toạ độ thế giới từ vị trí đã nạp.
+    for (const ch of root.children) {
+      const wx = o.origin.x + ch.position.x;
+      const wz = o.origin.z + ch.position.z;
+      if (o.flat?.some((f) => ch.name.startsWith(f))) {
+        ch.position.y -= 4;
+      } else if (o.ceiling && ch.name.startsWith(`${o.prefix}_ceil_`)) {
+        const r = Math.hypot(ch.position.x, ch.position.z);
+        const dome = o.ceiling.h * Math.sqrt(Math.max(0, 1 - (r / o.ceiling.r) ** 2));
+        ch.position.y += dome - 1.5;
+      } else {
+        ch.position.y += heightAt(wx, wz) - o.origin.y - 0.15;
+      }
+    }
     root.updateMatrixWorld(true);
     const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
     const groups = new Map<string, { mesh: THREE.Mesh; mats: THREE.Matrix4[] }>();
-    root.traverse((o) => {
-      const m = o as THREE.Mesh;
+    root.traverse((n) => {
+      const m = n as THREE.Mesh;
       if (!m.isMesh) return;
       const key = `${m.geometry.uuid}|${(m.material as THREE.Material).uuid}`;
       const g = groups.get(key) ?? { mesh: m, mats: [] };
@@ -650,15 +735,15 @@ export async function loadKtModel(eng: Game, shadows: boolean): Promise<void> {
       const im = new THREE.InstancedMesh(mesh.geometry, mesh.material, mats.length);
       mats.forEach((mt, i) => im.setMatrixAt(i, mt));
       im.instanceMatrix.needsUpdate = true;
-      im.castShadow = shadows;
+      im.castShadow = shadows && !o.noShadow?.test(mesh.name);
       im.receiveShadow = shadows;
       im.frustumCulled = false;
-      im.name = `kt-${mesh.name || 'part'}`;
+      im.name = `${o.prefix}-${mesh.name || 'part'}`;
       root.add(im);
     }
     eng.scene.add(root);
   } catch (e) {
-    assetLog.warn('không tải được arch_kiem_trung:', e);
+    assetLog.warn(`không tải được ${o.asset}:`, e);
   }
 }
 
