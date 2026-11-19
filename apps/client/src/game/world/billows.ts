@@ -13,7 +13,7 @@ export interface Billow {
 }
 
 /** Mây không được vươn lên quá mức này dưới mặt đảo thấp nhất ở nơi hình chiếu chồng lên đảo/cầu (m). */
-export const BILLOW_MARGIN = 22;
+export const BILLOW_MARGIN = 44;
 
 function segDist(px: number, pz: number, b: BridgeDef): number {
   const dx = b.bx - b.ax;
@@ -58,8 +58,8 @@ export function billowPlan(size: number, floor: number, islands: readonly Island
     out.push({ x, y, z, sx: rr * (1 + k * 0.7), sy, sz: rr, yaw: hash01(i, 23, 809) * 6.28, tower });
     kept++;
   }
-  // mây cuộn quanh chân từng đảo: vòng khối phình dẹt ôm thân đá ở ~46 m dưới mặt đảo thấp nhất (đỉnh vẫn dưới trần an toàn)
-  const footY = lowest - 46;
+  // mây cuộn quanh chân từng đảo: vòng khối phình dẹt ôm thân đá ở ~62 m dưới mặt đảo thấp nhất (POLISH-1: hạ mây để lộ thân nón của đảo) (đỉnh vẫn dưới trần an toàn)
+  const footY = lowest - 64;
   for (const isl of islands) {
     const count = Math.round(isl.r / 5);
     for (let j = 0; j < count; j++) {
@@ -68,10 +68,10 @@ export function billowPlan(size: number, floor: number, islands: readonly Island
       const sx = 24 + hash01(j, 7, 855) * 28;
       out.push({
         x: isl.x + Math.cos(a) * rad,
-        y: footY + (hash01(j, 9, 857) - 0.5) * 14,
+        y: footY + (hash01(j, 9, 857) - 0.5) * 10,
         z: isl.z + Math.sin(a) * rad,
         sx,
-        sy: 11 + hash01(j, 11, 859) * 4,
+        sy: 9 + hash01(j, 11, 859) * 3,
         sz: sx * 0.8,
         yaw: hash01(j, 13, 861) * 6.28,
         tower: false,

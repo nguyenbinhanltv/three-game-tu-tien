@@ -13,6 +13,7 @@ import {
   normalWorld,
   positionWorld,
   smoothstep,
+  dot,
   texture,
   time,
   vec2,
@@ -101,12 +102,17 @@ export class SkyIslands {
   private skirts: { isl: IslandDef; vi: VhIsland | null; mesh: THREE.Mesh }[] = [];
   private rockHandle: AssetHandle | null = null;
   private gone = false;
+  /** Cao độ mặt đảo (m): rêu chỉ ăn ở phần thân sát mặt đảo, thưa dần xuống mũi. */
+  private islandTopY = 124;
 
   constructor(parent: THREE.Object3D, terrain: Terrain) {
     this.group.name = 'skyIslands';
     const def = terrain.def;
     if (def.islands?.length && def.voidFloor !== undefined) {
       const art = vanHaiArt(def);
+      this.islandsDef = def.islands;
+      this.floorY = def.voidFloor;
+      this.islandTopY = Math.max(...def.islands.map((i) => i.y));
       for (const isl of def.islands) this.buildSkirt(isl, def.voidFloor, art.islandAt(isl.x, isl.z));
       this.buildFloorMist(def.voidFloor, def.size);
       this.buildBillows(def.voidFloor, def.size, def);
@@ -121,6 +127,47 @@ export class SkyIslands {
     for (const f of def.fakeIslands ?? []) this.buildFake(f);
     parent.add(this.group);
     if (this.skirts.length || this.fakes.length) void this.loadRocks();
+  }
+
+  private islandsDef: IslandDef[] = [];
+  private floorY = 60;
+
+  /** Đảo đá nhỏ vệ tinh lơ lửng quanh các đảo lớn (3 InstancedMesh, tất định theo vị trí đảo); tránh đè lên đảo khác và nằm trên sàn mây. */
+  private buildSatellites(geo: Map<string, THREE.BufferGeometry>): void {
+    const names = ['a', 'b', 'c'];
+    const mats: Record<string, THREE.Matrix4[]> = { a: [], b: [], c: [] };
+    const q = new THREE.Quaternion();
+    for (const isl of this.islandsDef) {
+      if (isl.r < 60) continue;
+      const n = isl.r > 150 ? 4 : 2;
+      for (let i = 0; i < n; i++) {
+        const h = (k: number) => hash01(Math.floor(isl.x) + i * 7, Math.floor(isl.z), 900 + k);
+        const a = h(1) * Math.PI * 2;
+        const d = isl.r * (1.12 + h(2) * 0.35) + 24;
+        const x = isl.x + Math.cos(a) * d;
+        const z = isl.z + Math.sin(a) * d;
+        const y = isl.y + (h(3) - 0.4) * 46;
+        if (y < this.floorY + 36) continue;
+        if (this.islandsDef.some((o) => o !== isl && Math.hypot(o.x - x, o.z - z) < o.r + 40)) continue;
+        const sc = 0.6 + h(4) * 0.8;
+        q.setFromEuler(new THREE.Euler((h(5) - 0.5) * 0.12, h(6) * Math.PI * 2, (h(7) - 0.5) * 0.12));
+        mats[names[Math.floor(h(8) * 3) % 3]!]!.push(
+          new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), q.clone(), new THREE.Vector3(sc, sc, sc)),
+        );
+      }
+    }
+    for (const nm of names) {
+      const g = geo.get(`vhsat_${nm}`);
+      const list = mats[nm]!;
+      if (!g || !list.length) continue;
+      const im = new THREE.InstancedMesh(g, this.rockMaterial(), list.length);
+      list.forEach((m4, i) => im.setMatrixAt(i, m4));
+      im.instanceMatrix.needsUpdate = true;
+      im.frustumCulled = false;
+      im.castShadow = true;
+      im.name = `island-satellite-${nm}`;
+      this.group.add(im);
+    }
   }
 
   /** Nạp khối đá Blender (`arch_vh_island`) và thay lưới thủ tục: lỗi mạng thì giữ nguyên bản thủ tục. */
@@ -173,6 +220,7 @@ export class SkyIslands {
         sk.mesh.geometry.dispose();
         sk.mesh = mesh;
       }
+      this.buildSatellites(geo);
       for (const f of this.fakes) {
         const src = geo.get(`vhfake_${(Math.floor(f.def.x) + Math.floor(f.def.z)) % 2 ? 'a' : 'b'}`);
         if (!src) continue;
@@ -445,11 +493,33 @@ export class SkyIslands {
     const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.92, metalness: 0, side: THREE.DoubleSide });
     const noise = getCloudNoise();
     const wp = positionWorld;
-    const a = texture(noise, vec2(wp.x.add(wp.z).mul(0.045), wp.y.mul(0.06))).g;
-    const b = texture(noise, vec2(wp.x.sub(wp.z).mul(0.21), wp.y.mul(0.33))).a;
-    m.colorNode = vertexColor().mul(float(0.62).add(a.mul(0.5)).add(b.mul(0.3)));
+    // triplanar: ba mặt chiếu theo pháp tuyến thế giới (không kéo dãn trên vách dốc của nón)
+    const w3 = normalWorld.abs().pow(4);
+    const wn = w3.div(w3.x.add(w3.y).add(w3.z).max(1e-4));
+    const smp = (u: Parameters<typeof texture>[1], ch: 'g' | 'a') => (ch === 'g' ? texture(noise, u).g : texture(noise, u).a);
+    const tri = (sc: number, ch: 'g' | 'a') =>
+      smp(vec2(wp.z, wp.y).mul(sc), ch)
+        .mul(wn.x)
+        .add(smp(vec2(wp.x, wp.z).mul(sc), ch).mul(wn.y))
+        .add(smp(vec2(wp.x, wp.y).mul(sc), ch).mul(wn.z));
+    const a = tri(0.03, 'g');
+    const b = tri(0.21, 'a');
+    // rêu ở mặt ngửa (loang theo nhiễu), đá sáng hơn ở mặt hướng nắng
+    const up = smoothstep(0.55, 0.92, normalWorld.y.add(a.sub(0.5).mul(0.35)));
+    const sun = dot(normalWorld, skyParams.sunDir).max(0);
+    const rock = vertexColor()
+      .mul(float(0.62).add(a.mul(0.5)).add(b.mul(0.3)))
+      .mul(float(0.88).add(sun.mul(0.5)));
+    m.colorNode = mix(
+      rock,
+      vec3(0.2, 0.33, 0.12).mul(float(0.7).add(b.mul(0.6))),
+      up
+        .mul(0.5)
+        .mul(smoothstep(-60, -8, wp.y.sub(this.islandTopY)))
+        .mul(float(1).sub(smoothstep(-3, 0, wp.y.sub(this.islandTopY)))),
+    );
     m.roughnessNode = float(0.8).add(b.mul(0.2));
-    m.emissiveNode = vertexColor().mul(0.16); // fill nhẹ: mặt dưới đảo không đen đặc khi nhìn từ biển mây
+    m.emissiveNode = vertexColor().mul(0.24); // fill nhẹ: mặt dưới đảo không đen đặc khi nhìn từ biển mây
     this.rock = this.track(m);
     return m;
   }
@@ -819,6 +889,7 @@ export class SkyIslands {
         vertexColors: true,
         roughness: 0.95,
         metalness: 0,
+        side: THREE.DoubleSide, // mặt cỏ trên của lưới Blender có thể quay xuống tùy hướng pháp tuyến
         transparent: true,
         opacity: 1,
         emissive: new THREE.Color(0x9fe8ff),
