@@ -398,8 +398,8 @@
         "label": "Bắc Hoang — ngày tuyết",
         "sunColor": "#EEF3FF", "sunIntensity": 2.6, "sunElevationDeg": 14,
         "skyColor": "#AFC3DE", "skyIntensity": 0.95,
-        "fogColor": "#B4C2E4", "fogDensity": 0.00042, "heightFogTop": 70, "heightFogBoost": 1.5,
-        "fogHaze": 0.0006, "fogHazeStart": 140, "fogScatter": 0.8, "rim": 0.5,
+        "fogColor": "#B4C2E4", "fogDensity": 0.00035, "heightFogTop": 70, "heightFogBoost": 1.4,
+        "fogHaze": 0.0004, "fogHazeStart": 150, "fogScatter": 0.8, "rim": 0.5,
         "shadowTint": "#46507A", "highlightTint": "#FFF4F4", "splitBalance": 0.05,
         "blackLift": "#16162E", "contrast": 1.15, "saturation": 0.8, "exposure": 0.98
       },
@@ -434,8 +434,8 @@
         "label": "Bắc Hoang — bên kia khe, ngày tím mờ",
         "sunColor": "#D8CAF4", "sunIntensity": 2.0, "sunElevationDeg": 10,
         "skyColor": "#5E5090", "skyIntensity": 0.9,
-        "fogColor": "#70629C", "fogDensity": 0.0008, "heightFogTop": 60, "heightFogBoost": 2.1,
-        "fogHaze": 0.0009, "fogHazeStart": 80, "fogScatter": 0.8, "rim": 0.7,
+        "fogColor": "#70629C", "fogDensity": 0.0007, "heightFogTop": 60, "heightFogBoost": 1.9,
+        "fogHaze": 0.0006, "fogHazeStart": 110, "fogScatter": 0.8, "rim": 0.7,
         "shadowTint": "#18102E", "highlightTint": "#E6D8FF", "splitBalance": -0.05,
         "blackLift": "#1A1232", "contrast": 1.15, "saturation": 0.82, "exposure": 1.08
       },
@@ -450,12 +450,12 @@
       },
       "bhr_night": {
         "label": "Bắc Hoang — bên kia khe, đêm tím độc",
-        "sunColor": "#7E6AD0", "sunIntensity": 1.4, "sunElevationDeg": 26,
-        "skyColor": "#160C34", "skyIntensity": 1.0,
-        "fogColor": "#1E1240", "fogDensity": 0.00144, "heightFogTop": 58, "heightFogBoost": 2.3,
-        "fogHaze": 0.00168, "fogHazeStart": 50, "fogScatter": 0.3, "rim": 1.1,
+        "sunColor": "#B8B0D0", "sunIntensity": 1.7, "sunElevationDeg": 26,
+        "skyColor": "#2A2640", "skyIntensity": 1.0,
+        "fogColor": "#24193E", "fogDensity": 0.001, "heightFogTop": 58, "heightFogBoost": 2.0,
+        "fogHaze": 0.0011, "fogHazeStart": 70, "fogScatter": 0.3, "rim": 1.1,
         "shadowTint": "#08041A", "highlightTint": "#B080FF", "splitBalance": -0.25,
-        "blackLift": "#0C0620", "contrast": 1.15, "saturation": 0.85, "exposure": 1.3
+        "blackLift": "#0C0A18", "contrast": 1.25, "saturation": 0.55, "exposure": 1.22
       },
       "dm_dawn": {
         "label": "Đoạn Mạch — bình minh phong đỏ",
