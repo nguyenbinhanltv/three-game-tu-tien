@@ -32,6 +32,7 @@ export const VIEWS: View[] = [
   { name: 'trencao', wow: 700, eye: [420, 330, -300], at: [-40, 110, 60], fov: 58 },
   { name: 'laucanh', wow: 100, eye: [70, 205, -400], at: [6, 195, -694], fov: 62 },
   { name: 'kinh', wow: 569, eye: [0, 150, 0], at: [-672, 345, 198], fov: 62 },
+  { name: 'vachdao', wow: 450, eye: [150, 104, 20], at: [85, 98, 0], fov: 62 },
   { name: 'phongxa', wow: 914, eye: [0, 140, -60], at: [-500, 120, -700], fov: 66 },
 ];
 
@@ -96,6 +97,73 @@ export default {
                 ),
               ),
             );
+          }
+          const hide = opt('--hide', '');
+          if (hide) {
+            // Gỡ lỗi hình: ẩn mọi mesh có tên trong danh sách (cách nhau bằng dấu phẩy) trước khi chụp.
+            await page.evaluate(
+              `(() => { const names = ${JSON.stringify(hide.split(','))}; window.__game.scene.traverse((o) => { if (names.includes(o.name)) o.visible = false; }); })()`,
+            );
+          }
+          if (flag('--cost')) {
+            // Tắt từng nhóm cấp 1 (và con của mapVis/Group) rồi đọc `info().drawCalls`: chi phí draw call thật của nhóm (gồm pass bóng).
+            const rows = await page.evaluate(`(async () => {
+              const g = window.__game;
+              const sc = g.scene;
+              const wait = () => new Promise((r) => setTimeout(r, 400));
+              await wait();
+              const base = g.info().drawCalls;
+              const out = [['base', base]];
+              const targets = [];
+              for (const c of sc.children) targets.push([c.name || c.type, c]);
+              for (const c of sc.children) if (c.name === 'mapVis' || c.type === 'Group') for (const d of c.children) targets.push([(c.name || c.type) + '/' + (d.name || d.type), d]);
+              for (const [n, o] of targets) {
+                if (!o.visible) continue;
+                const saved = [];
+                o.traverse((x) => { saved.push([x, x.layers.mask]); x.layers.mask = 0; });
+                await wait();
+                const dc = g.info().drawCalls;
+                for (const [x, m] of saved) x.layers.mask = m;
+                if (base - dc >= 3) out.push([n, base - dc]);
+              }
+              return out.sort((a, b) => b[1] - a[1]).slice(0, 25);
+            })()`);
+            console.log(`[cost ${v.name}] ` + JSON.stringify(rows));
+          }
+          if (flag('--thin')) {
+            // Liệt kê mesh/instance mảnh và dài (cột, thanh): tên chuỗi cha + hộp bao thế giới.
+            const rows = await page.evaluate(`(() => {
+              const sc = window.__game.scene;
+              const out = [];
+              const T = window.__game.scene.constructor;
+              function path(o) { const a = []; for (let p = o; p && p.parent; p = p.parent) a.push(p.name || p.type); return a.reverse().join('/'); }
+              sc.updateMatrixWorld(true);
+              sc.traverse((o) => {
+                if (!o.isMesh || !o.visible || !o.geometry) return;
+                if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+                const b = o.geometry.boundingBox;
+                const sx = b.max.x - b.min.x, sy = b.max.y - b.min.y, sz = b.max.z - b.min.z;
+                if (sy > 25 && Math.max(sx, sz) < 8) out.push([path(o), Math.round(sx), Math.round(sy), Math.round(sz), o.isInstancedMesh ? o.count : 1]);
+              });
+              return out.slice(0, 40);
+            })()`);
+            console.log(`[thin ${v.name}] ` + JSON.stringify(rows));
+          }
+          if (flag('--draws')) {
+            // Đếm mesh đang vẽ theo nhóm cha (ước lượng draw call): `--draws 1` in 25 nhóm nhiều nhất.
+            const rows = await page.evaluate(`(() => {
+              const sc = window.__game.scene;
+              const agg = new Map();
+              function walk(o, top, depth) {
+                if (!o.visible) return;
+                if (o.isMesh || o.isLine || o.isPoints) agg.set(top, (agg.get(top) || 0) + (Array.isArray(o.material) ? o.material.length : 1));
+                if (o.isMesh && o.castShadow) agg.set('shadow:' + top, (agg.get('shadow:' + top) || 0) + 1);
+                for (const c of o.children) walk(c, depth === 0 ? c.name || c.type : depth === 1 && (top === 'mapVis' || top === 'Group' || top === 'skyIslands') ? top + '/' + (c.name || c.type) : top, depth + 1);
+              }
+              walk(sc, '', 0);
+              return [...agg.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25);
+            })()`);
+            console.log(`[draws ${v.name}] ` + JSON.stringify(rows));
           }
           const stem = `${tag}-${viewport[1]}p-${mood}-${v.name}`;
           await snap(page, r.out, `${stem}.png`, { wait: settleMs() });

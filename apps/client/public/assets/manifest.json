@@ -220,6 +220,98 @@
         "build": null
       }
     },
+    "arch_do_kiep": {
+      "id": "arch_do_kiep",
+      "class": "arch",
+      "source": "assets/build/raw/arch_do_kiep.glb",
+      "file": "arch_do_kiep.d25413e485.glb",
+      "bytes": 11216772,
+      "rawBytes": 10533048,
+      "triangles": 50194,
+      "rawTriangles": 50194,
+      "lod0Cap": 600000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "marble_rock_01_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_jade",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "marble_rock_01_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 50194
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 324.4251,
+          "height": 88.5711,
+          "depth": 349.5111,
+          "minY": -5.688
+        },
+        "build": {
+          "width": 324.4249,
+          "height": 88.5711,
+          "depth": 349.5082,
+          "minY": -5.688
+        }
+      }
+    },
     "arch_kiem_trung": {
       "id": "arch_kiem_trung",
       "class": "arch",
@@ -581,11 +673,11 @@
       "id": "arch_phuc_mach",
       "class": "arch",
       "source": "assets/build/raw/arch_phuc_mach.glb",
-      "file": "arch_phuc_mach.668029390b.glb",
-      "bytes": 8942632,
-      "rawBytes": 10475004,
-      "triangles": 444980,
-      "rawTriangles": 444980,
+      "file": "arch_phuc_mach.4fd3e10fad.glb",
+      "bytes": 9537312,
+      "rawBytes": 12119636,
+      "triangles": 456488,
+      "rawTriangles": 456488,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -678,20 +770,20 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 444980
+          "triangles": 456488
         }
       ],
       "dims": {
         "raw": {
-          "width": 245.8793,
-          "height": 79.9321,
-          "depth": 255.5493,
+          "width": 248.6036,
+          "height": 85.9554,
+          "depth": 260.0354,
           "minY": -33.2875
         },
         "build": {
-          "width": 245.8812,
-          "height": 79.9321,
-          "depth": 255.5496,
+          "width": 248.6014,
+          "height": 85.9554,
+          "depth": 260.035,
           "minY": -33.2875
         }
       }
@@ -1197,6 +1289,43 @@
         }
       }
     },
+    "arch_vh_island": {
+      "id": "arch_vh_island",
+      "class": "arch",
+      "source": "assets/build/raw/arch_vh_island.glb",
+      "file": "arch_vh_island.935d425945.glb",
+      "bytes": 1303516,
+      "rawBytes": 4291896,
+      "triangles": 186509,
+      "rawTriangles": 186509,
+      "lod0Cap": 600000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 186509
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 471.3011,
+          "height": 663.3,
+          "depth": 459.4286,
+          "minY": -662.4
+        },
+        "build": {
+          "width": 471.2964,
+          "height": 663.3011,
+          "depth": 459.4458,
+          "minY": -662.4
+        }
+      }
+    },
     "arch_xich_tan": {
       "id": "arch_xich_tan",
       "class": "arch",
@@ -1313,98 +1442,6 @@
           "height": 19.6438,
           "depth": 162.0691,
           "minY": -0.9093
-        }
-      }
-    },
-    "arch_do_kiep": {
-      "id": "arch_do_kiep",
-      "class": "arch",
-      "source": "assets/build/raw/arch_do_kiep.glb",
-      "file": "arch_do_kiep.d25413e485.glb",
-      "bytes": 11216772,
-      "rawBytes": 10533048,
-      "triangles": 50194,
-      "rawTriangles": 50194,
-      "lod0Cap": 600000,
-      "skinned": false,
-      "quantized": true,
-      "bones": 0,
-      "animations": [],
-      "ktx2": true,
-      "textures": [
-        {
-          "name": "marble_rock_01_nor_gl_2k",
-          "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
-          "slots": [
-            "normalTexture"
-          ]
-        },
-        {
-          "name": "arch_sect_jade",
-          "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
-          "slots": [
-            "baseColorTexture"
-          ]
-        },
-        {
-          "name": "marble_rock_01_Rough_2k",
-          "mimeType": "image/ktx2",
-          "width": 512,
-          "height": 512,
-          "slots": [
-            "metallicRoughnessTexture"
-          ]
-        },
-        {
-          "name": "japanese_stone_wall_nor_gl_2k",
-          "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
-          "slots": [
-            "normalTexture"
-          ]
-        },
-        {
-          "name": "arch_sect_stone",
-          "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
-          "slots": [
-            "baseColorTexture"
-          ]
-        },
-        {
-          "name": "japanese_stone_wall_Rough_2k",
-          "mimeType": "image/ktx2",
-          "width": 512,
-          "height": 512,
-          "slots": [
-            "metallicRoughnessTexture"
-          ]
-        }
-      ],
-      "lods": [
-        {
-          "level": 0,
-          "triangles": 50194
-        }
-      ],
-      "dims": {
-        "raw": {
-          "width": 324.4251,
-          "height": 88.5711,
-          "depth": 349.5111,
-          "minY": -5.688
-        },
-        "build": {
-          "width": 324.4249,
-          "height": 88.5711,
-          "depth": 349.5082,
-          "minY": -5.688
         }
       }
     },
