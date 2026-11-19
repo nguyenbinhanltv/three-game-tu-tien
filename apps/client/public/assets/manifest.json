@@ -13820,9 +13820,9 @@
       "id": "prop_tc_nam_phat_sang",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_nam_phat_sang.glb",
-      "file": "prop_tc_nam_phat_sang.b995535347.glb",
-      "bytes": 338704,
-      "rawBytes": 1426348,
+      "file": "prop_tc_nam_phat_sang.a2d50b0890.glb",
+      "bytes": 338976,
+      "rawBytes": 1427192,
       "triangles": 2896,
       "rawTriangles": 2896,
       "lod0Cap": 5000,
@@ -13867,7 +13867,7 @@
         },
         {
           "level": 1,
-          "triangles": 1203,
+          "triangles": 1221,
           "target": 1158
         },
         {
@@ -13879,14 +13879,14 @@
       "dims": {
         "raw": {
           "width": 1.6709,
-          "height": 1.68,
-          "depth": 1.5447,
+          "height": 0.75,
+          "depth": 1.4745,
           "minY": -0.03
         },
         "build": {
-          "width": 1.671,
-          "height": 1.68,
-          "depth": 1.5446,
+          "width": 1.6709,
+          "height": 0.7501,
+          "depth": 1.4745,
           "minY": -0.03
         }
       }
@@ -13895,8 +13895,8 @@
       "id": "prop_tc_nam_phat_sang_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_nam_phat_sang_2.glb",
-      "file": "prop_tc_nam_phat_sang_2.0e37dcc4cb.glb",
-      "bytes": 338464,
+      "file": "prop_tc_nam_phat_sang_2.bc938ad262.glb",
+      "bytes": 338428,
       "rawBytes": 1426156,
       "triangles": 2896,
       "rawTriangles": 2896,
@@ -13947,20 +13947,20 @@
         },
         {
           "level": 2,
-          "triangles": 455,
+          "triangles": 456,
           "target": 434
         }
       ],
       "dims": {
         "raw": {
           "width": 1.8915,
-          "height": 1.5825,
+          "height": 0.6647,
           "depth": 1.9069,
           "minY": -0.03
         },
         "build": {
           "width": 1.8916,
-          "height": 1.5824,
+          "height": 0.6647,
           "depth": 1.9069,
           "minY": -0.03
         }

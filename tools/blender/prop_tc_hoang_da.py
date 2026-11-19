@@ -114,11 +114,11 @@ def _reishi(b, x, z, s, a0):
         y = (0.16 + i * 0.2) * s
         r = (0.42 - i * 0.07) * s
         cx, cz = x + math.cos(ang) * 0.3 * s, z + math.sin(ang) * 0.3 * s
-        lathe(b, [(0.0, y), (r * 0.95, y - 0.03 * s), (r, y + 0.02 * s), (r * 0.9, y + 0.07 * s), (0.0, y + 0.09 * s)], REISHI[0], 14, cx, cz, 1.0, 0.8, cap_top=False)
+        lathe(b, [(0.0, y), (r * 0.95, y - 0.03 * s), (r, y + 0.02 * s), (r * 0.9, y + 0.07 * s), (0.0, y + 0.09 * s)], REISHI[0], 14, cx, cz, 0.0, 1.0, 0.8, cap_top=False)
         for k in range(1, 4):
             rr = r * (1 - k * 0.22)
-            lathe(b, [(rr + 0.06 * s, y + 0.075 * s - k * 0.004), (rr, y + 0.085 * s - k * 0.004), (rr - 0.05 * s, y + 0.08 * s - k * 0.004)], REISHI[k], 14, cx, cz, 1.0, 0.8, cap_top=False)
-        lathe(b, [(r * 1.0, y + 0.0), (r * 1.04, y + 0.02 * s), (r * 0.98, y + 0.04 * s)], CREAM, 14, cx, cz, 1.0, 0.8, cap_top=False)
+            lathe(b, [(rr + 0.06 * s, y + 0.075 * s - k * 0.004), (rr, y + 0.085 * s - k * 0.004), (rr - 0.05 * s, y + 0.08 * s - k * 0.004)], REISHI[k], 14, cx, cz, 0.0, 1.0, 0.8, cap_top=False)
+        lathe(b, [(r * 1.0, y + 0.0), (r * 1.04, y + 0.02 * s), (r * 0.98, y + 0.04 * s)], CREAM, 14, cx, cz, 0.0, 1.0, 0.8, cap_top=False)
         ellipsoid(b, cx + math.cos(ang) * r * 0.5, y + 0.095 * s, cz + math.sin(ang) * r * 0.4, 0.03 * s, 0.012, 0.03 * s, GLOW_DIM, 5, 2)
 
 

@@ -30,9 +30,10 @@ interface View {
 /** Cụm dày nhất của một nhóm trong level: chọn tâm (số prop cùng nhóm trong 22 m nhiều nhất) rồi hướng nhìn có nhiều prop nhất phía trước. */
 /** Góc nhìn đặt tay theo cụm điểm nhấn đã duyệt (cổng sân, kiếm đài, đường chính, trước Chính điện của Lạc Kiếm Tông). */
 const EXTRA: Record<string, { group: string; view: View }[]> = {
+  doan_mach: [{ group: 'hoang_da', view: { name: 'doan_mach-hoang_da-cuu_mo', x: 700, z: 1010, yaw: Math.PI / 2, n: 1 } }],
   van_lam: [
     { group: 'hoang_da', view: { name: 'van_lam-hoang_da-rung', x: 2455, z: 2022, yaw: Math.PI / 2, n: 1 } },
-    { group: 'hoang_da', view: { name: 'van_lam-hoang_da-suoi', x: 2390, z: 2478, yaw: 0, n: 1 } },
+    { group: 'hoang_da', view: { name: 'van_lam-hoang_da-suoi', x: 2390, z: 2466, yaw: Math.PI, n: 1 } },
     { group: 'cho_lang', view: { name: 'van_lam-cho_lang-cho', x: 2048, z: 2172, yaw: 0, n: 1 } },
     { group: 'cho_lang', view: { name: 'van_lam-cho_lang-cho_xa', x: 2060, z: 2185, yaw: 0.35, n: 1 } },
     { group: 'tong_mon', view: { name: 'van_lam-tong_mon-cong', x: 2048, z: 2092, yaw: Math.PI, n: 1 } },
@@ -105,7 +106,7 @@ export default {
         for (const v of views) {
           await tp(page, v.x, v.z);
           await gm(page, 'killall', 1200);
-          await cam(page, { yaw: v.yaw, pitch: 0.22, dist: 11 });
+          await cam(page, { yaw: v.yaw, pitch: 0.42, dist: 16 }); // cao và xa hơn: tránh camera chui vào tán cây to
           await snap(page, r.out, `${v.name}-${mode}-${w}x${h}.png`, { wait: settleMs() });
           perf[`${v.name}-${mode}`] = await perfSample(page);
         }
