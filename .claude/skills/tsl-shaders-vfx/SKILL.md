@@ -82,7 +82,7 @@ Viết ngắn, đủ các dòng sau. Thiếu dòng nào thì chưa nên viết s
 - **Thứ bậc màu**: lõi / thân / viền / bóng, màu nhánh, màu nguy hiểm riêng cho quái.
 - **Giới hạn sinh**: số lưới, số hạt, trần theo chất lượng, bản của người khác giảm một bậc.
 - **Quy tắc dọn**: hết pha thì `drop` mọi lưới, hạt tự hết, decal có thời hạn; chết, đổi level, hủy chiêu, mất kết nối đều dọn.
-- **Bản giảm chuyển động**: bỏ rung, khựng, chớp, giữ hình tĩnh và vạch báo. Hiện game chỉ có công tắc "Khựng hình" và "Rung màn hình" (`game/fx/fxSettings.ts`, Cài đặt). Công tắc "Giảm chuyển động" (`ui/ngj/motion.ts`) mới áp cho giao diện, **chưa** áp cho VFX trong cảnh. Nối chúng là hướng mở, chưa làm.
+- **Bản giảm chuyển động**: bỏ rung, khựng, chớp, giữ hình tĩnh và vạch báo. Hiện game chỉ có công tắc "Khựng hình" và "Rung màn hình" (`game/fx/fxSettings.ts`, Cài đặt). Công tắc "Giảm chuyển động" (`ui/u2/shell/motion.ts`) mới áp cho giao diện, **chưa** áp cho VFX trong cảnh. Nối chúng là hướng mở, chưa làm.
 
 ## Ngân sách (desktop)
 

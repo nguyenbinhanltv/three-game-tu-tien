@@ -19,7 +19,7 @@ const add = (name, fg, a, bgs, min = 4.5) => {
 };
 // giấy ngà
 add('giấy: chữ mực', '#2a2118', 1, PAPER);
-add('giấy: chữ mực mờ (--ngj-ink-dim)', '#574a34', 1, PAPER);
+add('giấy: chữ mực mờ (--u-h-ink-dim)', '#574a34', 1, PAPER);
 add('giấy: tiêu đề nâu vàng', '#6b4d1c', 1, PAPER);
 add('giấy: phẩm lục', '#3b6322', 1, PAPER);
 add('giấy: phẩm lam', '#215a8a', 1, PAPER);

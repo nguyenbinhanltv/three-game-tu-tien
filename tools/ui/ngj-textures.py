@@ -3,7 +3,7 @@ import random
 from pathlib import Path
 from PIL import Image, ImageFilter, ImageChops
 
-OUT = Path(__file__).resolve().parents[2] / 'apps/client/src/ui/ngj/tex'
+OUT = Path(__file__).resolve().parents[2] / 'apps/client/src/ui/u2/shell/tex'
 N = 192
 random.seed(1711)
 

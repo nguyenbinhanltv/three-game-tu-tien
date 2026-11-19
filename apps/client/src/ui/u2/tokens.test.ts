@@ -1,10 +1,11 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 // Khóa token của UI Kit 2.0: màu chỉ viết ở tokens.css; CSS còn lại chỉ var(--u-*), và mọi biến dùng đều đã khai báo.
 const DIR = __dirname;
 const css = (f: string) => readFileSync(join(DIR, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+// CHỦ Ý chỉ quét CSS ngay trong u2/ (không đệ quy): win/panel.css, shell/*.css là CSS cũ còn màu cứng, chưa theo quy tắc kit (xem README).
 const FILES = readdirSync(DIR).filter((f) => f.endsWith('.css'));
 const OTHERS = FILES.filter((f) => f !== 'tokens.css');
 const NO_FF = OTHERS.filter((f) => f !== 'fonts.css'); // fonts.css khai @font-face (nơi duy nhất có tên font thật)
@@ -22,7 +23,7 @@ const MIGRATED = [
 ];
 
 describe('u2 token', () => {
-  it('CSS bảng đã chuyển không có màu cứng và chỉ dùng biến --u-*/--k-* đã khai báo', () => {
+  it('CSS bảng đã chuyển không có màu cứng và chỉ dùng biến --u-* đã khai báo', () => {
     for (const f of MIGRATED) {
       const c = readFileSync(join(DIR, '..', f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
       expect(c, f).not.toMatch(COLOR);
@@ -30,6 +31,22 @@ describe('u2 token', () => {
       for (const m of readFileSync(join(DIR, 'u2.css'), 'utf8').matchAll(/@property\s+(--u-[a-z0-9-]+)/g)) declared.add(m[1]); // biến hoạt ảnh chung
       for (const m of c.matchAll(/var\((--u-[a-z0-9-]+)/g)) expect(declared.has(m[1]!), `${f}: ${m[1]}`).toBe(true);
     }
+  });
+  it('U2-8: không quay lại token cũ --k-*/--ngj-* và không tạo lại ui/kit, ui/ngj', () => {
+    const SRC = join(DIR, '..', '..'); // apps/client/src
+    expect(existsSync(join(SRC, 'ui/kit')), 'ui/kit').toBe(false);
+    expect(existsSync(join(SRC, 'ui/ngj')), 'ui/ngj').toBe(false);
+    const bad: string[] = [];
+    const walk = (d: string) => {
+      for (const e of readdirSync(d, { withFileTypes: true })) {
+        const p = join(d, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (/\.(css|tsx?)$/.test(e.name) && e.name !== 'tokens.test.ts' && /--(k|ngj)-[a-z]/.test(readFileSync(p, 'utf8')))
+          bad.push(p);
+      }
+    };
+    walk(SRC);
+    expect(bad).toEqual([]);
   });
   it('không có màu cứng ngoài tokens.css', () => {
     for (const f of OTHERS) expect(css(f), f).not.toMatch(COLOR);

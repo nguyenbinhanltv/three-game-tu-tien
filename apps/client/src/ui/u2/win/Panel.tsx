@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react';
 import { t } from '@dtl/content';
-import { Cartouche, type MapMotif } from '../ngj/ngj';
-import '../ngj/tokens.css';
-import '../u2/fonts.css';
-import '../u2/tokens.css';
-import '../u2/u2.css';
-import '../u2/win.css';
-import { CornerCloud, CrossMark } from '../u2/patterns';
+import { Cartouche, type MapMotif } from '../shell/ornament';
+import '../fonts.css';
+import '../tokens.css';
+import '../u2.css';
+import '../win.css';
+import { CornerCloud, CrossMark } from '../patterns';
 
 export type PanelTone = 'night' | 'paper' | 'stone';
 

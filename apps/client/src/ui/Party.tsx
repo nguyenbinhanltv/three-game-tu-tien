@@ -5,7 +5,7 @@ import { C, inArena, type LootMode, type PartyMember } from '@dtl/shared';
 import { realmName, t } from '@dtl/content';
 import { Game } from '../game/engine';
 import { UiIcon } from './ContentIcon';
-import { Button, Divider, PanelWindow, ProgressBar } from './kit';
+import { Button, Divider, PanelWindow, ProgressBar } from './u2/win';
 import { set, togglePanel, useUI } from './store';
 
 function useNow(ms: number): number {
