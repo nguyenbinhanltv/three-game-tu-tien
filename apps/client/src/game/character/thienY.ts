@@ -7,7 +7,6 @@ import { atlasUv, type Capsule, CLOTH_DEFAULT, type ClothGrid, type ClothParams,
 
 const _v = new THREE.Vector3();
 const _a = new THREE.Vector3();
-const _b = new THREE.Vector3();
 const _inv = new THREE.Matrix4();
 
 /** Thông số theo mẫu vải: dây neo giữ vải gần thân (lệch tối đa ở gấu/mép tự do), voan nhẹ hơn lớp đặc. */
@@ -15,7 +14,7 @@ const PARAMS: Record<string, ClothParams> = {
   skirt_in: { ...CLOTH_DEFAULT, tether: 0.16, tetherPow: 1.2, damping: 0.97 },
   skirt_mid: { ...CLOTH_DEFAULT, tether: 0.24, tetherPow: 1.25, damping: 0.975 },
   skirt_out: { ...CLOTH_DEFAULT, tether: 0.32, tetherPow: 1.3, damping: 0.98 },
-  sleeve: { ...CLOTH_DEFAULT, tether: 0.32, tetherPow: 1.1, damping: 0.975, iterations: 3 },
+  sleeve: { ...CLOTH_DEFAULT, tether: 0.32, tetherPow: 1.1, damping: 0.975, iterations: 2 },
 };
 const paramsOf = (id: string): ClothParams => PARAMS[id] ?? PARAMS.sleeve!;
 
@@ -220,14 +219,15 @@ export class ClothRig {
     // viên nang thế giới (chân phình khi ngồi)
     for (let c = 0; c < this.caps.length; c++) {
       const cd = this.caps[c]!;
-      cd.a.getWorldPosition(_a);
-      cd.b.getWorldPosition(_b);
+      // đọc thẳng matrixWorld (đã cập nhật): getWorldPosition đi ngược cây cha mỗi lần gọi nên đắt
+      const ea = cd.a.matrixWorld.elements, eb = cd.b.matrixWorld.elements;
       const o = this.capOut[c]!;
-      o.ax = _a.x; o.ay = _a.y; o.az = _a.z;
-      o.bx = _b.x; o.by = _b.y; o.bz = _b.z;
+      o.ax = ea[12]!; o.ay = ea[13]!; o.az = ea[14]!;
+      o.bx = eb[12]!; o.by = eb[13]!; o.bz = eb[14]!;
       o.r = this.capBase[c]! * (cd.a.name.startsWith('thigh') || cd.a.name.startsWith('calf') ? 1 + 0.35 * sit : 1);
     }
-    this.root.getWorldPosition(_a);
+    const er = this.root.matrixWorld.elements;
+    _a.set(er[12]!, er[13]!, er[14]!);
     const floorY = _a.y + 0.01;
     if (this.fresh || _a.distanceToSquared(this.lastRoot) > 9) {
       this.grids.forEach((_g, gi) => this.sims[gi]!.reset(this.targets[gi]!));

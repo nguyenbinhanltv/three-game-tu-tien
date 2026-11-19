@@ -48,6 +48,9 @@ const ibm = ibmAcc.getArray()!;
 let bindWorld: M4 = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 const skirtPts: number[] = [];
 const sleeve = { l: [] as number[], r: [] as number[] };
+// Hướng lai: màu panel lấy từ CHÍNH lưới Tripo (đỉnh voan gần nhất → UV → texture gốc), giữ màu và hoa văn.
+const slvV: { p: V3; uv: [number, number] }[] = [];
+let baseTex: { data: Buffer; w: number; h: number; ch: number } | null = null;
 let minX = 1e9, maxX = -1e9, minZ = 1e9, maxZ = -1e9, maxY = -1e9;
 for (const node of root.listNodes()) {
   const mesh = node.getMesh();
@@ -61,7 +64,18 @@ for (const node of root.listNodes()) {
       const x = arr[3 * i]!, y = arr[3 * i + 1]!, z = arr[3 * i + 2]!;
       minX = Math.min(minX, x); maxX = Math.max(maxX, x); minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z); maxY = Math.max(maxY, y);
       if (nm.includes('oldskirt')) skirtPts.push(x, y, z);
-      else if (nm.includes('oldsleeve')) sleeve[x >= 0 ? 'l' : 'r'].push(x, y, z);
+      else if (nm.includes('oldsleeve')) {
+        sleeve[x >= 0 ? 'l' : 'r'].push(x, y, z);
+        const ta = prim.getAttribute('TEXCOORD_0');
+        if (ta) slvV.push({ p: [x, y, z], uv: [ta.getElement(i, [])[0]!, ta.getElement(i, [])[1]!] });
+      }
+    }
+    if (nm.includes('oldsleeve') && !baseTex) {
+      const img = prim.getMaterial()?.getBaseColorTexture()?.getImage();
+      if (img) {
+        const { data, info } = await sharp(Buffer.from(img)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+        baseTex = { data, w: info.width, h: info.height, ch: info.channels };
+      }
     }
   }
 }
@@ -123,6 +137,39 @@ const views = await Promise.all([
 ]);
 console.log('[thienybake] ảnh: ' + views.map((v) => `${v.w}x${v.h} s=${v.scale.toFixed(1)}`).join(' | '));
 
+const CELL = 0.02;
+const cellKey = (x: number, y: number, z: number) => `${Math.floor(x / CELL)},${Math.floor(y / CELL)},${Math.floor(z / CELL)}`;
+const hash = new Map<string, number[]>();
+slvV.forEach((v, i) => {
+  const k = cellKey(...v.p);
+  (hash.get(k) ?? hash.set(k, []).get(k)!).push(i);
+});
+/** Đỉnh voan cũ gần p nhất (tìm theo vòng ô tăng dần); null nếu xa quá `maxR`. */
+function nearestSleeve(p: V3, maxR: number): number | null {
+  let best = -1, bd = maxR * maxR;
+  const R = Math.ceil(maxR / CELL);
+  const cx = Math.floor(p[0] / CELL), cy = Math.floor(p[1] / CELL), cz = Math.floor(p[2] / CELL);
+  for (let dx = -R; dx <= R; dx++)
+    for (let dy = -R; dy <= R; dy++)
+      for (let dz = -R; dz <= R; dz++) {
+        const arr = hash.get(`${cx + dx},${cy + dy},${cz + dz}`);
+        if (!arr) continue;
+        for (const i of arr) {
+          const q = slvV[i]!.p;
+          const d = (q[0] - p[0]) ** 2 + (q[1] - p[1]) ** 2 + (q[2] - p[2]) ** 2;
+          if (d < bd) { bd = d; best = i; }
+        }
+      }
+  return best < 0 ? null : best;
+}
+function sampleTex(uv: [number, number]): [number, number, number] {
+  const t = baseTex!;
+  const x = Math.min(t.w - 1, Math.max(0, Math.floor((uv[0] % 1 + 1) % 1 * t.w)));
+  const y = Math.min(t.h - 1, Math.max(0, Math.floor(uv[1] * t.h)));
+  const o = (y * t.w + x) * t.ch;
+  return [t.data[o]!, t.data[o + 1]!, t.data[o + 2]!];
+}
+
 function sample(v: View, p: V3): [number, number, number] {
   const coord = v.axis === 'x' ? p[0] : p[2];
   const fx = v.c0 + v.sign * coord * v.scale;
@@ -161,6 +208,8 @@ function gridGeom(g: ClothGrid): { pos: Float32Array; nrm: Float32Array } {
   return { pos: g.rest, nrm };
 }
 
+const BG0 = [views[0]!.data[0]!, views[0]!.data[1]!, views[0]!.data[2]!];
+const FROM_MESH = opt('--from-mesh', '1') !== '0';
 const SLEEVE_SHIFT = Number(opt('--sleeve-shift', '0'));
 const SLEEVE_DROP = Number(opt('--sleeve-drop', '0'));
 const out = Buffer.alloc(SIZE * SIZE * 4, 255);
@@ -185,6 +234,12 @@ for (const g of grids) {
       const n: V3 = [lerp2(nrm, 0), lerp2(nrm, 1), lerp2(nrm, 2)];
       const nl = Math.hypot(n[0], n[1], n[2]) || 1;
       let acc = [0, 0, 0], wsum = 0;
+      let meshCol: [number, number, number] | null = null;
+      if (FROM_MESH && g.id.startsWith('sleeve') && baseTex) {
+        // lấy màu từ đỉnh voan Tripo gần nhất trong 12 cm (panel gần phẳng nên mở rộng dần); nếu không có thì dùng ảnh multiview
+        const ni = nearestSleeve(p, 0.12);
+        if (ni !== null) meshCol = sampleTex(slvV[ni]!.uv);
+      }
       for (const vw of views) {
         const d = (n[0] * vw.dir[0] + n[1] * vw.dir[1] + n[2] * vw.dir[2]) / nl;
         if (d <= 0) continue;
@@ -200,6 +255,15 @@ for (const g of grids) {
         wsum = 1;
       }
       const o = (ty * SIZE + tx) * 4;
+      if (meshCol) {
+        // Ảnh multiview nét hơn (hoa văn, viền vàng) nhưng ở tay áo ôm sát tay nó lấy da/hộ uyển hoặc nền: những texel đó dùng màu từ lưới Tripo.
+        const r = acc[0]! / wsum, gc = acc[1]! / wsum, bc = acc[2]! / wsum;
+        const lum = 0.299 * r + 0.587 * gc + 0.114 * bc;
+        const skin = r > gc + 4 && gc > bc - 2 && r - bc > 22 && r - bc < 95 && lum > 110;
+        const dark = lum < 85;
+        const bg = Math.abs(r - BG0[0]!) + Math.abs(gc - BG0[1]!) + Math.abs(bc - BG0[2]!) < 40;
+        if (skin || dark || bg) acc = [meshCol[0] * wsum, meshCol[1] * wsum, meshCol[2] * wsum];
+      }
       out[o] = acc[0]! / wsum;
       out[o + 1] = acc[1]! / wsum;
       out[o + 2] = acc[2]! / wsum;

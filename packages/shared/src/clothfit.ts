@@ -32,6 +32,8 @@ export interface ThienYInput {
 }
 
 export interface ThienYOptions {
+  /** Dựng lại váy 3 lớp (mặc định tắt: hướng lai giữ váy Tripo, chỉ thay voan tay áo). */
+  skirt?: boolean;
   skirtCols?: number;
   skirtRows?: number;
   sleeveCols?: number;
@@ -49,7 +51,8 @@ export function fitThienY(inp: ThienYInput, opt: ThienYOptions = {}): ClothGrid[
   const { joint, skirtPts, sleevePts, height } = inp;
   const k = height / 1.8;
   const out: ClothGrid[] = [];
-  if (skirtPts.length < 90) throw new Error('thienY: không có đỉnh váy cũ');
+  const doSkirt = opt.skirt === true;
+  if (doSkirt && skirtPts.length < 90) throw new Error('thienY: không có đỉnh váy cũ');
 
   // ---- váy: vòng elip theo từng độ cao ----
   const pel = joint('pelvis');
@@ -94,6 +97,7 @@ export function fitThienY(inp: ThienYInput, opt: ThienYOptions = {}): ClothGrid[
   for (let i = 0; i < sleevePts.r.length; i++) all[skirtPts.length + sleevePts.l.length + i] = sleevePts.r[i]!;
   const ringsAll = ringsOf(all);
   for (const L of SKIRT_LAYERS) {
+    if (!doSkirt) break;
     const yHem = yTop - (yTop - yBot) * L.len;
     const base = L.id === 'skirt_out' ? ringsAll : rings;
     const lr: SkirtRing[] = base.map((R, r) => ({ y: yTop - ((yTop - yHem) * r) / (rows - 1), cx: R.cx, cz: R.cz, a: R.a * L.scale, b: R.b * L.scale }));
@@ -113,7 +117,7 @@ export function fitThienY(inp: ThienYInput, opt: ThienYOptions = {}): ClothGrid[
     const drop = Math.max((top - pct(ysl, 0.03)) * 0.92, 0.2 * k);
     const nuS = opt.sleeveCols ?? 12;
     out.push(
-      panelGrid(`sleeve_${sd}`, p0, p1, drop, nuS, opt.sleeveRows ?? 10, { bone: `upperarm_${sd}`, w: [1, 0.55, 0.2] }, 1.8, [0, -1, 0], (_r, c) => (c < nuS / 2 ? `upperarm_${sd}` : `lowerarm_${sd}`)),
+      panelGrid(`sleeve_${sd}`, p0, p1, drop, nuS, opt.sleeveRows ?? 8, { bone: `upperarm_${sd}`, w: [1, 0.55, 0.2] }, 1.8, [0, -1, 0], (_r, c) => (c < nuS / 2 ? `upperarm_${sd}` : `lowerarm_${sd}`)),
     );
   }
   return out;

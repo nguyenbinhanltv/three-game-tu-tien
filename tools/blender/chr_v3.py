@@ -956,10 +956,14 @@ if SPRINGS:
         f = height if g.get('frac', True) else 1.0
         zlo, zhi, rmin = g['zMin'] * f, g['zMax'] * f, g.get('minRadius', 0.0) * f
         regs = g.get('domRegion')
+        HAIRV_G = HAIRV
+        if g.get('hairLum') is not None and TEXEL is not None:
+            # ngưỡng tối riêng của nhóm (model có tóc nâu sáng hơn mặc định 0,17)
+            HAIRV_G = ((TEXEL @ np.array([0.299, 0.587, 0.114])) < float(g['hairLum'])) & ((TEXEL[:, 2] - TEXEL[:, 0]) < 0.07)
         sel = np.array([i for i in range(NV) if zlo <= VP[i][2] <= zhi and math.hypot(VP[i][0] - cx, VP[i][1] - cy) >= rmin
                         and (regs is None or domreg[i] in regs)
-                        and (g.get('tex') != 'hair' or (HAIRV is not None and HAIRV[i]))
-                        and VP[i][1] - cy >= g.get('yMinRel', -9.0) * f and abs(VP[i][0] - cx) <= g.get('xAbsMax', 9.0) * f], int)
+                        and (g.get('tex') != 'hair' or (HAIRV_G is not None and HAIRV_G[i]))
+                        and VP[i][1] - cy >= g.get('yMinRel', -9.0) * f and VP[i][1] - cy <= g.get('yMaxRel', 9.0) * f and abs(VP[i][0] - cx) <= g.get('xAbsMax', 9.0) * f], int)
         if len(sel) == 0:
             log(f"lò xo {g['name']}: không có đỉnh nào (y rel max {float((VP[:, 1] - cy).max()):.3f}, ngưỡng {g.get('yMinRel', -9.0) * f:.3f})")
             continue

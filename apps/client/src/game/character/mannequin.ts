@@ -460,7 +460,8 @@ export class MannequinCharacter implements CharacterView {
     });
     for (let i = 0; i < this.lods.length; i++) this.lods[i] ??= [];
     // Thiên Y: mesh vải cũ tách riêng (`*_oldskirt`, `*_oldsleeve`) do chr_v3.py --split-cloth; có `?cloth=1` thì thay bằng vải mô phỏng, không thì hiện như thường.
-    const oldCloth = meshes.filter((m) => /_old(skirt|sleeve)/.test(m.name));
+    // Hướng lai: giữ váy Tripo (lò xo), chỉ thay voan tay áo (`*_oldsleeve`) bằng panel vải mô phỏng.
+    const oldCloth = meshes.filter((m) => /_oldsleeve/.test(m.name));
     if (FLAGS.cloth && !shadow && oldCloth.length) {
       try {
         // Texture đã bake (tools/asset-pipeline/src/thienybake.ts) nếu có; chưa có thì vải màu trơn.
