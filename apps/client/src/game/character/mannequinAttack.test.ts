@@ -56,6 +56,12 @@ describe('đòn UAL dự phòng phát sự kiện chiêu (A3)', () => {
     expect(ev.map((e) => e.kind)).toEqual(['windup', 'hit', 'recovery', 'end']);
     expect(ev[1]!.index).toBe(0);
   });
+  it('không truyền combo thì windup.combo = -1 (cùng quy ước perform)', () => {
+    const { m, ev } = fake();
+    run(m, 0.3);
+    m.attack({ skill: 'skl_test' });
+    expect(ev[0]!.combo).toBe(-1);
+  });
   it('hit tới sau khoảng hitIn của windup (đồng hồ animation)', () => {
     const { m, ev } = fake();
     run(m, 0.3);

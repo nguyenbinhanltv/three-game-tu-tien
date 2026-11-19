@@ -714,7 +714,7 @@ export class MannequinCharacter implements CharacterView {
       fired: false,
       rec: false,
       skill: o.skill ?? '',
-      combo: o.combo ?? this.swing % SWING.length,
+      combo: o.combo ?? -1,
       kb: !!o.kb,
     };
     const hitIn = V3_ANIM ? swingSeconds(0, h.hit, h.dur, this.swingBase) : h.hit / this.swingBase;
