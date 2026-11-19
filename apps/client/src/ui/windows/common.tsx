@@ -2,7 +2,7 @@ import { bindsOnEquip, enhanceMul, isEquipSlot, sellPrice, wearableBy, type InvI
 import { ITEM, itemName, QUEST, realmName, t } from '@dtl/content';
 import { ContentIcon, UiIcon } from '../ContentIcon';
 import { artifactLines, compareLines, gearQuality, itemLines, itemSub, pillLines, setLinesForItem, type TipLine } from '../gear';
-import { type PanelTone, PanelWindow, Slot, TipCard, Tooltip } from '../kit';
+import { type PanelTone, PanelWindow, Slot, TipCard, Tooltip } from '../u2/win';
 import { useUI } from '../store';
 import { Game } from '../../game/engine';
 import { belowLevel, itemHints, itemSources, itemUses } from '../itemInfo';

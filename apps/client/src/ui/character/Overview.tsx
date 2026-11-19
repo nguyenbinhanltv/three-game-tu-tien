@@ -3,7 +3,7 @@ import { C, EQUIP_SLOTS, wearableBy, type WearSlot } from '@dtl/shared';
 import { ITEM, itemName, realmName, SETS, swordModelOf, t } from '@dtl/content';
 import { Game, reqId } from '../../game/engine';
 import { gearQuality, pctText } from '../gear';
-import { Button, ProgressBar } from '../kit';
+import { Button, ProgressBar } from '../u2/win';
 import { BottleneckBox } from '../Realm';
 import { closePanel, useUI } from '../store';
 import { ItemDetail, ItemIcon } from '../windows/common';

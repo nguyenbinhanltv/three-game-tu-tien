@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { type LevelDef, PORTAL_POS, SECT, TELE_CAST_MS, TELE_PADS, padsOfLevel } from '@dtl/shared';
 import { itemName, LEVELS, monsterName, NPCS, QUESTS, t } from '@dtl/content';
 import { Game } from '../../game/engine';
-import { Button, Divider, PanelWindow, ProgressBar, TipCard } from '../kit';
+import { Button, Divider, PanelWindow, ProgressBar, TipCard } from '../u2/win';
 import { ancientMap, mipFor } from '../minimap/ancient';
 import { levelAssets, levelTerrain } from '../../base/levelCtx';
 import { questOverlay } from '../minimap/marks';

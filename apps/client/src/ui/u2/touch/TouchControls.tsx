@@ -5,12 +5,13 @@ import { Game } from '../../../game/engine';
 import { touchTap } from '../../../game/engine/touch';
 import { isTap, joystick, JOY_RADIUS } from '../../../input/touchMode';
 import { ContentIcon } from '../../ContentIcon';
-import { SysIcon, type SysIconName } from '../../ngj';
-import { TipCard } from '../../kit';
+import { SysIcon, type SysIconName } from '../shell';
+import { TipCard } from '../win';
 import { useUI } from '../../store';
 import { IconFrame } from '../Slot';
 import { useNow } from '../hud/common';
 import { useSkillView } from '../hud/SkillCluster';
+import { TouchUtility } from './TouchUtility';
 import { COMPACT_W, INNER_N, touchCluster, type TPos } from './touchLayout';
 
 const HOLD_MS = 420; // giữ ngón lâu hơn thế = xem mô tả, không ra chiêu
@@ -340,6 +341,7 @@ export function TouchControls() {
     <div className="u2t">
       <Joystick />
       <ActionCluster />
+      <TouchUtility />
       <RotateHint />
     </div>
   );

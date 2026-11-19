@@ -11,7 +11,7 @@ import { Game } from '../game/engine';
 import { prefetchManifest } from '../game/core/preload';
 import { Hud } from './Hud';
 import { RootPicker } from './Realm';
-import { Corners } from './ngj';
+import { Corners } from './u2/shell';
 import { Portrait } from './Art';
 import { get, type Phase, set, useUI } from './store';
 import { FLAGS, urlParams } from '../base/flags';

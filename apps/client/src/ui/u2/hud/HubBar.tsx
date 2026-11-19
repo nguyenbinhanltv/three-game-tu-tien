@@ -1,7 +1,7 @@
 import { t } from '@dtl/content';
 import { bagLow } from '../../itemInfo';
-import { SysIcon, type SysIconName } from '../../ngj';
-import { Tooltip } from '../../kit';
+import { SysIcon, type SysIconName } from '../shell';
+import { Tooltip } from '../win';
 import { QUEST } from '@dtl/content';
 import { type Panel, togglePanel, useUI } from '../../store';
 import { toggleChapters, useChapters } from '../../chapters/chaptersStore';

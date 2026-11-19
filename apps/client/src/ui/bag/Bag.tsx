@@ -8,7 +8,7 @@ import { ITEM, itemName, t } from '@dtl/content';
 import { ContentIcon, UiIcon } from '../ContentIcon';
 import { Game, reqId } from '../../game/engine';
 import { gearQuality } from '../gear';
-import { Button, Modal, Slot, Tabs, Tooltip } from '../kit';
+import { Button, Modal, Slot, Tabs, Tooltip } from '../u2/win';
 import { closePanel, pushToast, useUI } from '../store';
 import { ItemTip, Window } from '../windows/common';
 import { clearNewMark, endBagDrag, startBagDrag, useBagDrag, useNewMarks } from './dnd';

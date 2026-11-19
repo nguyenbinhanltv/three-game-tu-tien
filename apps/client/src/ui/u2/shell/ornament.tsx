@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { t } from '@dtl/content';
 
-/** Bộ thành phần "Ngọc Giản Kim Văn" (UI-1). Khung SVG/CSS, màu theo token `--ngj-*` (tokens.css), chưa gắn vào HUD/bảng thật. */
+/** Bộ thành phần "Ngọc Giản Kim Văn" (UI-1). Khung SVG/CSS, màu theo token `--u-h-*` (u2/tokens.css), chưa gắn vào HUD/bảng thật. */
 
 type Material = 'lacquer' | 'paper';
 export type CornerKind = 'star' | 'moon' | 'sun' | 'plain' | 'cloud';
