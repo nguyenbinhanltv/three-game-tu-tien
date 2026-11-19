@@ -39,6 +39,7 @@ import { DungeonFx } from './dungeonFx';
 
 const SEED = 20261119;
 const CENTER = LEVELS.kinh_nguyet!.dungeon!.center;
+const CENTER_Y = heightAt(CENTER.x, CENTER.z);
 
 /** Vòm điện (khớp `DOME_R/DOME_H` của `tools/blender/kinh_nguyet_arch.py`). */
 export const KN_DOME = { r: 135, h: 80 };
@@ -48,6 +49,14 @@ export const KN_OCULI: readonly { x: number; z: number }[] = [1.1, 4.3].map((a) 
   x: CENTER.x + Math.cos(a) * 46,
   z: CENTER.z + Math.sin(a) * 46,
 }));
+
+/** Các cột ánh trăng (tia volumetric nhẹ): hai khe hở trên trần (cột rọi xuống tâm trận là vũng sáng trăng trên sàn: nón volumetric ở giữa bị cắt cạnh khi nhìn từ trên xuống nên bỏ). */
+export const KN_BEAMS: readonly { x: number; z: number; r0: number; r1: number; a: number }[] = [
+  ...KN_OCULI.map((o) => ({ ...o, r0: 3.5, r1: 8, a: 1 })),
+];
+
+/** Vòng gương trăng khổng lồ (khớp `moon_ring` trong Blender): tâm cách tâm sảnh 92 m về phía bắc, cao 20 m, bán kính 12,2 m. */
+const RING = { z: -92, y: 20, r: 12.2 };
 
 /** Vùng cấm: khu giữa đài chiến và lối vào phía nam. */
 export function knKeepOut(x: number, z: number, minR: number): boolean {
@@ -62,11 +71,11 @@ export function knKeepOut(x: number, z: number, minR: number): boolean {
  * chỉ là màu theo hướng nên dùng được cho cả phản chiếu (lấy hướng phản xạ thay hướng nhìn).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function skyColor(dir: any): any {
+export function skyColor(dir: any, moonGain = 1): any {
   const nz = getCloudNoise();
   const h = clamp(dir.y, 0, 1);
   const base = mix(vec3(0.3, 0.37, 0.52), vec3(0.025, 0.04, 0.13), pow(h, 0.4));
-  const moonDir = normalize(vec3(0.0, 0.68, -0.73));
+  const moonDir = normalize(vec3(0.0, 0.55, -0.835));
   const md = max(dot(dir, moonDir), 0);
   const disc = smoothstep(0.9915, 0.9935, md);
   const halo = pow(md, 28).mul(0.55).add(pow(md, 5).mul(0.14));
@@ -80,7 +89,11 @@ export function skyColor(dir: any): any {
   const lit = mix(vec3(0.5, 0.56, 0.7), vec3(0.95, 0.96, 1.0), pow(md, 3));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let col: any = mix(base, lit, cloud);
-  col = col.add(vec3(0.7, 0.78, 1.0).mul(halo)).add(vec3(1.0, 0.98, 0.9).mul(disc).mul(1.6));
+  col = col.add(vec3(0.7, 0.78, 1.0).mul(halo).mul(moonGain)).add(
+    vec3(1.0, 0.98, 0.9)
+      .mul(disc)
+      .mul(1.6 * moonGain),
+  );
   const st = texture(nz, proj.mul(6.5)).g;
   const stars = smoothstep(0.93, 0.985, st)
     .mul(smoothstep(0.2, 0.6, h))
@@ -164,7 +177,28 @@ function reflectiveSurface(
   const v = normalize(v0.add(tilt));
   const cosT = clamp(v.y.negate(), 0, 1);
   const fres = pow(float(1).sub(cosT), 3.0);
-  const refl = skyColor(vec3(v.x, v.y.negate().add(0.02), v.z));
+  const rd = vec3(v.x, v.y.negate().add(0.02), v.z);
+  // trăng trong phản chiếu giảm còn ~35% (bản gốc cháy thành mảng trắng lớn trên sàn)
+  const refl = skyColor(rd, 0.35);
+  // phản chiếu phẳng của vòng gương trăng: cắt tia phản xạ với mặt phẳng z = RING.z (tương đối tâm sảnh), trúng đĩa/vành thì lấy màu gương
+  const relY = positionWorld.y.sub(CENTER_Y);
+  const relZ = positionWorld.z.sub(CENTER.z);
+  const rzc = rd.z.min(-0.02);
+  const tHit = float(RING.z).sub(relZ).div(rzc);
+  const hx = positionWorld.x.sub(CENTER.x).add(rd.x.mul(tHit));
+  const hy = relY.add(rd.y.mul(tHit));
+  const dRing = length(vec2(hx, hy.sub(RING.y)));
+  const ringValid = smoothstep(-0.02, -0.14, rd.z)
+    .mul(smoothstep(RING.z + 1.5, RING.z + 4, relZ))
+    .mul(smoothstep(0.0, 2.0, tHit));
+  const glint = sin(hx.mul(0.35).add(hy.mul(0.3)))
+    .mul(0.5)
+    .add(0.5);
+  const ringDisc = mix(vec3(0.1, 0.14, 0.26), vec3(0.8, 0.86, 1.0), glint.pow(3.0)).mul(0.6);
+  const ringRefl = ringDisc
+    .mul(smoothstep(RING.r - 0.5, RING.r - 1.8, dRing))
+    .add(vec3(0.95, 0.86, 0.62).mul(smoothstep(1.3, 0.0, abs(dRing.sub(RING.r + 0.8)))))
+    .mul(ringValid);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let col: any;
   const edgeDark = float(1).sub(smoothstep(40.0, 100.0, r).mul(0.8));
@@ -209,15 +243,18 @@ function reflectiveSurface(
           .negate(),
       ).mul(0.6),
     );
-    const lightMul = float(0.28).add(pools.mul(1.0));
+    const lightMul = float(0.28)
+      .add(pools.mul(0.6))
+      .add(exp(length(w).div(16).pow(2).negate()).mul(0.14));
     col = stone
       .mul(lightMul)
       .mul(edgeDark)
-      .add(refl.mul(fres.mul(0.95).add(0.05)).mul(edgeDark))
+      .add(refl.mul(fres.mul(0.95).add(0.16)).mul(edgeDark))
+      .add(ringRefl.mul(fres.mul(0.8).add(0.14)).mul(edgeDark))
       .add(silver);
   } else {
     const base = vec3(0.025, 0.04, 0.075);
-    col = base.add(refl.mul(fres.mul(0.75).add(0.22)));
+    col = base.add(refl.mul(fres.mul(0.75).add(0.22))).add(ringRefl.mul(fres.mul(0.7).add(0.4)));
   }
   const mat = new THREE.MeshBasicNodeMaterial({ fog: false });
   mat.colorNode = col;
@@ -285,15 +322,15 @@ export class KinhNguyetArt {
     this.addMoonbeams();
   }
 
-  /** Tia trăng qua khe hở trên trần (nón cộng sáng, mờ dần xuống nền) + vũng sáng bạc dưới chân tia. Không che tầm nhìn: mép mềm theo góc nhìn. */
+  /** Tia trăng volumetric nhẹ: nón hở cộng sáng từ trần xuống nền (hai khe hở + cột rọi xuống tâm trận), mờ dần xuống đáy và mép mềm theo góc nhìn. */
   private addMoonbeams(): void {
     const groundY = heightAt(CENTER.x, CENTER.z);
-    for (const o of KN_OCULI) {
+    for (const o of KN_BEAMS) {
       const r = Math.hypot(o.x - CENTER.x, o.z - CENTER.z);
       const top = groundY + KN_DOME.h * Math.sqrt(1 - (r / KN_DOME.r) ** 2) - 0.5;
-      const bot = groundY + 0.3;
+      const bot = heightAt(o.x, o.z) + 0.3;
       const h = top - bot;
-      const cg = new THREE.CylinderGeometry(3.5, 8, h, 28, 1, true);
+      const cg = new THREE.CylinderGeometry(o.r0, o.r1, h, 32, 1, true);
       const cm = new THREE.MeshBasicNodeMaterial({
         transparent: true,
         depthWrite: false,
@@ -301,9 +338,9 @@ export class KinhNguyetArt {
         side: THREE.DoubleSide,
         fog: false,
       });
-      const edge = pow(normalView.dot(positionViewDirection).abs(), 1.4);
-      cm.colorNode = mix(vec3(0.55, 0.68, 1.0), vec3(0.85, 0.92, 1.0), smoothstep(0.2, 1.0, uv().y));
-      cm.opacityNode = pow(uv().y, 1.3).mul(0.1).add(0.012).mul(edge);
+      const edge = pow(normalView.dot(positionViewDirection).abs(), 1.3);
+      cm.colorNode = mix(vec3(0.6, 0.72, 1.0), vec3(0.92, 0.95, 1.0), smoothstep(0.2, 1.0, uv().y));
+      cm.opacityNode = pow(uv().y, 1.4).mul(0.07).add(0.008).mul(pow(edge, 1.8)).mul(o.a);
       const cone = new THREE.Mesh(cg, cm);
       cone.position.set(o.x, bot + h / 2, o.z);
       cone.name = 'kn-moonbeam';

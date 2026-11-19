@@ -312,7 +312,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
             .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
     // Cung gương: quầng đèn nhỏ, màu lạnh, không vào bloom (đèn đá không cháy trắng).
     const halos = levelAssets(id).palace
-      ? createLanternHalos(pts, 1.3, levelAssets(id).palace === 'gilt' ? 0xd8a64a : 0xb8cdee)
+      ? createLanternHalos(pts, 1.3, levelAssets(id).palace === 'gilt' ? 0xd8a64a : levelAssets(id).kinhNguyetArt ? 0xffc47a : 0xb8cdee)
       : createLanternHalos(pts);
     eng.scene.add(halos);
     eng.levelObjs.push(halos);

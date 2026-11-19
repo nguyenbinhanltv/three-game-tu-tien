@@ -361,11 +361,11 @@
       "id": "arch_kinh_nguyet",
       "class": "arch",
       "source": "assets/build/raw/arch_kinh_nguyet.glb",
-      "file": "arch_kinh_nguyet.2572703a35.glb",
-      "bytes": 12716820,
-      "rawBytes": 11136824,
-      "triangles": 115001,
-      "rawTriangles": 115001,
+      "file": "arch_kinh_nguyet.d1c192cf6b.glb",
+      "bytes": 12752716,
+      "rawBytes": 11340532,
+      "triangles": 172257,
+      "rawTriangles": 172257,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -458,20 +458,20 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 115001
+          "triangles": 172257
         }
       ],
       "dims": {
         "raw": {
-          "width": 212.7695,
-          "height": 117.1038,
-          "depth": 207.0631,
+          "width": 212.7802,
+          "height": 117.0976,
+          "depth": 207.0113,
           "minY": -75.2654
         },
         "build": {
-          "width": 212.7691,
-          "height": 117.1039,
-          "depth": 207.0614,
+          "width": 212.7797,
+          "height": 117.0976,
+          "depth": 207.012,
           "minY": -75.2654
         }
       }

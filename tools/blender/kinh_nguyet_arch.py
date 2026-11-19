@@ -23,12 +23,14 @@ from thien_khuyet_arch import fbm3  # noqa: E402
 
 bs.MATERIALS['glass'] = Mat(0.08, 0.2, None, 1.0, False, 0.0, (0xBFD8FF, 0.5))
 bs.MATERIALS['silk'] = Mat(0.32, 0.12, None, 1.0, False, 0.0)
+bs.MATERIALS['frame'] = Mat(0.3, 0.45, None, 1.0, False, 0.0, (0xC9D0E0, 0.32))
+bs.MATERIALS['lamp'] = Mat(0.9, 0.0, None, 1.0, False, 0.0, (0xFFB45A, 1.1))
 bs.MATERIALS['jade'] = bs.MATERIALS.get('jade', Mat(0.55, 0.0, 'jade', 3.0, True, 0.04))
 
 SEED = 20261119
 DOME_R, DOME_H = 135.0, 80.0
-JADE = C(0xC4CBD9)
-JADE_DK = C(0x7A8499)
+JADE = C(0xE2DED2)
+JADE_DK = C(0xA39E90)
 SILVER = C(0xAEB9C8)
 SILVER_DK = C(0x5E6878)
 INDIGO = C(0x1B2744)
@@ -56,8 +58,10 @@ def glass(pos):
     return Paint(mix(C(0x1A2A55), C(0xCFE0FF), t), 'glass')
 
 
-SILV = Paint(SILVER, 'metal')
-SILV_D = Paint(SILVER_DK, 'metal')
+SILV = Paint(C(0xD5DDEA), 'frame')
+SILV_D = Paint(C(0xC9B27A), 'frame')  # đồng thau nhạt
+GOLD = Paint(C(0xE6D49A), 'frame')
+LAMP = Paint(C(0xFFC27A), 'lamp')
 
 
 def poly_glass(b, pts, inside):
@@ -71,8 +75,8 @@ def poly_glass(b, pts, inside):
 def bay(b, seed):
     """Một nhịp (rộng W) quay mặt vào tâm: hai nửa cột ở hai mép (mỗi cột chia cho nhịp kề), vòm nhọn, khung bạc và mặt gương phát sáng; z+ hướng vào tâm sảnh."""
     W = 34.0
-    H = 24.0
-    rise = 10.0
+    H = 17.0
+    rise = 8.0
     for sx in (-1, 1):
         x0 = sx * W / 2
         # chân tảng chìm sâu 3 m: sàn bám địa hình (thấp hơn mặt phẳng tâm tới ~1,3 m ở r 100) nên cột không được lơ lửng
@@ -103,6 +107,9 @@ def bay(b, seed):
             a = k / 8 * math.tau
             blob(b, (x0 + math.cos(a) * 1.9, H - 0.6, math.sin(a) * 1.9), (0.9, 1.4, 0.7), jade_col(seed + 20 + k), nu=8, nv=5, seed=seed + 30 + k, rot=a)
         blob(b, (x0, H + 0.6, 0), (3.2, 0.7, 3.2), jade_col(seed + 50), nu=14, nv=4, e=2.4, amp=0.04, seed=seed + 51)
+        for yb in (2.2, H * 0.5, H - 2.2):  # vòng viền vàng nhạt quanh thân cột
+            b.cylinder(x0, yb, 0, 2.42, 0.45, GOLD, 14)
+        b.cylinder(x0, 0.9, 0, 3.0, 0.3, GOLD, 14)
     # đường viền vòm nhọn: hai cung tròn gặp nhau ở đỉnh
     def arch_pt(t, off=0.0):
         # t 0..1 từ chân trái → đỉnh → chân phải; nửa rộng a = W/2 - 2.6
@@ -155,6 +162,27 @@ def bay(b, seed):
         blob(b, (px, py, 1.25), (0.55, 0.55, 0.3), lambda p, n: SILV, nu=8, nv=5)
         blob(b, (px + 0.55, py - 0.2, 1.25), (0.3, 0.3, 0.2), lambda p, n: SILV_D, nu=6, nv=4)
         blob(b, (px - 0.5, py + 0.25, 1.25), (0.26, 0.26, 0.2), lambda p, n: SILV_D, nu=6, nv=4)
+    # đèn cung ánh vàng ấm treo hai bên vòm (điểm nóng màu): dây bạc, nắp, thân đèn sáng, tua
+    for sx in (-1, 1):
+        lx = sx * (W / 2 - 8.4)
+        ly = H - 0.5
+        b.box(lx, ly + 2.4, 1.9, 0.08, 4.8, 0.08, SILV)
+        blob(b, (lx, ly + 0.2, 1.9), (0.9, 0.25, 0.9), lambda p, n: GOLD, nu=10, nv=4)
+        blob(b, (lx, ly - 1.4, 1.9), (1.5, 2.1, 1.5), lambda p, n: LAMP, nu=12, nv=7)
+        blob(b, (lx, ly - 2.45, 1.9), (0.6, 0.2, 0.6), lambda p, n: GOLD, nu=10, nv=4)
+        for k in range(5):
+            b.box(lx + (k - 2) * 0.16, ly - 3.4, 1.9, 0.05, 1.3, 0.05, Paint(C(0xE9B25C), 'frame'))
+    # huy hiệu trăng-mây trên hai mảng tường ở vai vòm: vòng bạc, trăng khuyết vàng, ba cuộn mây
+    for sx in (-1, 1):
+        mx_, my_ = sx * (W / 2 - 6.2), H + rise * 0.62
+        for k in range(20):
+            a_ = k / 20 * math.tau
+            blob(b, (mx_ + math.cos(a_) * 2.0, my_ + math.sin(a_) * 2.0, -1.2), (0.2, 0.2, 0.2), lambda p, n: SILV, nu=6, nv=4)
+        for k in range(9):
+            a_ = math.radians(-120 + k * 240 / 8)
+            blob(b, (mx_ - 0.2 + math.cos(a_) * 1.05, my_ + math.sin(a_) * 1.05, -1.2), (0.26, 0.26, 0.2), lambda p, n: GOLD, nu=6, nv=4)
+        for k, ox in enumerate((-0.2, 0.7, 1.3)):
+            blob(b, (mx_ + sx * ox * 0.9, my_ - 2.9 + 0.15 * k, -1.2), (0.55 - 0.1 * k, 0.28, 0.2), lambda p, n: SILV, nu=8, nv=4)
     # tường sau ngọc trắng (lấp sau gương và hai bên vòm) + gờ ngang
     top = H + rise + 2.2
     tbox(b, (0, top / 2 - 0.2, -2.4), (W - 4.0, top, 1.3), Paint(mix(JADE, JADE_DK, 0.1), 'jade'))
@@ -219,7 +247,7 @@ def moon_ring(b, seed):
         a0, a1 = i / N * math.tau, (i + 1) / N * math.tau
         p0 = (math.cos(a0) * R, cy + math.sin(a0) * R, 0)
         p1 = (math.cos(a1) * R, cy + math.sin(a1) * R, 0)
-        rod(b, p0, p1, T, T, lambda p, n: Paint(mix(SILVER, C(0xE8EEF8), 0.4 * (0.5 + 0.5 * math.sin(p[0] * 0.4))), 'metal'), nu=8, nv=1, amp=0.01)
+        rod(b, p0, p1, T, T, lambda p, n: Paint(mix(C(0xCFD8E6), C(0xF2E7C0), 0.5 * (0.5 + 0.5 * math.sin(p[0] * 0.4))), 'frame'), nu=8, nv=1, amp=0.01)
     for i in range(24):  # đinh tán và trăng khuyết trang trí
         a = i / 24 * math.tau
         blob(b, (math.cos(a) * (R + 1.6), cy + math.sin(a) * (R + 1.6), 0), (0.7, 0.7, 0.7), lambda p, n: SILV, nu=8, nv=5)
@@ -259,7 +287,7 @@ def shard(b, seed, big=True):
         spike = 1.0 if i % 2 == 0 else 0.5
         rr = (1.0 + rnd.uniform(-0.15, 0.25)) * spike
         pts.append((math.cos(a_) * rr * 1.35, math.sin(a_) * rr * h * (1.0 if abs(math.sin(a_)) > 0.5 else 0.7), 0.0))
-    th = 0.12
+    th = 0.09
     front = [(x, y, th) for x, y, _ in pts]
     back = [(x, y, -th) for x, y, _ in pts]
     c = (0, 0, 0)
@@ -273,7 +301,7 @@ def shard(b, seed, big=True):
         j = (i + 1) % n
         b.poly([front[i], front[j], back[j], back[i]], c, SILV)
         a_, b_ = pts[i], pts[j]
-        tbox(b, ((a_[0] + b_[0]) / 2, (a_[1] + b_[1]) / 2, th + 0.04), (math.dist(a_[:2], b_[:2]) * 1.02, 0.1, 0.14), SILV_D, rz=math.atan2(b_[1] - a_[1], b_[0] - a_[0]))
+        tbox(b, ((a_[0] + b_[0]) / 2, (a_[1] + b_[1]) / 2, th + 0.03), (math.dist(a_[:2], b_[:2]) * 1.02, 0.07, 0.1), SILV_D, rz=math.atan2(b_[1] - a_[1], b_[0] - a_[0]))
 
 
 def chime(b, seed):
@@ -386,7 +414,7 @@ def run(out):
         a = (i + 0.5) / NB * math.tau
         if abs(math.atan2(math.sin(a - math.pi / 2), math.cos(a - math.pi / 2))) < 0.2:
             continue
-        put('bay', f'bay{i % 2}', math.cos(a) * R, math.sin(a) * R, yaw=a + math.pi / 2 + math.pi, scale=1.0)
+        put('bay', f'bay{i % 2}', math.cos(a) * R, math.sin(a) * R, yaw=a + math.pi / 2, scale=1.0)
     # Vòng gương trăng khổng lồ ở bắc, nhìn về tâm.
     put('ring', 'ring', 0.0, -92.0, yaw=0.0, scale=1.0)
     # Chậu sen cạnh lối vào.

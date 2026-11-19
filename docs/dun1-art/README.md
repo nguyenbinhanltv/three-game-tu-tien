@@ -70,3 +70,12 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Tường/hàng cột** ngọc trắng xám (vật liệu `jade` có texture cẩm thạch), tường sau + trụ ốp + gờ, mái cong ngói lam bạc (hai đầu vút), rèm lụa bạc có nếp sóng. Cột thấp lại (24 m + vòm 10 m) để thấy bầu trời trên mái.
 - **Bỏ đá trôi xám đen** (`prop_da_troi`) khỏi cảnh Kính Nguyệt (lọc ở `levelLoad`, prop chỉ để nhìn).
 - **Còn lại**: gương chưa phản chiếu vật thể thật (chỉ bầu trời); tường còn khá phẳng/đơn điệu; chưa thấy rõ trăng và mây từ góc nhìn chiến đấu (bị mái che); tương phản sáng-tối mới ở vũng sáng và góc tối của sàn.
+
+### PR 3 vòng 3 (góp ý duyệt): mở trời, sàn phản chiếu gương, điểm nóng vàng
+
+- **Sửa lỗi hướng nhịp cột**: mọi nhịp (gương, rèm, đèn, huy hiệu) trước đây quay lưng vào tâm nên chỉ thấy mặt sau tường; nay quay mặt vào trong. Hàng cột thấp lại (17 m + vòm 8 m) để thấy bầu trời và trăng trên mái; trăng hạ xuống ngay trên vòng gương.
+- **Sàn phản chiếu**: ngoài soi bầu trời, sàn và hồ nước còn soi **vòng gương trăng** (cắt tia phản xạ với mặt phẳng z = −92, trúng đĩa/vành thì lấy màu gương bạc có vệt sáng + vành vàng nhạt); trăng trong phản chiếu giảm còn 35%.
+- **Điểm nóng màu**: đèn cung vàng ấm (vật liệu `lamp` phát sáng) treo hai bên mỗi vòm, quầng đèn đá vàng ấm (0xffc47a) thay xanh lạnh, viền vàng nhạt trên cột (4 vòng), huy hiệu trăng-mây ở vai vòm, tua vàng chân rèm lụa bạc, vành vàng quanh vòng gương trăng.
+- **Khung gương**: khung bạc/đồng mảnh (0,07 m) bằng vật liệu `frame` (phát sáng nhẹ) thay nét đen dày; mặt bên mảnh vỡ sáng bạc.
+- **Tia trăng volumetric nhẹ** từ hai khe hở trần (mờ, mép mềm); vũng sáng trăng ở tâm trận làm bằng shader sàn (nón volumetric ở giữa bị cắt cạnh khi nhìn từ trên xuống nên không dùng).
+- **Còn lại**: phản chiếu vòng gương trên sàn đọc như một vòng sáng khá rõ; tường vẫn chưa có phù điêu mây-trăng lớn (chỉ huy hiệu nhỏ); rèm lụa còn hơi răng cưa ở nếp.
