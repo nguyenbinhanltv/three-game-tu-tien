@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import '@dtl/content';
 import { terrainOf } from '@dtl/shared';
+import { bacHoangOccupied, inBeastFootprint } from './bhFootprint';
 import { BEAST_SPOTS, PILLAR_SPOTS, beastSkeleton, crackGeometry } from './bhWonders';
 import { riftPath } from './bacHoangArt';
 
@@ -51,5 +52,13 @@ describe('bhWonders (MAP-5 PR2)', () => {
       expect(Math.abs(tr.heightAt(x, z) - 72)).toBeLessThan(2);
     // vực vẫn sâu ở phần giữa khe
     expect(tr.heightAt(path[3]!.x, path[3]!.z)).toBeLessThan(45);
+  });
+
+  it('xác cự thú không đè lên bãi quái, tinh anh/boss, điểm đặt, điểm đáng chú ý hay đường hộ tống (xương không có va chạm)', () => {
+    const occ = bacHoangOccupied();
+    for (const b of BEAST_SPOTS) {
+      const hit = occ.filter((o) => inBeastFootprint(b, o.x, o.z, o.r + 4)).map((o) => o.id);
+      expect(hit, `xác tại (${b.x},${b.z}) s=${b.s} đè: ${hit.join(', ')}`).toEqual([]);
+    }
   });
 });

@@ -343,12 +343,12 @@ export interface BhSpot {
   sink?: number;
 }
 
-/** Xác cự thú: ba cá thể tại vùng trống (xa trạm, trụ truyền tống, đường đi); cá thể gần trạm là điểm "wow" đầu tiên khi nhìn về bắc. */
+/** Xác cự thú: bốn cá thể (hình chiếm chỗ không đè bãi quái/boss/điểm đặt, xem `bhFootprint.ts` + test) tại vùng trống (xa trạm, trụ truyền tống, đường đi); cá thể gần trạm là điểm "wow" đầu tiên khi nhìn về bắc. */
 export const BEAST_SPOTS: BhSpot[] = [
-  { x: 1060, z: 1330, yaw: 0.35, s: 1.55, sink: 3.0 },
-  { x: 1190, z: 1110, yaw: 2.6, s: 1.25, sink: 2.4 },
-  { x: 850, z: 640, yaw: -0.5, s: 1.75, sink: 3.4 },
-  { x: 1215, z: 380, yaw: 1.4, s: 1.4, sink: 2.8 },
+  { x: 1060, z: 1320, yaw: 1.75, s: 2.3, sink: 4.5 },
+  { x: 1160, z: 1060, yaw: 0.7, s: 1.9, sink: 3.6 },
+  { x: 880, z: 740, yaw: 4.2, s: 2.6, sink: 5.1 },
+  { x: 1220, z: 380, yaw: 0, s: 2.1, sink: 4.2 },
 ];
 
 /** Cột tà trận: tọa độ các bia trận (`tran_gioi_bia_*` trong terrain.json). */
