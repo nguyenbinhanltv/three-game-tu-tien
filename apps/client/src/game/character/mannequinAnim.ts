@@ -129,6 +129,18 @@ export function swingRate(u: number, base: number): number {
   return base * 1.05;
 }
 
+/**
+ * Số giây (đồng hồ animation) để đòn UAL dự phòng chạy từ giây `from` tới giây `to` của clip dài `dur`, với `swingRate(u, base)`
+ * (kéo lại chậm, bung nhanh): dùng cho `hitIn` của sự kiện `windup`. `base` ≤ 0 → 0.
+ */
+export function swingSeconds(from: number, to: number, dur: number, base: number, steps = 40): number {
+  if (base <= 0 || to <= from || dur <= 0) return 0;
+  const h = (to - from) / steps;
+  let s = 0;
+  for (let i = 0; i < steps; i++) s += h / swingRate((from + (i + 0.5) * h) / dur, base);
+  return s;
+}
+
 /** Biên độ giật thân khi trúng đòn (rad), tắt theo hàm mũ. */
 export function flinchOf(amp: number, age: number): number {
   return amp * Math.exp(-age * 9) * Math.min(1, age / 0.03);

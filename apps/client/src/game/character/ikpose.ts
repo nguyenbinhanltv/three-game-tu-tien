@@ -502,7 +502,7 @@ export class IkRig {
 }
 
 /** Tính lại ma trận thế giới của một xương từ ma trận cục bộ, giả định cha đã đúng. */
-function refreshWorld(o: THREE.Object3D): void {
+export function refreshWorld(o: THREE.Object3D): void {
   o.updateMatrix();
   o.matrixWorld.multiplyMatrices(o.parent!.matrixWorld, o.matrix);
 }
@@ -531,7 +531,7 @@ function setWorldQ(bone: THREE.Object3D, q: THREE.Quaternion): void {
  * IK hai đốt không cấp phát cho chân (bám đất mỗi khung): đưa `end` tới `target`, gối về phía `pole`; bàn chân giữ hướng
  * `endQ`. Dùng thẳng `matrixWorld` (đã làm mới), không gọi lại chuỗi cha như `getWorldPosition`.
  */
-function solveLeg(
+export function solveLeg(
   upper: THREE.Bone,
   mid: THREE.Bone,
   end: THREE.Bone,
