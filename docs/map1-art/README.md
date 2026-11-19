@@ -47,7 +47,7 @@ Người dùng chọn phong cách B (bản tả thực, điện ảnh). Giữ b�
 - **Phông xa** (`render/farRidges.ts`): mặt núi lưới 480×16 có mỏm/hốc/gờ, sáng tối theo pháp tuyến hướng nắng, vân tầng + khe dọc, mây cuộn giữa sườn trôi chậm, ngả lam nhạt dần theo lớp.
 - **Ánh sáng**: bóng PCF mềm (`shadowMap.type`, `shadow.radius`), tăng ánh sáng nền để bóng không đen kịt, bão hòa ngày giảm; GTAO, bloom, ACES, sương theo độ cao đã có sẵn từ trước.
 - **Thác**: thêm bọt trắng đục ở chân; sương chân thác lớn hơn.
-- **Cỏ**: tăng mật độ preset Cao (tầm 52 m, giãn 0,76) và Cực cao (66 m, 0,62), trần 100k bụi.
+- **Cỏ**: tăng mật độ preset Cao (tầm 48 m, giãn 0,8) và Cực cao (66 m, 0,62), trần 100k bụi.
 - Không làm ở PR này: texture mặt đất 2K (bộ `terrain` dùng chung với các level khác và VRAM 8 lớp × 2K ≈ 180 MB), phản chiếu mặt nước thác, mây thể tích, cây thẻ cho núi xa.
 
 ### Vòng chỉnh theo duyệt bản B (#305)
@@ -55,5 +55,11 @@ Người dùng chọn phong cách B (bản tả thực, điện ảnh). Giữ b�
 - **Mặt đất 2K** riêng Vân Lam/Kiếm Trủng: bộ `terrain-lk` (`pnpm assets:terrain --set lackiem`, màu 2048², pháp tuyến/nhám 1024², cùng 8 lớp Poly Haven của bộ gốc, trộn theo độ dốc/độ cao/đường mòn như cũ); các level khác vẫn dùng `terrain` 1024². VRAM màu 8 lớp ≈ 180 MB (chỉ khi ở Vân Lam). Cỏ 3D mọc cả ở đỉnh tông môn (chỗ không lát đá, không công trình: `grass.ts`).
 - **Cây thẻ alpha thay cây Tripo** (`game/world/cardForest.ts`): `prop_thong_co`, `prop_co_thu`, `prop_soi_nui`, `prop_anh_dao`, `prop_phong_do` dựng từ thân uốn + thẻ lá (pháp tuyến tán hướng ra cho khối mềm), gộp theo ô 256 m, cắt theo khung nhìn, ẩn khi xa quá 1,1 km, không đổ bóng; `PropLayer` bỏ các id này ở level có `lacKiemSky`. Tùng chậu hai bên đại lộ: thân Blender + tán thẻ (`lacKiemGarden.ts`).
 - **Cự kiếm giữa sân** (`thien_cong_kit.py` `blade_loft`/`sword_planted`): lưỡi tiết diện thoi có sống nổi, thép PBR (`metal_plate`) vát mép, chữ "万剑归宗" khắc nổi vàng.
-- **Chữ thật** (`KB.text`): font thư pháp Ma Shan Zheng (OFL, ở `../dtl-asset-source/font`) → biển cổng "落剑宗", hoành phi chính điện "天剑殿" (mặt chữ là mesh vàng); không có font thì bỏ qua chữ.
+- **Chữ Việt thư pháp** (`KB.text`): font Charm Bold (OFL, cùng font gốc của bộ nét cọ tên đạo hiệu #297, ở `../dtl-asset-source/font`) → biển cổng "Lạc Kiếm Tông", hoành phi chính điện "Thiên Kiếm Điện", thân cự kiếm "Vạn Kiếm Quy Tông" (mỗi tiếng một hàng); chữ là mesh vàng khắc nổi trên nền gỗ sơn mực; không có font thì bỏ qua chữ. Không còn chữ Hán trong cảnh (game tiếng Việt).
 - **Sân lát đá**: đại lộ là từng tấm 2,9 × 3,9 m trên nền mạch tối, cao thấp lệch nhẹ, vát mép; bậc ngoài cổng (client `sect.ts`) cũng hai tấm có khe và gờ rêu.
+
+### Vòng chỉnh theo duyệt #305 lần 3
+
+- Chữ Việt thay chữ Hán (xem mục "Chữ Việt thư pháp"); chữ dùng vật liệu vàng phát sáng nhẹ (`GILD_TEXT`) vì kim loại không có env map nên tối.
+- **Giảm tam giác** (mục tiêu đỉnh ≤ 1,7 triệu): cây thẻ có LOD (ô trong 300 m dùng mẫu đầy đủ, xa hơn dùng mẫu ~33% thẻ lá/thân 3 đoạn, ẩn quá 800 m), phông xa lưới 360×12, kiếm Kiếm Đài bớt chi tiết, kiến trúc vát mép 1 đoạn (pass bóng vẽ lại cả `arch_sect`), cỏ preset Cao tầm 48 m giãn 0,8. Đỉnh đo được 1,66 triệu (góc trên cao, preset Cao 1080p; trước vòng này 1,96 triệu), trung bình các góc 1,22–1,66 triệu; draw call đỉnh 188.
+- **Núi xa**: vân đá/vệt khe áp cả sườn cỏ dốc (không chỉ vách đá), cộng nhiễu vĩ mô hai tầng theo khoảng cách ở shader mặt đất (chỉ Vân Lam, sau cờ `setGroundStrata`) nên chỗ chỉ còn màu đỉnh lưới không còn mịn đều.

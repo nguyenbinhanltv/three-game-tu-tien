@@ -40,6 +40,7 @@ VERMILION_DARK = paint(0x8E2824, 'lacquer')
 PLUM = paint(0xC24B5A, 'lacquer')  # mai son nhạt (diềm, phướn)
 INK = paint(0x1F2E3C, 'lacquer')  # hoành phi nền mực
 STONE_JOINT = paint(0x56625c, 'stone')  # mạch lát đá
+GILD_TEXT = paint(0xF4C85C, 'lamp')  # chữ vàng khắc nổi: dùng vật liệu phát sáng nhẹ (kim loại không có env map nên tối đen)
 GILD = paint(0xD2AA55, 'metal')
 BRONZE_D = paint(0x8E6C3A, 'metal')
 TIMBER = paint(0x8A6944, 'wood')
@@ -89,7 +90,7 @@ def _find_pbr(ph, kind, size='2k'):
 
 def _find_font():
     for d in _asset_source_dirs():
-        f = os.path.join(os.path.dirname(d), 'font', 'MaShanZheng-Regular.ttf')
+        f = os.path.join(os.path.dirname(d), 'font', 'Charm-Bold.ttf')
         if os.path.exists(f):
             return f
     return None
@@ -453,7 +454,7 @@ class KB(bs.Builder):
             bs.ROOF, bs.GOLD = ROOF_SAVE
 
     def text(self, body, x, y, z, size, depth, color, yaw=0.0):
-        """Chữ Hán khắc nổi (font thư pháp OFL Ma Shan Zheng ở ../dtl-asset-source/font): chuỗi `body` căn giữa tại (x, y, z), mặt chữ hướng +z.
+        """Chữ Việt khắc nổi (font thư pháp Charm Bold, OFL, cùng font gốc của bộ nét cọ tên đạo hiệu #297; ở ../dtl-asset-source/font): chuỗi `body` căn giữa tại (x, y, z), mặt chữ hướng +z.
         Không có font thì bỏ qua (bản dựng vẫn chạy)."""
         import bmesh as _bm
         import bpy
@@ -881,7 +882,7 @@ def _(b):
     b.box(0, 0, 0, 5.8, 1.3, 0.3, INK)
     for sy in (-1, 1):
         b.box(0, sy * 0.58, 0.17, 5.8, 0.14, 0.08, GILD)
-    b.text('天剑殿', 0, 0, 0.17, 0.95, 0.12, GILD)
+    b.text('Thiên Kiếm Điện', 0, 0, 0.17, 0.62, 0.12, GILD_TEXT)
     for sx in (-1, 1):
         b.box(sx * 3.0, 0, 0, 0.2, 1.5, 0.4, GILD)
 
@@ -1067,13 +1068,13 @@ def _(b):
         b.curved_hip(sx * 11.9, 7.4, 0, 7.4, 2.4, 1.5, overhang=1.3, lift=0.9)
         b.dougong(sx * 8, 10.4, 0, 1.0)
     b.box(0, 9.4, 0, 17.5, 1.0, 1.1, VERMILION_DARK)
-    # Biển hiệu: gỗ sơn mực viền vàng, chữ "落剑宗" (Lạc Kiếm Tông) khắc nổi vàng.
+    # Biển hiệu: gỗ sơn mực viền vàng, chữ "Lạc Kiếm Tông" khắc nổi vàng.
     b.box(0, 7.2, 0, 6.8, 1.9, 0.4, INK)
     for sx in (-1, 1):
         b.box(sx * 3.3, 7.2, 0.22, 0.2, 1.9, 0.1, GILD)
     for sy in (-1, 1):
         b.box(0, 7.2 + sy * 0.9, 0.22, 6.8, 0.2, 0.1, GILD)
-    b.text('落剑宗', 0, 7.2, 0.22, 1.25, 0.14, GILD)
+    b.text('Lạc Kiếm Tông', 0, 7.2, 0.22, 0.95, 0.14, GILD_TEXT)
     b.curved_hip(0, 10.4, 0, 18, 3.2, 2.6, overhang=1.8, lift=1.3)
 
 

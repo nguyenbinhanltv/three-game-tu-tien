@@ -651,7 +651,7 @@ function swordGeometry(): THREE.BufferGeometry {
   guard.translate(0, 0.998, 0);
   parts.push({ g: guard.toNonIndexed(), c: gold });
   for (const sx of [-1, 1]) {
-    const horn = new THREE.ConeGeometry(0.022, 0.1, 5);
+    const horn = new THREE.ConeGeometry(0.022, 0.1, 4);
     horn.rotateZ(sx * -0.45);
     horn.translate(sx * 0.158, 1.04, 0);
     parts.push({ g: horn.toNonIndexed(), c: gold });
@@ -661,18 +661,18 @@ function swordGeometry(): THREE.BufferGeometry {
   boss.translate(0, 0.998, 0);
   parts.push({ g: boss.toNonIndexed(), c: gold });
   // Chuôi quấn dây (ba đai vàng) và đầu chuôi tròn có tua.
-  const grip = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 8);
+  const grip = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 6);
   grip.translate(0, 1.165, 0);
   parts.push({ g: grip.toNonIndexed(), c: wood });
-  for (const y of [1.07, 1.165, 1.26]) {
-    const ring = new THREE.CylinderGeometry(0.026, 0.026, 0.012, 8);
+  for (const y of [1.1, 1.23]) {
+    const ring = new THREE.CylinderGeometry(0.026, 0.026, 0.012, 6);
     ring.translate(0, y, 0);
     parts.push({ g: ring.toNonIndexed(), c: gold });
   }
   const pommel = new THREE.IcosahedronGeometry(0.036, 0);
   pommel.translate(0, 1.34, 0);
   parts.push({ g: pommel.toNonIndexed(), c: gold });
-  const tassel = new THREE.ConeGeometry(0.014, 0.16, 5);
+  const tassel = new THREE.ConeGeometry(0.014, 0.16, 3);
   tassel.rotateX(Math.PI);
   tassel.translate(0, 1.4 - 0.08, 0.0);
   tassel.translate(0.0, -0.04, 0);

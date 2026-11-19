@@ -38,7 +38,9 @@ export const CARD_TREE_IDS: ReadonlySet<string> = new Set(Object.keys(SPECIES));
 
 const CELL = 256;
 /** Ô xa hơn mức này (m) không vẽ (sương đã nuốt). */
-const DRAW_RANGE = 1100;
+const DRAW_RANGE = 800;
+/** Ô gần hơn mức này (m) dùng mẫu chi tiết (LOD 0), xa hơn dùng mẫu thưa (LOD 1). */
+const LOD_NEAR = 300;
 
 interface Template {
   pos: number[];
@@ -60,15 +62,17 @@ function rng(seed: number): () => number {
 }
 
 /** Mẫu một loài: thân tapered uốn + các thẻ lá (cùng pháp tuyến hướng ra), gốc ở (0,0,0), cao theo +y. */
-function buildTemplate(sp: Species, seed: number): Template {
+function buildTemplate(sp: Species, seed: number, lod: 0 | 1): Template {
   const r = rng(seed);
+  // LOD 1 (ô xa): ~33% số thẻ lá và thân 3 đoạn, hình dáng chung giữ nguyên.
+  const cardsPerTier = lod === 0 ? sp.cards : Math.max(3, Math.round(sp.cards * 0.33));
   const t: Template = { pos: [], nor: [], uv: [], col: [] };
   const barkUv = FOLIAGE_TILE.bark;
   const bu = barkUv[0] + FOLIAGE_TILE_SIZE[0] * 0.5;
   const bv = barkUv[1] + FOLIAGE_TILE_SIZE[1] * 0.5;
   const lean = (r() - 0.5) * 0.5;
   // Thân: ống 6 cạnh, bán kính giảm dần; pháp tuyến hướng ra theo trục.
-  const rows = 6;
+  const rows = lod === 0 ? 6 : 3;
   const trunkR = sp.height * 0.032;
   const ring: THREE.Vector3[][] = [];
   const ringR: number[] = [];
@@ -124,15 +128,15 @@ function buildTemplate(sp: Species, seed: number): Template {
     const ty = sp.height * base;
     const tc = new THREE.Vector3(lean * base * base * sp.height * 0.3, ty, 0);
     const radius = sp.crown * (pine ? 1 - q * 0.62 : 1 - q * 0.25) * (0.85 + r() * 0.3);
-    for (let k = 0; k < sp.cards; k++) {
-      const yaw = (k / sp.cards) * Math.PI * 2 + r() * 0.8;
+    for (let k = 0; k < cardsPerTier; k++) {
+      const yaw = (k / cardsPerTier) * Math.PI * 2 + r() * 0.8;
       const out = radius * (0.35 + r() * 0.55);
       const centre = new THREE.Vector3(
         tc.x + Math.cos(yaw) * out * 0.5,
         ty + (r() - 0.35) * radius * 0.5,
         tc.z + Math.sin(yaw) * out * 0.5,
       );
-      const size = radius * (1.05 + r() * 0.5);
+      const size = radius * (1.05 + r() * 0.5) * (lod === 0 ? 1 : 1.25); // thẻ ít hơn nên to hơn một chút để tán không thưa
       const droop = pine ? 0.35 + r() * 0.3 : (r() - 0.5) * 0.5;
       const rv = new THREE.Vector3(Math.cos(yaw + 1.2), 0, Math.sin(yaw + 1.2));
       const uvv = new THREE.Vector3(
@@ -175,7 +179,7 @@ function buildTemplate(sp: Species, seed: number): Template {
 
 export class CardForest {
   readonly group = new THREE.Group();
-  private chunks: { mesh: THREE.Mesh; cx: number; cz: number }[] = [];
+  private chunks: { near: THREE.Mesh; far: THREE.Mesh; cx: number; cz: number }[] = [];
   private mat: THREE.MeshStandardNodeMaterial;
   private dead = false;
 
@@ -183,12 +187,16 @@ export class CardForest {
   constructor(trees: readonly PropInstance[], tex: SkyTextures) {
     this.group.name = 'cardForest';
     this.mat = foliageMaterial(tex);
-    const templates = new Map<string, Template>();
+    const templates: [Map<string, Template>, Map<string, Template>] = [new Map(), new Map()];
     let seed = 11;
-    for (const [id, sp] of Object.entries(SPECIES)) templates.set(id, buildTemplate(sp, (seed += 17)));
+    for (const [id, sp] of Object.entries(SPECIES)) {
+      seed += 17;
+      templates[0].set(id, buildTemplate(sp, seed, 0));
+      templates[1].set(id, buildTemplate(sp, seed, 1));
+    }
     const byChunk = new Map<number, PropInstance[]>();
     for (const p of trees) {
-      if (!templates.has(p.id)) continue;
+      if (!templates[0].has(p.id)) continue;
       const key = Math.floor(p.x / CELL) * 4096 + Math.floor(p.z / CELL);
       let a = byChunk.get(key);
       if (!a) byChunk.set(key, (a = []));
@@ -197,15 +205,15 @@ export class CardForest {
     const m = new THREE.Matrix4();
     const v = new THREE.Vector3();
     const nm = new THREE.Matrix3();
-    for (const [key, list] of byChunk) {
+    const build = (list: PropInstance[], tpls: Map<string, Template>): THREE.Mesh => {
       const pos: number[] = [];
       const nor: number[] = [];
       const uv: number[] = [];
       const col: number[] = [];
       for (const p of list) {
-        const tpl = templates.get(p.id)!;
-        const sp = SPECIES[p.id]!;
-        const sc = p.s * (sp.kind === 'pine' ? 1 : 1);
+        const tpl = tpls.get(p.id);
+        if (!tpl) continue;
+        const sc = p.s;
         m.compose(
           new THREE.Vector3(p.x, p.y, p.z),
           new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), p.yaw),
@@ -215,13 +223,13 @@ export class CardForest {
         const tint = p.tint ?? [1, 1, 1];
         const jit = 0.9 + hash01(Math.round(p.x), Math.round(p.z), 7) * 0.2;
         for (let i = 0; i < tpl.pos.length; i += 3) {
-          v.set(tpl.pos[i]!, tpl.pos[i + 1]!, tpl.pos[i + 2]!).applyMatrix4(m);
+          v.set(tpl.pos[i] ?? 0, tpl.pos[i + 1] ?? 0, tpl.pos[i + 2] ?? 0).applyMatrix4(m);
           pos.push(v.x, v.y, v.z);
-          v.set(tpl.nor[i]!, tpl.nor[i + 1]!, tpl.nor[i + 2]!)
+          v.set(tpl.nor[i] ?? 0, tpl.nor[i + 1] ?? 0, tpl.nor[i + 2] ?? 0)
             .applyMatrix3(nm)
             .normalize();
           nor.push(v.x, v.y, v.z);
-          col.push(tpl.col[i]! * tint[0] * jit, tpl.col[i + 1]! * tint[1] * jit, tpl.col[i + 2]! * tint[2] * jit);
+          col.push((tpl.col[i] ?? 1) * tint[0] * jit, (tpl.col[i + 1] ?? 1) * tint[1] * jit, (tpl.col[i + 2] ?? 1) * tint[2] * jit);
         }
         for (const u of tpl.uv) uv.push(u);
       }
@@ -236,23 +244,34 @@ export class CardForest {
       mesh.frustumCulled = true;
       mesh.castShadow = false;
       mesh.receiveShadow = true;
+      mesh.visible = false;
+      this.group.add(mesh);
+      return mesh;
+    };
+    for (const [key, list] of byChunk) {
       const cx = (Math.floor(key / 4096) + 0.5) * CELL;
       const cz = ((key % 4096) + 0.5) * CELL;
-      this.chunks.push({ mesh, cx, cz });
-      this.group.add(mesh);
+      this.chunks.push({ near: build(list, templates[0]), far: build(list, templates[1]), cx, cz });
     }
   }
 
   /** Ẩn ô xa (gọi mỗi vài khung); `x`, `z` là vị trí camera/người chơi. */
   update(x: number, z: number): void {
-    const r2 = (DRAW_RANGE + CELL) * (DRAW_RANGE + CELL);
-    for (const c of this.chunks) c.mesh.visible = (c.cx - x) ** 2 + (c.cz - z) ** 2 < r2;
+    // Khoảng cách tới tâm ô trừ nửa cạnh ô: ô đang đứng lên luôn LOD 0.
+    for (const c of this.chunks) {
+      const d = Math.hypot(c.cx - x, c.cz - z) - CELL * 0.5;
+      c.near.visible = d < LOD_NEAR;
+      c.far.visible = d >= LOD_NEAR && d < DRAW_RANGE;
+    }
   }
 
   dispose(): void {
     if (this.dead) return;
     this.dead = true;
-    for (const c of this.chunks) c.mesh.geometry.dispose();
+    for (const c of this.chunks) {
+      c.near.geometry.dispose();
+      c.far.geometry.dispose();
+    }
     this.mat.dispose();
   }
 }

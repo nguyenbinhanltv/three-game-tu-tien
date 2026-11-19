@@ -27,8 +27,8 @@ def giant_sword(b, x, z):
     b.cylinder(x, 0.5, z, 3.0, 0.45, kit.JADE, 20, 2.6, smooth=False)
     b.cylinder(x, 0.95, z, 2.5, 0.08, kit.JADE_GREEN, 20)
     b.sword_planted(x, z, 1.1, 11.5, 2.3, yaw=0.0)
-    for i, ch in enumerate('万剑归宗'):  # chữ khắc nổi vàng dọc thân kiếm (Vạn kiếm quy tông)
-        b.text(ch, x, 1.1 + 3.4 + i * 1.75, z + 0.17, 1.2, 0.08, kit.GILD)
+    for i, word in enumerate(('Vạn', 'Kiếm', 'Quy', 'Tông')):  # chữ khắc nổi vàng dọc thân kiếm (Vạn Kiếm Quy Tông), mỗi tiếng một hàng
+        b.text(word, x, 1.1 + 3.4 + i * 1.75, z + 0.17, 0.85, 0.08, kit.GILD_TEXT)
     for k in range(6):  # đá chèn quanh chân kiếm
         a = k / 6 * math.tau
         b.box(x + math.cos(a) * 1.9, 1.15, z + math.sin(a) * 1.9, 0.9, 0.55, 0.9, kit.JADE_SHADE, yaw=-a)
@@ -181,8 +181,11 @@ def make_mesh(name, builder, keys, images, bevel=True):
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
     if bevel:
         # Vát mép đá/ngọc (mép mòn, bắt sáng): chỉ giữa hai mặt cùng chất liệu đá.
-        stone = {keys.index(k) for k in ('jade', 'stone', 'plaster', 'lacquer', 'wood', 'steel') if k in keys}
-        bevel_hard_edges(bm, 0.05, mats=stone, segments=2)
+        # Vát 1 đoạn cho mọi chất liệu (tam giác kiến trúc tính hai lần vì có pass bóng; 2 đoạn làm đỉnh vượt ngân sách 1,7 triệu).
+        hard = {keys.index(k) for k in ('jade', 'stone', 'steel') if k in keys}
+        soft = {keys.index(k) for k in ('plaster', 'lacquer', 'wood') if k in keys}
+        bevel_hard_edges(bm, 0.05, mats=hard, segments=1)
+        bevel_hard_edges(bm, 0.04, mats=soft, segments=1)
     bm.to_mesh(mesh)
     bm.free()
     return mesh

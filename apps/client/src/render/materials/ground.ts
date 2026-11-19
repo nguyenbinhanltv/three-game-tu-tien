@@ -182,7 +182,12 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   // Vân đá sơn thủy (MAP-1), tính theo điểm ảnh nên không phụ thuộc độ thô của lưới xa: tầng ngang theo độ cao + khe dọc theo
   // nhiễu kéo dài; vách và đá lộ ngả lam nhạt dần theo độ cao. Áp sau khi hòa về màu đỉnh lưới ở xa.
   if (strata) {
-    const rockish = max(cliffW, rockW.mul(0.7));
+    // Sườn dốc phủ cỏ cũng có vân (núi xa không còn mượt): trọng số theo độ dốc, cộng nhiễu vĩ mô theo khoảng cách (xa thì chỉ còn màu đỉnh lưới).
+    const rockish = max(max(cliffW, rockW.mul(0.7)), smoothstep(0.1, 0.3, slope).mul(0.6));
+    const farK = smoothstep(60, 380, dist).mul(0.9);
+    const macroA = texture(tex.mask, p.mul(0.0098)).a;
+    const macroB = texture(tex.mask, p.mul(0.0023).add(0.37)).a;
+    col = col.mul(mix(float(1), float(0.72).add(macroA.mul(0.34)).add(macroB.sub(0.5).mul(0.3)), farK));
     const band = sin(h.mul(0.13).add(macro.mul(5)).add(noise2.mul(4)))
       .mul(0.5)
       .add(0.5);

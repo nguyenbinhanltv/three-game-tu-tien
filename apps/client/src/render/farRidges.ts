@@ -71,8 +71,8 @@ function ridge(a: number, layer: Layer): number {
   return Math.pow(h, 1.25);
 }
 
-const SEGS = 480;
-const ROWS = 16;
+const SEGS = 360;
+const ROWS = 12;
 
 /** Nhiễu 2D tuần hoàn theo góc (cột) và không tuần hoàn theo hàng. */
 function noise2(t: number, v: number, period: number, seed: number): number {
