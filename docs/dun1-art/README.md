@@ -202,3 +202,8 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Đèn lồng ấm**: quầng 1,3 → 3,6 m, cường độ đèn điểm ×0,35 → ×0,9 (chỉ level có `kinhNguyetArt`).
 - **Chi phí**: ~195–214 draw call (trước ~150) do vẽ cảnh thêm cho phản chiếu; vẫn dưới 300.
 - **Còn lại**: cột sáng trăng volumetric mới là nón mờ sẵn có; vòng sáng nhỏ quanh chân nhân vật thử là vòng chân (aura chung) nên giữ nguyên.
+
+### Polish — Kính Nguyệt vòng 3 (góp ý duyệt): bỏ nhãn tên khỏi phản chiếu, giảm độ gương
+
+- Lượt vẽ phản chiếu ẩn thêm **nhãn tên** (`InstancedMesh` `label-batch`, nay có `name`) và mọi `THREE.Sprite`; nhãn tên/HUD 3D không còn lộn ngược trên sàn.
+- Cường độ phản chiếu giảm ~40–45% (hệ số nền 0,38 → 0,15, fresnel 0,5 → 0,3, trần sáng 0,7 → 0,6) và mờ dần theo khoảng cách tới camera (50 → 150 m, giảm tối đa 50%), nên vân đá đọc được; phản chiếu mạnh ở vùng giữa và khi nhìn xiên.

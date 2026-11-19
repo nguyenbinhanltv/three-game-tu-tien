@@ -266,13 +266,15 @@ function reflectiveSurface(
     if (planar) {
       // phản chiếu thật (mảnh gương, cột, đèn): mạnh ở vùng giữa (nhẵn, roughness thấp), mờ dần ra mép điện; thớ đá cắt bớt phản chiếu; fresnel tăng khi nhìn xiên
       const mid = float(1).sub(smoothstep(25.0, 95.0, r).mul(0.75));
+      const far = float(1).sub(smoothstep(50.0, 150.0, length(positionWorld.sub(cameraPosition))).mul(0.5));
       const k = fres
-        .mul(0.5)
-        .add(0.38)
+        .mul(0.3)
+        .add(0.15)
         .mul(mid)
+        .mul(far)
         .mul(float(1).sub(veins.mul(0.8)))
         .clamp(0, 0.85);
-      col = mix(col, planar.rgb.min(0.7), k);
+      col = mix(col, planar.rgb.min(0.6), k);
     }
   } else {
     const base = vec3(0.025, 0.04, 0.075);
@@ -329,7 +331,7 @@ export class KinhNguyetArt {
       this.group.add(rf.target);
       planar = rf;
       // lượt vẽ phản chiếu không có MRT bloom nên vật liệu VFX (`fx-*`) và các vật `MeshBasicMaterial` thường (vòng chân nhân vật, dấu cổng) không biên dịch được:
-      // ẩn nhóm VFX và các mesh đó trong đúng lượt này
+      // ẩn nhóm VFX, nhãn tên (`label-batch`), mọi `Sprite` và các mesh đó trong đúng lượt này
       const hide = opts.hideInReflection;
       const base = rf.reflector;
       const before = base.updateBefore.bind(base);
@@ -337,7 +339,13 @@ export class KinhNguyetArt {
         const scene = this.group.parent;
         const hidden: THREE.Object3D[] = [];
         scene?.traverse((o) => {
-          if (o.visible && (o === hide || (o as THREE.Mesh).material?.constructor === THREE.MeshBasicMaterial)) {
+          if (
+            o.visible &&
+            (o === hide ||
+              o.name === 'label-batch' ||
+              (o as THREE.Sprite).isSprite ||
+              (o as THREE.Mesh).material?.constructor === THREE.MeshBasicMaterial)
+          ) {
             o.visible = false;
             hidden.push(o);
           }
