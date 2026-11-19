@@ -91,9 +91,13 @@ export function bhGroundColor(
   const north = riftBlend(z - def.size / 2);
   // Nền: tuyết trắng ngả lam, đám đất đá đen lộ ra theo nhiễu thấp tần (tuyết mỏng, gió quét).
   let c = hex(SNOW.snow, 1.75 + n * 0.25);
-  c = lerp3(c, hex(SNOW.rock, 1.4), Math.min(0.62, Math.max(0, -n * 1.3 + 0.12)));
+  c = lerp3(c, hex(SNOW.rock, 1.4), Math.min(0.7, Math.max(0, -n * 1.6 + 0.2)));
   // Gió thổi tuyết thành vệt lam nhạt.
   c = lerp3(c, hex(SNOW.shade, 1.5), Math.min(0.2, Math.max(0, m) * 0.5));
+  // Vệt gió: dải kéo dài theo hướng gió (x), sáng tối xen kẽ như tuyết bị quét.
+  const wind = fbm(x * 0.006 + z * 0.0015, z * 0.055, 2, def.seed + 377);
+  c = lerp3(c, hex(SNOW.shade, 1.3), Math.min(0.3, Math.max(0, wind) * 0.9));
+  c = lerp3(c, hex(SNOW.snow, 2.1), Math.min(0.25, Math.max(0, -wind) * 0.7));
   // Bên kia: tuyết nhuốm tím độc, đá đen tuyền, vệt tím sậm theo nhiễu mịn.
   if (north > 0) {
     c = lerp3(c, hex(SNOW.shade, 0.75), north * 0.5);
