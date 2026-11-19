@@ -21,8 +21,8 @@ Không đụng file lò xo vạt/asset vật lý của worker -176 (`spring.ts`,
 ## Chưa làm / giới hạn (nói thẳng)
 
 - **Giữ chân bám dốc (IK chân trên Mannequin)**: chưa làm. `SkinnedCharacter` có IK hai đốt trên xương Mixamo (`ikpose.ts`), chưa chuyển sang xương Mannequin. Việc riêng.
-- **Đi lùi / đi ngang**: UAL không có clip lùi/ngang (đã soát cả UAL1 và UAL2), nên chưa có; cần clip ngoài hoặc dựng thủ tục.
-- **Rẽ tại chỗ bằng bước chân** (xoay chân): chỉ xoắn thân trên; chân không bước xoay vì không có clip xoay tại chỗ.
+- ~~Đi lùi / đi ngang~~: đã làm ở NV3-A1 (mục dưới).
+- **Rẽ tại chỗ bằng bước chân** (xoay chân): vẫn chỉ xoắn thân trên. Đã thử bake clip bước tại chỗ từ Walk (chân phải đi tới, chân trái đi lùi, biên độ 0,2–0,5): chân trụ trượt gấp 3–20 lần quãng cần có (xoay quanh hông bán kính ~0,1 m chỉ cần ~0,3 m/chu kỳ), nên bỏ. Làm bằng IK khóa chân trong game ở NV3-A2 (chân đứng yên trong thế giới khi thân xoay, vượt ~40° thì nhấc chân bước tới vị trí mới).
 - **Đi bộ**: trong game tốc độ chạy cố định 7 m/s (`RUN_SPEED`), nên clip đi chỉ hiện khi bị làm chậm (< ~2,4 m/s); logic có test thuần, chưa có tình huống quay riêng.
 - **Đồng bộ VFX với khung clip cho đòn UAL dự phòng**: đòn dự phòng không phát sự kiện `hitAt` (chỉ chiêu K-5 mới có); chưa thêm.
 - **Hệ số bù tay là hằng số theo model, chỉnh bằng mắt + số đo**: chưa tính tự động theo độ rộng ống tay từng model.
@@ -72,3 +72,35 @@ Không thấy hồi quy rõ (dao động giữa hai lượt cùng bản lớn h�
 Lưu ý: ở `chuỗi 3 chiêu (đứng)` nam, chỉ số "mới" (7,73) CAO hơn "cũ" (1,21): chiêu K-5 vắt tay ngang ngực nên đỉnh tay đi qua viên nang thân; chưa phân biệt được đó là xuyên thật hay tư thế hợp lệ (khung hình không thấy lỗi rõ). Chỉ số lấy mẫu ~25 lần mỗi tình huống, rất nhiễu.
 
 Quay: `pnpm shots chrv3anim --out <thư mục tuyệt đối> [--genders m,f] [--variants old,new,noarm]` (đặt `FFMPEG=` nếu không có trong PATH): quay riêng từng bản, ghi mốc đầu từng tình huống rồi cắt cùng tình huống (3,5 s, toàn thân, 3/4 trước + góc ngang cho chạy/rẽ/chạy+chém) từ hai bản, xếp trái cũ | phải mới vào `<giới>-cu-moi.webm`.
+
+
+## NV3-A1: đi lùi, đi ngang, chéo (không Mixamo, không mocap/AI)
+
+Dựng thủ tục bằng `tools/blender/ual_loco.py` (gọi từ `anim_ual_native.py`, chạy trong `node tools/blender/run.mjs --only anim_ual_native`), từ chính ba clip `Walk_Loop`, `Jog_Fwd_Loop`, `Sprint_Loop` của UAL1:
+
+| Clip mới (9) | Cách dựng |
+| --- | --- |
+| `Walk/Jog/Sprint_Bwd_Loop` | đảo chiều thời gian chu kỳ đi tới, dịch pha 0,5 (chân trụ trùng pha với clip tới/ngang để trộn chéo), thân ngả về trước được xoay ngược |
+| `*_StrafeL_Loop`, `*_StrafeR_Loop` | xoay hông (pelvis + chân) quanh trục đứng ±90°, cột sống xoay ngược để thân trên vẫn nhìn tới, bàn chân bù 40% góc (mũi chân không chĩa ngang hẳn) |
+
+Client (`mannequinAnim.ts` `dirMix`, `mannequin.ts`): `AnimState.moveAngle` (rad, 0 = tới, +π/2 = trái, ±π = lùi; `locoAngleOf` ở `packages/shared`, liên tục) → trọng số bốn hướng (chiếu lên bốn trục rồi chuẩn hóa: chéo 45° là trộn 50/50 hai clip kề nhau) × trọng số dải tốc độ (`locoMix`). Cả 12 clip chạy chung một pha (`locoPhase`, `timeScale = 0`), chu kỳ/giây = tốc độ ÷ sải. Khi nửa trên đang đánh (đòn dự phòng, chiêu K-5) chân theo clip đi-chạy trội nhất (`lowerSrc`, có trễ 0,15). Asset cũ không có clip hướng thì chỉ chạy clip tới (như trước).
+
+### Đo trượt chân (offline, trong Blender)
+
+Vị trí bàn chân trụ (xương `ball_*`, lúc bàn chân thấp hơn mốc 4,5 cm) theo chân xương, mỗi chu kỳ một lần. Tốc độ chân trụ phải bằng −S·u (u = hướng đi, S = sải): S khớp bình phương tối thiểu, **trượt = RMS(|v + S·u|) / S**. Clip tới gốc làm mốc nền (đi bộ có lăn gót nên nền 23%).
+
+| Clip | Sải S (m/chu kỳ) | Trượt / S | Ghi chú |
+| --- | --- | --- | --- |
+| Walk tới (mốc) | 1,24 | 23,3% | |
+| Walk lùi | 1,24 | 23,3% | cùng chuyển động, đảo chiều |
+| Walk ngang trái / phải | 1,20 / 1,20 | 34,8% / 34,8% | |
+| Jog tới (mốc) | 5,50 | 2,7% | |
+| Jog lùi | 5,50 | 2,7% | |
+| Jog ngang trái / phải | 5,35 / 5,43 | 9,0% / 6,5% | |
+| Jog chéo 45° (trộn 50/50 tới + trái) | 5,45 | 5,7% | đúng cách client trộn |
+| Sprint tới (mốc) / lùi | 5,94 | ≈ 0% (ít mẫu tiếp đất) | |
+| Sprint ngang trái / phải | 5,88 / 5,80 | 6,5% / 5,4% | |
+
+Trong game (7 m/s, chạy ≈ 60% chạy nhanh + 40% chạy): đi lùi trượt như đi tới; đi ngang khoảng 6–9% sải ≈ 40–60 cm/s ở 7 m/s (so với 2,7% = 19 cm/s của chạy tới). Sải của clip ngang lệch dưới 3% so với clip tới nên dùng chung bảng `LOCO` mà không nhảy nhịp khi đổi hướng.
+
+Giới hạn (nói thẳng): chạy lùi là clip chạy tới chạy ngược nên đầu gối vẫn nâng như chạy tới; chạy ngang là chân sải sang bên với mũi chân bù 40%, chưa có bước chéo chân (cross-step). Xoay chân tại chỗ chuyển sang A2 (xem trên).
