@@ -7,6 +7,8 @@ from prop_tc_lib import (BAMBOO, BAMBOO_D, CLOTH_B, CLOTH_D, CLOTH_R, CLOTH_W, C
 # Ít vật liệu hơn = ít draw call (mỗi vật liệu của mỗi id × LOD là một InstancedMesh): sành, nước, dây, đai sắt dùng vật liệu vải/gỗ chỉ-màu-đỉnh.
 CLAY = paint(0x8A5A3A, 'cloth')
 CLAY_D = paint(0x6E5444, 'cloth')
+CLAY_PBR = paint(0x8A5A3A, 'stone')  # chum/lu to nhìn cận: giữ PBR đá nung (vân, normal), chỉ hai món nên thêm ~2 draw call
+CLAY_PBR_D = paint(0x6E5444, 'stone')
 WATER = paint(0x3C6A7A, 'cloth')
 IRON_W = paint(0x3C4046, 'wood')
 HANDLE = paint(0x4D3324, 'cloth')
@@ -40,7 +42,7 @@ def _(b, v):
     # Vò rượu: ba chum sành nút vải đỏ đai trắng.
     spots = ((-0.9, 0, 0.9), (0, 0, 1.05), (0.95, 0.1, 0.8)) if v else ((-0.55, 0, 1.0), (0.45, 0.1, 0.85), (0.0, -0.75, 0.95))
     for x, z, s in spots:
-        lathe(b, [(0.0, 0), (0.32 * s, 0.02), (0.45 * s, 0.35 * s), (0.5 * s, 0.7 * s), (0.4 * s, 1.0 * s), (0.22 * s, 1.15 * s), (0.25 * s, 1.22 * s)], CLAY, 12, x, z)
+        lathe(b, [(0.0, 0), (0.32 * s, 0.02), (0.45 * s, 0.35 * s), (0.5 * s, 0.7 * s), (0.4 * s, 1.0 * s), (0.22 * s, 1.15 * s), (0.25 * s, 1.22 * s)], CLAY_PBR, 12, x, z)
         lathe(b, [(0.25 * s, 1.22 * s), (0.3 * s, 1.28 * s), (0.26 * s, 1.4 * s), (0.0, 1.42 * s)], CLOTH_R, 10, x, z)
         b.cylinder(x, 0.62 * s, z, 0.505 * s, 0.07, CLOTH_W, 12)
 
@@ -147,6 +149,6 @@ def _(b, v):
 def _(b, v):
     # Lu nước sành miệng rộng, nắp gỗ, có gáo; biến thể: hai lu.
     for x, z, s in (((-0.55, 0, 1.0), (0.55, 0.1, 0.8)) if v else ((0, 0, 1.0),)):
-        lathe(b, [(0.0, 0), (0.45 * s, 0.03), (0.62 * s, 0.4 * s), (0.66 * s, 0.75 * s), (0.5 * s, 1.1 * s), (0.5 * s, 1.18 * s), (0.56 * s, 1.2 * s)], CLAY_D, 14, x, z)
+        lathe(b, [(0.0, 0), (0.45 * s, 0.03), (0.62 * s, 0.4 * s), (0.66 * s, 0.75 * s), (0.5 * s, 1.1 * s), (0.5 * s, 1.18 * s), (0.56 * s, 1.2 * s)], CLAY_PBR_D, 14, x, z)
         b.cylinder(x, 1.2 * s, z, 0.5 * s, 0.04, WATER, 14)
     b.box(0.1, 1.28, 0.15, 0.5, 0.03, 0.05, HANDLE, yaw=0.4)

@@ -11439,8 +11439,8 @@
       "id": "prop_tc_gieng_nuoc",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_gieng_nuoc.glb",
-      "file": "prop_tc_gieng_nuoc.c21ceebd2f.glb",
-      "bytes": 880384,
+      "file": "prop_tc_gieng_nuoc.c1bb807733.glb",
+      "bytes": 880376,
       "rawBytes": 11078480,
       "triangles": 510,
       "rawTriangles": 510,
@@ -11541,8 +11541,8 @@
       "id": "prop_tc_gieng_nuoc_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_gieng_nuoc_2.glb",
-      "file": "prop_tc_gieng_nuoc_2.2982674f06.glb",
-      "bytes": 882972,
+      "file": "prop_tc_gieng_nuoc_2.8a970d0d99.glb",
+      "bytes": 882968,
       "rawBytes": 11082984,
       "triangles": 558,
       "rawTriangles": 558,
@@ -12369,32 +12369,60 @@
       "id": "prop_tc_lu_nuoc",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_lu_nuoc.glb",
-      "file": "prop_tc_lu_nuoc.37876b13b6.glb",
-      "bytes": 8620,
-      "rawBytes": 9384,
-      "triangles": 218,
-      "rawTriangles": 218,
+      "file": "prop_tc_lu_nuoc.aaad5a4641.glb",
+      "bytes": 585516,
+      "rawBytes": 9730024,
+      "triangles": 302,
+      "rawTriangles": 302,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
       "bones": 0,
       "animations": [],
-      "ktx2": false,
-      "textures": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
       "lods": [
         {
           "level": 0,
-          "triangles": 218
+          "triangles": 302
         },
         {
           "level": 1,
-          "triangles": 87,
-          "target": 87
+          "triangles": 119,
+          "target": 121
         },
         {
           "level": 2,
-          "triangles": 33,
-          "target": 33
+          "triangles": 55,
+          "target": 45
         }
       ],
       "dims": {
@@ -12416,32 +12444,60 @@
       "id": "prop_tc_lu_nuoc_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_lu_nuoc_2.glb",
-      "file": "prop_tc_lu_nuoc_2.3da1efcb34.glb",
-      "bytes": 11292,
-      "rawBytes": 16268,
-      "triangles": 424,
-      "rawTriangles": 424,
+      "file": "prop_tc_lu_nuoc_2.70dcbf1dc7.glb",
+      "bytes": 596136,
+      "rawBytes": 9751248,
+      "triangles": 592,
+      "rawTriangles": 592,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
       "bones": 0,
       "animations": [],
-      "ktx2": false,
-      "textures": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
       "lods": [
         {
           "level": 0,
-          "triangles": 424
+          "triangles": 592
         },
         {
           "level": 1,
-          "triangles": 170,
-          "target": 170
+          "triangles": 238,
+          "target": 237
         },
         {
           "level": 2,
-          "triangles": 64,
-          "target": 64
+          "triangles": 112,
+          "target": 89
         }
       ],
       "dims": {
@@ -12688,7 +12744,7 @@
       "id": "prop_tc_thung_go_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_thung_go_2.glb",
-      "file": "prop_tc_thung_go_2.d912930f0e.glb",
+      "file": "prop_tc_thung_go_2.39edd7805d.glb",
       "bytes": 326040,
       "rawBytes": 1403344,
       "triangles": 996,
@@ -13003,32 +13059,60 @@
       "id": "prop_tc_vo_ruou",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_vo_ruou.glb",
-      "file": "prop_tc_vo_ruou.81cdf7160b.glb",
-      "bytes": 14764,
-      "rawBytes": 23788,
-      "triangles": 678,
-      "rawTriangles": 678,
+      "file": "prop_tc_vo_ruou.3eec5bf8d6.glb",
+      "bytes": 606604,
+      "rawBytes": 9765684,
+      "triangles": 900,
+      "rawTriangles": 900,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
       "bones": 0,
       "animations": [],
-      "ktx2": false,
-      "textures": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
       "lods": [
         {
           "level": 0,
-          "triangles": 678
+          "triangles": 900
         },
         {
           "level": 1,
-          "triangles": 270,
-          "target": 271
+          "triangles": 358,
+          "target": 360
         },
         {
           "level": 2,
-          "triangles": 101,
-          "target": 102
+          "triangles": 135,
+          "target": 135
         }
       ],
       "dims": {
@@ -13050,32 +13134,60 @@
       "id": "prop_tc_vo_ruou_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_vo_ruou_2.glb",
-      "file": "prop_tc_vo_ruou_2.5b266af6c2.glb",
-      "bytes": 14572,
-      "rawBytes": 23792,
-      "triangles": 678,
-      "rawTriangles": 678,
+      "file": "prop_tc_vo_ruou_2.bec13b95eb.glb",
+      "bytes": 606372,
+      "rawBytes": 9766500,
+      "triangles": 900,
+      "rawTriangles": 900,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
       "bones": 0,
       "animations": [],
-      "ktx2": false,
-      "textures": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
       "lods": [
         {
           "level": 0,
-          "triangles": 678
+          "triangles": 900
         },
         {
           "level": 1,
-          "triangles": 270,
-          "target": 271
+          "triangles": 359,
+          "target": 360
         },
         {
           "level": 2,
-          "triangles": 102,
-          "target": 102
+          "triangles": 132,
+          "target": 135
         }
       ],
       "dims": {
@@ -13172,7 +13284,7 @@
       "id": "prop_tc_xe_keo_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_xe_keo_2.glb",
-      "file": "prop_tc_xe_keo_2.73a791d4c4.glb",
+      "file": "prop_tc_xe_keo_2.956567e7ab.glb",
       "bytes": 319808,
       "rawBytes": 1398220,
       "triangles": 892,
