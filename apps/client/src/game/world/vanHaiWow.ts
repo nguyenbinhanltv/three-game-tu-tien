@@ -146,6 +146,9 @@ export const STACKS: { x: number; z: number; top: number }[] = [
   { x: 300, z: 1790, top: 172 },
   { x: 1030, z: 330, top: 180 },
   { x: 1560, z: 1790, top: 176 },
+  // hai mõm đá gần giữa bản đồ (nhìn thấy từ Phù Đảo Các), vẫn cách mọi đảo thật > 150 m
+  { x: 1000, z: 560, top: 176 },
+  { x: 420, z: 920, top: 172 },
 ];
 
 export function towersOf(def: TerrainDef): Tower[] {
@@ -763,8 +766,12 @@ export class VanHaiWow {
       m.frustumCulled = false;
       m.renderOrder = 3;
       m.scale.setScalar(w.length);
-      if (w.length > 300) m.add(whaleDust(700));
-      else m.add(whaleDust(260));
+      // bụi sáng: geometry, material và buffer instance đều qua `track` để dispose khi rời level
+      const dust = whaleDust(w.length > 300 ? 700 : 260);
+      track(dust.geometry);
+      track(dust.material as THREE.Material);
+      track(dust);
+      m.add(dust);
       this.whales.push(m);
       this.group.add(m);
     }

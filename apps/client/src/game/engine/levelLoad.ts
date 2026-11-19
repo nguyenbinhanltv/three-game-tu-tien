@@ -19,6 +19,7 @@ import { GodRays } from '../../render/godRays';
 import { LacKiemGarden } from '../world/lacKiemGarden';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { VanHaiWow } from '../world/vanHaiWow';
+import { VanHaiGarden } from '../world/vanHaiGarden';
 import { applyGrading, markBloom } from '../../render/post';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { bhTod, GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../../render/grading';
@@ -338,6 +339,8 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   if (id === 'van_hai') {
     eng.vanHaiWow = new VanHaiWow(terrainOf(id).def);
     eng.scene.add(eng.vanHaiWow.group);
+    eng.vanHaiGarden = new VanHaiGarden(terrainOf(id));
+    eng.scene.add(eng.vanHaiGarden.group);
   }
   const gr = levelAssets(id).godRays;
   if (gr) {
@@ -416,6 +419,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.lacKiemGarden.group);
     eng.lacKiemGarden.dispose();
     eng.lacKiemGarden = null;
+  }
+  if (eng.vanHaiGarden) {
+    drop(eng.vanHaiGarden.group);
+    eng.vanHaiGarden.dispose();
+    eng.vanHaiGarden = null;
   }
   if (eng.vanHaiWow) {
     drop(eng.vanHaiWow.group);

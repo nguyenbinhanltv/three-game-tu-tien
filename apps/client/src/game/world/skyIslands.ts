@@ -230,7 +230,7 @@ export class SkyIslands {
       const ledgeT = y / 6.5 + nz(x * 0.03, y * 0.01, z * 0.03, 710) * 1.4;
       const ledge = Math.pow(ledgeT - Math.floor(ledgeT), 2.4); // tăng dần rồi gãy: gờ nhô ra từng tầng
       const groove = nz(Math.atan2(z, x) * 5 + seed, y * 0.05, 3.3, 720) - 0.5;
-      const push = ((rid - 0.45) * 15 + ledge * 4 + groove * 6) * SK.amp * (0.15 + depth * 0.95) * (y > -1 ? 0.1 : 1);
+      const push = ((rid - 0.45) * 15 + ledge * 4 + groove * 6) * SK.amp * (0.15 + depth * 0.95) * (y > -0.5 ? 0.4 : 1); // mép đảo gồ ghề, không còn vành tròn đều
       x += (x / rad) * push;
       z += (z / rad) * push;
       y += (rid - 0.4) * 3 * depth;
@@ -347,29 +347,30 @@ export class SkyIslands {
    * mây chuyển động chậm; mờ dần khi camera ở gần (không che nhân vật đi trên sàn mây).
    */
   private buildBillows(floor: number, size: number): void {
-    const N = 520;
+    const N = 900;
     const geo = this.track(new THREE.IcosahedronGeometry(1, 1));
     const mat = this.track(new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false }));
     const noise = getCloudNoise();
     const wp = positionWorld;
     const lit = clamp(normalWorld.y.mul(0.55).add(0.45).add(normalWorld.x.mul(0.12)), 0, 1);
     const swirl = texture(noise, vec2(wp.x.mul(0.012).add(time.mul(0.006)), wp.z.mul(0.012).add(wp.y.mul(0.02)))).a;
-    const shadow = mix(skyParams.top, vec3(0.36, 0.5, 0.78), 0.6).mul(0.6);
-    const light = skyParams.horizon.mul(0.98);
+    const shadow = mix(skyParams.top, vec3(0.2, 0.32, 0.62), 0.75).mul(0.36);
+    const light = mix(skyParams.horizon, vec3(1.0, 0.98, 0.95), 0.5).mul(0.95);
     mat.colorNode = mix(shadow, light, lit.mul(0.8).add(swirl.mul(0.2)));
     const facing = normalView.z.abs();
     const near = smoothstep(40, 170, wp.sub(cameraPosition).length());
-    mat.opacityNode = clamp(facing.pow(1.1).mul(float(0.25).add(swirl.mul(0.6))), 0, 0.58).mul(near);
+    mat.opacityNode = clamp(facing.pow(1.0).mul(float(0.3).add(swirl.mul(0.7))), 0, 0.72).mul(near);
     const im = new THREE.InstancedMesh(geo, mat, N);
     const m4 = new THREE.Matrix4();
     const q = new THREE.Quaternion();
     for (let i = 0; i < N; i++) {
       const x = hash01(i, 11, 801) * size;
       const z = hash01(i, 13, 803) * size;
-      const rr = 34 + hash01(i, 17, 805) * 70;
-      const y = floor + 2 + hash01(i, 19, 807) * 14;
+      const tower = i % 7 === 0; // mây tháp: khối cao, tạo chiều sâu và đường chân mây gồ ghề
+      const rr = tower ? 90 + hash01(i, 17, 805) * 80 : 40 + hash01(i, 17, 805) * 90;
+      const y = tower ? floor - 8 + hash01(i, 19, 807) * 10 : floor + 1 + hash01(i, 19, 807) * 26;
       q.setFromEuler(new THREE.Euler(0, hash01(i, 23, 809) * 6.28, 0));
-      m4.compose(new THREE.Vector3(x, y, z), q, new THREE.Vector3(rr * (1 + hash01(i, 29, 811) * 0.7), rr * 0.36, rr));
+      m4.compose(new THREE.Vector3(x, y, z), q, new THREE.Vector3(rr * (1 + hash01(i, 29, 811) * 0.7), rr * (tower ? 0.85 : 0.5), rr));
       im.setMatrixAt(i, m4);
     }
     im.instanceMatrix.needsUpdate = true;
