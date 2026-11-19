@@ -12,12 +12,18 @@ Tái thiết kế mỹ thuật chương 4 (`thien_khuyet`) theo phong cách B (b
 
 Ảnh/video duyệt PR để ở artifact phiên (không commit).
 
-## PR 2: cảnh trên trời + điểm wow
+## PR 2: cảnh trên trời + điểm wow (bản làm lại theo phong cách B)
 
-- Dữ liệu `thienKhuyetSky` (`ThienKhuyetSky` ở `packages/shared/src/types.ts`) trong `levels/thien_khuyet.assets.json`: 5 đảo (`cong_tien` = bệ Cổng Tiên Vỡ, 4 `cung` = tiên cung đổ nát), bậc thang xoắn 1,35 vòng quanh quảng trường (z 374) từ mặt đất lên bệ cổng, tượng thần đổ, trận pháp, số mảnh đá trời và cột ngọc vỡ.
-- Client dựng ở `game/world/thienKhuyetSky.ts` (`ThienKhuyetSkyScene`, nối ở `engine/levelLoad.ts`, cập nhật ở `engine/frameLoop.ts`). Mesh vát cạnh (`RoundedBoxGeometry`) và cột lathe có entasis, gãy lởm chởm theo nhiễu; thân đảo pháp tuyến mượt; vật liệu đá nhân nhiễu ba mặt phẳng theo toạ độ thế giới; vàng kim là vật liệu kim loại riêng; ngọc/trận pháp/màn cổng là TSL cộng sáng. Tất định (không `Math.random`).
-- Điểm wow: Cổng Tiên Vỡ (hai cột khổng lồ một gãy, xà đổ viền vàng, màn sáng vàng-tím rách mép, vòng tiên môn gãy phía sau); bậc thang xoắn có lan can gãy và đèn ngọc tím; tiên cung trôi (nền ba bậc, cột góc gãy, mái ngói tím nứt, vòm gãy); tượng thần võ sĩ gãy đổ cạnh đại đao cắm nghiêng; cột ngọc vỡ dọc đại lộ; 90 mảnh đá trời; trận pháp vàng kim xoay trên quảng trường.
-- Màu mặt đất (`thienKhuyetArt.ts`): nền tím xám, vách tím đậm có vỉa vàng kim.
-- Chỉ để nhìn: **không** đổi va chạm, điểm hồi sinh, NPC, cổng truyền tống, đường đi, vùng quái, nhiệm vụ. Bậc thang không đi bộ được.
-- Đo (preset Cao, 1080p, cả 4 thời điểm × 9 góc): draw call đỉnh 96 → 110, tam giác đỉnh 246k → 1,09 triệu, khung 10,4 → 11,3 ms (Chrome headless, nhiễu đo ~1 ms); trong ngân sách 300 draw call / 1–2 triệu tam giác. Thêm +8 draw call cố định cho cảnh này, không tải thêm file (hình học dựng lúc chạy).
-- Chưa làm (việc tiếp): texture PBR bake từ Blender/Poly Haven cho kiến trúc (hiện chỉ vật liệu theo màu đỉnh + nhiễu), kit Blender riêng cho Thiên Khuyết, tượng thần chi tiết hơn (đang ghép khối), LOD cho cảnh trời, vách núi bao quanh sân vẫn là một mặt dốc đều (cần dựng lại `thien_khuyet.terrain.json`), đảo đi bộ được, phông xa riêng.
+Phản hồi duyệt lần 1: cả cảnh nhuộm một màu tím, kiến trúc là khối primitive, cột kiểu Hy Lạp, vòng đồng đơn điệu, tượng thần mờ, mặt đất đơn sắc. Bản này:
+
+- **Kiến trúc là GLB Blender** `arch_thien_khuyet` (`tools/blender/thien_khuyet_arch.py`, job trong `tools/blender/run.mjs`, `pnpm assets:build --only arch_thien_khuyet`), dựng từ bộ kit #296 (`thien_cong_kit.py`) với bảng màu riêng: ngọc trắng ngà, ngói lưu ly vàng + sống mái tím, cột son, vàng kim, vết nứt phát sáng vàng. Gốc toạ độ = tâm quảng trường Điện Tiền; dữ liệu từ `thienKhuyetSky` trong `thien_khuyet.assets.json`.
+  - Bậc thang xoắn 1,35 vòng: bậc ngọc dày, mép vát, rêu, vài bậc mẻ/khuyết, lan can ngọc có đoạn gãy, đèn đá, trụ ngọc, thân đá treo nhũ đá.
+  - Cổng Tiên Vỡ: hai cột rồng son khổng lồ (trái nguyên có đai vàng, phải gãy), mái lưu ly vàng/tím trượt, hoành phi treo nghiêng, bia/trụ phù văn, mạch vàng nứt trên nền, mảnh vỡ trời trôi quanh (bỏ vành đồng).
+  - 4 tiên cung đổ nát: nền ngọc, cột son đầu củng (hàng sau gãy), mái hip lưu ly vàng trượt khỏi cột, mái rơi, sư tử đá đổ, lan can gãy.
+  - Cột son/đầu củng/cột rồng dọc đại lộ (gãy, đổ, có đèn đá) thay cột La Mã.
+  - Tượng thần tướng khổng lồ (`tk_statue`, cao ~240 m nếu đứng): giáp lá, vai giáp ba lớp, mũ vàng mào son, đổ ngửa, đầu và cánh tay phải rời ra, đại đao cắm bên cạnh, nứt phát sáng. Client hạ theo độ cao đất tại chỗ (`loadTkModel`).
+- Client (`game/world/thienKhuyetSky.ts`): thân đảo đá xám ấm phân tầng + rêu + cây xanh + nhũ đá, màn sáng cổng, trận pháp, mảnh đá trời. Đá trung tính (không tím).
+- Giảm tím toàn cảnh: tím chỉ ở trời/sương/ánh hoàng hôn; mặt đất đá xám ấm + rêu xanh, vách xám nâu có vỉa vàng (`thienKhuyetArt.ts`); `skyColor`/`shadowTint` của `tk_*` bớt bão hòa, `shadowAmount` 0,3.
+- Chỉ để nhìn: không đổi va chạm, hồi sinh, NPC, cổng, đường đi, vùng quái, nhiệm vụ.
+- Đo (preset Cao, 1080p, 4 thời điểm × 10 góc): draw call đỉnh 96 → 138, tam giác đỉnh 246k → 944k, khung 10,4 → 13,2 ms (nhiễu đo ~1 ms; góc nhìn cả cảnh). GLB 5,2 MB (26 MB thô, 296k tam giác, dưới trần 300k của lớp `arch`).
+- Chưa làm: texture PBR bake riêng (kit dùng texture thủ tục 256 px + màu đỉnh), vách núi bao quanh sân vẫn là một mặt dốc (cần dựng lại `thien_khuyet.terrain.json`), tượng thần còn ghép khối (chưa điêu khắc mặt/tay), LOD cho GLB, cây chỉ là tán tròn trên đảo.

@@ -5,17 +5,17 @@ import { fbm, hash01, smoothstep, type TerrainDef } from '@dtl/shared';
 /** Màu hex 0xRRGGBB. */
 const TK_COLORS = {
   /** Nền sân đá phiến cổ: xám lam đêm. */
-  slate: 0x7d72a0,
+  slate: 0x8c867f,
   /** Đá lát sáng hơn (sân, đại lộ). */
-  paving: 0xa699c0,
+  paving: 0xb6b0a8,
   /** Rêu sao: ngọc lam xỉn, mọc ở chỗ trũng ẩm. */
-  moss: 0x8c7650,
+  moss: 0x6f8d4a,
   /** Đá nứt tối. */
-  dark: 0x453a6e,
+  dark: 0x4c4742,
   /** Vách dốc lộ đá. */
-  cliff: 0x54448a,
+  cliff: 0x6e655c,
   /** Đất bụi trộn đá vụn ở Mộ Đạo. */
-  grave: 0x62567e,
+  grave: 0x6b645c,
   /** Vỉa vàng kim trong vách đá. */
   vein: 0xc79a46,
 } as const;

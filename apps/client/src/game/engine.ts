@@ -217,6 +217,8 @@ export class Game {
   lacKiemSky: LacKiemSkyScene | null = null;
   /** Tiên cung đổ nát, bậc thang lên trời, tượng thần, trận pháp của Thiên Khuyết (MAP-4). */
   thienKhuyetSky: ThienKhuyetSkyScene | null = null;
+  /** GLB kiến trúc Thiên Khuyết (MAP-4). */
+  tkAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
   /** Vườn hoa, lùm trúc, đá rêu quanh tông môn (MAP-1). */
   lacKiemGarden: LacKiemGarden | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
@@ -1285,6 +1287,7 @@ export class Game {
     postParams.inkDesat.value = 0;
     this.sectMesh?.geometry.dispose();
     this.sectAsset?.handle.release();
+    this.tkAsset?.handle.release();
     for (const m of this.sectAsset?.mats ?? []) m.dispose();
     this.sectAsset = null;
     this.sectMat.dispose();
