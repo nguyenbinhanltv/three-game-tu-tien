@@ -2,7 +2,7 @@ import { QUEST, t } from '@dtl/content';
 import { trackedQuestId } from '../../../game/entities/offscreen';
 import { objectiveText } from '../../objective';
 import { setHudPref, setTrackQuest, useUI } from '../../store';
-import { SysIcon } from '../../ngj';
+import { SysIcon } from '../shell';
 import { blurAfterPointer } from './common';
 
 /** Mũi tên thu/mở (dùng chung với Chat.tsx) của khối có thể thu gọn. */

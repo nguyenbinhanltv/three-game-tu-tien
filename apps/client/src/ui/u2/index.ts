@@ -1,6 +1,6 @@
 /**
  * UI Kit 2.0 "Mặc Kim Giản" (U2-1). Bảng mới import từ `../u2`; token ở `tokens.css`, xem mọi thành phần ở `?ui=kit`.
- * HUD/bảng thật chuyển sang kit này ở U2-2…U2-4; bộ cũ (`ui/kit`, `ui/ngj`) còn chạy song song đến U2-5.
+ * HUD/bảng thật chuyển sang kit này ở U2-2…U2-4; bộ khung cửa sổ cũ nay ở `ui/u2/win`, thành phần trang trí/icon ở `ui/u2/shell` (U2-8).
  */
 import './fonts.css';
 import './tokens.css';

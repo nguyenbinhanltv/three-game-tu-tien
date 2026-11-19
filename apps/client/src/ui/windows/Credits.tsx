@@ -1,5 +1,5 @@
 import { CREDIT_KINDS, CREDIT_LICENSE_URL, CREDITS, t } from '@dtl/content';
-import { Divider, PanelWindow } from '../kit';
+import { Divider, PanelWindow } from '../u2/win';
 import { closePanel } from '../store';
 
 /** Ghi công tài nguyên bên thứ ba: đọc từ `packages/content/data/credits.json` (nguồn duy nhất, `content:check` đối chiếu LICENSES.md). */

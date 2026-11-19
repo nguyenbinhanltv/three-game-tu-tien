@@ -1,7 +1,7 @@
 import { METHOD, methodName, realmName, SETS, skillBar, t } from '@dtl/content';
 import { ContentIcon } from '../ContentIcon';
 import { setLines, wornIds } from '../gear';
-import { Button, Divider, Slot } from '../kit';
+import { Button, Divider, Slot } from '../u2/win';
 import { RootCard } from '../Realm';
 import { openPanel, useUI } from '../store';
 

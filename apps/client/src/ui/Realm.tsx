@@ -1,4 +1,4 @@
-// Cảnh giới Phase 3-7: bình cảnh (tâm ma / Phá Cảnh Đan), linh căn ngũ hành. Dùng bộ khung `ui/kit`.
+// Cảnh giới Phase 3-7: bình cảnh (tâm ma / Phá Cảnh Đan), linh căn ngũ hành. Dùng bộ khung `ui/u2/win`.
 // Client chỉ hiển thị trạng thái server gửi (CharView) và gửi ý định; mọi phán định ở server.
 import './realm.css';
 import { useEffect, useState } from 'react';
@@ -19,7 +19,7 @@ import {
 import { itemName, nextMajorRealmName, realmName, ROOT, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { UiIcon } from './ContentIcon';
-import { Button, Divider } from './kit';
+import { Button, Divider } from './u2/win';
 import { closePanel, useUI } from './store';
 
 /** Số giây còn lại, đếm xuống từ `sec` (server gửi lúc `char` đổi). 0 = không chạy. */

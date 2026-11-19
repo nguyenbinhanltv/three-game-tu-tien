@@ -16,7 +16,7 @@ import {
   t,
 } from '@dtl/content';
 import { Game } from '../game/engine';
-import { Button } from './kit';
+import { Button } from './u2/win';
 import { type DebugPerf, useUI } from './store';
 
 /** Ngân sách desktop (CLAUDE.md, skill perf-budget): vượt thì tô đỏ, tới 80% thì tô vàng. */
