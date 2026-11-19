@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CollisionSet, type Shape, STEP_UP } from './collision';
+import { CollisionSet, footprintDist, type Shape, STEP_UP } from './collision';
 import { IN_FLY, IN_JUMP, IN_UP, type MoveInput, type MoveState, PLAYER_RADIUS, stepMove } from './movement';
 import { registerTerrain, type Terrain } from './terrain';
 import { VAN_LAM_TERRAIN } from './level';
@@ -127,6 +127,33 @@ describe('va chạm 3D', () => {
     c.near(500, 500, 5, () => n++);
     expect(n).toBe(0);
     expect(c.standY(100, 100, 5 + STEP_UP)).toBe(5);
+  });
+
+  it('lưới băm: 3000 hình, 100 người — mỗi bước chỉ xét vài hình (tất định, không đo giờ) và không ai nằm trong hình chặn', () => {
+    const shapes: Shape[] = [];
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 3000; i++)
+      shapes.push(
+        rnd() < 0.5
+          ? { k: 'cyl', x: 1000 + rnd() * 2200, z: 1000 + rnd() * 2200, r: 0.5, y0: 0, y1: 300 }
+          : { k: 'box', x: 1000 + rnd() * 2200, z: 1000 + rnd() * 2200, hx: 3, hz: 2, yaw: rnd() * 6, y0: 0, y1: 300 },
+      );
+    setup(shapes);
+    let visited = 0;
+    const near = T.collision.near.bind(T.collision);
+    T.collision.near = (x, z, r, fn) => near(x, z, r, (sh) => (visited++, fn(sh)));
+    const ps = Array.from({ length: 100 }, (_, i) => ({ x: 1500 + i * 10, y: 0, z: 1800, vy: 0, grounded: true, flying: false }));
+    const N = 200;
+    for (let n = 0; n < N; n++) for (const p of ps) stepMove(p, { s: n, mx: 0.5, mz: 1, yaw: n * 0.03, f: 0 }, ctx);
+    T.collision.near = near;
+    // Quét toàn bộ 3000 hình mỗi bước sẽ là 3000; lưới băm giữ ở mức vài hình (ô 16 m, mật độ ~0,0006 hình/m²).
+    expect(visited / (N * ps.length)).toBeLessThan(40);
+    for (const p of ps)
+      for (const sh of shapes) {
+        const d = footprintDist(sh, p.x, p.z);
+        expect(d).toBeGreaterThanOrEqual(PLAYER_RADIUS - 0.02);
+      }
   });
 
   it('ngự kiếm bay thẳng lên xuyên tán lá (fly:pass) nhưng đội đầu vào đáy khối chặn', () => {

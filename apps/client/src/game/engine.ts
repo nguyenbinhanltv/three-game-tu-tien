@@ -39,6 +39,7 @@ import {
 import { visibleView } from './net/aoiView';
 import { get, pushLog, pushToast, set, type TargetInfo } from '../ui/store';
 import { BlankWatch, canFallback, RENDERER_KEY } from './core/gpuGuard';
+import { collectScene, type ScanItem, type ScanOpts, sceneTree } from './debug/collScan';
 import { ColliderViz } from './debug/debugColliders';
 import { duckHold, type Sfx, sfx } from './audio/audio';
 import { rememberLevel } from './world/bootArt';
@@ -872,6 +873,16 @@ export class Game {
   send(type: string, msg?: unknown): void {
     if (this.leaving) return;
     this.room.send(type, msg);
+  }
+
+  /** Quét vật thể có hình trong cảnh cho công cụ `pnpm shots collscan` (COL-1): hộp bao thế giới từng mesh/instance. Chỉ đọc. */
+  collScan(opts?: ScanOpts): ScanItem[] {
+    return this.debugOk ? collectScene(this.scene, opts) : [];
+  }
+
+  /** Cây cảnh rút gọn để chỉnh bộ lọc công cụ quét. */
+  collTree(depth: number): string[] {
+    return this.debugOk ? sceneTree(this.scene, depth) : [];
   }
 
   /**
