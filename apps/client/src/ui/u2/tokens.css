@@ -185,7 +185,7 @@
   --u-z-toast: 800;
   --u-z-cine: 900;
 
-  /* ── Giá trị chuyển từ bộ khung cũ (--k-*): tên đổi, giá trị GIỮ NGUYÊN (U2-8) ── */
+  /* ── Giá trị chuyển từ bộ khung cửa sổ cũ: tên đổi, giá trị GIỮ NGUYÊN (U2-8) ── */
   --u-p-night: #1a2938;
   --u-p-night-2: #22364e;
   --u-p-night-0: #0e1722;
@@ -220,7 +220,7 @@
   --u-z-kit-tip: 60;
   --u-z-kit-modal: 50;
 
-  /* ── Giá trị chuyển từ Ngọc Giản (--ngj-*): tên đổi, giá trị GIỮ NGUYÊN (U2-8) ── */
+  /* ── Giá trị chuyển từ Ngọc Giản: tên đổi, giá trị GIỮ NGUYÊN (U2-8) ── */
   --u-h-gold: #c9a45c;
   --u-h-gold-hi: #f0d78e;
   --u-h-gold-lo: #7a5f2c;
@@ -241,7 +241,7 @@
   --u-scale: var(--ui-scale, 1);
 }
 
-/* Giảm chuyển động: tắt mọi thời lượng (cờ do ui/ngj/motion.ts đặt trên <html>). */
+/* Giảm chuyển động: tắt mọi thời lượng (cờ do ui/u2/shell/motion.ts đặt trên <html>). */
 :root[data-reduce-motion='1'],
 :root[data-reduce-motion='true'] {
   --u-dur-fast: 0ms;

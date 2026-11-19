@@ -1,9 +1,7 @@
 /**
- * Bộ khung UI chung (P2-C1). Mọi bảng mới import từ đây; xem trang mẫu `?viewer=ui`.
- * Khung vẽ bằng CSS (viền vát, đồng thau), màu theo assets/palette.json qua biến `--k-*` trong tokens.css.
+ * Bộ khung UI chung (P2-C1). Mọi bảng mới import từ đây.
  */
-import './tokens.css';
-import './kit.css';
+import './panel.css';
 
 export { Button, Segmented, Slider, Tabs } from './Controls';
 export { Modal } from './Modal';

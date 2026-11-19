@@ -3,8 +3,8 @@ import { BAR_SIZE, CHARGE_MAX, PF_FLYING, PF_MEDITATING, type SkillDef } from '@
 import { METHOD, realmName, resolveBarSkill, SKILL, skillBar, t, thanThong10Skill, thanThongSkill, VARIANTS } from '@dtl/content';
 import { Game } from '../../../game/engine';
 import { ContentIcon } from '../../ContentIcon';
-import { SysIcon, type SysIconName } from '../../ngj';
-import { TipCard, Tooltip } from '../../kit';
+import { SysIcon, type SysIconName } from '../shell';
+import { TipCard, Tooltip } from '../win';
 import { togglePanel, useUI } from '../../store';
 import { IconFrame } from '../Slot';
 import { LockMark } from '../patterns';

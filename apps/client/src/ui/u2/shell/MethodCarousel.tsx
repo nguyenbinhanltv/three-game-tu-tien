@@ -1,8 +1,8 @@
 import { type CSSProperties, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { METHODS, SKILL, t } from '@dtl/content';
-import { ContentIcon, UiIcon } from '../ContentIcon';
-import { NgjButton, NgjSlot } from './ngj';
+import { ContentIcon, UiIcon } from '../../ContentIcon';
+import { NgjButton, NgjSlot } from './ornament';
 import { SealNumeral } from './icons';
 import { useReduceMotion } from './motion';
 

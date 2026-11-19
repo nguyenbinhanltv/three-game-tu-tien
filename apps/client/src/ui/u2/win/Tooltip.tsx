@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react';
-import { uiScale } from '../uiScale';
+import { uiScale } from '../../uiScale';
 
 const GAP = 8;
 const MARGIN = 8;

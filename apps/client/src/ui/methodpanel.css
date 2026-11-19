@@ -285,7 +285,7 @@
     transform: scale(0.98);
   }
 }
-/* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/ngj/motion.ts). */
+/* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/u2/shell/motion.ts). */
 :root[data-reduce-motion='true'] .skill[data-state='ultready'] {
   animation: none;
   filter: brightness(1.3);

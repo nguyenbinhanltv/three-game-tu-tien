@@ -1,7 +1,7 @@
 import { t } from '@dtl/content';
 import { UiIcon } from '../ContentIcon';
 import { pctText } from '../gear';
-import { Divider, TipCard, Tooltip } from '../kit';
+import { Divider, TipCard, Tooltip } from '../u2/win';
 import { useUI } from '../store';
 import { statText } from './Overview';
 import { elemRows, STAT_GROUPS, statRows, type SourceId, type StatRow } from './stats';

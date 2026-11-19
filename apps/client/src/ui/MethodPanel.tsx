@@ -14,8 +14,8 @@ import {
 import { METHODS, METHOD, realmName, resolveBarSkill, skillBar, SKILL, t, VARIANTS } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { ContentIcon, UiIcon } from './ContentIcon';
-import { Button, Divider, PanelWindow, Slot, TipCard, Tooltip } from './kit';
-import { MethodCarousel } from './ngj';
+import { Button, Divider, PanelWindow, Slot, TipCard, Tooltip } from './u2/win';
+import { MethodCarousel } from './u2/shell';
 import { closePanel, useUI } from './store';
 
 const SCROLL = 'itm_bi_tich_tan_quyen';
