@@ -25,8 +25,10 @@ export const VIEWS: View[] = [
   { name: 'khich', stand: [1024, 960], eye: [1000, 84, 1010], at: [1024, 66, 860], fov: 60 },
   { name: 'khoc', stand: [834, 1340], eye: [900, 80, 1420], at: [760, 74, 1220], fov: 58 },
   { name: 'tragioi', stand: [1084, 600], eye: [1060, 84, 650], at: [1084, 76, 540], fov: 56 },
-  { name: 'xac', stand: [1010, 1405], eye: [1010, 13, 1410], at: [1060, 8, 1330], fov: 62, rel: true },
+  { name: 'xac', stand: [1000, 1450], eye: [1018, 7, 1388], at: [1066, 9, 1336], fov: 62, rel: true },
   { name: 'thu3', stand: [830, 700], eye: [800, 16, 700], at: [870, 6, 625], fov: 62, rel: true },
+  { name: 'cucquang', stand: [1024, 1000], eye: [1024, 4, 1000], at: [1024, 190, 500], fov: 78, rel: true },
+  { name: 'vuc', stand: [1000, 790], eye: [975, 7, 810], at: [1018, -34, 690], fov: 66, rel: true },
   { name: 'trencao', stand: [1024, 900], eye: [1180, 190, 1180], at: [1024, 70, 700], fov: 58 },
   { name: 'phongbac', stand: [1024, 420], eye: [1024, 90, 480], at: [1024, 120, 120], fov: 64 },
 ];

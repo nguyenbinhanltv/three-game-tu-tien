@@ -3,21 +3,21 @@
   "layers": [
     {
       "layer": "grass",
-      "ph": "snow_02",
-      "a": "grass.a.bed718f1b9.webp",
-      "n": "grass.n.8e37f10ab8.webp"
+      "ph": "proc:powder",
+      "a": "grass.a.2e3638e79f.webp",
+      "n": "grass.n.40ff098c05.webp"
     },
     {
       "layer": "dirt",
-      "ph": "snow_03",
-      "a": "dirt.a.cbf2f61761.webp",
-      "n": "dirt.n.6cde71c96a.webp"
+      "ph": "proc:ripple",
+      "a": "dirt.a.c48be5f8bb.webp",
+      "n": "dirt.n.f5a53744ca.webp"
     },
     {
       "layer": "forest",
-      "ph": "snow_field_aerial",
-      "a": "forest.a.ec318729fb.webp",
-      "n": "forest.n.1c4e79862d.webp"
+      "ph": "proc:crust",
+      "a": "forest.a.432cbbb14c.webp",
+      "n": "forest.n.7198aaf331.webp"
     },
     {
       "layer": "rock",
@@ -33,9 +33,9 @@
     },
     {
       "layer": "sand",
-      "ph": "snow_05",
-      "a": "sand.a.dc9b8c1a37.webp",
-      "n": "sand.n.5f5a81803f.webp"
+      "ph": "proc:drift",
+      "a": "sand.a.c7bc6da8f8.webp",
+      "n": "sand.n.7a8e5f780d.webp"
     },
     {
       "layer": "paving",
@@ -45,9 +45,9 @@
     },
     {
       "layer": "gravel",
-      "ph": "snow_04",
-      "a": "gravel.a.ad16896eb0.webp",
-      "n": "gravel.n.dc5be87090.webp"
+      "ph": "proc:grit",
+      "a": "gravel.a.762f9c4f28.webp",
+      "n": "gravel.n.8758713470.webp"
     }
   ]
 }

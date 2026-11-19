@@ -228,13 +228,13 @@
       "id": "khe_0",
       "x": 1024,
       "z": 834,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -243,13 +243,13 @@
       "id": "khe_1",
       "x": 1018,
       "z": 804,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -258,13 +258,13 @@
       "id": "khe_2",
       "x": 1010,
       "z": 774,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -273,13 +273,13 @@
       "id": "khe_3",
       "x": 1007,
       "z": 744,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -288,13 +288,13 @@
       "id": "khe_4",
       "x": 1006,
       "z": 714,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -303,13 +303,13 @@
       "id": "khe_5",
       "x": 1009,
       "z": 684,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -318,13 +318,13 @@
       "id": "khe_6",
       "x": 1014,
       "z": 654,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -333,13 +333,13 @@
       "id": "khe_7",
       "x": 1021,
       "z": 624,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -348,13 +348,13 @@
       "id": "khe_8",
       "x": 1029,
       "z": 594,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -363,13 +363,13 @@
       "id": "khe_9",
       "x": 1036,
       "z": 564,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -378,13 +378,13 @@
       "id": "khe_10",
       "x": 1040,
       "z": 534,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -393,13 +393,13 @@
       "id": "khe_11",
       "x": 1042,
       "z": 504,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -408,13 +408,13 @@
       "id": "khe_12",
       "x": 1040,
       "z": 474,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }
@@ -423,13 +423,13 @@
       "id": "khe_13",
       "x": 1036,
       "z": 444,
-      "y": 58,
+      "y": 38,
       "flatR": 10,
-      "outerR": 56,
+      "outerR": 46,
       "round": true,
       "detail": 1.5,
       "relief": {
-        "amp": 3,
+        "amp": 5,
         "freq": 0.05,
         "crease": true
       }

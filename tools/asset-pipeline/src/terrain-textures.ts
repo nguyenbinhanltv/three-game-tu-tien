@@ -76,15 +76,136 @@ export const ASH_LAYERS = [
  * (`levels/bac_hoang.assets.json` `ground.set`). Lớp tuyết không nhuộm (đã trắng); đá/vách kéo về đen lam bằng `tint`.
  */
 export const SNOW_LAYERS = [
-  { layer: 'grass', ph: 'snow_02', author: 'Rob Tuytel' },
-  { layer: 'dirt', ph: 'snow_03', author: 'Rob Tuytel' },
-  { layer: 'forest', ph: 'snow_field_aerial', author: 'Rob Tuytel' },
+  { layer: 'grass', ph: 'proc:powder', author: 'thủ tục (tools/asset-pipeline)' },
+  { layer: 'dirt', ph: 'proc:ripple', author: 'thủ tục (tools/asset-pipeline)' },
+  { layer: 'forest', ph: 'proc:crust', author: 'thủ tục (tools/asset-pipeline)' },
   { layer: 'rock', ph: 'dark_rock', author: 'Rob Tuytel', tint: [0.8, 0.82, 0.95] },
   { layer: 'cliff', ph: 'rock_wall_08', author: 'Amal Kumar', tint: [0.78, 0.8, 0.95] },
-  { layer: 'sand', ph: 'snow_05', author: 'Rob Tuytel' },
+  { layer: 'sand', ph: 'proc:drift', author: 'thủ tục (tools/asset-pipeline)' },
   { layer: 'paving', ph: 'volcanic_rock_tiles', author: 'Charlotte Baglioni', tint: [0.8, 0.82, 0.95] },
-  { layer: 'gravel', ph: 'snow_04', author: 'Rob Tuytel' },
+  { layer: 'gravel', ph: 'proc:grit', author: 'thủ tục (tools/asset-pipeline)' },
 ] as const;
+
+// ---- tuyết thủ tục: ô liền mạch (nhiễu giá trị tuần hoàn), không có dấu chân/vết bánh xe như bộ snow_* của Poly Haven ----
+function hash2(x: number, y: number, seed: number): number {
+  let h = (x * 374761393 + y * 668265263 + seed * 2246822519) | 0;
+  h = (h ^ (h >>> 13)) * 1274126177;
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
+/** Nhiễu giá trị tuần hoàn theo chu kỳ `p` ô (tile liền mạch), nội suy quintic. */
+function pnoise(x: number, y: number, p: number, seed: number): number {
+  const xi = Math.floor(x);
+  const yi = Math.floor(y);
+  const fx = x - xi;
+  const fy = y - yi;
+  const u = fx * fx * fx * (fx * (fx * 6 - 15) + 10);
+  const v = fy * fy * fy * (fy * (fy * 6 - 15) + 10);
+  const m = (n: number) => ((n % p) + p) % p;
+  const a = hash2(m(xi), m(yi), seed);
+  const b = hash2(m(xi + 1), m(yi), seed);
+  const c = hash2(m(xi), m(yi + 1), seed);
+  const d = hash2(m(xi + 1), m(yi + 1), seed);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function fbmT(u: number, v: number, base: number, oct: number, seed: number): number {
+  let s = 0;
+  let amp = 0.5;
+  let norm = 0;
+  let f = base;
+  for (let o = 0; o < oct; o++) {
+    s += amp * pnoise(u * f, v * f, f, seed + o * 17);
+    norm += amp;
+    amp *= 0.5;
+    f *= 2;
+  }
+  return s / norm;
+}
+
+/** Tuyết thủ tục 1024²: trả albedo (RGB) và độ cao 0..1 để dựng pháp tuyến/độ nhám. */
+function procSnow(kind: string, n: number): { rgb: Buffer; height: Float32Array; rough: Float32Array } {
+  const height = new Float32Array(n * n);
+  const rgb = Buffer.alloc(n * n * 3);
+  const rough = new Float32Array(n * n);
+  const seed = { powder: 11, ripple: 23, crust: 37, drift: 51, grit: 67 }[kind] ?? 1;
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      const u = x / n;
+      const v = y / n;
+      let h: number;
+      switch (kind) {
+        case 'ripple': {
+          // gờ gió (sastrugi): sóng kéo dài theo một phương, méo bởi nhiễu thấp tần
+          const warp = fbmT(u, v, 3, 3, seed) * 2.2;
+          const r = Math.sin((u * 14 + Math.round(warp) + fbmT(u, v, 2, 2, seed + 5) * 4) * Math.PI * 2);
+          h = 0.5 + 0.28 * r * (0.6 + 0.4 * fbmT(u, v, 4, 3, seed + 9)) + (fbmT(u, v, 16, 3, seed + 13) - 0.5) * 0.18;
+          break;
+        }
+        case 'crust': {
+          // lớp vỏ băng nứt: ô đa giác lớn + khe nứt hẹp
+          const a = fbmT(u, v, 6, 3, seed);
+          const crack = Math.abs(fbmT(u, v, 8, 2, seed + 3) - 0.5);
+          h = 0.55 + (a - 0.5) * 0.35 - Math.max(0, 0.035 - crack) * 6 + (fbmT(u, v, 32, 2, seed + 7) - 0.5) * 0.08;
+          break;
+        }
+        case 'drift':
+          h = 0.5 + (fbmT(u, v, 3, 5, seed) - 0.5) * 0.9;
+          break;
+        case 'grit': {
+          // tuyết lẫn sỏi đen mịn
+          const base = 0.5 + (fbmT(u, v, 4, 4, seed) - 0.5) * 0.5;
+          const g = pnoise(u * 90, v * 90, 90, seed + 2);
+          h = base + (g > 0.86 ? (g - 0.86) * 2.2 : 0);
+          break;
+        }
+        default:
+          // bột mịn: gò tuyết thấp tần + hạt mịn
+          h = 0.5 + (fbmT(u, v, 4, 5, seed) - 0.5) * 0.8 + (pnoise(u * 128, v * 128, 128, seed + 4) - 0.5) * 0.05;
+      }
+      h = Math.min(1, Math.max(0, h));
+      const i = y * n + x;
+      height[i] = h;
+      // màu: trắng ngả lam, thung sâu lam đậm hơn, đỉnh gò trắng sáng
+      const shade = 0.78 + h * 0.3;
+      let r = 0.9 * shade;
+      let g = 0.93 * shade;
+      let b = 1.0 * shade;
+      if (kind === 'grit' && pnoise(u * 90, v * 90, 90, seed + 2) > 0.86) {
+        r = 0.18;
+        g = 0.18;
+        b = 0.22;
+      }
+      if (kind === 'crust') {
+        const k = Math.max(0, 0.5 - h) * 0.9;
+        r -= k * 0.35;
+        g -= k * 0.22;
+      }
+      rgb[i * 3] = Math.min(255, Math.round(r * 255));
+      rgb[i * 3 + 1] = Math.min(255, Math.round(g * 255));
+      rgb[i * 3 + 2] = Math.min(255, Math.round(b * 255));
+      rough[i] = kind === 'crust' ? 0.35 + (1 - h) * 0.3 : 0.62 + (1 - h) * 0.18;
+    }
+  }
+  return { rgb, height, rough };
+}
+
+/** Pháp tuyến (OpenGL, R,G) từ độ cao tuần hoàn, B = độ nhám. */
+function procNormal(h: Float32Array, rough: Float32Array, n: number, strength: number): Buffer {
+  const out = Buffer.alloc(n * n * 3);
+  const at = (x: number, y: number) => h[((y + n) % n) * n + ((x + n) % n)]!;
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      const dx = (at(x + 1, y) - at(x - 1, y)) * strength;
+      const dy = (at(x, y + 1) - at(x, y - 1)) * strength;
+      const l = Math.hypot(dx, dy, 1);
+      const i = (y * n + x) * 3;
+      out[i] = Math.round(((-dx / l) * 0.5 + 0.5) * 255);
+      out[i + 1] = Math.round(((dy / l) * 0.5 + 0.5) * 255);
+      out[i + 2] = Math.round(rough[y * n + x]! * 255);
+    }
+  }
+  return out;
+}
 
 const SRC = process.env.DTL_ASSET_SOURCE
   ? path.resolve(process.env.DTL_ASSET_SOURCE, 'texture')
@@ -155,6 +276,19 @@ async function main(): Promise<void> {
   const layers: readonly { layer: string; ph: string; author: string; tint?: readonly number[] }[] =
     SET === 'ochre' ? OCHRE_LAYERS : SET === 'slate' ? SLATE_LAYERS : SET === 'ash' ? ASH_LAYERS : SET === 'snow' ? SNOW_LAYERS : LAYERS;
   for (const L of layers) {
+    if (L.ph.startsWith('proc:')) {
+      const ps = procSnow(L.ph.slice(5), SIZE);
+      const albedo = await sharp(ps.rgb, { raw: { width: SIZE, height: SIZE, channels: 3 } })
+        .webp({ quality: 80 })
+        .toBuffer();
+      const n = await sharp(procNormal(ps.height, ps.rough, SIZE, 14), { raw: { width: SIZE, height: SIZE, channels: 3 } })
+        .webp({ quality: 80 })
+        .toBuffer();
+      const entry = { layer: L.layer, ph: L.ph, a: await emit(L.layer, 'a', albedo, written), n: await emit(L.layer, 'n', n, written) };
+      manifest.push(entry);
+      console.log(`[terrain] ${L.layer} (${L.ph}): a ${(albedo.length / 1024) | 0} KB, n ${(n.length / 1024) | 0} KB`);
+      continue;
+    }
     const [diff, nor, rough] = await Promise.all([source(L.ph, 'Diffuse'), source(L.ph, 'nor_gl'), source(L.ph, 'Rough')]);
     let img = sharp(diff).resize(SIZE, SIZE).removeAlpha();
     if (L.tint) img = img.modulate({ saturation: 0.48, brightness: 1.08 }).linear([...L.tint], [0, 0, 0]);

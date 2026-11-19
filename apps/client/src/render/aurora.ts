@@ -18,8 +18,8 @@ export class Aurora {
 
   constructor() {
     // Cung bắc (−z) rộng ~150°, cao 120→1300 m; tạo bằng ống hở rồi cắt bằng thetaStart/thetaLength.
-    this.geo = new THREE.CylinderGeometry(RADIUS, RADIUS, 1180, 96, 1, true, Math.PI - 1.3, 2.6);
-    this.geo.translate(0, 120 + 590, 0);
+    this.geo = new THREE.CylinderGeometry(RADIUS, RADIUS, 1900, 128, 1, true, Math.PI - 1.55, 3.1);
+    this.geo.translate(0, 60 + 950, 0);
     this.mat = new THREE.MeshBasicNodeMaterial({
       transparent: true,
       depthWrite: false,
@@ -32,7 +32,7 @@ export class Aurora {
     const wave = vnoise(vec2(a.mul(5), time.mul(0.04)));
     const ray = vnoise(vec2(a.mul(70).add(wave.mul(9)), time.mul(0.1)));
     const fold = vnoise(vec2(a.mul(9).add(time.mul(0.03)), v.mul(1.5)));
-    const body = pow(float(1).sub(v), 1.2).mul(smoothstep(0.0, 0.08, v));
+    const body = pow(float(1).sub(v), 0.8).mul(smoothstep(0.0, 0.06, v));
     const inten = clamp(ray.mul(0.9).add(0.15).mul(fold.mul(0.9).add(0.35)).mul(body), 0, 1.4);
     const green = vec3(0.1, 1.0, 0.55);
     const teal = vec3(0.1, 0.65, 1.0);
@@ -43,8 +43,8 @@ export class Aurora {
     const flick = sin(time.mul(0.7).add(a.mul(11)))
       .mul(0.12)
       .add(0.88);
-    this.mat.colorNode = col.mul(1.1);
-    this.mat.opacityNode = clamp(inten.mul(edge).mul(flick).mul(this.amount), 0, 1);
+    this.mat.colorNode = col.mul(1.6);
+    this.mat.opacityNode = clamp(inten.mul(edge).mul(flick).mul(this.amount).mul(1.9), 0, 1);
     this.mesh = new THREE.Mesh(this.geo, this.mat);
     this.mesh.name = 'bh-aurora';
     this.mesh.frustumCulled = false;
