@@ -279,7 +279,7 @@ export class ThanTangArt {
       exit: DG.exit,
       seed: SEED,
       keepOut: ttKeepOut,
-      mist: { a: [0.16, 0.1, 0.26], b: [0.46, 0.32, 0.56], innerR: 30, outerR: 128, opacity: 0.34 },
+      mist: { a: [0.12, 0.1, 0.14], b: [0.38, 0.32, 0.4], innerR: 30, outerR: 128, opacity: 0.34 },
     });
     this.group.add(this.fx.group);
     this.addBeams();
