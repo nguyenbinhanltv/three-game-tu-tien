@@ -1,9 +1,21 @@
 // Mỹ thuật phó bản Xích Tẫn Khích (DV-3K, chương 5): hàm thuần theo `TerrainDef.canyon` của level `xich_tan_khich`, dùng chung cho màu đỉnh địa hình, đường vết nứt
 // phát sáng, điểm đèn nhấn và rải đá. Bảng màu `rift_*` như Bắc Hoang (`bacHoangArt.ts`). Không dùng Math.random: mọi máy cho cùng một hẻm.
 import { fbm, hash01, smoothstep, type TerrainDef } from '@dtl/shared';
-import { RIFT, type BhRock, type RiftPt } from './bacHoangArt';
+import { type BhRock, type RiftPt } from './bacHoangArt';
 
 export const XICH_LEVEL = 'xich_tan_khich';
+
+/** Bảng đen than núi lửa tàn (DUN-1 PR6). */
+const XK = {
+  basalt: 0x3a3532,
+  ash: 0x777069,
+  ashLight: 0x8f857a,
+  clay: 0x8a4a34,
+  glow: 0xe0642a,
+  bone: 0xcfc6b4,
+  wall: 0x2c2726,
+  rust: 0x5e2c1c,
+} as const;
 
 const hex = (c: number, k = 1): [number, number, number] => [
   (((c >> 16) & 255) / 255) * k,
@@ -71,48 +83,45 @@ export function xichGroundColor(
   const c = def.canyon;
   const n = fbm(x * 0.012, z * 0.012, 3, def.seed + 300);
   const m = fbm(x * 0.05, z * 0.05, 2, def.seed + 331);
+  const f = fbm(x * 0.18, z * 0.18, 1, def.seed + 377);
   const rel = xichRel(def, h);
   const slope = 1 - ny;
-  let col = hex(RIFT.ash, 1.6 + n * 0.3);
-  // (sàn sáng, vách tối: `col` bên dưới giữ nguyên cho sàn)
-  col = lerp3(col, hex(RIFT.ashLight, 0.7 + m * 0.2), Math.min(0.45, Math.max(0, n * 1.2 + 0.2)));
-  // Mạng nứt mảnh khắp sàn, đỏ sẫm.
+  // DUN-1 PR6: bảng đen than núi lửa tàn (đá bazan đen ấm, mảng tro xám, đất sét nung gạch ở gần vết nứt), KHÔNG tím; vách bazan đen có tầng gỉ đỏ.
+  let col = hex(XK.basalt, 0.8 + n * 0.5 + f * 0.2);
+  col = lerp3(col, hex(XK.ash, 0.8 + m * 0.3), Math.min(0.6, Math.max(0, n * 1.3 + 0.15)));
+  // Mạng nứt mảnh khắp sàn: sẫm, chỉ ửng cam rất nhẹ (vệt sáng thật do `DungeonFx`).
   const web = 1 - Math.min(1, Math.abs(fbm(x * 0.03 + 9, z * 0.03 - 4, 3, def.seed + 612)) * 8);
-  if (web > 0.4) col = lerp3(col, hex(RIFT.ember, 0.55), Math.min(0.4, (web - 0.4) * 0.9) * (1 - smoothstep(2, 10, rel)));
-  // Gần vết nứt: nóng dần (vệt sáng thật do `riftVeil`).
+  if (web > 0.4) col = lerp3(col, hex(XK.clay, 0.7), Math.min(0.15, (web - 0.4) * 0.4) * (1 - smoothstep(2, 10, rel)));
+  // Gần vết nứt: đá nung đỏ gạch rồi tối dần.
   if (cracks.length) {
     const d = xichCrackDist(cracks, x, z);
-    const heat = 1 - smoothstep(2, 15, d);
-    if (heat > 0) col = lerp3(col, hex(RIFT.ember, 0.8 + m * 0.4), heat * 0.6);
-    col = lerp3(col, hex(RIFT.blood, 0.6), (1 - smoothstep(10, 26, d)) * 0.25);
+    col = lerp3(col, hex(XK.clay, 0.9 + m * 0.4), (1 - smoothstep(1.5, 7, d)) * 0.3);
+    col = lerp3(col, hex(XK.glow, 1.0), (1 - smoothstep(0.3, 2.2, d)) * 0.5);
   }
   if (c) {
-    // Bục quanh bia giữ ở tâm: xương/tro bay sáng hơn, vòng than hồng mảnh ngoài rìa.
+    // Bục quanh bia giữ ở tâm: tro xương sáng hơn, vòng đá nung mảnh ngoài rìa.
     const dc = Math.hypot(x - c.cx, z - c.cz);
     const slab = 1 - smoothstep(8, 11.5, dc);
-    if (slab > 0) col = lerp3(col, hex(RIFT.bone, 0.6 + m * 0.12), slab * 0.65);
-    const ring = 1 - Math.min(1, Math.abs(dc - 13.5) / 0.7);
-    if (ring > 0) col = lerp3(col, hex(RIFT.ember, 0.9), ring * 0.55);
+    if (slab > 0) col = lerp3(col, hex(XK.bone, 0.5 + m * 0.12), slab * 0.6);
+    const ring = 1 - Math.min(1, Math.abs(dc - 13.5) / 0.5);
+    if (ring > 0) col = lerp3(col, hex(XK.glow, 0.8), ring * 0.4);
   }
   if (rel > 1.5) {
-    // Vách: dải tầng đá theo độ cao (≈ 3 m), xen huyết sậm và dạ tím; sườn dốc lộ đá tối.
+    // Vách bazan đen có tầng gỉ đỏ theo độ cao (≈ 3 m); chân vách ám khói; gờ đỉnh ánh đỏ nắng thấp.
     const band = 0.5 + 0.5 * Math.sin(rel * 2.1 + n * 7);
-    const strata = lerp3(hex(RIFT.violetDeep, 1.5), hex(RIFT.ash, 1.15), band);
-    col = lerp3(col, strata, Math.min(1, (rel - 1.5) / 9) * (0.55 + 0.35 * m));
-    // Vách tối hẳn so với sàn và trời (tách lớp giá trị), chỉ lộ vân tầng.
-    if (slope > 0.2) col = lerp3(col, hex(RIFT.violetDeep, 1.1 + band * 0.7), Math.min(0.85, (slope - 0.2) * 3));
-    // Chân vách ám khói, gờ đỉnh vách ánh than hồng (nắng xiên).
-    // Viền sáng: chân vách ánh than hồng hắt từ vết nứt (rim thấp), gờ đỉnh vách ánh tím lạnh của trời.
-    col = lerp3(col, hex(RIFT.ember, 1.3 + m * 0.4), (1 - smoothstep(1.5, 9, rel)) * 0.6);
+    const strata = lerp3(hex(XK.wall, 1.0), hex(XK.rust, 0.9), band * 0.7);
+    col = lerp3(col, strata, Math.min(1, (rel - 1.5) / 9) * (0.6 + 0.35 * m));
+    if (slope > 0.2) col = lerp3(col, hex(XK.wall, 0.8 + band * 0.5), Math.min(0.85, (slope - 0.2) * 3));
+    col = lerp3(col, hex(XK.clay, 1.0 + m * 0.3), (1 - smoothstep(1.5, 8, rel)) * 0.28);
     if (c)
       col = lerp3(
         col,
-        hex(RIFT.violet, 1.9),
-        smoothstep(c.wallH - 7, c.wallH - 1, rel) * (1 - smoothstep(c.wallH - 1, c.wallH + 3, rel)) * 0.7,
+        hex(XK.glow, 1.0),
+        smoothstep(c.wallH - 7, c.wallH - 1, rel) * (1 - smoothstep(c.wallH - 1, c.wallH + 3, rel)) * 0.3,
       );
   }
-  // Cao nguyên: tro bay.
-  if (c && rel > c.wallH - 6) col = lerp3(col, hex(RIFT.ashLight, 0.82 + n * 0.16), smoothstep(c.wallH - 6, c.wallH + 4, rel) * 0.7);
+  // Cao nguyên: tro bay xám ấm.
+  if (c && rel > c.wallH - 6) col = lerp3(col, hex(XK.ashLight, 0.8 + n * 0.14), smoothstep(c.wallH - 6, c.wallH + 4, rel) * 0.7);
   out[0] = col[0];
   out[1] = col[1];
   out[2] = col[2];

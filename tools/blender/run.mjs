@@ -52,6 +52,7 @@ const procedural = [
   { id: 'arch_phuc_mach', script: 'tools/blender/phuc_mach_arch.py' },
   { id: 'arch_kinh_nguyet', script: 'tools/blender/kinh_nguyet_arch.py' },
   { id: 'arch_than_tang', script: 'tools/blender/than_tang_arch.py' },
+  { id: 'arch_xich_tan', script: 'tools/blender/xich_tan_arch.py' },
   // Lưới Tripo v02 (task 70d2072c), tô màu theo vùng bằng script vì texture Tripo mất màu (M0-3).
   { id: 'prop_phi_kiem', script: 'tools/blender/recolor_phi_kiem.py', source: '3d/vu-khi/prop_phi_kiem/tripo/raw_v02.glb' },
   // Thư viện clip Quaternius UAL1+UAL2 (CC0): `source` = UAL1, `source2` = UAL2 (truyền `--src2`), xem anim_human_ual.py.

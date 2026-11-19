@@ -32,6 +32,11 @@ export interface DungeonFxConfig {
     w1?: number;
     /** Bề rộng vùng phát sáng ở đáy theo `|across|` (mặc định 0,7). */
     glowW?: number;
+    /** Đường nứt cho trước (nam → bắc, toạ độ thế giới): vẽ thêm bên cạnh các khe ngẫu nhiên; nửa rộng `pathW` (mặc định 0,5 m) dao động nhẹ. */
+    paths?: readonly (readonly { x: number; z: number }[])[];
+    pathW?: number;
+    /** Khoảng cách tới camera (m) khe mờ hết → hiện đủ (mặc định 14 → 34). */
+    fade?: [number, number];
   };
   mist?: { a: [number, number, number]; b: [number, number, number]; innerR: number; outerR: number; opacity: number };
   ring?: { rgb: string; mote: number };
@@ -79,10 +84,7 @@ export class DungeonFx {
   private addCracks(k: NonNullable<DungeonFxConfig['cracks']>): void {
     const { cx, cz, keepOut } = this.cfg;
     const rand = rng(this.cfg.seed + 31);
-    const pos: number[] = [];
-    const across: number[] = [];
-    const idx: number[] = [];
-    const P = PROFILE.length;
+    const all: number[][][] = [];
     let made = 0;
     for (let tries = 0; tries < 500 && made < k.count; tries++) {
       const a = rand() * Math.PI * 2;
@@ -116,6 +118,37 @@ export class DungeonFx {
         z += Math.sin(dir) * 2.2;
       }
       if (!ok || rows.length < 3) continue;
+      all.push(rows);
+      made++;
+    }
+    // đường nứt cho trước: lấy mẫu mỗi ~2,2 m, pháp tuyến theo hướng đoạn
+    for (const path of k.paths ?? []) {
+      const rows: number[][] = [];
+      for (let i = 0; i < path.length; i++) {
+        const a0 = path[Math.max(0, i - 1)]!;
+        const a1 = path[Math.min(path.length - 1, i + 1)]!;
+        const dx = a1.x - a0.x;
+        const dz = a1.z - a0.z;
+        const len = Math.hypot(dx, dz) || 1;
+        const nx = -dz / len;
+        const nz = dx / len;
+        const pt = path[i]!;
+        const w = (k.pathW ?? 0.5) * (0.75 + 0.5 * Math.sin(i * 1.7 + 0.5 * i * i * 0.05));
+        const row: number[] = [];
+        for (const [u, h] of PROFILE) {
+          const px = pt.x + nx * w * u;
+          const pz = pt.z + nz * w * u;
+          row.push(px, heightAt(px, pz) + 0.05 + h * Math.min(1, w * 1.4), pz);
+        }
+        rows.push(row);
+      }
+      if (rows.length >= 3) all.push(rows);
+    }
+    const pos: number[] = [];
+    const across: number[] = [];
+    const idx: number[] = [];
+    const P = PROFILE.length;
+    for (const rows of all) {
       const base = pos.length / 3;
       for (const row of rows) {
         for (let j = 0; j < P; j++) {
@@ -129,7 +162,6 @@ export class DungeonFx {
           idx.push(o, o + P, o + 1, o + 1, o + P, o + P + 1);
         }
       }
-      made++;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -150,7 +182,7 @@ export class DungeonFx {
       .mul(smoothstep(gw, 0.0, u))
       .mul(pulse);
     // gần camera (< ~14–34 m) khe mờ dần: không bao giờ thành dải to chắn khung hình khi camera sát mặt đất
-    const nearFade = smoothstep(14, 34, positionWorld.sub(cameraPosition).length());
+    const nearFade = smoothstep(k.fade?.[0] ?? 14, k.fade?.[1] ?? 34, positionWorld.sub(cameraPosition).length());
     mat.opacityNode = smoothstep(1.35, 1.05, u).mul(nearFade);
     mat.polygonOffset = true;
     mat.polygonOffsetFactor = -3;

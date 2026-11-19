@@ -8,7 +8,8 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 | 2 | Phục Mạch Quật (`phuc_mach`) | đã duyệt hình (#328) |
 | 3 | Kính Nguyệt Cung (`kinh_nguyet`) | đã duyệt hình (#330) |
 | 4 | Thần Tàng Điện (`than_tang`) | PR này |
-| tiếp | Kim Dạ Cung, Xích Tẫn Khích, Độ Kiếp (+ Bắc Hoang) | chưa làm |
+| 6 | Xích Tẫn Khích (`xich_tan_khich`) | PR này |
+| tiếp | Độ Kiếp (+ Bắc Hoang) | chưa làm |
 
 ## PR 1: Kiếm Trủng — nghĩa địa kiếm cổ
 
@@ -104,3 +105,13 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 
 - Sàn trong vùng đánh (r < ~64, chuyển dần tới r 72) đổi sang **đá xám đen ánh vàng ấm**, sáng hơn (nền 0,075–0,15 thay 0,008–0,026), gần như bỏ vân tím; vành ngoài giữ đen tím. Không đổi vạch báo của game.
 - Kiểm bằng `pnpm shots dungeonart --level than_tang --battle 1 --perf 1`: ảnh `90-boss-chieu` và `91-boss-pha-cuoi` (1080p). **Kết quả**: vạch báo tím/hồng (hình quạt, vòng chữ triện) nay tách rõ khỏi nền xám ấm — mép, vành chữ và các dải đồng tâm đều đọc được, không còn chìm vào nền tím như trước. Hạn chế: bloom/sương tím của hậu kỳ vẫn ngả nền hơi hồng-tím nên độ tương phản màu (không phải độ sáng) chưa tối đa; nền vẫn thiên lạnh ở các góc xa trong vùng đánh.
+
+## PR 6: Xích Tẫn Khích — hẻm núi lửa tàn đỏ-đen (áp chuẩn từ vòng 1)
+
+- **Bảng màu** `xk` (mặt trời đỏ cam thấp ~34°, trời khói nâu xám, sương tro; bão hòa 0,78, exposure 0,95). Màu đất `xichGroundColor` viết lại: bazan đen ấm + mảng tro xám + đất nung gạch ở gần vết nứt, vách bazan đen có tầng gỉ đỏ; **không còn tím**.
+- **Vết nứt dung nham LÕM** thay màn đỏ dày của `riftVeil` (`levelLoad.buildXich` bỏ veil khi `xichTanArt`): ba đường chính (`xichCracks`) + 16 khe nhánh, nửa rộng 0,3–0,9 m, gờ đá nổi hai bên bắt sáng, đáy than hồng nhấp nháy mềm; mờ dần theo khoảng cách camera (24→52 m) nên không thành dải chắn khung hình. `DungeonFx` nay nhận `cracks.paths` (đường cho trước) và `cracks.fade`.
+- **GLB Blender** `arch_xich_tan` (`tools/blender/xich_tan_arch.py`): 17 cụm cột bazan lục giác (7–11 cột cao 3–11 m, đỉnh vát, khe than hồng ở chân và dọc khe), 22 cụm obsidian nhọn, 16 mảng vỏ dung nham nguội nứt (phiến đen, khe nung đỏ), 9 miệng phun than, 14 cây cháy xém, 8 cột cờ gãy cờ đỏ rách, 14 đống xương + mũ giáp + khiên, 8 lò sắt than hồng (quầng `createLanternHalos`). Chừa quanh bia giữ, ba khe mạch và lối nam. Mỗi vật đặt theo `heightAt` tại chỗ.
+- Giữ nguyên: bia giữ, ba khe mạch ngọc lam (đúng chỗ khe của boss cuối), quầng than hồng, ngọn lửa trên cột prop, hạt tro, địa hình `canyon`.
+- **Kiểm tra vạch báo**: `pnpm shots dungeonart --level xich_tan_khich --battle 1` — vạch tím/hồng của boss đọc rõ trên nền nâu đen (ảnh `90-boss-chieu`).
+- **Ngân sách (preset Cao)**: ~157 draw call, ~0,48M tam giác (trước 70 / 0,33M).
+- **Còn lại**: mặt đất vẫn là texture `terrain-ash` ngả nâu đỏ như rơm (chưa có bộ texture đá bazan riêng); mảng vỏ dung nham còn hình "hoa" tỏa khe; cột bazan còn sắc cạnh một khối; quầng sáng lớn ở góc dưới ảnh boss là quầng ngọn lửa cột prop cũ (không đổi); chưa va chạm (đợi COL-1).

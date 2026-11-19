@@ -26,6 +26,7 @@ import { KiemTrungArt } from '../world/kiemTrungArt';
 import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
 import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../world/kinhNguyetArt';
 import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
+import { XichTanArt } from '../world/xichTanArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { VanHaiWow } from '../world/vanHaiWow';
@@ -118,7 +119,8 @@ export function buildXich(eng: Game, id: string, q: (typeof QUALITY)[string]): v
   if (!FLAGS.xichArt) return;
   const T = levelTerrain();
   const paths = xichCracks(T.def, (x, z) => heightAt(x, z));
-  for (const p of paths) {
+  // DUN-1 PR6: màn đỏ dày của `riftVeil` được thay bằng vết nứt dung nham lõm có gờ đá (`XichTanArt`); khe mạch ngọc lam và quầng giữ nguyên.
+  for (const p of levelAssets(id).xichTanArt ? [] : paths) {
     const v = buildRiftVeil(p, (x, z) => heightAt(x, z), {
       height: 7,
       ribs: false,
@@ -428,6 +430,11 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.phucMachArt.group);
     void loadPmModel(eng, q.shadows);
   }
+  if (levelAssets(id).xichTanArt) {
+    eng.xichTanArt = new XichTanArt();
+    eng.scene.add(eng.xichTanArt.group);
+    void loadXkModel(eng, q.shadows);
+  }
   if (levelAssets(id).thanTangArt) {
     eng.thanTangArt = new ThanTangArt();
     eng.scene.add(eng.thanTangArt.group);
@@ -516,6 +523,11 @@ export function unloadLevel(eng: Game): void {
     eng.tkAsset.handle.release();
     for (const m of eng.tkAsset.mats) m.dispose();
     eng.tkAsset = null;
+  }
+  if (eng.xichTanArt) {
+    drop(eng.xichTanArt.group);
+    eng.xichTanArt.dispose();
+    eng.xichTanArt = null;
   }
   if (eng.thanTangArt) {
     drop(eng.thanTangArt.group);
@@ -669,6 +681,20 @@ export async function loadKtModel(eng: Game, shadows: boolean): Promise<void> {
     enabled: () => !!levelAssets(levelId()).kiemTrungArt,
     origin: { x: KIEM_TRUNG.x, y: KIEM_TRUNG.y, z: KIEM_TRUNG.z },
     prefix: 'kt',
+  });
+}
+
+/**
+ * Nạp cảnh Xích Tẫn Khích dựng bằng Blender (asset `arch_xich_tan`): cụm cột bazan, obsidian, vỏ dung nham, miệng phun, cây cháy, cột cờ, xương, lò sắt.
+ * Mỗi vật đặt theo `heightAt` tại chỗ (hẻm có vách dốc, không `flat`). Vật liệu glTF giữ nguyên (than hồng là emissive trong GLB).
+ */
+export async function loadXkModel(eng: Game, shadows: boolean): Promise<void> {
+  const c = LEVELS.xich_tan_khich!.dungeon!.center;
+  await loadDungeonModel(eng, shadows, {
+    asset: 'arch_xich_tan',
+    enabled: () => !!levelAssets(levelId()).xichTanArt,
+    origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
+    prefix: 'xk',
   });
 }
 

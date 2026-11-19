@@ -277,6 +277,16 @@
         "shadowAmount": 0.4, "highlightAmount": 0.3,
         "blackLift": "#120E1E", "contrast": 1.22, "saturation": 0.88, "exposure": 0.85
       },
+      "xk": {
+        "label": "Xích Tẫn Khích — hẻm núi lửa tàn, mặt trời đỏ thấp, khói than",
+        "sunColor": "#FFD6B8", "sunIntensity": 1.6, "sunElevationDeg": 34,
+        "skyColor": "#4A3E3A", "skyIntensity": 0.75,
+        "fogColor": "#38302D", "fogDensity": 0.0016, "heightFogTop": 24, "heightFogBoost": 2.2,
+        "fogHaze": 0.0012, "fogHazeStart": 60, "fogScatter": 0.55, "rim": 1.1,
+        "shadowTint": "#140D0C", "highlightTint": "#FF9A50", "splitBalance": -0.05,
+        "shadowAmount": 0.4, "highlightAmount": 0.32,
+        "blackLift": "#150F0E", "contrast": 1.22, "saturation": 0.78, "exposure": 0.95
+      },
       "vh_dawn": {
         "label": "Vân Hải — bình minh lam bạc",
         "sunColor": "#FFD2B0", "sunIntensity": 3.2, "sunElevationDeg": 12,
