@@ -31,3 +31,16 @@ describe('khung va chạm (bảng F3)', () => {
     expect(out[post + 4]! - out[post + 1]!).toBeCloseTo(3, 5);
   });
 });
+
+describe('khung hình 3D (COL-1)', () => {
+  it('hộp xoay: 12 cạnh, đỉnh đúng góc đã xoay', async () => {
+    const { writeShape } = await import('./debugColliders');
+    const out = new Float32Array(200 * 3);
+    const end = writeShape(out, 0, { k: 'box', x: 10, z: 20, hx: 2, hz: 1, yaw: Math.PI / 2, y0: 0, y1: 5 });
+    expect(end / 3).toBe(24);
+    // yaw 90°: nửa x cục bộ (2) thành lệch theo -z thế giới.
+    const zs = [...Array(24).keys()].map((v) => out[v * 3 + 2]!);
+    expect(Math.max(...zs) - 20).toBeCloseTo(2, 4);
+    expect(Math.min(...zs) - 20).toBeCloseTo(-2, 4);
+  });
+});

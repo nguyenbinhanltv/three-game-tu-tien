@@ -21,6 +21,7 @@ import {
   PF_FLYING,
   PF_TRIBULATION,
   STEP,
+  collisionOf,
   stepMove,
   type SkillDef,
   CHARGE_MAX,
@@ -410,6 +411,7 @@ export function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
   eng.phucMachArt?.update(dt);
   eng.kinhNguyetArt?.update(dt);
   eng.thanTangArt?.update(dt);
+  eng.kimDaArt?.update(dt);
   eng.cardForest?.update(eng.camera.position.x, eng.camera.position.z);
 }
 
@@ -539,6 +541,7 @@ export function moveCtx(_eng: Game, me: PState): MoveCtx {
     frozen: dead,
     speedMul: 1,
     terrain: levelTerrain(),
+    collision: collisionOf(levelId()),
     bound: caveBoundOf(LEVELS[levelId()]),
     sky: skyFlightUnlocked(me.lv),
     ghost: scouting ? { x: soul.bx, z: soul.bz, r: SOUL_RANGE } : undefined,
