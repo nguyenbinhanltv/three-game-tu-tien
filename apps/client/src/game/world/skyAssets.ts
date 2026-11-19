@@ -79,12 +79,17 @@ export function loadSkyTextures(): Promise<SkyTextures | null> {
   return cached.catch(() => null);
 }
 
-/** Ô của atlas tán lá (2×2, v=0 ở hàng trên vì texture không lật). */
-export const FOLIAGE_TILE: Record<'pine' | 'maple' | 'bamboo' | 'peach', [number, number]> = {
+/** Kích thước một ô trong atlas tán lá (4×2) theo u, v. */
+export const FOLIAGE_TILE_SIZE: [number, number] = [0.25, 0.5];
+
+/** Góc trên-trái của ô trong atlas tán lá (4×2, v=0 ở hàng trên vì texture không lật). `bark` là ô đặc (không alpha) cho thân cây. */
+export const FOLIAGE_TILE: Record<'pine' | 'maple' | 'bamboo' | 'peach' | 'oak' | 'bark', [number, number]> = {
   pine: [0, 0],
-  maple: [0.5, 0],
-  bamboo: [0, 0.5],
-  peach: [0.5, 0.5],
+  maple: [0.25, 0],
+  bamboo: [0.5, 0],
+  peach: [0.75, 0],
+  oak: [0, 0.5],
+  bark: [0.25, 0.5],
 };
 
 /**

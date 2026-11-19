@@ -52,9 +52,9 @@ describe('pickPushers', () => {
 });
 
 describe('chỗ mọc cỏ', () => {
-  it('đồng cỏ thung lũng dày, sân đá tông môn và Kiếm Trủng không có', () => {
+  it('đồng cỏ thung lũng dày, vườn tông môn có cỏ (MAP-1 bản B), Kiếm Trủng không có', () => {
     expect(count(VALLEY.x + 40, VALLEY.z + 40)).toBeGreaterThan(120);
-    expect(count(SECT.x, SECT.z)).toBe(0);
+    expect(count(SECT.x + 62, SECT.z + 40)).toBeGreaterThan(20);
     expect(count(KIEM_TRUNG.x, KIEM_TRUNG.z)).toBe(0);
   });
   it('dữ liệu ô xác định (mọi client thấy cỏ cùng chỗ)', () => {

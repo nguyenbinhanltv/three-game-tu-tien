@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { clamp, exp, float, mix, smoothstep, sin, texture, time, uv, vec2, vec3 } from 'three/tsl';
 import { SECT, type LacKiemSky, type SkyIsland } from '@dtl/shared';
 import { createWorldMaterial } from '../../render/materials/world';
-import { FOLIAGE_TILE, foliageMaterial, loadSkyTextures, rockMaterial } from './skyAssets';
+import { FOLIAGE_TILE, FOLIAGE_TILE_SIZE, foliageMaterial, loadSkyTextures, rockMaterial } from './skyAssets';
 import { FarRidges } from '../../render/farRidges';
 import { getCloudNoise } from '../../render/noiseTex';
 
@@ -196,7 +196,7 @@ function blob(m: Mesher, c: THREE.Vector3, rx: number, ry: number, rz: number, c
 // ---------- tán lá bằng thẻ (alpha) ----------
 
 /** Lưới các thẻ (quad) có uv trỏ vào atlas tán lá; màu đỉnh nhân màu ảnh để đổi sắc theo cây. */
-class CardMesher {
+export class CardMesher {
   pos: number[] = [];
   uv: number[] = [];
   col: number[] = [];
@@ -218,7 +218,7 @@ class CardMesher {
         c.z + r.z * w * 0.5 * sx + u.z * h * 0.5 * sy,
       );
       // v = 0 ở hàng trên của ô (texture không lật), nên đỉnh trên (sy = 1) lấy v nhỏ.
-      this.uv.push(tile[0] + (sx * 0.5 + 0.5) * 0.5, tile[1] + (0.5 - (sy * 0.5 + 0.5) * 0.5));
+      this.uv.push(tile[0] + (sx * 0.5 + 0.5) * FOLIAGE_TILE_SIZE[0], tile[1] + (1 - (sy * 0.5 + 0.5)) * FOLIAGE_TILE_SIZE[1]);
       this.col.push(color.r, color.g, color.b);
     }
     this.idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
@@ -240,7 +240,7 @@ class CardMesher {
   }
 }
 
-type CrownKind = 'pine' | 'maple' | 'bamboo' | 'peach';
+export type CrownKind = 'pine' | 'maple' | 'bamboo' | 'peach';
 
 /** Loài cây theo đảo: Kiếm Đài tùng; đình Đông đào + tùng; tháp phong; đình Tây tùng + trúc; điện xa tùng + phong. */
 const ISLAND_TREES: Record<string, CrownKind[]> = {
@@ -252,7 +252,7 @@ const ISLAND_TREES: Record<string, CrownKind[]> = {
 };
 
 /** Tán một cây: các thẻ lá xoè quanh tâm, nghiêng ngẫu nhiên (cành rủ với tùng, bụi dựng với trúc). */
-function crown(cards: CardMesher, c: THREE.Vector3, size: number, kind: CrownKind, tint: THREE.Color, rand: () => number): void {
+export function crown(cards: CardMesher, c: THREE.Vector3, size: number, kind: CrownKind, tint: THREE.Color, rand: () => number): void {
   const tile = FOLIAGE_TILE[kind];
   const n = kind === 'bamboo' ? 7 : kind === 'pine' ? 15 : 13;
   const col = new THREE.Color();
@@ -454,7 +454,12 @@ function buildIsland(rock: Mesher, prop: Mesher, cards: CardMesher, isl: SkyIsla
   // Rừng nhỏ trên mặt đảo: thân tapered (tô màu đỉnh) + tán bằng thẻ lá alpha theo loài của đảo (chừa vùng giữa cho công trình/đài).
   const nTrees = Math.round(R * (isl.kind === 'kiem_dai' ? 0.22 : 0.5)); // Kiếm Đài: ít cây để kiếm là điểm nhìn chính
   const kinds = ISLAND_TREES[isl.id] ?? ['pine', 'maple', 'pine'];
-  const tints: Record<CrownKind, THREE.Color> = { pine: C(0xd8ffd8), maple: C(0xfff0e0), bamboo: C(0xe8ffd0), peach: C(0xffffff) };
+  const tints: Record<CrownKind, THREE.Color> = {
+    pine: new THREE.Color(1.15, 1.6, 1.1),
+    maple: new THREE.Color(1.25, 1.15, 1.05),
+    bamboo: new THREE.Color(1.1, 1.35, 1),
+    peach: new THREE.Color(1.15, 1.15, 1.15),
+  };
   for (let i = 0; i < nTrees; i++) {
     const a = rand() * Math.PI * 2;
     const rr = R * (0.72 + rand() * 0.2) * (radius(a, 0) / R);

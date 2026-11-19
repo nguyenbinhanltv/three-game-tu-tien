@@ -23,6 +23,8 @@ import {
   vec2,
   vec3,
 } from 'three/tsl';
+import { blocked } from './lacKiemGarden';
+import { sectPaving } from '../../render/groundMask';
 import { FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
 import { heightAt, levelTerrain } from '../../base/levelCtx';
 import { vanHaiArt } from './vanHaiArt';
@@ -127,7 +129,13 @@ function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, 
   if (h < WATER_Y + 2.2 || h > 240 || slope > 2.2) return false;
   const isl = levelTerrain().def;
   if (isl.islands && h < (isl.voidFloor ?? 0) + 40) return false; // không cỏ trên sàn mây và vách đảo
-  if (featureWeight(SECT, x, z) > 0.8 || featureWeight(PORTAL_PAD, x, z) > 0.8 || featureWeight(KIEM_TRUNG, x, z) > 0.12) return false;
+  // Đỉnh tông môn (MAP-1 bản B): có cỏ ở chỗ không lát đá và không có công trình/đại lộ (`blocked`, `sectPaving`).
+  if (
+    (featureWeight(SECT, x, z) > 0.8 && (sectPaving(x - SECT.x, z - SECT.z) > 0.02 || blocked(x - SECT.x, z - SECT.z))) ||
+    featureWeight(PORTAL_PAD, x, z) > 0.8 ||
+    featureWeight(KIEM_TRUNG, x, z) > 0.12
+  )
+    return false;
   const wValley = featureWeight(VALLEY, x, z);
   const wForest = featureWeight(FOREST, x, z);
   const wLake = featureWeight(LAKE, x, z);

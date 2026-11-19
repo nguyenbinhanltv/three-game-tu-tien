@@ -27,6 +27,8 @@ def giant_sword(b, x, z):
     b.cylinder(x, 0.5, z, 3.0, 0.45, kit.JADE, 20, 2.6, smooth=False)
     b.cylinder(x, 0.95, z, 2.5, 0.08, kit.JADE_GREEN, 20)
     b.sword_planted(x, z, 1.1, 11.5, 2.3, yaw=0.0)
+    for i, ch in enumerate('万剑归宗'):  # chữ khắc nổi vàng dọc thân kiếm (Vạn kiếm quy tông)
+        b.text(ch, x, 1.1 + 3.4 + i * 1.75, z + 0.17, 1.2, 0.08, kit.GILD)
     for k in range(6):  # đá chèn quanh chân kiếm
         a = k / 6 * math.tau
         b.box(x + math.cos(a) * 1.9, 1.15, z + math.sin(a) * 1.9, 0.9, 0.55, 0.9, kit.JADE_SHADE, yaw=-a)
@@ -72,9 +74,14 @@ def build_sect():
     P = b.place
 
     # ----- Trục thần đạo: đại lộ ngọc từ sơn môn lên chính điện, vòng bát quái quanh cự kiếm -----
+    # Lát đá thành từng tấm có khe: nền tối làm mạch, mỗi tấm 2,9 × 3,9 m cao thấp lệch nhẹ (vát mép, rêu bám kẽ do bevel + màu rêu theo mặt).
+    b.box(0, 0.02, 26, 12.2, 0.04, 108, kit.STONE_JOINT)
     for k in range(26):
         z = 78 - k * 4.0
-        b.box(0, 0.04, z, 12, 0.08, 3.8, kit.JADE if k % 2 == 0 else kit.JADE_SHADE)
+        for col in range(4):
+            x = -4.5 + col * 3.0
+            lift = b.rng.uniform(0.0, 0.025)
+            b.box(x, 0.07 + lift, z, 2.86, 0.1, 3.86, kit.JADE if (k + col) % 2 == 0 else kit.JADE_SHADE)
     for sx in (-1, 1):
         b.box(sx * 6.4, 0.07, 22, 0.8, 0.14, 108, kit.JADE_GREEN)
     P('prop_bat_quai', 0, 0.02, 18, scale=3.4)
@@ -174,7 +181,7 @@ def make_mesh(name, builder, keys, images, bevel=True):
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
     if bevel:
         # Vát mép đá/ngọc (mép mòn, bắt sáng): chỉ giữa hai mặt cùng chất liệu đá.
-        stone = {keys.index(k) for k in ('jade', 'stone', 'plaster', 'lacquer', 'wood') if k in keys}
+        stone = {keys.index(k) for k in ('jade', 'stone', 'plaster', 'lacquer', 'wood', 'steel') if k in keys}
         bevel_hard_edges(bm, 0.05, mats=stone, segments=2)
     bm.to_mesh(mesh)
     bm.free()

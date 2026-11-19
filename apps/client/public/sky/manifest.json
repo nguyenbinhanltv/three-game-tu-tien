@@ -5,12 +5,14 @@
     "source": "cliff_side"
   },
   "foliage": {
-    "atlas": "foliage.c39d12cdce.webp",
+    "atlas": "foliage.db3fb6814a.webp",
     "tiles": [
       "pine",
       "maple",
       "bamboo",
-      "peach"
+      "peach",
+      "oak",
+      "bark"
     ]
   }
 }

@@ -1013,3 +1013,5 @@ Texture PBR từ [Poly Haven](https://polyhaven.com/textures), giấy phép **CC
 
 Tác giả lấy từ API Poly Haven (`/info/<id>`) ngày 2026-11-19.
 
+Bổ sung (vòng chỉnh bản B): `metal_plate` ([Poly Haven](https://polyhaven.com/a/metal_plate), Rob Tuytel, CC0-1.0) cho thép cự kiếm; bộ mặt đất `terrain-lk` dùng cùng 8 texture Poly Haven CC0 của bộ `terrain` ở bản 2K; font [Ma Shan Zheng](https://fonts.google.com/specimen/Ma+Shan+Zheng) (Ma Shan Zheng Project Authors, SIL OFL 1.1, bản ở `../dtl-asset-source/font/`, giấy phép `OFL-mashanzheng.txt`) chỉ dùng để dựng mesh chữ trên biển hiệu và cự kiếm trong `arch_sect.glb`.
+

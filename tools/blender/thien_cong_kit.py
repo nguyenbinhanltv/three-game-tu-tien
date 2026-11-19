@@ -39,6 +39,7 @@ VERMILION = paint(0xB5332D, 'lacquer')  # son mai (cột, cửa)
 VERMILION_DARK = paint(0x8E2824, 'lacquer')
 PLUM = paint(0xC24B5A, 'lacquer')  # mai son nhạt (diềm, phướn)
 INK = paint(0x1F2E3C, 'lacquer')  # hoành phi nền mực
+STONE_JOINT = paint(0x56625c, 'stone')  # mạch lát đá
 GILD = paint(0xD2AA55, 'metal')
 BRONZE_D = paint(0x8E6C3A, 'metal')
 TIMBER = paint(0x8A6944, 'wood')
@@ -62,6 +63,7 @@ PBR_SOURCES = {
     'tile': ('ceramic_roof_01', 3.0, 2048, 1024),
     'lacquer': ('lacquered_cherry_wood', 3.0, 1024, 1024),
     'wood': ('dark_wood', 3.0, 1024, 1024),
+    'steel': ('metal_plate', 3.0, 1024, 1024),
 }
 PBR_ROUGH_SIZE = 512
 
@@ -80,6 +82,14 @@ def _asset_source_dirs():
 def _find_pbr(ph, kind, size='2k'):
     for d in _asset_source_dirs():
         f = os.path.join(d, ph, f'{ph}_{kind}_{size}.jpg')
+        if os.path.exists(f):
+            return f
+    return None
+
+
+def _find_font():
+    for d in _asset_source_dirs():
+        f = os.path.join(os.path.dirname(d), 'font', 'MaShanZheng-Regular.ttf')
         if os.path.exists(f):
             return f
     return None
@@ -442,24 +452,73 @@ class KB(bs.Builder):
         finally:
             bs.ROOF, bs.GOLD = ROOF_SAVE
 
-    def sword_planted(self, cx, cz, y0, length, width, thick=0.0, yaw=0.0):
-        """Kiếm cắm mũi xuống: lưỡi thon có rãnh giữa, tay nắm chạm hình sừng vẫy lên, chuôi quấn vàng, đầu chuôi tròn."""
-        w = width / 2
-        th = thick or max(0.12, width * 0.07)
-        outline = [(0.0, 0.0), (w * 0.8, length * 0.1), (w, length * 0.2), (w, length), (-w, length), (-w, length * 0.2), (-w * 0.8, length * 0.1)]
+    def text(self, body, x, y, z, size, depth, color, yaw=0.0):
+        """Chữ Hán khắc nổi (font thư pháp OFL Ma Shan Zheng ở ../dtl-asset-source/font): chuỗi `body` căn giữa tại (x, y, z), mặt chữ hướng +z.
+        Không có font thì bỏ qua (bản dựng vẫn chạy)."""
+        import bmesh as _bm
+        import bpy
+
+        path = _find_font()
+        if not path:
+            return
+        cu = bpy.data.curves.new('txt', 'FONT')
+        cu.body = body
+        cu.font = bpy.data.fonts.load(path)
+        cu.size = size
+        cu.extrude = depth / 2
+        cu.align_x = 'CENTER'
+        cu.align_y = 'CENTER'
+        ob = bpy.data.objects.new('txt', cu)
+        bpy.context.scene.collection.objects.link(ob)
+        bpy.context.view_layer.update()
+        ev = ob.evaluated_get(bpy.context.evaluated_depsgraph_get())
+        me = ev.to_mesh()
+        bm = _bm.new()
+        bm.from_mesh(me)
+        _bm.ops.triangulate(bm, faces=bm.faces[:])
+        c, sn = math.cos(yaw), math.sin(yaw)
+        for f in bm.faces:
+            pts = [(x + v.co.x * c + v.co.z * sn, y + v.co.y, z - v.co.x * sn + v.co.z * c) for v in f.verts]
+            self.face(pts, color)
+        bm.free()
+        ev.to_mesh_clear()
+        bpy.data.objects.remove(ob)
+        bpy.data.curves.remove(cu)
+
+    def blade_loft(self, cx, cz, y0, length, width, thick, yaw=0.0):
+        """Lưỡi kiếm mũi xuống: tiết diện thoi (sống nổi giữa, mép sắc) loe dần từ mũi nhọn; vát cạnh tự nhiên, không phải tấm phẳng."""
+        n = 14
         c, sn = math.cos(yaw), math.sin(yaw)
 
         def at(x, y, z):
             return (cx + x * c + z * sn, y0 + y, cz - x * sn + z * c)
 
-        mid = at(0, length * 0.5, 0)
-        for zz in (-th, th):
-            self.poly([at(x, y, zz) for x, y in outline], mid, BLADE)
-        for i in range(len(outline)):
-            j = (i + 1) % len(outline)
-            self.poly([at(outline[i][0], outline[i][1], -th), at(outline[j][0], outline[j][1], -th), at(outline[j][0], outline[j][1], th), at(outline[i][0], outline[i][1], th)], mid, BLADE_D)
-        for zz in (-1, 1):  # rãnh giữa: dải thép sẫm chìm
-            self.poly([at(-w * 0.12, length * 0.14, zz * (th + 0.02)), at(w * 0.12, length * 0.14, zz * (th + 0.02)), at(w * 0.12, length * 0.97, zz * (th + 0.02)), at(-w * 0.12, length * 0.97, zz * (th + 0.02))], mid, BLADE_D)
+        secs = []
+        for k in range(n + 1):
+            q = k / n
+            t = min(1.0, q / 0.22)
+            wk = max(0.004, math.sin(t * math.pi / 2) ** 0.85)
+            secs.append((q * length, width / 2 * wk * (1 - 0.05 * q), thick * wk))
+        for (ya, wa, ta), (yb, wb, tb) in zip(secs, secs[1:]):
+            mid = at(0, (ya + yb) / 2, 0)
+            la, fa, ra, ba = at(-wa, ya, 0), at(0, ya, ta), at(wa, ya, 0), at(0, ya, -ta)
+            lb, fb, rb, bb = at(-wb, yb, 0), at(0, yb, tb), at(wb, yb, 0), at(0, yb, -tb)
+            self.poly([la, fa, fb, lb], mid, BLADE)
+            self.poly([fa, ra, rb, fb], mid, BLADE)
+            self.poly([ra, ba, bb, rb], mid, BLADE_D)
+            self.poly([ba, la, lb, bb], mid, BLADE_D)
+        yt, wt, tt = secs[-1]
+        self.poly([at(-wt, yt, 0), at(0, yt, tt), at(wt, yt, 0), at(0, yt, -tt)], at(0, yt - 1, 0), BLADE_D)
+
+    def sword_planted(self, cx, cz, y0, length, width, thick=0.0, yaw=0.0):
+        """Kiếm cắm mũi xuống: lưỡi thon có rãnh giữa, tay nắm chạm hình sừng vẫy lên, chuôi quấn vàng, đầu chuôi tròn."""
+        th = thick or max(0.12, width * 0.07)
+        c, sn = math.cos(yaw), math.sin(yaw)
+
+        def at(x, y, z):
+            return (cx + x * c + z * sn, y0 + y, cz - x * sn + z * c)
+
+        self.blade_loft(cx, cz, y0, length, width, th, yaw)
         gx, gy, gz = at(0, length + 0.15, 0)
         self.box(gx, gy, gz, width * 2.4, 0.3, th * 3.2, GILD, yaw=yaw)
         for s in (-1, 1):  # đầu tay nắm vẫy lên
@@ -820,8 +879,9 @@ def _(b):
 @part('hoanh_phi', 'tuong')
 def _(b):
     b.box(0, 0, 0, 5.8, 1.3, 0.3, INK)
-    b.box(0, 0, 0.18, 5.4, 0.9, 0.08, GILD)
-    b.box(0, 0, 0.24, 4.2, 0.4, 0.05, INK)
+    for sy in (-1, 1):
+        b.box(0, sy * 0.58, 0.17, 5.8, 0.14, 0.08, GILD)
+    b.text('天剑殿', 0, 0, 0.17, 0.95, 0.12, GILD)
     for sx in (-1, 1):
         b.box(sx * 3.0, 0, 0, 0.2, 1.5, 0.4, GILD)
 
@@ -1007,8 +1067,13 @@ def _(b):
         b.curved_hip(sx * 11.9, 7.4, 0, 7.4, 2.4, 1.5, overhang=1.3, lift=0.9)
         b.dougong(sx * 8, 10.4, 0, 1.0)
     b.box(0, 9.4, 0, 17.5, 1.0, 1.1, VERMILION_DARK)
+    # Biển hiệu: gỗ sơn mực viền vàng, chữ "落剑宗" (Lạc Kiếm Tông) khắc nổi vàng.
     b.box(0, 7.2, 0, 6.8, 1.9, 0.4, INK)
-    b.box(0, 7.2, 0.24, 5.8, 1.1, 0.1, GILD)
+    for sx in (-1, 1):
+        b.box(sx * 3.3, 7.2, 0.22, 0.2, 1.9, 0.1, GILD)
+    for sy in (-1, 1):
+        b.box(0, 7.2 + sy * 0.9, 0.22, 6.8, 0.2, 0.1, GILD)
+    b.text('落剑宗', 0, 7.2, 0.22, 1.25, 0.14, GILD)
     b.curved_hip(0, 10.4, 0, 18, 3.2, 2.6, overhang=1.8, lift=1.3)
 
 
@@ -1172,10 +1237,10 @@ def _(b):
     for k in range(5):
         a = k * 0.5
         b.cylinder(math.sin(a) * 0.1, 0.95 + k * 0.38, math.cos(a) * 0.08, 0.13 - k * 0.012, 0.4, TIMBER_D, 8, 0.11 - k * 0.012)
-    for k, (r, hh, col, ox) in enumerate([(0.95, 0.38, paint(0x2f7f5c, 'stone'), -0.25), (0.78, 0.34, paint(0x4aa06a, 'stone'), 0.3), (0.6, 0.3, paint(0x7fbf72, 'stone'), -0.05)]):
-        y = 1.55 + k * 0.52
-        b.cylinder(ox, y, 0.05 * k, r, hh, col, 14, r * 0.78)
-        b.cylinder(ox, y + hh, 0.05 * k, r * 0.78, 0.1, col, 14, r * 0.5)
+    # Tán là thẻ lá alpha dựng ở client (game/world/lacKiemGarden.ts, cùng toạ độ chậu); ở đây chỉ chậu + thân tùng uốn.
+    for k in range(7):
+        ang = k * 0.45
+        b.cylinder(math.sin(ang) * 0.14 + k * 0.03, 0.95 + k * 0.3, math.cos(ang) * 0.1, 0.14 - k * 0.012, 0.34, TIMBER_D, 8, 0.12 - k * 0.012)
 
 
 @part('prop_bat_quai', 'prop')

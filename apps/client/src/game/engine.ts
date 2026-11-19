@@ -59,6 +59,7 @@ import { DeadTrees } from './world/deadTrees';
 import { type EclipseSun } from '../render/eclipse';
 import { Beacons } from '../render/beacons';
 import type { GodRays } from '../render/godRays';
+import type { CardForest } from './world/cardForest';
 import type { LacKiemGarden } from './world/lacKiemGarden';
 import type { LacKiemSkyScene } from './world/lacKiemSky';
 import { PostPipeline, postParams } from '../render/post';
@@ -216,6 +217,8 @@ export class Game {
   lacKiemSky: LacKiemSkyScene | null = null;
   /** Vườn hoa, lùm trúc, đá rêu quanh tông môn (MAP-1). */
   lacKiemGarden: LacKiemGarden | null = null;
+  /** Cây thẻ alpha thay cây Tripo ở Lạc Kiếm (MAP-1 bản B). */
+  cardForest: CardForest | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
   butterflies: Butterflies | null = null;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */

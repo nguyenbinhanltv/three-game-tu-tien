@@ -2,7 +2,8 @@ import * as THREE from 'three/webgpu';
 import { SECT } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { createWorldMaterial } from '../../render/materials/world';
-import { FOLIAGE_TILE, foliageMaterial, loadSkyTextures, type SkyTextures } from './skyAssets';
+import { CardMesher, crown } from './lacKiemSky';
+import { FOLIAGE_TILE, FOLIAGE_TILE_SIZE, foliageMaterial, loadSkyTextures, type SkyTextures } from './skyAssets';
 
 /**
  * Mật độ chi tiết theo cụm quanh tông môn (MAP-1): vườn hoa, lùm trúc, đá rêu. Mỗi loại một InstancedMesh (ba draw call).
@@ -266,7 +267,7 @@ export class LacKiemGarden {
       ] as const) {
         const up = sy * h * 0.5;
         pos.push(cx + c * sx * w * 0.5 + s * up * tilt, cy + up, cz + s * sx * w * 0.5 - c * up * tilt);
-        uv.push(tile[0] + (sx * 0.5 + 0.5) * 0.5, tile[1] + (0.5 - (sy * 0.5 + 0.5) * 0.5));
+        uv.push(tile[0] + (sx * 0.5 + 0.5) * FOLIAGE_TILE_SIZE[0], tile[1] + (1 - (sy * 0.5 + 0.5)) * FOLIAGE_TILE_SIZE[1]);
         col.push(1, 1, 1);
       }
       idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
@@ -292,6 +293,21 @@ export class LacKiemGarden {
     });
     this.group.add(mesh);
     this.disposables.push(geo, mat, mesh);
+    // Tùng chậu hai bên đại lộ: thân do Blender (prop_chau_cay), tán là thẻ lá alpha.
+    const pots = new CardMesher();
+    const r = rng(9090);
+    for (const sx of [-1, 1]) {
+      const x = SECT.x + sx * 12;
+      const z = SECT.z + 46;
+      crown(pots, new THREE.Vector3(x, heightAt(x, z) + 3.3, z), 1.7, 'pine', new THREE.Color(1.15, 1.6, 1.1), r);
+    }
+    const potMat = foliageMaterial(tex);
+    const potMesh = new THREE.Mesh(pots.geometry(), potMat);
+    potMesh.name = 'garden-pot-crowns';
+    potMesh.frustumCulled = false;
+    potMesh.castShadow = true;
+    this.group.add(potMesh);
+    this.disposables.push(potMesh.geometry, potMat);
   }
 
   dispose(): void {

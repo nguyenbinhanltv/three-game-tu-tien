@@ -215,11 +215,11 @@
       "id": "arch_sect",
       "class": "arch",
       "source": "assets/build/raw/arch_sect.glb",
-      "file": "arch_sect.2f88affbb8.glb",
-      "bytes": 18237916,
-      "rawBytes": 30203460,
-      "triangles": 230064,
-      "rawTriangles": 230064,
+      "file": "arch_sect.dcfa24474e.glb",
+      "bytes": 19919632,
+      "rawBytes": 38433420,
+      "triangles": 307916,
+      "rawTriangles": 307916,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -354,6 +354,33 @@
           ]
         },
         {
+          "name": "metal_plate_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_steel",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
           "name": "marble_rock_01_nor_gl_2k",
           "mimeType": "image/ktx2",
           "width": 2048,
@@ -384,7 +411,7 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 230064
+          "triangles": 307916
         }
       ],
       "dims": {

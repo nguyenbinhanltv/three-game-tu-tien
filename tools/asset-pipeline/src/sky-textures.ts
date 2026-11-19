@@ -1,7 +1,7 @@
 // Dựng texture cho cảnh trên không của Lạc Kiếm Tông (MAP-1 bản B tả thực): đá vách đảo nổi (Poly Haven CC0) và atlas tán lá có alpha.
 //   tsx src/sky-textures.ts      (lệnh gốc repo: pnpm assets:sky-textures)
 // Ra apps/client/public/sky/: rock.a.<hash>.webp (màu sRGB), rock.n.<hash>.webp (R,G = pháp tuyến OpenGL, B = độ nhám, như bộ terrain),
-// foliage.<hash>.webp (atlas 2×2 ô 512, có alpha: tùng, phong, trúc, đào) và manifest.json. Nguồn JPG 2K ở ../dtl-asset-source/texture (xem sect-textures.ts).
+// foliage.<hash>.webp (atlas 4×2 ô 512, có alpha: tùng, phong, trúc, đào, sồi + vỏ cây đặc) và manifest.json. Nguồn JPG 2K ở ../dtl-asset-source/texture (xem sect-textures.ts).
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
@@ -34,7 +34,7 @@ function rng(seed: number): () => number {
 const fmt = (n: number) => n.toFixed(1);
 const hsl = (h: number, s: number, l: number) => `hsl(${fmt(h)} ${fmt(s)}% ${fmt(l)}%)`;
 
-type Kind = 'pine' | 'maple' | 'bamboo' | 'peach';
+type Kind = 'pine' | 'maple' | 'bamboo' | 'peach' | 'oak' | 'bark';
 
 /** Một ô tán lá 512×512 dưới dạng SVG (nền trong suốt). */
 function leafTile(kind: Kind, seed: number): string {
@@ -94,6 +94,27 @@ function leafTile(kind: Kind, seed: number): string {
         const a = -Math.PI / 2 + (r() - 0.5) * 2.4 + (n % 2 ? 0.5 : -0.5);
         leaf(bx, 430 - r() * 60 - n * 12, a, 90 + r() * 70, 8 + r() * 5, hsl(92 + r() * 30, 48 + r() * 14, 26 + r() * 20), '#cfe9a0');
       }
+    }
+  } else if (kind === 'oak') {
+    // Sồi/cổ thụ lá rộng: nhiều lá bầu dục xanh nhiều sắc chồng nhau, gân sáng.
+    for (let k = 0; k < 150; k++)
+      leaf(
+        30 + r() * 450,
+        30 + r() * 450,
+        r() * Math.PI * 2,
+        34 + r() * 30,
+        14 + r() * 9,
+        hsl(88 + r() * 44, 38 + r() * 22, 22 + r() * 26),
+        '#d6efa6',
+      );
+  } else if (kind === 'bark') {
+    // Vỏ cây đặc (không alpha): nền nâu sẫm + vệt dọc, dùng cho thân cây trong cùng atlas.
+    parts.push(`<rect width="512" height="512" fill="#5b4636"/>`);
+    for (let k = 0; k < 90; k++) {
+      const x = r() * 512;
+      parts.push(
+        `<path d="M ${fmt(x)} 0 Q ${fmt(x + (r() - 0.5) * 30)} 256 ${fmt(x + (r() - 0.5) * 20)} 512" stroke="${hsl(24 + r() * 10, 22 + r() * 14, 14 + r() * 22)}" stroke-width="${fmt(2 + r() * 7)}" fill="none" stroke-opacity="0.8"/>`,
+      );
     }
   } else {
     // Đào: lá xanh nền + chùm hoa hồng năm cánh.
@@ -156,8 +177,8 @@ async function main(): Promise<void> {
   const rockN = `rock.n.${hash(normal)}.webp`;
   await writeFile(path.join(OUT, rockA), albedo);
   await writeFile(path.join(OUT, rockN), normal);
-  // Atlas tán lá 2×2.
-  const kinds: Kind[] = ['pine', 'maple', 'bamboo', 'peach'];
+  // Atlas tán lá 4×2 ô 512 (ô cuối là vỏ cây đặc).
+  const kinds: Kind[] = ['pine', 'maple', 'bamboo', 'peach', 'oak', 'bark'];
   const tiles = await Promise.all(
     kinds.map((k, i) =>
       sharp(Buffer.from(leafTile(k, 1000 + i * 77)), { density: 72 })
@@ -166,8 +187,8 @@ async function main(): Promise<void> {
         .toBuffer(),
     ),
   );
-  const atlas = await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
-    .composite(tiles.map((input, i) => ({ input, left: (i % 2) * 512, top: Math.floor(i / 2) * 512 })))
+  const atlas = await sharp({ create: { width: 2048, height: 1024, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite(tiles.map((input, i) => ({ input, left: (i % 4) * 512, top: Math.floor(i / 4) * 512 })))
     .webp({ quality: 88, alphaQuality: 92 })
     .toBuffer();
   const fol = `foliage.${hash(atlas)}.webp`;

@@ -1,6 +1,6 @@
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as THREE from 'three/webgpu';
-import { DUNGEON_EXIT, heightAt, KIEM_TRUNG, PORTAL_POS, SECT } from '@dtl/shared';
+import { DUNGEON_EXIT, hash01, heightAt, KIEM_TRUNG, PORTAL_POS, SECT } from '@dtl/shared';
 import { col, G, GeoBuilder, mat } from '../core/geo';
 import { heightAt as levelHeight } from '../../base/levelCtx';
 
@@ -19,6 +19,7 @@ const C_LAMP = col(0xffe2a0);
 const C_JADE = col(0xe3ece6);
 const C_JADE_SHADE = col(0xc2d2c9);
 const C_JADE_GREEN = col(0x6fb59a);
+const C_MOSS = col(0x5f7f4a);
 
 const R2 = Math.SQRT2;
 
@@ -152,7 +153,19 @@ function buildStaticRest(b: GeoBuilder, cx: number): void {
   for (let i = 0; i < 26; i++) {
     const z = 2136 + i * 4.2;
     const gy = heightAt(cx, z);
-    b.add(G.box, mat(cx, gy - 0.3, z, 0, 0, 0, 7.5, 1.4, 4.4), i % 2 ? C_JADE_SHADE : C_JADE);
+    // Bậc đá lát thành hai tấm có khe (nền tối làm mạch), độ cao lệch nhẹ, màu từng tấm đổi chút, gờ rêu ở mép trước (MAP-1 bản B).
+    b.add(G.box, mat(cx, gy - 0.34, z, 0, 0, 0, 7.5, 1.4, 4.4), C_STONE_DARK);
+    for (const [k, sx] of [-1, 1].entries()) {
+      const h = hash01(i, k, 91);
+      const lift = h * 0.04;
+      b.add(
+        G.box,
+        mat(cx + sx * 1.82, gy + 0.38 + lift, z, 0, 0, 0, 3.52, 0.12, 4.18),
+        (i + k) % 2 ? C_JADE_SHADE : C_JADE,
+        0.03 + h * 0.05,
+      );
+      b.add(G.box, mat(cx + sx * 1.82, gy + 0.3, z + 2.12, 0, 0, 0, 3.5, 0.2, 0.2), C_MOSS);
+    }
     // Viền ngọc lục hai bên và gờ bậc (MAP-1).
     for (const sx of [-1, 1]) b.add(G.box, mat(cx + sx * 3.95, gy + 0.55, z, 0, 0, 0, 0.7, 0.5, 4.4), C_JADE_GREEN);
   }

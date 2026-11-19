@@ -43,9 +43,17 @@ Người dùng chọn phong cách B (bản tả thực, điện ảnh). Giữ b�
 
 - **Vật liệu PBR kiến trúc** (`tools/blender/thien_cong_kit.py`, `PBR_SOURCES`): ngọc ← `marble_rock_01`, đá ← `japanese_stone_wall`, vữa ← `plastered_stone_wall`, ngói ← `ceramic_roof_01`, sơn son ← `lacquered_cherry_wood`, gỗ ← `dark_wood` (Poly Haven CC0, credit ở `assets/LICENSES.md`). Ảnh màu đổi sang độ sáng rồi nhân màu đỉnh (giữ đúng bảng màu), kèm normal (OpenGL) + độ nhám, nướng vào `arch_sect.glb` (2K cho ngọc/đá/ngói, 1K cho gỗ/vữa, nhám 512). Mép đá/gỗ vát 2 đoạn (5 cm). Nguồn ảnh: `pnpm assets:sect-textures` (ngoài repo); thiếu nguồn thì script quay về texture thủ tục. Ngân sách lớp `arch` nâng lên 2048 px / 600k tam giác (`assets/budgets.json`).
 - **Đá vách đảo nổi** (`game/world/skyAssets.ts` `rockMaterial`): albedo + normal + nhám `cliff_side` chiếu ba mặt phẳng, nhân màu đỉnh (tầng đá ấm/lạnh, rêu), hết flat shading. Texture ở `public/sky/` (`pnpm assets:sky-textures`).
-- **Cây**: tán bằng thẻ lá alpha (atlas 2×2: tùng, phong, trúc, đào, vẽ bằng SVG ở `sky-textures.ts`), thân tapered; loài theo đảo (`ISLAND_TREES`). Lá trúc trong vườn cũng là thẻ (`lacKiemGarden.ts`). Thay các khối tán cũ.
+- **Cây**: tán bằng thẻ lá alpha (atlas 4×2 ô 512: tùng, phong, trúc, đào, sồi + vỏ cây đặc, vẽ bằng SVG ở `sky-textures.ts`), thân tapered; loài theo đảo (`ISLAND_TREES`). Lá trúc trong vườn cũng là thẻ (`lacKiemGarden.ts`). Thay các khối tán cũ.
 - **Phông xa** (`render/farRidges.ts`): mặt núi lưới 480×16 có mỏm/hốc/gờ, sáng tối theo pháp tuyến hướng nắng, vân tầng + khe dọc, mây cuộn giữa sườn trôi chậm, ngả lam nhạt dần theo lớp.
 - **Ánh sáng**: bóng PCF mềm (`shadowMap.type`, `shadow.radius`), tăng ánh sáng nền để bóng không đen kịt, bão hòa ngày giảm; GTAO, bloom, ACES, sương theo độ cao đã có sẵn từ trước.
 - **Thác**: thêm bọt trắng đục ở chân; sương chân thác lớn hơn.
 - **Cỏ**: tăng mật độ preset Cao (tầm 52 m, giãn 0,76) và Cực cao (66 m, 0,62), trần 100k bụi.
 - Không làm ở PR này: texture mặt đất 2K (bộ `terrain` dùng chung với các level khác và VRAM 8 lớp × 2K ≈ 180 MB), phản chiếu mặt nước thác, mây thể tích, cây thẻ cho núi xa.
+
+### Vòng chỉnh theo duyệt bản B (#305)
+
+- **Mặt đất 2K** riêng Vân Lam/Kiếm Trủng: bộ `terrain-lk` (`pnpm assets:terrain --set lackiem`, màu 2048², pháp tuyến/nhám 1024², cùng 8 lớp Poly Haven của bộ gốc, trộn theo độ dốc/độ cao/đường mòn như cũ); các level khác vẫn dùng `terrain` 1024². VRAM màu 8 lớp ≈ 180 MB (chỉ khi ở Vân Lam). Cỏ 3D mọc cả ở đỉnh tông môn (chỗ không lát đá, không công trình: `grass.ts`).
+- **Cây thẻ alpha thay cây Tripo** (`game/world/cardForest.ts`): `prop_thong_co`, `prop_co_thu`, `prop_soi_nui`, `prop_anh_dao`, `prop_phong_do` dựng từ thân uốn + thẻ lá (pháp tuyến tán hướng ra cho khối mềm), gộp theo ô 256 m, cắt theo khung nhìn, ẩn khi xa quá 1,1 km, không đổ bóng; `PropLayer` bỏ các id này ở level có `lacKiemSky`. Tùng chậu hai bên đại lộ: thân Blender + tán thẻ (`lacKiemGarden.ts`).
+- **Cự kiếm giữa sân** (`thien_cong_kit.py` `blade_loft`/`sword_planted`): lưỡi tiết diện thoi có sống nổi, thép PBR (`metal_plate`) vát mép, chữ "万剑归宗" khắc nổi vàng.
+- **Chữ thật** (`KB.text`): font thư pháp Ma Shan Zheng (OFL, ở `../dtl-asset-source/font`) → biển cổng "落剑宗", hoành phi chính điện "天剑殿" (mặt chữ là mesh vàng); không có font thì bỏ qua chữ.
+- **Sân lát đá**: đại lộ là từng tấm 2,9 × 3,9 m trên nền mạch tối, cao thấp lệch nhẹ, vát mép; bậc ngoài cổng (client `sect.ts`) cũng hai tấm có khe và gờ rêu.

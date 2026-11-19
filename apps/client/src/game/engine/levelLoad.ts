@@ -16,6 +16,8 @@ import { XICH_LEVEL, xichCracks, type XichAccent } from '../world/xichArt';
 import { bhCtx } from '../world/propScatter';
 import { Beacons } from '../../render/beacons';
 import { GodRays } from '../../render/godRays';
+import { CARD_TREE_IDS, CardForest } from '../world/cardForest';
+import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { applyGrading, markBloom } from '../../render/post';
@@ -311,7 +313,20 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   const F = levelAssets(id).features;
   // P2-A4: prop Tripo (đèn đá, cổ thụ, đá, trúc…), nạp lười theo khoảng cách.
   if (F.trees === 'scatter') {
-    eng.props = new PropLayer(undefined, allProps(levelId()));
+    const all = allProps(levelId());
+    // Lạc Kiếm (MAP-1 bản B): cây Tripo (tán đĩa phẳng) thay bằng cây thẻ alpha (cardForest.ts); PropLayer giữ phần còn lại (đèn, bia, đá…).
+    const cardTrees = !!levelAssets(id).lacKiemSky;
+    eng.props = new PropLayer(undefined, cardTrees ? all.filter((p) => !CARD_TREE_IDS.has(p.id)) : all);
+    if (cardTrees) {
+      void loadSkyTextures().then((tex) => {
+        if (!tex || eng.disposed || eng.cardForest || levelId() !== id) return;
+        eng.cardForest = new CardForest(
+          all.filter((p) => CARD_TREE_IDS.has(p.id)),
+          tex,
+        );
+        eng.scene.add(eng.cardForest.group);
+      });
+    }
     eng.props.setQuality(get().quality, q.shadows);
     eng.scene.add(eng.props.group);
   }
@@ -403,6 +418,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.beacons.mesh);
     eng.beacons.dispose();
     eng.beacons = null;
+  }
+  if (eng.cardForest) {
+    drop(eng.cardForest.group);
+    eng.cardForest.dispose();
+    eng.cardForest = null;
   }
   if (eng.lacKiemGarden) {
     drop(eng.lacKiemGarden.group);
