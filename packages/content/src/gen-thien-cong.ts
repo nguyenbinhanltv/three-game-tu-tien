@@ -17,7 +17,7 @@ const CHECK = process.argv.includes('--check');
 const OUT = CHECK ? path.join(ROOT, 'packages/shared/src/props.thiencong.check.ts') : REAL_OUT;
 const ITEMS = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/blender/prop_tc_items.json'), 'utf8')).groups as Record<
   string,
-  { name: string; vi: string; collider: number | [number, number, number][]; foot?: number }[]
+  { name: string; vi: string; collider: number | [number, number, number][]; foot?: number; ext?: string }[]
 >;
 const args = process.argv.slice(2);
 const opt = (k: string) => (args.includes(k) ? args[args.indexOf(k) + 1] : undefined);
@@ -40,10 +40,14 @@ const SINGLE = new Set([
 ]);
 
 const groupOf = new Map<string, string>();
+const extOf = new Map<string, string>();
+/** id asset của một món: món `ext` dùng asset có sẵn (không có biến thể), còn lại prop_tc_<tên>[_2]. */
+const idOf = (name: string, v2: boolean) => extOf.get(name) ?? `prop_tc_${name}${v2 ? '_2' : ''}`;
 const info = new Map<string, { collider: [number, number, number][]; foot: number }>();
 for (const [g, list] of Object.entries(ITEMS)) {
   for (const it of list) {
     groupOf.set(it.name, g);
+    if (it.ext) extOf.set(it.name, it.ext);
     const col: [number, number, number][] = typeof it.collider === 'number' ? (it.collider > 0 ? [[0, 0, it.collider]] : []) : it.collider;
     const foot = it.foot ?? col[0]?.[2] ?? 0.5; // nửa cạnh lớn nhất của hộp bao (m), lưu trong danh mục JSON để bộ sinh tất định, không phụ thuộc file build
     info.set(it.name, { collider: col, foot });
@@ -140,7 +144,7 @@ for (const levelId of Object.keys(SCENES)) {
       const x = Math.round((sc.at[0] + f.dx) * 10) / 10;
       const z = Math.round((sc.at[1] + f.dz) * 10) / 10;
       const sc2 = f.s ?? 1;
-      const prop: TcProp = { id: `prop_tc_${f.name}${f.v2 && !SINGLE.has(f.name) ? '_2' : ''}`, x, z, yaw: f.yaw ?? 0, s: sc2 };
+      const prop: TcProp = { id: idOf(f.name, !!f.v2 && !SINGLE.has(f.name)), x, z, yaw: f.yaw ?? 0, s: sc2 };
       if (inf.collider.length) {
         const cy = Math.cos(prop.yaw);
         const sy = Math.sin(prop.yaw);
@@ -149,6 +153,10 @@ for (const levelId of Object.keys(SCENES)) {
           z: Math.round((z + (-dx * sy + dz * cy) * sc2) * 10) / 10,
           r: Math.round(r * sc2 * 100) / 100,
         }));
+      }
+      if ((prop.col ?? []).some((c) => near(monBlock, c.x, c.z, c.r)) || near(campCentres, x, z, 0)) {
+        miss.push(`bày tay ${f.name} (${x}, ${z}) nằm trong bãi quái/tâm bãi`);
+        continue;
       }
       const hit = (prop.col ?? [{ x, z, r: 0.5 }]).find((c) => near(solidBlock, c.x, c.z, c.r));
       if (hit) {
@@ -229,7 +237,7 @@ for (const levelId of Object.keys(SCENES)) {
                   : rand() * Math.PI * 2;
             const v2 = rand() < 0.5 && !SINGLE.has(name);
             const prop: TcProp = {
-              id: `prop_tc_${name}${v2 ? '_2' : ''}`,
+              id: idOf(name, v2),
               x,
               z,
               yaw: Math.round((yaw + (sc.face === 'random' ? 0 : (rand() - 0.5) * 0.3)) * 100) / 100,

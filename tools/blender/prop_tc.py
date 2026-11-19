@@ -42,7 +42,7 @@ def main():
     os.makedirs(outdir, exist_ok=True)
     report = {}
     for it in load_items()[group]:
-        if only and it['name'] != only:
+        if (only and it['name'] != only) or it.get('ext'):  # món `ext` dùng asset có sẵn, không dựng
             continue
         for v, pid in enumerate(ids_of(it['name'])):
             seed = zlib.crc32(pid.encode()) % 1000

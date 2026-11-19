@@ -4,7 +4,7 @@ import math
 import random
 
 from build_sect import paint
-from prop_tc_lib import (BARK, BARK_L, BAMBOO, BAMBOO_D, GLOW_B, GLOW_G, GLOW_P, GLOW_Y, LEAF_D, LEAF_G, LEAF_P, LEAF_Y, ROCK_D, ROCK_M, SOIL, STONE_D, STONE_L, STONE_M, WOOD_D, card, crystal, ellipsoid, item, lathe, leaf_cluster, rock, tube)
+from prop_tc_lib import (GLOW_DIM, BARK, BARK_L, BAMBOO, BAMBOO_D, GLOW_B, GLOW_G, GLOW_P, GLOW_Y, LEAF_D, LEAF_G, LEAF_P, LEAF_Y, ROCK_D, ROCK_M, SOIL, STONE_D, STONE_L, STONE_M, WOOD_D, card, crystal, ellipsoid, item, lathe, leaf_cluster, rock, tube)
 
 MOSS = paint(0x4F6B34, 'cloth')
 MOSS_L = paint(0x7C9A48, 'cloth')
@@ -55,7 +55,7 @@ def _(b, v):
     tube(b, pts, [0.8, 0.55, 0.4, 0.28, 0.12], BARK, 8, sub=4)
     for k in range(5):  # rễ nổi
         a = k / 5 * math.tau + 0.4
-        tube(b, [(math.cos(a) * 0.3, 0.7, math.sin(a) * 0.3), (math.cos(a) * 1.1, 0.3, math.sin(a) * 1.1), (math.cos(a) * 1.9, 0.0, math.sin(a) * 1.9)], [0.35, 0.22, 0.08], BARK_L, 6, sub=3)
+        tube(b, [(math.cos(a) * 0.3, 0.7, math.sin(a) * 0.3), (math.cos(a) * 1.1, 0.3, math.sin(a) * 1.1), (math.cos(a) * 1.9, -0.15, math.sin(a) * 1.9)], [0.35, 0.24, 0.14], BARK_L, 8, sub=3)
     crown = LEAF_P if v else LEAF_G
     for k in range(3):
         a = k / 3 * math.tau + 0.6
@@ -99,25 +99,49 @@ def _(b, v):
         ellipsoid(b, top[0], top[1] + 0.02, top[2], 0.05, 0.07, 0.05, glow, 8, 4)
 
 
+REISHI = [paint(0x7B2D1D, 'cloth'), paint(0xA5551F, 'cloth'), paint(0x5E2218, 'cloth'), paint(0xC98A3C, 'cloth')]
+CREAM = paint(0xE6DCC8, 'cloth')
+CAP_BROWN = paint(0x6B4A30, 'cloth')
+CAP_BROWN_D = paint(0x4E3623, 'cloth')
+
+
+def _reishi(b, x, z, s, a0):
+    """Nấm linh chi mọc từng tầng trên gốc cây mục: mũ hình thận nâu đỏ có vân vòng đồng tâm, mép kem, vài đốm sáng lục mờ."""
+    b.cylinder(x, 0, z, 0.34 * s, 0.7 * s, BARK, 9, 0.26 * s)
+    b.cylinder(x, 0.7 * s, z, 0.26 * s, 0.02, BARK_L, 9)
+    for i in range(3):
+        ang = a0 + i * 2.1
+        y = (0.16 + i * 0.2) * s
+        r = (0.42 - i * 0.07) * s
+        cx, cz = x + math.cos(ang) * 0.3 * s, z + math.sin(ang) * 0.3 * s
+        lathe(b, [(0.0, y), (r * 0.95, y - 0.03 * s), (r, y + 0.02 * s), (r * 0.9, y + 0.07 * s), (0.0, y + 0.09 * s)], REISHI[0], 14, cx, cz, 1.0, 0.8, cap_top=False)
+        for k in range(1, 4):
+            rr = r * (1 - k * 0.22)
+            lathe(b, [(rr + 0.06 * s, y + 0.075 * s - k * 0.004), (rr, y + 0.085 * s - k * 0.004), (rr - 0.05 * s, y + 0.08 * s - k * 0.004)], REISHI[k], 14, cx, cz, 1.0, 0.8, cap_top=False)
+        lathe(b, [(r * 1.0, y + 0.0), (r * 1.04, y + 0.02 * s), (r * 0.98, y + 0.04 * s)], CREAM, 14, cx, cz, 1.0, 0.8, cap_top=False)
+        ellipsoid(b, cx + math.cos(ang) * r * 0.5, y + 0.095 * s, cz + math.sin(ang) * r * 0.4, 0.03 * s, 0.012, 0.03 * s, GLOW_DIM, 5, 2)
+
+
+def _forest_mush(b, x, z, s, white):
+    lean = 0.06 * (1 if white else -1)
+    tube(b, [(x, 0, z), (x + lean * s, 0.2 * s, z), (x + lean * s * 1.4, 0.4 * s, z)], [0.05 * s, 0.035 * s, 0.04 * s], CREAM, 7, sub=3)
+    cx = x + lean * s * 1.4
+    cap = CREAM if white else CAP_BROWN
+    lathe(b, [(0.0, 0.4 * s), (0.17 * s, 0.39 * s), (0.27 * s, 0.43 * s), (0.28 * s, 0.5 * s), (0.2 * s, 0.57 * s), (0.08 * s, 0.61 * s), (0.0, 0.62 * s)], cap, 14, cx, z, cap_top=False)
+    lathe(b, [(0.27 * s, 0.42 * s), (0.08 * s, 0.4 * s), (0.0, 0.4 * s)], CAP_BROWN if white else CAP_BROWN_D, 14, cx, z, cap_top=False)
+    lathe(b, [(0.28 * s, 0.43 * s), (0.285 * s, 0.45 * s), (0.275 * s, 0.47 * s)], GLOW_DIM, 14, cx, z, cap_top=False)
+
+
 @item('nam_phat_sang')
 def _(b, v):
-    # Nấm phát sáng: cụm nấm mũ tròn mượt có tán nấm xếp lớp, thân cong, đốm sáng, rêu loang chân.
+    # Nấm rừng bán tả thực: gốc mục có nấm linh chi (mũ nâu đỏ vân vòng) + cụm nấm mũ nâu/trắng, mép phát sáng lục mờ, rêu loang.
     rng = random.Random(41 + v)
-    cap = GLOW_P if v else GLOW_B
-    _moss_patch(b, 0, 0, 0.75, rng)
-    for k in range(6):
+    _moss_patch(b, 0, 0, 0.8, rng)
+    _reishi(b, 0.0, 0.0, 1.0 if not v else 0.85, 0.4 + v)
+    for k in range(5):
         a = rng.uniform(0, math.tau)
-        rr = rng.uniform(0.0, 0.4)
-        s = rng.uniform(0.5, 1.3)
-        x, z = math.cos(a) * rr, math.sin(a) * rr
-        lean = rng.uniform(-0.08, 0.08)
-        tube(b, [(x, 0, z), (x + lean * s, 0.25 * s, z), (x + lean * s * 1.5, 0.5 * s, z)], [0.065 * s, 0.045 * s, 0.05 * s], STEM, 7, sub=3)
-        cx = x + lean * s * 1.5
-        lathe(b, [(0.0, 0.5 * s), (0.2 * s, 0.49 * s), (0.34 * s, 0.53 * s), (0.36 * s, 0.6 * s), (0.28 * s, 0.7 * s), (0.14 * s, 0.77 * s), (0.0, 0.79 * s)], cap if k % 3 else CAP_Y, 14, cx, z, cap_top=False)
-        lathe(b, [(0.34 * s, 0.52 * s), (0.1 * s, 0.5 * s), (0.0, 0.5 * s)], STEM, 14, cx, z, cap_top=False)  # mặt dưới có phiến
-        for d in range(5):  # đốm
-            da = d / 5 * math.tau + k
-            ellipsoid(b, cx + math.cos(da) * 0.16 * s, 0.7 * s, z + math.sin(da) * 0.16 * s, 0.035 * s, 0.02 * s, 0.035 * s, STEM, 5, 2)
+        d = rng.uniform(0.55, 0.9)
+        _forest_mush(b, math.cos(a) * d, math.sin(a) * d, rng.uniform(0.6, 1.1), k % 2 == 0)
 
 
 @item('mo_co')
@@ -155,17 +179,56 @@ def _(b, v):
 
 @item('re_cay')
 def _(b, v):
-    # Rễ cây khổng lồ trồi lên thành vòm: nhiều rễ uốn lượn, ngọn gốc cụt, rêu bám.
+    # Gốc cổ thụ gãy ngọn có rễ lồi bám đất: thân loe chân, 6–7 rễ cái uốn mềm dần nhỏ rồi chìm vào đất, rễ phụ nông, rêu phủ.
     rng = random.Random(51 + v)
+    tube(b, [(0, -0.2, 0), (0.05, 0.5, 0.02), (-0.04, 1.3, 0), (0.06, 2.1 + 0.3 * v, 0.03)], [1.15, 0.85, 0.7, 0.6], BARK, 10, sub=3)
+    b.cylinder(0.06, 2.1 + 0.3 * v, 0.03, 0.62, 0.05, BARK_L, 10)
     for k in range(7 if v else 6):
-        a = k / 6 * math.tau + rng.uniform(-0.3, 0.3)
-        r1, r2 = rng.uniform(1.5, 2.4), rng.uniform(2.8, 4.0)
-        top = rng.uniform(1.8, 2.8)
-        tube(b, [(math.cos(a) * 0.3, top, math.sin(a) * 0.3), (math.cos(a) * r1 * 0.6, top * 0.85, math.sin(a) * r1 * 0.6), (math.cos(a) * r1, top * 0.45, math.sin(a) * r1), (math.cos(a + 0.2) * r2, 0.05, math.sin(a + 0.2) * r2)], [0.28, 0.3, 0.22, 0.08], BARK if k % 2 else BARK_L, 6, sub=3)
-    tube(b, [(0, 3.0, 0), (0.1, 1.5, 0.05), (0, 0, 0)], [0.45, 0.55, 0.7], BARK, 8, sub=2)
-    ellipsoid(b, 0, 0.12, 0, 1.0, 0.18, 1.0, MOSS, 12, 3)
+        a = k / 6 * math.tau + rng.uniform(-0.25, 0.25)
+        r1, r2 = rng.uniform(1.5, 2.2), rng.uniform(2.6, 3.4)
+        top = rng.uniform(1.0, 1.5)
+        side = rng.uniform(-0.5, 0.5)
+        pts = [(math.cos(a) * 0.5, top, math.sin(a) * 0.5), (math.cos(a + side * 0.2) * r1 * 0.55, top * 0.6, math.sin(a + side * 0.2) * r1 * 0.55), (math.cos(a + side * 0.4) * r1, 0.28, math.sin(a + side * 0.4) * r1), (math.cos(a + side * 0.55) * r2, -0.12, math.sin(a + side * 0.55) * r2)]
+        tube(b, pts, [0.42, 0.34, 0.24, 0.12], BARK if k % 2 else BARK_L, 8, sub=4)
     for k in range(5):
-        ellipsoid(b, rng.uniform(-1.8, 1.8), 0.05, rng.uniform(-1.8, 1.8), 0.4, 0.15, 0.35, MOSS_L, 6, 3)
+        a = rng.uniform(0, math.tau)
+        tube(b, [(math.cos(a) * 1.0, 0.18, math.sin(a) * 1.0), (math.cos(a) * 1.8, 0.1, math.sin(a) * 1.8), (math.cos(a) * 2.5, -0.1, math.sin(a) * 2.5)], [0.14, 0.1, 0.06], BARK_L, 6, sub=3)
+    for k in range(9):
+        a = rng.uniform(0, math.tau)
+        d = rng.uniform(0.5, 2.4)
+        ellipsoid(b, math.cos(a) * d, 0.22 if d < 1.4 else 0.1, math.sin(a) * d, rng.uniform(0.25, 0.5), 0.1, rng.uniform(0.22, 0.4), MOSS if k % 2 else MOSS_L, 8, 3)
+    ellipsoid(b, 0.0, 1.0, 0.75, 0.3, 0.35, 0.2, MOSS, 8, 4)
+
+
+@item('goc_cay')
+def _(b, v):
+    # Gốc cây mục: thân cụt loe chân với rễ chìm, mặt cắt có vòng năm, rêu phủ một bên, vài nấm nhỏ.
+    s = 1.0 + 0.2 * v
+    tube(b, [(0, -0.1, 0), (0.03, 0.3 * s, 0), (0, 0.7 * s, 0.02)], [0.55 * s, 0.4 * s, 0.36 * s], BARK, 9, sub=3)
+    lathe(b, [(0.0, 0.7 * s), (0.34 * s, 0.7 * s), (0.34 * s, 0.68 * s), (0.0, 0.68 * s)], paint(0xB59A6A, 'wood'), 10)
+    for k in range(5):
+        a = k / 5 * math.tau + v
+        tube(b, [(math.cos(a) * 0.3 * s, 0.35 * s, math.sin(a) * 0.3 * s), (math.cos(a) * 0.7 * s, 0.08, math.sin(a) * 0.7 * s), (math.cos(a) * 1.0 * s, -0.08, math.sin(a) * 1.0 * s)], [0.14 * s, 0.1 * s, 0.05 * s], BARK_L, 6, sub=3)
+    for k in range(4):
+        a = k * 1.7
+        ellipsoid(b, math.cos(a) * 0.3 * s, 0.4 * s + 0.1 * k, math.sin(a) * 0.3 * s, 0.22 * s, 0.1, 0.2 * s, MOSS if k % 2 else MOSS_L, 8, 3)
+    for k in range(3):
+        ellipsoid(b, 0.35 * s + k * 0.05, 0.25 + k * 0.12, 0.2, 0.06, 0.03, 0.06, CAP_Y, 5, 2)
+
+
+@item('da_reu')
+def _(b, v):
+    # Đá phủ rêu nhiều cỡ: ba tảng đá nứt (PBR) xếp nhóm, rêu đóng trên mặt ngửa và chân, vài viên nhỏ.
+    rng = random.Random(61 + v)
+    for k, (x, z, r, sq) in enumerate(((0, 0, 0.9, 0.7), (0.95, 0.35, 0.55, 0.8), (-0.7, 0.55, 0.42, 0.7))):
+        rock(b, x, 0, z, r * (1.0 + 0.25 * v), ROCK_M if k % 2 == 0 else ROCK_D, seed=k + 9 * v, squash=sq, seg=9, rings=4)
+        for m in range(4):
+            a = rng.uniform(0, math.tau)
+            d = rng.uniform(0.0, r * 0.7)
+            ellipsoid(b, x + math.cos(a) * d, r * sq * 0.78, z + math.sin(a) * d, r * 0.32, 0.07, r * 0.28, MOSS if m % 2 else MOSS_L, 8, 3)
+        ellipsoid(b, x, 0.05, z, r * 1.05, 0.12, r * 0.95, MOSS, 10, 3)
+    for k in range(5):
+        rock(b, rng.uniform(-1.2, 1.4), 0, rng.uniform(-0.9, 1.0), rng.uniform(0.1, 0.2), ROCK_M, seed=k + 20, squash=0.6, seg=6, rings=3)
 
 
 @item('kho_go')
@@ -178,6 +241,8 @@ def _(b, v):
     for k in range(3):
         a = k * 2.1 + v
         tube(b, [(-0.8 + k * 0.9, 0.42 + math.cos(a) * 0.35, math.sin(a) * 0.35), (-0.8 + k * 0.9, 0.42 + math.cos(a) * 0.7, math.sin(a) * 0.7)], [0.1, 0.06], BARK_L, 5, sub=1)
+    for k in range(5):
+        ellipsoid(b, -1.2 + k * 0.7, 0.8, 0.0 + 0.05 * k, 0.32, 0.1, 0.3, MOSS if k % 2 else MOSS_L, 8, 3)
     b.cylinder(1.5, 0, 1.5, 0.5, 0.55, BARK, 9, 0.45)
     b.cylinder(1.5, 0.55, 1.5, 0.45, 0.02, ring, 9)
     for k in range(4):

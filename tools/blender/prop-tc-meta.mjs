@@ -18,6 +18,7 @@ const anchor = lines.findIndex((l) => l.startsWith('| `arch_thien_khuyet` |'));
 let licAdded = 0;
 for (const [g, items] of Object.entries(groups)) {
   for (const it of items) {
+    if (it.ext) continue; // món dùng asset có sẵn
     for (const id of [`prop_tc_${it.name}`, `prop_tc_${it.name}_2`]) {
       const f = path.join(root, 'assets/source/prop', id, 'meta.json');
       const row = `| \`${id}\` | Tự sinh bằng bộ kit \`tools/blender/thien_cong_kit.py\` + \`tools/blender/prop_tc_${g}.py\` (Blender headless); texture PBR Poly Haven CC0 (xem mục Thiên Công Khai Vật) | dự án | 2026-11-19 | PROP-1, nhóm ${g}: ${it.vi}${id.endsWith('_2') ? ' (biến thể 2)' : ''} |`;

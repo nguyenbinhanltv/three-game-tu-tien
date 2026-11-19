@@ -192,7 +192,7 @@
         "name": "nam_phat_sang",
         "vi": "Nấm phát sáng",
         "collider": 0.0,
-        "foot": 0.4846
+        "foot": 0.8355
       },
       {
         "name": "mo_co",
@@ -233,13 +233,53 @@
             0.9
           ]
         ],
-        "foot": 3.4535
+        "foot": 2.9628
       },
       {
         "name": "kho_go",
         "vi": "Khô gỗ",
         "collider": 0.0,
         "foot": 1.9431
+      },
+      {
+        "name": "goc_cay",
+        "vi": "Gốc cây mục",
+        "collider": 0.6,
+        "foot": 0.953
+      },
+      {
+        "name": "da_reu",
+        "vi": "Đá phủ rêu",
+        "collider": 1.0,
+        "foot": 1.3233
+      },
+      {
+        "name": "x_duong_xi",
+        "vi": "Dương xỉ (asset có sẵn)",
+        "collider": 0.0,
+        "ext": "prop_duong_xi",
+        "foot": 0.55
+      },
+      {
+        "name": "x_lau",
+        "vi": "Sậy lau (asset có sẵn)",
+        "collider": 0.0,
+        "ext": "prop_lau",
+        "foot": 0.8947
+      },
+      {
+        "name": "x_da_nam",
+        "vi": "Đá nằm (asset có sẵn)",
+        "collider": 0.7,
+        "ext": "prop_da_nam",
+        "foot": 2.0
+      },
+      {
+        "name": "x_da_dung",
+        "vi": "Đá dựng (asset có sẵn)",
+        "collider": 0.9,
+        "ext": "prop_da_dung",
+        "foot": 1.4285
       }
     ]
   }
