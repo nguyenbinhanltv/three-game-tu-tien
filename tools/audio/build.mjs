@@ -4,7 +4,7 @@
 //   node tools/audio/build.mjs            build rồi ghi apps/client/public/audio/{sfx,amb}/ + manifest.json + khối giấy phép trong assets/LICENSES.md
 //   node tools/audio/build.mjs --check    chỉ kiểm khai báo, nguồn có đủ, gói đều CC0 (không ghi gì)
 //
-// Đầu vào: tools/audio/sounds.json (khai báo) + file nguồn trong <DTL_ASSET_SOURCE>/sfx/ (không commit).
+// Đầu vào: tools/audio/sounds.json (khai báo) + file nguồn trong <DTL_ASSET_SOURCE>/audio/sfx/ (không commit).
 // DTL_ASSET_SOURCE mặc định là thư mục dtl-asset-source cạnh repo gốc (dò qua git common dir để chạy được trong worktree).
 // ffmpeg: biến FFMPEG, rồi `ffmpeg` trong PATH, rồi gói ffmpeg-static nếu cài. Cần libopus và aac.
 //
@@ -65,7 +65,7 @@ function parseSrc(spec, ref) {
   const pack = ref.slice(0, i);
   const p = spec.packs[pack];
   if (!p) throw new Error(`gói "${pack}" không có trong packs (${ref})`);
-  return { pack, file: ref.slice(i + 1), abs: path.join(sourceRoot(), 'sfx', p.dir, ref.slice(i + 1)) };
+  return { pack, file: ref.slice(i + 1), abs: path.join(sourceRoot(), 'audio', 'sfx', p.dir, ref.slice(i + 1)) };
 }
 
 /** Chuẩn hóa một biến thể về mảng lớp. */
@@ -397,7 +397,7 @@ function writeEncoded(subdir, base, chans, webmArgs, m4aArgs, written) {
 function licenseBlock(spec, used) {
   const lines = [LIC_BEGIN, '', '### Âm thanh (SFX, âm môi trường)', ''];
   lines.push(
-    'Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi để tra lại). File nguồn nằm ở `../dtl-asset-source/sfx/`, khai báo xử lý trong `tools/audio/sounds.json`. Bản build trong `apps/client/public/audio/`. Lớp kim loại tổng hợp (`synth: metal` trong sounds.json: `sfx_ascend`, `sfx_spellbreak`, `sfx_rare`) và âm chuông/lách tách đèn lồng ở client do code tự sinh, không dùng nguồn ngoài.',
+    'Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi để tra lại). File nguồn nằm ở `../dtl-asset-source/audio/sfx/`, khai báo xử lý trong `tools/audio/sounds.json`. Bản build trong `apps/client/public/audio/`. Lớp kim loại tổng hợp (`synth: metal` trong sounds.json: `sfx_ascend`, `sfx_spellbreak`, `sfx_rare`) và âm chuông/lách tách đèn lồng ở client do code tự sinh, không dùng nguồn ngoài.',
     '',
   );
   lines.push('| Âm | Nguồn | Giấy phép | Ngày | Chi tiết |', '| --- | --- | --- | --- | --- |');

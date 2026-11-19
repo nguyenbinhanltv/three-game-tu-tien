@@ -10,7 +10,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "chr/set_van_kinh_thiet_giap/tripo/raw_ao_ngoai_v01.glb",
+    "source": "3d/nhan-vat/set_van_kinh_thiet_giap/tripo/raw_ao_ngoai_v01.glb",
     "size": {
       "height": 1
     },
@@ -19,7 +19,7 @@
     "post": "tools/blender/outfit_build.py",
     "outfit": {
       "player": "chr_kiem_tu_nam",
-      "dir": "chr/set_van_kinh_thiet_giap/tripo",
+      "dir": "3d/nhan-vat/set_van_kinh_thiet_giap/tripo",
       "palette": {
         "main": "#4A5870",
         "sec": "#E4E8EC",

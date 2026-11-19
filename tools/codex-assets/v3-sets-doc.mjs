@@ -15,7 +15,7 @@ const out = args.includes('--out') ? args[args.indexOf('--out') + 1] : null;
 if (!out) throw new Error('--out <thư mục>');
 fs.mkdirSync(out, { recursive: true });
 const OLD = { ...S1, ...S3, ...S4 };
-const SRC = 'D:\\METAGRIT\\dtl-asset-source\\chr';
+const SRC = 'D:\\METAGRIT\\dtl-asset-source\\3d\\nhan-vat';
 const bo = (id) => id.replace(/^set_/, '');
 const WAVES = [
   ['Đợt 1: đồ khởi đầu + bậc 1', (s) => s.tier <= 1 && s.id !== 'set_lac_kiem'],

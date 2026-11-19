@@ -12,8 +12,8 @@
 // Đầu vào: tools/audio/music.json.
 // Bài `"compose": true` (mặc định của dự án): soạn bằng code ở tools/audio/compose/<id>.mjs, render bằng soundfont
 // GeneralUser GS (compose/render.mjs) ra đúng một vòng lặp liền, rồi chỉ chuẩn hóa + mã hóa. Bản WAV/MIDI trung gian
-// ghi vào <DTL_ASSET_SOURCE>/audio/music/compose/ để nghe hoặc mở bằng phần mềm soạn nhạc.
-// Bài còn lại: <DTL_ASSET_SOURCE>/audio/music/<id>.mp3 (không commit; ví dụ nhạc Suno tải về), qua bước dò vòng:
+// ghi vào <DTL_ASSET_SOURCE>/audio/nhac/compose/ để nghe hoặc mở bằng phần mềm soạn nhạc.
+// Bài còn lại: <DTL_ASSET_SOURCE>/audio/nhac/<id>.mp3 (không commit; ví dụ nhạc Suno tải về), qua bước dò vòng:
 // Xử lý (DSP ở loopcore.mjs): giải mã 48 kHz stereo → dò nhịp và phần có nhạc (bỏ lặng đầu, đuôi fade-out)
 // → chọn điểm vòng theo ô nhịp, khớp pha, điểm qua 0 → crossfade đoạn nối (mặc định 120 ms)
 // → chuẩn hóa -16 LUFS, đỉnh thực ≤ -1 dBTP → Opus/WebM 96 kbps + AAC/M4A 128 kbps, tên file theo hash.
@@ -56,7 +56,7 @@ const ID_RE = /^[a-z0-9_]+$/;
 
 function sourceOf(id, def) {
   if (def.compose) return path.join(HERE, 'compose', `${id}.mjs`);
-  const dir = path.join(sourceRoot(), 'audio', 'music');
+  const dir = path.join(sourceRoot(), 'audio', 'nhac');
   if (def.file) return path.join(dir, def.file);
   for (const e of EXTS) {
     const p = path.join(dir, id + e);
@@ -116,7 +116,7 @@ async function processTrack(FF, id, def, d) {
     const { loadSong, renderSong, wavFloat } = await composer();
     const song = await loadSong(id);
     if (song.loop !== loop) throw new Error(`compose/${id}.mjs có loop=${song.loop}, khác music.json`);
-    const dir = path.join(sourceRoot(), 'audio', 'music', 'compose');
+    const dir = path.join(sourceRoot(), 'audio', 'nhac', 'compose');
     chans = await renderSong(song, { midiOut: path.join(dir, `${id}.mid`) });
     fs.writeFileSync(path.join(dir, `${id}.wav`), wavFloat(chans));
     info = { id, src: `compose/${id}.mjs`, srcDur: chans[0].length / SR, composed: song.summary() };
@@ -184,7 +184,7 @@ function licenseBlock(spec, entries) {
   const lines = [LIC_BEGIN, '', '### Nhạc nền', ''];
   if (Object.keys(entries).some((id) => tracks[id]?.compose))
     lines.push(
-      '**Nhạc tự soạn** (Claude soạn bằng code ở `tools/audio/compose/<id>.mjs`, xuất MIDI): phát hành **CC0-1.0**. Render bằng soundfont **GeneralUser GS v2.0.3** của S. Christian Collins ([trang gốc](https://www.schristiancollins.com/generaluser.php), [repo](https://github.com/mrbumpy409/GeneralUser-GS), commit `684543d`), giấy phép *GeneralUser GS License v2.0*: “You may use GeneralUser GS without restriction for your own music creation, private or commercial … Please feel free to use it in your software projects”. Game chỉ phân phối bản âm thanh đã render, không phân phối file soundfont (file ở `../dtl-asset-source/audio/sf2/`, build tự tải theo commit ghim và kiểm SHA-256).',
+      '**Nhạc tự soạn** (Claude soạn bằng code ở `tools/audio/compose/<id>.mjs`, xuất MIDI): phát hành **CC0-1.0**. Render bằng soundfont **GeneralUser GS v2.0.3** của S. Christian Collins ([trang gốc](https://www.schristiancollins.com/generaluser.php), [repo](https://github.com/mrbumpy409/GeneralUser-GS), commit `684543d`), giấy phép *GeneralUser GS License v2.0*: “You may use GeneralUser GS without restriction for your own music creation, private or commercial … Please feel free to use it in your software projects”. Game chỉ phân phối bản âm thanh đã render, không phân phối file soundfont (file ở `../dtl-asset-source/audio/nhac/sf2/`, build tự tải theo commit ghim và kiểm SHA-256).',
       '',
     );
   if (Object.values(entries).some((e) => /suno/i.test(e.credit?.by ?? '')))
@@ -236,7 +236,7 @@ async function main() {
   // Suno bản free bắt buộc ghi nguồn kèm link bài; nhạc tự soạn không cần.
   const noUrl = have.filter((id) => !tracks[id].url && /suno/i.test(tracks[id].by ?? d.by));
   if (CHECK) {
-    console.log(`Nguồn: tools/audio/compose/ (tự soạn), ${path.join(sourceRoot(), 'audio', 'music')} (file)`);
+    console.log(`Nguồn: tools/audio/compose/ (tự soạn), ${path.join(sourceRoot(), 'audio', 'nhac')} (file)`);
     console.log(`Đã có (${have.length}): ${have.join(', ') || '—'}`);
     console.log(`Chưa có (${missing.length}): ${missing.join(', ') || '—'}`);
     if (noUrl.length) console.log(`Cảnh báo: chưa điền url Suno (cần để ghi nguồn): ${noUrl.join(', ')}`);

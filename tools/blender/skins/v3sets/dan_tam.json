@@ -2,7 +2,7 @@
   "$comment": "Đan Tâm Y Bát v3: dựng từ mẫu _template_ao_dai.",
   "set": "dan_tam",
   "name": "Đan Tâm Y Bát",
-  "raw": "chr/set_dan_tam/tripo/raw_v3_dan_tam_{g}.glb",
+  "raw": "3d/nhan-vat/set_dan_tam/tripo/raw_v3_dan_tam_{g}.glb",
   "height": {
     "nam": 1.84,
     "nu": 1.7

@@ -91,10 +91,10 @@ const seen = new Set();
 for (const def of [...defs, ...extras.map((id) => ({ id, icon: id }))]) {
   if (seen.has(def.icon)) continue;
   seen.add(def.icon);
-  // Thứ tự ưu tiên: bộ icon U2-I (2d/icons-v2/png256, đã căn giữa, không viền) > tranh Codex đợt 1 (2d/icons) > bản cũ (icons/, kể cả render Blender).
-  const v3 = path.join(source, '2d', 'icons-v2', 'png256', `${def.icon}.png`);
-  const v2 = path.join(source, '2d', 'icons', `${def.icon}.png`);
-  const file = fs.existsSync(v3) ? v3 : fs.existsSync(v2) ? v2 : path.join(source, 'icons', `${def.icon}.png`);
+  // Thứ tự ưu tiên: bộ icon U2-I (2d/icon/v2/png256, đã căn giữa, không viền) > tranh Codex đợt 1 (2d/icon/v1) > bản cũ (2d/icon/legacy, kể cả render Blender).
+  const v3 = path.join(source, '2d', 'icon', 'v2', 'png256', `${def.icon}.png`);
+  const v2 = path.join(source, '2d', 'icon', 'v1', `${def.icon}.png`);
+  const file = fs.existsSync(v3) ? v3 : fs.existsSync(v2) ? v2 : path.join(source, '2d', 'icon', 'legacy', `${def.icon}.png`);
   // Chưa có tranh gốc: không chiếm ô, client dùng emoji `iconFallback`.
   if (!fs.existsSync(file)) {
     console.log(`Bỏ qua (chưa có PNG): ${def.icon}`);

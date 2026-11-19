@@ -1,7 +1,7 @@
 {
  "id": "skin_shadow_wolf",
  "source": "D:/claude-tmp/skin3/src/shadow_wolf_warlord_knight.glb",
- "out": "chr/skin_shadow_wolf/prep/rig_v01.glb",
+ "out": "3d/skin/skin_shadow_wolf/prep/rig_v01.glb",
  "yaw": -90,
  "view": {
   "scale": 1.2,

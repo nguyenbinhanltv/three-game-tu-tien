@@ -4,13 +4,13 @@
 
 2026-11-16 · đi kèm `docs/ASSET_CONCEPTS.md` (ưu tiên 1) và `docs/EXPANSION_DESIGN.md`.
 
-Người dùng dựng 12 tinh anh trên Tripo web (`<DTL_ASSET_SOURCE>/mon/elite_*/tripo/{raw_v01,rig_v01}.glb`). Nhập theo pipeline
+Người dùng dựng 12 tinh anh trên Tripo web (`<DTL_ASSET_SOURCE>/3d/quai/elite_*/tripo/{raw_v01,rig_v01}.glb`). Nhập theo pipeline
 Tripo sẵn có: `assets/source/mon/<id>/meta.json` → `tools/blender/import_tripo.py` (+ script `import.post`) → `pnpm assets:build`
 → GLB có hash + `manifest.json`. Không tốn credit Tripo/API; mọi clip là thủ tục (không mua animation).
 
 ## Danh sách id → file
 
-Nguồn: `<DTL_ASSET_SOURCE>/mon/<id>/tripo/rig_v01.glb` (riêng ngô công chỉ có `raw_v01.glb`, xương dựng bằng script). Build:
+Nguồn: `<DTL_ASSET_SOURCE>/3d/quai/<id>/tripo/rig_v01.glb` (riêng ngô công chỉ có `raw_v01.glb`, xương dựng bằng script). Build:
 `apps/client/public/assets/<id>.<hash>.glb` (tên chính xác ở `manifest.json`). Mọi asset lớp ngân sách mới `elite`
 (10–15 nghìn tam giác LOD0, LOD1 ≤ 5000, LOD2 ≤ 1500; texture màu 1024, normal/ORM 512; ≤ 60 xương). Kích thước là kích thước
 thật trong game (mét), trừ ba con Vân Lam (nhập ở scale 1, `scale` trong `monsters.json` giữ nguyên nên hitbox không đổi).

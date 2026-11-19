@@ -7,31 +7,31 @@
   "status": "animated",
   "import": {
     "kind": "tripo",
-    "source": "chr/chr_kiem_tu_nam/tripo/rig_v01.glb",
+    "source": "3d/nhan-vat/chr_kiem_tu_nam/tripo/rig_v01.glb",
     "size": {
       "height": 1.75
     },
     "orient": "thigh",
     "clips": [
       {
-        "source": "chr/chr_kiem_tu_nam/tripo/anim_idle_v01.glb",
+        "source": "3d/nhan-vat/chr_kiem_tu_nam/tripo/anim_idle_v01.glb",
         "name": "idle",
         "loop": true
       },
       {
-        "source": "chr/chr_kiem_tu_nam/tripo/anim_run_v01.glb",
+        "source": "3d/nhan-vat/chr_kiem_tu_nam/tripo/anim_run_v01.glb",
         "name": "run",
         "recenter": true,
         "loop": true
       },
       {
-        "source": "chr/chr_kiem_tu_nam/tripo/anim_attack_v01.glb",
+        "source": "3d/nhan-vat/chr_kiem_tu_nam/tripo/anim_attack_v01.glb",
         "name": "heavy_chop",
         "start": 1.3,
         "end": 2.5
       },
       {
-        "source": "chr/chr_kiem_tu_nam/tripo/anim_death_v01.glb",
+        "source": "3d/nhan-vat/chr_kiem_tu_nam/tripo/anim_death_v01.glb",
         "name": "death"
       },
       {

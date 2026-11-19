@@ -4,7 +4,7 @@
 
 Nhập 12 model Tripo (người dùng dựng trên web, ưu tiên 3 của `docs/ASSET_CONCEPTS.md`) vào pipeline asset: GLB tối ưu có hash, LOD, clip thủ tục idle/chạy/đánh/trúng đòn/chết, nạp lười theo bản đồ. **Chưa đặt vào bản đồ** và chưa có dòng nào trong `monsters.json` (việc của E-2/E-3/E-4: hp/atk, `ai`, `scale`, hitbox, loot). Quái Vân Lam cũ giữ nguyên.
 
-Nguồn: `<dtl-asset-source>/mon/<id>/tripo/{raw_v01,rig_v01}.glb` (không có file `anim_*` nên mọi clip là thủ tục). Meta: `assets/source/mon/<id>/meta.json` (`import.kind: "tripo"`, nguồn là `rig_v01.glb`).
+Nguồn: `<dtl-asset-source>/3d/quai/<id>/tripo/{raw_v01,rig_v01}.glb` (không có file `anim_*` nên mọi clip là thủ tục). Meta: `assets/source/mon/<id>/meta.json` (`import.kind: "tripo"`, nguồn là `rig_v01.glb`).
 
 ## Bảng id → file → bản đồ
 

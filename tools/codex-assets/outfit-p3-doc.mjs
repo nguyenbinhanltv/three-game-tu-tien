@@ -26,7 +26,7 @@ if (!sharp) throw new Error('Không tìm thấy sharp (chạy pnpm install)');
 
 const items = build();
 const docDir = path.join(root, 'docs/outfit-concepts-p3');
-const srcImgDir = path.join(source, '2d/outfit_p3');
+const srcImgDir = path.join(source, '2d/concept/outfit_p3');
 const PIECES = ['ao_ngoai', 'lop_duoi', 'vai_giap', 'dai_tua', 'ung', 'trang_suc_dau'];
 const MODE = {
   ao_ngoai: 'HD Model',

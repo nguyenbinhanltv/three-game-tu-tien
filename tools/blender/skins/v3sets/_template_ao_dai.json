@@ -2,7 +2,7 @@
   "$comment": "MẪU kiểu dáng ÁO DÀI (Kiếm tu, Đan sư; vạt tới bắp chân, xẻ tà hai bên). Sao chép thành tools/blender/skins/v3sets/<bộ>.json rồi sửa `set`, `name`, `raw`. Phần `robe`/`groups`/`limbs` là cấu hình của chr_v3.py (số theo PHẦN CHIỀU CAO); phần khai bộ nằm ở đầu file. Mặc định lấy từ Lạc Kiếm v3b2 (đã duyệt).",
   "set": "ten_bo",
   "name": "Tên Bộ",
-  "raw": "chr/set_ten_bo/tripo/raw_v3_ten_bo_{g}.glb",
+  "raw": "3d/nhan-vat/set_ten_bo/tripo/raw_v3_ten_bo_{g}.glb",
   "height": {
     "nam": 1.84,
     "nu": 1.7

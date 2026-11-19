@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "prop/prop_tran_hon_linh/tripo/raw_v01.glb",
+    "source": "3d/vu-khi/prop_tran_hon_linh/tripo/raw_v01.glb",
     "size": {
       "height": 0.22
     }

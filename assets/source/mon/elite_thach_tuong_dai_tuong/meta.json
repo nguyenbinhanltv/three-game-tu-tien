@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/elite_thach_tuong_dai_tuong/tripo/rig_v01.glb",
+    "source": "3d/quai/elite_thach_tuong_dai_tuong/tripo/rig_v01.glb",
     "size": {
       "height": 3.4
     },

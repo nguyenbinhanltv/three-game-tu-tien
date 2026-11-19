@@ -47,7 +47,7 @@
       "additionalProperties": false,
       "properties": {
         "kind": { "enum": ["tripo", "external"], "description": "tripo: GLB sinh bằng Tripo; external: model nguồn ngoài (Sketchfab, gói CC…), cùng bước chuẩn hóa import_tripo.py, phải ghi license.spdx + license.url." },
-        "source": { "type": "string", "description": "GLB gốc, tương đối DTL_ASSET_SOURCE (../dtl-asset-source), ví dụ prop/prop_lo_dan/tripo/raw_v01.glb." },
+        "source": { "type": "string", "description": "GLB gốc, tương đối DTL_ASSET_SOURCE (../dtl-asset-source), ví dụ 3d/prop/prop_lo_dan/tripo/raw_v01.glb." },
         "size": {
           "type": "object",
           "description": "Kích thước thật (mét) của đúng một cạnh hộp bao ở tư thế nghỉ; scale đều theo cạnh này.",

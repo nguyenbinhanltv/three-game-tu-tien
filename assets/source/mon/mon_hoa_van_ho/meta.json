@@ -11,13 +11,13 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/mon_hoa_van_ho/tripo/rig_v01.glb",
+    "source": "3d/quai/mon_hoa_van_ho/tripo/rig_v01.glb",
     "size": {
       "depth": 1.5
     },
     "clips": [
       {
-        "source": "mon/mon_hoa_van_ho/tripo/anim_run_v01.glb",
+        "source": "3d/quai/mon_hoa_van_ho/tripo/anim_run_v01.glb",
         "name": "walk",
         "loop": true
       }

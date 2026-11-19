@@ -6,7 +6,7 @@
 // giống hệt cái sẽ nối vào khi phát lặp, nên chỗ nối liền mẫu mà không cần crossfade.
 // Bài không lặp (sting): render một lần + đuôi, loop.mjs bỏ lặng cuối.
 //
-// Soundfont: <DTL_ASSET_SOURCE>/audio/sf2/GeneralUser-GS-v2.0.3.sf2 (không commit). Thiếu thì tự tải từ commit ghim
+// Soundfont: <DTL_ASSET_SOURCE>/audio/nhac/sf2/GeneralUser-GS-v2.0.3.sf2 (không commit). Thiếu thì tự tải từ commit ghim
 // của repo gốc và kiểm SHA-256; sai checksum thì dừng.
 
 import crypto from 'node:crypto';
@@ -31,7 +31,7 @@ export const SOUNDFONT = {
 };
 
 export function soundfontPath() {
-  return path.join(sourceRoot(), 'audio', 'sf2', SOUNDFONT.file);
+  return path.join(sourceRoot(), 'audio', 'nhac', 'sf2', SOUNDFONT.file);
 }
 
 function sha256(buf) {
