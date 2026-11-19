@@ -148,3 +148,42 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Cột bazan**: vật liệu `_obs` viết lại — hạt mịn đẳng hướng (bỏ thớ kéo dọc gây vân gỗ), vết nứt THẲNG/GÓC CẠNH (hai họ đường thẳng chéo theo toạ độ thế giới, chỉ ở vài ô), ánh đỏ chỉ trong khe nứt và chân cột, mặt hướng lên và đỉnh gãy phủ tro xám; màu nền đá xanh đen sẫm hơn. Trong GLB, bỏ vệt dung nham dọc, thay bằng 1–3 khe thẳng nghiêng mảnh trên mặt cột.
 - **Bệ trung tâm** (`dais`): ba tầng đá vỡ (cao 0,16/0,32/0,48 m) quanh bia giữ, vết nứt tỏa từ tâm thành 7–9 mảng, khe dung nham gradient (sáng gần tâm, tối ra ngoài), vành dung nham dưới chân, đá vỡ nghiêng ở mép, mảnh vụn chỉ ở viền ngoài; phiến vỏ dung nham rải sàn giảm còn 7 mảng nhỏ, chỉ ở r > 30. **Bệ thấp (≤ 0,5 m) vì chỉ để nhìn, không va chạm** và người chơi đứng/đánh ngay trên đó (chân lún tối đa 0,5 m ở tầng giữa); chưa nâng cao theo yêu cầu "nhô cao" cho tới khi COL-1 cho phép khai báo mặt đi được.
 - **Vòng trắng xám lớn**: có trong ảnh chụp cả bản gốc (main, chưa có mỹ thuật DUN-1) lẫn mọi bí cảnh khác, tâm gần chỗ nhân vật thử đứng (1520, 1330), không phải `RingGeometry` thuộc cảnh. Thử ẩn mọi `RingGeometry` bán kính trong ≥ 0,98 (lãnh vực `cloneVis`, `scan`) và `?aura=0` đều không hết; chưa tìm ra nguồn. Cần người nắm hệ VFX/hậu kỳ xác định (ứng viên: viền vùng phủ bóng/ánh sáng, hoặc lớp hậu kỳ).
+
+## PR 7: Độ Kiếp — Thiên Lôi Đài dưới mây bão (bí cảnh cuối, áp chuẩn từ vòng 1)
+
+- **Phạm vi**: sân độ kiếp `do_kiep` (Nguyên Anh: lôi/hỏa/tâm ma; Hóa Thần: ngũ hành lôi/thần niệm/thiên nhân hợp nhất). Chỉ để nhìn; kịch bản kiếp, vòng trận môn, điểm đứng, cổng ra giữ nguyên. `do_kiep_bac_hoang` (Anh Biến) đã có mỹ thuật Bắc Hoang nên không đổi.
+- **Mood `dk`**: mây bão xanh thép, nắng lạnh, điểm sáng ấm (đỉnh đồng, khảm vàng) tương phản bóng xanh; không còn sương phủ. Đất `terrain-ochre` (xám ấm có hạt) thay nền navy phẳng; tắt cỏ/cây/hồ/tông môn của Vân Lam.
+- **GLB `arch_do_kiep`** (`tools/blender/do_kiep_arch.py`, ~28 nghìn tam giác): **đài lát đá** r 21 gồm ba vành phiến hình quạt so le (lệch cao thấp, khe tối) + vòng/tia/bát quái (tám nhóm ba vạch liền-đứt) khảm vàng, nằm sát mặt sân (≤ 0,45 m, chân lún tối đa như PR 6: chỉ để nhìn); **tám lôi trụ** đá bát giác thon cao ~10 m (đai vân mây nổi, vòng khảm vàng, đỉnh thu lôi đồng + cầu điện; hai trụ gãy kèm mảnh vỡ); **bốn đỉnh đồng** ba chân thú có quai, vân khắc, than hồng; **vết sét cháy** hình sao rải sân kèm tinh thể sét; **tảng đá nung** nứt cháy; **tùng bị sét đánh**. Chừa hành lang vào phía nam.
+- **Client** (`game/world/doKiepArt.ts`): `dkMaterialFor` cho `_rune` (khảm vàng/than hồng: nhấp nhô chậm + "chớp" mạnh ngắn chu kỳ ~9 s) và `_jade` (hoa cương thớ đá theo toạ độ thế giới, mặt ngửa lạnh hơn); `DungeonFx` (sương thấp, vòng cổng ra), quầng đỉnh đồng, hạt điện bốc dọc tám lôi trụ.
+- **Ngân sách (preset Cao)**: 129–141 draw call, ~0,23M tam giác (cũ: 91 / 0,74M; giảm do tắt cây/cỏ).
+- **Công cụ**: `pnpm shots dungeonart --level do_kiep --trib hoa_than --battle 1 --at 8,24,44` vào bằng `/gm trib`, tự vào lại khi kiếp kết thúc giữa chừng, chụp ba mốc kiếp.
+- **Còn lại**: phiến đài còn phẳng (chưa normal map hoa văn), tảng đá nung còn tròn như trứng, nền xa vẫn là sườn núi Vân Lam; chưa va chạm (đợi COL-1). Console có 1 lỗi `Object3D.add ... undefined` có sẵn trong màn kiếp (vẫn xảy ra khi tắt `doKiepArt`), không thuộc PR này.
+
+### PR 7 vòng 2 (góp ý duyệt): đỉnh núi giữa biển mây giông, chớp sét, trụ thu lôi
+
+- **Bối cảnh**: biển mây tím-xám phủ ngoài r 78 (che sườn dốc, chỉ đỉnh núi xa nhô lên) + 16 cột đá nhọn xa cao tới ~90 m mọc từ biển mây (`spire`, karst); **xoáy mây giông đen tím** hai lớp đĩa quay ngược chiều trên đài (mắt bão ở giữa bừng theo chớp). Mood `dk` tối hơn: tương phản 1,35, bão hòa 0,68, nền đen tím, điểm ấm duy nhất là đỉnh đồng.
+- **Chớp sét theo nhịp** (2,2–5,5 s, hai lần loé cách 0,2 s): một uniform `flashU` dùng chung cho xoáy mây, biển mây, vật liệu `_rune`/`_volt`/đá vụn, cộng một đèn điểm tím-trắng trên đài (cường độ HDR cho bloom bắt). Mưa (420 vệt), hạt điện dọc lôi trụ, hồ quang giữa các đầu thu lôi kề nhau.
+- **Đá**: tảng tròn trắng thay bằng **đá vỡ cháy xám** (5–8 phiến góc cạnh nghiêng chồng, mặt trên cháy đen, khe nứt điện tím-trắng chạy dọc phiến, đá vụn quanh chân); **28 mảnh đá vụn bay lơ lửng** quanh đài (xoay chậm, nhích lên xuống, vết nứt điện phát sáng mạnh lên theo chớp).
+- **Lôi trụ**: thân đá sẫm khắc phù văn điện (vạch ngang + nét sổ ở tám mặt, hai vòng đai phát điện), đầu thu lôi sắt đen + cầu điện tím-trắng, **dây xích 34 mắt** từ thân trụ võng về mép đài (bỏ xích ở trụ dời khỏi lối vào).
+- **Đài**: tối và cháy xém hơn (16 mảng muội đen, khe nứt điện gấp khúc), vết sét cháy có khe điện; vòng vàng giữ nhưng mờ hơn.
+- **Vòng trận đỏ/xanh chỉ báo** (hazard của kiếp, VFX game dùng chung mọi bí cảnh) **chưa hạ độ đậm**: đổi sẽ ảnh hưởng độ đọc ở mọi level; cần quyết định riêng.
+- **Ngân sách (Cao)**: 148–158 draw call, ~0,27–0,29M tam giác, khung ~9–11 ms trên máy chụp.
+
+### PR 7 vòng 3 (góp ý duyệt): ánh sáng — nền gần đen, điểm sáng, sét dày, chớp toàn cảnh
+
+- **Mood `dk`**: nền tối sâu (nắng 0,7, trời 0,5, sương gần đen, blackLift ~đen, tương phản 1,5). Điểm sáng thay cho ánh đồng đều: **đầu mỗi lôi trụ phát quầng trắng-tím**, phù văn trụ/đài (`_volt`, `_rune`) sáng nền mạnh hơn và bừng theo chớp, **bốn đèn điểm cam** ở lò lửa rọi sàn và chân trụ.
+- **Xoáy mây** thấy được trong ảnh toàn cảnh (02: camera hạ thấp, nhìn ngang qua đài) và ảnh `07-xoay-may`; có **tia chớp chạy trong mây** (đường vân sáng mảnh, chỉ hiện lúc chớp).
+- **Tia sét và vòng chỉ báo AOE**: ban đầu vòng 3 đổi hằng số dùng chung (`lightning.ts`, `hazard.ts`, `telegraph.ts`, `sigil.ts`); **đã hoàn nguyên ở vòng 5** theo review (thông số gameplay/chống lóa chốt ở K-6, ảnh hưởng mọi level). Muốn sét dày hơn, chớp mỗi đòn hoặc nền vạch báo nhạt hơn thì làm PR VFX riêng có ảnh so sánh nhiều level (`pnpm shots mons`).
+- **Ảnh**: `02-toan-canh` (đổi góc), `07-xoay-may`, `95-set-danh` (chụp 70 ms sau khi gọi chớp).
+
+### PR 7 vòng 4 (review code): chớp trang trí không lẫn với sét thật, đèn điểm theo chất lượng
+
+- **Bỏ đèn điểm chớp treo trên đài** (từng rọi sáng cả sàn đấu). Hai uniform tách riêng: `skyU` (xoáy mây, biển mây, tia trong mây: gồm chớp trang trí) và `flashU` (phù văn, khảm, đá vụn: chỉ theo `postParams.flash`, tức sét thật của kiếp). Sàn đấu không bao giờ loé vì chớp trang trí.
+- **Chớp trang trí thưa** (7–15 s một lần, trước 2,2–5,5 s) và **tạm dừng khi có vùng báo sét** (`eng.vfx.hazards.length > 0`, tới khi hết), nên vạch báo đang đếm ngược không bị loé và người chơi không nhầm với sét thật.
+- **Đèn điểm ấm ở bốn lò lửa** chỉ tạo khi `q.lights && isWebGPU` (như `LanternLights`); preset Thấp và WebGL2 không có đèn, vẫn còn quầng giả.
+- Ảnh `95-set-danh` mô phỏng sét thật (`strike()` + `post.flash(0,3)`) ở sân đang kiếp: sàn tối, chỉ nổi phù văn/khảm, sét và lò.
+
+### PR 7 vòng 5 (review code): hoàn nguyên thay đổi VFX dùng chung
+
+- Hoàn nguyên `render/vfx/sigil.ts`, `render/vfx/lightning.ts`, `game/fx/vfxParts/hazard.ts`, `game/fx/telegraph.ts` về như `main`: PR này chỉ chạm cảnh `do_kiep` (`doKiepArt.ts`, GLB, palette `dk`, dữ liệu level, kịch bản chụp).
+- Chớp ngẫu nhiên chỉ còn ảnh hưởng trời (xoáy mây, biển mây), thưa và dừng khi có hazard; không đèn điểm chớp trên đài; đèn lò chỉ khi `q.lights && isWebGPU` (xem vòng 4).
