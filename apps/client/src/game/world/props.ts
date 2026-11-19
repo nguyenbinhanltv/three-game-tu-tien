@@ -86,6 +86,8 @@ export const PROP_CFG: Record<string, PropCfg> = {
 };
 
 const CHUNK = 128;
+/** Ô gom prop không phải cây (mỗi loại × ô = một InstancedMesh/chất liệu): lớn hơn ô cây để bản đồ nhiều prop (PROP-1) không vượt ngân sách draw call. */
+const CELL = 256;
 /** Ô trong phạm vi này (cộng đệm) mới nạp asset, để mạng có thời gian trước khi ô vào tầm vẽ. */
 const LOAD_MARGIN = 80;
 
@@ -237,7 +239,7 @@ export class PropLayer {
         continue;
       }
       // Lưới ô lệch nửa ô: tâm Lạc Kiếm Tông (x = 2048) và trục đại lộ không còn nằm đúng ranh ô, nên mỗi loại prop không bị tách làm 2–4 InstancedMesh (draw call).
-      const k = `${p.id}|${Math.floor((p.x + CHUNK / 2) / CHUNK)}|${Math.floor((p.z + CHUNK / 2) / CHUNK)}`;
+      const k = `${p.id}|${Math.floor((p.x + CELL / 2) / CELL)}|${Math.floor((p.z + CELL / 2) / CELL)}`;
       let c = buckets.get(k);
       if (!c) {
         c = {
