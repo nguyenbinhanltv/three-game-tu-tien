@@ -278,27 +278,27 @@
       "lk_dawn": {
         "label": "Lạc Kiếm — bình minh vàng ngọc",
         "sunColor": "#FFC79B", "sunIntensity": 2.8, "sunElevationDeg": 13,
-        "skyColor": "#C2DAE8", "skyIntensity": 0.85,
+        "skyColor": "#C2DAE8", "skyIntensity": 1.0,
         "fogColor": "#CCDFEC", "fogDensity": 0.00042, "heightFogTop": 60, "heightFogBoost": 1.7,
         "fogHaze": 0.0016, "fogHazeStart": 120, "fogScatter": 0.8, "rim": 0.6,
         "shadowTint": "#245C66", "highlightTint": "#FFD0A8", "splitBalance": 0.1,
         "shadowAmount": 0.7, "highlightAmount": 0.32,
-        "blackLift": "#10303A", "contrast": 1.22, "saturation": 1.22, "exposure": 1.0
+        "blackLift": "#10303A", "contrast": 1.22, "saturation": 1.04, "exposure": 1.0
       },
       "lk_day": {
         "label": "Lạc Kiếm — trưa trong",
         "sunColor": "#FFF0D2", "sunIntensity": 3.9, "sunElevationDeg": 44,
-        "skyColor": "#9CCBEA", "skyIntensity": 0.78,
+        "skyColor": "#9CCBEA", "skyIntensity": 0.95,
         "fogColor": "#BDD8EC", "fogDensity": 0.0003, "heightFogTop": 60, "heightFogBoost": 1.5,
         "fogHaze": 0.0015, "fogHazeStart": 140, "fogScatter": 0.6, "rim": 0.45,
         "shadowTint": "#2A6A68", "highlightTint": "#FFE4B4", "splitBalance": 0.0,
         "shadowAmount": 0.65, "highlightAmount": 0.25,
-        "blackLift": "#0F2F33", "contrast": 1.24, "saturation": 1.28, "exposure": 1.0
+        "blackLift": "#0F2F33", "contrast": 1.24, "saturation": 0.98, "exposure": 1.0
       },
       "lk_dusk": {
         "label": "Lạc Kiếm — hoàng hôn cam",
         "sunColor": "#FFB04E", "sunIntensity": 5.0, "sunElevationDeg": 11,
-        "skyColor": "#CDB690", "skyIntensity": 0.55,
+        "skyColor": "#CDB690", "skyIntensity": 0.75,
         "fogColor": "#EBC692", "fogDensity": 0.0007, "heightFogTop": 75, "heightFogBoost": 2.3,
         "fogHaze": 0.0022, "fogHazeStart": 90, "fogScatter": 1.9, "rim": 0.7,
         "shadowTint": "#566090", "highlightTint": "#FFB45C", "splitBalance": 0.05,
