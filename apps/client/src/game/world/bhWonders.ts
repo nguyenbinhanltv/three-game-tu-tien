@@ -686,6 +686,30 @@ function crackMaterial(): THREE.MeshBasicNodeMaterial {
   return mat;
 }
 
+/** Điểm tinh thể băng dọc mép khe (`per` điểm mỗi đoạn). Luôn vẽ đủ 7 ở mọi chất lượng để hình khớp collider (server quyết định va chạm, không phụ thuộc chất lượng đồ họa). */
+export function iceSpots(path: readonly RiftPt[], per: number): { x: number; z: number; s: number; yaw: number }[] {
+  const spots: { x: number; z: number; s: number; yaw: number }[] = [];
+  for (let i = 0; i + 1 < path.length; i++) {
+    const a = path[i]!;
+    const b = path[i + 1]!;
+    const tx = b.x - a.x;
+    const tz = b.z - a.z;
+    const tl = Math.hypot(tx, tz) || 1;
+    for (let k = 0; k < per; k++) {
+      const side = hash01(i, k, 61) > 0.5 ? 1 : -1;
+      const u = hash01(i, k, 63);
+      const off = 15 + hash01(i, k, 65) * 9;
+      spots.push({
+        x: a.x + tx * u + (-tz / tl) * side * off,
+        z: a.z + tz * u + (tx / tl) * side * off,
+        s: 0.8 + hash01(i, k, 67) * 1.6,
+        yaw: hash01(i, k, 69) * 6.28,
+      });
+    }
+  }
+  return spots;
+}
+
 export class BhWonders {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
@@ -759,26 +783,7 @@ export class BhWonders {
           emissiveIntensity: 0.9,
         }),
       );
-      const spots: { x: number; z: number; s: number; yaw: number }[] = [];
-      const per = opts.detail ? 7 : 3;
-      for (let i = 0; i + 1 < path.length; i++) {
-        const a = path[i]!;
-        const b = path[i + 1]!;
-        const tx = b.x - a.x;
-        const tz = b.z - a.z;
-        const tl = Math.hypot(tx, tz) || 1;
-        for (let k = 0; k < per; k++) {
-          const side = hash01(i, k, 61) > 0.5 ? 1 : -1;
-          const u = hash01(i, k, 63);
-          const off = 15 + hash01(i, k, 65) * 9;
-          spots.push({
-            x: a.x + tx * u + (-tz / tl) * side * off,
-            z: a.z + tz * u + (tx / tl) * side * off,
-            s: 0.8 + hash01(i, k, 67) * 1.6,
-            yaw: hash01(i, k, 69) * 6.28,
-          });
-        }
-      }
+      const spots = iceSpots(path, 7);
       const ice = new THREE.InstancedMesh(own(crystalGeometry()), iceMat, spots.length);
       ice.name = 'bh-ice';
       spots.forEach((s, i) => {
