@@ -1,9 +1,10 @@
 {
-  "mood": "ochre",
+  "mood": "dm_day",
   "glb": [],
   "ground": { "set": "terrain-ochre", "mask": "neutral" },
   "music": ["wild_ochre"],
   "features": { "sect": false, "portals": true, "lanterns": false, "lake": false, "clouds": false, "grass": true, "trees": "scatter", "beacons": true, "vegetation": false },
   "minimap": "doan_mach",
-  "grassCards": "grass-ochre"
+  "grassCards": "grass-ochre",
+  "godRays": { "x": 1024, "z": 1024, "r": 520, "count": 60 }
 }
