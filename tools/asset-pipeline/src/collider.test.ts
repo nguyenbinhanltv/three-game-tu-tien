@@ -33,3 +33,14 @@ describe('lib.json khớp GLB đã build', () => {
     expect(cur).toBe(next);
   }, 60_000);
 });
+
+describe('prop-boxes.json khớp GLB', () => {
+  it('không cũ so với GLB (chạy pnpm colliders:prop nếu asset đổi)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/propboxes.ts', '--check'], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
+});

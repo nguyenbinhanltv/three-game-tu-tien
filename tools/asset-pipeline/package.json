@@ -12,7 +12,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "colliders": "tsx src/collider.ts",
-    "colliders:arch": "tsx src/archcollider.cli.ts"
+    "colliders:arch": "tsx src/archcollider.cli.ts",
+    "colliders:prop": "tsx src/propboxes.ts"
   },
   "dependencies": {
     "@dtl/content": "workspace:*",
