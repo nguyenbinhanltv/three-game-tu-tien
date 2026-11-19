@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blockedAt, CollisionSet, collisionOf, footprintDist, type Shape, slideOut, STEP_UP } from './collision';
+import { blockedAt, CollisionSet, collisionOf, footprintDist, instantiateShapes, type Shape, slideOut, STEP_UP } from './collision';
 import { boltBlockedAt } from './projectile';
 import { IN_FLY, IN_JUMP, IN_UP, type MoveInput, type MoveState, PLAYER_RADIUS, stepMove } from './movement';
 import { registerTerrain, type Terrain } from './terrain';
@@ -234,5 +234,24 @@ describe('quái và đạn (COL-1 / C-2)', () => {
     expect(c.segmentBlockedAt(0, 0, 40, 0, 0.3, 1.1)).toBe(-1); // chỉ có tán pass trên đường
     expect(c.segmentBlockedAt(0, 0, 100, 0, 0.3, 12)).toBe(-1); // bay trên đỉnh
     expect(boltBlockedAt(0, 0, 100, 0, 0.3, c, 1.1)).toBeGreaterThan(0.45);
+  });
+});
+
+describe('instantiateShapes: cột đổ (lean)', () => {
+  const pillar = [{ k: 'cyl' as const, x: 0, z: 0, r: 1, y0: 0, y1: 9 }];
+  it('nghiêng nhẹ vẫn là trụ đứng; nghiêng ≥ LEAN_MIN thành hộp nằm dọc hướng đổ (+z cục bộ sau yaw)', () => {
+    const [up] = instantiateShapes(pillar, { x: 10, y: 5, z: 20, yaw: 0, s: 1, lean: 0.2 });
+    expect(up!.k).toBe('cyl');
+    const [fallen] = instantiateShapes(pillar, { x: 10, y: 5, z: 20, yaw: 0, s: 1, lean: Math.PI / 2 });
+    expect(fallen).toMatchObject({ k: 'box', hx: 1, walk: false, y0: 5 });
+    if (!fallen || fallen.k !== 'box') throw new Error('hộp nằm');
+    expect(fallen.hz).toBeCloseTo(4.5 + 1, 6); // dài 9 m nằm ngang + 2 bán kính
+    expect(fallen.z).toBeCloseTo(20 + 4.5, 6); // tâm dịch nửa chiều dài về +z
+    expect(fallen.x).toBeCloseTo(10, 6);
+    expect(fallen.y1).toBeCloseTo(5 + 2, 6); // nằm ngang: chỉ cao 2 bán kính
+    // yaw 90°: hướng đổ quay theo (sin, cos) = (1, 0) → +x
+    const [r] = instantiateShapes(pillar, { x: 10, y: 5, z: 20, yaw: Math.PI / 2, s: 1, lean: Math.PI / 2 });
+    expect(r!.x).toBeCloseTo(14.5, 6);
+    expect(r!.z).toBeCloseTo(20, 6);
   });
 });

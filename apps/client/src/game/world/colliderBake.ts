@@ -1,6 +1,6 @@
 import { LEVELS } from '@dtl/content';
 import { levelId, setActiveLevel, heightAt } from '../../base/levelCtx';
-import { terrainOf } from '@dtl/shared';
+import { LEAN_MIN, terrainOf } from '@dtl/shared';
 import { mapleSpots } from './doanMachArt';
 import { gardenPlan } from './lacKiemGarden';
 import { planSmallSwords } from './kiemTrungArt';
@@ -11,7 +11,7 @@ import { allProps } from './propScatter';
  * Bake vị trí prop đã rải (`allProps`: điểm nhấn + prop Thiên Công + rải tự động) ra JSON gọn theo level để server (không import client)
  * và client dùng CHUNG một nguồn collider (COL-1 / C-2). File: `packages/content/data/colliders/<level>.inst.json`, sinh bằng
  * `pnpm colliders:bake`; test `colliderBake.test.ts` báo đỏ khi hàm rải đổi mà chưa bake lại.
- * Dạng: { ids: [asset id], p: [[idIndex, x, z, y, yaw, s, sy?]] } (làm tròn 0,01; yaw/s 0,001).
+ * Dạng: { ids: [asset id], p: [[idIndex, x, z, y, yaw, s, sy?, lean?]] } (làm tròn 0,01; yaw/s 0,001).
  */
 export interface InstFile {
   ids: string[];
@@ -33,6 +33,7 @@ export interface ExtraInst {
   yaw: number;
   s: number;
   sy?: number;
+  lean?: number;
 }
 
 /** Hàm rải riêng theo level (COL-B). Chạy với địa hình của level đó đang hoạt động. */
@@ -98,7 +99,9 @@ export function bakeLevel(level: string): InstFile {
       ids.push(it.id);
     }
     const row = [k, r2(it.x), r2(it.z), r2(it.y), r3(it.yaw), r3(it.s)];
-    if (it.sy !== undefined && it.sy !== 1) row.push(r3(it.sy));
+    const lean = it.lean !== undefined && Math.abs(it.lean) >= LEAN_MIN ? it.lean : undefined;
+    if ((it.sy !== undefined && it.sy !== 1) || lean !== undefined) row.push(r3(it.sy ?? 1));
+    if (lean !== undefined) row.push(r3(lean));
     p.push(row);
   }
   return { ids, p };
