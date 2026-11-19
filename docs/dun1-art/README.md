@@ -213,3 +213,16 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - `KinhNguyetArt.dispose()` gỡ `rf.target` khỏi group và gọi `reflector.dispose()` (giải phóng render target HalfFloat + depth); trước đó mỗi lần vào/ra level rò một render target. Hook ẩn vật trong lượt phản chiếu không `traverse` mỗi khung nữa: danh sách (nhãn tên, sprite, `MeshBasicMaterial` thường, nhóm VFX) quét lại mỗi ~0,5 s.
 - Độ phân giải phản chiếu 0,5 → 0,4. Phản chiếu chỉ bật ở preset có đèn (Cao/Cực cao) và WebGPU.
 - **Đo (`pnpm shots dungeonart --level kinh_nguyet --battle 1 --perf 1`, preset Cao, 1080p)**: cảnh trống 194–236 draw call, ~0,81–0,86M tam giác, 9–10 ms/khung; **đang đánh boss Chân Quân**: 205 draw call, ~0,97M tam giác, 9,4 ms/khung. Một lần đo trước khi hạ độ phân giải ra 257 draw call, 16,7 ms (ồn do chụp ảnh cùng lúc); chưa có số "không phản chiếu" cùng preset Cao để so riêng.
+
+## Polish — Thần Tàng: giảm tím, bệ tượng khắc hoa văn
+
+- **Giảm tím**: mood `tt` bão hòa 0,88 → 0,5, trời/sương/bóng/blackLift chuyển từ chàm sang xám trung tính; cẩm thạch GLB (`marble`) từ đen tím sang đen xám ngả tím nhạt, áo choàng tượng và biểu ngữ sang đỏ rượu sẫm; sương thấp (`DungeonFx.mist`) xám ấm. Vẫn giữ phù văn rune tím làm điểm nhấn nhỏ.
+- **Bệ tượng**: bỏ các ô vuông rune (đọc như bàn cờ đen-vàng); bậc giữa quấn **dải hồi văn** vàng sẫm (9 đơn vị mỗi mặt, nét ngang/sổ so le) kèm đường rune mảnh liền phía trên; mặt bậc dưới có hàng **cánh sen đá** nghiêng (10 cánh mỗi mặt); bốn góc có đinh vàng tròn. `plinth_carving` trong `tools/blender/than_tang_arch.py`.
+- **Ngân sách (Cao)**: 143–158 draw call, ~0,94–0,99M tam giác (GLB 438k → 487k tam giác), 8,4–9,9 ms/khung.
+
+## Polish — Phục Mạch: vách hang phá nhịp
+
+- **Vấn đề**: vách hang là 40 đoạn giống nhau (3 biến thể, mỗi đoạn 8 tầng × 3 khối cùng cao, khe tối đều) nên đọc như tường gạch lặp.
+- **`cave_wall` viết lại** (`tools/blender/phuc_mach_arch.py`): tầng cao thấp bất kỳ (3,5–10,5 m), mỗi tầng 1–4 khối rộng hẹp khác nhau, độ nhô vào/ra lệch mạnh (45% tầng nhô thêm 3,5–5 m như mái đua), thớ đá mỗi khối một mức, khe tối chỉ ở ~40% số tầng, 2–4 vết nứt dọc, 1–3 trụ đá lớn nhô từ chân và đá lở nhiều hơn. **8 biến thể** (trước 3), mỗi đoạn đặt thêm xoay ±5° và giãn ×0,9–1,15 nên không thấy lặp.
+- **Ngân sách (Cao)**: 243–262 draw call (như trước, dưới trần 300), ~1,0–1,06M tam giác; GLB 445k → 456k tam giác, ~9 MB.
+- **Còn lại**: vách vẫn là cùng bảng màu nâu sa thạch; chưa có rêu/nước rỉ hay thạch nhũ phủ vách.

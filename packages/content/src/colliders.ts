@@ -1,4 +1,5 @@
 import { instantiateShapes, type LocalShape, registerCollision, type Shape } from '@dtl/shared';
+import archKt from '../data/colliders/arch_kiem_trung.boxes.json';
 import archKn from '../data/colliders/arch_kinh_nguyet.boxes.json';
 import archPm from '../data/colliders/arch_phuc_mach.boxes.json';
 import archXk from '../data/colliders/arch_xich_tan.boxes.json';
@@ -8,6 +9,7 @@ import extraLib from '../data/colliders/extra-lib.json';
 import bacHoang from '../data/colliders/bac_hoang.inst.json';
 import doKiepBacHoang from '../data/colliders/do_kiep_bac_hoang.inst.json';
 import doanMach from '../data/colliders/doan_mach.inst.json';
+import kiemTrung from '../data/colliders/kiem_trung.inst.json';
 import kimDaCung from '../data/colliders/kim_da_cung.inst.json';
 import kinhNguyet from '../data/colliders/kinh_nguyet.inst.json';
 import phucMach from '../data/colliders/phuc_mach.inst.json';
@@ -31,10 +33,10 @@ export interface InstFile {
 /** `lib.json` (sinh từ GLB) + `extra-lib.json` (hình ghi tay cho đồ dựng bằng mã: cây phong, thân cây vườn…, id `x_*`). */
 export const COLLIDER_LIB = { ...libJson, ...extraLib } as unknown as Record<string, LocalShape[]>;
 
-/** Level → file prop đã bake. `kiem_trung` dùng chung bố cục prop với `van_lam` (cùng bản đồ). */
+/** Level → file prop đã bake (kiếm cắm Kiếm Trủng, vườn Lạc Kiếm… nằm trong cùng file qua `extraInstances`). */
 export const INST_BY_LEVEL: Record<string, InstFile> = {
   van_lam: vanLam,
-  kiem_trung: vanLam,
+  kiem_trung: kiemTrung,
   doan_mach: doanMach,
   van_hai: vanHai,
   thien_khuyet: thienKhuyet,
@@ -73,6 +75,7 @@ export interface ArchFile {
 }
 export const ARCH_BY_LEVEL: Record<string, ArchFile[]> = {
   van_lam: [archSect as unknown as ArchFile],
+  kiem_trung: [archKt as unknown as ArchFile],
   phuc_mach: [archPm as unknown as ArchFile],
   xich_tan_khich: [archXk as unknown as ArchFile],
   kinh_nguyet: [archKn as unknown as ArchFile],
