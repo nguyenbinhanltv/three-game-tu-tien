@@ -341,12 +341,25 @@ export function registerTerrain(def: TerrainDef): Terrain {
 
 export const VAN_LAM: Terrain = registerTerrain(VAN_LAM_TERRAIN);
 
+/**
+ * Bí cảnh dựng trên bản đồ Vân Lam (chung heightmap) nhưng KHÔNG chung vòng tròn va chạm của Vân Lam: cự kiếm Kiếm Trủng (1520, 1300) nằm đúng tâm hầm của
+ * chúng thành một cột vô hình, cổng bí cảnh/prop tông môn ở xa nhưng vô nghĩa. Hình va chạm riêng của từng bí cảnh khóa theo levelId (`collisionOf`).
+ * Kiếm Trủng vẫn dùng `VAN_LAM` nguyên bản (cự kiếm có thật ở đó).
+ */
+const OWN_COLLIDERS = new Set(['do_kiep', 'kim_da_cung', 'kinh_nguyet', 'phuc_mach', 'than_tang']);
+const CLEAN = new Map<string, Terrain>();
+
 /** Địa hình của level: nhận id hoặc LevelDef (có thể trỏ `terrain` sang id khác). Ném lỗi nếu chưa đăng ký. */
 export function terrainOf(level: string | { id: string; terrain?: string }): Terrain {
   const raw = typeof level === 'string' ? level : (level.terrain ?? level.id);
   const t = REGISTRY.get(TERRAIN_ALIAS[raw] ?? raw);
   if (!t) throw new Error(`terrainOf: level chưa có địa hình: ${raw}`);
-  return t;
+  const id = typeof level === 'string' ? level : level.id;
+  if (!OWN_COLLIDERS.has(id)) return t;
+  // Bản sao nông: dùng chung mọi hàm địa hình (heightAt…, không dựng lại), chỉ bỏ vòng tròn của Vân Lam. Dựng lại nếu địa hình gốc được đăng ký lại.
+  let c = CLEAN.get(id);
+  if (!c || c.heightAt !== t.heightAt) CLEAN.set(id, (c = { ...t, colliders: [] }));
+  return c;
 }
 
 // ---- Lối tắt cho Vân Lam (giữ API cũ) ----

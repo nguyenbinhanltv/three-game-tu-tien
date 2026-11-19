@@ -56,7 +56,7 @@ export function biomeAt(x: number, z: number): Biome {
  * Thế giới ↔ bí cảnh Kiếm Trủng là trường hợp chính: room đổi nhưng địa hình, tông môn, cổng, cột sáng giữ nguyên.
  */
 export function sameLayout(a: string, b: string): boolean {
-  if (terrainOf(a) !== terrainOf(b)) return false;
+  if (terrainOf(a).heightAt !== terrainOf(b).heightAt) return false; // cùng heightmap (bí cảnh chung bản đồ có bản sao địa hình khác vòng va chạm)
   const x = levelAssets(a);
   const y = levelAssets(b);
   return JSON.stringify([x.features, x.ground, x.mood]) === JSON.stringify([y.features, y.ground, y.mood]);
