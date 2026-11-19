@@ -39,7 +39,8 @@ kit._find_pbr = _find_pbr
 for _k, _c, _e in (('glow_g', 0x66FFA8, 1.5), ('glow_b', 0x66C8FF, 1.5), ('glow_p', 0xB070FF, 1.7), ('glow_y', 0xFFD070, 1.4), ('glow_r', 0xFF6A3A, 1.5)):
     bs.MATERIALS[_k] = Mat(0.7, 0.0, None, 1.0, False, 0.0, (_c, _e))
 bs.MATERIALS['leaf'] = Mat(0.85, 0.0, None, 1.0, False, 0.0)
-bs.MATERIALS['cloth'] = Mat(0.95, 0.0, None, 1.0, False, 0.0)  # vải, giấy, rơm: chỉ màu đỉnh
+bs.MATERIALS['blade'] = Mat(0.22, 0.65, None, 1.0, False, 0.0)  # thép: không texture, nhám thấp, kim loại vừa (cảnh chưa có env map)
+bs.MATERIALS['cloth'] = Mat(0.95, 0.0, None, 1.0, False, 0.0, (0xFFD8B0, 0.06))  # vải, giấy, rơm: chỉ màu đỉnh; phát sáng rất nhẹ (vải mỏng thấu sáng, mặt quay lưng nắng không đen)
 
 _orig_mm = bs.make_material
 
@@ -108,11 +109,17 @@ def _leaf_material(bpy):
 import inspect  # noqa: E402
 import textwrap  # noqa: E402
 
-_LOW = 'cu.extrude = depth / 2' + chr(10) + '    cu.resolution_u = 1' + chr(10) + '    cu.bevel_resolution = 0'
+_LOW = 'cu.extrude = depth / 2' + chr(10) + '    cu.resolution_u = TEXT_RES' + chr(10) + '    cu.bevel_resolution = 0'
 _src = textwrap.dedent(inspect.getsource(kit.KB.text)).replace('cu.extrude = depth / 2', _LOW)
 _ns = dict(kit.__dict__)
+_ns['TEXT_RES'] = 2
 exec(_src, _ns)
 kit.KB.text = _ns['text']
+
+
+def set_text_res(n):
+    """Số đoạn mỗi đường cong của chữ khắc (1 = thô, ít tam giác; 2 = vừa)."""
+    _ns['TEXT_RES'] = n
 
 # ---------- patina cho đồng: rỉ xanh bám mặt ngửa, chỗ thấp, ngẫu nhiên; mép sáng lên (mòn) ----------
 VERDIGRIS = bs.srgb(0x3F8F7A)
@@ -156,6 +163,7 @@ CLOTH_W = paint(0xE9E0CC, 'cloth')
 CLOTH_B = paint(0x2F4E6B, 'cloth')
 CLOTH_Y = paint(0xD9A93A, 'cloth')
 CLOTH_D = paint(0x3A2E34, 'cloth')
+INK_TEXT = paint(0x24160F, 'cloth')  # chữ khắc mực trên bia
 STRAW = paint(0xC9AE62, 'cloth')
 BAMBOO = paint(0x9DB05A, 'cloth')
 BAMBOO_D = paint(0x6F8438, 'cloth')
@@ -171,6 +179,8 @@ ROCK_D = paint(0x5E5C56, 'rock')
 DROCK = paint(0x4A4650, 'darkrock')
 DROCK_L = paint(0x6A6670, 'darkrock')
 BONE = paint(0xD8CFB8, 'stone')
+BLADE_STEEL = paint(0xB4C8DE, 'blade')
+kit.BLADE_D = paint(0x7C91AB, 'blade')  # mép lưỡi/sống kiếm của sword_up đọc biến này
 GLOW_G = paint(0x66FFA8, 'glow_g')
 GLOW_B = paint(0x66C8FF, 'glow_b')
 GLOW_P = paint(0xB070FF, 'glow_p')
@@ -487,15 +497,20 @@ def rune_column(b, cx, y0, cz, w, h, n, color, seed=0, yaw=0.0, depth=0.03):
         rune(b, cx, y0 + h - cell * (i + 0.5), cz, w, cell * 0.8, color, seed + i * 3, yaw, depth)
 
 
-def meander(b, cy, r, h, color, n=24, depth=0.03):
-    """Đai hoa văn mây vuông (lôi văn) quanh thân tròn bán kính r tại độ cao cy: n ô, mỗi ô một khối chữ L nổi."""
-    for i in range(n):
-        a = (i + 0.5) / n * math.tau
-        x, z = math.cos(a) * (r + depth / 2), math.sin(a) * (r + depth / 2)
-        w = math.tau * r / n * 0.8
-        b.box(x, cy, z, depth, h * 0.9, w, color, yaw=-(a))
-        if i % 2:
-            b.box(x, cy + h * 0.3, z, depth * 1.4, h * 0.25, w * 0.55, color, yaw=-(a))
+def meander(b, cy, r, h, color, n=18, depth=0.03):
+    """Băng hoa văn khắc liền mạch quanh thân tròn bán kính r tại độ cao cy: dải đồng sẫm khắc chìm, hai chỉ vàng viền, hai đường sóng mây cuộn đan nhau (ống mảnh liền một vòng)."""
+    d = 0.012
+    lathe(b, [(r + 0.002, cy - h / 2), (r + d, cy - h / 2 + 0.01), (r + d, cy + h / 2 - 0.01), (r + 0.002, cy + h / 2)], BRONZE_D, 28, cap_top=False)
+    for sy in (-1, 1):
+        lathe(b, [(r + d - 0.004, cy + sy * (h / 2 - 0.012) - 0.012), (r + d + 0.012, cy + sy * (h / 2 - 0.012) - 0.008), (r + d + 0.012, cy + sy * (h / 2 - 0.012) + 0.008), (r + d - 0.004, cy + sy * (h / 2 - 0.012) + 0.012)], color, 28, cap_top=False)
+    waves = max(5, n // 2)
+    for ph in (0.0, math.pi):
+        pts = []
+        for i in range(waves * 8 + 1):
+            a = i / (waves * 8) * math.tau
+            y = cy + math.sin(a * waves + ph) * h * 0.26
+            pts.append((math.cos(a) * (r + d + 0.006), y, math.sin(a) * (r + d + 0.006)))
+        tube(b, pts, 0.008, color, 4, sub=1, cap=False)
 
 
 def weight_uv(b, top, length):
@@ -503,6 +518,12 @@ def weight_uv(b, top, length):
     pts = b.verts[-len(b.faces[-1]):]
     # b.verts lưu toạ độ Blender (x, -z, y): độ cao = thành phần thứ ba
     b.uvs[-1] = [(max(0.0, min(1.0, (top - v[2]) / length)), 0.0) for v in pts]
+
+
+def weight_from(b, n0, top, length):
+    """Gán trọng số lắc cho mọi mặt từ chỉ số n0 (vd. chữ thêu bằng b.text trên phướn)."""
+    for i in range(n0, len(b.faces)):
+        b.uvs[i] = [(max(0.0, min(1.0, (top - b.verts[k][2]) / length)), 0.0) for k in b.faces[i]]
 
 
 def cloth_quad(b, pts, color, top, length):

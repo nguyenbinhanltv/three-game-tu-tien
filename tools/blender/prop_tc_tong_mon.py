@@ -5,6 +5,7 @@ import math
 
 from prop_tc_lib import (
     _GLYPHS,
+    BLADE_STEEL,
     BRONZE,
     BRONZE_D,
     CLOTH_B,
@@ -16,6 +17,7 @@ from prop_tc_lib import (
     GLOW_R,
     GLOW_Y,
     GREEN_BR,
+    INK_TEXT,
     IRON,
     JADE_G,
     LAMP,
@@ -29,6 +31,8 @@ from prop_tc_lib import (
     WOOD_D,
     arch_outline,
     cloth_quad,
+    set_text_res,
+    weight_from,
     ellipsoid,
     item,
     lathe,
@@ -62,20 +66,25 @@ def _ear(b, sx, y, r, hgt, color, t=0.09):
 
 @item('dinh_lu_dong')
 def _(b, v):
-    # Đỉnh lư đồng: bụng tròn trên ba chân thú (v: bốn chân, thân vuông), hai quai tai đỉnh, nắp sen, đai lôi văn + phù văn.
+    # Đỉnh lư đồng: bụng tròn trên ba chân thú (v: bốn chân, thân vuông), hai quai tai đỉnh, nắp sen, băng hoa văn khắc liền mạch.
     sq = bool(v)
     _paw_legs(b, 4 if sq else 3, 0.62, 0.62, BRONZE_D, 0.17)
     if sq:
         b.box(0, 1.3, 0, 1.5, 1.2, 1.5, BRONZE)
         b.box(0, 1.95, 0, 1.7, 0.12, 1.7, BRONZE_D)
         b.box(0, 0.74, 0, 1.64, 0.1, 1.64, BRONZE_D)
-        for k in range(4):
+        for k in range(4):  # mặt khắc chìm: hai khung chỉ vàng lồng nhau
             a = k * math.pi / 2
-            rune(b, math.sin(a) * 0.76, 1.3, math.cos(a) * 0.76, 0.5, 0.8, GILD, seed=k + 1, yaw=a, depth=0.04)
+            ox, oz = math.sin(a) * 0.752, math.cos(a) * 0.752
+            tx, tz = math.cos(a), -math.sin(a)  # hướng ngang trên mặt
+            for w_, h_ in ((1.1, 0.9), (0.9, 0.7)):
+                for ds, dy, ln, ht in ((0, h_ / 2, w_, 0.025), (0, -h_ / 2, w_, 0.025), (w_ / 2, 0, 0.025, h_), (-w_ / 2, 0, 0.025, h_)):
+                    b.box(ox + tx * ds, 1.3 + dy, oz + tz * ds, ln, ht, 0.025, GILD, yaw=a)
         r_ear = 0.82
     else:
         lathe(b, [(0.0, 0.6), (0.52, 0.62), (0.82, 0.95), (0.92, 1.35), (0.82, 1.75), (0.7, 1.9), (0.82, 1.98), (0.82, 2.06), (0.7, 2.08)], BRONZE, 20)
         meander(b, 1.12, 0.93, 0.2, GILD, 18)
+        meander(b, 1.62, 0.88, 0.12, GILD, 14)
         r_ear = 0.78
     top = 2.06
     for sx in (-1, 1):
@@ -89,7 +98,7 @@ def _(b, v):
 
 @item('gia_kiem')
 def _(b, v):
-    # Giá kiếm: hai trụ gỗ sơn son đầu vàng, ba thanh ngang, 4–5 thanh kiếm có chắn, đế đá, phù văn dát trên xà.
+    # Giá kiếm: hai trụ gỗ sơn son đầu vàng, ba thanh ngang, 4–5 thanh kiếm thép lưỡi xanh nhẹ, chuôi quấn vải, chắn + đầu chuôi vàng, đế đá.
     w = 2.8 if v else 2.2
     for sx in (-1, 1):
         b.box(sx * w / 2, 0.9, 0, 0.14, 1.8, 0.14, VERM_D)
@@ -101,16 +110,18 @@ def _(b, v):
     n = 5 if v else 4
     for k in range(n):
         x = -w / 2 + 0.3 + k * (w - 0.6) / (n - 1)
-        b.sword_up(x, 0.0, 0.62, 1.15, 0.12, tilt=0.06 * ((k % 3) - 1), color=STEEL)
-        b.box(x, 0.58, 0.03, 0.11, 0.1, 0.08, GILD)
+        tl = 0.06 * ((k % 3) - 1)
+        b.sword_up(x, 0.0, 0.62, 1.15, 0.12, tilt=tl, color=BLADE_STEEL, hilt=False)
+        b.box(x, 0.62, 0.0, 0.2, 0.05, 0.12, GILD)
+        for j in range(6):  # chuôi quấn vải: vòng dây đỏ/trắng xen kẽ
+            b.cylinder(x, 0.2 + j * 0.07, 0.0, 0.034, 0.06, CLOTH_R if j % 2 == 0 else CLOTH_W, 6)
+        ellipsoid(b, x, 0.14, 0.0, 0.05, 0.04, 0.05, GILD, 6, 3)
     b.box(0, 1.84, 0, w + 0.2, 0.08, 0.2, VERM)
-    for k in range(3 if v else 2):
-        rune(b, -w / 2 + 0.5 + k * (w - 1.0) / (2 if v else 1), 1.84, 0.105, 0.2, 0.06, GILD, seed=k * 5, depth=0.02)
 
 
 @item('bia_khac')
 def _(b, v):
-    # Bia khắc: bệ bậc, thân bia dày, mặt lõm ngọc lục có hai cột phù văn dát vàng, diềm lôi văn, mái bia ba tầng.
+    # Bia khắc: bệ bậc, thân bia dày, mặt lõm ngọc lục khắc chữ Việt thư pháp (Charm Bold), viền chỉ vàng, mái bia ba tầng.
     h = 2.6 if v else 2.2
     b.box(0, 0.12, 0, 1.7, 0.24, 0.9, STONE_D)
     b.box(0, 0.4, 0, 1.4, 0.32, 0.72, STONE_M)
@@ -120,68 +131,65 @@ def _(b, v):
     b.box(0, 0.56 + h + 0.2, 0, 0.94, 0.14, 0.32, STONE_L)
     b.box(0, 0.56 + h + 0.34, 0, 0.6, 0.12, 0.26, STONE_M)
     b.box(0, 0.56 + h * 0.5, 0.145, 0.82, h * 0.82, 0.02, JADE_G)
-    for sx in (-1, 1):
-        for k in range(8):
-            b.box(sx * 0.37, 0.56 + h * 0.12 + k * h * 0.095, 0.16, 0.05, 0.05, 0.02, GILD)
-    rune_column(b, -0.13, 0.56 + h * 0.14, 0.157, 0.22, h * 0.7, 5, GILD_TEXT, seed=3 * v)
-    rune_column(b, 0.13, 0.56 + h * 0.14, 0.157, 0.22, h * 0.7, 5, GILD_TEXT, seed=9 - 4 * v)
+    fy, fh = 0.56 + h * 0.5, h * 0.82
+    for dy in (-fh / 2 + 0.04, fh / 2 - 0.04):
+        b.box(0, fy + dy, 0.158, 0.76, 0.03, 0.012, GILD)
+    for dx in (-0.34, 0.34):
+        b.box(dx, fy, 0.158, 0.03, fh - 0.06, 0.012, GILD)
+    words = ('Lạc Kiếm', 'Kiếm Tâm') if not v else ('Đạp Thiên', 'Lộ')
+    set_text_res(3)
+    b.text(words[0], 0, 0.56 + h * 0.64, 0.158, 0.5, 0.045, INK_TEXT, fit_w=0.64, fit_h=0.5, bold=0.0)
+    b.text(words[1], 0, 0.56 + h * 0.34, 0.158, 0.5, 0.045, INK_TEXT, fit_w=0.64, fit_h=0.5, bold=0.0)
+    set_text_res(2)
 
 
 @item('co_phuong')
 def _(b, v):
-    # Cờ phướn: cột sơn son đầu thương vàng, xà ngang, phướn vải dày (hai mặt + mép) viền vàng, gấu tua rua, phù văn dát vàng.
+    # Cờ phướn: cột sơn son đầu thương vàng, xà ngang, phướn vải dày (hai mặt + mép) viền vàng, tua rua, chữ Việt thư pháp thêu hai mặt.
     # Trọng số lắc (0 ở mép treo → 1 ở đầu tự do) nằm ở UV.x của mặt vải; client đọc để lắc bằng shader gió.
     b.cylinder(0, 0, 0, 0.12, 5.0, VERM, 10, 0.09)
     b.cylinder(0, 0, 0, 0.3, 0.3, STONE_M, 8, 0.2)
     b.box(0.55, 4.7, 0, 1.3, 0.08, 0.08, WOOD_D)
     ellipsoid(b, 1.22, 4.7, 0, 0.07, 0.07, 0.07, GILD, 6, 3)
     lathe(b, [(0.0, 5.0), (0.1, 5.0), (0.07, 5.2), (0.0, 5.5)], GILD, 6)
-    cols = [(0.55, CLOTH_R), (1.05, CLOTH_B)] if v else [(0.55, CLOTH_R)]
+    cols = [(0.55, CLOTH_R, ('Kiếm',)), (1.05, CLOTH_B, ('Thiên',))] if v else [(0.55, CLOTH_R, ('Lạc',))]
     L, wd, th, top, n = 3.2, 0.5, 0.04, 4.66, 10
 
     def curve(dx, t):
-        return dx + math.sin(t * 3.4 + dx * 3) * 0.14 * t, math.sin(t * 5 + dx) * 0.05 * t
+        return dx + math.sin(t * 3.4 + dx * 3) * 0.07 * t
 
-    for dx, col in cols:
+    for dx, col, words in cols:
         for side in (1, -1):
             for i in range(n):
                 t0, t1 = i / n, (i + 1) / n
-                (x0, z0), (x1, z1) = curve(dx, t0), curve(dx, t1)
-                zf0, zf1 = z0 + side * th / 2, z1 + side * th / 2
+                x0, x1 = curve(dx, t0), curve(dx, t1)
+                zf = side * th / 2
                 y0, y1 = top - t0 * L, top - t1 * L
-                quad = [(x0 - wd / 2, y0, zf0), (x0 + wd / 2, y0, zf0), (x1 + wd / 2, y1, zf1), (x1 - wd / 2, y1, zf1)]
-                cloth_quad(b, quad if side > 0 else quad[::-1], col, top, L)
+                quad = [(x0 - wd / 2, y0, zf), (x0 + wd / 2, y0, zf), (x1 + wd / 2, y1, zf), (x1 - wd / 2, y1, zf)]
+                cloth_quad(b, quad[::-1] if side > 0 else quad, col, top, L)
                 for sx in (-1, 1):  # viền vàng
-                    e = [(x0 + sx * (wd / 2 - 0.06), y0, zf0 + 0.006 * side), (x0 + sx * wd / 2, y0, zf0 + 0.006 * side), (x1 + sx * wd / 2, y1, zf1 + 0.006 * side), (x1 + sx * (wd / 2 - 0.06), y1, zf1 + 0.006 * side)]
-                    cloth_quad(b, e if sx * side > 0 else e[::-1], CLOTH_Y, top, L)
+                    e = [(x0 + sx * (wd / 2 - 0.06), y0, zf + 0.006 * side), (x0 + sx * wd / 2, y0, zf + 0.006 * side), (x1 + sx * wd / 2, y1, zf + 0.006 * side), (x1 + sx * (wd / 2 - 0.06), y1, zf + 0.006 * side)]
+                    cloth_quad(b, e[::-1] if sx * side > 0 else e, CLOTH_Y, top, L)
         for sx in (-1, 1):  # mép dày hai bên
-            (xa, za), (xb, zb) = curve(dx, 0), curve(dx, 1)
-            cloth_quad(b, [(xa + sx * wd / 2, top, za - th / 2), (xa + sx * wd / 2, top, za + th / 2), (xb + sx * wd / 2, top - L, zb + th / 2), (xb + sx * wd / 2, top - L, zb - th / 2)][:: -sx], CLOTH_Y, top, L)
-        xe, ze = curve(dx, 1)
+            xa, xb = curve(dx, 0), curve(dx, 1)
+            edge = [(xa + sx * wd / 2, top, -th / 2), (xa + sx * wd / 2, top, th / 2), (xb + sx * wd / 2, top - L, th / 2), (xb + sx * wd / 2, top - L, -th / 2)]
+            cloth_quad(b, edge[::-1] if sx > 0 else edge, CLOTH_Y, top, L)
+        xe = curve(dx, 1)
         yb = top - L
         for k in range(7):  # tua rua
             tx = xe - wd / 2 + (k + 0.5) * wd / 7
             for side in (1, -1):
-                q = [(tx - 0.012, yb, ze + side * th / 2), (tx + 0.012, yb, ze + side * th / 2), (tx + 0.012, yb - 0.22, ze + side * th / 2), (tx - 0.012, yb - 0.22, ze + side * th / 2)]
-                cloth_quad(b, q if side > 0 else q[::-1], CLOTH_Y, top, L)
-        for k in range(4):  # phù văn dát vàng hai mặt
-            t = (0.55 + k * 0.6) / L
-            xm, zm = curve(dx, t)
-            yy = top - 0.55 - k * 0.6
-            for x0g, y0g, x1g, y1g in _GLYPHS[(k * 3 + int(dx * 4)) % len(_GLYPHS)]:
-                ax, ay = (x0g - 0.5) * 0.26, (1 - y0g / 2.0 - 0.5) * 0.4
-                bx, by = (x1g - 0.5) * 0.26, (1 - y1g / 2.0 - 0.5) * 0.4
-                ln = math.hypot(bx - ax, by - ay)
-                if ln < 1e-4:
-                    continue
-                ang = math.atan2(by - ay, bx - ax)
-                mx, my = (ax + bx) / 2, (ay + by) / 2
-                ux, uy = math.cos(ang) * (ln / 2 + 0.02), math.sin(ang) * (ln / 2 + 0.02)
-                vx, vy = -math.sin(ang) * 0.02, math.cos(ang) * 0.02
-                q = [(-ux - vx, -uy - vy), (ux - vx, uy - vy), (ux + vx, uy + vy), (-ux + vx, -uy + vy)]
-                for side in (1, -1):
-                    pts = [(xm + mx + qx, yy + my + qy, zm + side * (th / 2 + 0.012)) for qx, qy in q]
-                    cloth_quad(b, pts if side > 0 else pts[::-1], CLOTH_Y, top, L)
+                q = [(tx - 0.012, yb, side * th / 2), (tx + 0.012, yb, side * th / 2), (tx + 0.012, yb - 0.22, side * th / 2), (tx - 0.012, yb - 0.22, side * th / 2)]
+                cloth_quad(b, q[::-1] if side > 0 else q, CLOTH_Y, top, L)
+        set_text_res(1)
+        for wi, word in enumerate(words):  # chữ thêu hai mặt, đi theo vải (trọng số lắc)
+            yy = top - 1.2 - wi * 0.75
+            xm = curve(dx, (top - yy) / L)
+            n0 = len(b.faces)
+            b.text(word, xm, yy, th / 2 + 0.01, 0.5, 0.012, CLOTH_Y, fit_w=0.36, fit_h=0.5, bold=0.0)
+            b.text(word, xm, yy, -th / 2 - 0.01, 0.5, 0.012, CLOTH_Y, yaw=math.pi, fit_w=0.36, fit_h=0.5, bold=0.0)
+            weight_from(b, n0, top, L)
+        set_text_res(2)
 
 
 @item('lo_luyen_dan')
@@ -202,7 +210,6 @@ def _(b, v):
     for sx in (-1, 1):
         for k in range(3):
             ellipsoid(b, sx * 0.43, 0.9 + k * 0.28, zf + 0.12, 0.03, 0.03, 0.03, GILD, 5, 3)
-        rune(b, sx * 0.72, 1.2, zf - 0.12, 0.22, 0.34, GILD, seed=2 + v, yaw=sx * -0.7, depth=0.03)
     for sx in (-1, 1):
         ellipsoid(b, sx * 0.96 * s, 1.5, 0, 0.12, 0.12, 0.12, GILD, 6, 4)
         tube(b, [(sx * 1.02 * s, 1.5, 0), (sx * 1.2 * s, 1.35, 0), (sx * 1.2 * s, 1.1, 0), (sx * 1.02 * s, 0.98, 0)], 0.05, BRONZE_D, 6, sub=3)
@@ -214,7 +221,7 @@ def _(b, v):
 
 @item('chuong_dong')
 def _(b, v):
-    # Chuông đồng treo trong giá gỗ sơn son, thân chuông đai lôi văn + phù văn, dùi gỗ.
+    # Chuông đồng treo trong giá gỗ sơn son: thân chuông miệng loe, ba băng hoa văn khắc, bốn ô núm (vú chuông 3×3) ngăn bằng gờ vàng, dùi gỗ.
     s = 1.25 if v else 1.0
     for sx in (-1, 1):
         b.box(sx * 1.3 * s, 1.6 * s, 0.4, 0.2, 3.2 * s, 0.2, VERM_D)
@@ -225,13 +232,31 @@ def _(b, v):
     for sx in (-1, 1):
         b.box(sx * 1.1 * s, 3.45 * s, 0, 0.3, 0.3, 0.55, GILD)
     b.cylinder(0, 2.9 * s, 0, 0.07, 0.4, BRONZE_D, 6)
-    lathe(b, [(0.1, 2.9 * s), (0.45 * s, 2.7 * s), (0.62 * s, 1.7 * s), (0.75 * s, 0.95 * s), (0.85 * s, 0.82 * s), (0.78 * s, 0.78 * s)], BRONZE, 18)
-    meander(b, 2.2 * s, 0.66 * s, 0.14, GILD, 16)
-    meander(b, 0.9 * s, 0.82 * s, 0.1, GILD, 18)
-    for k in range(4):
-        a = k / 4 * math.tau
-        rune(b, math.sin(a) * 0.72 * s, 1.55 * s, math.cos(a) * 0.72 * s, 0.26, 0.5, GILD, seed=k * 2 + v, yaw=a, depth=0.035)
-    b.box(0, 0.9 * s, 1.0, 0.1, 0.1, 1.3, WOOD)
+    prof = [(0.1, 2.9 * s), (0.34 * s, 2.78 * s), (0.5 * s, 2.3 * s), (0.58 * s, 1.5 * s), (0.7 * s, 1.0 * s), (0.9 * s, 0.84 * s), (1.0 * s, 0.8 * s)]
+    lathe(b, prof + [(1.04 * s, 0.77 * s), (0.98 * s, 0.74 * s)], BRONZE, 22)
+    ellipsoid(b, 0, 2.86 * s, 0, 0.12, 0.1, 0.12, GILD, 6, 3)
+
+    def rb(y):  # bán kính thân chuông ở độ cao y
+        for (r0, y0), (r1, y1) in zip(prof, prof[1:]):
+            if y1 <= y <= y0:
+                return r1 + (r0 - r1) * (y - y1) / (y0 - y1)
+        return prof[-1][0]
+
+    meander(b, 2.46 * s, rb(2.46 * s), 0.16, GILD, 18)
+    meander(b, 0.98 * s, rb(0.98 * s), 0.14, GILD, 18)
+    meander(b, 1.55 * s, rb(1.55 * s), 0.06, GILD, 18)
+    for k in range(4):  # bốn ô núm 3×3 giữa các gờ đứng vàng
+        a0 = k * math.pi / 2
+        for dy in range(3):
+            y = (1.78 + dy * 0.2) * s
+            for dx in (-1, 0, 1):
+                a = a0 + dx * 0.3
+                rr = rb(y) + 0.02
+                ellipsoid(b, math.sin(a) * rr, y, math.cos(a) * rr, 0.05 * s, 0.05 * s, 0.05 * s, GILD, 6, 3)
+        ar = a0 + math.pi / 4
+        rr = rb(2.0 * s) + 0.012
+        b.box(math.sin(ar) * rr, 2.0 * s, math.cos(ar) * rr, 0.025, 0.7 * s, 0.025, GILD, yaw=ar)
+    b.box(0, 0.9 * s, 1.1, 0.1, 0.1, 1.3, WOOD)
 
 
 @item('trong')
