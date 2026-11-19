@@ -37,6 +37,7 @@ import {
   distToSegment,
   inLine,
   hitOffsets,
+  collisionOf,
   planDash,
   strikeDelay,
   type Terrain,
@@ -258,7 +259,11 @@ export class CombatSystem {
     const plan =
       close || pullOnly
         ? { x: p.move.x, z: p.move.z, dist: 0, blocked: true }
-        : planDash(p.move, dir, dashDist, stop, { terrain: this.c.terrain, bound: caveBoundOf(this.c.level) });
+        : planDash(p.move, dir, dashDist, stop, {
+            terrain: this.c.terrain,
+            bound: caveBoundOf(this.c.level),
+            collision: collisionOf(this.c.level),
+          });
     if (plan.dist < 1 && !(close && skill.power > 0) && !pullOnly) return this.c.warn(p, close ? 'sys.dash_close' : 'sys.dash_blocked');
     const rs = resolveFor(c.meta, skill);
     if (p.meditating) this.c.setMeditating(p, false);
@@ -1102,7 +1107,7 @@ export class CombatSystem {
       dir,
       Math.min(d - stop, 30),
       { x: tx, z: tz, r: stop },
-      { terrain: this.c.terrain, bound: caveBoundOf(this.c.level) },
+      { terrain: this.c.terrain, bound: caveBoundOf(this.c.level), collision: collisionOf(this.c.level) },
     );
     if (plan.dist < 0.5) return 0;
     p.move.x = plan.x;

@@ -4,7 +4,7 @@
 // Ra: collscan-<level>.json (đếm + nhóm + danh sách thiếu) và ảnh `<level>-miss<N>.png` (khung va chạm F3 bật) cho các nhóm thiếu nhiều nhất.
 import '@dtl/content';
 import { LEVELS } from '@dtl/content';
-import { type CircleCollider, footprintDist, type Shape, terrainOf } from '@dtl/shared';
+import { type CircleCollider, collisionOf, footprintDist, type Shape, terrainOf } from '@dtl/shared';
 import { flag, num, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { cam, enterLevel, gm, skipCutscene, tp, waitLevel } from '../lib/game';
@@ -99,7 +99,7 @@ export default {
     const t = terrainOf(LEVEL);
     const rep = summarize(
       LEVEL,
-      classify([...seen.values()], t.colliders as CircleCollider[], t.collision.shapes as Shape[], footprintDist, t.groundAt),
+      classify([...seen.values()], t.colliders as CircleCollider[], collisionOf(LEVEL).shapes as Shape[], footprintDist, t.groundAt),
     );
     writeJson(r.out, `collscan-${LEVEL}.json`, rep);
     console.log(`[collscan] ${LEVEL}: ${rep.total} vật, cần va chạm ${rep.needs}, đã phủ ${rep.covered}, thiếu ${rep.missing}`);

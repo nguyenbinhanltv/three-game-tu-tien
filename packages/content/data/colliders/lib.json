@@ -1,0 +1,711 @@
+{
+ "prop_anh_dao": [
+  {
+   "k": "cyl",
+   "x": -0.93,
+   "z": -1.82,
+   "r": 1.03,
+   "y0": 0,
+   "y1": 4.2
+  }
+ ],
+ "prop_anh_ngoc_kinh": [],
+ "prop_bia_da": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.48,
+   "y0": 0,
+   "y1": 2.4
+  }
+ ],
+ "prop_cau_da_gay": [],
+ "prop_cau_may": [],
+ "prop_cay_goc_kho": [
+  {
+   "k": "cyl",
+   "x": -0.08,
+   "z": 0,
+   "r": 1.44,
+   "y0": 0,
+   "y1": 3.6
+  }
+ ],
+ "prop_co_thu": [
+  {
+   "k": "cyl",
+   "x": 1.76,
+   "z": 2.29,
+   "r": 1.8,
+   "y0": 0,
+   "y1": 10.7
+  }
+ ],
+ "prop_cong_khai_mach": [],
+ "prop_cong_thanh_vo": [],
+ "prop_da_dung": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 1.24,
+   "y0": 0,
+   "y1": 4.96
+  }
+ ],
+ "prop_da_nam": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 1.9,
+   "hz": 1.9,
+   "y0": 0,
+   "y1": 1.54,
+   "walk": false
+  }
+ ],
+ "prop_da_phien": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 1.37,
+   "hz": 1.42,
+   "y0": 0,
+   "y1": 0.83,
+   "walk": true
+  }
+ ],
+ "prop_da_troi": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 3.05,
+   "y0": 0,
+   "y1": 8
+  }
+ ],
+ "prop_dai_tinh_bai": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 3.8,
+   "hz": 3.77,
+   "y0": 0,
+   "y1": 2.42,
+   "walk": false
+  }
+ ],
+ "prop_den_da": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.57,
+   "y0": 0,
+   "y1": 2.8
+  }
+ ],
+ "prop_den_long_troi": [],
+ "prop_duong_xi": [],
+ "prop_kiem_gay": [],
+ "prop_kiem_han_giao": [],
+ "prop_kiem_han_quang": [],
+ "prop_kiem_kinh_quang": [],
+ "prop_kiem_kinh_quang_cuoi": [],
+ "prop_kiem_liet_mach": [],
+ "prop_kiem_liet_mach_cuoi": [],
+ "prop_kiem_tan_hoa": [],
+ "prop_kiem_thanh_phong": [],
+ "prop_kiem_thiet": [],
+ "prop_kiem_tinh_khuyet": [],
+ "prop_kiem_tinh_khuyet_cuoi": [],
+ "prop_kiem_tram_ta": [],
+ "prop_kinh_ho_dai": [],
+ "prop_lau": [],
+ "prop_linh_thao": [],
+ "prop_lo_dan": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.45,
+   "y0": 0,
+   "y1": 1.2
+  }
+ ],
+ "prop_lu_huong": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.68,
+   "y0": 0,
+   "y1": 1.8
+  }
+ ],
+ "prop_mach_tinh_tru": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 1.86,
+   "hz": 1.62,
+   "y0": 0,
+   "y1": 3.5,
+   "walk": false
+  }
+ ],
+ "prop_ngung_dan_lo": [],
+ "prop_phi_kiem": [],
+ "prop_phong_do": [
+  {
+   "k": "cyl",
+   "x": -0.41,
+   "z": -0.07,
+   "r": 0.51,
+   "y0": 0,
+   "y1": 5.4
+  }
+ ],
+ "prop_phu_dao_dinh": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 2.48,
+   "y0": 0,
+   "y1": 6
+  }
+ ],
+ "prop_soi_nui": [
+  {
+   "k": "cyl",
+   "x": -0.66,
+   "z": -0.35,
+   "r": 1.39,
+   "y0": 0,
+   "y1": 7.2
+  }
+ ],
+ "prop_tc_ban_ghe_da": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 1.43,
+   "hz": 1.19,
+   "y0": 0,
+   "y1": 0.8,
+   "walk": true
+  }
+ ],
+ "prop_tc_ban_ghe_da_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 1.43,
+   "hz": 1.19,
+   "y0": 0,
+   "y1": 0.74,
+   "walk": true
+  }
+ ],
+ "prop_tc_bia_khac": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 0.81,
+   "hz": 0.43,
+   "y0": 0,
+   "y1": 3.16,
+   "walk": false
+  }
+ ],
+ "prop_tc_bia_khac_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 0.81,
+   "hz": 0.43,
+   "y0": 0,
+   "y1": 3.56,
+   "walk": false
+  }
+ ],
+ "prop_tc_chuong_dong": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0.36,
+   "r": 1.25,
+   "y0": 0,
+   "y1": 3.6
+  }
+ ],
+ "prop_tc_chuong_dong_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0.23,
+   "hx": 1.96,
+   "hz": 1.44,
+   "y0": 0,
+   "y1": 4.46,
+   "walk": false
+  }
+ ],
+ "prop_tc_co_phuong": [
+  {
+   "k": "box",
+   "x": 0.5,
+   "z": 0,
+   "hx": 0.74,
+   "hz": 0.27,
+   "y0": 0,
+   "y1": 5.5,
+   "walk": false
+  }
+ ],
+ "prop_tc_co_phuong_2": [
+  {
+   "k": "box",
+   "x": 0.52,
+   "z": 0,
+   "hx": 0.76,
+   "hz": 0.27,
+   "y0": 0,
+   "y1": 5.5,
+   "walk": false
+  }
+ ],
+ "prop_tc_den_da": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.56,
+   "y0": 0,
+   "y1": 2.18
+  }
+ ],
+ "prop_tc_den_da_2": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.7,
+   "y0": 0,
+   "y1": 2.72
+  }
+ ],
+ "prop_tc_dinh_lu_dong": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.86,
+   "y0": 0,
+   "y1": 3.2
+  }
+ ],
+ "prop_tc_dinh_lu_dong_2": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.76,
+   "y0": 0,
+   "y1": 3.2
+  }
+ ],
+ "prop_tc_gia_kiem": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 1.33,
+   "hz": 0.47,
+   "y0": 0,
+   "y1": 2.08,
+   "walk": false
+  }
+ ],
+ "prop_tc_gia_kiem_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 1.62,
+   "hz": 0.47,
+   "y0": 0,
+   "y1": 2.08,
+   "walk": false
+  }
+ ],
+ "prop_tc_gieng_nuoc": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.86,
+   "y0": 0,
+   "y1": 2.11
+  }
+ ],
+ "prop_tc_gieng_nuoc_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 1.28,
+   "hz": 0.95,
+   "y0": 0,
+   "y1": 2.96,
+   "walk": false
+  }
+ ],
+ "prop_tc_gio_thuoc": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.47,
+   "y0": 0,
+   "y1": 1.07
+  }
+ ],
+ "prop_tc_gio_thuoc_2": [
+  {
+   "k": "box",
+   "x": 0.73,
+   "z": 0.33,
+   "hx": 1.21,
+   "hz": 0.81,
+   "y0": 0,
+   "y1": 1.07,
+   "walk": true
+  }
+ ],
+ "prop_tc_hang_rao_tre": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0.02,
+   "hx": 1.51,
+   "hz": 0.09,
+   "y0": 0,
+   "y1": 1.6,
+   "walk": false
+  }
+ ],
+ "prop_tc_hang_rao_tre_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0.02,
+   "hx": 1.51,
+   "hz": 0.09,
+   "y0": 0,
+   "y1": 1.6,
+   "walk": false
+  }
+ ],
+ "prop_tc_lo_luyen_dan": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0.13,
+   "r": 1.03,
+   "y0": 0,
+   "y1": 3.1
+  }
+ ],
+ "prop_tc_lo_luyen_dan_2": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0.15,
+   "r": 1.15,
+   "y0": 0,
+   "y1": 3.1
+  }
+ ],
+ "prop_tc_long_den_giay": [
+  {
+   "k": "box",
+   "x": 0.61,
+   "z": 0,
+   "hx": 0.75,
+   "hz": 0.29,
+   "y0": 0,
+   "y1": 3,
+   "walk": false
+  }
+ ],
+ "prop_tc_long_den_giay_2": [
+  {
+   "k": "box",
+   "x": 0.61,
+   "z": 0,
+   "hx": 0.75,
+   "hz": 0.29,
+   "y0": 0,
+   "y1": 3,
+   "walk": false
+  }
+ ],
+ "prop_tc_lu_huong": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.56,
+   "y0": 0,
+   "y1": 1.47
+  }
+ ],
+ "prop_tc_lu_huong_2": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.48,
+   "y0": 0,
+   "y1": 1.25
+  }
+ ],
+ "prop_tc_lu_nuoc": [
+  {
+   "k": "box",
+   "x": 0.22,
+   "z": 0.11,
+   "hx": 0.84,
+   "hz": 0.72,
+   "y0": 0,
+   "y1": 1.4,
+   "walk": false
+  }
+ ],
+ "prop_tc_lu_nuoc_2": [
+  {
+   "k": "box",
+   "x": -0.05,
+   "z": 0.11,
+   "hx": 1.1,
+   "hz": 0.72,
+   "y0": 0,
+   "y1": 1.4,
+   "walk": false
+  }
+ ],
+ "prop_tc_sap_hang": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0.16,
+   "hx": 1.57,
+   "hz": 1.29,
+   "y0": 0,
+   "y1": 2.95,
+   "walk": false
+  }
+ ],
+ "prop_tc_sap_hang_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0.16,
+   "hx": 1.76,
+   "hz": 1.39,
+   "y0": 0,
+   "y1": 2.95,
+   "walk": false
+  }
+ ],
+ "prop_tc_thung_go": [
+  {
+   "k": "box",
+   "x": -0.13,
+   "z": 0.16,
+   "hx": 1.18,
+   "hz": 0.52,
+   "y0": 0,
+   "y1": 1.32,
+   "walk": false
+  }
+ ],
+ "prop_tc_thung_go_2": [
+  {
+   "k": "box",
+   "x": 0.36,
+   "z": 0.05,
+   "hx": 0.72,
+   "hz": 0.41,
+   "y0": 0,
+   "y1": 1.32,
+   "walk": false
+  }
+ ],
+ "prop_tc_trong": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.74,
+   "y0": 0,
+   "y1": 1.81
+  }
+ ],
+ "prop_tc_trong_2": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 0.95,
+   "y0": 0,
+   "y1": 2.35
+  }
+ ],
+ "prop_tc_vo_ruou": [
+  {
+   "k": "box",
+   "x": -0.09,
+   "z": -0.35,
+   "hx": 0.91,
+   "hz": 0.82,
+   "y0": 0,
+   "y1": 1.36,
+   "walk": false
+  }
+ ],
+ "prop_tc_vo_ruou_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 1.28,
+   "hz": 0.49,
+   "y0": 0,
+   "y1": 1.43,
+   "walk": false
+  }
+ ],
+ "prop_tc_xe_keo": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0.79,
+   "hx": 0.74,
+   "hz": 1.62,
+   "y0": 0,
+   "y1": 1.63,
+   "walk": false
+  }
+ ],
+ "prop_tc_xe_keo_2": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0.79,
+   "hx": 0.74,
+   "hz": 1.62,
+   "y0": 0,
+   "y1": 1.51,
+   "walk": false
+  }
+ ],
+ "prop_than_nien_chau": [],
+ "prop_thanh_lien_an": [],
+ "prop_thong_co": [
+  {
+   "k": "cyl",
+   "x": -3.2,
+   "z": 1.07,
+   "r": 1.8,
+   "y0": 0,
+   "y1": 8.4
+  }
+ ],
+ "prop_tran_hon_linh": [],
+ "prop_tru_da_khac_van": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 1.25,
+   "y0": 0,
+   "y1": 9
+  }
+ ],
+ "prop_tru_nham_do": [
+  {
+   "k": "cyl",
+   "x": 0,
+   "z": 0,
+   "r": 2.75,
+   "y0": 0,
+   "y1": 8
+  }
+ ],
+ "prop_truc": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 1,
+   "hz": 0.7,
+   "y0": 0,
+   "y1": 7,
+   "walk": false,
+   "fly": "pass"
+  }
+ ],
+ "prop_tu_kim_ho_lo": [],
+ "prop_tung_phu_dao": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 5,
+   "hz": 2.96,
+   "y0": 0,
+   "y1": 7.5,
+   "walk": false
+  }
+ ],
+ "prop_tuong_canh": [
+  {
+   "k": "box",
+   "x": -0.01,
+   "z": 0,
+   "hx": 0.49,
+   "hz": 0.8,
+   "y0": 0,
+   "y1": 1.8,
+   "walk": false
+  }
+ ],
+ "prop_tuong_da_vo_si": [
+  {
+   "k": "box",
+   "x": 0,
+   "z": 0,
+   "hx": 4.82,
+   "hz": 2.86,
+   "y0": 0,
+   "y1": 7,
+   "walk": false
+  }
+ ],
+ "prop_vo_kiem_kinh_quang": [],
+ "prop_vo_kiem_liet_mach": [],
+ "prop_vo_kiem_tinh_khuyet": []
+}

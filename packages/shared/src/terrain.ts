@@ -1,4 +1,4 @@
-import { CollisionSet, type Shape } from './collision';
+import { CollisionSet } from './collision';
 import { fbm, lerp, ridged, smoothstep } from './noise';
 import { thienCongColliders } from './props.thiencong';
 import {
@@ -38,7 +38,7 @@ export interface Terrain {
   size: number;
   margin: number;
   colliders: CircleCollider[];
-  /** Va chạm 3D (hộp xoay, trụ, mặt đi được, khối lơ lửng; COL-1). Rỗng cho tới khi level đăng ký bằng `registerCollision`. */
+  /** Va chạm 3D (hộp xoay, trụ, mặt đi được, khối lơ lửng; COL-1). Chỉ là mặc định rỗng cho test/công cụ; game dùng `collisionOf(levelId)` truyền qua `MoveCtx.collision`. */
   collision: CollisionSet;
   /** Chân vách vùng chơi (không đi quá); Infinity nếu level không có ranh. */
   playWall: number;
@@ -340,11 +340,6 @@ export function registerTerrain(def: TerrainDef): Terrain {
 }
 
 export const VAN_LAM: Terrain = registerTerrain(VAN_LAM_TERRAIN);
-
-/** Thêm hình va chạm 3D vào địa hình của level (client và server cùng gọi ở nơi dựng level, cùng dữ liệu). Level alias dùng chung bộ. */
-export function registerCollision(level: string | { id: string; terrain?: string }, shapes: readonly Shape[]): void {
-  terrainOf(level).collision.add(shapes);
-}
 
 /** Địa hình của level: nhận id hoặc LevelDef (có thể trỏ `terrain` sang id khác). Ném lỗi nếu chưa đăng ký. */
 export function terrainOf(level: string | { id: string; terrain?: string }): Terrain {

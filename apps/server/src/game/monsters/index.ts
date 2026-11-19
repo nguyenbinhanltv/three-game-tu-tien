@@ -4,6 +4,9 @@ import {
   BOLT_MAX_LIFE,
   BOLT_MAX_LIVE,
   boltBlockedAt,
+  BOLT_HEIGHT,
+  type CollisionSet,
+  slideOut,
   boltLift,
   type BoltEndMsg,
   boltHits,
@@ -131,11 +134,16 @@ export interface MonsterCtx {
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src' | 'q'>): void;
   sysAll(k: string, params?: Record<string, string | number>, type?: string): void;
   readonly terrain: Terrain;
+  /** Hình va chạm 3D của level (COL-1): quái trượt khỏi vật rắn, đạn bị chặn, không đặt chỗ trong vật rắn. */
+  readonly collision: CollisionSet;
   readonly than: ThanTangSystem;
   readonly tribSys: TribSystem;
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
   readonly zones: MonZones;
 }
+
+/** Bán kính thân quái khi trượt khỏi vật rắn (m). */
+const MON_RADIUS = 0.7;
 
 export class MonsterSystem {
   constructor(private readonly c: MonsterCtx) {}
@@ -700,6 +708,8 @@ export class MonsterSystem {
     m.s.x = nx;
     m.s.z = nz;
     m.s.y = this.c.terrain.groundAt(nx, nz);
+    // Không xuyên cây/đá/tường thấy được: trượt ra khỏi hình rắn (rẻ, không pathfinding; kẹt thì cơ chế bỏ đuổi `evadeUntil` lo).
+    if (slideOut(this.c.collision, m.s, m.s.y, MON_RADIUS)) m.s.y = this.c.terrain.groundAt(m.s.x, m.s.z);
     m.s.yaw = Math.atan2(dx, dz);
     return d - step;
   }
@@ -1260,7 +1270,7 @@ export class MonsterSystem {
       const t = Math.min(this.c.now, b.endAt);
       boltXZ(b.x0, b.z0, b.yaw, b.v, (t - b.t0) / 1000, _bp);
       // Vật cản trên đường quét: rút ngắn đoạn tới chỗ chạm trước khi xét người (không trúng người sau tường).
-      const bt = boltBlockedAt(b.px, b.pz, _bp.x, _bp.z, b.r);
+      const bt = boltBlockedAt(b.px, b.pz, _bp.x, _bp.z, b.r, this.c.collision, this.c.terrain.groundAt(b.px, b.pz) + BOLT_HEIGHT + b.lift);
       if (bt >= 0) {
         _bp.x = b.px + (_bp.x - b.px) * bt;
         _bp.z = b.pz + (_bp.z - b.pz) * bt;

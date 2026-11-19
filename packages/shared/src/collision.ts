@@ -173,6 +173,28 @@ export class CollisionSet {
   }
 
   /**
+   * Đoạn A→B (bán kính `r`, cao độ `y`) chạm hình rắn đầu tiên ở tham số t ∈ [0, 1] (lấy mẫu 0,6 m); -1 nếu không chạm.
+   * Dùng cho đạn: hình `fly:'pass'` (tán lá) không chặn; hình phải có khoảng cao [y0 − r, đỉnh + r] chứa `y`.
+   */
+  segmentBlockedAt(ax: number, az: number, bx: number, bz: number, r: number, y: number): number {
+    if (!this.shapes.length) return -1;
+    const len = Math.hypot(bx - ax, bz - az);
+    const cands: Shape[] = [];
+    this.near((ax + bx) / 2, (az + bz) / 2, len / 2 + r, (s) => {
+      if (s.fly === 'pass' || y < s.y0 - r || y > shapeMaxTop(s) + r) return;
+      cands.push(s);
+    });
+    if (!cands.length) return -1;
+    const n = Math.max(1, Math.ceil(len / 0.6));
+    for (let k = 0; k <= n; k++) {
+      const x = ax + ((bx - ax) * k) / n;
+      const z = az + ((bz - az) * k) / n;
+      for (let i = 0; i < cands.length; i++) if (footprintDist(cands[i]!, x, z) < r) return k / n;
+    }
+    return -1;
+  }
+
+  /**
    * Đẩy thân trụ bán kính `r` tại `p` ra khỏi mọi hình chặn theo độ cao hiện tại; sửa `p.x/z`. Trả true nếu có đẩy.
    * Hình không chặn khi: mặt đi được và chân đã ≥ đỉnh − STEP_UP (leo lên được, không khi ngự kiếm), ngự kiếm qua `fly:'pass'`,
    * hoặc khoảng [y, y + BODY_H] không giao [y0, y1].
@@ -263,4 +285,110 @@ export function footprintDist(s: Shape, x: number, z: number): number {
 /** Điểm (x, z, y) có nằm trong khối của hình không (dùng báo cáo phủ va chạm). */
 export function shapeCovers(s: Shape, x: number, z: number, margin = 0): boolean {
   return footprintDist(s, x, z) <= margin;
+}
+
+// ---- Registry theo level (C-2): mỗi `levelId` một bộ hình, KHÔNG theo địa hình (Kiếm Trủng, Phục Mạch… dùng chung địa hình Vân Lam nhưng bố cục khác).
+const REG = new Map<string, CollisionSet>();
+
+/** Bộ hình va chạm của level (tạo rỗng nếu chưa đăng ký). Client và server cùng truyền vào `MoveCtx.collision`. */
+export function collisionOf(level: string | { id: string }): CollisionSet {
+  const id = typeof level === 'string' ? level : level.id;
+  let c = REG.get(id);
+  if (!c) REG.set(id, (c = new CollisionSet()));
+  return c;
+}
+
+/** Thêm hình va chạm cho level (gọi ở nơi nạp dữ liệu, cùng dữ liệu trên client và server). */
+export function registerCollision(level: string | { id: string }, shapes: readonly Shape[]): void {
+  collisionOf(level).add(shapes);
+}
+
+// ---- Collider cục bộ theo asset (C-2): hình trong hệ tọa độ của asset (gốc ở chân, mặt trước +Z, y từ chân), áp lên từng instance ----
+
+export type LocalShape =
+  | {
+      k: 'box';
+      x: number;
+      z: number;
+      hx: number;
+      hz: number;
+      y0: number;
+      y1: number;
+      yaw?: number;
+      walk?: boolean;
+      y1b?: number;
+      fly?: 'block' | 'pass';
+    }
+  | { k: 'cyl'; x: number; z: number; r: number; y0: number; y1: number; fly?: 'block' | 'pass' };
+
+/** Vị trí đặt một instance: (x, z) và cao độ chân `y`, quay `yaw` quanh Y (rad, Three.js), tỉ lệ đều `s`, tỉ lệ cao thêm `sy` (cây). */
+export interface Placement {
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  s: number;
+  sy?: number;
+}
+
+/**
+ * Áp một bộ hình cục bộ lên một instance → hình thế giới. Quy ước quay giống `CollisionSet` (world = R(yaw)·local):
+ * (lx, lz) → (lx·cos + lz·sin, −lx·sin + lz·cos). Cao độ nhân `s·sy`.
+ */
+export function instantiateShapes(local: readonly LocalShape[], p: Placement, out: Shape[] = [], tag?: string): Shape[] {
+  const c = Math.cos(p.yaw);
+  const sn = Math.sin(p.yaw);
+  const sy = p.s * (p.sy ?? 1);
+  for (const l of local) {
+    const x = p.x + (l.x * c + l.z * sn) * p.s;
+    const z = p.z + (-l.x * sn + l.z * c) * p.s;
+    const y0 = p.y + l.y0 * sy;
+    const y1 = p.y + l.y1 * sy;
+    if (l.k === 'cyl') out.push({ k: 'cyl', x, z, r: l.r * p.s, y0, y1, fly: l.fly, tag });
+    else
+      out.push({
+        k: 'box',
+        x,
+        z,
+        hx: l.hx * p.s,
+        hz: l.hz * p.s,
+        yaw: p.yaw + (l.yaw ?? 0),
+        y0,
+        y1,
+        walk: l.walk,
+        y1b: l.y1b === undefined ? undefined : p.y + l.y1b * sy,
+        fly: l.fly,
+        tag,
+      });
+  }
+  return out;
+}
+
+const _slide: BodyState = { x: 0, y: 0, z: 0, flying: false, grounded: true };
+/**
+ * Quái/thực thể đi bộ: đẩy (x, z) ra khỏi hình rắn theo cao độ chân `y` (trượt dọc hình, không pathfinding). Sửa `p`, trả true nếu có đẩy.
+ * Hình thấp (≤ `STEP_UP`) bước qua được như người chơi.
+ */
+export function slideOut(set: CollisionSet, p: { x: number; z: number }, y: number, r: number): boolean {
+  if (!set.size) return false;
+  _slide.x = p.x;
+  _slide.z = p.z;
+  _slide.y = y;
+  const moved = set.push(_slide, r);
+  if (moved) {
+    p.x = _slide.x;
+    p.z = _slide.z;
+  }
+  return moved;
+}
+
+/** (x, z) có nằm trong hình rắn (tính bán kính `r`) ở độ cao chân `y` không: đặt chỗ quái/điểm hồi sinh. */
+export function blockedAt(set: CollisionSet, x: number, z: number, y: number, r: number): boolean {
+  if (!set.size) return false;
+  let hit = false;
+  set.near(x, z, r, (s) => {
+    if (hit || y + BODY_H <= s.y0 || y >= shapeMaxTop(s) - STEP_UP) return;
+    if (footprintDist(s, x, z) < r) hit = true;
+  });
+  return hit;
 }
