@@ -130,7 +130,7 @@
   width: 100%;
 }
 .bag-grid .k-slot[data-size] {
-  --u-p-slot-size: 100%;
+  --slot-size: 100%;
 }
 /* ---------- nhân vật ---------- */
 .stats {

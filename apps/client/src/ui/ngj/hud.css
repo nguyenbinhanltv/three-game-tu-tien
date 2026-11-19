@@ -4,19 +4,19 @@
  * Giữ nguyên bố cục, kích thước ô, hành vi và phím tắt: chỉ thay vỏ.
  */
 :root:root {
-  --u-h-hud-bg: rgba(30, 23, 18, 0.9);
-  --u-h-hud-bg-soft: rgba(30, 23, 18, 0.78);
-  --u-h-hud-shadow:
+  --hud-bg: rgba(30, 23, 18, 0.9);
+  --hud-bg-soft: rgba(30, 23, 18, 0.78);
+  --hud-shadow:
     inset 0 0 0 3px rgba(30, 23, 18, 0.9), inset 0 0 0 4px rgba(201, 164, 92, 0.55), inset 0 0 18px rgba(201, 164, 92, 0.1),
     0 4px 14px rgba(0, 0, 0, 0.35);
 }
 /* ───────── khối sơn mài chung ───────── */
 :root:root .hud :is(.frame, .skill-row, .tracker, .chat, .boss-bar) {
   position: relative;
-  background: var(--u-h-hud-bg);
+  background: var(--hud-bg);
   border: 1px solid var(--ngj-gold);
   border-radius: 3px;
-  box-shadow: var(--u-h-hud-shadow);
+  box-shadow: var(--hud-shadow);
   color: var(--ngj-ivory);
 }
 :root:root .hud .frame {
@@ -300,7 +300,7 @@
   padding: 8px 22px;
   border: 1px solid var(--ngj-gold);
   border-radius: 3px;
-  background: var(--u-h-hud-bg);
+  background: var(--hud-bg);
   box-shadow:
     inset 0 0 0 2px rgba(30, 23, 18, 0.9),
     inset 0 0 0 3px rgba(201, 164, 92, 0.45),
@@ -330,7 +330,7 @@
 /* ───────── thanh máu boss ───────── */
 :root:root .hud .boss-bar {
   padding: 8px 26px 12px;
-  background: var(--u-h-hud-bg);
+  background: var(--hud-bg);
 }
 :root:root .hud .boss-name {
   font: 700 22px var(--ngj-font-title);
@@ -357,7 +357,7 @@
 }
 /* ───────── nhóm buff, thanh niệm ───────── */
 :root:root .buff-chip {
-  background: var(--u-h-hud-bg);
+  background: var(--hud-bg);
   border-color: var(--ngj-gold-lo);
   color: var(--ngj-ivory);
 }
