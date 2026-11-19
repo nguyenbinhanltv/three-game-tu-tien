@@ -30,3 +30,14 @@ Chân đảo (`skyIslands.ts` `buildSkirt`): lưới 112 cạnh dùng chung đ�
 Chụp ảnh: `window.__game.vanHaiWow.freeze(giây)` giữ đồng hồ để cá nằm trong khung (kịch bản `vanhai` tự gọi); `--probe 1` in danh sách mesh.
 
 Chưa làm: cây thẻ alpha thay bonsai tùng (cần asset cây mới), normal map đá bake từ Blender, LOD mõm đá.
+
+## PR3: mép đảo và biển mây
+
+- Chân đảo (`buildSkirt`): profile lấy mẫu lại bằng spline (56 vòng × 96 cạnh; trước 14 vòng nên dịch chuyển chỉ làm bầu, không tạo được gờ); dịch chuyển ridged + gờ tầng ~4,4 m nhô ra + rãnh + gồ ghề mịn; đá **xám ấm ↔ nâu ↔ nâu vàng** phân tầng ~1,6 m (không pha lam), rêu loang theo mảng ở mặt ngửa, vành cỏ chỉ ~1,4 m; nhũ đá ×1,7, rễ ×1,9 và dài hơn.
+- Mây cuộn ôm chân đảo (`billowPlan`): mỗi đảo có vòng ~r/5 khối phình dẹt ở ~46 m dưới mặt đảo thấp nhất; biển mây chừa ~25% khe hở, khối nhỏ dần về mép khe, phần thấp khối tối hơn (chiều sâu).
+- `cloud-floor`: mặt sàn mây xanh thẫm có vân mây trắng chuyển động, đúng cao độ sàn mây + `polygonOffset` nên không z-fight với lưới địa hình ở mọi khoảng cách, che mặt đất texture của sàn (mặt đất `terrain` ở #308 làm sàn mây lộ ra màu be khi nhìn ngang).
+- Mood `vh_*`: `shadowTint` bớt bão hòa (#3C5470…), `shadowAmount` 0,5 (0,3 hoàng hôn) để vùng tối của đá không bị ép về lam.
+- Kịch bản chụp: `tungdai` sửa góc (camera cắm xuống đất), thêm `chandao` (nhìn ngang chân đảo và mây cuộn).
+- Đo (preset Cao, 1080p): draw call 145–232, tam giác 0,91–1,17 triệu, khung ~8,4 ms (góc `bienmay`, `chandao`, `trencao`).
+- Gỡ vệt trắng ngang cắt chân đảo (góc `chandao`): đó là các đĩa mây phẳng nằm ngang (vành sương `mistRing` ở chân đảo và `cloud-banks`) bị nhìn đúng cạnh khi camera ngang tầm. Đã xóa cả hai; vòng mây cuộn và khối biển mây thay thế (draw call giảm ~40).
+- **TODO (PR4):** thân đảo vẫn là lathe (đối xứng xoay, xám đen nhẵn, chỉ có vệt sọc dọc). Làm đúng cách như Lạc Kiếm (#296/#305): mesh đảo dựng bằng Blender (`tools/blender/`, khối đá gồ ghề không đối xứng, vật liệu PBR chiếu ba mặt, nhũ đá và rễ là mesh thật), tối ưu qua `tools/asset-pipeline`, nạp thay `buildSkirt`.

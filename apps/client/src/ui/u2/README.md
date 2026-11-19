@@ -9,6 +9,10 @@ Nền tảng: token, font, họa tiết, thành phần và trang xem. Chưa thay
 - Khóa: ESLint (`eslint.config.mjs`, `UI_STYLE_RULES`) cấm hex/rgb trong chuỗi và `style={{color:'…'}}` ở `apps/client/src/ui`; `LEGACY_UI_STYLE` liệt kê file cũ chưa chuyển (chỉ được xóa dòng). `tokens.test.ts` kiểm CSS của kit. `node tools/ui/contrast.mjs` kiểm WCAG AA token mới.
 - Font: `python tools/fonts/subset_u2.py <thư mục TTF>` (xem docstring); 177 KB woff2 tổng.
 
+## Miễn trừ có chủ ý: `win/` và `shell/`
+
+Quy tắc "hex/rgba chỉ ở `tokens.css`" áp cho các file CSS nằm thẳng trong `u2/`. Hai thư mục con **chưa theo** quy tắc đó: `win/panel.css` và `shell/{hud,screens,ornament}.css` là CSS của bộ cũ dời vào (U2-8), còn nhiều màu cứng; `tokens.test.ts` không quét thư mục con. Đừng coi màu cứng ở đó là hợp lệ cho file mới; chuyển dần từng file sang `--u-*` rồi đưa vào danh sách kiểm.
+
 ## Token của bộ cũ (U2-8)
 
 Bộ kit cũ (`ui/kit`, `ui/ngj`, biến `--k-*`/`--ngj-*`) đã gỡ. Giá trị của nó nằm ở `tokens.css`, **giữ nguyên** để hình không đổi:

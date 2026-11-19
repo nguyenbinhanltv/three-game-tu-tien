@@ -28,3 +28,12 @@ Phản hồi duyệt lần 1: cả cảnh nhuộm một màu tím, kiến trúc 
 - Chỉ để nhìn: không đổi va chạm, hồi sinh, NPC, cổng, đường đi, vùng quái, nhiệm vụ.
 - Đo (preset Cao, 1080p, 4 thời điểm × 10 góc): draw call đỉnh 96 → 138, tam giác đỉnh 246k → 892k, khung 10,4 → 12,2 ms (nhiễu đo ~1 ms; góc nhìn cả cảnh). GLB 4,9 MB (24 MB thô, 272k tam giác, dưới trần 300k của lớp `arch`).
 - Chưa làm: phông xa (dãy núi mây xa có vân đá + mây cuộn thay vách phẳng, chia PR sau), texture PBR bake riêng (kit dùng texture thủ tục 256 px + màu đỉnh), vách núi bao quanh sân vẫn là một mặt dốc (cần dựng lại `thien_khuyet.terrain.json`), tượng thần chưa có texture chạm khắc (chỉ lưới + màu đỉnh), LOD cho GLB, cây chỉ là tán tròn trên đảo.
+
+## PR 3: đảo bay đá rễ, vách triplanar, tượng chi tiết hơn
+
+- **Đảo bay** (`game/world/thienKhuyetSky.ts`): đá xám ấm phân tầng, rêu rủ, thêm **rễ cây đá** bám thân đảo (ống thon cong ra ngoài rồi rũ xuống) và **dây leo xanh** rủ từ mép (`roots`, `taperedTube`), nhũ đá; vật liệu đá có **pháp tuyến nhám** (`bumpMap` theo nhiễu chiếu chéo) cùng nhiễu màu ba mặt phẳng, nên không còn mặt nhẵn như đất sét.
+- **Vách núi sau**: dùng nhánh vân vách theo nhiễu của shader mặt đất (`render/materials/ground.ts`, vốn dựng cho Đoạn Mạch, nay tham số hóa màu bằng `CliffTones`): tọa độ dọc vách `u` + độ cao, không dùng khung texture 11 m nên hết ô caro. Thiên Khuyết bật ở `Terrain.setGround` (`terrain.ts`) với hai tông xám ấm ↔ nâu cát và vỉa vàng kim ở khe nứt. Ở xa vách vẫn hòa về màu đỉnh lưới (`tkGroundColor`).
+- **Tượng thần** (`thien_khuyet_arch.py`): lưới ngực 44×32, nếp giáp lá nổi và sống ngực giữa, vai giáp ba lớp có nếp xoắn và gai vàng, mặt chia 52×40 có sống mũi, gò mày, hốc mắt, khe miệng, cằm, gò má; mũ có mào, tua mào sau gáy, sừng/cánh mũ vàng.
+- **Ngân sách tam giác**: kit #305 đã thêm vát mép cho vật liệu mềm (vữa/sơn/gỗ) và texture PBR Poly Haven nên cùng script ra ~550k tam giác. Tách GLB thành ba object: `tk_stair` (không vát mép, ~1100 bậc), `tk_main` (cổng, tiên cung, cột; có vát mép), `tk_statue`. GLB 14 MB (texture PBR 2K, người dùng cho phép tăng dung lượng), 261k tam giác (< 300k).
+- Đo (preset Cao, 1080p, hoàng hôn + ngày × 10 góc): draw call đỉnh 144, tam giác đỉnh 945k, khung 10,0 ms.
+- Chưa làm: phông xa núi mây có vân đá (vẫn vách phẳng ở xa), mặt tượng chưa có texture chạm, tượng còn tròn ở các khối vai.
