@@ -149,11 +149,9 @@ describe('va chạm 3D', () => {
     T.collision.near = near;
     // Quét toàn bộ 3000 hình mỗi bước sẽ là 3000; lưới băm giữ ở mức vài hình (ô 16 m, mật độ ~0,0006 hình/m²).
     expect(visited / (N * ps.length)).toBeLessThan(40);
-    for (const p of ps)
-      for (const sh of shapes) {
-        const d = footprintDist(sh, p.x, p.z);
-        expect(d).toBeGreaterThanOrEqual(PLAYER_RADIUS - 0.02);
-      }
+    let inside = 0;
+    for (const p of ps) for (const sh of shapes) if (footprintDist(sh, p.x, p.z) < PLAYER_RADIUS - 0.02) inside++;
+    expect(inside).toBe(0);
   });
 
   it('ngự kiếm bay thẳng lên xuyên tán lá (fly:pass) nhưng đội đầu vào đáy khối chặn', () => {
