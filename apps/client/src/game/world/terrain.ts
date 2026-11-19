@@ -38,6 +38,7 @@ import { tkGroundColor } from './thienKhuyetArt';
 import { bhGroundColor, riftPath, type RiftPt } from './bacHoangArt';
 import { xichCracks, xichGroundColor } from './xichArt';
 import { ktGroundColor } from './kiemTrungArt';
+import { pmGroundColor } from './phucMachArt';
 
 const TILE = 256;
 const NEAR_R = 3;
@@ -77,6 +78,8 @@ let SLATE = T.id === 'thien_khuyet';
 let XICH = T.def.canyon !== undefined && T.id === 'xich_tan_khich';
 /** Bí cảnh Kiếm Trủng (DUN-1): dùng địa hình Vân Lam nhưng bảng màu đất riêng (xám lam, tro, rỉ). */
 let KT = false;
+/** Bí cảnh Phục Mạch Quật (DUN-1 PR2): bảng màu đất hầm mỏ (son nâu, đất sét đỏ, đá vụn). */
+let PM = false;
 let XICH_CRACKS: RiftPt[][] = [];
 const _tk: [number, number, number] = [0, 0, 0];
 const _bh: [number, number, number] = [0, 0, 0];
@@ -222,6 +225,10 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
     ktGroundColor(x, z, ny, _tk);
     return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
   }
+  if (PM) {
+    pmGroundColor(x, z, ny, _tk);
+    return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
+  }
   if (SLATE) {
     tkGroundColor(T.def, x, z, ny, _tk);
     return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
@@ -291,7 +298,7 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
 
 /** Trọng số vùng cho shader mặt đất: x rừng, y đất khô, z đất chết Kiếm Trủng, w dự phòng. */
 function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
-  if (OCHRE || SLATE || ASH || KT) {
+  if (OCHRE || SLATE || ASH || KT || PM) {
     // Một lớp nền duy nhất: ở preset Vừa/Thấp lớp nền chọn cứng theo ngưỡng nên mảng đất/đất nứt hiện thành vệt mép gắt (E2-I); biến thiên màu do màu đỉnh (`ochreColor`) lo.
     o[k] = o[k + 1] = o[k + 2] = o[k + 3] = 0;
     return;
@@ -519,6 +526,7 @@ export class Terrain {
     BH_PATH = ASH ? riftPath(T.def) : [];
     SLATE = T.id === 'thien_khuyet';
     KT = levelId() === 'kiem_trung';
+    PM = levelId() === 'phuc_mach';
     XICH = T.def.canyon !== undefined && T.id === 'xich_tan_khich';
     XICH_CRACKS = XICH ? xichCracks(T.def, (x, z) => T.heightAt(x, z)) : [];
     const COARSE_N = this.COARSE_N;
@@ -670,16 +678,19 @@ export class Terrain {
   setGround(tex: GroundTextures | null, level: GroundLevel): void {
     setGroundTileBreak(XICH || ASH);
     setGroundStrata(isVanLam());
-    setGroundNoSnow(KT);
+    setGroundNoSnow(KT || PM);
     setGroundRedStrata(
-      T.id === 'doan_mach' || T.id === 'thien_khuyet' || KT,
+      T.id === 'doan_mach' || T.id === 'thien_khuyet' || KT || PM,
       // Thiên Khuyết (MAP-4): vách xám ấm ↔ nâu cát, khe nứt có vỉa vàng kim; vân từ nhiễu theo tọa độ dọc vách (hết ô caro).
       T.id === 'thien_khuyet'
         ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18] }
         : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
           KT
           ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }
-          : undefined,
+          : // Phục Mạch (DUN-1 PR2): vách sa thạch nâu đỏ sẫm, khe nứt có vỉa mạch tinh lục.
+            PM
+            ? { lo: [0.1, 0.07, 0.05], hi: [0.3, 0.2, 0.13], vein: [0.25, 0.7, 0.55] }
+            : undefined,
     );
     if (tex) applyGroundShader(this.material, tex, level);
     else clearGroundShader(this.material);
