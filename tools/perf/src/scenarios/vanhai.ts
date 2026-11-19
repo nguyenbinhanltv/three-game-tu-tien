@@ -32,6 +32,7 @@ export const VIEWS: View[] = [
   { name: 'trencao', wow: 700, eye: [420, 330, -300], at: [-40, 110, 60], fov: 58 },
   { name: 'laucanh', wow: 100, eye: [70, 205, -400], at: [6, 195, -694], fov: 62 },
   { name: 'kinh', wow: 569, eye: [0, 150, 0], at: [-672, 345, 198], fov: 62 },
+  { name: 'vachdao', wow: 450, eye: [150, 104, 20], at: [85, 98, 0], fov: 62 },
   { name: 'phongxa', wow: 914, eye: [0, 140, -60], at: [-500, 120, -700], fov: 66 },
 ];
 

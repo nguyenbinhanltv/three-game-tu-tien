@@ -1197,6 +1197,43 @@
         }
       }
     },
+    "arch_vh_island": {
+      "id": "arch_vh_island",
+      "class": "arch",
+      "source": "assets/build/raw/arch_vh_island.glb",
+      "file": "arch_vh_island.1848641e9a.glb",
+      "bytes": 1010296,
+      "rawBytes": 3406936,
+      "triangles": 149501,
+      "rawTriangles": 149501,
+      "lod0Cap": 600000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 149501
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 446.4656,
+          "height": 112.7818,
+          "depth": 451.9257,
+          "minY": -111.5323
+        },
+        "build": {
+          "width": 446.464,
+          "height": 112.7872,
+          "depth": 451.9257,
+          "minY": -111.5405
+        }
+      }
+    },
     "arch_xich_tan": {
       "id": "arch_xich_tan",
       "class": "arch",

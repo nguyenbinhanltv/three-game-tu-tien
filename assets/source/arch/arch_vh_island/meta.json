@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "arch_vh_island",
+  "type": "arch",
+  "status": "in_game",
+  "procedural": { "script": "tools/blender/vh_island_arch.py", "seed": 20261120 },
+  "license": { "source": "Tự sinh bằng tools/blender/vh_island_arch.py (POLISH-1: chân đảo bay Vân Hải)", "owner": "dự án", "date": "2026-11-20" }
+}

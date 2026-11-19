@@ -24,6 +24,7 @@ import { skyParams } from '../../render/sky';
 import { bridgeDeckY, type BridgeDef, hash01, type IslandDef, type Terrain, type TerrainDef } from '@dtl/shared';
 import type { SpiritScan } from '../../ui/store';
 import { pondMaterial } from '../../render/pondWater';
+import { assets, type AssetHandle } from '../core/assets';
 import { billowPlan } from './billows';
 import { vanHaiArt, type VhIsland, type VhKind } from './vanHaiArt';
 
@@ -50,6 +51,37 @@ const SKIRT: Record<VhKind, { amp: number; belly: number; len: number; spikes: n
   tieu_dao: { amp: 1.2, belly: 1, len: 0.9, spikes: 0.8, roots: 1 },
 };
 
+/** Bán kính danh nghĩa của khối đá dựng sẵn trong `arch_vh_island` (Blender, `vh_island_arch.py`): client co giãn ngang theo `r / R`. */
+const ROCK_R: Record<VhKind, number> = {
+  hub: 85,
+  tung_dai_dao: 207,
+  thach_quy_dao: 207,
+  kinh_ho_dao: 207,
+  loi_van_dao: 207,
+  kinh_ngu_dai: 207,
+  tieu_dao: 40,
+};
+const FAKE_R = 40;
+
+/** Bản sao có position/normal/color dạng float32 (pipeline lượng tử hóa thành số nguyên chuẩn hóa: ghi số mét vào đó sẽ bị cắt về [-1, 1]). */
+function toFloatGeometry(src: THREE.BufferGeometry): THREE.BufferGeometry {
+  const g = new THREE.BufferGeometry();
+  for (const name of ['position', 'normal', 'color']) {
+    const a = src.getAttribute(name) as THREE.BufferAttribute | undefined;
+    if (!a) continue;
+    const size = name === 'color' ? 3 : a.itemSize;
+    const f = new Float32Array(a.count * size);
+    for (let i = 0; i < a.count; i++) {
+      f[i * size] = a.getX(i);
+      f[i * size + 1] = a.getY(i);
+      f[i * size + 2] = a.getZ(i);
+    }
+    g.setAttribute(name, new THREE.BufferAttribute(f, size));
+  }
+  if (src.index) g.setIndex(src.index.clone());
+  return g;
+}
+
 interface Fake {
   def: IslandDef;
   mesh: THREE.Mesh;
@@ -65,6 +97,10 @@ export class SkyIslands {
   private fakes: Fake[] = [];
   private disposables: { dispose(): void }[] = [];
   private lastMs = 0;
+  /** Chân đảo thật đang vẽ bằng lưới thủ tục (dự phòng); thay bằng lưới Blender khi GLB về. */
+  private skirts: { isl: IslandDef; vi: VhIsland | null; mesh: THREE.Mesh }[] = [];
+  private rockHandle: AssetHandle | null = null;
+  private gone = false;
 
   constructor(parent: THREE.Object3D, terrain: Terrain) {
     this.group.name = 'skyIslands';
@@ -84,6 +120,77 @@ export class SkyIslands {
     if (chains.length) this.buildBridges(chains, terrain);
     for (const f of def.fakeIslands ?? []) this.buildFake(f);
     parent.add(this.group);
+    if (this.skirts.length || this.fakes.length) void this.loadRocks();
+  }
+
+  /** Nạp khối đá Blender (`arch_vh_island`) và thay lưới thủ tục: lỗi mạng thì giữ nguyên bản thủ tục. */
+  private async loadRocks(): Promise<void> {
+    try {
+      const h = await assets.acquire('arch_vh_island', { priority: 400 });
+      if (this.gone) {
+        h.release();
+        return;
+      }
+      this.rockHandle = h;
+      const geo = new Map<string, THREE.BufferGeometry>();
+      h.scene.updateMatrixWorld(true);
+      h.scene.traverse((o) => {
+        const m = o as THREE.Mesh;
+        // pipeline lượng tử hóa đỉnh (KHR_mesh_quantization): phần co giãn/dịch nằm ở ma trận nút, phải áp vào lưới
+        if (m.isMesh) geo.set(o.name, toFloatGeometry(m.geometry).applyMatrix4(m.matrixWorld));
+      });
+      for (const g of geo.values()) this.track(g);
+      for (const sk of this.skirts) {
+        const src = geo.get(`vhrock_${sk.vi?.kind ?? 'tieu_dao'}`);
+        if (!src) continue;
+        const g = this.track(src.clone());
+        const pos = g.attributes.position!;
+        const c0 = g.attributes.color as THREE.BufferAttribute;
+        const cf = new Float32Array(pos.count * 3);
+        for (let i = 0; i < pos.count; i++) cf.set([c0.getX(i), c0.getY(i), c0.getZ(i)], i * 3);
+        g.setAttribute('color', new THREE.BufferAttribute(cf, 3)); // về float (pipeline có thể lượng tử hóa màu đỉnh) để sửa vành cỏ
+        const col = g.attributes.color as THREE.BufferAttribute;
+        // vành cỏ ở mép trên khớp màu mặt đảo (palette riêng từng đảo, như terrain.ts islandColor)
+        const pal = sk.vi?.pal;
+        const A = new THREE.Color(pal ? pal.moss : 0x7a8460)
+          .lerp(new THREE.Color(pal ? pal.soil : 0x7a8460), 0.5)
+          .multiplyScalar(1.3 * 0.84);
+        const c = new THREE.Color();
+        for (let i = 0; i < pos.count; i++) {
+          const y = pos.getY(i);
+          if (y > -1.4) {
+            c.setRGB(col.getX(i), col.getY(i), col.getZ(i)).lerp(A, Math.min(1, (y + 1.4) / 1.4));
+            col.setXYZ(i, c.r, c.g, c.b);
+          }
+        }
+        const kr = sk.vi ? (ROCK_R[sk.vi.kind] ?? 207) : 40;
+        const mesh = new THREE.Mesh(g, sk.mesh.material);
+        mesh.scale.set(sk.isl.r / kr, 1, sk.isl.r / kr);
+        mesh.position.copy(sk.mesh.position);
+        mesh.name = 'island-skirt';
+        this.group.add(mesh);
+        this.group.remove(sk.mesh);
+        sk.mesh.geometry.dispose();
+        sk.mesh = mesh;
+      }
+      for (const f of this.fakes) {
+        const src = geo.get(`vhfake_${(Math.floor(f.def.x) + Math.floor(f.def.z)) % 2 ? 'a' : 'b'}`);
+        if (!src) continue;
+        const g = src.clone().toNonIndexed();
+        g.scale(f.def.r / FAKE_R, 1, f.def.r / FAKE_R);
+        const fc = g.attributes.color as THREE.BufferAttribute;
+        const ff = new Float32Array(fc.count * 3);
+        for (let i = 0; i < fc.count; i++) ff.set([fc.getX(i), fc.getY(i), fc.getZ(i)], i * 3);
+        g.setAttribute('color', new THREE.BufferAttribute(ff, 3));
+        const trees = f.mesh.userData.trees as THREE.BufferGeometry | undefined;
+        const merged = (trees ? mergeGeometries([g, trees], false) : g) ?? g;
+        if (merged !== g) g.dispose();
+        f.mesh.geometry.dispose();
+        f.mesh.geometry = this.track(merged);
+      }
+    } catch {
+      /* chỉ thiếu phần chi tiết: giữ chân đảo thủ tục */
+    }
   }
 
   private track<T extends { dispose(): void }>(o: T): T {
@@ -327,6 +434,7 @@ export class SkyIslands {
     mesh.name = 'island-skirt';
     mesh.frustumCulled = false;
     this.group.add(mesh);
+    this.skirts.push({ isl, vi, mesh });
     // (vành sương phẳng ở chân đảo đã gỡ: nhìn ngang tầm chúng thành vệt trắng cắt ngang chân đảo; thay bằng vòng mây cuộn trong `billowPlan`)
   }
 
@@ -341,6 +449,7 @@ export class SkyIslands {
     const b = texture(noise, vec2(wp.x.sub(wp.z).mul(0.21), wp.y.mul(0.33))).a;
     m.colorNode = vertexColor().mul(float(0.62).add(a.mul(0.5)).add(b.mul(0.3)));
     m.roughnessNode = float(0.8).add(b.mul(0.2));
+    m.emissiveNode = vertexColor().mul(0.16); // fill nhẹ: mặt dưới đảo không đen đặc khi nhìn từ biển mây
     this.rock = this.track(m);
     return m;
   }
@@ -690,13 +799,19 @@ export class SkyIslands {
     };
     painted(body, (x, y, z) => (y > -0.5 && Math.hypot(x, z) < f.r + 0.5 ? C_GRASS : C_ROCK));
     const parts: THREE.BufferGeometry[] = [body];
+    const treeParts: THREE.BufferGeometry[] = [];
     for (let i = 0; i < 5; i++) {
       const a = (i / 5) * Math.PI * 2 + f.x * 0.01;
       const rr = f.r * (0.25 + (0.4 * ((i * 37) % 10)) / 10);
       const tree = new THREE.ConeGeometry(2.4, 9, 7).toNonIndexed();
       tree.translate(Math.cos(a) * rr, 4.5, Math.sin(a) * rr);
       parts.push(painted(tree, () => C_TREE));
+      const tc = tree.clone();
+      tc.deleteAttribute('uv'); // khớp thuộc tính lưới Blender (position, normal, color) để gộp được
+      treeParts.push(tc);
     }
+    const trees = this.track(mergeGeometries(treeParts, false));
+    for (const p of treeParts) p.dispose();
     const merged = this.track(mergeGeometries(parts, false));
     for (const p of parts) p.dispose();
     const mat = this.track(
@@ -713,6 +828,7 @@ export class SkyIslands {
     const mesh = new THREE.Mesh(merged, mat);
     mesh.position.set(f.x, f.y, f.z);
     mesh.name = 'fake-island';
+    mesh.userData.trees = trees;
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     this.group.add(mesh);
@@ -774,6 +890,9 @@ export class SkyIslands {
   }
 
   dispose(): void {
+    this.gone = true;
+    this.rockHandle?.release();
+    this.rockHandle = null;
     this.group.parent?.remove(this.group);
     for (const d of this.disposables) d.dispose();
     this.disposables.length = 0;
