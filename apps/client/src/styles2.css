@@ -9,14 +9,14 @@
   bottom: -3px;
   width: 2px;
   margin-left: -1px;
-  background: #f3e3bc;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+  background: var(--u-x-hf3e3bc);
+  box-shadow: 0 0 4px var(--u-x-rgba-0-0-0-0-9);
   opacity: 0.85;
 }
 /* Thanh phá thế: mảnh, vàng đồng, ngay dưới máu. Gần đầy thì sáng lên, mất thế thì đầy và nhấp nháy. */
 .gauge.posture {
   --cut: 4px;
-  --fill: linear-gradient(180deg, #ffe7ad 0%, #d2ae62 50%, #8a6a2c 100%);
+  --fill: linear-gradient(180deg, var(--u-x-hffe7ad) 0%, var(--u-x-hd2ae62) 50%, var(--u-x-h8a6a2c) 100%);
   width: 70%;
   height: 7px;
   margin: 5px auto 0;
@@ -32,11 +32,11 @@
   margin-right: 8px;
   font: 600 11px var(--font-display, var(--serif));
   color: var(--gold-soft);
-  text-shadow: 0 1px 2px #000;
+  text-shadow: 0 1px 2px var(--u-x-h000);
 }
 .gauge.posture.near {
-  --fill: linear-gradient(180deg, #fff6d6 0%, #f2c47e 50%, #b0802e 100%);
-  box-shadow: 0 0 8px rgba(242, 196, 126, 0.55);
+  --fill: linear-gradient(180deg, var(--u-x-hfff6d6) 0%, var(--u-x-hf2c47e) 50%, var(--u-x-hb0802e) 100%);
+  box-shadow: 0 0 8px var(--u-x-rgba-242-196-126-0-55);
 }
 .gauge.posture.broken .gauge-fill {
   animation: posture-blink 0.5s ease-in-out infinite alternate;
@@ -50,7 +50,7 @@
   }
 }
 .gauge.tcast.broken {
-  --fill: linear-gradient(180deg, #fff3c6 0%, #f2c47e 45%, #a57a2e 100%);
+  --fill: linear-gradient(180deg, var(--u-son-text) 0%, var(--u-x-hf2c47e) 45%, var(--u-x-ha57a2e) 100%);
 }
 /* Letterbox mỏng + phụ đề: chỉ là lớp hình, không nhận chuột, không khóa điều khiển.
    Không đặt z-index: nằm đầu .hud nên thanh boss và các khung khác vẽ đè lên dải đen. */
@@ -65,7 +65,7 @@
   left: 0;
   right: 0;
   height: 6vh;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--u-x-rgba-0-0-0-0-7);
 }
 .boss-line .lb-top {
   top: 0;
@@ -90,14 +90,14 @@
   font: 600 13px var(--font-display, var(--serif));
   color: var(--gold-soft);
   letter-spacing: 1px;
-  text-shadow: 0 1px 2px #000;
+  text-shadow: 0 1px 2px var(--u-x-h000);
 }
 .boss-line-say {
   font: 500 20px var(--font-display, var(--serif));
-  color: #f4f1ea;
+  color: var(--u-x-hf4f1ea);
   text-shadow:
-    0 1px 3px #000,
-    0 0 10px rgba(0, 0, 0, 0.8);
+    0 1px 3px var(--u-x-h000),
+    0 0 10px var(--u-x-rgba-0-0-0-0-8);
 }
 @keyframes boss-line-fade {
   0% {
@@ -127,8 +127,8 @@
   background-size: cover;
   background-position: center;
   opacity: 0;
-  -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, #000 25%, transparent 100%);
-  mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, #000 25%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, var(--u-x-h000) 25%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, var(--u-x-h000) 25%, transparent 100%);
   animation: chapter-art var(--dur) ease-in-out forwards;
 }
 @keyframes chapter-art {
@@ -146,7 +146,7 @@
   left: 0;
   right: 0;
   height: 7vh;
-  background: rgba(6, 9, 14, 0.78);
+  background: var(--u-x-rgba-6-9-14-0-78);
   animation: chapter-bar var(--dur) cubic-bezier(0.3, 0, 0.2, 1) forwards;
 }
 .chapter-card .lb-top {
@@ -169,42 +169,42 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  background: radial-gradient(closest-side, rgba(6, 9, 14, 0.55), rgba(6, 9, 14, 0));
+  background: radial-gradient(closest-side, var(--u-x-rgba-6-9-14-0-55), var(--u-x-rgba-6-9-14-0));
   animation: chapter-fade var(--dur) ease-in-out forwards;
 }
 .chapter-kicker {
   font: 600 13px var(--font-display, var(--serif));
   letter-spacing: 3px;
   color: var(--gold-soft);
-  text-shadow: 0 1px 2px #000;
+  text-shadow: 0 1px 2px var(--u-x-h000);
 }
 .chapter-title {
   margin-top: 4px;
   font: 700 clamp(30px, 3.4vw, 46px) var(--font-display, var(--serif));
-  color: #f4efe2;
+  color: var(--u-x-hf4efe2);
   letter-spacing: 6px;
   text-shadow:
-    0 2px 4px #000,
-    0 0 18px rgba(0, 0, 0, 0.85);
+    0 2px 4px var(--u-x-h000),
+    0 0 18px var(--u-x-rgba-0-0-0-0-85);
   animation: chapter-spread var(--dur) ease-out forwards;
 }
 .chapter-rule {
   width: 180px;
   height: 1px;
   margin: 8px 0 9px;
-  background: linear-gradient(90deg, rgba(214, 182, 110, 0), var(--gold) 50%, rgba(214, 182, 110, 0));
+  background: linear-gradient(90deg, var(--u-x-rgba-214-182-110-0), var(--gold) 50%, var(--u-x-rgba-214-182-110-0));
 }
 .chapter-sub {
   font: italic 500 17px var(--font-display, var(--serif));
-  color: #e4dccb;
-  text-shadow: 0 1px 3px #000;
+  color: var(--u-x-he4dccb);
+  text-shadow: 0 1px 3px var(--u-x-h000);
   white-space: nowrap;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .chapter-card.chapter-trib .chapter-kicker {
-  color: #d9c2ff;
+  color: var(--u-x-hd9c2ff);
 }
 @keyframes chapter-bar {
   0% {
@@ -268,7 +268,7 @@
   left: 0;
   right: 0;
   height: 12vh;
-  background: #05070b;
+  background: var(--u-x-h05070b);
   animation: cine-bar-in 900ms cubic-bezier(0.3, 0, 0.2, 1) both;
 }
 .cine-top {
@@ -299,10 +299,10 @@
   font-size: clamp(18px, 2.3vw, 28px);
   letter-spacing: 0.12em;
   line-height: 1.7;
-  color: #efe6d0;
+  color: var(--u-giay);
   text-shadow:
-    0 0 14px rgba(5, 7, 11, 0.9),
-    0 1px 3px rgba(5, 7, 11, 0.9);
+    0 0 14px var(--u-x-rgba-5-7-11-0-9),
+    0 1px 3px var(--u-x-rgba-5-7-11-0-9);
   opacity: 0;
   animation: cine-line var(--dur) ease-in-out forwards;
 }
@@ -312,7 +312,7 @@
   bottom: calc(12vh + 1.5vh);
   font-size: 12px;
   letter-spacing: 0.08em;
-  color: rgba(239, 230, 208, 0.55);
+  color: var(--u-x-rgba-239-230-208-0-55);
   opacity: 0;
   animation: cine-skip 1200ms ease-out 1500ms forwards;
 }
@@ -371,10 +371,10 @@
   width: min(760px, 88vw);
   text-align: center;
   font-family: var(--font-display);
-  color: #efe6d0;
+  color: var(--u-giay);
   text-shadow:
-    0 0 14px rgba(5, 7, 11, 0.95),
-    0 1px 3px rgba(5, 7, 11, 0.95);
+    0 0 14px var(--u-x-rgba-5-7-11-0-95),
+    0 1px 3px var(--u-x-rgba-5-7-11-0-95);
   opacity: 0;
   animation: cine-name var(--dur) ease-in-out forwards;
 }
@@ -387,7 +387,7 @@
   margin-top: 4px;
   font-size: clamp(13px, 1.3vw, 17px);
   letter-spacing: 0.18em;
-  color: var(--gold-soft, #d8bd7a);
+  color: var(--gold-soft, var(--u-x-hd8bd7a));
 }
 .cine-name-say {
   margin-top: 10px;
@@ -398,7 +398,7 @@
 .cine-phase .cine-name-main {
   font-size: clamp(14px, 1.4vw, 18px);
   letter-spacing: 0.2em;
-  color: var(--gold-soft, #d8bd7a);
+  color: var(--gold-soft, var(--u-x-hd8bd7a));
 }
 .cine-phase .cine-name-say {
   margin-top: 4px;
@@ -450,22 +450,22 @@
   opacity: 0;
 }
 #boot.art-on ~ #root .ts-sub {
-  color: #f2e9d6;
-  text-shadow: 0 1px 14px rgba(10, 24, 28, 0.9);
+  color: var(--u-x-hf2e9d6);
+  text-shadow: 0 1px 14px var(--u-x-rgba-10-24-28-0-9);
 }
 #boot.art-on ~ #root .ts-card {
-  color: #29292c;
+  color: var(--u-p-text-ink);
 }
 #boot.art-on .ts-title {
-  color: #f2e9d6;
-  text-shadow: 0 2px 24px rgba(10, 24, 28, 0.85);
+  color: var(--u-x-hf2e9d6);
+  text-shadow: 0 2px 24px var(--u-x-rgba-10-24-28-0-85);
 }
 #boot.art-on .ts-veil {
   background: linear-gradient(
     180deg,
-    rgba(10, 24, 28, 0.35) 0%,
-    rgba(10, 24, 28, 0) 40%,
-    rgba(10, 24, 28, 0) 55%,
-    rgba(10, 24, 28, 0.55) 100%
+    var(--u-x-rgba-10-24-28-0-35) 0%,
+    var(--u-x-rgba-10-24-28-0) 40%,
+    var(--u-x-rgba-10-24-28-0) 55%,
+    var(--u-x-rgba-10-24-28-0-55) 100%
   );
 }

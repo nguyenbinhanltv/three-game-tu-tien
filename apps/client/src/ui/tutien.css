@@ -7,11 +7,11 @@
 /* ---------- khung nhân vật / mục tiêu ---------- */
 .hud .frame {
   background: var(--u-p-ink-bg);
-  border-color: rgba(200, 169, 110, 0.45);
+  border-color: var(--u-x-rgba-200-169-110-0-45);
 }
 .frame-realm[data-tier='tc'] {
   color: var(--u-p-gold);
-  text-shadow: 0 0 6px rgba(255, 222, 150, 0.45);
+  text-shadow: 0 0 6px var(--u-x-rgba-255-222-150-0-45);
 }
 .frame-xp-row {
   display: flex;
@@ -42,21 +42,21 @@
   letter-spacing: 0.08em;
 }
 .frame.can-break {
-  border-color: rgba(255, 222, 150, 0.75);
+  border-color: var(--u-x-rgba-255-222-150-0-75);
 }
 @keyframes break-glow {
   0%,
   100% {
-    filter: drop-shadow(0 0 2px rgba(255, 222, 150, 0.55));
+    filter: drop-shadow(0 0 2px var(--u-x-rgba-255-222-150-0-55));
   }
   50% {
-    filter: drop-shadow(0 0 7px rgba(255, 222, 150, 0.95)) brightness(1.12);
+    filter: drop-shadow(0 0 7px var(--u-x-rgba-255-222-150-0-95)) brightness(1.12);
   }
 }
 /* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/u2/shell/motion.ts). */
 :root[data-reduce-motion='true'] .break-btn {
   animation: none;
-  filter: drop-shadow(0 0 4px rgba(255, 222, 150, 0.8));
+  filter: drop-shadow(0 0 4px var(--u-x-rgba-255-222-150-0-8));
 }
 /* ---------- hồi chiêu: vòng linh văn ----------
  * Lòng ô tối đi, một vành kim chạy theo phần còn lại (đầu vành sáng), khắc vạch như vòng phù văn.
@@ -64,7 +64,7 @@
  */
 .skill-sweep {
   inset: 1.5px;
-  background: radial-gradient(circle, rgba(6, 10, 18, 0.5) 0 54%, rgba(6, 10, 18, 0.82) 56%);
+  background: radial-gradient(circle, var(--u-x-rgba-6-10-18-0-5) 0 54%, var(--u-x-rgba-6-10-18-0-82) 56%);
   clip-path: polygon(
     6px 0,
     calc(100% - 6px) 0,
@@ -88,18 +88,18 @@
 .skill-sweep::before {
   background: conic-gradient(
     from 0deg,
-    rgba(255, 222, 150, 0.95) 0,
-    rgba(200, 169, 110, 0.85) calc((1 - var(--p)) * 1turn),
-    rgba(200, 169, 110, 0.16) 0
+    var(--u-x-rgba-255-222-150-0-95) 0,
+    var(--u-x-rgba-200-169-110-0-85) calc((1 - var(--p)) * 1turn),
+    var(--u-x-rgba-200-169-110-0-16) 0
   );
-  -webkit-mask: radial-gradient(circle, transparent 0 calc(71% - 3.5px), #000 calc(71% - 3px) calc(71% - 0.5px), transparent 71%);
-  mask: radial-gradient(circle, transparent 0 calc(71% - 3.5px), #000 calc(71% - 3px) calc(71% - 0.5px), transparent 71%);
+  -webkit-mask: radial-gradient(circle, transparent 0 calc(71% - 3.5px), var(--u-x-h000) calc(71% - 3px) calc(71% - 0.5px), transparent 71%);
+  mask: radial-gradient(circle, transparent 0 calc(71% - 3.5px), var(--u-x-h000) calc(71% - 3px) calc(71% - 0.5px), transparent 71%);
 }
 /* Vạch linh văn: 12 khấc tối cắt vành thành đốt. */
 .skill-sweep::after {
-  background: repeating-conic-gradient(from -3deg, rgba(6, 10, 18, 0.9) 0 6deg, transparent 6deg 30deg);
-  -webkit-mask: radial-gradient(circle, transparent 0 calc(71% - 4px), #000 calc(71% - 3.5px) 71%, transparent calc(71% + 0.5px));
-  mask: radial-gradient(circle, transparent 0 calc(71% - 4px), #000 calc(71% - 3.5px) 71%, transparent calc(71% + 0.5px));
+  background: repeating-conic-gradient(from -3deg, var(--u-x-rgba-6-10-18-0-9) 0 6deg, transparent 6deg 30deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 calc(71% - 4px), var(--u-x-h000) calc(71% - 3.5px) 71%, transparent calc(71% + 0.5px));
+  mask: radial-gradient(circle, transparent 0 calc(71% - 4px), var(--u-x-h000) calc(71% - 3.5px) 71%, transparent calc(71% + 0.5px));
 }
 .skill-cd-text {
   font: 700 18px var(--u-p-font-serif);
@@ -111,7 +111,7 @@
   min-width: 300px;
   padding: 8px 18px 10px;
   background: var(--u-p-ink-bg);
-  border: 1px solid rgba(200, 169, 110, 0.6);
+  border: 1px solid var(--u-x-rgba-200-169-110-0-6);
   border-radius: 0;
   clip-path: polygon(
     8px 0,
@@ -128,23 +128,23 @@
 .hud .trib-title {
   font: 700 18px var(--u-p-font-title);
   letter-spacing: var(--u-p-track-title);
-  color: #d9c2ff; /* thiên lôi spirit_thunder nhạt: tím chỉ ở chữ tiêu đề và thanh đếm */
+  color: var(--u-x-hd9c2ff); /* thiên lôi spirit_thunder nhạt: tím chỉ ở chữ tiêu đề và thanh đếm */
   margin-bottom: 6px;
 }
 /* Lớp `kiep`, không phải `trib`: thanh nằm trong hộp `.trib` và không được ăn quy tắc định vị của hộp. */
 .gauge.kiep {
   --cut: 6px;
-  --fill: linear-gradient(180deg, #efe3ff 0%, #b48cff 48%, #5b3f95 100%);
+  --fill: linear-gradient(180deg, var(--u-x-hefe3ff) 0%, var(--u-q3) 48%, var(--u-x-h5b3f95) 100%);
   height: 15px;
 }
 .gauge.dan {
   --cut: 6px;
-  --fill: linear-gradient(180deg, #cfe6ff 0%, #6fa8ee 48%, #2f5a9c 100%);
+  --fill: linear-gradient(180deg, var(--u-x-hcfe6ff) 0%, var(--u-x-h6fa8ee) 48%, var(--u-x-h2f5a9c) 100%);
   height: 13px;
 }
 .gauge.tam {
   --cut: 6px;
-  --fill: linear-gradient(180deg, #e3d6ff 0%, #9a82d6 48%, #4a3a82 100%);
+  --fill: linear-gradient(180deg, var(--u-x-he3d6ff) 0%, var(--u-x-h9a82d6) 48%, var(--u-x-h4a3a82) 100%);
   height: 13px;
 }
 .trib-soul {
@@ -152,31 +152,31 @@
   padding: 2px 10px;
   font-size: 12px;
   letter-spacing: 0.08em;
-  color: #b9c8e6;
-  border: 1px solid rgba(150, 175, 220, 0.35);
-  background: rgba(20, 26, 44, 0.45);
+  color: var(--u-x-hb9c8e6);
+  border: 1px solid var(--u-x-rgba-150-175-220-0-35);
+  background: var(--u-x-rgba-20-26-44-0-45);
 }
 .trib-soul.on {
-  color: #e6f0ff;
-  border-color: rgba(190, 215, 255, 0.7);
+  color: var(--u-x-he6f0ff);
+  border-color: var(--u-x-rgba-190-215-255-0-7);
 }
 .trib-clone {
-  color: #e8d9a4;
-  border-color: rgba(232, 205, 130, 0.35);
-  background: rgba(44, 36, 18, 0.45);
+  color: var(--u-x-he8d9a4);
+  border-color: var(--u-x-rgba-232-205-130-0-35);
+  background: var(--u-x-rgba-44-36-18-0-45);
 }
 .trib-clone.on {
-  color: #fff3c8;
-  border-color: rgba(255, 232, 160, 0.75);
+  color: var(--u-x-hfff3c8);
+  border-color: var(--u-x-rgba-255-232-160-0-75);
 }
 .trib-hanh {
   margin-top: 6px;
   padding: 2px 10px;
   font-size: 13px;
   letter-spacing: 0.08em;
-  color: #f4e6b0;
-  border: 1px solid rgba(232, 205, 130, 0.5);
-  background: rgba(36, 30, 16, 0.55);
+  color: var(--u-x-hf4e6b0);
+  border: 1px solid var(--u-x-rgba-232-205-130-0-5);
+  background: var(--u-x-rgba-36-30-16-0-55);
 }
 .trib-dan {
   margin-top: 6px;
@@ -202,7 +202,7 @@
   white-space: nowrap;
 }
 .trib-phase.on .trib-phase-name {
-  color: #d9c2ff;
+  color: var(--u-x-hd9c2ff);
 }
 .trib-hint {
   margin-top: 5px;
@@ -239,10 +239,10 @@
   inset: 2px;
 }
 .k-slot[data-q='1'] .k-slot-in {
-  box-shadow: inset 0 0 8px rgba(126, 162, 90, 0.35);
+  box-shadow: inset 0 0 8px var(--u-x-rgba-126-162-90-0-35);
 }
 .k-slot[data-q='2'] .k-slot-in {
-  box-shadow: inset 0 0 9px rgba(95, 167, 216, 0.4);
+  box-shadow: inset 0 0 9px var(--u-x-rgba-95-167-216-0-4);
 }
 .k-slot[data-q]:not([data-q='0']) .k-slot-in::after {
   content: '';
@@ -279,34 +279,34 @@
   --s: var(--ui-scale, 1);
   font: 800 calc(19px * var(--s)) var(--u-p-font-body, var(--sans));
   font-variant-numeric: tabular-nums;
-  -webkit-text-stroke: calc(0.6px * var(--s)) rgba(8, 12, 20, 0.9);
+  -webkit-text-stroke: calc(0.6px * var(--s)) var(--u-x-rgba-8-12-20-0-9);
   paint-order: stroke fill;
   text-shadow:
-    0 0 3px rgba(0, 0, 0, 0.9),
-    0 2px 2px rgba(0, 0, 0, 0.75);
+    0 0 3px var(--u-x-rgba-0-0-0-0-9),
+    0 2px 2px var(--u-x-rgba-0-0-0-0-75);
 }
 .dmg-layer .dmg.hit {
-  color: #f1ebdc;
+  color: var(--u-x-hf1ebdc);
 }
 .dmg-layer .dmg.crit {
-  color: #ffd45a;
+  color: var(--u-x-hffd45a);
   font: 900 calc(30px * var(--s)) var(--u-p-font-serif, var(--serif));
   letter-spacing: 0.02em;
   text-shadow:
-    0 0 10px rgba(255, 170, 40, 0.7),
-    0 0 3px rgba(0, 0, 0, 0.95),
-    0 2px 2px rgba(0, 0, 0, 0.8);
+    0 0 10px var(--u-x-rgba-255-170-40-0-7),
+    0 0 3px var(--u-x-rgba-0-0-0-0-95),
+    0 2px 2px var(--u-x-rgba-0-0-0-0-8);
 }
 .dmg-layer .dmg.hurt {
-  color: #ff6a58;
+  color: var(--u-x-hff6a58);
   font-size: calc(22px * var(--s));
 }
 .dmg-layer .dmg.heal {
-  color: #7fe3d0;
+  color: var(--u-focus);
   font-size: calc(18px * var(--s));
 }
 .dmg-layer .dmg.other {
-  color: #cfd6dc;
+  color: var(--u-x-hcfd6dc);
   font-size: calc(14px * var(--s));
   opacity: 0.85;
 }

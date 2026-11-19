@@ -29,16 +29,16 @@
   transform: translate3d(calc(var(--sx) * var(--k) * 1px), calc(var(--sy) * var(--k) * 0.5px), 0);
 }
 .u2s-far {
-  -webkit-mask-image: linear-gradient(#000 0, #000 36%, transparent 54%);
-  mask-image: linear-gradient(#000 0, #000 36%, transparent 54%);
+  -webkit-mask-image: linear-gradient(var(--u-x-h000) 0, var(--u-x-h000) 36%, transparent 54%);
+  mask-image: linear-gradient(var(--u-x-h000) 0, var(--u-x-h000) 36%, transparent 54%);
 }
 .u2s-mid {
-  -webkit-mask-image: linear-gradient(transparent 26%, #000 42%, #000 60%, transparent 74%);
-  mask-image: linear-gradient(transparent 26%, #000 42%, #000 60%, transparent 74%);
+  -webkit-mask-image: linear-gradient(transparent 26%, var(--u-x-h000) 42%, var(--u-x-h000) 60%, transparent 74%);
+  mask-image: linear-gradient(transparent 26%, var(--u-x-h000) 42%, var(--u-x-h000) 60%, transparent 74%);
 }
 .u2s-near {
-  -webkit-mask-image: linear-gradient(transparent 56%, #000 74%);
-  mask-image: linear-gradient(transparent 56%, #000 74%);
+  -webkit-mask-image: linear-gradient(transparent 56%, var(--u-x-h000) 74%);
+  mask-image: linear-gradient(transparent 56%, var(--u-x-h000) 74%);
 }
 .u2s-front {
   mix-blend-mode: multiply;
