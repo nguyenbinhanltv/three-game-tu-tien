@@ -38,6 +38,8 @@ export interface Flags {
   jog: number;
   /** `?v3anim=0` về hệ animation cũ của v3 (so video trước/sau). */
   v3Anim: boolean;
+  /** `?v3feet=0` tắt IK chân bám đất + bước chân xoay tại chỗ của v3 (so video trước/sau). */
+  v3Feet: boolean;
   /** `?armfit=<độ>` ghi đè góc bù dang tay của v3 (null = mặc định theo model). */
   armFit: number | null;
   /** `?v3pal=0` tắt bảng màu nhuộm v3. */
@@ -90,6 +92,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   v3model: { scope: 'test', doc: '=a bản Lạc Kiếm v3 cũ' },
   jog: { scope: 'test', doc: 'tốc độ clip chạy v3' },
   v3anim: { scope: 'test', doc: '=0 hệ animation v3 cũ' },
+  v3feet: { scope: 'test', doc: '=0 tắt IK chân bám đất + bước chân xoay tại chỗ của v3' },
   armfit: { scope: 'test', doc: 'góc bù dang tay v3 (độ)' },
   v3pal: { scope: 'test', doc: '=0 tắt nhuộm v3' },
   ual: { scope: 'test', doc: '=0 tắt clip UAL' },
@@ -150,6 +153,7 @@ export function readFlags(search: string): Flags {
     v3Model: q.get('v3model'),
     jog: Number(q.get('jog')) || 0,
     v3Anim: !off(q.get('v3anim')),
+    v3Feet: !off(q.get('v3feet')),
     armFit: q.get('armfit') === null || Number.isNaN(Number(q.get('armfit'))) ? null : Number(q.get('armfit')),
     v3Palette: !off(q.get('v3pal')),
     ual: !off(q.get('ual')),

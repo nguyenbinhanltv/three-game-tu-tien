@@ -103,4 +103,27 @@ Vị trí bàn chân trụ (xương `ball_*`, lúc bàn chân thấp hơn mốc 
 
 Trong game (7 m/s, chạy ≈ 60% chạy nhanh + 40% chạy): đi lùi trượt như đi tới; đi ngang khoảng 6–9% sải ≈ 40–60 cm/s ở 7 m/s (so với 2,7% = 19 cm/s của chạy tới). Sải của clip ngang lệch dưới 3% so với clip tới nên dùng chung bảng `LOCO` mà không nhảy nhịp khi đổi hướng.
 
-Giới hạn (nói thẳng): chạy lùi là clip chạy tới chạy ngược nên đầu gối vẫn nâng như chạy tới; chạy ngang là chân sải sang bên với mũi chân bù 40%, chưa có bước chéo chân (cross-step). Xoay chân tại chỗ chuyển sang A2 (xem trên).
+Giới hạn (nói thẳng): chạy lùi là clip chạy tới chạy ngược nên đầu gối vẫn nâng như chạy tới; chạy ngang là chân sải sang bên với mũi chân bù 40%, chưa có bước chéo chân (cross-step). Xoay chân tại chỗ làm ở A2 (mục dưới).
+
+
+Ghi chú sau duyệt A1: bước ngang đã giảm khom (`STRAFE_UPRIGHT` = 0,6: xoay ngược 60% độ ngả thân của clip chạy tới). Dang chân rộng là hệ quả của hông xoay 90°: thử 75° làm trượt chân ngang tăng từ 6–9% lên 31–35% nên giữ 90°.
+
+## NV3-A2: IK chân bám dốc + xoay tại chỗ (`mannequinFeet.ts`, `?v3feet=0` tắt để so)
+
+Chạy sau mixer, chỉ LOD0 trong khung nhìn, đứng trên đất (không chết/ngồi/thiền/bay/nhảy):
+
+- **Bám dốc/bậc**: đo cổ chân của clip → chênh độ cao mặt đất dưới từng chân so với dưới thân → hạ hông (nâng tối đa 40% mức hạ) và IK hai đốt (`solveLeg` của `ikpose.ts`, chuyển từ Mixamo sang xương `pelvis/thigh/calf/foot`). Độ cao mặt đất qua tham số `ground` (mặc định `groundAt` địa hình); khi COL-1 có mặt đi được hiệu dụng chỉ cần truyền vào, không sửa chỗ khác. Chưa nối vì COL-1 mới có lõi (C-1), chưa có API `groundAt` hiệu dụng.
+- **Xoay tại chỗ**: đứng yên thì mỗi bàn chân khóa trong thế giới (vị trí + hướng, đã chiếu theo mặt đất). Thân xoay lệch quá ~40° (hoặc chỗ khóa xa chỗ clip muốn quá 0,3 m) thì chân lệch nhất nhấc lên bước (0,26 s, cung 7 cm) tới tư thế mới rồi khóa lại; mỗi lúc một chân, nghỉ 0,1 s. Chân khóa nên trượt chân bằng 0 theo cách dựng (không bake bước tại chỗ, xem A1). Đòn/chiêu/trúng đòn và khi đi thì không khóa.
+
+### Số đo (`pnpm shots chrv3anim --group feet`, dốc 0,39 ≈ 21°, đứng yên; cổ chân cách mặt đất dưới nó, trung bình 8 mẫu)
+
+| | trái | phải | chênh hai chân |
+| --- | --- | --- | --- |
+| nam, đất phẳng (mốc) | 0,206 | 0,204 | 0,002 |
+| nam, dốc, IK tắt | 0,287 | 0,145 | **0,142** |
+| nam, dốc, IK bật | 0,216 | 0,208 | **0,009** |
+| nữ, đất phẳng (mốc) | 0,133 | 0,131 | 0,002 |
+| nữ, dốc, IK tắt | 0,213 | 0,072 | **0,141** |
+| nữ, dốc, IK bật | 0,140 | 0,132 | **0,007** |
+
+Hông hạ ~7,6 cm trên dốc. Giới hạn: chưa tính bàn chân nghiêng theo mặt dốc (giữ hướng clip); bậc thang đợi COL-1; bước chân khi xoay chưa có clip nâng đầu gối riêng (chỉ cung cổ chân).

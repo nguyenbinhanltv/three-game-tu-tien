@@ -31,6 +31,7 @@ import {
   turnLagOf,
   xfade,
 } from './mannequinAnim';
+import { MqFeet } from './mannequinFeet';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import type { AnimState, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
 import { FLAGS } from '../../base/flags';
@@ -380,6 +381,8 @@ export class MannequinCharacter implements CharacterView {
   private mix = { walk: 0, jog: 1, sprint: 0 };
   /** Trọng số bốn hướng đi (làm mượt) và dải/hướng của từng action đi-chạy (A1: đi lùi, đi ngang, chéo). */
   private dir: DirMix = { f: 1, b: 0, l: 0, r: 0 };
+  /** Chân bám đất + bước chân khi xoay tại chỗ (A2); null với bóng hoặc asset thiếu xương chân. */
+  private feet: MqFeet | null = null;
   private lowerPick: THREE.AnimationAction | null = null;
   private locoKey = new Map<THREE.AnimationAction, { band: LocoBand; dir: LocoDirKey }>();
   /** Đòn UAL dự phòng chỉ nửa trên khi đang chạy; chân theo clip nền (nửa dưới). */
@@ -497,6 +500,7 @@ export class MannequinCharacter implements CharacterView {
       this.bladeLen = sword.info.len;
       this.mountBlade(false);
     }
+    if (V3_ANIM && !shadow && FLAGS.v3Feet) this.feet = MqFeet.from(this.rig, this.root, tpl.height);
     this.inner.add(this.rig);
     this.root.add(this.inner);
     this.mixer = new THREE.AnimationMixer(this.rig);
@@ -933,6 +937,13 @@ export class MannequinCharacter implements CharacterView {
       t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
     }
     if (V3_ANIM && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
+    if (this.feet) {
+      if (this.lodLevel === 0 && this.inner.visible) {
+        const active = this.grounded && !a.dead && !a.meditating && this.baseName !== 'Sitting_Idle_Loop';
+        // Khóa chân chỉ khi đứng yên thật: đòn/chiêu/trúng đòn có chân tự di chuyển trong clip.
+        this.feet.update(this.acc, { active, standing: a.speed < 0.3 && !this.perf && !this.shot });
+      } else this.feet.release();
+    }
     const drawNow = this.combatT > 0 || !!a.combat;
     if (drawNow !== this.drawn) this.mountBlade(drawNow);
     // Lò xo vạt: chỉ LOD0 và trong khung nhìn; ma trận thế giới của xương phải mới (root vừa được đặt vị trí).
