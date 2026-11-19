@@ -257,6 +257,16 @@
         "shadowAmount": 0.32, "highlightAmount": 0.3,
         "blackLift": "#1A1612", "contrast": 1.22, "saturation": 0.82, "exposure": 1.02
       },
+      "kn": {
+        "label": "Kính Nguyệt Cung — điện gương, trăng bạc, chàm sâu",
+        "sunColor": "#CFE0FF", "sunIntensity": 2.3, "sunElevationDeg": 60,
+        "skyColor": "#222E52", "skyIntensity": 0.7,
+        "fogColor": "#121A30", "fogDensity": 0.0011, "heightFogTop": 14, "heightFogBoost": 2.2,
+        "fogHaze": 0.0008, "fogHazeStart": 80, "fogScatter": 0.6, "rim": 1.1,
+        "shadowTint": "#0E1830", "highlightTint": "#DCE8FF", "splitBalance": -0.1,
+        "shadowAmount": 0.35, "highlightAmount": 0.3,
+        "blackLift": "#101830", "contrast": 1.2, "saturation": 0.8, "exposure": 0.95
+      },
       "vh_dawn": {
         "label": "Vân Hải — bình minh lam bạc",
         "sunColor": "#FFD2B0", "sunIntensity": 3.2, "sunElevationDeg": 12,

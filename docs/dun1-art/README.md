@@ -5,8 +5,9 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 | PR | Bí cảnh | Trạng thái |
 | --- | --- | --- |
 | 1 | Kiếm Trủng (`kiem_trung`) | đã merge (#327) |
-| 2 | Phục Mạch Quật (`phuc_mach`) | PR này |
-| tiếp | Kính Nguyệt, Thần Tàng, Kim Dạ Cung, Xích Tẫn Khích, Độ Kiếp (+ Bắc Hoang) | chưa làm |
+| 2 | Phục Mạch Quật (`phuc_mach`) | đã duyệt hình (#328) |
+| 3 | Kính Nguyệt Cung (`kinh_nguyet`) | PR này |
+| tiếp | Thần Tàng, Kim Dạ Cung, Xích Tẫn Khích, Độ Kiếp (+ Bắc Hoang) | chưa làm |
 
 ## PR 1: Kiếm Trủng — nghĩa địa kiếm cổ
 
@@ -50,3 +51,12 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Đường ray và đồ mỏ**: vòng ray r=72 (31 đoạn) nối các cửa hầm, 5 giá tời (khung chữ A, trống quấn dây, ròng rọc, thùng treo), 6 xe goòng trên ray, 46 cột chống gỗ dọc chân vách, đống quặng + thùng + xe; bỏ hàng khung gỗ chắn lối vào (camera sau lưng người chơi bị che).
 - **Ngân sách (preset Cao)**: ~250 draw call, ~1,06M tam giác; file `arch_phuc_mach` ~10 MB.
 - **Còn lại**: đống quặng còn tròn trịa như nấm đất; mạng mạch sàn hơi rộng; vách mới là phiến tròn xếp tầng (chưa triplanar).
+
+## PR 3: Kính Nguyệt Cung — điện gương trăng bạc
+
+- **Bảng màu** `kn` (chàm sâu, trăng bạc lạnh, một thời điểm cố định). Vòm `buildMoonDomeShell` (r 135 / h 80, ngoài vùng đi lại 90): chàm tối dần lên cao, trăng sáng + quầng ở phía bắc cao ~50°, 520 sao li ti (`Points` cộng sáng), quầng quanh hai khe hở trần; hai tia trăng rọi qua khe hở.
+- **Sàn gương** (`buildMirrorFloorKn`, shader TSL, thay sàn canvas cũ): nền chàm đen, vệt phản chiếu trăng kéo dài (lệch theo gợn), gợn nước nhiễu trôi, khảm bạc (hai vòng quanh đài chiến r 57/59,5, vòng r 20 và r 40, 9 cánh hoa); đĩa r 112 bám địa hình (phẳng ±3 m).
+- **GLB Blender** `arch_kinh_nguyet` (`tools/blender/kinh_nguyet_arch.py`, dựng trên bộ Kiếm Trủng; client `loadKnModel` → `loadDungeonModel`): 17 nhịp hàng cột ngọc sáo + đầu cột cánh sen + vòm nhọn + khung bạc + gương treo (r 100, cao ~44), vòng gương trăng khổng lồ phía bắc (đường kính 26 m trên bệ bậc), 34 mảnh gương cắm nghiêng + 44 mảnh lơ lửng, 48 dây chuông gương treo trần, 70 cụm mảnh gương vỡ, 2 chậu sen. Vật liệu gương `knMaterialFor`: phát sáng theo màu đỉnh (vệt chéo) + fresnel viền.
+- `DungeonFx` dùng lại (sương bạc thấp). Sàn/hall/vỏ cũ của cung gương (`buildMirrorFloor`, `buildPalaceHall`) chỉ còn dùng cho Thần Tàng.
+- **Ngân sách (preset Cao)**: ~110 draw call, ~0,39M tam giác (trước 61 / 0,29M). File `arch_kinh_nguyet` ~6 MB.
+- **Còn lại**: gương còn giống tinh thể phẳng xanh (chưa có phản chiếu giả theo hướng nhìn); tổng thể còn một tông xanh chàm, thiếu điểm ấm; hàng cột còn lộ phần cột texture gạch đá.
