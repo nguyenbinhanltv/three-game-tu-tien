@@ -144,6 +144,14 @@ export default {
         ...(level === 'van_lam' && groups.includes('hoang_da')
           ? [viewClear(level, 'van_lam-hoang_da-rung', 2470, 2022, ['tre', 'cay_co_thu'])].filter((v): v is View => !!v)
           : []),
+        ...(level === 'bac_hoang' && groups.includes('di_vuc')
+          ? [
+              viewAround(level, 'di_vuc', 'bac_hoang-di_vuc-rift', 1000, 881, 28),
+              viewAround(level, 'di_vuc', 'bac_hoang-di_vuc-trai', 1500, 598, 28),
+            ]
+              .filter((v): v is View => !!v)
+              .map((v) => ({ ...v, pitch: 0.5, dist: 13 }))
+          : []),
         ...(EXTRA[level] ?? []).filter((e) => groups.includes(e.group)).map((e) => e.view),
       ];
       if (!views.length) continue;
@@ -153,15 +161,17 @@ export default {
           renderer: opt('--renderer', 'webgpu'),
           quality: 'high',
           viewport: [w, h],
-          extra: mode === 'truoc' ? 'tc=0' : '',
+          extra: `${mode === 'truoc' ? 'tc=0&' : ''}mood=${opt('--mood', 'day')}&aura=0`,
           warnings: true,
         });
-        await gm(page, `level ${level === 'van_lam' ? 15 : Math.max(27, lv.minLevel ?? 0)}`);
+        await gm(page, `level ${level === 'van_lam' ? 15 : Math.max(27, lv.minLevel ?? 0)}`); // cảnh giới thấp: không hào quang/pháp tướng che prop
         await gm(page, 'god on');
         if (level !== 'van_lam') await enterLevel(page, level);
+        if (level === 'bac_hoang') await gm(page, 'level 15', 1500); // vào xong mới hạ cảnh giới: không pháp tướng che prop
         for (const v of views) {
           await tp(page, v.x, v.z);
-          await gm(page, 'killall', 1200);
+          await gm(page, 'killall', 1500);
+          await gm(page, 'killall', 1500); // hai lần: quái hồi sinh/đang đánh làm che prop trong ảnh duyệt
           await cam(page, { yaw: v.yaw, pitch: v.pitch ?? 0.42, dist: v.dist ?? 16 }); // cao và xa hơn: tránh camera chui vào tán cây to
           await snap(page, r.out, `${v.name}-${mode}-${w}x${h}.png`, { wait: settleMs() });
           perf[`${v.name}-${mode}`] = await perfSample(page);

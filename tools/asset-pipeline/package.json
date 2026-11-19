@@ -11,7 +11,8 @@
     "minimap": "tsx src/minimap.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "colliders": "tsx src/collider.ts"
+    "colliders": "tsx src/collider.ts",
+    "colliders:arch": "tsx src/archcollider.cli.ts"
   },
   "dependencies": {
     "@dtl/content": "workspace:*",
