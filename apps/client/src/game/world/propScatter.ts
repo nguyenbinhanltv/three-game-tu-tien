@@ -9,7 +9,7 @@ import {
   tribSealPos,
   propsOf,
   terrainOf,
-  COLLIDERS,
+  COLLIDERS_LAYOUT,
   DUNGEON_EXIT,
   featureWeight,
   FOREST,
@@ -135,7 +135,7 @@ function build(): PropInstance[] {
       if (onPath(x, z)) continue;
       let bad = false;
       for (const c of KEEP_CLEAR) if ((x - c.x) ** 2 + (z - c.z) ** 2 < c.r * c.r) bad = true;
-      for (const c of COLLIDERS) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 2 + (o.pad ?? 0)) ** 2) bad = true;
+      for (const c of COLLIDERS_LAYOUT) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 2 + (o.pad ?? 0)) ** 2) bad = true;
       const g = o.gap ?? 2;
       for (const m of mine) if ((x - m.x) ** 2 + (z - m.z) ** 2 < g * g) bad = true;
       if (bad) continue;
@@ -283,7 +283,7 @@ function scatterTrees(out: PropInstance[]): void {
         if (onPath(x, z)) continue;
         let bad = false;
         for (const c of KEEP_CLEAR) if ((x - c.x) ** 2 + (z - c.z) ** 2 < c.r * c.r) bad = true;
-        for (const c of COLLIDERS) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 5) ** 2) bad = true;
+        for (const c of COLLIDERS_LAYOUT) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 5) ** 2) bad = true;
         for (const b of big) if ((x - b.x) ** 2 + (z - b.z) ** 2 < (7 * b.s + 5) ** 2) bad = true;
         if (bad) continue;
         const [s0, s1] = TREE_SCALE[id]!;
