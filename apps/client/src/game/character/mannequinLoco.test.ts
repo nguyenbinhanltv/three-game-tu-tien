@@ -62,7 +62,12 @@ describe('MannequinCharacter: đi lùi / ngang / chéo (A1)', () => {
       new THREE.AnimationClip(name, 1, [
         new THREE.QuaternionKeyframeTrack('spine_02.quaternion', [0, 1], [0, 0, y, Math.sqrt(1 - y * y), 0, 0, y, Math.sqrt(1 - y * y)]),
       ]);
-    const tpl = { bank: null, height: 1.8, clips: new Map(names.map((n, i) => [n, clip(n, i * 0.05)])), handle: { scene } } as unknown as MannequinTemplate;
+    const tpl = {
+      bank: null,
+      height: 1.8,
+      clips: new Map(names.map((n, i) => [n, clip(n, i * 0.05)])),
+      handle: { scene },
+    } as unknown as MannequinTemplate;
     return new MannequinCharacter(tpl);
   }
   const weightsByName = (m: MannequinCharacter): Record<string, number> => {

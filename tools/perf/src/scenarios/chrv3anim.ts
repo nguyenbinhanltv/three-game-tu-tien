@@ -255,7 +255,9 @@ export default {
           locoSit('lùi + chém', ['KeyW'], true),
         ];
         const pick = list('--sit', '')[0];
-        const chosen = (group === 'base' ? sits : group === 'loco' ? locoSits : [...sits, ...locoSits]).filter((x) => !pick || x.name.includes(pick));
+        const chosen = (group === 'base' ? sits : group === 'loco' ? locoSits : [...sits, ...locoSits]).filter(
+          (x) => !pick || x.name.includes(pick),
+        );
         const marks: { name: string; at: number }[] = [];
         await hold(FRONT, 350); // quay mặt về phía camera
         await sleep(700);
@@ -277,7 +279,9 @@ export default {
           })();
           await sit.run();
           const pr = await probe;
-          console.log(`[shots:chrv3anim] ${tag} · ${sit.name}: góc ${pr.ang === undefined ? '—' : ((pr.ang * 180) / Math.PI).toFixed(0) + '°'}, tốc độ ${pr.spd?.toFixed(1)}, mục tiêu ${pr.tgt || 'không'}, facing ${pr.fac?.toFixed(2)}, camYaw ${pr.cam.toFixed(2)}`);
+          console.log(
+            `[shots:chrv3anim] ${tag} · ${sit.name}: góc ${pr.ang === undefined ? '—' : ((pr.ang * 180) / Math.PI).toFixed(0) + '°'}, tốc độ ${pr.spd?.toFixed(1)}, mục tiêu ${pr.tgt || 'không'}, facing ${pr.fac?.toFixed(2)}, camYaw ${pr.cam.toFixed(2)}`,
+          );
           await sleep(500);
         }
         if (pen) {

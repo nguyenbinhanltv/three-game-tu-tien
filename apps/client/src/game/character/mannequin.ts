@@ -558,7 +558,10 @@ export class MannequinCharacter implements CharacterView {
     if (this.loco) {
       this.locoKey.set(next, { band: 'jog', dir: 'f' });
       // Thứ tự cố định: đi, chạy nhanh, rồi lùi/ngang của từng dải (thiếu clip trong asset thì bỏ qua, quay về clip tới).
-      const want: [LocoBand, LocoDirKey][] = [['walk', 'f'], ['sprint', 'f']];
+      const want: [LocoBand, LocoDirKey][] = [
+        ['walk', 'f'],
+        ['sprint', 'f'],
+      ];
       for (const band of ['jog', 'walk', 'sprint'] as const) for (const d of ['b', 'l', 'r'] as const) want.push([band, d]);
       for (const [band, d] of want) {
         const c = this.action(locoClipName(band, d));
