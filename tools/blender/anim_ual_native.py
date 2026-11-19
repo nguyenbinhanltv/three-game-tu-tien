@@ -8,6 +8,9 @@ import sys
 
 import bpy
 
+sys.path.insert(0, __import__('os').path.dirname(__import__('os').path.abspath(__file__)))
+import ual_loco  # noqa: E402 clip đi lùi/ngang dựng thủ tục (A1)
+
 argv = sys.argv[sys.argv.index('--') + 1:]
 OUT = argv[0]
 SRC1 = argv[argv.index('--src') + 1]
@@ -58,14 +61,28 @@ A1.animation_data.action = None
 for t in list(A1.animation_data.nla_tracks):
     A1.animation_data.nla_tracks.remove(t)
 info = {}
+picked = []
 for lib, name in CLIPS:
     act = find(acts1 if lib == 1 else acts2, name)
     act.name = name
     act.use_fake_user = True
+    picked.append((name, act, lib))
+# Đi lùi / đi ngang (A1): dựng từ Walk/Jog/Sprint trước khi tạo NLA (action đang gán không bị NLA làm nhiễu).
+LOCO_NEW, LOCO_REPORT = ual_loco.build(A1, {n: a for n, a, _ in picked})
+for name, act, lib in picked:
     tr = A1.animation_data.nla_tracks.new()
     tr.name = name
     tr.strips.new(name, int(act.frame_range[0]), act)
     info[name] = {'lib': lib, 'sec': round((act.frame_range[1] - act.frame_range[0]) / 30, 3)}
+for name in LOCO_NEW:
+    act = bpy.data.actions[name]
+    tr = A1.animation_data.nla_tracks.new()
+    tr.name = name
+    tr.strips.new(name, int(act.frame_range[0]), act)
+    info[name] = {'lib': 'procedural', 'sec': round((act.frame_range[1] - act.frame_range[0]) / 30, 3)}
+if '--report' in argv:
+    with open(argv[argv.index('--report') + 1], 'w', encoding='utf8') as fh:
+        json.dump(LOCO_REPORT, fh, ensure_ascii=False, indent=1)
 for a in list(bpy.data.actions):
     if a.name not in info:
         bpy.data.actions.remove(a)

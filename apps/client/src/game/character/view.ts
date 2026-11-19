@@ -18,6 +18,8 @@ export interface AnimState {
   combat?: boolean;
   /** Hướng đi so với hướng nhìn (K-4): đi lùi/ngang khi nhân vật nhìn mục tiêu. Bỏ trống = đi tới. */
   moveDir?: LocoDir;
+  /** Góc hướng đi so với hướng nhìn (rad, 0 = tới, +π/2 = trái, ±π = lùi), liên tục: nhân vật v3 trộn 8 hướng. Bỏ trống = 0. */
+  moveAngle?: number;
   /** Điểm nhìn (thế giới) của mục tiêu đang chọn: nhân vật v3 quay đầu nhìn theo, giới hạn góc. */
   lookAt?: { x: number; y: number; z: number };
   /** Boss bị ngắt chú hoặc mất thế (cờ MF_STUN). */
