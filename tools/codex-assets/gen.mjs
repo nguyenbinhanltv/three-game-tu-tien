@@ -85,9 +85,10 @@ const all =
       : { ...read(`${group}.json`), ...(fs.existsSync(path.join(here, `${group}.pending.json`)) ? read(`${group}.pending.json`) : {}) }; // *.pending.json: id chưa có trên main, chỉ sinh ảnh (build.mjs không đọc)
 const todo = (ids.length ? ids : Object.keys(all)).filter((id) => {
   if (!all[id]) throw new Error(`Không có chủ thể: ${id}`);
-  return force || !fs.existsSync(path.join(source, '2d', group, `${id}.png`));
+  return force || !fs.existsSync(path.join(source, '2d', GROUP_DIR[group] ?? group, `${id}.png`));
 });
-const outDir = path.join(source, '2d', group);
+const GROUP_DIR = { icons: 'icon/v1', portraits: 'chan-dung/portraits', loading: 'nen/loading', layers: 'nen/layers', ui: 'ui/ui', concepts: 'concept/quai-prop', outfit: 'concept/outfit' }; // nhóm → thư mục dưới 2d/ (cây nguồn mới)
+const outDir = path.join(source, '2d', GROUP_DIR[group] ?? group);
 fs.mkdirSync(outDir, { recursive: true });
 console.log(`${group}: ${todo.length}/${Object.keys(all).length} ảnh, ${jobs} luồng → ${outDir}`);
 

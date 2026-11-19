@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/mon_co_thanh_chien_ma/tripo/rig_v01.glb",
+    "source": "3d/quai/mon_co_thanh_chien_ma/tripo/rig_v01.glb",
     "size": {
       "height": 2.6
     },

@@ -51,7 +51,7 @@ const procedural = [
   { id: 'arch_kiem_trung', script: 'tools/blender/kiem_trung_arch.py' },
   { id: 'arch_phuc_mach', script: 'tools/blender/phuc_mach_arch.py' },
   // Lưới Tripo v02 (task 70d2072c), tô màu theo vùng bằng script vì texture Tripo mất màu (M0-3).
-  { id: 'prop_phi_kiem', script: 'tools/blender/recolor_phi_kiem.py', source: 'prop/prop_phi_kiem/tripo/raw_v02.glb' },
+  { id: 'prop_phi_kiem', script: 'tools/blender/recolor_phi_kiem.py', source: '3d/vu-khi/prop_phi_kiem/tripo/raw_v02.glb' },
   // Thư viện clip Quaternius UAL1+UAL2 (CC0): `source` = UAL1, `source2` = UAL2 (truyền `--src2`), xem anim_human_ual.py.
   {
     id: 'anim_human_ual',
@@ -64,7 +64,7 @@ const procedural = [
   ...['nam', 'nu'].map((g) => ({
     id: `chr_v3_lac_kiem_${g}`,
     script: 'tools/blender/chr_v3.py',
-    source: `chr/set_lac_kiem/tripo/raw_v3_${g}.glb`,
+    source: `3d/nhan-vat/set_lac_kiem/tripo/raw_v3_${g}.glb`,
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: [
       '--id',
@@ -80,7 +80,7 @@ const procedural = [
   ...['nam', 'nu'].map((g) => ({
     id: `chr_v3b_lac_kiem_${g}`,
     script: 'tools/blender/chr_v3.py',
-    source: `chr/set_lac_kiem/tripo/raw_v3b_${g}.glb`,
+    source: `3d/nhan-vat/set_lac_kiem/tripo/raw_v3b_${g}.glb`,
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: [
       '--id',
@@ -96,7 +96,7 @@ const procedural = [
   ...['nam', 'nu'].map((g) => ({
     id: `chr_v3b2_lac_kiem_${g}`,
     script: 'tools/blender/chr_v3.py',
-    source: `chr/set_lac_kiem/tripo/raw_v3b_${g}.glb`,
+    source: `3d/nhan-vat/set_lac_kiem/tripo/raw_v3b_${g}.glb`,
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: [
       '--id',
@@ -111,66 +111,66 @@ const procedural = [
   {
     id: 'chr_v3_varkessa_nu',
     script: 'tools/blender/chr_v3.py',
-    source: 'chr/skin_varkessa/prep/rig_v01.glb',
+    source: '3d/skin/skin_varkessa/prep/rig_v01.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'chr_v3_varkessa_nu'],
   },
   {
     id: 'chr_v3_duskrella_nu',
     script: 'tools/blender/chr_v3.py',
-    source: 'chr/skin_duskrella/prep/rig_v01.glb',
+    source: '3d/skin/skin_duskrella/prep/rig_v01.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'chr_v3_duskrella_nu', '--height', '1.8'],
   },
   {
     id: 'chr_v3_crimson_nam',
     script: 'tools/blender/chr_v3.py',
-    source: 'chr/skin_crimson/prep/rig_v01.glb',
+    source: '3d/skin/skin_crimson/prep/rig_v01.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'chr_v3_crimson_nam', '--height', '1.9'],
   },
   {
     id: 'chr_v3_noxavyra_nu',
     script: 'tools/blender/chr_v3.py',
-    source: 'chr/skin_noxavyra/prep/rig_v01.glb',
+    source: '3d/skin/skin_noxavyra/prep/rig_v01.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'chr_v3_noxavyra_nu', '--height', '1.8'],
   },
   {
     id: 'chr_v3_kings_demon_nu',
     script: 'tools/blender/chr_v3.py',
-    source: 'chr/skin_kings_demon/prep/rig_v01.glb',
+    source: '3d/skin/skin_kings_demon/prep/rig_v01.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'chr_v3_kings_demon_nu', '--height', '1.8'],
   },
   {
     id: 'chr_v3_korvaden_nam',
     script: 'tools/blender/chr_v3.py',
-    source: 'chr/skin_korvaden/prep/rig_v01.glb',
+    source: '3d/skin/skin_korvaden/prep/rig_v01.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'chr_v3_korvaden_nam', '--height', '2.0'],
   },
   {
     id: 'chr_v3_shadow_wolf_nam',
     script: 'tools/blender/chr_v3.py',
-    source: 'chr/skin_shadow_wolf/prep/rig_v01.glb',
+    source: '3d/skin/skin_shadow_wolf/prep/rig_v01.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'chr_v3_shadow_wolf_nam', '--height', '1.9'],
   },
   // Quái hai chân Dị Vực (DV-2 đợt 2): bản điêu khắc CC BY → `skin_prep.py --stage bake` (cấu hình tools/blender/skins/dv2_*.json) → lưới thấp
-  // không xương `mon/<id>/prep/bake.glb` (thư mục nguồn ngoài repo hoặc thư mục làm việc: `DTL_ASSET_SOURCE=<thư mục>`) → chr_v3.py đặt lên xương Mannequin.
+  // không xương `3d/quai/<id>/prep/bake.glb` (thư mục nguồn ngoài repo hoặc thư mục làm việc: `DTL_ASSET_SOURCE=<thư mục>`) → chr_v3.py đặt lên xương Mannequin.
   // Hai con không chữ A khai mốc `--landmarks` và vùng cứng `--bind` (vũ khí/khiên/áo choàng đi theo một xương).
   {
     id: 'mon_tan_chung',
     script: 'tools/blender/chr_v3.py',
-    source: 'mon/mon_tan_chung/prep/bake.glb',
+    source: '3d/quai/mon_tan_chung/prep/bake.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'mon_tan_chung', '--auto', '--height', '2.2', '--tris', '9000'],
   },
   {
     id: 'mon_giac_kiem_trong_binh',
     script: 'tools/blender/chr_v3.py',
-    source: 'mon/mon_giac_kiem_trong_binh/prep/bake.glb',
+    source: '3d/quai/mon_giac_kiem_trong_binh/prep/bake.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: [
       '--id',
@@ -188,7 +188,7 @@ const procedural = [
   {
     id: 'elite_hoi_giac_cu_thu',
     script: 'tools/blender/chr_v3.py',
-    source: 'mon/elite_hoi_giac_cu_thu/prep/bake.glb',
+    source: '3d/quai/elite_hoi_giac_cu_thu/prep/bake.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: [
       '--id',
@@ -207,7 +207,7 @@ const procedural = [
   {
     id: 'boss_tan_hoa_kiem_co',
     script: 'tools/blender/chr_v3.py',
-    source: 'boss/boss_tan_hoa_kiem_co/prep/bake.glb',
+    source: '3d/boss/boss_tan_hoa_kiem_co/prep/bake.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: [
       '--id',
@@ -225,7 +225,7 @@ const procedural = [
   {
     id: 'boss_kim_da_ma_hau',
     script: 'tools/blender/chr_v3.py',
-    source: 'boss/boss_kim_da_ma_hau/prep/bake.glb',
+    source: '3d/boss/boss_kim_da_ma_hau/prep/bake.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: [
       '--id',
@@ -244,7 +244,7 @@ const procedural = [
   {
     id: 'boss_thu_khich_duc_chu',
     script: 'tools/blender/chr_v3.py',
-    source: 'boss/boss_thu_khich_duc_chu/prep/bake.glb',
+    source: '3d/boss/boss_thu_khich_duc_chu/prep/bake.glb',
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: [
       '--id',

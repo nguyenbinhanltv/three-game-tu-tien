@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/elite_ho_mach_khoi_tuong/tripo/rig_v01.glb",
+    "source": "3d/quai/elite_ho_mach_khoi_tuong/tripo/rig_v01.glb",
     "size": {
       "height": 3
     },

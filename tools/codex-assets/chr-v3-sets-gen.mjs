@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // CHR-V3 hàng loạt: concept NHÂN VẬT NGUYÊN KHỐI CÓ MẶT theo từng bộ (v3-sets-data.mjs), nam và nữ, trước/sau/nghiêng, tư thế chữ A, kiểu v3b.
-// Ra: <DTL_ASSET_SOURCE>/chr/<thư mục bộ>/concept/v3_<nam|nu>_<front|back|side>.png + .prompt.txt (chỉ THÊM file mới, không ghi đè).
+// Ra: <DTL_ASSET_SOURCE>/3d/nhan-vat/<thư mục bộ>/concept/v3_<nam|nu>_<front|back|side>.png + .prompt.txt (chỉ THÊM file mới, không ghi đè).
 // Dùng: node tools/codex-assets/chr-v3-sets-gen.mjs [--sets set_de_tu,set_huyen_giap] [--jobs 3] [--force]. Codex tích hợp công cụ ảnh, không dùng Tripo API/credit.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -42,7 +42,7 @@ const todo = [];
 for (const id of only) {
   const set = V3_SETS[id];
   if (!set) throw new Error(`không có bộ ${id} trong v3-sets-data.mjs`);
-  const dir = path.join(source, 'chr', set.folder, 'concept');
+  const dir = path.join(source, '3d', 'nhan-vat', set.folder, 'concept');
   fs.mkdirSync(dir, { recursive: true });
   for (const g of Object.keys(set.who))
     for (const v of Object.keys(VIEW)) todo.push({ dir, name: `v3_${g}_${v}`, prompt: A(prompt(set, g, v)) });

@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "mon/mon_ngo_cong_au/tripo/rig_v01.glb",
+    "source": "3d/quai/mon_ngo_cong_au/tripo/rig_v01.glb",
     "size": {
       "longest": 2.4
     },

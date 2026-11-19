@@ -1,6 +1,6 @@
 """Hoa Trúc: đóng gói tranh Codex (nền magenta phẳng) thành WebP có alpha / nền ở apps/client/public/hoa-truc.
 
-Chạy: python tools/hoa-truc/build.py [thư mục nguồn]   (mặc định D:/METAGRIT/dtl-asset-source/portrait/hoa_truc hoặc $DTL_ASSET_SOURCE/portrait/hoa_truc)
+Chạy: python tools/hoa-truc/build.py [thư mục nguồn]   (mặc định D:/METAGRIT/dtl-asset-source/2d/hoa-truc/hoa_truc hoặc $DTL_ASSET_SOURCE/2d/hoa-truc/hoa_truc)
 - nhân vật / kiếm: tách nền magenta (khoảng cách màu + làm mềm viền, khử viền hồng), cắt theo khung chữ nhật, hạ cỡ, WebP alpha.
 - cảnh giới: hạ cỡ, WebP không alpha.
 Ghi thêm manifest.json (kích thước + khung nhìn của từng ảnh) cho client đọc.
@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(os.environ.get('DTL_ASSET_SOURCE', 'D:/METAGRIT/dtl-asset-source')) / 'portrait' / 'hoa_truc'
+SRC = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(os.environ.get('DTL_ASSET_SOURCE', 'D:/METAGRIT/dtl-asset-source')) / '2d' / 'hoa-truc' / 'hoa_truc'
 OUT = ROOT / 'apps/client/public/hoa-truc'
 OUT.mkdir(parents=True, exist_ok=True)
 MAG = np.array([255, 0, 255], float)

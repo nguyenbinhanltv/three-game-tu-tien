@@ -3,7 +3,7 @@
 # (mảnh nguồn chính chỉ để import_tripo có việc làm, script này tự nạp lại cả 6 mảnh gốc từ DTL_ASSET_SOURCE). Khối `import.outfit` trong meta.json:
 #
 #   player    id nhân vật đích (GLB thô assets/build/raw/<id>.glb)
-#   dir       thư mục mảnh: chr/<bộ>/tripo (tương đối DTL_ASSET_SOURCE), tên tệp raw_<mảnh>_v01.glb
+#   dir       thư mục mảnh: 3d/nhan-vat/<bộ>/tripo (tương đối DTL_ASSET_SOURCE), tên tệp raw_<mảnh>_v01.glb
 #   palette   { main, sec, trim, accent } hex: bảng màu 3 kênh + màu vân sáng; mặt nạ nhuộm sinh từ texture màu theo bảng này
 #   fitPose   { armDown: độ } tư thế tay thả của thân nền khi căn (khớp tay áo thả của mảnh; mặc định 70)
 #   gain      nhân sáng texture màu (mặc định 1)

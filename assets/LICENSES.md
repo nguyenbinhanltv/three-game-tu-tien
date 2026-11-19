@@ -21,7 +21,7 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 
 ## Chân dung 2D Codex (2026-11-16)
 
-Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`tools/codex-assets/gen.mjs portraits`, chủ thể ở `tools/codex-assets/portraits.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/portraits/<id>.png` và `<id>.prompt.txt`. Đóng gói bằng `tools/codex-assets/pack.mjs portraits` thành WebP 480×640 ở `apps/client/public/assets/art/portraits/` (nạp lười).
+Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`tools/codex-assets/gen.mjs portraits`, chủ thể ở `tools/codex-assets/portraits.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/chan-dung/portraits/<id>.png` và `<id>.prompt.txt`. Đóng gói bằng `tools/codex-assets/pack.mjs portraits` thành WebP 480×640 ở `apps/client/public/assets/art/portraits/` (nạp lười).
 
 | ID | Nguồn | Giấy phép | Ngày | Tệp |
 | --- | --- | --- | --- | --- |
@@ -38,7 +38,7 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 
 ## Icon UI M4-7
 
-Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ. Không dùng tài sản hoặc khung icon của guizang. PNG gốc ở `<DTL_ASSET_SOURCE>/icons/<id>.png`; prompt tại `docs/prompts/codex.md` mục 9, chủ thể tại `tools/icons/subjects.json`. Atlas 128px/ô: `apps/client/public/assets/ui/icons.*.webp`. Manifest lưu SHA-256 và dung lượng từng PNG nguồn.
+Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ. Không dùng tài sản hoặc khung icon của guizang. PNG gốc ở `<DTL_ASSET_SOURCE>/2d/icon/v1/<id>.png`; prompt tại `docs/prompts/codex.md` mục 9, chủ thể tại `tools/icons/subjects.json`. Atlas 128px/ô: `apps/client/public/assets/ui/icons.*.webp`. Manifest lưu SHA-256 và dung lượng từng PNG nguồn.
 
 | Asset | Nguồn | Giấy phép | Ngày | Chi tiết |
 | --- | --- | --- | --- | --- |
@@ -368,7 +368,7 @@ Cây chết, vệt nứt Giới Khích và đá/cột đổ của Bắc Hoang l�
 
 ### Âm thanh (SFX, âm môi trường)
 
-Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi để tra lại). File nguồn nằm ở `../dtl-asset-source/sfx/`, khai báo xử lý trong `tools/audio/sounds.json`. Bản build trong `apps/client/public/audio/`. Lớp kim loại tổng hợp (`synth: metal` trong sounds.json: `sfx_ascend`, `sfx_spellbreak`, `sfx_rare`) và âm chuông/lách tách đèn lồng ở client do code tự sinh, không dùng nguồn ngoài.
+Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi để tra lại). File nguồn nằm ở `../dtl-asset-source/audio/sfx/`, khai báo xử lý trong `tools/audio/sounds.json`. Bản build trong `apps/client/public/audio/`. Lớp kim loại tổng hợp (`synth: metal` trong sounds.json: `sfx_ascend`, `sfx_spellbreak`, `sfx_rare`) và âm chuông/lách tách đèn lồng ở client do code tự sinh, không dùng nguồn ngoài.
 
 | Âm | Nguồn | Giấy phép | Ngày | Chi tiết |
 | --- | --- | --- | --- | --- |
@@ -445,7 +445,7 @@ Ba font U2 do `tools/fonts/subset_u2.py` cắt (Latin + Latin mở rộng + U+1E
 
 ### Nhạc nền
 
-**Nhạc tự soạn** (Claude soạn bằng code ở `tools/audio/compose/<id>.mjs`, xuất MIDI): phát hành **CC0-1.0**. Render bằng soundfont **GeneralUser GS v2.0.3** của S. Christian Collins ([trang gốc](https://www.schristiancollins.com/generaluser.php), [repo](https://github.com/mrbumpy409/GeneralUser-GS), commit `684543d`), giấy phép *GeneralUser GS License v2.0*: “You may use GeneralUser GS without restriction for your own music creation, private or commercial … Please feel free to use it in your software projects”. Game chỉ phân phối bản âm thanh đã render, không phân phối file soundfont (file ở `../dtl-asset-source/audio/sf2/`, build tự tải theo commit ghim và kiểm SHA-256).
+**Nhạc tự soạn** (Claude soạn bằng code ở `tools/audio/compose/<id>.mjs`, xuất MIDI): phát hành **CC0-1.0**. Render bằng soundfont **GeneralUser GS v2.0.3** của S. Christian Collins ([trang gốc](https://www.schristiancollins.com/generaluser.php), [repo](https://github.com/mrbumpy409/GeneralUser-GS), commit `684543d`), giấy phép *GeneralUser GS License v2.0*: “You may use GeneralUser GS without restriction for your own music creation, private or commercial … Please feel free to use it in your software projects”. Game chỉ phân phối bản âm thanh đã render, không phân phối file soundfont (file ở `../dtl-asset-source/audio/nhac/sf2/`, build tự tải theo commit ghim và kiểm SHA-256).
 
 Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằng `tools/audio/loop.mjs`. Bản build trong `apps/client/public/audio/music/`.
 
@@ -483,7 +483,7 @@ Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằn
 
 ## Icon 2D Codex (2026-11-16)
 
-Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`tools/codex-assets/gen.mjs`, chủ thể ở `tools/codex-assets/icons.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/icons/<id>.png` và `<id>.prompt.txt`. 28 icon trang bị vẽ lại thay bản render Blender (PR #86); ID cũ giữ nguyên ô atlas.
+Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`tools/codex-assets/gen.mjs`, chủ thể ở `tools/codex-assets/icons.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/icon/v1/<id>.png` và `<id>.prompt.txt`. 28 icon trang bị vẽ lại thay bản render Blender (PR #86); ID cũ giữ nguyên ô atlas.
 
 | ID | Nguồn | Giấy phép | Ngày | Tệp |
 | --- | --- | --- | --- | --- |
@@ -730,7 +730,7 @@ SquigglyFish, https://squigglyfish.itch.io/godot-elemental-spells-vfx-sfx. Chỉ
 
 ## Icon 2D Codex v2 (U2-I, 2026-11-18)
 
-Sinh bằng công cụ ảnh tích hợp Codex (`codex exec`) cho dự án Đạp Thiên Lộ, thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. Mỗi tờ là một lưới 3×2 icon (1536×1024) cắt và căn giữa thành PNG 256 px; atlas WebP 128/64 px ở `apps/client/public/assets/ui/icons-{hud,items}.v2.*.webp`. Nguồn: `<DTL_ASSET_SOURCE>/2d/icons-v2/` (`sheets/` tờ gốc + prompt, `png256/` icon đã cắt). Danh sách tờ và prompt: `tools/icons/sheets.v2.json`.
+Sinh bằng công cụ ảnh tích hợp Codex (`codex exec`) cho dự án Đạp Thiên Lộ, thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. Mỗi tờ là một lưới 3×2 icon (1536×1024) cắt và căn giữa thành PNG 256 px; atlas WebP 128/64 px ở `apps/client/public/assets/ui/icons-{hud,items}.v2.*.webp`. Nguồn: `<DTL_ASSET_SOURCE>/2d/icon/v2/` (`sheets/` tờ gốc + prompt, `png256/` icon đã cắt). Danh sách tờ và prompt: `tools/icons/sheets.v2.json`.
 
 | Nhóm | Số icon | Nguồn |
 | --- | --- | --- |
@@ -1028,7 +1028,7 @@ Mỗi icon trong atlas (tên khóa = id icon):
 
 ## Nền sơn thủy và lớp parallax Codex (U2-4, 2026-11-18)
 
-Sinh bằng công cụ ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`codex exec`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/loading|layers/`; đóng gói bằng `node tools/codex-assets/pack.mjs loading layers` thành WebP có hash ở `apps/client/public/assets/art/`.
+Sinh bằng công cụ ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`codex exec`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/nen/loading|layers/`; đóng gói bằng `node tools/codex-assets/pack.mjs loading layers` thành WebP có hash ở `apps/client/public/assets/art/`.
 
 | Ảnh | Nguồn tạo | Tác giả | Ngày | Nguồn |
 | --- | --- | --- | --- | --- |

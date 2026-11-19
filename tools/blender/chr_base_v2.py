@@ -1,7 +1,7 @@
 # CHR-PROTO: dựng thân nền nam/nữ từ MakeHuman (MPFB2, CC0) → GLB rig Mixamo dùng như `rig_v01.glb` của Tripo cho import_tripo.py.
 # Chạy: blender --background --factory-startup --python tools/blender/chr_base_v2.py -- <nam|nu> <thư mục ra> [--tris N] [--blend]
 # Cần mã nguồn MPFB2 (git clone --depth 1 https://github.com/makehumancommunity/mpfb2) ở $MPFB_SRC (mặc định
-# <dtl-asset-source>/chr/chr_base_v2/_src/mpfb2/src). MPFB không chạy như addon ở chế độ nền nên vá vài hàm tùy chọn trước khi import.
+# <dtl-asset-source>/3d/nhan-vat/chr_base_v2/_src/mpfb2/src). MPFB không chạy như addon ở chế độ nền nên vá vài hàm tùy chọn trước khi import.
 # Việc làm: macro (Á Đông, trẻ, cao ráo) → rig Mixamo + trọng số MakeHuman (đi kèm MPFB) → bỏ lưới phụ (răng, lưỡi, váy...) giữ thân + mắt
 # → giảm mặt đồng đều (Decimate collapse, đối xứng X) → ép tư thế chữ T như asset Tripo → vẽ albedo 1K theo UV MakeHuman
 # (da, đồ lót, môi, lông mày, má) → xuất GLB gồm lưới thân (+ đầu tạm) và lưới mắt (hai vật liệu).
@@ -25,7 +25,7 @@ ARM_DOWN = float(argv[argv.index('--arm-down') + 1]) if '--arm-down' in argv els
 os.makedirs(OUT, exist_ok=True)
 bpy.ops.wm.read_factory_settings(use_empty=True)
 
-MPFB_SRC = os.environ.get('MPFB_SRC', 'D:/METAGRIT/dtl-asset-source/chr/chr_base_v2/_src/mpfb2/src')
+MPFB_SRC = os.environ.get('MPFB_SRC', 'D:/METAGRIT/dtl-asset-source/3d/nhan-vat/chr_base_v2/_src/mpfb2/src')
 sys.path.insert(0, MPFB_SRC)
 _user = os.path.join(os.environ.get('TEMP', '.'), 'mpfbuser')
 os.makedirs(_user, exist_ok=True)

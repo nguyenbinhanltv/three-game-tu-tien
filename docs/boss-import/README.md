@@ -2,7 +2,7 @@
 
 > **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/boss-import/<file>`.
 
-Nguồn: `D:/METAGRIT/dtl-asset-source/boss/<id>/tripo/{raw_v01,rig_v01}.glb` (người dùng dựng trên Tripo web, không tốn credit).
+Nguồn: `D:/METAGRIT/dtl-asset-source/3d/boss/<id>/tripo/{raw_v01,rig_v01}.glb` (người dùng dựng trên Tripo web, không tốn credit).
 Boss cũ (Hàn Giao, Kiếm Khôi, Huyết Lang Vương, Thủ Mộ Tướng) giữ nguyên, GLB và manifest của chúng không đổi.
 
 Ảnh GPU thật (Chrome WebGPU, tắt tiếng): `docs/boss-import/<id>_turntable.jpg` (trước, bên, sau, chéo) và `<id>_clips.jpg`

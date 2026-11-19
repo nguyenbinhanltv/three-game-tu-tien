@@ -2,7 +2,7 @@
   "$comment": "MẪU ĐỒ ĐỆ TỬ (đạo bào giản dị tới bắp chân, tay áo vừa): như áo dài, không lò xo tay áo (tay áo vừa, ít xuyên).",
   "set": "ten_bo",
   "name": "Tên Bộ",
-  "raw": "chr/set_ten_bo/tripo/raw_v3_ten_bo_{g}.glb",
+  "raw": "3d/nhan-vat/set_ten_bo/tripo/raw_v3_ten_bo_{g}.glb",
   "height": {
     "nam": 1.84,
     "nu": 1.7

@@ -7,7 +7,7 @@ Ngân sách mỗi nhân vật ≤ 18k tam giác (thân nền 6k + các mảnh �
 
 ## Liệt Mạch Kiếm Y (Kiếm tu, Thổ/Kim (mạch đất nứt))
 
-Tổng tam giác 6 mảnh: **11700**. Thư mục lưu: `<DTL_ASSET_SOURCE>/chr/set_liet_mach_kiem_y/tripo/`.
+Tổng tam giác 6 mảnh: **11700**. Thư mục lưu: `<DTL_ASSET_SOURCE>/3d/nhan-vat/set_liet_mach_kiem_y/tripo/`.
 
 ### Áo ngoài · `liet_mach_ao_ngoai`
 
@@ -108,7 +108,7 @@ A slim bronze hair crown (guan) that holds a topknot: a small tapered bronze cap
 
 ## Địa Long Hộ Giáp (Hộ pháp, Thổ)
 
-Tổng tam giác 6 mảnh: **12900**. Thư mục lưu: `<DTL_ASSET_SOURCE>/chr/set_dia_long_ho_giap/tripo/`.
+Tổng tam giác 6 mảnh: **12900**. Thư mục lưu: `<DTL_ASSET_SOURCE>/3d/nhan-vat/set_dia_long_ho_giap/tripo/`.
 
 ### Áo ngoài (giáp thân) · `dia_long_ao_ngoai`
 
@@ -209,7 +209,7 @@ A stone-grey helm-crown (circlet style, open face, no visor): a band with old go
 
 ## Phục Mạch Đan Bào (Đan sư, Mộc)
 
-Tổng tam giác 6 mảnh: **11800**. Thư mục lưu: `<DTL_ASSET_SOURCE>/chr/set_phuc_mach_dan_bao/tripo/`.
+Tổng tam giác 6 mảnh: **11800**. Thư mục lưu: `<DTL_ASSET_SOURCE>/3d/nhan-vat/set_phuc_mach_dan_bao/tripo/`.
 
 ### Áo ngoài (đạo bào + voan choàng) · `phuc_mach_ao_ngoai`
 

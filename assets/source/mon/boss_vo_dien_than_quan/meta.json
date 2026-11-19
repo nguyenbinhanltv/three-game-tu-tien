@@ -11,7 +11,7 @@
   },
   "import": {
     "kind": "tripo",
-    "source": "boss/boss_vo_dien_than_quan/tripo/rig_v01.glb",
+    "source": "3d/boss/boss_vo_dien_than_quan/tripo/rig_v01.glb",
     "size": {
       "height": 4.6
     },

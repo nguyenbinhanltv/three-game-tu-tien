@@ -32,7 +32,7 @@ const items = build();
 const docDir = path.join(root, 'docs/outfit-concepts');
 const imgDir = path.join(docDir, 'ket-dan');
 fs.mkdirSync(imgDir, { recursive: true });
-const srcImgDir = path.join(source, '2d/outfit');
+const srcImgDir = path.join(source, '2d/concept/outfit');
 const PIECES = ['ao_ngoai', 'lop_duoi', 'vai_giap', 'dai_tua', 'ung', 'trang_suc_dau'];
 const specOf = (id) => {
   const it = items[id];
@@ -133,7 +133,7 @@ for (const [iid, it] of Object.entries(SWORD.items)) {
 ![${id}](${id}.webp)
 
 - **Tripo:** ${settingsLine(it.tris)}
-- **Lưu GLB:** \`prop/${SWORD.srcId}/tripo/raw_${iid}_v01.glb\`
+- **Lưu GLB:** \`3d/vu-khi/${SWORD.srcId}/tripo/raw_${iid}_v01.glb\`
 - **Gắn vào:** ${it.bones}
 - **Xương lò xo:** ${it.spring}
 - **Lưu ý khi dựng:** ${it.notes}
@@ -230,7 +230,7 @@ Cho mỗi mảnh:
 
 Id bộ và thư mục nguồn: ${Object.values(SETS)
   .map((s) => `\`${s.dir}/${s.srcId}\``)
-  .join(', ')}, kiếm \`prop/${SWORD.srcId}\`. Các thư mục \`concept/\` đã chứa ảnh và prompt gốc.
+  .join(', ')}, kiếm \`3d/vu-khi/${SWORD.srcId}\`. Các thư mục \`concept/\` đã chứa ảnh và prompt gốc.
 
 **Mẹo:** mảnh xuyên sáng (voan, dải lụa của Phục Mạch) cứ dựng như vải mỏng đặc; worker sẽ đổi sang alpha-test hoặc dither. Đừng cố bắt Tripo làm trong suốt. Mảnh đối xứng (vai, ủng, bên trái và phải) chỉ cần dựng một cặp; không cần dựng riêng nam và nữ, pipeline fit theo từng thân nền.
 

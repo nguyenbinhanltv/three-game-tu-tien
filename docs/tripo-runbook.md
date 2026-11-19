@@ -40,7 +40,7 @@ File lớn (ảnh concept, GLB thô, GLB rig, animation) nằm **ngoài repo**. 
 
 | Nơi | Đường dẫn | Chứa | Commit? |
 | --- | --- | --- | --- |
-| Thư mục nguồn | `DTL_ASSET_SOURCE`, `../dtl-asset-source/` (đã chốt; thư mục cạnh thư mục repo gốc, không nằm trong repo) | ảnh concept, GLB tải từ Tripo, nhật ký CLI thô | không. Người dùng tự sao lưu (ổ khác hoặc cloud) |
+| Thư mục nguồn | `DTL_ASSET_SOURCE`, `../dtl-asset-source/` (đã chốt; thư mục cạnh thư mục repo gốc, không nằm trong repo) | ảnh concept, GLB tải từ Tripo, nhật ký CLI thô (cây `3d/`, `2d/`, `anim/`, `audio/`… xem `assets/README.md`) | không. Người dùng tự sao lưu (ổ khác hoặc cloud) |
 | Metadata trong repo | `assets/source/<loại>/<asset_id>/meta.json` | prompt, task id, credit, trạng thái | có |
 | Nhật ký đợt CLI | `assets/source/_batches/<YYYY-MM-DD>-<tên-đợt>.json` | báo giá, người duyệt, hạn mức, usage | có |
 | Build | `assets/build/`, `apps/client/public/assets/` | GLB đã tối ưu (M2) | theo pipeline M2 |
@@ -152,10 +152,10 @@ Với **mỗi** prop, chạy đúng lệnh sẽ chạy thật, thêm `--dry-run`
 
 ```bash
 SRC="${DTL_ASSET_SOURCE:-../dtl-asset-source}"   # nên đặt DTL_ASSET_SOURCE thành đường dẫn tuyệt đối
-tripo make "$SRC/prop/prop_lo_dan/concept_34.png" \
+tripo make "$SRC/3d/prop/prop_lo_dan/concept_34.png" \
   --model v3.1 -n 1 \
   -p face_limit=4000 -p smart_low_poly=true -p texture_quality=detailed -p pbr=true \
-  --name prop_lo_dan_v01 -o "$SRC/prop/prop_lo_dan/tripo" \
+  --name prop_lo_dan_v01 -o "$SRC/3d/prop/prop_lo_dan/tripo" \
   --dry-run --json
 ```
 

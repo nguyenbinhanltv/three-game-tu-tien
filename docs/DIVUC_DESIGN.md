@@ -4,7 +4,7 @@ Bản 2 · 2026-11-18 (sau lượt soát lore độc lập) · nối tiếp `doc
 
 Đây là tài liệu **thiết kế**, không đổi code game. Mọi con số là điểm khởi đầu cho `pnpm sim:progress` và `fight:check`; mọi tên mới (đánh dấu †) phải vào `glossary.json` trước khi vào i18n (mục 13); lượt soát `lore-keeper` độc lập đã chạy và đã áp (mục 14.1). Mười hai quyết định ở mục 15 đã được người dùng **chốt ngày 2026-11-18** (tất cả theo đề xuất).
 
-Nguồn quyết định (người dùng, 2026-11-18): hướng **A "Dị Vực xâm lấn"**: giữ bản sắc tiên hiệp; phương Tây chỉ xuất hiện như **thế lực từ giới khác** tràn vào Huyền Linh Giới; nối từ kết chương 4 ("mạch chảy trở lại nhưng về hướng bắc, nơi chưa ai đặt chân", `EXPANSION_DESIGN.md` mục 1.2). Asset lấy từ 17 model CC BY 4.0 trong `../dtl-asset-source/assets-online/` (mục 6.4); ba file **loại hẳn** dù trang tải ghi CC BY vì là nhân vật của hãng khác (điều cấm 10 của art bible): `jett_valorant…`, `kafka_honkai_star_rail…` (Riot/HoYoverse) và `butterfly_revamp` (không phải con bướm, xem mục 6.4).
+Nguồn quyết định (người dùng, 2026-11-18): hướng **A "Dị Vực xâm lấn"**: giữ bản sắc tiên hiệp; phương Tây chỉ xuất hiện như **thế lực từ giới khác** tràn vào Huyền Linh Giới; nối từ kết chương 4 ("mạch chảy trở lại nhưng về hướng bắc, nơi chưa ai đặt chân", `EXPANSION_DESIGN.md` mục 1.2). Asset lấy từ 17 model CC BY 4.0 trong `../dtl-asset-source/3d/skin/goc-online/` (mục 6.4); ba file **loại hẳn** dù trang tải ghi CC BY vì là nhân vật của hãng khác (điều cấm 10 của art bible): `jett_valorant…`, `kafka_honkai_star_rail…` (Riot/HoYoverse) và `butterfly_revamp` (không phải con bướm, xem mục 6.4).
 
 ---
 
@@ -355,7 +355,7 @@ Rủi ro chất lượng: bản điêu khắc dày chi tiết (lông, xích, cá
 
 ### 6.4 Bảng gắn asset
 
-Nguồn: `../dtl-asset-source/assets-online/`. Tác giả, giấy phép lấy từ `asset.extras` trong từng GLB (đọc ngày 2026-11-18). "6 (Atahan3D)" là tên hiển thị + tài khoản Sketchfab của cùng một tác giả.
+Nguồn: `../dtl-asset-source/3d/skin/goc-online/`. Tác giả, giấy phép lấy từ `asset.extras` trong từng GLB (đọc ngày 2026-11-18). "6 (Atahan3D)" là tên hiển thị + tài khoản Sketchfab của cùng một tác giả.
 
 | File nguồn | Tam giác | Tác giả | Vai trong game | Id đề xuất | Lớp | Rig |
 | --- | --- | --- | --- | --- | --- | --- |
