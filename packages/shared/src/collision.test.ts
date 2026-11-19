@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CollisionSet, type Shape, STEP_UP } from './collision';
+import { blockedAt, CollisionSet, collisionOf, footprintDist, type Shape, slideOut, STEP_UP } from './collision';
+import { boltBlockedAt } from './projectile';
 import { IN_FLY, IN_JUMP, IN_UP, type MoveInput, type MoveState, PLAYER_RADIUS, stepMove } from './movement';
 import { registerTerrain, type Terrain } from './terrain';
 import { VAN_LAM_TERRAIN } from './level';
@@ -13,7 +14,7 @@ const G = T.groundAt(X, Z);
 function fresh(x = X, z = Z): MoveState {
   return { x, y: T.groundAt(x, z), z, vy: 0, grounded: true, flying: false };
 }
-const ctx = { canFly: true, frozen: false, speedMul: 1, terrain: T };
+const ctx = { canFly: true, frozen: false, speedMul: 1, terrain: T, collision: collisionOf(T.id) };
 let seq = 0;
 const inp = (mx: number, mz: number, f = 0): MoveInput => ({ s: ++seq, mx, mz, yaw: 0, f });
 /** Đi tiến (-z) n bước. */
@@ -21,8 +22,8 @@ function walk(s: MoveState, n: number, f = 0): void {
   for (let i = 0; i < n; i++) stepMove(s, inp(0, 1, f), ctx);
 }
 function setup(shapes: Shape[]): void {
-  T.collision.clear();
-  T.collision.add(shapes);
+  collisionOf(T.id).clear();
+  collisionOf(T.id).add(shapes);
 }
 
 describe('va chạm 3D', () => {
@@ -129,6 +130,31 @@ describe('va chạm 3D', () => {
     expect(c.standY(100, 100, 5 + STEP_UP)).toBe(5);
   });
 
+  it('lưới băm: 3000 hình, 100 người — mỗi bước chỉ xét vài hình (tất định, không đo giờ) và không ai nằm trong hình chặn', () => {
+    const shapes: Shape[] = [];
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 3000; i++)
+      shapes.push(
+        rnd() < 0.5
+          ? { k: 'cyl', x: 1000 + rnd() * 2200, z: 1000 + rnd() * 2200, r: 0.5, y0: 0, y1: 300 }
+          : { k: 'box', x: 1000 + rnd() * 2200, z: 1000 + rnd() * 2200, hx: 3, hz: 2, yaw: rnd() * 6, y0: 0, y1: 300 },
+      );
+    setup(shapes);
+    let visited = 0;
+    const near = collisionOf(T.id).near.bind(collisionOf(T.id));
+    collisionOf(T.id).near = (x, z, r, fn) => near(x, z, r, (sh) => (visited++, fn(sh)));
+    const ps = Array.from({ length: 100 }, (_, i) => ({ x: 1500 + i * 10, y: 0, z: 1800, vy: 0, grounded: true, flying: false }));
+    const N = 200;
+    for (let n = 0; n < N; n++) for (const p of ps) stepMove(p, { s: n, mx: 0.5, mz: 1, yaw: n * 0.03, f: 0 }, ctx);
+    collisionOf(T.id).near = near;
+    // Quét toàn bộ 3000 hình mỗi bước sẽ là 3000; lưới băm giữ ở mức vài hình (ô 16 m, mật độ ~0,0006 hình/m²).
+    expect(visited / (N * ps.length)).toBeLessThan(40);
+    let inside = 0;
+    for (const p of ps) for (const sh of shapes) if (footprintDist(sh, p.x, p.z) < PLAYER_RADIUS - 0.02) inside++;
+    expect(inside).toBe(0);
+  });
+
   it('ngự kiếm bay thẳng lên xuyên tán lá (fly:pass) nhưng đội đầu vào đáy khối chặn', () => {
     setup([
       { k: 'cyl', x: X, z: Z, r: 3, y0: G + 4, y1: G + 9, fly: 'pass' },
@@ -166,14 +192,47 @@ describe('va chạm 3D', () => {
       voidFloor: 100,
     });
     expect(IS.blockRise).toBe(true);
-    const ic = { canFly: false, frozen: false, speedMul: 1, terrain: IS };
-    IS.collision.clear();
+    const ic = { canFly: false, frozen: false, speedMul: 1, terrain: IS, collision: collisionOf(IS.id) };
+    collisionOf(IS.id).clear();
     // Sàn cầu phẳng ở cao độ mặt đảo, nhô ra khỏi mép đảo trên vực.
-    IS.collision.add([{ k: 'box', x: 2048 + 45, z: 2048, hx: 30, hz: 2, yaw: 0, y0: 199, y1: 200.2 }]);
+    collisionOf(IS.id).add([{ k: 'box', x: 2048 + 45, z: 2048, hx: 30, hz: 2, yaw: 0, y0: 199, y1: 200.2 }]);
     const s: MoveState = { x: 2048 + 8, y: IS.groundAt(2048 + 8, 2048), z: 2048, vy: 0, grounded: true, flying: false };
     for (let i = 0; i < 90; i++) stepMove(s, { s: i, mx: 0, mz: 1, yaw: -Math.PI / 2, f: 0 }, ic);
     expect(s.x).toBeGreaterThan(2048 + 35);
     expect(s.y).toBeCloseTo(200.2, 2);
     expect(s.grounded).toBe(true);
+  });
+});
+
+describe('quái và đạn (COL-1 / C-2)', () => {
+  it('slideOut đẩy thân quái ra khỏi trụ/hộp, trượt dọc; blockedAt báo đặt chỗ trong vật', () => {
+    const c = new CollisionSet();
+    c.add([
+      { k: 'cyl', x: 100, z: 100, r: 1, y0: 0, y1: 8 },
+      { k: 'box', x: 120, z: 100, hx: 3, hz: 0.5, yaw: 0.4, y0: 0, y1: 3, walk: false },
+    ]);
+    const p = { x: 100.3, z: 100 };
+    expect(slideOut(c, p, 0, 0.7)).toBe(true);
+    expect(Math.hypot(p.x - 100, p.z - 100)).toBeGreaterThanOrEqual(1.7 - 1e-6);
+    expect(blockedAt(c, 100.5, 100, 0, 0.8)).toBe(true);
+    expect(blockedAt(c, 110, 100, 0, 0.8)).toBe(false);
+    // vật thấp (≤ STEP_UP) bước qua được, không đẩy
+    const low = new CollisionSet();
+    low.add([{ k: 'box', x: 0, z: 0, hx: 2, hz: 2, yaw: 0, y0: 0, y1: 0.4 }]);
+    expect(slideOut(low, { x: 0.5, z: 0 }, 0, 0.7)).toBe(false);
+  });
+
+  it('đạn quét bị chặn bởi thân cây/tường nhưng không bởi tán (pass) hay khi bay trên đỉnh', () => {
+    const c = new CollisionSet();
+    c.add([
+      { k: 'cyl', x: 50, z: 0, r: 1, y0: 0, y1: 6 },
+      { k: 'cyl', x: 30, z: 0, r: 4, y0: 3, y1: 9, fly: 'pass' },
+    ]);
+    const t = c.segmentBlockedAt(0, 0, 100, 0, 0.3, 1.1);
+    expect(t).toBeGreaterThan(0.45);
+    expect(t).toBeLessThan(0.52);
+    expect(c.segmentBlockedAt(0, 0, 40, 0, 0.3, 1.1)).toBe(-1); // chỉ có tán pass trên đường
+    expect(c.segmentBlockedAt(0, 0, 100, 0, 0.3, 12)).toBe(-1); // bay trên đỉnh
+    expect(boltBlockedAt(0, 0, 100, 0, 0.3, c, 1.1)).toBeGreaterThan(0.45);
   });
 });

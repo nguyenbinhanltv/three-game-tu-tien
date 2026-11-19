@@ -277,6 +277,26 @@
         "shadowAmount": 0.4, "highlightAmount": 0.3,
         "blackLift": "#120E1E", "contrast": 1.22, "saturation": 0.88, "exposure": 0.85
       },
+      "xk": {
+        "label": "Xích Tẫn Khích — hẻm núi lửa tàn, mặt trời đỏ thấp, khói than",
+        "sunColor": "#FFD6B8", "sunIntensity": 1.6, "sunElevationDeg": 34,
+        "skyColor": "#4A3E3A", "skyIntensity": 0.75,
+        "fogColor": "#38302D", "fogDensity": 0.0016, "heightFogTop": 24, "heightFogBoost": 2.2,
+        "fogHaze": 0.0012, "fogHazeStart": 60, "fogScatter": 0.55, "rim": 1.1,
+        "shadowTint": "#140D0C", "highlightTint": "#FF9A50", "splitBalance": -0.05,
+        "shadowAmount": 0.4, "highlightAmount": 0.32,
+        "blackLift": "#150F0E", "contrast": 1.22, "saturation": 0.78, "exposure": 0.95
+      },
+      "kd": {
+        "label": "Kim Dạ Cung — cung dát vàng đêm lồng đèn",
+        "sunColor": "#FFD9A0", "sunIntensity": 1.5, "sunElevationDeg": 54,
+        "skyColor": "#4A3524", "skyIntensity": 0.6,
+        "fogColor": "#241810", "fogDensity": 0.001, "heightFogTop": 12, "heightFogBoost": 2.0,
+        "fogHaze": 0.0008, "fogHazeStart": 80, "fogScatter": 0.5, "rim": 1.0,
+        "shadowTint": "#160E0C", "highlightTint": "#FFC070", "splitBalance": -0.05,
+        "shadowAmount": 0.38, "highlightAmount": 0.3,
+        "blackLift": "#16100C", "contrast": 1.2, "saturation": 0.82, "exposure": 0.9
+      },
       "vh_dawn": {
         "label": "Vân Hải — bình minh lam bạc",
         "sunColor": "#FFD2B0", "sunIntensity": 3.2, "sunElevationDeg": 12,

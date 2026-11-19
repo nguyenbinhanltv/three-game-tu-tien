@@ -50,7 +50,7 @@
   }
 }
 .gauge.tcast.broken {
-  --fill: linear-gradient(180deg, var(--u-son-text) 0%, var(--u-x-hf2c47e) 45%, var(--u-x-ha57a2e) 100%);
+  --fill: linear-gradient(180deg, var(--u-x-hfff3c6) 0%, var(--u-x-hf2c47e) 45%, var(--u-x-ha57a2e) 100%);
 }
 /* Letterbox mỏng + phụ đề: chỉ là lớp hình, không nhận chuột, không khóa điều khiển.
    Không đặt z-index: nằm đầu .hud nên thanh boss và các khung khác vẽ đè lên dải đen. */

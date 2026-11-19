@@ -26,6 +26,8 @@ import { KiemTrungArt } from '../world/kiemTrungArt';
 import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
 import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../world/kinhNguyetArt';
 import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
+import { XichTanArt, xkMaterialFor } from '../world/xichTanArt';
+import { buildGildedSky, KD_DOME, KimDaArt } from '../world/kimDaArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { VanHaiWow } from '../world/vanHaiWow';
@@ -118,7 +120,8 @@ export function buildXich(eng: Game, id: string, q: (typeof QUALITY)[string]): v
   if (!FLAGS.xichArt) return;
   const T = levelTerrain();
   const paths = xichCracks(T.def, (x, z) => heightAt(x, z));
-  for (const p of paths) {
+  // DUN-1 PR6: màn đỏ dày của `riftVeil` được thay bằng vết nứt dung nham lõm có gờ đá (`XichTanArt`); khe mạch ngọc lam và quầng giữ nguyên.
+  for (const p of levelAssets(id).xichTanArt ? [] : paths) {
     const v = buildRiftVeil(p, (x, z) => heightAt(x, z), {
       height: 7,
       ribs: false,
@@ -143,7 +146,14 @@ export function buildXich(eng: Game, id: string, q: (typeof QUALITY)[string]): v
   // Quầng giả: bia giữ than hồng; khe mạch ngọc lam lớn hơn, hai tầng (sát đất và lơ lửng) để điểm nhấn lạnh đọc được từ xa.
   const halos = createLanternHalos(pts.slice(0, 1), 6, 0xff7a45);
   const jade = acc.slice(1).flatMap((a2) => [1.6, 5.5].map((dy) => ({ x: a2.x, y: heightAt(a2.x, a2.z) + dy, z: a2.z })));
-  const jadeGlow = buildCrystalGlow(jade);
+  // DUN-1 PR6: cầu ngọc lam to chói đổi thành lửa xanh nhạt nhỏ (đối màu than hồng vẫn đọc được là khe mạch của boss cuối), chỉ tầng sát đất.
+  const jadeGlow = levelAssets(id).xichTanArt
+    ? createLanternHalos(
+        jade.filter((_, i) => i % 2 === 0),
+        2.4,
+        0x8fc4de,
+      )
+    : buildCrystalGlow(jade);
   // Ngọn lửa than hồng trên các trụ đá dọc chân vách (cách một trụ), thay đèn lồng kiểu Vân Lam.
   const flames = propsOf(id)
     .filter((q) => q.id === 'prop_tru_da_khac_van')
@@ -329,13 +339,15 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     // Kiếm Trủng (DUN-1): huyệt kiếm cao, có ô trời mở; level khác giữ vỏ hang cũ.
     const shell = levelAssets(id).kiemTrungArt
       ? buildSwordCaveShell(cave, heightAt(cave.x, cave.z))
-      : levelAssets(id).thanTangArt
-        ? buildVaultDome(cave, heightAt(cave.x, cave.z))
-        : levelAssets(id).kinhNguyetArt
-          ? buildMoonDomeShell(cave, heightAt(cave.x, cave.z))
-          : levelAssets(id).phucMachArt
-            ? buildMineCaveShell(cave, heightAt(cave.x, cave.z), PM_OCULI)
-            : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
+      : levelAssets(id).kimDaArt
+        ? buildGildedSky(cave, heightAt(cave.x, cave.z))
+        : levelAssets(id).thanTangArt
+          ? buildVaultDome(cave, heightAt(cave.x, cave.z))
+          : levelAssets(id).kinhNguyetArt
+            ? buildMoonDomeShell(cave, heightAt(cave.x, cave.z))
+            : levelAssets(id).phucMachArt
+              ? buildMineCaveShell(cave, heightAt(cave.x, cave.z), PM_OCULI)
+              : buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
     const glow = buildCrystalGlow(
       propsOf(id)
         .filter((p) => p.id === 'prop_mach_tinh_tru')
@@ -343,7 +355,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     );
     eng.scene.add(shell, glow);
     eng.levelObjs.push(shell, glow);
-    if (palace && !levelAssets(id).kinhNguyetArt && !levelAssets(id).thanTangArt) {
+    if (palace && !levelAssets(id).kinhNguyetArt && !levelAssets(id).thanTangArt && !levelAssets(id).kimDaArt) {
       // Cung gương (E3-M): sàn gương giả phủ lòng chảo (một draw call, không phản chiếu thật).
       const floor = buildMirrorFloor({ ...cave, r: cave.r - 2 }, heightAt, palace);
       const hall = buildPalaceHall(cave, heightAt, palace);
@@ -366,11 +378,14 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     const cardTrees = !!levelAssets(id).lacKiemSky;
     // Kính Nguyệt (DUN-1 PR3): đá trôi xám đen lạc tông với điện ngọc trắng, bỏ khỏi cảnh (prop chỉ để nhìn, không va chạm).
     // Thần Tàng (DUN-1 PR4): vòng cột đá khắc vân cũ (r 76–80) đè lên ba cửa phong ấn mới, bỏ.
+    // Kim Dạ (DUN-1 PR5): hàng cột đá khắc vân cũ (r 70–74) đè lên nhịp tường mới, bỏ.
     const dropIds = levelAssets(id).kinhNguyetArt
       ? new Set(['prop_da_troi'])
-      : levelAssets(id).thanTangArt
-        ? new Set(['prop_tru_da_khac_van'])
-        : null;
+      : levelAssets(id).kimDaArt
+        ? new Set(['prop_tru_da_khac_van', 'prop_tuong_da_vo_si'])
+        : levelAssets(id).thanTangArt
+          ? new Set(['prop_tru_da_khac_van'])
+          : null;
     const shown = dropIds ? all.filter((p) => !dropIds.has(p.id)) : all;
     eng.props = new PropLayer(undefined, cardTrees ? shown.filter((p) => !CARD_TREE_IDS.has(p.id)) : shown);
     if (cardTrees) {
@@ -427,6 +442,16 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.phucMachArt = new PhucMachArt();
     eng.scene.add(eng.phucMachArt.group);
     void loadPmModel(eng, q.shadows);
+  }
+  if (levelAssets(id).xichTanArt) {
+    eng.xichTanArt = new XichTanArt();
+    eng.scene.add(eng.xichTanArt.group);
+    void loadXkModel(eng, q.shadows);
+  }
+  if (levelAssets(id).kimDaArt) {
+    eng.kimDaArt = new KimDaArt();
+    eng.scene.add(eng.kimDaArt.group);
+    void loadKdModel(eng, q.shadows);
   }
   if (levelAssets(id).thanTangArt) {
     eng.thanTangArt = new ThanTangArt();
@@ -516,6 +541,16 @@ export function unloadLevel(eng: Game): void {
     eng.tkAsset.handle.release();
     for (const m of eng.tkAsset.mats) m.dispose();
     eng.tkAsset = null;
+  }
+  if (eng.xichTanArt) {
+    drop(eng.xichTanArt.group);
+    eng.xichTanArt.dispose();
+    eng.xichTanArt = null;
+  }
+  if (eng.kimDaArt) {
+    drop(eng.kimDaArt.group);
+    eng.kimDaArt.dispose();
+    eng.kimDaArt = null;
   }
   if (eng.thanTangArt) {
     drop(eng.thanTangArt.group);
@@ -669,6 +704,53 @@ export async function loadKtModel(eng: Game, shadows: boolean): Promise<void> {
     enabled: () => !!levelAssets(levelId()).kiemTrungArt,
     origin: { x: KIEM_TRUNG.x, y: KIEM_TRUNG.y, z: KIEM_TRUNG.z },
     prefix: 'kt',
+  });
+}
+
+/**
+ * Nạp cảnh Xích Tẫn Khích dựng bằng Blender (asset `arch_xich_tan`): cụm cột bazan, obsidian, vỏ dung nham, miệng phun, cây cháy, cột cờ, xương, lò sắt.
+ * Mỗi vật đặt theo `heightAt` tại chỗ (hẻm có vách dốc, không `flat`). Vật liệu glTF giữ nguyên (than hồng là emissive trong GLB).
+ */
+export async function loadXkModel(eng: Game, shadows: boolean): Promise<void> {
+  const c = LEVELS.xich_tan_khich!.dungeon!.center;
+  await loadDungeonModel(eng, shadows, {
+    asset: 'arch_xich_tan',
+    enabled: () => !!levelAssets(levelId()).xichTanArt,
+    origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
+    prefix: 'xk',
+    material: xkMaterialFor,
+  });
+}
+
+/**
+ * Nạp cảnh Kim Dạ Cung dựng bằng Blender (asset `arch_kim_da`): nhịp tường, ngai vàng, cột đèn + dây đèn lồng (`kd_string_*` đặt y 9 m trong GLB), đỉnh đồng, cây vàng chết.
+ * Vàng dùng chung vật liệu PBR cổ của Thần Tàng (`ttMaterialFor`). Sàn bám `heightAt` (phẳng ±3 m tới r 110): vật đặt theo mặt bằng tâm (`flat`).
+ */
+export async function loadKdModel(eng: Game, shadows: boolean): Promise<void> {
+  const c = LEVELS.kim_da_cung!.dungeon!.center;
+  await loadDungeonModel(eng, shadows, {
+    asset: 'arch_kim_da',
+    enabled: () => !!levelAssets(levelId()).kimDaArt,
+    origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
+    prefix: 'kd',
+    ceiling: KD_DOME,
+    flat: [
+      'kd_bay',
+      'kd_throne',
+      'kd_post',
+      'kd_censer',
+      'kd_tree',
+      'kd_string',
+      'kd_pondrim',
+      'kd_bridge',
+      'kd_altar',
+      'kd_osman',
+      'kd_lowlantern',
+      'kd_statue',
+    ],
+    flatDy: 0.05,
+    material: ttMaterialFor,
+    noShadow: /bay|throne|string/,
   });
 }
 
