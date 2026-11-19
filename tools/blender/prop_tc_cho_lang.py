@@ -2,11 +2,14 @@
 import math
 
 from build_sect import paint
-from prop_tc_lib import (BAMBOO, BAMBOO_D, CLOTH_B, CLOTH_D, CLOTH_R, CLOTH_W, CLOTH_Y, IRON, LAMP, STONE_D, STONE_L, STONE_M, STRAW, WOOD, WOOD_D, WOOD_L, ellipsoid, flat_ring, item, lathe, tube, wheel)
+from prop_tc_lib import (BAMBOO, BAMBOO_D, CLOTH_B, CLOTH_D, CLOTH_R, CLOTH_W, CLOTH_Y, LAMP, STONE_D, STONE_L, STONE_M, STRAW, WOOD, WOOD_D, WOOD_L, ellipsoid, flat_ring, item, lathe, tube, wheel)
 
-CLAY = paint(0x8A5A3A, 'stone')
-CLAY_D = paint(0x6E5444, 'stone')
-WATER = paint(0x3C6A7A, 'stone')
+# Ít vật liệu hơn = ít draw call (mỗi vật liệu của mỗi id × LOD là một InstancedMesh): sành, nước, dây, đai sắt dùng vật liệu vải/gỗ chỉ-màu-đỉnh.
+CLAY = paint(0x8A5A3A, 'cloth')
+CLAY_D = paint(0x6E5444, 'cloth')
+WATER = paint(0x3C6A7A, 'cloth')
+IRON_W = paint(0x3C4046, 'wood')
+HANDLE = paint(0x4D3324, 'cloth')
 
 
 @item('sap_hang')
@@ -51,7 +54,7 @@ def _(b, v):
     for k in range(7):
         a = k / 7 * math.tau
         tube(b, [(math.cos(a) * 0.1, 0.42, math.sin(a) * 0.1), (math.cos(a) * 0.3, 0.72, math.sin(a) * 0.3), (math.cos(a) * 0.46, 0.55, math.sin(a) * 0.46)], 0.03, leaf if k % 2 else root, 4)
-    tube(b, [(-0.46, 0.5, 0), (-0.3, 0.95, 0), (0.3, 0.95, 0), (0.46, 0.5, 0)], 0.035, WOOD_D, 5)
+    tube(b, [(-0.46, 0.5, 0), (-0.3, 0.95, 0), (0.3, 0.95, 0), (0.46, 0.5, 0)], 0.035, HANDLE, 5)
     if v:
         lathe(b, [(0.0, 0.0), (0.7, 0.03), (0.8, 0.07)], STRAW, 14, cx=1.2, cz=0.4, cap_bot=True)
         for k in range(6):
@@ -62,13 +65,13 @@ def _(b, v):
 def _(b, v):
     # Lồng đèn giấy treo trên cột tre cong: 1 hoặc 3 lồng.
     b.cylinder(0, 0, 0, 0.05, 2.6, BAMBOO_D, 6, 0.04)
-    b.cylinder(0, 0, 0, 0.18, 0.12, STONE_M, 8, 0.1)
+    b.cylinder(0, 0, 0, 0.18, 0.12, HANDLE, 8, 0.1)
     tube(b, [(0, 2.6, 0), (0.25, 2.85, 0), (0.6, 2.8, 0)], 0.035, BAMBOO_D, 5)
     for k in range(3 if v else 1):
         x, y = 0.6, 2.35 - k * 0.75
         ellipsoid(b, x, y, 0, 0.3, 0.38, 0.3, LAMP, 10, 6)
-        b.cylinder(x, y + 0.36, 0, 0.1, 0.06, WOOD_D, 8)
-        b.cylinder(x, y - 0.42, 0, 0.1, 0.06, WOOD_D, 8)
+        b.cylinder(x, y + 0.36, 0, 0.1, 0.06, HANDLE, 8)
+        b.cylinder(x, y - 0.42, 0, 0.1, 0.06, HANDLE, 8)
         b.cylinder(x, y - 0.7, 0, 0.012, 0.3, CLOTH_R, 4)
 
 
@@ -77,7 +80,7 @@ def _(b, v):
     # Xe kéo tay hai bánh: thùng gỗ, càng, hàng chất trên xe.
     for sx in (-1, 1):
         wheel(b, sx * 0.72, 0.45, 0, 0.45, 0.07, WOOD_D)
-    b.box(0, 0.45, 0, 1.4, 0.07, 0.07, IRON)
+    b.box(0, 0.45, 0, 1.4, 0.07, 0.07, IRON_W)
     b.box(0, 0.62, -0.1, 1.2, 0.1, 1.6, WOOD)
     for sz in (-1, 1):
         b.box(0, 0.9, -0.1 + sz * 0.78, 1.2, 0.5, 0.06, WOOD_L)
@@ -98,7 +101,7 @@ def _(b, v):
     def barrel(x, z, s, y0=0.0):
         lathe(b, [(0.0, y0), (0.36 * s, y0), (0.44 * s, y0 + 0.4 * s), (0.46 * s, y0 + 0.5 * s), (0.44 * s, y0 + 0.6 * s), (0.36 * s, y0 + 1.0 * s), (0.0, y0 + 1.0 * s)], WOOD, 14, x, z)
         for yy in (0.15, 0.85):
-            b.cylinder(x, y0 + yy * s - 0.03, z, 0.4 * s, 0.07, IRON, 14)
+            b.cylinder(x, y0 + yy * s - 0.03, z, 0.4 * s, 0.07, IRON_W, 14)
 
     barrel(0, 0, 1.0)
     barrel(0.9, 0.1, 0.8)
@@ -146,4 +149,4 @@ def _(b, v):
     for x, z, s in (((-0.55, 0, 1.0), (0.55, 0.1, 0.8)) if v else ((0, 0, 1.0),)):
         lathe(b, [(0.0, 0), (0.45 * s, 0.03), (0.62 * s, 0.4 * s), (0.66 * s, 0.75 * s), (0.5 * s, 1.1 * s), (0.5 * s, 1.18 * s), (0.56 * s, 1.2 * s)], CLAY_D, 14, x, z)
         b.cylinder(x, 1.2 * s, z, 0.5 * s, 0.04, WATER, 14)
-    b.box(0.1, 1.28, 0.15, 0.5, 0.03, 0.05, WOOD_D, yaw=0.4)
+    b.box(0.1, 1.28, 0.15, 0.5, 0.03, 0.05, HANDLE, yaw=0.4)

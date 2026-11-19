@@ -26,6 +26,8 @@ const ONLY = opt('--level');
 const SEED = 20261119;
 /** Hệ số mật độ cho số lượng rải ngẫu nhiên của `thienCongScenes.ts` (duyệt ảnh: bản đầu quá thưa, trước/sau không phân biệt được). */
 const DENSITY = 2.2;
+/** Món nhỏ/rẻ chỉ bày một biến thể: mỗi id × LOD × vật liệu là một InstancedMesh, nên bớt id để cảnh đông (chợ) không vượt 300 draw call. */
+const SINGLE = new Set(['vo_ruou', 'gio_thuoc', 'thung_go', 'lu_nuoc', 'long_den_giay', 'hang_rao_tre']);
 
 const groupOf = new Map<string, string>();
 const info = new Map<string, { collider: [number, number, number][]; foot: number }>();
@@ -116,7 +118,7 @@ for (const levelId of Object.keys(SCENES)) {
       const x = Math.round((sc.at[0] + f.dx) * 10) / 10;
       const z = Math.round((sc.at[1] + f.dz) * 10) / 10;
       const sc2 = f.s ?? 1;
-      const prop: TcProp = { id: `prop_tc_${f.name}${f.v2 ? '_2' : ''}`, x, z, yaw: f.yaw ?? 0, s: sc2 };
+      const prop: TcProp = { id: `prop_tc_${f.name}${f.v2 && !SINGLE.has(f.name) ? '_2' : ''}`, x, z, yaw: f.yaw ?? 0, s: sc2 };
       if (inf.collider.length) {
         const cy = Math.cos(prop.yaw);
         const sy = Math.sin(prop.yaw);
@@ -183,7 +185,7 @@ for (const levelId of Object.keys(SCENES)) {
                 : sc.face === 'out'
                   ? Math.atan2(x - sc.at[0], z - sc.at[1])
                   : rand() * Math.PI * 2;
-            const v2 = rand() < 0.5;
+            const v2 = rand() < 0.5 && !SINGLE.has(name);
             const prop: TcProp = {
               id: `prop_tc_${name}${v2 ? '_2' : ''}`,
               x,
