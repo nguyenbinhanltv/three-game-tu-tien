@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { LEVELS, NPCS } from '@dtl/content';
 import { bridgeDeckY } from '@dtl/shared';
 import { setActiveLevel, levelTerrain } from '../../base/levelCtx';
-import { exclusions, groveDensity, mapleSpots, ownBridge, runeSpots } from './doanMachArt';
+import { bridgeFill, exclusions, groveDensity, mapleSpots, ownBridge, runeSpots } from './doanMachArt';
 
 const dist = (a: { x: number; z: number }, b: { x: number; z: number }) => Math.hypot(a.x - b.x, a.z - b.z);
 
@@ -99,6 +99,36 @@ describe('Đoạn Mạch (MAP-2): cây phong, cổ trận, cầu treo', () => {
     }
     expect(Math.abs(t.heightAt(br.ax, br.az) - t.surfaceAt(br.ax, br.az))).toBeLessThan(1);
     expect(Math.abs(t.heightAt(br.bx, br.bz) - t.surfaceAt(br.bx, br.bz))).toBeLessThan(1);
+  });
+
+  it('không có tường vô hình: chỗ địa hình bị mặt cầu nâng lên đều có khối đá lấp hiện hình phủ từ đáy khe tới ván cầu', () => {
+    const t = levelTerrain();
+    const br = ownBridge();
+    if (!br) throw new Error('thiếu cầu own');
+    const fill = bridgeFill(br);
+    expect(fill.length).toBeGreaterThan(20);
+    const len = Math.hypot(br.bx - br.ax, br.bz - br.az);
+    let raised = 0;
+    for (let i = 0; i <= Math.round(len); i++) {
+      const u = i / Math.round(len);
+      const x = br.ax + (br.bx - br.ax) * u;
+      const z = br.az + (br.bz - br.az) * u;
+      // thử ngang trục cầu trong dải mà withBridges nâng (halfW + 0,8): mọi điểm bị nâng > 0,5 m phải nằm trong bề rộng khối lấp
+      for (const off of [-(br.halfW + 0.6), -br.halfW, 0, br.halfW, br.halfW + 0.6]) {
+        const px = x + off; // trục cầu chạy theo z nên lệch ngang là x
+        const lift = t.heightAt(px, z) - t.surfaceAt(px, z);
+        if (lift <= 0.5) continue;
+        raised++;
+        const f = fill.find((q) => Math.abs(q.z - z) < 0.75 && Math.abs(q.x - x) < 0.75);
+        expect(f, `không có khối lấp tại (${px.toFixed(1)}, ${z.toFixed(1)}), nâng ${lift.toFixed(1)} m`).toBeDefined();
+        if (f) {
+          expect(Math.abs(px - f.x)).toBeLessThanOrEqual(f.half);
+          expect(f.floor).toBeLessThanOrEqual(t.surfaceAt(px, z) + 0.2);
+          expect(f.top).toBeGreaterThanOrEqual(t.heightAt(px, z) - 0.3 - lift * 0.0);
+        }
+      }
+    }
+    expect(raised).toBeGreaterThan(30);
   });
 
   it('mật độ rừng nằm trong [-1, 1]', () => {

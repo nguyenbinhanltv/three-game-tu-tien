@@ -386,6 +386,43 @@ function canopyGeometry(): THREE.BufferGeometry {
   return g;
 }
 
+export interface BridgeFillSample {
+  x: number;
+  z: number;
+  /** Cao độ mặt đất thật bên dưới (lưới địa hình, không tính mặt cầu). */
+  floor: number;
+  /** Mặt trên khối đá lấp (ngay dưới ván cầu). */
+  top: number;
+  /** Nửa bề rộng khối lấp: phủ trọn dải `halfW + 0,8` mà `withBridges` (shared) nâng lên. */
+  half: number;
+}
+
+/**
+ * Khối đá lấp dưới cầu. Địa hình là heightfield nên dải quanh trục cầu bị `withBridges` kéo lên mặt cầu bất kể chỗ đứng: ai đi dọc đáy khe tới
+ * đó gặp một bậc cao. Thay vì để tường vô hình, vẽ đúng phần bị nâng lên thành khối đá xây (đập đá chống cầu) để nhìn là chỗ không đi qua.
+ * Hàm thuần theo địa hình, có test khớp độ cao thật.
+ */
+export function bridgeFill(b: BridgeDef, step = 1): BridgeFillSample[] {
+  const t = levelTerrain();
+  const len = Math.hypot(b.bx - b.ax, b.bz - b.az);
+  const n = Math.max(1, Math.round(len / step));
+  const out: BridgeFillSample[] = [];
+  for (let i = 0; i <= n; i++) {
+    const u = i / n;
+    const x = b.ax + (b.bx - b.ax) * u;
+    const z = b.az + (b.bz - b.az) * u;
+    const half = b.halfW + 0.9;
+    // đáy = điểm thấp nhất trên cả bề rộng dải (mặt đất dốc ngang thì mép thấp hơn trục)
+    const sx = -(b.bz - b.az) / len;
+    const sz = (b.bx - b.ax) / len;
+    let floor = Infinity;
+    for (const off of [-half, -half / 2, 0, half / 2, half]) floor = Math.min(floor, t.surfaceAt(x + sx * off, z + sz * off));
+    const deck = bridgeDeckY(b, u);
+    if (deck - floor > 0.3) out.push({ x, z, floor, top: deck - 0.12, half });
+  }
+  return out;
+}
+
 /** Cầu treo: ván gỗ theo đường võng `bridgeDeckY`, hai dây thừng, cột đầu cầu sơn đỏ. Một lưới, màu đỉnh. */
 function bridgeGeometry(b: BridgeDef): THREE.BufferGeometry {
   const len = Math.hypot(b.bx - b.ax, b.bz - b.az);
@@ -440,6 +477,29 @@ function bridgeGeometry(b: BridgeDef): THREE.BufferGeometry {
       parts.push({ g: cap, col: WOOD2 });
     }
   }
+  // Đập đá chống cầu: các lớp đá xây xếp chồng từ đáy khe lên sát ván cầu, lệch nhẹ từng lớp cho thô ráp, trụ chống mỗi ~8 m.
+  const STONE = [new THREE.Color(0xa87b5c), new THREE.Color(0x93684c), new THREE.Color(0xb98c68), new THREE.Color(0x7e5640)];
+  const fill = bridgeFill(b);
+  const rnd = rng(SEED + 404);
+  fill.forEach((f, i) => {
+    const course = 1.1;
+    const layers = Math.max(1, Math.ceil((f.top - (f.floor - 0.6)) / course));
+    const h = (f.top - (f.floor - 0.6)) / layers;
+    for (let k = 0; k < layers; k++) {
+      const w = (f.half + (rnd() - 0.5) * 0.25) * 2;
+      const g = new THREE.BoxGeometry(w, h * 0.97, 1.04);
+      g.rotateY(yaw);
+      g.translate(f.x, f.floor - 0.6 + h * (k + 0.5), f.z);
+      parts.push({ g, col: STONE[(i + k * 2) % STONE.length] ?? WOOD2 });
+    }
+    if (i % 8 === 4) {
+      const total = f.top - (f.floor - 0.6);
+      const g = new THREE.BoxGeometry((f.half + 0.5) * 2, total, 1.7);
+      g.rotateY(yaw);
+      g.translate(f.x, f.floor - 0.6 + total / 2, f.z);
+      parts.push({ g, col: STONE[1] ?? WOOD2 });
+    }
+  });
   const geo = mergeFlat(parts);
   for (const p of parts) p.g.dispose();
   return geo;
