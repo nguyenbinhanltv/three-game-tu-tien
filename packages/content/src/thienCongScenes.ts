@@ -582,6 +582,8 @@ export const SCENES: Record<string, Scene[]> = {
   bac_hoang: [
     {
       note: 'Hàn Hối Nguyên',
+      clusters: 9,
+      clusterR: 12,
       at: [1294, 1394],
       r: 160,
       face: 'random',
@@ -601,6 +603,8 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Khô Lộc Lâm',
+      clusters: 9,
+      clusterR: 12,
       at: [771, 1363],
       r: 170,
       face: 'random',
@@ -620,6 +624,8 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Khích Giải',
+      clusters: 8,
+      clusterR: 12,
       at: [1000, 881],
       r: 150,
       face: 'random',
@@ -627,6 +633,8 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Xích Tẫn Bình',
+      clusters: 8,
+      clusterR: 12,
       at: [1500, 598],
       r: 160,
       face: 'random',
@@ -634,6 +642,8 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Kim Đa Ngoại Uyên',
+      clusters: 8,
+      clusterR: 12,
       at: [593, 620],
       r: 160,
       face: 'random',
@@ -641,6 +651,8 @@ export const SCENES: Record<string, Scene[]> = {
     },
     {
       note: 'Trấn Giới Đài',
+      clusters: 8,
+      clusterR: 12,
       at: [1028, 475],
       r: 150,
       face: 'random',

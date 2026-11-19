@@ -325,6 +325,60 @@
         "collider": 0.0,
         "foot": 0.4
       }
+    ],
+    "di_vuc": [
+      {
+        "name": "xuong_cu_thu",
+        "vi": "Xương cự thú thu nhỏ",
+        "collider": [
+          [
+            -1.0,
+            0,
+            0.5
+          ],
+          [
+            0.4,
+            0,
+            0.5
+          ],
+          [
+            2.6,
+            0.2,
+            0.8
+          ]
+        ]
+      },
+      {
+        "name": "cot_ta_mau_tim",
+        "vi": "Cột tà màu tím",
+        "collider": 0.8
+      },
+      {
+        "name": "tinh_the_tim",
+        "vi": "Tinh thể tím",
+        "collider": 1.2
+      },
+      {
+        "name": "chan_dong_do_nat",
+        "vi": "Chân đồng đổ nát phương Tây",
+        "collider": [
+          [
+            -0.6,
+            0,
+            1.0
+          ],
+          [
+            0.6,
+            0,
+            1.0
+          ]
+        ]
+      },
+      {
+        "name": "co_rach",
+        "vi": "Cờ rách",
+        "collider": 0.4
+      }
     ]
   }
 }
