@@ -407,6 +407,7 @@ export function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
   eng.vanHaiWow?.update(dt);
   eng.doanMachArt?.update(eng.camera.position);
   eng.kiemTrungArt?.update(dt);
+  eng.phucMachArt?.update(dt);
   eng.cardForest?.update(eng.camera.position.x, eng.camera.position.z);
 }
 

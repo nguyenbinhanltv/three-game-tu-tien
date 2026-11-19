@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "arch_phuc_mach",
+  "type": "arch",
+  "status": "in_game",
+  "procedural": { "script": "tools/blender/phuc_mach_arch.py", "seed": 20261119 },
+  "license": { "source": "Tự sinh bằng bộ dựng tools/blender/build_sect.py + thien_cong_kit.py + kiem_trung_arch.py + phuc_mach_arch.py (DUN-1 PR2)", "owner": "dự án", "date": "2026-11-19" }
+}

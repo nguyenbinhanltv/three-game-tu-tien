@@ -247,6 +247,16 @@
         "shadowAmount": 0.3, "highlightAmount": 0.3,
         "blackLift": "#202833", "contrast": 1.22, "saturation": 0.8, "exposure": 1.12
       },
+      "pm": {
+        "label": "Phục Mạch Quật — hầm mỏ cũ, đất son tối, mạch tinh lam lục",
+        "sunColor": "#FFD9A6", "sunIntensity": 2.0, "sunElevationDeg": 58,
+        "skyColor": "#4A3A2C", "skyIntensity": 0.7,
+        "fogColor": "#2A2018", "fogDensity": 0.0021, "heightFogTop": 10, "heightFogBoost": 2.2,
+        "fogHaze": 0.0009, "fogHazeStart": 70, "fogScatter": 0.5, "rim": 1.0,
+        "shadowTint": "#1C1814", "highlightTint": "#7FE8D0", "splitBalance": -0.05,
+        "shadowAmount": 0.32, "highlightAmount": 0.3,
+        "blackLift": "#1A1612", "contrast": 1.22, "saturation": 0.82, "exposure": 1.02
+      },
       "vh_dawn": {
         "label": "Vân Hải — bình minh lam bạc",
         "sunColor": "#FFD2B0", "sunIntensity": 3.2, "sunElevationDeg": 12,

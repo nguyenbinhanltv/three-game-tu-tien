@@ -1,8 +1,8 @@
 {
-  "mood": "ochre_night",
+  "mood": "pm",
   "glb": [],
   "ground": {
-    "set": "terrain-ochre",
+    "set": "terrain-slate",
     "mask": "neutral"
   },
   "music": [
@@ -24,7 +24,14 @@
   "cave": {
     "x": 1520,
     "z": 1300,
-    "r": 94,
-    "h": 46
+    "r": 135,
+    "h": 75
+  },
+  "phucMachArt": true,
+  "godRays": {
+    "x": 1520,
+    "z": 1280,
+    "r": 95,
+    "count": 36
   }
 }

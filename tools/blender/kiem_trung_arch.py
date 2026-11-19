@@ -43,6 +43,7 @@ CHAIN = pnt(0x4A4036, 'metal')
 BRONZE = pnt(0x6E5A3A, 'metal')
 LEATHER = pnt(0x2A2220, 'wood')
 ROCK = [C(0x5A6470), C(0x434B56), C(0x6C7784), C(0x2F353E)]
+HAZE = C(0x9FB4C8)  # màu sương xa (bí cảnh khác đặt lại)
 STEEL = C(0xB8C4D0)
 STEEL_DK = C(0x6A7681)
 RUST = C(0x7E4A2C)
@@ -161,7 +162,7 @@ def rock_col(seed, haze=0.0, strata=0.0, moss_amt=1.0):
             if m > 0.5:
                 rgb = mix(rgb, MOSS, min(0.8, (m - 0.5) * 3) * moss_amt)
         if haze:
-            rgb = mix(rgb, C(0x9FB4C8), haze)
+            rgb = mix(rgb, HAZE, haze)
         return Paint(tuple(rgb), 'stone')
 
     return fn
@@ -416,15 +417,15 @@ def karst(b, h, w, haze, seed):
                     rgb = mix(rgb, RUST, low * 0.25 * n_)
                     if j % 3 == 0 and q < 0.5:
                         rgb = mix(rgb, MOSS, 0.25 * n_)
-                    rgb = mix(rgb, C(0x9FB4C8), haze * (0.3 + 0.7 * q))
+                    rgb = mix(rgb, HAZE, haze * (0.3 + 0.7 * q))
                     b.poly(quad, mid, Paint(tuple(rgb), 'stone'))
             prev = ring
-        b.poly(prev, (cx, 0, cz), Paint(mix(ROCK[1], C(0x9FB4C8), haze), 'stone'))
+        b.poly(prev, (cx, 0, cz), Paint(mix(ROCK[1], HAZE, haze), 'stone'))
     for k in range(6):
         a = rnd.uniform(0, math.tau)
         d = rnd.uniform(0.9, 1.7) * w
         tbox(b, (math.cos(a) * d, 0.6, math.sin(a) * d), (w * rnd.uniform(0.3, 0.6), w * rnd.uniform(0.3, 0.8), w * rnd.uniform(0.3, 0.6)),
-             Paint(mix(ROCK[k % 4], C(0x9FB4C8), haze * 0.5), 'stone'), rx=rnd.uniform(-0.5, 0.5), rz=rnd.uniform(-0.5, 0.5), yaw=a)
+             Paint(mix(ROCK[k % 4], HAZE, haze * 0.5), 'stone'), rx=rnd.uniform(-0.5, 0.5), rz=rnd.uniform(-0.5, 0.5), yaw=a)
 
 
 # ---------- vật rải ----------
