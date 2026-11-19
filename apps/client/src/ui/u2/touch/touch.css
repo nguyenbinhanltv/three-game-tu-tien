@@ -367,8 +367,12 @@ html[data-touch] .win-host .u2-close {
     top: calc(var(--t-t) + 168px);
     width: calc(100vw - var(--t-l) - var(--t-r));
   }
+  /* màn dọc: gợi ý xoay và thông báo nằm giữa màn, dưới các hàng nút/nhiệm vụ, không đè khung nhân vật, hub và ô tiện ích */
   .u2t-rotate {
-    top: calc(var(--t-t) + 170px);
+    top: 44%;
+  }
+  :root .hud.u2hud[data-mode='touch'] .toasts {
+    top: 34%;
   }
   .u2t-joy-hint {
     bottom: calc(var(--t-b) + 120px);
