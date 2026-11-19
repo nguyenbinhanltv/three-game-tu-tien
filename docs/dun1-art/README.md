@@ -99,3 +99,8 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Ánh sáng**: ba tia sáng vàng nhạt từ giếng sáng vòm, sương tím thấp đậm hơn, exposure 0,82.
 - **Ngân sách (preset Cao)**: ~158 draw call, ~0,85M tam giác.
 - **Còn lại**: tượng vẫn thô ở độ phân giải khối (chưa có normal map hoa văn thật); bệ tượng nhìn từ trên còn "bàn cờ" vàng; vòng trận r 64 vạch chia còn đọc như đoạn rời ở góc nhìn lướt; sàn vẫn thiên tím xanh ở vùng xa.
+
+### PR 4 vòng 3 (review code): vạch báo boss đọc rõ trên sàn
+
+- Sàn trong vùng đánh (r < ~64, chuyển dần tới r 72) đổi sang **đá xám đen ánh vàng ấm**, sáng hơn (nền 0,075–0,15 thay 0,008–0,026), gần như bỏ vân tím; vành ngoài giữ đen tím. Không đổi vạch báo của game.
+- Kiểm bằng `pnpm shots dungeonart --level than_tang --battle 1 --perf 1`: ảnh `90-boss-chieu` và `91-boss-pha-cuoi` (1080p). **Kết quả**: vạch báo tím/hồng (hình quạt, vòng chữ triện) nay tách rõ khỏi nền xám ấm — mép, vành chữ và các dải đồng tâm đều đọc được, không còn chìm vào nền tím như trước. Hạn chế: bloom/sương tím của hậu kỳ vẫn ngả nền hơi hồng-tím nên độ tương phản màu (không phải độ sáng) chưa tối đa; nền vẫn thiên lạnh ở các góc xa trong vùng đánh.

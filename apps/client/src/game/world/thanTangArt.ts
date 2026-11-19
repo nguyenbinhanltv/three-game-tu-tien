@@ -172,9 +172,16 @@ export function buildVaultFloor(): THREE.Mesh {
     .mul(0.5)
     .add(smoothstep(0.62, 0.8, texture(nz, vec2(w.x.mul(0.05), w.y.mul(0.8)).add(0.1)).b).mul(0.4));
   const wear = smoothstep(0.55, 0.85, texture(nz, w.mul(1 / 6.5)).a);
-  const stone = mix(vec3(0.008, 0.007, 0.016), vec3(0.026, 0.02, 0.042), tone)
+  // Vùng đánh (r < ~64): đá xám đen ánh vàng ấm, sáng hơn, gần như không vân tím (vạch báo của game là thông tin né đòn, phải đọc rõ nhất trên sàn);
+  // vành ngoài giữ đen tím. `inner` = 1 trong vùng đánh, về 0 quanh r 70.
+  const inner = float(1).sub(smoothstep(58.0, 72.0, r));
+  const outerStone = mix(vec3(0.008, 0.007, 0.016), vec3(0.026, 0.02, 0.042), tone)
     .add(vec3(0.22, 0.1, 0.36).mul(purpleV).mul(0.16))
     .add(vec3(0.85, 0.6, 0.22).mul(goldV).mul(0.22));
+  const innerStone = mix(vec3(0.075, 0.068, 0.07), vec3(0.15, 0.135, 0.12), tone)
+    .add(vec3(0.5, 0.36, 0.16).mul(goldV).mul(0.16))
+    .add(vec3(0.22, 0.14, 0.3).mul(purpleV).mul(0.03));
+  const stone = mix(outerStone, innerStone, inner);
   // vũng sáng
   const spots = [
     { x: CENTER.x, z: CENTER.z, rr: 18, k: 0.55 },
@@ -193,7 +200,7 @@ export function buildVaultFloor(): THREE.Mesh {
       ).mul(sp.k),
     );
   const edgeDark = float(1).sub(smoothstep(26.0, 100.0, r).mul(0.88));
-  const lit = float(0.32).add(pools.mul(1.1));
+  const lit = float(0.32).add(inner.mul(0.5)).add(pools.mul(1.1));
   const warm = vec3(1.0, 0.66, 0.26);
   const cold = vec3(0.14, 0.08, 0.24);
   // phản chiếu: ấm vàng quanh vũng sáng, lạnh tím ở xa; giảm bởi mòn
