@@ -17,6 +17,7 @@ import hires from './scenarios/hires';
 import lackiem from './scenarios/lackiem';
 import bachoang from './scenarios/bachoang';
 import doanmach from './scenarios/doanmach';
+import vanhai from './scenarios/vanhai';
 import quality from './scenarios/quality';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
@@ -50,6 +51,7 @@ const SCENARIOS: Scenario[] = [
   lackiem,
   bachoang,
   doanmach,
+  vanhai,
   map,
   mons,
   dungeon,
