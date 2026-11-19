@@ -224,9 +224,15 @@ const OUT = path.join(
         ? 'terrain-ash'
         : SET === 'snow'
           ? 'terrain-snow'
-          : 'terrain',
+          : SET === 'lackiem'
+            ? 'terrain-lk'
+            : 'terrain',
 );
-const SIZE = 1024;
+/** Bộ `lackiem` (MAP-1 bản B, chỉ Vân Lam/Kiếm Trủng): màu 2048², pháp tuyến/nhám 1024² (client giải mã ở nửa kích thước albedo); bộ khác 1024². */
+const LK = SET === 'lackiem';
+const SIZE = LK ? 2048 : 1024;
+const NSIZE = LK ? 1024 : SIZE;
+const TAG = LK ? '2k' : '1k';
 
 async function fetchBuf(url: string): Promise<Buffer> {
   const r = await fetch(url);
@@ -235,13 +241,13 @@ async function fetchBuf(url: string): Promise<Buffer> {
 }
 
 async function source(ph: string, kind: 'Diffuse' | 'nor_gl' | 'Rough'): Promise<Buffer> {
-  const f = path.join(SRC, ph, `${ph}_${kind}_1k.jpg`);
+  const f = path.join(SRC, ph, `${ph}_${kind}_${TAG}.jpg`);
   if (existsSync(f)) return readFile(f);
   const files = (await (await fetch(`https://api.polyhaven.com/files/${ph}`)).json()) as Record<
     string,
     Record<string, Record<string, { url: string }>>
   >;
-  const buf = await fetchBuf(files[kind]['1k'].jpg.url);
+  const buf = await fetchBuf(files[kind][TAG].jpg.url);
   await mkdir(path.dirname(f), { recursive: true });
   await writeFile(f, buf);
   return buf;
@@ -294,10 +300,10 @@ async function main(): Promise<void> {
     if (L.tint) img = img.modulate({ saturation: 0.48, brightness: 1.08 }).linear([...L.tint], [0, 0, 0]);
     const albedo = await img.webp({ quality: 76 }).toBuffer();
     // Pháp tuyến: R = x, G = y (z dựng lại ở shader), B = độ nhám.
-    const nrm = await sharp(nor).resize(SIZE, SIZE).removeAlpha().raw().toBuffer();
-    const r = await sharp(rough).resize(SIZE, SIZE).greyscale().raw().toBuffer();
-    for (let i = 0; i < SIZE * SIZE; i++) nrm[i * 3 + 2] = r[i];
-    const n = await sharp(nrm, { raw: { width: SIZE, height: SIZE, channels: 3 } })
+    const nrm = await sharp(nor).resize(NSIZE, NSIZE).removeAlpha().raw().toBuffer();
+    const r = await sharp(rough).resize(NSIZE, NSIZE).greyscale().raw().toBuffer();
+    for (let i = 0; i < NSIZE * NSIZE; i++) nrm[i * 3 + 2] = r[i];
+    const n = await sharp(nrm, { raw: { width: NSIZE, height: NSIZE, channels: 3 } })
       .webp({ quality: 78 })
       .toBuffer();
     const ar = albedo;
@@ -305,7 +311,7 @@ async function main(): Promise<void> {
     manifest.push(entry);
     console.log(`[terrain] ${L.layer} (${L.ph}): a ${(ar.length / 1024) | 0} KB, n ${(n.length / 1024) | 0} KB`);
   }
-  if (SET !== 'terrain') {
+  if (SET !== 'terrain' && !LK) {
     await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify({ size: SIZE, layers: manifest }, null, 2) + '\n');
     return;
   }

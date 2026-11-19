@@ -27,6 +27,8 @@ def giant_sword(b, x, z):
     b.cylinder(x, 0.5, z, 3.0, 0.45, kit.JADE, 20, 2.6, smooth=False)
     b.cylinder(x, 0.95, z, 2.5, 0.08, kit.JADE_GREEN, 20)
     b.sword_planted(x, z, 1.1, 11.5, 2.3, yaw=0.0)
+    for i, word in enumerate(('Vạn', 'Kiếm', 'Quy', 'Tông')):  # chữ khắc nổi vàng dọc thân kiếm (Vạn Kiếm Quy Tông), mỗi tiếng một hàng
+        b.text(word, x, 1.1 + 3.4 + i * 1.75, z + 0.17, 0.85, 0.1, kit.GILD_TEXT, fit_w=1.6, fit_h=1.15, bold=0.04)
     for k in range(6):  # đá chèn quanh chân kiếm
         a = k / 6 * math.tau
         b.box(x + math.cos(a) * 1.9, 1.15, z + math.sin(a) * 1.9, 0.9, 0.55, 0.9, kit.JADE_SHADE, yaw=-a)
@@ -72,9 +74,14 @@ def build_sect():
     P = b.place
 
     # ----- Trục thần đạo: đại lộ ngọc từ sơn môn lên chính điện, vòng bát quái quanh cự kiếm -----
+    # Lát đá thành từng tấm có khe: nền tối làm mạch, mỗi tấm 2,9 × 3,9 m cao thấp lệch nhẹ (vát mép, rêu bám kẽ do bevel + màu rêu theo mặt).
+    b.box(0, 0.02, 26, 12.2, 0.04, 108, kit.STONE_JOINT)
     for k in range(26):
         z = 78 - k * 4.0
-        b.box(0, 0.04, z, 12, 0.08, 3.8, kit.JADE if k % 2 == 0 else kit.JADE_SHADE)
+        for col in range(4):
+            x = -4.5 + col * 3.0
+            lift = b.rng.uniform(0.0, 0.025)
+            b.box(x, 0.07 + lift, z, 2.86, 0.1, 3.86, kit.JADE if (k + col) % 2 == 0 else kit.JADE_SHADE)
     for sx in (-1, 1):
         b.box(sx * 6.4, 0.07, 22, 0.8, 0.14, 108, kit.JADE_GREEN)
     P('prop_bat_quai', 0, 0.02, 18, scale=3.4)
@@ -138,7 +145,7 @@ def build_sect():
 # ---------- xuất GLB ----------
 
 
-def bevel_hard_edges(bm, width=0.04, angle=math.radians(35), mats=()):
+def bevel_hard_edges(bm, width=0.04, angle=math.radians(35), mats=(), segments=1):
     edges = []
     for e in bm.edges:
         if len(e.link_faces) != 2:
@@ -148,7 +155,7 @@ def bevel_hard_edges(bm, width=0.04, angle=math.radians(35), mats=()):
         if e.calc_face_angle(0.0) >= angle:
             edges.append(e)
     if edges:
-        bmesh.ops.bevel(bm, geom=edges, offset=width, segments=1, affect='EDGES')
+        bmesh.ops.bevel(bm, geom=edges, offset=width, segments=segments, affect='EDGES')
 
 
 def make_mesh(name, builder, keys, images, bevel=True):
@@ -174,8 +181,11 @@ def make_mesh(name, builder, keys, images, bevel=True):
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
     if bevel:
         # Vát mép đá/ngọc (mép mòn, bắt sáng): chỉ giữa hai mặt cùng chất liệu đá.
-        stone = {keys.index(k) for k in ('jade', 'stone') if k in keys}
-        bevel_hard_edges(bm, 0.035, mats=stone)
+        # Vát 1 đoạn cho mọi chất liệu (tam giác kiến trúc tính hai lần vì có pass bóng; 2 đoạn làm đỉnh vượt ngân sách 1,7 triệu).
+        hard = {keys.index(k) for k in ('jade', 'stone', 'steel') if k in keys}
+        soft = {keys.index(k) for k in ('plaster', 'lacquer', 'wood') if k in keys}
+        bevel_hard_edges(bm, 0.05, mats=hard, segments=1)
+        bevel_hard_edges(bm, 0.04, mats=soft, segments=1)
     bm.to_mesh(mesh)
     bm.free()
     return mesh

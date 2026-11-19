@@ -1000,3 +1000,22 @@ Sinh bằng công cụ ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (
 ## Texture mặt đất Bắc Hoang (MAP-5 PR2)
 
 Bộ snow cho `bac_hoang`, đóng gói bằng `pnpm assets:terrain --set snow` ra `apps/client/public/terrain-snow/` (nạp lười khi vào level). Năm lớp tuyết (`proc:powder|ripple|crust|drift|grit`) do chính dự án sinh thủ tục (không nguồn ngoài, không cần ghi công). Ba lớp còn lại từ [Poly Haven](https://polyhaven.com/textures), **CC0-1.0**: `dark_rock` (Rob Tuytel), `rock_wall_08` (Amal Kumar), `volcanic_rock_tiles` (Charlotte Baglioni); đã kéo về đen lam bằng `tint`.
+
+## Lạc Kiếm Tông bản B tả thực (MAP-1)
+
+Texture PBR từ [Poly Haven](https://polyhaven.com/textures), giấy phép **CC0-1.0** (ghi để truy vết). Bản 2K gốc ở `../dtl-asset-source/texture/<id>/` (tải bằng `pnpm assets:sect-textures`). Kiến trúc: ảnh màu đổi sang độ sáng (xám) rồi nhân màu đỉnh theo bảng màu, cộng normal + độ nhám, nướng vào `arch_sect.glb` bằng `tools/blender/thien_cong_kit.py`. Đá vách đảo nổi và atlas tán lá đóng gói bằng `pnpm assets:sky-textures` ra `apps/client/public/sky/` (atlas lá tự vẽ bằng SVG, không dùng ảnh ngoài).
+
+| Dùng cho | Poly Haven | Tác giả | Giấy phép |
+| --- | --- | --- | --- |
+| ngọc trắng (nền, lan can, bậc) | [marble_rock_01](https://polyhaven.com/a/marble_rock_01) | Amal Kumar | CC0-1.0 |
+| đá chân tảng, nền | [japanese_stone_wall](https://polyhaven.com/a/japanese_stone_wall) | Rico Cilliers, Charlotte Baglioni, Dario Barresi | CC0-1.0 |
+| tường vữa | [plastered_stone_wall](https://polyhaven.com/a/plastered_stone_wall) | Rob Tuytel | CC0-1.0 |
+| ngói lưu ly | [ceramic_roof_01](https://polyhaven.com/a/ceramic_roof_01) | Rob Tuytel | CC0-1.0 |
+| cột sơn son | [lacquered_cherry_wood](https://polyhaven.com/a/lacquered_cherry_wood) | Jenelle van Heerden, Rico Cilliers | CC0-1.0 |
+| gỗ xà, cửa | [dark_wood](https://polyhaven.com/a/dark_wood) | Dario Barresi, Dimitrios Savva, Rico Cilliers | CC0-1.0 |
+| vách đá đảo nổi | [cliff_side](https://polyhaven.com/a/cliff_side) | James Ray Cock, Jenelle van Heerden, Dario Barresi | CC0-1.0 |
+
+Tác giả lấy từ API Poly Haven (`/info/<id>`) ngày 2026-11-19.
+
+Bổ sung (vòng chỉnh bản B): `metal_plate` ([Poly Haven](https://polyhaven.com/a/metal_plate), Rob Tuytel, CC0-1.0) cho thép cự kiếm; bộ mặt đất `terrain-lk` dùng cùng 8 texture Poly Haven CC0 của bộ `terrain` ở bản 2K; font [Charm Bold](https://fonts.google.com/specimen/Charm) (SIL OFL 1.1, giấy phép ở `apps/client/public/fonts/OFL-charm.txt`; bản TTF ở `../dtl-asset-source/font/`) chỉ dùng để dựng mesh chữ Việt trên biển hiệu và cự kiếm trong `arch_sect.glb`.
+

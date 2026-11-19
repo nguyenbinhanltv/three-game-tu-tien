@@ -171,3 +171,18 @@ Sau đó main có thêm #62 (chỉnh màu) và #64 (hit feel theo hạng thân, 
 | Băng thông ~40 KB/s mỗi client khi 100 người chung kênh (~26 KB/s ở 50) | xem mục Server | Chưa cần. Khi mở rộng: AOI theo ô (đã ghi trong CLAUDE.md là chưa có). | Lớn |
 | Chưa đo trên máy mục tiêu (Iris Xe / Radeon 680M) | GPU ở đây chỉ 0,2–0,7 ms (WebGPU) và 2–5 ms (WebGL2) | Chạy `pnpm bench:crowd --bots 50 --presets medium` trên laptop GPU tích hợp; pháp trận (`castSigil`) và cỏ là phần fragment nặng nhất cần xem. | Nhỏ |
 
+## MAP-1 Lạc Kiếm Tông bản B (2026-11-19)
+
+Chrome headless, Vân Lam, `pnpm shots lackiem --perf 1` (1080p, 6 góc cố định). Số liệu đầy đủ và cách đo: `docs/map1-art/README.md`.
+
+| Chỉ số | Bản A (main trước #305) | Bản B |
+| --- | --- | --- |
+| Draw call đỉnh (Cao) | 184 | 188 |
+| Tam giác đỉnh (Cao) | 1,48 triệu | 1,66 triệu |
+| `arch_sect` (KTX2) | 2,3 MB, 142k tam giác | ~19 MB, ~280k tam giác |
+| Bộ texture mặt đất Cao/Cực cao | 1024² (~56 MB VRAM) | 2K `terrain-lk` (~224 MB VRAM) |
+| Bộ texture mặt đất Thấp/Vừa | 1024² | 1024² (không đổi) |
+| Heap JS (Cao) | — | 443 MB (627 MB nếu giữ mảng nguồn texture; đã bỏ sau upload) |
+
+Số `textures` của renderer 105 (Cao) / 103 (Vừa); chưa chạy `bench:client` đầy đủ.
+
