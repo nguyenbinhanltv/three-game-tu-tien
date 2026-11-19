@@ -47,7 +47,7 @@ export default {
           viewport: [1280, 720],
           quality: 'high',
           look: { g },
-          query: { chr: 'v3', ...(env('V3_CLOTH', '') === '1' ? { cloth: '1' } : {}) }, // V3_CLOTH=1: vải mô phỏng Thiên Y
+          query: { chr: 'v3', ...(env('V3_CLOTH', '') === '1' ? { cloth: '1' } : {}), ...Object.fromEntries(new URLSearchParams(env('V3_QUERY', '')).entries()) }, // V3_CLOTH=1: vải mô phỏng Thiên Y
           hide: 'hud',
           warnings: /models|chr_v3|clip/,
         });
@@ -199,6 +199,16 @@ export default {
           }
           return out;
         });
+        const tex = await page.evaluate(() => {
+          const g = window.__game!;
+          const m = g.ents.players.get(g.sid).model;
+          const out: string[] = [];
+          m.rig.traverse((o: { isMesh?: boolean; material?: { map?: { image?: { width: number; height: number }; colorSpace?: string } | null; roughness?: number; metalness?: number }; name: string; visible: boolean }) => {
+            if (o.isMesh && o.visible && o.material?.map) out.push(`${o.name}: ${o.material.map.image?.width}x${o.material.map.image?.height} ${o.material.map.colorSpace} r=${o.material.roughness} m=${o.material.metalness}`);
+          });
+          return out;
+        });
+        console.log(`[shots:v3views] ${tag} texture: ${tex.join(' | ')}`);
         console.log(`[shots:v3views] ${tag} xương (cao so với chân, m): ${JSON.stringify(bones)}`);
         const cst = await page.evaluate(() => {
           const g = window.__game!;

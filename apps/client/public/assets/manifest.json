@@ -4659,8 +4659,8 @@
       "id": "chr_v3_tinh_khuyet_nu",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_tinh_khuyet_nu.glb",
-      "file": "chr_v3_tinh_khuyet_nu.fc94bdaf42.glb",
-      "bytes": 12161568,
+      "file": "chr_v3_tinh_khuyet_nu.73f278b574.glb",
+      "bytes": 12175744,
       "rawBytes": 16141088,
       "triangles": 99438,
       "rawTriangles": 99438,
@@ -4711,7 +4711,7 @@
         },
         {
           "level": 2,
-          "triangles": 7991,
+          "triangles": 7996,
           "target": 8000
         }
       ],

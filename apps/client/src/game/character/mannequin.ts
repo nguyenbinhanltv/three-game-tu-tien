@@ -208,6 +208,9 @@ function tuneTripoMaterial(m: THREE.MeshStandardNodeMaterial): void {
   else m.roughness = Math.max(m.roughness, 0.6);
   m.metalness = 0.5;
   m.envMapIntensity = 0.55;
+  // Da nhợt của Tripo (baseColor sáng ~0,8) bị nắng + env game thổi trắng/xám: hạ phản xạ khuếch tán một chút cho còn sắc hồng.
+  // Ánh sáng game hơi lạnh (đo má: R−B từ 56 còn 29): bù ấm nhẹ (R giữ, G −15%, B −20%).
+  m.color.setRGB(0.96, 0.82, 0.76);
   m.needsUpdate = true;
 }
 
