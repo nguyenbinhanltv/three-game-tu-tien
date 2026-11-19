@@ -54,7 +54,7 @@ C_GRASS = lin(0x7A8460)
 C_ROOT = lin(0x4A3A2C)
 C_ROOT_L = lin(0x6A5238)
 C_VINE = lin(0x3F7A34)
-C_LEAF = lin(0x5E9A3E)
+C_LEAF = lin(0x3F7A30)
 
 
 def hsh(a, b, c, sd):
@@ -260,9 +260,10 @@ def island(name, R, amp, belly, spikes, roots, dk, seed, fake=False, seg=96, nr=
         return layer_off[k]
 
     def base_r(m):
+        # vách rộng hơn mép địa hình (R + edge 12 → vách đảo trong heightAt kết thúc ở ~R+6): R + 10 để váy che hẳn vành địa hình, không còn lộ đĩa mỏng
         if m <= 8.0:
-            return R + 3.0
-        return (R + 3.0) * (0.05 + 0.95 * math.exp(-(m - 8.0) / tau))
+            return R + 10.0
+        return (R + 10.0) * (0.05 + 0.95 * math.exp(-(m - 8.0) / tau))
 
     def surf(th, m):
         """Điểm trên mặt thân ở góc th, độ sâu m → (x, z, r, ao)."""
@@ -412,7 +413,7 @@ def island(name, R, amp, belly, spikes, roots, dk, seed, fake=False, seg=96, nr=
                 continue
             p = pts[q]
             a = rnd.random() * math.tau
-            lw = (0.7 + rnd.random() * 0.6) * ss**0.5
+            lw = (0.4 + rnd.random() * 0.3) * ss**0.5
             va = M.vert((p[0], p[1], p[2]))
             vb = M.vert((p[0] + math.cos(a) * lw * 1.4, p[1] - lw * 0.6, p[2] + math.sin(a) * lw * 1.4))
             vc = M.vert((p[0] + math.cos(a + 0.7) * lw, p[1] - lw * 1.4, p[2] + math.sin(a + 0.7) * lw))

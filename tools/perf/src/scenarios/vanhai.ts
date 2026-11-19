@@ -98,6 +98,25 @@ export default {
               ),
             );
           }
+          if (flag('--thin')) {
+            // Liệt kê mesh/instance mảnh và dài (cột, thanh): tên chuỗi cha + hộp bao thế giới.
+            const rows = await page.evaluate(`(() => {
+              const sc = window.__game.scene;
+              const out = [];
+              const T = window.__game.scene.constructor;
+              function path(o) { const a = []; for (let p = o; p && p.parent; p = p.parent) a.push(p.name || p.type); return a.reverse().join('/'); }
+              sc.updateMatrixWorld(true);
+              sc.traverse((o) => {
+                if (!o.isMesh || !o.visible || !o.geometry) return;
+                if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+                const b = o.geometry.boundingBox;
+                const sx = b.max.x - b.min.x, sy = b.max.y - b.min.y, sz = b.max.z - b.min.z;
+                if (sy > 25 && Math.max(sx, sz) < 8) out.push([path(o), Math.round(sx), Math.round(sy), Math.round(sz), o.isInstancedMesh ? o.count : 1]);
+              });
+              return out.slice(0, 40);
+            })()`);
+            console.log(`[thin ${v.name}] ` + JSON.stringify(rows));
+          }
           if (flag('--draws')) {
             // Đếm mesh đang vẽ theo nhóm cha (ước lượng draw call): `--draws 1` in 25 nhóm nhiều nhất.
             const rows = await page.evaluate(`(() => {
@@ -106,6 +125,7 @@ export default {
               function walk(o, top, depth) {
                 if (!o.visible) return;
                 if (o.isMesh || o.isLine || o.isPoints) agg.set(top, (agg.get(top) || 0) + (Array.isArray(o.material) ? o.material.length : 1));
+                if (o.isMesh && o.castShadow) agg.set('shadow:' + top, (agg.get('shadow:' + top) || 0) + 1);
                 for (const c of o.children) walk(c, depth === 0 ? c.name || c.type : depth === 1 && (top === 'mapVis' || top === 'Group' || top === 'skyIslands') ? top + '/' + (c.name || c.type) : top, depth + 1);
               }
               walk(sc, '', 0);

@@ -136,8 +136,8 @@ export class SkyIslands {
 
   /** Đảo đá nhỏ vệ tinh lơ lửng quanh các đảo lớn (3 InstancedMesh, tất định theo vị trí đảo); tránh đè lên đảo khác và nằm trên sàn mây. */
   private buildSatellites(geo: Map<string, THREE.BufferGeometry>): void {
-    const names = ['a', 'b', 'c'];
-    const mats: Record<string, THREE.Matrix4[]> = { a: [], b: [], c: [] };
+    const names = ['a'];
+    const mats: Record<string, THREE.Matrix4[]> = { a: [] };
     const q = new THREE.Quaternion();
     for (const isl of this.islandsDef) {
       if (isl.r < 60) continue;
@@ -153,8 +153,13 @@ export class SkyIslands {
         if (this.islandsDef.some((o) => o !== isl && Math.hypot(o.x - x, o.z - z) < o.r + 40)) continue;
         const sc = 0.6 + h(4) * 0.8;
         q.setFromEuler(new THREE.Euler((h(5) - 0.5) * 0.12, h(6) * Math.PI * 2, (h(7) - 0.5) * 0.12));
-        mats[names[Math.floor(h(8) * 3) % 3]!]!.push(
-          new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), q.clone(), new THREE.Vector3(sc, sc, sc)),
+        mats.a!.push(
+          // một kiểu duy nhất (1 draw call): đổi dáng bằng co giãn lệch trục + xoay quanh trục đứng
+          new THREE.Matrix4().compose(
+            new THREE.Vector3(x, y, z),
+            q.clone(),
+            new THREE.Vector3(sc * (0.75 + h(9) * 0.6), sc * (0.7 + h(10) * 0.8), sc * (0.75 + h(11) * 0.6)),
+          ),
         );
       }
     }

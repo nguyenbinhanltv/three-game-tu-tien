@@ -315,7 +315,7 @@ function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
 }
 
 /** Level đảo nổi: ô lưới có độ chênh cao hơn mức này (m) là vách đảo, không dựng mặt (vách là khối đá treo ở skyIslands.ts). */
-const CLIFF_SKIP = 9;
+const CLIFF_SKIP = 4; // POLISH-1: 9 → 4 để vành địa hình rủ ở mép đảo không lòi qua váy đá
 /** Ô nằm ở vách ranh vùng chơi (không phải vách đảo): vẫn dựng mặt, nếu không để lại các khe mảnh như đường kẻ dọc trên trời. */
 function onPlayWall(pos: Float32Array, a: number, d: number): boolean {
   const cx = (pos[a * 3]! + pos[d * 3]!) / 2;
@@ -407,6 +407,8 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
       for (let k = 0; k < res; k++) {
         const a = get(k);
         const b = get(k + 1);
+        // Level đảo nổi: ranh ô cắt qua vách đảo thì hai đỉnh kề nhau chênh hàng chục mét → viền rủ thành cột/vạt dài đâm xuống mây (POLISH-1); bỏ đoạn đó.
+        if (cliff < Infinity && Math.abs(pos[a * 3 + 1]! - pos[b * 3 + 1]!) > cliff) continue;
         const c = start + k;
         const d = start + k + 1;
         idx.push(a, c, b, b, c, d, a, b, c, b, d, c);

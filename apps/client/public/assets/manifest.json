@@ -1293,9 +1293,9 @@
       "id": "arch_vh_island",
       "class": "arch",
       "source": "assets/build/raw/arch_vh_island.glb",
-      "file": "arch_vh_island.9e21d8881d.glb",
-      "bytes": 1296036,
-      "rawBytes": 4266912,
+      "file": "arch_vh_island.5e439de3c0.glb",
+      "bytes": 1295616,
+      "rawBytes": 4266904,
       "triangles": 185373,
       "rawTriangles": 185373,
       "lod0Cap": 600000,
@@ -1313,15 +1313,15 @@
       ],
       "dims": {
         "raw": {
-          "width": 456.9937,
+          "width": 471.3011,
           "height": 663.3,
-          "depth": 445.963,
+          "depth": 459.4286,
           "minY": -662.4
         },
         "build": {
-          "width": 456.9869,
-          "height": 663.3006,
-          "depth": 445.9817,
+          "width": 471.2964,
+          "height": 663.3011,
+          "depth": 459.4458,
           "minY": -662.4
         }
       }
