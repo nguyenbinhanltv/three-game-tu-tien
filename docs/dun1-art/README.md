@@ -214,6 +214,12 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - Độ phân giải phản chiếu 0,5 → 0,4. Phản chiếu chỉ bật ở preset có đèn (Cao/Cực cao) và WebGPU.
 - **Đo (`pnpm shots dungeonart --level kinh_nguyet --battle 1 --perf 1`, preset Cao, 1080p)**: cảnh trống 194–236 draw call, ~0,81–0,86M tam giác, 9–10 ms/khung; **đang đánh boss Chân Quân**: 205 draw call, ~0,97M tam giác, 9,4 ms/khung. Một lần đo trước khi hạ độ phân giải ra 257 draw call, 16,7 ms (ồn do chụp ảnh cùng lúc); chưa có số "không phản chiếu" cùng preset Cao để so riêng.
 
+## Polish — Thần Tàng: giảm tím, bệ tượng khắc hoa văn
+
+- **Giảm tím**: mood `tt` bão hòa 0,88 → 0,5, trời/sương/bóng/blackLift chuyển từ chàm sang xám trung tính; cẩm thạch GLB (`marble`) từ đen tím sang đen xám ngả tím nhạt, áo choàng tượng và biểu ngữ sang đỏ rượu sẫm; sương thấp (`DungeonFx.mist`) xám ấm. Vẫn giữ phù văn rune tím làm điểm nhấn nhỏ.
+- **Bệ tượng**: bỏ các ô vuông rune (đọc như bàn cờ đen-vàng); bậc giữa quấn **dải hồi văn** vàng sẫm (9 đơn vị mỗi mặt, nét ngang/sổ so le) kèm đường rune mảnh liền phía trên; mặt bậc dưới có hàng **cánh sen đá** nghiêng (10 cánh mỗi mặt); bốn góc có đinh vàng tròn. `plinth_carving` trong `tools/blender/than_tang_arch.py`.
+- **Ngân sách (Cao)**: 143–158 draw call, ~0,94–0,99M tam giác (GLB 438k → 487k tam giác), 8,4–9,9 ms/khung.
+
 ## Polish — Phục Mạch: vách hang phá nhịp
 
 - **Vấn đề**: vách hang là 40 đoạn giống nhau (3 biến thể, mỗi đoạn 8 tầng × 3 khối cùng cao, khe tối đều) nên đọc như tường gạch lặp.
