@@ -2,6 +2,7 @@
 // Server mô phỏng và phán định trúng theo vị trí người chơi do server giữ; client chỉ nội suy
 // bằng cùng công thức dưới đây từ gói spawn (gốc, hướng, tốc độ, thời điểm phát).
 
+import type { CollisionSet } from './collision';
 import { COLLIDERS } from './level';
 import { PLAYER_RADIUS } from './movement';
 import { groundAt } from './terrain';
@@ -95,7 +96,7 @@ export function boltHits(
  * Đạn quét từ A tới B chạm vật cản tĩnh (kiến trúc, cự kiếm Kiếm Trủng) đầu tiên ở tham số t ∈ [0, 1]
  * nào; -1 nếu không chạm. Xét cả đoạn nên tick dài cũng không xuyên tường.
  */
-export function boltBlockedAt(ax: number, az: number, bx: number, bz: number, r: number): number {
+export function boltBlockedAt(ax: number, az: number, bx: number, bz: number, r: number, set?: CollisionSet, y = 0): number {
   const ux = bx - ax;
   const uz = bz - az;
   const a = ux * ux + uz * uz;
@@ -113,10 +114,15 @@ export function boltBlockedAt(ax: number, az: number, bx: number, bz: number, r:
     const t = (-b - Math.sqrt(disc)) / (2 * a);
     if (t >= 0 && t <= 1 && (best < 0 || t < best)) best = t;
   }
+  // Hình 3D của level (cây, đá, tường thấy được; COL-1): chạm sớm hơn thì lấy.
+  if (set) {
+    const ts = set.segmentBlockedAt(ax, az, bx, bz, r, y);
+    if (ts >= 0 && (best < 0 || ts < best)) best = ts;
+  }
   return best;
 }
 
 /** Điểm (x, z) đang nằm trong vật cản tĩnh (đầu nòng mọc trong tường). */
-export function boltBlocked(x: number, z: number, r: number): boolean {
-  return boltBlockedAt(x, z, x, z, r) === 0;
+export function boltBlocked(x: number, z: number, r: number, set?: CollisionSet, y = 0): boolean {
+  return boltBlockedAt(x, z, x, z, r, set, y) === 0;
 }

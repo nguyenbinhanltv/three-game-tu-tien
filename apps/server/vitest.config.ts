@@ -7,6 +7,7 @@ import { defineConfig } from 'vitest/config';
 //  - giới hạn số tiến trình test để không tự tranh CPU với chính mình.
 export default defineConfig({
   test: {
+    setupFiles: ['./vitest.setup.ts'],
     testTimeout: 30_000,
     hookTimeout: 60_000,
     teardownTimeout: 30_000,
