@@ -56,8 +56,10 @@ SPRINGS = opt('--springs')
 WINGS = opt('--wings')  # cánh (DV-2 đợt 4): JSON {parent, region:{min,max} (nửa +X, tọa độ lưới NGUỒN), chains:[{name, pts:[[x,y,z]…]}]}, tự lấy đối xứng nửa -X
 NO_EXPORT = '--no-export' in argv
 BIND = opt('--bind')  # quái dị vực (DV-2 đợt 2): JSON {binds:[{box:{min,max}, bone|blend:[[z,bone],[z,bone]]|drop:[xương…]}]} ép vùng cứng (vũ khí, khiên, áo choàng) theo một xương, tọa độ lưới NGUỒN
+BIND_A = '--bind-a' in argv  # NV3-B: GIỮ mesh ở A-pose, khung xương đặt theo mesh (không biến dạng sang T-pose); sau khi xuất, góc nghỉ cục bộ của xương được đặt lại = template UAL để clip phát đúng
 AUTO = '--auto' in argv  # đầu vào không xương: tự ước lượng mốc theo tỉ lệ Mannequin + đo lưới (xem estimate_landmarks)
 REP = {'id': ID, 'input': os.path.basename(IN)}
+HAND_HINT = (json.load(open(SPRINGS, encoding='utf-8')).get('hand') or {}) if SPRINGS else {}
 
 
 def log(m):
@@ -190,17 +192,73 @@ SRC_DZ = -zmin
 for key in LM:
     LM[key] = (LM[key][0] - np.array([0, 0, zmin]), LM[key][1] - np.array([0, 0, zmin]))
 
+def skin_vertices(Vs):
+    """Chỉ số đỉnh có màu da (từ texture màu); None nếu không có texture. Dùng tìm bàn tay khi tay áo voan rộng che mất mốc 'điểm ngoài cùng'."""
+    img = None
+    for mat in BODY.data.materials:
+        if mat and mat.node_tree:
+            for n in mat.node_tree.nodes:
+                if n.type == 'BSDF_PRINCIPLED' and n.inputs['Base Color'].links:
+                    src = n.inputs['Base Color'].links[0].from_node
+                    if src.type == 'TEX_IMAGE' and src.image:
+                        img = src.image
+    uvl = BODY.data.uv_layers.active
+    if img is None or uvl is None:
+        return None
+    small = img.copy()
+    small.scale(512, 512)
+    px = np.array(small.pixels[:], np.float32).reshape(512, 512, 4)[:, :, :3]
+    bpy.data.images.remove(small)
+    nv = len(BODY.data.vertices)
+    acc, cnt = np.zeros((nv, 3)), np.zeros(nv)
+    for loop in BODY.data.loops:
+        u, v = uvl.data[loop.index].uv
+        acc[loop.vertex_index] += px[int(np.clip(v, 0, 0.9999) * 512), int(np.clip(u % 1.0, 0, 0.9999) * 512)]
+        cnt[loop.vertex_index] += 1
+    c = acc / np.maximum(cnt, 1)[:, None]
+    lum = c @ np.array([0.299, 0.587, 0.114])
+    # sRGB (0-1): da = đỏ > lục > lam, chênh đỏ-lam vừa phải, đủ sáng (loại tóc tối, vải trắng/lam/tím).
+    loose = (c[:, 0] > 0.50) & (c[:, 0] > c[:, 1] + 0.02) & (c[:, 1] > c[:, 2] - 0.01) & ((c[:, 0] - c[:, 2]) > 0.10) & ((c[:, 0] - c[:, 2]) < 0.50) & (lum > 0.45)
+    # Vải ngà/kem cũng lọt bộ lọc lỏng: so với màu da MẶT của chính model (trung vị các đỉnh lọc lỏng ở vùng mặt) cho chặt.
+    H0 = float(Vs[:, 2].max())
+    face = np.where(loose & (Vs[:, 2] > 0.84 * H0) & (np.abs(Vs[:, 0]) < 0.06 * H0))[0]
+    if len(face) < 30:
+        return loose
+    M = np.median(c[face], axis=0)
+    log(f'màu da mặt (sRGB) {M.round(2)} từ {len(face)} đỉnh')
+    if '--debug-skin' in argv:
+        for sx in (1, -1):
+            for zf in (0.50, 0.55, 0.60):
+                m_ = np.where((np.abs(Vs[:, 0] - sx * 0.23 * H0) < 0.05 * H0) & (np.abs(Vs[:, 2] - zf * H0) < 0.03 * H0))[0]
+                if len(m_):
+                    log(f'DBG mẫu màu quanh (x={sx * 0.23:+.2f}H, z={zf:.2f}H): {len(m_)} đỉnh, trung vị {np.median(c[m_], axis=0).round(2)}, tối đa dist da mặt {np.median(np.linalg.norm(c[m_] - M, axis=1)):.2f}')
+    return (np.linalg.norm(c - M, axis=1) < 0.17) & (lum > 0.35)
+
+
 def estimate_landmarks():
     """Mốc cho GLB Tripo chữ A không xương: tỉ lệ khớp lấy từ Mannequin (8 đầu) co theo chiều cao; tay (đầu ngón) và chân (cổ chân, mũi
     chân) đo từ lưới. Đúng cho nhân vật cao ~8 đầu, tay chếch ~35°, hai chân tách nhau; sai lệch nhỏ do bước đặt lại tư thế hấp thụ."""
     Vs = np.array([v.co[:] for v in BODY.data.vertices], float)
     H = float(Vs[:, 2].max())
+    SKIN = skin_vertices(Vs) if BIND_A else None
     k = H / float(T['Head']['tail'][2])
     P = {n: d['head'] * k for n, d in T.items()}
     torso = Vs[(Vs[:, 2] > 0.55 * H) & (Vs[:, 2] < 0.75 * H)]
     dy = float(torso[:, 1].mean()) - P['spine_02'][1]
     for n in P:
         P[n] = P[n] + np.array([0.0, dy, 0.0])
+    if SKIN is not None:
+        # Khớp đầu theo cằm thật: mão/búi tóc cao làm tỉ lệ 8 đầu đặt khớp đầu quá cao (mặt rơi xuống dưới khớp, bị trọng số cổ/đòn kéo méo).
+        fs = np.where(SKIN & (Vs[:, 2] > 0.84 * H) & (np.abs(Vs[:, 0] - P['Head'][0]) < 0.06 * H))[0]
+        if len(fs) >= 60:
+            log('DBG da mặt z phân vị 0/3/25/50/75/97/100: ' + ' '.join(f'{np.percentile(Vs[fs, 2], q):.2f}' for q in (0, 3, 25, 50, 75, 97, 100)))
+            chin, brow = float(np.percentile(Vs[fs, 2], 3)), float(np.percentile(Vs[fs, 2], 97))
+            z_new = chin + 0.22 * (brow - chin)
+            dz = z_new - float(P['Head'][2])
+            if dz < -0.005 * H:
+                for nme in ('Head', 'neck_01'):
+                    P[nme] = P[nme] + np.array([0.0, 0.0, dz])
+                log(f'khớp đầu theo mặt: cằm z={chin:.2f}, trán z={brow:.2f} → Head z={z_new:.2f} (mẫu {z_new - dz:.2f}, {len(fs)} đỉnh da mặt)')
     out = {}
 
     def lm(name, head, tail):
@@ -219,6 +277,18 @@ def estimate_landmarks():
         F = arm[np.argmax(sg * arm[:, 0])]  # đầu ngón tay: điểm ngoài cùng của tay
         d = F - S
         elbow, wrist = S + 0.47 * d, S + 0.86 * d
+        if BIND_A:
+            # Bàn tay theo gợi ý (đo trên ảnh raw của 18 model Tripo bậc cao: tay chữ A đồng nhất, tâm bàn tay x ≈ 0,265 H, z ≈ 0,49 H; voan phủ lên bàn tay
+            # nên dò màu da không ổn định). Ghi đè theo bộ bằng khóa `hand` trong file lò xo: {"x":…, "z":…, "len":…} (phần chiều cao).
+            hh = HAND_HINT
+            C = np.array([sg * hh.get('x', 0.265) * H, 0.0, hh.get('z', 0.49) * H])
+            near = Vs[(np.abs(Vs[:, 0] - C[0]) < 0.03 * H) & (np.abs(Vs[:, 2] - C[2]) < 0.03 * H)]
+            C[1] = float(np.median(near[:, 1])) if len(near) else float(S[1])
+            dn = (C - S) / max(np.linalg.norm(C - S), 1e-9)
+            hl = hh.get('len', 0.105) * H
+            F, wrist = C + dn * 0.5 * hl, C - dn * 0.5 * hl
+            elbow = S + 0.5 * (wrist - S)
+            log(f'bàn tay {sd} theo gợi ý: tâm ({C[0]:.2f},{C[1]:.2f},{C[2]:.2f}), dài {hl:.2f} m, vai→cổ tay {np.linalg.norm(wrist - S):.2f} m')
         lm(side + 'shoulder', P['clavicle_' + sd], S)
         lm(side + 'arm', S, elbow)
         lm(side + 'forearm', elbow, wrist)
@@ -308,7 +378,14 @@ for s in 'lr':
     fwd_f = hand_t - hand_h
     kT = T[f'middle_01_{s}']['head'] - T[hd]['head']
     sc = np.linalg.norm(fwd_f) / max(np.linalg.norm(kT), 1e-6)
+    if BIND_A:
+        # fwd_f là cả bàn tay (cổ tay → chóp ngón), nên so với cổ tay → chóp ngón giữa của MẪU (không phải tới khớp ngón), nếu không xương ngón dài gấp đôi.
+        tip_key = f'middle_04_leaf_{s}'
+        tipT = T[tip_key]['head'] if tip_key in T else T[f'middle_03_{s}']['tail']
+        sc = np.linalg.norm(fwd_f) / max(np.linalg.norm(tipT - T[hd]['head']), 1e-6)
+    sc_raw = sc
     sc = float(np.clip(sc, 0.5, 1.6)) if np.linalg.norm(fwd_f) > 1e-4 else 1.0
+    log(f'DBG bàn tay {s}: dài {np.linalg.norm(fwd_f):.3f} m, mẫu tới ngón giữa {np.linalg.norm(kT):.3f} m, hệ số {sc_raw:.2f} → {sc:.2f}')
     rot = Vector(kT).rotation_difference(Vector(fwd_f)) if np.linalg.norm(fwd_f) > 1e-4 else Quaternion()
     for n in T:
         if re.match(r'(thumb|index|middle|ring|pinky)_', n) and n.endswith('_' + s):
@@ -494,6 +571,24 @@ if BIND:
                 row = W[vi] / max(W[vi].sum(), 1e-9)
                 W[vi] = t * tw + (1 - t) * row
         log(f'bind {bd.get("note", bd.get("bone", "blend"))}: {len(inb)} đỉnh')
+if BIND_A:
+    # Đầu cứng (NV3-B): mặt/mũ/tóc búi từ đáy đầu trở lên bám 100% `Head`; dải nối cổ → đầu chuyển tuyến tính từ `neck_01`. Trọng số khoảng cách thuần
+    # trộn cả đòn/cột sống/hông vào mặt nên mặt méo khi cúi hoặc xoay thân.
+    z_head, z_neck = float(F_HEAD['Head'][2]), float(F_HEAD['neck_01'][2])
+    band = max(z_head - z_neck, 1e-6)
+    n_head = 0
+    for vi in range(NV):
+        z = V[vi, 2]
+        if z >= z_head - 0.15 * band:
+            W[vi] = 0
+            W[vi, IDX['Head']] = 1.0
+            n_head += 1
+        elif z > z_neck:
+            t = (z - z_neck) / band
+            W[vi] *= (1 - t)
+            W[vi, IDX['Head']] += t
+            W[vi] /= max(W[vi].sum(), 1e-9)
+    log(f'đầu cứng: {n_head} đỉnh bám Head')
 # ≤ 4 xương/đỉnh, chuẩn hóa
 for vi in range(NV):
     row = W[vi]
@@ -522,14 +617,39 @@ for n in DEF:
     Th.append(F_HEAD[n])
     Tp.append(Fp_HEAD[n])
 VP = np.zeros_like(V)
-for bi in range(len(DEF)):
-    wcol = W[:, bi]
-    nz = wcol > 0
-    if not nz.any():
-        continue
-    VP[nz] += wcol[nz, None] * ((V[nz] - Th[bi]) @ Rm[bi].T + Tp[bi])
-for i, v in enumerate(BODY.data.vertices):
-    v.co = Vector(VP[i])
+if BIND_A:
+    # NV3-B: KHÔNG biến dạng lưới. Lưới giữ nguyên tư thế A của model; xương đặt theo lưới (F), mọi mốc/trọng số/lò xo phía sau tính trên lưới A.
+    VP = V.copy()
+    RMd = {n: Rm[i] for i, n in enumerate(DEF)}
+    TPd = {n: Tp[i] for i, n in enumerate(DEF)}
+    THd = {n: Th[i] for i, n in enumerate(DEF)}
+    RM_OF, FA_HEAD, FA_TAIL = {}, {}, {}
+    for n in order:  # cha trước con
+        if n in RMd:
+            RM_OF[n] = RMd[n]
+            FA_HEAD[n], FA_TAIL[n] = F_HEAD[n].copy(), F_TAIL[n].copy()
+        else:  # root, xương lá: theo phép biến đổi của cha (nghịch đảo của F → F')
+            par = T[n]['parent']
+            R = RM_OF.get(par, np.eye(3))
+            RM_OF[n] = R
+            pb = par if par in TPd else None
+            if pb is None:
+                FA_HEAD[n], FA_TAIL[n] = Fp_HEAD[n].copy(), Fp_TAIL[n].copy()
+            else:
+                FA_HEAD[n] = (Fp_HEAD[n] - TPd[pb]) @ R + THd[pb]
+                FA_TAIL[n] = (Fp_TAIL[n] - TPd[pb]) @ R + THd[pb]
+    FP_BACKUP = (Fp_HEAD, Fp_TAIL)
+    Fp_HEAD, Fp_TAIL = FA_HEAD, FA_TAIL  # từ đây "Fp" = khung xương theo lưới A
+    REP['bind_a'] = True
+else:
+    for bi in range(len(DEF)):
+        wcol = W[:, bi]
+        nz = wcol > 0
+        if not nz.any():
+            continue
+        VP[nz] += wcol[nz, None] * ((V[nz] - Th[bi]) @ Rm[bi].T + Tp[bi])
+    for i, v in enumerate(BODY.data.vertices):
+        v.co = Vector(VP[i])
 BODY.data.update()
 for p in BODY.data.polygons:
     p.use_smooth = True
@@ -538,12 +658,22 @@ BODY.data.calc_loop_triangles()
 # ---------- armature xuất = armature mẫu, sửa vị trí ----------
 bpy.context.view_layer.objects.active = ARM
 ARM.select_set(True)
+FT_REST = {b.name: np.array(b.matrix_local.to_3x3()) for b in ARM.data.bones}  # khung xương mẫu (T) trong không gian armature, trước khi sửa
 bpy.ops.object.mode_set(mode='EDIT')
 eb = ARM.data.edit_bones
 for b in eb:
     b.use_connect = False
+FA_FRAME = {}
 for n in order:
     b = eb[n]
+    if BIND_A:
+        # Khung xương theo lưới A = khung mẫu quay ngược phép quay tối thiểu F → F' (cùng cách `qdiff` đã dùng để biến dạng lưới ở chế độ cũ).
+        fa = RM_OF[n].T @ FT_REST[n]
+        FA_FRAME[n] = fa
+        ln = float(np.linalg.norm(Fp_TAIL[n] - Fp_HEAD[n]))
+        b.matrix = Matrix.Translation(Vector(Fp_HEAD[n])) @ Matrix(fa.tolist()).to_4x4()
+        b.tail = b.head + Vector(fa[:, 1]) * ln
+        continue
     b.head = Vector(Fp_HEAD[n])
     b.tail = Vector(Fp_TAIL[n])
     b.roll = T[n]['roll']
@@ -686,13 +816,59 @@ if SPRINGS:
     SP = json.load(open(SPRINGS, encoding='utf-8'))
     cx, cy = H['pelvis'][0], H['pelvis'][1]
     # Vạt đạo bào: ở giữa (trước/sau) bám hông, ra ngoài mới bám đùi cùng phía; tránh vạt bị xé khi hai chân tách nhau.
+    sgn_l = 1.0 if T['thigh_l']['head'][0] > 0 else -1.0
+    SLEEVE = np.zeros(NV, bool)
+    SL = SP.get('sleeve', {} if BIND_A else None)  # chế độ A: tay buông xuống nên đầu tay áo rơi vào vùng robe → luôn phân loại tay áo
+    if SL is not None:
+        # NV3-B: voan tay áo rộng (tấm vải treo từ cẳng tay xuống gấu) KHÔNG được để `robe` ghi đè sang đùi/cẳng chân: phân loại bằng khoảng cách
+        # trên lưới (geodesic): đỉnh nào "gần tay hơn hông" theo đường đi trên mặt lưới thì là voan tay áo. Trọng số: bám cung tay theo độ gần trục tay,
+        # phần còn lại về hông; lò xo tay áo (`limbs`) lo phần chuyển động trễ.
+        import heapq
+
+        def geod(seeds):
+            d = np.full(NV, 1e9)
+            h = []
+            for s0 in seeds:
+                d[s0] = 0.0
+                heapq.heappush(h, (0.0, int(s0)))
+            while h:
+                dd, u = heapq.heappop(h)
+                if dd > d[u]:
+                    continue
+                for w2 in adj[u]:
+                    nd = dd + float(np.linalg.norm(VP[u] - VP[w2]))
+                    if nd < d[w2]:
+                        d[w2] = nd
+                        heapq.heappush(h, (nd, w2))
+            return d
+
+        hip_axis = seg_dist(VP, Fp_HEAD['pelvis'], Fp_HEAD['spine_02'])
+        d_hip = geod(np.where(hip_axis < SL.get('hipR', 0.09) * height)[0])
+        for sd in 'lr':
+            arm_axis = seg_dist(VP, Fp_HEAD[f'lowerarm_{sd}'], Fp_TAIL[f'hand_{sd}'])
+            d_arm = geod(np.where(arm_axis < SL.get('armR', 0.05) * height)[0])
+            on_side = ((VP[:, 0] - cx) * sgn_l > 0) == (sd == 'l')
+            SLEEVE |= on_side & (d_arm < d_hip - SL.get('margin', 0.0) * height)
+        log(f'voan tay áo (geodesic): {int(SLEEVE.sum())}/{NV} đỉnh')
+        R_S = SL.get('falloff', 0.12) * height
+        for i in np.where(SLEEVE)[0]:
+            sd = 'l' if (VP[i][0] - cx) * sgn_l > 0 else 'r'
+            names = [f'upperarm_{sd}', f'lowerarm_{sd}', f'hand_{sd}']
+            dd = np.array([seg_dist(VP[i][None], Fp_HEAD[n], Fp_TAIL[n])[0] for n in names])
+            iw = 1.0 / (dd ** 2 + 1e-4)
+            iw /= iw.sum()
+            g = float(math.exp(-((dd.min() / max(R_S, 1e-6)) ** 2)))
+            W[i] = 0
+            for n, wv in zip(names, iw):
+                W[i, IDX[n]] = g * wv
+            W[i, IDX['pelvis']] += (1 - g) * SL.get('hipShare', 1.0)
+            W[i, IDX['spine_02']] += (1 - g) * (1 - SL.get('hipShare', 1.0))
     RB = SP.get('robe')
     if RB:
-        sgn_l = 1.0 if T['thigh_l']['head'][0] > 0 else -1.0
         n_rb = 0
         for i in range(NV):
             x, y, z = VP[i]
-            if not (RB['zMin'] * height <= z <= RB['zMax'] * height) or math.hypot(x - cx, y - cy) < RB['minRadius'] * height:
+            if SLEEVE[i] or not (RB['zMin'] * height <= z <= RB['zMax'] * height) or math.hypot(x - cx, y - cy) < RB['minRadius'] * height:
                 continue
             zlo_r, zhi_r = RB['zMin'] * height, RB['zMax'] * height
             tz = (z - zlo_r) / max(zhi_r - zlo_r, 1e-6)  # 0 ở gấu, 1 ở hông
@@ -894,6 +1070,17 @@ POSES = [  # (clip, tỉ lệ thời gian)
 ]
 
 
+REST_FIX = {}
+if BIND_A:
+    for n in order:
+        p = T[n]['parent']
+        if p is None or n not in FT_REST:
+            continue
+        qT = Matrix(FT_REST[p].T.tolist()) @ Matrix(FT_REST[n].tolist())          # (khung cha mẫu)⁻¹ · khung xương mẫu
+        qA = Matrix(FA_FRAME[p].T.tolist()) @ Matrix(FA_FRAME[n].tolist())
+        REST_FIX[n] = (qA.inverted() @ qT).to_quaternion()
+
+
 def find_act(name):
     for k, a in ACTIONS.items():
         if k == name or re.sub(r'\.\d+$', '', k) == name or k.endswith('|' + name):
@@ -917,6 +1104,16 @@ def set_pose(clip, t):
     f0, f1 = act.frame_range
     bpy.context.scene.frame_set(int(round(f0 + (f1 - f0) * t)))
     bpy.context.view_layer.update()
+    if BIND_A:
+        # Clip UAL là delta so với khung nghỉ của MẪU (T). Khung nghỉ của ta là A nên đổi delta: basis_A = (Qrel_A⁻¹ · Qrel_T) · basis_T,
+        # Qrel = (khung cha)⁻¹ · (khung xương); nhờ đó hướng thế giới của từng xương đúng như clip gốc (giống việc client phát clip tuyệt đối).
+        for pb in ARM.pose.bones:
+            c = REST_FIX.get(pb.name)
+            if c is not None:
+                pb.rotation_mode = 'QUATERNION'
+                pb.rotation_quaternion = c @ pb.rotation_quaternion
+        ARM.animation_data.action = None
+        bpy.context.view_layer.update()
 
 
 def region_col(n):
@@ -1091,6 +1288,22 @@ def render_views(outdir):
     for o in LODS[1:]:
         o.hide_render = True
     set_pose(None, 0)
+    if '--debug-pose' in argv:
+        set_pose(argv[argv.index('--debug-pose') + 1], 0.0)
+    if '--debug-weights' in argv:
+        # Tô màu theo xương trội: tay trái đỏ, tay phải cam, chân trái xanh dương, chân phải lam nhạt, thân lục, lò xo tím, twist vàng.
+        pal = {'arm_l': (1, 0.1, 0.1), 'arm_r': (1, 0.6, 0.1), 'leg_l': (0.1, 0.2, 1), 'leg_r': (0.1, 0.9, 1), 'torso': (0.2, 0.8, 0.2)}
+        ca = BODY.data.color_attributes.new('dbg', 'FLOAT_COLOR', 'POINT')
+        for vi in range(NV):
+            cn = COLS[int(W[vi].argmax())]
+            col = (0.9, 0.2, 0.9) if cn.startswith('dtl_o_') else (1, 1, 0.1) if 'twist' in cn else pal[REGION[cn]]
+            ca.data[vi].color = (*col, 1.0)
+        sc.display.shading.color_type = 'VERTEX'
+        hv = np.where((VP[:, 2] > 0.86 * height) & (np.abs(VP[:, 0] - cx) < 0.06 * height))[0]
+        tot = W[hv].sum(0)
+        log('DBG đầu: ' + ', '.join(f'{COLS[i]}={tot[i] / max(len(hv), 1):.2f}' for i in np.argsort(-tot)[:6]) + f' ({len(hv)} đỉnh); Head {Fp_HEAD["Head"].round(2)}→{Fp_TAIL["Head"].round(2)} cao {height:.2f}')
+        for sd in 'lr':
+            log(f'DBG tay {sd}: upperarm {Fp_HEAD["upperarm_" + sd].round(2)} lowerarm {Fp_HEAD["lowerarm_" + sd].round(2)} hand {Fp_HEAD["hand_" + sd].round(2)}→{Fp_TAIL["hand_" + sd].round(2)}')
     full = max(2.3, height * 1.28)
     views = [(0, full, 0.5), (45, full, 0.5), (90, full, 0.5), (180, full, 0.5),
              (0, height * 0.24, 0.93), (35, height * 0.24, 0.93), (0, height * 0.42, 0.42), (180, height * 0.42, 0.42)]
@@ -1125,6 +1338,29 @@ if SHEET:
     render_sheet(SHEET)
     if '--views' in argv:
         render_views(SHEET)
+    if '--debug-hand' in argv:
+        # Ảnh cận bàn tay trái ở tư thế `--debug-pose` (mặc định Idle): thấy ngón có bị kéo dài/cong sai không.
+        sc = bpy.context.scene
+        sc.render.engine = 'BLENDER_WORKBENCH'
+        sc.display.shading.light = 'STUDIO'
+        sc.display.shading.color_type = 'TEXTURE'
+        sc.render.resolution_x, sc.render.resolution_y = 480, 480
+        set_pose(argv[argv.index('--debug-pose') + 1] if '--debug-pose' in argv else 'Idle_Loop', 0.0)
+        hp = np.array(ARM.matrix_world @ ARM.pose.bones['hand_l'].head)
+        cd = bpy.data.cameras.new('c3')
+        cd.type = 'ORTHO'
+        cd.ortho_scale = 0.55
+        cam3 = bpy.data.objects.new('c3', cd)
+        bpy.context.collection.objects.link(cam3)
+        sc.camera = cam3
+        for o in LODS[1:]:
+            o.hide_render = True
+        for i, az in enumerate((0, 90)):
+            a_ = math.radians(az)
+            cam3.location = (hp[0] + 6 * math.sin(a_), hp[1] - 6 * math.cos(a_), hp[2] - 0.05)
+            cam3.rotation_euler = (math.radians(90), 0, a_)
+            sc.render.filepath = os.path.join(SHEET, f'{ID}-hand{i}.png')
+            bpy.ops.render.render(write_still=True)
 
 # ---------- xuất ----------
 # optimize.ts tự sinh LOD từ LOD0 theo ngân sách (--keep-lods để giữ LOD của script này).
@@ -1149,3 +1385,29 @@ if not NO_EXPORT:
         export_extras=True, export_image_format='AUTO', use_selection=False,
     )
     log(f'xuất {OUT} {os.path.getsize(OUT) // 1024} KB; ' + json.dumps({k: REP[k] for k in ('tris', 'bones', 'spring_bones')}))
+    if BIND_A:
+        # Đặt lại góc nghỉ cục bộ của các nút xương = template UAL (clip phát tuyệt đối nên không đổi, nhưng mã client đọc "tư thế nghỉ" của xương);
+        # ma trận bind nghịch đảo (A) giữ nguyên nên lưới vẫn đứng ở tư thế A khi đang phát clip.
+        import struct
+
+        def read_glb(path):
+            raw = open(path, 'rb').read()
+            jl = struct.unpack('<I', raw[12:16])[0]
+            return raw, json.loads(raw[20:20 + jl]), jl
+
+        _, tj, _ = read_glb(TEMPLATE)
+        trot = {n['name']: n.get('rotation', [0, 0, 0, 1]) for n in tj['nodes'] if 'name' in n}
+        raw, gj, jl = read_glb(OUT)
+        npatched = 0
+        for nd in gj['nodes']:
+            nm = nd.get('name')
+            if nm in trot and nm not in ('root', 'Armature'):
+                nd['rotation'] = [float(x) for x in trot[nm]]
+                npatched += 1
+        jb = json.dumps(gj, separators=(',', ':')).encode('utf8')
+        jb += b' ' * ((4 - len(jb) % 4) % 4)
+        rest = raw[20 + jl:]
+        out = b'glTF' + struct.pack('<II', 2, 12 + 8 + len(jb) + len(rest)) + struct.pack('<I', len(jb)) + b'JSON' + jb + rest
+        open(OUT, 'wb').write(out)
+        log(f'bind A: đặt lại góc nghỉ cục bộ của {npatched} nút xương theo template')
+

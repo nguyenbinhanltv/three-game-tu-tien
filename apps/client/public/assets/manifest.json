@@ -4659,9 +4659,9 @@
       "id": "chr_v3_tinh_khuyet_nu",
       "class": "player_v3",
       "source": "assets/build/raw/chr_v3_tinh_khuyet_nu.glb",
-      "file": "chr_v3_tinh_khuyet_nu.9c58d50edb.glb",
-      "bytes": 4473404,
-      "rawBytes": 4354972,
+      "file": "chr_v3_tinh_khuyet_nu.2c1749884e.glb",
+      "bytes": 4451528,
+      "rawBytes": 4355628,
       "triangles": 24000,
       "rawTriangles": 24000,
       "lod0Cap": 24000,
@@ -4711,21 +4711,21 @@
         },
         {
           "level": 2,
-          "triangles": 5023,
+          "triangles": 5061,
           "target": 4800
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.2792,
-          "height": 1.6898,
-          "depth": 0.5361,
+          "width": 1.7577,
+          "height": 1.69,
+          "depth": 0.463,
           "minY": 0.0111
         },
         "build": {
-          "width": 2.2792,
-          "height": 1.6898,
-          "depth": 0.5361,
+          "width": 1.7577,
+          "height": 1.69,
+          "depth": 0.463,
           "minY": 0.0111
         }
       }

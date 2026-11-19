@@ -291,7 +291,7 @@ function v3SetEntries() {
         script: 'tools/blender/chr_v3.py',
         source: String(cfg.raw).replace('{g}', g),
         template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
-        extra: ['--id', id, '--auto', '--height', String(h), '--springs', `repo:tools/blender/skins/v3sets/${f}`],
+        extra: ['--id', id, '--auto', '--height', String(h), '--springs', `repo:tools/blender/skins/v3sets/${f}`, ...(cfg.bindA ? ['--bind-a'] : [])],
       });
     }
   }

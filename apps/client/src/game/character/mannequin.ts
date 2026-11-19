@@ -222,13 +222,13 @@ export const ARM_FIT: Record<string, number> = {
   chr_v3_huyen_giap_nu: (20 * Math.PI) / 180,
   chr_v3_dan_tam_nam: (16 * Math.PI) / 180,
   chr_v3_dan_tam_nu: (16 * Math.PI) / 180,
-  // Kiếm tu bậc cao (NV3-B): tay áo rộng voan như Lạc Kiếm v3b2; chỉnh lại sau khi đo `springMetrics`.
-  chr_v3_kinh_quang_nam: (16 * Math.PI) / 180,
-  chr_v3_kinh_quang_nu: (16 * Math.PI) / 180,
-  chr_v3_liet_mach_nam: (16 * Math.PI) / 180,
-  chr_v3_liet_mach_nu: (16 * Math.PI) / 180,
-  chr_v3_tinh_khuyet_nam: (16 * Math.PI) / 180,
-  chr_v3_tinh_khuyet_nu: (16 * Math.PI) / 180,
+  // Kiếm tu bậc cao (NV3-B, bind A-pose `--bind-a`): lưới không bị ép sang T nên không cần bù góc dang (0); chỉnh lại sau khi đo `springMetrics`.
+  chr_v3_kinh_quang_nam: 0,
+  chr_v3_kinh_quang_nu: 0,
+  chr_v3_liet_mach_nam: 0,
+  chr_v3_liet_mach_nu: 0,
+  chr_v3_tinh_khuyet_nam: 0,
+  chr_v3_tinh_khuyet_nu: 0,
 };
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
 

@@ -71,7 +71,9 @@ export default {
 
         await page.evaluate(() => {
           const g = window.__game!;
-          setInterval(() => (g.ents.players.get(g.sid).label.visible = false), 16); // nhãn tên che nhân vật; engine bật lại mỗi khung
+          const ent = g.ents.players.get(g.sid);
+          ent.labelKeep = true; // engine giữ trạng thái nhãn thay vì bật lại mỗi khung
+          ent.label.visible = false; // nhãn tên che nhân vật
         });
         // (1) đứng 4 góc, 720p + 1080p. Camera gần, chiều cao nhân vật vừa khung.
         const facing = await page.evaluate(() => window.__game!.facing as number);
@@ -82,7 +84,7 @@ export default {
           await page.setViewportSize({ width: w, height: h });
           const strip: Buffer[] = [];
           for (const v of ['front', 'left', 'right', 'back']) {
-            await cam(page, { yaw: views[v], pitch: 0.02, dist: 2.6 });
+            await cam(page, { yaw: views[v], pitch: 0.02, dist: 1.9 });
             await sleep(900);
             const b = await page.screenshot({ clip: { x: w / 2 - h * 0.3, y: 0, width: h * 0.6, height: h } });
             fs.writeFileSync(path.join(r.out, `${tag}-${v}-${tagSize}.png`), b);
@@ -107,7 +109,7 @@ export default {
         const shot = (): Promise<Buffer> => page.screenshot({ clip });
         const cells: { img: Buffer; caption: string; mark?: boolean }[] = [];
         const add = async (cap: string, mark = false) => cells.push({ img: await shot(), caption: cap, mark });
-        const frame = () => cam(page, { yaw: base + 0.5, pitch: 0.1, dist: 2.7 });
+        const frame = () => cam(page, { yaw: base + 0.5, pitch: 0.1, dist: 2.1 });
         await frame();
         await sleep(500);
         await add('đứng');
