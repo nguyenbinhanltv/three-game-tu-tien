@@ -318,7 +318,7 @@
       "id": "khe_6",
       "x": 1014,
       "z": 654,
-      "y": 38,
+      "y": 46,
       "flatR": 10,
       "outerR": 46,
       "round": true,
@@ -333,7 +333,7 @@
       "id": "khe_7",
       "x": 1021,
       "z": 624,
-      "y": 38,
+      "y": 55,
       "flatR": 10,
       "outerR": 46,
       "round": true,
@@ -348,7 +348,7 @@
       "id": "khe_8",
       "x": 1029,
       "z": 594,
-      "y": 38,
+      "y": 64,
       "flatR": 10,
       "outerR": 46,
       "round": true,
@@ -363,67 +363,7 @@
       "id": "khe_9",
       "x": 1036,
       "z": 564,
-      "y": 38,
-      "flatR": 10,
-      "outerR": 46,
-      "round": true,
-      "detail": 1.5,
-      "relief": {
-        "amp": 5,
-        "freq": 0.05,
-        "crease": true
-      }
-    },
-    {
-      "id": "khe_10",
-      "x": 1040,
-      "z": 534,
-      "y": 38,
-      "flatR": 10,
-      "outerR": 46,
-      "round": true,
-      "detail": 1.5,
-      "relief": {
-        "amp": 5,
-        "freq": 0.05,
-        "crease": true
-      }
-    },
-    {
-      "id": "khe_11",
-      "x": 1042,
-      "z": 504,
-      "y": 38,
-      "flatR": 10,
-      "outerR": 46,
-      "round": true,
-      "detail": 1.5,
-      "relief": {
-        "amp": 5,
-        "freq": 0.05,
-        "crease": true
-      }
-    },
-    {
-      "id": "khe_12",
-      "x": 1040,
-      "z": 474,
-      "y": 38,
-      "flatR": 10,
-      "outerR": 46,
-      "round": true,
-      "detail": 1.5,
-      "relief": {
-        "amp": 5,
-        "freq": 0.05,
-        "crease": true
-      }
-    },
-    {
-      "id": "khe_13",
-      "x": 1036,
-      "z": 444,
-      "y": 38,
+      "y": 72,
       "flatR": 10,
       "outerR": 46,
       "round": true,

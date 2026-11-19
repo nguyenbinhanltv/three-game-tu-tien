@@ -39,4 +39,17 @@ describe('bhWonders (MAP-5 PR2)', () => {
       expect(Math.hypot(s.x - 1024, s.z - 1544)).toBeGreaterThan(70);
     }
   });
+
+  it('sân Trấn Giới Đài và bia nhiệm vụ giữ mặt phẳng ~72 m (vực khe khép lại trước sân)', () => {
+    const tr = terrainOf('bac_hoang');
+    for (const [x, z] of [
+      [1024, 494],
+      [1024, 508],
+      [1042, 504],
+      [1084, 554],
+    ] as const)
+      expect(Math.abs(tr.heightAt(x, z) - 72)).toBeLessThan(2);
+    // vực vẫn sâu ở phần giữa khe
+    expect(tr.heightAt(path[3]!.x, path[3]!.z)).toBeLessThan(45);
+  });
 });
