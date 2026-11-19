@@ -26,7 +26,7 @@ export interface ScanItem {
 
 /** Tên (đoạn đường dẫn) cho thấy vật không cần va chạm. */
 export const SCAN_SKIP =
-  /grass|flower|petal|particle|leaf|leaves|cloud|mist|fog|sky|star|rain|snow|dust|canopy|crown|moon-gate|duong_xi|prop_kiem_thanh_phong|mapvis|mote|ray|aurora|decal|trail|shadow|water|pond|lake|terrain|chunk|ground|backdrop|firefl|butterfl|bird|ambient|beacon|rune|glow|aura|vfx|fx|bolt|hazard|ring|sprite|label|marker|nameplate|player|chr_|rig|monster|npc|loot|damage|debug|impostor|billow|haze|veil|smoke|spark|wisp/i;
+  /grass|flower|petal|particle|leaf|leaves|cloud|mist|fog|sky|star|rain|snow|dust|canopy|crown|moon-gate|den_long_troi|duong_xi|prop_kiem_thanh_phong|mapvis|mote|ray|aurora|decal|trail|shadow|water|pond|lake|terrain|chunk|ground|backdrop|firefl|butterfl|bird|ambient|beacon|rune|glow|aura|vfx|fx|bolt|hazard|ring|sprite|label|marker|nameplate|player|chr_|rig|monster|npc|loot|damage|debug|impostor|billow|haze|veil|smoke|spark|wisp/i;
 
 const _box = new THREE.Box3();
 const _m = new THREE.Matrix4();
