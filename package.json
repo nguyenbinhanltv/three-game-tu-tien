@@ -48,7 +48,7 @@
     "invite": "pnpm --filter @dtl/server invite",
     "icons:build": "node tools/icons/build.mjs",
     "icons:check": "node tools/icons/build.mjs --check",
-    "lint": "eslint .",
+    "lint": "eslint . && stylelint \"apps/client/src/**/*.css\"",
     "deps:check": "madge --circular --extensions ts --ts-config packages/shared/tsconfig.json --no-spinner packages/shared/src",
     "format": "prettier --write \"**/*.{ts,tsx,mjs,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,mjs,css}\"",
@@ -61,6 +61,7 @@
     "eslint": "^9.39.5",
     "madge": "^8.0.0",
     "prettier": "^3.10.1",
+    "stylelint": "^18.0.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.73.0"
   }
