@@ -85,10 +85,12 @@ const SECT_WALL: CircleCollider[] = [-1, 1].flatMap((sx) => [
 ]);
 
 /**
- * Va chạm tĩnh của kiến trúc tông môn (xấp xỉ bằng hình tròn): chính điện, hai đình, trụ cổng, cự kiếm, hai lầu, tháp Kiếm,
- * hai bia, tường rào + cổng phụ (`SECT_WALL`), cổng bí cảnh, cự kiếm Kiếm Trủng và prop có va chạm.
+ * Kiến trúc tông môn xấp xỉ bằng hình tròn (cũ): chính điện, hai đình, trụ cổng, lư hương, hai lầu, tháp Kiếm, hai bia, tường rào + cổng phụ (`SECT_WALL`).
+ * COL-1 / COL-A: va chạm đi bộ thật của các công trình này nay do hộp sinh từ hình học `arch_sect` (`packages/content/data/colliders/arch_sect.boxes.json`,
+ * `pnpm colliders:arch`) nên KHÔNG còn nằm trong `COLLIDERS` (vòng tròn to che cả cửa vào). Vẫn giữ ở `COLLIDERS_LAYOUT` làm vùng tránh khi rải prop,
+ * hình trên minimap và vật che tầm nhìn.
  */
-export const COLLIDERS: CircleCollider[] = [
+export const SECT_ARCH_CIRCLES: CircleCollider[] = [
   { x: 2048, z: 2004, r: 17 }, // Chính điện
   { x: 1996, z: 2052, r: 8 }, // Đan phòng
   { x: 2100, z: 2052, r: 8 }, // Tàng Kiếm Các
@@ -101,17 +103,24 @@ export const COLLIDERS: CircleCollider[] = [
   { x: 2018, z: 2078, r: 1.2 }, // Bia khắc trái
   { x: 2078, z: 2078, r: 1.2 }, // Bia khắc phải
   ...SECT_WALL, // Tường rào ngói + cổng phụ hai bên sơn môn
+];
+
+/** Va chạm đi bộ tĩnh bằng vòng tròn: cổng bí cảnh, cự kiếm Kiếm Trủng và prop điểm nhấn có va chạm (cổ thụ, tượng thú, lư hương). */
+export const COLLIDERS: CircleCollider[] = [
   { x: 2048, z: 1700, r: 3.2 }, // Cổng bí cảnh (khối đá)
   { x: 1520, z: 1300, r: 3.4 }, // Cự kiếm giữa Kiếm Trủng
   ...PROP_COLLIDERS, // Prop điểm nhấn có va chạm (cổ thụ, tượng thú, lư hương)
 ];
+
+/** Mọi vòng tròn của bố cục Vân Lam (kiến trúc cũ + va chạm): vùng tránh khi rải prop, hình kiến trúc trên minimap. Không dùng để chặn đường. */
+export const COLLIDERS_LAYOUT: CircleCollider[] = [...SECT_ARCH_CIRCLES, ...COLLIDERS];
 
 /**
  * Vật che tầm nhìn camera (chỉ dùng ở client để làm mờ, không chặn đường đi): mọi collider
  * cộng phần kiến trúc treo cao không có va chạm như mái và xà cổng.
  */
 export const OCCLUDERS: CircleCollider[] = [
-  ...COLLIDERS,
+  ...COLLIDERS_LAYOUT,
   // Cổng tam quan (z = 2128): mái giữa rộng 22 m và hai mái bên.
   { x: 2031, z: 2128, r: 4.5 },
   { x: 2040, z: 2128, r: 5 },
