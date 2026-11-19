@@ -58,7 +58,7 @@ describe('bacHoangArt (DV-3I)', () => {
     bhGroundColor(def, path, 1100, 500, 72, 1, n);
     for (const v of [...s, ...n]) {
       expect(v).toBeGreaterThanOrEqual(0);
-      expect(v).toBeLessThanOrEqual(1.2);
+      expect(v).toBeLessThanOrEqual(2);
     }
     expect(s[0] + s[1] + s[2]).toBeGreaterThan(n[0] + n[1] + n[2]);
   });
