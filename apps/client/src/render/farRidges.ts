@@ -37,6 +37,8 @@ export interface RidgeLayer {
   haze: number;
   seed: number;
   freq: number;
+  /** Số mũ của đường sống núi (mặc định 1,25): lớn hơn = đỉnh nhọn sắc, thung sâu (kiểu sơn thủy). */
+  sharp?: number;
 }
 
 const LAYERS: RidgeLayer[] = [
@@ -68,7 +70,7 @@ function ridge(a: number, layer: RidgeLayer): number {
   h += 0.3 * (1 - Math.abs(1 - 2 * noise1(t * 2.3, layer.freq * 2, layer.seed + 1)));
   h += 0.18 * (1 - Math.abs(1 - 2 * noise1(t * 5.1, Math.round(layer.freq * 5.1), layer.seed + 2)));
   h += 0.07 * noise1(t * 11, layer.freq * 11, layer.seed + 3);
-  return Math.pow(h, 1.25);
+  return Math.pow(h, layer.sharp ?? 1.25);
 }
 
 const SEGS = 360;

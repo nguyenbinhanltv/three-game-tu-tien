@@ -4,6 +4,9 @@ import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometr
 import type { ThienKhuyetSky, TkIsland } from '@dtl/shared';
 import { createWorldMaterial } from '../../render/materials/world';
 import { FarRidges, type RidgeLayer } from '../../render/farRidges';
+import { TkWall } from './thienKhuyetWall';
+import { assets, type AssetHandle } from '../core/assets';
+import { toFloatGeometry } from './skyIslands';
 import { getCloudNoise } from '../../render/noiseTex';
 
 /**
@@ -454,9 +457,9 @@ function arrayMaterial(): THREE.MeshBasicNodeMaterial {
 
 /** Phông núi xa nhiều lớp sau vách bao quanh (POLISH-1): tím xám nhạt dần, chân chìm trong sương; tâm trùng tâm vùng chơi (`thien_khuyet.terrain.json` play). */
 const TK_RIDGES: RidgeLayer[] = [
-  { radius: 1450, amp: 950, base: 140, color: 0x6d5f7c, haze: 0.42, seed: 7, freq: 6 },
-  { radius: 2200, amp: 1250, base: 120, color: 0x84779a, haze: 0.6, seed: 17, freq: 8 },
-  { radius: 3100, amp: 1600, base: 100, color: 0xa294b8, haze: 0.78, seed: 31, freq: 10 },
+  { radius: 1250, amp: 1250, base: 110, color: 0x3a2f4c, haze: 0.16, seed: 7, freq: 6, sharp: 2.3 },
+  { radius: 1900, amp: 1650, base: 100, color: 0x54466e, haze: 0.34, seed: 17, freq: 8, sharp: 2.1 },
+  { radius: 2700, amp: 2200, base: 90, color: 0x7a6b94, haze: 0.56, seed: 31, freq: 10, sharp: 1.9 },
 ];
 
 export class ThienKhuyetSkyScene {
@@ -466,6 +469,9 @@ export class ThienKhuyetSkyScene {
 
   constructor(sky: ThienKhuyetSky, groundAt: (x: number, z: number) => number) {
     this.group.name = 'thienKhuyetSky';
+    const wall = new TkWall(groundAt);
+    this.group.add(wall.group);
+    this.disposables.push(wall);
     const ridges = new FarRidges(1044, 884, TK_RIDGES);
     this.group.add(ridges.group);
     this.disposables.push(ridges);
@@ -528,16 +534,18 @@ export class ThienKhuyetSkyScene {
       this.group.add(arr);
       this.disposables.push(ag, am);
     }
-    if (sky.shards > 0) {
+    // POLISH-1: số mảnh giảm còn ~40% và thay bằng bộ khối đá đảo vệ tinh Vân Hải (arch_vh_island) khi GLB về; mảnh dẹt thủ tục chỉ là dự phòng
+    const shardN = Math.round(sky.shards * 0.4);
+    if (shardN > 0) {
       const sg = shardGeometry(17);
       const sm = createWorldMaterial({ vertexColors: false, roughness: 0.78, metalness: 0.02, color: 0xffffff });
-      const mesh = new THREE.InstancedMesh(sg, sm, sky.shards);
+      const mesh = new THREE.InstancedMesh(sg, sm, shardN);
       mesh.name = 'tk-shards';
       mesh.frustumCulled = false;
       const r = tkRng(991);
       const d = new THREE.Object3D();
       const c = new THREE.Color();
-      for (let i = 0; i < sky.shards; i++) {
+      for (let i = 0; i < shardN; i++) {
         const a = r() * Math.PI * 2;
         const rr = 160 + r() * 520;
         d.position.set(1044 + Math.cos(a) * rr * 1.1, 150 + r() * 230, 520 + Math.sin(a) * rr * 0.8);
@@ -556,7 +564,65 @@ export class ThienKhuyetSkyScene {
       this.group.add(mesh);
       this.shards = mesh;
       this.disposables.push(sg, sm, mesh);
+      void this.useIslandRocks(mesh);
     }
+  }
+
+  private rockHandle: AssetHandle | null = null;
+  private gone = false;
+
+  /** Thay hình mảnh đá bằng khối đá đảo vệ tinh (nón ngược có vân tầng); mặt cỏ xanh trên đỉnh đổi sang rêu xám để hợp tông Thiên Khuyết. */
+  private async useIslandRocks(mesh: THREE.InstancedMesh): Promise<void> {
+    try {
+      const h = await assets.acquire('arch_vh_island', { priority: 300 });
+      if (this.gone) {
+        h.release();
+        return;
+      }
+      this.rockHandle = h;
+      let geo: THREE.BufferGeometry | null = null;
+      h.scene.updateMatrixWorld(true);
+      h.scene.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh && o.name === 'vhsat_c') geo = toFloatGeometry(m.geometry).applyMatrix4(m.matrixWorld);
+      });
+      if (!geo) return;
+      const g: THREE.BufferGeometry = geo;
+      const col = g.attributes.color as THREE.BufferAttribute;
+      const pos = g.attributes.position!;
+      const c = new THREE.Color();
+      for (let i = 0; i < pos.count; i++) {
+        c.setRGB(col.getX(i), col.getY(i), col.getZ(i));
+        if (c.g > c.r * 1.12 && c.g > c.b * 1.2) c.setRGB(c.r * 0.9, c.g * 0.82, c.b * 0.6); // cỏ xanh → rêu xám ấm
+        col.setXYZ(i, c.r, c.g, c.b);
+      }
+      const ng = this.track(g);
+      const mat = this.track(stoneMaterial(0.86));
+      const old = mesh.geometry;
+      mesh.geometry = ng;
+      mesh.material = mat;
+      // hình mới cao ~50 m (R 22): co theo cỡ mảnh cũ (2,5–18 → 0,15–0,9)
+      const m4 = new THREE.Matrix4();
+      const p = new THREE.Vector3();
+      const q = new THREE.Quaternion();
+      const sc = new THREE.Vector3();
+      for (let i = 0; i < mesh.count; i++) {
+        mesh.getMatrixAt(i, m4);
+        m4.decompose(p, q, sc);
+        const k = sc.x * 0.05;
+        m4.compose(p, new THREE.Quaternion().setFromEuler(new THREE.Euler(0, (i * 2.399) % 6.28, 0)), sc.set(k, k * 0.9, k));
+        mesh.setMatrixAt(i, m4);
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      old.dispose();
+    } catch {
+      /* giữ mảnh dẹt thủ tục */
+    }
+  }
+
+  private track<T extends { dispose(): void }>(o: T): T {
+    this.disposables.push(o);
+    return o;
   }
 
   /** Mảnh đá trời nhấp nhô rất chậm (tịnh tiến cả khối). */
@@ -565,6 +631,9 @@ export class ThienKhuyetSkyScene {
   }
 
   dispose(): void {
+    this.gone = true;
+    this.rockHandle?.release();
+    this.rockHandle = null;
     for (const d of this.disposables) d.dispose();
     this.disposables = [];
   }

@@ -653,6 +653,32 @@ def build_statue(b, st, rnd):
         b.box(rnd.uniform(-5, 5) * S, 0.2 * S + rnd.uniform(1, 9) * S, rnd.uniform(-34, -4) * S, 0.2 * S, 0.2 * S, rnd.uniform(2, 6) * S, GOLD_LIT)
 
 
+def build_statue_giant(b, st, rnd):
+    """Tượng thần tướng đá (bộ chạm khắc của Thần Tàng: mũ trụ mặt nạ trơn có mào vàng và hai sừng, giáp vai ba lớp có gai, ngực giáp vảy, đai khóa, tay giáp nắm đại kiếm, áo choàng sau lưng)
+    phóng ~11 lần rồi cho đổ ngửa; kiếm gãy (lưỡi chỉ còn một đoạn lởm chởm dưới chắn tay), rêu và đá vỡ rải quanh."""
+    import than_tang_arch as tta  # noqa: E402
+
+    S = st['size'] / 15.0
+    start = len(b.verts)
+    tta.statue(b, 1020)
+    # kiếm gãy: đáy lưỡi (thân kiếm tbox cao 10 m ở z = 2,6) kéo lên 7,8 m theo mặt cắt xiên → còn đoạn lưỡi dưới chắn tay
+    for i in range(start, len(b.verts)):
+        X, Y, Z = b.verts[i]  # Blender: (x, -z_game, y_game)
+        if abs(Y + 2.6) < 0.3 and abs(X) < 0.6 and Z < 5.3 and Z > 0.1:
+            b.verts[i] = bs.P(X, 7.8 + 0.9 * X + 0.4 * math.sin(X * 9), -Y)
+    for i in range(start, len(b.verts)):
+        X, Y, Z = b.verts[i]
+        b.verts[i] = bs.P(X * S, Z * S, -Y * S)  # P nhận toạ độ game (x, y lên, z): Blender (X, Y, Z) → (X, Z, -Y)
+    xform(b, start, (0, 0, 0), -1.43, 0.0, 0.0, d=(0, 0, 0))
+    low = min(b.verts[i][2] for i in range(start, len(b.verts)))  # đặt tượng nằm chạm đất (điểm thấp nhất y = 0)
+    for i in range(start, len(b.verts)):
+        X, Y, Z = b.verts[i]
+        b.verts[i] = bs.P(X, Z - low, -Y)
+    rubble(b, 0, 0.0, -30 * S / 5.6, 34, 3.8 * S / 5.6, rnd, 38 * S / 5.6)
+    for k in range(14):  # nứt phát sáng vàng trên giáp
+        b.box(rnd.uniform(-5, 5) * S / 5.6, 0.2 * S / 5.6 + rnd.uniform(1, 9) * S / 5.6, rnd.uniform(-34, -4) * S / 5.6, 0.2 * S / 5.6, 0.2 * S / 5.6, rnd.uniform(2, 6) * S / 5.6, GOLD_LIT)
+
+
 def build_all():
     data = build_data()
     rnd = random.Random(20261119)
@@ -666,8 +692,8 @@ def build_all():
         else:
             build_palace(main, isl, rnd, big=isl['id'] in ('cung_tay', 'cung_dong'))
     build_avenue_pillars(main, data['pillars'], rnd)
-    statue = new_builder(seed=5, moss=0.4)
-    build_statue(statue, data['statue'], rnd)
+    statue = new_builder(seed=5, moss=0.12)
+    build_statue_giant(statue, data['statue'], rnd)
     return stair, main, statue, data
 
 
