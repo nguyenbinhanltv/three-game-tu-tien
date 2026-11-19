@@ -9586,11 +9586,11 @@
       "id": "prop_tc_ban_ghe_da",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_ban_ghe_da.glb",
-      "file": "prop_tc_ban_ghe_da.73bba5fd4d.glb",
-      "bytes": 633728,
-      "rawBytes": 9813380,
-      "triangles": 1720,
-      "rawTriangles": 1720,
+      "file": "prop_tc_ban_ghe_da.6a34d16d6f.glb",
+      "bytes": 594820,
+      "rawBytes": 9748740,
+      "triangles": 728,
+      "rawTriangles": 728,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -9629,17 +9629,17 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 1720
+          "triangles": 728
         },
         {
           "level": 1,
-          "triangles": 687,
-          "target": 688
+          "triangles": 290,
+          "target": 291
         },
         {
           "level": 2,
-          "triangles": 257,
-          "target": 258
+          "triangles": 109,
+          "target": 109
         }
       ],
       "dims": {
@@ -9661,11 +9661,11 @@
       "id": "prop_tc_ban_ghe_da_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_ban_ghe_da_2.glb",
-      "file": "prop_tc_ban_ghe_da_2.4f67a09b9e.glb",
-      "bytes": 630028,
-      "rawBytes": 9804604,
-      "triangles": 1730,
-      "rawTriangles": 1730,
+      "file": "prop_tc_ban_ghe_da_2.80dc9f62d6.glb",
+      "bytes": 598724,
+      "rawBytes": 9753408,
+      "triangles": 858,
+      "rawTriangles": 858,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -9704,31 +9704,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 1730
+          "triangles": 858
         },
         {
           "level": 1,
-          "triangles": 691,
-          "target": 692
+          "triangles": 374,
+          "target": 343
         },
         {
           "level": 2,
-          "triangles": 259,
-          "target": 260
+          "triangles": 128,
+          "target": 129
         }
       ],
       "dims": {
         "raw": {
           "width": 3.0091,
-          "height": 0.75,
+          "height": 0.74,
           "depth": 2.5136,
-          "minY": -0.01
+          "minY": 0
         },
         "build": {
           "width": 3.0091,
-          "height": 0.7501,
+          "height": 0.7398,
           "depth": 2.5136,
-          "minY": -0.01
+          "minY": 0.0001
         }
       }
     },
@@ -9736,11 +9736,11 @@
       "id": "prop_tc_bia_khac",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_bia_khac.glb",
-      "file": "prop_tc_bia_khac.29785e77a3.glb",
-      "bytes": 1587000,
-      "rawBytes": 23514644,
-      "triangles": 4997,
-      "rawTriangles": 18558,
+      "file": "prop_tc_bia_khac.c8006f377d.glb",
+      "bytes": 1466988,
+      "rawBytes": 21688712,
+      "triangles": 1178,
+      "rawTriangles": 1178,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -9833,17 +9833,17 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4997
+          "triangles": 1178
         },
         {
           "level": 1,
-          "triangles": 1996,
-          "target": 1999
+          "triangles": 467,
+          "target": 471
         },
         {
           "level": 2,
-          "triangles": 747,
-          "target": 750
+          "triangles": 174,
+          "target": 177
         }
       ],
       "dims": {
@@ -9865,11 +9865,11 @@
       "id": "prop_tc_bia_khac_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_bia_khac_2.glb",
-      "file": "prop_tc_bia_khac_2.e83ed75320.glb",
-      "bytes": 1586504,
-      "rawBytes": 22873872,
-      "triangles": 4998,
-      "rawTriangles": 12422,
+      "file": "prop_tc_bia_khac_2.094643437a.glb",
+      "bytes": 1465260,
+      "rawBytes": 21676564,
+      "triangles": 926,
+      "rawTriangles": 926,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -9962,17 +9962,17 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4998
+          "triangles": 926
         },
         {
           "level": 1,
-          "triangles": 1997,
-          "target": 1999
+          "triangles": 367,
+          "target": 370
         },
         {
           "level": 2,
-          "triangles": 747,
-          "target": 750
+          "triangles": 136,
+          "target": 139
         }
       ],
       "dims": {
@@ -9994,11 +9994,11 @@
       "id": "prop_tc_chuong_dong",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_chuong_dong.glb",
-      "file": "prop_tc_chuong_dong.c3f96ad4eb.glb",
-      "bytes": 1636036,
-      "rawBytes": 17005732,
-      "triangles": 4998,
-      "rawTriangles": 6628,
+      "file": "prop_tc_chuong_dong.522b33255c.glb",
+      "bytes": 1642620,
+      "rawBytes": 16882448,
+      "triangles": 4996,
+      "rawTriangles": 5228,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10109,17 +10109,17 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4998
+          "triangles": 4996
         },
         {
           "level": 1,
-          "triangles": 1988,
-          "target": 1999
+          "triangles": 1980,
+          "target": 1998
         },
         {
           "level": 2,
-          "triangles": 741,
-          "target": 750
+          "triangles": 746,
+          "target": 749
         }
       ],
       "dims": {
@@ -10141,11 +10141,11 @@
       "id": "prop_tc_chuong_dong_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_chuong_dong_2.glb",
-      "file": "prop_tc_chuong_dong_2.984f0648e5.glb",
-      "bytes": 1634072,
-      "rawBytes": 17005716,
-      "triangles": 4998,
-      "rawTriangles": 6628,
+      "file": "prop_tc_chuong_dong_2.b99dcb08c9.glb",
+      "bytes": 1642688,
+      "rawBytes": 16882436,
+      "triangles": 4996,
+      "rawTriangles": 5228,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10256,17 +10256,17 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4998
+          "triangles": 4996
         },
         {
           "level": 1,
           "triangles": 1967,
-          "target": 1999
+          "target": 1998
         },
         {
           "level": 2,
-          "triangles": 738,
-          "target": 750
+          "triangles": 746,
+          "target": 749
         }
       ],
       "dims": {
@@ -10288,11 +10288,11 @@
       "id": "prop_tc_co_phuong",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_co_phuong.glb",
-      "file": "prop_tc_co_phuong.b5add8e1b9.glb",
-      "bytes": 1438712,
-      "rawBytes": 16510112,
-      "triangles": 1256,
-      "rawTriangles": 1256,
+      "file": "prop_tc_co_phuong.18b8af1d1c.glb",
+      "bytes": 1427348,
+      "rawBytes": 16456624,
+      "triangles": 596,
+      "rawTriangles": 596,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10403,17 +10403,17 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 1256
+          "triangles": 596
         },
         {
           "level": 1,
-          "triangles": 494,
-          "target": 502
+          "triangles": 231,
+          "target": 238
         },
         {
           "level": 2,
-          "triangles": 179,
-          "target": 188
+          "triangles": 85,
+          "target": 89
         }
       ],
       "dims": {
@@ -10435,11 +10435,11 @@
       "id": "prop_tc_co_phuong_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_co_phuong_2.glb",
-      "file": "prop_tc_co_phuong_2.fe10250621.glb",
-      "bytes": 1477724,
-      "rawBytes": 16715060,
-      "triangles": 4040,
-      "rawTriangles": 4040,
+      "file": "prop_tc_co_phuong_2.91668e765d.glb",
+      "bytes": 1433692,
+      "rawBytes": 16495948,
+      "triangles": 1388,
+      "rawTriangles": 1388,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10550,17 +10550,17 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4040
+          "triangles": 1388
         },
         {
           "level": 1,
-          "triangles": 1608,
-          "target": 1616
+          "triangles": 602,
+          "target": 555
         },
         {
           "level": 2,
-          "triangles": 597,
-          "target": 606
+          "triangles": 203,
+          "target": 208
         }
       ],
       "dims": {
@@ -10582,11 +10582,11 @@
       "id": "prop_tc_den_da",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_den_da.glb",
-      "file": "prop_tc_den_da.c56c111055.glb",
-      "bytes": 626032,
-      "rawBytes": 9829268,
-      "triangles": 1550,
-      "rawTriangles": 1550,
+      "file": "prop_tc_den_da.29f526c0d2.glb",
+      "bytes": 595564,
+      "rawBytes": 9754032,
+      "triangles": 558,
+      "rawTriangles": 558,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10625,29 +10625,29 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 1550
+          "triangles": 558
         },
         {
           "level": 1,
-          "triangles": 618,
-          "target": 620
+          "triangles": 221,
+          "target": 223
         },
         {
           "level": 2,
-          "triangles": 231,
-          "target": 233
+          "triangles": 82,
+          "target": 84
         }
       ],
       "dims": {
         "raw": {
           "width": 1.24,
-          "height": 2.2117,
+          "height": 2.18,
           "depth": 1.24,
           "minY": 0
         },
         "build": {
           "width": 1.24,
-          "height": 2.2117,
+          "height": 2.18,
           "depth": 1.24,
           "minY": 0
         }
@@ -10657,11 +10657,11 @@
       "id": "prop_tc_den_da_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_den_da_2.glb",
-      "file": "prop_tc_den_da_2.cf034fd797.glb",
-      "bytes": 625568,
-      "rawBytes": 9830248,
-      "triangles": 1550,
-      "rawTriangles": 1550,
+      "file": "prop_tc_den_da_2.04fd402de1.glb",
+      "bytes": 595204,
+      "rawBytes": 9754372,
+      "triangles": 558,
+      "rawTriangles": 558,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10700,30 +10700,30 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 1550
+          "triangles": 558
         },
         {
           "level": 1,
-          "triangles": 618,
-          "target": 620
+          "triangles": 222,
+          "target": 223
         },
         {
           "level": 2,
-          "triangles": 231,
-          "target": 233
+          "triangles": 82,
+          "target": 84
         }
       ],
       "dims": {
         "raw": {
           "width": 1.55,
-          "height": 2.7494,
+          "height": 2.725,
           "depth": 1.55,
           "minY": 0
         },
         "build": {
-          "width": 1.5501,
-          "height": 2.7494,
-          "depth": 1.5501,
+          "width": 1.55,
+          "height": 2.725,
+          "depth": 1.55,
           "minY": 0
         }
       }
@@ -10732,11 +10732,11 @@
       "id": "prop_tc_dinh_lu_dong",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_dinh_lu_dong.glb",
-      "file": "prop_tc_dinh_lu_dong.91cbce798d.glb",
-      "bytes": 469748,
-      "rawBytes": 4964116,
-      "triangles": 5000,
-      "rawTriangles": 18578,
+      "file": "prop_tc_dinh_lu_dong.80366b1b68.glb",
+      "bytes": 500996,
+      "rawBytes": 4241932,
+      "triangles": 4305,
+      "rawTriangles": 4305,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10775,31 +10775,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 5000
+          "triangles": 4305
         },
         {
           "level": 1,
-          "triangles": 1991,
-          "target": 2000
+          "triangles": 1715,
+          "target": 1722
         },
         {
           "level": 2,
-          "triangles": 733,
-          "target": 750
+          "triangles": 646,
+          "target": 646
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.1365,
-          "height": 3.2346,
-          "depth": 2.1359,
-          "minY": -0.0346
+          "width": 1.912,
+          "height": 3.2,
+          "depth": 1.912,
+          "minY": 0
         },
         "build": {
-          "width": 2.1364,
-          "height": 3.2346,
-          "depth": 2.136,
-          "minY": -0.0346
+          "width": 1.912,
+          "height": 3.2,
+          "depth": 1.912,
+          "minY": 0
         }
       }
     },
@@ -10807,11 +10807,11 @@
       "id": "prop_tc_dinh_lu_dong_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_dinh_lu_dong_2.glb",
-      "file": "prop_tc_dinh_lu_dong_2.6853f919bb.glb",
-      "bytes": 466456,
-      "rawBytes": 4893368,
-      "triangles": 4980,
-      "rawTriangles": 13932,
+      "file": "prop_tc_dinh_lu_dong_2.f6f2c19d62.glb",
+      "bytes": 372584,
+      "rawBytes": 4001220,
+      "triangles": 1500,
+      "rawTriangles": 1500,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -10850,31 +10850,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4980
+          "triangles": 1500
         },
         {
           "level": 1,
-          "triangles": 1986,
-          "target": 1992
+          "triangles": 600,
+          "target": 600
         },
         {
           "level": 2,
-          "triangles": 738,
-          "target": 747
+          "triangles": 224,
+          "target": 225
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.8905,
-          "height": 3.2346,
-          "depth": 1.9225,
-          "minY": -0.0346
+          "width": 1.757,
+          "height": 3.2,
+          "depth": 1.7,
+          "minY": 0
         },
         "build": {
-          "width": 1.8904,
-          "height": 3.2346,
-          "depth": 1.9224,
-          "minY": -0.0346
+          "width": 1.7569,
+          "height": 3.2,
+          "depth": 1.6999,
+          "minY": 0
         }
       }
     },
@@ -10882,8 +10882,8 @@
       "id": "prop_tc_gia_kiem",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_gia_kiem.glb",
-      "file": "prop_tc_gia_kiem.5ec134d45d.glb",
-      "bytes": 1454628,
+      "file": "prop_tc_gia_kiem.470d4f8a8b.glb",
+      "bytes": 1454636,
       "rawBytes": 16496996,
       "triangles": 1012,
       "rawTriangles": 1012,
@@ -11029,8 +11029,8 @@
       "id": "prop_tc_gia_kiem_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_gia_kiem_2.glb",
-      "file": "prop_tc_gia_kiem_2.7594a0fb51.glb",
-      "bytes": 1458212,
+      "file": "prop_tc_gia_kiem_2.aff64539ee.glb",
+      "bytes": 1458196,
       "rawBytes": 16506912,
       "triangles": 1162,
       "rawTriangles": 1162,
@@ -11176,11 +11176,11 @@
       "id": "prop_tc_lo_luyen_dan",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_lo_luyen_dan.glb",
-      "file": "prop_tc_lo_luyen_dan.862dadcd8c.glb",
-      "bytes": 1619100,
-      "rawBytes": 15967704,
-      "triangles": 4995,
-      "rawTriangles": 10346,
+      "file": "prop_tc_lo_luyen_dan.8e2b0a1ca1.glb",
+      "bytes": 1596380,
+      "rawBytes": 15525956,
+      "triangles": 4931,
+      "rawTriangles": 4931,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -11273,30 +11273,30 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4995
+          "triangles": 4931
         },
         {
           "level": 1,
-          "triangles": 1994,
-          "target": 1998
+          "triangles": 1967,
+          "target": 1972
         },
         {
           "level": 2,
-          "triangles": 745,
-          "target": 749
+          "triangles": 736,
+          "target": 740
         }
       ],
       "dims": {
         "raw": {
           "width": 2.526,
           "height": 3.1,
-          "depth": 2.2727,
+          "depth": 2.2925,
           "minY": 0
         },
         "build": {
           "width": 2.5259,
           "height": 3.1,
-          "depth": 2.2711,
+          "depth": 2.2923,
           "minY": 0
         }
       }
@@ -11305,11 +11305,11 @@
       "id": "prop_tc_lo_luyen_dan_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_lo_luyen_dan_2.glb",
-      "file": "prop_tc_lo_luyen_dan_2.5e2ebbecf9.glb",
-      "bytes": 1616652,
-      "rawBytes": 15967952,
-      "triangles": 4994,
-      "rawTriangles": 10360,
+      "file": "prop_tc_lo_luyen_dan_2.303ac41bfb.glb",
+      "bytes": 1596328,
+      "rawBytes": 15525964,
+      "triangles": 4931,
+      "rawTriangles": 4931,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -11402,17 +11402,17 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4994
+          "triangles": 4931
         },
         {
           "level": 1,
-          "triangles": 1996,
-          "target": 1998
+          "triangles": 1945,
+          "target": 1972
         },
         {
           "level": 2,
-          "triangles": 746,
-          "target": 749
+          "triangles": 736,
+          "target": 740
         }
       ],
       "dims": {
@@ -11434,11 +11434,11 @@
       "id": "prop_tc_lu_huong",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_lu_huong.glb",
-      "file": "prop_tc_lu_huong.44cf53dc05.glb",
-      "bytes": 800064,
-      "rawBytes": 5904652,
-      "triangles": 4998,
-      "rawTriangles": 6879,
+      "file": "prop_tc_lu_huong.0b6e18f222.glb",
+      "bytes": 664908,
+      "rawBytes": 5588780,
+      "triangles": 2428,
+      "rawTriangles": 2428,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -11495,31 +11495,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4998
+          "triangles": 2428
         },
         {
           "level": 1,
-          "triangles": 1998,
-          "target": 1999
+          "triangles": 934,
+          "target": 971
         },
         {
           "level": 2,
-          "triangles": 748,
-          "target": 750
+          "triangles": 361,
+          "target": 364
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.3425,
-          "height": 1.466,
-          "depth": 1.3452,
-          "minY": -0.0174
+          "width": 1.252,
+          "height": 1.465,
+          "depth": 1.252,
+          "minY": 0
         },
         "build": {
-          "width": 1.3425,
-          "height": 1.466,
-          "depth": 1.3452,
-          "minY": -0.0174
+          "width": 1.252,
+          "height": 1.465,
+          "depth": 1.252,
+          "minY": 0
         }
       }
     },
@@ -11527,11 +11527,11 @@
       "id": "prop_tc_lu_huong_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_lu_huong_2.glb",
-      "file": "prop_tc_lu_huong_2.5a6f777b1a.glb",
-      "bytes": 798176,
-      "rawBytes": 5907184,
-      "triangles": 4997,
-      "rawTriangles": 6911,
+      "file": "prop_tc_lu_huong_2.99a2e1b28a.glb",
+      "bytes": 666220,
+      "rawBytes": 5588884,
+      "triangles": 2428,
+      "rawTriangles": 2428,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -11588,31 +11588,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4997
+          "triangles": 2428
         },
         {
           "level": 1,
-          "triangles": 1998,
-          "target": 1999
+          "triangles": 954,
+          "target": 971
         },
         {
           "level": 2,
-          "triangles": 748,
-          "target": 750
+          "triangles": 356,
+          "target": 364
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.1577,
-          "height": 1.25,
-          "depth": 1.1607,
-          "minY": -0.0174
+          "width": 1.073,
+          "height": 1.249,
+          "depth": 1.072,
+          "minY": 0
         },
         "build": {
-          "width": 1.1577,
-          "height": 1.25,
-          "depth": 1.1607,
-          "minY": -0.0174
+          "width": 1.073,
+          "height": 1.249,
+          "depth": 1.072,
+          "minY": 0
         }
       }
     },
@@ -11620,11 +11620,11 @@
       "id": "prop_tc_trong",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_trong.glb",
-      "file": "prop_tc_trong.74e6971cb1.glb",
-      "bytes": 935320,
-      "rawBytes": 6886420,
-      "triangles": 2716,
-      "rawTriangles": 2716,
+      "file": "prop_tc_trong.caafe1371b.glb",
+      "bytes": 871360,
+      "rawBytes": 6764492,
+      "triangles": 806,
+      "rawTriangles": 806,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -11708,28 +11708,28 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 2716
+          "triangles": 806
         },
         {
           "level": 1,
-          "triangles": 1082,
-          "target": 1086
+          "triangles": 319,
+          "target": 322
         },
         {
           "level": 2,
-          "triangles": 409,
-          "target": 407
+          "triangles": 120,
+          "target": 121
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.6576,
+          "width": 1.6343,
           "height": 1.8075,
           "depth": 1.64,
           "minY": 0
         },
         "build": {
-          "width": 1.6575,
+          "width": 1.6343,
           "height": 1.8075,
           "depth": 1.6401,
           "minY": 0
@@ -11740,11 +11740,11 @@
       "id": "prop_tc_trong_2",
       "class": "prop",
       "source": "assets/build/raw/prop_tc_trong_2.glb",
-      "file": "prop_tc_trong_2.f71a8097b7.glb",
-      "bytes": 931612,
-      "rawBytes": 6883620,
-      "triangles": 2668,
-      "rawTriangles": 2668,
+      "file": "prop_tc_trong_2.0ec5faea5d.glb",
+      "bytes": 871564,
+      "rawBytes": 6764824,
+      "triangles": 806,
+      "rawTriangles": 806,
       "lod0Cap": 5000,
       "skinned": false,
       "quantized": true,
@@ -11828,28 +11828,28 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 2668
+          "triangles": 806
         },
         {
           "level": 1,
-          "triangles": 1065,
-          "target": 1067
+          "triangles": 319,
+          "target": 322
         },
         {
           "level": 2,
-          "triangles": 399,
-          "target": 400
+          "triangles": 120,
+          "target": 121
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.1316,
+          "width": 2.1083,
           "height": 2.3498,
           "depth": 2.132,
           "minY": 0
         },
         "build": {
-          "width": 2.1315,
+          "width": 2.1083,
           "height": 2.3498,
           "depth": 2.1321,
           "minY": 0
