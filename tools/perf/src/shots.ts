@@ -16,6 +16,7 @@ import flyover from './scenarios/flyover';
 import hires from './scenarios/hires';
 import lackiem from './scenarios/lackiem';
 import thienkhuyet from './scenarios/thienkhuyet';
+import doanmach from './scenarios/doanmach';
 import quality from './scenarios/quality';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
@@ -48,6 +49,7 @@ const SCENARIOS: Scenario[] = [
   points,
   lackiem,
   thienkhuyet,
+  doanmach,
   map,
   mons,
   dungeon,
