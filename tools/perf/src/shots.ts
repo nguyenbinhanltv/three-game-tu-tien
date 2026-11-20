@@ -9,7 +9,10 @@ import { args, flag } from './lib/env';
 import { runScenario, type Scenario } from './lib/scenario';
 import asset from './scenarios/asset';
 import calli from './scenarios/calli';
+import calli3d from './scenarios/calli3d';
 import chrv2 from './scenarios/chrv2';
+import calliscreen from './scenarios/calliscreen';
+import calliset from './scenarios/calliset';
 import clone from './scenarios/clone';
 import collwalk from './scenarios/collwalk';
 import divuc from './scenarios/divuc';
@@ -62,6 +65,7 @@ const SCENARIOS: Scenario[] = [
   collscan,
   propstc,
   calli,
+  calli3d,
   lackiem,
   collwalk,
   thienkhuyet,
@@ -90,6 +94,8 @@ const SCENARIOS: Scenario[] = [
   ual,
   quest4,
   quest5,
+  calliscreen,
+  calliset,
   clone,
   fly,
   chrv3,

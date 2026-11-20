@@ -6,6 +6,7 @@
 import * as THREE from 'three/webgpu';
 import {
   FLIP_ATLASES,
+  fxCamFade,
   fxEventsFor,
   fxTierFor,
   skillTiming,
@@ -566,6 +567,9 @@ export class FxRunner {
           }
           m.fxK = k;
           place(m, k, isShade ? 1.08 : 1, isShade ? 0.03 * (s0[0]! + 0.5) : 0);
+          if (ev.camFade)
+            m.fxOpacity =
+              alpha * fxCamFade(cam.position.x - c.actor.x, cam.position.z - c.actor.z, m.position.x - c.actor.x, m.position.z - c.actor.z);
         }
         void head;
       },
@@ -580,6 +584,9 @@ export class FxRunner {
     // Khung đầu: đặt ngay để không lóe một khung ở gốc.
     place(main, 0, 1, 0);
     if (shade) place(shade, 0, 1.08, 0.03);
+    if (ev.camFade)
+      main.fxOpacity =
+        alpha * fxCamFade(cam.position.x - c.actor.x, cam.position.z - c.actor.z, main.position.x - c.actor.x, main.position.z - c.actor.z);
   }
 
   /** Ghi màu viền, độ rách và bảng màu vào tham số của lưới. */
