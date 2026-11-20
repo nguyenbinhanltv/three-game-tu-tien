@@ -13,8 +13,6 @@ import {
   skillUpgradeCost,
   variantSwitchBlock,
   VARIANT_SWITCH_COOLDOWN_SEC,
-  stackMul,
-  stacksAlive,
   activeVariant,
   type SkillDef,
   type SkillVariant,
@@ -122,13 +120,6 @@ describe('sạc và nội tại', () => {
   });
   it('một nhát cơ bản cho ít sạc: cần cả chục nhát mới đầy', () => {
     expect(CHARGE_MAX / chargeFromDealt(30, 30)).toBeGreaterThan(30);
-  });
-  it('kiếm ý/thế tăng sát thương theo tầng, rụng theo thời gian', () => {
-    expect(stackMul(0, 0.15, 5)).toBe(1);
-    expect(stackMul(5, 0.15, 5)).toBeCloseTo(1.75);
-    expect(stackMul(99, 0.15, 5)).toBeCloseTo(1.75);
-    expect(stacksAlive(3, 1000, 5000, 10)).toBe(3);
-    expect(stacksAlive(3, 1000, 11000, 10)).toBe(0);
   });
   it('hồi phục và giảm sát thương', () => {
     expect(healAmount(100, 0.2)).toBe(120);

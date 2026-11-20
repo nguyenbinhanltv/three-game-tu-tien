@@ -1,6 +1,7 @@
 // Kiểu dữ liệu nội dung game và trạng thái nhân vật, dùng chung client/server.
 
 import type { ItemInst } from './itemtypes';
+import type { SkillRes } from './resource';
 
 /**
  * Tám ô trang bị (Phase 3-1): pháp kiếm, đạo bào, hộ uyển, vân ngoa, đai lưng, ngọc bội, giới chỉ, pháp bảo phụ.
@@ -641,6 +642,8 @@ export interface SkillDef {
   allyCount?: number;
   /** Hệ số từng nhát khi chiêu đánh nhiều lần trong một lần bấm (nhân `power`); `hitAt[i]` là mốc nhát i. */
   hitsMul?: number[];
+  /** VS-2a: tích/xả tài nguyên riêng của công pháp (Kiếm ý, Huyết khí, Đan hỏa). Luật ở `resource.ts`. */
+  res?: SkillRes;
 }
 
 /**
