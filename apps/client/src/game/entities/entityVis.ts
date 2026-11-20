@@ -78,7 +78,12 @@ const MARK_LABEL_UP = 0.46;
 const MARK_LABEL_SCALE = 0.82;
 
 /** Dựng lại nhãn ấn cho gói bit `mk`: trả nhãn mới (đã gắn vào `root`, đặt trên `nameLabel`) hoặc null khi không có ấn. */
-function swapMarkLabel(root: { add(o: Label): unknown; remove(o: Label): unknown }, old: Label | null, mk: number, nameLabel: Label | null): Label | null {
+function swapMarkLabel(
+  root: { add(o: Label): unknown; remove(o: Label): unknown },
+  old: Label | null,
+  mk: number,
+  nameLabel: Label | null,
+): Label | null {
   if (old) {
     root.remove(old);
     disposeLabel(old);
