@@ -6,6 +6,8 @@ import {
   clamp,
   cos,
   float,
+  floor,
+  fract,
   int,
   luminance,
   max,
@@ -86,6 +88,8 @@ export interface CliffTones {
   hi: [number, number, number];
   /** Màu vỉa chạy theo khe nứt (vàng kim Thiên Khuyết); bỏ trống = khe chỉ tối đi. */
   vein?: [number, number, number];
+  /** Vách dựng từ khối đá xếp lệch (cột khối ngẫu nhiên × tầng lệch nhau, khe giữa các khối): hết dải ngang lặp (Thiên Khuyết, POLISH-1). */
+  blocks?: boolean;
 }
 const RED_TONES: CliffTones = { lo: [0.4, 0.2, 0.16], hi: [0.58, 0.52, 0.5] };
 let cliffTones: CliffTones = RED_TONES;
@@ -120,7 +124,17 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   // ----- trọng số -----
   // Sân lát đá chỉ nằm trên mặt gần phẳng: sườn dốc quanh sân lát chiếu từ trên xuống bị kéo giãn thành sọc kẻ ô khi nhìn
   // lướt (P2-E4), nên mặt nạ lát đá tắt dần theo độ dốc và để đá núi/cỏ lo phần sườn.
-  const pav = mask.g.mul(float(1).sub(smoothstep(0.05, 0.14, slope)));
+  const pavRaw = mask.g.mul(float(1).sub(smoothstep(0.05, 0.14, slope)));
+  // Bệ cổng bí cảnh Vân Lam (POLISH-1): lát đá không phủ đều như thảm mà vỡ thành mảng theo nhiễu (rìa lởm chởm, đứt đoạn, cỏ lấn vào).
+  const portalK = strata ? smoothstep(48, 34, p.sub(vec2(2048, 1708)).length()) : float(0);
+  const pavBreak = smoothstep(
+    0.4,
+    0.56,
+    texture(tex.mask, p.mul(0.026).add(0.13))
+      .a.mul(0.7)
+      .add(texture(tex.mask, p.mul(0.085).add(0.71)).a.mul(0.3)),
+  );
+  const pav = pavRaw.mul(mix(float(1), pavBreak, portalK));
   const rockW = max(smoothstep(0.1, 0.26, slope), smoothstep(175, 235, h).mul(0.65)).mul(float(1).sub(pav));
   const cliffW = smoothstep(0.3, 0.46, slope);
   // Tuyết chỉ ở đỉnh rất cao (MAP-1): núi gần không còn phủ trắng phẳng.
@@ -181,6 +195,29 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   const dirtEdge = hi ? A(p.div(5), L.dirt) : base.mul(0.85);
   let col: Node = mix(base, dirtEdge.mul(0.9), wetEdge.mul(0.8));
   col = mix(col, special, spW);
+  if (strata) {
+    // Phiến đá lớn có viền: lưới ô ~3,4 m méo theo nhiễu; mỗi phiến một sắc, mạch tối có rêu, vài phiến sứt mép; chỉ ở bệ cổng.
+    const warp = texture(tex.mask, p.mul(0.06)).a.sub(0.5).mul(1.4);
+    const q = p.div(3.4).add(warp);
+    const cell = floor(q);
+    const f = fract(q);
+    const hsh = fract(sin(dot(cell, vec2(12.9898, 78.233))).mul(43758.5453));
+    const jointW = float(0.05).add(hsh.mul(0.05));
+    const joint = max(smoothstep(jointW, 0, f.x), smoothstep(jointW, 0, f.y))
+      .max(smoothstep(float(1).sub(jointW), 1, f.x))
+      .max(smoothstep(float(1).sub(jointW), 1, f.y));
+    const slabTone = float(0.78).add(hsh.mul(0.42));
+    const mossMix = joint.mul(float(0.45).add(hsh.mul(0.4)));
+    const slab = col.mul(slabTone).mul(float(1).sub(joint.mul(0.65)));
+    const slabMoss = mix(slab, vec3(0.2, 0.32, 0.13), mossMix.mul(0.7));
+    col = mix(
+      col,
+      slabMoss,
+      step(0.5, pav)
+        .mul(portalK)
+        .mul(float(1).sub(pavFar.mul(0.2))),
+    );
+  }
   col = col.mul(hue).mul(float(0.84).add(macro.mul(0.32)));
   col = mix(col, col.mul(TOMB_TINT), bio.z);
 
@@ -248,6 +285,45 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       const crack = smoothstep(0.045, 0.0, nA.sub(0.5).abs()).mul(smoothstep(0.2, 0.8, nB));
       tone = tone.mul(float(1).sub(crack.mul(0.6)));
       if (cliffTones.vein) tone = mix(tone, vec3(...cliffTones.vein), crack.mul(0.85));
+      if (cliffTones.blocks) {
+        // Khối đá xếp lệch, hai cỡ (khối lớn ~60–120 m + khối nhỏ ~20–40 m): cột theo tọa độ dọc vách (méo mạnh bởi nhiễu), bề cao tầng mỗi cột một kiểu,
+        // màu từng khối khác nhau, khe tối quanh khối, mép trên khối sáng, vài khối chạy vỉa vàng ở khe.
+        const layer = (su: number, wob: number, sh: number, k: number) => {
+          const ub = u
+            .mul(su)
+            .add(nA.mul(wob))
+            .add(nB.mul(wob * 0.35));
+          const ci = floor(ub);
+          const cf = fract(ub);
+          const hb = fract(sin(ci.mul(127.1).add(k * 311.7)).mul(43758.5453));
+          const hy = h
+            .mul(float(sh).mul(float(0.65).add(hb.mul(0.8))))
+            .add(hb.mul(9))
+            .add(nB.mul(1.2));
+          const ri = floor(hy);
+          const rf = fract(hy);
+          const hr = fract(sin(ri.mul(91.7).add(ci.mul(17.3)).add(k)).mul(24634.6345));
+          const gw = float(0.03).add(hb.mul(0.05));
+          const gap = max(smoothstep(gw, 0, cf), smoothstep(float(1).sub(gw), 1, cf)).max(smoothstep(0.07, 0, rf));
+          return { hb, rf, hr, gap };
+        };
+        const big = layer(0.0062, 2.4, 0.026, 1);
+        const small = layer(0.022, 1.6, 0.055, 2);
+        let blk: Node = mix(vec3(...cliffTones.lo), vec3(...cliffTones.hi), big.hr.mul(0.7).add(small.hr.mul(0.3)).mul(0.85).add(0.07));
+        blk = blk
+          .mul(mix(vec3(1.18, 0.96, 0.78), vec3(0.82, 0.9, 1.1), big.hb))
+          .mul(float(0.7).add(big.hr.mul(0.6)))
+          .mul(float(0.86).add(small.hb.mul(0.2)))
+          .mul(float(0.78).add(nC.mul(0.44)));
+        // xa thì khe mờ dần (đường kẻ thẳng dài thành ô lưới): chỉ còn mảng màu
+        const gap = max(big.gap.mul(0.85), small.gap.mul(0.45)).mul(float(1).sub(smoothstep(120, 650, dist).mul(0.75)));
+        tone = mix(tone, blk, 0.82);
+        tone = tone
+          .mul(float(1).sub(gap.mul(0.7)))
+          .mul(float(1).add(smoothstep(0.86, 1, big.rf).mul(0.26)))
+          .mul(float(1).add(smoothstep(0.88, 1, small.rf).mul(0.1)));
+        if (cliffTones.vein) tone = mix(tone, vec3(...cliffTones.vein), big.gap.mul(smoothstep(0.6, 0.92, big.hb)).mul(0.32));
+      }
       // gờ đá: mép trên mỗi tầng sáng, ngay dưới tối
       // chỉ ở vài tầng (nA cao): gờ không chạy đều khắp vách
       const ledgeOn = smoothstep(0.35, 0.6, nA);

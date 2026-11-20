@@ -20,7 +20,6 @@ import {
   hash01,
   KIEM_TRUNG,
   LAKE,
-  PORTAL_PAD,
   SECT,
   TERRAIN_SEED,
   trailsOf,
@@ -31,7 +30,7 @@ import { LEVELS } from '@dtl/content';
 import { levelId, levelTerrain } from '../../base/levelCtx';
 import { col, G, GeoBuilder, mat } from '../core/geo';
 import { withSightFade } from './occlusion';
-import { sectPaving } from '../../render/groundMask';
+import { portalPaving, sectPaving } from '../../render/groundMask';
 import { nearPropTree } from './propScatter';
 import { vanHaiArt, type VhPalette } from './vanHaiArt';
 import { tkGroundColor } from './thienKhuyetArt';
@@ -247,7 +246,6 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
   const wValley = featureWeight(VALLEY, x, z);
   const wForest = featureWeight(FOREST, x, z);
   const wLake = featureWeight(LAKE, x, z);
-  const wPad = featureWeight(PORTAL_PAD, x, z);
   const n = fbm(x * 0.013, z * 0.013, 2, TERRAIN_SEED + 300);
 
   out.copy(C_GRASS_WILD);
@@ -290,7 +288,8 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
   if (wSect > 0.5) out.lerp(C_GRASS_SECT, Math.min(0.85, (wSect - 0.5) * 3));
   const paved = sectPaving(x - SECT.x, z - SECT.z);
   if (paved > 0) out.lerp(C_STONE, paved);
-  if (wPad > 0.9) out.lerp(C_STONE, Math.min(1, (wPad - 0.9) * 10));
+  const pPad = portalPaving(x, z); // chỉ vòng quanh cổng (r ≤ 31 m); phần còn lại của cao nguyên phẳng là cỏ (POLISH-1)
+  if (pPad > 0) out.lerp(C_STONE, pPad);
   // Đất chết xám tím của Kiếm Trủng.
   const wTomb = featureWeight(KIEM_TRUNG, x, z);
   if (wTomb > 0.15) out.lerp(C_TOMB, Math.min(1, (wTomb - 0.15) * 1.8));
@@ -480,8 +479,7 @@ function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeom
       const wForest = featureWeight(FOREST, x, z);
       const wValley = featureWeight(VALLEY, x, z);
       const wLake = featureWeight(LAKE, x, z);
-      const wPad = featureWeight(PORTAL_PAD, x, z);
-      if (wPad > 0.85 || featureWeight(KIEM_TRUNG, x, z) > 0.25) continue;
+      if (portalPaving(x, z) > 0.02 || featureWeight(KIEM_TRUNG, x, z) > 0.25) continue;
       // Quanh cổ thụ/thông Tripo (P2-A4) bỏ cây thủ tục để không chồng lên nhau.
       if (nearPropTree(x, z)) continue;
       // Độ dốc: bỏ cây trên vách đá.
@@ -732,7 +730,7 @@ export class Terrain {
       T.id === 'doan_mach' || T.id === 'thien_khuyet' || KT || PM,
       // Thiên Khuyết (MAP-4): vách xám ấm ↔ nâu cát, khe nứt có vỉa vàng kim; vân từ nhiễu theo tọa độ dọc vách (hết ô caro).
       T.id === 'thien_khuyet'
-        ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18] }
+        ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18], blocks: true }
         : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
           KT
           ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }

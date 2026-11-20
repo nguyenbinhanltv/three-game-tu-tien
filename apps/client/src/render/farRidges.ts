@@ -26,7 +26,7 @@ import { skyParams } from './sky';
  * Không bị sương của `scene.fogNode` (xa hơn tầm sương), không ghi độ sâu, vẽ ngay sau bầu trời.
  */
 
-interface Layer {
+export interface RidgeLayer {
   radius: number;
   /** Cao đỉnh (m) so với `base`. */
   amp: number;
@@ -37,9 +37,11 @@ interface Layer {
   haze: number;
   seed: number;
   freq: number;
+  /** Số mũ của đường sống núi (mặc định 1,25): lớn hơn = đỉnh nhọn sắc, thung sâu (kiểu sơn thủy). */
+  sharp?: number;
 }
 
-const LAYERS: Layer[] = [
+const LAYERS: RidgeLayer[] = [
   { radius: 1700, amp: 520, base: -140, color: 0x4f8f86, haze: 0.38, seed: 3, freq: 7 },
   { radius: 2500, amp: 700, base: -160, color: 0x5f86a6, haze: 0.58, seed: 11, freq: 9 },
   { radius: 3400, amp: 900, base: -180, color: 0x7f9fc2, haze: 0.76, seed: 29, freq: 11 },
@@ -62,13 +64,13 @@ function noise1(t: number, period: number, seed: number): number {
 }
 
 /** Đường sống núi: nhiều tầng, đỉnh nhọn (|1 - 2n|) chồng nền thoải. */
-function ridge(a: number, layer: Layer): number {
+function ridge(a: number, layer: RidgeLayer): number {
   const t = (a / (Math.PI * 2)) * layer.freq;
   let h = 0.45 * noise1(t, layer.freq, layer.seed);
   h += 0.3 * (1 - Math.abs(1 - 2 * noise1(t * 2.3, layer.freq * 2, layer.seed + 1)));
   h += 0.18 * (1 - Math.abs(1 - 2 * noise1(t * 5.1, Math.round(layer.freq * 5.1), layer.seed + 2)));
   h += 0.07 * noise1(t * 11, layer.freq * 11, layer.seed + 3);
-  return Math.pow(h, 1.25);
+  return Math.pow(h, layer.sharp ?? 1.25);
 }
 
 const SEGS = 360;
@@ -92,7 +94,7 @@ function noise2(t: number, v: number, period: number, seed: number): number {
  * Mặt núi có chiều sâu: lưới SEGS × ROWS, mỗi hàng dịch ra/vào theo nhiễu (mỏm đá, hốc, gờ), càng cao càng gồ ghề, nên đường sống
  * và mặt núi có khối thật (shader tô sáng tối theo pháp tuyến hướng nắng) thay vì một tấm phẳng.
  */
-function ringGeometry(layer: Layer): THREE.BufferGeometry {
+function ringGeometry(layer: RidgeLayer): THREE.BufferGeometry {
   const pos: number[] = [];
   const uvs: number[] = [];
   const idx: number[] = [];
@@ -129,7 +131,7 @@ function ringGeometry(layer: Layer): THREE.BufferGeometry {
   return g;
 }
 
-function ridgeMaterial(layer: Layer): THREE.MeshBasicNodeMaterial {
+function ridgeMaterial(layer: RidgeLayer): THREE.MeshBasicNodeMaterial {
   const mat = new THREE.MeshBasicNodeMaterial({ side: THREE.DoubleSide, fog: false, depthWrite: false });
   const rock = uniform(new THREE.Color(layer.color));
   const horizon = skyParams.horizon;
@@ -179,9 +181,9 @@ export class FarRidges {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
 
-  constructor(cx: number, cz: number) {
+  constructor(cx: number, cz: number, layers: RidgeLayer[] = LAYERS) {
     this.group.name = 'farRidges';
-    LAYERS.forEach((layer, i) => {
+    layers.forEach((layer, i) => {
       const geo = ringGeometry(layer);
       const mat = ridgeMaterial(layer);
       const mesh = new THREE.Mesh(geo, mat);

@@ -71,6 +71,7 @@ import type { KinhNguyetArt } from './world/kinhNguyetArt';
 import type { ThanTangArt } from './world/thanTangArt';
 import type { XichTanArt } from './world/xichTanArt';
 import type { BhFar } from './world/bhFar';
+import type { LacKiemFar } from './world/lacKiemFar';
 import type { DoKiepArt } from './world/doKiepArt';
 import type { KimDaArt } from './world/kimDaArt';
 import type { LacKiemSkyScene } from './world/lacKiemSky';
@@ -250,6 +251,7 @@ export class Game {
   thanTangArt: ThanTangArt | null = null;
   xichTanArt: XichTanArt | null = null;
   bhFar: BhFar | null = null;
+  lacKiemFar: LacKiemFar | null = null;
   doKiepArt: DoKiepArt | null = null;
   kimDaArt: KimDaArt | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */

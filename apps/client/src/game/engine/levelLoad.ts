@@ -29,6 +29,7 @@ import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/th
 import { XichTanArt, xkMaterialFor } from '../world/xichTanArt';
 import { DoKiepArt, dkMaterialFor } from '../world/doKiepArt';
 import { BhFar } from '../world/bhFar';
+import { LacKiemFar } from '../world/lacKiemFar';
 import { buildGildedSky, KD_DOME, KimDaArt } from '../world/kimDaArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
@@ -467,6 +468,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.bhFar = new BhFar(() => (eng.scene.fog as THREE.Fog | null)?.color ?? null);
     eng.scene.add(eng.bhFar.group);
   }
+  if (levelAssets(id).lacKiemFar) {
+    eng.lacKiemFar = new LacKiemFar(() => (eng.scene.fog as THREE.Fog | null)?.color ?? null);
+    eng.scene.add(eng.lacKiemFar.group);
+  }
   if (levelAssets(id).doKiepArt) {
     eng.doKiepArt = new DoKiepArt({ lights: q.lights && isWebGPU(eng.renderer), hazardActive: () => eng.vfx.hazards.length > 0 });
     eng.scene.add(eng.doKiepArt.group);
@@ -575,6 +580,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.bhFar.group);
     eng.bhFar.dispose();
     eng.bhFar = null;
+  }
+  if (eng.lacKiemFar) {
+    drop(eng.lacKiemFar.group);
+    eng.lacKiemFar.dispose();
+    eng.lacKiemFar = null;
   }
   if (eng.doKiepArt) {
     drop(eng.doKiepArt.group);
@@ -720,8 +730,16 @@ export async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
       m.receiveShadow = shadows;
       m.frustumCulled = false;
     });
-    const statue = root.getObjectByName('tk_statue');
-    if (statue) statue.position.y += heightAt(sky.statue.x, sky.statue.z) - TK_ORIGIN.y - 5; // cộng dồn: node đã có phép dịch lượng tử hóa
+    // Tượng đổ vỡ ba khúc (`tk_statue0..2`): mỗi khúc nằm sát đất theo heightAt tại chỗ nó nằm, lún 0,8 m (cộng dồn: node đã có phép dịch lượng tử hóa).
+    root.updateMatrixWorld(true);
+    const box = new THREE.Box3();
+    const mid = new THREE.Vector3();
+    for (let q = 0; q < 3; q++) {
+      const piece = root.getObjectByName(`tk_statue${q}`);
+      if (!piece) continue;
+      box.setFromObject(piece).getCenter(mid);
+      piece.position.y += heightAt(mid.x, mid.z) - TK_ORIGIN.y - 0.8;
+    }
     eng.scene.add(root);
   } catch (e) {
     assetLog.warn('không tải được arch_thien_khuyet:', e);

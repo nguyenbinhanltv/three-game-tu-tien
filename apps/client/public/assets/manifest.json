@@ -792,11 +792,11 @@
       "id": "arch_sect",
       "class": "arch",
       "source": "assets/build/raw/arch_sect.glb",
-      "file": "arch_sect.8da4e5de4e.glb",
-      "bytes": 19361756,
-      "rawBytes": 35627644,
-      "triangles": 279104,
-      "rawTriangles": 279104,
+      "file": "arch_sect.66e5d35c33.glb",
+      "bytes": 19378064,
+      "rawBytes": 35890348,
+      "triangles": 280746,
+      "rawTriangles": 280746,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -988,7 +988,7 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 279104
+          "triangles": 280746
         }
       ],
       "dims": {
@@ -1102,11 +1102,11 @@
       "id": "arch_thien_khuyet",
       "class": "arch",
       "source": "assets/build/raw/arch_thien_khuyet.glb",
-      "file": "arch_thien_khuyet.255f8e3b4d.glb",
-      "bytes": 14732164,
-      "rawBytes": 28633140,
-      "triangles": 260935,
-      "rawTriangles": 260935,
+      "file": "arch_thien_khuyet.fc2f870f64.glb",
+      "bytes": 13113148,
+      "rawBytes": 26534112,
+      "triangles": 237559,
+      "rawTriangles": 237559,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -1239,53 +1239,26 @@
           "slots": [
             "metallicRoughnessTexture"
           ]
-        },
-        {
-          "name": "metal_plate_nor_gl_2k",
-          "mimeType": "image/ktx2",
-          "width": 1024,
-          "height": 1024,
-          "slots": [
-            "normalTexture"
-          ]
-        },
-        {
-          "name": "arch_sect_steel",
-          "mimeType": "image/ktx2",
-          "width": 1024,
-          "height": 1024,
-          "slots": [
-            "baseColorTexture"
-          ]
-        },
-        {
-          "name": "metal_plate_Rough_2k",
-          "mimeType": "image/ktx2",
-          "width": 512,
-          "height": 512,
-          "slots": [
-            "metallicRoughnessTexture"
-          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 260935
+          "triangles": 237559
         }
       ],
       "dims": {
         "raw": {
           "width": 895.5503,
-          "height": 332.087,
+          "height": 326.0038,
           "depth": 926.1588,
-          "minY": -7.487
+          "minY": -1.4038
         },
         "build": {
           "width": 895.5196,
-          "height": 332.1131,
+          "height": 326.0269,
           "depth": 926.1588,
-          "minY": -7.4907
+          "minY": -1.4045
         }
       }
     },

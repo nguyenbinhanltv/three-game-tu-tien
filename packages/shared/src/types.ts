@@ -932,6 +932,8 @@ export interface LevelAssets {
   xichTanArt?: boolean;
   /** Lớp núi xa Bắc Hoang (POLISH-1, client `game/world/bhFar.ts`): đỉnh tuyết nhiều lớp + sương chân núi ngoài vùng chơi. Chỉ để nhìn. */
   bhFar?: boolean;
+  /** Lớp cảnh xa Lạc Kiếm Tông (POLISH-1, client `game/world/lacKiemFar.ts`): cụm tùng, gờ đá, sương dải trên đồi xa. Chỉ để nhìn. */
+  lacKiemFar?: boolean;
   /** Cảnh Độ Kiếp (DUN-1 PR7, client `game/world/doKiepArt.ts` + GLB `arch_do_kiep`): Thiên Lôi Đài dưới mây bão. Chỉ để nhìn. */
   doKiepArt?: boolean;
   /** Cảnh Kim Dạ Cung (DUN-1 PR5, client `game/world/kimDaArt.ts` + GLB `arch_kim_da`): cung dát vàng đêm lồng đèn. Chỉ để nhìn. */
