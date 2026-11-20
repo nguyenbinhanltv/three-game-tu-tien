@@ -198,7 +198,8 @@ export function markDefErrors(defs: readonly MarkDef[]): string[] {
     if (!(d.dur > 0 && d.dur <= 30)) errs.push(`${at}: dur 0–30 giây`);
     if (d.amp !== undefined && !(d.amp > 0 && d.amp * d.max <= 1)) errs.push(`${at}: amp × max không quá +100%`);
     if (d.ampAll !== undefined && !(d.ampAll > 0 && d.ampAll <= 0.5)) errs.push(`${at}: ampAll trong (0; 0,5]`);
-    if (d.on === 'ally' && (d.amp !== undefined || d.ampAll !== undefined || d.onApply)) errs.push(`${at}: ấn trên đạo hữu không có amp/onApply`);
+    if (d.on === 'ally' && (d.amp !== undefined || d.ampAll !== undefined || d.onApply))
+      errs.push(`${at}: ấn trên đạo hữu không có amp/onApply`);
     if (d.onApply?.stun !== undefined && !(d.onApply.stun > 0 && d.onApply.stun <= 3)) errs.push(`${at}: onApply.stun 0–3 giây`);
     if (d.onApply?.posture !== undefined && !(d.onApply.posture > 0 && d.onApply.posture <= 0.5)) errs.push(`${at}: onApply.posture 0–0,5`);
     if (!/^[0-9a-f]{6}$/i.test(d.color)) errs.push(`${at}: màu phải là hex 6 ký tự`);
@@ -243,7 +244,8 @@ export function skillMarkErrors(
     if (cm.stun !== undefined && !(cm.stun > 0 && cm.stun <= 3)) errs.push(`${at}: consumeMark.stun 0–3 giây`);
     if (cm.res !== undefined && !(cm.res > 0)) errs.push(`${at}: consumeMark.res phải dương`);
     if (cm.heal !== undefined && !(cm.heal > 0 && cm.heal <= 1)) errs.push(`${at}: consumeMark.heal trong (0; 1]`);
-    if (cm.burst && !(cm.burst.r > 0 && cm.burst.r <= 10 && cm.burst.mul > 0 && cm.burst.mul <= 3)) errs.push(`${at}: consumeMark.burst r 0–10 m, mul 0–3`);
+    if (cm.burst && !(cm.burst.r > 0 && cm.burst.r <= 10 && cm.burst.mul > 0 && cm.burst.mul <= 3))
+      errs.push(`${at}: consumeMark.burst r 0–10 m, mul 0–3`);
     if (cm.then) {
       const t = defs.get(cm.then.mark);
       if (!t || t.on !== 'mon') errs.push(`${at}: consumeMark.then.mark phải là ấn trên quái`);

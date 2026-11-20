@@ -119,7 +119,9 @@ describe('ấn trên mục tiêu (VS-2c)', () => {
     expect(ok({ id: 's', kind: 'aoe', consumeMark: { id: 'kiem_an', extraHit: 0.3 } }).join()).toMatch(/extraHit chỉ dùng/);
     expect(ok({ id: 's', kind: 'heal', consumeMark: { id: 'kiem_an', heal: 0.5 } }).join()).toMatch(/không tiêu bằng heal/);
     expect(ok({ id: 's', kind: 'damage', consumeMark: { id: 'moc_an', perMark: 0.2 } }).join()).toMatch(/chỉ tiêu bằng heal\/burst/);
-    expect(ok({ id: 's', kind: 'aoe', consumeMark: { id: 'tran_an', then: { mark: 'moc_an', resCost: 40 } } }).join()).toMatch(/ấn trên quái/);
+    expect(ok({ id: 's', kind: 'aoe', consumeMark: { id: 'tran_an', then: { mark: 'moc_an', resCost: 40 } } }).join()).toMatch(
+      /ấn trên quái/,
+    );
     // @ts-expect-error id lạ phải bị bắt lúc chạy (dữ liệu JSON không có kiểu)
     expect(ok({ id: 's', kind: 'damage', applyMark: { id: 'zz' } }).join()).toMatch(/không phải ấn/);
   });

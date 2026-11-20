@@ -339,7 +339,9 @@ export class CombatSystem {
       const cm = skill.consumeMark;
       const took = cm && tgt.state !== MS_DEAD ? this.takeMonMark(p, tgt, cm.id) : 0;
       const stunSec =
-        (rs.variant?.stun ?? skill.stun ?? 0) + (skill.id === 'skl_dich_son_xung' ? c.stats.setFx.dichSonStun : 0) + (took ? (cm?.stun ?? 0) : 0);
+        (rs.variant?.stun ?? skill.stun ?? 0) +
+        (skill.id === 'skl_dich_son_xung' ? c.stats.setFx.dichSonStun : 0) +
+        (took ? (cm?.stun ?? 0) : 0);
       if (stunSec > 0 && tgt.state !== MS_DEAD) this.stunMonster(p, tgt, stunSec);
       if (took && cm) {
         if (cm.res) this.addRes(p, cm.res);
