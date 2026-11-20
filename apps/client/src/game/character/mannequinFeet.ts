@@ -40,17 +40,39 @@ export const FEET = {
 };
 
 let slotWin = -1e9;
-let slotUsed = 0;
+/** Khoảng cách camera của người khác đã xin suất trong cửa sổ hiện tại (tăng dần, tối đa `maxPerFrame` phần tử). */
+let slotNear: number[] = [];
+/** Ngưỡng khoảng cách của cửa sổ trước: chỉ những người gần camera hơn ngưỡng này được IK. */
+let slotLimit = Infinity;
 /**
- * Xin một suất IK chân trong khung hiện tại (`now` = performance.now). Cửa sổ 6 ms gom mọi lần gọi của cùng một khung; quá
- * `FEET.maxPerFrame` thì từ chối và nhân vật đó trả về tư thế clip (gọi `release`).
+ * Xin một suất IK chân trong khung hiện tại (`now` = performance.now, `dist` = khoảng cách tới camera, `self` = nhân vật của mình).
+ * Chính mình luôn được; người khác được nếu nằm trong `maxPerFrame - 1` người gần camera nhất của khung TRƯỚC (cửa sổ 6 ms gom
+ * mọi lần gọi của một khung, nên xếp hạng trễ một khung, đủ cho IK vì cảnh đổi chậm). Bị từ chối thì gọi `release`.
  */
-export function feetSlot(now: number): boolean {
+export function feetSlot(now: number, dist: number, self = false): boolean {
   if (now - slotWin > 6) {
     slotWin = now;
-    slotUsed = 0;
+    slotLimit = slotNear.length >= FEET.maxPerFrame - 1 ? slotNear[FEET.maxPerFrame - 2]! : Infinity;
+    slotNear = [];
   }
-  return slotUsed++ < FEET.maxPerFrame;
+  if (self) return true;
+  let i = slotNear.length;
+  if (i < FEET.maxPerFrame - 1 || dist < slotNear[i - 1]!) {
+    if (i >= FEET.maxPerFrame - 1) i--;
+    while (i > 0 && slotNear[i - 1]! > dist) {
+      slotNear[i] = slotNear[i - 1]!;
+      i--;
+    }
+    slotNear[i] = dist;
+  }
+  return dist <= slotLimit;
+}
+
+/** Đặt lại bộ chọn suất (test). */
+export function resetFeetSlots(): void {
+  slotWin = -1e9;
+  slotNear = [];
+  slotLimit = Infinity;
 }
 
 /**

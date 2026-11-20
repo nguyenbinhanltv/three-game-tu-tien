@@ -1,7 +1,18 @@
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { registerCollision } from '@dtl/shared';
-import { FEET, groundNormal, hipDrop, MqFeet, needStep, stepArc, walkableGround, wrapAngle } from './mannequinFeet';
+import {
+  FEET,
+  feetSlot,
+  groundNormal,
+  hipDrop,
+  MqFeet,
+  needStep,
+  resetFeetSlots,
+  stepArc,
+  walkableGround,
+  wrapAngle,
+} from './mannequinFeet';
 
 describe('mannequinFeet: hàm thuần', () => {
   it('wrapAngle đưa về (−π, π]', () => {
@@ -199,5 +210,36 @@ describe('MqFeet: bàn chân theo dốc', () => {
     for (let i = 0; i < 90; i++) feet.update(1 / 60, { active: false, standing: false }, flat);
     root.updateMatrixWorld(true);
     expect(up(foot).angleTo(new THREE.Vector3(0, 1, 0))).toBeCloseTo(rest, 2);
+  });
+});
+
+describe('feetSlot: chọn theo khoảng cách camera', () => {
+  const frame = (t: number, dists: number[], selfFirst = false) => {
+    const got = dists.map((d, i) => feetSlot(t, d, selfFirst && i === 0));
+    return got;
+  };
+  it('chính mình luôn được, người xa nhất bị loại khi đông, người gần được giữ', () => {
+    resetFeetSlots();
+    const dists = [0, 9, 3, 12, 5, 7, 2, 20];
+    frame(0, dists, true); // khung 1 chỉ thu thập
+    const got = frame(100, dists, true);
+    expect(got[0]).toBe(true); // mình (dist 0)
+    // maxPerFrame - 1 người gần nhất (khác mình): 2, 3, 5 được; 7, 9, 12, 20 bị loại.
+    const byDist = Object.fromEntries(dists.map((d, i) => [d, got[i]]));
+    expect([byDist[2], byDist[3], byDist[5]]).toEqual([true, true, true]);
+    expect([byDist[7], byDist[9], byDist[12], byDist[20]]).toEqual([false, false, false, false]);
+  });
+  it('thứ tự gọi không đổi kết quả', () => {
+    resetFeetSlots();
+    const a = [20, 2, 12, 3, 7, 5];
+    frame(0, a);
+    const g = frame(100, a);
+    const near = a.filter((_, i) => g[i]).sort((x, y) => x - y);
+    expect(near).toEqual([2, 3, 5]);
+  });
+  it('ít người hơn ngưỡng thì ai cũng được', () => {
+    resetFeetSlots();
+    frame(0, [4, 8]);
+    expect(frame(100, [4, 8])).toEqual([true, true]);
   });
 });
