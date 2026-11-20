@@ -84,7 +84,12 @@ export interface SkirtTune {
 const KIEM_TU_TUNE: SkirtTune = { rMul: 1.7, hemStiff: 2.0, sleeve: { stiffness: 260, drag: 14, maxAngle: 12, maxInward: 5 } };
 export const SKIRT_TUNE: Record<string, SkirtTune> = {
   chr_v3_dan_tam_: { rMul: 1.5 },
-  chr_v3_tinh_khuyet_nu: KIEM_TU_TUNE, // bản thử bind A-pose; các model Kiếm tu khác chưa áp (chờ duyệt)
+  chr_v3_tinh_khuyet_nu: KIEM_TU_TUNE, // bản thử bind A-pose
+  chr_v3_tinh_khuyet_nam: KIEM_TU_TUNE, // NV3-ROLL đợt 1
+  chr_v3_kinh_quang_nam: KIEM_TU_TUNE, // NV3-ROLL đợt 1
+  chr_v3_kinh_quang_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 1
+  chr_v3_liet_mach_nam: KIEM_TU_TUNE, // NV3-ROLL đợt 1
+  chr_v3_liet_mach_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 1
 };
 const skirtTuneOf = (id: string): SkirtTune | undefined => Object.entries(SKIRT_TUNE).find(([k]) => id.startsWith(k))?.[1];
 /** Thông số riêng của vạt ở lò xo v2: góc lệch tối đa hẹp (12°) vì vạt nay do lò xo + va chạm điều khiển phần lớn (share 0,8): lệch rộng làm hai nửa vạt chéo nhau khi chạy. Tóc và tay áo giữ `V3_SPRING`. */
@@ -197,7 +202,14 @@ function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
 }
 
 /** Asset dựng bằng `chr_v3.py --keep-original` (lưới/texture gốc Tripo): vật liệu cần chỉnh cho hợp ánh sáng game. */
-export const KEEP_ORIGINAL_ASSETS: ReadonlySet<string> = new Set(['chr_v3_tinh_khuyet_nu']);
+export const KEEP_ORIGINAL_ASSETS: ReadonlySet<string> = new Set([
+  'chr_v3_tinh_khuyet_nu',
+  'chr_v3_tinh_khuyet_nam',
+  'chr_v3_kinh_quang_nam',
+  'chr_v3_kinh_quang_nu',
+  'chr_v3_liet_mach_nam',
+  'chr_v3_liet_mach_nu',
+]);
 
 /**
  * Tripo gán roughness thấp cho tóc (≈0,24) và metallic mặc định 1 (glTF khi thiếu hệ số): dưới nắng + env của game, da/tóc bóng như nhựa/cao su.
@@ -256,11 +268,11 @@ export const ARM_FIT: Record<string, number> = {
   chr_v3_dan_tam_nam: (16 * Math.PI) / 180,
   chr_v3_dan_tam_nu: (16 * Math.PI) / 180,
   // Kiếm tu bậc cao (NV3-B, bind A-pose `--bind-a`): lưới không bị ép sang T nên không cần bù góc dang (0); chỉnh lại sau khi đo `springMetrics`.
-  chr_v3_kinh_quang_nam: (16 * Math.PI) / 180,
-  chr_v3_kinh_quang_nu: (16 * Math.PI) / 180,
-  chr_v3_liet_mach_nam: (16 * Math.PI) / 180,
-  chr_v3_liet_mach_nu: (16 * Math.PI) / 180,
-  chr_v3_tinh_khuyet_nam: (16 * Math.PI) / 180,
+  chr_v3_kinh_quang_nam: 0,
+  chr_v3_kinh_quang_nu: 0,
+  chr_v3_liet_mach_nam: 0,
+  chr_v3_liet_mach_nu: 0,
+  chr_v3_tinh_khuyet_nam: 0,
   chr_v3_tinh_khuyet_nu: 0,
 };
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
