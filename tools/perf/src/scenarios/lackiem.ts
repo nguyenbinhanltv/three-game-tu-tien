@@ -22,6 +22,8 @@ interface View {
 /** Sáu góc máy cố định (camera tự do `__game.freeCam`, chỉ có tác dụng khi URL có `?debug=1`): không bị địa hình đẩy camera. */
 export const VIEWS: View[] = [
   { name: 'cong', eye: [0, 7, 112], at: [0, 8, 60], fov: 55 },
+  { name: 'bienxa', eye: [0, 7, 128], at: [0, 7.5, 96], fov: 40 },
+  { name: 'biengan', eye: [0, 7, 112], at: [0, 7.5, 96], fov: 42 },
   { name: 'san', eye: [0, 9, 62], at: [0, 8, -20], fov: 58 },
   { name: 'kiemdai', eye: [-62, 24, 76], at: [-170, 34, 150], fov: 60 },
   { name: 'dong', eye: [60, 42, 64], at: [235, 30, 30], fov: 60 },
