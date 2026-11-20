@@ -35,7 +35,7 @@ import {
   turnLagOf,
   xfade,
 } from './mannequinAnim';
-import { MqFeet } from './mannequinFeet';
+import { feetSlot, MqFeet } from './mannequinFeet';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import UAL_HIT from './ualHit.json';
 import type { AnimState, AttackOpts, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
@@ -431,6 +431,9 @@ export class MannequinCharacter implements CharacterView {
   private colScale = 1;
   private twists: Twist[] = [];
   private lodLevel = 0;
+  /** Khoảng cách camera và cờ nhân vật của mình từ lần `setView` gần nhất (chọn suất IK chân theo gần camera). */
+  private viewDist = 0;
+  private viewSelf = true;
   /** Kiếm: vỏ trên lưng (`dtl_scabbard`) khi nghỉ, nắm tay (`dtl_sword`) khi giao chiến. */
   private blade: THREE.Mesh | null = null;
   private bladeLen = 0;
@@ -1070,6 +1073,8 @@ export class MannequinCharacter implements CharacterView {
     const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length);
     this.applyLod(level);
     this.lodLevel = level;
+    this.viewDist = v.dist;
+    this.viewSelf = !!v.self;
     this.interval = mixerInterval(level, v.inView, !!v.self);
     this.inner.visible = v.inView;
   }
@@ -1139,7 +1144,9 @@ export class MannequinCharacter implements CharacterView {
     if (V3_ANIM && !V3_OFF.has('proc') && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
     if (this.feet && !V3_OFF.has('feet')) {
       if (this.lodLevel === 0 && this.inner.visible) {
-        const active = this.grounded && !a.dead && !a.meditating && this.baseName !== 'Sitting_Idle_Loop';
+        // Hết suất (đông người ở xa camera): `active: false` để IK mờ dần rồi tự nhả, được cấp lại thì hiện dần, không giật.
+        const active =
+          feetSlot(this.viewDist, this.viewSelf) && this.grounded && !a.dead && !a.meditating && this.baseName !== 'Sitting_Idle_Loop';
         // Khóa chân chỉ khi đứng yên thật: đòn/chiêu/trúng đòn có chân tự di chuyển trong clip.
         this.feet.update(this.acc, { active, standing: a.speed < 0.3 && !this.perf && !this.shot });
       } else this.feet.release();

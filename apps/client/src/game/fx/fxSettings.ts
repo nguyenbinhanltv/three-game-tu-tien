@@ -1,5 +1,16 @@
 import { FX_QUALITY_TIER, type FxQuality } from '@dtl/shared';
 import { FLAGS } from '../../base/flags';
+import {
+  DEFAULT_AURA_COMBAT,
+  DEFAULT_AURA_MODE,
+  DEFAULT_AURA_OTHERS,
+  isAuraCombat,
+  isAuraMode,
+  isAuraOthers,
+  type AuraCombat,
+  type AuraMode,
+  type AuraOthers,
+} from './realmAuraRules';
 
 /**
  * Cài đặt hiệu ứng chiêu (VFX-V0): "Chất lượng hiệu ứng" Thấp/Vừa/Cao và công tắc khựng hình.
@@ -8,6 +19,9 @@ import { FLAGS } from '../../base/flags';
 const KEY = 'dtl.fxQuality';
 const KEY_STOP = 'dtl.hitStop';
 const KEY_AURA = 'dtl.realmAura';
+const KEY_AURA_MODE = 'dtl.auraMode';
+const KEY_AURA_OTHERS = 'dtl.auraOthers';
+const KEY_AURA_COMBAT = 'dtl.auraCombat';
 
 const isQ = (v: unknown): v is FxQuality => typeof v === 'string' && v in FX_QUALITY_TIER;
 
@@ -23,14 +37,48 @@ function readQuality(): FxQuality {
 let quality: FxQuality = readQuality();
 let hitStop = typeof localStorage === 'undefined' || localStorage.getItem(KEY_STOP) !== '0';
 
-let realmAura = FLAGS.aura && (typeof localStorage === 'undefined' || localStorage.getItem(KEY_AURA) !== '0');
+const lsGet = (k: string): string | null => (typeof localStorage === 'undefined' ? null : localStorage.getItem(k));
+const lsSet = (k: string, v: string): void => {
+  if (typeof localStorage !== 'undefined') localStorage.setItem(k, v);
+};
+
+/** Hào quang cảnh giới (VS-0): Tắt/Tối giản/Chuẩn/Đầy đủ. Khóa cũ `dtl.realmAura=0` (từ bản chỉ bật/tắt) vẫn nghĩa là Tắt; `?aura=0` ép Tắt. */
+function readAuraMode(): AuraMode {
+  if (!FLAGS.aura) return 'off';
+  const m = lsGet(KEY_AURA_MODE);
+  if (isAuraMode(m)) return m;
+  return lsGet(KEY_AURA) === '0' ? 'off' : DEFAULT_AURA_MODE;
+}
+const readOthers = (): AuraOthers => {
+  const v = lsGet(KEY_AURA_OTHERS);
+  return isAuraOthers(v) ? v : DEFAULT_AURA_OTHERS;
+};
+const readCombat = (): AuraCombat => {
+  const v = lsGet(KEY_AURA_COMBAT);
+  return isAuraCombat(v) ? v : DEFAULT_AURA_COMBAT;
+};
+
+let auraMode: AuraMode = readAuraMode();
+let auraOthers: AuraOthers = readOthers();
+let auraCombat: AuraCombat = readCombat();
 
 export const fxQuality = (): FxQuality => quality;
-/** Hào quang cảnh giới trên nhân vật (RFX-1): công tắc trong Cài đặt; `?aura=0` ép tắt. */
-export const realmAuraOn = (): boolean => realmAura;
-export function setRealmAuraOn(on: boolean): void {
-  realmAura = on;
-  if (typeof localStorage !== 'undefined') localStorage.setItem(KEY_AURA, on ? '1' : '0');
+export const auraModeOf = (): AuraMode => auraMode;
+export const auraOthersOf = (): AuraOthers => auraOthers;
+export const auraCombatOf = (): AuraCombat => auraCombat;
+/** Hào quang cảnh giới trên nhân vật có bật không (mọi chế độ trừ Tắt). */
+export const realmAuraOn = (): boolean => auraMode !== 'off';
+export function setAuraMode(m: AuraMode): void {
+  auraMode = m;
+  lsSet(KEY_AURA_MODE, m);
+}
+export function setAuraOthers(m: AuraOthers): void {
+  auraOthers = m;
+  lsSet(KEY_AURA_OTHERS, m);
+}
+export function setAuraCombat(m: AuraCombat): void {
+  auraCombat = m;
+  lsSet(KEY_AURA_COMBAT, m);
 }
 export function setFxQuality(q: FxQuality): void {
   quality = q;

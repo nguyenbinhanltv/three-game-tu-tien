@@ -28,6 +28,7 @@ import { hashName as hashStr, type EscortMsg, type QuestView } from '@dtl/shared
 import { LABELS, type Label } from './labelBatch';
 import { buildNode, disposeLabel, makeLabel } from '../core/models';
 import { type AnimState, type CharacterView, type SkillEvent } from '../character/view';
+import { beginFeetFrame } from '../character/mannequinFeet';
 import { MonsterSkins } from '../character/monsterSkins';
 import { NPC_SKINS, NpcSkins } from '../character/npcSkins';
 import { type PlayerLook, PlayerSkins } from '../character/playerSkins';
@@ -368,6 +369,7 @@ export class EntityManager {
       bars.setView(cam.position.x, cam.position.y, cam.position.z, cam.fov ?? 55, typeof window === 'undefined' ? 0 : window.innerHeight);
 
     // ----- người chơi -----
+    beginFeetFrame(); // chốt xếp hạng suất IK chân của khung trước (mannequinFeet.feetSlot)
     view.players.forEach((s, sid) => {
       const isLocal = sid === this.mySid;
       let v = this.players.get(sid);
