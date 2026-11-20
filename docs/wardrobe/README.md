@@ -25,7 +25,7 @@ Trạng thái: **đã duyệt** (20/11): miễn phí (mặc định, để chỗ
 Mục sưu tập = **id vật phẩm trang bị** (có `kind` ∈ ô hiển thị) đã từng có ở túi/trang bị của nhân vật. Lấy id vật phẩm làm khóa (không tạo id "ngoại hình" riêng) vì: bộ/phụ kiện/skin hiện đã suy từ id vật phẩm; tên, icon, tooltip dùng lại được; v3 gắn mảnh theo cùng id.
 
 - **Ô hiển thị**: `weapon`, `robe`, `bracer`, `boots`, `belt`, `head` (mô hình thấy được). `jade`, `ring`, `artifact` không có hình trên người (artifact có hình bay quanh người, để vòng sau) nên không vào tủ. `skin` giữ riêng như hiện tại.
-- **Mở khóa**: một điểm duy nhất trong `Character.tx` sau khi commit: duyệt `inv` + `equip` của bản nháp, id nào thuộc ô hiển thị mà chưa có trong tủ thì thêm. Bao trùm mọi nguồn (rơi đồ, chế tạo, mua, GM, thư) mà không phải sửa từng hệ; đúng điều yêu cầu "nhặt/mặc lần đầu".
+- **Mở khóa**: một điểm duy nhất, **bên trong** `db.transaction` của `Character.tx` (không phải sau commit): tính các id mới từ `d.inv` + `d.equip` của bản nháp so với tủ đang có, rồi `INSERT OR IGNORE` vào `wardrobe` cùng transaction với việc ghi túi. Nhờ vậy món vào túi và món vào tủ cùng thành công hoặc cùng bị hủy; không có cửa sổ "đã vào túi nhưng chưa vào tủ" để người chơi bán/phân giải mất mở khóa. Chỉ sau khi commit thành công mới cập nhật tủ trong bộ nhớ và gửi `S.WARDROBE`. Bao trùm mọi nguồn (rơi đồ, chế tạo, mua, GM, thư) mà không phải sửa từng hệ; đúng điều yêu cầu "nhặt/mặc lần đầu".
 - **Vật phẩm bị bán/phân giải vẫn còn trong tủ.** Đây là lý do chính của tủ.
 - Nạp nhân vật cũ: migrate `DATA_VERSION 7` điền tủ từ túi + trang bị hiện có (không đụng vật phẩm/tiền nên không ghi ledger, giống các migrate trước).
 
@@ -96,7 +96,7 @@ Mặc định đề xuất: **miễn phí đổi ngoại hình và nhuộm** (MV
 
 ## 7. Bảo mật và kiểm thử
 
-- Test server (`wardrobe.test.ts`): mở khóa khi nhặt/chế/GM (một hook); không mở khóa theo tin client; chọn món chưa có → từ chối; sai ô, sai giới → từ chối; chỉ số không đổi khi áp dụng; idem trùng không ghi lần hai; còn nguyên sau khi nạp lại; mẫu bị xóa khỏi content → bị dọn; skin đè; migrate điền tủ từ đồ cũ.
+- Test server (`wardrobe.test.ts`): mở khóa khi nhặt/chế/GM (một hook); **giao dịch thất bại (hủy, trùng idem, lỗi DB) thì không mở khóa và túi cũng không đổi**; ghi `wardrobe` lỗi thì cả giao dịch lùi lại; không mở khóa theo tin client; chọn món chưa có → từ chối; sai ô, sai giới → từ chối; chỉ số không đổi khi áp dụng; idem trùng không ghi lần hai; còn nguyên sau khi nạp lại; mẫu bị xóa khỏi content → bị dọn; skin đè; migrate điền tủ từ đồ cũ.
 - `ledger:check` vẫn sạch (chỉ dòng `noop`). `pnpm bots --count 100`: 0 dòng `refId`. Security bot (`pnpm security`): thêm ca gửi `LOOK_SET` với id lạ/kiểu sai/spam.
 - Test shared: `parseOutfitLook`, `displaySlot` guard, xây `visualEquip`.
 
