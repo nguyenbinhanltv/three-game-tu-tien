@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { float, length, mix, positionWorld, smoothstep, texture, time, uniform, vec2, vec3 } from 'three/tsl';
-import { hash01, SECT } from '@dtl/shared';
+import { hash01, playDist, SECT } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { getCloudNoise } from '../../render/noiseTex';
 
@@ -13,13 +13,23 @@ import { getCloudNoise } from '../../render/noiseTex';
 
 const TREES = 1800;
 const ROCKS = 900;
-const R0 = 300;
-const R1 = 1500;
+/** Chỉ rải NGOÀI vùng chơi (khung 2,2 × 2,2 km quanh tông môn, `playDist` ≤ PLAY_HALF) cộng đệm: cây/đá cảnh xa không có va chạm nên không được nằm nơi đi lại. */
+export const FAR_MIN_PLAY_DIST = 1160;
+const R1 = 2300;
 
-function ringPoint(i: number, salt: number): { x: number; z: number } {
+/** Điểm ứng viên ngoài vùng chơi và trong thế giới 4096 m; null nếu rơi vào vùng chơi/ngoài bản đồ. */
+export function farCandidate(i: number, salt: number): { x: number; z: number } | null {
   const a = hash01(i, 1, salt) * Math.PI * 2;
-  const r = R0 + Math.sqrt(hash01(i, 2, salt)) * (R1 - R0);
-  return { x: SECT.x + Math.cos(a) * r, z: SECT.z + Math.sin(a) * r };
+  const r = 900 + Math.sqrt(hash01(i, 2, salt)) * (R1 - 900);
+  const x = SECT.x + Math.cos(a) * r;
+  const z = SECT.z + Math.sin(a) * r;
+  if (x < 20 || z < 20 || x > 4076 || z > 4076) return null;
+  if (playDist(x, z) < FAR_MIN_PLAY_DIST) return null;
+  return { x, z };
+}
+
+function ringPoint(i: number, salt: number): { x: number; z: number } | null {
+  return farCandidate(i, salt);
 }
 
 /** Độ dốc (0 phẳng → 1 đứng) tại điểm, lấy mẫu 6 m. */
@@ -86,17 +96,18 @@ export class LacKiemFar {
     const density = (x: number, z: number): number => hash01(Math.floor(x / 110), Math.floor(z / 110), 4101);
     while (mats.length < TREES && guard++ < TREES * 12) {
       const p = ringPoint(guard, 4001);
+      if (!p) continue;
       const s = slopeAt(p.x, p.z);
       // cụm: ô 110 m có mật độ riêng; tránh sườn quá dốc (đá lộ)
       if (s > 0.55 || hash01(guard, 3, 4003) > density(p.x, p.z) * 1.1) continue;
       const y = heightAt(p.x, p.z);
       dummy.position.set(p.x, y - 0.4, p.z);
       dummy.rotation.set(0, hash01(guard, 4, 4005) * 6.28, 0);
-      const sc = 1.2 + hash01(guard, 5, 4007) * 1.8;
+      const sc = 1.0 + hash01(guard, 5, 4007) * 0.9;
       dummy.scale.set(sc * (0.85 + hash01(guard, 6, 4009) * 0.3), sc * (0.9 + hash01(guard, 7, 4011) * 0.5), sc);
       dummy.updateMatrix();
       mats.push(dummy.matrix.clone());
-      cols.push(new THREE.Color().setHSL(0.3 + hash01(guard, 8, 4013) * 0.06, 0.38, 0.17 + hash01(guard, 9, 4015) * 0.1));
+      cols.push(new THREE.Color().setHSL(0.33 + hash01(guard, 8, 4013) * 0.05, 0.3, 0.1 + hash01(guard, 9, 4015) * 0.07));
     }
     const mesh = new THREE.InstancedMesh(geo, mat, mats.length);
     mats.forEach((m, i) => {
@@ -122,11 +133,12 @@ export class LacKiemFar {
     let guard = 0;
     while (list.length < ROCKS && guard++ < ROCKS * 30) {
       const p = ringPoint(guard, 4101);
+      if (!p) continue;
       if (slopeAt(p.x, p.z) < 0.3) continue;
       const y = heightAt(p.x, p.z);
       dummy.position.set(p.x, y + 0.5, p.z);
       dummy.rotation.set((hash01(guard, 3, 4103) - 0.5) * 0.6, hash01(guard, 4, 4105) * 6.28, (hash01(guard, 5, 4107) - 0.5) * 0.6);
-      const sc = 5 + hash01(guard, 6, 4109) * 12;
+      const sc = 4 + hash01(guard, 6, 4109) * 7;
       dummy.scale.set(
         sc * (1.0 + hash01(guard, 7, 4111)),
         sc * (0.35 + hash01(guard, 8, 4113) * 0.35),
