@@ -738,6 +738,7 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
 }
 
 function clearSuyMarks(eng: Game, sid: string): void {
+  if (sid === eng.sid) eng.suyLog = undefined;
   for (const [k, h] of eng.suyMarks) {
     if (!k.startsWith(sid + ':')) continue;
     h.stop();
@@ -755,6 +756,20 @@ function suyMark(eng: Game, m: FxMsg): void {
   const kind = m.s ?? '';
   const alive = () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0;
   const key = `${src}:${kind}:${m.n ?? 0}`;
+  if (import.meta.env.DEV && mine) {
+    // Đợt lôi ẩn dùng `n` làm mặt nạ cung nên gom về một khóa.
+    const slot = kind === 'thuc' || kind === 'tam' ? 0 : (m.n ?? 0);
+    (eng.suyLog ??= {})[`${kind}:${slot}`] = {
+      s: kind,
+      n: m.n ?? 0,
+      x: m.x ?? 0,
+      z: m.z ?? 0,
+      r: m.r ?? 0,
+      pg: m.pg ?? 0,
+      lv: m.lv ?? 0,
+      at: Date.now(),
+    };
+  }
   const drop = (k: string) => {
     eng.suyMarks.get(k)?.stop();
     eng.suyMarks.delete(k);
