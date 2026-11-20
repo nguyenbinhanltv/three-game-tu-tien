@@ -164,6 +164,9 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.USE, (p, m) => this.sim.onUse(p, m));
     on(C.EQUIP, (p, m) => this.sim.onEquip(p, m));
     on(C.UNEQUIP, (p, m) => this.sim.onUnequip(p, m));
+    on(C.LOOK_SET, (p, m) => this.sim.wardrobe.onLookSet(p, m));
+    on(C.LOOK_DYE, (p, m) => this.sim.wardrobe.onLookDye(p, m));
+    on(C.LOOK_RESET, (p, m) => this.sim.wardrobe.onLookReset(p, m));
     on(C.MOVE_ITEM, (p, m) => this.sim.onMoveItem(p, m));
     on(C.INV_SORT, (p, m) => this.sim.inventory.onSort(p, m));
     on(C.INV_LOCK, (p, m) => this.sim.inventory.onLock(p, m));

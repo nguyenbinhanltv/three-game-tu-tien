@@ -43,12 +43,12 @@ import {
   TELE_PAD,
 } from '@dtl/shared';
 import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT, SETS } from '@dtl/content';
-import { characters, db, items, ledger, rootForName } from '../db';
+import { characters, db, items, ledger, rootForName, wardrobe } from '../db';
 import { methodDefMul, methodOf, sanitizeMethodMeta, type MethodMeta } from './method';
 import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta } from './artifact';
 import { log } from '../log';
 
-import { at } from '@dtl/shared';
+import { at, emptyLook, isWardrobeKind, outfitLookFromDb, outfitLookToDb, type OutfitLook } from '@dtl/shared';
 export interface CharMeta extends MethodMeta, ArtifactMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
   dungeonDay?: string;
@@ -57,6 +57,8 @@ export interface CharMeta extends MethodMeta, ArtifactMeta {
 }
 
 /** Bản nháp thay đổi túi đồ/tiền. Chỉ thành thật khi commit trong một transaction. */
+const DYE_IDS: ReadonlySet<string> = new Set(APPEARANCE.dyes.map((d) => d.id));
+
 export class InvDraft {
   inv: InvSlot[];
   equip: Equipment;
@@ -67,6 +69,8 @@ export class InvDraft {
   goldDelta = 0;
   /** Linh căn mới (đổi ở NPC); ghi cùng transaction với phí linh thạch. */
   root: RootId | '' = '';
+  /** Lựa chọn tủ ngoại trang mới (đã kiểm ở `WardrobeSystem`); ghi cùng transaction với dòng ledger `noop`. */
+  look: OutfitLook | null = null;
 
   constructor(c: Character) {
     this.inv = c.inv.map((s) => (s ? { ...s } : null));
@@ -242,6 +246,11 @@ export class Character {
   meta: CharMeta = {};
   /** Ngoại hình đã kiểm (server quyết định; client chỉ gửi lựa chọn lúc tạo nhân vật). */
   appearance: Appearance = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
+  /** Tủ ngoại trang (P4): id món đã mở khóa (bảng `wardrobe`) và lựa chọn đang áp dụng (cột `look`). Chỉ để hiển thị, không đổi chỉ số. */
+  wardrobe = new Set<string>();
+  look: OutfitLook = emptyLook();
+  /** Cần gửi lại `S.WARDROBE` cho chủ. */
+  wardrobeDirty = true;
 
   /** Linh căn ngũ hành (`RootId`), gán lúc tạo nhân vật hoặc migration; đổi ở NPC (tx). */
   root: RootId = 'kim';
@@ -324,6 +333,10 @@ export class Character {
     c.root = isRootId(row.root) ? row.root : rootForName(row.name);
     c.bk = row.bk === 0 || BOTTLENECK_LEVELS.includes(row.bk) ? row.bk : initialBottleneck(row.level);
     c.tele = parseTele(row.tele);
+    for (const r of db.select({ itemId: wardrobe.itemId }).from(wardrobe).where(eq(wardrobe.charId, id)).all()) {
+      if (isWardrobeKind(ITEM.get(r.itemId)?.kind)) c.wardrobe.add(r.itemId);
+    }
+    c.look = outfitLookFromDb(row.look, c.appearance.g, (i) => ITEM.get(i), c.wardrobe, DYE_IDS);
     // Món nằm sai chỗ trong cột `equip` (DB hỏng/sửa tay): `stray` trả về túi, `dropped` (mẫu không còn) ghi sổ cái -1.
     let misplaced: { stray: InvItem[]; dropped: string[] } = { stray: [], dropped: [] };
     let rawEquip: Equipment | null = null;
@@ -497,6 +510,8 @@ export class Character {
       return false;
     }
     const ts = Date.now();
+    // Mở khóa tủ ngoại trang: tính từ bản nháp và ghi TRONG cùng transaction (không có cửa sổ "đã vào túi nhưng chưa vào tủ").
+    const unlock = this.newWardrobeIds(d);
     try {
       db.transaction((tx) => {
         const rows: (typeof ledger.$inferInsert)[] = [];
@@ -529,8 +544,14 @@ export class Character {
               .run();
           }
         }
+        for (const id of unlock) tx.insert(wardrobe).values({ charId: this.id, itemId: id, at: ts }).onConflictDoNothing().run();
         tx.update(characters)
-          .set({ gold: d.gold, equip: JSON.stringify(d.equip), ...(d.root ? { root: d.root } : {}) })
+          .set({
+            gold: d.gold,
+            equip: JSON.stringify(d.equip),
+            ...(d.root ? { root: d.root } : {}),
+            ...(d.look ? { look: outfitLookToDb(d.look) } : {}),
+          })
           .where(eq(characters.id, this.id))
           .run();
       });
@@ -544,6 +565,10 @@ export class Character {
       }
       return false;
     }
+    // Chỉ sau khi commit thành công mới đổi bộ nhớ và báo cho chủ.
+    for (const id of unlock) this.wardrobe.add(id);
+    if (d.look) this.look = d.look;
+    if (unlock.length || d.look) this.wardrobeDirty = true;
     this.inv = d.inv;
     this.equip = d.equip;
     this.gold = d.gold;
@@ -554,6 +579,17 @@ export class Character {
     this.invDirty = true;
     this.charDirty = true;
     return true;
+  }
+
+  /** Món có hình trên người đang ở túi/trang bị của bản nháp mà chưa có trong tủ. */
+  private newWardrobeIds(d: InvDraft): string[] {
+    const out = new Set<string>();
+    const see = (id: string | undefined) => {
+      if (id && !this.wardrobe.has(id) && isWardrobeKind(ITEM.get(id)?.kind)) out.add(id);
+    };
+    for (const s of d.inv) see(s?.id);
+    for (const k of WEAR_SLOTS) see(d.equip[k]?.id);
+    return [...out];
   }
 
   /** Cộng tu vi. Trả về số cấp vừa lên (tự lên giữa các nút bình cảnh; dừng ở bình cảnh chưa vượt và ở đại viên mãn 15/19/23/27). */
