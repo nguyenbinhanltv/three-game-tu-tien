@@ -12,6 +12,13 @@ export const draftFrom = (look: OutfitLook): Draft => ({
   dye: look.dye ?? null,
 });
 
+/**
+ * Khóa theo NỘI DUNG của look (không theo tham chiếu): mọi `S.WARDROBE` đều tạo object mới, kể cả khi chỉ mở khóa món mới,
+ * nên bản nháp chỉ được đồng bộ lại khi khóa này đổi (không xóa lựa chọn dở dang của người chơi khi nhặt đồ).
+ */
+export const lookKey = (look: OutfitLook): string =>
+  DISPLAY_SLOTS.map((s) => look.over[s] ?? '').join('|') + '#' + (look.dye ? look.dye.join(',') : '');
+
 export type LookCmd = { kind: 'set'; slot: DisplaySlot; id: string | null } | { kind: 'dye'; dye: DyeTriple | null };
 
 const sameDye = (a: DyeTriple | null | undefined, b: DyeTriple | null | undefined): boolean =>

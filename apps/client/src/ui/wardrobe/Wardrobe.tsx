@@ -9,7 +9,7 @@ import { ContentIcon } from '../ContentIcon';
 import { useUI } from '../store';
 import { Button, Divider, PanelWindow, Slot, Tabs, Tooltip } from '../u2/win';
 import { gearQuality } from '../gear';
-import { draftFrom, itemsForSlot, planApply, withChannel, type Draft, type LookCmd } from './model';
+import { draftFrom, itemsForSlot, lookKey, planApply, withChannel, type Draft, type LookCmd } from './model';
 import { closeWardrobe } from './nav';
 import { draftLook } from './previewLook';
 import './wardrobe.css';
@@ -87,8 +87,10 @@ export function Wardrobe() {
   const [draft, setDraft] = useState<Draft>(() => draftFrom(wardrobe.look));
   const timers = useRef<number[]>([]);
   useEffect(() => () => timers.current.forEach((x) => window.clearTimeout(x)), []);
-  // Server xác nhận (hoặc từ chối) thì bản nháp bám theo lựa chọn thật.
-  useEffect(() => setDraft(draftFrom(wardrobe.look)), [wardrobe.look]);
+  // Server xác nhận (hoặc từ chối) thì bản nháp bám theo lựa chọn thật. Chỉ khi NỘI DUNG look đổi: tin `S.WARDROBE` do mở khóa món mới
+  // (nhặt/chế đồ, vào phòng) có look giữ nguyên không được xóa lựa chọn đang chọn dở.
+  const serverKey = lookKey(wardrobe.look);
+  useEffect(() => setDraft(draftFrom(wardrobe.look)), [serverKey]);
 
   const cmds = useMemo(() => planApply(wardrobe.look, draft), [wardrobe.look, draft]);
   const list = useMemo(() => itemsForSlot(wardrobe.owned, tab, gender, (id) => ITEM.get(id)), [wardrobe.owned, tab, gender]);

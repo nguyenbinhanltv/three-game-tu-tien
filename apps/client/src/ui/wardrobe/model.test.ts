@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { draftFrom, itemsForSlot, planApply, withChannel } from './model';
+import { draftFrom, itemsForSlot, lookKey, planApply, withChannel } from './model';
 
 describe('wardrobe model', () => {
   it('không đổi gì thì không có lệnh', () => {
@@ -44,5 +44,16 @@ describe('wardrobe model', () => {
     const old: [string, string, string] = ['x', 'y', 'z'];
     expect(withChannel(old, 2, 'q', 'base')).toEqual(['x', 'y', 'q']);
     expect(old).toEqual(['x', 'y', 'z']);
+  });
+
+  it('lookKey theo nội dung: owned đổi mà look giữ nguyên thì khóa không đổi (bản nháp không bị reset)', () => {
+    const a = { over: { robe: 'r1' as const, head: 'h1' as const }, dye: ['x', 'y', 'z'] as [string, string, string] };
+    // object mới (như mỗi tin S.WARDROBE), thứ tự khóa khác, cùng nội dung
+    const b = { dye: ['x', 'y', 'z'] as [string, string, string], over: { head: 'h1' as const, robe: 'r1' as const } };
+    expect(lookKey(b)).toBe(lookKey(a));
+    expect(lookKey({ over: {} })).toBe(lookKey({ over: {} }));
+    // nội dung đổi thì khóa đổi
+    expect(lookKey({ over: { robe: 'r2' } })).not.toBe(lookKey({ over: { robe: 'r1' } }));
+    expect(lookKey({ over: {}, dye: ['x', 'y', 'z'] })).not.toBe(lookKey({ over: {} }));
   });
 });
