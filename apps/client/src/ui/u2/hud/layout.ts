@@ -6,7 +6,7 @@
  * Thứ tự ưu tiên khi chật (bỏ/thu từ dưới lên): cụm kỹ năng + hub không bao giờ ẩn → thanh máu, boss → minimap thu nhỏ →
  * nhiệm vụ thu thanh → chat thu một dòng → tên chiêu vệt mực.
  */
-export interface Box {
+interface Box {
   x: number;
   y: number;
   w: number;
@@ -18,9 +18,9 @@ export type HudMode = 'standard' | 'compact' | 'touch';
 export type SkillLayout = 'arc' | 'bar';
 
 export const SAFE = 24; // lề an toàn PC
-export const SAFE_TOUCH = 8; // lề cảm ứng (+ env(safe-area-inset-*))
+const SAFE_TOUCH = 8; // lề cảm ứng (+ env(safe-area-inset-*))
 
-export interface HudBoxes {
+interface HudBoxes {
   mode: HudMode;
   W: number;
   H: number;
@@ -64,7 +64,7 @@ export const SIZES = {
   compact: { tl: { w: 380, h: 118 }, hubH: 44, hubW: 340, mapW: 204, mapH: 220, questW: 340, questH: 109, chatW: 380, chatH: 190 },
 } as const;
 export const QUEST_COLLAPSED_H = 34;
-export const CHAT_COLLAPSED_H = 34;
+const CHAT_COLLAPSED_H = 34;
 /** Chat nhỏ nhất người chơi được kéo về (đơn vị thiết kế). */
 export const CHAT_MIN = { w: 320, h: 140 } as const;
 export const BOSS_MAX_W = 760;
@@ -106,7 +106,7 @@ export function skillBox(W: number, H: number, layout: SkillLayout = 'arc'): Box
 export const UTILITY = { w: 600, h: 112 } as const;
 
 /** Hộp ô tiện ích: ngay bên trái cụm cung, sát mép dưới (kiểu bar: chiếm dải trên của hộp skills nên không có hộp riêng). */
-export function utilityBox(skills: Box, layout: SkillLayout): Box {
+function utilityBox(skills: Box, layout: SkillLayout): Box {
   if (layout === 'bar') return { x: skills.x, y: skills.y, w: 0, h: 0 };
   return { x: skills.x - 8 - UTILITY.w, y: skills.y + skills.h - UTILITY.h, w: UTILITY.w, h: UTILITY.h };
 }
@@ -180,7 +180,7 @@ function touchBoxes(W: number, H: number, o: HudOpts): HudBoxes {
   return { mode: 'touch', W, H, tl, tc, hub, map, quest, chat, skills, utility: { x: skills.x, y: skills.y, w: 0, h: 0 } };
 }
 
-export function intersects(a: Box, b: Box): boolean {
+function intersects(a: Box, b: Box): boolean {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 }
 
@@ -203,7 +203,7 @@ export interface SlotPos {
   d: number;
 }
 
-export interface ClusterGeom {
+interface ClusterGeom {
   main: SlotPos;
   inner: SlotPos[];
   outer: SlotPos[];

@@ -3,9 +3,8 @@
 
 import { campMeleeCount, campRespawnSec, formationSlots, MS_DEAD, type CampDef, type SpawnDef } from '@dtl/shared';
 import type { CampRt, MonEnt } from './entities';
-export type { CampRt };
 
-export interface CampHost {
+interface CampHost {
   now(): number;
   /** Sinh một quái sống ngay tại (x, z) (điểm nhà = vị trí này). */
   spawn(monId: string, level: number, x: number, z: number, sp: SpawnDef): MonEnt | null;

@@ -8,7 +8,7 @@ import { PF_DEAD, DOMAIN_EFFECT, DOMAIN_TICK_MS, domainRadius, domainScale, type
 import { METHOD } from '@dtl/content';
 import type { PlayerEnt } from './entities';
 
-export interface DomainHost {
+interface DomainHost {
   now(): number;
   players(): Iterable<PlayerEnt>;
   canAssist(owner: PlayerEnt, o: PlayerEnt): boolean;
@@ -23,7 +23,7 @@ interface Aura {
   reduce: number;
 }
 
-export function domainRole(p: PlayerEnt): MethodRole | null {
+function domainRole(p: PlayerEnt): MethodRole | null {
   const m = p.char.meta.method;
   return m ? (METHOD.get(m)?.role ?? null) : null;
 }

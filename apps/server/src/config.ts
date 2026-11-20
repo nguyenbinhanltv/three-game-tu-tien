@@ -6,8 +6,8 @@ import { log } from './log';
 
 import { at } from '@dtl/shared';
 const here = path.dirname(fileURLToPath(import.meta.url));
-export const SERVER_ROOT = path.resolve(here, '..');
-export const REPO_ROOT = path.resolve(SERVER_ROOT, '..', '..');
+const SERVER_ROOT = path.resolve(here, '..');
+const REPO_ROOT = path.resolve(SERVER_ROOT, '..', '..');
 
 /** Nạp file .env đơn giản (KEY=VALUE mỗi dòng). Biến môi trường thật được ưu tiên. */
 function loadEnvFile(file: string): void {

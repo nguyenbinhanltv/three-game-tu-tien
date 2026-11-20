@@ -33,7 +33,7 @@ export interface TribMechCtx {
   now: number;
 }
 
-export interface TribMechanic {
+interface TribMechanic {
   enter?(c: TribMechCtx): void;
   tick?(c: TribMechCtx): void;
   exit?(c: TribMechCtx): void;
@@ -45,10 +45,6 @@ const warned = new Set<string>();
 /** Cài (hoặc thay) cơ chế `id`. Dùng ở E2-D/E3/E4. */
 export function registerMechanic(id: string, impl: TribMechanic): void {
   registry.set(id, impl);
-}
-
-export function hasMechanic(id: string): boolean {
-  return registry.has(id);
 }
 
 for (const id of TRIB_MECHANIC_IDS) {
@@ -75,7 +71,7 @@ for (const id of TRIB_MECHANIC_IDS) {
 // ---------- dan_tran (E2-D): Đan Trận của Đan Hỏa Kiếp ----------
 
 /** Trạng thái Đan Trận trong `tr.mech.dan_tran` (chỉ server giữ). */
-export interface DanTranState {
+interface DanTranState {
   x: number;
   z: number;
   /** Thanh ngưng đan 0..100. */
@@ -93,7 +89,7 @@ export interface DanTranState {
 }
 
 /** Người độ kiếp đang đứng yên trong vòng (chưa bay, chưa chết)? */
-export function inDanTran(st: { x: number; z: number }, r: number, p: PlayerEnt): boolean {
+function inDanTran(st: { x: number; z: number }, r: number, p: PlayerEnt): boolean {
   return !p.move.flying && Math.hypot(p.move.x - st.x, p.move.z - st.z) <= r;
 }
 
@@ -263,7 +259,7 @@ registerMechanic('tia_xich', {
 // ---------- xuat_khieu (E3-L): nguyên anh rời thân (móc tạm cho tới khi E3-K nối phím X và thực thể nguyên anh thật) ----------
 
 /** Trạng thái xuất khiếu trong `tr.mech.xuat_khieu` (chỉ server giữ). */
-export interface SoulState {
+interface SoulState {
   /** Mốc nguyên anh quay về thân (ms); 0 = đang ở trong thân. */
   until: number;
   /** Mốc dùng lại được (ms). */
@@ -316,7 +312,7 @@ registerMechanic('xuat_khieu', {
 
 // ---------- tam_canh (E3-L): thanh tâm cảnh + Tâm Ma Ảnh dùng chiêu của người độ kiếp ----------
 
-export interface TamCanhState {
+interface TamCanhState {
   /** Tâm cảnh 0..100. */
   tc: number;
   /** Mốc bóng ra chiêu kế (ms) và lượt chiêu (xoay giữa hai chiêu). */

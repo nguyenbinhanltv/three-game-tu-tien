@@ -102,7 +102,7 @@ function foliageColor(isl: VhIsland, r: number): THREE.Color {
   return base.multiplyScalar(1.15);
 }
 
-export interface VhTreeSpot {
+interface VhTreeSpot {
   x: number;
   z: number;
   /** Cao độ đất tại gốc. */

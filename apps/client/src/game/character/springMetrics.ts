@@ -6,9 +6,9 @@
 // Cả hai đều là phần TĂNG so với tư thế nghỉ.
 import * as THREE from 'three/webgpu';
 
-export type Region = 'arm_l' | 'arm_r' | 'leg_l' | 'leg_r' | 'torso';
+type Region = 'arm_l' | 'arm_r' | 'leg_l' | 'leg_r' | 'torso';
 
-export function regionOf(bone: string): Region {
+function regionOf(bone: string): Region {
   let m = /(upperarm|lowerarm|clavicle|hand|thumb|index|middle|ring|pinky)(?:_\d+)?(?:_twist)?_([lr])(?:_|$)/.exec(bone);
   if (m) return m[2] === 'l' ? 'arm_l' : 'arm_r';
   m = /^(thigh|calf|foot|ball)(?:_twist)?_([lr])$/.exec(bone);
@@ -74,13 +74,13 @@ export function triTri(a: THREE.Vector3[], b: THREE.Vector3[]): boolean {
   return i1[0] <= i2[1] && i2[0] <= i1[1];
 }
 
-export interface Posed {
+interface Posed {
   /** Đỉnh (thế giới) và vị trí xương theo tên. */
   verts: THREE.Vector3[];
   bones: Map<string, THREE.Vector3>;
 }
 
-export interface MeshInfo {
+interface MeshInfo {
   /** Tên xương trội nhất của từng đỉnh. */
   domBone: string[];
   index: number[];

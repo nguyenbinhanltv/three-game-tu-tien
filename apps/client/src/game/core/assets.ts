@@ -42,7 +42,7 @@ export interface ManifestAsset {
 }
 
 /** Texture bậc cao của một vật liệu (tệp KTX2 rời, `pnpm assets:hires`). */
-export interface ManifestHires {
+interface ManifestHires {
   mat: string;
   slots: string[];
   file: string;

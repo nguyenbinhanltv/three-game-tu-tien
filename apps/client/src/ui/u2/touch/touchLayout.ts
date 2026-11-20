@@ -26,7 +26,7 @@ const at = (r: number, deg: number, d: number): TPos => {
   return { dx: r * Math.cos(a), dy: r * Math.sin(a), d };
 };
 
-export interface TouchCluster {
+interface TouchCluster {
   main: TPos;
   /** Chiêu 2–5 (phím 2–5): cung trong. */
   inner: TPos[];
@@ -37,8 +37,8 @@ export interface TouchCluster {
 }
 
 export const INNER_N = 4;
-export const OUTER_N = 5;
-export const QUICK_N = 6;
+const OUTER_N = 5;
+const QUICK_N = 6;
 
 /** Màn hẹp (điện thoại cầm dọc): hàng nút phụ co lại 44 px, khoảng cách 4 px để cả 6 nút nằm trong bề rộng ~390 px. */
 export const COMPACT_W = 460;

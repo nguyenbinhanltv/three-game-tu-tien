@@ -5,7 +5,7 @@ import * as THREE from 'three/webgpu';
  * (không dùng ảnh ngoài). Mã hóa cho shader `card` (render/vfx/stylized.ts): kênh R = tầng màu (0 bóng sẫm … 0,5 thân … 1 viền sáng),
  * kênh G = 1 ở phần dùng màu điểm nhấn (vàng / đỏ son), alpha = hình. Một texture mỗi thẻ.
  */
-export type CardId = 'arhat' | 'phoenix' | 'ghost' | 'infant';
+type CardId = 'arhat' | 'phoenix' | 'ghost' | 'infant';
 type Ctx = CanvasRenderingContext2D;
 const col = (tier: number, acc = 0) => `rgb(${Math.round(tier * 255)},${Math.round(acc * 255)},0)`;
 

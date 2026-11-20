@@ -34,7 +34,7 @@ import { CLONE_MOVES, METHOD, SKILL } from '@dtl/content';
 import type { MonEnt, PlayerEnt } from './entities';
 
 import { at } from '@dtl/shared';
-export interface CloneHost {
+interface CloneHost {
   now(): number;
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string): void;

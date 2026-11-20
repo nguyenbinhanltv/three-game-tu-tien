@@ -9,11 +9,11 @@
 import { MS_DEAD, MS_IDLE, MS_RETURN, type FxMsg, type MonsterKimDa, at } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from './entities';
 
-export interface Pt {
+interface Pt {
   x: number;
   z: number;
 }
-export interface Circle extends Pt {
+interface Circle extends Pt {
   r: number;
 }
 
@@ -36,7 +36,7 @@ export function shadowSpot(boss: Pt, center: Pt, sep: number): Pt {
   return { x: boss.x + dx * k, z: boss.z + dz * k };
 }
 
-export interface KimDaHost {
+interface KimDaHost {
   now(): number;
   monsters(): readonly MonEnt[];
   players(): Iterable<PlayerEnt>;

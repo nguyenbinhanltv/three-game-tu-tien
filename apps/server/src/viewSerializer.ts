@@ -21,7 +21,7 @@ type Ser = {
 // `encodeView` ghi byte hiển thị (thêm/bớt thực thể) rồi mới gọi `encode`; nếu một client đơn lẻ đã vượt bộ đệm thì `encode`
 // cấp bộ đệm mới nhưng gói bị cắt, không sửa được từ ngoài. Nên giữ BUFFER_SIZE đủ rộng (VIEW_BUFFER_SIZE) và báo lỗi to nếu
 // vẫn tràn, thay vì để client âm thầm mất thực thể.
-export const VIEW_BUFFER_SIZE = 128 * 1024;
+const VIEW_BUFFER_SIZE = 128 * 1024;
 
 function encodeViewChecked(enc: Ser['encoder'], view: StateView, sharedOffset: number): Buffer {
   const buf = enc.sharedBuffer;

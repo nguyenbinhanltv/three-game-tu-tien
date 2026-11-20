@@ -49,7 +49,7 @@ import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta 
 import { log } from '../log';
 
 import { at } from '@dtl/shared';
-export interface CharMeta extends MethodMeta, ArtifactMeta {
+interface CharMeta extends MethodMeta, ArtifactMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
   dungeonDay?: string;
   /** Như `dungeonDay` nhưng theo từng phó bản (E2-C): level → ngày nhận thưởng gần nhất. */

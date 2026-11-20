@@ -95,7 +95,7 @@ function scatter(cl: Cluster[], rand: () => number): { x: number; z: number; k: 
 }
 
 /** Kế hoạch vườn: mọi giá trị ngẫu nhiên từng cây/hoa/đá, tính theo ĐÚNG thứ tự dòng `rand` như khi dựng cảnh. Hàm thuần (không THREE): dựng cảnh và bake va chạm dùng chung. */
-export interface GardenPlan {
+interface GardenPlan {
   flowers: { x: number; z: number; rx: number; ry: number; rz: number; s: number; petal: number; light: number }[];
   bamboo: {
     x: number;

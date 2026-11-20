@@ -7,7 +7,7 @@ import { SysIcon, type SysIconName } from '../shell';
 import type { useUI } from '../../store';
 import { itemQuality } from './chatItem';
 
-export type Line = ReturnType<typeof useUI.getState>['log'][number];
+type Line = ReturnType<typeof useUI.getState>['log'][number];
 
 /** Icon nét vàng cho dòng hệ thống: theo kênh chiến đấu hoặc loại tin. */
 function iconOf(l: Line): SysIconName {

@@ -16,7 +16,7 @@ export function occupied(pts: readonly { x: number; z: number }[], x: number, z:
   return pts.some((p) => (p.x - x) ** 2 + (p.z - z) ** 2 <= r * r);
 }
 
-export interface SteleStep {
+interface SteleStep {
   held: number;
   empty: number;
   /** Bia đang tắt (trống quá `grace` giây): có giới áp. */
@@ -42,7 +42,7 @@ export function veinUnder(rift: MonsterRift, x: number, z: number): number {
   return rift.veins.findIndex((v) => (v.x - x) ** 2 + (v.z - z) ** 2 <= v.r * v.r);
 }
 
-export interface XichTanHost {
+interface XichTanHost {
   now(): number;
   players(): Iterable<PlayerEnt>;
   isDead(p: PlayerEnt): boolean;
@@ -117,7 +117,7 @@ export class SteleHold {
   }
 }
 
-export interface RiftHost {
+interface RiftHost {
   now(): number;
   monsters(): readonly MonEnt[];
   /** Boss mất thế `sec` giây (cắt chú đang niệm). */

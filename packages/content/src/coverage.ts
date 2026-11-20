@@ -9,7 +9,7 @@ export const COVER_EDGE_MAX = 70;
  * Chuẩn cứng theo level (m, đo trên lưới `COVER_STEP`): p95 và điểm xa nhất tới mép cụm gần nhất. Level không có mục thì dùng `DEFAULT_COVER`.
  * Ở 120–140 quái/km² (cụm 3–4 con, bán kính 30) hình học chỉ cho p95 ≈ 61 m và max ≈ 84 m; phủ 100 % ≤ 70 m cần ≈ 150 quái/km².
  */
-export interface CoverStd {
+interface CoverStd {
   p95: number;
   max: number;
 }
@@ -20,9 +20,9 @@ export const COVER_BY_LEVEL: Record<string, CoverStd> = {
   thien_khuyet: { p95: 65, max: 85 },
   bac_hoang: { p95: 65, max: 85 },
 };
-export const COVER_STEP = 12;
+const COVER_STEP = 12;
 
-export interface CampCoverage {
+interface CampCoverage {
   points: number;
   max: number;
   p50: number;
@@ -33,7 +33,7 @@ export interface CampCoverage {
 }
 
 /** Quanh boss có đấu trường trống (không cụm nào), không tính vào độ phủ. */
-export const BOSS_ARENA_R = 60;
+const BOSS_ARENA_R = 60;
 
 export function campCoverage(lv: Pick<LevelDef, 'zones' | 'camps' | 'spawns'>, step = COVER_STEP, limit = COVER_EDGE_MAX): CampCoverage {
   const zones = lv.zones ?? [];

@@ -10,14 +10,14 @@ import type { planDrop } from './model';
 
 type Target = Parameters<typeof planDrop>[2];
 
-export const HOLD_MS = 350;
+const HOLD_MS = 350;
 let lastLiveEnd = 0;
 /** Vừa thả xong một lần kéo bằng ngón (click giả theo sau không được chọn món). */
 export const justTouchDragged = (): boolean => Date.now() - lastLiveEnd < 400;
 const SLOP = 10; // px: vuốt xa hơn thế trước khi bốc thì là cuộn, không phải kéo
 
 /** Đích thả tại điểm (x, y): ô túi, số trang hay ô trang bị; không có thì null. */
-export function targetAt(x: number, y: number): Target | null {
+function targetAt(x: number, y: number): Target | null {
   const el = document.elementFromPoint(x, y);
   if (!el) return null;
   const cell = el.closest<HTMLElement>('.bag-cell[data-slot]');

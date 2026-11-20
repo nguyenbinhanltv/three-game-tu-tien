@@ -28,7 +28,7 @@ import xichTan from '../data/colliders/xich_tan_khich.inst.json';
  * - `<level>.inst.json`: vị trí prop đã rải (bake từ `allProps` của client bằng `pnpm colliders:bake`).
  * Tập hình khóa theo `levelId` (Kiếm Trủng dùng chung địa hình Vân Lam nhưng là level riêng; danh sách prop dùng chung với Vân Lam như `allPropsRaw`).
  */
-export interface InstFile {
+interface InstFile {
   ids: string[];
   p: number[][];
 }
@@ -72,7 +72,7 @@ for (const level of Object.keys(INST_BY_LEVEL)) registerCollision(level, propSha
  * Kiến trúc dựng thành MỘT lưới gộp (arch_*): hộp trục thế giới sinh từ hình học GLB bằng `pnpm colliders:arch` (`tools/asset-pipeline/src/archcollider.ts`).
  * [x0, z0, x1, z1, y0, y1, walk(1)|rắn(0)]. Khóa theo level đang dùng kiến trúc đó.
  */
-export interface ArchFile {
+interface ArchFile {
   id: string;
   boxes: number[][];
 }
@@ -87,7 +87,7 @@ export const ARCH_BY_LEVEL: Record<string, ArchFile[]> = {
   kinh_nguyet: [archKn as unknown as ArchFile],
 };
 
-export function archShapesOf(level: string): Shape[] {
+function archShapesOf(level: string): Shape[] {
   const out: Shape[] = [];
   for (const f of ARCH_BY_LEVEL[level] ?? [])
     for (const b of f.boxes)

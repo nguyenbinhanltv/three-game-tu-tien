@@ -5,8 +5,8 @@
  * mép xơ nhẹ (cọ khô chỉ ở mép), vết mực loang rất nhẹ quanh nét; thân chữ đặc, không có vệt sọc. Dấu tiếng Việt thường nằm ở nửa trên ô nên được làm đậm, không bị cọ khô ăn mất.
  */
 
-export type BrushTone = 'ink' | 'gold';
-export interface BrushColors {
+type BrushTone = 'ink' | 'gold';
+interface BrushColors {
   /** Màu nét chính (mực đen hoặc vàng kim). */
   main: string;
   /** Màu quầng loang (nâu mực hoặc vàng ánh). */
@@ -74,7 +74,7 @@ const smooth = (a: number, b: number, x: number) => {
 };
 
 /** Vẽ một chữ (một tiếng) thành mặt nạ alpha 0–1 (CW×CH) với nét cọ. `seed` làm mỗi chữ khác nhau một chút. */
-export function brushGlyphMask(word: string, family: string, seed: number): { a: Float32Array; halo: Float32Array } {
+function brushGlyphMask(word: string, family: string, seed: number): { a: Float32Array; halo: Float32Array } {
   const empty = () => ({ a: new Float32Array(CW * CH), halo: new Float32Array(CW * CH) });
   const cv = document.createElement('canvas');
   cv.width = CW;

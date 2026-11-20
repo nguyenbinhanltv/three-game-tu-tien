@@ -32,7 +32,6 @@ import {
   PF_SHIELD,
   S,
   type SkillDef,
-  SPAWN_POINT,
   type SpawnDef,
   type SysMsg,
   type TribDef,
@@ -1500,5 +1499,3 @@ export class GameSim {
     if (f.trib) this.sys(p, 'sys.gm', { m: this.gmSys.tribulation(p) }, 'info');
   }
 }
-
-export const DEFAULT_SPAWN = SPAWN_POINT;

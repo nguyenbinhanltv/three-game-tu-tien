@@ -13,7 +13,7 @@ import { logger } from '../../base/log';
 const hiresLog = logger('hires');
 
 /** Phần của AssetCache mà bộ lập lịch cần (thay được khi test). */
-export interface HiresHost {
+interface HiresHost {
   hiresCandidates(): HiresCandidate[];
   hiresMemory(): number;
   /** `ok` đã thay; `stale` bị hủy giữa chừng (thử lại sau); `none` không thay được (bỏ hẳn). */
@@ -23,7 +23,7 @@ export interface HiresHost {
   revertHires(): void;
 }
 
-export interface StreamerDeps {
+interface StreamerDeps {
   quality: () => string;
   nav: () => NavInfo;
   /** true khi vào game và CPU rảnh. */
@@ -32,8 +32,8 @@ export interface StreamerDeps {
 }
 
 /** Dưới ngưỡng này (byte/s) thì coi mạng chậm và tạm dừng. */
-export const SLOW_BPS = 200 * 1024;
-export const SLOW_PAUSE_MS = 30000;
+const SLOW_BPS = 200 * 1024;
+const SLOW_PAUSE_MS = 30000;
 
 /**
  * Tải từng tệp bậc cao một, theo thứ tự gần camera, qua xô byte/giây, trong trần bộ nhớ.

@@ -5,7 +5,7 @@ import { empowerOpen, type SkillDef } from '@dtl/shared';
 import { METHOD_SKILLS, SKILLS } from '@dtl/content';
 
 /** Một đòn đã bấm, đã trừ linh lực/đặt hồi chiêu, chờ tới `at` (giờ server, ms) mới áp hiệu quả. */
-export interface PendingStrike {
+interface PendingStrike {
   skill: SkillDef;
   target: string;
   at: number;
