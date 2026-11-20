@@ -84,12 +84,12 @@ function wallMaterial(): THREE.MeshStandardNodeMaterial {
   const c = tri(0.4, 'g');
   const up = smoothstep(0.5, 0.9, normalWorld.y.add(a.sub(0.5).mul(0.3)));
   const rock = vertexColor().mul(float(0.7).add(a.mul(0.45)).add(b.mul(0.25)).add(c.mul(0.12)));
-  const tint = mix(vec3(1.1, 0.95, 0.82), vec3(0.86, 0.92, 1.08), smoothstep(0.35, 0.65, tri(0.0045, 'g')));
+  const tint = mix(vec3(1.06, 0.98, 0.92), vec3(0.9, 0.94, 1.1), smoothstep(0.35, 0.65, tri(0.0045, 'g'))); // đổi sắc nhẹ ấm ↔ lạnh theo mảng lớn
   const base = mix(rock.mul(tint), vec3(0.2, 0.31, 0.12).mul(float(0.7).add(b.mul(0.6))), up.mul(0.6));
   const dist = wp.sub(cameraPosition).length();
   const grey = vec3(base.dot(vec3(0.3, 0.59, 0.11)));
-  const toned = mix(grey, base, 0.4).mul(vec3(0.62, 0.58, 0.64)); // đá xám ấm hơi tím, tối hơn để hợp mood Thiên Khuyết (không còn vàng cát)
-  m.colorNode = mix(toned, skyParams.horizon.mul(0.9), smoothstep(250, 1500, dist).mul(0.4));
+  const dull = mix(base, grey.mul(vec3(1.0, 0.96, 1.08)), 0.45); // bớt đỏ nâu: xám tím
+  m.colorNode = mix(dull, skyParams.horizon.mul(vec3(0.7, 0.62, 0.85)), smoothstep(300, 1600, dist).mul(0.32)); // sương tím nhạt theo khoảng cách
   m.roughnessNode = float(0.72).add(b.mul(0.28));
   m.emissiveNode = vertexColor().mul(0.06);
   return m;
@@ -107,10 +107,10 @@ export class TkWall {
     const pos: number[] = [];
     const col: number[] = [];
     const idx: number[] = [];
-    const lo = new THREE.Color(0x3d3631);
-    const mid = new THREE.Color(0x6e6054);
-    const hi = new THREE.Color(0x8f8068);
-    const dark = new THREE.Color(0x2c2623);
+    const lo = new THREE.Color(0x2b2733); // đá xám tím (palette Thiên Khuyết), vàng chỉ ở vỉa nhỏ
+    const mid = new THREE.Color(0x4f4a5c);
+    const hi = new THREE.Color(0x726a80);
+    const dark = new THREE.Color(0x1d1a24);
     const tmp = new THREE.Color();
     const ledgeTop: { x: number; y: number; z: number; nx: number; nz: number }[] = [];
     const stride = ROWS + 1;

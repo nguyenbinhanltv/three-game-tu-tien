@@ -359,8 +359,8 @@ def fbm3(x, y, z, seed=0, octaves=3):
     return tot / norm
 
 
-SAND = (0.36, 0.3, 0.24)  # đá cam thạch ấm (tuyến tính)
-SAND_DK = (0.16, 0.13, 0.1)
+SAND = (0.2, 0.17, 0.24)  # đá xám tím (tuyến tính), hợp palette Thiên Khuyết
+SAND_DK = (0.07, 0.06, 0.09)
 MOSS_LIN = (0.12, 0.26, 0.07)
 
 
@@ -501,6 +501,7 @@ def build_statue(b, st, rnd):
     viền vàng, mũ trụ mào vàng có mặt và hộ nhĩ, hai tay (phải gãy rời), đại đao cắm bên cạnh."""
     S = st['size'] / 64.0
     parts = {}
+    fstart = len(b.faces)
 
     def seg(name, fn):
         start = len(b.verts)
@@ -639,18 +640,57 @@ def build_statue(b, st, rnd):
             x, z = x * cy_ + z * sy_, -x * sy_ + z * cy_
             b.verts[i] = bs.P(x + piv[0] + d[0], y + piv[1] + d[1], z + piv[2] + d[2])
 
+    def scale_part(name, k, piv):
+        s0, s1 = parts[name]
+        for i in range(s0, s1):
+            X, Y, Z = b.verts[i]
+            b.verts[i] = (piv[0] + (X - piv[0]) * k, piv[1] + (Y - piv[1]) * k, piv[2] + (Z - piv[2]) * k)
+
+    # đầu và bàn tay phóng to: từ 100–200 m phải đọc ra mặt (mũ, sống mũi, gò mày) và bàn tay chống đất
+    scale_part('head', 1.7, (0.0, 0.0, 55.0 * S))
+    scale_part('farm_r', 1.6, (0.0, 0.0, 0.0))
     fall = -1.43
     for name in ('legs', 'torso', 'arm_l', 'arm_r'):
         bring(name, fall, 0.0, 0.0, (0, 0, 0))
-    bring('head', -1.2, 0.5, 0.4, (-4 * S, 3.0 * S, -50 * S))
+    bring('head', -1.2, 0.5, 0.4, (-5 * S, 3.0 * S, -52 * S))
     bring('farm_r', -1.5, 0.0, 0.9, (24 * S, 2.4 * S, -34 * S))
+    # vỡ ba khúc: chân / thân + hai tay / đầu + bàn tay gãy; mỗi khúc trượt và xoay lệch quanh trục thân (-z)
+    pieces_of = {'legs': 0, 'torso': 1, 'arm_l': 1, 'arm_r': 1, 'head': 2, 'farm_r': 2}
+    ids3 = [[], [], []]
+    for nm, q in pieces_of.items():
+        ids3[q] += list(range(parts[nm][0], parts[nm][1]))
+    xform_idx(b, ids3[0], (0, 0, 0), 0.0, -0.12, 0.0, d=(-4.0 * S, 0.0, 6.0 * S))
+    xform_idx(b, ids3[1], (0, 0, -40 * S), 0.0, 0.16, 0.05, d=(5.0 * S, 0.0, 0.0))
+    xform_idx(b, ids3[2], (0, 0, -54 * S), 0.0, -0.3, 0.1, d=(-3.0 * S, 0.0, -2.0 * S))
     # Kiếm cổ phong (jian): lưỡi thẳng hai lưỡi có sống, hộ thủ đĩa vàng, chuôi quấn, đuôi kiếm có tua đỏ; cắm xiên cạnh tượng.
     start = len(b.verts)
     jian(b, 0.0, 0.0, 0.0, 46 * S, S)
-    xform(b, start, (0, 0, 0), 0.12, 0.0, 0.26, d=(18 * S, -3.0 * S, -8 * S))
+    xform(b, start, (0, 0, 0), 1.4, 0.0, 0.26, d=(30 * S, 0.0, -24 * S))  # kiếm gãy nằm cạnh tay, không còn cắm đứng
     rubble(b, 0, 0.0, -20 * S, 26, 3.4 * S, rnd, 36 * S)
     for k in range(12):  # nứt phát sáng vàng trên giáp
         b.box(rnd.uniform(-5, 5) * S, 0.2 * S + rnd.uniform(1, 9) * S, rnd.uniform(-34, -4) * S, 0.2 * S, 0.2 * S, rnd.uniform(2, 6) * S, GOLD_LIT)
+    # mỗi khúc nằm chạm đất riêng (đáy y = 0); client còn đặt từng khúc theo heightAt chỗ nó nằm
+    for g in ids3:
+        low = min(b.verts[i][2] for i in g)
+        xform_idx(b, g, (0, 0, 0), 0.0, 0.0, 0.0, d=(0.0, -low, 0.0))
+    # nhãn khúc của từng mặt: mặt nào đỉnh đầu thuộc khúc nào; vật thêm (kiếm, đá vụn, nứt vàng) về khúc gần nhất theo xz
+    owner = {}
+    for q, g in enumerate(ids3):
+        for i in g:
+            owner[i] = q
+    cxz = []
+    for g in ids3:
+        pts = [(b.verts[i][0], -b.verts[i][1]) for i in g]
+        cxz.append((sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts)))
+    pieces = []
+    for f in b.faces[fstart:]:
+        if f[0] in owner:
+            pieces.append(owner[f[0]])
+        else:
+            c = (sum(b.verts[i][0] for i in f) / len(f), sum(-b.verts[i][1] for i in f) / len(f))
+            pieces.append(min(range(3), key=lambda q: (cxz[q][0] - c[0]) ** 2 + (cxz[q][1] - c[1]) ** 2))
+    b.pieces = pieces
+    b.pstart = fstart
 
 
 def xform_idx(b, idxs, piv, rx=0.0, ry=0.0, rz=0.0, d=(0.0, 0.0, 0.0)):
@@ -667,90 +707,6 @@ def xform_idx(b, idxs, piv, rx=0.0, ry=0.0, rz=0.0, d=(0.0, 0.0, 0.0)):
         b.verts[i] = bs.P(x + piv[0] + d[0], y + piv[1] + d[1], z + piv[2] + d[2])
 
 
-def build_statue_giant(b, st, rnd):
-    """Tượng thần tướng đá (bộ chạm khắc của Thần Tàng: mũ trụ mặt nạ trơn có mào vàng và hai sừng, giáp vai ba lớp có gai, ngực giáp vảy, đai khóa, tay giáp nắm đại kiếm, áo choàng sau lưng)
-    phóng ×8, cho đổ ngửa rồi vỡ làm ba khúc nằm lệch nhau (chân + bệ / thân + tay cầm kiếm gãy / đầu + vai); kiếm gãy, vàng kim loại cũ, rêu, đá vỡ rải quanh."""
-    import than_tang_arch as tta  # noqa: E402
-    from build_sect import Mat  # noqa: E402
-
-    # vàng cổ: kim loại (không phát sáng như nhựa vàng của Thần Tàng); đá xen mòn cạnh do màu đỉnh của tượng (rêu ở mặt ngửa)
-    bs.MATERIALS['gold'] = Mat(0.38, 0.95, None, 1.0, False, 0.0)
-    S = 8.0
-    start = len(b.verts)
-    fstart = len(b.faces)
-    orig_poly = b.poly
-
-    def poly_no_cape(pts, c, col, *a, **k):  # bỏ áo choàng lụa phẳng sau lưng (tấm dẹt trơn nằm trên đất, không ra dáng vải)
-        if getattr(col, 'mat', None) == 'silk' and len(pts) == 4:
-            return None
-        return orig_poly(pts, c, col, *a, **k)
-
-    b.poly = poly_no_cape
-    tta.statue(b, 1020)
-    b.poly = orig_poly
-    # kiếm gãy: đáy lưỡi (thân kiếm tbox cao 10 m ở z = 2,6) kéo lên 7,8 m theo mặt cắt xiên → còn đoạn lưỡi dưới chắn tay
-    for i in range(start, len(b.verts)):
-        X, Y, Z = b.verts[i]  # Blender: (x, -z_game, y_game)
-        if abs(Y + 2.6) < 0.3 and abs(X) < 0.6 and Z < 5.3 and Z > 0.1:
-            b.verts[i] = bs.P(X, 7.8 + 0.9 * X + 0.4 * math.sin(X * 9), -Y)
-    # chia khúc theo độ cao gốc của từng mặt (đỉnh riêng từng mặt): 0 = chân+bệ, 1 = thân+tay, 2 = đầu+vai
-    groups = ([], [], [])
-    keep = []
-    for f in b.faces[fstart:]:
-        zc = sum(b.verts[i][2] for i in f) / len(f)
-        if zc < 2.9:  # bệ ba tầng gãy rời khỏi tượng (không còn bệ lật thành tấm lớn dựng đứng)
-            keep.append(False)
-            continue
-        keep.append(True)
-        groups[0 if zc < 6.8 else 1 if zc < 12.4 else 2].append(f)
-    for lst in (b.faces, b.colors, b.uvs, b.mats, b.smooth):  # các danh sách song song theo mặt
-        lst[fstart:] = [x for x, k in zip(lst[fstart:], keep) if k]
-    gof = {}
-    for gi, g in enumerate(groups):
-        for f in g:
-            gof[f] = gi
-    stat_faces = list(b.faces[fstart:])
-    for i in range(start, len(b.verts)):
-        X, Y, Z = b.verts[i]
-        b.verts[i] = bs.P(X * S, Z * S, -Y * S)  # P nhận toạ độ game (x, y lên, z): Blender (X, Y, Z) → (X, Z, -Y)
-    xform(b, start, (0, 0, 0), -1.43, 0.0, 0.0, d=(0, 0, 0))
-    ids = [sorted({i for f in g for i in f}) for g in groups]
-    cen = []
-    for g in ids:
-        cs = [(b.verts[i][0], b.verts[i][2], -b.verts[i][1]) for i in g]
-        n = max(1, len(cs))
-        cen.append((sum(c[0] for c in cs) / n, sum(c[1] for c in cs) / n, sum(c[2] for c in cs) / n))
-    # các khúc lệch nhau: khúc giữa xoay nhẹ, trượt sang bên; khúc đầu lăn nghiêng, rời xa hơn
-    xform_idx(b, ids[1], cen[1], 0.0, 0.22, 0.1, d=(34.0, 0.0, -6.0))
-    xform_idx(b, ids[2], cen[2], 0.12, -0.55, 0.35, d=(-30.0, 3.0, -26.0))
-    for gi, g in enumerate(ids):  # mỗi khúc nằm chạm đất riêng (không khúc nào lơ lửng)
-        xform_idx(b, g, (0, 0, 0), 0.0, 0.0, 0.0, d=(0.0, -min(b.verts[i][2] for i in g), 0.0))
-    low = min(b.verts[i][2] for g in ids for i in g)  # nằm chạm đất (điểm thấp nhất y = 0); không tính đỉnh mồ côi của bệ đã bỏ
-    for i in range(start, len(b.verts)):
-        X, Y, Z = b.verts[i]
-        b.verts[i] = bs.P(X, Z - low, -Y)
-    nstat = len(stat_faces)
-    sc = S / 5.6
-    rubble(b, 0, 0.0, -30 * sc, 34, 3.8 * sc, rnd, 38 * sc)
-    for c in cen[1:]:  # đá vụn ở chỗ gãy
-        rubble(b, c[0], 0.0, c[2], 14, 2.6 * sc, rnd, 10 * sc)
-    for k in range(14):  # nứt phát sáng vàng trên giáp
-        b.box(rnd.uniform(-5, 5) * sc, 0.2 * sc + rnd.uniform(1, 9) * sc, rnd.uniform(-34, -4) * sc, 0.2 * sc, 0.2 * sc, rnd.uniform(2, 6) * sc, GOLD_LIT)
-    pieces = []
-    cxz = []
-    for g in ids:
-        pts = [(b.verts[i][0], -b.verts[i][1]) for i in g]
-        cxz.append((sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts)))
-    for k, f in enumerate(b.faces[fstart:]):
-        if k < nstat:
-            pieces.append(gof[stat_faces[k]])
-        else:  # đá vụn / nứt vàng: về khúc gần nhất
-            c = [sum(b.verts[i][0] for i in f) / len(f), sum(-b.verts[i][1] for i in f) / len(f)]
-            pieces.append(min(range(3), key=lambda q: (cxz[q][0] - c[0]) ** 2 + (cxz[q][1] - c[1]) ** 2))
-    b.pieces = pieces
-    b.pstart = fstart
-
-
 def build_all():
     data = build_data()
     rnd = random.Random(20261119)
@@ -765,7 +721,7 @@ def build_all():
             build_palace(main, isl, rnd, big=isl['id'] in ('cung_tay', 'cung_dong'))
     build_avenue_pillars(main, data['pillars'], rnd)
     statue = new_builder(seed=5, moss=0.35)
-    build_statue_giant(statue, data['statue'], rnd)
+    build_statue(statue, data['statue'], rnd)
     return stair, main, statue, data
 
 
