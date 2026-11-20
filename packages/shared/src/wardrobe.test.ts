@@ -66,21 +66,36 @@ describe('wardrobe', () => {
   it('parseLookSetMsg / parseLookDyeMsg chỉ nhận cấu trúc đúng, bỏ trường thừa', () => {
     expect(parseLookSetMsg({ slot: 'robe', id: 'robe_a', r: 'x', evil: 1 })).toEqual({ slot: 'robe', id: 'robe_a', r: 'x' });
     expect(parseLookSetMsg({ slot: 'head', id: null })).toEqual({ slot: 'head', id: null, r: undefined });
-    for (const bad of [null, 'x', [], {}, { slot: 'skin', id: 'a' }, { slot: 'robe', id: 3 }, { slot: 'robe', id: '' }, { slot: 'robe', id: 'x'.repeat(65) }, { slot: 'robe' }])
+    for (const bad of [
+      null,
+      'x',
+      [],
+      {},
+      { slot: 'skin', id: 'a' },
+      { slot: 'robe', id: 3 },
+      { slot: 'robe', id: '' },
+      { slot: 'robe', id: 'x'.repeat(65) },
+      { slot: 'robe' },
+    ])
       expect(parseLookSetMsg(bad)).toBeNull();
     expect(parseLookDyeMsg(dyes, { dye: ['c1', 'c2', 'c3'], r: 1 })).toEqual({ dye: ['c1', 'c2', 'c3'], r: 1 });
     expect(parseLookDyeMsg(dyes, { dye: null })).toEqual({ dye: null, r: undefined });
-    for (const bad of [null, [], {}, { dye: ['c1'] }, { dye: ['c1', 'c2', 'zz'] }, { dye: 'c1' }]) expect(parseLookDyeMsg(dyes, bad)).toBeNull();
+    for (const bad of [null, [], {}, { dye: ['c1'] }, { dye: ['c1', 'c2', 'zz'] }, { dye: 'c1' }])
+      expect(parseLookDyeMsg(dyes, bad)).toBeNull();
   });
 
   it('sanitizeOutfitLook: bỏ từng mục hỏng, giữ mục tốt', () => {
-    const raw = { over: { robe: 'robe_b', head: 'head_a', weapon: 'robe_a', boots: 'nope', skin: 'skin_a', toString: 'x' }, dye: ['c1', 'c2', 'c3'] };
+    const raw = {
+      over: { robe: 'robe_b', head: 'head_a', weapon: 'robe_a', boots: 'nope', skin: 'skin_a', toString: 'x' },
+      dye: ['c1', 'c2', 'c3'],
+    };
     expect(sanitizeOutfitLook(raw, 'm', item, owned, dyes)).toEqual({ over: { head: 'head_a' }, dye: ['c1', 'c2', 'c3'] });
     // một màu lạ: bỏ cả bộ ba
     expect(sanitizeOutfitLook({ over: {}, dye: ['c1', 'zz', 'c3'] }, 'm', item, owned, dyes)).toEqual({ over: {} });
     // sai giới
     expect(sanitizeOutfitLook({ over: { robe: 'robe_f' } }, 'm', item, owned, dyes).over).toEqual({});
-    for (const junk of [null, undefined, 3, 'x', [], { over: [] }, { over: 'x' }]) expect(sanitizeOutfitLook(junk, 'm', item, owned, dyes)).toEqual({ over: {} });
+    for (const junk of [null, undefined, 3, 'x', [], { over: [] }, { over: 'x' }])
+      expect(sanitizeOutfitLook(junk, 'm', item, owned, dyes)).toEqual({ over: {} });
   });
 
   it('DB: JSON hỏng thành rỗng, vòng ghi/đọc giữ nguyên, look rỗng ghi chuỗi rỗng', () => {
