@@ -35,7 +35,7 @@ def thiet_quyen():
         # giáng: chớp + khựng + sóng xung nón vàng lan ra bán kính 6
         snd(0.0, 'impact', 0.9, 0.7, 0.04),
         snd(0.0, 'block', 0.5, 0.6, 0.05),
-        mesh('burst', 0.0, 0.12, at='area', offset=[0, 0.5, 0], scale=2.4, billboard=True, sweep=0, tone='accent', cross=True, tier=0),
+        mesh('burst', 0.0, 0.11, at='area', offset=[0, 0.5, 0], scale=2.4, billboard=True, sweep=0, tone='accent', cross=True, tier=0),
         flip('spark_burst', 0.0, 0.36, 3.6, at='area', offset=[0, 0.8, 0], alpha=0.8, tone='accent', tier=0),
         mesh('shock_cone', 0.0, 0.42, at='area', scale=[1.6] * 3, scaleTo=[6.8] * 3, alpha=0.85, sweep=0.3, erodeFrom=0.3, shadow=False, tone='accent', tier=0),
         mesh('shock_cone', 0.06, 0.38, at='area', scale=[1.2] * 3, scaleTo=[5.2] * 3, alpha=0.7, sweep=0.3, erodeFrom=0.3, shadow=False, tone='rim', tier=1),
@@ -49,7 +49,7 @@ def thiet_quyen():
     ]
     ev += pillars(0.03, 8, 4.4, h=3.4, w=1.4, seed=0.3)
     ev += rubble(0.03, 'area', 6, 3.0, 2.4, 0.9, seed0=2)
-    ev += feel(0.0, ms=85, sh=0.42, fl=0.12, vg=0.35, fov=2.6)
+    ev += feel(0.0, ms=80, sh=0.42, fl=0.12, vg=0.35, fov=2.6)
     return {'skill': 'skl_thiet_quyen_chan_dia', 'replaces': ['thietquyen'], 'events': ev}
 
 
