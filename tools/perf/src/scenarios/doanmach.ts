@@ -25,6 +25,12 @@ export const VIEWS: View[] = [
   { name: 'cauda', eye: [1470, 8, 1010], at: [1504, 6, 974], fov: 60 },
   { name: 'congmo', eye: [630, 6, 980], at: [584, 10, 944], fov: 58 },
   { name: 'vachdut', eye: [1030, 10, 540], at: [1044, 40, 484], fov: 60 },
+  // MAP-DEBT 2: mặt vách nhìn gần (10–25 m) để soát chi tiết đá (vỉa mỏng, khe nứt, vụn vỡ)
+  // vách quay mặt ~45° và ~225° (pháp tuyến chéo trục): soát khe khối không bị kéo dài/tối đều (review #399)
+  { name: 'vach45', eye: [1519, 12, 1519], at: [1600, 40, 1600], fov: 60 },
+  { name: 'vach225', eye: [529, 12, 529], at: [448, 40, 448], fov: 60 },
+  { name: 'vachgan', eye: [1040, 20, 512], at: [1046, 32, 484], fov: 60 },
+  { name: 'vachsat', eye: [1040, 10, 496], at: [1048, 24, 480], fov: 60 },
   { name: 'cautreo', eye: [925, 12, 1524], at: [970, -2, 1524], fov: 62 },
   { name: 'cautreogan', eye: [978, 8, 1503], at: [970, 0, 1523], fov: 62 },
   { name: 'toancanh', eye: [1500, 160, 1560], at: [950, 20, 950], fov: 58 },
