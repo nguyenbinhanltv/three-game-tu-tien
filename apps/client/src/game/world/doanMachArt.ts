@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { LEVELS, NPCS } from '@dtl/content';
 import { bridgeDeckY, type BridgeDef } from '@dtl/shared';
 import { heightAt, levelTerrain } from '../../base/levelCtx';
@@ -6,6 +7,9 @@ import { runeMaterial } from '../../render/runeWall';
 import { MapleLeaves } from '../../render/mapleLeaves';
 import { createWorldMaterial } from '../../render/materials/world';
 import { DoanMachFalls, fallSpots } from './doanMachFalls';
+import { logger } from '../../base/log';
+import { assets, type AssetHandle } from '../core/assets';
+import { adoptGltfMaterials } from '../../render/materials/world';
 
 /**
  * Cảnh Đoạn Mạch (MAP-2, chỉ để nhìn, không va chạm): rừng phong thẻ lá alpha theo cụm (đỏ/cam/vàng, mỗi cây là thân + tán xoè bằng các thẻ
@@ -15,6 +19,7 @@ import { DoanMachFalls, fallSpots } from './doanMachFalls';
  * Draw call: 3 (tán phong ba sắc) + 1 (thân cây) + 1 (cổ trận) + 1 (cầu).
  */
 
+const doanLog = logger('doanMachArt');
 const SEED = 20261119;
 
 function rng(seed: number): () => number {
@@ -426,7 +431,64 @@ export function bridgeFill(b: BridgeDef, step = 1): BridgeFillSample[] {
 }
 
 /** Cầu treo: ván gỗ theo đường võng `bridgeDeckY`, hai dây thừng, cột đầu cầu sơn đỏ. Một lưới, màu đỉnh. */
-function bridgeGeometry(b: BridgeDef): THREE.BufferGeometry {
+/** Đập đá dưới cầu: hai mái đá hai bên trục cầu, lưới (mẫu dọc cầu × 9 hàng), từ đáy khe lên sát ván; gồ ghề + bậc lệch nhau, màu đá theo mảng. */
+function damGeometry(b: BridgeDef, yaw: number): THREE.BufferGeometry {
+  const fill = bridgeFill(b);
+  const ROWS = 15;
+  const rnd = rng(SEED + 404);
+  const pos: number[] = [];
+  const col: number[] = [];
+  const idx: number[] = [];
+  const palette = [
+    new THREE.Color(0x8a5a40),
+    new THREE.Color(0x9c6c4c),
+    new THREE.Color(0x7a4c36),
+    new THREE.Color(0xa87a58),
+    new THREE.Color(0x6a4230),
+  ];
+  const cs = Math.cos(yaw);
+  const sn = Math.sin(yaw);
+  const tmp = new THREE.Color();
+  if (fill.length < 2) return new THREE.BufferGeometry();
+  for (const side of [-1, 1]) {
+    const base = pos.length / 3;
+    fill.forEach((f, i) => {
+      for (let r = 0; r <= ROWS; r++) {
+        const t = r / ROWS;
+        const y = f.floor - 0.6 + (f.top - (f.floor - 0.6)) * t;
+        const step = Math.floor((i + side * 3) / 4); // khối kề nhau lệch nhau theo đoạn ~4 m
+        const ledge = Math.sin(step * 1.7 + r * 1.3 + side) * 0.5 + (Math.floor(t * 5) / 5 - t) * 1.6; // bậc đá rõ: mỗi tầng thụt vào rồi nhô ở mép
+        const bump = (Math.sin(i * 0.9 + r * 1.9 + side * 2) + Math.sin(i * 0.37 - r * 0.8)) * 0.3;
+        const out = f.half + 0.15 + ledge + bump - t * 0.2; // thu nhẹ về phía mặt cầu
+        // vector ngang vuông góc trục cầu (trục z cục bộ quay `yaw` quanh y)
+        const px = f.x + cs * out * side;
+        const pz = f.z - sn * out * side;
+        pos.push(px, y, pz);
+        const n = 0.5 + 0.5 * Math.sin(f.x * 0.45 + f.z * 0.27 + r * 0.9) * Math.cos(step * 0.8 + r * 0.4);
+        tmp
+          .copy(palette[Math.min(palette.length - 1, Math.floor(n * palette.length))]!)
+          .multiplyScalar(1.15 + t * 0.5 + (rnd() - 0.5) * 0.12);
+        col.push(tmp.r, tmp.g, tmp.b);
+      }
+    });
+    for (let i = 0; i < fill.length - 1; i++)
+      for (let r = 0; r < ROWS; r++) {
+        const a = base + i * (ROWS + 1) + r;
+        const c = base + (i + 1) * (ROWS + 1) + r;
+        if (side > 0) idx.push(a, c + 1, c, a, a + 1, c + 1);
+        else idx.push(a, c, c + 1, a, c + 1, a + 1);
+      }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g.toNonIndexed();
+}
+
+/** `part`: 'fill' = chỉ đập đá chống cầu (cầu gỗ là GLB Blender `arch_dm_bridge`); 'all' = cả cầu gỗ thủ tục (dự phòng khi GLB chưa nạp được). */
+function bridgeGeometry(b: BridgeDef, part: 'fill' | 'all' = 'all'): THREE.BufferGeometry {
   const len = Math.hypot(b.bx - b.ax, b.bz - b.az);
   const deck = (t: number) => new THREE.Vector3(b.ax + (b.bx - b.ax) * t, bridgeDeckY(b, t), b.az + (b.bz - b.az) * t);
   const dir = new THREE.Vector3(b.bx - b.ax, 0, b.bz - b.az).normalize();
@@ -439,7 +501,7 @@ function bridgeGeometry(b: BridgeDef): THREE.BufferGeometry {
   const planks = Math.round(len / 0.9);
   const half = b.halfW;
   const yaw = Math.atan2(dir.x, dir.z);
-  for (let i = 0; i <= planks; i++) {
+  for (let i = 0; i <= planks && part === 'all'; i++) {
     const t = i / planks;
     const p = deck(t);
     const q = deck(Math.min(1, t + 0.01));
@@ -452,7 +514,7 @@ function bridgeGeometry(b: BridgeDef): THREE.BufferGeometry {
   }
   const segs = 24;
   const up = new THREE.Vector3(0, 1, 0);
-  for (const sgn of [-1, 1]) {
+  for (const sgn of part === 'all' ? [-1, 1] : []) {
     for (let i = 0; i < segs; i++) {
       const p0 = deck(i / segs).addScaledVector(side, sgn * (half + 0.05));
       const p1 = deck((i + 1) / segs).addScaledVector(side, sgn * (half + 0.05));
@@ -479,32 +541,16 @@ function bridgeGeometry(b: BridgeDef): THREE.BufferGeometry {
       parts.push({ g: cap, col: WOOD2 });
     }
   }
-  // Đập đá chống cầu: các lớp đá xây xếp chồng từ đáy khe lên sát ván cầu, lệch nhẹ từng lớp cho thô ráp, trụ chống mỗi ~8 m.
-  const STONE = [new THREE.Color(0xa87b5c), new THREE.Color(0x93684c), new THREE.Color(0xb98c68), new THREE.Color(0x7e5640)];
-  const fill = bridgeFill(b);
-  const rnd = rng(SEED + 404);
-  fill.forEach((f, i) => {
-    const course = 1.1;
-    const layers = Math.max(1, Math.ceil((f.top - (f.floor - 0.6)) / course));
-    const h = (f.top - (f.floor - 0.6)) / layers;
-    for (let k = 0; k < layers; k++) {
-      const w = (f.half + (rnd() - 0.5) * 0.25) * 2;
-      const g = new THREE.BoxGeometry(w, h * 0.97, 1.04);
-      g.rotateY(yaw);
-      g.translate(f.x, f.floor - 0.6 + h * (k + 0.5), f.z);
-      parts.push({ g, col: STONE[(i + k * 2) % STONE.length] ?? WOOD2 });
-    }
-    if (i % 8 === 4) {
-      const total = f.top - (f.floor - 0.6);
-      const g = new THREE.BoxGeometry((f.half + 0.5) * 2, total, 1.7);
-      g.rotateY(yaw);
-      g.translate(f.x, f.floor - 0.6 + total / 2, f.z);
-      parts.push({ g, col: STONE[1] ?? WOOD2 });
-    }
-  });
-  const geo = mergeFlat(parts);
+  // Đập đá chống cầu: mái đá tự nhiên (lưới liền, không phải khối xếp), mặt ngoài gồ ghề theo nhiễu + bậc đá lệch nhau, màu theo mảng.
+  const dam = new THREE.BufferGeometry(); // không dựng đập đá (xem constructor)
+  const deckGeo = parts.length ? mergeFlat(parts) : null;
+  void damGeometry;
   for (const p of parts) p.g.dispose();
-  return geo;
+  if (!deckGeo) return dam;
+  const merged = mergeGeometries([deckGeo, dam], false) ?? deckGeo;
+  deckGeo.dispose();
+  dam.dispose();
+  return merged;
 }
 
 export class DoanMachArt {
@@ -587,14 +633,42 @@ export class DoanMachArt {
     this.leaves = new MapleLeaves();
     this.group.add(this.leaves.mesh);
 
-    // Cầu treo (nếu level khai báo cầu `own`).
-    const br = ownBridge();
-    if (br) {
-      const bgeo = bridgeGeometry(br);
+    // Cầu treo: GLB Blender nạp bất đồng bộ qua `loadBridge`. Không còn đập đá dựng dưới cầu (nhìn như tấm rèm chắn lòng vực): địa hình bên dưới tự hiện.
+  }
+
+  private rockHandle: AssetHandle | null = null;
+  private gone = false;
+
+  /** Cầu treo gỗ dựng bằng Blender (`arch_dm_bridge`): gốc tại đầu a, z dọc nhịp; mặt cầu theo `bridgeDeckY`. Lỗi thì dựng lại cầu thủ tục. */
+  async loadBridge(renderer: THREE.WebGPURenderer): Promise<void> {
+    const b = ownBridge();
+    if (!b) return;
+    try {
+      await assets.attach(renderer);
+      const h = await assets.acquire('arch_dm_bridge', { pos: { x: b.ax, z: b.az } });
+      if (this.gone) {
+        h.release();
+        return;
+      }
+      this.rockHandle = h;
+      const root = h.scene;
+      const mats = adoptGltfMaterials(root);
+      for (const m of mats) this.disposables.push(m);
+      root.position.set(b.ax, b.ay, b.az);
+      root.rotation.y = Math.atan2(b.bx - b.ax, b.bz - b.az); // GLB dọc +z: quay về hướng đầu b
+      root.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        m.castShadow = true;
+        m.frustumCulled = false;
+      });
+      this.group.add(root);
+    } catch (e) {
+      doanLog.warn('không nạp được cầu Blender, dùng cầu thủ tục', e);
+      const bgeo = bridgeGeometry(b, 'all');
       const bmat = createWorldMaterial({ vertexColors: true, roughness: 0.9 });
       const bridge = new THREE.Mesh(bgeo, bmat);
-      bridge.name = 'hanging-bridge';
-      bridge.castShadow = true;
+      bridge.name = 'hanging-bridge-fallback';
       bridge.frustumCulled = false;
       this.group.add(bridge);
       this.disposables.push(bgeo, bmat);
@@ -607,6 +681,9 @@ export class DoanMachArt {
   }
 
   dispose(): void {
+    this.gone = true;
+    this.rockHandle?.release();
+    this.rockHandle = null;
     this.leaves?.dispose();
     this.leaves = null;
     for (const d of this.disposables) d.dispose();
