@@ -70,6 +70,9 @@ export const postParams = {
   hit: uniform(0),
   /** 0..1: chớp sáng toàn màn hình (sấm độ kiếp...), tự giảm dần. */
   flash: uniform(0),
+  /** 0..1: chớp tối/sáng ở viền khung hình (VS-1 `vignette`), tự giảm dần; `punchLight` = 1 → viền sáng, 0 → viền tối. */
+  punch: uniform(0),
+  punchLight: uniform(0),
   /** 0..1: làm nhòe hướng tâm ở mép khung (cảnh boss xuất hiện, P2-B2); chỉ có khi pipeline dựng với `radial`. */
   radial: uniform(0),
   /** 0..1 và màu: nhuộm thoáng qua cả khung (chuyển pha boss, P2-B3), thay màu trời/sương trong một nhịp. */
@@ -250,6 +253,9 @@ export class PostPipeline {
     const edge = smoothstep(0.3, 0.75, length(fromCenter));
     g = vec3(mix(g, vec3(0.75, 0.05, 0.04), edge.mul(postParams.hit).mul(0.55)));
     g = vec3(mix(g, vec3(1, 0.98, 0.94), postParams.flash.mul(0.75)));
+    const punchEdge = smoothstep(0.22, 0.78, length(fromCenter));
+    const punchTone = postParams.punchLight.mul(0.95).add(0.03);
+    g = vec3(mix(g, vec3(punchTone, punchTone, punchTone.mul(0.97).add(0.01)), punchEdge.mul(postParams.punch).mul(2.4).min(0.9)));
     // Nhuộm thoáng qua (chuyển pha): giữ độ sáng, đổi sắc vùng tối nhiều hơn vùng sáng.
     const pl = luminance(g);
     g = vec3(mix(g, postParams.pulseColor.mul(pl.mul(1.15).add(0.06)), postParams.pulse.mul(0.65)));
@@ -309,7 +315,22 @@ export class PostPipeline {
     postParams.flash.value = Math.max(postParams.flash.value, Math.min(1, amount));
   }
 
+  /** Chớp tối/sáng ở viền khung hình (VS-1): `amount` 0..0,5 tự tan tuyến tính trong `ms`. */
+  punch(amount: number, tone: 'dark' | 'light', ms: number): void {
+    postParams.punch.value = Math.max(postParams.punch.value, Math.min(0.5, amount));
+    postParams.punchLight.value = tone === 'light' ? 1 : 0;
+    this.punchRate = postParams.punch.value / Math.max(0.05, ms / 1000);
+  }
+
+  private punchRate = 1;
+
+  /** Mức chớp viền hiện tại (0..0,5), để kiểm tra/đo. */
+  punchLevel(): number {
+    return postParams.punch.value;
+  }
+
   update(dt: number): void {
+    if (postParams.punch.value > 0) postParams.punch.value = Math.max(0, postParams.punch.value - dt * this.punchRate);
     if (postParams.hit.value > 0) postParams.hit.value = Math.max(0, postParams.hit.value - dt * 2.2);
     if (postParams.flash.value > 0) postParams.flash.value = Math.max(0, postParams.flash.value - dt * 4);
   }
