@@ -51,9 +51,16 @@ function rockSpot(): Spot {
 
 function spots(): Spot[] {
   requireLevel('doan_mach');
-  const br = collisionOf('doan_mach').shapes.find((s) => s.k === 'box' && s.tag === 'prop_cau_da_gay' && s.y1b !== undefined) as BoxShape | undefined;
+  const br = collisionOf('doan_mach').shapes.find((s) => s.k === 'box' && s.tag === 'prop_cau_da_gay' && s.y1b !== undefined) as
+    BoxShape | undefined;
   const bridge: Spot = br
-    ? { id: 'bridge', level: 'doan_mach', x: br.x + Math.sin(br.yaw) * br.hz * 0.2, z: br.z + Math.cos(br.yaw) * br.hz * 0.2, face: Math.atan2(Math.cos(br.yaw), Math.sin(br.yaw)) }
+    ? {
+        id: 'bridge',
+        level: 'doan_mach',
+        x: br.x + Math.sin(br.yaw) * br.hz * 0.2,
+        z: br.z + Math.cos(br.yaw) * br.hz * 0.2,
+        face: Math.atan2(Math.cos(br.yaw), Math.sin(br.yaw)),
+      }
     : { id: 'bridge', level: 'doan_mach', x: 1504, z: 969, face: Math.PI / 2 };
   return [
     slopeSpot(),
@@ -94,9 +101,13 @@ export default {
         await gm(page, 'set set_lac_kiem', 1200);
         await gm(page, 'killall', 800);
         await skipCutscene(page, 10);
-        await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+        await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+          timeout: 60_000,
+          polling: 300,
+        });
         // Hiệu chỉnh hướng đi theo camera: phím W đi theo `camYaw`, ta tìm yaw để đi đúng hướng thế giới mong muốn.
-        const pos = () => page.evaluate(() => ({ x: window.__game!.renderPos.x, y: window.__game!.renderPos.y, z: window.__game!.renderPos.z }));
+        const pos = () =>
+          page.evaluate(() => ({ x: window.__game!.renderPos.x, y: window.__game!.renderPos.y, z: window.__game!.renderPos.z }));
         const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
         const calib = async () => {
           const probe = async (yaw: number) => {
@@ -170,7 +181,8 @@ export default {
             const clip = centerClip(vw, vh, 640, 360);
             await page.keyboard.down(key);
             await sleep(120);
-            for (let i = 0; i < frames; i++) list2.push(await snap(page, r.out, `stairs-walk-${g}-${v}/${String(i).padStart(2, '0')}.jpg`, { clip }));
+            for (let i = 0; i < frames; i++)
+              list2.push(await snap(page, r.out, `stairs-walk-${g}-${v}/${String(i).padStart(2, '0')}.jpg`, { clip }));
             await page.keyboard.up(key);
             seq[`${g}-${v}`] = list2;
           }
@@ -183,16 +195,25 @@ export default {
         for (const sz of sizes)
           rows.push({
             label: `${s.id} ${sz}`,
-            cells: (['truoc', 'sau'] as const).map((v) => ({ img: stills.get(`${s.id}/${g}/${sz}/${v}`)!, caption: v === 'truoc' ? 'TRƯỚC (v3feet=0)' : 'SAU' })),
+            cells: (['truoc', 'sau'] as const).map((v) => ({
+              img: stills.get(`${s.id}/${g}/${sz}/${v}`)!,
+              caption: v === 'truoc' ? 'TRƯỚC (v3feet=0)' : 'SAU',
+            })),
           });
       await sheet(sctx, path.join(r.out, `so-sanh-${g}.jpg`), rows, { cell: 640, ratio: 0.5625, title: `NV3-A2 IK chân bám dốc (${g})` });
       for (const v of ['truoc', 'sau']) {
         const fr = seq[`${g}-${v}`];
-        if (fr) await sheet(sctx, path.join(r.out, `bac-thang-${g}-${v}.jpg`), [{ label: v, cells: fr.map((b, i) => ({ img: b, caption: String(i) })) }].flatMap((row) => {
-          const out: SheetRow[] = [];
-          for (let i = 0; i < row.cells.length; i += 5) out.push({ label: i === 0 ? row.label : '', cells: row.cells.slice(i, i + 5) });
-          return out;
-        }), { cell: 320, ratio: 0.5625 });
+        if (fr)
+          await sheet(
+            sctx,
+            path.join(r.out, `bac-thang-${g}-${v}.jpg`),
+            [{ label: v, cells: fr.map((b, i) => ({ img: b, caption: String(i) })) }].flatMap((row) => {
+              const out: SheetRow[] = [];
+              for (let i = 0; i < row.cells.length; i += 5) out.push({ label: i === 0 ? row.label : '', cells: row.cells.slice(i, i + 5) });
+              return out;
+            }),
+            { cell: 320, ratio: 0.5625 },
+          );
       }
       await sctx.close();
     }

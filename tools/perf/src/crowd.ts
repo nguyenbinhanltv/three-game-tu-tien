@@ -690,7 +690,10 @@ async function goTo(page: Page, sc: Scene): Promise<boolean> {
 async function feetAB(page: Page): Promise<void> {
   const sec = Number(opt('--feetsec', '20'));
   const rows: Record<string, number | string>[] = [];
-  await page.waitForFunction(() => !!(window as unknown as { __feetProbe?: unknown }).__feetProbe, undefined, { timeout: 120_000, polling: 500 });
+  await page.waitForFunction(() => !!(window as unknown as { __feetProbe?: unknown }).__feetProbe, undefined, {
+    timeout: 120_000,
+    polling: 500,
+  });
   await page.evaluate(() => {
     const w = window as unknown as { __frames: number };
     w.__frames = 0;
@@ -703,7 +706,11 @@ async function feetAB(page: Page): Promise<void> {
   for (let i = 0; i < 6; i++) {
     const on = i % 2 === 0;
     await page.evaluate((o) => {
-      const w = window as unknown as { __feetProbe: { off: boolean; rec: boolean; calls: number; ms: number; per: number[] }; __frames: number; __crowd: { rx: number } };
+      const w = window as unknown as {
+        __feetProbe: { off: boolean; rec: boolean; calls: number; ms: number; per: number[] };
+        __frames: number;
+        __crowd: { rx: number };
+      };
       const fp = w.__feetProbe;
       fp.off = !o;
       fp.rec = true;
@@ -715,7 +722,11 @@ async function feetAB(page: Page): Promise<void> {
     }, on);
     await sleep(sec * 1000);
     const r = await page.evaluate(() => {
-      const w = window as unknown as { __feetProbe: { rec: boolean; calls: number; ms: number; per: number[] }; __frames: number; __crowd: { rx: number } };
+      const w = window as unknown as {
+        __feetProbe: { rec: boolean; calls: number; ms: number; per: number[] };
+        __frames: number;
+        __crowd: { rx: number };
+      };
       const fp = w.__feetProbe;
       const per = [...fp.per].sort((a, b) => a - b);
       const q = (p: number) => per[Math.min(per.length - 1, Math.floor(per.length * p))] ?? 0;
