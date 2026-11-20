@@ -5,7 +5,8 @@ import { Game, reqId } from '../../game/engine';
 import { gearQuality, pctText } from '../gear';
 import { Button, ProgressBar } from '../u2/win';
 import { BottleneckBox } from '../Realm';
-import { closePanel, openPanel, useUI } from '../store';
+import { closePanel, useUI } from '../store';
+import { openWardrobe } from '../wardrobe/nav';
 import { ItemDetail, ItemIcon } from '../windows/common';
 import { breakInfo } from './breakthrough';
 import { dropFromDrag } from '../bag/Bag';
@@ -91,7 +92,7 @@ function EquipBoard() {
         <div className="k-dim equip-hint">{EQUIP_SLOTS.some((es) => equip[es]) ? t('ui.equip.hint2') : t('ui.equip.none')}</div>
       )}
       <div>
-        <Button onClick={() => openPanel('wardrobe')}>{t('ui.wardrobe.open')}</Button>
+        <Button onClick={openWardrobe}>{t('ui.wardrobe.open')}</Button>
       </div>
     </div>
   );

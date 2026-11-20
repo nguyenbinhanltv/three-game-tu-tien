@@ -260,9 +260,13 @@ const DYE_IDS: ReadonlySet<string> = new Set(APPEARANCE.dyes.map((d) => d.id));
 
 /** Nhuộm 3 kênh → màu v1 (kênh 1 = vải chính `hex`, kênh 2 = viền `trim`; kênh 3 dành cho nhân vật v3). Sai định dạng thì bỏ. */
 export function tintOf(dye3: string | undefined): PlayerLook['tint'] {
-  const d = dye3 ? decodeDye3(DYE_IDS, dye3) : undefined;
-  const a = d ? DYE.get(d[0]) : undefined;
-  const b = d ? DYE.get(d[1]) : undefined;
+  return tintOfTriple(dye3 ? decodeDye3(DYE_IDS, dye3) : undefined);
+}
+
+/** Như `tintOf` nhưng từ bộ ba id màu đã giải mã (bản nháp của Tủ ngoại trang). */
+export function tintOfTriple(d: readonly string[] | null | undefined): PlayerLook['tint'] {
+  const a = d ? DYE.get(d[0] ?? '') : undefined;
+  const b = d ? DYE.get(d[1] ?? '') : undefined;
   return a && b ? { hex: a.hex, trim: b.hex } : undefined;
 }
 

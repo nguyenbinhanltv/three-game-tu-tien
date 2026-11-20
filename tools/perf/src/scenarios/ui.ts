@@ -55,11 +55,34 @@ interface Panel {
   tab?: number;
   /** Bấm nút có chữ này (regex) trước khi chụp, ví dụ mở Ghi công từ Cài đặt. */
   click?: string;
+  /** Thao tác thêm sau khi mở bảng, trước khi chụp (ví dụ chọn dáng + màu trong Tủ ngoại trang). */
+  act?: (page: Page) => Promise<void>;
 }
 const PANELS: Panel[] = [
   { id: 'nhan-vat', key: 'c' },
   { id: 'nhan-vat-thuoc-tinh', key: 'c', tab: 1 },
   { id: 'tu-ngoai-trang', key: 'c', click: 'Tủ ngoại trang' },
+  {
+    id: 'tu-ngoai-trang-chon',
+    key: 'c',
+    click: 'Tủ ngoại trang',
+    act: async (page) => {
+      // Tháo hết đồ để nhân vật về bộ đồ đệ tử (áo nhuộm được): bản xem trước mới thấy rõ dáng + màu của bản nháp.
+      for (const slot of ['weapon', 'robe', 'bracer', 'boots', 'belt', 'jade', 'ring', 'artifact', 'head']) {
+        await page.evaluate((sl) => window.__game!.send('uneq', { slot: sl, r: 'u' + sl + Math.random().toString(36).slice(2, 8) }), slot);
+        await sleep(320);
+      }
+      await sleep(800);
+      // Chọn một đạo bào khác món đang mặc + nhuộm ba kênh, để xem trước đổi dáng và màu (chưa Áp dụng).
+      await page.locator('.wd-grid .k-slot').nth(2).click();
+      const rows = page.locator('.wd-swatches');
+      await rows.nth(0).locator('.wd-swatch').nth(3).click();
+      await rows.nth(1).locator('.wd-swatch').nth(1).click();
+      await rows.nth(2).locator('.wd-swatch').nth(4).click();
+      await page.mouse.move(8, 8);
+      await sleep(2500);
+    },
+  },
   { id: 'tui-do', key: 'b' },
   { id: 'cong-phap', key: 'k' },
   { id: 'nhiem-vu', key: 'l' },
@@ -84,6 +107,8 @@ const BAG = [
   'roll weapon 3 20',
   'roll robe 2 12',
   'roll ring 3 16',
+  'give itm_dao_bao 1',
+  'give itm_linh_ti_bao 1',
 ];
 
 /** Chi phí CPU của trang mỗi khung trong 5 giây (CDP Performance), để so HUD cũ/mới ở cùng cảnh. */
@@ -172,6 +197,7 @@ async function panels(r: Run, variants: string[], sizes: string[], only: string[
           .click()
           .catch(() => undefined);
       await sleep(900);
+      await p.act?.(page);
       await snapSizes(page, r.out, `bang-${p.id}-${variant}`, sizes, 900);
       // Đóng: Escape, nút đóng của hội thoại NPC nếu còn, rồi bấm lại phím nếu bảng vẫn mở (phím là bật/tắt).
       await page.keyboard.press('Escape');
