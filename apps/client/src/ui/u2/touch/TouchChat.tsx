@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '@dtl/content';
 import { CHAT_TABS, type ChatTab, setChatTab, useUI } from '../../store';
-import { ChatLine, sendChatText } from '../hud/Chat';
+import { ChatLine, sendChatText } from '../hud/ChatLine';
 
 /**
  * Vùng nhìn thấy (thu lại khi bàn phím ảo hiện): cao `height` và lệch `top` (iOS Safari cuộn layout viewport lên khi mở bàn phím,

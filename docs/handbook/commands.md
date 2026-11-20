@@ -25,7 +25,7 @@
 
 ## Vòng phụ thuộc (R-6, CLEAN-2)
 
-- `pnpm deps:check` (madge, chạy ở CI): `packages/shared/src` **không được có vòng import** (kể cả `import type`). Đã gỡ 20 vòng bằng cách tách module lá: `itemtypes.ts` (Quality, MainStat, AffixStat, AffixRoll, ItemInst), `elements.ts` (nay giữ cả `ELEMENTS`/`Element`), `gems.ts` (linh ngọc, tách khỏi `upgrade.ts`), `props.types.ts` (`HandProp`), `teleport.types.ts` (`TelePad`). Các module cũ (`items`, `upgrade`, `props`, `teleport`) re-export lại nên API công khai của `@dtl/shared` không đổi.
+- `pnpm deps:check` (chạy ở CI) gồm hai phần. (1) madge: `packages/shared/src` **không được có vòng import** (kể cả `import type`). (2) dpdm `-T`: `packages/content`, `apps/client`, `apps/server` **không được có vòng giá trị**; vòng chỉ-kiểu (`import type`) được phép. Gỡ vòng ở client bằng module lá, ví dụ `apps/client/src/game/world/thienKhuyetNoise.ts`, `apps/client/src/game/engine/click.ts`, `apps/client/src/ui/u2/hud/ChatLine.tsx`. Đã gỡ 20 vòng bằng cách tách module lá: `itemtypes.ts` (Quality, MainStat, AffixStat, AffixRoll, ItemInst), `elements.ts` (nay giữ cả `ELEMENTS`/`Element`), `gems.ts` (linh ngọc, tách khỏi `upgrade.ts`), `props.types.ts` (`HandProp`), `teleport.types.ts` (`TelePad`). Các module cũ (`items`, `upgrade`, `props`, `teleport`) re-export lại nên API công khai của `@dtl/shared` không đổi.
 - Khi thêm module trong shared: kiểu/hằng số dùng chung nhiều nơi đặt ở module lá, đừng import ngược module "chủ"; chạy `pnpm deps:check` trước khi mở PR.
 
 ## `noUncheckedIndexedAccess` (CLEAN-2)

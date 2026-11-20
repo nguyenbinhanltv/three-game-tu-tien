@@ -1,7 +1,7 @@
 // U2-6: điều khiển cảm ứng trên canvas (vuốt xoay camera, chụm hai ngón zoom, chạm chọn mục tiêu). Cần ảo (joystick, nút) ở
 // `ui/u2/touch/`. Chỉ gửi ý định như bàn phím: `eng.touchMove` thay cho WASD trong `buildInput`; server vẫn quyết định.
 import { isTap, pinchDist } from '../../input/touchMode';
-import { onClick } from './input';
+import { onClick } from './click';
 import type { Game } from '../engine';
 
 const SWIPE_YAW = 0.0058;

@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { bumpMap, cameraPosition, float, mix, normalWorld, positionWorld, smoothstep, texture, vec2, vec3, vertexColor } from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
-import { tkFbm } from './thienKhuyetSky';
+import { tkFbm } from './thienKhuyetNoise';
 
 /**
  * Vách vực Đoạn Mạch dạng bậc thang địa chất (POLISH-3): lớp "da" mesh phủ lên vách địa hình (cùng cách làm với `thienKhuyetWall.ts`).
