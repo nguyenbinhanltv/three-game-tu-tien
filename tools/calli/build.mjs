@@ -102,6 +102,7 @@ async function build(only) {
     let x = 0;
     let prev = null;
     const d = [];
+    const dots = [];
     let x1 = Infinity,
       y1 = Infinity,
       x2 = -Infinity,
@@ -109,14 +110,43 @@ async function build(only) {
     for (const g of font.stringToGlyphs(text)) {
       if (prev) x += font.getKerningValue(prev, g) * k;
       const p = g.getPath(x, 0, size);
-      const b = p.getBoundingBox();
-      if (p.commands.length) {
+      // Tách chấm dưới (dấu nặng): contour nằm hẳn dưới đường chữ. Vẽ riêng, to hơn và hạ xuống để không bị nét chân chữ bên cạnh nuốt.
+      const main = [];
+      let cur = null;
+      const contours = [];
+      for (const c of p.commands) {
+        if (c.type === 'M') contours.push((cur = []));
+        cur?.push(c);
+      }
+      for (const cs of contours) {
+        const q = new opentype.Path();
+        q.commands = cs;
+        const cb = q.getBoundingBox();
+        if (cb.y1 >= size * 0.01) {
+          const cx = (cb.x1 + cb.x2) / 2,
+            cy = (cb.y1 + cb.y2) / 2;
+          const sc = 1.15,
+            dy = size * 0.04;
+          dots.push(
+            `<path transform="translate(${cx.toFixed(2)} ${(cy + dy).toFixed(2)}) scale(${sc}) translate(${-cx.toFixed(2)} ${-cy.toFixed(2)})" d="${q.toPathData(2)}"/>`,
+          );
+          const hw = ((cb.x2 - cb.x1) * sc) / 2,
+            hh = ((cb.y2 - cb.y1) * sc) / 2;
+          x1 = Math.min(x1, cx - hw);
+          x2 = Math.max(x2, cx + hw);
+          y2 = Math.max(y2, cy + dy + hh);
+        } else main.push(...cs);
+      }
+      const mp = new opentype.Path();
+      mp.commands = main;
+      const b = mp.getBoundingBox();
+      if (main.length) {
         x1 = Math.min(x1, b.x1);
         y1 = Math.min(y1, b.y1);
         x2 = Math.max(x2, b.x2);
         y2 = Math.max(y2, b.y2);
       }
-      d.push(p.toPathData(2));
+      d.push(mp.toPathData(2));
       x += g.advanceWidth * k + (it.spacing ?? 0) * size;
       prev = g;
     }
@@ -145,6 +175,8 @@ async function build(only) {
 <g filter="url(#rough)">
 <path d="${pathData}" fill="url(#e)" stroke="url(#e)" stroke-width="${(edge * 2).toFixed(2)}"/>
 <path d="${pathData}" fill="url(#f)"/>
+<g stroke="url(#e)" stroke-width="${(edge * 2.2).toFixed(2)}" fill="url(#e)">${dots.join('')}</g>
+<g fill="url(#f)">${dots.join('')}</g>
 </g>
 </g></svg>`;
     const png = await sharp(Buffer.from(svg)).png({ palette: true, quality: 92, effort: 10, colours: 128 }).toBuffer();
