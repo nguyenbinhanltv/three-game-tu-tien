@@ -542,8 +542,9 @@ function bridgeGeometry(b: BridgeDef, part: 'fill' | 'all' = 'all'): THREE.Buffe
     }
   }
   // Đập đá chống cầu: mái đá tự nhiên (lưới liền, không phải khối xếp), mặt ngoài gồ ghề theo nhiễu + bậc đá lệch nhau, màu theo mảng.
-  const dam = damGeometry(b, yaw);
+  const dam = new THREE.BufferGeometry(); // không dựng đập đá (xem constructor)
   const deckGeo = parts.length ? mergeFlat(parts) : null;
+  void damGeometry;
   for (const p of parts) p.g.dispose();
   if (!deckGeo) return dam;
   const merged = mergeGeometries([deckGeo, dam], false) ?? deckGeo;
@@ -632,18 +633,7 @@ export class DoanMachArt {
     this.leaves = new MapleLeaves();
     this.group.add(this.leaves.mesh);
 
-    // Cầu treo (nếu level khai báo cầu `own`).
-    const br = ownBridge();
-    if (br) {
-      const bgeo = bridgeGeometry(br, 'fill');
-      const bmat = createWorldMaterial({ vertexColors: true, roughness: 0.9 });
-      const bridge = new THREE.Mesh(bgeo, bmat);
-      bridge.name = 'hanging-bridge';
-      bridge.castShadow = true;
-      bridge.frustumCulled = false;
-      this.group.add(bridge);
-      this.disposables.push(bgeo, bmat);
-    }
+    // Cầu treo: GLB Blender nạp bất đồng bộ qua `loadBridge`. Không còn đập đá dựng dưới cầu (nhìn như tấm rèm chắn lòng vực): địa hình bên dưới tự hiện.
   }
 
   private rockHandle: AssetHandle | null = null;
