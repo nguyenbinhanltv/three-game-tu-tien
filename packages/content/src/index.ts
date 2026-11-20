@@ -297,6 +297,7 @@ export const CREDIT_LICENSE_URL: Record<string, string> = {
   'CC0-1.0': 'https://creativecommons.org/publicdomain/zero/1.0/',
   MIT: 'https://opensource.org/license/mit',
   'OFL-1.1': 'https://openfontlicense.org/open-font-license-official-text/',
+  Fontzin: 'https://fontzin.com',
   'GeneralUser-GS-2.0': 'https://github.com/mrbumpy409/GeneralUser-GS/blob/main/LICENSE.txt',
 };
 /** Key pose cho công cụ tư thế IK (client nướng thành AnimationClip). Thêm tệp mới trong data/poses thì khai báo ở đây. */

@@ -216,6 +216,11 @@
   text-shadow: none;
   filter: drop-shadow(0 4px 0 var(--u-thanh-6)) drop-shadow(0 0 24px var(--u-thanh-6));
 }
+/* Có ảnh thư pháp: bỏ nền chữ kim/bóng cũ (ảnh tự có viền vàng + mực). */
+#boot.u2-on.art-on .ts-title:not(.nocalli) {
+  background: none;
+  filter: none;
+}
 #boot.u2-on.art-on .ts-seal {
   display: none;
 }

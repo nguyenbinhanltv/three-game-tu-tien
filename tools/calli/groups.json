@@ -1,0 +1,8 @@
+{
+  "$doc": "Danh sách chuỗi CỐ ĐỊNH được vẽ thành ảnh thư pháp (nhóm → mục). key = i18n key trong packages/content/data/i18n/*.json; chữ thật vẫn ở i18n (ảnh chỉ là lớp hiển thị, giữ chữ cho a11y). style: ink = mực đậm viền vàng (nền sáng), gold = chữ kim viền mực (nền tối). size = cỡ chữ khi vẽ (px). spacing = giãn chữ (em). Không dùng cho chữ thường của UI, tooltip, chat, số sát thương, tên người chơi.",
+  "groups": {
+    "title": {
+      "items": [{ "id": "title", "key": "ui.title", "style": "ink", "size": 260, "spacing": 0.02 }]
+    }
+  }
+}
