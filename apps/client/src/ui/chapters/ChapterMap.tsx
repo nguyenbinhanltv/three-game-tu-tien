@@ -16,6 +16,7 @@ import { ContentIcon } from '../ContentIcon';
 import { Badge, Bar, Button, Panel, Slot, Tabs, type TabDef } from '../u2';
 import { openPanel, useUI } from '../store';
 import { closeChapters, pickChapter, pickNode, useChapters } from './chaptersStore';
+import { Calli } from '../calli/Calli';
 import './chapters.css';
 
 const GLYPH: Record<ChapterNodeDef['kind'], string> = { world: '●', dungeon: '⬡', boss: '☠', trib: '⚡' };
@@ -130,7 +131,9 @@ function ChapterMapBody() {
             </div>
           </div>
           <div className="u2c__info">
-            <h2 className="u2c__title">{t(`ui.chapters.${def.id}.name`)}</h2>
+            <h2 className="u2c__title">
+              <Calli k={`ui.chapters.${def.id}.name`} em={1.9} />
+            </h2>
             <div className="u2c__tags">
               <Badge tone="son">{t('ui.chapters.level', { a: def.levels[0], b: def.levels[1] })}</Badge>
             </div>

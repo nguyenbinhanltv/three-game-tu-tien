@@ -113,7 +113,23 @@ async function build(only) {
       y1 = Infinity,
       x2 = -Infinity,
       y2 = -Infinity;
-    for (const g of font.stringToGlyphs(text)) {
+    const chars = [...text];
+    const gl = font.stringToGlyphs(text);
+    for (const [gi, g] of gl.entries()) {
+      // Font không có "·" (dấu giữa phụ đề): vẽ chấm tròn ở giữa x-height.
+      if (chars[gi] === '·' && gl.length === chars.length) {
+        const r = size * 0.04;
+        const cx = x + size * 0.17;
+        const cy = -size * 0.22;
+        dots.push(`<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${r.toFixed(2)}"/>`);
+        x1 = Math.min(x1, cx - r);
+        x2 = Math.max(x2, cx + r);
+        y1 = Math.min(y1, cy - r);
+        y2 = Math.max(y2, cy + r);
+        x += size * 0.34 + (it.spacing ?? 0) * size;
+        prev = null;
+        continue;
+      }
       if (prev) x += font.getKerningValue(prev, g) * k;
       const p = g.getPath(x, 0, size);
       // Tách chấm dưới (dấu nặng): contour nằm hẳn dưới đường chữ. Vẽ riêng, to hơn và hạ xuống để không bị nét chân chữ bên cạnh nuốt.
