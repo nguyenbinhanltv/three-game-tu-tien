@@ -186,7 +186,7 @@ def tran_son():
             ],
             # b = khiêu khích mạnh + tự giảm sát thương 3 s: bốn tấm thuẫn dựng quanh thân, ở lại ~3 s
             'guard': [
-                mesh('shield_plate', 0.05 + 0.03 * i, 2.8, at='self', offset=[x, G, z], rot=[0, a, 0], scale=[1.1, 1.15, 1.1], sweep=0.12, erodeFrom=0.82, alpha=1,
+                mesh('shield_plate', 0.05 + 0.03 * i, 2.8, at='self', offset=[x, G, z], rot=[0, a, 0], scale=[1.1, 1.15, 1.1], sweep=0.12, erodeFrom=0.82, alpha=1, camFade=True,
                      follow=True, tone='core', tier=0, seed=20 + i)
                 for i, (x, z, a) in enumerate(around(4, 1.25, math.pi / 4))
             ],
@@ -263,8 +263,8 @@ def son_nhac():
     # vành núi: 7 trụ đá quanh thân, ngả ra ngoài; trụ sau lưng cao, trụ phía trước thấp
     for i, (x, z, a) in enumerate(around(7, 2.1, 0.2)):
         h = 1.2 + 1.3 * (0.5 + 0.5 * math.cos(math.radians(a)))  # a = 0 (trước mặt người, xa camera sau lưng) cao nhất
-        ev.append(mesh('rock_spire', -0.1 + 0.015 * i, 1.8, at='self', offset=[x, G, z], rot=[14, a, 0], scale=[1.9, round(h, 2), 1.9], sweep=0.08, erodeFrom=0.62, alpha=1,
-                       tone='core', tier=0 if i % 2 == 0 else 1, seed=60 + i))
+        ev.append(mesh('rock_spire', -0.1 + 0.015 * i, 1.8, at='self', offset=[x, G, z], rot=[14, a, 0], scale=[1.9, round(h, 2), 1.9], sweep=0.08, erodeFrom=0.62, alpha=1, camFade=True,
+                       tone='shadow', tier=0 if i % 2 == 0 else 1, seed=60 + i))
     ev += [
         snd(0.0, 'impact', 0.95, 0.6, 0.04),
         snd(0.02, 'block', 0.5, 0.62, 0.05),
@@ -318,9 +318,9 @@ def kim_cuong():
     ]
     for i, (x, z, a) in enumerate(plates):
         far = [round(x * 3.4, 2), G + 2.0, round(z * 3.4, 2)]
-        ev.append(mesh('shield_plate', -0.34 + 0.012 * i, 0.32, at='self', offset=far, rot=[0, a, 0], scale=1.0, sweep=0, erodeFrom=0.98, alpha=1, keepUp=True,
+        ev.append(mesh('shield_plate', -0.34 + 0.012 * i, 0.32, at='self', offset=far, rot=[0, a, 0], scale=1.0, sweep=0, erodeFrom=0.98, alpha=1, keepUp=True, camFade=True,
                        move={'to': 'self', 'offset': [x, G, z], 'ease': 'in'}, tone='core', tier=0 if i % 2 == 0 else 1, seed=10 + i))
-        ev.append(mesh('shield_plate', 0.0, 1.0, at='self', offset=[x, G, z], rot=[0, a, 0], scale=1.0, sweep=0, erodeFrom=0.5, alpha=1, follow=True,
+        ev.append(mesh('shield_plate', 0.0, 1.0, at='self', offset=[x, G, z], rot=[0, a, 0], scale=1.0, sweep=0, erodeFrom=0.5, alpha=1, follow=True, camFade=True,
                        tone='core', tier=0 if i % 2 == 0 else 1, seed=10 + i))
     ev += [
         snd(-0.2, 'slash', 0.45, 0.72, 0.04),
@@ -347,7 +347,7 @@ R['skl_kim_cuong_bat_hoai'] = kim_cuong
 
 
 def phap_tuong():
-    """Thiên Kim Pháp Tướng (cấp 28, buff giảm 25% + giậm mỗi 3 s trong 8 m, 12 s; hit 0,6 s): TỨ TRỤ vàng đồng khổng lồ lần lượt trồi lên bốn góc,
+    """Thiên Kim Pháp Tướng (cấp 28, buff giảm 25% + giậm mỗi 3 s trong 8 m, 12 s; hit 0,6 s): TỨ TRỤ đá tối gân đồng lần lượt trồi lên bốn góc (trụ nào nằm giữa camera và người thì tự ẩn, `camFade`),
     PHÁP LUÂN (hai vành đứng) hiện sau đầu, sóng chấn quét ra và vành ở lại ở mép 8 m (vùng giậm)."""
     ev = [
         parts('spark', -0.6, 44, 2.6, 1, 0.5, 0.08, at='self', inward=True, tone='body', tier=1),
@@ -356,10 +356,10 @@ def phap_tuong():
         decal('rune', -0.55, 4.6, 2.0, at='self', offset=[0, G, 0], grow=0.4, tone='body', alpha=0.95, tier=0),
     ]
     # tứ trụ: trồi lần lượt (mỗi trụ một nhịp), trụ cuối đúng khung hit
-    for i, (x, z, a) in enumerate(arc([-115, -42, 42, 115], 5.2)):
+    for i, (x, z, a) in enumerate(arc([-135, -45, 45, 135], 5.2)):
         t0 = -0.36 + 0.12 * i
-        ev.append(mesh('rock_spire', t0, 2.6 - t0, at='self', offset=[x, G, z], rot=[0, a + 40 * i, 0], scale=[2.1, 4.4, 2.1], sweep=0.1, erodeFrom=0.72, alpha=1,
-                       tone='core', tier=0, seed=10 + i))
+        ev.append(mesh('rock_spire', t0, 2.6 - t0, at='self', offset=[x, G, z], rot=[0, a + 40 * i, 0], scale=[2.1, 4.4, 2.1], sweep=0.1, erodeFrom=0.72, alpha=1, camFade=True,
+                       tone='shadow', tier=0, seed=10 + i))
         ev.append(flip('dust_kick', t0, 0.7, 2.8, at='self', offset=[x, G + 0.6, z], alpha=0.55, tone='core', tier=1))
         if i < 3:
             ev.append(snd(t0, 'impact', 0.4, 0.8 - 0.05 * i, 0.05))
@@ -384,7 +384,7 @@ def phap_tuong():
         'variants': {
             # a = giảm thêm 15%: ba tấm thuẫn lớn dựng giữa các trụ (thành chắn phía trước), ở lại 3 s
             'immune': [
-                mesh('shield_plate', 0.08 + 0.04 * i, 3.0, at='self', offset=[x, G, z], rot=[0, a, 0], scale=[2.0, 1.6, 2.0], sweep=0.14, erodeFrom=0.8, alpha=1,
+                mesh('shield_plate', 0.08 + 0.04 * i, 3.0, at='self', offset=[x, G, z], rot=[0, a, 0], scale=[2.0, 1.6, 2.0], sweep=0.14, erodeFrom=0.8, alpha=1, camFade=True,
                      tone='core', tier=0, seed=40 + i)
                 for i, (x, z, a) in enumerate(arc([-78, 0, 78], 4.2))
             ],

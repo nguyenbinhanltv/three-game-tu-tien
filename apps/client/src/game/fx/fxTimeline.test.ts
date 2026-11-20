@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FX_TIMELINE, SKILL, VARIANTS } from '@dtl/content';
-import { fxDrawCount, fxEventsFor, fxParticleCount, skillTiming, validateFxTimeline } from '@dtl/shared';
+import { fxCamFade, fxDrawCount, fxEventsFor, fxParticleCount, skillTiming, validateFxTimeline } from '@dtl/shared';
 import { paletteOf } from '../../render/vfx/palette';
 import { cancelDropsCast, scheduleEvents, variantFor } from './fxTimeline';
 
@@ -388,5 +388,29 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
     expect(stay('skl_son_nhac_hoa_than', ['rune_ring2'], 'stomp')).toBe(true);
     expect(stay('skl_kim_cuong_bat_hoai', ['diamond_cage'])).toBe(true);
     expect(stay('skl_thien_kim_phap_tuong', ['rune_ring2'])).toBe(true);
+  });
+});
+
+describe('camFade: khối cao quanh người tự ẩn khi nằm giữa camera và người ra chiêu', () => {
+  it('phía camera ẩn hẳn, hai bên và phía sau hiện đủ, sát người không mờ', () => {
+    // Camera ở +Z so với người ra chiêu.
+    expect(fxCamFade(0, 9, 0, 5)).toBe(0);
+    expect(fxCamFade(0, 9, 2, 5)).toBe(0);
+    expect(fxCamFade(0, 9, 5, 0)).toBe(1);
+    expect(fxCamFade(0, 9, 0, -5)).toBe(1);
+    expect(fxCamFade(0, 9, 0, 0.3)).toBe(1);
+    const mid = fxCamFade(0, 9, 4.4, 2.6);
+    expect(mid).toBeGreaterThan(0);
+    expect(mid).toBeLessThan(1);
+  });
+  it('trụ đá, thuẫn dựng quanh thân của Hộ pháp đều bật camFade', () => {
+    for (const id of ['skl_son_nhac_hoa_than', 'skl_thien_kim_phap_tuong', 'skl_kim_cuong_bat_hoai']) {
+      const tl = FX_TIMELINE.get(id)!;
+      const tall = [...tl.events, ...Object.values(tl.variants ?? {}).flat()].filter(
+        (e) => e.type === 'mesh' && (e.shape === 'rock_spire' || e.shape === 'shield_plate'),
+      );
+      expect(tall.length, id).toBeGreaterThan(0);
+      for (const e of tall) expect((e as { camFade?: boolean }).camFade, id).toBe(true);
+    }
   });
 });

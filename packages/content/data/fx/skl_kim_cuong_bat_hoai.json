@@ -77,6 +77,7 @@
    "erodeFrom": 0.98,
    "alpha": 1,
    "keepUp": true,
+   "camFade": true,
    "move": {
     "to": "self",
     "offset": [
@@ -111,6 +112,7 @@
    "erodeFrom": 0.5,
    "alpha": 1,
    "follow": true,
+   "camFade": true,
    "tone": "core",
    "tier": 0,
    "seed": 10
@@ -136,6 +138,7 @@
    "erodeFrom": 0.98,
    "alpha": 1,
    "keepUp": true,
+   "camFade": true,
    "move": {
     "to": "self",
     "offset": [
@@ -170,6 +173,7 @@
    "erodeFrom": 0.5,
    "alpha": 1,
    "follow": true,
+   "camFade": true,
    "tone": "core",
    "tier": 1,
    "seed": 11
@@ -195,6 +199,7 @@
    "erodeFrom": 0.98,
    "alpha": 1,
    "keepUp": true,
+   "camFade": true,
    "move": {
     "to": "self",
     "offset": [
@@ -229,6 +234,7 @@
    "erodeFrom": 0.5,
    "alpha": 1,
    "follow": true,
+   "camFade": true,
    "tone": "core",
    "tier": 0,
    "seed": 12
@@ -254,6 +260,7 @@
    "erodeFrom": 0.98,
    "alpha": 1,
    "keepUp": true,
+   "camFade": true,
    "move": {
     "to": "self",
     "offset": [
@@ -288,6 +295,7 @@
    "erodeFrom": 0.5,
    "alpha": 1,
    "follow": true,
+   "camFade": true,
    "tone": "core",
    "tier": 1,
    "seed": 13
@@ -313,6 +321,7 @@
    "erodeFrom": 0.98,
    "alpha": 1,
    "keepUp": true,
+   "camFade": true,
    "move": {
     "to": "self",
     "offset": [
@@ -347,6 +356,7 @@
    "erodeFrom": 0.5,
    "alpha": 1,
    "follow": true,
+   "camFade": true,
    "tone": "core",
    "tier": 0,
    "seed": 14
@@ -372,6 +382,7 @@
    "erodeFrom": 0.98,
    "alpha": 1,
    "keepUp": true,
+   "camFade": true,
    "move": {
     "to": "self",
     "offset": [
@@ -406,6 +417,7 @@
    "erodeFrom": 0.5,
    "alpha": 1,
    "follow": true,
+   "camFade": true,
    "tone": "core",
    "tier": 1,
    "seed": 15

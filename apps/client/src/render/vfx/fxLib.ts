@@ -677,15 +677,19 @@ function bellCage(): THREE.BufferGeometry {
   return f.done();
 }
 
-/** Trụ đá (Sơn Nhạc Hóa Thân): cụm ba tảng lăng trụ 5 mặt gồ ghề, đỉnh vát lệch; tảng chính cao 1, hai tảng phụ ngả ra ngoài. */
+/**
+ * Trụ đá (Sơn Nhạc Hóa Thân, Thiên Kim Pháp Tướng): cụm ba tảng lăng trụ 6 mặt gồ ghề bốn tầng, đỉnh vát lệch; tảng chính cao 1, hai tảng phụ
+ * ngả ra ngoài. `u` chạy 0 → 1 ngang mỗi mặt nên các CẠNH DỌC có gân sáng đồng của shader `crystal` (đá tối, viền sáng như vết nứt Thiết Quyền).
+ */
 function rockSpire(): THREE.BufferGeometry {
   const r = rng(17);
   const f = new Faces();
   const prism = (cx: number, cz: number, h: number, rad: number, lx: number, lz: number) => {
-    const n = 5;
+    const n = 6;
     const a0 = r() * 6.28;
-    const levels = [0, 0.42, 0.78].map((t) => {
-      const sc = t === 0 ? 1.08 : t < 0.5 ? 0.95 : 0.7;
+    const SC = [1.12, 0.92, 1.0, 0.66];
+    const levels = [0, 0.3, 0.6, 0.84].map((t, li) => {
+      const sc = SC[li]!;
       return Array.from({ length: n }, (_, i) => {
         const a = a0 + (i / n) * Math.PI * 2 + (r() - 0.5) * 0.3;
         const rr = rad * sc * (0.8 + r() * 0.4);
@@ -694,18 +698,18 @@ function rockSpire(): THREE.BufferGeometry {
     });
     for (const p of levels[0]!) (p as unknown as number[])[1] = 0;
     const tip = [cx + lx * h + (r() - 0.5) * rad * 0.5, h, cz + lz * h + (r() - 0.5) * rad * 0.5] as const;
-    const us = [0.2, 0.5, 0.8];
-    const P = (p: readonly [number, number, number], k: number): V5 => [p[0], p[1], p[2], us[k % 3]!, Math.min(1, p[1])];
+    const P = (p: readonly [number, number, number], u: number): V5 => [p[0], p[1], p[2], u, Math.min(1, p[1])];
     for (let l = 0; l < levels.length - 1; l++) {
       f.o = [cx + lx * h * 0.4, (levels[l]![0]![1] + levels[l + 1]![0]![1]) / 2, cz + lz * h * 0.4];
       for (let i = 0; i < n; i++) {
         const j = (i + 1) % n;
-        f.tri(P(levels[l]![i]!, 0), P(levels[l]![j]!, 1), P(levels[l + 1]![j]!, 2));
-        f.tri(P(levels[l]![i]!, 0), P(levels[l + 1]![j]!, 1), P(levels[l + 1]![i]!, 2));
+        f.tri(P(levels[l]![i]!, 0), P(levels[l]![j]!, 1), P(levels[l + 1]![j]!, 1));
+        f.tri(P(levels[l]![i]!, 0), P(levels[l + 1]![j]!, 1), P(levels[l + 1]![i]!, 0));
       }
     }
     f.o = [cx + lx * h * 0.7, h * 0.7, cz + lz * h * 0.7];
-    for (let i = 0; i < n; i++) f.tri(P(levels[2]![i]!, 0), P(levels[2]![(i + 1) % n]!, 1), P(tip, 2));
+    const top = levels[levels.length - 1]!;
+    for (let i = 0; i < n; i++) f.tri(P(top[i]!, 0), P(top[(i + 1) % n]!, 1), P(tip, 0.5));
   };
   prism(0, 0, 1, 0.27, 0.05, -0.04);
   prism(0.26, 0.1, 0.62, 0.19, 0.3, 0.12);
