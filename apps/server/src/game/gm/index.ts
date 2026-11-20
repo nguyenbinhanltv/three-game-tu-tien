@@ -114,13 +114,14 @@ export class GmSystem {
   tribulation(p: PlayerEnt, id: TribId = 'truc_co', stage?: number): string {
     const c = p.char;
     const def = tribDef(id);
+    if (this.c.level().dungeon || this.c.isDead(p) || p.trib || p.trial || this.c.inDuel(p)) return 'trib: không độ kiếp được lúc này';
+    // Đặt sau dòng kiểm bận: đang trong kiếp mà đổi tiến độ thì ải đang chạy sẽ không được lưu và nội tại pháp tắc bị mất giữa chừng.
     // Kiếp chuỗi (TN-4): `/gm trib ngu_suy [ải 1..5]` đặt lại tiến độ để vào thẳng ải đó (thưởng từng ải vẫn chỉ nhận một lần nhờ khóa chống trùng).
     if (def.chain) {
       if (stage !== undefined && Number.isInteger(stage) && stage >= 1 && stage <= def.phases.length) c.meta.suy = stage - 1;
       else if (suyDone(c.meta.suy, def)) c.meta.suy = 0;
       c.recalc();
     }
-    if (this.c.level().dungeon || this.c.isDead(p) || p.trib || p.trial || this.c.inDuel(p)) return 'trib: không độ kiếp được lúc này';
     if (c.level !== def.from) this.setLevel(p, def.from);
     if (def.to > def.from) {
       c.bk = def.from;

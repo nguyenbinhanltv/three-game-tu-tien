@@ -1015,6 +1015,16 @@ for (const q of QUESTS) {
     if (o.type === 'kill' && !MONSTER.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
     if ((o.type === 'gather' || o.type === 'craft') && !ITEM.has(o.target ?? '')) err(`quest ${q.id}: vật phẩm không tồn tại ${o.target}`);
     if (o.type === 'talk' && !NPC.has(o.target ?? '')) err(`quest ${q.id}: npc không tồn tại ${o.target}`);
+    // Kiếp chuỗi còn mốc tạm (to = from): mục tiêu `breakthrough` tính theo cấp `to` nên sẽ tự xong ngay ở cấp `from`. Chặn cho tới khi chuỗi gắn vào thang cấp.
+    if (
+      o.type === 'breakthrough' &&
+      o.target &&
+      TRIB_DEFS[o.target as keyof typeof TRIB_DEFS]?.chain &&
+      TRIB_DEFS[o.target as keyof typeof TRIB_DEFS].to <= TRIB_DEFS[o.target as keyof typeof TRIB_DEFS].from
+    )
+      err(
+        `quest ${q.id}: breakthrough ${o.target} là kiếp chuỗi chưa gắn vào thang cấp (to = from), nhiệm vụ sẽ tự xong; chưa dùng làm mục tiêu được`,
+      );
     if (o.type === 'breakthrough' && o.target && !(TRIB_IDS as readonly string[]).includes(o.target))
       err(`quest ${q.id}: breakthrough target phải là id kiếp, không phải ${o.target}`);
   }
