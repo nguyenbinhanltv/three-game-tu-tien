@@ -4702,21 +4702,21 @@
       "id": "chr_v3_tinh_khuyet_nu",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_tinh_khuyet_nu.glb",
-      "file": "chr_v3_tinh_khuyet_nu.0579790abc.glb",
-      "bytes": 15795736,
-      "rawBytes": 16282468,
+      "file": "chr_v3_tinh_khuyet_nu.b651b5cdb2.glb",
+      "bytes": 12182904,
+      "rawBytes": 16278616,
       "triangles": 99518,
       "rawTriangles": 99518,
       "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
-      "bones": 139,
+      "bones": 127,
       "animations": [],
-      "ktx2": false,
+      "ktx2": true,
       "textures": [
         {
           "name": "fantasy_female_character_3d_model_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/ktx2",
           "width": 4096,
           "height": 4096,
           "slots": [
@@ -4725,7 +4725,7 @@
         },
         {
           "name": "fantasy_female_character_3d_model_basecolor",
-          "mimeType": "image/jpeg",
+          "mimeType": "image/ktx2",
           "width": 4096,
           "height": 4096,
           "slots": [
@@ -4734,7 +4734,7 @@
         },
         {
           "name": "fantasy_female_character_3d_model_rm",
-          "mimeType": "image/jpeg",
+          "mimeType": "image/ktx2",
           "width": 4096,
           "height": 4096,
           "slots": [
@@ -4749,27 +4749,27 @@
         },
         {
           "level": 1,
-          "triangles": 23996,
+          "triangles": 23994,
           "target": 24000
         },
         {
           "level": 2,
-          "triangles": 8167,
+          "triangles": 8166,
           "target": 8000
         }
       ],
       "dims": {
         "raw": {
           "width": 1.517,
-          "height": 1.6877,
+          "height": 1.6865,
           "depth": 0.4824,
-          "minY": 0.0151
+          "minY": 0.0163
         },
         "build": {
           "width": 1.517,
-          "height": 1.6877,
+          "height": 1.6865,
           "depth": 0.4824,
-          "minY": 0.0151
+          "minY": 0.0163
         }
       }
     },
