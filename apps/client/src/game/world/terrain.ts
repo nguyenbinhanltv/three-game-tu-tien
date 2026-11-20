@@ -487,7 +487,8 @@ function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeom
 
       if (wSect > 0.8) continue; // trong tông môn không rải đá/cây
       if (slope > 5.5) {
-        if (r3 < 0.12 && !far) addRock(b, x, h, z, 1 + r4 * 2.2, r1);
+        // quanh bệ cổng bí cảnh đá khối thủ tục (icosahedron phẳng) bị bỏ: đá PROP-1 (da_reu, cột đá) thay thế (POLISH-2)
+        if (r3 < 0.12 && !far && Math.hypot(x - 2048, z - 1708) > 110) addRock(b, x, h, z, 1 + r4 * 2.2, r1);
         continue;
       }
       let density = 0.3;
