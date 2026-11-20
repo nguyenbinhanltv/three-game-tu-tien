@@ -432,6 +432,8 @@ export class Game {
   ch4Checked = false;
   ch5Checked = false;
   danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
+  /** Dấu trên sân của Thiên Nhân Ngũ Suy (TN-4), khóa `<sid>:<loại>:<ô>`. */
+  suyMarks = new Map<string, { set(pg: number): void; stop(): void }>();
   /** Năm Trấn Giới Bia của Nhật Thực Kiếp (của mình). */
   stelesVfx: { set(mask: number): void; stop(): void } | null = null;
   stelesMask = 0;

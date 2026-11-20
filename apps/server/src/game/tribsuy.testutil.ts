@@ -30,10 +30,19 @@ export function suyState(p: PlayerEnt): AnySuy | undefined {
   return p.trib?.mech?.suy as AnySuy | undefined;
 }
 
+/** Tốc độ đi của người chơi mẫu (m/s): chậm hơn chạy thật (RUN_SPEED = 7) một chút để ải qua được có dư địa cho người thật. */
+export const SUY_WALK = 6;
+
+/** Đi bộ một nhịp 50 ms về phía (x, z): không dịch chuyển tức thời, để test chứng minh ải qua được với tốc độ chạy thật. */
 function put(p: PlayerEnt, x: number, z: number): void {
-  p.move.x = x;
-  p.move.z = z;
-  p.move.y = groundAt(x, z);
+  const dx = x - p.move.x;
+  const dz = z - p.move.z;
+  const d = Math.hypot(dx, dz);
+  const step = SUY_WALK * 0.05;
+  const k = d <= step ? 1 : step / d;
+  p.move.x += dx * k;
+  p.move.z += dz * k;
+  p.move.y = groundAt(p.move.x, p.move.z);
   p.move.flying = false;
 }
 
@@ -68,11 +77,20 @@ export function playSuy(sim: GameSim, p: PlayerEnt): void {
     }
     case 'suy_tho': {
       const t = cfg.tho!;
-      const i = st.lit!.findIndex((v) => !v);
-      if (i >= 0) {
+      // Tới ngọn đã tắt gần nhất; đủ đèn thì về tâm sân chờ.
+      let best: { x: number; z: number } | null = null;
+      let bestD = Number.POSITIVE_INFINITY;
+      st.lit!.forEach((v, i) => {
+        if (v) return;
         const pos = suyRingPos(st, t.ring, i, t.lamps);
-        put(p, pos.x, pos.z);
-      } else put(p, st.x, st.z);
+        const d = Math.hypot(pos.x - p.move.x, pos.z - p.move.z);
+        if (d < bestD) {
+          bestD = d;
+          best = pos;
+        }
+      });
+      const to = (best as { x: number; z: number } | null) ?? st;
+      put(p, to.x, to.z);
       break;
     }
     case 'suy_tam':

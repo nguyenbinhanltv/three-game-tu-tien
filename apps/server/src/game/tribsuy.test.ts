@@ -10,6 +10,7 @@ import {
   TRIB_LEVEL,
   lawPassive,
   suyRemaining,
+  suyRingPos,
   tribForLevel,
   type FxMsg,
   type HazardMsg,
@@ -344,14 +345,22 @@ describe('Thọ Nguyên Suy', () => {
     const off = st.lit!.findIndex((v) => !v);
     expect(off).toBeGreaterThanOrEqual(0);
     expect(fxs('suymark').some((m) => m.s === 'den' && m.n === off && m.pg === 2)).toBe(true);
-    // Đứng chưa đủ `light` giây rồi rời đi: đèn vẫn tắt.
-    runSuy(sim, p, t.light - 0.5, true);
+    // Đi tới ngọn đã tắt, đứng chưa đủ `light` giây rồi rời đi: đèn vẫn tắt.
+    const lamp = suyRingPos(st, t.ring, off, t.lamps);
+    const dist = () => Math.hypot(p.move.x - lamp.x, p.move.z - lamp.z);
+    for (let i = 0; i < 100 && dist() > t.r; i++) runSuy(sim, p, 0.05, true);
+    expect(dist()).toBeLessThanOrEqual(t.r);
+    runSuy(sim, p, t.light - 0.4, true);
     expect(suyState(p)!.lit![off]).toBe(false);
+    expect(fxs('suymark').some((m) => m.s === 'den' && m.n === off && m.pg === 3)).toBe(true);
     p.move.x = st.x;
     p.move.z = st.z;
     runSuy(sim, p, 0.2, false);
     expect(suyState(p)!.lit![off]).toBe(false);
-    runSuy(sim, p, t.light + 0.3, true);
+    // Quay lại đứng đủ lâu thì thắp được.
+    p.move.x = lamp.x;
+    p.move.z = lamp.z;
+    runSuy(sim, p, t.light + 0.2, false);
     expect(suyState(p)!.lit![off]).toBe(true);
   });
 });
@@ -391,4 +400,31 @@ describe('Đạo Tâm Suy', () => {
     expect(p.trib).toBeNull();
     expect(sim.monsters.filter((m) => m.owner === p.sid && m.s.hp > 0)).toHaveLength(0);
   });
+});
+
+describe('dư địa qua ải', () => {
+  // Người chơi mẫu ĐI BỘ thật (6 m/s, chậm hơn chạy 7 m/s), không dịch chuyển tức thời: ải nào cũng phải qua được với thanh còn cách 100 một quãng,
+  // để người thật (phản ứng chậm hơn, có lúc lỡ nhịp) vẫn có chỗ sai. Đổi số trong tribulations.json mà làm ải quá sát thì test này báo.
+  for (let k = 0; k < N; k++) {
+    it(`ải ${k + 1} (${DEF.phases[k]!.id}): sáu hạt giống, thanh cao nhất dưới 70`, () => {
+      for (const seed of [1, 2, 3, 4, 5, 6]) {
+        let a = seed * 7919;
+        vi.spyOn(Math, 'random').mockImplementation(() => {
+          a = (a * 1664525 + 1013904223) >>> 0;
+          return a / 4294967296;
+        });
+        const { sim, p } = mk(k);
+        sim.beginTribulation(p, DEF, false);
+        let max = 0;
+        for (let i = 0; i < 41 * 20 && p.trib && (p.trib.pi ?? k) <= k; i++) {
+          runSuy(sim, p, 0.05, true);
+          const st = suyState(p);
+          if (st && (p.trib?.pi ?? -1) === k) max = Math.max(max, st.pg);
+        }
+        expect(p.char.meta.suy, `hạt giống ${seed}`).toBeGreaterThan(k);
+        expect(max, `hạt giống ${seed}`).toBeLessThan(70);
+        vi.restoreAllMocks();
+      }
+    });
+  }
 });

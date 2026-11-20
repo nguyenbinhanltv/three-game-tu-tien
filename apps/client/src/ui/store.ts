@@ -260,6 +260,14 @@ interface UIState {
   nguHanh: { e: number; at: number } | null;
   /** Trấn Giới Bia sáng của Nhật Thực Kiếp (mặt nạ bit 0..4); -1 = không trong kiếp này. */
   steles: number;
+  /**
+   * Thiên Nhân Ngũ Suy (TN-4): thanh suy khí của ải đang chạy (`id` = cơ chế `suy_*`, `mode`/`until` = nhịp tĩnh/phá vọng hoặc điều tức),
+   * mốc ngưng thần hồi xong, mốc đợt lôi ẩn đang tụ sẽ nổ, mặt nạ Thọ Đăng đang cháy. Chỉ là lớp hình, luật ở server.
+   */
+  suy: { id: string; pg: number; mode: number; until: number } | null;
+  suyCdUntil: number;
+  suyWaveUntil: number;
+  suyLamps: number;
   cloneUntil: number;
   /** Kiếp đang độ (id trong `tribulations.json`) để HUD đọc pha. */
   tribId: string;
@@ -383,6 +391,10 @@ export const useUI = create<UIState>(() => ({
   steles: -1,
   cloneUntil: 0,
   tribId: 'truc_co',
+  suy: null,
+  suyCdUntil: 0,
+  suyWaveUntil: 0,
+  suyLamps: -1,
   bossLine: null,
   chapter: null,
   cine: null,

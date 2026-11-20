@@ -231,6 +231,45 @@ function CastBar() {
   );
 }
 
+/** Dòng nhắc theo nhịp của ải Ngũ Suy đang chạy (TN-4): điều tức, ngưng thần, Thọ Đăng, tĩnh/phá vọng. */
+function SuyHint(props: {
+  suy: { id: string; pg: number; mode: number; until: number };
+  now: number;
+  cdUntil: number;
+  waveUntil: number;
+  lamps: number;
+  max: number;
+}) {
+  const { suy, now, cdUntil, waveUntil, lamps, max } = props;
+  const secs = (until: number) => Math.max(1, Math.ceil((until - now) / 1000));
+  let text = '';
+  let on = false;
+  if (suy.id === 'suy_tam') {
+    on = suy.mode === 1;
+    text =
+      now < suy.until && suy.mode === 0 && suy.pg >= 0 && suy.until - now > 5500
+        ? t('ui.trib.suy.rest', { n: secs(suy.until) })
+        : t(on ? 'ui.trib.suy_tam.strike' : 'ui.trib.suy_tam.calm');
+  } else if (now < suy.until) text = t('ui.trib.suy.rest', { n: secs(suy.until) });
+  else if (suy.id === 'suy_thuc') {
+    on = now < waveUntil && now >= cdUntil;
+    text =
+      now < cdUntil
+        ? t('ui.trib.suy_thuc.cd', { n: secs(cdUntil) })
+        : (now < waveUntil ? t('ui.trib.suy_thuc.wave') + ' ' : '') + t('ui.trib.suy_thuc.hint');
+  } else if (suy.id === 'suy_tho' && lamps >= 0) {
+    let lit = 0;
+    for (let i = 0; i < max; i++) if (lamps & (1 << i)) lit++;
+    text = t('ui.trib.suy_tho.lamps', { lit, max });
+  }
+  if (!text) return null;
+  return (
+    <div className={'trib-soul trib-suy-hint' + (on ? ' on' : '')} data-testid="suy-hint">
+      {text}
+    </div>
+  );
+}
+
 function Tribulation() {
   const tribEnd = useUI((s) => s.tribEnd);
   const tribId = useUI((s) => s.tribId);
@@ -240,6 +279,10 @@ function Tribulation() {
   const nguHanh = useUI((s) => s.nguHanh);
   const cloneUntil = useUI((s) => s.cloneUntil);
   const steles = useUI((s) => s.steles);
+  const suy = useUI((s) => s.suy);
+  const suyCdUntil = useUI((s) => s.suyCdUntil);
+  const suyWaveUntil = useUI((s) => s.suyWaveUntil);
+  const suyLamps = useUI((s) => s.suyLamps);
   const now = useNow(250);
   if (!tribEnd || now >= tribEnd) return null;
   // Pha, thời lượng và lời nhắc đọc từ `tribulations.json` theo kiếp đang độ (E1-F); Trúc Cơ giữ ba pha của S2-C.
@@ -285,6 +328,14 @@ function Tribulation() {
         <div className="trib-dan trib-tam" data-testid="tam-bar">
           <ProgressBar cls="tam" value={tamCanh} max={100} text={t('ui.trib.tam_canh.label', { n: Math.round(tamCanh) })} />
         </div>
+      )}
+      {suy && suy.id === ph.mechanic && (
+        <div className="trib-dan trib-suy" data-testid="suy-bar" data-suy={suy.id}>
+          <ProgressBar cls="tam" value={suy.pg} max={100} text={t('ui.trib.suy.label', { n: Math.round(suy.pg) })} />
+        </div>
+      )}
+      {suy && suy.id === ph.mechanic && (
+        <SuyHint suy={suy} now={now} cdUntil={suyCdUntil} waveUntil={suyWaveUntil} lamps={suyLamps} max={ph.suy?.tho?.lamps ?? 0} />
       )}
       {ph.mechanic === 'xuat_khieu' && (
         <div className={'trib-soul' + (now < soulUntil ? ' on' : '')} data-testid="soul-hint">

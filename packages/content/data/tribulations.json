@@ -268,17 +268,17 @@
         {
           "id": "than_thuc_suy", "end": 120, "kind": "lei", "gap": 4.5, "aimPct": 0, "extra": 1, "extraR": 3.0, "extraPct": 0.04,
           "mechanic": "suy_thuc",
-          "suy": { "rest": 4, "start": 30, "rise": 2, "riseEnd": 4, "thuc": { "sectors": 8, "safe": 3, "r": 14, "every": 5, "warn": 3, "pct": 0.12, "hurt": 14, "cure": 18, "cd": 4, "cdEnd": 9 } }
+          "suy": { "rest": 4, "start": 30, "rise": 2, "riseEnd": 4, "thuc": { "sectors": 8, "safe": 3, "r": 14, "every": 5, "warn": 3, "pct": 0.12, "hurt": 14, "cure": 18, "cd": 3, "cdEnd": 8 } }
         },
         {
           "id": "tho_nguyen_suy", "end": 160, "kind": "lei", "gap": 3.2, "aimPct": 0.07, "extra": 1, "extraR": 3.4, "extraPct": 0.05,
           "mechanic": "suy_tho",
-          "suy": { "rest": 4, "start": 20, "rise": 1, "riseEnd": 2, "tho": { "lamps": 5, "ring": 9, "r": 2.6, "light": 1.5, "gust": 4, "gustEnd": 2.6, "warn": 1.5, "per": 5, "cure": 6 } }
+          "suy": { "rest": 4, "start": 20, "rise": 1, "riseEnd": 2, "tho": { "lamps": 5, "ring": 8, "r": 2.8, "light": 1.2, "gust": 5, "gustEnd": 3.6, "warn": 1.5, "per": 2.4, "cure": 5 } }
         },
         {
           "id": "dao_tam_suy", "end": 200, "kind": "tam_ma", "gap": 3.6, "aimPct": 0.06, "extra": 1, "extraR": 3.4, "extraPct": 0.05,
           "mechanic": "suy_tam",
-          "suy": { "rest": 4, "start": 30, "rise": 3, "riseEnd": 5, "tam": { "calm": 5, "strike": 3, "hitBad": 8, "hitGood": 30, "miss": 12, "hurt": 5, "hpFrac": 40 } }
+          "suy": { "rest": 4, "start": 30, "rise": 2.5, "riseEnd": 4.5, "tam": { "calm": 5, "strike": 3, "hitBad": 8, "hitGood": 30, "miss": 12, "hurt": 2, "hpFrac": 40 } }
         }
       ]
     }
