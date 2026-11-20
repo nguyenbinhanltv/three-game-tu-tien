@@ -168,9 +168,13 @@ function ChapterCardShow({ card }: { card: ChapterCard }) {
         <div className="chapter-title">
           {/* Tên cảnh giới (ascend*) và tên nơi chốn/độ kiếp: ảnh thư pháp khi đã vẽ, lùi về chữ. */}
           {k.startsWith('ui.chapter.ascend') ? (
-            <Calli k={'realm.' + level} text={realmName(level)} />
+            <Calli k={'realm.' + level} text={realmName(level)} big />
           ) : (
-            <Calli k={k + '.title'} text={t(k + '.title', { realm: realmName(level), next: nextMajorRealmName(level) })} />
+            <Calli
+              big={k === 'ui.chapter.trib'}
+              k={k + '.title'}
+              text={t(k + '.title', { realm: realmName(level), next: nextMajorRealmName(level) })}
+            />
           )}
         </div>
         <div className="chapter-rule" />
