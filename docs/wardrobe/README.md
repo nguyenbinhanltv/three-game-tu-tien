@@ -1,6 +1,6 @@
 # P4 · Tủ ngoại trang (transmog) — thiết kế
 
-Trạng thái: **đã duyệt** (20/11): **miễn phí, người dùng đã chốt** (không có `cost`, không động tới linh thạch), không nhận `artifact`, nhuộm một bộ ba cho cả người, chưa có mở khóa thành tựu. P4-1 (shared: `packages/shared/src/wardrobe.ts`), P4-2 (server: `apps/server/src/game/wardrobe/`, bảng `wardrobe`, cột `characters.look`, `DATA_VERSION` 7) và P4-3 (client: cửa sổ `apps/client/src/ui/wardrobe/`, nút ở bảng nhân vật, `S.WARDROBE` vào store, nhuộm v1 qua `PState.dye3`) đã làm; security bot và bot 100 ở P4-4. Nguồn yêu cầu: `ke-hoach-tong-trang-phuc-vu-khi.md` mục 8.4 (người dùng chốt 16/11): *mặc đồ chỉ số này nhưng hiện dáng bộ khác đã sở hữu, kèm nhuộm 3 kênh riêng*.
+Trạng thái: **đã duyệt** (20/11): **miễn phí, người dùng đã chốt** (không có `cost`, không động tới linh thạch), không nhận `artifact`, nhuộm một bộ ba cho cả người, chưa có mở khóa thành tựu. P4-1 (shared: `packages/shared/src/wardrobe.ts`), P4-2 (server: `apps/server/src/game/wardrobe/`, bảng `wardrobe`, cột `characters.look`, `DATA_VERSION` 7) và P4-3 (client: cửa sổ `apps/client/src/ui/wardrobe/`, nút ở bảng nhân vật, `S.WARDROBE` vào store, nhuộm v1 qua `PState.dye3`) đã làm; P4-4 (bài bảo mật `apps/bot-client/src/security/wardrobe.ts`, bot 100 `--wardrobe`, handbook) đã làm: P4 xong. Nguồn yêu cầu: `ke-hoach-tong-trang-phuc-vu-khi.md` mục 8.4 (người dùng chốt 16/11): *mặc đồ chỉ số này nhưng hiện dáng bộ khác đã sở hữu, kèm nhuộm 3 kênh riêng*.
 
 ## 1. Hiện trạng (đã đọc code)
 
