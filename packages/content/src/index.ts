@@ -616,6 +616,11 @@ export function skillBar(methodId: string | undefined): SkillDef[] {
   return bar;
 }
 
+/** Chiêu tư thế của công pháp (VS-2e, mỗi công pháp một chiêu `kind: 'stance'`); chưa có công pháp thì không có. */
+export function stanceSkill(methodId: string | undefined): SkillDef | undefined {
+  return methodId ? METHOD_SKILLS.find((s) => s.method === methodId && s.kind === 'stance') : undefined;
+}
+
 /** Phím tắt hàng chiêu bậc cao: Shift + số (E2-G). */
 export const TIER_MIN_UNLOCK = 16;
 /** Cấp mở thần thông ô 9 (Kết Đan sơ kỳ, E2-E). */

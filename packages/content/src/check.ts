@@ -98,7 +98,16 @@ import {
   t,
 } from './index';
 import { LOOT, LOOT_MATS } from './loot';
-import { branchErrors, chainErrors, markDefErrors, monSkillsOf, resourceErrors, skillMarkErrors, skillResErrors } from '@dtl/shared';
+import {
+  stanceErrors,
+  branchErrors,
+  chainErrors,
+  markDefErrors,
+  monSkillsOf,
+  resourceErrors,
+  skillMarkErrors,
+  skillResErrors,
+} from '@dtl/shared';
 import {
   PILL_TIERS,
   ARTIFACT_MAX_LEVEL,
@@ -147,11 +156,21 @@ for (const f of MON_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => 
 // Chiêu lướt (K-2) không có động tác riêng: dùng chung fx `dash`, hình lướt do client dựng.
 const POSED = ALL_SKILLS.filter((s) => s.kind !== 'dash');
 for (const s of POSED) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
-const skillPoses = POSED.map((s) => s.pose);
+// VS-2e: chiêu tư thế (`kind: 'stance'` và chiêu có `stanceOf`) mượn hình của một chiêu thường: không tính vào luật "riêng",
+// nhưng phải trùng khít pose + fx + mốc ra đòn với đúng một chiêu thường để client (tra chiêu theo fx) vẫn ra đúng động tác.
+const borrows = (s: (typeof POSED)[number]) => s.kind === 'stance' || !!s.stanceOf;
+const OWN = POSED.filter((s) => !borrows(s));
+const skillPoses = OWN.map((s) => s.pose);
 if (new Set(skillPoses).size !== skillPoses.length) err('hai skill dùng chung một pose');
 // Client chọn động tác theo fx của chiêu (FX của server chỉ mang loại hiệu ứng): fx phải riêng cho mỗi chiêu.
-const skillFx = POSED.map((s) => s.fx);
+const skillFx = OWN.map((s) => s.fx);
 if (new Set(skillFx).size !== skillFx.length) err('hai skill dùng chung một fx');
+for (const s of POSED.filter(borrows)) {
+  const base = OWN.find((o) => o.fx === s.fx);
+  if (!base) err(`skill ${s.id}: chiêu tư thế phải mượn fx của một chiêu thường (fx "${s.fx}" không có)`);
+  else if (base.pose !== s.pose || base.hitAt?.[0] !== s.hitAt?.[0])
+    err(`skill ${s.id}: mượn fx của ${base.id} thì pose và hitAt[0] phải trùng với nó`);
+}
 for (const id of [POSE_FLY, POSE_SKY, POSE_CAST]) if (!POSE.get(id)?.loop) err(`pose ${id} (trạng thái nền) phải có và lặp`);
 for (const [id, swap] of Object.entries(POSE_SWORD_SWAP)) {
   const p = POSE.get(id);
@@ -235,6 +254,16 @@ for (const m of METHODS) {
 for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined)) err(m);
 // VS-2b: đồ thị chuỗi chiêu (id có thật, cùng công pháp, không vòng, hệ số trong khoảng).
 for (const m of chainErrors(ALL_SKILLS)) err(m);
+// VS-2e: tư thế (mỗi công pháp đúng một chiêu tư thế, đổi 3–4 ô chiêu chung, chiêu tư thế trỏ ngược về nó).
+for (const e of stanceErrors(ALL_SKILLS, new Set(SKILLS.map((s) => s.id)))) err(e);
+for (const m of METHODS) {
+  const n = METHOD_SKILLS.filter((s) => s.method === m.id && s.kind === 'stance').length;
+  if (n !== 1) err(`method ${m.id}: cần đúng một chiêu tư thế (đang có ${n})`);
+}
+for (const s of ALL_SKILLS) {
+  if ((s.stance || s.stanceOf) && t(`skill.${s.id}.name`) !== (GLOSSARY.stances as Record<string, string>)[s.id])
+    err(`chiêu tư thế ${s.id}: tên lệch glossary.stances`);
+}
 // VS-2d: cây nhánh công pháp (mỗi mốc 2–3 nhánh, chiêu bậc cao nào cũng thuộc một nhánh), tên khớp glossary.branches.
 for (const m of METHODS) {
   for (const e of branchErrors(m, ALL_SKILLS)) err(e);

@@ -1010,3 +1010,12 @@
   pointer-events: auto;
   animation: u2h-breathe 1.6s ease-in-out infinite;
 }
+
+/* ───────── tư thế (VS-2e): ô chiêu đang bị đổi sang chiêu tư thế viền theo màu công pháp; ô tư thế đang giữ thì sáng ───────── */
+.u2h-skills .u2h-skill.in-stance[data-state] .u2-frame {
+  --qc: var(--mc, var(--u-ngoc-hi));
+  filter: drop-shadow(0 0 5px var(--mc, var(--u-ngoc-hi)));
+}
+.stance-slot[data-active] {
+  filter: drop-shadow(0 0 6px var(--u-h-gold-hi));
+}

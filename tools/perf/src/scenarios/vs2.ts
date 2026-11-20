@@ -2,6 +2,7 @@
 //   res: thanh tài nguyên riêng (Kiếm ý / Huyết khí / Đan hỏa) lúc rỗng, đang tích và đầy, kèm tooltip.
 //   chain: ô chiêu sáng viền khi cửa sổ chuỗi mở + tooltip báo thưởng chuỗi (mỗi phái một chuỗi mở đầu).
 //   branch: thẻ nhắc chọn nhánh trên HUD, cây nhánh trong bảng Công pháp lúc chưa chọn và sau khi chọn hai mốc.
+//   stance: bấm Y vào tư thế: ba ô chiêu đổi sang chiêu tư thế, ô tư thế đếm ngược, kèm tooltip.
 //   marks: ấn trên mục tiêu: Kiếm ấn trên thủ lĩnh (thẻ trong thanh thủ lĩnh), Trấn ấn trên đầu bầy quái, Mộc ấn trên người chơi.
 import { list } from '../lib/env';
 import { sleep } from '../lib/devserver';
@@ -228,18 +229,57 @@ async function stepBranch(r: Run, sizes: string[]): Promise<Record<string, unkno
   return log;
 }
 
+async function stepStance(r: Run, sizes: string[]): Promise<Record<string, unknown>> {
+  const log: Record<string, unknown> = {};
+  for (const m of METHODS.filter((x) => want(x.tag))) {
+    const { ctx, page } = await r.open({
+      name: 'Vs2s' + m.tag.replace('-', ''),
+      viewport: [1920, 1080],
+      seenIntro: true,
+      query: { realm: 'nk12', at: 'tong_mon', god: 1 },
+    });
+    await sleep(2500);
+    await gm(page, `method ${m.id}`, 1600);
+    const labels = () =>
+      page.locator('.u2h-skills .u2h-skill[aria-label]').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
+    log[`${m.tag}-truoc`] = await labels();
+    for (const tag of sizes) {
+      const [w, h] = UI_SIZES[tag] ?? UI_SIZES['1080p']!;
+      await page.setViewportSize({ width: w, height: h });
+      // Lệnh GM đi qua chat: cách nhau hơn 1 giây. Xóa hồi chiêu rồi vào tư thế bằng phím Y.
+      await gm(page, 'cd', 1400);
+      await page.keyboard.press('KeyY', { delay: 60 });
+      await sleep(2700);
+      log[`${m.tag}-${tag}`] = {
+        active: await page.locator('[data-testid="stance-slot"][data-active]').count(),
+        bar: await labels(),
+      };
+      await snap(page, r.out, `e-stance-${m.tag}-${tag}.jpg`, { wait: 150 });
+      await page.locator('[data-testid="stance-slot"]').hover();
+      await sleep(600);
+      await snap(page, r.out, `e-stance-${m.tag}-tooltip-${tag}.jpg`, { clip: clipOf(w, h), wait: 100 });
+      await page.mouse.move(8, 8);
+      // Chờ hết tư thế trước lượt sau.
+      await sleep(8000);
+    }
+    await ctx.close();
+  }
+  return log;
+}
+
 export default {
   name: 'vs2',
   desc: 'VS-2 hệ kỹ năng mới: ảnh HUD ba công pháp (thanh tài nguyên riêng…) ở 1080p + 720p',
-  usage: '[--step res,chain,marks,branch] [--sizes 1080p,720p] [--only kiem-tu,ho-phap,dan-su]',
+  usage: '[--step res,chain,marks,branch,stance] [--sizes 1080p,720p] [--only kiem-tu,ho-phap,dan-su]',
   async run(r) {
     const sizes = list('--sizes', '1080p,720p');
-    const steps = list('--step', 'res,chain,marks,branch');
+    const steps = list('--step', 'res,chain,marks,branch,stance');
     const log: Record<string, unknown> = {};
     if (steps.includes('res')) log.res = await stepRes(r, sizes);
     if (steps.includes('chain')) log.chain = await stepChain(r, sizes);
     if (steps.includes('marks')) log.marks = await stepMarks(r, sizes);
     if (steps.includes('branch')) log.branch = await stepBranch(r, sizes);
+    if (steps.includes('stance')) log.stance = await stepStance(r, sizes);
     writeJson(r.out, 'vs2.json', log);
   },
 } satisfies Scenario;

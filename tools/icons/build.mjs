@@ -64,6 +64,8 @@ if (process.argv.includes('--check')) {
       continue;
     }
     if (!cell || !def.iconFallback || !licenses.includes(def.icon)) throw new Error(`Missing icon/fallback/license: ${def.id}`);
+    // Chiêu tư thế (VS-2e, có `stanceOf`) mượn tranh của chiêu nền mà nó thay ô: ô atlas đó đã được chiêu nền kiểm.
+    if (def.stanceOf) continue;
     checkCell(def.icon, cell);
   }
   for (const id of extras) {

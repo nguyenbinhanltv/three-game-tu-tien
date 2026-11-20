@@ -29,6 +29,7 @@ import {
   METHOD,
   realmName,
   skillBar,
+  stanceSkill,
   thanThong10Skill,
   thanThongSkill,
   tierBar,
@@ -36,6 +37,7 @@ import {
   VARIANTS,
   t,
 } from '@dtl/content';
+import { barWithStance } from '../ui/stanceView';
 import { visibleView } from './net/aoiView';
 import { get, pushLog, pushToast, set, type TargetInfo } from '../ui/store';
 import { BlankWatch, canFallback, RENDERER_KEY } from './core/gpuGuard';
@@ -1016,7 +1018,9 @@ export class Game {
     const br = get().method?.br;
     const tt = thanThongSkill(m, br);
     const tt10 = thanThong10Skill(m);
-    return [...skillBar(m), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : []), ...tierBar(m, br)];
+    const bar = [...skillBar(m), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : []), ...tierBar(m, br)];
+    // VS-2e: đang giữ tư thế thì vài ô đổi thành chiêu tư thế (theo tin server; server vẫn kiểm khi nhận lệnh).
+    return barWithStance(bar, get().method, Date.now() - get().methodOff);
   }
 
   useSkill(i: number): void {
@@ -1049,6 +1053,16 @@ export class Game {
   }
 
   /** Chiêu lướt của công pháp (phím Q, không nằm trên thanh chiêu): chỉ gửi ý định, server lập đường và kiểm (K-2). */
+  /** Vào tư thế của công pháp (VS-2e, phím Y): chỉ gửi ý định, server kiểm cảnh giới, hồi chiêu, linh lực. */
+  useStance(): void {
+    const me = this.me();
+    const skill = stanceSkill(get().method?.method);
+    if (!skill || !me || me.fl & PF_DEAD) return;
+    if ((get().char?.level ?? 0) < skill.unlock) return;
+    if ((get().cds[skill.id] ?? 0) > Date.now() + 80) return;
+    this.send(C.SKILL, { id: skill.id });
+  }
+
   useDash(): void {
     const me = this.me();
     const m = METHOD.get(get().method?.method ?? '');
