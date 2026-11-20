@@ -1,6 +1,6 @@
 # P4 · Tủ ngoại trang (transmog) — thiết kế
 
-Trạng thái: **đã duyệt** (20/11): miễn phí (mặc định, để chỗ thêm `cost` sau nếu người dùng chọn thu phí), không nhận `artifact`, nhuộm một bộ ba cho cả người, chưa có mở khóa thành tựu. Chưa có code. Nguồn yêu cầu: `ke-hoach-tong-trang-phuc-vu-khi.md` mục 8.4 (người dùng chốt 16/11): *mặc đồ chỉ số này nhưng hiện dáng bộ khác đã sở hữu, kèm nhuộm 3 kênh riêng*.
+Trạng thái: **đã duyệt** (20/11): **miễn phí, người dùng đã chốt** (không có `cost`, không động tới linh thạch), không nhận `artifact`, nhuộm một bộ ba cho cả người, chưa có mở khóa thành tựu. P4-1 (shared: `packages/shared/src/wardrobe.ts`) đã làm; server/client chưa. Nguồn yêu cầu: `ke-hoach-tong-trang-phuc-vu-khi.md` mục 8.4 (người dùng chốt 16/11): *mặc đồ chỉ số này nhưng hiện dáng bộ khác đã sở hữu, kèm nhuộm 3 kênh riêng*.
 
 ## 1. Hiện trạng (đã đọc code)
 
@@ -84,7 +84,7 @@ Server (`apps/server/src/game/wardrobe/index.ts`, một `WardrobeSystem` + giao 
 
 ### Có tốn tiền/vật phẩm không?
 
-Mặc định đề xuất: **miễn phí đổi ngoại hình và nhuộm** (MVP, game chơi với bạn bè; dễ thêm sau). Nếu duyệt thu phí nhuộm: thêm `cost` linh thạch trong `appearance.json`, trừ trong **cùng transaction** của `LOOK_DYE` với ledger `gold` -N khóa idem; không đổi giao thức. → *Câu hỏi 1 cho orchestrator.*
+Người dùng đã chốt: **miễn phí đổi ngoại hình và nhuộm**. Không có trường `cost`, không trừ linh thạch/vật phẩm, nên các thao tác `LOOK_*` chỉ ghi dòng `noop` vào ledger. Nếu sau này thu phí thì thêm `cost` trong `appearance.json` và trừ trong cùng transaction; hiện chưa làm.
 
 ## 6. Giao diện (UI Kit 2.0)
 
@@ -112,7 +112,7 @@ Mặc định đề xuất: **miễn phí đổi ngoại hình và nhuộm** (MV
 
 ## 9. Câu hỏi đã duyệt (cũ)
 
-1. Nhuộm/đổi ngoại hình **miễn phí** (đề xuất) hay thu linh thạch?
+1. Nhuộm/đổi ngoại hình miễn phí hay thu linh thạch? → **miễn phí** (người dùng chốt).
 2. Tủ có nhận cả `artifact` (pháp bảo bay quanh người) ở vòng này không? (đề xuất: không, vòng sau)
 3. Nhuộm: một bộ ba cho cả người (đề xuất) hay theo từng ô?
 4. Có cần mục "mở khóa bằng thành tựu/sự kiện" không có trong túi? (đề xuất: chưa; vẫn đi qua hook tx khi món vào túi)
