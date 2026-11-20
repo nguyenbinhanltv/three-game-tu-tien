@@ -88,7 +88,7 @@ export default {
           if (flag('--perf') && viewport[1] === 1080) perf[stem] = await perfSample(page);
           if (flag('--props')) {
             const t = (await page.evaluate(
-              `(() => { const g = window.__game; const m = new Map(); g.props.group.traverse((o) => { if (!o.isMesh || !o.visible) return; const k = (o.name || o.parent?.name || '?') + '|' + (o.material && o.material.name || '') + '|' + (o.count ?? 1); m.set(k, (m.get(k) || 0) + 1); }); return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 40); })()`,
+              `(() => { const g = window.__game; const m = new Map(); g.props.group.traverse((o) => { if (!o.isMesh || !o.visible) return; const k = (o.name || o.parent?.name || '?') + '|' + (o.material && o.material.name || '') + '|' + (o.count ?? 1); m.set(k, (m.get(k) || 0) + 1); }); return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 400); })()`,
             )) as [string, number][];
             for (const [k, n] of t) console.log(`PROP ${String(n).padStart(3)} ${k}`);
           }
