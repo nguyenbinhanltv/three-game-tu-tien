@@ -118,7 +118,7 @@ export class MapVis {
 
   /**
    * Bệ truyền tống kiểu kiến trúc cổ (POLISH-1): ba bậc đá 12 cạnh có viền khắc hoa văn (khối nhỏ quanh gờ), bốn bậc thang lên ở bốn hướng,
-   * mặt bệ lõm chứa vòng rune, bốn trụ đèn đá vuông (đế, thân vát, vòng cổ, mũ, chóp). Màu đỉnh đá xanh xám có rêu ở chân từng tầng; gộp một geometry (một draw call).
+   * mặt bệ chứa vòng rune (nằm ngay trên mặt, y 0,87), bốn trụ đèn đá vuông (đế, thân vát, vòng cổ, mũ, chóp). Màu đỉnh đá xanh xám có rêu ở chân từng tầng; gộp một geometry (một draw call).
    */
   private stoneGeometry(): THREE.BufferGeometry {
     const parts: THREE.BufferGeometry[] = [];
@@ -207,7 +207,7 @@ export class MapVis {
     const runeB = new THREE.Mesh(this.geo.runeB, this.mat.locked);
     for (const r of [runeA, runeB]) {
       r.rotation.x = -Math.PI / 2;
-      r.position.y = 0.45;
+      r.position.y = 0.87;
     }
     const beam = new THREE.Mesh(this.geo.beam, this.mat.beam);
     beam.position.y = 13.4;
