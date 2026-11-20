@@ -49,4 +49,20 @@ describe('collider prop theo level (COL-1 / C-2)', () => {
     expect(shapes.length).toBeGreaterThan(1000);
     for (const s of shapes) expect(s).toMatchObject({ k: 'cyl', fly: 'pass' });
   });
+
+  it('Bắc Hoang: cây chết, băng ven khe và cột tà trận có hình; Sân Nhật Thực Kiếp chỉ có cây chết (client chỉ vẽ BhWonders ở bac_hoang) (COL-C)', () => {
+    const count = (level: string): Map<string, number> => {
+      const tags = new Map<string, number>();
+      for (const s of propShapesOf(level)) tags.set(s.tag ?? '', (tags.get(s.tag ?? '') ?? 0) + 1);
+      return tags;
+    };
+    const bh = count('bac_hoang');
+    expect(bh.get('x_bh_dead_tree')).toBeGreaterThan(100);
+    expect(bh.get('x_bh_ice')).toBeGreaterThan(10);
+    expect(bh.get('x_bh_pillar')).toBe(12); // 6 cột × (đế + thân)
+    const dk = count('do_kiep_bac_hoang');
+    expect(dk.get('x_bh_dead_tree')).toBe(bh.get('x_bh_dead_tree'));
+    expect(dk.get('x_bh_ice')).toBeUndefined();
+    expect(dk.get('x_bh_pillar')).toBeUndefined();
+  });
 });
