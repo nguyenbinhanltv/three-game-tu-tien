@@ -66,6 +66,10 @@ AUTO = '--auto' in argv  # đầu vào không xương: tự ước lượng mố
 REP = {'id': ID, 'input': os.path.basename(IN)}
 HAND_HINT = (json.load(open(SPRINGS, encoding='utf-8')).get('hand') or {}) if SPRINGS else {}
 ANATOMY = (json.load(open(SPRINGS, encoding='utf-8')).get('anatomy') or {}) if SPRINGS else {}  # C4: mốc giải phẫu đo trên lưới (m, model cao 1,7): shoulderDz, shoulderX, ankleX, spine3Z
+for _g in ('nam', 'nu'):  # ghi đè mốc theo giới: anatomy.nam / anatomy.nu (id kết thúc bằng _nam/_nu); model nam cao 1,84 m cần mốc tính lại (số m, không tự co theo chiều cao)
+    _ov = ANATOMY.pop(_g, None)
+    if _ov and ID.endswith('_' + _g):
+        ANATOMY.update(_ov)
 
 
 def log(m):
