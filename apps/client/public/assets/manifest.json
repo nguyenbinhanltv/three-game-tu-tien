@@ -316,11 +316,11 @@
       "id": "arch_kiem_trung",
       "class": "arch",
       "source": "assets/build/raw/arch_kiem_trung.glb",
-      "file": "arch_kiem_trung.82e694a3e4.glb",
-      "bytes": 9645812,
-      "rawBytes": 9673180,
-      "triangles": 285388,
-      "rawTriangles": 285388,
+      "file": "arch_kiem_trung.780d34e637.glb",
+      "bytes": 9700624,
+      "rawBytes": 9868488,
+      "triangles": 355916,
+      "rawTriangles": 355916,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -440,7 +440,7 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 285388
+          "triangles": 355916
         }
       ],
       "dims": {

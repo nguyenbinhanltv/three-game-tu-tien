@@ -240,3 +240,7 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Tinh thể Phục Mạch**: bỏ **bàn cờ ô màu** (mặt sáng/kính chọn ngẫu nhiên từng mặt từng vòng): nay chọn theo CỘT mặt một lần cho cả thân nên thành sọc dọc; gradient chân tối → mũi sáng dựng bằng **14 vòng** (trước 7); vật liệu client chuyển sang kiểu PROP-1 (`propCrystal`): lõi nóng ở mũi, viền fresnel cùng sắc, mặt giữa sẫm. Hộp va chạm `arch_phuc_mach.boxes.json` sinh lại (7683 hộp).
 - **Ngân sách (Cao)**: Kiếm Trủng 253 draw call, ~1,11M tam giác, 8,7 ms; Phục Mạch 246–257 draw call, ~1,34–1,41M tam giác (trước ~1,0M: tinh thể 14 vòng tốn thêm tam giác), 10–11 ms. Dưới trần 300 draw call và 1,8M tam giác.
 - **Còn lại**: mũ giáp vòm đỏ nâu + khiên đĩa ở Kiếm Trủng còn tô phẳng; tinh thể Phục Mạch vẫn sáng nhạt ở mũi (cần giảm HDR nếu muốn trầm hơn).
+
+### Polish — gò mộ Kiếm Trủng vòng 2 (duyệt ảnh): gò đất thấp bẹp, bỏ mũ giáp úp
+
+- Vòm tròn nhẵn và **các khối bán cầu nâu đỏ** (mũ giáp úp `armor`) bị bỏ: `grave` viết lại thành **gò đất đắp thấp bẹp** (cao ~0,45 m, rộng 3–5 m, mép không đều do bán kính đổi theo nhiễu lớn, đỉnh sụt lõm nhẹ, sườn thoải loe thành váng mỏng), đất nâu xám ẩm lẫn **sỏi sáng** và 26 viên đá vụn, **90 chùm cỏ khô** (5 lá tam giác nghiêng mỗi chùm, vàng xám) mọc ở gò và rìa, bia đá nghiêng sứt + kiếm gãy cắm. Cảnh có 64 gò (trước 44) thay phần mũ giáp; không còn `armor` trong cảnh. `arch_kiem_trung.boxes.json` + `colliders:lib/bake` sinh lại.

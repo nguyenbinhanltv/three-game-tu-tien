@@ -444,46 +444,73 @@ def kta_stone_col(seed):
 
 
 def grave(b, seed):
-    """Gò đất phủ cỏ khô (đất nâu sẫm, đỉnh vàng úa, chùm cỏ dựng), bia đá nghiêng sứt mép, kiếm gãy cắm đầu gò, vài nén hương."""
+    """Gò mộ đất đắp THẤP và BẸP (cao ~0,45 m, rộng 3–5 m): mép không đều (bán kính đổi theo nhiễu lớn), đỉnh sụt lõm nhẹ, sườn thoải rồi loe thành váng đất mỏng; đất nâu xám ẩm lẫn
+    sỏi đá vụn sáng; ~90 chùm cỏ khô vàng xám dựng nghiêng (thẻ lá tam giác); sỏi/đá vụn rải quanh; một tấm bia đá nghiêng sứt mép và một thanh kiếm gãy cắm đầu gò."""
     rnd = random.Random(seed)
     s = rnd.uniform(0.9, 1.3)
+    NU, NV = 36, 10
 
-    def mound(pos, nrm):
-        n = fbm3(pos[0] * 1.6, pos[1] * 1.6, pos[2] * 1.6, seed, 3)
-        m = fbm3(pos[0] * 5, pos[1] * 5, pos[2] * 5, seed + 7, 2)
-        rgb = mix(C(0x6B6258), C(0x5A544E), n)  # đất nâu xám
-        # cỏ khô thưa: chỉ vài đám vàng xám, phần lớn là đất trần; chân gò hòa về màu nền
-        rgb = mix(rgb, C(0x8C8660), max(0.0, m - 0.62) * 2.2 * max(0.0, nrm[1]))
-        low = max(0.0, 1.0 - pos[1] / (0.5 * s))
-        rgb = mix(rgb, C(0x5E636B), low * 0.7)
-        return Paint(tuple(c * (0.75 + 0.4 * n) for c in rgb), 'earth')
+    def radius(th):
+        return (1.0 + 0.32 * (fbm3(math.cos(th) * 1.3 + 3, math.sin(th) * 1.3, 0.5, seed, 2) - 0.5) * 2 + 0.12 * math.sin(th * 3 + seed)) * 2.2 * s
 
-    blob(b, (0, 0.5 * s, 0), (2.5 * s, 1.0 * s, 1.85 * s), mound, nu=28, nv=14, seed=seed, v0=0.0, v1=0.5, amp=0.34)
-    # đá chìm lộ nửa thân quanh gò + vết đất sạt: phá vòm trơn
-    for k in range(7):
+    def height(th, q):
+        # q 0 (tâm) → 1 (mép): đỉnh phẳng hơi lõm, sườn thoải, mép tụt về 0
+        base = 0.46 * s * (1 - q ** 2.2) ** 0.8
+        dip = -0.07 * s * math.exp(-((q / 0.28) ** 2))
+        return max(0.0, base + dip + 0.05 * s * (fbm3(math.cos(th) * 4, math.sin(th) * 4, q * 3, seed + 5, 2) - 0.5))
+
+    def f(u, v):
+        th = u * math.tau
+        q = v
+        r = radius(th) * q
+        return (math.cos(th) * r, height(th, q), math.sin(th) * r)
+
+    def colfn(pos, nrm):
+        n = fbm3(pos[0] * 1.8, pos[1] * 1.8, pos[2] * 1.8, seed, 3)
+        g = fbm3(pos[0] * 6, pos[1] * 6, pos[2] * 6, seed + 7, 2)
+        rgb = mix(C(0x5A5046), C(0x4A423A), n)  # đất nâu xám ẩm
+        rgb = mix(rgb, C(0x8E897E), max(0.0, g - 0.58) * 3.0)  # sỏi sáng
+        rgb = mix(rgb, C(0x8C8458), max(0.0, fbm3(pos[0] * 3.5, pos[1] * 3.5, pos[2] * 3.5, seed + 11, 2) - 0.6) * 1.8 * max(0.0, nrm[1]))  # đốm cỏ khô
+        low = max(0.0, 1.0 - pos[1] / (0.18 * s))
+        rgb = mix(rgb, C(0x5E636B), low * 0.55)
+        return Paint(tuple(c * (0.8 + 0.35 * n) for c in rgb), 'earth')
+
+    surf(b, f, NU, NV, lambda v: (0, 0.1, 0), colfn)
+    # váng đất loe mỏng quanh chân gò, mép lẫn vào nền
+    blob(b, (0, 0.03 * s, 0), (3.4 * s, 0.1 * s, 2.7 * s), colfn, nu=20, nv=4, seed=seed + 3, v0=0.0, v1=0.5, amp=0.3)
+    # sỏi và đá vụn
+    for k in range(26):
         a = rnd.uniform(0, math.tau)
-        d = rnd.uniform(0.55, 1.05)
-        blob(b, (math.cos(a) * 2.3 * s * d, 0.35 * s * (1.0 - 0.5 * d), math.sin(a) * 1.7 * s * d), (rnd.uniform(0.25, 0.55) * s, rnd.uniform(0.18, 0.4) * s, rnd.uniform(0.25, 0.5) * s), kta_stone_col(seed + 30 + k), nu=8, nv=5, e=1.8, amp=0.3, seed=seed + 31 + k)
-    blob(b, (0, 0.05 * s, 0), (3.6 * s, 0.22 * s, 2.7 * s), mound, nu=18, nv=4, seed=seed + 3, v0=0.0, v1=0.5, amp=0.25)  # váng đất loe ra, mép lẫn vào nền
-    for k in range(70):
+        d = rnd.uniform(0.2, 1.5) * 2.2 * s
+        sz = rnd.uniform(0.06, 0.2) * s
+        blob(b, (math.cos(a) * d, sz * 0.4, math.sin(a) * d), (sz, sz * 0.6, sz * rnd.uniform(0.8, 1.2)), kta_stone_col(seed + k), nu=6, nv=4, e=1.7, amp=0.3, seed=seed + k)
+    # cỏ khô: mỗi chùm 5 lá tam giác nghiêng, vàng xám sẫm dần về gốc
+    for k in range(90):
         a = rnd.uniform(0, math.tau)
-        d = rnd.uniform(0.0, 1.05) ** 0.6
-        x, z = math.cos(a) * 2.1 * s * d, math.sin(a) * 1.55 * s * d
-        h_ = rnd.uniform(0.3, 0.95)
-        y = 1.1 * s * max(0.0, 1.0 - d * d) ** 0.5
-        tbox(b, (x, y + h_ / 2 - 0.05, z), (0.05, h_, 0.015), Paint(mix(GRASS, GRASS_DK, rnd.random()), 'plaster'),
-             rx=rnd.uniform(-0.35, 0.35), rz=rnd.uniform(-0.35, 0.35), yaw=a)
+        d = rnd.uniform(0.0, 1.25) ** 0.7 * radius(a) * 0.95
+        x, z = math.cos(a) * d, math.sin(a) * d
+        q = min(1.0, d / max(radius(a), 0.01))
+        y0 = height(a, q) - 0.02
+        h_ = rnd.uniform(0.3, 0.75) * s
+        for bl in range(5):
+            ba = rnd.uniform(0, math.tau)
+            lean = rnd.uniform(0.1, 0.5) * h_
+            wd = 0.05
+            tip = (x + math.cos(ba) * lean, y0 + h_ * rnd.uniform(0.8, 1.0), z + math.sin(ba) * lean)
+            col = Paint(mix(GRASS_DK, GRASS, rnd.random()), 'plaster')
+            b.poly([(x - wd, y0, z), (x + wd, y0, z), tip], (x, y0 + 1, z), col)
+            b.poly([(x, y0, z - wd), (x, y0, z + wd), tip], (x, y0 + 1, z), col)
     stone = Paint(C(0x76808C), 'stone')
-    tbox(b, (0.1 * s, 1.0 * s, -1.55 * s), (0.85 * s, 1.7 * s, 0.26 * s), stone, rx=0.12, rz=rnd.uniform(-0.28, 0.28), yaw=rnd.uniform(-0.3, 0.3))
-    tbox(b, (0.5 * s, 1.75 * s, -1.4 * s), (0.4 * s, 0.25 * s, 0.24 * s), stone, rx=0.5, rz=0.7)
+    tbox(b, (0.1 * s, 0.7 * s, -1.2 * s), (0.85 * s, 1.3 * s, 0.24 * s), stone, rx=0.14, rz=rnd.uniform(-0.3, 0.3), yaw=rnd.uniform(-0.3, 0.3))
+    tbox(b, (0.45 * s, 1.3 * s, -1.1 * s), (0.4 * s, 0.22 * s, 0.22 * s), stone, rx=0.5, rz=0.7)
     for k in range(3):
-        b.box(0.1 * s, (0.7 + 0.3 * k) * s, -1.4 * s, 0.4 * s, 0.05 * s, 0.02 * s, Paint(C(0x242A32), 'stone'))
+        b.box(0.1 * s, (0.45 + 0.28 * k) * s, -1.1 * s, 0.4 * s, 0.05 * s, 0.02 * s, Paint(C(0x242A32), 'stone'))
     st = Paint(STEEL, 'steel')
-    tbox(b, (0.5 * s, 1.5 * s, 0.35 * s), (0.16 * s, 2.0 * s, 0.05 * s), st, rx=-0.15, rz=0.22)
-    tbox(b, (0.62 * s, 2.45 * s, 0.31 * s), (0.7 * s, 0.1 * s, 0.14 * s), Paint(BRONZE.rgb, 'metal'), rx=-0.15, rz=0.22)
-    tbox(b, (0.68 * s, 2.85 * s, 0.29 * s), (0.08 * s, 0.7 * s, 0.08 * s), Paint(LEATHER.rgb, 'wood'), rx=-0.15, rz=0.22)
+    tbox(b, (0.5 * s, 1.1 * s, 0.35 * s), (0.16 * s, 1.9 * s, 0.05 * s), st, rx=-0.15, rz=0.22)
+    tbox(b, (0.62 * s, 2.0 * s, 0.31 * s), (0.7 * s, 0.1 * s, 0.14 * s), Paint(BRONZE.rgb, 'metal'), rx=-0.15, rz=0.22)
+    tbox(b, (0.68 * s, 2.4 * s, 0.29 * s), (0.08 * s, 0.7 * s, 0.08 * s), Paint(LEATHER.rgb, 'wood'), rx=-0.15, rz=0.22)
     for k in range(3):
-        b.box(rnd.uniform(-0.6, 0.2) * s, 1.0 * s, 0.9 * s + rnd.uniform(0, 0.4), 0.03, 0.3, 0.03, PAPER)
+        b.box(rnd.uniform(-0.6, 0.2) * s, 0.5 * s, 0.9 * s + rnd.uniform(0, 0.4), 0.03, 0.3, 0.03, PAPER)
 
 
 def stele(b, seed):
@@ -709,12 +736,11 @@ def run(out):
             put(kind, v, x, z, yaw=rnd.uniform(0, 6.28), scale=rnd.uniform(*scale))
             got += 1
 
-    scatter('grave', 'grave{}', 44, 36, 105, (1.0, 1.7))
+    scatter('grave', 'grave{}', 64, 36, 105, (1.0, 1.7))  # gò đất thấp thay cả mũ giáp úp nâu đỏ (đã bỏ khỏi cảnh)
     scatter('stele', 'stele{}', 20, 40, 108)
     scatter('pillar', 'pillar{}', 16, 44, 110)
     scatter('steps', 'steps', 4, 52, 90, (1.0, 1.4))
     scatter('bones', 'bones{}', 44, 32, 108, (1.5, 2.4))
-    scatter('armor', 'armor{}', 36, 32, 108, (1.6, 2.6))
     # Mảnh kiếm vụn rải cả trong đài chiến (nằm sát đất, không cản).
     got = 0
     while got < 70:
