@@ -303,7 +303,9 @@ export class ClothRig {
     for (const b of this.batches) {
       this.root.remove(b.mesh);
       b.mesh.geometry.dispose();
-      (b.mesh.material as THREE.Material).dispose();
+      const mat = b.mesh.material as THREE.MeshStandardMaterial;
+      mat.map?.dispose(); // texture riêng của từng nhân vật (TextureLoader ở mannequin.ts); dispose lặp lại vô hại
+      mat.dispose();
     }
   }
 }

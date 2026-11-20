@@ -1308,6 +1308,7 @@ export class MannequinCharacter implements CharacterView {
     this.disposed = true;
     this.hit.reset();
     this.blade?.removeFromParent();
+    this.cloth?.dispose();
     this.stopPerform();
     this.mixer.stopAllAction();
     this.mixer.uncacheRoot(this.rig);
