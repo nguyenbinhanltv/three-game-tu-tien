@@ -300,8 +300,8 @@ R['skl_thien_kiem_vu'] = thien_kiem_vu
 
 # --------------------------------------------------------------------------------------------------------------------------------
 def van_kiem():
-    """Vạn Kiếm Quy Tông (tối thượng, quy mô lớn nhất): ~110 kiếm to bản xoắn ốc đổ xuống vùng 10 m, rồng quấn kiếm 3D, sóng xung + trận lớn; slowmo ngắn + FOV."""
-    pts = spiral(110, 9.0, 17.0, -0.55, 0.2, 3.2, 0.0)
+    """Vạn Kiếm Quy Tông (tối thượng, quy mô lớn nhất): ~64 kiếm to bản xoắn ốc đổ xuống vùng 10 m, rồng quấn kiếm 3D, sóng xung + trận lớn; slowmo ngắn + FOV."""
+    pts = spiral(64, 9.0, 17.0, -0.55, 0.2, 2.4, 0.0)
     ev = [
         parts('spark', -0.65, 40, 2.4, 1, 0.45, 0.07, at='self', offset=[0, 0.8, 0.2], inward=True, tone='rim', tier=1),
         snd(-0.65, 'sword', 0.6, 0.8),
@@ -311,11 +311,11 @@ def van_kiem():
         decal('rune', -0.6, 11.5, 1.8, at='area', grow=0.3, tone='accent', alpha=1, tier=0),
     ]
     for i, (dx, dz, t0, top) in enumerate(pts):
-        tier = 0 if i < 30 else (1 if i < 70 else 2)
-        ev += sword_fall(t0, dx, dz, top, 3.2, 3.6, 3.2, fall=0.34, tier=tier, seed=i + 1, ghost=(i % 3 == 0), stuck=(i % 2 == 0), stay=0.8)
-        if i % 40 == 0:
+        tier = 0 if i < 18 else (1 if i < 38 else 2)
+        ev += sword_fall(t0, dx, dz, top, 3.2, 3.6, 3.2, fall=0.34, tier=tier, seed=i + 1, ghost=(i % 4 == 0), stuck=(i % 3 == 0), stay=0.7)
+        if i % 32 == 0:
             ev.append(snd(t0 + 0.34, 'impact', 0.25, 0.9 + 0.05 * (i % 6), 0.08))
-        if i % 5 == 0:
+        if i % 8 == 0:
             ev.append(mesh('crack_radial', t0 + 0.35, 0.9, at='area', offset=[dx, 0.05, dz], scale=1.6, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=1, seed=i))
     ev += [
         # rồng quấn kiếm 3D lao xuống tâm (to, đúng nhịp hit)

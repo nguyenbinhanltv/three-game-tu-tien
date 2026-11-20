@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   FX_QUALITY_TIER,
   FX_SKILL_DRAW_MAX,
+  FX_MESH_MAX,
   FX_SOUND_MAX,
   fxDrawCount,
   fxEventsFor,
@@ -184,6 +185,11 @@ describe('dòng thời gian hiệu ứng', () => {
       const snd = Array.from({ length: FX_SOUND_MAX + 1 }, (_, k) => ({ type: 'soundAt' as const, t: k * 0.01, id: 'x' }));
       expect(ok(snd).join()).toMatch(/âm > 8/);
       expect(ok(snd.slice(0, FX_SOUND_MAX))).toEqual([]);
+    });
+    it('tối đa FX_MESH_MAX sự kiện mesh mỗi đòn (số lưới sống)', () => {
+      const m = Array.from({ length: FX_MESH_MAX + 1 }, () => ({ type: 'mesh' as const, shape: 'spike' as const, t: 0, dur: 0.3 }));
+      expect(ok(m).join()).toMatch(/sự kiện mesh >/);
+      expect(ok(m.slice(0, FX_MESH_MAX)).join()).not.toMatch(/sự kiện mesh >/);
     });
   });
 });
