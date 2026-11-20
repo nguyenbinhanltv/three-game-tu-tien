@@ -111,7 +111,8 @@ const ALLY_ONLY = /thuan_di_ho_the|thuan_di_cuu_vien/;
 const SKILLS = list('--skills', 'skl_kiem_khi_tram,skl_phi_kiem');
 const FXQ = opt('--fxq', 'high');
 const PERF = flag('--perf');
-const LEVEL = num('--level', 12);
+// Chiêu Hộ pháp/Đan sư mở ở cấp 16+: mặc định cấp 28 + `skills max` để chiêu ra được (cấp 12 thì chiêu bị khóa, khung chỉ có nền).
+const LEVEL = num('--level', SKILLS.some((s) => METHOD_OF[s]) ? 28 : 12);
 const FPS = num('--fps', 24);
 const SLOW = num('--slow', 0.25);
 const TILE = num('--tile', 40);
