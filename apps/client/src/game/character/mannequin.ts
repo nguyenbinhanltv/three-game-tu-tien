@@ -1143,8 +1143,10 @@ export class MannequinCharacter implements CharacterView {
     }
     if (V3_ANIM && !V3_OFF.has('proc') && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
     if (this.feet && !V3_OFF.has('feet')) {
-      if (this.lodLevel === 0 && this.inner.visible && feetSlot(performance.now(), this.viewDist, this.viewSelf)) {
-        const active = this.grounded && !a.dead && !a.meditating && this.baseName !== 'Sitting_Idle_Loop';
+      if (this.lodLevel === 0 && this.inner.visible) {
+        // Hết suất (đông người ở xa camera): `active: false` để IK mờ dần rồi tự nhả, được cấp lại thì hiện dần, không giật.
+        const active =
+          feetSlot(this.viewDist, this.viewSelf) && this.grounded && !a.dead && !a.meditating && this.baseName !== 'Sitting_Idle_Loop';
         // Khóa chân chỉ khi đứng yên thật: đòn/chiêu/trúng đòn có chân tự di chuyển trong clip.
         this.feet.update(this.acc, { active, standing: a.speed < 0.3 && !this.perf && !this.shot });
       } else this.feet.release();

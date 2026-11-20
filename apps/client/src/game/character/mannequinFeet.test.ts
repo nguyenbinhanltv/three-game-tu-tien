@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { registerCollision } from '@dtl/shared';
 import {
+  beginFeetFrame,
   FEET,
   feetSlot,
   groundNormal,
@@ -214,32 +215,49 @@ describe('MqFeet: bàn chân theo dốc', () => {
 });
 
 describe('feetSlot: chọn theo khoảng cách camera', () => {
-  const frame = (t: number, dists: number[], selfFirst = false) => {
-    const got = dists.map((d, i) => feetSlot(t, d, selfFirst && i === 0));
-    return got;
+  /** Một khung: `beginFeetFrame` rồi mỗi nhân vật xin suất; phần tử đầu là mình khi `selfFirst`. */
+  const frame = (dists: number[], selfFirst = false) => {
+    beginFeetFrame();
+    return dists.map((d, i) => feetSlot(d, selfFirst && i === 0));
   };
   it('chính mình luôn được, người xa nhất bị loại khi đông, người gần được giữ', () => {
     resetFeetSlots();
     const dists = [0, 9, 3, 12, 5, 7, 2, 20];
-    frame(0, dists, true); // khung 1 chỉ thu thập
-    const got = frame(100, dists, true);
-    expect(got[0]).toBe(true); // mình (dist 0)
-    // maxPerFrame - 1 người gần nhất (khác mình): 2, 3, 5 được; 7, 9, 12, 20 bị loại.
+    frame(dists, true); // khung 1 chỉ thu thập
+    const got = frame(dists, true);
+    expect(got[0]).toBe(true);
     const byDist = Object.fromEntries(dists.map((d, i) => [d, got[i]]));
+    // maxPerFrame - 1 người gần nhất (khác mình): 2, 3, 5 được; 7, 9, 12, 20 bị loại.
     expect([byDist[2], byDist[3], byDist[5]]).toEqual([true, true, true]);
     expect([byDist[7], byDist[9], byDist[12], byDist[20]]).toEqual([false, false, false, false]);
+  });
+  it('mình ở xa camera vẫn được và không chiếm suất của người khác', () => {
+    resetFeetSlots();
+    const dists = [50, 2, 3, 4, 8];
+    frame(dists, true);
+    const got = frame(dists, true);
+    expect(got).toEqual([true, true, true, true, false]);
   });
   it('thứ tự gọi không đổi kết quả', () => {
     resetFeetSlots();
     const a = [20, 2, 12, 3, 7, 5];
-    frame(0, a);
-    const g = frame(100, a);
-    const near = a.filter((_, i) => g[i]).sort((x, y) => x - y);
-    expect(near).toEqual([2, 3, 5]);
+    frame(a);
+    const g = frame(a);
+    expect(a.filter((_, i) => g[i]).sort((x, y) => x - y)).toEqual([2, 3, 5]);
   });
   it('ít người hơn ngưỡng thì ai cũng được', () => {
     resetFeetSlots();
-    frame(0, [4, 8]);
-    expect(frame(100, [4, 8])).toEqual([true, true]);
+    frame([4, 8]);
+    expect(frame([4, 8])).toEqual([true, true]);
+  });
+  it('không phụ thuộc thời gian: nhiều khung liền nhau (240 Hz) vẫn cấp đủ, không từ chối cả bọn', () => {
+    resetFeetSlots();
+    for (let f = 0; f < 5; f++) expect(frame([1, 2, 3])).toEqual([true, true, true]);
+  });
+  it('ngoài danh sách (không gọi) thì không ảnh hưởng khung sau', () => {
+    resetFeetSlots();
+    frame([1, 2, 3, 4, 5, 6]);
+    frame([]); // khung không ai xin
+    expect(frame([9])).toEqual([true]);
   });
 });

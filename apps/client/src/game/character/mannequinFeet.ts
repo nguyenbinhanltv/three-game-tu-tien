@@ -39,26 +39,29 @@ export const FEET = {
   maxPerFrame: 4,
 };
 
-let slotWin = -1e9;
-/** Khoảng cách camera của người khác đã xin suất trong cửa sổ hiện tại (tăng dần, tối đa `maxPerFrame` phần tử). */
+/** Khoảng cách camera của người khác đã xin suất trong khung hiện tại (tăng dần, tối đa `maxPerFrame - 1` phần tử). */
 let slotNear: number[] = [];
-/** Ngưỡng khoảng cách của cửa sổ trước: chỉ những người gần camera hơn ngưỡng này được IK. */
+/** Ngưỡng khoảng cách của khung trước: chỉ những người gần camera hơn ngưỡng này được IK. */
 let slotLimit = Infinity;
 /**
- * Xin một suất IK chân trong khung hiện tại (`now` = performance.now, `dist` = khoảng cách tới camera, `self` = nhân vật của mình).
- * Chính mình luôn được; người khác được nếu nằm trong `maxPerFrame - 1` người gần camera nhất của khung TRƯỚC (cửa sổ 6 ms gom
- * mọi lần gọi của một khung, nên xếp hạng trễ một khung, đủ cho IK vì cảnh đổi chậm). Bị từ chối thì gọi `release`.
+ * Bắt đầu một khung: chốt ngưỡng từ những người đã xin suất ở khung trước, rồi xóa danh sách. Gọi đúng một lần ở đầu vòng cập nhật
+ * nhân vật của engine (đếm khung thật, không theo thời gian nên đúng ở mọi tần số quét và khi khung nặng).
  */
-export function feetSlot(now: number, dist: number, self = false): boolean {
-  if (now - slotWin > 6) {
-    slotWin = now;
-    slotLimit = slotNear.length >= FEET.maxPerFrame - 1 ? slotNear[FEET.maxPerFrame - 2]! : Infinity;
-    slotNear = [];
-  }
+export function beginFeetFrame(): void {
+  slotLimit = slotNear.length >= FEET.maxPerFrame - 1 ? slotNear[FEET.maxPerFrame - 2]! : Infinity;
+  slotNear = [];
+}
+/**
+ * Xin một suất IK chân trong khung hiện tại (`dist` = khoảng cách tới camera, `self` = nhân vật của mình). Chính mình luôn được và
+ * không tính vào giới hạn; người khác được nếu nằm trong `maxPerFrame - 1` người gần camera nhất của khung TRƯỚC (xếp hạng trễ
+ * một khung, đủ cho IK vì cảnh đổi chậm). Bị từ chối thì nhân vật gọi `update` với `active: false` để IK tắt mượt, không giật.
+ */
+export function feetSlot(dist: number, self = false): boolean {
   if (self) return true;
   let i = slotNear.length;
-  if (i < FEET.maxPerFrame - 1 || dist < slotNear[i - 1]!) {
-    if (i >= FEET.maxPerFrame - 1) i--;
+  const cap = FEET.maxPerFrame - 1;
+  if (i < cap || dist < slotNear[i - 1]!) {
+    if (i >= cap) i--;
     while (i > 0 && slotNear[i - 1]! > dist) {
       slotNear[i] = slotNear[i - 1]!;
       i--;
@@ -70,7 +73,6 @@ export function feetSlot(now: number, dist: number, self = false): boolean {
 
 /** Đặt lại bộ chọn suất (test). */
 export function resetFeetSlots(): void {
-  slotWin = -1e9;
   slotNear = [];
   slotLimit = Infinity;
 }
