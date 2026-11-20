@@ -233,60 +233,65 @@ R['skl_hoanh_kiem_pha_mach'] = hoanh_kiem
 
 
 # --------------------------------------------------------------------------------------------------------------------------------
+# Lưu ý hình học: kiếm có `move` tự xoay mũi (+Z) theo hướng bay nên KHÔNG thêm `rot`; kiếm đứng yên (cắm đất) dùng rot [90,0,0] (mũi xuống).
+# Kiếm to bản: scale không đều [w, w, len] để lưỡi rộng ra (kiếm thật tỉ lệ ~1:8, không phải que). Màu `body` (thân xanh), không dùng `rim` (trắng) cho lưỡi.
+def sword_fall(t0, dx, dz, top, bottom, w, ln, fall=0.3, tier=0, seed=1, ghost=True, stuck=True, stay=0.9, at='area'):
+    ev = [mesh('blade_flying', t0, fall, at=at, offset=[dx, top, dz], scale=[w, w, ln], sweep=0, erodeFrom=0.95, move={'to': at, 'ease': 'in', 'offset': [dx, bottom, dz]}, tone='body', alpha=1, tier=tier, seed=seed)]
+    if ghost:  # vệt kéo dài phía trên lưỡi
+        ev.append(mesh('blade_ghost', t0 - 0.02, fall + 0.04, at=at, offset=[dx, top + ln * 0.9, dz], scale=[w * 0.8, w * 0.8, ln * 1.1], sweep=0, erodeFrom=0.7, move={'to': at, 'ease': 'in', 'offset': [dx, bottom + ln * 0.9, dz]}, tone='rim', alpha=0.5, tier=tier, seed=seed + 100))
+    if stuck:
+        ev.append(mesh('blade_stuck', t0 + fall, stay, at=at, offset=[dx, bottom, dz], rot=[90, 0, 0], scale=[w, w, ln], sweep=0, erodeFrom=0.6, alpha=1, tone='body', tier=tier, seed=seed))
+    return ev
+
+
+def spiral(n, rmax, top, t_from, t_to, turns, seed=0.0):
+    """n điểm xoắn ốc từ ngoài vào trong, thời điểm rơi tăng dần (kiếm đổ xuống theo vòng xoáy)."""
+    out = []
+    for i in range(n):
+        f = i / max(1, n - 1)
+        rad = rmax * (1.0 - 0.8 * f)
+        ang = seed + f * turns * math.tau
+        out.append((round(math.cos(ang) * rad, 2), round(math.sin(ang) * rad, 2), round(t_from + (t_to - t_from) * f, 3), round(top + 5 * math.sin(f * 9), 1)))
+    return out
+
+
 def thien_kiem_vu():
-    """Thiên Kiếm Vũ: vòng ấn đôi báo trước vùng 9 m, 14 thanh kiếm thật rơi xuống và cắm đất, mỗi thanh nứt đất + bụi."""
-    r = random_ring(14, 6.6, 3)
+    """Thiên Kiếm Vũ: vòng ấn + trận lớn báo vùng 9 m, 26 thanh kiếm to bản có vệt kéo rơi dồn dập rồi cắm đất, mỗi nhát nứt đất + bụi."""
+    pts = spiral(26, 7.6, 15.0, -0.5, 0.05, 2.2, 0.4)
     ev = [
-        parts('spark', -0.42, 18, 1.4, 1, 0.3, 0.06, at='self', offset=[0, 0.4, 0.3], inward=True, tone='rim', tier=1),
-        snd(-0.42, 'sword', 0.5, 0.9),
-        # báo trước vùng chiêu
-        mesh('rune_ring2', -0.42, 0.6, at='area', scale=0.9, scaleTo=1.0, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.8, shadow=False, tone='rim', tier=0, seed=2),
-        decal('rune', -0.4, 7.5, 1.0, at='area', grow=0.3, tone='accent', alpha=0.8, tier=1),
+        parts('spark', -0.55, 18, 1.4, 1, 0.3, 0.06, at='self', offset=[0, 0.4, 0.3], inward=True, tone='rim', tier=1),
+        snd(-0.55, 'sword', 0.5, 0.9),
+        mesh('rune_ring2', -0.55, 1.0, at='area', scale=0.95, scaleTo=1.0, fit='area', alpha=1, sweep=0.5, erodeFrom=0.8, shadow=False, tone='accent', tier=0, seed=2),
+        decal('rune', -0.55, 9.5, 1.6, at='area', grow=0.25, tone='accent', alpha=1, tier=0),
     ]
-    for i, (dx, dz) in enumerate(r):
-        t0 = -0.4 + 0.026 * i  # rơi lệch nhịp nối tiếp nhau
-        ev.append(mesh('blade_flying', t0, 0.3, at='area', offset=[dx, 16.0, dz], rot=[90, 0, 0], scale=3.0, sweep=0, erodeFrom=0.9, move={'to': 'area', 'ease': 'in', 'offset': [dx, 3.1, dz]}, tone='rim', alpha=1, tier=0 if i < 8 else 1, seed=i + 1))
-        ev.append(mesh('blade_stuck', t0 + 0.3, 0.9, at='area', offset=[dx, 3.1, dz], rot=[90, 0, 0], scale=3.0, sweep=0, erodeFrom=0.6, alpha=1, tone='rim', tier=0 if i < 8 else 1, seed=i + 1))
-        if i % 3 == 0:
-            ev.append(flip('dust_kick', t0 + 0.31, 0.6, 2.6, at='area', offset=[dx, 0.5, dz], alpha=0.5, tone='body', tier=1))
-            ev.append(mesh('shock_cone', t0 + 0.32, 0.34, at='area', offset=[dx, 0.05, dz], scale=[0.5] * 3, scaleTo=[1.6] * 3, alpha=0.7, sweep=0.3, erodeFrom=0.3, shadow=False, tone='rim', tier=1))
+    for i, (dx, dz, t0, top) in enumerate(pts):
+        tier = 0 if i < 14 else 1
+        ev += sword_fall(t0, dx, dz, top, 3.4, 4.0, 3.4, fall=0.32, tier=tier, seed=i + 1, ghost=(i % 2 == 0))
+        ev.append(snd(t0 + 0.32, 'impact', 0.22, 1.0 + 0.04 * (i % 5), 0.08))
         if i % 2 == 0:
-            ev.append(mesh('crack_radial', t0 + 0.32, 0.8, at='area', offset=[dx, 0.05, dz], scale=1.5, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=1, seed=i))
-            ev.append(mesh('rubble_a', t0 + 0.32, 0.42, at='area', offset=[dx, 0.05, dz], rot=[30 * i, 70, 10], scale=0.4, scaleTo=0.25, sweep=0, erodeFrom=0.3, alpha=1, move={'to': 'area', 'offset': [dx + 0.6, 0.9, dz + 0.4], 'ease': 'out'}, tone='shadow', tier=1, seed=i))
-        ev.append(snd(t0 + 0.3, 'impact', 0.22, 1.0 + 0.04 * (i % 5), 0.08))
-        ev.append(parts('spark', t0 + 0.3, 10, 6, 1, 0.3, 0.08, at='area', offset=[dx, 0.4, dz], tone='rim', tier=1))
-    # vệt cháy/nứt lớn ở tâm + đòn kết
+            ev.append(mesh('crack_radial', t0 + 0.33, 0.9, at='area', offset=[dx, 0.05, dz], scale=1.8, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=1, seed=i))
+        if i % 3 == 0:
+            ev.append(flip('dust_kick', t0 + 0.33, 0.6, 2.8, at='area', offset=[dx, 0.5, dz], alpha=0.55, tone='body', tier=1))
+            ev.append(mesh('rubble_a', t0 + 0.33, 0.42, at='area', offset=[dx, 0.05, dz], rot=[30 * i, 70, 10], scale=0.45, scaleTo=0.28, sweep=0, erodeFrom=0.3, alpha=1, move={'to': 'area', 'offset': [dx + 0.7, 1.0, dz + 0.5], 'ease': 'out'}, tone='shadow', tier=1, seed=i))
+        if i % 4 == 0:
+            ev.append(parts('spark', t0 + 0.33, 8, 6, 1, 0.3, 0.08, at='area', offset=[dx, 0.4, dz], tone='rim', tier=1))
     ev += [
-        decal('crack', 0.1, 6.5, 3.0, at='area', grow=0.2, tone='core', alpha=1, tier=1),
-        decal('scorch', 0.1, 4.5, 3.2, at='area', grow=0.2, tone='shadow', alpha=0.7, tier=1),
-        mesh('burst', 0.1, 0.12, at='area', offset=[0, 1.2, 0], scale=2.2, billboard=True, sweep=0, tone='body', cross=True, tier=0),
-        snd(0.12, 'impact', 0.7, 0.88),
+        decal('crack', 0.0, 7.0, 3.0, at='area', grow=0.2, tone='core', alpha=1, tier=0),
+        decal('scorch', 0.0, 6.0, 3.2, at='area', grow=0.2, tone='shadow', alpha=0.75, tier=0),
+        mesh('shock_cone', 0.05, 0.4, at='area', scale=[2.0] * 3, scaleTo=[8.5] * 3, alpha=0.7, sweep=0.3, erodeFrom=0.3, shadow=False, tone='body', tier=0),
+        snd(0.08, 'impact', 0.7, 0.88),
     ]
-    ev += feel(0.1, ms=60, sh=0.28, fl=0.12, vg=0.3, fov=1.8)
+    ev += feel(0.05, ms=60, sh=0.3, fl=0.08, vg=0.3, fov=2.4)
     return {
         'skill': 'skl_thien_kiem_vu',
         'replaces': ['rain'],
         'events': ev,
         'variants': {
-            # rộng: vòng ấn ngoài to hơn quét ra rìa
             'wide': [mesh('rune_ring2', 0.2, 0.8, at='area', scale=0.2, scaleTo=1.15, fit='area', alpha=0.8, sweep=0.5, shadow=False, tone='rim', tier=1, seed=50)],
-            # tập trung: một thanh kiếm khổng lồ cắm ngay tâm + cú nổ
-            'focus': [
-                mesh('blade_giant', 0.25, 0.8, at='area', offset=[0, 0.0, 0], rot=[90, 0, 0], scale=5.0, sweep=0, erodeFrom=0.6, alpha=1, move={'to': 'area', 'ease': 'in', 'offset': [0, 4.2, 0]}, tone='rim', tier=0, seed=51),
-                flip('spark_burst', 0.3, 0.36, 3.2, at='area', offset=[0, 1.2, 0], alpha=0.95, tone='accent', tier=0),
-            ],
+            'focus': sword_fall(0.2, 0, 0, 22.0, 6.0, 9.0, 8.0, fall=0.4, seed=51, ghost=True, stuck=True, stay=1.0)
+            + [flip('spark_burst', 0.62, 0.36, 2.6, at='area', offset=[0, 1.4, 0], alpha=0.7, tone='accent', tier=0)],
         },
     }
-
-
-def random_ring(n, rmax, seed):
-    """Vị trí rải đều trong vùng tròn (xoắn ốc vàng, ổn định, không ngẫu nhiên)."""
-    out = []
-    for i in range(n):
-        rad = rmax * math.sqrt((i + 0.5) / n)
-        ang = i * 2.399963 + seed
-        out.append((round(math.cos(ang) * rad, 2), round(math.sin(ang) * rad, 2)))
-    return out
 
 
 R['skl_thien_kiem_vu'] = thien_kiem_vu
@@ -294,28 +299,37 @@ R['skl_thien_kiem_vu'] = thien_kiem_vu
 
 # --------------------------------------------------------------------------------------------------------------------------------
 def van_kiem():
-    """Vạn Kiếm Quy Tông (tối thượng): vầng kiếm sau lưng + trận kiếm bao vùng 10 m, rồng quấn kiếm 3D lao xuống, slow-mo + vignette + camera."""
+    """Vạn Kiếm Quy Tông (tối thượng, quy mô lớn nhất): ~110 kiếm to bản xoắn ốc đổ xuống vùng 10 m, rồng quấn kiếm 3D, sóng xung + trận lớn; slowmo ngắn + FOV."""
+    pts = spiral(110, 9.0, 17.0, -0.55, 0.2, 3.2, 0.0)
     ev = [
-        parts('spark', -0.5, 40, 2.4, 1, 0.45, 0.07, at='self', offset=[0, 0.8, 0.2], inward=True, tone='rim', tier=1),
-        snd(-0.5, 'sword', 0.6, 0.8),
-        vig(-0.5, 0.3, 500, tier=1),
-        cam(-0.5, 0.12, 1.6, fov=3.0, tier=1),
-        # vầng kiếm mở sau lưng + trận kiếm dựng quanh vùng
-        mesh('sword_halo', -0.5, 0.6, at='self', offset=[0, 1.2, -0.9], rot=[0, 0, 0], scale=1.5, scaleTo=1.9, sweep=0.5, erodeFrom=0.6, alpha=0.95, tone='rim', tier=0, seed=2),
-        mesh('rune_array', -0.45, 0.8, at='area', scale=7.5, scaleTo=8.0, sweep=0.5, erodeFrom=0.7, alpha=0.9, tone='body', tier=0, seed=3),
-        # rồng quấn kiếm lao xuống tâm
-        mesh('dragon_sword', -0.32, 0.34, at='area', offset=[0, 12, 0], rot=[180, 0, 0], scale=3.2, sweep=0, erodeFrom=0.85, alpha=1, move={'to': 'area', 'ease': 'in', 'offset': [0, 0.2, 0]}, tone='rim', tier=0, seed=4),
-        snd(-0.2, 'slash', 0.6, 0.85, 0.05),
-        # ba vệt chém khổng lồ quét quanh
+        parts('spark', -0.65, 40, 2.4, 1, 0.45, 0.07, at='self', offset=[0, 0.8, 0.2], inward=True, tone='rim', tier=1),
+        snd(-0.65, 'sword', 0.6, 0.8),
+        vig(-0.6, 0.3, 500, tier=1),
+        cam(-0.6, 0.2, 1.8, fov=5.0, tier=1),
+        mesh('rune_ring2', -0.6, 1.2, at='area', scale=1.0, scaleTo=1.05, fit='area', alpha=1, sweep=0.5, erodeFrom=0.85, shadow=False, tone='accent', tier=0, seed=2),
+        decal('rune', -0.6, 11.5, 1.8, at='area', grow=0.3, tone='accent', alpha=1, tier=0),
     ]
-    for i, a in enumerate([-60, 20, 100]):
-        ev.append(mesh('slash_thick', -0.06 + 0.03 * i, 0.3, at='area', offset=[0, 0.8, 0], rot=[0, a, -20 + 20 * i], scale=3.6, scaleTo=7.0, spin=250, sweep=0.35, erodeFrom=0.5, ragged=0.5, shadow=False, tone='rim' if i % 2 else 'body', alpha=0.95, tier=0 if i == 0 else 1, seed=i + 7))
-    ev += [slow(0.0, 0.35, 220, tier=2), snd(0.0, 'impact', 0.85, 0.8, 0.04), snd(0.02, 'crit', 0.5, 0.9, 0.05)]
-    ev += impact(0.0, at='area', y=1.4, burst=3.6, sparks=80)
-    ev += ground(0.0, at='area', r=7.0, cone=9.0, crackscale=7.0)
-    ev += rubble(0.03, 'area', 5, 3.2, 2.2, 1.0, seed0=2)
-    ev += feel(0.0, ms=80, sh=0.45, fl=0.2, vg=0.45, fov=3.0, pull=0.12)
-    ev.append(flip('ink_smoke', 0.06, 0.9, 5.0, at='area', offset=[0, 1.8, 0], alpha=0.45, tone='shadow', tier=2))
+    for i, (dx, dz, t0, top) in enumerate(pts):
+        tier = 0 if i < 30 else (1 if i < 70 else 2)
+        ev += sword_fall(t0, dx, dz, top, 3.2, 3.6, 3.2, fall=0.34, tier=tier, seed=i + 1, ghost=(i % 3 == 0), stuck=(i % 2 == 0), stay=0.8)
+        if i % 6 == 0:
+            ev.append(snd(t0 + 0.34, 'impact', 0.2, 0.9 + 0.05 * (i % 6), 0.08))
+        if i % 5 == 0:
+            ev.append(mesh('crack_radial', t0 + 0.35, 0.9, at='area', offset=[dx, 0.05, dz], scale=1.6, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=1, seed=i))
+    ev += [
+        # rồng quấn kiếm 3D lao xuống tâm (to, đúng nhịp hit)
+        mesh('dragon_sword', -0.3, 0.45, at='area', offset=[0, 14, 0], rot=[180, 0, 0], scale=4.5, sweep=0, erodeFrom=0.85, alpha=1, move={'to': 'area', 'ease': 'in', 'offset': [0, 0.3, 0]}, keepUp=True, tone='body', tier=0, seed=4),
+        snd(-0.3, 'slash', 0.6, 0.85, 0.05),
+        slow(0.0, 0.4, 250, tier=2),
+        snd(0.0, 'impact', 0.9, 0.8, 0.04),
+        snd(0.02, 'crit', 0.5, 0.9, 0.05),
+        flip('spark_burst', 0.0, 0.4, 5.0, at='area', offset=[0, 1.6, 0], alpha=0.65, tone='accent', tier=0),
+        parts('spark', 0.0, 90, 10, 1, 0.5, 0.1, at='area', offset=[0, 1.4, 0], tone='rim', tier=0),
+    ]
+    ev += ground(0.0, at='area', r=9.0, cone=11.0, crackscale=9.0)
+    ev += rubble(0.03, 'area', 6, 3.8, 2.4, 1.0, seed0=2)
+    ev += feel(0.0, ms=70, sh=0.45, fl=0.1, vg=0.4, fov=5.0, pull=0.2)
+    ev.append(flip('ink_smoke', 0.06, 0.9, 6.0, at='area', offset=[0, 2.0, 0], alpha=0.35, tone='shadow', tier=2))
     return {'skill': 'skl_van_kiem_quy_tong', 'replaces': ['vankiem'], 'events': ev}
 
 
@@ -324,42 +338,43 @@ R['skl_van_kiem_quy_tong'] = van_kiem
 
 # --------------------------------------------------------------------------------------------------------------------------------
 def hoa_hinh():
-    """Thiên Kiếm Hóa Hình (cấp 28): vòng ấn đôi, kiếm khổng lồ dựng lên rồi chém xuống tâm vùng 12 m, vết chém dọc + nứt đất khổng lồ."""
+    """Thiên Kiếm Hóa Hình (cấp 28): trận lớn, kiếm khổng lồ có lưỡi/chắn/chuôi giáng xuống tâm vùng 12 m kèm 12 kiếm nhỏ vây quanh; nứt đất khổng lồ. Hạn chế chói: không burst trắng, chớp thấp."""
     ev = [
         parts('spark', -0.6, 36, 2.6, 1, 0.5, 0.08, at='self', offset=[0, 1.0, 0.3], inward=True, tone='rim', tier=1),
         snd(-0.6, 'sword', 0.6, 0.78),
         vig(-0.6, 0.35, 600, tier=1),
-        mesh('rune_ring2', -0.6, 0.7, at='area', scale=0.9, scaleTo=1.05, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.8, shadow=False, tone='rim', tier=0, seed=2),
-        decal('rune', -0.58, 11, 1.2, at='area', grow=0.4, tone='accent', alpha=0.85, tier=1),
-        # kiếm khổng lồ dựng lên từ lòng đất (mũi hướng lên) ...
-        mesh('blade_giant', -0.55, 0.5, at='area', offset=[0, -4.0, 0], rot=[-90, 0, 0], scale=9.0, sweep=0, erodeFrom=0.95, alpha=1, move={'to': 'area', 'ease': 'out', 'offset': [0, 0.0, 0]}, tone='rim', tier=0, seed=3),
+        mesh('rune_ring2', -0.6, 1.2, at='area', scale=1.0, scaleTo=1.05, fit='area', alpha=1, sweep=0.5, erodeFrom=0.85, shadow=False, tone='accent', tier=0, seed=2),
+        decal('rune', -0.6, 12.0, 1.8, at='area', grow=0.3, tone='accent', alpha=1, tier=0),
         snd(-0.5, 'cast', 0.6, 0.8),
-        # ... rồi lật mũi xuống chém vào tâm
-        mesh('blade_giant', -0.1, 0.14, at='area', offset=[0, 12.0, 0], rot=[90, 0, 0], scale=9.0, sweep=0, erodeFrom=0.95, alpha=1, move={'to': 'area', 'ease': 'in', 'offset': [0, 4.5, 0]}, tone='rim', tier=0, seed=4),
-        mesh('slash_thick', -0.08, 0.3, at='area', offset=[0, 2.0, 0], rot=[0, 0, 90], scale=5.0, scaleTo=9.0, sweep=0.35, erodeFrom=0.5, ragged=0.5, shadow=False, tone='rim', alpha=0.95, tier=0, seed=5),
+        # kiếm khổng lồ giáng xuống từ trên trời (mũi xuống, thân xanh, KHÔNG trắng)
+        mesh('blade_giant', -0.45, 0.45, at='area', offset=[0, 30.0, 0], scale=[9.0, 9.0, 6.5], sweep=0, erodeFrom=0.95, alpha=1, move={'to': 'area', 'ease': 'in', 'offset': [0, 7.0, 0]}, tone='body', tier=0, seed=4),
+        mesh('blade_ghost', -0.47, 0.49, at='area', offset=[0, 38.0, 0], scale=[7.0, 7.0, 8.0], sweep=0, erodeFrom=0.7, alpha=0.5, move={'to': 'area', 'ease': 'in', 'offset': [0, 15.0, 0]}, tone='rim', tier=1, seed=5),
+        mesh('blade_stuck', 0.0, 1.1, at='area', offset=[0, 7.0, 0], rot=[90, 0, 0], scale=[9.0, 9.0, 6.5], sweep=0, erodeFrom=0.7, alpha=1, tone='body', tier=0, seed=6),
         snd(-0.1, 'slash', 0.6, 0.8, 0.05),
-        slow(0.0, 0.3, 240, tier=2),
+        slow(0.0, 0.35, 250, tier=2),
         snd(0.0, 'impact', 0.9, 0.75, 0.04),
         snd(0.02, 'crit', 0.55, 0.85, 0.05),
+        flip('spark_burst', 0.0, 0.4, 4.2, at='area', offset=[0, 1.6, 0], alpha=0.6, tone='accent', tier=0),
+        parts('spark', 0.0, 90, 10, 1, 0.5, 0.1, at='area', offset=[0, 1.4, 0], tone='rim', tier=0),
     ]
-    ev += impact(0.0, at='area', y=1.6, burst=4.0, sparks=90)
-    ev += ground(0.0, at='area', r=8.0, cone=10.0, crackscale=8.5)
-    ev += rubble(0.03, 'area', 6, 3.8, 2.6, 1.1, seed0=3)
-    ev += feel(0.0, ms=80, sh=0.5, fl=0.2, vg=0.45, fov=3.2, pull=0.15)
-    ev.append(flip('ink_smoke', 0.06, 0.9, 5.5, at='area', offset=[0, 2.0, 0], alpha=0.45, tone='shadow', tier=2))
+    # 12 kiếm nhỏ cắm quanh vòng ngoài (vây trận)
+    for i in range(12):
+        a = i / 12 * math.tau
+        ev += sword_fall(-0.35 + 0.03 * i, round(math.cos(a) * 9.5, 2), round(math.sin(a) * 9.5, 2), 16.0, 3.0, 3.4, 3.0, fall=0.3, tier=0 if i < 6 else 1, seed=20 + i, ghost=(i % 2 == 0), stuck=True, stay=1.0)
+    ev += ground(0.0, at='area', r=9.0, cone=12.0, crackscale=9.5)
+    ev += rubble(0.03, 'area', 6, 4.0, 2.6, 1.1, seed0=3)
+    ev += feel(0.0, ms=70, sh=0.5, fl=0.08, vg=0.4, fov=4.0, pull=0.15)
     return {
         'skill': 'skl_thien_kiem_hoa_hinh',
         'events': ev,
         'variants': {
-            # đóng băng: vòng băng xanh sẫm quét ra + âm băng
             'freeze': [
                 mesh('rune_ring2', 0.3, 0.9, at='area', scale=0.1, scaleTo=1.0, fit='area', alpha=0.85, sweep=0.5, shadow=False, tone='core', tier=1, seed=20),
                 snd(0.04, 'ice_spike', 0.9, 1.0, 0.03),
                 snd(0.32, 'ice_hit', 0.8, 1.0, 0.03),
             ],
-            # vang dội: cú nổ thứ hai màu vàng + vòng ấn vàng
             'echo': [
-                flip('spark_burst', 0.4, 0.36, 3.6, at='area', offset=[0, 1.5, 0], alpha=0.9, tone='accent', tier=0),
+                flip('spark_burst', 0.4, 0.36, 3.2, at='area', offset=[0, 1.5, 0], alpha=0.6, tone='accent', tier=0),
                 mesh('rune_ring2', 0.4, 0.8, at='area', scale=0.1, scaleTo=0.9, fit='area', alpha=0.85, sweep=0.5, shadow=False, tone='accent', tier=1, seed=21),
             ],
         },
