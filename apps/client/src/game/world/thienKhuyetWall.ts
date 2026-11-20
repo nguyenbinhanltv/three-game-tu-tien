@@ -15,7 +15,6 @@ import {
   vertexColor,
 } from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
-import { skyParams } from '../../render/sky';
 import { tkFbm } from './thienKhuyetSky';
 
 /**
@@ -87,9 +86,10 @@ function wallMaterial(): THREE.MeshStandardNodeMaterial {
   const tint = mix(vec3(1.06, 0.98, 0.92), vec3(0.9, 0.94, 1.1), smoothstep(0.35, 0.65, tri(0.0045, 'g'))); // đổi sắc nhẹ ấm ↔ lạnh theo mảng lớn
   const base = mix(rock.mul(tint), vec3(0.2, 0.31, 0.12).mul(float(0.7).add(b.mul(0.6))), up.mul(0.6));
   const dist = wp.sub(cameraPosition).length();
-  const grey = vec3(base.dot(vec3(0.3, 0.59, 0.11)));
-  const dull = mix(base, grey.mul(vec3(1.0, 0.96, 1.08)), 0.45); // bớt đỏ nâu: xám tím
-  m.colorNode = mix(dull, skyParams.horizon.mul(vec3(0.7, 0.62, 0.85)), smoothstep(300, 1600, dist).mul(0.32)); // sương tím nhạt theo khoảng cách
+  // xám tím: nhân lạnh để ánh nắng ấm không đẩy đá thành nâu đỏ; sương tím cố định theo khoảng cách
+  // (không dùng skyParams.horizon: HDR sáng; cũng không pha xám bằng dot(): kết quả ra màu cát trên WebGPU, chưa rõ nguyên nhân)
+  const cool = base.mul(vec3(0.82, 0.86, 1.12));
+  m.colorNode = mix(cool, vec3(0.1, 0.085, 0.14), smoothstep(300, 1600, dist).mul(0.35));
   m.roughnessNode = float(0.72).add(b.mul(0.28));
   m.emissiveNode = vertexColor().mul(0.06);
   return m;
