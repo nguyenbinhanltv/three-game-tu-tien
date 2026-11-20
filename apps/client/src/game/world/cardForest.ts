@@ -36,7 +36,7 @@ const SPECIES: Record<string, Species> = {
 /** Id prop được thay bằng cây thẻ. */
 export const CARD_TREE_IDS: ReadonlySet<string> = new Set(Object.keys(SPECIES));
 
-const CELL = 256;
+const CELL = 384;
 /** Ô xa hơn mức này (m) không vẽ (sương đã nuốt). */
 const DRAW_RANGE = 800;
 /** Ô gần hơn mức này (m) dùng mẫu chi tiết (LOD 0), xa hơn dùng mẫu thưa (LOD 1). */
