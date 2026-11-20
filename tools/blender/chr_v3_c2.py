@@ -14,6 +14,10 @@ import heapq
 import json as _json
 
 C2 = (_json.load(open(C2_CFG, encoding='utf-8')).get('c2') or {}) if C2_CFG else {}
+for _g in ('nam', 'nu'):  # ghi đè theo giới: c2.nam / c2.nu (id asset kết thúc bằng _nam/_nu); khóa còn lại dùng chung
+    _ov = C2.pop(_g, None)
+    if _ov and ID.endswith('_' + _g):
+        C2.update(_ov)
 if os.environ.get('C2_JSON'):
     C2.update(_json.loads(os.environ['C2_JSON']))  # thử tham số nhanh, không sửa file cấu hình
 _H = height
@@ -37,6 +41,8 @@ for _s, _g in _SD.items():
     _arm_d[_m] = np.minimum(_segd(VP[_m], Fp_HEAD[f'upperarm_{_s}'], Fp_HEAD[f'lowerarm_{_s}']), _segd(VP[_m], Fp_HEAD[f'lowerarm_{_s}'], Fp_HEAD[f'hand_{_s}']))
 _cand = ((_ax > C2.get('veilX', 0.12) * _H / 1.7) & _lav & (_arm_d > C2.get('armKeep', 0.045) * _H / 1.7)) | (
     (_ax > C2.get('veilXLow', 0.20) * _H / 1.7) & (VP[:, 2] < C2.get('veilZLow', 0.9) * _H / 1.7) & (_arm_d > C2.get('armKeep', 0.045) * _H / 1.7))
+if C2.get('veilGeo'):  # voan nhận theo hình học (không theo màu): bộ voan trắng/kem, màu không tách được khỏi áo
+    _cand |= (_ax > C2.get('veilX', 0.12) * _H / 1.7) & (VP[:, 2] < C2.get('veilZMax', 1.12) * _H / 1.7) & (_arm_d > C2.get('armKeep', 0.045) * _H / 1.7)
 _cand &= VP[:, 2] > 0.03 * _H / 1.7
 _lab_v = _cand.copy()
 for _it in range(8):  # lọc đa số trên đồ thị cạnh: bỏ đốm lẻ
@@ -52,6 +58,13 @@ _side = np.where(VP[:, 0] - _cxs > 0, 1, 2)
 LAB[(VP[:, 2] < _zw) & ~_lab_v] = 3
 LAB[(VP[:, 2] < _zw) & ~_lab_v & (VP[:, 1] >= Fp_HEAD['pelvis'][1])] = 4
 LAB[_lab_v] = _side[_lab_v]
+_hk = C2.get('handKeep', 0) * _H / 1.7  # bàn tay/cổ tay ở dưới eo (người cao, tay buông thấp) không thuộc vạt: giữ vùng thân
+if _hk > 0:
+    _hand_d = np.full(NV, 9.0)
+    for _s in _SD:
+        _hand_d = np.minimum(_hand_d, _segd(VP, Fp_HEAD[f'hand_{_s}'], Fp_TAIL[f'hand_{_s}']))
+        _hand_d = np.minimum(_hand_d, _segd(VP, Fp_HEAD[f'lowerarm_{_s}'], Fp_HEAD[f'hand_{_s}']))
+    LAB[(_hand_d < _hk) & (LAB != 1) & (LAB != 2)] = 0
 _leg_d = np.full(NV, 9.0)
 for _s in _SD:
     for _a, _b in ((f'calf_{_s}', f'foot_{_s}'), (f'foot_{_s}', f'ball_{_s}')):
@@ -371,7 +384,7 @@ for _vi in range(NV):
     _sm = _row.sum()
     W[_vi] = _row / _sm if _sm > 1e-9 else _row
 if os.environ.get('C2_DUMP2'):  # chẩn đoán: vị trí/nhãn vùng/trọng số cuối
-    np.savez(os.environ['C2_DUMP2'], VP=VP, LAB=LABN, W=W, COLS=np.array(COLS))
+    np.savez(os.environ['C2_DUMP2'], VP=VP, LAB=LABN, W=W, COLS=np.array(COLS), BN=np.array(list(Fp_HEAD)), BH=np.array([Fp_HEAD[k] for k in Fp_HEAD], float), BT=np.array([Fp_TAIL[k] for k in Fp_HEAD], float))
 REP['c2_verts'] = NV
 REP['c2_underbody'] = {'verts': len(_ring_verts), 'tris_quads': len(_ufaces)}
 log(f'C2 xong: {NV} đỉnh (gốc {_N0}), {len(COLS)} cột trọng số')
