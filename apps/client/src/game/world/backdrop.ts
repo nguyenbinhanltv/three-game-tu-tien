@@ -12,6 +12,7 @@ import { buildSect, SECT_LANTERNS } from './sect';
 import { Terrain } from './terrain';
 import { FLAGS } from '../../base/flags';
 import { logger } from '../../base/log';
+import { addSectSigns } from './sectSigns';
 
 const titleLog = logger('title');
 
@@ -135,6 +136,7 @@ export class TitleBackdrop {
         if (!m.isMesh) return;
         m.frustumCulled = false;
       });
+      this.sectAsset.mats.push(...addSectSigns(handle.scene));
       this.scene.add(handle.scene);
       if (this.sectMesh) {
         const old = this.sectMesh.geometry;
