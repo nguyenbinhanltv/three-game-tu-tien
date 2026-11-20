@@ -109,7 +109,9 @@ function wallMaterial(): THREE.MeshStandardNodeMaterial {
   const crack = max(ridge(tri(0.085, 'a'), 0.03), ridge(tri(0.27, 'g'), 0.045).mul(0.85));
   const chip = smoothstep(0.58, 0.8, tri(0.95, 'g')); // mảng vỡ nhỏ
   // Khe nứt khối: hàng cao ~2,6 m (le theo vỉa), khối rộng ~4–9 m lệch hàng, khe uốn theo nhiễu và chỉ ~55% biên có khe (không đều như gạch); mỗi khối sáng/tối lệch chút
-  const along = wp.x.mul(wn.z).add(wp.z.mul(wn.x)).add(wp.x.mul(wn.y)).add(a.sub(0.5).mul(3));
+  // tiếp tuyến ngang CÓ DẤU của mặt vách (vuông góc pháp tuyến trên mặt phẳng xz): đúng ở mọi hướng quanh vực, kể cả mặt ~45°/225° (trọng số `wn` đã abs nên không dùng được); mặt ngửa của thềm dùng x
+  const tn = normalWorld.xz.add(vec2(1e-4, 0)).normalize();
+  const along = mix(wp.x.mul(tn.y.negate()).add(wp.z.mul(tn.x)), wp.x, up).add(a.sub(0.5).mul(3));
   const hy = wp.y.add(warp.mul(0.6)).div(2.6);
   const row = floor(hy);
   const hash2 = (p: ReturnType<typeof vec2>) => fract(sin(dot(p, vec2(12.9898, 78.233))).mul(43758.5453));
