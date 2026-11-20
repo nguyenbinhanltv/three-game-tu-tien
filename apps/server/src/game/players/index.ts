@@ -5,7 +5,11 @@ import {
   caveBoundOf,
   wearableBy,
   glowStage,
+  encodeDye3,
+  isEmptyLook,
   lookSet,
+  setStatuses,
+  visualEquip,
   accessoryCode,
   FLY_UNLOCK_LEVEL,
   HP_REGEN_IDLE,
@@ -109,7 +113,7 @@ export class PlayerSystem {
     if (!(y >= g)) y = g;
     if (y > g + 3) y = g; // không lưu trạng thái đang bay
     char.room = this.c.opts.levelId;
-    char.charDirty = char.invDirty = char.questDirty = true;
+    char.charDirty = char.invDirty = char.questDirty = char.wardrobeDirty = true;
     const p: PlayerEnt = {
       sid: client.sessionId,
       client,
@@ -223,18 +227,30 @@ export class PlayerSystem {
     if (s.mp !== mp) s.mp = mp;
     if (s.mmp !== c.mmp) s.mmp = c.mmp;
     if (s.lv !== c.level) s.lv = c.level;
-    const wp = c.equip.weapon?.id ?? '';
+    // Tủ ngoại trang: ghi đè hiển thị theo ô (chỉ hình; chỉ số tính từ c.equip). Look rỗng thì đi đường cũ, không cấp phát.
+    const ve = isEmptyLook(c.look) ? null : visualEquip(c.equip, c.look);
+    const wp = (ve ? ve.weapon?.id : c.equip.weapon?.id) ?? '';
     if (s.wp !== wp) s.wp = wp;
     const wg = glowStage(c.equip.weapon?.plus ?? 0);
     if (s.wg !== wg) s.wg = wg;
-    const sk = lookSet(c.stats.sets)?.id ?? '';
+    const sk =
+      lookSet(
+        ve
+          ? setStatuses(
+              SETS,
+              Object.values(ve).map((x) => x.id),
+            )
+          : c.stats.sets,
+      )?.id ?? '';
     if (s.sk !== sk) s.sk = sk;
-    const sa = accessoryCode(SETS, c.equip);
+    const sa = accessoryCode(SETS, ve ?? c.equip);
     if (s.sa !== sa) s.sa = sa;
     // Skin sai giới (đổi giới tính bằng GM sau khi mặc) không được hiển thị; món vẫn nằm ở ô, tháo ra bình thường.
     const skinId = c.equip.skin?.id ?? '';
     const sn = skinId && wearableBy(ITEM.get(skinId), c.appearance.g) ? skinId : '';
     if (s.sn !== sn) s.sn = sn;
+    const d3 = encodeDye3(c.look.dye);
+    if (s.dye3 !== d3) s.dye3 = d3;
     const art = c.equip.artifact?.id ?? '';
     if (s.art !== art) s.art = art;
     const mt = c.meta.method ?? '';
