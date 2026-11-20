@@ -3,16 +3,14 @@ import { float, mix, positionWorld, smoothstep, texture, time, uv, vec2, vec3 } 
 import { hash01 } from '@dtl/shared';
 import { heightAt, levelTerrain } from '../../base/levelCtx';
 import { getCloudNoise } from '../../render/noiseTex';
-import type { CliffSpot } from './doanMachCliffs';
 
 /**
  * Thác nhỏ ở khe vách Đoạn Mạch (POLISH-1; chỉ để nhìn, không va chạm, tất định). Điểm đặt chọn TRONG KHE (hai bên khe cao hơn tâm), độ rơi ≥ 28 m.
  *  - Đường chảy THEO ĐỊA HÌNH thật (đi xuống theo gradient, mỗi 3 m một mốc) nên dải nước ôm sát vách chứ không phải một tấm thẳng dán nghiêng;
  *  - dải nước là ỐNG nửa tiết diện 7 cột: phồng ra ở giữa (≤ 0,8 m), vòng cung qua mép trên rồi ôm vách; UV chạy dọc theo dòng, hai lớp nhiễu cuộn ở hai tốc độ,
  *    mép sáng (bọt do chạm đá);
- *  - hai mỏm đá (cụm phiến của `arch_doan_mach`) kẹp hai bên khe ở đầu thác và vòng đá tảng quanh hồ chân thác (trả về qua `fallRockSpots`);
  *  - ở chân: hồ nhỏ nước xanh có gợn (mép mềm, không đĩa trắng), vòng bọt xoáy mờ, bụi nước (điểm cộng sáng).
- * Draw call: 4 (nước, hồ, bọt, bụi nước) + đá qua `InstancedMesh` của vách.
+ * Draw call: 4 (nước, hồ, bọt, bụi nước).
  */
 
 export interface FallPoint {
@@ -34,7 +32,7 @@ export interface FallSpot {
 }
 
 const STEP = 3;
-const COLS = 7;
+const COLS = 11;
 
 function groundNormal(x: number, z: number, e = 3): { x: number; y: number; z: number } {
   const gx = (heightAt(x + e, z) - heightAt(x - e, z)) / (2 * e);
@@ -114,49 +112,6 @@ export function fallSpots(max = 6): FallSpot[] {
   return out;
 }
 
-/** Cụm đá kẹp hai bên khe ở đầu thác + vòng đá tảng quanh hồ chân (dùng biến thể của `arch_doan_mach`). */
-export function fallRockSpots(falls: readonly FallSpot[]): CliffSpot[] {
-  const out: CliffSpot[] = [];
-  falls.forEach((f, i) => {
-    const p0 = f.path[Math.min(3, f.path.length - 1)]!;
-    const hl = Math.hypot(p0.nx, p0.nz) || 1;
-    const nx = p0.nx / hl;
-    const nz = p0.nz / hl;
-    const tx = -p0.dz;
-    const tz = p0.dx;
-    for (const side of [-1, 1]) {
-      out.push({
-        x: p0.x + tx * side * (f.w * 0.5 + 7),
-        z: p0.z + tz * side * (f.w * 0.5 + 7),
-        nx,
-        nz,
-        ny: p0.ny,
-        hn: hl,
-        kind: 'slab',
-        variant: (i * 2 + (side > 0 ? 1 : 0)) % 6,
-        s: 1.3,
-      });
-    }
-    const pe = f.path[f.path.length - 1]!;
-    for (let k = 0; k < 7; k++) {
-      const a = (k / 7) * Math.PI * 2 + hash01(i, k, 8121);
-      const r = f.w * 1.5 + 2.5 + hash01(i, k, 8123) * 2;
-      out.push({
-        x: pe.x + Math.cos(a) * r,
-        z: pe.z + Math.sin(a) * r,
-        nx: 0,
-        nz: 1,
-        ny: 1,
-        hn: 0.001,
-        kind: 'boulder',
-        variant: k % 2,
-        s: 0.7 + hash01(i, k, 8125) * 0.7,
-      });
-    }
-  });
-  return out;
-}
-
 export class DoanMachFalls {
   readonly group = new THREE.Group();
   private readonly disposables: { dispose(): void }[] = [];
@@ -216,7 +171,14 @@ export class DoanMachFalls {
     const rim = smoothstep(0.6, 1.0, across.abs());
     const water = mix(vec3(0.4, 0.62, 0.8), vec3(0.93, 0.98, 1.0), streak).add(vec3(1, 1, 1).mul(rim.mul(0.25)));
     mat.colorNode = water;
-    mat.opacityNode = edge.mul(float(0.5).add(streak.mul(0.45)).add(rim.mul(0.2))).clamp(0, 0.9);
+    // bọt trắng đậm ở đỉnh (uv.y nhỏ) và ở chân (uv.y lớn) của mỗi dòng
+    const along = uv().y.div(6).fract().max(0.0001);
+    const qn = uv().y.div(6);
+    const topFoam = smoothstep(0.1, 0.0, qn.fract().min(qn.sub(qn.floor())));
+    mat.opacityNode = edge
+      .mul(float(0.45).add(streak.mul(0.45)).add(rim.mul(0.25)).add(topFoam.mul(0.3)))
+      .clamp(0, 0.9)
+      .mul(smoothstep(0.0, 0.06, along));
     const mesh = new THREE.Mesh(geo, mat);
     mesh.name = 'doan-mach-fall';
     mesh.frustumCulled = false;

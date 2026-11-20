@@ -1,8 +1,0 @@
-{
-  "$schema": "../../../meta.schema.json",
-  "id": "arch_doan_mach",
-  "type": "arch",
-  "status": "in_game",
-  "procedural": { "script": "tools/blender/doan_mach_arch.py", "seed": 20261121 },
-  "license": { "source": "Tự sinh bằng bộ dựng tools/blender/build_sect.py + thien_cong_kit.py + kiem_trung_arch.py + doan_mach_arch.py (POLISH-1 Đoạn Mạch)", "owner": "dự án", "date": "2026-11-21" }
-}

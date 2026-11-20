@@ -236,8 +236,6 @@ export class Game {
   /** GLB kiến trúc Thiên Khuyết (MAP-4). */
   tkAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
   /** GLB cảnh Kiếm Trủng (cự kiếm, vành núi đá, mộ, bia, xương…), DUN-1. */
-  /** Vách đá Đoạn Mạch (POLISH-1): nhóm InstancedMesh dựng từ `arch_doan_mach` (asset giữ ở `ktAsset`). */
-  dmCliffs: THREE.Group | null = null;
   ktAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
   /** Vân Hải (MAP-3): thuyền tiên, cá kình mây, cầu vòng linh khí, hải đăng. */
   vanHaiWow: VanHaiWow | null = null;
