@@ -6,7 +6,7 @@ import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { TRAILS, basePropsOf, TELE_PADS, thienCongColliders, terrainOf, WATER_Y, type HandProp } from '@dtl/shared';
+import { COLLIDERS_LAYOUT, TRAILS, basePropsOf, TELE_PADS, thienCongColliders, terrainOf, WATER_Y, type HandProp } from '@dtl/shared';
 import { LEVELS, NPCS } from './index';
 import { SCENES, sectAxis, type Scene } from './thienCongScenes';
 
@@ -307,7 +307,11 @@ for (const levelId of Object.keys(SCENES)) {
     }
   }
   // Điểm cần trống (map:report báo kẹt khi prop rắn khép kín quanh điểm, COL-1): bỏ prop trong bán kính, KHÔNG dựng lại để không xê dịch prop khác.
-  const clear = KEEP_CLEAR[levelId] ?? [];
+  // Vân Lam: vòng tránh của kiến trúc tông môn (`COLLIDERS_LAYOUT`) — prop PROP-1 không được chạm (test propScatter) nên bỏ khi bộ sinh đặt chồng.
+  const clear = [
+    ...(KEEP_CLEAR[levelId] ?? []),
+    ...(levelId === 'van_lam' ? COLLIDERS_LAYOUT.map((c) => [c.x, c.z, c.r + 2] as [number, number, number]) : []),
+  ];
   for (let i = list.length - 1; i >= 0; i--)
     if (clear.some(([cx, cz, cr]) => Math.hypot(list[i]!.x - cx, list[i]!.z - cz) < cr)) list.splice(i, 1);
   out[levelId] = list;
