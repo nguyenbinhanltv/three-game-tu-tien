@@ -8,48 +8,57 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from recipes_vs1 import (  # noqa: E402
-    cam, decal, feel, flip, ground, mesh, parts, rubble, snd, stop, shake, flash, vig, write,
+    cam, decal, feel, flip, mesh, parts, snd, write,
 )
 
 R = {}
 
 
-def pillars(t, n, r, at='area', h=3.2, w=1.5, tier=1, seed=1, fit=False):
-    """n cột đá vàng trồi lên theo vòng bán kính r (rubble_c kéo cao = cột đá), lệch nhịp nhẹ."""
+def debris(t, at, n, r, up, scale, seed0=1, tone='core'):
+    """n tảng đá 3D tối màu bung lên từ vòng bán kính r rồi RƠI LẠI mặt đất (hai pha: bay lên ease-out, rơi xuống ease-in)."""
     ev = []
     for i in range(n):
-        a = i / n * math.tau + seed
+        a = i / n * math.tau + seed0
         x, z = round(math.cos(a) * r, 2), round(math.sin(a) * r, 2)
-        ev.append(mesh('rubble_c', t + 0.02 * i, 0.7, at=at, offset=[x, -0.6, z], rot=[0, 40 * i, 0], scale=[w, h, w], scaleTo=[w, h * 1.05, w], sweep=0.25, erodeFrom=0.6, alpha=1,
-                       move={'to': at, 'offset': [x, h * 0.35, z], 'ease': 'out'}, tone='body', tier=tier if i >= 4 else 0, seed=seed + i))
+        h = up * (0.7 + 0.3 * ((i * 37) % 10) / 10)
+        shp = 'rubble_a' if i % 2 == 0 else 'rubble_c'
+        rot = [35 * i, 70 * i, 15 * i]
+        ev.append(mesh(shp, t, 0.22, at=at, offset=[x, 0.1, z], rot=rot, scale=scale, sweep=0, erodeFrom=0.98, alpha=1,
+                       move={'to': at, 'offset': [x * 1.15, h, z * 1.15], 'ease': 'out'}, tone=tone, tier=0 if i < 6 else 1, seed=seed0 + i))
+        ev.append(mesh(shp, t + 0.22, 0.3, at=at, offset=[x * 1.15, h, z * 1.15], rot=rot, scale=scale, scaleTo=scale * 0.8, sweep=0, erodeFrom=0.7, alpha=1,
+                       move={'to': at, 'offset': [x * 1.3, 0.1, z * 1.3], 'ease': 'in'}, tone=tone, tier=0 if i < 6 else 1, seed=seed0 + i))
     return ev
 
 
 def thiet_quyen():
-    """Thiết Quyền Chấn Địa (AoE r 6, hit 0,45 s): tụ lực vào nắm đấm, giáng xuống: sóng xung vàng, nứt tỏa, 8 cột đá trồi vòng ngoài, đá văng, bụi."""
+    """Thiết Quyền Chấn Địa (AoE r 6, hit 0,45 s): nắm đấm giáng xuống đất: vòng nứt tỏa tối + viền sáng, vòng sóng xung SẮC NÉT đồng-vàng đậm (không phủ mờ), tảng đá tối bung lên rồi rơi lại, bụi nâu ở chân. Màu đồng (body/core), KHÔNG dùng accent/rim (vàng chanh/kem)."""
     ev = [
         parts('dust', -0.45, 22, 1.4, 1, 0.38, 0.18, at='self', offset=[0.3, 0, 0.5], inward=True, tone='core', tier=1),
-        parts('spark', -0.45, 16, 1.4, 1, 0.3, 0.07, at='self', offset=[0.3, 0.9, 0.5], inward=True, tone='accent', tier=1),
+        parts('spark', -0.45, 16, 1.4, 1, 0.3, 0.07, at='self', offset=[0.3, 0.9, 0.5], inward=True, tone='body', tier=1),
         snd(-0.45, 'cast', 0.45, 0.8),
-        decal('rune', -0.4, 5.5, 0.9, at='area', grow=0.3, tone='accent', alpha=1, tier=0),
-        # giáng: chớp + khựng + sóng xung nón vàng lan ra bán kính 6
-        snd(0.0, 'impact', 0.9, 0.7, 0.04),
-        snd(0.0, 'block', 0.5, 0.6, 0.05),
-        mesh('burst', 0.0, 0.11, at='area', offset=[0, 0.5, 0], scale=2.4, billboard=True, sweep=0, tone='accent', cross=True, tier=0),
-        flip('spark_burst', 0.0, 0.36, 3.6, at='area', offset=[0, 0.8, 0], alpha=0.8, tone='accent', tier=0),
-        mesh('shock_cone', 0.0, 0.42, at='area', scale=[1.6] * 3, scaleTo=[6.8] * 3, alpha=0.85, sweep=0.3, erodeFrom=0.3, shadow=False, tone='accent', tier=0),
-        mesh('shock_cone', 0.06, 0.38, at='area', scale=[1.2] * 3, scaleTo=[5.2] * 3, alpha=0.7, sweep=0.3, erodeFrom=0.3, shadow=False, tone='rim', tier=1),
-        mesh('crack_radial', 0.02, 0.9, at='area', scale=6.0, alpha=1, sweep=0.2, erodeFrom=0.75, shadow=False, tone='core', tier=0, seed=2),
-        decal('crack', 0.02, 6.5, 2.8, at='area', grow=0.14, tone='core', alpha=1, tier=1),
-        decal('scorch', 0.02, 5.2, 3.0, at='area', grow=0.1, tone='shadow', alpha=0.8, tier=0),
-        flip('dust_kick', 0.05, 0.7, 4.4, at='area', offset=[0, 0.8, 0], alpha=0.55, tone='body', tier=1),
-        flip('dust_kick', 0.12, 0.7, 3.4, at='area', offset=[1.8, 0.6, 1.2], alpha=0.45, tone='body', tier=2),
-        parts('spark', 0.0, 50, 8, 1, 0.45, 0.1, at='area', offset=[0, 0.8, 0], tone='accent', tier=0),
-        parts('dust', 0.0, 40, 5, 1, 0.7, 0.28, at='area', offset=[0, 0.3, 0], tone='body', tier=1),
+        decal('rune', -0.4, 5.5, 0.9, at='area', grow=0.3, tone='body', alpha=1, tier=0),
+        # giáng (t = 0 là khung hit; mọi thứ bật NGAY, không mọc dần): chớp + khựng + rung + âm nặng
+        snd(0.0, 'impact', 0.95, 0.65, 0.04),
+        snd(0.0, 'block', 0.55, 0.62, 0.05),
+        mesh('burst', -0.02, 0.11, at='area', offset=[0, 0.4, 0], scale=2.6, billboard=True, sweep=0, tone='body', cross=True, tier=0),
+        flip('spark_burst', -0.02, 0.34, 3.4, at='area', offset=[0, 0.7, 0], alpha=0.8, tone='body', tier=0),
+        # vòng nứt tỏa (hiện đủ ngay) tối + viền sáng; decal nứt/cháy lưu lại
+        mesh('crack_radial', -0.03, 1.0, at='area', scale=6.2, alpha=1, sweep=0.02, erodeFrom=0.8, shadow=False, tone='core', tier=0, seed=2),
+        mesh('crack_radial', -0.03, 0.7, at='area', offset=[0, 0.03, 0], scale=6.2, alpha=0.9, sweep=0.02, erodeFrom=0.5, shadow=False, tone='body', tier=0, seed=2),
+        decal('crack', -0.03, 6.8, 2.8, at='area', grow=0.05, tone='core', alpha=1, tier=1),
+        decal('scorch', -0.03, 5.4, 3.0, at='area', grow=0.05, tone='shadow', alpha=0.85, tier=0),
+        # vòng sóng xung sắc nét: hai vành mảnh (rune_ring2) mở rộng nhanh, màu đồng đậm, không phủ mờ
+        mesh('rune_ring2', -0.03, 0.4, at='area', offset=[0, 0.08, 0], scale=2.4, scaleTo=7.4, sweep=0.04, erodeFrom=0.55, alpha=1, shadow=False, tone='body', tier=0, seed=3),
+        mesh('rune_ring2', 0.04, 0.36, at='area', offset=[0, 0.1, 0], scale=1.8, scaleTo=6.0, sweep=0.04, erodeFrom=0.5, alpha=0.9, shadow=False, tone='core', tier=1, seed=4),
+        # bụi nâu ở chân (thấp, dày) + hạt
+        flip('dust_kick', 0.0, 0.8, 5.0, at='area', offset=[0, 0.7, 0], alpha=0.7, tone='core', tier=0),
+        flip('dust_kick', 0.1, 0.8, 3.8, at='area', offset=[2.0, 0.6, 1.4], alpha=0.6, tone='core', tier=1),
+        flip('dust_kick', 0.14, 0.8, 3.8, at='area', offset=[-2.0, 0.6, -1.2], alpha=0.6, tone='core', tier=2),
+        parts('spark', 0.0, 50, 8, 1, 0.45, 0.1, at='area', offset=[0, 0.8, 0], tone='body', tier=0),
+        parts('dust', 0.0, 60, 5, 1, 0.8, 0.3, at='area', offset=[0, 0.3, 0], tone='core', tier=1),
     ]
-    ev += pillars(0.03, 8, 4.4, h=3.4, w=1.4, seed=0.3)
-    ev += rubble(0.03, 'area', 6, 3.0, 2.4, 0.9, seed0=2)
-    ev += feel(0.0, ms=80, sh=0.42, fl=0.12, vg=0.35, fov=2.6)
+    ev += debris(-0.02, 'area', 10, 2.4, 3.4, 1.3, seed0=0.5)
+    ev += feel(0.0, ms=80, sh=0.55, fl=0.16, vg=0.4, fov=3.0)
     return {'skill': 'skl_thiet_quyen_chan_dia', 'replaces': ['thietquyen'], 'events': ev}
 
 
