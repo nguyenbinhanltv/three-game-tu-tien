@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import type { FxLibShape } from '@dtl/shared';
 
 /**
- * Thư viện hình mesh VFX (VS-1): 25 hình có KHỐI (độ dày, sống lưng, mảnh vỡ) thay cho các tấm phẳng kite/spike/ripple.
+ * Thư viện hình mesh VFX (VS-1): 27 hình có KHỐI (độ dày, sống lưng, mảnh vỡ) thay cho các tấm phẳng kite/spike/ripple.
  * Dựng thủ tục bằng code (không file GLB: không cần nạp, gộp instance như mọi hình `FxShape`, thử trong test node). UV theo quy ước của shader
  * `render/vfx/stylized.ts`:
  *   - kiểu `toon`: `u` dọc hình (chiều quét/lộ dần), `v` từ mép trong (0) ra mép ngoài (1).
@@ -802,6 +802,65 @@ function diamondCage(): THREE.BufferGeometry {
   return f.done();
 }
 
+// ---------------------------------------------------------------------------------------------------------------
+// Đan sư (VS-1): viên đan và sen nở. Kiểu `crystal`, ĐỨNG theo +Y. `u` 0 → 1 ngang mỗi cánh/đai nên mép cánh có gân sáng.
+// ---------------------------------------------------------------------------------------------------------------
+/** Viên đan: khối cầu 20 mặt phẳng (bán kính 0,5, tâm ở gốc) + một đai ngang nổi quanh xích đạo (vân đan). */
+function pillOrb(): THREE.BufferGeometry {
+  const f = new Faces();
+  const ico = new THREE.IcosahedronGeometry(0.5, 0).toNonIndexed();
+  const p = ico.getAttribute('position');
+  f.o = [0, 0, 0];
+  const us = [0.2, 0.5, 0.8];
+  for (let i = 0; i < p.count; i += 3) {
+    const v = (k: number): V5 => [p.getX(i + k), p.getY(i + k), p.getZ(i + k), us[k]!, p.getY(i + k) + 0.5];
+    f.tri(v(0), v(1), v(2));
+  }
+  const segs = 14;
+  const vOf = (y: number) => Math.min(1, Math.max(0, y + 0.5));
+  for (let i = 0; i < segs; i++) {
+    const a0 = (i / segs) * Math.PI * 2;
+    const a1 = ((i + 1) / segs) * Math.PI * 2;
+    f.beam(
+      new THREE.Vector3(Math.cos(a0) * 0.55, 0, Math.sin(a0) * 0.55),
+      new THREE.Vector3(Math.cos(a1) * 0.55, 0, Math.sin(a1) * 0.55),
+      0.045,
+      vOf,
+    );
+  }
+  return f.done();
+}
+
+/**
+ * Sen nở: hai vòng cánh (8 cánh ngoài xòe thấp, 5 cánh trong dựng cao) quanh trục Y, đáy ở y = 0, bán kính ngoài ~1.
+ * `v` chạy từ gốc cánh (0) ra đầu cánh (1) nên `sweep` làm sen NỞ từ tâm ra; mỗi cánh có sống giữa hơi lõm.
+ */
+function lotusBloom(): THREE.BufferGeometry {
+  const f = new Faces();
+  const petal = (ang: number, r0: number, len: number, rise: number, width: number) => {
+    const segs = 6;
+    const cs = Math.cos(ang);
+    const sn = Math.sin(ang);
+    const row = (s: number): [V5, V5, V5] => {
+      const out = r0 + len * Math.sin(s * 1.25) * 0.98;
+      const up = rise * s * s + 0.02;
+      const w = width * Math.pow(Math.sin(Math.PI * Math.pow(s, 0.7)), 0.85) + 0.005;
+      const P = (side: number, dip: number, u: number): V5 => [cs * out - sn * w * side, up - dip, sn * out + cs * w * side, u, s];
+      return [P(-1, 0, 0), P(0, 0.05 * Math.sin(Math.PI * s), 0.5), P(1, 0, 1)];
+    };
+    f.o = [cs * (r0 + len * 0.5), -1, sn * (r0 + len * 0.5)];
+    for (let i = 0; i < segs; i++) {
+      const a = row(i / segs);
+      const b = row((i + 1) / segs);
+      f.quad(a[0], a[1], b[1], b[0]);
+      f.quad(a[1], a[2], b[2], b[1]);
+    }
+  };
+  for (let i = 0; i < 8; i++) petal((i / 8) * Math.PI * 2, 0.14, 0.9, 0.38, 0.2);
+  for (let i = 0; i < 5; i++) petal((i / 5) * Math.PI * 2 + 0.3, 0.06, 0.5, 0.85, 0.15);
+  return f.done();
+}
+
 const BUILDERS: Record<FxLibShape, () => THREE.BufferGeometry> = {
   slash_thick: slashThick,
   slash_thin: slashThin,
@@ -828,6 +887,8 @@ const BUILDERS: Record<FxLibShape, () => THREE.BufferGeometry> = {
   rock_spire: rockSpire,
   shield_plate: shieldPlate,
   diamond_cage: diamondCage,
+  pill_orb: pillOrb,
+  lotus_bloom: lotusBloom,
 };
 
 const cache = new Map<FxLibShape, THREE.BufferGeometry>();

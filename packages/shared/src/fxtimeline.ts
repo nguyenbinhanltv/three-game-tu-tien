@@ -70,6 +70,9 @@ export const FX_LIB_SHAPES = [
   'rock_spire',
   'shield_plate',
   'diamond_cage',
+  // Đan sư (VS-1): viên đan, sen nở (kiểu `crystal`; sen đứng +Y, đáy y = 0, `sweep` = nở từ tâm ra).
+  'pill_orb',
+  'lotus_bloom',
 ] as const;
 
 /** Hình vẽ bằng shader `toon` (có lớp bóng sẫm phía sau khi `shadow` không tắt): tính thêm một nhóm draw call khi đếm ngân sách. */
