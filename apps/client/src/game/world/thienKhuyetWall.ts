@@ -1,5 +1,19 @@
 import * as THREE from 'three/webgpu';
-import { clamp, float, mix, normalWorld, positionWorld, smoothstep, texture, time, uv, vec2, vec3, vertexColor } from 'three/tsl';
+import {
+  cameraPosition,
+  clamp,
+  float,
+  mix,
+  normalWorld,
+  positionWorld,
+  smoothstep,
+  texture,
+  time,
+  uv,
+  vec2,
+  vec3,
+  vertexColor,
+} from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
 import { skyParams } from '../../render/sky';
 import { tkFbm } from './thienKhuyetSky';
@@ -16,8 +30,8 @@ const CX = 1044;
 const CZ = 884;
 const RAYS = 960;
 const ROWS = 44;
-const Y0 = 76; // chân vách (sàn đấu trường)
-const Y1 = 345; // đỉnh vách
+const Y0 = 92; // chân da vách: cao hơn gò trong đấu trường (~87 m), nếu thấp hơn dò tia dừng sớm và dựng tấm phẳng giữa sân
+const Y1 = 430; // đỉnh vách (tia dò chạm cao nguyên trước thì hàng trên giữ bán kính hàng dưới, xem wallRadii)
 
 function hash(i: number, s: number): number {
   let h = (i * 374761393 + s * 668265263) | 0;
@@ -28,12 +42,16 @@ function hash(i: number, s: number): number {
 /** Bán kính vách theo từng tầng cho một tia (nhị phân trên đoạn dốc). */
 function wallRadii(groundAt: (x: number, z: number) => number, dx: number, dz: number, ys: number[]): number[] {
   const out: number[] = [];
-  let r = 380;
+  let r = 640;
   const h = (rr: number) => groundAt(CX + dx * rr, CZ + dz * rr);
-  // đi ra tới khi chạm tầng thấp nhất
-  while (r < 1800 && h(r) < ys[0]!) r += 6;
+  while (r < 1800 && h(r) < ys[0]!) r += 6; // đi ra tới khi chạm tầng thấp nhất
+  let last = r;
   for (const y of ys) {
     while (r < 1800 && h(r) < y) r += 3;
+    if (r >= 1800) {
+      out.push(-last); // cao nguyên thấp hơn y: không có vách ở độ cao này (bán kính âm = đánh dấu, dựng điểm này trùng hàng dưới → ô suy biến)
+      continue;
+    }
     // tinh chỉnh trong [r-3, r]
     let lo = r - 3;
     let hi = r;
@@ -43,12 +61,14 @@ function wallRadii(groundAt: (x: number, z: number) => number, dx: number, dz: n
       else hi = m;
     }
     out.push(hi);
+    last = hi;
   }
   return out;
 }
 
 function wallMaterial(): THREE.MeshStandardNodeMaterial {
-  const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9, metalness: 0, side: THREE.DoubleSide });
+  // fog: false — vách ở xa 500–800 m, sương cảnh làm cả vách thành màn hồng mờ; thay bằng pha sương nhẹ theo khoảng cách bên dưới
+  const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9, metalness: 0, side: THREE.DoubleSide, fog: false });
   const noise = getCloudNoise();
   const wp = positionWorld;
   const w3 = normalWorld.abs().pow(4);
@@ -65,10 +85,13 @@ function wallMaterial(): THREE.MeshStandardNodeMaterial {
   const up = smoothstep(0.5, 0.9, normalWorld.y.add(a.sub(0.5).mul(0.3)));
   const rock = vertexColor().mul(float(0.7).add(a.mul(0.45)).add(b.mul(0.25)).add(c.mul(0.12)));
   const tint = mix(vec3(1.1, 0.95, 0.82), vec3(0.86, 0.92, 1.08), smoothstep(0.35, 0.65, tri(0.0045, 'g')));
-  m.colorNode = mix(rock.mul(tint), vec3(0.2, 0.31, 0.12).mul(float(0.7).add(b.mul(0.6))), up.mul(0.6));
+  const base = mix(rock.mul(tint), vec3(0.2, 0.31, 0.12).mul(float(0.7).add(b.mul(0.6))), up.mul(0.6));
+  const dist = wp.sub(cameraPosition).length();
+  const grey = vec3(base.dot(vec3(0.3, 0.59, 0.11)));
+  const toned = mix(grey, base, 0.4).mul(vec3(0.62, 0.58, 0.64)); // đá xám ấm hơi tím, tối hơn để hợp mood Thiên Khuyết (không còn vàng cát)
+  m.colorNode = mix(toned, skyParams.horizon.mul(0.9), smoothstep(250, 1500, dist).mul(0.4));
   m.roughnessNode = float(0.72).add(b.mul(0.28));
   m.emissiveNode = vertexColor().mul(0.06);
-  void skyParams;
   return m;
 }
 
@@ -84,9 +107,9 @@ export class TkWall {
     const pos: number[] = [];
     const col: number[] = [];
     const idx: number[] = [];
-    const lo = new THREE.Color(0x4d433c);
-    const mid = new THREE.Color(0x8a7863);
-    const hi = new THREE.Color(0xb39a78);
+    const lo = new THREE.Color(0x3d3631);
+    const mid = new THREE.Color(0x6e6054);
+    const hi = new THREE.Color(0x8f8068);
     const dark = new THREE.Color(0x2c2623);
     const tmp = new THREE.Color();
     const ledgeTop: { x: number; y: number; z: number; nx: number; nz: number }[] = [];
@@ -96,8 +119,11 @@ export class TkWall {
       const dx = Math.cos(th);
       const dz = Math.sin(th);
       const radii = wallRadii(groundAt, dx, dz, ys);
+      let top = ROWS;
+      while (top > 0 && radii[top]! < 0) top--;
       for (let j = 0; j <= ROWS; j++) {
-        const y = ys[j]!;
+        const jj = Math.min(j, top); // hàng trên cao nguyên: lặp hàng cuối có vách
+        const y = ys[jj]!;
         const sd = 77;
         // lệch về phía tâm (đứng trước vách địa hình), luôn ≥ 1 m để không z-fight
         const layerK = Math.floor(y / 9.5);
@@ -106,11 +132,11 @@ export class TkWall {
         const col3 = th * 3.2;
         const chunk = tkFbm(Math.cos(th) * 7 + 3, y * 0.018, Math.sin(th) * 7, sd + 1, 3); // khối lệch cao thấp
         const crackN = Math.abs(tkFbm(col3 * 4 + 11, y * 0.004, 5.5, sd + 2, 2) - 0.5);
-        const crack = Math.max(0, 1 - crackN * 14); // khe dọc V
+        const crack = Math.max(0, 1 - crackN * 40) * 0.8; // khe dọc V hẹp (không thành sọc rèm to)
         const fine = tkFbm(Math.cos(th) * 60, y * 0.08, Math.sin(th) * 60, sd + 3, 2);
         const proud = 4 + layer * 6 + ledge * 9 + chunk * 44 + fine * 5 - crack * 11;
         const off = Math.max(1, proud);
-        const r = radii[j]! - off;
+        const r = radii[jj]! - off;
         const px = CX + dx * r;
         const pz = CZ + dz * r;
         pos.push(px, y, pz);
@@ -126,10 +152,13 @@ export class TkWall {
           ledgeTop.push({ x: px, y, z: pz, nx: -dx, nz: -dz });
       }
     }
+    const rad = (v: number) => Math.hypot(pos[v * 3]! - CX, pos[v * 3 + 2]! - CZ);
     for (let i = 0; i < RAYS; i++)
       for (let j = 0; j < ROWS; j++) {
         const a = i * stride + j;
         const b = (i + 1) * stride + j;
+        // bỏ ô nối hai tia mà bán kính nhảy > 40 m (tia dò hụt): đó là chỗ sinh các tấm phẳng dựng chéo
+        if (Math.abs(rad(a) - rad(b)) > 40 || Math.abs(rad(a) - rad(a + 1)) > 40) continue;
         idx.push(a, b, b + 1, a, b + 1, a + 1);
       }
     const g = new THREE.BufferGeometry();

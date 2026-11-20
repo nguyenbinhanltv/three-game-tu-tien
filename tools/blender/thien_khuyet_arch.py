@@ -705,6 +705,11 @@ def build_statue_giant(b, st, rnd):
         groups[0 if zc < 6.8 else 1 if zc < 12.4 else 2].append(f)
     for lst in (b.faces, b.colors, b.uvs, b.mats, b.smooth):  # các danh sách song song theo mặt
         lst[fstart:] = [x for x, k in zip(lst[fstart:], keep) if k]
+    gof = {}
+    for gi, g in enumerate(groups):
+        for f in g:
+            gof[f] = gi
+    stat_faces = list(b.faces[fstart:])
     for i in range(start, len(b.verts)):
         X, Y, Z = b.verts[i]
         b.verts[i] = bs.P(X * S, Z * S, -Y * S)  # P nhận toạ độ game (x, y lên, z): Blender (X, Y, Z) → (X, Z, -Y)
@@ -720,16 +725,30 @@ def build_statue_giant(b, st, rnd):
     xform_idx(b, ids[2], cen[2], 0.12, -0.55, 0.35, d=(-30.0, 3.0, -26.0))
     for gi, g in enumerate(ids):  # mỗi khúc nằm chạm đất riêng (không khúc nào lơ lửng)
         xform_idx(b, g, (0, 0, 0), 0.0, 0.0, 0.0, d=(0.0, -min(b.verts[i][2] for i in g), 0.0))
-    low = min(b.verts[i][2] for i in range(start, len(b.verts)))  # nằm chạm đất (điểm thấp nhất y = 0)
+    low = min(b.verts[i][2] for g in ids for i in g)  # nằm chạm đất (điểm thấp nhất y = 0); không tính đỉnh mồ côi của bệ đã bỏ
     for i in range(start, len(b.verts)):
         X, Y, Z = b.verts[i]
         b.verts[i] = bs.P(X, Z - low, -Y)
+    nstat = len(stat_faces)
     sc = S / 5.6
     rubble(b, 0, 0.0, -30 * sc, 34, 3.8 * sc, rnd, 38 * sc)
     for c in cen[1:]:  # đá vụn ở chỗ gãy
         rubble(b, c[0], 0.0, c[2], 14, 2.6 * sc, rnd, 10 * sc)
     for k in range(14):  # nứt phát sáng vàng trên giáp
         b.box(rnd.uniform(-5, 5) * sc, 0.2 * sc + rnd.uniform(1, 9) * sc, rnd.uniform(-34, -4) * sc, 0.2 * sc, 0.2 * sc, rnd.uniform(2, 6) * sc, GOLD_LIT)
+    pieces = []
+    cxz = []
+    for g in ids:
+        pts = [(b.verts[i][0], -b.verts[i][1]) for i in g]
+        cxz.append((sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts)))
+    for k, f in enumerate(b.faces[fstart:]):
+        if k < nstat:
+            pieces.append(gof[stat_faces[k]])
+        else:  # đá vụn / nứt vàng: về khúc gần nhất
+            c = [sum(b.verts[i][0] for i in f) / len(f), sum(-b.verts[i][1] for i in f) / len(f)]
+            pieces.append(min(range(3), key=lambda q: (cxz[q][0] - c[0]) ** 2 + (cxz[q][1] - c[1]) ** 2))
+    b.pieces = pieces
+    b.pstart = fstart
 
 
 def build_all():
@@ -750,16 +769,44 @@ def build_all():
     return stair, main, statue, data
 
 
+def split_statue(sb):
+    """Tách builder tượng thành 3 builder theo `sb.pieces` (nhãn khúc của từng mặt, tính từ `sb.pstart`)."""
+    outs = []
+    for q in range(3):
+        nb = bs.Builder()
+        remap = {}
+        for k, f in enumerate(sb.faces):
+            lab = sb.pieces[k - sb.pstart] if k >= sb.pstart else 0
+            if lab != q:
+                continue
+            nf = []
+            for i in f:
+                if i not in remap:
+                    remap[i] = len(nb.verts)
+                    nb.verts.append(sb.verts[i])
+                nf.append(remap[i])
+            nb.faces.append(tuple(nf))
+            nb.colors.append(sb.colors[k])
+            nb.uvs.append(sb.uvs[k])
+            nb.mats.append(sb.mats[k])
+            nb.smooth.append(sb.smooth[k])
+        outs.append(nb)
+    return outs
+
+
 def run(out):
     bs.make_textures()
     stair, main, statue, data = build_all()
     bpy.ops.wm.read_factory_settings(use_empty=True)
     keys, images = ts.materials_for([stair, main, statue])
-    for name, b, bevel in (('tk_stair', stair, False), ('tk_main', main, True), ('tk_statue', statue, True)):
+    parts = [('tk_stair', stair, False), ('tk_main', main, True)]
+    for q, sb in enumerate(split_statue(statue)):  # ba khúc tượng là ba object riêng: client đặt từng khúc theo heightAt chỗ nó nằm
+        parts.append((f'tk_statue{q}', sb, True))
+    for name, b, bevel in parts:
         mesh = ts.make_mesh(name, b, keys, images, bevel=bevel)
         obj = bpy.data.objects.new(name, mesh)
         bpy.context.scene.collection.objects.link(obj)
-        if name == 'tk_statue':
+        if name.startswith('tk_statue'):
             st = data['statue']
             obj.location = (st['x'] - CX, -(st['z'] - CZ), 0.0)  # Blender: (x, -z, y); client hạ y theo đất
             obj.rotation_euler = (0.0, 0.0, -st['yaw'])
