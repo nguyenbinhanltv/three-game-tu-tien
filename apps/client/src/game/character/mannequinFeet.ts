@@ -6,7 +6,8 @@
 //    nên trượt chân bằng 0 theo cách dựng, khác bước tại chỗ dựng từ Walk (chân trụ trượt gấp nhiều lần).
 // Hàm thuần ở đầu file để test.
 import * as THREE from 'three/webgpu';
-import { groundAt as terrainGround } from '../../base/levelCtx';
+import { collisionOf, STEP_UP } from '@dtl/shared';
+import { groundAt as terrainGround, levelId } from '../../base/levelCtx';
 import { refreshWorld, solveLeg } from './ikpose';
 
 export const FEET = {
@@ -24,7 +25,102 @@ export const FEET = {
   /** Hạ hông tối đa theo chiều cao nhân vật; nâng tối đa 40% mức đó. */
   hipLim: 0.25,
   rate: 14,
+  /** Góc nghiêng bàn chân tối đa theo pháp tuyến mặt đất (rad, ~20°). */
+  tiltMax: 0.35,
+  /** Nửa bước lấy mẫu pháp tuyến (m, cỡ nửa bàn chân). */
+  tiltStep: 0.12,
+  /** Mẫu chênh quá mức này (m) trên một nửa bước là mép bậc, không phải dốc: bỏ qua trục đó (bậc thang không làm bàn chân gật). */
+  tiltEdge: 0.1,
+  /** Tốc độ làm mượt nghiêng bàn chân (1/s). */
+  tiltRate: 12,
+  /** Chu kỳ lấy lại pháp tuyến (s): bốn lần dò độ cao mỗi chân là phần tốn nhất, dốc đổi chậm nên dùng lại giữa hai lần. */
+  normalEvery: 0.1,
+  /** Số nhân vật tối đa chạy IK chân trong một khung (bench 50 bot: 6,6 nhân vật ≈ 0,45 ms/khung, ngưỡng 0,3 ms). */
+  maxPerFrame: 4,
 };
+
+/** Khoảng cách camera của người khác đã xin suất trong khung hiện tại (tăng dần, tối đa `maxPerFrame - 1` phần tử). */
+let slotNear: number[] = [];
+/** Ngưỡng khoảng cách của khung trước: chỉ những người gần camera hơn ngưỡng này được IK. */
+let slotLimit = Infinity;
+/**
+ * Bắt đầu một khung: chốt ngưỡng từ những người đã xin suất ở khung trước, rồi xóa danh sách. Gọi đúng một lần ở đầu vòng cập nhật
+ * nhân vật của engine (đếm khung thật, không theo thời gian nên đúng ở mọi tần số quét và khi khung nặng).
+ */
+export function beginFeetFrame(): void {
+  slotLimit = slotNear.length >= FEET.maxPerFrame - 1 ? slotNear[FEET.maxPerFrame - 2]! : Infinity;
+  slotNear = [];
+}
+/**
+ * Xin một suất IK chân trong khung hiện tại (`dist` = khoảng cách tới camera, `self` = nhân vật của mình). Chính mình luôn được và
+ * không tính vào giới hạn; người khác được nếu nằm trong `maxPerFrame - 1` người gần camera nhất của khung TRƯỚC (xếp hạng trễ
+ * một khung, đủ cho IK vì cảnh đổi chậm). Bị từ chối thì nhân vật gọi `update` với `active: false` để IK tắt mượt, không giật.
+ */
+export function feetSlot(dist: number, self = false): boolean {
+  if (self) return true;
+  let i = slotNear.length;
+  const cap = FEET.maxPerFrame - 1;
+  if (i < cap || dist < slotNear[i - 1]!) {
+    if (i >= cap) i--;
+    while (i > 0 && slotNear[i - 1]! > dist) {
+      slotNear[i] = slotNear[i - 1]!;
+      i--;
+    }
+    slotNear[i] = dist;
+  }
+  return dist <= slotLimit;
+}
+
+/** Đặt lại bộ chọn suất (test). */
+export function resetFeetSlots(): void {
+  slotNear = [];
+  slotLimit = Infinity;
+}
+
+/**
+ * Đầu dò đo chi phí IK chân (bench công bằng bật/tắt xen kẽ trong cùng phiên): `off` tắt IK lúc chạy, `rec` bật ghi thời gian từng lần
+ * `update`. Đọc qua `window.__feetProbe`. Không ảnh hưởng khi `rec`/`off` đều false (chỉ một phép so sánh).
+ */
+export const feetProbe = { off: false, rec: false, calls: 0, ms: 0, per: [] as number[] };
+if (typeof window !== 'undefined') (window as unknown as { __feetProbe: typeof feetProbe }).__feetProbe = feetProbe;
+
+/** Hàm độ cao mặt đứng được tại (x, z). */
+export type GroundFn = (x: number, z: number) => number;
+
+/**
+ * Mặt đứng hiệu dụng của level hiện tại (COL-1): max(địa hình, mặt đi được 3D như bậc thang, cầu, mặt đá) mà đỉnh không cao
+ * quá `footY + STEP_UP`, đúng công thức `stepMove` dùng cho vị trí chân nên chân không cắm xuống bậc hay lơ lửng trên cầu.
+ */
+export function walkableGround(footY: number, level: string = levelId(), terrain: GroundFn = terrainGround): GroundFn {
+  const col = collisionOf(level);
+  if (!col.size) return terrain;
+  const maxTop = footY + STEP_UP;
+  return (x, z) => Math.max(terrain(x, z), col.standY(x, z, maxTop));
+}
+
+/**
+ * Pháp tuyến mặt đất tại (x, z) bằng sai phân trung tâm trên hai trục thế giới, góc lệch so với phương đứng kẹp ở `maxAng`.
+ * Trục nào có chênh lớn bất thường (mép bậc) thì coi phẳng. Ghi vào `out` (đơn vị).
+ */
+export function groundNormal(
+  g: GroundFn,
+  x: number,
+  z: number,
+  out: THREE.Vector3,
+  e: number = FEET.tiltStep,
+  maxAng: number = FEET.tiltMax,
+): THREE.Vector3 {
+  const slope = (a: number, b: number): number => (Math.abs(a - b) > FEET.tiltEdge ? 0 : (a - b) / (2 * e));
+  const sx = slope(g(x + e, z), g(x - e, z));
+  const sz = slope(g(x, z + e), g(x, z - e));
+  out.set(-sx, 1, -sz).normalize();
+  const ang = Math.acos(Math.min(1, out.y));
+  if (ang > maxAng) {
+    const k = Math.sin(maxAng) / Math.max(1e-6, Math.sin(ang));
+    out.set(out.x * k, Math.cos(maxAng), out.z * k);
+  }
+  return out;
+}
 
 export const wrapAngle = (a: number): number => {
   while (a > Math.PI) a -= Math.PI * 2;
@@ -55,11 +151,18 @@ interface Leg {
   step: { t: number; from: THREE.Vector3; fromQ: THREE.Quaternion } | null;
   tgt: THREE.Vector3;
   endQ: THREE.Quaternion;
+  /** Nghiêng bàn chân theo pháp tuyến (quay thế giới, làm mượt). */
+  tilt: THREE.Quaternion;
+  /** Pháp tuyến lần lấy mẫu gần nhất (quay từ phương đứng). */
+  nq: THREE.Quaternion;
 }
 
 const _v = new THREE.Vector3();
 const _m3 = new THREE.Matrix3();
 const _s = new THREE.Vector3();
+const _n = new THREE.Vector3();
+const _up = new THREE.Vector3(0, 1, 0);
+const _tq = new THREE.Quaternion();
 
 export interface FeetState {
   /** Đứng trên đất, không chết/ngồi/bay/thiền: bật bám đất. */
@@ -81,6 +184,7 @@ export class MqFeet {
   private pin = 0;
   private hip = 0;
   private cool = 0;
+  private nT = 0;
   private ds = [0, 0];
   /** Số lần bước chân từ lúc tạo (đo/kiểm). */
   steps = 0;
@@ -120,6 +224,8 @@ export class MqFeet {
         step: null,
         tgt: new THREE.Vector3(),
         endQ: new THREE.Quaternion(),
+        tilt: new THREE.Quaternion(),
+        nq: new THREE.Quaternion(),
       });
     }
     return new MqFeet(root, pelvis, legs, FEET.hipLim * height);
@@ -150,6 +256,8 @@ export class MqFeet {
     for (const l of this.legs) {
       l.plant.has = false;
       l.step = null;
+      l.tilt.identity();
+      l.nq.identity();
     }
   }
 
@@ -157,7 +265,21 @@ export class MqFeet {
    * Gọi ngay sau `mixer.update` (và lớp phụ), trước lò xo. `ground` mặc định là địa hình của level; sau này đổi sang mặt đi được hiệu dụng
    * (bậc thang, sàn kiến trúc của COL-1) mà không cần sửa chỗ khác.
    */
-  update(dt: number, st: FeetState, ground: (x: number, z: number) => number = terrainGround): void {
+  update(dt: number, st: FeetState, ground?: GroundFn): void {
+    if (feetProbe.off) {
+      this.release();
+      return;
+    }
+    if (!feetProbe.rec) return this.run(dt, st, ground);
+    const t0 = performance.now();
+    this.run(dt, st, ground);
+    const d = performance.now() - t0;
+    feetProbe.calls++;
+    feetProbe.ms += d;
+    feetProbe.per.push(d);
+  }
+
+  private run(dt: number, st: FeetState, ground?: GroundFn): void {
     const want = st.active ? 1 : 0;
     this.w += Math.sign(want - this.w) * Math.min(Math.abs(want - this.w), dt * 6);
     if (this.w <= 0.001) {
@@ -172,6 +294,7 @@ export class MqFeet {
     this.pin += Math.sign(wantPin - this.pin) * Math.min(Math.abs(wantPin - this.pin), dt * 8);
     const yaw = this.root.rotation.y;
     const rp = this.root.position;
+    ground ??= walkableGround(rp.y);
     const base = ground(rp.x, rp.z);
     this.cool -= dt;
 
@@ -253,6 +376,20 @@ export class MqFeet {
         l.endQ.slerp(p.q, this.pin);
       }
     });
+    // 4b. Bàn chân theo pháp tuyến mặt đất tại đích (kẹp góc, mượt), nhân vào hướng clip.
+    const tk = 1 - Math.exp(-dt * FEET.tiltRate);
+    this.nT -= dt;
+    const resample = this.nT <= 0;
+    if (resample) this.nT = FEET.normalEvery;
+    for (const l of this.legs) {
+      if (resample) {
+        groundNormal(ground, l.tgt.x, l.tgt.z, _n);
+        l.nq.setFromUnitVectors(_up, _n);
+      }
+      l.tilt.slerp(l.nq, tk);
+      _tq.identity().slerp(l.tilt, this.w);
+      l.endQ.premultiply(_tq);
+    }
     // 5. IK.
     this.pelvis.updateWorldMatrix(true, false);
     for (let i = 0; i < this.bones.length; i++) this.pre[i]!.copy(this.bones[i]!.quaternion);
