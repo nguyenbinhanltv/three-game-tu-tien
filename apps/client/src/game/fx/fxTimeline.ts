@@ -27,6 +27,7 @@ import type { SkillEvent } from '../character/view';
 import { emitCount } from './fxSettings';
 import { densitySize } from '../../render/vfx/particles';
 import type { Vfx } from './vfx';
+import { presentDt } from './vfxParts/common';
 
 export interface FxTarget {
   /** Chân mục tiêu (y = mặt đất dưới chân). */
@@ -334,11 +335,12 @@ export class FxRunner {
     this.casts.delete(sid);
   }
 
-  update(dt: number): void {
+  /** `mineScale` (VS-1 `slowmo`): chỉ nhân cho đồng hồ chiêu của MÌNH; chiêu người khác và vạch báo/chiêu quái luôn `dt` thật. */
+  update(dt: number, mineScale = 1): void {
     for (const c of this.casts.values()) {
       const clk = c.actor.model.performClock?.();
       if (clk && clk.skill === c.def.id) c.clock = clk.t;
-      else c.clock += dt;
+      else c.clock += presentDt(c.mine, dt, mineScale);
       this.pump(c, c.clock);
       if (c.q.every((x) => x.done)) this.casts.delete(c.sid);
     }
@@ -568,6 +570,7 @@ export class FxRunner {
         this.v.drop(main);
         if (shade) this.v.drop(shade);
       },
+      c.mine,
     );
     main.fxA.z = seed;
     if (shade) shade.fxA.z = seed;
@@ -688,6 +691,7 @@ export class FxRunner {
         this.decals--;
         this.v.drop(m);
       },
+      c.mine,
     );
   }
 
