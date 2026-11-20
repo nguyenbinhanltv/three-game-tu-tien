@@ -589,6 +589,15 @@
       "mods": [
         "port"
       ]
+    },
+    {
+      "id": "fz_thu_phap_giao_long",
+      "kind": "font",
+      "title": "Fz Thu Phap Giao Long (chữ thư pháp vẽ từ font, chỉ dùng ảnh đã vẽ)",
+      "author": "Thái Hiếu (Fontzin.com)",
+      "url": "https://fontzin.com",
+      "license": "Fontzin",
+      "mods": ["calli"]
     }
   ]
 }

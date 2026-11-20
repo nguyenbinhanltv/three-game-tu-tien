@@ -4,6 +4,7 @@ packages:
   - "tools/asset-pipeline"
   - "tools/perf"
   - "tools/audio"
+  - "tools/calli"
 onlyBuiltDependencies:
   - better-sqlite3
   - esbuild
