@@ -497,8 +497,11 @@ export class CombatSystem {
   /** Trả đúng `n` điểm tài nguyên nếu đủ (không đủ thì không trừ gì). */
   payRes(p: PlayerEnt, n: number): boolean {
     const cur = this.liveRes(p);
-    if (!(n > 0) || cur < n) return false;
+    const def = resourceOf(p.char.meta);
+    if (!def || !(n > 0) || cur < n) return false;
     p.mth.res = cur - n;
+    // Như `spendRes`: dời mốc để phần đã rụng không bị trừ lần nữa.
+    p.mth.resAt = resSpendAt(def, p.mth.resAt, this.c.now);
     p.mth.dirty = true;
     return true;
   }
