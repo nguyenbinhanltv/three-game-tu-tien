@@ -30,14 +30,23 @@ const fail = (m) => {
 
 // Màu lấy từ token UI Kit 2.0 (--u-*) để đồng bộ.
 const tokens = {};
-for (const m of fs.readFileSync(path.join(root, 'apps/client/src/ui/u2/tokens.css'), 'utf8').matchAll(/--(u-[\w-]+):\s*(#[0-9a-fA-F]{6})/g)) tokens[m[1]] = m[2];
+for (const m of fs.readFileSync(path.join(root, 'apps/client/src/ui/u2/tokens.css'), 'utf8').matchAll(/--(u-[\w-]+):\s*(#[0-9a-fA-F]{6})/g))
+  tokens[m[1]] = m[2];
 const tok = (n) => {
   if (!tokens[n]) fail(`thiếu token --${n}`);
   return tokens[n] ?? '#000000';
 };
 const STYLES = {
-  ink: { fill: [tok('u-ink-3'), tok('u-ink-1'), tok('u-ink-0')], edge: [tok('u-gold-hi'), tok('u-gold'), tok('u-gold-lo')], glow: tok('u-gold-lo') },
-  gold: { fill: [tok('u-gold-hi'), tok('u-gold'), tok('u-gold-lo')], edge: [tok('u-ink-2'), tok('u-ink-1'), tok('u-ink-0')], glow: tok('u-son') },
+  ink: {
+    fill: [tok('u-ink-3'), tok('u-ink-1'), tok('u-ink-0')],
+    edge: [tok('u-gold-hi'), tok('u-gold'), tok('u-gold-lo')],
+    glow: tok('u-gold-lo'),
+  },
+  gold: {
+    fill: [tok('u-gold-hi'), tok('u-gold'), tok('u-gold-lo')],
+    edge: [tok('u-ink-2'), tok('u-ink-1'), tok('u-ink-0')],
+    glow: tok('u-son'),
+  },
 };
 
 function check() {
