@@ -1,6 +1,6 @@
 # P4 · Tủ ngoại trang (transmog) — thiết kế
 
-Trạng thái: **đã duyệt** (20/11): **miễn phí, người dùng đã chốt** (không có `cost`, không động tới linh thạch), không nhận `artifact`, nhuộm một bộ ba cho cả người, chưa có mở khóa thành tựu. P4-1 (shared: `packages/shared/src/wardrobe.ts`) đã làm; server/client chưa. Nguồn yêu cầu: `ke-hoach-tong-trang-phuc-vu-khi.md` mục 8.4 (người dùng chốt 16/11): *mặc đồ chỉ số này nhưng hiện dáng bộ khác đã sở hữu, kèm nhuộm 3 kênh riêng*.
+Trạng thái: **đã duyệt** (20/11): **miễn phí, người dùng đã chốt** (không có `cost`, không động tới linh thạch), không nhận `artifact`, nhuộm một bộ ba cho cả người, chưa có mở khóa thành tựu. P4-1 (shared: `packages/shared/src/wardrobe.ts`) và P4-2 (server: `apps/server/src/game/wardrobe/`, bảng `wardrobe`, cột `characters.look`, `DATA_VERSION` 7) đã làm; client chưa. Nguồn yêu cầu: `ke-hoach-tong-trang-phuc-vu-khi.md` mục 8.4 (người dùng chốt 16/11): *mặc đồ chỉ số này nhưng hiện dáng bộ khác đã sở hữu, kèm nhuộm 3 kênh riêng*.
 
 ## 1. Hiện trạng (đã đọc code)
 

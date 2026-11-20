@@ -4,9 +4,11 @@ import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import {
+  DISPLAY_SLOTS,
   DUNGEON_MIN_LEVEL,
   initialBottleneck,
   INV_SIZE,
+  isDisplaySlot,
   isEquipSlot,
   isRootId,
   isWearSlot,
@@ -52,6 +54,8 @@ export const characters = sqliteTable('characters', {
   meta: text('meta').notNull().default('{}'),
   /** Ngoại hình JSON `{"g":"m","dye":"attire_sect"}` (quyết định 6.4b); '' = nhân vật cũ, màu theo tên. */
   appearance: text('appearance').notNull().default(''),
+  /** Tủ ngoại trang (P4): JSON `OutfitLook` (ghi đè hiển thị theo ô + nhuộm 3 kênh); rỗng = không dùng. */
+  look: text('look').notNull().default(''),
   /** Linh căn ngũ hành (`RootId`); '' chỉ tồn tại tới lần migration/nạp đầu, sau đó luôn có. */
   root: text('root').notNull().default(''),
   /** Bình cảnh đã vượt cao nhất: 0, 5, 10 hoặc 15 (Phase 3-7). */
@@ -75,6 +79,17 @@ export const items = sqliteTable(
     locked: integer('locked').notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.charId, t.slot] })],
+);
+
+/** Tủ ngoại trang (P4): món đã mở khóa theo nhân vật, vĩnh viễn (bán/phân giải món vẫn còn). Chỉ ghi trong `Character.tx`. */
+export const wardrobe = sqliteTable(
+  'wardrobe',
+  {
+    charId: integer('char_id').notNull(),
+    itemId: text('item_id').notNull(),
+    at: integer('at').notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.charId, t.itemId] })],
 );
 
 export const ledger = sqliteTable('ledger', {
@@ -115,6 +130,7 @@ CREATE TABLE IF NOT EXISTS characters (
   quests TEXT NOT NULL DEFAULT '{"active":{},"done":[]}',
   meta TEXT NOT NULL DEFAULT '{}',
   appearance TEXT NOT NULL DEFAULT '',
+  look TEXT NOT NULL DEFAULT '',
   root TEXT NOT NULL DEFAULT '',
   bk INTEGER NOT NULL DEFAULT 0,
   tele TEXT NOT NULL DEFAULT '',
@@ -129,6 +145,12 @@ CREATE TABLE IF NOT EXISTS items (
   inst TEXT,
   locked INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (char_id, slot)
+);
+CREATE TABLE IF NOT EXISTS wardrobe (
+  char_id INTEGER NOT NULL,
+  item_id TEXT NOT NULL,
+  at INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (char_id, item_id)
 );
 CREATE TABLE IF NOT EXISTS ledger (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -154,10 +176,11 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ['characters', 'root', "TEXT NOT NULL DEFAULT ''"],
   ['characters', 'bk', 'INTEGER NOT NULL DEFAULT 0'],
   ['characters', 'tele', "TEXT NOT NULL DEFAULT ''"],
+  ['characters', 'look', "TEXT NOT NULL DEFAULT ''"],
 ];
 
-/** Phiên bản dữ liệu (PRAGMA user_version). 1 = trang bị 8 ô (Phase 3-1); 2 = linh căn + bình cảnh (Phase 3-7); 3 = Truyền Tống Trận (M-4); 4 = thang 28 cấp (E1-C: tu vi Trúc Cơ, bình cảnh); 6 = trần cấp 32 (DV-3K: tu vi cấp 28 từng là trần `99.999.999` nên bị kẹp về `xpNeed(28)`); 5 = túi 120 ô + cột `items.locked` (TD-A; không cần đổi dữ liệu: túi chỉ là các hàng theo ô, đồ cũ ở ô 0–29 giữ nguyên). */
-export const DATA_VERSION = 6;
+/** Phiên bản dữ liệu (PRAGMA user_version). 1 = trang bị 8 ô (Phase 3-1); 2 = linh căn + bình cảnh (Phase 3-7); 3 = Truyền Tống Trận (M-4); 4 = thang 28 cấp (E1-C: tu vi Trúc Cơ, bình cảnh); 6 = trần cấp 32 (DV-3K: tu vi cấp 28 từng là trần `99.999.999` nên bị kẹp về `xpNeed(28)`); 7 = tủ ngoại trang P4 (điền `wardrobe` từ túi + trang bị hiện có); 5 = túi 120 ô + cột `items.locked` (TD-A; không cần đổi dữ liệu: túi chỉ là các hàng theo ô, đồ cũ ở ô 0–29 giữ nguyên). */
+export const DATA_VERSION = 7;
 
 /**
  * Chuyển trang bị từ 3 ô (weapon/robe/accessory) sang 8 ô: `accessory` đi vào ô đúng loại của mẫu
@@ -285,6 +308,32 @@ function migrateTrucCoXp(sqlite: Database.Database): void {
   }
 }
 
+/**
+ * Tủ ngoại trang (P4): điền `wardrobe` từ mọi món có hình trên người đang nằm ở túi hoặc trang bị của từng nhân vật.
+ * Không tạo/mất vật phẩm hay tiền nên không ghi ledger. Idempotent (INSERT OR IGNORE).
+ */
+export function migrateWardrobe(sqlite: Database.Database): void {
+  const ins = sqlite.prepare('INSERT OR IGNORE INTO wardrobe (char_id, item_id, at) VALUES (?, ?, ?)');
+  const now = Date.now();
+  const show = (id: unknown): id is string => typeof id === 'string' && isDisplaySlot(ITEM.get(id)?.kind);
+  for (const r of sqlite.prepare('SELECT char_id, item_id FROM items').all() as { char_id: number; item_id: string }[]) {
+    if (show(r.item_id)) ins.run(r.char_id, r.item_id, now);
+  }
+  for (const r of sqlite.prepare('SELECT id, equip FROM characters').all() as { id: number; equip: string }[]) {
+    let eq: Record<string, { id?: unknown } | null> = {};
+    try {
+      eq = JSON.parse(r.equip) as typeof eq;
+    } catch {
+      continue;
+    }
+    if (!eq || typeof eq !== 'object') continue;
+    for (const slot of DISPLAY_SLOTS) {
+      const id = eq[slot]?.id;
+      if (show(id)) ins.run(r.id, id, now);
+    }
+  }
+}
+
 function levelPast(zones: readonly { id: string; lvMax: number }[], zone: string, level: number): boolean {
   const z = zones.find((x) => x.id === zone);
   return !!z && level > z.lvMax;
@@ -303,6 +352,7 @@ function migrate(sqlite: Database.Database): void {
     if (v < 3) migrateTele(sqlite);
     if (v < 4) migrateTrucCoXp(sqlite);
     if (v < 6) migrateHoaThanXp(sqlite);
+    if (v < 7) migrateWardrobe(sqlite);
     if (v < DATA_VERSION) sqlite.pragma(`user_version = ${DATA_VERSION}`);
   })();
 }

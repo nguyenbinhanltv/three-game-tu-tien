@@ -29,6 +29,8 @@ export class PlayerS extends Schema {
   /** Ngoại hình (để hiển thị): giới tính 'm' | 'f' và id màu áo trong appearance.json. */
   @view() @type('string') g = 'm';
   @view() @type('string') dye = '';
+  /** Nhuộm 3 kênh của tủ ngoại trang (`encodeDye3`: "a,b,c"), '' = không. Chỉ để hiển thị. */
+  @view() @type('string') dye3 = '';
   /** Kiểu tóc nhân vật nền v2 ('a' | 'b'), '' = mặc định. Chỉ để hiển thị. */
   @view() @type('string') hr = '';
   /** Bộ trang bị quyết định màu áo/ánh kiếm (từ 2 món): id bộ trong sets.json, '' = không. Chỉ để hiển thị. */
