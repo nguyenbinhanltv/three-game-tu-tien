@@ -60,12 +60,7 @@ export const BANNED_NAMES: BannedName[] = [
 ];
 
 /** Bỏ dấu tiếng Việt, đ → d. */
-export const foldVi = (s: string): string =>
-  s
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D');
+export const foldVi = (s: string): string => s.normalize('NFD').replace(/\p{M}/gu, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
 
 /** Chuẩn hóa để so dạng có dấu: NFC, chữ thường, bỏ ký tự vô hình, gộp khoảng trắng. */
 const normVi = (s: string): string =>
@@ -95,7 +90,12 @@ const ASCII_ONLY = /^[\x20-\x7e\t\r\n]*$/;
 export function findBanned(text: string): BannedName[] {
   const hits: BannedName[] = [];
   const n = normVi(text);
-  const ascii = ASCII_ONLY.test(text) ? ` ${text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()} ` : undefined;
+  const ascii = ASCII_ONLY.test(text)
+    ? ` ${text
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim()} `
+    : undefined;
   for (const c of COMPILED) {
     if (c.re.test(n) || (ascii && c.ascii && ascii.includes(c.ascii))) hits.push(c.b);
   }
@@ -199,10 +199,12 @@ export function checkLoreTerms(g: LoreGlossary): string[] {
   // Ngũ hành là 5 nguồn đầu của nhóm thực, cùng id và tên với glossary.elements (linh căn, ngọc khảm đang dùng).
   const real = Object.entries(g.origins.real ?? {});
   Object.entries(g.elements).forEach(([id, name], i) => {
-    if (real[i]?.[0] !== id || real[i]?.[1] !== name) errors.push(`glossary.origins.real: vị trí ${i + 1} phải là ${id} "${name}" như glossary.elements`);
+    if (real[i]?.[0] !== id || real[i]?.[1] !== name)
+      errors.push(`glossary.origins.real: vị trí ${i + 1} phải là ${id} "${name}" như glossary.elements`);
   });
 
-  if (Object.keys(g.huyenKiep).join() !== HUYEN_KIEP_GROUPS.join()) errors.push(`glossary.huyenKiep: cần đúng các nhóm ${HUYEN_KIEP_GROUPS.join(', ')}`);
+  if (Object.keys(g.huyenKiep).join() !== HUYEN_KIEP_GROUPS.join())
+    errors.push(`glossary.huyenKiep: cần đúng các nhóm ${HUYEN_KIEP_GROUPS.join(', ')}`);
   if (Object.keys(g.huyenKiepGroups).join() !== HUYEN_KIEP_GROUPS.join())
     errors.push(`glossary.huyenKiepGroups: cần đúng các nhóm ${HUYEN_KIEP_GROUPS.join(', ')}`);
   const kiepIds: string[] = [];

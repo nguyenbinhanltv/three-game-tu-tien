@@ -68,7 +68,10 @@ describe('TN-0: content:check chặn tên cấm trong dữ liệu và i18n', () 
   it('thư mục dữ liệu có tên cấm thì báo lỗi kèm file và vị trí', () => {
     fs.mkdirSync(path.join(tmp, 'i18n'));
     fs.mkdirSync(path.join(tmp, 'levels'));
-    fs.writeFileSync(path.join(tmp, 'i18n', 'vi.json'), JSON.stringify({ 'quest.q1.desc': 'Tìm Lý Mộ Uyển ở chân núi.', 'quest.q1.name': 'Lên núi' }));
+    fs.writeFileSync(
+      path.join(tmp, 'i18n', 'vi.json'),
+      JSON.stringify({ 'quest.q1.desc': 'Tìm Lý Mộ Uyển ở chân núi.', 'quest.q1.name': 'Lên núi' }),
+    );
     fs.writeFileSync(path.join(tmp, 'npcs.json'), JSON.stringify([{ id: 'npc_tu_do_nam' }, { id: 'npc_lao_gia' }]));
     fs.writeFileSync(path.join(tmp, 'levels', 'hang_nhac.json'), '{"id":"ok"}');
     fs.writeFileSync(path.join(tmp, 'levels', 'README.md'), 'dòng một\nBản đồ Chu Tước tinh\n');
