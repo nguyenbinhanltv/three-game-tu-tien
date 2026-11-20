@@ -4,5 +4,6 @@
   "ground": { "set": "terrain-snow", "mask": "neutral" },
   "music": ["wild_ash", "wild_rift"],
   "features": { "sect": false, "portals": false, "lanterns": true, "lake": false, "clouds": false, "grass": false, "trees": "scatter", "beacons": true, "vegetation": false },
+  "bhFar": true,
   "minimap": "bac_hoang"
 }

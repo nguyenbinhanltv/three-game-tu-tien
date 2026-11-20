@@ -5,9 +5,11 @@ import {
   float,
   mix,
   length,
+  normalView,
   normalWorld,
   positionLocal,
   positionView,
+  positionViewDirection,
   positionWorld,
   pow,
   sin,
@@ -466,7 +468,7 @@ function amethystGeometry(): THREE.BufferGeometry {
   prism(0.34, 2.3, 0.6, 0.3, -0.35, 0.3);
   prism(0.3, 2.0, -0.55, 0.2, 0.3, -0.4);
   prism(0.24, 1.4, 0.2, -0.6, 0.5, 0.15);
-  return merge(parts);
+  return withGradient(merge(parts), [0.1, 0.04, 0.26], [0.58, 0.38, 0.92]);
 }
 
 /** Điểm mọc tinh thể trên vách khe: nơi dốc, độ sâu giữa đáy và mép; hướng theo pháp tuyến địa hình. */
@@ -542,8 +544,41 @@ function mistMaterial(strength: number): THREE.MeshBasicNodeMaterial {
   const dens = clamp(n1.mul(0.9).add(n2.mul(0.5)).sub(0.35), 0, 1).mul(body);
   mat.colorNode = mix(vec3(0.34, 0.18, 0.62), vec3(0.75, 0.45, 1.0), n2.mul(body));
   const nearFade = smoothstep(10, 45, length(positionView));
-  mat.opacityNode = clamp(dens.mul(strength).mul(nearFade), 0, 0.6);
+  mat.opacityNode = clamp(dens.mul(strength).mul(nearFade), 0, 0.42);
   return mat;
+}
+
+/** Thêm màu đỉnh gradient theo độ cao cục bộ (chân tối → mũi sáng) để vật liệu tinh thể có chiều sâu thay vì một màu phẳng (kiểu PROP-1). */
+function withGradient(g: THREE.BufferGeometry, base: [number, number, number], tip: [number, number, number]): THREE.BufferGeometry {
+  const p = g.attributes.position as THREE.BufferAttribute;
+  let top = 0;
+  for (let i = 0; i < p.count; i++) top = Math.max(top, p.getY(i));
+  const col = new Float32Array(p.count * 3);
+  for (let i = 0; i < p.count; i++) {
+    const t = Math.pow(Math.min(1, Math.max(0, p.getY(i) / (top || 1))), 1.3);
+    col[i * 3] = base[0] + (tip[0] - base[0]) * t;
+    col[i * 3 + 1] = base[1] + (tip[1] - base[1]) * t;
+    col[i * 3 + 2] = base[2] + (tip[2] - base[2]) * t;
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return g;
+}
+
+/** Vật liệu tinh thể gradient (như `propCrystal`): lõi nóng ở mũi, fresnel viền cùng sắc, thân giữa sẫm. */
+function gradientCrystalMaterial(roughness: number, emissiveK: number): THREE.MeshStandardNodeMaterial {
+  const vc = vertexColor();
+  const fres = pow(float(1).sub(normalView.dot(positionViewDirection).abs()), 2.2);
+  const lum = vc
+    .dot(vec3(0.3, 0.5, 0.2))
+    .mul(2.2)
+    .clamp(0, 1);
+  const m = new THREE.MeshStandardNodeMaterial({ roughness, metalness: 0.05 });
+  m.colorNode = vc.mul(0.35);
+  m.emissiveNode = vc
+    .mul(float(1).add(lum.mul(lum).mul(0.9)))
+    .mul(emissiveK)
+    .add(vc.normalize().mul(fres).mul(0.7));
+  return m;
 }
 
 function crystalGeometry(): THREE.BufferGeometry {
@@ -567,7 +602,7 @@ function crystalGeometry(): THREE.BufferGeometry {
     );
   }
   parts.push(place(new THREE.ConeGeometry(0.4, 2.8, 5, 1), 0, 1.3, 0));
-  return merge(parts);
+  return withGradient(merge(parts), [0.1, 0.2, 0.42], [0.55, 0.72, 0.95]);
 }
 
 /** Mạng vết rạn tỏa từ khe: đa giác dải (ribbon) bám địa hình; `aNear` 1 ở sát khe → 0 ở đầu vết nứt (mờ dần), `aEdge` thon hai mép. */
@@ -774,15 +809,7 @@ export class BhWonders {
 
     // Tinh thể băng dọc mép khe
     if (path.length > 1) {
-      const iceMat = own(
-        new THREE.MeshStandardNodeMaterial({
-          color: 0xbfd6ff,
-          roughness: 0.12,
-          metalness: 0.0,
-          emissive: new THREE.Color(0x3a1a78),
-          emissiveIntensity: 0.9,
-        }),
-      );
+      const iceMat = own(gradientCrystalMaterial(0.12, 0.9));
       const spots = iceSpots(path, 7);
       const ice = new THREE.InstancedMesh(own(crystalGeometry()), iceMat, spots.length);
       ice.name = 'bh-ice';
@@ -802,15 +829,7 @@ export class BhWonders {
       // Vực khe: tinh thể tím mọc từ vách + sương tím cuộn ra
       const spotsC = wallCrystalSpots(path, heightAt, opts.detail ? 170 : 70);
       if (spotsC.length) {
-        const amMat = own(
-          new THREE.MeshStandardNodeMaterial({
-            color: 0x8a5cff,
-            roughness: 0.18,
-            metalness: 0.1,
-            emissive: new THREE.Color(0x7a2cff),
-            emissiveIntensity: 1.6,
-          }),
-        );
+        const amMat = own(gradientCrystalMaterial(0.18, 1.2));
         markBloom(amMat, 0.35);
         const am = new THREE.InstancedMesh(own(amethystGeometry()), amMat, spotsC.length);
         am.name = 'bh-amethyst';
