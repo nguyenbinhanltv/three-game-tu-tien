@@ -930,6 +930,8 @@ export interface LevelAssets {
   thanTangArt?: boolean;
   /** Cảnh Xích Tẫn Khích (DUN-1 PR6, client `game/world/xichTanArt.ts` + GLB `arch_xich_tan`): hẻm núi lửa tàn đỏ-đen. Chỉ để nhìn. */
   xichTanArt?: boolean;
+  /** Lớp núi xa Bắc Hoang (POLISH-1, client `game/world/bhFar.ts`): đỉnh tuyết nhiều lớp + sương chân núi ngoài vùng chơi. Chỉ để nhìn. */
+  bhFar?: boolean;
   /** Lớp cảnh xa Lạc Kiếm Tông (POLISH-1, client `game/world/lacKiemFar.ts`): cụm tùng, gờ đá, sương dải trên đồi xa. Chỉ để nhìn. */
   lacKiemFar?: boolean;
   /** Cảnh Độ Kiếp (DUN-1 PR7, client `game/world/doKiepArt.ts` + GLB `arch_do_kiep`): Thiên Lôi Đài dưới mây bão. Chỉ để nhìn. */

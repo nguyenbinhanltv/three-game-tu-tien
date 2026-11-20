@@ -25,8 +25,6 @@ import {
   uniform,
   vec2,
   vec3,
-  floor,
-  fract,
 } from 'three/tsl';
 import { WORLD_SIZE } from '@dtl/shared';
 import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
