@@ -22,13 +22,22 @@ export interface Peak {
   r: number;
 }
 
-/** Điểm ứng viên: ngoài `bounds` (đệm MARGIN) và trong thế giới `size` (chừa `edge`). null nếu không hợp lệ. */
+/** Bán kính chân tối đa so với `r`: jitter ngang ≤ ~1,28 × giãn trục z ≤ 1,2 (+ đệm xô lệch) → vòng tròn ngoại tiếp cả chân nón. */
+export const FOOT_K = 1.65;
+
+/** Khoảng cách Euclid từ điểm tới khung chữ nhật (0 nếu nằm trong). */
+export function distToRect(x: number, z: number, b: { x0: number; z0: number; x1: number; z1: number }): number {
+  return Math.hypot(Math.max(b.x0 - x, 0, x - b.x1), Math.max(b.z0 - z, 0, z - b.z1));
+}
+
+/** Điểm ứng viên: TOÀN BỘ chân nón (tâm + `r × FOOT_K`) nằm ngoài `bounds` (đệm MARGIN) và tâm trong thế giới `size` (chừa `edge`). null nếu không hợp lệ. */
 export function peakCandidate(i: number, bounds: { x0: number; z0: number; x1: number; z1: number }, size: number): Peak | null {
   const edge = 30;
   const x = edge + hash01(i, 1, 6101) * (size - 2 * edge);
   const z = edge + hash01(i, 2, 6101) * (size - 2 * edge);
-  if (x > bounds.x0 - MARGIN && x < bounds.x1 + MARGIN && z > bounds.z0 - MARGIN && z < bounds.z1 + MARGIN) return null;
-  return { x, z, h: 70 + hash01(i, 3, 6101) * 150, r: 36 + hash01(i, 4, 6101) * 50 };
+  const r = 36 + hash01(i, 4, 6101) * 50;
+  if (distToRect(x, z, bounds) < MARGIN + r * FOOT_K) return null;
+  return { x, z, h: 70 + hash01(i, 3, 6101) * 150, r };
 }
 
 export class BhFar {

@@ -42,3 +42,7 @@ Tái thiết kế mỹ thuật Bắc Hoang Tẫn Nguyên (level `bac_hoang`, ch�
 - **Đêm**: đèn trại đổi sang màu cam ấm (`0xff8a3c`) và giảm cường độ (`bh_night` 1,8 → 1,4, `bhr_night` 1,9 → 1,5) nên vùng sáng bớt thành đĩa trắng phẳng trên tuyết; vẫn là đĩa sáng của đèn điểm (cần ánh lửa/khói thật để thôi giống đĩa).
 - **Ngân sách (Cao, 1080p)**: 179–236 draw call, ~0,65–0,81M tam giác.
 - **Còn lại**: độ nhám/normal tuyết gần (yêu cầu "tuyết có độ nhám, bóng đổ") chưa làm: texture tuyết hiện vẫn mịn; ánh lửa trại và khói chưa có.
+
+### Polish — Bắc Hoang vòng 3 (review): chân núi xa ngoài vùng chơi
+
+- `peakCandidate` trước chỉ loại tâm đỉnh trong `playBounds` ± 40 m, trong khi chân nón vươn tới ~110 m (r 36–86 × jitter 1,28 × giãn z 1,2): đỉnh ở rìa lấn vào vùng chơi mà không có va chạm. Nay yêu cầu khoảng cách từ tâm tới khung ≥ `MARGIN + r × FOOT_K` (1,65, vòng tròn ngoại tiếp chân nón); test `bhFar.test.ts` kiểm mọi đỉnh được chọn có toàn bộ chân ngoài `playBounds`. Hệ quả: dãy đỉnh giữa thưa hơn (đỉnh tập trung ở góc/ngoài cùng), nền xa còn mảng phẳng giữa các đỉnh.
