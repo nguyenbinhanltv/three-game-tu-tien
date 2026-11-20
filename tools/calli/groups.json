@@ -129,6 +129,32 @@
         }
       ]
     },
+    "sign": {
+      "items": [
+        {
+          "id": "sign_cong_tong",
+          "key": "ui.sign.lac_kiem_tong",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03,
+          "board": {
+            "w": 6.8,
+            "h": 1.9
+          }
+        },
+        {
+          "id": "sign_thien_kiem_dien",
+          "key": "ui.sign.thien_kiem_dien",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03,
+          "board": {
+            "w": 5.8,
+            "h": 1.3
+          }
+        }
+      ]
+    },
     "outfit": {
       "items": [
         {

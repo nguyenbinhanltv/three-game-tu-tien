@@ -127,6 +127,22 @@
     "h": 232,
     "hash": "6f6a90d2eb74"
   },
+  "sign_cong_tong": {
+    "key": "ui.sign.lac_kiem_tong",
+    "text": "Lạc Kiếm Tông",
+    "file": "sign-sign_cong_tong.5e349b3e2d42.png",
+    "w": 1360,
+    "h": 380,
+    "hash": "5e349b3e2d42"
+  },
+  "sign_thien_kiem_dien": {
+    "key": "ui.sign.thien_kiem_dien",
+    "text": "Thiên Kiếm Điện",
+    "file": "sign-sign_thien_kiem_dien.437ee16dbf7c.png",
+    "w": 1160,
+    "h": 260,
+    "hash": "437ee16dbf7c"
+  },
   "set_lac_kiem": {
     "key": "set.set_lac_kiem.name",
     "text": "Lạc Kiếm Môn Phục",

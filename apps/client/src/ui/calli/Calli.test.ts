@@ -1,9 +1,10 @@
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { t } from '@dtl/content';
-import manifest from './manifest.json';
+import manifest from '../../base/calliManifest.json';
 import { METHOD_SKILLS } from '@dtl/content';
-import { calliFilesOf, calliOf } from './Calli';
+import { calliOf } from '../../base/calli';
+import { calliFilesOf } from './Calli';
 
 describe('calliOf', () => {
   it('có ảnh cho cảnh giới và địa danh đã vẽ', () => {
