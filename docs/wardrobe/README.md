@@ -1,6 +1,6 @@
 # P4 · Tủ ngoại trang (transmog) — thiết kế
 
-Trạng thái: **bản thiết kế chờ orchestrator duyệt** (20/11). Chưa có code. Nguồn yêu cầu: `ke-hoach-tong-trang-phuc-vu-khi.md` mục 8.4 (người dùng chốt 16/11): *mặc đồ chỉ số này nhưng hiện dáng bộ khác đã sở hữu, kèm nhuộm 3 kênh riêng*.
+Trạng thái: **đã duyệt** (20/11): miễn phí (mặc định, để chỗ thêm `cost` sau nếu người dùng chọn thu phí), không nhận `artifact`, nhuộm một bộ ba cho cả người, chưa có mở khóa thành tựu. Chưa có code. Nguồn yêu cầu: `ke-hoach-tong-trang-phuc-vu-khi.md` mục 8.4 (người dùng chốt 16/11): *mặc đồ chỉ số này nhưng hiện dáng bộ khác đã sở hữu, kèm nhuộm 3 kênh riêng*.
 
 ## 1. Hiện trạng (đã đọc code)
 
@@ -110,7 +110,7 @@ Mặc định đề xuất: **miễn phí đổi ngoại hình và nhuộm** (MV
 | P4-3 | Client: state `S.WARDROBE`, đường hiển thị `dye3`, cửa sổ Tủ ngoại trang + i18n |
 | P4-4 | Security bot, bot 100, ảnh 720p/1080p, handbook `gameplay-systems.md`/`client-ui.md` |
 
-## 9. Câu hỏi cần duyệt
+## 9. Câu hỏi đã duyệt (cũ)
 
 1. Nhuộm/đổi ngoại hình **miễn phí** (đề xuất) hay thu linh thạch?
 2. Tủ có nhận cả `artifact` (pháp bảo bay quanh người) ở vòng này không? (đề xuất: không, vòng sau)
