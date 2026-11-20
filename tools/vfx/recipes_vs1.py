@@ -267,7 +267,8 @@ def thien_kiem_vu():
     for i, (dx, dz, t0, top) in enumerate(pts):
         tier = 0 if i < 14 else 1
         ev += sword_fall(t0, dx, dz, top, 3.4, 4.0, 3.4, fall=0.32, tier=tier, seed=i + 1, ghost=(i % 2 == 0))
-        ev.append(snd(t0 + 0.32, 'impact', 0.22, 1.0 + 0.04 * (i % 5), 0.08))
+        if i % 6 == 0:  # chỉ vài âm cắm (giới hạn voice, xem validateFxTimeline: ≤ 8 âm/chiêu)
+            ev.append(snd(t0 + 0.32, 'impact', 0.3, 1.0 + 0.04 * (i % 5), 0.08))
         if i % 2 == 0:
             ev.append(mesh('crack_radial', t0 + 0.33, 0.9, at='area', offset=[dx, 0.05, dz], scale=1.8, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=1, seed=i))
         if i % 3 == 0:
@@ -312,8 +313,8 @@ def van_kiem():
     for i, (dx, dz, t0, top) in enumerate(pts):
         tier = 0 if i < 30 else (1 if i < 70 else 2)
         ev += sword_fall(t0, dx, dz, top, 3.2, 3.6, 3.2, fall=0.34, tier=tier, seed=i + 1, ghost=(i % 3 == 0), stuck=(i % 2 == 0), stay=0.8)
-        if i % 6 == 0:
-            ev.append(snd(t0 + 0.34, 'impact', 0.2, 0.9 + 0.05 * (i % 6), 0.08))
+        if i % 40 == 0:
+            ev.append(snd(t0 + 0.34, 'impact', 0.25, 0.9 + 0.05 * (i % 6), 0.08))
         if i % 5 == 0:
             ev.append(mesh('crack_radial', t0 + 0.35, 0.9, at='area', offset=[dx, 0.05, dz], scale=1.6, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=1, seed=i))
     ev += [

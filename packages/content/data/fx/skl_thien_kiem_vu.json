@@ -156,7 +156,7 @@
    "type": "soundAt",
    "t": -0.18,
    "id": "impact",
-   "gain": 0.22,
+   "gain": 0.3,
    "rate": 1.0,
    "jitter": 0.08
   },
@@ -311,14 +311,6 @@
    "seed": 2
   },
   {
-   "type": "soundAt",
-   "t": -0.158,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.04,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "blade_flying",
    "t": -0.456,
@@ -411,14 +403,6 @@
    "seed": 3
   },
   {
-   "type": "soundAt",
-   "t": -0.136,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.08,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "crack_radial",
    "t": -0.126,
@@ -497,14 +481,6 @@
    "tone": "body",
    "tier": 0,
    "seed": 4
-  },
-  {
-   "type": "soundAt",
-   "t": -0.114,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.12,
-   "jitter": 0.08
   },
   {
    "type": "mesh",
@@ -651,14 +627,6 @@
    "seed": 5
   },
   {
-   "type": "soundAt",
-   "t": -0.092,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.16,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "crack_radial",
    "t": -0.082,
@@ -757,14 +725,6 @@
    "seed": 6
   },
   {
-   "type": "soundAt",
-   "t": -0.07,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.0,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "blade_flying",
    "t": -0.368,
@@ -860,7 +820,7 @@
    "type": "soundAt",
    "t": -0.048,
    "id": "impact",
-   "gain": 0.22,
+   "gain": 0.3,
    "rate": 1.04,
    "jitter": 0.08
   },
@@ -997,14 +957,6 @@
    "seed": 8
   },
   {
-   "type": "soundAt",
-   "t": -0.026,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.08,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "blade_flying",
    "t": -0.324,
@@ -1095,14 +1047,6 @@
    "tone": "body",
    "tier": 0,
    "seed": 9
-  },
-  {
-   "type": "soundAt",
-   "t": -0.004,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.12,
-   "jitter": 0.08
   },
   {
    "type": "mesh",
@@ -1201,14 +1145,6 @@
    "tone": "body",
    "tier": 0,
    "seed": 10
-  },
-  {
-   "type": "soundAt",
-   "t": 0.018,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.16,
-   "jitter": 0.08
   },
   {
    "type": "mesh",
@@ -1355,14 +1291,6 @@
    "seed": 11
   },
   {
-   "type": "soundAt",
-   "t": 0.04,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.0,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "crack_radial",
    "t": 0.05,
@@ -1441,14 +1369,6 @@
    "tone": "body",
    "tier": 0,
    "seed": 12
-  },
-  {
-   "type": "soundAt",
-   "t": 0.062,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.04,
-   "jitter": 0.08
   },
   {
    "type": "mesh",
@@ -1546,7 +1466,7 @@
    "type": "soundAt",
    "t": 0.084,
    "id": "impact",
-   "gain": 0.22,
+   "gain": 0.3,
    "rate": 1.08,
    "jitter": 0.08
   },
@@ -1701,14 +1621,6 @@
    "seed": 14
   },
   {
-   "type": "soundAt",
-   "t": 0.106,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.12,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "blade_flying",
    "t": -0.192,
@@ -1801,14 +1713,6 @@
    "seed": 15
   },
   {
-   "type": "soundAt",
-   "t": 0.128,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.16,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "crack_radial",
    "t": 0.138,
@@ -1887,14 +1791,6 @@
    "tone": "body",
    "tier": 1,
    "seed": 16
-  },
-  {
-   "type": "soundAt",
-   "t": 0.15,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.0,
-   "jitter": 0.08
   },
   {
    "type": "mesh",
@@ -2041,14 +1937,6 @@
    "seed": 17
   },
   {
-   "type": "soundAt",
-   "t": 0.172,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.04,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "crack_radial",
    "t": 0.182,
@@ -2147,14 +2035,6 @@
    "seed": 18
   },
   {
-   "type": "soundAt",
-   "t": 0.194,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.08,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "blade_flying",
    "t": -0.104,
@@ -2250,7 +2130,7 @@
    "type": "soundAt",
    "t": 0.216,
    "id": "impact",
-   "gain": 0.22,
+   "gain": 0.3,
    "rate": 1.12,
    "jitter": 0.08
   },
@@ -2387,14 +2267,6 @@
    "seed": 20
   },
   {
-   "type": "soundAt",
-   "t": 0.238,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.16,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "blade_flying",
    "t": -0.06,
@@ -2485,14 +2357,6 @@
    "tone": "body",
    "tier": 1,
    "seed": 21
-  },
-  {
-   "type": "soundAt",
-   "t": 0.26,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.0,
-   "jitter": 0.08
   },
   {
    "type": "mesh",
@@ -2591,14 +2455,6 @@
    "tone": "body",
    "tier": 1,
    "seed": 22
-  },
-  {
-   "type": "soundAt",
-   "t": 0.282,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.04,
-   "jitter": 0.08
   },
   {
    "type": "mesh",
@@ -2745,14 +2601,6 @@
    "seed": 23
   },
   {
-   "type": "soundAt",
-   "t": 0.304,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.08,
-   "jitter": 0.08
-  },
-  {
    "type": "mesh",
    "shape": "crack_radial",
    "t": 0.314,
@@ -2831,14 +2679,6 @@
    "tone": "body",
    "tier": 1,
    "seed": 24
-  },
-  {
-   "type": "soundAt",
-   "t": 0.326,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.12,
-   "jitter": 0.08
   },
   {
    "type": "mesh",
@@ -2936,7 +2776,7 @@
    "type": "soundAt",
    "t": 0.348,
    "id": "impact",
-   "gain": 0.22,
+   "gain": 0.3,
    "rate": 1.16,
    "jitter": 0.08
   },
@@ -3089,14 +2929,6 @@
    "tone": "body",
    "tier": 1,
    "seed": 26
-  },
-  {
-   "type": "soundAt",
-   "t": 0.37,
-   "id": "impact",
-   "gain": 0.22,
-   "rate": 1.0,
-   "jitter": 0.08
   },
   {
    "type": "decal",

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   FX_QUALITY_TIER,
   FX_SKILL_DRAW_MAX,
+  FX_SOUND_MAX,
   fxDrawCount,
   fxEventsFor,
   fxParticleCount,
@@ -178,6 +179,11 @@ describe('dòng thời gian hiệu ứng', () => {
       };
       expect(FX_SKILL_DRAW_MAX).toBe(25);
       expect(validateFxTimeline(big, () => true).join('\n')).toMatch(/draw cả chiêu/);
+    });
+    it('tối đa FX_SOUND_MAX âm mỗi đòn (giữ voice cho âm quan trọng)', () => {
+      const snd = Array.from({ length: FX_SOUND_MAX + 1 }, (_, k) => ({ type: 'soundAt' as const, t: k * 0.01, id: 'x' }));
+      expect(ok(snd).join()).toMatch(/âm > 8/);
+      expect(ok(snd.slice(0, FX_SOUND_MAX))).toEqual([]);
     });
   });
 });

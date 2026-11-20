@@ -344,6 +344,9 @@ export function fxDrawCount(events: readonly FxEvent[]): number {
   return groups.size + bolts + gusts;
 }
 
+/** Số âm tối đa (`sound` + `soundAt`) mỗi đòn/biến thức: mỗi âm chiếm một voice (MAX_VOICES = 32), âm FX không bị chống dồn. */
+export const FX_SOUND_MAX = 8;
+
 /** Ngân sách draw call của CẢ chiêu (VS-1): mọi sự kiện của mọi mốc/đòn/biến thức hợp lại. Mỗi mốc riêng vẫn ≤ 12. */
 export const FX_SKILL_DRAW_MAX = 25;
 
@@ -431,6 +434,12 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
         ).length;
         if (n > 1) errs.push(`${p}: ${n} slowmo cùng một mốc trúng (tối đa 1)`);
       }
+    }
+  // Âm: `soundAt`/`sound` không qua chống dồn của `sfx` (throttle = false) và mỗi âm chiếm một trong MAX_VOICES = 32 → tối đa FX_SOUND_MAX mỗi đòn.
+  for (const c of combos)
+    for (const v of vars) {
+      const n = fxEventsFor(tl, c, v).filter((e) => e.type === 'sound' || e.type === 'soundAt').length;
+      if (n > FX_SOUND_MAX) errs.push(`${p}: ${n} âm > ${FX_SOUND_MAX} (đòn ${c}${v ? ', biến thức ' + v : ''})`);
     }
   // Tia sét: tối đa 4 tia mỗi đòn (mỗi tia một draw call riêng, không gộp).
   for (const c of combos)
