@@ -1131,10 +1131,6 @@ if SPRINGS:
         if np.count_nonzero(row) > 4:
             row[row < np.sort(row)[-4]] = 0
         row /= row.sum()
-if os.environ.get('C2_DUMP'):
-    _faces = np.array([list(p_.vertices) for p_ in BODY.data.polygons], int)
-    np.savez(os.environ['C2_DUMP'], VP=VP, W=W, COLS=np.array(COLS), faces=_faces, SLEEVE=SLEEVE, RIGID=RIGID, height=height,
-             bn=np.array(list(Fp_HEAD)), bh=np.array([Fp_HEAD[k] for k in Fp_HEAD]), bt=np.array([Fp_TAIL[k] for k in Fp_HEAD]), TEXEL=TEXEL if TEXEL is not None else np.zeros((NV, 3)))
 if C2_ON:
     exec(compile(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'chr_v3_c2.py'), encoding='utf-8').read(), 'chr_v3_c2.py', 'exec'), globals())
 bpy.ops.object.mode_set(mode='OBJECT')

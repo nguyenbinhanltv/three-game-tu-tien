@@ -237,8 +237,8 @@ REP['c2_bridge_after'] = {'voan-khac': _bridge_count((1, 2), (0, 3, 4, 5)), 'cha
 log(f'C2 cạnh cầu nối sau cắt: {REP["c2_bridge_after"]}')
 
 # ---------- xương phụ voan + trọng số theo lớp ----------
-_K = C2.get('veilStrips', 4)
-_J = C2.get('veilLinks', 3)
+_K = C2.get('veilStrips', 3)
+_J = C2.get('veilLinks', 2)
 _zt, _zh = C2.get('veilTop', 1.05) * _H / 1.7, C2.get('veilHem', 0.08) * _H / 1.7
 _new_cols = {}
 _veil_info = {}
@@ -337,7 +337,7 @@ for _q, _w in enumerate(_ring_w):
 RIGID[_nb:] = True
 
 # viền mềm: hai bản sao của một đỉnh gốc ở hai vùng kề nhau trộn `seamTie` về trung bình
-_tie = float(C2.get('seamTie', 0.5))
+_tie = float(C2.get('seamTie', 0.3))
 if _tie > 0:
     _groups = {}
     for _i in range(_nb):
@@ -370,7 +370,7 @@ for _vi in range(NV):
         _row[_row < np.sort(_row)[-4]] = 0
     _sm = _row.sum()
     W[_vi] = _row / _sm if _sm > 1e-9 else _row
-if os.environ.get('C2_DUMP2'):
+if os.environ.get('C2_DUMP2'):  # chẩn đoán: vị trí/nhãn vùng/trọng số cuối
     np.savez(os.environ['C2_DUMP2'], VP=VP, LAB=LABN, W=W, COLS=np.array(COLS))
 REP['c2_verts'] = NV
 REP['c2_underbody'] = {'verts': len(_ring_verts), 'tris_quads': len(_ufaces)}

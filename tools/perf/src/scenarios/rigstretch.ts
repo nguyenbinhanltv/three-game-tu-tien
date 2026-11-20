@@ -205,6 +205,7 @@ export default {
             return { name: bn.name, parent: bn.parent ? bn.parent.name : null, p: [-(e[0]! * tx + e[1]! * ty + e[2]! * tz), -(e[4]! * tx + e[5]! * ty + e[6]! * tz), -(e[8]! * tx + e[9]! * ty + e[10]! * tz)].map((v) => Math.round(v * 1000) / 1000) };
           });
           return {
+            nEdges: restLen.length,
             restPos: clipName === 'Idle_Loop' ? rest.map((v) => Math.round(v * 1000) / 1000) : [],
             groups: clipName === 'Idle_Loop' ? groups : [],
             domBones: clipName === 'Idle_Loop' ? dom : [],

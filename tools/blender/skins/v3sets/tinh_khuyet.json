@@ -12,7 +12,7 @@
   ],
   "splitCloth": true,
   "keepOriginal": true,
-  "c2": {},
+  "c2": {"seamTie": 0.3, "veilStrips": 3, "veilLinks": 2, "skirtThighK": 0.5},
   "groups": [
     {
       "name": "skirt",
