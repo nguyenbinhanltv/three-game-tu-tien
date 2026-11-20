@@ -21,6 +21,7 @@ import {
   PF_SOUL,
   inSkyBand,
   SOUL_SCOUT,
+  tribDef,
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
@@ -331,9 +332,11 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
         set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
         eng.post?.flash(0.3);
         // Thẻ chương đột phá sau khi mây kiếp tan và trụ sáng bốc lên; sting đột phá đã phát nên không thêm chiêng.
+        // Kiếp chuỗi chưa gắn vào thang cấp (Ngũ Suy, TN-4) không đổi cảnh giới nên không có thẻ chương.
         window.setTimeout(
           () =>
             !eng.disposed &&
+            !(tribDef(m.tb).chain && tribDef(m.tb).to <= tribDef(m.tb).from) &&
             chapter(
               eng,
               m.tb === 'anh_bien'
@@ -438,6 +441,36 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       if (src === eng.sid) set({ danPg: m.pg ?? 0 });
       break;
     }
+    case 'suy': {
+      // Thanh suy khí của một ải Ngũ Suy (TN-4): `pg` < 0 khép ải (dọn mọi dấu của người đó), còn lại cập nhật thanh và nhịp.
+      if (m.pg !== undefined && m.pg < 0) {
+        clearSuyMarks(eng, src);
+        if (src === eng.sid) set({ suy: null, suyWaveUntil: 0, suyLamps: -1 });
+        break;
+      }
+      if (src !== eng.sid) break;
+      const prev = get().suy;
+      const same = prev && prev.id === m.s;
+      set({
+        suy: {
+          id: m.s ?? '',
+          pg: m.pg ?? 0,
+          mode: m.n ?? (same ? prev.mode : 0),
+          until: m.d !== undefined ? Date.now() + m.d * 1000 : same ? prev.until : 0,
+        },
+        ...(same ? {} : { suyCdUntil: 0, suyWaveUntil: 0, suyLamps: m.s === 'suy_tho' ? 0 : -1 }),
+      });
+      break;
+    }
+    case 'suymark':
+      suyMark(eng, m);
+      break;
+    case 'suyreveal':
+      if (src === eng.sid) set({ suyCdUntil: Date.now() + (m.d ?? 0) * 1000 });
+      break;
+    case 'suyok':
+      if (src === eng.sid) eng.post?.flash(0.18);
+      break;
     case 'tamcanh': {
       // Tâm cảnh (E3-L): của chủ kiếp; lần đầu (pg 100) cắt cảnh ngắn nhìn xuống chỗ Tâm Ma Ảnh sắp hiện.
       if (src !== eng.sid) break;
@@ -674,7 +707,20 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       }
       eng.cloneVfx.get(src)?.stop();
       eng.cloneVfx.delete(src);
-      if (src === eng.sid) set({ danPg: -1, tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
+      clearSuyMarks(eng, src);
+      if (src === eng.sid)
+        set({
+          danPg: -1,
+          tamCanh: -1,
+          soulUntil: 0,
+          nguHanh: null,
+          cloneUntil: 0,
+          steles: -1,
+          suy: null,
+          suyCdUntil: 0,
+          suyWaveUntil: 0,
+          suyLamps: -1,
+        });
       v.tribulationCloud(
         (out) => e.chestOf(src, out),
         m.d ?? 40,
@@ -688,6 +734,76 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
         chapter(eng, 'trib');
       }
       break;
+  }
+}
+
+function clearSuyMarks(eng: Game, sid: string): void {
+  if (sid === eng.sid) eng.suyLog = undefined;
+  for (const [k, h] of eng.suyMarks) {
+    if (!k.startsWith(sid + ':')) continue;
+    h.stop();
+    eng.suyMarks.delete(k);
+  }
+}
+
+/**
+ * Dấu trên sân của Thiên Nhân Ngũ Suy (TN-4). Bản đầu dùng vòng Đan Trận làm dấu tạm (vòng đầy = đang mở/đang cháy), VFX riêng từng ải làm ở PR sau.
+ * `nhan` Linh Nhãn, `toi` Tôi Thể Lôi, `den` Thọ Đăng (ô `n`; `n` < 0 = dọn hết đèn), `thuc` đợt lôi ẩn (vạch báo đi qua S.HAZARD), `tam` nhịp phá vọng.
+ */
+function suyMark(eng: Game, m: FxMsg): void {
+  const src = m.src ?? '';
+  const mine = src === eng.sid;
+  const kind = m.s ?? '';
+  const alive = () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0;
+  const key = `${src}:${kind}:${m.n ?? 0}`;
+  if (import.meta.env.DEV && mine) {
+    // Đợt lôi ẩn dùng `n` làm mặt nạ cung nên gom về một khóa.
+    const slot = kind === 'thuc' || kind === 'tam' ? 0 : (m.n ?? 0);
+    (eng.suyLog ??= {})[`${kind}:${slot}`] = {
+      s: kind,
+      n: m.n ?? 0,
+      x: m.x ?? 0,
+      z: m.z ?? 0,
+      r: m.r ?? 0,
+      pg: m.pg ?? 0,
+      lv: m.lv ?? 0,
+      at: Date.now(),
+    };
+  }
+  const drop = (k: string) => {
+    eng.suyMarks.get(k)?.stop();
+    eng.suyMarks.delete(k);
+  };
+  const ring = (k: string, dur: number, pg: number) => {
+    let h = eng.suyMarks.get(k);
+    if (!h) {
+      h = eng.vfx.danTran(m.x ?? 0, m.z ?? 0, m.r ?? 3, dur, alive);
+      eng.suyMarks.set(k, h);
+    }
+    h.set(pg);
+  };
+  if (kind === 'nhan') {
+    drop(key);
+    if (m.pg) ring(key, (m.d ?? 8) + 0.5, 100);
+  } else if (kind === 'toi') {
+    drop(key);
+    if (m.pg === 1) ring(key, (m.d ?? 2) + 0.2, 60);
+  } else if (kind === 'den') {
+    if ((m.n ?? 0) < 0) {
+      for (const k of [...eng.suyMarks.keys()]) if (k.startsWith(`${src}:den:`)) drop(k);
+      if (mine) set({ suyLamps: -1 });
+      return;
+    }
+    // 1 cháy, 0 tắt, 2 suy phong đang nhắm, 3 đang thắp lại.
+    ring(key, 60, m.pg === 1 ? 100 : m.pg === 2 ? 55 : m.pg === 3 ? 30 : 0);
+    if (mine && (m.pg === 0 || m.pg === 1)) {
+      const cur = Math.max(0, get().suyLamps);
+      const bit = 1 << (m.n ?? 0);
+      set({ suyLamps: m.pg === 1 ? cur | bit : cur & ~bit });
+    }
+  } else if (kind === 'thuc' && mine) {
+    if (m.pg === 3) set({ suyWaveUntil: Date.now() + (m.d ?? 3) * 1000 });
+    else if (m.pg === 0) set({ suyWaveUntil: 0 });
   }
 }
 
