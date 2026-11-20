@@ -101,7 +101,7 @@ import {
   t,
 } from './index';
 import { LOOT, LOOT_MATS } from './loot';
-import { monSkillsOf } from '@dtl/shared';
+import { chainErrors, monSkillsOf, resourceErrors, skillResErrors } from '@dtl/shared';
 import {
   PILL_TIERS,
   ARTIFACT_MAX_LEVEL,
@@ -219,6 +219,13 @@ const needStr = (key: string) => {
 };
 
 // ---- công pháp (Phase 3-5): chiêu công pháp, nội tại, biến thức ----
+// VS-2a: `res` của chiêu phải trỏ tới tài nguyên có thật; chiêu công pháp chỉ dùng tài nguyên của chính công pháp đó.
+for (const s of [...SKILLS, ...METHOD_SKILLS]) {
+  if (!s.res) continue;
+  const owner = METHODS.find((m) => m.resource?.id === s.res!.id);
+  for (const e of skillResErrors(s.res, owner?.resource.max, `skill ${s.id}`)) err(e);
+  if (owner && s.method && s.method !== owner.id) err(`skill ${s.id}: res.id ${s.res.id} không phải tài nguyên của công pháp ${s.method}`);
+}
 for (const s of SKILLS) if (s.method || s.ult) err(`skill ${s.id}: chiêu chung không có method/ult (đặt trong methods.json)`);
 for (const m of METHODS) {
   const sig = SKILL.get(m.sig);
@@ -226,9 +233,16 @@ for (const m of METHODS) {
   if (!sig || sig.method !== m.id || sig.ult) err(`method ${m.id}: chiêu đặc trưng ${m.sig} phải thuộc công pháp và không phải tối thượng`);
   if (!ult || ult.method !== m.id || !ult.ult) err(`method ${m.id}: chiêu tối thượng ${m.ult} phải thuộc công pháp và có ult`);
   if (!/^[0-9a-f]{6}$/i.test(m.color)) err(`method ${m.id}: màu phải là hex 6 ký tự`);
-  if (m.passive.kind === 'kiem_y' || m.passive.kind === 'the') {
-    if (!(m.passive.max! >= 1 && m.passive.max! <= 9 && m.passive.perStack! > 0 && m.passive.decay! > 0))
-      err(`method ${m.id}: nội tại thiếu max/perStack/decay`);
+  // VS-2a: tài nguyên riêng của công pháp.
+  if (!m.resource) err(`method ${m.id}: thiếu resource`);
+  else {
+    for (const e of resourceErrors(m.resource, `method ${m.id}.resource`)) err(e);
+    if (METHODS.some((o) => o !== m && o.resource?.id === m.resource.id))
+      err(`method ${m.id}: tài nguyên ${m.resource.id} trùng công pháp khác`);
+    needStr(`ui.method.res.${m.resource.id}`);
+    needStr(`ui.method.res.${m.resource.id}.tip`);
+    if (t(`ui.method.res.${m.resource.id}`) !== (GLOSSARY.resources as Record<string, string>)[m.resource.id])
+      err(`method ${m.id}: tên tài nguyên lệch glossary.resources`);
   }
   needStr(`method.${m.id}.name`);
   needStr(`method.${m.id}.desc`);
@@ -239,8 +253,9 @@ for (const m of METHODS) {
     err(`method ${m.id}: chiêu lướt ${m.dash} phải thuộc công pháp và có kind dash`);
 }
 // Quy tắc thời gian/liên hoàn (K-2): hitAt trùng nhịp pose, combo, cường hóa, lướt.
-const SKILL_IDS = new Set(ALL_SKILLS.map((s) => s.id));
-for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined, SKILL_IDS)) err(m);
+for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined)) err(m);
+// VS-2b: đồ thị chuỗi chiêu (id có thật, cùng công pháp, không vòng, hệ số trong khoảng).
+for (const m of chainErrors(ALL_SKILLS)) err(m);
 // K-5: pose theo đòn trong chuỗi và theo giọng công pháp phải đủ bộ và khớp nhịp từng đòn.
 for (const s of ALL_SKILLS) {
   if (!s.pose) continue;

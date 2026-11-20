@@ -1,6 +1,7 @@
 // Công pháp (Phase 3-5): công thức dùng chung client (hiển thị) và server (tính thật). Hàm thuần.
 // Dữ liệu (công pháp, chiêu, biến thức) nằm ở packages/content/data/methods.json.
 
+import type { ResourceDef } from './resource';
 import type { SkillDef } from './types';
 
 /** Cảnh giới (tầng) mở chọn công pháp chủ tu. */
@@ -28,17 +29,11 @@ export type VariantId = 'a' | 'b';
 /** Nội tại của công pháp: tham số theo `kind` (xem methods.json). */
 export interface MethodPassive {
   kind: 'kiem_y' | 'the' | 'dan_kinh';
-  /** Số tầng tối đa (kiếm ý / thế). */
-  max?: number;
-  /** Mỗi tầng cộng bao nhiêu sát thương cho chiêu tiêu thụ tầng. */
-  perStack?: number;
-  /** Giây không tăng tầng thì rụng hết. */
-  decay?: number;
   /** Phòng ngự cộng thêm (Kim Thân). */
   defMul?: number;
   /** Hồi phục cộng thêm (Đan Kinh). */
   healMul?: number;
-  /** Kiếm tu: bạo kích gốc cộng thêm; đủ `max` tầng kiếm ý thì cộng thêm `critAtMax`. */
+  /** Kiếm tu: bạo kích gốc cộng thêm; Kiếm ý đầy (`resource.max`) thì cộng thêm `critAtMax`. */
   critBase?: number;
   critAtMax?: number;
   /** Kiếm tu: đòn thứ ba của chuỗi đánh thường hoàn lại chừng này giây GCD. */
@@ -62,6 +57,8 @@ export interface MethodDef {
   /** Màu VFX chiêu của công pháp (hex). */
   color: string;
   passive: MethodPassive;
+  /** Tài nguyên riêng của công pháp (VS-2a): Kiếm ý / Huyết khí / Đan hỏa. Luật ở `resource.ts`. */
+  resource: ResourceDef;
 }
 
 /**
@@ -306,16 +303,6 @@ export function addCharge(cur: number, gain: number): number {
 }
 
 // ---------- nội tại ----------
-
-/** Kiếm ý (Lạc Kiếm Quyết): Lôi Đình Nhất Kiếm tiêu hết tầng, mỗi tầng cộng `perStack` sát thương. */
-export function stackMul(stacks: number, perStack: number, max: number): number {
-  return 1 + perStack * Math.max(0, Math.min(max, Math.floor(stacks)));
-}
-
-/** Một tầng (kiếm ý / thế) còn hay đã rụng vì quá `decay` giây kể từ lần tăng gần nhất. */
-export function stacksAlive(stacks: number, lastGainAt: number, now: number, decaySec: number): number {
-  return stacks > 0 && now - lastGainAt < decaySec * 1000 ? stacks : 0;
-}
 
 /** Hồi phục sau cộng thêm của công pháp (Đan Kinh: +20%). */
 export function healAmount(base: number, healMul: number | undefined): number {

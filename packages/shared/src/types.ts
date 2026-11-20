@@ -1,6 +1,7 @@
 // Kiểu dữ liệu nội dung game và trạng thái nhân vật, dùng chung client/server.
 
 import type { ItemInst } from './itemtypes';
+import type { SkillRes } from './resource';
 
 /**
  * Tám ô trang bị (Phase 3-1): pháp kiếm, đạo bào, hộ uyển, vân ngoa, đai lưng, ngọc bội, giới chỉ, pháp bảo phụ.
@@ -534,11 +535,21 @@ export interface ComboDef {
   hits: ComboHit[];
 }
 
-/** Cường hóa: sau khi chiêu `by` áp trúng, trong `window` giây chiêu này mạnh `powerMul` lần (một lần dùng, rồi tắt). */
-export interface EmpowerDef {
-  by: string;
+/**
+ * Chuỗi chiêu (VS-2b, thay `empower` của K-2): dùng chiêu này trong `window` giây sau khi một chiêu trong `after` áp xong
+ * thì được thưởng (một lần, rồi cửa sổ đóng). Luật và kiểm dữ liệu ở `chain.ts`.
+ */
+export interface ChainDef {
+  /** id các chiêu mở chuỗi: một trong số này vừa áp xong thì cửa sổ mở. */
+  after: string[];
+  /** Cửa sổ (giây) tính từ lúc chiêu mở áp xong. */
   window: number;
-  powerMul: number;
+  /** Thưởng: nhân sức mạnh (sát thương, lượng hồi), nhân linh lực tốn, nhân hồi chiêu. */
+  powerMul?: number;
+  mpMul?: number;
+  cdMul?: number;
+  /** Nhãn hình cho client (không mang luật). */
+  fx?: string;
 }
 
 /** Cửa sổ hủy (giây từ lúc bấm): từ mốc đó, di chuyển / lướt được phép hủy phần thu về. Client dùng để cắt hình; server chỉ nhận lướt sau `dash`. */
@@ -601,8 +612,8 @@ export interface SkillDef {
   cancel?: CancelDef;
   /** Chuỗi đánh thường liên hoàn (chiêu ô 1). */
   combo?: ComboDef;
-  /** Cửa sổ cường hóa sau khi chiêu khác áp trúng. */
-  empower?: EmpowerDef;
+  /** Chuỗi chiêu: thưởng khi dùng ngay sau một chiêu khác (xem `ChainDef`). */
+  chain?: ChainDef;
   /** Chiêu lướt (kind 'dash'). */
   dash?: DashDef;
   /** Lướt húc: choáng quái thường (giây); tinh anh chỉ nửa, boss miễn. */
@@ -641,6 +652,8 @@ export interface SkillDef {
   allyCount?: number;
   /** Hệ số từng nhát khi chiêu đánh nhiều lần trong một lần bấm (nhân `power`); `hitAt[i]` là mốc nhát i. */
   hitsMul?: number[];
+  /** VS-2a: tích/xả tài nguyên riêng của công pháp (Kiếm ý, Huyết khí, Đan hỏa). Luật ở `resource.ts`. */
+  res?: SkillRes;
 }
 
 /**

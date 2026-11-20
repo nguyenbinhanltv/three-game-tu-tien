@@ -35,7 +35,6 @@ import {
   hasString,
   ITEM,
   itemName,
-  METHOD,
   nextMajorRealmName,
   realmName,
   resolveBarSkill,
@@ -67,6 +66,8 @@ import { QuestTrack } from './u2/hud/QuestChat';
 import { ChatBox } from './u2/hud/Chat';
 import { SkillBanner } from './u2/hud/SkillBanner';
 import { SkillCluster } from './u2/hud/SkillCluster';
+import { ResourceBar } from './u2/hud/ResourceBar';
+import { chainLines, skillMpNow } from './skillChain';
 import { TouchControls } from './u2/touch/TouchControls';
 import './u2/touch/touch.css';
 import { blurAfterPointer, useNow } from './u2/hud/common';
@@ -530,12 +531,10 @@ function UtilityRow() {
   const mp = useUI((s) => s.mp);
   const airborne = useUI((s) => s.airborne);
   const method = useUI((s) => s.method);
+  const empowered = useUI((s) => s.empowered);
   const clone = useUI((s) => s.clone);
   const now = useNow(100);
   if (!char) return null;
-  const mdef = method?.method ? METHOD.get(method.method) : undefined;
-  const pas = mdef?.passive;
-  const stackKind = pas?.kind === 'kiem_y' || pas?.kind === 'the' ? pas.kind : null;
   const tier = tierBar(method?.method);
   return (
     <>
@@ -550,7 +549,10 @@ function UtilityRow() {
               const ready = Math.max(cds[sk.id] ?? 0, gcdAt);
               const left = Math.max(0, ready - now);
               const total = (cds[sk.id] ?? 0) > gcdAt ? Math.max(1, rs.cd) * 1000 : 1000;
-              const noMp = !locked && mp < sk.mp;
+              // VS-2b: cửa sổ chuỗi đang mở thì sáng viền, linh lực tính theo thưởng chuỗi.
+              const chainOpen = !locked && (empowered[sk.id] ?? 0) > now;
+              const mpNow = skillMpNow(sk, chainOpen);
+              const noMp = !locked && mp < mpNow;
               const state = locked ? 'locked' : airborne ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
               const lv = method?.lv[sk.id] ?? 1;
               const vr = method?.vr[sk.id];
@@ -558,8 +560,9 @@ function UtilityRow() {
                 { text: t('ui.skill.tier_key', { n: j + 1 }) },
                 ...(lv > 1 ? [{ text: t('ui.skill.level_tag', { n: lv }) }] : []),
                 ...(vr && VARIANTS[sk.id] ? [{ text: t('ui.skill.variant_tag', { name: t(`skill.${sk.id}.var.${vr}.name`) }) }] : []),
-                ...(sk.mp ? [{ text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined }] : []),
+                ...(sk.mp ? [{ text: `${t('ui.mp')}: ${mpNow}`, tone: noMp ? ('bad' as const) : undefined }] : []),
                 ...(rs.cd ? [{ text: t('ui.skill.cd', { n: rs.cd }) }] : []),
+                ...(locked ? [] : chainLines(sk, chainOpen)),
               ];
               return (
                 <Tooltip
@@ -575,7 +578,7 @@ function UtilityRow() {
                 >
                   <button
                     type="button"
-                    className="skill"
+                    className={'skill' + (chainOpen ? ' empowered' : '')}
                     data-state={state}
                     data-method="1"
                     aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`}
@@ -609,14 +612,7 @@ function UtilityRow() {
         </div>
       </div>
       <div className="u2h-chips">
-        {stackKind && (
-          <div className="stack-pips" aria-label={t(`ui.method.stacks.${stackKind}`)}>
-            <span>{t(`ui.method.stacks.${stackKind}`)}</span>
-            {Array.from({ length: pas?.max ?? 5 }, (_, i) => (
-              <i key={i} className={i < (method?.stacks ?? 0) ? 'on' : ''} />
-            ))}
-          </div>
-        )}
+        <ResourceBar />
         {char.level >= CLONE_UNLOCK_LEVEL && (
           <div className={'clone-chip' + (now < clone.until ? ' on' : '')} data-testid="clone-chip" aria-label={t('ui.clone.title')}>
             <span className="clone-key">G</span>
