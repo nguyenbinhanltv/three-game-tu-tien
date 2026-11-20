@@ -15,6 +15,7 @@ import { env, flag, list, num, opt } from '../lib/env';
 import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { sheet } from '../lib/shot';
+import { SKILL } from '@dtl/content';
 
 declare global {
   interface Window {
@@ -410,6 +411,11 @@ export default {
           const slowOk = pass === 'slow' && rec.frames.length >= 3;
           if (slowOk) sheeted.add(tag);
           // `--stills -70,0,200`: ảnh đủ cỡ viewport tại các mốc (ms game) so với khung hit đầu tiên (lượt chậm cho nhiều khung).
+          // Chiêu không có sự kiện `hit` trong nhật ký (tối thượng bơm giả ở client): ước tính từ hitAt của chiêu + 70 ms trễ khởi động.
+          if (slowOk && !rec.hits.length && opt('--stills', '')) {
+            const h0 = SKILL.get(sk)?.hitAt?.[0];
+            if (h0 !== undefined) rec.hits = [Math.round(h0 * 1000) + 70];
+          }
           if (slowOk && rec.hits.length && opt('--stills', '')) {
             for (const off of opt('--stills', '').split(',').map(Number)) {
               const want = rec.hits[0]! + off;
