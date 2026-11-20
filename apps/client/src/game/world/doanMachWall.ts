@@ -97,7 +97,8 @@ export class DoanMachWall {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
 
-  constructor(groundAt: (x: number, z: number) => number) {
+  /** `holes`: chỗ đặt thác / phù văn trên vách thật (xz, y, bán kính ngang, nửa cao). Da KHÔNG bỏ ô mà lún sâu vào sau vách quanh đó (lưới vẫn liền, địa hình thật hiện ra). */
+  constructor(groundAt: (x: number, z: number) => number, holes: { x: number; z: number; y: number; r: number; hy: number }[] = []) {
     this.group.name = 'doanMachWall';
     const pos: number[] = [];
     const col: number[] = [];
@@ -231,6 +232,26 @@ export class DoanMachWall {
     smooth(2);
     raise();
     smooth(1);
+    // lún da vào sau vách quanh thác/phù văn: so theo điểm VÁCH tương ứng của đỉnh (bán kính trước khi trừ độ nhô, `med`) và giới hạn theo độ cao
+    for (const h of holes) {
+      const dh = Math.hypot(h.x - CX, h.z - CZ);
+      const ang = Math.atan2(h.z - CZ, h.x - CX);
+      const span = Math.ceil((h.r / dh) * (RAYS / (Math.PI * 2))) + 2;
+      const i0 = Math.round(((ang < 0 ? ang + Math.PI * 2 : ang) / (Math.PI * 2)) * RAYS);
+      for (let d = -span; d <= span; d++) {
+        const i = (((i0 + d) % RAYS) + RAYS) % RAYS;
+        const th = (i / RAYS) * Math.PI * 2;
+        for (let j = 0; j <= ROWS; j++) {
+          const k = i * stride + j;
+          if (Math.abs(ys[k]! - h.y) > h.hy) continue;
+          const wx = CX + Math.cos(th) * med[k]!;
+          const wz = CZ + Math.sin(th) * med[k]!;
+          if ((wx - h.x) ** 2 + (wz - h.z) ** 2 > h.r * h.r) continue;
+          rad[k] = Math.max(rad[k]!, med[k]! + 6); // sâu 6 m sau mặt vách: địa hình che da dù có polygonOffset
+        }
+      }
+    }
+    for (let j = 0; j <= ROWS; j++) rad[RAYS * stride + j] = rad[j]!;
     for (let i = 0; i <= RAYS; i++) {
       const th = ((i % RAYS) / RAYS) * Math.PI * 2;
       for (let j = 0; j <= ROWS; j++) {
