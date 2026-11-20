@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { baseClipOf, JOG_SPEED, V3_MODELS, v3AssetOf } from './mannequin';
+import { baseClipOf, JOG_SPEED, lod0Slots, V3_MODELS, v3AssetOf } from './mannequin';
 import type { AnimState } from './view';
 
 const st = (o: Partial<AnimState> = {}): AnimState => ({
@@ -39,7 +39,10 @@ describe('v3AssetOf (chọn asset v3 theo giới + skin)', () => {
     expect(v3AssetOf('f', undefined, 'set_lac_kiem')).toBe(V3_MODELS.f);
     expect(v3AssetOf('m', undefined, 'set_dia_giap')).toBe('chr_v3_huyen_giap_nam');
     expect(v3AssetOf('f', undefined, 'set_luu_ly')).toBe('chr_v3_dan_tam_nu');
-    expect(v3AssetOf('m', undefined, 'set_tinh_khuyet')).toBe(V3_MODELS.m);
+    expect(v3AssetOf('m', undefined, 'set_tinh_khuyet')).toBe('chr_v3_tinh_khuyet_nam');
+    expect(v3AssetOf('f', undefined, 'set_kinh_quang')).toBe('chr_v3_kinh_quang_nu');
+    expect(v3AssetOf('m', undefined, 'set_liet_mach')).toBe('chr_v3_liet_mach_nam');
+    expect(v3AssetOf('m', undefined, 'set_han_giao')).toBe(V3_MODELS.m);
     expect(v3AssetOf('m', undefined, 'set_khong_co')).toBe(V3_MODELS.m);
   });
   it('skin đè bộ trang bị', () => {
@@ -83,5 +86,15 @@ describe('jogRate (chống trượt chân)', () => {
     expect(jogRate(JOG_SPEED * 1.3)).toBeCloseTo(1.3, 5);
     expect(jogRate(0.1)).toBe(0.4);
     expect(jogRate(100)).toBe(2);
+  });
+});
+
+describe('lod0Slots', () => {
+  it('LOD0 gốc Tripo ~100k tam giác chiếm 3 suất, LOD 24k chiếm 1', () => {
+    expect(lod0Slots(99518)).toBe(3);
+    expect(lod0Slots(102000)).toBe(3);
+    expect(lod0Slots(102001)).toBe(4);
+    expect(lod0Slots(24000)).toBe(1);
+    expect(lod0Slots(0)).toBe(1);
   });
 });

@@ -1,3 +1,5 @@
+export * from './clothfit';
+export * from './cloth';
 export * from './noise';
 export * from './level';
 export * from './props';

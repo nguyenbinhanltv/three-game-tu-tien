@@ -22,7 +22,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Document, Logger, type Mesh, type Node } from '@gltf-transform/core';
 import { EXTMeshoptCompression } from '@gltf-transform/extensions';
-import { dedup, prune, quantize, reorder, resample, simplifyPrimitive, textureCompress, weld } from '@gltf-transform/functions';
+import {
+  compactPrimitive,
+  dedup,
+  prune,
+  quantize,
+  reorder,
+  resample,
+  simplifyPrimitive,
+  textureCompress,
+  weld,
+} from '@gltf-transform/functions';
+import type { Primitive } from '@gltf-transform/core';
 import sharp from 'sharp';
 import {
   ASSET_ID,
@@ -207,11 +218,53 @@ async function capLod0(doc: Document, cap: number): Promise<number> {
   return countTriangles(doc, 0);
 }
 
+/** Xương mà vùng của nó được giữ nguyên mật độ gốc ở mọi LOD (mặt, tóc mái, mão, bàn tay): decimate gây méo mắt/miệng (NV3-B). */
+const PROTECT_BONES: Record<string, readonly string[]> = { player_v3_hi: ['Head', 'hand_l', 'hand_r'] };
+
+/**
+ * Tách primitive có skin thành (vùng bảo vệ, phần còn lại) theo xương trội của từng đỉnh: tam giác thuộc vùng bảo vệ khi ≥ 2/3 đỉnh có xương
+ * trội (trọng số lớn nhất) nằm trong `bones`. Hai primitive dùng chung vật liệu; chỉ phần còn lại được simplify.
+ */
+function splitProtected(prim: Primitive, jointNames: readonly string[], bones: readonly string[]): [Primitive, Primitive] | null {
+  const idx = prim.getIndices();
+  const j = prim.getAttribute('JOINTS_0');
+  const w = prim.getAttribute('WEIGHTS_0');
+  if (!idx || !j || !w) return null;
+  const want = new Set(bones);
+  const n = prim.getAttribute('POSITION')!.getCount();
+  const prot = new Uint8Array(n);
+  const jv: number[] = [],
+    wv: number[] = [];
+  for (let v = 0; v < n; v++) {
+    j.getElement(v, jv);
+    w.getElement(v, wv);
+    let best = 0;
+    for (let k = 1; k < 4; k++) if (wv[k]! > wv[best]!) best = k;
+    prot[v] = want.has(jointNames[jv[best]!] ?? '') ? 1 : 0;
+  }
+  const a: number[] = [],
+    b: number[] = [];
+  for (let i = 0; i < idx.getCount(); i += 3) {
+    const t = [idx.getScalar(i), idx.getScalar(i + 1), idx.getScalar(i + 2)] as const;
+    (prot[t[0]]! + prot[t[1]]! + prot[t[2]]! >= 2 ? a : b).push(...t);
+  }
+  if (!a.length || !b.length) return null;
+  const mk = (tris: number[]): Primitive => {
+    // clone() dùng chung accessor với bản gốc: compact sẽ ghi đè LOD0, nên nhân bản accessor trước.
+    const p = prim.clone();
+    for (const sem of p.listSemantics()) p.setAttribute(sem, p.getAttribute(sem)!.clone());
+    p.setIndices(p.getIndices()!.clone().setArray(new Uint32Array(tris)));
+    compactPrimitive(p);
+    return p;
+  };
+  return [mk(a), mk(b)];
+}
+
 /**
  * Sinh LOD mức `level` ngay trong `doc`: mỗi node LOD0 có mesh → node anh em "<tên>_lod<level>" với mesh đã giảm.
  * Primitive được clone rồi simplify; thuộc tính đỉnh (gồm JOINTS_0/WEIGHTS_0, UV, màu) đi theo đỉnh còn lại.
  */
-async function addLod(doc: Document, level: number, target: number): Promise<number> {
+async function addLod(doc: Document, level: number, target: number, protect: readonly string[] = []): Promise<number> {
   const { MeshoptSimplifier } = await meshopt();
   const lod0 = countTriangles(doc, 0);
   const ratio = Math.min(1, target / Math.max(1, lod0));
@@ -219,6 +272,29 @@ async function addLod(doc: Document, level: number, target: number): Promise<num
     .getRoot()
     .listNodes()
     .filter((n) => n.getMesh() && lodLevel(n) === 0);
+  // Tổng tam giác vùng bảo vệ / phần còn lại trên MỌI mesh LOD0 (đích LOD là cho cả model, không phải từng mesh).
+  const kr = level === 1 ? 0.6 : 0.15;
+  let protSum = 0,
+    restSum = 0;
+  if (protect.length) {
+    for (const node of sources) {
+      const jn =
+        node
+          .getSkin()
+          ?.listJoints()
+          .map((x) => x.getName()) ?? [];
+      for (const prim of node.getMesh()!.listPrimitives()) {
+        const sp = splitProtected(prim, jn, protect);
+        if (sp) {
+          protSum += primitiveTriangles(sp[0]);
+          restSum += primitiveTriangles(sp[1]);
+          sp[0].dispose();
+          sp[1].dispose();
+        } else restSum += primitiveTriangles(prim);
+      }
+    }
+  }
+  const restRatio = protect.length ? Math.min(1, Math.max(0.02, (target - protSum * kr) / Math.max(1, restSum))) : ratio;
   let created: { nodes: Node[]; meshes: Mesh[] } = { nodes: [], meshes: [] };
   let got = Infinity;
   for (const { error, permissive } of ATTEMPTS) {
@@ -232,7 +308,27 @@ async function addLod(doc: Document, level: number, target: number): Promise<num
       let lodMesh = meshMap.get(mesh);
       if (!lodMesh) {
         lodMesh = doc.createMesh(`${mesh.getName()}_lod${level}`).setExtras({ ...mesh.getExtras(), lod: level });
+        const jointNames =
+          node
+            .getSkin()
+            ?.listJoints()
+            .map((x) => x.getName()) ?? [];
         for (const prim of mesh.listPrimitives()) {
+          const split = protect.length ? splitProtected(prim, jointNames, protect) : null;
+          if (split) {
+            // vùng bảo vệ giữ nguyên; phần còn lại giảm theo tỉ lệ bù để tổng đạt `target`
+            const [keep0, rest] = split;
+            // vùng bảo vệ chỉ giảm nhẹ (LOD1 giữ 60%, LOD2 15%: vẫn dày hơn thân/vải nhiều lần); phần còn lại gánh phần giảm của cả model.
+            const keep = simplifyPrimitive(keep0, { simplifier, ratio: kr, error, lockBorder: level === 1 });
+            if (process.env.LOD_DEBUG)
+              console.log(
+                `[lod${level}] bảo vệ ${primitiveTriangles(keep0)}→${primitiveTriangles(keep)}, còn lại ${primitiveTriangles(rest)} ratio ${restRatio.toFixed(3)} error ${error}`,
+              );
+            if ((keep.getIndices()?.getCount() ?? 0) >= 3) lodMesh.addPrimitive(keep);
+            const sr = simplifyPrimitive(rest, { simplifier, ratio: restRatio, error, lockBorder: level === 1 });
+            if ((sr.getIndices()?.getCount() ?? 0) >= 3) lodMesh.addPrimitive(sr);
+            continue;
+          }
           const simp = simplifyPrimitive(prim.clone(), { simplifier, ratio, error });
           // Chi tiết phẳng nhỏ (chữ khắc, họa tiết) có thể bị rút về 0 tam giác ở LOD xa: bỏ primitive rỗng (mã hóa meshopt không nhận mảng đỉnh rỗng).
           if ((simp.getIndices()?.getCount() ?? 0) >= 3) lodMesh.addPrimitive(simp);
@@ -329,7 +425,7 @@ export async function optimizeAsset(
   const lods: ManifestLod[] = [{ level: 0, triangles: lod0 }];
   const targets = lod0 > 0 ? lodTargets(lod0, spec) : [];
   for (let i = 0; i < targets.length; i++) {
-    const got = await addLod(doc, i + 1, targets[i]);
+    const got = await addLod(doc, i + 1, targets[i], PROTECT_BONES[cls] ?? []);
     if (got > targets[i] * 1.1) warn(`${id}: LOD${i + 1} chỉ giảm được còn ${got} tam giác (đích ${targets[i]})`);
     lods.push({ level: i + 1, triangles: got, target: targets[i] });
   }

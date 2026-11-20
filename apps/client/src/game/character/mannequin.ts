@@ -3,6 +3,8 @@
 // (sửa lỗi bóng T-pose). Chưa có: pose IK chiêu K-5, kiếm gắn tay, phụ kiện bộ đồ, K-3 (đi lùi/ngang), IK chân.
 // Đây là bản thử pipeline: không đổi mặc định, không đụng v1/v2.
 import * as THREE from 'three/webgpu';
+import { texture } from 'three/tsl';
+import { ClothRig } from './thienY';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/shared';
@@ -41,6 +43,7 @@ import { FLAGS } from '../../base/flags';
 import { logger } from '../../base/log';
 
 const modelsLog = logger('models');
+const thienYLog = logger('thienY');
 
 /** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
 export const CHR_V3 = FLAGS.chr === 'v3';
@@ -72,11 +75,16 @@ export const SPRING2 = { hemStiff: HEM_STIFF, sitScale: SIT_COLLIDER_SCALE, arms
 /** Chỉnh riêng vạt theo bộ (khóa = tiền tố id asset): bộ có vạt dài/rộng hơn Lạc Kiếm cần góc lệch hẹp hơn, gấu cứng hơn, viên nang đùi lớn hơn. */
 export interface SkirtTune {
   spring?: Partial<SpringParams>;
+  /** Có khóa này thì chuỗi lò xo tay áo (`dtl_o_sleeve_*`) tách ra nhóm riêng với thông số hẹp/cứng hơn (voan tay áo rộng không văng thành mảng khi giơ tay). */
+  sleeve?: Partial<SpringParams>;
   hemStiff?: number;
   rMul?: number;
 }
+/** Kiếm tu bậc cao (NV3-B, bản thử `tinh_khuyet_nu`): tay áo voan rộng + vạt dài. Tay áo: cứng hơn, cản mạnh, góc hẹp; viên nang đùi lớn hơn để vạt không sụp khi ngồi. */
+const KIEM_TU_TUNE: SkirtTune = { rMul: 1.7, hemStiff: 2.0, sleeve: { stiffness: 260, drag: 14, maxAngle: 12, maxInward: 5 } };
 export const SKIRT_TUNE: Record<string, SkirtTune> = {
   chr_v3_dan_tam_: { rMul: 1.5 },
+  chr_v3_tinh_khuyet_nu: KIEM_TU_TUNE, // bản thử bind A-pose; các model Kiếm tu khác chưa áp (chờ duyệt)
 };
 const skirtTuneOf = (id: string): SkirtTune | undefined => Object.entries(SKIRT_TUNE).find(([k]) => id.startsWith(k))?.[1];
 /** Thông số riêng của vạt ở lò xo v2: góc lệch tối đa hẹp (12°) vì vạt nay do lò xo + va chạm điều khiển phần lớn (share 0,8): lệch rộng làm hai nửa vạt chéo nhau khi chạy. Tóc và tay áo giữ `V3_SPRING`. */
@@ -109,13 +117,13 @@ export const V3_OWN_SETS: Readonly<Record<string, string>> = {
   set_de_tu: 'de_tu',
   set_huyen_giap: 'huyen_giap',
   set_dan_tam: 'dan_tam',
+  set_kinh_quang: 'kinh_quang',
+  set_liet_mach: 'liet_mach',
+  set_tinh_khuyet: 'tinh_khuyet',
 };
 const V3_BRANCH_FALLBACK: Readonly<Record<string, string>> = {
   set_lac_kiem: 'lac_kiem',
   set_han_giao: 'lac_kiem',
-  set_liet_mach: 'lac_kiem',
-  set_kinh_quang: 'lac_kiem',
-  set_tinh_khuyet: 'lac_kiem',
   set_tran_khich: 'lac_kiem',
   set_dia_giap: 'huyen_giap',
   set_van_kinh: 'huyen_giap',
@@ -188,9 +196,32 @@ function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
   return o ? o.position.clone() : null;
 }
 
-export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
+/** Asset dựng bằng `chr_v3.py --keep-original` (lưới/texture gốc Tripo): vật liệu cần chỉnh cho hợp ánh sáng game. */
+export const KEEP_ORIGINAL_ASSETS: ReadonlySet<string> = new Set(['chr_v3_tinh_khuyet_nu']);
+
+/**
+ * Tripo gán roughness thấp cho tóc (≈0,24) và metallic mặc định 1 (glTF khi thiếu hệ số): dưới nắng + env của game, da/tóc bóng như nhựa/cao su.
+ * Nâng sàn roughness lên 0,55 (map G × 0,45 + 0,55, giữ vi biến thiên), giảm metalness hệ số về 0,5 (vàng trang sức vẫn kim loại), giảm env.
+ * Màu (baseColor) giữ nguyên, đã là sRGB do GLTFLoader/KTX2Loader.
+ */
+function tuneTripoMaterial(m: THREE.MeshStandardNodeMaterial): void {
+  if (m.roughnessMap) m.roughnessNode = texture(m.roughnessMap).g.mul(0.45).add(0.55);
+  else m.roughness = Math.max(m.roughness, 0.6);
+  m.metalness = 0.5;
+  m.envMapIntensity = 0.55;
+  // Da nhợt của Tripo (baseColor sáng ~0,8) bị nắng + env game thổi trắng/xám: hạ phản xạ khuếch tán một chút cho còn sắc hồng.
+  // Ánh sáng game hơi lạnh (đo má: R−B từ 56 còn 29): bù ấm nhẹ (R giữ, G −15%, B −20%).
+  m.color.setRGB(0.96, 0.82, 0.76);
+  m.needsUpdate = true;
+}
+
+/** Clip riêng cho áo bào rộng (`tools/blender/anim_robe.py`): ghi đè clip cùng tên của thư viện UAL cho asset giữ gốc. */
+export const ROBE_LIB = 'anim_robe';
+
+export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
   if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
+  if (KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const m of mats) tuneTripoMaterial(m);
   const look = SKIN_LOOKS[handle.id];
   if (look) for (const m of mats) applySkinLook(m, look);
   const box = new THREE.Box3().setFromObject(handle.scene);
@@ -199,8 +230,10 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
   const b = restPos(lib.scene, 'pelvis');
   const k = a && b && b.length() > 1e-6 ? a.length() / b.length() : 1;
   const clips = new Map<string, THREE.AnimationClip>();
+  const over = new Map<string, THREE.AnimationClip>();
+  if (robe && KEEP_ORIGINAL_ASSETS.has(handle.id) && !FLAGS.noRobeAnim) for (const c of robe.animations) over.set(c.name, c);
   for (const c of lib.animations) {
-    const cl = c.clone();
+    const cl = (over.get(c.name) ?? c).clone();
     for (const t of cl.tracks) {
       if (t.name === 'pelvis.position') for (let i = 0; i < t.values.length; i++) t.values[i]! *= k;
     }
@@ -222,9 +255,22 @@ export const ARM_FIT: Record<string, number> = {
   chr_v3_huyen_giap_nu: (20 * Math.PI) / 180,
   chr_v3_dan_tam_nam: (16 * Math.PI) / 180,
   chr_v3_dan_tam_nu: (16 * Math.PI) / 180,
+  // Kiếm tu bậc cao (NV3-B, bind A-pose `--bind-a`): lưới không bị ép sang T nên không cần bù góc dang (0); chỉnh lại sau khi đo `springMetrics`.
+  chr_v3_kinh_quang_nam: (16 * Math.PI) / 180,
+  chr_v3_kinh_quang_nu: (16 * Math.PI) / 180,
+  chr_v3_liet_mach_nam: (16 * Math.PI) / 180,
+  chr_v3_liet_mach_nu: (16 * Math.PI) / 180,
+  chr_v3_tinh_khuyet_nam: (16 * Math.PI) / 180,
+  chr_v3_tinh_khuyet_nu: 0,
 };
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
 
+/** `?v3off=proc,feet,twist,cloth` tắt từng hệ phụ của v3 để cô lập lỗi hình (chẩn đoán). */
+const V3_OFF = new Set(FLAGS.v3Off);
+/** Số suất LOD0 theo tổng tam giác: mỗi 34.000 tam giác một suất (99.518 → 3, 24.000 → 1). */
+export function lod0Slots(tris: number): number {
+  return Math.max(1, Math.ceil(tris / 34000));
+}
 const IDENT = new THREE.Matrix4();
 const _w = new THREE.Quaternion();
 const _pw = new THREE.Quaternion();
@@ -369,6 +415,19 @@ export class MannequinCharacter implements CharacterView {
   private spring2 = false;
   /** Lò xo vạt riêng của asset v2 (null với v3/v3b: vạt nằm chung trong `springs`). */
   private skirtSprings: SpringBones | null = null;
+  private sleeveSprings: SpringBones | null = null;
+  /** Số suất LOD0 mà nhân vật này chiếm (entities.applyLodBudget): LOD0 gốc Tripo ~100k tam giác (gồm cả mesh `_oldsleeve`) tính 3 suất (`lod0Slots`: ≤4 người LOD0 trong ngân sách 12). */
+  get lod0Cost(): number {
+    let tris = 0;
+    for (const m of this.lods[0] ?? []) {
+      const g = m.geometry;
+      tris += (g.index ? g.index.count : g.getAttribute('position').count) / 3;
+    }
+    return lod0Slots(tris);
+  }
+  /** Vải mô phỏng Thiên Y (null nếu tắt hoặc model không có vải cũ tách riêng). */
+  cloth: ClothRig | null = null;
+  private clothSit = 0;
   private colScale = 1;
   private twists: Twist[] = [];
   private lodLevel = 0;
@@ -378,6 +437,8 @@ export class MannequinCharacter implements CharacterView {
   private scabbard: THREE.Object3D | null = null;
   private hand: THREE.Object3D | null = null;
   private qScab = new THREE.Quaternion();
+  /** Dịch kiếm đeo lưng (không gian xương vỏ): hạ chuôi xuống ngang vai thay vì lên tới đỉnh đầu với model cao/tóc búi cao. */
+  private posScab = new THREE.Vector3();
   private qHand = new THREE.Quaternion();
   private drawn = false;
   /** Đòn nối tiếp sau đòn hiện tại (ngã → đứng dậy). */
@@ -407,6 +468,8 @@ export class MannequinCharacter implements CharacterView {
   private shotLowerW = 0;
   // Lớp phụ sau mixer (A/C): nghiêng khi rẽ, xoay tại chỗ, thở, nhìn mục tiêu, giật khi trúng đòn, bù tay.
   private bones: Record<string, THREE.Object3D | null> = {};
+  /** Xương đầu của Mannequin (tên 'Head' viết hoa: `bones.head` không bao giờ tìm thấy). */
+  private headBone: THREE.Object3D | null = null;
   private lastYaw = NaN;
   private yawRate = 0;
   private lean = 0;
@@ -442,6 +505,21 @@ export class MannequinCharacter implements CharacterView {
       meshes.push(m);
     });
     for (let i = 0; i < this.lods.length; i++) this.lods[i] ??= [];
+    // Thiên Y: mesh vải cũ tách riêng (`*_oldskirt`, `*_oldsleeve`) do chr_v3.py --split-cloth; có `?cloth=1` thì thay bằng vải mô phỏng, không thì hiện như thường.
+    // Hướng lai: giữ váy Tripo (lò xo), chỉ thay voan tay áo (`*_oldsleeve`) bằng panel vải mô phỏng.
+    const oldCloth = meshes.filter((m) => /_oldsleeve/.test(m.name));
+    if (FLAGS.cloth && !shadow && oldCloth.length) {
+      try {
+        // Texture đã bake (tools/asset-pipeline/src/thienybake.ts) nếu có; chưa có thì vải màu trơn.
+        const map = new THREE.TextureLoader().load(`/thien_y/${tpl.handle.id}.png`, undefined, undefined, () => undefined);
+        map.colorSpace = THREE.SRGBColorSpace;
+        map.flipY = false;
+        this.cloth = new ClothRig(this.rig, this.root, tpl.height, oldCloth, { map });
+        this.lods[0] = (this.lods[0] ?? []).filter((m) => !oldCloth.includes(m));
+      } catch (e) {
+        thienYLog.warn('bỏ qua vải mô phỏng:', e instanceof Error ? e.message : e);
+      }
+    }
     this.applyLod(0);
     const defs: SpringDef[] = [];
     this.rig.traverse((o) => {
@@ -455,9 +533,14 @@ export class MannequinCharacter implements CharacterView {
     });
     if (this.spring2) {
       // Lò xo v2: vạt tách riêng (góc hẹp, gấu cứng hơn, viên nang tay + đùi phình khi ngồi); tóc và tay áo như cũ.
+      const tune = skirtTuneOf(tpl.handle.id);
+      const isSleeve = (n: string) => n.startsWith('dtl_o_sleeve_');
       const skirt = defs.filter((d) => d.bone.startsWith('dtl_o_skirt_'));
-      const rest = defs.filter((d) => !d.bone.startsWith('dtl_o_skirt_'));
+      const sleeve = tune?.sleeve ? defs.filter((d) => isSleeve(d.bone)) : [];
+      const rest = defs.filter((d) => !d.bone.startsWith('dtl_o_skirt_') && !(tune?.sleeve && isSleeve(d.bone)));
       if (rest.length && !shadow) this.springs = new SpringBones(this.rig, rest, V3_SPRING, colliderDefs(this.rig, tpl.height));
+      if (sleeve.length && !shadow)
+        this.sleeveSprings = new SpringBones(this.rig, sleeve, { ...V3_SPRING, ...tune!.sleeve }, colliderDefs(this.rig, tpl.height));
       if (skirt.length && !shadow)
         this.skirtSprings = new SpringBones(
           this.rig,
@@ -501,6 +584,7 @@ export class MannequinCharacter implements CharacterView {
       if (th) this.side = Math.sign(th.getWorldPosition(new THREE.Vector3()).sub(this.rig.getWorldPosition(new THREE.Vector3())).x) || 1;
       this.armFit = ARM_FIT[tpl.handle.id] ?? ARM_FIT_DEFAULT;
     }
+    this.headBone = this.rig.getObjectByName('Head') ?? null;
     this.scabbard = this.rig.getObjectByName('dtl_scabbard') ?? null;
     this.hand = this.rig.getObjectByName('dtl_sword') ?? null;
     if (sword && !shadow && this.scabbard && this.hand) {
@@ -511,6 +595,11 @@ export class MannequinCharacter implements CharacterView {
         out.copy(qb).multiply(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize()));
       };
       align(this.scabbard, new THREE.Vector3(-0.12, -0.55, -0.1), this.qScab);
+      if (KEEP_ORIGINAL_ASSETS.has(tpl.handle.id)) {
+        // chuôi đang ở ~đỉnh đầu (1,75 m): hạ 0,3 m × tỉ lệ cao theo trục thế giới
+        const qb = this.scabbard.getWorldQuaternion(new THREE.Quaternion()).invert();
+        this.posScab.set(0, -0.3 * (tpl.height / 1.7), 0).applyQuaternion(qb);
+      }
       align(this.hand, new THREE.Vector3(0, 1, 0), this.qHand);
       this.blade = sword.mesh.clone();
       this.blade.frustumCulled = false;
@@ -538,7 +627,8 @@ export class MannequinCharacter implements CharacterView {
     this.drawn = drawn;
     const bone = drawn ? this.hand : this.scabbard;
     bone?.add(this.blade);
-    this.blade.position.set(0, 0, 0);
+    if (drawn) this.blade.position.set(0, 0, 0);
+    else this.blade.position.copy(this.posScab);
     this.blade.quaternion.copy(drawn ? this.qHand : this.qScab);
   }
 
@@ -1042,12 +1132,12 @@ export class MannequinCharacter implements CharacterView {
     this.blendBases(this.acc);
     if (this.loco && this.base) this.syncLoco(this.acc);
     this.mixer.update(this.acc);
-    for (const t of this.twists) {
+    for (const t of V3_OFF.has('twist') ? [] : this.twists) {
       _tq.copy(t.restLimb).invert().multiply(t.limb.quaternion);
       t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
     }
-    if (V3_ANIM && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
-    if (this.feet) {
+    if (V3_ANIM && !V3_OFF.has('proc') && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
+    if (this.feet && !V3_OFF.has('feet')) {
       if (this.lodLevel === 0 && this.inner.visible) {
         const active = this.grounded && !a.dead && !a.meditating && this.baseName !== 'Sitting_Idle_Loop';
         // Khóa chân chỉ khi đứng yên thật: đòn/chiêu/trúng đòn có chân tự di chuyển trong clip.
@@ -1057,17 +1147,26 @@ export class MannequinCharacter implements CharacterView {
     const drawNow = this.combatT > 0 || !!a.combat;
     if (drawNow !== this.drawn) this.mountBlade(drawNow);
     // Lò xo vạt: chỉ LOD0 và trong khung nhìn; ma trận thế giới của xương phải mới (root vừa được đặt vị trí).
-    if (this.springs || this.skirtSprings) {
+    if (this.springs || this.skirtSprings || this.sleeveSprings) {
       if (this.lodLevel === 0 && this.inner.visible) {
         this.root.updateMatrixWorld(true);
         const sit = this.spring2 && (this.baseName === 'Sitting_Idle_Loop' || this.baseName === 'pose_tam_thien');
         this.colScale += ((sit ? SPRING2.sitScale : 1) - this.colScale) * Math.min(1, this.acc * 6);
         this.springs?.update(this.acc, IDENT);
+        this.sleeveSprings?.update(this.acc, IDENT);
         this.skirtSprings?.update(this.acc, IDENT, this.colScale);
       } else {
         this.springs?.reset();
+        this.sleeveSprings?.reset();
         this.skirtSprings?.reset();
       }
+    }
+    if (this.cloth) {
+      const on = this.lodLevel === 0 && this.inner.visible;
+      this.cloth.setActive(on);
+      const sitNow = this.baseName === 'Sitting_Idle_Loop' || this.baseName === 'pose_tam_thien';
+      this.clothSit += ((sitNow ? 1 : 0) - this.clothSit) * Math.min(1, this.acc * 6);
+      if (on) this.cloth.update(this.acc, this.clothSit, !!(this.springs || this.skirtSprings || this.sleeveSprings));
     }
     this.acc = 0;
   }
@@ -1172,6 +1271,12 @@ export class MannequinCharacter implements CharacterView {
     rotateWorld(b.head ?? null, _up, this.lookYaw * 0.55);
     rotateWorld(b.neck_01 ?? null, rgt, this.lookPitch * 0.3);
     rotateWorld(b.head ?? null, rgt, this.lookPitch * 0.5);
+    // Model giữ gốc Tripo: đầu thẳng ở A-pose, nhưng clip Idle của UAL (dáng Mannequin) cúi đầu ~13°: ngửa đầu bù lại (cổ 40%, đầu 60%) khi đứng/đi.
+    if (free && KEEP_ORIGINAL_ASSETS.has(this.tpl.handle.id)) {
+      const lift = FLAGS.headLift;
+      rotateWorld(b.neck_01 ?? null, rgt, -lift * 0.4);
+      rotateWorld(this.headBone, rgt, -lift * 0.6);
+    }
     // Bù dang tay/vai theo model (tay áo rộng không bị tay clip ép xuyên).
     // Hệ số theo độ buông của tay (hướng vai→khuỷu, 0 khi cách phương thẳng đứng hơn 60°, 1 khi buông thẳng): tay giơ/chém không bị dạng thêm, chỉ tay buông sát thân mới cần chừa.
     if (free && !a.casting && this.armFit) {
@@ -1204,6 +1309,7 @@ export class MannequinCharacter implements CharacterView {
     this.disposed = true;
     this.hit.reset();
     this.blade?.removeFromParent();
+    this.cloth?.dispose();
     this.stopPerform();
     this.mixer.stopAllAction();
     this.mixer.uncacheRoot(this.rig);
@@ -1261,15 +1367,19 @@ export class MannequinPlayers {
   private load(id: string): void {
     if (this.tpl.has(id)) return;
     this.tpl.set(id, 'loading');
-    Promise.all([this.cache.acquire(id, { priority: 1 }), this.cache.acquire(V3_LIB, { priority: 1 })]).then(
-      ([h, lib]) => {
+    const robeP = KEEP_ORIGINAL_ASSETS.has(id)
+      ? this.cache.acquire(ROBE_LIB, { priority: 1 }).catch(() => undefined)
+      : Promise.resolve(undefined);
+    Promise.all([this.cache.acquire(id, { priority: 1 }), this.cache.acquire(V3_LIB, { priority: 1 }), robeP]).then(
+      ([h, lib, robe]) => {
         if (this.disposed) {
           h.release();
           lib.release();
+          robe?.release();
           return;
         }
         try {
-          this.tpl.set(id, mannequinTemplate(h, lib));
+          this.tpl.set(id, mannequinTemplate(h, lib, robe));
           this.ensurePoses();
         } catch (err) {
           modelsLog.warn(`không dựng được ${id}`, err);
