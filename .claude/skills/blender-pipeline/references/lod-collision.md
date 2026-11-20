@@ -17,7 +17,12 @@ Sai thường gặp: decimate mù đến khi không nhận ra; LOD khác số sl
 
 ## Hình va chạm theo hệ COL-1
 
-Hình va chạm của dự án sinh từ GLB đã tối ưu bằng `pnpm colliders:lib` (thư viện prop) và `pnpm colliders:arch` (kiến trúc), chi tiết ở `docs/handbook/maps-levels.md` (mục COL-1). Từ Blender chỉ cần **đặt một khối lưới (mesh hộp/trụ, đã áp scale) có tên đúng, không dùng Empty** nếu hình suy từ hộp bao không đủ. `colShapes()` trong `tools/asset-pipeline/src/collider.ts` bỏ qua node `COL_*` không có mesh (Empty xuất ra node không mesh nên bị bỏ âm thầm, collider rơi về suy tự động) và lấy hình từ hộp bao của lưới:
+Hình va chạm của dự án sinh từ GLB đã tối ưu theo hai đường **khác nhau**, chi tiết ở `docs/handbook/maps-levels.md` (mục COL-1):
+
+- **Prop thư viện** (`prop_*`, `pnpm colliders:lib`, `collider.ts`): đây là **đường duy nhất đọc node `COL_*`**.
+- **Kiến trúc** (`arch_*`, `pnpm colliders:arch`, `archcollider.cli.ts`): **loại bỏ** mọi node `COL_*` và sinh hộp từ chính tam giác LOD0 hiển thị. Đặt `COL_*` trong GLB kiến trúc **không có tác dụng**; muốn đổi va chạm thì sửa hình học hiển thị hoặc tham số của `colliders:arch` (`--cell`, `--shift`, `--place`…).
+
+Phần còn lại của mục này (bảng `COL_*` và nguyên tắc 1–5) **chỉ áp cho prop thư viện**. Với prop, từ Blender chỉ cần **đặt một khối lưới (mesh hộp/trụ, đã áp scale) có tên đúng, không dùng Empty** nếu hình suy từ hộp bao không đủ. `colShapes()` trong `tools/asset-pipeline/src/collider.ts` bỏ qua node `COL_*` không có mesh (Empty xuất ra node không mesh nên bị bỏ âm thầm, collider rơi về suy tự động) và lấy hình từ hộp bao của lưới:
 
 | Tên node trong GLB | Hình | Ghi chú |
 | --- | --- | --- |
@@ -27,7 +32,7 @@ Hình va chạm của dự án sinh từ GLB đã tối ưu bằng `pnpm collide
 
 Các node `COL_*` xuất kèm asset **nhưng không vẽ**; bước optimize bỏ chúng khỏi cảnh. Không có node `COL_*` thì `collider.ts` tự suy (cây = trụ thân cao ~60% với tán xuyên được, vật < 0,6 m bỏ qua…); đồ muốn đi xuyên được ghi `"none"` trong `packages/content/data/colliders/overrides.json`.
 
-Nguyên tắc rút từ `collision-proxy`, áp vào COL-1:
+Nguyên tắc rút từ `collision-proxy`, áp vào COL-1 **cho prop** (kiến trúc: chỉ nguyên tắc 5–6, và va chạm do hình học hiển thị quyết định):
 
 1. **Ít hình đơn giản hơn một lưới phức tạp.** Bảng công thức (đối chiếu cho `COL_*`): hòm = 1 hộp; ghế/bàn = mặt + vài chân; bậc thang = một hộp mỗi bậc hoặc một `COL_ramp_*` (bước lên tối đa `STEP_UP` 0,5 m); cột = `COL_cyl_*`; cổng/đình = hộp từng cột + dầm đủ cao cho người đi dưới.
 2. **Không dùng lưới hiển thị làm hình va chạm.** Khối đặc không đi qua được thì để suy tự động; khối rỗng/cong cần hình tay.
