@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "anim_robe",
+  "type": "anim",
+  "budgetClass": "anim",
+  "itemId": null,
+  "status": "animated",
+  "procedural": {
+    "script": "tools/blender/anim_robe.py",
+    "seed": null
+  },
+  "license": {
+    "source": "CC0 Quaternius UAL 1 + 2 (Standard), biên độ kẹp bằng tools/blender/anim_robe.py cho áo bào",
+    "owner": "Quaternius",
+    "date": "2026-11-20",
+    "url": "https://quaternius.com",
+    "spdx": "CC0-1.0"
+  }
+}

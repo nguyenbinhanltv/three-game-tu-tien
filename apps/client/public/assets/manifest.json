@@ -134,6 +134,49 @@
         "build": null
       }
     },
+    "anim_robe": {
+      "id": "anim_robe",
+      "class": "anim",
+      "source": "assets/build/raw/anim_robe.glb",
+      "file": "anim_robe.be39ea1446.glb",
+      "bytes": 783476,
+      "rawBytes": 973168,
+      "triangles": 0,
+      "rawTriangles": 0,
+      "lod0Cap": 0,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [
+        "Idle_Loop",
+        "Spell_Simple_Idle_Loop",
+        "Sitting_Idle_Loop",
+        "Sword_Idle",
+        "Walk_Loop",
+        "Jog_Fwd_Loop",
+        "Sprint_Loop",
+        "Jump_Loop",
+        "Sword_Attack",
+        "Sword_Regular_A",
+        "Sword_Regular_B",
+        "Sword_Regular_C",
+        "Roll",
+        "Hit_Chest",
+        "Hit_Knockback"
+      ],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 0
+        }
+      ],
+      "dims": {
+        "raw": null,
+        "build": null
+      }
+    },
     "anim_ual_native": {
       "id": "anim_ual_native",
       "class": "anim",
@@ -4098,6 +4141,156 @@
         }
       }
     },
+    "chr_v3_kinh_quang_nam": {
+      "id": "chr_v3_kinh_quang_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_kinh_quang_nam.glb",
+      "file": "chr_v3_kinh_quang_nam.083f7dd301.glb",
+      "bytes": 4059964,
+      "rawBytes": 4170264,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 114,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "ancient_male_character_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "ancient_male_character_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "ancient_male_character_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11997,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4795,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.2174,
+          "height": 1.8292,
+          "depth": 0.5818,
+          "minY": 0.0107
+        },
+        "build": {
+          "width": 2.2174,
+          "height": 1.8292,
+          "depth": 0.5818,
+          "minY": 0.0107
+        }
+      }
+    },
+    "chr_v3_kinh_quang_nu": {
+      "id": "chr_v3_kinh_quang_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_kinh_quang_nu.glb",
+      "file": "chr_v3_kinh_quang_nu.610403155b.glb",
+      "bytes": 4045064,
+      "rawBytes": 3986432,
+      "triangles": 23999,
+      "rawTriangles": 23999,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 123,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "fantasy_female_character_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "fantasy_female_character_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "fantasy_female_character_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 23999
+        },
+        {
+          "level": 1,
+          "triangles": 12000,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4800,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.2233,
+          "height": 1.691,
+          "depth": 0.4886,
+          "minY": 0.0096
+        },
+        "build": {
+          "width": 2.2233,
+          "height": 1.691,
+          "depth": 0.4886,
+          "minY": 0.0096
+        }
+      }
+    },
     "chr_v3_korvaden_nam": {
       "id": "chr_v3_korvaden_nam",
       "class": "player_v3",
@@ -4314,6 +4507,156 @@
         }
       }
     },
+    "chr_v3_liet_mach_nam": {
+      "id": "chr_v3_liet_mach_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_liet_mach_nam.glb",
+      "file": "chr_v3_liet_mach_nam.9a2d2825e4.glb",
+      "bytes": 4341932,
+      "rawBytes": 4456312,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 123,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "ancient_male_character_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "ancient_male_character_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "ancient_male_character_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11995,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4797,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.1264,
+          "height": 1.8646,
+          "depth": 0.7032,
+          "minY": -0.0252
+        },
+        "build": {
+          "width": 2.1264,
+          "height": 1.8646,
+          "depth": 0.7032,
+          "minY": -0.0252
+        }
+      }
+    },
+    "chr_v3_liet_mach_nu": {
+      "id": "chr_v3_liet_mach_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_liet_mach_nu.glb",
+      "file": "chr_v3_liet_mach_nu.960e7549f3.glb",
+      "bytes": 4450928,
+      "rawBytes": 4416232,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 114,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "ancient_woman_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "ancient_woman_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "ancient_woman_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11980,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 5014,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.1353,
+          "height": 1.7179,
+          "depth": 0.6784,
+          "minY": -0.0189
+        },
+        "build": {
+          "width": 2.1353,
+          "height": 1.7179,
+          "depth": 0.6784,
+          "minY": -0.0189
+        }
+      }
+    },
     "chr_v3_noxavyra_nu": {
       "id": "chr_v3_noxavyra_nu",
       "class": "player_v3",
@@ -4443,6 +4786,156 @@
           "height": 1.9196,
           "depth": 0.7224,
           "minY": -0.0063
+        }
+      }
+    },
+    "chr_v3_tinh_khuyet_nam": {
+      "id": "chr_v3_tinh_khuyet_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_tinh_khuyet_nam.glb",
+      "file": "chr_v3_tinh_khuyet_nam.4f87a67bde.glb",
+      "bytes": 4539900,
+      "rawBytes": 4492988,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 123,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "celestial_man_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "celestial_man_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "celestial_man_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11996,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4796,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.1423,
+          "height": 1.83,
+          "depth": 0.566,
+          "minY": 0.0092
+        },
+        "build": {
+          "width": 2.1423,
+          "height": 1.83,
+          "depth": 0.566,
+          "minY": 0.0092
+        }
+      }
+    },
+    "chr_v3_tinh_khuyet_nu": {
+      "id": "chr_v3_tinh_khuyet_nu",
+      "class": "player_v3_hi",
+      "source": "assets/build/raw/chr_v3_tinh_khuyet_nu.glb",
+      "file": "chr_v3_tinh_khuyet_nu.b651b5cdb2.glb",
+      "bytes": 12182904,
+      "rawBytes": 16278616,
+      "triangles": 99518,
+      "rawTriangles": 99518,
+      "lod0Cap": 110000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 127,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "fantasy_female_character_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 4096,
+          "height": 4096,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "fantasy_female_character_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 4096,
+          "height": 4096,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "fantasy_female_character_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 4096,
+          "height": 4096,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 99518
+        },
+        {
+          "level": 1,
+          "triangles": 23994,
+          "target": 24000
+        },
+        {
+          "level": 2,
+          "triangles": 8166,
+          "target": 8000
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.517,
+          "height": 1.6865,
+          "depth": 0.4824,
+          "minY": 0.0163
+        },
+        "build": {
+          "width": 1.517,
+          "height": 1.6865,
+          "depth": 0.4824,
+          "minY": 0.0163
         }
       }
     },

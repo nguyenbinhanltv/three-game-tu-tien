@@ -46,6 +46,14 @@ interface Flags {
   v3Palette: boolean;
   /** `?ual=0` tắt clip UAL. */
   ual: boolean;
+  /** `?cloth=1` bật vải mô phỏng (Thiên Y) cho model v3 có mesh vải cũ tách riêng. */
+  cloth: boolean;
+  /** `?norobeanim` dùng clip UAL gốc thay clip áo bào cho model giữ gốc (so sánh). */
+  noRobeAnim: boolean;
+  /** `?v3off=proc,feet,twist,cloth` tắt từng hệ phụ của v3 (chẩn đoán). */
+  v3Off: string[];
+  /** `?headlift=<rad>` góc ngửa đầu bù clip Idle cho model giữ gốc (mặc định 0,23). */
+  headLift: number;
   /** `?renderer=webgl2|webgpu|auto` (xem `rendererChoice`). */
   renderer: string | null;
   /** `?gputime=1` bật timestamp query (chỉ công cụ đo). */
@@ -96,6 +104,10 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   armfit: { scope: 'test', doc: 'góc bù dang tay v3 (độ)' },
   v3pal: { scope: 'test', doc: '=0 tắt nhuộm v3' },
   ual: { scope: 'test', doc: '=0 tắt clip UAL' },
+  norobeanim: { scope: 'test', doc: 'có mặt: dùng clip UAL gốc thay clip áo bào (model giữ gốc Tripo)' },
+  v3off: { scope: 'test', doc: 'proc,feet,twist,cloth: tắt từng hệ phụ của v3 (chẩn đoán)' },
+  headlift: { scope: 'test', doc: 'góc ngửa đầu bù clip Idle cho model giữ gốc (rad, mặc định 0,23)' },
+  cloth: { scope: 'test', doc: '=1 vải mô phỏng Thiên Y (model v3 có vải cũ tách riêng)' },
   renderer: { scope: 'diag', doc: 'webgl2|webgpu|auto' },
   gputime: { scope: 'diag', doc: '=1 timestamp query (công cụ đo)' },
   slowmo: { scope: 'diag', doc: 'chậm hiển thị (dev)' },
@@ -157,6 +169,10 @@ export function readFlags(search: string): Flags {
     armFit: q.get('armfit') === null || Number.isNaN(Number(q.get('armfit'))) ? null : Number(q.get('armfit')),
     v3Palette: !off(q.get('v3pal')),
     ual: !off(q.get('ual')),
+    cloth: q.get('cloth') === '1',
+    noRobeAnim: q.has('norobeanim'),
+    v3Off: (q.get('v3off') ?? '').split(',').filter(Boolean),
+    headLift: Number.isFinite(Number(q.get('headlift') ?? NaN)) && q.get('headlift') !== null ? Number(q.get('headlift')) : 0.23,
     renderer: q.get('renderer'),
     gpuTime: q.get('gputime') === '1',
     slowmo: Math.min(1, Math.max(0.05, Number(q.get('slowmo')) || 1)),

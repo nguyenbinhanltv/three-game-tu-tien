@@ -14,155 +14,392 @@
   },
   "classes": {
     "player": {
-      "triangles": { "min": 15000, "max": 25000 },
+      "triangles": {
+        "min": 15000,
+        "max": 25000
+      },
       "lods": [
-        { "ratio": 0.4, "maxTriangles": 8000 },
-        { "ratio": 0.15, "maxTriangles": 3000 }
+        {
+          "ratio": 0.4,
+          "maxTriangles": 8000
+        },
+        {
+          "ratio": 0.15,
+          "maxTriangles": 3000
+        }
       ],
-      "texture": { "color": 1024, "data": 1024 },
+      "texture": {
+        "color": 1024,
+        "data": 1024
+      },
       "bones": 60
     },
     "player_v3": {
-      "triangles": { "min": 4000, "max": 24000 },
+      "triangles": {
+        "min": 4000,
+        "max": 24000
+      },
       "lods": [
-        { "ratio": 0.5, "maxTriangles": 12000 },
-        { "ratio": 0.2, "maxTriangles": 4800 }
+        {
+          "ratio": 0.5,
+          "maxTriangles": 12000
+        },
+        {
+          "ratio": 0.2,
+          "maxTriangles": 4800
+        }
       ],
-      "texture": { "color": 2048, "data": 2048 },
+      "texture": {
+        "color": 2048,
+        "data": 2048
+      },
       "bones": 128
     },
     "player_v2": {
-      "triangles": { "min": 4000, "max": 12000 },
+      "triangles": {
+        "min": 4000,
+        "max": 12000
+      },
       "lods": [
-        { "ratio": 0.55, "maxTriangles": 5200 },
-        { "ratio": 0.24, "maxTriangles": 2200 }
+        {
+          "ratio": 0.55,
+          "maxTriangles": 5200
+        },
+        {
+          "ratio": 0.24,
+          "maxTriangles": 2200
+        }
       ],
-      "texture": { "color": 2048, "data": 1024 },
+      "texture": {
+        "color": 2048,
+        "data": 1024
+      },
       "bones": 60,
       "webp": true
     },
     "npc": {
-      "triangles": { "min": 10000, "max": 15000 },
-      "lods": [{ "ratio": 0.4, "maxTriangles": 5000 }],
-      "texture": { "color": 1024, "data": 512 },
+      "triangles": {
+        "min": 10000,
+        "max": 15000
+      },
+      "lods": [
+        {
+          "ratio": 0.4,
+          "maxTriangles": 5000
+        }
+      ],
+      "texture": {
+        "color": 1024,
+        "data": 512
+      },
       "bones": 60
     },
     "monster": {
-      "triangles": { "min": 5000, "max": 10000 },
+      "triangles": {
+        "min": 5000,
+        "max": 10000
+      },
       "lods": [
-        { "ratio": 0.35, "maxTriangles": 3000 },
-        { "ratio": 0.12, "maxTriangles": 1000 }
+        {
+          "ratio": 0.35,
+          "maxTriangles": 3000
+        },
+        {
+          "ratio": 0.12,
+          "maxTriangles": 1000
+        }
       ],
-      "texture": { "color": 1024, "data": 512 },
+      "texture": {
+        "color": 1024,
+        "data": 512
+      },
       "bones": 60
     },
     "elite": {
-      "triangles": { "min": 10000, "max": 15000 },
+      "triangles": {
+        "min": 10000,
+        "max": 15000
+      },
       "lods": [
-        { "ratio": 0.35, "maxTriangles": 5000 },
-        { "ratio": 0.12, "maxTriangles": 1500 }
+        {
+          "ratio": 0.35,
+          "maxTriangles": 5000
+        },
+        {
+          "ratio": 0.12,
+          "maxTriangles": 1500
+        }
       ],
-      "texture": { "color": 1024, "data": 512 },
+      "texture": {
+        "color": 1024,
+        "data": 512
+      },
       "bones": 60
     },
     "monster_mq": {
-      "triangles": { "min": 5000, "max": 10000 },
+      "triangles": {
+        "min": 5000,
+        "max": 10000
+      },
       "lods": [
-        { "ratio": 0.35, "maxTriangles": 3500 },
-        { "ratio": 0.12, "maxTriangles": 1200 }
+        {
+          "ratio": 0.35,
+          "maxTriangles": 3500
+        },
+        {
+          "ratio": 0.12,
+          "maxTriangles": 1200
+        }
       ],
-      "texture": { "color": 1024, "data": 512 },
+      "texture": {
+        "color": 1024,
+        "data": 512
+      },
       "bones": 96
     },
     "elite_mq": {
-      "triangles": { "min": 10000, "max": 15000 },
+      "triangles": {
+        "min": 10000,
+        "max": 15000
+      },
       "lods": [
-        { "ratio": 0.35, "maxTriangles": 5000 },
-        { "ratio": 0.12, "maxTriangles": 1800 }
+        {
+          "ratio": 0.35,
+          "maxTriangles": 5000
+        },
+        {
+          "ratio": 0.12,
+          "maxTriangles": 1800
+        }
       ],
-      "texture": { "color": 1024, "data": 512 },
+      "texture": {
+        "color": 1024,
+        "data": 512
+      },
       "bones": 96
     },
     "boss_mq": {
-      "triangles": { "min": 20000, "max": 50000 },
+      "triangles": {
+        "min": 20000,
+        "max": 50000
+      },
       "lods": [
-        { "ratio": 0.5, "maxTriangles": 15000 },
-        { "ratio": 0.2, "maxTriangles": 6000 }
+        {
+          "ratio": 0.5,
+          "maxTriangles": 15000
+        },
+        {
+          "ratio": 0.2,
+          "maxTriangles": 6000
+        }
       ],
-      "texture": { "color": 2048, "data": 2048 },
+      "texture": {
+        "color": 2048,
+        "data": 2048
+      },
       "bones": 96
     },
     "boss": {
-      "triangles": { "min": 20000, "max": 50000 },
+      "triangles": {
+        "min": 20000,
+        "max": 50000
+      },
       "lods": [
-        { "ratio": 0.35, "maxTriangles": 15000 },
-        { "ratio": 0.12, "maxTriangles": 5000 }
+        {
+          "ratio": 0.35,
+          "maxTriangles": 15000
+        },
+        {
+          "ratio": 0.12,
+          "maxTriangles": 5000
+        }
       ],
-      "texture": { "color": 1536, "data": 1024 },
+      "texture": {
+        "color": 1536,
+        "data": 1024
+      },
       "bones": 80
     },
     "weapon": {
-      "triangles": { "min": 1000, "max": 3000 },
+      "triangles": {
+        "min": 1000,
+        "max": 3000
+      },
       "lods": [],
-      "texture": { "color": 512, "data": 512 },
+      "texture": {
+        "color": 512,
+        "data": 512
+      },
       "bones": 0
     },
     "artifact": {
-      "triangles": { "min": 1000, "max": 3000 },
-      "lods": [{ "ratio": 0.4 }, { "ratio": 0.15 }],
-      "texture": { "color": 512, "data": 512 },
+      "triangles": {
+        "min": 1000,
+        "max": 3000
+      },
+      "lods": [
+        {
+          "ratio": 0.4
+        },
+        {
+          "ratio": 0.15
+        }
+      ],
+      "texture": {
+        "color": 512,
+        "data": 512
+      },
       "bones": 0
     },
     "prop": {
-      "triangles": { "min": 500, "max": 5000 },
-      "lods": [{ "ratio": 0.4 }, { "ratio": 0.15 }],
-      "texture": { "color": 1024, "data": 512 },
+      "triangles": {
+        "min": 500,
+        "max": 5000
+      },
+      "lods": [
+        {
+          "ratio": 0.4
+        },
+        {
+          "ratio": 0.15
+        }
+      ],
+      "texture": {
+        "color": 1024,
+        "data": 512
+      },
       "bones": 0
     },
     "outfit": {
-      "triangles": { "min": 500, "max": 14000 },
-      "lods": [{ "ratio": 0.4 }, { "ratio": 0.15 }],
-      "texture": { "color": 1024, "data": 1024 },
+      "triangles": {
+        "min": 500,
+        "max": 14000
+      },
+      "lods": [
+        {
+          "ratio": 0.4
+        },
+        {
+          "ratio": 0.15
+        }
+      ],
+      "texture": {
+        "color": 1024,
+        "data": 1024
+      },
       "bones": 80,
       "webp": true
     },
     "outfit_v2": {
-      "triangles": { "min": 500, "max": 14000 },
-      "lods": [{ "ratio": 0.4 }, { "ratio": 0.15 }],
-      "texture": { "color": 1024, "data": 1024 },
+      "triangles": {
+        "min": 500,
+        "max": 14000
+      },
+      "lods": [
+        {
+          "ratio": 0.4
+        },
+        {
+          "ratio": 0.15
+        }
+      ],
+      "texture": {
+        "color": 1024,
+        "data": 1024
+      },
       "bones": 80,
       "webp": true
     },
     "skin": {
-      "triangles": { "min": 8000, "max": 25000 },
-      "lods": [{ "ratio": 0.4, "maxTriangles": 8000 }, { "ratio": 0.15, "maxTriangles": 3000 }],
-      "texture": { "color": 1024, "data": 1024 },
+      "triangles": {
+        "min": 8000,
+        "max": 25000
+      },
+      "lods": [
+        {
+          "ratio": 0.4,
+          "maxTriangles": 8000
+        },
+        {
+          "ratio": 0.15,
+          "maxTriangles": 3000
+        }
+      ],
+      "texture": {
+        "color": 1024,
+        "data": 1024
+      },
       "bones": 80,
       "webp": true
     },
     "drop": {
-      "triangles": { "min": 300, "max": 1500 },
+      "triangles": {
+        "min": 300,
+        "max": 1500
+      },
       "lods": [],
-      "texture": { "color": 256, "data": 256 },
+      "texture": {
+        "color": 256,
+        "data": 256
+      },
       "bones": 0
     },
     "arch": {
-      "triangles": { "min": 0, "max": 600000 },
+      "triangles": {
+        "min": 0,
+        "max": 600000
+      },
       "lods": [],
-      "texture": { "color": 2048, "data": 2048 },
+      "texture": {
+        "color": 2048,
+        "data": 2048
+      },
       "bones": 0
     },
     "fx": {
-      "triangles": { "min": 0, "max": 5000 },
+      "triangles": {
+        "min": 0,
+        "max": 5000
+      },
       "lods": [],
-      "texture": { "color": 512, "data": 512 },
+      "texture": {
+        "color": 512,
+        "data": 512
+      },
       "bones": 0
     },
     "anim": {
-      "triangles": { "min": 0, "max": 0 },
+      "triangles": {
+        "min": 0,
+        "max": 0
+      },
       "lods": [],
-      "texture": { "color": 0, "data": 0 },
+      "texture": {
+        "color": 0,
+        "data": 0
+      },
       "bones": 60
+    },
+    "player_v3_hi": {
+      "triangles": {
+        "min": 4000,
+        "max": 110000
+      },
+      "lods": [
+        {
+          "ratio": 0.25,
+          "maxTriangles": 24000
+        },
+        {
+          "ratio": 0.1,
+          "maxTriangles": 8000
+        }
+      ],
+      "texture": {
+        "color": 4096,
+        "data": 4096
+      },
+      "bones": 128
     }
   }
 }
