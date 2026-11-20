@@ -755,15 +755,15 @@ def hand(b, S, px, py, pz, sgn, k, seed, curl=0.55):
             pos = (pos[0] + d[0] * seg, pos[1] + d[1] * seg, pos[2] + d[2] * seg)
             pts.append(pos)
         limb(b, [P(*q) for q in pts], [1.0 * k * S, 0.98 * k * S, 0.84 * k * S, 0.66 * k * S], nu=12, steps=4, seed=seed + 10 * i)
-    pos = (px + 1.2 * k, py - sgn * 0.4 * k, pz)
+    pos = (px - 1.2 * k, py - sgn * 0.4 * k, pz)
     pts = [pos]
     pitch = 0.0
     for seg in (3.4 * k, 2.8 * k):  # ngón cái lệch ngang
         pitch += curl * 0.7
-        d = (math.cos(0.75) * math.cos(pitch), sgn * math.sin(0.75) * math.cos(pitch) * 0.8, math.sin(pitch))
+        d = (-math.cos(0.75) * math.cos(pitch), sgn * math.sin(0.75) * math.cos(pitch) * 0.8, math.sin(pitch))
         pos = (pos[0] + d[0] * seg, pos[1] + d[1] * seg, pos[2] + d[2] * seg)
         pts.append(pos)
-    limb(b, [P(*q) for q in pts] + [P(pts[-1][0] + 0.6 * k, pts[-1][1] + sgn * 0.5 * k, pts[-1][2])], [1.25 * k * S, 1.1 * k * S, 0.85 * k * S, 0.7 * k * S], nu=12, steps=4, seed=seed + 90)
+    limb(b, [P(*q) for q in pts] + [P(pts[-1][0] - 0.6 * k, pts[-1][1] + sgn * 0.5 * k, pts[-1][2])], [1.25 * k * S, 1.1 * k * S, 0.85 * k * S, 0.7 * k * S], nu=12, steps=4, seed=seed + 90)
 
 
 def build_statue(b, st, rnd):
