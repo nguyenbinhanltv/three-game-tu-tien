@@ -302,6 +302,18 @@ describe('tủ ngoại trang: giao thức', () => {
     const n = said.length;
     sim.wardrobe.flush(p); // không đổi thì không gửi
     expect(said.length).toBe(n);
+  });
+
+  it('kết nối lại: client mới nhận lại tủ khi đánh dấu gửi lại như nhánh allowReconnection (base.ts)', () => {
+    const { sim, p, said, char } = setup();
+    give(char, ROBE_A);
+    sim.wardrobe.flush(p);
+    sim.wardrobe.flush(p);
+    const n = said.filter((m) => m.type === S.WARDROBE).length;
+    // Đúng cờ mà base.ts bật khi kết nối lại thành công.
+    char.charDirty = char.invDirty = char.questDirty = char.wardrobeDirty = true;
+    sim.wardrobe.flush(p);
+    expect(said.filter((m) => m.type === S.WARDROBE).length).toBe(n + 1);
     expect(C.LOOK_SET).toBe('lk');
   });
 });

@@ -113,7 +113,7 @@ export class PlayerSystem {
     if (!(y >= g)) y = g;
     if (y > g + 3) y = g; // không lưu trạng thái đang bay
     char.room = this.c.opts.levelId;
-    char.charDirty = char.invDirty = char.questDirty = true;
+    char.charDirty = char.invDirty = char.questDirty = char.wardrobeDirty = true;
     const p: PlayerEnt = {
       sid: client.sessionId,
       client,
