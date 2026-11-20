@@ -139,7 +139,7 @@ function UltCardView() {
   return (
     <div className="ult-card" key={card.id} style={{ '--mc': '#' + card.color } as CSSProperties}>
       <div className="ult-card-name">
-        <Calli k={`skill.${card.skill}.name`} />
+        <Calli k={`skill.${card.skill}.name`} em={3.2} />
       </div>
     </div>
   );

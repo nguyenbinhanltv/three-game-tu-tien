@@ -14,7 +14,7 @@ const GROUPS: Record<string, Item[]> = {
     lv: +s.split(':')[1],
   })),
   place: ['sect:15', 'dungeon:15', 'ch2:20', 'ch3:24', 'ch4:28', 'ch5:32'].map((s) => ({ id: s.split(':')[0], lv: +s.split(':')[1] })),
-  ult: ['skl_van_kiem_quy_tong', 'skl_kim_cuong_bat_hoai', 'skl_hoi_thien_dan_lo'].map((id) => ({ id, lv: 15, wait: 220 })),
+  ult: ['skl_van_kiem_quy_tong', 'skl_kim_cuong_bat_hoai', 'skl_hoi_thien_dan_lo'].map((id) => ({ id, lv: 15, wait: 2200 })),
 };
 
 export default {
@@ -34,6 +34,11 @@ export default {
           });
           if (plain) await page.route('**/assets/calli/**', (rt) => rt.abort());
           await sleep(2500);
+          // Thẻ chiêu chỉ 0,6 s: kéo dài hoạt ảnh để chụp đúng lúc hiện đủ (chỉ trong kịch bản chụp).
+          if (g === 'ult')
+            await page.addStyleTag({
+              content: '.ult-card,.ult-card-name{animation-duration:8s!important}.ult-card-name .calli{animation-duration:2s!important}',
+            });
           await page.evaluate(
             async ([group, id]) => {
               // Đường dẫn là biến để tsc không tìm module (trình duyệt tự nạp từ Vite dev).

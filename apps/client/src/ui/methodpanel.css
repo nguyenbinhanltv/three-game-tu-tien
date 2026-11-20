@@ -384,7 +384,10 @@
 
 /* Tên chiêu tối thượng bằng chữ thư pháp (tools/calli): thẻ chỉ 0,6 s nên nét bút hiện nhanh (0,25 s). */
 .ult-card-name .calli {
+  width: auto;
+  max-width: 80vw;
   animation-duration: 0.25s;
   animation-delay: 0s;
-  filter: drop-shadow(0 0 14px var(--mc));
+  height: 3.2em;
+  filter: drop-shadow(0 0 2px var(--u-ink-0)) drop-shadow(0 3px 5px var(--u-ink-0)) drop-shadow(0 0 16px var(--mc));
 }
