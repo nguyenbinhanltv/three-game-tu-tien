@@ -192,9 +192,11 @@ export function runFrame(eng: Game): void {
   const rp = eng.renderPos;
   eng.terrain.update(rp.x, rp.z, eng.started ? 1 : 8);
   const myLevel = get().char?.level ?? 1;
+  // Chậm thời gian TRÌNH DIỄN (VS-1 `slowmo`): chỉ animation/hình/hạt; di chuyển, dự đoán, camera, âm thanh dùng dt thật.
+  const vdt = dt * eng.presentationScale(performance.now());
   if (me) {
     eng.ents.update(
-      dt,
+      vdt,
       eng.view,
       { x: rp.x, y: rp.y, z: rp.z, yaw: eng.facing, speed: eng.speed, airborne: !eng.cur.grounded && !eng.cur.flying },
       eng.targetId,
@@ -207,11 +209,11 @@ export function runFrame(eng: Game): void {
     eng.questMarkersDirty = false;
     eng.ents.updateQuestMarkers(get().quests, myLevel);
   }
-  if (me) eng.vfx.trails.update(dt, eng.ents.players, eng.sid, eng.camera);
-  eng.skillFx?.update(dt);
+  if (me) eng.vfx.trails.update(vdt, eng.ents.players, eng.sid, eng.camera);
+  eng.skillFx?.update(vdt);
   if (me) eng.realmAura?.update(dt);
   if (me) updateGrass(eng, dt, rp);
-  eng.vfx.update(dt);
+  eng.vfx.update(vdt);
   eng.post?.update(dt);
   updateCamera(eng, dt);
   setListener(rp.x, rp.z, eng.camYaw);
@@ -329,7 +331,14 @@ function updateCamera(eng: Game, dt: number): void {
     pull = f.amt * Math.min(1, f.t / 0.4) * Math.max(0, Math.min(1, (f.dur - f.t) / 0.6));
     if (f.t >= f.dur) eng.fxPull = null;
   }
-  const wantFov = zc.fov + ultPunch;
+  let fovKick = 0;
+  if (eng.fxFov) {
+    const f = eng.fxFov;
+    f.t += dt;
+    fovKick = f.amt * Math.min(1, f.t / 0.15) * Math.max(0, Math.min(1, (f.dur - f.t) / 0.6));
+    if (f.t >= f.dur) eng.fxFov = null;
+  }
+  const wantFov = zc.fov + ultPunch + fovKick;
   if (Math.abs(eng.camera.fov - wantFov) > 0.01) {
     eng.camera.fov = wantFov;
     eng.camera.updateProjectionMatrix();
