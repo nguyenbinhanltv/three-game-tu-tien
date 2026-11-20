@@ -34,3 +34,19 @@ Chỉ là lớp hình, client tự suy từ `PState.lv` (cảnh giới) và `PSt
 | Bật (4 hào quang) | 158 (+16) | 664–666k (+70k) | 217 | 121 | 71 + 3 phân thân |
 
 Phần lớn mức tăng là 3 phân thân (mesh nhân vật vật liệu bóng, đã tắt đổ bóng): người ở Ảnh Biến khoảng +10 draw call, ba người còn lại vài draw call mỗi người. Thời gian khung ~15 ms ở cả hai lượt (4 phiên chung một GPU, chỉ để so ngang). Hạt dùng chung ngân sách `PARTICLE_BUDGET`. Atlas tranh pháp tướng 1536×683 (~4 MB).
+
+
+## VS-0: thứ bậc thị giác (2026-11-20)
+
+Bảng trên mô tả các lớp; từ VS-0 các lớp **không cộng dồn nữa** mà theo vai chính/phụ/nền (xem `docs/handbook/vfx-animation.md` và chú thích đầu mục trong `game/fx/realmAuraRules.ts`).
+
+| Cảnh giới | Lớp chính | Lớp phụ (khi đứng yên ≥ 3 s) | Chỉ ở Đầy đủ |
+| --- | --- | --- | --- |
+| Kết Đan | kim đan | xoáy ốc vàng | |
+| Nguyên Anh | Kiếm tu: vòng 9 kiếm; Đan sư: sen lửa; Hộ pháp: trận đồ chân | Nguyên Anh nhỏ (đã thu nhỏ, đặt trên tên) | vòng ngũ hành |
+| Hóa Thần | rim light + phù văn lưng | vòng kiếm / sen lửa | Nguyên Anh nhỏ, ngũ hành |
+| Ảnh Biến | rim light + tia sét tím-vàng | phù văn lưng | vòng kiếm/sen, Nguyên Anh nhỏ, ngũ hành, 3 phân thân |
+
+Pháp tướng (Hóa Thần+): chỉ khi ra chiêu tối thượng/chiêu mở từ 28, ≤ 1,3 s, đặt lệch bên camera; Tối giản không có pháp tướng. Mọi chế độ trừ Tối giản/Tắt vẫn có hạt nền thưa khi đứng yên.
+
+Số đo ngân sách mỗi người (`pnpm shots realmaura --budget`, 1280×720 Cao, nhân vật đứng yên, hiệu số draw call so với Tắt, cùng cảnh): Chuẩn **+2…+5**, Đầy đủ **+2…+14** (max ở Ảnh Biến/Kết Đan khi 3 phân thân/ lớp phụ đều hiện); mục tiêu ≤ 25 / ≤ 60. Chi phí nhỏ vì lưới gộp instance; phần nặng vẫn là phân thân (mesh nhân vật) nên chỉ có ở Đầy đủ.

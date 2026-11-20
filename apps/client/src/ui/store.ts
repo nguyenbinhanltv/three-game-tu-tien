@@ -15,7 +15,8 @@ import type {
   WardrobeMsg,
 } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio/audio';
-import { fxQuality, hitStopOn, realmAuraOn } from '../game/fx/fxSettings';
+import { auraCombatOf, auraModeOf, auraOthersOf, fxQuality, hitStopOn } from '../game/fx/fxSettings';
+import type { AuraCombat, AuraMode, AuraOthers } from '../game/fx/realmAuraRules';
 import { uiScale } from './uiScale';
 import {
   closeWindow,
@@ -291,7 +292,9 @@ interface UIState {
   fxQuality: 'low' | 'medium' | 'high';
   hitStop: boolean;
   /** Hào quang cảnh giới trên nhân vật (RFX-1). */
-  realmAura: boolean;
+  auraMode: AuraMode;
+  auraOthers: AuraOthers;
+  auraCombat: AuraCombat;
   /** Thẻ chương (C2) bật/tắt trong Cài đặt. */
   chapterCards: boolean;
   /** HUD U2-2: kiểu cụm kỹ năng ('arc' cung góc phải dưới | 'bar' thanh ngang giữa dưới), lưu `dtl.skillLayout`. */
@@ -403,7 +406,9 @@ export const useUI = create<UIState>(() => ({
   camShake: localStorage.getItem('dtl.camShake') !== '0',
   fxQuality: fxQuality(),
   hitStop: hitStopOn(),
-  realmAura: realmAuraOn(),
+  auraMode: auraModeOf(),
+  auraOthers: auraOthersOf(),
+  auraCombat: auraCombatOf(),
   offscreen: localStorage.getItem('dtl.offscreen') !== '0',
   chapterCards: localStorage.getItem('dtl.chapterCards') !== '0',
   skillLayout: localStorage.getItem('dtl.skillLayout') === 'bar' ? 'bar' : 'arc',

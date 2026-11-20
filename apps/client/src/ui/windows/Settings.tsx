@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { t } from '@dtl/content';
 import { getVolume, isMuted, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../../game/audio/audio';
 import { Game } from '../../game/engine';
+import { AURA_COMBATS, AURA_MODES, AURA_OTHERS } from '../../game/fx/realmAuraRules';
 import { Button, Divider, PanelWindow, Segmented, Slider } from '../u2/win';
 import { setReduceMotion, useReduceMotion } from '../u2/shell';
 import { closePanel, openPanel, set, setHudPref, useUI } from '../store';
@@ -45,7 +46,9 @@ export function Settings() {
   const reduceMotion = useReduceMotion();
   const fxQ = useUI((s) => s.fxQuality);
   const hitStop = useUI((s) => s.hitStop);
-  const realmAura = useUI((s) => s.realmAura);
+  const auraMode = useUI((s) => s.auraMode);
+  const auraOthers = useUI((s) => s.auraOthers);
+  const auraCombat = useUI((s) => s.auraCombat);
   const offscreen = useUI((s) => s.offscreen);
   const chapterCards = useUI((s) => s.chapterCards);
   const [mute, setMute] = useState(isMuted());
@@ -117,7 +120,27 @@ export function Settings() {
       />
       <div className="k-dim">{t('ui.settings.fx_quality_hint')}</div>
       <Segmented label={t('ui.settings.hit_stop')} value={hitStop} onChange={(on) => Game.current?.setHitStop(on)} options={onOff} />
-      <Segmented label={t('ui.settings.realm_aura')} value={realmAura} onChange={(on) => Game.current?.setRealmAura(on)} options={onOff} />
+      <Divider label={t('ui.settings.realm_aura')} />
+      <Segmented
+        label={t('ui.settings.realm_aura')}
+        value={auraMode}
+        onChange={(m) => Game.current?.setAuraMode(m)}
+        options={AURA_MODES.map((m) => ({ value: m, label: t('ui.settings.aura.mode.' + m) }))}
+      />
+      <div className="k-dim">{t('ui.settings.aura_others')}</div>
+      <Segmented
+        label={t('ui.settings.aura_others')}
+        value={auraOthers}
+        onChange={(m) => Game.current?.setAuraOthers(m)}
+        options={AURA_OTHERS.map((m) => ({ value: m, label: t('ui.settings.aura.others.' + m) }))}
+      />
+      <div className="k-dim">{t('ui.settings.aura_combat')}</div>
+      <Segmented
+        label={t('ui.settings.aura_combat')}
+        value={auraCombat}
+        onChange={(m) => Game.current?.setAuraCombat(m)}
+        options={AURA_COMBATS.map((m) => ({ value: m, label: t('ui.settings.aura.combat.' + m) }))}
+      />
       <div className="k-dim">{t('ui.settings.realm_aura_hint')}</div>
       <Divider label={t('ui.settings.offscreen')} />
       <Segmented label={t('ui.settings.offscreen')} value={offscreen} onChange={(on) => Game.current?.setOffscreen(on)} options={onOff} />
