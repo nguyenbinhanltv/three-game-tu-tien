@@ -43,13 +43,13 @@ const CENTER = DG.center;
 export const TT_DOME = { r: 135, h: 80 };
 
 /** Ba hướng cửa phong ấn (độ, atan2(z, x)): khớp `seals.doors` ở `levels/than_tang.json` và `props.thantang.ts`. */
-export const TT_DOOR_DEG = [200, 270, 340] as const;
+const TT_DOOR_DEG = [200, 270, 340] as const;
 
 /** Điểm đứng chạm cửa (toạ độ thế giới) của ba cửa: vũng sáng vàng trên sàn. */
 const DOOR_POINTS = (DG.waves.find((w) => w.seals)?.seals?.doors ?? []).map((d) => ({ x: d.x, z: d.z }));
 
 /** Vùng cấm: khu giữa đài chiến và lối vào phía nam. */
-export function ttKeepOut(x: number, z: number, minR: number): boolean {
+function ttKeepOut(x: number, z: number, minR: number): boolean {
   const dx = x - CENTER.x;
   const dz = z - CENTER.z;
   return Math.hypot(dx, dz) < minR || (Math.abs(dx) < 10 && dz > 0);
@@ -98,7 +98,7 @@ export function buildVaultDome(def: { x: number; z: number; r: number; h: number
 }
 
 /** Vị trí lư lửa vòng quanh điện (r 90, chừa cửa nam): khớp `BRAZIERS`/`BRAZIER_R` trong `tools/blender/than_tang_arch.py`. */
-export function brazierSpots(): { x: number; z: number }[] {
+function brazierSpots(): { x: number; z: number }[] {
   const n = 14;
   const out: { x: number; z: number }[] = [];
   for (let i = 0; i < n; i++) {
@@ -145,7 +145,7 @@ export function ttMaterialFor(name: string): THREE.Material | null {
  * sao tám cánh trong r 20, ba đường toả ra ba cửa phong ấn có chấm dọc đường. Vũng sáng vàng ấm dưới mỗi lư lửa, ở tâm và trước ba điểm chạm cửa.
  * Đĩa r 112 bám `heightAt` + 0,08 m.
  */
-export function buildVaultFloor(): THREE.Mesh {
+function buildVaultFloor(): THREE.Mesh {
   const R = 112;
   const geo = new THREE.RingGeometry(0.01, R, 128, 48).rotateX(-Math.PI / 2);
   const p = geo.attributes.position as THREE.BufferAttribute;
@@ -279,7 +279,7 @@ export class ThanTangArt {
       exit: DG.exit,
       seed: SEED,
       keepOut: ttKeepOut,
-      mist: { a: [0.16, 0.1, 0.26], b: [0.46, 0.32, 0.56], innerR: 30, outerR: 128, opacity: 0.34 },
+      mist: { a: [0.12, 0.1, 0.14], b: [0.38, 0.32, 0.4], innerR: 30, outerR: 128, opacity: 0.34 },
     });
     this.group.add(this.fx.group);
     this.addBeams();

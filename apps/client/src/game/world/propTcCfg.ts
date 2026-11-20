@@ -11,13 +11,13 @@ interface Cfg {
   crystal?: boolean;
 }
 
-const SMALL: Cfg = { range: 150, lod: [20, 55], decor: true };
-const MEDIUM: Cfg = { range: 260, lod: [35, 90] };
-const LARGE: Cfg = { range: 380, lod: [50, 120] };
+const SMALL: Cfg = { range: 110, lod: [20, 55], decor: true };
+const MEDIUM: Cfg = { range: 210, lod: [35, 90] };
+const LARGE: Cfg = { range: 300, lod: [50, 120] };
 /** Vật phát sáng/cao: nhìn thấy từ xa hơn. */
-const BEACON: Cfg = { range: 320, lod: [45, 110] };
+const BEACON: Cfg = { range: 260, lod: [45, 110] };
 
-export const TC_NAMES: Record<string, Cfg> = {
+const TC_NAMES: Record<string, Cfg> = {
   // tông môn
   dinh_lu_dong: MEDIUM,
   gia_kiem: MEDIUM,

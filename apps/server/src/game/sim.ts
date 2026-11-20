@@ -32,7 +32,6 @@ import {
   PF_SHIELD,
   S,
   type SkillDef,
-  SPAWN_POINT,
   type SpawnDef,
   type SysMsg,
   type TribDef,
@@ -65,6 +64,7 @@ import { GmSystem } from './gm';
 import { CombatSystem, type CombatCtx } from './combat';
 import { MonsterSystem, type MonsterCtx } from './monsters';
 import { EconomySystem, type EconomyCtx } from './economy';
+import { WardrobeSystem, type WardrobeCtx } from './wardrobe';
 import { TAUNT_BOSS_MUL } from './combat/consts';
 import { resolveFor } from './method';
 
@@ -304,6 +304,21 @@ export class GameSim {
       },
       get upgrade() {
         return s.upgrade;
+      },
+      warn: (p, k, params) => s.warn(p, k, params),
+    }))(this),
+  );
+
+  /** Tủ ngoại trang (P4): xem `game/wardrobe/`. */
+  readonly wardrobe = new WardrobeSystem(
+    ((s: GameSim): WardrobeCtx => ({
+      get duel() {
+        return s.duel;
+      },
+      idem: (p, r) => s.ecoSys.idem(p, r),
+      isDead: (p) => s.isDead(p),
+      get now() {
+        return s.now;
       },
       warn: (p, k, params) => s.warn(p, k, params),
     }))(this),
@@ -1026,6 +1041,7 @@ export class GameSim {
         c.invDirty = false;
         p.client.send(S.INV, this.invMsg(p));
       }
+      this.wardrobe.flush(p);
       if (c.questDirty) {
         c.questDirty = false;
         p.client.send(S.QUESTS, c.quests);
@@ -1500,5 +1516,3 @@ export class GameSim {
     if (f.trib) this.sys(p, 'sys.gm', { m: this.gmSys.tribulation(p) }, 'info');
   }
 }
-
-export const DEFAULT_SPAWN = SPAWN_POINT;

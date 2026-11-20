@@ -268,6 +268,7 @@
   "sys.sold": "Đã bán {item} ×{n}, được {gold} linh thạch",
   "sys.equip_level": "Cảnh giới chưa đủ để dùng vật này.",
   "sys.equip_gender": "Vật này không hợp với giới tính của nhân vật.",
+  "sys.wardrobe_locked": "Ngoại hình này chưa có trong tủ ngoại trang.",
   "sys.item_cd": "Dược lực viên trước chưa tan hết.",
   "sys.enh_ok": "Cường hóa thành công: {item} +{n}",
   "sys.enh_fail": "Cường hóa thất bại, nguyên liệu tiêu tan.",

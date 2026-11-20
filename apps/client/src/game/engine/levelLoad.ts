@@ -22,11 +22,14 @@ import { CARD_TREE_IDS, CardForest } from '../world/cardForest';
 import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
 import { DoanMachArt } from '../world/doanMachArt';
-import { KiemTrungArt } from '../world/kiemTrungArt';
+import { KiemTrungArt, ktMaterialFor } from '../world/kiemTrungArt';
 import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
 import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../world/kinhNguyetArt';
 import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
 import { XichTanArt, xkMaterialFor } from '../world/xichTanArt';
+import { DoKiepArt, dkMaterialFor } from '../world/doKiepArt';
+import { BhFar } from '../world/bhFar';
+import { LacKiemFar } from '../world/lacKiemFar';
 import { buildGildedSky, KD_DOME, KimDaArt } from '../world/kimDaArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
@@ -91,7 +94,7 @@ export async function loadGround(eng: Game): Promise<void> {
 }
 
 /** Dựng lớp riêng của Bắc Hoang: vệt nứt Giới Khích (3 draw call), cây chết (≤ 3 draw call). `?bhart=0` tắt để so ảnh. */
-export function buildBacHoang(eng: Game): void {
+function buildBacHoang(eng: Game): void {
   if (!FLAGS.bhArt) return;
   const T = levelTerrain();
   eng.riftMood = true;
@@ -116,7 +119,7 @@ export function buildBacHoang(eng: Game): void {
   }
 }
 
-export function buildXich(eng: Game, id: string, q: (typeof QUALITY)[string]): void {
+function buildXich(eng: Game, id: string, q: (typeof QUALITY)[string]): void {
   if (!FLAGS.xichArt) return;
   const T = levelTerrain();
   const paths = xichCracks(T.def, (x, z) => heightAt(x, z));
@@ -243,7 +246,7 @@ export function disposeBacHoang(eng: Game): void {
 }
 
 /** Mood của level; `?mood=` trên URL thắng (chụp ảnh so sánh). */
-export function moodOf(_eng: Game, id: string): GradingName {
+function moodOf(_eng: Game, id: string): GradingName {
   const m = levelAssets(id).mood;
   if (m === 'default' || !(m in GRADING)) return GRADING_DEFAULT;
   // `?mood=dawn|day|night` thắng; level có bộ mood riêng (ochre) lấy biến thể cùng thời điểm.
@@ -318,18 +321,31 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     const pts =
       id === 'van_lam' || id === 'kiem_trung'
         ? SECT_LANTERNS
-        : propsOf(id)
-            .filter((p) => p.id === 'prop_den_da')
-            .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
+        : id === 'bac_hoang'
+          ? // Bắc Hoang: đèn lồng trời quanh trại Dị Vực và Trấn Giới Đài (trước đây không có nguồn sáng nào, trại tối đặc ban đêm)
+            propsOf(id)
+              .filter((p) => p.id === 'prop_den_long_troi' || p.id === 'prop_tc_chan_dong_do_nat' || p.id === 'prop_tc_chan_dong_do_nat_2')
+              .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 3.2 * p.s, z: p.z, color: 0xff8a3c }))
+          : propsOf(id)
+              .filter((p) => p.id === 'prop_den_da')
+              .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
     // Cung gương: quầng đèn nhỏ, màu lạnh, không vào bloom (đèn đá không cháy trắng).
     const halos = levelAssets(id).palace
-      ? createLanternHalos(pts, 1.3, levelAssets(id).palace === 'gilt' ? 0xd8a64a : levelAssets(id).kinhNguyetArt ? 0xffc47a : 0xb8cdee)
-      : createLanternHalos(pts);
+      ? createLanternHalos(
+          pts,
+          levelAssets(id).kinhNguyetArt ? 3.6 : 1.3,
+          levelAssets(id).palace === 'gilt' ? 0xd8a64a : levelAssets(id).kinhNguyetArt ? 0xffc47a : 0xb8cdee,
+        )
+      : id === 'bac_hoang'
+        ? createLanternHalos(pts, 2.8, 0xffb868)
+        : createLanternHalos(pts);
     eng.scene.add(halos);
     eng.levelObjs.push(halos);
     eng.lanterns = new LanternLights(eng.scene, pts);
     eng.lanterns.setEnabled(q.lights && isWebGPU(eng.renderer)); // T6: đèn lồng point light thật chỉ ở WebGPU
-    eng.lanterns.setIntensityScale((LANTERN_LIGHT[mood] ?? 1) * (levelAssets(id).palace ? 0.35 : 1));
+    eng.lanterns.setIntensityScale(
+      (LANTERN_LIGHT[mood] ?? 1) * (levelAssets(id).palace ? (levelAssets(id).kinhNguyetArt ? 0.9 : 0.35) : 1),
+    );
   }
   const cave = levelAssets(id).cave;
   if (cave) {
@@ -432,6 +448,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   if (levelAssets(id).doanMachArt) {
     eng.doanMachArt = new DoanMachArt();
     eng.scene.add(eng.doanMachArt.group);
+    void eng.doanMachArt.loadBridge(eng.renderer);
   }
   if (levelAssets(id).kiemTrungArt) {
     eng.kiemTrungArt = new KiemTrungArt({ reduced: q.heightFog === false });
@@ -448,6 +465,19 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.xichTanArt.group);
     void loadXkModel(eng, q.shadows);
   }
+  if (levelAssets(id).bhFar) {
+    eng.bhFar = new BhFar(() => (eng.scene.fog as THREE.Fog | null)?.color ?? null);
+    eng.scene.add(eng.bhFar.group);
+  }
+  if (levelAssets(id).lacKiemFar) {
+    eng.lacKiemFar = new LacKiemFar(() => (eng.scene.fog as THREE.Fog | null)?.color ?? null);
+    eng.scene.add(eng.lacKiemFar.group);
+  }
+  if (levelAssets(id).doKiepArt) {
+    eng.doKiepArt = new DoKiepArt({ lights: q.lights && isWebGPU(eng.renderer), hazardActive: () => eng.vfx.hazards.length > 0 });
+    eng.scene.add(eng.doKiepArt.group);
+    void loadDkModel(eng, q.shadows);
+  }
   if (levelAssets(id).kimDaArt) {
     eng.kimDaArt = new KimDaArt();
     eng.scene.add(eng.kimDaArt.group);
@@ -459,7 +489,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     void loadTtModel(eng, q.shadows);
   }
   if (levelAssets(id).kinhNguyetArt) {
-    eng.kinhNguyetArt = new KinhNguyetArt();
+    eng.kinhNguyetArt = new KinhNguyetArt({ reflect: q.lights && isWebGPU(eng.renderer), hideInReflection: eng.vfx.group });
     eng.scene.add(eng.kinhNguyetArt.group);
     void loadKnModel(eng, q.shadows);
   }
@@ -547,6 +577,21 @@ export function unloadLevel(eng: Game): void {
     eng.xichTanArt.dispose();
     eng.xichTanArt = null;
   }
+  if (eng.bhFar) {
+    drop(eng.bhFar.group);
+    eng.bhFar.dispose();
+    eng.bhFar = null;
+  }
+  if (eng.lacKiemFar) {
+    drop(eng.lacKiemFar.group);
+    eng.lacKiemFar.dispose();
+    eng.lacKiemFar = null;
+  }
+  if (eng.doKiepArt) {
+    drop(eng.doKiepArt.group);
+    eng.doKiepArt.dispose();
+    eng.doKiepArt = null;
+  }
   if (eng.kimDaArt) {
     drop(eng.kimDaArt.group);
     eng.kimDaArt.dispose();
@@ -630,7 +675,7 @@ export function unloadLevel(eng: Game): void {
 }
 
 /** Nạp kiến trúc tông môn dựng bằng Blender (asset `arch_sect` qua AssetCache); lỗi thì giữ bản dựng bằng code. */
-export async function loadSectModel(eng: Game, shadows: boolean): Promise<void> {
+async function loadSectModel(eng: Game, shadows: boolean): Promise<void> {
   try {
     await assets.attach(eng.renderer);
     const handle = await assets.acquire('arch_sect', { pos: { x: SECT.x, z: SECT.z } });
@@ -667,7 +712,7 @@ export async function loadSectModel(eng: Game, shadows: boolean): Promise<void> 
  * Nạp kiến trúc Thiên Khuyết dựng bằng Blender (asset `arch_thien_khuyet`: bậc thang xoắn, Cổng Tiên Vỡ, tiên cung, cột, tượng thần).
  * Gốc GLB = tâm quảng trường; object `tk_statue` hạ theo độ cao đất tại chỗ tượng. Lỗi thì chỉ thiếu phần kiến trúc.
  */
-export async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
+async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
   try {
     await assets.attach(eng.renderer);
     const handle = await assets.acquire('arch_thien_khuyet', { pos: { x: TK_ORIGIN.x, z: TK_ORIGIN.z } });
@@ -686,8 +731,16 @@ export async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
       m.receiveShadow = shadows;
       m.frustumCulled = false;
     });
-    const statue = root.getObjectByName('tk_statue');
-    if (statue) statue.position.y += heightAt(sky.statue.x, sky.statue.z) - TK_ORIGIN.y - 5; // cộng dồn: node đã có phép dịch lượng tử hóa
+    // Tượng đổ vỡ ba khúc (`tk_statue0..2`): mỗi khúc nằm sát đất theo heightAt tại chỗ nó nằm, lún 0,8 m (cộng dồn: node đã có phép dịch lượng tử hóa).
+    root.updateMatrixWorld(true);
+    const box = new THREE.Box3();
+    const mid = new THREE.Vector3();
+    for (let q = 0; q < 3; q++) {
+      const piece = root.getObjectByName(`tk_statue${q}`);
+      if (!piece) continue;
+      box.setFromObject(piece).getCenter(mid);
+      piece.position.y += heightAt(mid.x, mid.z) - TK_ORIGIN.y - 0.8;
+    }
     eng.scene.add(root);
   } catch (e) {
     assetLog.warn('không tải được arch_thien_khuyet:', e);
@@ -698,12 +751,13 @@ export async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
  * Nạp cảnh Kiếm Trủng dựng bằng Blender (asset `arch_kiem_trung`: cự kiếm, vành núi đá, mộ, bia, cột gãy, bậc đá, xương, giáp vụn, vòng kiếm trận).
  * Gốc GLB = tâm đài chiến; mỗi object `kt_*` có gốc ở chân vật nên hạ y theo `heightAt` tại chỗ vật (cộng dồn). Lỗi thì chỉ thiếu phần trang trí.
  */
-export async function loadKtModel(eng: Game, shadows: boolean): Promise<void> {
+async function loadKtModel(eng: Game, shadows: boolean): Promise<void> {
   await loadDungeonModel(eng, shadows, {
     asset: 'arch_kiem_trung',
     enabled: () => !!levelAssets(levelId()).kiemTrungArt,
     origin: { x: KIEM_TRUNG.x, y: KIEM_TRUNG.y, z: KIEM_TRUNG.z },
     prefix: 'kt',
+    material: ktMaterialFor,
   });
 }
 
@@ -711,7 +765,7 @@ export async function loadKtModel(eng: Game, shadows: boolean): Promise<void> {
  * Nạp cảnh Xích Tẫn Khích dựng bằng Blender (asset `arch_xich_tan`): cụm cột bazan, obsidian, vỏ dung nham, miệng phun, cây cháy, cột cờ, xương, lò sắt.
  * Mỗi vật đặt theo `heightAt` tại chỗ (hẻm có vách dốc, không `flat`). Vật liệu glTF giữ nguyên (than hồng là emissive trong GLB).
  */
-export async function loadXkModel(eng: Game, shadows: boolean): Promise<void> {
+async function loadXkModel(eng: Game, shadows: boolean): Promise<void> {
   const c = LEVELS.xich_tan_khich!.dungeon!.center;
   await loadDungeonModel(eng, shadows, {
     asset: 'arch_xich_tan',
@@ -723,10 +777,25 @@ export async function loadXkModel(eng: Game, shadows: boolean): Promise<void> {
 }
 
 /**
+ * Nạp cảnh Độ Kiếp dựng bằng Blender (asset `arch_do_kiep`): đài lát đá khảm bát quái, tám lôi trụ, đỉnh đồng, vết sét cháy, tảng đá nung, tùng cháy.
+ * Mỗi vật đặt theo `heightAt` tại chỗ (sân phẳng tới r 78, xa hơn là sườn núi).
+ */
+async function loadDkModel(eng: Game, shadows: boolean): Promise<void> {
+  const c = LEVELS.do_kiep!.dungeon!.center;
+  await loadDungeonModel(eng, shadows, {
+    asset: 'arch_do_kiep',
+    enabled: () => !!levelAssets(levelId()).doKiepArt,
+    origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
+    prefix: 'dk',
+    material: dkMaterialFor,
+  });
+}
+
+/**
  * Nạp cảnh Kim Dạ Cung dựng bằng Blender (asset `arch_kim_da`): nhịp tường, ngai vàng, cột đèn + dây đèn lồng (`kd_string_*` đặt y 9 m trong GLB), đỉnh đồng, cây vàng chết.
  * Vàng dùng chung vật liệu PBR cổ của Thần Tàng (`ttMaterialFor`). Sàn bám `heightAt` (phẳng ±3 m tới r 110): vật đặt theo mặt bằng tâm (`flat`).
  */
-export async function loadKdModel(eng: Game, shadows: boolean): Promise<void> {
+async function loadKdModel(eng: Game, shadows: boolean): Promise<void> {
   const c = LEVELS.kim_da_cung!.dungeon!.center;
   await loadDungeonModel(eng, shadows, {
     asset: 'arch_kim_da',
@@ -758,7 +827,7 @@ export async function loadKdModel(eng: Game, shadows: boolean): Promise<void> {
  * Nạp cảnh Thần Tàng Điện dựng bằng Blender (asset `arch_than_tang`): tường hốc vòm + phướn, ba cửa phong ấn, tượng võ sĩ, đống kim ngân, mặt nạ, đèn chùm (`tt_ceil_*` treo trần).
  * Sàn bám `heightAt` (phẳng ±3 m tới r 110): vật đặt theo mặt bằng tâm (`flat`).
  */
-export async function loadTtModel(eng: Game, shadows: boolean): Promise<void> {
+async function loadTtModel(eng: Game, shadows: boolean): Promise<void> {
   const c = LEVELS.than_tang!.dungeon!.center;
   await loadDungeonModel(eng, shadows, {
     asset: 'arch_than_tang',
@@ -777,7 +846,7 @@ export async function loadTtModel(eng: Game, shadows: boolean): Promise<void> {
  * Nạp cảnh Kính Nguyệt Cung dựng bằng Blender (asset `arch_kinh_nguyet`): hàng cột + vòm gương, vòng gương trăng, mảnh gương, dây chuông treo trần (`kn_ceil_*`).
  * Sàn sảnh phẳng ±3 m tới r 110 nên mọi vật đặt theo mặt bằng tâm (`flat`), không theo `heightAt` từng chỗ. Gương thay vật liệu emissive (`knMaterialFor`).
  */
-export async function loadKnModel(eng: Game, shadows: boolean): Promise<void> {
+async function loadKnModel(eng: Game, shadows: boolean): Promise<void> {
   const c = LEVELS.kinh_nguyet!.dungeon!.center;
   await loadDungeonModel(eng, shadows, {
     asset: 'arch_kinh_nguyet',
@@ -796,7 +865,7 @@ export async function loadKnModel(eng: Game, shadows: boolean): Promise<void> {
  * Nạp cảnh Phục Mạch Quật dựng bằng Blender (asset `arch_phuc_mach`): cụm mạch tinh, cột đá, khung chống gỗ, cửa hầm + ray + xe, nhũ đá và mạch tinh treo
  * trần (object `pm_ceil_*` đặt y theo độ cao vòm hang). Gốc GLB = tâm hầm.
  */
-export async function loadPmModel(eng: Game, shadows: boolean): Promise<void> {
+async function loadPmModel(eng: Game, shadows: boolean): Promise<void> {
   const c = LEVELS.phuc_mach!.dungeon!.center;
   await loadDungeonModel(eng, shadows, {
     asset: 'arch_phuc_mach',

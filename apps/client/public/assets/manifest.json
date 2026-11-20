@@ -263,15 +263,144 @@
         "build": null
       }
     },
+    "arch_dm_bridge": {
+      "id": "arch_dm_bridge",
+      "class": "arch",
+      "source": "assets/build/raw/arch_dm_bridge.glb",
+      "file": "arch_dm_bridge.d72414fdde.glb",
+      "bytes": 315968,
+      "rawBytes": 1416036,
+      "triangles": 16436,
+      "rawTriangles": 16436,
+      "lod0Cap": 600000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 16436
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 6.2019,
+          "height": 5.8845,
+          "depth": 62.3965,
+          "minY": -2.7645
+        },
+        "build": {
+          "width": 6.2002,
+          "height": 5.8803,
+          "depth": 62.3965,
+          "minY": -2.7624
+        }
+      }
+    },
+    "arch_do_kiep": {
+      "id": "arch_do_kiep",
+      "class": "arch",
+      "source": "assets/build/raw/arch_do_kiep.glb",
+      "file": "arch_do_kiep.d25413e485.glb",
+      "bytes": 11216772,
+      "rawBytes": 10533048,
+      "triangles": 50194,
+      "rawTriangles": 50194,
+      "lod0Cap": 600000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "marble_rock_01_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_jade",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "marble_rock_01_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_stone",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "japanese_stone_wall_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 50194
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 324.4251,
+          "height": 88.5711,
+          "depth": 349.5111,
+          "minY": -5.688
+        },
+        "build": {
+          "width": 324.4249,
+          "height": 88.5711,
+          "depth": 349.5082,
+          "minY": -5.688
+        }
+      }
+    },
     "arch_kiem_trung": {
       "id": "arch_kiem_trung",
       "class": "arch",
       "source": "assets/build/raw/arch_kiem_trung.glb",
-      "file": "arch_kiem_trung.bdb13fc676.glb",
-      "bytes": 9533776,
-      "rawBytes": 9265292,
-      "triangles": 218420,
-      "rawTriangles": 218420,
+      "file": "arch_kiem_trung.780d34e637.glb",
+      "bytes": 9700624,
+      "rawBytes": 9868488,
+      "triangles": 355916,
+      "rawTriangles": 355916,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -391,7 +520,7 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 218420
+          "triangles": 355916
         }
       ],
       "dims": {
@@ -624,11 +753,11 @@
       "id": "arch_phuc_mach",
       "class": "arch",
       "source": "assets/build/raw/arch_phuc_mach.glb",
-      "file": "arch_phuc_mach.668029390b.glb",
-      "bytes": 8942632,
-      "rawBytes": 10475004,
-      "triangles": 444980,
-      "rawTriangles": 444980,
+      "file": "arch_phuc_mach.bc6ed73e2b.glb",
+      "bytes": 9802452,
+      "rawBytes": 14171448,
+      "triangles": 598800,
+      "rawTriangles": 659264,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -721,20 +850,20 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 444980
+          "triangles": 598800
         }
       ],
       "dims": {
         "raw": {
-          "width": 245.8793,
-          "height": 79.9321,
-          "depth": 255.5493,
+          "width": 248.6036,
+          "height": 85.9554,
+          "depth": 259.14,
           "minY": -33.2875
         },
         "build": {
-          "width": 245.8812,
-          "height": 79.9321,
-          "depth": 255.5496,
+          "width": 248.6014,
+          "height": 85.9554,
+          "depth": 259.1383,
           "minY": -33.2875
         }
       }
@@ -743,11 +872,11 @@
       "id": "arch_sect",
       "class": "arch",
       "source": "assets/build/raw/arch_sect.glb",
-      "file": "arch_sect.8da4e5de4e.glb",
-      "bytes": 19361756,
-      "rawBytes": 35627644,
-      "triangles": 279104,
-      "rawTriangles": 279104,
+      "file": "arch_sect.a045466417.glb",
+      "bytes": 19307808,
+      "rawBytes": 34965124,
+      "triangles": 270484,
+      "rawTriangles": 270484,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -939,7 +1068,7 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 279104
+          "triangles": 270484
         }
       ],
       "dims": {
@@ -961,11 +1090,11 @@
       "id": "arch_than_tang",
       "class": "arch",
       "source": "assets/build/raw/arch_than_tang.glb",
-      "file": "arch_than_tang.60382c0b18.glb",
-      "bytes": 6303576,
-      "rawBytes": 7638696,
-      "triangles": 438064,
-      "rawTriangles": 438064,
+      "file": "arch_than_tang.e0310bd86d.glb",
+      "bytes": 6387912,
+      "rawBytes": 8264528,
+      "triangles": 486736,
+      "rawTriangles": 486736,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -1031,7 +1160,7 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 438064
+          "triangles": 486736
         }
       ],
       "dims": {
@@ -1053,11 +1182,11 @@
       "id": "arch_thien_khuyet",
       "class": "arch",
       "source": "assets/build/raw/arch_thien_khuyet.glb",
-      "file": "arch_thien_khuyet.255f8e3b4d.glb",
-      "bytes": 14732164,
-      "rawBytes": 28633140,
-      "triangles": 260935,
-      "rawTriangles": 260935,
+      "file": "arch_thien_khuyet.5c09919942.glb",
+      "bytes": 14625608,
+      "rawBytes": 28604492,
+      "triangles": 256470,
+      "rawTriangles": 256470,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -1222,21 +1351,58 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 260935
+          "triangles": 256470
         }
       ],
       "dims": {
         "raw": {
-          "width": 895.5503,
-          "height": 332.087,
+          "width": 932.7038,
+          "height": 327.7796,
           "depth": 926.1588,
-          "minY": -7.487
+          "minY": -3.1796
         },
         "build": {
-          "width": 895.5196,
-          "height": 332.1131,
+          "width": 932.696,
+          "height": 327.8033,
           "depth": 926.1588,
-          "minY": -7.4907
+          "minY": -3.1809
+        }
+      }
+    },
+    "arch_vh_island": {
+      "id": "arch_vh_island",
+      "class": "arch",
+      "source": "assets/build/raw/arch_vh_island.glb",
+      "file": "arch_vh_island.935d425945.glb",
+      "bytes": 1303516,
+      "rawBytes": 4291896,
+      "triangles": 186509,
+      "rawTriangles": 186509,
+      "lod0Cap": 600000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 186509
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 471.3011,
+          "height": 663.3,
+          "depth": 459.4286,
+          "minY": -662.4
+        },
+        "build": {
+          "width": 471.2964,
+          "height": 663.3011,
+          "depth": 459.4458,
+          "minY": -662.4
         }
       }
     },

@@ -33,10 +33,10 @@ import type { Vfx } from './vfx';
 /** Cấp từ đó có linh quang hộ thể (Trúc Cơ). */
 export const TRUC_CO_LEVEL = 16;
 /** Bán kính, độ mờ tối đa của linh quang hộ thể (m, alpha). */
-export const AURA_RADIUS = 0.9;
-export const AURA_ALPHA = 0.25;
+const AURA_RADIUS = 0.9;
+const AURA_ALPHA = 0.25;
 /** Giây không giao chiến thì linh quang hiện lên. */
-export const AURA_CALM = 4;
+const AURA_CALM = 4;
 
 const RING_GEO = new THREE.RingGeometry(0.82, 1, 40);
 const _p = new THREE.Vector3();
@@ -44,7 +44,7 @@ const _b = new THREE.Vector3();
 const _t = new THREE.Vector3();
 
 /** Người chơi như `SkillFx` cần đọc (khớp `PlayerVis`). */
-export interface SkillFxActor {
+interface SkillFxActor {
   x: number;
   y: number;
   z: number;
@@ -59,18 +59,13 @@ export interface SkillFxActor {
   };
 }
 
-export interface SkillFxEnv {
+interface SkillFxEnv {
   player(sid: string): SkillFxActor | undefined;
   mySid(): string;
   myMethod(): string | undefined;
   camera(): THREE.PerspectiveCamera;
   /** Phần của môi trường cho bộ chạy timeline (VFX-V0): mục tiêu, rung, chớp, âm thanh, cài đặt chất lượng. */
   fx: Omit<FxRunnerEnv, 'camera'>;
-}
-
-/** Chiêu này chạy bằng dòng thời gian hiệu ứng (`data/fx/<id>.json`) thay cho hình cũ không. */
-export function hasTimeline(skillId: string | undefined): boolean {
-  return !!skillId && FX_TIMELINE.has(skillId);
 }
 
 /** Loại `S.FX` kiểu cũ bị timeline thay thế cho chiêu có timeline (engine bỏ hình cũ). */
@@ -115,17 +110,17 @@ interface BladeJob {
 }
 
 /** Màu `def` theo công pháp: của mình theo công pháp đang chọn; người khác theo công pháp của chiêu (chiêu chung = kiếm tu). */
-export function tintFor(def: SkillDef, mine: boolean, myMethod: string | undefined): number {
+function tintFor(def: SkillDef, mine: boolean, myMethod: string | undefined): number {
   return tintOfMethod(mine ? (def.method ?? myMethod) : def.method);
 }
 
 /** Cho phép phát hiệu ứng của chiêu này không. Chiêu lướt không có mốc trúng nên bỏ. */
-export function wantsPhaseFx(def: SkillDef | undefined): def is SkillDef {
+function wantsPhaseFx(def: SkillDef | undefined): def is SkillDef {
   return !!def && def.kind !== 'dash';
 }
 
 /** Người khác chỉ được vẽ khi gần và pool chưa đông (cùng quy tắc `skipOthersFx`, nhưng không đụng chiêu liên quan tới mình). */
-export function othersAllowed(dist: number, live: number): boolean {
+function othersAllowed(dist: number, live: number): boolean {
   return dist <= OTHERS_FX_DIST && live < OTHERS_FX_LIVE_MAX;
 }
 

@@ -26,6 +26,7 @@ export const VIEWS: View[] = [
   { name: 'congmo', eye: [630, 6, 980], at: [584, 10, 944], fov: 58 },
   { name: 'vachdut', eye: [1030, 10, 540], at: [1044, 40, 484], fov: 60 },
   { name: 'cautreo', eye: [925, 12, 1524], at: [970, -2, 1524], fov: 62 },
+  { name: 'cautreogan', eye: [978, 8, 1503], at: [970, 0, 1523], fov: 62 },
   { name: 'toancanh', eye: [1500, 160, 1560], at: [950, 20, 950], fov: 58 },
 ];
 
@@ -79,7 +80,21 @@ export default {
         await gm(page, 'god on');
         await enterLevel(page, 'doan_mach');
         await gm(page, 'killall', 1200);
-        for (const v of views) {
+        const fallViews: View[] = [];
+        if (flag('--thac')) {
+          // Góc chụp thác: lấy điểm thác thật từ cảnh (tên `doan-mach-fall-pool`, vị trí các instance) và đứng cách chân thác ~26 m nhìn lên.
+          const pts = (await page.evaluate(
+            `(() => { const g = window.__game; const out = []; g.scene.traverse((o) => { if (o.name !== 'doan-mach-fall-pool') return; const a = o.instanceMatrix.array; for (let i = 0; i < o.count; i++) out.push([a[i * 16 + 12], a[i * 16 + 14]]); }); return out; })()`,
+          )) as [number, number][];
+          const [px, pz] = pts[0] ?? [1024, 1024];
+          // đứng cách 28 m về phía tâm bản đồ, nhìn tới chân thác rồi nhìn lên đỉnh
+          const dx = 1024 - px;
+          const dz = 1024 - pz;
+          const l = Math.hypot(dx, dz) || 1;
+          fallViews.push({ name: 'thac', eye: [px + (dx / l) * 28, 6, pz + (dz / l) * 28], at: [px, 18, pz], fov: 58 });
+          fallViews.push({ name: 'thac2', eye: [px + (dx / l) * 60, 22, pz + (dz / l) * 60], at: [px, 16, pz], fov: 60 });
+        }
+        for (const v of [...views, ...fallViews]) {
           await tp(page, v.eye[0], v.eye[2]);
           await gm(page, 'killall', 600);
           await cam(page, v);

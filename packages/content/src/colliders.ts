@@ -1,9 +1,18 @@
 import { instantiateShapes, type LocalShape, registerCollision, type Shape } from '@dtl/shared';
+import archKd from '../data/colliders/arch_kim_da.boxes.json';
+import archTk from '../data/colliders/arch_thien_khuyet.boxes.json';
+import archKt from '../data/colliders/arch_kiem_trung.boxes.json';
+import archKn from '../data/colliders/arch_kinh_nguyet.boxes.json';
+import archPm from '../data/colliders/arch_phuc_mach.boxes.json';
+import archXk from '../data/colliders/arch_xich_tan.boxes.json';
+import archTt from '../data/colliders/arch_than_tang.boxes.json';
 import archSect from '../data/colliders/arch_sect.boxes.json';
 import libJson from '../data/colliders/lib.json';
+import extraLib from '../data/colliders/extra-lib.json';
 import bacHoang from '../data/colliders/bac_hoang.inst.json';
 import doKiepBacHoang from '../data/colliders/do_kiep_bac_hoang.inst.json';
 import doanMach from '../data/colliders/doan_mach.inst.json';
+import kiemTrung from '../data/colliders/kiem_trung.inst.json';
 import kimDaCung from '../data/colliders/kim_da_cung.inst.json';
 import kinhNguyet from '../data/colliders/kinh_nguyet.inst.json';
 import phucMach from '../data/colliders/phuc_mach.inst.json';
@@ -19,17 +28,18 @@ import xichTan from '../data/colliders/xich_tan_khich.inst.json';
  * - `<level>.inst.json`: vị trí prop đã rải (bake từ `allProps` của client bằng `pnpm colliders:bake`).
  * Tập hình khóa theo `levelId` (Kiếm Trủng dùng chung địa hình Vân Lam nhưng là level riêng; danh sách prop dùng chung với Vân Lam như `allPropsRaw`).
  */
-export interface InstFile {
+interface InstFile {
   ids: string[];
   p: number[][];
 }
 
-export const COLLIDER_LIB = libJson as unknown as Record<string, LocalShape[]>;
+/** `lib.json` (sinh từ GLB) + `extra-lib.json` (hình ghi tay cho đồ dựng bằng mã: cây phong, thân cây vườn…, id `x_*`). */
+export const COLLIDER_LIB = { ...libJson, ...extraLib } as unknown as Record<string, LocalShape[]>;
 
-/** Level → file prop đã bake. `kiem_trung` dùng chung bố cục prop với `van_lam` (cùng bản đồ). */
+/** Level → file prop đã bake (kiếm cắm Kiếm Trủng, vườn Lạc Kiếm… nằm trong cùng file qua `extraInstances`). */
 export const INST_BY_LEVEL: Record<string, InstFile> = {
   van_lam: vanLam,
-  kiem_trung: vanLam,
+  kiem_trung: kiemTrung,
   doan_mach: doanMach,
   van_hai: vanHai,
   thien_khuyet: thienKhuyet,
@@ -51,7 +61,7 @@ export function propShapesOf(level: string, lib: Record<string, LocalShape[]> = 
     const id = f.ids[r[0]!]!;
     const local = lib[id];
     if (!local?.length) continue;
-    instantiateShapes(local, { x: r[1]!, z: r[2]!, y: r[3]!, yaw: r[4]!, s: r[5]!, sy: r[6] }, out, id);
+    instantiateShapes(local, { x: r[1]!, z: r[2]!, y: r[3]!, yaw: r[4]!, s: r[5]!, sy: r[6], lean: r[7] }, out, id);
   }
   return out;
 }
@@ -62,15 +72,22 @@ for (const level of Object.keys(INST_BY_LEVEL)) registerCollision(level, propSha
  * Kiến trúc dựng thành MỘT lưới gộp (arch_*): hộp trục thế giới sinh từ hình học GLB bằng `pnpm colliders:arch` (`tools/asset-pipeline/src/archcollider.ts`).
  * [x0, z0, x1, z1, y0, y1, walk(1)|rắn(0)]. Khóa theo level đang dùng kiến trúc đó.
  */
-export interface ArchFile {
+interface ArchFile {
   id: string;
   boxes: number[][];
 }
 export const ARCH_BY_LEVEL: Record<string, ArchFile[]> = {
   van_lam: [archSect as unknown as ArchFile],
+  thien_khuyet: [archTk as unknown as ArchFile],
+  kiem_trung: [archKt as unknown as ArchFile],
+  kim_da_cung: [archKd as unknown as ArchFile],
+  phuc_mach: [archPm as unknown as ArchFile],
+  xich_tan_khich: [archXk as unknown as ArchFile],
+  than_tang: [archTt as unknown as ArchFile],
+  kinh_nguyet: [archKn as unknown as ArchFile],
 };
 
-export function archShapesOf(level: string): Shape[] {
+function archShapesOf(level: string): Shape[] {
   const out: Shape[] = [];
   for (const f of ARCH_BY_LEVEL[level] ?? [])
     for (const b of f.boxes)

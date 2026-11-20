@@ -11,8 +11,8 @@ import { isTouchMode } from '../input/touchMode';
 const UI_BASE = { w: 1920, h: 1080 };
 const UI_SCALE_MIN = 0.85;
 const UI_SCALE_MAX = 2;
-export const UI_USER_MIN = 0.8;
-export const UI_USER_MAX = 1.4;
+const UI_USER_MIN = 0.8;
+const UI_USER_MAX = 1.4;
 const KEY = 'dtl.uiScale';
 
 /** Mode HUD ứng với hệ số (compact khi < 0,95) và chiều cao vùng thiết kế tối thiểu của nó (layout.ts): hệ số bị kẹp để HUD không chồng lấn. */

@@ -12,6 +12,7 @@ import type {
   PartyMsg,
   QuestView,
   SpiritHit,
+  WardrobeMsg,
 } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio/audio';
 import { fxQuality, hitStopOn, realmAuraOn } from '../game/fx/fxSettings';
@@ -226,6 +227,8 @@ interface UIState {
   char: CharView | null;
   inv: InvSlot[];
   equip: Equipment;
+  /** Tủ ngoại trang của mình (`S.WARDROBE`): món đã mở khóa và lựa chọn đang áp dụng. */
+  wardrobe: WardrobeMsg;
   quests: QuestView;
   hp: number;
   mhp: number;
@@ -352,6 +355,7 @@ export const useUI = create<UIState>(() => ({
   char: null,
   inv: [],
   equip: {},
+  wardrobe: { owned: [], look: { over: {} } },
   quests: { active: {}, done: [] },
   hp: 1,
   mhp: 1,
@@ -438,7 +442,7 @@ let lastLog = '';
 let lastLogAt = 0;
 
 /** Kênh mặc định của một dòng: chat người chơi theo `type`, còn lại là tin hệ thống. */
-export function channelOf(type: string): ChatChannel {
+function channelOf(type: string): ChatChannel {
   return type === 'chat' ? 'world' : type === 'party' ? 'party' : 'system';
 }
 

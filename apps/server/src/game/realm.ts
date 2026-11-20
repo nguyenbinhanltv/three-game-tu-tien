@@ -20,7 +20,7 @@ import type { MonEnt, PlayerEnt } from './entities';
 import { log } from '../log';
 
 /** Phần sim mà hệ bình cảnh cần mượn (sim.ts truyền vào, không import ngược để tránh vòng). */
-export interface RealmHost {
+interface RealmHost {
   now(): number;
   /** Chỉ thế giới chính có thử thách tâm ma (không phải bí cảnh). */
   inWorld(): boolean;

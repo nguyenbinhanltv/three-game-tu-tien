@@ -391,7 +391,9 @@ export class EntityManager {
         look.set !== v.look.set ||
         look.acc !== v.look.acc ||
         look.w !== v.look.w ||
-        look.skin !== v.look.skin;
+        look.skin !== v.look.skin ||
+        look.tint?.hex !== v.look.tint?.hex ||
+        look.tint?.trim !== v.look.tint?.trim;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
         // `create` trước: nó khởi động việc nạp lười (asset nhân vật, kiếm riêng), rồi mới hỏi còn nạp không để biết có phải dựng lại.
         const next = this.playerSkins.create(look);
@@ -1020,14 +1022,26 @@ export class EntityManager {
     return this.localLook.g;
   }
 
+  /** Ngoại hình xem thử đặt từ ngoài (Tủ ngoại trang: bản nháp chưa áp dụng); null = dùng ngoại hình thật của mình. */
+  private previewLook: PlayerLook | null = null;
+
+  /** Ngoại hình thật của mình lúc này (nền để dựng bản xem thử). */
+  localLookNow(): PlayerLook {
+    return this.localLook;
+  }
+
+  setPreviewLook(look: PlayerLook | null): void {
+    this.previewLook = look;
+  }
+
   /** Khóa ngoại hình của mình (xem trước nhân vật 3D, TD-C): đổi khi đổi đồ, giới tính, màu áo, kiếm. */
   previewKey(): string {
-    return JSON.stringify(this.localLook);
+    return JSON.stringify(this.previewLook ?? this.localLook);
   }
 
   /** Dựng một model riêng cho xem trước nhân vật (không đưa vào cảnh chính); bên gọi tự dispose. */
   previewBuild(): { model: CharacterView; key: string; pending: boolean } {
-    const look = this.localLook;
+    const look = this.previewLook ?? this.localLook;
     const model = this.playerSkins.create(look);
     return { model, key: JSON.stringify(look), pending: this.playerSkins.pending(look) };
   }

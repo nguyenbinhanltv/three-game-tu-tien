@@ -148,3 +148,124 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Cột bazan**: vật liệu `_obs` viết lại — hạt mịn đẳng hướng (bỏ thớ kéo dọc gây vân gỗ), vết nứt THẲNG/GÓC CẠNH (hai họ đường thẳng chéo theo toạ độ thế giới, chỉ ở vài ô), ánh đỏ chỉ trong khe nứt và chân cột, mặt hướng lên và đỉnh gãy phủ tro xám; màu nền đá xanh đen sẫm hơn. Trong GLB, bỏ vệt dung nham dọc, thay bằng 1–3 khe thẳng nghiêng mảnh trên mặt cột.
 - **Bệ trung tâm** (`dais`): ba tầng đá vỡ (cao 0,16/0,32/0,48 m) quanh bia giữ, vết nứt tỏa từ tâm thành 7–9 mảng, khe dung nham gradient (sáng gần tâm, tối ra ngoài), vành dung nham dưới chân, đá vỡ nghiêng ở mép, mảnh vụn chỉ ở viền ngoài; phiến vỏ dung nham rải sàn giảm còn 7 mảng nhỏ, chỉ ở r > 30. **Bệ thấp (≤ 0,5 m) vì chỉ để nhìn, không va chạm** và người chơi đứng/đánh ngay trên đó (chân lún tối đa 0,5 m ở tầng giữa); chưa nâng cao theo yêu cầu "nhô cao" cho tới khi COL-1 cho phép khai báo mặt đi được.
 - **Vòng trắng xám lớn**: có trong ảnh chụp cả bản gốc (main, chưa có mỹ thuật DUN-1) lẫn mọi bí cảnh khác, tâm gần chỗ nhân vật thử đứng (1520, 1330), không phải `RingGeometry` thuộc cảnh. Thử ẩn mọi `RingGeometry` bán kính trong ≥ 0,98 (lãnh vực `cloneVis`, `scan`) và `?aura=0` đều không hết; chưa tìm ra nguồn. Cần người nắm hệ VFX/hậu kỳ xác định (ứng viên: viền vùng phủ bóng/ánh sáng, hoặc lớp hậu kỳ).
+
+## PR 7: Độ Kiếp — Thiên Lôi Đài dưới mây bão (bí cảnh cuối, áp chuẩn từ vòng 1)
+
+- **Phạm vi**: sân độ kiếp `do_kiep` (Nguyên Anh: lôi/hỏa/tâm ma; Hóa Thần: ngũ hành lôi/thần niệm/thiên nhân hợp nhất). Chỉ để nhìn; kịch bản kiếp, vòng trận môn, điểm đứng, cổng ra giữ nguyên. `do_kiep_bac_hoang` (Anh Biến) đã có mỹ thuật Bắc Hoang nên không đổi.
+- **Mood `dk`**: mây bão xanh thép, nắng lạnh, điểm sáng ấm (đỉnh đồng, khảm vàng) tương phản bóng xanh; không còn sương phủ. Đất `terrain-ochre` (xám ấm có hạt) thay nền navy phẳng; tắt cỏ/cây/hồ/tông môn của Vân Lam.
+- **GLB `arch_do_kiep`** (`tools/blender/do_kiep_arch.py`, ~28 nghìn tam giác): **đài lát đá** r 21 gồm ba vành phiến hình quạt so le (lệch cao thấp, khe tối) + vòng/tia/bát quái (tám nhóm ba vạch liền-đứt) khảm vàng, nằm sát mặt sân (≤ 0,45 m, chân lún tối đa như PR 6: chỉ để nhìn); **tám lôi trụ** đá bát giác thon cao ~10 m (đai vân mây nổi, vòng khảm vàng, đỉnh thu lôi đồng + cầu điện; hai trụ gãy kèm mảnh vỡ); **bốn đỉnh đồng** ba chân thú có quai, vân khắc, than hồng; **vết sét cháy** hình sao rải sân kèm tinh thể sét; **tảng đá nung** nứt cháy; **tùng bị sét đánh**. Chừa hành lang vào phía nam.
+- **Client** (`game/world/doKiepArt.ts`): `dkMaterialFor` cho `_rune` (khảm vàng/than hồng: nhấp nhô chậm + "chớp" mạnh ngắn chu kỳ ~9 s) và `_jade` (hoa cương thớ đá theo toạ độ thế giới, mặt ngửa lạnh hơn); `DungeonFx` (sương thấp, vòng cổng ra), quầng đỉnh đồng, hạt điện bốc dọc tám lôi trụ.
+- **Ngân sách (preset Cao)**: 129–141 draw call, ~0,23M tam giác (cũ: 91 / 0,74M; giảm do tắt cây/cỏ).
+- **Công cụ**: `pnpm shots dungeonart --level do_kiep --trib hoa_than --battle 1 --at 8,24,44` vào bằng `/gm trib`, tự vào lại khi kiếp kết thúc giữa chừng, chụp ba mốc kiếp.
+- **Còn lại**: phiến đài còn phẳng (chưa normal map hoa văn), tảng đá nung còn tròn như trứng, nền xa vẫn là sườn núi Vân Lam; chưa va chạm (đợi COL-1). Console có 1 lỗi `Object3D.add ... undefined` có sẵn trong màn kiếp (vẫn xảy ra khi tắt `doKiepArt`), không thuộc PR này.
+
+### PR 7 vòng 2 (góp ý duyệt): đỉnh núi giữa biển mây giông, chớp sét, trụ thu lôi
+
+- **Bối cảnh**: biển mây tím-xám phủ ngoài r 78 (che sườn dốc, chỉ đỉnh núi xa nhô lên) + 16 cột đá nhọn xa cao tới ~90 m mọc từ biển mây (`spire`, karst); **xoáy mây giông đen tím** hai lớp đĩa quay ngược chiều trên đài (mắt bão ở giữa bừng theo chớp). Mood `dk` tối hơn: tương phản 1,35, bão hòa 0,68, nền đen tím, điểm ấm duy nhất là đỉnh đồng.
+- **Chớp sét theo nhịp** (2,2–5,5 s, hai lần loé cách 0,2 s): một uniform `flashU` dùng chung cho xoáy mây, biển mây, vật liệu `_rune`/`_volt`/đá vụn, cộng một đèn điểm tím-trắng trên đài (cường độ HDR cho bloom bắt). Mưa (420 vệt), hạt điện dọc lôi trụ, hồ quang giữa các đầu thu lôi kề nhau.
+- **Đá**: tảng tròn trắng thay bằng **đá vỡ cháy xám** (5–8 phiến góc cạnh nghiêng chồng, mặt trên cháy đen, khe nứt điện tím-trắng chạy dọc phiến, đá vụn quanh chân); **28 mảnh đá vụn bay lơ lửng** quanh đài (xoay chậm, nhích lên xuống, vết nứt điện phát sáng mạnh lên theo chớp).
+- **Lôi trụ**: thân đá sẫm khắc phù văn điện (vạch ngang + nét sổ ở tám mặt, hai vòng đai phát điện), đầu thu lôi sắt đen + cầu điện tím-trắng, **dây xích 34 mắt** từ thân trụ võng về mép đài (bỏ xích ở trụ dời khỏi lối vào).
+- **Đài**: tối và cháy xém hơn (16 mảng muội đen, khe nứt điện gấp khúc), vết sét cháy có khe điện; vòng vàng giữ nhưng mờ hơn.
+- **Vòng trận đỏ/xanh chỉ báo** (hazard của kiếp, VFX game dùng chung mọi bí cảnh) **chưa hạ độ đậm**: đổi sẽ ảnh hưởng độ đọc ở mọi level; cần quyết định riêng.
+- **Ngân sách (Cao)**: 148–158 draw call, ~0,27–0,29M tam giác, khung ~9–11 ms trên máy chụp.
+
+### PR 7 vòng 3 (góp ý duyệt): ánh sáng — nền gần đen, điểm sáng, sét dày, chớp toàn cảnh
+
+- **Mood `dk`**: nền tối sâu (nắng 0,7, trời 0,5, sương gần đen, blackLift ~đen, tương phản 1,5). Điểm sáng thay cho ánh đồng đều: **đầu mỗi lôi trụ phát quầng trắng-tím**, phù văn trụ/đài (`_volt`, `_rune`) sáng nền mạnh hơn và bừng theo chớp, **bốn đèn điểm cam** ở lò lửa rọi sàn và chân trụ.
+- **Xoáy mây** thấy được trong ảnh toàn cảnh (02: camera hạ thấp, nhìn ngang qua đài) và ảnh `07-xoay-may`; có **tia chớp chạy trong mây** (đường vân sáng mảnh, chỉ hiện lúc chớp).
+- **Tia sét và vòng chỉ báo AOE**: ban đầu vòng 3 đổi hằng số dùng chung (`lightning.ts`, `hazard.ts`, `telegraph.ts`, `sigil.ts`); **đã hoàn nguyên ở vòng 5** theo review (thông số gameplay/chống lóa chốt ở K-6, ảnh hưởng mọi level). Muốn sét dày hơn, chớp mỗi đòn hoặc nền vạch báo nhạt hơn thì làm PR VFX riêng có ảnh so sánh nhiều level (`pnpm shots mons`).
+- **Ảnh**: `02-toan-canh` (đổi góc), `07-xoay-may`, `95-set-danh` (chụp 70 ms sau khi gọi chớp).
+
+### PR 7 vòng 4 (review code): chớp trang trí không lẫn với sét thật, đèn điểm theo chất lượng
+
+- **Bỏ đèn điểm chớp treo trên đài** (từng rọi sáng cả sàn đấu). Hai uniform tách riêng: `skyU` (xoáy mây, biển mây, tia trong mây: gồm chớp trang trí) và `flashU` (phù văn, khảm, đá vụn: chỉ theo `postParams.flash`, tức sét thật của kiếp). Sàn đấu không bao giờ loé vì chớp trang trí.
+- **Chớp trang trí thưa** (7–15 s một lần, trước 2,2–5,5 s) và **tạm dừng khi có vùng báo sét** (`eng.vfx.hazards.length > 0`, tới khi hết), nên vạch báo đang đếm ngược không bị loé và người chơi không nhầm với sét thật.
+- **Đèn điểm ấm ở bốn lò lửa** chỉ tạo khi `q.lights && isWebGPU` (như `LanternLights`); preset Thấp và WebGL2 không có đèn, vẫn còn quầng giả.
+- Ảnh `95-set-danh` mô phỏng sét thật (`strike()` + `post.flash(0,3)`) ở sân đang kiếp: sàn tối, chỉ nổi phù văn/khảm, sét và lò.
+
+### PR 7 vòng 5 (review code): hoàn nguyên thay đổi VFX dùng chung
+
+- Hoàn nguyên `render/vfx/sigil.ts`, `render/vfx/lightning.ts`, `game/fx/vfxParts/hazard.ts`, `game/fx/telegraph.ts` về như `main`: PR này chỉ chạm cảnh `do_kiep` (`doKiepArt.ts`, GLB, palette `dk`, dữ liệu level, kịch bản chụp).
+- Chớp ngẫu nhiên chỉ còn ảnh hưởng trời (xoáy mây, biển mây), thưa và dừng khi có hazard; không đèn điểm chớp trên đài; đèn lò chỉ khi `q.lights && isWebGPU` (xem vòng 4).
+
+## Polish — Kính Nguyệt: giảm cháy sáng (vòng 1)
+
+- Gương trăng (`knMaterialFor`): phát sáng giảm (phản chiếu trời ×0,5, vệt chéo ×0,6, viền ×0,3, vệt bake ×0,6) nên không còn cháy thành mảng trắng.
+- Sàn cẩm thạch (`reflectiveSurface`): đá tối hơn (tương phản thớ rõ hơn), vũng sáng trăng và ánh nền giảm, phản chiếu hướng trời nghiêng theo fresnel mạnh hơn (bóng loáng xa/cận), vạch trận và chấm chia (72) mờ ~35–70%, quầng bạc quanh vòng ×0,55.
+- Mood `kn`: exposure 0,92 → 0,8, tương phản 1,14 → 1,2.
+- **Còn lại**: sàn vẫn chưa phản chiếu thật cột/gương (chỉ phản chiếu trời và vòng gương trăng, không có planar reflection); vũng tròn trắng quanh nhân vật thử và vòng ở bắc không thuộc shader sàn (không ẩn được bằng `kn-moonbeam`/`dungeon-*`), nguồn chưa xác định.
+
+### Polish — Kính Nguyệt vòng 2 (góp ý duyệt): bỏ đĩa trăng đặc, sàn phản chiếu thật, đèn lồng ấm
+
+- **Đĩa/vòng trắng đặc** trên sàn là **phản chiếu của đĩa trăng và vòng gương trăng** trong shader sàn (ẩn sàn là hết; không phải cột sáng hay vòng cảnh giới): sàn nay chỉ phản chiếu trời + mây (không trăng), phản chiếu vòng gương trăng mềm hơn nhiều (gradient rộng, viền vàng ×0,35, ×0,45 trên sàn). Hồ nước vẫn soi trăng.
+- **Sàn phản chiếu thật** (`reflector` của TSL, nửa độ phân giải, `KinhNguyetArt({ reflect })`): thấy mảnh gương, cột, đèn, vòng gương trăng trên sàn; mạnh ở vùng giữa (nhẵn), mờ dần ra mép điện, thớ đá cắt bớt, fresnel tăng khi nhìn xiên, độ sáng phản chiếu bị chặn ở 0,7. Chỉ bật khi `q.lights && WebGPU` (preset Thấp/WebGL2 giữ sàn cũ). Lượt vẽ phản chiếu không có MRT bloom nên ẩn nhóm VFX và các `MeshBasicMaterial` thường (vòng chân nhân vật, dấu cổng) trong đúng lượt đó (nếu không: lỗi WGSL).
+- **Đèn lồng ấm**: quầng 1,3 → 3,6 m, cường độ đèn điểm ×0,35 → ×0,9 (chỉ level có `kinhNguyetArt`).
+- **Chi phí**: ~195–214 draw call (trước ~150) do vẽ cảnh thêm cho phản chiếu; vẫn dưới 300.
+- **Còn lại**: cột sáng trăng volumetric mới là nón mờ sẵn có; vòng sáng nhỏ quanh chân nhân vật thử là vòng chân (aura chung) nên giữ nguyên.
+
+### Polish — Kính Nguyệt vòng 3 (góp ý duyệt): bỏ nhãn tên khỏi phản chiếu, giảm độ gương
+
+- Lượt vẽ phản chiếu ẩn thêm **nhãn tên** (`InstancedMesh` `label-batch`, nay có `name`) và mọi `THREE.Sprite`; nhãn tên/HUD 3D không còn lộn ngược trên sàn.
+- Cường độ phản chiếu giảm ~40–45% (hệ số nền 0,38 → 0,15, fresnel 0,5 → 0,3, trần sáng 0,7 → 0,6) và mờ dần theo khoảng cách tới camera (50 → 150 m, giảm tối đa 50%), nên vân đá đọc được; phản chiếu mạnh ở vùng giữa và khi nhìn xiên.
+
+### Polish — Kính Nguyệt vòng 4 (review code): giải phóng render target, đo trong trận
+
+- `KinhNguyetArt.dispose()` gỡ `rf.target` khỏi group và gọi `reflector.dispose()` (giải phóng render target HalfFloat + depth); trước đó mỗi lần vào/ra level rò một render target. Hook ẩn vật trong lượt phản chiếu không `traverse` mỗi khung nữa: danh sách (nhãn tên, sprite, `MeshBasicMaterial` thường, nhóm VFX) quét lại mỗi ~0,5 s.
+- Độ phân giải phản chiếu 0,5 → 0,4. Phản chiếu chỉ bật ở preset có đèn (Cao/Cực cao) và WebGPU.
+- **Đo (`pnpm shots dungeonart --level kinh_nguyet --battle 1 --perf 1`, preset Cao, 1080p)**: cảnh trống 194–236 draw call, ~0,81–0,86M tam giác, 9–10 ms/khung; **đang đánh boss Chân Quân**: 205 draw call, ~0,97M tam giác, 9,4 ms/khung. Một lần đo trước khi hạ độ phân giải ra 257 draw call, 16,7 ms (ồn do chụp ảnh cùng lúc); chưa có số "không phản chiếu" cùng preset Cao để so riêng.
+
+## Polish — Thần Tàng: giảm tím, bệ tượng khắc hoa văn
+
+- **Giảm tím**: mood `tt` bão hòa 0,88 → 0,5, trời/sương/bóng/blackLift chuyển từ chàm sang xám trung tính; cẩm thạch GLB (`marble`) từ đen tím sang đen xám ngả tím nhạt, áo choàng tượng và biểu ngữ sang đỏ rượu sẫm; sương thấp (`DungeonFx.mist`) xám ấm. Vẫn giữ phù văn rune tím làm điểm nhấn nhỏ.
+- **Bệ tượng**: bỏ các ô vuông rune (đọc như bàn cờ đen-vàng); bậc giữa quấn **dải hồi văn** vàng sẫm (9 đơn vị mỗi mặt, nét ngang/sổ so le) kèm đường rune mảnh liền phía trên; mặt bậc dưới có hàng **cánh sen đá** nghiêng (10 cánh mỗi mặt); bốn góc có đinh vàng tròn. `plinth_carving` trong `tools/blender/than_tang_arch.py`.
+- **Ngân sách (Cao)**: 143–158 draw call, ~0,94–0,99M tam giác (GLB 438k → 487k tam giác), 8,4–9,9 ms/khung.
+
+## Polish — Phục Mạch: vách hang phá nhịp
+
+- **Vấn đề**: vách hang là 40 đoạn giống nhau (3 biến thể, mỗi đoạn 8 tầng × 3 khối cùng cao, khe tối đều) nên đọc như tường gạch lặp.
+- **`cave_wall` viết lại** (`tools/blender/phuc_mach_arch.py`): tầng cao thấp bất kỳ (3,5–10,5 m), mỗi tầng 1–4 khối rộng hẹp khác nhau, độ nhô vào/ra lệch mạnh (45% tầng nhô thêm 3,5–5 m như mái đua), thớ đá mỗi khối một mức, khe tối chỉ ở ~40% số tầng, 2–4 vết nứt dọc, 1–3 trụ đá lớn nhô từ chân và đá lở nhiều hơn. **8 biến thể** (trước 3), mỗi đoạn đặt thêm xoay ±5° và giãn ×0,9–1,15 nên không thấy lặp.
+- **Ngân sách (Cao)**: 243–262 draw call (như trước, dưới trần 300), ~1,0–1,06M tam giác; GLB 445k → 456k tam giác, ~9 MB.
+- **Còn lại**: vách vẫn là cùng bảng màu nâu sa thạch; chưa có rêu/nước rỉ hay thạch nhũ phủ vách.
+
+## Polish — Kiếm Trủng: khe nứt có chiều sâu
+
+- **Vấn đề**: khe nứt (`DungeonFx.cracks`) dùng cấu hình mặc định nên nhìn gần là dải xanh sáng phẳng, lõi trắng bè như dòng nước.
+- **Cấu hình mới** (`kiemTrungArt.ts`): 40 khe (trước 34); đáy khe xanh chàm sẫm hơn, lõi sáng xanh nhạt rất hẹp (`core` + `glowW` 0,3) thay dải trắng rộng; **gờ đá nổi hai bên ×3** (`lip`); nửa rộng 0,28–0,88 m (hẹp hơn); đá hai bên cùng tông sàn; mờ dần theo khoảng cách camera 22 → 50 m để không đè lên người chơi. Quầng cộng sáng ngoài giữ nhẹ.
+- **Công cụ**: kịch bản `dungeonart` thêm `--nearcrack 1` (tự tìm khe gần điểm tâm + 60 m phía nam, thêm góc `08-khe-nut-can`), và góc `07-khe-nut-gan`.
+- **Còn lại**: các gò mộ vòm (`grave`) trên sàn còn tô một màu phẳng (low-poly), vòng "kiếm trận" khắc sàn là các dải mờ phẳng; chưa động tới GLB nên không phải sinh lại collider.
+
+## Polish — nợ cũ: gò mộ Kiếm Trủng, tinh thể Phục Mạch
+
+- **Gò mộ Kiếm Trủng**: vòm nâu/xám trơn một màu thành **gò đất cỏ khô**: GLB `grave` chia lưới mịn hơn (28×14 thay 18×9, biên độ gồ ghề 0,34), 7 tảng đá chìm lộ nửa thân quanh gò, 70 chùm cỏ khô (trước 18) dài ngắn khác nhau; client thêm vật liệu `ktMaterialFor` cho `_earth` (nhiễu hạt mịn + nhiễu mảng theo toạ độ thế giới, mặt ngửa phủ đốm cỏ vàng úa, mặt đứng/chân sẫm hơn, nhám 0,96). Hộp va chạm `arch_kiem_trung.boxes.json` sinh lại (7985 hộp).
+- **Tinh thể Phục Mạch**: bỏ **bàn cờ ô màu** (mặt sáng/kính chọn ngẫu nhiên từng mặt từng vòng): nay chọn theo CỘT mặt một lần cho cả thân nên thành sọc dọc; gradient chân tối → mũi sáng dựng bằng **14 vòng** (trước 7); vật liệu client chuyển sang kiểu PROP-1 (`propCrystal`): lõi nóng ở mũi, viền fresnel cùng sắc, mặt giữa sẫm. Hộp va chạm `arch_phuc_mach.boxes.json` sinh lại (7683 hộp).
+- **Ngân sách (Cao)**: Kiếm Trủng 253 draw call, ~1,11M tam giác, 8,7 ms; Phục Mạch 246–257 draw call, ~1,34–1,41M tam giác (trước ~1,0M: tinh thể 14 vòng tốn thêm tam giác), 10–11 ms. Dưới trần 300 draw call và 1,8M tam giác.
+- **Còn lại**: mũ giáp vòm đỏ nâu + khiên đĩa ở Kiếm Trủng còn tô phẳng; tinh thể Phục Mạch vẫn sáng nhạt ở mũi (cần giảm HDR nếu muốn trầm hơn).
+
+### Polish — gò mộ Kiếm Trủng vòng 2 (duyệt ảnh): gò đất thấp bẹp, bỏ mũ giáp úp
+
+- Vòm tròn nhẵn và **các khối bán cầu nâu đỏ** (mũ giáp úp `armor`) bị bỏ: `grave` viết lại thành **gò đất đắp thấp bẹp** (cao ~0,45 m, rộng 3–5 m, mép không đều do bán kính đổi theo nhiễu lớn, đỉnh sụt lõm nhẹ, sườn thoải loe thành váng mỏng), đất nâu xám ẩm lẫn **sỏi sáng** và 26 viên đá vụn, **90 chùm cỏ khô** (5 lá tam giác nghiêng mỗi chùm, vàng xám) mọc ở gò và rìa, bia đá nghiêng sứt + kiếm gãy cắm. Cảnh có 64 gò (trước 44) thay phần mũ giáp; không còn `armor` trong cảnh. `arch_kiem_trung.boxes.json` + `colliders:lib/bake` sinh lại.
+
+## Polish — Lạc Kiếm Tông: đồi xa có lớp, chữ biển thẳng
+
+- **Đồi xa** (`game/world/lacKiemFar.ts`, cờ `lacKiemFar` ở `van_lam.assets.json`; chỉ để nhìn, không va chạm): trước đây đồi xa là mặt địa hình mượt không cây không đá. Nay có **1800 cây tùng xa** (một `InstancedMesh`, thân + hai tầng nón, mọc theo mật độ ô 110 m nên thành cụm, tránh sườn quá dốc), **900 gờ đá** lộ trên sườn dốc (khối góc cạnh dẹt nghiêng theo hướng ngẫu nhiên, nhiễu hạt) và **ba lớp sương dải** ở +14/+48/+96 m (vành phẳng, nhiễu trôi chậm, mờ ở mép trong, màu lấy từ sương cảnh theo từng mood) tạo tầng sâu giữa các dãy đồi. Vùng 300–1500 m quanh tông môn.
+- **Chữ biển nghiêng khó đọc**: font Charm Bold nghiêng ~17°. `Builder.text` (`thien_cong_kit.py`) thêm tham số `unslant` (cắt ngược chữ về thẳng đứng, 0,3) và làm đậm nét hơn (0,045 → 0,06); áp cho biển cổng "Lạc Kiếm Tông", hoành phi "Thiên Kiếm Điện" và các chữ dọc ở `thien_cong_sect.py`. GLB `arch_sect` dựng lại; `arch_sect.boxes.json` + `colliders:lib/bake` sinh lại (2311 hộp).
+- **Còn lại**: cây xa là nón đơn giản (xa nên bị sương nuốt, gần hơn ~600 m thấy hơi low-poly); đồi gần vẫn là địa hình mượt; chữ vẫn là một font (chưa thư pháp khắc bia thật, cần font riêng hỗ trợ dấu tiếng Việt).
+- **Ngân sách (Cao, 1080p)**: thêm ~8 draw call (cây, đá, 3 vành sương, +chữ biển không đổi) và ~0,1M tam giác so với trước: cổng 235 → 243 draw call, 1,67M → 1,77M tam giác; góc cao `trencao` 322 → 330 draw call, 1,85M → 1,95M tam giác. **`trencao` đã vượt 300 draw call và 1,8M tam giác từ trước PR này** (cảnh toàn tông môn nhìn từ trên cao, chưa tối ưu); PR không làm tốt hơn phần đó.
+
+### Polish — Lạc Kiếm Tông vòng 2 (review): cây/đá xa chỉ ngoài vùng chơi
+
+- Cây/đá cảnh xa trước đây rải ở r 300–1500 m, trùng vùng chơi (bãi quái, đường, bệ cổng, hồ) và không có va chạm. Nay `farCandidate` chỉ cho điểm có `playDist ≥ 1160` (ngoài khung chơi 2,2 × 2,2 km + đệm) và trong bản đồ 4096 m, nên không còn gì mọc ở nơi đi lại; test `lacKiemFar.test.ts` kiểm mọi điểm ứng viên đều ngoài vùng chơi.
+- Cây xa nhỏ lại (cao ~18–32 m thay vì tới ~55 m) và tối hơn (lightness 0,10–0,17, bão hòa 0,3) nên không còn nón xanh nhạt to bất thường trên sống đồi (ảnh `phongxa`, `dawn-cong`); đá nhỏ lại (4–11 m).
+- Hệ quả: cây/đá chỉ còn ở dãy núi ngoài cùng; sống đồi gần hơn trở lại mượt (chỉ còn sương dải). Muốn thêm lớp ở giữa phải có va chạm hoặc để cùng loại thông của map (CardForest) với giới hạn tầm vẽ lớn hơn.
+
+## Polish — Đoạn Mạch: thử rồi bỏ (chưa làm lại)
+
+- Đã thử hai hướng và **không đạt duyệt ảnh**, nên không vào `main`: (1) vách bằng shader (tầng đá hai cỡ + warp UV + khe + rêu, nhánh `rich` của `CliffTones`) vẫn là dải màu trên lưới địa hình, đọc ra như đồi cát; (2) thác bằng dải lưới bám địa hình có shader nước cuộn, nhưng nhìn gần là tấm phẳng nghiêng như poster, hồ chân là đĩa trắng.
+- **Cần làm đúng**: vách đá thật là **mesh** (khối đá tầng dày mỏng gãy khúc, khe nứt dọc, gờ nhô) dựng bằng Blender như `arch_*` rồi đặt dọc chân vách, hoặc displacement thật trong địa hình; thác là dải lưới cong theo vách (UV chạy dọc, bọt mép và chân), đặt trong khe đã tạo hình bằng mesh, hồ chân có bờ đá. Làm cùng đợt với mesh vách vì thác phải ngồi trong khe của vách.
+
+## Polish — Đoạn Mạch (làm lại lần 3): vách bằng texture đá PBR thật + thác bám khe
+
+- **Bỏ cụm hộp vuông rời** (bản mesh trước bị chê là "voxel dán lên vách sọc cũ"): GLB `arch_doan_mach`, `doanMachCliffs.ts`, collider/manifest liên quan đã gỡ khỏi PR.
+- **Vật liệu vách** (`render/materials/ground.ts`, cờ `pbr` của `CliffTones`, chỉ `doan_mach`): bỏ hẳn nhánh tạo sọc bằng nhiễu; vách dùng lớp `cliff` thật của bộ texture `terrain-ochre` (đá nâu có vân và khe nứt, CC0 Poly Haven) **triplanar ở hai tỉ lệ** (11 m gần, 29 m xoay trục xa; pha trộn theo khoảng cách) nên hết lặp ô; chỉ đẩy sắc về đỏ gạch, thêm mảng sáng/tối lớn + tầng theo độ cao KHÔNG đều (nhiễu theo `h`, không phải sin đều), vệt nước chảy sẫm, khe nứt dọc tối, rêu/đất vàng đọng ở gờ ngang giữa vách; **pháp tuyến vách ×2,4** (`cliffW`) cho khối nổi. Level khác (Thiên Khuyết `blocks`, Kiếm Trủng, Phục Mạch) không đổi.
+- **Thác** (`game/world/doanMachFalls.ts`, dựng trong `DoanMachArt`): đặt ở khe vách thật (hai bên cao hơn tâm ≥ 1,2 m, độ rơi ≥ 28 m), dòng chảy bám địa hình theo gradient (mốc 3 m), ống nửa tiết diện 11 cột (phồng giữa, vòng cung ở mép trên), UV chạy dọc, hai lớp nhiễu cuộn, mép sáng và alpha mềm, bọt đầu mỗi dòng; hồ chân mép mềm có gợn, vòng bọt xoáy mờ, bụi nước. 4 draw call. Scenario: `pnpm shots doanmach --thac 1` (góc `thac`, `thac2`).
+- **Còn lại**: sườn vẫn là lưới địa hình mượt (đá chỉ là màu + pháp tuyến, không có khối nhô thật): nhìn nghiêng ở sườn thoải thấy bề mặt hơi bóng; dải nước nhìn gần vẫn phẳng, đầu chân dải còn góc cạnh; muốn vách "khối đá" thật cần vỏ mesh liền mạch như Thiên Khuyết (#368/#378) — làm riêng.

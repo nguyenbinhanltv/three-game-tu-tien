@@ -20,7 +20,6 @@ import {
   hash01,
   KIEM_TRUNG,
   LAKE,
-  PORTAL_PAD,
   SECT,
   TERRAIN_SEED,
   trailsOf,
@@ -31,7 +30,7 @@ import { LEVELS } from '@dtl/content';
 import { levelId, levelTerrain } from '../../base/levelCtx';
 import { col, G, GeoBuilder, mat } from '../core/geo';
 import { withSightFade } from './occlusion';
-import { sectPaving } from '../../render/groundMask';
+import { portalPaving, sectPaving } from '../../render/groundMask';
 import { nearPropTree } from './propScatter';
 import { vanHaiArt, type VhPalette } from './vanHaiArt';
 import { tkGroundColor } from './thienKhuyetArt';
@@ -247,7 +246,6 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
   const wValley = featureWeight(VALLEY, x, z);
   const wForest = featureWeight(FOREST, x, z);
   const wLake = featureWeight(LAKE, x, z);
-  const wPad = featureWeight(PORTAL_PAD, x, z);
   const n = fbm(x * 0.013, z * 0.013, 2, TERRAIN_SEED + 300);
 
   out.copy(C_GRASS_WILD);
@@ -290,7 +288,8 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
   if (wSect > 0.5) out.lerp(C_GRASS_SECT, Math.min(0.85, (wSect - 0.5) * 3));
   const paved = sectPaving(x - SECT.x, z - SECT.z);
   if (paved > 0) out.lerp(C_STONE, paved);
-  if (wPad > 0.9) out.lerp(C_STONE, Math.min(1, (wPad - 0.9) * 10));
+  const pPad = portalPaving(x, z); // chỉ vòng quanh cổng (r ≤ 31 m); phần còn lại của cao nguyên phẳng là cỏ (POLISH-1)
+  if (pPad > 0) out.lerp(C_STONE, pPad);
   // Đất chết xám tím của Kiếm Trủng.
   const wTomb = featureWeight(KIEM_TRUNG, x, z);
   if (wTomb > 0.15) out.lerp(C_TOMB, Math.min(1, (wTomb - 0.15) * 1.8));
@@ -316,11 +315,25 @@ function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
 
 /** Level đảo nổi: ô lưới có độ chênh cao hơn mức này (m) là vách đảo, không dựng mặt (vách là khối đá treo ở skyIslands.ts). */
 const CLIFF_SKIP = 9;
+/** Ô gần (≤ 4,5 m): ngưỡng thấp hơn (độ dốc ~42°) để vành địa hình rủ ở mép đảo không lòi qua váy đá (POLISH-1); ô xa/lưới thô giữ 9 m vì cùng độ chênh là dốc thoải hơn nhiều. */
+const CLIFF_NEAR = 4;
+const NEAR_CELL = 4.5;
+const cliffOf = (cell: number): number => (cell <= NEAR_CELL ? CLIFF_NEAR : CLIFF_SKIP);
 /** Ô nằm ở vách ranh vùng chơi (không phải vách đảo): vẫn dựng mặt, nếu không để lại các khe mảnh như đường kẻ dọc trên trời. */
 function onPlayWall(pos: Float32Array, a: number, d: number): boolean {
   const cx = (pos[a * 3]! + pos[d * 3]!) / 2;
   const cz = (pos[a * 3 + 2]! + pos[d * 3 + 2]!) / 2;
   return T.playDist(cx, cz) > T.playWall - 12;
+}
+/** Điểm nằm trên vành dốc bên ngoài mép đảo (r + 2 … r + edge + 10): váy đá (skyIslands.ts) thay thế, địa hình không dựng để khỏi lòi tam giác ra ngoài váy. */
+function onIslandBevel(x: number, z: number): boolean {
+  const isl = T.def.islands;
+  if (!isl) return false;
+  for (const i of isl) {
+    const d = Math.hypot(x - i.x, z - i.z);
+    if (d > i.r + 2 && d < i.r + i.edge + 10) return true;
+  }
+  return false;
 }
 function quadSpan(pos: Float32Array, a: number, b: number, c: number, d: number): number {
   const ya = pos[a * 3 + 1]!;
@@ -373,14 +386,19 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
     }
   }
   const idx: number[] = [];
-  const cliff = T.def.islands ? CLIFF_SKIP : Infinity;
+  const cliff = T.def.islands ? cliffOf(cell) : Infinity;
   for (let j = 0; j < res; j++) {
     for (let i = 0; i < res; i++) {
       const a = j * n1 + i;
       const b = a + 1;
       const c = a + n1;
       const d = c + 1;
-      if (cliff < Infinity && quadSpan(pos, a, b, c, d) > cliff && !onPlayWall(pos, a, d)) continue; // vách đảo: bỏ mặt đứng, `skyIslands.ts` dựng khối đá treo
+      if (
+        cliff < Infinity &&
+        !onPlayWall(pos, a, d) &&
+        (quadSpan(pos, a, b, c, d) > cliff || onIslandBevel((pos[a * 3]! + pos[d * 3]!) / 2, (pos[a * 3 + 2]! + pos[d * 3 + 2]!) / 2))
+      )
+        continue; // vách đảo: bỏ mặt đứng, `skyIslands.ts` dựng khối đá treo
       idx.push(a, c, b, b, c, d);
     }
   }
@@ -407,6 +425,8 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
       for (let k = 0; k < res; k++) {
         const a = get(k);
         const b = get(k + 1);
+        // Level đảo nổi: ranh ô cắt qua vách đảo thì hai đỉnh kề nhau chênh hàng chục mét → viền rủ thành cột/vạt dài đâm xuống mây (POLISH-1); bỏ đoạn đó.
+        if (cliff < Infinity && Math.abs(pos[a * 3 + 1]! - pos[b * 3 + 1]!) > CLIFF_SKIP) continue; // ngưỡng 9 m cố định: chỉ bỏ đoạn rủ qua vách thật, không hở khe giữa ô khác LOD
         const c = start + k;
         const d = start + k + 1;
         idx.push(a, c, b, b, c, d, a, b, c, b, d, c);
@@ -459,8 +479,7 @@ function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeom
       const wForest = featureWeight(FOREST, x, z);
       const wValley = featureWeight(VALLEY, x, z);
       const wLake = featureWeight(LAKE, x, z);
-      const wPad = featureWeight(PORTAL_PAD, x, z);
-      if (wPad > 0.85 || featureWeight(KIEM_TRUNG, x, z) > 0.25) continue;
+      if (portalPaving(x, z) > 0.02 || featureWeight(KIEM_TRUNG, x, z) > 0.25) continue;
       // Quanh cổ thụ/thông Tripo (P2-A4) bỏ cây thủ tục để không chồng lên nhau.
       if (nearPropTree(x, z)) continue;
       // Độ dốc: bỏ cây trên vách đá.
@@ -468,7 +487,8 @@ function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeom
 
       if (wSect > 0.8) continue; // trong tông môn không rải đá/cây
       if (slope > 5.5) {
-        if (r3 < 0.12 && !far) addRock(b, x, h, z, 1 + r4 * 2.2, r1);
+        // quanh bệ cổng bí cảnh đá khối thủ tục (icosahedron phẳng) bị bỏ: đá PROP-1 (da_reu, cột đá) thay thế (POLISH-2)
+        if (r3 < 0.12 && !far && Math.hypot(x - 2048, z - 1708) > 190) addRock(b, x, h, z, 1 + r4 * 2.2, r1);
         continue;
       }
       let density = 0.3;
@@ -477,7 +497,7 @@ function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeom
       else if (wLake > 0.3) density = 0.2;
       if (h > 200) density *= 0.5;
       if (r3 > density) {
-        if (r3 > 0.94 && !far) addRock(b, x, h, z, 0.6 + r4 * 1.4, r1);
+        if (r3 > 0.94 && !far && Math.hypot(x - 2048, z - 1708) > 190) addRock(b, x, h, z, 0.6 + r4 * 1.4, r1); // quanh bệ cổng: đá PROP-1 thay đá khối thủ tục
         continue;
       }
       // Cây là của propScatter.scatterTrees + PropLayer (cây Tripo); terrain chỉ rải đá.
@@ -552,6 +572,23 @@ export class Terrain {
     this.group.add(this.coarse);
   }
 
+  // Level đảo nổi: viền rủ ngắn (1,2 m: đủ che khe nứt giữa ô khác LOD trên mặt đảo phẳng); viền dài 17 m thò ra khỏi thân đá của váy thành các tam giác dán trên vách (POLISH-1).
+  private voidTile = new Map<number, boolean>();
+  /** Ô chỉ gồm sàn mây (mọi mẫu độ cao bằng `voidFloor`, không có đảo/cầu): chỉ ở level đảo nổi. */
+  private isVoidTile(tx: number, tz: number): boolean {
+    const floor = T.def.voidFloor;
+    if (floor === undefined || !T.def.islands) return false;
+    const key = tz * this.NT + tx;
+    const have = this.voidTile.get(key);
+    if (have !== undefined) return have;
+    let v = true;
+    const N = 16;
+    for (let j = 0; j <= N && v; j++)
+      for (let i = 0; i <= N && v; i++) if (heightAt(tx * TILE + (i / N) * TILE, tz * TILE + (j / N) * TILE) > floor + 0.5) v = false;
+    this.voidTile.set(key, v);
+    return v;
+  }
+
   private desiredRes(d: number): number {
     return d <= 1 ? 64 : 32;
   }
@@ -589,8 +626,13 @@ export class Terrain {
           }
           if (ring <= NEAR_R) {
             const res = this.desiredRes(ring);
+            if (t.res !== res && this.isVoidTile(tx, tz)) {
+              // Level đảo nổi: ô chỉ có sàn mây phẳng không dựng lưới mịn (lưới thô đã vẽ sàn; mặt sàn lại bị mặt vực/mây che): bớt ~nửa số draw call địa hình.
+              t.res = res;
+              continue;
+            }
             if (t.res !== res) {
-              const geo = buildTileGeometry(tx * TILE, tz * TILE, TILE, res, (TILE / res) * 1.5 + 5);
+              const geo = buildTileGeometry(tx * TILE, tz * TILE, TILE, res, T.def.islands ? 1.2 : (TILE / res) * 1.5 + 5);
               if (t.mesh) {
                 this.group.remove(t.mesh);
                 t.mesh.geometry.dispose();
@@ -650,7 +692,13 @@ export class Terrain {
         const b = a + 1;
         const c = a + n1;
         const d = c + 1;
-        if (cpos && quadSpan(cpos, a, b, c, d) > CLIFF_SKIP && !onPlayWall(cpos, a, d)) continue;
+        if (
+          cpos &&
+          !onPlayWall(cpos, a, d) &&
+          (quadSpan(cpos, a, b, c, d) > CLIFF_SKIP ||
+            onIslandBevel((cpos[a * 3]! + cpos[d * 3]!) / 2, (cpos[a * 3 + 2]! + cpos[d * 3 + 2]!) / 2))
+        )
+          continue;
         idx[o++] = a;
         idx[o++] = c;
         idx[o++] = b;
@@ -682,15 +730,18 @@ export class Terrain {
     setGroundRedStrata(
       T.id === 'doan_mach' || T.id === 'thien_khuyet' || KT || PM,
       // Thiên Khuyết (MAP-4): vách xám ấm ↔ nâu cát, khe nứt có vỉa vàng kim; vân từ nhiễu theo tọa độ dọc vách (hết ô caro).
-      T.id === 'thien_khuyet'
-        ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18] }
-        : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
-          KT
-          ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }
-          : // Phục Mạch (DUN-1 PR2): vách sa thạch nâu đỏ sẫm, khe nứt có vỉa mạch tinh lục.
-            PM
-            ? { lo: [0.1, 0.07, 0.05], hi: [0.3, 0.2, 0.13], vein: [0.25, 0.7, 0.55] }
-            : undefined,
+      T.id === 'doan_mach'
+        ? // Đoạn Mạch (POLISH-1): vách đá PBR thật nhuộm đỏ nâu, không dùng nhiễu tạo sọc.
+          { lo: [0.3, 0.14, 0.1], hi: [0.62, 0.4, 0.28], pbr: true }
+        : T.id === 'thien_khuyet'
+          ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18], blocks: true }
+          : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
+            KT
+            ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }
+            : // Phục Mạch (DUN-1 PR2): vách sa thạch nâu đỏ sẫm, khe nứt có vỉa mạch tinh lục.
+              PM
+              ? { lo: [0.1, 0.07, 0.05], hi: [0.3, 0.2, 0.13], vein: [0.25, 0.7, 0.55] }
+              : undefined,
     );
     if (tex) applyGroundShader(this.material, tex, level);
     else clearGroundShader(this.material);

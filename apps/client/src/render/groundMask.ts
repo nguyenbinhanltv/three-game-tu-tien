@@ -6,6 +6,7 @@ import {
   KIEM_TRUNG,
   LAKE,
   PORTAL_PAD,
+  PORTAL_POS,
   SECT,
   SUOI,
   TERRAIN_SEED,
@@ -99,6 +100,15 @@ const soft = (v: number, a: number, b: number) => clamp01((b - v) / (b - a));
  * Chỗ lát đá của sân tông môn (MAP-1): chỉ đại lộ, vòng bát quái, sân chính điện, sân hai đình và sân sơn môn (toạ độ tương đối tâm
  * tông môn, khớp `tools/blender/thien_cong_sect.py`). Phần còn lại của đỉnh núi là cỏ, đất và rêu thay cho lát đá phủ kín.
  */
+/**
+ * Lát đá ở bệ cổng bí cảnh (POLISH-1): chỉ vòng tròn quanh cổng (r ≤ 26 m, mờ dần tới 31 m) thay vì cả cao nguyên phẳng bán kính ~55 m (đĩa trắng rộng trống);
+ * phần cao nguyên còn lại là cỏ/đất như nơi khác.
+ */
+export function portalPaving(x: number, z: number): number {
+  const d = Math.hypot(x - PORTAL_POS.x, z - PORTAL_POS.z);
+  return clamp01((31 - d) / 5);
+}
+
 export function sectPaving(lx: number, lz: number): number {
   const ax = Math.abs(lx);
   const avenue = Math.min(soft(ax, 7.5, 10), soft(Math.abs(lz - 26), 56, 60));
@@ -117,8 +127,7 @@ export function maskPixel(i: number, j: number, lines: P[][], out: Uint8ClampedA
   const d = distToPaths(x, z, lines);
   out[o] = Number.isFinite(d) ? clamp01(0.5 + (PATH_HALF_WIDTH - d) / (2 * PATH_RANGE)) * 255 : 0;
   // G: sân lát đá.
-  const wPad = featureWeight(PORTAL_PAD, x, z);
-  out[o + 1] = clamp01(Math.max(sectPaving(x - SECT.x, z - SECT.z), (wPad - 0.88) * 12)) * 255;
+  out[o + 1] = clamp01(Math.max(sectPaving(x - SECT.x, z - SECT.z), portalPaving(x, z))) * 255;
   // B: cát ven hồ (chỉ gần hồ mới tốn heightAt).
   let sand = 0;
   if (featureWeight(LAKE, x, z) > 0) {

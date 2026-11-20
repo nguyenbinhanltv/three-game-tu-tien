@@ -77,7 +77,7 @@ export function auraCaps(tier: 0 | 1 | 2, mine: boolean): AuraCaps {
 /** Giây sau lần ra chiêu mà coi là "chiến đấu nặng" (hào quang quanh người mờ bớt cho đỡ rối mắt). */
 export const AURA_COMBAT_SEC = 2.5;
 
-export interface AuraState {
+interface AuraState {
   fl: number;
   /** Giây kể từ lần ra chiêu gần nhất của người này. */
   sinceCast: number;

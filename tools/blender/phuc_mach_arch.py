@@ -65,7 +65,9 @@ def crystal_prism(b, ox, oz, dx, dz, h, r, ph, glow_ratio, rnd):
     """Một tinh thể lăng trụ lục giác: tiết diện co dần về mũi nhọn qua nhiều vòng; màu đỉnh là gradient từ chân tối → lõi sáng ở mũi (client dùng màu đỉnh làm phát sáng),
     mặt xen kẽ 'mạch' (phát sáng) và 'kính' (sẫm, chỉ bắt viền)."""
     sides = 6
-    rings = [(0.0, 1.0), (0.05, 1.0), (0.3, 0.97), (0.55, 0.9), (0.75, 0.78), (0.9, 0.55), (1.0, 0.0)]
+    # 14 vòng (gradient mịn hơn, bớt đứt khúc); mặt sáng/kính chọn THEO CỘT mặt (một lần cho cả thân) nên thành sọc dọc, không còn bàn cờ ô màu
+    rings = [(0.0, 1.0), (0.04, 1.0), (0.12, 0.99), (0.22, 0.97), (0.34, 0.94), (0.46, 0.9), (0.58, 0.85), (0.68, 0.78), (0.77, 0.7), (0.85, 0.58), (0.91, 0.45), (0.96, 0.28), (0.99, 0.12), (1.0, 0.0)]
+    glow_cols = [rnd.random() < glow_ratio for _ in range(sides)]
     prev = None
     for q, rk in rings:
         ring = []
@@ -75,7 +77,7 @@ def crystal_prism(b, ox, oz, dx, dz, h, r, ph, glow_ratio, rnd):
         if prev:
             for j in range(sides):
                 k2 = (j + 1) % sides
-                glow = rnd.random() < glow_ratio
+                glow = glow_cols[j]
                 t = q ** 1.3
                 col = Paint(mix(C(0x0A3A32), C(0x7FFFE0), t), 'vein') if glow else Paint(mix(C(0x04201C), C(0x2F9C88), t), 'crystal')
                 b.poly([prev[j], prev[k2], ring[k2], ring[j]], (ox, 0, oz), col)
@@ -111,23 +113,40 @@ def crystal_cluster(b, H, seed, glow_ratio=0.62):
 
 
 def cave_wall(b, seed):
-    """Một đoạn vách hang liền khối (rộng ~24 m, cao 48 m): các tầng phiến sa thạch chồng lệch có nhô ngang, khe tối giữa tầng, sẫm dần lên cao; ghép vòng quanh thành vách kín."""
+    """Một đoạn vách hang liền khối (rộng ~24 m, cao 48 m), PHÁ NHỊP: tầng phiến cao thấp bất kỳ (3,5–10,5 m), mỗi tầng 1–4 khối rộng hẹp khác nhau, độ nhô vào/ra và độ nghiêng lệch mạnh (có tầng nhô hẳn như mái
+    đua), thớ đá mỗi khối một mức; khe tối chỉ ở vài tầng; vài vết nứt dọc, trụ đá lớn nhô từ chân lên và mảng sập; ghép vòng quanh thành vách kín (8 biến thể, đặt xoay/giãn ngẫu nhiên nên không thấy lặp)."""
     rnd = random.Random(seed)
     W = 24.0
-    rows = 8
-    for row in range(rows):
-        y0 = -4.0 + row * 6.4
-        nb = 3
+    y = -4.0
+    row = 0
+    while y < 46.0:
+        hgt = rnd.choice((3.5, 5.0, 6.5, 8.0, 10.5)) * rnd.uniform(0.85, 1.15)
+        nb = rnd.choice((1, 2, 2, 3, 4))
+        cuts = sorted(rnd.uniform(0.15, 0.85) for _ in range(nb - 1))
+        edges = [0.0] + cuts + [1.0]
         for k in range(nb):
-            x = (k + 0.5) / nb * W - W / 2 + rnd.uniform(-1.5, 1.5)
-            out = rnd.uniform(-2.0, 1.5) + (1.5 if row % 3 == 1 else 0.0)  # +z hướng vào trong hang: tầng nhô ra
-            blob(b, (x, y0 + 3.4, out), (W / nb * rnd.uniform(0.62, 0.85), 3.9, rnd.uniform(4.5, 7.0)), kta.rock_col(seed + row * 7 + k, haze=0.1 + 0.05 * row, strata=1.6, moss_amt=0.0),
-                 nu=12, nv=6, e=2.7, amp=0.38, seed=seed + row * 5 + k, rot=rnd.uniform(0, 3))
-        # khe tối sau mỗi tầng
-        tbox(b, (0, y0 + 0.2, -3.0), (W, 0.6, 3.0), Paint(C(0x0A0705), 'earth'))
+            w = (edges[k + 1] - edges[k]) * W
+            x = (edges[k] + edges[k + 1]) / 2 * W - W / 2
+            out = rnd.uniform(-3.0, 2.0) + (rnd.choice((0.0, 0.0, 3.5, 5.0)) if rnd.random() < 0.45 else 0.0)
+            blob(b, (x, y + hgt / 2, out), (w * rnd.uniform(0.55, 0.72), hgt * rnd.uniform(0.5, 0.68), rnd.uniform(3.5, 9.0)),
+                 kta.rock_col(seed + row * 7 + k, haze=0.08 + 0.04 * row, strata=rnd.uniform(0.8, 2.8), moss_amt=0.0),
+                 nu=12, nv=6, e=rnd.uniform(2.2, 3.0), amp=rnd.uniform(0.3, 0.5), seed=seed + row * 5 + k, rot=rnd.uniform(0, 3))
+        if rnd.random() < 0.4:  # khe tối sau tầng (chỉ vài tầng)
+            tbox(b, (rnd.uniform(-4, 4), y + 0.2, -3.0), (rnd.uniform(10, W), 0.6, 3.0), Paint(C(0x0A0705), 'earth'))
+        y += hgt * rnd.uniform(0.75, 0.95)
+        row += 1
+    # vết nứt dọc tối
+    for k in range(rnd.randint(2, 4)):
+        x = rnd.uniform(-W / 2 + 2, W / 2 - 2)
+        tbox(b, (x, rnd.uniform(8, 24), -1.0), (rnd.uniform(0.4, 1.1), rnd.uniform(10, 26), 3.0), Paint(C(0x0A0705), 'earth'), rz=rnd.uniform(-0.12, 0.12))
+    # trụ đá lớn nhô từ chân vách lên + mảng sập
+    for k in range(rnd.randint(1, 3)):
+        hh = rnd.uniform(10, 30)
+        blob(b, (rnd.uniform(-W / 2 + 3, W / 2 - 3), hh * 0.4, rnd.uniform(3.0, 6.5)), (rnd.uniform(2.2, 4.0), hh * 0.5, rnd.uniform(2.0, 3.5)),
+             kta.rock_col(seed + 40 + k, haze=0.05, strata=rnd.uniform(1.0, 2.5), moss_amt=0.0), nu=10, nv=7, e=2.2, amp=0.4, seed=seed + 41 + k, v0=0.0, v1=0.9)
     # khối chân vách + đá lở
-    for k in range(4):
-        blob(b, (rnd.uniform(-W / 2, W / 2), 1.2, rnd.uniform(2.5, 5.0)), (rnd.uniform(1.4, 3.0), 1.6, rnd.uniform(1.2, 2.4)), kta.rock_col(seed + 90 + k, moss_amt=0.0), nu=8, nv=5, e=2.0, amp=0.35, seed=seed + 95 + k)
+    for k in range(6):
+        blob(b, (rnd.uniform(-W / 2, W / 2), 1.2, rnd.uniform(2.5, 6.0)), (rnd.uniform(1.4, 3.6), rnd.uniform(1.2, 2.2), rnd.uniform(1.2, 2.8)), kta.rock_col(seed + 90 + k, moss_amt=0.0), nu=8, nv=5, e=2.0, amp=0.35, seed=seed + 95 + k)
 
 
 def ceil_slab(b, seed):
@@ -296,7 +315,7 @@ def build_variants():
     b = new_b(709)
     rails(b, 14.5, 709)
     v['rails14'] = b
-    for i in range(3):
+    for i in range(8):
         b = new_b(750 + i)
         cave_wall(b, 750 + i * 11)
         v[f'wall{i}'] = b
@@ -371,7 +390,7 @@ def run(out):
         a = i / 40 * math.tau
         r = 114 + rnd.uniform(-2.5, 2.5)
         h = dome_h(r) + 4.0
-        put('wall', f'wall{rnd.randrange(3)}', math.cos(a) * r, math.sin(a) * r, yaw=a + math.pi / 2, scale=h / 48.0)
+        put('wall', f'wall{rnd.randrange(8)}', math.cos(a) * r, math.sin(a) * r, yaw=a + math.pi / 2 + rnd.uniform(-0.08, 0.08), scale=h / 48.0 * rnd.uniform(0.9, 1.15))
     # Cửa hầm quanh vành, mỗi cửa có đường ray chạy vào + xe quặng.
     adits = []
     for i in range(5):

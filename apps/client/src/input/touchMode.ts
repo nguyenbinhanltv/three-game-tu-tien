@@ -21,7 +21,7 @@ function readPref(): TouchPref {
 }
 
 /** Thiết bị chạm là chính? (không có chuột/trackpad kèm theo). */
-export function detectTouchDevice(): boolean {
+function detectTouchDevice(): boolean {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
   const mm = (q: string) => window.matchMedia(q).matches;
   if (mm('(pointer: coarse)') && mm('(hover: none)')) return true;
@@ -93,9 +93,9 @@ export function installTouchMode(): () => void {
 
 export const JOY_RADIUS = 56; // px, bán kính cần (đầu cần chạm tới mép vòng đế)
 export const JOY_DEAD = 0.18; // vùng chết (phần của bán kính)
-export const JOY_RUN = 0.92; // vượt ngưỡng này thì chạy hết tốc
+const JOY_RUN = 0.92; // vượt ngưỡng này thì chạy hết tốc
 
-export interface JoyOut {
+interface JoyOut {
   /** Giống W/A/S/D: mx phải = +1, mz tiến = +1 (đã chuẩn hóa nên chéo không nhanh hơn). */
   mx: number;
   mz: number;

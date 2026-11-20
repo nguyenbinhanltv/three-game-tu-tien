@@ -265,17 +265,17 @@
         "fogHaze": 0.0007, "fogHazeStart": 80, "fogScatter": 0.5, "rim": 1.0,
         "shadowTint": "#2A3350", "highlightTint": "#F2F0E6", "splitBalance": 0.0,
         "shadowAmount": 0.3, "highlightAmount": 0.25,
-        "blackLift": "#1A2034", "contrast": 1.14, "saturation": 0.62, "exposure": 0.92
+        "blackLift": "#141A2C", "contrast": 1.2, "saturation": 0.66, "exposure": 0.8
       },
       "tt": {
         "label": "Thần Tàng Điện — điện tàng đen tím nạm vàng",
         "sunColor": "#E8DCC4", "sunIntensity": 1.5, "sunElevationDeg": 56,
-        "skyColor": "#3A2E58", "skyIntensity": 0.55,
-        "fogColor": "#1C1630", "fogDensity": 0.001, "heightFogTop": 12, "heightFogBoost": 2.0,
+        "skyColor": "#46424E", "skyIntensity": 0.55,
+        "fogColor": "#1C1824", "fogDensity": 0.001, "heightFogTop": 12, "heightFogBoost": 2.0,
         "fogHaze": 0.0008, "fogHazeStart": 80, "fogScatter": 0.5, "rim": 1.0,
-        "shadowTint": "#120C26", "highlightTint": "#F4D27E", "splitBalance": -0.05,
-        "shadowAmount": 0.4, "highlightAmount": 0.3,
-        "blackLift": "#120E1E", "contrast": 1.22, "saturation": 0.88, "exposure": 0.85
+        "shadowTint": "#16121C", "highlightTint": "#F4D27E", "splitBalance": -0.05,
+        "shadowAmount": 0.38, "highlightAmount": 0.3,
+        "blackLift": "#14111A", "contrast": 1.22, "saturation": 0.5, "exposure": 0.9
       },
       "xk": {
         "label": "Xích Tẫn Khích — hẻm núi lửa tàn, mặt trời đỏ thấp, khói than",
@@ -286,6 +286,16 @@
         "shadowTint": "#140D0C", "highlightTint": "#FF9A50", "splitBalance": -0.05,
         "shadowAmount": 0.4, "highlightAmount": 0.32,
         "blackLift": "#150F0E", "contrast": 1.22, "saturation": 0.78, "exposure": 0.95
+      },
+      "dk": {
+        "label": "Độ Kiếp — Thiên Lôi Đài trên biển mây giông, nền tối, chớp tím-trắng, đỉnh đồng hổ phách",
+        "sunColor": "#B8C4F0", "sunIntensity": 0.7, "sunElevationDeg": 40,
+        "skyColor": "#2E3048", "skyIntensity": 0.5,
+        "fogColor": "#0C0B16", "fogDensity": 0.0016, "heightFogTop": 26, "heightFogBoost": 1.6,
+        "fogHaze": 0.0012, "fogHazeStart": 60, "fogScatter": 0.4, "rim": 1.3,
+        "shadowTint": "#06060F", "highlightTint": "#FFB878", "splitBalance": 0.05,
+        "shadowAmount": 0.5, "highlightAmount": 0.4,
+        "blackLift": "#05050C", "contrast": 1.5, "saturation": 0.7, "exposure": 1.12
       },
       "kd": {
         "label": "Kim Dạ Cung — cung dát vàng đêm lồng đèn",
@@ -385,13 +395,13 @@
         "blackLift": "#22203C", "contrast": 1.2, "saturation": 0.8, "exposure": 1.0
       },
       "bh_day": {
-        "label": "Bắc Hoang — ngày tuyết",
-        "sunColor": "#EEF3FF", "sunIntensity": 2.6, "sunElevationDeg": 14,
-        "skyColor": "#AFC3DE", "skyIntensity": 0.95,
-        "fogColor": "#B4C2E4", "fogDensity": 0.00042, "heightFogTop": 70, "heightFogBoost": 1.5,
-        "fogHaze": 0.0006, "fogHazeStart": 140, "fogScatter": 0.8, "rim": 0.5,
-        "shadowTint": "#46507A", "highlightTint": "#FFF4F4", "splitBalance": 0.05,
-        "blackLift": "#16162E", "contrast": 1.15, "saturation": 0.8, "exposure": 0.98
+        "label": "Bắc Hoang — ngày tuyết (trắng xám trung tính, trời xám xanh nhạt)",
+        "sunColor": "#F2F4F8", "sunIntensity": 2.6, "sunElevationDeg": 14,
+        "skyColor": "#B4BEC8", "skyIntensity": 0.95,
+        "fogColor": "#C2CBD6", "fogDensity": 0.00035, "heightFogTop": 70, "heightFogBoost": 1.4,
+        "fogHaze": 0.0004, "fogHazeStart": 150, "fogScatter": 0.8, "rim": 0.5,
+        "shadowTint": "#4E5666", "highlightTint": "#FFFFFF", "splitBalance": 0.0,
+        "blackLift": "#1C1E26", "contrast": 1.2, "saturation": 0.45, "exposure": 0.98
       },
       "bh_dusk": {
         "label": "Bắc Hoang — hoàng hôn tím tuyết",
@@ -421,13 +431,13 @@
         "blackLift": "#160E2C", "contrast": 1.18, "saturation": 0.85, "exposure": 1.1
       },
       "bhr_day": {
-        "label": "Bắc Hoang — bên kia khe, ngày tím mờ",
-        "sunColor": "#D8CAF4", "sunIntensity": 2.0, "sunElevationDeg": 10,
-        "skyColor": "#5E5090", "skyIntensity": 0.9,
-        "fogColor": "#70629C", "fogDensity": 0.0008, "heightFogTop": 60, "heightFogBoost": 2.1,
-        "fogHaze": 0.0009, "fogHazeStart": 80, "fogScatter": 0.8, "rim": 0.7,
-        "shadowTint": "#18102E", "highlightTint": "#E6D8FF", "splitBalance": -0.05,
-        "blackLift": "#1A1232", "contrast": 1.15, "saturation": 0.82, "exposure": 1.08
+        "label": "Bắc Hoang — bên kia khe, ngày xám (cực quang chỉ là điểm nhấn ở khe)",
+        "sunColor": "#E4E6F0", "sunIntensity": 2.0, "sunElevationDeg": 10,
+        "skyColor": "#9AA2B4", "skyIntensity": 0.9,
+        "fogColor": "#A4A8BA", "fogDensity": 0.0007, "heightFogTop": 60, "heightFogBoost": 1.9,
+        "fogHaze": 0.0006, "fogHazeStart": 110, "fogScatter": 0.8, "rim": 0.7,
+        "shadowTint": "#2E2C40", "highlightTint": "#EEE8FF", "splitBalance": -0.05,
+        "blackLift": "#1A1826", "contrast": 1.22, "saturation": 0.42, "exposure": 1.05
       },
       "bhr_dusk": {
         "label": "Bắc Hoang — bên kia khe, hoàng hôn độc",
@@ -440,12 +450,12 @@
       },
       "bhr_night": {
         "label": "Bắc Hoang — bên kia khe, đêm tím độc",
-        "sunColor": "#7E6AD0", "sunIntensity": 1.4, "sunElevationDeg": 26,
-        "skyColor": "#160C34", "skyIntensity": 1.0,
-        "fogColor": "#1E1240", "fogDensity": 0.00144, "heightFogTop": 58, "heightFogBoost": 2.3,
-        "fogHaze": 0.00168, "fogHazeStart": 50, "fogScatter": 0.3, "rim": 1.1,
+        "sunColor": "#B8B0D0", "sunIntensity": 1.7, "sunElevationDeg": 26,
+        "skyColor": "#2A2640", "skyIntensity": 1.0,
+        "fogColor": "#24193E", "fogDensity": 0.001, "heightFogTop": 58, "heightFogBoost": 2.0,
+        "fogHaze": 0.0011, "fogHazeStart": 70, "fogScatter": 0.3, "rim": 1.1,
         "shadowTint": "#08041A", "highlightTint": "#B080FF", "splitBalance": -0.25,
-        "blackLift": "#0C0620", "contrast": 1.15, "saturation": 0.85, "exposure": 1.3
+        "blackLift": "#0C0A18", "contrast": 1.25, "saturation": 0.55, "exposure": 1.22
       },
       "dm_dawn": {
         "label": "Đoạn Mạch — bình minh phong đỏ",

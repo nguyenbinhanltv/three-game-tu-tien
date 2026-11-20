@@ -293,6 +293,38 @@ export const SCENES: Record<string, Scene[]> = {
     },
     { note: 'Linh Tuyền: linh thạch', at: [2414, 2443], r: 30, rMin: 8, face: 'random', items: { linh_thach: 3 } },
     { note: 'Bia Đá Vách Ngọc: trận đồ', at: [2419, 1795], r: 36, rMin: 12, face: 'center', items: { tran_do_khac_san: 1, linh_thach: 2 } },
+    {
+      note: 'Cỏ cây và đá quanh bệ cổng bí cảnh (quảng trường không còn trống, POLISH-1)',
+      clusters: 5,
+      clusterR: 10,
+      at: [2048, 1730],
+      r: 56,
+      face: 'random',
+      // chừa bệ trận (tâm 2048,1750, cột/bia tới ~25 m) và quanh cổng đá (2048,1708): ngoài ra mọc cỏ cây
+      avoid: (x, z) => Math.hypot(x - 2048, z - 1750) < 32 || Math.hypot(x - 2048, z - 1708) < 16,
+      items: { linh_thao: 5, nam_phat_sang: 4 },
+    },
+    {
+      note: 'Cụm điểm nhấn quanh bệ cổng: đá lớn + cổ thụ + bụi trúc, cỏ nấm lấp quanh (thay hàng khúc gỗ rải)',
+      clusters: 3,
+      clusterR: 7,
+      at: [2048, 1735],
+      r: 46,
+      face: 'random',
+      avoid: (x, z) => Math.hypot(x - 2048, z - 1750) < 34 || Math.hypot(x - 2048, z - 1708) < 20,
+      items: { cay_co_thu: 1, tre: 4, da_reu: 6, cot_da_do: 1, linh_thao: 4, nam_phat_sang: 2 },
+    },
+    {
+      note: 'Sườn đồi sau cổng: đá tầng, cổ thụ, bụi trúc (vách đồi không còn phẳng một màu)',
+      clusters: 5,
+      clusterR: 10,
+      at: [2048, 1640],
+      r: 62,
+      rMin: 22,
+      face: 'random',
+      avoid: (x, z) => Math.hypot(x - 2048, z - 1708) < 26,
+      items: { cay_co_thu: 3, tre: 7, da_reu: 9, linh_thao: 6, cot_da_do: 3 },
+    },
   ],
   doan_mach: [
     {

@@ -2,7 +2,7 @@ import { levelId } from '../../base/levelCtx';
 import { baseOf } from '../../base/quality';
 import * as THREE from 'three/webgpu';
 import { type AssetCache, type AssetHandle, assets } from '../core/assets';
-import { adoptGltfMaterials } from '../../render/materials/world';
+import { adoptGltfMaterials, createWorldMaterial } from '../../render/materials/world';
 import { allProps, type PropInstance } from './propScatter';
 import { ImpostorLayer } from './treeImpostor';
 import { withSightFade } from './occlusion';
@@ -86,6 +86,8 @@ export const PROP_CFG: Record<string, PropCfg> = {
 };
 
 const CHUNK = 128;
+/** Ô gom prop không phải cây (mỗi loại × ô = một InstancedMesh/chất liệu): lớn hơn ô cây để bản đồ nhiều prop (PROP-1) không vượt ngân sách draw call. */
+const CELL = 256;
 /** Ô trong phạm vi này (cộng đệm) mới nạp asset, để mạng có thời gian trước khi ô vào tầm vẽ. */
 const LOAD_MARGIN = 80;
 
@@ -111,6 +113,108 @@ export function governScale(prev: number, tris: number): number {
   if (tris > TRI_HIGH) return Math.max(0.6, prev - 0.06);
   if (tris < TRI_LOW) return Math.min(1, prev + 0.03);
   return prev;
+}
+
+/** Vật liệu chung cho các mảnh đặc đã gộp ở LOD xa: màu đỉnh (kit PROP-1: màu đỉnh quyết định sắc, texture chỉ cho chi tiết) nhám cao. */
+let flatFarMat: THREE.Material | null = null;
+const farMaterial = (): THREE.Material =>
+  (flatFarMat ??= createWorldMaterial({ name: 'prop_far_flat', vertexColors: true, roughness: 0.85, metalness: 0.05 }));
+
+const WHITE = new THREE.Color(1, 1, 1);
+
+/** Mảnh gộp được ở LOD xa: đặc (không alpha), không phát sáng, không phải tán lá/đèn/ngọc/vải đung đưa. */
+function isPlain(lm: { geometry: THREE.BufferGeometry; material: THREE.Material }, cloth: boolean): boolean {
+  // Chỉ kit có màu đỉnh (PROP-1: màu đỉnh quyết định sắc): mảnh không có thuộc tính `color` lấy sắc từ texture/`material.color` nên không gộp được (sẽ thành khối xám).
+  if (!lm.geometry.getAttribute('color')) return false;
+  const m = lm.material as THREE.MeshStandardMaterial;
+  if (m.transparent || (m.alphaTest ?? 0) > 0) return false;
+  // phát sáng thật (đèn, ngọc, than) thì giữ riêng; phát sáng rất nhẹ (vải thấu sáng ~0,06) thì vẫn gộp được
+  if (m.emissive && Math.max(m.emissive.r, m.emissive.g, m.emissive.b) * (m.emissiveIntensity ?? 1) > 0.15) return false;
+  return !(cloth ? /lamp|glow|leaf|crystal|vein/ : /lamp|glow|leaf|crystal|vein|cloth/).test(m.name ?? '');
+}
+
+/**
+ * Gộp các mảnh "đặc" của một mức LOD xa thành MỘT hình học màu đỉnh (position, normal, color × 0,85 thay độ sáng trung bình của texture), một vật liệu chung:
+ * 3–6 vật liệu PROP-1 của mỗi món thành 1 draw call. Mảnh phát sáng/alpha/vải đung đưa giữ riêng. Ở tầm LOD này texture chỉ còn vài điểm ảnh.
+ */
+export function mergePlainMeshes<T extends { geometry: THREE.BufferGeometry; material: THREE.Material; owned?: boolean }>(
+  meshes: T[],
+  make: (geometry: THREE.BufferGeometry) => T,
+  cloth = true,
+): T[] {
+  const plain = meshes.filter((m) => isPlain(m, cloth));
+  if (plain.length < 2) return meshes;
+  let nv = 0;
+  let ni = 0;
+  for (const lm of plain) {
+    const g = lm.geometry;
+    nv += g.getAttribute('position').count;
+    ni += g.index ? g.index.count : g.getAttribute('position').count;
+  }
+  const pos = new Float32Array(nv * 3);
+  const nor = new Float32Array(nv * 3);
+  const col = new Float32Array(nv * 3);
+  const idx = new Uint32Array(ni);
+  let vo = 0;
+  let io = 0;
+  for (const lm of plain) {
+    const g = lm.geometry;
+    const P = g.getAttribute('position');
+    const N = g.getAttribute('normal');
+    const C = g.getAttribute('color');
+    const mc = (lm.material as THREE.MeshStandardMaterial).color ?? WHITE;
+    for (let i = 0; i < P.count; i++) {
+      const o = (vo + i) * 3;
+      pos[o] = P.getX(i);
+      pos[o + 1] = P.getY(i);
+      pos[o + 2] = P.getZ(i);
+      if (N) {
+        nor[o] = N.getX(i);
+        nor[o + 1] = N.getY(i);
+        nor[o + 2] = N.getZ(i);
+      } else nor[o + 1] = 1;
+      // màu đỉnh × độ sáng trung bình của texture (0,85), giảm bão hòa 18% (texture xám làm dịu sắc so với màu đỉnh thuần)
+      const cr = (C ? C.getX(i) : 1) * mc.r;
+      const cg = (C ? C.getY(i) : 1) * mc.g;
+      const cb = (C ? C.getZ(i) : 1) * mc.b;
+      const lum = cr * 0.3 + cg * 0.59 + cb * 0.11;
+      col[o] = (lum + (cr - lum) * 0.82) * 0.85;
+      col[o + 1] = (lum + (cg - lum) * 0.82) * 0.85;
+      col[o + 2] = (lum + (cb - lum) * 0.82) * 0.85;
+    }
+    if (g.index) for (let i = 0; i < g.index.count; i++) idx[io + i] = g.index.getX(i) + vo;
+    else for (let i = 0; i < P.count; i++) idx[io + i] = vo + i;
+    io += g.index ? g.index.count : P.count;
+    vo += P.count;
+  }
+  const merged = new THREE.BufferGeometry();
+  merged.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  merged.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  merged.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  merged.setIndex(new THREE.BufferAttribute(idx, 1));
+  merged.computeBoundingSphere();
+  merged.computeBoundingBox();
+  return [make(merged), ...meshes.filter((m) => !isPlain(m, cloth))];
+}
+
+const _bb = new THREE.Box3();
+const _bs = new THREE.Vector3();
+/** Kích thước hộp bao (đường chéo) của một hình học. */
+const sizeOf = (g: THREE.BufferGeometry): number => {
+  if (!g.boundingBox) g.computeBoundingBox();
+  return _bb.copy(g.boundingBox!).getSize(_bs).length();
+};
+
+/**
+ * Bỏ các mảnh nhỏ ở mức LOD xa: mảnh có hộp bao < `ratio` × mảnh lớn nhất (đèn, nắp, vải nhỏ). Theo KÍCH THƯỚC hộp bao chứ không theo số tam giác (thẻ tán lá chỉ vài tam giác
+ * nhưng rất lớn). Luôn giữ ít nhất một. `distinct` false = mức này dùng chung mảng với mức trước: không đụng.
+ */
+export function pruneMinorMeshes<T extends { geometry: THREE.BufferGeometry }>(meshes: T[], distinct: boolean, ratio = 0.4): T[] {
+  if (!distinct || meshes.length < 2) return meshes;
+  const sizes = meshes.map((m) => sizeOf(m.geometry));
+  const max = Math.max(...sizes);
+  const kept = meshes.filter((_, i) => sizes[i]! >= max * ratio);
+  return kept.length ? kept : meshes;
 }
 
 interface LodMesh {
@@ -237,7 +341,7 @@ export class PropLayer {
         continue;
       }
       // Lưới ô lệch nửa ô: tâm Lạc Kiếm Tông (x = 2048) và trục đại lộ không còn nằm đúng ranh ô, nên mỗi loại prop không bị tách làm 2–4 InstancedMesh (draw call).
-      const k = `${p.id}|${Math.floor((p.x + CHUNK / 2) / CHUNK)}|${Math.floor((p.z + CHUNK / 2) / CHUNK)}`;
+      const k = `${p.id}|${Math.floor((p.x + CELL / 2) / CELL)}|${Math.floor((p.z + CELL / 2) / CELL)}`;
       let c = buckets.get(k);
       if (!c) {
         c = {
@@ -517,6 +621,14 @@ export class PropLayer {
       (lods[k] ??= []).push({ geometry, material: m.material as THREE.Material, owned: baked });
     });
     for (let k = 0; k < lods.length; k++) lods[k] ??= lods[Math.max(0, k - 1)] ?? [];
+    // Mức LOD 1 và 2 của prop không phải cây: bỏ mảnh nhỏ (đèn, nắp, vải nhỏ) — ở tầm đó chỉ vài điểm ảnh nhưng mỗi vật liệu là một draw call (PROP-1: 3–6 vật liệu/món).
+    if (!cfg?.tree && lods.length > 1) {
+      for (let k = 1; k < lods.length; k++) {
+        if (lods[k] === lods[k - 1]) continue;
+        const merged = mergePlainMeshes(lods[k]!, (geometry) => ({ geometry, material: farMaterial(), owned: true }), !cfg?.sway);
+        lods[k] = pruneMinorMeshes(merged, true, k >= 2 ? 0.5 : 0.35);
+      }
+    }
     return { handle, mats, lods: lods.length ? lods : [[]] };
   }
 

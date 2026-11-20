@@ -6,6 +6,8 @@
 import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { type MarkInfo, type QuestView, padsOfLevel, type TelePad, terrainOf } from '@dtl/shared';
+import { float, positionWorld, texture, vec2, vertexColor } from 'three/tsl';
+import { getCloudNoise } from '../../render/noiseTex';
 import { groundAt } from '../../base/levelCtx';
 import { SpiritVis } from '../fx/scan';
 import { QuestSpotVis } from './questSpots';
@@ -18,6 +20,18 @@ const LOCKED_COLOR = 0x7a7f86;
 const OWN_COLOR = 0xffd54a;
 const MATE_COLOR = 0x5cb8ff;
 const MARK_BEAM_H = 150;
+
+/** Đá bệ: màu đỉnh × vân nhiễu ba mặt phẳng theo toạ độ thế giới (không đều như thảm), nhám đổi theo vân; rêu đã nằm ở màu đỉnh. */
+function padStoneMaterial(): THREE.MeshStandardNodeMaterial {
+  const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9, metalness: 0.02 });
+  const noise = getCloudNoise();
+  const wp = positionWorld;
+  const a = texture(noise, vec2(wp.x.add(wp.z).mul(0.35), wp.y.mul(0.35))).g;
+  const b = texture(noise, vec2(wp.x.sub(wp.z).mul(1.3), wp.y.mul(1.1))).a;
+  m.colorNode = vertexColor().mul(float(0.72).add(a.mul(0.4)).add(b.mul(0.26)));
+  m.roughnessNode = float(0.78).add(b.mul(0.22));
+  return m;
+}
 
 const additive = (color: number, opacity: number) =>
   new THREE.MeshBasicMaterial({
@@ -71,7 +85,7 @@ export class MapVis {
     cast: new THREE.RingGeometry(0.72, 1, 40),
   };
   private mat = {
-    stone: new THREE.MeshStandardMaterial({ color: 0x7b7f78, roughness: 0.92, metalness: 0.02 }),
+    stone: padStoneMaterial(),
     open: additive(OPEN_COLOR, 0.8),
     locked: additive(LOCKED_COLOR, 0.35),
     beam: additive(OPEN_COLOR, 0.09),
@@ -102,23 +116,81 @@ export class MapVis {
     scene.add(this.group);
   }
 
-  /** Bệ đá tròn và bốn trụ ngắn, gộp một geometry (một draw call). */
+  /**
+   * Bệ truyền tống kiểu kiến trúc cổ (POLISH-1): ba bậc đá 12 cạnh có viền khắc hoa văn (khối nhỏ quanh gờ), bốn bậc thang lên ở bốn hướng,
+   * mặt bệ chứa vòng rune (nằm ngay trên mặt, y 0,87), bốn trụ đèn đá vuông (đế, thân vát, vòng cổ, mũ, chóp). Màu đỉnh đá xanh xám có rêu ở chân từng tầng; gộp một geometry (một draw call).
+   */
   private stoneGeometry(): THREE.BufferGeometry {
     const parts: THREE.BufferGeometry[] = [];
-    const base = new THREE.CylinderGeometry(2.9, 3.2, 0.34, 24);
-    base.translate(0, 0.17, 0);
-    parts.push(base);
-    const inner = new THREE.CylinderGeometry(2.1, 2.1, 0.1, 24);
-    inner.translate(0, 0.38, 0);
-    parts.push(inner);
+    const col = new THREE.Color();
+    const add = (g: THREE.BufferGeometry, hex: number, moss = 0, jit = 0): void => {
+      const n = g.attributes.position!.count;
+      const c = new Float32Array(n * 3);
+      const mc = new THREE.Color(0x4c6a38);
+      for (let i = 0; i < n; i++) {
+        const y = g.attributes.position!.getY(i);
+        col.setHex(hex);
+        const h = Math.sin(i * 12.9898 + hex * 0.001) * 43758.5453;
+        col.multiplyScalar(1 + (h - Math.floor(h) - 0.5) * jit);
+        if (moss > 0) col.lerp(mc, Math.max(0, Math.min(1, moss * (1 - y * 3.2))));
+        c.set([col.r, col.g, col.b], i * 3);
+      }
+      g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+      parts.push(g);
+    };
+    const tiers: [number, number, number, number, number][] = [
+      [3.55, 3.75, 0.3, 0, 0x5d6a72],
+      [3.05, 3.2, 0.26, 0.3, 0x687680],
+      [2.6, 2.7, 0.2, 0.56, 0x74828b],
+    ];
+    for (const [r0, r1, h, y, hex] of tiers) {
+      const g = new THREE.CylinderGeometry(r0, r1, h, 12);
+      g.translate(0, y + h / 2, 0);
+      add(g, hex, y === 0 ? 0.9 : 0.5, 0.22);
+    }
+    const dais = new THREE.CylinderGeometry(2.1, 2.2, 0.1, 24);
+    dais.translate(0, 0.78, 0);
+    add(dais, 0x8a979e, 0, 0.12);
+    // viền khắc hoa văn: khối nhỏ xen kẽ cao thấp quanh gờ bậc giữa
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2;
+      const g = new THREE.BoxGeometry(0.34, i % 2 ? 0.12 : 0.2, 0.2);
+      g.rotateY(-a);
+      g.translate(Math.cos(a) * 2.85, 0.56 + (i % 2 ? 0.06 : 0.1), Math.sin(a) * 2.85);
+      add(g, i % 2 ? 0x95a2a9 : 0x7d8b93, 0, 0.15);
+    }
+    // bậc thang lên ở bốn hướng (hai bậc mỗi hướng)
+    for (let k = 0; k < 4; k++) {
+      const a = (k / 4) * Math.PI * 2;
+      for (let st = 0; st < 2; st++) {
+        const g = new THREE.BoxGeometry(1.5 - st * 0.2, 0.15, 0.55);
+        g.translate(0, 0.075 + st * 0.15, 0);
+        g.rotateY(-a + Math.PI / 2);
+        const rr = 3.85 - st * 0.45;
+        g.translate(Math.cos(a) * rr, st * 0.0, Math.sin(a) * rr);
+        add(g, 0x6c7a83, 0.6 - st * 0.4, 0.2);
+      }
+    }
+    // bốn trụ đèn đá vuông ở bốn góc
     for (let i = 0; i < 4; i++) {
       const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
-      const pillar = new THREE.CylinderGeometry(0.17, 0.24, 1.7, 7);
-      pillar.translate(Math.cos(a) * 2.6, 1.0, Math.sin(a) * 2.6);
-      parts.push(pillar);
-      const cap = new THREE.SphereGeometry(0.25, 8, 6);
-      cap.translate(Math.cos(a) * 2.6, 1.95, Math.sin(a) * 2.6);
-      parts.push(cap);
+      const px = Math.cos(a) * 2.45;
+      const pz = Math.sin(a) * 2.45;
+      const put = (g: THREE.BufferGeometry, y: number, hex: number, moss = 0): void => {
+        g.rotateY(-a);
+        g.translate(px, y, pz);
+        add(g, hex, moss, 0.18);
+      };
+      put(new THREE.BoxGeometry(0.62, 0.22, 0.62), 0.9, 0x62707a, 0.8);
+      const shaft = new THREE.CylinderGeometry(0.2, 0.26, 1.2, 4);
+      shaft.rotateY(Math.PI / 4);
+      put(shaft, 1.6, 0x7a8890, 0.15);
+      put(new THREE.BoxGeometry(0.42, 0.1, 0.42), 2.25, 0x8d9aa1);
+      put(new THREE.BoxGeometry(0.5, 0.26, 0.5), 2.43, 0x6f7d86);
+      const cap = new THREE.ConeGeometry(0.45, 0.34, 4);
+      cap.rotateY(Math.PI / 4);
+      put(cap, 2.73, 0x5e6c75);
+      put(new THREE.SphereGeometry(0.07, 6, 5), 2.95, 0xb9c4c9);
     }
     const merged = mergeGeometries(parts, false);
     for (const g of parts) g.dispose();
@@ -135,7 +207,7 @@ export class MapVis {
     const runeB = new THREE.Mesh(this.geo.runeB, this.mat.locked);
     for (const r of [runeA, runeB]) {
       r.rotation.x = -Math.PI / 2;
-      r.position.y = 0.45;
+      r.position.y = 0.87;
     }
     const beam = new THREE.Mesh(this.geo.beam, this.mat.beam);
     beam.position.y = 13.4;

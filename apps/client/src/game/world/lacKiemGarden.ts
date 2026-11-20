@@ -94,6 +94,64 @@ function scatter(cl: Cluster[], rand: () => number): { x: number; z: number; k: 
   return out;
 }
 
+/** Kế hoạch vườn: mọi giá trị ngẫu nhiên từng cây/hoa/đá, tính theo ĐÚNG thứ tự dòng `rand` như khi dựng cảnh. Hàm thuần (không THREE): dựng cảnh và bake va chạm dùng chung. */
+interface GardenPlan {
+  flowers: { x: number; z: number; rx: number; ry: number; rz: number; s: number; petal: number; light: number }[];
+  bamboo: {
+    x: number;
+    z: number;
+    rx: number;
+    ry: number;
+    rz: number;
+    sx: number;
+    sy: number;
+    sz: number;
+    h: number;
+    sat: number;
+    l: number;
+  }[];
+  rocks: { x: number; z: number; s: number; rx: number; ry: number; rz: number; sx: number; sy: number; c: number }[];
+}
+
+let planCache: GardenPlan | null = null;
+export function gardenPlan(): GardenPlan {
+  if (planCache) return planCache;
+  const rand = rng(424242);
+  const flowers = scatter(FLOWERS, rand).map((p) => ({
+    x: p.x,
+    z: p.z,
+    rx: (rand() - 0.5) * 0.3,
+    ry: rand() * 6.28,
+    rz: (rand() - 0.5) * 0.3,
+    s: 0.95 + rand() * 0.8,
+    petal: Math.floor(rand() * PETALS.length),
+    light: (rand() - 0.5) * 0.08,
+  }));
+  const bamboo = scatter(BAMBOO, rand).map((p) => {
+    const rx = (rand() - 0.5) * 0.14;
+    const ry = rand() * 6.28;
+    const rz = (rand() - 0.5) * 0.14;
+    const sx = 0.8 + rand() * 0.5;
+    const sy = 0.75 + rand() * 0.55;
+    const sz = 0.8 + rand() * 0.5;
+    const h = 0.27 + rand() * 0.05;
+    const sat = 0.4 + rand() * 0.2;
+    const l = 0.6 + rand() * 0.25;
+    return { x: p.x, z: p.z, rx, ry, rz, sx, sy, sz, h, sat, l };
+  });
+  const rocks = scatter(ROCKS, rand).map((q) => {
+    const s = 0.7 + rand() * 1.5;
+    const rx = (rand() - 0.5) * 0.4;
+    const ry = rand() * 6.28;
+    const rz = (rand() - 0.5) * 0.4;
+    const sx = s * (1 + rand() * 0.5);
+    const sy = s * (0.8 + rand() * 0.6);
+    const c = 0.85 + rand() * 0.3;
+    return { x: q.x, z: q.z, s, rx, ry, rz, sx, sy, c };
+  });
+  return (planCache = { flowers, bamboo, rocks });
+}
+
 function merge(parts: { g: THREE.BufferGeometry; col: THREE.Color }[]): THREE.BufferGeometry {
   const pos: number[] = [];
   const nor: number[] = [];
@@ -129,7 +187,7 @@ export class LacKiemGarden {
 
   constructor() {
     this.group.name = 'lacKiemGarden';
-    const rand = rng(424242);
+    const plan = gardenPlan();
     const dummy = new THREE.Object3D();
     const color = new THREE.Color();
 
@@ -148,18 +206,18 @@ export class LacKiemGarden {
         { g: bloom, col: new THREE.Color(1, 1, 1) },
         { g: leaf, col: new THREE.Color(0.35, 0.8, 0.35) },
       ]);
-      const pts = scatter(FLOWERS, rand);
+      const pts = plan.flowers;
       const mat = createWorldMaterial({ vertexColors: true, roughness: 0.9, side: THREE.DoubleSide });
       const mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, pts.length));
       mesh.name = 'garden-flowers';
       mesh.frustumCulled = false;
       pts.forEach((p, i) => {
         dummy.position.set(p.x, heightAt(p.x, p.z), p.z);
-        dummy.rotation.set((rand() - 0.5) * 0.3, rand() * 6.28, (rand() - 0.5) * 0.3);
-        dummy.scale.setScalar(0.95 + rand() * 0.8);
+        dummy.rotation.set(p.rx, p.ry, p.rz);
+        dummy.scale.setScalar(p.s);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
-        color.setHex(PETALS[Math.floor(rand() * PETALS.length)] ?? 0xffffff).offsetHSL(0, 0, (rand() - 0.5) * 0.08);
+        color.setHex(PETALS[p.petal] ?? 0xffffff).offsetHSL(0, 0, p.light);
         mesh.setColorAt(i, color);
       });
       mesh.count = pts.length;
@@ -179,7 +237,7 @@ export class LacKiemGarden {
         parts.push({ g: node, col: new THREE.Color(0.3, 0.5, 0.25) });
       }
       const geo = merge(parts);
-      const pts = scatter(BAMBOO, rand);
+      const pts = plan.bamboo;
       const mat = createWorldMaterial({ vertexColors: true, roughness: 0.82, side: THREE.DoubleSide });
       const mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, pts.length));
       mesh.name = 'garden-bamboo';
@@ -189,12 +247,12 @@ export class LacKiemGarden {
       this.bambooCols = [];
       pts.forEach((p, i) => {
         dummy.position.set(p.x, heightAt(p.x, p.z) - 0.1, p.z);
-        dummy.rotation.set((rand() - 0.5) * 0.14, rand() * 6.28, (rand() - 0.5) * 0.14);
-        dummy.scale.set(0.8 + rand() * 0.5, 0.75 + rand() * 0.55, 0.8 + rand() * 0.5);
+        dummy.rotation.set(p.rx, p.ry, p.rz);
+        dummy.scale.set(p.sx, p.sy, p.sz);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
         this.bambooMats.push(dummy.matrix.clone());
-        color.setHSL(0.27 + rand() * 0.05, 0.4 + rand() * 0.2, 0.6 + rand() * 0.25);
+        color.setHSL(p.h, p.sat, p.l);
         mesh.setColorAt(i, color);
         this.bambooCols.push(color.clone());
       });
@@ -217,7 +275,7 @@ export class LacKiemGarden {
       }
       base.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
       base.computeVertexNormals();
-      const pts = scatter(ROCKS, rand);
+      const pts = plan.rocks;
       const mat = createWorldMaterial({ vertexColors: true, roughness: 0.95 });
       const mesh = new THREE.InstancedMesh(base, mat, Math.max(1, pts.length));
       mesh.name = 'garden-rocks';
@@ -225,13 +283,12 @@ export class LacKiemGarden {
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       pts.forEach((q, i) => {
-        const s = 0.7 + rand() * 1.5;
-        dummy.position.set(q.x, heightAt(q.x, q.z) + s * 0.1, q.z);
-        dummy.rotation.set((rand() - 0.5) * 0.4, rand() * 6.28, (rand() - 0.5) * 0.4);
-        dummy.scale.set(s * (1 + rand() * 0.5), s * (0.8 + rand() * 0.6), s);
+        dummy.position.set(q.x, heightAt(q.x, q.z) + q.s * 0.1, q.z);
+        dummy.rotation.set(q.rx, q.ry, q.rz);
+        dummy.scale.set(q.sx, q.sy, q.s);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
-        color.setScalar(0.85 + rand() * 0.3);
+        color.setScalar(q.c);
         mesh.setColorAt(i, color);
       });
       mesh.count = pts.length;

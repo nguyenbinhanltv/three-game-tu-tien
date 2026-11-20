@@ -39,7 +39,7 @@ export function pruneRareLoot(eng: Game): void {
 }
 
 /** Niệm chú/choáng của quái (theo đồng hồ client), nếu quái có chiêu niệm chú. */
-export function castOf(eng: Game, m: MState): TargetCast | undefined {
+function castOf(eng: Game, m: MState): TargetCast | undefined {
   const def = MONSTER.get(m.t);
   if (!def || !m.mf || !m.ce) return undefined;
   const end = m.ce - eng.timeOffset;
@@ -63,7 +63,7 @@ export function bossSay(eng: Game, src: string, key: string): void {
 }
 
 /** Boss cho thanh giữa phía trên: boss đang chọn, không thì boss còn sống gần nhất đang giao chiến trong 80 m. */
-export function bossFor(eng: Game, target: TargetInfo | null, x: number, z: number): BossInfo | null {
+function bossFor(eng: Game, target: TargetInfo | null, x: number, z: number): BossInfo | null {
   let id = target?.kind === 'mon' && target.boss ? target.id : '';
   if (!id) {
     let best = 80 * 80;
@@ -209,7 +209,7 @@ export function syncHud(eng: Game, me: PState | undefined): void {
  * Ứng viên cho chỉ báo ngoài màn hình (M4-15), theo thứ tự ưu tiên: mục tiêu đang chọn, boss đang
  * giao chiến, đích của nhiệm vụ đang theo dõi. Chỉ đọc vị trí đã có (trạng thái room, NPC, dữ liệu bản đồ).
  */
-export function offscreenCandidates(eng: Game, target: TargetInfo | null, boss: BossInfo | null): OffCandidate[] {
+function offscreenCandidates(eng: Game, target: TargetInfo | null, boss: BossInfo | null): OffCandidate[] {
   const out: OffCandidate[] = [];
   if (!get().offscreen) return out;
   const ents = eng.ents;
@@ -307,7 +307,7 @@ export function offscreenCandidates(eng: Game, target: TargetInfo | null, boss: 
 }
 
 /** Thẻ đang chờ (vào bí cảnh) và lần đầu vào Lạc Kiếm Tông của nhân vật này; gọi mỗi lần đồng bộ HUD. */
-export function checkChapters(eng: Game, x: number, z: number, flying = false): void {
+function checkChapters(eng: Game, x: number, z: number, flying = false): void {
   if (!eng.started || eng.snapToServer) return;
   // Ngự kiếm lần đầu (G10): thẻ chương + gợi ý lên/xuống; đã xem thì lần sau không hiện.
   if (flying && get().room === ROOM_WORLD && !eng.pendingChapter && get().soul.k !== SOUL_SCOUT) {
@@ -366,7 +366,7 @@ export function checkChapters(eng: Game, x: number, z: number, flying = false): 
  * hơn 0,6 giây mà chưa có giờ kết thúc thì dựng lại HUD và mây kiếp. Không biết lúc bắt đầu thật nên đếm từ đủ thời lượng
  * (cận trên); HUD vẫn tắt đúng lúc vì nó theo cờ của server.
  */
-export function recoverTribulation(eng: Game, me: PState): void {
+function recoverTribulation(eng: Game, me: PState): void {
   const now = Date.now();
   if (!(me.fl & PF_TRIBULATION)) {
     eng.tribFlagAt = 0;
@@ -388,7 +388,7 @@ export function recoverTribulation(eng: Game, me: PState): void {
 }
 
 /** Số liệu cho bảng gỡ lỗi F3 (M1-2). */
-export function debugInfo(eng: Game, me: PState, fps: number): DebugInfo {
+function debugInfo(eng: Game, me: PState, fps: number): DebugInfo {
   const states: string[] = [];
   const on = (cond: unknown, key: string): void => {
     if (cond) states.push('ui.debug.st.' + key);
@@ -424,7 +424,7 @@ export function debugInfo(eng: Game, me: PState, fps: number): DebugInfo {
   };
 }
 
-export function debugPerfInfo(eng: Game, fps: number): DebugPerf {
+function debugPerfInfo(eng: Game, fps: number): DebugPerf {
   const mem = eng.renderer.info.memory;
   const lod = eng.ents.lodStats();
   return {

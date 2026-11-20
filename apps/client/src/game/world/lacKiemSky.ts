@@ -240,7 +240,7 @@ export class CardMesher {
   }
 }
 
-export type CrownKind = 'pine' | 'maple' | 'bamboo' | 'peach';
+type CrownKind = 'pine' | 'maple' | 'bamboo' | 'peach';
 
 /** Loài cây theo đảo: Kiếm Đài tùng; đình Đông đào + tùng; tháp phong; đình Tây tùng + trúc; điện xa tùng + phong. */
 const ISLAND_TREES: Record<string, CrownKind[]> = {
@@ -278,7 +278,7 @@ const SEG = 72;
 const RINGS = 28;
 
 /** Toạ độ thế giới của tâm mặt trên đảo. */
-export function islandTop(isl: SkyIsland): THREE.Vector3 {
+function islandTop(isl: SkyIsland): THREE.Vector3 {
   return new THREE.Vector3(SECT.x + isl.x, SECT.y + isl.y, SECT.z + isl.z);
 }
 
@@ -744,6 +744,8 @@ export class LacKiemSkyScene {
     this.cardMesh.castShadow = true;
     this.cardMesh.frustumCulled = false;
     this.group.add(this.cardMesh);
+    this.shadowMeshes.push(this.rockMesh, propMesh, this.cardMesh);
+    this.islandCenters = sky.islands.map((i) => ({ x: SECT.x + i.x, z: SECT.z + i.z, r: i.r }));
     this.disposables.push(this.rockMesh.geometry, rockMat0, propMesh.geometry, propMat, this.cardMesh.geometry);
     void loadSkyTextures().then((tex) => {
       if (!tex || this.dead) return;
@@ -844,6 +846,7 @@ export class LacKiemSkyScene {
       mesh.name = 'kiem-dai-swords';
       mesh.frustumCulled = false;
       mesh.castShadow = true;
+      this.shadowMeshes.push(mesh);
       const top = islandTop(dai);
       const r = rng(777);
       const dummy = new THREE.Object3D();
@@ -883,9 +886,20 @@ export class LacKiemSkyScene {
   }
 
   private mists: THREE.Mesh[] = [];
+  /** Lưới đảo trời đổ bóng (đá, vật trang trí, tán lá, kiếm đài): chỉ bật khi người chơi ở gần một đảo — pass bóng vẽ cả lưới gộp dù đảo cách xa hơn bản đồ bóng (±70 m). */
+  private shadowMeshes: THREE.Object3D[] = [];
+  private islandCenters: { x: number; z: number; r: number }[] = [];
+  private shadowOn = true;
 
   /** Sương chân thác luôn quay mặt về camera (billboard quanh trục đứng). */
-  update(camera: THREE.Camera): void {
+  update(camera: THREE.Camera, focusX = SECT.x, focusZ = SECT.z): void {
+    // Đảo cách tông môn 150–350 m, bản đồ bóng chỉ phủ ±70 m quanh người chơi: ở xa các đảo thì tắt đổ bóng (đỡ ~8 draw call và ~0,25M tam giác ở pass bóng).
+    let near = false;
+    for (const c of this.islandCenters) if (Math.hypot(focusX - c.x, focusZ - c.z) < c.r + 110) near = true;
+    if (near !== this.shadowOn) {
+      this.shadowOn = near;
+      for (const m of this.shadowMeshes) m.castShadow = near;
+    }
     for (const m of this.mists) m.rotation.y = Math.atan2(camera.position.x - m.position.x, camera.position.z - m.position.z);
   }
 

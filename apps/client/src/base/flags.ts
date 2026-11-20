@@ -7,7 +7,7 @@
  * Không có `location` (test node): mọi cờ về mặc định.
  */
 
-export interface Flags {
+interface Flags {
   /** `?mute=1` tắt tiếng (playtest luôn dùng). */
   mute: boolean;
   /** `?auto=<đạo hiệu>` tự đăng nhập bằng tài khoản thử. */

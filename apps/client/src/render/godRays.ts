@@ -44,6 +44,7 @@ export const GOD_RAY_INTENSITY: Record<string, number> = {
   kn: 0.5,
   tt: 0.4,
   xk: 0.5,
+  dk: 0.7,
   kd: 0.4,
   dm_dawn: 1.1,
   dm_day: 0.55,
@@ -55,7 +56,7 @@ export const GOD_RAY_INTENSITY: Record<string, number> = {
   vh_night: 0.3,
 };
 
-export interface GodRayArea {
+interface GodRayArea {
   x: number;
   z: number;
   /** Bán kính rải (m). */

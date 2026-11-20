@@ -1,7 +1,7 @@
 // Bài kiểm tra bảo mật: Lướt/hủy chiêu (K-2), AOI (M-2) (R-7, tách từ security-check.ts).
 import { Client, type Room } from 'colyseus.js';
 import { C, S } from '@dtl/shared';
-import { HTTP, WS, W, check, health, join, type Ctx } from './lib';
+import { HTTP, WS, W, check, health, join, type Ctx, waitUntil } from './lib';
 
 export async function runDashaoi(_ctx: Ctx): Promise<void> {
   // 20. K-2: lướt và hủy chiêu. Spam lướt chỉ ra một lần (khe + hồi chiêu), lướt không xuyên mép bản đồ, lệnh rác không làm sập,
@@ -23,7 +23,8 @@ export async function runDashaoi(_ctx: Ctx): Promise<void> {
     // Chưa theo công pháp: lướt của công pháp bị từ chối, vị trí không đổi.
     const p0 = pos();
     g.room.send(C.SKILL, { id: 'skl_kiem_anh_bo' });
-    await W(400);
+    await waitUntil(() => msgs.some((m) => m.k === 'sys.no_method'));
+    await W(150); // chừa thêm một nhịp để thấy nếu server lỡ cho lướt
     const p1 = pos();
     check(
       'lướt khi chưa theo công pháp bị từ chối',

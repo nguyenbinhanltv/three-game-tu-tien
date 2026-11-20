@@ -10,6 +10,7 @@ import { runScenario, type Scenario } from './lib/scenario';
 import asset from './scenarios/asset';
 import chrv2 from './scenarios/chrv2';
 import clone from './scenarios/clone';
+import collwalk from './scenarios/collwalk';
 import divuc from './scenarios/divuc';
 import dungeon from './scenarios/dungeon';
 import flyover from './scenarios/flyover';
@@ -57,6 +58,7 @@ const SCENARIOS: Scenario[] = [
   collscan,
   propstc,
   lackiem,
+  collwalk,
   thienkhuyet,
   bachoang,
   doanmach,

@@ -63,6 +63,8 @@ export interface PlayerLook {
   w?: string;
   /** Mã phụ kiện hình dáng của đồ bộ (`accessoryCode`): hiện theo từng món đã mặc, không cần đủ 2 món. */
   acc?: string;
+  /** Nhuộm tủ ngoại trang (P4): màu vải chính + viền; thắng cả màu bộ. Nhân vật v3 chưa dùng (đọc `dye3` riêng). */
+  tint?: { hex: string; trim: string };
   /** Skin đang mặc ở ô ngoại hình (`ItemDef.skin`, vd. `set_skin_varkessa`): lưới phủ toàn thân, đè mọi trang phục. */
   skin?: string;
 }
@@ -258,7 +260,8 @@ function modelOf(g: string, hair?: string): string | null {
   return own ?? APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender)?.model ?? null;
 }
 
-function dyeOf(id: string, set?: string) {
+function dyeOf(id: string, set?: string, tint?: { hex: string; trim: string }) {
+  if (tint) return { id: `tint:${tint.hex}:${tint.trim}`, hex: tint.hex, trim: tint.trim, accent: tint.trim };
   const look = set ? SET.get(set)?.look : undefined;
   // Bộ trang bị nhuộm áo bằng chính cơ chế `applyDye` (tham số material), id riêng để không đụng cache màu thường.
   if (look) return { id: `set:${set}`, hex: look.hex, trim: look.trim, accent: look.trim };
@@ -385,7 +388,7 @@ export class PlayerSkins {
       const v = this.v3.create(look.g, look.skin, look.w, look.set);
       if (v) return v;
     }
-    const dye = dyeOf(look.dye, look.set);
+    const dye = dyeOf(look.dye, look.set, look.tint);
     const id = modelOf(look.g, look.hair);
     const skin = id ? PLAYER_SKINS[id] : undefined;
     if (id && skin && !this.legacy) this.load(id);

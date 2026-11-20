@@ -21,7 +21,7 @@ import {
 import { parties } from './party';
 import type { PlayerEnt } from './entities';
 
-export interface DuelHost {
+interface DuelHost {
   now(): number;
   /** Chỉ thế giới chính có võ đài. */
   inWorld(): boolean;

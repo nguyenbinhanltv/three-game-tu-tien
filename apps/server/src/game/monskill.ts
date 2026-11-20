@@ -33,7 +33,7 @@ import {
   type ReflectWin,
 } from '@dtl/shared';
 
-export interface MxPlayer {
+interface MxPlayer {
   sid: string;
   move: { x: number; y: number; z: number };
   char: { mhp: number };
@@ -66,7 +66,7 @@ export function newRt(): MonSkillRt {
 }
 
 /** Phần của quái mà chiêu cần (MonEnt thỏa cấu trúc này). */
-export interface MxMon {
+interface MxMon {
   id: string;
   def: MonsterDef;
   s: { x: number; y: number; z: number; yaw: number; hp: number; mhp: number; mf: number; ce: number };
@@ -87,7 +87,7 @@ export interface MxMon {
   minionOf?: string;
 }
 
-export interface MonSkillHost {
+interface MonSkillHost {
   now(): number;
   mon(id: string): MxMon | undefined;
   isDead(m: MxMon): boolean;

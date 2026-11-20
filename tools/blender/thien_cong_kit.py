@@ -42,6 +42,7 @@ INK = paint(0x1F2E3C, 'lacquer')  # hoành phi nền mực
 STONE_JOINT = paint(0x56625c, 'stone')  # mạch lát đá
 GILD_TEXT = paint(0xF4C85C, 'lamp')  # chữ vàng khắc nổi: dùng vật liệu phát sáng nhẹ (kim loại không có env map nên tối đen)
 GILD = paint(0xD2AA55, 'metal')
+GILD_TEXT_HI = paint(0xFFE49A, 'lamp')  # vàng sáng hơn GILD_TEXT cho chữ biển cổng (tương phản với nền son sẫm)
 BRONZE_D = paint(0x8E6C3A, 'metal')
 TIMBER = paint(0x8A6944, 'wood')
 TIMBER_D = paint(0x4D3324, 'wood')
@@ -88,13 +89,15 @@ def _find_pbr(ph, kind, size='2k'):
     return None
 
 
-def _find_font():
+def _find_font(name='Charm-Bold.ttf'):
     for d in _asset_source_dirs():
-        f = os.path.join(os.path.dirname(d), 'font', 'Charm-Bold.ttf')
+        f = os.path.join(os.path.dirname(d), 'font', name)
         if os.path.exists(f):
             return f
     return None
 
+
+UNSLANT = 0.3  # Charm Bold nghiêng ~17°: cắt thẳng cho chữ biển/hoành phi
 
 PBR_FILES = {}  # khóa chất liệu -> {'normal': path, 'rough': path}
 
@@ -453,13 +456,14 @@ class KB(bs.Builder):
         finally:
             bs.ROOF, bs.GOLD = ROOF_SAVE
 
-    def text(self, body, x, y, z, size, depth, color, yaw=0.0, fit_w=None, fit_h=None, bold=0.0):
+    def text(self, body, x, y, z, size, depth, color, yaw=0.0, fit_w=None, fit_h=None, bold=0.0, unslant=0.0, font='Charm-Bold.ttf'):
         """Chữ Việt khắc nổi (font thư pháp Charm Bold, OFL, cùng font gốc của bộ nét cọ tên đạo hiệu #297; ở ../dtl-asset-source/font): chuỗi `body` căn giữa tại (x, y, z), mặt chữ hướng +z.
+        `unslant` (tan góc nghiêng, ~0,3 cho Charm Bold): cắt ngược chữ nghiêng về thẳng đứng như chữ khắc bia (đọc rõ khi nhìn từ xa).
         Không có font thì bỏ qua (bản dựng vẫn chạy)."""
         import bmesh as _bm
         import bpy
 
-        path = _find_font()
+        path = _find_font(font)
         if not path:
             return
         cu = bpy.data.curves.new('txt', 'FONT')
@@ -479,6 +483,9 @@ class KB(bs.Builder):
         bm.from_mesh(me)
         _bm.ops.triangulate(bm, faces=bm.faces[:])
         # Co/giãn đồng dạng để chữ chiếm `fit_w` theo chiều ngang (và không vượt `fit_h`), căn giữa theo hộp bao.
+        if unslant:
+            for v in bm.verts:
+                v.co.x -= v.co.y * unslant
         xs = [v.co.x for v in bm.verts]
         ys = [v.co.y for v in bm.verts]
         k = 1.0
@@ -893,7 +900,7 @@ def _(b):
     b.box(0, 0, 0, 5.8, 1.3, 0.3, VERMILION_DARK)
     for sy in (-1, 1):
         b.box(0, sy * 0.58, 0.17, 5.8, 0.14, 0.08, GILD)
-    b.text('Thiên Kiếm Điện', 0, 0, 0.17, 0.62, 0.14, GILD_TEXT, fit_w=4.05, fit_h=0.85, bold=0.045)
+    b.text('Thiên Kiếm Điện', 0, 0, 0.17, 0.62, 0.14, GILD_TEXT, fit_w=4.05, fit_h=0.85, bold=0.06, unslant=UNSLANT)
     for sx in (-1, 1):
         b.box(sx * 3.0, 0, 0, 0.2, 1.5, 0.4, GILD)
 
@@ -1085,7 +1092,8 @@ def _(b):
         b.box(sx * 3.3, 7.2, 0.23, 0.26, 1.9, 0.12, GILD)
     for sy in (-1, 1):
         b.box(0, 7.2 + sy * 0.88, 0.23, 6.8, 0.26, 0.12, GILD)
-    b.text('Lạc Kiếm Tông', 0, 7.2, 0.21, 1.2, 0.2, GILD_TEXT, fit_w=4.8, fit_h=1.25, bold=0.045)
+    # chữ khải (nét đứng, chân rõ: Alegreya SC Bold, OFL) thay chữ thảo nghiêng Charm: đọc được từ cổng; vàng sáng, lấp ~85% ngang biển, nét đậm
+    b.text('Lạc Kiếm Tông', 0, 7.2, 0.23, 1.2, 0.22, GILD_TEXT_HI, fit_w=5.7, fit_h=1.4, bold=0.035, font='AlegreyaSC-Bold.ttf')
     b.curved_hip(0, 10.4, 0, 18, 3.2, 2.6, overhang=1.8, lift=1.3)
 
 

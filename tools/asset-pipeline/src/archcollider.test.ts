@@ -56,6 +56,19 @@ describe('archcollider: hộp rắn, bậc thang, mái', () => {
   });
 });
 
+describe('archcollider: thềm bậc sâu 0,5 m (cùng ô với mặt đứng bậc kế)', () => {
+  it('8 bậc sâu 0,5 m cao 0,25 m: mọi bậc là hộp walk, leo được tới thềm trên', () => {
+    const tris: Tri[] = [];
+    for (let i = 0; i < 8; i++) tris.push(...box(10, 0, 10 + i * 0.5, 14, 0.25 * (i + 1), 10.5 + i * 0.5));
+    // thềm 2 m x 4 m ở trên cùng, thân điện chặn phía sau
+    tris.push(...box(10, 0, 14, 14, 2, 16), ...box(10, 0, 16, 14, 8, 17));
+    const b = buildArchBoxes(tris, flat);
+    for (let i = 0; i < 8; i++) expect(cover(b, 12, 10.25 + i * 0.5, 0.25 * (i + 1), 1), `bậc ${i}`).toBe(true);
+    expect(cover(b, 12, 15, 2, 1)).toBe(true); // thềm đỉnh đứng được
+    expect(cover(b, 12, 16.5, 4, 0)).toBe(true); // thân điện chặn
+  });
+});
+
 describe('archcollider: khối lơ lửng', () => {
   it('sàn/mái cách đất 5 m không nối với đất: đi dưới gầm được, không hộp chặn', () => {
     const b = buildArchBoxes(box(10, 5, 10, 14, 5.3, 14), flat);
@@ -80,4 +93,66 @@ describe('file hộp kiến trúc khớp GLB', () => {
     );
     expect(r.status, r.stderr).toBe(0);
   }, 60_000);
+
+  it('arch_phuc_mach.boxes.json không cũ so với GLB và địa hình (bí cảnh, COL-B)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const args = (
+      '--id arch_phuc_mach --origin 1520,149.92207108842044,1300 --level phuc_mach --place dungeon --prefix pm --flat pm_wall_ ' +
+      '--flatDy -4 --dome 135,75 --cell 1 --region 1422,1202,1618,1398 --check'
+    ).split(' ');
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/archcollider.cli.ts', ...args], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
+
+  it('arch_kinh_nguyet.boxes.json không cũ so với GLB và địa hình (bí cảnh, COL-B)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const args = (
+      '--id arch_kinh_nguyet --origin 1520,149.92207108842044,1300 --level kinh_nguyet --place dungeon --prefix kn ' +
+      '--flat kn_bay,kn_ring,kn_basin,kn_shard,kn_float,kn_frag --flatDy 0.05 --dome 135,80 --cell 1 --region 1422,1202,1618,1398 --check'
+    ).split(' ');
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/archcollider.cli.ts', ...args], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
+
+  it('arch_thien_khuyet.boxes.json không cũ so với GLB và địa hình (COL-C)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const args = '--id arch_thien_khuyet --origin 1044,80,374 --level thien_khuyet --shift tk_statue:1.6 --cell 1 --check'.split(' ');
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/archcollider.cli.ts', ...args], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
+
+  it('arch_than_tang.boxes.json không cũ so với GLB và địa hình (bí cảnh, COL-C)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const args = (
+      '--id arch_than_tang --origin 1520,149.92207108842044,1300 --level than_tang --cell 1 --region 1422,1202,1618,1398 --place dungeon ' +
+      '--prefix tt --flat tt_bay,tt_gate,tt_statue,tt_hoard,tt_mask,tt_brazier --flatDy 0.05 --dome 135,80 --check'
+    ).split(' ');
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/archcollider.cli.ts', ...args], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
+
+  it('arch_xich_tan.boxes.json không cũ so với GLB và địa hình (bí cảnh, COL-C)', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const args =
+      '--id arch_xich_tan --origin 1520,59.81419698223804,1300 --level xich_tan_khich --cell 1 --region 1422,1202,1618,1398 --place dungeon --prefix xk --check'.split(
+        ' ',
+      );
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'src/archcollider.cli.ts', ...args], {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    });
+    expect(r.status, r.stderr).toBe(0);
+  }, 120_000);
 });

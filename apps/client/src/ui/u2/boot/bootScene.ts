@@ -9,7 +9,7 @@ import { loadArtUrl } from '../../Art';
  * (cành tùng — trộn nhân, sương — trộn sáng), hạc và cánh hoa. Màn tiêu đề thêm hiệu ứng cuộn tranh mở ra (một lần mỗi phiên).
  * Giảm chuyển động (`data-reduce-motion` ở <html>, hoặc prefers-reduced-motion): chỉ còn khung tĩnh. Tự dừng khi #boot đã `gone` hoặc tab ẩn.
  */
-export type SceneMode = 'title' | 'zone';
+type SceneMode = 'title' | 'zone';
 
 const REVEAL_KEY = 'dtl.scrollRevealed';
 const CRANE = '<svg viewBox="0 0 64 26" aria-hidden="true"><path d="M2 14Q18-2 32 13Q46-2 62 14Q46 8 32 18Q18 8 2 14Z"/></svg>';
@@ -137,9 +137,4 @@ export async function mountBootScene(boot: HTMLElement, url: string, mode: Scene
   addEventListener('pointermove', onMove, { passive: true });
   raf = requestAnimationFrame(tick);
   current = { el: root, stop, url, mode };
-}
-
-/** Gỡ cảnh (về nền cũ). */
-export function unmountBootScene(): void {
-  current?.stop();
 }

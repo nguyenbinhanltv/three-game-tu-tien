@@ -27,7 +27,7 @@ import {
 } from '@dtl/shared';
 import type { PlayerEnt } from './entities';
 
-export interface SoulHost {
+interface SoulHost {
   now(): number;
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string): void;

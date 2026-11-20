@@ -39,7 +39,7 @@ import {
 } from './realmAuraRules';
 
 /** Người chơi như hào quang cần đọc (khớp `PlayerVis`). */
-export interface AuraActor {
+interface AuraActor {
   sid: string;
   yaw: number;
   fl: number;
@@ -51,7 +51,7 @@ export interface AuraActor {
   mt: string;
 }
 
-export interface RealmAuraEnv {
+interface RealmAuraEnv {
   players(): Iterable<AuraActor>;
   mySid(): string;
   camera(): THREE.Camera;
@@ -67,9 +67,9 @@ export interface RealmAuraEnv {
 }
 
 /** Số người khác gần nhất được vẽ hào quang, theo bậc chất lượng (Thấp tắt hẳn). */
-export const OTHERS_MAX = [0, 4, 8] as const;
+const OTHERS_MAX = [0, 4, 8] as const;
 /** Độ nhấc người khỏi đất khi Nguyên Anh trở lên (m). */
-export const LIFT = 0.2;
+const LIFT = 0.2;
 /** Số phân thân Ảnh Biến (chốt 3). */
 const CLONES = 3;
 

@@ -9,7 +9,7 @@ import { ITEM, itemName } from '@dtl/content';
 import type { InvItem } from '@dtl/shared';
 import type { PlayerEnt } from './entities';
 
-export interface InventoryHost {
+interface InventoryHost {
   now(): number;
   isDead(p: PlayerEnt): boolean;
   idem(p: PlayerEnt, r: unknown): string | null | undefined;
@@ -17,9 +17,9 @@ export interface InventoryHost {
 }
 
 /** Tối thiểu giữa hai lệnh cùng loại của một người (ms). */
-export const SORT_GAP_MS = 1000;
-export const SPLIT_GAP_MS = 150;
-export const LOCK_GAP_MS = 100;
+const SORT_GAP_MS = 1000;
+const SPLIT_GAP_MS = 150;
+const LOCK_GAP_MS = 100;
 
 export class InventorySystem {
   private last = new WeakMap<PlayerEnt, { sort: number; split: number; lock: number }>();

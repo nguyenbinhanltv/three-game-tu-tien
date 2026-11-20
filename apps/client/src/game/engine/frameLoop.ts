@@ -94,7 +94,7 @@ export function fireSkill(eng: Game, i: number): void {
  * Vào thế ngay khi gửi chiêu (chỉ hình): chỉ khi client thấy server sẽ nhận (đứng đất, hết chờ, đủ linh lực, trong tầm).
  * Dùng cho cả bấm phím lẫn tự đánh, để chuỗi liên hoàn luôn có nhịp vào thế đủ (K-4).
  */
-export function predictSkill(eng: Game, i: number, skill: SkillDef, needTarget: boolean): void {
+function predictSkill(eng: Game, i: number, skill: SkillDef, needTarget: boolean): void {
   const me = eng.me();
   if (!me) return;
   const mon = needTarget ? eng.view.monsters.get(eng.targetId) : undefined;
@@ -306,7 +306,7 @@ export function runFrame(eng: Game): void {
   }
 }
 
-export function updateCamera(eng: Game, dt: number): void {
+function updateCamera(eng: Game, dt: number): void {
   const rp = eng.renderPos;
   const flying = eng.cur.flying;
   eng.camFrame.update(dt);
@@ -381,7 +381,7 @@ export function updateCamera(eng: Game, dt: number): void {
 }
 
 /** Cỏ rạp theo mình + 5 người/quái gần nhất (chỉ đọc vị trí đã nội suy của EntityManager). */
-export function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
+function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
   const pool = eng.pushPool;
   let n = 0;
   const put = (x: number, y: number, z: number, r: number) => {
@@ -403,7 +403,7 @@ export function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
   pickPushers(eng.pushSelf, pool, eng.pushers, 40, n);
   eng.grass.update(dt, rp, eng.pushers, eng.started ? 1 : 6);
   eng.props?.update(dt, rp.x, rp.z);
-  eng.lacKiemSky?.update(eng.camera);
+  eng.lacKiemSky?.update(eng.camera, rp.x, rp.z);
   eng.thienKhuyetSky?.update(performance.now() / 1000);
   eng.vanHaiWow?.update(dt);
   eng.doanMachArt?.update(eng.camera.position);
@@ -412,6 +412,9 @@ export function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
   eng.kinhNguyetArt?.update(dt);
   eng.thanTangArt?.update(dt);
   eng.xichTanArt?.update(dt);
+  eng.bhFar?.update();
+  eng.lacKiemFar?.update();
+  eng.doKiepArt?.update(dt);
   eng.kimDaArt?.update(dt);
   eng.cardForest?.update(eng.camera.position.x, eng.camera.position.z);
 }
@@ -420,7 +423,7 @@ export function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
  * Chết và hồi sinh (P2-B5): đẩy số của `DeathFx` vào hậu kỳ (mực, khử màu), trôi camera ra sau và lên cao, nổ linh quang
  * khi sống lại. Không đụng cảnh độ kiếp: tribFx chạy sau và chỉ dùng `pulse`; chết lúc kiếp thất bại thì hai lớp chồng nhau.
  */
-export function deathVisual(eng: Game, d: { ink: number; desat: number; drift: number }, tx: number, ty: number, tz: number): void {
+function deathVisual(eng: Game, d: { ink: number; desat: number; drift: number }, tx: number, ty: number, tz: number): void {
   const fx = eng.deathFx;
   if (fx.died) {
     // Cảnh đang chiếu (mở đầu, boss) nhường chỗ cho cảnh chết.
@@ -447,7 +450,7 @@ export function deathVisual(eng: Game, d: { ink: number; desat: number; drift: n
  * Cảnh độ kiếp (P2-B4): trong lúc cờ PF_TRIBULATION của mình bật, màu toàn cảnh chìm dần sang tối/tím (qua `pulse` của
  * hậu kỳ) rồi trả về khi hết kiếp. Chỉ là lớp hình theo cờ server; cảnh boss đang chiếu thì nhường `pulse` cho cảnh đó.
  */
-export function tribFx(eng: Game, dt: number): void {
+function tribFx(eng: Game, dt: number): void {
   const on = ((eng.me()?.fl ?? 0) & PF_TRIBULATION) !== 0;
   eng.tribScene = on;
   const was = eng.tribMix;
@@ -462,7 +465,7 @@ export function tribFx(eng: Game, dt: number): void {
 }
 
 /** Gửi (và gửi lại nếu server chưa nhận) chiêu đang chờ khi hết GCD/hồi chiêu. */
-export function tickSkillQueue(eng: Game, now: number): void {
+function tickSkillQueue(eng: Game, now: number): void {
   const q = eng.skillQueue;
   if (q.slot < 0) return;
   const st = get();
@@ -476,7 +479,7 @@ export function tickSkillQueue(eng: Game, now: number): void {
 }
 
 /** Tự đánh thường liên tục khi đã chọn mục tiêu và bật auto. */
-export function tickCombat(eng: Game, now: number, me: PState | undefined): void {
+function tickCombat(eng: Game, now: number, me: PState | undefined): void {
   if (!me || !eng.targetId || eng.skillQueue.slot >= 0) return;
   if (eng.targetKind === 'mon') {
     const m = eng.view.monsters.get(eng.targetId);
@@ -498,7 +501,7 @@ export function tickCombat(eng: Game, now: number, me: PState | undefined): void
   }
 }
 
-export function reconcile(eng: Game, me: PState): void {
+function reconcile(eng: Game, me: PState): void {
   if (me.seq === eng.lastAck && me.x === eng.lastSx && me.y === eng.lastSy && me.z === eng.lastSz && me.fl === eng.lastFl) return;
   if (me.seq > eng.lastAck && me.seq <= eng.seq) notePing(eng, eng.inputSentAt[me.seq & 127]);
   eng.lastAck = me.seq;
@@ -533,7 +536,7 @@ export function reconcile(eng: Game, me: PState): void {
   eng.cur = base;
 }
 
-export function moveCtx(_eng: Game, me: PState): MoveCtx {
+function moveCtx(_eng: Game, me: PState): MoveCtx {
   const dead = (me.fl & PF_DEAD) !== 0;
   const soul = get().soul;
   const scouting = (me.fl & PF_SOUL) !== 0 && soul.k === SOUL_SCOUT && !dead;
@@ -549,7 +552,7 @@ export function moveCtx(_eng: Game, me: PState): MoveCtx {
   };
 }
 
-export function buildInput(eng: Game): MoveInput {
+function buildInput(eng: Game): MoveInput {
   const k = eng.keys.held;
   const typing = eng.typing();
   let mx = 0;
@@ -581,7 +584,7 @@ export function buildInput(eng: Game): MoveInput {
  * Ping ước tính (ms): từ lúc gửi input tới lúc thấy server xác nhận seq đó trong state.
  * Gồm cả chờ tick và nhịp gửi patch của server nên cao hơn RTT thuần; chỉ để gỡ lỗi.
  */
-export function notePing(eng: Game, sentAt: number | undefined): void {
+function notePing(eng: Game, sentAt: number | undefined): void {
   if (!sentAt) return;
   const rtt = performance.now() - sentAt;
   if (rtt < 0 || rtt > 5000) return;
@@ -593,7 +596,7 @@ export function notePing(eng: Game, sentAt: number | undefined): void {
  * Thu canvas về 24×14 điểm, độ lệch chuẩn độ sáng gần 0 ba lần liên tiếp thì lùi WebGL2.
  * Chạy ngay sau `post.render()` trong cùng tác vụ, lúc đó canvas WebGPU còn đọc được.
  */
-export function checkBlankFrame(eng: Game, now: number): void {
+function checkBlankFrame(eng: Game, now: number): void {
   if (eng.fellBack || document.hidden || !isWebGPU(eng.renderer)) return;
   if (eng.cine.active || eng.deathFx.active || ((eng.me()?.fl ?? 0) & PF_DEAD) !== 0) {
     eng.blankWatch.reset();

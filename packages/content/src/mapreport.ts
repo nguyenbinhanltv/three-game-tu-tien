@@ -23,6 +23,7 @@ import {
   type SpawnDef,
   type ZoneDef,
 } from '@dtl/shared';
+import { reachability } from './connect';
 import { LEVELS, MONSTER, NPCS } from './index';
 import { campCoverage, COVER_BY_LEVEL, COVER_EDGE_MAX, DEFAULT_COVER } from './coverage';
 import { PLACES } from './places';
@@ -264,6 +265,50 @@ function stuckScan(): { checked: number; stuck: [number, number][] } {
   return { checked, stuck };
 }
 const stuck = stuckScan();
+// Khoang kín trong công trình (người chơi không thể vào) không phải bẫy: bỏ điểm kẹt trong vùng tông môn mà không tới được từ điểm hồi sinh (BFS bằng chính stepMove).
+{
+  // Vân Lam: vùng tông môn từ điểm hồi sinh; bí cảnh: vùng quanh tâm hang từ điểm vào.
+  const dg = LEVELS[LEVEL_ID]?.dungeon;
+  const area = IS_VL
+    ? { box: { x0: 1900, z0: 1930, x1: 2200, z1: 2150 }, from: SPAWN_POINT }
+    : dg
+      ? {
+          box: {
+            x0: dg.center.x - (dg.bound ?? 200),
+            z0: dg.center.z - (dg.bound ?? 200),
+            x1: dg.center.x + (dg.bound ?? 200),
+            z1: dg.center.z + (dg.bound ?? 200),
+          },
+          from: dg.spawn,
+        }
+      : null;
+  if (area && stuck.stuck.length) {
+    const reach = reachability(LEVEL_ID, area.from, area.box, 1);
+    const { box } = area;
+    // Điểm trong vùng chỉ là bẫy thật nếu tới được từ điểm vào nhưng KHÔNG quay lại được điểm vào (BFS từ chính điểm đó); thoát 8 hướng thẳng là phép thử quá chặt ở vách/hốc.
+    stuck.stuck = stuck.stuck.filter(([x, z]) => {
+      // Phó bản: vách hang (`DungeonDef.bound`) đẩy người chơi về trong vòng tròn nên điểm ngoài vòng không bao giờ có người đứng.
+      if (dg && Math.hypot(x - dg.center.x, z - dg.center.z) > (dg.bound ?? 200)) return false;
+      if (!(x > box.x0 && x < box.x1 && z > box.z0 && z < box.z1)) return true;
+      if (!reach(x, z)) return false;
+      return !reachability(LEVEL_ID, { x, z }, box, 1)(area.from.x, area.from.z);
+    });
+  }
+}
+
+// Phép thử 8 hướng thẳng quá chặt ở hốc đá vụn/vách. Bẫy thật = người đi vào được (BFS bằng chính stepMove, ô 1 m, hộp 80×80 m, từ một trong tám điểm cách 38 m)
+// nhưng không đi ra được. Hốc kín cả hai chiều (không ai vào được) không phải bẫy; điểm đi ra được thì bỏ.
+if (stuck.stuck.length) {
+  stuck.stuck = stuck.stuck.filter(([x, z]) => {
+    const box = { x0: x - 40, z0: z - 40, x1: x + 40, z1: z + 40 };
+    const R = 38;
+    const ring: [number, number][] = [];
+    for (let i = 0; i < 8; i++) ring.push([x + Math.cos((i * Math.PI) / 4) * R, z + Math.sin((i * Math.PI) / 4) * R]);
+    const out = reachability(LEVEL_ID, { x, z }, box, 1);
+    if (ring.some(([rx, rz]) => out(rx, rz))) return false; // đi ra được
+    return ring.some(([rx, rz]) => reachability(LEVEL_ID, { x: rx, z: rz }, box, 1)(x, z)); // vào được mà không ra được
+  });
+}
 
 // ---- in ----
 const f1 = (n: number) => (Number.isFinite(n) ? n.toFixed(1) : '> 770');

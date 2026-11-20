@@ -164,6 +164,9 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.USE, (p, m) => this.sim.onUse(p, m));
     on(C.EQUIP, (p, m) => this.sim.onEquip(p, m));
     on(C.UNEQUIP, (p, m) => this.sim.onUnequip(p, m));
+    on(C.LOOK_SET, (p, m) => this.sim.wardrobe.onLookSet(p, m));
+    on(C.LOOK_DYE, (p, m) => this.sim.wardrobe.onLookDye(p, m));
+    on(C.LOOK_RESET, (p, m) => this.sim.wardrobe.onLookReset(p, m));
     on(C.MOVE_ITEM, (p, m) => this.sim.onMoveItem(p, m));
     on(C.INV_SORT, (p, m) => this.sim.inventory.onSort(p, m));
     on(C.INV_LOCK, (p, m) => this.sim.inventory.onLock(p, m));
@@ -344,7 +347,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
           cur.client = again;
           cur.connected = true;
           cur.invSent = undefined; // client mới chưa có túi: tin S.INV kế tiếp phải là ảnh đầy đủ
-          cur.char.charDirty = cur.char.invDirty = cur.char.questDirty = true;
+          cur.char.charDirty = cur.char.invDirty = cur.char.questDirty = cur.char.wardrobeDirty = true; // client mới chưa có tủ ngoại trang
         } else {
           // Nhân vật đã bị phiên đăng nhập khác thay thế trong lúc chờ: không để client cũ ở lại nghe lén.
           again.send(S.KICK, { k: 'sys.kicked_dup' });

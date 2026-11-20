@@ -49,18 +49,20 @@
     "icons:build": "node tools/icons/build.mjs",
     "icons:check": "node tools/icons/build.mjs --check",
     "lint": "eslint . && stylelint \"apps/client/src/**/*.css\"",
-    "deps:check": "madge --circular --extensions ts --ts-config packages/shared/tsconfig.json --no-spinner packages/shared/src",
+    "deps:check": "madge --circular --extensions ts --ts-config packages/shared/tsconfig.json --no-spinner packages/shared/src && dpdm --no-warning --no-tree --exit-code circular:1 -T \"packages/content/src/**/*.ts\" \"apps/*/src/**/*.{ts,tsx}\"",
     "format": "prettier --write \"**/*.{ts,tsx,mjs,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,mjs,css}\"",
     "docs:check": "node tools/docs/check.mjs",
     "docs:paths": "node tools/docs/check-paths.mjs",
     "colliders:lib": "pnpm --filter @dtl/asset-pipeline run colliders",
     "colliders:bake": "node tools/maps/bake-colliders.mjs",
-    "colliders:arch": "pnpm --filter @dtl/asset-pipeline run colliders:arch --"
+    "colliders:arch": "pnpm --filter @dtl/asset-pipeline run colliders:arch --",
+    "colliders:prop": "pnpm --filter @dtl/asset-pipeline run colliders:prop --"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
     "concurrently": "^9.1.0",
+    "dpdm": "^3.15.1",
     "eslint": "^9.39.5",
     "madge": "^8.0.0",
     "postcss": "^8.5.33",
