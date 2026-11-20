@@ -74,7 +74,7 @@ import { RealmSystem } from './realm';
 import { MonSkills } from './monskill';
 import { MonZones } from './monzone';
 import { CampSystem } from './camps';
-import { empowerDeadlines } from './skillflow';
+import { chainDeadlines } from './skillflow';
 import { DuelSystem } from './duel';
 import { TeleportSystem } from './teleport';
 import { QuestObjSystem } from './questobj';
@@ -1121,7 +1121,7 @@ export class GameSim {
     const cds: Record<string, number> = {};
     for (const [k, v] of p.cds) if (v > this.now) cds[k] = v;
     const m: CdMsg = { cds, gcd: p.gcdAt, now: Date.now() };
-    const em = empowerDeadlines(p.flow, this.now);
+    const em = chainDeadlines(p.flow, this.now);
     if (Object.keys(em).length) m.em = em;
     p.client.send(S.CD, m);
   }

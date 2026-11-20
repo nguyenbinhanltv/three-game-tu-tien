@@ -5,12 +5,10 @@ import { GCD } from './formulas';
 import { cloneMoveState, stepMove, type MoveCtx, type MoveInput, type MoveState } from './movement';
 import type { PoseDef } from './pose';
 import { groundAt } from './terrain';
-import type { ComboDef, DashDef, EmpowerDef, SkillDef } from './types';
+import type { ComboDef, DashDef, SkillDef } from './types';
 
 /** Đòn thường liên hoàn đứt nếu ngừng đánh quá chừng này (giây). */
 export const COMBO_WINDOW = 2;
-/** Cửa sổ cường hóa mặc định (giây). */
-export const EMPOWER_WINDOW = 3;
 /** Tốc độ lướt (m/s) và bước mô phỏng nhỏ để không xuyên vật cản mỏng. */
 export const DASH_SPEED = 28;
 export const DASH_STEP = 0.0125;
@@ -47,11 +45,6 @@ export function hitOffsets(s: SkillDef, n: number): number[] {
 export function comboNext(def: ComboDef, lastIdx: number, lastAtMs: number, nowMs: number): number {
   if (lastIdx < 0 || nowMs - lastAtMs > def.window * 1000) return 0;
   return (lastIdx + 1) % def.hits.length;
-}
-
-/** Cửa sổ cường hóa còn mở không: chiêu mở (`by`) áp lúc `openedAtMs`. */
-export function empowerOpen(def: EmpowerDef, openedAtMs: number | undefined, nowMs: number): boolean {
-  return openedAtMs !== undefined && nowMs >= openedAtMs && nowMs - openedAtMs <= def.window * 1000;
 }
 
 /** Hướng lướt (vector đơn vị trên mặt phẳng XZ) theo kiểu `dir`; null nếu không xác định được. */
@@ -151,7 +144,7 @@ export function planDash(
  * - `windup` ≤ `hitAt[0]`; `hitAt` cuối + `recovery` ≈ độ dài pose (±0,06 s) và không quá GCD (chiêu ngay).
  * - `castType` khớp `cast`; `channel`/`charge` chưa có chiêu nào dùng (server chưa hỗ trợ).
  */
-export function validateSkillRules(s: SkillDef, pose: PoseDef | undefined, ids: ReadonlySet<string>): string[] {
+export function validateSkillRules(s: SkillDef, pose: PoseDef | undefined): string[] {
   const at = `skill ${s.id}`;
   const errs: string[] = [];
   const ct = castTypeOf(s);
@@ -161,7 +154,7 @@ export function validateSkillRules(s: SkillDef, pose: PoseDef | undefined, ids: 
   if (s.moveWhileCast && ct !== 'cast') errs.push(`${at}: moveWhileCast chỉ dùng với castType cast`);
   if (s.moveWhileCast) errs.push(`${at}: moveWhileCast chưa được server hỗ trợ`);
   if (s.hitAt && s.hitAt.some((h) => !(h >= 0 && h <= GCD))) errs.push(`${at}: hitAt phải trong 0–GCD (${GCD}s)`);
-  if (ct === 'cast' && (s.combo || s.empower)) errs.push(`${at}: chiêu niệm chưa hỗ trợ combo/empower`);
+  if (ct === 'cast' && s.combo) errs.push(`${at}: chiêu niệm chưa hỗ trợ combo`);
   if (s.combo && !(s.power > 0)) errs.push(`${at}: combo cần power > 0`);
   if (s.pose) {
     const hit = s.hitAt;
@@ -192,12 +185,6 @@ export function validateSkillRules(s: SkillDef, pose: PoseDef | undefined, ids: 
       if (!(h.power > 0)) errs.push(`${at}: combo.hits[${i}].power phải > 0`);
       if (!(h.hitAt >= 0 && h.hitAt <= GCD)) errs.push(`${at}: combo.hits[${i}].hitAt ngoài 0–GCD`);
     }
-  }
-  if (s.empower) {
-    if (!ids.has(s.empower.by)) errs.push(`${at}: empower.by "${s.empower.by}" không phải chiêu`);
-    if (s.empower.by === s.id) errs.push(`${at}: empower.by không được là chính nó`);
-    if (!(s.empower.window > 0 && s.empower.window <= 10)) errs.push(`${at}: empower.window 0–10 giây`);
-    if (!(s.empower.powerMul >= 1 && s.empower.powerMul <= 3)) errs.push(`${at}: empower.powerMul 1–3`);
   }
   if (s.dash) {
     if (!(s.dash.dist > 0 && s.dash.dist <= 12)) errs.push(`${at}: dash.dist 0–12 m`);

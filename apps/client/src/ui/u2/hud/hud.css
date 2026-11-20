@@ -670,6 +670,10 @@
 .u2h-skill.empowered .u2-frame {
   --qc: var(--u-ngoc-hi);
 }
+/* VS-2b: cửa sổ chuỗi chiêu đang mở: thêm quầng ngọc để phân biệt với ô đang xếp hàng. */
+.u2h-skill.empowered .u2-frame {
+  filter: drop-shadow(0 0 5px var(--u-ngoc-hi));
+}
 .u2h-skill[aria-pressed='true'] .u2-frame {
   background: var(--u-ngoc-hi);
 }

@@ -5,7 +5,6 @@ import {
   comboNext,
   dashDir,
   DASH_MAX_SLOPE,
-  empowerOpen,
   groundAt,
   hitOffsets,
   planDash,
@@ -36,7 +35,6 @@ const SK: SkillDef = {
   recovery: 0.54,
 };
 const POSE: PoseDef = { id: 'p', duration: 0.8, loop: false, hit: [0.26, 0.42], keys: [] };
-const ids = new Set(['x', 'y']);
 const state = (x: number, z: number): MoveState => ({ x, y: groundAt(x, z), z, vy: 0, grounded: true, flying: false });
 
 describe('thời gian chiêu', () => {
@@ -80,14 +78,6 @@ describe('liên hoàn và cường hóa', () => {
     expect(comboNext(def, 2, 3000, 4000)).toBe(0);
     expect(comboNext(def, 1, 2000, 2000 + COMBO_WINDOW * 1000 + 1)).toBe(0);
     expect(comboNext(def, 1, 2000, 2000 + COMBO_WINDOW * 1000)).toBe(2);
-  });
-  it('cửa sổ cường hóa mở đúng khoảng sau khi chiêu mở áp', () => {
-    const e = { by: 'y', window: 3, powerMul: 1.5 };
-    expect(empowerOpen(e, undefined, 5000)).toBe(false);
-    expect(empowerOpen(e, 1000, 1000)).toBe(true);
-    expect(empowerOpen(e, 1000, 4000)).toBe(true);
-    expect(empowerOpen(e, 1000, 4001)).toBe(false);
-    expect(empowerOpen(e, 5000, 4000)).toBe(false);
   });
 });
 
@@ -146,34 +136,31 @@ describe('lướt', () => {
 
 describe('validateSkillRules', () => {
   it('chiêu hợp lệ không lỗi', () => {
-    expect(validateSkillRules(SK, POSE, ids)).toEqual([]);
+    expect(validateSkillRules(SK, POSE)).toEqual([]);
   });
   it('bắt các lỗi', () => {
-    expect(validateSkillRules({ ...SK, hitAt: undefined }, POSE, ids).join()).toMatch(/thiếu hitAt/);
-    expect(validateSkillRules({ ...SK, hitAt: [0.5] }, POSE, ids).join()).toMatch(/lệch hit\[0\]/);
-    expect(validateSkillRules({ ...SK, hitAt: [0.26, 0.2] }, POSE, ids).join()).toMatch(/tăng dần/);
-    expect(validateSkillRules({ ...SK, windup: 0.5 }, POSE, ids).join()).toMatch(/windup/);
-    expect(validateSkillRules({ ...SK, recovery: 0.2 }, POSE, ids).join()).toMatch(/recovery/);
-    expect(validateSkillRules({ ...SK, castType: 'channel' }, POSE, ids).join()).toMatch(/chưa được server hỗ trợ/);
-    expect(validateSkillRules({ ...SK, castType: 'cast' }, POSE, ids).join()).toMatch(/cast > 0/);
-    expect(validateSkillRules({ ...SK, empower: { by: 'zz', window: 3, powerMul: 1.5 } }, POSE, ids).join()).toMatch(/không phải chiêu/);
-    expect(validateSkillRules({ ...SK, empower: { by: 'y', window: 3, powerMul: 9 } }, POSE, ids).join()).toMatch(/powerMul/);
-    expect(validateSkillRules({ ...SK, combo: { window: 2, hits: [] } }, POSE, ids).join()).toMatch(/combo cần/);
+    expect(validateSkillRules({ ...SK, hitAt: undefined }, POSE).join()).toMatch(/thiếu hitAt/);
+    expect(validateSkillRules({ ...SK, hitAt: [0.5] }, POSE).join()).toMatch(/lệch hit\[0\]/);
+    expect(validateSkillRules({ ...SK, hitAt: [0.26, 0.2] }, POSE).join()).toMatch(/tăng dần/);
+    expect(validateSkillRules({ ...SK, windup: 0.5 }, POSE).join()).toMatch(/windup/);
+    expect(validateSkillRules({ ...SK, recovery: 0.2 }, POSE).join()).toMatch(/recovery/);
+    expect(validateSkillRules({ ...SK, castType: 'channel' }, POSE).join()).toMatch(/chưa được server hỗ trợ/);
+    expect(validateSkillRules({ ...SK, castType: 'cast' }, POSE).join()).toMatch(/cast > 0/);
+    expect(validateSkillRules({ ...SK, combo: { window: 2, hits: [] } }, POSE).join()).toMatch(/combo cần/);
     expect(
       validateSkillRules(
         { ...SK, kind: 'dash', cd: 2, dash: { dist: 8, dir: 'back' }, pose: undefined, hitAt: undefined },
         undefined,
-        ids,
       ).join(),
     ).toMatch(/hồi chiêu ≥ 8/);
-    expect(validateSkillRules({ ...SK, kind: 'dash' }, POSE, ids).join()).toMatch(/cần trường dash/);
-    expect(validateSkillRules({ ...SK, hitAt: [0.26, 2] }, POSE, ids).join()).toMatch(/0–GCD/);
-    expect(validateSkillRules({ ...SK, power: 0, combo: { window: 2, hits: [{ power: 1, hitAt: 0.2 }] } }, POSE, ids).join()).toMatch(
+    expect(validateSkillRules({ ...SK, kind: 'dash' }, POSE).join()).toMatch(/cần trường dash/);
+    expect(validateSkillRules({ ...SK, hitAt: [0.26, 2] }, POSE).join()).toMatch(/0–GCD/);
+    expect(validateSkillRules({ ...SK, power: 0, combo: { window: 2, hits: [{ power: 1, hitAt: 0.2 }] } }, POSE).join()).toMatch(
       /power > 0/,
     );
-    expect(validateSkillRules({ ...SK, cast: 1.5, empower: { by: 'y', window: 3, powerMul: 1.5 } }, POSE, ids).join()).toMatch(
+    expect(validateSkillRules({ ...SK, cast: 1.5, combo: { window: 2, hits: [{ power: 1, hitAt: 0.2 }] } }, POSE).join()).toMatch(
       /chiêu niệm chưa hỗ trợ/,
     );
-    expect(validateSkillRules({ ...SK, dash: { dist: 8, dir: 'back' } }, POSE, ids).join()).toMatch(/chỉ dùng với kind/);
+    expect(validateSkillRules({ ...SK, dash: { dist: 8, dir: 'back' } }, POSE).join()).toMatch(/chỉ dùng với kind/);
   });
 });
