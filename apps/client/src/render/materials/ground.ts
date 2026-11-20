@@ -5,7 +5,6 @@ import {
   dot,
   clamp,
   cos,
-  abs,
   float,
   floor,
   fract,
@@ -89,8 +88,6 @@ export interface CliffTones {
   hi: [number, number, number];
   /** Màu vỉa chạy theo khe nứt (vàng kim Thiên Khuyết); bỏ trống = khe chỉ tối đi. */
   vein?: [number, number, number];
-  /** Vách "đá thật" (Đoạn Mạch): tầng dày mỏng không đều chéo nghiêng theo nhiễu lớn, khe dọc cao, rêu và đất vàng ở khe; bỏ = vân cũ (giữ nguyên cho level khác). */
-  rich?: boolean;
   /** Vách dựng từ khối đá xếp lệch (cột khối ngẫu nhiên × tầng lệch nhau, khe giữa các khối): hết dải ngang lặp (Thiên Khuyết, POLISH-1). */
   blocks?: boolean;
 }
@@ -334,43 +331,8 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
         .mul(float(1).add(smoothstep(0.92, 1, bandB).mul(0.2).mul(ledgeOn)))
         .mul(float(1).sub(smoothstep(0.12, 0, bandB).mul(0.3).mul(ledgeOn)));
       // giữ chút chi tiết của texture gốc nhưng không để nó lộ khung lặp
-      if (cliffTones.rich) {
-        // Vách đá thật (POLISH-1 Đoạn Mạch): tầng đá dày mỏng KHÔNG đều (hai cỡ tầng chọn theo mảng), chéo nghiêng theo nhiễu lớn (warp), mỗi tầng một sắc,
-        // khe giữa tầng đứt đoạn, mép tầng sáng ở trên; khe dọc cao tối + đất vàng; rêu từng đốm ở chỗ thấp. Không còn sọc ngang đều.
-        const warp = texture(tex.mask, vec2(u.mul(0.0021).add(0.3), h.mul(0.0021))).a.sub(0.5);
-        const warp2 = texture(tex.mask, vec2(u.mul(0.0063).add(0.7), h.mul(0.0063))).a.sub(0.5);
-        const coord = h.add(u.mul(0.1)).add(warp.mul(110)).add(warp2.mul(28));
-        const kk = smoothstep(0.4, 0.6, nA);
-        const LA = coord.div(8.5);
-        const LB = coord.div(21);
-        // băm số theo chỉ số tầng (nhiễu texture mượt nên tầng kề nhau gần như cùng giá trị: không đủ tương phản)
-        const rnd = (li: Node, salt: number) => fract(sin(li.mul(127.1).add(salt * 311.7)).mul(43758.5453));
-        const layerA = rnd(floor(LA), 0.31);
-        const layerB = rnd(floor(LB), 0.67);
-        const lf = mix(fract(LA), fract(LB), kk);
-        const lr = mix(layerA, layerB, kk);
-        const seamBreak = smoothstep(0.2, 0.42, texture(tex.mask, vec2(u.mul(0.011), floor(LA).mul(0.37).add(floor(LB).mul(0.21)))).a);
-        const seam = smoothstep(0.14, 0.0, lf).mul(seamBreak);
-        const lip = smoothstep(0.8, 1.0, lf).mul(0.22);
-        let rich: Node = mix(vec3(...cliffTones.lo), vec3(...cliffTones.hi), smoothstep(0.1, 0.9, lr.mul(0.85).add(nB.mul(0.25))));
-        rich = rich
-          .mul(float(0.55).add(lr.mul(0.6)))
-          .mul(float(0.75).add(nC.mul(0.5)))
-          .mul(float(1).add(lip.mul(1.6)))
-          .mul(float(1).sub(seam.mul(0.8)));
-        // khe dọc dài (tần số thấp theo độ cao): tối đi, đất vàng lộ ra
-        const vc = smoothstep(0.04, 0.0, abs(texture(tex.mask, vec2(u.mul(0.0075).add(warp.mul(0.15)), h.mul(0.0006))).a.sub(0.5)));
-        rich = mix(rich, vec3(0.62, 0.48, 0.22).mul(float(0.55).add(nC.mul(0.5))), vc.mul(0.55));
-        rich = rich.mul(float(1).sub(vc.mul(0.35)));
-        // rêu từng đốm, nhiều hơn ở dưới thấp và quanh khe giữa tầng
-        const mossN = smoothstep(0.6, 0.8, texture(tex.mask, vec2(u.mul(0.021).add(0.1), h.mul(0.019))).a);
-        const mossK = mossN.mul(float(0.35).add(seam.mul(0.4))).mul(smoothstep(300, 60, h));
-        rich = mix(rich, vec3(0.2, 0.3, 0.12).mul(float(0.7).add(nC.mul(0.5))), mossK);
-        col = mix(col, rich.mul(float(0.85).add(luminance(col).mul(0.2))), rockish.mul(0.97));
-      } else {
-        const detail = float(0.7).add(luminance(col).mul(0.5));
-        col = mix(col, tone.mul(detail).mul(1.05), rockish.mul(0.92));
-      }
+      const detail = float(0.7).add(luminance(col).mul(0.5));
+      col = mix(col, tone.mul(detail).mul(1.05), rockish.mul(0.92));
     } else {
       col = col.mul(mix(float(1), strataMul, rockish));
       col = mix(col, col.mul(vec3(0.82, 0.94, 1.1)), rockish.mul(smoothstep(140, 300, h)).mul(0.6));

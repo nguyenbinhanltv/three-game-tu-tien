@@ -5,7 +5,6 @@ import { heightAt, levelTerrain } from '../../base/levelCtx';
 import { runeMaterial } from '../../render/runeWall';
 import { MapleLeaves } from '../../render/mapleLeaves';
 import { createWorldMaterial } from '../../render/materials/world';
-import { DoanMachFalls } from './doanMachFalls';
 
 /**
  * Cảnh Đoạn Mạch (MAP-2, chỉ để nhìn, không va chạm): rừng phong thẻ lá alpha theo cụm (đỏ/cam/vàng, mỗi cây là thân + tán xoè bằng các thẻ
@@ -577,11 +576,6 @@ export class DoanMachArt {
       this.group.add(mesh);
       this.disposables.push(geo, mat, mesh);
     }
-
-    // Thác nhỏ trên vách (POLISH-1).
-    const falls = new DoanMachFalls();
-    this.group.add(falls.group);
-    this.disposables.push(falls);
 
     // Lá phong bay quanh camera (GPU, 1 draw call).
     this.leaves = new MapleLeaves();
