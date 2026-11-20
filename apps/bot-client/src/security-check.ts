@@ -15,6 +15,7 @@ import { runDashaoi } from './security/dashaoi';
 import { runMisc } from './security/misc';
 import { runTeleport } from './security/teleport';
 import { runBag } from './security/bag';
+import { runWardrobe } from './security/wardrobe';
 import { runRatelimit } from './security/ratelimit';
 import { testParamsChecks } from './security/testparams';
 import { type Ctx, join, M, P, stats, W } from './security/lib';
@@ -23,6 +24,12 @@ async function main() {
   // SECURITY_ONLY=testparams: chỉ chạy bài ?god/?at (bài 13) để thử lại nhanh.
   if (process.env.SECURITY_ONLY === 'testparams') {
     await testParamsChecks();
+    console.log(stats.failed ? `${stats.failed} mục HỎNG` : 'Tất cả đều ĐẠT');
+    process.exit(stats.failed ? 1 : 0);
+  }
+  // SECURITY_ONLY=wardrobe: chỉ chạy bài Tủ ngoại trang (P4-4).
+  if (process.env.SECURITY_ONLY === 'wardrobe') {
+    await runWardrobe();
     console.log(stats.failed ? `${stats.failed} mục HỎNG` : 'Tất cả đều ĐẠT');
     process.exit(stats.failed ? 1 : 0);
   }
@@ -46,6 +53,7 @@ async function main() {
   await runMisc(ctx);
   await runTeleport(ctx);
   await runBag(ctx);
+  await runWardrobe(ctx);
   await runRatelimit(ctx);
   console.log(stats.failed ? `\n${stats.failed} mục HỎNG` : '\nTất cả đều ĐẠT');
   process.exit(stats.failed ? 1 : 0);
