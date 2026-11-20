@@ -65,7 +65,9 @@ def crystal_prism(b, ox, oz, dx, dz, h, r, ph, glow_ratio, rnd):
     """Một tinh thể lăng trụ lục giác: tiết diện co dần về mũi nhọn qua nhiều vòng; màu đỉnh là gradient từ chân tối → lõi sáng ở mũi (client dùng màu đỉnh làm phát sáng),
     mặt xen kẽ 'mạch' (phát sáng) và 'kính' (sẫm, chỉ bắt viền)."""
     sides = 6
-    rings = [(0.0, 1.0), (0.05, 1.0), (0.3, 0.97), (0.55, 0.9), (0.75, 0.78), (0.9, 0.55), (1.0, 0.0)]
+    # 14 vòng (gradient mịn hơn, bớt đứt khúc); mặt sáng/kính chọn THEO CỘT mặt (một lần cho cả thân) nên thành sọc dọc, không còn bàn cờ ô màu
+    rings = [(0.0, 1.0), (0.04, 1.0), (0.12, 0.99), (0.22, 0.97), (0.34, 0.94), (0.46, 0.9), (0.58, 0.85), (0.68, 0.78), (0.77, 0.7), (0.85, 0.58), (0.91, 0.45), (0.96, 0.28), (0.99, 0.12), (1.0, 0.0)]
+    glow_cols = [rnd.random() < glow_ratio for _ in range(sides)]
     prev = None
     for q, rk in rings:
         ring = []
@@ -75,7 +77,7 @@ def crystal_prism(b, ox, oz, dx, dz, h, r, ph, glow_ratio, rnd):
         if prev:
             for j in range(sides):
                 k2 = (j + 1) % sides
-                glow = rnd.random() < glow_ratio
+                glow = glow_cols[j]
                 t = q ** 1.3
                 col = Paint(mix(C(0x0A3A32), C(0x7FFFE0), t), 'vein') if glow else Paint(mix(C(0x04201C), C(0x2F9C88), t), 'crystal')
                 b.poly([prev[j], prev[k2], ring[k2], ring[j]], (ox, 0, oz), col)

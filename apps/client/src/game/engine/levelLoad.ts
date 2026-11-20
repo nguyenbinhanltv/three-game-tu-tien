@@ -22,7 +22,7 @@ import { CARD_TREE_IDS, CardForest } from '../world/cardForest';
 import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
 import { DoanMachArt } from '../world/doanMachArt';
-import { KiemTrungArt } from '../world/kiemTrungArt';
+import { KiemTrungArt, ktMaterialFor } from '../world/kiemTrungArt';
 import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
 import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../world/kinhNguyetArt';
 import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
@@ -731,6 +731,7 @@ export async function loadKtModel(eng: Game, shadows: boolean): Promise<void> {
     enabled: () => !!levelAssets(levelId()).kiemTrungArt,
     origin: { x: KIEM_TRUNG.x, y: KIEM_TRUNG.y, z: KIEM_TRUNG.z },
     prefix: 'kt',
+    material: ktMaterialFor,
   });
 }
 
