@@ -312,7 +312,7 @@ export const SCENES: Record<string, Scene[]> = {
       r: 46,
       face: 'random',
       avoid: (x, z) => Math.hypot(x - 2048, z - 1750) < 34 || Math.hypot(x - 2048, z - 1708) < 20,
-      items: { da_linh_khi: 2, cay_co_thu: 1, tre: 4, da_reu: 4, linh_thao: 4, nam_phat_sang: 2 },
+      items: { cay_co_thu: 1, tre: 4, da_reu: 6, cot_da_do: 1, linh_thao: 4, nam_phat_sang: 2 },
     },
     {
       note: 'Sườn đồi sau cổng: đá tầng, cổ thụ, bụi trúc (vách đồi không còn phẳng một màu)',
@@ -323,7 +323,7 @@ export const SCENES: Record<string, Scene[]> = {
       rMin: 22,
       face: 'random',
       avoid: (x, z) => Math.hypot(x - 2048, z - 1708) < 26,
-      items: { da_linh_khi: 4, cay_co_thu: 3, tre: 7, da_reu: 6, linh_thao: 6, cot_da_do: 2 },
+      items: { cay_co_thu: 3, tre: 7, da_reu: 9, linh_thao: 6, cot_da_do: 3 },
     },
   ],
   doan_mach: [
