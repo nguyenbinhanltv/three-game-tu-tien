@@ -1,4 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { allowSkillForTest } from './testkit';
 import {
   CLONE_CD_MS,
   CLONE_LIFE_MS,
@@ -418,6 +419,7 @@ describe('chống khai thác', () => {
       m.stunUntil = Date.now() + 60_000;
       p.gcdAt = 0;
       p.cds.clear();
+      allowSkillForTest(p.char, id);
       sim.onSkill(p, { id, t: m.id });
       advance(900);
       sim.onClone(p, {});

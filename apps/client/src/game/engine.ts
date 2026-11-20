@@ -1012,9 +1012,11 @@ export class Game {
   /** Thanh chiêu hiện tại: 6 chiêu chung + 2 chiêu công pháp (ô 1–8), thần thông ô 9 (chỉ số `BAR_SIZE`), ô 10 (`BAR_SIZE + 1`, Hóa Thần), rồi hàng bậc cao (Shift+số). */
   bar(): SkillDef[] {
     const m = get().method?.method;
-    const tt = thanThongSkill(m);
+    // VS-2d: ô 9 và hàng bậc cao theo nhánh công pháp đã chọn.
+    const br = get().method?.br;
+    const tt = thanThongSkill(m, br);
     const tt10 = thanThong10Skill(m);
-    return [...skillBar(m), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : []), ...tierBar(m)];
+    return [...skillBar(m), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : []), ...tierBar(m, br)];
   }
 
   useSkill(i: number): void {

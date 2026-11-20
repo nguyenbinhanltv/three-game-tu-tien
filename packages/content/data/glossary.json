@@ -11,6 +11,38 @@
   "def": "phòng ngự",
   "posture": "thế",
   "posture_broken": "mất thế",
+  "branches": {
+    "lac_kiem_quyet": {
+      "pha_mach": "Phá Mạch",
+      "tam_diep": "Tam Điệp",
+      "ngu_kiem": "Ngự Kiếm",
+      "thuan_kiem": "Thuấn Kiếm",
+      "kiem_anh": "Kiếm Ảnh",
+      "thuan_tram": "Thuấn Trảm",
+      "van_kiem": "Vạn Kiếm",
+      "nhat_kiem": "Nhất Kiếm"
+    },
+    "bat_dong_kim_than": {
+      "chan_dia": "Chấn Địa",
+      "kim_chung": "Kim Chung",
+      "son_nhac": "Sơn Nhạc",
+      "dich_son": "Dịch Sơn",
+      "thiet_than": "Thiết Thân",
+      "ho_the": "Hộ Thế",
+      "bat_dong": "Bất Động",
+      "kim_cuong": "Kim Cương"
+    },
+    "thanh_moc_dan_kinh": {
+      "moc_linh": "Mộc Linh",
+      "duoc_vu": "Dược Vũ",
+      "ho_dan": "Hộ Đan",
+      "doc_dan": "Độc Đan",
+      "hoa_than": "Hóa Thân",
+      "cuu_vien": "Cứu Viện",
+      "truong_duoc": "Trường Dược",
+      "thinh_hoa": "Thịnh Hỏa"
+    }
+  },
   "marks": {
     "kiem_an": "Kiếm ấn",
     "truy_hon": "Truy hồn",

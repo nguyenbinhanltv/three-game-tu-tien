@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import { allowSkillForTest } from './testkit';
 import { groundAt, MF_STUN, MS_DEAD, unpackMarks } from '@dtl/shared';
 
 // VS-2c: ấn trên mục tiêu. Server đặt, tiêu, tính thưởng và đồng bộ gói bit `mk`; client chỉ vẽ.
@@ -31,7 +32,12 @@ function setup(level = 28) {
     respawn: { x: X, z: Z },
     persistPosition: false,
   });
-  const raw = sim.onSkill.bind(sim);
+  const raw0 = sim.onSkill.bind(sim);
+  // VS-2d: test cơ chế chiêu, không đi qua bước chọn nhánh công pháp.
+  const raw = (pl: Ent, msg: { id: string; t?: string }) => {
+    allowSkillForTest(pl.char, msg.id);
+    raw0(pl, msg);
+  };
   const priv = sim as unknown as {
     resolvePending(p: Ent): void;
     tickMethods(): void;

@@ -54,9 +54,10 @@ import {
   planDash,
   strikeDelay,
   type Terrain,
+  type ResourceMods,
 } from '@dtl/shared';
 import { MARK, SKILL } from '@dtl/content';
-import { type Hot, methodOf, passiveOf, resolveFor, resourceOf, type Trail } from '../method';
+import { branchModsOf, gateOf, type Hot, methodOf, passiveOf, resolveFor, resourceOf, type Trail } from '../method';
 import { chainOf, takeChain } from '../skillflow';
 import type { DuelSystem } from '../duel';
 import type { MirrorSystem } from '../mirror';
@@ -124,6 +125,9 @@ export class CombatSystem {
     if (c.level < skill.unlock) return this.c.warn(p, 'sys.level_low');
     if (skill.method && c.meta.method !== skill.method) return this.c.warn(p, 'sys.no_method');
     if (skill.locked) return this.c.warn(p, 'sys.skill_locked');
+    // VS-2d: chiêu gắn nhánh công pháp chỉ dùng được khi đã chọn đúng nhánh ở mốc của nó.
+    const gate = gateOf(c, skill);
+    if (gate !== 'ok') return this.c.warn(p, gate === 'need' ? 'sys.branch_needed' : 'sys.branch_other');
     if (this.airborne(p)) return this.c.warn(p, 'sys.cannot_while_flying');
     if (skill.dash) return this.onDash(p, skill, typeof m.t === 'string' ? m.t : '');
     if (p.casting || p.flow.pending) return;
@@ -339,7 +343,9 @@ export class CombatSystem {
       const cm = skill.consumeMark;
       const took = cm && tgt.state !== MS_DEAD ? this.takeMonMark(p, tgt, cm.id) : 0;
       const stunSec =
-        (rs.variant?.stun ?? skill.stun ?? 0) + (skill.id === 'skl_dich_son_xung' ? c.stats.setFx.dichSonStun : 0) + (took ? (cm?.stun ?? 0) : 0);
+        (rs.variant?.stun ?? skill.stun ?? 0) +
+        (skill.id === 'skl_dich_son_xung' ? c.stats.setFx.dichSonStun : 0) +
+        (took ? (cm?.stun ?? 0) : 0);
       if (stunSec > 0 && tgt.state !== MS_DEAD) this.stunMonster(p, tgt, stunSec);
       if (took && cm) {
         if (cm.res) this.addRes(p, cm.res);
@@ -432,20 +438,25 @@ export class CombatSystem {
   /** Lượng tài nguyên đang có (đã tính rụng theo thời gian); chưa có công pháp thì 0. */
   liveRes(p: PlayerEnt): number {
     const def = resourceOf(p.char.meta);
-    return def ? resNow(def, p.mth.res, p.mth.resAt, this.c.now) : 0;
+    return def ? resNow(def, p.mth.res, p.mth.resAt, this.c.now, this.resMods(p)) : 0;
+  }
+
+  /** Luật nhánh công pháp tác động lên tài nguyên của `p` (VS-2d): trần, giữ lại khi xả, nhân tích, không rụng. */
+  resMods(p: PlayerEnt): ResourceMods | undefined {
+    return branchModsOf(p.char).res;
   }
 
   /** Tài nguyên đang đầy (Kiếm ý đầy: bạo kích cộng thêm). */
   resFull(p: PlayerEnt): boolean {
     const def = resourceOf(p.char.meta);
-    return !!def && this.liveRes(p) >= resMax(def);
+    return !!def && this.liveRes(p) >= resMax(def, this.resMods(p));
   }
 
   /** Tích `n` điểm tài nguyên; mỗi lần tích làm mới mốc rụng. */
   addRes(p: PlayerEnt, n: number): void {
     const def = resourceOf(p.char.meta);
     if (!def || !(n > 0)) return;
-    p.mth.res = resAdd(def, this.liveRes(p), n);
+    p.mth.res = resAdd(def, this.liveRes(p), n, this.resMods(p));
     p.mth.resAt = this.c.now;
     p.mth.dirty = true;
   }
@@ -485,7 +496,7 @@ export class CombatSystem {
   spendRes(p: PlayerEnt, skill: SkillDef): { mul: number; spent: number } {
     const def = resourceOf(p.char.meta);
     if (!def) return { mul: 1, spent: 0 };
-    const sp = resSpend(def, this.liveRes(p), skill.res, dealsDamage(skill) && skill.cd > 0);
+    const sp = resSpend(def, this.liveRes(p), skill.res, dealsDamage(skill) && skill.cd > 0, this.resMods(p));
     if (sp.spent <= 0) return { mul: 1, spent: 0 };
     p.mth.res = sp.left;
     // `sp.left` là lượng còn lại LÚC NÀY (đã trừ phần rụng): dời mốc để lần đọc sau không trừ phần rụng đó lần nữa.
@@ -519,7 +530,7 @@ export class CombatSystem {
     const def = this.markFor(p, id);
     if (!def || def.on !== 'mon') return;
     if (mon.state === MS_DEAD || (mon.owner && mon.owner !== p.sid) || this.c.now < mon.evadeUntil) return;
-    markAdd(mon.marks, def, p.sid, n, this.c.now, { mul });
+    markAdd(mon.marks, def, p.sid, n, this.c.now, { mul, durMul: branchModsOf(p.char).markDurMul });
     mon.s.mk = packMarks(mon.marks, this.c.now);
     // Mất thế: quái thường choáng, thủ lĩnh cộng thanh phá thế (không choáng thủ lĩnh bằng ấn).
     if (def.onApply) {
@@ -542,7 +553,7 @@ export class CombatSystem {
   markAlly(p: PlayerEnt, o: PlayerEnt, id: string, n = 1): void {
     const def = this.markFor(p, id);
     if (!def || def.on !== 'ally' || !this.canAssist(p, o)) return;
-    markAdd(o.marks, def, p.sid, n, this.c.now);
+    markAdd(o.marks, def, p.sid, n, this.c.now, { durMul: branchModsOf(p.char).markDurMul });
     o.s.mk = packMarks(o.marks, this.c.now);
   }
 
