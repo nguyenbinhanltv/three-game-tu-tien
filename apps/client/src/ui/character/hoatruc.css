@@ -220,7 +220,7 @@
   left: 50%;
   bottom: 14px;
   transform: translateX(-50%);
-  padding: 4px 14px;
+  padding: 3px 14px;
   font-family: var(--u-font-head);
   font-weight: 700;
   font-size: var(--u-fs-2);
@@ -231,6 +231,13 @@
   animation: hoatruc-seal 2400ms var(--u-ease) both;
   z-index: 3;
   pointer-events: none;
+}
+/* tên bộ bằng chữ thư pháp (tools/calli, nhóm outfit): ảnh vàng trên nền son, hiện nét bút cùng nhịp dấu triện */
+.hoatruc-seal .calli {
+  width: auto;
+  max-width: 60vw;
+  vertical-align: middle;
+  filter: drop-shadow(0 1px 1px var(--u-ink-0));
 }
 /* viền theo phẩm; Thần = hồng ngọc chạy dọc khung */
 .hoatruc-rim {

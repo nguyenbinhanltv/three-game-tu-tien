@@ -142,5 +142,141 @@
     "w": 1160,
     "h": 260,
     "hash": "437ee16dbf7c"
+  },
+  "set_lac_kiem": {
+    "key": "set.set_lac_kiem.name",
+    "text": "Lạc Kiếm Môn Phục",
+    "file": "outfit-set_lac_kiem.c94d0f0f6a40.png",
+    "w": 719,
+    "h": 131,
+    "hash": "c94d0f0f6a40"
+  },
+  "set_liet_mach": {
+    "key": "set.set_liet_mach.name",
+    "text": "Liệt Mạch Kiếm Y",
+    "file": "outfit-set_liet_mach.40aa190d7ca8.png",
+    "w": 674,
+    "h": 159,
+    "hash": "40aa190d7ca8"
+  },
+  "set_dia_giap": {
+    "key": "set.set_dia_giap.name",
+    "text": "Địa Long Hộ Giáp",
+    "file": "outfit-set_dia_giap.01042a9e678f.png",
+    "w": 603,
+    "h": 158,
+    "hash": "01042a9e678f"
+  },
+  "set_phuc_mach": {
+    "key": "set.set_phuc_mach.name",
+    "text": "Phục Mạch Đan Bào",
+    "file": "outfit-set_phuc_mach.f039d0c12a88.png",
+    "w": 720,
+    "h": 130,
+    "hash": "f039d0c12a88"
+  },
+  "set_kinh_quang": {
+    "key": "set.set_kinh_quang.name",
+    "text": "Kính Quang Kiếm Y",
+    "file": "outfit-set_kinh_quang.140f93b73d91.png",
+    "w": 718,
+    "h": 170,
+    "hash": "140f93b73d91"
+  },
+  "set_van_kinh": {
+    "key": "set.set_van_kinh.name",
+    "text": "Vân Kình Thiết Giáp",
+    "file": "outfit-set_van_kinh.58af90855558.png",
+    "w": 702,
+    "h": 131,
+    "hash": "58af90855558"
+  },
+  "set_luu_ly": {
+    "key": "set.set_luu_ly.name",
+    "text": "Lưu Ly Đan Y",
+    "file": "outfit-set_luu_ly.7b3b44789708.png",
+    "w": 483,
+    "h": 158,
+    "hash": "7b3b44789708"
+  },
+  "set_tinh_khuyet": {
+    "key": "set.set_tinh_khuyet.name",
+    "text": "Tinh Khuyết Kiếm Bào",
+    "file": "outfit-set_tinh_khuyet.1d24a8afb0ee.png",
+    "w": 790,
+    "h": 134,
+    "hash": "1d24a8afb0ee"
+  },
+  "set_co_thanh": {
+    "key": "set.set_co_thanh.name",
+    "text": "Cổ Thành Huyền Giáp",
+    "file": "outfit-set_co_thanh.9830085d661a.png",
+    "w": 740,
+    "h": 136,
+    "hash": "9830085d661a"
+  },
+  "set_than_tang": {
+    "key": "set.set_than_tang.name",
+    "text": "Thần Tàng Đan Bào",
+    "file": "outfit-set_than_tang.3bf97a7ab756.png",
+    "w": 652,
+    "h": 155,
+    "hash": "3bf97a7ab756"
+  },
+  "de_tu": {
+    "key": "ui.hoatruc.de_tu",
+    "text": "Đồ Đệ Tử",
+    "file": "outfit-de_tu.a3d4ccf423f6.png",
+    "w": 349,
+    "h": 129,
+    "hash": "a3d4ccf423f6"
+  },
+  "set_dan_tam": {
+    "key": "set.set_dan_tam.name",
+    "text": "Đan Tâm Y Bát",
+    "file": "outfit-set_dan_tam.0e194cbb405b.png",
+    "w": 548,
+    "h": 161,
+    "hash": "0e194cbb405b"
+  },
+  "set_han_giao": {
+    "key": "set.set_han_giao.name",
+    "text": "Hàn Giao Lân",
+    "file": "outfit-set_han_giao.2a1d697dd538.png",
+    "w": 461,
+    "h": 120,
+    "hash": "2a1d697dd538"
+  },
+  "set_huyen_giap": {
+    "key": "set.set_huyen_giap.name",
+    "text": "Huyền Giáp Hộ Pháp",
+    "file": "outfit-set_huyen_giap.ee6a8b39d239.png",
+    "w": 689,
+    "h": 136,
+    "hash": "ee6a8b39d239"
+  },
+  "set_tan_thiet": {
+    "key": "set.set_tan_thiet.name",
+    "text": "Tẫn Thiết Hộ Giáp",
+    "file": "outfit-set_tan_thiet.fa5742a34765.png",
+    "w": 612,
+    "h": 131,
+    "hash": "fa5742a34765"
+  },
+  "set_tinh_dan_bao": {
+    "key": "set.set_tinh_dan_bao.name",
+    "text": "Tịnh Quang Đan Bào",
+    "file": "outfit-set_tinh_dan_bao.a8370a69ca64.png",
+    "w": 676,
+    "h": 155,
+    "hash": "a8370a69ca64"
+  },
+  "set_tran_khich": {
+    "key": "set.set_tran_khich.name",
+    "text": "Trấn Khích Kiếm Y",
+    "file": "outfit-set_tran_khich.e8cf6dfba50f.png",
+    "w": 718,
+    "h": 170,
+    "hash": "e8cf6dfba50f"
   }
 }
