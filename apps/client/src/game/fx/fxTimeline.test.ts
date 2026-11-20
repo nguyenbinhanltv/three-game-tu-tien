@@ -285,6 +285,11 @@ describe('VS-1: chiêu làm lại giữ biến thức (tín hiệu thị giác c
     'skl_van_kiem_quy_tong',
     'skl_thien_kiem_hoa_hinh',
     'skl_thiet_quyen_chan_dia',
+    'skl_tran_son_an',
+    'skl_kim_cuong_bat_hoai',
+    'skl_kim_chung_tran',
+    'skl_son_nhac_hoa_than',
+    'skl_thien_kim_phap_tuong',
   ];
   it('mọi biến thức trong methods.json của chiêu đã làm lại có sự kiện riêng trong timeline', () => {
     for (const id of REDONE) {
@@ -294,5 +299,81 @@ describe('VS-1: chiêu làm lại giữ biến thức (tín hiệu thị giác c
         if (fx) expect(Object.keys(tl.variants ?? {}), `${id}:${fx}`).toContain(fx);
       }
     }
+  });
+});
+
+describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu một hình khối)', () => {
+  /** Hình khối chủ đạo của từng chiêu (nhận diện riêng). */
+  const HERO: Record<string, string[]> = {
+    skl_thiet_quyen_chan_dia: ['rubble_a'],
+    skl_tran_son_an: ['seal_block'],
+    skl_kim_chung_tran: ['bell_cage'],
+    skl_son_nhac_hoa_than: ['rock_spire', 'rubble_b'],
+    skl_kim_cuong_bat_hoai: ['shield_plate', 'diamond_cage'],
+    skl_thien_kim_phap_tuong: ['rock_spire', 'rune_ring2'],
+  };
+  const all = (id: string) => {
+    const tl = FX_TIMELINE.get(id)!;
+    return [...tl.events, ...Object.values(tl.variants ?? {}).flat()];
+  };
+  it('trong ngân sách: ≤ 12 draw mỗi biến thức, ≤ 25 cả chiêu, hạt ≤ 1.500', () => {
+    for (const id of Object.keys(HERO)) {
+      const tl = FX_TIMELINE.get(id)!;
+      expect(validateFxTimeline(tl, (s) => SKILL.has(s)), id).toEqual([]);
+      for (const v of [undefined, ...Object.keys(tl.variants ?? {})]) expect(fxDrawCount(fxEventsFor(tl, -1, v)), `${id}:${v}`).toBeLessThanOrEqual(12);
+      expect(fxDrawCount(all(id)), id).toBeLessThanOrEqual(25);
+      expect(fxParticleCount(all(id)), id).toBeLessThanOrEqual(1500);
+    }
+  });
+  it('có hình khối chủ đạo riêng, không còn gai/vòng phẳng kiểu cũ (spike, ripple, helix)', () => {
+    for (const [id, hero] of Object.entries(HERO)) {
+      const shapes = new Set(all(id).flatMap((e) => (e.type === 'mesh' ? [e.shape] : [])));
+      for (const h of hero) expect(shapes.has(h as 'burst'), `${id}:${h}`).toBe(true);
+      for (const old of ['spike', 'ripple', 'helix', 'kite'] as const) expect(shapes.has(old), `${id}:${old}`).toBe(false);
+    }
+    // Ấn, chuông, kim cương chỉ thuộc về một chiêu.
+    for (const only of ['seal_block', 'bell_cage', 'diamond_cage'] as const) {
+      const users = Object.keys(HERO).filter((id) => all(id).some((e) => e.type === 'mesh' && e.shape === only));
+      expect(users, only).toHaveLength(1);
+    }
+  });
+  it('chỉ tông đồng/nâu/đá (body, core, shadow): không accent vàng chanh, không rim kem', () => {
+    for (const id of Object.keys(HERO))
+      for (const e of all(id)) {
+        const tone = (e as { tone?: string }).tone;
+        if (tone !== undefined && e.type !== 'vignette') expect(['body', 'core', 'shadow'], `${id}:${e.type}`).toContain(tone);
+      }
+  });
+  it('nhịp và cảm giác theo luật chiêu thường: chớp ≤ 0,15, vignette tối ≤ 0,35 (tối thượng ≤ 0,45), slowmo chỉ ở tối thượng', () => {
+    for (const id of Object.keys(HERO)) {
+      const ult = SKILL.get(id)!.ult === true;
+      const ev = all(id);
+      const snd = ev.filter((e) => e.type === 'soundAt').map((e) => e.t);
+      expect(Math.min(...snd), id).toBeLessThan(0);
+      expect(snd.some((t) => t === 0), id).toBe(true);
+      for (const e of ev) {
+        if (e.type === 'flash') expect(e.amount, id).toBeLessThanOrEqual(0.15);
+        if (e.type === 'vignette') {
+          expect(e.tone ?? 'dark', id).toBe('dark');
+          expect(e.amount, id).toBeLessThanOrEqual(ult ? 0.45 : 0.35);
+        }
+        if (e.type === 'slowmo') expect(ult, id).toBe(true);
+      }
+      // Đòn kết đúng mốc trúng: khựng + rung tại t = 0.
+      expect(ev.some((e) => e.type === 'hitstop' && e.t === 0), id).toBe(true);
+      expect(ev.some((e) => e.type === 'shake' && e.t === 0), id).toBe(true);
+    }
+  });
+  it('khiên/hộ thể/vùng: có hình Ở LẠI ≥ 1,5 s báo vùng tác dụng (vành mép vùng hoặc khung quanh thân)', () => {
+    const stay = (id: string, shapes: string[], variant?: string) =>
+      fxEventsFor(FX_TIMELINE.get(id)!, -1, variant).some((e) => e.type === 'mesh' && shapes.includes(e.shape) && !e.move && e.dur >= 1.5);
+    expect(stay('skl_tran_son_an', ['rune_ring2'])).toBe(true);
+    expect(stay('skl_tran_son_an', ['shield_plate'], 'guard')).toBe(true);
+    expect(stay('skl_kim_chung_tran', ['bell_cage'])).toBe(true);
+    expect(stay('skl_kim_chung_tran', ['rune_ring2'], 'ally')).toBe(true);
+    expect(stay('skl_son_nhac_hoa_than', ['rock_spire'])).toBe(true);
+    expect(stay('skl_son_nhac_hoa_than', ['rune_ring2'], 'stomp')).toBe(true);
+    expect(stay('skl_kim_cuong_bat_hoai', ['diamond_cage'])).toBe(true);
+    expect(stay('skl_thien_kim_phap_tuong', ['rune_ring2'])).toBe(true);
   });
 });

@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import type { FxLibShape } from '@dtl/shared';
 
 /**
- * Thư viện hình mesh VFX (VS-1): 20 hình có KHỐI (độ dày, sống lưng, mảnh vỡ) thay cho các tấm phẳng kite/spike/ripple.
+ * Thư viện hình mesh VFX (VS-1): 25 hình có KHỐI (độ dày, sống lưng, mảnh vỡ) thay cho các tấm phẳng kite/spike/ripple.
  * Dựng thủ tục bằng code (không file GLB: không cần nạp, gộp instance như mọi hình `FxShape`, thử trong test node). UV theo quy ước của shader
  * `render/vfx/stylized.ts`:
  *   - kiểu `toon`: `u` dọc hình (chiều quét/lộ dần), `v` từ mép trong (0) ra mép ngoài (1).
@@ -517,6 +517,273 @@ function petalBlade(): THREE.BufferGeometry {
   return build(pos, uvs, idx);
 }
 
+// ---------------------------------------------------------------------------------------------------------------
+// Hộ pháp (VS-1): ấn, chuông, trụ đá, thuẫn, khung kim cương. Đều kiểu `crystal`, ĐỨNG theo +Y (đáy ở y = 0), mặt phẳng từng mặt.
+// `u` chạy 0 → 1 ngang mỗi mặt/thanh nên shader tô gân vàng ở cạnh (viền đồng); đá dùng `u` giữa mặt để không có gân.
+// Chuông và kim cương là KHUNG (gọng + đai) chứ không phải vỏ kín: úp quanh người mà vẫn thấy nhân vật bên trong.
+// ---------------------------------------------------------------------------------------------------------------
+type V5 = [number, number, number, number, number];
+
+/** Gom tam giác rời (mỗi mặt một pháp tuyến); tự lật chiều để mặt hướng ra xa điểm `o` (tâm khối). */
+class Faces {
+  pos: number[] = [];
+  uvs: number[] = [];
+  o: [number, number, number] = [0, 0, 0];
+  tri(a: V5, b: V5, c: V5): void {
+    const ux = b[0] - a[0];
+    const uy = b[1] - a[1];
+    const uz = b[2] - a[2];
+    const vx = c[0] - a[0];
+    const vy = c[1] - a[1];
+    const vz = c[2] - a[2];
+    const nx = uy * vz - uz * vy;
+    const ny = uz * vx - ux * vz;
+    const nz = ux * vy - uy * vx;
+    const mx = (a[0] + b[0] + c[0]) / 3 - this.o[0];
+    const my = (a[1] + b[1] + c[1]) / 3 - this.o[1];
+    const mz = (a[2] + b[2] + c[2]) / 3 - this.o[2];
+    const out = nx * mx + ny * my + nz * mz >= 0;
+    for (const p of out ? [a, b, c] : [a, c, b]) {
+      this.pos.push(p[0], p[1], p[2]);
+      this.uvs.push(p[3], p[4]);
+    }
+  }
+  quad(a: V5, b: V5, c: V5, d: V5): void {
+    this.tri(a, b, c);
+    this.tri(a, c, d);
+  }
+  /** Thanh bốn mặt (tiết diện hình thoi, nửa rộng `w`) nối P → Q; `v` lấy theo `vOf(y)`. */
+  beam(p: THREE.Vector3, q: THREE.Vector3, w: number, vOf: (y: number) => number): void {
+    const d = new THREE.Vector3().subVectors(q, p).normalize();
+    const n1 = new THREE.Vector3().crossVectors(d, Math.abs(d.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0)).normalize();
+    const n2 = new THREE.Vector3().crossVectors(d, n1).normalize();
+    const mid = new THREE.Vector3().addVectors(p, q).multiplyScalar(0.5);
+    this.o = [mid.x, mid.y, mid.z];
+    const ring = (c: THREE.Vector3): THREE.Vector3[] => [
+      c.clone().addScaledVector(n1, w),
+      c.clone().addScaledVector(n2, w),
+      c.clone().addScaledVector(n1, -w),
+      c.clone().addScaledVector(n2, -w),
+    ];
+    const a = ring(p);
+    const b = ring(q);
+    for (let i = 0; i < 4; i++) {
+      const j = (i + 1) % 4;
+      this.quad(
+        [a[i]!.x, a[i]!.y, a[i]!.z, 0, vOf(a[i]!.y)],
+        [a[j]!.x, a[j]!.y, a[j]!.z, 1, vOf(a[j]!.y)],
+        [b[j]!.x, b[j]!.y, b[j]!.z, 1, vOf(b[j]!.y)],
+        [b[i]!.x, b[i]!.y, b[i]!.z, 0, vOf(b[i]!.y)],
+      );
+    }
+  }
+  /** Khối chóp cụt đáy đa giác đều `n` cạnh quanh trục Y: (r0, y0) → (r1, y1), xoay `rot` rad; mỗi mặt `u` 0 → 1. */
+  frustum(n: number, r0: number, y0: number, r1: number, y1: number, vOf: (y: number) => number, rot = 0): void {
+    this.o = [0, (y0 + y1) / 2, 0];
+    for (let i = 0; i < n; i++) {
+      const a0 = rot + (i / n) * Math.PI * 2;
+      const a1 = rot + ((i + 1) / n) * Math.PI * 2;
+      this.quad(
+        [Math.cos(a0) * r0, y0, Math.sin(a0) * r0, 0, vOf(y0)],
+        [Math.cos(a1) * r0, y0, Math.sin(a1) * r0, 1, vOf(y0)],
+        [Math.cos(a1) * r1, y1, Math.sin(a1) * r1, 1, vOf(y1)],
+        [Math.cos(a0) * r1, y1, Math.sin(a0) * r1, 0, vOf(y1)],
+      );
+    }
+  }
+  /** Nắp đa giác đều `n` cạnh ở độ cao `y` (mặt hướng ra xa `o` hiện tại). */
+  cap(n: number, r: number, y: number, v: number, rot = 0): void {
+    for (let i = 0; i < n; i++) {
+      const a0 = rot + (i / n) * Math.PI * 2;
+      const a1 = rot + ((i + 1) / n) * Math.PI * 2;
+      this.tri([0, y, 0, 0.5, v], [Math.cos(a0) * r, y, Math.sin(a0) * r, 0.5, v], [Math.cos(a1) * r, y, Math.sin(a1) * r, 0.5, v]);
+    }
+  }
+  done(): THREE.BufferGeometry {
+    return build(
+      this.pos,
+      this.uvs,
+      Array.from({ length: this.pos.length / 3 }, (_, i) => i),
+    );
+  }
+}
+
+/** Ấn (Trấn Sơn Ấn): đế vuông vát mép 1 × 1, hai bậc thu dần, núm cầm ở đỉnh; cao 1. Đáy (mặt khắc) ở y = 0. */
+function sealBlock(): THREE.BufferGeometry {
+  const f = new Faces();
+  const v = (y: number) => y;
+  const q = Math.SQRT2; // bán kính đa giác 4 cạnh = nửa cạnh × √2
+  const r4 = Math.PI / 4;
+  const tiers: [number, number][] = [
+    [0.46, 0],
+    [0.5, 0.06],
+    [0.5, 0.4],
+    [0.42, 0.48],
+    [0.3, 0.5],
+    [0.3, 0.62],
+    [0.2, 0.68],
+    [0.12, 0.7],
+    [0.17, 0.86],
+    [0.1, 1],
+  ];
+  for (let i = 0; i < tiers.length - 1; i++) f.frustum(4, tiers[i]![0] * q, tiers[i]![1], tiers[i + 1]![0] * q, tiers[i + 1]![1], v, r4);
+  f.o = [0, 0.5, 0];
+  f.cap(4, 0.46 * q, 0, 0, r4);
+  f.cap(4, 0.1 * q, 1, 1, r4);
+  return f.done();
+}
+
+/** Hồ sơ chuông (bán kính, độ cao): vành loe ở đáy, thân thon, vai tròn. */
+const BELL_PROFILE: [number, number][] = [
+  [1.0, 0],
+  [0.9, 0.14],
+  [0.79, 0.5],
+  [0.73, 0.95],
+  [0.67, 1.3],
+  [0.52, 1.56],
+  [0.4, 1.64],
+];
+
+/**
+ * Chuông khung (Kim Chung Tráo): 8 gọng dọc theo hồ sơ chuông + 3 đai ngang (vành miệng dày, đai thân, đai vai) + chỏm kín và quai.
+ * Bán kính miệng 1, cao 2; giữa các gọng để trống nên nhân vật bên trong không bị che.
+ */
+function bellCage(): THREE.BufferGeometry {
+  const f = new Faces();
+  const H = 2;
+  const v = (y: number) => Math.min(1, Math.max(0, y / H));
+  const at = (a: number, r: number, y: number) => new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r);
+  for (let k = 0; k < 8; k++) {
+    const a = (k / 8) * Math.PI * 2;
+    for (let i = 0; i < BELL_PROFILE.length - 1; i++)
+      f.beam(at(a, BELL_PROFILE[i]![0], BELL_PROFILE[i]![1]), at(a, BELL_PROFILE[i + 1]![0], BELL_PROFILE[i + 1]![1]), 0.055, v);
+  }
+  const band = (r: number, y: number, w: number, segs: number) => {
+    for (let i = 0; i < segs; i++) f.beam(at((i / segs) * Math.PI * 2, r, y), at(((i + 1) / segs) * Math.PI * 2, r, y), w, v);
+  };
+  band(1.0, 0.05, 0.08, 24);
+  band(0.76, 0.72, 0.045, 16);
+  band(0.6, 1.44, 0.045, 16);
+  // Chỏm kín (vai → đỉnh) + quai.
+  f.frustum(8, 0.4, 1.64, 0.26, 1.78, v);
+  f.frustum(8, 0.26, 1.78, 0.1, 1.84, v);
+  f.o = [0, 1.7, 0];
+  f.cap(8, 0.1, 1.84, v(1.84));
+  f.beam(new THREE.Vector3(-0.09, 1.82, 0), new THREE.Vector3(-0.09, 1.97, 0), 0.03, v);
+  f.beam(new THREE.Vector3(0.09, 1.82, 0), new THREE.Vector3(0.09, 1.97, 0), 0.03, v);
+  f.beam(new THREE.Vector3(-0.12, 1.97, 0), new THREE.Vector3(0.12, 1.97, 0), 0.03, v);
+  return f.done();
+}
+
+/** Trụ đá (Sơn Nhạc Hóa Thân): cụm ba tảng lăng trụ 5 mặt gồ ghề, đỉnh vát lệch; tảng chính cao 1, hai tảng phụ ngả ra ngoài. */
+function rockSpire(): THREE.BufferGeometry {
+  const r = rng(17);
+  const f = new Faces();
+  const prism = (cx: number, cz: number, h: number, rad: number, lx: number, lz: number) => {
+    const n = 5;
+    const a0 = r() * 6.28;
+    const levels = [0, 0.42, 0.78].map((t) => {
+      const sc = t === 0 ? 1.08 : t < 0.5 ? 0.95 : 0.7;
+      return Array.from({ length: n }, (_, i) => {
+        const a = a0 + (i / n) * Math.PI * 2 + (r() - 0.5) * 0.3;
+        const rr = rad * sc * (0.8 + r() * 0.4);
+        return [cx + lx * t * h + Math.cos(a) * rr, t * h * (0.94 + r() * 0.12), cz + lz * t * h + Math.sin(a) * rr] as const;
+      });
+    });
+    for (const p of levels[0]!) (p as unknown as number[])[1] = 0;
+    const tip = [cx + lx * h + (r() - 0.5) * rad * 0.5, h, cz + lz * h + (r() - 0.5) * rad * 0.5] as const;
+    const us = [0.2, 0.5, 0.8];
+    const P = (p: readonly [number, number, number], k: number): V5 => [p[0], p[1], p[2], us[k % 3]!, Math.min(1, p[1])];
+    for (let l = 0; l < levels.length - 1; l++) {
+      f.o = [cx + lx * h * 0.4, (levels[l]![0]![1] + levels[l + 1]![0]![1]) / 2, cz + lz * h * 0.4];
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        f.tri(P(levels[l]![i]!, 0), P(levels[l]![j]!, 1), P(levels[l + 1]![j]!, 2));
+        f.tri(P(levels[l]![i]!, 0), P(levels[l + 1]![j]!, 1), P(levels[l + 1]![i]!, 2));
+      }
+    }
+    f.o = [cx + lx * h * 0.7, h * 0.7, cz + lz * h * 0.7];
+    for (let i = 0; i < n; i++) f.tri(P(levels[2]![i]!, 0), P(levels[2]![(i + 1) % n]!, 1), P(tip, 2));
+  };
+  prism(0, 0, 1, 0.27, 0.05, -0.04);
+  prism(0.26, 0.1, 0.62, 0.19, 0.3, 0.12);
+  prism(-0.22, 0.16, 0.44, 0.17, -0.34, 0.2);
+  return f.done();
+}
+
+/** Thuẫn (Kim Cương Bất Hoại, Thiên Kim Pháp Tướng): tấm chắn sáu cạnh thuôn dài rộng 1, cao 1,6, dày; mặt trước (+Z) hai bậc nổi và núm giữa. */
+function shieldPlate(): THREE.BufferGeometry {
+  const f = new Faces();
+  const H = 1.6;
+  const out: [number, number][] = [
+    [0, 0],
+    [0.5, 0.22],
+    [0.5, 1.28],
+    [0, 1.6],
+    [-0.5, 1.28],
+    [-0.5, 0.22],
+  ];
+  const cy = 0.8;
+  const inner = out.map(([x, y]) => [x * 0.62, cy + (y - cy) * 0.66] as [number, number]);
+  const n = out.length;
+  f.o = [0, cy, -0.4];
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    // Vành ngoài (gân vàng ở mép: `u` = 1 tại mép ngoài) → bậc trong → núm.
+    f.quad(
+      [out[i]![0], out[i]![1], 0.05, 1, out[i]![1] / H],
+      [out[j]![0], out[j]![1], 0.05, 1, out[j]![1] / H],
+      [inner[j]![0], inner[j]![1], 0.12, 0.5, inner[j]![1] / H],
+      [inner[i]![0], inner[i]![1], 0.12, 0.5, inner[i]![1] / H],
+    );
+    f.tri([inner[i]![0], inner[i]![1], 0.12, 0.3, inner[i]![1] / H], [inner[j]![0], inner[j]![1], 0.12, 0.7, inner[j]![1] / H], [0, cy, 0.24, 0.5, 0.5]);
+  }
+  f.o = [0, cy, 0];
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    f.quad(
+      [out[i]![0], out[i]![1], 0.05, 0, out[i]![1] / H],
+      [out[j]![0], out[j]![1], 0.05, 1, out[j]![1] / H],
+      [out[j]![0], out[j]![1], -0.07, 1, out[j]![1] / H],
+      [out[i]![0], out[i]![1], -0.07, 0, out[i]![1] / H],
+    );
+    f.tri([out[i]![0], out[i]![1], -0.07, 0.3, out[i]![1] / H], [out[j]![0], out[j]![1], -0.07, 0.7, out[j]![1] / H], [0, cy, -0.07, 0.5, 0.5]);
+  }
+  return f.done();
+}
+
+/** Khung kim cương (Kim Cương Bất Hoại): 12 cạnh của khối bát diện thuôn (đỉnh dưới y = 0, đai vuông bán kính 0,9 ở y = 1, đỉnh trên y = 2,2) + hạt ở 6 đỉnh. */
+function diamondCage(): THREE.BufferGeometry {
+  const f = new Faces();
+  const H = 2.2;
+  const v = (y: number) => Math.min(1, Math.max(0, y / H));
+  const top = new THREE.Vector3(0, H, 0);
+  const bot = new THREE.Vector3(0, 0, 0);
+  const eq = [0, 1, 2, 3].map((i) => new THREE.Vector3(Math.cos((i / 4) * Math.PI * 2) * 0.9, 1, Math.sin((i / 4) * Math.PI * 2) * 0.9));
+  for (let i = 0; i < 4; i++) {
+    f.beam(eq[i]!, eq[(i + 1) % 4]!, 0.04, v);
+    f.beam(eq[i]!, top, 0.04, v);
+    f.beam(bot, eq[i]!, 0.04, v);
+  }
+  const gem = (c: THREE.Vector3, s: number) => {
+    f.o = [c.x, c.y, c.z];
+    const ax: [number, number, number][] = [
+      [s, 0, 0],
+      [0, 0, s],
+      [-s, 0, 0],
+      [0, 0, -s],
+    ];
+    for (let i = 0; i < 4; i++) {
+      const a = ax[i]!;
+      const b = ax[(i + 1) % 4]!;
+      for (const sy of [s * 1.4, -s * 1.4])
+        f.tri([c.x + a[0], c.y, c.z + a[2], 0.2, v(c.y)], [c.x + b[0], c.y, c.z + b[2], 0.8, v(c.y)], [c.x, c.y + sy, c.z, 0.5, v(c.y + sy)]);
+    }
+  };
+  for (const c of [...eq, top]) gem(c, 0.1);
+  return f.done();
+}
+
 const BUILDERS: Record<FxLibShape, () => THREE.BufferGeometry> = {
   slash_thick: slashThick,
   slash_thin: slashThin,
@@ -538,6 +805,11 @@ const BUILDERS: Record<FxLibShape, () => THREE.BufferGeometry> = {
   sword_halo: swordHalo,
   spark_streak: sparkStreak,
   petal_blade: petalBlade,
+  seal_block: sealBlock,
+  bell_cage: bellCage,
+  rock_spire: rockSpire,
+  shield_plate: shieldPlate,
+  diamond_cage: diamondCage,
 };
 
 const cache = new Map<FxLibShape, THREE.BufferGeometry>();
