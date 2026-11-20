@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { cameraPosition, float, mix, normalWorld, positionWorld, smoothstep, texture, vec2, vec3, vertexColor } from 'three/tsl';
+import { bumpMap, cameraPosition, float, mix, normalWorld, positionWorld, smoothstep, texture, vec2, vec3, vertexColor } from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
 import { tkFbm } from './thienKhuyetSky';
 
@@ -51,7 +51,16 @@ function wallRadius(groundAt: (x: number, z: number) => number, dx: number, dz: 
 
 function wallMaterial(): THREE.MeshStandardNodeMaterial {
   // fog: false như vách Thiên Khuyết: sương cảnh làm cả vách thành màn mờ; pha sương nhẹ theo khoảng cách
-  const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9, metalness: 0, side: THREE.DoubleSide, fog: false });
+  const m = new THREE.MeshStandardNodeMaterial({
+    roughness: 0.9,
+    metalness: 0,
+    side: THREE.DoubleSide,
+    fog: false,
+    // thiên về phía camera: các mảng địa hình xuyên qua da (gần đồng phẳng ở chân vách) không thắng độ sâu
+    polygonOffset: true,
+    polygonOffsetFactor: -3,
+    polygonOffsetUnits: -6,
+  });
   const noise = getCloudNoise();
   const wp = positionWorld;
   const w3 = normalWorld.abs().pow(4);
@@ -72,6 +81,14 @@ function wallMaterial(): THREE.MeshStandardNodeMaterial {
   const dist = wp.sub(cameraPosition).length();
   m.colorNode = mix(ledgeTop, vec3(0.5, 0.33, 0.28), smoothstep(350, 1800, dist).mul(0.3));
   m.roughnessNode = float(0.74).add(b.mul(0.26));
+  // pháp tuyến đá sắc hơn (nhìn gần không còn như bánh nhiều lớp mềm): bump hai tỉ lệ theo toạ độ thế giới (mặt phẳng ngang theo hướng vách + dọc)
+  const bu = vec2(wp.x.add(wp.z).mul(0.37), wp.y.mul(0.5));
+  m.normalNode = bumpMap(
+    texture(noise, bu)
+      .a.mul(0.65)
+      .add(texture(noise, bu.mul(3.1)).g.mul(0.35)),
+    float(2.4),
+  );
   m.emissiveNode = vertexColor().mul(0.05);
   return m;
 }
@@ -175,7 +192,7 @@ export class DoanMachWall {
     // trên mặt đất, (2) làm mịn bán kính theo các tia kề để không còn khe nứt/tấm rời, (3) đẩy lần nữa. Thay cho cách cũ (bỏ ô khi bán kính nhảy / chìm đất) vốn để lộ nền sau.
     const rad = new Float32Array((RAYS + 1) * stride);
     for (let k = 0; k < rad.length; k++) rad[k] = med[k]! - offs[k]!;
-    const raise = () => {
+    const raise = (margin = 0.4) => {
       for (let i = 0; i <= RAYS; i++) {
         const th = ((i % RAYS) / RAYS) * Math.PI * 2;
         const c = Math.cos(th);
@@ -183,7 +200,7 @@ export class DoanMachWall {
         for (let j = 0; j <= ROWS; j++) {
           const k = i * stride + j;
           let r = rad[k]!;
-          for (let n = 0; n < 40 && r > 300 && groundAt(CX + c * r, CZ + sn * r) > ys[k]! - 0.4; n++) r -= 3;
+          for (let n = 0; n < 40 && r > 300 && groundAt(CX + c * r, CZ + sn * r) > ys[k]! - margin; n++) r -= 3;
           rad[k] = r;
         }
       }
