@@ -130,9 +130,9 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   const pavBreak = smoothstep(
     0.4,
     0.56,
-    texture(tex.mask, p.mul(0.026).add(0.13))
+    texture(tex.mask, p.mul(0.0075).add(0.13))
       .a.mul(0.7)
-      .add(texture(tex.mask, p.mul(0.085).add(0.71)).a.mul(0.3)),
+      .add(texture(tex.mask, p.mul(0.021).add(0.71)).a.mul(0.3)),
   );
   // vỡ mảng chỉ ở rìa (r > 16 m): lõi quanh cổng lát liền, nếu không cả vòng thành lốm đốm
   const pav = pavRaw.mul(mix(float(1), pavBreak, portalK.mul(smoothstep(16, 27, p.sub(vec2(2048, 1708)).length()))));
@@ -198,7 +198,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   col = mix(col, special, spW);
   if (strata) {
     // Phiến đá lớn có viền: lưới ô ~3,4 m méo theo nhiễu; mỗi phiến một sắc, mạch tối có rêu, vài phiến sứt mép; chỉ ở bệ cổng.
-    const warp = texture(tex.mask, p.mul(0.06)).a.sub(0.5).mul(1.4);
+    const warp = texture(tex.mask, p.mul(0.0045)).a.sub(0.5).mul(0.45); // mặt nạ phủ 4096 m: nhân 0,0045 ≈ vân ~15 m (bản trước 0,06 → nhiễu từng điểm ảnh)
     const q = p.div(3.4).add(warp);
     const cell = floor(q);
     const f = fract(q);
@@ -209,12 +209,15 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       .max(smoothstep(float(1).sub(jointW), float(1).sub(jointW.mul(0.45)), f.y));
     // Phiến đá xanh xám: màu phẳng theo từng phiến (xen kẽ sáng/tối kiểu bàn cờ lệch + mỗi phiến một độ), giữ chút chi tiết từ texture lát
     const checker = step(0.5, fract(cell.x.add(cell.y).mul(0.5)));
-    const stone = mix(vec3(0.3, 0.35, 0.36), vec3(0.5, 0.54, 0.53), hsh.mul(0.6).add(checker.mul(0.4)));
+    const stone = mix(vec3(0.2, 0.23, 0.24), vec3(0.42, 0.45, 0.44), hsh.mul(0.6).add(checker.mul(0.4)));
     const detail = float(0.82).add(luminance(col).mul(0.5));
     const slabTop = stone.mul(detail);
     const mossMix = joint.mul(float(0.4).add(hsh.mul(0.5)));
     const slabMoss = mix(slabTop.mul(float(1).sub(joint.mul(0.82))), vec3(0.16, 0.27, 0.1), mossMix.mul(0.65));
-    col = mix(col, slabMoss, step(0.5, pav).mul(portalK));
+    // vùng phiến theo bán kính quanh cổng (không phụ thuộc mặt nạ): lõi r ≤ 24 lát liền, rìa 24–31 vỡ theo nhiễu
+    const dPortal = p.sub(vec2(2048, 1708)).length();
+    const slabArea = smoothstep(31, 25, dPortal).mul(mix(float(1), pavBreak, smoothstep(22, 28, dPortal)));
+    col = mix(col, slabMoss, step(0.5, slabArea).mul(portalK));
   }
   col = col.mul(hue).mul(float(0.84).add(macro.mul(0.32)));
   col = mix(col, col.mul(TOMB_TINT), bio.z);
