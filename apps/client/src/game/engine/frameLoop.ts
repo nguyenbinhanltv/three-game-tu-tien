@@ -403,7 +403,7 @@ export function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
   pickPushers(eng.pushSelf, pool, eng.pushers, 40, n);
   eng.grass.update(dt, rp, eng.pushers, eng.started ? 1 : 6);
   eng.props?.update(dt, rp.x, rp.z);
-  eng.lacKiemSky?.update(eng.camera);
+  eng.lacKiemSky?.update(eng.camera, rp.x, rp.z);
   eng.thienKhuyetSky?.update(performance.now() / 1000);
   eng.vanHaiWow?.update(dt);
   eng.doanMachArt?.update(eng.camera.position);
