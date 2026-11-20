@@ -66,7 +66,8 @@ function wallMaterial(): THREE.MeshStandardNodeMaterial {
   const b = tri(0.09, 'a');
   const c = tri(0.4, 'g');
   const up = smoothstep(0.6, 0.92, normalWorld.y.add(a.sub(0.5).mul(0.3))); // mặt ngửa của thềm: cát/đất vàng nhạt
-  const rock = vertexColor().mul(float(0.68).add(a.mul(0.5)).add(b.mul(0.28)).add(c.mul(0.14)));
+  const d = tri(1.3, 'a'); // hạt đá mịn (sắc nét khi nhìn gần)
+  const rock = vertexColor().mul(float(0.66).add(a.mul(0.45)).add(b.mul(0.3)).add(c.mul(0.2)).add(d.sub(0.5).mul(0.35)));
   const ledgeTop = mix(rock, vec3(0.55, 0.36, 0.2).mul(float(0.7).add(b.mul(0.5))), up.mul(0.55));
   const dist = wp.sub(cameraPosition).length();
   m.colorNode = mix(ledgeTop, vec3(0.5, 0.33, 0.28), smoothstep(350, 1800, dist).mul(0.3));
@@ -79,7 +80,8 @@ export class DoanMachWall {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
 
-  constructor(groundAt: (x: number, z: number) => number) {
+  /** `holes`: điểm đặt thác / phù văn khắc trên vách thật (xz, bán kính) — da bỏ ô quanh đó để chúng không bị che. */
+  constructor(groundAt: (x: number, z: number) => number, holes: { x: number; z: number; r: number }[] = []) {
     this.group.name = 'doanMachWall';
     const pos: number[] = [];
     const col: number[] = [];
@@ -131,14 +133,16 @@ export class DoanMachWall {
         if (ok) rLast = r!;
         else r = rLast;
         // mặt cắt thẳng đứng: độ nhô cố định trong tầng (theo cột khối), tầng kế lệch hẳn → thềm ngang rộng vài mét
-        const layerOff = (hash(lk, 71) - 0.5) * 7 + (hash(lk * 7 + grp, 73) - 0.5) * 10;
-        const chunk = (tkFbm(grp * 0.7 + 3, lk * 0.35, 1.7, 311, 2) - 0.5) * 12; // khối kề nhau lệch nhau
+        const layerOff = (hash(lk, 71) - 0.5) * 3 + (hash(lk * 7 + grp, 73) - 0.5) * 4;
+        const chunk = (tkFbm(grp * 0.7 + 3, lk * 0.35, 1.7, 311, 2) - 0.5) * 5; // khối kề nhau lệch nhau
         const crackN = Math.abs(tkFbm(grp * 0.9 + 11, lk * 0.12, 5.5, 313, 2) - 0.5);
         const crack = Math.max(0, 1 - crackN * 30); // khe dọc hẹp lõm sâu (theo tầng, nên có đoạn đứt)
         const fine = (tkFbm(Math.cos(th) * 70, dy * 0.08, Math.sin(th) * 70, 317, 2) - 0.5) * (m === 1 ? 3.5 : 1.2);
         const lip = m === 2 ? 1.6 + hash(lk * 11 + grp, 79) * 2.4 : 0; // mép trên tầng nhô ra rồi gãy
-        const proud = 6 + layerOff + chunk + fine - crack * 7 + lip;
-        const off = Math.max(1.2, proud) + 14; // +14 m: địa hình (đồi, ghềnh) nhô trước vách che da ở độ cao thấp, để hở thủng; lùi da ra trước địa hình
+        const proud = 3.5 + layerOff + chunk + fine - crack * 3 + lip;
+        // da sát vách thật (vài mét); chỉ ở chân vách (< 110 m) lùi thêm tới 18 m trước đồi/ghềnh nhô che da, rồi tắt dần lên cao (thác/phù văn nằm trên vách)
+        const lowK = Math.max(0, 1 - dy / 110);
+        const off = Math.min(8, Math.max(0.8, proud)) + 18 * lowK * lowK;
         rawR.push(r!);
         offs.push(off);
         ys.push(y);
@@ -148,7 +152,12 @@ export class DoanMachWall {
           .lerp(mid, 0.3 + band * 0.55)
           .lerp(hi, Math.min(0.45, t * 0.4) + (m === 2 ? 0.28 : 0));
         tmp.lerp(dark, Math.min(0.85, crack * 0.7 + (m === 0 ? 0.35 : 0) + Math.max(0, (4 - off) * 0.08)));
-        tmp.multiplyScalar(0.82 + hash(lk * 13 + grp, 5) * 0.4);
+        tmp.multiplyScalar(0.8 + hash(lk * 13 + grp, 5) * 0.4);
+        // đổi sắc theo tầng: xám nâu ↔ vàng đất; giảm bão hòa ~25%
+        const hsl = { h: 0, s: 0, l: 0 };
+        tmp.getHSL(hsl);
+        const warm = hash(lk * 5 + 3, 97);
+        tmp.setHSL(hsl.h + (warm - 0.5) * 0.04 + (warm > 0.7 ? 0.03 : 0), hsl.s * (warm < 0.3 ? 0.3 : 0.55), hsl.l * (0.92 + warm * 0.16));
         col.push(tmp.r, tmp.g, tmp.b);
         if (!ok) col.splice(col.length - 3, 3, 0, 0, 0);
       }
@@ -172,12 +181,26 @@ export class DoanMachWall {
         pos.push(CX + Math.cos(th) * rr, ys[k]!, CZ + Math.sin(th) * rr);
       }
     }
+    // ẩn đỉnh trong vùng thác/phù văn (đặt trên vách thật)
+    const hidden = new Uint8Array(pos.length / 3);
+    for (let v = 0; v < hidden.length; v++) {
+      const px = pos[v * 3]!;
+      const pz = pos[v * 3 + 2]!;
+      // ô chìm dưới địa hình thì tự bị che bởi độ sâu; không bỏ (bỏ để lộ mặt dốc thoải màu be giữa chân vách và da)
+      for (const h of holes) {
+        if ((px - h.x) ** 2 + (pz - h.z) ** 2 < h.r * h.r) {
+          hidden[v] = 1;
+          break;
+        }
+      }
+    }
     for (let i = 0; i < RAYS; i++) {
       if (!rays[i]![0] || !rays[i + 1]![0]) continue;
       for (let j = 0; j < ROWS; j++) {
         const a = i * stride + j;
         const b = (i + 1) * stride + j;
-        if (Math.abs(radOf(a) - radOf(b)) > 30 || Math.abs(radOf(a) - radOf(a + 1)) > 30) continue; // vẫn nhảy lớn sau lọc: bỏ ô
+        if (hidden[a] || hidden[b] || hidden[a + 1] || hidden[b + 1]) continue;
+        if (Math.abs(radOf(a) - radOf(b)) > 70 || Math.abs(radOf(a) - radOf(a + 1)) > 70) continue; // vẫn nhảy lớn sau lọc: bỏ ô
         idx.push(a, b, b + 1, a, b + 1, a + 1);
       }
     }

@@ -515,7 +515,13 @@ export class DoanMachArt {
 
   constructor() {
     this.group.name = 'doanMachArt';
-    const wall = new DoanMachWall(heightAt);
+    const holes = [
+      ...fallSpots().flatMap((f) => f.path.filter((_, i) => i % 4 === 0).map((p) => ({ x: p.x, z: p.z, r: 7 }))),
+      ...runeSpots()
+        .filter((r) => Math.hypot(r.pos.x - 1024, r.pos.z - 1024) > 600) // chỉ phù văn trên vách ngoài (nơi có da); phù văn trên đồi trong sân không liên quan
+        .map((r) => ({ x: r.pos.x, z: r.pos.z, r: r.size * 0.3 })),
+    ];
+    const wall = new DoanMachWall(heightAt, holes);
     this.group.add(wall.group);
     this.disposables.push(wall);
     const rand = rng(SEED + 99);
