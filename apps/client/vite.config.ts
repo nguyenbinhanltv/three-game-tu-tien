@@ -6,7 +6,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const serverDir = path.resolve(here, '..', 'server');
-const calliManifest = path.resolve(here, 'public/assets/calli/index.json');
+const calliManifest = path.resolve(here, 'src/ui/calli/manifest.json');
 const uiStrings = path.resolve(here, '../../packages/content/data/i18n/vi.ui.json');
 
 /** Khung hình đầu trong index.html hiện trước khi JS chạy: chèn tiêu đề từ i18n (`ui.title`) lúc build. */

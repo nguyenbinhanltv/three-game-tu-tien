@@ -37,7 +37,10 @@ describe('v3AssetOf (chọn asset v3 theo giới + skin)', () => {
     expect(v3AssetOf('m', undefined, 'set_huyen_giap')).toBe('chr_v3_huyen_giap_nam');
     expect(v3AssetOf('f', undefined, 'set_dan_tam')).toBe('chr_v3_dan_tam_nu');
     expect(v3AssetOf('f', undefined, 'set_lac_kiem')).toBe(V3_MODELS.f);
-    expect(v3AssetOf('m', undefined, 'set_dia_giap')).toBe('chr_v3_huyen_giap_nam');
+    expect(v3AssetOf('m', undefined, 'set_dia_giap')).toBe('chr_v3_dia_long_nam');
+    expect(v3AssetOf('f', undefined, 'set_co_thanh')).toBe('chr_v3_co_thanh_nu');
+    expect(v3AssetOf('m', undefined, 'set_van_kinh')).toBe('chr_v3_van_kinh_nam');
+    expect(v3AssetOf('m', undefined, 'set_tan_thiet')).toBe('chr_v3_huyen_giap_nam');
     expect(v3AssetOf('f', undefined, 'set_luu_ly')).toBe('chr_v3_dan_tam_nu');
     expect(v3AssetOf('m', undefined, 'set_tinh_khuyet')).toBe('chr_v3_tinh_khuyet_nam');
     expect(v3AssetOf('f', undefined, 'set_kinh_quang')).toBe('chr_v3_kinh_quang_nu');

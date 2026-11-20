@@ -292,17 +292,53 @@ _sgn_l = 1.0 if Fp_HEAD['thigh_l'][0] > _cxs else -1.0
 _R_ARM = C2.get('veilArmR', 0.10) * _H / 1.7
 _CH = C2.get('veilChain', 0.45)
 _PEL = C2.get('veilPelvis', 0.7)
+def _veil_geo(_vi, _seed_mask):
+    """Khoảng cách dọc theo vải (Dijkstra trên cạnh nội vùng voan) từ các đỉnh gần tay: ảnh hưởng tay giảm mượt dọc tấm vải thay vì nhảy trong vài cm (Euclid)."""
+    _inv = {int(v): k for k, v in enumerate(_vi)}
+    _dist = np.full(len(_vi), 1e9)
+    _hp = []
+    for _k in np.where(_seed_mask)[0]:
+        _dist[_k] = 0.0
+        heapq.heappush(_hp, (0.0, int(_k)))
+    while _hp:
+        _d0, _k = heapq.heappop(_hp)
+        if _d0 > _dist[_k]:
+            continue
+        _v = int(_vi[_k])
+        for _w in adj[_v]:
+            _kk = _inv.get(_w)
+            if _kk is None:
+                continue
+            _nd = _d0 + float(np.linalg.norm(VP[_v] - VP[_w]))
+            if _nd < _dist[_kk]:
+                _dist[_kk] = _nd
+                heapq.heappush(_hp, (_nd, _kk))
+    return {int(_vi[_k]): float(_dist[_k]) for _k in range(len(_vi))}
+
+
 for _s, _g in _SD.items():
     _vi, _, _cent, _edges = _veil_info[_s]
     _names_arm = [f'upperarm_{_s}', f'lowerarm_{_s}', f'hand_{_s}']
     _ycent = np.array([np.mean([_cent[k][j][1] for j in range(_J + 1)]) for k in range(_K)])
+    _GEO = None
+    if C2.get('armFall') == 'geo':
+        _segs = [np.minimum(_segd(VP[_vi], Fp_HEAD[n], Fp_TAIL[n]), 9) for n in _names_arm]
+        _dmin = np.min(np.stack(_segs), axis=0)
+        _GEO = _veil_geo(_vi, _dmin < float(C2.get('geoSeed', 0.05)) * _H / 1.7)
     _zlev = np.array([_zt + (_zh - _zt) * (_j + 0.5) / _J for _j in range(_J)])
     for _i in _vi:
         x, y, z = VP[_i]
         _dd = np.array([_segd(VP[_i][None], Fp_HEAD[n], Fp_TAIL[n])[0] for n in _names_arm])
         _iw = 1.0 / (_dd ** 2 + 1e-4)
         _iw /= _iw.sum()
-        _garm = float(math.exp(-((_dd.min() / max(_R_ARM, 1e-6)) ** 2))) * float(_smooth01((z - 0.55 * _H / 1.7) / (0.3 * _H / 1.7)))
+        if _GEO is not None:
+            _u_ = _GEO[int(_i)] / max(float(C2.get('armGeoR', 0.2)) * _H / 1.7, 1e-6)
+            _gk = float(1.0 - _smooth01(_u_))
+        elif C2.get('armFall') == 'cauchy':  # đuôi dài: ảnh hưởng tay giảm dần theo khoảng cách (tay áo rủ xuống tầm hông không nhảy đột ngột từ tay sang hông)
+            _gk = 1.0 / (1.0 + (_dd.min() / max(_R_ARM, 1e-6)) ** float(C2.get('armFallP', 2)))
+        else:
+            _gk = float(math.exp(-((_dd.min() / max(_R_ARM, 1e-6)) ** 2)))
+        _garm = _gk * float(_smooth01((z - float(C2.get('armFallZ', 0.55)) * _H / 1.7) / (0.3 * _H / 1.7)))
         _u = float(np.clip((_zt - z) / (_zt - _zh), 0, 1))
         _sc = (1 - _garm) * _CH * float(_smooth01((_u - 0.15) / 0.4))
         _rest = 1 - _garm - _sc

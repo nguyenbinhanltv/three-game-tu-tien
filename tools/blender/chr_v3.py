@@ -642,15 +642,23 @@ if BIND_A:
     band = max(z_head - z_neck, 1e-6)
     n_head = 0
     RIGID = np.zeros(NV, bool)
+    # `anatomy.headR` (m, model cao 1,7): đầu cứng chỉ trong bán kính này theo trục x; vai giáp/cổ áo cao (Hộ pháp) nằm ngoài thì giữ trọng số vai, không bị kéo theo Head
+    if os.environ.get('ANAT_JSON'):  # thử nhanh mốc/đầu cứng không sửa file cấu hình
+        ANATOMY.update(json.loads(os.environ['ANAT_JSON']))
+    neck_low = float(ANATOMY.get('headBandLow', 0.04))  # dải chuyển cổ→đầu: từ z_neck - neck_low·cao (mặc định 0,04; cổ áo cao cần rộng hơn)
+    head_r = float(ANATOMY['headR']) * height / 1.7 if ANATOMY.get('headR') else None
+    cx_head = float(F_HEAD['Head'][0])
     for vi in range(NV):
         z = V[vi, 2]
+        if head_r is not None and abs(V[vi, 0] - cx_head) > head_r:
+            continue
         if z >= z_head - 0.05 * height:
             W[vi] = 0
             W[vi, IDX['Head']] = 1.0
             RIGID[vi] = True
             n_head += 1
-        elif z > z_neck - 0.04 * height:
-            t = (z - (z_neck - 0.04 * height)) / max((z_head - 0.05 * height) - (z_neck - 0.04 * height), 1e-6)
+        elif z > z_neck - neck_low * height:
+            t = (z - (z_neck - neck_low * height)) / max((z_head - 0.05 * height) - (z_neck - neck_low * height), 1e-6)
             W[vi] *= (1 - t)
             W[vi, IDX['Head']] += t
             W[vi] /= max(W[vi].sum(), 1e-9)
@@ -665,13 +673,22 @@ if BIND_A:
         rel = V - w0
         tproj = rel @ axu
         perp = np.linalg.norm(rel - np.outer(tproj, axu), axis=1)
-        hm = (tproj > -0.01 * height) & (tproj < axl + 0.04 * height) & (perp < 0.055 * height)
+        hb = float(ANATOMY.get('handBlend', 0)) * height / 1.7  # dải chuyển cổ tay → bàn tay (hộ uyển giáp nằm sát cổ tay): bàn tay chỉ cứng quá +hb, trong ±hb trộn tuyến tính
+        hm = (tproj > -0.01 * height + (hb if hb > 0 else 0)) & (tproj < axl + 0.04 * height) & (perp < 0.055 * height)
         ids = np.where(hm)[0]
         for vi in ids:
             W[vi] = 0
             W[vi, IDX[f'hand_{sd}']] = 1.0
             RIGID[vi] = True
         n_hand += len(ids)
+        if hb > 0:
+            band = np.where((tproj > -hb) & (tproj <= hb) & (perp < 0.055 * height) & ~hm)[0]
+            for vi in band:
+                t = float((tproj[vi] + hb) / (2 * hb))
+                row = W[vi] / max(W[vi].sum(), 1e-9)
+                W[vi] = (1 - t) * row
+                W[vi, IDX[f'hand_{sd}']] += t
+            log(f'bàn tay {sd}: dải chuyển cổ tay ±{hb:.3f} m, {len(band)} đỉnh')
     log(f'bàn tay cứng: {n_hand} đỉnh bám hand_*')
     if ANATOMY.get('smoothIters'):
         # C4: (1) mặt nạ phía: đỉnh bên trái không ăn xương chi bên phải và ngược lại (váy không ăn đùi bên kia, tay áo không ăn tay bên kia);

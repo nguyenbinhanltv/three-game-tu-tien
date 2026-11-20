@@ -317,7 +317,7 @@ function v3SetEntries() {
                 ...(cfg.tris ? ['--tris', String(cfg.tris)] : []),
                 ...(cfg.splitCloth ? ['--split-cloth'] : []),
                 ...(cfg.keepOriginal ? ['--keep-original'] : []),
-                ...(cfg.c2 ? ['--c2'] : []),
+                ...(cfg.c2 && !process.env.V3_NO_C2 ? ['--c2'] : []), // V3_NO_C2=1: dựng bản C4 (không tách lưới) để lấy số "gốc"
               ]
             : []),
         ],
