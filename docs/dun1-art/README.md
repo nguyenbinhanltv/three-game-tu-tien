@@ -245,6 +245,19 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 
 - Vòm tròn nhẵn và **các khối bán cầu nâu đỏ** (mũ giáp úp `armor`) bị bỏ: `grave` viết lại thành **gò đất đắp thấp bẹp** (cao ~0,45 m, rộng 3–5 m, mép không đều do bán kính đổi theo nhiễu lớn, đỉnh sụt lõm nhẹ, sườn thoải loe thành váng mỏng), đất nâu xám ẩm lẫn **sỏi sáng** và 26 viên đá vụn, **90 chùm cỏ khô** (5 lá tam giác nghiêng mỗi chùm, vàng xám) mọc ở gò và rìa, bia đá nghiêng sứt + kiếm gãy cắm. Cảnh có 64 gò (trước 44) thay phần mũ giáp; không còn `armor` trong cảnh. `arch_kiem_trung.boxes.json` + `colliders:lib/bake` sinh lại.
 
+## Polish — Lạc Kiếm Tông: đồi xa có lớp, chữ biển thẳng
+
+- **Đồi xa** (`game/world/lacKiemFar.ts`, cờ `lacKiemFar` ở `van_lam.assets.json`; chỉ để nhìn, không va chạm): trước đây đồi xa là mặt địa hình mượt không cây không đá. Nay có **1800 cây tùng xa** (một `InstancedMesh`, thân + hai tầng nón, mọc theo mật độ ô 110 m nên thành cụm, tránh sườn quá dốc), **900 gờ đá** lộ trên sườn dốc (khối góc cạnh dẹt nghiêng theo hướng ngẫu nhiên, nhiễu hạt) và **ba lớp sương dải** ở +14/+48/+96 m (vành phẳng, nhiễu trôi chậm, mờ ở mép trong, màu lấy từ sương cảnh theo từng mood) tạo tầng sâu giữa các dãy đồi. Vùng 300–1500 m quanh tông môn.
+- **Chữ biển nghiêng khó đọc**: font Charm Bold nghiêng ~17°. `Builder.text` (`thien_cong_kit.py`) thêm tham số `unslant` (cắt ngược chữ về thẳng đứng, 0,3) và làm đậm nét hơn (0,045 → 0,06); áp cho biển cổng "Lạc Kiếm Tông", hoành phi "Thiên Kiếm Điện" và các chữ dọc ở `thien_cong_sect.py`. GLB `arch_sect` dựng lại; `arch_sect.boxes.json` + `colliders:lib/bake` sinh lại (2311 hộp).
+- **Còn lại**: cây xa là nón đơn giản (xa nên bị sương nuốt, gần hơn ~600 m thấy hơi low-poly); đồi gần vẫn là địa hình mượt; chữ vẫn là một font (chưa thư pháp khắc bia thật, cần font riêng hỗ trợ dấu tiếng Việt).
+- **Ngân sách (Cao, 1080p)**: thêm ~8 draw call (cây, đá, 3 vành sương, +chữ biển không đổi) và ~0,1M tam giác so với trước: cổng 235 → 243 draw call, 1,67M → 1,77M tam giác; góc cao `trencao` 322 → 330 draw call, 1,85M → 1,95M tam giác. **`trencao` đã vượt 300 draw call và 1,8M tam giác từ trước PR này** (cảnh toàn tông môn nhìn từ trên cao, chưa tối ưu); PR không làm tốt hơn phần đó.
+
+### Polish — Lạc Kiếm Tông vòng 2 (review): cây/đá xa chỉ ngoài vùng chơi
+
+- Cây/đá cảnh xa trước đây rải ở r 300–1500 m, trùng vùng chơi (bãi quái, đường, bệ cổng, hồ) và không có va chạm. Nay `farCandidate` chỉ cho điểm có `playDist ≥ 1160` (ngoài khung chơi 2,2 × 2,2 km + đệm) và trong bản đồ 4096 m, nên không còn gì mọc ở nơi đi lại; test `lacKiemFar.test.ts` kiểm mọi điểm ứng viên đều ngoài vùng chơi.
+- Cây xa nhỏ lại (cao ~18–32 m thay vì tới ~55 m) và tối hơn (lightness 0,10–0,17, bão hòa 0,3) nên không còn nón xanh nhạt to bất thường trên sống đồi (ảnh `phongxa`, `dawn-cong`); đá nhỏ lại (4–11 m).
+- Hệ quả: cây/đá chỉ còn ở dãy núi ngoài cùng; sống đồi gần hơn trở lại mượt (chỉ còn sương dải). Muốn thêm lớp ở giữa phải có va chạm hoặc để cùng loại thông của map (CardForest) với giới hạn tầm vẽ lớn hơn.
+
 ## Polish — Đoạn Mạch: thác nhỏ, vách bớt sọc
 
 - **Thác nhỏ** (`game/world/doanMachFalls.ts`, dựng trong `DoanMachArt`; chỉ để nhìn, không va chạm, tất định): tối đa 7 dải nước mảnh (rộng 2,4–4,6 m) đổ từ mép xuống chân vách (chọn vách dốc quay vào vùng chơi, độ rơi ≥ 28 m, cách nhau ≥ 90 m), vệt bọt chảy xuống bằng nhiễu cuộn theo thời gian, mép dải mờ, **bụi nước** (điểm cộng sáng mềm) và **vũng bọt** ở chân. 3 draw call.
