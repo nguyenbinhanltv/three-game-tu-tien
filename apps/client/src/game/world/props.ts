@@ -251,18 +251,6 @@ interface TreeSlot {
 /** Sức chứa mỗi InstancedMesh của pool (cây gần camera < ~1000 mỗi loài mỗi mức). */
 const POOL_CAP = 1024;
 
-/** Mức LOD xa nhất của prop không phải cây: mọi ô ở mức này của cùng một loại dùng chung `FarSlot` (một draw call mỗi mesh thay vì mỗi ô). */
-const FAR_LEVEL = 2;
-
-/** Một mesh của pool LOD xa (loại × mesh của mức `FAR_LEVEL`): bộ đệm tăng theo lũy thừa 2, `count` theo số instance của mọi ô đang ở mức xa. */
-interface FarSlot {
-  im: THREE.InstancedMesh;
-  cap: number;
-  tinted: boolean;
-  geometry: THREE.BufferGeometry;
-  material: THREE.Material;
-}
-
 interface Cell {
   id: string;
   items: PropInstance[];
@@ -271,9 +259,7 @@ interface Cell {
   /** Bán kính bao ô (để trừ vào khoảng cách). */
   radius: number;
   matrices: THREE.InstancedBufferAttribute | null;
-  /** Sắc độ theo instance (3 số/instance, cùng số instance với `matrices`) khi ô có prop nhuộm. */
-  tints: Float32Array | null;
-  /** meshes[k] = InstancedMesh các mesh của mức k; mức `FAR_LEVEL` để trống (dùng pool LOD xa, `farPool`). */
+  /** meshes[k] = InstancedMesh các mesh của mức k. */
   meshes: THREE.InstancedMesh[][] | null;
   level: number;
 }
@@ -338,9 +324,6 @@ export class PropLayer {
   private govern = 1;
   /** pool[id][k] = các InstancedMesh (mỗi mesh của asset ở mức LOD k) dùng chung cho mọi cây loài `id` ở mức k. */
   private pool = new Map<string, TreeSlot[][]>();
-  /** farPool[id] = các mesh của mức LOD xa nhất dùng chung cho mọi ô ở mức đó; `farSig` = chữ ký tập ô đang gán (đổi thì dựng lại bộ đệm). */
-  private farPool = new Map<string, FarSlot[]>();
-  private farSig = new Map<string, string>();
   /** Số InstancedMesh đang hiện (đo draw call). */
   visibleMeshes = 0;
 
@@ -368,7 +351,6 @@ export class PropLayer {
           cz: 0,
           radius: 0,
           matrices: null,
-          tints: null,
           meshes: null,
           level: -1,
         };
@@ -437,7 +419,6 @@ export class PropLayer {
     for (const c of this.cells)
       if (c.meshes) for (const lv of c.meshes) for (const m of lv) m.castShadow = shadows && !!PROP_CFG[c.id]!.shadow;
     this.applyPoolShadows();
-    for (const [id, slots] of this.farPool) for (const sl of slots) sl.im.castShadow = shadows && !!PROP_CFG[id]!.shadow;
   }
 
   /** Chỉ mức LOD 0 đổ bóng: mức 2 ở xa bóng không thấy rõ, mà pass bóng vẽ cả pool (không cắt theo từng instance). */
@@ -467,7 +448,6 @@ export class PropLayer {
     this.acc = 0;
     const scale = this.rangeScale();
     let vis = 0;
-    const far = new Map<string, Cell[]>();
     for (const c of this.cells) {
       const cfg = PROP_CFG[c.id]!;
       const d = Math.max(0, Math.hypot(c.cx - camX, c.cz - camZ) - c.radius);
@@ -484,13 +464,8 @@ export class PropLayer {
       const dc = Math.hypot(c.cx - camX, c.cz - camZ);
       const lv = dc < cfg.lod[0] * scale ? 0 : dc < cfg.lod[1] * scale ? 1 : 2;
       this.setLevel(c, Math.min(lv, t.lods.length - 1));
-      if (c.level === FAR_LEVEL) {
-        const list = far.get(c.id);
-        if (list) list.push(c);
-        else far.set(c.id, [c]);
-      } else if (c.meshes && c.level >= 0) vis += c.meshes[c.level]!.length;
+      if (c.meshes && c.level >= 0) vis += c.meshes[c.level]!.length;
     }
-    vis += this.updateFar(far);
     if (this.impostors) vis += this.updateTrees(camX, camZ, scale);
     this.visibleMeshes = vis;
   }
@@ -560,94 +535,6 @@ export class PropLayer {
       }
     }
     this.lastVis = vis;
-    return vis;
-  }
-
-  /**
-   * Pool LOD xa: mọi ô cùng loại đang ở mức `FAR_LEVEL` gộp vào các InstancedMesh chung (tre/cổ thụ mỗi ô hai draw call vì thẻ lá tách riêng → hai cho cả bản đồ).
-   * Chỉ dựng lại bộ đệm khi tập ô đổi (ô chuyển mức hoặc vào/ra tầm). Mất cắt hình theo từng ô, đổi lại số draw call không còn tăng theo số ô.
-   * Trả về số mesh đang hiện.
-   */
-  private updateFar(far: Map<string, Cell[]>): number {
-    let vis = 0;
-    for (const [id, slots] of this.farPool) {
-      if (far.has(id)) continue;
-      for (const sl of slots) {
-        sl.im.visible = false;
-        sl.im.count = 0;
-      }
-      this.farSig.delete(id);
-    }
-    for (const [id, cells] of far) {
-      const t = this.templates.get(id);
-      if (!t || typeof t === 'string') continue;
-      const sig = cells.map((c) => this.cells.indexOf(c)).join(',');
-      let slots = this.farPool.get(id);
-      let n = 0;
-      let tinted = false;
-      for (const c of cells) {
-        n += c.matrices!.count;
-        tinted ||= !!c.tints;
-      }
-      const meshes = t.lods[FAR_LEVEL] ?? [];
-      const needBuild = !slots || slots.length !== meshes.length || slots.some((sl, i) => sl.cap < n || (tinted && !sl.tinted) || sl.geometry !== meshes[i]!.geometry);
-      if (needBuild) {
-        for (const sl of slots ?? []) {
-          sl.im.removeFromParent();
-          sl.im.dispose();
-        }
-        const cap = 2 ** Math.ceil(Math.log2(Math.max(2, n)));
-        const shadow = this.shadows && !!PROP_CFG[id]!.shadow;
-        slots = meshes.map((lm) => {
-          const im = new THREE.InstancedMesh(lm.geometry, lm.material, cap);
-          im.instanceMatrix = new THREE.InstancedBufferAttribute(new Float32Array(cap * 16), 16);
-          if (tinted) im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(cap * 3).fill(1), 3);
-          im.name = id; // nhãn cho công cụ quét va chạm (`collScan`)
-          im.matrixAutoUpdate = false;
-          im.castShadow = shadow;
-          im.receiveShadow = this.shadows;
-          im.frustumCulled = false; // gộp nhiều ô rải khắp bản đồ: hình cầu bao của một ô không còn đúng
-          im.count = 0;
-          im.visible = false;
-          this.group.add(im);
-          return { im, cap, tinted, geometry: lm.geometry, material: lm.material };
-        });
-        this.farPool.set(id, slots);
-        this.farSig.delete(id);
-      }
-      if (this.farSig.get(id) !== sig) {
-        for (const sl of slots!) {
-          const mat = sl.im.instanceMatrix.array as Float32Array;
-          const col = sl.im.instanceColor ? (sl.im.instanceColor.array as Float32Array) : null;
-          let o = 0;
-          for (const c of cells) {
-            const m = c.matrices!.array as Float32Array;
-            mat.set(m, o * 16);
-            if (col) {
-              if (c.tints) col.set(c.tints, o * 3);
-              else col.fill(1, o * 3, (o + c.matrices!.count) * 3);
-            }
-            o += c.matrices!.count;
-          }
-          sl.im.count = n;
-          const im = sl.im.instanceMatrix as THREE.InstancedBufferAttribute;
-          im.clearUpdateRanges();
-          im.addUpdateRange(0, n * 16);
-          im.needsUpdate = true;
-          if (sl.im.instanceColor) {
-            const ic = sl.im.instanceColor as THREE.InstancedBufferAttribute;
-            ic.clearUpdateRanges();
-            ic.addUpdateRange(0, n * 3);
-            ic.needsUpdate = true;
-          }
-        }
-        this.farSig.set(id, sig);
-      }
-      for (const sl of slots!) {
-        sl.im.visible = n > 0;
-        if (n > 0) vis++;
-      }
-    }
     return vis;
   }
 
@@ -762,10 +649,9 @@ export class PropLayer {
       }
     }
     c.matrices = new THREE.InstancedBufferAttribute(arr, 16);
-    c.tints = tinted ? colArr : null;
     const shadow = this.shadows && !!PROP_CFG[c.id]!.shadow;
-    c.meshes = t.lods.map((meshes, k) =>
-      (k === FAR_LEVEL ? [] : meshes).map((lm) => {
+    c.meshes = t.lods.map((meshes) =>
+      meshes.map((lm) => {
         const im = new THREE.InstancedMesh(lm.geometry, lm.material, n);
         // Mỗi InstancedMesh một bản ma trận riêng (vài chục byte): dùng chung một thuộc tính giữa các mesh làm WebGPU vẽ lệch.
         im.instanceMatrix = new THREE.InstancedBufferAttribute(arr.slice(), 16);
@@ -800,9 +686,6 @@ export class PropLayer {
     }
     for (const levels of this.pool.values()) for (const slots of levels) for (const sl of slots) sl.im.dispose();
     this.pool.clear();
-    for (const slots of this.farPool.values()) for (const sl of slots) sl.im.dispose();
-    this.farPool.clear();
-    this.farSig.clear();
     for (const t of this.templates.values()) {
       if (typeof t === 'string') continue;
       for (const m of t.mats) m.dispose();
