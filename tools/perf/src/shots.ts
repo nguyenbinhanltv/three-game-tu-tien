@@ -37,6 +37,7 @@ import chrv3 from './scenarios/chrv3';
 import chrv3anim from './scenarios/chrv3anim';
 import v3sets from './scenarios/v3sets';
 import v3views from './scenarios/v3views';
+import rigstretch from './scenarios/rigstretch';
 import skinv3 from './scenarios/skinv3';
 import hoatruc from './scenarios/hoatruc';
 import thiengiai from './scenarios/thiengiai';
@@ -87,6 +88,7 @@ const SCENARIOS: Scenario[] = [
   chrv3anim,
   v3sets,
   v3views,
+  rigstretch,
   skinv3,
   divuc,
   flyover,
