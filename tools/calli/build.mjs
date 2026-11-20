@@ -13,7 +13,7 @@ import { createHash } from 'node:crypto';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const here = path.join(root, 'tools/calli');
 const outDir = path.join(root, 'apps/client/public/assets/calli');
-const manifestPath = path.join(root, 'apps/client/src/ui/calli/manifest.json'); // client import được (tra theo i18n key)
+const manifestPath = path.join(root, 'apps/client/src/base/calliManifest.json'); // client import được (tra theo i18n key)
 const BUDGET = 2 * 1024 * 1024; // tổng ảnh thư pháp < 2 MB
 const read = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
 const groups = read(path.join(here, 'groups.json')).groups;
@@ -185,13 +185,35 @@ async function build(only) {
 <g fill="url(#f)">${dots.join('')}</g>
 </g>
 </g></svg>`;
-    const png = await sharp(Buffer.from(svg)).png({ palette: true, quality: 92, effort: 10, colours: 128 }).toBuffer();
+    // Biển hiệu 3D (it.board = {w,h} mét, 200 px/m): tấm gỗ sơn son viền vàng chứa chữ thư pháp, phủ kín biển gốc để chữ khối cũ không lộ ra.
+    let out = svg;
+    let outW = W;
+    let outH = H;
+    if (it.board) {
+      outW = Math.round(it.board.w * 200);
+      outH = Math.round(it.board.h * 200);
+      const sc = Math.min((outW * 0.84) / (x2 - x1), (outH * 0.66) / (y2 - y1));
+      const inner = svg.slice(svg.indexOf('<g transform='), svg.lastIndexOf('</svg>')).replace(/^<g transform="[^"]*"/, '<g');
+      const fr = Math.round(outH * 0.07);
+      out = `<svg xmlns="http://www.w3.org/2000/svg" width="${outW}" height="${outH}" viewBox="0 0 ${outW} ${outH}">
+<defs>
+<linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tok('u-son')}"/><stop offset="1" stop-color="${tok('u-son-lo')}"/></linearGradient>
+<linearGradient id="gild" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tok('u-gold-hi')}"/><stop offset="0.5" stop-color="${tok('u-gold')}"/><stop offset="1" stop-color="${tok('u-gold-lo')}"/></linearGradient>
+${svg.slice(svg.indexOf('<linearGradient id="f"'), svg.indexOf('</defs>'))}
+</defs>
+<rect width="${outW}" height="${outH}" fill="url(#gild)"/>
+<rect x="${fr}" y="${fr}" width="${outW - fr * 2}" height="${outH - fr * 2}" fill="url(#wood)"/>
+<rect x="${fr * 1.9}" y="${fr * 1.9}" width="${outW - fr * 3.8}" height="${outH - fr * 3.8}" fill="none" stroke="${tok('u-gold-lo')}" stroke-width="${Math.max(2, fr * 0.18)}"/>
+<g transform="translate(${outW / 2} ${outH / 2}) scale(${sc.toFixed(4)}) translate(${(-(x1 + x2) / 2).toFixed(2)} ${(-(y1 + y2) / 2).toFixed(2)})" stroke-linejoin="round" stroke-linecap="round">${inner}</g>
+</svg>`;
+    }
+    const png = await sharp(Buffer.from(out)).png({ palette: true, quality: 92, effort: 10, colours: 128 }).toBuffer();
     const file = `${it.group}-${it.id}.${sha(png)}.png`; // có hash: /assets/* được cache immutable
     for (const old of fs.readdirSync(outDir))
       if (old.startsWith(`${it.group}-${it.id}.`) && old !== file && old.endsWith('.png')) fs.rmSync(path.join(outDir, old));
     fs.writeFileSync(path.join(outDir, file), png);
-    m[it.id] = { key: it.key, text, file, w: W, h: H, hash: sha(png) };
-    console.log(`calli: ${file} ${W}×${H} ${(png.length / 1024).toFixed(1)} KB`);
+    m[it.id] = { key: it.key, text, file, w: outW, h: outH, hash: sha(png) };
+    console.log(`calli: ${file} ${outW}×${outH} ${(png.length / 1024).toFixed(1)} KB`);
   }
   fs.writeFileSync(manifestPath, JSON.stringify(m, null, 2) + '\n');
 }

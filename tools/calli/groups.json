@@ -103,6 +103,180 @@
           "spacing": 0.03
         }
       ]
+    },
+    "ult": {
+      "items": [
+        {
+          "id": "skl_van_kiem_quy_tong",
+          "key": "skill.skl_van_kiem_quy_tong.name",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.04
+        },
+        {
+          "id": "skl_kim_cuong_bat_hoai",
+          "key": "skill.skl_kim_cuong_bat_hoai.name",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.04
+        },
+        {
+          "id": "skl_hoi_thien_dan_lo",
+          "key": "skill.skl_hoi_thien_dan_lo.name",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.04
+        }
+      ]
+    },
+    "sign": {
+      "items": [
+        {
+          "id": "sign_cong_tong",
+          "key": "ui.sign.lac_kiem_tong",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03,
+          "board": {
+            "w": 6.8,
+            "h": 1.9
+          }
+        },
+        {
+          "id": "sign_thien_kiem_dien",
+          "key": "ui.sign.thien_kiem_dien",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03,
+          "board": {
+            "w": 5.8,
+            "h": 1.3
+          }
+        }
+      ]
+    },
+    "outfit": {
+      "items": [
+        {
+          "id": "set_lac_kiem",
+          "key": "set.set_lac_kiem.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_liet_mach",
+          "key": "set.set_liet_mach.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_dia_giap",
+          "key": "set.set_dia_giap.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_phuc_mach",
+          "key": "set.set_phuc_mach.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_kinh_quang",
+          "key": "set.set_kinh_quang.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_van_kinh",
+          "key": "set.set_van_kinh.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_luu_ly",
+          "key": "set.set_luu_ly.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_tinh_khuyet",
+          "key": "set.set_tinh_khuyet.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_co_thanh",
+          "key": "set.set_co_thanh.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_than_tang",
+          "key": "set.set_than_tang.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_dan_tam",
+          "key": "set.set_dan_tam.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_han_giao",
+          "key": "set.set_han_giao.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_huyen_giap",
+          "key": "set.set_huyen_giap.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_tan_thiet",
+          "key": "set.set_tan_thiet.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_tinh_dan_bao",
+          "key": "set.set_tinh_dan_bao.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_tran_khich",
+          "key": "set.set_tran_khich.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "de_tu",
+          "key": "ui.hoatruc.de_tu",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        }
+      ]
     }
   }
 }

@@ -1,7 +1,10 @@
+import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { t } from '@dtl/content';
-import manifest from './manifest.json';
-import { calliOf } from './Calli';
+import manifest from '../../base/calliManifest.json';
+import { METHOD_SKILLS } from '@dtl/content';
+import { calliOf } from '../../base/calli';
+import { calliFilesOf } from './Calli';
 
 describe('calliOf', () => {
   it('có ảnh cho cảnh giới và địa danh đã vẽ', () => {
@@ -15,5 +18,32 @@ describe('calliOf', () => {
   });
   it('chữ trong manifest khớp i18n hiện tại (ảnh không cũ)', () => {
     for (const e of Object.values(manifest as Record<string, { key: string; text: string }>)) expect(e.text).toBe(t(e.key));
+  });
+});
+
+describe('calliFilesOf (nạp trước thẻ chiêu tối thượng)', () => {
+  it('mọi chiêu tối thượng có đúng ảnh trong manifest', () => {
+    const keys = METHOD_SKILLS.filter((s) => s.ult).map((s) => `skill.${s.id}.name`);
+    expect(keys.length).toBeGreaterThan(0);
+    const files = calliFilesOf(keys);
+    expect(files).toHaveLength(keys.length);
+    const known = new Set(Object.values(manifest as Record<string, { file: string }>).map((e) => e.file));
+    for (const f of files) expect(known.has(f), f).toBe(true);
+  });
+  it('bỏ key chưa có ảnh', () => {
+    expect(calliFilesOf(['khong.ton.tai', 'ui.bag'])).toEqual([]);
+  });
+});
+
+describe('tên bộ trang phục', () => {
+  it('mọi key set.*.name trong i18n đều có ảnh thư pháp (bộ mới thêm sau không bị sót)', () => {
+    const dir = new URL('../../../../../packages/content/data/i18n/', import.meta.url);
+    const keys = new Set<string>();
+    for (const f of fs.readdirSync(dir)) {
+      if (f.endsWith('.json'))
+        for (const k of Object.keys(JSON.parse(fs.readFileSync(new URL(f, dir), 'utf8')))) if (/^set\.[a-z_]+\.name$/.test(k)) keys.add(k);
+    }
+    expect(keys.size).toBeGreaterThanOrEqual(16);
+    for (const k of keys) expect(calliOf(k), k).toBeDefined();
   });
 });
