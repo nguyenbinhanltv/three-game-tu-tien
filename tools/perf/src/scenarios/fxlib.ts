@@ -51,6 +51,22 @@ export default {
       await snap(page, r.out, `${name}.jpg`, { wait: 0 });
       await sleep(3200);
     };
+    if (process.argv.includes('--punch')) {
+      // Kiểm `vignette` (PostPipeline.punch): tối / sáng ở viền, giữ 3 s để chụp.
+      await page.evaluate(`window.__game.post.flash(0.9)`);
+      await sleep(60);
+      await snap(page, r.out, 'flash-ref.jpg', { wait: 0 });
+      await sleep(1500);
+      for (const tone of ['dark', 'light']) {
+        await page.evaluate(`window.__game.post.punch(0.5, '${tone}', 3000)`);
+        await sleep(250);
+        console.log('[punch]', tone, await page.evaluate('window.__game.post.punchLevel()'));
+        await snap(page, r.out, `punch-${tone}.jpg`, { wait: 0 });
+        await sleep(3000);
+      }
+      await ctx.close();
+      return;
+    }
     for (const s of shapes) {
       const l = LOOK[s] ?? { s: 1.5 };
       await cam(page, { yaw: Math.PI, pitch: l.pitch ?? 0.2, dist: 2.2 });
