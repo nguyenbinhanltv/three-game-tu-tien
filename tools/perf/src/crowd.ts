@@ -683,6 +683,76 @@ async function goTo(page: Page, sc: Scene): Promise<boolean> {
   return arrived;
 }
 
+/**
+ * `--feetab`: đo chi phí IK chân v3 trực tiếp bằng performance.now quanh `MqFeet.update`, bật/tắt xen kẽ (bật, tắt) × 3 lần, mỗi đoạn
+ * `--feetsec` giây (mặc định 20), cùng phiên, cùng cảnh, bot đang di chuyển (kiểm bằng KB/s nhận). In bảng và ghi JSON.
+ */
+async function feetAB(page: Page): Promise<void> {
+  const sec = Number(opt('--feetsec', '20'));
+  const rows: Record<string, number | string>[] = [];
+  await page.waitForFunction(() => !!(window as unknown as { __feetProbe?: unknown }).__feetProbe, undefined, {
+    timeout: 120_000,
+    polling: 500,
+  });
+  await page.evaluate(() => {
+    const w = window as unknown as { __frames: number };
+    w.__frames = 0;
+    const tick = () => {
+      w.__frames++;
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  for (let i = 0; i < 6; i++) {
+    const on = i % 2 === 0;
+    await page.evaluate((o) => {
+      const w = window as unknown as {
+        __feetProbe: { off: boolean; rec: boolean; calls: number; ms: number; per: number[] };
+        __frames: number;
+        __crowd: { rx: number };
+      };
+      const fp = w.__feetProbe;
+      fp.off = !o;
+      fp.rec = true;
+      fp.calls = 0;
+      fp.ms = 0;
+      fp.per = [];
+      w.__frames = 0;
+      w.__crowd.rx = 0;
+    }, on);
+    await sleep(sec * 1000);
+    const r = await page.evaluate(() => {
+      const w = window as unknown as {
+        __feetProbe: { rec: boolean; calls: number; ms: number; per: number[] };
+        __frames: number;
+        __crowd: { rx: number };
+      };
+      const fp = w.__feetProbe;
+      const per = [...fp.per].sort((a, b) => a - b);
+      const q = (p: number) => per[Math.min(per.length - 1, Math.floor(per.length * p))] ?? 0;
+      fp.rec = false;
+      return { frames: w.__frames, calls: fp.calls, ms: fp.ms, p50: q(0.5), p95: q(0.95), rx: w.__crowd.rx };
+    });
+    rows.push({
+      segment: i + 1,
+      ik: on ? 'bật' : 'tắt',
+      fps: +(r.frames / sec).toFixed(1),
+      msPerFrame: +(r.ms / Math.max(1, r.frames)).toFixed(3),
+      callsPerFrame: +(r.calls / Math.max(1, r.frames)).toFixed(2),
+      msPerCall_p50: +r.p50.toFixed(4),
+      msPerCall_p95: +r.p95.toFixed(4),
+      rxKBs: +(r.rx / 1024 / sec).toFixed(1),
+    });
+  }
+  await page.evaluate(() => {
+    (window as unknown as { __feetProbe: { off: boolean } }).__feetProbe.off = false;
+  });
+  console.log('[crowd] feetab (IK chân bật/tắt xen kẽ, cùng phiên):');
+  console.table(rows);
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  fs.writeFileSync(path.join(OUT_DIR, `feetab-${Date.now()}.json`), JSON.stringify(rows, null, 2));
+}
+
 async function measure(
   page: Page,
   sc: Scene,
@@ -693,6 +763,7 @@ async function measure(
   arrived: boolean,
 ): Promise<Point> {
   await sleep(WARMUP * 1000);
+  if (process.argv.includes('--feetab')) await feetAB(page);
   const roomName = await page.evaluate(() => window.__game!.room?.name as string);
   await page.evaluate(
     ({ dur, cam }) => {
