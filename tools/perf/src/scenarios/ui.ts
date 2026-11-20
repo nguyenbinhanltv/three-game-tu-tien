@@ -59,6 +59,7 @@ interface Panel {
 const PANELS: Panel[] = [
   { id: 'nhan-vat', key: 'c' },
   { id: 'nhan-vat-thuoc-tinh', key: 'c', tab: 1 },
+  { id: 'tu-ngoai-trang', key: 'c', click: 'Tủ ngoại trang' },
   { id: 'tui-do', key: 'b' },
   { id: 'cong-phap', key: 'k' },
   { id: 'nhiem-vu', key: 'l' },

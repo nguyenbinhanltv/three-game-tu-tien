@@ -3,7 +3,7 @@
  * `vw`/`vh` truyền vào đã chia cho hệ số phóng.
  */
 
-export type WinId = 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map' | 'method' | 'party' | 'credits';
+export type WinId = 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map' | 'method' | 'party' | 'credits' | 'wardrobe';
 
 export interface WinState {
   id: WinId;
@@ -39,6 +39,7 @@ const WIN_WIDTH: Record<WinId, number> = {
   method: 600,
   party: 460,
   credits: 520,
+  wardrobe: 560,
 };
 /** Chiều cao ước lượng để canh giữa (cửa sổ cuộn nên không biết trước). */
 const WIN_HEIGHT: Record<WinId, number> = {
@@ -51,6 +52,7 @@ const WIN_HEIGHT: Record<WinId, number> = {
   method: 600,
   party: 520,
   credits: 620,
+  wardrobe: 640,
 };
 
 /** Cửa sổ ghép đôi: nhân vật bên trái, túi bên phải. */

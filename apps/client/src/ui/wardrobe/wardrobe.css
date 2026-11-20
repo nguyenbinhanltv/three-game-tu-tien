@@ -1,0 +1,84 @@
+/* Cửa sổ Tủ ngoại trang (P4-3): chỉ dùng token --u-*. */
+.wd {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u-sp-3);
+  margin-top: var(--u-sp-3);
+}
+.wd-note {
+  padding: var(--u-sp-2) var(--u-sp-3);
+  border: 1px solid var(--u-gold-line);
+  background: var(--u-wash-gold);
+  color: var(--u-gold-text);
+  font-size: var(--u-fs-2);
+}
+.wd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: var(--u-sp-2);
+  min-height: 84px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: var(--u-sp-1);
+}
+.wd-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.wd-cell[data-locked='1'] {
+  opacity: 0.45;
+}
+.wd-name {
+  max-width: 76px;
+  text-align: center;
+  font-size: var(--u-fs-1);
+  color: var(--fg-dim);
+  overflow-wrap: anywhere;
+}
+.wd-default {
+  font-size: var(--u-fs-2);
+  color: var(--fg-dim);
+}
+.wd-dye-row {
+  display: flex;
+  align-items: center;
+  gap: var(--u-sp-3);
+}
+.wd-dye-label {
+  width: 110px;
+  font-size: var(--u-fs-2);
+  color: var(--fg);
+}
+.wd-swatches {
+  display: flex;
+  gap: var(--u-sp-2);
+}
+.wd-swatch {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: var(--sw);
+  border: 2px solid var(--u-card-line);
+  cursor: pointer;
+}
+.wd-swatch[aria-checked='true'] {
+  border-color: var(--u-gold);
+  outline: 2px solid var(--u-gold-line);
+  outline-offset: 1px;
+}
+.wd-swatch:focus-visible {
+  outline: 2px solid var(--u-focus);
+  outline-offset: 2px;
+}
+.wd-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: var(--u-sp-2);
+  flex-wrap: wrap;
+  padding: var(--u-sp-2) 0;
+  background: var(--u-giay);
+  border-top: 1px solid var(--u-gold-line);
+}

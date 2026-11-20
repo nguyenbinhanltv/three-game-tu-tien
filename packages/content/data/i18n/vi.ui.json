@@ -1283,5 +1283,22 @@
   "ui.touch.chat_placeholder": "Nói gì đó…",
   "ui.touch.chat_send": "Gửi",
   "ui.bag.hint_touch": "Chạm: chọn món (có nút dùng/mặc) · Giữ ngón rồi kéo: đổi chỗ, mặc, chuyển trang",
-  "ui.hoatruc.de_tu": "Đồ Đệ Tử"
+  "ui.hoatruc.de_tu": "Đồ Đệ Tử",
+  "ui.wardrobe.title": "Tủ ngoại trang",
+  "ui.wardrobe.sub": "Đổi dáng, không đổi chỉ số",
+  "ui.wardrobe.open": "Tủ ngoại trang",
+  "ui.wardrobe.slots": "Ô trang phục",
+  "ui.wardrobe.default": "Hiện đúng món đang mặc",
+  "ui.wardrobe.default_short": "Gốc",
+  "ui.wardrobe.none": "Chưa mở khóa dáng nào cho ô này. Nhặt hoặc mặc món đồ lần đầu để thêm vào tủ.",
+  "ui.wardrobe.skin_over": "Ngoại hình {name} đang che các dáng khác; tháo ra để thấy lựa chọn của tủ.",
+  "ui.wardrobe.dye": "Nhuộm màu",
+  "ui.wardrobe.ch.0": "Vải chính",
+  "ui.wardrobe.ch.1": "Viền",
+  "ui.wardrobe.ch.2": "Tua và kim loại",
+  "ui.wardrobe.dye_hint": "Một bộ ba màu cho cả người. Kênh Tua và kim loại dành cho nhân vật phiên bản mới.",
+  "ui.wardrobe.apply": "Áp dụng",
+  "ui.wardrobe.revert": "Hoàn lại",
+  "ui.wardrobe.reset": "Về mặc định",
+  "ui.wardrobe.free_hint": "Miễn phí, đổi lúc nào cũng được. Chỉ số luôn tính theo trang bị thật đang mặc."
 }
