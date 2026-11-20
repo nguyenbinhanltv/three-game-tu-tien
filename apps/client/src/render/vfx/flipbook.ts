@@ -8,12 +8,12 @@ import type { FxUniforms, N } from './common';
  * không tải mạng; chạy được cả trong test). R = độ sáng, A = độ phủ. Thay bằng atlas vẽ tay (Codex/Blender) sau này chỉ cần đổi
  * `makeFlipSheet`/`flipTexture`, shader và timeline giữ nguyên.
  *
- * Bố cục: tấm `SHEET`², 2×2 atlas (id = chỉ số trong `FLIP_ATLASES`; id 0 ở góc dưới-trái theo v), mỗi atlas 4×4 khung `FRAME`² px,
+ * Bố cục: tấm `SHEET`² (512², khung 64 px; sinh ~56 ms trên máy thử, bản 1024² tốn ~270 ms), 2×2 atlas (id = chỉ số trong `FLIP_ATLASES`; id 0 ở góc dưới-trái theo v), mỗi atlas 4×4 khung `FRAME`² px,
  * khung f ở cột f%4, hàng ⌊f/4⌋ (hàng 0 là v thấp nhất). Bản đồ toàn bộ vẽ theo hệ UV (v hướng lên), nên không phải lật ảnh.
  */
 export const FLIP_COLS = 4;
 export const FLIP_FRAMES = FLIP_COLS * FLIP_COLS;
-export const FLIP_SHEET = 1024;
+export const FLIP_SHEET = 512;
 
 const hash = (x: number, y: number): number => {
   const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;

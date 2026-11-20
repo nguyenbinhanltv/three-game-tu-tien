@@ -193,7 +193,8 @@ export function runFrame(eng: Game): void {
   eng.terrain.update(rp.x, rp.z, eng.started ? 1 : 8);
   const myLevel = get().char?.level ?? 1;
   // Chậm thời gian TRÌNH DIỄN (VS-1 `slowmo`): chỉ animation/hình/hạt; di chuyển, dự đoán, camera, âm thanh dùng dt thật.
-  const vdt = dt * eng.presentationScale(performance.now());
+  const pscale = eng.presentationScale(performance.now());
+  const vdt = dt * pscale;
   if (me) {
     eng.ents.update(
       vdt,
@@ -201,6 +202,7 @@ export function runFrame(eng: Game): void {
       { x: rp.x, y: rp.y, z: rp.z, yaw: eng.facing, speed: eng.speed, airborne: !eng.cur.grounded && !eng.cur.flying },
       eng.targetId,
       myLevel,
+      vdt,
     );
   }
   if (me) eng.steps?.update(eng.ents, eng.sid, rp, !eng.cur.grounded && !eng.cur.flying);
@@ -209,11 +211,11 @@ export function runFrame(eng: Game): void {
     eng.questMarkersDirty = false;
     eng.ents.updateQuestMarkers(get().quests, myLevel);
   }
-  if (me) eng.vfx.trails.update(vdt, eng.ents.players, eng.sid, eng.camera);
-  eng.skillFx?.update(vdt);
+  if (me) eng.vfx.trails.update(dt, eng.ents.players, eng.sid, eng.camera);
+  eng.skillFx?.update(dt, pscale);
   if (me) eng.realmAura?.update(dt);
   if (me) updateGrass(eng, dt, rp);
-  eng.vfx.update(vdt);
+  eng.vfx.update(dt, pscale);
   eng.post?.update(dt);
   updateCamera(eng, dt);
   setListener(rp.x, rp.z, eng.camYaw);
