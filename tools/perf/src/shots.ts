@@ -50,6 +50,7 @@ import minimap from './scenarios/minimap';
 import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
 import realmaura from './scenarios/realmaura';
+import fxlib from './scenarios/fxlib';
 import xichkhe from './scenarios/xichkhe';
 import dungeonart from './scenarios/dungeonart';
 import collscan from './scenarios/collscan';
@@ -101,6 +102,7 @@ const SCENARIOS: Scenario[] = [
   hires,
   quality,
   realmaura,
+  fxlib,
 ];
 
 const name = args[0] && !args[0].startsWith('--') ? args[0] : 'points';

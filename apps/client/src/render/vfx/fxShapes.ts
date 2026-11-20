@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
-import type { FxShape } from '@dtl/shared';
+import { FX_TOON_SHAPES, type FxShape } from '@dtl/shared';
+import { libGeometry } from './fxLib';
 
 /**
  * Lưới nền của hiệu ứng vẽ tay (VFX-V0). Quy ước cục bộ: +Z tiến, +Y lên, +X phải.
@@ -449,6 +450,8 @@ export function shapeGeometry(s: ShapeKey): THREE.BufferGeometry {
       return memo('gust', () => gustGeometry());
     case 'flip':
       return QUAD_XY;
+    default:
+      return libGeometry(s);
   }
 }
 
@@ -456,6 +459,16 @@ export function shapeGeometry(s: ShapeKey): THREE.BufferGeometry {
 export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' | 'card' | 'wind' | 'flip' {
   if (s === 'card') return 'card';
   if (s === 'flip') return 'flip';
+  if (FX_TOON_SHAPES.has(s)) return 'toon';
+  if (
+    s.startsWith('blade_') ||
+    s.startsWith('rubble_') ||
+    s === 'rune_array' ||
+    s === 'sword_halo' ||
+    s === 'dragon_sword' ||
+    s === 'petal_blade'
+  )
+    return 'crystal';
   if (s === 'gust') return 'wind';
   if (s === 'spike' || s === 'shard' || s === 'kite' || s === 'dragon' || s === 'statue') return 'crystal';
   if (s === 'burst') return 'burst';
