@@ -13,7 +13,7 @@ import { createHash } from 'node:crypto';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const here = path.join(root, 'tools/calli');
 const outDir = path.join(root, 'apps/client/public/assets/calli');
-const manifestPath = path.join(outDir, 'index.json');
+const manifestPath = path.join(root, 'apps/client/src/ui/calli/manifest.json'); // client import được (tra theo i18n key)
 const BUDGET = 2 * 1024 * 1024; // tổng ảnh thư pháp < 2 MB
 const read = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
 const groups = read(path.join(here, 'groups.json')).groups;

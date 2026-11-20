@@ -1,0 +1,106 @@
+{
+  "title": {
+    "key": "ui.title",
+    "text": "Đạp Thiên Lộ",
+    "file": "title-title.fc5f2f07a4e8.png",
+    "w": 992,
+    "h": 306,
+    "hash": "fc5f2f07a4e8"
+  },
+  "realm_16": {
+    "key": "realm.16",
+    "text": "Trúc Cơ sơ kỳ",
+    "file": "realm-realm_16.b6a8136837b6.png",
+    "w": 929,
+    "h": 242,
+    "hash": "b6a8136837b6"
+  },
+  "realm_20": {
+    "key": "realm.20",
+    "text": "Kết Đan sơ kỳ",
+    "file": "realm-realm_20.1f7d5d6cb627.png",
+    "w": 937,
+    "h": 244,
+    "hash": "1f7d5d6cb627"
+  },
+  "realm_24": {
+    "key": "realm.24",
+    "text": "Nguyên Anh sơ kỳ",
+    "file": "realm-realm_24.095f50ec685e.png",
+    "w": 1106,
+    "h": 283,
+    "hash": "095f50ec685e"
+  },
+  "realm_28": {
+    "key": "realm.28",
+    "text": "Hóa Thần sơ kỳ",
+    "file": "realm-realm_28.813728ed8e36.png",
+    "w": 953,
+    "h": 249,
+    "hash": "813728ed8e36"
+  },
+  "realm_32": {
+    "key": "realm.32",
+    "text": "Anh Biến sơ kỳ",
+    "file": "realm-realm_32.ae06f30ed648.png",
+    "w": 984,
+    "h": 244,
+    "hash": "ae06f30ed648"
+  },
+  "trib_do_kiep": {
+    "key": "ui.chapter.trib.title",
+    "text": "Độ kiếp",
+    "file": "realm-trib_do_kiep.34233a6e9a31.png",
+    "w": 479,
+    "h": 235,
+    "hash": "34233a6e9a31"
+  },
+  "place_sect": {
+    "key": "ui.chapter.sect.title",
+    "text": "Lạc Kiếm Tông",
+    "file": "place-place_sect.54df84de62eb.png",
+    "w": 945,
+    "h": 285,
+    "hash": "54df84de62eb"
+  },
+  "place_dungeon": {
+    "key": "ui.chapter.dungeon.title",
+    "text": "Kiếm Trủng",
+    "file": "place-place_dungeon.73b04a7d902d.png",
+    "w": 744,
+    "h": 285,
+    "hash": "73b04a7d902d"
+  },
+  "place_ch2": {
+    "key": "ui.chapter.ch2.title",
+    "text": "Đoạn Mạch",
+    "file": "place-place_ch2.e98ca9292f13.png",
+    "w": 711,
+    "h": 236,
+    "hash": "e98ca9292f13"
+  },
+  "place_ch3": {
+    "key": "ui.chapter.ch3.title",
+    "text": "Vân Hải",
+    "file": "place-place_ch3.2acd1c132f4a.png",
+    "w": 473,
+    "h": 219,
+    "hash": "2acd1c132f4a"
+  },
+  "place_ch4": {
+    "key": "ui.chapter.ch4.title",
+    "text": "Thiên Khuyết",
+    "file": "place-place_ch4.63ae23591fcd.png",
+    "w": 814,
+    "h": 244,
+    "hash": "63ae23591fcd"
+  },
+  "place_ch5": {
+    "key": "ui.chapter.ch5.title",
+    "text": "Bắc Hoang",
+    "file": "place-place_ch5.b5914b85c7c2.png",
+    "w": 701,
+    "h": 298,
+    "hash": "b5914b85c7c2"
+  }
+}

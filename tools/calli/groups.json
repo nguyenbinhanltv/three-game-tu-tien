@@ -2,7 +2,107 @@
   "$doc": "Danh sách chuỗi CỐ ĐỊNH được vẽ thành ảnh thư pháp (nhóm → mục). key = i18n key trong packages/content/data/i18n/*.json; chữ thật vẫn ở i18n (ảnh chỉ là lớp hiển thị, giữ chữ cho a11y). style: ink = mực đậm viền vàng (nền sáng), gold = chữ kim viền mực (nền tối). size = cỡ chữ khi vẽ (px). spacing = giãn chữ (em). Không dùng cho chữ thường của UI, tooltip, chat, số sát thương, tên người chơi.",
   "groups": {
     "title": {
-      "items": [{ "id": "title", "key": "ui.title", "style": "ink", "size": 260, "spacing": 0.02 }]
+      "items": [
+        {
+          "id": "title",
+          "key": "ui.title",
+          "style": "ink",
+          "size": 260,
+          "spacing": 0.02
+        }
+      ]
+    },
+    "realm": {
+      "items": [
+        {
+          "id": "realm_16",
+          "key": "realm.16",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        },
+        {
+          "id": "realm_20",
+          "key": "realm.20",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        },
+        {
+          "id": "realm_24",
+          "key": "realm.24",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        },
+        {
+          "id": "realm_28",
+          "key": "realm.28",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        },
+        {
+          "id": "realm_32",
+          "key": "realm.32",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        },
+        {
+          "id": "trib_do_kiep",
+          "key": "ui.chapter.trib.title",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        }
+      ]
+    },
+    "place": {
+      "items": [
+        {
+          "id": "place_sect",
+          "key": "ui.chapter.sect.title",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        },
+        {
+          "id": "place_dungeon",
+          "key": "ui.chapter.dungeon.title",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        },
+        {
+          "id": "place_ch2",
+          "key": "ui.chapter.ch2.title",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        },
+        {
+          "id": "place_ch3",
+          "key": "ui.chapter.ch3.title",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        },
+        {
+          "id": "place_ch4",
+          "key": "ui.chapter.ch4.title",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        },
+        {
+          "id": "place_ch5",
+          "key": "ui.chapter.ch5.title",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.03
+        }
+      ]
     }
   }
 }
