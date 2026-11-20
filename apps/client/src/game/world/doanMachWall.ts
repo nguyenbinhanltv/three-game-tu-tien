@@ -80,8 +80,7 @@ export class DoanMachWall {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
 
-  /** `holes`: điểm đặt thác / phù văn khắc trên vách thật (xz, bán kính) — da bỏ ô quanh đó để chúng không bị che. */
-  constructor(groundAt: (x: number, z: number) => number, holes: { x: number; z: number; r: number }[] = []) {
+  constructor(groundAt: (x: number, z: number) => number) {
     this.group.name = 'doanMachWall';
     const pos: number[] = [];
     const col: number[] = [];
@@ -96,15 +95,14 @@ export class DoanMachWall {
     const rawR: number[] = [];
     const offs: number[] = [];
     const ys: number[] = [];
-    const radOf = (v: number) => Math.hypot(pos[v * 3]! - CX, pos[v * 3 + 2]! - CZ);
-    // chân vách từng tia, lọc trung vị 11 tia kề (tia lệch chân → dải da bị xô lệch độ cao thành tấm dựng chéo)
+    // chân vách từng tia, lọc trung vị 41 tia kề (chân vách lệch giữa hai tia kề → tấm da dựng chéo / khe nứt dọc, bậc trên đường chân trời) (tia lệch chân → dải da bị xô lệch độ cao thành tấm dựng chéo)
     const feet0: ({ r: number; y: number } | null)[] = [];
     for (let i = 0; i < RAYS; i++) feet0.push(wallFoot(groundAt, Math.cos((i / RAYS) * Math.PI * 2), Math.sin((i / RAYS) * Math.PI * 2)));
     const feet = feet0.map((f, i) => {
       if (!f) return null;
       const ys2: number[] = [];
       const rs2: number[] = [];
-      for (let d = -5; d <= 5; d++) {
+      for (let d = -20; d <= 20; d++) {
         const g = feet0[(((i + d) % RAYS) + RAYS) % RAYS];
         if (g) {
           ys2.push(g.y);
@@ -173,34 +171,60 @@ export class DoanMachWall {
         const m = nb[3]!;
         if (Math.abs(rawR[i * stride + j]! - m) > 25) med[i * stride + j] = m;
       }
+    // Lớp da LIỀN KÍN (không bỏ ô nào): bán kính từng đỉnh = vách − độ nhô; rồi (1) đẩy đỉnh nào chìm dưới địa hình (đồi/ghềnh nhô trước vách) ra phía tâm cho tới khi nổi
+    // trên mặt đất, (2) làm mịn bán kính theo các tia kề để không còn khe nứt/tấm rời, (3) đẩy lần nữa. Thay cho cách cũ (bỏ ô khi bán kính nhảy / chìm đất) vốn để lộ nền sau.
+    const rad = new Float32Array((RAYS + 1) * stride);
+    for (let k = 0; k < rad.length; k++) rad[k] = med[k]! - offs[k]!;
+    const raise = () => {
+      for (let i = 0; i <= RAYS; i++) {
+        const th = ((i % RAYS) / RAYS) * Math.PI * 2;
+        const c = Math.cos(th);
+        const sn = Math.sin(th);
+        for (let j = 0; j <= ROWS; j++) {
+          const k = i * stride + j;
+          let r = rad[k]!;
+          for (let n = 0; n < 40 && r > 300 && groundAt(CX + c * r, CZ + sn * r) > ys[k]! - 0.4; n++) r -= 3;
+          rad[k] = r;
+        }
+      }
+    };
+    const smooth = (w: number) => {
+      const src = rad.slice();
+      for (let i = 0; i <= RAYS; i++)
+        for (let j = 0; j <= ROWS; j++) {
+          let sum = 0;
+          for (let d = -w; d <= w; d++) sum += src[((((i + d) % RAYS) + RAYS) % RAYS) * stride + j]!;
+          rad[i * stride + j] = sum / (2 * w + 1);
+        }
+      for (let j = 0; j <= ROWS; j++) rad[RAYS * stride + j] = rad[j]!; // tia cuối trùng tia đầu
+    };
+    // trung vị 41 tia kề: tia lệch > 10 m (dò trúng đồi thay vì vách) bị thay → hết khe nứt dọc / tấm rời
+    {
+      const src = rad.slice();
+      for (let i = 0; i < RAYS; i++)
+        for (let j = 0; j <= ROWS; j++) {
+          const nb: number[] = [];
+          for (let d = -20; d <= 20; d++) nb.push(src[((((i + d) % RAYS) + RAYS) % RAYS) * stride + j]!);
+          nb.sort((p, q) => p - q);
+          if (Math.abs(src[i * stride + j]! - nb[20]!) > 10) rad[i * stride + j] = nb[20]!;
+        }
+      for (let j = 0; j <= ROWS; j++) rad[RAYS * stride + j] = rad[j]!;
+    }
+    raise();
+    smooth(2);
+    raise();
+    smooth(1);
     for (let i = 0; i <= RAYS; i++) {
       const th = ((i % RAYS) / RAYS) * Math.PI * 2;
       for (let j = 0; j <= ROWS; j++) {
         const k = i * stride + j;
-        const rr = med[k]! - offs[k]!;
-        pos.push(CX + Math.cos(th) * rr, ys[k]!, CZ + Math.sin(th) * rr);
-      }
-    }
-    // ẩn đỉnh trong vùng thác/phù văn (đặt trên vách thật)
-    const hidden = new Uint8Array(pos.length / 3);
-    for (let v = 0; v < hidden.length; v++) {
-      const px = pos[v * 3]!;
-      const pz = pos[v * 3 + 2]!;
-      // ô chìm dưới địa hình thì tự bị che bởi độ sâu; không bỏ (bỏ để lộ mặt dốc thoải màu be giữa chân vách và da)
-      for (const h of holes) {
-        if ((px - h.x) ** 2 + (pz - h.z) ** 2 < h.r * h.r) {
-          hidden[v] = 1;
-          break;
-        }
+        pos.push(CX + Math.cos(th) * rad[k]!, ys[k]!, CZ + Math.sin(th) * rad[k]!);
       }
     }
     for (let i = 0; i < RAYS; i++) {
-      if (!rays[i]![0] || !rays[i + 1]![0]) continue;
       for (let j = 0; j < ROWS; j++) {
         const a = i * stride + j;
         const b = (i + 1) * stride + j;
-        if (hidden[a] || hidden[b] || hidden[a + 1] || hidden[b + 1]) continue;
-        if (Math.abs(radOf(a) - radOf(b)) > 70 || Math.abs(radOf(a) - radOf(a + 1)) > 70) continue; // vẫn nhảy lớn sau lọc: bỏ ô
         idx.push(a, b, b + 1, a, b + 1, a + 1);
       }
     }
