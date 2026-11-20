@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { FX_QUALITY_TIER, fxDrawCount, fxEventsFor, fxParticleCount, fxTierFor, validateFxTimeline, type FxTimeline } from './fxtimeline';
+import {
+  FX_QUALITY_TIER,
+  FX_SKILL_DRAW_MAX,
+  fxDrawCount,
+  fxEventsFor,
+  fxParticleCount,
+  fxTierFor,
+  validateFxTimeline,
+  type FxTimeline,
+} from './fxtimeline';
 
 const tl: FxTimeline = {
   skill: 'a',
@@ -100,5 +109,75 @@ describe('dòng thời gian hiệu ứng', () => {
     const errs = validateFxTimeline(many, () => true).join('\n');
     expect(errs).toMatch(/draw > 12/);
     expect(errs).toMatch(/hạt > 1500/);
+  });
+
+  describe('VS-1: sự kiện mới và ngân sách cả chiêu', () => {
+    const ok = (events: FxTimeline['events']) => validateFxTimeline({ skill: 'a', events }, () => true);
+    it('slowmo/vignette/soundAt/camera.fov hợp lệ trong khoảng cho phép', () => {
+      expect(
+        ok([
+          { type: 'slowmo', t: 0, scale: 0.4, ms: 200 },
+          { type: 'vignette', t: 0, amount: 0.3, ms: 400, tone: 'light' },
+          { type: 'soundAt', t: 0, id: 'x', rate: 1.1, jitter: 0.1 },
+          { type: 'camera', t: 0, pull: 0.1, dur: 1, fov: 4 },
+        ]),
+      ).toEqual([]);
+    });
+    it('bác giá trị ngoài khoảng', () => {
+      const errs = ok([
+        { type: 'slowmo', t: 0, scale: 0.05, ms: 200 },
+        { type: 'slowmo', t: 0, scale: 0.5, ms: 900 },
+        { type: 'vignette', t: 0, amount: 0.9, ms: 400 },
+        { type: 'soundAt', t: 0, id: 'x', rate: 3, jitter: 0.9, gain: 5 },
+        { type: 'camera', t: 0, pull: 0.1, dur: 1, fov: 20 },
+      ]).join('\n');
+      expect(errs).toMatch(/slowmo scale=0.05/);
+      expect(errs).toMatch(/slowmo scale=0.5 ms=900/);
+      expect(errs).toMatch(/vignette amount=0.9/);
+      expect(errs).toMatch(/soundAt rate=3/);
+      expect(errs).toMatch(/soundAt jitter=0.9/);
+      expect(errs).toMatch(/soundAt gain=5/);
+      expect(errs).toMatch(/camera fov=20/);
+    });
+    it('hai slowmo cùng một mốc trúng bị bác', () => {
+      expect(
+        ok([
+          { type: 'slowmo', t: 0, scale: 0.5, ms: 100 },
+          { type: 'slowmo', t: 0.1, scale: 0.5, ms: 100 },
+        ]).join(),
+      ).toMatch(/slowmo cùng một mốc/);
+    });
+    it('hình flip cần atlas hợp lệ; atlas không gắn vào hình khác', () => {
+      expect(ok([{ type: 'mesh', shape: 'flip', dur: 0.5, t: 0, flip: 'ink_smoke' }])).toEqual([]);
+      expect(ok([{ type: 'mesh', shape: 'flip', dur: 0.5, t: 0 }]).join()).toMatch(/thiếu\/sai atlas/);
+      expect(ok([{ type: 'mesh', shape: 'spike', dur: 0.5, t: 0, flip: 'ink_smoke' }]).join()).toMatch(/chỉ hình flip/);
+    });
+    it('ngân sách cả chiêu ≤ 25 draw (hợp mọi mốc/đòn/biến thức) dù mỗi mốc ≤ 12', () => {
+      const shapes = ['crescent', 'spike', 'kite', 'ripple', 'burst', 'smoke', 'helix', 'ribbon', 'dragon', 'flip', 'card'] as const;
+      const mk = (a: number, b: number) =>
+        shapes
+          .slice(a, b)
+          .map((shape) => ({ type: 'mesh' as const, shape, dur: 0.3, t: 0, ...(shape === 'flip' ? { flip: 'ink_smoke' as const } : {}) }));
+      const combo: Record<string, FxTimeline['events']> = {};
+      const decals = (tex: 'crack' | 'rune' | 'scorch' | 'strike') => ({ type: 'decal' as const, tex, r: 1, dur: 1, t: 0 });
+      for (let i = 0; i < 6; i++)
+        combo[String(i)] = [decals(['crack', 'rune', 'scorch', 'strike'][i % 4] as 'crack'), { type: 'trail', dur: 0.2, t: 0 }];
+      const big: FxTimeline = {
+        skill: 'a',
+        events: mk(0, 11),
+        combo,
+        variants: {
+          v: [
+            { type: 'bolt', t: 0 },
+            { type: 'bolt', t: 0 },
+            { type: 'bolt', t: 0 },
+            { type: 'bolt', t: 0 },
+            { type: 'bolt', t: 0 },
+          ],
+        },
+      };
+      expect(FX_SKILL_DRAW_MAX).toBe(25);
+      expect(validateFxTimeline(big, () => true).join('\n')).toMatch(/draw cả chiêu/);
+    });
   });
 });

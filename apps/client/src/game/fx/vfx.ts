@@ -9,6 +9,7 @@ import { boltPhase, boltShape } from '../../render/vfx/lightning';
 import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTiming } from '../../render/vfx/ink';
 import { type LootTier } from '../../render/vfx/loot';
 import { PARTICLES } from '../../render/vfx/particles';
+import { flipTexture } from '../../render/vfx/flipbook';
 import { QUAD_XZ, shapeGeometry, shapeKind, swordFxGeometry, type ShapeKey } from '../../render/vfx/fxShapes';
 import { DECAL_STRIKE } from '../../render/vfx/stylized';
 import { maxRadiusFor } from '../../render/vfx/phases';
@@ -31,6 +32,7 @@ import {
   STRIKE_POOL_MAX,
   TUBE_GEO,
   UP,
+  presentDt,
   _a,
   _b,
   _c,
@@ -100,6 +102,12 @@ export class Vfx {
     RAIN.prewarm();
     this.warmKinds();
     this.warmBatches();
+    // Texture flipbook sinh thủ tục (~56 ms): sinh lúc tải, không để khựng ở lần ra chiêu đầu dùng `flip`.
+    this.add(
+      0.4,
+      () => {},
+      () => void flipTexture(),
+    );
     // Lưới phi kiếm thật cho mưa kiếm: nạp một lần (giữ handle suốt phiên); chưa có thì dùng lưới dự phòng.
     rainModel ??= assets
       .acquire('prop_phi_kiem', { priority: PREFETCH_PRIORITY.vfx })
@@ -188,6 +196,7 @@ export class Vfx {
       'statue',
       'card',
       'ribbon',
+      'flip',
     ];
     for (const s of shapes) {
       const kind = shapeKind(s);
@@ -219,13 +228,13 @@ export class Vfx {
     }
   }
 
-  add(dur: number, update: (k: number, dt: number) => void, end: () => void): void {
-    this.items.push({ t: 0, dur, update, end });
+  add(dur: number, update: (k: number, dt: number) => void, end: () => void, slow = false): void {
+    this.items.push({ t: 0, dur, update, end, slow });
   }
 
   /** Cho module hiệu ứng bên ngoài (telegraph.ts) chạy theo cùng vòng cập nhật. */
-  track(dur: number, update: (k: number, dt: number) => void, end: () => void): void {
-    this.add(dur, update, end);
+  track(dur: number, update: (k: number, dt: number) => void, end: () => void, slow = false): void {
+    this.add(dur, update, end, slow);
   }
 
   /** Lấy một lưới từ pool và gắn vào cảnh. `kind`: xem `FxKind` (mặc định cộng sáng có bloom). */
@@ -241,12 +250,17 @@ export class Vfx {
     POOL.release(m);
   }
 
-  update(dt: number): void {
+  /**
+   * `presentScale` (VS-1 `slowmo`) chỉ nhân cho mục đánh dấu `slow` (hình của CHÍNH MÌNH, chiêu của mình); mục khác, hạt, đạn, vạch báo quái
+   * luôn chạy `dt` thật để không lệch mốc server gây sát thương.
+   */
+  update(dt: number, presentScale = 1): void {
     for (let i = this.items.length - 1; i >= 0; i--) {
       const f = this.items[i]!;
-      f.t += dt;
+      const d = presentDt(f.slow, dt, presentScale);
+      f.t += d;
       const k = Math.min(1, f.t / f.dur);
-      f.update(k, dt);
+      f.update(k, d);
       if (k >= 1) {
         f.end();
         this.items.splice(i, 1);

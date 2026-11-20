@@ -447,12 +447,15 @@ export function shapeGeometry(s: ShapeKey): THREE.BufferGeometry {
       return memo('ribbon', () => helixGeometry(2.6, 0.22, 0.03, 96));
     case 'gust':
       return memo('gust', () => gustGeometry());
+    case 'flip':
+      return QUAD_XY;
   }
 }
 
 /** Kiểu material của một hình (theo lớp). */
-export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' | 'card' | 'wind' {
+export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' | 'card' | 'wind' | 'flip' {
   if (s === 'card') return 'card';
+  if (s === 'flip') return 'flip';
   if (s === 'gust') return 'wind';
   if (s === 'spike' || s === 'shard' || s === 'kite' || s === 'dragon' || s === 'statue') return 'crystal';
   if (s === 'burst') return 'burst';
