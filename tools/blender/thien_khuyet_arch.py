@@ -365,9 +365,9 @@ MOSS_LIN = (0.12, 0.26, 0.07)
 
 
 # vật liệu riêng của tượng: không dán texture lặp (ô vuông tối), màu đỉnh + nhiễu liền; vàng cổ kim loại sẫm có xanh đồng ở khe
-bs.MATERIALS['tkstone'] = Mat(0.88, 0.0, None, 1.0, False, 0.0)
-bs.MATERIALS['tkgold'] = Mat(0.5, 0.75, None, 1.0, False, 0.0)
-OLD_GOLD = (0.24, 0.15, 0.04)  # vàng cổ sẫm (tuyến tính)
+bs.MATERIALS['tkstone'] = Mat(0.74, 0.0, None, 1.0, False, 0.0)
+bs.MATERIALS['tkgold'] = Mat(0.28, 0.95, None, 1.0, False, 0.0)  # vàng kim loại bóng
+OLD_GOLD = (0.62, 0.40, 0.09)  # vàng kim (tuyến tính), kim loại bóng
 VERDI = (0.05, 0.16, 0.12)  # xanh đồng
 
 
@@ -376,7 +376,7 @@ def sculpt_color(pos, nrm, gold=False, seed=3):
     x, y, z = pos
     if gold:
         v = fbm3(x * 0.9, y * 0.9, z * 0.9, seed + 21, 3)
-        k = 0.55 + 0.9 * v  # vàng sẫm có chỗ bóng chỗ tối
+        k = 0.7 + 0.55 * v  # vàng có chỗ bóng chỗ tối
         rgb = [c * k for c in OLD_GOLD]
         gap = fbm3(x * 0.5 + 4, y * 0.5, z * 0.5, seed + 33, 2)
         if gap > 0.62:  # xanh đồng đọng ở khe
@@ -403,7 +403,7 @@ def sculpt_color(pos, nrm, gold=False, seed=3):
     return bs.Paint(tuple(rgb), 'tkstone')
 
 
-def surface(b, f, nu, nv, center, hole=None, gold_at=None):
+def surface(b, f, nu, nv, center, hole=None, gold_at=None, col=None):
     """Lưới điêu khắc: f(u, v) → điểm; u quanh (0..1), v dọc (0..1); `center(v)` = điểm trên trục để định chiều pháp tuyến ra ngoài."""
     grid = [[f((i % nu) / nu, j / nv) for j in range(nv + 1)] for i in range(nu + 1)]
     for i in range(nu):
@@ -426,10 +426,10 @@ def surface(b, f, nu, nv, center, hole=None, gold_at=None):
                 dq.reverse()
                 n = (-n[0], -n[1], -n[2])
             ln = math.sqrt(n[0] ** 2 + n[1] ** 2 + n[2] ** 2) or 1.0
-            b.face(dq, sculpt_color(c, (n[0] / ln, n[1] / ln, n[2] / ln), gold=bool(gold_at and gold_at(c))), True)
+            b.face(dq, col(c) if col else sculpt_color(c, (n[0] / ln, n[1] / ln, n[2] / ln), gold=bool(gold_at and gold_at(c))), True)
 
 
-def ellipsoid(b, c, r, nu=22, nv=14, v0=0.0, v1=1.0, e=1.0, amp=0.08, seed=1, hole=None, gold_at=None, ridge=None):
+def ellipsoid(b, c, r, nu=22, nv=14, v0=0.0, v1=1.0, e=1.0, amp=0.08, seed=1, hole=None, gold_at=None, ridge=None, col=None):
     """Mặt cầu/siêu cầu méo: bán kính r=(rx, ry, rz), số mũ e (>1 = vuông), nhiễu `amp`, `ridge(x,y,z)` = hệ số nếp giáp nhân vào bán kính."""
 
     def f(u, v):
@@ -445,10 +445,10 @@ def ellipsoid(b, c, r, nu=22, nv=14, v0=0.0, v1=1.0, e=1.0, amp=0.08, seed=1, ho
             k *= ridge(x, y, z)
         return (c[0] + (x - c[0]) * k, c[1] + (y - c[1]) * k, c[2] + (z - c[2]) * k)
 
-    surface(b, f, nu, nv, lambda v: c, hole, gold_at)
+    surface(b, f, nu, nv, lambda v: c, hole, gold_at, col)
 
 
-def tube(b, a, bpt, r0, r1, nu=14, nv=8, ridges=0, amp=0.07, seed=1, hole=None, gold_at=None, bulge=0.0):
+def tube(b, a, bpt, r0, r1, nu=14, nv=8, ridges=0, amp=0.07, seed=1, hole=None, gold_at=None, bulge=0.0, col=None):
     """Ống thon từ a đến b: bán kính r0 → r1, nếp vòng `ridges`, phình giữa `bulge`, nhiễu đá."""
     ax = [bpt[k] - a[k] for k in range(3)]
     L = math.sqrt(sum(t * t for t in ax)) or 1.0
@@ -470,7 +470,7 @@ def tube(b, a, bpt, r0, r1, nu=14, nv=8, ridges=0, amp=0.07, seed=1, hole=None, 
         k_ = 1.0 + amp * (fbm3(p[0] * 0.6, p[1] * 0.6, p[2] * 0.6, seed, 3) - 0.5) * 2
         return tuple(base[k] + (p[k] - base[k]) * k_ for k in range(3))
 
-    surface(b, f, nu, nv, lambda v: tuple(a[k] + (bpt[k] - a[k]) * v for k in range(3)), hole, gold_at)
+    surface(b, f, nu, nv, lambda v: tuple(a[k] + (bpt[k] - a[k]) * v for k in range(3)), hole, gold_at, col)
 
 
 def jian(b, x0, y0, z0, length, S):
@@ -583,6 +583,8 @@ def build_statue(b, st, rnd):
         tube(b, P(0, 49, 0), P(0, 52.5, 0), 3.3 * S, 2.8 * S, nu=14, nv=4, seed=91)
 
     def head():
+        dark = lambda c: bs.Paint(tuple(v * 0.45 for v in SAND_DK), 'tkstone')
+        pale = lambda c: bs.Paint(tuple(min(1.0, v * 2.3) for v in sculpt_color(c, (0, 0, 1)).rgb), 'tkstone')  # mặt đá sáng hơn thân để mày/mũi/môi nổi
         def face(x, y, z):
             k = 1.0
             xs, ys, zs = x / S, y / S, z / S
@@ -602,25 +604,44 @@ def build_statue(b, st, rnd):
                     k += 0.1  # gò má
             return k
 
-        ellipsoid(b, P(0, 55.2, 0.6), P(3.3, 4.3, 3.5), nu=52, nv=40, seed=101, amp=0.025, ridge=face)
+        ellipsoid(b, P(0, 55.2, 0.6), P(3.3, 4.3, 3.5), nu=52, nv=40, seed=101, amp=0.025, ridge=face, col=lambda c: pale(c) if c[2] > 1.0 * S and c[1] < 58.0 * S else sculpt_color(c, (0, 0, 1)))
         ellipsoid(b, P(0, 56.8, -0.1), P(4.1, 3.9, 4.2), v0=0.0, v1=0.56, nu=36, nv=14, seed=102, amp=0.04)
         ellipsoid(b, P(0, 60.4, -0.6), P(0.5, 2.6, 4.8), nu=18, nv=14, seed=103, amp=0.02, gold_at=lambda c: True)  # mào vàng
         tube(b, P(0, 61.5, -4.2), P(0, 58.5, -8.5), 1.0 * S, 0.1 * S, nu=10, nv=5, amp=0.02, gold_at=lambda c: True)  # tua mào phía sau
+        # Các khối lớn đọc được từ 100–200 m (không chỉ nếp nổi trên mặt cầu): mày dày xếch, hốc mắt tối, sống mũi nhô, miệng mím, râu vàng, vương miện
         for sx in (-1, 1):
+            tube(b, P(sx * 0.35, 56.7, 3.7), P(sx * 3.2, 58.0, 2.5), 0.95 * S, 0.7 * S, nu=12, nv=6, amp=0.03, seed=170 + sx, col=pale)  # mày xếch
+            ellipsoid(b, P(sx * 1.75, 55.9, 3.75), P(1.05, 0.5, 0.5), nu=14, nv=8, amp=0.0, col=dark)  # hốc mắt
+            ellipsoid(b, P(sx * 2.7, 54.0, 3.0), P(1.0, 0.9, 0.9), nu=12, nv=8, amp=0.03, seed=174 + sx, col=pale)  # gò má
+            ellipsoid(b, P(sx * 1.35, 53.6, 4.35), P(1.35, 0.3, 0.5), nu=14, nv=8, amp=0.0, gold_at=lambda c: True)  # ria
             ellipsoid(b, P(sx * 3.5, 54.0, 1.0), P(0.9, 2.7, 2.4), nu=16, nv=12, seed=104 + sx, gold_at=lambda c: abs(c[1] - 52.6 * S) < 0.3 * S)
             tube(b, P(sx * 3.9, 58.6, 0.2), P(sx * 6.4, 63.0, -0.6), 0.7 * S, 0.05 * S, nu=8, nv=5, amp=0.02, gold_at=lambda c: True)  # sừng/cánh mũ
+
+        ellipsoid(b, P(0, 55.1, 4.6), P(0.95, 2.1, 1.8), nu=16, nv=12, amp=0.02, seed=178, col=pale)  # sống mũi + chóp mũi (khối kín)
+        ellipsoid(b, P(0, 54.2, 4.7), P(1.15, 0.6, 0.9), nu=14, nv=8, amp=0.02, seed=179, col=pale)  # cánh mũi
+        ellipsoid(b, P(0, 53.0, 3.85), P(2.1, 0.3, 0.5), nu=14, nv=6, amp=0.0, col=dark)  # khe miệng
+        ellipsoid(b, P(0, 53.5, 3.9), P(1.5, 0.35, 0.55), nu=14, nv=8, amp=0.02, seed=180, col=pale)  # môi trên
+        ellipsoid(b, P(0, 51.9, 3.6), P(1.4, 1.0, 1.0), nu=14, nv=10, amp=0.02, seed=181, col=pale)  # cằm
+        tube(b, P(0, 51.4, 3.9), P(0, 49.4, 3.6), 1.3 * S, 0.6 * S, nu=12, nv=8, amp=0.02, ridges=2, gold_at=lambda c: True)  # râu vàng (ngắn, không chống đất)
+        # vương miện: vành vàng + năm chóp
+        ellipsoid(b, P(0, 58.4, -0.1), P(4.4, 0.75, 4.5), nu=36, nv=8, amp=0.0, gold_at=lambda c: True)
+        for k in range(5):
+            a = (k - 2) * 0.52
+            bx, bz = math.sin(a) * 4.2, math.cos(a) * 4.3 - 0.1
+            tube(b, P(bx, 58.6, bz), P(bx * 1.05, 58.6 + (3.9 if k == 2 else 3.0), bz * 1.05), 0.65 * S, 0.1 * S, nu=8, nv=4, amp=0.0, gold_at=lambda c: True)
 
     def arm_left():
         tube(b, P(-11.9, 46.2, 0), P(-13.4, 36.0, 1.6), 3.2 * S, 2.7 * S, ridges=2, seed=111)
         ellipsoid(b, P(-13.5, 35.4, 1.7), P(3.0, 2.6, 3.0), seed=112, gold_at=lambda c: abs(c[1] - 35.4 * S) < 0.5 * S)
         tube(b, P(-13.5, 34.6, 1.8), P(-12.3, 25.2, 5.6), 2.7 * S, 2.1 * S, ridges=5, bulge=0.12, seed=113)
-        ellipsoid(b, P(-12.1, 23.6, 6.1), P(2.6, 3.0, 1.8), seed=114)
+        ellipsoid(b, P(-12.1, 23.2, 6.1), P(3.5, 3.7, 2.0), seed=114)  # lòng bàn tay
         # bàn tay mở xòe: năm ngón to thon xòe quạt (ngón cái lệch), chống xuống đất khi tượng nằm
-        for k, ang in enumerate((-0.62, -0.31, 0.0, 0.31, 0.62)):
-            L = (4.6, 6.2, 6.8, 6.0, 4.2)[k]
-            base = P(-12.1 + math.sin(ang) * 1.2, 22.0, 6.1)
-            tip = P(-12.1 + math.sin(ang) * (1.2 + L * 0.55), 22.0 - L * math.cos(ang), 6.1 + (0.8 if k == 0 else 0.0))
-            tube(b, base, tip, 0.85 * S, 0.5 * S, nu=8, nv=4, ridges=2, amp=0.03, seed=150 + k)
+        for k, ang in enumerate((-0.95, -0.48, 0.0, 0.46, 0.9)):
+            L = (6.5, 8.6, 9.4, 8.4, 6.0)[k] * 1.1
+            base = P(-12.1 + math.sin(ang) * 2.0, 21.2, 6.1)
+            tip = P(-12.1 + math.sin(ang) * (2.0 + L * 0.62), 21.2 - L * math.cos(ang), 6.1 + (0.8 if k == 0 else 0.0))
+            tube(b, base, tip, 1.35 * S, 0.8 * S, nu=10, nv=5, ridges=2, amp=0.03, seed=150 + k)
+            ellipsoid(b, tip, P(0.82, 0.82, 0.82), nu=10, nv=6, amp=0.03, seed=160 + k)  # đầu ngón
 
     def arm_right():
         tube(b, P(11.9, 46.2, 0), P(13.4, 36.0, 1.6), 3.2 * S, 2.7 * S, ridges=2, seed=121)
@@ -639,7 +660,12 @@ def build_statue(b, st, rnd):
 
     def forearm_right():
         tube(b, P(0, 0, 0), P(0, 10.5, 0), 2.3 * S, 2.1 * S, ridges=4, seed=131, bulge=0.1)
-        ellipsoid(b, P(0, 11.6, 0), P(1.9, 2.7, 1.5), seed=132)
+        ellipsoid(b, P(0, 12.0, 0), P(2.7, 3.0, 1.5), seed=132)  # lòng bàn tay
+        for k, ang in enumerate((-0.9, -0.45, 0.0, 0.45, 0.85)):
+            L = (4.8, 6.4, 7.0, 6.2, 4.4)[k]
+            tip = P(math.sin(ang) * (1.9 + L * 0.6), 13.4 + L * math.cos(ang), 0.4)
+            tube(b, P(math.sin(ang) * 1.9, 13.4, 0), tip, 1.0 * S, 0.55 * S, nu=10, nv=5, ridges=2, amp=0.03, seed=190 + k)
+            ellipsoid(b, tip, P(0.6, 0.6, 0.6), nu=10, nv=6, amp=0.03, seed=200 + k)  # đầu ngón
 
     seg('legs', legs)
     seg('torso', torso)
@@ -668,13 +694,12 @@ def build_statue(b, st, rnd):
             b.verts[i] = (piv[0] + (X - piv[0]) * k, piv[1] + (Y - piv[1]) * k, piv[2] + (Z - piv[2]) * k)
 
     # đầu và bàn tay phóng to: từ 100–200 m phải đọc ra mặt (mũ, sống mũi, gò mày) và bàn tay chống đất
-    scale_part('head', 1.9, (0.0, 0.0, 55.0 * S))
+    HEAD_K = 1.8
+    scale_part('head', HEAD_K, (0.0, 0.0, 55.0 * S))
     scale_part('farm_r', 1.6, (0.0, 0.0, 0.0))
     fall = -1.43
     for name in ('legs', 'torso', 'arm_l', 'arm_r'):
         bring(name, fall, 0.0, 0.0, (0, 0, 0))
-    bring('head', -1.2, 0.5, 0.4, (-5 * S, 3.0 * S, -52 * S))
-    bring('farm_r', -1.5, 0.0, 0.9, (24 * S, 2.4 * S, -34 * S))
     # vỡ ba khúc: chân / thân + hai tay / đầu + bàn tay gãy; mỗi khúc trượt và xoay lệch quanh trục thân (-z)
     pieces_of = {'legs': 0, 'torso': 1, 'arm_l': 1, 'arm_r': 1, 'head': 2, 'farm_r': 2}
     ids3 = [[], [], []]
@@ -682,11 +707,41 @@ def build_statue(b, st, rnd):
         ids3[q] += list(range(parts[nm][0], parts[nm][1]))
     xform_idx(b, ids3[0], (0, 0, 0), 0.0, -0.12, 0.0, d=(-4.0 * S, 0.0, 6.0 * S))
     xform_idx(b, ids3[1], (0, 0, -40 * S), 0.0, 0.16, 0.05, d=(5.0 * S, 0.0, 0.0))
-    hv = list(range(parts['head'][0], parts['head'][1]))
-    hc = [sum(b.verts[i][k] for i in hv) / len(hv) for k in range(3)]
-    hpiv = (hc[0], hc[2], -hc[1])  # tâm đầu theo toạ độ game
-    HEAD_YAW = float(os.environ.get('TK_HEAD_YAW', '0.0'))  # xoay mặt hướng quảng trường (chỉnh theo ảnh xem trước)
-    xform_idx(b, ids3[2], hpiv, float(os.environ.get('TK_HEAD_PITCH', '1.3')), -0.3 + HEAD_YAW, 0.1 + float(os.environ.get('TK_HEAD_ROLL', '0')), d=(-3.0 * S, 0.0, -2.0 * S))
+    # Đầu: lăn khỏi cổ, nằm nghiêng trên đất, mặt quay về quảng trường và hơi ngửa lên trời để từ 100–200 m thấy mũ, mày, mũi, miệng.
+    # Khung đầu (toạ độ game, đứng): x phải, y lên, z là hướng mặt. Hướng đích tính trong khung object tượng (Blender: x, y, z lên);
+    # đầu nằm ~150 m phía tây-bắc quảng trường; object xoay -yaw nên hướng về quảng trường trong khung object là (-0.9, 0.42), ngửa lên 0,3.
+    def basis(f, up0):
+        n = lambda v: tuple(t / math.sqrt(sum(q * q for q in v)) for t in v)
+        f = n(f)
+        d = sum(a_ * b_ for a_, b_ in zip(up0, f))
+        u = n(tuple(a_ - d * b_ for a_, b_ in zip(up0, f)))
+        r = (u[1] * f[2] - u[2] * f[1], u[2] * f[0] - u[0] * f[2], u[0] * f[1] - u[1] * f[0])  # r = u × f
+        return r, u, f
+
+    def lay(name, c_game, bs3, dest, ground=True):
+        r_, u_, f_ = bs3
+        s0, s1 = parts[name]
+        for i in range(s0, s1):
+            X, Y, Z = b.verts[i]
+            x, y, z = X - c_game[0], Z - c_game[1], -Y - c_game[2]
+            b.verts[i] = (dest[0] + x * r_[0] + y * u_[0] + z * f_[0], dest[1] + x * r_[1] + y * u_[1] + z * f_[1], dest[2] + x * r_[2] + y * u_[2] + z * f_[2])
+        if ground:
+            low = min(b.verts[i][2] for i in range(s0, s1))
+            for i in range(s0, s1):
+                X, Y, Z = b.verts[i]
+                b.verts[i] = (X, Y, Z - low)
+
+    tv = [b.verts[i] for i in range(parts['torso'][0], parts['torso'][1])]
+    neck_y = max(v[1] for v in tv)
+    head_c = (0.0, 55.0 * S + 0.2 * S * HEAD_K, 0.6 * S * HEAD_K)  # tâm mặt cầu đầu sau khi phóng to (toạ độ game)
+    HEAD_F = tuple(float(t) for t in os.environ.get('TK_HEAD_F', '-0.9,0.42,0.3').split(','))
+    HEAD_UP = tuple(float(t) for t in os.environ.get('TK_HEAD_UP', '0.3,0.0,1.0').split(','))
+    head_b = basis(HEAD_F, HEAD_UP)
+    hdest = (-6.0 * S, neck_y + 11.0 * S, 0.0)
+    lay('head', head_c, head_b, hdest)
+    # Cẳng tay phải gãy + bàn tay xòe nằm cạnh đầu, ngón hướng lên trời, chống lên đất
+    farm_c = (0.0, 6.0 * S * 1.6, 0.0)
+    lay('farm_r', farm_c, basis((-0.35, 0.94, 0.2), (-0.3, -0.55, 0.78)), (hdest[0] + 21.0 * S, hdest[1] - 4.0 * S, 0.0))
     # Kiếm cổ phong (jian): lưỡi thẳng hai lưỡi có sống, hộ thủ đĩa vàng, chuôi quấn, đuôi kiếm có tua đỏ; cắm xiên cạnh tượng.
     start = len(b.verts)
     jian(b, 0.0, 0.0, 0.0, 46 * S, S)
@@ -698,6 +753,9 @@ def build_statue(b, st, rnd):
     for g in ids3:
         low = min(b.verts[i][2] for i in g)
         xform_idx(b, g, (0, 0, 0), 0.0, 0.0, 0.0, d=(0.0, -low, 0.0))
+    hv = list(range(parts['head'][0], parts['head'][1]))
+    b.parts = parts
+    b.head_c = tuple(sum(b.verts[i][k] for i in hv) / len(hv) for k in range(3))  # tâm đầu (cho ảnh xem trước)
     # nhãn khúc của từng mặt: mặt nào đỉnh đầu thuộc khúc nào; vật thêm (kiếm, đá vụn, nứt vàng) về khúc gần nhất theo xz
     owner = {}
     for q, g in enumerate(ids3):
