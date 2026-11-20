@@ -5,6 +5,7 @@ import {
   CHARGE_MAX,
   type DmgMsg,
   caveBoundOf,
+  chainMp,
   healAmount,
   resAdd,
   resFromHeal,
@@ -48,7 +49,7 @@ import {
 } from '@dtl/shared';
 import { SKILL } from '@dtl/content';
 import { type Hot, methodOf, passiveOf, resolveFor, resourceOf, type Trail } from '../method';
-import { isEmpowered } from '../skillflow';
+import { chainOf, takeChain } from '../skillflow';
 import type { DuelSystem } from '../duel';
 import type { MirrorSystem } from '../mirror';
 import type { CloneSystem } from '../clone';
@@ -118,7 +119,8 @@ export class CombatSystem {
     if (p.casting || p.flow.pending) return;
     if (this.c.now < p.gcdAt - 60) return;
     if ((p.cds.get(skill.id) ?? 0) > this.c.now) return this.c.warn(p, 'sys.cooldown');
-    if (c.mp < skill.mp) return this.c.warn(p, 'sys.not_enough_mp');
+    // VS-2b: chiêu đang mở chuỗi có thể tốn ít linh lực hơn.
+    if (c.mp < chainMp(skill.mp, chainOf(p.flow, skill, this.c.now))) return this.c.warn(p, 'sys.not_enough_mp');
     if (skill.ult && p.mth.charge < CHARGE_MAX) return this.c.warn(p, 'sys.ult_not_ready');
     if (skill.kind === 'revive' && !this.reviveTarget(p, skill.allyRadius ?? 14)) return this.c.warn(p, 'sys.no_ally_dead');
     if (skill.blinkAlly && skill.kind !== 'revive' && !this.nearestAlly(p, skill.blinkAlly.range)) return this.c.warn(p, 'sys.no_ally');
@@ -155,7 +157,7 @@ export class CombatSystem {
   }
 
   /**
-   * Chiêu không niệm (K-2): chuỗi đánh thường, cường hóa, rồi áp ngay hoặc chờ `hitAt` (hình và sát thương cùng nhịp).
+   * Chiêu không niệm (K-2): chuỗi đánh thường, chuỗi chiêu (VS-2b), rồi áp ngay hoặc chờ `hitAt` (hình và sát thương cùng nhịp).
    * Linh lực, hồi chiêu, vòng sạc trừ lúc bấm; đòn bị hủy vì mục tiêu thì hoàn lại.
    */
   beginSkill(p: PlayerEnt, skill: SkillDef, targetId: string): void {
@@ -172,16 +174,16 @@ export class CombatSystem {
       const refund = passiveOf(p.char.meta)?.gcdRefund;
       if (refund && combo === skill.combo.hits.length - 1) p.gcdAt -= refund * 1000;
     }
-    if (isEmpowered(f, skill, this.c.now)) {
-      mul *= skill.empower!.powerMul;
-      f.opened.delete(skill.empower!.by);
-    }
+    // VS-2b: đang trong cửa sổ chuỗi thì nhận thưởng (sức mạnh, linh lực, hồi chiêu) và đóng cửa sổ ngay lúc bấm.
+    const ch = takeChain(f, skill, this.c.now);
+    mul *= ch.powerMul;
+    const ctx: StrikeCtx = { combo: combo >= 0 ? combo : undefined, mul, mpMul: ch.mpMul, cdMul: ch.cdMul };
     const delay = strikeDelay(skill, combo >= 0 ? combo : undefined) * 1000;
-    if (delay <= 0) return this.resolveWith(p, skill, targetId, { combo: combo >= 0 ? combo : undefined, mul });
+    if (delay <= 0) return this.resolveWith(p, skill, targetId, ctx);
     const prevCd = p.cds.get(skill.id);
     const prevCharge = p.mth.charge;
-    this.commitSkill(p, skill);
-    f.pending = { skill, target: targetId, at: this.c.now + delay, combo, mul, prevCd, prevCharge };
+    const mp = this.commitSkill(p, skill, ctx);
+    f.pending = { skill, target: targetId, at: this.c.now + delay, combo, mul, mp, prevCd, prevCharge };
     this.c.sendCd(p);
   }
 
@@ -200,7 +202,7 @@ export class CombatSystem {
       p.mth.dirty = true;
     }
     if (refund) {
-      p.char.mp = Math.min(p.char.mmp, p.char.mp + st.skill.mp);
+      p.char.mp = Math.min(p.char.mmp, p.char.mp + st.mp);
       if (st.prevCd === undefined) p.cds.delete(st.skill.id);
       else p.cds.set(st.skill.id, st.prevCd);
     }
@@ -318,11 +320,8 @@ export class CombatSystem {
     }
     // Lướt có sát thương (Thiết Bích Xung): húc mục tiêu nếu đã sát người.
     if (skill.power > 0 && tgt && (pullOnly || this.inRange(p, tgt, 3))) {
-      let mul = 1;
-      if (isEmpowered(p.flow, skill, this.c.now)) {
-        mul = skill.empower!.powerMul;
-        p.flow.opened.delete(skill.empower!.by);
-      }
+      // Lướt húc trong cửa sổ chuỗi: chỉ nhân sức mạnh, tiêu cửa sổ khi húc trúng (lướt hụt không mất chuỗi).
+      const mul = takeChain(p.flow, skill, this.c.now).powerMul;
       this.c.hitMonster(p, tgt, rs.power * mul, elemDamageMul(c.stats.elemDmg, skill.elem), skill.elem);
       // Húc choáng quái thường (hộ pháp): tinh anh nửa thời gian, boss miễn.
       // Bộ Vân Kình bậc 3 (4 món): Dịch Sơn Xung choáng thêm `dichSonStun` giây.
@@ -653,21 +652,27 @@ export class CombatSystem {
   }
 
   executeSkill(p: PlayerEnt, skill: SkillDef, targetId: string, ctx: StrikeCtx = {}): void {
-    this.commitSkill(p, skill);
+    this.commitSkill(p, skill, ctx);
     this.resolveSkill(p, skill, targetId, ctx);
   }
 
-  /** Trừ linh lực, đặt hồi chiêu, tiêu vòng sạc (chiêu tối thượng): tại lúc bấm (hoặc lúc niệm xong). */
-  commitSkill(p: PlayerEnt, skill: SkillDef): void {
+  /**
+   * Trừ linh lực, đặt hồi chiêu, tiêu vòng sạc (chiêu tối thượng): tại lúc bấm (hoặc lúc niệm xong).
+   * `ctx.mpMul`/`ctx.cdMul`: thưởng chuỗi chiêu (VS-2b). Trả linh lực đã trừ (để hoàn đúng khi đòn bị hủy).
+   */
+  commitSkill(p: PlayerEnt, skill: SkillDef, ctx: StrikeCtx = {}): number {
     const rs = resolveFor(p.char.meta, skill);
-    p.char.mp -= skill.mp;
-    if (rs.cd > 0) p.cds.set(skill.id, this.c.now + rs.cd * 1000);
+    const mp = Math.min(p.char.mp, Math.max(0, Math.ceil(skill.mp * (ctx.mpMul ?? 1))));
+    p.char.mp -= mp;
+    const cd = rs.cd * (ctx.cdMul ?? 1);
+    if (cd > 0) p.cds.set(skill.id, this.c.now + cd * 1000);
     if (skill.ult) {
       p.mth.charge = 0;
       p.mth.lockCharge = true;
       p.mth.dirty = true;
     }
     p.lastCombatAt = this.c.now;
+    return mp;
   }
 
   /** Áp hiệu quả của chiêu (sát thương, hồi, khiên...): tại `hitAt` hoặc ngay khi không có độ trễ. */
@@ -923,8 +928,8 @@ export class CombatSystem {
         break;
       }
       case 'heal': {
-        // Đan sư xả Đan hỏa (`res.cost`) thì lượng hồi nhân `resMul`.
-        const base = c.mhp * rs.power * resMul;
+        // Đan sư xả Đan hỏa (`res.cost`) thì lượng hồi nhân `resMul`; chuỗi chiêu nhân thêm `ctx.mul`.
+        const base = c.mhp * rs.power * resMul * (ctx.mul ?? 1);
         const recv = 1 + c.stats.healRecv;
         if (v?.hot) {
           this.addHot(p.sid, healAmount(base * v.hot.totalMul, healMul) / v.hot.dur, v.hot.dur, p);
@@ -1053,7 +1058,10 @@ export class CombatSystem {
             o.char.recalc();
             o.mth.dirty = true;
           }
-          const total = healAmount(o.char.mhp * rs.power * durMul * healBoost * (o === p ? (v?.selfHealMul ?? 1) : 1), healMul);
+          const total = healAmount(
+            o.char.mhp * rs.power * durMul * healBoost * (ctx.mul ?? 1) * (o === p ? (v?.selfHealMul ?? 1) : 1),
+            healMul,
+          );
           this.addHot(o.sid, total / sec, sec, p);
           if (v?.selfShield) {
             const amount = Math.round(o.char.mhp * v.selfShield);
