@@ -17,7 +17,7 @@ Sai thường gặp: decimate mù đến khi không nhận ra; LOD khác số sl
 
 ## Hình va chạm theo hệ COL-1
 
-Hình va chạm của dự án sinh từ GLB đã tối ưu bằng `pnpm colliders:lib` (thư viện prop) và `pnpm colliders:arch` (kiến trúc), chi tiết ở `docs/handbook/maps-levels.md` (mục COL-1). Từ Blender chỉ cần **đặt Empty/khối rỗng có tên đúng** nếu hình suy từ hộp bao không đủ:
+Hình va chạm của dự án sinh từ GLB đã tối ưu bằng `pnpm colliders:lib` (thư viện prop) và `pnpm colliders:arch` (kiến trúc), chi tiết ở `docs/handbook/maps-levels.md` (mục COL-1). Từ Blender chỉ cần **đặt một khối lưới (mesh hộp/trụ, đã áp scale) có tên đúng, không dùng Empty** nếu hình suy từ hộp bao không đủ. `colShapes()` trong `tools/asset-pipeline/src/collider.ts` bỏ qua node `COL_*` không có mesh (Empty xuất ra node không mesh nên bị bỏ âm thầm, collider rơi về suy tự động) và lấy hình từ hộp bao của lưới:
 
 | Tên node trong GLB | Hình | Ghi chú |
 | --- | --- | --- |
