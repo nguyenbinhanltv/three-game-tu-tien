@@ -1,7 +1,7 @@
 import { currentSearch } from '../../base/flags';
-import { TRUC_CO_LEVEL } from '@dtl/shared';
+import { decodeDye3, TRUC_CO_LEVEL } from '@dtl/shared';
 import { swordOverride } from '../core/testParams';
-import { APPEARANCE, ITEM, SET, MONSTER, monsterName, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';
+import { APPEARANCE, DYE, ITEM, SET, MONSTER, monsterName, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';
 import { bodyRadiusOf } from '@dtl/shared';
 import { legacyAppearance } from '@dtl/shared';
 import { type Label } from './labelBatch';
@@ -42,6 +42,8 @@ export interface PState {
   sk?: string;
   /** Mã phụ kiện hình dáng của đồ bộ (`accessoryCode`); '' hoặc thiếu = không. */
   sa?: string;
+  /** Nhuộm 3 kênh của tủ ngoại trang (`encodeDye3`: "a,b,c"); '' hoặc thiếu = không. */
+  dye3?: string;
   /** id pháp bảo phụ đang đeo (P3-8); '' hoặc thiếu = không. */
   art?: string;
   /** id công pháp đang tu (chọn giọng động tác, K-5); '' hoặc thiếu = chưa chọn. */
@@ -254,6 +256,20 @@ function labelY(m: CharacterView): number {
   return m instanceof Humanoid ? 2.55 : m.height + 0.75;
 }
 
+const DYE_IDS: ReadonlySet<string> = new Set(APPEARANCE.dyes.map((d) => d.id));
+
+/** Nhuộm 3 kênh → màu v1 (kênh 1 = vải chính `hex`, kênh 2 = viền `trim`; kênh 3 dành cho nhân vật v3). Sai định dạng thì bỏ. */
+export function tintOf(dye3: string | undefined): PlayerLook['tint'] {
+  return tintOfTriple(dye3 ? decodeDye3(DYE_IDS, dye3) : undefined);
+}
+
+/** Như `tintOf` nhưng từ bộ ba id màu đã giải mã (bản nháp của Tủ ngoại trang). */
+export function tintOfTriple(d: readonly string[] | null | undefined): PlayerLook['tint'] {
+  const a = d ? DYE.get(d[0] ?? '') : undefined;
+  const b = d ? DYE.get(d[1] ?? '') : undefined;
+  return a && b ? { hex: a.hex, trim: b.hex } : undefined;
+}
+
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 export function lookOf(s: PState): PlayerLook {
   const base = {
@@ -262,7 +278,9 @@ export function lookOf(s: PState): PlayerLook {
   };
   const look: PlayerLook = s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
   const skin = s.sn ? ITEM.get(s.sn)?.skin : undefined;
-  const full = s.sa ? { ...look, acc: s.sa } : look;
+  const tint = tintOf(s.dye3);
+  const tinted = tint ? { ...look, tint } : look;
+  const full = s.sa ? { ...tinted, acc: s.sa } : tinted;
   return skin ? { ...full, skin } : full;
 }
 
