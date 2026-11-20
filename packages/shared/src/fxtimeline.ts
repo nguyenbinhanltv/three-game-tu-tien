@@ -108,6 +108,8 @@ export interface FxBase {
   tier?: 0 | 1 | 2;
   /** Chỉ phát ở mốc trúng thứ mấy (0-based) của chiêu nhiều mốc (Kiếm Vũ Tam Điệp...); không có thì mọi mốc. */
   hit?: number | number[];
+  /** Sự kiện CHUNG bị bỏ khi biến thức đang chọn (`fx`) bằng giá trị này (biến thức thay hẳn một phần hình, không chỉ cộng thêm: Dịch Sơn Xung kéo thay vì đẩy). */
+  unless?: string;
 }
 
 export interface FxMeshEvent extends FxBase {
@@ -389,7 +391,8 @@ export function fxParticleCount(events: readonly FxEvent[]): number {
 export function fxEventsFor(tl: FxTimeline, combo: number, variant?: string): FxEvent[] {
   const extra = combo >= 0 ? tl.combo?.[String(combo)] : undefined;
   const vr = variant ? tl.variants?.[variant] : undefined;
-  return extra || vr ? [...tl.events, ...(extra ?? []), ...(vr ?? [])] : tl.events;
+  const base = variant && tl.events.some((e) => e.unless === variant) ? tl.events.filter((e) => e.unless !== variant) : tl.events;
+  return extra || vr ? [...base, ...(extra ?? []), ...(vr ?? [])] : base;
 }
 
 /** Bậc chất lượng hiệu ứng (cài đặt người chơi): 0 Thấp, 1 Vừa, 2 Cao. */

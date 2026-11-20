@@ -399,6 +399,211 @@ def phap_tuong():
 
 R['skl_thien_kim_phap_tuong'] = phap_tuong
 
+
+# --------------------------------------------------------------------------------------------------------------------------------
+# VS-1 Hộ pháp phần 3: 4 chiêu còn lại (hai chiêu lướt kích theo S.FX, một hộ thể, một khiên cho đồng đội).
+# Chiêu lướt (`trigger: fx`): t = 0 là lúc nhận S.FX (người đã được server đặt ở ĐÍCH, model trượt ~0,3 s từ chỗ cũ), mọi t ≥ 0;
+# đường lướt nằm SAU lưng (`self` offset z âm), cú húc ở DASH_HIT. Thuấn Di Hộ Thể neo `self` (sau thuấn di người đứng cạnh đồng đội 1,8 m;
+# S.FX của chiêu không có `dst` nên `target` không đáng tin).
+DASH_HIT = 0.24
+
+
+def thiet_bich():
+    """Thiết Bích Xung (lướt húc 8 m, choáng 1 s): một tấm THUẪN sắt lớn lao dọc đường lướt (hai bóng thuẫn nối đuôi), dừng sầm trước mặt
+    ngay chỗ húc: nứt nền nhỏ, đá văng, bụi dọc đường."""
+    T = DASH_HIT
+    P = [1.9, 1.5, 1.9]
+    ev = [
+        snd(0.0, 'slash', 0.5, 0.7, 0.05),
+        parts('dust', 0.0, 24, 3.0, 0.9, 0.5, 0.22, at='self', offset=[0, G + 0.2, -6.0], tone='core', tier=1),
+        mesh('shield_plate', 0.0, T, at='self', offset=[0, G, -5.5], scale=P, sweep=0, erodeFrom=0.98, alpha=1, keepUp=True,
+             move={'to': 'self', 'offset': [0, G, 1.0], 'ease': 'out'}, tone='core', tier=0, seed=1),
+        mesh('shield_plate', 0.04, T, at='self', offset=[0, G, -5.5], scale=P, sweep=0, erodeFrom=0.5, alpha=0.5, keepUp=True,
+             move={'to': 'self', 'offset': [0, G, 0.2], 'ease': 'out'}, tone='body', tier=1, seed=2),
+        mesh('shield_plate', 0.08, T, at='self', offset=[0, G, -5.5], scale=P, sweep=0, erodeFrom=0.4, alpha=0.3, keepUp=True,
+             move={'to': 'self', 'offset': [0, G, -0.8], 'ease': 'out'}, tone='body', tier=2, seed=3),
+        flip('dust_kick', 0.05, 0.7, 2.6, at='self', offset=[0.3, G + 0.5, -5.0], alpha=0.5, tone='core', tier=1),
+        flip('dust_kick', 0.13, 0.7, 2.6, at='self', offset=[-0.3, G + 0.5, -2.4], alpha=0.5, tone='core', tier=1),
+        # húc: thuẫn đứng sững trước mặt rồi tan
+        mesh('shield_plate', T, 0.55, at='self', offset=[0, G, 1.0], scale=P, sweep=0, erodeFrom=0.35, alpha=1, tone='core', tier=0, seed=1),
+        snd(T, 'impact', 0.85, 0.75, 0.04),
+        snd(T, 'block', 0.6, 0.8, 0.05),
+        wave(T, 'self', G, 0.8, 3.2, dur=0.36, tone='body', seed=3),
+    ]
+    for i, (dx, dy, dz) in enumerate([(1.6, 0.9, 0.6), (-1.5, 0.8, 0.8), (0.3, 1.8, 0.4)]):
+        ev.append(mesh('spark_streak', T, 0.24, at='self', offset=[0, 0, 1.4], scale=1.4, move={'to': 'self', 'offset': [dx, dy, 1.4 + dz], 'ease': 'out'},
+                       shadow=False, tone='body', alpha=1, seed=i + 1, tier=1))
+    q = quake(T, 'self', G, 2.6, 2.8, burst=1.8, sparks=36, dust=3.0)
+    for e in q:
+        e['offset'] = [e['offset'][0], e['offset'][1], 1.6]
+    ev += q
+    ev += debris_at(T - 0.02, 'self', [0, G, 1.6], 6, 1.2, 1.4, 0.45, seed0=0.3)
+    ev += [stop(T, 55), shake(T, 0.32), flash(T, 0.08, tier=0), vig(T, 0.25, 300, tier=1), cam(T, 0, 0.5, fov=1.5, tier=1)]
+    return {'skill': 'skl_thiet_bich_xung', 'trigger': 'fx', 'fxKind': 'dash', 'method': 'bat_dong_kim_than', 'events': ev}
+
+
+R['skl_thiet_bich_xung'] = thiet_bich
+
+
+def dich_son():
+    """Dịch Sơn Xung (lướt đẩy lùi 6 m): chỗ húc trồi lên một VÁCH ĐÁ ba tảng, vách trượt về trước 6 m cày một rãnh nứt dài (đẩy kẻ địch đi);
+    biến thức kéo (`pull`) thì bỏ vách trượt (`unless`), thay bằng đá và vành sóng co VỀ phía mình."""
+    T = DASH_HIT
+    Z0, PUSH = 1.5, 6.0
+    ev = [
+        snd(0.0, 'slash', 0.5, 0.66, 0.05),
+        parts('dust', 0.0, 26, 3.0, 0.9, 0.55, 0.24, at='self', offset=[0, G + 0.2, -5.0], tone='core', tier=1),
+        flip('dust_kick', 0.06, 0.7, 2.8, at='self', offset=[0, G + 0.5, -4.0], alpha=0.5, tone='core', tier=1),
+        snd(T, 'impact', 0.9, 0.66, 0.04),
+        snd(T, 'thunder', 0.35, 0.62, 0.04),
+        # rãnh cày dọc đường đẩy (tối + viền sáng)
+        mesh('rift_line', T, 1.3, at='self', offset=[0, G + 0.1, Z0 - 0.3], scale=[2.4, 1, PUSH + 0.6], alpha=1, sweep=0.38, erodeFrom=0.75, shadow=False, tone='core', tier=0, seed=3),
+        mesh('rift_line', T, 0.9, at='self', offset=[0, G + 0.13, Z0 - 0.3], scale=[1.5, 1, PUSH + 0.6], alpha=0.85, sweep=0.38, erodeFrom=0.5, shadow=False, tone='body', tier=1, seed=3),
+        flip('dust_kick', T + 0.12, 0.7, 3.0, at='self', offset=[0.4, G + 0.6, Z0 + 2.5], alpha=0.55, tone='core', tier=1),
+        flip('dust_kick', T + 0.26, 0.7, 3.0, at='self', offset=[-0.4, G + 0.6, Z0 + 5.0], alpha=0.55, tone='core', tier=2),
+    ]
+    # vách đá ba tảng: trồi ở chỗ húc rồi trượt về trước (bỏ khi biến thức kéo)
+    for i, (x, h) in enumerate([(-1.15, 2.1), (0.0, 2.8), (1.15, 2.2)]):
+        k = dict(at='self', rot=[16, 25 * (i - 1), 0], scale=[1.7, h, 1.7], alpha=1, tone='shadow', tier=0 if i == 1 else 1, seed=10 + i, unless='pull')
+        ev.append(mesh('rock_spire', T - 0.02, 0.5, offset=[x, G, Z0], sweep=0.2, erodeFrom=0.98, keepUp=True,
+                       move={'to': 'self', 'offset': [x, G, Z0 + PUSH], 'ease': 'out'}, **k))
+        ev.append(mesh('rock_spire', T + 0.48, 0.7, offset=[x, G, Z0 + PUSH], sweep=0, erodeFrom=0.35, **k))
+    q = quake(T, 'self', G, 3.2, 3.4, burst=2.0, sparks=40, dust=3.4)
+    for e in q:
+        e['offset'] = [e['offset'][0], e['offset'][1], Z0]
+    ev += q
+    ev += debris_at(T - 0.02, 'self', [0, G, Z0], 6, 1.5, 1.8, 0.55, seed0=0.8)
+    ev += [stop(T, 60), shake(T, 0.4), flash(T, 0.1, tier=0), vig(T, 0.3, 300, tier=1), cam(T, 0, 0.5, fov=2.0, tier=1)]
+    end = Z0 + PUSH
+    return {
+        'skill': 'skl_dich_son_xung', 'trigger': 'fx', 'fxKind': 'dichson', 'replaces': ['dichson'],
+        'events': ev,
+        'variants': {
+            # a = choáng lâu: cuối đường đẩy vách đá vỡ nổ, vành choáng mở ra
+            'stun': [
+                mesh('burst', T + 0.5, 0.11, at='self', offset=[0, G + 1.0, end], scale=1.8, billboard=True, sweep=0, tone='body', cross=True, tier=0),
+                mesh('crack_radial', T + 0.5, 0.9, at='self', offset=[0, G + 0.05, end], scale=2.6, alpha=1, sweep=0.02, erodeFrom=0.75, shadow=False, tone='core', tier=0, seed=5),
+                wave(T + 0.5, 'self', G, 0.6, 2.6, dur=0.4, tone='body', seed=6),
+                snd(T + 0.5, 'crit', 0.5, 0.8, 0.05),
+            ],
+            # b = kéo về: hai tảng đá và vành sóng co từ xa VỀ phía mình (không có vách trượt đi)
+            'pull': [
+                mesh('rune_ring2', T, 0.45, at='self', offset=[0, G + 0.1, Z0], scale=6.0, scaleTo=1.4, sweep=0.04, erodeFrom=0.75, alpha=1, shadow=False, tone='body', tier=0, seed=7),
+                *[mesh('rock_spire', T + 0.02, 0.42, at='self', offset=[x, G, end + 1.0], rot=[-16, 180, 0], scale=[1.5, 1.9, 1.5], sweep=0.2, erodeFrom=0.8, alpha=1, keepUp=True,
+                       move={'to': 'self', 'offset': [x * 0.8, G, Z0 + 1.4], 'ease': 'in'}, tone='shadow', tier=0, seed=20 + i) for i, x in enumerate([-1.2, 1.2])],
+            ],
+        },
+    }
+
+
+R['skl_dich_son_xung'] = dich_son
+
+
+def anh_thiet():
+    """Ảnh Thiết Thân (giảm 30% trong 8 s; hit 0,35 s): ba BÓNG SẮT (thẻ bóng người tông đồng sẫm) từ hai bên và sau lưng nhập vào thân,
+    khóa lại thành BA ĐAI GIÁP (vành ngang gối, bụng, vai) bám theo người ~3,8 s."""
+    GH = [0.95, 1.9, 1]
+    ev = [
+        parts('spark', -0.35, 24, 1.8, 1, 0.3, 0.06, at='self', inward=True, tone='body', tier=1),
+        snd(-0.35, 'cast', 0.45, 0.85),
+        decal('rune', -0.32, 1.7, 1.2, at='self', offset=[0, G, 0], grow=0.2, tone='body', alpha=0.9, tier=0),
+    ]
+    for i, (x, z) in enumerate([(-1.9, 0.3), (1.9, 0.3), (0.0, -1.9)]):
+        ev.append(mesh('card', -0.32 + 0.03 * i, 0.3, card='ghost', at='self', offset=[x, 0.1, z], billboard=True, scale=GH, sweep=0.15, erodeFrom=0.85, alpha=0.85,
+                       move={'to': 'self', 'offset': [0, 0.1, 0], 'ease': 'in'}, tone='core', tier=0 if i < 2 else 1, seed=11 + i))
+    ev += [
+        snd(-0.1, 'slash', 0.35, 0.8, 0.04),
+        # nhập thân: bóng phình ra rồi tan + ba đai giáp khóa quanh người
+        mesh('card', 0.0, 0.34, card='ghost', at='self', offset=[0, 0.1, 0], billboard=True, scale=GH, scaleTo=[1.35, 2.7, 1], sweep=0, erodeFrom=0.2, alpha=0.55,
+             follow=True, tone='body', tier=0, seed=15),
+        snd(0.0, 'block', 0.85, 0.74, 0.03),
+        snd(0.0, 'shield', 0.5, 0.9, 0.04),
+        snd(0.03, 'impact', 0.45, 0.8, 0.04),
+        mesh('burst', -0.02, 0.11, at='self', offset=[0, 0.2, 0], scale=1.5, billboard=True, sweep=0, tone='body', cross=True, tier=0),
+    ]
+    for i, (y, s, tone) in enumerate([(G + 0.45, 1.0, 'body'), (G + 1.05, 1.12, 'core'), (G + 1.65, 0.95, 'body')]):
+        ev.append(mesh('rune_ring2', 0.05 * i, 3.8 - 0.05 * i, at='self', offset=[0, y, 0], rot=[0, 40 * i, 0], scale=s, scaleTo=s, sweep=0.06, erodeFrom=0.85, alpha=1, shadow=False,
+                       follow=True, tone=tone, tier=0 if i != 1 else 1, seed=20 + i))
+    ev += [
+        wave(0.0, 'self', G, 1.0, 3.6, dur=0.42, tone='body', seed=3),
+        mesh('crack_radial', 0.0, 0.9, at='self', offset=[0, G + 0.05, 0], scale=2.2, alpha=1, sweep=0.02, erodeFrom=0.75, shadow=False, tone='core', tier=0, seed=2),
+        decal('scorch', 0.0, 2.0, 2.6, at='self', offset=[0, G, 0], grow=0.05, tone='shadow', alpha=0.7, tier=1),
+        flip('dust_kick', 0.0, 0.7, 2.8, at='self', offset=[0, G + 0.5, 0], alpha=0.5, tone='core', tier=1),
+        parts('spark', 0.0, 28, 5, 1, 0.4, 0.08, at='self', offset=[0, 0, 0], tone='body', tier=0),
+    ]
+    ev += debris_at(-0.02, 'self', [0, G, 0], 6, 1.5, 1.2, 0.42, seed0=1.1)
+    ev += feel(0.0, ms=60, sh=0.3, fl=0.08, vg=0.25, fov=1.5)
+    return {
+        'skill': 'skl_anh_thiet_than',
+        'events': ev,
+        'variants': {
+            # a = kéo dài: thêm đai thứ tư trên đầu và hai nhịp vành chân nhắc "vẫn còn hiệu lực"
+            'long': [
+                mesh('rune_ring2', 0.15, 3.8, at='self', offset=[0, G + 2.2, 0], scale=0.7, scaleTo=0.7, sweep=0.06, erodeFrom=0.85, alpha=1, shadow=False, follow=True, tone='core', tier=0, seed=30),
+                *[mesh('rune_ring2', t, 0.6, at='self', offset=[0, G + 0.12, 0], scale=1.0, scaleTo=2.4, sweep=0.06, erodeFrom=0.5, alpha=0.8, shadow=False, follow=True, tone='body', tier=1, seed=31 + k)
+                  for k, t in enumerate([1.4, 2.8])],
+            ],
+            # b = thêm giảm sát thương cho riêng mình 3 s: hai tấm thuẫn chắn chéo trước mặt
+            'self': [
+                mesh('shield_plate', 0.06 + 0.04 * i, 2.8, at='self', offset=[x, G, z], rot=[0, a, 0], scale=[1.15, 1.1, 1.15], sweep=0.12, erodeFrom=0.82, alpha=1, camFade=True,
+                     follow=True, tone='core', tier=0, seed=40 + i)
+                for i, (x, z, a) in enumerate(arc([-38, 38], 1.35))
+            ],
+        },
+    }
+
+
+R['skl_anh_thiet_than'] = anh_thiet
+
+
+def thuan_di_ho_the():
+    """Thuấn Di Hộ Thể (thuấn di tới đồng đội + khiên 6 s; hit 0,25 s): đáp xuống cạnh đồng đội, một LŨY THUẪN thấp tám tấm dựng vòng r 3 m
+    quanh chỗ đáp (thấp ngang hông: không che người), vành ở lại ở mép lũy. Neo `self`: sau thuấn di người đứng cách đồng đội 1,8 m."""
+    RW = 3.0
+    ev = [
+        parts('spark', -0.25, 18, 2.0, 1, 0.24, 0.06, at='self', inward=True, tone='body', tier=1),
+        snd(-0.25, 'cast', 0.45, 1.1),
+        mesh('burst', -0.06, 0.1, at='self', offset=[0, 0.2, 0], scale=1.3, billboard=True, sweep=0, tone='body', tier=0),
+    ]
+    # đáp: ba tia từ trên cao cắm xuống chỗ đáp
+    for i, (x, z) in enumerate([(0.5, 0.2), (-0.4, 0.5), (0.0, -0.5)]):
+        ev.append(mesh('spark_streak', -0.02 + 0.01 * i, 0.12, at='self', offset=[x * 3, 7.0, z * 3], scale=2.2, move={'to': 'self', 'offset': [x, G + 0.2, z], 'ease': 'in'},
+                       shadow=False, tone='body', alpha=1, seed=i + 1, tier=1))
+    ev += [
+        snd(0.0, 'impact', 0.8, 0.8, 0.04),
+        snd(0.0, 'shield', 0.6, 0.85, 0.04),
+        snd(0.04, 'block', 0.5, 0.78, 0.05),
+        wave(0.0, 'self', G, 0.8, RW * EDGE, dur=0.4, tone='body', seed=3),
+        zone_ring(0.3, 'self', G, RW, 3.2, tone='core', seed=5),
+    ]
+    for i, (x, z, a) in enumerate(around(8, RW, math.pi / 8)):
+        ev.append(mesh('shield_plate', 0.02 + 0.02 * i, 3.3, at='self', offset=[x, G, z], rot=[0, a, 0], scale=[1.7, 0.72, 1.7], sweep=0.08, erodeFrom=0.82, alpha=1, camFade=True,
+                       tone='core', tier=0 if i % 2 == 0 else 1, seed=10 + i))
+    ev += quake(0.0, 'self', G, 2.8, 3.0, burst=1.8, sparks=36, dust=3.2)
+    ev += debris_at(-0.02, 'self', [0, G, 0], 6, 1.4, 1.5, 0.45, seed0=0.5)
+    ev += feel(0.0, ms=55, sh=0.3, fl=0.08, vg=0.25, fov=1.5)
+    return {
+        'skill': 'skl_thuan_di_ho_the',
+        'events': ev,
+        'variants': {
+            # a = khiêu khích quái trong 8 m ở chỗ đáp: sóng ra mép 8 m + vành ở lại + triện tối
+            'taunt': [
+                wave(0.08, 'self', G, 1.5, 8 * EDGE, dur=0.55, tone='body', seed=40),
+                zone_ring(0.4, 'self', G, 8, 2.6, tone='core', seed=41),
+                decal('rune', 0.1, 8.0, 2.6, at='self', offset=[0, G, 0], grow=0.4, tone='shadow', alpha=0.6, tier=1),
+            ],
+            # b = khiên dày hơn nhưng ngắn: thêm vòng lũy trong bốn tấm CAO, tan sớm
+            'big': [
+                mesh('shield_plate', 0.06 + 0.03 * i, 1.6, at='self', offset=[x, G, z], rot=[0, a, 0], scale=[1.5, 1.35, 1.5], sweep=0.1, erodeFrom=0.7, alpha=1, camFade=True,
+                     tone='body', tier=0, seed=50 + i)
+                for i, (x, z, a) in enumerate(around(4, 1.9))
+            ],
+        },
+    }
+
+
+R['skl_thuan_di_ho_the'] = thuan_di_ho_the
+
 if __name__ == '__main__':
     for i in sys.argv[1:] or list(R):
         write(R[i]())
