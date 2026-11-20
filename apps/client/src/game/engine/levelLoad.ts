@@ -28,6 +28,7 @@ import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../wo
 import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
 import { XichTanArt, xkMaterialFor } from '../world/xichTanArt';
 import { DoKiepArt, dkMaterialFor } from '../world/doKiepArt';
+import { BhFar } from '../world/bhFar';
 import { buildGildedSky, KD_DOME, KimDaArt } from '../world/kimDaArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
@@ -323,7 +324,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
           ? // Bắc Hoang: đèn lồng trời quanh trại Dị Vực và Trấn Giới Đài (trước đây không có nguồn sáng nào, trại tối đặc ban đêm)
             propsOf(id)
               .filter((p) => p.id === 'prop_den_long_troi' || p.id === 'prop_tc_chan_dong_do_nat' || p.id === 'prop_tc_chan_dong_do_nat_2')
-              .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 3.2 * p.s, z: p.z }))
+              .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 3.2 * p.s, z: p.z, color: 0xff8a3c }))
           : propsOf(id)
               .filter((p) => p.id === 'prop_den_da')
               .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
@@ -462,6 +463,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.xichTanArt.group);
     void loadXkModel(eng, q.shadows);
   }
+  if (levelAssets(id).bhFar) {
+    eng.bhFar = new BhFar(() => (eng.scene.fog as THREE.Fog | null)?.color ?? null);
+    eng.scene.add(eng.bhFar.group);
+  }
   if (levelAssets(id).doKiepArt) {
     eng.doKiepArt = new DoKiepArt({ lights: q.lights && isWebGPU(eng.renderer), hazardActive: () => eng.vfx.hazards.length > 0 });
     eng.scene.add(eng.doKiepArt.group);
@@ -565,6 +570,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.xichTanArt.group);
     eng.xichTanArt.dispose();
     eng.xichTanArt = null;
+  }
+  if (eng.bhFar) {
+    drop(eng.bhFar.group);
+    eng.bhFar.dispose();
+    eng.bhFar = null;
   }
   if (eng.doKiepArt) {
     drop(eng.doKiepArt.group);

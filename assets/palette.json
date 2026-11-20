@@ -395,13 +395,13 @@
         "blackLift": "#22203C", "contrast": 1.2, "saturation": 0.8, "exposure": 1.0
       },
       "bh_day": {
-        "label": "Bắc Hoang — ngày tuyết",
-        "sunColor": "#EEF3FF", "sunIntensity": 2.6, "sunElevationDeg": 14,
-        "skyColor": "#AFC3DE", "skyIntensity": 0.95,
-        "fogColor": "#B4C2E4", "fogDensity": 0.00035, "heightFogTop": 70, "heightFogBoost": 1.4,
+        "label": "Bắc Hoang — ngày tuyết (trắng xám trung tính, trời xám xanh nhạt)",
+        "sunColor": "#F2F4F8", "sunIntensity": 2.6, "sunElevationDeg": 14,
+        "skyColor": "#B4BEC8", "skyIntensity": 0.95,
+        "fogColor": "#C2CBD6", "fogDensity": 0.00035, "heightFogTop": 70, "heightFogBoost": 1.4,
         "fogHaze": 0.0004, "fogHazeStart": 150, "fogScatter": 0.8, "rim": 0.5,
-        "shadowTint": "#46507A", "highlightTint": "#FFF4F4", "splitBalance": 0.05,
-        "blackLift": "#16162E", "contrast": 1.15, "saturation": 0.8, "exposure": 0.98
+        "shadowTint": "#4E5666", "highlightTint": "#FFFFFF", "splitBalance": 0.0,
+        "blackLift": "#1C1E26", "contrast": 1.2, "saturation": 0.45, "exposure": 0.98
       },
       "bh_dusk": {
         "label": "Bắc Hoang — hoàng hôn tím tuyết",
@@ -431,13 +431,13 @@
         "blackLift": "#160E2C", "contrast": 1.18, "saturation": 0.85, "exposure": 1.1
       },
       "bhr_day": {
-        "label": "Bắc Hoang — bên kia khe, ngày tím mờ",
-        "sunColor": "#D8CAF4", "sunIntensity": 2.0, "sunElevationDeg": 10,
-        "skyColor": "#5E5090", "skyIntensity": 0.9,
-        "fogColor": "#70629C", "fogDensity": 0.0007, "heightFogTop": 60, "heightFogBoost": 1.9,
+        "label": "Bắc Hoang — bên kia khe, ngày xám (cực quang chỉ là điểm nhấn ở khe)",
+        "sunColor": "#E4E6F0", "sunIntensity": 2.0, "sunElevationDeg": 10,
+        "skyColor": "#9AA2B4", "skyIntensity": 0.9,
+        "fogColor": "#A4A8BA", "fogDensity": 0.0007, "heightFogTop": 60, "heightFogBoost": 1.9,
         "fogHaze": 0.0006, "fogHazeStart": 110, "fogScatter": 0.8, "rim": 0.7,
-        "shadowTint": "#18102E", "highlightTint": "#E6D8FF", "splitBalance": -0.05,
-        "blackLift": "#1A1232", "contrast": 1.15, "saturation": 0.82, "exposure": 1.08
+        "shadowTint": "#2E2C40", "highlightTint": "#EEE8FF", "splitBalance": -0.05,
+        "blackLift": "#1A1826", "contrast": 1.22, "saturation": 0.42, "exposure": 1.05
       },
       "bhr_dusk": {
         "label": "Bắc Hoang — bên kia khe, hoàng hôn độc",

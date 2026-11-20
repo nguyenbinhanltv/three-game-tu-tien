@@ -34,3 +34,11 @@ Tái thiết kế mỹ thuật Bắc Hoang Tẫn Nguyên (level `bac_hoang`, ch�
 - **Trại Dị Vực**: Bắc Hoang trước đây không có nguồn sáng nào ở trại (đèn lồng chỉ lấy `prop_den_da`). Nay `levelLoad.ts` lấy `prop_den_long_troi` + `prop_tc_chan_dong_do_nat(_2)` làm điểm đèn: quầng ấm 4,2 m (`0xffb868`) và đèn điểm thật khi `q.lights` + WebGPU (hệ số theo mood `LANTERN_LIGHT[bh_*]` có sẵn).
 - **Tinh thể** (`bhWonders.ts`): băng dọc mép khe và thạch anh tím mọc từ vách dùng màu đỉnh gradient (chân tối → mũi sáng) + vật liệu kiểu PROP-1 (lõi nóng ở mũi, fresnel viền cùng sắc, thân giữa sẫm) thay vật liệu một màu phẳng.
 - **Ngân sách (Cao, 1080p)**: 166–244 draw call, ~0,63–0,78M tam giác. Console có 3 cảnh báo có sẵn (`toNonIndexed`, thiếu `normal`/`uv`) giống bản trước.
+
+### Polish — Bắc Hoang vòng 2 (duyệt ảnh): ngày trung tính, núi xa nhiều lớp, đèn ấm
+
+- **Ban ngày** (`bh_day`, `bhr_day`): bão hòa 0,8 → 0,45 / 0,42, tuyết trắng xám trung tính hơi lạnh, trời xám xanh nhạt (`#B4BEC8`; bên kia khe `#9AA2B4`), bóng xám lam thay tím; cực quang chỉ còn ở khe (sương tím của khe giới hạn độ đục 0,6 → 0,42).
+- **Núi xa nhiều lớp** (`game/world/bhFar.ts`, cờ `bhFar`; chỉ để nhìn, không va chạm): ~150 đỉnh nhọn lởm chởm (nón lục giác 5 tầng xô lệch, màu đá lam xám, đỉnh phủ tuyết bằng màu đỉnh gradient, hắt chút sáng ban đêm) ở dải ngoài khung chơi (`playBounds` + đệm 40 m) và ba lớp sương chân núi (+30/+75/+130 m, nhiễu trôi chậm, màu sương lấy theo mood). Trước đây vách nền xa là mảng xanh phẳng không chi tiết.
+- **Đêm**: đèn trại đổi sang màu cam ấm (`0xff8a3c`) và giảm cường độ (`bh_night` 1,8 → 1,4, `bhr_night` 1,9 → 1,5) nên vùng sáng bớt thành đĩa trắng phẳng trên tuyết; vẫn là đĩa sáng của đèn điểm (cần ánh lửa/khói thật để thôi giống đĩa).
+- **Ngân sách (Cao, 1080p)**: 179–236 draw call, ~0,65–0,81M tam giác.
+- **Còn lại**: độ nhám/normal tuyết gần (yêu cầu "tuyết có độ nhám, bóng đổ") chưa làm: texture tuyết hiện vẫn mịn; ánh lửa trại và khói chưa có.

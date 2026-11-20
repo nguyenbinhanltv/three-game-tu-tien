@@ -544,7 +544,7 @@ function mistMaterial(strength: number): THREE.MeshBasicNodeMaterial {
   const dens = clamp(n1.mul(0.9).add(n2.mul(0.5)).sub(0.35), 0, 1).mul(body);
   mat.colorNode = mix(vec3(0.34, 0.18, 0.62), vec3(0.75, 0.45, 1.0), n2.mul(body));
   const nearFade = smoothstep(10, 45, length(positionView));
-  mat.opacityNode = clamp(dens.mul(strength).mul(nearFade), 0, 0.6);
+  mat.opacityNode = clamp(dens.mul(strength).mul(nearFade), 0, 0.42);
   return mat;
 }
 
