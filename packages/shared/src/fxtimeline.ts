@@ -33,7 +33,54 @@ export type FxShape =
   /** Chùm đường gió: bảy vệt mảnh cuộn quanh trục +Z, đầu vệt chạy dọc đường rồi tan (kiểu `wind`, Storm & Wind CC BY). */
   | 'gust'
   /** Tấm flipbook (VS-1): khói mực, tia lửa, bụi, nét bút... phát tuần tự 16 khung theo tiến độ vòng đời; chọn atlas bằng `flip` (kiểu `flip`). */
-  | 'flip';
+  | 'flip'
+  | FxLibShape;
+
+/**
+ * Thư viện hình mesh có khối (VS-1, dựng ở `render/vfx/fxLib.ts`). Hậu tố cho biết dùng thế nào:
+ * `slash_*` vết chém dày (toon, mặt XZ lồi +Z); `blade_*` kiếm (crystal, mũi +Z); `shock_cone|crack_radial|rift_line|rune_ring2` mặt đất (toon, mặt XZ);
+ * `rubble_*` đá vỡ, `rune_array|sword_halo|dragon_sword|petal_blade` (crystal); `spark_streak` tia lửa (toon, dọc +Z).
+ */
+export type FxLibShape = (typeof FX_LIB_SHAPES)[number];
+export const FX_LIB_SHAPES = [
+  'slash_thick',
+  'slash_thin',
+  'slash_cross',
+  'slash_fan',
+  'blade_flying',
+  'blade_stuck',
+  'blade_giant',
+  'blade_ghost',
+  'shock_cone',
+  'crack_radial',
+  'rift_line',
+  'rubble_a',
+  'rubble_b',
+  'rubble_c',
+  'rune_ring2',
+  'rune_array',
+  'dragon_sword',
+  'sword_halo',
+  'spark_streak',
+  'petal_blade',
+] as const;
+
+/** Hình vẽ bằng shader `toon` (có lớp bóng sẫm phía sau khi `shadow` không tắt): tính thêm một nhóm draw call khi đếm ngân sách. */
+export const FX_TOON_SHAPES: ReadonlySet<string> = new Set([
+  'crescent',
+  'ripple',
+  'helix',
+  'ribbon',
+  'slash_thick',
+  'slash_thin',
+  'slash_cross',
+  'slash_fan',
+  'shock_cone',
+  'crack_radial',
+  'rift_line',
+  'rune_ring2',
+  'spark_streak',
+]);
 
 /** Atlas flipbook có sẵn (4×4 khung mỗi atlas, sinh thủ tục ở `render/vfx/flipbook.ts`). */
 export const FLIP_ATLASES = ['ink_smoke', 'spark_burst', 'dust_kick', 'slash_streak'] as const;
@@ -280,8 +327,7 @@ export function fxDrawCount(events: readonly FxEvent[]): number {
   for (const e of events) {
     if (e.type === 'mesh') {
       if (e.shape !== 'gust') groups.add(e.shape);
-      if (e.shadow !== false && (e.shape === 'crescent' || e.shape === 'ripple' || e.shape === 'helix' || e.shape === 'ribbon'))
-        groups.add(e.shape + ':shadow');
+      if (e.shadow !== false && FX_TOON_SHAPES.has(e.shape)) groups.add(e.shape + ':shadow');
     } else if (e.type === 'decal') groups.add('decal:' + e.tex);
     else if (e.type === 'trail') groups.add('trail');
     else if (e.type === 'bolt') bolts++;
