@@ -21,7 +21,9 @@ import { GodRays } from '../../render/godRays';
 import { CARD_TREE_IDS, CardForest } from '../world/cardForest';
 import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
-import { DoanMachArt } from '../world/doanMachArt';
+import { DoanMachArt, exclusions as dmExclusions } from '../world/doanMachArt';
+import { buildCliffGroup, cliffSpots, dmMaterialFor } from '../world/doanMachCliffs';
+import { DoanMachFalls, fallRockSpots, fallSpots } from '../world/doanMachFalls';
 import { KiemTrungArt, ktMaterialFor } from '../world/kiemTrungArt';
 import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
 import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../world/kinhNguyetArt';
@@ -448,6 +450,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   if (levelAssets(id).doanMachArt) {
     eng.doanMachArt = new DoanMachArt();
     eng.scene.add(eng.doanMachArt.group);
+    void loadDmModel(eng, q.shadows);
   }
   if (levelAssets(id).kiemTrungArt) {
     eng.kiemTrungArt = new KiemTrungArt({ reduced: q.heightFog === false });
@@ -610,6 +613,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.phucMachArt.group);
     eng.phucMachArt.dispose();
     eng.phucMachArt = null;
+  }
+  if (eng.dmCliffs) {
+    (eng.dmCliffs.userData.dispose as (() => void) | undefined)?.();
+    drop(eng.dmCliffs);
+    eng.dmCliffs = null;
   }
   if (eng.ktAsset) {
     drop(eng.ktAsset.handle.scene);
@@ -788,6 +796,56 @@ export async function loadDkModel(eng: Game, shadows: boolean): Promise<void> {
     prefix: 'dk',
     material: dkMaterialFor,
   });
+}
+
+/**
+ * Nạp vách đá Đoạn Mạch dựng bằng Blender (asset `arch_doan_mach`): cụm phiến sa thạch, cột đá gãy bậc, đá viền hồ. Điểm đặt chọn ở sườn dốc quanh/ngoài vùng chơi, tránh mọi
+ * chỗ cấm (`exclusions` cộng đệm 10 m), mỗi biến thể gộp thành một `InstancedMesh`. Dùng chung ô `ktAsset` (chỉ một asset kiểu này mỗi level) để giải phóng cùng level.
+ */
+export async function loadDmModel(eng: Game, shadows: boolean): Promise<void> {
+  try {
+    await assets.attach(eng.renderer);
+    const c = LEVELS.doan_mach!;
+    const handle = await assets.acquire('arch_doan_mach', { pos: { x: c.spawn?.x ?? 1024, z: c.spawn?.z ?? 1024 } });
+    if (eng.disposed || !levelAssets(levelId()).doanMachArt || eng.ktAsset) {
+      handle.release();
+      return;
+    }
+    const root = handle.scene;
+    eng.ktAsset = { handle, mats: adoptGltfMaterials(root) };
+    const made = new Map<THREE.Material, THREE.Material>();
+    root.traverse((n) => {
+      const m = n as THREE.Mesh;
+      if (!m.isMesh) return;
+      const src = m.material as THREE.Material;
+      let rep = made.get(src);
+      if (!rep) {
+        const r = dmMaterialFor(src.name);
+        if (!r) return;
+        rep = r;
+        made.set(src, r);
+        eng.ktAsset!.mats.push(r);
+      }
+      m.material = rep;
+    });
+    const ex = dmExclusions();
+    const falls = fallSpots();
+    // vách thường tránh đường nước (đệm 16 m) để khe thác không bị đè bởi cụm đá khác
+    const onFall = (x: number, z: number) => falls.some((f) => f.path.some((p) => (x - p.x) ** 2 + (z - p.z) ** 2 < 16 * 16));
+    const spots = [
+      ...cliffSpots((x, z) => !onFall(x, z) && !ex.some((e) => (x - e.x) ** 2 + (z - e.z) ** 2 < (e.r + 10) ** 2)),
+      ...fallRockSpots(falls),
+    ];
+    const group = buildCliffGroup(root, spots, shadows);
+    const fallsArt = new DoanMachFalls(falls);
+    group.add(fallsArt.group);
+    group.userData.dispose = () => fallsArt.dispose();
+    eng.scene.add(group);
+    // dùng group (không phải root) để `unloadLevel` gỡ: root gốc được release cùng handle
+    eng.dmCliffs = group;
+  } catch (e) {
+    assetLog.warn('không tải được arch_doan_mach:', e);
+  }
 }
 
 /**

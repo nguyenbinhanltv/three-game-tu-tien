@@ -22161,6 +22161,43 @@
           "minY": 0
         }
       }
+    },
+    "arch_doan_mach": {
+      "id": "arch_doan_mach",
+      "class": "arch",
+      "source": "assets/build/raw/arch_doan_mach.glb",
+      "file": "arch_doan_mach.5019e50ae9.glb",
+      "bytes": 132368,
+      "rawBytes": 501956,
+      "triangles": 5640,
+      "rawTriangles": 5640,
+      "lod0Cap": 600000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 5640
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 25.8745,
+          "height": 30.6404,
+          "depth": 11.5313,
+          "minY": -0.5681
+        },
+        "build": {
+          "width": 25.8751,
+          "height": 30.6404,
+          "depth": 11.5311,
+          "minY": -0.5681
+        }
+      }
     }
   }
 }
