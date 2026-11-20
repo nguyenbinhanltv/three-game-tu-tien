@@ -2,6 +2,10 @@
 
 > Đường dẫn nguồn dạng `2d/icons/…` và `icons/…` trong các bảng icon bên dưới là bản cũ, nay nằm ở `../dtl-asset-source-luu-tru/` (ASSET-CLEAN 2026-11-19); atlas hiện tại lấy từ `2d/icon/v2/png256/`. Các đường dẫn khác tính từ gốc cây nguồn mới (`3d/`, `2d/`, `audio/`…).
 
+## Ý tưởng quy trình từ blender-skills (2026-11-20)
+
+Các trang `.claude/skills/blender-pipeline/references/{reference-match,qa-checklist,lod-collision}.md`, `.claude/skills/procedural-assets/references/modeling-tips.md` và `.claude/skills/character-3d/references/weights-proportions.md` tham khảo ý tưởng, kỹ thuật và checklist từ các skill `reference-image-match`, `sculpting`, `character-artist`, `hard-surface`, `rigging`, `cloth-sim`, `qa-review`, `asset-optimization`, `lod-pipeline`, `collision-proxy`, `procedural-modeling` của repo https://github.com/arjun988/blender-skills (giấy phép MIT, © arjun988). Đã viết lại bằng lời dự án và đổi theo quy ước riêng; không chép nguyên văn, không cài bộ skill ngoài. Không phải asset, chỉ ghi nguồn.
+
 ## Màn tải và chất liệu UI 2D Codex (2026-11-16)
 
 Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`tools/codex-assets/gen.mjs loading|ui`, chủ thể ở `tools/codex-assets/loading.json`, `ui.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/<nhóm>/<id>.png` và `<id>.prompt.txt`. Đóng gói bằng `tools/codex-assets/pack.mjs loading ui` thành WebP ở `apps/client/public/assets/art/` (nạp lười).

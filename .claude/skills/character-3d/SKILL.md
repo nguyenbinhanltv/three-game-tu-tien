@@ -7,7 +7,7 @@ description: Quy trình làm một bộ nhân vật v3 (Tripo → Blender → ga
 
 Quy trình đã chạy trọn vẹn cho `Tinh Khuyết Kiếm Bào` nữ (NV3-B, cách 1 = rig + trọng số, cách 2 = tách lưới, 20/11). **Mức đạt hiện tại là mức nền, chưa phải đích**: người dùng chấm "ổn hơn nhưng chưa wow". Hướng tiếp ở mục 10. Đã áp đợt 1 (Kiếm tu, 5 model) và đợt 2 (Hộ pháp, 6 model, mục 11); các đợt còn lại cần người dùng duyệt ảnh từng đợt.
 
-Chi tiết từng chặng (lệnh, tham số, số đo): `input-tripo.md`, `rig-split.md`, `anim-verify.md` (cùng thư mục `references` của skill). Lịch sử và số đo các đợt N-0…N-9: `docs/chr-v3/README.md`. Phối hợp với skill `blender-pipeline` (Blender nền, LOD, KTX2), `tsl-shaders-vfx` (vật liệu), `perf-budget`, `playtest`.
+Chi tiết từng chặng (lệnh, tham số, số đo): `input-tripo.md`, `rig-split.md`, `anim-verify.md`, và `weights-proportions.md` (bảng tỉ lệ đầu, bảng kiểm trọng số/twist/tư thế cực đoan, gợi ý vải; cùng thư mục `references` của skill). Lịch sử và số đo các đợt N-0…N-9: `docs/chr-v3/README.md`. Phối hợp với skill `blender-pipeline` (Blender nền, LOD, KTX2), `tsl-shaders-vfx` (vật liệu), `perf-budget`, `playtest`.
 
 ## 1. Đầu vào (người dùng làm phần Tripo, **không API, không credit**)
 1. Codex sinh ảnh concept **A-pose** + **multiview 4 góc** `<bộ>_<nam|nu>_{front,left,right,back}.png` vào `2d/hoa-truc/thien_giai/` trong `dtl-asset-source` (ngoài repo, `../dtl-asset-source` hoặc `DTL_ASSET_SOURCE`).

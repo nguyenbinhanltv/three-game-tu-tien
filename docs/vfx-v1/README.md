@@ -46,3 +46,7 @@ mất hình hoặc lẫn ma trận (vòng ấn to bất thường, gai không hi
 Trong ngân sách (< 300 draw; CPU khung không đổi ở p50). Chưa đo 50 người cùng ra chiêu (V6); chiêu người khác đã hạ một bậc chất lượng.
 
 Ảnh dãy khung (mới, nam/nữ, và hình cũ): thư mục `anh/`. Video webm: ngoài repo, `D:/claude-tmp/vfx-v1/new/` (chậm 0,25× và tốc độ thật). Video nặng ở ngoài repo (đường dẫn trong mô tả PR); ảnh dãy khung ở thư mục này.
+
+## VS-1 (2026-11): hạ tầng VFX "wow" cho Kiếm tu
+
+Kế hoạch: `ke-hoach-vfx-skill-huong-tu.md` mục C2 và `vs1-ke-hoach-vfx-kiem-tu.md` (artifact phiên). Lớp 1 (hạ tầng): sự kiện timeline `slowmo`, `vignette`, `soundAt`, `camera.fov`, hình `flip` (flipbook thủ tục), kiểm ngân sách cả chiêu ≤ 25 draw. Lớp 2: thư viện hình mesh. Lớp 3: làm lại Kiếm Khí Trảm (mẫu phong cách, duyệt trước khi làm 5 chiêu còn lại). Chi tiết kỹ thuật: `docs/handbook/vfx-animation.md`.

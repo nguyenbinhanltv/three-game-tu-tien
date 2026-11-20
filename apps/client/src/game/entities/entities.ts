@@ -359,6 +359,8 @@ export class EntityManager {
     local: { x: number; y: number; z: number; yaw: number; speed: number; airborne: boolean },
     targetId: string,
     myLevel: number,
+    /** Thời gian trình diễn RIÊNG cho animation của nhân vật mình (VS-1 `slowmo`); vị trí, nội suy, quái và người khác luôn dùng `dt` thật. */
+    myAnimDt: number = dt,
   ): void {
     this.time += dt;
     const k = Math.min(1, dt * 12);
@@ -457,7 +459,7 @@ export class EntityManager {
       h.push({ t: this.time, x: v.x, z: v.z });
       while (h.length > 1 && this.time - h[0]!.t > HIST_SEC) h.shift();
       const lookMon = isLocal && targetId ? this.monsters.get(targetId) : undefined;
-      v.model.update(dt, {
+      v.model.update(isLocal ? myAnimDt : dt, {
         lookAt: lookMon ? { x: lookMon.x, y: lookMon.y + 1.2, z: lookMon.z } : undefined,
         moveDir: v.speed > 0.3 ? locoDirOf(v.yaw, v.mvx, v.mvz) : undefined,
         moveAngle: v.speed > 0.3 ? locoAngleOf(v.yaw, v.mvx, v.mvz) : undefined,

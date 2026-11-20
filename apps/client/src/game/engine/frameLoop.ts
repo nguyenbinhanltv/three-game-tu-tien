@@ -192,13 +192,18 @@ export function runFrame(eng: Game): void {
   const rp = eng.renderPos;
   eng.terrain.update(rp.x, rp.z, eng.started ? 1 : 8);
   const myLevel = get().char?.level ?? 1;
+  // Chậm thời gian TRÌNH DIỄN (VS-1 `slowmo`): chỉ animation/hình/hạt; di chuyển, dự đoán, camera, âm thanh dùng dt thật.
+  const pscale = eng.presentationScale(performance.now());
+  const vdt = dt * pscale;
   if (me) {
+    // Đối số đầu LUÔN là dt thật (nội suy vị trí người khác/quái, hover, hộ tống, animation của thực thể không phải mình); `vdt` chỉ cho animation nhân vật mình.
     eng.ents.update(
       dt,
       eng.view,
       { x: rp.x, y: rp.y, z: rp.z, yaw: eng.facing, speed: eng.speed, airborne: !eng.cur.grounded && !eng.cur.flying },
       eng.targetId,
       myLevel,
+      vdt,
     );
   }
   if (me) eng.steps?.update(eng.ents, eng.sid, rp, !eng.cur.grounded && !eng.cur.flying);
@@ -208,10 +213,10 @@ export function runFrame(eng: Game): void {
     eng.ents.updateQuestMarkers(get().quests, myLevel);
   }
   if (me) eng.vfx.trails.update(dt, eng.ents.players, eng.sid, eng.camera);
-  eng.skillFx?.update(dt);
+  eng.skillFx?.update(dt, pscale);
   if (me) eng.realmAura?.update(dt);
   if (me) updateGrass(eng, dt, rp);
-  eng.vfx.update(dt);
+  eng.vfx.update(dt, pscale);
   eng.post?.update(dt);
   updateCamera(eng, dt);
   setListener(rp.x, rp.z, eng.camYaw);
@@ -329,7 +334,14 @@ function updateCamera(eng: Game, dt: number): void {
     pull = f.amt * Math.min(1, f.t / 0.4) * Math.max(0, Math.min(1, (f.dur - f.t) / 0.6));
     if (f.t >= f.dur) eng.fxPull = null;
   }
-  const wantFov = zc.fov + ultPunch;
+  let fovKick = 0;
+  if (eng.fxFov) {
+    const f = eng.fxFov;
+    f.t += dt;
+    fovKick = f.amt * Math.min(1, f.t / 0.15) * Math.max(0, Math.min(1, (f.dur - f.t) / 0.6));
+    if (f.t >= f.dur) eng.fxFov = null;
+  }
+  const wantFov = zc.fov + ultPunch + fovKick;
   if (Math.abs(eng.camera.fov - wantFov) > 0.01) {
     eng.camera.fov = wantFov;
     eng.camera.updateProjectionMatrix();
@@ -402,7 +414,7 @@ function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
   eng.pushSelf.z = rp.z;
   pickPushers(eng.pushSelf, pool, eng.pushers, 40, n);
   eng.grass.update(dt, rp, eng.pushers, eng.started ? 1 : 6);
-  eng.props?.update(dt, rp.x, rp.z);
+  eng.props?.update(dt, eng.camera.position.x, eng.camera.position.z); // LOD và tầm vẽ theo CAMERA (không theo người chơi): camera cao/xa không còn vẽ prop LOD gần
   eng.lacKiemSky?.update(eng.camera, rp.x, rp.z);
   eng.thienKhuyetSky?.update(performance.now() / 1000);
   eng.vanHaiWow?.update(dt);

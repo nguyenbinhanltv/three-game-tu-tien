@@ -385,6 +385,21 @@ export class Game {
   ultCamT = -1;
   /** Kéo camera ra xa nhẹ của hiệu ứng pháp tướng (theo công tắc "Rung màn hình"). */
   fxPull: { amt: number; dur: number; t: number } | null = null;
+  /** Đẩy góc nhìn của sự kiện `camera.fov` (VS-1). */
+  fxFov: { amt: number; dur: number; t: number } | null = null;
+  /** Chậm thời gian trình diễn (VS-1, sự kiện `slowmo`): chỉ hình/hạt/animation, không đụng di chuyển hay luật. */
+  fxSlow: { scale: number; until: number } | null = null;
+
+  /** Hệ số thời gian trình diễn hiện tại (1 = bình thường). */
+  presentationScale(now: number): number {
+    const s = this.fxSlow;
+    if (!s) return 1;
+    if (now >= s.until) {
+      this.fxSlow = null;
+      return 1;
+    }
+    return s.scale;
+  }
   /** Động tác chiêu (M3-4): dự đoán khi bấm phím, khớp lúc ra đòn với hiệu ứng. */
   skillPoses = new SkillPoses();
   /** Cần ảo cảm ứng (U2-6): ý định di chuyển thay WASD, null khi thả. */
@@ -681,6 +696,18 @@ export class Game {
         flash: (a) => this.post?.flash(a),
         camPull: (pull, dur) => {
           if (this.shake.enabled) this.fxPull = { amt: pull, dur, t: 0 };
+        },
+        camFov: (deg, dur) => {
+          if (this.shake.enabled) this.fxFov = { amt: deg, dur, t: 0 };
+        },
+        slowmo: (scale, ms) => {
+          if (this.shake.enabled) this.fxSlow = { scale, until: performance.now() + ms };
+        },
+        vignette: (amount, tone, ms) => this.post?.punch(amount, tone, ms),
+        soundRate: (id, gain, sid, rate) => {
+          const pv = this.ents?.players.get(sid);
+          const vol = sid === this.sid ? gain : pv ? volumeAt(this, pv.x, pv.z) * gain * 0.6 : 0;
+          if (vol > 0) sfx(id as Sfx, vol, pv, false, { rate });
         },
         areaOf: (sid) => this.fxArea.get(sid) ?? null,
         originOf: (sid) => this.fxOrigin.get(sid) ?? null,

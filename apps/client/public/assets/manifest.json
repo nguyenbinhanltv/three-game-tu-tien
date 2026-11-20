@@ -1182,11 +1182,11 @@
       "id": "arch_thien_khuyet",
       "class": "arch",
       "source": "assets/build/raw/arch_thien_khuyet.glb",
-      "file": "arch_thien_khuyet.5c09919942.glb",
-      "bytes": 14625608,
-      "rawBytes": 28604492,
-      "triangles": 256470,
-      "rawTriangles": 256470,
+      "file": "arch_thien_khuyet.41a1b9ed8a.glb",
+      "bytes": 15718036,
+      "rawBytes": 32853352,
+      "triangles": 313813,
+      "rawTriangles": 313813,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -1351,7 +1351,7 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 256470
+          "triangles": 313813
         }
       ],
       "dims": {
@@ -1362,7 +1362,7 @@
           "minY": -3.1796
         },
         "build": {
-          "width": 932.696,
+          "width": 932.6852,
           "height": 327.8033,
           "depth": 926.1588,
           "minY": -3.1809

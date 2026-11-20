@@ -357,7 +357,7 @@ export class SkillFx {
   }
 
   /** Mỗi khung: lấy mẫu vệt kiếm, linh quang hộ thể. */
-  update(dt: number): void {
+  update(dt: number, mineScale = 1): void {
     this.clock += dt;
     for (let i = this.pending.length - 1; i >= 0; i--) {
       const p = this.pending[i]!;
@@ -405,7 +405,7 @@ export class SkillFx {
       }
       if (j.actor.model.bladePoints?.(_p, _t)) j.rib.push(_p, _t);
     }
-    this.runner.update(dt);
+    this.runner.update(dt, mineScale);
     this.updateAura(dt);
   }
 

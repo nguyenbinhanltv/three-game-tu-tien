@@ -5,6 +5,7 @@
 
 import * as THREE from 'three/webgpu';
 import {
+  FLIP_ATLASES,
   fxEventsFor,
   fxTierFor,
   skillTiming,
@@ -26,6 +27,7 @@ import type { SkillEvent } from '../character/view';
 import { emitCount } from './fxSettings';
 import { densitySize } from '../../render/vfx/particles';
 import type { Vfx } from './vfx';
+import { presentDt } from './vfxParts/common';
 
 export interface FxTarget {
   /** Chân mục tiêu (y = mặt đất dưới chân). */
@@ -58,6 +60,14 @@ export interface FxRunnerEnv {
   flash(amount: number): void;
   /** Kéo camera ra xa nhẹ (pháp tướng): hệ số khoảng cách thêm và thời lượng (giây). */
   camPull(pull: number, dur: number): void;
+  /** Đẩy góc nhìn thêm `deg` độ cùng nhịp `camPull` (VS-1). */
+  camFov(deg: number, dur: number): void;
+  /** Chậm thời gian trình diễn `scale`× trong `ms` mili giây (VS-1; không đụng luật/di chuyển). */
+  slowmo(scale: number, ms: number): void;
+  /** Chớp tối/sáng ở viền khung hình (VS-1). */
+  vignette(amount: number, tone: 'dark' | 'light', ms: number): void;
+  /** Âm có chỉnh tốc độ phát (VS-1, `soundAt`). */
+  soundRate(id: string, gain: number, sid: string, rate: number): void;
   sound(id: string, gain: number, sid: string): void;
   /** Vùng của chiêu diện rộng gần nhất của `sid` (S.FX x, z, r). */
   areaOf(sid: string): { x: number; z: number; r: number } | null;
@@ -325,11 +335,12 @@ export class FxRunner {
     this.casts.delete(sid);
   }
 
-  update(dt: number): void {
+  /** `mineScale` (VS-1 `slowmo`): chỉ nhân cho đồng hồ chiêu của MÌNH; chiêu người khác và vạch báo/chiêu quái luôn `dt` thật. */
+  update(dt: number, mineScale = 1): void {
     for (const c of this.casts.values()) {
       const clk = c.actor.model.performClock?.();
       if (clk && clk.skill === c.def.id) c.clock = clk.t;
-      else c.clock += dt;
+      else c.clock += presentDt(c.mine, dt, mineScale);
       this.pump(c, c.clock);
       if (c.q.every((x) => x.done)) this.casts.delete(c.sid);
     }
@@ -434,7 +445,19 @@ export class FxRunner {
         break;
       }
       case 'camera':
-        if (c.mine) this.env.camPull(ev.pull, ev.dur);
+        if (c.mine) {
+          this.env.camPull(ev.pull, ev.dur);
+          if (ev.fov) this.env.camFov(ev.fov, ev.dur);
+        }
+        break;
+      case 'slowmo':
+        if (c.mine) this.env.slowmo(ev.scale, ev.ms);
+        break;
+      case 'vignette':
+        if (c.mine) this.env.vignette(ev.amount, ev.tone ?? 'dark', ev.ms);
+        break;
+      case 'soundAt':
+        this.env.soundRate(ev.id, ev.gain ?? 1, c.sid, (ev.rate ?? 1) * (1 + (Math.random() * 2 - 1) * (ev.jitter ?? 0)));
         break;
       case 'flash':
         if (c.mine) this.env.flash(Math.min(0.3, ev.amount));
@@ -500,8 +523,11 @@ export class FxRunner {
       } else if (ev.follow) {
         this.anchor(c, ev.at ?? 'self', ev.offset, yaw, this.tgtOf(c) ?? tgt, m.position);
       } else m.position.copy(start);
-      if (ev.billboard) m.quaternion.copy(cam.quaternion);
-      else {
+      if (ev.billboard ?? kind === 'flip') {
+        // Quay mặt về camera; `rot[2]` xoay thêm trong mặt phẳng hình (nét chém chéo).
+        m.quaternion.copy(cam.quaternion);
+        if (ev.rot?.[2]) m.quaternion.multiply(_q.setFromAxisAngle(AXIS_Z, ev.rot[2] * DEG));
+      } else {
         m.quaternion.copy(baseQ);
         if (spin) m.quaternion.multiply(_q.setFromAxisAngle(AXIS_Z, spin * k * dur));
       }
@@ -535,6 +561,8 @@ export class FxRunner {
           } else if (kind === 'decal') {
             m.fxA.x = easeOut(Math.min(1, k / Math.max(sweep, 0.2)));
             m.fxA.y = sstep(erodeFrom, 1, k);
+          } else if (kind === 'flip') {
+            m.fxA.x = Math.max(0, FLIP_ATLASES.indexOf(ev.flip ?? 'ink_smoke'));
           }
           m.fxK = k;
           place(m, k, isShade ? 1.08 : 1, isShade ? 0.03 * (s0[0]! + 0.5) : 0);
@@ -545,6 +573,7 @@ export class FxRunner {
         this.v.drop(main);
         if (shade) this.v.drop(shade);
       },
+      c.mine,
     );
     main.fxA.z = seed;
     if (shade) shade.fxA.z = seed;
@@ -665,6 +694,7 @@ export class FxRunner {
         this.decals--;
         this.v.drop(m);
       },
+      c.mine,
     );
   }
 

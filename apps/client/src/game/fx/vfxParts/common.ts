@@ -12,7 +12,12 @@ export interface Fx {
   /** k = tiến độ 0..1. */
   update(k: number, dt: number): void;
   end(): void;
+  /** Chạy theo thời gian trình diễn chậm (`slowmo`, chỉ hình của chính mình). */
+  slow?: boolean;
 }
+
+/** Thời gian của một mục theo `slowmo`: chỉ mục đánh dấu `slow` (hình của chính mình) nhân với `scale`; còn lại luôn `dt` thật. */
+export const presentDt = (slow: boolean | undefined, dt: number, scale: number): number => (slow ? dt * scale : dt);
 
 export type PosFn = (out: THREE.Vector3) => boolean;
 

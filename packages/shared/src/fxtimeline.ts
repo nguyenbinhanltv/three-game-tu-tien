@@ -31,7 +31,60 @@ export type FxShape =
   /** Thẻ pháp tướng vẽ 2D quay mặt về camera (kiểu `card`); chọn tranh bằng `card`. */
   | 'card'
   /** Chùm đường gió: bảy vệt mảnh cuộn quanh trục +Z, đầu vệt chạy dọc đường rồi tan (kiểu `wind`, Storm & Wind CC BY). */
-  | 'gust';
+  | 'gust'
+  /** Tấm flipbook (VS-1): khói mực, tia lửa, bụi, nét bút... phát tuần tự 16 khung theo tiến độ vòng đời; chọn atlas bằng `flip` (kiểu `flip`). */
+  | 'flip'
+  | FxLibShape;
+
+/**
+ * Thư viện hình mesh có khối (VS-1, dựng ở `render/vfx/fxLib.ts`). Hậu tố cho biết dùng thế nào:
+ * `slash_*` vết chém dày (toon, mặt XZ lồi +Z); `blade_*` kiếm (crystal, mũi +Z); `shock_cone|crack_radial|rift_line|rune_ring2` mặt đất (toon, mặt XZ);
+ * `rubble_*` đá vỡ, `rune_array|sword_halo|dragon_sword|petal_blade` (crystal); `spark_streak` tia lửa (toon, dọc +Z).
+ */
+export type FxLibShape = (typeof FX_LIB_SHAPES)[number];
+export const FX_LIB_SHAPES = [
+  'slash_thick',
+  'slash_thin',
+  'slash_cross',
+  'slash_fan',
+  'blade_flying',
+  'blade_stuck',
+  'blade_giant',
+  'blade_ghost',
+  'shock_cone',
+  'crack_radial',
+  'rift_line',
+  'rubble_a',
+  'rubble_b',
+  'rubble_c',
+  'rune_ring2',
+  'rune_array',
+  'dragon_sword',
+  'sword_halo',
+  'spark_streak',
+  'petal_blade',
+] as const;
+
+/** Hình vẽ bằng shader `toon` (có lớp bóng sẫm phía sau khi `shadow` không tắt): tính thêm một nhóm draw call khi đếm ngân sách. */
+export const FX_TOON_SHAPES: ReadonlySet<string> = new Set([
+  'crescent',
+  'ripple',
+  'helix',
+  'ribbon',
+  'slash_thick',
+  'slash_thin',
+  'slash_cross',
+  'slash_fan',
+  'shock_cone',
+  'crack_radial',
+  'rift_line',
+  'rune_ring2',
+  'spark_streak',
+]);
+
+/** Atlas flipbook có sẵn (4×4 khung mỗi atlas, sinh thủ tục ở `render/vfx/flipbook.ts`). */
+export const FLIP_ATLASES = ['ink_smoke', 'spark_burst', 'dust_kick', 'slash_streak'] as const;
+export type FlipAtlas = (typeof FLIP_ATLASES)[number];
 
 /** Bố trí gốc của sự kiện. */
 /** `area`: tâm vùng của chiêu diện rộng (`S.FX` x,z; không có thì như `ground`). `ground`: chân mục tiêu (mặt đất dưới chân); không có mục tiêu thì 5 m trước mặt, ngang chân người ra chiêu. */
@@ -86,6 +139,8 @@ export interface FxMeshEvent extends FxBase {
     ease?: 'out' | 'in' | 'linear';
     /** Dịch đích (khác `offset` của điểm xuất phát), ví dụ rơi thẳng từ trên cao. */ offset?: [number, number, number];
   };
+  /** Atlas của hình `flip` (bắt buộc với `shape: "flip"`). */
+  flip?: FlipAtlas;
   /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh). */
   card?: 'arhat' | 'phoenix' | 'ghost';
   /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */
@@ -172,11 +227,42 @@ export interface FxBoltEvent extends FxBase {
   seed?: number;
 }
 
-/** Kéo camera ra xa nhẹ (chỉ của mình): `pull` = hệ số khoảng cách thêm (0..0,4), lên trong 0,4 s, giữ rồi hạ trong 0,6 s cuối của `dur`. */
+/**
+ * Kéo camera ra xa nhẹ (chỉ của mình): `pull` = hệ số khoảng cách thêm (0..0,4), lên trong 0,4 s, giữ rồi hạ trong 0,6 s cuối của `dur`.
+ * `fov` (VS-1, tùy chọn): đẩy góc nhìn thêm 0..8° cùng nhịp (đòn nặng "nện" vào mắt); theo công tắc "Rung màn hình".
+ */
 export interface FxCameraEvent extends FxBase {
   type: 'camera';
   pull: number;
   dur: number;
+  fov?: number;
+}
+
+/**
+ * Chậm thời gian TRÌNH DIỄN (VS-1; chỉ của mình, theo công tắc "Rung màn hình"): hình ảnh/hạt/animation chạy `scale`× tốc độ trong `ms`;
+ * di chuyển, dự đoán, luật chơi và server không đổi. `scale` 0,2..0,9, `ms` 40..300.
+ */
+export interface FxSlowmoEvent extends FxBase {
+  type: 'slowmo';
+  scale: number;
+  ms: number;
+}
+
+/** Chớp tối/sáng ở viền khung hình (VS-1; chỉ của mình): `amount` 0..0,5, tự tan trong `ms` (100..900). */
+export interface FxVignetteEvent extends FxBase {
+  type: 'vignette';
+  amount: number;
+  ms: number;
+  tone?: 'dark' | 'light';
+}
+
+/** Âm đặt đúng mốc (VS-1): như `sound` nhưng chỉnh được tốc độ phát `rate` (0,6..1,6) và biến thiên ngẫu nhiên `jitter` (0..0,25). */
+export interface FxSoundAtEvent extends FxBase {
+  type: 'soundAt';
+  id: string;
+  gain?: number;
+  rate?: number;
+  jitter?: number;
 }
 
 export interface FxFlashEvent extends FxBase {
@@ -201,7 +287,10 @@ export type FxEvent =
   | FxFlashEvent
   | FxSoundEvent
   | FxBoltEvent
-  | FxCameraEvent;
+  | FxCameraEvent
+  | FxSlowmoEvent
+  | FxVignetteEvent
+  | FxSoundAtEvent;
 
 export interface FxTimeline {
   /** id chiêu (khớp `skills.json`/`methods.json`). */
@@ -238,8 +327,7 @@ export function fxDrawCount(events: readonly FxEvent[]): number {
   for (const e of events) {
     if (e.type === 'mesh') {
       if (e.shape !== 'gust') groups.add(e.shape);
-      if (e.shadow !== false && (e.shape === 'crescent' || e.shape === 'ripple' || e.shape === 'helix' || e.shape === 'ribbon'))
-        groups.add(e.shape + ':shadow');
+      if (e.shadow !== false && FX_TOON_SHAPES.has(e.shape)) groups.add(e.shape + ':shadow');
     } else if (e.type === 'decal') groups.add('decal:' + e.tex);
     else if (e.type === 'trail') groups.add('trail');
     else if (e.type === 'bolt') bolts++;
@@ -255,6 +343,15 @@ export function fxDrawCount(events: readonly FxEvent[]): number {
   for (const e of events) if (e.type === 'mesh' && e.shape === 'gust') gusts++;
   return groups.size + bolts + gusts;
 }
+
+/** Số sự kiện `mesh` tối đa mỗi đòn/biến thức (mỗi cái là một lưới sống + một closure mỗi khung). */
+export const FX_MESH_MAX = 170;
+
+/** Số âm tối đa (`sound` + `soundAt`) mỗi đòn/biến thức: mỗi âm chiếm một voice (MAX_VOICES = 32), âm FX không bị chống dồn. */
+export const FX_SOUND_MAX = 8;
+
+/** Ngân sách draw call của CẢ chiêu (VS-1): mọi sự kiện của mọi mốc/đòn/biến thức hợp lại. Mỗi mốc riêng vẫn ≤ 12. */
+export const FX_SKILL_DRAW_MAX = 25;
 
 /** Tổng số hạt của một tập sự kiện (ngân sách ≤ 1.500/chiêu). */
 export function fxParticleCount(events: readonly FxEvent[]): number {
@@ -297,6 +394,20 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (e.type === 'flash' && !(e.amount >= 0 && e.amount <= 0.3)) errs.push(`${p}: chớp ${e.amount} ngoài 0–0,3`);
       if (e.type === 'camera' && !(e.pull >= 0 && e.pull <= 0.4 && e.dur > 0 && e.dur <= 4))
         errs.push(`${p}: camera pull=${e.pull} dur=${e.dur} ngoài (0–0,4, ≤ 4 s)`);
+      if (e.type === 'camera' && !(e.fov === undefined || (e.fov >= 0 && e.fov <= 8))) errs.push(`${p}: camera fov=${e.fov} ngoài 0–8°`);
+      if (e.type === 'slowmo' && !(e.scale >= 0.2 && e.scale <= 0.9 && e.ms >= 40 && e.ms <= 300))
+        errs.push(`${p}: slowmo scale=${e.scale} ms=${e.ms} ngoài (0,2–0,9; 40–300 ms)`);
+      if (e.type === 'vignette' && !(e.amount >= 0 && e.amount <= 0.5 && e.ms >= 100 && e.ms <= 900))
+        errs.push(`${p}: vignette amount=${e.amount} ms=${e.ms} ngoài (0–0,5; 100–900 ms)`);
+      if (e.type === 'soundAt') {
+        if (!e.id) errs.push(`${p}: soundAt thiếu id`);
+        if (!(e.rate === undefined || (e.rate >= 0.6 && e.rate <= 1.6))) errs.push(`${p}: soundAt rate=${e.rate} ngoài 0,6–1,6`);
+        if (!(e.jitter === undefined || (e.jitter >= 0 && e.jitter <= 0.25))) errs.push(`${p}: soundAt jitter=${e.jitter} ngoài 0–0,25`);
+        if (!(e.gain === undefined || (e.gain >= 0 && e.gain <= 1.5))) errs.push(`${p}: soundAt gain=${e.gain} ngoài 0–1,5`);
+      }
+      if (e.type === 'mesh' && e.shape === 'flip' && !(e.flip && (FLIP_ATLASES as readonly string[]).includes(e.flip)))
+        errs.push(`${p}: mesh flip thiếu/sai atlas (${e.flip}), hợp lệ: ${FLIP_ATLASES.join('|')}`);
+      if (e.type === 'mesh' && e.shape !== 'flip' && e.flip) errs.push(`${p}: chỉ hình flip mới có trường flip`);
       if (e.type === 'bolt' && !(e.scale === undefined || (e.scale > 0 && e.scale <= 4)))
         errs.push(`${p}: bolt scale=${e.scale} ngoài (0, 4]`);
       if (e.type === 'bolt' && !(e.thick === undefined || (e.thick > 0 && e.thick <= 6)))
@@ -314,6 +425,31 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (fxParticleCount(ev) > 1500) errs.push(`${p}: ${fxParticleCount(ev)} hạt > 1500 (đòn ${c}${v ? ', biến thức ' + v : ''})`);
     }
   }
+  // VS-1: ngân sách cả chiêu (mọi mốc, đòn, biến thức hợp lại) ≤ 25 draw, và mỗi mốc tối đa một chớp chậm thời gian (chồng nhau gây rối nhịp).
+  const union = [...tl.events, ...Object.values(tl.combo ?? {}).flat(), ...Object.values(tl.variants ?? {}).flat()];
+  if (fxDrawCount(union) > FX_SKILL_DRAW_MAX) errs.push(`${p}: ${fxDrawCount(union)} draw cả chiêu > ${FX_SKILL_DRAW_MAX}`);
+  for (const c of combos)
+    for (const v of vars) {
+      const ev = fxEventsFor(tl, c, v);
+      for (const hit of new Set(ev.map((e) => (typeof e.hit === 'number' ? e.hit : -1)))) {
+        const n = ev.filter(
+          (e) => e.type === 'slowmo' && (e.hit === undefined || e.hit === hit || (Array.isArray(e.hit) && e.hit.includes(hit))),
+        ).length;
+        if (n > 1) errs.push(`${p}: ${n} slowmo cùng một mốc trúng (tối đa 1)`);
+      }
+    }
+  // Số lưới: mỗi sự kiện `mesh` là một closure `Vfx.track` + một lần ghi instance mỗi khung; chiêu của người khác chỉ hạ một bậc nên vẫn nhiều (đo: ≥ 150 lưới sống làm khung p50 gấp đôi).
+  for (const c of combos)
+    for (const v of vars) {
+      const n = fxEventsFor(tl, c, v).filter((e) => e.type === 'mesh').length;
+      if (n > FX_MESH_MAX) errs.push(`${p}: ${n} sự kiện mesh > ${FX_MESH_MAX} (đòn ${c}${v ? ', biến thức ' + v : ''})`);
+    }
+  // Âm: `soundAt`/`sound` không qua chống dồn của `sfx` (throttle = false) và mỗi âm chiếm một trong MAX_VOICES = 32 → tối đa FX_SOUND_MAX mỗi đòn.
+  for (const c of combos)
+    for (const v of vars) {
+      const n = fxEventsFor(tl, c, v).filter((e) => e.type === 'sound' || e.type === 'soundAt').length;
+      if (n > FX_SOUND_MAX) errs.push(`${p}: ${n} âm > ${FX_SOUND_MAX} (đòn ${c}${v ? ', biến thức ' + v : ''})`);
+    }
   // Tia sét: tối đa 4 tia mỗi đòn (mỗi tia một draw call riêng, không gộp).
   for (const c of combos)
     for (const v of vars) {

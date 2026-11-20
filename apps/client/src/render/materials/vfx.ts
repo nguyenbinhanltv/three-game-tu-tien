@@ -4,6 +4,7 @@ import { markBloom } from '../post';
 import type { FxUniforms } from '../vfx/common';
 import { inkNodes } from '../vfx/ink';
 import { boltNodes, vortexNodes, windNodes } from '../vfx/lightning';
+import { flipNodes } from '../vfx/flipbook';
 import { beamNodes } from '../vfx/loot';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
@@ -69,7 +70,8 @@ export type FxKind =
   | 'decal'
   | 'card'
   | 'art'
-  | 'wind';
+  | 'wind'
+  | 'flip';
 
 const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: number; fog: boolean }> = {
   glow: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
@@ -92,6 +94,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   card: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
   art: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.3, fog: false },
   wind: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.2, fog: false },
+  flip: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
 };
 
 const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opacity: unknown }>> = {
@@ -110,6 +113,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   card: cardNodes,
   art: artNodes,
   wind: windNodes,
+  flip: flipNodes,
   dome: (u) => {
     // Fresnel: 1 ở rìa (nhìn lướt), ~0 ở giữa (nhìn thẳng). Vân phù văn: dải ngang mờ chạy theo độ cao.
     const fres = pow(float(1).sub(abs(dot(normalize(normalView), normalize(positionView.negate())))), 2.6);
@@ -199,6 +203,7 @@ export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>([
   'decal',
   'card',
   'art',
+  'flip',
 ]);
 
 /** Tên thuộc tính instance: màu + độ trong, `fxA`, `fxB`, (`fxK`, 0, 0, 0). */
