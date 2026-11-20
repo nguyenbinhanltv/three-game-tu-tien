@@ -40,7 +40,7 @@ jobs:
       - name: Lint (luật ranh giới, R-9)
         run: pnpm lint
 
-      - name: Vòng phụ thuộc (R-6: shared mọi vòng, còn lại vòng giá trị)
+      - name: Vòng phụ thuộc (R-6, shared mọi vòng, còn lại vòng giá trị)
         run: pnpm deps:check
 
       - name: Prettier (140 cột)
