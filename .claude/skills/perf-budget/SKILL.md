@@ -59,6 +59,10 @@ Tự hạ (`base/quality.ts` `AutoQuality`, nối ở `game/engine/frameLoop.ts`
 - **Kích thước tải**: `pnpm size` (`tools/perf/src/size.ts`; tự `pnpm build` nếu chưa có `apps/client/dist`, `--build` để build lại). Cộng những gì phải tải trước khi đứng trong thế giới: HTML, JS/CSS trong `index.html` (gzip mức 9), font, `apps/client/public/assets/manifest.json` + mọi asset gọi `assets.acquire('<id>')` bằng chuỗi hằng trong `apps/client/src`, bảng icon UI, `apps/client/public/audio/manifest.json` + sprite SFX không `lazy` (tính cả webm lẫn m4a, so ngân sách với bản nặng hơn). In riêng phần nạp sau khi vào (âm môi trường, sprite lazy, chunk động, GLB theo nhu cầu). Lưu `bench/results/size-<ngày>.json`; thoát mã 1 nếu vượt 30MB (`--budget-mb` để đổi). Thêm asset nạp ở màn tải bằng cách khác (không qua `assets.acquire` với id hằng) thì sửa `size.ts` cho khớp.
 - **Server**: chạy 100 bot (skill `playtest`), đọc metric `tick_ms` p95 từ log server.
 
+## Soát asset trước khi đo
+
+Draw call phần lớn đến từ số material: gộp slot trùng, dùng atlas/trim sheet, nhân bản bằng instance thay vì sao chép hình học (chi tiết: `.claude/skills/blender-pipeline/references/qa-checklist.md` mục 3 và `lod-collision.md`). Mảng phát sáng dùng material riêng theo vật.
+
 ## Khi vượt ngưỡng
 
 Thử theo thứ tự, đo lại sau mỗi bước:

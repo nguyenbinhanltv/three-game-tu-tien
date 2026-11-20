@@ -457,7 +457,7 @@
    "sweep": 0.2,
    "erodeFrom": 0.7,
    "shadow": false,
-   "tone": "body",
+   "tone": "core",
    "tier": 0,
    "seed": 2
   },
@@ -466,10 +466,10 @@
    "tex": "crack",
    "at": "ground",
    "t": 0.04,
-   "r": 3.2,
+   "r": 3.6,
    "grow": 0.12,
    "dur": 2.6,
-   "tone": "body",
+   "tone": "core",
    "alpha": 1,
    "tier": 1
   },
@@ -478,11 +478,11 @@
    "tex": "scorch",
    "at": "ground",
    "t": 0.04,
-   "r": 2.6,
+   "r": 3.2,
    "grow": 0.1,
    "dur": 3,
    "tone": "shadow",
-   "alpha": 0.85,
+   "alpha": 1,
    "tier": 1
   },
   {
@@ -507,7 +507,7 @@
    "type": "mesh",
    "shape": "rubble_a",
    "t": 0.03,
-   "dur": 0.55,
+   "dur": 0.42,
    "at": "ground",
    "offset": [
     0,
@@ -519,10 +519,10 @@
     10,
     0
    ],
-   "scale": 0.55,
-   "scaleTo": 0.4,
+   "scale": 0.5,
+   "scaleTo": 0.32,
    "sweep": 0,
-   "erodeFrom": 0.65,
+   "erodeFrom": 0.3,
    "alpha": 1,
    "move": {
     "to": "ground",
@@ -533,7 +533,7 @@
     ],
     "ease": "out"
    },
-   "tone": "body",
+   "tone": "shadow",
    "tier": 1,
    "seed": 1
   },
@@ -541,7 +541,7 @@
    "type": "mesh",
    "shape": "rubble_a",
    "t": 0.04,
-   "dur": 0.55,
+   "dur": 0.42,
    "at": "ground",
    "offset": [
     0,
@@ -553,10 +553,10 @@
     70,
     20
    ],
-   "scale": 0.55,
-   "scaleTo": 0.4,
+   "scale": 0.5,
+   "scaleTo": 0.32,
    "sweep": 0,
-   "erodeFrom": 0.65,
+   "erodeFrom": 0.3,
    "alpha": 1,
    "move": {
     "to": "ground",
@@ -567,7 +567,7 @@
     ],
     "ease": "out"
    },
-   "tone": "body",
+   "tone": "shadow",
    "tier": 1,
    "seed": 2
   },
@@ -575,7 +575,7 @@
    "type": "mesh",
    "shape": "rubble_a",
    "t": 0.05,
-   "dur": 0.55,
+   "dur": 0.42,
    "at": "ground",
    "offset": [
     0,
@@ -587,10 +587,10 @@
     120,
     40
    ],
-   "scale": 0.55,
-   "scaleTo": 0.4,
+   "scale": 0.5,
+   "scaleTo": 0.32,
    "sweep": 0,
-   "erodeFrom": 0.65,
+   "erodeFrom": 0.3,
    "alpha": 1,
    "move": {
     "to": "ground",
@@ -601,7 +601,7 @@
     ],
     "ease": "out"
    },
-   "tone": "body",
+   "tone": "shadow",
    "tier": 1,
    "seed": 3
   },
@@ -609,7 +609,7 @@
    "type": "mesh",
    "shape": "rubble_a",
    "t": 0.06,
-   "dur": 0.55,
+   "dur": 0.42,
    "at": "ground",
    "offset": [
     0,
@@ -621,10 +621,10 @@
     200,
     10
    ],
-   "scale": 0.55,
-   "scaleTo": 0.4,
+   "scale": 0.5,
+   "scaleTo": 0.32,
    "sweep": 0,
-   "erodeFrom": 0.65,
+   "erodeFrom": 0.3,
    "alpha": 1,
    "move": {
     "to": "ground",
@@ -635,7 +635,7 @@
     ],
     "ease": "out"
    },
-   "tone": "body",
+   "tone": "shadow",
    "tier": 1,
    "seed": 4
   },
