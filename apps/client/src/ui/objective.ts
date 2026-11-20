@@ -2,7 +2,7 @@ import { questSpot, type ObjectiveDef } from '@dtl/shared';
 import { itemName, LEVELS, monsterName, realmName, t } from '@dtl/content';
 
 /** Tên điểm của mục tiêu `touch`/`scan`: tìm ở mọi level (id điểm là duy nhất toàn game). */
-export function spotName(id: string | undefined): string {
+function spotName(id: string | undefined): string {
   for (const lv of Object.values(LEVELS)) {
     const sp = questSpot(lv, id);
     if (sp) return t(sp.nameKey);
@@ -10,7 +10,7 @@ export function spotName(id: string | undefined): string {
   return id ?? '';
 }
 
-export function escortName(id: string | undefined): string {
+function escortName(id: string | undefined): string {
   for (const lv of Object.values(LEVELS)) {
     const e = lv.escorts?.find((x) => x.id === id);
     if (e) return t(`npc.${e.npc}.name`);

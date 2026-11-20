@@ -63,7 +63,7 @@ const flashU = uniform(0);
 const skyU = uniform(0);
 
 /** Vùng cấm đặt hiệu ứng ngẫu nhiên: quanh đài và lối vào phía nam. */
-export function dkKeepOut(x: number, z: number, minR: number): boolean {
+function dkKeepOut(x: number, z: number, minR: number): boolean {
   const dx = x - CENTER.x;
   const dz = z - CENTER.z;
   return Math.hypot(dx, dz) < minR || (Math.abs(dx) < 9 && dz > 24);

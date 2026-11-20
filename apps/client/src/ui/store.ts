@@ -438,7 +438,7 @@ let lastLog = '';
 let lastLogAt = 0;
 
 /** Kênh mặc định của một dòng: chat người chơi theo `type`, còn lại là tin hệ thống. */
-export function channelOf(type: string): ChatChannel {
+function channelOf(type: string): ChatChannel {
   return type === 'chat' ? 'world' : type === 'party' ? 'party' : 'system';
 }
 

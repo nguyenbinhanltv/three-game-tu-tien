@@ -63,7 +63,7 @@ export function xichCrackDist(paths: readonly RiftPt[][], x: number, z: number):
 }
 
 /** Độ cao so với sàn hẻm (m). */
-export function xichRel(def: TerrainDef, h: number): number {
+function xichRel(def: TerrainDef, h: number): number {
   return h - def.natural.level;
 }
 
@@ -135,7 +135,7 @@ export interface XichAccent {
   k: number;
 }
 
-export interface XichScatterCtx {
+interface XichScatterCtx {
   def: TerrainDef;
   heightAt(x: number, z: number): number;
   clear: readonly { x: number; z: number; r: number }[];

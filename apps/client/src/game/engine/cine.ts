@@ -52,13 +52,13 @@ export function startCine(eng: Game): void {
 }
 
 /** Cảnh boss/chuyển pha chỉ chạy khi người chơi bật thẻ chương, không `?cine=0`, không đang chết, không đang có cảnh khác. */
-export function canBossCine(eng: Game, me: PState | undefined): boolean {
+function canBossCine(eng: Game, me: PState | undefined): boolean {
   if (!me || !eng.started || eng.cine.active || eng.snapToServer) return false;
   if ((me.fl & PF_DEAD) !== 0 || get().phase !== 'game') return false;
   return get().chapterCards && FLAGS.cinematics;
 }
 
-export function beginBossCine(
+function beginBossCine(
   eng: Game,
   kind: 'boss' | 'phase' | 'dan',
   path: readonly Waypoint[],
@@ -178,7 +178,7 @@ export function runCine(eng: Game, dt: number): void {
  * đường; (2) cả hai cảnh: camera không được sát boss hơn `minBossDist` (thấy trọn thân trên), nới ra dần ở 15%
  * cuối để hòa liền vào camera thường.
  */
-export function focusCine(eng: Game): void {
+function focusCine(eng: Game): void {
   const f = eng.cineFocus!;
   const m = eng.view.monsters.get(f.id);
   if (!m || m.st === MS_DEAD) return;
@@ -205,7 +205,7 @@ export function focusCine(eng: Game): void {
 }
 
 /** Hiệu ứng hậu kỳ theo nhịp cảnh boss: nhòe hướng tâm (xuất hiện) hoặc nhuộm màu (chuyển pha), kèm rung lần hai. */
-export function cineFx(eng: Game, on: boolean): void {
+function cineFx(eng: Game, on: boolean): void {
   const k = eng.cineKind;
   if (k === 'sect') return;
   const w = on ? eng.cine.weight : 0;

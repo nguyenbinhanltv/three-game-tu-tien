@@ -82,7 +82,7 @@ export type GradingName =
   | 'bhr_dusk'
   | 'bhr_night';
 /** Thời điểm trong ngày (`?mood=`); level có bộ mood riêng (Đoạn Mạch: `ochre*`) đổi theo. */
-export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
+type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 
 type RawPreset = Record<keyof GradingPreset, string | number>;
 const raw = palette.grading as unknown as {

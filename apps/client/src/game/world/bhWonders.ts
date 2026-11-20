@@ -304,7 +304,7 @@ export function beastSkeleton(): THREE.BufferGeometry {
 }
 
 /** Đụn tuyết phủ quanh thân xác (chôn nửa dưới, phủ lên xương sườn thấp). */
-export function beastDrifts(): THREE.BufferGeometry {
+function beastDrifts(): THREE.BufferGeometry {
   const parts: THREE.BufferGeometry[] = [];
   // đụn thấp quanh chân xương sườn (không phủ kín thân), và một gò lớn hơn nơi đầu
   for (let i = 0; i < 16; i++) {
@@ -472,7 +472,7 @@ function amethystGeometry(): THREE.BufferGeometry {
 }
 
 /** Điểm mọc tinh thể trên vách khe: nơi dốc, độ sâu giữa đáy và mép; hướng theo pháp tuyến địa hình. */
-export function wallCrystalSpots(
+function wallCrystalSpots(
   path: readonly RiftPt[],
   heightAt: (x: number, z: number) => number,
   count: number,

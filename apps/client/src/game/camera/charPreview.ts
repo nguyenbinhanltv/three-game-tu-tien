@@ -9,8 +9,8 @@ import { logger } from '../../base/log';
 const previewLog = logger('preview');
 
 /** Rộng phải là bội số của 64: WebGPU đọc texture theo hàng căn 256 byte (three không bù phần đệm). */
-export const PREVIEW_W = 256;
-export const PREVIEW_H = 352;
+const PREVIEW_W = 256;
+const PREVIEW_H = 352;
 /** Khung hình/giây của xem trước. */
 const PREVIEW_FPS = 30;
 /** Quá mức này (ms CPU trung bình mỗi lần vẽ, tính trên cửa sổ `BUDGET_WINDOW` lần) thì lùi về chân dung 2D. */

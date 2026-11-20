@@ -55,7 +55,7 @@ export function groveDensity(x: number, z: number): number {
   return a * 0.5 + b * 0.35 + c * 0.15;
 }
 
-export interface Spot {
+interface Spot {
   x: number;
   z: number;
   r: number;
@@ -96,7 +96,7 @@ export function exclusions(): Spot[] {
   return out;
 }
 
-export interface TreeSpot {
+interface TreeSpot {
   x: number;
   z: number;
   s: number;
@@ -150,7 +150,7 @@ export function mapleSpots(max = 700): TreeSpot[] {
   return out;
 }
 
-export interface RuneSpot {
+interface RuneSpot {
   pos: THREE.Vector3;
   normal: THREE.Vector3;
   size: number;
@@ -394,7 +394,7 @@ function canopyGeometry(): THREE.BufferGeometry {
   return g;
 }
 
-export interface BridgeFillSample {
+interface BridgeFillSample {
   x: number;
   z: number;
   /** Cao độ mặt đất thật bên dưới (lưới địa hình, không tính mặt cầu). */

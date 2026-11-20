@@ -3,7 +3,7 @@ import { type CircleCollider, collisionOf, shapeMaxTop, type Shape } from '@dtl/
 import { groundAt, levelId, levelTerrain } from '../../base/levelCtx';
 
 /** Loại hiển thị, mỗi loại một màu (và một `LineSegments`): vòng tròn cũ hồng; hộp/trụ chặn cyan; mặt đi được lục; xuyên được khi ngự kiếm (tán lá, đồ nhỏ) vàng. (`vertexColors` không chạy trên WebGPU nên tách theo màu.) */
-export type VizKind = 'circle' | 'block' | 'walk' | 'pass';
+type VizKind = 'circle' | 'block' | 'walk' | 'pass';
 const KIND_COLOR: Record<VizKind, number> = { circle: 0xff5ad1, block: 0x33e6ff, walk: 0x59ff66, pass: 0xffe64d };
 const KINDS = Object.keys(KIND_COLOR) as VizKind[];
 /** Số hình 3D tối đa vẽ cùng lúc (cấp bộ đệm một lần). */
@@ -11,7 +11,7 @@ const MAX_SHAPES = 4000;
 const SHAPE_VERTS = 24 + 16 * 4; // hộp: 12 cạnh; trụ: hai vòng 16 đoạn + 4 gân (đủ chỗ cho cả hai)
 
 /** Hình 3D nằm trong tầm vẽ quanh (x, z), tính cả cỡ. */
-export function shapesNear(list: readonly Shape[], x: number, z: number, range = RANGE): Shape[] {
+function shapesNear(list: readonly Shape[], x: number, z: number, range = RANGE): Shape[] {
   return list.filter((s) => Math.hypot(s.x - x, s.z - z) - (s.k === 'cyl' ? s.r : Math.hypot(s.hx, s.hz)) <= range);
 }
 

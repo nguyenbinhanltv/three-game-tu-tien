@@ -10,7 +10,7 @@ import type { Particles } from '../../render/vfx/particles';
  * đi từ sân tông môn xuống thung lũng hay vào rừng thì hạt đổi dần, không giật.
  */
 
-export type AmbientKind = 'mote' | 'pollen' | 'petal' | 'leaf' | 'mist' | 'jade' | 'ash' | 'ember' | 'maple';
+type AmbientKind = 'mote' | 'pollen' | 'petal' | 'leaf' | 'mist' | 'jade' | 'ash' | 'ember' | 'maple';
 
 /** Số hạt mỗi giây ở preset Vừa, theo loại. */
 type AmbientRates = Record<AmbientKind, number>;

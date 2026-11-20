@@ -11,10 +11,10 @@ import type { FxCaster, FxRunner, FxTarget } from './fxTimeline';
 import { OTHERS_FX_LIVE_MAX } from './fxBudget';
 
 /** Xa hơn mức này (m, tới camera) thì không phát FX quái. */
-export const MON_FX_DIST = 60;
+const MON_FX_DIST = 60;
 /** Khoảng giãn tối thiểu giữa hai lần cùng loại của một quái (giây): quái bị đánh liên tục không sinh hạt liên tục. */
-export const MON_HIT_GAP = 0.12;
-export const MON_STRIKE_GAP = 0.3;
+const MON_HIT_GAP = 0.12;
+const MON_STRIKE_GAP = 0.3;
 
 /** Hệ ngũ hành theo loại vùng khi không biết quái thả vùng. */
 const ELEM_OF_KIND: Record<string, string> = { fire: 'hoa', frost: 'thuy', lightning: 'kim', spirit: 'moc' };
@@ -29,7 +29,7 @@ export function hazardMul(r: number, base: number): number {
   return Math.min(4, Math.max(0.5, r / base));
 }
 
-export interface MonLike {
+interface MonLike {
   id: string;
   s: { t: string };
   x: number;
@@ -39,7 +39,7 @@ export interface MonLike {
   model: { height: number };
 }
 
-export interface MonFxEnv {
+interface MonFxEnv {
   camera(): { position: { x: number; z: number } };
   live(): number;
 }

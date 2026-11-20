@@ -13,7 +13,7 @@ import { getCloudNoise } from '../../render/noiseTex';
  * Draw call: 4 (nước, hồ, bọt, bụi nước).
  */
 
-export interface FallPoint {
+interface FallPoint {
   x: number;
   y: number;
   z: number;
@@ -26,7 +26,7 @@ export interface FallPoint {
   dz: number;
 }
 
-export interface FallSpot {
+interface FallSpot {
   path: FallPoint[];
   w: number;
 }
@@ -42,7 +42,7 @@ function groundNormal(x: number, z: number, e = 3): { x: number; y: number; z: n
 }
 
 /** Đường chảy từ (x0, z0): đi xuống theo gradient, mỗi STEP m; dừng khi hết dốc hoặc quá 150 m. */
-export function flowPath(x0: number, z0: number): FallPoint[] {
+function flowPath(x0: number, z0: number): FallPoint[] {
   const out: FallPoint[] = [];
   let x = x0;
   let z = z0;

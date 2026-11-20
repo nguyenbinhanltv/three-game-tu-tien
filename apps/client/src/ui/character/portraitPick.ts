@@ -18,10 +18,10 @@ export type OutfitArt =
   | 'tinh_khuyet'
   | 'co_thanh'
   | 'than_tang';
-export type RealmArt = 'nk' | 'tc' | 'kd' | 'na' | 'ht' | 'ab';
+type RealmArt = 'nk' | 'tc' | 'kd' | 'na' | 'ht' | 'ab';
 /** Đạo (theo vai trò công pháp): kiếm tu / hộ pháp / đan sư. */
 export type DaoArt = 'kiem' | 'ho_phap' | 'dan_su';
-export type SwordArt = 'thanh_phong' | 'han_quang';
+type SwordArt = 'thanh_phong' | 'han_quang';
 
 /** Bộ có tranh riêng: id bộ → tên tranh (apps/client/public/hoa-truc/<tên>_<nam|nu>.webp). Bộ khác rơi về đồ đệ tử; CHỈ thêm bộ khi `.webp` của nó đã vào repo . */
 const SET_ART: Record<string, OutfitArt> = {

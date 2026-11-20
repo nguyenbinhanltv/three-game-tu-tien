@@ -19,7 +19,7 @@ import {
   vec4,
 } from 'three/tsl';
 
-export interface SkinLook {
+interface SkinLook {
   /** Nhân albedo (tuyến tính). */
   gain: number;
   /** Ép hệ số kim loại (nhân với metalnessMap nếu có). */

@@ -3,7 +3,7 @@
  * (`debug|info|warn|error|silent`, mặc định `info`); đổi lúc chạy bằng `setLogLevel`. Giữ nguyên chữ thẻ `[tag]` ở đầu
  * mỗi dòng (các công cụ và người đọc log dựa vào đó), không thêm dấu thời gian: nơi chạy (systemd, pm2) đã gắn.
  */
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
+type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
 
 const ORDER: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40, silent: 99 };
 

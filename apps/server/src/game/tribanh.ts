@@ -14,9 +14,9 @@ import type { MonEnt, PlayerEnt } from './sim';
 import type { TribHost, TribState } from './trib';
 import { registerMechanic } from './tribmech';
 
-export const STELE_COUNT = 5;
+const STELE_COUNT = 5;
 /** Khe Giới Khích nằm ở mép bắc sân (−z), cách tâm `RIFT_DIST` lần bán kính ngũ giác. */
-export const RIFT_DIST = 1.9;
+const RIFT_DIST = 1.9;
 
 interface Bolt {
   x: number;
@@ -25,7 +25,7 @@ interface Bolt {
 }
 
 /** Trạng thái dẫn lôi trong `tr.mech.dan_loi` (chỉ server giữ). Còn nguyên sau khi pha 1 kết thúc: pha 3 đọc số bia sáng. */
-export interface DanLoiState {
+interface DanLoiState {
   x: number;
   z: number;
   lit: boolean[];
@@ -34,7 +34,7 @@ export interface DanLoiState {
 }
 
 /** Trạng thái nhật thực trong `tr.mech.nhat_thuc`. */
-export interface NhatThucState {
+interface NhatThucState {
   boss: MonEnt | null;
   boltAt: number;
   bolts: Bolt[];
@@ -44,11 +44,11 @@ export interface NhatThucState {
 }
 
 /** Tâm sân kiếp của `def` (từ level kiếp). */
-export function arenaCenter(def: TribDef): { x: number; z: number } {
+function arenaCenter(def: TribDef): { x: number; z: number } {
   return LEVELS[tribLevelOf(def)]?.dungeon?.center ?? { x: 0, z: 0 };
 }
 
-export function danLoiCfg(def: TribDef): TribDanLoi | undefined {
+function danLoiCfg(def: TribDef): TribDanLoi | undefined {
   return def.phases.find((p) => p.danLoi)?.danLoi;
 }
 
@@ -226,7 +226,7 @@ registerMechanic('nhat_thuc', {
 });
 
 /** Gỡ Nhật Thực Dực Chủ (hết pha hoặc kiếp kết thúc giữa chừng). */
-export function dropBoss(host: TribHost, tr: TribState): void {
+function dropBoss(host: TribHost, tr: TribState): void {
   const st = tr.mech?.nhat_thuc as NhatThucState | undefined;
   if (st?.boss) host.removeMonster(st.boss);
   if (st) {

@@ -214,7 +214,7 @@ export function swordKeepOut(x: number, z: number, minR: number): boolean {
   return false;
 }
 
-export interface KtSword {
+interface KtSword {
   x: number;
   z: number;
   /** Độ cao cắm so với mặt đất (m, thân kiếm hiển thị). */

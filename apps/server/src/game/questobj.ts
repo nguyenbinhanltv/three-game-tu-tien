@@ -23,7 +23,7 @@ import { QUEST, t } from '@dtl/content';
 import type { PlayerEnt } from './entities';
 
 import { at } from '@dtl/shared';
-export interface QuestObjHost {
+interface QuestObjHost {
   now(): number;
   level(): LevelDef;
   players(): Iterable<PlayerEnt>;
@@ -40,7 +40,7 @@ interface Convoy {
 }
 
 /** Điểm `touch` có tiền tố này chỉ tính khi người chơi đang ở dạng nguyên anh xuất khiếu (cờ `PF_SOUL`). */
-export const SOUL_SPOT_PREFIX = 'phong_an_mon_';
+const SOUL_SPOT_PREFIX = 'phong_an_mon_';
 
 /** Nhịp chấm mục tiêu (ms). */
 const STEP_MS = 250;
