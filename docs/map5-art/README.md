@@ -26,3 +26,30 @@ Tái thiết kế mỹ thuật Bắc Hoang Tẫn Nguyên (level `bac_hoang`, ch�
 - **Vực khe sâu thật** (vòng chỉnh theo duyệt PR2): nền khe hạ y 58 → 38 (mặt 72, sâu 34 m), `outerR` 56 → 46, nhấp nhô 5 m (`levels/bac_hoang.terrain.json` + `tools/maps/gen-bac-hoang.mjs`); khe còn 10 nút (z −190 → −460), 4 nút cuối khép dần về y 72 và dừng cách Trấn Giới Đài hơn 30 m để sân, bia `tran_gioi_bia_5` và cột tà trận vẫn phẳng ~72 m (có test); bac_hoang không `blockRise` nên không chặn đi lại, 56 test server qua; minimap dựng lại. Vách tối, ánh tím từ đáy hắt lên (`bhGroundColor`), tinh thể tím mọc từ vách (`wallCrystalSpots`, `InstancedMesh`, bloom), hai lớp sương tím cuộn ra (`mistMaterial`), băng và vết nứt như trước.
 - **Xác cự thú làm lại**: đốt sống khối có gai thần kinh cao + mỏm ngang, xương sườn dày (gãy/thiếu), sọ có mào, hốc mắt, sừng có đai, hàm răng lởm chởm; màu đỉnh ngà ngả vàng, sứt mẻ theo nhiễu 3D, băng xanh và tuyết phủ mặt hướng lên (shader), chôn nửa dưới; cao 8–15 m.
 - **Cực quang** lớn hơn (cung 180°, cao tới ~36° trên chân trời) và sáng hơn; góc chụp `cucquang`, `vuc`.
+
+## Polish — Bắc Hoang: sương ngày, đêm Trấn Giới Đài, trại Dị Vực, tinh thể gradient
+
+- **Sương ban ngày xa**: mood `bh_day` hạ `fogHaze` 0,0006 → 0,0004 và đẩy `fogHazeStart` 140 → 150, `fogDensity` 0,00042 → 0,00035; `bhr_day` (bên kia khe) 0,0009/80 → 0,0006/110, mật độ 0,0008 → 0,0007. Hạ thấp hơn nữa sẽ lộ vách nền xa còn phẳng (mảng tím xám sau dải đồi), nên dừng ở mức này; vách nền xa cần làm riêng.
+- **Đêm Trấn Giới Đài** (`bhr_night`, bên kia khe): bớt tím đặc — bão hòa 0,85 → 0,55, exposure 1,3 → 1,22, nắng/trời/sương xám ngả tím nhạt thay chàm, sương thưa hơn (0,00144 → 0,001), tương phản 1,25.
+- **Trại Dị Vực**: Bắc Hoang trước đây không có nguồn sáng nào ở trại (đèn lồng chỉ lấy `prop_den_da`). Nay `levelLoad.ts` lấy `prop_den_long_troi` + `prop_tc_chan_dong_do_nat(_2)` làm điểm đèn: quầng ấm 4,2 m (`0xffb868`) và đèn điểm thật khi `q.lights` + WebGPU (hệ số theo mood `LANTERN_LIGHT[bh_*]` có sẵn).
+- **Tinh thể** (`bhWonders.ts`): băng dọc mép khe và thạch anh tím mọc từ vách dùng màu đỉnh gradient (chân tối → mũi sáng) + vật liệu kiểu PROP-1 (lõi nóng ở mũi, fresnel viền cùng sắc, thân giữa sẫm) thay vật liệu một màu phẳng.
+- **Ngân sách (Cao, 1080p)**: 166–244 draw call, ~0,63–0,78M tam giác. Console có 3 cảnh báo có sẵn (`toNonIndexed`, thiếu `normal`/`uv`) giống bản trước.
+
+### Polish — Bắc Hoang vòng 2 (duyệt ảnh): ngày trung tính, núi xa nhiều lớp, đèn ấm
+
+- **Ban ngày** (`bh_day`, `bhr_day`): bão hòa 0,8 → 0,45 / 0,42, tuyết trắng xám trung tính hơi lạnh, trời xám xanh nhạt (`#B4BEC8`; bên kia khe `#9AA2B4`), bóng xám lam thay tím; cực quang chỉ còn ở khe (sương tím của khe giới hạn độ đục 0,6 → 0,42).
+- **Núi xa nhiều lớp** (`game/world/bhFar.ts`, cờ `bhFar`; chỉ để nhìn, không va chạm): ~150 đỉnh nhọn lởm chởm (nón lục giác 5 tầng xô lệch, màu đá lam xám, đỉnh phủ tuyết bằng màu đỉnh gradient, hắt chút sáng ban đêm) ở dải ngoài khung chơi (`playBounds` + đệm 40 m) và ba lớp sương chân núi (+30/+75/+130 m, nhiễu trôi chậm, màu sương lấy theo mood). Trước đây vách nền xa là mảng xanh phẳng không chi tiết.
+- **Đêm**: đèn trại đổi sang màu cam ấm (`0xff8a3c`) và giảm cường độ (`bh_night` 1,8 → 1,4, `bhr_night` 1,9 → 1,5) nên vùng sáng bớt thành đĩa trắng phẳng trên tuyết; vẫn là đĩa sáng của đèn điểm (cần ánh lửa/khói thật để thôi giống đĩa).
+- **Ngân sách (Cao, 1080p)**: 179–236 draw call, ~0,65–0,81M tam giác.
+- **Còn lại**: độ nhám/normal tuyết gần (yêu cầu "tuyết có độ nhám, bóng đổ") chưa làm: texture tuyết hiện vẫn mịn; ánh lửa trại và khói chưa có.
+
+### Polish — Bắc Hoang vòng 3 (review): chân núi xa ngoài vùng chơi
+
+- `peakCandidate` trước chỉ loại tâm đỉnh trong `playBounds` ± 40 m, trong khi chân nón vươn tới ~110 m (r 36–86 × jitter 1,28 × giãn z 1,2): đỉnh ở rìa lấn vào vùng chơi mà không có va chạm. Nay yêu cầu khoảng cách từ tâm tới khung ≥ `MARGIN + r × FOOT_K` (1,65, vòng tròn ngoại tiếp chân nón); test `bhFar.test.ts` kiểm mọi đỉnh được chọn có toàn bộ chân ngoài `playBounds`. Hệ quả: dãy đỉnh giữa thưa hơn (đỉnh tập trung ở góc/ngoài cùng), nền xa còn mảng phẳng giữa các đỉnh.
+
+### Polish — Bắc Hoang vòng 4 (duyệt ảnh): sương mềm theo độ cao, đĩa sáng nhỏ hơn
+
+- **Sương dải không còn thành vạch kẻ**: ba vành sương phẳng mờ hẳn khi nhìn ngang (`edgeOn` theo góc nhìn so với mặt phẳng vành) và giảm 20% độ đục; thêm **sương chân vách** (`buildWallHaze`): ống đứng bao vùng chơi, đặc ở chân rồi tan dần lên cao (gradient độ cao + nhiễu cuộn chậm), không có mép ngang.
+- **Vùng sáng đèn trại**: quầng 4,2 → 2,8 m, cường độ đèn điểm ban đêm 1,4 → 0,9 (`bhr_night` 1,5 → 1,0); vùng sáng nhỏ và nhạt hơn nhưng vẫn là đĩa tròn trên tuyết (cần ánh lửa/khói thật).
+- **Ảnh**: đủ ngày + đêm, `tragioi` + `tram`, 720p + 1080p ở `polish-bac-hoang/sau`.
+- **Còn lại**: vách giữa đêm còn mảng xanh chàm ít chi tiết (màu địa hình, chưa có lớp đá/tuyết ở vách); ban ngày vách và núi xa rất sáng gần trắng.

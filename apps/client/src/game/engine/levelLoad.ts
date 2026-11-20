@@ -28,6 +28,7 @@ import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../wo
 import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
 import { XichTanArt, xkMaterialFor } from '../world/xichTanArt';
 import { DoKiepArt, dkMaterialFor } from '../world/doKiepArt';
+import { BhFar } from '../world/bhFar';
 import { LacKiemFar } from '../world/lacKiemFar';
 import { buildGildedSky, KD_DOME, KimDaArt } from '../world/kimDaArt';
 import { LacKiemSkyScene } from '../world/lacKiemSky';
@@ -320,9 +321,14 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     const pts =
       id === 'van_lam' || id === 'kiem_trung'
         ? SECT_LANTERNS
-        : propsOf(id)
-            .filter((p) => p.id === 'prop_den_da')
-            .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
+        : id === 'bac_hoang'
+          ? // Bắc Hoang: đèn lồng trời quanh trại Dị Vực và Trấn Giới Đài (trước đây không có nguồn sáng nào, trại tối đặc ban đêm)
+            propsOf(id)
+              .filter((p) => p.id === 'prop_den_long_troi' || p.id === 'prop_tc_chan_dong_do_nat' || p.id === 'prop_tc_chan_dong_do_nat_2')
+              .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 3.2 * p.s, z: p.z, color: 0xff8a3c }))
+          : propsOf(id)
+              .filter((p) => p.id === 'prop_den_da')
+              .map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
     // Cung gương: quầng đèn nhỏ, màu lạnh, không vào bloom (đèn đá không cháy trắng).
     const halos = levelAssets(id).palace
       ? createLanternHalos(
@@ -330,7 +336,9 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
           levelAssets(id).kinhNguyetArt ? 3.6 : 1.3,
           levelAssets(id).palace === 'gilt' ? 0xd8a64a : levelAssets(id).kinhNguyetArt ? 0xffc47a : 0xb8cdee,
         )
-      : createLanternHalos(pts);
+      : id === 'bac_hoang'
+        ? createLanternHalos(pts, 2.8, 0xffb868)
+        : createLanternHalos(pts);
     eng.scene.add(halos);
     eng.levelObjs.push(halos);
     eng.lanterns = new LanternLights(eng.scene, pts);
@@ -456,6 +464,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.xichTanArt.group);
     void loadXkModel(eng, q.shadows);
   }
+  if (levelAssets(id).bhFar) {
+    eng.bhFar = new BhFar(() => (eng.scene.fog as THREE.Fog | null)?.color ?? null);
+    eng.scene.add(eng.bhFar.group);
+  }
   if (levelAssets(id).lacKiemFar) {
     eng.lacKiemFar = new LacKiemFar(() => (eng.scene.fog as THREE.Fog | null)?.color ?? null);
     eng.scene.add(eng.lacKiemFar.group);
@@ -563,6 +575,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.xichTanArt.group);
     eng.xichTanArt.dispose();
     eng.xichTanArt = null;
+  }
+  if (eng.bhFar) {
+    drop(eng.bhFar.group);
+    eng.bhFar.dispose();
+    eng.bhFar = null;
   }
   if (eng.lacKiemFar) {
     drop(eng.lacKiemFar.group);
