@@ -66,7 +66,8 @@ export function fitThienY(inp: ThienYInput, opt: ThienYOptions = {}): ClothGrid[
     for (let r = 0; r < rows; r++) {
       const y = yTop - ((yTop - yBot) * r) / (rows - 1);
       const band = ((yTop - yBot) / (rows - 1)) * 0.75;
-      const xs: number[] = [], zs: number[] = [];
+      const xs: number[] = [],
+        zs: number[] = [];
       for (let i = 0; i < pts.length; i += 3) {
         if (Math.abs(pts[i + 1]! - y) < band) {
           xs.push(pts[i]!);
@@ -78,7 +79,10 @@ export function fitThienY(inp: ThienYInput, opt: ThienYOptions = {}): ClothGrid[
         rr.push(prev ? { ...prev, y } : { y, cx: pel[0], cz: pel[2], a: 0.14 * k, b: 0.1 * k });
         continue;
       }
-      const x0 = pct(xs, 0.04), x1 = pct(xs, 0.96), z0 = pct(zs, 0.04), z1 = pct(zs, 0.96);
+      const x0 = pct(xs, 0.04),
+        x1 = pct(xs, 0.96),
+        z0 = pct(zs, 0.04),
+        z1 = pct(zs, 0.96);
       rr.push({ y, cx: (x0 + x1) / 2, cz: (z0 + z1) / 2, a: Math.max((x1 - x0) / 2, 0.1 * k), b: Math.max((z1 - z0) / 2, 0.08 * k) });
     }
     for (let r = 1; r < rr.length; r++) {
@@ -100,7 +104,13 @@ export function fitThienY(inp: ThienYInput, opt: ThienYOptions = {}): ClothGrid[
     if (!doSkirt) break;
     const yHem = yTop - (yTop - yBot) * L.len;
     const base = L.id === 'skirt_out' ? ringsAll : rings;
-    const lr: SkirtRing[] = base.map((R, r) => ({ y: yTop - ((yTop - yHem) * r) / (rows - 1), cx: R.cx, cz: R.cz, a: R.a * L.scale, b: R.b * L.scale }));
+    const lr: SkirtRing[] = base.map((R, r) => ({
+      y: yTop - ((yTop - yHem) * r) / (rows - 1),
+      cx: R.cx,
+      cz: R.cz,
+      a: R.a * L.scale,
+      b: R.b * L.scale,
+    }));
     out.push(skirtGrid(L.id, lr, opt.skirtCols ?? 28, { bone: 'pelvis', w: [1, 0.7, 0.35, 0.12] }));
   }
 
@@ -110,14 +120,27 @@ export function fitThienY(inp: ThienYInput, opt: ThienYOptions = {}): ClothGrid[
     if (flat.length < 60) continue;
     const ysl: number[] = [];
     for (let i = 1; i < flat.length; i += 3) ysl.push(flat[i]!);
-    const sh = joint(`upperarm_${sd}`), el = joint(`lowerarm_${sd}`), wr = joint(`hand_${sd}`);
+    const sh = joint(`upperarm_${sd}`),
+      el = joint(`lowerarm_${sd}`),
+      wr = joint(`hand_${sd}`);
     const p0: V3 = [sh[0] + (el[0] - sh[0]) * 0.35, sh[1] + (el[1] - sh[1]) * 0.35, sh[2] + (el[2] - sh[2]) * 0.35];
     const p1: V3 = [wr[0] + (wr[0] - el[0]) * 0.25, wr[1] + (wr[1] - el[1]) * 0.25, wr[2] + (wr[2] - el[2]) * 0.25];
     const top = (p0[1] + p1[1]) / 2;
     const drop = Math.max((top - pct(ysl, 0.03)) * 0.92, 0.2 * k);
     const nuS = opt.sleeveCols ?? 12;
     out.push(
-      panelGrid(`sleeve_${sd}`, p0, p1, drop, nuS, opt.sleeveRows ?? 8, { bone: `upperarm_${sd}`, w: [1, 0.55, 0.2] }, 1.8, [0, -1, 0], (_r, c) => (c < nuS / 2 ? `upperarm_${sd}` : `lowerarm_${sd}`)),
+      panelGrid(
+        `sleeve_${sd}`,
+        p0,
+        p1,
+        drop,
+        nuS,
+        opt.sleeveRows ?? 8,
+        { bone: `upperarm_${sd}`, w: [1, 0.55, 0.2] },
+        1.8,
+        [0, -1, 0],
+        (_r, c) => (c < nuS / 2 ? `upperarm_${sd}` : `lowerarm_${sd}`),
+      ),
     );
   }
   return out;

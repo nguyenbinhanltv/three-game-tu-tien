@@ -22,7 +22,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Document, Logger, type Mesh, type Node } from '@gltf-transform/core';
 import { EXTMeshoptCompression } from '@gltf-transform/extensions';
-import { compactPrimitive, dedup, prune, quantize, reorder, resample, simplifyPrimitive, textureCompress, weld } from '@gltf-transform/functions';
+import {
+  compactPrimitive,
+  dedup,
+  prune,
+  quantize,
+  reorder,
+  resample,
+  simplifyPrimitive,
+  textureCompress,
+  weld,
+} from '@gltf-transform/functions';
 import type { Primitive } from '@gltf-transform/core';
 import sharp from 'sharp';
 import {
@@ -223,7 +233,8 @@ function splitProtected(prim: Primitive, jointNames: readonly string[], bones: r
   const want = new Set(bones);
   const n = prim.getAttribute('POSITION')!.getCount();
   const prot = new Uint8Array(n);
-  const jv: number[] = [], wv: number[] = [];
+  const jv: number[] = [],
+    wv: number[] = [];
   for (let v = 0; v < n; v++) {
     j.getElement(v, jv);
     w.getElement(v, wv);
@@ -231,7 +242,8 @@ function splitProtected(prim: Primitive, jointNames: readonly string[], bones: r
     for (let k = 1; k < 4; k++) if (wv[k]! > wv[best]!) best = k;
     prot[v] = want.has(jointNames[jv[best]!] ?? '') ? 1 : 0;
   }
-  const a: number[] = [], b: number[] = [];
+  const a: number[] = [],
+    b: number[] = [];
   for (let i = 0; i < idx.getCount(); i += 3) {
     const t = [idx.getScalar(i), idx.getScalar(i + 1), idx.getScalar(i + 2)] as const;
     (prot[t[0]]! + prot[t[1]]! + prot[t[2]]! >= 2 ? a : b).push(...t);
@@ -262,10 +274,15 @@ async function addLod(doc: Document, level: number, target: number, protect: rea
     .filter((n) => n.getMesh() && lodLevel(n) === 0);
   // Tổng tam giác vùng bảo vệ / phần còn lại trên MỌI mesh LOD0 (đích LOD là cho cả model, không phải từng mesh).
   const kr = level === 1 ? 0.6 : 0.15;
-  let protSum = 0, restSum = 0;
+  let protSum = 0,
+    restSum = 0;
   if (protect.length) {
     for (const node of sources) {
-      const jn = node.getSkin()?.listJoints().map((x) => x.getName()) ?? [];
+      const jn =
+        node
+          .getSkin()
+          ?.listJoints()
+          .map((x) => x.getName()) ?? [];
       for (const prim of node.getMesh()!.listPrimitives()) {
         const sp = splitProtected(prim, jn, protect);
         if (sp) {
@@ -291,7 +308,11 @@ async function addLod(doc: Document, level: number, target: number, protect: rea
       let lodMesh = meshMap.get(mesh);
       if (!lodMesh) {
         lodMesh = doc.createMesh(`${mesh.getName()}_lod${level}`).setExtras({ ...mesh.getExtras(), lod: level });
-        const jointNames = node.getSkin()?.listJoints().map((x) => x.getName()) ?? [];
+        const jointNames =
+          node
+            .getSkin()
+            ?.listJoints()
+            .map((x) => x.getName()) ?? [];
         for (const prim of mesh.listPrimitives()) {
           const split = protect.length ? splitProtected(prim, jointNames, protect) : null;
           if (split) {
@@ -299,7 +320,10 @@ async function addLod(doc: Document, level: number, target: number, protect: rea
             const [keep0, rest] = split;
             // vùng bảo vệ chỉ giảm nhẹ (LOD1 giữ 60%, LOD2 15%: vẫn dày hơn thân/vải nhiều lần); phần còn lại gánh phần giảm của cả model.
             const keep = simplifyPrimitive(keep0, { simplifier, ratio: kr, error, lockBorder: level === 1 });
-            if (process.env.LOD_DEBUG) console.log(`[lod${level}] bảo vệ ${primitiveTriangles(keep0)}→${primitiveTriangles(keep)}, còn lại ${primitiveTriangles(rest)} ratio ${restRatio.toFixed(3)} error ${error}`);
+            if (process.env.LOD_DEBUG)
+              console.log(
+                `[lod${level}] bảo vệ ${primitiveTriangles(keep0)}→${primitiveTriangles(keep)}, còn lại ${primitiveTriangles(rest)} ratio ${restRatio.toFixed(3)} error ${error}`,
+              );
             if ((keep.getIndices()?.getCount() ?? 0) >= 3) lodMesh.addPrimitive(keep);
             const sr = simplifyPrimitive(rest, { simplifier, ratio: restRatio, error, lockBorder: level === 1 });
             if ((sr.getIndices()?.getCount() ?? 0) >= 3) lodMesh.addPrimitive(sr);

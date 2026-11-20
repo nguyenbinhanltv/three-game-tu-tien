@@ -37,7 +37,10 @@ function gridTopology(nu: number, nv: number, wrap: boolean): { uv: Float32Array
   for (let r = 0; r < nv - 1; r++)
     for (let c = 0; c < cols; c++) {
       const c1 = (c + 1) % nu;
-      const a = r * nu + c, b = r * nu + c1, d = (r + 1) * nu + c, e = (r + 1) * nu + c1;
+      const a = r * nu + c,
+        b = r * nu + c1,
+        d = (r + 1) * nu + c,
+        e = (r + 1) * nu + c1;
       idx.push(a, b, d, b, e, d); // CCW nhìn từ ngoài (mặt ngoài của ống/váy là mặt trước)
     }
   return { uv, index: Uint32Array.from(idx) };
@@ -49,7 +52,15 @@ export interface RowPin {
   w: number[];
 }
 
-function makeGrid(id: string, nu: number, nv: number, wrap: boolean, rest: Float32Array, pin: RowPin, boneAt?: (r: number, c: number) => string): ClothGrid {
+function makeGrid(
+  id: string,
+  nu: number,
+  nv: number,
+  wrap: boolean,
+  rest: Float32Array,
+  pin: RowPin,
+  boneAt?: (r: number, c: number) => string,
+): ClothGrid {
   const { uv, index } = gridTopology(nu, nv, wrap);
   const pinW = new Float32Array(nu * nv);
   for (let r = 0; r < nv; r++) for (let c = 0; c < nu; c++) pinW[r * nu + c]! = pin.w[r] ?? 0;
@@ -117,8 +128,11 @@ export function sleeveGrid(
     const t = (r / (nv - 1)) * (1 + extend);
     const rad = radius(t);
     // Dọc cánh tay tới cổ tay (t ≤ 1), sau đó phần mút rủ THẲNG XUỐNG theo trọng lực (không kéo chéo theo hướng tay).
-    const tt = Math.min(t, 1), dropT = Math.max(t - 1, 0);
-    const cx = start[0]! + d[0]! * len * tt, cy = start[1]! + d[1]! * len * tt - len * dropT, cz = start[2]! + d[2]! * len * tt;
+    const tt = Math.min(t, 1),
+      dropT = Math.max(t - 1, 0);
+    const cx = start[0]! + d[0]! * len * tt,
+      cy = start[1]! + d[1]! * len * tt - len * dropT,
+      cz = start[2]! + d[2]! * len * tt;
     for (let c = 0; c < nu; c++) {
       const a = (c / nu) * Math.PI * 2;
       const i = (r * nu + c) * 3;
@@ -192,7 +206,16 @@ export interface ClothParams {
   tetherPow: number;
 }
 
-export const CLOTH_DEFAULT: ClothParams = { gravity: 9.8, damping: 0.985, iterations: 3, stretch: 0.9, bend: 0.12, maxStretch: 1.12, tether: 0, tetherPow: 1 };
+export const CLOTH_DEFAULT: ClothParams = {
+  gravity: 9.8,
+  damping: 0.985,
+  iterations: 3,
+  stretch: 0.9,
+  bend: 0.12,
+  maxStretch: 1.12,
+  tether: 0,
+  tetherPow: 1,
+};
 
 /** Bộ giải verlet cho một lưới. Mọi mảng đều cấp phát một lần. */
 export class ClothSim {
@@ -205,7 +228,10 @@ export class ClothSim {
   private cw: Float32Array;
   private nc = 0;
 
-  constructor(readonly grid: ClothGrid, readonly params: ClothParams = CLOTH_DEFAULT) {
+  constructor(
+    readonly grid: ClothGrid,
+    readonly params: ClothParams = CLOTH_DEFAULT,
+  ) {
     this.n = grid.nu * grid.nv;
     this.pos = grid.rest.slice();
     this.prev = grid.rest.slice();
@@ -216,7 +242,9 @@ export class ClothSim {
     this.cw = new Float32Array(cap);
     const { nu, nv, wrap } = grid;
     const add = (i: number, j: number, w: number) => {
-      const dx = grid.rest[3 * i]! - grid.rest[3 * j]!, dy = grid.rest[3 * i + 1]! - grid.rest[3 * j + 1]!, dz = grid.rest[3 * i + 2]! - grid.rest[3 * j + 2]!;
+      const dx = grid.rest[3 * i]! - grid.rest[3 * j]!,
+        dy = grid.rest[3 * i + 1]! - grid.rest[3 * j + 1]!,
+        dz = grid.rest[3 * i + 2]! - grid.rest[3 * j + 2]!;
       this.ca[this.nc]! = i;
       this.cb[this.nc]! = j;
       this.cl[this.nc]! = Math.hypot(dx, dy, dz);
@@ -252,7 +280,9 @@ export class ClothSim {
     const pinW = grid.pinW;
     const g = params.gravity * dt * dt;
     const damp = Math.pow(params.damping, dt * 60);
-    const wx = wind[0]! * dt * dt, wy = wind[1]! * dt * dt, wz = wind[2]! * dt * dt;
+    const wx = wind[0]! * dt * dt,
+      wy = wind[1]! * dt * dt,
+      wz = wind[2]! * dt * dt;
     for (let i = 0; i < this.n; i++) {
       const k = 3 * i;
       const pw = pinW[i]!;
@@ -262,7 +292,9 @@ export class ClothSim {
         prev[k + 2]! = pos[k + 2]! = target[k + 2]!;
         continue;
       }
-      const x = pos[k]!, y = pos[k + 1]!, z = pos[k + 2]!;
+      const x = pos[k]!,
+        y = pos[k + 1]!,
+        z = pos[k + 2]!;
       let nx = x + (x - prev[k]!) * damp + wx;
       let ny = y + (y - prev[k + 1]!) * damp - g + wy;
       let nz = z + (z - prev[k + 2]!) * damp + wz;
@@ -281,10 +313,14 @@ export class ClothSim {
     const maxS = params.maxStretch;
     for (let it = 0; it < params.iterations; it++) {
       for (let c = 0; c < this.nc; c++) {
-        const i = this.ca[c]!, j = this.cb[c]!;
+        const i = this.ca[c]!,
+          j = this.cb[c]!;
         const w = this.cw[c]!;
-        const ki = 3 * i, kj = 3 * j;
-        const dx = pos[kj]! - pos[ki]!, dy = pos[kj + 1]! - pos[ki + 1]!, dz = pos[kj + 2]! - pos[ki + 2]!;
+        const ki = 3 * i,
+          kj = 3 * j;
+        const dx = pos[kj]! - pos[ki]!,
+          dy = pos[kj + 1]! - pos[ki + 1]!,
+          dz = pos[kj + 2]! - pos[ki + 2]!;
         const d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1e-9;
         const L = this.cl[c]!;
         let diff: number;
@@ -297,10 +333,12 @@ export class ClothSim {
           if (d > L * maxS) target2 = L * maxS;
           diff = ((d - target2) / d) * params.stretch * w;
         }
-        const wi = pinW[i]! >= 1 ? 0 : 1, wj = pinW[j]! >= 1 ? 0 : 1;
+        const wi = pinW[i]! >= 1 ? 0 : 1,
+          wj = pinW[j]! >= 1 ? 0 : 1;
         const sw = wi + wj;
         if (sw === 0) continue;
-        const ci = (diff * wi) / sw, cj = (diff * wj) / sw;
+        const ci = (diff * wi) / sw,
+          cj = (diff * wj) / sw;
         pos[ki]! += dx * ci;
         pos[ki + 1]! += dy * ci;
         pos[ki + 2]! += dz * ci;
@@ -324,7 +362,9 @@ export class ClothSim {
       const R2 = R * R;
       for (let c = 0; c < nu; c++) {
         const k = 3 * (r * nu + c);
-        const dx = pos[k]! - target[k]!, dy = pos[k + 1]! - target[k + 1]!, dz = pos[k + 2]! - target[k + 2]!;
+        const dx = pos[k]! - target[k]!,
+          dy = pos[k + 1]! - target[k + 1]!,
+          dz = pos[k + 2]! - target[k + 2]!;
         const d2 = dx * dx + dy * dy + dz * dz;
         if (d2 > R2) {
           const f = R / Math.sqrt(d2);
@@ -341,15 +381,23 @@ export class ClothSim {
     for (let i = 0; i < this.n; i++) {
       if (this.grid.pinW[i]! >= 1) continue;
       const k = 3 * i;
-      const px = pos[k]!, py = pos[k + 1]!, pz = pos[k + 2]!;
+      const px = pos[k]!,
+        py = pos[k + 1]!,
+        pz = pos[k + 2]!;
       for (let c = 0; c < caps.length; c++) {
         const cp = caps[c]!;
-        const abx = cp.bx - cp.ax, aby = cp.by - cp.ay, abz = cp.bz - cp.az;
+        const abx = cp.bx - cp.ax,
+          aby = cp.by - cp.ay,
+          abz = cp.bz - cp.az;
         const l2 = abx * abx + aby * aby + abz * abz;
         let t = l2 > 1e-12 ? ((px - cp.ax) * abx + (py - cp.ay) * aby + (pz - cp.az) * abz) / l2 : 0;
         t = t < 0 ? 0 : t > 1 ? 1 : t;
-        const qx = cp.ax + abx * t, qy = cp.ay + aby * t, qz = cp.az + abz * t;
-        const dx = px - qx, dy = py - qy, dz = pz - qz;
+        const qx = cp.ax + abx * t,
+          qy = cp.ay + aby * t,
+          qz = cp.az + abz * t;
+        const dx = px - qx,
+          dy = py - qy,
+          dz = pz - qz;
         const d2 = dx * dx + dy * dy + dz * dz;
         if (d2 < cp.r * cp.r) {
           const d = Math.sqrt(d2) || 1e-9;
@@ -367,18 +415,24 @@ export class ClothSim {
     const { nu, nv, wrap } = this.grid;
     const pos = this.pos;
     for (let r = 0; r < nv; r++) {
-      let mx = 0, my = 0, mz = 0;
+      let mx = 0,
+        my = 0,
+        mz = 0;
       if (wrap && outward) {
         for (let c = 0; c < nu; c++) {
           mx += pos[3 * (r * nu + c)]!;
           my += pos[3 * (r * nu + c) + 1]!;
           mz += pos[3 * (r * nu + c) + 2]!;
         }
-        mx /= nu; my /= nu; mz /= nu;
+        mx /= nu;
+        my /= nu;
+        mz /= nu;
       }
-      const r0 = Math.max(r - 1, 0), r1 = Math.min(r + 1, nv - 1);
+      const r0 = Math.max(r - 1, 0),
+        r1 = Math.min(r + 1, nv - 1);
       for (let c = 0; c < nu; c++) {
-        let c0 = c - 1, c1 = c + 1;
+        let c0 = c - 1,
+          c1 = c + 1;
         if (wrap) {
           c0 = (c0 + nu) % nu;
           c1 = c1 % nu;
@@ -386,10 +440,19 @@ export class ClothSim {
           c0 = Math.max(c0, 0);
           c1 = Math.min(c1, nu - 1);
         }
-        const a = 3 * (r * nu + c1), b = 3 * (r * nu + c0), u = 3 * (r0 * nu + c), d = 3 * (r1 * nu + c);
-        const tx = pos[a]! - pos[b]!, ty = pos[a + 1]! - pos[b + 1]!, tz = pos[a + 2]! - pos[b + 2]!;
-        const sx = pos[d]! - pos[u]!, sy = pos[d + 1]! - pos[u + 1]!, sz = pos[d + 2]! - pos[u + 2]!;
-        let nx = ty * sz - tz * sy, ny = tz * sx - tx * sz, nz = tx * sy - ty * sx;
+        const a = 3 * (r * nu + c1),
+          b = 3 * (r * nu + c0),
+          u = 3 * (r0 * nu + c),
+          d = 3 * (r1 * nu + c);
+        const tx = pos[a]! - pos[b]!,
+          ty = pos[a + 1]! - pos[b + 1]!,
+          tz = pos[a + 2]! - pos[b + 2]!;
+        const sx = pos[d]! - pos[u]!,
+          sy = pos[d + 1]! - pos[u + 1]!,
+          sz = pos[d + 2]! - pos[u + 2]!;
+        let nx = ty * sz - tz * sy,
+          ny = tz * sx - tx * sz,
+          nz = tx * sy - ty * sx;
         if (wrap && outward) {
           // ống/váy: pháp tuyến hướng ra xa tâm vòng (không để tối vì quay vào trong)
           const k0 = 3 * (r * nu + c);

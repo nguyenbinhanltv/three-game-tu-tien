@@ -47,7 +47,11 @@ export default {
           viewport: [1280, 720],
           quality: 'high',
           look: { g },
-          query: { chr: 'v3', ...(env('V3_CLOTH', '') === '1' ? { cloth: '1' } : {}), ...Object.fromEntries(new URLSearchParams(env('V3_QUERY', '')).entries()) }, // V3_CLOTH=1: vải mô phỏng Thiên Y
+          query: {
+            chr: 'v3',
+            ...(env('V3_CLOTH', '') === '1' ? { cloth: '1' } : {}),
+            ...Object.fromEntries(new URLSearchParams(env('V3_QUERY', '')).entries()),
+          }, // V3_CLOTH=1: vải mô phỏng Thiên Y
           hide: 'hud',
           warnings: /models|chr_v3|clip/,
         });
@@ -90,17 +94,33 @@ export default {
             strip.push(b);
             if (tagSize === '1080p') fixed[v] = b;
           }
-          const rows: SheetRow[] = [{ label: `game ${tagSize}: trước · trái · phải · sau`, cells: strip.map((b, i) => ({ img: b, caption: ['front', 'left', 'right', 'back'][i] })) }];
+          const rows: SheetRow[] = [
+            {
+              label: `game ${tagSize}: trước · trái · phải · sau`,
+              cells: strip.map((b, i) => ({ img: b, caption: ['front', 'left', 'right', 'back'][i] })),
+            },
+          ];
           const refs = ['front', 'left', 'right', 'back'].map((v) => path.join(refDir, `${S.ref}_${gname}_${v}.png`));
           if (refs.every((f) => fs.existsSync(f)))
-            rows.push({ label: 'ảnh multiview (Thiên Giai)', cells: refs.map((f, i) => ({ img: fs.readFileSync(f), caption: ['front', 'left', 'right', 'back'][i] })) });
-          await sheet(ctx, path.join(r.out, `${tag}-goc-${tagSize}.png`), rows, { cell: tagSize === '1080p' ? 420 : 300, ratio: 1.45, title: `${S.label} (${gname}) · ${asset}` });
+            rows.push({
+              label: 'ảnh multiview (Thiên Giai)',
+              cells: refs.map((f, i) => ({ img: fs.readFileSync(f), caption: ['front', 'left', 'right', 'back'][i] })),
+            });
+          await sheet(ctx, path.join(r.out, `${tag}-goc-${tagSize}.png`), rows, {
+            cell: tagSize === '1080p' ? 420 : 300,
+            ratio: 1.45,
+            title: `${S.label} (${gname}) · ${asset}`,
+          });
         }
         await page.setViewportSize({ width: 1280, height: 720 });
 
         // (1b) cận mặt + bàn tay trong game (so với render Blender của GLB gốc: `chr_v3.py --debug-faces`).
         await page.setViewportSize({ width: 960, height: 960 });
-        for (const [nm, dist, pitch, yawAdd] of [['face', 0.62, -0.02, 0], ['face34', 0.62, -0.02, 0.5], ['hand', 0.9, 0.35, 0]] as const) {
+        for (const [nm, dist, pitch, yawAdd] of [
+          ['face', 0.62, -0.02, 0],
+          ['face34', 0.62, -0.02, 0.5],
+          ['hand', 0.9, 0.35, 0],
+        ] as const) {
           await cam(page, { yaw: base + yFront + yawAdd, pitch, dist });
           await sleep(900);
           fs.writeFileSync(path.join(r.out, `${tag}-${nm}.png`), await page.screenshot());
@@ -117,7 +137,13 @@ export default {
           const V = m.rig.position.constructor as new () => { x: number; y: number; z: number };
           const h = hd!.getWorldPosition(new V() as never) as unknown as { x: number; y: number; z: number };
           const n = nk!.getWorldPosition(new V() as never) as unknown as { x: number; y: number; z: number };
-          return { clip: (m as unknown as { baseName?: string }).baseName, headY: Math.round(h.y * 100) / 100, neckY: Math.round(n.y * 100) / 100, dz: Math.round((h.z - n.z) * 100) / 100, camPitch: g.camPitch };
+          return {
+            clip: (m as unknown as { baseName?: string }).baseName,
+            headY: Math.round(h.y * 100) / 100,
+            neckY: Math.round(n.y * 100) / 100,
+            dz: Math.round((h.z - n.z) * 100) / 100,
+            camPitch: g.camPitch,
+          };
         });
         console.log(`[shots:v3views] ${tag} dbg: ${JSON.stringify(dbg)}`);
         await page.setViewportSize({ width: 1280, height: 720 });
@@ -198,7 +224,8 @@ export default {
         await add('bay tiến');
         await page.keyboard.up('KeyW');
         const rows: SheetRow[] = [];
-        for (let i = 0; i < cells.length; i += 5) rows.push({ label: i === 0 ? `${S.label} (${gname}) · ${asset}` : '', cells: cells.slice(i, i + 5) });
+        for (let i = 0; i < cells.length; i += 5)
+          rows.push({ label: i === 0 ? `${S.label} (${gname}) · ${asset}` : '', cells: cells.slice(i, i + 5) });
         await sheet(ctx, path.join(r.out, `${tag}-chuyendong.png`), rows, { cell: 300, ratio: 1.39 });
         const bones = await page.evaluate(() => {
           const g = window.__game!;
@@ -208,7 +235,9 @@ export default {
           for (const n of ['pelvis', 'spine_03', 'neck_01', 'Head', 'dtl_scabbard', 'hand_l']) {
             const o = m.rig.getObjectByName(n);
             if (o) {
-              const v = o.getWorldPosition(new (o.position.constructor as new () => { x: number; y: number; z: number; sub: (v: unknown) => unknown })() as never) as unknown as { x: number; y: number; z: number };
+              const v = o.getWorldPosition(
+                new (o.position.constructor as new () => { x: number; y: number; z: number; sub: (v: unknown) => unknown })() as never,
+              ) as unknown as { x: number; y: number; z: number };
               out[n] = [Math.round((v.y - y0) * 100) / 100];
             }
           }
@@ -218,9 +247,23 @@ export default {
           const g = window.__game!;
           const m = g.ents.players.get(g.sid).model;
           const out: string[] = [];
-          m.rig.traverse((o: { isMesh?: boolean; material?: { map?: { image?: { width: number; height: number }; colorSpace?: string } | null; roughness?: number; metalness?: number }; name: string; visible: boolean }) => {
-            if (o.isMesh && o.visible && o.material?.map) out.push(`${o.name}: ${o.material.map.image?.width}x${o.material.map.image?.height} ${o.material.map.colorSpace} r=${o.material.roughness} m=${o.material.metalness}`);
-          });
+          m.rig.traverse(
+            (o: {
+              isMesh?: boolean;
+              material?: {
+                map?: { image?: { width: number; height: number }; colorSpace?: string } | null;
+                roughness?: number;
+                metalness?: number;
+              };
+              name: string;
+              visible: boolean;
+            }) => {
+              if (o.isMesh && o.visible && o.material?.map)
+                out.push(
+                  `${o.name}: ${o.material.map.image?.width}x${o.material.map.image?.height} ${o.material.map.colorSpace} r=${o.material.roughness} m=${o.material.metalness}`,
+                );
+            },
+          );
           return out;
         });
         console.log(`[shots:v3views] ${tag} texture: ${tex.join(' | ')}`);
@@ -229,7 +272,9 @@ export default {
           const g = window.__game!;
           return g.ents.players.get(g.sid).model.cloth?.stats ?? null;
         });
-        console.log(`[shots:v3views] ${tag} vải mô phỏng: ${cst ? `${cst.verts} đỉnh, ${cst.ms.toFixed(3)} ms/khung (trung bình trượt)` : 'tắt'}`);
+        console.log(
+          `[shots:v3views] ${tag} vải mô phỏng: ${cst ? `${cst.verts} đỉnh, ${cst.ms.toFixed(3)} ms/khung (trung bình trượt)` : 'tắt'}`,
+        );
         await ctx.close();
         console.log(`[shots:v3views] ${tag} xong`);
       }

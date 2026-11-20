@@ -15,7 +15,8 @@ describe('Thiên Y: lưới vải', () => {
     let worst = 0;
     for (let r = 0; r < 9; r++)
       for (let c = 0; c < 8; c++) {
-        const a = 3 * (r * 8 + c), b = 3 * ((r + 1) * 8 + c);
+        const a = 3 * (r * 8 + c),
+          b = 3 * ((r + 1) * 8 + c);
         const d = Math.hypot(f(sim.pos, a) - f(sim.pos, b), f(sim.pos, a + 1) - f(sim.pos, b + 1), f(sim.pos, a + 2) - f(sim.pos, b + 2));
         const L = Math.hypot(f(g.rest, a) - f(g.rest, b), f(g.rest, a + 1) - f(g.rest, b + 1), f(g.rest, a + 2) - f(g.rest, b + 2));
         worst = Math.max(worst, d / L);
@@ -41,7 +42,10 @@ describe('Thiên Y: lưới vải', () => {
   });
 
   it('tay áo: ống quanh trục có đủ đỉnh, chỉ số tam giác hợp lệ và pháp tuyến đơn vị', () => {
-    const g = sleeveGrid('l', [0.2, 1.3, 0], [0.3, 1.0, 0.05], (t) => 0.05 + 0.1 * t, 12, 8, 0.4, { bone: 'lowerarm_l', w: [1, 0.6, 0.25] });
+    const g = sleeveGrid('l', [0.2, 1.3, 0], [0.3, 1.0, 0.05], (t) => 0.05 + 0.1 * t, 12, 8, 0.4, {
+      bone: 'lowerarm_l',
+      w: [1, 0.6, 0.25],
+    });
     const sim = new ClothSim(g);
     expect(g.index.every((v) => v < sim.n)).toBe(true);
     const nrm = new Float32Array(sim.n * 3);

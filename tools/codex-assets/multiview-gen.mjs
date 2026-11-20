@@ -27,24 +27,29 @@ const PHAI = {
 };
 const GENDER = { nam: 'man', nu: 'woman' };
 const VIEWS = {
-  left: 'LEFT SIDE VIEW: the figure is turned exactly 90 degrees so that she/he FACES TOWARD THE LEFT EDGE of the image; we see the character\'s LEFT side (profile). Keep the SAME A-pose as the front view: both arms held away from the torso at about 35-45 degrees, so in profile the near arm visibly angles down and slightly away from the body with a clear gap between arm and torso (NOT hanging straight against the body, NOT crossed); hands open and relaxed.',
-  right: 'RIGHT SIDE VIEW: the figure is turned exactly 90 degrees so that she/he FACES TOWARD THE RIGHT EDGE of the image; we see the character\'s RIGHT side (profile), the mirror-opposite of the left view. Keep the SAME A-pose as the front view: both arms held away from the torso at about 35-45 degrees, with a clear gap between arm and torso in profile (NOT hanging straight against the body); hands open and relaxed.',
+  left: "LEFT SIDE VIEW: the figure is turned exactly 90 degrees so that she/he FACES TOWARD THE LEFT EDGE of the image; we see the character's LEFT side (profile). Keep the SAME A-pose as the front view: both arms held away from the torso at about 35-45 degrees, so in profile the near arm visibly angles down and slightly away from the body with a clear gap between arm and torso (NOT hanging straight against the body, NOT crossed); hands open and relaxed.",
+  right:
+    "RIGHT SIDE VIEW: the figure is turned exactly 90 degrees so that she/he FACES TOWARD THE RIGHT EDGE of the image; we see the character's RIGHT side (profile), the mirror-opposite of the left view. Keep the SAME A-pose as the front view: both arms held away from the torso at about 35-45 degrees, with a clear gap between arm and torso in profile (NOT hanging straight against the body); hands open and relaxed.",
   back: 'BACK VIEW: the figure stands with the BACK TO THE CAMERA, facing directly away; we see the back of the head (hair, topknot, hair ornaments), the back of the robe/armor/cape, and any back embroidery or pattern. Same A-pose, arms ~35-45 degrees from torso.',
 };
 
 const dir = path.join(source, '2d', 'hoa-truc', 'thien_giai');
-const bos = (phaiSel ? PHAI[phaiSel] ?? [] : Object.values(PHAI).flat());
+const bos = phaiSel ? (PHAI[phaiSel] ?? []) : Object.values(PHAI).flat();
 const items = [];
-for (const bo of bos) for (const g of ['nam', 'nu']) {
-  const id = `${bo}_${g}`;
-  if (only.length && !only.includes(id)) continue;
-  const front = path.join(dir, `${id}_apose.png`);
-  if (!fs.existsSync(front)) { console.log('THIẾU', front); continue; }
-  const f = path.join(dir, `${id}_front.png`);
-  if (!fs.existsSync(f)) fs.copyFileSync(front, f);
-  fs.copyFileSync(path.join(dir, `${id}_apose.prompt.txt`), path.join(dir, `${id}_front.prompt.txt`));
-  for (const v of Object.keys(VIEWS).filter((x) => viewSel.includes(x))) items.push({ id, g, v, front, name: `${id}_${v}` });
-}
+for (const bo of bos)
+  for (const g of ['nam', 'nu']) {
+    const id = `${bo}_${g}`;
+    if (only.length && !only.includes(id)) continue;
+    const front = path.join(dir, `${id}_apose.png`);
+    if (!fs.existsSync(front)) {
+      console.log('THIẾU', front);
+      continue;
+    }
+    const f = path.join(dir, `${id}_front.png`);
+    if (!fs.existsSync(f)) fs.copyFileSync(front, f);
+    fs.copyFileSync(path.join(dir, `${id}_apose.prompt.txt`), path.join(dir, `${id}_front.prompt.txt`));
+    for (const v of Object.keys(VIEWS).filter((x) => viewSel.includes(x))) items.push({ id, g, v, front, name: `${id}_${v}` });
+  }
 const has = (n) => fs.existsSync(path.join(dir, `${n}.png`));
 const queue = items.filter((t) => force || !has(t.name));
 console.log(`${queue.length}/${items.length} ảnh → ${dir}`);
@@ -63,7 +68,9 @@ const runOne = (t) =>
     const p = spawn('codex', a, { stdio: ['pipe', 'pipe', 'pipe'], shell: process.platform === 'win32' });
     let sid = '';
     let done = false;
-    const onData = (d) => { if (!sid) sid = /session id:\s*([0-9a-f-]{36})/i.exec(String(d))?.[1] ?? ''; };
+    const onData = (d) => {
+      if (!sid) sid = /session id:\s*([0-9a-f-]{36})/i.exec(String(d))?.[1] ?? '';
+    };
     p.stdout.on('data', onData);
     p.stderr.on('data', onData);
     p.stdin.end(body);
@@ -94,13 +101,18 @@ const runOne = (t) =>
 
 const failed = [];
 let next = 0;
-await Promise.all(Array.from({ length: jobs }, async () => {
-  while (next < queue.length) {
-    const t = queue[next++];
-    let ok = false;
-    for (let i = 0; i < 3 && !ok; i++) ok = await runOne(t);
-    console.log(`${ok ? 'OK ' : 'LỖI'} ${t.name}`);
-    if (!ok) failed.push(t.name);
-  }
-}));
-if (failed.length) { console.log('Thất bại:', failed.join(' ')); process.exitCode = 1; }
+await Promise.all(
+  Array.from({ length: jobs }, async () => {
+    while (next < queue.length) {
+      const t = queue[next++];
+      let ok = false;
+      for (let i = 0; i < 3 && !ok; i++) ok = await runOne(t);
+      console.log(`${ok ? 'OK ' : 'LỖI'} ${t.name}`);
+      if (!ok) failed.push(t.name);
+    }
+  }),
+);
+if (failed.length) {
+  console.log('Thất bại:', failed.join(' '));
+  process.exitCode = 1;
+}

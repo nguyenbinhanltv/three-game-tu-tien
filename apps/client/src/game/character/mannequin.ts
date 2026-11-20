@@ -231,7 +231,8 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   const k = a && b && b.length() > 1e-6 ? a.length() / b.length() : 1;
   const clips = new Map<string, THREE.AnimationClip>();
   const over = new Map<string, THREE.AnimationClip>();
-  if (robe && KEEP_ORIGINAL_ASSETS.has(handle.id) && !new URLSearchParams(location.search).has('norobeanim')) for (const c of robe.animations) over.set(c.name, c);
+  if (robe && KEEP_ORIGINAL_ASSETS.has(handle.id) && !new URLSearchParams(location.search).has('norobeanim'))
+    for (const c of robe.animations) over.set(c.name, c);
   for (const c of lib.animations) {
     const cl = (over.get(c.name) ?? c).clone();
     for (const t of cl.tracks) {
@@ -266,7 +267,9 @@ export const ARM_FIT: Record<string, number> = {
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
 
 /** `?v3off=proc,feet,twist,cloth` tắt từng hệ phụ của v3 để cô lập lỗi hình (chẩn đoán). */
-const V3_OFF = new Set((typeof location !== 'undefined' ? (new URLSearchParams(location.search).get('v3off') ?? '') : '').split(',').filter(Boolean));
+const V3_OFF = new Set(
+  (typeof location !== 'undefined' ? (new URLSearchParams(location.search).get('v3off') ?? '') : '').split(',').filter(Boolean),
+);
 const IDENT = new THREE.Matrix4();
 const _w = new THREE.Quaternion();
 const _pw = new THREE.Quaternion();
@@ -1362,7 +1365,9 @@ export class MannequinPlayers {
   private load(id: string): void {
     if (this.tpl.has(id)) return;
     this.tpl.set(id, 'loading');
-    const robeP = KEEP_ORIGINAL_ASSETS.has(id) ? this.cache.acquire(ROBE_LIB, { priority: 1 }).catch(() => undefined) : Promise.resolve(undefined);
+    const robeP = KEEP_ORIGINAL_ASSETS.has(id)
+      ? this.cache.acquire(ROBE_LIB, { priority: 1 }).catch(() => undefined)
+      : Promise.resolve(undefined);
     Promise.all([this.cache.acquire(id, { priority: 1 }), this.cache.acquire(V3_LIB, { priority: 1 }), robeP]).then(
       ([h, lib, robe]) => {
         if (this.disposed) {

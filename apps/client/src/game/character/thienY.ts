@@ -3,7 +3,17 @@
 // xương như skin, mô phỏng bằng verlet (`@dtl/shared` cloth.ts) với viên nang chân/tay/thân, sàn, gió nhẹ. Chỉ nhân vật LOD0 trong khung nhìn mô
 // phỏng; xa/khuất thì hiện lại vải cũ. Hai mesh (một đặc, một trong suốt) dùng chung texture atlas: +2 draw call mỗi nhân vật.
 import * as THREE from 'three/webgpu';
-import { atlasUv, type Capsule, CLOTH_DEFAULT, type ClothGrid, type ClothParams, ClothSim, fitThienY, THIEN_Y_SHEER, type V3 } from '@dtl/shared';
+import {
+  atlasUv,
+  type Capsule,
+  CLOTH_DEFAULT,
+  type ClothGrid,
+  type ClothParams,
+  ClothSim,
+  fitThienY,
+  THIEN_Y_SHEER,
+  type V3,
+} from '@dtl/shared';
 
 const _v = new THREE.Vector3();
 const _a = new THREE.Vector3();
@@ -121,14 +131,17 @@ export class ClothRig {
     for (const solid of [true, false]) {
       const ids = this.grids.map((g, i) => (sheer(g) === !solid ? i : -1)).filter((i) => i >= 0);
       if (!ids.length) continue;
-      let nv = 0, ni = 0;
+      let nv = 0,
+        ni = 0;
       const start: number[] = [];
       for (const gi of ids) {
         start.push(nv);
         nv += this.grids[gi]!.nu * this.grids[gi]!.nv;
         ni += this.grids[gi]!.index.length;
       }
-      const pos = new Float32Array(nv * 3), uv = new Float32Array(nv * 2), index = new Uint32Array(ni);
+      const pos = new Float32Array(nv * 3),
+        uv = new Float32Array(nv * 2),
+        index = new Uint32Array(ni);
       let ii = 0;
       ids.forEach((gi, n) => {
         const g = this.grids[gi]!;
@@ -170,12 +183,21 @@ export class ClothRig {
     });
 
     // ---- viên nang va chạm (thế giới): hông, đùi, cẳng, thân, tay ----
-    const spec: [string, string, number][] = [['pelvis', 'spine_01', 0.11], ['spine_01', 'spine_03', 0.13]];
+    const spec: [string, string, number][] = [
+      ['pelvis', 'spine_01', 0.11],
+      ['spine_01', 'spine_03', 0.13],
+    ];
     for (const sd of ['l', 'r']) {
-      spec.push([`thigh_${sd}`, `calf_${sd}`, 0.09], [`calf_${sd}`, `foot_${sd}`, 0.06], [`upperarm_${sd}`, `lowerarm_${sd}`, 0.05], [`lowerarm_${sd}`, `hand_${sd}`, 0.04]);
+      spec.push(
+        [`thigh_${sd}`, `calf_${sd}`, 0.09],
+        [`calf_${sd}`, `foot_${sd}`, 0.06],
+        [`upperarm_${sd}`, `lowerarm_${sd}`, 0.05],
+        [`lowerarm_${sd}`, `hand_${sd}`, 0.04],
+      );
     }
     for (const [an, bn, r] of spec) {
-      const a = rig.getObjectByName(an), b = rig.getObjectByName(bn);
+      const a = rig.getObjectByName(an),
+        b = rig.getObjectByName(bn);
       if (a && b) {
         this.caps.push({ a, b, r: r * k });
         this.capBase.push(r * k);
@@ -218,10 +240,15 @@ export class ClothRig {
     for (let c = 0; c < this.caps.length; c++) {
       const cd = this.caps[c]!;
       // đọc thẳng matrixWorld (đã cập nhật): getWorldPosition đi ngược cây cha mỗi lần gọi nên đắt
-      const ea = cd.a.matrixWorld.elements, eb = cd.b.matrixWorld.elements;
+      const ea = cd.a.matrixWorld.elements,
+        eb = cd.b.matrixWorld.elements;
       const o = this.capOut[c]!;
-      o.ax = ea[12]!; o.ay = ea[13]!; o.az = ea[14]!;
-      o.bx = eb[12]!; o.by = eb[13]!; o.bz = eb[14]!;
+      o.ax = ea[12]!;
+      o.ay = ea[13]!;
+      o.az = ea[14]!;
+      o.bx = eb[12]!;
+      o.by = eb[13]!;
+      o.bz = eb[14]!;
       o.r = this.capBase[c]! * (cd.a.name.startsWith('thigh') || cd.a.name.startsWith('calf') ? 1 + 0.35 * sit : 1);
     }
     const er = this.root.matrixWorld.elements;

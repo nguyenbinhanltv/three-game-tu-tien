@@ -17,16 +17,55 @@ if (!glbPath || !viewsBase || !outPath) throw new Error('thiếu --glb / --views
 type M4 = number[];
 const inv = (m: M4): M4 => {
   // nghịch đảo tổng quát 4x4 (cofactor)
-  const [a00, a01, a02, a03, a10, a11, a12, a13, a20, a21, a22, a23, a30, a31, a32, a33] = m as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
-  const b00 = a00 * a11 - a01 * a10, b01 = a00 * a12 - a02 * a10, b02 = a00 * a13 - a03 * a10, b03 = a01 * a12 - a02 * a11, b04 = a01 * a13 - a03 * a11, b05 = a02 * a13 - a03 * a12;
-  const b06 = a20 * a31 - a21 * a30, b07 = a20 * a32 - a22 * a30, b08 = a20 * a33 - a23 * a30, b09 = a21 * a32 - a22 * a31, b10 = a21 * a33 - a23 * a31, b11 = a22 * a33 - a23 * a32;
+  const [a00, a01, a02, a03, a10, a11, a12, a13, a20, a21, a22, a23, a30, a31, a32, a33] = m as [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+  ];
+  const b00 = a00 * a11 - a01 * a10,
+    b01 = a00 * a12 - a02 * a10,
+    b02 = a00 * a13 - a03 * a10,
+    b03 = a01 * a12 - a02 * a11,
+    b04 = a01 * a13 - a03 * a11,
+    b05 = a02 * a13 - a03 * a12;
+  const b06 = a20 * a31 - a21 * a30,
+    b07 = a20 * a32 - a22 * a30,
+    b08 = a20 * a33 - a23 * a30,
+    b09 = a21 * a32 - a22 * a31,
+    b10 = a21 * a33 - a23 * a31,
+    b11 = a22 * a33 - a23 * a32;
   const det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
   const d = 1 / det;
   return [
-    (a11 * b11 - a12 * b10 + a13 * b09) * d, (a02 * b10 - a01 * b11 - a03 * b09) * d, (a31 * b05 - a32 * b04 + a33 * b03) * d, (a22 * b04 - a21 * b05 - a23 * b03) * d,
-    (a12 * b08 - a10 * b11 - a13 * b07) * d, (a00 * b11 - a02 * b08 + a03 * b07) * d, (a32 * b02 - a30 * b05 - a33 * b01) * d, (a20 * b05 - a22 * b02 + a23 * b01) * d,
-    (a10 * b10 - a11 * b08 + a13 * b06) * d, (a01 * b08 - a00 * b10 - a03 * b06) * d, (a30 * b04 - a31 * b02 + a33 * b00) * d, (a21 * b02 - a20 * b04 - a23 * b00) * d,
-    (a11 * b07 - a10 * b09 - a12 * b06) * d, (a00 * b09 - a01 * b07 + a02 * b06) * d, (a31 * b01 - a30 * b03 - a32 * b00) * d, (a20 * b03 - a21 * b01 + a22 * b00) * d,
+    (a11 * b11 - a12 * b10 + a13 * b09) * d,
+    (a02 * b10 - a01 * b11 - a03 * b09) * d,
+    (a31 * b05 - a32 * b04 + a33 * b03) * d,
+    (a22 * b04 - a21 * b05 - a23 * b03) * d,
+    (a12 * b08 - a10 * b11 - a13 * b07) * d,
+    (a00 * b11 - a02 * b08 + a03 * b07) * d,
+    (a32 * b02 - a30 * b05 - a33 * b01) * d,
+    (a20 * b05 - a22 * b02 + a23 * b01) * d,
+    (a10 * b10 - a11 * b08 + a13 * b06) * d,
+    (a01 * b08 - a00 * b10 - a03 * b06) * d,
+    (a30 * b04 - a31 * b02 + a33 * b00) * d,
+    (a21 * b02 - a20 * b04 - a23 * b00) * d,
+    (a11 * b07 - a10 * b09 - a12 * b06) * d,
+    (a00 * b09 - a01 * b07 + a02 * b06) * d,
+    (a31 * b01 - a30 * b03 - a32 * b00) * d,
+    (a20 * b03 - a21 * b01 + a22 * b00) * d,
   ];
 };
 const tf = (m: M4, p: V3): V3 => [
@@ -51,7 +90,11 @@ const sleeve = { l: [] as number[], r: [] as number[] };
 // Hướng lai: màu panel lấy từ CHÍNH lưới Tripo (đỉnh voan gần nhất → UV → texture gốc), giữ màu và hoa văn.
 const slvV: { p: V3; uv: [number, number] }[] = [];
 let baseTex: { data: Buffer; w: number; h: number; ch: number } | null = null;
-let minX = 1e9, maxX = -1e9, minZ = 1e9, maxZ = -1e9, maxY = -1e9;
+let minX = 1e9,
+  maxX = -1e9,
+  minZ = 1e9,
+  maxZ = -1e9,
+  maxY = -1e9;
 for (const node of root.listNodes()) {
   const mesh = node.getMesh();
   if (!mesh) continue;
@@ -61,8 +104,14 @@ for (const node of root.listNodes()) {
     const pa = prim.getAttribute('POSITION')!;
     const arr = pa.getArray()!;
     for (let i = 0; i < pa.getCount(); i++) {
-      const x = arr[3 * i]!, y = arr[3 * i + 1]!, z = arr[3 * i + 2]!;
-      minX = Math.min(minX, x); maxX = Math.max(maxX, x); minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z); maxY = Math.max(maxY, y);
+      const x = arr[3 * i]!,
+        y = arr[3 * i + 1]!,
+        z = arr[3 * i + 2]!;
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minZ = Math.min(minZ, z);
+      maxZ = Math.max(maxZ, z);
+      maxY = Math.max(maxY, y);
       if (nm.includes('oldskirt')) skirtPts.push(x, y, z);
       else if (nm.includes('oldsleeve')) {
         sleeve[x >= 0 ? 'l' : 'r'].push(x, y, z);
@@ -112,7 +161,10 @@ async function loadView(name: string, axis: 'x' | 'z', sign: 1 | -1, dir: V3): P
   const { width: w, height: h, channels: ch } = info;
   // nền = màu góc; hình = khác nền > 14
   const bg = [data[0]!, data[1]!, data[2]!];
-  let top = h, bot = 0, left = w, right = 0;
+  let top = h,
+    bot = 0,
+    left = w,
+    right = 0;
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++) {
       const o = (y * w + x) * ch;
@@ -146,9 +198,12 @@ slvV.forEach((v, i) => {
 });
 /** Đỉnh voan cũ gần p nhất (tìm theo vòng ô tăng dần); null nếu xa quá `maxR`. */
 function nearestSleeve(p: V3, maxR: number): number | null {
-  let best = -1, bd = maxR * maxR;
+  let best = -1,
+    bd = maxR * maxR;
   const R = Math.ceil(maxR / CELL);
-  const cx = Math.floor(p[0] / CELL), cy = Math.floor(p[1] / CELL), cz = Math.floor(p[2] / CELL);
+  const cx = Math.floor(p[0] / CELL),
+    cy = Math.floor(p[1] / CELL),
+    cz = Math.floor(p[2] / CELL);
   for (let dx = -R; dx <= R; dx++)
     for (let dy = -R; dy <= R; dy++)
       for (let dz = -R; dz <= R; dz++) {
@@ -157,14 +212,17 @@ function nearestSleeve(p: V3, maxR: number): number | null {
         for (const i of arr) {
           const q = slvV[i]!.p;
           const d = (q[0] - p[0]) ** 2 + (q[1] - p[1]) ** 2 + (q[2] - p[2]) ** 2;
-          if (d < bd) { bd = d; best = i; }
+          if (d < bd) {
+            bd = d;
+            best = i;
+          }
         }
       }
   return best < 0 ? null : best;
 }
 function sampleTex(uv: [number, number]): [number, number, number] {
   const t = baseTex!;
-  const x = Math.min(t.w - 1, Math.max(0, Math.floor((uv[0] % 1 + 1) % 1 * t.w)));
+  const x = Math.min(t.w - 1, Math.max(0, Math.floor((((uv[0] % 1) + 1) % 1) * t.w)));
   const y = Math.min(t.h - 1, Math.max(0, Math.floor(uv[1] * t.h)));
   const o = (y * t.w + x) * t.ch;
   return [t.data[o]!, t.data[o + 1]!, t.data[o + 2]!];
@@ -174,9 +232,12 @@ function sample(v: View, p: V3): [number, number, number] {
   const coord = v.axis === 'x' ? p[0] : p[2];
   const fx = v.c0 + v.sign * coord * v.scale;
   const fy = v.r0 - p[1] * v.scale;
-  const x0 = Math.floor(fx), y0 = Math.floor(fy);
-  const tx = fx - x0, ty = fy - y0;
-  const px = (x: number, y: number, c: number) => v.data[(Math.min(v.h - 1, Math.max(0, y)) * v.w + Math.min(v.w - 1, Math.max(0, x))) * v.ch + c]!;
+  const x0 = Math.floor(fx),
+    y0 = Math.floor(fy);
+  const tx = fx - x0,
+    ty = fy - y0;
+  const px = (x: number, y: number, c: number) =>
+    v.data[(Math.min(v.h - 1, Math.max(0, y)) * v.w + Math.min(v.w - 1, Math.max(0, x))) * v.ch + c]!;
   const o: [number, number, number] = [0, 0, 0];
   for (let c = 0; c < 3; c++) {
     const a = px(x0, y0, c) * (1 - tx) + px(x0 + 1, y0, c) * tx;
@@ -190,19 +251,27 @@ function sample(v: View, p: V3): [number, number, number] {
 function gridGeom(g: ClothGrid): { pos: Float32Array; nrm: Float32Array } {
   const nrm = new Float32Array(g.nu * g.nv * 3);
   for (let r = 0; r < g.nv; r++) {
-    let cx = 0, cy = 0, cz = 0;
+    let cx = 0,
+      cy = 0,
+      cz = 0;
     for (let c = 0; c < g.nu; c++) {
       cx += g.rest[3 * (r * g.nu + c)]!;
       cy += g.rest[3 * (r * g.nu + c) + 1]!;
       cz += g.rest[3 * (r * g.nu + c) + 2]!;
     }
-    cx /= g.nu; cy /= g.nu; cz /= g.nu;
+    cx /= g.nu;
+    cy /= g.nu;
+    cz /= g.nu;
     for (let c = 0; c < g.nu; c++) {
       const i = 3 * (r * g.nu + c);
-      let dx = g.rest[i]! - cx, dy = g.rest[i + 1]! - cy, dz = g.rest[i + 2]! - cz;
+      let dx = g.rest[i]! - cx,
+        dy = g.rest[i + 1]! - cy,
+        dz = g.rest[i + 2]! - cz;
       if (g.id.startsWith('skirt')) dy = 0; // hướng ngang
       const l = Math.hypot(dx, dy, dz) || 1;
-      nrm[i] = dx / l; nrm[i + 1] = dy / l; nrm[i + 2] = dz / l;
+      nrm[i] = dx / l;
+      nrm[i + 1] = dy / l;
+      nrm[i + 2] = dz / l;
     }
   }
   return { pos: g.rest, nrm };
@@ -217,23 +286,36 @@ for (const g of grids) {
   const reg = THIEN_Y_ATLAS[g.id];
   if (!reg) continue;
   const { pos, nrm } = gridGeom(g);
-  const x0 = Math.round(reg[0] * SIZE), y0 = Math.round(reg[1] * SIZE), x1 = Math.round(reg[2] * SIZE), y1 = Math.round(reg[3] * SIZE);
+  const x0 = Math.round(reg[0] * SIZE),
+    y0 = Math.round(reg[1] * SIZE),
+    x1 = Math.round(reg[2] * SIZE),
+    y1 = Math.round(reg[3] * SIZE);
   const cols = g.wrap ? g.nu : g.nu - 1;
   for (let ty = y0; ty < y1; ty++)
     for (let tx = x0; tx < x1; tx++) {
-      const u = (tx - x0 + 0.5) / (x1 - x0), v = (ty - y0 + 0.5) / (y1 - y0);
-      const fu = u * cols, fv = v * (g.nv - 1);
-      const c0 = Math.min(Math.floor(fu), cols - 1), r0 = Math.min(Math.floor(fv), g.nv - 2);
-      const c1 = (c0 + 1) % g.nu, r1 = r0 + 1;
-      const su = fu - c0, sv = fv - r0;
+      const u = (tx - x0 + 0.5) / (x1 - x0),
+        v = (ty - y0 + 0.5) / (y1 - y0);
+      const fu = u * cols,
+        fv = v * (g.nv - 1);
+      const c0 = Math.min(Math.floor(fu), cols - 1),
+        r0 = Math.min(Math.floor(fv), g.nv - 2);
+      const c1 = (c0 + 1) % g.nu,
+        r1 = r0 + 1;
+      const su = fu - c0,
+        sv = fv - r0;
       const at = (arr: Float32Array, r: number, c: number, k: number) => arr[3 * (r * g.nu + c) + k]!;
-      const lerp2 = (arr: Float32Array, k: number) => (at(arr, r0, c0, k) * (1 - su) + at(arr, r0, c1, k) * su) * (1 - sv) + (at(arr, r1, c0, k) * (1 - su) + at(arr, r1, c1, k) * su) * sv;
+      const lerp2 = (arr: Float32Array, k: number) =>
+        (at(arr, r0, c0, k) * (1 - su) + at(arr, r0, c1, k) * su) * (1 - sv) +
+        (at(arr, r1, c0, k) * (1 - su) + at(arr, r1, c1, k) * su) * sv;
       const p: V3 = [lerp2(pos, 0), lerp2(pos, 1), lerp2(pos, 2)];
       // Tay áo ôm sát cánh tay trong ảnh nên chiếu thẳng sẽ lấy da/hộ uyển: lấy mẫu lệch ra ngoài (theo trục ngang của ảnh trước/sau) để chạm voan.
-      const ps: V3 = g.id.startsWith('sleeve') ? [p[0] + Math.sign(p[0] || 1) * SLEEVE_SHIFT * height, p[1] - SLEEVE_DROP * height * Math.max(0, v - 0.2), p[2]] : p;
+      const ps: V3 = g.id.startsWith('sleeve')
+        ? [p[0] + Math.sign(p[0] || 1) * SLEEVE_SHIFT * height, p[1] - SLEEVE_DROP * height * Math.max(0, v - 0.2), p[2]]
+        : p;
       const n: V3 = [lerp2(nrm, 0), lerp2(nrm, 1), lerp2(nrm, 2)];
       const nl = Math.hypot(n[0], n[1], n[2]) || 1;
-      let acc = [0, 0, 0], wsum = 0;
+      let acc = [0, 0, 0],
+        wsum = 0;
       let meshCol: [number, number, number] | null = null;
       if (FROM_MESH && g.id.startsWith('sleeve') && baseTex) {
         // lấy màu từ đỉnh voan Tripo gần nhất trong 12 cm (panel gần phẳng nên mở rộng dần); nếu không có thì dùng ảnh multiview
@@ -245,7 +327,9 @@ for (const g of grids) {
         if (d <= 0) continue;
         const w = d * d * d;
         const s = sample(vw, ps);
-        acc[0]! += s[0] * w; acc[1]! += s[1] * w; acc[2]! += s[2] * w;
+        acc[0]! += s[0] * w;
+        acc[1]! += s[1] * w;
+        acc[2]! += s[2] * w;
         wsum += w;
       }
       if (wsum < 1e-4) {
@@ -257,7 +341,9 @@ for (const g of grids) {
       const o = (ty * SIZE + tx) * 4;
       if (meshCol) {
         // Ảnh multiview nét hơn (hoa văn, viền vàng) nhưng ở tay áo ôm sát tay nó lấy da/hộ uyển hoặc nền: những texel đó dùng màu từ lưới Tripo.
-        const r = acc[0]! / wsum, gc = acc[1]! / wsum, bc = acc[2]! / wsum;
+        const r = acc[0]! / wsum,
+          gc = acc[1]! / wsum,
+          bc = acc[2]! / wsum;
         const lum = 0.299 * r + 0.587 * gc + 0.114 * bc;
         const skin = r > gc + 4 && gc > bc - 2 && r - bc > 22 && r - bc < 95 && lum > 110;
         const dark = lum < 85;
@@ -277,22 +363,39 @@ const BG = [views[0]!.data[0]!, views[0]!.data[1]!, views[0]!.data[2]!];
 for (const g of grids) {
   const reg = THIEN_Y_ATLAS[g.id];
   if (!reg) continue;
-  const x0 = Math.round(reg[0] * SIZE), y0 = Math.round(reg[1] * SIZE), x1 = Math.round(reg[2] * SIZE), y1 = Math.round(reg[3] * SIZE);
+  const x0 = Math.round(reg[0] * SIZE),
+    y0 = Math.round(reg[1] * SIZE),
+    x1 = Math.round(reg[2] * SIZE),
+    y1 = Math.round(reg[3] * SIZE);
   const isBad = (o: number) => Math.abs(out[o]! - BG[0]!) + Math.abs(out[o + 1]! - BG[1]!) + Math.abs(out[o + 2]! - BG[2]!) < 40;
-  let r = 0, gg = 0, b = 0, n = 0;
+  let r = 0,
+    gg = 0,
+    b = 0,
+    n = 0;
   for (let ty = y0; ty < y1; ty++)
     for (let tx = x0; tx < x1; tx++) {
       const o = (ty * SIZE + tx) * 4;
-      if (!isBad(o)) { r += out[o]!; gg += out[o + 1]!; b += out[o + 2]!; n++; }
+      if (!isBad(o)) {
+        r += out[o]!;
+        gg += out[o + 1]!;
+        b += out[o + 2]!;
+        n++;
+      }
     }
   if (!n) continue;
   const mean = [r / n, gg / n, b / n];
   for (let ty = y0; ty < y1; ty++)
     for (let tx = x0; tx < x1; tx++) {
       const o = (ty * SIZE + tx) * 4;
-      if (isBad(o)) { out[o] = mean[0]!; out[o + 1] = mean[1]!; out[o + 2] = mean[2]!; }
+      if (isBad(o)) {
+        out[o] = mean[0]!;
+        out[o + 1] = mean[1]!;
+        out[o + 2] = mean[2]!;
+      }
     }
 }
 fs.mkdirSync(outPath.replace(/[\\/][^\\/]*$/, ''), { recursive: true });
-await sharp(out, { raw: { width: SIZE, height: SIZE, channels: 4 } }).png().toFile(outPath);
+await sharp(out, { raw: { width: SIZE, height: SIZE, channels: 4 } })
+  .png()
+  .toFile(outPath);
 console.log(`[thienybake] ghi ${outPath} ${SIZE}x${SIZE}`);

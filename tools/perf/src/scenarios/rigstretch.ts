@@ -9,7 +9,8 @@ import { sleep } from '../lib/devserver';
 import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 
-const DEFAULT_CLIPS = 'Idle_Loop,Jog_Fwd_Loop,Jog_Bwd_Loop,Walk_Loop,Sword_Attack,Sword_Regular_A,Sword_Regular_B,Sword_Regular_C,Roll,Hit_Chest,Hit_Knockback,Sitting_Idle_Loop,Jump_Loop,Spell_Simple_Idle_Loop,Death01';
+const DEFAULT_CLIPS =
+  'Idle_Loop,Jog_Fwd_Loop,Jog_Bwd_Loop,Walk_Loop,Sword_Attack,Sword_Regular_A,Sword_Regular_B,Sword_Regular_C,Roll,Hit_Chest,Hit_Knockback,Sitting_Idle_Loop,Jump_Loop,Spell_Simple_Idle_Loop,Death01';
 
 export default {
   name: 'rigstretch',
@@ -18,16 +19,29 @@ export default {
   async run(r) {
     const clips = list('--clips', DEFAULT_CLIPS);
     const frames = Number(list('--frames', '12')[0]);
-    const { ctx, page } = await r.open({ name: 'RS', viewport: [1280, 720], quality: 'high', look: { g: 'f' }, query: { chr: 'v3' }, hide: 'hud', warnings: /models|chr_v3|clip/ });
+    const { ctx, page } = await r.open({
+      name: 'RS',
+      viewport: [1280, 720],
+      quality: 'high',
+      look: { g: 'f' },
+      query: { chr: 'v3' },
+      hide: 'hud',
+      warnings: /models|chr_v3|clip/,
+    });
     await gm(page, 'level 12', 1500);
     await gm(page, 'god on', 1200);
     await gm(page, 'set set_tinh_khuyet', 1500);
     await gm(page, 'killall', 800);
     await gm(page, 'tp 2048 2088', 1500);
-    await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+    await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+      timeout: 60_000,
+      polling: 300,
+    });
     await sleep(3500);
     await cam(page, { yaw: 0.5, pitch: 0.1, dist: 3 });
-    const names = await page.evaluate(() => [...(window.__game!.ents.players.get(window.__game!.sid).model.tpl.clips as Map<string, unknown>).keys()]);
+    const names = await page.evaluate(() => [
+      ...(window.__game!.ents.players.get(window.__game!.sid).model.tpl.clips as Map<string, unknown>).keys(),
+    ]);
     fs.writeFileSync(path.join(r.out, 'clips.json'), JSON.stringify(names));
     console.log(`[rigstretch] ${names.length} clip UAL: ${names.join(', ')}`);
     const results: Record<string, unknown> = {};
@@ -40,7 +54,15 @@ export default {
         ({ clipName, nFrames }) => {
           const g = window.__game!;
           const m = g.ents.players.get(g.sid).model;
-          const lods: { geometry: { index: { array: ArrayLike<number> } | null; getAttribute: (n: string) => { count: number; getX: (i: number) => number; array: ArrayLike<number> } }; getVertexPosition: (i: number, t: unknown) => unknown; skeleton: { bones: { name: string }[] }; name: string }[] = m.lods[0];
+          const lods: {
+            geometry: {
+              index: { array: ArrayLike<number> } | null;
+              getAttribute: (n: string) => { count: number; getX: (i: number) => number; array: ArrayLike<number> };
+            };
+            getVertexPosition: (i: number, t: unknown) => unknown;
+            skeleton: { bones: { name: string }[] };
+            name: string;
+          }[] = m.lods[0];
           const V = m.rig.position.constructor as new () => { x: number; y: number; z: number };
           const tmp = new V();
           // đỉnh toàn model (gộp các mesh LOD0), toạ độ bind (nghỉ) và xương trội
@@ -58,7 +80,11 @@ export default {
             const n = pos.count;
             for (let i = 0; i < n; i++) {
               // vị trí bind = skin ở tư thế bind (bind pose): dùng getVertexPosition khi skeleton ở pose bind sẽ cho cùng giá trị; ở đây lấy attribute trực tiếp (toạ độ mesh)
-              rest.push(pos.getX(i), (pos as unknown as { getY: (i: number) => number }).getY(i), (pos as unknown as { getZ: (i: number) => number }).getZ(i));
+              rest.push(
+                pos.getX(i),
+                (pos as unknown as { getY: (i: number) => number }).getY(i),
+                (pos as unknown as { getZ: (i: number) => number }).getZ(i),
+              );
               let best = 0;
               let bw = -1;
               for (let k = 0; k < 4; k++) {
@@ -73,7 +99,8 @@ export default {
             const idx = mesh.geometry.index!.array;
             for (let t = 0; t < idx.length; t += 3) {
               for (let e = 0; e < 3; e++) {
-                const a = idx[t + e]! + base, b = idx[t + (e + 1) % 3]! + base;
+                const a = idx[t + e]! + base,
+                  b = idx[t + ((e + 1) % 3)]! + base;
                 const key = a < b ? a * 1000003 + b : b * 1000003 + a;
                 if (!edgeSeen.has(key)) {
                   edgeSeen.add(key);
@@ -88,21 +115,28 @@ export default {
           // chiều dài cạnh ở bind: tính bằng vị trí skin ở khung bind của clip? dùng toạ độ attribute (đã ở không gian bind của mesh)
           const restLen = new Float32Array(edges.length / 2);
           for (let e = 0; e < restLen.length; e++) {
-            const a = edges[2 * e]!, b = edges[2 * e + 1]!;
+            const a = edges[2 * e]!,
+              b = edges[2 * e + 1]!;
             restLen[e] = Math.hypot(rest[3 * a]! - rest[3 * b]!, rest[3 * a + 1]! - rest[3 * b + 1]!, rest[3 * a + 2]! - rest[3 * b + 2]!);
           }
           // kiểm trọng số: đỉnh tổng trọng số < 0.99 (bị kéo về gốc toạ độ khi skin) và đỉnh có đúng 0
-          let wLow = 0, wZero = 0;
+          let wLow = 0,
+            wZero = 0;
           const lowPos: number[] = [];
           for (const mesh of meshes) {
             const sw = mesh.geometry.getAttribute('skinWeight') as unknown as { array: ArrayLike<number>; count: number };
-            const pp = mesh.geometry.getAttribute('position') as unknown as { getX: (i: number) => number; getY: (i: number) => number; getZ: (i: number) => number };
+            const pp = mesh.geometry.getAttribute('position') as unknown as {
+              getX: (i: number) => number;
+              getY: (i: number) => number;
+              getZ: (i: number) => number;
+            };
             for (let i = 0; i < sw.count; i++) {
               const sum = sw.array[4 * i]! + sw.array[4 * i + 1]! + sw.array[4 * i + 2]! + sw.array[4 * i + 3]!;
               if (sum < 0.99) {
                 wLow++;
                 if (sum < 1e-4) wZero++;
-                if (lowPos.length < 60) lowPos.push(Math.round(pp.getX(i) * 100) / 100, Math.round(pp.getY(i) * 100) / 100, Math.round(pp.getZ(i) * 100) / 100);
+                if (lowPos.length < 60)
+                  lowPos.push(Math.round(pp.getX(i) * 100) / 100, Math.round(pp.getY(i) * 100) / 100, Math.round(pp.getZ(i) * 100) / 100);
               }
             }
           }
@@ -122,27 +156,37 @@ export default {
             act.time = t;
             m.mixer.update(0);
             m.rig.updateMatrixWorld(true);
-            for (const { m: mesh, base: b0, n } of info) for (let i = 0; i < n; i++) {
-              mesh.getVertexPosition(i, tmp);
-              cur[3 * (b0 + i)] = tmp.x;
-              cur[3 * (b0 + i) + 1] = tmp.y;
-              cur[3 * (b0 + i) + 2] = tmp.z;
-            }
+            for (const { m: mesh, base: b0, n } of info)
+              for (let i = 0; i < n; i++) {
+                mesh.getVertexPosition(i, tmp);
+                cur[3 * (b0 + i)] = tmp.x;
+                cur[3 * (b0 + i) + 1] = tmp.y;
+                cur[3 * (b0 + i) + 2] = tmp.z;
+              }
             const ratios: number[] = [];
             const vr = new Float32Array(nV).fill(1);
-            let ns = 0, nq = 0, wE = 0, wV = 1;
+            let ns = 0,
+              nq = 0,
+              wE = 0,
+              wV = 1;
             for (let e = 0; e < restLen.length; e++) {
               const L0 = restLen[e]!;
               if (L0 < 0.004) continue;
-              const a = edges[2 * e]!, b = edges[2 * e + 1]!;
+              const a = edges[2 * e]!,
+                b = edges[2 * e + 1]!;
               const L = Math.hypot(cur[3 * a]! - cur[3 * b]!, cur[3 * a + 1]! - cur[3 * b + 1]!, cur[3 * a + 2]! - cur[3 * b + 2]!);
               const q = L / L0;
               ratios.push(q);
               const dev = q > 1 ? q : 1 / q;
               if (q > 1.8) ns++;
               if (q < 0.55) nq++;
-              const dW = wV > 1 ? wV : 1 / wV, dA = vr[a]! > 1 ? vr[a]! : 1 / vr[a]!, dB = vr[b]! > 1 ? vr[b]! : 1 / vr[b]!;
-              if (dev > dW) { wV = q; wE = e; }
+              const dW = wV > 1 ? wV : 1 / wV,
+                dA = vr[a]! > 1 ? vr[a]! : 1 / vr[a]!,
+                dB = vr[b]! > 1 ? vr[b]! : 1 / vr[b]!;
+              if (dev > dW) {
+                wV = q;
+                wE = e;
+              }
               if (dev > dA) vr[a] = q;
               if (dev > dB) vr[b] = q;
             }
@@ -150,14 +194,22 @@ export default {
             const p99 = sorted[Math.floor(sorted.length * 0.99)]!;
             const p01 = sorted[Math.floor(sorted.length * 0.01)]!;
             const score = ns + nq;
-            perFrame.push({ t: Math.round(t * 100) / 100, p99: Math.round(p99 * 100) / 100, max: Math.round(wV * 100) / 100, nStretch: ns, nSquash: nq, worstEdge: wE });
+            perFrame.push({
+              t: Math.round(t * 100) / 100,
+              p99: Math.round(p99 * 100) / 100,
+              max: Math.round(wV * 100) / 100,
+              nStretch: ns,
+              nSquash: nq,
+              worstEdge: wE,
+            });
             void p01;
             if (!worst || score > worst.score) worst = { score, t, ratio: vr, pos: cur.slice() };
           }
           // cặp xương của các cạnh tệ ở khung tệ nhất
           const wr = worst!.ratio;
           for (let e = 0; e < restLen.length; e++) {
-            const a = edges[2 * e]!, b = edges[2 * e + 1]!;
+            const a = edges[2 * e]!,
+              b = edges[2 * e + 1]!;
             const q = Math.max(wr[a]!, 1 / wr[a]!, wr[b]!, 1 / wr[b]!);
             if (q > 1.8 && dom[a] !== dom[b]) {
               const key = [dom[a], dom[b]].sort().join(' | ');
@@ -189,36 +241,78 @@ export default {
           let bridgeLeg = 0;
           for (let e = 0; e < restLen.length; e++) {
             if (restLen[e]! > 0.03) continue;
-            const ga = groups[edges[2 * e]!]!, gb = groups[edges[2 * e + 1]!]!;
+            const ga = groups[edges[2 * e]!]!,
+              gb = groups[edges[2 * e + 1]!]!;
             if (ga === gb) continue;
             if ((ga === 'tay') !== (gb === 'tay')) bridgeArm++;
             if ((ga === 'chan') !== (gb === 'chan')) bridgeLeg++;
           }
-          const regions = [...regTot.entries()].map(([k, tot]) => ({ region: k, bad: reg.get(k) ?? 0, total: tot, pct: Math.round(((reg.get(k) ?? 0) / tot) * 1000) / 10 })).sort((x, y) => y.pct - x.pct);
+          const regions = [...regTot.entries()]
+            .map(([k, tot]) => ({ region: k, bad: reg.get(k) ?? 0, total: tot, pct: Math.round(((reg.get(k) ?? 0) / tot) * 1000) / 10 }))
+            .sort((x, y) => y.pct - x.pct);
           const w = worst!;
           // dữ liệu vẽ overlay xương / heatmap trọng số: toạ độ bind của đỉnh, nhóm xương trội, vị trí bind + cha của từng xương
-          const sk0 = meshes[0]!.skeleton as unknown as { bones: { name: string; parent: { name: string } | null }[]; boneInverses: { elements: number[] }[] };
+          const sk0 = meshes[0]!.skeleton as unknown as {
+            bones: { name: string; parent: { name: string } | null }[];
+            boneInverses: { elements: number[] }[];
+          };
           const bindBones = sk0.bones.map((bn, bi) => {
             const e = sk0.boneInverses[bi]!.elements;
             // vị trí bind = −R^T · t với ma trận nghịch đảo (cột): t = e[12..14], R^T từ 3x3 trên
-            const tx = e[12]!, ty = e[13]!, tz = e[14]!;
-            return { name: bn.name, parent: bn.parent ? bn.parent.name : null, p: [-(e[0]! * tx + e[1]! * ty + e[2]! * tz), -(e[4]! * tx + e[5]! * ty + e[6]! * tz), -(e[8]! * tx + e[9]! * ty + e[10]! * tz)].map((v) => Math.round(v * 1000) / 1000) };
+            const tx = e[12]!,
+              ty = e[13]!,
+              tz = e[14]!;
+            return {
+              name: bn.name,
+              parent: bn.parent ? bn.parent.name : null,
+              p: [
+                -(e[0]! * tx + e[1]! * ty + e[2]! * tz),
+                -(e[4]! * tx + e[5]! * ty + e[6]! * tz),
+                -(e[8]! * tx + e[9]! * ty + e[10]! * tz),
+              ].map((v) => Math.round(v * 1000) / 1000),
+            };
           });
           return {
             nEdges: restLen.length,
             restPos: clipName === 'Idle_Loop' ? rest.map((v) => Math.round(v * 1000) / 1000) : [],
             groups: clipName === 'Idle_Loop' ? groups : [],
             domBones: clipName === 'Idle_Loop' ? dom : [],
-            bindBones: clipName === 'Idle_Loop' ? bindBones : [], wLow, wZero, lowPos, bridgeArm, bridgeLeg, clip: clipName, duration: dur, perFrame, worstT: w.t, regions, pairs, worstRatio: Array.from(w.ratio).map((v) => Math.round(v * 100) / 100), worstPos: Array.from(w.pos).map((v) => Math.round(v * 1000) / 1000), nV };
+            bindBones: clipName === 'Idle_Loop' ? bindBones : [],
+            wLow,
+            wZero,
+            lowPos,
+            bridgeArm,
+            bridgeLeg,
+            clip: clipName,
+            duration: dur,
+            perFrame,
+            worstT: w.t,
+            regions,
+            pairs,
+            worstRatio: Array.from(w.ratio).map((v) => Math.round(v * 100) / 100),
+            worstPos: Array.from(w.pos).map((v) => Math.round(v * 1000) / 1000),
+            nV,
+          };
         },
         { clipName: clip, nFrames: frames },
       );
-      const { worstRatio, worstPos, restPos, groups, domBones, bindBones, ...summary } = res as { worstRatio: number[]; worstPos: number[]; restPos: number[]; groups: string[]; domBones: string[]; bindBones: unknown[]; [k: string]: unknown };
-      if (restPos.length) fs.writeFileSync(path.join(r.out, 'rest.json'), JSON.stringify({ pos: restPos, groups, domBones, bones: bindBones }));
+      const { worstRatio, worstPos, restPos, groups, domBones, bindBones, ...summary } = res as {
+        worstRatio: number[];
+        worstPos: number[];
+        restPos: number[];
+        groups: string[];
+        domBones: string[];
+        bindBones: unknown[];
+        [k: string]: unknown;
+      };
+      if (restPos.length)
+        fs.writeFileSync(path.join(r.out, 'rest.json'), JSON.stringify({ pos: restPos, groups, domBones, bones: bindBones }));
       fs.writeFileSync(path.join(r.out, `rigstretch-worst-${clip}.json`), JSON.stringify({ ratio: worstRatio, pos: worstPos }));
       results[clip] = summary;
       const pf = (summary as { perFrame: { nStretch: number; nSquash: number }[] }).perFrame;
-      console.log(`[rigstretch] ${clip}: tệ nhất ${Math.max(...pf.map((x) => x.nStretch + x.nSquash))} cạnh (giãn>1.8 hoặc nén<0.55) / khung`);
+      console.log(
+        `[rigstretch] ${clip}: tệ nhất ${Math.max(...pf.map((x) => x.nStretch + x.nSquash))} cạnh (giãn>1.8 hoặc nén<0.55) / khung`,
+      );
     }
     fs.writeFileSync(path.join(r.out, 'rigstretch.json'), JSON.stringify(results, null, 1));
     await ctx.close();
