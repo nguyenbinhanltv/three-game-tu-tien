@@ -103,7 +103,20 @@ import { SkillPoses } from './combat/skillPose';
 import { SkillFx } from './fx/skillFx';
 import { MonFx } from './fx/monFx';
 import { variantFor } from './fx/fxTimeline';
-import { fxQuality, hitStopOn, realmAuraOn, setFxQuality, setHitStopOn, setRealmAuraOn } from './fx/fxSettings';
+import {
+  auraCombatOf,
+  auraModeOf,
+  auraOthersOf,
+  fxQuality,
+  hitStopOn,
+  realmAuraOn,
+  setAuraCombat,
+  setAuraMode,
+  setAuraOthers,
+  setFxQuality,
+  setHitStopOn,
+} from './fx/fxSettings';
+import type { AuraCombat, AuraMode, AuraOthers } from './fx/realmAuraRules';
 import { RealmAuraFx } from './fx/realmAura';
 import { type FxQuality } from '@dtl/shared';
 import { type SkillEvent } from './character/view';
@@ -698,6 +711,10 @@ export class Game {
       gfxQuality: () => get().quality,
       fxQuality,
       enabled: realmAuraOn,
+      mode: auraModeOf,
+      others: auraOthersOf,
+      combat: auraCombatOf,
+      partySids: () => new Set((get().party?.members ?? []).map((m) => m.sid).filter(Boolean)),
     });
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
     this.vfx.particles.setQuality(get().quality);
@@ -1238,9 +1255,19 @@ export class Game {
     set({ hitStop: on });
   }
 
-  setRealmAura(on: boolean): void {
-    setRealmAuraOn(on);
-    set({ realmAura: on });
+  setAuraMode(m: AuraMode): void {
+    setAuraMode(m);
+    set({ auraMode: m });
+  }
+
+  setAuraOthers(m: AuraOthers): void {
+    setAuraOthers(m);
+    set({ auraOthers: m });
+  }
+
+  setAuraCombat(m: AuraCombat): void {
+    setAuraCombat(m);
+    set({ auraCombat: m });
   }
 
   /** Khóa preset: bật thì không tự hạ khi nghẽn. */

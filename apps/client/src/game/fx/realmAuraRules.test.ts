@@ -14,6 +14,19 @@ import {
   qualityTier,
   summonsPhantom,
   swordCount,
+  auraWeights,
+  otherAuraLevel,
+  OTHERS_MAIN_DIST,
+  OTHERS_OFF_DIST,
+  phantomAnchor,
+  roleAllowed,
+  settledTarget,
+  SETTLE_SEC,
+  W_BG,
+  W_MAIN_ACTIVE,
+  W_SUB,
+  W_SUB_FULL,
+  W_BG_FULL,
 } from './realmAuraRules';
 
 describe('realmAuraRules', () => {
@@ -72,5 +85,78 @@ describe('realmAuraRules', () => {
     expect(phantomPhase(0).reveal).toBe(0);
     expect(phantomPhase(0.5).erode).toBe(0);
     expect(phantomPhase(PHANTOM_DUR).erode).toBeGreaterThan(1);
+  });
+
+  describe('VS-0 thứ bậc thị giác', () => {
+    const idle = { combat: 'dim', moving: false, fighting: false, settle: 1 } as const;
+    it('vai nào được dựng ở chế độ nào', () => {
+      expect(roleAllowed('main', 'off')).toBe(false);
+      expect(roleAllowed('main', 'min')).toBe(true);
+      expect(roleAllowed('sub', 'min')).toBe(false);
+      expect(roleAllowed('sub', 'std')).toBe(true);
+      expect(roleAllowed('extra', 'std')).toBe(false);
+      expect(roleAllowed('extra', 'full')).toBe(true);
+      expect(roleAllowed('event', 'min')).toBe(false);
+      expect(roleAllowed('event', 'std')).toBe(true);
+    });
+    it('Chuẩn: yên đủ lâu thì chính 1, phụ ≤ 0,5, nền ≤ 0,2', () => {
+      const w = auraWeights({ mode: 'std', ...idle });
+      expect(w.main).toBe(1);
+      expect(w.sub).toBeLessThanOrEqual(0.5);
+      expect(w.bg).toBeLessThanOrEqual(0.2);
+      expect(w).toEqual({ main: 1, sub: W_SUB, bg: W_BG });
+    });
+    it('chạy hoặc chiến đấu: chỉ lớp chính, 30–50%', () => {
+      for (const st of [{ moving: true, fighting: false }, { moving: false, fighting: true }]) {
+        const w = auraWeights({ mode: 'std', combat: 'dim', settle: 0, ...st });
+        expect(w.main).toBe(W_MAIN_ACTIVE);
+        expect(w.main).toBeGreaterThanOrEqual(0.3);
+        expect(w.main).toBeLessThanOrEqual(0.5);
+        expect(w.sub).toBe(0);
+        expect(w.bg).toBe(0);
+      }
+    });
+    it('"Khi chiến đấu: Giữ" không làm mờ lớp chính lúc giao chiến (vẫn mờ khi chạy)', () => {
+      expect(auraWeights({ mode: 'std', combat: 'keep', moving: false, fighting: true, settle: 0 }).main).toBe(1);
+      expect(auraWeights({ mode: 'std', combat: 'keep', moving: true, fighting: false, settle: 0 }).main).toBe(W_MAIN_ACTIVE);
+    });
+    it('Tối giản chỉ lớp chính; Tắt không gì; Đầy đủ nới trần phụ/nền', () => {
+      expect(auraWeights({ mode: 'min', ...idle })).toEqual({ main: 0.6, sub: 0, bg: 0 });
+      expect(auraWeights({ mode: 'off', ...idle })).toEqual({ main: 0, sub: 0, bg: 0 });
+      expect(auraWeights({ mode: 'full', ...idle })).toEqual({ main: 1, sub: W_SUB_FULL, bg: W_BG_FULL });
+    });
+    it('lớp phụ mở dần theo mức đã yên', () => {
+      expect(auraWeights({ mode: 'std', ...idle, settle: 0.5 }).sub).toBeCloseTo(W_SUB / 2);
+    });
+    it('đứng yên 3 s hoặc đả tọa thì coi là đã yên', () => {
+      expect(settledTarget(SETTLE_SEC - 0.1, false)).toBe(0);
+      expect(settledTarget(SETTLE_SEC, false)).toBe(1);
+      expect(settledTarget(0, true)).toBe(1);
+    });
+    it('người khác: Tắt/Chỉ tổ đội/Gần theo khoảng cách', () => {
+      const L = otherAuraLevel;
+      expect(L('off', 3, true, true, 45)).toBe('none');
+      expect(L('party', 3, false, true, 45)).toBe('none');
+      expect(L('party', 3, true, true, 45)).toBe('full');
+      expect(L('near', OTHERS_MAIN_DIST, false, true, 45)).toBe('full');
+      expect(L('near', OTHERS_MAIN_DIST + 1, false, true, 45)).toBe('main');
+      expect(L('near', OTHERS_OFF_DIST + 1, false, true, 45)).toBe('none');
+      expect(L('near', 5, false, false, 45)).toBe('main');
+    });
+    it('đồng đội giữ lớp chính tới hết tầm hiệu ứng', () => {
+      expect(otherAuraLevel('near', 40, true, false, 45)).toBe('main');
+      expect(otherAuraLevel('near', 46, true, false, 45)).toBe('none');
+    });
+    it('pháp tướng lệch khỏi trục camera → nhân vật', () => {
+      for (const sign of [1, -1]) {
+        const o = phantomAnchor(0, 1, sign); // camera nhìn dọc +z
+        expect(Math.abs(o.x)).toBeGreaterThan(2.5); // lệch ngang đủ xa
+      }
+      expect(phantomAnchor(0, 1, 1).x).toBe(-phantomAnchor(0, 1, -1).x);
+    });
+    it('pháp tướng sống ≤ 1,3 s', () => {
+      expect(PHANTOM_DUR).toBeLessThanOrEqual(1.3);
+      expect(phantomPhase(PHANTOM_DUR).alpha).toBeGreaterThan(0);
+    });
   });
 });

@@ -106,7 +106,7 @@ export default {
   name: 'realmaura',
   desc: 'Hào quang cảnh giới trên nhân vật: 4 cảnh giới × 3 đạo (1080p + 720p), dãy khung pháp tướng, video, đo hiệu năng trước/sau',
   usage:
-    '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--mood day|night] [--video] [--perf] [--others N] [--only stills|phantom]',
+    '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--mood day|night] [--mode off|min|std|full] [--run] [--video] [--perf] [--budget] [--others N] [--only stills|phantom]',
   async run(r) {
     const daos = list('--daos', 'kiem,ho,dan');
     const realms = list('--realms', 'kd,na,hn,ab');
@@ -116,10 +116,16 @@ export default {
     const quality = opt('--quality', 'high');
     const fxq = opt('--fxq', 'high');
     const mood = opt('--mood', '');
+    /** Chế độ Hào quang khi chụp (mặc định Chuẩn, như người chơi); `--mode full` để so bản cũ. */
+    const mode = opt('--mode', 'std');
     const query = { fxq, ...(mood ? { mood } : {}), ...(flag('--off') ? { aura: 0 } : {}) };
 
     if (flag('--perf')) {
-      await perf(r, daos, num('--others', 4), quality, fxq);
+      await perf(r, daos, num('--others', 4), quality, fxq, mode);
+      return;
+    }
+    if (flag('--budget')) {
+      await budget(r, daos, quality, fxq);
       return;
     }
 
@@ -127,14 +133,24 @@ export default {
       const d = DAO[dao];
       const { ctx, page } = await r.open({ name: `Au${dao}`, viewport: [vw, vh], dpr: 1, quality, query, hide: 'hud', warnings: /models/ });
       await gm(page, 'god on', 800);
+      await page.evaluate(`window.__game.setAuraMode(${JSON.stringify(mode)})`);
       for (const rk of realms) {
         const re = REALMS[rk];
         await setup(page, dao, re.lv);
         if (only !== 'phantom') {
           for (const [vn, yaw, pitch] of VIEWS) {
             await cam(page, { yaw, pitch, dist: 4.4 });
-            await sleep(2600);
+            await sleep(4600); // đứng yên > 3 s: lớp phụ/nền đã mở (Chuẩn)
             await shotBoth(page, r.out, `${d.label}-${re.label}-${vn}`, vw, vh);
+          }
+          if (flag('--run')) {
+            // Đang chạy: chỉ còn lớp chính mờ bớt.
+            await cam(page, { yaw: Math.PI + 0.5, pitch: 0.16, dist: 4.4 });
+            await page.keyboard.down('KeyW');
+            await sleep(900);
+            await snap(page, r.out, `${d.label}-${re.label}-chay-1080p.jpg`, { wait: 0 });
+            await page.keyboard.up('KeyW');
+            await gm(page, 'tp 2048 2088', 1400);
           }
           // Đang ngự kiếm: hào quang quanh người phải tắt (soát ở Nguyên Anh+).
           if (re.lv >= 24 && rk === 'na') {
@@ -224,7 +240,14 @@ async function videos(r: Parameters<Scenario['run']>[0], daos: string[], quality
 }
 
 /** Đo trước/sau: tắt/bật hào quang trong cùng phiên, mình ở Ảnh Biến + N người khác (mỗi người một phiên) đứng quanh. */
-async function perf(r: Parameters<Scenario['run']>[0], daos: string[], others: number, quality: string, fxq: string): Promise<void> {
+async function perf(
+  r: Parameters<Scenario['run']>[0],
+  daos: string[],
+  others: number,
+  quality: string,
+  fxq: string,
+  mode: string,
+): Promise<void> {
   const { ctx, page } = await r.open({
     name: 'Aperf',
     viewport: [1280, 720],
@@ -249,13 +272,39 @@ async function perf(r: Parameters<Scenario['run']>[0], daos: string[], others: n
   await sleep(2500);
   const rows: Record<string, unknown>[] = [];
   for (const on of [false, true, false, true]) {
-    await page.evaluate(`window.__game.setRealmAura(${on})`);
-    await sleep(1500);
+    await page.evaluate(`window.__game.setAuraMode(${JSON.stringify(on ? mode : 'off')})`);
+    await sleep(4500);
     const p = await perfSample(page);
     rows.push({ aura: on, ...p, stats: await stat(page) });
   }
   console.log('[shots:realmaura] perf', JSON.stringify(rows, null, 1));
-  fs.writeFileSync(path.join(r.out, 'perf.json'), JSON.stringify({ others, quality, fxq, rows }, null, 2));
+  fs.writeFileSync(path.join(r.out, 'perf.json'), JSON.stringify({ others, quality, fxq, mode, rows }, null, 2));
   for (const c of extra) await c.close();
   await ctx.close();
+}
+
+/**
+ * Ngân sách draw call MỖI NGƯỜI: một nhân vật đứng yên (đã "đã yên" để lớp phụ/nền mở) ở từng cảnh giới × đạo, hiệu số draw call
+ * giữa Tắt và từng chế độ. Mục tiêu: Chuẩn ≤ 25, Đầy đủ ≤ 60. Ghi `budget.json`.
+ */
+async function budget(r: Parameters<Scenario['run']>[0], daos: string[], quality: string, fxq: string): Promise<void> {
+  const rows: { dao: string; realm: string; off: number; std: number; full: number; dStd: number; dFull: number }[] = [];
+  for (const dao of daos) {
+    const { ctx, page } = await r.open({ name: `Ab${dao}`, viewport: [1280, 720], dpr: 1, quality, query: { fxq }, hide: 'hud', warnings: /models/ });
+    for (const rk of Object.keys(REALMS)) {
+      await setup(page, dao, REALMS[rk].lv);
+      await cam(page, { yaw: Math.PI + 0.5, pitch: 0.2, dist: 6 });
+      const m: Record<string, number> = {};
+      for (const mode of ['off', 'std', 'full']) {
+        await page.evaluate(`window.__game.setAuraMode(${JSON.stringify(mode)})`);
+        await sleep(5200);
+        m[mode] = (await perfSample(page)).drawCalls;
+      }
+      const row = { dao, realm: REALMS[rk].label, off: m.off, std: m.std, full: m.full, dStd: m.std - m.off, dFull: m.full - m.off };
+      console.log('[shots:realmaura] budget', JSON.stringify(row));
+      rows.push(row);
+    }
+    await ctx.close();
+  }
+  fs.writeFileSync(path.join(r.out, 'budget.json'), JSON.stringify(rows, null, 2));
 }

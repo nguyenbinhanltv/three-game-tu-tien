@@ -126,3 +126,117 @@ export function phantomPhase(t: number): { reveal: number; erode: number; alpha:
   const alpha = Math.min(1, t / 0.15) * 0.78;
   return { reveal, erode, alpha };
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// VS-0: thứ bậc thị giác. Mỗi lớp hào quang thuộc đúng một vai:
+//   main  = nhận dạng cảnh giới (1 thứ; cảnh giới mới THAY lớp chính cũ, lớp cũ co vào thành nền), sáng nhất
+//   sub   = lớp phụ (tối đa 1 vai, chỉ hiện khi đã đứng yên đủ lâu), ≤ 50% độ sáng
+//   extra = lớp trang trí thêm, chỉ ở chế độ Đầy đủ, cùng trần độ sáng với sub
+//   bg    = nền (hạt, lõi co lại, trận đồ chân), ≤ 20% độ sáng
+//   event = pháp tướng: chỉ bùng ≤ PHANTOM_DUR giây khi ra chiêu tối thượng, không theo độ yên tĩnh
+// Cảnh giới → lớp chính / phụ:
+//   Kết Đan   : kim đan                       / xoáy ốc vàng
+//   Nguyên Anh: vòng kiếm | cánh sen | trận đồ / Nguyên Anh nhỏ (thẻ) (Hộ pháp cũng thẻ)
+//   Hóa Thần  : rim light + phù văn lưng       / vòng kiếm | cánh sen
+//   Ảnh Biến  : rim light + tia sét tím-vàng   / phù văn lưng
+// ---------------------------------------------------------------------------------------------------------------
+export type AuraMode = 'off' | 'min' | 'std' | 'full';
+export type AuraOthers = 'off' | 'party' | 'near';
+export type AuraCombat = 'keep' | 'dim';
+export type LayerRole = 'main' | 'sub' | 'extra' | 'bg' | 'event';
+
+export const AURA_MODES: readonly AuraMode[] = ['off', 'min', 'std', 'full'];
+export const AURA_OTHERS: readonly AuraOthers[] = ['off', 'party', 'near'];
+export const AURA_COMBATS: readonly AuraCombat[] = ['keep', 'dim'];
+export const DEFAULT_AURA_MODE: AuraMode = 'std';
+export const DEFAULT_AURA_OTHERS: AuraOthers = 'near';
+export const DEFAULT_AURA_COMBAT: AuraCombat = 'dim';
+
+/** Giây đứng yên liên tục thì lớp phụ mới hiện (đả tọa hiện ngay). */
+export const SETTLE_SEC = 3;
+/** Người khác: quá khoảng này (m) chỉ còn lớp chính; quá khoảng tắt kể cả lớp chính (đồng đội giữ tới `OTHERS_FX_DIST`). */
+export const OTHERS_MAIN_DIST = 15;
+export const OTHERS_OFF_DIST = 30;
+/** Số người khác cùng lúc được vẽ lớp phụ trong tầm nhìn. */
+export const OTHERS_SUB_MAX = 2;
+/** Độ sáng tối đa theo vai (nhân với độ sáng gốc của lớp). Chuẩn theo kế hoạch: chính 1, phụ ≤ 0,5, nền ≤ 0,2. */
+export const W_SUB = 0.5;
+export const W_BG = 0.2;
+/** Đầy đủ nới trần cho lớp phụ/trang trí/nền. */
+export const W_SUB_FULL = 0.85;
+export const W_BG_FULL = 0.35;
+/** Độ sáng lớp chính khi chạy hoặc đang giao chiến (30–50%) và ở chế độ Tối giản. */
+export const W_MAIN_ACTIVE = 0.4;
+export const W_MAIN_MIN = 0.6;
+/** Ngân sách draw call mỗi người (đo bằng `pnpm shots realmaura --perf`). */
+export const AURA_DRAW_BUDGET = { std: 25, full: 60 } as const;
+
+export const isAuraMode = (v: unknown): v is AuraMode => AURA_MODES.includes(v as AuraMode);
+export const isAuraOthers = (v: unknown): v is AuraOthers => AURA_OTHERS.includes(v as AuraOthers);
+export const isAuraCombat = (v: unknown): v is AuraCombat => AURA_COMBATS.includes(v as AuraCombat);
+
+/** Chế độ này có dựng lớp thuộc vai `role` không (lớp không được phép thì không tạo lưới, không tốn draw call). */
+export function roleAllowed(role: LayerRole, mode: AuraMode): boolean {
+  if (mode === 'off') return false;
+  if (role === 'main') return true;
+  if (mode === 'min') return false;
+  if (role === 'extra') return mode === 'full';
+  return true; // sub, bg, event ở Chuẩn và Đầy đủ
+}
+
+/** Mỗi lớp của một người được tới mức nào: chỉ lớp chính, hay cả phụ. */
+export type AuraLevel = 'none' | 'main' | 'full';
+
+/**
+ * Hào quang của người KHÁC ở mức nào, theo cài đặt, khoảng cách tới camera (m) và có phải đồng đội không.
+ * Đồng đội luôn giữ lớp chính (tới `maxDist`); `subOk` = người này nằm trong nhóm gần nhất được vẽ lớp phụ.
+ */
+export function otherAuraLevel(mode: AuraOthers, dist: number, party: boolean, subOk: boolean, maxDist: number): AuraLevel {
+  if (mode === 'off') return 'none';
+  if (party) return dist > maxDist ? 'none' : dist <= OTHERS_MAIN_DIST && subOk ? 'full' : 'main';
+  if (mode === 'party') return 'none';
+  if (dist > OTHERS_OFF_DIST) return 'none';
+  return dist <= OTHERS_MAIN_DIST && subOk ? 'full' : 'main';
+}
+
+export interface AuraWeightIn {
+  mode: AuraMode;
+  combat: AuraCombat;
+  /** Đang chạy/di chuyển (không yên). */
+  moving: boolean;
+  /** Đang giao chiến (vừa ra chiêu trong `AURA_COMBAT_SEC`). */
+  fighting: boolean;
+  /** 0–1: đã đứng yên đủ `SETTLE_SEC` (mượt dần). */
+  settle: number;
+}
+export interface AuraWeights {
+  main: number;
+  sub: number;
+  bg: number;
+}
+
+/** Độ sáng tối đa theo vai ở trạng thái hiện tại. Chạy/chiến: chỉ lớp chính 40%; yên 3 s: đủ phụ/nền. */
+export function auraWeights(i: AuraWeightIn): AuraWeights {
+  if (i.mode === 'off') return { main: 0, sub: 0, bg: 0 };
+  const full = i.mode === 'full';
+  let main = 1;
+  if (i.fighting) main = i.combat === 'keep' ? 1 : W_MAIN_ACTIVE;
+  else if (i.moving) main = W_MAIN_ACTIVE;
+  if (i.mode === 'min') main = Math.min(main, W_MAIN_MIN);
+  if (i.mode === 'min') return { main, sub: 0, bg: 0 };
+  const s = Math.max(0, Math.min(1, i.settle));
+  return { main, sub: s * (full ? W_SUB_FULL : W_SUB), bg: s * (full ? W_BG_FULL : W_BG) };
+}
+
+/** Đứng yên liên tục `still` giây (hoặc đang đả tọa) thì coi là "đã yên". */
+export function settledTarget(still: number, meditating: boolean): 0 | 1 {
+  return meditating || still >= SETTLE_SEC ? 1 : 0;
+}
+
+/**
+ * Chỗ đặt pháp tướng: LỆCH khỏi trục camera → nhân vật (sang bên + hơi ra sau), không che nhân vật.
+ * `dx,dz` = hướng từ camera tới nhân vật (chuẩn hóa), `sign` = ±1 (bên trái/phải, theo hạt giống từng người).
+ */
+export function phantomAnchor(dx: number, dz: number, sign: number): { x: number; z: number } {
+  return { x: -dz * sign * 3.1 + dx * 1.4, z: dx * sign * 3.1 + dz * 1.4 };
+}
