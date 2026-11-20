@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FX_TIMELINE, SKILL } from '@dtl/content';
+import { FX_TIMELINE, SKILL, VARIANTS } from '@dtl/content';
 import { fxDrawCount, fxEventsFor, fxParticleCount, skillTiming, validateFxTimeline } from '@dtl/shared';
 import { paletteOf } from '../../render/vfx/palette';
 import { cancelDropsCast, scheduleEvents, variantFor } from './fxTimeline';
@@ -273,5 +273,26 @@ describe('Kiếm Khí Trảm VS-1 (chiêu mẫu phong cách mới)', () => {
     const snd = ev.filter((e) => e.type === 'soundAt').map((e) => e.t);
     expect(Math.min(...snd)).toBeLessThan(0);
     expect(snd.some((t) => t === 0)).toBe(true);
+  });
+});
+
+describe('VS-1: chiêu làm lại giữ biến thức (tín hiệu thị giác của lựa chọn)', () => {
+  // Thêm id vào đây khi một chiêu được làm lại theo ngôn ngữ VS-1; chiêu cũ chưa làm lại chưa bị ép.
+  const REDONE = [
+    'skl_phi_kiem_truy_hon',
+    'skl_hoanh_kiem_pha_mach',
+    'skl_thien_kiem_vu',
+    'skl_van_kiem_quy_tong',
+    'skl_thien_kiem_hoa_hinh',
+    'skl_thiet_quyen_chan_dia',
+  ];
+  it('mọi biến thức trong methods.json của chiêu đã làm lại có sự kiện riêng trong timeline', () => {
+    for (const id of REDONE) {
+      const tl = FX_TIMELINE.get(id)!;
+      for (const v of Object.values(VARIANTS[id] ?? {})) {
+        const fx = (v as { fx?: string }).fx;
+        if (fx) expect(Object.keys(tl.variants ?? {}), `${id}:${fx}`).toContain(fx);
+      }
+    }
   });
 });
