@@ -718,6 +718,7 @@ Bản thử, không thay nhân vật trong game (`?chr=v2`, docs/chr-v2). Thân 
 | `set_kinh_quang_kiem_y_v2_nam` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |
 | `set_kinh_quang_kiem_y_v2_nu` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |
 | `anim_ual_native` | Thư viện 37 clip UAL cho nhân vật v3, GIỮ tên xương UE5 Mannequin (phát trực tiếp, không chuyển clip): Quaternius Universal Animation Library 1 + 2 bản Standard, **CC0 1.0** (https://quaternius.com), gói bằng `tools/blender/anim_ual_native.py`; nguồn ở `../dtl-asset-source/anim/ual/SOURCE.md` | Quaternius | CC0-1.0 | 2026-11-18 | Không bắt buộc ghi công (vẫn ghi ở màn Ghi công) |
+| `anim_robe` | 15 clip (Idle_Loop, Spell_Simple_Idle_Loop, Sitting_Idle_Loop, Sword_Idle, Walk_Loop, Jog_Fwd_Loop, Sprint_Loop, Jump_Loop, Sword_Attack, Sword_Regular_A/B/C, Roll, Hit_Chest, Hit_Knockback) cho áo bào rộng, biên độ kẹp từ UAL 1 + 2 bản Standard (Quaternius, **CC0 1.0**) bằng `tools/blender/anim_robe.py`, giữ tên xương và tên clip | Quaternius | CC0-1.0 | 2026-11-20 | Không bắt buộc ghi công |
 | `chr_v3_lac_kiem_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Lạc Kiếm Môn Phục v3 (nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-18 | xem meta.json |
 | `chr_v3_lac_kiem_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Lạc Kiếm Môn Phục v3 (nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-18 | xem meta.json |
 | `chr_v3b_lac_kiem_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Lạc Kiếm Môn Phục v3b, vạt xẻ hai bên đối xứng (nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-18 | xem meta.json |
@@ -737,6 +738,12 @@ Bản thử, không thay nhân vật trong game (`?chr=v2`, docs/chr-v2). Thân 
 | `chr_v3_de_tu_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Đồ Đệ Tử (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-18 | xem meta.json |
 | `chr_v3_huyen_giap_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Huyền Giáp Hộ Pháp (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-18 | xem meta.json |
 | `chr_v3_huyen_giap_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Huyền Giáp Hộ Pháp (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-18 | xem meta.json |
+| `chr_v3_kinh_quang_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Kính Quang Kiếm Y (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
+| `chr_v3_kinh_quang_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Kính Quang Kiếm Y (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
+| `chr_v3_liet_mach_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Liệt Mạch Kiếm Y (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
+| `chr_v3_liet_mach_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Liệt Mạch Kiếm Y (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
+| `chr_v3_tinh_khuyet_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Tinh Khuyết Kiếm Bào (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
+| `chr_v3_tinh_khuyet_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Tinh Khuyết Kiếm Bào (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-19 | xem meta.json |
 
 
 ## VFX viết lại bằng TSL từ gói bên ngoài (2026-11-18)

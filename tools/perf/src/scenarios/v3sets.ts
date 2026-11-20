@@ -15,6 +15,9 @@ const SETS: Record<string, { gm: string; label: string }> = {
   de_tu: { gm: 'set off', label: 'Đồ Đệ Tử' },
   huyen_giap: { gm: 'set set_huyen_giap', label: 'Huyền Giáp' },
   dan_tam: { gm: 'set set_dan_tam', label: 'Đan Tâm' },
+  kinh_quang: { gm: 'set set_kinh_quang', label: 'Kính Quang' },
+  liet_mach: { gm: 'set set_liet_mach', label: 'Liệt Mạch' },
+  tinh_khuyet: { gm: 'set set_tinh_khuyet', label: 'Tinh Khuyết' },
 };
 
 export default {
