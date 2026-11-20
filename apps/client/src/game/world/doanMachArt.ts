@@ -1,3 +1,4 @@
+import { DoanMachWall } from './doanMachWall';
 import * as THREE from 'three/webgpu';
 import { LEVELS, NPCS } from '@dtl/content';
 import { bridgeDeckY, type BridgeDef } from '@dtl/shared';
@@ -514,6 +515,9 @@ export class DoanMachArt {
 
   constructor() {
     this.group.name = 'doanMachArt';
+    const wall = new DoanMachWall(heightAt);
+    this.group.add(wall.group);
+    this.disposables.push(wall);
     const rand = rng(SEED + 99);
     const dummy = new THREE.Object3D();
 
