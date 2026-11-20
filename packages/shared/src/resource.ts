@@ -69,6 +69,14 @@ export function resNow(def: ResourceDef, v: number, gainAtMs: number, nowMs: num
   return Math.max(0, cur - over * def.decay.perSec);
 }
 
+/**
+ * Mốc `gainAtMs` phải ghi lại sau khi XẢ (không phải tích) để còn `left` điểm lúc `nowMs`: phần đã rụng tới giờ không bị
+ * trừ lần nữa, và việc xả không làm mới thời gian giữ (đang rụng thì rụng tiếp ngay từ `left`).
+ */
+export function resSpendAt(def: ResourceDef, gainAtMs: number, nowMs: number): number {
+  return Math.max(gainAtMs, nowMs - def.decay.after * 1000);
+}
+
 /** Cộng `n` điểm (đã nhân `gainMul`), không quá trần. `cur` là lượng đang có lúc cộng (đã tính rụng). */
 export function resAdd(def: ResourceDef, cur: number, n: number, mods?: ResourceMods): number {
   if (!(n > 0) || !Number.isFinite(n)) return Math.max(0, cur);

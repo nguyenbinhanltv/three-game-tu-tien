@@ -116,6 +116,7 @@ import { checkLevel } from './levelcheck';
 import { CREDITS, CREDIT_KINDS, CREDIT_LICENSE_URL } from './index';
 
 import { at } from '@dtl/shared';
+import { checkLoreTerms, scanBannedDir } from './lore';
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
 
@@ -1785,6 +1786,11 @@ console.log(
       err(`asset ${id} (${m.spdx ?? 'external'}) chưa có mục ghi công trong packages/content/data/credits.json`);
   }
 }
+
+// TN-0: ranh giới Tiên Nghịch (docs/handbook/lore-boundary.md). Các bộ thuật ngữ mượn đủ số lượng; không file nào trong
+// data/ (dữ liệu game, i18n, level, fx…) chứa tên cấm: nhân vật, nơi khởi đầu, tông môn, pháp bảo trung tâm, tên truyện.
+for (const e of checkLoreTerms(GLOSSARY)) err(e);
+for (const e of scanBannedDir(fileURLToPath(new URL('../data/', import.meta.url)))) err(e);
 
 if (errors.length) {
   console.error(`\n${errors.length} lỗi nội dung:`);

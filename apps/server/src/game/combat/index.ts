@@ -20,6 +20,7 @@ import {
   resMax,
   resNow,
   resSpend,
+  resSpendAt,
   type FxMsg,
   AIRBORNE_HEIGHT,
   elemDamageMul,
@@ -487,6 +488,8 @@ export class CombatSystem {
     const sp = resSpend(def, this.liveRes(p), skill.res, dealsDamage(skill) && skill.cd > 0);
     if (sp.spent <= 0) return { mul: 1, spent: 0 };
     p.mth.res = sp.left;
+    // `sp.left` là lượng còn lại LÚC NÀY (đã trừ phần rụng): dời mốc để lần đọc sau không trừ phần rụng đó lần nữa.
+    p.mth.resAt = resSpendAt(def, p.mth.resAt, this.c.now);
     p.mth.dirty = true;
     return { mul: sp.mul, spent: sp.spent };
   }
