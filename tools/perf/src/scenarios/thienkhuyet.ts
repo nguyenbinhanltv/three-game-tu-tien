@@ -26,6 +26,10 @@ export const VIEWS: View[] = [
   { name: 'tuong2', eye: [880, 90, 600], at: [830, 50, 490], fov: 62 },
   { name: 'tuongxa', eye: [1010, 125, 740], at: [735, 85, 490], fov: 60 },
   { name: 'tuonggan', eye: [905, 108, 625], at: [735, 85, 490], fov: 60 },
+  // Đầu tượng nằm ở ~(986, 470): ba góc nhìn từ quảng trường ở 110 / 150 / 200 m (MAP-DEBT 1: mặt phải đọc rõ).
+  { name: 'mat110', eye: [1060, 90, 388], at: [986, 96, 470], fov: 50 },
+  { name: 'mat150', eye: [1044, 92, 340], at: [986, 96, 470], fov: 50 },
+  { name: 'mat200', eye: [1090, 96, 300], at: [986, 96, 470], fov: 50 },
   { name: 'tuong', eye: [1010, 120, 640], at: [830, 55, 490], fov: 64 },
   { name: 'cung', eye: [1180, 130, 620], at: [1520, 215, 600], fov: 58 },
   { name: 'trencao', eye: [1300, 280, 900], at: [1040, 90, 380], fov: 56 },
