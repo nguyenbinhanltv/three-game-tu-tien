@@ -1102,11 +1102,11 @@
       "id": "arch_thien_khuyet",
       "class": "arch",
       "source": "assets/build/raw/arch_thien_khuyet.glb",
-      "file": "arch_thien_khuyet.fc2f870f64.glb",
-      "bytes": 13113148,
-      "rawBytes": 26534112,
-      "triangles": 237559,
-      "rawTriangles": 237559,
+      "file": "arch_thien_khuyet.5c09919942.glb",
+      "bytes": 14625608,
+      "rawBytes": 28604492,
+      "triangles": 256470,
+      "rawTriangles": 256470,
       "lod0Cap": 600000,
       "skinned": false,
       "quantized": true,
@@ -1239,26 +1239,53 @@
           "slots": [
             "metallicRoughnessTexture"
           ]
+        },
+        {
+          "name": "metal_plate_nor_gl_2k",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "arch_sect_steel",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "metal_plate_Rough_2k",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 237559
+          "triangles": 256470
         }
       ],
       "dims": {
         "raw": {
-          "width": 895.5503,
-          "height": 326.0038,
+          "width": 932.7038,
+          "height": 327.7796,
           "depth": 926.1588,
-          "minY": -1.4038
+          "minY": -3.1796
         },
         "build": {
-          "width": 895.5196,
-          "height": 326.0269,
+          "width": 932.696,
+          "height": 327.8033,
           "depth": 926.1588,
-          "minY": -1.4045
+          "minY": -3.1809
         }
       }
     },
