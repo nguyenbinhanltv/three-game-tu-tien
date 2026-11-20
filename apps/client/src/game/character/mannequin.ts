@@ -43,6 +43,7 @@ import { FLAGS } from '../../base/flags';
 import { logger } from '../../base/log';
 
 const modelsLog = logger('models');
+const thienYLog = logger('thienY');
 
 /** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
 export const CHR_V3 = FLAGS.chr === 'v3';
@@ -512,7 +513,7 @@ export class MannequinCharacter implements CharacterView {
         this.cloth = new ClothRig(this.rig, this.root, tpl.height, oldCloth, { map });
         this.lods[0] = (this.lods[0] ?? []).filter((m) => !oldCloth.includes(m));
       } catch (e) {
-        console.warn('thienY: bỏ qua vải mô phỏng:', e instanceof Error ? e.message : e);
+        thienYLog.warn('bỏ qua vải mô phỏng:', e instanceof Error ? e.message : e);
       }
     }
     this.applyLod(0);

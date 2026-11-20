@@ -138,9 +138,7 @@ export class ClothRig {
       });
       const geo = new THREE.BufferGeometry();
       const pa = new THREE.BufferAttribute(pos, 3);
-      pa.setUsage(THREE.DynamicDrawUsage);
       const na = new THREE.BufferAttribute(new Float32Array(nv * 3), 3);
-      na.setUsage(THREE.DynamicDrawUsage);
       geo.setAttribute('position', pa);
       geo.setAttribute('normal', na);
       geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
