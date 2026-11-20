@@ -29,6 +29,9 @@ function point(name: string, defR: number): { x: number; z: number; r: number } 
 
 // --set <id bộ> (hoặc BOT_SET): lúc vào game /gm set <bộ> để đo client với đám đông mặc bộ trang bị (áo mặc thật).
 const SET = arg('set', process.env.BOT_SET ?? '');
+// --wardrobe: bot nhận một đạo bào rồi đổi dáng/nhuộm trong Tủ ngoại trang định kỳ (đo đường StateView với `dye3`, 0 dòng refId).
+const WARDROBE = process.argv.includes('--wardrobe');
+const WARDROBE_DYES = ['attire_sect', 'attire_ivory', 'wood_roof', 'wood_cinnabar', 'attire_rogue', 'attire_ink'];
 const COUNT = Number(arg('count', '10'));
 const DURATION = Number(arg('duration', '60'));
 const URL = arg('url', defaultServerWs());
@@ -175,6 +178,21 @@ class Bot {
     if (SET) {
       setTimeout(() => this.chat(`/gm set ${SET}`), at);
       at += 1000;
+    }
+    if (WARDROBE) {
+      setTimeout(() => this.chat('/gm give itm_bo_y 1'), at);
+      at += 1000;
+      let n = 0;
+      setInterval(() => {
+        if (!this.sid) return;
+        n++;
+        const r = `bw${this.name}${n}${Date.now() % 100000}`;
+        if (n % 3 === 0) this.room.send(C.LOOK_SET, { slot: 'robe', id: n % 2 ? 'itm_bo_y' : null, r });
+        else {
+          const d = (i: number) => WARDROBE_DYES[(n + i) % WARDROBE_DYES.length]!;
+          this.room.send(C.LOOK_DYE, { dye: [d(0), d(1), d(2)], r });
+        }
+      }, 1500).unref();
     }
     if (DUNGEON && roomName === ROOM_WORLD) {
       setTimeout(() => this.chat(`/gm tp ${PORTAL_POS.x} ${PORTAL_POS.z + 4}`), at);
