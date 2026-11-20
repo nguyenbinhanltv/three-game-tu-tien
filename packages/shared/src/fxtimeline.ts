@@ -168,7 +168,7 @@ export interface FxMeshEvent extends FxBase {
   /** Hiệu ứng của quái (V5): `dur` lấy bằng thời gian báo trước `delay` của vạch (vùng sắp nổ), `dur` trong JSON chỉ là dự phòng. */
   untilDelay?: boolean;
   /**
-   * Khối cao dựng quanh người (trụ đá, thuẫn): tự mờ dần tới ẩn khi nằm GIỮA camera và người ra chiêu (`fxCamFade`), để không che nhân vật
+   * Khối cao dựng quanh người (trụ đá, thuẫn): tự mờ dần tới ẩn khi nằm GIỮA camera và người ra chiêu, hoặc giữa camera và mục tiêu của đòn (khối trong 4 m quanh mục tiêu), để không che nhân vật
    * và mục tiêu đứng gần; phía bên kia vẫn hiện đủ. Chỉ là hình.
    */
   camFade?: boolean;
