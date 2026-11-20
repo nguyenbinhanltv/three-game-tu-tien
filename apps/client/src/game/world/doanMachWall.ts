@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { bumpMap, cameraPosition, float, mix, normalWorld, positionWorld, smoothstep, texture, vec2, vec3, vertexColor } from 'three/tsl';
+import { bumpMap, cameraPosition, dot, float, floor, fract, max, mix, normalWorld, positionWorld, sin, smoothstep, texture, vec2, vec3, vertexColor } from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
 import { tkFbm } from './thienKhuyetNoise';
 
@@ -76,19 +76,41 @@ function wallMaterial(): THREE.MeshStandardNodeMaterial {
   const c = tri(0.4, 'g');
   const up = smoothstep(0.6, 0.92, normalWorld.y.add(a.sub(0.5).mul(0.3))); // mặt ngửa của thềm: cát/đất vàng nhạt
   const d = tri(1.3, 'a'); // hạt đá mịn (sắc nét khi nhìn gần)
-  const rock = vertexColor().mul(float(0.66).add(a.mul(0.45)).add(b.mul(0.3)).add(c.mul(0.2)).add(d.sub(0.5).mul(0.35)));
-  const ledgeTop = mix(rock, vec3(0.55, 0.36, 0.2).mul(float(0.7).add(b.mul(0.5))), up.mul(0.55));
   const dist = wp.sub(cameraPosition).length();
+  // Chi tiết nhỏ cho nhìn gần (hết cảm giác "bánh xốp"): vỉa mỏng ~1 m và ~4 m uốn theo nhiễu (khe vỉa tối + lõm), khe nứt kiểu đường gờ của nhiễu (mảnh, sắc, ba hướng triplanar),
+  // vụn vỡ ở mép; AO tối ở khe và vỉa. Chỉ shader (không thêm hình học, không thêm draw call); khe/vỉa nhạt dần xa để khỏi lấp lánh.
+  const warp = a.sub(0.5).mul(5).add(b.sub(0.5).mul(1.1));
+  const seamThin = smoothstep(0.88, 1.0, sin(wp.y.add(warp).mul(6.6)).mul(0.5).add(0.5));
+  const seamThick = smoothstep(0.92, 1.0, sin(wp.y.add(warp.mul(2)).mul(1.55)).mul(0.5).add(0.5));
+  const ridge = (n: ReturnType<typeof tri>, w: number) => float(1).sub(smoothstep(0, w, n.sub(0.5).abs()));
+  const crack = max(ridge(tri(0.085, 'a'), 0.03), ridge(tri(0.27, 'g'), 0.045).mul(0.85));
+  const chip = smoothstep(0.58, 0.8, tri(0.95, 'g')); // mảng vỡ nhỏ
+  // Khe nứt khối: hàng cao ~2,6 m (le theo vỉa), khối rộng ~4–9 m lệch hàng, khe uốn theo nhiễu và chỉ ~55% biên có khe (không đều như gạch); mỗi khối sáng/tối lệch chút
+  const along = wp.x.mul(wn.z).add(wp.z.mul(wn.x)).add(wp.x.mul(wn.y)).add(a.sub(0.5).mul(3));
+  const hy = wp.y.add(warp.mul(0.6)).div(2.6);
+  const row = floor(hy);
+  const hash2 = (p: ReturnType<typeof vec2>) => fract(sin(dot(p, vec2(12.9898, 78.233))).mul(43758.5453));
+  const bw = float(4).add(hash2(vec2(row, 3.1)).mul(5));
+  const ux = along.add(hash2(vec2(row, 7.7)).mul(40)).div(bw);
+  const cellX = floor(ux);
+  const jx = fract(ux).sub(0.5).abs().mul(-2).add(1); // 0 giữa khối → 1 sát khe
+  const jointOn = smoothstep(0.4, 0.5, hash2(vec2(cellX, row.add(11.3)))); // bỏ ~45% khe dọc
+  const joint = smoothstep(0.93, 0.99, jx).mul(jointOn);
+  const block = hash2(vec2(cellX, row)).sub(0.5);
+  const fade = float(1).sub(smoothstep(120, 700, dist).mul(0.7));
+  const ao = float(1).sub(seamThin.mul(0.2).add(seamThick.mul(0.3)).add(crack.mul(0.5)).add(joint.mul(0.55)).mul(fade)).max(0.28).mul(float(1).add(block.mul(0.18)));
+  const rock = vertexColor().mul(ao).mul(float(0.66).add(a.mul(0.45)).add(b.mul(0.3)).add(c.mul(0.2)).add(d.sub(0.5).mul(0.35)));
+  const ledgeTop = mix(rock, vec3(0.55, 0.36, 0.2).mul(float(0.7).add(b.mul(0.5))), up.mul(0.55));
   m.colorNode = mix(ledgeTop, vec3(0.5, 0.33, 0.28), smoothstep(350, 1800, dist).mul(0.3));
   m.roughnessNode = float(0.74).add(b.mul(0.26));
   // pháp tuyến đá sắc hơn (nhìn gần không còn như bánh nhiều lớp mềm): bump hai tỉ lệ theo toạ độ thế giới (mặt phẳng ngang theo hướng vách + dọc)
   const bu = vec2(wp.x.add(wp.z).mul(0.37), wp.y.mul(0.5));
-  m.normalNode = bumpMap(
-    texture(noise, bu)
-      .a.mul(0.65)
-      .add(texture(noise, bu.mul(3.1)).g.mul(0.35)),
-    float(2.4),
-  );
+  const height = texture(noise, bu)
+    .a.mul(0.5)
+    .add(texture(noise, bu.mul(3.1)).g.mul(0.3))
+    .add(d.mul(0.2))
+    .sub(seamThin.mul(0.5).add(seamThick.mul(0.75)).add(crack.mul(0.95)).add(joint.mul(1.1)).add(chip.mul(0.35)).mul(fade));
+  m.normalNode = bumpMap(height, float(4.2).mul(float(1).sub(smoothstep(80, 420, dist).mul(0.6))));
   m.emissiveNode = vertexColor().mul(0.05);
   return m;
 }
@@ -167,8 +189,8 @@ export class DoanMachWall {
           .copy(lo)
           .lerp(mid, 0.3 + band * 0.55)
           .lerp(hi, Math.min(0.45, t * 0.4) + (m === 2 ? 0.28 : 0));
-        tmp.lerp(dark, Math.min(0.85, crack * 0.7 + (m === 0 ? 0.35 : 0) + Math.max(0, (4 - off) * 0.08)));
-        tmp.multiplyScalar(0.8 + hash(lk * 13 + grp, 5) * 0.4);
+        tmp.lerp(dark, Math.min(0.85, crack * 0.25 + (m === 0 ? 0.35 : 0) + Math.max(0, (4 - off) * 0.08)));
+        tmp.multiplyScalar(0.9 + hash(lk * 13 + grp, 5) * 0.2); // khối sáng/tối do shader (khe khối), đỉnh chỉ lệch nhẹ: hết ô vuông mờ
         // đổi sắc theo tầng: xám nâu ↔ vàng đất; giảm bão hòa ~25%
         const hsl = { h: 0, s: 0, l: 0 };
         tmp.getHSL(hsl);
