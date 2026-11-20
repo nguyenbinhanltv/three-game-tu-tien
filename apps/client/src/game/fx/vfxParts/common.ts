@@ -24,8 +24,8 @@ export const _c = new THREE.Vector3();
 export const _q = new THREE.Quaternion();
 export const _up = new THREE.Vector3(0, 1, 0);
 export const UP = new THREE.Vector3(0, 1, 0);
-export const AX_X = new THREE.Vector3(1, 0, 0);
-export const AX_Z = new THREE.Vector3(0, 0, 1);
+const AX_X = new THREE.Vector3(1, 0, 0);
+const AX_Z = new THREE.Vector3(0, 0, 1);
 /** Tâm hình của lưới cung (SLASH_GEO) theo tọa độ lưới, để đặt dấu chém đúng giữa mục tiêu. */
 export const SLASH_CENTER = new THREE.Vector3(0, 0, -0.33);
 
@@ -64,7 +64,7 @@ export interface InkMark {
 }
 
 /** Bộ đệm tia sét (lưới + hình) giữ lại giữa các lần đánh: phát không cấp phát. */
-export interface Bolt {
+interface Bolt {
   geo: BoltGeometry;
   shape: BoltShape;
 }

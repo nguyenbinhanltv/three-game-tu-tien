@@ -22,7 +22,7 @@ import { methodOf } from './method';
 import type { PlayerEnt } from './entities';
 
 /** Tổ đội: sống ở cấp tiến trình (qua mọi room và bí cảnh), không lưu DB (khởi động lại server thì giải tán). */
-export class Party {
+class Party {
   members: number[] = [];
   leader = 0;
   loot: LootMode = 'turn';
@@ -43,7 +43,7 @@ interface Entry {
   room: object;
 }
 
-export class PartyManager {
+class PartyManager {
   private nextId = 1;
   private byChar = new Map<number, Party>();
   private reg = new Map<number, Entry>();

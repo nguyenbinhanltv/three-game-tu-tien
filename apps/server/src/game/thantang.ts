@@ -22,7 +22,7 @@ import {
 } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from './entities';
 
-export const ELEMS: readonly Element[] = ['kim', 'moc', 'tho', 'thuy', 'hoa'];
+const ELEMS: readonly Element[] = ['kim', 'moc', 'tho', 'thuy', 'hoa'];
 const KIND: Record<Element, HazardMsg['kind']> = { kim: 'lightning', moc: 'spirit', tho: 'spirit', thuy: 'frost', hoa: 'fire' };
 
 /** Hành khắc chế `e` (hành nào thắng `e`). */
@@ -60,7 +60,7 @@ export function gathered(pts: readonly { x: number; z: number }[], r: number): b
   return pts.every((p) => Math.hypot(p.x - cx, p.z - cz) <= r);
 }
 
-export interface ThanHost {
+interface ThanHost {
   now(): number;
   players(): Iterable<PlayerEnt>;
   monsters(): readonly MonEnt[];

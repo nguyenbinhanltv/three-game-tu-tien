@@ -20,7 +20,7 @@ import {
 import { t } from '@dtl/content';
 import type { PlayerEnt } from './entities';
 
-export interface TeleHost {
+interface TeleHost {
   now(): number;
   /** Chỉ bản đồ thế giới có trận (bí cảnh thì không). */
   inWorld(): boolean;

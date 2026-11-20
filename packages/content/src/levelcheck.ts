@@ -25,11 +25,11 @@ import { campCoverage, COVER_BY_LEVEL, DEFAULT_COVER } from './coverage';
 import { GLOSSARY, hasString, ITEM, MONSTER, t } from './index';
 
 /** Level giữ bố cục M-1 (ngưỡng số quái tuyệt đối). Level khác dùng mật độ. */
-export const LEGACY_LEVELS: readonly string[] = ['van_lam', 'kiem_trung'];
+const LEGACY_LEVELS: readonly string[] = ['van_lam', 'kiem_trung'];
 /** Mật độ quái thường/km² vùng săn cho level mới (bản đồ mở rộng). */
-export const DENSITY_MIN = 100;
-export const DENSITY_MAX = 140;
-export const MUSIC_ZONES = ['sect', 'wild', 'forest', 'lake', 'dungeon'];
+const DENSITY_MIN = 100;
+const DENSITY_MAX = 140;
+const MUSIC_ZONES = ['sect', 'wild', 'forest', 'lake', 'dungeon'];
 
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 

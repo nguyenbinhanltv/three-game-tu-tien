@@ -51,7 +51,7 @@ import type { PlayerEnt } from './entities';
 
 import { at } from '@dtl/shared';
 /** Phần sim mà hệ nâng cấp cần mượn (sim.ts truyền vào). */
-export interface UpgradeHost {
+interface UpgradeHost {
   now(): number;
   isDead(p: PlayerEnt): boolean;
   nearNpc(p: PlayerEnt, npcId: string): boolean;
@@ -64,9 +64,9 @@ export interface UpgradeHost {
 }
 
 /** Món cần xử lý: ô đang mặc (`w`) hoặc ô túi (`i`). */
-export type ItemRef = { w: EquipSlot } | { i: number };
+type ItemRef = { w: EquipSlot } | { i: number };
 
-export function parseRef(m: { w?: unknown; i?: unknown } | null | undefined): ItemRef | null {
+function parseRef(m: { w?: unknown; i?: unknown } | null | undefined): ItemRef | null {
   if (!m) return null;
   if (m.w !== undefined) return isEquipSlot(m.w) ? { w: m.w } : null;
   if (Number.isInteger(m.i) && (m.i as number) >= 0 && (m.i as number) < INV_SIZE) return { i: m.i as number };

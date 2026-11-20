@@ -12,14 +12,14 @@ export interface DeckEnv {
   playable(src: string | string[] | undefined): string[];
 }
 
-export interface Channel {
+interface Channel {
   g: GainNode;
   el: HTMLAudioElement | null;
   node: MediaElementAudioSourceNode | null;
 }
 
 /** Mức gió tổng hợp (trước bus ambient); chỉnh theo âm môi trường file ở level -22 dB. */
-export const WIND_GAIN = 0.35;
+const WIND_GAIN = 0.35;
 
 export function ramp(g: GainNode, to: number, t: number, dur: number): void {
   g.gain.cancelScheduledValues(t);
@@ -31,7 +31,7 @@ export function ramp(g: GainNode, to: number, t: number, dur: number): void {
  * Gió tổng hợp: nhiễu 4 giây lặp → thông dải → thông thấp có tần số cắt và âm lượng thở theo 2 LFO chậm.
  * Chỉ dựng đồ thị khi cần và gỡ hẳn khi tắt để không tốn CPU lúc đã có file.
  */
-export class SynthWind {
+class SynthWind {
   private g: GainNode;
   private nodes: AudioScheduledSourceNode[] = [];
   on = false;

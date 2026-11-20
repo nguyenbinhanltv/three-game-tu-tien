@@ -83,7 +83,7 @@ export function onSwingEvent(eng: Game, sid: string, e: SkillEvent): void {
 }
 
 /** FX của nguyên anh và thuấn di (E3-K): chỉ hình. Trả true nếu đã xử lý. */
-export function onSoulFx(eng: Game, m: FxMsg, src: string): boolean {
+function onSoulFx(eng: Game, m: FxMsg, src: string): boolean {
   if (m.t !== 'soul_out' && m.t !== 'soul_in' && m.t !== 'soul_flee' && m.t !== 'blink') return false;
   eng.soulLog.push({ t: m.t, src, x: m.x, z: m.z, d: m.d });
   if (eng.soulLog.length > 40) eng.soulLog.shift();
@@ -103,7 +103,7 @@ export function onSoulFx(eng: Game, m: FxMsg, src: string): boolean {
   return true;
 }
 
-export function ensureSoulVis(eng: Game): SoulVis {
+function ensureSoulVis(eng: Game): SoulVis {
   eng.soulVis ??= new SoulVis(eng.scene, (sid, kind) => eng.ents?.makeSoul(sid, kind) ?? null);
   return eng.soulVis;
 }
@@ -719,7 +719,7 @@ export function shakeForHazard(eng: Game, m: HazardMsg): void {
   }
 }
 
-export function playFxSound(eng: Game, t: string, src: string, dst: string, x?: number, z?: number): void {
+function playFxSound(eng: Game, t: string, src: string, dst: string, x?: number, z?: number): void {
   // Sự kiện của chính mình có nhạc ngắn (sting) riêng: lên tầng và đột phá thay hẳn jingle SFX;
   // tử vong giữ tiếng ngã (SFX) và thêm sting. Chưa có file/tắt tiếng thì dùng SFX như cũ.
   const sting = src === eng.sid ? STINGS[t] : undefined;
@@ -769,7 +769,7 @@ export function playFxSound(eng: Game, t: string, src: string, dst: string, x?: 
 }
 
 /** Ghi nhận người chơi (mình/đồng đội) bị đánh và kẻ đánh, cho nhấp nháy trên minimap. */
-export function markHurt(eng: Game, m: DmgMsg): void {
+function markHurt(eng: Game, m: DmgMsg): void {
   if (m.heal || m.n <= 0 || !eng.view.players.has(m.dst)) return;
   const now = performance.now();
   if (eng.hurtAt.size > 64) for (const [k, at] of eng.hurtAt) if (now - at > 3000) eng.hurtAt.delete(k);
@@ -901,7 +901,7 @@ export function applyDmg(
 }
 
 /** Vệt mực mờ dưới chân nạn nhân đòn nặng (M4-14), tối đa một vệt mỗi 0,4 giây mỗi nạn nhân. */
-export function heavyInk(eng: Game, dst: string, src: string | undefined): void {
+function heavyInk(eng: Game, dst: string, src: string | undefined): void {
   const v = eng.vfx;
   const e = eng.ents;
   if (!v || !e) return;
@@ -975,7 +975,7 @@ export function monsterInk(eng: Game, m: MonVis): void {
  * Vẽ một món đồ rơi (M4-6) nảy ra từ quái/điểm hái `src`. `item` không có = vàng. Chỉ là lớp hình:
  * món đồ đã vào túi ở server. Trả false nếu không có vị trí để vẽ (nguồn đã mất khỏi trạng thái room).
  */
-export function showLoot(eng: Game, src: string, item: string | undefined, q?: number): boolean {
+function showLoot(eng: Game, src: string, item: string | undefined, q?: number): boolean {
   const v = eng.vfx;
   const e = eng.ents;
   if (!v || !e) return false;

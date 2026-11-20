@@ -12,7 +12,7 @@ import { blurAfterPointer, useNow } from './common';
 import { CLUSTER, clusterGeom, skillBox, type SlotPos } from './layout';
 
 /** Nhãn phím của ô thanh chiêu thứ i (khớp `Game.useSkill(i)`): 1–8, ô 9 thần thông = 0, ô 10 = `. */
-export function keyLabelOf(i: number): string {
+function keyLabelOf(i: number): string {
   return i === BAR_SIZE ? '0' : i === BAR_SIZE + 1 ? '`' : String(i + 1);
 }
 

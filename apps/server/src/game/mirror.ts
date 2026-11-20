@@ -45,7 +45,7 @@ export function wardMul(ward: number): number {
 }
 
 /** Nhịp tính sát thương tia (ms) và hồi riêng của lặp lại. */
-export const DISC_TICK_MS = 500;
+const DISC_TICK_MS = 500;
 /** Tầm (m) người chat còn được boss gương lặp lại câu nói; cùng tầm với `onSkill`. */
 export const ECHO_CHAT_RANGE = 60;
 /** Tầm (m) nhận thông báo tách bóng. */
@@ -53,7 +53,7 @@ export const SPLIT_NOTICE_RANGE = 120;
 /** Thời gian thần thức làm thể thật sáng (ms). */
 export const SENSE_MS = 6000;
 /** Chiêu của Tâm Ma Ảnh trong màn gương: cách nhau (giây), báo trước (giây), hệ số. */
-export const VEIL_CAST = { every: 4, warn: 1.2, pow: 0.5 };
+const VEIL_CAST = { every: 4, warn: 1.2, pow: 0.5 };
 
 export interface MirrorHost {
   now(): number;

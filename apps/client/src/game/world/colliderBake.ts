@@ -15,19 +15,19 @@ import { allProps, bhCtx } from './propScatter';
  * `pnpm colliders:bake`; test `colliderBake.test.ts` báo đỏ khi hàm rải đổi mà chưa bake lại.
  * Dạng: { ids: [asset id], p: [[idIndex, x, z, y, yaw, s, sy?, lean?]] } (làm tròn 0,01; yaw/s 0,001).
  */
-export interface InstFile {
+interface InstFile {
   ids: string[];
   p: number[][];
 }
 
 /** Level dùng chung danh sách prop với level khác (phải khớp `allPropsRaw`): Kiếm Trủng nằm trên bản đồ Vân Lam. */
-export const INST_ALIAS: Record<string, string> = {};
+const INST_ALIAS: Record<string, string> = {};
 
 const r2 = (v: number): number => Math.round(v * 100) / 100;
 const r3 = (v: number): number => Math.round(v * 1000) / 1000;
 
 /** Instance collider không phải prop GLB: cây/đồ dựng riêng của từng level (id `x_*` có hình ở `data/colliders/extra-lib.json`). */
-export interface ExtraInst {
+interface ExtraInst {
   id: string;
   x: number;
   z: number;
@@ -94,7 +94,7 @@ const EXTRA: Record<string, () => ExtraInst[]> = {
   van_hai: () => vanHaiTreeSpots(terrainOf('van_hai')).map((t) => ({ id: 'x_vh_trunk', x: t.x, z: t.z, y: t.y, yaw: t.yaw, s: t.s })),
 };
 
-export function extraInstances(level: string): ExtraInst[] {
+function extraInstances(level: string): ExtraInst[] {
   const fn = EXTRA[level];
   if (!fn) return [];
   const prev = levelId();

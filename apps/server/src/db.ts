@@ -164,7 +164,7 @@ export const DATA_VERSION = 6;
  * (ngọc bội → jade, giới chỉ → ring). Chỉ đổi chỗ, không tạo hay mất vật phẩm nên không ghi ledger.
  * Khóa lạ khác được đưa về túi. Chạy một lần (user_version), idempotent.
  */
-export function migrateEquipSlots(sqlite: Database.Database): void {
+function migrateEquipSlots(sqlite: Database.Database): void {
   const rows = sqlite.prepare('SELECT id, equip FROM characters').all() as { id: number; equip: string }[];
   const upd = sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?');
   const usedSlots = sqlite.prepare('SELECT slot FROM items WHERE char_id = ?');
@@ -224,7 +224,7 @@ export function rootForName(name: string): (typeof ROOT_IDS)[number] {
  * Phase 3-7: gán linh căn cho nhân vật chưa có và đặt bình cảnh đã vượt theo cấp hiện tại
  * (người đã qua tầng 5/10 không bị chặn lại). Không đụng vật phẩm/tiền nên không ghi ledger. Idempotent.
  */
-export function migrateRealm(sqlite: Database.Database): void {
+function migrateRealm(sqlite: Database.Database): void {
   const rows = sqlite.prepare('SELECT id, name, level, root FROM characters').all() as {
     id: number;
     name: string;
@@ -269,7 +269,7 @@ export function migrateHoaThanXp(sqlite: Database.Database): void {
   sqlite.prepare('UPDATE characters SET xp = MIN(xp, ?) WHERE level = ?').run(xpNeed(HOA_THAN_LEVEL), HOA_THAN_LEVEL);
 }
 
-export function migrateTrucCoXp(sqlite: Database.Database): void {
+function migrateTrucCoXp(sqlite: Database.Database): void {
   const rows = sqlite.prepare('SELECT id, level, xp, bk FROM characters WHERE level >= ? AND level <= 18').all(TRUC_CO_LEVEL) as {
     id: number;
     level: number;
@@ -320,4 +320,3 @@ export function openDb(file: string = config.dbFile) {
 const opened = openDb();
 export const sqlite = opened.sqlite;
 export const db = opened.db;
-export type Db = typeof db;

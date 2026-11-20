@@ -23,7 +23,7 @@ export interface TestFlags {
   trib?: boolean;
 }
 
-export type TestFlagsResult =
+type TestFlagsResult =
   | { kind: 'none' }
   | { kind: 'denied' }
   | { kind: 'bad_place'; id: string }

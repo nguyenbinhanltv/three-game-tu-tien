@@ -6,7 +6,7 @@ import { PF_DEAD, type WaveDef } from '@dtl/shared';
 import type { PlayerEnt } from './entities';
 
 import { at } from '@dtl/shared';
-export type SealsDef = NonNullable<WaveDef['seals']>;
+type SealsDef = NonNullable<WaveDef['seals']>;
 
 /** Cửa đóng gần nhất (theo chỗ đứng của cửa, không phải trận môn) trong `r` m; -1 nếu không có. */
 export function nearestClosed(def: SealsDef, open: readonly boolean[], x: number, z: number, r: number): number {
@@ -42,7 +42,7 @@ export function barrierPush(def: SealsDef, open: readonly boolean[], x: number, 
 /** Quá chừng này (ms) không mở thêm được cửa nào thì tự lỏng một cửa (chống kẹt khi hết bùa). */
 export const STALL_MS = 180_000;
 
-export interface SealHost {
+interface SealHost {
   now(): number;
   players(): Iterable<PlayerEnt>;
   isDead(p: PlayerEnt): boolean;

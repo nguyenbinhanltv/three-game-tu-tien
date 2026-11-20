@@ -87,7 +87,7 @@ export interface Ctx {
 }
 
 /** Cổng TCP trống (để server tạm không đụng server của worktree khác). */
-export function freePort(): Promise<number> {
+function freePort(): Promise<number> {
   return new Promise((res, rej) => {
     const srv = net.createServer();
     srv.once('error', rej);

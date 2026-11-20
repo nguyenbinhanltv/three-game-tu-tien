@@ -3,7 +3,7 @@
  * `debug` chỉ in khi chạy dev (`import.meta.env.DEV`); production chỉ giữ info/warn/error. Đổi lúc chạy bằng `setLogLevel`.
  * Dòng log giữ dạng `[module] nội dung` như trước để người đọc console và `tools/perf` (bắt `[gpu]`, `[load]`…) không đổi.
  */
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
+type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
 
 const ORDER: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40, silent: 99 };
 
@@ -18,7 +18,7 @@ export function logLevel(): LogLevel {
   return (Object.keys(ORDER) as LogLevel[]).find((k) => ORDER[k] === threshold) ?? 'info';
 }
 
-export interface Logger {
+interface Logger {
   debug(...args: unknown[]): void;
   info(...args: unknown[]): void;
   warn(...args: unknown[]): void;

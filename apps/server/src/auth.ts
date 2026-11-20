@@ -8,9 +8,9 @@ import { accounts, db, invites } from './db';
 
 export const ERR_NEED_NAME = 4010;
 export const ERR_NAME_TAKEN = 4011;
-export const ERR_NOT_INVITED = 4012;
-export const ERR_AUTH = 4013;
-export const ERR_SESSION = 4014;
+const ERR_NOT_INVITED = 4012;
+const ERR_AUTH = 4013;
+const ERR_SESSION = 4014;
 export const ERR_NO_TICKET = 4015;
 
 export interface AuthResult {

@@ -46,7 +46,7 @@ const CENTER = DG.center;
 export const KD_DOME = { r: 135, h: 80 };
 
 /** Cột đèn quanh sảnh: 22 vị trí r 84, chừa cửa nam (khớp `POSTS/POST_R` của kim_da_arch.py). Đèn ở cao ~6,6 m. */
-export function lanternPosts(): { x: number; z: number }[] {
+function lanternPosts(): { x: number; z: number }[] {
   const n = 22;
   const out: { x: number; z: number }[] = [];
   for (let i = 0; i < n; i++) {
@@ -67,7 +67,7 @@ const PONDS = [
 const PUZZLE = (DG.waves.find((w) => w.puzzle)?.puzzle?.points ?? []).map((p) => ({ x: p.x, z: p.z }));
 
 /** Vùng cấm: khu giữa đài chiến và lối vào phía nam. */
-export function kdKeepOut(x: number, z: number, minR: number): boolean {
+function kdKeepOut(x: number, z: number, minR: number): boolean {
   const dx = x - CENTER.x;
   const dz = z - CENTER.z;
   return Math.hypot(dx, dz) < minR || (Math.abs(dx) < 10 && dz > 0);
@@ -78,7 +78,7 @@ export function kdKeepOut(x: number, z: number, minR: number): boolean {
  * mây mỏng hổ phách trôi chậm, ngả sáng về phía trăng; sao li ti.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function goldenSky(dir: any): any {
+function goldenSky(dir: any): any {
   const nz = getCloudNoise();
   const h = clamp(dir.y, 0, 1);
   const base = mix(vec3(0.26, 0.15, 0.08), vec3(0.015, 0.012, 0.02), pow(h, 0.42));
@@ -134,7 +134,7 @@ const hash2 = (c: any): any => fract(sin(dot(c, vec2(12.9898, 78.233))).mul(4375
  * (chỉ hiện ngoài vùng đánh để không lẫn vạch báo; mờ dần vào trong r 46). Vòng trận chỉ còn hai vòng liền MẢNH vàng mềm (r 46, r 64) + hoa sen 16 cánh trong r 18; vũng sáng ấm
  * dưới cột đèn, bốn đèn đố, ngai. Đĩa r 112 bám `heightAt` + 0,08 m.
  */
-export function buildGildedFloor(): THREE.Mesh {
+function buildGildedFloor(): THREE.Mesh {
   const R = 112;
   const geo = new THREE.RingGeometry(0.01, R, 128, 48).rotateX(-Math.PI / 2);
   const p = geo.attributes.position as THREE.BufferAttribute;
@@ -264,7 +264,7 @@ export function buildGildedFloor(): THREE.Mesh {
 }
 
 /** Mặt nước hồ (đĩa phẳng cao hơn đất 0,2 m): tối, soi trời hổ phách + ánh đèn lồng theo Fresnel, gợn nhẹ. */
-export function buildPond(x: number, z: number, rad: number): THREE.Mesh {
+function buildPond(x: number, z: number, rad: number): THREE.Mesh {
   const geo = new THREE.CircleGeometry(rad, 40).rotateX(-Math.PI / 2);
   const p = geo.attributes.position as THREE.BufferAttribute;
   for (let i = 0; i < p.count; i++) p.setY(i, heightAt(x + p.getX(i), z + p.getZ(i)) + 0.2);

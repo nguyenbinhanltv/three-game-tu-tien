@@ -32,7 +32,7 @@ const BRAZIERS: readonly [number, number][] = [
 ];
 
 /** Vùng cấm đặt vết nứt ngẫu nhiên: quanh bia giữ và lối vào phía nam. */
-export function xkKeepOut(x: number, z: number, minR: number): boolean {
+function xkKeepOut(x: number, z: number, minR: number): boolean {
   const dx = x - CENTER.x;
   const dz = z - CENTER.z;
   return Math.hypot(dx, dz) < minR || (Math.abs(dx) < 9 && dz > 34);

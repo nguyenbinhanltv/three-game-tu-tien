@@ -5,11 +5,11 @@
 import type { WaveDef } from '@dtl/shared';
 
 export const TOUCH_R = 3.2;
-export const MAX_FAILS = 3;
+const MAX_FAILS = 3;
 
 type Puzzle = NonNullable<WaveDef['puzzle']>;
 
-export interface PuzzleHost {
+interface PuzzleHost {
   now(): number;
   players(): { sid: string; x: number; z: number; dead: boolean }[];
   /** Quái phạt xuất hiện (n con quanh tâm). */

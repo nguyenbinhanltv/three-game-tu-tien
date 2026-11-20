@@ -5,7 +5,7 @@ import { logger } from '../../base/log';
 const log = logger('minimap');
 const M = 256;
 /** Bán kính tan sương quanh người chơi (m) và khoảng cách tối thiểu giữa hai lần đóng dấu. */
-export const REVEAL_R = 90;
+const REVEAL_R = 90;
 const STAMP_GAP = 10;
 const SAVE_MS = 8000;
 

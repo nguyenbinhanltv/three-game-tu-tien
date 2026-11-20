@@ -5,7 +5,7 @@ import net from 'node:net';
 import type { Duplex } from 'node:stream';
 import { log } from './log';
 
-export interface RateLimitOptions {
+interface RateLimitOptions {
   /** Số request dồn tối đa (dung lượng xô). <= 0 thì tắt giới hạn. */
   burst: number;
   /** Tốc độ hồi token mỗi phút. */
@@ -175,7 +175,7 @@ export const MAX_MATCHMAKE_BODY = 16 * 1024;
 type RequestListener = (req: http.IncomingMessage, res: http.ServerResponse) => void;
 type UpgradeListener = (req: http.IncomingMessage, socket: Duplex, head: Buffer) => void;
 
-export interface HttpRateLimiter {
+interface HttpRateLimiter {
   matchmake: TokenBucket;
   upgrade: TokenBucket;
 }
