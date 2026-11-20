@@ -196,8 +196,9 @@ export function runFrame(eng: Game): void {
   const pscale = eng.presentationScale(performance.now());
   const vdt = dt * pscale;
   if (me) {
+    // Đối số đầu LUÔN là dt thật (nội suy vị trí người khác/quái, hover, hộ tống, animation của thực thể không phải mình); `vdt` chỉ cho animation nhân vật mình.
     eng.ents.update(
-      vdt,
+      dt,
       eng.view,
       { x: rp.x, y: rp.y, z: rp.z, yaw: eng.facing, speed: eng.speed, airborne: !eng.cur.grounded && !eng.cur.flying },
       eng.targetId,

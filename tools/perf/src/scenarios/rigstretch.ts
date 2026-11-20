@@ -15,22 +15,24 @@ const DEFAULT_CLIPS =
 export default {
   name: 'rigstretch',
   desc: 'Phân tích: độ giãn/nén cạnh tam giác của nhân vật v3 theo từng khung của từng clip + heatmap khung tệ nhất',
-  usage: '--out <dir> [--clips a,b,…] [--frames 12]',
+  usage: '--out <dir> [--clips a,b,…] [--frames 12] [--set set_tinh_khuyet] [--gender f|m]',
   async run(r) {
     const clips = list('--clips', DEFAULT_CLIPS);
     const frames = Number(list('--frames', '12')[0]);
+    const setId = list('--set', 'set_tinh_khuyet')[0]!;
+    const gender = list('--gender', 'f')[0]!;
     const { ctx, page } = await r.open({
       name: 'RS',
       viewport: [1280, 720],
       quality: 'high',
-      look: { g: 'f' },
+      look: { g: gender },
       query: { chr: 'v3' },
       hide: 'hud',
       warnings: /models|chr_v3|clip/,
     });
     await gm(page, 'level 12', 1500);
     await gm(page, 'god on', 1200);
-    await gm(page, 'set set_tinh_khuyet', 1500);
+    await gm(page, `set ${setId}`, 1500);
     await gm(page, 'killall', 800);
     await gm(page, 'tp 2048 2088', 1500);
     await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
