@@ -1,21 +1,6 @@
 import { useState, type CSSProperties } from 'react';
-import { hasString, t } from '@dtl/content';
-import manifest from './manifest.json';
-
-interface Entry {
-  key: string;
-  text: string;
-  file: string;
-  w: number;
-  h: number;
-}
-
-/** Ảnh thư pháp đã vẽ (tools/calli) theo i18n key. Trả undefined khi chưa có ảnh hoặc chữ i18n đã đổi sau lần vẽ (ảnh cũ). */
-export function calliOf(key: string): Entry | undefined {
-  if (!hasString(key)) return undefined;
-  const e = Object.values(manifest as Record<string, Entry>).find((x) => x.key === key);
-  return e && e.text === t(key) ? e : undefined;
-}
+import { t } from '@dtl/content';
+import { calliOf } from '../../base/calli';
 
 /**
  * Chữ cố định hiện bằng ảnh thư pháp; chữ thật giữ ở `aria-label` và là phương án lùi khi không có ảnh/ảnh lỗi.

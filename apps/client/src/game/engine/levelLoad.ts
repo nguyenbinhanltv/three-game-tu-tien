@@ -59,6 +59,7 @@ import { FLAGS } from '../../base/flags';
 import { LANTERN_LIGHT, QUALITY, isWebGPU, isWorldRoom } from './common';
 import type { Game } from '../engine';
 import { logger } from '../../base/log';
+import { addSectSigns } from '../world/sectSigns';
 
 const groundLog = logger('ground');
 const assetLog = logger('asset');
@@ -694,6 +695,7 @@ async function loadSectModel(eng: Game, shadows: boolean): Promise<void> {
       m.receiveShadow = shadows;
       m.frustumCulled = false;
     });
+    eng.sectAsset.mats.push(...addSectSigns(root)); // biển hiệu thư pháp (sau traverse: tấm biển không cần đổ bóng)
     eng.scene.add(root);
     if (eng.sectMesh) {
       const old = eng.sectMesh.geometry;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { t } from '@dtl/content';
-import manifest from './manifest.json';
-import { calliOf } from './Calli';
+import manifest from '../../base/calliManifest.json';
+import { calliOf } from '../../base/calli';
 
 describe('calliOf', () => {
   it('có ảnh cho cảnh giới và địa danh đã vẽ', () => {
