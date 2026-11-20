@@ -448,6 +448,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   if (levelAssets(id).doanMachArt) {
     eng.doanMachArt = new DoanMachArt();
     eng.scene.add(eng.doanMachArt.group);
+    void eng.doanMachArt.loadBridge(eng.renderer);
   }
   if (levelAssets(id).kiemTrungArt) {
     eng.kiemTrungArt = new KiemTrungArt({ reduced: q.heightFog === false });

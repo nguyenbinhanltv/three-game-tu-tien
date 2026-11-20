@@ -186,3 +186,31 @@ Chrome headless, Vân Lam, `pnpm shots lackiem --perf 1` (1080p, 6 góc cố đ�
 
 Số `textures` của renderer 105 (Cao) / 103 (Vừa); chưa chạy `bench:client` đầy đủ.
 
+
+## PERF: góc nặng nhất các bản đồ về dưới 300 draw call (2026-11-20, preset Cao, 1080p, `pnpm shots <map> --perf 1`)
+
+Đo lại các góc nặng nhất của 5 bản đồ. Chỉ Lạc Kiếm Tông `trencao` vượt trần (330 draw call); Vân Hải sát trần (287). Sau thay đổi:
+
+| Bản đồ · góc | draw call trước → sau | tam giác trước → sau |
+| --- | --- | --- |
+| Lạc Kiếm · trencao | 330 → **294** | 1,95M → **1,76M** |
+| Lạc Kiếm · cong | 249 → 224 | 1,77M → 1,57M |
+| Lạc Kiếm · san | 216 → 197 | 1,70M → 1,50M |
+| Vân Hải · chandao | 287 → 269 | 1,49M → 1,49M |
+| Vân Hải · tungdai | 277 → 259 | 1,46M → 1,46M |
+| Thiên Khuyết · phongxa | 237 → 217 | 1,28M → 1,27M |
+| Bắc Hoang · trencao | 227 → 213 | 0,81M → 0,81M |
+| Đoạn Mạch · machtinh | 167 (không đổi đáng kể) | 0,59M |
+
+**Nguồn draw call (đo bằng `pnpm shots lackiem --perf 1 --hide @props` v.v.)**: tổng 330 = ~159 prop (`PropLayer`), 44 mesh rừng thẻ (`cardForest`), 18 đảo trời + 23 pass bóng (kèm 0,56M tam giác), phần còn lại là địa hình, hậu kỳ. Prop PROP-1 mỗi món 3–6 vật liệu `arch_sect_*`, mỗi vật liệu × ô × mức LOD là một draw call; ở `trencao` ~90 draw call prop nằm cách camera 250–400 m (vài điểm ảnh).
+
+**Thay đổi**:
+1. `props.ts`: LOD 1 và 2 của prop (không phải cây) bỏ các mảnh có hộp bao nhỏ hơn 35% (LOD 1) / 50% (LOD 2) mảnh lớn nhất (đèn, nắp, vải nhỏ); theo **kích thước hộp bao**, không theo số tam giác (thẻ tán lá ít tam giác nhưng rộng nên giữ). LOD 0 không đổi. −25 draw call.
+2. `lacKiemSky.ts`: lưới đảo trời (đá, vật trang trí, tán lá, kiếm đài) chỉ đổ bóng khi người chơi cách một đảo < bán kính + 110 m (bản đồ bóng chỉ ±70 m quanh người chơi, mà pass bóng vẽ cả lưới gộp). −4 draw call, −0,2M tam giác.
+3. `cardForest.ts`: ô rừng thẻ 256 → 384 m: ít mesh hơn, số cây không đổi. −7 draw call.
+
+**Thử và bỏ**: tăng ô gom prop 256 → 512 m làm tăng tam giác (+0,2M) mà chỉ giảm 6 draw call (ô lớn kéo cả ô ở mức LOD cao); co tầm theo bán kính ô × 0,5 chỉ −10 và hiện/ẩn lệch ở rìa tầm.
+
+**Công cụ chẩn đoán** (kịch bản `lackiem`): `--draws 1` (mesh trong khung nhìn theo nhóm), `--tops 1` (mesh theo nhóm gốc của scene), `--props 1` / `--cells 1` / `--lodtri 1` (prop theo ô, khoảng cách camera, tam giác từng vật liệu), `--hide <tên|@props|@cardforest|@sky>`, `--noshadow <tên>`, `--shadowoff 1`.
+
+**Còn lại**: Lạc Kiếm `trencao` 294 vẫn sát trần (phần lớn là prop PROP-1 nhiều vật liệu): bước tiếp theo đúng nghĩa là gộp vật liệu `arch_sect_*` thành atlas một vật liệu hoặc dùng `BatchedMesh`; các bí cảnh DUN-1 (Phục Mạch 246–262, Kính Nguyệt 195–236 có phản chiếu) chưa đổi.

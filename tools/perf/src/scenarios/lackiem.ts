@@ -8,6 +8,7 @@ import { sleep } from '../lib/devserver';
 import { flag, list, num, opt } from '../lib/env';
 import { gm, hideUi, perfSample, skipCutscene, tp } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
+import { drawSources, topLevelCounts } from '../lib/drawsrc';
 import { settleMs, snap, writeJson } from '../lib/shot';
 
 interface View {
@@ -71,9 +72,48 @@ export default {
             },
             { s: [SECT.x, SECT.y, SECT.z], v },
           );
+          if (flag('--noshadow'))
+            await page.evaluate(
+              `(() => { const g = window.__game; const names = ${JSON.stringify(list('--noshadow', ''))}; g.scene.traverse((o) => { if (names.some((n) => o.name === n || o.name.startsWith(n))) o.castShadow = false; }); })()`,
+            );
+          if (flag('--shadowoff')) await page.evaluate('(() => { const g = window.__game; g.env.sun.castShadow = false; })()');
+          if (flag('--hide'))
+            await page.evaluate(
+              `(() => { const g = window.__game; const names = ${JSON.stringify(list('--hide', ''))}; g.scene.traverse((o) => { if (names.some((n) => o.name === n || o.name.startsWith(n))) o.visible = false; }); if (names.includes('@props')) g.props.group.visible = false; if (names.includes('@cardforest')) g.cardForest.group.visible = false; if (names.includes('@sky')) g.lacKiemSky.group.visible = false; if (names.includes('@mapvis')) g.scene.children.forEach((c) => { if (c.name === 'mapVis') c.visible = false; }); })()`,
+            );
           const stem = `${tag}-${viewport[1]}p-${mood}-${v.name}`;
           await snap(page, r.out, `${stem}.png`, { wait: settleMs() });
           if (flag('--perf') && viewport[1] === 1080) perf[stem] = await perfSample(page);
+          if (flag('--props')) {
+            const t = (await page.evaluate(
+              `(() => { const g = window.__game; const m = new Map(); g.props.group.traverse((o) => { if (!o.isMesh || !o.visible) return; const k = (o.name || o.parent?.name || '?') + '|' + (o.material && o.material.name || '') + '|' + (o.count ?? 1); m.set(k, (m.get(k) || 0) + 1); }); return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 40); })()`,
+            )) as [string, number][];
+            for (const [k, n] of t) console.log(`PROP ${String(n).padStart(3)} ${k}`);
+          }
+          if (flag('--cells')) {
+            const t = (await page.evaluate(
+              `(() => { const g = window.__game; const by = {}; let dc = 0; const cp = g.camera.position; const bins = { '<80': 0, '80-150': 0, '150-250': 0, '250-400': 0, '>400': 0 }; for (const c of g.props.cells) { if (c.level < 0 || !c.meshes) continue; const n = c.meshes[c.level].length; dc += n; const dd = Math.hypot(c.cx - cp.x, c.cz - cp.z); bins[dd < 80 ? '<80' : dd < 150 ? '80-150' : dd < 250 ? '150-250' : dd < 400 ? '250-400' : '>400'] += n; const k = c.id + ' L' + c.level; const e = by[k] || (by[k] = { cells: 0, meshes: 0, items: 0 }); e.cells++; e.meshes += n; e.items += c.items.length; } return { dc, bins, by: Object.entries(by).sort((a, b) => b[1].meshes - a[1].meshes).slice(0, 30) }; })()`,
+            )) as { dc: number; bins: Record<string, number>; by: [string, { cells: number; meshes: number; items: number }][] };
+            console.log(`CELLS propdc=${t.dc} bins=${JSON.stringify(t.bins)}`);
+            for (const [k, e] of t.by)
+              console.log(
+                `CELL ${String(e.meshes).padStart(3)} dc  ${String(e.cells).padStart(2)} ô  ${String(e.items).padStart(4)} vật  ${k}`,
+              );
+          }
+          if (flag('--lodtri')) {
+            const t = (await page.evaluate(
+              `(() => { const g = window.__game; const out = []; const seen = new Set(); for (const c of g.props.cells) { if (c.level < 0 || !c.meshes || seen.has(c.id + c.level)) continue; seen.add(c.id + c.level); out.push(c.id + ' L' + c.level + ': ' + c.meshes[c.level].map((m) => (m.material.name || '?').replace('arch_sect_', '') + '=' + Math.round((m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position.count) / 3)).join(' ')); } return out; })()`,
+            )) as string[];
+            for (const l of t) console.log('LODTRI ' + l);
+          }
+          if (flag('--tops'))
+            for (const t of await topLevelCounts(page)) console.log(`TOP ${String(t.meshes).padStart(4)} ${t.type} ${t.name}`);
+          if (flag('--draws') && viewport[1] === 1080) {
+            const d = await drawSources(page, 30);
+            console.log(`DRAWS ${stem} total=${d.total} shadow=${d.shadowTotal}`);
+            for (const g of d.groups)
+              console.log(`  ${String(g.dc).padStart(4)} dc ${String(g.tris).padStart(8)} tri sh${g.shadow} off${g.culledOff}  ${g.key}`);
+          }
         }
         await ctx.close();
       }
