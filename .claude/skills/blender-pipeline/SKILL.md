@@ -5,6 +5,8 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 
 # Pipeline Blender → glTF
 
+> Nhân vật v3 (Tripo → xương Mannequin, tách lưới, clip áo bào, đo rigstretch): xem skill `character-3d`, không lặp lại ở đây.
+
 > Hiện trạng (2026-11-15, sau Phase 2; mục cũ bên dưới đã cập nhật):
 > - **Có**: `tools/blender/run.mjs` (danh sách job → GLB thô `assets/build/raw/<id>.glb`, bỏ qua job khi GLB thô mới hơn script), `build_sect.py` (kiến trúc tông môn → `arch_sect`), `build_fixture_rig.py` (GLB có xương cho test), `find-blender.mjs` (dò Blender qua `BLENDER`, PATH, thư mục cài mặc định). `tools/asset-pipeline`: `optimize.ts`, `validate.ts`, `ktx.ts`, `config.ts`, test vitest. Client nạp theo manifest qua `AssetCache` (`apps/client/src/game/core/assets.ts`). Chi tiết lệnh và bố cục: `assets/README.md`.
 > - **Có từ M2-2**: `import_tripo.py` chuẩn hóa GLB Tripo (hướng theo xương đùi hoặc `yaw`, scale theo `size` trong meta, gốc ở đáy, áp transform, tên theo id, socket, hạ texture); `run.mjs` tự tạo job cho meta.json có khối `import`; `optimize.ts` hạ LOD0 về `budget.faceLimit` (chỉ asset có khối `import`) hoặc ngân sách lớp. Chi tiết: `assets/README.md` mục Nhập Tripo.
