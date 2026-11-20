@@ -2,6 +2,10 @@
 
 > Đường dẫn nguồn dạng `2d/icons/…` và `icons/…` trong các bảng icon bên dưới là bản cũ, nay nằm ở `../dtl-asset-source-luu-tru/` (ASSET-CLEAN 2026-11-19); atlas hiện tại lấy từ `2d/icon/v2/png256/`. Các đường dẫn khác tính từ gốc cây nguồn mới (`3d/`, `2d/`, `audio/`…).
 
+## Chữ thư pháp Giao Long (2026-11-20)
+
+Chữ thư pháp vẽ từ font Fz Thu Phap Giao Long - Thái Hiếu (Fontzin.com). Font nằm ngoài repo (`D:/METAGRIT/fonts-private/`, biến môi trường `CALLI_FONT`), **không commit, không đóng gói vào game**; chỉ commit ảnh đã vẽ bằng `tools/calli/build.mjs` ở `apps/client/public/assets/calli/` (chỉ cho nhóm chuỗi cố định: logo, tên cảnh giới/địa danh/chiêu, biển hiệu, tên bộ trang phục, tiêu đề chương). Ghi công ở màn Ghi công (`credits.json`, mục `fz_thu_phap_giao_long`). Không dùng font Fz Harukaze.
+
 ## Ý tưởng quy trình từ blender-skills (2026-11-20)
 
 Các trang `.claude/skills/blender-pipeline/references/{reference-match,qa-checklist,lod-collision}.md`, `.claude/skills/procedural-assets/references/modeling-tips.md` và `.claude/skills/character-3d/references/weights-proportions.md` tham khảo ý tưởng, kỹ thuật và checklist từ các skill `reference-image-match`, `sculpting`, `character-artist`, `hard-surface`, `rigging`, `cloth-sim`, `qa-review`, `asset-optimization`, `lod-pipeline`, `collision-proxy`, `procedural-modeling` của repo https://github.com/arjun988/blender-skills (giấy phép MIT, © arjun988). Đã viết lại bằng lời dự án và đổi theo quy ước riêng; không chép nguyên văn, không cài bộ skill ngoài. Không phải asset, chỉ ghi nguồn.

@@ -36,6 +36,7 @@ tools/vfx          gen-fx-*.py, recipes_*.py: sinh timeline VFX (data/fx/*.json)
 tools/ui           contrast.mjs: kiểm WCAG AA token chữ
 tools/docs         check.mjs (media docs), check-paths.mjs (đường dẫn trong CLAUDE.md/handbook/skill)
 tools/codex-assets script sinh concept/tranh (một lần)
+tools/calli        build.mjs + groups.json: vẽ chữ thư pháp Giao Long (font ngoài repo, `CALLI_FONT`) thành PNG trong suốt ở `apps/client/public/assets/calli/` (`pnpm calli[:check]`; KHÔNG commit font)
 tools/icons        build.mjs + subjects.json: icon vật phẩm/chiêu (`pnpm icons:build|check`)
 tools/palette      gen_palette.mjs: bảng màu từ `assets/palette.json` (`pnpm palette[:check]`)
 tools/fonts        subset.py: cắt font
