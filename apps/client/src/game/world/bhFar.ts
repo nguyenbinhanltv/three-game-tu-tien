@@ -1,5 +1,20 @@
 import * as THREE from 'three/webgpu';
-import { float, length, mix, positionWorld, smoothstep, texture, time, uniform, vec2, vec3, vertexColor } from 'three/tsl';
+import {
+  cameraPosition,
+  float,
+  length,
+  mix,
+  normalize,
+  positionWorld,
+  smoothstep,
+  texture,
+  time,
+  uniform,
+  uv,
+  vec2,
+  vec3,
+  vertexColor,
+} from 'three/tsl';
 import { hash01 } from '@dtl/shared';
 import { heightAt, levelTerrain } from '../../base/levelCtx';
 import { getCloudNoise } from '../../render/noiseTex';
@@ -52,6 +67,7 @@ export class BhFar {
     const T = levelTerrain();
     this.buildPeaks(T.playBounds, T.def.size);
     this.buildMist(T.playBounds);
+    this.buildWallHaze(T.playBounds);
   }
 
   private buildPeaks(bounds: { x0: number; z0: number; x1: number; z1: number }, size: number): void {
@@ -141,7 +157,13 @@ export class BhFar {
       const dens = smoothstep(0.42, 0.78, a.mul(0.7).add(b.mul(0.4)));
       const rr = length(w.sub(vec2(cx, cz)));
       mat.colorNode = mix(this.mistTint, vec3(1, 1, 1), b.mul(0.3));
-      mat.opacityNode = dens.mul(smoothstep(half * 0.82, half * 1.0, rr)).mul(float(op));
+      // nhìn ngang (sát mặt phẳng vành) thì mờ hẳn: vành phẳng không còn thành vạch kẻ ngang; chỉ lộ khi nhìn xiên từ trên cao
+      const view = normalize(positionWorld.sub(cameraPosition));
+      const edgeOn = smoothstep(0.04, 0.28, view.y.abs());
+      mat.opacityNode = dens
+        .mul(smoothstep(half * 0.82, half * 1.0, rr))
+        .mul(edgeOn)
+        .mul(float(op * 0.8));
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.set(cx, heightAt(cx, cz) + dy, cz);
       mesh.renderOrder = 3;
@@ -150,6 +172,32 @@ export class BhFar {
       this.group.add(mesh);
       this.disposables.push(geo, mat);
     }
+  }
+
+  /** Sương chân vách: một ống đứng bao quanh vùng chơi, đặc nhất ở chân rồi tan dần lên cao (gradient mềm theo độ cao, không có mép ngang), nhiễu cuộn chậm. */
+  private buildWallHaze(bounds: { x0: number; z0: number; x1: number; z1: number }): void {
+    const cx = (bounds.x0 + bounds.x1) / 2;
+    const cz = (bounds.z0 + bounds.z1) / 2;
+    const half = (bounds.x1 - bounds.x0) / 2;
+    const H = 150;
+    const geo = new THREE.CylinderGeometry(half * 1.02, half * 1.02, H, 64, 1, true);
+    const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, fog: false, side: THREE.BackSide });
+    const nzt = getCloudNoise();
+    const ang = uv().x.mul(6.0);
+    const drift = time.mul(0.004);
+    const n = texture(nzt, vec2(ang.add(drift), uv().y.mul(1.4)))
+      .g.mul(0.6)
+      .add(texture(nzt, vec2(ang.mul(2.3).sub(drift), uv().y.mul(3.1))).b.mul(0.4));
+    const grad = float(1).sub(uv().y).pow(1.6); // uv.y 0 = đáy ống? CylinderGeometry: uv.y = 1 ở trên → 1 - y = đặc ở chân
+    mat.colorNode = mix(this.mistTint, vec3(1, 1, 1), n.mul(0.25));
+    mat.opacityNode = grad.mul(smoothstep(0.25, 0.75, n)).mul(0.5);
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(cx, heightAt(cx, cz) + H * 0.28, cz);
+    mesh.renderOrder = 3;
+    mesh.frustumCulled = false;
+    mesh.name = 'bhfar-wallhaze';
+    this.group.add(mesh);
+    this.disposables.push(geo, mat);
   }
 
   update(): void {

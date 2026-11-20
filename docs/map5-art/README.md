@@ -46,3 +46,10 @@ Tái thiết kế mỹ thuật Bắc Hoang Tẫn Nguyên (level `bac_hoang`, ch�
 ### Polish — Bắc Hoang vòng 3 (review): chân núi xa ngoài vùng chơi
 
 - `peakCandidate` trước chỉ loại tâm đỉnh trong `playBounds` ± 40 m, trong khi chân nón vươn tới ~110 m (r 36–86 × jitter 1,28 × giãn z 1,2): đỉnh ở rìa lấn vào vùng chơi mà không có va chạm. Nay yêu cầu khoảng cách từ tâm tới khung ≥ `MARGIN + r × FOOT_K` (1,65, vòng tròn ngoại tiếp chân nón); test `bhFar.test.ts` kiểm mọi đỉnh được chọn có toàn bộ chân ngoài `playBounds`. Hệ quả: dãy đỉnh giữa thưa hơn (đỉnh tập trung ở góc/ngoài cùng), nền xa còn mảng phẳng giữa các đỉnh.
+
+### Polish — Bắc Hoang vòng 4 (duyệt ảnh): sương mềm theo độ cao, đĩa sáng nhỏ hơn
+
+- **Sương dải không còn thành vạch kẻ**: ba vành sương phẳng mờ hẳn khi nhìn ngang (`edgeOn` theo góc nhìn so với mặt phẳng vành) và giảm 20% độ đục; thêm **sương chân vách** (`buildWallHaze`): ống đứng bao vùng chơi, đặc ở chân rồi tan dần lên cao (gradient độ cao + nhiễu cuộn chậm), không có mép ngang.
+- **Vùng sáng đèn trại**: quầng 4,2 → 2,8 m, cường độ đèn điểm ban đêm 1,4 → 0,9 (`bhr_night` 1,5 → 1,0); vùng sáng nhỏ và nhạt hơn nhưng vẫn là đĩa tròn trên tuyết (cần ánh lửa/khói thật).
+- **Ảnh**: đủ ngày + đêm, `tragioi` + `tram`, 720p + 1080p ở `polish-bac-hoang/sau`.
+- **Còn lại**: vách giữa đêm còn mảng xanh chàm ít chi tiết (màu địa hình, chưa có lớp đá/tuyết ở vách); ban ngày vách và núi xa rất sáng gần trắng.

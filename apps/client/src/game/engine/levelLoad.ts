@@ -337,7 +337,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
           levelAssets(id).palace === 'gilt' ? 0xd8a64a : levelAssets(id).kinhNguyetArt ? 0xffc47a : 0xb8cdee,
         )
       : id === 'bac_hoang'
-        ? createLanternHalos(pts, 4.2, 0xffb868)
+        ? createLanternHalos(pts, 2.8, 0xffb868)
         : createLanternHalos(pts);
     eng.scene.add(halos);
     eng.levelObjs.push(halos);
