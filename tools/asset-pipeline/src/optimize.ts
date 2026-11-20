@@ -350,7 +350,7 @@ async function addLod(doc: Document, level: number, target: number, protect: rea
       created.nodes.push(lodNode);
     }
     got = countTriangles(doc, level);
-    if (got <= target * 1.1) break;
+    if (got <= target * 1.04) break; // dưới ngưỡng validate (1,05× trần)
   }
   return got;
 }

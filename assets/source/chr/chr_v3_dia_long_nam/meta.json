@@ -1,0 +1,21 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "chr_v3_dia_long_nam",
+  "type": "chr",
+  "budgetClass": "player_v3_hi",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 110000,
+    "texture": 4096
+  },
+  "procedural": {
+    "script": "tools/blender/chr_v3.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Tripo web app (image→3D, người dùng dựng) từ concept Codex Địa Long Hộ Giáp (v3, nam); đặt lên xương UE5 Mannequin bằng tools/blender/chr_v3.py",
+    "owner": "dự án",
+    "date": "2026-11-20"
+  }
+}

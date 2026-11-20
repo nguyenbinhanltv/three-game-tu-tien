@@ -1,0 +1,97 @@
+{
+  "$comment": "Vạn Kinh Thiết Giáp v3 (Hộ pháp): C2 từ mẫu kinh_quang + vạt/robe mẫu giáp (NV3-ROLL đợt 2).",
+  "set": "van_kinh",
+  "name": "Vạn Kinh Thiết Giáp",
+  "raw": "3d/nhan-vat/set_van_kinh_thiet_giap/tripo/raw_v3_van_kinh_{g}.glb",
+  "height": {
+    "nam": 1.84,
+    "nu": 1.7
+  },
+  "bindA": [
+    "nam",
+    "nu"
+  ],
+  "splitCloth": true,
+  "keepOriginal": true,
+  "c2": {
+    "seamTie": 0.3,
+    "veilStrips": 3,
+    "veilLinks": 2,
+    "skirtThighK": 0.5,
+    "nam": {
+      "handKeep": 0.07,
+      "smooth": 50,
+      "veilChain": 0.75,
+      "veilArmR": 0.05
+    },
+    "veilGeo": true,
+    "veilX": 0.15,
+    "veilArmR": 0.05,
+    "smooth": 50,
+    "veilChain": 0.75
+  },
+  "groups": [
+    {
+      "name": "skirt",
+      "parent": "pelvis",
+      "axis": "angle",
+      "zMin": 0.32,
+      "zMax": 0.5,
+      "minRadius": 0.09,
+      "count": 8,
+      "links": 2,
+      "share": 0.6,
+      "domRegion": [
+        "torso",
+        "leg"
+      ]
+    },
+    {
+      "name": "hair",
+      "parent": "spine_03",
+      "axis": "x",
+      "zMin": 0.45,
+      "zMax": 0.86,
+      "yMinRel": 0.04,
+      "xAbsMax": 0.1,
+      "count": 3,
+      "links": 3,
+      "tex": "hair",
+      "share": 0.5
+    }
+  ],
+  "robe": {
+    "zMin": 0.3,
+    "zMax": 0.52,
+    "minRadius": 0.09,
+    "xInner": 0.04,
+    "xOuter": 0.1,
+    "outerShare": 0.5,
+    "front": 0.9,
+    "back": 0.45,
+    "pow": 0.7,
+    "calf": 0.4
+  },
+  "limbs": [],
+  "sleeve": {
+    "hipR": 0.09,
+    "armR": 0.05,
+    "margin": 0.0,
+    "falloff": 0.14,
+    "hipShare": 1.0
+  },
+  "anatomy": {
+    "shoulderDz": -0.13,
+    "ankleX": 0.1,
+    "spine3Z": 1.23,
+    "smoothIters": 40,
+    "smoothAlpha": 0.6,
+    "finalSmooth": 10,
+    "nam": {
+      "shoulderDz": -0.14,
+      "ankleX": 0.108,
+      "spine3Z": 1.33
+    },
+    "headR": 0.14
+  }
+}
