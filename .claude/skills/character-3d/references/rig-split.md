@@ -1,6 +1,6 @@
 # Rig bind A-pose + tách lưới C2: tham số theo bộ
 
-Tất cả cấu hình ở MỘT file `tools/blender/skins/v3sets/<bộ>.json` (mẫu `_template_ao_dai.json`, `_template_giap.json`, `_template_de_tu.json`; tên bắt đầu `_` bị bỏ qua). `run.mjs` (`v3SetEntries`) sinh job `chr_v3_<set>_<giới>` và truyền cờ: `--bind-a` (khi `bindA` bao gồm giới đó), `--keep-original`, `--split-cloth`, `--c2` (khi có khối `c2`). Mẫu đã chạy: file `tinh_khuyet.json` của Tinh Khuyết nữ.
+Tất cả cấu hình ở MỘT file `tools/blender/skins/v3sets/<bộ>.json` (mẫu `_template_ao_dai.json`, `_template_giap.json`, `_template_de_tu.json`; tên bắt đầu `_` bị bỏ qua). `run.mjs` (`v3SetEntries`) sinh job `chr_v3_<set>_<giới>` và truyền cờ: `--bind-a` (khi `bindA` bao gồm giới đó). **`--keep-original`, `--split-cloth`, `--c2` (và `--tris`) nằm trong cùng nhánh `bindA`**: chỉ được truyền cho giới có trong `bindA`; đặt `keepOriginal`/`splitCloth`/`c2`/`tris` cho giới không có trong `bindA` (vd nam khi `bindA` là `["nu"]`) thì job vẫn chạy nhưng **không giữ gốc, không tách lưới, không cảnh báo**. Muốn bật cho giới nào thì thêm giới đó vào `bindA`. Mẫu đã chạy: file `tinh_khuyet.json` của Tinh Khuyết nữ.
 
 ## Khối cấu hình
 | Khóa | Ý nghĩa |
