@@ -14,6 +14,12 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 > - **Chưa có**: `export.py` theo collection `EXPORT_`, `export_level.py`, ảnh xem trước tự động `assets/build/previews/`. `toktx` (KTX-Software 4.4.2) là bắt buộc để build: thiếu thì `assets:build` dừng với lỗi (cách cài ở `assets/README.md`, mục "Cài toktx").
 > - Máy đang dùng Blender 5.3. Tọa độ trong script là tọa độ game quanh tâm sân tông môn; vị trí công trình phải khớp `COLLIDERS` trong `packages/shared/src/level.ts`.
 
+## Đọc thêm (references/)
+
+- `.claude/skills/blender-pipeline/references/reference-match.md`: **vòng lặp khớp ảnh tham chiếu headless** (phân tích ảnh, camera khớp theo định dạng `shots`, chụp so sánh Blender + trong game, bảng chấm, giới hạn 3 vòng). Dùng khi dựng vật hữu cơ/có mặt/tay/tượng theo ảnh.
+- `.claude/skills/blender-pipeline/references/qa-checklist.md`: checklist QA trước khi xuất, mức nghiêm trọng, ảnh bắt buộc, mẫu phán quyết SHIP/KHÔNG SHIP.
+- `.claude/skills/blender-pipeline/references/lod-collision.md`: làm LOD0 dễ giản lược, kiểm LOD; hình va chạm theo hệ COL-1 (`COL_box_*|COL_cyl_*|COL_ramp_*`, không UCX).
+
 ## Chạy Blender
 
 - Luôn chạy nền, không mở giao diện: `blender --background <file.blend> --python tools/blender/<script>.py -- <args>`.

@@ -33,6 +33,10 @@ Cột "Hiện có" ghi đúng chỗ code đang nằm; cột "Hướng tới" là
 - Geometry sinh lúc chạy trong client (terrain, env, models) không qua pipeline nhưng vẫn phải giữ ngân sách (skill `perf-budget`) và dispose khi bỏ.
 - Nếu Blender chưa được cài: sinh trực tiếp bằng code Three.js (BufferGeometry) trong client, ghi chú để sinh lại bằng bpy sau. (Chưa có script Node nào xuất GLB bằng `GLTFExporter`.)
 
+## Mẹo dựng khối
+
+`.claude/skills/procedural-assets/references/modeling-tips.md`: dựng/nặn/bake, vật cứng và kiến trúc cổ phong (thứ tự tầng, vát theo tầng, boolean, instance), hữu cơ liền khối (không ghép primitive), thủ tục có seed và thử biên. Dựng theo ảnh mẫu: vòng lặp ở `.claude/skills/blender-pipeline/references/reference-match.md`; kiểm trước xuất: `.claude/skills/blender-pipeline/references/qa-checklist.md`.
+
 ## Asset bên thứ ba
 
 - Chỉ dùng nguồn có giấy phép rõ ràng (CC0 ưu tiên). Ghi mỗi asset vào `assets/LICENSES.md`: tên, nguồn, link, giấy phép, ngày tải.
