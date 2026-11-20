@@ -99,6 +99,12 @@
    "tier": 0
   },
   {
+   "type": "flash",
+   "t": 0.0,
+   "amount": 0.15,
+   "tier": 0
+  },
+  {
    "type": "particles",
    "kind": "spark",
    "t": 0.0,

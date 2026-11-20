@@ -17,7 +17,7 @@ const SLUG = ['1-linh-luc-suy', '2-nhuc-than-suy', '3-than-thuc-suy', '4-tho-ngu
 /** Sự kiện hình đáng chụp của từng ải: khóa timeline → [tên ảnh, trễ ms sau khi phát]. */
 const EVENTS: Record<string, Record<string, [string, number]>> = {
   suy_linh: { suy_nhan_open: ['linh-nhan-mo', 350], suy_nhan_end: ['linh-nhan-doi-cho', 200], suy_ok: ['qua-ai', 350] },
-  suy_the: { suy_toi_warn: ['toi-the-loi-bao', 1300], suy_toi_hit: ['don-toi-the-loi', 140], suy_ok: ['qua-ai', 350] },
+  suy_the: { suy_toi_warn: ['toi-the-loi-bao', 800], suy_toi_hit: ['don-toi-the-loi', 140], suy_ok: ['qua-ai', 350] },
   suy_thuc: {
     suy_thuc_brew: ['loi-an-dang-tu', 500],
     suy_thuc_pulse: ['ngung-than', 350],

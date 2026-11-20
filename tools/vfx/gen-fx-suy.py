@@ -69,6 +69,7 @@ write('suy_ok', 'linh', [
     mesh('helix', 0.05, 1.3, at='area', offset=[0, 0.1, 0], rot=[-90, 0, 0], scale=[1.2, 1.2, 2.6], sweep=0.6, erodeFrom=0.55, ragged=0.5, tone='body', alpha=0.8, spin=220, seed=6, tier=1),
     mesh('burst', 0.0, 0.11, at='area', offset=[0, 1.2, 0], scale=1.8, billboard=True, sweep=0.0, tone='rim', alpha=0.7, tier=0),
     parts('petal', 0.05, 46, 2.4, 0.9, 1.9, 0.2, at='area', offset=[0, 0.6, 0], tone='rim', grav=-1.1, tier=0),
+    {'type': 'flash', 't': 0.0, 'amount': 0.15, 'tier': 0},
     parts('spark', 0.0, 30, 4.2, 1.0, 0.9, 0.09, at='area', offset=[0, 0.8, 0], tone='accent', tier=1),
 ])
 
@@ -114,10 +115,16 @@ write('suy_toi_warn', 'the', [
     mesh('seal_block', 0.0, 2.2, at='area', offset=[0, 6.0, 0], scale=[1.5, 1.2, 1.5], sweep=0.15, erodeFrom=0.95, tone='body', alpha=0.95, seed=32, keepUp=True,
          move={'to': 'area', 'offset': [0, 2.4, 0], 'ease': 'in'}, untilDelay=True, tier=0, **START),
     parts('spark', 0.0, 24, 2.0, 1.0, 1.0, 0.1, at='area', offset=[0, 2.6, 0], tone='rim', inward=True, tier=0, **START),
+    {'type': 'bolt', 't': 0.2, 'from': 'start', 'at': 'area', 'offset': [0.9, 0, 0.4], 'scale': 0.9, 'thick': 2.6, 'tone': 'rim', 'seed': 34, 'tier': 0},
+    {'type': 'bolt', 't': 0.72, 'from': 'start', 'at': 'area', 'offset': [-0.8, 0, -0.6], 'scale': 0.95, 'thick': 3.0, 'tone': 'body', 'seed': 35, 'tier': 0},
+    {'type': 'bolt', 't': 1.24, 'from': 'start', 'at': 'area', 'offset': [0.2, 0, 0.9], 'scale': 1.0, 'thick': 3.4, 'tone': 'rim', 'seed': 36, 'tier': 0},
+    {'type': 'bolt', 't': 1.76, 'from': 'start', 'at': 'area', 'offset': [-0.3, 0, -0.2], 'scale': 1.0, 'thick': 3.8, 'tone': 'body', 'seed': 37, 'tier': 0},
 ] + ring(4, 2.6, lambda i, x, z: mesh('rock_spire', round(0.1 + 0.08 * i, 3), 2.2, at='area', offset=[x, 0, z], rot=[0, i * 90, 0], scale=[0.45, 0.8, 0.45], sweep=0.2, erodeFrom=0.92, tone='body', alpha=0.95, seed=40 + i, untilDelay=True, tier=0, **START), phase=0.5))
 
 write('suy_toi_hit', 'the', [
-    {'type': 'bolt', 't': 0.0, 'at': 'area', 'scale': 0.9, 'thick': 3.2, 'tone': 'body', 'seed': 51, 'tier': 0},
+    {'type': 'bolt', 't': 0.0, 'at': 'area', 'scale': 1.15, 'thick': 5.5, 'tone': 'rim', 'seed': 51, 'tier': 0},
+    {'type': 'bolt', 't': 0.07, 'at': 'area', 'offset': [0.7, 0, -0.5], 'scale': 0.9, 'thick': 2.0, 'tone': 'body', 'seed': 57, 'tier': 1},
+    {'type': 'flash', 't': 0.0, 'amount': 0.22, 'tier': 0},
     mesh('shock_cone', 0.0, 0.5, at='area', offset=[0, 0.05, 0], scale=[0.5, 0.6, 0.5], scaleTo=[3.4, 1.5, 3.4], sweep=0.3, erodeFrom=0.35, ragged=0.8, tone='rim', alpha=0.9, seed=52, tier=0),
     mesh('crack_radial', 0.02, 2.4, at='area', offset=[0, 0.05, 0], scale=[0.5, 1, 0.5], scaleTo=[2.9, 1, 2.9], sweep=0.25, erodeFrom=0.6, ragged=0.8, tone='body', alpha=0.9, seed=53, tier=0),
     mesh('seal_block', 0.0, 0.3, at='area', offset=[0, 2.4, 0], scale=[1.5, 1.2, 1.5], scaleTo=[1.9, 0.5, 1.9], sweep=0.0, erodeFrom=0.2, tone='rim', alpha=0.9, seed=54, keepUp=True,
@@ -228,7 +235,7 @@ write('suy_tam_open', 'tam', [
     decal('rune', 0.0, 3.0, 3.0, at='self', offset=[0, -1.12, 0], grow=0.25, tone='accent', alpha=1.0, yaw=0, untilDelay=True, tier=0, **START),
     mesh('shock_cone', 0.0, 0.5, at='self', offset=[0, -1.1, 0], scale=[0.4, 0.4, 0.4], scaleTo=[3.2, 1.0, 3.2], sweep=0.3, erodeFrom=0.4, ragged=0.6, tone='rim', alpha=0.8, seed=93, tier=0, **START),
     parts('spark', 0.0, 22, 2.6, 1.0, 0.8, 0.08, at='self', tone='accent', inward=True, tier=1, **START),
-] + ring(4, 2.6, lambda i, x, z: mesh('spike', round(0.04 * i, 3), 3.0, at='self', offset=[x, -1.12, z], rot=[-90, 0, 0], scale=[0.42, 0.42, 0.5], sweep=0.15, erodeFrom=0.92, tone='accent', alpha=0.95, seed=91 + i, untilDelay=True, tier=0, **START), phase=0.5))
+] + ring(4, 2.6, lambda i, x, z: mesh('spike', round(0.04 * i, 3), 3.0, at='self', offset=[x, -1.12, z], rot=[-90, 0, 0], scale=[0.7, 0.7, 0.75], sweep=0.15, erodeFrom=0.92, tone='accent', alpha=0.95, seed=91 + i, untilDelay=True, tier=0, **START), phase=0.5))
 
 write('suy_tam_good', 'tam', [
     mesh('slash_cross', 0.0, 0.4, at='target', scale=[2.4, 1, 2.4], rot=[90, 0, 0], sweep=0.3, erodeFrom=0.4, ragged=0.7, tone='accent', alpha=0.95, seed=94, tier=0),
@@ -237,6 +244,7 @@ write('suy_tam_good', 'tam', [
     parts('shard', 0.0, 20, 5.5, 0.9, 0.7, 0.13, at='target', tone='accent', grav=8, tier=1),
     parts('petal', 0.05, 22, 2.0, 0.9, 1.6, 0.18, at='self', tone='rim', grav=-1.0, tier=1),
     {'type': 'shake', 't': 0.0, 'level': 0.15, 'tier': 1},
+    {'type': 'flash', 't': 0.0, 'amount': 0.16, 'tier': 0},
 ])
 
 write('suy_tam_bad', 'tam', [

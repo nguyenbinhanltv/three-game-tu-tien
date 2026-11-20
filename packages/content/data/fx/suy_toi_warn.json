@@ -88,6 +88,70 @@
    "from": "start"
   },
   {
+   "type": "bolt",
+   "t": 0.2,
+   "from": "start",
+   "at": "area",
+   "offset": [
+    0.9,
+    0,
+    0.4
+   ],
+   "scale": 0.9,
+   "thick": 2.6,
+   "tone": "rim",
+   "seed": 34,
+   "tier": 0
+  },
+  {
+   "type": "bolt",
+   "t": 0.72,
+   "from": "start",
+   "at": "area",
+   "offset": [
+    -0.8,
+    0,
+    -0.6
+   ],
+   "scale": 0.95,
+   "thick": 3.0,
+   "tone": "body",
+   "seed": 35,
+   "tier": 0
+  },
+  {
+   "type": "bolt",
+   "t": 1.24,
+   "from": "start",
+   "at": "area",
+   "offset": [
+    0.2,
+    0,
+    0.9
+   ],
+   "scale": 1.0,
+   "thick": 3.4,
+   "tone": "rim",
+   "seed": 36,
+   "tier": 0
+  },
+  {
+   "type": "bolt",
+   "t": 1.76,
+   "from": "start",
+   "at": "area",
+   "offset": [
+    -0.3,
+    0,
+    -0.2
+   ],
+   "scale": 1.0,
+   "thick": 3.8,
+   "tone": "body",
+   "seed": 37,
+   "tier": 0
+  },
+  {
    "type": "mesh",
    "shape": "rock_spire",
    "t": 0.1,

@@ -752,6 +752,9 @@ export class Game {
     });
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
     this.suyFx = new SuyFx(this.skillFx.runner, {
+      vfx: this.vfx,
+      scene: this.scene,
+      mySid: () => this.sid,
       player: (sid) => this.ents?.players.get(sid),
       ground: (x, z) => groundAt(x, z),
       tribOn: (sid) => ((this.view.players.get(sid)?.fl ?? 0) & PF_TRIBULATION) !== 0,

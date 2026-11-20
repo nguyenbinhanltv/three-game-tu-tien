@@ -6,10 +6,31 @@
    "type": "bolt",
    "t": 0.0,
    "at": "area",
-   "scale": 0.9,
-   "thick": 3.2,
-   "tone": "body",
+   "scale": 1.15,
+   "thick": 5.5,
+   "tone": "rim",
    "seed": 51,
+   "tier": 0
+  },
+  {
+   "type": "bolt",
+   "t": 0.07,
+   "at": "area",
+   "offset": [
+    0.7,
+    0,
+    -0.5
+   ],
+   "scale": 0.9,
+   "thick": 2.0,
+   "tone": "body",
+   "seed": 57,
+   "tier": 1
+  },
+  {
+   "type": "flash",
+   "t": 0.0,
+   "amount": 0.22,
    "tier": 0
   },
   {

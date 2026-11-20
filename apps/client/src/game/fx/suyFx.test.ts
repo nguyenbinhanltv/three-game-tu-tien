@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SUY_FX, SUY_FX_STAGE } from '@dtl/content';
 import { FX_SKILL_DRAW_MAX, SUY_MECHANICS, fxDrawCount, type FxMsg } from '@dtl/shared';
+import * as THREE from 'three/webgpu';
 import { SuyFx } from './suyFx';
 import type { FxRunner } from './fxTimeline';
 
@@ -186,5 +187,89 @@ describe('SuyFx', () => {
     fx.mark({ t: 'suymark', src: 'khac', s: 'tam', pg: 1 });
     fx.ok({ t: 'suyok', src: 'khac' });
     expect(calls).toHaveLength(0);
+  });
+});
+
+describe('lớp đọc được từ xa (đèn khu ải, cột linh quang, lửa Thọ Đăng)', () => {
+  function mkGlow() {
+    const beacons: { color: number; stopped: boolean; dur: number }[] = [];
+    const lampSets: [number, number, number | undefined][] = [];
+    let lampStops = 0;
+    const scene = new THREE.Scene();
+    const calls: string[] = [];
+    const runner = { startAt: (tl: { skill: string }) => calls.push(tl.skill) } as unknown as FxRunner;
+    const me = { x: 10, y: 0, z: 20, yaw: 0, model: {} };
+    const fx = new SuyFx(runner, {
+      player: (sid) => (sid === 'me' ? me : undefined),
+      ground: () => 0,
+      tribOn: () => true,
+      shadow: () => null,
+      mySid: () => 'me',
+      scene,
+      vfx: {
+        suyBeacon: (_pos, color, o) => {
+          const b = { color, stopped: false, dur: o.dur };
+          beacons.push(b);
+          return { stop: () => (b.stopped = true) };
+        },
+        suyLamps: (pts) => {
+          expect(pts).toHaveLength(5);
+          return { set: (i, s, sec) => lampSets.push([i, s, sec]), stop: () => lampStops++ };
+        },
+      },
+    });
+    const lights = () => scene.children.filter((c) => (c as THREE.PointLight).isPointLight) as THREE.PointLight[];
+    return { fx, beacons, lampSets, lights, stops: () => lampStops };
+  }
+
+  it('vào ải: thêm đúng hai đèn không đổ bóng (chủ đạo trên tâm ải, viền bám nhân vật); khép ải thì gỡ sạch', () => {
+    const { fx, lights } = mkGlow();
+    fx.bar(bar('suy_linh', { x: 4, z: 6 }));
+    expect(lights()).toHaveLength(2);
+    expect(lights().every((l) => !l.castShadow)).toBe(true);
+    expect(lights()[0]!.position.x).toBe(4);
+    expect(lights()[0]!.position.y).toBeGreaterThan(8);
+    fx.update();
+    // Đèn viền đứng sau lưng nhân vật (yaw 0 = nhìn +Z nên đèn lùi về -Z).
+    expect(lights()[1]!.position.z).toBeLessThan(20);
+    // Sang ải khác: vẫn hai đèn (không cộng dồn), đổi màu theo ải.
+    const c0 = lights()[0]!.color.getHex();
+    fx.bar(bar('suy_the', { x: 4, z: 6 }));
+    expect(lights()).toHaveLength(2);
+    expect(lights()[0]!.color.getHex()).not.toBe(c0);
+    fx.bar(bar('suy_the', { pg: -1 }));
+    expect(lights()).toHaveLength(0);
+    expect(fx.lit).toBe(false);
+  });
+
+  it('cột linh quang: Linh Nhãn dời thì cột cũ tắt; Tôi Thể Lôi sống đúng thời lượng báo; khép ải tắt hết', () => {
+    const { fx, beacons } = mkGlow();
+    fx.bar(bar('suy_linh', { x: 0, z: 0 }));
+    fx.mark(mark('nhan', { x: 8, z: 0, r: 3.2, d: 8, pg: 1 }));
+    fx.mark(mark('nhan', { x: -8, z: 0, r: 3.2, d: 6, pg: 1 }));
+    expect(beacons.map((b) => b.stopped)).toEqual([true, false]);
+    fx.mark(mark('toi', { x: 1, z: 1, r: 2.8, d: 2.2, pg: 1 }));
+    expect(beacons.at(-1)!.dur).toBe(2.2);
+    fx.mark(mark('toi', { x: 1, z: 1, r: 2.8, pg: 2 }));
+    expect(beacons.at(-1)!.stopped).toBe(true);
+    fx.bar(bar('suy_linh', { pg: -1 }));
+    expect(beacons.every((b) => b.stopped)).toBe(true);
+  });
+
+  it('lửa Thọ Đăng theo đúng trạng thái server báo (cháy, bị nhắm kèm thời lượng, tắt, đang thắp) và tắt khi dọn đèn', () => {
+    const { fx, lampSets, stops } = mkGlow();
+    fx.bar(bar('suy_tho', { x: 0, z: 0 }));
+    fx.mark(mark('den', { n: 2, x: 0, z: 8, r: 2.8, pg: 1 }));
+    fx.mark(mark('den', { n: 2, x: 0, z: 8, r: 2.8, d: 1.5, pg: 2 }));
+    fx.mark(mark('den', { n: 2, x: 0, z: 8, r: 2.8, pg: 0 }));
+    fx.mark(mark('den', { n: 2, x: 0, z: 8, r: 2.8, d: 1.2, pg: 3 }));
+    expect(lampSets).toEqual([
+      [2, 1, undefined],
+      [2, 2, 1.5],
+      [2, 0, undefined],
+      [2, 3, 1.2],
+    ]);
+    fx.mark(mark('den', { n: -1, pg: 0 }));
+    expect(stops()).toBe(1);
   });
 });

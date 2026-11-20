@@ -123,6 +123,8 @@ interface FxAtOpts {
   variant?: string;
   /** Mốc trúng (giây từ lúc phát), mặc định 0. */
   hitAt?: number;
+  /** Hiệu ứng của chính người xem (ải Ngũ Suy của mình, TN-4): không hạ bậc chất lượng, có rung/chớp theo cài đặt. Mặc định false (FX quái). */
+  mine?: boolean;
 }
 
 interface BladeJob {
@@ -285,7 +287,7 @@ export class FxRunner {
    */
   startAt(tl: FxTimeline, o: FxAtOpts): void {
     const sid = `~mon${++this.serial}`;
-    const tier = fxTierFor(this.env.quality(), false);
+    const tier = fxTierFor(this.env.quality(), !!o.mine);
     const pal = paletteOf(o.palette);
     const events = fxEventsFor(tl, -1, o.variant);
     const q = scheduleEvents(events, [o.hitAt ?? 0], tier).map((s, idx) => ({ ...s, idx, done: false }));
@@ -293,7 +295,7 @@ export class FxRunner {
       sid,
       actor: o.actor,
       def: { id: tl.skill } as SkillDef,
-      mine: false,
+      mine: !!o.mine,
       tier,
       pal,
       q,
