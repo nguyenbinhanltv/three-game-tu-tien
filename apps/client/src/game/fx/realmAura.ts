@@ -638,7 +638,14 @@ export class RealmAuraFx {
           infant.scale.set(INFANT_SCALE, INFANT_SCALE, 1);
           infant.fxK = c.t;
           show(c, infant, Math.min(1, c.gate * 1.15) * 1.8, infantRole);
-          halo(infant.position.x, infant.position.y, infant.position.z, 0.7 + Math.sin(c.t * 2.2) * 0.04, GOLD.core, c.gate * c.wSub * 0.14);
+          halo(
+            infant.position.x,
+            infant.position.y,
+            infant.position.z,
+            0.7 + Math.sin(c.t * 2.2) * 0.04,
+            GOLD.core,
+            c.gate * c.wSub * 0.14,
+          );
         });
       }
       if (detail && ok('extra')) {
@@ -774,7 +781,10 @@ export class RealmAuraFx {
     if (stage >= 4) {
       // ---------- Ảnh Biến: tia sét tím-vàng (chính), hạt sương mực (nền), 3 phân thân (trang trí, chỉ Đầy đủ) ----------
       if (ok('main')) {
-        const bolts = [mk(shapeGeometry('ribbon'), VIOLET.body, 'toon', VIOLET.rim), mk(shapeGeometry('ribbon'), 0xe2b84a, 'toon', 0xfff4c0)];
+        const bolts = [
+          mk(shapeGeometry('ribbon'), VIOLET.body, 'toon', VIOLET.rim),
+          mk(shapeGeometry('ribbon'), 0xe2b84a, 'toon', 0xfff4c0),
+        ];
         ups.push((c) => {
           // Nháy tia sét: thỉnh thoảng cụt ngắn (erode) rồi bật lại.
           au.flick -= c.dt;

@@ -290,7 +290,15 @@ async function perf(
 async function budget(r: Parameters<Scenario['run']>[0], daos: string[], quality: string, fxq: string): Promise<void> {
   const rows: { dao: string; realm: string; off: number; std: number; full: number; dStd: number; dFull: number }[] = [];
   for (const dao of daos) {
-    const { ctx, page } = await r.open({ name: `Ab${dao}`, viewport: [1280, 720], dpr: 1, quality, query: { fxq }, hide: 'hud', warnings: /models/ });
+    const { ctx, page } = await r.open({
+      name: `Ab${dao}`,
+      viewport: [1280, 720],
+      dpr: 1,
+      quality,
+      query: { fxq },
+      hide: 'hud',
+      warnings: /models/,
+    });
     for (const rk of Object.keys(REALMS)) {
       await setup(page, dao, REALMS[rk].lv);
       await cam(page, { yaw: Math.PI + 0.5, pitch: 0.2, dist: 6 });

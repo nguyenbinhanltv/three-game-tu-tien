@@ -107,7 +107,10 @@ describe('realmAuraRules', () => {
       expect(w).toEqual({ main: 1, sub: W_SUB, bg: W_BG });
     });
     it('chạy hoặc chiến đấu: chỉ lớp chính, 30–50%', () => {
-      for (const st of [{ moving: true, fighting: false }, { moving: false, fighting: true }]) {
+      for (const st of [
+        { moving: true, fighting: false },
+        { moving: false, fighting: true },
+      ]) {
         const w = auraWeights({ mode: 'std', combat: 'dim', settle: 0, ...st });
         expect(w.main).toBe(W_MAIN_ACTIVE);
         expect(w.main).toBeGreaterThanOrEqual(0.3);
