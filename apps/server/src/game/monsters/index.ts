@@ -101,7 +101,6 @@ const boltCount = (c: MonsterCaster) => Math.max(1, Math.min(5, c.n ?? 1));
 
 /** Phần GameSim mà hệ quái cần. */
 export interface MonsterCtx {
-  addStack(p: PlayerEnt, max: number, decay: number): void;
   readonly bolts: Bolt[];
   readonly camps: CampSystem;
   damagePlayer(p: PlayerEnt, dmg: number, src: string, hv?: boolean, ke?: 1 | -1): void;
@@ -115,7 +114,9 @@ export interface MonsterCtx {
   readonly hazards: Hazard[];
   readonly host: SimHost;
   isDead(p: PlayerEnt): boolean;
-  liveStacks(p: PlayerEnt): number;
+  /** Tài nguyên riêng (VS-2a): đang đầy không; một nhịp sát thương theo thời gian của `p` vừa nổ. */
+  resFull(p: PlayerEnt): boolean;
+  resDot(p: PlayerEnt): void;
   lockCut(h: Hazard, p: PlayerEnt): { mul: number; max: number };
   readonly mirror: MirrorSystem;
   readonly monById: Map<string, MonEnt>;
@@ -159,8 +160,11 @@ export class MonsterSystem {
   slotWait = new Map<string, number>();
   nextBoltId = 1;
 
-  /** `mul`: hệ số sát thương hệ (linh căn, dòng phụ); không đổi việc đòn có nặng hay không (theo `power` gốc). */
-  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): void {
+  /**
+   * `mul`: hệ số sát thương hệ (linh căn, dòng phụ); không đổi việc đòn có nặng hay không (theo `power` gốc).
+   * Trả true nếu đòn có hiệu lực (nơi gọi dùng để tích tài nguyên riêng theo chiêu).
+   */
+  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): boolean {
     // Dấu ấn của chính người đánh: sát thương nhân thêm (Kiếm Ảnh Phân Quang).
     const mk = mon.mark;
     const power0 = mk && mk.sid === p.sid && this.c.now < mk.until ? basePower * (1 + mk.mul) : basePower;
@@ -171,8 +175,7 @@ export class MonsterSystem {
     // Nội tại công pháp (3-10): kiếm tu đủ kiếm ý thì bạo kích cao hơn; hộ pháp đánh cận chiến mạnh hơn.
     const pas0 = passiveOf(p.char.meta);
     let critRate = Math.min(STAT_CAPS.critRate, p.char.stats.critRate + this.c.domain.critAdd(p));
-    if (pas0?.kind === 'kiem_y' && pas0.critAtMax && this.c.liveStacks(p) >= (pas0.max ?? 5))
-      critRate = Math.min(STAT_CAPS.critRate, critRate + pas0.critAtMax);
+    if (pas0?.critAtMax && this.c.resFull(p)) critRate = Math.min(STAT_CAPS.critRate, critRate + pas0.critAtMax);
     let meleeMul = 1;
     if (pas0?.melee && Math.hypot(mon.s.x - p.move.x, mon.s.z - p.move.z) <= pas0.melee.r + mon.def.scale) meleeMul += pas0.melee.mul;
     const { dmg, crit } = computeDamage(
@@ -190,15 +193,14 @@ export class MonsterSystem {
     // Đòn không có hiệu lực (quái đã chết, đang miễn sát thương, bóng tâm ma của người khác) không cho kiếm ý/sạc.
     const lands = mon.state !== MS_DEAD && !(mon.owner && mon.owner !== p.sid) && this.c.now >= mon.evadeUntil;
     this.damageMonster(mon, vulnerableDamage(dmg, stunned), p, crit, stunned || heavy, heavy, ke);
-    if (!lands) return;
+    if (!lands) return false;
     // Bộ Hàn Giao Lân (3 món): đòn bạo kích làm chậm mục tiêu (boss chỉ chậm nhẹ).
     const slowSec = p.char.stats.setFx.critSlowSec;
     if (crit && slowSec > 0 && mon.state !== MS_DEAD)
       mon.slow = { until: this.c.now + slowSec * 1000, mul: mon.def.boss ? SET_SLOW_BOSS : SET_SLOW_MUL };
-    const pas = passiveOf(p.char.meta);
-    if (pas?.kind === 'kiem_y') this.c.addStack(p, pas.max ?? 5, pas.decay ?? 10);
     // Chiêu tối thượng đang ra không tự nạp lại vòng sạc của chính nó.
     if (!p.mth.lockCharge) this.c.gainCharge(p, chargeFromDealt(dmg, p.char.atk));
+    return true;
   }
 
   /** Chiêu ngắt trúng boss: phá chú nếu đúng cửa sổ. Mục tiêu, tầm, GCD, hồi chiêu đã kiểm ở onSkill. */
@@ -396,7 +398,7 @@ export class MonsterSystem {
     if (p) msg.src = p.sid;
     this.c.emit(S.DMG, msg);
     // Tâm cảnh (E3-L): đánh trúng Tâm Ma Ảnh của mình thì hồi.
-    if (p?.trib && dmg > 0 && mon.owner === p.sid) this.c.tribSys.noteHit(p, 'hit');
+    if (p?.trib && dmg > 0 && mon.owner === p.sid) this.c.tribSys.noteHit(p, 'hit', dot);
     if (p) {
       mon.threat.set(p.sid, (mon.threat.get(p.sid) ?? 0) + dmg);
       if (mon.state === MS_IDLE || (mon.state === MS_RETURN && this.homeDist(mon) < LEASH * 0.7)) {
@@ -921,6 +923,7 @@ export class MonsterSystem {
         m.poison.nextAt += 1000;
         const owner = this.c.players.get(m.poison.sid) ?? null;
         this.damageMonster(m, m.poison.per, owner, false, false, false, 0, true);
+        if (owner) this.c.resDot(owner);
         if (m.state === MS_DEAD) return;
       }
     }

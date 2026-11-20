@@ -157,6 +157,9 @@ export interface LoreGlossary {
   dao: Record<string, string>;
   originGroups: Record<string, string>;
   origins: Record<string, Record<string, string>>;
+  /** Tên năm ải của Thiên Nhân Ngũ Suy (TN-4, tự đặt) và thuật ngữ riêng của chuỗi. */
+  nguSuy: Record<string, string>;
+  nguSuyTerms: Record<string, string>;
   huyenKiepGroups: Record<string, string>;
   huyenKiep: Record<string, Record<string, string>>;
   cuuKieu: string[];
@@ -175,7 +178,7 @@ function distinct(what: string, list: string[], errors: string[]) {
   }
 }
 
-/** Kiểm các bộ thuật ngữ có số lượng cố định: Bản Nguyên 14 (6 + 4 + 4), Huyền Kiếp 9 (3 × 3), Cửu Kiều 9, 4 Bộ, 9 sao Cổ Thần. */
+/** Kiểm các bộ thuật ngữ có số lượng cố định: Bản Nguyên 14 (6 + 4 + 4), Ngũ Suy 5, Huyền Kiếp 9 (3 × 3), Cửu Kiều 9, 4 Bộ, 9 sao Cổ Thần. */
 export function checkLoreTerms(g: LoreGlossary): string[] {
   const errors: string[] = [];
   if (g.steps.length !== 4) errors.push(`glossary.steps: cần 4 Bộ, đang có ${g.steps.length}`);
@@ -218,6 +221,11 @@ export function checkLoreTerms(g: LoreGlossary): string[] {
   }
   distinct('glossary.huyenKiep (id)', kiepIds, errors);
   distinct('glossary.huyenKiep', kiepNames, errors);
+
+  const suyN = Object.keys(g.nguSuy ?? {}).length;
+  if (suyN !== 5) errors.push(`glossary.nguSuy: cần 5 ải, đang có ${suyN}`);
+  distinct('glossary.nguSuy', Object.values(g.nguSuy ?? {}), errors);
+  distinct('glossary.nguSuyTerms', Object.values(g.nguSuyTerms ?? {}), errors);
 
   if (g.cuuKieu.length !== 9) errors.push(`glossary.cuuKieu: cần 9 cầu, đang có ${g.cuuKieu.length}`);
   distinct('glossary.cuuKieu', g.cuuKieu, errors);

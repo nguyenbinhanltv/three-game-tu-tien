@@ -9,12 +9,13 @@
 //   ngu_hanh    Hóa Thần, pha Ngũ hành lôi: tia mang hành xoay Kim→Mộc→Thủy→Hỏa→Thổ mỗi 5 s, 5 trận môn, đứng đúng trận môn giảm 80% (cờ `ke`).
 //   dan_loi     Anh Biến, pha Dẫn lôi: năm Trấn Giới Bia của kiếp sáng khi tia rơi gần (tribanh.ts).
 //   nhat_thuc   Anh Biến, pha Nhật thực: Nhật Thực Dực Chủ dập bia, thiên lôi đánh cả hắn (tribanh.ts).
+//   suy_*       Thiên Nhân Ngũ Suy (TN-4): năm ải suy kiệt, mỗi ải một thao tác riêng (tribsuy.ts).
 //   phan_than   Hóa Thần, pha Thần niệm / Hợp nhất: phím G tạo phân thân thần niệm; phân thân chắn thay 40% ở pha cuối.
 //
 // Quy ước: trạng thái của cơ chế nằm ở `tr.mech[<id>]` (chỉ server giữ). Mọi lệnh phím (X, G) phải qua `GameSim.rateOk` và kiểm trạng thái kiếp ở server.
 
 import { METHOD, SKILL } from '@dtl/content';
-import { PF_DEAD, TRIB_MECHANIC_IDS, tribDef, type TribDef, type TribPhaseDef, at } from '@dtl/shared';
+import { PF_DEAD, TRIB_MECHANIC_IDS, isSuyMechanic, tribDef, type TribDef, type TribPhaseDef, at } from '@dtl/shared';
 import type { PlayerEnt } from './entities';
 import type { TribState } from './tribtypes';
 import type { TribHost } from './tribhost';
@@ -56,9 +57,10 @@ for (const id of TRIB_MECHANIC_IDS) {
     id === 'ngu_hanh' ||
     id === 'phan_than' ||
     id === 'dan_loi' ||
-    id === 'nhat_thuc'
+    id === 'nhat_thuc' ||
+    isSuyMechanic(id)
   )
-    continue; // đã cài thật (E2-D, E3-L ở dưới; E4-D ở tribnhan.ts)
+    continue; // đã cài thật (E2-D, E3-L ở dưới; E4-D ở tribnhan.ts; TN-4 ở tribsuy.ts)
   registerMechanic(id, {
     enter(c) {
       if (warned.has(id)) return;

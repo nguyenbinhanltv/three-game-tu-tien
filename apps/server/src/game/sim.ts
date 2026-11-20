@@ -74,7 +74,7 @@ import { RealmSystem } from './realm';
 import { MonSkills } from './monskill';
 import { MonZones } from './monzone';
 import { CampSystem } from './camps';
-import { empowerDeadlines } from './skillflow';
+import { chainDeadlines } from './skillflow';
 import { DuelSystem } from './duel';
 import { TeleportSystem } from './teleport';
 import { QuestObjSystem } from './questobj';
@@ -90,7 +90,7 @@ import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg } from './artifact';
 import { log } from '../log';
 
-import { at } from '@dtl/shared';
+import { at, type TribId } from '@dtl/shared';
 const INTERACT_RANGE = 9;
 
 export class GameSim {
@@ -129,6 +129,17 @@ export class GameSim {
     removeMonster: (m) => this.removeMonster(m),
     stunMonster: (m, sec) => this.monSys.stun(m, sec),
     heal: (p, n) => this.healPlayer(p, n),
+    drainMp: (p, n) => {
+      p.char.mp = Math.max(0, p.char.mp - Math.max(0, n));
+    },
+    sap: (p, n) => {
+      if (n > 0) this.damagePlayer(p, n, p.sid, false);
+    },
+    refill: (p) => {
+      p.char.hp = p.char.mhp;
+      p.char.mp = p.char.mmp;
+    },
+    suyCleared: (p, idx) => this.tribHub.suyCleared(p, idx),
   });
   /** Bình cảnh, tâm ma, linh căn (P3-7). */
   readonly realm = new RealmSystem({
@@ -327,7 +338,6 @@ export class GameSim {
   /** Quái (R-7): xem `game/monsters/`. */
   private readonly monSys = new MonsterSystem(
     ((s: GameSim): MonsterCtx => ({
-      addStack: (p, max, decay) => s.addStack(p, max, decay),
       get bolts() {
         return s.bolts;
       },
@@ -353,7 +363,8 @@ export class GameSim {
         return s.host;
       },
       isDead: (p) => s.isDead(p),
-      liveStacks: (p) => s.liveStacks(p),
+      resDot: (p) => s.combat.resDot(p),
+      resFull: (p) => s.combat.resFull(p),
       lockCut: (h, p) => s.lockCut(h, p),
       get mirror() {
         return s.mirror;
@@ -492,7 +503,7 @@ export class GameSim {
   private readonly deathSys = new DeathSystem(
     ((s: GameSim): DeathCtx => ({
       abortStrike: (p, refund, notify) => s.abortStrike(p, refund, notify),
-      addStack: (p, max, decay) => s.addStack(p, max, decay),
+      resTaken: (p, n) => s.combat.resTaken(p, n),
       get bossDmgMul() {
         return s.bossDmgMul;
       },
@@ -673,7 +684,7 @@ export class GameSim {
       this.soul.resetCooldown(p);
       this.clone.resetCooldown(p);
     },
-    onBreakthrough: (p, force) => this.onBreakthrough(p, force),
+    onBreakthrough: (p, force, id) => this.onBreakthrough(p, force, id),
     sys: (p, k, params, type) => this.sys(p, k, params, type),
   });
 
@@ -1110,16 +1121,13 @@ export class GameSim {
     const cds: Record<string, number> = {};
     for (const [k, v] of p.cds) if (v > this.now) cds[k] = v;
     const m: CdMsg = { cds, gcd: p.gcdAt, now: Date.now() };
-    const em = empowerDeadlines(p.flow, this.now);
+    const em = chainDeadlines(p.flow, this.now);
     if (Object.keys(em).length) m.em = em;
     p.client.send(S.CD, m);
   }
 
   private abortStrike(p: PlayerEnt, refund: boolean, notify = true): void {
     return this.combat.abortStrike(p, refund, notify);
-  }
-  private addStack(p: PlayerEnt, max: number, decay: number): void {
-    return this.combat.addStack(p, max, decay);
   }
   private aggroMonster(mon: MonEnt, p: PlayerEnt, assist = false): void {
     return this.combat.aggroMonster(mon, p, assist);
@@ -1138,9 +1146,6 @@ export class GameSim {
   }
   private gainCharge(p: PlayerEnt, n: number): void {
     return this.combat.gainCharge(p, n);
-  }
-  private liveStacks(p: PlayerEnt): number {
-    return this.combat.liveStacks(p);
   }
   private monstersNear(x: number, z: number, r: number, except?: MonEnt): MonEnt[] {
     return this.combat.monstersNear(x, z, r, except);
@@ -1255,7 +1260,7 @@ export class GameSim {
   fireBolts(m: MonEnt, c: MonsterCaster, yaw: number, lift = 0): void {
     return this.monSys.fireBolts(m, c, yaw, lift);
   }
-  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): void {
+  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): boolean {
     return this.monSys.hitMonster(p, mon, basePower, mul, elem);
   }
   private homeDist(m: MonEnt): number {
@@ -1318,7 +1323,13 @@ export class GameSim {
     return this.monSys.tryInterrupt(p, mon, extraStun);
   }
   damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false, ke?: 1 | -1): void {
-    return this.deathSys.damagePlayer(p, dmg, src, hv, ke);
+    // Đánh dấu "đang chịu đòn": sát thương phản lại quái trong lúc này (Kim Chung Trấn, bộ Huyền Giáp) là thụ động, không phải ra tay (ải Đạo Tâm Suy).
+    this.tribSys.hurting++;
+    try {
+      return this.deathSys.damagePlayer(p, dmg, src, hv, ke);
+    } finally {
+      this.tribSys.hurting--;
+    }
   }
   grantDungeonReward(p: PlayerEnt, r: DungeonReward, key: string, label: string): boolean {
     return this.deathSys.grantDungeonReward(p, r, key, label);
@@ -1344,8 +1355,8 @@ export class GameSim {
   onBottleneck(p: PlayerEnt, msg: unknown): void {
     return this.tribHub.onBottleneck(p, msg);
   }
-  onBreakthrough(p: PlayerEnt, force = false): void {
-    return this.tribHub.onBreakthrough(p, force);
+  onBreakthrough(p: PlayerEnt, force = false, id?: TribId): void {
+    return this.tribHub.onBreakthrough(p, force, id);
   }
   onChangeRoot(p: PlayerEnt, msg: unknown): void {
     return this.tribHub.onChangeRoot(p, msg);

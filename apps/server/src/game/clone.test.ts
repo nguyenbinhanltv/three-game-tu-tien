@@ -242,7 +242,7 @@ describe('Kiếm tu: lặp chiêu của chủ ở 50% và chém một đòn khi 
     sim.onClone(p, {});
     const ch = p.mth.charge;
     advance(6000);
-    expect(p.mth.stacks).toBe(0);
+    expect(p.mth.res).toBe(0);
     expect(p.mth.charge).toBe(ch);
   });
 });

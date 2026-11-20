@@ -216,28 +216,6 @@
   color: var(--u-p-text);
   text-shadow: 0 1px 2px var(--u-ink-0);
 }
-.stack-pips {
-  --mc: var(--u-p-gold);
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  margin-bottom: 2px;
-  font-size: 11px;
-  color: var(--mc);
-  text-shadow: 0 1px 2px var(--u-ink-0);
-}
-.stack-pips i {
-  width: 9px;
-  height: 9px;
-  transform: rotate(45deg);
-  border: 1px solid var(--mc);
-  background: transparent;
-  transition: background 0.12s;
-}
-.stack-pips i.on {
-  background: var(--mc);
-  box-shadow: 0 0 6px var(--mc);
-}
 
 /* ---------- thẻ chiêu tối thượng 0,6 giây ---------- */
 .ult-card {
