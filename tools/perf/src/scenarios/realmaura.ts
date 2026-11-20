@@ -106,7 +106,7 @@ export default {
   name: 'realmaura',
   desc: 'Hào quang cảnh giới trên nhân vật: 4 cảnh giới × 3 đạo (1080p + 720p), dãy khung pháp tướng, video, đo hiệu năng trước/sau',
   usage:
-    '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--mood day|night] [--mode off|min|std|full] [--run] [--video] [--perf] [--budget] [--others N] [--only stills|phantom]',
+    '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--mood day|night] [--mode off|min|std|full] [--run] [--video] [--perf] [--budget] [--cmp] [--settings] [--others N] [--only stills|phantom]',
   async run(r) {
     const daos = list('--daos', 'kiem,ho,dan');
     const realms = list('--realms', 'kd,na,hn,ab');
@@ -122,6 +122,29 @@ export default {
 
     if (flag('--perf')) {
       await perf(r, daos, num('--others', 4), quality, fxq, mode);
+      return;
+    }
+    if (flag('--settings')) {
+      // Bảng Cài đặt mới (Hào quang cảnh giới / người khác / khi chiến đấu).
+      const { ctx, page } = await r.open({ name: 'Aset', viewport: [vw, vh], dpr: 1, quality, query: { fxq }, warnings: /models/ });
+      await sleep(2500);
+      await page.locator('[data-testid="hub-settings"]').click();
+      await sleep(1200);
+      const found = await page.evaluate(() => {
+        const el = [...document.querySelectorAll('*')].find((e) =>
+          [...e.childNodes].some((n) => n.nodeType === 3 && (n.textContent ?? '').includes('Hào quang cảnh giới')),
+        );
+        el?.scrollIntoView({ block: 'start' });
+        return !!el;
+      });
+      if (!found) console.warn('[shots:realmaura] không tìm thấy mục Hào quang cảnh giới trong Cài đặt');
+      await sleep(500);
+      await snap(page, r.out, 'cai-dat-hao-quang.jpg', { wait: 600 });
+      await ctx.close();
+      return;
+    }
+    if (flag('--cmp')) {
+      await cmp(r, quality, fxq, mode);
       return;
     }
     if (flag('--budget')) {
@@ -315,4 +338,103 @@ async function budget(r: Parameters<Scenario['run']>[0], daos: string[], quality
     await ctx.close();
   }
   fs.writeFileSync(path.join(r.out, 'budget.json'), JSON.stringify(rows, null, 2));
+}
+
+/** Đặt chế độ hào quang; bản cũ (trước VS-0) chỉ có bật/tắt nên bỏ qua `setAuraMode`. */
+const setMode = (page: Page, m: string) =>
+  page.evaluate(`window.__game.setAuraMode ? window.__game.setAuraMode(${JSON.stringify(m)}) : window.__game.setRealmAura(${m !== 'off'})`);
+
+/**
+ * Bộ ảnh so sánh TRƯỚC/SAU cùng camera, cùng vị trí, cùng tư thế (chạy trên cả nhánh cũ lẫn mới, `--out` khác nhau):
+ * Kiếm tu × Nguyên Anh/Hóa Thần/Ảnh Biến: đứng yên, đang chạy, vừa ra chiêu (giao chiến); thẻ Nguyên Anh cận cảnh;
+ * pháp tướng khi ra chiêu tối thượng (Hóa Thần, dãy khung); số draw call từng cảnh giới (Tắt / mặc định / Đầy đủ).
+ */
+async function cmp(r: Parameters<Scenario['run']>[0], quality: string, fxq: string, mode: string): Promise<void> {
+  const rows: Record<string, unknown>[] = [];
+  const { ctx, page } = await r.open({
+    name: 'Acmp',
+    viewport: [1920, 1080],
+    dpr: 1,
+    quality,
+    query: { fxq },
+    hide: 'hud',
+    warnings: /models/,
+  });
+  await gm(page, 'god on', 800);
+  await setMode(page, mode);
+  const FRONT = { yaw: 0.5, pitch: 0.16, dist: 4.4 };
+  for (const rk of list('--realms', 'na,hn,ab')) {
+    const re = REALMS[rk];
+    await setup(page, 'kiem', re.lv);
+    await setMode(page, mode);
+    await gm(page, 'killall', 400);
+    // 1) đứng yên > 3 s
+    await cam(page, FRONT);
+    await sleep(4800);
+    await snap(page, r.out, `${re.label}-1-yen.jpg`);
+    if (rk === 'na') {
+      await cam(page, { yaw: 0.5, pitch: 0.28, dist: 2.6 });
+      await sleep(900);
+      await snap(page, r.out, 'nguyenanh-the-nguyen-anh-can-canh.jpg');
+      await cam(page, FRONT);
+    }
+    // 2) đang chạy
+    await page.keyboard.down('KeyW');
+    await sleep(1000);
+    await snap(page, r.out, `${re.label}-2-chay.jpg`);
+    await page.keyboard.up('KeyW');
+    await gm(page, 'tp 2048 2088', 1400);
+    // 3) giao chiến: ra chiêu vào quái gần
+    await gm(page, 'spawn mon_soi_xam 1', 1500);
+    await cam(page, FRONT);
+    await gm(page, 'cd', 300);
+    const cast1 = await cast(page, 'skl_kiem_khi_tram', false);
+    await sleep(500);
+    await snap(page, r.out, `${re.label}-3-chien.jpg`);
+    if (!cast1) console.warn(`[shots:realmaura] ${re.label}: không ra được chiêu giao chiến`);
+    // 4a) pháp tướng tách riêng (chỉ sự kiện windup chiêu tối thượng, không kèm hình chiêu): trước = ảnh mờ treo + bùng, sau = bùng ≤ 1,3 s lệch trục
+    if (rk === 'hn') {
+      await gm(page, 'killall', 600);
+      await cam(page, { yaw: Math.PI + 0.5, pitch: 0.16, dist: 7 });
+      await sleep(4800);
+      await snap(page, r.out, 'phap-tuong-0-yen.jpg');
+      await page.evaluate(
+        `window.__game.emitSkillEvent(window.__game.sid, { kind: 'windup', skill: ${JSON.stringify(DAO.kiem.ult)}, index: 0, combo: -1, t: 0, kb: false })`,
+      );
+      let t0 = 0;
+      for (const ms of [150, 450, 800, 1200, 1500]) {
+        await sleep(ms - t0);
+        t0 = ms;
+        await snap(page, r.out, `phap-tuong-1-t${ms}.jpg`, { wait: 0 });
+      }
+      await sleep(1500);
+    }
+    // 4b) pháp tướng khi ra chiêu tối thượng thật (Hóa Thần)
+    if (rk === 'hn') {
+      await gm(page, 'killall', 600);
+      await gm(page, 'spawn mon_soi_xam 1', 1500);
+      await cam(page, { yaw: Math.PI + 0.7, pitch: 0.12, dist: 11 });
+      await sleep(900);
+      await cast(page, DAO.kiem.ult, true);
+      for (let k = 0; k < 10; k++) {
+        await snap(page, r.out, `hoathan-4-phap-tuong-f${k}.jpg`, { wait: 0 });
+        await sleep(100);
+      }
+      await sleep(2500);
+    }
+    await gm(page, 'killall', 800);
+    await gm(page, 'tp 2048 2088', 1400);
+    await cam(page, { yaw: Math.PI + 0.5, pitch: 0.2, dist: 6 });
+    // 5) draw call: Tắt / mặc định / Đầy đủ (bản cũ: Tắt / Bật)
+    const m: Record<string, number> = {};
+    for (const mm of ['off', mode, 'full']) {
+      await setMode(page, mm);
+      await sleep(5200);
+      m[mm] = (await perfSample(page)).drawCalls;
+    }
+    rows.push({ realm: re.label, ...m });
+    console.log('[shots:realmaura] cmp draw', JSON.stringify(rows[rows.length - 1]));
+  }
+  fs.writeFileSync(path.join(r.out, 'draw.json'), JSON.stringify(rows, null, 2));
+  await ctx.close();
 }
