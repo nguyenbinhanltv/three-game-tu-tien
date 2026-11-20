@@ -461,7 +461,7 @@ export function App() {
       {title && (
         <div className="title-screen">
           <div className="ts-sub">
-            <Calli k={phase === 'login' ? 'ui.subtitle' : regional('ui.subtitle')} em={2.3} />
+            <Calli k={phase === 'login' ? 'ui.subtitle' : regional('ui.subtitle')} em={3.7} />
           </div>
           {phase === 'login' && <Login />}
           {(phase === 'connecting' || phase === 'loading' || phase === 'game') && <LoadingPanel onDone={() => setTitle(false)} />}

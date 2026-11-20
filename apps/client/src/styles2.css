@@ -533,5 +533,11 @@
   vertical-align: middle;
 }
 .ts-sub .calli {
-  filter: drop-shadow(0 0 8px var(--u-x-rgba-230-221-203-0-95));
+  /* viền tối + bóng đổ để tách khỏi tranh nền (sáng lẫn tối), không dùng quầng sáng như chữ thường */
+  filter: drop-shadow(0 0 1.5px var(--u-ink-0)) drop-shadow(0 2px 5px var(--u-ink-0));
+}
+
+/* Ảnh phụ đề cao hơn chữ thường nhiều: lề âm để không đẩy thẻ đăng nhập xuống (720p vốn đã sát đáy). */
+.ts-sub .calli-wrap {
+  margin: -0.6em 0;
 }

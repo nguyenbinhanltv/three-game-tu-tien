@@ -104,6 +104,31 @@
         }
       ]
     },
+    "ult": {
+      "items": [
+        {
+          "id": "skl_van_kiem_quy_tong",
+          "key": "skill.skl_van_kiem_quy_tong.name",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.04
+        },
+        {
+          "id": "skl_kim_cuong_bat_hoai",
+          "key": "skill.skl_kim_cuong_bat_hoai.name",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.04
+        },
+        {
+          "id": "skl_hoi_thien_dan_lo",
+          "key": "skill.skl_hoi_thien_dan_lo.name",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.04
+        }
+      ]
+    },
     "chapter": {
       "items": [
         {
@@ -149,35 +174,35 @@
           "id": "sub_van_lam",
           "key": "ui.subtitle",
           "style": "gold",
-          "size": 95,
+          "size": 150,
           "spacing": 0.03
         },
         {
           "id": "sub_doan_mach",
           "key": "ui.subtitle.doan_mach",
           "style": "gold",
-          "size": 95,
+          "size": 150,
           "spacing": 0.03
         },
         {
           "id": "sub_van_hai",
           "key": "ui.subtitle.van_hai",
           "style": "gold",
-          "size": 95,
+          "size": 150,
           "spacing": 0.03
         },
         {
           "id": "sub_thien_khuyet",
           "key": "ui.subtitle.thien_khuyet",
           "style": "gold",
-          "size": 95,
+          "size": 150,
           "spacing": 0.03
         },
         {
           "id": "sub_bac_hoang",
           "key": "ui.subtitle.bac_hoang",
           "style": "gold",
-          "size": 95,
+          "size": 150,
           "spacing": 0.03
         },
         {
