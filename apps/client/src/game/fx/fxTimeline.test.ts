@@ -290,6 +290,10 @@ describe('VS-1: chiêu làm lại giữ biến thức (tín hiệu thị giác c
     'skl_kim_chung_tran',
     'skl_son_nhac_hoa_than',
     'skl_thien_kim_phap_tuong',
+    'skl_thiet_bich_xung',
+    'skl_dich_son_xung',
+    'skl_anh_thiet_than',
+    'skl_thuan_di_ho_the',
   ];
   it('mọi biến thức trong methods.json của chiêu đã làm lại có sự kiện riêng trong timeline', () => {
     for (const id of REDONE) {
@@ -302,7 +306,7 @@ describe('VS-1: chiêu làm lại giữ biến thức (tín hiệu thị giác c
   });
 });
 
-describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu một hình khối)', () => {
+describe('VS-1 Hộ pháp: 10 chiêu làm lại (đồng/nâu/đá, mỗi chiêu một hình khối)', () => {
   /** Hình khối chủ đạo của từng chiêu (nhận diện riêng). */
   const HERO: Record<string, string[]> = {
     skl_thiet_quyen_chan_dia: ['rubble_a'],
@@ -311,6 +315,10 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
     skl_son_nhac_hoa_than: ['rock_spire', 'rubble_b'],
     skl_kim_cuong_bat_hoai: ['shield_plate', 'diamond_cage'],
     skl_thien_kim_phap_tuong: ['rock_spire', 'rune_ring2'],
+    skl_thiet_bich_xung: ['shield_plate'],
+    skl_dich_son_xung: ['rock_spire', 'rift_line'],
+    skl_anh_thiet_than: ['card', 'rune_ring2'],
+    skl_thuan_di_ho_the: ['shield_plate', 'rune_ring2'],
   };
   const all = (id: string) => {
     const tl = FX_TIMELINE.get(id)!;
@@ -352,10 +360,19 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
     for (const id of Object.keys(HERO)) {
       const ult = SKILL.get(id)!.ult === true;
       const ev = all(id);
+      // Chiêu lướt kích theo S.FX: t = 0 là lúc nhận tin (không có báo trước), cú húc ở mốc `hit` riêng sau khi trượt tới nơi.
+      const dash = FX_TIMELINE.get(id)!.trigger === 'fx';
+      const stops = ev.filter((e) => e.type === 'hitstop').map((e) => e.t);
+      const hit = dash ? Math.min(...stops) : 0;
       const snd = ev.filter((e) => e.type === 'soundAt').map((e) => e.t);
-      expect(Math.min(...snd), id).toBeLessThan(0);
+      if (dash) {
+        expect(Math.min(...ev.map((e) => e.t)), id).toBeGreaterThanOrEqual(0);
+        expect(hit, id).toBeGreaterThan(0.15);
+        expect(hit, id).toBeLessThanOrEqual(0.35);
+      }
+      expect(Math.min(...snd), id).toBeLessThan(dash ? hit : 0);
       expect(
-        snd.some((t) => t === 0),
+        snd.some((t) => t === hit),
         id,
       ).toBe(true);
       for (const e of ev) {
@@ -366,13 +383,13 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
         }
         if (e.type === 'slowmo') expect(ult, id).toBe(true);
       }
-      // Đòn kết đúng mốc trúng: khựng + rung tại t = 0.
+      // Đòn kết đúng mốc trúng: khựng + rung tại mốc trúng (t = 0; chiêu lướt: mốc húc).
       expect(
-        ev.some((e) => e.type === 'hitstop' && e.t === 0),
+        ev.some((e) => e.type === 'hitstop' && e.t === hit),
         id,
       ).toBe(true);
       expect(
-        ev.some((e) => e.type === 'shake' && e.t === 0),
+        ev.some((e) => e.type === 'shake' && e.t === hit),
         id,
       ).toBe(true);
     }
@@ -388,6 +405,10 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
     expect(stay('skl_son_nhac_hoa_than', ['rune_ring2'], 'stomp')).toBe(true);
     expect(stay('skl_kim_cuong_bat_hoai', ['diamond_cage'])).toBe(true);
     expect(stay('skl_thien_kim_phap_tuong', ['rune_ring2'])).toBe(true);
+    expect(stay('skl_anh_thiet_than', ['rune_ring2'])).toBe(true);
+    expect(stay('skl_anh_thiet_than', ['shield_plate'], 'self')).toBe(true);
+    expect(stay('skl_thuan_di_ho_the', ['shield_plate'])).toBe(true);
+    expect(stay('skl_thuan_di_ho_the', ['rune_ring2'], 'taunt')).toBe(true);
   });
 });
 
@@ -412,5 +433,28 @@ describe('camFade: khối cao quanh người tự ẩn khi nằm giữa camera v
       expect(tall.length, id).toBeGreaterThan(0);
       for (const e of tall) expect((e as { camFade?: boolean }).camFade, id).toBe(true);
     }
+  });
+});
+
+describe('unless: biến thức thay một phần hình chung', () => {
+  it('Dịch Sơn Xung: đẩy (mặc định, stun) có vách đá trượt về trước; kéo (pull) bỏ vách trượt, có đá kéo về', () => {
+    const tl = FX_TIMELINE.get('skl_dich_son_xung')!;
+    const pushed = (v?: string) =>
+      fxEventsFor(tl, -1, v).filter((e) => e.type === 'mesh' && e.shape === 'rock_spire' && (e as { unless?: string }).unless === 'pull')
+        .length;
+    expect(pushed()).toBeGreaterThan(0);
+    expect(pushed('stun')).toBe(pushed());
+    expect(pushed('pull')).toBe(0);
+    expect(fxEventsFor(tl, -1, 'pull').some((e) => e.type === 'mesh' && e.shape === 'rock_spire')).toBe(true);
+    // Timeline không dùng `unless` thì trả đúng mảng gốc (không sao chép).
+    const plain = FX_TIMELINE.get('skl_kim_chung_tran')!;
+    expect(fxEventsFor(plain, -1)).toBe(plain.events);
+  });
+  it('chiêu lướt Hộ pháp vẫn kích theo S.FX đúng loại, đúng công pháp', () => {
+    const a = FX_TIMELINE.get('skl_thiet_bich_xung')!;
+    expect([a.trigger, a.fxKind, a.method]).toEqual(['fx', 'dash', 'bat_dong_kim_than']);
+    const b = FX_TIMELINE.get('skl_dich_son_xung')!;
+    expect([b.trigger, b.fxKind]).toEqual(['fx', 'dichson']);
+    expect(b.replaces).toContain('dichson');
   });
 });
