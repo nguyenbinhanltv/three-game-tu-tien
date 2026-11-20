@@ -1,5 +1,35 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Thiên Nhân Ngũ Suy: bản chuẩn hành vi > cả chuỗi năm ải, hạt giống 3 1`] = `
+{
+  "cleared": 5,
+  "ended": true,
+  "n": 733,
+  "sha": "5741dfdb49f063a328c2d62b32edab0ba9b7e00e",
+  "t": 200050,
+}
+`;
+
+exports[`Thiên Nhân Ngũ Suy: bản chuẩn hành vi > cả chuỗi năm ải, hạt giống 11 1`] = `
+{
+  "cleared": 5,
+  "ended": true,
+  "n": 734,
+  "sha": "dce9f0f6b363452a5a5f3e0ff0acadd8b975e005",
+  "t": 200050,
+}
+`;
+
+exports[`Thiên Nhân Ngũ Suy: bản chuẩn hành vi > cả chuỗi năm ải, hạt giống 2026 1`] = `
+{
+  "cleared": 5,
+  "ended": true,
+  "n": 731,
+  "sha": "626d56790b58d06ebe5dd6e5ab7c3252f4080a38",
+  "t": 200050,
+}
+`;
+
 exports[`độ kiếp Trúc Cơ: bản chuẩn hành vi > toàn bộ 40 s, hạt giống 1 1`] = `
 {
   "ended": true,

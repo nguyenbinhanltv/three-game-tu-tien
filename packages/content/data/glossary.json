@@ -534,6 +534,24 @@
       "sat_luc": "Sát Lục"
     }
   },
+  "nguSuy": {
+    "linh_luc_suy": "Linh Lực Suy",
+    "nhuc_than_suy": "Nhục Thân Suy",
+    "than_thuc_suy": "Thần Thức Suy",
+    "tho_nguyen_suy": "Thọ Nguyên Suy",
+    "dao_tam_suy": "Đạo Tâm Suy"
+  },
+  "nguSuyTerms": {
+    "suy_khi": "suy khí",
+    "linh_nhan": "Linh Nhãn",
+    "toi_the_loi": "Tôi Thể Lôi",
+    "loi_an": "lôi ẩn",
+    "ngung_than": "ngưng thần",
+    "tho_dang": "Thọ Đăng",
+    "suy_phong": "suy phong",
+    "pha_vong": "phá vọng",
+    "law_first": "pháp tắc sơ ngộ"
+  },
   "huyenKiepGroups": {
     "ngoai": "Ngoại kiếp",
     "noi": "Nội kiếp",

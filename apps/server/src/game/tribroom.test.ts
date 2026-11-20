@@ -126,16 +126,19 @@ const xfers = (p: Ent) => sent.filter((s) => s.type === S.TRANSFER && s.to === p
 
 describe('dữ liệu tribulations.json', () => {
   it('bốn kiếp mở ra từ bốn đại viên mãn, pha liền mạch tới hết thời lượng', () => {
-    expect(TRIB_IDS.sort()).toEqual(['anh_bien', 'hoa_than', 'ket_dan', 'nguyen_anh', 'truc_co']);
+    // Kiếp chuỗi Thiên Nhân Ngũ Suy (TN-4) chưa gắn vào thang cấp: kiểm riêng ở tribsuy.test.ts.
+    const ids = TRIB_IDS.filter((i) => !TRIB_DEFS[i].chain);
+    expect(TRIB_IDS.filter((i) => TRIB_DEFS[i].chain)).toEqual(['ngu_suy']);
+    expect(ids.sort()).toEqual(['anh_bien', 'hoa_than', 'ket_dan', 'nguyen_anh', 'truc_co']);
     for (const level of PEAK_LEVELS) expect(tribForLevel(level)?.from).toBe(level);
     expect(tribForLevel(16)).toBeNull();
     for (const id of TRIB_IDS) {
       const d = TRIB_DEFS[id];
-      expect(d.to).toBe(d.from + 1);
+      if (!d.chain) expect(d.to).toBe(d.from + 1);
       expect(d.phases.at(-1)!.end).toBe(d.duration);
       for (let i = 1; i < d.phases.length; i++) expect(d.phases[i].end).toBeGreaterThan(d.phases[i - 1].end);
     }
-    expect(TRIB_IDS.map((i) => TRIB_DEFS[i].duration).sort((a, b) => a - b)).toEqual([40, 55, 65, 80, 90]);
+    expect(ids.map((i) => TRIB_DEFS[i].duration).sort((a, b) => a - b)).toEqual([40, 55, 65, 80, 90]);
     expect(TRIB_DEFS.nguyen_anh.room).toBe('tribulation');
     expect(TRIB_DEFS.hoa_than.room).toBe('tribulation');
     expect(TRIB_DEFS.ket_dan.room).toBe('world');
