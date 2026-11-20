@@ -43,13 +43,14 @@ def thiet_quyen():
         mesh('burst', -0.02, 0.11, at='area', offset=[0, 0.4, 0], scale=2.6, billboard=True, sweep=0, tone='body', cross=True, tier=0),
         flip('spark_burst', -0.02, 0.34, 3.4, at='area', offset=[0, 0.7, 0], alpha=0.8, tone='body', tier=0),
         # vòng nứt tỏa (hiện đủ ngay) tối + viền sáng; decal nứt/cháy lưu lại
-        mesh('crack_radial', -0.03, 1.0, at='area', scale=6.2, alpha=1, sweep=0.02, erodeFrom=0.8, shadow=False, tone='core', tier=0, seed=2),
-        mesh('crack_radial', -0.03, 0.7, at='area', offset=[0, 0.03, 0], scale=6.2, alpha=0.9, sweep=0.02, erodeFrom=0.5, shadow=False, tone='body', tier=0, seed=2),
-        decal('crack', -0.03, 6.8, 2.8, at='area', grow=0.05, tone='core', alpha=1, tier=1),
+        mesh('crack_radial', -0.03, 1.0, at='area', scale=1.0, fit='area', alpha=1, sweep=0.02, erodeFrom=0.8, shadow=False, tone='core', tier=0, seed=2),
+        mesh('crack_radial', -0.03, 0.7, at='area', offset=[0, 0.03, 0], scale=1.0, fit='area', alpha=0.9, sweep=0.02, erodeFrom=0.5, shadow=False, tone='body', tier=0, seed=2),
+        decal('crack', -0.03, 7.0, 2.8, at='area', grow=0.05, tone='core', alpha=1, tier=1),
         decal('scorch', -0.03, 5.4, 3.0, at='area', grow=0.05, tone='shadow', alpha=0.85, tier=0),
         # vòng sóng xung sắc nét: hai vành mảnh (rune_ring2) mở rộng nhanh, màu đồng đậm, không phủ mờ
-        mesh('rune_ring2', -0.03, 0.4, at='area', offset=[0, 0.08, 0], scale=2.4, scaleTo=7.4, sweep=0.04, erodeFrom=0.55, alpha=1, shadow=False, tone='body', tier=0, seed=3),
-        mesh('rune_ring2', 0.04, 0.36, at='area', offset=[0, 0.1, 0], scale=1.8, scaleTo=6.0, sweep=0.04, erodeFrom=0.5, alpha=0.9, shadow=False, tone='core', tier=1, seed=4),
+        # vòng sóng xung theo VÙNG THẬT của server (`fit: area`, scale tương đối theo bán kính S.FX: 6 m mặc định, ~8 m ở biến thức wide)
+        mesh('rune_ring2', -0.03, 0.4, at='area', offset=[0, 0.08, 0], scale=0.45, scaleTo=1.25, fit='area', sweep=0.04, erodeFrom=0.7, alpha=1, shadow=False, tone='body', tier=0, seed=3),
+        mesh('rune_ring2', 0.04, 0.36, at='area', offset=[0, 0.1, 0], scale=0.4, scaleTo=1.05, fit='area', sweep=0.04, erodeFrom=0.65, alpha=1, shadow=False, tone='core', tier=1, seed=4),
         # bụi nâu ở chân (thấp, dày) + hạt
         flip('dust_kick', 0.0, 0.8, 5.0, at='area', offset=[0, 0.7, 0], alpha=0.7, tone='core', tier=0),
         flip('dust_kick', 0.1, 0.8, 3.8, at='area', offset=[2.0, 0.6, 1.4], alpha=0.6, tone='core', tier=1),
@@ -58,8 +59,25 @@ def thiet_quyen():
         parts('dust', 0.0, 60, 5, 1, 0.8, 0.3, at='area', offset=[0, 0.3, 0], tone='core', tier=1),
     ]
     ev += debris(-0.02, 'area', 10, 2.4, 3.4, 1.3, seed0=0.5)
-    ev += feel(0.0, ms=80, sh=0.55, fl=0.16, vg=0.4, fov=3.0)
-    return {'skill': 'skl_thiet_quyen_chan_dia', 'replaces': ['thietquyen'], 'events': ev}
+    ev += feel(0.0, ms=80, sh=0.55, fl=0.15, vg=0.35, fov=3.0)
+    return {
+        'skill': 'skl_thiet_quyen_chan_dia',
+        'replaces': ['thietquyen'],
+        'events': ev,
+        'variants': {
+            # a = vùng rộng ×1,33: vòng ngoài thứ ba quét ra rìa + decal nứt lớn hơn + thêm 4 tảng đá xa
+            'wide': [
+                mesh('rune_ring2', 0.08, 0.4, at='area', offset=[0, 0.12, 0], scale=0.5, scaleTo=1.15, fit='area', sweep=0.04, erodeFrom=0.5, alpha=0.9, shadow=False, tone='body', tier=1, seed=5),
+                decal('crack', 0.0, 8.6, 2.8, at='area', grow=0.08, tone='core', alpha=0.9, tier=1),
+            ]
+            + debris(0.02, 'area', 4, 6.0, 2.8, 1.5, seed0=1.2),
+            # b = làm chậm: dấu hiệu thị giác = vòng triện tối + vành `core` ở lại lâu dưới chân (vùng đang làm chậm kẻ địch)
+            'slow': [
+                decal('rune', 0.1, 6.5, 3.4, at='area', grow=0.3, tone='shadow', alpha=0.9, tier=0),
+                mesh('rune_ring2', 0.15, 2.6, at='area', offset=[0, 0.14, 0], scale=0.55, scaleTo=0.6, fit='area', sweep=0.3, erodeFrom=0.8, alpha=0.85, shadow=False, tone='core', tier=0, seed=6),
+            ],
+        },
+    }
 
 
 R['skl_thiet_quyen_chan_dia'] = thiet_quyen
