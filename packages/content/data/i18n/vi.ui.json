@@ -316,6 +316,7 @@
   "ui.trib.suy.label": "Suy khí {n}%",
   "ui.trib.suy.rest": "Điều tức ({n} s)",
   "ui.trib.suy.stage": "Ải {n}/{max}",
+  "ui.trib.suy.short": "Ải {n}",
   "ui.trib.suy_thuc.hint": "[X] Ngưng thần",
   "ui.trib.suy_thuc.cd": "Ngưng thần hồi ({n} s)",
   "ui.trib.suy_thuc.wave": "Lôi ẩn đang tụ!",

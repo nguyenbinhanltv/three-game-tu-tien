@@ -1,0 +1,73 @@
+{
+ "skill": "suy_toi_miss",
+ "palette": "suy_the",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "seal_block",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    2.4,
+    0
+   ],
+   "scale": [
+    1.5,
+    1.2,
+    1.5
+   ],
+   "scaleTo": [
+    1.0,
+    1.6,
+    1.0
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.1,
+   "tone": "core",
+   "alpha": 0.7,
+   "seed": 56,
+   "keepUp": true,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "area",
+   "offset": [
+    0,
+    2.2,
+    0
+   ],
+   "scale": 2.4,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "core",
+   "alpha": 0.6,
+   "flip": "ink_smoke",
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 16,
+   "speed": 1.6,
+   "spread": 1.0,
+   "life": 0.9,
+   "size": 0.28,
+   "at": "area",
+   "offset": [
+    0,
+    2.2,
+    0
+   ],
+   "tone": "core",
+   "grav": 1.5,
+   "tier": 1
+  }
+ ]
+}

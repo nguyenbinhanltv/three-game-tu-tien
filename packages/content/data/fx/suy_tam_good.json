@@ -1,0 +1,107 @@
+{
+ "skill": "suy_tam_good",
+ "palette": "suy_tam",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "slash_cross",
+   "t": 0.0,
+   "dur": 0.4,
+   "at": "target",
+   "scale": [
+    2.4,
+    1,
+    2.4
+   ],
+   "rot": [
+    90,
+    0,
+    0
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.4,
+   "ragged": 0.7,
+   "tone": "accent",
+   "alpha": 0.95,
+   "seed": 94,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.11,
+   "at": "target",
+   "scale": 2.0,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "alpha": 0.75,
+   "cross": true,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.02,
+   "dur": 0.5,
+   "at": "target",
+   "offset": [
+    0,
+    -0.9,
+    0
+   ],
+   "scale": [
+    0.4,
+    0.5,
+    0.4
+   ],
+   "scaleTo": [
+    3.0,
+    1.2,
+    3.0
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.4,
+   "ragged": 0.7,
+   "tone": "accent",
+   "alpha": 0.8,
+   "seed": 95,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0.0,
+   "n": 20,
+   "speed": 5.5,
+   "spread": 0.9,
+   "life": 0.7,
+   "size": 0.13,
+   "at": "target",
+   "tone": "accent",
+   "grav": 8,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "petal",
+   "t": 0.05,
+   "n": 22,
+   "speed": 2.0,
+   "spread": 0.9,
+   "life": 1.6,
+   "size": 0.18,
+   "at": "self",
+   "tone": "rim",
+   "grav": -1.0,
+   "tier": 1
+  },
+  {
+   "type": "shake",
+   "t": 0.0,
+   "level": 0.15,
+   "tier": 1
+  }
+ ]
+}

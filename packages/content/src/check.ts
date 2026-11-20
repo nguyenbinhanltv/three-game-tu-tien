@@ -45,6 +45,8 @@ import {
   POSE_SWORD_SWAP,
   validatePose,
   validateFxTimeline,
+  fxDrawCount,
+  FX_SKILL_DRAW_MAX,
   validateSkillPose,
   validateSkillRules,
   SKILL_ID_ALIASES,
@@ -81,6 +83,9 @@ import {
   POSES,
   FX_TIMELINES,
   MON_FX_TIMELINES,
+  SUY_FX,
+  SUY_FX_STAGE,
+  SUY_FX_TIMELINES,
   QUEST,
   QUESTS,
   CHAPTERS,
@@ -141,6 +146,24 @@ const POSE = new Map(POSES.map((p) => [p.id, p]));
 // Dòng thời gian hiệu ứng (VFX-V0): chiêu có thật, mốc hợp lệ, ngân sách ≤ 12 draw và ≤ 1.500 hạt mỗi chiêu.
 for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKILL.has(id) || id.startsWith('fx_'))) err(m);
 for (const f of MON_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('mon_'))) err(m);
+// TN-4: hiệu ứng Thiên Nhân Ngũ Suy. Mỗi timeline theo luật chung (≤ 12 draw); cả một ải (mọi timeline của ải hợp lại) ≤ 25 draw.
+for (const f of SUY_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('suy_'))) err(m);
+{
+  const used = new Set<string>();
+  for (const mech of SUY_MECHANICS) {
+    const keys = SUY_FX_STAGE[mech] ?? [];
+    if (!keys.length) err(`fx ngũ suy: ải ${mech} chưa có timeline`);
+    const events = keys.flatMap((k) => {
+      used.add(k);
+      const tl = SUY_FX.get(k);
+      if (!tl) err(`fx ngũ suy: ải ${mech} cần timeline ${k} (chạy python tools/vfx/gen-fx-suy.py)`);
+      return tl?.events ?? [];
+    });
+    const n = fxDrawCount(events);
+    if (n > FX_SKILL_DRAW_MAX) err(`fx ngũ suy: ải ${mech} dùng ${n} draw > ${FX_SKILL_DRAW_MAX}`);
+  }
+  for (const f of SUY_FX_TIMELINES) if (!used.has(f.skill)) err(`fx ngũ suy: timeline ${f.skill} không thuộc ải nào (SUY_FX_STAGE)`);
+}
 // Mỗi skill một động tác riêng, không dài quá GCD (chiêu niệm chú: động tác chém sau khi niệm xong cũng ≤ GCD).
 // Chiêu lướt (K-2) không có động tác riêng: dùng chung fx `dash`, hình lướt do client dựng.
 const POSED = ALL_SKILLS.filter((s) => s.kind !== 'dash');
