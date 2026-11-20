@@ -355,7 +355,7 @@ function DeathOverlay() {
       <Panel tone="paper" size="s" className="death-panel" role="alertdialog" aria-labelledby="death-title">
         <Header
           id="death-title"
-          title={soulFlee ? t('ui.dead.soul_title') : t('ui.dead.title')}
+          title={<Calli k={soulFlee ? 'ui.dead.soul_title' : 'ui.dead.title'} em={2.7} />}
           sub={soulFlee ? t('ui.dead.soul_sub') : t('ui.dead.sub')}
         />
         <PanelBody>
@@ -366,7 +366,7 @@ function DeathOverlay() {
           <p className="death-hint">{t('ui.dead.hint')}</p>
           <div className="death-actions">
             <Button variant="primary" size="l" onClick={() => Game.current?.send(C.RESPAWN)}>
-              {t('ui.dead.respawn')}
+              <Calli k="ui.dead.respawn" em={2.4} />
             </Button>
           </div>
         </PanelBody>

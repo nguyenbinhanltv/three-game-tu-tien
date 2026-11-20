@@ -58,7 +58,8 @@ export function Header({
   id,
   plate,
 }: {
-  title: string;
+  /** `string` hoặc ảnh thư pháp (`<Calli>`: chữ thật nằm ở aria-label của ảnh). */
+  title: ReactNode;
   sub?: string;
   onClose?: () => void;
   actions?: ReactNode;

@@ -278,5 +278,109 @@
     "w": 718,
     "h": 170,
     "hash": "e8cf6dfba50f"
+  },
+  "ch1": {
+    "key": "ui.chapters.ch1.name",
+    "text": "Vân Lam Sơn Mạch",
+    "file": "chapter-ch1.bfc1f4e44599.png",
+    "w": 677,
+    "h": 130,
+    "hash": "bfc1f4e44599"
+  },
+  "ch2": {
+    "key": "ui.chapters.ch2.name",
+    "text": "Đoạn Mạch Cổ Cốc",
+    "file": "chapter-ch2.147d79254886.png",
+    "w": 689,
+    "h": 131,
+    "hash": "147d79254886"
+  },
+  "ch3": {
+    "key": "ui.chapters.ch3.name",
+    "text": "Vân Hải Phù Đảo",
+    "file": "chapter-ch3.5ff72b77e784.png",
+    "w": 551,
+    "h": 120,
+    "hash": "5ff72b77e784"
+  },
+  "ch4": {
+    "key": "ui.chapters.ch4.name",
+    "text": "Thiên Khuyết Cổ Thành",
+    "file": "chapter-ch4.b13fdf6d8a01.png",
+    "w": 779,
+    "h": 134,
+    "hash": "b13fdf6d8a01"
+  },
+  "ch5": {
+    "key": "ui.chapters.ch5.name",
+    "text": "Bắc Hoang Tẫn Nguyên",
+    "file": "chapter-ch5.1055caf12c09.png",
+    "w": 754,
+    "h": 163,
+    "hash": "1055caf12c09"
+  },
+  "sub_van_lam": {
+    "key": "ui.subtitle",
+    "text": "Huyền Linh Giới · Vân Lam Sơn Mạch",
+    "file": "screen-sub_van_lam.4dee2ee108b0.png",
+    "w": 1726,
+    "h": 196,
+    "hash": "4dee2ee108b0"
+  },
+  "sub_doan_mach": {
+    "key": "ui.subtitle.doan_mach",
+    "text": "Huyền Linh Giới · Đoạn Mạch Cổ Cốc",
+    "file": "screen-sub_doan_mach.4773cd6f637c.png",
+    "w": 1743,
+    "h": 196,
+    "hash": "4773cd6f637c"
+  },
+  "sub_van_hai": {
+    "key": "ui.subtitle.van_hai",
+    "text": "Huyền Linh Giới · Vân Hải Phù Đảo",
+    "file": "screen-sub_van_hai.88891fe45d05.png",
+    "w": 1554,
+    "h": 196,
+    "hash": "88891fe45d05"
+  },
+  "sub_thien_khuyet": {
+    "key": "ui.subtitle.thien_khuyet",
+    "text": "Huyền Linh Giới · Thiên Khuyết Cổ Thành",
+    "file": "screen-sub_thien_khuyet.77dca38f16cb.png",
+    "w": 1865,
+    "h": 196,
+    "hash": "77dca38f16cb"
+  },
+  "sub_bac_hoang": {
+    "key": "ui.subtitle.bac_hoang",
+    "text": "Giới Khích · Bắc Hoang Tẫn Nguyên",
+    "file": "screen-sub_bac_hoang.5bcd527faa7b.png",
+    "w": 1672,
+    "h": 229,
+    "hash": "5bcd527faa7b"
+  },
+  "dead": {
+    "key": "ui.dead.title",
+    "text": "Ngươi đã trọng thương",
+    "file": "screen-dead.43b5f3adbf1f.png",
+    "w": 883,
+    "h": 191,
+    "hash": "43b5f3adbf1f"
+  },
+  "dead_soul": {
+    "key": "ui.dead.soul_title",
+    "text": "Nguyên anh xuất khiếu",
+    "file": "screen-dead_soul.3f39c2c41f1f.png",
+    "w": 906,
+    "h": 192,
+    "hash": "3f39c2c41f1f"
+  },
+  "respawn": {
+    "key": "ui.dead.respawn",
+    "text": "Hồi sinh",
+    "file": "screen-respawn.5f6cff6de23e.png",
+    "w": 273,
+    "h": 110,
+    "hash": "5f6cff6de23e"
   }
 }
