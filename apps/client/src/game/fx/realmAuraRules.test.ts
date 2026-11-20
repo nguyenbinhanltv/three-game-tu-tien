@@ -15,6 +15,7 @@ import {
   summonsPhantom,
   swordCount,
   auraWeights,
+  effectiveOpacity,
   otherAuraLevel,
   OTHERS_MAIN_DIST,
   OTHERS_OFF_DIST,
@@ -160,6 +161,24 @@ describe('realmAuraRules', () => {
     it('pháp tướng sống ≤ 1,3 s', () => {
       expect(PHANTOM_DUR).toBeLessThanOrEqual(1.3);
       expect(phantomPhase(PHANTOM_DUR).alpha).toBeGreaterThan(0);
+    });
+    it('độ hiện hiệu dụng ≤ 1 và ≤ trần theo vai ở mọi chế độ, kể cả khi độ sáng gốc vượt 1', () => {
+      const cap = { main: 1, sub: 0.85, extra: 0.85, bg: 0.35 } as const;
+      for (const mode of ['min', 'std', 'full'] as const) {
+        const w = auraWeights({ mode, combat: 'dim', moving: false, fighting: false, settle: 1 });
+        const ww = { wMain: w.main, wSub: w.sub, wBg: w.bg };
+        for (const base of [0, 0.4, 1, 1.9, 5]) {
+          for (const role of ['main', 'sub', 'extra', 'bg', 'event'] as const) {
+            const o = effectiveOpacity(base, role, ww);
+            expect(o).toBeLessThanOrEqual(1);
+            if (role !== 'event') expect(o).toBeLessThanOrEqual(cap[role] + 1e-9);
+          }
+        }
+      }
+      // Chuẩn: phụ ≤ 0,5, nền ≤ 0,2 đúng như cam kết
+      const std = auraWeights({ mode: 'std', combat: 'dim', moving: false, fighting: false, settle: 1 });
+      expect(effectiveOpacity(1, 'sub', { wMain: std.main, wSub: std.sub, wBg: std.bg })).toBeLessThanOrEqual(0.5);
+      expect(effectiveOpacity(1, 'bg', { wMain: std.main, wSub: std.sub, wBg: std.bg })).toBeLessThanOrEqual(0.2);
     });
   });
 });

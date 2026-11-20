@@ -240,3 +240,12 @@ export function settledTarget(still: number, meditating: boolean): 0 | 1 {
 export function phantomAnchor(dx: number, dz: number, sign: number): { x: number; z: number } {
   return { x: -dz * sign * 3.1 + dx * 1.4, z: dx * sign * 3.1 + dz * 1.4 };
 }
+
+/**
+ * Độ hiện thật của một lớp: độ sáng gốc (kẹp 0–1) × trần theo vai, và luôn ≤ 1 (alpha > 1 làm hệ số hòa trộn thường âm, trừ cả nền).
+ * Không có hệ số bù: trần theo vai là trần thật.
+ */
+export function effectiveOpacity(base: number, role: LayerRole, w: { wMain: number; wSub: number; wBg: number }): number {
+  const wt = role === 'main' ? w.wMain : role === 'bg' ? w.wBg : role === 'event' ? 1 : w.wSub;
+  return Math.max(0, Math.min(1, Math.max(0, Math.min(1, base)) * wt));
+}

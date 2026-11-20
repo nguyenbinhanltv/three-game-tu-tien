@@ -28,6 +28,7 @@ import {
   auraWeights,
   danBeat,
   danGlowVisibility,
+  effectiveOpacity,
   daoOf,
   haloVisibility,
   isCalm,
@@ -570,8 +571,7 @@ export class RealmAuraFx {
     const ok = (role: LayerRole): boolean => roleAllowed(role, bmode);
     /** Độ hiện = độ sáng gốc của lớp × trần theo vai (VS-0). */
     const show = (c: Ctx, m: FxMesh, op: number, role: LayerRole): void => {
-      const wt = role === 'main' ? c.wMain : role === 'bg' ? c.wBg : role === 'event' ? 1 : c.wSub;
-      m.fxOpacity = op * wt;
+      m.fxOpacity = effectiveOpacity(op, role, c);
       m.visible = m.fxOpacity > 0.02;
     };
     // Quầng sáng mềm: một hạt tròn mờ dần phát mỗi khung (cầu cộng sáng có mặt phẳng nên lộ cạnh đa giác).
@@ -606,7 +606,7 @@ export class RealmAuraFx {
           spiral.position.set(c.p.x, c.p.y + 0.08, c.p.z);
           spiral.quaternion.copy(_q.setFromAxisAngle(AX_Y, c.t * 1.8)).multiply(UPRIGHT);
           spiral.scale.set(3.3, 3.3, 2.1 + c.beat * 0.2);
-          show(c, spiral, c.vDan * 0.95 * 2, 'sub');
+          show(c, spiral, c.vDan * 0.95, 'sub');
         });
       }
     }
@@ -624,7 +624,7 @@ export class RealmAuraFx {
           feet.position.set(c.p.x, c.y0 + 0.09, c.p.z);
           feet.rotation.y = c.t * 0.3;
           feet.scale.set(1.5, 1, 1.5);
-          show(c, feet, c.gate * (feetRole === 'bg' ? 2.2 : 0.9), feetRole);
+          show(c, feet, c.gate * 0.9, feetRole);
         });
       }
       // ---------- Nguyên Anh nhỏ (thẻ): thu nhỏ và đặt TRÊN tên nhân vật, không đè lên tên ----------
@@ -637,7 +637,7 @@ export class RealmAuraFx {
           infant.quaternion.copy(c.camQ);
           infant.scale.set(INFANT_SCALE, INFANT_SCALE, 1);
           infant.fxK = c.t;
-          show(c, infant, Math.min(1, c.gate * 1.15) * 1.8, infantRole);
+          show(c, infant, Math.min(1, c.gate * 1.15), infantRole);
           halo(
             infant.position.x,
             infant.position.y,
@@ -739,7 +739,7 @@ export class RealmAuraFx {
         rune.position.set(c.p.x, c.p.y + 1.0, c.p.z);
         rune.rotation.y = -c.t * 0.7;
         rune.scale.set(1.4, 1, 1.4);
-        show(c, rune, c.gate * (runeRole === 'sub' ? 1.7 : 0.85), runeRole);
+        show(c, rune, c.gate * 0.85, runeRole);
       });
     }
     // Pháp tướng (event): tranh vẽ tay billboard, CHỈ bùng ≤ PHANTOM_DUR giây khi ra chiêu tối thượng, đặt LỆCH khỏi trục camera
