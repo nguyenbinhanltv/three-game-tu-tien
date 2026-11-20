@@ -118,10 +118,13 @@ const RIM = { 2: { hex: 0xffd98a, k: 0.8 }, 3: { hex: 0xbfd6ff, k: 1.8 }, 4: { h
 const WUXING = [0xf4ecd0, 0x4fd16a, 0x3a8cf0, 0xf0502a, 0xe3b43a];
 
 /** Màu theo đạo (phi kiếm, hạt linh khí, viền tranh pháp tướng). */
-const DAO_LOOK: Record<AuraDao, { body: number; rim: number; mote: number; art: number; artRim: number }> = {
-  kiem: { body: 0x2cc7dc, rim: 0xf2fdff, mote: 0x9fe2f0, art: 0, artRim: 0xa6e8ff },
-  ho: { body: 0xe39a2c, rim: 0xfff0c2, mote: 0xffc95a, art: 1, artRim: 0xffdc8a },
-  dan: { body: 0xe4452f, rim: 0xffd9a0, mote: 0x8ff0b0, art: 2, artRim: 0xffb98a },
+// `artTint` nhân vào màu tranh, `artUnder` là lớp bóng sẫm sau tranh: Hộ pháp nhuộm đồng/vàng kim + bóng nâu (tranh Huyền Vũ gốc xanh-trắng
+// đọc không ra pháp tướng Hộ pháp cạnh chiêu tông đồng); hai đạo còn lại giữ màu tranh gốc.
+type DaoLook = { body: number; rim: number; mote: number; art: number; artRim: number; artTint: number; artUnder: number };
+const DAO_LOOK: Record<AuraDao, DaoLook> = {
+  kiem: { body: 0x2cc7dc, rim: 0xf2fdff, mote: 0x9fe2f0, art: 0, artRim: 0xa6e8ff, artTint: 0xffffff, artUnder: 0x16243d },
+  ho: { body: 0xe39a2c, rim: 0xfff0c2, mote: 0xffc95a, art: 1, artRim: 0xffd27a, artTint: 0xffb24a, artUnder: 0x2a1708 },
+  dan: { body: 0xe4452f, rim: 0xffd9a0, mote: 0x8ff0b0, art: 2, artRim: 0xffb98a, artTint: 0xffffff, artUnder: 0x16243d },
 };
 
 // ---- Rim light lên chính nhân vật: emissive fresnel cộng vào vật liệu node của model, cường độ/màu theo `mesh.userData.rimCol` (đọc mỗi lần vẽ
@@ -746,9 +749,9 @@ export class RealmAuraFx {
     // (sang bên + hơi ra sau) để không che nhân vật; không còn ảnh mờ treo khi đứng yên.
     if (stage >= 3 && detail && ok('event')) {
       // Lớp bóng sẫm cùng hình đặt ngay sau tranh: tranh sáng đọc được trên nền ban ngày.
-      const under = mk(shapeGeometry('card'), 0x16243d, 'art', 0x000000);
+      const under = mk(shapeGeometry('card'), look.artUnder, 'art', 0x000000);
       under.fxA.set(1.3, 0, seed * 30, look.art);
-      const art = mk(shapeGeometry('card'), 0xffffff, 'art', look.artRim);
+      const art = mk(shapeGeometry('card'), look.artTint, 'art', look.artRim);
       art.fxA.set(1.3, 0, seed * 30, look.art);
       const ring = mk(QUAD_XZ, SILVER.body, 'decal', SILVER.rim);
       ring.fxA.set(0, 0, seed * 30, DECAL_RUNE);

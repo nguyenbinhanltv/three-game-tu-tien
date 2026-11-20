@@ -9,8 +9,8 @@ const tris = (s: (typeof FX_LIB_SHAPES)[number]) => {
 };
 
 describe('thư viện hình mesh VFX (VS-1)', () => {
-  it('đủ 20 hình, mỗi hình dựng được và dùng chung một bản (memo)', () => {
-    expect(FX_LIB_SHAPES.length).toBe(20);
+  it('đủ 25 hình, mỗi hình dựng được và dùng chung một bản (memo)', () => {
+    expect(FX_LIB_SHAPES.length).toBe(25);
     for (const s of FX_LIB_SHAPES) {
       expect(libGeometry(s)).toBe(libGeometry(s));
       expect(shapeGeometry(s)).toBe(libGeometry(s));
@@ -66,6 +66,11 @@ describe('thư viện hình mesh VFX (VS-1)', () => {
       'rubble_a',
       'rubble_b',
       'rubble_c',
+      'seal_block',
+      'bell_cage',
+      'rock_spire',
+      'shield_plate',
+      'diamond_cage',
     ] as const) {
       const bb = libGeometry(s).boundingBox!;
       const dims = [bb.max.x - bb.min.x, bb.max.y - bb.min.y, bb.max.z - bb.min.z].sort((a, b) => a - b);
