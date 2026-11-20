@@ -32,12 +32,21 @@ export function pmMaterialFor(name: string): THREE.Material | null {
   const isVein = name.endsWith('_vein');
   if (!isVein && !name.endsWith('_crystal')) return null;
   const vc = vertexColor();
-  const fres = pow(float(1).sub(normalView.dot(positionViewDirection).abs()), 2.4);
-  const m = new THREE.MeshStandardNodeMaterial({ roughness: isVein ? 0.16 : 0.1, metalness: isVein ? 0.05 : 0.3, name });
+  const fres = pow(float(1).sub(normalView.dot(positionViewDirection).abs()), 2.2);
+  // Như PROP-1 (`propCrystal`): màu đỉnh là gradient chân tối → lõi sáng ở mũi (Blender, 14 vòng); lõi nóng ở mũi (pha cùng sắc), fresnel viền cùng sắc màu đỉnh,
+  // mặt giữa sẫm nên có chiều sâu thay vì mảng trắng phẳng.
+  const lum = vc
+    .dot(vec3(0.3, 0.5, 0.2))
+    .mul(2.2)
+    .clamp(0, 1);
+  const core = vc.mul(float(1).add(lum.mul(lum).mul(0.9)));
+  const rim = vc
+    .normalize()
+    .mul(fres)
+    .mul(isVein ? 0.7 : 0.55);
+  const m = new THREE.MeshStandardNodeMaterial({ roughness: isVein ? 0.12 : 0.08, metalness: isVein ? 0.05 : 0.3, name });
   m.colorNode = vc.mul(isVein ? 0.3 : 0.55);
-  m.emissiveNode = isVein
-    ? vc.mul(1.15).add(vec3(0.12, 0.85, 0.65).mul(fres).mul(1.0))
-    : vc.mul(0.3).add(vec3(0.08, 0.6, 0.5).mul(fres).mul(0.9));
+  m.emissiveNode = isVein ? core.mul(0.8).add(rim) : vc.mul(0.45).add(rim);
   return m;
 }
 

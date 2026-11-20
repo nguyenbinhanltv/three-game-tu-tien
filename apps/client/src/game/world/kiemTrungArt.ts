@@ -1,9 +1,30 @@
 import * as THREE from 'three/webgpu';
-import { uniform } from 'three/tsl';
+import { float, mix, normalWorld, positionWorld, smoothstep, texture, uniform, vec3, vertexColor } from 'three/tsl';
 import { DUNGEON_EXIT, fbm, hash01, KIEM_TRUNG } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { createWorldMaterial } from '../../render/materials/world';
+import { getCloudNoise } from '../../render/noiseTex';
 import { DungeonFx } from './dungeonFx';
+
+/**
+ * Vật liệu đất của GLB `arch_kiem_trung` (gò mộ, vết đất): màu đỉnh (Blender) nhân nhiễu hạt mịn + nhiễu mảng theo toạ độ thế giới (không còn một màu phẳng), mặt ngửa phủ
+ * cỏ khô vàng úa theo nhiễu (đốm, không phủ kín), chân gò và mặt đứng sẫm hơn (đất ẩm), độ nhám cao. Vật liệu khác giữ nguyên.
+ */
+export function ktMaterialFor(name: string): THREE.Material | null {
+  if (!name.endsWith('_earth')) return null;
+  const nz = getCloudNoise();
+  const wp = positionWorld;
+  const fine = texture(nz, wp.xz.mul(1.9).add(wp.y.mul(1.3))).g;
+  const clump = texture(nz, wp.xz.mul(0.45).add(wp.y.mul(0.5))).a;
+  const speck = texture(nz, wp.xy.mul(7.0).add(wp.z.mul(4.0))).b;
+  const up = smoothstep(0.45, 0.9, normalWorld.y);
+  const grass = smoothstep(0.5, 0.75, clump).mul(up);
+  const base = vertexColor().mul(float(0.6).add(fine.mul(0.55)).add(speck.mul(0.2)));
+  const dry = vec3(0.5, 0.45, 0.24).mul(float(0.7).add(speck.mul(0.6)));
+  const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.96, metalness: 0, name });
+  m.colorNode = mix(base, dry, grass.mul(0.8)).mul(float(1).sub(float(1).sub(up).mul(0.25)));
+  return m;
+}
 
 /**
  * Cảnh Kiếm Trủng (DUN-1, bí cảnh đầu tiên; chỉ để nhìn, KHÔNG va chạm, không đổi vùng boss/đợt quái/cổng):
