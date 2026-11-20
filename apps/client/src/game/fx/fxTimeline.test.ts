@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FX_TIMELINE, SKILL } from '@dtl/content';
-import { fxEventsFor, skillTiming, validateFxTimeline } from '@dtl/shared';
+import { fxDrawCount, fxEventsFor, fxParticleCount, skillTiming, validateFxTimeline } from '@dtl/shared';
 import { paletteOf } from '../../render/vfx/palette';
 import { cancelDropsCast, scheduleEvents, variantFor } from './fxTimeline';
 
@@ -13,19 +13,19 @@ describe('FxRunner.scheduleEvents', () => {
     const burst = s.find((x) => x.ev.type === 'mesh' && x.ev.shape === 'burst')!;
     expect(burst.at).toBeCloseTo(tm.hitAt[0]! + burst.ev.t, 6);
     // Lưỡi liềm bắt đầu trước hitAt.
-    const cres = s.find((x) => x.ev.type === 'mesh' && x.ev.shape === 'crescent')!;
+    const cres = s.find((x) => x.ev.type === 'mesh' && x.ev.shape === 'slash_thick')!;
     expect(cres.at).toBeLessThan(tm.hitAt[0]!);
     // Đã sắp theo thời gian.
     for (let i = 1; i < s.length; i++) expect(s[i]!.at).toBeGreaterThanOrEqual(s[i - 1]!.at);
   });
 
-  it('bậc chất lượng: Thấp bỏ hạt phụ, decal, gai; Cao đủ', () => {
+  it('bậc chất lượng: Thấp bỏ hạt phụ, decal, hình đất; Cao đủ', () => {
     const hit = [0.28];
     const low = scheduleEvents(evs, hit, 0);
     const high = scheduleEvents(evs, hit, 2);
     expect(low.length).toBeLessThan(high.length);
     expect(low.some((x) => x.ev.type === 'decal')).toBe(false);
-    expect(low.some((x) => x.ev.type === 'mesh' && x.ev.shape === 'crescent')).toBe(true);
+    expect(low.some((x) => x.ev.type === 'mesh' && x.ev.shape === 'slash_thick')).toBe(true);
     expect(low.some((x) => x.ev.type === 'hitstop')).toBe(true);
   });
 
@@ -245,5 +245,27 @@ describe('dữ liệu timeline chiêu mẫu', () => {
     expect(paletteOf('thanh_moc_dan_kinh')).not.toEqual(k);
     expect(paletteOf(undefined)).toEqual(k);
     expect(paletteOf('khong_co')).toEqual(k);
+  });
+});
+
+describe('Kiếm Khí Trảm VS-1 (chiêu mẫu phong cách mới)', () => {
+  const tl = FX_TIMELINE.get('skl_kiem_khi_tram')!;
+  it('hợp lệ và trong ngân sách: ≤ 12 draw mỗi mốc, ≤ 25 cả chiêu, hạt ≤ 1.500', () => {
+    expect(validateFxTimeline(tl, (id) => SKILL.has(id))).toEqual([]);
+    expect(fxDrawCount(fxEventsFor(tl, -1))).toBeLessThanOrEqual(12);
+    expect(fxParticleCount(tl.events)).toBeLessThanOrEqual(1500);
+  });
+  it('dùng hình thư viện, flipbook, âm đặt mốc và khựng/rung/fov (không còn gai spike phẳng)', () => {
+    const ev = fxEventsFor(tl, -1);
+    const shapes = new Set(ev.flatMap((e) => (e.type === 'mesh' ? [e.shape] : [])));
+    expect(shapes.has('slash_thick')).toBe(true);
+    expect(shapes.has('flip')).toBe(true);
+    expect(shapes.has('spike')).toBe(false);
+    const types = new Set(ev.map((e) => e.type));
+    for (const t of ['soundAt', 'hitstop', 'shake', 'camera']) expect(types.has(t as 'soundAt'), t).toBe(true);
+    // Nhịp: có âm trước đòn (báo trước), trúng, và âm đúng mốc trúng.
+    const snd = ev.filter((e) => e.type === 'soundAt').map((e) => e.t);
+    expect(Math.min(...snd)).toBeLessThan(0);
+    expect(snd.some((t) => t === 0)).toBe(true);
   });
 });
