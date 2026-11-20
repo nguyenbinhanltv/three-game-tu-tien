@@ -15,7 +15,7 @@ import {
   vertexColor,
 } from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
-import { tkFbm } from './thienKhuyetSky';
+import { tkFbm } from './thienKhuyetNoise';
 
 /**
  * Vách núi bao quanh Thiên Khuyết (POLISH-1): lớp "da" mesh thật phủ lên vách địa hình (địa hình chỉ là heightmap dốc đứng, shader chỉ tô được màu).
