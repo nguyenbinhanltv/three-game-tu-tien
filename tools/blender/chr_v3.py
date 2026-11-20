@@ -53,6 +53,10 @@ TEXMAX = int(opt('--tex', 2048))
 SHEET = opt('--sheet')
 REPORT = opt('--report')
 SPRINGS = opt('--springs')
+C2_ON = '--c2' in argv  # NV3-B C2: tách lưới voan/váy/chân + thân dưới áo + xương phụ voan (tools/blender/chr_v3_c2.py)
+C2_CFG = None
+if C2_ON and SPRINGS:
+    C2_CFG = SPRINGS  # cấu hình khối "c2" nằm trong file springs của bộ
 WINGS = opt('--wings')  # cánh (DV-2 đợt 4): JSON {parent, region:{min,max} (nửa +X, tọa độ lưới NGUỒN), chains:[{name, pts:[[x,y,z]…]}]}, tự lấy đối xứng nửa -X
 NO_EXPORT = '--no-export' in argv
 BIND = opt('--bind')  # quái dị vực (DV-2 đợt 2): JSON {binds:[{box:{min,max}, bone|blend:[[z,bone],[z,bone]]|drop:[xương…]}]} ép vùng cứng (vũ khí, khiên, áo choàng) theo một xương, tọa độ lưới NGUỒN
@@ -1127,6 +1131,12 @@ if SPRINGS:
         if np.count_nonzero(row) > 4:
             row[row < np.sort(row)[-4]] = 0
         row /= row.sum()
+if os.environ.get('C2_DUMP'):
+    _faces = np.array([list(p_.vertices) for p_ in BODY.data.polygons], int)
+    np.savez(os.environ['C2_DUMP'], VP=VP, W=W, COLS=np.array(COLS), faces=_faces, SLEEVE=SLEEVE, RIGID=RIGID, height=height,
+             bn=np.array(list(Fp_HEAD)), bh=np.array([Fp_HEAD[k] for k in Fp_HEAD]), bt=np.array([Fp_TAIL[k] for k in Fp_HEAD]), TEXEL=TEXEL if TEXEL is not None else np.zeros((NV, 3)))
+if C2_ON:
+    exec(compile(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'chr_v3_c2.py'), encoding='utf-8').read(), 'chr_v3_c2.py', 'exec'), globals())
 bpy.ops.object.mode_set(mode='OBJECT')
 REP['bones'] = len(ARM.data.bones)
 REP['spring_bones'] = n_spring

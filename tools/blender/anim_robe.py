@@ -1,6 +1,6 @@
-# Clip cho nhân vật mặc áo bào rộng (C4, NV3-B): lấy Idle_Loop, Jog_Fwd_Loop (UAL1) và Sword_Regular_A (UAL2), GIỮ tên clip và tên xương
-# UE5 Mannequin, nhưng kẹp biên độ xoay các xương chi về phía tư thế nghỉ (slerp từ quaternion đơn vị): tay giơ không quá ngang vai, bước chân
-# ngắn ~30%, gập hông/ngực nhẹ hơn. Áo bào rộng dính liền thân (Tripo) không chịu được biên độ clip viết cho áo bó.
+# Clip cho nhân vật mặc áo bào rộng (C4 → C2, NV3-B): lấy clip UAL (đi/chạy, chém, lướt, trúng đòn…), GIỮ tên clip và tên xương UE5 Mannequin, nhưng
+# thu biên độ dao động của các xương chi quanh tư thế trung bình của clip và đưa tay về gần góc bind A (xem hệ số bên dưới).
+# Áo bào rộng (Tripo) không chịu được biên độ clip viết cho áo bó.
 # Dùng: blender -b --factory-startup --python anim_robe.py -- <out.glb> --src <UAL1_Standard.glb> --src2 <UAL2_Standard.glb>
 import json
 import re
@@ -14,16 +14,22 @@ OUT = argv[0]
 SRC1 = argv[argv.index('--src') + 1]
 SRC2 = argv[argv.index('--src2') + 1]
 
-# (thư viện, clip, {nhóm xương: hệ số giữ biên độ})
+# Mỗi nhóm xương có hai hệ số (C2): `base` = giữ bao nhiêu phần TƯ THẾ TRUNG BÌNH của clip so với tư thế T của mẫu (1,0 = giữ nguyên: Idle UAL gốc đã buông tay ~23° ra ngoài, sát góc bind A 26° của model; kéo về T như C4 làm tay giang ~36–75° → "cánh"), `amp` = biên độ dao động quanh tư thế trung bình (0,55 → tay vung bằng 55%).
+# Công thức: q' = slerp(1, q̄, base) · slerp(1, q̄⁻¹·q, amp), q̄ = trung bình (đã căn nửa cầu) của các khóa của xương trong clip.
 ARM = ['clavicle_l', 'clavicle_r', 'upperarm_l', 'upperarm_r', 'lowerarm_l', 'lowerarm_r']
 HAND = ['hand_l', 'hand_r']
 LEG = ['thigh_l', 'thigh_r', 'calf_l', 'calf_r', 'foot_l', 'foot_r', 'ball_l', 'ball_r']
 TORSO = ['spine_01', 'spine_02', 'spine_03', 'neck_01', 'Head']
-CLIPS = [
-    (1, 'Idle_Loop', {'arm': 0.55, 'hand': 0.7, 'leg': 0.9, 'torso': 0.9}),
-    (1, 'Jog_Fwd_Loop', {'arm': 0.55, 'hand': 0.7, 'leg': 0.7, 'torso': 0.75}),
-    (2, 'Sword_Regular_A', {'arm': 0.6, 'hand': 0.8, 'leg': 0.8, 'torso': 0.85}),
-]
+LOCO = {'arm': (1.0, 0.55), 'hand': (1.0, 0.7), 'leg': (1.0, 0.7), 'torso': (1.0, 0.75)}
+SWORD = {'arm': (1.0, 0.65), 'hand': (1.0, 0.8), 'leg': (1.0, 0.8), 'torso': (1.0, 0.85)}
+ROLL = {'arm': (1.0, 0.5), 'hand': (1.0, 0.6), 'leg': (1.0, 0.55), 'torso': (1.0, 0.5)}
+HURT = {'arm': (1.0, 0.6), 'hand': (1.0, 0.7), 'leg': (1.0, 0.65), 'torso': (1.0, 0.7)}
+IDLE = {'arm': (1.0, 0.9), 'hand': (1.0, 0.9), 'leg': (1.0, 0.9), 'torso': (1.0, 0.9)}
+# tên clip → (hồ sơ); thư viện tự dò (UAL1 trước, rồi UAL2)
+CLIPS = [(n, IDLE) for n in ('Idle_Loop', 'Spell_Simple_Idle_Loop', 'Sitting_Idle_Loop', 'Sword_Idle')]
+CLIPS += [(n, LOCO) for n in ('Walk_Loop', 'Walk_Bwd_Loop', 'Walk_StrafeL_Loop', 'Walk_StrafeR_Loop', 'Jog_Fwd_Loop', 'Jog_Bwd_Loop', 'Jog_StrafeL_Loop', 'Jog_StrafeR_Loop', 'Sprint_Loop', 'Jump_Loop')]
+CLIPS += [(n, SWORD) for n in ('Sword_Attack', 'Sword_Regular_A', 'Sword_Regular_B', 'Sword_Regular_C')]
+CLIPS += [('Roll', ROLL), ('Hit_Chest', HURT), ('Hit_Knockback', HURT)]
 GROUP = {**{b: 'arm' for b in ARM}, **{b: 'hand' for b in HAND}, **{b: 'leg' for b in LEG}, **{b: 'torso' for b in TORSO}}
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -68,8 +74,34 @@ for t in list(A1.animation_data.nla_tracks):
 
 info = {}
 ident = Quaternion()
-for lib, name, factors in CLIPS:
-    act = find(acts1 if lib == 1 else acts2, name)
+
+
+def mean_quat(qs):
+    ref = qs[0]
+    acc = Quaternion((0, 0, 0, 0))
+    for q in qs:
+        qq = q.copy()
+        if qq.dot(ref) < 0:
+            qq.negate()
+        acc = Quaternion((acc.w + qq.w, acc.x + qq.x, acc.y + qq.y, acc.z + qq.z))
+    acc.normalize()
+    return acc
+
+
+def pick(name):
+    for acts in (acts1, acts2):
+        try:
+            return find(acts, name)
+        except SystemExit:
+            pass
+    return None
+
+
+for name, prof in CLIPS:
+    act = pick(name)
+    if act is None:
+        print(f'[anim_robe] bỏ qua {name} (không có trong UAL1/UAL2)')
+        continue
     act.name = name
     act.use_fake_user = True
     chans = {}
@@ -82,14 +114,20 @@ for lib, name, factors in CLIPS:
         grp = GROUP.get(bone)
         if grp is None or len(fcs) < 4:
             continue
-        k = factors[grp]
+        base_k, amp_k = prof[grp]
         npts = min(len(fcs[i].keyframe_points) for i in range(4))
+        qs = [Quaternion([fcs[i].keyframe_points[p].co[1] for i in range(4)]).normalized() for p in range(npts)]
+        qm = mean_quat(qs)
+        qbase = ident.slerp(qm, base_k)
         for p in range(npts):
-            q = Quaternion([fcs[i].keyframe_points[p].co[1] for i in range(4)])
-            q.normalize()
-            if q.dot(ident) < 0:
+            q = qs[p].copy()
+            if q.dot(qm) < 0:
                 q.negate()
-            nq = ident.slerp(q, k)
+            osc = qm.inverted() @ q
+            if osc.dot(ident) < 0:
+                osc.negate()
+            nq = qbase @ ident.slerp(osc, amp_k)
+            nq.normalize()
             for i in range(4):
                 kp = fcs[i].keyframe_points[p]
                 kp.co[1] = nq[i]
@@ -101,7 +139,7 @@ for lib, name, factors in CLIPS:
     tr = A1.animation_data.nla_tracks.new()
     tr.name = name
     tr.strips.new(name, int(act.frame_range[0]), act)
-    info[name] = {'bones_edited': n_edit, 'factors': factors, 'sec': round((act.frame_range[1] - act.frame_range[0]) / 30, 3)}
+    info[name] = {'bones_edited': n_edit, 'sec': round((act.frame_range[1] - act.frame_range[0]) / 30, 3)}
 for a in list(bpy.data.actions):
     if a.name not in info:
         bpy.data.actions.remove(a)

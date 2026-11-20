@@ -138,9 +138,9 @@
       "id": "anim_robe",
       "class": "anim",
       "source": "assets/build/raw/anim_robe.glb",
-      "file": "anim_robe.2cfa5ef9db.glb",
-      "bytes": 162092,
-      "rawBytes": 198456,
+      "file": "anim_robe.be39ea1446.glb",
+      "bytes": 783476,
+      "rawBytes": 973168,
       "triangles": 0,
       "rawTriangles": 0,
       "lod0Cap": 0,
@@ -149,8 +149,20 @@
       "bones": 0,
       "animations": [
         "Idle_Loop",
+        "Spell_Simple_Idle_Loop",
+        "Sitting_Idle_Loop",
+        "Sword_Idle",
+        "Walk_Loop",
         "Jog_Fwd_Loop",
-        "Sword_Regular_A"
+        "Sprint_Loop",
+        "Jump_Loop",
+        "Sword_Attack",
+        "Sword_Regular_A",
+        "Sword_Regular_B",
+        "Sword_Regular_C",
+        "Roll",
+        "Hit_Chest",
+        "Hit_Knockback"
       ],
       "ktx2": false,
       "textures": [],
@@ -4690,21 +4702,21 @@
       "id": "chr_v3_tinh_khuyet_nu",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_tinh_khuyet_nu.glb",
-      "file": "chr_v3_tinh_khuyet_nu.32a2e43c62.glb",
-      "bytes": 11988948,
-      "rawBytes": 16137152,
-      "triangles": 99438,
-      "rawTriangles": 99438,
+      "file": "chr_v3_tinh_khuyet_nu.0579790abc.glb",
+      "bytes": 15795736,
+      "rawBytes": 16282468,
+      "triangles": 99518,
+      "rawTriangles": 99518,
       "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
-      "bones": 115,
+      "bones": 139,
       "animations": [],
-      "ktx2": true,
+      "ktx2": false,
       "textures": [
         {
           "name": "fantasy_female_character_3d_model_normal",
-          "mimeType": "image/ktx2",
+          "mimeType": "image/png",
           "width": 4096,
           "height": 4096,
           "slots": [
@@ -4713,7 +4725,7 @@
         },
         {
           "name": "fantasy_female_character_3d_model_basecolor",
-          "mimeType": "image/ktx2",
+          "mimeType": "image/jpeg",
           "width": 4096,
           "height": 4096,
           "slots": [
@@ -4722,7 +4734,7 @@
         },
         {
           "name": "fantasy_female_character_3d_model_rm",
-          "mimeType": "image/ktx2",
+          "mimeType": "image/jpeg",
           "width": 4096,
           "height": 4096,
           "slots": [
@@ -4733,31 +4745,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 99438
+          "triangles": 99518
         },
         {
           "level": 1,
-          "triangles": 23994,
+          "triangles": 23996,
           "target": 24000
         },
         {
           "level": 2,
-          "triangles": 7993,
+          "triangles": 8167,
           "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.5222,
-          "height": 1.6906,
-          "depth": 0.4774,
-          "minY": 0.0123
+          "width": 1.517,
+          "height": 1.6877,
+          "depth": 0.4824,
+          "minY": 0.0151
         },
         "build": {
-          "width": 1.5222,
-          "height": 1.6906,
-          "depth": 0.4774,
-          "minY": 0.0123
+          "width": 1.517,
+          "height": 1.6877,
+          "depth": 0.4824,
+          "minY": 0.0151
         }
       }
     },
