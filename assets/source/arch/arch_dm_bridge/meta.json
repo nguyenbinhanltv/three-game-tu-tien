@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "arch_dm_bridge",
+  "type": "arch",
+  "status": "in_game",
+  "procedural": { "script": "tools/blender/dm_bridge_arch.py", "seed": 20261120 },
+  "license": { "source": "Tự sinh bằng tools/blender/dm_bridge_arch.py (POLISH-3: cầu treo Đoạn Mạch)", "owner": "dự án", "date": "2026-11-20" }
+}

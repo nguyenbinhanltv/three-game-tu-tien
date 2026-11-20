@@ -220,6 +220,43 @@
         "build": null
       }
     },
+    "arch_dm_bridge": {
+      "id": "arch_dm_bridge",
+      "class": "arch",
+      "source": "assets/build/raw/arch_dm_bridge.glb",
+      "file": "arch_dm_bridge.d72414fdde.glb",
+      "bytes": 315968,
+      "rawBytes": 1416036,
+      "triangles": 16436,
+      "rawTriangles": 16436,
+      "lod0Cap": 600000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 16436
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 6.2019,
+          "height": 5.8845,
+          "depth": 62.3965,
+          "minY": -2.7645
+        },
+        "build": {
+          "width": 6.2002,
+          "height": 5.8803,
+          "depth": 62.3965,
+          "minY": -2.7624
+        }
+      }
+    },
     "arch_do_kiep": {
       "id": "arch_do_kiep",
       "class": "arch",

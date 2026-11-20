@@ -26,6 +26,7 @@ export const VIEWS: View[] = [
   { name: 'congmo', eye: [630, 6, 980], at: [584, 10, 944], fov: 58 },
   { name: 'vachdut', eye: [1030, 10, 540], at: [1044, 40, 484], fov: 60 },
   { name: 'cautreo', eye: [925, 12, 1524], at: [970, -2, 1524], fov: 62 },
+  { name: 'cautreogan', eye: [978, 8, 1503], at: [970, 0, 1523], fov: 62 },
   { name: 'toancanh', eye: [1500, 160, 1560], at: [950, 20, 950], fov: 58 },
 ];
 
