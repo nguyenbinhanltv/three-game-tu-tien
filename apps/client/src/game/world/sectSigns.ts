@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { calliOf } from '../../base/calli';
 import { logger } from '../../base/log';
+import { createWorldMaterial } from '../../render/materials/world';
 
 const log = logger('sectSigns');
 
@@ -28,8 +29,14 @@ function textureOf(file: string): THREE.Texture {
   return tex;
 }
 
-/** Gắn các tấm biển vào gốc GLB `arch_sect`. Trả các vật liệu mới để chủ cảnh `dispose()` cùng vật liệu GLB. */
-export function addSectSigns(root: THREE.Object3D): THREE.Material[] {
+/**
+ * Gắn các tấm biển vào gốc GLB `arch_sect`. Trả các vật liệu mới để chủ cảnh `dispose()` cùng vật liệu GLB.
+ * Vật liệu cùng loại với kiến trúc (`createWorldMaterial`), `wrap` là hàm bọc nơi gọi dùng cho vật liệu GLB (game: `withOccluderFade`, để biển mờ cùng cổng/điện khi che nhân vật).
+ */
+export function addSectSigns(
+  root: THREE.Object3D,
+  wrap: (m: THREE.MeshStandardNodeMaterial) => THREE.MeshStandardNodeMaterial = (m) => m,
+): THREE.Material[] {
   const mats: THREE.Material[] = [];
   for (const s of SIGNS) {
     const e = calliOf(s.key);
@@ -39,7 +46,7 @@ export function addSectSigns(root: THREE.Object3D): THREE.Material[] {
     }
     const tex = textureOf(e.file);
     // Sáng nhẹ tự thân (emissive = chính ảnh) để chữ vàng đọc được từ xa cả lúc sương/tối; vẫn nhận ánh sáng cảnh.
-    const mat = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0x555555, roughness: 0.55, metalness: 0.2 });
+    const mat = wrap(createWorldMaterial({ map: tex, emissiveMap: tex, emissive: 0x555555, roughness: 0.55, metalness: 0.2 }));
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(s.w, s.h), mat);
     mesh.position.set(s.x, s.y, s.z);
     mesh.name = 'calli_sign';

@@ -695,7 +695,7 @@ async function loadSectModel(eng: Game, shadows: boolean): Promise<void> {
       m.receiveShadow = shadows;
       m.frustumCulled = false;
     });
-    eng.sectAsset.mats.push(...addSectSigns(root)); // biển hiệu thư pháp (sau traverse: tấm biển không cần đổ bóng)
+    eng.sectAsset.mats.push(...addSectSigns(root, withOccluderFade)); // biển hiệu thư pháp (sau traverse: tấm biển không cần đổ bóng)
     eng.scene.add(root);
     if (eng.sectMesh) {
       const old = eng.sectMesh.geometry;
