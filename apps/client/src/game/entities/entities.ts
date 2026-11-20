@@ -405,6 +405,7 @@ export class EntityManager {
         v.swapModel(next, look);
       }
       if (v.lv !== s.lv) v.refreshLabel();
+      if ((s.mk ?? 0) !== v.mk) v.refreshMarks();
       if (isLocal) {
         v.x = local.x;
         v.y = local.y;
@@ -527,6 +528,7 @@ export class EntityManager {
         else next.dispose();
       }
       if (v.lv !== s.lv) v.refreshLabel(myLevel);
+      if ((s.mk ?? 0) !== v.mk) v.refreshMarks();
       const ox = v.x;
       const oz = v.z;
       if (Math.abs(s.x - v.x) + Math.abs(s.z - v.z) > 30) {

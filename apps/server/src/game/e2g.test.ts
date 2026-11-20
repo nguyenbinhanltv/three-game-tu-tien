@@ -193,7 +193,7 @@ describe('E2-G: Lạc Kiếm Quyết', () => {
     setVar('skl_kiem_dan_ban_menh', 'b');
     const near = mon(X + 3, Z);
     const marked = mon(X + 9, Z);
-    marked.mark = { sid: p.sid, until: Date.now() + 60000, mul: 0.2 };
+    marked.marks.push({ id: 'truy_hon', sid: p.sid, n: 1, until: Date.now() + 60000 });
     fresh(p);
     sim.onSkill(p, { id: 'skl_kiem_dan_ban_menh' });
     wait(1100);

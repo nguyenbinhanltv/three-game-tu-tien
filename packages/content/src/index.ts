@@ -5,6 +5,7 @@ import {
   registerTerrain,
   resolveSkill,
   type CloneMethodDef,
+  type MarkDef,
   type FxTimeline,
   type ResolvedSkill,
   type TerrainDef,
@@ -40,6 +41,7 @@ import itemsJson from '../data/items.json';
 import monstersJson from '../data/monsters.json';
 import skillsJson from '../data/skills.json';
 import methodsJson from '../data/methods.json';
+import marksJson from '../data/marks.json';
 import recipesJson from '../data/recipes.json';
 import artifactsJson from '../data/artifacts.json';
 import clonesJson from '../data/clones.json';
@@ -219,6 +221,9 @@ export const SKILLS = skillsJson as SkillDef[];
 /** Công pháp chủ tu và chiêu của chúng (Phase 3-5, data/methods.json). */
 export const METHODS = methodsJson.methods as MethodDef[];
 export const METHOD_SKILLS = methodsJson.skills as SkillDef[];
+/** Ấn trên mục tiêu (VS-2c, data/marks.json): id → định nghĩa. */
+export const MARKS = marksJson as MarkDef[];
+export const MARK: ReadonlyMap<string, MarkDef> = new Map(MARKS.map((m) => [m.id, m]));
 /** id chiêu → biến thức A/B (cả chiêu chung lẫn chiêu công pháp). */
 export const VARIANTS = methodsJson.variants as unknown as Record<string, { a: SkillVariant; b: SkillVariant }>;
 export const RECIPES = [...(recipesJson as RecipeDef[]), ...(alchemyJson.recipes as RecipeDef[])];
