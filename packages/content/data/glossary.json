@@ -479,5 +479,98 @@
     "boss_thu_khich_duc_chu": "Thủ Khích Dực Chủ",
     "mon_kim_da_bong": "Bóng Kim Dạ",
     "mon_kd_bong_mac_ca": "Bóng Mặc Cả"
-  }
+  },
+  "steps": [
+    "Nhất Bộ",
+    "Nhị Bộ",
+    "Tam Bộ",
+    "Tứ Bộ"
+  ],
+  "dao": {
+    "origin": "Bản Nguyên",
+    "law": "pháp tắc",
+    "domain": "lĩnh vực",
+    "intent": "ý cảnh",
+    "primal_force": "nguyên lực",
+    "path": "Hướng tu",
+    "ancient_god": "Cổ Thần",
+    "soul_banner": "hồn phiên",
+    "soul_force": "hồn lực",
+    "restriction": "cấm chế",
+    "five_decays": "Thiên Nhân Ngũ Suy",
+    "mystic_tribulation": "Huyền Kiếp",
+    "nine_bridges": "Đạp Thiên Cửu Kiều",
+    "half_step": "bán bộ Đạp Thiên"
+  },
+  "originGroups": {
+    "real": "Hành nguyên",
+    "void": "Lý nguyên",
+    "special": "Cực nguyên"
+  },
+  "origins": {
+    "real": {
+      "kim": "Kim",
+      "moc": "Mộc",
+      "thuy": "Thủy",
+      "hoa": "Hỏa",
+      "tho": "Thổ",
+      "loi": "Lôi"
+    },
+    "void": {
+      "sinh_tu": "Sinh Tử",
+      "nhan_qua": "Nhân Quả",
+      "chan_gia": "Chân Giả",
+      "luan_hoi": "Luân Hồi"
+    },
+    "special": {
+      "khoi_nguyen": "Khởi Nguyên",
+      "tich_diet": "Tịch Diệt",
+      "cam_che": "Cấm Chế",
+      "sat_luc": "Sát Lục"
+    }
+  },
+  "huyenKiepGroups": {
+    "ngoai": "Ngoại kiếp",
+    "noi": "Nội kiếp",
+    "hon": "Hồn kiếp"
+  },
+  "huyenKiep": {
+    "ngoai": {
+      "tuyet": "Tuyết Kiếp",
+      "phong": "Phong Kiếp",
+      "loi": "Lôi Kiếp"
+    },
+    "noi": {
+      "tram_ly": "Trảm Ly Kiếp",
+      "huyet_anh": "Huyết Ảnh Kiếp",
+      "van_tam": "Vấn Tâm Kiếp"
+    },
+    "hon": {
+      "kho_than": "Thập Tức Khô Thần",
+      "hon_tho": "Hồn Thọ Kiếp",
+      "luan_hoi": "Luân Hồi Kiếp"
+    }
+  },
+  "cuuKieu": [
+    "Đệ Nhất Kiều",
+    "Đệ Nhị Kiều",
+    "Đệ Tam Kiều",
+    "Đệ Tứ Kiều",
+    "Đệ Ngũ Kiều",
+    "Đệ Lục Kiều",
+    "Đệ Thất Kiều",
+    "Đệ Bát Kiều",
+    "Đệ Cửu Kiều"
+  ],
+  "coThanStars": [
+    "Nhất Tinh",
+    "Nhị Tinh",
+    "Tam Tinh",
+    "Tứ Tinh",
+    "Ngũ Tinh",
+    "Lục Tinh",
+    "Thất Tinh",
+    "Bát Tinh",
+    "Cửu Tinh"
+  ]
 }
