@@ -70,9 +70,10 @@ export const FX_LIB_SHAPES = [
   'rock_spire',
   'shield_plate',
   'diamond_cage',
-  // Đan sư (VS-1): viên đan, sen nở (kiểu `crystal`; sen đứng +Y, đáy y = 0, `sweep` = nở từ tâm ra).
+  // Đan sư (VS-1): viên đan (`crystal`), sen nở và lưỡi lửa (`toon`; đứng +Y, đáy y = 0, `sweep` = sen nở từ tâm ra / lửa bốc lên).
   'pill_orb',
   'lotus_bloom',
+  'flame_tongue',
 ] as const;
 
 /** Hình vẽ bằng shader `toon` (có lớp bóng sẫm phía sau khi `shadow` không tắt): tính thêm một nhóm draw call khi đếm ngân sách. */
@@ -90,6 +91,8 @@ export const FX_TOON_SHAPES: ReadonlySet<string> = new Set([
   'rift_line',
   'rune_ring2',
   'spark_streak',
+  'lotus_bloom',
+  'flame_tongue',
 ]);
 
 /** Atlas flipbook có sẵn (4×4 khung mỗi atlas, sinh thủ tục ở `render/vfx/flipbook.ts`). */

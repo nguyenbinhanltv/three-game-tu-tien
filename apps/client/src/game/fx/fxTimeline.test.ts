@@ -474,6 +474,7 @@ describe('VS-1 Đan sư: chiêu mẫu Đan Hỏa Phong Trần (ngọc lục + đ
     const shapes = new Set(all.flatMap((e) => (e.type === 'mesh' ? [e.shape as string] : [])));
     expect(shapes.has('pill_orb')).toBe(true);
     expect(shapes.has('lotus_bloom')).toBe(true);
+    expect(shapes.has('flame_tongue')).toBe(true);
     for (const s of shapes) expect(/^(rubble_|crack_radial|slash_|blade_|spike|kite|ripple|helix)/.test(s), s).toBe(false);
   });
   it('viên đan bay trong lúc vung và tới nơi đúng mốc trúng; đòn kết (sen, khựng, rung, âm) ở t = 0', () => {
@@ -483,7 +484,16 @@ describe('VS-1 Đan sư: chiêu mẫu Đan Hỏa Phong Trần (ngọc lục + đ
       expect(orb.t).toBeLessThan(0);
       expect(orb.t + orb.dur).toBeCloseTo(0, 6);
     }
-    expect(tl.events.some((e) => e.type === 'mesh' && e.shape === 'lotus_bloom' && e.t === 0)).toBe(true);
+    // Khung hit không được trống: sen đã bắt đầu nở trước mốc trúng ≤ 50 ms, và có hình bật NGAY (sweep 0) ở mốc trúng:
+    // lõi đan phình, mảnh đan, tia lửa.
+    const lotus = tl.events.find((e) => e.type === 'mesh' && e.shape === 'lotus_bloom')!;
+    expect(lotus.t).toBeLessThanOrEqual(0);
+    expect(lotus.t).toBeGreaterThanOrEqual(-0.05);
+    const instant = tl.events
+      .filter((e) => e.type === 'mesh' && e.sweep === 0 && e.t >= -0.03 && e.t <= 0)
+      .map((e) => (e.type === 'mesh' ? e.shape : ''));
+    for (const sh of ['pill_orb', 'spark_streak', 'burst']) expect(instant, sh).toContain(sh);
+    expect(tl.events.filter((e) => e.type === 'mesh' && e.shape === 'flame_tongue').length).toBeGreaterThanOrEqual(4);
     expect(tl.events.some((e) => e.type === 'hitstop' && e.t === 0)).toBe(true);
     expect(tl.events.some((e) => e.type === 'shake' && e.t === 0)).toBe(true);
     const snd = tl.events.filter((e) => e.type === 'soundAt').map((e) => e.t);

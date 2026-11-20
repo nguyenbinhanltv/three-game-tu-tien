@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import type { FxLibShape } from '@dtl/shared';
 
 /**
- * Thư viện hình mesh VFX (VS-1): 27 hình có KHỐI (độ dày, sống lưng, mảnh vỡ) thay cho các tấm phẳng kite/spike/ripple.
+ * Thư viện hình mesh VFX (VS-1): 28 hình có KHỐI (độ dày, sống lưng, mảnh vỡ) thay cho các tấm phẳng kite/spike/ripple.
  * Dựng thủ tục bằng code (không file GLB: không cần nạp, gộp instance như mọi hình `FxShape`, thử trong test node). UV theo quy ước của shader
  * `render/vfx/stylized.ts`:
  *   - kiểu `toon`: `u` dọc hình (chiều quét/lộ dần), `v` từ mép trong (0) ra mép ngoài (1).
@@ -803,7 +803,7 @@ function diamondCage(): THREE.BufferGeometry {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// Đan sư (VS-1): viên đan và sen nở. Kiểu `crystal`, ĐỨNG theo +Y. `u` 0 → 1 ngang mỗi cánh/đai nên mép cánh có gân sáng.
+// Đan sư (VS-1): viên đan (`crystal`), sen nở và lưỡi lửa (`toon`, ba tầng màu + bóng sẫm). Đều ĐỨNG theo +Y, đáy ở y = 0 (viên đan: tâm ở gốc).
 // ---------------------------------------------------------------------------------------------------------------
 /** Viên đan: khối cầu 20 mặt phẳng (bán kính 0,5, tâm ở gốc) + một đai ngang nổi quanh xích đạo (vân đan). */
 function pillOrb(): THREE.BufferGeometry {
@@ -832,33 +832,76 @@ function pillOrb(): THREE.BufferGeometry {
 }
 
 /**
- * Sen nở: hai vòng cánh (8 cánh ngoài xòe thấp, 5 cánh trong dựng cao) quanh trục Y, đáy ở y = 0, bán kính ngoài ~1.
- * `v` chạy từ gốc cánh (0) ra đầu cánh (1) nên `sweep` làm sen NỞ từ tâm ra; mỗi cánh có sống giữa hơi lõm.
+ * Sen nở (kiểu `toon`): hai vòng cánh (8 cánh ngoài xòe thấp, 5 cánh trong dựng cao) quanh trục Y, đáy ở y = 0, bán kính ngoài ~1.
+ * `u` chạy từ gốc cánh (0) ra đầu cánh (1) nên `sweep` làm sen NỞ từ tâm ra; `v` từ sống cánh (0, lõi sẫm) ra mép cánh (1, viền sáng):
+ * mỗi cánh đủ ba tầng màu và có lớp bóng sẫm bên dưới nên đọc được trên nền sáng. Cánh cong lòng máng (sống lõm) để có khối.
  */
 function lotusBloom(): THREE.BufferGeometry {
-  const f = new Faces();
+  const pos: number[] = [];
+  const uvs: number[] = [];
+  const idx: number[] = [];
   const petal = (ang: number, r0: number, len: number, rise: number, width: number) => {
-    const segs = 6;
+    const segs = 7;
     const cs = Math.cos(ang);
     const sn = Math.sin(ang);
-    const row = (s: number): [V5, V5, V5] => {
+    const base = pos.length / 3;
+    for (let i = 0; i <= segs; i++) {
+      const s = i / segs;
       const out = r0 + len * Math.sin(s * 1.25) * 0.98;
       const up = rise * s * s + 0.02;
-      const w = width * Math.pow(Math.sin(Math.PI * Math.pow(s, 0.7)), 0.85) + 0.005;
-      const P = (side: number, dip: number, u: number): V5 => [cs * out - sn * w * side, up - dip, sn * out + cs * w * side, u, s];
-      return [P(-1, 0, 0), P(0, 0.05 * Math.sin(Math.PI * s), 0.5), P(1, 0, 1)];
-    };
-    f.o = [cs * (r0 + len * 0.5), -1, sn * (r0 + len * 0.5)];
-    for (let i = 0; i < segs; i++) {
-      const a = row(i / segs);
-      const b = row((i + 1) / segs);
-      f.quad(a[0], a[1], b[1], b[0]);
-      f.quad(a[1], a[2], b[2], b[1]);
+      const w = width * Math.pow(Math.sin(Math.PI * Math.pow(s, 0.7)), 0.85) + 0.004;
+      const dip = 0.07 * Math.sin(Math.PI * s);
+      for (const [side, d, v] of [
+        [-1, 0, 1],
+        [0, dip, 0],
+        [1, 0, 1],
+      ] as const) {
+        pos.push(cs * out - sn * w * side, up - d + 0.05 * Math.abs(side) * Math.sin(Math.PI * s), sn * out + cs * w * side);
+        uvs.push(s, v);
+      }
+      if (i < segs) {
+        const q = base + i * 3;
+        idx.push(q, q + 1, q + 3, q + 1, q + 4, q + 3, q + 1, q + 2, q + 4, q + 2, q + 5, q + 4);
+      }
     }
   };
-  for (let i = 0; i < 8; i++) petal((i / 8) * Math.PI * 2, 0.14, 0.9, 0.38, 0.2);
-  for (let i = 0; i < 5; i++) petal((i / 5) * Math.PI * 2 + 0.3, 0.06, 0.5, 0.85, 0.15);
-  return f.done();
+  for (let i = 0; i < 8; i++) petal((i / 8) * Math.PI * 2, 0.14, 0.9, 0.38, 0.22);
+  for (let i = 0; i < 5; i++) petal((i / 5) * Math.PI * 2 + 0.3, 0.06, 0.5, 0.85, 0.16);
+  return build(pos, uvs, idx);
+}
+
+/**
+ * Lưỡi lửa (kiểu `toon`): hai dải chéo nhau đứng theo +Y (cao 1, đáy y = 0), thân phình ở 1/3 dưới rồi thuôn nhọn, uốn chữ S.
+ * `u` từ chân (0) lên ngọn (1) nên `sweep` làm lửa BỐC lên; `v` = 1 ở trục giữa (viền sáng = lõi nóng) và 0 ở hai mép (tầng sẫm, mép rách
+ * của shader toon cho ra viền lửa lởm chởm).
+ */
+function flameTongue(): THREE.BufferGeometry {
+  const pos: number[] = [];
+  const uvs: number[] = [];
+  const idx: number[] = [];
+  for (const axis of [0, 1] as const) {
+    const base = pos.length / 3;
+    const segs = 10;
+    for (let i = 0; i <= segs; i++) {
+      const t = i / segs;
+      const w = 0.24 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.55)), 0.8) * (1 - 0.3 * t) + 0.004;
+      const sway = 0.09 * Math.sin(t * 6.5 + axis * 1.7) * t;
+      for (const [side, v] of [
+        [-1, 0],
+        [0, 1],
+        [1, 0],
+      ] as const) {
+        if (axis === 0) pos.push(sway + w * side, t, sway * 0.6);
+        else pos.push(sway * 0.6, t, -sway + w * side);
+        uvs.push(t, v);
+      }
+      if (i < segs) {
+        const q = base + i * 3;
+        idx.push(q, q + 1, q + 3, q + 1, q + 4, q + 3, q + 1, q + 2, q + 4, q + 2, q + 5, q + 4);
+      }
+    }
+  }
+  return build(pos, uvs, idx);
 }
 
 const BUILDERS: Record<FxLibShape, () => THREE.BufferGeometry> = {
@@ -889,6 +932,7 @@ const BUILDERS: Record<FxLibShape, () => THREE.BufferGeometry> = {
   diamond_cage: diamondCage,
   pill_orb: pillOrb,
   lotus_bloom: lotusBloom,
+  flame_tongue: flameTongue,
 };
 
 const cache = new Map<FxLibShape, THREE.BufferGeometry>();

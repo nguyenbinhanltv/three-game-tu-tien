@@ -38,7 +38,8 @@ const LOOK: Record<string, { s: number; rot?: [number, number, number]; y?: numb
   diamond_cage: { s: 0.8, y: -1.1, rot: [0, 25, 0] },
   // Đan sư.
   pill_orb: { s: 0.9, y: 0.2 },
-  lotus_bloom: { s: 1.3, y: -1.1, pitch: 0.5 },
+  lotus_bloom: { s: 1.3, y: -1.1, pitch: 0.5, tone: 'accent' },
+  flame_tongue: { s: 1.4, y: -1.1, tone: 'accent' },
 };
 
 export default {
