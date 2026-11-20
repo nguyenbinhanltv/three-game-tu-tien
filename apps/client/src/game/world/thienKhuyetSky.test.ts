@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { tkFbm, tkRng } from './thienKhuyetSky';
+import { tkFbm, tkRng } from './thienKhuyetNoise';
 
 describe('Thiên Khuyết trên trời (MAP-4)', () => {
   it('nhiễu và rng tất định', () => {

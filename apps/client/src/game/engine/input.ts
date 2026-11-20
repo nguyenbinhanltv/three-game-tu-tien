@@ -9,6 +9,7 @@ import { isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../../input/b
 import { QUALITY, WEBGL2_MAX_PIXELS, isWebGPU } from './common';
 import { skipCine } from './cine';
 import { bindTouch } from './touch';
+import { onClick } from './click';
 import type { Game } from '../engine';
 
 /**
@@ -328,20 +329,4 @@ export function isMoveKey(eng: Game, code: string, action: string | undefined): 
   if (action === 'autorun') return true;
   if (isKeyFor(code, 'forward') || isKeyFor(code, 'back') || isKeyFor(code, 'up')) return true;
   return eng.controls !== 'turn' && (isKeyFor(code, 'left') || isKeyFor(code, 'right'));
-}
-
-export function onClick(eng: Game, x: number, y: number, aim?: number): void {
-  const hit = eng.ents.pick(x, y, window.innerWidth, window.innerHeight, eng.camera, aim);
-  if (!hit) return;
-  if (hit.kind === 'npc') {
-    const n = eng.ents.npcs.find((e) => e.id === hit.id)!;
-    eng.setTarget(hit.id, 'npc');
-    if (Math.hypot(n.x - eng.cur.x, n.z - eng.cur.z) < 8) eng.openNpc(hit.id);
-    else pushToast(t('sys.too_far'), 'bad');
-  } else if (hit.kind === 'node') {
-    eng.send(C.GATHER, { id: hit.id });
-  } else {
-    if (hit.kind === 'mon' && hit.id === eng.targetId) eng.useSkill(0);
-    else eng.setTarget(hit.id, hit.kind);
-  }
 }
