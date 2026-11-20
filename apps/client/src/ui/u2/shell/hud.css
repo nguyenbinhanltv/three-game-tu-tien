@@ -257,9 +257,6 @@
 :root:root .skill:focus-visible {
   --edge: linear-gradient(180deg, var(--u-x-hd9fff6), var(--u-h-jade-hi) 50%, var(--u-h-jade));
 }
-:root:root .stack-pips {
-  color: var(--u-h-gold-hi);
-}
 /* ───────── thanh chức năng dưới ───────── */
 :root:root .action-row.ngj-sys {
   gap: 8px;

@@ -327,7 +327,6 @@ export class GameSim {
   /** Quái (R-7): xem `game/monsters/`. */
   private readonly monSys = new MonsterSystem(
     ((s: GameSim): MonsterCtx => ({
-      addStack: (p, max, decay) => s.addStack(p, max, decay),
       get bolts() {
         return s.bolts;
       },
@@ -353,7 +352,8 @@ export class GameSim {
         return s.host;
       },
       isDead: (p) => s.isDead(p),
-      liveStacks: (p) => s.liveStacks(p),
+      resDot: (p) => s.combat.resDot(p),
+      resFull: (p) => s.combat.resFull(p),
       lockCut: (h, p) => s.lockCut(h, p),
       get mirror() {
         return s.mirror;
@@ -492,7 +492,7 @@ export class GameSim {
   private readonly deathSys = new DeathSystem(
     ((s: GameSim): DeathCtx => ({
       abortStrike: (p, refund, notify) => s.abortStrike(p, refund, notify),
-      addStack: (p, max, decay) => s.addStack(p, max, decay),
+      resTaken: (p, n) => s.combat.resTaken(p, n),
       get bossDmgMul() {
         return s.bossDmgMul;
       },
@@ -1118,9 +1118,6 @@ export class GameSim {
   private abortStrike(p: PlayerEnt, refund: boolean, notify = true): void {
     return this.combat.abortStrike(p, refund, notify);
   }
-  private addStack(p: PlayerEnt, max: number, decay: number): void {
-    return this.combat.addStack(p, max, decay);
-  }
   private aggroMonster(mon: MonEnt, p: PlayerEnt, assist = false): void {
     return this.combat.aggroMonster(mon, p, assist);
   }
@@ -1138,9 +1135,6 @@ export class GameSim {
   }
   private gainCharge(p: PlayerEnt, n: number): void {
     return this.combat.gainCharge(p, n);
-  }
-  private liveStacks(p: PlayerEnt): number {
-    return this.combat.liveStacks(p);
   }
   private monstersNear(x: number, z: number, r: number, except?: MonEnt): MonEnt[] {
     return this.combat.monstersNear(x, z, r, except);
@@ -1255,7 +1249,7 @@ export class GameSim {
   fireBolts(m: MonEnt, c: MonsterCaster, yaw: number, lift = 0): void {
     return this.monSys.fireBolts(m, c, yaw, lift);
   }
-  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): void {
+  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): boolean {
     return this.monSys.hitMonster(p, mon, basePower, mul, elem);
   }
   private homeDist(m: MonEnt): number {

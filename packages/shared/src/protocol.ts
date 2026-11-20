@@ -1,6 +1,7 @@
 // Giao thức mạng giữa client và server. Tên message ngắn để tiết kiệm băng thông.
 
 import type { ArtifactMsg } from './artifacts';
+import type { ResourceMods } from './resource';
 import { INV_SIZE, type CharView, type Equipment, type InvSlot, type QuestView } from './types';
 
 export const PROTOCOL_VERSION = 1;
@@ -224,8 +225,13 @@ export interface MethodMsg {
   lv: Record<string, number>;
   /** id chiêu → biến thức đã chọn. */
   vr: Record<string, 'a' | 'b'>;
-  /** Kiếm ý hoặc thế (0..5). */
-  stacks: number;
+  /**
+   * Tài nguyên riêng (VS-2a) ngay sau lần tích/xả gần nhất và giờ server (ms) của lần tích gần nhất;
+   * client tự tính phần rụng theo thời gian bằng `resNow`. `resMods`: luật nhánh đang áp (trần, không rụng...).
+   */
+  res: number;
+  resAt: number;
+  resMods?: ResourceMods;
   /** Vòng sạc chiêu tối thượng 0..100. */
   charge: number;
   /** Giảm sát thương (Kim Cương Bất Hoại) tới giờ server này (ms); 0 = không. */

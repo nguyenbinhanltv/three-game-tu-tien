@@ -10,6 +10,7 @@ import {
   type MethodDef,
   type MethodMsg,
   type MethodPassive,
+  type ResourceDef,
   type ResolvedSkill,
   type SkillDef,
   type VariantId,
@@ -58,6 +59,11 @@ export function passiveOf(meta: MethodMeta): MethodPassive | undefined {
   return methodOf(meta)?.passive;
 }
 
+/** Tài nguyên riêng của công pháp đang tu (VS-2a); chưa chọn công pháp thì không có. */
+export function resourceOf(meta: MethodMeta): ResourceDef | undefined {
+  return methodOf(meta)?.resource;
+}
+
 export function skillLevelOf(meta: MethodMeta, id: string): number {
   return clampSkillLevel(meta.skillLv?.[id] ?? 1);
 }
@@ -87,6 +93,8 @@ export interface Hot {
   endAt: number;
   /** Lượng hồi mỗi giây. */
   per: number;
+  /** sid người tạo dòng hồi (tích Đan hỏa theo phần hồi thật); không có = không ai được tính. */
+  by?: string;
 }
 
 /** Vệt kiếm khí trên đất (Kiếm Khí Trảm biến thức B). */
@@ -101,11 +109,14 @@ export interface Trail {
   power: number;
 }
 
-/** Trạng thái chạy của người chơi (không lưu DB: kiếm ý/thế/sạc mất khi thoát). */
+/** Trạng thái chạy của người chơi (không lưu DB: tài nguyên riêng và vòng sạc mất khi thoát). */
 export class MethodRt {
-  /** Kiếm ý hoặc thế (cùng một chỗ vì mỗi người chỉ có một công pháp). */
-  stacks = 0;
-  stackAt = 0;
+  /**
+   * Tài nguyên riêng (Kiếm ý / Huyết khí / Đan hỏa; một chỗ vì mỗi người chỉ có một công pháp): giá trị ngay sau lần
+   * tích/xả gần nhất và lúc (ms) của lần tích gần nhất. Lượng đang có tính bằng `resNow` (rụng theo thời gian).
+   */
+  res = 0;
+  resAt = 0;
   /** Vòng sạc chiêu tối thượng 0..CHARGE_MAX. */
   charge = 0;
   /** Giảm sát thương tới lúc `guardUntil` (ms), tỉ lệ `guardReduce`. */
@@ -121,7 +132,7 @@ export class MethodRt {
   lockCharge = false;
 
   reset(): void {
-    this.stacks = 0;
+    this.res = 0;
     this.charge = 0;
     this.guardUntil = 0;
     this.guardReduce = 0;
@@ -149,7 +160,8 @@ export class MethodRt {
       method: meta.method ?? '',
       lv: { ...(meta.skillLv ?? {}) },
       vr: { ...(meta.skillVar ?? {}) },
-      stacks: this.stacks,
+      res: this.res,
+      resAt: this.resAt,
       charge: Math.min(CHARGE_MAX, Math.floor(this.charge)),
       guardUntil: now < this.guardUntil ? this.guardUntil : 0,
       now,

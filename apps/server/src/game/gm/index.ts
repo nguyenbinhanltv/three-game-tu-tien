@@ -59,7 +59,7 @@ import {
   weaponIds,
   type GmBranch,
 } from './tools';
-import { setSkillLevel, skillLevelOf } from '../method';
+import { resourceOf, setSkillLevel, skillLevelOf } from '../method';
 import type { LevelDef, MonsterDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from '../entities';
 
@@ -345,6 +345,16 @@ export class GmSystem {
         c.hp = c.mhp;
         c.mp = c.mmp;
         return say('đã hồi đầy');
+      case 'res': {
+        // /gm res [n]: đặt tài nguyên riêng của công pháp (mặc định đầy).
+        const rdef = resourceOf(c.meta);
+        if (!rdef) return say('chưa chọn công pháp');
+        p.mth.res = Math.max(0, Math.min(rdef.max, a[1] === undefined ? rdef.max : Number(a[1]) || 0));
+        // Giờ của sim là `Date.now()` mỗi tick.
+        p.mth.resAt = Date.now();
+        p.mth.dirty = true;
+        return say(rdef.id + ' = ' + p.mth.res);
+      }
       case 'charge': {
         // /gm charge [0-100]: đặt vòng sạc chiêu tối thượng (mặc định đầy).
         p.mth.charge = Math.max(0, Math.min(CHARGE_MAX, a[1] === undefined ? CHARGE_MAX : Number(a[1]) | 0));
