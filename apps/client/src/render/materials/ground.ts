@@ -213,7 +213,12 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const detail = float(0.82).add(luminance(col).mul(0.5));
     const slabTop = stone.mul(detail);
     const mossMix = joint.mul(float(0.4).add(hsh.mul(0.5)));
-    const slabMoss = mix(slabTop.mul(float(1).sub(joint.mul(0.82))), vec3(0.16, 0.27, 0.1), mossMix.mul(0.65));
+    // rãnh: trộn đất tối và rêu sẫm (50/50 theo từng ô), không còn xanh cỏ sáng đều như kẻ lưới; vài phiến sứt mép (rãnh rộng ra theo nhiễu mịn)
+    const grout = mix(vec3(0.13, 0.095, 0.065), vec3(0.07, 0.115, 0.05), step(0.5, fract(hsh.mul(7.31))));
+    const chip = smoothstep(0.55, 0.8, texture(tex.mask, p.mul(0.09)).a).mul(0.35);
+    const jointC = clamp(joint.add(chip.mul(joint)), 0, 1);
+    const slabMoss = mix(slabTop.mul(float(1).sub(jointC.mul(0.35))), grout.mul(float(0.8).add(hsh.mul(0.5))), jointC.mul(0.85));
+    void mossMix;
     // vùng phiến theo bán kính quanh cổng (không phụ thuộc mặt nạ): lõi r ≤ 24 lát liền, rìa 24–31 vỡ theo nhiễu
     const dPortal = p.sub(vec2(2048, 1708)).length();
     const slabArea = smoothstep(31, 25, dPortal).mul(mix(float(1), pavBreak, smoothstep(22, 28, dPortal)));
