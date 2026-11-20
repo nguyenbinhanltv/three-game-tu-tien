@@ -61,9 +61,12 @@ import {
   WATER_Y,
   xpLevelFactor,
   type BossTimerMsg,
+  markAmp,
+  marksPrune,
+  packMarks,
 } from '@dtl/shared';
 import { type GuardCfg } from '../trib';
-import { ITEM_SYS, ITEMS, itemName, MONSTER, monsterName, t } from '@dtl/content';
+import { ITEM_SYS, ITEMS, itemName, MARK, MONSTER, monsterName, t } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
 import { MonS } from '../../state';
 import { type Character } from '../character';
@@ -165,9 +168,8 @@ export class MonsterSystem {
    * Trả true nếu đòn có hiệu lực (nơi gọi dùng để tích tài nguyên riêng theo chiêu).
    */
   hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): boolean {
-    // Dấu ấn của chính người đánh: sát thương nhân thêm (Kiếm Ảnh Phân Quang).
-    const mk = mon.mark;
-    const power0 = mk && mk.sid === p.sid && this.c.now < mk.until ? basePower * (1 + mk.mul) : basePower;
+    // Ấn trên quái (VS-2c): ấn của chính người đánh cộng theo tầng (Truy hồn), ấn chung (Mất thế) cộng cho mọi người.
+    const power0 = basePower * (1 + markAmp(mon.marks, MARK, p.sid, this.c.now));
     // Cộng hưởng vai trò (tổ đội đủ Kiếm tu/Hộ pháp/Đan sư đứng gần nhau): đánh mạnh hơn một chút.
     const power = parties.resonance(p) ? power0 * (1 + RESONANCE_DMG) : power0;
     // Khắc chế ngũ hành (3-10): server tính, client chỉ nhận cờ `ke` để hiển thị.
@@ -438,7 +440,8 @@ export class MonsterSystem {
   killMonster(mon: MonEnt): void {
     // Vũng độc khi chết (E3-G): đệ tử và bóng tâm ma không để lại.
     if (!mon.owner && !mon.minionOf) this.c.zones.onDeath(mon, mon.def.deathPool);
-    mon.mark = undefined;
+    mon.marks.length = 0;
+    if (mon.s.mk !== 0) mon.s.mk = 0;
     mon.taunt = undefined;
     mon.state = MS_DEAD;
     mon.s.st = MS_DEAD;
@@ -614,6 +617,7 @@ export class MonsterSystem {
       slideLast: 0,
       slideD0: 0,
       evadeUntil: 0,
+      marks: [],
       abilityAt: 0,
       threat: new Map(),
       owner: '',
@@ -927,6 +931,8 @@ export class MonsterSystem {
         if (m.state === MS_DEAD) return;
       }
     }
+    // Ấn hết hạn (VS-2c): dọn và cập nhật gói bit đồng bộ.
+    if (m.marks.length && marksPrune(m.marks, this.c.now)) m.s.mk = packMarks(m.marks, this.c.now);
     if (m.state === MS_IDLE) {
       if (this.c.now >= m.thinkAt) {
         m.thinkAt = this.c.now + 400;

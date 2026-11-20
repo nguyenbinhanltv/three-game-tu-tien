@@ -149,6 +149,7 @@ export class PlayerSystem {
       skillWindowAt: this.c.now,
       skillCount: 0,
       mth: new MethodRt(),
+      marks: [],
       saveAt: this.c.now + SAVE_INTERVAL,
       noLoot,
       connected: true,

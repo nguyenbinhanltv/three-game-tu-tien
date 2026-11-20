@@ -81,7 +81,7 @@ function bossFor(eng: Game, target: TargetInfo | null, x: number, z: number): Bo
   if (!m || m.st === MS_DEAD) return null;
   if (Math.hypot(m.x - x, m.z - z) > BOSS_BAR_RANGE) return null;
   const def = MONSTER.get(m.t);
-  const info: BossInfo = { id, def: m.t, level: m.lv, hp: m.hp, mhp: m.mhp, cast: castOf(eng, m) };
+  const info: BossInfo = { id, def: m.t, level: m.lv, hp: m.hp, mhp: m.mhp, cast: castOf(eng, m), mk: m.mk ?? 0 };
   if (def?.posture) info.posture = (m.pz ?? 0) / 100;
   if (def?.phases) info.marks = def.phases.map((p) => p.hp);
   return info;
@@ -112,13 +112,14 @@ export function syncHud(eng: Game, me: PState | undefined): void {
           hp: m.hp,
           mhp: m.mhp,
           boss: !!def.boss,
+          mk: m.mk ?? 0,
         };
         const cast = castOf(eng, m);
         if (cast) target.cast = cast;
       }
     } else if (eng.targetKind === 'player') {
       const p = eng.view.players.get(eng.targetId);
-      if (p) target = { id: eng.targetId, kind: 'player', name: p.name, level: p.lv, hp: p.hp, mhp: p.mhp, boss: false };
+      if (p) target = { id: eng.targetId, kind: 'player', name: p.name, level: p.lv, hp: p.hp, mhp: p.mhp, boss: false, mk: p.mk ?? 0 };
       else eng.targetId = '';
     } else {
       target = {
