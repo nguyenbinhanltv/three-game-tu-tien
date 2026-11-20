@@ -44,6 +44,8 @@ export interface TargetInfo {
   boss: boolean;
   /** Boss đang niệm chú hoặc đang choáng: `end` theo đồng hồ client (ms), `open` = tỉ lệ đoạn hộ chú. */
   cast?: TargetCast;
+  /** Ấn mục tiêu đang mang (VS-2c): gói bit `packMarks`; 0 hoặc thiếu = không có. */
+  mk?: number;
 }
 
 /** Thanh boss giữa phía trên: boss đang là mục tiêu, hoặc boss gần nhất đang giao chiến. */
@@ -55,6 +57,8 @@ export interface BossInfo {
   hp: number;
   mhp: number;
   cast?: TargetCast;
+  /** Ấn thủ lĩnh đang mang (VS-2c): gói bit `packMarks`. Khác `marks` (vạch chuyển pha theo máu). */
+  mk?: number;
   /** Thanh phá thế 0–1 (không có nếu boss không có thanh này). */
   posture?: number;
   /** Ngưỡng máu (0–1) chuyển pha, vẽ thành vạch trên thanh máu. */

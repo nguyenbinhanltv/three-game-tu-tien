@@ -55,6 +55,7 @@ import { ChatBox } from './u2/hud/Chat';
 import { SkillBanner } from './u2/hud/SkillBanner';
 import { SkillCluster } from './u2/hud/SkillCluster';
 import { ResourceBar } from './u2/hud/ResourceBar';
+import { MarkChips } from './u2/hud/MarkChips';
 import { chainLines, skillMpNow } from './skillChain';
 import { TouchControls } from './u2/touch/TouchControls';
 import './u2/touch/touch.css';
@@ -92,6 +93,7 @@ function TargetFrame({ below }: { below: boolean }) {
         />
       )}
       {target.cast && <TargetCastBar cast={target.cast} />}
+      <MarkChips mk={target.mk} />
     </div>
   );
 }

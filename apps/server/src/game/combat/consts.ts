@@ -12,3 +12,5 @@ export const SET_HEAL_RADIUS = 14;
  */
 export const visualSeed = () => fxSeed(() => randomInt(0x7fffffff) / 0x7fffffff);
 export const LEASH = 48;
+/** Tầm (m) tiêu ấn đặt trên đạo hữu (Mộc ấn): người mang ấn phải đứng trong khoảng này quanh người ra chiêu. */
+export const MARK_ALLY_RANGE = 14;

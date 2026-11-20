@@ -24,9 +24,10 @@ import {
   TRUC_CO_FREE_FLY_ALT,
   vulnerableDamage,
   xpNeed,
+  markAmp,
 } from '@dtl/shared';
 import { TribSystem } from '../trib';
-import { itemName, MONSTER, nextMajorRealmName, realmName } from '@dtl/content';
+import { itemName, MARK, MONSTER, nextMajorRealmName, realmName } from '@dtl/content';
 import { type Character } from '../character';
 import type { PlayerEnt, MonEnt, Hazard, SimHost } from '../entities';
 import { visualSeed } from '../combat/consts';
@@ -228,8 +229,7 @@ export class TribulationSystem {
     if (mon.state === MS_DEAD || (mon.owner && mon.owner !== p.sid) || this.c.now < mon.evadeUntil) return;
     const elem = skill?.elem;
     const ke = elemCounter(elem, mon.def.elem);
-    const mk = mon.mark;
-    const pw = mk && mk.sid === p.sid && this.c.now < mk.until ? power * (1 + mk.mul) : power;
+    const pw = power * (1 + markAmp(mon.marks, MARK, p.sid, this.c.now));
     const em = elemDamageMul(p.char.stats.elemDmg, elem);
     const crit0 = Math.min(STAT_CAPS.critRate, p.char.stats.critRate + this.c.domain.critAdd(p));
     const { dmg, crit } = computeDamage(

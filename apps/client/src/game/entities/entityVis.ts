@@ -11,6 +11,7 @@ import { MonsterSkins } from '../character/monsterSkins';
 import { type PlayerLook, PlayerSkins } from '../character/playerSkins';
 import { BAR_ALLY, BAR_BOSS, BAR_ENEMY } from './headBars';
 import { HpTrail } from './hpTrail';
+import { markLabelSpec } from './markLabel';
 import { ArtifactVis } from '../fx/artifactVis';
 
 export interface PState {
@@ -48,6 +49,8 @@ export interface PState {
   art?: string;
   /** id công pháp đang tu (chọn giọng động tác, K-5); '' hoặc thiếu = chưa chọn. */
   mt?: string;
+  /** Ấn đang mang (VS-2c): gói bit `packMarks`; 0 hoặc thiếu = không có. */
+  mk?: number;
 }
 
 export interface MState {
@@ -66,6 +69,27 @@ export interface MState {
   /** Boss: pha hiện tại (0 = pha đầu) và thanh phá thế 0–100. */
   ph?: number;
   pz?: number;
+  /** Ấn đang mang (VS-2c): gói bit `packMarks`; 0 hoặc thiếu = không có. */
+  mk?: number;
+}
+
+/** Nhãn ấn nằm trên nhãn tên chừng này (theo đơn vị của nhãn tên) và nhỏ hơn một chút. */
+const MARK_LABEL_UP = 0.46;
+const MARK_LABEL_SCALE = 0.82;
+
+/** Dựng lại nhãn ấn cho gói bit `mk`: trả nhãn mới (đã gắn vào `root`, đặt trên `nameLabel`) hoặc null khi không có ấn. */
+function swapMarkLabel(root: { add(o: Label): unknown; remove(o: Label): unknown }, old: Label | null, mk: number, nameLabel: Label | null): Label | null {
+  if (old) {
+    root.remove(old);
+    disposeLabel(old);
+  }
+  const spec = markLabelSpec(mk);
+  if (!spec || !nameLabel) return null;
+  const l = makeLabel(spec.text, spec.color);
+  l.scale.copy(nameLabel.scale).multiplyScalar(MARK_LABEL_SCALE);
+  l.position.y = nameLabel.position.y + MARK_LABEL_UP * nameLabel.scale.y * 2;
+  root.add(l);
+  return l;
 }
 
 export class PlayerVis {
@@ -125,11 +149,20 @@ export class PlayerVis {
     this.label.position.y = labelY(this.model);
     this.model.root.add(this.label);
     this.lv = this.s.lv;
+    this.refreshMarks();
+  }
+  /** Ấn đang mang (VS-2c, Mộc ấn): nhãn nhỏ trên tên; dựng lại khi `mk` đổi. */
+  markLabel: Label | null = null;
+  mk = 0;
+  refreshMarks() {
+    this.mk = this.s.mk ?? 0;
+    this.markLabel = swapMarkLabel(this.model.root, this.markLabel, this.mk, this.label);
   }
   /** Thay model (asset nạp xong, đổi màu áo): giữ nhãn, chỗ trong cảnh; hit-stop/giật lùi dở dang bỏ đi. */
   swapModel(next: CharacterView, look: PlayerLook): void {
     const parent = this.model.root.parent;
     this.model.root.remove(this.label);
+    if (this.markLabel) this.model.root.remove(this.markLabel);
     this.model.root.removeFromParent();
     this.model.dispose();
     this.model = next;
@@ -138,9 +171,11 @@ export class PlayerVis {
     this.label.position.y = labelY(next);
     next.root.add(this.label);
     parent?.add(next.root);
+    this.refreshMarks();
   }
   dispose() {
     disposeLabel(this.label);
+    if (this.markLabel) disposeLabel(this.markLabel);
     this.art?.dispose();
     this.lo?.dispose();
     this.model.dispose();
@@ -187,9 +222,17 @@ export class MonVis {
     this.yaw = s.yaw;
   }
   /** Asset model mới nạp xong: thay model khối tạm bằng model mới (giữ nhãn, vị trí). */
+  /** Ấn đang mang (VS-2c): nhãn nhỏ trên tên quái; dựng lại khi `mk` đổi. */
+  markLabel: Label | null = null;
+  mk = 0;
+  refreshMarks() {
+    this.mk = this.s.mk ?? 0;
+    this.markLabel = swapMarkLabel(this.model.root, this.markLabel, this.mk, this.label);
+  }
   swapModel(next: MonsterView, myLevel: number): void {
     const parent = this.model.root.parent;
     if (this.label) this.model.root.remove(this.label);
+    if (this.markLabel) this.model.root.remove(this.markLabel);
     this.model.root.removeFromParent();
     this.model.dispose();
     this.model = next;
@@ -217,9 +260,11 @@ export class MonVis {
     else if (def.elite) this.label.scale.multiplyScalar(1.25);
     this.model.root.add(this.label);
     this.lv = this.s.lv;
+    this.refreshMarks();
   }
   dispose() {
     if (this.label) disposeLabel(this.label);
+    if (this.markLabel) disposeLabel(this.markLabel);
     this.model.dispose();
   }
 }

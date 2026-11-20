@@ -1,4 +1,5 @@
 import { NGUNG_KHI_MAX, PF_TRIBULATION } from '@dtl/shared';
+import { MarkChips } from './MarkChips';
 import { monsterName, realmName, t } from '@dtl/content';
 import { Game } from '../../../game/engine';
 import { Portrait } from '../../Art';
@@ -116,6 +117,7 @@ export function BossCard() {
           <i key={f} className="u2h-boss-mark" style={{ left: f * 100 + '%' }} />
         ))}
       </div>
+      <MarkChips mk={boss.mk} />
       {boss.posture !== undefined && (
         <div className={'gauge posture' + (boss.cast?.kind === 'broken' ? ' broken' : boss.posture >= 0.75 ? ' near' : '')}>
           <div className="gauge-in">

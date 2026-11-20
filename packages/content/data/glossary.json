@@ -11,6 +11,13 @@
   "def": "phòng ngự",
   "posture": "thế",
   "posture_broken": "mất thế",
+  "marks": {
+    "kiem_an": "Kiếm ấn",
+    "truy_hon": "Truy hồn",
+    "tran_an": "Trấn ấn",
+    "mat_the": "Mất thế",
+    "moc_an": "Mộc ấn"
+  },
   "resources": {
     "kiem_y": "Kiếm ý",
     "huyet_khi": "Huyết khí",

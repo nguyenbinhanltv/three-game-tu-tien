@@ -1,6 +1,7 @@
 // VS-2 (hệ kỹ năng mới): ảnh HUD của ba công pháp ở vài cỡ màn hình. Mỗi bước `--step` chụp phần giao diện của một PR.
 //   res: thanh tài nguyên riêng (Kiếm ý / Huyết khí / Đan hỏa) lúc rỗng, đang tích và đầy, kèm tooltip.
 //   chain: ô chiêu sáng viền khi cửa sổ chuỗi mở + tooltip báo thưởng chuỗi (mỗi phái một chuỗi mở đầu).
+//   marks: ấn trên mục tiêu: Kiếm ấn trên thủ lĩnh (thẻ trong thanh thủ lĩnh), Trấn ấn trên đầu bầy quái, Mộc ấn trên người chơi.
 import { list } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { gm, tp } from '../lib/game';
@@ -119,16 +120,68 @@ async function stepChain(r: Run, sizes: string[]): Promise<Record<string, unknow
   return log;
 }
 
+/** Mỗi phái một cảnh đặt ấn: chỗ đứng, các phím bấm (xóa hồi chiêu giữa các lần), có Tab chọn thủ lĩnh không. */
+const MARK_SCENES = [
+  { id: 'lac_kiem_quyet', tag: 'kiem-tu', at: 'boss', boss: true, keys: ['Digit2', 'Digit2', 'Digit2'] },
+  { id: 'bat_dong_kim_than', tag: 'ho-phap', at: 'rung', boss: false, keys: ['Digit7'] },
+  { id: 'thanh_moc_dan_kinh', tag: 'dan-su', at: 'tong_mon', boss: false, keys: ['Digit7'] },
+] as const;
+
+async function stepMarks(r: Run, sizes: string[]): Promise<Record<string, unknown>> {
+  const log: Record<string, unknown> = {};
+  for (const m of MARK_SCENES.filter((x) => want(x.tag))) {
+    const { ctx, page } = await r.open({
+      name: 'Vs2m' + m.tag.replace('-', ''),
+      viewport: [1920, 1080],
+      seenIntro: true,
+      query: { realm: 'nk12', at: m.at, god: 1 },
+    });
+    await sleep(2500);
+    await gm(page, `method ${m.id}`);
+    await sleep(800);
+    if (m.boss) {
+      await tp(page, 1640, 2252);
+      await sleep(2500);
+    }
+    for (const tag of sizes) {
+      const [w, h] = UI_SIZES[tag] ?? UI_SIZES['1080p']!;
+      await page.setViewportSize({ width: w, height: h });
+      if (m.boss) {
+        await page.keyboard.press('Tab', { delay: 80 });
+        await page.keyboard.press('Tab', { delay: 80 });
+      }
+      for (const k of m.keys) {
+        await gm(page, 'cd', 350);
+        await page.keyboard.press(k, { delay: 60 });
+        await sleep(750);
+      }
+      // Gói bit `mk` server vừa đồng bộ (đọc từ state của client) + số thẻ ấn trên HUD.
+      log[`${m.tag}-${tag}`] = await page.evaluate(() => {
+        const g = window.__game as unknown as { view: { monsters: Map<string, { mk?: number }>; players: Map<string, { mk?: number }> } };
+        const mons = [...g.view.monsters.values()].filter((x) => (x.mk ?? 0) > 0).length;
+        const players = [...g.view.players.values()].filter((x) => (x.mk ?? 0) > 0).length;
+        return { mons, players, chips: document.querySelectorAll('[data-testid="mark-chips"] .mark-chip').length };
+      });
+      await page.mouse.move(8, 8);
+      await snap(page, r.out, `c-marks-${m.tag}-${tag}.jpg`, { wait: 250 });
+      await sleep(m.boss ? 9000 : 11000);
+    }
+    await ctx.close();
+  }
+  return log;
+}
+
 export default {
   name: 'vs2',
   desc: 'VS-2 hệ kỹ năng mới: ảnh HUD ba công pháp (thanh tài nguyên riêng…) ở 1080p + 720p',
-  usage: '[--step res,chain] [--sizes 1080p,720p] [--only kiem-tu,ho-phap,dan-su]',
+  usage: '[--step res,chain,marks] [--sizes 1080p,720p] [--only kiem-tu,ho-phap,dan-su]',
   async run(r) {
     const sizes = list('--sizes', '1080p,720p');
-    const steps = list('--step', 'res,chain');
+    const steps = list('--step', 'res,chain,marks');
     const log: Record<string, unknown> = {};
     if (steps.includes('res')) log.res = await stepRes(r, sizes);
     if (steps.includes('chain')) log.chain = await stepChain(r, sizes);
+    if (steps.includes('marks')) log.marks = await stepMarks(r, sizes);
     writeJson(r.out, 'vs2.json', log);
   },
 } satisfies Scenario;
