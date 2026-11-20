@@ -703,8 +703,16 @@ export async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
       m.receiveShadow = shadows;
       m.frustumCulled = false;
     });
-    const statue = root.getObjectByName('tk_statue');
-    if (statue) statue.position.y += heightAt(sky.statue.x, sky.statue.z) - TK_ORIGIN.y - 5; // cộng dồn: node đã có phép dịch lượng tử hóa
+    // Tượng đổ vỡ ba khúc (`tk_statue0..2`): mỗi khúc nằm sát đất theo heightAt tại chỗ nó nằm, lún 0,8 m (cộng dồn: node đã có phép dịch lượng tử hóa).
+    root.updateMatrixWorld(true);
+    const box = new THREE.Box3();
+    const mid = new THREE.Vector3();
+    for (let q = 0; q < 3; q++) {
+      const piece = root.getObjectByName(`tk_statue${q}`);
+      if (!piece) continue;
+      box.setFromObject(piece).getCenter(mid);
+      piece.position.y += heightAt(mid.x, mid.z) - TK_ORIGIN.y - 0.8;
+    }
     eng.scene.add(root);
   } catch (e) {
     assetLog.warn('không tải được arch_thien_khuyet:', e);

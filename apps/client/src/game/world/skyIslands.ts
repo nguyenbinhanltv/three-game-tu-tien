@@ -67,7 +67,7 @@ const ROCK_R: Record<VhKind, number> = {
 const FAKE_R = 40;
 
 /** Bản sao có position/normal/color dạng float32 (pipeline lượng tử hóa thành số nguyên chuẩn hóa: ghi số mét vào đó sẽ bị cắt về [-1, 1]). */
-function toFloatGeometry(src: THREE.BufferGeometry): THREE.BufferGeometry {
+export function toFloatGeometry(src: THREE.BufferGeometry): THREE.BufferGeometry {
   const g = new THREE.BufferGeometry();
   for (const name of ['position', 'normal', 'color']) {
     const a = src.getAttribute(name) as THREE.BufferAttribute | undefined;

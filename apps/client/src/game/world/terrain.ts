@@ -744,7 +744,7 @@ export class Terrain {
         ? // Đoạn Mạch (POLISH-1): vách sa thạch đỏ nâu có tầng dày mỏng chéo, khe dọc, rêu.
           { lo: [0.34, 0.16, 0.12], hi: [0.66, 0.46, 0.34], rich: true }
         : T.id === 'thien_khuyet'
-          ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18] }
+          ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18], blocks: true }
           : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
             KT
             ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }
