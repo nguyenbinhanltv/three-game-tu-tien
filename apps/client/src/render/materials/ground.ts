@@ -90,6 +90,8 @@ export interface CliffTones {
   vein?: [number, number, number];
   /** Vách dựng từ khối đá xếp lệch (cột khối ngẫu nhiên × tầng lệch nhau, khe giữa các khối): hết dải ngang lặp (Thiên Khuyết, POLISH-1). */
   blocks?: boolean;
+  /** Vách dùng texture đá PBR thật (CC0, lớp `cliff` của bộ texture level, triplanar) nhuộm sắc đỏ nâu thay cho nhiễu tạo màu: hết sọc ngang (Đoạn Mạch, POLISH-1). */
+  pbr?: boolean;
 }
 const RED_TONES: CliffTones = { lo: [0.4, 0.2, 0.16], hi: [0.58, 0.52, 0.5] };
 let cliffTones: CliffTones = RED_TONES;
@@ -249,7 +251,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   col = mix(col, vc.mul(0.62), smoothstep(0.3, 0.06, ndv).mul(0.55));
   // Vân đá sơn thủy (MAP-1), tính theo điểm ảnh nên không phụ thuộc độ thô của lưới xa: tầng ngang theo độ cao + khe dọc theo
   // nhiễu kéo dài; vách và đá lộ ngả lam nhạt dần theo độ cao. Áp sau khi hòa về màu đỉnh lưới ở xa.
-  if (strata || redStrata) {
+  if (strata || (redStrata && !cliffTones.pbr)) {
     // Sườn dốc phủ cỏ cũng có vân ở Vân Lam (núi xa không còn mượt): trọng số theo độ dốc; vách sa thạch MAP-2 giữ như cũ.
     const base = max(cliffW, rockW.mul(0.7));
     const rockish = strata ? max(base, smoothstep(0.1, 0.3, slope).mul(0.6)) : base;
@@ -344,6 +346,42 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       col = mix(col, col.mul(vec3(0.82, 0.94, 1.1)), rockish.mul(smoothstep(140, 300, h)).mul(0.6));
     }
   }
+  if (redStrata && cliffTones.pbr) {
+    // Vách đá thật: giữ màu texture `cliff` triplanar đã trộn ở trên (cliffW/rockW), chỉ nhuộm sắc đỏ nâu theo độ sáng, phá lặp bằng mảng lớn + vỉa theo độ cao,
+    // rêu/đất vàng đọng ở gờ ngang (mặt ít dốc hơn) và vệt nước chảy sẫm theo toạ độ ngang.
+    const rockish2 = max(cliffW, rockW.mul(0.7));
+    // hai lớp đá triplanar ở hai tỉ lệ khác nhau (11 m đã có trong `col`; thêm lớp `rock` 29 m xoay trục) → hết lặp ô nhỏ nhìn từ xa
+    const uvXYb = vec2(positionWorld.x.mul(0.8).add(positionWorld.z.mul(0.6)), positionWorld.y.negate()).div(29);
+    const uvZYb = vec2(positionWorld.z.mul(0.8).sub(positionWorld.x.mul(0.6)), positionWorld.y.negate()).div(29);
+    // chỉ dùng lớp `cliff` (đá nâu có vân, khe nứt thật), không trộn lớp `rock` (đất nứt màu cát)
+    const bigRock = mix(A(uvZYb, L.cliff), A(uvXYb, L.cliff), wz.div(wsum));
+    const near = mix(A(uvZY, L.cliff), A(uvXY, L.cliff), wz.div(wsum));
+    const mixed = mix(near, bigRock, smoothstep(10, 90, dist).mul(0.5).add(0.35));
+    const lum2 = luminance(mixed);
+    const macroA = texture(tex.mask, p.mul(0.0042).add(0.21)).a;
+    const macroB = texture(tex.mask, p.mul(0.019).add(0.63)).a;
+    const hs = texture(tex.mask, vec2(p.x.add(p.y).mul(0.0035), h.mul(0.0032))).a; // mảng theo độ cao: tầng đá sáng/tối KHÔNG đều
+    // giữ màu thật của texture đá, chỉ đẩy sắc về đỏ gạch + thêm mảng sáng/tối lớn và tầng theo độ cao
+    const warm = vec3(1.28, 0.82, 0.66);
+    let rockCol: Node = mixed.mul(warm).mul(float(0.85).add(lum2.mul(0.5)));
+    rockCol = rockCol.mul(float(0.62).add(macroA.mul(0.55)).add(hs.sub(0.5).mul(0.55))).mul(float(0.78).add(macroB.mul(0.46)));
+    const ledge = smoothstep(0.62, 0.34, slope).mul(smoothstep(0.1, 0.3, slope)); // gờ ngang giữa vách
+    const mossN = smoothstep(0.5, 0.72, texture(tex.mask, p.mul(0.03).add(0.4)).a);
+    rockCol = mix(rockCol, vec3(0.42, 0.36, 0.16), ledge.mul(mossN).mul(0.55));
+    rockCol = mix(rockCol, vec3(0.2, 0.28, 0.12), ledge.mul(mossN.mul(smoothstep(250, 90, h))).mul(0.4));
+    const streakN = texture(tex.mask, vec2(p.x.add(p.y).mul(0.017), h.mul(0.0011))).a;
+    rockCol = rockCol.mul(float(1).sub(smoothstep(0.5, 0.78, streakN).mul(0.45)));
+    // khe nứt dọc tối (đường mảnh theo toạ độ ngang)
+    const crackN = smoothstep(
+      0.03,
+      0.0,
+      texture(tex.mask, vec2(p.x.add(p.y).mul(0.0061), h.mul(0.0009)))
+        .a.sub(0.5)
+        .abs(),
+    );
+    rockCol = rockCol.mul(float(1).sub(crackN.mul(0.55)));
+    col = mix(col, rockCol, rockish2.mul(0.97));
+  }
   mat.vertexColors = false;
   mat.colorNode = col;
 
@@ -365,7 +403,9 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     } else {
       off = mix(off, offXZ(nr), cliffW);
     }
-    const nrm = normalize(nGeo.add(off.mul(groundParams.normalStrength)));
+    const nrm = normalize(
+      nGeo.add(off.mul(groundParams.normalStrength).mul(redStrata && cliffTones.pbr ? mix(float(1), float(2.4), cliffW) : float(1))),
+    );
     mat.normalNode = transformNormalToView(nrm);
     mat.roughnessNode = mix(clamp(rough, 0.35, 1), float(0.7), snowW);
   }
