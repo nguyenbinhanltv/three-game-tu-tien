@@ -4143,25 +4143,25 @@
     },
     "chr_v3_kinh_quang_nam": {
       "id": "chr_v3_kinh_quang_nam",
-      "class": "player_v3",
+      "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_kinh_quang_nam.glb",
-      "file": "chr_v3_kinh_quang_nam.083f7dd301.glb",
-      "bytes": 4059964,
-      "rawBytes": 4170264,
-      "triangles": 24000,
-      "rawTriangles": 24000,
-      "lod0Cap": 24000,
+      "file": "chr_v3_kinh_quang_nam.fd91fdd59a.glb",
+      "bytes": 11237796,
+      "rawBytes": 14872112,
+      "triangles": 97910,
+      "rawTriangles": 97910,
+      "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
-      "bones": 114,
+      "bones": 119,
       "animations": [],
       "ktx2": true,
       "textures": [
         {
           "name": "ancient_male_character_3d_model_normal",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "normalTexture"
           ]
@@ -4169,8 +4169,8 @@
         {
           "name": "ancient_male_character_3d_model_basecolor",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "baseColorTexture"
           ]
@@ -4178,8 +4178,8 @@
         {
           "name": "ancient_male_character_3d_model_rm",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -4188,55 +4188,55 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 24000
+          "triangles": 97910
         },
         {
           "level": 1,
-          "triangles": 11997,
-          "target": 12000
+          "triangles": 23996,
+          "target": 24000
         },
         {
           "level": 2,
-          "triangles": 4795,
-          "target": 4800
+          "triangles": 7993,
+          "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.2174,
-          "height": 1.8292,
-          "depth": 0.5818,
-          "minY": 0.0107
+          "width": 1.4789,
+          "height": 1.8341,
+          "depth": 0.4802,
+          "minY": 0.0089
         },
         "build": {
-          "width": 2.2174,
-          "height": 1.8292,
-          "depth": 0.5818,
-          "minY": 0.0107
+          "width": 1.4789,
+          "height": 1.8341,
+          "depth": 0.4802,
+          "minY": 0.0089
         }
       }
     },
     "chr_v3_kinh_quang_nu": {
       "id": "chr_v3_kinh_quang_nu",
-      "class": "player_v3",
+      "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_kinh_quang_nu.glb",
-      "file": "chr_v3_kinh_quang_nu.610403155b.glb",
-      "bytes": 4045064,
-      "rawBytes": 3986432,
-      "triangles": 23999,
-      "rawTriangles": 23999,
-      "lod0Cap": 24000,
+      "file": "chr_v3_kinh_quang_nu.de482dbcb1.glb",
+      "bytes": 10977004,
+      "rawBytes": 14257172,
+      "triangles": 98975,
+      "rawTriangles": 98975,
+      "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
-      "bones": 123,
+      "bones": 119,
       "animations": [],
       "ktx2": true,
       "textures": [
         {
           "name": "fantasy_female_character_3d_model_normal",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "normalTexture"
           ]
@@ -4244,8 +4244,8 @@
         {
           "name": "fantasy_female_character_3d_model_basecolor",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "baseColorTexture"
           ]
@@ -4253,8 +4253,8 @@
         {
           "name": "fantasy_female_character_3d_model_rm",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -4263,31 +4263,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 23999
+          "triangles": 98975
         },
         {
           "level": 1,
-          "triangles": 12000,
-          "target": 12000
+          "triangles": 23997,
+          "target": 24000
         },
         {
           "level": 2,
-          "triangles": 4800,
-          "target": 4800
+          "triangles": 8140,
+          "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.2233,
-          "height": 1.691,
-          "depth": 0.4886,
-          "minY": 0.0096
+          "width": 1.4806,
+          "height": 1.6988,
+          "depth": 0.423,
+          "minY": 0.0056
         },
         "build": {
-          "width": 2.2233,
-          "height": 1.691,
-          "depth": 0.4886,
-          "minY": 0.0096
+          "width": 1.4806,
+          "height": 1.6988,
+          "depth": 0.423,
+          "minY": 0.0056
         }
       }
     },
@@ -4509,25 +4509,25 @@
     },
     "chr_v3_liet_mach_nam": {
       "id": "chr_v3_liet_mach_nam",
-      "class": "player_v3",
+      "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_liet_mach_nam.glb",
-      "file": "chr_v3_liet_mach_nam.9a2d2825e4.glb",
-      "bytes": 4341932,
-      "rawBytes": 4456312,
-      "triangles": 24000,
-      "rawTriangles": 24000,
-      "lod0Cap": 24000,
+      "file": "chr_v3_liet_mach_nam.9cd4e0e5ae.glb",
+      "bytes": 11967148,
+      "rawBytes": 15851928,
+      "triangles": 95780,
+      "rawTriangles": 95780,
+      "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
-      "bones": 123,
+      "bones": 119,
       "animations": [],
       "ktx2": true,
       "textures": [
         {
           "name": "ancient_male_character_3d_model_normal",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "normalTexture"
           ]
@@ -4535,8 +4535,8 @@
         {
           "name": "ancient_male_character_3d_model_basecolor",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "baseColorTexture"
           ]
@@ -4544,8 +4544,8 @@
         {
           "name": "ancient_male_character_3d_model_rm",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -4554,55 +4554,55 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 24000
+          "triangles": 95780
         },
         {
           "level": 1,
-          "triangles": 11995,
-          "target": 12000
+          "triangles": 23942,
+          "target": 23945
         },
         {
           "level": 2,
-          "triangles": 4797,
-          "target": 4800
+          "triangles": 8381,
+          "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.1264,
-          "height": 1.8646,
-          "depth": 0.7032,
-          "minY": -0.0252
+          "width": 1.569,
+          "height": 1.8462,
+          "depth": 0.6252,
+          "minY": -0.0032
         },
         "build": {
-          "width": 2.1264,
-          "height": 1.8646,
-          "depth": 0.7032,
-          "minY": -0.0252
+          "width": 1.569,
+          "height": 1.8462,
+          "depth": 0.6252,
+          "minY": -0.0032
         }
       }
     },
     "chr_v3_liet_mach_nu": {
       "id": "chr_v3_liet_mach_nu",
-      "class": "player_v3",
+      "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_liet_mach_nu.glb",
-      "file": "chr_v3_liet_mach_nu.960e7549f3.glb",
-      "bytes": 4450928,
-      "rawBytes": 4416232,
-      "triangles": 24000,
-      "rawTriangles": 24000,
-      "lod0Cap": 24000,
+      "file": "chr_v3_liet_mach_nu.4236a70124.glb",
+      "bytes": 12055780,
+      "rawBytes": 16210996,
+      "triangles": 98424,
+      "rawTriangles": 98424,
+      "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
-      "bones": 114,
+      "bones": 110,
       "animations": [],
       "ktx2": true,
       "textures": [
         {
           "name": "ancient_woman_3d_model_normal",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "normalTexture"
           ]
@@ -4610,8 +4610,8 @@
         {
           "name": "ancient_woman_3d_model_basecolor",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "baseColorTexture"
           ]
@@ -4619,8 +4619,8 @@
         {
           "name": "ancient_woman_3d_model_rm",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -4629,31 +4629,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 24000
+          "triangles": 98424
         },
         {
           "level": 1,
-          "triangles": 11980,
-          "target": 12000
+          "triangles": 23992,
+          "target": 24000
         },
         {
           "level": 2,
-          "triangles": 5014,
-          "target": 4800
+          "triangles": 7985,
+          "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.1353,
-          "height": 1.7179,
-          "depth": 0.6784,
-          "minY": -0.0189
+          "width": 1.4433,
+          "height": 1.7066,
+          "depth": 0.6558,
+          "minY": -0.0044
         },
         "build": {
-          "width": 2.1353,
-          "height": 1.7179,
-          "depth": 0.6784,
-          "minY": -0.0189
+          "width": 1.4433,
+          "height": 1.7066,
+          "depth": 0.6558,
+          "minY": -0.0044
         }
       }
     },
@@ -4791,25 +4791,25 @@
     },
     "chr_v3_tinh_khuyet_nam": {
       "id": "chr_v3_tinh_khuyet_nam",
-      "class": "player_v3",
+      "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_tinh_khuyet_nam.glb",
-      "file": "chr_v3_tinh_khuyet_nam.4f87a67bde.glb",
-      "bytes": 4539900,
-      "rawBytes": 4492988,
-      "triangles": 24000,
-      "rawTriangles": 24000,
-      "lod0Cap": 24000,
+      "file": "chr_v3_tinh_khuyet_nam.a32d5c5986.glb",
+      "bytes": 12424756,
+      "rawBytes": 16668964,
+      "triangles": 94226,
+      "rawTriangles": 94226,
+      "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
-      "bones": 123,
+      "bones": 127,
       "animations": [],
       "ktx2": true,
       "textures": [
         {
           "name": "celestial_man_3d_model_normal",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "normalTexture"
           ]
@@ -4817,8 +4817,8 @@
         {
           "name": "celestial_man_3d_model_basecolor",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "baseColorTexture"
           ]
@@ -4826,8 +4826,8 @@
         {
           "name": "celestial_man_3d_model_rm",
           "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
+          "width": 4096,
+          "height": 4096,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -4836,31 +4836,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 24000
+          "triangles": 94226
         },
         {
           "level": 1,
-          "triangles": 11996,
-          "target": 12000
+          "triangles": 23552,
+          "target": 23557
         },
         {
           "level": 2,
-          "triangles": 4796,
-          "target": 4800
+          "triangles": 8023,
+          "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.1423,
-          "height": 1.83,
-          "depth": 0.566,
-          "minY": 0.0092
+          "width": 1.6378,
+          "height": 1.8362,
+          "depth": 0.5434,
+          "minY": 0.0072
         },
         "build": {
-          "width": 2.1423,
-          "height": 1.83,
-          "depth": 0.566,
-          "minY": 0.0092
+          "width": 1.6378,
+          "height": 1.8362,
+          "depth": 0.5434,
+          "minY": 0.0072
         }
       }
     },
