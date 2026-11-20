@@ -47,4 +47,12 @@ export interface TribHost {
   removeMonster(m: MonEnt): void;
   stunMonster(m: MonEnt, sec: number): void;
   heal(p: PlayerEnt, n: number): void;
+  /** Ngũ Suy (TN-4): rút `n` linh lực (không phải sát thương, không dưới 0). */
+  drainMp(p: PlayerEnt, n: number): void;
+  /** Ngũ Suy: bào `n` khí huyết kiểu rỉ dần (không phải đòn nặng: client không khựng). */
+  sap(p: PlayerEnt, n: number): void;
+  /** Ngũ Suy: hồi đầy khí huyết và linh lực đầu mỗi ải. */
+  refill(p: PlayerEnt): void;
+  /** Ngũ Suy: ải `idx` (0-based) của kiếp chuỗi đã qua: lưu tiến độ, thưởng một lần (transaction + sổ cái). */
+  suyCleared(p: PlayerEnt, idx: number): void;
 }

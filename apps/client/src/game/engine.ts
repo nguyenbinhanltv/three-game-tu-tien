@@ -298,6 +298,8 @@ export class Game {
   /** Hiệu ứng quái/tinh anh/boss (V5). */
   monFx: MonFx | null = null;
   boltKinds = new Map<number, string>();
+  /** Dấu trên sân mới nhất của Thiên Nhân Ngũ Suy của chính mình, theo khóa `<loại>:<ô>` (chỉ bản dev, cho Playwright: `__game.suyLog`). */
+  suyLog?: Record<string, { s: string; n: number; x: number; z: number; r: number; pg: number; lv: number; at: number }>;
   /** Nhật ký vùng báo của quái (chỉ bản dev, cho Playwright: `__game.hazardLog`). */
   hazardLog?: {
     k: string;
@@ -432,6 +434,8 @@ export class Game {
   ch4Checked = false;
   ch5Checked = false;
   danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
+  /** Dấu trên sân của Thiên Nhân Ngũ Suy (TN-4), khóa `<sid>:<loại>:<ô>`. */
+  suyMarks = new Map<string, { set(pg: number): void; stop(): void }>();
   /** Năm Trấn Giới Bia của Nhật Thực Kiếp (của mình). */
   stelesVfx: { set(mask: number): void; stop(): void } | null = null;
   stelesMask = 0;

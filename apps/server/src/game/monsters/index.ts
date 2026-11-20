@@ -400,7 +400,7 @@ export class MonsterSystem {
     if (p) msg.src = p.sid;
     this.c.emit(S.DMG, msg);
     // Tâm cảnh (E3-L): đánh trúng Tâm Ma Ảnh của mình thì hồi.
-    if (p?.trib && dmg > 0 && mon.owner === p.sid) this.c.tribSys.noteHit(p, 'hit');
+    if (p?.trib && dmg > 0 && mon.owner === p.sid) this.c.tribSys.noteHit(p, 'hit', dot);
     if (p) {
       mon.threat.set(p.sid, (mon.threat.get(p.sid) ?? 0) + dmg);
       if (mon.state === MS_IDLE || (mon.state === MS_RETURN && this.homeDist(mon) < LEASH * 0.7)) {

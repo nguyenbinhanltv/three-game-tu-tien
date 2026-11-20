@@ -19,7 +19,7 @@ Playtest luôn tắt tiếng: mở game với `?mute=1` (ví dụ `?mute=1&debug
 | `help` | `/gm help [lệnh]` — liệt kê lệnh, cú pháp, ví dụ. | `/gm help kit` |
 | `level` | `/gm level <1-28>` — đặt cấp. | `/gm level 20` |
 | `realm` | `/gm realm <nk1…nk15\|tc\|tc1…tc3\|kd1…\|na1…\|ht>` — đặt cảnh giới. | `/gm realm tc2` |
-| `trib` | `/gm trib [truc_co\|ket_dan\|nguyen_anh\|hoa_than]` — độ kiếp ngay. | `/gm trib ket_dan` |
+| `trib` | `/gm trib [truc_co\|ket_dan\|nguyen_anh\|hoa_than\|anh_bien\|ngu_suy [ải 1..5]]` — độ kiếp ngay. Với `ngu_suy` (Thiên Nhân Ngũ Suy) có thể ghi số ải để vào thẳng ải đó. | `/gm trib ngu_suy 3` |
 | `xp` | `/gm xp <n>` — cộng tu vi. | `/gm xp 5000` |
 | `gold` | `/gm gold <n>` — cộng linh thạch. | `/gm gold 100000` |
 | `god` | `/gm god [on\|off]` — bất tử. | `/gm god on` |
