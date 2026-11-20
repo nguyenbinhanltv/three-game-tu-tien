@@ -327,7 +327,7 @@ export default {
   name: 'vfx',
   desc: 'VFX từng chiêu/FX quái/cảnh lớn: webm chậm + thật và tờ dãy khung có mốc hit, nam/nữ; --crowd N đo sân đông',
   usage:
-    '[--skills skl_a,mon:hit,scene_kiep_kd] [--genders m,f] [--fxq high|medium|low] [--level 12] [--perf] [--crowd N] [--webm-only|--sheet-only] [--fps 24] [--vw 1100 --vh 900] [--tile 40] [--tmax 1000] [--dist 7] [--span 1700] [--query a=b]',
+    '[--skills skl_a,mon:hit,scene_kiep_kd] [--genders m,f] [--fxq high|medium|low] [--level 12] [--perf] [--crowd N] [--webm-only|--sheet-only] [--fps 24] [--vw 1100 --vh 900] [--stills -70,0,200] [--tile 40] [--tmax 1000] [--dist 7] [--span 1700] [--query a=b]',
   async run(r) {
     const sheetCtx = await r.browser.newContext({ viewport: { width: 1800, height: 800 } });
     const sheets: (() => Promise<void>)[] = [];
@@ -409,6 +409,17 @@ export default {
           // Tờ ảnh lấy từ lượt chậm; lượt chậm không ghi được khung (hiếm, GPU bận) thì lấy từ lượt thật.
           const slowOk = pass === 'slow' && rec.frames.length >= 3;
           if (slowOk) sheeted.add(tag);
+          // `--stills -70,0,200`: ảnh đủ cỡ viewport tại các mốc (ms game) so với khung hit đầu tiên (lượt chậm cho nhiều khung).
+          if (slowOk && rec.hits.length && opt('--stills', '')) {
+            for (const off of opt('--stills', '').split(',').map(Number)) {
+              const want = rec.hits[0]! + off;
+              const f = rec.frames.reduce<Frame | null>(
+                (b, x) => (!b || Math.abs((x.at - rec.t0) * slow - want) < Math.abs((b.at - rec.t0) * slow - want) ? x : b),
+                null,
+              );
+              if (f) fs.writeFileSync(path.join(r.out, `${tag}-still${off >= 0 ? '+' : ''}${off}.jpg`), Buffer.from(f.data, 'base64'));
+            }
+          }
           if (!flag('--webm-only') && (slowOk || (pass === 'real' && !sheeted.has(tag)))) {
             const title = `${sk} · ${g === 'm' ? 'Thanh Phong (nam)' : 'Lam Chi (nữ)'} · mỗi ô ${TILE} ms game, viền đỏ = khung hit`;
             sheets.push(() => tileSheet(sheetCtx, path.join(r.out, `${tag}.png`), title, rec, span, slow));
