@@ -327,7 +327,7 @@ export default {
   name: 'vfx',
   desc: 'VFX từng chiêu/FX quái/cảnh lớn: webm chậm + thật và tờ dãy khung có mốc hit, nam/nữ; --crowd N đo sân đông',
   usage:
-    '[--skills skl_a,mon:hit,scene_kiep_kd] [--genders m,f] [--fxq high|medium|low] [--level 12] [--perf] [--crowd N] [--webm-only|--sheet-only] [--fps 24] [--tile 40] [--tmax 1000] [--dist 7] [--span 1700] [--query a=b]',
+    '[--skills skl_a,mon:hit,scene_kiep_kd] [--genders m,f] [--fxq high|medium|low] [--level 12] [--perf] [--crowd N] [--webm-only|--sheet-only] [--fps 24] [--vw 1100 --vh 900] [--tile 40] [--tmax 1000] [--dist 7] [--span 1700] [--query a=b]',
   async run(r) {
     const sheetCtx = await r.browser.newContext({ viewport: { width: 1800, height: 800 } });
     const sheets: (() => Promise<void>)[] = [];
@@ -338,7 +338,7 @@ export default {
         const slow = pass === 'slow' ? SLOW : 1;
         const { ctx, page } = await r.open({
           name: `V${g}${pass[0]}`,
-          viewport: [1100, 900],
+          viewport: [num('--vw', 1100), num('--vh', 900)],
           quality: opt('--quality', 'high'),
           look: { g },
           hide: 'hud',

@@ -19,6 +19,8 @@ import { PREFETCH_PRIORITY } from '../core/preload';
 import { G } from '../core/geo';
 import { type Box } from '../core/screenFit';
 import { FLAGS } from '../../base/flags';
+import { FX_LIB_SHAPES } from '@dtl/shared';
+import { FX_TIMELINES, MON_FX_TIMELINES } from '@dtl/content';
 import {
   BOLTS,
   Fx,
@@ -188,7 +190,15 @@ export class Vfx {
       'statue',
       'card',
       'ribbon',
+      'flip',
     ];
+    // VS-1: hình thư viện mới (`FX_LIB_SHAPES`) mà timeline đã phát hành thực sự dùng cũng vẽ ấm (không thì khung đầu của chiêu giật khi biên dịch shader).
+    const used = new Set<ShapeKey>();
+    for (const tl of [...FX_TIMELINES, ...MON_FX_TIMELINES]) {
+      const lists = [tl.events, ...Object.values(tl.combo ?? {}), ...Object.values(tl.variants ?? {})];
+      for (const ev of lists.flat()) if (ev.type === 'mesh' && (FX_LIB_SHAPES as readonly string[]).includes(ev.shape)) used.add(ev.shape);
+    }
+    shapes.push(...used);
     for (const s of shapes) {
       const kind = shapeKind(s);
       const order = kind === 'decal' ? -1 : kind === 'crystal' ? 1 : 0;
