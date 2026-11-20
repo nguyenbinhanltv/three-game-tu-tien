@@ -18,6 +18,7 @@ import type { PlayerEnt } from './entities';
 import { runMechanic, soulActive, soulOut, tamCanhHit, type TribMechCtx } from './tribmech';
 import { cloneAbsorb, cloneOut } from './tribnhan';
 import { riftFinal, tribCleanup } from './tribanh';
+import { suyCleanup, suyReveal, suyTamHit } from './tribsuy';
 import type { GuardCfg, TribState } from './tribtypes';
 import type { HazardExtra, TribHost } from './tribhost';
 export type { GuardCfg, TribState, HazardExtra, TribHost };
@@ -28,10 +29,13 @@ export class TribSystem {
   /** Dọn trạng thái cơ chế khi kiếp kết thúc (gỡ quái kiếp). */
   cleanup(p: PlayerEnt): void {
     tribCleanup(this.h, p);
+    suyCleanup(this.h, p);
   }
 
   /** Xuất khiếu (E3-L): true nếu nguyên anh vừa rời thân. */
   soul(p: PlayerEnt): boolean {
+    // Cùng phím X: trong ải Thần Thức Suy (TN-4) là ngưng thần soi lôi ẩn.
+    if (suyReveal(this.h, p)) return true;
     return soulOut(this.h, p);
   }
 
@@ -50,9 +54,10 @@ export class TribSystem {
     return cloneAbsorb(this.h, p, n);
   }
 
-  /** Va chạm giữa người độ kiếp và Tâm Ma Ảnh của mình (cơ chế `tam_canh`). */
-  noteHit(p: PlayerEnt, kind: 'hurt' | 'hit'): void {
+  /** Va chạm giữa người độ kiếp và bóng của mình (cơ chế `tam_canh`, ải Đạo Tâm Suy). `dot`: sát thương rỉ theo thời gian, không phải ra tay. */
+  noteHit(p: PlayerEnt, kind: 'hurt' | 'hit', dot = false): void {
     tamCanhHit(this.h, p, kind);
+    suyTamHit(this.h, p, kind, dot);
   }
 
   /** Một nhịp 50 ms cho người đang độ kiếp. */

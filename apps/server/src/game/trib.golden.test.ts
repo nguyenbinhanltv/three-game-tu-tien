@@ -78,3 +78,47 @@ describe('độ kiếp Trúc Cơ: bản chuẩn hành vi', () => {
     });
   }
 });
+
+// TN-4: Thiên Nhân Ngũ Suy. Người chơi mẫu (tribsuy.testutil.ts) thao tác đúng cả năm ải với Math.random cố định; băm mọi vùng báo,
+// sát thương và FX của chuỗi (`suy`, `suymark`, `suyreveal`, `suyok`). Đổi số trong `tribulations.json` hay luật trong tribsuy.ts thì bản chuẩn đổi theo.
+describe('Thiên Nhân Ngũ Suy: bản chuẩn hành vi', () => {
+  for (const seed of [3, 11, 2026]) {
+    it(`cả chuỗi năm ải, hạt giống ${seed}`, async () => {
+      const { runSuy } = await import('./tribsuy.testutil');
+      const { TRIB_DEFS, TRIB_LEVEL } = await import('@dtl/shared');
+      const { LEVELS } = await import('@dtl/content');
+      vi.spyOn(Math, 'random').mockImplementation(rng(seed));
+      const sent: { type: string; msg: unknown }[] = [];
+      const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
+      const spawn = LEVELS[TRIB_LEVEL]!.dungeon!.spawn;
+      const sim = new GameSim(new WorldState(), host as never, {
+        levelId: TRIB_LEVEL,
+        roomName: 'tribulation',
+        spawn,
+        respawn: spawn,
+        persistPosition: false,
+      });
+      const def = TRIB_DEFS.ngu_suy;
+      const char = Character.create(7100 + seed, 'suygold' + seed);
+      char.level = def.from;
+      char.recalc();
+      char.hp = char.mhp;
+      char.mp = char.mmp;
+      const p = sim.addPlayer({ sessionId: 'sg' + seed, send: () => undefined } as never, char, true, 'sg' + seed);
+      p.move.x = spawn.x;
+      p.move.z = spawn.z;
+      p.move.y = groundAt(spawn.x, spawn.z);
+      sim.now = 2_000_000;
+      const t0 = sim.now;
+      expect(sim.beginTribulation(p, def, false)).toBe(true);
+      runSuy(sim, p, def.duration + 5, true);
+      const rows = sent
+        .filter((x) => x.type === S.HAZARD || x.type === S.DMG || (x.type === S.FX && String((x.msg as { t: string }).t).startsWith('suy')))
+        .map((x) => JSON.stringify([x.type, { ...(x.msg as object), sd: undefined }]));
+      if (process.env.TRIB_DUMP) writeFileSync(process.env.TRIB_DUMP + 'suy' + seed, rows.join('\n'));
+      const sha = createHash('sha1').update(rows.join('\n')).digest('hex');
+      expect({ n: rows.length, ended: !p.trib, t: sim.now - t0, cleared: char.meta.suy, sha }).toMatchSnapshot();
+      expect(char.meta.suy).toBe(def.phases.length);
+    });
+  }
+});

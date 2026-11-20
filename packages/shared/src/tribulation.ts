@@ -5,7 +5,7 @@ import raw from '../../content/data/tribulations.json';
 import { at } from './arr';
 import { ELEM_BEATS, ELEMENTS, type Element } from './elements';
 
-export type TribId = 'truc_co' | 'ket_dan' | 'nguyen_anh' | 'hoa_than' | 'anh_bien';
+export type TribId = 'truc_co' | 'ket_dan' | 'nguyen_anh' | 'hoa_than' | 'anh_bien' | 'ngu_suy';
 export type TribPhaseKind = 'lei' | 'hoa' | 'tam_ma';
 /** Độ kiếp chạy ngay trong room thế giới hay room riêng (tổ đội vào cùng). */
 export type TribRoomKind = 'world' | 'tribulation';
@@ -208,6 +208,101 @@ export interface TribNhatThuc {
   shieldEvery: number;
 }
 
+/**
+ * Một ải của Thiên Nhân Ngũ Suy (TN-4, cơ chế `suy_*`). Mỗi ải có một thanh suy khí 0..100: qua `rest` giây điều tức đầu ải thì thanh tăng
+ * `rise` %/giây, nặng dần tới `riseEnd` ở cuối ải; chạm 100 là ải thất bại. Chỉ thao tác riêng của ải (khối cấu hình tương ứng) mới kéo thanh xuống.
+ * Suy khí không phải sát thương: nó rút linh lực, khí huyết, tầm cảm ứng… theo tỉ lệ thanh.
+ */
+export interface TribSuy {
+  rest: number;
+  /** Thanh lúc vào ải (0..100). */
+  start: number;
+  rise: number;
+  riseEnd: number;
+  linh?: TribSuyLinh;
+  the?: TribSuyThe;
+  thuc?: TribSuyThuc;
+  tho?: TribSuyTho;
+  tam?: TribSuyTam;
+}
+
+/** Linh Lực Suy (`suy_linh`): một Linh Nhãn bán kính `r` hiện trên vòng `ring` quanh tâm ải, sau `life` giây (ngắn dần tới `lifeEnd`) thì dời chỗ. Đứng trong đó thanh giảm `cure` %/giây; linh lực bị rút `drain` × thanh mỗi giây (phần của linh lực tối đa). */
+export interface TribSuyLinh {
+  ring: number;
+  r: number;
+  life: number;
+  lifeEnd: number;
+  cure: number;
+  drain: number;
+}
+
+/** Nhục Thân Suy (`suy_the`): mỗi `every` giây một tia Tôi Thể Lôi rơi cách người `dist` mét (bán kính `r`, báo `warn` giây). Đứng trong đó lúc rơi thì thanh giảm `cure`, mất `cost` khí huyết tối đa; khí huyết rỉ `bleed` × thanh mỗi giây. */
+export interface TribSuyThe {
+  every: number;
+  warn: number;
+  r: number;
+  dist: number;
+  cure: number;
+  cost: number;
+  bleed: number;
+}
+
+/**
+ * Thần Thức Suy (`suy_thuc`): sân chia `sectors` cung quanh tâm ải (bán kính `r`). Mỗi `every` giây một đợt lôi ẩn: `safe` cung yên, các cung còn lại nổ sau `warn` giây.
+ * Server KHÔNG báo trước cung nào nổ; bấm ngưng thần (phím X) thì đợt đang chờ mới hiện vạch. Hồi chiêu ngưng thần dài dần theo thanh (`cd` → `cdEnd`).
+ * Đứng cung yên lúc nổ: thanh giảm `cure`. Trúng (hoặc ra ngoài sân): thanh tăng `hurt`, mất `pct` khí huyết tối đa.
+ */
+export interface TribSuyThuc {
+  sectors: number;
+  safe: number;
+  r: number;
+  every: number;
+  warn: number;
+  pct: number;
+  hurt: number;
+  cure: number;
+  cd: number;
+  cdEnd: number;
+}
+
+/**
+ * Thọ Nguyên Suy (`suy_tho`): `lamps` ngọn Thọ Đăng trên vòng `ring`. Mỗi `gust` giây (dày dần tới `gustEnd`) suy phong nhắm một ngọn đang cháy, báo `warn` giây rồi thổi tắt.
+ * Đứng trong `r` mét quanh ngọn tắt liền `light` giây thì thắp lại. Mỗi ngọn tắt cộng `per` %/giây vào thanh; đủ mọi ngọn cháy thì thanh giảm `cure` %/giây. Tắt hết là thất bại.
+ */
+export interface TribSuyTho {
+  lamps: number;
+  ring: number;
+  r: number;
+  light: number;
+  gust: number;
+  gustEnd: number;
+  warn: number;
+  per: number;
+  cure: number;
+}
+
+/**
+ * Đạo Tâm Suy (`suy_tam`): Vọng Ảnh (bóng tâm ma, máu `hpFrac` × khí huyết chủ) quấy nhiễu. Nhịp `calm` giây tĩnh rồi `strike` giây phá vọng xoay vòng.
+ * Lúc tĩnh mà ra tay trúng bóng: thanh tăng `hitBad`. Lúc phá vọng trúng bóng (một lần mỗi nhịp): thanh giảm `hitGood`; hết nhịp không trúng: tăng `miss`. Bị bóng đánh trúng: tăng `hurt`.
+ */
+export interface TribSuyTam {
+  calm: number;
+  strike: number;
+  hitBad: number;
+  hitGood: number;
+  miss: number;
+  hurt: number;
+  hpFrac: number;
+}
+
+/** Pháp tắc sơ ngộ (thưởng nội tại khi qua đủ Ngũ Suy): phần cộng thêm vào khí huyết, linh lực, công, thủ. */
+export interface TribLaw {
+  hp: number;
+  mp: number;
+  atk: number;
+  def: number;
+}
+
 export interface TribPhaseDef {
   id: string;
   kind: TribPhaseKind;
@@ -234,6 +329,8 @@ export interface TribPhaseDef {
   phanThan?: TribPhanThan;
   danLoi?: TribDanLoi;
   nhatThuc?: TribNhatThuc;
+  /** Ải suy (chỉ dùng khi `mechanic` là một trong `suy_*`). */
+  suy?: TribSuy;
   /** Thiên lôi pha này nhuốm lửa (lôi hỏa): client đổi màu tia (HDR vẫn dưới trần). Chỉ là lớp hình. */
   hot?: boolean;
   /** Móc cơ chế riêng (tribmech.ts). */
@@ -264,6 +361,15 @@ export interface TribDef {
   phases: TribPhaseDef[];
   /** Level (bản đồ kiếp) của room kiếp riêng; thiếu = `do_kiep`. */
   level?: string;
+  /**
+   * Kiếp dạng chuỗi (TN-4, Thiên Nhân Ngũ Suy): mỗi pha là một ải, qua ải nào server lưu ải đó (`meta.suy`), lần sau vào tiếp từ ải chưa qua.
+   * `to` = `from` nghĩa là qua chuỗi không đổi cấp (thang cấp chưa mở tới cảnh giới kế); khi `to` = `from` + 1 thì chuỗi là kiếp đột phá của cấp `from`.
+   */
+  chain?: boolean;
+  /** Linh thạch thưởng một lần cho từng ải của chuỗi (theo thứ tự pha). */
+  stageGold?: number[];
+  /** Nội tại mở khi qua đủ chuỗi. */
+  law?: TribLaw;
 }
 
 /** Móc cơ chế riêng hợp lệ (server cài ở apps/server/src/game/tribmech.ts; `content:check` kiểm dữ liệu chỉ dùng id trong danh sách này). */
@@ -276,6 +382,11 @@ export const TRIB_MECHANIC_IDS = [
   'phan_than',
   'dan_loi',
   'nhat_thuc',
+  'suy_linh',
+  'suy_the',
+  'suy_thuc',
+  'suy_tho',
+  'suy_tam',
 ] as const;
 
 const defs = (raw as unknown as { defs: Record<string, Omit<TribDef, 'id'>> }).defs;
@@ -298,9 +409,9 @@ export function tribRoomNameOf(level: string): string {
   return level === 'do_kiep' ? 'tribulation' : `tribulation-${level}`;
 }
 
-/** Kiếp mở ra từ cấp đại viên mãn `level` (15, 19, 23, 27), hoặc null. */
+/** Kiếp mở ra từ cấp đại viên mãn `level` (15, 19, 23, 27), hoặc null. Chuỗi chưa gắn vào thang cấp (`to` = `from`) không tính: chỉ mở bằng id. */
 export function tribForLevel(level: number): TribDef | null {
-  return TRIB_IDS.map((i) => TRIB_DEFS[i]).find((d) => d.from === level) ?? null;
+  return TRIB_IDS.map((i) => TRIB_DEFS[i]).find((d) => d.from === level && d.to > d.from) ?? null;
 }
 
 /** Chỉ số pha (0-based) tại giây `elapsed`. */

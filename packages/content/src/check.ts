@@ -108,7 +108,7 @@ import {
   SPIRIT_UNLOCK_LEVEL,
 } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
-import { PEAK_LEVELS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS, tribForLevel, peakGated } from '@dtl/shared';
+import { PEAK_LEVELS, SUY_MECHANICS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS, isSuyMechanic, tribForLevel, peakGated } from '@dtl/shared';
 import { TELE_PADS, TELE_PAD, terrainOf, questSpot, inPoly } from '@dtl/shared';
 import { checkLevel } from './levelcheck';
 import { CREDITS, CREDIT_KINDS, CREDIT_LICENSE_URL } from './index';
@@ -1304,9 +1304,15 @@ if (!at(LEVELS, 'van_lam').spawn) err('van_lam: thiếu spawn');
   for (const id of TRIB_IDS) {
     const d = TRIB_DEFS[id];
     const w = `độ kiếp ${id}`;
-    if (!peaks.has(d.from) || d.to !== d.from + 1) err(`${w}: from ${d.from} phải là đại viên mãn và to = from + 1`);
-    if (seenFrom.has(d.from)) err(`${w}: hai kiếp cùng from ${d.from}`);
-    seenFrom.add(d.from);
+    if (d.chain) {
+      // Kiếp chuỗi (TN-4): hoặc đã gắn vào thang cấp (to = from + 1), hoặc còn là mốc tạm (to = from) thì chưa được bật cho người chơi.
+      if (d.to !== d.from && d.to !== d.from + 1) err(`${w}: kiếp chuỗi cần to = from (mốc tạm) hoặc to = from + 1`);
+      if (d.to === d.from && d.enabled) err(`${w}: kiếp chuỗi chưa gắn vào thang cấp (to = from) thì không được bật`);
+    } else if (!peaks.has(d.from) || d.to !== d.from + 1) err(`${w}: from ${d.from} phải là đại viên mãn và to = from + 1`);
+    if (d.to > d.from) {
+      if (seenFrom.has(d.from)) err(`${w}: hai kiếp cùng from ${d.from}`);
+      seenFrom.add(d.from);
+    }
     if (d.item !== null && !ITEM.get(d.item)) err(`${w}: vật phẩm đột phá ${d.item} không tồn tại`);
     if (d.enabled && d.item === null) err(`${w}: bật (enabled) mà chưa có vật phẩm đột phá`);
     if (d.room !== 'world' && d.room !== 'tribulation') err(`${w}: room phải là world hoặc tribulation`);
@@ -1423,6 +1429,102 @@ if (!at(LEVELS, 'van_lam').spawn) err('van_lam: thiếu spawn');
           err(`độ kiếp ${id}/${p.id}: tam_canh cần tamCanh {hurt, hit, skillEvery, skillWarn, skillPow} và shadows`);
       }
     }
+  }
+  // Thiên Nhân Ngũ Suy (TN-4): mỗi pha của kiếp chuỗi là một ải có cơ chế `suy_*` riêng, đủ thông số và qua được bằng thao tác.
+  for (const [id, d] of Object.entries(TRIB_DEFS)) {
+    const w = `độ kiếp ${id}`;
+    const suyPhases = d.phases.filter((p) => isSuyMechanic(p.mechanic) || p.suy);
+    if (!d.chain) {
+      if (suyPhases.length) err(`${w}: cơ chế suy_* chỉ dùng trong kiếp chuỗi (chain)`);
+      if (d.stageGold || d.law) err(`${w}: stageGold/law chỉ dùng trong kiếp chuỗi`);
+      continue;
+    }
+    if (d.room !== 'tribulation') err(`${w}: kiếp chuỗi phải chạy ở room tribulation`);
+    if (suyPhases.length !== d.phases.length) err(`${w}: mọi pha của kiếp chuỗi phải là một ải suy_*`);
+    if (new Set(d.phases.map((p) => p.mechanic)).size !== d.phases.length) err(`${w}: mỗi ải phải dùng một cơ chế riêng`);
+    if (id === 'ngu_suy' && d.phases.map((p) => p.mechanic).join() !== SUY_MECHANICS.join())
+      err(`${w}: năm ải phải theo thứ tự ${SUY_MECHANICS.join(', ')}`);
+    if (!d.stageGold || d.stageGold.length !== d.phases.length || d.stageGold.some((g) => !Number.isInteger(g) || g < 0 || g > 5000))
+      err(`${w}: stageGold cần đúng ${d.phases.length} số nguyên trong [0, 5000]`);
+    const law = d.law;
+    if (!law || [law.hp, law.mp, law.atk, law.def].some((v) => !(v >= 0 && v <= 0.1)))
+      err(`${w}: law cần hp/mp/atk/def trong [0, 0,1] (nội tại nhỏ, không phá cân bằng)`);
+    if (d.failXpLoss !== 0) err(`${w}: Ngũ Suy không phạt tu vi (failXpLoss = 0)`);
+    const names = (GLOSSARY as unknown as { nguSuy?: Record<string, string> }).nguSuy ?? {};
+    d.phases.forEach((p, i) => {
+      const pw = `${w}/${p.id}`;
+      const s = p.suy;
+      const len = p.end - (d.phases[i - 1]?.end ?? 0);
+      if (!s || !(s.rest >= 0 && s.rest < len && s.start >= 0 && s.start < 100 && s.rise >= 0 && s.riseEnd >= s.rise)) {
+        err(`${pw}: thiếu hoặc sai khối suy {rest, start, rise, riseEnd >= rise}`);
+        return;
+      }
+      const act = len - s.rest;
+      const avg = (s.rise + s.riseEnd) / 2;
+      if (id === 'ngu_suy') {
+        if (names[p.id] === undefined) err(`${pw}: tên ải phải có trong glossary.nguSuy`);
+        else if (hasString(`ui.trib.${id}.${p.id}`) && t(`ui.trib.${id}.${p.id}`) !== names[p.id])
+          err(`${pw}: chuỗi ui.trib.${id}.${p.id} phải đúng tên trong glossary ("${names[p.id]}")`);
+      }
+      needStr(`sys.${p.mechanic}_start`);
+      // Không thao tác thì phải thất bại (ải không qua được bằng cách đứng chịu): riêng Thọ Nguyên Suy thất bại vì đèn tắt hết.
+      if (p.mechanic !== 'suy_tho' && !(s.start + avg * act >= 100)) err(`${pw}: đứng yên vẫn qua được (start + tăng < 100)`);
+      if (p.mechanic === 'suy_linh') {
+        const x = s.linh;
+        if (!x || !(x.ring > 0 && x.r > 0 && x.lifeEnd > 0 && x.life >= x.lifeEnd && x.cure > s.riseEnd && x.drain >= 0 && x.drain <= 0.2))
+          err(`${pw}: linh cần {ring, r, life >= lifeEnd > 0, cure > riseEnd, drain trong [0, 0,2]}`);
+      }
+      if (p.mechanic === 'suy_the') {
+        const x = s.the;
+        if (
+          !x ||
+          !(
+            x.every > x.warn &&
+            x.warn > 0 &&
+            x.r > 0 &&
+            x.dist > x.r &&
+            x.cure > 0 &&
+            x.cost >= 0 &&
+            x.cost <= 0.15 &&
+            x.bleed >= 0 &&
+            x.bleed <= 0.05
+          )
+        )
+          err(`${pw}: the cần {every > warn > 0, r, dist > r, cure, cost <= 0,15, bleed <= 0,05}`);
+        else if (!(Math.floor(act / x.every) * x.cure > avg * act)) err(`${pw}: đón đủ mọi tia vẫn không hóa giải nổi suy khí`);
+      }
+      if (p.mechanic === 'suy_thuc') {
+        const x = s.thuc;
+        if (
+          !x ||
+          !(x.sectors >= 3 && x.sectors <= 16 && x.safe >= 1 && x.safe < x.sectors && x.r > 0 && x.every > x.warn && x.warn >= 1.5) ||
+          !(x.pct > 0 && x.pct <= 0.3 && x.hurt > 0 && x.cure > 0 && x.cd > 0 && x.cdEnd >= x.cd)
+        )
+          err(`${pw}: thuc cần {sectors 3–16, 1 <= safe < sectors, r, every > warn >= 1,5, pct <= 0,3, hurt, cure, cdEnd >= cd > 0}`);
+        else if (!(Math.floor(act / x.every) * x.cure > avg * act)) err(`${pw}: né đủ mọi đợt vẫn không hóa giải nổi suy khí`);
+      }
+      if (p.mechanic === 'suy_tho') {
+        const x = s.tho;
+        if (
+          !x ||
+          !(x.lamps >= 3 && x.lamps <= 8 && x.ring > 0 && x.r > 0 && x.light > 0 && x.gustEnd > 0 && x.gust >= x.gustEnd && x.warn > 0) ||
+          !(x.per > 0 && x.cure >= 0)
+        )
+          err(`${pw}: tho cần {lamps 3–8, ring, r, light, gust >= gustEnd > 0, warn, per, cure}`);
+        else if (!(x.gustEnd + x.warn > x.light)) err(`${pw}: đèn tắt nhanh hơn thời gian thắp một ngọn, không thể giữ`);
+      }
+      if (p.mechanic === 'suy_tam') {
+        const x = s.tam;
+        if (!x || !(x.calm > 0 && x.strike >= 2 && x.hitBad > 0 && x.hitGood > 0 && x.miss >= 0 && x.hurt >= 0 && x.hpFrac >= 1))
+          err(`${pw}: tam cần {calm, strike >= 2, hitBad, hitGood, miss, hurt, hpFrac >= 1}`);
+        else if (!(Math.floor(act / (x.calm + x.strike)) * x.hitGood > avg * act - (100 - s.start)))
+          err(`${pw}: trúng đủ mọi nhịp phá vọng vẫn không giữ nổi thanh dưới 100`);
+        if (!MONSTER.get('mon_tam_ma')) err(`${pw}: thiếu quái mon_tam_ma (Vọng Ảnh)`);
+      }
+    });
+    for (const k of ['sys.suy_fail', 'sys.suy_keep', 'sys.suy_stage', 'sys.suy_stage_gold', 'sys.suy_law', 'sys.suy_ok', 'sys.suy_done'])
+      needStr(k);
+    for (const k of ['label', 'rest', 'stage']) needStr(`ui.trib.suy.${k}`);
   }
   if (!tribForLevel(19)?.enabled) err('độ kiếp Kết Đan (cấp 19) phải đang bật (E2-D)');
   if (peakGated(19) || peakGated(23) || peakGated(27))

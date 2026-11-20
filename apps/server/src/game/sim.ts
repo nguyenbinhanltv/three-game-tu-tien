@@ -90,7 +90,7 @@ import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg } from './artifact';
 import { log } from '../log';
 
-import { at } from '@dtl/shared';
+import { at, type TribId } from '@dtl/shared';
 const INTERACT_RANGE = 9;
 
 export class GameSim {
@@ -129,6 +129,17 @@ export class GameSim {
     removeMonster: (m) => this.removeMonster(m),
     stunMonster: (m, sec) => this.monSys.stun(m, sec),
     heal: (p, n) => this.healPlayer(p, n),
+    drainMp: (p, n) => {
+      p.char.mp = Math.max(0, p.char.mp - Math.max(0, n));
+    },
+    sap: (p, n) => {
+      if (n > 0) this.damagePlayer(p, n, p.sid, false);
+    },
+    refill: (p) => {
+      p.char.hp = p.char.mhp;
+      p.char.mp = p.char.mmp;
+    },
+    suyCleared: (p, idx) => this.tribHub.suyCleared(p, idx),
   });
   /** Bình cảnh, tâm ma, linh căn (P3-7). */
   readonly realm = new RealmSystem({
@@ -673,7 +684,7 @@ export class GameSim {
       this.soul.resetCooldown(p);
       this.clone.resetCooldown(p);
     },
-    onBreakthrough: (p, force) => this.onBreakthrough(p, force),
+    onBreakthrough: (p, force, id) => this.onBreakthrough(p, force, id),
     sys: (p, k, params, type) => this.sys(p, k, params, type),
   });
 
@@ -1344,8 +1355,8 @@ export class GameSim {
   onBottleneck(p: PlayerEnt, msg: unknown): void {
     return this.tribHub.onBottleneck(p, msg);
   }
-  onBreakthrough(p: PlayerEnt, force = false): void {
-    return this.tribHub.onBreakthrough(p, force);
+  onBreakthrough(p: PlayerEnt, force = false, id?: TribId): void {
+    return this.tribHub.onBreakthrough(p, force, id);
   }
   onChangeRoot(p: PlayerEnt, msg: unknown): void {
     return this.tribHub.onChangeRoot(p, msg);
