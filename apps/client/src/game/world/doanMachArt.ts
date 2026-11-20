@@ -1,3 +1,4 @@
+import { DoanMachWall } from './doanMachWall';
 import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { LEVELS, NPCS } from '@dtl/content';
@@ -560,6 +561,16 @@ export class DoanMachArt {
 
   constructor() {
     this.group.name = 'doanMachArt';
+    // thác (đường chảy theo vách thật, kể cả hồ chân) và phù văn vách ngoài: da lún sau vách quanh chúng để không bị che
+    const holes = [
+      ...fallSpots().flatMap((f) => f.path.filter((_, i) => i % 3 === 0).map((p) => ({ x: p.x, z: p.z, y: p.y, r: 13, hy: 9 }))),
+      ...runeSpots()
+        .filter((r) => Math.hypot(r.pos.x - 1024, r.pos.z - 1024) > 600)
+        .map((r) => ({ x: r.pos.x, z: r.pos.z, y: r.pos.y, r: r.size * 0.6, hy: r.size * 0.6 })),
+    ];
+    const wall = new DoanMachWall(heightAt, holes);
+    this.group.add(wall.group);
+    this.disposables.push(wall);
     const rand = rng(SEED + 99);
     const dummy = new THREE.Object3D();
 
