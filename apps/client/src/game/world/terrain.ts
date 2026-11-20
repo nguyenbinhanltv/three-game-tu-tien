@@ -729,15 +729,18 @@ export class Terrain {
     setGroundRedStrata(
       T.id === 'doan_mach' || T.id === 'thien_khuyet' || KT || PM,
       // Thiên Khuyết (MAP-4): vách xám ấm ↔ nâu cát, khe nứt có vỉa vàng kim; vân từ nhiễu theo tọa độ dọc vách (hết ô caro).
-      T.id === 'thien_khuyet'
-        ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18], blocks: true }
-        : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
-          KT
-          ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }
-          : // Phục Mạch (DUN-1 PR2): vách sa thạch nâu đỏ sẫm, khe nứt có vỉa mạch tinh lục.
-            PM
-            ? { lo: [0.1, 0.07, 0.05], hi: [0.3, 0.2, 0.13], vein: [0.25, 0.7, 0.55] }
-            : undefined,
+      T.id === 'doan_mach'
+        ? // Đoạn Mạch (POLISH-1): vách đá PBR thật nhuộm đỏ nâu, không dùng nhiễu tạo sọc.
+          { lo: [0.3, 0.14, 0.1], hi: [0.62, 0.4, 0.28], pbr: true }
+        : T.id === 'thien_khuyet'
+          ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18], blocks: true }
+          : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
+            KT
+            ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }
+            : // Phục Mạch (DUN-1 PR2): vách sa thạch nâu đỏ sẫm, khe nứt có vỉa mạch tinh lục.
+              PM
+              ? { lo: [0.1, 0.07, 0.05], hi: [0.3, 0.2, 0.13], vein: [0.25, 0.7, 0.55] }
+              : undefined,
     );
     if (tex) applyGroundShader(this.material, tex, level);
     else clearGroundShader(this.material);
