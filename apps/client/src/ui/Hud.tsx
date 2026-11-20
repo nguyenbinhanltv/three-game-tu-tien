@@ -54,6 +54,7 @@ import { DuelBanner, InviteStack, PartyFrame } from './Party';
 import { Minimap } from './minimap/Minimap';
 import { Panels } from './windows/Panels';
 import { TrialBanner } from './Realm';
+import { Calli } from './calli/Calli';
 import { BagWarn } from './BagWarn';
 import { type BossLine, type ChapterCard, togglePanel, useUI } from './store';
 import { HubBar } from './u2/hud/HubBar';
@@ -164,7 +165,18 @@ function ChapterCardShow({ card }: { card: ChapterCard }) {
       <div className="lb lb-bot" />
       <div className="chapter-text">
         <div className="chapter-kicker">{t(k + '.kicker', { realm: realmName(level), next: nextMajorRealmName(level) })}</div>
-        <div className="chapter-title">{t(k + '.title', { realm: realmName(level), next: nextMajorRealmName(level) })}</div>
+        <div className="chapter-title">
+          {/* Tên cảnh giới (ascend*) và tên nơi chốn/độ kiếp: ảnh thư pháp khi đã vẽ, lùi về chữ. */}
+          {k.startsWith('ui.chapter.ascend') ? (
+            <Calli k={'realm.' + level} text={realmName(level)} big />
+          ) : (
+            <Calli
+              big={k === 'ui.chapter.trib'}
+              k={k + '.title'}
+              text={t(k + '.title', { realm: realmName(level), next: nextMajorRealmName(level) })}
+            />
+          )}
+        </div>
         <div className="chapter-rule" />
         <div className="chapter-sub">{t(k + '.sub', { realm: realmName(level), next: nextMajorRealmName(level) })}</div>
       </div>
