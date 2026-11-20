@@ -257,3 +257,8 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - Cây/đá cảnh xa trước đây rải ở r 300–1500 m, trùng vùng chơi (bãi quái, đường, bệ cổng, hồ) và không có va chạm. Nay `farCandidate` chỉ cho điểm có `playDist ≥ 1160` (ngoài khung chơi 2,2 × 2,2 km + đệm) và trong bản đồ 4096 m, nên không còn gì mọc ở nơi đi lại; test `lacKiemFar.test.ts` kiểm mọi điểm ứng viên đều ngoài vùng chơi.
 - Cây xa nhỏ lại (cao ~18–32 m thay vì tới ~55 m) và tối hơn (lightness 0,10–0,17, bão hòa 0,3) nên không còn nón xanh nhạt to bất thường trên sống đồi (ảnh `phongxa`, `dawn-cong`); đá nhỏ lại (4–11 m).
 - Hệ quả: cây/đá chỉ còn ở dãy núi ngoài cùng; sống đồi gần hơn trở lại mượt (chỉ còn sương dải). Muốn thêm lớp ở giữa phải có va chạm hoặc để cùng loại thông của map (CardForest) với giới hạn tầm vẽ lớn hơn.
+
+## Polish — Đoạn Mạch: thử rồi bỏ (chưa làm lại)
+
+- Đã thử hai hướng và **không đạt duyệt ảnh**, nên không vào `main`: (1) vách bằng shader (tầng đá hai cỡ + warp UV + khe + rêu, nhánh `rich` của `CliffTones`) vẫn là dải màu trên lưới địa hình, đọc ra như đồi cát; (2) thác bằng dải lưới bám địa hình có shader nước cuộn, nhưng nhìn gần là tấm phẳng nghiêng như poster, hồ chân là đĩa trắng.
+- **Cần làm đúng**: vách đá thật là **mesh** (khối đá tầng dày mỏng gãy khúc, khe nứt dọc, gờ nhô) dựng bằng Blender như `arch_*` rồi đặt dọc chân vách, hoặc displacement thật trong địa hình; thác là dải lưới cong theo vách (UV chạy dọc, bọt mép và chân), đặt trong khe đã tạo hình bằng mesh, hồ chân có bờ đá. Làm cùng đợt với mesh vách vì thác phải ngồi trong khe của vách.
