@@ -45,12 +45,12 @@ describe('CamFrame', () => {
     expect(f.pitchAdd).toBe(0);
   });
 
-  it('khung camera ngắn (2–3 giây), thẻ chữ 2–3 giây', () => {
+  it('khung camera ngắn (2–3 giây), thẻ chữ 2–4 giây (đột phá/độ kiếp 4 giây: chữ cảnh giới lớn)', () => {
     for (const p of Object.values(CHAPTER)) {
       expect(p.cam).toBeGreaterThanOrEqual(2);
       expect(p.cam).toBeLessThanOrEqual(3);
       expect(p.card).toBeGreaterThanOrEqual(2000);
-      expect(p.card).toBeLessThanOrEqual(3000);
+      expect(p.card).toBeLessThanOrEqual(4000);
       expect(p.dist).toBeLessThanOrEqual(1.35);
       expect(Math.abs(p.pitch)).toBeLessThanOrEqual(0.15);
     }

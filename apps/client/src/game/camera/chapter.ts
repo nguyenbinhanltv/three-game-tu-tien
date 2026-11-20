@@ -23,19 +23,19 @@ interface ChapterPreset {
 export const CHAPTER: Record<ChapterKind, ChapterPreset> = {
   sect: { card: 3000, dist: 1.3, pitch: 0.1, cam: 2.4 },
   dungeon: { card: 2800, dist: 1.2, pitch: 0.06, cam: 2.2 },
-  trib: { card: 2800, dist: 1.25, pitch: -0.14, cam: 2.2 },
+  trib: { card: 4000, dist: 1.25, pitch: -0.14, cam: 2.2 },
   /** Ngự kiếm lần đầu: giữ camera như cũ (hạ thấp góc nhìn thì vệt phi kiếm thành cột sáng chắn màn hình). */
   fly: { card: 3000, dist: 1.0, pitch: 0.06, cam: 2.6 },
   /** Đột phá thành công: ngẩng lên trời quang sau mây kiếp. */
-  ascend: { card: 3000, dist: 1.15, pitch: -0.04, cam: 3 },
+  ascend: { card: 4000, dist: 1.15, pitch: -0.04, cam: 3 },
   /** Kết Đan: như đột phá thường nhưng kéo lùi hơn để thấy vòng đan quang quanh người. */
-  ascend_kd: { card: 3000, dist: 1.3, pitch: -0.02, cam: 3 },
+  ascend_kd: { card: 4000, dist: 1.3, pitch: -0.02, cam: 3 },
   /** Nguyên Anh: ngẩng nhẹ lên trời, kéo lùi để thấy bóng nguyên anh lơ lửng sau lưng. */
-  ascend_na: { card: 3000, dist: 1.35, pitch: -0.05, cam: 3 },
+  ascend_na: { card: 4000, dist: 1.35, pitch: -0.05, cam: 3 },
   /** Hóa Thần: ngẩng lên trời sao, kéo lùi nhiều hơn một chút để thấy bóng thần niệm sau gáy. */
-  ascend_hn: { card: 3000, dist: 1.35, pitch: -0.06, cam: 3 },
+  ascend_hn: { card: 4000, dist: 1.35, pitch: -0.06, cam: 3 },
   /** Anh Biến: ngẩng lên trời nhật thực, kéo lùi để thấy khe khép ở phía bắc. */
-  ascend_ab: { card: 3000, dist: 1.35, pitch: -0.07, cam: 3 },
+  ascend_ab: { card: 4000, dist: 1.35, pitch: -0.07, cam: 3 },
   /** Chương 2 · Đoạn Mạch: lần đầu tới Đoạn Mạch Cổ Cốc. */
   ch2: { card: 3000, dist: 1.25, pitch: 0.08, cam: 2.6 },
   /** Chương 3 · Vân Hải: lần đầu tới Phù Đảo Các, kéo lùi và ngẩng nhẹ để thấy biển mây. */
