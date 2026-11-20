@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { FEET, hipDrop, MqFeet, needStep, stepArc, wrapAngle } from './mannequinFeet';
+import { registerCollision } from '@dtl/shared';
+import { FEET, groundNormal, hipDrop, MqFeet, needStep, stepArc, walkableGround, wrapAngle } from './mannequinFeet';
 
 describe('mannequinFeet: hàm thuần', () => {
   it('wrapAngle đưa về (−π, π]', () => {
@@ -129,5 +130,74 @@ describe('MqFeet', () => {
     for (let i = 0; i < 30; i++) feet.update(1 / 60, { active: true, standing: false }, flat);
     expect(feet.steps).toBe(0);
     expect(feet.planted).toBe(false);
+  });
+});
+
+describe('groundNormal', () => {
+  const n = new THREE.Vector3();
+  it('đất phẳng: thẳng đứng', () => {
+    groundNormal(() => 0, 3, 4, n);
+    expect(n.y).toBeCloseTo(1);
+    expect(n.x).toBeCloseTo(0);
+  });
+  it('dốc 15° dọc x: pháp tuyến nghiêng ngược chiều dốc', () => {
+    const t = Math.tan(0.26);
+    groundNormal((x) => x * t, 0, 0, n);
+    expect(Math.acos(n.y)).toBeCloseTo(0.26, 2);
+    expect(n.x).toBeLessThan(0);
+  });
+  it('dốc dựng đứng bị kẹp ở tiltMax', () => {
+    groundNormal((x) => x * 0.4, 0, 0, n); // chênh 0,096 < tiltEdge nhưng góc ~22° > tiltMax
+    expect(Math.acos(n.y)).toBeLessThanOrEqual(FEET.tiltMax + 1e-6);
+    expect(n.length()).toBeCloseTo(1);
+  });
+  it('mép bậc (nhảy cao) coi là phẳng, bàn chân không gật', () => {
+    groundNormal((x) => (x > 0 ? 0.3 : 0), 0, 0, n);
+    expect(n.y).toBeCloseTo(1);
+  });
+});
+
+const terrainGround = () => 0;
+
+describe('walkableGround (COL-1)', () => {
+  it('bậc thang: lấy mặt bậc cao hơn địa hình, đỉnh quá tầm bước thì bỏ qua', () => {
+    const t0 = terrainGround();
+    const t5 = terrainGround();
+    registerCollision('mqfeet_test', [
+      { k: 'box', x: 0, z: 0, hx: 1, hz: 1, y0: t0 - 1, y1: t0 + 0.3, yaw: 0 },
+      { k: 'box', x: 5, z: 0, hx: 1, hz: 1, y0: t5 - 1, y1: t5 + 3, yaw: 0 },
+    ]);
+    const g = walkableGround(t0, 'mqfeet_test', terrainGround);
+    expect(g(0, 0)).toBeCloseTo(t0 + 0.3, 3);
+    expect(g(5, 0)).toBeCloseTo(t5, 3); // đỉnh cao hơn tầm bước: không đứng được
+    expect(g(20, 20)).toBeCloseTo(terrainGround(), 5);
+  });
+  it('chân trên bậc cao: cổ chân được nâng theo mặt bậc', () => {
+    const t = terrainGround();
+    registerCollision('mqfeet_test2', [{ k: 'box', x: 0.1, z: 0, hx: 0.04, hz: 1, y0: t - 1, y1: t + 0.2, yaw: 0 }]);
+    const { root, feet } = rig();
+    root.position.y = terrainGround();
+    root.updateMatrixWorld(true);
+    const g = walkableGround(root.position.y, 'mqfeet_test2', terrainGround);
+    const y0 = worldY(root, 'foot_l');
+    for (let i = 0; i < 40; i++) feet.update(1 / 60, { active: true, standing: false }, g);
+    root.updateMatrixWorld(true);
+    expect(worldY(root, 'foot_l')).toBeGreaterThan(y0 + 0.1);
+  });
+});
+
+describe('MqFeet: bàn chân theo dốc', () => {
+  it('đứng trên dốc 15°: bàn chân nghiêng theo mặt đất, trả về thẳng khi tắt', () => {
+    const { root, feet } = rig();
+    const t = Math.tan(0.26);
+    const foot = root.getObjectByName('foot_l')!;
+    const up = (o: THREE.Object3D) => new THREE.Vector3(0, 1, 0).applyQuaternion(o.getWorldQuaternion(new THREE.Quaternion()));
+    const rest = up(foot).angleTo(new THREE.Vector3(0, 1, 0));
+    for (let i = 0; i < 90; i++) feet.update(1 / 60, { active: true, standing: false }, (x) => x * t);
+    root.updateMatrixWorld(true);
+    expect(up(foot).angleTo(new THREE.Vector3(0, 1, 0))).toBeGreaterThan(rest + 0.15);
+    for (let i = 0; i < 90; i++) feet.update(1 / 60, { active: false, standing: false }, flat);
+    root.updateMatrixWorld(true);
+    expect(up(foot).angleTo(new THREE.Vector3(0, 1, 0))).toBeCloseTo(rest, 2);
   });
 });

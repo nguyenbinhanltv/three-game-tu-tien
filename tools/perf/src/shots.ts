@@ -36,6 +36,7 @@ import thanpham from './scenarios/thanpham';
 import ual from './scenarios/ual';
 import chrv3 from './scenarios/chrv3';
 import chrv3anim from './scenarios/chrv3anim';
+import chrv3feet from './scenarios/chrv3feet';
 import v3sets from './scenarios/v3sets';
 import skinv3 from './scenarios/skinv3';
 import hoatruc from './scenarios/hoatruc';
@@ -86,6 +87,7 @@ const SCENARIOS: Scenario[] = [
   fly,
   chrv3,
   chrv3anim,
+  chrv3feet,
   v3sets,
   skinv3,
   divuc,
