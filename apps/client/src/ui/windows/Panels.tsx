@@ -5,6 +5,7 @@ import { Character } from '../character/Character';
 import { MethodPanel } from '../MethodPanel';
 import { PartyPanel } from '../Party';
 import { focusPanel, movePanel, panelScale, useUI } from '../store';
+import { Wardrobe } from '../wardrobe/Wardrobe';
 import { WorldMap } from '../worldmap/WorldMap';
 import { Credits } from './Credits';
 import { Help } from './Help';
@@ -32,6 +33,8 @@ function Body({ id }: { id: WinId }): ReactNode {
       return <PartyPanel />;
     case 'credits':
       return <Credits />;
+    case 'wardrobe':
+      return <Wardrobe />;
   }
 }
 

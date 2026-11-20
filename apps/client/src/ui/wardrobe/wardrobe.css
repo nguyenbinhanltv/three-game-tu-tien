@@ -1,0 +1,176 @@
+/* Cửa sổ Tủ ngoại trang (P4-3): chỉ dùng token --u-* / --fg. Hai cột: xem trước 3D bên trái, chọn bên phải; vừa 720p. */
+.wd {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: var(--u-sp-3) var(--u-sp-4);
+  margin-top: var(--u-sp-2);
+}
+.wd-pv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--u-sp-1);
+}
+.wd-pv-stage {
+  width: 190px;
+  height: 262px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+  border: 1px solid var(--u-gold-line);
+  background: radial-gradient(ellipse at 50% 70%, var(--u-wash-gold), transparent 70%);
+}
+.wd-pv-stage:active {
+  cursor: grabbing;
+}
+.wd-pv-stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+.wd-pv-hint {
+  font-size: var(--u-fs-1);
+}
+.wd .k-tabs {
+  flex-wrap: nowrap;
+}
+.wd .k-tab {
+  padding-inline: 8px;
+  white-space: nowrap;
+  font-size: var(--u-fs-2);
+}
+.wd-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u-sp-2);
+  min-width: 0;
+}
+.wd-note {
+  padding: var(--u-sp-1) var(--u-sp-2);
+  border: 1px solid var(--u-gold-line);
+  background: var(--u-wash-gold);
+  color: var(--u-gold-text);
+  font-size: var(--u-fs-1);
+}
+.wd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: var(--u-sp-2);
+  min-height: 76px;
+  max-height: 124px;
+  overflow-y: auto;
+  padding: var(--u-sp-2) var(--u-sp-1);
+}
+.wd-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.wd-cell[data-locked='1'] {
+  opacity: 0.45;
+}
+/* Ô đang chọn: viền ngọc rõ (ô vát cắt clip-path nên đổi màu viền qua --q, không dùng outline) + dấu tích + tên đậm. */
+:root:root .u2-win .wd .k-slot[aria-pressed='true'] {
+  --q: linear-gradient(180deg, var(--u-h-jade-hi), var(--u-h-jade) 50%, var(--u-h-jade-lo));
+}
+.wd-cell {
+  position: relative;
+}
+.wd-cell[data-sel='1']::after {
+  content: '✓';
+  position: absolute;
+  top: -4px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--u-h-jade);
+  color: var(--u-h-ivory);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 0 0 2px var(--u-giay);
+}
+.wd-cell[data-sel='1'] .wd-name {
+  color: var(--fg);
+  font-weight: 700;
+}
+.wd-name {
+  max-width: 76px;
+  text-align: center;
+  font-size: var(--u-fs-1);
+  color: var(--fg-dim);
+  overflow-wrap: anywhere;
+}
+.wd-default {
+  font-size: var(--u-fs-1);
+  color: var(--fg-dim);
+}
+.wd-dye-row {
+  display: flex;
+  align-items: center;
+  gap: var(--u-sp-3);
+}
+.wd-dye-label {
+  width: 110px;
+  font-size: var(--u-fs-2);
+  color: var(--fg);
+}
+.wd-swatches {
+  display: flex;
+  gap: var(--u-sp-2);
+}
+.wd-swatch {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: var(--sw);
+  border: 2px solid var(--u-card-line);
+  cursor: pointer;
+}
+/* Màu đang chọn: viền vàng + dấu tích (không chỉ dựa vào màu). */
+.wd-swatch[aria-checked='true'] {
+  border-color: var(--u-gold);
+  outline: 2px solid var(--u-h-jade-hi);
+  outline-offset: 1px;
+}
+.wd-swatch[aria-checked='true']::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--u-h-ivory);
+  text-shadow:
+    0 0 3px var(--u-ink-0),
+    0 0 3px var(--u-ink-0);
+}
+.wd-swatch:focus-visible {
+  outline: 2px solid var(--u-focus);
+  outline-offset: 2px;
+}
+.wd-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--u-sp-2);
+  flex-wrap: wrap;
+  padding-top: var(--u-sp-2);
+  border-top: 1px solid var(--u-gold-line);
+}
+.wd-hint {
+  flex: 1;
+  min-width: 160px;
+  text-align: right;
+  font-size: var(--u-fs-1);
+}
