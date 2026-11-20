@@ -264,6 +264,13 @@ const procedural = [
     ],
   },
   // Clip UAL giữ tên xương Mannequin, phát thẳng lên chr_v3_* (không chuyển clip).
+  // C4 (NV3-B): clip biên độ kẹp cho áo bào rộng (cùng tên clip + xương), chỉ dùng cho model giữ gốc `chr_v3_tinh_khuyet_nu`.
+  {
+    id: 'anim_robe',
+    script: 'tools/blender/anim_robe.py',
+    source: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    source2: 'anim/ual/ual2/Universal Animation Library 2[Standard]/Unreal-Godot/UAL2_Standard.glb',
+  },
   {
     id: 'anim_ual_native',
     script: 'tools/blender/anim_ual_native.py',

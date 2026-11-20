@@ -134,6 +134,37 @@
         "build": null
       }
     },
+    "anim_robe": {
+      "id": "anim_robe",
+      "class": "anim",
+      "source": "assets/build/raw/anim_robe.glb",
+      "file": "anim_robe.2cfa5ef9db.glb",
+      "bytes": 162092,
+      "rawBytes": 198456,
+      "triangles": 0,
+      "rawTriangles": 0,
+      "lod0Cap": 0,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [
+        "Idle_Loop",
+        "Jog_Fwd_Loop",
+        "Sword_Regular_A"
+      ],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 0
+        }
+      ],
+      "dims": {
+        "raw": null,
+        "build": null
+      }
+    },
     "anim_ual_native": {
       "id": "anim_ual_native",
       "class": "anim",
@@ -4659,9 +4690,9 @@
       "id": "chr_v3_tinh_khuyet_nu",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_tinh_khuyet_nu.glb",
-      "file": "chr_v3_tinh_khuyet_nu.73f278b574.glb",
-      "bytes": 12175744,
-      "rawBytes": 16141088,
+      "file": "chr_v3_tinh_khuyet_nu.32a2e43c62.glb",
+      "bytes": 11988948,
+      "rawBytes": 16137152,
       "triangles": 99438,
       "rawTriangles": 99438,
       "lod0Cap": 110000,
@@ -4706,27 +4737,27 @@
         },
         {
           "level": 1,
-          "triangles": 23998,
+          "triangles": 23994,
           "target": 24000
         },
         {
           "level": 2,
-          "triangles": 7996,
+          "triangles": 7993,
           "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.7573,
-          "height": 1.6893,
-          "depth": 0.4902,
-          "minY": 0.0107
+          "width": 1.5222,
+          "height": 1.6906,
+          "depth": 0.4774,
+          "minY": 0.0123
         },
         "build": {
-          "width": 1.7573,
-          "height": 1.6893,
-          "depth": 0.4902,
-          "minY": 0.0107
+          "width": 1.5222,
+          "height": 1.6906,
+          "depth": 0.4774,
+          "minY": 0.0123
         }
       }
     },

@@ -61,6 +61,7 @@ BIND_A = '--bind-a' in argv  # NV3-B: GIỮ mesh ở A-pose, khung xương đặ
 AUTO = '--auto' in argv  # đầu vào không xương: tự ước lượng mốc theo tỉ lệ Mannequin + đo lưới (xem estimate_landmarks)
 REP = {'id': ID, 'input': os.path.basename(IN)}
 HAND_HINT = (json.load(open(SPRINGS, encoding='utf-8')).get('hand') or {}) if SPRINGS else {}
+ANATOMY = (json.load(open(SPRINGS, encoding='utf-8')).get('anatomy') or {}) if SPRINGS else {}  # C4: mốc giải phẫu đo trên lưới (m, model cao 1,7): shoulderDz, shoulderX, ankleX, spine3Z
 
 
 def log(m):
@@ -295,6 +296,20 @@ def estimate_landmarks():
                 for nme in ('Head', 'neck_01'):
                     P[nme] = P[nme] + np.array([0.0, 0.0, dz])
                 log(f'khớp đầu theo mặt: cằm z={chin:.2f}, trán z={brow:.2f} → Head z={z_new:.2f} (mẫu {z_new - dz:.2f}, {len(fs)} đỉnh da mặt)')
+    if ANATOMY:
+        # Mốc theo giải phẫu đo trên lưới thay cho tỉ lệ Mannequin 8 đầu (xem phan-tich-rig-anim.md, A2).
+        for sd in 'lr':
+            sgn = 1.0 if P['upperarm_' + sd][0] > 0 else -1.0
+            for nm in ('upperarm_', 'clavicle_'):
+                P[nm + sd][2] += ANATOMY.get('shoulderDz', 0.0)
+            if 'shoulderX' in ANATOMY:
+                P['upperarm_' + sd][0] = sgn * ANATOMY['shoulderX']
+        if 'spine3Z' in ANATOMY:
+            z0, z3 = float(P['pelvis'][2]), float(ANATOMY['spine3Z'])
+            P['spine_03'][2] = z3
+            P['spine_01'][2] = z0 + (z3 - z0) * 0.36
+            P['spine_02'][2] = z0 + (z3 - z0) * 0.70
+        log('mốc giải phẫu: ' + ', '.join(f'{k}={v}' for k, v in ANATOMY.items()))
     out = {}
 
     def lm(name, head, tail):
@@ -331,6 +346,8 @@ def estimate_landmarks():
         lm(side + 'hand', wrist, F)
         low = Vs[(Vs[:, 2] < 0.12 * H) & (sg * Vs[:, 0] > 0)]
         ank = low.mean(axis=0)
+        if 'ankleX' in ANATOMY:
+            ank[0] = sg * ANATOMY['ankleX']
         toe_y = float(Vs[(Vs[:, 2] < 0.05 * H) & (sg * Vs[:, 0] > 0)][:, 1].min())
         hip = P['thigh_' + sd]
         foot = np.array([ank[0], ank[1], P['foot_' + sd][2]])
@@ -616,11 +633,13 @@ if BIND_A:
     height = float(V[:, 2].max())
     band = max(z_head - z_neck, 1e-6)
     n_head = 0
+    RIGID = np.zeros(NV, bool)
     for vi in range(NV):
         z = V[vi, 2]
         if z >= z_head - 0.05 * height:
             W[vi] = 0
             W[vi, IDX['Head']] = 1.0
+            RIGID[vi] = True
             n_head += 1
         elif z > z_neck - 0.04 * height:
             t = (z - (z_neck - 0.04 * height)) / max((z_head - 0.05 * height) - (z_neck - 0.04 * height), 1e-6)
@@ -643,8 +662,33 @@ if BIND_A:
         for vi in ids:
             W[vi] = 0
             W[vi, IDX[f'hand_{sd}']] = 1.0
+            RIGID[vi] = True
         n_hand += len(ids)
     log(f'bàn tay cứng: {n_hand} đỉnh bám hand_*')
+    if ANATOMY.get('smoothIters'):
+        # C4: (1) mặt nạ phía: đỉnh bên trái không ăn xương chi bên phải và ngược lại (váy không ăn đùi bên kia, tay áo không ăn tay bên kia);
+        # (2) làm mượt trọng số vùng không cứng trên đồ thị cạnh lưới (nhiều vòng) để chuyển tiếp tay↔thân↔váy trải rộng thay vì đứt ở đường nối.
+        sgn_l = 1.0 if T['thigh_l']['head'][0] > 0 else -1.0
+        side_cols = {'l': [IDX[n] for n in IDX if n.endswith('_l')], 'r': [IDX[n] for n in IDX if n.endswith('_r')]}
+        for vi in range(NV):
+            xv = (V[vi, 0] - float(F_HEAD['pelvis'][0])) * sgn_l
+            if abs(xv) > 0.02:
+                W[vi, side_cols['r' if xv > 0 else 'l']] = 0.0
+        for it in range(int(ANATOMY['smoothIters'])):
+            Wn = W.copy()
+            a_ = float(ANATOMY.get('smoothAlpha', 0.5))
+            for vi in range(NV):
+                if RIGID[vi] or not adj[vi]:
+                    continue
+                Wn[vi] = (1 - a_) * W[vi] + a_ * W[adj[vi]].mean(axis=0)
+            W = Wn
+        for vi in range(NV):
+            sm_ = W[vi].sum()
+            if sm_ <= 1e-9:
+                W[vi, IDX['pelvis']] = 1.0
+            else:
+                W[vi] /= sm_
+        log(f'trọng số: mặt nạ phía + làm mượt {ANATOMY["smoothIters"]} vòng (α={ANATOMY.get("smoothAlpha", 0.5)})')
 # ≤ 4 xương/đỉnh, chuẩn hóa
 for vi in range(NV):
     row = W[vi]
@@ -1087,6 +1131,24 @@ bpy.ops.object.mode_set(mode='OBJECT')
 REP['bones'] = len(ARM.data.bones)
 REP['spring_bones'] = n_spring
 
+if BIND_A and ANATOMY.get('finalSmooth'):
+    # C4: vải/tay áo/robe/lò xo ghi đè trọng số theo vùng sau bước làm mượt đầu nên để lại đường đứt ở ranh giới vùng (dải eo, gấu): làm mượt lần cuối
+    # trên toàn bộ cột (gồm xương phụ), vẫn giữ đầu và bàn tay cứng.
+    for it in range(int(ANATOMY['finalSmooth'])):
+        Wn = W.copy()
+        for vi in range(NV):
+            if RIGID[vi] or not adj[vi]:
+                continue
+            Wn[vi] = 0.5 * W[vi] + 0.5 * W[adj[vi]].mean(axis=0)
+        W = Wn
+    for vi in range(NV):
+        row = W[vi]
+        if np.count_nonzero(row) > 4:
+            thr = np.sort(row)[-4]
+            row[row < thr] = 0
+        sm_ = row.sum()
+        W[vi] = row / sm_ if sm_ > 1e-9 else row
+    log(f'làm mượt trọng số lần cuối {ANATOMY["finalSmooth"]} vòng')
 # nhóm đỉnh Mannequin + modifier
 BODY.vertex_groups.clear()
 vgs = {n: BODY.vertex_groups.new(name=n) for n in COLS}

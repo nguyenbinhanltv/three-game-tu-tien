@@ -214,7 +214,10 @@ function tuneTripoMaterial(m: THREE.MeshStandardNodeMaterial): void {
   m.needsUpdate = true;
 }
 
-export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
+/** Clip riêng cho áo bào rộng (`tools/blender/anim_robe.py`): ghi đè clip cùng tên của thư viện UAL cho asset giữ gốc. */
+export const ROBE_LIB = 'anim_robe';
+
+export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
   if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const m of mats) tuneTripoMaterial(m);
@@ -226,8 +229,10 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
   const b = restPos(lib.scene, 'pelvis');
   const k = a && b && b.length() > 1e-6 ? a.length() / b.length() : 1;
   const clips = new Map<string, THREE.AnimationClip>();
+  const over = new Map<string, THREE.AnimationClip>();
+  if (robe && KEEP_ORIGINAL_ASSETS.has(handle.id) && !new URLSearchParams(location.search).has('norobeanim')) for (const c of robe.animations) over.set(c.name, c);
   for (const c of lib.animations) {
-    const cl = c.clone();
+    const cl = (over.get(c.name) ?? c).clone();
     for (const t of cl.tracks) {
       if (t.name === 'pelvis.position') for (let i = 0; i < t.values.length; i++) t.values[i]! *= k;
     }
@@ -1356,15 +1361,17 @@ export class MannequinPlayers {
   private load(id: string): void {
     if (this.tpl.has(id)) return;
     this.tpl.set(id, 'loading');
-    Promise.all([this.cache.acquire(id, { priority: 1 }), this.cache.acquire(V3_LIB, { priority: 1 })]).then(
-      ([h, lib]) => {
+    const robeP = KEEP_ORIGINAL_ASSETS.has(id) ? this.cache.acquire(ROBE_LIB, { priority: 1 }).catch(() => undefined) : Promise.resolve(undefined);
+    Promise.all([this.cache.acquire(id, { priority: 1 }), this.cache.acquire(V3_LIB, { priority: 1 }), robeP]).then(
+      ([h, lib, robe]) => {
         if (this.disposed) {
           h.release();
           lib.release();
+          robe?.release();
           return;
         }
         try {
-          this.tpl.set(id, mannequinTemplate(h, lib));
+          this.tpl.set(id, mannequinTemplate(h, lib, robe));
           this.ensurePoses();
         } catch (err) {
           modelsLog.warn(`không dựng được ${id}`, err);

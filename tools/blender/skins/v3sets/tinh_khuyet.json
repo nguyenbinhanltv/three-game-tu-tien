@@ -57,16 +57,16 @@
     }
   ],
   "robe": {
-    "zMin": 0.22,
+    "zMin": 0.0,
     "zMax": 0.52,
-    "minRadius": 0.09,
+    "minRadius": 0.08,
     "xInner": 0.04,
     "xOuter": 0.1,
     "outerShare": 0.5,
-    "front": 0.9,
-    "back": 0.45,
+    "front": 0.3,
+    "back": 0.15,
     "pow": 0.7,
-    "calf": 0.4
+    "calf": 0.0
   },
   "limbs": [],
   "sleeve": {
@@ -75,5 +75,13 @@
     "margin": 0.0,
     "falloff": 0.14,
     "hipShare": 1.0
+  },
+  "anatomy": {
+    "shoulderDz": -0.13,
+    "ankleX": 0.1,
+    "spine3Z": 1.23,
+    "smoothIters": 40,
+    "smoothAlpha": 0.6,
+    "finalSmooth": 10
   }
 }
