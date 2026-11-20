@@ -258,6 +258,11 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - Cây xa nhỏ lại (cao ~18–32 m thay vì tới ~55 m) và tối hơn (lightness 0,10–0,17, bão hòa 0,3) nên không còn nón xanh nhạt to bất thường trên sống đồi (ảnh `phongxa`, `dawn-cong`); đá nhỏ lại (4–11 m).
 - Hệ quả: cây/đá chỉ còn ở dãy núi ngoài cùng; sống đồi gần hơn trở lại mượt (chỉ còn sương dải). Muốn thêm lớp ở giữa phải có va chạm hoặc để cùng loại thông của map (CardForest) với giới hạn tầm vẽ lớn hơn.
 
+## Polish — Đoạn Mạch: thử rồi bỏ (chưa làm lại)
+
+- Đã thử hai hướng và **không đạt duyệt ảnh**, nên không vào `main`: (1) vách bằng shader (tầng đá hai cỡ + warp UV + khe + rêu, nhánh `rich` của `CliffTones`) vẫn là dải màu trên lưới địa hình, đọc ra như đồi cát; (2) thác bằng dải lưới bám địa hình có shader nước cuộn, nhưng nhìn gần là tấm phẳng nghiêng như poster, hồ chân là đĩa trắng.
+- **Cần làm đúng**: vách đá thật là **mesh** (khối đá tầng dày mỏng gãy khúc, khe nứt dọc, gờ nhô) dựng bằng Blender như `arch_*` rồi đặt dọc chân vách, hoặc displacement thật trong địa hình; thác là dải lưới cong theo vách (UV chạy dọc, bọt mép và chân), đặt trong khe đã tạo hình bằng mesh, hồ chân có bờ đá. Làm cùng đợt với mesh vách vì thác phải ngồi trong khe của vách.
+
 ## Polish — Đoạn Mạch (làm lại bằng mesh): cụm đá vách + thác trong khe
 
 - **GLB `arch_doan_mach`** (`tools/blender/doan_mach_arch.py`, ~5,6 nghìn tam giác, 11 biến thể): 6 **cụm phiến sa thạch đỏ nâu** (tầng dày 1,6–4,8 m ngẫu nhiên, mỗi tầng 1–4 khối hộp lệch nghiêng/xoay, hình bao phình–thắt không phải chữ nhật, nhô/lõm, mép sứt, đá lở góc cạnh dưới chân), 3 **cột đá gãy bậc**, 2 cụm **đá tảng** viền hồ; màu đỉnh sa thạch + vỉa vàng đất + rêu trên mặt ngửa.
