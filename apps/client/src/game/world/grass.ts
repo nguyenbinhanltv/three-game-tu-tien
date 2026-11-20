@@ -24,8 +24,8 @@ import {
   vec3,
 } from 'three/tsl';
 import { blocked } from './lacKiemGarden';
-import { sectPaving } from '../../render/groundMask';
-import { FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
+import { portalPaving, sectPaving } from '../../render/groundMask';
+import { FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
 import { heightAt, levelTerrain } from '../../base/levelCtx';
 import { vanHaiArt } from './vanHaiArt';
 import { tkGrassDensity } from './thienKhuyetArt';
@@ -132,7 +132,7 @@ function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, 
   // Đỉnh tông môn (MAP-1 bản B): có cỏ ở chỗ không lát đá và không có công trình/đại lộ (`blocked`, `sectPaving`).
   if (
     (featureWeight(SECT, x, z) > 0.8 && (sectPaving(x - SECT.x, z - SECT.z) > 0.02 || blocked(x - SECT.x, z - SECT.z))) ||
-    featureWeight(PORTAL_PAD, x, z) > 0.8 ||
+    portalPaving(x, z) > 0.02 ||
     featureWeight(KIEM_TRUNG, x, z) > 0.12
   )
     return false;

@@ -6,6 +6,8 @@ import {
   clamp,
   cos,
   float,
+  floor,
+  fract,
   int,
   luminance,
   max,
@@ -124,7 +126,17 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   // ----- trọng số -----
   // Sân lát đá chỉ nằm trên mặt gần phẳng: sườn dốc quanh sân lát chiếu từ trên xuống bị kéo giãn thành sọc kẻ ô khi nhìn
   // lướt (P2-E4), nên mặt nạ lát đá tắt dần theo độ dốc và để đá núi/cỏ lo phần sườn.
-  const pav = mask.g.mul(float(1).sub(smoothstep(0.05, 0.14, slope)));
+  const pavRaw = mask.g.mul(float(1).sub(smoothstep(0.05, 0.14, slope)));
+  // Bệ cổng bí cảnh Vân Lam (POLISH-1): lát đá không phủ đều như thảm mà vỡ thành mảng theo nhiễu (rìa lởm chởm, đứt đoạn, cỏ lấn vào).
+  const portalK = strata ? smoothstep(48, 34, p.sub(vec2(2048, 1708)).length()) : float(0);
+  const pavBreak = smoothstep(
+    0.4,
+    0.56,
+    texture(tex.mask, p.mul(0.026).add(0.13))
+      .a.mul(0.7)
+      .add(texture(tex.mask, p.mul(0.085).add(0.71)).a.mul(0.3)),
+  );
+  const pav = pavRaw.mul(mix(float(1), pavBreak, portalK));
   const rockW = max(smoothstep(0.1, 0.26, slope), smoothstep(175, 235, h).mul(0.65)).mul(float(1).sub(pav));
   const cliffW = smoothstep(0.3, 0.46, slope);
   // Tuyết chỉ ở đỉnh rất cao (MAP-1): núi gần không còn phủ trắng phẳng.
@@ -185,6 +197,29 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   const dirtEdge = hi ? A(p.div(5), L.dirt) : base.mul(0.85);
   let col: Node = mix(base, dirtEdge.mul(0.9), wetEdge.mul(0.8));
   col = mix(col, special, spW);
+  if (strata) {
+    // Phiến đá lớn có viền: lưới ô ~3,4 m méo theo nhiễu; mỗi phiến một sắc, mạch tối có rêu, vài phiến sứt mép; chỉ ở bệ cổng.
+    const warp = texture(tex.mask, p.mul(0.06)).a.sub(0.5).mul(1.4);
+    const q = p.div(3.4).add(warp);
+    const cell = floor(q);
+    const f = fract(q);
+    const hsh = fract(sin(dot(cell, vec2(12.9898, 78.233))).mul(43758.5453));
+    const jointW = float(0.05).add(hsh.mul(0.05));
+    const joint = max(smoothstep(jointW, 0, f.x), smoothstep(jointW, 0, f.y))
+      .max(smoothstep(float(1).sub(jointW), 1, f.x))
+      .max(smoothstep(float(1).sub(jointW), 1, f.y));
+    const slabTone = float(0.78).add(hsh.mul(0.42));
+    const mossMix = joint.mul(float(0.45).add(hsh.mul(0.4)));
+    const slab = col.mul(slabTone).mul(float(1).sub(joint.mul(0.65)));
+    const slabMoss = mix(slab, vec3(0.2, 0.32, 0.13), mossMix.mul(0.7));
+    col = mix(
+      col,
+      slabMoss,
+      step(0.5, pav)
+        .mul(portalK)
+        .mul(float(1).sub(pavFar.mul(0.2))),
+    );
+  }
   col = col.mul(hue).mul(float(0.84).add(macro.mul(0.32)));
   col = mix(col, col.mul(TOMB_TINT), bio.z);
 
