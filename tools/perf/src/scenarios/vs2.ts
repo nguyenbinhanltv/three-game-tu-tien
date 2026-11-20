@@ -122,9 +122,9 @@ async function stepChain(r: Run, sizes: string[]): Promise<Record<string, unknow
 
 /** Mỗi phái một cảnh đặt ấn: chỗ đứng, các phím bấm (xóa hồi chiêu giữa các lần), có Tab chọn thủ lĩnh không. */
 const MARK_SCENES = [
-  { id: 'lac_kiem_quyet', tag: 'kiem-tu', at: 'boss', boss: true, keys: ['Digit2', 'Digit2', 'Digit2'] },
-  { id: 'bat_dong_kim_than', tag: 'ho-phap', at: 'rung', boss: false, keys: ['Digit7'] },
-  { id: 'thanh_moc_dan_kinh', tag: 'dan-su', at: 'tong_mon', boss: false, keys: ['Digit7'] },
+  { id: 'lac_kiem_quyet', tag: 'kiem-tu', at: 'boss', boss: true, spawn: '', keys: ['Digit2', 'Digit2', 'Digit2'] },
+  { id: 'bat_dong_kim_than', tag: 'ho-phap', at: 'rung', boss: false, spawn: 'mon_thiet_boi_tru 3', keys: ['Digit7'] },
+  { id: 'thanh_moc_dan_kinh', tag: 'dan-su', at: 'tong_mon', boss: false, spawn: '', keys: ['Digit7'] },
 ] as const;
 
 async function stepMarks(r: Run, sizes: string[]): Promise<Record<string, unknown>> {
@@ -150,8 +150,14 @@ async function stepMarks(r: Run, sizes: string[]): Promise<Record<string, unknow
         await page.keyboard.press('Tab', { delay: 80 });
         await page.keyboard.press('Tab', { delay: 80 });
       }
+      // Chiêu quanh mình cần quái trong tầm: gọi vài con ngang cấp ngay trước mặt (dọn lượt trước).
+      // Lệnh GM đi qua chat nên phải cách nhau hơn 1 giây (server giãn chat), không thì bị bỏ.
+      if (m.spawn) {
+        await gm(page, 'spawn clear', 1400);
+        await gm(page, `spawn ${m.spawn}`, 1800);
+      }
       for (const k of m.keys) {
-        await gm(page, 'cd', 350);
+        await gm(page, 'cd', 1300);
         await page.keyboard.press(k, { delay: 60 });
         await sleep(750);
       }
@@ -163,7 +169,9 @@ async function stepMarks(r: Run, sizes: string[]): Promise<Record<string, unknow
         return { mons, players, chips: document.querySelectorAll('[data-testid="mark-chips"] .mark-chip').length };
       });
       await page.mouse.move(8, 8);
-      await snap(page, r.out, `c-marks-${m.tag}-${tag}.jpg`, { wait: 250 });
+      // Chờ thông báo GM giữa màn hình tan (nó che thẻ ấn trong thanh thủ lĩnh); ấn ngắn nhất còn hơn 2 giây.
+      await sleep(2600);
+      await snap(page, r.out, `c-marks-${m.tag}-${tag}.jpg`, { wait: 150 });
       await sleep(m.boss ? 9000 : 11000);
     }
     await ctx.close();
