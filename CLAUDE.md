@@ -103,6 +103,7 @@ Skill trong `.claude/skills/`, subagent trong `.claude/agents/`. Dùng skill tư
 - `tsl-shaders-vfx`: shader TSL, VFX chiêu theo timeline JSON (phong cách, ngân sách, cách thêm hiệu ứng, checklist kiểm), vết mực, mây, độ kiếp, grading
 - `procedural-assets`: sinh địa hình, cây, đá, kiến trúc bằng code hoặc bpy
 - `blender-pipeline`: script Blender headless, xuất GLB, tối ưu, kiểm tra asset
+- `character-3d`: làm một bộ nhân vật v3 từ ảnh A-pose/multiview + Tripo đến game (giữ lưới gốc, rig bind A-pose, tách lưới voan/vạt/chân, clip áo bào, đo rigstretch, bảng lỗi, hướng tới mức wow)
 - `colyseus-server`: rooms, schema, xác thực input, AOI, lưu DB
 - `game-content`: thêm quái, skill, vật phẩm, nhiệm vụ, cảnh giới, cân bằng
 - `perf-budget`: đo và giữ ngân sách hiệu năng
