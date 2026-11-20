@@ -123,7 +123,8 @@ function ochreColor(x: number, z: number, h: number, ny: number, out: THREE.Colo
     const v1 = fbm(x * 0.11 + z * 0.07, z * 0.11 - x * 0.07, 2, T.def.seed + 811);
     const patch = fbm(x * 0.03 + 17, z * 0.03 - 9, 3, T.def.seed + 823);
     const chip = fbm(x * 0.2, z * 0.2 + h * 0.15, 2, T.def.seed + 831);
-    out.multiplyScalar(1 - k * (Math.max(0, v1 - 0.05) * 0.9 + (0.5 - patch) * 0.35 + Math.max(0, chip - 0.25) * 0.4));
+    if (T.id === 'doan_mach')
+      out.multiplyScalar(1 - k * (Math.max(0, v1 - 0.05) * 0.9 + (0.5 - patch) * 0.35 + Math.max(0, chip - 0.25) * 0.4));
   }
   const w = T.def.water;
   if (w && h < w.y + 2.2) out.lerp(C_SAND, Math.min(1, (w.y + 2.2 - h) / 1.6));
@@ -739,15 +740,18 @@ export class Terrain {
     setGroundRedStrata(
       T.id === 'doan_mach' || T.id === 'thien_khuyet' || KT || PM,
       // Thiên Khuyết (MAP-4): vách xám ấm ↔ nâu cát, khe nứt có vỉa vàng kim; vân từ nhiễu theo tọa độ dọc vách (hết ô caro).
-      T.id === 'thien_khuyet'
-        ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18] }
-        : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
-          KT
-          ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }
-          : // Phục Mạch (DUN-1 PR2): vách sa thạch nâu đỏ sẫm, khe nứt có vỉa mạch tinh lục.
-            PM
-            ? { lo: [0.1, 0.07, 0.05], hi: [0.3, 0.2, 0.13], vein: [0.25, 0.7, 0.55] }
-            : undefined,
+      T.id === 'doan_mach'
+        ? // Đoạn Mạch (POLISH-1): vách sa thạch đỏ nâu có tầng dày mỏng chéo, khe dọc, rêu.
+          { lo: [0.34, 0.16, 0.12], hi: [0.66, 0.46, 0.34], rich: true }
+        : T.id === 'thien_khuyet'
+          ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18] }
+          : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
+            KT
+            ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }
+            : // Phục Mạch (DUN-1 PR2): vách sa thạch nâu đỏ sẫm, khe nứt có vỉa mạch tinh lục.
+              PM
+              ? { lo: [0.1, 0.07, 0.05], hi: [0.3, 0.2, 0.13], vein: [0.25, 0.7, 0.55] }
+              : undefined,
     );
     if (tex) applyGroundShader(this.material, tex, level);
     else clearGroundShader(this.material);
