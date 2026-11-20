@@ -20,6 +20,7 @@ import { PREFETCH_PRIORITY } from '../core/preload';
 import { G } from '../core/geo';
 import { type Box } from '../core/screenFit';
 import { FLAGS } from '../../base/flags';
+import { FX_LIB_SHAPES } from '@dtl/shared';
 import {
   BOLTS,
   Fx,
@@ -197,6 +198,8 @@ export class Vfx {
       'card',
       'ribbon',
       'flip',
+      // VS-1: thư viện hình mesh có khối; vòng lặp bên dưới tự chọn kiểu, renderOrder và nhóm bóng `-2` cho hình `toon`.
+      ...FX_LIB_SHAPES,
     ];
     for (const s of shapes) {
       const kind = shapeKind(s);
