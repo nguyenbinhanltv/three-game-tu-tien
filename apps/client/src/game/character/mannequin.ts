@@ -33,7 +33,7 @@ import {
   turnLagOf,
   xfade,
 } from './mannequinAnim';
-import { MqFeet } from './mannequinFeet';
+import { feetSlot, MqFeet } from './mannequinFeet';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import UAL_HIT from './ualHit.json';
 import type { AnimState, AttackOpts, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
@@ -1048,7 +1048,7 @@ export class MannequinCharacter implements CharacterView {
     }
     if (V3_ANIM && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
     if (this.feet) {
-      if (this.lodLevel === 0 && this.inner.visible) {
+      if (this.lodLevel === 0 && this.inner.visible && feetSlot(performance.now())) {
         const active = this.grounded && !a.dead && !a.meditating && this.baseName !== 'Sitting_Idle_Loop';
         // Khóa chân chỉ khi đứng yên thật: đòn/chiêu/trúng đòn có chân tự di chuyển trong clip.
         this.feet.update(this.acc, { active, standing: a.speed < 0.3 && !this.perf && !this.shot });

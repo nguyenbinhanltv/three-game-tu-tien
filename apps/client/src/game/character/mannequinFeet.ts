@@ -33,7 +33,32 @@ export const FEET = {
   tiltEdge: 0.1,
   /** Tốc độ làm mượt nghiêng bàn chân (1/s). */
   tiltRate: 12,
+  /** Chu kỳ lấy lại pháp tuyến (s): bốn lần dò độ cao mỗi chân là phần tốn nhất, dốc đổi chậm nên dùng lại giữa hai lần. */
+  normalEvery: 0.1,
+  /** Số nhân vật tối đa chạy IK chân trong một khung (bench 50 bot: 6,6 nhân vật ≈ 0,45 ms/khung, ngưỡng 0,3 ms). */
+  maxPerFrame: 4,
 };
+
+let slotWin = -1e9;
+let slotUsed = 0;
+/**
+ * Xin một suất IK chân trong khung hiện tại (`now` = performance.now). Cửa sổ 6 ms gom mọi lần gọi của cùng một khung; quá
+ * `FEET.maxPerFrame` thì từ chối và nhân vật đó trả về tư thế clip (gọi `release`).
+ */
+export function feetSlot(now: number): boolean {
+  if (now - slotWin > 6) {
+    slotWin = now;
+    slotUsed = 0;
+  }
+  return slotUsed++ < FEET.maxPerFrame;
+}
+
+/**
+ * Đầu dò đo chi phí IK chân (bench công bằng bật/tắt xen kẽ trong cùng phiên): `off` tắt IK lúc chạy, `rec` bật ghi thời gian từng lần
+ * `update`. Đọc qua `window.__feetProbe`. Không ảnh hưởng khi `rec`/`off` đều false (chỉ một phép so sánh).
+ */
+export const feetProbe = { off: false, rec: false, calls: 0, ms: 0, per: [] as number[] };
+if (typeof window !== 'undefined') (window as unknown as { __feetProbe: typeof feetProbe }).__feetProbe = feetProbe;
 
 /** Hàm độ cao mặt đứng được tại (x, z). */
 export type GroundFn = (x: number, z: number) => number;
@@ -104,6 +129,8 @@ interface Leg {
   endQ: THREE.Quaternion;
   /** Nghiêng bàn chân theo pháp tuyến (quay thế giới, làm mượt). */
   tilt: THREE.Quaternion;
+  /** Pháp tuyến lần lấy mẫu gần nhất (quay từ phương đứng). */
+  nq: THREE.Quaternion;
 }
 
 const _v = new THREE.Vector3();
@@ -133,6 +160,7 @@ export class MqFeet {
   private pin = 0;
   private hip = 0;
   private cool = 0;
+  private nT = 0;
   private ds = [0, 0];
   /** Số lần bước chân từ lúc tạo (đo/kiểm). */
   steps = 0;
@@ -173,6 +201,7 @@ export class MqFeet {
         tgt: new THREE.Vector3(),
         endQ: new THREE.Quaternion(),
         tilt: new THREE.Quaternion(),
+        nq: new THREE.Quaternion(),
       });
     }
     return new MqFeet(root, pelvis, legs, FEET.hipLim * height);
@@ -204,6 +233,7 @@ export class MqFeet {
       l.plant.has = false;
       l.step = null;
       l.tilt.identity();
+      l.nq.identity();
     }
   }
 
@@ -212,6 +242,20 @@ export class MqFeet {
    * (bậc thang, sàn kiến trúc của COL-1) mà không cần sửa chỗ khác.
    */
   update(dt: number, st: FeetState, ground?: GroundFn): void {
+    if (feetProbe.off) {
+      this.release();
+      return;
+    }
+    if (!feetProbe.rec) return this.run(dt, st, ground);
+    const t0 = performance.now();
+    this.run(dt, st, ground);
+    const d = performance.now() - t0;
+    feetProbe.calls++;
+    feetProbe.ms += d;
+    feetProbe.per.push(d);
+  }
+
+  private run(dt: number, st: FeetState, ground?: GroundFn): void {
     const want = st.active ? 1 : 0;
     this.w += Math.sign(want - this.w) * Math.min(Math.abs(want - this.w), dt * 6);
     if (this.w <= 0.001) {
@@ -310,10 +354,15 @@ export class MqFeet {
     });
     // 4b. Bàn chân theo pháp tuyến mặt đất tại đích (kẹp góc, mượt), nhân vào hướng clip.
     const tk = 1 - Math.exp(-dt * FEET.tiltRate);
+    this.nT -= dt;
+    const resample = this.nT <= 0;
+    if (resample) this.nT = FEET.normalEvery;
     for (const l of this.legs) {
-      groundNormal(ground, l.tgt.x, l.tgt.z, _n);
-      _tq.setFromUnitVectors(_up, _n);
-      l.tilt.slerp(_tq, tk);
+      if (resample) {
+        groundNormal(ground, l.tgt.x, l.tgt.z, _n);
+        l.nq.setFromUnitVectors(_up, _n);
+      }
+      l.tilt.slerp(l.nq, tk);
       _tq.identity().slerp(l.tilt, this.w);
       l.endQ.premultiply(_tq);
     }
