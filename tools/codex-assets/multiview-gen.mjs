@@ -83,20 +83,34 @@ const runOne = (t) =>
       else p.kill();
       resolve(ok);
     };
-    const poll = setInterval(() => {
-      if (!sid) return;
+    // Thành công = đã chép ảnh của PHIÊN NÀY (không dùng has(): với --force ảnh cũ làm lần lỗi bị tính là OK).
+    let copied = false;
+    let copyTimer = null;
+    const sessionPng = () => {
+      if (!sid) return null;
       const d = path.join(genRoot, sid);
       const png = fs.existsSync(d) ? fs.readdirSync(d).filter((f) => f.endsWith('.png')) : [];
-      if (png.length) {
-        setTimeout(() => {
-          fs.copyFileSync(path.join(d, png[png.length - 1]), path.join(dir, `${t.name}.png`));
-          finish(true);
-        }, 3000);
+      return png.length ? path.join(d, png[png.length - 1]) : null;
+    };
+    const copyNow = () => {
+      if (copyTimer) clearTimeout(copyTimer);
+      copyTimer = null;
+      const src = sessionPng();
+      if (src) {
+        fs.copyFileSync(src, path.join(dir, `${t.name}.png`));
+        copied = true;
+      }
+      finish(copied);
+    };
+    const poll = setInterval(() => {
+      if (sessionPng()) {
         clearInterval(poll);
+        copyTimer = setTimeout(copyNow, 3000);
       }
     }, 3000);
-    const timer = setTimeout(() => finish(has(t.name)), 9 * 60_000);
-    p.on('close', () => finish(has(t.name)));
+    const timer = setTimeout(copyNow, 9 * 60_000);
+    // Codex thường thoát ngay sau khi vẽ: chép ngay thay vì đợi 3 giây (tránh chạy lại cả lượt sinh ảnh).
+    p.on('close', copyNow);
   });
 
 const failed = [];

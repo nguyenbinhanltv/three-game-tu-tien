@@ -231,8 +231,7 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   const k = a && b && b.length() > 1e-6 ? a.length() / b.length() : 1;
   const clips = new Map<string, THREE.AnimationClip>();
   const over = new Map<string, THREE.AnimationClip>();
-  if (robe && KEEP_ORIGINAL_ASSETS.has(handle.id) && !new URLSearchParams(location.search).has('norobeanim'))
-    for (const c of robe.animations) over.set(c.name, c);
+  if (robe && KEEP_ORIGINAL_ASSETS.has(handle.id) && !FLAGS.noRobeAnim) for (const c of robe.animations) over.set(c.name, c);
   for (const c of lib.animations) {
     const cl = (over.get(c.name) ?? c).clone();
     for (const t of cl.tracks) {
@@ -267,9 +266,11 @@ export const ARM_FIT: Record<string, number> = {
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
 
 /** `?v3off=proc,feet,twist,cloth` tắt từng hệ phụ của v3 để cô lập lỗi hình (chẩn đoán). */
-const V3_OFF = new Set(
-  (typeof location !== 'undefined' ? (new URLSearchParams(location.search).get('v3off') ?? '') : '').split(',').filter(Boolean),
-);
+const V3_OFF = new Set(FLAGS.v3Off);
+/** Số suất LOD0 theo tổng tam giác: mỗi 34.000 tam giác một suất (99.518 → 3, 24.000 → 1). */
+export function lod0Slots(tris: number): number {
+  return Math.max(1, Math.ceil(tris / 34000));
+}
 const IDENT = new THREE.Matrix4();
 const _w = new THREE.Quaternion();
 const _pw = new THREE.Quaternion();
@@ -415,14 +416,14 @@ export class MannequinCharacter implements CharacterView {
   /** Lò xo vạt riêng của asset v2 (null với v3/v3b: vạt nằm chung trong `springs`). */
   private skirtSprings: SpringBones | null = null;
   private sleeveSprings: SpringBones | null = null;
-  /** Số suất LOD0 mà nhân vật này chiếm (entities.applyLodBudget): LOD0 gốc Tripo ~100k tam giác tính 3 suất (≈ ≤4 người LOD0 trong ngân sách 12). */
+  /** Số suất LOD0 mà nhân vật này chiếm (entities.applyLodBudget): LOD0 gốc Tripo ~100k tam giác (gồm cả mesh `_oldsleeve`) tính 3 suất (`lod0Slots`: ≤4 người LOD0 trong ngân sách 12). */
   get lod0Cost(): number {
     let tris = 0;
     for (const m of this.lods[0] ?? []) {
       const g = m.geometry;
       tris += (g.index ? g.index.count : g.getAttribute('position').count) / 3;
     }
-    return Math.max(1, Math.ceil(tris / 33000));
+    return lod0Slots(tris);
   }
   /** Vải mô phỏng Thiên Y (null nếu tắt hoặc model không có vải cũ tách riêng). */
   cloth: ClothRig | null = null;
@@ -1272,7 +1273,7 @@ export class MannequinCharacter implements CharacterView {
     rotateWorld(b.head ?? null, rgt, this.lookPitch * 0.5);
     // Model giữ gốc Tripo: đầu thẳng ở A-pose, nhưng clip Idle của UAL (dáng Mannequin) cúi đầu ~13°: ngửa đầu bù lại (cổ 40%, đầu 60%) khi đứng/đi.
     if (free && KEEP_ORIGINAL_ASSETS.has(this.tpl.handle.id)) {
-      const lift = Number(new URLSearchParams(location.search).get('headlift') ?? 0.23);
+      const lift = FLAGS.headLift;
       rotateWorld(b.neck_01 ?? null, rgt, -lift * 0.4);
       rotateWorld(this.headBone, rgt, -lift * 0.6);
     }

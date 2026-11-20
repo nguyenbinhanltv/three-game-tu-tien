@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { baseClipOf, JOG_SPEED, V3_MODELS, v3AssetOf } from './mannequin';
+import { baseClipOf, JOG_SPEED, lod0Slots, V3_MODELS, v3AssetOf } from './mannequin';
 import type { AnimState } from './view';
 
 const st = (o: Partial<AnimState> = {}): AnimState => ({
@@ -86,5 +86,15 @@ describe('jogRate (chống trượt chân)', () => {
     expect(jogRate(JOG_SPEED * 1.3)).toBeCloseTo(1.3, 5);
     expect(jogRate(0.1)).toBe(0.4);
     expect(jogRate(100)).toBe(2);
+  });
+});
+
+describe('lod0Slots', () => {
+  it('LOD0 gốc Tripo ~100k tam giác chiếm 3 suất, LOD 24k chiếm 1', () => {
+    expect(lod0Slots(99518)).toBe(3);
+    expect(lod0Slots(102000)).toBe(3);
+    expect(lod0Slots(102001)).toBe(4);
+    expect(lod0Slots(24000)).toBe(1);
+    expect(lod0Slots(0)).toBe(1);
   });
 });
