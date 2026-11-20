@@ -83,7 +83,7 @@ export function setGroundNoSnow(on: boolean): void {
  */
 let redStrata = false;
 /** Hai màu vách (tối ↔ sáng) và vỉa nứt tùy chọn của vân vách theo nhiễu (không dùng khung texture 11 m, nên không ra ô caro). */
-export interface CliffTones {
+interface CliffTones {
   lo: [number, number, number];
   hi: [number, number, number];
   /** Màu vỉa chạy theo khe nứt (vàng kim Thiên Khuyết); bỏ trống = khe chỉ tối đi. */

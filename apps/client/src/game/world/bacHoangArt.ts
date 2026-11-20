@@ -4,7 +4,7 @@
 import { fbm, hash01, smoothstep, type TerrainDef } from '@dtl/shared';
 
 /** Màu hex 0xRRGGBB, đúng id `rift_*` của palette. */
-export const RIFT = {
+const RIFT = {
   ash: 0x2a2426,
   ashLight: 0x8c8580,
   ember: 0xc4412b,

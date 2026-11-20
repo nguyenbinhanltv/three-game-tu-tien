@@ -252,7 +252,7 @@ const STAGES: [stat: string, line: string][] = [
   ['minimap', 'ui.load.minimap'],
 ];
 /** Khóa chuỗi theo vùng của tranh màn tải (`<khóa>.<vùng>`); Vân Lam và vùng thiếu chuỗi dùng khóa gốc. */
-export function regional(key: string): string {
+function regional(key: string): string {
   const k = `${key}.${regionOfArt(lastZoneArt())}`;
   return hasString(k) ? k : key;
 }

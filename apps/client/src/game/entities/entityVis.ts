@@ -226,7 +226,7 @@ export class MonVis {
  * Trạng thái hiển thị thanh trên đầu của một thực thể: đoạn trễ, lúc hết giao chiến, độ mờ.
  * Chỉ hiện khi đang giao chiến (máu vừa đổi, quái đang đuổi/đánh) hoặc đang là mục tiêu.
  */
-export class BarState {
+class BarState {
   trail = new HpTrail(1);
   alpha = 0;
   private lastHp = -1;
@@ -250,7 +250,7 @@ export class BarState {
 }
 
 /** Nhãn tên trên đầu: model khối cao 1,95 m giữ chỗ cũ (2,55); model có xương theo chiều cao thật. */
-export function labelY(m: CharacterView): number {
+function labelY(m: CharacterView): number {
   return m instanceof Humanoid ? 2.55 : m.height + 0.75;
 }
 
@@ -267,19 +267,19 @@ export function lookOf(s: PState): PlayerLook {
 }
 
 /** Dòng cảnh giới trên bảng tên người chơi: `[Ngưng Khí tầng 9]`. */
-export function realmTag(level: number): string {
+function realmTag(level: number): string {
   return t('ui.nameplate.realm', { realm: realmName(level) });
 }
 
 /** Màu dòng cảnh giới theo đại cảnh giới: Ngưng Khí vải ngà, Trúc Cơ kim quang (art bible mục 4: attire_ivory, spirit_gold). */
-export function realmTagColor(level: number): string {
+function realmTagColor(level: number): string {
   return level >= TRUC_CO_LEVEL ? '#ffde96' : '#e6ddcb';
 }
 
 /** Tốc độ hiện/ẩn thanh (độ mờ mỗi giây). */
-export const BAR_FADE = 6;
+const BAR_FADE = 6;
 
 /** Thanh trên đầu còn hiện bao lâu (giây) sau lần cuối máu đổi. */
-export const COMBAT_LINGER = 6;
+const COMBAT_LINGER = 6;
 
-export const SWORD_FORCED = swordOverride(currentSearch(), SWORD_MODELS);
+const SWORD_FORCED = swordOverride(currentSearch(), SWORD_MODELS);

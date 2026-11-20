@@ -1,7 +1,7 @@
 import { fbm, hash01, type BridgeDef, type IslandDef } from '@dtl/shared';
 
 /** Một khối mây của biển mây (ellipsoid: bán kính ngang `sx` × `sz`, nửa cao `sy`, quay `yaw` quanh y). */
-export interface Billow {
+interface Billow {
   x: number;
   y: number;
   z: number;

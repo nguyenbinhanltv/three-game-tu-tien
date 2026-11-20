@@ -13,7 +13,7 @@ import { getCloudNoise } from '../../render/noiseTex';
  * Mỗi bí cảnh truyền màu/vị trí qua `DungeonFxConfig`; vùng cấm (đài chiến, lối vào) qua `keepOut`.
  */
 
-export interface DungeonFxConfig {
+interface DungeonFxConfig {
   cx: number;
   cz: number;
   exit: { x: number; z: number };

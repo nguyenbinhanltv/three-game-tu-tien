@@ -240,7 +240,7 @@ export class CardMesher {
   }
 }
 
-export type CrownKind = 'pine' | 'maple' | 'bamboo' | 'peach';
+type CrownKind = 'pine' | 'maple' | 'bamboo' | 'peach';
 
 /** Loài cây theo đảo: Kiếm Đài tùng; đình Đông đào + tùng; tháp phong; đình Tây tùng + trúc; điện xa tùng + phong. */
 const ISLAND_TREES: Record<string, CrownKind[]> = {
@@ -278,7 +278,7 @@ const SEG = 72;
 const RINGS = 28;
 
 /** Toạ độ thế giới của tâm mặt trên đảo. */
-export function islandTop(isl: SkyIsland): THREE.Vector3 {
+function islandTop(isl: SkyIsland): THREE.Vector3 {
   return new THREE.Vector3(SECT.x + isl.x, SECT.y + isl.y, SECT.z + isl.z);
 }
 

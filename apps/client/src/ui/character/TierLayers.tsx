@@ -27,7 +27,7 @@ function glyphPath(seed: number): string {
   }
   return segs.join('');
 }
-export const GLYPHS = Array.from({ length: 18 }, (_, i) => glyphPath(i + 3));
+const GLYPHS = Array.from({ length: 18 }, (_, i) => glyphPath(i + 3));
 
 /** Dải vân phù vàng lượn quanh người (Kết Đan trở lên): hai vòng elip xoay ngược nhau, mỗi vòng 9 nét vân sáng. */
 function VanPhu() {

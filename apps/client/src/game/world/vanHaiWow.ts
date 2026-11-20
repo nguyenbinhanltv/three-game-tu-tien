@@ -17,7 +17,7 @@ import { getCloudNoise } from '../../render/noiseTex';
 
 // ---------- hàm thuần (có test) ----------
 
-export interface Pose {
+interface Pose {
   x: number;
   y: number;
   z: number;
@@ -66,7 +66,7 @@ export function shipPose(p: ShipPlan, t: number): Pose {
   };
 }
 
-export interface WhalePlan {
+interface WhalePlan {
   cx: number;
   cz: number;
   r: number;
@@ -107,7 +107,7 @@ function rimToward(isl: { x: number; z: number; r: number }, tx: number, tz: num
   return [isl.x + (dx / d) * (isl.r - inset), isl.z + (dz / d) * (isl.r - inset)];
 }
 
-export interface Arc {
+interface Arc {
   ax: number;
   ay: number;
   az: number;
@@ -142,7 +142,7 @@ export function rainbowArcs(def: TerrainDef): Arc[] {
   return arcs;
 }
 
-export interface Tower {
+interface Tower {
   x: number;
   y: number;
   z: number;

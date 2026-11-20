@@ -21,7 +21,7 @@ interface HubItem {
  * Bảy mục của Ngọc Đái: Túi B, Nhân vật C, Công pháp K, Tổ đội P, Nhiệm vụ L, Hành trình N, Cài đặt O.
  * Hành trình (N) mở Bản đồ chương (`ui/chapters`); M vẫn là bản đồ vùng.
  */
-export const HUB_ITEMS: readonly HubItem[] = [
+const HUB_ITEMS: readonly HubItem[] = [
   { id: 'bag', icon: 'bag', name: 'ui.bag.short', key: 'B', panel: 'bag' },
   { id: 'char', icon: 'character', name: 'ui.char', key: 'C', panel: 'char' },
   { id: 'method', icon: 'method', name: 'ui.method.key', key: 'K', panel: 'method' },

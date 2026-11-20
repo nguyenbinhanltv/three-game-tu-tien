@@ -23,7 +23,7 @@ export interface HiresPolicy {
 
 const MB = 1048576;
 
-export function tierOf(quality: string): 0 | 1 | 2 {
+function tierOf(quality: string): 0 | 1 | 2 {
   return quality === 'ultra' ? 2 : quality === 'high' ? 1 : 0;
 }
 

@@ -64,7 +64,7 @@ import type { LevelDef, MonsterDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from '../entities';
 
 /** Phần GameSim mà lệnh GM cần (giao diện hẹp, tránh import vòng lớp GameSim). */
-export interface GmCtx {
+interface GmCtx {
   level(): LevelDef;
   monsters(): readonly MonEnt[];
   playerCount(): number;

@@ -17,7 +17,7 @@ export function skyOf(mood: string): Sky {
 const staticCache = new Map<string, HTMLCanvasElement>();
 
 /** Vòng tĩnh: nền mực, viền kim ngoài, vòng kim sẫm và vòng ngọc ở sát lòng; giữa trong suốt để lộ bản đồ. */
-export function rimStatic(D: number, dpr: number): HTMLCanvasElement {
+function rimStatic(D: number, dpr: number): HTMLCanvasElement {
   const key = `${D}@${dpr}`;
   const hit = staticCache.get(key);
   if (hit) return hit;

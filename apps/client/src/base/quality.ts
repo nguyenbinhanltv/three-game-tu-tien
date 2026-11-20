@@ -2,7 +2,7 @@
  * Preset chất lượng đồ họa: Thấp / Vừa / Cao / Cực cao. Hàm thuần (có test): gợi ý theo GPU, tự hạ theo hiệu năng.
  * Mặc định luôn là Vừa; gợi ý chỉ hiện ở Cài đặt, không tự đổi.
  */
-export type Quality = 'low' | 'medium' | 'high' | 'ultra';
+type Quality = 'low' | 'medium' | 'high' | 'ultra';
 
 export const QUALITIES: readonly Quality[] = ['low', 'medium', 'high', 'ultra'];
 
@@ -27,7 +27,7 @@ export interface GpuHint {
   maxBufferSize: number;
 }
 
-export interface MachineHint {
+interface MachineHint {
   deviceMemory?: number;
   cores?: number;
 }
@@ -39,7 +39,7 @@ export const setGpuHint = (h: GpuHint | null): void => {
 export const getGpuHint = (): GpuHint | null => gpuHint;
 
 /** GPU tích hợp / di động (Intel, Apple, Qualcomm, ARM, hoặc Radeon/Vega đồ họa tích hợp). */
-export function isIntegrated(g: GpuHint): boolean {
+function isIntegrated(g: GpuHint): boolean {
   const s = `${g.vendor} ${g.architecture} ${g.description}`.toLowerCase();
   if (/apple|intel|qualcomm|adreno|arm\b|mali|powervr|broadcom|microsoft|swiftshader|llvmpipe/.test(s)) return true;
   return /radeon\(tm\) graphics|radeon graphics|vega \d+ graphics|\b[678]\d0m\b|integrated|\buhd\b|\biris\b/.test(s);
@@ -57,7 +57,7 @@ export function suggestQuality(g: GpuHint | null, m: MachineHint): Quality {
   return big ? 'ultra' : 'high';
 }
 
-export interface AutoOptions {
+interface AutoOptions {
   /** Cửa sổ quan sát (ms). */
   windowMs: number;
   /** CPU p95 (ms) vượt mức này thì hạ. */
@@ -68,7 +68,7 @@ export interface AutoOptions {
   cooldownMs: number;
 }
 
-export const AUTO_DEFAULTS: AutoOptions = { windowMs: 10_000, cpuP95: 12, minFps: 40, cooldownMs: 15_000 };
+const AUTO_DEFAULTS: AutoOptions = { windowMs: 10_000, cpuP95: 12, minFps: 40, cooldownMs: 15_000 };
 
 /**
  * Tự hạ preset khi nghẽn: trong cửa sổ 10 s, CPU p95 của khung > 12 ms hoặc fps trung bình < 40 thì hạ một bậc

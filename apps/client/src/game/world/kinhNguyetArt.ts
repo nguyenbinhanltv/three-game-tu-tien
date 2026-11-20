@@ -51,7 +51,7 @@ export const KN_OCULI: readonly { x: number; z: number }[] = [1.1, 4.3].map((a) 
 }));
 
 /** Các cột ánh trăng (tia volumetric nhẹ): hai khe hở trên trần (cột rọi xuống tâm trận là vũng sáng trăng trên sàn: nón volumetric ở giữa bị cắt cạnh khi nhìn từ trên xuống nên bỏ). */
-export const KN_BEAMS: readonly { x: number; z: number; r0: number; r1: number; a: number }[] = [
+const KN_BEAMS: readonly { x: number; z: number; r0: number; r1: number; a: number }[] = [
   ...KN_OCULI.map((o) => ({ ...o, r0: 3.5, r1: 8, a: 1 })),
 ];
 
@@ -71,7 +71,7 @@ export function knKeepOut(x: number, z: number, minR: number): boolean {
  * chỉ là màu theo hướng nên dùng được cho cả phản chiếu (lấy hướng phản xạ thay hướng nhìn).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function skyColor(dir: any, moonGain = 1): any {
+function skyColor(dir: any, moonGain = 1): any {
   const nz = getCloudNoise();
   const h = clamp(dir.y, 0, 1);
   const base = mix(vec3(0.3, 0.37, 0.52), vec3(0.025, 0.04, 0.13), pow(h, 0.4));
@@ -291,7 +291,7 @@ function reflectiveSurface(
 
 /** Sàn cẩm thạch phản chiếu (đĩa r 112 bám `heightAt` + 0,08 m). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function buildMirrorFloorKn(planar?: any): THREE.Mesh {
+function buildMirrorFloorKn(planar?: any): THREE.Mesh {
   const R = 112;
   const geo = new THREE.RingGeometry(0.01, R, 128, 48).rotateX(-Math.PI / 2);
   const p = geo.attributes.position as THREE.BufferAttribute;
@@ -304,7 +304,7 @@ export function buildMirrorFloorKn(planar?: any): THREE.Mesh {
 }
 
 /** Hồ nước tĩnh soi trăng (đĩa r `rad`, cao hơn sàn 0,14 m): ba hồ ở phía bắc và hai bên, ngoài khu đánh. */
-export function buildPond(x: number, z: number, rad: number): THREE.Mesh {
+function buildPond(x: number, z: number, rad: number): THREE.Mesh {
   const geo = new THREE.CircleGeometry(rad, 48).rotateX(-Math.PI / 2);
   const p = geo.attributes.position as THREE.BufferAttribute;
   for (let i = 0; i < p.count; i++) p.setY(i, heightAt(x + p.getX(i), z + p.getZ(i)) + 0.14);

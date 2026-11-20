@@ -5,10 +5,10 @@ import * as THREE from 'three/webgpu';
  * Tranh nạp bất đồng bộ; ô nào chưa nạp thì trong suốt. Dựng một lần, nạp lười ở lần đầu shader `art` biên dịch. Không có `document` (test) thì trả texture trống.
  */
 export const ART_COUNT = 3;
-export const ART_FILES = ['phap_tuong_kiem_long', 'phap_tuong_huyen_vu', 'phap_tuong_chu_tuoc'] as const;
+const ART_FILES = ['phap_tuong_kiem_long', 'phap_tuong_huyen_vu', 'phap_tuong_chu_tuoc'] as const;
 /** Ô tranh: tỉ lệ 3:4 (tranh gốc ~570×760). */
-export const CELL_W = 512;
-export const CELL_H = 683;
+const CELL_W = 512;
+const CELL_H = 683;
 
 let atlas: THREE.Texture | null = null;
 

@@ -159,7 +159,7 @@ function floorMaterial(k = 1, endFade = false, root: Rgb = EMBER): THREE.MeshBas
 }
 
 /** Dựng ba lớp. `heightAt` lấy mặt đất thật để dải lòng khe nằm sát đáy (khe có nếp gấp ±3 m). */
-export interface RiftVeilOpts {
+interface RiftVeilOpts {
   /** Màu chân khe tím (Bắc Hoang) thay vì than hồng (Xích Tẫn Khích). */
   violet?: boolean;
   /** Chiều cao màn dọc (m); mặc định `RIFT_VEIL_HEIGHT`. */

@@ -37,7 +37,7 @@ const ELEM_HAZARD: Record<(typeof ELEMENTS)[number], HazardKind> = {
 const SEAL_REFRESH = 9;
 
 /** Trạng thái ngũ hành lôi trong `tr.mech.ngu_hanh` (chỉ server giữ). */
-export interface NguHanhState {
+interface NguHanhState {
   /** Tâm trận môn. */
   x: number;
   z: number;
@@ -48,7 +48,7 @@ export interface NguHanhState {
 }
 
 /** Cấu hình ngũ hành của kiếp (nằm ở pha đầu; các pha sau dùng lại trận môn). */
-export function nguHanhCfg(def: TribDef): TribNguHanh | undefined {
+function nguHanhCfg(def: TribDef): TribNguHanh | undefined {
   return def.phases.find((p) => p.nguHanh)?.nguHanh;
 }
 
@@ -132,7 +132,7 @@ registerMechanic('ngu_hanh', {
 // ---------- phan_than ----------
 
 /** Trạng thái thế thân thần niệm trong `tr.mech.phan_than` (chỉ server giữ). */
-export interface CloneState {
+interface CloneState {
   /** Vị trí thế thân và mốc tan (ms); until 0 = không có. */
   x: number;
   z: number;
@@ -148,7 +148,7 @@ export interface CloneState {
   linkAt: number;
 }
 
-export function cloneAlive(st: CloneState | undefined, now: number): boolean {
+function cloneAlive(st: CloneState | undefined, now: number): boolean {
   return !!st && st.until > 0 && now < st.until;
 }
 

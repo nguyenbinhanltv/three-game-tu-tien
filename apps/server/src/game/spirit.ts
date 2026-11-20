@@ -24,7 +24,7 @@ import {
 } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from './entities';
 
-export interface SpiritHost {
+interface SpiritHost {
   now(): number;
   players(): Iterable<PlayerEnt>;
   monsters(): readonly MonEnt[];

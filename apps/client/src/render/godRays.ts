@@ -56,7 +56,7 @@ export const GOD_RAY_INTENSITY: Record<string, number> = {
   vh_night: 0.3,
 };
 
-export interface GodRayArea {
+interface GodRayArea {
   x: number;
   z: number;
   /** Bán kính rải (m). */
