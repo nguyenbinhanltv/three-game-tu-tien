@@ -22,13 +22,19 @@
       "handKeep": 0.07,
       "smooth": 50,
       "veilChain": 0.75,
-      "veilArmR": 0.05
+      "veilArmR": 0.05,
+      "armFall": "geo",
+      "armGeoR": 0.5,
+      "geoSeed": 0.08
     },
     "veilGeo": true,
     "veilX": 0.15,
     "veilArmR": 0.05,
     "smooth": 50,
-    "veilChain": 0.75
+    "veilChain": 0.75,
+    "armFall": "geo",
+    "armGeoR": 0.5,
+    "geoSeed": 0.08
   },
   "groups": [
     {
@@ -92,6 +98,7 @@
       "ankleX": 0.108,
       "spine3Z": 1.33
     },
-    "headR": 0.14
+    "headR": 0.14,
+    "handBlend": 0.025
   }
 }

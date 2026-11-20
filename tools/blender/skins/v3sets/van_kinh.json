@@ -22,7 +22,10 @@
       "handKeep": 0.07,
       "smooth": 50,
       "veilChain": 0.75,
-      "veilArmR": 0.05
+      "veilArmR": 0.05,
+      "armFall": "geo",
+      "armGeoR": 0.5,
+      "geoSeed": 0.08
     },
     "veilGeo": true,
     "veilX": 0.15,
@@ -90,7 +93,8 @@
     "nam": {
       "shoulderDz": -0.14,
       "ankleX": 0.108,
-      "spine3Z": 1.33
+      "spine3Z": 1.33,
+      "handBlend": 0.025
     },
     "headR": 0.14
   }

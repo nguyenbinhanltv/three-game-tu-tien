@@ -3572,8 +3572,8 @@
       "id": "chr_v3_co_thanh_nu",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_co_thanh_nu.glb",
-      "file": "chr_v3_co_thanh_nu.c5b7f19467.glb",
-      "bytes": 12433744,
+      "file": "chr_v3_co_thanh_nu.7874aef9c1.glb",
+      "bytes": 12422056,
       "rawBytes": 16896732,
       "triangles": 98485,
       "rawTriangles": 98485,
@@ -3619,24 +3619,24 @@
         },
         {
           "level": 1,
-          "triangles": 24011,
+          "triangles": 23995,
           "target": 24000
         },
         {
           "level": 2,
-          "triangles": 7985,
+          "triangles": 7979,
           "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.4824,
+          "width": 1.5778,
           "height": 1.6919,
           "depth": 0.4728,
           "minY": 0.0126
         },
         "build": {
-          "width": 1.4824,
+          "width": 1.5778,
           "height": 1.6919,
           "depth": 0.4728,
           "minY": 0.0126
@@ -4013,8 +4013,8 @@
       "id": "chr_v3_dia_long_nam",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_dia_long_nam.glb",
-      "file": "chr_v3_dia_long_nam.6b00e1741b.glb",
-      "bytes": 11955228,
+      "file": "chr_v3_dia_long_nam.2790943acd.glb",
+      "bytes": 11943520,
       "rawBytes": 16134816,
       "triangles": 96016,
       "rawTriangles": 96016,
@@ -4060,24 +4060,24 @@
         },
         {
           "level": 1,
-          "triangles": 23994,
+          "triangles": 23996,
           "target": 24000
         },
         {
           "level": 2,
-          "triangles": 7999,
+          "triangles": 7997,
           "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.618,
+          "width": 1.6795,
           "height": 1.8341,
           "depth": 0.4768,
           "minY": 0.0088
         },
         "build": {
-          "width": 1.618,
+          "width": 1.6795,
           "height": 1.8341,
           "depth": 0.4768,
           "minY": 0.0088
@@ -4088,8 +4088,8 @@
       "id": "chr_v3_dia_long_nu",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_dia_long_nu.glb",
-      "file": "chr_v3_dia_long_nu.573d868ab4.glb",
-      "bytes": 12063108,
+      "file": "chr_v3_dia_long_nu.f49635b973.glb",
+      "bytes": 12050852,
       "rawBytes": 16057404,
       "triangles": 96740,
       "rawTriangles": 96740,
@@ -4140,21 +4140,21 @@
         },
         {
           "level": 2,
-          "triangles": 8291,
+          "triangles": 8288,
           "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.4795,
+          "width": 1.5746,
           "height": 1.6935,
-          "depth": 0.3985,
+          "depth": 0.4195,
           "minY": 0.0104
         },
         "build": {
-          "width": 1.4795,
+          "width": 1.5746,
           "height": 1.6935,
-          "depth": 0.3985,
+          "depth": 0.4195,
           "minY": 0.0104
         }
       }
@@ -5243,8 +5243,8 @@
       "id": "chr_v3_van_kinh_nam",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_van_kinh_nam.glb",
-      "file": "chr_v3_van_kinh_nam.b73115f10a.glb",
-      "bytes": 11688792,
+      "file": "chr_v3_van_kinh_nam.ab4f18b2fd.glb",
+      "bytes": 11666764,
       "rawBytes": 15405120,
       "triangles": 98291,
       "rawTriangles": 98291,
@@ -5295,19 +5295,19 @@
         },
         {
           "level": 2,
-          "triangles": 8257,
+          "triangles": 8221,
           "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.6583,
+          "width": 1.7174,
           "height": 1.8316,
           "depth": 0.4286,
           "minY": 0.0122
         },
         "build": {
-          "width": 1.6583,
+          "width": 1.7174,
           "height": 1.8316,
           "depth": 0.4286,
           "minY": 0.0122

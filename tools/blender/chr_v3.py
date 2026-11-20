@@ -673,13 +673,22 @@ if BIND_A:
         rel = V - w0
         tproj = rel @ axu
         perp = np.linalg.norm(rel - np.outer(tproj, axu), axis=1)
-        hm = (tproj > -0.01 * height) & (tproj < axl + 0.04 * height) & (perp < 0.055 * height)
+        hb = float(ANATOMY.get('handBlend', 0)) * height / 1.7  # dải chuyển cổ tay → bàn tay (hộ uyển giáp nằm sát cổ tay): bàn tay chỉ cứng quá +hb, trong ±hb trộn tuyến tính
+        hm = (tproj > -0.01 * height + (hb if hb > 0 else 0)) & (tproj < axl + 0.04 * height) & (perp < 0.055 * height)
         ids = np.where(hm)[0]
         for vi in ids:
             W[vi] = 0
             W[vi, IDX[f'hand_{sd}']] = 1.0
             RIGID[vi] = True
         n_hand += len(ids)
+        if hb > 0:
+            band = np.where((tproj > -hb) & (tproj <= hb) & (perp < 0.055 * height) & ~hm)[0]
+            for vi in band:
+                t = float((tproj[vi] + hb) / (2 * hb))
+                row = W[vi] / max(W[vi].sum(), 1e-9)
+                W[vi] = (1 - t) * row
+                W[vi, IDX[f'hand_{sd}']] += t
+            log(f'bàn tay {sd}: dải chuyển cổ tay ±{hb:.3f} m, {len(band)} đỉnh')
     log(f'bàn tay cứng: {n_hand} đỉnh bám hand_*')
     if ANATOMY.get('smoothIters'):
         # C4: (1) mặt nạ phía: đỉnh bên trái không ăn xương chi bên phải và ngược lại (váy không ăn đùi bên kia, tay áo không ăn tay bên kia);
