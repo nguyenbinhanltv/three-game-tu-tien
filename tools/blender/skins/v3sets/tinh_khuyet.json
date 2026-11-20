@@ -7,12 +7,10 @@
     "nam": 1.84,
     "nu": 1.7
   },
-  "bindA": [
-    "nu"
-  ],
+  "bindA": ["nam", "nu"],
   "splitCloth": true,
   "keepOriginal": true,
-  "c2": {"seamTie": 0.3, "veilStrips": 3, "veilLinks": 2, "skirtThighK": 0.5},
+  "c2": {"seamTie": 0.3, "veilStrips": 3, "veilLinks": 2, "skirtThighK": 0.5, "nam": {"handKeep": 0.07}},
   "groups": [
     {
       "name": "skirt",
@@ -83,6 +81,7 @@
     "spine3Z": 1.23,
     "smoothIters": 40,
     "smoothAlpha": 0.6,
-    "finalSmooth": 10
+    "finalSmooth": 10,
+    "nam": {"shoulderDz": -0.14, "ankleX": 0.108, "spine3Z": 1.33}
   }
 }
