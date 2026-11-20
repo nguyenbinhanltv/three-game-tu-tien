@@ -39,7 +39,7 @@ packages/content/
 
 - Từ Trúc Cơ trở lên: sơ kỳ / trung kỳ / hậu kỳ / đại viên mãn.
 - Tên viết từ trí nhớ bản dịch tiếng Việt; khi người dùng sửa thì `realms.json` và `glossary.json` là nguồn đúng.
-- Hệ cảnh giới mượn từ Tiên Nghịch chỉ được vì game chơi riêng, không thương mại. Cốt truyện, NPC, địa danh, công pháp phải tự sáng tác, không chép tình tiết hay nhân vật của truyện.
+- Ranh giới Tiên Nghịch (TN-0, chi tiết ở `docs/handbook/lore-boundary.md`): mượn được thang cảnh giới, khái niệm (Bản Nguyên, Huyền Kiếp, Cửu Kiều, Cổ Thần…) và **tên** kỹ năng gốc, chỉ vì game chơi riêng, không thương mại; cơ chế và mô tả tự viết. Tên tông môn, quốc gia, nhân vật, NPC, địa danh, pháp bảo và cốt truyện phải tự sáng tác, không chép tình tiết, nhân vật hay câu chữ của truyện. Tên mượn phải có trong `glossary.json` trước khi dùng; `pnpm content:check` báo lỗi nếu dữ liệu hoặc i18n chứa tên cấm (`BANNED_NAMES` trong `packages/content/src/lore.ts`).
 
 ## Thế giới
 
