@@ -555,7 +555,9 @@ class Faces {
   /** Thanh bốn mặt (tiết diện hình thoi, nửa rộng `w`) nối P → Q; `v` lấy theo `vOf(y)`. */
   beam(p: THREE.Vector3, q: THREE.Vector3, w: number, vOf: (y: number) => number): void {
     const d = new THREE.Vector3().subVectors(q, p).normalize();
-    const n1 = new THREE.Vector3().crossVectors(d, Math.abs(d.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0)).normalize();
+    const n1 = new THREE.Vector3()
+      .crossVectors(d, Math.abs(d.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0))
+      .normalize();
     const n2 = new THREE.Vector3().crossVectors(d, n1).normalize();
     const mid = new THREE.Vector3().addVectors(p, q).multiplyScalar(0.5);
     this.o = [mid.x, mid.y, mid.z];
@@ -736,7 +738,11 @@ function shieldPlate(): THREE.BufferGeometry {
       [inner[j]![0], inner[j]![1], 0.12, 0.5, inner[j]![1] / H],
       [inner[i]![0], inner[i]![1], 0.12, 0.5, inner[i]![1] / H],
     );
-    f.tri([inner[i]![0], inner[i]![1], 0.12, 0.3, inner[i]![1] / H], [inner[j]![0], inner[j]![1], 0.12, 0.7, inner[j]![1] / H], [0, cy, 0.24, 0.5, 0.5]);
+    f.tri(
+      [inner[i]![0], inner[i]![1], 0.12, 0.3, inner[i]![1] / H],
+      [inner[j]![0], inner[j]![1], 0.12, 0.7, inner[j]![1] / H],
+      [0, cy, 0.24, 0.5, 0.5],
+    );
   }
   f.o = [0, cy, 0];
   for (let i = 0; i < n; i++) {
@@ -747,7 +753,11 @@ function shieldPlate(): THREE.BufferGeometry {
       [out[j]![0], out[j]![1], -0.07, 1, out[j]![1] / H],
       [out[i]![0], out[i]![1], -0.07, 0, out[i]![1] / H],
     );
-    f.tri([out[i]![0], out[i]![1], -0.07, 0.3, out[i]![1] / H], [out[j]![0], out[j]![1], -0.07, 0.7, out[j]![1] / H], [0, cy, -0.07, 0.5, 0.5]);
+    f.tri(
+      [out[i]![0], out[i]![1], -0.07, 0.3, out[i]![1] / H],
+      [out[j]![0], out[j]![1], -0.07, 0.7, out[j]![1] / H],
+      [0, cy, -0.07, 0.5, 0.5],
+    );
   }
   return f.done();
 }
@@ -777,7 +787,11 @@ function diamondCage(): THREE.BufferGeometry {
       const a = ax[i]!;
       const b = ax[(i + 1) % 4]!;
       for (const sy of [s * 1.4, -s * 1.4])
-        f.tri([c.x + a[0], c.y, c.z + a[2], 0.2, v(c.y)], [c.x + b[0], c.y, c.z + b[2], 0.8, v(c.y)], [c.x, c.y + sy, c.z, 0.5, v(c.y + sy)]);
+        f.tri(
+          [c.x + a[0], c.y, c.z + a[2], 0.2, v(c.y)],
+          [c.x + b[0], c.y, c.z + b[2], 0.8, v(c.y)],
+          [c.x, c.y + sy, c.z, 0.5, v(c.y + sy)],
+        );
     }
   };
   for (const c of [...eq, top]) gem(c, 0.1);

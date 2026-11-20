@@ -319,8 +319,12 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
   it('trong ngân sách: ≤ 12 draw mỗi biến thức, ≤ 25 cả chiêu, hạt ≤ 1.500', () => {
     for (const id of Object.keys(HERO)) {
       const tl = FX_TIMELINE.get(id)!;
-      expect(validateFxTimeline(tl, (s) => SKILL.has(s)), id).toEqual([]);
-      for (const v of [undefined, ...Object.keys(tl.variants ?? {})]) expect(fxDrawCount(fxEventsFor(tl, -1, v)), `${id}:${v}`).toBeLessThanOrEqual(12);
+      expect(
+        validateFxTimeline(tl, (s) => SKILL.has(s)),
+        id,
+      ).toEqual([]);
+      for (const v of [undefined, ...Object.keys(tl.variants ?? {})])
+        expect(fxDrawCount(fxEventsFor(tl, -1, v)), `${id}:${v}`).toBeLessThanOrEqual(12);
       expect(fxDrawCount(all(id)), id).toBeLessThanOrEqual(25);
       expect(fxParticleCount(all(id)), id).toBeLessThanOrEqual(1500);
     }
@@ -350,7 +354,10 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
       const ev = all(id);
       const snd = ev.filter((e) => e.type === 'soundAt').map((e) => e.t);
       expect(Math.min(...snd), id).toBeLessThan(0);
-      expect(snd.some((t) => t === 0), id).toBe(true);
+      expect(
+        snd.some((t) => t === 0),
+        id,
+      ).toBe(true);
       for (const e of ev) {
         if (e.type === 'flash') expect(e.amount, id).toBeLessThanOrEqual(0.15);
         if (e.type === 'vignette') {
@@ -360,8 +367,14 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
         if (e.type === 'slowmo') expect(ult, id).toBe(true);
       }
       // Đòn kết đúng mốc trúng: khựng + rung tại t = 0.
-      expect(ev.some((e) => e.type === 'hitstop' && e.t === 0), id).toBe(true);
-      expect(ev.some((e) => e.type === 'shake' && e.t === 0), id).toBe(true);
+      expect(
+        ev.some((e) => e.type === 'hitstop' && e.t === 0),
+        id,
+      ).toBe(true);
+      expect(
+        ev.some((e) => e.type === 'shake' && e.t === 0),
+        id,
+      ).toBe(true);
     }
   });
   it('khiên/hộ thể/vùng: có hình Ở LẠI ≥ 1,5 s báo vùng tác dụng (vành mép vùng hoặc khung quanh thân)', () => {
