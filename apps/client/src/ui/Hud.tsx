@@ -30,7 +30,19 @@ import {
   tribPhaseStart,
   PF_DEAD,
 } from '@dtl/shared';
-import { ARTIFACT, hasString, ITEM, itemName, nextMajorRealmName, realmName, resolveBarSkill, t, tierBar, VARIANTS } from '@dtl/content';
+import {
+  ARTIFACT,
+  hasString,
+  ITEM,
+  itemName,
+  nextMajorRealmName,
+  realmName,
+  resolveBarSkill,
+  t,
+  tierBar,
+  VARIANTS,
+  METHOD_SKILLS,
+} from '@dtl/content';
 import { Portrait, useArtUrl } from './Art';
 import { Game } from '../game/engine';
 import { artifactLines } from './gear';
@@ -42,7 +54,7 @@ import { DuelBanner, InviteStack, PartyFrame } from './Party';
 import { Minimap } from './minimap/Minimap';
 import { Panels } from './windows/Panels';
 import { TrialBanner } from './Realm';
-import { Calli } from './calli/Calli';
+import { Calli, preloadCalli } from './calli/Calli';
 import { BagWarn } from './BagWarn';
 import { type BossLine, type ChapterCard, togglePanel, useUI } from './store';
 import { HubBar } from './u2/hud/HubBar';
@@ -127,7 +139,9 @@ function UltCardView() {
   if (!card || now >= card.until) return null;
   return (
     <div className="ult-card" key={card.id} style={{ '--mc': '#' + card.color } as CSSProperties}>
-      <div className="ult-card-name">{t(`skill.${card.skill}.name`)}</div>
+      <div className="ult-card-name">
+        <Calli k={`skill.${card.skill}.name`} em={3.2} />
+      </div>
     </div>
   );
 }
@@ -341,7 +355,7 @@ function DeathOverlay() {
       <Panel tone="paper" size="s" className="death-panel" role="alertdialog" aria-labelledby="death-title">
         <Header
           id="death-title"
-          title={soulFlee ? t('ui.dead.soul_title') : t('ui.dead.title')}
+          title={<Calli k={soulFlee ? 'ui.dead.soul_title' : 'ui.dead.title'} em={2.7} />}
           sub={soulFlee ? t('ui.dead.soul_sub') : t('ui.dead.sub')}
         />
         <PanelBody>
@@ -352,7 +366,7 @@ function DeathOverlay() {
           <p className="death-hint">{t('ui.dead.hint')}</p>
           <div className="death-actions">
             <Button variant="primary" size="l" onClick={() => Game.current?.send(C.RESPAWN)}>
-              {t('ui.dead.respawn')}
+              <Calli k="ui.dead.respawn" em={2.4} />
             </Button>
           </div>
         </PanelBody>
@@ -397,6 +411,10 @@ export function Hud() {
       delete document.body.dataset.cut;
     };
   }, [cut]);
+  // Thẻ chiêu tối thượng chỉ sống 0,6 s: nạp trước ảnh tên chiêu lúc vào game (nạp lúc thẻ hiện thì thường chưa kịp).
+  useEffect(() => {
+    preloadCalli(METHOD_SKILLS.filter((s) => s.ult).map((s) => `skill.${s.id}.name`));
+  }, []);
   const cining = useUI((s) => s.cine !== null && !s.cine.out && s.cine.kind !== 'dan');
   const dueling = useUI((s) => s.duel !== null);
   const skillLayout = useUI((s) => s.skillLayout);

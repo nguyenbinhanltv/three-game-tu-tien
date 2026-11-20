@@ -33,6 +33,8 @@
   "viewer.frame": "{backend} · {fps} khung/giây · {calls} draw call · {tris} tam giác (cả khung hình)",
   "viewer.help": "Chuột trái xoay · chuột phải kéo · lăn chuột phóng to/thu nhỏ",
   "ui.title": "Đạp Thiên Lộ",
+  "ui.sign.lac_kiem_tong": "Lạc Kiếm Tông",
+  "ui.sign.thien_kiem_dien": "Thiên Kiếm Điện",
   "ui.subtitle": "Huyền Linh Giới · Vân Lam Sơn Mạch",
   "ui.tagline": "Một kiếm, một đường, đạp lên chín tầng trời.",
   "ui.login.dev_title": "Đăng nhập thử (máy local)",

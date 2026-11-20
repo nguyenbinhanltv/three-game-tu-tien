@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { resAdd, resFromHeal, resFromTaken, resMax, resNow, resourceErrors, resSpend, skillResErrors, type ResourceDef } from './index';
+import {
+  resAdd,
+  resFromHeal,
+  resFromTaken,
+  resMax,
+  resNow,
+  resourceErrors,
+  resSpend,
+  resSpendAt,
+  skillResErrors,
+  type ResourceDef,
+} from './index';
 
 const KIEM_Y: ResourceDef = { id: 'kiem_y', max: 5, ui: 'pips', gain: { basic: 1 }, decay: { after: 10 } };
 const HUYET_KHI: ResourceDef = {
@@ -58,6 +69,21 @@ describe('tài nguyên riêng của công pháp (VS-2a)', () => {
     const sr = { id: 'dan_hoa', cost: 40, bonusMul: 1.5 } as const;
     expect(resSpend(DAN_HOA, 55, sr, false)).toEqual({ left: 15, spent: 40, mul: 1.5 });
     expect(resSpend(DAN_HOA, 39.9, sr, false)).toEqual({ left: 39.9, spent: 0, mul: 1 });
+  });
+  it('xả lúc đang rụng: mốc dời để phần đã rụng không bị trừ hai lần, và rụng tiếp ngay', () => {
+    // Đan hỏa 100 tại t0; t0+16s đã rụng 4 giây × 5 = còn 80; xả 40 còn 40.
+    const now = 16_000;
+    const cur = resNow(DAN_HOA, 100, 0, now);
+    expect(cur).toBe(80);
+    const sp = resSpend(DAN_HOA, cur, { id: 'dan_hoa', cost: 40, bonusMul: 1.5 }, false);
+    const at = resSpendAt(DAN_HOA, 0, now);
+    expect(resNow(DAN_HOA, sp.left, at, now)).toBe(40);
+    // Không được làm mới thời gian giữ: 2 giây sau rụng tiếp 10 điểm.
+    expect(resNow(DAN_HOA, sp.left, at, now + 2000)).toBe(30);
+    // Chưa tới lúc rụng thì mốc giữ nguyên (xả không kéo dài thời gian giữ).
+    expect(resSpendAt(DAN_HOA, 5000, 9000)).toBe(5000);
+    // Kiếm ý (rụng hết một lần): còn sống thì mốc không đổi.
+    expect(resSpendAt(KIEM_Y, 1000, 6000)).toBe(1000);
   });
   it('luật nhánh: trần cộng thêm, giữ lại khi xả, nhân tích, không rụng', () => {
     expect(resMax(KIEM_Y, { max: 2 })).toBe(7);

@@ -62,6 +62,7 @@ CLAUDE.md giữ phần lõi. Chi tiết từng hệ thống và lệnh nằm ở
 | `audio.md` | SFX, nhạc tự soạn, cân âm lượng |
 | `gameplay-systems.md` | công pháp, trang bị, độ kiếp, thần thức, nguyên anh, GM |
 | `quests.md` | nhiệm vụ theo chương |
+| `lore-boundary.md` | ranh giới Tiên Nghịch: được/không được dùng gì, thuật ngữ đã chốt, danh sách tên cấm (`content:check`) |
 | `status.md` | hiện trạng 2026-11-15 và việc còn mở (lịch sử, đã sửa mục lệch thời) |
 
 Script `node tools/docs/check-paths.mjs` (chạy ở CI) kiểm mọi đường dẫn file nêu trong CLAUDE.md, handbook và skill đều tồn tại.

@@ -208,6 +208,36 @@ describe('Đan hỏa (Thanh Mộc Đan Kinh)', () => {
     const big = heal(40);
     expect(big / plain).toBeCloseTo(1.5, 1);
   });
+  it('xả khi Đan hỏa đang rụng dần: còn lại đúng bằng trước trừ 40, không rụng hai lần', () => {
+    const { sim, join, fresh, live } = setup();
+    const p = join('a', 'thanh_moc_dan_kinh');
+    p.mth.res = 100;
+    p.mth.resAt = sim.now;
+    // Quá `after` (12 giây) 4 giây, rụng 5 mỗi giây: còn 80.
+    sim.now += 16_000;
+    expect(live(p)).toBeCloseTo(80);
+    // Đầy khí huyết nên lượng hồi không tích thêm Đan hỏa: chỉ còn phần xả.
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_hoi_nguyen_thuat' });
+    expect(live(p)).toBeCloseTo(40);
+    // Xả không làm mới thời gian giữ: 2 giây sau rụng tiếp 10.
+    sim.now += 2000;
+    expect(live(p)).toBeCloseTo(30);
+  });
+  it('xả hết Huyết khí lúc đang rụng rồi tích lại: không bị trừ phần rụng cũ', () => {
+    const { sim, join, mon, fresh, live } = setup();
+    const p = join('b', 'bat_dong_kim_than');
+    const m = mon();
+    p.mth.res = 100;
+    p.mth.resAt = sim.now;
+    sim.now += 10_000;
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_kiem_khi_tram', t: m.id });
+    expect(live(p)).toBe(0);
+    p.char.hp = p.char.mhp = 10_000;
+    sim.damagePlayer(p, 1000, 'mon_x');
+    expect(live(p)).toBeCloseTo(25);
+  });
   it('mộc độc phát tác tích Đan hỏa cho người gieo', () => {
     const { sim, join, mon, fresh } = setup();
     const p = join('a', 'thanh_moc_dan_kinh');
