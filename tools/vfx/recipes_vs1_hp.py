@@ -446,7 +446,8 @@ R['skl_thiet_bich_xung'] = thiet_bich
 
 
 def dich_son():
-    """Dịch Sơn Xung (lướt đẩy lùi 6 m): chỗ húc trồi lên một VÁCH ĐÁ ba tảng, vách trượt về trước 6 m cày một rãnh nứt dài (đẩy kẻ địch đi);
+    """Dịch Sơn Xung (lướt đẩy lùi 6 m): chỗ húc trồi lên một VÁCH ĐÁ ba tảng (tảng giữa THẤP ngang chân quái, hai tảng cao dạt hai bên và
+    có `camFade`: không che mục tiêu), vách trượt về trước 6 m cày một rãnh nứt dài (đẩy kẻ địch đi);
     biến thức kéo (`pull`) thì bỏ vách trượt (`unless`), thay bằng đá và vành sóng co VỀ phía mình."""
     T = DASH_HIT
     Z0, PUSH = 1.5, 6.0
@@ -463,16 +464,16 @@ def dich_son():
         flip('dust_kick', T + 0.26, 0.7, 3.0, at='self', offset=[-0.4, G + 0.6, Z0 + 5.0], alpha=0.55, tone='core', tier=2),
     ]
     # vách đá ba tảng: trồi ở chỗ húc rồi trượt về trước (bỏ khi biến thức kéo)
-    for i, (x, h) in enumerate([(-1.15, 2.1), (0.0, 2.8), (1.15, 2.2)]):
-        k = dict(at='self', rot=[16, 25 * (i - 1), 0], scale=[1.7, h, 1.7], alpha=1, tone='shadow', tier=0 if i == 1 else 1, seed=10 + i, unless='pull')
-        ev.append(mesh('rock_spire', T - 0.02, 0.5, offset=[x, G, Z0], sweep=0.2, erodeFrom=0.98, keepUp=True,
-                       move={'to': 'self', 'offset': [x, G, Z0 + PUSH], 'ease': 'out'}, **k))
-        ev.append(mesh('rock_spire', T + 0.48, 0.7, offset=[x, G, Z0 + PUSH], sweep=0, erodeFrom=0.35, **k))
+    for i, (x, h, w, dz) in enumerate([(-1.7, 1.7, 1.5, 0.3), (0.0, 0.75, 1.9, -0.6), (1.7, 1.8, 1.5, 0.3)]):
+        k = dict(at='self', rot=[16, 25 * (i - 1), 0], scale=[w, h, w], alpha=1, tone='shadow', tier=0, seed=10 + i, unless='pull', camFade=(i != 1))
+        ev.append(mesh('rock_spire', T - 0.02, 0.5, offset=[x, G, Z0 + dz], sweep=0.2, erodeFrom=0.98, keepUp=True,
+                       move={'to': 'self', 'offset': [x, G, Z0 + dz + PUSH], 'ease': 'out'}, **k))
+        ev.append(mesh('rock_spire', T + 0.48, 0.7, offset=[x, G, Z0 + dz + PUSH], sweep=0, erodeFrom=0.35, **k))
     q = quake(T, 'self', G, 3.2, 3.4, burst=2.0, sparks=40, dust=3.4)
     for e in q:
         e['offset'] = [e['offset'][0], e['offset'][1], Z0]
     ev += q
-    ev += debris_at(T - 0.02, 'self', [0, G, Z0], 6, 1.5, 1.8, 0.55, seed0=0.8)
+    ev += debris_at(T - 0.02, 'self', [0, G, Z0 - 0.4], 6, 1.6, 1.3, 0.4, seed0=0.8)
     ev += [stop(T, 60), shake(T, 0.4), flash(T, 0.1, tier=0), vig(T, 0.3, 300, tier=1), cam(T, 0, 0.5, fov=2.0, tier=1)]
     end = Z0 + PUSH
     return {
@@ -489,8 +490,8 @@ def dich_son():
             # b = kéo về: hai tảng đá và vành sóng co từ xa VỀ phía mình (không có vách trượt đi)
             'pull': [
                 mesh('rune_ring2', T, 0.45, at='self', offset=[0, G + 0.1, Z0], scale=6.0, scaleTo=1.4, sweep=0.04, erodeFrom=0.75, alpha=1, shadow=False, tone='body', tier=0, seed=7),
-                *[mesh('rock_spire', T + 0.02, 0.42, at='self', offset=[x, G, end + 1.0], rot=[-16, 180, 0], scale=[1.5, 1.9, 1.5], sweep=0.2, erodeFrom=0.8, alpha=1, keepUp=True,
-                       move={'to': 'self', 'offset': [x * 0.8, G, Z0 + 1.4], 'ease': 'in'}, tone='shadow', tier=0, seed=20 + i) for i, x in enumerate([-1.2, 1.2])],
+                *[mesh('rock_spire', T + 0.02, 0.42, at='self', offset=[x, G, end + 1.0], rot=[-16, 180, 0], scale=[1.4, 1.6, 1.4], sweep=0.2, erodeFrom=0.8, alpha=1, keepUp=True, camFade=True,
+                       move={'to': 'self', 'offset': [x, G, Z0 + 1.4], 'ease': 'in'}, tone='shadow', tier=0, seed=20 + i) for i, x in enumerate([-1.7, 1.7])],
             ],
         },
     }
