@@ -214,3 +214,27 @@ Số `textures` của renderer 105 (Cao) / 103 (Vừa); chưa chạy `bench:clie
 **Công cụ chẩn đoán** (kịch bản `lackiem`): `--draws 1` (mesh trong khung nhìn theo nhóm), `--tops 1` (mesh theo nhóm gốc của scene), `--props 1` / `--cells 1` / `--lodtri 1` (prop theo ô, khoảng cách camera, tam giác từng vật liệu), `--hide <tên|@props|@cardforest|@sky>`, `--noshadow <tên>`, `--shadowoff 1`.
 
 **Còn lại**: Lạc Kiếm `trencao` 294 vẫn sát trần (phần lớn là prop PROP-1 nhiều vật liệu): bước tiếp theo đúng nghĩa là gộp vật liệu `arch_sect_*` thành atlas một vật liệu hoặc dùng `BatchedMesh`; các bí cảnh DUN-1 (Phục Mạch 246–262, Kính Nguyệt 195–236 có phản chiếu) chưa đổi.
+
+## PERF-2: 7 bí cảnh DUN-1 + Lạc Kiếm `trencao` xuống ~260 (2026-11-20, Cao, 1080p)
+
+**(1) Bí cảnh DUN-1** (góc nặng nhất mỗi cảnh, `pnpm shots dungeonart --level <id> --perf 1`): tất cả dưới 300 draw call và dưới 1,5M tam giác, không cần sửa.
+
+| Bí cảnh | draw call | tam giác | góc |
+| --- | --- | --- | --- |
+| Phục Mạch | 248 | 1,34–1,41M | 01-vao / 03-mach-tinh-bac |
+| Kiếm Trủng | 247 | 1,25M | 06-vanh-cu-kiem |
+| Kính Nguyệt (có phản chiếu) | 207 | 0,88M | 01-vao |
+| Độ Kiếp | 175 | 0,28M | 05-dinh-dong |
+| Kim Dạ Cung | 170 | 0,80M | 03-ngai-bac |
+| Thần Tàng | 156 | 0,97M | 06-tuong-da |
+| Xích Tẫn Khích | 154 | 0,47M | 06-doc-hem |
+
+Phục Mạch và Kiếm Trủng (~250) là hai cảnh gần trần nhất; lý do là hàng trăm vật GLB gộp theo biến thể (~75 draw call) cộng vách/trần hang, chưa cần động tới.
+
+**(2) Prop PROP-1 gộp mảnh ở LOD xa** (`props.ts`, `mergePlainMeshes`): ở LOD 1 và 2 của prop không phải cây, các mảnh "đặc" của một món (không alpha, không phát sáng thật, không tán lá/đèn/ngọc; vải đung đưa chỉ ở món `sway`) gộp thành **một hình học màu đỉnh + một vật liệu chung** (`prop_far_flat`): màu đỉnh × 0,85 (độ sáng trung bình của texture) và giảm bão hòa 18% để khớp màu cũ (kit PROP-1 để màu đỉnh quyết định sắc, texture chỉ cho chi tiết). Mỗi món 3–6 vật liệu thành 1–2 draw call. LOD 0 không đổi. Đã so ảnh `cong`, `trencao`, `san` trước/sau cùng góc: không khác biệt nhìn thấy (ban đầu mái quầy chợ bị lệch sắc nên mới thêm bước giảm bão hòa).
+
+**Kết quả (Cao, 1080p)**: Lạc Kiếm trencao 330 (main) → 294 (#383) → **261**, tam giác 1,95M → 1,76M; cong 249 → 205; san 216 → 185. Các bản đồ khác: Vân Hải chandao 287 → 252, Thiên Khuyết phongxa 237 → 199, Bắc Hoang trencao 227 → 193.
+
+**Không làm được tới ~250**: còn 261 ở `trencao`. `BatchedMesh` (một draw call mỗi vật liệu cho mọi prop) có hỗ trợ ở WebGPU r178 (`BatchNode`) nhưng cần cấp trước dung lượng đỉnh/chỉ số/instance cho từng vật liệu và thêm/xóa instance khi đổi LOD: thay đổi lớn trong `PropLayer` (dùng ở mọi level), nên để riêng. Atlas một vật liệu "uber" cho PROP-1 bị loại vì mỗi vật liệu có 3 texture (albedo, normal, MR) riêng. Còn lại ở `trencao`: ~103 draw call prop (tre/cổ thụ L2 mỗi ô 2 draw call vì thẻ lá alpha tách riêng), 14 đảo trời, 10 rừng thẻ, 9 vườn, 18 pass bóng. Thử và bỏ: rút tầm vẽ rừng thẻ 800 → 640 m chỉ giảm 2 draw call.
+
+**PERF-2 vòng 2 (review): chỉ gộp mảnh có màu đỉnh.** `mergePlainMeshes` trước đó coi mảnh không có thuộc tính `color` là màu (1,1,1) × 0,85 (xám sáng) và bỏ qua `material.color`/texture, đúng với kit PROP-1 nhưng sai với prop Tripo/CC0 cũ (màu từ texture). Nay `isPlain` yêu cầu hình học có thuộc tính `color` (không có thì giữ nguyên, không gộp) và màu gộp nhân thêm `material.color`. Test mới: mảnh không có màu đỉnh không gộp; `material.color` được nhân vào. Đã chụp trước (`main` sau #383) / sau cùng góc ở Vân Hải (chandao, tungdai), Bắc Hoang (trencao, tram), Thiên Khuyết (phongxa, tram) và Lạc Kiếm: hình không khác biệt nhìn thấy; draw call: Vân Hải 269→252 / 259→242, Bắc Hoang 214→189 / 199→175, Thiên Khuyết 217→199 / 201→183, Lạc Kiếm trencao 261.
