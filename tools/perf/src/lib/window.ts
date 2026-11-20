@@ -64,6 +64,8 @@ export interface GameDebug {
   view: { level?: string; monsters: Map<string, MonView> };
   skillLog: { at: number; e: { kind: string } }[];
   hazardLog?: HazardLog[];
+  /** Dấu trên sân mới nhất của Thiên Nhân Ngũ Suy theo khóa `<loại>:<ô>` (bản dev, TN-4). */
+  suyLog?: Record<string, { s: string; n: number; x: number; z: number; r: number; pg: number; lv: number; at: number }>;
   gpuErrors?: string[];
   /** Bản ghi người chơi của schema; công cụ chỉ đọc vài trường. */
   me(): any;

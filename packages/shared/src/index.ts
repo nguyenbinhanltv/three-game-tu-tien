@@ -43,6 +43,7 @@ export * from './spawnrules';
 export * from './elements';
 export * from './monskill';
 export * from './tribulation';
+export * from './ngusuy';
 export * from './propLib';
 export * from './fxtimeline';
 export * from './chapters';
