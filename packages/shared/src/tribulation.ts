@@ -282,7 +282,7 @@ export interface TribSuyTho {
 }
 
 /**
- * Đạo Tâm Suy (`suy_tam`): Vọng Ảnh (bóng tâm ma, máu `hpFrac` × khí huyết chủ) quấy nhiễu. Nhịp `calm` giây tĩnh rồi `strike` giây phá vọng xoay vòng.
+ * Đạo Tâm Suy (`suy_tam`): Tâm Ma Ảnh (bóng tâm ma, máu `hpFrac` × khí huyết chủ) quấy nhiễu. Nhịp `calm` giây tĩnh rồi `strike` giây phá vọng xoay vòng.
  * Lúc tĩnh mà ra tay trúng bóng: thanh tăng `hitBad`. Lúc phá vọng trúng bóng (một lần mỗi nhịp): thanh giảm `hitGood`; hết nhịp không trúng: tăng `miss`. Bị bóng đánh trúng: tăng `hurt`.
  */
 export interface TribSuyTam {

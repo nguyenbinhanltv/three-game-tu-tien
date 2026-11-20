@@ -24,6 +24,9 @@ import type { HazardExtra, TribHost } from './tribhost';
 export type { GuardCfg, TribState, HazardExtra, TribHost };
 
 export class TribSystem {
+  /** Số lớp `damagePlayer` đang chạy (GameSim tăng/giảm): đòn trúng bóng phát sinh trong lúc chủ kiếp chịu đòn là phản đòn thụ động. */
+  hurting = 0;
+
   constructor(private h: TribHost) {}
 
   /** Dọn trạng thái cơ chế khi kiếp kết thúc (gỡ quái kiếp). */
@@ -57,7 +60,7 @@ export class TribSystem {
   /** Va chạm giữa người độ kiếp và bóng của mình (cơ chế `tam_canh`, ải Đạo Tâm Suy). `dot`: sát thương rỉ theo thời gian, không phải ra tay. */
   noteHit(p: PlayerEnt, kind: 'hurt' | 'hit', dot = false): void {
     tamCanhHit(this.h, p, kind);
-    suyTamHit(this.h, p, kind, dot);
+    suyTamHit(this.h, p, kind, dot || (kind === 'hit' && this.hurting > 0));
   }
 
   /** Một nhịp 50 ms cho người đang độ kiếp. */

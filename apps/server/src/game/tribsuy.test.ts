@@ -392,7 +392,24 @@ describe('Đạo Tâm Suy', () => {
     expect(st.pg).toBeCloseTo(pg - t.hitGood + t.hurt, 5);
   });
 
-  it('hết kiếp hay thất bại đều dọn Vọng Ảnh', () => {
+  it('phản đòn thụ động khi bị Tâm Ma Ảnh đánh không tính là ra tay lúc tĩnh', () => {
+    vi.spyOn(Math, 'random').mockImplementation(() => 0.2);
+    const { sim, p } = mk(4);
+    const cfg = DEF.phases[4]!.suy!;
+    sim.beginTribulation(p, DEF, false);
+    runSuy(sim, p, cfg.rest + 1, false);
+    const st = suyState(p)!;
+    const sh = sim.monsters.find((m) => m.owner === p.sid)!;
+    p.mth.reflectUntil = sim.now + 10_000;
+    p.mth.reflectMul = 0.5;
+    const pg = st.pg;
+    const hp = sh.s.hp;
+    sim.damagePlayer(p, 100, sh.id);
+    expect(sh.s.hp).toBeLessThan(hp);
+    expect(st.pg).toBeCloseTo(pg + cfg.tam!.hurt, 5);
+  });
+
+  it('hết kiếp hay thất bại đều dọn Tâm Ma Ảnh', () => {
     vi.spyOn(Math, 'random').mockImplementation(() => 0.2);
     const { sim, p } = mk(4);
     sim.beginTribulation(p, DEF, false);

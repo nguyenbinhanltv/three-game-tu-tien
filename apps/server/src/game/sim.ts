@@ -1329,7 +1329,13 @@ export class GameSim {
     return this.monSys.tryInterrupt(p, mon, extraStun);
   }
   damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false, ke?: 1 | -1): void {
-    return this.deathSys.damagePlayer(p, dmg, src, hv, ke);
+    // Đánh dấu "đang chịu đòn": sát thương phản lại quái trong lúc này (Kim Chung Trấn, bộ Huyền Giáp) là thụ động, không phải ra tay (ải Đạo Tâm Suy).
+    this.tribSys.hurting++;
+    try {
+      return this.deathSys.damagePlayer(p, dmg, src, hv, ke);
+    } finally {
+      this.tribSys.hurting--;
+    }
   }
   grantDungeonReward(p: PlayerEnt, r: DungeonReward, key: string, label: string): boolean {
     return this.deathSys.grantDungeonReward(p, r, key, label);

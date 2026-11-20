@@ -1519,7 +1519,7 @@ if (!at(LEVELS, 'van_lam').spawn) err('van_lam: thiếu spawn');
           err(`${pw}: tam cần {calm, strike >= 2, hitBad, hitGood, miss, hurt, hpFrac >= 1}`);
         else if (!(Math.floor(act / (x.calm + x.strike)) * x.hitGood > avg * act - (100 - s.start)))
           err(`${pw}: trúng đủ mọi nhịp phá vọng vẫn không giữ nổi thanh dưới 100`);
-        if (!MONSTER.get('mon_tam_ma')) err(`${pw}: thiếu quái mon_tam_ma (Vọng Ảnh)`);
+        if (!MONSTER.get('mon_tam_ma')) err(`${pw}: thiếu quái mon_tam_ma (Tâm Ma Ảnh)`);
       }
     });
     for (const k of ['sys.suy_fail', 'sys.suy_keep', 'sys.suy_stage', 'sys.suy_stage_gold', 'sys.suy_law', 'sys.suy_ok', 'sys.suy_done'])

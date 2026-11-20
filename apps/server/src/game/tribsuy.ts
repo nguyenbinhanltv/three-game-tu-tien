@@ -5,7 +5,7 @@
 //  - Nhục Thân Suy (`suy_the`): khí huyết rỉ theo thanh. Tôi Thể Lôi rơi gần người, phải BƯỚC VÀO đón tia (mất chút khí huyết) thanh mới giảm.
 //  - Thần Thức Suy (`suy_thuc`): lôi ẩn nổ theo cung, server không báo trước. Phím X ngưng thần thì đợt đang chờ mới hiện vạch; hồi chiêu dài dần theo thanh.
 //  - Thọ Nguyên Suy (`suy_tho`): suy phong thổi tắt dần các ngọn Thọ Đăng; đứng cạnh ngọn tắt đủ lâu để thắp lại. Tắt hết là thất bại.
-//  - Đạo Tâm Suy (`suy_tam`): Vọng Ảnh quấy nhiễu. Nhịp tĩnh thì nhịn không ra tay, nhịp phá vọng thì phải đánh trúng nó.
+//  - Đạo Tâm Suy (`suy_tam`): Tâm Ma Ảnh quấy nhiễu. Nhịp tĩnh thì nhịn không ra tay, nhịp phá vọng thì phải đánh trúng nó.
 //
 // Thanh chạm 100 ở ải nào thì kiếp thất bại tại ải đó; ải đã qua được `host.suyCleared` lưu lại (thưởng một lần qua transaction + sổ cái),
 // lần sau vào tiếp từ ải chưa qua. Thao tác của người chơi chỉ là di chuyển, đòn đánh và phím X: tất cả đều đã đi qua kiểm tra của sim.
@@ -490,7 +490,7 @@ registerMechanic('suy_tam', {
 });
 
 /**
- * Va chạm giữa chủ kiếp và Vọng Ảnh trong ải Đạo Tâm Suy. `hurt`: bị bóng đánh trúng. `hit`: đánh trúng bóng (đúng nhịp phá vọng thì hóa giải, lúc tĩnh là động niệm).
+ * Va chạm giữa chủ kiếp và Tâm Ma Ảnh trong ải Đạo Tâm Suy. `hurt`: bị bóng đánh trúng. `hit`: đánh trúng bóng (đúng nhịp phá vọng thì hóa giải, lúc tĩnh là động niệm).
  * Sát thương rỉ theo thời gian (`dot`) không tính là ra tay.
  */
 export function suyTamHit(host: TribHost, p: PlayerEnt, kind: 'hurt' | 'hit', dot = false): void {
@@ -514,7 +514,7 @@ export function suyTamHit(host: TribHost, p: PlayerEnt, kind: 'hurt' | 'hit', do
   if (st.pg >= 100 && (p.s.fl & PF_DEAD) === 0) fail(host, p, st);
 }
 
-/** Dọn thứ ải suy để lại trong sim khi kiếp kết thúc giữa chừng (Vọng Ảnh). */
+/** Dọn thứ ải suy để lại trong sim khi kiếp kết thúc giữa chừng (Tâm Ma Ảnh). */
 export function suyCleanup(host: TribHost, p: PlayerEnt): void {
   const st = p.trib?.mech?.suy as SuyState | undefined;
   if (!st) return;
