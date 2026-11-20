@@ -57,6 +57,23 @@ describe('mergePlainMeshes: gộp mảnh đặc ở LOD xa', () => {
     expect(mergePlainMeshes([wood, cloth], make, true)).toHaveLength(1);
     expect(mergePlainMeshes([wood, cloth], make, false)).toHaveLength(2);
   });
+  it('mảnh không có màu đỉnh (màu từ texture/material.color) không bị gộp', () => {
+    const noColor = () => ({
+      geometry: new THREE.BoxGeometry(1, 1, 1),
+      material: new THREE.MeshStandardMaterial({ name: 'tripo_body' }),
+      owned: false as boolean | undefined,
+    });
+    const list = [noColor(), noColor(), mk('arch_sect_stone')];
+    expect(mergePlainMeshes(list, make)).toBe(list);
+  });
+  it('nhân thêm material.color vào màu gộp', () => {
+    const a = mk('arch_sect_stone', { color: new THREE.Color(1, 0, 0) });
+    const b = mk('arch_sect_wood');
+    const out = mergePlainMeshes([a, b], make);
+    const col = out[0]!.geometry.getAttribute('color');
+    // đỉnh đầu thuộc mảnh a (đỏ): G và B bằng lum*0,18*0,85 ≈ nhỏ so với R
+    expect(col.getX(0)).toBeGreaterThan(col.getZ(0));
+  });
   it('chỉ một mảnh đặc: không đổi', () => {
     const only = [mk('arch_sect_stone'), mk('prop_tc_leaf', { transparent: true })];
     expect(mergePlainMeshes(only, make)).toBe(only);

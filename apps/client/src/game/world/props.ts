@@ -120,8 +120,12 @@ let flatFarMat: THREE.Material | null = null;
 const farMaterial = (): THREE.Material =>
   (flatFarMat ??= createWorldMaterial({ name: 'prop_far_flat', vertexColors: true, roughness: 0.85, metalness: 0.05 }));
 
+const WHITE = new THREE.Color(1, 1, 1);
+
 /** Mảnh gộp được ở LOD xa: đặc (không alpha), không phát sáng, không phải tán lá/đèn/ngọc/vải đung đưa. */
-function isPlain(lm: { material: THREE.Material }, cloth: boolean): boolean {
+function isPlain(lm: { geometry: THREE.BufferGeometry; material: THREE.Material }, cloth: boolean): boolean {
+  // Chỉ kit có màu đỉnh (PROP-1: màu đỉnh quyết định sắc): mảnh không có thuộc tính `color` lấy sắc từ texture/`material.color` nên không gộp được (sẽ thành khối xám).
+  if (!lm.geometry.getAttribute('color')) return false;
   const m = lm.material as THREE.MeshStandardMaterial;
   if (m.transparent || (m.alphaTest ?? 0) > 0) return false;
   // phát sáng thật (đèn, ngọc, than) thì giữ riêng; phát sáng rất nhẹ (vải thấu sáng ~0,06) thì vẫn gộp được
@@ -158,6 +162,7 @@ export function mergePlainMeshes<T extends { geometry: THREE.BufferGeometry; mat
     const P = g.getAttribute('position');
     const N = g.getAttribute('normal');
     const C = g.getAttribute('color');
+    const mc = (lm.material as THREE.MeshStandardMaterial).color ?? WHITE;
     for (let i = 0; i < P.count; i++) {
       const o = (vo + i) * 3;
       pos[o] = P.getX(i);
@@ -169,9 +174,9 @@ export function mergePlainMeshes<T extends { geometry: THREE.BufferGeometry; mat
         nor[o + 2] = N.getZ(i);
       } else nor[o + 1] = 1;
       // màu đỉnh × độ sáng trung bình của texture (0,85), giảm bão hòa 18% (texture xám làm dịu sắc so với màu đỉnh thuần)
-      const cr = C ? C.getX(i) : 1;
-      const cg = C ? C.getY(i) : 1;
-      const cb = C ? C.getZ(i) : 1;
+      const cr = (C ? C.getX(i) : 1) * mc.r;
+      const cg = (C ? C.getY(i) : 1) * mc.g;
+      const cb = (C ? C.getZ(i) : 1) * mc.b;
       const lum = cr * 0.3 + cg * 0.59 + cb * 0.11;
       col[o] = (lum + (cr - lum) * 0.82) * 0.85;
       col[o + 1] = (lum + (cg - lum) * 0.82) * 0.85;
