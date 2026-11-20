@@ -1,5 +1,22 @@
 import * as THREE from 'three/webgpu';
-import { bumpMap, cameraPosition, dot, float, floor, fract, max, mix, normalWorld, positionWorld, sin, smoothstep, texture, vec2, vec3, vertexColor } from 'three/tsl';
+import {
+  bumpMap,
+  cameraPosition,
+  dot,
+  float,
+  floor,
+  fract,
+  max,
+  mix,
+  normalWorld,
+  positionWorld,
+  sin,
+  smoothstep,
+  texture,
+  vec2,
+  vec3,
+  vertexColor,
+} from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
 import { tkFbm } from './thienKhuyetNoise';
 
@@ -81,7 +98,13 @@ function wallMaterial(): THREE.MeshStandardNodeMaterial {
   // vụn vỡ ở mép; AO tối ở khe và vỉa. Chỉ shader (không thêm hình học, không thêm draw call); khe/vỉa nhạt dần xa để khỏi lấp lánh.
   const warp = a.sub(0.5).mul(5).add(b.sub(0.5).mul(1.1));
   const seamThin = smoothstep(0.88, 1.0, sin(wp.y.add(warp).mul(6.6)).mul(0.5).add(0.5));
-  const seamThick = smoothstep(0.92, 1.0, sin(wp.y.add(warp.mul(2)).mul(1.55)).mul(0.5).add(0.5));
+  const seamThick = smoothstep(
+    0.92,
+    1.0,
+    sin(wp.y.add(warp.mul(2)).mul(1.55))
+      .mul(0.5)
+      .add(0.5),
+  );
   const ridge = (n: ReturnType<typeof tri>, w: number) => float(1).sub(smoothstep(0, w, n.sub(0.5).abs()));
   const crack = max(ridge(tri(0.085, 'a'), 0.03), ridge(tri(0.27, 'g'), 0.045).mul(0.85));
   const chip = smoothstep(0.58, 0.8, tri(0.95, 'g')); // mảng vỡ nhỏ
@@ -98,8 +121,13 @@ function wallMaterial(): THREE.MeshStandardNodeMaterial {
   const joint = smoothstep(0.93, 0.99, jx).mul(jointOn);
   const block = hash2(vec2(cellX, row)).sub(0.5);
   const fade = float(1).sub(smoothstep(120, 700, dist).mul(0.7));
-  const ao = float(1).sub(seamThin.mul(0.2).add(seamThick.mul(0.3)).add(crack.mul(0.5)).add(joint.mul(0.55)).mul(fade)).max(0.28).mul(float(1).add(block.mul(0.18)));
-  const rock = vertexColor().mul(ao).mul(float(0.66).add(a.mul(0.45)).add(b.mul(0.3)).add(c.mul(0.2)).add(d.sub(0.5).mul(0.35)));
+  const ao = float(1)
+    .sub(seamThin.mul(0.2).add(seamThick.mul(0.3)).add(crack.mul(0.5)).add(joint.mul(0.55)).mul(fade))
+    .max(0.28)
+    .mul(float(1).add(block.mul(0.18)));
+  const rock = vertexColor()
+    .mul(ao)
+    .mul(float(0.66).add(a.mul(0.45)).add(b.mul(0.3)).add(c.mul(0.2)).add(d.sub(0.5).mul(0.35)));
   const ledgeTop = mix(rock, vec3(0.55, 0.36, 0.2).mul(float(0.7).add(b.mul(0.5))), up.mul(0.55));
   m.colorNode = mix(ledgeTop, vec3(0.5, 0.33, 0.28), smoothstep(350, 1800, dist).mul(0.3));
   m.roughnessNode = float(0.74).add(b.mul(0.26));
