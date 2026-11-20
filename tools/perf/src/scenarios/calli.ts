@@ -1,51 +1,55 @@
-// Thẻ chương dùng chữ thư pháp (tools/calli): tên cảnh giới (độ kiếp/đột phá) và địa danh khi vào nơi mới, ở 720p + 1080p.
-// Gọi thẳng `chapter()` của engine (không cần chơi tới) rồi chụp giữa thẻ. Kiểm 0 lỗi console.
-import { list, opt } from '../lib/env';
+// Chữ thư pháp (tools/calli) ở chỗ hiển thị thật: tên cảnh giới/địa danh (thẻ chương), tên chiêu tối thượng… ở 720p + 1080p.
+// Gọi thẳng hàm của engine/store (không cần chơi tới) rồi chụp giữa lúc hiện. `--plain` chặn ảnh thư pháp để chụp bản "trước" (chữ thường)
+// cùng camera. Kiểm 0 lỗi console.
+import { flag, list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import type { Scenario } from '../lib/scenario';
 import { snap, UI_SIZES } from '../lib/shot';
 
-/** nhóm → [thẻ, cấp để {realm} ra đúng tên cảnh giới]. */
-const GROUPS: Record<string, [string, number][]> = {
-  realm: [
-    ['trib', 15],
-    ['ascend', 16],
-    ['ascend_kd', 20],
-    ['ascend_na', 24],
-    ['ascend_hn', 28],
-    ['ascend_ab', 32],
-  ],
-  place: [
-    ['sect', 15],
-    ['dungeon', 15],
-    ['ch2', 20],
-    ['ch3', 24],
-    ['ch4', 28],
-    ['ch5', 32],
-  ],
+type Item = { id: string; lv?: number; wait?: number };
+/** nhóm → mục. `lv` = cấp nhân vật (để {realm} ra đúng tên cảnh giới). */
+const GROUPS: Record<string, Item[]> = {
+  realm: ['trib:15', 'ascend:16', 'ascend_kd:20', 'ascend_na:24', 'ascend_hn:28', 'ascend_ab:32'].map((s) => ({
+    id: s.split(':')[0],
+    lv: +s.split(':')[1],
+  })),
+  place: ['sect:15', 'dungeon:15', 'ch2:20', 'ch3:24', 'ch4:28', 'ch5:32'].map((s) => ({ id: s.split(':')[0], lv: +s.split(':')[1] })),
+  ult: ['skl_van_kiem_quy_tong', 'skl_kim_cuong_bat_hoai', 'skl_hoi_thien_dan_lo'].map((id) => ({ id, lv: 15, wait: 220 })),
 };
 
 export default {
   name: 'calli',
-  desc: 'Thẻ chương chữ thư pháp (cảnh giới / địa danh) ở 720p + 1080p',
-  usage: '[--groups realm,place] [--sizes 720p,1080p]',
+  desc: 'Chữ thư pháp (cảnh giới, địa danh, chiêu tối thượng…) ở 720p + 1080p; --plain = bản trước (chữ thường)',
+  usage: '[--groups realm,place,ult] [--sizes 720p,1080p] [--plain]',
   async run(r) {
-    for (const g of list('--groups', opt('--group', 'realm,place'))) {
+    const plain = flag('--plain');
+    for (const g of list('--groups', opt('--group', 'realm,place,ult'))) {
       for (const tag of list('--sizes', '720p,1080p')) {
-        for (const [kind, lv] of GROUPS[g] ?? []) {
+        for (const it of GROUPS[g] ?? []) {
           const { ctx, page, errors } = await r.open({
             name: 'Calli',
             viewport: UI_SIZES[tag],
-            query: { god: 1, realm: lv, at: 'tong_mon' },
+            query: { god: 1, realm: it.lv ?? 15, at: 'tong_mon' },
             seenIntro: true,
           });
+          if (plain) await page.route('**/assets/calli/**', (rt) => rt.abort());
           await sleep(2500);
-          await page.evaluate(async (k) => {
-            const url = '/src/game/engine/cine.ts'; // biến để tsc không tìm module (trình duyệt tự nạp từ Vite dev)
-            const m = await import(/* @vite-ignore */ url);
-            m.chapter(window.__game!, k as never, false);
-          }, kind);
-          await snap(page, r.out, `${g}-${kind}-${tag}.jpg`, { wait: 1500 });
+          await page.evaluate(
+            async ([group, id]) => {
+              // Đường dẫn là biến để tsc không tìm module (trình duyệt tự nạp từ Vite dev).
+              const eng = '/src/game/engine/cine.ts';
+              const store = '/src/ui/store.ts';
+              if (group === 'ult') {
+                const { useUI } = await import(/* @vite-ignore */ store);
+                useUI.setState({ ultCard: { id: Date.now(), skill: id, color: 'ffd45a', until: Date.now() + 5000 } });
+              } else {
+                const m = await import(/* @vite-ignore */ eng);
+                m.chapter(window.__game!, id as never, false);
+              }
+            },
+            [g, it.id],
+          );
+          await snap(page, r.out, `${plain ? 'truoc' : 'sau'}-${g}-${it.id}-${tag}.jpg`, { wait: it.wait ?? 1500 });
           if (errors.length) console.log('  LỖI console:', errors.slice(0, 3));
           await ctx.close();
         }

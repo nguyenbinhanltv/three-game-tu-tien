@@ -381,3 +381,10 @@
     display: none;
   }
 }
+
+/* Tên chiêu tối thượng bằng chữ thư pháp (tools/calli): thẻ chỉ 0,6 s nên nét bút hiện nhanh (0,25 s). */
+.ult-card-name .calli {
+  animation-duration: 0.25s;
+  animation-delay: 0s;
+  filter: drop-shadow(0 0 14px var(--mc));
+}

@@ -138,7 +138,9 @@ function UltCardView() {
   if (!card || now >= card.until) return null;
   return (
     <div className="ult-card" key={card.id} style={{ '--mc': '#' + card.color } as CSSProperties}>
-      <div className="ult-card-name">{t(`skill.${card.skill}.name`)}</div>
+      <div className="ult-card-name">
+        <Calli k={`skill.${card.skill}.name`} />
+      </div>
     </div>
   );
 }
