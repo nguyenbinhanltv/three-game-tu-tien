@@ -285,6 +285,18 @@ describe('luật riêng của nhánh mốc 28', () => {
     b.sim.damagePlayer(q, 1000, 'mon_x');
     expect(b.live(q)).toBeCloseTo(32.5);
   });
+  it('reset không làm mới hồi chiêu của chiêu thuộc nhánh (không mua được lượt dùng lại bằng linh thạch)', () => {
+    const { sim, join } = setup();
+    const p = join('lac_kiem_quyet', 28);
+    sim.onBranch(p, { a: 'pick', tier: 28, id: 'van_kiem', r: 'cd-00001' });
+    const until = sim.now + 55_000;
+    p.cds.set('skl_thien_kiem_hoa_hinh', until);
+    p.char.gold = 100_000;
+    sim.onBranch(p, { a: 'reset', r: 'cd-00002' });
+    expect(p.char.branches.lac_kiem_quyet).toBeUndefined();
+    sim.onBranch(p, { a: 'pick', tier: 28, id: 'van_kiem', r: 'cd-00003' });
+    expect(p.cds.get('skl_thien_kiem_hoa_hinh')).toBe(until);
+  });
   it('reset: tài nguyên vượt trần cũ bị kẹp về trần gốc', () => {
     const { sim, join, mon, use, live } = setup();
     const p = join('lac_kiem_quyet', 28);

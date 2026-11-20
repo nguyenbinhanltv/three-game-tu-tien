@@ -31,7 +31,6 @@ import {
   BRANCH_RESET_COOLDOWN_SEC,
   branchResetCost,
   pickBlock,
-  skillTier,
 } from '@dtl/shared';
 import { PILL_QUALITY, ITEM, itemName, NPC, QUEST, realmName, RECIPE, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { type Character, isEquipSlot, sameSlot } from '../character';
@@ -490,8 +489,8 @@ export class EconomySystem {
       return this.c.warn(p, 'sys.not_enough_gold');
     c.meta.branchAt = this.c.now;
     c.save();
-    // Hồi chiêu của chiêu thuộc nhánh không mang sang lựa chọn mới; tài nguyên vượt trần mới bị kẹp lại khi đọc (`resNow`).
-    for (const id of [...p.cds.keys()]) if (skillTier(def, id)) p.cds.delete(id);
+    // Hồi chiêu GIỮ NGUYÊN qua reset: xóa đi thì trả linh thạch là làm mới được chiêu hồi lâu (chọn lại đúng nhánh cũ).
+    // Tài nguyên vượt trần mới bị kẹp lại khi đọc (`resNow`).
     p.mth.dirty = true;
     this.c.sys(p, 'sys.branch_reset', { n: cost }, 'info');
     this.c.sendCd(p);
