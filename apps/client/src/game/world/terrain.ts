@@ -116,7 +116,15 @@ function ochreColor(x: number, z: number, h: number, ny: number, out: THREE.Colo
     const fleck = fbm(x * 0.18, z * 0.18, 2, T.def.seed + 529);
     out.lerp(fleck > 0.1 ? C_MAPLE_GOLD : C_MAPLE_LITTER, k * 0.55);
   }
-  if (slope > 0.12) out.lerp(n > 0 ? C_SANDSTONE : C_SANDSTONE_DARK, Math.min(1, (slope - 0.12) * 4.5));
+  if (slope > 0.12) {
+    const k = Math.min(1, (slope - 0.12) * 4.5);
+    out.lerp(n > 0 ? C_SANDSTONE : C_SANDSTONE_DARK, k);
+    // Phá sọc ngang của texture vách: vệt dọc sẫm (nước chảy lâu năm, chỉ phụ thuộc x–z nên thành sọc đứng), mảng sáng/tối lớn ~35 m và đốm sập.
+    const v1 = fbm(x * 0.11 + z * 0.07, z * 0.11 - x * 0.07, 2, T.def.seed + 811);
+    const patch = fbm(x * 0.03 + 17, z * 0.03 - 9, 3, T.def.seed + 823);
+    const chip = fbm(x * 0.2, z * 0.2 + h * 0.15, 2, T.def.seed + 831);
+    out.multiplyScalar(1 - k * (Math.max(0, v1 - 0.05) * 0.9 + (0.5 - patch) * 0.35 + Math.max(0, chip - 0.25) * 0.4));
+  }
   const w = T.def.water;
   if (w && h < w.y + 2.2) out.lerp(C_SAND, Math.min(1, (w.y + 2.2 - h) / 1.6));
 }

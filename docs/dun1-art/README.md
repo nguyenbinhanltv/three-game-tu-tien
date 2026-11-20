@@ -233,3 +233,9 @@ Mỗi bí cảnh một bảng màu + một điểm nhìn "wow" hợp chủ đề
 - **Cấu hình mới** (`kiemTrungArt.ts`): 40 khe (trước 34); đáy khe xanh chàm sẫm hơn, lõi sáng xanh nhạt rất hẹp (`core` + `glowW` 0,3) thay dải trắng rộng; **gờ đá nổi hai bên ×3** (`lip`); nửa rộng 0,28–0,88 m (hẹp hơn); đá hai bên cùng tông sàn; mờ dần theo khoảng cách camera 22 → 50 m để không đè lên người chơi. Quầng cộng sáng ngoài giữ nhẹ.
 - **Công cụ**: kịch bản `dungeonart` thêm `--nearcrack 1` (tự tìm khe gần điểm tâm + 60 m phía nam, thêm góc `08-khe-nut-can`), và góc `07-khe-nut-gan`.
 - **Còn lại**: các gò mộ vòm (`grave`) trên sàn còn tô một màu phẳng (low-poly), vòng "kiếm trận" khắc sàn là các dải mờ phẳng; chưa động tới GLB nên không phải sinh lại collider.
+
+## Polish — Đoạn Mạch: thác nhỏ, vách bớt sọc
+
+- **Thác nhỏ** (`game/world/doanMachFalls.ts`, dựng trong `DoanMachArt`; chỉ để nhìn, không va chạm, tất định): tối đa 7 dải nước mảnh (rộng 2,4–4,6 m) đổ từ mép xuống chân vách (chọn vách dốc quay vào vùng chơi, độ rơi ≥ 28 m, cách nhau ≥ 90 m), vệt bọt chảy xuống bằng nhiễu cuộn theo thời gian, mép dải mờ, **bụi nước** (điểm cộng sáng mềm) và **vũng bọt** ở chân. 3 draw call.
+- **Vách bớt sọc**: màu đỉnh vách sa thạch (`terrain.ts` `ochreColor`) thêm vệt dọc sẫm (nước chảy), mảng sáng/tối lớn và đốm sập; shader vách (`ground.ts` nhánh `redStrata`) giảm phần texture gốc (0,7+0,5·lum → 0,86+0,22·lum), tăng vệt loang dọc (0,66+0,7·s → 0,55+0,95·s) và trọng số mảng. Vách gần hết sọc đều, nhưng **vách xa nhất (dải trên cùng ảnh toàn cảnh) vẫn có các vành ngang đều** — có vẻ từ lưới địa hình thô (bậc theo hàng đỉnh), không phải từ màu; cần chỉnh lưới địa hình xa riêng.
+- **Ngân sách (Cao, 1080p)**: +4 draw call, ~+5k tam giác: vách đứt 99 → 103, toàn cảnh 118 → 122 draw call, 0,60M tam giác; dưới trần.

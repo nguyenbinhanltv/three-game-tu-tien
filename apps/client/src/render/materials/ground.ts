@@ -238,12 +238,12 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
         .add(0.5);
       // vệt loang dọc (nước chảy lâu năm): kéo dài theo chiều cao, phá nhịp tầng ngang
       const streak = texture(tex.mask, vec2(u.mul(0.043).add(0.17), h.mul(0.0014))).a;
-      const mixTone = smoothstep(0.25, 0.75, bandA.mul(0.25).add(nB.mul(0.45)).add(streak.mul(0.3)));
+      const mixTone = smoothstep(0.25, 0.75, bandA.mul(0.15).add(nB.mul(0.5)).add(streak.mul(0.45)));
       let tone: Node = mix(vec3(...cliffTones.lo), vec3(...cliffTones.hi), mixTone);
       tone = tone
         .mul(float(0.72).add(nC.mul(0.56)))
         .mul(float(0.93).add(bandB.mul(0.1)))
-        .mul(float(0.66).add(streak.mul(0.7)));
+        .mul(float(0.55).add(streak.mul(0.95)));
       // khe nứt dọc: đường tối mảnh nơi nA gần 0,5
       const crack = smoothstep(0.045, 0.0, nA.sub(0.5).abs()).mul(smoothstep(0.2, 0.8, nB));
       tone = tone.mul(float(1).sub(crack.mul(0.6)));
@@ -255,7 +255,8 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
         .mul(float(1).add(smoothstep(0.92, 1, bandB).mul(0.2).mul(ledgeOn)))
         .mul(float(1).sub(smoothstep(0.12, 0, bandB).mul(0.3).mul(ledgeOn)));
       // giữ chút chi tiết của texture gốc nhưng không để nó lộ khung lặp
-      const detail = float(0.7).add(luminance(col).mul(0.5));
+      // POLISH-1: giảm phần texture gốc (tầng ngang mịn lặp) để vách bớt sọc; vệt loang dọc và mảng lớn mạnh hơn
+      const detail = float(0.86).add(luminance(col).mul(0.22));
       col = mix(col, tone.mul(detail).mul(1.05), rockish.mul(0.92));
     } else {
       col = col.mul(mix(float(1), strataMul, rockish));
