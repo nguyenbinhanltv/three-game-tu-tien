@@ -104,6 +104,31 @@
         }
       ]
     },
+    "ult": {
+      "items": [
+        {
+          "id": "skl_van_kiem_quy_tong",
+          "key": "skill.skl_van_kiem_quy_tong.name",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.04
+        },
+        {
+          "id": "skl_kim_cuong_bat_hoai",
+          "key": "skill.skl_kim_cuong_bat_hoai.name",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.04
+        },
+        {
+          "id": "skl_hoi_thien_dan_lo",
+          "key": "skill.skl_hoi_thien_dan_lo.name",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.04
+        }
+      ]
+    },
     "outfit": {
       "items": [
         {
