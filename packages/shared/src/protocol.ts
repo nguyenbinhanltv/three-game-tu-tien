@@ -124,6 +124,12 @@ export const C = {
   SOUL: 'soul',
   /** Phân thân thần niệm (E4-K, phím G): `CloneCmd`. Trong Thiên Nhân Kiếp là thế thân của kiếp. */
   CLONE: 'clone',
+  /** Tủ ngoại trang (P4): hiện món `id` (đã mở khóa) thay cho món đang mặc ở ô `slot`; `id: null` = về món đang mặc. `LookSetMsg`. */
+  LOOK_SET: 'lk',
+  /** Nhuộm 3 kênh (`LookDyeMsg`); `dye: null` = bỏ nhuộm. */
+  LOOK_DYE: 'lkd',
+  /** Xóa mọi ghi đè và nhuộm của tủ ngoại trang: `{ r }`. */
+  LOOK_RESET: 'lkr',
 } as const;
 
 /** Server → client. */
@@ -166,6 +172,8 @@ export const S = {
   SOUL_STATE: 'souls',
   /** Trạng thái phân thân thần niệm của mình (`CloneStateMsg`, E4-K). */
   CLONE_STATE: 'clonest',
+  /** Tủ ngoại trang của mình (`WardrobeMsg`): gửi khi vào phòng, mở khóa món mới, đổi lựa chọn. */
+  WARDROBE: 'wd',
 } as const;
 
 export interface InitMsg {
