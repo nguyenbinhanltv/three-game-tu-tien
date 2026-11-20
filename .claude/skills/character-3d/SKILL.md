@@ -5,7 +5,7 @@ description: Quy trình làm một bộ nhân vật v3 (Tripo → Blender → ga
 
 # Nhân vật 3D v3: từ ảnh đến game
 
-Quy trình đã chạy trọn vẹn cho `Tinh Khuyết Kiếm Bào` nữ (NV3-B, cách 1 = rig + trọng số, cách 2 = tách lưới, 20/11). **Mức đạt hiện tại là mức nền, chưa phải đích**: người dùng chấm "ổn hơn nhưng chưa wow". Hướng tiếp ở mục 10. Chưa áp cho 17 model còn lại: mỗi bộ cần người dùng duyệt ảnh.
+Quy trình đã chạy trọn vẹn cho `Tinh Khuyết Kiếm Bào` nữ (NV3-B, cách 1 = rig + trọng số, cách 2 = tách lưới, 20/11). **Mức đạt hiện tại là mức nền, chưa phải đích**: người dùng chấm "ổn hơn nhưng chưa wow". Hướng tiếp ở mục 10. Đã áp đợt 1 (Kiếm tu, 5 model) và đợt 2 (Hộ pháp, 6 model, mục 11); các đợt còn lại cần người dùng duyệt ảnh từng đợt.
 
 Chi tiết từng chặng (lệnh, tham số, số đo): `input-tripo.md`, `rig-split.md`, `anim-verify.md`, và `weights-proportions.md` (bảng tỉ lệ đầu, bảng kiểm trọng số/twist/tư thế cực đoan, gợi ý vải; cùng thư mục `references` của skill). Lịch sử và số đo các đợt N-0…N-9: `docs/chr-v3/README.md`. Phối hợp với skill `blender-pipeline` (Blender nền, LOD, KTX2), `tsl-shaders-vfx` (vật liệu), `perf-budget`, `playtest`.
 
@@ -104,3 +104,13 @@ Cạnh sai giảm 80–90% mà người dùng vẫn chưa thấy "wow" ⇒ đi�
 | 6 | Đẩy vạt theo bước chân (lực theo hướng bước) | vạt chỉ lắc thụ động | video chạy thẳng/ngang; so độ lệch vạt với hướng bước |
 
 Mỗi hạng mục: một PR nhỏ, ảnh gốc/trước/sau, ngân sách (`perf-budget`) và 0 lỗi console.
+
+## 11. Hộ pháp / giáp (NV3-ROLL đợt 2): khác Kiếm tu ở đâu
+Áp cho Cổ Thành, Địa Long, Vạn Kinh (nam + nữ; cấu hình `v3sets/{co_thanh,dia_long,van_kinh}.json`, cùng `c2` với Kiếm tu). Giáp thật ra là áo bào có voan + vai giáp + hộ uyển, nên dùng chung `chr_v3_c2.py`, nhưng có ba chỗ phải chỉnh riêng:
+| Triệu chứng (rigstretch) | Nguyên nhân thật | Cách sửa (khóa cấu hình) |
+|---|---|---|
+| p99 > 3 ở chém/ngã, số cạnh sai tổng đã giảm tốt (nghèo p99, không nghèo %) | Voan tay áo rủ ngang tầm bàn tay/hông: đỉnh cách tay 6–12 cm bám `pelvis`, đỉnh sát tay bám `hand` → trọng số đổi trong vài cm, tay giơ làm cạnh giãn >4× (đo: ~640 đỉnh `pelvis` quanh mỗi bàn tay) | **Ảnh hưởng tay giảm theo khoảng cách dọc vải (Dijkstra trên cạnh nội vùng voan), không theo Euclid**: `c2.armFall` `"geo"`, `armGeoR` 0,5, `geoSeed` 0,08 (đơn vị phần chiều cao 1,7 m). Euclid + Gaussian hẹp, tăng `smooth`, đổi `veilChain/veilArmR`, `headR`, `headBandLow` chỉ giảm số cạnh, p99 gần như không đổi (4,34 → 4,14); geodesic đưa Vạn Kinh nam về 2,2–3,2 trong một bước |
+| Bàn tay cứng bị kéo, 63–66% đỉnh `hand_*` có tỉ lệ cạnh >3 | Hộ uyển nằm sát cổ tay: bàn tay cứng bắt đầu ngay tại cổ tay nên cạnh hộ uyển ↔ bàn tay gánh cả góc xoay cổ tay | `anatomy.handBlend` (m, ≈0,025): bàn tay cứng chỉ từ +hb, trong ±hb trộn tuyến tính từ trọng số tay |
+| Tưởng do cổ áo cao/vai rồng | Sai: cạnh `Head | clavicle` chỉ là cặp trội, nới dải cổ (`anatomy.headBandLow`) và giới hạn đầu cứng theo x (`headR`) không đổi số đo | giữ mặc định; chỉ dùng khi ảnh thấy cổ xé |
+Đo đúng chỗ trước khi chỉnh: chạy `pnpm shots rigstretch … --clips Idle_Loop,Sword_Attack` rồi gom `rigstretch-worst-*.json` + `rest.json` theo xương trội và độ cao (đỉnh xấu tập ở xương/độ cao nào), thay vì đoán. `ANAT_JSON='{"handBlend":0.025}'` và `C2_JSON='{"armFall":"geo"}'` thử nhanh không sửa file; `V3_NO_C2=1` dựng bản C4 để lấy số "gốc".
+Khác khi nhập bộ mới: `v3-newset.mjs` tạo `meta.json` nhưng đổi tay `budgetClass` sang `player_v3_hi` (110k tam giác, texture 4096); thêm id vào `V3_OWN_SETS` (bộ `set_dia_giap` → `dia_long`; id bộ ≠ tên asset), `KEEP_ORIGINAL_ASSETS`, `SKIRT_TUNE`, `ARM_FIT` ở `mannequin.ts`; script đo phải truyền đúng id bộ (đo nhầm sang `set_dia_long` sẽ rơi về model mặc định và cho số ảo). Model nam cao 1,84 m: mốc giải phẫu tính lại (`anatomy.nam`), `handKeep` cho tay buông dưới eo, ghi đè theo giới `c2.nam|nu`, `anatomy.nam|nu`. LOD2 vượt trần khi tối ưu (Vạn Kinh nữ 8.489): ngưỡng chấp nhận LOD trong `optimize.ts` là 1,04× mục tiêu (từng 1,10× nên lọt qua `validate` 1,05×).
