@@ -55,6 +55,7 @@ const procedural = [
   { id: 'arch_xich_tan', script: 'tools/blender/xich_tan_arch.py' },
   { id: 'arch_do_kiep', script: 'tools/blender/do_kiep_arch.py' },
   { id: 'arch_kim_da', script: 'tools/blender/kim_da_arch.py' },
+  { id: 'arch_dm_bridge', script: 'tools/blender/dm_bridge_arch.py' }, // POLISH-3: cầu treo Đoạn Mạch
   { id: 'arch_vh_island', script: 'tools/blender/vh_island_arch.py' }, // POLISH-1: chân đảo bay Vân Hải
   // Lưới Tripo v02 (task 70d2072c), tô màu theo vùng bằng script vì texture Tripo mất màu (M0-3).
   { id: 'prop_phi_kiem', script: 'tools/blender/recolor_phi_kiem.py', source: '3d/vu-khi/prop_phi_kiem/tripo/raw_v02.glb' },
