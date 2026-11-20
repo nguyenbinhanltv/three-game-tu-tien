@@ -70,6 +70,12 @@ function check() {
       if (sha(b) !== e.hash) fail(`${it.id}: hash ảnh lệch manifest`);
     }
   }
+  // Tên file phải chứa hash; index.html phải lấy ảnh qua placeholder (vite điền từ manifest), không ghi cứng tên.
+  for (const [id, e] of Object.entries(m)) if (!e.file.includes(`.${e.hash}.`)) fail(`${id}: tên file không chứa hash ${e.hash}`);
+  const html = fs.readFileSync(path.join(root, 'apps/client/index.html'), 'utf8');
+  if (/assets\/calli\/[\w-]+\.(?:[0-9a-f]{12}\.)?png/.test(html)) fail('index.html ghi cứng tên ảnh calli; dùng %DTL_CALLI_TITLE%');
+  if (!html.includes('%DTL_CALLI_TITLE%')) fail('index.html thiếu placeholder %DTL_CALLI_TITLE%');
+  for (const f of fs.readdirSync(outDir)) if (f.endsWith('.png') && !Object.values(m).some((e) => e.file === f)) fail(`ảnh mồ côi ${f}`);
   for (const id of Object.keys(m)) if (!all.some((x) => x.id === id)) fail(`manifest thừa ${id}`);
   if (total > BUDGET) fail(`tổng ảnh ${total} B vượt ngân sách ${BUDGET} B`);
   // Chặn lỡ tay commit font.
@@ -180,7 +186,9 @@ async function build(only) {
 </g>
 </g></svg>`;
     const png = await sharp(Buffer.from(svg)).png({ palette: true, quality: 92, effort: 10, colours: 128 }).toBuffer();
-    const file = `${it.group}-${it.id}.png`;
+    const file = `${it.group}-${it.id}.${sha(png)}.png`; // có hash: /assets/* được cache immutable
+    for (const old of fs.readdirSync(outDir))
+      if (old.startsWith(`${it.group}-${it.id}.`) && old !== file && old.endsWith('.png')) fs.rmSync(path.join(outDir, old));
     fs.writeFileSync(path.join(outDir, file), png);
     m[it.id] = { key: it.key, text, file, w: W, h: H, hash: sha(png) };
     console.log(`calli: ${file} ${W}×${H} ${(png.length / 1024).toFixed(1)} KB`);

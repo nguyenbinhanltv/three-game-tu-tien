@@ -6,6 +6,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const serverDir = path.resolve(here, '..', 'server');
+const calliManifest = path.resolve(here, 'public/assets/calli/index.json');
 const uiStrings = path.resolve(here, '../../packages/content/data/i18n/vi.ui.json');
 
 /** Khung hình đầu trong index.html hiện trước khi JS chạy: chèn tiêu đề từ i18n (`ui.title`) lúc build. */
@@ -15,7 +16,13 @@ function titleFromI18n(): Plugin {
     name: 'dtl-title-i18n',
     transformIndexHtml(html) {
       const title = (JSON.parse(fs.readFileSync(uiStrings, 'utf8')) as Record<string, string>)['ui.title'];
-      return html.replaceAll('%DTL_TITLE%', esc(title));
+      // Ảnh thư pháp tên có hash (server cache immutable cho /assets/*): lấy tên + cỡ từ manifest của tools/calli.
+      const calli = (JSON.parse(fs.readFileSync(calliManifest, 'utf8')) as Record<string, { file: string; w: number; h: number }>)['title'];
+      return html
+        .replaceAll('%DTL_CALLI_TITLE_W%', String(calli.w))
+        .replaceAll('%DTL_CALLI_TITLE_H%', String(calli.h))
+        .replaceAll('%DTL_CALLI_TITLE%', calli.file)
+        .replaceAll('%DTL_TITLE%', esc(title));
     },
   };
 }
