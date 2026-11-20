@@ -115,6 +115,26 @@ export function governScale(prev: number, tris: number): number {
   return prev;
 }
 
+const _bb = new THREE.Box3();
+const _bs = new THREE.Vector3();
+/** Kích thước hộp bao (đường chéo) của một hình học. */
+const sizeOf = (g: THREE.BufferGeometry): number => {
+  if (!g.boundingBox) g.computeBoundingBox();
+  return _bb.copy(g.boundingBox!).getSize(_bs).length();
+};
+
+/**
+ * Bỏ các mảnh nhỏ ở mức LOD xa: mảnh có hộp bao < `ratio` × mảnh lớn nhất (đèn, nắp, vải nhỏ). Theo KÍCH THƯỚC hộp bao chứ không theo số tam giác (thẻ tán lá chỉ vài tam giác
+ * nhưng rất lớn). Luôn giữ ít nhất một. `distinct` false = mức này dùng chung mảng với mức trước: không đụng.
+ */
+export function pruneMinorMeshes<T extends { geometry: THREE.BufferGeometry }>(meshes: T[], distinct: boolean, ratio = 0.4): T[] {
+  if (!distinct || meshes.length < 2) return meshes;
+  const sizes = meshes.map((m) => sizeOf(m.geometry));
+  const max = Math.max(...sizes);
+  const kept = meshes.filter((_, i) => sizes[i]! >= max * ratio);
+  return kept.length ? kept : meshes;
+}
+
 interface LodMesh {
   geometry: THREE.BufferGeometry;
   material: THREE.Material;
@@ -519,6 +539,12 @@ export class PropLayer {
       (lods[k] ??= []).push({ geometry, material: m.material as THREE.Material, owned: baked });
     });
     for (let k = 0; k < lods.length; k++) lods[k] ??= lods[Math.max(0, k - 1)] ?? [];
+    // Mức LOD 1 và 2 của prop không phải cây: bỏ mảnh nhỏ (đèn, nắp, vải nhỏ) — ở tầm đó chỉ vài điểm ảnh nhưng mỗi vật liệu là một draw call (PROP-1: 3–6 vật liệu/món).
+    if (!cfg?.tree && lods.length > 1) {
+      for (let k = 1; k < lods.length; k++) {
+        if (lods[k] !== lods[k - 1]) lods[k] = pruneMinorMeshes(lods[k]!, true, k >= 2 ? 0.5 : 0.35);
+      }
+    }
     return { handle, mats, lods: lods.length ? lods : [[]] };
   }
 
