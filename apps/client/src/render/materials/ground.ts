@@ -134,7 +134,8 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       .a.mul(0.7)
       .add(texture(tex.mask, p.mul(0.085).add(0.71)).a.mul(0.3)),
   );
-  const pav = pavRaw.mul(mix(float(1), pavBreak, portalK));
+  // vỡ mảng chỉ ở rìa (r > 16 m): lõi quanh cổng lát liền, nếu không cả vòng thành lốm đốm
+  const pav = pavRaw.mul(mix(float(1), pavBreak, portalK.mul(smoothstep(16, 27, p.sub(vec2(2048, 1708)).length()))));
   const rockW = max(smoothstep(0.1, 0.26, slope), smoothstep(175, 235, h).mul(0.65)).mul(float(1).sub(pav));
   const cliffW = smoothstep(0.3, 0.46, slope);
   // Tuyết chỉ ở đỉnh rất cao (MAP-1): núi gần không còn phủ trắng phẳng.
@@ -202,21 +203,18 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const cell = floor(q);
     const f = fract(q);
     const hsh = fract(sin(dot(cell, vec2(12.9898, 78.233))).mul(43758.5453));
-    const jointW = float(0.05).add(hsh.mul(0.05));
-    const joint = max(smoothstep(jointW, 0, f.x), smoothstep(jointW, 0, f.y))
-      .max(smoothstep(float(1).sub(jointW), 1, f.x))
-      .max(smoothstep(float(1).sub(jointW), 1, f.y));
-    const slabTone = float(0.78).add(hsh.mul(0.42));
-    const mossMix = joint.mul(float(0.45).add(hsh.mul(0.4)));
-    const slab = col.mul(slabTone).mul(float(1).sub(joint.mul(0.65)));
-    const slabMoss = mix(slab, vec3(0.2, 0.32, 0.13), mossMix.mul(0.7));
-    col = mix(
-      col,
-      slabMoss,
-      step(0.5, pav)
-        .mul(portalK)
-        .mul(float(1).sub(pavFar.mul(0.2))),
-    );
+    const jointW = float(0.07).add(hsh.mul(0.05));
+    const joint = max(smoothstep(jointW, jointW.mul(0.45), f.x), smoothstep(jointW, jointW.mul(0.45), f.y))
+      .max(smoothstep(float(1).sub(jointW), float(1).sub(jointW.mul(0.45)), f.x))
+      .max(smoothstep(float(1).sub(jointW), float(1).sub(jointW.mul(0.45)), f.y));
+    // Phiến đá xanh xám: màu phẳng theo từng phiến (xen kẽ sáng/tối kiểu bàn cờ lệch + mỗi phiến một độ), giữ chút chi tiết từ texture lát
+    const checker = step(0.5, fract(cell.x.add(cell.y).mul(0.5)));
+    const stone = mix(vec3(0.3, 0.35, 0.36), vec3(0.5, 0.54, 0.53), hsh.mul(0.6).add(checker.mul(0.4)));
+    const detail = float(0.82).add(luminance(col).mul(0.5));
+    const slabTop = stone.mul(detail);
+    const mossMix = joint.mul(float(0.4).add(hsh.mul(0.5)));
+    const slabMoss = mix(slabTop.mul(float(1).sub(joint.mul(0.82))), vec3(0.16, 0.27, 0.1), mossMix.mul(0.65));
+    col = mix(col, slabMoss, step(0.5, pav).mul(portalK));
   }
   col = col.mul(hue).mul(float(0.84).add(macro.mul(0.32)));
   col = mix(col, col.mul(TOMB_TINT), bio.z);

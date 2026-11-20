@@ -34,6 +34,7 @@ interface View {
 const EXTRA: Record<string, { group: string; view: View }[]> = {
   van_lam: [
     { group: 'tran_phap', view: { name: 'van_lam-tran_phap-bi_cong', x: 2048, z: 1778, yaw: 0, n: 1, pitch: 0.7, dist: 30 } },
+    { group: 'tran_phap', view: { name: 'van_lam-tran_phap-bi_cong_gan', x: 2048, z: 1736, yaw: 0, n: 1, pitch: 0.55, dist: 15 } },
     { group: 'hoang_da', view: { name: 'van_lam-hoang_da-suoi', x: 2390, z: 2466, yaw: Math.PI, n: 1 } },
     { group: 'cho_lang', view: { name: 'van_lam-cho_lang-cho', x: 2048, z: 2172, yaw: 0, n: 1 } },
     { group: 'cho_lang', view: { name: 'van_lam-cho_lang-cho_xa', x: 2060, z: 2185, yaw: 0.35, n: 1 } },
