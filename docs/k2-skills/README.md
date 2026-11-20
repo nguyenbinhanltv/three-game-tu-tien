@@ -12,7 +12,7 @@ Bước K-2 của kế hoạch kỹ năng và animation. Server áp sát thươn
 | `recovery` | Thu về sau mốc cuối; `hitAt` cuối + `recovery` ≈ độ dài pose, ≤ GCD |
 | `cancel` | `{move, dash}`: giây từ lúc bấm mà di chuyển / lướt được phép cắt phần thu về (client dùng ở K-4) |
 | `combo` | Chuỗi đánh thường: `{window, hits: [{power, hitAt, kb?}]}` |
-| `empower` | `{by, window, powerMul}`: trong `window` giây sau khi chiêu `by` áp, chiêu này mạnh `powerMul` lần, một lần |
+| `chain` (VS-2b, thay `empower`) | `{after: [id…], window, powerMul?, mpMul?, cdMul?}`: trong `window` giây sau khi một chiêu trong `after` áp, chiêu này được thưởng, một lần (xem `docs/handbook/gameplay-systems.md`) |
 | `dash` + `kind: 'dash'` | `{dist, dir: target|forward|back, stop?}`; hồi chiêu ≥ 8 s |
 | `moveWhileCast` | Đã khai báo, chặn ở check (chưa hỗ trợ) |
 

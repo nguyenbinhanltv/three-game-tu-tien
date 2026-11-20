@@ -257,6 +257,11 @@
 :root:root .skill:focus-visible {
   --edge: linear-gradient(180deg, var(--u-x-hd9fff6), var(--u-h-jade-hi) 50%, var(--u-h-jade));
 }
+/* VS-2b: cửa sổ chuỗi chiêu đang mở (hàng chiêu bậc cao). */
+:root:root .skill.empowered {
+  --edge: linear-gradient(180deg, var(--u-x-hd9fff6), var(--u-h-jade-hi) 50%, var(--u-h-jade));
+  filter: drop-shadow(0 0 5px var(--u-h-jade-hi));
+}
 /* ───────── thanh chức năng dưới ───────── */
 :root:root .action-row.ngj-sys {
   gap: 8px;

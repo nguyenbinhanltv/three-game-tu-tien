@@ -252,10 +252,12 @@ export interface SimOptions {
   persistPosition: boolean;
 }
 
-/** Ngữ cảnh một lần áp chiêu: đòn thứ mấy của chuỗi đánh thường, hệ số nhân (combo, cường hóa). */
+/** Ngữ cảnh một lần áp chiêu: đòn thứ mấy của chuỗi đánh thường, hệ số nhân (combo, chuỗi chiêu), thưởng chuỗi lên linh lực và hồi chiêu. */
 export interface StrikeCtx {
   combo?: number;
   mul?: number;
+  mpMul?: number;
+  cdMul?: number;
 }
 
 /** Trạng thái chạy của một bãi. */

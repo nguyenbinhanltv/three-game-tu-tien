@@ -96,7 +96,7 @@ import {
   t,
 } from './index';
 import { LOOT, LOOT_MATS } from './loot';
-import { monSkillsOf, resourceErrors, skillResErrors } from '@dtl/shared';
+import { chainErrors, monSkillsOf, resourceErrors, skillResErrors } from '@dtl/shared';
 import {
   PILL_TIERS,
   ARTIFACT_MAX_LEVEL,
@@ -230,8 +230,9 @@ for (const m of METHODS) {
     err(`method ${m.id}: chiêu lướt ${m.dash} phải thuộc công pháp và có kind dash`);
 }
 // Quy tắc thời gian/liên hoàn (K-2): hitAt trùng nhịp pose, combo, cường hóa, lướt.
-const SKILL_IDS = new Set(ALL_SKILLS.map((s) => s.id));
-for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined, SKILL_IDS)) err(m);
+for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined)) err(m);
+// VS-2b: đồ thị chuỗi chiêu (id có thật, cùng công pháp, không vòng, hệ số trong khoảng).
+for (const m of chainErrors(ALL_SKILLS)) err(m);
 // K-5: pose theo đòn trong chuỗi và theo giọng công pháp phải đủ bộ và khớp nhịp từng đòn.
 for (const s of ALL_SKILLS) {
   if (!s.pose) continue;
