@@ -96,6 +96,12 @@ export const SKIRT_TUNE: Record<string, SkirtTune> = {
   chr_v3_dia_long_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 2 (Hộ pháp)
   chr_v3_van_kinh_nam: KIEM_TU_TUNE, // NV3-ROLL đợt 2 (Hộ pháp)
   chr_v3_van_kinh_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 2 (Hộ pháp)
+  chr_v3_luu_ly_nam: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
+  chr_v3_luu_ly_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
+  chr_v3_phuc_mach_nam: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
+  chr_v3_phuc_mach_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
+  chr_v3_than_tang_nam: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
+  chr_v3_than_tang_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
 };
 const skirtTuneOf = (id: string): SkirtTune | undefined => Object.entries(SKIRT_TUNE).find(([k]) => id.startsWith(k))?.[1];
 /** Thông số riêng của vạt ở lò xo v2: góc lệch tối đa hẹp (12°) vì vạt nay do lò xo + va chạm điều khiển phần lớn (share 0,8): lệch rộng làm hai nửa vạt chéo nhau khi chạy. Tóc và tay áo giữ `V3_SPRING`. */
@@ -134,15 +140,15 @@ export const V3_OWN_SETS: Readonly<Record<string, string>> = {
   set_co_thanh: 'co_thanh',
   set_dia_giap: 'dia_long',
   set_van_kinh: 'van_kinh',
+  set_luu_ly: 'luu_ly',
+  set_phuc_mach: 'phuc_mach',
+  set_than_tang: 'than_tang',
 };
 const V3_BRANCH_FALLBACK: Readonly<Record<string, string>> = {
   set_lac_kiem: 'lac_kiem',
   set_han_giao: 'lac_kiem',
   set_tran_khich: 'lac_kiem',
   set_tan_thiet: 'huyen_giap',
-  set_phuc_mach: 'dan_tam',
-  set_luu_ly: 'dan_tam',
-  set_than_tang: 'dan_tam',
   set_tinh_dan_bao: 'dan_tam',
 };
 /** Asset v3 của một nhân vật (giới `g`, skin đang mặc nếu có, bộ trang bị `set`). Skin sai giới (server không cho mặc) bị bỏ qua. */
@@ -221,6 +227,12 @@ export const KEEP_ORIGINAL_ASSETS: ReadonlySet<string> = new Set([
   'chr_v3_dia_long_nu',
   'chr_v3_van_kinh_nam',
   'chr_v3_van_kinh_nu',
+  'chr_v3_luu_ly_nam',
+  'chr_v3_luu_ly_nu',
+  'chr_v3_phuc_mach_nam',
+  'chr_v3_phuc_mach_nu',
+  'chr_v3_than_tang_nam',
+  'chr_v3_than_tang_nu',
 ]);
 
 /**
@@ -292,6 +304,12 @@ export const ARM_FIT: Record<string, number> = {
   chr_v3_dia_long_nu: 0,
   chr_v3_van_kinh_nam: 0,
   chr_v3_van_kinh_nu: 0,
+  chr_v3_luu_ly_nam: 0,
+  chr_v3_luu_ly_nu: 0,
+  chr_v3_phuc_mach_nam: 0,
+  chr_v3_phuc_mach_nu: 0,
+  chr_v3_than_tang_nam: 0,
+  chr_v3_than_tang_nu: 0,
 };
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
 
