@@ -11,6 +11,7 @@ import asset from './scenarios/asset';
 import calli from './scenarios/calli';
 import calli3d from './scenarios/calli3d';
 import chrv2 from './scenarios/chrv2';
+import calliset from './scenarios/calliset';
 import clone from './scenarios/clone';
 import collwalk from './scenarios/collwalk';
 import divuc from './scenarios/divuc';
@@ -90,6 +91,7 @@ const SCENARIOS: Scenario[] = [
   ual,
   quest4,
   quest5,
+  calliset,
   clone,
   fly,
   chrv3,

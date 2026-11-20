@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { t } from '@dtl/content';
 import { InkStroke } from '../u2';
+import { Calli } from '../calli/Calli';
 import { useReduceMotion } from '../u2/shell';
 import { motionAt } from './hoaMotion';
 import { TierBack, TierFront, tierUrl } from './TierLayers';
@@ -245,7 +245,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
       <div className="hoatruc-rim" />
       {seal && (
         <div className="hoatruc-seal" key={'s' + swap}>
-          {pick.setId ? t(`set.${pick.setId}.name`) : t('ui.hoatruc.de_tu')}
+          <Calli k={pick.setId ? `set.${pick.setId}.name` : 'ui.hoatruc.de_tu'} em={2.8} />
         </div>
       )}
     </div>
