@@ -2,7 +2,7 @@
 //   pnpm colliders:lib [--only <id>] [--check]
 // Nguồn hình, theo thứ tự ưu tiên:
 //   1. Node tên `COL_box_*` / `COL_cyl_*` trong GLB (Blender: hộp/trụ rỗng đặt đúng chỗ; xuất kèm asset, KHÔNG vẽ — bước optimize phải bỏ khỏi cảnh). Lấy hộp bao của mesh node làm hình.
-//   2. `overrides.json` (ghi tay): thay hẳn một asset, hoặc `"none"` = đi xuyên được (cổng, cầu, đồ treo).
+//   2. `overrides.json` (ghi tay): thay hẳn một asset, hoặc `"none"` = đi xuyên được (đồ treo). Rồi `prop-boxes.json` (sinh bằng `pnpm colliders:prop`: cổng/cầu/đình từ hình học GLB).
 //   3. Suy từ hộp bao LOD0 + đáy (đỉnh trong 18% chiều cao dưới cùng) theo luật dưới đây.
 // Hình ở tọa độ cục bộ của asset (gốc ở chân, mặt trước +Z, y từ chân). Áp lên instance bằng `instantiateShapes` (shared).
 // `--check`: không ghi, thoát 1 nếu lib.json khác bản sinh (CI/`content:check` dùng để bắt lib cũ khi asset đổi).
@@ -11,6 +11,7 @@ import path from 'node:path';
 import type { Document, Node } from '@gltf-transform/core';
 import type { LocalShape } from '@dtl/shared';
 import { createIO, ROOT } from './config.js';
+import { readPropBoxes } from './propboxes.js';
 import { lodLevel } from './stats.js';
 
 const ASSETS = path.join(ROOT, 'apps/client/public/assets');
@@ -190,6 +191,7 @@ export async function buildLib(only?: string): Promise<Lib> {
   };
   const overrides: Overrides = fs.existsSync(OVERRIDES) ? (JSON.parse(fs.readFileSync(OVERRIDES, 'utf8')) as Overrides) : {};
   const io = await createIO();
+  const propBoxes = readPropBoxes();
   const lib: Lib = {};
   for (const [id, a] of Object.entries(manifest.assets).sort(([x], [y]) => x.localeCompare(y))) {
     if (!id.startsWith('prop_') || (only && id !== only)) continue; // gồm cả class 'artifact' đặt làm prop (vd. prop_ngung_dan_lo)
@@ -200,6 +202,10 @@ export async function buildLib(only?: string): Promise<Lib> {
     }
     if (ov) {
       lib[id] = ov;
+      continue;
+    }
+    if (propBoxes[id]) {
+      lib[id] = propBoxes[id]!;
       continue;
     }
     const doc = await io.read(path.join(ASSETS, a.file));
