@@ -75,7 +75,7 @@ import { equippedArtifact, passiveValue, pruneBuffs } from '../artifact';
 import type { MonEnt, PlayerEnt, StrikeCtx, Stomp, Summon } from '../entities';
 import { LEASH, MARK_ALLY_RANGE, SET_HEAL_RADIUS, TAUNT_BOSS_MUL, visualSeed } from './consts';
 
-import { at, sanitizeStars, starEnough } from '@dtl/shared';
+import { at, HOA_HINH_SKILL, sanitizeStars, starEnough } from '@dtl/shared';
 /** Phần GameSim mà hệ chiêu cần. */
 export interface CombatCtx {
   /** Đối tượng room (khóa tra thành viên tổ đội cùng room, VS-2f). */
@@ -1572,6 +1572,9 @@ export class CombatSystem {
         m.stance = null;
         m.dirty = true;
       }
+      // Hóa hình Cổ Thần (TN-5): cờ hiển thị cho mọi người trong tầm nhìn, theo đúng tư thế đang giữ.
+      const hh = stanceActive(m.stance, now) && m.stance.id === HOA_HINH_SKILL ? 1 : 0;
+      if (p.s.hh !== hh) p.s.hh = hh;
       // Ấn trên người (VS-2c) hết hạn: dọn và cập nhật gói bit đồng bộ.
       if (p.marks.length && marksPrune(p.marks, now)) p.s.mk = packMarks(p.marks, now);
       // Tài nguyên đã rụng hết: dọn về 0 (client tự tính phần rụng từ `res`/`resAt`, không cần gửi lại từng nhịp).
