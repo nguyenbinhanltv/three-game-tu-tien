@@ -71,9 +71,11 @@ import {
   ITEMS,
   LEVELS,
   METHODS,
+  MARK,
   METHOD_SKILLS,
   MONSTER,
   PATHS,
+  SKILL,
   QUESTS,
   realmName,
   SKILLS,
@@ -134,8 +136,22 @@ function methodSkills(level: number, id?: MethodId): SkillDef[] {
   return [m.sig, m.dash].map((sid) => METHOD_SKILLS.find((s) => s.id === sid)!).filter((s) => s && s.unlock <= level);
 }
 
-/** Sát thương trung bình mỗi giây của người chơi lên một quái (xoay vòng các chiêu đã mở). `monElem`: hệ quái, tính khắc chế. */
-function playerDps(level: number, atk: number, monDef: number, id?: MethodId, monElem?: string): number {
+/**
+ * VS-2: người chơi thật làm đúng cơ chế mới (ấn, tư thế, xả tài nguyên) khoảng chừng này so với "làm đều tay".
+ * Cùng ý với `SUSTAIN_EFF`; nhịp lên cấp tính theo mức này, bảng "VS-2" bên dưới in cả hai đầu mút.
+ */
+const SKILL_EFF = 0.6;
+/** Hộ pháp có đủ 40 Huyết khí lúc tiêu Trấn ấn khoảng chừng này số lần (đánh một mình, kéo `PULL` quái). */
+const TANK_RES_READY = 0.7;
+/** `base`: bấm theo hồi chiêu, không dùng cơ chế VS-2 (mô hình trước VS-2); `skilled`: dùng đủ; `avg`: người chơi thật (`SKILL_EFF`). */
+type PlayMode = 'base' | 'avg' | 'skilled';
+
+/**
+ * Sát thương trung bình mỗi giây của người chơi lên một quái (xoay vòng các chiêu đã mở). `monElem`: hệ quái, tính khắc chế.
+ * Lớp VS-2 chỉ cộng phần cơ chế MỚI (nhát bắn thêm của Kiếm ấn, Mất thế, tư thế). Thưởng đã có từ trước VS-2 mà mô hình
+ * vốn không tính (dấu Truy hồn +20%, Lôi Đình xả Kiếm ý, chuỗi cũ) vẫn để ngoài: nhịp 3–4 giờ đã được hiệu chỉnh như thế.
+ */
+function playerDps(level: number, atk: number, monDef: number, id?: MethodId, monElem?: string, mode: PlayMode = 'avg'): number {
   const m = methodAt(level, id);
   const pas = m?.passive;
   // Nhịp đánh: mọi đòn thường 1 GCD; kiếm tu hoàn 0,2 s mỗi chuỗi 3 đòn.
@@ -145,31 +161,89 @@ function playerDps(level: number, atk: number, monDef: number, id?: MethodId, mo
   const critMul = 1 + crit * (CRIT_MULT - 1);
   const melee = 1 + (pas?.melee?.mul ?? 0);
   const one = (s: SkillDef) => hit(atk, s.power, monDef) * critMul * melee * counterMul(elemCounter(s.elem, monElem));
-  let perSec = 0;
-  let gcdUsed = 0;
-  for (const s of [...SKILLS, ...methodSkills(level, id)]) {
-    if (s.unlock > level || (s.kind !== 'damage' && s.kind !== 'aoe' && !(s.kind === 'dash' && s.power > 0)) || s.cd <= 0) continue;
-    perSec += one(s) / s.cd;
-    // Lướt không ăn GCD.
-    if (s.kind !== 'dash') gcdUsed += (gcd + s.cast) / s.cd;
-  }
+  const deals = (s: SkillDef) => s.kind === 'damage' || s.kind === 'aoe' || (s.kind === 'dash' && s.power > 0);
+  /** Xoay vòng: chiêu có hồi chiêu dùng ngay khi hồi xong, thời gian còn lại đánh đòn `basic`. */
+  const rot = (skills: SkillDef[], basic: SkillDef): number => {
+    let perSec = 0;
+    let gcdUsed = 0;
+    for (const s of skills) {
+      if (s === basic || s.unlock > level || !deals(s) || s.cd <= 0) continue;
+      perSec += one(s) / s.cd;
+      // Thiêu đốt của chiêu vùng (Đan Hỏa Vũ): sát thương theo thời gian, không giảm theo phòng ngự.
+      if (s.burn) perSec += (atk * s.burn.mul * s.burn.dur) / s.cd;
+      // Lướt không ăn GCD.
+      if (s.kind !== 'dash') gcdUsed += (gcd + s.cast) / s.cd;
+    }
+    return perSec + (one(basic) / gcd) * Math.max(0, 1 - gcdUsed);
+  };
+  const bar = [...SKILLS, ...methodSkills(level, id)];
   const basic = at(SKILLS, 0);
-  perSec += (one(basic) / gcd) * Math.max(0, 1 - gcdUsed);
+  let perSec = rot(bar, basic);
   // Mộc độc đan sư: sát thương theo thời gian mỗi mục tiêu, không giảm theo phòng ngự, phủ `POISON_MOBS` quái trong cụm.
   const hx = m ? METHOD_SKILLS.find((s) => s.id === m.sig && s.poison) : undefined;
   if (hx?.poison && hx.unlock <= level) perSec += ((atk * hx.poison.mul * hx.poison.dur) / hx.cd) * POISON_MOBS;
-  return perSec;
+  if (mode === 'base' || !m) return perSec;
+
+  // ---------- lớp VS-2 ----------
+  const avail = bar.filter((s) => s.unlock <= level);
+  const mine = (markId: string) => {
+    const md = MARK.get(markId);
+    return md && (!md.method || md.method === m.id) ? md : undefined;
+  };
+  let bonus = 0;
+  // (1) Kiếm ấn: chiêu tiêu ấn bắn thêm một nhát mỗi tầng. Số tầng lúc tiêu = số lần chiêu đặt ấn kịp ra giữa hai lần tiêu.
+  for (const s of avail) {
+    const cm = s.consumeMark;
+    const md = cm?.extraHit ? mine(cm.id) : undefined;
+    if (!cm?.extraHit || !md || s.cd <= 0) continue;
+    const stacks = Math.min(
+      md.max,
+      avail.filter((a) => a.applyMark?.id === cm.id && a.cd > 0).reduce((n, a) => n + s.cd / a.cd, 0),
+    );
+    bonus += (one(s) * cm.extraHit * stacks) / s.cd;
+  }
+  // (2) Mất thế: tiêu Trấn ấn + xả đủ Huyết khí → mọi sát thương lên quái +`ampAll` trong thời gian ấn.
+  for (const s of avail) {
+    const th = s.consumeMark?.then;
+    const opener = th ? avail.find((a) => a.applyMark?.id === s.consumeMark!.id && a.cd > 0) : undefined;
+    const md = th ? mine(th.mark) : undefined;
+    if (!th || !opener || !md?.ampAll) continue;
+    bonus += perSec * md.ampAll * Math.min(1, md.dur / opener.cd) * TANK_RES_READY;
+    break;
+  }
+  // (3) Tư thế: trong `dur` giây mỗi `cd` giây, vài ô đổi sang chiêu tư thế.
+  const st = METHOD_SKILLS.find((s) => s.method === m.id && s.kind === 'stance' && s.unlock <= level);
+  if (st?.stance) {
+    const swap = st.stance.swap;
+    const inStance = bar.map((s) => (swap[s.id] ? (SKILL.get(swap[s.id]!) ?? s) : s));
+    const basicIn = swap[basic.id] ? (SKILL.get(swap[basic.id]!) ?? basic) : basic;
+    bonus += (st.stance.dur / st.cd) * (rot(inStance, basicIn) - rot(bar, basic));
+  }
+  return perSec + bonus * (mode === 'skilled' ? 1 : SKILL_EFF);
 }
 
 /** Máu tự hồi bằng chiêu (khiên, hồi nguyên, hồi xuân) theo tỉ lệ máu tối đa mỗi giây, nhân hiệu suất dùng thật. */
-function selfSustain(level: number, id?: MethodId): number {
+function selfSustain(level: number, id?: MethodId, mode: PlayMode = 'avg'): number {
   const m = methodAt(level, id);
   const healMul = 1 + (m?.passive.healMul ?? 0);
+  const eff = mode === 'base' || !m ? 0 : mode === 'skilled' ? 1 : SKILL_EFF;
+  const sus = (s: SkillDef) => (s.kind === 'heal' || s.kind === 'hot' ? s.power * healMul : s.kind === 'shield' ? s.power : 0);
   let r = 0;
   for (const s of [...SKILLS, ...methodSkills(level, id)]) {
     if (s.unlock > level || s.cd <= 0) continue;
-    if (s.kind === 'heal' || s.kind === 'hot') r += (s.power * healMul) / s.cd;
-    if (s.kind === 'shield') r += s.power / s.cd;
+    r += sus(s) / s.cd;
+    // VS-2: Đan sư xả Đan hỏa (`res.cost`) thì chiêu hồi mạnh thêm `bonusMul`.
+    if (m && s.res?.cost && s.res.id === m.resource.id && s.res.bonusMul) r += ((sus(s) * (s.res.bonusMul - 1)) / s.cd) * eff;
+  }
+  // VS-2: tư thế đổi ô hồi/khiên (Lô Hỏa Hồi Nguyên, Kim Thân Hộ Thế) trong `dur` giây mỗi `cd` giây.
+  const st = m ? METHOD_SKILLS.find((s) => s.method === m.id && s.kind === 'stance' && s.unlock <= level) : undefined;
+  if (st?.stance) {
+    for (const [from, to] of Object.entries(st.stance.swap)) {
+      const a = SKILL.get(from);
+      const b = SKILL.get(to);
+      if (!a || !b || !(b.cd > 0) || !(sus(b) > 0)) continue;
+      r += (st.stance.dur / st.cd) * (sus(b) / b.cd - (a.cd > 0 && a.unlock <= level ? sus(a) / a.cd : 0)) * eff;
+    }
   }
   return r * SUSTAIN_EFF;
 }
@@ -352,6 +426,41 @@ console.log(
   if (Math.min(...hs) < 3 || Math.max(...hs) > 4) {
     console.error('LỖI: nhịp tới viên mãn tầng 15 phải 3–4 giờ cho cả ba công pháp');
     process.exitCode = 1;
+  }
+}
+{
+  // VS-2: phần thưởng của cơ chế mới so với "bấm theo hồi chiêu" (mô hình trước VS-2), trên quái thường cùng cấp.
+  //  - `đúng cơ chế`: làm đủ (ấn, tư thế, xả tài nguyên); `thực tế`: người chơi thật (`SKILL_EFF`), là số nhịp lên cấp dùng.
+  //  - Ràng buộc: chơi đúng không được lợi quá +20% (cơ chế lấn át chỉ số), không bị thiệt; mức thực tế lệch mô hình cũ không quá +5%.
+  console.log(
+    `
+VS-2: sát thương mỗi giây so với bấm theo hồi chiêu (đúng cơ chế / thực tế ${pct(SKILL_EFF)}), và máu tự hồi mỗi giây (thực tế so với cũ)`,
+  );
+  console.log('Cảnh giới            ' + METHOD_IDS.map((m) => METHOD_NAME[m].padEnd(22)).join(''));
+  for (const level of [5, 8, 12, 15]) {
+    const sp = pickSpawn(level);
+    const def = MONSTER.get(sp.mon)!;
+    const mlv = Math.min(sp.levelMax, Math.max(sp.levelMin, level));
+    const ms = monsterStats(mlv, def.hpMul, def.atkMul);
+    const cells: string[] = [];
+    for (const id of METHOD_IDS) {
+      const pl = playerM(level, id);
+      const dps = (mode: PlayMode) => playerDps(level, pl.atk, ms.def, id, def.elem, mode);
+      const skilled = dps('skilled') / dps('base') - 1;
+      const avg = dps('avg') / dps('base') - 1;
+      const sus = selfSustain(level, id, 'avg') / Math.max(1e-9, selfSustain(level, id, 'base')) - 1;
+      cells.push(`+${pct(skilled)} / +${pct(avg)}, hồi +${pct(sus)}`.padEnd(22));
+      const who = `VS-2 tầng ${level} ${METHOD_NAME[id]}`;
+      if (skilled < -1e-9 || skilled > 0.2) {
+        console.error(`LỖI: ${who}: chơi đúng cơ chế đổi sát thương ${pct(skilled)}, ngoài 0–20%`);
+        process.exitCode = 1;
+      }
+      if (avg > 0.05) {
+        console.error(`LỖI: ${who}: sát thương thực tế lệch mô hình trước VS-2 ${pct(avg)}, quá +5%`);
+        process.exitCode = 1;
+      }
+    }
+    console.log(`${realmName(level).padEnd(20)} ${cells.join('')}`);
   }
 }
 
