@@ -758,6 +758,12 @@ Bản thử, không thay nhân vật trong game (`?chr=v2`, docs/chr-v2). Thân 
 | `chr_v3_dia_long_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Địa Long Hộ Giáp (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-20 | xem meta.json |
 | `chr_v3_van_kinh_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Vạn Kinh Thiết Giáp (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-20 | xem meta.json |
 | `chr_v3_van_kinh_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Vạn Kinh Thiết Giáp (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-20 | xem meta.json |
+| `chr_v3_luu_ly_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Lưu Ly Đan Y (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-20 | xem meta.json |
+| `chr_v3_luu_ly_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Lưu Ly Đan Y (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-20 | xem meta.json |
+| `chr_v3_phuc_mach_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Phục Mạch Đan Bào (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-20 | xem meta.json |
+| `chr_v3_phuc_mach_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Phục Mạch Đan Bào (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-20 | xem meta.json |
+| `chr_v3_than_tang_nam` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Thần Tàng Đan Bào (v3, nam); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-20 | xem meta.json |
+| `chr_v3_than_tang_nu` | Tripo web app (image→3D, người dùng dựng) từ concept Codex Thần Tàng Đan Bào (v3, nữ); đặt lên xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | dự án | 2026-11-20 | xem meta.json |
 
 
 ## VFX viết lại bằng TSL từ gói bên ngoài (2026-11-18)
