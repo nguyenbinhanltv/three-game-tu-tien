@@ -35,9 +35,13 @@
     "armFall": "geo",
     "armGeoR": 0.5,
     "geoSeed": 0.08,
-    "veilAlpha": 0.85,
-    "borderFade": 0.02,
-    "borderAlpha": 0.25
+    "veilAlpha": 0.93,
+    "borderFade": 0.03,
+    "borderAlpha": 0.55,
+    "fadeLabels": [
+      1,
+      2
+    ]
   },
   "groups": [
     {

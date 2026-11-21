@@ -3,7 +3,7 @@
 // (sửa lỗi bóng T-pose). Chưa có: pose IK chiêu K-5, kiếm gắn tay, phụ kiện bộ đồ, K-3 (đi lùi/ngang), IK chân.
 // Đây là bản thử pipeline: không đổi mặc định, không đụng v1/v2.
 import * as THREE from 'three/webgpu';
-import { texture } from 'three/tsl';
+import { attribute, dot, float, fract, mix, screenCoordinate, texture, vec2, vec3, vec4 } from 'three/tsl';
 import { ClothRig } from './thienY';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
@@ -254,18 +254,37 @@ function tuneTripoMaterial(m: THREE.MeshStandardNodeMaterial): void {
 }
 
 /**
- * Voan/mép vải hở của model giữ gốc có alpha đỉnh (COLOR_0 từ `chr_v3_c2.py`: `c2.veilAlpha`, `c2.borderFade`): vẽ bằng alpha hash
- * (ngẫu nhiên theo vị trí, ghi độ sâu): không cần sắp xếp tam giác trong một mesh, không vỡ lỗ, mép răng cưa tan dần. Tấm vải mỏng hai mặt.
- * Có alpha đỉnh thì vật liệu của mesh đó dùng alpha hash + DoubleSide; `?v3side=front|double` ghi đè mặt vẽ để so sánh.
+ * Voan/mép vải hở của model giữ gốc có đỉnh COLOR_0 từ `chr_v3_c2.py`: R = mặt nạ voan, A = độ phủ (`c2.veilAlpha`, `c2.borderFade`).
+ * - Độ phủ vẽ bằng dither màn hình (interleaved gradient noise, ổn định theo điểm ảnh, FXAA/pixelRatio 2 làm mịn): không sắp xếp tam giác trong một mesh,
+ *   ghi độ sâu, không vỡ lỗ; mép răng cưa tan dần. Ít hạt hơn alpha hash theo vị trí.
+ * - Voan sáng và không kim loại như tranh gốc: vật liệu Tripo chung dùng metalness 0,5 và tint ấm cho da/tóc, làm voan tối; mặt nạ gỡ cả hai.
+ * - Tấm vải mỏng hai mặt. `?v3side=front|double` ghi đè mặt vẽ để so sánh.
  */
+export const VEIL_LOOK = { gain: 1.4, lift: 0.07, sat: 0.85, metalness: 0.0 } as const;
 function applyVeilAlpha(root: THREE.Object3D): void {
+  const seen = new Set<THREE.Material>();
   root.traverse((o) => {
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh || !mesh.geometry.hasAttribute('color')) return;
     for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+      if (seen.has(m)) continue;
+      seen.add(m);
       const nm = m as THREE.MeshStandardNodeMaterial;
-      nm.vertexColors = true;
-      nm.alphaHash = true;
+      const vc = attribute('color', 'vec4');
+      const mask = vc.r;
+      const base = nm.map ? texture(nm.map).rgb : vec3(1, 1, 1);
+      const warm = vec3(nm.color.r, nm.color.g, nm.color.b);
+      const tint = mix(warm, vec3(1, 1, 1), mask);
+      const bright = base.mul(tint).mul(mix(float(1), float(VEIL_LOOK.gain), mask)).add(mask.mul(VEIL_LOOK.lift));
+      const luma = dot(bright, vec3(0.299, 0.587, 0.114));
+      const lit = mix(bright, vec3(luma, luma, luma), mask.mul(1 - VEIL_LOOK.sat)); // voan nhạt màu như tranh gốc (texture Tripo sẫm hơn)
+      nm.vertexColors = false; // màu đỉnh đọc tay (không nhân vào albedo)
+      nm.colorNode = vec4(lit, 1);
+      nm.metalnessNode = mix(float(nm.metalness), float(VEIL_LOOK.metalness), mask);
+      nm.opacityNode = vc.a;
+      const ign = fract(fract(dot(screenCoordinate, vec2(0.06711056, 0.00583715))).mul(52.9829189));
+      nm.alphaTestNode = ign; // bỏ điểm ảnh khi độ phủ <= nhiễu (độ phủ 1 giữ nguyên)
+      nm.alphaHash = false;
       nm.transparent = false;
       nm.depthWrite = true;
       if (FLAGS.v3Side !== 'front') nm.side = THREE.DoubleSide;

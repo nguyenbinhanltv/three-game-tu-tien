@@ -438,7 +438,7 @@ _bf = float(C2.get('borderFade', 0.0)) * _H / 1.7
 if _va < 1.0 or _bf > 0:
     _isb = np.isin(_vorig, np.array(sorted(_border_orig), int))
     _alpha = np.ones(NV)
-    _cloth = np.isin(LABN, (1, 2, 3, 4))
+    _cloth = np.isin(LABN, tuple(C2.get('fadeLabels', (1, 2, 3, 4))))  # vùng làm mờ mép (mặc định cả voan và vạt; Đan sư chỉ voan: vạt hở lộ nền thành "tuyết")
     if _bf > 0:
         _dist = np.full(NV, 1e9)
         _hp = []
@@ -462,6 +462,7 @@ if _va < 1.0 or _bf > 0:
     _alpha = np.where(np.isin(LABN, (1, 2)), _alpha * _va, _alpha)
     _ca = BODY.data.color_attributes.new('DtlAlpha', 'BYTE_COLOR', 'POINT')
     _buf = np.ones((NV, 4), np.float32)
+    _buf[:, 0] = np.where(np.isin(LABN, (1, 2)), 1.0, 0.0)  # R = mặt nạ voan (client làm voan sáng/không kim loại); G, B = 1
     _buf[:, 3] = _alpha
     _ca.data.foreach_set('color', _buf.ravel())
     BODY.data.color_attributes.active_color = _ca
