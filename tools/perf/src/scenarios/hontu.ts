@@ -251,12 +251,12 @@ async function stepFix(r: Run, sizes: string[], tag: string): Promise<Record<str
     await cam(page, { yaw });
     await gm(page, 'spawn clear', 1400);
     await sleep(8000);
-    // (b) đồ rơi: một nhóm quanh điểm giữa nhân vật và camera
+    // (b) đồ rơi (4 món cùng điểm): ở chân nhân vật (phải hiện đủ), chắn giữa camera và nhân vật (phải mờ), zoom sát. Ghi khoảng cách camera→người THẬT vào hontu.json (`at: rung` có distMul 0,88 nên nhỏ hơn số truyền vào).
     // `toward`: mét dời điểm rơi từ chân người về phía camera (7 = chắn giữa đường ngắm).
     for (const [name, dist, toward] of [
-      ['chan-nguoi-12m', 12, 0],
-      ['chan-giua-12m', 12, 7],
-      ['zoom-3m', 3, 0],
+      ['chan-nguoi-camera-mac-dinh', 13, 0],
+      ['chan-giua-camera-mac-dinh', 13, 7],
+      ['chan-nguoi-zoom-sat', 3, 0],
     ] as const) {
       await cam(page, { yaw, dist });
       await sleep(1200);
@@ -287,6 +287,10 @@ async function stepFix(r: Run, sizes: string[], tag: string): Promise<Record<str
           );
       }, toward);
       await sleep(1100);
+      log[`do-roi-${name}-${sz}`] = await page.evaluate(() => {
+        const g = window.__game as unknown as { renderPos: { x: number; z: number }; camera: { position: { x: number; z: number } } };
+        return { camToPlayer: Math.round(Math.hypot(g.camera.position.x - g.renderPos.x, g.camera.position.z - g.renderPos.z) * 10) / 10 };
+      });
       await snap(page, r.out, `b-do-roi-${name}-${tag}-${sz}.jpg`, { wait: 0 });
       await sleep(5000);
     }
