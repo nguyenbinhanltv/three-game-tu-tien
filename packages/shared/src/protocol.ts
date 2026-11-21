@@ -106,6 +106,8 @@ export const C = {
   SKILL_VAR: 'skv',
   /** Nhánh công pháp (VS-2d): `{ a: 'pick', tier, id, r }` chọn nhánh (miễn phí), `{ a: 'reset', r }` reset cả cây (tốn linh thạch). */
   BRANCH: 'brn',
+  /** Rèn sao Cổ Thần (TN-5): `{ r }` (khóa chống trùng); sao kế tiếp do server quyết, client không gửi số sao. */
+  STAR: 'star',
   /** Vượt bình cảnh: `{ m: 'trial' | 'pill', r? }` (r = khóa chống trùng khi dùng đan). */
   BOTTLENECK: 'bk',
   /** Đổi linh căn ở NPC: `{ npc, root, r? }`. */
@@ -241,6 +243,8 @@ export interface MethodMsg {
   br?: Record<number, string>;
   /** Hướng tu đã lĩnh ngộ (TN-2): id các hướng có `unlock`; vắng = chưa lĩnh ngộ hướng nào. Chỉ để giao diện hiện đúng nút. */
   paths?: string[];
+  /** Sao Cổ Thần đã rèn (TN-5); vắng = 0. */
+  sr?: number;
   /** Tư thế đang giữ (VS-2e): id chiêu tư thế và giờ server (ms) hết hạn; không có = không ở tư thế nào. */
   st?: StanceState;
   /** Vòng sạc chiêu tối thượng 0..100. */

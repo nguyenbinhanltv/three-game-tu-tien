@@ -7,6 +7,7 @@ import {
   MAX_SKILL_LEVEL,
   migrateSkillKeys,
   pathOpen,
+  sanitizeStars,
   sanitizeLearnedPaths,
   resolveSkill,
   branchMods,
@@ -39,6 +40,8 @@ export interface MethodMeta {
   branchAt?: number;
   /** Hướng tu đã lĩnh ngộ (TN-2): id các hướng có `unlock` trong paths.json. Hướng không cần lĩnh ngộ không nằm ở đây. */
   paths?: string[];
+  /** Sao Cổ Thần đã rèn (TN-5), 0–9; chỉ ghi qua `EconomySystem.onStar` (sau giao dịch trừ vật phẩm). */
+  stars?: number;
 }
 
 /** Làm sạch phần công pháp của meta khi đọc từ DB (dữ liệu hỏng/cũ: bỏ phần lạ). */
@@ -66,6 +69,9 @@ export function sanitizeMethodMeta(meta: MethodMeta): void {
     }
   }
   meta.skillVar = vr;
+  const stars = sanitizeStars(meta.stars);
+  if (stars) meta.stars = stars;
+  else delete meta.stars;
   if (typeof meta.methodAt !== 'number' || !Number.isFinite(meta.methodAt)) delete meta.methodAt;
   if (typeof meta.branchAt !== 'number' || !Number.isFinite(meta.branchAt)) delete meta.branchAt;
 }
@@ -214,6 +220,7 @@ export class MethodRt {
       method: meta.method ?? '',
       lv: { ...(meta.skillLv ?? {}) },
       ...(meta.paths?.length ? { paths: [...meta.paths] } : {}),
+      ...(meta.stars ? { sr: meta.stars } : {}),
       vr: { ...(meta.skillVar ?? {}) },
       res: this.res,
       resAt: this.resAt,

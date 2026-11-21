@@ -596,6 +596,8 @@ export interface SkillDef {
   stance?: StanceDef;
   /** VS-2e: chiêu chỉ dùng được khi đang trong tư thế của chiêu tư thế này (id). */
   stanceOf?: string;
+  /** TN-5: sao Cổ Thần tối thiểu để dùng chiêu (không khai = không đòi). Luật ở `costar.ts`. */
+  star?: number;
   /** `guard`: tỉ lệ sát thương được giảm. `taunt`: bán kính nằm ở `radius`, thời gian ở `duration`. */
   reduce?: number;
   /** `hot`: tổng lượng hồi (theo % máu tối đa) chia đều trong `duration`; `healAllies` bán kính hồi cho đồng đội. */
