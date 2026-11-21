@@ -169,8 +169,11 @@ export function branchErrors(
   }
   for (const t of BRANCH_TIERS) {
     const n = list.filter((b) => b.tier === t).length;
-    if (n < 2 || n > 3) errs.push(`${at}: mốc ${t} cần 2–3 nhánh (đang có ${n})`);
+    // TN-2: công pháp mới có thể chưa làm tới các mốc cao (mốc trống = 0 nhánh), nhưng không được bỏ trống mốc ở giữa.
+    if (n !== 0 && (n < 2 || n > 3)) errs.push(`${at}: mốc ${t} cần 2–3 nhánh (đang có ${n})`);
+    if (n === 0 && list.some((b) => b.tier > t)) errs.push(`${at}: mốc ${t} trống mà mốc cao hơn đã có nhánh`);
   }
+  if (!list.some((b) => b.tier === BRANCH_TIERS[0])) errs.push(`${at}: mốc ${BRANCH_TIERS[0]} phải có nhánh`);
   // Hai nhánh cùng mốc phải khác nhau về lối chơi: khác chiêu hoặc khác luật riêng.
   for (const t of BRANCH_TIERS) {
     const at2 = list.filter((b) => b.tier === t);

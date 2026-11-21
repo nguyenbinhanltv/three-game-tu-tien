@@ -109,9 +109,12 @@ const lost = (m: { s: { hp: number; mhp: number } }) => m.s.mhp - m.s.hp;
 
 describe('E2-G: dữ liệu chiêu', () => {
   it('21 chiêu bậc 2–3, mỗi công pháp 7 chiêu; chiêu từ Nguyên Anh (24+) khóa, Trúc Cơ/Kết Đan chơi được', () => {
-    const tier = METHOD_SKILLS.filter((s) => s.unlock >= 16);
+    // Ba công pháp của E2-G; Dẫn Hồn Kinh (TN-2) mới có mốc 16 và 20, kiểm riêng ở hontu.test.ts.
+    const E2G = ['lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh'];
+    const tier = METHOD_SKILLS.filter((s) => s.unlock >= 16 && E2G.includes(s.method ?? ''));
     expect(tier.length).toBe(21);
-    for (const m of ['lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh']) {
+    expect(METHOD_SKILLS.filter((s) => s.unlock >= 16 && s.method === 'dan_hon_kinh').map((s) => s.unlock)).toEqual([16, 16, 20, 20]);
+    for (const m of E2G) {
       const mine = tier.filter((s) => s.method === m);
       expect(mine.length, m).toBe(7);
       for (const s of mine) expect(!!s.locked, s.id).toBe(false);

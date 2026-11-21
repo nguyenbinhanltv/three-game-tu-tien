@@ -2,15 +2,17 @@
 // Hàm thuần dùng chung server (đặt/tiêu/tính thưởng) và client (đọc gói bit để vẽ trên đầu mục tiêu).
 // Dữ liệu ở packages/content/data/marks.json; chiêu khai `applyMark` / `consumeMark` (types.ts).
 
-export type MarkId = 'kiem_an' | 'truy_hon' | 'tran_an' | 'mat_the' | 'moc_an';
+export type MarkId = 'kiem_an' | 'truy_hon' | 'tran_an' | 'mat_the' | 'moc_an' | 'hon_an';
 
 /**
  * Thứ tự cố định để gói bit vào trường đồng bộ `mk` (mỗi ấn `MARK_BITS` bit). KHÔNG đổi thứ tự, chỉ thêm vào cuối:
  * client và server phải đọc cùng một bảng.
  */
-export const MARK_ORDER: readonly MarkId[] = ['kiem_an', 'truy_hon', 'tran_an', 'mat_the', 'moc_an'];
+export const MARK_ORDER: readonly MarkId[] = ['kiem_an', 'truy_hon', 'tran_an', 'mat_the', 'moc_an', 'hon_an'];
 export const MARK_BITS = 3;
 export const MARK_STACK_MAX = (1 << MARK_BITS) - 1;
+/** Nhịp sát thương của ấn có `dot` (ms). */
+export const MARK_DOT_MS = 1000;
 
 export interface MarkDef {
   id: MarkId;
@@ -28,6 +30,11 @@ export interface MarkDef {
   ampAll?: number;
   /** Lúc đặt: quái thường choáng `stun` giây; thủ lĩnh cộng `posture` vào thanh phá thế (0–1). */
   onApply?: { stun?: number; posture?: number };
+  /**
+   * TN-2 (Hồn ấn, chỉ ấn trên quái): mỗi giây mỗi tầng gây `per` × công kích của người đặt (chốt lúc đặt); người đặt hồi
+   * `leech` phần sát thương đó (rút máu).
+   */
+  dot?: { per: number; leech?: number };
   /** Màu hiển thị (hex 6 ký tự). */
   color: string;
 }
@@ -41,6 +48,9 @@ export interface MarkRt {
   until: number;
   /** Ghi đè `amp` của định nghĩa (biến thức "ấn sâu" của Phi Kiếm Truy Hồn). */
   mul?: number;
+  /** Ấn có `dot`: sát thương mỗi tầng mỗi nhịp (đã nhân công kích lúc đặt) và giờ server (ms) của nhịp kế. */
+  per?: number;
+  nextAt?: number;
 }
 
 /** Chiêu đặt ấn lên mục tiêu trúng đòn (quái) hoặc người được hồi (đạo hữu). */
@@ -105,7 +115,7 @@ export function markAdd(
   sid: string,
   n: number,
   nowMs: number,
-  o: { durMul?: number; mul?: number; maxAdd?: number } = {},
+  o: { durMul?: number; mul?: number; maxAdd?: number; per?: number } = {},
 ): number {
   const add = Math.max(1, Math.floor(n));
   const max = Math.min(MARK_STACK_MAX, def.max + Math.max(0, o.maxAdd ?? 0));
@@ -115,10 +125,19 @@ export function markAdd(
     cur.n = nowMs < cur.until ? Math.min(max, cur.n + add) : Math.min(max, add);
     cur.until = until;
     if (o.mul !== undefined) cur.mul = o.mul;
+    if (o.per !== undefined) {
+      cur.per = o.per;
+      // Đặt thêm tầng không lùi nhịp đang chờ (không kéo dài khoảng nghỉ giữa hai nhịp).
+      if (cur.nextAt === undefined || nowMs >= cur.nextAt + MARK_DOT_MS) cur.nextAt = nowMs + MARK_DOT_MS;
+    }
     return cur.n;
   }
   const rt: MarkRt = { id: def.id, sid, n: Math.min(max, add), until };
   if (o.mul !== undefined) rt.mul = o.mul;
+  if (o.per !== undefined) {
+    rt.per = o.per;
+    rt.nextAt = nowMs + MARK_DOT_MS;
+  }
   list.push(rt);
   return rt.n;
 }
@@ -197,6 +216,11 @@ export function markDefErrors(defs: readonly MarkDef[]): string[] {
     if (!(Number.isInteger(d.max) && d.max >= 1 && d.max <= MARK_STACK_MAX)) errs.push(`${at}: max 1–${MARK_STACK_MAX}`);
     if (!(d.dur > 0 && d.dur <= 30)) errs.push(`${at}: dur 0–30 giây`);
     if (d.amp !== undefined && !(d.amp > 0 && d.amp * d.max <= 1)) errs.push(`${at}: amp × max không quá +100%`);
+    if (d.dot) {
+      if (d.on !== 'mon') errs.push(`${at}: dot chỉ cho ấn trên quái`);
+      if (!(d.dot.per > 0 && d.dot.per * d.max <= 1)) errs.push(`${at}: dot.per × max không quá 100% công kích mỗi giây`);
+      if (d.dot.leech !== undefined && !(d.dot.leech > 0 && d.dot.leech <= 0.5)) errs.push(`${at}: dot.leech trong (0; 0,5]`);
+    }
     if (d.ampAll !== undefined && !(d.ampAll > 0 && d.ampAll <= 0.5)) errs.push(`${at}: ampAll trong (0; 0,5]`);
     if (d.on === 'ally' && (d.amp !== undefined || d.ampAll !== undefined || d.onApply))
       errs.push(`${at}: ấn trên đạo hữu không có amp/onApply`);

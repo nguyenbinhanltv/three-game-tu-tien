@@ -8,10 +8,14 @@ import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { at } from '@dtl/shared';
+import { METHODS } from './index';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Hạn cho một lần chạy sim: ~1 phút lúc máy rảnh, hơn 4 phút khi nhiều worker khác đang chiếm CPU. */
 const SIM_TIMEOUT = 600_000;
+
+// Mọi công pháp trong dữ liệu (TN-2 thêm Dẫn Hồn Kinh): nhịp phải giữ cho từng cái, không viết cứng danh sách.
+const METHOD_IDS = METHODS.map((m) => m.id).sort();
 
 describe('nhịp chương 2 + 3 (sim:progress)', () => {
   const run: { error?: Error; status: number | null; stderr: string } = { status: null, stderr: '' };
@@ -50,7 +54,7 @@ describe('nhịp chương 2 + 3 (sim:progress)', () => {
     const hours = [...at(m!, 1).matchAll(/(\w+)=([\d.]+)/g)]
       .filter(([, k]) => k !== 'target' && k !== 'tol')
       .map(([, k, v]) => [k, Number(v)] as const);
-    expect(hours.map(([k]) => k).sort()).toEqual(['bat_dong_kim_than', 'lac_kiem_quyet', 'thanh_moc_dan_kinh']);
+    expect(hours.map(([k]) => k).sort()).toEqual(METHOD_IDS);
     for (const [k, h] of hours) {
       expect(h, k).toBeGreaterThanOrEqual(4 * 0.88);
       expect(h, k).toBeLessThanOrEqual(4 * 1.12);
@@ -63,7 +67,7 @@ describe('nhịp chương 2 + 3 (sim:progress)', () => {
     const hours = [...at(m!, 1).matchAll(/(\w+)=([\d.]+)/g)]
       .filter(([, k]) => k !== 'target' && k !== 'tol')
       .map(([, k, v]) => [k, Number(v)] as const);
-    expect(hours.map(([k]) => k).sort()).toEqual(['bat_dong_kim_than', 'lac_kiem_quyet', 'thanh_moc_dan_kinh']);
+    expect(hours.map(([k]) => k).sort()).toEqual(METHOD_IDS);
     for (const [k, h] of hours) {
       expect(h, k).toBeGreaterThanOrEqual(6 * 0.88);
       expect(h, k).toBeLessThanOrEqual(6 * 1.12);
@@ -76,7 +80,7 @@ describe('nhịp chương 2 + 3 (sim:progress)', () => {
     const hours = [...at(m!, 1).matchAll(/(\w+)=([\d.]+)/g)]
       .filter(([, k]) => k !== 'target' && k !== 'tol')
       .map(([, k, v]) => [k, Number(v)] as const);
-    expect(hours.map(([k]) => k).sort()).toEqual(['bat_dong_kim_than', 'lac_kiem_quyet', 'thanh_moc_dan_kinh']);
+    expect(hours.map(([k]) => k).sort()).toEqual(METHOD_IDS);
     for (const [k, h] of hours) {
       expect(h, k).toBeGreaterThanOrEqual(8 * 0.88);
       expect(h, k).toBeLessThanOrEqual(8 * 1.12);
@@ -84,9 +88,9 @@ describe('nhịp chương 2 + 3 (sim:progress)', () => {
   });
 
   it('Ngưng Khí 1 → 15 vẫn 3–4 giờ cho cả ba công pháp', () => {
-    const m = /Kiếm tu ([\d.]+) giờ, Hộ pháp ([\d.]+) giờ, Đan sư ([\d.]+) giờ/.exec(out);
+    const m = /Kiếm tu ([\d.]+) giờ, Hộ pháp ([\d.]+) giờ, Đan sư ([\d.]+) giờ, Hồn tu ([\d.]+) giờ/.exec(out);
     expect(m).not.toBeNull();
-    for (const v of m!.slice(1, 4).map(Number)) {
+    for (const v of m!.slice(1, 5).map(Number)) {
       expect(v).toBeGreaterThanOrEqual(3);
       expect(v).toBeLessThanOrEqual(4);
     }

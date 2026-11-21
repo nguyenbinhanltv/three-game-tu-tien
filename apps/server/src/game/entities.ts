@@ -19,6 +19,8 @@ export interface Summon {
   range: number;
   power: number;
   markFirst: boolean;
+  /** Loại FX mỗi nhịp đánh (`<fx của chiêu>_hit`). */
+  hitFx: string;
   elem?: string;
 }
 /** Giậm của Sơn Nhạc Hóa Thân (E2-G). */
