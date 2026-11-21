@@ -210,6 +210,16 @@ import fx_skl_hoanh_dao from '../data/fx/skl_hoanh_dao.json';
 import fx_skl_tam_dao from '../data/fx/skl_tam_dao.json';
 import fx_skl_doan_luu from '../data/fx/skl_doan_luu.json';
 import fx_skl_liet_dia_tram from '../data/fx/skl_liet_dia_tram.json';
+import fx_skl_tha_co from '../data/fx/skl_tha_co.json';
+import fx_skl_co_trieu from '../data/fx/skl_co_trieu.json';
+import fx_skl_hut_mau_co from '../data/fx/skl_hut_mau_co.json';
+import fx_skl_co_bao from '../data/fx/skl_co_bao.json';
+import fx_skl_thu_co from '../data/fx/skl_thu_co.json';
+import fx_skl_hoa_co_vuong from '../data/fx/skl_hoa_co_vuong.json';
+import fx_co_bay_hit from '../data/fx/co_bay_hit.json';
+import fx_co_vuong_hit from '../data/fx/co_vuong_hit.json';
+import fx_co_bay_stand from '../data/fx/co_bay_stand.json';
+import fx_co_vuong_stand from '../data/fx/co_vuong_stand.json';
 import fx_skl_kim_cuong_bat_hoai from '../data/fx/skl_kim_cuong_bat_hoai.json';
 import fx_skl_linh_khi_ho_the from '../data/fx/skl_linh_khi_ho_the.json';
 import fx_skl_loi_dinh_nhat_kiem from '../data/fx/skl_loi_dinh_nhat_kiem.json';
@@ -563,6 +573,12 @@ export const FX_TIMELINES = [
   fx_skl_tam_dao,
   fx_skl_doan_luu,
   fx_skl_liet_dia_tram,
+  fx_skl_tha_co,
+  fx_skl_co_trieu,
+  fx_skl_hut_mau_co,
+  fx_skl_co_bao,
+  fx_skl_thu_co,
+  fx_skl_hoa_co_vuong,
   fx_skl_kim_cuong_bat_hoai,
   fx_skl_linh_khi_ho_the,
   fx_skl_loi_dinh_nhat_kiem,
@@ -675,6 +691,9 @@ export const HK_FX = new Map(HK_FX_TIMELINES.map((f) => [f.skill, f]));
 /** TN-2: hiệu ứng tại điểm của Hồn tu (nhịp hồn binh, tia hồn thu về), client phát bằng `FxRunner.startAt` (`game/fx/honFx.ts`). */
 export const HON_FX_TIMELINES = [fx_hon_binh_hit, fx_hon_reap, fx_hon_binh_stand] as unknown as FxTimeline[];
 export const HON_FX = new Map(HON_FX_TIMELINES.map((f) => [f.skill, f]));
+// Cổ tu (PR VFX): hiệu ứng tại điểm (nhịp bầy cổ/Cổ Vương cắn, bầy cổ và Cổ Vương đứng quanh người gọi), client phát bằng `FxRunner.startAt` (`game/fx/coFx.ts`).
+export const CO_FX_TIMELINES = [fx_co_bay_hit, fx_co_vuong_hit, fx_co_bay_stand, fx_co_vuong_stand] as unknown as FxTimeline[];
+export const CO_FX = new Map(CO_FX_TIMELINES.map((f) => [f.skill, f]));
 /** Timeline của từng kiếp nhỏ (theo cơ chế `hk_*`), gồm cả phần chung vào/qua/trượt: ngân sách draw call kiểm theo nhóm này. */
 export const HK_FX_STAGE: Record<string, string[]> = {
   hk_tuyet: ['hk_enter', 'hk_tuyet_drift', 'suy_ok', 'suy_fail'],

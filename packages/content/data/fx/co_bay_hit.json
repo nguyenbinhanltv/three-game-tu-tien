@@ -1,0 +1,43 @@
+{
+ "skill": "co_bay_hit",
+ "palette": "duong_co_kinh",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.1,
+   "at": "self",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "scale": 1.1,
+   "billboard": true,
+   "sweep": 0,
+   "tone": "body",
+   "cross": true,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 10,
+   "speed": 2.2,
+   "spread": 1,
+   "life": 0.4,
+   "size": 0.12,
+   "at": "self",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "tone": "body",
+   "grav": -0.6,
+   "tier": 1
+  }
+ ]
+}

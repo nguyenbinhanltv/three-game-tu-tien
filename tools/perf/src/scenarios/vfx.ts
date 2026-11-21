@@ -26,6 +26,7 @@ declare global {
 const HP = 'bat_dong_kim_than';
 const DS = 'thanh_moc_dan_kinh';
 const DAO = 'liet_nhan_dao_kinh';
+const CO = 'duong_co_kinh';
 /** Công pháp của từng chiêu (V3: Hộ pháp/Đan sư); chiêu không ghi là Kiếm tu. */
 const METHOD_OF: Record<string, string> = Object.fromEntries([
   ...[
@@ -40,6 +41,7 @@ const METHOD_OF: Record<string, string> = Object.fromEntries([
     'skl_thuan_di_ho_the',
     'skl_thien_kim_phap_tuong',
   ].map((k) => [k, HP]),
+  ...['skl_tha_co', 'skl_co_trieu', 'skl_hut_mau_co', 'skl_co_bao', 'skl_thu_co', 'skl_hoa_co_vuong'].map((k) => [k, CO]),
   ...['skl_bao_nhan', 'skl_tram_son_dao', 'skl_hoanh_dao', 'skl_tam_dao', 'skl_doan_luu', 'skl_liet_dia_tram'].map((k) => [k, DAO]),
   ...[
     'skl_luu_huong_bo',
@@ -73,11 +75,11 @@ const PHAP = /scene_|van_kiem_quy_tong|kim_cuong|hoi_thien/;
 const PHAP_SOLO = /kim_cuong|hoi_thien|scene_/;
 /** Chiêu diện rộng/từ trên cao: lùi camera, ngẩng cao để thấy cả vùng. */
 const WIDE =
-  /scene_|kim_cuong|thien_kiem_vu|van_kiem_quy_tong|tram_son_dao|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
+  /scene_|kim_cuong|thien_kiem_vu|van_kiem_quy_tong|tram_son_dao|co_trieu|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
 /** Chiêu lướt của công pháp (phím Q, `useDash`). Chiêu lướt bậc cao (Nghịch Kiếm, Dịch Sơn Xung) nằm trên thanh chiêu: bấm ô như chiêu thường. */
 const DASH = /kiem_anh_bo|thiet_bich_xung|luu_huong_bo/;
 /** Chiêu tối thượng của Đao tu: không qua thanh chiêu (cần vòng sạc thật), chỉ phát dòng thời gian FX để duyệt hình. */
-const INJECT_ONLY = /tram_son_dao/;
+const INJECT_ONLY = /tram_son_dao|co_trieu/;
 const ULT =
   /van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/;
 /** Thời lượng ghi riêng (ms game) của chiêu có niệm. */

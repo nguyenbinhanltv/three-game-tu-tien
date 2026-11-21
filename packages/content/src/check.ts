@@ -88,6 +88,7 @@ import {
   HK_FX_STAGE,
   HK_FX_TIMELINES,
   HON_FX_TIMELINES,
+  CO_FX_TIMELINES,
   SUY_FX,
   SUY_FX_STAGE,
   SUY_FX_TIMELINES,
@@ -212,6 +213,18 @@ for (const f of HON_FX_TIMELINES) {
   if (f.events.some((e) => e.type === 'hitstop' || e.type === 'shake' || e.type === 'flash'))
     err(`fx hồn tu: ${f.skill} không được khựng/rung/chớp`);
   if (f.palette !== 'dan_hon_kinh') err(`fx hồn tu: ${f.skill} phải dùng bảng màu dan_hon_kinh`);
+}
+// Cổ tu: hiệu ứng tại điểm. Nhịp cắn phát tới 4 lần mỗi giây nên rất nhẹ (≤ 3 draw, ≤ 30 hạt, không khựng/rung/chớp); đoạn bầy cổ đứng
+// quanh người gọi phát nối tiếp (≤ 6 draw, ≤ 30 hạt).
+for (const f of CO_FX_TIMELINES) {
+  for (const m of validateFxTimeline(f, (id) => id.startsWith('co_'))) err(m);
+  const n = fxDrawCount(f.events);
+  const cap = f.skill.endsWith('_stand') ? 6 : 3;
+  if (n > cap) err(`fx cổ tu: ${f.skill} dùng ${n} draw > ${cap}`);
+  if (fxParticleCount(f.events) > 30) err(`fx cổ tu: ${f.skill} quá 30 hạt`);
+  if (f.events.some((e) => e.type === 'hitstop' || e.type === 'shake' || e.type === 'flash'))
+    err(`fx cổ tu: ${f.skill} không được khựng/rung/chớp`);
+  if (f.palette !== 'duong_co_kinh') err(`fx cổ tu: ${f.skill} phải dùng bảng màu duong_co_kinh`);
 }
 // TN-6: hiệu ứng Huyền Kiếp, cùng luật: mỗi timeline ≤ 12 draw, cả một kiếp nhỏ ≤ 25 draw.
 for (const f of HK_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('hk_'))) err(m);

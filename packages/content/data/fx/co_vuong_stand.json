@@ -1,0 +1,75 @@
+{
+ "skill": "co_vuong_stand",
+ "palette": "duong_co_kinh",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 3.6,
+   "at": "self",
+   "offset": [
+    1.6,
+    -0.3,
+    1.0
+   ],
+   "scale": 1.1,
+   "sweep": 0.1,
+   "erodeFrom": 0.9,
+   "tone": "body",
+   "alpha": 1,
+   "follow": true,
+   "tier": 0,
+   "seed": 70,
+   "move": {
+    "to": "self",
+    "ease": "inOut",
+    "offset": [
+     1.6,
+     -0.1,
+     1.2
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    1.6,
+    -1.08,
+    1.0
+   ],
+   "scale": 0.3,
+   "scaleTo": 1.4,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "tone": "rim",
+   "alpha": 0.7,
+   "shadow": false,
+   "tier": 1,
+   "seed": 71
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 12,
+   "speed": 1.2,
+   "spread": 1,
+   "life": 0.9,
+   "size": 0.14,
+   "at": "self",
+   "offset": [
+    1.6,
+    -0.4,
+    1.0
+   ],
+   "tone": "core",
+   "grav": -1.0,
+   "tier": 1
+  }
+ ]
+}

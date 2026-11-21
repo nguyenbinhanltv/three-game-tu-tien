@@ -1,0 +1,141 @@
+{
+ "skill": "co_bay_stand",
+ "palette": "duong_co_kinh",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 3.6,
+   "at": "self",
+   "offset": [
+    -2.0,
+    -0.45,
+    0.8
+   ],
+   "scale": 0.4,
+   "sweep": 0.1,
+   "erodeFrom": 0.9,
+   "tone": "body",
+   "alpha": 1,
+   "follow": true,
+   "tier": 0,
+   "seed": 60,
+   "move": {
+    "to": "self",
+    "ease": "inOut",
+    "offset": [
+     1.4,
+     -0.6,
+     0.7200000000000001
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.04,
+   "dur": 3.6,
+   "at": "self",
+   "offset": [
+    2.0,
+    -0.45,
+    0.8
+   ],
+   "scale": 0.4,
+   "sweep": 0.1,
+   "erodeFrom": 0.9,
+   "tone": "body",
+   "alpha": 1,
+   "follow": true,
+   "tier": 0,
+   "seed": 61,
+   "move": {
+    "to": "self",
+    "ease": "inOut",
+    "offset": [
+     -1.4,
+     -0.6,
+     0.7200000000000001
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.08,
+   "dur": 3.6,
+   "at": "self",
+   "offset": [
+    -1.2,
+    -0.45,
+    2.2
+   ],
+   "scale": 0.4,
+   "sweep": 0.1,
+   "erodeFrom": 0.9,
+   "tone": "body",
+   "alpha": 1,
+   "follow": true,
+   "tier": 1,
+   "seed": 62,
+   "move": {
+    "to": "self",
+    "ease": "inOut",
+    "offset": [
+     0.84,
+     -0.6,
+     1.9800000000000002
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.12,
+   "dur": 3.6,
+   "at": "self",
+   "offset": [
+    1.2,
+    -0.45,
+    2.2
+   ],
+   "scale": 0.4,
+   "sweep": 0.1,
+   "erodeFrom": 0.9,
+   "tone": "body",
+   "alpha": 1,
+   "follow": true,
+   "tier": 1,
+   "seed": 63,
+   "move": {
+    "to": "self",
+    "ease": "inOut",
+    "offset": [
+     -0.84,
+     -0.6,
+     1.9800000000000002
+    ]
+   }
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 14,
+   "speed": 1.2,
+   "spread": 1,
+   "life": 0.9,
+   "size": 0.12,
+   "at": "self",
+   "offset": [
+    0,
+    -0.6,
+    1.2
+   ],
+   "tone": "body",
+   "grav": -1.0,
+   "tier": 1
+  }
+ ]
+}
