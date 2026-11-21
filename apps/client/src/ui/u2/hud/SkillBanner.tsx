@@ -3,7 +3,6 @@ import { hasString, t } from '@dtl/content';
 import { Game } from '../../../game/engine';
 import { useUI } from '../../store';
 import { InkBanner } from '../index';
-import { bannerSkill } from './bannerSkill';
 
 const SHOW_MS = 1300;
 
@@ -23,7 +22,7 @@ export function SkillBanner() {
       // Đòn đánh thường liên hoàn không hiện tên (sẽ nhấp nháy liên tục); chỉ chiêu có tên riêng.
       if (sid !== g.sid || e.kind !== 'windup' || !e.skill || e.combo >= 0 || !hasString(`skill.${e.skill}.name`)) return;
       n += 1;
-      setCur({ id: n, skill: bannerSkill(e.skill, useUI.getState().method?.method || undefined), variant: n % 3 });
+      setCur({ id: n, skill: e.skill, variant: n % 3 });
       window.clearTimeout(timer);
       timer = window.setTimeout(() => setCur(null), SHOW_MS);
     });

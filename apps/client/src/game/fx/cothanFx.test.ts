@@ -2,13 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { FX_TIMELINE, METHOD_SKILLS, PATH, SKILL } from '@dtl/content';
 import { fxDrawCount, fxEventsFor, fxParticleCount, HOA_HINH_SKILL, validateFxTimeline } from '@dtl/shared';
 import type { FxEvent } from '@dtl/shared';
-import { fxTriggered } from './skillFx';
 import { paletteOf } from '../../render/vfx/palette';
 
-// Cổ Thần (PR VFX): 4 timeline riêng cho chiêu có pose riêng + cảnh Hóa Hình (trigger fx); chiêu tư thế mượn hình chiêu nền.
+// Cổ Thần (PR VFX): 4 timeline riêng cho chiêu có pose riêng + Hóa Hình (fx riêng); chiêu của tư thế mượn hình chiêu nền.
 const METHOD = 'co_than_quyet';
-const OWN = ['skl_thai_co_quyen', 'skl_tinh_bao', 'skl_huyet_cu_ho', 'skl_co_than_nhat_kich'];
-const SCENE = 'fx_co_hoa_hinh';
+const OWN = ['skl_thai_co_quyen', 'skl_tinh_bao', 'skl_huyet_cu_ho', 'skl_co_than_nhat_kich', 'skl_hoa_hinh'];
+const SCENE = 'skl_hoa_hinh';
 const evs = (id: string): FxEvent[] => fxEventsFor(FX_TIMELINE.get(id)!, -1);
 
 describe('VFX Cổ Thần', () => {
@@ -27,42 +26,55 @@ describe('VFX Cổ Thần', () => {
     }
   });
 
-  it('không có timeline cho chiêu tư thế (mượn hình chiêu nền) hay chiêu lướt', () => {
-    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD && (x.stanceOf || x.kind === 'dash' || x.kind === 'stance')))
+  it('không có timeline cho chiêu của tư thế (mượn hình chiêu nền) hay chiêu lướt', () => {
+    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD && (x.stanceOf || x.kind === 'dash')))
       expect(FX_TIMELINE.has(s.id), s.id).toBe(false);
   });
 
-  it('cảnh Hóa Hình là timeline trigger fx loại hoahinh của Cổ Thần Quyết, hợp lệ, trong ngân sách; server phát đúng loại đó', () => {
-    const tl = FX_TIMELINE.get(SCENE)!;
-    expect(tl).toBeDefined();
-    expect(tl.trigger).toBe('fx');
-    expect(tl.fxKind).toBe('hoahinh');
-    expect(tl.method).toBe(METHOD);
-    expect(
-      validateFxTimeline(tl, (x) => SKILL.has(x) || x.startsWith('fx_')),
-      SCENE,
-    ).toEqual([]);
-    expect(fxDrawCount(evs(SCENE))).toBeLessThanOrEqual(12);
-    expect(fxParticleCount(evs(SCENE))).toBeLessThanOrEqual(1500);
-    expect(fxTriggered('hoahinh', METHOD)).toBe(tl);
-    expect(fxTriggered('hoahinh', 'lac_kiem_quyet')).toBeUndefined();
-    expect(SKILL.get(HOA_HINH_SKILL)?.kind).toBe('stance');
+  it('Hóa Hình có fx + pose riêng (không mượn Sơn Nhạc): timeline của chính chiêu, thay đúng loại FX của nó', () => {
+    const sk = SKILL.get(HOA_HINH_SKILL)!;
+    expect(sk.kind).toBe('stance');
+    expect(sk.fx).toBe('cohoahinh');
+    expect(sk.pose).toBe('hoa_hinh');
+    expect(METHOD_SKILLS.filter((s) => s.fx === sk.fx)).toHaveLength(1);
+    expect(FX_TIMELINE.get(SCENE)!.replaces).toEqual([sk.fx]);
   });
 
-  it('khoảnh khắc wow của Hóa Hình: sóng chấn mặt đất, bóng Cổ Thần khổng lồ (camFade), làm chậm + kéo máy; không phủ khối lên thân', () => {
+  it('khoảnh khắc wow của Hóa Hình: Cổ Thần khổng lồ (thẻ colossus, camFade, đứng phía trước người), sóng chấn sát đất, làm chậm + kéo máy; không phủ khối lên thân, không rải đá', () => {
     const e = evs(SCENE);
+    const colossus = e.filter((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'colossus');
+    expect(colossus).toHaveLength(2); // cặp đối xứng trước/sau người: thẻ giữa camera và người tự mờ
+    const zs = colossus.map((g) => (g.type === 'mesh' ? (g.offset?.[2] ?? 0) : 0));
+    expect(Math.min(...zs)).toBeLessThan(-3);
+    expect(Math.max(...zs)).toBeGreaterThan(3);
+    for (const g of colossus)
+      if (g.type === 'mesh') {
+        expect(g.camFade, 'Cổ Thần khổng lồ').toBe(true);
+        expect(Math.abs(g.offset?.[2] ?? 0), 'cách người đủ xa').toBeGreaterThan(3);
+      }
     expect(e.filter((x) => x.type === 'mesh' && x.shape === 'shock_cone').length).toBeGreaterThanOrEqual(2);
-    const ghosts = e.filter((x) => x.type === 'mesh' && x.shape === 'card');
-    expect(ghosts.length).toBeGreaterThanOrEqual(1);
-    for (const g of ghosts) if (g.type === 'mesh') expect(g.camFade, 'bóng Cổ Thần').toBe(true);
     expect(e.some((x) => x.type === 'slowmo')).toBe(true);
     expect(e.some((x) => x.type === 'camera' && (x.pull ?? 0) > 0)).toBe(true);
-    // mọi khối đặt quanh/phía sau người (`self`) mà không nằm sát đất phải camFade; không khối nào follow thân (không phủ màu)
+    expect(e.some((x) => x.type === 'mesh' && x.shape.startsWith('rubble_'))).toBe(false);
     for (const x of e) {
       if (x.type !== 'mesh') continue;
       expect(x.follow, x.shape).not.toBe(true);
-      if (x.at === 'self' && (x.offset?.[1] ?? 0) > 0.5) expect(x.camFade, x.shape).toBe(true);
+      // sóng chấn hạ xuống đất, bán kính cuối nhỏ (không che nửa thân như bản đầu)
+      if (x.shape === 'shock_cone') {
+        const sc = x.scaleTo ?? x.scale ?? 0;
+        expect(Array.isArray(sc) ? Math.max(...sc) : sc, 'sóng chấn').toBeLessThanOrEqual(5.5);
+      }
     }
+  });
+
+  it('Thái Cổ Quyền: cự quyền (thẻ fist) giáng xuống mục tiêu + sóng chấn + bụi; Nhất Kích: cự quyền phía trước vùng, camFade', () => {
+    const q = evs('skl_thai_co_quyen');
+    expect(q.some((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'fist' && x.at === 'target')).toBe(true);
+    expect(q.some((x) => x.type === 'mesh' && x.shape === 'shock_cone')).toBe(true);
+    expect(q.filter((x) => x.type === 'mesh' && x.shape === 'flip' && x.flip === 'dust_kick').length).toBeGreaterThanOrEqual(1);
+    const k = evs('skl_co_than_nhat_kich').filter((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'fist');
+    expect(k.length).toBe(2);
+    for (const f of k) if (f.type === 'mesh') expect(f.camFade).toBe(true);
   });
 
   it('không che camera/nhân vật/mục tiêu: khối đứng hoặc rơi cao và mọi tảng đá đều camFade; đá có trần 2,2 m', () => {
@@ -77,17 +89,18 @@ describe('VFX Cổ Thần', () => {
     }
   });
 
-  it('chỉ chiêu tối thượng và cảnh Hóa Hình dùng làm chậm và kéo máy', () => {
+  it('chỉ chiêu tối thượng và Hóa Hình dùng làm chậm và kéo máy', () => {
     for (const id of OWN) {
       const e = evs(id);
+      const big = id === 'skl_co_than_nhat_kich' || id === 'skl_hoa_hinh';
       expect(
         e.some((x) => x.type === 'slowmo'),
         id,
-      ).toBe(id === 'skl_co_than_nhat_kich');
+      ).toBe(big);
       expect(
         e.some((x) => x.type === 'camera' && (x.pull ?? 0) > 0),
         id,
-      ).toBe(id === 'skl_co_than_nhat_kich');
+      ).toBe(big);
     }
   });
 

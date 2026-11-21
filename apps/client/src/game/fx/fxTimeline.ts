@@ -614,7 +614,11 @@ export class FxRunner {
             ? 1
             : ev.card === 'ghost'
               ? 2
-              : 0
+              : ev.card === 'colossus'
+                ? 6
+                : ev.card === 'fist'
+                  ? 7
+                  : 0
           : kind === 'burst' && ev.cross
             ? 1
             : 0;

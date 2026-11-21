@@ -33,9 +33,26 @@
   },
   {
    "type": "decal",
+   "tex": "scorch",
+   "t": -0.25,
+   "r": 3.6,
+   "dur": 5.0,
+   "at": "self",
+   "offset": [
+    0,
+    -1.12,
+    0
+   ],
+   "grow": 0.2,
+   "tone": "shadow",
+   "alpha": 0.8,
+   "tier": 1
+  },
+  {
+   "type": "decal",
    "tex": "rune",
    "t": -0.2,
-   "r": 3.4,
+   "r": 3.6,
    "dur": 5.2,
    "at": "self",
    "offset": [
@@ -45,7 +62,7 @@
    ],
    "grow": 0.25,
    "tone": "body",
-   "alpha": 0.9,
+   "alpha": 1,
    "tier": 0
   },
   {
@@ -63,7 +80,7 @@
    "scaleTo": 0.6,
    "sweep": 0.2,
    "erodeFrom": 0.8,
-   "alpha": 0.85,
+   "alpha": 0.95,
    "shadow": false,
    "tone": "rim",
    "follow": true,
@@ -87,15 +104,15 @@
     0.8
    ],
    "scaleTo": [
-    3.2,
-    3.2,
-    3.2
+    3.4,
+    3.4,
+    3.4
    ],
    "alpha": 0.8,
    "sweep": 0.3,
    "erodeFrom": 0.3,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "tier": 1,
    "seed": 5,
    "camFade": true
@@ -106,7 +123,7 @@
    "t": 0.0,
    "dur": 0.34,
    "flip": "spark_burst",
-   "scale": 2.4,
+   "scale": 2.6,
    "billboard": true,
    "at": "self",
    "offset": [
@@ -114,8 +131,8 @@
     0.2,
     0
    ],
-   "alpha": 0.7,
-   "tone": "body",
+   "alpha": 0.8,
+   "tone": "accent",
    "tier": 0
   },
   {
@@ -130,7 +147,7 @@
    "type": "particles",
    "kind": "spark",
    "t": 0.0,
-   "n": 36,
+   "n": 40,
    "speed": 5,
    "spread": 1,
    "life": 0.5,

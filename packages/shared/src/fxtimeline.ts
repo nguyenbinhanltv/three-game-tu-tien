@@ -160,8 +160,8 @@ export interface FxMeshEvent extends FxBase {
   };
   /** Atlas của hình `flip` (bắt buộc với `shape: "flip"`). */
   flip?: FlipAtlas;
-  /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh). */
-  card?: 'arhat' | 'phoenix' | 'ghost';
+  /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh); `colossus` (Cổ Thần khổng lồ nửa thân) và `fist` (cự quyền) của Cổ Thần (TN-5). */
+  card?: 'arhat' | 'phoenix' | 'ghost' | 'colossus' | 'fist';
   /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */
   keepUp?: boolean;
   /** Quay quanh trục tiến (độ/giây), cho vòng xoắn. */

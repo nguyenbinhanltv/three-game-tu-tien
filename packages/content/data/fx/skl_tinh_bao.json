@@ -40,7 +40,7 @@
    "at": "area",
    "grow": 0.3,
    "tone": "body",
-   "alpha": 0.9,
+   "alpha": 0.95,
    "tier": 0
   },
   {
@@ -59,7 +59,7 @@
    "fit": "area",
    "sweep": 0.4,
    "erodeFrom": 0.8,
-   "alpha": 0.9,
+   "alpha": 0.95,
    "shadow": false,
    "tone": "rim",
    "tier": 0,
@@ -79,7 +79,7 @@
    "t": -0.02,
    "dur": 0.4,
    "flip": "spark_burst",
-   "scale": 3.6,
+   "scale": 3.8,
    "billboard": true,
    "at": "area",
    "offset": [
@@ -87,7 +87,7 @@
     0.9,
     0
    ],
-   "alpha": 0.85,
+   "alpha": 0.9,
    "tone": "accent",
    "tier": 0
   },
@@ -102,7 +102,7 @@
     0.9,
     0
    ],
-   "scale": 2.4,
+   "scale": 2.6,
    "billboard": true,
    "sweep": 0,
    "tone": "body",
@@ -130,11 +130,11 @@
     8.4,
     8.4
    ],
-   "alpha": 0.85,
+   "alpha": 0.7,
    "sweep": 0.3,
    "erodeFrom": 0.3,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "tier": 1,
    "seed": 4,
    "camFade": false
@@ -156,15 +156,15 @@
     0.8
    ],
    "scaleTo": [
-    7.2,
-    7.2,
-    7.2
+    7.0,
+    7.0,
+    7.0
    ],
-   "alpha": 0.7,
+   "alpha": 0.55,
    "sweep": 0.3,
    "erodeFrom": 0.3,
    "shadow": false,
-   "tone": "body",
+   "tone": "rim",
    "tier": 1,
    "seed": 6,
    "camFade": false
@@ -189,13 +189,18 @@
    "type": "decal",
    "tex": "scorch",
    "t": 0.0,
-   "r": 5.6,
+   "r": 6.0,
    "dur": 3.0,
    "at": "area",
-   "grow": 0.05,
+   "offset": [
+    0,
+    0.0,
+    0
+   ],
+   "grow": 0.08,
    "tone": "shadow",
-   "alpha": 0.8,
-   "tier": 1
+   "alpha": 0.85,
+   "tier": 0
   },
   {
    "type": "mesh",
@@ -214,7 +219,7 @@
     0
    ],
    "scale": [
-    1.0,
+    1.2,
     1,
     8.0
    ],
@@ -222,7 +227,7 @@
    "sweep": 0.55,
    "erodeFrom": 0.75,
    "shadow": false,
-   "tone": "core",
+   "tone": "body",
    "tier": 0,
    "seed": 20
   },
@@ -243,7 +248,7 @@
     0
    ],
    "scale": [
-    1.0,
+    1.2,
     1,
     8.0
    ],
@@ -272,7 +277,7 @@
     0
    ],
    "scale": [
-    1.0,
+    1.2,
     1,
     8.0
    ],
@@ -280,7 +285,7 @@
    "sweep": 0.55,
    "erodeFrom": 0.75,
    "shadow": false,
-   "tone": "core",
+   "tone": "body",
    "tier": 0,
    "seed": 22
   },
@@ -301,7 +306,7 @@
     0
    ],
    "scale": [
-    1.0,
+    1.2,
     1,
     8.0
    ],
@@ -330,7 +335,7 @@
     0
    ],
    "scale": [
-    1.0,
+    1.2,
     1,
     8.0
    ],
@@ -338,7 +343,7 @@
    "sweep": 0.55,
    "erodeFrom": 0.75,
    "shadow": false,
-   "tone": "core",
+   "tone": "body",
    "tier": 1,
    "seed": 24
   },
@@ -359,7 +364,7 @@
     0
    ],
    "scale": [
-    1.0,
+    1.2,
     1,
     8.0
    ],
@@ -388,7 +393,7 @@
     0
    ],
    "scale": [
-    1.0,
+    1.2,
     1,
     8.0
    ],
@@ -396,7 +401,7 @@
    "sweep": 0.55,
    "erodeFrom": 0.75,
    "shadow": false,
-   "tone": "core",
+   "tone": "body",
    "tier": 1,
    "seed": 26
   },
@@ -417,7 +422,7 @@
     0
    ],
    "scale": [
-    1.0,
+    1.2,
     1,
     8.0
    ],
@@ -446,7 +451,7 @@
     0
    ],
    "scale": [
-    1.0,
+    1.2,
     1,
     8.0
    ],
@@ -454,7 +459,7 @@
    "sweep": 0.55,
    "erodeFrom": 0.75,
    "shadow": false,
-   "tone": "core",
+   "tone": "body",
    "tier": 1,
    "seed": 28
   },

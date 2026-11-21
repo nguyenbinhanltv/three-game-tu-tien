@@ -28,11 +28,30 @@ const ONLY = list('--only', '');
 
 type Page = Awaited<ReturnType<Run['open']>>['page'];
 
+/** Góc camera mặc định lúc vào game (đọc một lần ở `run`). */
+let baseYaw = 0;
+
 async function target(page: Page): Promise<void> {
+  // Tọa độ cố định cho mọi chiêu (sân lát đá phía nam bệ kiếm): quái gọi ở chỗ người chơi, người chơi lùi ra 7 m về phía bắc.
+  await gm(page, 'tp 2048 2095', 1800);
   await gm(page, 'spawn clear', 1400);
-  await gm(page, `spawn ${MON} 2`, 1800);
+  await gm(page, `spawn ${MON} 1`, 1800);
+  await gm(page, 'tp 2048 2088', 1800);
   await gm(page, 'cd', 1300);
-  await page.keyboard.press('Tab', { delay: 80 });
+  const ok = await page.evaluate((mon) => {
+    const g = window.__game as unknown as {
+      view: { monsters: Map<string, { t: string; st: number }> };
+      setTarget?: (id: string, kind: string) => void;
+    };
+    const e = [...g.view.monsters.entries()].find(([, m]) => m.t === mon && m.st !== 3);
+    if (e) g.setTarget?.(e[0], 'mon');
+    return !!e;
+  }, MON);
+  if (!ok) console.log('[cothanvfx] KHÔNG tìm thấy tinh anh để chọn mục tiêu');
+  // Góc camera tuyệt đối (cùng góc ở 720p và 1080p, mọi chiêu): xoay ngang so với góc mặc định lúc vào game.
+  await page.evaluate((yaw) => {
+    (window.__game as unknown as { camYaw: number }).camYaw = yaw;
+  }, baseYaw + 1.25);
   await sleep(400);
 }
 
@@ -44,12 +63,19 @@ async function run(r: Run, g: string, tags: string[]): Promise<Record<string, un
     viewport: [1920, 1080],
     seenIntro: true,
     look: { g },
-    query: { realm: 'nk12', at: 'rung', god: 1, chr: 'v3' },
+    query: { realm: 'nk12', god: 1, chr: 'v3' },
   });
+  page.on('console', (m) => {
+    if (m.type() === 'error' || m.type() === 'warning') console.log('[console]', m.text().slice(0, 300));
+  });
+  page.on('pageerror', (e) => console.log('[pageerror]', String(e).slice(0, 400)));
   await sleep(2500);
+  baseYaw = await page.evaluate(() => (window.__game as unknown as { camYaw: number }).camYaw);
   await gm(page, 'level 32', 1500);
   await gm(page, `method ${METHOD} 3`, 1300);
   await gm(page, 'stars 3', 1300);
+  // Sân trống của tông môn (không cây che); quái cách người ~7 m, camera xoay ngang để người và quái đứng cạnh nhau.
+  await gm(page, 'tp 2048 2088', 2500);
   for (const tag of tags) {
     const [w, h] = UI_SIZES[tag] ?? UI_SIZES['1080p']!;
     await page.setViewportSize({ width: w, height: h });
