@@ -1451,6 +1451,10 @@ export class GameSim {
   onBranch(p: PlayerEnt, msg: unknown): void {
     return this.ecoSys.onBranch(p, msg);
   }
+
+  onStar(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onStar(p, msg);
+  }
   onTalk(p: PlayerEnt, msg: unknown): void {
     return this.ecoSys.onTalk(p, msg);
   }

@@ -142,7 +142,8 @@ export function propCollidersOf(levelId: string): { x: number; z: number; r: num
     levelId === 'kinh_nguyet' ||
     levelId === 'than_tang' ||
     levelId === 'xich_tan_khich' ||
-    levelId === 'kim_da_cung'
+    levelId === 'kim_da_cung' ||
+    levelId === 'luyen_than'
   )
     return [];
   if (levelId === 'doan_mach') return DOAN_MACH_PROPS.filter((p) => p.r).map((p) => ({ x: p.x, z: p.z, r: p.r as number }));

@@ -75,7 +75,7 @@ import { equippedArtifact, passiveValue, pruneBuffs } from '../artifact';
 import type { MonEnt, PlayerEnt, StrikeCtx, Stomp, Summon } from '../entities';
 import { LEASH, MARK_ALLY_RANGE, SET_HEAL_RADIUS, TAUNT_BOSS_MUL, visualSeed } from './consts';
 
-import { at } from '@dtl/shared';
+import { at, sanitizeStars, starEnough } from '@dtl/shared';
 /** Phần GameSim mà hệ chiêu cần. */
 export interface CombatCtx {
   /** Đối tượng room (khóa tra thành viên tổ đội cùng room, VS-2f). */
@@ -137,6 +137,7 @@ export class CombatSystem {
     if (skill.method && c.meta.method !== skill.method) return this.c.warn(p, 'sys.no_method');
     if (skill.locked) return this.c.warn(p, 'sys.skill_locked');
     // VS-2d: chiêu gắn nhánh công pháp chỉ dùng được khi đã chọn đúng nhánh ở mốc của nó.
+    if (!starEnough(sanitizeStars(c.meta.stars), skill.star)) return this.c.warn(p, 'sys.star_low', { n: skill.star ?? 0 });
     const gate = gateOf(c, skill);
     if (gate !== 'ok') return this.c.warn(p, gate === 'need' ? 'sys.branch_needed' : 'sys.branch_other');
     // VS-2e: chiêu tư thế chỉ dùng được khi đang giữ đúng tư thế đó (client đổi ô theo tin server, server vẫn kiểm).

@@ -44,13 +44,13 @@ import {
   sanitizePicks,
   type BranchPicks,
 } from '@dtl/shared';
-import { APPEARANCE, ITEM, ITEM_SYS, METHOD, QUEST, ROOT, SETS } from '@dtl/content';
+import { APPEARANCE, ITEM, ITEM_SYS, METHOD, QUEST, ROOT, SETS, STARS } from '@dtl/content';
 import { branches, characters, db, items, ledger, rootForName, wardrobe } from '../db';
 import { methodDefMul, methodOf, sanitizeMethodMeta, type MethodMeta } from './method';
 import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta } from './artifact';
 import { log } from '../log';
 
-import { huyenOriginTier, lawPassive, originAtTier, sanitizeChainMeta } from '@dtl/shared';
+import { COTHAN_METHOD, sanitizeStars, starBonus, huyenOriginTier, lawPassive, originAtTier, sanitizeChainMeta } from '@dtl/shared';
 import { at, emptyLook, isWardrobeKind, outfitLookFromDb, outfitLookToDb, type OutfitLook } from '@dtl/shared';
 interface CharMeta extends MethodMeta, ArtifactMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
@@ -458,7 +458,9 @@ export class Character {
     this.stats = critAdd > 0 ? { ...st, critRate: Math.min(st.critRate + critAdd, STAT_CAPS.critRate) } : st;
     // Bản mệnh pháp bảo Ngưng Đan Lô (E2-E): khí huyết tối đa cộng thêm theo cấp của chủ.
     const bondedHp = bondedHpPassive(this.level);
-    this.mhp = mp0?.hpMul || bondedHp > 0 ? Math.round(st.hp * (1 + (mp0?.hpMul ?? 0) + bondedHp)) : st.hp;
+    // Sao Cổ Thần (TN-5): khí huyết tối đa cộng thêm, chỉ khi đang giữ Cổ Thần Quyết.
+    const starHp = this.meta.method === COTHAN_METHOD ? starBonus(STARS, sanitizeStars(this.meta.stars)).hp : 0;
+    this.mhp = mp0?.hpMul || bondedHp > 0 || starHp > 0 ? Math.round(st.hp * (1 + (mp0?.hpMul ?? 0) + bondedHp + starHp)) : st.hp;
     // Nội tại pháp bảo (P3-8): Hồ Lô cộng linh lực tối đa, Thanh Liên Ấn cộng phòng ngự.
     const mpPas = passiveValue(this.equip, this.meta, 'mp');
     this.mmp = mpPas > 0 ? Math.round(st.mp * (1 + mpPas)) : st.mp;

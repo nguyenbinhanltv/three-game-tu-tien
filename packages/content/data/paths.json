@@ -2,47 +2,123 @@
   {
     "id": "kiem_tu",
     "role": "dps",
-    "methods": ["lac_kiem_quyet"],
+    "methods": [
+      "lac_kiem_quyet"
+    ],
     "dao": "kiem",
     "art": "kiem",
     "voice": "kt",
     "gm": "kiem",
-    "weapons": ["sword"],
-    "palette": { "core": "0a3f5e", "body": "2cc7dc", "rim": "f2fdff", "accent": "f3c860", "shadow": "08202e" },
+    "weapons": [
+      "sword"
+    ],
+    "palette": {
+      "core": "0a3f5e",
+      "body": "2cc7dc",
+      "rim": "f2fdff",
+      "accent": "f3c860",
+      "shadow": "08202e"
+    },
     "tint": "cff3ff",
-    "hit": { "sfx": "crit", "gain": 0.18, "rate": 1.2, "strongOnly": true },
+    "hit": {
+      "sfx": "crit",
+      "gain": 0.18,
+      "rate": 1.2,
+      "strongOnly": true
+    },
     "match": [],
-    "synergy": { "gives": ["kiem_an", "truy_hon"], "wants": ["mat_the", "moc_an"] }
+    "synergy": {
+      "gives": [
+        "kiem_an",
+        "truy_hon"
+      ],
+      "wants": [
+        "mat_the",
+        "moc_an"
+      ]
+    }
   },
   {
     "id": "the_tu",
     "role": "tank",
-    "methods": ["bat_dong_kim_than"],
+    "methods": [
+      "bat_dong_kim_than"
+    ],
     "dao": "ho",
     "art": "ho_phap",
     "voice": "hp",
     "gm": "hophap",
-    "weapons": ["fist"],
-    "palette": { "core": "5a2d0b", "body": "e39a2c", "rim": "fff0c2", "accent": "ffd25a", "shadow": "2a1708" },
+    "weapons": [
+      "fist"
+    ],
+    "palette": {
+      "core": "5a2d0b",
+      "body": "e39a2c",
+      "rim": "fff0c2",
+      "accent": "ffd25a",
+      "shadow": "2a1708"
+    },
     "tint": "ffde96",
-    "hit": { "sfx": "impact", "gain": 0.2, "rate": 1 },
-    "match": ["kim_than", "ho_phap", "hophap"],
-    "synergy": { "gives": ["tran_an", "mat_the"], "wants": ["moc_an"] }
+    "hit": {
+      "sfx": "impact",
+      "gain": 0.2,
+      "rate": 1
+    },
+    "match": [
+      "kim_than",
+      "ho_phap",
+      "hophap"
+    ],
+    "synergy": {
+      "gives": [
+        "tran_an",
+        "mat_the"
+      ],
+      "wants": [
+        "moc_an"
+      ]
+    }
   },
   {
     "id": "dan_su",
     "role": "support",
-    "methods": ["thanh_moc_dan_kinh"],
+    "methods": [
+      "thanh_moc_dan_kinh"
+    ],
     "dao": "dan",
     "art": "dan_su",
     "voice": "ds",
     "gm": "dansu",
-    "weapons": ["sword"],
-    "palette": { "core": "06301f", "body": "23b374", "rim": "9fe9bd", "accent": "e4452f", "shadow": "071c13" },
+    "weapons": [
+      "sword"
+    ],
+    "palette": {
+      "core": "06301f",
+      "body": "23b374",
+      "rim": "9fe9bd",
+      "accent": "e4452f",
+      "shadow": "071c13"
+    },
     "tint": "7fe3d0",
-    "hit": { "sfx": "cast", "gain": 0.12, "rate": 1.3 },
-    "match": ["dan_kinh", "dan_su", "dansu", "moc_dan"],
-    "synergy": { "gives": ["moc_an"], "wants": ["mat_the"] }
+    "hit": {
+      "sfx": "cast",
+      "gain": 0.12,
+      "rate": 1.3
+    },
+    "match": [
+      "dan_kinh",
+      "dan_su",
+      "dansu",
+      "moc_dan"
+    ],
+    "synergy": {
+      "gives": [
+        "moc_an"
+      ],
+      "wants": [
+        "mat_the"
+      ]
+    }
   },
   {
     "id": "hon_tu",
@@ -130,6 +206,48 @@
     "unlock": {
       "level": 10,
       "gold": 300
+    }
+  },
+  {
+    "id": "co_than",
+    "role": "tank",
+    "methods": [
+      "co_than_quyet"
+    ],
+    "dao": "ho",
+    "art": "ho_phap",
+    "voice": "hp",
+    "gm": "cothan",
+    "weapons": [
+      "fist"
+    ],
+    "palette": {
+      "core": "3a0d0d",
+      "body": "b3322a",
+      "rim": "ffd9a8",
+      "accent": "e8b04a",
+      "shadow": "180606"
+    },
+    "tint": "ffcf9a",
+    "hit": {
+      "sfx": "impact",
+      "gain": 0.22,
+      "rate": 0.9,
+      "strongOnly": true
+    },
+    "match": [
+      "co_than"
+    ],
+    "synergy": {
+      "gives": [],
+      "wants": [
+        "moc_an"
+      ]
+    },
+    "unlock": {
+      "level": 28,
+      "gold": 3000,
+      "from": "bat_dong_kim_than"
     }
   }
 ]

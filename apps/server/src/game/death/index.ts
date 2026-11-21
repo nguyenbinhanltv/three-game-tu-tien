@@ -20,7 +20,7 @@ import {
   type Terrain,
 } from '@dtl/shared';
 import { TribSystem } from '../trib';
-import { ITEM_SYS, ITEMS, itemName, t } from '@dtl/content';
+import { ITEM_SYS, ITEMS, itemName, STARS, t } from '@dtl/content';
 import type { PlayerEnt, MonEnt, SimOptions } from '../entities';
 import { RealmSystem } from '../realm';
 import { DuelSystem } from '../duel';
@@ -30,7 +30,7 @@ import { CloneSystem } from '../clone';
 import { DomainSystem } from '../domain';
 import { parties } from '../party';
 
-import { at } from '@dtl/shared';
+import { at, COTHAN_METHOD, sanitizeStars, starBonus } from '@dtl/shared';
 /** Phần GameSim mà hệ chết/hồi sinh cần. */
 export interface DeathCtx {
   abortStrike(p: PlayerEnt, refund: boolean, notify?: boolean): void;
@@ -127,6 +127,11 @@ export class DeathSystem {
     }
     if (src && this.c.bossDmgMul !== 1 && this.c.monById.get(src)?.def.boss) n = Math.max(1, Math.round(n * this.c.bossDmgMul));
     if (this.c.now < p.mth.guardUntil) n = reduceDamage(n, p.mth.guardReduce);
+    // Sao Cổ Thần (TN-5): giảm sát thương nhận khi đang giữ Cổ Thần Quyết.
+    if (c.meta.method === COTHAN_METHOD) {
+      const sr = starBonus(STARS, sanitizeStars(c.meta.stars)).reduce;
+      if (sr > 0) n = reduceDamage(n, sr);
+    }
     // Lĩnh vực hộ pháp (E4-K) giảm sát thương; phân thân hộ pháp gánh một phần sát thương quái ở gần nó.
     const dRed = this.c.domain.reduce(p);
     if (dRed > 0) n = reduceDamage(n, dRed);
