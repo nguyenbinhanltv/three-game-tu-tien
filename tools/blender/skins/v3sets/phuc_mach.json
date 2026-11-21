@@ -34,7 +34,10 @@
     "veilChain": 0.75,
     "armFall": "geo",
     "armGeoR": 0.5,
-    "geoSeed": 0.08
+    "geoSeed": 0.08,
+    "veilAlpha": 0.85,
+    "borderFade": 0.02,
+    "borderAlpha": 0.25
   },
   "groups": [
     {

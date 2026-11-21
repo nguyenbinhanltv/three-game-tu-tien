@@ -4961,9 +4961,9 @@
       "id": "chr_v3_luu_ly_nam",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_luu_ly_nam.glb",
-      "file": "chr_v3_luu_ly_nam.7e75504653.glb",
-      "bytes": 12421108,
-      "rawBytes": 16457944,
+      "file": "chr_v3_luu_ly_nam.979a366056.glb",
+      "bytes": 12503272,
+      "rawBytes": 16963236,
       "triangles": 99354,
       "rawTriangles": 99354,
       "lod0Cap": 110000,
@@ -5013,22 +5013,22 @@
         },
         {
           "level": 2,
-          "triangles": 7993,
+          "triangles": 8228,
           "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.7049,
-          "height": 1.8384,
+          "width": 1.6992,
+          "height": 1.8383,
           "depth": 0.468,
-          "minY": 0.0053
+          "minY": 0.0054
         },
         "build": {
-          "width": 1.7049,
-          "height": 1.8384,
+          "width": 1.6992,
+          "height": 1.8383,
           "depth": 0.468,
-          "minY": 0.0053
+          "minY": 0.0054
         }
       }
     },
@@ -5036,9 +5036,9 @@
       "id": "chr_v3_luu_ly_nu",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_luu_ly_nu.glb",
-      "file": "chr_v3_luu_ly_nu.3aa4ceb3bd.glb",
-      "bytes": 12251556,
-      "rawBytes": 16324948,
+      "file": "chr_v3_luu_ly_nu.935d572159.glb",
+      "bytes": 15787432,
+      "rawBytes": 16819608,
       "triangles": 97221,
       "rawTriangles": 97221,
       "lod0Cap": 110000,
@@ -5046,11 +5046,11 @@
       "quantized": false,
       "bones": 119,
       "animations": [],
-      "ktx2": true,
+      "ktx2": false,
       "textures": [
         {
           "name": "ancient_chinese_gown_3d_model_normal",
-          "mimeType": "image/ktx2",
+          "mimeType": "image/png",
           "width": 4096,
           "height": 4096,
           "slots": [
@@ -5059,7 +5059,7 @@
         },
         {
           "name": "ancient_chinese_gown_3d_model_basecolor",
-          "mimeType": "image/ktx2",
+          "mimeType": "image/jpeg",
           "width": 4096,
           "height": 4096,
           "slots": [
@@ -5068,7 +5068,7 @@
         },
         {
           "name": "ancient_chinese_gown_3d_model_rm",
-          "mimeType": "image/ktx2",
+          "mimeType": "image/jpeg",
           "width": 4096,
           "height": 4096,
           "slots": [
@@ -5083,27 +5083,27 @@
         },
         {
           "level": 1,
-          "triangles": 23985,
+          "triangles": 24001,
           "target": 24000
         },
         {
           "level": 2,
-          "triangles": 8319,
+          "triangles": 7973,
           "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.5956,
-          "height": 1.698,
-          "depth": 0.4748,
-          "minY": 0.006
+          "width": 1.583,
+          "height": 1.6981,
+          "depth": 0.4747,
+          "minY": 0.0059
         },
         "build": {
-          "width": 1.5956,
-          "height": 1.698,
-          "depth": 0.4748,
-          "minY": 0.006
+          "width": 1.583,
+          "height": 1.6981,
+          "depth": 0.4747,
+          "minY": 0.0059
         }
       }
     },
@@ -5177,9 +5177,9 @@
       "id": "chr_v3_phuc_mach_nam",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_phuc_mach_nam.glb",
-      "file": "chr_v3_phuc_mach_nam.a3607f4bd3.glb",
-      "bytes": 10467412,
-      "rawBytes": 13548424,
+      "file": "chr_v3_phuc_mach_nam.2293b24ac2.glb",
+      "bytes": 10572432,
+      "rawBytes": 14033364,
       "triangles": 94376,
       "rawTriangles": 94376,
       "lod0Cap": 110000,
@@ -5252,9 +5252,9 @@
       "id": "chr_v3_phuc_mach_nu",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_phuc_mach_nu.glb",
-      "file": "chr_v3_phuc_mach_nu.708c36f946.glb",
-      "bytes": 10925428,
-      "rawBytes": 14351632,
+      "file": "chr_v3_phuc_mach_nu.2a71995b39.glb",
+      "bytes": 11037476,
+      "rawBytes": 14849636,
       "triangles": 96027,
       "rawTriangles": 96027,
       "lod0Cap": 110000,
@@ -5393,9 +5393,9 @@
       "id": "chr_v3_than_tang_nam",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_than_tang_nam.glb",
-      "file": "chr_v3_than_tang_nam.66037d653b.glb",
-      "bytes": 12965256,
-      "rawBytes": 17685244,
+      "file": "chr_v3_than_tang_nam.1e1aaf6014.glb",
+      "bytes": 13045308,
+      "rawBytes": 18204912,
       "triangles": 99016,
       "rawTriangles": 99016,
       "lod0Cap": 110000,
@@ -5451,16 +5451,16 @@
       ],
       "dims": {
         "raw": {
-          "width": 1.7317,
-          "height": 1.834,
-          "depth": 0.5211,
-          "minY": 0.0091
+          "width": 1.7304,
+          "height": 1.8342,
+          "depth": 0.5242,
+          "minY": 0.0089
         },
         "build": {
-          "width": 1.7317,
-          "height": 1.834,
-          "depth": 0.5211,
-          "minY": 0.0091
+          "width": 1.7304,
+          "height": 1.8342,
+          "depth": 0.5242,
+          "minY": 0.0089
         }
       }
     },
@@ -5468,9 +5468,9 @@
       "id": "chr_v3_than_tang_nu",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_than_tang_nu.glb",
-      "file": "chr_v3_than_tang_nu.82faf307c6.glb",
-      "bytes": 13507304,
-      "rawBytes": 18300156,
+      "file": "chr_v3_than_tang_nu.dd6ff51250.glb",
+      "bytes": 13579196,
+      "rawBytes": 18800016,
       "triangles": 98352,
       "rawTriangles": 98352,
       "lod0Cap": 110000,
@@ -5520,21 +5520,21 @@
         },
         {
           "level": 2,
-          "triangles": 7980,
+          "triangles": 7984,
           "target": 8000
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.5186,
+          "width": 1.5297,
           "height": 1.6972,
-          "depth": 0.4623,
+          "depth": 0.4774,
           "minY": 0.0066
         },
         "build": {
-          "width": 1.5186,
+          "width": 1.5297,
           "height": 1.6972,
-          "depth": 0.4623,
+          "depth": 0.4774,
           "minY": 0.0066
         }
       }

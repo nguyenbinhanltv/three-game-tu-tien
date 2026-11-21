@@ -248,7 +248,30 @@ function tuneTripoMaterial(m: THREE.MeshStandardNodeMaterial): void {
   // Da nhợt của Tripo (baseColor sáng ~0,8) bị nắng + env game thổi trắng/xám: hạ phản xạ khuếch tán một chút cho còn sắc hồng.
   // Ánh sáng game hơi lạnh (đo má: R−B từ 56 còn 29): bù ấm nhẹ (R giữ, G −15%, B −20%).
   m.color.setRGB(0.96, 0.82, 0.76);
+  if (FLAGS.v3Side === 'double') m.side = THREE.DoubleSide;
+  else if (FLAGS.v3Side === 'front') m.side = THREE.FrontSide;
   m.needsUpdate = true;
+}
+
+/**
+ * Voan/mép vải hở của model giữ gốc có alpha đỉnh (COLOR_0 từ `chr_v3_c2.py`: `c2.veilAlpha`, `c2.borderFade`): vẽ bằng alpha hash
+ * (ngẫu nhiên theo vị trí, ghi độ sâu): không cần sắp xếp tam giác trong một mesh, không vỡ lỗ, mép răng cưa tan dần. Tấm vải mỏng hai mặt.
+ * Có alpha đỉnh thì vật liệu của mesh đó dùng alpha hash + DoubleSide; `?v3side=front|double` ghi đè mặt vẽ để so sánh.
+ */
+function applyVeilAlpha(root: THREE.Object3D): void {
+  root.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh || !mesh.geometry.hasAttribute('color')) return;
+    for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+      const nm = m as THREE.MeshStandardNodeMaterial;
+      nm.vertexColors = true;
+      nm.alphaHash = true;
+      nm.transparent = false;
+      nm.depthWrite = true;
+      if (FLAGS.v3Side !== 'front') nm.side = THREE.DoubleSide;
+      nm.needsUpdate = true;
+    }
+  });
 }
 
 /** Clip riêng cho áo bào rộng (`tools/blender/anim_robe.py`): ghi đè clip cùng tên của thư viện UAL cho asset giữ gốc. */
@@ -258,6 +281,7 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   const mats = adoptGltfMaterials(handle.scene);
   if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const m of mats) tuneTripoMaterial(m);
+  if (KEEP_ORIGINAL_ASSETS.has(handle.id)) applyVeilAlpha(handle.scene);
   const look = SKIN_LOOKS[handle.id];
   if (look) for (const m of mats) applySkinLook(m, look);
   const box = new THREE.Box3().setFromObject(handle.scene);

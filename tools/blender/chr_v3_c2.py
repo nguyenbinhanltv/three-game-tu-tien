@@ -85,6 +85,12 @@ for _f in _bm.faces:
     _c = np.bincount([LAB[_v.index] for _v in _f.verts], minlength=6)
     _fl.append(int(np.argmax(_c)) if _c.max() > 1 or len(_f.verts) == 3 else int(LAB[_f.verts[0].index]))
 _fl = np.array(_fl)
+# đỉnh gốc nằm trên cạnh biên hở (vải Tripo là các tấm mỏng hở, hem răng cưa): dùng cho alpha mờ dần về mép (`veilAlpha`, `borderFade`)
+_border_orig = set()
+for _e in _bm.edges:
+    if len(_e.link_faces) == 1:
+        _border_orig.add(_e.verts[0].index)
+        _border_orig.add(_e.verts[1].index)
 _n_edges_cut = 0
 _cut = []
 for _e in _bm.edges:
@@ -318,7 +324,7 @@ def _veil_geo(_vi, _seed_mask):
 
 for _s, _g in _SD.items():
     _vi, _, _cent, _edges = _veil_info[_s]
-    _names_arm = [f'upperarm_{_s}', f'lowerarm_{_s}', f'hand_{_s}']
+    _names_arm = [f'upperarm_{_s}', f'lowerarm_{_s}'] + ([] if C2.get('armNoHand') else [f'hand_{_s}'])  # armNoHand: tay áo rủ từ cẳng tay, không xoay theo cổ tay
     _ycent = np.array([np.mean([_cent[k][j][1] for j in range(_J + 1)]) for k in range(_K)])
     _GEO = None
     if C2.get('armFall') == 'geo':
@@ -424,3 +430,40 @@ if os.environ.get('C2_DUMP2'):  # chẩn đoán: vị trí/nhãn vùng/trọng s
 REP['c2_verts'] = NV
 REP['c2_underbody'] = {'verts': len(_ring_verts), 'tris_quads': len(_ufaces)}
 log(f'C2 xong: {NV} đỉnh (gốc {_N0}), {len(COLS)} cột trọng số')
+
+# ---------- alpha đỉnh (COLOR_0, chỉ khi bật): voan trong suốt + mép hở mờ dần ----------
+# Client (alpha hash + ghi độ sâu) đọc alpha này: không cần sắp xếp tam giác, không vỡ lỗ; hem răng cưa tan vào nền. Tắt: veilAlpha = 1 và borderFade = 0.
+_va = float(C2.get('veilAlpha', 1.0))
+_bf = float(C2.get('borderFade', 0.0)) * _H / 1.7
+if _va < 1.0 or _bf > 0:
+    _isb = np.isin(_vorig, np.array(sorted(_border_orig), int))
+    _alpha = np.ones(NV)
+    _cloth = np.isin(LABN, (1, 2, 3, 4))
+    if _bf > 0:
+        _dist = np.full(NV, 1e9)
+        _hp = []
+        for _i in np.where(_isb & _cloth)[0]:
+            _dist[_i] = 0.0
+            heapq.heappush(_hp, (0.0, int(_i)))
+        while _hp:
+            _d0, _i = heapq.heappop(_hp)
+            if _d0 > _dist[_i]:
+                continue
+            for _w in adj[_i]:
+                if LABN[_w] != LABN[_i]:
+                    continue
+                _nd = _d0 + float(np.linalg.norm(VP[_i] - VP[_w]))
+                if _nd < _dist[_w]:
+                    _dist[_w] = _nd
+                    heapq.heappush(_hp, (_nd, int(_w)))
+        _u = np.clip(_dist / _bf, 0, 1)
+        _a0 = float(C2.get('borderAlpha', 0.0))
+        _alpha = np.where(_cloth, _a0 + (1 - _a0) * (_u * _u * (3 - 2 * _u)), 1.0)
+    _alpha = np.where(np.isin(LABN, (1, 2)), _alpha * _va, _alpha)
+    _ca = BODY.data.color_attributes.new('DtlAlpha', 'BYTE_COLOR', 'POINT')
+    _buf = np.ones((NV, 4), np.float32)
+    _buf[:, 3] = _alpha
+    _ca.data.foreach_set('color', _buf.ravel())
+    BODY.data.color_attributes.active_color = _ca
+    REP['c2_alpha'] = {'veil': _va, 'borderFade': _bf, 'min': float(_alpha.min()), 'mean': float(_alpha.mean())}
+    log(f'C2 alpha đỉnh: veilAlpha {_va}, borderFade {_bf:.3f} m, alpha tối thiểu {_alpha.min():.2f}, trung bình {_alpha.mean():.3f}')
