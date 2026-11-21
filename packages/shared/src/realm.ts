@@ -1,6 +1,7 @@
 // Cảnh giới Phase 3-7: bình cảnh (Ngưng Khí tầng 5/10/15), thử thách tâm ma, linh căn ngũ hành.
-// Hàm thuần dùng chung client (hiển thị) và server (phán định). Bảng linh căn nằm ở packages/content/data/roots.json.
+// Hàm thuần dùng chung client (hiển thị) và server (phán định). Bảng linh căn nay là bảng Bản Nguyên (TN-1): packages/content/data/origins.json, luật ở origin.ts.
 
+import type { OriginDef, OriginStat } from './origin';
 import { tribForLevel } from './tribulation';
 import {
   ANH_BIEN_LEVEL,
@@ -114,27 +115,18 @@ export function isRootId(v: unknown): v is RootId {
   return typeof v === 'string' && (ROOT_IDS as readonly string[]).includes(v);
 }
 
-/** Phần cộng chỉ số phụ của một linh căn (phân số: 0,05 = 5%). */
-export interface RootStat {
-  atkPct?: number;
-  defPct?: number;
-  mpPct?: number;
-  critRate?: number;
-  healRecv?: number;
-}
-
-export interface RootDef {
-  id: RootId;
-  /** Hệ ngũ hành được cộng sát thương (trùng id). */
-  elem: RootId;
-  /** +% sát thương chiêu cùng hệ. */
-  elemDmg: number;
-  stat: RootStat;
-}
+/** Linh căn nay là một Bản Nguyên (TN-1, `origin.ts`): kiểu cũ giữ làm bí danh cho mã đang dùng. */
+export type RootStat = OriginStat;
+export type RootDef = OriginDef;
 
 /** Hệ ngũ hành của từng chiêu (`SkillDef.elem` thiếu thì chiêu không thuộc hệ nào). */
 export function elemDamageMul(elemDmg: Record<string, number>, elem: string | undefined): number {
   return elem ? 1 + (elemDmg[elem] ?? 0) : 1;
+}
+
+/** Hệ số sát thương của một chiêu từ chỉ số người đánh: hệ ngũ hành của chiêu × phần cộng mọi chiêu (`allDmg`, Bản Nguyên Lôi). */
+export function skillDamageMul(stats: { elemDmg: Record<string, number>; allDmg?: number }, elem: string | undefined): number {
+  return elemDamageMul(stats.elemDmg, elem) * (1 + (stats.allDmg ?? 0));
 }
 
 /** Giá phí đổi linh căn ở NPC (linh thạch), tăng theo cảnh giới để không thành chuyện tiện tay. */

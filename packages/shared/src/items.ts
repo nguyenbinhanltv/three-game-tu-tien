@@ -312,6 +312,8 @@ export interface PlayerStats extends BaseStats {
   skillDmg: Record<string, number>;
   elemDmg: Record<string, number>;
   elemRes: Record<string, number>;
+  /** +% sát thương mọi chiêu (TN-1: Bản Nguyên ngoài ngũ hành). */
+  allDmg: number;
   /** Bộ trang bị (P3-4): món đang mặc theo bộ và hiệu ứng combat đã kích hoạt. */
   sets: SetStatus[];
   setFx: SetFx;
@@ -325,7 +327,7 @@ export interface EquippedEntry {
 
 /**
  * Tổng chỉ số từ cảnh giới + các ô đang mặc. Công thức: cộng phẳng (dòng chính × cường hóa), rồi nhân phần trăm.
- * Đồ cũ (không `inst`) cộng đúng như trước nên nhịp lên cấp không đổi. Linh căn cộng ở đây (P3-7); bộ trang bị, công pháp cộng ở đợt sau.
+ * Đồ cũ (không `inst`) cộng đúng như trước nên nhịp lên cấp không đổi. Linh căn/Bản Nguyên cộng ở đây (P3-7, TN-1; bậc Bản Nguyên: truyền `originAtTier(def, bậc)`); bộ trang bị, công pháp cộng ở đợt sau.
  */
 export function computePlayerStats(
   level: number,
@@ -418,8 +420,10 @@ export function computePlayerStats(
     : [];
   for (const s of setSt) for (const tier of s.active) for (const a of tier.lines ?? []) addLine(a);
   // Linh căn: +% sát thương hệ của mình và một chỉ số phụ nhẹ (thiết kế mục 2).
+  let allDmg = 0;
   if (root) {
-    elemDmg[root.elem] = (elemDmg[root.elem] ?? 0) + root.elemDmg;
+    if (root.elem) elemDmg[root.elem] = (elemDmg[root.elem] ?? 0) + (root.elemDmg ?? 0);
+    allDmg += root.allDmg ?? 0;
     atkPct += root.stat.atkPct ?? 0;
     defPct += root.stat.defPct ?? 0;
     mpPct += root.stat.mpPct ?? 0;
@@ -441,6 +445,7 @@ export function computePlayerStats(
     skillDmg,
     elemDmg,
     elemRes,
+    allDmg,
     sets: setSt,
     setFx: setSt.length ? setFxOf(setSt) : NO_SET_FX,
   };

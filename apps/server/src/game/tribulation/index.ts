@@ -3,7 +3,7 @@ import {
   computeDamage,
   type DmgMsg,
   type FxMsg,
-  elemDamageMul,
+  skillDamageMul,
   elemCounter,
   STAT_CAPS,
   counterMul,
@@ -251,7 +251,7 @@ export class TribulationSystem {
     const elem = skill?.elem;
     const ke = elemCounter(elem, mon.def.elem);
     const pw = power * (1 + markAmp(mon.marks, MARK, p.sid, this.c.now));
-    const em = elemDamageMul(p.char.stats.elemDmg, elem);
+    const em = skillDamageMul(p.char.stats, elem);
     const crit0 = Math.min(STAT_CAPS.critRate, p.char.stats.critRate + this.c.domain.critAdd(p));
     const { dmg, crit } = computeDamage(
       p.char.atk,
@@ -296,11 +296,17 @@ export class TribulationSystem {
     setChainCleared(c.meta, def, have + 1);
     if (ok && gold > 0) this.c.sys(p, chainKey(def, 'stage_gold'), { n: idx + 1, max: def.phases.length, gold }, 'good');
     else this.c.sys(p, chainKey(def, 'stage'), { n: idx + 1, max: def.phases.length }, 'good');
-    if (chainDone(c.meta, def) && def.law) {
+    if (chainDone(c.meta, def)) {
+      // Qua đủ một chuỗi: pháp tắc (TN-4) hoặc bậc Bản Nguyên (TN-1, chuỗi Huyền Kiếp) đổi chỉ số nên tính lại ngay.
       c.recalc();
-      c.hp = c.mhp;
-      c.mp = c.mmp;
-      this.c.sys(p, 'sys.suy_law', undefined, 'good');
+      if (def.law) {
+        c.hp = c.mhp;
+        c.mp = c.mmp;
+        this.c.sys(p, 'sys.suy_law', undefined, 'good');
+      } else {
+        c.hp = Math.min(c.hp, c.mhp);
+        c.mp = Math.min(c.mp, c.mmp);
+      }
     }
     this.c.fx({ t: 'suyok', src: p.sid, n: idx, s: ph.id });
     this.c.savePlayer(p);

@@ -50,7 +50,7 @@ import { methodDefMul, methodOf, sanitizeMethodMeta, type MethodMeta } from './m
 import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta } from './artifact';
 import { log } from '../log';
 
-import { lawPassive, sanitizeChainMeta } from '@dtl/shared';
+import { huyenOriginTier, lawPassive, originAtTier, sanitizeChainMeta } from '@dtl/shared';
 import { at, emptyLook, isWardrobeKind, outfitLookFromDb, outfitLookToDb, type OutfitLook } from '@dtl/shared';
 interface CharMeta extends MethodMeta, ArtifactMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
@@ -436,7 +436,8 @@ export class Character {
       const e = this.equip[k];
       if (e) worn.push({ item: e, tpl: ITEM.get(e.id)?.stats });
     }
-    const st0 = computePlayerStats(this.level, worn, ROOT.get(this.root), SETS);
+    // Bậc Bản Nguyên (TN-1): mỗi chuỗi Huyền Kiếp qua đủ nhân thưởng của nguồn thêm 25%; suy từ tiến độ kiếp, không lưu riêng.
+    const st0 = computePlayerStats(this.level, worn, originAtTier(ROOT.get(this.root), huyenOriginTier(this.meta)), SETS);
     // Pháp tắc sơ ngộ (TN-4): qua đủ Thiên Nhân Ngũ Suy thì bốn chỉ số gốc cộng thêm theo `tribulations.json`.
     const law = lawPassive(this.meta.suy);
     const st = law
