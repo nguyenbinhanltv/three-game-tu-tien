@@ -32,6 +32,7 @@ export * from './marks';
 export * from './branch';
 export * from './stance';
 export * from './joint';
+export * from './path';
 export * from './artifacts';
 export * from './spirit';
 export * from './soul';
