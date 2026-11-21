@@ -63,6 +63,12 @@
       "co_bao": "Cổ Bạo",
       "thu_co": "Thu Cổ",
       "co_vuong": "Cổ Vương"
+    },
+    "cam_che_kinh": {
+      "pha_diet": "Phá Diệt",
+      "tue_nguyet": "Tuế Nguyệt",
+      "sinh_tu": "Sinh Tử",
+      "phien_thien": "Phiên Thiên"
     }
   },
   "stances": {
@@ -93,7 +99,11 @@
     "skl_hoa_hinh": "Hóa Hình",
     "skl_hinh_quyen": "Hình Quyền",
     "skl_hinh_chan": "Hình Chấn",
-    "skl_hinh_giap": "Hình Giáp"
+    "skl_hinh_giap": "Hình Giáp",
+    "skl_bo_tran": "Bố Trận",
+    "skl_cam_chi": "Cấm Chỉ",
+    "skl_khon_tran": "Khốn Trận",
+    "skl_ho_tran": "Hộ Trận"
   },
   "paths": {
     "kiem_tu": "Kiếm tu",
@@ -102,7 +112,8 @@
     "hon_tu": "Hồn tu",
     "dao_tu": "Đao tu",
     "co_tu": "Cổ tu",
-    "co_than": "Cổ Thần"
+    "co_than": "Cổ Thần",
+    "cam_che_su": "Cấm chế sư"
   },
   "joints": {
     "pha_the_tram": "Phá Thế Trảm",
@@ -116,7 +127,8 @@
     "moc_an": "Mộc ấn",
     "hon_an": "Hồn ấn",
     "dao_ngan": "Đao ngấn",
-    "co_doc": "Cổ độc"
+    "co_doc": "Cổ độc",
+    "cam_an": "Cấm ấn"
   },
   "resources": {
     "kiem_y": "Kiếm ý",
@@ -125,7 +137,8 @@
     "hon_luc": "Hồn lực",
     "khi_the": "Khí thế",
     "co": "Cổ",
-    "co_huyet": "Cổ huyết"
+    "co_huyet": "Cổ huyết",
+    "cam_luc": "Cấm lực"
   },
   "realms": [
     "Ngưng Khí",
@@ -462,7 +475,11 @@
     "skl_hut_mau_co": "Hút Máu Cổ",
     "skl_co_bao": "Cổ Bạo",
     "skl_thu_co": "Thu Cổ",
-    "skl_hoa_co_vuong": "Hóa Cổ Vương"
+    "skl_hoa_co_vuong": "Hóa Cổ Vương",
+    "skl_pha_diet_cam": "Phá Diệt Cấm",
+    "skl_tue_nguyet_cam": "Tuế Nguyệt Cấm",
+    "skl_sinh_tu_cam": "Sinh Tử Cấm",
+    "skl_phien_thien_an": "Phiên Thiên Ấn"
   },
   "maps": {
     "van_lam": "Vân Lam Sơn Mạch",

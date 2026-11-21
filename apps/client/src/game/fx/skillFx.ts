@@ -227,7 +227,8 @@ export class SkillFx {
       def.kind !== 'guard' &&
       def.kind !== 'taunt' &&
       def.kind !== 'buff' &&
-      def.kind !== 'summon'
+      def.kind !== 'summon' &&
+      def.kind !== 'formation'
     ) {
       for (const h of tm.hitAt) {
         const [s, en] = bladeWindow(h - e.t);

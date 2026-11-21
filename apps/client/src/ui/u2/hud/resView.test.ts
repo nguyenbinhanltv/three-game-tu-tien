@@ -6,7 +6,7 @@ const def = (id: string) => METHODS.find((m) => m.resource.id === id)!.resource;
 
 describe('thanh tài nguyên riêng (VS-2a)', () => {
   it('mỗi công pháp một tài nguyên, kiểu vẽ khớp thang đo', () => {
-    expect(METHODS.map((m) => m.resource.id).sort()).toEqual(['co', 'co_huyet', 'dan_hoa', 'hon_luc', 'huyet_khi', 'khi_the', 'kiem_y']);
+    expect(METHODS.map((m) => m.resource.id).sort()).toEqual(['cam_luc', 'co', 'co_huyet', 'dan_hoa', 'hon_luc', 'huyet_khi', 'khi_the', 'kiem_y']);
     expect(def('kiem_y').ui).toBe('pips');
     expect(def('huyet_khi').ui).toBe('bar');
   });

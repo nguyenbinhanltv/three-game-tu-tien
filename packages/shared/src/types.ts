@@ -507,8 +507,43 @@ export interface MonsterPosture {
  * damage/aoe/heal/shield: 6 chiêu chung. Chiêu công pháp (Phase 3-5) thêm: `taunt` (khiêu khích quanh mình),
  * `guard` (giảm sát thương nhận), `hot` (hồi vùng theo thời gian), `revive` (hồi sinh đồng đội gần).
  */
+/** Kiểu trận (xem `SkillDef.formation`). */
+export type FormationMode = 'sat' | 'khon' | 'ho' | 'sinhtu';
+
+export interface FormationDef {
+  mode: FormationMode;
+  /** Chỗ đặt: dưới chân người đặt hoặc `FORMATION_AHEAD` mét trước mặt theo hướng nhìn (server tính). */
+  at: 'self' | 'ahead';
+  r: number;
+  dur: number;
+  every: number;
+  /** Giây dựng trận: chưa có hiệu lực trong lúc dựng. */
+  arm: number;
+  /** Hệ số sát thương mỗi nhịp lên mỗi quái trong trận (`sat`, `khon`, `sinhtu`). */
+  power: number;
+  /** `khon`: nhân tốc độ quái (0–1, nhỏ hơn = chậm hơn). */
+  slow?: number;
+  /** `ho`, `sinhtu`: phần khí huyết tối đa hồi mỗi nhịp cho mỗi đạo hữu trong trận. */
+  heal?: number;
+  /** Mỗi nhịp gieo thêm 1 Cấm ấn lên quái trong trận (`sat`, `sinhtu` luôn gieo; `khon` chỉ khi `mark`). */
+  mark?: boolean;
+}
+
 export type SkillKind =
-  'damage' | 'aoe' | 'heal' | 'shield' | 'taunt' | 'guard' | 'hot' | 'revive' | 'dash' | 'line' | 'summon' | 'buff' | 'stance';
+  | 'damage'
+  | 'aoe'
+  | 'heal'
+  | 'shield'
+  | 'taunt'
+  | 'guard'
+  | 'hot'
+  | 'revive'
+  | 'dash'
+  | 'line'
+  | 'summon'
+  | 'buff'
+  | 'stance'
+  | 'formation';
 
 /** Kiểu thi triển (K-2). `channel`/`charge` đã khai báo nhưng server chưa hỗ trợ (check chặn). */
 export type CastType = 'instant' | 'cast' | 'channel' | 'charge';
@@ -645,6 +680,11 @@ export interface SkillDef {
   party?: number;
   /** `aoe`: thiêu đốt quái trúng: mỗi giây `mul` × công, kéo dài `dur` giây. */
   burn?: { mul: number; dur: number };
+  /**
+   * `formation` (TN-8): đặt một thực thể trận lên đất. Luật thuần ở `formation.ts`. Trận chờ `arm` giây rồi mỗi `every` giây tới hết `dur`:
+   * `sat` đánh quái, `khon` làm chậm (thủ lĩnh miễn) + đánh nhẹ, `ho` hồi đạo hữu, `sinhtu` vừa hồi vừa đánh.
+   */
+  formation?: FormationDef;
   /** `summon`: `count` kiếm đan, mỗi `every` giây đánh quái gần nhất trong `range` mét; `power` là hệ số mỗi nhịp. */
   summon?: { count: number; every: number; range: number };
   /** `buff`: giảm sát thương nhận `reduce` trong `duration` giây; `stomp` giậm quanh mình mỗi `every` giây; `regen` hồi %/giây. */

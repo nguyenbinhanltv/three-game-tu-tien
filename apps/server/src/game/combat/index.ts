@@ -3,6 +3,13 @@
 import {
   addCharge,
   CHARGE_MAX,
+  formationAdd,
+  formationHeals,
+  formationHurts,
+  formationMarks,
+  formationSpot,
+  inFormation,
+  type FormationState,
   type DmgMsg,
   caveBoundOf,
   chainMp,
@@ -117,6 +124,9 @@ export class CombatSystem {
   trails: Trail[] = [];
   summons: Summon[] = [];
   stomps: Stomp[] = [];
+  /** TN-8: thực thể trận đang đứng trên đất (mọi người chung một danh sách, tối đa `FORMATION_MAX` mỗi người). */
+  formations: FormationState[] = [];
+  private formationSeq = 0;
   /** E4-G: kiếm ảnh đang chạy của Phân Anh Kiếm Ảnh (mỗi người một). */
   echoes = new Map<string, { until: number; delay: number; hits: number[]; elem: string }>();
 
@@ -790,6 +800,45 @@ export class CombatSystem {
   }
 
   /** Quái sống trong `r` mét quanh (x, z), trừ `except`, gần nhất trước. */
+  /**
+   * TN-8: nhịp của mọi thực thể trận. Trận bỏ khi chủ rời room hoặc ngã, hoặc hết thời gian. Trước `armAt` trận chưa có hiệu lực. Mỗi nhịp:
+   * `sat`/`sinhtu` đánh quái trong trận và gieo Cấm ấn, `khon` làm chậm (thủ lĩnh miễn) + đánh nhẹ, `ho`/`sinhtu` hồi đạo hữu hợp lệ trong trận.
+   * Nhịp có tác dụng thì chủ nhận Cấm lực (nguồn `dot`).
+   */
+  private tickFormations(now: number): void {
+    for (let i = this.formations.length - 1; i >= 0; i--) {
+      const f = at(this.formations, i);
+      const owner = this.c.players.get(f.sid);
+      if (!owner || this.c.isDead(owner) || now >= f.until) {
+        this.formations.splice(i, 1);
+        continue;
+      }
+      if (now < f.armAt) continue;
+      while (now >= f.nextAt && f.nextAt <= f.until) {
+        f.nextAt += f.every * 1000;
+        let acted = false;
+        if (formationHurts(f.mode)) {
+          const elemMul = skillDamageMul(owner.char.stats, 'thuy');
+          for (const o of this.monstersNear(f.x, f.z, f.r)) {
+            if (o.owner && o.owner !== f.sid) continue;
+            acted = true;
+            if (f.slow !== undefined && !o.def.boss) o.slow = { until: now + f.every * 1000 + 500, mul: f.slow };
+            this.c.hitMonster(owner, o, f.power, elemMul, 'thuy');
+            if (o.state !== MS_DEAD && f.mark) this.markMon(owner, o, 'cam_an', 1);
+          }
+        }
+        if (formationHeals(f.mode) && f.heal) {
+          for (const o of this.c.players.values()) {
+            if (this.c.isDead(o) || !this.canAssist(owner, o) || !inFormation(f, o.move.x, o.move.z) || o.char.hp >= o.char.mhp) continue;
+            if (this.healPlayer(o, Math.round(o.char.mhp * f.heal), owner) > 0) acted = true;
+          }
+        }
+        this.c.fx({ t: `${SKILL.get(f.skill)?.fx ?? 'tran'}_tick`, src: f.sid, x: f.x, z: f.z, r: f.r });
+        if (acted) this.resDot(owner);
+      }
+    }
+  }
+
   monstersNear(x: number, z: number, r: number, except?: MonEnt): MonEnt[] {
     const out: { m: MonEnt; d: number }[] = [];
     for (const o of this.c.monsters) {
@@ -921,7 +970,7 @@ export class CombatSystem {
     // VS-2a: chiêu xả tài nguyên riêng lúc áp (Kiếm ý theo `res` của chiêu, Huyết khí theo luật `auto`, Đan hỏa cho chiêu hồi).
     const { mul: resMul, spent: resSpent } = this.spendRes(p, skill);
     // Chiêu gọi (`summon`) xả tài nguyên thì mỗi nhịp của vật gọi mạnh theo (Tát Đậu Thành Binh xả Hồn lực).
-    let mul = dealsDamage(skill) || skill.kind === 'summon' ? resMul : 1;
+    let mul = dealsDamage(skill) || skill.kind === 'summon' || skill.kind === 'formation' ? resMul : 1;
     // VS-2c: ấn chiêu này đặt và tiêu (dữ liệu của chiêu; người không tu đúng công pháp của ấn thì `markFor` trả rỗng).
     const am = skill.applyMark;
     const cm = skill.consumeMark;
@@ -1159,6 +1208,31 @@ export class CombatSystem {
         if (st.reduce) p.mth.setGuard(this.c.now, st.reduce, st.dur);
         p.mth.dirty = true;
         this.c.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, d: st.dur, ...tag });
+        break;
+      }
+      case 'formation': {
+        // TN-8: đặt một thực thể trận lên đất. Server tính chỗ đặt (không nhận tọa độ từ client); mỗi người tối đa FORMATION_MAX trận.
+        const fd = skill.formation;
+        if (!fd) break;
+        const spot = formationSpot(fd, p.move.x, p.move.z, p.s.yaw);
+        this.formations = formationAdd(this.formations, {
+          id: ++this.formationSeq,
+          sid: p.sid,
+          skill: skill.id,
+          mode: fd.mode,
+          x: spot.x,
+          z: spot.z,
+          r: fd.r,
+          armAt: this.c.now + fd.arm * 1000,
+          until: this.c.now + fd.dur * 1000,
+          nextAt: this.c.now + (fd.arm + fd.every) * 1000,
+          every: fd.every,
+          power: rs.power * mul,
+          slow: fd.slow,
+          heal: fd.heal,
+          mark: formationMarks(fd),
+        });
+        this.c.fx({ t: skill.fx, src: p.sid, x: spot.x, y: p.move.y, z: spot.z, r: fd.r, d: fd.dur, ...tag });
         break;
       }
       case 'summon': {
@@ -1543,6 +1617,7 @@ export class CombatSystem {
         }
       }
     }
+    this.tickFormations(now);
     for (let i = this.stomps.length - 1; i >= 0; i--) {
       const st = at(this.stomps, i);
       const owner = this.c.players.get(st.sid);
