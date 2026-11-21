@@ -133,10 +133,12 @@ describe('hiệu quả trong tư thế', () => {
     expect(priv.combat.liveRes(p)).toBe(2);
     use('skl_tran_kiem_tram', m.id);
     expect(m.marks.find((x) => x.id === 'kiem_an')?.n).toBe(1);
+    // Trận Kiếm Trảm cũng tích 1 ô (như Kiếm Khí Trảm ngoài trận tích sẵn Kiếm ý).
+    expect(priv.combat.liveRes(p)).toBe(3);
     // Quá 10 giây kể từ lần tích cuối nhưng vẫn trong trận (kéo dài hạn tư thế để chỉ thử luật không rụng).
     p.mth.stance!.until = sim.now + 60_000;
     sim.now += 30_000;
-    expect(priv.combat.liveRes(p)).toBe(2);
+    expect(priv.combat.liveRes(p)).toBe(3);
     p.mth.stance = null;
     expect(priv.combat.liveRes(p)).toBe(0);
   });
