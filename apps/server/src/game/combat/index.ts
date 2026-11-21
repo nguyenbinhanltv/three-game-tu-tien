@@ -23,7 +23,7 @@ import {
   resSpendAt,
   type FxMsg,
   AIRBORNE_HEIGHT,
-  elemDamageMul,
+  skillDamageMul,
   GCD,
   type LevelDef,
   MF_STUN,
@@ -328,7 +328,7 @@ export class CombatSystem {
     // Lướt xuyên (Nghịch Kiếm Chuyển Phong): chém mọi quái sát đường lướt.
     if (def.pierce && skill.power > 0) {
       let killed = false;
-      const em = elemDamageMul(c.stats.elemDmg, skill.elem);
+      const em = skillDamageMul(c.stats, skill.elem);
       for (const o of this.c.monsters) {
         if (o.state === MS_DEAD || (o.owner && o.owner !== p.sid)) continue;
         if (distToSegment(from.x, from.z, plan.x, plan.z, o.s.x, o.s.z) <= def.pierce.r + o.def.scale) {
@@ -349,7 +349,7 @@ export class CombatSystem {
     if (skill.power > 0 && tgt && (pullOnly || this.inRange(p, tgt, 3))) {
       // Lướt húc trong cửa sổ chuỗi: chỉ nhân sức mạnh, tiêu cửa sổ khi húc trúng (lướt hụt không mất chuỗi).
       const mul = takeChain(p.flow, skill, this.c.now).powerMul;
-      this.c.hitMonster(p, tgt, rs.power * mul, elemDamageMul(c.stats.elemDmg, skill.elem), skill.elem);
+      this.c.hitMonster(p, tgt, rs.power * mul, skillDamageMul(c.stats, skill.elem), skill.elem);
       // Húc choáng quái thường (hộ pháp): tinh anh nửa thời gian, boss miễn.
       // Bộ Vân Kình bậc 3 (4 món): Dịch Sơn Xung choáng thêm `dichSonStun` giây.
       // VS-2c: húc quái mang Trấn ấn của mình: choáng thêm, tích Huyết khí; đủ Huyết khí thì xả ra khiến quái mất thế.
@@ -892,7 +892,7 @@ export class CombatSystem {
     if (ctx.combo !== undefined) tag.n = ctx.combo;
     // Chiêu tối thượng nhiều mốc: giữ khóa vòng sạc tới đòn trễ cuối (không tự nạp lại vòng sạc của chính nó).
     let holdLock = 0;
-    const elemMul = elemDamageMul(c.stats.elemDmg, skill.elem);
+    const elemMul = skillDamageMul(c.stats, skill.elem);
     // VS-2a: chiêu xả tài nguyên riêng lúc áp (Kiếm ý theo `res` của chiêu, Huyết khí theo luật `auto`, Đan hỏa cho chiêu hồi).
     const { mul: resMul, spent: resSpent } = this.spendRes(p, skill);
     let mul = dealsDamage(skill) ? resMul : 1;
@@ -1506,7 +1506,7 @@ export class CombatSystem {
         const near = this.monstersNear(owner.move.x, owner.move.z, sm.range);
         const marked = (o: MonEnt) => markCount(o.marks, 'truy_hon', sm.sid, now) > 0;
         const pool = sm.markFirst ? [...near.filter(marked), ...near.filter((o) => !marked(o))] : near;
-        const em = elemDamageMul(owner.char.stats.elemDmg, sm.elem);
+        const em = skillDamageMul(owner.char.stats, sm.elem);
         for (const o of pool.slice(0, sm.count)) {
           this.c.fx({ t: 'kiemdan_hit', src: owner.sid, dst: o.id });
           this.c.hitMonster(owner, o, sm.power, em, sm.elem);
@@ -1524,7 +1524,7 @@ export class CombatSystem {
         st.nextAt += st.every * 1000;
         this.c.fx({ t: 'sonnhac_stomp', src: owner.sid, x: owner.move.x, y: owner.move.y, z: owner.move.z, r: st.r });
         for (const o of this.monstersNear(owner.move.x, owner.move.z, st.r))
-          this.c.hitMonster(owner, o, st.power, elemDamageMul(owner.char.stats.elemDmg, 'tho'), 'tho');
+          this.c.hitMonster(owner, o, st.power, skillDamageMul(owner.char.stats, 'tho'), 'tho');
       }
     }
     for (const p of this.c.players.values()) {

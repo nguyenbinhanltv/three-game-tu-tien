@@ -1,6 +1,7 @@
 import {
   clampTier,
   pathOfKey,
+  ROOT_IDS,
   registerMethodVoices,
   pickedBranch,
   skillGate,
@@ -37,6 +38,7 @@ import type {
   PoseDef,
   QuestDef,
   RealmDef,
+  OriginDef,
   RootDef,
   RecipeDef,
   SkillDef,
@@ -59,7 +61,7 @@ import npcsJson from '../data/npcs.json';
 import questsJson from '../data/quests.json';
 import chaptersJson from '../data/chapters.json';
 import realmsJson from '../data/realms.json';
-import rootsJson from '../data/roots.json';
+import originsJson from '../data/origins.json';
 import vanLamJson from '../data/levels/van_lam.json';
 import kiemTrungJson from '../data/levels/kiem_trung.json';
 import doanMachJson from '../data/levels/doan_mach.json';
@@ -318,8 +320,10 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   xich_tan_khich: xichTanKhichAssetsJson as LevelAssets,
   kim_da_cung: kimDaCungAssetsJson as LevelAssets,
 };
-/** Năm linh căn ngũ hành (P3-7). */
-export const ROOTS = rootsJson as RootDef[];
+/** 14 Bản Nguyên (TN-1, data/origins.json): sáu nguồn `real` đã mở, tám nguồn khóa theo chương. */
+export const ORIGINS = originsJson as OriginDef[];
+/** Các nguồn người chơi đang được mang (`ROOT_IDS`): năm linh căn ngũ hành (P3-7). */
+export const ROOTS: RootDef[] = ORIGINS.filter((o) => (ROOT_IDS as readonly string[]).includes(o.id));
 export const GLOSSARY = glossaryJson;
 
 /** Ghi công asset bên thứ ba (nguồn duy nhất, đối chiếu với assets/LICENSES.md + meta.json bằng content:check). */
@@ -557,7 +561,9 @@ export const SUY_FX_STAGE: Record<string, string[]> = {
   ],
   suy_tam: ['suy_enter_tam', 'suy_tam_open', 'suy_tam_good', 'suy_tam_bad', 'suy_tam_miss', 'suy_ok', 'suy_fail'],
 };
-export const ROOT = index(ROOTS);
+/** Tra theo id trên CẢ 14 nguồn (nguồn nào được chọn do `isRootId` quyết định, không phải bảng này). */
+export const ROOT = index(ORIGINS);
+export const ORIGIN = ROOT;
 export const ARTIFACT = index(ARTIFACTS);
 /** Danh sách chiêu của phân thân thần niệm theo công pháp (E4-K): `data/clones.json`. */
 export const CLONE_MOVES = clonesJson as unknown as Record<string, CloneMethodDef>;

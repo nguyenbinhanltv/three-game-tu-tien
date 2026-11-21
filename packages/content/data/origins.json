@@ -1,0 +1,16 @@
+[
+  { "id": "kim", "group": "real", "elem": "kim", "elemDmg": 0.08, "stat": { "critRate": 0.05 }, "color": "d9dde6" },
+  { "id": "moc", "group": "real", "elem": "moc", "elemDmg": 0.08, "stat": { "healRecv": 0.05 }, "color": "4fbf7a" },
+  { "id": "thuy", "group": "real", "elem": "thuy", "elemDmg": 0.08, "stat": { "mpPct": 0.05 }, "color": "3f8fe0" },
+  { "id": "hoa", "group": "real", "elem": "hoa", "elemDmg": 0.08, "stat": { "atkPct": 0.05 }, "color": "e8562f" },
+  { "id": "tho", "group": "real", "elem": "tho", "elemDmg": 0.08, "stat": { "defPct": 0.05 }, "color": "c79a4a" },
+  { "id": "loi", "group": "real", "allDmg": 0.03, "stat": { "critRate": 0.03 }, "color": "9a7bff" },
+  { "id": "sinh_tu", "group": "void", "chapter": 6, "stat": {}, "color": "7fd6c2" },
+  { "id": "nhan_qua", "group": "void", "chapter": 6, "stat": {}, "color": "d6b25e" },
+  { "id": "chan_gia", "group": "void", "chapter": 6, "stat": {}, "color": "b9a7e8" },
+  { "id": "luan_hoi", "group": "void", "chapter": 6, "stat": {}, "color": "5a6fd8" },
+  { "id": "khoi_nguyen", "group": "special", "chapter": 7, "stat": {}, "color": "fff2c4" },
+  { "id": "tich_diet", "group": "special", "chapter": 7, "stat": {}, "color": "5b5566" },
+  { "id": "cam_che", "group": "special", "chapter": 7, "stat": {}, "color": "3fc7c7" },
+  { "id": "sat_luc", "group": "special", "chapter": 7, "stat": {}, "color": "c2283a" }
+]

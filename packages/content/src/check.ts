@@ -92,6 +92,7 @@ import {
   REALMS,
   RECIPES,
   ROOTS,
+  ORIGINS,
   SKILLS,
   JOINTS,
   MARK,
@@ -108,6 +109,8 @@ import { LOOT, LOOT_MATS } from './loot';
 import {
   jointErrors,
   pathErrors,
+  originErrors,
+  ORIGIN_GROUPS,
   POSE_VOICES,
   stanceErrors,
   branchErrors,
@@ -1147,16 +1150,30 @@ for (const q of QUESTS) {
 }
 for (const r of REALMS) needStr(r.key);
 // ---- linh căn ngũ hành và bình cảnh (P3-7) ----
-uniqueIds('root', ROOTS);
-if (ROOTS.map((r) => r.id).join() !== ROOT_IDS.join()) err(`roots.json phải đủ năm linh căn theo thứ tự ${ROOT_IDS.join(', ')}`);
+// TN-1: 14 Bản Nguyên (origins.json). Nguồn người chơi mang (`ROOT_IDS`) đứng đầu bảng; nguồn khóa chưa có thưởng.
+for (const e of originErrors(ORIGINS, ELEMENTS, ROOT_IDS)) err(e);
+if (ROOTS.map((r) => r.id).join() !== ROOT_IDS.join())
+  err(`origins.json phải có đủ các nguồn người chơi mang theo thứ tự ${ROOT_IDS.join(', ')}`);
+{
+  const gl = GLOSSARY.origins as Record<string, Record<string, string>>;
+  const glGroups = GLOSSARY.originGroups as Record<string, string>;
+  for (const g of ORIGIN_GROUPS) {
+    needStr(`origin.group.${g}`);
+    if (t(`origin.group.${g}`) !== glGroups[g]) err(`origin.group.${g}: tên lệch glossary.originGroups`);
+    const have = ORIGINS.filter((o) => o.group === g).map((o) => o.id);
+    if (have.join() !== Object.keys(gl[g] ?? {}).join())
+      err(`origins.json nhóm ${g}: phải khớp glossary.origins.${g} (${Object.keys(gl[g] ?? {}).join(', ')})`);
+  }
+  for (const o of ORIGINS) {
+    needStr(`origin.${o.id}.name`);
+    needStr(`origin.${o.id}.desc`);
+    if (t(`origin.${o.id}.name`) !== gl[o.group]?.[o.id]) err(`origin ${o.id}: tên lệch glossary.origins`);
+  }
+}
 for (const r of ROOTS) {
   needStr(`root.${r.id}.name`);
   needStr(`root.${r.id}.desc`);
   needStr(`elem.${r.id}`);
-  if (!(ELEMENTS as readonly string[]).includes(r.elem)) err(`root ${r.id}: hệ ${r.elem} không hợp lệ`);
-  if (!(r.elemDmg > 0 && r.elemDmg <= 0.1)) err(`root ${r.id}: elemDmg phải trong (0; 0,1] (thiết kế: +8%)`);
-  const vals = Object.values(r.stat);
-  if (vals.length !== 1 || !(vals[0]! > 0 && vals[0]! <= 0.05)) err(`root ${r.id}: đúng một chỉ số phụ, tối đa +5%`);
 }
 for (const s of SKILLS)
   if (s.elem !== undefined && !(ELEMENTS as readonly string[]).includes(s.elem)) err(`skill ${s.id}: elem ${s.elem} không hợp lệ`);
