@@ -1,0 +1,58 @@
+{
+ "skill": "suy_den_light",
+ "palette": "suy_tho",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "helix",
+   "t": 0.0,
+   "dur": 1.2,
+   "at": "area",
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": [
+    0.7,
+    0.7,
+    0.9
+   ],
+   "sweep": 0.9,
+   "erodeFrom": 0.85,
+   "ragged": 0.4,
+   "tone": "rim",
+   "alpha": 0.8,
+   "seed": 89,
+   "spin": 300,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 26,
+   "speed": 2.2,
+   "spread": 1.0,
+   "life": 0.9,
+   "size": 0.08,
+   "at": "area",
+   "offset": [
+    0,
+    1.9,
+    0
+   ],
+   "tone": "rim",
+   "inward": true,
+   "tier": 0,
+   "from": "start"
+  }
+ ]
+}

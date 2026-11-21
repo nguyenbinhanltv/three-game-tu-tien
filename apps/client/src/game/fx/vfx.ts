@@ -459,6 +459,12 @@ export class Vfx {
    * không có seed thì ngẫu nhiên tại chỗ. `flash` > 0: chớp toàn cảnh qua `onFlash` lúc tia ngược
    * bừng (và nhỏ hơn ở lần bừng thứ hai). Thời lượng 0,42 giây như bản cũ.
    */
+  /**
+   * Hệ số cỡ quầng cầu chạm đất của tia sét (mặc định 1). Ải Ngũ Suy (TN-4) hạ xuống khi đang chạy: quầng nở tới ~3 m bằng lưới ít mặt
+   * trông như khối lăng trụ mờ che tầm nhìn khi rơi sát camera, trong lúc người chơi phải đọc dấu của ải.
+   */
+  boltGlowMul = 1;
+
   lightning(x: number, y: number, z: number, color = 0xd6c4ff, scale = 1, seed?: number, flash = 0, thick = 1): void {
     const sd = seedOr(seed);
     const bolt = takeBolt();
@@ -488,7 +494,8 @@ export class Vfx {
           struck = 2;
           if (flash > 0) this.onFlash?.(flash * 0.6);
         }
-        glow.scale.set(scale * (1 + k * 2.2), scale * (0.6 + k * 1.2), scale * (1 + k * 2.2));
+        const gm = this.boltGlowMul;
+        glow.scale.set(scale * (1 + k * 2.2) * gm, scale * (0.6 + k * 1.2) * gm, scale * (1 + k * 2.2) * gm);
         glow.fxOpacity = 0.35 * (1 - k) * (k < 0.12 ? 0.3 : 1);
         ring.scale.setScalar(scale * (1 + Math.max(0, k - 0.12) * 4.5));
         ring.fxOpacity = k < 0.12 ? 0 : 0.9 * (1 - k);
@@ -874,6 +881,137 @@ export class Vfx {
     return {
       set: (m) => {
         mask = m;
+      },
+      stop: () => {
+        stopping = true;
+      },
+    };
+  }
+
+  /**
+   * Cột linh quang của Thiên Nhân Ngũ Suy (TN-4): cột sáng mảnh cộng sáng (có bloom) + vành dưới chân tại `pos()` (bám theo nếu `pos` đổi),
+   * để dấu của ải đọc được từ xa trên sân tối. Sống `dur` giây hoặc tới khi `stop()` / `stillOn()` sai; mờ vào/ra 0,25 s. Đỉnh sáng dưới `FX_MAX_HDR`.
+   */
+  suyBeacon(
+    pos: () => { x: number; y: number; z: number } | null,
+    color: number,
+    o: { h: number; r: number; dur: number; opacity?: number; pulse?: number; thick?: number; crackle?: boolean },
+    stillOn: () => boolean = () => true,
+  ): { stop(): void } {
+    const col = this.fx(G.ico1, color, 0);
+    const ring = this.fx(RING_GEO, color, 0);
+    ring.rotation.x = -Math.PI / 2;
+    const op = o.opacity ?? 0.5;
+    let t = 0;
+    let fade = 0;
+    let stopping = false;
+    const it = {
+      t: 0,
+      dur: o.dur + 0.3,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const on = !stopping && t < o.dur && stillOn();
+        fade = on ? Math.min(1, fade + dt * 4) : Math.max(0, fade - dt * 4);
+        if (!on && fade <= 0) it.t = it.dur;
+        const p = pos();
+        if (!p) return;
+        const pulse = 1 + Math.sin(t * (o.pulse ?? 3)) * 0.08;
+        // `crackle` (trụ lôi quang của Tôi Thể Lôi): bề rộng và độ sáng giật theo hai nhịp lệch pha như tia sét đang giáng, mạnh dần về cuối.
+        const k = Math.min(1, t / Math.max(0.1, o.dur));
+        const jit = o.crackle ? 0.45 + 0.55 * Math.abs(Math.sin(t * 31) * Math.sin(t * 17 + 1.3)) : 1;
+        const w = 0.16 * o.r * (o.thick ?? 1) * pulse * (o.crackle ? 0.5 + 0.5 * k + 0.35 * jit : 1);
+        col.position.set(p.x, p.y + o.h * 0.5, p.z);
+        col.scale.set(w, o.h, w);
+        col.fxOpacity = op * fade * (o.crackle ? 0.55 + 0.45 * jit : 1);
+        ring.position.set(p.x, p.y + 0.14, p.z);
+        ring.scale.setScalar(o.r * (0.96 + 0.04 * pulse));
+        ring.fxOpacity = Math.min(0.9, op * 1.5) * fade;
+      },
+      end: () => {
+        this.drop(col);
+        this.drop(ring);
+      },
+    };
+    this.items.push(it);
+    return {
+      stop: () => {
+        stopping = true;
+      },
+    };
+  }
+
+  /**
+   * Thọ Đăng của ải Thọ Nguyên Suy (TN-4): mỗi ngọn một ngọn lửa cộng sáng (bloom) bập bùng trên trụ đèn + quầng dưới chân, đọc được từ xa.
+   * Trạng thái từng ngọn (`set(i, state, sec)`): 1 cháy (vàng ấm, lửa cao); 0 tắt (lửa mất, quầng xám lam nhấp nháy = "tới đây thắp");
+   * 2 suy phong đang nhắm: trong `sec` giây lửa lùn dần, quầng NHẠT MÀU DẦN từ vàng sang xám lam; 3 đang thắp lại: lửa lớn dần trong `sec` giây.
+   * Thân đèn có khối do timeline `suy_den_*` vẽ; ở đây chỉ là phần phát sáng. `stop()` hoặc `stillOn()` sai thì tắt dần rồi trả lưới.
+   */
+  suyLamps(
+    pts: readonly { x: number; z: number }[],
+    stillOn: () => boolean,
+  ): { set(i: number, state: number, sec?: number): void; stop(): void } {
+    const WARM = new THREE.Color(0xffa02a);
+    const COLD = new THREE.Color(0x8fa3b8);
+    const flames: FxMesh[] = [];
+    const cores: FxMesh[] = [];
+    const halos: FxMesh[] = [];
+    const pos = pts.map((p) => ({ x: p.x, z: p.z, y: groundAt(p.x, p.z) }));
+    for (let i = 0; i < pts.length; i++) {
+      flames.push(this.fx(G.ico1, 0xff8a1e, 0));
+      cores.push(this.fx(G.ico1, 0xffe9a8, 0));
+      const h = this.fx(RING_GEO, 0xffa02a, 0);
+      h.rotation.x = -Math.PI / 2;
+      halos.push(h);
+    }
+    const st = pts.map(() => ({ state: 1, lit: 0, since: 0, sec: 1 }));
+    const tint = new THREE.Color();
+    let t = 0;
+    let fade = 0;
+    let stopping = false;
+    const it = {
+      t: 0,
+      dur: 600,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const on = !stopping && stillOn();
+        fade = on ? Math.min(1, fade + dt * 3) : Math.max(0, fade - dt * 3);
+        if (!on && fade <= 0) it.t = it.dur;
+        for (let i = 0; i < pos.length; i++) {
+          const s = st[i]!;
+          const k = Math.min(1, (t - s.since) / Math.max(0.05, s.sec));
+          // Độ cháy đích 0..1 theo trạng thái; `cool` = phần ngả xám lam của quầng.
+          const target = s.state === 1 ? 1 : s.state === 2 ? 1 - 0.75 * k : s.state === 3 ? 0.15 + 0.6 * k : 0;
+          const cool = s.state === 2 ? k : s.state === 0 ? 1 : 0;
+          s.lit += (target - s.lit) * Math.min(1, dt * 9);
+          const flick = 1 + Math.sin(t * 11 + i * 2.1) * 0.1 + Math.sin(t * 23 + i) * 0.05;
+          const h = (0.8 + 2.4 * s.lit) * flick;
+          const p = pos[i]!;
+          flames[i]!.position.set(p.x, p.y + 1.75 + h * 0.5, p.z);
+          flames[i]!.scale.set(0.45 + 0.35 * s.lit, h, 0.45 + 0.35 * s.lit);
+          flames[i]!.fxOpacity = 0.8 * s.lit * fade;
+          cores[i]!.position.set(p.x, p.y + 1.85 + h * 0.3, p.z);
+          cores[i]!.scale.set(0.26, h * 0.55, 0.26);
+          cores[i]!.fxOpacity = 0.5 * s.lit * fade;
+          tint.copy(WARM).lerp(COLD, cool);
+          halos[i]!.fxColor.copy(tint);
+          halos[i]!.position.set(p.x, p.y + 0.16, p.z);
+          const blink = s.state === 0 ? 0.55 + 0.35 * Math.sin(t * 6 + i) : s.state === 2 ? 0.7 + 0.25 * Math.sin(t * 14) : 0.6;
+          halos[i]!.scale.setScalar(s.state === 0 ? 2.8 : 2.2 + 0.8 * s.lit);
+          halos[i]!.fxOpacity = Math.min(0.75, blink) * fade;
+        }
+      },
+      end: () => {
+        for (const m of [...flames, ...cores, ...halos]) this.drop(m);
+      },
+    };
+    this.items.push(it);
+    return {
+      set: (i, state, sec = 0.3) => {
+        const s = st[i];
+        if (!s) return;
+        s.state = state;
+        s.since = t;
+        s.sec = sec;
       },
       stop: () => {
         stopping = true;

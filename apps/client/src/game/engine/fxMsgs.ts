@@ -443,6 +443,7 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     }
     case 'suy': {
       // Thanh suy khí của một ải Ngũ Suy (TN-4): `pg` < 0 khép ải (dọn mọi dấu của người đó), còn lại cập nhật thanh và nhịp.
+      eng.suyFx?.bar(m);
       if (m.pg !== undefined && m.pg < 0) {
         clearSuyMarks(eng, src);
         if (src === eng.sid) set({ suy: null, suyWaveUntil: 0, suyLamps: -1 });
@@ -469,6 +470,7 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       if (src === eng.sid) set({ suyCdUntil: Date.now() + (m.d ?? 0) * 1000 });
       break;
     case 'suyok':
+      eng.suyFx?.ok(m);
       if (src === eng.sid) eng.post?.flash(0.18);
       break;
     case 'tamcanh': {
@@ -739,24 +741,21 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
 
 function clearSuyMarks(eng: Game, sid: string): void {
   if (sid === eng.sid) eng.suyLog = undefined;
-  for (const [k, h] of eng.suyMarks) {
-    if (!k.startsWith(sid + ':')) continue;
-    h.stop();
-    eng.suyMarks.delete(k);
-  }
+  eng.suyFx?.clear(sid);
 }
 
 /**
- * Dấu trên sân của Thiên Nhân Ngũ Suy (TN-4). Bản đầu dùng vòng Đan Trận làm dấu tạm (vòng đầy = đang mở/đang cháy), VFX riêng từng ải làm ở PR sau.
+ * Dấu trên sân của Thiên Nhân Ngũ Suy (TN-4): hình do `SuyFx` phát theo timeline `suy_*.json`; ở đây chỉ giữ phần HUD của chính mình
+ * (Thọ Đăng đang cháy, đợt lôi ẩn đang tụ) và nhật ký dev cho Playwright.
  * `nhan` Linh Nhãn, `toi` Tôi Thể Lôi, `den` Thọ Đăng (ô `n`; `n` < 0 = dọn hết đèn), `thuc` đợt lôi ẩn (vạch báo đi qua S.HAZARD), `tam` nhịp phá vọng.
  */
 function suyMark(eng: Game, m: FxMsg): void {
   const src = m.src ?? '';
   const mine = src === eng.sid;
   const kind = m.s ?? '';
-  const alive = () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0;
-  const key = `${src}:${kind}:${m.n ?? 0}`;
-  if (import.meta.env.DEV && mine) {
+  eng.suyFx?.mark(m);
+  if (!mine) return;
+  if (import.meta.env.DEV) {
     // Đợt lôi ẩn dùng `n` làm mặt nạ cung nên gom về một khóa.
     const slot = kind === 'thuc' || kind === 'tam' ? 0 : (m.n ?? 0);
     (eng.suyLog ??= {})[`${kind}:${slot}`] = {
@@ -770,38 +769,15 @@ function suyMark(eng: Game, m: FxMsg): void {
       at: Date.now(),
     };
   }
-  const drop = (k: string) => {
-    eng.suyMarks.get(k)?.stop();
-    eng.suyMarks.delete(k);
-  };
-  const ring = (k: string, dur: number, pg: number) => {
-    let h = eng.suyMarks.get(k);
-    if (!h) {
-      h = eng.vfx.danTran(m.x ?? 0, m.z ?? 0, m.r ?? 3, dur, alive);
-      eng.suyMarks.set(k, h);
-    }
-    h.set(pg);
-  };
-  if (kind === 'nhan') {
-    drop(key);
-    if (m.pg) ring(key, (m.d ?? 8) + 0.5, 100);
-  } else if (kind === 'toi') {
-    drop(key);
-    if (m.pg === 1) ring(key, (m.d ?? 2) + 0.2, 60);
-  } else if (kind === 'den') {
-    if ((m.n ?? 0) < 0) {
-      for (const k of [...eng.suyMarks.keys()]) if (k.startsWith(`${src}:den:`)) drop(k);
-      if (mine) set({ suyLamps: -1 });
-      return;
-    }
-    // 1 cháy, 0 tắt, 2 suy phong đang nhắm, 3 đang thắp lại.
-    ring(key, 60, m.pg === 1 ? 100 : m.pg === 2 ? 55 : m.pg === 3 ? 30 : 0);
-    if (mine && (m.pg === 0 || m.pg === 1)) {
+  if (kind === 'den') {
+    if ((m.n ?? 0) < 0) return set({ suyLamps: -1 });
+    // 1 cháy, 0 tắt (2 suy phong đang nhắm, 3 đang thắp lại: chưa đổi số đèn).
+    if (m.pg === 0 || m.pg === 1) {
       const cur = Math.max(0, get().suyLamps);
       const bit = 1 << (m.n ?? 0);
       set({ suyLamps: m.pg === 1 ? cur | bit : cur & ~bit });
     }
-  } else if (kind === 'thuc' && mine) {
+  } else if (kind === 'thuc') {
     if (m.pg === 3) set({ suyWaveUntil: Date.now() + (m.d ?? 3) * 1000 });
     else if (m.pg === 0) set({ suyWaveUntil: 0 });
   }

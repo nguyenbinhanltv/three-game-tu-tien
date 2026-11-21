@@ -103,6 +103,9 @@ import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './combat/skillPose';
 import { SkillFx } from './fx/skillFx';
+import { SuyFx } from './fx/suyFx';
+import { groundAt } from '../base/levelCtx';
+import { PF_TRIBULATION } from '@dtl/shared';
 import { MonFx } from './fx/monFx';
 import { variantFor } from './fx/fxTimeline';
 import {
@@ -436,8 +439,8 @@ export class Game {
   ch4Checked = false;
   ch5Checked = false;
   danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
-  /** Dấu trên sân của Thiên Nhân Ngũ Suy (TN-4), khóa `<sid>:<loại>:<ô>`. */
-  suyMarks = new Map<string, { set(pg: number): void; stop(): void }>();
+  /** Hiệu ứng năm ải Thiên Nhân Ngũ Suy (TN-4) theo timeline `suy_*.json`. */
+  suyFx: SuyFx | null = null;
   /** Năm Trấn Giới Bia của Nhật Thực Kiếp (của mình). */
   stelesVfx: { set(mask: number): void; stop(): void } | null = null;
   stelesMask = 0;
@@ -750,6 +753,18 @@ export class Game {
       partySids: () => new Set((get().party?.members ?? []).map((m) => m.sid).filter(Boolean)),
     });
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
+    this.suyFx = new SuyFx(this.skillFx.runner, {
+      vfx: this.vfx,
+      scene: this.scene,
+      mySid: () => this.sid,
+      player: (sid) => this.ents?.players.get(sid),
+      ground: (x, z) => groundAt(x, z),
+      tribOn: (sid) => ((this.view.players.get(sid)?.fl ?? 0) & PF_TRIBULATION) !== 0,
+      shadow: () => {
+        for (const m of this.view.monsters.values()) if (m.t === 'mon_tam_ma' && m.hp > 0) return { x: m.x, y: groundAt(m.x, m.z), z: m.z };
+        return null;
+      },
+    });
     this.vfx.particles.setQuality(get().quality);
     buildLevelB(this, this.initLevel, q);
     this.ambient = new AmbientParticles(this.vfx.particles);
@@ -1431,6 +1446,8 @@ export class Game {
     this.realmAura?.dispose();
     this.realmAura = null;
     this.monFx = null;
+    this.suyFx?.dispose();
+    this.suyFx = null;
     this.vfx?.dispose();
     this.terrain?.dispose();
     this.ground?.dispose();
