@@ -27,8 +27,13 @@ function point(name: string, defR: number): { x: number; z: number; r: number } 
   return Number.isFinite(x) && Number.isFinite(z) ? { x, z, r } : null;
 }
 
-// --set <id bộ> (hoặc BOT_SET): lúc vào game /gm set <bộ> để đo client với đám đông mặc bộ trang bị (áo mặc thật).
-const SET = arg('set', process.env.BOT_SET ?? '');
+// --set <id bộ>[,<id bộ>…] (hoặc BOT_SET): lúc vào game /gm set <bộ> để đo client với đám đông mặc bộ trang bị (áo mặc thật).
+// Nhiều bộ thì bot thứ i mặc bộ thứ i % n; `off` = không mặc bộ nào (đồ khởi đầu).
+const SETS = arg('set', process.env.BOT_SET ?? '')
+  .split(',')
+  .filter(Boolean);
+// --genders m,f: giới tính lúc tạo nhân vật, chia đều theo thứ tự bot (mặc định toàn nam như trước).
+const GENDERS = arg('genders', 'm').split(',').filter(Boolean);
 // --wardrobe: bot nhận một đạo bào rồi đổi dáng/nhuộm trong Tủ ngoại trang định kỳ (đo đường StateView với `dye3`, 0 dòng refId).
 const WARDROBE = process.argv.includes('--wardrobe');
 const WARDROBE_DYES = ['attire_sect', 'attire_ivory', 'wood_roof', 'wood_cinnabar', 'attire_rogue', 'attire_ink'];
@@ -93,7 +98,10 @@ class Bot {
   private bossSpawns = 0;
   private bossTimer: ReturnType<typeof setInterval> | null = null;
 
-  constructor(public name: string) {}
+  constructor(
+    public name: string,
+    private index = 0,
+  ) {}
 
   async connect(): Promise<void> {
     await this.join(ROOM_WORLD);
@@ -107,7 +115,7 @@ class Bot {
     const client = new Client(URL);
     // Màu áo khác nhau theo tên (chỉ có tác dụng lúc tạo nhân vật) để cảnh test tải giống người thật.
     const dye = APPEARANCE.dyes[hashName(this.name) % APPEARANCE.dyes.length].id;
-    const room = await client.joinOrCreate(roomName, { dev: this.name, ap: { g: 'm', dye } });
+    const room = await client.joinOrCreate(roomName, { dev: this.name, ap: { g: GENDERS[this.index % GENDERS.length] ?? 'm', dye } });
     this.room = room;
     this.sid = '';
     room.onMessage(S.INIT, (m: InitMsg) => {
@@ -175,8 +183,10 @@ class Bot {
         at += 1000;
       }
     }
-    if (SET) {
-      setTimeout(() => this.chat(`/gm set ${SET}`), at);
+    // Giới tính đổi mỗi bot, bộ đổi mỗi `GENDERS.length` bot: đủ mọi cặp bộ × giới.
+    const set = SETS[Math.floor(this.index / GENDERS.length) % Math.max(1, SETS.length)];
+    if (set) {
+      setTimeout(() => this.chat(`/gm set ${set}`), at);
       at += 1000;
     }
     if (WARDROBE) {
@@ -364,7 +374,7 @@ async function main() {
   const bots: Bot[] = [];
   let failed = 0;
   for (let i = 0; i < COUNT; i++) {
-    const b = new Bot(`${PREFIX}${i + 1}`);
+    const b = new Bot(`${PREFIX}${i + 1}`, i);
     try {
       await b.connect();
       bots.push(b);

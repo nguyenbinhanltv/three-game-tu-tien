@@ -28,7 +28,7 @@ export default {
             viewport,
             quality: 'high',
             look: { g },
-            query: { ...(chr === 'v2' && { chr: 'v2' }), ...(v === 'old' && { ual: 0 }) },
+            query: { chr: chr === 'v2' ? 'v2' : 'v1', ...(v === 'old' && { ual: 0 }) },
             hide: 'hud',
             warnings: /models/,
             video: dir,

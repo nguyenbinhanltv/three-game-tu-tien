@@ -111,6 +111,11 @@ describe('máy trạng thái', () => {
     expect(lodLevel(5, [22, 55], false, 3)).toBe(1);
     expect(lodLevel(30, [22, 55], true, 3)).toBe(1);
     expect(lodLevel(80, [22, 55], false, 3)).toBe(2);
+    // N-7: hết suất LOD1 của model nặng thì LOD2 dù ở gần; không vượt số mức có thật.
+    expect(lodLevel(5, [22, 55], false, 3, 2)).toBe(2);
+    expect(lodLevel(5, [22, 55], true, 3, 2)).toBe(2);
+    expect(lodLevel(5, [22, 55], true, 2, 2)).toBe(1);
+    expect(lodLevel(5, [22, 55], true, 3, 0)).toBe(0);
     expect(lodLevel(80, [22, 55], true, 1)).toBe(0);
   });
 });

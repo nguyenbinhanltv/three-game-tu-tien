@@ -8,7 +8,7 @@ import { cam, gm, info } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { centerClip, snap, writeJson } from '../lib/shot';
 
-const QUERY: Record<string, Record<string, string>> = { old: {}, v2: { chr: 'v2' }, v2b: { chr: 'v2', hair: 'b' } };
+const QUERY: Record<string, Record<string, string>> = { old: { chr: 'v1' }, v2: { chr: 'v2' }, v2b: { chr: 'v2', hair: 'b' } };
 /** [tên góc, yaw, pitch, khoảng cách]. */
 const STILLS: [string, number, number, number][] = [
   ['matcan', 0, 0.02, 0.9],
