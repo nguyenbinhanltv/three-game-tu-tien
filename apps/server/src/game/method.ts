@@ -6,6 +6,8 @@ import {
   CHARGE_MAX,
   MAX_SKILL_LEVEL,
   migrateSkillKeys,
+  pathOpen,
+  sanitizeLearnedPaths,
   resolveSkill,
   branchMods,
   stanceActive,
@@ -22,7 +24,7 @@ import {
   type SkillDef,
   type VariantId,
 } from '@dtl/shared';
-import { METHOD, SKILL, VARIANTS } from '@dtl/content';
+import { METHOD, PATHS, pathOf, SKILL, VARIANTS } from '@dtl/content';
 
 /** Phần công pháp lưu trong `characters.meta` (JSON). Không cần đổi bảng DB. */
 export interface MethodMeta {
@@ -35,11 +37,18 @@ export interface MethodMeta {
   methodAt?: number;
   /** Lần reset nhánh công pháp gần nhất (ms, giờ server) để chống reset dồn (VS-2d). */
   branchAt?: number;
+  /** Hướng tu đã lĩnh ngộ (TN-2): id các hướng có `unlock` trong paths.json. Hướng không cần lĩnh ngộ không nằm ở đây. */
+  paths?: string[];
 }
 
 /** Làm sạch phần công pháp của meta khi đọc từ DB (dữ liệu hỏng/cũ: bỏ phần lạ). */
 export function sanitizeMethodMeta(meta: MethodMeta): void {
   if (typeof meta.method !== 'string' || !METHOD.has(meta.method)) delete meta.method;
+  const learned = sanitizeLearnedPaths(PATHS, meta.paths);
+  if (learned.length) meta.paths = learned;
+  else delete meta.paths;
+  // Đang tu công pháp của hướng chưa lĩnh ngộ (dữ liệu hỏng): bỏ công pháp, người chơi chọn lại.
+  if (meta.method && !pathOpen(pathOf(meta.method), meta.paths)) delete meta.method;
   // Chiêu đổi id (K-2): giữ cấp và biến thức theo id mới.
   migrateSkillKeys(meta.skillLv);
   migrateSkillKeys(meta.skillVar);
@@ -59,6 +68,16 @@ export function sanitizeMethodMeta(meta: MethodMeta): void {
   meta.skillVar = vr;
   if (typeof meta.methodAt !== 'number' || !Number.isFinite(meta.methodAt)) delete meta.methodAt;
   if (typeof meta.branchAt !== 'number' || !Number.isFinite(meta.branchAt)) delete meta.branchAt;
+}
+
+/**
+ * Lệnh GM đặt thẳng công pháp: nếu công pháp thuộc hướng phải lĩnh ngộ (TN-2) thì ghi luôn là đã lĩnh ngộ, để lần nạp sau
+ * `sanitizeMethodMeta` không gỡ công pháp. Không trừ linh thạch (GM), không dùng cho đường chơi thường.
+ */
+export function grantPathOf(meta: MethodMeta): void {
+  const path = pathOf(meta.method);
+  if (!path?.unlock || pathOpen(path, meta.paths)) return;
+  meta.paths = [...(meta.paths ?? []), path.id];
 }
 
 export function methodOf(meta: MethodMeta): MethodDef | undefined {

@@ -250,6 +250,12 @@ import poseThietQuyenJson from '../data/poses/thiet_quyen.json';
 import poseDanHoaJson from '../data/poses/dan_hoa.json';
 import poseKiemVuJson from '../data/poses/kiem_vu.json';
 import poseKiemDanJson from '../data/poses/kiem_dan.json';
+import posePheHonJson from '../data/poses/phe_hon.json';
+import poseTatDauThanhBinhJson from '../data/poses/tat_dau_thanh_binh.json';
+import poseSuuHonThuatJson from '../data/poses/suu_hon_thuat.json';
+import poseAmHonTrieuJson from '../data/poses/am_hon_trieu.json';
+import poseDinhThanThuatJson from '../data/poses/dinh_than_thuat.json';
+import poseHoangTuyenDanJson from '../data/poses/hoang_tuyen_dan.json';
 import posePhanAnhKiemAnhJson from '../data/poses/phan_anh_kiem_anh.json';
 import poseKimChungJson from '../data/poses/kim_chung.json';
 import poseSonNhacJson from '../data/poses/son_nhac.json';
@@ -424,6 +430,12 @@ export const POSES = [
   poseDanHoaJson,
   poseKiemVuJson,
   poseKiemDanJson,
+  posePheHonJson,
+  poseTatDauThanhBinhJson,
+  poseSuuHonThuatJson,
+  poseAmHonTrieuJson,
+  poseDinhThanThuatJson,
+  poseHoangTuyenDanJson,
   posePhanAnhKiemAnhJson,
   poseKimChungJson,
   poseSonNhacJson,

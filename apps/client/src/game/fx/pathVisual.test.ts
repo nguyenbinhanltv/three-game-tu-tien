@@ -61,7 +61,9 @@ describe('hình theo hướng tu khớp bảng cứng trước VS-3', () => {
     for (const [m, pal] of Object.entries(OLD_PALETTE)) expect(FX_PALETTE[m], m).toEqual(pal);
   });
   it('màu linh quang của chiêu', () => {
-    expect(METHOD_TINT).toEqual(OLD_TINT);
+    // Ba công pháp có từ trước VS-3 giữ đúng màu cũ; công pháp thêm sau (TN-2: Dẫn Hồn Kinh) lấy `tint` của hướng tu nó thuộc.
+    expect(METHOD_TINT).toMatchObject(OLD_TINT);
+    expect(METHOD_TINT.dan_hon_kinh).toBe(0xc9d4e0);
     expect(DEFAULT_TINT).toBe(0xcff3ff);
     for (const k of KEYS) expect(tintOfMethod(k), String(k)).toBe((k && (OLD_TINT as Record<string, number>)[k]) || 0xcff3ff);
   });

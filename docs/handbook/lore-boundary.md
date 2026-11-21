@@ -38,6 +38,8 @@ Tên năm ải của Thiên Nhân Ngũ Suy (TN-4, `glossary.nguSuy`) **tự đ�
 
 Thuật ngữ riêng của Huyền Kiếp (TN-6, `glossary.huyenKiepTerms`) đều **tự đặt** từ từ ghép thể loại: kiếp lực, cương phong, Dẫn Lôi Trụ, Bản Mệnh Ấn, Huyết Ảnh, Hồn Châu, cung sinh, điều tức. Chín tên kiếp giữ theo `glossary.huyenKiep` (TN-0, trong đó Vấn Tâm Kiếp tự đặt); cơ chế cả chín kiếp tự thiết kế, không dựa tình tiết nào của truyện.
 
+Hồn tu (TN-2): bốn tên chiêu **gốc** thuộc mức Cẩn trọng, chỉ giữ tên, cơ chế và mô tả tự viết: Phệ Hồn, Sưu Hồn Thuật, Định Thân Thuật, Tát Đậu Thành Binh. Còn lại **tự đặt** từ từ ghép thể loại: Dẫn Hồn Kinh (công pháp), Hồn ấn, U Ảnh Bộ, Tế Phiên, Hồn Trảo, Âm Phong, Hồn Chướng, Âm Hồn Triều, Hoàng Tuyền Dẫn và tên bốn nhánh (Sưu Hồn, Hồn Triều, Định Hồn, Hoàng Tuyền). "Hồn tu", "hồn lực", "hồn phiên" là thuật ngữ thể loại (`glossary.dao`). Không dùng tên hồn phiên riêng của truyện, không nhắc nhân vật hay tình tiết.
+
 Tên Hán-Việt lấy từ wiki fan, nhiều mục chỉ có một nguồn; khi người dùng sửa thì `glossary.json` là nguồn đúng. Nguồn khái niệm và độ chắc từng mục ghi ở tài liệu kế hoạch nội bộ, không đưa vào lời thoại hay UI.
 
 ## Kiểm tự động
