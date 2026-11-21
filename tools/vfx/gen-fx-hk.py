@@ -108,13 +108,14 @@ write('hk_phong_hit', 'hk_phong', [
 ])
 
 # ---- Lôi Kiếp ----
+# Trụ thấp (~3,5 m): cao hơn thì thân trụ chắn mất nhân vật khi nó đứng giữa camera và người (duyệt ảnh #432).
 ROD = [
-    mesh('rock_spire', 0.0, LOOP, at='area', offset=[0, 0, 0], scale=[1.0, 4.4, 1.0], sweep=0.0, erodeFrom=HOLD, alpha=0.98, seed=51, tier=0, **START),
-    mesh('kite', 0.0, LOOP, at='area', offset=[0, 4.3, 0], rot=[-90, 0, 0], scale=[2.6, 2.6, 1.8], sweep=0.0, erodeFrom=HOLD, alpha=0.95, seed=52, tier=0, **START),
+    mesh('rock_spire', 0.0, LOOP, at='area', offset=[0, 0, 0], scale=[1.0, 2.6, 1.0], sweep=0.0, erodeFrom=HOLD, alpha=0.98, seed=51, tier=0, **START),
+    mesh('kite', 0.0, LOOP, at='area', offset=[0, 2.5, 0], rot=[-90, 0, 0], scale=[2.0, 2.0, 1.2], sweep=0.0, erodeFrom=HOLD, alpha=0.95, seed=52, tier=0, **START),
 ]
 write('hk_loi_rod', 'hk_loi', [dict(e, tone='body' if i == 0 else 'rim') for i, e in enumerate(ROD)] + [
     decal('rune', 0.0, 2.2, LOOP, at='area', grow=0.01, tone='body', alpha=0.95, yaw=0, tier=0, **START),
-    parts('spark', 0.0, 4, 0.8, 0.5, 1.2, 0.07, at='area', offset=[0, 5.2, 0], tone='rim', grav=-0.8, tier=1, **START),
+    parts('spark', 0.0, 4, 0.8, 0.5, 1.2, 0.07, at='area', offset=[0, 3.4, 0], tone='rim', grav=-0.8, tier=1, **START),
 ])
 write('hk_loi_hot', 'hk_loi', [dict(e, tone='accent') for e in ROD] + [
     decal('rune', 0.0, 4.5, LOOP, at='area', grow=0.01, tone='accent', alpha=1.0, yaw=0, tier=0, **START),
