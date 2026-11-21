@@ -162,8 +162,7 @@ describe('Huyền Kiếp: bản chuẩn hành vi', () => {
           return x.type === S.HAZARD || x.type === S.DMG || (x.type === S.FX && (t.startsWith('suy') || t === 'hkmark'));
         })
         .map((x) => JSON.stringify([x.type, { ...(x.msg as object), sd: undefined, src: undefined, dst: undefined }]));
-      const sha = createHash('sha1').update(rows.join('
-')).digest('hex');
+      const sha = createHash('sha1').update(rows.join('\n')).digest('hex');
       expect({ n: rows.length, ended: !p.trib, t: sim.now - t0, cleared: chainCleared(char.meta, def), sha }).toMatchSnapshot();
       expect(chainCleared(char.meta, def)).toBe(def.phases.length);
     });
