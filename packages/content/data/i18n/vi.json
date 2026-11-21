@@ -1491,7 +1491,7 @@
   "gm.cmd.help": "/gm help [lệnh] — liệt kê lệnh, cú pháp, ví dụ. VD: /gm help kit",
   "gm.cmd.level": "/gm level <1-28> — đặt cấp. VD: /gm level 20",
   "gm.cmd.realm": "/gm realm <nk1…nk15|tc|tc1…tc3|kd1…|na1…|ht> — đặt cảnh giới. VD: /gm realm tc2",
-  "gm.cmd.trib": "/gm trib [truc_co|ket_dan|nguyen_anh|hoa_than|anh_bien|ngu_suy [ải 1..5]] — độ kiếp ngay. VD: /gm trib ket_dan, /gm trib ngu_suy 3",
+  "gm.cmd.trib": "/gm trib [truc_co|ket_dan|nguyen_anh|hoa_than|anh_bien|ngu_suy [ải 1..5]|huyen_ngoai|huyen_noi|huyen_hon [kiếp 1..3]] — độ kiếp ngay. VD: /gm trib ket_dan, /gm trib ngu_suy 3, /gm trib huyen_noi 2",
   "gm.cmd.xp": "/gm xp <n> — cộng tu vi. VD: /gm xp 5000",
   "gm.cmd.gold": "/gm gold <n> — cộng linh thạch. VD: /gm gold 100000",
   "gm.cmd.god": "/gm god [on|off] — bất tử. VD: /gm god on",

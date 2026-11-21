@@ -21,6 +21,8 @@ import {
   PF_SOUL,
   inSkyBand,
   SOUL_SCOUT,
+  hkLuanAngle,
+  hkRingPos,
   tribDef,
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
@@ -466,6 +468,9 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     case 'suymark':
       suyMark(eng, m);
       break;
+    case 'hkmark':
+      hkMark(eng, m);
+      break;
     case 'suyreveal':
       if (src === eng.sid) set({ suyCdUntil: Date.now() + (m.d ?? 0) * 1000 });
       break;
@@ -739,7 +744,108 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
   }
 }
 
+function clearHkMarks(eng: Game, sid: string, prefix = ''): void {
+  for (const [k, h] of eng.hkMarks) {
+    if (!k.startsWith(`${sid}:${prefix}`)) continue;
+    h.stop();
+    eng.hkMarks.delete(k);
+  }
+}
+
+/**
+ * Dấu trên sân của Huyền Kiếp (TN-6). Bản đầu dùng cột linh quang sẵn có (`Vfx.suyBeacon`) làm dấu tạm; hình riêng từng kiếp làm ở PR VFX.
+ * Phần HUD của chính mình (dòng nhắc) đọc `hkMark` trong store; bản dev ghi `__game.suyLog` cho Playwright.
+ */
+function hkMark(eng: Game, m: FxMsg): void {
+  const src = m.src ?? '';
+  const mine = src === eng.sid;
+  const kind = m.s ?? '';
+  const pg = m.pg ?? 0;
+  const on = () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0;
+  const at = (x: number, z: number) => ({ x, y: groundAt(x, z), z });
+  const put = (
+    slot: string,
+    color: number,
+    x: number,
+    z: number,
+    o: { h: number; r: number; dur: number; opacity?: number; pulse?: number },
+  ) => {
+    const k = `${src}:${kind}:${slot}`;
+    eng.hkMarks.get(k)?.stop();
+    const p = at(x, z);
+    eng.hkMarks.set(
+      k,
+      eng.vfx.suyBeacon(() => p, color, o, on),
+    );
+  };
+  const drop = (slot: string) => clearHkMarks(eng, src, `${kind}:${slot}`);
+  const x = m.x ?? 0;
+  const z = m.z ?? 0;
+  const ring = (n: number, r: number, f: (i: number, px: number, pz: number) => void) => {
+    for (let i = 0; i < n; i++) {
+      const p = hkRingPos({ x, z }, r, i, n);
+      f(i, p.x, p.z);
+    }
+  };
+  if (pg === 0 && (m.n ?? -1) < 0) clearHkMarks(eng, src, kind + ':');
+  else if (kind === 'tuyet') {
+    if (pg === 2) put(String(m.n ?? 0), 0xbfe6ff, x, z, { h: 2.2, r: m.r ?? 3, dur: m.d ?? 9, opacity: 0.45 });
+  } else if (kind === 'phong') {
+    if (pg === 1) ring(m.n ?? 3, m.r ?? 7, (i, px, pz) => put('p' + i, 0xc9b27a, px, pz, { h: 6, r: 1.4, dur: 40, opacity: 0.45 }));
+    else if (pg === 2)
+      // Chỗ nấp: sau từng trụ theo chiều gió (ox, oz).
+      ring(3, m.r ?? 7, (i, px, pz) =>
+        put('s' + i, 0x8fe3b0, px + (m.ox ?? 0) * 2.2, pz + (m.oz ?? 0) * 2.2, { h: 1.6, r: 1.8, dur: m.d ?? 3, opacity: 0.5, pulse: 10 }),
+      );
+    else clearHkMarks(eng, src, 'phong:s');
+  } else if (kind === 'loi') {
+    const i = String(m.n ?? 0);
+    if (pg === 1) put(i, 0x9a63ff, x, z, { h: 7, r: 1.6, dur: 40, opacity: 0.4 });
+    else if (pg === 2) put(i, 0xff5a3a, x, z, { h: 7, r: m.r ?? 4.5, dur: m.d ?? 9, opacity: 0.45, pulse: 12 });
+  } else if (kind === 'ly') {
+    if (pg === 1) put('an', 0xf3c860, x, z, { h: 3, r: m.r ?? 6, dur: 40, opacity: 0.3 });
+  } else if (kind === 'van') {
+    if (pg === 1)
+      ring(m.n ?? 3, m.r ?? 7, (i, px, pz) => put('a' + i, 0x7d6be0, px, pz, { h: 2.5, r: m.lv ?? 2.6, dur: 40, opacity: 0.3 }));
+    else if (pg === 2) put('show', 0xfff1c9, x, z, { h: 9, r: m.r ?? 2.6, dur: m.d ?? 1.4, opacity: 0.6, pulse: 14 });
+    else if (pg === 3) drop('show');
+    else if (pg === 4 || pg === 5) put('show', pg === 4 ? 0x8fe3b0 : 0xff5a3a, x, z, { h: 6, r: m.r ?? 2.6, dur: 0.9, opacity: 0.55 });
+  } else if (kind === 'chau') {
+    const i = String(m.n ?? 0);
+    if (pg === 1) put(i, 0xa7f0d8, x, z, { h: 3.5, r: 1.2, dur: m.d ?? 6, opacity: 0.55, pulse: 6 });
+    else drop(i);
+  } else if (kind === 'luan' && pg === 1) {
+    // Cung sinh: cột sáng chạy theo góc `ox + oz × t` ở giữa bán kính vòng.
+    const k = `${src}:luan:safe`;
+    eng.hkMarks.get(k)?.stop();
+    const t0 = performance.now();
+    const rr = Math.min(6, (m.r ?? 13) * 0.5);
+    eng.hkMarks.set(
+      k,
+      eng.vfx.suyBeacon(
+        () => {
+          const th = hkLuanAngle(m.ox ?? 0, m.oz ?? 0, (performance.now() - t0) / 1000);
+          return at(x + Math.sin(th) * rr, z + Math.cos(th) * rr);
+        },
+        0x8fe3b0,
+        { h: 8, r: 3, dur: (m.d ?? 5) + 0.3, opacity: 0.45 },
+        on,
+      ),
+    );
+  }
+  if (!mine) return;
+  if (import.meta.env.DEV) {
+    const slot = ['tuyet', 'loi', 'chau'].includes(kind) ? (m.n ?? 0) : 0;
+    (eng.suyLog ??= {})[`${kind}:${slot}`] = { s: kind, n: m.n ?? 0, x, z, r: m.r ?? 0, pg, lv: m.lv ?? 0, at: Date.now() };
+  }
+  // Dòng nhắc HUD: chỉ các dấu có ý nghĩa nhịp/thời hạn.
+  if (['phong', 'van', 'tuc', 'luan'].includes(kind))
+    set({ hkMark: { s: kind, pg, n: m.n ?? 0, lv: m.lv ?? 0, until: Date.now() + (m.d ?? 0) * 1000, r: m.r ?? 0 } });
+}
+
 function clearSuyMarks(eng: Game, sid: string): void {
+  clearHkMarks(eng, sid);
+  if (sid === eng.sid) set({ hkMark: null });
   if (sid === eng.sid) eng.suyLog = undefined;
   eng.suyFx?.clear(sid);
 }

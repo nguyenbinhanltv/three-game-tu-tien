@@ -218,7 +218,12 @@ function onKeyDown(eng: Game, e: KeyboardEvent): void {
   }
   // Xuất khiếu trong Tam Trọng Kiếp (E3-L, móc tạm: E3-K sẽ nối phím X thật). Chỉ gửi ý định, server kiểm pha, hồi chiêu.
   // Cùng phím X trong ải Thần Thức Suy (TN-4) là ngưng thần soi lôi ẩn.
-  if (code === 'KeyX' && !e.shiftKey && (eng.tribId === 'nguyen_anh' || eng.tribId === 'ngu_suy') && get().tribEnd > Date.now()) {
+  if (
+    code === 'KeyX' &&
+    !e.shiftKey &&
+    (eng.tribId === 'nguyen_anh' || eng.tribId === 'ngu_suy' || eng.tribId.startsWith('huyen_')) &&
+    get().tribEnd > Date.now()
+  ) {
     eng.send(C.TRIB_SOUL, {});
     return;
   }
