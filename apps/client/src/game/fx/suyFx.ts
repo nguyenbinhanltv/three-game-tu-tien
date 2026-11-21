@@ -469,19 +469,19 @@ export class SuyFx {
           const t0 = performance.now();
           const dx = m.ox ?? 0;
           const dz = m.oz ?? 0;
-          for (let k = 0; k < 4; k++)
+          for (let k = 0; k < 6; k++)
             this.glowFn(
               src,
               `phw${k}`,
               hexOf('hk_phong', 'rim'),
               () => {
-                const u = ((((performance.now() - t0) / 1000) * 9 + k * 5.5) % 22) - 11;
+                const u = ((((performance.now() - t0) / 1000) * 9 + k * 4) % 24) - 12;
                 const side = (k % 2 ? 1 : -1) * 1.6;
                 const px = c.x + dx * u + dz * side;
                 const pz = c.z + dz * u - dx * side;
                 return { x: px, y: this.env.ground(px, pz), z: pz };
               },
-              { h: 2.2, r: 1.1, dur: m.d ?? 3, opacity: 0.55, thick: 2.4 },
+              { h: 3.6, r: 1.7, dur: m.d ?? 3, opacity: 0.7, thick: 2.6 },
             );
           const rg = this.ringOf.get(src) ?? { n: 3, r: 7 };
           // Chỗ nấp: ngay sau từng trụ theo chiều gió.
@@ -601,7 +601,16 @@ export class SuyFx {
         const old = this.loops.get(`${src}:chau${i}`);
         if (pg === 1) {
           this.setLoop(src, `chau${i}`, 'hk_chau', 'hk_hon_tho', x, z, m.r ?? 1.8);
-          this.glow(src, `chau${i}`, hexOf('hk_hon_tho', 'body'), { x, z, h: 8, r: 1.5, dur: m.d ?? 6, opacity: 0.5, pulse: 6 });
+          this.glow(src, `chau${i}`, hexOf('hk_hon_tho', 'body'), {
+            x,
+            z,
+            h: 5,
+            r: 1.8,
+            dur: m.d ?? 6,
+            opacity: 0.65,
+            pulse: 6,
+            thick: 3.2,
+          });
         } else {
           this.loops.delete(`${src}:chau${i}`);
           this.dropGlow(src, `chau${i}`);
