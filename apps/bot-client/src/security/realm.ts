@@ -135,6 +135,21 @@ export async function runRealm(_ctx: Ctx): Promise<void> {
       flipped && g0 - g1 === rootChangeCost(6) && ca?.root === want && ((ca as CharV | null)?.gold ?? 0) === g1,
       `${before} → ${ca?.root}, linh thạch ${g0} → ${g1}`,
     );
+    // i. Bản Nguyên đang khóa (TN-1): đứng cạnh NPC, đủ tiền, khóa mới vẫn bị từ chối và không trừ phí; Lôi thì đổi được.
+    for (const root of ['sinh_tu', 'luan_hoi', 'khoi_nguyen', 'sat_luc']) a.room.send(C.ROOT, { npc: 'npc_chuong_mon', root, r: rq() });
+    await W(700);
+    check(
+      'Bản Nguyên đang khóa: server không cho đổi sang, không trừ linh thạch',
+      ca?.root === want && ((ca as CharV | null)?.gold ?? 0) === g1,
+      `${ca?.root}, linh thạch ${(ca as CharV | null)?.gold}`,
+    );
+    a.room.send(C.ROOT, { npc: 'npc_chuong_mon', root: 'loi', r: rq() });
+    await W(700);
+    check(
+      'Bản Nguyên Lôi: đổi được ở NPC, trừ đúng phí',
+      ca?.root === 'loi' && g1 - ((ca as CharV | null)?.gold ?? 0) === rootChangeCost(6),
+      `${ca?.root}, linh thạch ${g1} → ${(ca as CharV | null)?.gold}`,
+    );
     await say(a.room, 'killall');
     await a.room.leave(true);
     await b.room.leave(true);

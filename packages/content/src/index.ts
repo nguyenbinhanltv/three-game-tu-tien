@@ -351,7 +351,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
 };
 /** 14 Bản Nguyên (TN-1, data/origins.json): sáu nguồn `real` đã mở, tám nguồn khóa theo chương. */
 export const ORIGINS = originsJson as OriginDef[];
-/** Các nguồn người chơi đang được mang (`ROOT_IDS`): năm linh căn ngũ hành (P3-7). */
+/** Các nguồn người chơi đang được mang (`ROOT_IDS`): năm linh căn ngũ hành (P3-7) + Lôi (TN-1). */
 export const ROOTS: RootDef[] = ORIGINS.filter((o) => (ROOT_IDS as readonly string[]).includes(o.id));
 export const GLOSSARY = glossaryJson;
 
