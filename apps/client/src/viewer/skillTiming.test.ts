@@ -7,8 +7,8 @@ import { allSkillTimings, skillForId } from './skillTiming';
 describe('bảng thời gian chiêu (K-1)', () => {
   const rows = allSkillTimings();
 
-  it('đủ 63 chiêu có pose: 6 gốc + 6 công pháp + 19 chiêu bậc 2–3 (E2-G, trừ 2 chiêu lướt không có pose) + 12 chiêu tư thế (VS-2e) + 10 chiêu Hồn tu (TN-2, trừ chiêu lướt) + 10 chiêu Đao tu (trừ chiêu lướt)', () => {
-    expect(rows).toHaveLength(63);
+  it('đủ 73 chiêu có pose: 6 gốc + 6 công pháp + 19 chiêu bậc 2–3 (E2-G, trừ 2 chiêu lướt không có pose) + 12 chiêu tư thế (VS-2e) + 10 chiêu Hồn tu (TN-2, trừ chiêu lướt) + 10 chiêu Đao tu (trừ chiêu lướt) + 10 chiêu Cổ tu (trừ chiêu lướt)', () => {
+    expect(rows).toHaveLength(73);
     expect(rows.filter((r) => r.method === '')).toHaveLength(6);
   });
 

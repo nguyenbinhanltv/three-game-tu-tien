@@ -131,5 +131,48 @@
       "level": 10,
       "gold": 300
     }
+  },
+  {
+    "id": "co_tu",
+    "role": "dps",
+    "methods": [
+      "duong_co_kinh"
+    ],
+    "dao": "dan",
+    "art": "dan_su",
+    "voice": "ds",
+    "gm": "co",
+    "weapons": [
+      "cohu"
+    ],
+    "palette": {
+      "core": "12301c",
+      "body": "5e9a3a",
+      "rim": "d6e88a",
+      "accent": "e2d8b8",
+      "shadow": "0a1a10"
+    },
+    "tint": "d6e88a",
+    "hit": {
+      "sfx": "cast",
+      "gain": 0.14,
+      "rate": 1.1
+    },
+    "match": [
+      "co_tu",
+      "co_kinh"
+    ],
+    "synergy": {
+      "gives": [
+        "co_doc"
+      ],
+      "wants": [
+        "mat_the"
+      ]
+    },
+    "unlock": {
+      "level": 10,
+      "gold": 300
+    }
   }
 ]
