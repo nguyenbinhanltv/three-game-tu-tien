@@ -142,7 +142,10 @@ export function findIds(q: string, limit = 30): FindHit[] {
 
 /** Danh sách lệnh GM theo nhóm (khớp nhóm nút ở bảng F3). Chuỗi cú pháp/ví dụ ở i18n `gm.cmd.<id>`. */
 export const GM_GROUPS: readonly { id: string; cmds: readonly string[] }[] = [
-  { id: 'char', cmds: ['help', 'level', 'realm', 'trib', 'xp', 'gold', 'god', 'heal', 'die', 'charge', 'res', 'branch', 'cd', 'dye'] },
+  {
+    id: 'char',
+    cmds: ['help', 'level', 'realm', 'trib', 'xp', 'gold', 'god', 'heal', 'die', 'charge', 'res', 'branch', 'cd', 'dye', 'dao'],
+  },
   { id: 'skill', cmds: ['skills', 'learn', 'method', 'variant'] },
   { id: 'gear', cmds: ['kit', 'roll', 'set', 'plus', 'art', 'give', 'bag'] },
   { id: 'outfit', cmds: ['outfit', 'skin'] },

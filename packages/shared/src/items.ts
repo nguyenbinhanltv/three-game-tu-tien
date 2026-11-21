@@ -334,6 +334,7 @@ export function computePlayerStats(
   equipped: EquippedEntry[],
   root?: RootDef | null,
   sets: readonly SetDef[] = [],
+  dao?: RootDef | null,
 ): PlayerStats {
   const b = playerBaseStats(level);
   let hp = b.hp;
@@ -421,14 +422,16 @@ export function computePlayerStats(
   for (const s of setSt) for (const tier of s.active) for (const a of tier.lines ?? []) addLine(a);
   // Linh căn: +% sát thương hệ của mình và một chỉ số phụ nhẹ (thiết kế mục 2).
   let allDmg = 0;
-  if (root) {
-    if (root.elem) elemDmg[root.elem] = (elemDmg[root.elem] ?? 0) + (root.elemDmg ?? 0);
-    allDmg += root.allDmg ?? 0;
-    atkPct += root.stat.atkPct ?? 0;
-    defPct += root.stat.defPct ?? 0;
-    mpPct += root.stat.mpPct ?? 0;
-    critRate += root.stat.critRate ?? 0;
-    healRecv += root.stat.healRecv ?? 0;
+  // Bản Nguyên mang sẵn, rồi Đạo (TN-3: nguồn đã nhân nửa, `daoOrigin`).
+  for (const o of [root, dao]) {
+    if (!o) continue;
+    if (o.elem) elemDmg[o.elem] = (elemDmg[o.elem] ?? 0) + (o.elemDmg ?? 0);
+    allDmg += o.allDmg ?? 0;
+    atkPct += o.stat.atkPct ?? 0;
+    defPct += o.stat.defPct ?? 0;
+    mpPct += o.stat.mpPct ?? 0;
+    critRate += o.stat.critRate ?? 0;
+    healRecv += o.stat.healRecv ?? 0;
   }
   return {
     hp: Math.round(hp * (1 + hpPct)),

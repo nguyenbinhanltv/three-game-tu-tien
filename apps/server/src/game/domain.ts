@@ -4,7 +4,7 @@
 //  - Đan sư (support): chủ và đồng đội trong vùng hồi một phần khí huyết mỗi giây (tick).
 // Công thức ở `packages/shared/src/clone.ts`. Chỉ server tính; client chỉ vẽ vòng nhạt dưới chân chủ.
 
-import { PF_DEAD, DOMAIN_EFFECT, DOMAIN_TICK_MS, domainRadius, domainScale, type MethodRole } from '@dtl/shared';
+import { PF_DEAD, DOMAIN_EFFECT, DOMAIN_TICK_MS, daoOf, domainRadius, domainScale, domainVariant, type MethodRole } from '@dtl/shared';
 import { METHOD } from '@dtl/content';
 import type { PlayerEnt } from './entities';
 
@@ -21,6 +21,11 @@ interface Aura {
   p: PlayerEnt;
   r: number;
   reduce: number;
+}
+
+/** Biến thể Ý cảnh của lĩnh vực theo Đạo (TN-3): cộng vào hiệu ứng theo vai trò, xem `DAO_DOMAIN`. */
+function variantOf(p: PlayerEnt) {
+  return domainVariant(daoOf(p.char.meta));
 }
 
 function domainRole(p: PlayerEnt): MethodRole | null {
@@ -42,8 +47,9 @@ export class DomainSystem {
 
   /** Bạo kích cộng thêm của chủ nhờ lĩnh vực kiếm tu. */
   critAdd(p: PlayerEnt): number {
-    if (domainRadius(p.char.level) <= 0 || domainRole(p) !== 'dps' || !this.active(p)) return 0;
-    return DOMAIN_EFFECT.dps.crit * domainScale(p.char.level);
+    if (domainRadius(p.char.level) <= 0 || !this.active(p)) return 0;
+    const base = domainRole(p) === 'dps' ? DOMAIN_EFFECT.dps.crit : 0;
+    return (base + (variantOf(p).crit ?? 0)) * domainScale(p.char.level);
   }
 
   /** Tỉ lệ sát thương nhận giảm cho `p` nhờ lĩnh vực hộ pháp của chủ/đồng đội (0 nếu không). */
@@ -67,8 +73,12 @@ export class DomainSystem {
       const r = domainRadius(p.char.level);
       if (r <= 0 || !this.active(p)) continue;
       const role = domainRole(p);
-      if (role === 'tank') this.tanks.push({ p, r, reduce: DOMAIN_EFFECT.tank.reduce * domainScale(p.char.level) });
-      else if (role === 'support') healers.push({ p, r, regen: DOMAIN_EFFECT.support.regen * domainScale(p.char.level) });
+      const v = variantOf(p);
+      const scale = domainScale(p.char.level);
+      const reduce = ((role === 'tank' ? DOMAIN_EFFECT.tank.reduce : 0) + (v.reduce ?? 0)) * scale;
+      const regen = ((role === 'support' ? DOMAIN_EFFECT.support.regen : 0) + (v.regen ?? 0)) * scale;
+      if (reduce > 0) this.tanks.push({ p, r, reduce });
+      if (regen > 0) healers.push({ p, r, regen });
     }
     for (const hl of healers) {
       for (const o of this.h.players()) {
