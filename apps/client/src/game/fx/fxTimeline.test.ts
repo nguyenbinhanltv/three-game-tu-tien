@@ -294,6 +294,7 @@ describe('VS-1: chiêu làm lại giữ biến thức (tín hiệu thị giác c
     'skl_dich_son_xung',
     'skl_anh_thiet_than',
     'skl_thuan_di_ho_the',
+    'skl_dan_hoa_phong_tran',
   ];
   it('mọi biến thức trong methods.json của chiêu đã làm lại có sự kiện riêng trong timeline', () => {
     for (const id of REDONE) {
@@ -456,5 +457,62 @@ describe('unless: biến thức thay một phần hình chung', () => {
     const b = FX_TIMELINE.get('skl_dich_son_xung')!;
     expect([b.trigger, b.fxKind]).toEqual(['fx', 'dichson']);
     expect(b.replaces).toContain('dichson');
+  });
+});
+
+describe('VS-1 Đan sư: chiêu mẫu Đan Hỏa Phong Trần (ngọc lục + đỏ son, viên đan và sen lửa)', () => {
+  const tl = FX_TIMELINE.get('skl_dan_hoa_phong_tran')!;
+  const all = [...tl.events, ...Object.values(tl.variants ?? {}).flat()];
+  it('trong ngân sách: ≤ 12 draw mỗi biến thức, ≤ 25 cả chiêu, hạt ≤ 1.500', () => {
+    expect(validateFxTimeline(tl, (id) => SKILL.has(id))).toEqual([]);
+    for (const v of [undefined, ...Object.keys(tl.variants ?? {})])
+      expect(fxDrawCount(fxEventsFor(tl, -1, v)), String(v)).toBeLessThanOrEqual(12);
+    expect(fxDrawCount(all)).toBeLessThanOrEqual(25);
+    expect(fxParticleCount(all)).toBeLessThanOrEqual(1500);
+  });
+  it('hình chủ đạo là viên đan + sen nở; không mượn đá vỡ/nứt gãy của Hộ pháp hay vết chém của Kiếm tu', () => {
+    const shapes = new Set(all.flatMap((e) => (e.type === 'mesh' ? [e.shape as string] : [])));
+    expect(shapes.has('pill_orb')).toBe(true);
+    expect(shapes.has('lotus_bloom')).toBe(true);
+    expect(shapes.has('flame_tongue')).toBe(true);
+    for (const s of shapes) expect(/^(rubble_|crack_radial|slash_|blade_|spike|kite|ripple|helix)/.test(s), s).toBe(false);
+  });
+  it('viên đan bay trong lúc vung và tới nơi đúng mốc trúng; đòn kết (sen, khựng, rung, âm) ở t = 0', () => {
+    const orb = tl.events.find((e) => e.type === 'mesh' && e.shape === 'pill_orb' && e.move);
+    expect(orb).toBeTruthy();
+    if (orb?.type === 'mesh') {
+      expect(orb.t).toBeLessThan(0);
+      expect(orb.t + orb.dur).toBeCloseTo(0, 6);
+    }
+    // Khung hit không được trống: sen đã bắt đầu nở trước mốc trúng ≤ 50 ms, và có hình bật NGAY (sweep 0) ở mốc trúng:
+    // lõi đan phình, mảnh đan, tia lửa.
+    const lotus = tl.events.find((e) => e.type === 'mesh' && e.shape === 'lotus_bloom')!;
+    expect(lotus.t).toBeLessThanOrEqual(0);
+    expect(lotus.t).toBeGreaterThanOrEqual(-0.05);
+    const instant = tl.events
+      .filter((e) => e.type === 'mesh' && e.sweep === 0 && e.t >= -0.03 && e.t <= 0)
+      .map((e) => (e.type === 'mesh' ? e.shape : ''));
+    for (const sh of ['pill_orb', 'spark_streak', 'burst']) expect(instant, sh).toContain(sh);
+    expect(tl.events.filter((e) => e.type === 'mesh' && e.shape === 'flame_tongue').length).toBeGreaterThanOrEqual(4);
+    expect(tl.events.some((e) => e.type === 'hitstop' && e.t === 0)).toBe(true);
+    expect(tl.events.some((e) => e.type === 'shake' && e.t === 0)).toBe(true);
+    const snd = tl.events.filter((e) => e.type === 'soundAt').map((e) => e.t);
+    expect(Math.min(...snd)).toBeLessThan(0);
+    expect(snd.some((t) => t === 0)).toBe(true);
+  });
+  it('luật chiêu thường: chớp ≤ 0,15, vignette tối ≤ 0,35, không slowmo; vùng thiêu đốt có vành ở lại theo vùng thật', () => {
+    for (const e of all) {
+      if (e.type === 'flash') expect(e.amount).toBeLessThanOrEqual(0.15);
+      if (e.type === 'vignette') {
+        expect(e.tone ?? 'dark').toBe('dark');
+        expect(e.amount).toBeLessThanOrEqual(0.35);
+      }
+      expect(e.type).not.toBe('slowmo');
+    }
+    expect(
+      tl.events.some(
+        (e) => e.type === 'mesh' && e.shape === 'rune_ring2' && e.fit === 'area' && !e.scaleTo?.toString().startsWith('0') && e.dur >= 1.5,
+      ),
+    ).toBe(true);
   });
 });
