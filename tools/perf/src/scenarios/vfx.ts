@@ -72,7 +72,8 @@ const PHAP_SOLO = /kim_cuong|hoi_thien|scene_/;
 /** Chiêu diện rộng/từ trên cao: lùi camera, ngẩng cao để thấy cả vùng. */
 const WIDE =
   /scene_|kim_cuong|thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
-const DASH = /kiem_anh_bo|nghich_kiem|thiet_bich_xung|luu_huong_bo|dich_son_xung/;
+/** Chiêu lướt của công pháp (phím Q, `useDash`). Chiêu lướt bậc cao (Nghịch Kiếm, Dịch Sơn Xung) nằm trên thanh chiêu: bấm ô như chiêu thường. */
+const DASH = /kiem_anh_bo|thiet_bich_xung|luu_huong_bo/;
 const ULT =
   /van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/;
 /** Thời lượng ghi riêng (ms game) của chiêu có niệm. */
@@ -222,10 +223,13 @@ async function press(page: Page, id: string): Promise<void> {
 }
 
 /** Ghi màn hình `span` ms game (đồng hồ thật = span / slow), chạy `act` lúc bắt đầu; trả khung + mốc hit theo ms game. */
-async function record(ctx: BrowserContext, page: Page, slow: number, span: number, act: () => Promise<unknown>): Promise<Rec> {
+async function record(ctx: BrowserContext, page: Page, slow: number, span: number, act: () => Promise<unknown>, skill = ''): Promise<Rec> {
   await page.bringToFront();
   await sleep(300);
-  await page.evaluate(() => void (window.__game!.skillLog.length = 0));
+  await page.evaluate(() => {
+    window.__game!.skillLog.length = 0;
+    window.__game!.skillFx.runner.log.length = 0;
+  });
   if (PERF) await page.evaluate(SAMPLER);
   const cdp = await ctx.newCDPSession(page);
   const frames: Frame[] = [];
@@ -244,6 +248,16 @@ async function record(ctx: BrowserContext, page: Page, slow: number, span: numbe
     ([p, s]) => window.__game!.skillLog.filter((x) => x.e.kind === 'hit').map((x) => Math.round((x.at - p) * s)),
     [t0p, slow] as const,
   );
+  // Chiêu kích theo S.FX (lướt): mốc 0 = lúc sự kiện timeline đầu tiên của chiêu phát (nhật ký chiêu chỉ có mốc bấm, lệch ~0,25 s).
+  // Lưu ý: từ cấp Nguyên Anh lướt cơ bản bị thay bằng thuấn di (`blinkReplaces`) nên timeline lướt không phát: chụp bằng `--level 20`.
+  if (skill) {
+    const at = await page.evaluate(
+      (id) => window.__game!.skillFx.runner.log.find((x: { skill: string; real: number }) => x.skill === id)?.real,
+      skill,
+    );
+    if (typeof at === 'number') hits.splice(0, hits.length, Math.round((at - t0p) * slow));
+    else console.warn(`[shots:vfx] ${skill}: không thấy timeline phát (lướt bị thay bằng thuấn di ở cấp cao? thử --level 20)`);
+  }
   return { frames, t0, hits };
 }
 
@@ -392,14 +406,21 @@ export default {
             mon ? 0.4 : wide && !PHAP.test(sk) ? 0.3 : 0.2,
           );
           const span = SPAN[sk] ?? (mon ? (MON_SPAN[mon.kind] ?? 1600) : num('--span', 1700));
-          const rec = await record(ctx, page, slow, span, async () => {
-            if (mon) return mon.kind === 'death' ? gm(page, 'killall', 0) : monAct(page, mon.kind, slow);
-            // Đánh thường: liên hoàn 3 đòn, bấm theo nhịp game (đồng hồ thật = game / slow).
-            for (let k = 0; k < (sk === 'skl_phi_kiem' ? 3 : 1); k++) {
-              await press(page, sk);
-              if (sk === 'skl_phi_kiem') await sleep((620 / slow) | 0);
-            }
-          });
+          const rec = await record(
+            ctx,
+            page,
+            slow,
+            span,
+            async () => {
+              if (mon) return mon.kind === 'death' ? gm(page, 'killall', 0) : monAct(page, mon.kind, slow);
+              // Đánh thường: liên hoàn 3 đòn, bấm theo nhịp game (đồng hồ thật = game / slow).
+              for (let k = 0; k < (sk === 'skl_phi_kiem' ? 3 : 1); k++) {
+                await press(page, sk);
+                if (sk === 'skl_phi_kiem') await sleep((620 / slow) | 0);
+              }
+            },
+            SKILL.get(sk)?.kind === 'dash' ? sk : '',
+          );
           const gpuErr = await page.evaluate(() => window.__game!.gpuErrors ?? []);
           if (gpuErr.length) console.warn('[shots:vfx] gpuErrors:', JSON.stringify(gpuErr).slice(0, 1500));
           if (PERF) console.log(`[perf] ${sk} ${pass}: ${perfLine((await page.evaluate(() => window.__vfxPerf))!)}`);
