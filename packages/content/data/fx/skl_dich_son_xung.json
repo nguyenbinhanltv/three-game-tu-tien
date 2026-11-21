@@ -555,8 +555,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 0.8,
-   "camFade": true
+   "seed": 0.8
   },
   {
    "type": "mesh",
@@ -590,8 +589,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 0.8,
-   "camFade": true
+   "seed": 0.8
   },
   {
    "type": "mesh",
@@ -624,8 +622,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 1.8,
-   "camFade": true
+   "seed": 1.8
   },
   {
    "type": "mesh",
@@ -659,8 +656,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 1.8,
-   "camFade": true
+   "seed": 1.8
   },
   {
    "type": "mesh",
@@ -693,8 +689,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 2.8,
-   "camFade": true
+   "seed": 2.8
   },
   {
    "type": "mesh",
@@ -728,8 +723,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 2.8,
-   "camFade": true
+   "seed": 2.8
   },
   {
    "type": "mesh",
@@ -762,8 +756,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 3.8,
-   "camFade": true
+   "seed": 3.8
   },
   {
    "type": "mesh",
@@ -797,8 +790,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 3.8,
-   "camFade": true
+   "seed": 3.8
   },
   {
    "type": "mesh",
@@ -831,8 +823,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 4.8,
-   "camFade": true
+   "seed": 4.8
   },
   {
    "type": "mesh",
@@ -866,8 +857,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 4.8,
-   "camFade": true
+   "seed": 4.8
   },
   {
    "type": "mesh",
@@ -900,8 +890,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 5.8,
-   "camFade": true
+   "seed": 5.8
   },
   {
    "type": "mesh",
@@ -935,8 +924,7 @@
    },
    "tone": "core",
    "tier": 0,
-   "seed": 5.8,
-   "camFade": true
+   "seed": 5.8
   },
   {
    "type": "hitstop",
