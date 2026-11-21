@@ -51,7 +51,7 @@ const BOTS = opt('--bots', '50,100')
 const SCENES = opt('--scenes', 'san,rung,boss,dungeon').split(',').filter(Boolean);
 const RENDERERS = opt('--renderers', 'webgpu,webgl2').split(',').filter(Boolean) as ('webgpu' | 'webgl2')[];
 const PRESETS = opt('--presets', 'medium,high').split(',').filter(Boolean);
-/** `--botargs "--set a,b --genders m,f --level 15"`: cờ thêm cho bot ở mọi cảnh (vd. đám đông mặc đủ bộ nhân vật v3, N-7). */
+/** `--botargs "--set a,b --genders m,f --level 15"`: cờ thêm cho bot ở mọi cảnh, đặt TRƯỚC cờ của cảnh nên ghi đè được (vd. `--crowd x,z,9` gom đám đông, `--set` mặc đủ bộ nhân vật v3, N-7). */
 const BOT_ARGS = opt('--botargs', '').split(' ').filter(Boolean);
 const SECONDS = Number(opt('--seconds', '10'));
 const WARMUP = Number(opt('--warmup', '5'));
@@ -930,7 +930,7 @@ async function runDungeon(browser: Browser, sc: Scene, errorsOut: string[]): Pro
         await gm(page, `tp ${PORTAL_POS.x} ${PORTAL_POS.z + 4}`);
         await page.evaluate((t) => window.__game!.send(t), C.PORTAL);
         await waitInGame(page, 'dungeon');
-        const n = await bots.start(4, `dg${renderer === 'webgpu' ? 'a' : 'b'}${preset.slice(0, 1)}`, [...sc.bots, ...BOT_ARGS]);
+        const n = await bots.start(4, `dg${renderer === 'webgpu' ? 'a' : 'b'}${preset.slice(0, 1)}`, [...BOT_ARGS, ...sc.bots]);
         const h = await waitOnline((x) => x.rooms.some((r) => r.name === 'dungeon' && r.players >= 5), 60_000);
         console.log(`[crowd] dungeon: ${n} bot, ${h?.rooms.find((r) => r.name === 'dungeon')?.players ?? 0} người trong bí cảnh`);
       };
@@ -1037,7 +1037,7 @@ async function main(): Promise<void> {
         continue;
       }
       for (const n of BOTS) {
-        const got = await bots.start(n, `b${name}`, [...sc.bots, ...BOT_ARGS]);
+        const got = await bots.start(n, `b${name}`, [...BOT_ARGS, ...sc.bots]);
         console.log(`[crowd] ${name}: ${got}/${n} bot đã vào`);
         // Chờ bot tới chỗ (đi bộ từ chỗ hồi sinh / lên cấp) trước khi mở client đo.
         await sleep(8000);

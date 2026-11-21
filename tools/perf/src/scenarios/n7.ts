@@ -90,7 +90,8 @@ export default {
         await gm(page, 'level 15', 1500);
         await gm(page, 'god on', 1100);
         await gm(page, 'killall', 900);
-        await gm(page, `tp ${SAN.x} ${SAN.z}`, 1500);
+        // Mỗi giới đứng một chỗ: server còn giữ chỗ nhân vật của lượt trước vài chục giây sau khi trang đóng (hai người chồng lên nhau).
+        await gm(page, `tp ${SAN.x + (g === 'm' ? 0 : 7)} ${SAN.z}`, 1500);
         for (const [phai, set] of Object.entries(CLOSE)) {
           await gm(page, `set ${set}`, 1500);
           await waitModels(page, 1, 60_000);
@@ -156,7 +157,56 @@ export default {
           // Số đo ở 720p (viewport cuối của `shoot`), cùng điều kiện với bench.
           const perf = await perfSample(page);
           const players = await page.evaluate(() => window.__game!.ents.players.size);
-          stats[`dam-dong-${n}`] = { bots: got, players, ready, ...perf };
+          // Heap sau khi ép GC (CDP) + ước lượng phần do nhân vật giữ: byte hình học duy nhất, số action của mixer, byte keyframe của clip.
+          const cdp = await ctx.newCDPSession(page);
+          await cdp.send('HeapProfiler.collectGarbage');
+          await sleep(500);
+          const heap = await page.evaluate(() => {
+            const geos = new Set<any>();
+            const clips = new Set<any>();
+            let actions = 0;
+            let geoBytes = 0;
+            let clipBytes = 0;
+            for (const p of window.__game!.ents.players.values()) {
+              p.model.root.traverse((o: any) => o.geometry && geos.add(o.geometry));
+              const mixer = p.model.mixer;
+              for (const a of mixer?._actions ?? []) {
+                actions++;
+                clips.add(a.getClip());
+              }
+            }
+            for (const g of geos) {
+              for (const k of Object.keys(g.attributes)) geoBytes += g.attributes[k].array.byteLength;
+              if (g.index) geoBytes += g.index.array.byteLength;
+            }
+            for (const c of clips) for (const t of c.tracks) clipBytes += t.times.byteLength + t.values.byteLength;
+            // Trạng thái hiển thị từng người: asset | LOD | nhóm trong có hiện | số lưới đang hiện (bắt lỗi "có bảng tên, không có thân").
+            const shown: Record<string, number> = {};
+            for (const p of window.__game!.ents.players.values()) {
+              const m = p.model;
+              let vis = 0;
+              m.root.traverse((o: any) => {
+                if (!o.isMesh || !o.visible) return;
+                let q = o.parent;
+                while (q && q !== m.root && q.visible) q = q.parent;
+                if (q === m.root) vis++;
+              });
+              const k = `${m.tpl?.handle?.id ?? m.constructor.name} lod${m.lodLevel ?? m.lod ?? '?'} ${vis} lưới`;
+              shown[k] = (shown[k] ?? 0) + 1;
+            }
+            return {
+              shown,
+              heapGcMB: Math.round((performance.memory?.usedJSHeapSize ?? 0) / 1e6),
+              geoMB: Math.round(geoBytes / 1e6),
+              actions,
+              clips: clips.size,
+              clipMB: Math.round(clipBytes / 1e6),
+            };
+          });
+          stats[`dam-dong-${n}`] = { bots: got, players, ready, ...perf, ...heap };
+          console.log(
+            `[shots:n7] heap sau GC ${heap.heapGcMB} MB, hình học ${heap.geoMB} MB, ${heap.actions} action, ${heap.clips} clip ${heap.clipMB} MB`,
+          );
           console.log(`[shots:n7] ${tag} đám đông ${n}: ${players} người, ${perf.drawCalls} draw, ${perf.triangles} tam giác`);
           await ctx.close();
           await bots.stop();
