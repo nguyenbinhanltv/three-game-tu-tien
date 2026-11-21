@@ -13,6 +13,7 @@ import { adoptGltfMaterials, cloneWorldMaterial } from '../../render/materials/w
 import { lodLevel, mixerInterval } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { attachBrawlerGear, gearShown, snapshotBind, type BindSnapshot, type BrawlerGear } from './brawlerGear';
+import { attachCoGear, fluteMesh } from './coGear';
 import { greatbladeMesh } from './greatblade';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
@@ -552,8 +553,12 @@ export class MannequinCharacter implements CharacterView {
   /** Kiếm: vỏ trên lưng (`dtl_scabbard`) khi nghỉ, nắm tay (`dtl_sword`) khi giao chiến. */
   private blade: THREE.Mesh | null = null;
   private bladeLen = 0;
-  /** Đao tu: đao lớn thủ tục thay kiếm (dựng khi cần) và kiếm gốc để trả lại khi đổi hướng. */
-  private big: { mesh: THREE.Mesh; len: number } | null = null;
+  /** Vũ khí thủ tục thay kiếm theo hướng tu (đao lớn Đao tu, sáo Cổ tu), dựng khi cần; kiếm gốc để trả lại khi đổi hướng. */
+  private held = new Map<string, { mesh: THREE.Mesh; len: number }>();
+  private heldKey = '';
+  /** Cổ tu: hũ cổ treo hông (SkinnedMesh) và trạng thái bật riêng (chỉ vẽ ở LOD0). */
+  private coGear: BrawlerGear | null = null;
+  private coOn = false;
   private origBlade: { mesh: THREE.Mesh; len: number } | null = null;
   private scabbard: THREE.Object3D | null = null;
   private hand: THREE.Object3D | null = null;
@@ -780,18 +785,38 @@ export class MannequinCharacter implements CharacterView {
     if (this.blade) this.blade.visible = !on && this.lodLevel < 2;
   }
 
-  /** Hướng tu cầm đao lớn (Đao tu): thay cây kiếm trong tay/trên lưng bằng đao lớn thủ tục; tắt thì trả kiếm gốc. */
-  setGreatBlade(on: boolean): void {
+  /** Đổi vũ khí trong tay/trên lưng theo hướng tu: `key` rỗng = trả kiếm gốc. */
+  private swapHeld(key: string, make: () => { mesh: THREE.Mesh; len: number }): void {
     if (this.disposed || this.shadow || !this.blade) return;
-    if (!this.origBlade && this.blade !== this.big?.mesh) this.origBlade = { mesh: this.blade, len: this.bladeLen };
-    if (on && !this.big) this.big = greatbladeMesh(this.height);
-    const want = on ? this.big : this.origBlade;
+    if (!this.origBlade && !this.heldKey) this.origBlade = { mesh: this.blade, len: this.bladeLen };
+    let want = this.origBlade;
+    if (key) {
+      if (!this.held.has(key)) this.held.set(key, make());
+      want = this.held.get(key)!;
+    }
+    this.heldKey = key;
     if (!want || want.mesh === this.blade) return;
     this.blade.removeFromParent();
     this.blade = want.mesh;
     this.bladeLen = want.len;
     this.blade.visible = true;
     this.mountBlade(this.drawn);
+  }
+
+  /** Hướng tu cầm đao lớn (Đao tu): thay cây kiếm trong tay/trên lưng bằng đao lớn thủ tục; tắt thì trả kiếm gốc. */
+  setGreatBlade(on: boolean): void {
+    if (on) this.swapHeld('great', () => greatbladeMesh(this.height));
+    else if (this.heldKey === 'great') this.swapHeld('', () => greatbladeMesh(this.height));
+  }
+
+  /** Hướng tu Cổ tu: sáo cổ thay kiếm + hũ cổ treo hông trái (chỉ vẽ ở LOD0). Tắt thì trả kiếm gốc, ẩn hũ. */
+  setCoGear(on: boolean): void {
+    if (this.disposed || this.shadow) return;
+    if (on) this.swapHeld('flute', () => fluteMesh(this.height));
+    else if (this.heldKey === 'flute') this.swapHeld('', () => fluteMesh(this.height));
+    this.coOn = on;
+    if (on && !this.coGear && this.gearBind) this.coGear = attachCoGear(this.rig, this.gearBind, this.height);
+    this.coGear?.setVisible(gearShown(on, this.lodLevel));
   }
 
   private mountBlade(drawn: boolean): void {
@@ -1306,6 +1331,7 @@ export class MannequinCharacter implements CharacterView {
     this.setParked(level >= 2 && !this.disposed && !V3_OFF.has('park'));
     this.lodLevel = level;
     this.gear?.setVisible(gearShown(this.gearOn, level));
+    this.coGear?.setVisible(gearShown(this.coOn, level));
     this.viewDist = v.dist;
     this.viewSelf = !!v.self;
     this.interval = mixerInterval(level, v.inView, !!v.self);
@@ -1553,8 +1579,11 @@ export class MannequinCharacter implements CharacterView {
     this.disposed = true;
     this.hit.reset();
     this.blade?.removeFromParent();
-    this.big?.mesh.removeFromParent();
-    this.big?.mesh.geometry.dispose();
+    for (const h of this.held.values()) {
+      h.mesh.removeFromParent();
+      h.mesh.geometry.dispose();
+    }
+    this.coGear?.dispose();
     this.gear?.dispose();
     this.cloth?.dispose();
     this.stopPerform();
