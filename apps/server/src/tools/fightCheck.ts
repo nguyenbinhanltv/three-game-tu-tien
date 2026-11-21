@@ -7,7 +7,7 @@
 //   --mon <id>: ép dùng một quái thường (cấp quái = cấp thử), để đo quái mới khi đã có dữ liệu.
 process.env.DB_FILE = ':memory:';
 
-import { CHARGE_MAX, groundAt, METHOD_UNLOCK_LEVEL, MS_DEAD, levelSpawns, type MonsterDef } from '@dtl/shared';
+import { CHARGE_MAX, groundAt, METHOD_UNLOCK_LEVEL, MS_DEAD, levelSpawns, skillGate, stanceActive, type MonsterDef } from '@dtl/shared';
 
 import { at } from '@dtl/shared';
 const arg = (name: string, def: string) => {
@@ -19,6 +19,8 @@ const LEVELS = arg('levels', '4,10,15,20,28').split(',').map(Number);
 const FORCE_MON = arg('mon', '');
 const PULL = Number(arg('pull', '2'));
 const NOGEAR = process.argv.includes('--nogear');
+/** `--nostance`: bot không vào tư thế (đo riêng phần đóng góp của tư thế, VS-2e). */
+const NOSTANCE = process.argv.includes('--nostance');
 
 let fake = Date.now();
 Date.now = () => fake;
@@ -26,7 +28,7 @@ Date.now = () => fake;
 const { GameSim } = await import('../game/sim');
 const { WorldState } = await import('../state');
 const { Character } = await import('../game/character');
-const { ITEM, LEVELS: LV, MONSTER, SKILL, SKILLS, METHOD_SKILLS, METHODS } = await import('@dtl/content');
+const { ITEM, LEVELS: LV, METHOD, MONSTER, SKILL, SKILLS, METHOD_SKILLS, METHODS } = await import('@dtl/content');
 const { MAX_LEVEL } = await import('@dtl/shared');
 for (const lv of LEVELS) if (!(lv >= 1 && lv <= MAX_LEVEL)) throw new Error(`--levels: cấp ${lv} ngoài 1–${MAX_LEVEL}`);
 if (FORCE_MON && (!MONSTER.get(FORCE_MON) || MONSTER.get(FORCE_MON)!.boss || MONSTER.get(FORCE_MON)!.elite))
@@ -112,7 +114,20 @@ function fightOnce(level: number, method: string | undefined): Result {
     const m = sim.spawnMonster(def, mlv, X + 4 + i, Z + i, null);
     return m;
   });
-  const skills = [...SKILLS, ...METHOD_SKILLS].filter((s) => s.unlock <= level && (!s.method || s.method === method));
+  // VS-2d: chọn nhánh đầu tiên ở mỗi mốc đã đủ cảnh giới (chỉ sửa bộ nhớ của nhân vật thử), rồi chỉ dùng chiêu nhánh đó cho.
+  const mdef = method ? METHOD.get(method) : undefined;
+  if (mdef && level >= METHOD_UNLOCK_LEVEL) {
+    const picks: Record<number, string> = {};
+    for (const b of mdef.branches) if (level >= b.tier && !picks[b.tier]) picks[b.tier] = b.id;
+    char.branches[mdef.id] = picks;
+  }
+  const usable = [...SKILLS, ...METHOD_SKILLS].filter(
+    (s) =>
+      s.unlock <= level && (!s.method || s.method === method) && skillGate(mdef, mdef ? char.branches[mdef.id] : undefined, s.id) === 'ok',
+  );
+  // VS-2e: chiêu tư thế và các chiêu thay ô chỉ dùng trong tư thế (xem vòng lặp).
+  const stance = NOSTANCE ? undefined : usable.find((s) => s.kind === 'stance' && s.stance);
+  const skills = usable.filter((s) => s.kind !== 'stance' && !s.stanceOf);
   const hp0 = char.hp;
   const t0 = fake;
   for (let step = 0; step < 1200 && mons.some((m) => m.state !== MS_DEAD); step++) {
@@ -131,7 +146,15 @@ function fightOnce(level: number, method: string | undefined): Result {
       ...skills.filter((s) => s.cd > 0 && (s.kind === 'damage' || s.kind === 'aoe' || s.kind === 'taunt' || s.kind === 'hot')),
       SKILL.get('skl_phi_kiem')!,
     ];
-    const s = order.find((x) => ready(x));
+    // Vào tư thế ngay khi dùng được; đang giữ tư thế thì ô bị đổi dùng chiêu tư thế.
+    const inStance = stanceActive(p.mth.stance, fake) && stance?.id === p.mth.stance.id;
+    if (stance && !inStance && ready(stance)) {
+      sim.onSkill(p, { id: stance.id });
+      continue;
+    }
+    const swap = inStance ? stance.stance!.swap : {};
+    const live = (x: (typeof skills)[number]) => (swap[x.id] ? (SKILL.get(swap[x.id]!) ?? x) : x);
+    const s = order.map(live).find((x) => ready(x));
     if (s) sim.onSkill(p, { id: s.id, t: target.id });
   }
   void METHODS;

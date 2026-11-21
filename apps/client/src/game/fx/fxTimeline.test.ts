@@ -300,6 +300,10 @@ describe('VS-1: chiêu làm lại giữ biến thức (tín hiệu thị giác c
     'skl_moc_linh_tran',
     'skl_ngung_dan_ho_the',
     'skl_thien_dan_phap_gioi',
+    'skl_luu_huong_bo',
+    'skl_duoc_vu',
+    'skl_anh_duoc_hoa_than',
+    'skl_thuan_di_cuu_vien',
   ];
   it('mọi biến thức trong methods.json của chiêu đã làm lại có sự kiện riêng trong timeline', () => {
     for (const id of REDONE) {
@@ -615,5 +619,87 @@ describe('VS-1 Đan sư phần 2: 5 chiêu hồi/hộ (ngọc lục là chính, 
         ),
         id,
       ).toBe(true);
+  });
+});
+
+describe('VS-1 Đan sư phần 3: 4 chiêu cuối (cả 10 chiêu Đan sư theo ngôn ngữ mới)', () => {
+  const IDS = ['skl_luu_huong_bo', 'skl_duoc_vu', 'skl_anh_duoc_hoa_than', 'skl_thuan_di_cuu_vien'];
+  const all = (id: string) => {
+    const tl = FX_TIMELINE.get(id)!;
+    return [...tl.events, ...Object.values(tl.variants ?? {}).flat()];
+  };
+  it('trong ngân sách: ≤ 12 draw mỗi biến thức, ≤ 25 cả chiêu, hạt ≤ 1.500', () => {
+    for (const id of IDS) {
+      const tl = FX_TIMELINE.get(id)!;
+      expect(
+        validateFxTimeline(tl, (s) => SKILL.has(s)),
+        id,
+      ).toEqual([]);
+      for (const v of [undefined, ...Object.keys(tl.variants ?? {})])
+        expect(fxDrawCount(fxEventsFor(tl, -1, v)), `${id}:${v}`).toBeLessThanOrEqual(12);
+      expect(fxDrawCount(all(id)), id).toBeLessThanOrEqual(25);
+      expect(fxParticleCount(all(id)), id).toBeLessThanOrEqual(1500);
+    }
+  });
+  it('không mượn hình Hộ pháp/Kiếm tu hay kiểu cũ; sen thấp; không đỏ son (đều là chiêu hồi/di chuyển)', () => {
+    for (const id of IDS)
+      for (const e of all(id)) {
+        if (e.type !== 'mesh') continue;
+        expect(
+          /^(rubble_|rock_spire|crack_radial|shield_plate|slash_|blade_|spike|kite|ripple|helix)/.test(e.shape),
+          `${id}:${e.shape}`,
+        ).toBe(false);
+        expect(e.tone, `${id}:${e.shape}`).not.toBe('accent');
+        if (e.shape === 'lotus_bloom') expect((e.scale as number[])[1], id).toBeLessThanOrEqual(0.5);
+      }
+  });
+  it('Lưu Hương Bộ kích theo S.FX lướt của Đan sư, mọi t ≥ 0, không khựng/rung (không gây hại)', () => {
+    const tl = FX_TIMELINE.get('skl_luu_huong_bo')!;
+    expect([tl.trigger, tl.fxKind, tl.method]).toEqual(['fx', 'dash', 'thanh_moc_dan_kinh']);
+    expect(Math.min(...tl.events.map((e) => e.t))).toBeGreaterThanOrEqual(0);
+    expect(tl.events.some((e) => e.type === 'hitstop' || e.type === 'shake' || e.type === 'flash')).toBe(false);
+  });
+  it('Dược Vũ: mưa phủ cả vùng và đã rơi ở khung hit (giọt chạm đất tại t ≈ 0, có bừng sáng), trận mây trên cao, vành mép bật ngay', () => {
+    const ev = FX_TIMELINE.get('skl_duoc_vu')!.events;
+    const drops = ev.flatMap((e) => (e.type === 'mesh' && e.shape === 'pill_orb' && e.move && (e.offset?.[1] ?? 0) > 5 ? [e] : []));
+    expect(drops.length).toBeGreaterThanOrEqual(24);
+    // Chạm đất trong ±60 ms quanh mốc trúng: ít nhất 8 giọt; đang rơi lúc trúng: thêm ít nhất 6.
+    expect(drops.filter((e) => Math.abs(e.t + e.dur) <= 0.06).length).toBeGreaterThanOrEqual(8);
+    expect(drops.filter((e) => e.t < 0 && e.t + e.dur > 0.06).length).toBeGreaterThanOrEqual(6);
+    // Phủ vùng: có giọt gần tâm (< 3 m) và sát mép (> 8 m, vùng 10 m).
+    const reach = drops.map((e) => Math.hypot(e.offset![0], e.offset![2]));
+    expect(Math.min(...reach)).toBeLessThan(3);
+    expect(Math.max(...reach)).toBeGreaterThan(8);
+    expect(Math.max(...reach)).toBeLessThanOrEqual(10);
+    // Mỗi giọt có một cú bừng sáng lúc chạm đất.
+    expect(ev.filter((e) => e.type === 'mesh' && e.shape === 'flip' && e.flip === 'spark_burst').length).toBeGreaterThanOrEqual(
+      drops.length,
+    );
+    // Trận mây trên cao ở lại ≥ 2 s; vành mép vùng bật ngay.
+    expect(ev.some((e) => e.type === 'mesh' && e.shape === 'rune_ring2' && (e.offset?.[1] ?? 0) > 5 && e.dur >= 2)).toBe(true);
+    expect(
+      ev.some((e) => e.type === 'mesh' && e.shape === 'rune_ring2' && e.fit === 'area' && e.t <= 0 && (e.sweep ?? 0.35) * e.dur <= 0.06),
+    ).toBe(true);
+  });
+  it('ba chiêu có động tác: âm báo trước + âm đúng mốc trúng, cảm giác nhẹ, có vành ở lại ≥ 1,5 s', () => {
+    for (const id of IDS.slice(1)) {
+      const ev = all(id);
+      const snd = ev.filter((e) => e.type === 'soundAt').map((e) => e.t);
+      expect(Math.min(...snd), id).toBeLessThan(0);
+      expect(
+        snd.some((t) => t === 0),
+        id,
+      ).toBe(true);
+      for (const e of ev) {
+        if (e.type === 'hitstop') expect(e.ms, id).toBeLessThanOrEqual(60);
+        if (e.type === 'shake') expect(e.level, id).toBeLessThanOrEqual(0.35);
+        if (e.type === 'flash') expect(e.amount, id).toBeLessThanOrEqual(0.1);
+        expect(e.type, id).not.toBe('slowmo');
+      }
+      expect(
+        FX_TIMELINE.get(id)!.events.some((e) => e.type === 'mesh' && e.shape === 'rune_ring2' && e.dur >= 1.5),
+        id,
+      ).toBe(true);
+    }
   });
 });
