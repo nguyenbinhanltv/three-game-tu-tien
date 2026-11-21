@@ -1,13 +1,15 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { HUYEN_CHAINS, huyenOriginTier, isRootId, setChainCleared, TRIB_DEFS } from '@dtl/shared';
-import { ROOT } from '@dtl/content';
+import { HUYEN_CHAINS, huyenOriginTier, isRootId, originOpen, ROOT_IDS, setChainCleared, TRIB_DEFS } from '@dtl/shared';
+import { ORIGINS, ROOT } from '@dtl/content';
 
 process.env.DB_FILE = ':memory:';
 
 let Character: typeof import('./character').Character;
+let rootForName: typeof import('../db').rootForName;
 
 beforeAll(async () => {
   ({ Character } = await import('./character'));
+  ({ rootForName } = await import('../db'));
 });
 
 let n = 0;
@@ -54,12 +56,31 @@ describe('bậc Bản Nguyên nối Huyền Kiếp (TN-1 ↔ TN-6)', () => {
   });
 });
 
-describe('nguồn chọn được', () => {
-  it('TN1-1 chưa mở thêm nguồn nào cho người chơi: Lôi và tám nguồn khóa có dữ liệu nhưng server chưa nhận', () => {
-    expect(ROOT.get('loi')?.allDmg).toBeGreaterThan(0);
-    for (const id of ['loi', 'sinh_tu', 'luan_hoi', 'sat_luc']) {
-      expect(ROOT.has(id), id).toBe(true);
-      expect(isRootId(id), id).toBe(false);
+describe('nguồn chọn được (TN1-2)', () => {
+  it('sáu nguồn Hành nguyên chọn được, có Lôi; tám nguồn khóa có dữ liệu nhưng server không nhận', () => {
+    expect([...ROOT_IDS]).toEqual(ORIGINS.filter(originOpen).map((o) => o.id));
+    expect(isRootId('loi')).toBe(true);
+    for (const o of ORIGINS.filter((x) => !originOpen(x))) {
+      expect(ROOT.has(o.id), o.id).toBe(true);
+      expect(isRootId(o.id), o.id).toBe(false);
     }
+  });
+
+  it('tạo nhân vật mang Lôi: +3% mọi chiêu, không cộng hệ nào; lưu và nạp lại vẫn là Lôi', () => {
+    const c = Character.create(940_000 + ++n, 'Loi' + n + Date.now(), null, 'loi');
+    expect(c.root).toBe('loi');
+    expect(c.stats.allDmg).toBeCloseTo(0.03);
+    expect(c.stats.elemDmg).toEqual({});
+    expect(Character.load(c.id)?.root).toBe('loi');
+  });
+
+  it('nhân vật cũ chưa có nguồn vẫn được gán trong năm nguồn ngũ hành như trước khi có Lôi', () => {
+    const legacy = (name: string) => {
+      let h = 0;
+      for (const ch of name) h = (h * 31 + ch.codePointAt(0)!) >>> 0;
+      return ['kim', 'moc', 'thuy', 'hoa', 'tho'][h % 5];
+    };
+    for (const name of ['An', 'Bình', 'Lạc Vân', 'tu_si_42', 'Hàn Giao', 'x', 'Đạp Thiên'])
+      expect(rootForName(name), name).toBe(legacy(name));
   });
 });

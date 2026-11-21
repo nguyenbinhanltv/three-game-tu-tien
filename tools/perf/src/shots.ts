@@ -54,6 +54,7 @@ import ui from './scenarios/ui';
 import minimap from './scenarios/minimap';
 import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
+import tn1 from './scenarios/tn1';
 import vs2 from './scenarios/vs2';
 import realmaura from './scenarios/realmaura';
 import fxlib from './scenarios/fxlib';
@@ -78,6 +79,7 @@ const SCENARIOS: Scenario[] = [
   dungeon,
   asset,
   vfx,
+  tn1,
   vs2,
   outfit,
   skin,

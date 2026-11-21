@@ -67,7 +67,9 @@ describe('bình cảnh', () => {
 describe('linh căn', () => {
   it('nhận diện id', () => {
     expect(isRootId('kim')).toBe(true);
+    expect(isRootId('loi')).toBe(true);
     expect(isRootId('lôi')).toBe(false);
+    expect(isRootId('sinh_tu')).toBe(false);
     expect(isRootId(3)).toBe(false);
   });
   it('không có linh căn thì chỉ số như cũ', () => {
