@@ -1,7 +1,18 @@
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { V3_MODELS, V3_OWN_SETS, V3_SKINS, v3AssetOf } from './mannequin';
-import { addDyeMask, DYE_MASK_ATTR, isUndyedBone, v3DyeHex, v3DyeRefOf } from './v3Dye';
+import { createWorldMaterial } from '../../render/materials/world';
+import {
+  addDyeMask,
+  applyV3Dye,
+  DYE_MASK_ATTR,
+  isUndyedBone,
+  v3DyeHex,
+  type V3DyeRef,
+  v3DyeRefOf,
+  type V3DyeUniforms,
+  v3DyeValues,
+} from './v3Dye';
 
 const DYES = new Map([
   ['attire_sect', { hex: '#3B6584' }],
@@ -87,5 +98,47 @@ describe('mặt nạ nhuộm theo xương', () => {
     expect([a.getX(0), a.getX(1), a.getX(2)]).toEqual([1, 0, 0.75]);
     addDyeMask(scene);
     expect(g.getAttribute(DYE_MASK_ATTR)).toBe(a);
+  });
+});
+
+describe('applyV3Dye: tham số là uniform, không nướng hằng số vào shader', () => {
+  type N = { type: string; isConstNode?: boolean; isUniformNode?: boolean; value?: unknown; getChildren(): Iterable<N> };
+  /** Chữ ký cấu trúc đồ thị node: loại node và giá trị HẰNG SỐ theo thứ tự duyệt; giá trị uniform không tính (không vào mã shader). */
+  function signature(root: unknown): string {
+    const out: string[] = [];
+    const seen = new Set<N>();
+    const walk = (n: N) => {
+      if (seen.has(n)) return void out.push('^');
+      seen.add(n);
+      out.push(n.isUniformNode ? `U:${n.type}` : n.isConstNode ? `C:${JSON.stringify(n.value)}` : n.type);
+      for (const c of n.getChildren()) walk(c);
+    };
+    walk(root as N);
+    return out.join('|');
+  }
+  const dyed = (ref: V3DyeRef, hex: string) => applyV3Dye(createWorldMaterial({ map: new THREE.Texture() }), ref, hex);
+
+  it('hai màu, hai vải tham chiếu, hai chế độ: cùng một cấu trúc node (một chương trình shader), chỉ khác giá trị uniform', () => {
+    const a = dyed({ mode: 'chroma', ref: '#435466' }, '#9D392E');
+    const b = dyed({ mode: 'chroma', ref: '#41574b' }, '#E6DDCB');
+    const c = dyed({ mode: 'neutral', ref: '#a7a6a3' }, '#3B6584');
+    const sig = signature(a.colorNode);
+    expect(sig).toContain('U:');
+    expect(signature(b.colorNode)).toBe(sig);
+    expect(signature(c.colorNode)).toBe(sig);
+    const ua = a.userData.v3Dye as V3DyeUniforms;
+    const ub = b.userData.v3Dye as V3DyeUniforms;
+    const uc = c.userData.v3Dye as V3DyeUniforms;
+    for (const u of Object.values(ua)) expect((u as unknown as N).isUniformNode).toBe(true);
+    expect(ua.target.value.getHex()).not.toBe(ub.target.value.getHex());
+    expect([ua.neutral.value, uc.neutral.value]).toEqual([0, 1]);
+  });
+
+  it('v3DyeValues: màu sáng hơn vải gốc thì nén tương phản; vải tham chiếu xám vẫn có hướng hợp lệ', () => {
+    expect(v3DyeValues({ mode: 'chroma', ref: '#435466' }, '#E6DDCB').gamma).toBe(0.6);
+    expect(v3DyeValues({ mode: 'chroma', ref: '#435466' }, '#29292C').gamma).toBe(1);
+    const grey = v3DyeValues({ mode: 'neutral', ref: '#808080' }, '#3B6584');
+    expect(grey.dir.length()).toBeCloseTo(1);
+    expect(grey.neutral).toBe(1);
   });
 });
