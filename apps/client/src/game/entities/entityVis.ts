@@ -51,6 +51,8 @@ export interface PState {
   mt?: string;
   /** Ấn đang mang (VS-2c): gói bit `packMarks`; 0 hoặc thiếu = không có. */
   mk?: number;
+  /** Đang hóa hình Cổ Thần (TN-5): 1 = thân to lớn; 0 hoặc thiếu = không. */
+  hh?: number;
 }
 
 export interface MState {
@@ -121,6 +123,8 @@ export class PlayerVis {
   /** Vận tốc hiển thị đã làm mượt (m/s) để suy ra đi lùi/ngang so với hướng nhìn (K-4). */
   mvx = 0;
   mvz = 0;
+  /** Mức hóa hình hiển thị 0..1 (trôi dần tới đích để thân to lên/nhỏ lại mượt, TN-5). */
+  giant = 0;
   /** Vị trí vài chục khung gần nhất (để lướt hiển thị biết xuất phát từ đâu, K-4). */
   hist: { t: number; x: number; z: number }[] = [];
   /** Chuyển sự kiện chiêu của model ra ngoài (engine/VFX/âm thanh/camera đăng ký). */

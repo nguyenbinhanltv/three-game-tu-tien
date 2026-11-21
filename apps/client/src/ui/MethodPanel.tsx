@@ -18,6 +18,7 @@ import { MethodCarousel } from './u2/shell';
 import { closePanel, useUI } from './store';
 import { chainLines } from './skillChain';
 import { BranchTree } from './BranchTree';
+import { showsStars, StarPanel } from './StarPanel';
 import { methodPickView } from './methodPick';
 
 const SCROLL = 'itm_bi_tich_tan_quyen';
@@ -230,6 +231,12 @@ export function MethodPanel() {
         <>
           <Divider label={t('ui.branch.title')} />
           <BranchTree method={cur} picks={method?.br} level={char.level} gold={gold} />
+          {showsStars(cur.id) && (
+            <>
+              <Divider label={t('ui.star.title')} />
+              <StarPanel level={char.level} gold={gold} />
+            </>
+          )}
         </>
       )}
       <Divider label={t('ui.char.skills')} />

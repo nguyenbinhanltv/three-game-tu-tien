@@ -4,6 +4,8 @@
 
 export const COTHAN_METHOD = 'co_than_quyet';
 export const COTHAN_STAR_MAX = 9;
+/** Chiêu tư thế Hóa Hình: đang giữ nó thì thân Cổ Thần to lớn (cờ `hh` trong state). */
+export const HOA_HINH_SKILL = 'skl_hoa_hinh';
 
 export interface StarDef {
   /** 1–9. */

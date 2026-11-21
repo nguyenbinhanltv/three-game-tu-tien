@@ -45,6 +45,8 @@ export class PlayerS extends Schema {
   @view() @type('string') mt = '';
   /** Ấn đang mang (VS-2c, Mộc ấn...): gói bit `packMarks`. Chỉ để hiển thị. */
   @view() @type('uint32') mk = 0;
+  /** Đang hóa hình Cổ Thần (TN-5): 1 = thân to lớn tạm thời. Chỉ để hiển thị. */
+  @view() @type('uint8') hh = 0;
 }
 
 export class MonS extends Schema {
