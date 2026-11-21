@@ -1,0 +1,114 @@
+{
+  "$comment": "Thần Tàng Đan Bào v3 (Đan sư): C2 từ cấu hình đợt 2 (geodesic + handBlend) + vạt/robe mẫu Kiếm tu (NV3-ROLL đợt 3).",
+  "set": "than_tang",
+  "name": "Thần Tàng Đan Bào",
+  "raw": "3d/nhan-vat/set_than_tang_dan_bao/tripo/raw_v3_than_tang_{g}.glb",
+  "height": {
+    "nam": 1.84,
+    "nu": 1.7
+  },
+  "bindA": [
+    "nam",
+    "nu"
+  ],
+  "splitCloth": true,
+  "keepOriginal": true,
+  "c2": {
+    "seamTie": 0.3,
+    "veilStrips": 3,
+    "veilLinks": 2,
+    "skirtThighK": 0.5,
+    "nam": {
+      "handKeep": 0.07,
+      "smooth": 80,
+      "veilChain": 0.75,
+      "veilArmR": 0.05,
+      "armFall": "geo",
+      "armGeoR": 0.8,
+      "geoSeed": 0.12,
+      "armNoHand": true
+    },
+    "veilGeo": true,
+    "veilX": 0.15,
+    "veilArmR": 0.05,
+    "smooth": 80,
+    "veilChain": 0.75,
+    "armFall": "geo",
+    "armGeoR": 0.8,
+    "geoSeed": 0.12,
+    "veilAlpha": 0.93,
+    "borderFade": 0.03,
+    "borderAlpha": 0.55,
+    "armNoHand": true,
+    "fadeLabels": [
+      1,
+      2
+    ]
+  },
+  "groups": [
+    {
+      "name": "skirt",
+      "parent": "pelvis",
+      "axis": "angle",
+      "zMin": 0.24,
+      "zMax": 0.5,
+      "minRadius": 0.09,
+      "count": 12,
+      "links": 2,
+      "share": 0.8,
+      "domRegion": [
+        "torso",
+        "leg"
+      ]
+    },
+    {
+      "name": "hair",
+      "parent": "spine_03",
+      "axis": "x",
+      "zMin": 0.45,
+      "zMax": 0.86,
+      "yMinRel": 0.04,
+      "xAbsMax": 0.1,
+      "count": 3,
+      "links": 3,
+      "tex": "hair",
+      "share": 0.5
+    }
+  ],
+  "robe": {
+    "zMin": 0.0,
+    "zMax": 0.52,
+    "minRadius": 0.08,
+    "xInner": 0.04,
+    "xOuter": 0.1,
+    "outerShare": 0.5,
+    "front": 0.3,
+    "back": 0.15,
+    "pow": 0.7,
+    "calf": 0.0
+  },
+  "limbs": [],
+  "sleeve": {
+    "hipR": 0.09,
+    "armR": 0.05,
+    "margin": 0.0,
+    "falloff": 0.14,
+    "hipShare": 1.0
+  },
+  "anatomy": {
+    "shoulderDz": -0.13,
+    "ankleX": 0.1,
+    "spine3Z": 1.23,
+    "smoothIters": 40,
+    "smoothAlpha": 0.6,
+    "finalSmooth": 10,
+    "nam": {
+      "shoulderDz": -0.14,
+      "ankleX": 0.108,
+      "spine3Z": 1.33,
+      "handBlend": 0.05
+    },
+    "headR": 0.14,
+    "handBlend": 0.05
+  }
+}
