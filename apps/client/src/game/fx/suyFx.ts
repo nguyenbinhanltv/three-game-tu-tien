@@ -604,12 +604,12 @@ export class SuyFx {
           this.glow(src, `chau${i}`, hexOf('hk_hon_tho', 'body'), {
             x,
             z,
-            h: 5,
+            h: 3.2,
             r: 1.8,
             dur: m.d ?? 6,
-            opacity: 0.65,
+            opacity: 0.6,
             pulse: 6,
-            thick: 3.2,
+            thick: 1.5,
           });
         } else {
           this.loops.delete(`${src}:chau${i}`);
