@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react';
 import {
   BOTTLENECK_RETRY_SEC,
   C,
+  DAO_MUL,
+  DAO_UNLOCK_LEVEL,
+  daoOf,
   type CharView,
   isBottleneckLevel,
   isPeakLevel,
@@ -185,6 +188,44 @@ export function LockedOrigins() {
 }
 
 /** Tab đổi linh căn ở NPC có `rootChange`. */
+/** Tab Đạo (TN-3): từ Vấn Đỉnh chọn MỘT nguồn làm Đạo, một lần, miễn phí. Server tự kiểm cấp và chưa chọn (`onChooseDao`). */
+export function DaoTab() {
+  const char = useUI((s) => s.char);
+  if (!char) return null;
+  const chosen = daoOf({ dao: char.dao });
+  const locked = char.level < DAO_UNLOCK_LEVEL;
+  const g = Game.current;
+  return (
+    <div className="shop-list">
+      <Divider label={t('ui.dao.title')} />
+      <div className="k-dim">
+        {t(chosen ? 'ui.dao.chosen_desc' : locked ? 'ui.dao.locked' : 'ui.dao.desc', {
+          lv: DAO_UNLOCK_LEVEL,
+          pct: Math.round(DAO_MUL * 100),
+        })}
+      </div>
+      {ROOT_IDS.map((id) => {
+        const cur = chosen === id;
+        return (
+          <div key={id} className="k-card shop-row" data-dao={id}>
+            <span className="root-glyph" aria-hidden="true">
+              <UiIcon id={`root_${id}`} fallback={t(`elem.${id}`)} />
+            </span>
+            <div className="shop-info">
+              <div className="item-name">{t(`origin.${id}.name`)}</div>
+              <div className="k-dim">{t(`root.${id}.desc`)}</div>
+              <div className="k-dim">{t(`ui.dao.domain.${id}`)}</div>
+            </div>
+            <Button variant="primary" disabled={!!chosen || locked} onClick={() => g?.send(C.DAO, { root: id })}>
+              {cur ? t('ui.dao.current') : t('ui.dao.pick')}
+            </Button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function RootTab({ npcId }: { npcId: string }) {
   const char = useUI((s) => s.char);
   if (!char) return null;

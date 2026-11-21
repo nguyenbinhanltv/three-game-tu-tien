@@ -76,5 +76,8 @@
   {"id": "itm_kim_da_mien", "kind": "material", "stack": 20, "price": 0, "sell": 520, "rarity": 3, "icon": "itm_kim_da_mien", "iconFallback": "👑"},
   { "id": "itm_hu_anh_phien", "kind": "material", "stack": 99, "price": 0, "sell": 140, "rarity": 4, "iconFallback": "🔮" },
   { "id": "itm_dong_van_phien", "kind": "material", "stack": 99, "price": 0, "sell": 140, "rarity": 4, "iconFallback": "🪙" },
-  {"id": "itm_co_huyet_tinh", "kind": "material", "stack": 99, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_co_huyet_tinh", "iconFallback": "🩸"}
+  {"id": "itm_co_huyet_tinh", "kind": "material", "stack": 99, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_co_huyet_tinh", "iconFallback": "🩸"},
+  { "id": "itm_van_dinh_lo", "kind": "material", "stack": 10, "price": 0, "sell": 0, "rarity": 4, "iconFallback": "🌑" },
+  { "id": "itm_am_hu_lo", "kind": "material", "stack": 10, "price": 0, "sell": 0, "rarity": 4, "iconFallback": "🌒" },
+  { "id": "itm_duong_thuc_lo", "kind": "material", "stack": 10, "price": 0, "sell": 0, "rarity": 4, "iconFallback": "🌕" }
 ]
