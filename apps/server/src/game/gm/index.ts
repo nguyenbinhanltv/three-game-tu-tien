@@ -61,7 +61,7 @@ import {
   weaponIds,
   type GmBranch,
 } from './tools';
-import { methodOf, picksOf, resourceOf, setSkillLevel, skillLevelOf } from '../method';
+import { grantPathOf, methodOf, picksOf, resourceOf, setSkillLevel, skillLevelOf } from '../method';
 import type { LevelDef, MonsterDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from '../entities';
 
@@ -411,6 +411,7 @@ export class GmSystem {
         // /gm method <id> [cấp chiêu]: chọn công pháp ngay (không cần tầng/NPC/linh thạch); cấp chiêu áp cho mọi chiêu mở.
         if (!METHOD.has(a[1] ?? '')) return say('method ' + [...METHOD.keys()].join(' | '));
         c.meta.method = a[1] ?? '';
+        grantPathOf(c.meta);
         const lv = Math.max(1, Math.min(MAX_SKILL_LEVEL, Number(a[2] ?? 1) | 0));
         for (const sk of SKILL.values()) if (!sk.method || sk.method === a[1]) setSkillLevel(c.meta, sk.id, lv);
         p.mth.reset();
@@ -533,6 +534,7 @@ export class GmSystem {
         const lv = Math.max(1, Math.min(MAX_SKILL_LEVEL, Number(a[2] ?? MAX_SKILL_LEVEL) | 0 || MAX_SKILL_LEVEL));
         if (sk.method && c.meta.method !== sk.method) {
           c.meta.method = sk.method;
+          grantPathOf(c.meta);
           p.mth.reset();
         }
         if (c.level < sk.unlock) this.setLevel(p, sk.unlock);
@@ -560,6 +562,7 @@ export class GmSystem {
         const need = Math.max(...plan.pieces.map((x) => ITEM.get(x.id)?.reqLevel ?? 1));
         if (c.level < need) this.setLevel(p, need);
         c.meta.method = BRANCH_METHOD[br];
+        grantPathOf(c.meta);
         for (const sk of SKILL.values()) if (!sk.method || sk.method === c.meta.method) setSkillLevel(c.meta, sk.id, MAX_SKILL_LEVEL);
         p.mth.reset();
         if (!this.equipPieces(p, plan.pieces, plus)) return say(t('gm.msg.bag_full'));

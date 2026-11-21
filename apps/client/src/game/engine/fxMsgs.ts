@@ -27,6 +27,7 @@ import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
 import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from '../fx/methodFx';
+import { aliasFx, FX_SILENT } from '../fx/fxAlias';
 import { get, pushLog, pushToast, set } from '../../ui/store';
 import { sysChannel } from '../../ui/u2/hud/chatChannel';
 import { duck, lootChime, playSting, type Sfx, sfx } from '../audio/audio';
@@ -148,6 +149,8 @@ export function updateSoulVis(eng: Game, dt: number, me: PState | undefined): vo
 }
 
 export function handleFx(eng: Game, m: FxMsg, held = false): void {
+  if (FX_SILENT.has(m.t)) return;
+  m = aliasFx(m);
   const v = eng.vfx;
   const e = eng.ents;
   if (!v || !e || eng.disposed) return;

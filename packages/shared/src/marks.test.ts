@@ -21,7 +21,16 @@ const TRUY_HON: MarkDef = { id: 'truy_hon', on: 'mon', max: 1, dur: 8, method: '
 const TRAN_AN: MarkDef = { id: 'tran_an', on: 'mon', max: 1, dur: 6, method: 'bat_dong_kim_than', color: 'ffc95a' };
 const MAT_THE: MarkDef = { id: 'mat_the', on: 'mon', max: 1, dur: 5, ampAll: 0.15, onApply: { stun: 1, posture: 0.2 }, color: 'ff8a5a' };
 const MOC_AN: MarkDef = { id: 'moc_an', on: 'ally', max: 1, dur: 10, method: 'thanh_moc_dan_kinh', color: '7dffa0' };
-const ALL = [KIEM_AN, TRUY_HON, TRAN_AN, MAT_THE, MOC_AN];
+const HON_AN: MarkDef = {
+  id: 'hon_an',
+  on: 'mon',
+  max: 3,
+  dur: 8,
+  method: 'dan_hon_kinh',
+  dot: { per: 0.12, leech: 0.2 },
+  color: 'b9a8ff',
+};
+const ALL = [KIEM_AN, TRUY_HON, TRAN_AN, MAT_THE, MOC_AN, HON_AN];
 const DEFS = new Map(ALL.map((d) => [d.id as string, d]));
 
 describe('ấn trên mục tiêu (VS-2c)', () => {
@@ -94,9 +103,25 @@ describe('ấn trên mục tiêu (VS-2c)', () => {
     expect(unpackMarks(undefined)).toEqual([]);
     expect(unpackMarks(-5)).toEqual([]);
     expect(unpackMarks(Number.NaN)).toEqual([]);
-    // Đủ mọi ấn ở tầng tối đa vẫn nằm trong uint16.
+    // Đủ mọi ấn ở tầng tối đa vẫn là số dương nằm trong uint32 (trường đồng bộ `mk`), đọc lại không mất ấn nào.
     const full: MarkRt[] = MARK_ORDER.map((id) => ({ id, sid: 'x', n: 7, until: 1e12 }));
-    expect(packMarks(full, 0)).toBeLessThan(65536);
+    const packed = packMarks(full, 0);
+    expect(packed).toBeGreaterThan(0);
+    expect(packed).toBeLessThan(2 ** 31);
+    expect(unpackMarks(packed).map((x) => x.id)).toEqual([...MARK_ORDER]);
+  });
+  it('TN-2: ấn có sát thương theo thời gian giữ nhịp khi đặt thêm tầng, đặt lại sau khi hết hạn thì bắt nhịp mới', () => {
+    const list: MarkRt[] = [];
+    markAdd(list, HON_AN, 'a', 1, 0, { per: 30 });
+    expect(list[0]).toMatchObject({ n: 1, per: 30, nextAt: 1000 });
+    markAdd(list, HON_AN, 'a', 1, 400, { per: 35 });
+    expect(list[0]).toMatchObject({ n: 2, per: 35, nextAt: 1000 });
+    // Ấn không có `per` (mọi ấn cũ) không sinh nhịp.
+    markAdd(list, KIEM_AN, 'a', 1, 0);
+    expect(list[1]!.nextAt).toBeUndefined();
+    // Bỏ lâu rồi đặt lại (nhịp cũ đã quá hạn hơn một nhịp): bắt nhịp mới từ lúc đặt, không nổ bù.
+    markAdd(list, HON_AN, 'a', 1, 30_000, { per: 30 });
+    expect(list[0]).toMatchObject({ n: 1, nextAt: 31_000 });
   });
   it('kiểm bảng ấn', () => {
     expect(markDefErrors(ALL)).toEqual([]);
@@ -104,7 +129,12 @@ describe('ấn trên mục tiêu (VS-2c)', () => {
     expect(markDefErrors([...ALL, KIEM_AN]).join()).toMatch(/trùng id/);
     expect(markDefErrors([{ ...KIEM_AN, max: 9 }, ...ALL.slice(1)]).join()).toMatch(/max/);
     expect(markDefErrors([{ ...KIEM_AN, color: 'xyz' }, ...ALL.slice(1)]).join()).toMatch(/hex/);
-    expect(markDefErrors([...ALL.slice(0, 4), { ...MOC_AN, amp: 0.1 }]).join()).toMatch(/đạo hữu/);
+    expect(markDefErrors([...ALL.slice(0, 4), { ...MOC_AN, amp: 0.1 }, HON_AN]).join()).toMatch(/đạo hữu/);
+    // TN-2: ấn có sát thương theo thời gian chỉ nằm trên quái, tổng mỗi giây không quá 100% công kích, rút máu không quá 50%.
+    const hon = (d: Partial<MarkDef>) => markDefErrors([...ALL.slice(0, 5), { ...HON_AN, ...d }]).join();
+    expect(hon({ dot: { per: 0.4 } })).toMatch(/dot\.per/);
+    expect(hon({ dot: { per: 0.1, leech: 0.8 } })).toMatch(/leech/);
+    expect(markDefErrors([...ALL.slice(0, 4), { ...MOC_AN, dot: { per: 0.1 } }, HON_AN]).join()).toMatch(/dot chỉ cho ấn trên quái/);
   });
   it('kiểm chiêu đặt/tiêu ấn', () => {
     const ok = (s: Parameters<typeof skillMarkErrors>[0]) => skillMarkErrors(s, DEFS);

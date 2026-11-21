@@ -45,6 +45,29 @@ export interface PathDef {
   match: string[];
   /** Phối hợp tổ đội: ấn hướng này tạo ra và ấn nó muốn đồng đội tạo. */
   synergy: { gives: MarkId[]; wants: MarkId[] };
+  /**
+   * TN-2: hướng phải lĩnh ngộ mới tu được (không có = chọn tự do từ Ngưng Khí 5 như ba hướng đầu). Lĩnh ngộ một lần ở chỗ
+   * người truyền công pháp: đủ cảnh giới `level`, trả `gold` linh thạch, nhận vật `grant` (pháp bảo gắn mệnh của hướng).
+   */
+  unlock?: PathUnlock;
+}
+
+export interface PathUnlock {
+  level: number;
+  gold: number;
+  grant?: string;
+}
+
+/** Hướng `p` đã mở với nhân vật có danh sách hướng đã lĩnh ngộ `learned` chưa (hướng không có `unlock` luôn mở). */
+export function pathOpen(p: PathDef | undefined, learned: readonly string[] | undefined): boolean {
+  return !p?.unlock || !!learned?.includes(p.id);
+}
+
+/** Làm sạch danh sách hướng đã lĩnh ngộ đọc từ DB: chỉ giữ id hướng có `unlock`, bỏ trùng. */
+export function sanitizeLearnedPaths(paths: readonly PathDef[], raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const ok = new Set(paths.filter((p) => p.unlock).map((p) => p.id));
+  return [...new Set(raw.filter((x): x is string => typeof x === 'string' && ok.has(x)))];
 }
 
 /**
@@ -95,6 +118,12 @@ export function pathErrors(
     if (p.hit && !(p.hit.gain > 0 && p.hit.gain <= 0.5 && p.hit.rate > 0)) errs.push(`${at}: hit.gain trong (0; 0,5], rate dương`);
     if (!Array.isArray(p.match)) errs.push(`${at}: thiếu match (mảng, có thể rỗng)`);
     if (!p.weapons?.length) errs.push(`${at}: chưa khai vũ khí`);
+    if (p.unlock) {
+      const u = p.unlock;
+      if (!(Number.isInteger(u.level) && u.level >= 5 && u.level <= 60)) errs.push(`${at}: unlock.level phải là cảnh giới 5–60`);
+      if (!(Number.isInteger(u.gold) && u.gold >= 0 && u.gold <= 100000)) errs.push(`${at}: unlock.gold phải là số nguyên 0–100000`);
+      if (u.grant !== undefined && !/^itm_[a-z0-9_]+$/.test(u.grant)) errs.push(`${at}: unlock.grant phải là id vật phẩm`);
+    }
     for (const k of [...(p.synergy?.gives ?? []), ...(p.synergy?.wants ?? [])])
       if (!markIds.has(k)) errs.push(`${at}: synergy trỏ tới ấn "${k}" không tồn tại`);
   }
