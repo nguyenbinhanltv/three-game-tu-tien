@@ -195,6 +195,7 @@ export class Vfx {
       'helix',
       'dragon',
       'statue',
+      'soul_soldier',
       'card',
       'ribbon',
       'flip',

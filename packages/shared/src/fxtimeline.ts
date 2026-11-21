@@ -28,6 +28,8 @@ export type FxShape =
   | 'dragon'
   /** Pháp tướng tượng ngồi (La Hán): thân tròn xoay dựng từ đài sen tới đầu, cao ~4,2 m ở scale 1 (kiểu `crystal`). */
   | 'statue'
+  /** Hồn binh (TN-2): bóng lính đứng cầm giáo, cao 1 ở scale 1 (chân ở gốc, dọc +Y), mặt quay +Z (kiểu `crystal`, mọc từ chân lên). */
+  | 'soul_soldier'
   /** Thẻ pháp tướng vẽ 2D quay mặt về camera (kiểu `card`); chọn tranh bằng `card`. */
   | 'card'
   /** Chùm đường gió: bảy vệt mảnh cuộn quanh trục +Z, đầu vệt chạy dọc đường rồi tan (kiểu `wind`, Storm & Wind CC BY). */
