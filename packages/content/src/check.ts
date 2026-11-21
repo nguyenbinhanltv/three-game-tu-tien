@@ -100,6 +100,7 @@ import {
   JOINTS,
   MARK,
   PATHS,
+  pathOf,
   MARKS,
   METHODS,
   METHOD,
@@ -487,7 +488,9 @@ for (const it of ITEMS) {
     if (t(`ui.party.role.${role}`) !== name) err(`vai trò tổ đội ${role}: tên lệch glossary.party.roles`);
   }
   for (const m of METHODS) {
-    if (t(`method.${m.id}.role`) !== GLOSSARY.party.roles[m.role]) err(`công pháp ${m.id}: tên vai trò lệch glossary.party.roles`);
+    // Nhãn vai của công pháp là tên hướng tu của nó (ba hướng đầu trùng tên vai tổ đội; hướng mới như Hồn tu có tên riêng).
+    const pathName = (GLOSSARY.paths as Record<string, string>)[pathOf(m.id)?.id ?? ''];
+    if (t(`method.${m.id}.role`) !== pathName) err(`công pháp ${m.id}: nhãn vai phải là tên hướng tu (glossary.paths)`);
   }
   for (const k of ['gem', 'refineStone', 'dust', 'ward'] as const) if (!GLOSSARY.upgrade[k]) err(`glossary.upgrade.${k} thiếu`);
   if (t(`item.${REFINE_ITEM}.name`) !== GLOSSARY.upgrade.refineStone) err('tên Tẩy Luyện Thạch lệch glossary');

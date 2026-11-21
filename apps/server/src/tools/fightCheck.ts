@@ -28,6 +28,7 @@ Date.now = () => fake;
 const { GameSim } = await import('../game/sim');
 const { WorldState } = await import('../state');
 const { Character } = await import('../game/character');
+const { grantPathOf } = await import('../game/method');
 const { ITEM, LEVELS: LV, METHOD, MONSTER, SKILL, SKILLS, METHOD_SKILLS, METHODS } = await import('@dtl/content');
 const { MAX_LEVEL } = await import('@dtl/shared');
 for (const lv of LEVELS) if (!(lv >= 1 && lv <= MAX_LEVEL)) throw new Error(`--levels: cấp ${lv} ngoài 1–${MAX_LEVEL}`);
@@ -99,7 +100,11 @@ function fightOnce(level: number, method: string | undefined): Result {
   const char = Character.create(acc++, 'f' + acc);
   char.level = level;
   char.root = 'tho';
-  if (method && level >= METHOD_UNLOCK_LEVEL) char.meta.method = method;
+  if (method && level >= METHOD_UNLOCK_LEVEL) {
+    char.meta.method = method;
+    // TN-2: hướng phải lĩnh ngộ (Hồn tu) coi như đã lĩnh ngộ, chỉ từ cảnh giới mở.
+    grantPathOf(char.meta);
+  }
   for (const [slot, id] of Object.entries(NOGEAR ? {} : gearFor(level)))
     if (id) (char.equip as Record<string, unknown>)[slot] = { id, n: 1 };
   char.recalc();
@@ -166,7 +171,7 @@ console.log('cấp   quái                     công pháp     TTK     mất/con
 const STRICT = process.argv.includes('--strict');
 const bad: string[] = [];
 for (const lv of LEVELS) {
-  for (const m of [undefined, 'lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh'] as const) {
+  for (const m of [undefined, ...METHODS.map((x) => x.id)]) {
     if (!m && lv >= METHOD_UNLOCK_LEVEL) continue;
     const rs = Array.from({ length: RUNS }, () => fightOnce(lv, m));
     const avg = (f: (r: Result) => number) => rs.reduce((n, r) => n + f(r), 0) / rs.length;

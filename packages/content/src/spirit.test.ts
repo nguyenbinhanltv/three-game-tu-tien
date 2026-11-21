@@ -22,9 +22,11 @@ describe('E2-E: thần thức, ô chiêu 9, bản mệnh pháp bảo', () => {
   it('hàng bậc cao còn 16, 18, 22, 24, 26 theo thứ tự (không gồm 20)', () => {
     // VS-2d: hàng bậc cao là chiêu mốc 16 và 24; chưa chọn nhánh thì hiện cả hai chiêu mỗi mốc, chọn rồi chỉ còn chiêu của nhánh.
     for (const m of METHODS) {
-      expect(tierBar(m.id).map((s) => s.unlock)).toEqual([16, 16, 24, 24]);
-      const picks = { 16: m.branches.find((b) => b.tier === 16)!.id, 24: m.branches.find((b) => b.tier === 24)!.id };
-      expect(tierBar(m.id, picks).map((s) => s.unlock)).toEqual([16, 24]);
+      // TN-2: công pháp chưa làm tới mốc 24 (Dẫn Hồn Kinh) thì hàng bậc cao chỉ có mốc 16.
+      const b24 = m.branches.find((b) => b.tier === 24);
+      expect(tierBar(m.id).map((s) => s.unlock)).toEqual(b24 ? [16, 16, 24, 24] : [16, 16]);
+      const picks = { 16: m.branches.find((b) => b.tier === 16)!.id, ...(b24 ? { 24: b24.id } : {}) };
+      expect(tierBar(m.id, picks).map((s) => s.unlock)).toEqual(b24 ? [16, 24] : [16]);
       // Ô 9 theo nhánh mốc 20 đã chọn.
       const b20 = m.branches.filter((b) => b.tier === 20);
       for (const b of b20) expect(b.grants).toContain(thanThongSkill(m.id, { 20: b.id })!.id);

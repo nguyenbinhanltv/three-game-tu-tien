@@ -14,6 +14,7 @@ import {
   methodSwitchCost,
   METHOD_SWITCH_COOLDOWN_SEC,
   METHOD_UNLOCK_LEVEL,
+  pathOpen,
   MAX_SKILL_LEVEL,
   skillUpgradeCost,
   variantSwitchBlock,
@@ -32,7 +33,7 @@ import {
   branchResetCost,
   pickBlock,
 } from '@dtl/shared';
-import { PILL_QUALITY, ITEM, itemName, NPC, QUEST, realmName, RECIPE, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
+import { PILL_QUALITY, ITEM, itemName, NPC, QUEST, realmName, RECIPE, SKILL, t, METHOD, VARIANTS, skillName, pathOf } from '@dtl/content';
 import { type Character, isEquipSlot, sameSlot } from '../character';
 import { methodOf, passiveOf, picksOf, setSkillLevel, skillLevelOf } from '../method';
 import type { DuelSystem } from '../duel';
@@ -397,7 +398,21 @@ export class EconomySystem {
     if (c.level < METHOD_UNLOCK_LEVEL) return this.c.warn(p, 'sys.method_low', { realm: realmName(METHOD_UNLOCK_LEVEL) });
     if (c.meta.method === def.id) return this.c.warn(p, 'sys.method_same');
     if (this.c.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000) return this.c.warn(p, 'sys.method_combat');
-    if (c.meta.method) {
+    // TN-2: hướng tu phải lĩnh ngộ (Hồn tu). Lĩnh ngộ một lần ở chỗ người truyền công pháp, đủ cảnh giới, trả linh thạch trong
+    // một giao dịch có khóa chống trùng + ledger; lần lĩnh ngộ chuyển luôn sang công pháp đó (không tính thêm phí đổi).
+    const path = pathOf(def.id);
+    const unlock = pathOpen(path, c.meta.paths) ? undefined : path?.unlock;
+    if (path && unlock) {
+      const pathName = t(`path.${path.id}.name`);
+      if (c.level < unlock.level) return this.c.warn(p, 'sys.path_low', { realm: realmName(unlock.level), path: pathName });
+      if (!this.c.nearNpc(p, METHOD_NPC)) return this.c.warn(p, 'sys.path_far', { npc: t(`npc.${METHOD_NPC}.name`), path: pathName });
+      const idem = this.idem(p, m.r);
+      if (idem === undefined) return;
+      if (c.gold < unlock.gold) return this.c.warn(p, 'sys.not_enough_gold');
+      if (!c.tx(`path:unlock:${path.id}`, idem, (d) => d.spendGold(unlock.gold))) return this.c.warn(p, 'sys.not_enough_gold');
+      c.meta.paths = [...(c.meta.paths ?? []), path.id];
+      this.c.sys(p, 'sys.path_learned', { path: pathName, n: unlock.gold }, 'good');
+    } else if (c.meta.method) {
       // Đổi công pháp: gặp người, tốn linh thạch, có chờ.
       if (!this.c.nearNpc(p, METHOD_NPC)) return this.c.warn(p, 'sys.method_far', { npc: t(`npc.${METHOD_NPC}.name`) });
       if (this.c.now - (c.meta.methodAt ?? 0) < METHOD_SWITCH_COOLDOWN_SEC * 1000) return this.c.warn(p, 'sys.method_cd');
