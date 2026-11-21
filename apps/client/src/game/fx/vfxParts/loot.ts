@@ -18,6 +18,39 @@ import { G } from '../../core/geo';
 import { LOOT_FX_MAX, RING_GEO, _a } from './common';
 import type { Vfx } from '../vfx';
 
+/** Điểm rơi gần camera hơn người chơi từ chừng này mét trở xuống thì hiện đủ (đồ rơi quanh chân nhân vật, kể cả khi zoom gần hay ở vùng camera sát). */
+export const LOOT_GAP_FULL = 1.5;
+/** Gần camera hơn người chơi từ chừng này mét trở lên thì mờ hết mức: cột/chớp nằm chắn giữa camera và nhân vật. */
+export const LOOT_GAP_HIDE = 5.5;
+/** Camera nằm trong hay sát cột (cách mép cột dưới mức đầu, tính từ mép cột) thì mờ; hiện đủ từ mức sau. */
+export const LOOT_CAM_INSIDE = 0.5;
+export const LOOT_CAM_CLEAR = 1.5;
+
+/**
+ * Hệ số 0..1 cho cột sáng/chớp của đồ rơi, theo khoảng cách THẬT của camera (không dùng ngưỡng tuyệt đối vì camera mặc định cách người
+ * ≈ 12 m trên mặt bằng, vùng `camZones` sát hơn nữa, zoom được tới 3 m): `distCam` = camera → điểm rơi, `distViewer` = camera → người chơi
+ * (mặt bằng; `null` khi chưa biết). Mờ khi điểm rơi nằm chắn trước người chơi (gần camera hơn người từ 1,5 m, hết hẳn ở 5,5 m) hoặc camera
+ * nằm trong cột. Đồ rơi quanh chân nhân vật ở mọi góc camera mặc định cho 1.
+ */
+export function lootNearK(distCam: number, distViewer: number | null, radius: number): number {
+  const inside = Math.min(1, Math.max(0, (distCam - radius - LOOT_CAM_INSIDE) / (LOOT_CAM_CLEAR - LOOT_CAM_INSIDE)));
+  if (distViewer === null) return inside;
+  const gap = distViewer - distCam;
+  const between = Math.min(1, Math.max(0, (LOOT_GAP_HIDE - gap) / (LOOT_GAP_HIDE - LOOT_GAP_FULL)));
+  return Math.min(inside, between);
+}
+
+function lootNear(v: Vfx, x: number, z: number, radius: number): number {
+  const cam = v.camera;
+  if (!cam) return 1;
+  const me = v.viewerAt?.() ?? null;
+  return lootNearK(
+    Math.hypot(cam.position.x - x, cam.position.z - z),
+    me ? Math.hypot(cam.position.x - me.x, cam.position.z - me.z) : null,
+    radius,
+  );
+}
+
 /**
  * Đồ rơi (M4-6), chỉ là lớp hình: viên đồ nảy ra từ `from` (ngực quái) tới một điểm quanh xác, chạm
  * đất (gọi `onLand`: chuông), cột sáng theo bậc dâng lên, nằm một lúc rồi biến mất (gọi `onCollect`
@@ -90,7 +123,10 @@ export function lootDrop(
         landed = true;
         onLand?.();
         _a.set(tx, gy, tz);
-        v.burst(_a, col, 0.5 + tier * 0.25, 0.3);
+        // Chớp lúc chạm đất là quầng cộng sáng tròn: rơi giữa camera và nhân vật thì thành quả cầu lóa che tầm nhìn (duyệt ảnh #447),
+        // nên gần camera thì thu nhỏ, rất gần thì bỏ.
+        const nb = lootNear(v, tx, tz, T.radius);
+        if (nb > 0.2) v.burst(_a, col, (0.5 + tier * 0.25) * (0.35 + 0.65 * nb), 0.3);
         for (let i = 0; i < T.sparks; i++) {
           const a = Math.random() * Math.PI * 2;
           const r = Math.random() * T.radius * 0.8;
@@ -119,8 +155,7 @@ export function lootDrop(
         beam.fxA.x = Math.min(1.1, bt / 0.25);
         beam.fxK = Math.min(1, bt / 0.8);
         // Camera sát hay nằm trong cột (nhiều món rơi chồng nhau): mặt cột che kín màn hình thành tấm trắng cháy sáng, nên mờ dần khi lại gần.
-        const cam = v.camera;
-        const near = cam ? Math.min(1, Math.max(0, (Math.hypot(cam.position.x - tx, cam.position.z - tz) - T.radius * 1.2) / 5)) : 1;
+        const near = lootNear(v, tx, tz, T.radius);
         const vis = (0.15 + 0.85 * near) * lootCrowd(v.lootActive);
         beam.fxOpacity = full ? 0 : T.alpha * out * lootPulse(tier, bt) * vis;
         if (core) {
