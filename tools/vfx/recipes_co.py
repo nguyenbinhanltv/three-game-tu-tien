@@ -167,13 +167,13 @@ def hoa_co_vuong():
         parts('spark', -0.5, 32, 2.4, 1, 0.5, 0.07, at='self', offset=[0, 0.9, 0.3], inward=True, tone='rim', tier=1),
         snd(-0.5, 'cast', 0.55, 0.8),
         decal('rune', -0.4, 4.5, 1.6, at='self', offset=[0, -1.12, 0], grow=0.3, tone='body', alpha=1, tier=0),
-        mesh('pill_orb', -0.35, 0.5, at='self', offset=[1.4, -0.2, 0.9], scale=0.5, scaleTo=1.5, sweep=0, erodeFrom=0.9, alpha=1, tone='body', follow=True, tier=0, seed=8),
+        mesh('pill_orb', -0.35, 0.5, at='self', offset=[2.2, -0.4, 0.9], scale=0.4, scaleTo=0.95, sweep=0, erodeFrom=0.9, alpha=1, tone='body', follow=True, tier=0, seed=8),
         mesh('rune_ring2', -0.3, 0.8, at='self', offset=[0, -1.05, 0], scale=0.5, scaleTo=0.9, sweep=0.3, erodeFrom=0.8, alpha=1, shadow=False, tone='rim', tier=0, seed=9),
         snd(0.0, 'impact', 0.7, 0.8),
-        mesh('burst', 0.0, 0.12, at='self', offset=[1.4, 0.6, 0.9], scale=2.6, billboard=True, sweep=0, tone='body', cross=True, tier=0),
-        flip('spark_burst', 0.0, 0.4, 3.6, at='self', offset=[1.4, 0.6, 0.9], alpha=0.8, tone='rim', tier=0),
-        parts('dust', 0.0, 70, 5, 1, 0.9, 0.22, at='self', offset=[1.4, 0.4, 0.9], tone='body', grav=-0.4, tier=0),
-        parts('spark', 0.0, 50, 7, 1, 0.5, 0.09, at='self', offset=[1.4, 0.7, 0.9], tone='rim', tier=0),
+        mesh('burst', 0.0, 0.12, at='self', offset=[2.2, 0.2, 0.9], scale=2.0, billboard=True, sweep=0, tone='body', cross=True, tier=0),
+        flip('spark_burst', 0.0, 0.4, 3.6, at='self', offset=[2.2, 0.2, 0.9], alpha=0.8, tone='rim', tier=0),
+        parts('dust', 0.0, 70, 5, 1, 0.9, 0.22, at='self', offset=[2.2, 0.2, 0.9], tone='body', grav=-0.4, tier=0),
+        parts('spark', 0.0, 50, 7, 1, 0.5, 0.09, at='self', offset=[2.2, 0.3, 0.9], tone='rim', tier=0),
         mesh('crack_radial', 0.02, 0.9, at='self', offset=[0, -1.08, 0], scale=2.6, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=1, seed=2),
         smoke(0.05, 'self', y=-0.5, scale=3.4, tone='core', alpha=0.4),
     ]
@@ -214,8 +214,8 @@ def co_bay_stand():
 def co_vuong_stand():
     """Cổ Vương đứng bên người gọi: một cục độc lớn lơ lửng, vòng triện nhỏ dưới nó."""
     return [
-        mesh('pill_orb', 0.0, 3.6, at='self', offset=[1.6, -0.3, 1.0], scale=1.1, sweep=0.1, erodeFrom=0.9, tone='body', alpha=1, follow=True, tier=0, seed=70,
-             move={'to': 'self', 'ease': 'inOut', 'offset': [1.6, -0.1, 1.2]}),
+        mesh('pill_orb', 0.0, 3.6, at='self', offset=[2.2, -0.4, 1.0], scale=0.9, sweep=0.1, erodeFrom=0.9, tone='body', alpha=1, follow=True, tier=0, seed=70,
+             move={'to': 'self', 'ease': 'inOut', 'offset': [2.2, -0.2, 1.2]}),
         mesh('ripple', 0.0, 0.6, at='self', offset=[1.6, -1.08, 1.0], scale=0.3, scaleTo=1.4, sweep=0.5, erodeFrom=0.4, tone='rim', alpha=0.7, shadow=False, tier=1, seed=71),
         parts('dust', 0.0, 12, 1.2, 1, 0.9, 0.14, at='self', offset=[1.6, -0.4, 1.0], tone='core', grav=-1.0, tier=1),
     ]
