@@ -70,10 +70,10 @@ def tram_son_dao():
         decal('rune', -0.5, 4.8, 1.4, at='ground', grow=0.3, tone='rim', alpha=1, tier=0),
         mesh('rune_ring2', -0.5, 1.0, at='ground', offset=[0, 0.1, 0], scale=1.0, scaleTo=1.02, fit='area', alpha=1, sweep=0.5, erodeFrom=0.85, shadow=False, tone='rim', tier=0, seed=2),
         # đao khổng lồ rơi (tự xoay mũi theo hướng rơi) + bóng đuôi, rồi cắm xuống
-        mesh('blade_flying', -0.3, 0.3, at='target', offset=[0, 9, 0], scale=[4.2, 4.2, 5.8], sweep=0, erodeFrom=0.95, move={'to': 'target', 'ease': 'in', 'offset': [0, 0.5, 0]}, tone='body', alpha=1, camFade=True, tier=0, seed=1),
-        mesh('blade_ghost', -0.32, 0.34, at='target', offset=[0, 14, 0], scale=[3.4, 3.4, 6.2], sweep=0, erodeFrom=0.7, move={'to': 'target', 'ease': 'in', 'offset': [0, 5.5, 0]}, tone='rim', alpha=0.5, camFade=True, tier=1, seed=101),
+        mesh('blade_flying', -0.3, 0.3, at='target', offset=[1.6, 9, 0], scale=[3.6, 3.6, 5.2], sweep=0, erodeFrom=0.95, move={'to': 'target', 'ease': 'in', 'offset': [1.6, 0.5, 0]}, tone='body', alpha=1, tier=0, seed=1),
+        mesh('blade_ghost', -0.32, 0.34, at='target', offset=[1.6, 14, 0], scale=[3.0, 3.0, 5.6], sweep=0, erodeFrom=0.7, move={'to': 'target', 'ease': 'in', 'offset': [1.6, 5.5, 0]}, tone='rim', alpha=0.5, tier=1, seed=101),
         snd(-0.3, 'slash', 0.65, 0.7, 0.05),
-        mesh('blade_stuck', 0.0, 1.0, at='target', offset=[0, 0.5, 0], rot=[90, 0, 0], scale=[4.2, 4.2, 5.8], sweep=0, erodeFrom=0.6, alpha=1, tone='body', camFade=True, tier=0, seed=1),
+        mesh('blade_stuck', 0.0, 1.0, at='target', offset=[1.6, 0.5, 0], rot=[90, 0, 0], scale=[3.6, 3.6, 5.2], sweep=0, erodeFrom=0.6, alpha=1, tone='body', camFade=True, tier=0, seed=1),
         slow(0.0, 0.4, 260, tier=2),
         snd(0.0, 'impact', 0.95, 0.7, 0.04),
         snd(0.02, 'crit', 0.5, 0.85, 0.05),

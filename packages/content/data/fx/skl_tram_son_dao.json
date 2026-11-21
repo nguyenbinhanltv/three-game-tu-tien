@@ -88,14 +88,14 @@
    "dur": 0.3,
    "at": "target",
    "offset": [
-    0,
+    1.6,
     9,
     0
    ],
    "scale": [
-    4.2,
-    4.2,
-    5.8
+    3.6,
+    3.6,
+    5.2
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -103,14 +103,13 @@
     "to": "target",
     "ease": "in",
     "offset": [
-     0,
+     1.6,
      0.5,
      0
     ]
    },
    "tone": "body",
    "alpha": 1,
-   "camFade": true,
    "tier": 0,
    "seed": 1
   },
@@ -121,14 +120,14 @@
    "dur": 0.34,
    "at": "target",
    "offset": [
-    0,
+    1.6,
     14,
     0
    ],
    "scale": [
-    3.4,
-    3.4,
-    6.2
+    3.0,
+    3.0,
+    5.6
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -136,14 +135,13 @@
     "to": "target",
     "ease": "in",
     "offset": [
-     0,
+     1.6,
      5.5,
      0
     ]
    },
    "tone": "rim",
    "alpha": 0.5,
-   "camFade": true,
    "tier": 1,
    "seed": 101
   },
@@ -162,7 +160,7 @@
    "dur": 1.0,
    "at": "target",
    "offset": [
-    0,
+    1.6,
     0.5,
     0
    ],
@@ -172,9 +170,9 @@
     0
    ],
    "scale": [
-    4.2,
-    4.2,
-    5.8
+    3.6,
+    3.6,
+    5.2
    ],
    "sweep": 0,
    "erodeFrom": 0.6,

@@ -34,8 +34,8 @@ describe('VFX Đao tu', () => {
     for (const id of OWN) {
       for (const e of evs(id)) {
         if (e.type !== 'mesh') continue;
-        if (/^(blade_flying|blade_stuck|blade_ghost|sword_halo|rubble_)/.test(e.shape)) {
-          // blade_ghost của chiêu nhẹ bay thấp; chỉ bắt buộc với khối cao hoặc đá
+        if (/^(blade_stuck|sword_halo|rubble_)/.test(e.shape)) {
+          // đao rơi chỉ lướt 0,3 s trên cao và lệch bên mục tiêu; khối đứng lại (đao cắm), vành, đá thì phải camFade
           expect(e.camFade, `${id}:${e.shape}`).toBe(true);
         }
         if (e.shape.startsWith('rubble_') && e.move?.offset) expect(e.move.offset[1]!, `${id}:${e.shape}`).toBeLessThanOrEqual(2.2);

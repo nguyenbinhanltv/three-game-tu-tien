@@ -76,6 +76,8 @@ const WIDE =
   /scene_|kim_cuong|thien_kiem_vu|van_kiem_quy_tong|tram_son_dao|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
 /** Chiêu lướt của công pháp (phím Q, `useDash`). Chiêu lướt bậc cao (Nghịch Kiếm, Dịch Sơn Xung) nằm trên thanh chiêu: bấm ô như chiêu thường. */
 const DASH = /kiem_anh_bo|thiet_bich_xung|luu_huong_bo/;
+/** Chiêu tối thượng của Đao tu: không qua thanh chiêu (cần vòng sạc thật), chỉ phát dòng thời gian FX để duyệt hình. */
+const INJECT_ONLY = /tram_son_dao/;
 const ULT =
   /van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/;
 /** Thời lượng ghi riêng (ms game) của chiêu có niệm. */
@@ -210,7 +212,11 @@ async function press(page: Page, id: string): Promise<void> {
   if (DASH.test(id)) return page.evaluate(() => window.__game!.useDash());
   // Thuấn Di Hộ Thế/Cứu Viện cần đồng đội (server từ chối khi đứng một mình): chỉ phát dòng thời gian FX.
   const slot =
-    id === 'skl_phi_kiem' ? 0 : ALLY_ONLY.test(id) ? -1 : await page.evaluate((i) => window.__game!.bar().findIndex((s) => s.id === i), id);
+    id === 'skl_phi_kiem'
+      ? 0
+      : ALLY_ONLY.test(id) || INJECT_ONLY.test(id)
+        ? -1
+        : await page.evaluate((i) => window.__game!.bar().findIndex((s) => s.id === i), id);
   if (slot >= 0) return page.evaluate((s) => window.__game!.useSkill(s), slot);
   await page.evaluate((sk) => {
     const g = window.__game!;
