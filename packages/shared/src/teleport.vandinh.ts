@@ -1,7 +1,7 @@
 // Truyền Tống Trận của Vấn Đỉnh Âm Dương Giới (TN-3, tiền tố vd_). SINH BẰNG tools/maps/gen-van_dinh.mjs.
 // vd_tp_tram nhận khách từ ngoài (mở bằng nhiệm vụ chương 6 hoặc "/gm tele vd_tp_tram"). vd_chuyen_am và vd_chuyen_duong là cặp
 // Chuyển Diện Trận Đài nối mặt Âm Hư (tây) với mặt Dương Thực (đông); cả hai mở bằng cách đứng lên bệ, như mọi trận khác.
-import type { TelePad } from './teleport';
+import type { TelePad } from './teleport.types';
 
 export const VAN_DINH_PADS: readonly TelePad[] = [
   { id: 'vd_tp_tram', level: 'van_dinh', face: { x: 1024, z: 1024 }, zone: '', x: 1024, z: 1548 },

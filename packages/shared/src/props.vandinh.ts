@@ -1,6 +1,6 @@
 // Prop bày của Vấn Đỉnh Âm Dương Giới (TN-3). SINH BẰNG tools/maps/gen-van_dinh.mjs: sửa ở đó rồi chạy lại.
 // Va chạm của trụ/đá/gốc cây nằm ở `terrain.colliders` (van_dinh.terrain.json), tính từ PROP_LIB theo vị trí và xoay.
-import type { HandProp } from './props';
+import type { HandProp } from './props.types';
 
 export const VAN_DINH_PROPS: readonly HandProp[] = [
   { id: 'prop_den_long_troi', x: 1010, z: 1564, yaw: 0, s: 1 },
