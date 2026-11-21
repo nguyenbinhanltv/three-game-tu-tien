@@ -290,6 +290,11 @@ describe('VS-1: chiêu làm lại giữ biến thức (tín hiệu thị giác c
     'skl_kim_chung_tran',
     'skl_son_nhac_hoa_than',
     'skl_thien_kim_phap_tuong',
+    'skl_thiet_bich_xung',
+    'skl_dich_son_xung',
+    'skl_anh_thiet_than',
+    'skl_thuan_di_ho_the',
+    'skl_dan_hoa_phong_tran',
   ];
   it('mọi biến thức trong methods.json của chiêu đã làm lại có sự kiện riêng trong timeline', () => {
     for (const id of REDONE) {
@@ -302,7 +307,7 @@ describe('VS-1: chiêu làm lại giữ biến thức (tín hiệu thị giác c
   });
 });
 
-describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu một hình khối)', () => {
+describe('VS-1 Hộ pháp: 10 chiêu làm lại (đồng/nâu/đá, mỗi chiêu một hình khối)', () => {
   /** Hình khối chủ đạo của từng chiêu (nhận diện riêng). */
   const HERO: Record<string, string[]> = {
     skl_thiet_quyen_chan_dia: ['rubble_a'],
@@ -311,6 +316,10 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
     skl_son_nhac_hoa_than: ['rock_spire', 'rubble_b'],
     skl_kim_cuong_bat_hoai: ['shield_plate', 'diamond_cage'],
     skl_thien_kim_phap_tuong: ['rock_spire', 'rune_ring2'],
+    skl_thiet_bich_xung: ['shield_plate'],
+    skl_dich_son_xung: ['rock_spire', 'rift_line'],
+    skl_anh_thiet_than: ['card', 'rune_ring2'],
+    skl_thuan_di_ho_the: ['shield_plate', 'rune_ring2'],
   };
   const all = (id: string) => {
     const tl = FX_TIMELINE.get(id)!;
@@ -352,10 +361,19 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
     for (const id of Object.keys(HERO)) {
       const ult = SKILL.get(id)!.ult === true;
       const ev = all(id);
+      // Chiêu lướt kích theo S.FX: t = 0 là lúc nhận tin (không có báo trước), cú húc ở mốc `hit` riêng sau khi trượt tới nơi.
+      const dash = FX_TIMELINE.get(id)!.trigger === 'fx';
+      const stops = ev.filter((e) => e.type === 'hitstop').map((e) => e.t);
+      const hit = dash ? Math.min(...stops) : 0;
       const snd = ev.filter((e) => e.type === 'soundAt').map((e) => e.t);
-      expect(Math.min(...snd), id).toBeLessThan(0);
+      if (dash) {
+        expect(Math.min(...ev.map((e) => e.t)), id).toBeGreaterThanOrEqual(0);
+        expect(hit, id).toBeGreaterThan(0.15);
+        expect(hit, id).toBeLessThanOrEqual(0.35);
+      }
+      expect(Math.min(...snd), id).toBeLessThan(dash ? hit : 0);
       expect(
-        snd.some((t) => t === 0),
+        snd.some((t) => t === hit),
         id,
       ).toBe(true);
       for (const e of ev) {
@@ -366,13 +384,13 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
         }
         if (e.type === 'slowmo') expect(ult, id).toBe(true);
       }
-      // Đòn kết đúng mốc trúng: khựng + rung tại t = 0.
+      // Đòn kết đúng mốc trúng: khựng + rung tại mốc trúng (t = 0; chiêu lướt: mốc húc).
       expect(
-        ev.some((e) => e.type === 'hitstop' && e.t === 0),
+        ev.some((e) => e.type === 'hitstop' && e.t === hit),
         id,
       ).toBe(true);
       expect(
-        ev.some((e) => e.type === 'shake' && e.t === 0),
+        ev.some((e) => e.type === 'shake' && e.t === hit),
         id,
       ).toBe(true);
     }
@@ -388,6 +406,10 @@ describe('VS-1 Hộ pháp: 6 chiêu làm lại (đồng/nâu/đá, mỗi chiêu 
     expect(stay('skl_son_nhac_hoa_than', ['rune_ring2'], 'stomp')).toBe(true);
     expect(stay('skl_kim_cuong_bat_hoai', ['diamond_cage'])).toBe(true);
     expect(stay('skl_thien_kim_phap_tuong', ['rune_ring2'])).toBe(true);
+    expect(stay('skl_anh_thiet_than', ['rune_ring2'])).toBe(true);
+    expect(stay('skl_anh_thiet_than', ['shield_plate'], 'self')).toBe(true);
+    expect(stay('skl_thuan_di_ho_the', ['shield_plate'])).toBe(true);
+    expect(stay('skl_thuan_di_ho_the', ['rune_ring2'], 'taunt')).toBe(true);
   });
 });
 
@@ -412,5 +434,85 @@ describe('camFade: khối cao quanh người tự ẩn khi nằm giữa camera v
       expect(tall.length, id).toBeGreaterThan(0);
       for (const e of tall) expect((e as { camFade?: boolean }).camFade, id).toBe(true);
     }
+  });
+});
+
+describe('unless: biến thức thay một phần hình chung', () => {
+  it('Dịch Sơn Xung: đẩy (mặc định, stun) có vách đá trượt về trước; kéo (pull) bỏ vách trượt, có đá kéo về', () => {
+    const tl = FX_TIMELINE.get('skl_dich_son_xung')!;
+    const pushed = (v?: string) =>
+      fxEventsFor(tl, -1, v).filter((e) => e.type === 'mesh' && e.shape === 'rock_spire' && (e as { unless?: string }).unless === 'pull')
+        .length;
+    expect(pushed()).toBeGreaterThan(0);
+    expect(pushed('stun')).toBe(pushed());
+    expect(pushed('pull')).toBe(0);
+    expect(fxEventsFor(tl, -1, 'pull').some((e) => e.type === 'mesh' && e.shape === 'rock_spire')).toBe(true);
+    // Timeline không dùng `unless` thì trả đúng mảng gốc (không sao chép).
+    const plain = FX_TIMELINE.get('skl_kim_chung_tran')!;
+    expect(fxEventsFor(plain, -1)).toBe(plain.events);
+  });
+  it('chiêu lướt Hộ pháp vẫn kích theo S.FX đúng loại, đúng công pháp', () => {
+    const a = FX_TIMELINE.get('skl_thiet_bich_xung')!;
+    expect([a.trigger, a.fxKind, a.method]).toEqual(['fx', 'dash', 'bat_dong_kim_than']);
+    const b = FX_TIMELINE.get('skl_dich_son_xung')!;
+    expect([b.trigger, b.fxKind]).toEqual(['fx', 'dichson']);
+    expect(b.replaces).toContain('dichson');
+  });
+});
+
+describe('VS-1 Đan sư: chiêu mẫu Đan Hỏa Phong Trần (ngọc lục + đỏ son, viên đan và sen lửa)', () => {
+  const tl = FX_TIMELINE.get('skl_dan_hoa_phong_tran')!;
+  const all = [...tl.events, ...Object.values(tl.variants ?? {}).flat()];
+  it('trong ngân sách: ≤ 12 draw mỗi biến thức, ≤ 25 cả chiêu, hạt ≤ 1.500', () => {
+    expect(validateFxTimeline(tl, (id) => SKILL.has(id))).toEqual([]);
+    for (const v of [undefined, ...Object.keys(tl.variants ?? {})])
+      expect(fxDrawCount(fxEventsFor(tl, -1, v)), String(v)).toBeLessThanOrEqual(12);
+    expect(fxDrawCount(all)).toBeLessThanOrEqual(25);
+    expect(fxParticleCount(all)).toBeLessThanOrEqual(1500);
+  });
+  it('hình chủ đạo là viên đan + sen nở; không mượn đá vỡ/nứt gãy của Hộ pháp hay vết chém của Kiếm tu', () => {
+    const shapes = new Set(all.flatMap((e) => (e.type === 'mesh' ? [e.shape as string] : [])));
+    expect(shapes.has('pill_orb')).toBe(true);
+    expect(shapes.has('lotus_bloom')).toBe(true);
+    expect(shapes.has('flame_tongue')).toBe(true);
+    for (const s of shapes) expect(/^(rubble_|crack_radial|slash_|blade_|spike|kite|ripple|helix)/.test(s), s).toBe(false);
+  });
+  it('viên đan bay trong lúc vung và tới nơi đúng mốc trúng; đòn kết (sen, khựng, rung, âm) ở t = 0', () => {
+    const orb = tl.events.find((e) => e.type === 'mesh' && e.shape === 'pill_orb' && e.move);
+    expect(orb).toBeTruthy();
+    if (orb?.type === 'mesh') {
+      expect(orb.t).toBeLessThan(0);
+      expect(orb.t + orb.dur).toBeCloseTo(0, 6);
+    }
+    // Khung hit không được trống: sen đã bắt đầu nở trước mốc trúng ≤ 50 ms, và có hình bật NGAY (sweep 0) ở mốc trúng:
+    // lõi đan phình, mảnh đan, tia lửa.
+    const lotus = tl.events.find((e) => e.type === 'mesh' && e.shape === 'lotus_bloom')!;
+    expect(lotus.t).toBeLessThanOrEqual(0);
+    expect(lotus.t).toBeGreaterThanOrEqual(-0.05);
+    const instant = tl.events
+      .filter((e) => e.type === 'mesh' && e.sweep === 0 && e.t >= -0.03 && e.t <= 0)
+      .map((e) => (e.type === 'mesh' ? e.shape : ''));
+    for (const sh of ['pill_orb', 'spark_streak', 'burst']) expect(instant, sh).toContain(sh);
+    expect(tl.events.filter((e) => e.type === 'mesh' && e.shape === 'flame_tongue').length).toBeGreaterThanOrEqual(4);
+    expect(tl.events.some((e) => e.type === 'hitstop' && e.t === 0)).toBe(true);
+    expect(tl.events.some((e) => e.type === 'shake' && e.t === 0)).toBe(true);
+    const snd = tl.events.filter((e) => e.type === 'soundAt').map((e) => e.t);
+    expect(Math.min(...snd)).toBeLessThan(0);
+    expect(snd.some((t) => t === 0)).toBe(true);
+  });
+  it('luật chiêu thường: chớp ≤ 0,15, vignette tối ≤ 0,35, không slowmo; vùng thiêu đốt có vành ở lại theo vùng thật', () => {
+    for (const e of all) {
+      if (e.type === 'flash') expect(e.amount).toBeLessThanOrEqual(0.15);
+      if (e.type === 'vignette') {
+        expect(e.tone ?? 'dark').toBe('dark');
+        expect(e.amount).toBeLessThanOrEqual(0.35);
+      }
+      expect(e.type).not.toBe('slowmo');
+    }
+    expect(
+      tl.events.some(
+        (e) => e.type === 'mesh' && e.shape === 'rune_ring2' && e.fit === 'area' && !e.scaleTo?.toString().startsWith('0') && e.dur >= 1.5,
+      ),
+    ).toBe(true);
   });
 });
