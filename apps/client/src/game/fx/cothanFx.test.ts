@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FX_TIMELINE, METHOD_SKILLS, PATH, SKILL } from '@dtl/content';
-import { fxDrawCount, fxEventsFor, fxParticleCount, HOA_HINH_SKILL, validateFxTimeline } from '@dtl/shared';
+import { fxAwayFromCam, fxDrawCount, fxEventsFor, fxParticleCount, HOA_HINH_SKILL, validateFxTimeline } from '@dtl/shared';
 import type { FxEvent } from '@dtl/shared';
 import { paletteOf } from '../../render/vfx/palette';
 
@@ -43,13 +43,11 @@ describe('VFX Cổ Thần', () => {
   it('khoảnh khắc wow của Hóa Hình: Cổ Thần khổng lồ (thẻ colossus, camFade, đứng phía trước người), sóng chấn sát đất, làm chậm + kéo máy; không phủ khối lên thân, không rải đá', () => {
     const e = evs(SCENE);
     const colossus = e.filter((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'colossus');
-    expect(colossus).toHaveLength(2); // cặp đối xứng trước/sau người: thẻ giữa camera và người tự mờ
-    const zs = colossus.map((g) => (g.type === 'mesh' ? (g.offset?.[2] ?? 0) : 0));
-    expect(Math.min(...zs)).toBeLessThan(-3);
-    expect(Math.max(...zs)).toBeGreaterThan(3);
+    expect(colossus, 'chỉ MỘT bóng Cổ Thần, đặt ở phía xa camera').toHaveLength(1);
     for (const g of colossus)
       if (g.type === 'mesh') {
-        expect(g.camFade, 'Cổ Thần khổng lồ').toBe(true);
+        expect(g.awayFromCam, 'phía xa camera = sau lưng người chơi').toBe(true);
+        expect(g.camFade).toBe(true);
         expect(Math.abs(g.offset?.[2] ?? 0), 'cách người đủ xa').toBeGreaterThan(3);
       }
     expect(e.filter((x) => x.type === 'mesh' && x.shape === 'shock_cone').length).toBeGreaterThanOrEqual(2);
@@ -67,6 +65,25 @@ describe('VFX Cổ Thần', () => {
     }
   });
 
+  it('fxAwayFromCam: điểm cùng phía camera thì lấy đối xứng qua người, ở phía xa thì giữ nguyên', () => {
+    // người ở gốc, camera ở (0, -10): điểm (0, -7) cùng phía camera -> (0, 7); điểm (0, 7) phía xa -> giữ
+    expect(fxAwayFromCam(0, 0, 0, -10, 0, -7)).toEqual([0, 7]);
+    expect(fxAwayFromCam(0, 0, 0, -10, 0, 7)).toEqual([0, 7]);
+    expect(fxAwayFromCam(0, 0, 0, -10, 3, 0)).toEqual([3, 0]);
+    expect(fxAwayFromCam(5, 5, 5, 15, 5, 12)).toEqual([5, -2]);
+    // luôn cách người đúng bằng khoảng cũ và không bao giờ nằm cùng phía camera
+    for (const [px, pz] of [
+      [2, -6],
+      [-4, 3],
+      [7, 7],
+      [-3, -3],
+    ] as const) {
+      const [x, z] = fxAwayFromCam(0, 0, 4, -9, px, pz);
+      expect(Math.hypot(x, z)).toBeCloseTo(Math.hypot(px, pz), 9);
+      expect(x * 4 + z * -9).toBeLessThanOrEqual(1e-9);
+    }
+  });
+
   it('Thái Cổ Quyền: cự quyền (thẻ fist) giáng xuống mục tiêu + sóng chấn + bụi; Nhất Kích: cự quyền phía trước vùng, camFade', () => {
     const q = evs('skl_thai_co_quyen');
     expect(q.some((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'fist' && x.at === 'target')).toBe(true);
@@ -74,6 +91,9 @@ describe('VFX Cổ Thần', () => {
     expect(q.filter((x) => x.type === 'mesh' && x.shape === 'flip' && x.flip === 'dust_kick').length).toBeGreaterThanOrEqual(1);
     const k = evs('skl_co_than_nhat_kich').filter((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'fist');
     expect(k.length).toBe(2);
+    // cự quyền Thái Cổ Quyền giữ lâu ngay trên mục tiêu (ảnh chụp có độ trễ): còn ở lại ≥ 0,5 s sau lúc trúng
+    const main = q.find((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'fist' && x.alpha === 1);
+    expect(main && main.type === 'mesh' ? main.t + main.dur : 0).toBeGreaterThanOrEqual(0.5);
     for (const f of k) if (f.type === 'mesh') expect(f.camFade).toBe(true);
   });
 

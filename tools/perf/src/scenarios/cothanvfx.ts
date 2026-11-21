@@ -15,7 +15,7 @@ const MON = 'elite_liet_cot_bao';
 
 /** Chiêu chụp: id, nhánh cần chọn, có cần vòng sạc đầy không, các mốc chụp tính bằng ms sau lúc trúng (đầu tiên là +30 ms). */
 const SKILLS: { id: string; tag: string; at: number[]; branch?: string; charge?: boolean }[] = [
-  { id: 'skl_thai_co_quyen', tag: 'thai-co-quyen', at: [30, 300] },
+  { id: 'skl_thai_co_quyen', tag: 'thai-co-quyen', at: [30, 160] },
   { id: 'skl_tinh_bao', tag: 'tinh-bao', at: [30, 320], branch: '16 huyet_tran' },
   { id: 'skl_huyet_cu_ho', tag: 'huyet-cu-ho', at: [30, 400], branch: '16 huyet_cu' },
   { id: 'skl_co_than_nhat_kich', tag: 'nhat-kich', at: [30, 350, 1100], charge: true },

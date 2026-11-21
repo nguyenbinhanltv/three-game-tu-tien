@@ -179,6 +179,11 @@ export interface FxMeshEvent extends FxBase {
    * và mục tiêu đứng gần; phía bên kia vẫn hiện đủ. Chỉ là hình.
    */
   camFade?: boolean;
+  /**
+   * Đặt khối ở PHÍA XA camera so với người ra chiêu: nếu vị trí tính ra (anchor + offset) nằm cùng phía với camera thì lấy đối xứng qua người
+   * (trên mặt XZ). Dùng cho bóng lớn "sau lưng" khi chưa biết hướng nhìn của người chơi so với camera (Hóa Hình của Cổ Thần).
+   */
+  awayFromCam?: boolean;
 }
 
 /**
@@ -192,6 +197,15 @@ export function fxCamFade(cx: number, cz: number, mx: number, mz: number): numbe
   const d = (cx * mx + cz * mz) / (lc * lm);
   const k = Math.min(1, Math.max(0, (d - 0.26) / (0.7 - 0.26)));
   return 1 - k * k * (3 - 2 * k);
+}
+
+/**
+ * Điểm (px, pz) đặt ở phía xa camera: (ax, az) = người ra chiêu, (cx, cz) = camera. Cùng phía với camera (tích vô hướng > 0) thì đối xứng qua người.
+ * Trả `[x, z]` mới; không đổi khi đã ở phía xa hoặc trùng người.
+ */
+export function fxAwayFromCam(ax: number, az: number, cx: number, cz: number, px: number, pz: number): [number, number] {
+  const dot = (px - ax) * (cx - ax) + (pz - az) * (cz - az);
+  return dot > 0 ? [2 * ax - px, 2 * az - pz] : [px, pz];
 }
 
 export interface FxParticleEvent extends FxBase {

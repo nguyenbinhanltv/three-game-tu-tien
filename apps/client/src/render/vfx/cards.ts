@@ -486,10 +486,16 @@ function drawGhost(g: Ctx): void {
 function drawColossus(g: Ctx): void {
   const C = 256;
   const body = 0.46;
-  const dark = 0.22;
+  const dark = 0.2;
   g.lineJoin = 'round';
   g.lineCap = 'round';
-  // Hai tay: cánh tay đưa ra ngoài rồi cẳng tay dựng lên, viền sáng bên ngoài, nắm đấm ở đầu.
+  /** Gradient ngang: lõi tối ở giữa, sáng dần ra viền (kênh R = tầng màu). */
+  const hGrad = (x0: number, x1: number, stops: [number, number][]): CanvasGradient => {
+    const gr = g.createLinearGradient(x0, 0, x1, 0);
+    for (const [p, tier] of stops) gr.addColorStop(p, col(tier));
+    return gr;
+  };
+  // Hai tay: viền sáng ngoài cùng, vào trong sáng nhạt rồi tối dần tới lõi (bốn lớp nét chồng nhau), nắm đấm có gradient tròn.
   for (const s of [-1, 1]) {
     const pts: [number, number][] = [
       [C + s * 150, 292],
@@ -497,12 +503,21 @@ function drawColossus(g: Ctx): void {
       [C + s * 214, 214],
     ];
     line(g, 1, 96, pts);
-    line(g, body, 80, pts);
-    line(g, dark, 22, [
-      [C + s * 164, 306],
-      [C + s * 212, 366],
-    ]);
-    fillPath(g, body, 0, () => g.arc(C + s * 214, 170, 50, 0, Math.PI * 2), 1, 9);
+    line(g, 0.6, 80, pts);
+    line(g, 0.4, 54, pts);
+    line(g, dark, 24, pts);
+    const fx = C + s * 214;
+    const rg = g.createRadialGradient(fx, 170, 6, fx, 170, 50);
+    rg.addColorStop(0, col(0.22));
+    rg.addColorStop(0.65, col(0.42));
+    rg.addColorStop(1, col(0.62));
+    g.beginPath();
+    g.arc(fx, 170, 50, 0, Math.PI * 2);
+    g.fillStyle = rg;
+    g.fill();
+    g.strokeStyle = col(1);
+    g.lineWidth = 9;
+    g.stroke();
     // vân trên tay: hai đai kim văn quanh cánh tay + một vạch chữ V trên nắm đấm
     for (const [x, y, a] of [
       [C + s * 190, 332, 0.5],
@@ -510,7 +525,7 @@ function drawColossus(g: Ctx): void {
     ] as const)
       line(
         g,
-        0.9,
+        0.95,
         7,
         [
           [x - 26 * Math.cos(a), y + 26 * Math.sin(a)],
@@ -530,23 +545,26 @@ function drawColossus(g: Ctx): void {
       1,
     );
   }
-  // Thân: vai rộng thu về eo.
-  fillPath(
-    g,
-    body,
-    0,
-    () => {
-      g.moveTo(C - 168, 276);
-      g.quadraticCurveTo(C - 120, 226, C - 52, 222);
-      g.lineTo(C + 52, 222);
-      g.quadraticCurveTo(C + 120, 226, C + 168, 276);
-      g.lineTo(C + 132, 768);
-      g.lineTo(C - 132, 768);
-      g.closePath();
-    },
-    1,
-    10,
-  );
+  // Thân: gradient ngang lõi tối giữa ngực, sáng dần ra hai vai.
+  g.beginPath();
+  g.moveTo(C - 168, 276);
+  g.quadraticCurveTo(C - 120, 226, C - 52, 222);
+  g.lineTo(C + 52, 222);
+  g.quadraticCurveTo(C + 120, 226, C + 168, 276);
+  g.lineTo(C + 132, 768);
+  g.lineTo(C - 132, 768);
+  g.closePath();
+  g.fillStyle = hGrad(C - 170, C + 170, [
+    [0, 0.62],
+    [0.28, 0.44],
+    [0.5, 0.22],
+    [0.72, 0.44],
+    [1, 0.62],
+  ]);
+  g.fill();
+  g.strokeStyle = col(1);
+  g.lineWidth = 10;
+  g.stroke();
   // Bóng dưới ngực (khối cơ) để thân có khối.
   for (const s of [-1, 1]) {
     fillPath(
@@ -562,8 +580,8 @@ function drawColossus(g: Ctx): void {
       0,
     );
   }
-  // Cổ + đầu + hai sừng.
-  fillPath(g, body, 0, () => g.rect(C - 34, 188, 68, 54), 1, 8);
+  // Cổ + đầu (gradient tròn lõi tối) + hai sừng.
+  fillPath(g, 0.36, 0, () => g.rect(C - 34, 188, 68, 54), 1, 8);
   for (const s of [-1, 1]) {
     fillPath(
       g,
@@ -579,7 +597,17 @@ function drawColossus(g: Ctx): void {
       8,
     );
   }
-  fillPath(g, body, 0, () => g.ellipse(C, 142, 58, 66, 0, 0, Math.PI * 2), 1, 10);
+  const hg = g.createRadialGradient(C, 142, 8, C, 142, 66);
+  hg.addColorStop(0, col(0.2));
+  hg.addColorStop(0.6, col(0.4));
+  hg.addColorStop(1, col(0.62));
+  g.beginPath();
+  g.ellipse(C, 142, 58, 66, 0, 0, Math.PI * 2);
+  g.fillStyle = hg;
+  g.fill();
+  g.strokeStyle = col(1);
+  g.lineWidth = 10;
+  g.stroke();
   // Mắt (sáng) và kim văn trán.
   for (const s of [-1, 1])
     line(
@@ -632,17 +660,19 @@ function drawColossus(g: Ctx): void {
       ],
       1,
     );
-    line(
-      g,
-      0.8,
-      5,
-      [
-        [C + s * 36, 450],
-        [C + s * 40, 560],
-        [C + s * 44, 680],
-      ],
-      1,
-    );
+    // vân sáng chạy dọc thân: ba đường kim văn song song từ ngực xuống đai lưng
+    for (const dx of [36, 78, 112])
+      line(
+        g,
+        0.8,
+        5,
+        [
+          [C + s * dx, 450 + dx * 0.2],
+          [C + s * (dx + 4), 560],
+          [C + s * (dx + 8), 700],
+        ],
+        1,
+      );
   }
   // Đai lưng kim văn.
   line(
@@ -672,7 +702,7 @@ function drawColossus(g: Ctx): void {
   const gr = g.createLinearGradient(0, 0, 0, 768);
   gr.addColorStop(0, 'rgba(0,0,0,0.35)');
   gr.addColorStop(0.1, 'rgba(0,0,0,1)');
-  gr.addColorStop(0.62, 'rgba(0,0,0,1)');
+  gr.addColorStop(0.58, 'rgba(0,0,0,1)');
   gr.addColorStop(1, 'rgba(0,0,0,0)');
   g.fillStyle = gr;
   g.fillRect(0, 0, 512, 768);

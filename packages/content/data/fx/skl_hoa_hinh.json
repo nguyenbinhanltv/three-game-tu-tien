@@ -90,7 +90,7 @@
    "type": "mesh",
    "shape": "card",
    "t": -0.1,
-   "dur": 1.5,
+   "dur": 1.6,
    "card": "colossus",
    "at": "self",
    "offset": [
@@ -106,39 +106,13 @@
    ],
    "sweep": 0.22,
    "erodeFrom": 0.7,
-   "alpha": 0.74,
+   "alpha": 0.92,
    "shadow": false,
    "tone": "body",
    "camFade": true,
+   "awayFromCam": true,
    "tier": 0,
    "seed": 31
-  },
-  {
-   "type": "mesh",
-   "shape": "card",
-   "t": -0.1,
-   "dur": 1.5,
-   "card": "colossus",
-   "at": "self",
-   "offset": [
-    0,
-    3.8,
-    -7.5
-   ],
-   "billboard": true,
-   "scale": [
-    6.0,
-    9.0,
-    1
-   ],
-   "sweep": 0.22,
-   "erodeFrom": 0.7,
-   "alpha": 0.74,
-   "shadow": false,
-   "tone": "body",
-   "camFade": true,
-   "tier": 0,
-   "seed": 32
   },
   {
    "type": "decal",

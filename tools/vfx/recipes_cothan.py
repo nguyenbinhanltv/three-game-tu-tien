@@ -5,8 +5,8 @@
 # Hóa Hình có fx + pose RIÊNG (`cohoahinh`, `hoa_hinh`), nên timeline của chính chiêu `skl_hoa_hinh` tự chạy (không mượn Sơn Nhạc).
 # Hai thẻ vẽ riêng cho Cổ Thần (render/vfx/cards.ts): `colossus` (Cổ Thần khổng lồ nửa thân: đầu sừng, vai, hai tay gập, viền sáng, kim văn)
 # và `fist` (cự quyền). Thẻ quay mặt về camera; camera mặc định ở sau lưng người chơi nên đặt thẻ PHÍA TRƯỚC người, không nằm giữa camera và người.
-# Hướng nhìn của người chơi so với camera không biết trước (chiêu không mục tiêu thì quay mặt về camera), nên thẻ lớn đặt thành CẶP đối xứng
-# trước/sau người, cùng `camFade`: thẻ nằm giữa camera và người tự mờ, thẻ còn lại hiện.
+# Hướng nhìn của người chơi so với camera không biết trước (chiêu không mục tiêu thì quay mặt về camera), nên bóng lớn của Hóa Hình dùng
+# `awayFromCam`: luôn ở phía xa camera, tức thật sự sau lưng người chơi, và chỉ MỘT bóng (cự quyền Nhất Kích vẫn dùng cặp + camFade).
 # Tránh che camera/nhân vật/mục tiêu (bài học #424/#432/#444): khối đứng/cao dùng `camFade`, đá có trần 2,2 m, không phủ màu lên thân, sóng
 # chấn nhỏ sát đất. Ngân sách: mỗi mốc ≤ 12 draw, cả chiêu ≤ 25, hạt ≤ 1.500.
 import math
@@ -40,16 +40,16 @@ def thai_co_quyen():
         parts('spark', -0.4, 24, 1.4, 1, 0.3, 0.07, at='self', offset=[0.2, 0.2, 0.4], inward=True, tone='rim', tier=1),
         snd(-0.4, 'cast', 0.5, 0.7),
         # tàn ảnh quyền rơi trước, rồi cự quyền chính (viền sáng + kim văn), dừng ngay trên mục tiêu lúc trúng
-        mesh('card', -0.2, 0.3, card='fist', at='target', offset=[0, 6.0, 0], move={'to': 'target', 'offset': [0, 3.0, 0], 'ease': 'in'}, billboard=True, scale=[1.9, 1.9, 1], sweep=0, erodeFrom=0.8, alpha=0.4, shadow=False, tone='core', tier=1, seed=3),
-        mesh('card', -0.14, 0.5, card='fist', at='target', offset=[0, 5.4, 0], move={'to': 'target', 'offset': [0, 2.6, 0], 'ease': 'in'}, billboard=True, scale=[2.4, 2.4, 1], sweep=0, erodeFrom=0.7, alpha=1, shadow=False, tone='body', tier=0, seed=5),
+        mesh('card', -0.2, 0.4, card='fist', at='target', offset=[0, 6.0, 0], move={'to': 'target', 'offset': [0, 3.0, 0], 'ease': 'in'}, billboard=True, scale=[1.9, 1.9, 1], sweep=0, erodeFrom=0.8, alpha=0.4, shadow=False, tone='core', tier=1, seed=3),
+        mesh('card', -0.14, 0.85, card='fist', at='target', offset=[0, 5.4, 0], move={'to': 'target', 'offset': [0, 2.6, 0], 'ease': 'in'}, billboard=True, scale=[2.4, 2.4, 1], sweep=0, erodeFrom=0.7, alpha=1, shadow=False, tone='body', tier=0, seed=5),
         snd(-0.14, 'slash', 0.5, 0.65, 0.06),
         snd(0.0, 'impact', 0.9, 0.7),
         flip('spark_burst', 0.0, 0.36, 3.2, at='target', offset=[0, 1.0, 0], alpha=0.9, tone='accent', tier=0),
-        ring_wave(0.0, 'ground', 0.6, 4.2, 0.4, alpha=0.85, seed=3),
-        ring_wave(0.07, 'ground', 0.5, 3.2, 0.4, tone='rim', alpha=0.6, seed=4),
-        flip('dust_kick', 0.02, 0.7, 3.4, at='ground', offset=[0, 0.6, 0], alpha=0.75, tone='body', tier=0),
-        flip('dust_kick', 0.06, 0.7, 2.6, at='ground', offset=[0.8, 0.5, 0.4], rot=[0, 0, 30], alpha=0.55, tone='core', tier=1),
-        mesh('crack_radial', 0.02, 0.9, at='ground', scale=3.6, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=0, seed=2),
+        ring_wave(0.0, 'ground', 0.6, 4.2, 0.65, alpha=0.9, seed=3),
+        ring_wave(0.07, 'ground', 0.5, 3.2, 0.65, tone='rim', alpha=0.65, seed=4),
+        flip('dust_kick', 0.02, 1.0, 3.4, at='ground', offset=[0, 0.6, 0], alpha=0.75, tone='body', tier=0),
+        flip('dust_kick', 0.06, 1.0, 2.6, at='ground', offset=[0.8, 0.5, 0.4], rot=[0, 0, 30], alpha=0.55, tone='core', tier=1),
+        mesh('crack_radial', 0.02, 1.4, at='ground', scale=3.6, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=0, seed=2),
     ]
     ev += dark_ground(0.02, 'ground', 3.0)
     ev += [parts('spark', 0.0, 60, 9, 1, 0.45, 0.1, at='target', offset=[0, 1.0, 0], tone='rim', tier=0)]
@@ -173,8 +173,7 @@ def hoa_hinh():
         snd(0.0, 'impact', 1.0, 0.62, 0.04),
         snd(0.04, 'crit', 0.5, 0.7, 0.05),
         # bóng Cổ Thần khổng lồ: thẻ `colossus` đứng phía trước người chơi (camera ở sau lưng) nên người chơi nổi lên trước nó; mọc từ đất lên
-        mesh('card', -0.1, 1.5, card='colossus', at='self', offset=[0, 3.8, 7.5], billboard=True, scale=[6.0, 9.0, 1], sweep=0.22, erodeFrom=0.7, alpha=0.74, shadow=False, tone='body', camFade=True, tier=0, seed=31),
-        mesh('card', -0.1, 1.5, card='colossus', at='self', offset=[0, 3.8, -7.5], billboard=True, scale=[6.0, 9.0, 1], sweep=0.22, erodeFrom=0.7, alpha=0.74, shadow=False, tone='body', camFade=True, tier=0, seed=32),
+        mesh('card', -0.1, 1.6, card='colossus', at='self', offset=[0, 3.8, 7.5], billboard=True, scale=[6.0, 9.0, 1], sweep=0.22, erodeFrom=0.7, alpha=0.92, shadow=False, tone='body', camFade=True, awayFromCam=True, tier=0, seed=31),
         # vành triện + lớp tối + nứt dưới chân
         decal('scorch', -0.1, 5.2, 2.8, at='self', offset=[0, G, 0], grow=0.15, tone='shadow', alpha=0.8, tier=1),
         decal('rune', 0.0, 6.0, 2.4, at='self', offset=[0, G, 0], grow=0.2, tone='body', alpha=1, tier=0),
