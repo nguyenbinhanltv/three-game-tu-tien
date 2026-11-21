@@ -1,8 +1,8 @@
 // Cận cổ nhân vật v3 (sửa lỗi cổ Tinh Khuyết nam / Thần Tàng nữ): cùng camera, ở ba tư thế (đứng, chạy, chém) + 4 góc 1080p.
-// Dùng: pnpm shots neck --out <thư mục> --tag <truoc|sau> [--sets tinh_khuyet:m,than_tang:f]
+// Dùng: pnpm shots neck --out <thư mục> --tag <truoc|sau> (hoặc biến NECK_TAG) [--sets tinh_khuyet:m,than_tang:f]
 import fs from 'node:fs';
 import path from 'node:path';
-import { env, list } from '../lib/env';
+import { env, list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
@@ -14,7 +14,7 @@ export default {
   desc: 'Cận cổ + 4 góc 1080p ở đứng/chạy/chém cho Tinh Khuyết nam, Thần Tàng nữ (trước/sau sửa cổ)',
   usage: '--out <dir> [--tag sau] [--sets tinh_khuyet:m,than_tang:f]',
   async run(r) {
-    const tagP = env('NECK_TAG', 'sau');
+    const tagP = opt('--tag', env('NECK_TAG', 'sau'));
     for (const sg of list('--sets', 'tinh_khuyet:m,than_tang:f')) {
       const [s, g] = sg.split(':');
       const tag = `${tagP}-${s}-${g === 'm' ? 'nam' : 'nu'}`;
