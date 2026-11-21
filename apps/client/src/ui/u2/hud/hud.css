@@ -931,6 +931,10 @@
   --rc: var(--u-h-jade-hi);
   --rc-lo: var(--u-h-jade-lo);
 }
+.res-bar[data-res='hon_luc'] {
+  --rc: var(--u-h-soul-hi);
+  --rc-lo: var(--u-h-soul-lo);
+}
 .res-pips {
   display: flex;
   gap: 5px;

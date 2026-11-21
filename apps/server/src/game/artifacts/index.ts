@@ -18,11 +18,12 @@ import {
   MS_ATTACK,
   MS_CHASE,
   PF_SHIELD,
+  REAP_MAX_TARGETS,
   S,
   SKILL_MSG_PER_SEC,
   type SysMsg,
 } from '@dtl/shared';
-import { ARTIFACT, itemName, t } from '@dtl/content';
+import { ARTIFACT, itemName, MARK, t } from '@dtl/content';
 import type { PlayerEnt, MonEnt, SimHost } from '../entities';
 import { DuelSystem } from '../duel';
 import { parties } from '../party';
@@ -31,6 +32,9 @@ import { equippedArtifact, feedQi, progressOf } from '../artifact';
 /** Phần GameSim mà hệ pháp bảo cần. */
 export interface ArtifactCtx {
   addPosture(m: MonEnt, n: number): void;
+  /** TN-2 (hồn phiên): đặt ấn của `p` lên quái và tích tài nguyên riêng; cả hai tự bỏ qua nếu `p` không tu đúng công pháp. */
+  markMon(p: PlayerEnt, mon: MonEnt, id: string, n?: number): void;
+  addRes(p: PlayerEnt, n: number): void;
   airborne(p: PlayerEnt): boolean;
   canAssist(p: PlayerEnt, o: PlayerEnt): boolean;
   readonly duel: DuelSystem;
@@ -191,6 +195,24 @@ export class ArtifactSystem {
         }
         this.c.fx({ t: 'art', src: p.sid, r: def.radius, d: dur, ...tag });
         this.c.sys(p, 'sys.art_shield', { n: who.size }, 'good');
+        break;
+      }
+      case 'reap': {
+        // Hồn phiên (TN-2): nhiếp hồn quái đang giao chiến quanh mình. Ấn và Hồn lực chỉ có tác dụng với người tu công pháp của ấn.
+        const rp = def.reap;
+        const mk = rp ? MARK.get(rp.mark) : undefined;
+        if (!rp || !mk || (mk.method && mk.method !== c.meta.method)) return this.c.warn(p, 'sys.art_reap_none');
+        const targets = near
+          .filter((m) => (m.state === MS_CHASE || m.state === MS_ATTACK) && this.c.now >= m.evadeUntil)
+          .slice(0, REAP_MAX_TARGETS);
+        if (!targets.length) return this.c.warn(p, 'sys.art_no_target');
+        for (const mon of targets) {
+          this.c.markMon(p, mon, rp.mark);
+          this.c.addRes(p, rp.res);
+          this.c.fx({ t: 'artreap', src: mon.id, dst: p.sid, ...tag });
+        }
+        this.c.fx({ t: 'art', src: p.sid, r: def.radius, d: 1.2, ...tag });
+        this.c.sys(p, 'sys.art_reap', { n: targets.length }, 'good');
         break;
       }
       case 'heal': {
