@@ -583,6 +583,8 @@ export class MannequinCharacter implements CharacterView {
   /** Thể tu: bind của các xương gắn găng/giáp (chụp lúc dựng) và bộ găng khi đã gắn. */
   private gearBind: BindSnapshot | null = null;
   private gear: BrawlerGear | null = null;
+  /** Hướng tu hiện tại là Thể tu (găng/giáp chỉ vẽ khi đang ở LOD gần: một người xa không đáng một draw call). */
+  private gearOn = false;
   private disposed = false;
 
   constructor(
@@ -727,8 +729,9 @@ export class MannequinCharacter implements CharacterView {
   /** Hướng tu Thể tu: tay không, găng + giáp nhẹ (dựng lần đầu khi cần). Bỏ thì ẩn, không dựng lại. */
   setBrawlerGear(on: boolean): void {
     if (this.disposed || this.shadow) return;
+    this.gearOn = on;
     if (on && !this.gear && this.gearBind) this.gear = attachBrawlerGear(this.rig, this.gearBind, this.height);
-    this.gear?.setVisible(on);
+    this.gear?.setVisible(on && this.lodLevel === 0);
     if (this.blade) this.blade.visible = !on;
   }
 
@@ -1180,6 +1183,7 @@ export class MannequinCharacter implements CharacterView {
     const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length);
     this.applyLod(level);
     this.lodLevel = level;
+    this.gear?.setVisible(this.gearOn && level === 0);
     this.viewDist = v.dist;
     this.viewSelf = !!v.self;
     this.interval = mixerInterval(level, v.inView, !!v.self);

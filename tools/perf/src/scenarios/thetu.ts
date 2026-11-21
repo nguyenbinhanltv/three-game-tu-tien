@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
-import { cam, gm } from '../lib/game';
+import { cam, gm, perfSample } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 
 export default {
@@ -40,15 +40,25 @@ export default {
         const gm_ = window.__game!;
         gm_.ents.players.get(gm_.sid).model.root.remove(gm_.ents.players.get(gm_.sid).label);
       });
+      // Đo draw call/tam giác cùng khung: Thể tu (có găng + giáp) so với Kiếm tu (cầm kiếm), nhân vật gần camera (LOD0).
+      await cam(page, { yaw: 0, pitch: 0.06, dist: 3.6 });
+      const withGear = await perfSample(page);
+      await gm(page, 'method lac_kiem_quyet 5', 1200);
+      const noGear = await perfSample(page);
+      console.log(
+        `[shots:thetu] ${gname}: Thể tu draw ${withGear.drawCalls} / tam giác ${withGear.triangles}; Kiếm tu draw ${noGear.drawCalls} / tam giác ${noGear.triangles}`,
+      );
+      await gm(page, `method ${method} 5`, 1200);
       const facing = await page.evaluate(() => window.__game!.facing as number);
       for (const [size, [w, h]] of Object.entries({ '720p': [1280, 720], '1080p': [1920, 1080] }) as [string, [number, number]][]) {
         await page.setViewportSize({ width: w, height: h });
         for (const [nm, yaw, pitch, dist] of [
-          ['truoc', 0, 0.02, 2.0],
-          ['trai', -1.5708, 0.02, 2.0],
-          ['sau', 3.1416, 0.02, 2.0],
-          ['ba-phan-tu', 0.7, 0.1, 1.6],
-          ['tay', 0.4, 0.3, 0.95],
+          ['truoc', 0, 0.06, 3.0],
+          ['trai', -1.5708, 0.06, 3.0],
+          ['sau', 3.1416, 0.06, 3.0],
+          ['ba-phan-tu', 0.7, 0.1, 3.0],
+          ['tay', -0.8, -0.05, 1.7],
+          ['tay-phai', 0.8, -0.05, 1.7],
         ] as const) {
           await cam(page, { yaw: facing + yaw, pitch, dist });
           await sleep(900);
