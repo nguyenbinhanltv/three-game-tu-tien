@@ -52,7 +52,10 @@ import {
   KET_DAN_LEVEL,
   NGUYEN_ANH_LEVEL,
   HOA_THAN_LEVEL,
+  AM_HU_LEVEL,
   ANH_BIEN_LEVEL,
+  DUONG_THUC_LEVEL,
+  VAN_DINH_LEVEL,
   MAX_SKILL_LEVEL,
   skillUpgradeCost,
   shadowStats,
@@ -514,6 +517,39 @@ VS-2: sát thương mỗi giây so với bấm theo hồi chiêu (đúng cơ ch�
     `${realmName(HOA_THAN_LEVEL).padEnd(22)} ${'(trần tạm)'.padStart(7)} ${' '.padStart(9)} ${String(hb.hp).padStart(6)} ${String(hb.mp).padStart(6)} ${String(hb.atk).padStart(5)} ${String(hb.def).padStart(5)}`,
   );
   console.log(`Mốc thiết kế: Trúc Cơ 4 giờ, Kết Đan 6 giờ, Nguyên Anh 8 giờ (cờ LỖI nếu ngoài ±${TOL * 100}%).`);
+
+  // Chương 6 (TN-3, `tn3/thiet-ke.md` mục 1): nhịp theo thu nhập thiết kế (chưa có quái/nhiệm vụ `van_dinh` để mô phỏng đủ như chương 5;
+  // PR bản đồ sẽ thêm `ch6Timeline` khi có cụm quái). Anh Biến 32–35 ~2 giờ, Vấn Đỉnh 36–39 ~5 giờ, Âm Hư 40–43 ~5 giờ; Dương Thực 44 là trần tạm.
+  const CH6_STAGES = [
+    { name: 'Anh Biến', from: ANH_BIEN_LEVEL, to: VAN_DINH_LEVEL - 1, hours: 2 },
+    { name: 'Vấn Đỉnh', from: VAN_DINH_LEVEL, to: AM_HU_LEVEL - 1, hours: 5 },
+    { name: 'Âm Hư', from: AM_HU_LEVEL, to: DUONG_THUC_LEVEL - 1, hours: 5 },
+  ] as const;
+  console.log('\nChương 6 (TN-3): Anh Biến → Vấn Đỉnh → Âm Hư theo thu nhập thiết kế (khung; chưa mô phỏng quái van_dinh)');
+  console.log('cảnh giới              xpNeed  thu nhập/giờ  giờ/cấp');
+  let ch6Hours = 0;
+  for (const st of CH6_STAGES) {
+    let hrs = 0;
+    for (let l = st.from; l <= st.to; l++) {
+      const h = xpNeed(l) / designIncome(l);
+      hrs += h;
+      console.log(
+        `${realmName(l).padEnd(22)} ${String(xpNeed(l)).padStart(7)} ${designIncome(l).toFixed(0).padStart(12)} ${h.toFixed(2).padStart(8)}`,
+      );
+    }
+    ch6Hours += hrs;
+    if (Math.abs(hrs / st.hours - 1) > TOL) {
+      console.error(`LỖI: chặng ${st.name} ra ${hrs.toFixed(2)} giờ theo thu nhập thiết kế, ngoài ${st.hours} giờ ±${TOL * 100}%`);
+      process.exitCode = 1;
+    }
+  }
+  console.log(
+    `Chương 6: ${ch6Hours.toFixed(2)} giờ (mốc 12 giờ ±${TOL * 100}%); trần tạm ${realmName(DUONG_THUC_LEVEL)} (cấp ${DUONG_THUC_LEVEL}).`,
+  );
+  if (Math.abs(ch6Hours / 12 - 1) > TOL) {
+    console.error(`LỖI: chương 6 ra ${ch6Hours.toFixed(2)} giờ, ngoài 12 giờ ±${TOL * 100}%`);
+    process.exitCode = 1;
+  }
 
   // Thu nhập tu vi thực của mô phỏng ở cấp 15 (Kiếm tu), so với thu nhập thiết kế cùng cấp: mô hình thiết kế có sát thực không.
   const sim15 = (xpNeed(NGUNG_KHI_MAX) - (questByLevel.get(NGUNG_KHI_MAX) ?? 0)) / (at(main.secByLevel, NGUNG_KHI_MAX) / 3600);

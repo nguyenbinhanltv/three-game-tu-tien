@@ -702,5 +702,51 @@
     "Thất Tinh",
     "Bát Tinh",
     "Cửu Tinh"
-  ]
+  ],
+  "vanDinh": {
+    "_doc": "TN-3 chương 6 (Vấn Đỉnh): tên địa danh, quái, NPC tự đặt, lore-keeper soát 2026-11-21. UI ghi \"mặt Âm Hư\"/\"mặt Dương Thực\", không để trơ tên cảnh giới.",
+    "map": {
+      "van_dinh": "Vấn Đỉnh Âm Dương Giới"
+    },
+    "faces": {
+      "am": "Mặt Âm Hư",
+      "duong": "Mặt Dương Thực"
+    },
+    "zones": {
+      "cong_gioi": "Cổng Giới",
+      "ho_hu_anh": "Hồ Hư Ảnh",
+      "rung_re_treo": "Rừng Rễ Treo",
+      "rung_dong_kho": "Rừng Đồng Khô",
+      "bac_dinh": "Bậc Đỉnh",
+      "gioi_tri": "Giới Trì"
+    },
+    "places": {
+      "chuyen_dien_tran_dai": "Chuyển Diện Trận Đài",
+      "anh_bia": "Ảnh Bia",
+      "gioi_tri_dong_phu": "Giới Trì Động Phủ"
+    },
+    "monsters": {
+      "mon_anh_hac": "Ảnh Hạc",
+      "mon_bong_re": "Bóng Rễ",
+      "mon_hu_anh_ve": "Hư Ảnh Vệ",
+      "mon_quy_ho": "Quỷ Hồ",
+      "mon_sa_no": "Sa Nô",
+      "mon_dong_giap_khoi": "Đồng Giáp Khôi",
+      "mon_kim_van_thu": "Kim Văn Thú",
+      "mon_hoa_dieu": "Hỏa Điểu",
+      "elite_anh_hac_vuong": "Ảnh Hạc Vương",
+      "elite_hu_anh_nhan": "Hư Ảnh Nhân",
+      "elite_sa_tuong": "Sa Tướng",
+      "boss_hu_anh_chu": "Hư Ảnh Chủ",
+      "boss_dinh_linh": "Đỉnh Linh",
+      "boss_phu_chu": "Phủ Chủ"
+    },
+    "npcs": {
+      "npc_thach_nghien": "Thạch Nghiên",
+      "npc_luong_tu_gioi": "Lương Tư Giới"
+    },
+    "factions": {
+      "ho_gioi_duong": "Hộ Giới Đường"
+    }
+  }
 }
