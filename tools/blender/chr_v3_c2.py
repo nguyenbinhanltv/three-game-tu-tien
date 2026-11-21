@@ -170,12 +170,16 @@ def _tube(nodes, bones, radii, ell=1.0):
             _ufaces.append((a0, a1, a1 + _ringN, a0 + _ringN))
 
 
-_tp = [Fp_HEAD[n] for n, _ in _chains['torso']] + [Fp_TAIL['neck_01']]
+# `torsoTop` 'spine': ống thân dừng ở giữa spine_03 (dưới cổ áo). Mặc định 'neck' kéo ống tới hết xương cổ với bán kính 0,7×thân và ell 1,25 → lòi ra khỏi cổ
+# thành mảng tím/xanh đen phẳng kéo dài dưới cằm (Tinh Khuyết nam, Thần Tàng nữ).
+_tchain = [(n, w) for n, w in _chains['torso'] if not (C2.get('torsoTop') == 'spine' and n == 'neck_01')]
+_tp = [Fp_HEAD[n] for n, _ in _tchain]
+_tp.append((Fp_HEAD['spine_03'] + Fp_TAIL['spine_03']) * 0.5 if C2.get('torsoTop') == 'spine' else Fp_TAIL['neck_01'])  # 'spine': dừng ở giữa spine_03, còn lệch dưới vạt cổ áo
 _trad = []
 for _i in range(len(_tp) - 1):
     _trad.append(_inner_radius(_tp[_i], _tp[_i + 1], 0.05, 0.13))
 _trad.append(_trad[-1] * 0.7)
-_tnames = [n for n, _ in _chains['torso']]
+_tnames = [n for n, _ in _tchain]
 _tube(_tp, _tnames, _trad, ell=1.25)
 for _s in _SD:
     if C2.get('legTube', False):  # ống đùi/cẳng: mặc định tắt (lòi ra ngoài khi váy dạt)

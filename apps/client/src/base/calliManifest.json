@@ -382,5 +382,13 @@
     "w": 273,
     "h": 110,
     "hash": "5f6cff6de23e"
+  },
+  "skl_tat_dau_thanh_binh": {
+    "key": "skill.skl_tat_dau_thanh_binh.name",
+    "text": "Tát Đậu Thành Binh",
+    "file": "ult-skl_tat_dau_thanh_binh.d483209272b4.png",
+    "w": 1221,
+    "h": 240,
+    "hash": "d483209272b4"
   }
 }

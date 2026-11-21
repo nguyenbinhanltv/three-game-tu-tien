@@ -1,16 +1,15 @@
-// Nhân vật v3 (N-0, `?chr=v3`): model nguyên khối có bộ xương UE5 Mannequin (`chr_v3_*`, tools/blender/chr_v3.py) phát
-// clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này
-// (sửa lỗi bóng T-pose). Chưa có: pose IK chiêu K-5, kiếm gắn tay, phụ kiện bộ đồ, K-3 (đi lùi/ngang), IK chân.
-// Đây là bản thử pipeline: không đổi mặc định, không đụng v1/v2.
+// Nhân vật v3 (N-0 → N-7): model nguyên khối có bộ xương UE5 Mannequin (`chr_v3_*`, tools/blender/chr_v3.py) phát
+// clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
+// Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
 import * as THREE from 'three/webgpu';
 import { attribute, dot, float, fract, mix, screenCoordinate, texture, vec2, vec3, vec4 } from 'three/tsl';
 import { ClothRig } from './thienY';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/shared';
-import { type AssetCache, type AssetHandle, assets } from '../core/assets';
+import { type AssetCache, type AssetHandle, assetKey, assets } from '../core/assets';
 import { HitReact, type HitOpts } from '../combat/hitreact';
-import { adoptGltfMaterials } from '../../render/materials/world';
+import { adoptGltfMaterials, cloneWorldMaterial } from '../../render/materials/world';
 import { lodLevel, mixerInterval } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { attachBrawlerGear, gearShown, snapshotBind, type BindSnapshot, type BrawlerGear } from './brawlerGear';
@@ -18,7 +17,10 @@ import { greatbladeMesh } from './greatblade';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
 import { applySkinLook, SKIN_LOOKS } from './skinLook';
+import { applySoulLook, type SoulKind } from './soulLook';
 import { applyV3Palette } from './v3Palette';
+import { storedQuality, type TexCap, V3TextureBudget, v3TexturePolicy } from './v3Detail';
+import { addDyeMask, applyV3Dye, v3DyeRefOf } from './v3Dye';
 import {
   breathOf,
   dirMix,
@@ -38,6 +40,7 @@ import {
   xfade,
 } from './mannequinAnim';
 import { feetSlot, MqFeet } from './mannequinFeet';
+import { lodOf, mergeLodMeshes } from './mannequinLod';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import UAL_HIT from './ualHit.json';
 import type { AnimState, AttackOpts, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
@@ -47,8 +50,8 @@ import { logger } from '../../base/log';
 const modelsLog = logger('models');
 const thienYLog = logger('thienY');
 
-/** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
-export const CHR_V3 = FLAGS.chr === 'v3';
+/** Nhân vật Mannequin v3 là mặc định của người chơi (N-7); chỉ tắt khi `?chr=v1` (dự phòng một bản). */
+export const CHR_V3 = FLAGS.chr !== 'v1';
 /** `?v3anim=0` về hệ animation cũ (một clip chạy, crossfade 0,16 s, không lớp phụ) để so video trước/sau. */
 export const V3_ANIM = FLAGS.v3Anim;
 export const V3_LIB = 'anim_ual_native';
@@ -118,15 +121,6 @@ export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_korvaden: 'chr_v3_korvaden_nam',
   set_skin_shadow_wolf: 'chr_v3_shadow_wolf_nam',
 };
-/** Skin chỉ có bản v3 (v1/v2 không có asset `set_skin_<tên>_<giới>`: bỏ qua, hiện trang phục thường). Varkessa có cả v1. */
-export const V3_ONLY_SKINS: ReadonlySet<string> = new Set([
-  'set_skin_duskrella',
-  'set_skin_crimson',
-  'set_skin_noxavyra',
-  'set_skin_kings_demon',
-  'set_skin_shadow_wolf',
-  'set_skin_korvaden',
-]);
 /**
  * Model v3 theo bộ trang bị đang mặc (`PlayerLook.set`, id trong sets.json): bộ có model riêng dùng `chr_v3_<bộ>_<nam|nu>`.
  * Bộ chưa có model riêng (bậc 1 trở lên) tạm dùng model cùng nhánh: kiếm tu → Lạc Kiếm, hộ pháp → Huyền Giáp, đan sư → Đan Tâm.
@@ -208,6 +202,8 @@ export interface MannequinTemplate {
   height: number;
   /** Clip UAL đã chỉnh độ cao hông theo nhân vật này. */
   clips: Map<string, THREE.AnimationClip>;
+  /** Hình học do mẫu tự tạo (lưới LOD đã gộp): `dispose` khi bỏ mẫu. */
+  owned: THREE.BufferGeometry[];
 }
 
 function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
@@ -308,6 +304,10 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   if (KEEP_ORIGINAL_ASSETS.has(handle.id) && FLAGS.v3Veil) applyVeilAlpha(handle.scene);
   const look = SKIN_LOOKS[handle.id];
   if (look) for (const m of mats) applySkinLook(m, look);
+  // Mặt nạ nhuộm theo xương (đầu/tay/tóc không nhuộm): thêm trước khi gộp lưới để mọi lưới cùng bộ thuộc tính.
+  if (v3DyeRefOf(handle.id)) addDyeMask(handle.scene);
+  // Sau khi đã đổi vật liệu: các lưới cùng LOD dùng chung một vật liệu thì gộp làm một (1 draw call mỗi người ở LOD1/LOD2).
+  const owned = mergeLodMeshes(handle.scene);
   const box = new THREE.Box3().setFromObject(handle.scene);
   // Độ cao hông của nhân vật so với bộ xương mẫu của thư viện: chỉ kênh vị trí của pelvis bị nhân theo tỉ lệ.
   const a = restPos(handle.scene, 'pelvis');
@@ -324,7 +324,7 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
     clips.set(c.name, cl);
   }
   const height = box.max.y - Math.max(box.min.y, 0);
-  return { handle, lib, height, bank: null, clips };
+  return { handle, lib, height, bank: null, clips, owned };
 }
 
 /** Bù góc dang vai/tay (rad) theo model khi áp clip UAL: tay áo rộng của Tripo bị tay clip ép xuyên; đo/chỉnh bằng `chrv3 --pen`. `?armfit=<độ>` ghi đè. */
@@ -521,6 +521,25 @@ export class MannequinCharacter implements CharacterView {
     }
     return lod0Slots(tris);
   }
+  /** Số suất LOD1 (entities.applyLodBudget, N-7): mỗi 12.000 tam giác LOD1 một suất (model bậc cao ~24k = 2, cơ bản 12k = 1). */
+  get lod1Cost(): number {
+    let tris = 0;
+    for (const m of this.lods[1] ?? []) {
+      const g = m.geometry;
+      tris += (g.index ? g.index.count : g.getAttribute('position').count) / 3;
+    }
+    return Math.max(1, Math.round(tris / 12000));
+  }
+  /**
+   * "Đỗ rig" ở LOD2 (N-7): cả cây `rig` (xương + mọi lưới) rời khỏi cảnh, riêng lưới LOD2 gắn thẳng vào `inner` ở `DetachedBindMode`.
+   * three không còn duyệt ~120 xương mỗi khung để tính ma trận thế giới, và `skeleton.update()` chỉ chạy khi mixer vừa chạy (8 Hz ở LOD2).
+   * Xương khi đỗ nằm trong hệ tọa độ của model (rig không có cha), nên mọi thứ đọc vị trí thế giới của xương (kiếm, IK chân, lò xo: chỉ
+   * LOD0/LOD1) không dùng được trong lúc đỗ. Cùng ý với `detachRig` + `skipUnchangedSkeletons` của `SkinnedCharacter`.
+   */
+  private parked:
+    { m: THREE.SkinnedMesh; home: THREE.Object3D; pos: THREE.Vector3; quat: THREE.Quaternion; scale: THREE.Vector3 }[] | null = null;
+  /** Tăng mỗi lần tư thế xương đổi lúc đang đỗ; `skeleton.update()` của lưới đỗ bỏ qua khi phiên bản chưa đổi. */
+  private parkVersion = 0;
   /** Vải mô phỏng Thiên Y (null nếu tắt hoặc model không có vải cũ tách riêng). */
   cloth: ClothRig | null = null;
   private clothSit = 0;
@@ -593,9 +612,14 @@ export class MannequinCharacter implements CharacterView {
 
   constructor(
     private tpl: MannequinTemplate,
-    shadow = false,
+    /** `true` = bóng tâm ma (vật liệu bóng chung); một vật liệu = linh thể (nguyên anh, thân xác, phân thân) dùng vật liệu đó. */
+    ghost: boolean | THREE.Material = false,
     sword: SwordTemplate | null = null,
+    /** Vật liệu thân thay cho vật liệu mẫu (bản đã nhuộm, N-7); không đổi cách dựng như `ghost`. */
+    bodyMat: THREE.Material | null = null,
   ) {
+    const shadow = !!ghost;
+    const ghostMat = ghost === true ? shadowMaterial() : ghost || bodyMat;
     this.height = tpl.height;
     this.shadow = shadow;
     this.spring2 = isSpring2(tpl.handle.id);
@@ -605,13 +629,17 @@ export class MannequinCharacter implements CharacterView {
     this.rig.traverse((o) => {
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
-      const lv = typeof o.userData.lod === 'number' ? o.userData.lod : 0;
+      const lv = lodOf(o, this.rig);
       (this.lods[lv] ??= []).push(m);
       m.frustumCulled = false;
-      if (shadow) m.material = shadowMaterial();
+      if (ghostMat) m.material = ghostMat;
       meshes.push(m);
     });
     for (let i = 0; i < this.lods.length; i++) this.lods[i] ??= [];
+    // Nhóm bọc lưới nhiều primitive mang `userData.lod` và bị `AssetCache` ẩn sẵn (lod > 0): bật lại, hiển thị theo LOD do từng lưới con quyết định.
+    this.rig.traverse((o) => {
+      if (!(o as THREE.Mesh).isMesh && typeof o.userData.lod === 'number') o.visible = true;
+    });
     // Thiên Y: mesh vải cũ tách riêng (`*_oldskirt`, `*_oldsleeve`) do chr_v3.py --split-cloth; có `?cloth=1` thì thay bằng vải mô phỏng, không thì hiện như thường.
     // Hướng lai: giữ váy Tripo (lò xo), chỉ thay voan tay áo (`*_oldsleeve`) bằng panel vải mô phỏng.
     const oldCloth = meshes.filter((m) => /_oldsleeve/.test(m.name));
@@ -736,7 +764,7 @@ export class MannequinCharacter implements CharacterView {
     this.gearOn = on;
     if (on && !this.gear && this.gearBind) this.gear = attachBrawlerGear(this.rig, this.gearBind, this.height);
     this.gear?.setVisible(gearShown(on, this.lodLevel));
-    if (this.blade) this.blade.visible = !on;
+    if (this.blade) this.blade.visible = !on && this.lodLevel < 2;
   }
 
   /** Hướng tu cầm đao lớn (Đao tu): thay cây kiếm trong tay/trên lưng bằng đao lớn thủ tục; tắt thì trả kiếm gốc. */
@@ -763,8 +791,70 @@ export class MannequinCharacter implements CharacterView {
     this.blade.quaternion.copy(drawn ? this.qHand : this.qScab);
   }
 
-  private applyLod(level: number): void {
-    for (let i = 0; i < this.lods.length; i++) for (const m of this.lods[i]!) m.visible = i === Math.min(level, this.lods.length - 1);
+  private applyLod(level: number, self = true): void {
+    const shown = Math.min(level, this.lods.length - 1);
+    // Bóng đổ như v1: chỉ LOD0 (pass bóng vẽ lại cả lưới). Model bậc cao ~99k tam giác của NGƯỜI KHÁC không đổ bóng (N-7: mỗi model
+    // thêm ~100k tam giác mỗi tầng bóng); nhân vật mình luôn đổ. Bóng tâm ma/linh thể trong mờ không đổ.
+    const cast = shown === 0 && !this.shadow && (self || this.lod0Cost <= 1);
+    for (let i = 0; i < this.lods.length; i++)
+      for (const m of this.lods[i]!) {
+        m.visible = i === shown;
+        m.castShadow = cast && i === 0;
+      }
+    // Kiếm (một draw call mỗi người) ẩn ở LOD xa nhất: ngoài ~55 m không còn thấy.
+    // Thể tu đánh tay không: kiếm ẩn hẳn (`setBrawlerGear`), không để lượt LOD bật lại.
+    if (this.blade) this.blade.visible = level < 2 && !this.gearOn;
+  }
+
+  /** Đang đỗ rig (LOD2): xương ở hệ tọa độ model, không đọc được vị trí thế giới. */
+  get rigParked(): boolean {
+    return !!this.parked;
+  }
+
+  private setParked(on: boolean): void {
+    if (on === !!this.parked) return;
+    if (on) {
+      const list = (this.lods[2] ?? []).filter((m) => (m as THREE.SkinnedMesh).isSkinnedMesh) as THREE.SkinnedMesh[];
+      if (this.lods.length < 3 || !list.length || list.length !== this.lods[2]!.length || !this.rig.parent) return;
+      const saved: NonNullable<MannequinCharacter['parked']> = [];
+      for (const m of list) {
+        if (!m.parent) continue;
+        saved.push({ m, home: m.parent, pos: m.position.clone(), quat: m.quaternion.clone(), scale: m.scale.clone() });
+        // DetachedBindMode: đỉnh = matrixWorld(lưới) · bindMatrix⁻¹ · xương(hệ model) · boneInverse · bindMatrix, nên lưới đặt dưới `inner`
+        // với đúng biến đổi lúc bind (bindMatrix = ma trận lưới trong hệ model).
+        this.inner.add(m);
+        m.bindMatrix.decompose(m.position, m.quaternion, m.scale);
+        m.bindMode = THREE.DetachedBindMode;
+        const sk = m.skeleton;
+        let at = -1;
+        sk.update = () => {
+          if (at === this.parkVersion) return;
+          at = this.parkVersion;
+          THREE.Skeleton.prototype.update.call(sk);
+        };
+      }
+      this.inner.remove(this.rig);
+      this.parked = saved;
+      this.syncParked();
+    } else {
+      const saved = this.parked!;
+      this.parked = null;
+      this.inner.add(this.rig);
+      for (const e of saved) {
+        e.home.add(e.m);
+        e.m.position.copy(e.pos);
+        e.m.quaternion.copy(e.quat);
+        e.m.scale.copy(e.scale);
+        e.m.bindMode = THREE.AttachedBindMode;
+        delete (e.m.skeleton as { update?: unknown }).update;
+      }
+    }
+  }
+
+  /** Sau khi mixer đổi tư thế lúc đang đỗ: tính lại ma trận xương (hệ model); `skeleton.update()` chạy một lần ở lượt vẽ tới. */
+  private syncParked(): void {
+    this.rig.updateMatrixWorld(true);
+    this.parkVersion++;
   }
 
   private action(name: string): THREE.AnimationAction | null {
@@ -1197,15 +1287,18 @@ export class MannequinCharacter implements CharacterView {
     this.setView({ dist: d, inView: true, allowLod0: true, self: d <= 0 });
   }
 
-  setView(v: { dist: number; inView: boolean; allowLod0: boolean; self?: boolean }): void {
-    const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length);
-    this.applyLod(level);
+  setView(v: { dist: number; inView: boolean; allowLod0: boolean; self?: boolean; minLod?: number }): void {
+    const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length, v.minLod);
+    this.applyLod(level, !!v.self);
+    this.setParked(level >= 2 && !this.disposed && !V3_OFF.has('park'));
     this.lodLevel = level;
     this.gear?.setVisible(gearShown(this.gearOn, level));
     this.viewDist = v.dist;
     this.viewSelf = !!v.self;
     this.interval = mixerInterval(level, v.inView, !!v.self);
+    // Ngoài khung nhìn: bỏ cả cây xương khỏi lượt tính ma trận và lượt dựng danh sách vẽ (như `SkinnedCharacter`).
     this.inner.visible = v.inView;
+    this.inner.matrixWorldAutoUpdate = v.inView;
   }
 
   update(realDt: number, a: AnimState): void {
@@ -1270,6 +1363,7 @@ export class MannequinCharacter implements CharacterView {
       _tq.copy(t.restLimb).invert().multiply(t.limb.quaternion);
       t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
     }
+    if (this.parked) this.syncParked();
     if (V3_ANIM && !V3_OFF.has('proc') && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
     if (this.feet && !V3_OFF.has('feet')) {
       if (this.lodLevel === 0 && this.inner.visible) {
@@ -1433,7 +1527,7 @@ export class MannequinCharacter implements CharacterView {
   }
 
   bladePoints(base: THREE.Vector3, tip: THREE.Vector3): boolean {
-    if (!this.blade || !this.drawn) return false;
+    if (!this.blade || !this.drawn || this.parked) return false;
     this.blade.updateWorldMatrix(true, false);
     base.setFromMatrixPosition(this.blade.matrixWorld);
     tip.set(0, this.bladeLen, 0).applyMatrix4(this.blade.matrixWorld);
@@ -1442,6 +1536,7 @@ export class MannequinCharacter implements CharacterView {
 
   dispose(): void {
     if (this.disposed) return;
+    this.setParked(false); // trả lưới LOD2 về rig để dọn chung
     this.disposed = true;
     this.hit.reset();
     this.blade?.removeFromParent();
@@ -1462,7 +1557,7 @@ export class MannequinCharacter implements CharacterView {
   }
 }
 
-/** Nạp và dựng nhân vật v3; PlayerSkins gọi khi `?chr=v3`. Trả null khi asset chưa nạp xong (bên gọi dùng đường cũ). */
+/** Nạp và dựng nhân vật v3 (mặc định từ N-7); PlayerSkins gọi. Trả null khi asset chưa nạp xong (bên gọi dùng model khối tạm) hoặc lỗi. */
 export class MannequinPlayers {
   private tpl = new Map<string, MannequinTemplate | 'loading' | 'failed'>();
   private swords = new Map<string, SwordTemplate | 'loading' | 'failed'>();
@@ -1470,7 +1565,25 @@ export class MannequinPlayers {
   /** Nguồn nướng pose K-5 (asset Mixamo), nạp lười khi có template đầu tiên. */
   private poseSrc: PoseSource | 'loading' | 'failed' | null = null;
   private poseHandle: AssetHandle | null = null;
-  constructor(private cache: AssetCache) {}
+  /** Vật liệu linh thể theo asset + loại (dùng chung giữa các bản sao). */
+  private soulMats = new Map<string, THREE.MeshStandardNodeMaterial>();
+  /** Vật liệu đã nhuộm theo mẫu + màu (dùng chung giữa mọi người cùng model cùng màu). */
+  private dyeMats = new Map<string, THREE.MeshStandardNodeMaterial>();
+  /** Trần texture theo model (N-7): nhân vật mình đầy đủ, model của người khác bị chặn cạnh lúc nạp (`v3Detail.ts`). */
+  private budget: V3TextureBudget;
+  constructor(
+    private cache: AssetCache,
+    quality: string = storedQuality(),
+  ) {
+    this.budget = new V3TextureBudget(v3TexturePolicy(quality));
+  }
+
+  /** Khóa mẫu (`tpl`) của một nhân vật: id asset + trần texture của bản nạp. */
+  private keyOf(g: string, skin: string | undefined, set: string | undefined, self: boolean): { id: string; cap: TexCap; key: string } {
+    const id = v3AssetOf(g, skin, set);
+    const cap = this.budget.capOf(id, self);
+    return { id, cap, key: assetKey(id, cap) };
+  }
 
   private ensurePoses(): void {
     if (this.poseSrc) {
@@ -1503,13 +1616,13 @@ export class MannequinPlayers {
     );
   }
 
-  private load(id: string): void {
-    if (this.tpl.has(id)) return;
-    this.tpl.set(id, 'loading');
+  private load(id: string, cap: TexCap, key: string): void {
+    if (this.tpl.has(key)) return;
+    this.tpl.set(key, 'loading');
     const robeP = KEEP_ORIGINAL_ASSETS.has(id)
       ? this.cache.acquire(ROBE_LIB, { priority: 1 }).catch(() => undefined)
       : Promise.resolve(undefined);
-    Promise.all([this.cache.acquire(id, { priority: 1 }), this.cache.acquire(V3_LIB, { priority: 1 }), robeP]).then(
+    Promise.all([this.cache.acquire(id, { priority: 1, ...cap }), this.cache.acquire(V3_LIB, { priority: 1 }), robeP]).then(
       ([h, lib, robe]) => {
         if (this.disposed) {
           h.release();
@@ -1518,16 +1631,16 @@ export class MannequinPlayers {
           return;
         }
         try {
-          this.tpl.set(id, mannequinTemplate(h, lib, robe));
+          this.tpl.set(key, mannequinTemplate(h, lib, robe));
           this.ensurePoses();
         } catch (err) {
           modelsLog.warn(`không dựng được ${id}`, err);
-          this.tpl.set(id, 'failed');
+          this.tpl.set(key, 'failed');
         }
       },
       (err) => {
         modelsLog.warn(`không nạp được ${id} (v3)`, err);
-        this.tpl.set(id, 'failed');
+        this.tpl.set(key, 'failed');
       },
     );
   }
@@ -1558,26 +1671,71 @@ export class MannequinPlayers {
     return null;
   }
 
-  private get(g: string, skin?: string, set?: string): MannequinTemplate | null {
-    const id = v3AssetOf(g, skin, set);
-    this.load(id);
-    const t = this.tpl.get(id);
+  private get(g: string, skin?: string, set?: string, self = false): MannequinTemplate | null {
+    const { id, cap, key } = this.keyOf(g, skin, set, self);
+    this.load(id, cap, key);
+    const t = this.tpl.get(key);
     if (t && typeof t !== 'string') this.ensurePoses();
     return t && typeof t !== 'string' ? t : null;
   }
 
-  create(g: string, skin?: string, w?: string, set?: string): CharacterView | null {
-    const t = this.get(g, skin, set);
-    return t ? new MannequinCharacter(t, false, this.sword(w ?? SWORD_MODEL_DEFAULT)) : null;
+  /** `self`: nhân vật của mình (texture đầy đủ theo preset); người khác dùng bản có trần texture. `dye`: màu nhuộm áo (hex) hoặc null. */
+  create(g: string, skin?: string, w?: string, set?: string, self = false, dye: string | null = null): CharacterView | null {
+    const t = this.get(g, skin, set, self);
+    if (!t) return null;
+    const mat = dye ? this.dyedMaterial(t, this.keyOf(g, skin, set, self).key, dye) : null;
+    return new MannequinCharacter(t, false, this.sword(w ?? SWORD_MODEL_DEFAULT), mat);
   }
 
-  createShadow(g: string, def: MonsterDef, skin?: string, set?: string): MonsterView | null {
-    const t = this.get(g, skin, set);
+  /** Bản sao vật liệu của mẫu có nhuộm `dye`; null nếu model không nhuộm được (skin toàn thân) hoặc không có vật liệu. */
+  private dyedMaterial(t: MannequinTemplate, key: string, dye: string): THREE.MeshStandardNodeMaterial | null {
+    const ref = v3DyeRefOf(t.handle.id);
+    if (!ref) return null;
+    const k = `${key}/${dye.toLowerCase()}`;
+    let m = this.dyeMats.get(k);
+    if (m) return m;
+    let src: THREE.Material | null = null;
+    t.handle.scene.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!src && mesh.isMesh) src = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) ?? null;
+    });
+    if (!src) return null;
+    m = applyV3Dye(cloneWorldMaterial(src as THREE.MeshStandardNodeMaterial), ref, dye);
+    this.dyeMats.set(k, m);
+    return m;
+  }
+
+  createShadow(g: string, def: MonsterDef, skin?: string, set?: string, self = false): MonsterView | null {
+    const t = this.get(g, skin, set, self);
     return t ? (Object.assign(new MannequinCharacter(t, true), { def }) as unknown as MonsterView) : null;
   }
 
-  pending(g: string, skin?: string, w?: string, set?: string): boolean {
-    if (this.get(g, skin, set) === null && this.tpl.get(v3AssetOf(g, skin, set)) !== 'failed') return true;
+  /** Nguyên anh / thân xác / phân thân (E3-K, RFX-1): bản sao model v3 của nhân vật với vật liệu linh thể; null khi asset chưa nạp. */
+  createSoul(g: string, kind: SoulKind, skin?: string, set?: string, self = false): CharacterView | null {
+    const t = this.get(g, skin, set, self);
+    if (!t) return null;
+    const key = `${this.keyOf(g, skin, set, self).key}/${kind}`;
+    let m = this.soulMats.get(key);
+    if (!m) {
+      let src: THREE.Material | null = null;
+      t.handle.scene.traverse((o) => {
+        const mesh = o as THREE.Mesh;
+        if (!src && mesh.isMesh) src = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) ?? null;
+      });
+      m = src ? cloneWorldMaterial(src as THREE.MeshStandardNodeMaterial) : new THREE.MeshStandardNodeMaterial();
+      applySoulLook(m, kind);
+      this.soulMats.set(key, m);
+    }
+    return new MannequinCharacter(t, m);
+  }
+
+  /** Asset v3 của nhân vật này nạp lỗi (bên gọi lùi về đường cũ trong bản còn giữ v1). */
+  failed(g: string, skin?: string, set?: string, self = false): boolean {
+    return this.tpl.get(this.keyOf(g, skin, set, self).key) === 'failed';
+  }
+
+  pending(g: string, skin?: string, w?: string, set?: string, self = false): boolean {
+    if (this.get(g, skin, set, self) === null && !this.failed(g, skin, set, self)) return true;
     this.sword(w ?? SWORD_MODEL_DEFAULT);
     return this.swords.get(w ?? SWORD_MODEL_DEFAULT) === 'loading';
   }
@@ -1586,12 +1744,17 @@ export class MannequinPlayers {
     this.disposed = true;
     for (const t of this.tpl.values()) {
       if (typeof t === 'string') continue;
+      for (const g of t.owned) g.dispose();
       t.handle.release();
       t.lib.release();
     }
     this.tpl.clear();
     this.poseHandle?.release();
     this.poseHandle = null;
+    for (const m of this.soulMats.values()) m.dispose();
+    this.soulMats.clear();
+    for (const m of this.dyeMats.values()) m.dispose();
+    this.dyeMats.clear();
     for (const t of this.swords.values()) if (typeof t === 'object') t.release();
     this.swords.clear();
   }

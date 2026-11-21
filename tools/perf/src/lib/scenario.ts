@@ -11,6 +11,8 @@ export interface Run {
   /** Thư mục ra (đã tạo). */
   out: string;
   clientPort: number;
+  /** Cổng server game (cho bot, `/health`). */
+  port: number;
   renderer: string;
   browser: Browser;
   /** Lỗi console của mọi trang mở qua `open`. */
@@ -25,6 +27,8 @@ export interface Scenario {
   desc: string;
   /** Tham số riêng (in ở `pnpm shots <tên> --help`). */
   usage?: string;
+  /** Biến môi trường thêm cho server dev (vd. `RATE_LIMIT_EXEMPT=loopback` khi kịch bản chạy bot). */
+  env?: Record<string, string>;
   /** Không cần server/trình duyệt (vd. `--dry`): trả true thì khung thoát luôn. */
   dry?(): boolean;
   run(r: Run): Promise<void>;
@@ -39,7 +43,7 @@ export async function runScenario(sc: Scenario): Promise<void> {
   const out = outDir(`shots-${sc.name}`);
   fs.mkdirSync(out, { recursive: true });
   const { port, clientPort } = ports(...DEFAULT_PORTS);
-  const dev = createDevServer({ port, clientPort, tag: `shots-${sc.name}`, command: `pnpm shots ${sc.name}` });
+  const dev = createDevServer({ port, clientPort, tag: `shots-${sc.name}`, command: `pnpm shots ${sc.name}`, env: sc.env });
   const errors: string[] = [];
   let browser: Browser | undefined;
   try {
@@ -47,7 +51,7 @@ export async function runScenario(sc: Scenario): Promise<void> {
     browser = await launchChrome();
     const renderer = opt('--renderer', 'webgpu');
     const b = browser;
-    await sc.run({ out, clientPort, renderer, browser: b, errors, open: (o) => openGame(b, { renderer, ...o, clientPort, errors }) });
+    await sc.run({ out, clientPort, port, renderer, browser: b, errors, open: (o) => openGame(b, { renderer, ...o, clientPort, errors }) });
     reportErrors(tag, errors);
     console.log(`[${tag}] xong, ảnh ở ${out}`);
   } catch (e) {

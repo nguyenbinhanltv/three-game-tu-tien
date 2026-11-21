@@ -7,6 +7,7 @@ import type { ArtifactKind } from '@dtl/shared';
 import { ARTIFACT } from '@dtl/content';
 import { assets, type AssetHandle } from '../core/assets';
 import { adoptGltfMaterials } from '../../render/materials/world';
+import { buildProcProp } from '../../render/props/procProps';
 import { logger } from '../../base/log';
 
 const artifactLog = logger('artifact');
@@ -37,6 +38,11 @@ export function idlePose(kind: ArtifactKind, t: number, speed: number, out: ArtP
       break;
     case 'shield':
       Object.assign(out, { x: 0, y: 1.22, z: -0.38, rx: -0.3, ry: 0, rz: 0, s: 1.2 });
+      break;
+    case 'reap':
+      // Hồn phiên: cắm chéo sau lưng, cán nghiêng ra vai trái; mặt lá phiên quay về sau (phía camera mặc định) để đọc được
+      // hình đuôi én, không quay cạnh; đỉnh phiên thấp hơn đỉnh đầu để không che đầu nhân vật. Đung đưa nhẹ theo bước chạy.
+      Object.assign(out, { x: 0.18, y: 0.68, z: -0.27, rx: -0.1, ry: 0, rz: 0.5 + sway * 0.8, s: 1.5 });
       break;
     case 'heal':
       // Ngưng Đan Lô nhỏ, lơ lửng sau lưng hơi cao và lệch vai phải (không che mặt), lắc lư nhẹ.
@@ -75,6 +81,18 @@ export function activePose(kind: ArtifactKind, t: number, out: ArtPose = blank()
       break;
     case 'shield':
       Object.assign(out, { x: 0, y: 3.25 + Math.sin(t * 3) * 0.06, z: 0, rx: 0, ry: t * 1.2, rz: 0, s: 2.1 });
+      break;
+    case 'reap':
+      // Nhiếp Hồn: phiên bay ra trước mặt lệch trái (không che người), dựng thẳng và phất qua lại.
+      Object.assign(out, {
+        x: 0.55,
+        y: 1.05 + Math.sin(t * 5) * 0.04,
+        z: 0.75,
+        rx: 0,
+        ry: Math.sin(t * 6) * 0.7,
+        rz: Math.sin(t * 6 + 1) * 0.22,
+        s: 2.2,
+      });
       break;
     case 'heal':
       // Vận chiêu: bay ra trước mặt tầm ngực, nghiêng nắp rót đan khí, xoay chậm.
@@ -148,6 +166,15 @@ export class ArtifactVis {
     this.unload();
     const def = ARTIFACT.get(itemId);
     if (!def) return;
+    if (def.proc) {
+      // TN-2: pháp bảo chưa có GLB (hồn phiên) dựng bằng mã, có ngay, không qua bộ nạp asset. Gốc ở chân cán nên không dời tâm.
+      const proc = buildProcProp(def.asset);
+      if (!proc) return artifactLog.warn(`chưa có hàm dựng thủ tục cho ${def.asset}`);
+      this.handle = { id: def.asset, scene: proc.scene, animations: [], release: () => proc.dispose() };
+      this.pivot.add(proc.scene);
+      this.seeded = false;
+      return;
+    }
     assets
       .acquire(def.asset, { priority: 20 })
       .then((h) => {
