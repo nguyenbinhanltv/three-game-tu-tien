@@ -237,6 +237,8 @@ export interface MethodMsg {
   resMods?: ResourceMods;
   /** Nhánh đã chọn của công pháp đang tu (VS-2d): mốc cảnh giới → id nhánh. */
   br?: Record<number, string>;
+  /** Hướng tu đã lĩnh ngộ (TN-2): id các hướng có `unlock`; vắng = chưa lĩnh ngộ hướng nào. Chỉ để giao diện hiện đúng nút. */
+  paths?: string[];
   /** Tư thế đang giữ (VS-2e): id chiêu tư thế và giờ server (ms) hết hạn; không có = không ở tư thế nào. */
   st?: StanceState;
   /** Vòng sạc chiêu tối thượng 0..100. */

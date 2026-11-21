@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { allowSkillForTest } from './testkit';
-import { groundAt, MF_STUN, MS_DEAD, unpackMarks } from '@dtl/shared';
+import { groundAt, MF_STUN, MS_CHASE, MS_DEAD, unpackMarks } from '@dtl/shared';
 
 // TN-2: Hồn tu (Dẫn Hồn Kinh). Server quyết định hết: lĩnh ngộ hướng tu, Hồn lực (thu hồn), Hồn ấn (bào mòn + rút máu), hồn binh.
 process.env.DB_FILE = ':memory:';
@@ -149,10 +149,16 @@ describe('lĩnh ngộ Hồn tu', () => {
     expect(p.char.meta.method).toBe(HON);
     expect(p.char.meta.paths).toEqual(['hon_tu']);
     expect(p.char.gold).toBe(1000 - u.gold);
-    expect(unlockRows(p.char.id)).toEqual([{ kind: 'gold', delta: -u.gold }]);
+    // Một giao dịch: trừ linh thạch và phát hồn phiên, cùng ghi sổ cái.
+    const rows = unlockRows(p.char.id);
+    expect(rows).toHaveLength(2);
+    expect(rows).toContainEqual({ kind: 'gold', delta: -u.gold });
+    expect(rows.find((r) => r.kind !== 'gold')?.delta).toBe(1);
+    expect(p.char.inv.filter((x) => x?.id === u.grant)).toHaveLength(1);
     sim.onMethod(p, { method: HON, r: 'ht-000010' });
     expect(p.char.gold).toBe(1000 - u.gold);
-    expect(unlockRows(p.char.id)).toHaveLength(1);
+    expect(unlockRows(p.char.id)).toHaveLength(2);
+    expect(p.char.inv.filter((x) => x?.id === u.grant)).toHaveLength(1);
   });
   it('đã lĩnh ngộ: đổi đi rồi đổi về chỉ tốn phí đổi công pháp, không trả phí lĩnh ngộ lần hai', () => {
     const { sim, join } = setup();
@@ -453,6 +459,102 @@ describe('chiêu Hồn tu', () => {
     expect(names(b)).toEqual(['hon_an:1']);
     sim.now += 9000;
     expect(res(p)).toBe(60);
+  });
+});
+
+describe('hồn phiên', () => {
+  it('túi đầy thì không lĩnh ngộ được: không trừ linh thạch, không ghi sổ, không đổi công pháp', () => {
+    const { sim, join } = setup();
+    const u = PATH.get('hon_tu')!.unlock!;
+    const p = join('', u.level);
+    nearNpc(p);
+    p.char.gold = 1000;
+    for (let i = 0; i < p.char.inv.length; i++) p.char.inv[i] = { id: 'itm_bi_tich_tan_quyen', n: 99 };
+    sim.onMethod(p, { method: HON, r: 'ht-000030' });
+    expect(p.char.meta.method).toBeUndefined();
+    expect(p.char.meta.paths).toBeUndefined();
+    expect(p.char.gold).toBe(1000);
+    expect(unlockRows(p.char.id)).toEqual([]);
+  });
+  it('đã có hồn phiên từ trước (GM phát) thì lĩnh ngộ không phát thêm cái thứ hai', () => {
+    const { sim, join } = setup();
+    const u = PATH.get('hon_tu')!.unlock!;
+    const p = join('', u.level);
+    nearNpc(p);
+    p.char.gold = 1000;
+    p.char.inv[0] = { id: u.grant!, n: 1 };
+    sim.onMethod(p, { method: HON, r: 'ht-000031' });
+    expect(p.char.meta.method).toBe(HON);
+    expect(p.char.inv.filter((x) => x?.id === u.grant)).toHaveLength(1);
+  });
+  it('Nhiếp Hồn: tối đa 5 quái đang giao chiến quanh mình nhận Hồn ấn, mỗi con +5 Hồn lực; nội tại làm Hồn lực tích nhanh hơn', () => {
+    const { sim, join, mon, names, res } = setup();
+    const p = join();
+    p.char.equip.artifact = { id: 'itm_hon_phien', n: 1 };
+    p.char.recalc();
+    const ms = Array.from({ length: 7 }, (_, i) => mon(X + 4, Z + i - 3));
+    for (const m of ms) {
+      m.state = MS_CHASE;
+      m.target = p.sid;
+    }
+    const idle = mon(X - 5, Z);
+    sim.onArtifact(p);
+    expect(ms.filter((m) => names(m).includes('hon_an:1'))).toHaveLength(5);
+    expect(names(idle)).toEqual([]);
+    // Cấp 1: nội tại +4% → 5 con × 5 × 1,04.
+    expect(res(p)).toBeCloseTo(26, 5);
+    // Đang hồi chiêu: bấm lại không có gì thêm.
+    sim.onArtifact(p);
+    expect(res(p)).toBeCloseTo(26, 5);
+  });
+  it('phái khác đeo hồn phiên: Nhiếp Hồn không ra, không tốn linh lực, không vào hồi chiêu', () => {
+    const { sim, join, mon, names } = setup();
+    const p = join('lac_kiem_quyet');
+    p.char.equip.artifact = { id: 'itm_hon_phien', n: 1 };
+    const m = mon(X + 4, Z);
+    m.state = MS_CHASE;
+    m.target = p.sid;
+    const mp = p.char.mp;
+    sim.onArtifact(p);
+    expect(names(m)).toEqual([]);
+    expect(p.char.mp).toBe(mp);
+    expect(p.cds.get('art_phien')).toBeUndefined();
+  });
+});
+
+describe('nội tại hồn phiên chỉ áp cho Hồn lực (review #443)', () => {
+  const mods = (sim: Sim, p: Ent) =>
+    (sim as unknown as { combat: { resMods(p: Ent): { gainMul?: number } | undefined } }).combat.resMods(p);
+  it('người tu Lạc Kiếm Quyết / Bất Động Kim Thân / Thanh Mộc Đan Kinh đeo hồn phiên: lượng tích tài nguyên không đổi', () => {
+    for (const method of ['lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh']) {
+      const { sim, join } = setup();
+      const p = join(method);
+      const before = mods(sim, p)?.gainMul ?? 1;
+      p.char.equip.artifact = { id: 'itm_hon_phien', n: 1 };
+      p.char.meta.art = { itm_hon_phien: { lv: 5, qi: 0 } };
+      p.char.recalc();
+      expect(mods(sim, p)?.gainMul ?? 1, method).toBe(before);
+    }
+  });
+  it('người tu Dẫn Hồn Kinh đeo hồn phiên: +4% mỗi cấp pháp bảo; tháo ra thì hết', () => {
+    const { sim, join } = setup();
+    const p = join();
+    expect(mods(sim, p)?.gainMul ?? 1).toBe(1);
+    p.char.equip.artifact = { id: 'itm_hon_phien', n: 1 };
+    p.char.meta.art = { itm_hon_phien: { lv: 5, qi: 0 } };
+    expect(mods(sim, p)?.gainMul).toBeCloseTo(1.2, 6);
+    delete p.char.equip.artifact;
+    expect(mods(sim, p)?.gainMul ?? 1).toBe(1);
+  });
+  it('Kiếm tu đeo hồn phiên cấp 5 đánh thường: mỗi đòn vẫn đúng 1 Kiếm ý', () => {
+    const { join, mon, fresh, use, res } = setup();
+    const p = join('lac_kiem_quyet');
+    p.char.equip.artifact = { id: 'itm_hon_phien', n: 1 };
+    p.char.meta.art = { itm_hon_phien: { lv: 5, qi: 0 } };
+    const m = mon();
+    fresh(p);
+    use(p, 'skl_phi_kiem', m.id);
+    expect(res(p)).toBe(1);
   });
 });
 
