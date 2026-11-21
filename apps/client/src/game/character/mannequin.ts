@@ -47,8 +47,8 @@ import { logger } from '../../base/log';
 const modelsLog = logger('models');
 const thienYLog = logger('thienY');
 
-/** Nhân vật Mannequin v3 là mặc định của người chơi (N-7); chỉ tắt khi `?chr=v1` (dự phòng một bản) hoặc `?chr=v2`. */
-export const CHR_V3 = FLAGS.chr !== 'v1' && FLAGS.chr !== 'v2';
+/** Nhân vật Mannequin v3 là mặc định của người chơi (N-7); chỉ tắt khi `?chr=v1` (dự phòng một bản). */
+export const CHR_V3 = FLAGS.chr !== 'v1';
 /** `?v3anim=0` về hệ animation cũ (một clip chạy, crossfade 0,16 s, không lớp phụ) để so video trước/sau. */
 export const V3_ANIM = FLAGS.v3Anim;
 export const V3_LIB = 'anim_ual_native';
@@ -118,15 +118,6 @@ export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_korvaden: 'chr_v3_korvaden_nam',
   set_skin_shadow_wolf: 'chr_v3_shadow_wolf_nam',
 };
-/** Skin chỉ có bản v3 (v1/v2 không có asset `set_skin_<tên>_<giới>`: bỏ qua, hiện trang phục thường). Varkessa có cả v1. */
-export const V3_ONLY_SKINS: ReadonlySet<string> = new Set([
-  'set_skin_duskrella',
-  'set_skin_crimson',
-  'set_skin_noxavyra',
-  'set_skin_kings_demon',
-  'set_skin_shadow_wolf',
-  'set_skin_korvaden',
-]);
 /**
  * Model v3 theo bộ trang bị đang mặc (`PlayerLook.set`, id trong sets.json): bộ có model riêng dùng `chr_v3_<bộ>_<nam|nu>`.
  * Bộ chưa có model riêng (bậc 1 trở lên) tạm dùng model cùng nhánh: kiếm tu → Lạc Kiếm, hộ pháp → Huyền Giáp, đan sư → Đan Tâm.

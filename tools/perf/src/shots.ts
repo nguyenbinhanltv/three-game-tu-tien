@@ -10,7 +10,6 @@ import { runScenario, type Scenario } from './lib/scenario';
 import asset from './scenarios/asset';
 import calli from './scenarios/calli';
 import calli3d from './scenarios/calli3d';
-import chrv2 from './scenarios/chrv2';
 import calliscreen from './scenarios/calliscreen';
 import calliset from './scenarios/calliset';
 import clone from './scenarios/clone';
@@ -27,12 +26,10 @@ import vanhai from './scenarios/vanhai';
 import quality from './scenarios/quality';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
-import outfit from './scenarios/outfit';
 import points from './scenarios/points';
 import propstc from './scenarios/propstc';
 import quest4 from './scenarios/quest4';
 import quest5 from './scenarios/quest5';
-import skin from './scenarios/skin';
 import thiennhan from './scenarios/thiennhan';
 import ngusuy from './scenarios/ngusuy';
 import huyenkiep from './scenarios/huyenkiep';
@@ -83,9 +80,6 @@ const SCENARIOS: Scenario[] = [
   vfx,
   tn1,
   vs2,
-  outfit,
-  skin,
-  chrv2,
   ui,
   minimap,
   chat,

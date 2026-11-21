@@ -41,7 +41,7 @@ function ktx2Images(id: string) {
 
 describe('isUastcKtx2 (chọn đường cho normal map)', () => {
   // Pipeline nén normal map bằng UASTC, mọi thứ khác bằng ETC1S (tools/asset-pipeline/src/ktx.ts): đổi quy ước đó là test này báo.
-  for (const id of ['chr_kiem_tu_nam', 'boss_han_giao', 'set_dia_long_ho_giap_nam']) {
+  for (const id of ['chr_kiem_tu_nam', 'boss_han_giao', 'chr_v3_de_tu_nam']) {
     it(`${id}: normal map là UASTC, màu và ORM là ETC1S`, () => {
       const t = ktx2Images(id);
       expect(isUastcKtx2(t.normal)).toBe(true);
