@@ -263,6 +263,7 @@
         "itm_kim_da_mien_phien",
         "itm_tinh_vu"
       ]
-    }
+    },
+    {"id":"ch6","level":"van_dinh","art":"bac_hoang","levels":[32,43],"closeQuest":"q6_dung_thuc","nodes":[{"id":"ch6_van_dinh","kind":"world","ref":"van_dinh","x":16,"y":66,"minLevel":32,"tele":"vd_tp_tram"},{"id":"ch6_gioi_tri","kind":"dungeon","ref":"gioi_tri","x":50,"y":28,"minLevel":42},{"id":"ch6_boss_hu_anh_chu","kind":"boss","ref":"boss_hu_anh_chu","x":36,"y":62,"minLevel":38},{"id":"ch6_boss_dinh_linh","kind":"boss","ref":"boss_dinh_linh","x":70,"y":64,"minLevel":43},{"id":"ch6_duong_thuc","kind":"trib","ref":"duong_thuc","x":88,"y":40,"minLevel":43}],"featured":["itm_hu_anh_phien","itm_dong_van_phien","itm_van_dinh_lo","itm_duong_thuc_lo"]}
   ]
 }

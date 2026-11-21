@@ -5,6 +5,7 @@ export const DUNGEON_QUEST_TARGET: Readonly<Record<string, string>> = {
   than_tang: 'than_tang_dien',
   xich_tan_khich: 'xich_tan_khich',
   kim_da_cung: 'kim_da_cung',
+  gioi_tri: 'gioi_tri',
 };
 
 /** Đích phó bản chương 5 đã khai trong nhiệm vụ (DV3-H) nhưng level phó bản chưa vào. Khi level có thật thì chuyển sang bảng trên (Kim Dạ Cung đã chuyển ở DV-3E). */

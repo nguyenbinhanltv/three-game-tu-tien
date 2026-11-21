@@ -3,10 +3,11 @@ import { METHOD_SKILLS, POSE, SKILL, SKILLS } from '@dtl/content';
 import type { CharacterView, PerformOpts } from '../character/view';
 
 /** FX của chiêu → chiêu (mỗi chiêu một fx riêng trong skills.json). */
-// Chiêu tư thế (VS-2e) mượn fx + pose của một chiêu thường: tra theo fx luôn ra chiêu thường đó.
-const SKILL_BY_FX = new Map<string, SkillDef>(
-  [...SKILLS, ...METHOD_SKILLS].filter((s) => s.kind !== 'stance' && !s.stanceOf).map((s) => [s.fx, s]),
-);
+// Chiêu tư thế (VS-2e) mượn fx + pose của một chiêu thường: tra theo fx luôn ra chiêu thường đó. Chiêu tư thế có fx RIÊNG (Hóa Hình của
+// Cổ Thần, TN-5) không mượn của ai nên vào bảng như chiêu thường (nếu không thì không có động tác, timeline và tên chiêu).
+const ALL_SKILLS = [...SKILLS, ...METHOD_SKILLS];
+const SKILL_BY_FX = new Map<string, SkillDef>(ALL_SKILLS.filter((s) => s.kind !== 'stance' && !s.stanceOf).map((s) => [s.fx, s]));
+for (const s of ALL_SKILLS) if (s.kind === 'stance' && !s.stanceOf && !SKILL_BY_FX.has(s.fx)) SKILL_BY_FX.set(s.fx, s);
 /** FX mà model khối cũ phản ứng bằng `attack()` (giữ nguyên hành vi khi model không có động tác riêng). */
 const ATTACK_FX = new Set(['sword', 'slash', 'thunder', 'rain', 'kanh', 'vankiem']);
 

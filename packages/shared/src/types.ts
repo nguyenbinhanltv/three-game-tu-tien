@@ -772,6 +772,8 @@ export interface NpcDef {
   enhance?: boolean;
   /** Đổi linh căn ở NPC này (tốn linh thạch, `rootChangeCost`). */
   rootChange?: boolean;
+  /** NPC cho chọn Đạo (TN-3, từ Vấn Đỉnh): mở tab Đạo trong hộp thoại. Server vẫn tự kiểm cấp và một lần (`onChooseDao`). */
+  daoChoose?: boolean;
 }
 
 export interface SpawnDef {

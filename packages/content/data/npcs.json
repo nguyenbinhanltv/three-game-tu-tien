@@ -15,5 +15,8 @@
   {"id": "npc_to_van_ngu_bh", "x": 1000, "z": 1534, "yaw": 3.1416, "color": "#587a96", "level": "bac_hoang"},
   {"id": "npc_co_bat_dich", "x": 1050, "z": 1534, "yaw": 3.1416, "color": "#6b5d4a", "level": "bac_hoang"},
   {"id": "npc_mac_chieu_bia", "x": 1024, "z": 1526, "yaw": 3.1416, "color": "#6d6a5a", "level": "bac_hoang"},
-  {"id": "npc_tinh_quang_su", "x": 1000, "z": 520, "yaw": 3.1416, "color": "#cfd6dc", "level": "bac_hoang"}
+  {"id": "npc_tinh_quang_su", "x": 1000, "z": 520, "yaw": 3.1416, "color": "#cfd6dc", "level": "bac_hoang"},
+  { "id": "npc_luong_tu_gioi", "x": 1000, "z": 1534, "yaw": 3.1416, "color": "#8a93a8", "level": "van_dinh" },
+  { "id": "npc_thach_nghien", "x": 962, "z": 548, "yaw": 3.1416, "color": "#4a6a8c", "level": "van_dinh", "daoChoose": true },
+  { "id": "npc_luong_tu_gioi_dong", "x": 1232, "z": 640, "yaw": 3.1416, "color": "#b8893c", "level": "van_dinh" }
 ]
