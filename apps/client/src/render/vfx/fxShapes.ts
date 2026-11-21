@@ -471,7 +471,8 @@ export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' |
     s === 'bell_cage' ||
     s === 'rock_spire' ||
     s === 'shield_plate' ||
-    s === 'diamond_cage'
+    s === 'diamond_cage' ||
+    s === 'pill_orb'
   )
     return 'crystal';
   if (s === 'gust') return 'wind';

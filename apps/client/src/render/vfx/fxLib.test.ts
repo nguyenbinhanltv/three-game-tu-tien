@@ -9,8 +9,8 @@ const tris = (s: (typeof FX_LIB_SHAPES)[number]) => {
 };
 
 describe('thư viện hình mesh VFX (VS-1)', () => {
-  it('đủ 25 hình, mỗi hình dựng được và dùng chung một bản (memo)', () => {
-    expect(FX_LIB_SHAPES.length).toBe(25);
+  it('đủ 28 hình, mỗi hình dựng được và dùng chung một bản (memo)', () => {
+    expect(FX_LIB_SHAPES.length).toBe(28);
     for (const s of FX_LIB_SHAPES) {
       expect(libGeometry(s)).toBe(libGeometry(s));
       expect(shapeGeometry(s)).toBe(libGeometry(s));
