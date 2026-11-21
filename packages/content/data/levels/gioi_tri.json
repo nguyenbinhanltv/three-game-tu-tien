@@ -1,0 +1,169 @@
+{
+  "id": "gioi_tri",
+  "terrain": "van_dinh",
+  "spawns": [],
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1464,
+      "z": 1436
+    },
+    "exit": {
+      "x": 1464,
+      "z": 1454
+    },
+    "center": {
+      "x": 1464,
+      "z": 1384
+    },
+    "minLevel": 42,
+    "returnLevel": "van_dinh",
+    "returnSpawn": {
+      "x": 1354,
+      "z": 1281
+    },
+    "bound": 90,
+    "private": true,
+    "lockAt": 2,
+    "maxRevives": 2,
+    "reward": {
+      "xpPct": 0.15,
+      "gold": [
+        5200,
+        6800
+      ],
+      "level": 42,
+      "items": [
+        {
+          "item": "itm_hu_anh_phien",
+          "chance": 1,
+          "min": 4,
+          "max": 6
+        },
+        {
+          "item": "itm_dong_van_phien",
+          "chance": 1,
+          "min": 4,
+          "max": 6
+        },
+        {
+          "item": "itm_tu_khi_dan",
+          "chance": 1,
+          "min": 2,
+          "max": 3
+        },
+        {
+          "item": "itm_yeu_dan",
+          "chance": 1,
+          "min": 3,
+          "max": 5
+        }
+      ],
+      "equip": [
+        {
+          "chance": 0.5,
+          "q": [
+            0,
+            0,
+            0,
+            70,
+            30
+          ]
+        },
+        {
+          "chance": 0.4,
+          "q": [
+            0,
+            0,
+            30,
+            55,
+            15
+          ]
+        }
+      ]
+    },
+    "waves": [
+      {
+        "mons": [
+          {
+            "id": "mon_sa_no",
+            "level": 42,
+            "n": 6
+          },
+          {
+            "id": "mon_hu_anh_ve",
+            "level": 42,
+            "n": 2
+          }
+        ],
+        "delay": 8
+      },
+      {
+        "mons": [
+          {
+            "id": "mon_kim_van_thu",
+            "level": 42,
+            "n": 6
+          },
+          {
+            "id": "mon_quy_ho",
+            "level": 42,
+            "n": 4
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "elite_sa_tuong",
+            "level": 42,
+            "n": 1
+          },
+          {
+            "id": "mon_dong_giap_khoi",
+            "level": 42,
+            "n": 4
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "mon_hoa_dieu",
+            "level": 42,
+            "n": 6
+          },
+          {
+            "id": "mon_bong_re",
+            "level": 42,
+            "n": 4
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "elite_hu_anh_nhan",
+            "level": 42,
+            "n": 2
+          },
+          {
+            "id": "elite_anh_hac_vuong",
+            "level": 42,
+            "n": 1
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_phu_chu",
+            "level": 42,
+            "n": 1
+          }
+        ],
+        "title": true
+      }
+    ]
+  }
+}

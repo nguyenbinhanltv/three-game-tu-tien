@@ -11,6 +11,7 @@ import libJson from '../data/colliders/lib.json';
 import extraLib from '../data/colliders/extra-lib.json';
 import bacHoang from '../data/colliders/bac_hoang.inst.json';
 import vanDinh from '../data/colliders/van_dinh.inst.json';
+import gioiTri from '../data/colliders/gioi_tri.inst.json';
 import doKiepBacHoang from '../data/colliders/do_kiep_bac_hoang.inst.json';
 import doanMach from '../data/colliders/doan_mach.inst.json';
 import kiemTrung from '../data/colliders/kiem_trung.inst.json';
@@ -46,6 +47,7 @@ export const INST_BY_LEVEL: Record<string, InstFile> = {
   thien_khuyet: thienKhuyet,
   bac_hoang: bacHoang,
   van_dinh: vanDinh,
+  gioi_tri: gioiTri,
   do_kiep_bac_hoang: doKiepBacHoang,
   phuc_mach: phucMach,
   kinh_nguyet: kinhNguyet,

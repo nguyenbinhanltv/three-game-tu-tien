@@ -83,6 +83,8 @@ import bacHoangAssetsJson from '../data/levels/bac_hoang.assets.json';
 import vanDinhJson from '../data/levels/van_dinh.json';
 import vanDinhTerrainJson from '../data/levels/van_dinh.terrain.json';
 import vanDinhAssetsJson from '../data/levels/van_dinh.assets.json';
+import gioiTriJson from '../data/levels/gioi_tri.json';
+import gioiTriAssetsJson from '../data/levels/gioi_tri.assets.json';
 import doKiepJson from '../data/levels/do_kiep.json';
 import doKiepBhJson from '../data/levels/do_kiep_bac_hoang.json';
 import phucMachJson from '../data/levels/phuc_mach.json';
@@ -382,6 +384,7 @@ export const LEVELS: Record<string, LevelDef> = {
   thien_khuyet: thienKhuyetJson as LevelDef,
   bac_hoang: bacHoangJson as LevelDef,
   van_dinh: vanDinhJson as LevelDef,
+  gioi_tri: gioiTriJson as LevelDef,
   do_kiep: doKiepJson as LevelDef,
   do_kiep_bac_hoang: doKiepBhJson as LevelDef,
   phuc_mach: phucMachJson as LevelDef,
@@ -407,6 +410,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   thien_khuyet: thienKhuyetAssetsJson as LevelAssets,
   bac_hoang: bacHoangAssetsJson as LevelAssets,
   van_dinh: vanDinhAssetsJson as LevelAssets,
+  gioi_tri: gioiTriAssetsJson as LevelAssets,
   do_kiep: doKiepAssetsJson as LevelAssets,
   do_kiep_bac_hoang: doKiepBhAssetsJson as LevelAssets,
   phuc_mach: phucMachAssetsJson as LevelAssets,

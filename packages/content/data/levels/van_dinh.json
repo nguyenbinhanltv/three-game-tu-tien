@@ -377,6 +377,14 @@
       "beamH": 80
     }
   ],
+  "portals": [
+    {
+      "x": 1370,
+      "z": 1293,
+      "r": 12,
+      "to": "gioi_tri"
+    }
+  ],
   "spots": [
     {
       "id": "anh_bia_1",

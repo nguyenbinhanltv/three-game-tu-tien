@@ -235,11 +235,11 @@
       ]
     },
     "van_dinh": {
-      "_doc": "TN-3: kiếp chương 6, bản đầu. Chưa bật (item null, enabled false) cho tới khi có vật phẩm đột phá bậc 6 và cân bằng; dùng lại cơ chế có sẵn, chưa có cơ chế riêng.",
+      "_doc": "TN-3: kiếp chương 6, bản đầu. Đã bật: đan itm_van_dinh_lo chế ở npc_duoc_su (rcp_van_dinh_lo); vẫn dùng cơ chế có sẵn, chưa có tribmech riêng.",
       "from": 35,
       "to": 36,
-      "enabled": false,
-      "item": null,
+      "enabled": true,
+      "item": "itm_van_dinh_lo",
       "room": "tribulation",
       "element": "dao",
       "duration": 100,
@@ -328,11 +328,11 @@
       ]
     },
     "am_hu": {
-      "_doc": "TN-3: kiếp chương 6, bản đầu. Chưa bật (item null, enabled false) cho tới khi có vật phẩm đột phá bậc 6 và cân bằng; dùng lại cơ chế có sẵn, chưa có cơ chế riêng.",
+      "_doc": "TN-3: kiếp chương 6, bản đầu. Đã bật: đan itm_am_hu_lo chế ở npc_duoc_su (rcp_am_hu_lo); vẫn dùng cơ chế có sẵn, chưa có tribmech riêng.",
       "from": 39,
       "to": 40,
-      "enabled": false,
-      "item": null,
+      "enabled": true,
+      "item": "itm_am_hu_lo",
       "room": "tribulation",
       "element": "am_hu",
       "duration": 110,
@@ -454,11 +454,11 @@
       ]
     },
     "duong_thuc": {
-      "_doc": "TN-3: kiếp chương 6, bản đầu. Chưa bật (item null, enabled false) cho tới khi có vật phẩm đột phá bậc 6 và cân bằng; dùng lại cơ chế có sẵn, chưa có cơ chế riêng.",
+      "_doc": "TN-3: kiếp chương 6, bản đầu. Đã bật: đan itm_duong_thuc_lo chế ở npc_duoc_su (rcp_duong_thuc_lo); vẫn dùng cơ chế có sẵn, chưa có tribmech riêng.",
       "from": 43,
       "to": 44,
-      "enabled": false,
-      "item": null,
+      "enabled": true,
+      "item": "itm_duong_thuc_lo",
       "room": "tribulation",
       "element": "duong_thuc",
       "duration": 120,
