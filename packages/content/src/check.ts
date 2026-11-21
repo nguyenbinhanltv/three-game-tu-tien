@@ -88,6 +88,7 @@ import {
   RECIPES,
   ROOTS,
   SKILLS,
+  JOINTS,
   MARK,
   MARKS,
   METHODS,
@@ -99,6 +100,7 @@ import {
 } from './index';
 import { LOOT, LOOT_MATS } from './loot';
 import {
+  jointErrors,
   stanceErrors,
   branchErrors,
   chainErrors,
@@ -254,6 +256,13 @@ for (const m of METHODS) {
 for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined)) err(m);
 // VS-2b: đồ thị chuỗi chiêu (id có thật, cùng công pháp, không vòng, hệ số trong khoảng).
 for (const m of chainErrors(ALL_SKILLS)) err(m);
+// VS-2f: hợp kích tổ đội.
+for (const e of jointErrors(JOINTS, MARK)) err(e);
+for (const j of JOINTS) {
+  needStr(`joint.${j.id}.name`);
+  needStr(`joint.${j.id}.desc`);
+  if (t(`joint.${j.id}.name`) !== (GLOSSARY.joints as Record<string, string>)[j.id]) err(`joint ${j.id}: tên lệch glossary.joints`);
+}
 // VS-2e: tư thế (mỗi công pháp đúng một chiêu tư thế, đổi 3–4 ô chiêu chung, chiêu tư thế trỏ ngược về nó).
 for (const e of stanceErrors(ALL_SKILLS, new Set(SKILLS.map((s) => s.id)))) err(e);
 for (const m of METHODS) {

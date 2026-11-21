@@ -363,6 +363,7 @@ export class GameSim {
         return s.host;
       },
       isDead: (p) => s.isDead(p),
+      jointFinish: (p) => s.combat.jointFinish(p),
       resDot: (p) => s.combat.resDot(p),
       resFull: (p) => s.combat.resFull(p),
       lockCut: (h, p) => s.lockCut(h, p),
@@ -427,6 +428,9 @@ export class GameSim {
   /** Chiêu và công pháp (R-7): xem `game/combat/`. */
   private readonly combat = new CombatSystem(
     ((s: GameSim): CombatCtx => ({
+      get room() {
+        return s.host;
+      },
       addPosture: (m, n) => s.addPosture(m, n),
       get clone() {
         return s.clone;

@@ -3,7 +3,9 @@
 //   chain: ô chiêu sáng viền khi cửa sổ chuỗi mở + tooltip báo thưởng chuỗi (mỗi phái một chuỗi mở đầu).
 //   branch: thẻ nhắc chọn nhánh trên HUD, cây nhánh trong bảng Công pháp lúc chưa chọn và sau khi chọn hai mốc.
 //   stance: bấm Y vào tư thế: ba ô chiêu đổi sang chiêu tư thế, ô tư thế đếm ngược, kèm tooltip.
+//   joint: hai client cùng tổ đội: Hộ pháp khiến Hàn Giao mất thế, Kiếm tu xả Kiếm ý bằng Lôi Đình → hợp kích Phá Thế Trảm.
 //   marks: ấn trên mục tiêu: Kiếm ấn trên thủ lĩnh (thẻ trong thanh thủ lĩnh), Trấn ấn trên đầu bầy quái, Mộc ấn trên người chơi.
+import { t } from '@dtl/content';
 import { list } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { gm, tp } from '../lib/game';
@@ -267,19 +269,71 @@ async function stepStance(r: Run, sizes: string[]): Promise<Record<string, unkno
   return log;
 }
 
+async function stepJoint(r: Run, sizes: string[]): Promise<Record<string, unknown>> {
+  const log: Record<string, unknown> = {};
+  const q = { realm: 'nk12', at: 'boss', god: 1 };
+  const tank = await r.open({ name: 'Vs2jHo', viewport: [1920, 1080], seenIntro: true, query: q });
+  const sword = await r.open({ name: 'Vs2jKiem', viewport: [1920, 1080], seenIntro: true, query: q });
+  await sleep(2500);
+  // Lệnh GM đi qua chat: cách nhau hơn 1 giây.
+  await gm(tank.page, 'method bat_dong_kim_than', 1500);
+  await gm(sword.page, 'method lac_kiem_quyet', 1500);
+  // Lập tổ đội: Hộ pháp mời theo tên, Kiếm tu bấm nút Nhận trên thẻ mời.
+  await tank.page.evaluate((n) => window.__game!.send('pty', { a: 'inv', n }), sword.name);
+  await sleep(1200);
+  await sword.page
+    .getByRole('button', { name: t('ui.party.accept') })
+    .first()
+    .click();
+  await sleep(1000);
+  for (const p of [tank.page, sword.page]) await tp(p, 1640, 2252);
+  await sleep(2500);
+  for (const tag of sizes) {
+    const [w, h] = UI_SIZES[tag] ?? UI_SIZES['1080p']!;
+    for (const p of [tank.page, sword.page]) {
+      await p.setViewportSize({ width: w, height: h });
+      await p.keyboard.press('Tab', { delay: 80 });
+      await p.keyboard.press('Tab', { delay: 80 });
+    }
+    await gm(tank.page, 'cd', 1300);
+    await gm(sword.page, 'cd', 1300);
+    await gm(sword.page, 'res 5', 1300);
+    await gm(tank.page, 'res 80', 1300);
+    // Trấn Sơn Ấn (ô 7) → Thiết Bích Xung (Q) khiến thủ lĩnh mất thế; Kiếm tu niệm Lôi Đình (ô 6, 1,5 giây) xả Kiếm ý.
+    await tank.page.keyboard.press('Digit7', { delay: 60 });
+    await sleep(750);
+    await tank.page.keyboard.press('KeyQ', { delay: 60 });
+    await sleep(450);
+    await snap(tank.page, r.out, `f-joint-ho-phap-mat-the-${tag}.jpg`, { wait: 100 });
+    await sword.page.keyboard.press('Digit6', { delay: 60 });
+    await sleep(2300);
+    const said = (p: typeof tank.page) =>
+      p.locator('body').evaluate((el, s) => (el.textContent ?? '').includes(s), t('joint.pha_the_tram.name'));
+    log[tag] = { tank: await said(tank.page), sword: await said(sword.page) };
+    await snap(sword.page, r.out, `f-joint-kiem-tu-ket-${tag}.jpg`, { wait: 100 });
+    await snap(tank.page, r.out, `f-joint-ho-phap-ket-${tag}.jpg`, { wait: 100 });
+    // Chờ hết hồi nội bộ của cặp (6 giây) trước lượt sau.
+    await sleep(6500);
+  }
+  await tank.ctx.close();
+  await sword.ctx.close();
+  return log;
+}
+
 export default {
   name: 'vs2',
   desc: 'VS-2 hệ kỹ năng mới: ảnh HUD ba công pháp (thanh tài nguyên riêng…) ở 1080p + 720p',
-  usage: '[--step res,chain,marks,branch,stance] [--sizes 1080p,720p] [--only kiem-tu,ho-phap,dan-su]',
+  usage: '[--step res,chain,marks,branch,stance,joint] [--sizes 1080p,720p] [--only kiem-tu,ho-phap,dan-su]',
   async run(r) {
     const sizes = list('--sizes', '1080p,720p');
-    const steps = list('--step', 'res,chain,marks,branch,stance');
+    const steps = list('--step', 'res,chain,marks,branch,stance,joint');
     const log: Record<string, unknown> = {};
     if (steps.includes('res')) log.res = await stepRes(r, sizes);
     if (steps.includes('chain')) log.chain = await stepChain(r, sizes);
     if (steps.includes('marks')) log.marks = await stepMarks(r, sizes);
     if (steps.includes('branch')) log.branch = await stepBranch(r, sizes);
     if (steps.includes('stance')) log.stance = await stepStance(r, sizes);
+    if (steps.includes('joint')) log.joint = await stepJoint(r, sizes);
     writeJson(r.out, 'vs2.json', log);
   },
 } satisfies Scenario;
