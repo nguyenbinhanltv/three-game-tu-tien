@@ -217,7 +217,18 @@ async function press(page: Page, id: string): Promise<void> {
       : ALLY_ONLY.test(id) || INJECT_ONLY.test(id)
         ? -1
         : await page.evaluate((i) => window.__game!.bar().findIndex((s) => s.id === i), id);
-  if (slot >= 0) return page.evaluate((s) => window.__game!.useSkill(s), slot);
+  if (slot >= 0) {
+    // Chọn con quái sống gần nhất làm mục tiêu trước khi bấm: chiêu vùng neo vào mục tiêu, không chọn thì rơi về chỗ người ra chiêu
+    // và con quái đứng ngoài tầm (ảnh Liệt Địa Trảm bản nữ không trúng sói).
+    await page.evaluate(() => {
+      const g = window.__game!;
+      const near = [...g.view.monsters.entries()]
+        .filter(([, m]) => m.st !== 3)
+        .sort((a, b) => Math.hypot(a[1].x - g.cur.x, a[1].z - g.cur.z) - Math.hypot(b[1].x - g.cur.x, b[1].z - g.cur.z))[0];
+      if (near) g.setTarget?.(near[0], 'mon');
+    });
+    return page.evaluate((s) => window.__game!.useSkill(s), slot);
+  }
   await page.evaluate((sk) => {
     const g = window.__game!;
     const hit = [...g.view.monsters.entries()].find(([, m]) => m.st !== 3);
