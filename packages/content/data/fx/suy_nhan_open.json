@@ -1,0 +1,72 @@
+{
+ "skill": "suy_nhan_open",
+ "palette": "suy_linh",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.55,
+   "at": "area",
+   "offset": [
+    0,
+    0.05,
+    0
+   ],
+   "scale": [
+    0.4,
+    0.5,
+    0.4
+   ],
+   "scaleTo": [
+    3.4,
+    1.0,
+    3.4
+   ],
+   "sweep": 0.35,
+   "erodeFrom": 0.4,
+   "ragged": 0.7,
+   "tone": "rim",
+   "alpha": 0.8,
+   "seed": 12,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.11,
+   "at": "area",
+   "offset": [
+    0,
+    0.9,
+    0
+   ],
+   "scale": 1.6,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "alpha": 0.6,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 26,
+   "speed": 3.0,
+   "spread": 1.0,
+   "life": 0.8,
+   "size": 0.08,
+   "at": "area",
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "tone": "rim",
+   "grav": -1.4,
+   "tier": 0
+  }
+ ]
+}

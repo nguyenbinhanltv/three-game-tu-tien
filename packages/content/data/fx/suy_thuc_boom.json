@@ -1,0 +1,148 @@
+{
+ "skill": "suy_thuc_boom",
+ "palette": "suy_thuc",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "rift_line",
+   "t": 0.0,
+   "dur": 1.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.06,
+    1.0
+   ],
+   "scale": [
+    3.2,
+    1,
+    12.5
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.55,
+   "ragged": 0.9,
+   "tone": "accent",
+   "alpha": 0.95,
+   "seed": 71,
+   "tier": 0
+  },
+  {
+   "type": "bolt",
+   "t": 0.04,
+   "at": "area",
+   "offset": [
+    0,
+    0,
+    8.0
+   ],
+   "scale": 0.7,
+   "thick": 1.6,
+   "tone": "body",
+   "seed": 72,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.03,
+   "dur": 0.9,
+   "at": "area",
+   "offset": [
+    0.9,
+    0,
+    4.5
+   ],
+   "rot": [
+    0,
+    20,
+    8
+   ],
+   "scale": [
+    0.9,
+    1.7,
+    0.9
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.6,
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 73,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.08,
+   "dur": 0.9,
+   "at": "area",
+   "offset": [
+    -1.6,
+    0,
+    9.0
+   ],
+   "rot": [
+    0,
+    140,
+    -8
+   ],
+   "scale": [
+    1.1,
+    2.1,
+    1.1
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.6,
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 74,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.12,
+   "dur": 0.9,
+   "at": "area",
+   "offset": [
+    1.8,
+    0,
+    12.0
+   ],
+   "rot": [
+    0,
+    260,
+    6
+   ],
+   "scale": [
+    0.9,
+    1.5,
+    0.9
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.6,
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 75,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0.04,
+   "n": 18,
+   "speed": 6.0,
+   "spread": 0.8,
+   "life": 0.7,
+   "size": 0.15,
+   "at": "area",
+   "offset": [
+    0,
+    0.4,
+    8.0
+   ],
+   "tone": "rim",
+   "grav": 9,
+   "tier": 1
+  }
+ ]
+}

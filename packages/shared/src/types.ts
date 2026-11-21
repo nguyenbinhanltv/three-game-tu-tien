@@ -3,6 +3,7 @@
 import type { ItemInst } from './itemtypes';
 import type { ApplyMark, ConsumeMark } from './marks';
 import type { SkillRes } from './resource';
+import type { StanceDef } from './stance';
 
 /**
  * Tám ô trang bị (Phase 3-1): pháp kiếm, đạo bào, hộ uyển, vân ngoa, đai lưng, ngọc bội, giới chỉ, pháp bảo phụ.
@@ -506,7 +507,8 @@ export interface MonsterPosture {
  * damage/aoe/heal/shield: 6 chiêu chung. Chiêu công pháp (Phase 3-5) thêm: `taunt` (khiêu khích quanh mình),
  * `guard` (giảm sát thương nhận), `hot` (hồi vùng theo thời gian), `revive` (hồi sinh đồng đội gần).
  */
-export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield' | 'taunt' | 'guard' | 'hot' | 'revive' | 'dash' | 'line' | 'summon' | 'buff';
+export type SkillKind =
+  'damage' | 'aoe' | 'heal' | 'shield' | 'taunt' | 'guard' | 'hot' | 'revive' | 'dash' | 'line' | 'summon' | 'buff' | 'stance';
 
 /** Kiểu thi triển (K-2). `channel`/`charge` đã khai báo nhưng server chưa hỗ trợ (check chặn). */
 export type CastType = 'instant' | 'cast' | 'channel' | 'charge';
@@ -590,6 +592,10 @@ export interface SkillDef {
   /** VS-2c: đặt ấn lên mục tiêu trúng đòn / người được hồi, và tiêu ấn của mình để lấy thưởng. Luật ở `marks.ts`. */
   applyMark?: ApplyMark;
   consumeMark?: ConsumeMark;
+  /** VS-2e: chiêu tư thế (kind 'stance'): vào tư thế `dur` giây, đổi các ô chiêu theo `swap`. Luật ở `stance.ts`. */
+  stance?: StanceDef;
+  /** VS-2e: chiêu chỉ dùng được khi đang trong tư thế của chiêu tư thế này (id). */
+  stanceOf?: string;
   /** `guard`: tỉ lệ sát thương được giảm. `taunt`: bán kính nằm ở `radius`, thời gian ở `duration`. */
   reduce?: number;
   /** `hot`: tổng lượng hồi (theo % máu tối đa) chia đều trong `duration`; `healAllies` bán kính hồi cho đồng đội. */

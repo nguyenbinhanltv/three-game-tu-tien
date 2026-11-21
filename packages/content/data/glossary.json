@@ -11,6 +11,52 @@
   "def": "phòng ngự",
   "posture": "thế",
   "posture_broken": "mất thế",
+  "branches": {
+    "lac_kiem_quyet": {
+      "pha_mach": "Phá Mạch",
+      "tam_diep": "Tam Điệp",
+      "ngu_kiem": "Ngự Kiếm",
+      "thuan_kiem": "Thuấn Kiếm",
+      "kiem_anh": "Kiếm Ảnh",
+      "thuan_tram": "Thuấn Trảm",
+      "van_kiem": "Vạn Kiếm",
+      "nhat_kiem": "Nhất Kiếm"
+    },
+    "bat_dong_kim_than": {
+      "chan_dia": "Chấn Địa",
+      "kim_chung": "Kim Chung",
+      "son_nhac": "Sơn Nhạc",
+      "dich_son": "Dịch Sơn",
+      "thiet_than": "Thiết Thân",
+      "ho_the": "Hộ Thế",
+      "bat_dong": "Bất Động",
+      "kim_cuong": "Kim Cương"
+    },
+    "thanh_moc_dan_kinh": {
+      "moc_linh": "Mộc Linh",
+      "duoc_vu": "Dược Vũ",
+      "ho_dan": "Hộ Đan",
+      "doc_dan": "Độc Đan",
+      "hoa_than": "Hóa Thân",
+      "cuu_vien": "Cứu Viện",
+      "truong_duoc": "Trường Dược",
+      "thinh_hoa": "Thịnh Hỏa"
+    }
+  },
+  "stances": {
+    "skl_ngu_kiem_tran": "Ngự Kiếm Trận",
+    "skl_tran_kiem": "Trận Kiếm",
+    "skl_tran_kiem_tram": "Trận Kiếm Trảm",
+    "skl_tran_kiem_vu": "Trận Kiếm Vũ",
+    "skl_kim_than": "Kim Thân",
+    "skl_kim_than_quyen": "Kim Thân Quyền",
+    "skl_chan_son_quyen": "Chấn Sơn Quyền",
+    "skl_kim_than_ho_the": "Kim Thân Hộ Thế",
+    "skl_dan_lo": "Đan Lô",
+    "skl_dan_hoa_chi": "Đan Hỏa Chỉ",
+    "skl_lo_hoa_hoi_nguyen": "Lô Hỏa Hồi Nguyên",
+    "skl_dan_hoa_vu": "Đan Hỏa Vũ"
+  },
   "marks": {
     "kiem_an": "Kiếm ấn",
     "truy_hon": "Truy hồn",

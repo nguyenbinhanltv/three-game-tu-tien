@@ -45,6 +45,8 @@ import {
   POSE_SWORD_SWAP,
   validatePose,
   validateFxTimeline,
+  fxDrawCount,
+  FX_SKILL_DRAW_MAX,
   validateSkillPose,
   validateSkillRules,
   SKILL_ID_ALIASES,
@@ -81,6 +83,9 @@ import {
   POSES,
   FX_TIMELINES,
   MON_FX_TIMELINES,
+  SUY_FX,
+  SUY_FX_STAGE,
+  SUY_FX_TIMELINES,
   QUEST,
   QUESTS,
   CHAPTERS,
@@ -98,7 +103,16 @@ import {
   t,
 } from './index';
 import { LOOT, LOOT_MATS } from './loot';
-import { chainErrors, markDefErrors, monSkillsOf, resourceErrors, skillMarkErrors, skillResErrors } from '@dtl/shared';
+import {
+  stanceErrors,
+  branchErrors,
+  chainErrors,
+  markDefErrors,
+  monSkillsOf,
+  resourceErrors,
+  skillMarkErrors,
+  skillResErrors,
+} from '@dtl/shared';
 import {
   PILL_TIERS,
   ARTIFACT_MAX_LEVEL,
@@ -143,15 +157,43 @@ const POSE = new Map(POSES.map((p) => [p.id, p]));
 // Dòng thời gian hiệu ứng (VFX-V0): chiêu có thật, mốc hợp lệ, ngân sách ≤ 12 draw và ≤ 1.500 hạt mỗi chiêu.
 for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKILL.has(id) || id.startsWith('fx_'))) err(m);
 for (const f of MON_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('mon_'))) err(m);
+// TN-4: hiệu ứng Thiên Nhân Ngũ Suy. Mỗi timeline theo luật chung (≤ 12 draw); cả một ải (mọi timeline của ải hợp lại) ≤ 25 draw.
+for (const f of SUY_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('suy_'))) err(m);
+{
+  const used = new Set<string>();
+  for (const mech of SUY_MECHANICS) {
+    const keys = SUY_FX_STAGE[mech] ?? [];
+    if (!keys.length) err(`fx ngũ suy: ải ${mech} chưa có timeline`);
+    const events = keys.flatMap((k) => {
+      used.add(k);
+      const tl = SUY_FX.get(k);
+      if (!tl) err(`fx ngũ suy: ải ${mech} cần timeline ${k} (chạy python tools/vfx/gen-fx-suy.py)`);
+      return tl?.events ?? [];
+    });
+    const n = fxDrawCount(events);
+    if (n > FX_SKILL_DRAW_MAX) err(`fx ngũ suy: ải ${mech} dùng ${n} draw > ${FX_SKILL_DRAW_MAX}`);
+  }
+  for (const f of SUY_FX_TIMELINES) if (!used.has(f.skill)) err(`fx ngũ suy: timeline ${f.skill} không thuộc ải nào (SUY_FX_STAGE)`);
+}
 // Mỗi skill một động tác riêng, không dài quá GCD (chiêu niệm chú: động tác chém sau khi niệm xong cũng ≤ GCD).
 // Chiêu lướt (K-2) không có động tác riêng: dùng chung fx `dash`, hình lướt do client dựng.
 const POSED = ALL_SKILLS.filter((s) => s.kind !== 'dash');
 for (const s of POSED) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
-const skillPoses = POSED.map((s) => s.pose);
+// VS-2e: chiêu tư thế (`kind: 'stance'` và chiêu có `stanceOf`) mượn hình của một chiêu thường: không tính vào luật "riêng",
+// nhưng phải trùng khít pose + fx + mốc ra đòn với đúng một chiêu thường để client (tra chiêu theo fx) vẫn ra đúng động tác.
+const borrows = (s: (typeof POSED)[number]) => s.kind === 'stance' || !!s.stanceOf;
+const OWN = POSED.filter((s) => !borrows(s));
+const skillPoses = OWN.map((s) => s.pose);
 if (new Set(skillPoses).size !== skillPoses.length) err('hai skill dùng chung một pose');
 // Client chọn động tác theo fx của chiêu (FX của server chỉ mang loại hiệu ứng): fx phải riêng cho mỗi chiêu.
-const skillFx = POSED.map((s) => s.fx);
+const skillFx = OWN.map((s) => s.fx);
 if (new Set(skillFx).size !== skillFx.length) err('hai skill dùng chung một fx');
+for (const s of POSED.filter(borrows)) {
+  const base = OWN.find((o) => o.fx === s.fx);
+  if (!base) err(`skill ${s.id}: chiêu tư thế phải mượn fx của một chiêu thường (fx "${s.fx}" không có)`);
+  else if (base.pose !== s.pose || base.hitAt?.[0] !== s.hitAt?.[0])
+    err(`skill ${s.id}: mượn fx của ${base.id} thì pose và hitAt[0] phải trùng với nó`);
+}
 for (const id of [POSE_FLY, POSE_SKY, POSE_CAST]) if (!POSE.get(id)?.loop) err(`pose ${id} (trạng thái nền) phải có và lặp`);
 for (const [id, swap] of Object.entries(POSE_SWORD_SWAP)) {
   const p = POSE.get(id);
@@ -235,6 +277,26 @@ for (const m of METHODS) {
 for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined)) err(m);
 // VS-2b: đồ thị chuỗi chiêu (id có thật, cùng công pháp, không vòng, hệ số trong khoảng).
 for (const m of chainErrors(ALL_SKILLS)) err(m);
+// VS-2e: tư thế (mỗi công pháp đúng một chiêu tư thế, đổi 3–4 ô chiêu chung, chiêu tư thế trỏ ngược về nó).
+for (const e of stanceErrors(ALL_SKILLS, new Set(SKILLS.map((s) => s.id)))) err(e);
+for (const m of METHODS) {
+  const n = METHOD_SKILLS.filter((s) => s.method === m.id && s.kind === 'stance').length;
+  if (n !== 1) err(`method ${m.id}: cần đúng một chiêu tư thế (đang có ${n})`);
+}
+for (const s of ALL_SKILLS) {
+  if ((s.stance || s.stanceOf) && t(`skill.${s.id}.name`) !== (GLOSSARY.stances as Record<string, string>)[s.id])
+    err(`chiêu tư thế ${s.id}: tên lệch glossary.stances`);
+}
+// VS-2d: cây nhánh công pháp (mỗi mốc 2–3 nhánh, chiêu bậc cao nào cũng thuộc một nhánh), tên khớp glossary.branches.
+for (const m of METHODS) {
+  for (const e of branchErrors(m, ALL_SKILLS)) err(e);
+  const names = (GLOSSARY.branches as Record<string, Record<string, string>>)[m.id] ?? {};
+  for (const b of m.branches ?? []) {
+    needStr(`branch.${m.id}.${b.id}.name`);
+    needStr(`branch.${m.id}.${b.id}.desc`);
+    if (t(`branch.${m.id}.${b.id}.name`) !== names[b.id]) err(`method ${m.id} nhánh ${b.id}: tên lệch glossary.branches`);
+  }
+}
 // VS-2c: bảng ấn và chiêu đặt/tiêu ấn.
 for (const m of markDefErrors(MARKS)) err(m);
 for (const m of MARKS) {
@@ -1021,6 +1083,16 @@ for (const q of QUESTS) {
     if (o.type === 'kill' && !MONSTER.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
     if ((o.type === 'gather' || o.type === 'craft') && !ITEM.has(o.target ?? '')) err(`quest ${q.id}: vật phẩm không tồn tại ${o.target}`);
     if (o.type === 'talk' && !NPC.has(o.target ?? '')) err(`quest ${q.id}: npc không tồn tại ${o.target}`);
+    // Kiếp chuỗi còn mốc tạm (to = from): mục tiêu `breakthrough` tính theo cấp `to` nên sẽ tự xong ngay ở cấp `from`. Chặn cho tới khi chuỗi gắn vào thang cấp.
+    if (
+      o.type === 'breakthrough' &&
+      o.target &&
+      TRIB_DEFS[o.target as keyof typeof TRIB_DEFS]?.chain &&
+      TRIB_DEFS[o.target as keyof typeof TRIB_DEFS].to <= TRIB_DEFS[o.target as keyof typeof TRIB_DEFS].from
+    )
+      err(
+        `quest ${q.id}: breakthrough ${o.target} là kiếp chuỗi chưa gắn vào thang cấp (to = from), nhiệm vụ sẽ tự xong; chưa dùng làm mục tiêu được`,
+      );
     if (o.type === 'breakthrough' && o.target && !(TRIB_IDS as readonly string[]).includes(o.target))
       err(`quest ${q.id}: breakthrough target phải là id kiếp, không phải ${o.target}`);
   }

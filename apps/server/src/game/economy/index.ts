@@ -28,10 +28,13 @@ import {
   type SkillDef,
   type SysMsg,
   tribDef,
+  BRANCH_RESET_COOLDOWN_SEC,
+  branchResetCost,
+  pickBlock,
 } from '@dtl/shared';
 import { PILL_QUALITY, ITEM, itemName, NPC, QUEST, realmName, RECIPE, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { type Character, isEquipSlot, sameSlot } from '../character';
-import { passiveOf, setSkillLevel, skillLevelOf } from '../method';
+import { methodOf, passiveOf, picksOf, setSkillLevel, skillLevelOf } from '../method';
 import type { DuelSystem } from '../duel';
 import type { NodeEnt, PlayerEnt } from '../entities';
 import type { TeleportSystem } from '../teleport';
@@ -448,6 +451,49 @@ export class EconomySystem {
     p.mth.dirty = true;
     this.c.sys(p, 'sys.skill_up_ok', { skill: skillName(sk.id), n: lv + 1 }, 'good');
     this.c.fx({ t: 'enhance', src: p.sid });
+  }
+
+  /**
+   * Nhánh công pháp (VS-2d). `pick`: chọn nhánh cho một mốc đã đủ cảnh giới, miễn phí, mỗi mốc một lần (muốn đổi phải reset).
+   * `reset`: xóa mọi nhánh của công pháp đang tu, tốn linh thạch theo cảnh giới, có giãn cách. Cả hai ghi DB trong một
+   * giao dịch có khóa chống trùng và dòng ledger; không làm được khi đang giao chiến hay đang ra chiêu.
+   */
+  onBranch(p: PlayerEnt, msg: unknown): void {
+    const m = msg as { a?: unknown; tier?: unknown; id?: unknown; r?: unknown } | null;
+    if (!m || this.c.isDead(p)) return;
+    const idem = this.idem(p, m.r);
+    if (!idem) return;
+    const c = p.char;
+    const def = methodOf(c.meta);
+    if (!def) return this.c.warn(p, 'sys.no_method');
+    if (this.c.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000) return this.c.warn(p, 'sys.branch_combat');
+    if (p.casting || p.flow.pending) return this.c.warn(p, 'sys.branch_combat');
+    if (m.a === 'pick') {
+      const block = pickBlock(def, picksOf(c), m.tier, m.id, c.level);
+      if (block) return this.c.warn(p, `sys.branch_${block}`);
+      const tier = m.tier as number;
+      const id = m.id as string;
+      if (!c.tx(`branch:pick:${def.id}:${tier}:${id}`, idem, (d) => d.setBranch(def.id, tier, id))) return;
+      p.mth.dirty = true;
+      this.c.sys(p, 'sys.branch_picked', { branch: t(`branch.${def.id}.${id}.name`) }, 'good');
+      this.c.fx({ t: 'levelup', src: p.sid });
+      return;
+    }
+    if (m.a !== 'reset') return;
+    const picks = picksOf(c);
+    if (!picks || !Object.keys(picks).length) return this.c.warn(p, 'sys.branch_none');
+    if (this.c.now - (c.meta.branchAt ?? 0) < BRANCH_RESET_COOLDOWN_SEC * 1000) return this.c.warn(p, 'sys.branch_cd');
+    const cost = branchResetCost(c.level);
+    if (c.gold < cost) return this.c.warn(p, 'sys.not_enough_gold');
+    if (!c.tx(`branch:reset:${def.id}`, idem, (d) => d.spendGold(cost) && d.clearBranches(def.id)))
+      return this.c.warn(p, 'sys.not_enough_gold');
+    c.meta.branchAt = this.c.now;
+    c.save();
+    // Hồi chiêu GIỮ NGUYÊN qua reset: xóa đi thì trả linh thạch là làm mới được chiêu hồi lâu (chọn lại đúng nhánh cũ).
+    // Tài nguyên vượt trần mới bị kẹp lại khi đọc (`resNow`).
+    p.mth.dirty = true;
+    this.c.sys(p, 'sys.branch_reset', { n: cost }, 'info');
+    this.c.sendCd(p);
   }
 
   /** Chọn biến thức A/B (từ cấp 3), đổi miễn phí khi không giao chiến. */

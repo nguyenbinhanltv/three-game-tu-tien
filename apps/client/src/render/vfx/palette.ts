@@ -22,6 +22,13 @@ export const FX_PALETTE: Record<string, FxPalette> = {
   thanh_moc_dan_kinh: { core: 0x06301f, body: 0x23b374, rim: 0x9fe9bd, accent: 0xe4452f, shadow: 0x071c13 },
   // Lôi: tím và trắng.
   loi: { core: 0x3a1670, body: 0x9a63ff, rim: 0xf5eeff, accent: 0xffe27a, shadow: 0x1a0c33 },
+  // ---- Thiên Nhân Ngũ Suy (TN-4): mỗi ải một sắc, trầm hơn chiêu người chơi (suy kiệt). Thân/viền là thứ PHẢI BƯỚC VÀO (Linh Nhãn, Tôi Thể Lôi,
+  // Thọ Đăng); `accent` là mối nguy của ải (lôi ẩn đỏ son, suy phong xám lam) hoặc nhịp phá vọng (vàng).
+  suy_linh: { core: 0x0b2a3a, body: 0x3fb6c9, rim: 0xe6fbff, accent: 0xa7f0d8, shadow: 0x061820 },
+  suy_the: { core: 0x4a2408, body: 0xe0a03a, rim: 0xfff1c9, accent: 0xff6a2a, shadow: 0x1f0f05 },
+  suy_thuc: { core: 0x1c1440, body: 0x7d6be0, rim: 0xeee9ff, accent: 0xff4a3a, shadow: 0x0c0920 },
+  suy_tho: { core: 0x3a2a08, body: 0xffc45a, rim: 0xfff3d0, accent: 0x8fa3b8, shadow: 0x181004 },
+  suy_tam: { core: 0x2a0c2e, body: 0xb04bff, rim: 0xf3e2ff, accent: 0xf3c860, shadow: 0x12061a },
   // ---- Quái (V5): bảng "nguy hiểm", tách khỏi bảng "của ta". Lõi rất sẫm, thân bão hòa theo ngũ hành, viền sáng ấm, điểm nhấn đỏ son/đỏ thẫm
   // để vạch báo và đòn của quái luôn đọc ra là mối nguy (không lẫn với lam ngọc/lục/hổ phách của người chơi).
   mon_kim: { core: 0x141b2b, body: 0x7f98bd, rim: 0xf4f9ff, accent: 0xff4a3a, shadow: 0x080b12 },

@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import { allowSkillForTest } from './testkit';
 import { CHARGE_MAX, groundAt, MS_CHASE, MS_DEAD, PF_DEAD, S, skillUpgradeCost, type MethodMsg } from '@dtl/shared';
 
 // Công pháp (Phase 3-5): server quyết định cấp chiêu, biến thức, sạc, khiêu khích, giữ.
@@ -51,6 +52,8 @@ function setup(level = 8) {
   const raw = sim.onSkill.bind(sim);
   (sim as unknown as { onSkillRaw: typeof raw }).onSkillRaw = raw;
   sim.onSkill = (pl: Ent, msg: unknown) => {
+    // VS-2d: test cơ chế chiêu, không đi qua bước chọn nhánh công pháp.
+    allowSkillForTest(pl.char, (msg as { id?: unknown } | null)?.id);
     raw(pl, msg);
     const st = pl.flow.pending;
     if (st) {

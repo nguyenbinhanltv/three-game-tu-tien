@@ -182,7 +182,7 @@
     0.42,
     2.6
    ],
-   "sweep": 0.1,
+   "sweep": 0.053,
    "erodeFrom": 0.62,
    "ragged": 0.15,
    "alpha": 1,

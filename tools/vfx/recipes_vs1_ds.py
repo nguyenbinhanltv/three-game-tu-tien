@@ -124,6 +124,7 @@ def lotus(t, at, r, h=0.45, dur=1.6, tone='body', tier=0, seed=5, off=(0, 0.06, 
     """Sen thấp nở từ tâm ra: bán kính r m, cánh ngoài cao ~0,4 × h m. Sen to được nâng thêm 0,04 m mỗi mét bán kính: lòng cánh võng xuống,
     không nâng thì chìm dưới nền lát (cánh trông rỗng)."""
     off = (off[0], round(off[1] + 0.04 * r, 3), off[2])
+    sweep = round(min(sweep, 0.09 / dur), 3)  # nở xong trong ≤ 0,09 s dù hình ở lại lâu (`sweep` là tỉ lệ vòng đời)
     return mesh('lotus_bloom', t, dur, at=at, offset=list(off), rot=[0, rot, 0], scale=[r, h, r], sweep=sweep, erodeFrom=0.62, ragged=0.15, alpha=1, tone=tone, tier=tier, seed=seed, **k)
 
 
@@ -192,47 +193,57 @@ R['skl_hoi_xuan_quyet'] = hoi_xuan
 
 
 def moc_linh():
-    """Mộc Linh Trận (trận hồi 8 s trong r 8 + độc lên quái; hit 0,4 s): sáu LÁ NGỌC lớn mọc thẳng đứng thành vòng trận, TRẬN NHÃN là một viên
-    đan ngọc treo ở tâm, sen thấp dưới trận nhãn; vành mép vùng + vành trong ở lại 3,6 s (trận đang chạy)."""
-    RL = 5.2  # vòng lá (m): nằm trong cả vùng thường (8 m) lẫn vùng dày (6 m)
+    """Mộc Linh Trận (trận hồi 8 s trong r 8 + độc lên quái; hit 0,4 s): vòng trận hiện ĐỦ ngay khung hit đúng bán kính vùng (vành mép + vành nửa
+    vùng, `fit: area`), mười LÁ NGỌC to bản mọc đứng trên viền, một DÂY LEO xoắn từ tâm ra viền, trận nhãn là viên đan treo ở tâm; ba NHỊP HỒI
+    (vành sáng quét từ tâm ra mép + cánh hoa) trong lúc trận chạy."""
+    RIM = 7.6  # vòng lá trên viền vùng thường (8 m); biến thức dày (6 m) dùng vòng riêng
     ev = [
         parts('petal', -0.4, 18, 1.5, 1, 0.3, 0.08, at='self', inward=True, tone='body', tier=1),
         snd(-0.4, 'cast', 0.4, 1.0),
-        decal('rune', -0.36, 5.4, 2.6, at='area', grow=0.3, tone='body', alpha=0.75, tier=0),
-        # trận nhãn: viên đan treo ở tâm, sen thấp bên dưới
-        mesh('pill_orb', -0.02, 3.8, at='area', offset=[0, 2.6, 0], scale=0.4, scaleTo=0.75, sweep=0.06, erodeFrom=0.85, alpha=1, spin=160, tone='body', tier=0, seed=1),
-        mesh('burst', -0.02, 0.11, at='area', offset=[0, 2.6, 0], scale=1.6, billboard=True, sweep=0, tone='body', cross=True, tier=0),
-        lotus(-0.04, 'area', 2.2, h=0.4, dur=2.2, tone='body', seed=5),
-        snd(0.0, 'heal', 0.7, 0.9, 0.04),
-        snd(0.0, 'impact', 0.35, 1.2, 0.05),
-        wave(0.0, 'area', 0.12, 1.0, dur=0.46, tone='body', seed=3),
-        wave(0.08, 'area', 0.1, 0.7, dur=0.42, tone='accent', tier=1, seed=4, alpha=0.7),
-        zone_ring(0.3, 'area', 3.6, tone='body', seed=7),
-        mesh('rune_ring2', 0.36, 3.5, at='area', offset=[0, 0.14, 0], scale=0.5, scaleTo=0.5, fit='area', sweep=0.12, erodeFrom=0.8, alpha=0.85, shadow=False, tone='core', tier=1, seed=8),
-        parts('petal', 0.0, 40, 3.0, 1, 1.2, 0.11, at='area', offset=[0, 0.5, 0], grav=-1.1, tone='body', tier=0),
+        decal('rune', -0.36, 5.4, 3.0, at='area', grow=0.2, tone='body', alpha=0.8, tier=0),
+        # vòng trận: bật ngay ở khung hit, đúng bán kính vùng thật
+        mesh('rune_ring2', -0.03, 3.9, at='area', offset=[0, 0.13, 0], scale=EDGE, scaleTo=EDGE, fit='area', sweep=0.01, erodeFrom=0.8, alpha=1.0, shadow=False, tone='body', tier=0, seed=7),
+        mesh('rune_ring2', -0.03, 3.8, at='area', offset=[0, 0.13, 0], scale=0.5, scaleTo=0.5, fit='area', sweep=0.01, erodeFrom=0.8, alpha=0.9, shadow=False, tone='core', tier=1, seed=8),
+        wave(0.0, 'area', 0.1, 1.0, dur=0.45, tone='rim', seed=3),
+        # trận nhãn + sen thấp ở tâm
+        mesh('pill_orb', -0.04, 3.9, at='area', offset=[0, 2.6, 0], scale=0.5, scaleTo=0.8, sweep=0.01, erodeFrom=0.85, alpha=1, spin=160, tone='body', tier=0, seed=1),
+        mesh('burst', -0.02, 0.11, at='area', offset=[0, 2.6, 0], scale=2.2, billboard=True, sweep=0, tone='body', cross=True, tier=0),
+        flip('spark_burst', -0.02, 0.36, 3.0, at='area', offset=[0, 2.6, 0], alpha=0.7, tone='body', tier=0),
+        lotus(-0.06, 'area', 2.4, h=0.4, dur=2.4, tone='body', seed=5),
+        # dây leo xoắn từ tâm ra viền (bỏ ở biến thức dày: vùng nhỏ hơn)
+        mesh('ribbon', -0.06, 3.8, at='area', offset=[0, 0.25, 0], rot=[-90, 0, 0], scale=[35, 35, 1.0], sweep=0.03, erodeFrom=0.8, ragged=0.6, spin=30, alpha=0.95, shadow=False,
+             tone='core', tier=0, seed=9, unless='dense'),
+        snd(0.0, 'heal', 0.75, 0.9, 0.04),
+        snd(0.0, 'impact', 0.4, 1.2, 0.05),
+        parts('petal', 0.0, 50, 4.0, 1, 1.3, 0.11, at='area', offset=[0, 0.5, 0], grav=-1.1, tone='body', tier=0),
         parts('spark', 0.0, 26, 5, 1, 0.45, 0.07, at='area', offset=[0, 2.6, 0], tone='rim', tier=1),
     ]
-    # sáu lá ngọc lớn mọc đứng quanh vòng trận (mọc lần lượt), lá to bản (rộng ×2), mặt lá xoay tiếp tuyến với vòng trận
-    for i, (x, z, a) in enumerate(ring(6, RL, 0.3)):
-        ev.append(mesh('petal_blade', -0.02 + 0.035 * i, 3.7 - 0.035 * i, at='area', offset=[x, 0.05, z], rot=[-90, a + 90, 0], scale=[7.0, 3.4, 3.4], sweep=0.07, erodeFrom=0.82, alpha=1,
-                       tone='body' if i % 2 == 0 else 'rim', tier=0 if i % 2 == 0 else 1, seed=20 + i))
-    ev += soft(0.0, ms=45, sh=0.16, fl=0.06, fov=1.2)
+    # mười lá ngọc to bản mọc đứng trên viền, đã mọc xong ở khung hit
+    for i, (x, z, a) in enumerate(ring(10, RIM, 0.2)):
+        ev.append(mesh('petal_blade', -0.1 + 0.008 * i, 3.9, at='area', offset=[x, 0.05, z], rot=[-90, a + 90, 0], scale=[6.0, 3.0, 3.0], sweep=0.02, erodeFrom=0.82, alpha=1,
+                       tone='body' if i % 2 == 0 else 'rim', tier=0 if i % 2 == 0 else 1, seed=20 + i, unless='dense'))
+    # ba nhịp hồi: vành sáng từ tâm ra mép + cánh hoa bay lên
+    for k, t in enumerate([0.9, 1.8, 2.7]):
+        ev.append(wave(t, 'area', 0.08, 1.0, dur=0.6, tone='rim', tier=0 if k == 0 else 1, seed=60 + k, alpha=0.9))
+        ev.append(parts('petal', t, 24, 3.4, 1, 1.0, 0.1, at='area', offset=[0, 0.4, 0], grav=-1.2, tone='body', tier=1))
+    ev += soft(0.0, ms=45, sh=0.18, fl=0.07, fov=1.5)
     return {
         'skill': 'skl_moc_linh_tran',
         'replaces': ['moclinh'],
         'events': ev,
         'variants': {
-            # a = trận dày (vùng ×0,75, hồi mạnh hơn): thêm vòng sen trong + sáu lá thấp vòng trong
+            # a = trận dày (vùng ×0,75 = 6 m, hồi mạnh hơn): vòng lá + dây leo riêng ở r 5,6 m, thêm vòng sen trong
             'dense': [
-                lotus(0.06, 'area', 3.6, h=0.4, dur=2.4, tone='rim', tier=0, seed=40, rot=22),
-                *[mesh('petal_blade', 0.1 + 0.03 * i, 3.0, at='area', offset=[x, 0.05, z], rot=[-90, a + 90, 0], scale=[4.5, 2.0, 2.0], sweep=0.08, erodeFrom=0.8, alpha=1, tone='body', tier=1, seed=41 + i)
-                  for i, (x, z, a) in enumerate(ring(6, 2.9, 0.8))],
+                lotus(0.0, 'area', 3.8, h=0.4, dur=2.6, tone='rim', tier=0, seed=40, rot=22),
+                mesh('ribbon', -0.06, 3.8, at='area', offset=[0, 0.25, 0], rot=[-90, 0, 0], scale=[26, 26, 1.0], sweep=0.03, erodeFrom=0.8, ragged=0.6, spin=30, alpha=0.95, shadow=False, tone='core', tier=0, seed=39),
+                *[mesh('petal_blade', -0.1 + 0.008 * i, 3.9, at='area', offset=[x, 0.05, z], rot=[-90, a + 90, 0], scale=[5.0, 2.6, 2.6], sweep=0.02, erodeFrom=0.82, alpha=1,
+                       tone='body' if i % 2 == 0 else 'rim', tier=0 if i % 2 == 0 else 1, seed=41 + i) for i, (x, z, a) in enumerate(ring(10, 5.6, 0.2))],
             ],
-            # b = độc mạnh ×2: lửa độc đỏ son bốc ở chân các lá + vành đỏ son ở lại
+            # b = độc mạnh ×2: lửa độc đỏ son bốc ở viền + vành đỏ son ở lại
             'venom': [
-                *[mesh('flame_tongue', 0.1 + 0.04 * i, 0.9, at='area', offset=[x, 0.05, z], rot=[8, a, 0], scale=[1.0, 1.2, 1.0], scaleTo=[0.8, 1.7, 0.8], sweep=0.16, erodeFrom=0.45, ragged=0.75,
-                       shadow=False, tone='accent', tier=0 if i % 2 == 0 else 1, seed=50 + i) for i, (x, z, a) in enumerate(ring(6, RL - 0.9, 0.82))],
-                mesh('rune_ring2', 0.4, 3.0, at='area', offset=[0, 0.16, 0], scale=0.8, scaleTo=0.8, fit='area', sweep=0.12, erodeFrom=0.78, alpha=0.85, shadow=False, tone='accent', tier=0, seed=57),
+                *[mesh('flame_tongue', 0.06 + 0.03 * i, 1.0, at='area', offset=[x, 0.05, z], rot=[8, a, 0], scale=[1.2, 1.4, 1.2], scaleTo=[0.9, 2.0, 0.9], sweep=0.16, erodeFrom=0.45, ragged=0.75,
+                       shadow=False, tone='accent', tier=0 if i % 2 == 0 else 1, seed=50 + i) for i, (x, z, a) in enumerate(ring(6, RIM - 1.0, 0.5))],
+                mesh('rune_ring2', 0.2, 3.2, at='area', offset=[0, 0.17, 0], scale=0.85, scaleTo=0.85, fit='area', sweep=0.05, erodeFrom=0.78, alpha=0.9, shadow=False, tone='accent', tier=0, seed=57),
             ],
         },
     }
@@ -299,53 +310,71 @@ R['skl_ngung_dan_ho_the'] = ngung_dan
 
 
 def phap_gioi():
-    """Thiên Đan Pháp Giới (cấp 28, hồi 12 s trong r 14; hit 0,6 s): một viên THIÊN ĐAN lớn hiện trên cao rồi treo giữa trời 3,8 s, tám lá ngọc
-    từ thiên đan rơi xuống, mỗi lá nở một đóa sen nhỏ quanh một đóa sen lớn thấp ở tâm (biển sen); hai vành ở lại (mép vùng và nửa vùng)."""
-    SKY = [0, 5.6, 0]
-    spots = ring(8, 6.4, 0.2)
+    """Thiên Đan Pháp Giới (cấp 28, lĩnh vực hồi 12 s trong r 14; hit 0,6 s): LĨNH VỰC LỚN bật ngay khung hit: thiên đan 2,4 m treo trên cao với hai
+    vành trận đan, CỘT SÁNG ngọc nối trời với đất, ba vành đồng tâm đúng bán kính vùng, biển sen (sen lớn ở tâm + hai vòng sen), cánh sen bốc lên."""
+    SKY = [0, 7.0, 0]
+    mid = ring(8, 8.5, 0.2)
+    far = ring(8, 12.0, 0.6)
     ev = [
-        parts('spark', -0.6, 40, 2.6, 1, 0.5, 0.08, at='self', offset=SKY, inward=True, tone='body', tier=1),
+        parts('spark', -0.6, 60, 3.0, 1, 0.55, 0.09, at='area', offset=SKY, inward=True, tone='body', tier=1),
         snd(-0.6, 'cast', 0.5, 0.75),
-        decal('rune', -0.55, 6.0, 2.8, at='area', grow=0.4, tone='body', alpha=0.8, tier=0),
-        mesh('pill_orb', -0.58, 0.58, at='area', offset=SKY, scale=0.2, scaleTo=1.5, sweep=0.2, erodeFrom=0.98, alpha=1, spin=260, tone='body', tier=0, seed=1),
-        # thiên đan treo giữa trời
-        mesh('pill_orb', 0.0, 3.8, at='area', offset=SKY, rot=[10, 0, 12], scale=1.5, scaleTo=1.6, sweep=0, erodeFrom=0.85, alpha=1, spin=90, tone='body', tier=0, seed=1),
-        mesh('burst', -0.02, 0.12, at='area', offset=SKY, scale=3.0, billboard=True, sweep=0, tone='body', cross=True, tier=0),
-        flip('spark_burst', -0.02, 0.38, 4.0, at='area', offset=SKY, alpha=0.7, tone='body', tier=0),
-        snd(0.0, 'heal', 0.9, 0.85, 0.04),
-        snd(0.0, 'impact', 0.5, 0.9, 0.05),
+        vig(-0.55, 0.25, 500, tier=1),
+        decal('rune', -0.55, 8.0, 3.4, at='area', grow=0.4, tone='body', alpha=0.85, tier=0),
+        mesh('pill_orb', -0.58, 0.58, at='area', offset=SKY, scale=0.2, scaleTo=2.2, sweep=0.2, erodeFrom=0.98, alpha=1, spin=260, tone='body', tier=0, seed=1),
+        # ---- khung hit: mọi thứ bật NGAY ----
+        mesh('pill_orb', 0.0, 3.8, at='area', offset=SKY, rot=[10, 0, 12], scale=2.2, scaleTo=2.4, sweep=0, erodeFrom=0.85, alpha=1, spin=90, tone='body', tier=0, seed=1),
+        mesh('burst', -0.02, 0.12, at='area', offset=SKY, scale=5.0, billboard=True, sweep=0, tone='body', cross=True, tier=0),
+        mesh('burst', -0.02, 0.12, at='area', offset=[0, 1.0, 0], scale=3.4, billboard=True, sweep=0, tone='rim', tier=0),
+        flip('spark_burst', -0.02, 0.4, 6.0, at='area', offset=SKY, alpha=0.8, tone='body', tier=0),
+        # trận đan trên cao: hai vành nằm ngang quanh thiên đan (vành trong đỏ son)
+        mesh('rune_ring2', -0.03, 3.8, at='area', offset=[0, 6.6, 0], scale=4.6, scaleTo=4.9, sweep=0.01, erodeFrom=0.85, alpha=1, shadow=False, spin=40, tone='body', tier=0, seed=11),
+        mesh('rune_ring2', -0.03, 3.7, at='area', offset=[0, 7.5, 0], rot=[0, 30, 0], scale=2.9, scaleTo=3.1, sweep=0.01, erodeFrom=0.85, alpha=1, shadow=False, spin=-60, tone='accent', tier=0, seed=12),
+        # cột sáng nối trời với đất: ba lưỡi sáng kéo cao
+        *[mesh('flame_tongue', -0.04 + 0.02 * k, 1.5 - 0.2 * k, at='area', offset=[0, 0.1, 0], rot=[0, 60 * k, 0], scale=[2.4 - 0.5 * k, 8.5, 2.4 - 0.5 * k], scaleTo=[1.4 - 0.3 * k, 9.5, 1.4 - 0.3 * k],
+               sweep=0.04, erodeFrom=0.5, ragged=0.5, alpha=0.9, shadow=False, tone='rim' if k == 1 else 'body', tier=0 if k == 0 else 1, seed=14 + k) for k in range(3)],
+        snd(0.0, 'heal', 0.95, 0.8, 0.04),
+        snd(0.0, 'impact', 0.6, 0.85, 0.05),
+        snd(0.02, 'thunder', 0.3, 0.9, 0.04),
         snd(0.3, 'shield', 0.4, 1.1, 0.05),
-        # sen lớn thấp ở tâm + sóng theo vùng thật + hai vành ở lại
-        lotus(-0.04, 'area', 4.4, h=0.42, dur=2.6, tone='body', seed=5, sweep=0.08),
-        wave(0.0, 'area', 0.1, 1.0, dur=0.56, tone='body', seed=3),
-        wave(0.1, 'area', 0.1, 0.75, dur=0.5, tone='rim', tier=1, seed=4),
-        zone_ring(0.36, 'area', 3.6, tone='body', seed=7),
-        mesh('rune_ring2', 0.42, 3.4, at='area', offset=[0, 0.14, 0], scale=0.5, scaleTo=0.5, fit='area', sweep=0.12, erodeFrom=0.8, alpha=0.85, shadow=False, tone='core', tier=1, seed=8),
-        parts('petal', 0.0, 70, 3.4, 1, 1.9, 0.12, at='area', offset=SKY, grav=1.6, tone='body', tier=0),
-        parts('petal', 0.3, 40, 3.0, 1, 1.6, 0.11, at='area', offset=SKY, grav=1.5, tone='rim', tier=1),
+        # lĩnh vực: ba vành đồng tâm đúng bán kính vùng, bật ngay và ở lại
+        mesh('rune_ring2', -0.03, 3.7, at='area', offset=[0, 0.13, 0], scale=EDGE, scaleTo=EDGE, fit='area', sweep=0.01, erodeFrom=0.8, alpha=1.0, shadow=False, tone='body', tier=0, seed=7),
+        mesh('rune_ring2', -0.03, 3.6, at='area', offset=[0, 0.13, 0], scale=0.66, scaleTo=0.66, fit='area', sweep=0.01, erodeFrom=0.8, alpha=0.9, shadow=False, tone='rim', tier=0, seed=8),
+        mesh('rune_ring2', -0.03, 3.5, at='area', offset=[0, 0.13, 0], scale=0.33, scaleTo=0.33, fit='area', sweep=0.01, erodeFrom=0.8, alpha=0.9, shadow=False, tone='core', tier=1, seed=9),
+        wave(0.0, 'area', 0.08, 1.0, dur=0.5, tone='rim', seed=3),
+        wave(0.9, 'area', 0.08, 1.0, dur=0.7, tone='rim', tier=1, seed=4, alpha=0.9),
+        wave(1.8, 'area', 0.08, 1.0, dur=0.7, tone='rim', tier=1, seed=5, alpha=0.9),
+        # biển sen: sen lớn ở tâm
+        lotus(-0.07, 'area', 5.0, h=0.42, dur=3.0, tone='body', seed=5),
+        parts('petal', 0.0, 110, 5.0, 1, 2.0, 0.13, at='area', offset=SKY, grav=1.8, tone='body', tier=0),
+        parts('petal', 0.3, 60, 4.0, 1, 1.8, 0.12, at='area', offset=SKY, grav=1.6, tone='rim', tier=1),
+        parts('spark', 0.0, 60, 9, 1, 0.6, 0.1, at='area', offset=SKY, tone='rim', tier=0),
     ]
-    # tám lá ngọc rơi từ thiên đan xuống, mỗi lá nở một đóa sen nhỏ
-    for i, (x, z, _a) in enumerate(spots):
-        t0 = 0.0 + 0.04 * i
-        ev.append(mesh('petal_blade', t0, 0.26, at='area', offset=SKY, scale=2.6, sweep=0, erodeFrom=0.7, alpha=1,
-                       move={'to': 'area', 'offset': [x, 0.3, z], 'ease': 'in'}, tone='rim', tier=0 if i % 2 == 0 else 1, seed=20 + i))
-        ev.append(lotus(t0 + 0.24, 'area', 1.5, h=0.5, dur=2.3, tone='body' if i % 2 == 0 else 'rim', tier=0 if i % 2 == 0 else 1, seed=30 + i, off=(x, 0.06, z), rot=20 * i))
-    ev += [stop(0.0, 50, tier=1), shake(0.0, 0.25), flash(0.0, 0.08, tier=1), cam(0.0, 0.12, 1.6, fov=3.0, tier=1)]
+    # hai vòng sen quanh tâm: tám đóa lớn ở 8,5 m (bật ngay), tám đóa nhỏ ở 12 m
+    for i, (x, z, _a) in enumerate(mid):
+        ev.append(lotus(-0.06 + 0.006 * i, 'area', 2.4, h=0.48, dur=2.8, tone='body' if i % 2 == 0 else 'rim', tier=0, seed=30 + i, off=(x, 0.06, z), rot=20 * i))
+    for i, (x, z, _a) in enumerate(far):
+        ev.append(lotus(0.05 + 0.02 * i, 'area', 1.5, h=0.5, dur=2.4, tone='rim' if i % 2 == 0 else 'body', tier=1 if i % 2 == 0 else 2, seed=40 + i, off=(x, 0.06, z), rot=25 * i))
+    # cánh sen bốc lên từ vòng sen (bốn cánh đỏ son)
+    for i, (x, z, a) in enumerate(ring(12, 6.5, 0.1)):
+        ev.append(mesh('petal_blade', -0.02 + 0.01 * i, 0.9, at='area', offset=[x, 0.3, z], rot=[-70, a + 90, 0], scale=[4.2, 2.8, 2.8], sweep=0, erodeFrom=0.5, alpha=1,
+                       move={'to': 'area', 'offset': [round(x * 1.25, 2), 4.2 + 0.5 * (i % 3), round(z * 1.25, 2)], 'ease': 'out'},
+                       tone='accent' if i % 3 == 0 else ('rim' if i % 3 == 1 else 'body'), tier=0 if i % 2 == 0 else 1, seed=70 + i))
+    ev += [stop(0.0, 60), shake(0.0, 0.3), flash(0.0, 0.1, tier=0), vig(0.0, 0.3, 320, tier=1), cam(-0.1, 0.2, 2.0, fov=4.0, tier=1)]
     return {
         'skill': 'skl_thien_dan_phap_gioi',
         'events': ev,
         'variants': {
             # a = tăng công cho tổ đội: lửa đan hỏa đỏ son bốc ở tám đóa sen + một vành đỏ son quét ra
             'atk': [
-                *[mesh('flame_tongue', 0.34 + 0.04 * i, 0.9, at='area', offset=[x, 0.1, z], rot=[0, 45 * i, 0], scale=[1.1, 1.3, 1.1], scaleTo=[0.9, 1.9, 0.9], sweep=0.16, erodeFrom=0.45, ragged=0.75,
-                       shadow=False, tone='accent', tier=0 if i % 2 == 0 else 1, seed=50 + i) for i, (x, z, _a) in enumerate(spots)],
+                *[mesh('flame_tongue', 0.12 + 0.03 * i, 1.0, at='area', offset=[x, 0.1, z], rot=[0, 45 * i, 0], scale=[1.4, 1.6, 1.4], scaleTo=[1.1, 2.4, 1.1], sweep=0.16, erodeFrom=0.45, ragged=0.75,
+                       shadow=False, tone='accent', tier=0 if i % 2 == 0 else 1, seed=50 + i) for i, (x, z, _a) in enumerate(mid)],
                 wave(0.2, 'area', 0.2, 1.0, dur=0.55, tone='accent', seed=58),
             ],
             # b = tăng thủ cho tổ đội: tám viên đan ngọc lớn treo trên tám đóa sen + vành lõi sẫm ở lại
             'def': [
-                *[mesh('pill_orb', 0.34 + 0.04 * i, 3.0, at='area', offset=[x, 1.3, z], rot=[0, 30 * i, 15], scale=0.6, sweep=0.15, erodeFrom=0.8, alpha=1, spin=120, tone='body', tier=0 if i % 2 == 0 else 1, seed=60 + i)
-                  for i, (x, z, _a) in enumerate(spots)],
-                mesh('rune_ring2', 0.5, 3.0, at='area', offset=[0, 0.16, 0], scale=0.78, scaleTo=0.78, fit='area', sweep=0.12, erodeFrom=0.8, alpha=0.85, shadow=False, tone='core', tier=0, seed=68),
+                *[mesh('pill_orb', 0.12 + 0.03 * i, 3.0, at='area', offset=[x, 1.4, z], rot=[0, 30 * i, 15], scale=0.7, sweep=0.1, erodeFrom=0.8, alpha=1, spin=120, tone='body', tier=0 if i % 2 == 0 else 1, seed=60 + i)
+                  for i, (x, z, _a) in enumerate(mid)],
+                mesh('rune_ring2', 0.3, 3.0, at='area', offset=[0, 0.17, 0], scale=0.82, scaleTo=0.82, fit='area', sweep=0.05, erodeFrom=0.8, alpha=0.9, shadow=False, tone='core', tier=0, seed=68),
             ],
         },
     }
