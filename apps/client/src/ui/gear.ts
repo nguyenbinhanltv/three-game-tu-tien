@@ -5,6 +5,7 @@ import {
   type AffixRoll,
   gemAffixes,
   computePlayerStats,
+  daoOrigin,
   enhanceMul,
   EQUIP_SLOTS,
   type EquipSlot,
@@ -115,11 +116,21 @@ interface StatDiff {
   after: number;
 }
 
+/** Bản Nguyên của Đạo (nửa thưởng, TN-3); null khi chưa chọn Đạo. */
+const daoDef = (daoId: string) => (daoId ? daoOrigin(ROOT.get(daoId)) : null);
+
 /** Chênh lệch tổng chỉ số nếu mặc `item` vào ô của nó (món đang mặc ở ô đó bị thay). */
-export function equipDiff(level: number, equip: Equipment, slot: EquipSlot, item: InvItem, root?: RootDef | null): StatDiff[] {
-  const before = computePlayerStats(level, entries(equip), root ?? null, SETS);
+export function equipDiff(
+  level: number,
+  equip: Equipment,
+  slot: EquipSlot,
+  item: InvItem,
+  root?: RootDef | null,
+  dao?: RootDef | null,
+): StatDiff[] {
+  const before = computePlayerStats(level, entries(equip), root ?? null, SETS, dao ?? null);
   const next: Equipment = { ...equip, [slot]: item };
-  const after = computePlayerStats(level, entries(next), root ?? null, SETS);
+  const after = computePlayerStats(level, entries(next), root ?? null, SETS, dao ?? null);
   const out: StatDiff[] = [];
   for (const key of STAT_KEYS) {
     const b = statValue(before, key);
@@ -130,10 +141,11 @@ export function equipDiff(level: number, equip: Equipment, slot: EquipSlot, item
 }
 
 /** Thay đổi lực chiến nếu mặc `item` vào ô của nó (0 nếu không phải trang bị mặc được). */
-export function powerDelta(level: number, equip: Equipment, item: InvItem, def: ItemDef, rootId: string): number {
+export function powerDelta(level: number, equip: Equipment, item: InvItem, def: ItemDef, rootId: string, daoId = ''): number {
   if (!isEquipSlot(def.kind)) return 0;
   const root = ROOT.get(rootId) ?? null;
-  const at = (eq: Equipment) => combatPower(computePlayerStats(level, entries(eq), root, SETS));
+  const dao = daoDef(daoId);
+  const at = (eq: Equipment) => combatPower(computePlayerStats(level, entries(eq), root, SETS, dao));
   return at({ ...equip, [def.kind]: item }) - at(equip);
 }
 
@@ -149,15 +161,15 @@ export function diffLines(diffs: StatDiff[]): TipLine[] {
 }
 
 /** Phần so sánh cho tooltip món trong túi: tiêu đề + các dòng chênh lệch. Rỗng nếu không phải trang bị. */
-export function compareLines(level: number, equip: Equipment, item: InvItem, def: ItemDef, rootId = ''): TipLine[] {
+export function compareLines(level: number, equip: Equipment, item: InvItem, def: ItemDef, rootId = '', daoId = ''): TipLine[] {
   const slot = def.kind;
   // Chỉ ô có chỉ số mới so sánh (skin là ô ngoại hình, không có chỉ số).
   if (!isEquipSlot(slot)) return [];
   const worn = equip[slot];
-  const diffs = diffLines(equipDiff(level, equip, slot, item, ROOT.get(rootId) ?? null));
+  const diffs = diffLines(equipDiff(level, equip, slot, item, ROOT.get(rootId) ?? null, daoDef(daoId)));
   const head = worn ? t('ui.cmp.vs', { item: t(`item.${worn.id}.name`) }) : t('ui.cmp.vs_empty');
   const req: TipLine[] = (def.reqLevel ?? 1) > level ? [{ text: t('ui.item.req', { realm: realmName(def.reqLevel!) }), tone: 'bad' }] : [];
-  const dp = powerDelta(level, equip, item, def, rootId);
+  const dp = powerDelta(level, equip, item, def, rootId, daoId);
   const power: TipLine[] = dp === 0 ? [] : [{ text: t('ui.cmp.power', { n: (dp > 0 ? '+' : '') + dp }), tone: dp > 0 ? 'good' : 'bad' }];
   return [{ text: head, tone: 'dim' }, ...(diffs.length ? diffs : [{ text: t('ui.cmp.same'), tone: 'dim' as const }]), ...power, ...req];
 }

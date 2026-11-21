@@ -148,7 +148,7 @@ export function Overview() {
   const equip = useUI((s) => s.equip);
   if (!char) return null;
   const xpFull = char.xp >= char.xpNeed;
-  const rows = statRows(char.level, equip, char.root, char);
+  const rows = statRows(char.level, equip, char.root, char, char.dao);
   const byId = new Map(rows.map((r) => [r.id, r]));
   return (
     <div className="char-overview">

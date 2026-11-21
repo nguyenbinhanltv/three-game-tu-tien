@@ -53,6 +53,8 @@ export interface CharV {
   level: number;
   bk: number;
   root: string;
+  /** Đạo (TN-3): nguồn đã chọn, rỗng = chưa chọn. */
+  dao?: string;
   trial: number;
   retry: number;
 }
