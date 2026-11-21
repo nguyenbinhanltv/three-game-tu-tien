@@ -41,6 +41,8 @@ const DYE_SHOTS: { name: string; gm: string[]; dye3?: string[] | null }[] = [
   { name: 'de_tu-3-muc', gm: ['dye attire_ink'] },
   { name: 'dan_tam-0-goc', gm: ['dye attire_sect', 'set set_dan_tam'] },
   { name: 'dan_tam-1-tu_tim', gm: [], dye3: ['attire_rogue', 'attire_ivory', 'attire_ink'] },
+  { name: 'dan_tam-2-tu_do_son', gm: [], dye3: ['wood_cinnabar', 'attire_ivory', 'attire_ink'] },
+  { name: 'dan_tam-3-tu_nga', gm: [], dye3: ['attire_ivory', 'attire_ivory', 'attire_ink'] },
   { name: 'tinh_khuyet-1-tu_do_son', gm: ['set set_tinh_khuyet'], dye3: ['wood_cinnabar', 'attire_ivory', 'attire_ink'] },
   { name: 'liet_mach-1-tu_luc', gm: ['set set_liet_mach'], dye3: ['wood_roof', 'attire_ivory', 'attire_ink'] },
   { name: 'van_kinh-1-tu_lam', gm: ['set set_van_kinh'], dye3: ['attire_sect', 'attire_ivory', 'attire_ink'] },
