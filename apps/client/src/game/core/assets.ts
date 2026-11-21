@@ -74,6 +74,65 @@ export interface AcquireOptions {
    * Mặc định 0 (như thứ ngay cạnh người chơi).
    */
   priority?: number;
+  /**
+   * Cạnh texture tối đa của bản nạp này (N-7: model nhân vật của người khác); thiếu = giữ nguyên tệp. Bản có trần là một bản nạp riêng
+   * (khóa `id@…`), bỏ các mức mip lớn hơn trần ngay sau khi parse nên không lên GPU và không giữ trong RAM.
+   */
+  maxTexture?: number;
+  /** Trần riêng cho normal map (trên WebGPU giải ra RGBA8, tốn gấp 4–8 lần texture nén); thiếu = `maxTexture`. */
+  maxNormal?: number;
+}
+
+/** Khóa bản nạp trong `AssetCache`: id, thêm hậu tố khi có trần texture. */
+export function assetKey(id: string, o: AcquireOptions = {}): string {
+  const t = o.maxTexture ?? Infinity;
+  const n = o.maxNormal ?? t;
+  return Number.isFinite(t) || Number.isFinite(n) ? `${id}@${t}n${n}` : id;
+}
+
+type MipLevel = { data: Uint8Array; width: number; height: number };
+
+/**
+ * Áp trần cạnh texture cho mọi vật liệu trong `root` (gọi một lần ngay sau khi parse, trước lần vẽ đầu): texture nén bỏ các mức mip
+ * đầu; normal map đã giải RGBA8 (`plainDataTexture`) đổi sang mức mip có sẵn trong tệp. Luôn bỏ các mức mip giữ tạm. Trả số texture đã thu nhỏ.
+ */
+export function capTextures(root: THREE.Object3D, maxTexture = Infinity, maxNormal = maxTexture): number {
+  const seen = new Set<THREE.Texture>();
+  let shrunk = 0;
+  root.traverse((o) => {
+    const mats = (o as THREE.Mesh).material;
+    if (!mats) return;
+    for (const mat of Array.isArray(mats) ? mats : [mats]) {
+      for (const [slot, v] of Object.entries(mat)) {
+        const tex = v as THREE.Texture | null;
+        if (!tex || !tex.isTexture || seen.has(tex)) continue;
+        seen.add(tex);
+        const cap = slot === 'normalMap' ? maxNormal : maxTexture;
+        const spare = tex.userData.dtlMips as MipLevel[] | undefined;
+        delete tex.userData.dtlMips;
+        const mips = (tex as THREE.CompressedTexture).isCompressedTexture
+          ? ((tex as THREE.CompressedTexture).mipmaps as MipLevel[] | undefined)
+          : undefined;
+        if (mips && mips.length > 1) {
+          let k = 0;
+          while (k < mips.length - 1 && Math.max(mips[k]!.width, mips[k]!.height) > cap) k++;
+          if (k === 0) continue;
+          mips.splice(0, k);
+          const img = tex.image as { width: number; height: number };
+          img.width = mips[0]!.width;
+          img.height = mips[0]!.height;
+        } else if (spare?.length) {
+          const img = tex.image as MipLevel;
+          if (Math.max(img.width, img.height) <= cap) continue;
+          const lv = spare.find((m) => Math.max(m.width, m.height) <= cap) ?? spare[spare.length - 1]!;
+          tex.image = { data: lv.data, width: lv.width, height: lv.height };
+        } else continue;
+        tex.needsUpdate = true;
+        shrunk++;
+      }
+    }
+  });
+  return shrunk;
 }
 
 /** Tiến độ nạp theo byte (kích thước lấy từ manifest), cộng dồn mọi asset đã yêu cầu. */
@@ -103,6 +162,8 @@ export interface HiresApplied {
 
 interface Entry {
   id: string;
+  /** Khóa trong `entries` (`assetKey`): id, hoặc `id@…` cho bản có trần texture. */
+  key: string;
   refs: number;
   gltf: GLTF | null;
   promise: Promise<GLTF>;
@@ -189,6 +250,9 @@ function plainDataTexture(src: THREE.Texture): THREE.Texture {
   tex.magFilter = THREE.LinearFilter;
   tex.minFilter = THREE.LinearMipmapLinearFilter;
   tex.generateMipmaps = true;
+  // Các mức mip nhỏ hơn có sẵn trong tệp: giữ tạm tới `capTextures` (ngay sau khi parse) để bản có trần texture dùng, không phải lọc ảnh.
+  const rest = (src as THREE.CompressedTexture).mipmaps?.slice(1) ?? [];
+  if (rest.length) tex.userData.dtlMips = rest;
   tex.needsUpdate = true;
   src.dispose();
   return tex;
@@ -441,10 +505,12 @@ export class AssetCache {
 
   /** Lấy một bản sao của asset; nạp nếu chưa có. Lỗi (thiếu trong manifest, mạng) thì reject. */
   async acquire(id: string, opts: AcquireOptions = {}): Promise<AssetHandle> {
-    let e = this.entries.get(id);
+    const key = assetKey(id, opts);
+    let e = this.entries.get(key);
     if (!e) {
       const entry: Entry = {
         id,
+        key,
         refs: 0,
         gltf: null,
         promise: null as unknown as Promise<GLTF>,
@@ -457,8 +523,8 @@ export class AssetCache {
           const a = m.assets[id];
           if (!a) throw new Error(`asset "${id}" không có trong manifest`);
           const url = this.base + a.file;
-          const p = this.bytes.get(id) ?? { loaded: 0, total: a.bytes };
-          this.bytes.set(id, p);
+          const p = this.bytes.get(key) ?? { loaded: 0, total: a.bytes };
+          this.bytes.set(key, p);
           const onBytes = (n: number) => (p.loaded = Math.min(n, p.total));
           const pre = this.raw.get(url);
           let job: Promise<GLTF>;
@@ -467,10 +533,10 @@ export class AssetCache {
             this.bump(id, opts);
             job = pre.then((buf) => {
               this.raw.delete(url);
-              return buf ? this.parse(buf, url) : this.enqueue(id, opts, () => this.load(url, onBytes));
+              return buf ? this.parse(buf, url) : this.enqueue(key, opts, () => this.load(url, onBytes));
             });
           } else {
-            job = this.enqueue(id, opts, () => this.load(url, onBytes));
+            job = this.enqueue(key, opts, () => this.load(url, onBytes));
           }
           return job.then(
             (g) => {
@@ -478,19 +544,23 @@ export class AssetCache {
               return g;
             },
             (err) => {
-              this.bytes.delete(id);
+              this.bytes.delete(key);
               throw err;
             },
           );
         })
         .then((g) => {
-          entry.gltf = g;
-          return g;
+          // Trần texture của bản nạp này; bản không trần cũng đi qua để bỏ các mức mip giữ tạm.
+          capTextures(g.scene, opts.maxTexture, opts.maxNormal ?? opts.maxTexture);
+          // Chỉ giữ cảnh và clip: `parser` của GLTFLoader còn nắm nguyên byte GLB + ảnh KTX2 nhúng (10–13 MB mỗi model nhân vật bậc cao).
+          const slim = { scene: g.scene, animations: g.animations } as GLTF;
+          entry.gltf = slim;
+          return slim;
         });
       e = entry;
-      this.entries.set(id, e);
+      this.entries.set(key, e);
     } else if (!e.gltf) {
-      this.bump(id, opts);
+      this.bump(key, opts);
     }
     e.refs++;
     let gltf: GLTF;
@@ -498,7 +568,7 @@ export class AssetCache {
       gltf = await e.promise;
     } catch (err) {
       e.refs--;
-      if (this.entries.get(id) === e) this.entries.delete(id);
+      if (this.entries.get(key) === e) this.entries.delete(key);
       throw err;
     }
     return this.instance(e, gltf);
@@ -717,8 +787,8 @@ export class AssetCache {
         scene.removeFromParent();
         e.refs--;
         e.handles.delete(scene);
-        if (e.refs <= 0 && this.entries.get(e.id) === e) {
-          this.entries.delete(e.id);
+        if (e.refs <= 0 && this.entries.get(e.key) === e) {
+          this.entries.delete(e.key);
           this.revertEntryHires(e);
           disposeObject(gltf.scene);
         }

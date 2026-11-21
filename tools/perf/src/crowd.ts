@@ -29,16 +29,15 @@
 //   --profile: ghi CPU profile trong lúc đo (Chrome DevTools mở được), in 25 hàm tốn self-time nhất; làm CPU khung cao hơn
 // Biến môi trường: PORT, CLIENT_PORT, BENCH_CHANNEL.
 
-import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { C, FOREST, KIEM_TRUNG, MS_DEAD, PF_DEAD, PORTAL_POS, SPAWN_POINT } from '@dtl/shared';
 import type { Browser, Page } from 'playwright';
-import { createDevServer, killTree, ROOT, sleep } from './lib/devserver';
+import { createDevServer, ROOT, sleep } from './lib/devserver';
 import { args, env, opt, ports } from './lib/env';
+import { Bots } from './lib/bots';
 import { launchChrome } from './lib/browser';
 import { gm } from './lib/game';
 
@@ -52,6 +51,8 @@ const BOTS = opt('--bots', '50,100')
 const SCENES = opt('--scenes', 'san,rung,boss,dungeon').split(',').filter(Boolean);
 const RENDERERS = opt('--renderers', 'webgpu,webgl2').split(',').filter(Boolean) as ('webgpu' | 'webgl2')[];
 const PRESETS = opt('--presets', 'medium,high').split(',').filter(Boolean);
+/** `--botargs "--set a,b --genders m,f --level 15"`: cờ thêm cho bot ở mọi cảnh, đặt TRƯỚC cờ của cảnh nên ghi đè được (vd. `--crowd x,z,9` gom đám đông, `--set` mặc đủ bộ nhân vật v3, N-7). */
+const BOT_ARGS = opt('--botargs', '').split(' ').filter(Boolean);
 const SECONDS = Number(opt('--seconds', '10'));
 const WARMUP = Number(opt('--warmup', '5'));
 const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
@@ -134,56 +135,7 @@ async function health(): Promise<Health | null> {
 }
 
 // ---------- bot ----------
-const botRequire = createRequire(path.join(ROOT, 'apps/bot-client/package.json'));
-const TSX_CLI = botRequire.resolve('tsx/cli');
-
-class Bots {
-  child: ChildProcess | null = null;
-  out: string[] = [];
-  async start(count: number, prefix: string, extra: string[]): Promise<number> {
-    const a = [
-      TSX_CLI,
-      'src/index.ts',
-      '--count',
-      String(count),
-      '--duration',
-      '3600',
-      '--url',
-      `ws://localhost:${PORT}`,
-      '--prefix',
-      prefix,
-      ...extra,
-    ];
-    this.out = [];
-    this.child = spawn(process.execPath, a, { cwd: path.join(ROOT, 'apps/bot-client'), stdio: ['pipe', 'pipe', 'pipe'] });
-    const onData = (d: Buffer) => this.out.push(...String(d).split(/\r?\n/).filter(Boolean));
-    this.child.stdout!.on('data', onData);
-    this.child.stderr!.on('data', onData);
-    const until = Date.now() + 180_000;
-    while (Date.now() < until) {
-      const line = this.out.find((l) => /bot đã vào/.test(l));
-      if (line) return Number(line.match(/(\d+) bot đã vào/)?.[1] ?? 0);
-      if (this.child.exitCode !== null) break;
-      await sleep(250);
-    }
-    throw new Error('bot không khởi động được:\n' + this.out.slice(-10).join('\n'));
-  }
-  /** Gửi "quit" để bot rời room êm; quá 20 giây thì kill cả cây. */
-  async stop(): Promise<void> {
-    const c = this.child;
-    if (!c) return;
-    this.child = null;
-    try {
-      c.stdin!.write('quit\n');
-    } catch {
-      /* đã thoát */
-    }
-    const until = Date.now() + 20_000;
-    while (c.exitCode === null && Date.now() < until) await sleep(200);
-    if (c.exitCode === null && c.pid) killTree(c.pid);
-  }
-}
-const bots = new Bots();
+const bots = new Bots(PORT);
 
 /** Chờ server thấy đúng `n` người (rời room cũ có thể trễ vài giây). */
 async function waitOnline(pred: (h: Health) => boolean, ms: number): Promise<Health | null> {
@@ -978,7 +930,7 @@ async function runDungeon(browser: Browser, sc: Scene, errorsOut: string[]): Pro
         await gm(page, `tp ${PORTAL_POS.x} ${PORTAL_POS.z + 4}`);
         await page.evaluate((t) => window.__game!.send(t), C.PORTAL);
         await waitInGame(page, 'dungeon');
-        const n = await bots.start(4, `dg${renderer === 'webgpu' ? 'a' : 'b'}${preset.slice(0, 1)}`, sc.bots);
+        const n = await bots.start(4, `dg${renderer === 'webgpu' ? 'a' : 'b'}${preset.slice(0, 1)}`, [...BOT_ARGS, ...sc.bots]);
         const h = await waitOnline((x) => x.rooms.some((r) => r.name === 'dungeon' && r.players >= 5), 60_000);
         console.log(`[crowd] dungeon: ${n} bot, ${h?.rooms.find((r) => r.name === 'dungeon')?.players ?? 0} người trong bí cảnh`);
       };
@@ -1085,7 +1037,7 @@ async function main(): Promise<void> {
         continue;
       }
       for (const n of BOTS) {
-        const got = await bots.start(n, `b${name}`, sc.bots);
+        const got = await bots.start(n, `b${name}`, [...BOT_ARGS, ...sc.bots]);
         console.log(`[crowd] ${name}: ${got}/${n} bot đã vào`);
         // Chờ bot tới chỗ (đi bộ từ chỗ hồi sinh / lên cấp) trước khi mở client đo.
         await sleep(8000);

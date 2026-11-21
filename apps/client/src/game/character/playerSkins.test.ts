@@ -35,7 +35,7 @@ async function skins(fail = false, legacy = false) {
       return loader.parseAsync(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), '');
     },
   });
-  const s = new PlayerSkins(cache, legacy);
+  const s = new PlayerSkins(cache, legacy, false);
   s.preload();
   for (let i = 0; i < 100 && s.pending(MALE); i++) await new Promise((r) => setTimeout(r, 10));
   return s;

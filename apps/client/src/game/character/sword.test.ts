@@ -42,7 +42,7 @@ function cache() {
 }
 
 async function player(): Promise<{ m: SkinnedPlayer; s: PlayerSkins }> {
-  const s = new PlayerSkins(cache());
+  const s = new PlayerSkins(cache(), undefined, false);
   s.preload();
   for (let i = 0; i < 100 && s.pending(MALE); i++) await new Promise((r) => setTimeout(r, 10));
   const m = s.create(MALE) as SkinnedPlayer;
