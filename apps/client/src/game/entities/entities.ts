@@ -116,7 +116,7 @@ const LOD0_MAX = 12;
  * Model không khai `lod1Cost` (v1, quái, NPC) không tính. 50 người mặc đủ bộ: ~0,94M → ~0,6M tam giác nhân vật.
  */
 const LOD1_SLOTS = 12;
-/** Đông người: từ `CROWD_VIEW` thể có xương trong khung nhìn thì suất LOD0 giảm còn `LOD0_CROWD` (LOD0 v3 bậc cao ~99k tam giác mỗi người). */
+/** Đông người: từ `CROWD_VIEW` nhân vật v3 (model khai `lod1Cost`) trong khung nhìn thì suất LOD0 giảm còn `LOD0_CROWD` (LOD0 v3 bậc cao ~99k tam giác mỗi người). Quái, NPC, model v1 không tính. */
 const CROWD_VIEW = 24;
 const LOD0_CROWD = 6;
 /**
@@ -815,7 +815,8 @@ export class EntityManager {
     let lod1 = 0;
     let labels = 0;
     let seen = 0;
-    for (const e of list) if (e.inView && e.model.setView) seen++;
+    // Chỉ đếm nhân vật v3 (model khai `lod1Cost`): bầy quái, NPC, người chơi v1 không làm giảm suất LOD0.
+    for (const e of list) if (e.inView && (e.model as { lod1Cost?: number }).lod1Cost !== undefined) seen++;
     const lod0Max = seen >= CROWD_VIEW ? LOD0_CROWD : LOD0_MAX;
     const boxes = this.labelBoxes;
     boxes.length = 0;

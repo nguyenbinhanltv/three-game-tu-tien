@@ -181,7 +181,16 @@ Trần texture chốt lúc nạp model: đổi preset có tác dụng từ lần
 
 **Còn nợ**: CPU khung của v3 cao hơn v1 khoảng 2 ms khi có 50 người trong khung nhìn (phần `matrix` 0,5 → 1,3 ms, `ents` 0,8 → 1,0 ms, `render` +1 ms): bộ xương Mannequin 119–127 xương (v1: 65), cây xương nằm trong cảnh nên three tính ma trận thế giới mỗi khung và `skeleton.update()` chạy cho từng lưới. v1 tránh bằng `detachRig` + `skipUnchangedSkeletons` (`skinned.ts`); chuyển cách đó sang v3 cần đổi cách gắn kiếm, IK chân và lò xo (đang bám xương trong cảnh) nên để việc riêng.
 
+### Nhuộm áo trên v3 (`game/character/v3Dye.ts`)
+Model v3 không có texture mặt nạ vải, nên nhuộm bằng hai lớp mặt nạ trong shader:
+- **Hình học**: thuộc tính đỉnh `dyeMask` tính lúc dựng mẫu từ trọng số xương; đỉnh bám đầu, cổ, bàn tay, ngón, tóc = 0. Da và tóc không bao giờ bị nhuộm, kể cả bộ vải tông ấm trùng sắc da (Liệt Mạch, Địa Long).
+- **Màu** theo model (`V3_DYE_REF`, đo cụm màu lớn nhất của texture gốc): `chroma` = texel cùng hướng sắc độ với vải chính; `neutral` = texel ít bão hòa (Huyền Giáp, Cổ Thành, Kính Quang, Vạn Kinh). Viền vàng và lớp vải phụ giữ nguyên.
+
+Khi nào nhuộm (`v3DyeHex`): màu đạo bào lúc tạo nhân vật áp lên đồ khởi đầu (không mặc bộ, màu khác mặc định); nhuộm Tủ ngoại trang (`dye3`) áp kênh 1 lên mọi model theo bộ; skin toàn thân không nhuộm. Mặc bộ mà không nhuộm tủ thì model giữ màu riêng (như áo mô-đun của v1). Vật liệu nhuộm là bản sao theo (model, màu), dùng chung giữa mọi người cùng model cùng màu. Ảnh: `pnpm shots n7 --dye`.
+
+Giới hạn: chỉ kênh 1 (vải chính) của `dye3`; kênh 2 (viền) và kênh 3 chưa có vì không tách được viền khỏi vải phụ bằng màu. Tinh Khuyết: vải chính gần đen nên lớp đổi màu là voan tím. Thêm model mới phải thêm dòng vào `V3_DYE_REF` (test `v3Dye.test.ts` bắt thiếu).
+
 ### Chưa có trên v3 (v1 có)
-- Màu đạo bào chọn lúc tạo nhân vật và nhuộm ba kênh của Tủ ngoại trang (`dye`, `dye3`) chưa tác dụng lên model v3 (chỉ Lạc Kiếm v3b có bảng màu cố định).
+- Kênh viền (kênh 2) và kênh 3 của nhuộm Tủ ngoại trang.
 - Phụ kiện thủ tục theo từng món (`acc`) và vỏ kiếm theo bộ: model v3 nguyên khối đã có sẵn.
 - Bộ chưa có model riêng dùng model cùng nhánh (`V3_BRANCH_FALLBACK`).

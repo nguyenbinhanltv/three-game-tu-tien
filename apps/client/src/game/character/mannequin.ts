@@ -9,7 +9,7 @@ import { SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assetKey, assets } from '../core/assets';
 import { HitReact, type HitOpts } from '../combat/hitreact';
-import { adoptGltfMaterials } from '../../render/materials/world';
+import { adoptGltfMaterials, cloneWorldMaterial } from '../../render/materials/world';
 import { lodLevel, mixerInterval } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { partExtras } from './sword';
@@ -18,6 +18,7 @@ import { applySkinLook, SKIN_LOOKS } from './skinLook';
 import { applySoulLook, type SoulKind } from './soulLook';
 import { applyV3Palette } from './v3Palette';
 import { storedQuality, type TexCap, V3TextureBudget, v3TexturePolicy } from './v3Detail';
+import { addDyeMask, applyV3Dye, v3DyeRefOf } from './v3Dye';
 import {
   breathOf,
   dirMix,
@@ -301,6 +302,8 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   if (KEEP_ORIGINAL_ASSETS.has(handle.id) && FLAGS.v3Veil) applyVeilAlpha(handle.scene);
   const look = SKIN_LOOKS[handle.id];
   if (look) for (const m of mats) applySkinLook(m, look);
+  // Mặt nạ nhuộm theo xương (đầu/tay/tóc không nhuộm): thêm trước khi gộp lưới để mọi lưới cùng bộ thuộc tính.
+  if (v3DyeRefOf(handle.id)) addDyeMask(handle.scene);
   // Sau khi đã đổi vật liệu: các lưới cùng LOD dùng chung một vật liệu thì gộp làm một (1 draw call mỗi người ở LOD1/LOD2).
   const owned = mergeLodMeshes(handle.scene);
   const box = new THREE.Box3().setFromObject(handle.scene);
@@ -592,9 +595,11 @@ export class MannequinCharacter implements CharacterView {
     /** `true` = bóng tâm ma (vật liệu bóng chung); một vật liệu = linh thể (nguyên anh, thân xác, phân thân) dùng vật liệu đó. */
     ghost: boolean | THREE.Material = false,
     sword: SwordTemplate | null = null,
+    /** Vật liệu thân thay cho vật liệu mẫu (bản đã nhuộm, N-7); không đổi cách dựng như `ghost`. */
+    bodyMat: THREE.Material | null = null,
   ) {
     const shadow = !!ghost;
-    const ghostMat = ghost === true ? shadowMaterial() : ghost || null;
+    const ghostMat = ghost === true ? shadowMaterial() : ghost || bodyMat;
     this.height = tpl.height;
     this.shadow = shadow;
     this.spring2 = isSpring2(tpl.handle.id);
@@ -1459,6 +1464,8 @@ export class MannequinPlayers {
   private poseHandle: AssetHandle | null = null;
   /** Vật liệu linh thể theo asset + loại (dùng chung giữa các bản sao). */
   private soulMats = new Map<string, THREE.MeshStandardNodeMaterial>();
+  /** Vật liệu đã nhuộm theo mẫu + màu (dùng chung giữa mọi người cùng model cùng màu). */
+  private dyeMats = new Map<string, THREE.MeshStandardNodeMaterial>();
   /** Trần texture theo model (N-7): nhân vật mình đầy đủ, model của người khác bị chặn cạnh lúc nạp (`v3Detail.ts`). */
   private budget: V3TextureBudget;
   constructor(
@@ -1569,10 +1576,30 @@ export class MannequinPlayers {
     return t && typeof t !== 'string' ? t : null;
   }
 
-  /** `self`: nhân vật của mình (texture đầy đủ theo preset); người khác dùng bản có trần texture. */
-  create(g: string, skin?: string, w?: string, set?: string, self = false): CharacterView | null {
+  /** `self`: nhân vật của mình (texture đầy đủ theo preset); người khác dùng bản có trần texture. `dye`: màu nhuộm áo (hex) hoặc null. */
+  create(g: string, skin?: string, w?: string, set?: string, self = false, dye: string | null = null): CharacterView | null {
     const t = this.get(g, skin, set, self);
-    return t ? new MannequinCharacter(t, false, this.sword(w ?? SWORD_MODEL_DEFAULT)) : null;
+    if (!t) return null;
+    const mat = dye ? this.dyedMaterial(t, this.keyOf(g, skin, set, self).key, dye) : null;
+    return new MannequinCharacter(t, false, this.sword(w ?? SWORD_MODEL_DEFAULT), mat);
+  }
+
+  /** Bản sao vật liệu của mẫu có nhuộm `dye`; null nếu model không nhuộm được (skin toàn thân) hoặc không có vật liệu. */
+  private dyedMaterial(t: MannequinTemplate, key: string, dye: string): THREE.MeshStandardNodeMaterial | null {
+    const ref = v3DyeRefOf(t.handle.id);
+    if (!ref) return null;
+    const k = `${key}/${dye.toLowerCase()}`;
+    let m = this.dyeMats.get(k);
+    if (m) return m;
+    let src: THREE.Material | null = null;
+    t.handle.scene.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!src && mesh.isMesh) src = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) ?? null;
+    });
+    if (!src) return null;
+    m = applyV3Dye(cloneWorldMaterial(src as THREE.MeshStandardNodeMaterial), ref, dye);
+    this.dyeMats.set(k, m);
+    return m;
   }
 
   createShadow(g: string, def: MonsterDef, skin?: string, set?: string, self = false): MonsterView | null {
@@ -1592,7 +1619,7 @@ export class MannequinPlayers {
         const mesh = o as THREE.Mesh;
         if (!src && mesh.isMesh) src = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) ?? null;
       });
-      m = (src as THREE.MeshStandardNodeMaterial | null)?.clone() ?? new THREE.MeshStandardNodeMaterial();
+      m = src ? cloneWorldMaterial(src as THREE.MeshStandardNodeMaterial) : new THREE.MeshStandardNodeMaterial();
       applySoulLook(m, kind);
       this.soulMats.set(key, m);
     }
@@ -1623,6 +1650,8 @@ export class MannequinPlayers {
     this.poseHandle = null;
     for (const m of this.soulMats.values()) m.dispose();
     this.soulMats.clear();
+    for (const m of this.dyeMats.values()) m.dispose();
+    this.dyeMats.clear();
     for (const t of this.swords.values()) if (typeof t === 'object') t.release();
     this.swords.clear();
   }
