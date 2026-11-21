@@ -13,6 +13,7 @@ import { HitReact, type HitOpts } from '../combat/hitreact';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { lodLevel, mixerInterval } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
+import { attachBrawlerGear, gearShown, snapshotBind, type BindSnapshot, type BrawlerGear } from './brawlerGear';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
 import { applySkinLook, SKIN_LOOKS } from './skinLook';
@@ -579,6 +580,11 @@ export class MannequinCharacter implements CharacterView {
   private clock = Math.random() * 10;
   private side = 1;
   private armFit = 0;
+  /** Thể tu: bind của các xương gắn găng/giáp (chụp lúc dựng) và bộ găng khi đã gắn. */
+  private gearBind: BindSnapshot | null = null;
+  private gear: BrawlerGear | null = null;
+  /** Hướng tu hiện tại là Thể tu (găng/giáp chỉ vẽ khi đang ở LOD gần: một người xa không đáng một draw call). */
+  private gearOn = false;
   private disposed = false;
 
   constructor(
@@ -703,6 +709,7 @@ export class MannequinCharacter implements CharacterView {
       this.bladeLen = sword.info.len;
       this.mountBlade(false);
     }
+    if (!shadow) this.gearBind = snapshotBind(this.rig);
     if (V3_ANIM && !shadow && FLAGS.v3Feet) this.feet = MqFeet.from(this.rig, this.root, tpl.height);
     this.inner.add(this.rig);
     this.root.add(this.inner);
@@ -717,6 +724,15 @@ export class MannequinCharacter implements CharacterView {
     });
     this.play('Idle_Loop');
     this.mixer.update(0);
+  }
+
+  /** Hướng tu Thể tu: tay không, găng + giáp nhẹ (dựng lần đầu khi cần). Bỏ thì ẩn, không dựng lại. */
+  setBrawlerGear(on: boolean): void {
+    if (this.disposed || this.shadow) return;
+    this.gearOn = on;
+    if (on && !this.gear && this.gearBind) this.gear = attachBrawlerGear(this.rig, this.gearBind, this.height);
+    this.gear?.setVisible(gearShown(on, this.lodLevel));
+    if (this.blade) this.blade.visible = !on;
   }
 
   private mountBlade(drawn: boolean): void {
@@ -1167,6 +1183,7 @@ export class MannequinCharacter implements CharacterView {
     const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length);
     this.applyLod(level);
     this.lodLevel = level;
+    this.gear?.setVisible(gearShown(this.gearOn, level));
     this.viewDist = v.dist;
     this.viewSelf = !!v.self;
     this.interval = mixerInterval(level, v.inView, !!v.self);
@@ -1410,6 +1427,7 @@ export class MannequinCharacter implements CharacterView {
     this.disposed = true;
     this.hit.reset();
     this.blade?.removeFromParent();
+    this.gear?.dispose();
     this.cloth?.dispose();
     this.stopPerform();
     this.mixer.stopAllAction();

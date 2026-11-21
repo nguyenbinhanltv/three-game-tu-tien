@@ -14,19 +14,20 @@ from recipes_vs1 import (  # noqa: E402
 R = {}
 
 
-def debris(t, at, n, r, up, scale, seed0=1, tone='core'):
+def debris(t, at, n, r, up, scale, seed0=1, tone='core', cap=None, cam_fade=False):
     """n tảng đá 3D tối màu bung lên từ vòng bán kính r rồi RƠI LẠI mặt đất (hai pha: bay lên ease-out, rơi xuống ease-in)."""
     ev = []
+    fade = {'camFade': True} if cam_fade else {}  # camFade: tảng mờ khi nằm giữa camera và người/mục tiêu
     for i in range(n):
         a = i / n * math.tau + seed0
         x, z = round(math.cos(a) * r, 2), round(math.sin(a) * r, 2)
-        h = up * (0.7 + 0.3 * ((i * 37) % 10) / 10)
+        h = (up if cap is None else min(up, cap)) * (0.7 + 0.3 * ((i * 37) % 10) / 10)  # cap: trần độ cao (m), để tảng không lơ lửng ngang đầu che mục tiêu
         shp = 'rubble_a' if i % 2 == 0 else 'rubble_c'
         rot = [35 * i, 70 * i, 15 * i]
         ev.append(mesh(shp, t, 0.22, at=at, offset=[x, 0.1, z], rot=rot, scale=scale, sweep=0, erodeFrom=0.98, alpha=1,
-                       move={'to': at, 'offset': [x * 1.15, h, z * 1.15], 'ease': 'out'}, tone=tone, tier=0 if i < 6 else 1, seed=seed0 + i))
+                       move={'to': at, 'offset': [x * 1.15, h, z * 1.15], 'ease': 'out'}, tone=tone, tier=0 if i < 6 else 1, seed=seed0 + i, **fade))
         ev.append(mesh(shp, t + 0.22, 0.3, at=at, offset=[x * 1.15, h, z * 1.15], rot=rot, scale=scale, scaleTo=scale * 0.8, sweep=0, erodeFrom=0.7, alpha=1,
-                       move={'to': at, 'offset': [x * 1.3, 0.1, z * 1.3], 'ease': 'in'}, tone=tone, tier=0 if i < 6 else 1, seed=seed0 + i))
+                       move={'to': at, 'offset': [x * 1.3, 0.1, z * 1.3], 'ease': 'in'}, tone=tone, tier=0 if i < 6 else 1, seed=seed0 + i, **fade))
     return ev
 
 
@@ -58,7 +59,7 @@ def thiet_quyen():
         parts('spark', 0.0, 50, 8, 1, 0.45, 0.1, at='area', offset=[0, 0.8, 0], tone='body', tier=0),
         parts('dust', 0.0, 60, 5, 1, 0.8, 0.3, at='area', offset=[0, 0.3, 0], tone='core', tier=1),
     ]
-    ev += debris(-0.02, 'area', 10, 2.4, 3.4, 1.3, seed0=0.5)
+    ev += debris(-0.02, 'area', 10, 2.4, 3.4, 1.0, seed0=0.5, cap=2.2, cam_fade=True)
     ev += feel(0.0, ms=80, sh=0.55, fl=0.15, vg=0.35, fov=3.0)
     return {
         'skill': 'skl_thiet_quyen_chan_dia',
@@ -70,7 +71,7 @@ def thiet_quyen():
                 mesh('rune_ring2', 0.08, 0.4, at='area', offset=[0, 0.12, 0], scale=0.5, scaleTo=1.15, fit='area', sweep=0.04, erodeFrom=0.5, alpha=0.9, shadow=False, tone='body', tier=1, seed=5),
                 decal('crack', 0.0, 8.6, 2.8, at='area', grow=0.08, tone='core', alpha=0.9, tier=1),
             ]
-            + debris(0.02, 'area', 4, 6.0, 2.8, 1.5, seed0=1.2),
+            + debris(0.02, 'area', 4, 6.0, 2.8, 1.5, seed0=1.2, cap=2.2, cam_fade=True),
             # b = làm chậm: dấu hiệu thị giác = vòng triện tối + vành `core` ở lại lâu dưới chân (vùng đang làm chậm kẻ địch)
             'slow': [
                 decal('rune', 0.1, 6.5, 3.4, at='area', grow=0.3, tone='shadow', alpha=0.9, tier=0),
