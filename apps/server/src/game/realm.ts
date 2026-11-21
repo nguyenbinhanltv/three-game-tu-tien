@@ -4,6 +4,8 @@
 
 import {
   bottleneckReady,
+  canChooseDao,
+  DAO_UNLOCK_LEVEL,
   BOTTLENECK_RETRY_SEC,
   isRootId,
   peakGated,
@@ -182,6 +184,26 @@ export class RealmSystem {
     });
     if (!ok) return;
     h.sys(p, 'sys.root_changed', { root: t(`origin.${to}.name`), n: cost }, 'good');
+    h.fx({ t: 'potion', src: p.sid });
+  }
+
+  // ---------- Đạo (TN-3) ----------
+
+  /**
+   * Lệnh `dao`: `{ root }`. Từ Vấn Đỉnh (cấp 36) chọn MỘT nguồn trong sáu nguồn Bản Nguyên đã mở làm Đạo, một lần, miễn phí
+   * (không đụng tiền/vật phẩm nên không cần ledger; chỉ ghi `meta.dao` rồi lưu). Đổi Đạo chỉ qua GM tới khi có vật phẩm đổi.
+   */
+  onChooseDao(p: PlayerEnt, msg: unknown): void {
+    const h = this.h;
+    const m = msg as { root?: unknown } | null;
+    if (!m || !isRootId(m.root) || h.isDead(p) || p.trib || p.trial) return;
+    const c = p.char;
+    if (c.level < DAO_UNLOCK_LEVEL) return h.warn(p, 'sys.dao_locked', { lv: DAO_UNLOCK_LEVEL });
+    if (!canChooseDao(c.level, c.meta)) return h.warn(p, 'sys.dao_have');
+    c.meta.dao = m.root;
+    c.recalc();
+    c.charDirty = true;
+    h.sys(p, 'sys.dao_set', { root: t(`origin.${m.root}.name`) }, 'good');
     h.fx({ t: 'potion', src: p.sid });
   }
 }

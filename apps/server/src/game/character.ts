@@ -50,9 +50,11 @@ import { methodDefMul, methodOf, sanitizeMethodMeta, type MethodMeta } from './m
 import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta } from './artifact';
 import { log } from '../log';
 
-import { huyenOriginTier, lawPassive, originAtTier, sanitizeChainMeta } from '@dtl/shared';
+import { daoOf, daoOrigin, huyenOriginTier, lawPassive, originAtTier, sanitizeChainMeta } from '@dtl/shared';
 import { at, emptyLook, isWardrobeKind, outfitLookFromDb, outfitLookToDb, type OutfitLook } from '@dtl/shared';
 interface CharMeta extends MethodMeta, ArtifactMeta {
+  /** Đạo (TN-3): nguồn Bản Nguyên chọn từ Vấn Đỉnh (một lần). Đọc qua `daoOf` (đã làm sạch). */
+  dao?: string;
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
   dungeonDay?: string;
   /** Như `dungeonDay` nhưng theo từng phó bản (E2-C): level → ngày nhận thưởng gần nhất. */
@@ -437,7 +439,14 @@ export class Character {
       if (e) worn.push({ item: e, tpl: ITEM.get(e.id)?.stats });
     }
     // Bậc Bản Nguyên (TN-1): mỗi chuỗi Huyền Kiếp qua đủ nhân thưởng của nguồn thêm 25%; suy từ tiến độ kiếp, không lưu riêng.
-    const st0 = computePlayerStats(this.level, worn, originAtTier(ROOT.get(this.root), huyenOriginTier(this.meta)), SETS);
+    const dao = daoOf(this.meta);
+    const st0 = computePlayerStats(
+      this.level,
+      worn,
+      originAtTier(ROOT.get(this.root), huyenOriginTier(this.meta)),
+      SETS,
+      dao ? daoOrigin(ROOT.get(dao)) : null,
+    );
     // Pháp tắc sơ ngộ (TN-4): qua đủ Thiên Nhân Ngũ Suy thì bốn chỉ số gốc cộng thêm theo `tribulations.json`.
     const law = lawPassive(this.meta.suy);
     const st = law
@@ -489,6 +498,7 @@ export class Character {
       def: this.def,
       gold: this.gold,
       root: this.root,
+      dao: daoOf(this.meta) ?? '',
       bk: this.bk,
       trial: this.trialEndsAt > 0 ? Math.max(0, Math.ceil((this.trialEndsAt - Date.now()) / 1000)) : 0,
       retry: Math.max(0, Math.ceil((this.retryAt - Date.now()) / 1000)),

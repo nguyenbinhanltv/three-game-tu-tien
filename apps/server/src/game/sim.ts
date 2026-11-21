@@ -1374,6 +1374,9 @@ export class GameSim {
   onChangeRoot(p: PlayerEnt, msg: unknown): void {
     return this.tribHub.onChangeRoot(p, msg);
   }
+  onChooseDao(p: PlayerEnt, msg: unknown): void {
+    return this.tribHub.onChooseDao(p, msg);
+  }
   onClone(p: PlayerEnt, msg: unknown): void {
     return this.tribHub.onClone(p, msg);
   }
