@@ -25,6 +25,7 @@ declare global {
 
 const HP = 'bat_dong_kim_than';
 const DS = 'thanh_moc_dan_kinh';
+const DAO = 'liet_nhan_dao_kinh';
 /** Công pháp của từng chiêu (V3: Hộ pháp/Đan sư); chiêu không ghi là Kiếm tu. */
 const METHOD_OF: Record<string, string> = Object.fromEntries([
   ...[
@@ -39,6 +40,7 @@ const METHOD_OF: Record<string, string> = Object.fromEntries([
     'skl_thuan_di_ho_the',
     'skl_thien_kim_phap_tuong',
   ].map((k) => [k, HP]),
+  ...['skl_bao_nhan', 'skl_tram_son_dao', 'skl_hoanh_dao', 'skl_tam_dao', 'skl_doan_luu', 'skl_liet_dia_tram'].map((k) => [k, DAO]),
   ...[
     'skl_luu_huong_bo',
     'skl_hoi_xuan_quyet',
@@ -369,8 +371,8 @@ export default {
         await gm(page, 'god on', 1600);
         await method('lac_kiem_quyet');
         await gm(page, `tp ${SPOTS[spot++ % SPOTS.length].join(' ')}`, 1600);
-        // Chờ model người chơi nạp xong thư viện K-3 (trúng đòn có hướng) để động tác đủ.
-        await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.dirHits === true, undefined, {
+        // Chờ model người chơi v3 (mặc định từ N-7) nạp xong để động tác đủ.
+        await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3 === true, undefined, {
           timeout: 60_000,
           polling: 300,
         });
