@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { PATHS } from '@dtl/content';
-import { attachBrawlerGear, BRAWLER_WEAPON, gearShown, snapshotBind } from './brawlerGear';
+import { attachBrawlerGear, BRAWLER_COLORS, BRAWLER_WEAPON, COTHAN_COLORS, gearShown, snapshotBind } from './brawlerGear';
 
 function bone(name: string, x: number, y: number, z = 0, parent?: THREE.Object3D): THREE.Bone {
   const b = new THREE.Bone();
@@ -135,5 +135,40 @@ describe('Thể tu: găng + giáp nhẹ thủ tục', () => {
     const g = new THREE.Group();
     bone('spine_01', 0, 1, 0, g);
     expect(attachBrawlerGear(g, snapshotBind(g), 1.7).meshes).toHaveLength(0);
+  });
+});
+
+describe('Cổ Thần: bộ giáp nâng cấp (huyết đồng + gai xương)', () => {
+  const colors = (geo: THREE.BufferGeometry): Set<string> => {
+    const a = geo.getAttribute('color');
+    const out = new Set<string>();
+    const c = new THREE.Color();
+    for (let i = 0; i < a.count; i++) out.add(c.fromBufferAttribute(a, i).getHexString());
+    return out;
+  };
+  it('vẫn một SkinnedMesh, nhiều tam giác hơn bộ Thể tu (thêm gai) nhưng trong ngân sách; đỉnh gai ăn xương vai trái', () => {
+    const r = rig();
+    const base = attachBrawlerGear(r, snapshotBind(r), 1.7).meshes[0] as THREE.SkinnedMesh;
+    const r2 = rig();
+    const gear = attachBrawlerGear(r2, snapshotBind(r2), 1.7, true);
+    expect(gear.meshes).toHaveLength(1);
+    const m = gear.meshes[0] as THREE.SkinnedMesh;
+    expect(m.name).toBe('dtl_cothan_gear');
+    expect(m.geometry.getAttribute('position').count).toBeGreaterThan(base.geometry.getAttribute('position').count);
+    expect(m.geometry.getAttribute('position').count / 3).toBeLessThan(6500);
+    expect(m.geometry.getAttribute('skinIndex').count).toBe(m.geometry.getAttribute('position').count);
+  });
+  it('đổi màu sang huyết đồng, không còn màu đồng gốc của Thể tu; vải gai giữ nguyên', () => {
+    const r = rig();
+    const base = colors((attachBrawlerGear(r, snapshotBind(r), 1.7).meshes[0] as THREE.Mesh).geometry);
+    const r2 = rig();
+    const up = colors((attachBrawlerGear(r2, snapshotBind(r2), 1.7, true).meshes[0] as THREE.Mesh).geometry);
+    const hex = (n: number): string => new THREE.Color(n).getHexString();
+    expect(base.has(hex(BRAWLER_COLORS.bronze))).toBe(true);
+    for (const k of ['earth', 'bronze', 'brass'] as const) {
+      expect(up.has(hex(BRAWLER_COLORS[k]))).toBe(false);
+      expect(up.has(hex(COTHAN_COLORS[k]))).toBe(true);
+    }
+    expect(up.has(hex(BRAWLER_COLORS.linen))).toBe(true);
   });
 });

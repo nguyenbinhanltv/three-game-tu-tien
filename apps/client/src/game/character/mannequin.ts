@@ -611,6 +611,7 @@ export class MannequinCharacter implements CharacterView {
   /** Thể tu: bind của các xương gắn găng/giáp (chụp lúc dựng) và bộ găng khi đã gắn. */
   private gearBind: BindSnapshot | null = null;
   private gear: BrawlerGear | null = null;
+  private gearAncient = false;
   /** Hướng tu hiện tại là Thể tu (găng/giáp chỉ vẽ khi đang ở LOD gần: một người xa không đáng một draw call). */
   private gearOn = false;
   private disposed = false;
@@ -763,11 +764,23 @@ export class MannequinCharacter implements CharacterView {
     this.mixer.update(0);
   }
 
+  /** Hóa hình Cổ Thần (TN-5): phóng cả thân theo `k` (gốc mannequin không đặt tỉ lệ nên 1 = bình thường). */
+  setGiant(k: number): void {
+    if (this.disposed || this.shadow) return;
+    if (this.root.scale.x !== k) this.root.scale.setScalar(k);
+  }
+
   /** Hướng tu Thể tu: tay không, găng + giáp nhẹ (dựng lần đầu khi cần). Bỏ thì ẩn, không dựng lại. */
-  setBrawlerGear(on: boolean): void {
+  setBrawlerGear(on: boolean, ancient = false): void {
     if (this.disposed || this.shadow) return;
     this.gearOn = on;
-    if (on && !this.gear && this.gearBind) this.gear = attachBrawlerGear(this.rig, this.gearBind, this.height);
+    // Đổi giữa Thể tu và Cổ Thần: dựng lại bộ giáp theo biến thể (hiếm, chỉ khi đổi công pháp).
+    if (this.gear && this.gearAncient !== ancient) {
+      this.gear.dispose();
+      this.gear = null;
+    }
+    this.gearAncient = ancient;
+    if (on && !this.gear && this.gearBind) this.gear = attachBrawlerGear(this.rig, this.gearBind, this.height, ancient);
     this.gear?.setVisible(gearShown(on, this.lodLevel));
     if (this.blade) this.blade.visible = !on && this.lodLevel < 2;
   }

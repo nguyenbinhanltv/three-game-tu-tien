@@ -24,6 +24,7 @@ import {
   TRIB_DEFS,
   type TribId,
   xpNeed,
+  sanitizeStars,
 } from '@dtl/shared';
 import {
   ARTIFACT,
@@ -382,6 +383,14 @@ export class GmSystem {
         p.mth.resAt = Date.now();
         p.mth.dirty = true;
         return say(rdef.id + ' = ' + p.mth.res);
+      }
+      case 'stars': {
+        // /gm stars <0-9>: đặt sao Cổ Thần ngay (chỉ để thử/chụp ảnh): bỏ cấp, vật phẩm, linh thạch; không ghi ledger.
+        c.meta.stars = sanitizeStars(Number(a[1]));
+        c.recalc();
+        c.save();
+        p.mth.dirty = true;
+        return say('sao Cổ Thần = ' + (c.meta.stars ?? 0));
       }
       case 'charge': {
         // /gm charge [0-100]: đặt vòng sạc chiêu tối thượng (mặc định đầy).

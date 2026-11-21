@@ -32,6 +32,11 @@ export function ResourceBar() {
         aria-valuenow={n}
       >
         <span className="res-name">{name}</span>
+        {def.id === 'co_huyet' && method.sr ? (
+          <span className="res-n" data-testid="res-star">
+            {t('ui.star.short', { n: method.sr })}
+          </span>
+        ) : null}
         {def.ui === 'pips' ? (
           <span className="res-pips">
             {Array.from({ length: rv.max }, (_, i) => (
