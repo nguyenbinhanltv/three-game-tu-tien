@@ -319,9 +319,9 @@ function Tribulation() {
                 cls="kiep"
                 value={Math.max(0, Math.min(len, elapsed - start))}
                 max={len}
-                text={i === pi ? t('ui.trib.secs', { n: Math.ceil(left) }) : undefined}
+                text={i === pi ? t('ui.trib.secs', { n: Math.ceil(def.chain ? start + len - elapsed : left) }) : undefined}
               />
-              <div className="trib-phase-name">{t(key + p.id)}</div>
+              <div className="trib-phase-name">{def.chain && i !== pi ? t('ui.trib.suy.short', { n: i + 1 }) : t(key + p.id)}</div>
             </div>
           );
         })}

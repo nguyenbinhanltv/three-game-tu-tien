@@ -1,0 +1,240 @@
+{
+ "skill": "suy_toi_warn",
+ "palette": "suy_the",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 2.8,
+   "dur": 2.2,
+   "at": "area",
+   "grow": 0.25,
+   "tone": "body",
+   "alpha": 1.0,
+   "yaw": 0,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.1,
+   "r": 1.4,
+   "dur": 2.2,
+   "at": "area",
+   "grow": 0.3,
+   "tone": "rim",
+   "alpha": 0.9,
+   "yaw": 45,
+   "untilDelay": true,
+   "tier": 1,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 24,
+   "speed": 2.0,
+   "spread": 1.0,
+   "life": 1.0,
+   "size": 0.1,
+   "at": "area",
+   "offset": [
+    0,
+    2.6,
+    0
+   ],
+   "tone": "rim",
+   "inward": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "bolt",
+   "t": 0.1,
+   "from": "start",
+   "at": "area",
+   "offset": [
+    0.9,
+    0,
+    0.4
+   ],
+   "scale": 0.3,
+   "thick": 3.6,
+   "tone": "rim",
+   "seed": 34,
+   "tier": 0
+  },
+  {
+   "type": "bolt",
+   "t": 0.65,
+   "from": "start",
+   "at": "area",
+   "offset": [
+    0.3,
+    0,
+    0.9
+   ],
+   "scale": 0.3,
+   "thick": 3.6,
+   "tone": "rim",
+   "seed": 36,
+   "tier": 0
+  },
+  {
+   "type": "bolt",
+   "t": 1.2,
+   "from": "start",
+   "at": "area",
+   "offset": [
+    0.6,
+    0,
+    -0.7
+   ],
+   "scale": 0.3,
+   "thick": 3.6,
+   "tone": "rim",
+   "seed": 38,
+   "tier": 0
+  },
+  {
+   "type": "bolt",
+   "t": 1.75,
+   "from": "start",
+   "at": "area",
+   "offset": [
+    0.0,
+    0,
+    0.0
+   ],
+   "scale": 0.3,
+   "thick": 3.6,
+   "tone": "body",
+   "seed": 39,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.1,
+   "dur": 2.2,
+   "at": "area",
+   "offset": [
+    1.84,
+    0,
+    1.84
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.45,
+    0.8,
+    0.45
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.92,
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 40,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.18,
+   "dur": 2.2,
+   "at": "area",
+   "offset": [
+    1.84,
+    0,
+    -1.84
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "scale": [
+    0.45,
+    0.8,
+    0.45
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.92,
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 41,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.26,
+   "dur": 2.2,
+   "at": "area",
+   "offset": [
+    -1.84,
+    0,
+    -1.84
+   ],
+   "rot": [
+    0,
+    180,
+    0
+   ],
+   "scale": [
+    0.45,
+    0.8,
+    0.45
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.92,
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 42,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.34,
+   "dur": 2.2,
+   "at": "area",
+   "offset": [
+    -1.84,
+    0,
+    1.84
+   ],
+   "rot": [
+    0,
+    270,
+    0
+   ],
+   "scale": [
+    0.45,
+    0.8,
+    0.45
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.92,
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 43,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  }
+ ]
+}
