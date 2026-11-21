@@ -93,6 +93,8 @@ import {
   RECIPES,
   ROOTS,
   SKILLS,
+  MARK,
+  MARKS,
   METHODS,
   METHOD,
   METHOD_SKILLS,
@@ -101,7 +103,7 @@ import {
   t,
 } from './index';
 import { LOOT, LOOT_MATS } from './loot';
-import { chainErrors, monSkillsOf, resourceErrors, skillResErrors } from '@dtl/shared';
+import { chainErrors, markDefErrors, monSkillsOf, resourceErrors, skillMarkErrors, skillResErrors } from '@dtl/shared';
 import {
   PILL_TIERS,
   ARTIFACT_MAX_LEVEL,
@@ -256,6 +258,18 @@ for (const m of METHODS) {
 for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined)) err(m);
 // VS-2b: đồ thị chuỗi chiêu (id có thật, cùng công pháp, không vòng, hệ số trong khoảng).
 for (const m of chainErrors(ALL_SKILLS)) err(m);
+// VS-2c: bảng ấn và chiêu đặt/tiêu ấn.
+for (const m of markDefErrors(MARKS)) err(m);
+for (const m of MARKS) {
+  if (m.method && !METHOD.has(m.method)) err(`mark ${m.id}: công pháp ${m.method} không tồn tại`);
+  needStr(`mark.${m.id}.name`);
+  needStr(`mark.${m.id}.desc`);
+  if (t(`mark.${m.id}.name`) !== (GLOSSARY.marks as Record<string, string>)[m.id]) err(`mark ${m.id}: tên lệch glossary.marks`);
+}
+for (const s of ALL_SKILLS) for (const m of skillMarkErrors(s, MARK)) err(m);
+for (const m of MARKS) {
+  if (!ALL_SKILLS.some((s) => s.applyMark?.id === m.id || s.consumeMark?.then?.mark === m.id)) err(`mark ${m.id}: không chiêu nào đặt`);
+}
 // K-5: pose theo đòn trong chuỗi và theo giọng công pháp phải đủ bộ và khớp nhịp từng đòn.
 for (const s of ALL_SKILLS) {
   if (!s.pose) continue;

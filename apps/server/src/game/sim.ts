@@ -428,6 +428,7 @@ export class GameSim {
   /** Chiêu và công pháp (R-7): xem `game/combat/`. */
   private readonly combat = new CombatSystem(
     ((s: GameSim): CombatCtx => ({
+      addPosture: (m, n) => s.addPosture(m, n),
       get clone() {
         return s.clone;
       },

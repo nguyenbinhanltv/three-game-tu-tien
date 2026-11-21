@@ -36,6 +36,10 @@ const LOOK: Record<string, { s: number; rot?: [number, number, number]; y?: numb
   rock_spire: { s: 1.6, y: -1.1, rot: [0, 40, 0] },
   shield_plate: { s: 1.1, y: -1.1, rot: [0, 150, 0] },
   diamond_cage: { s: 0.8, y: -1.1, rot: [0, 25, 0] },
+  // Đan sư.
+  pill_orb: { s: 0.9, y: 0.2 },
+  lotus_bloom: { s: 1.3, y: -1.1, pitch: 0.5, tone: 'accent' },
+  flame_tongue: { s: 1.4, y: -1.1, tone: 'accent' },
 };
 
 export default {

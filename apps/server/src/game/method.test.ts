@@ -228,8 +228,9 @@ describe('chiêu công pháp: server kiểm điều kiện', () => {
     const m = mon();
     fresh(p);
     sim.onSkill(p, { id: 'skl_phi_kiem_truy_hon', t: m.id });
-    expect(m.mark?.sid).toBe(p.sid);
-    expect(m.mark?.mul).toBeCloseTo(0.2);
+    const tr = m.marks.find((x) => x.id === 'truy_hon');
+    expect(tr?.sid).toBe(p.sid);
+    expect(tr?.n).toBe(1);
   });
 });
 

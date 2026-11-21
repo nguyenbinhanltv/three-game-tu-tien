@@ -974,3 +974,26 @@
 .res-bar[data-full] .res-pips i.on {
   box-shadow: 0 0 8px var(--rc);
 }
+
+/* ───────── ấn trên mục tiêu (VS-2c): thẻ nhỏ trong khung mục tiêu và thanh thủ lĩnh ───────── */
+.mark-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+  pointer-events: auto;
+}
+.u2h-tc .mark-chips {
+  justify-content: center;
+}
+.mark-chip {
+  --mc: var(--u-h-gold-hi);
+  padding: 1px 7px;
+  border: 1px solid var(--mc);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--u-h-lacquer) 84%, transparent);
+  font: 700 11px var(--u-h-font-body);
+  color: var(--mc);
+  text-shadow: 0 1px 2px var(--u-ink-0);
+  white-space: nowrap;
+}
