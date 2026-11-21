@@ -14,6 +14,7 @@ import { adoptGltfMaterials } from '../../render/materials/world';
 import { lodLevel, mixerInterval } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { attachBrawlerGear, gearShown, snapshotBind, type BindSnapshot, type BrawlerGear } from './brawlerGear';
+import { greatbladeMesh } from './greatblade';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
 import { applySkinLook, SKIN_LOOKS } from './skinLook';
@@ -532,6 +533,9 @@ export class MannequinCharacter implements CharacterView {
   /** Kiếm: vỏ trên lưng (`dtl_scabbard`) khi nghỉ, nắm tay (`dtl_sword`) khi giao chiến. */
   private blade: THREE.Mesh | null = null;
   private bladeLen = 0;
+  /** Đao tu: đao lớn thủ tục thay kiếm (dựng khi cần) và kiếm gốc để trả lại khi đổi hướng. */
+  private big: { mesh: THREE.Mesh; len: number } | null = null;
+  private origBlade: { mesh: THREE.Mesh; len: number } | null = null;
   private scabbard: THREE.Object3D | null = null;
   private hand: THREE.Object3D | null = null;
   private qScab = new THREE.Quaternion();
@@ -733,6 +737,20 @@ export class MannequinCharacter implements CharacterView {
     if (on && !this.gear && this.gearBind) this.gear = attachBrawlerGear(this.rig, this.gearBind, this.height);
     this.gear?.setVisible(gearShown(on, this.lodLevel));
     if (this.blade) this.blade.visible = !on;
+  }
+
+  /** Hướng tu cầm đao lớn (Đao tu): thay cây kiếm trong tay/trên lưng bằng đao lớn thủ tục; tắt thì trả kiếm gốc. */
+  setGreatBlade(on: boolean): void {
+    if (this.disposed || this.shadow || !this.blade) return;
+    if (!this.origBlade && this.blade !== this.big?.mesh) this.origBlade = { mesh: this.blade, len: this.bladeLen };
+    if (on && !this.big) this.big = greatbladeMesh(this.height);
+    const want = on ? this.big : this.origBlade;
+    if (!want || want.mesh === this.blade) return;
+    this.blade.removeFromParent();
+    this.blade = want.mesh;
+    this.bladeLen = want.len;
+    this.blade.visible = true;
+    this.mountBlade(this.drawn);
   }
 
   private mountBlade(drawn: boolean): void {
@@ -1427,6 +1445,8 @@ export class MannequinCharacter implements CharacterView {
     this.disposed = true;
     this.hit.reset();
     this.blade?.removeFromParent();
+    this.big?.mesh.removeFromParent();
+    this.big?.mesh.geometry.dispose();
     this.gear?.dispose();
     this.cloth?.dispose();
     this.stopPerform();
