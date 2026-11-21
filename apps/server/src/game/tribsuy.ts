@@ -114,7 +114,8 @@ function near(p: PlayerEnt, x: number, z: number, r: number): boolean {
 }
 
 function sendBar(c: { host: TribHost; p: PlayerEnt }, st: SuyState, extra: { n?: number; d?: number } = {}): void {
-  c.host.fx({ t: 'suy', src: c.p.sid, s: st.id, pg: Math.round(st.pg), ...extra });
+  // Tròn số nhưng không bao giờ gửi 100 khi chưa thất bại: 100 là tín hiệu "suy khí công tâm" (client phát hình thất bại).
+  c.host.fx({ t: 'suy', src: c.p.sid, s: st.id, pg: Math.min(99, Math.round(st.pg)), ...extra });
 }
 
 /** Vào ải: hồi đầy (ải nào cũng bắt đầu ngang nhau, nên vào tiếp từ ải dở không thiệt), đặt tâm, mở thanh. */

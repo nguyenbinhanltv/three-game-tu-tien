@@ -132,6 +132,7 @@ export class GameSim {
     drainMp: (p, n) => {
       p.char.mp = Math.max(0, p.char.mp - Math.max(0, n));
     },
+    // Nguồn sát thương là chính chủ kiếp (không phải id quái): `damagePlayer` không tìm thấy quái nào để phản đòn hay tính "bị bóng đánh trúng".
     sap: (p, n) => {
       if (n > 0) this.damagePlayer(p, n, p.sid, false);
     },

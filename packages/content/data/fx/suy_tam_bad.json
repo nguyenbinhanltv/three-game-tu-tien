@@ -1,0 +1,68 @@
+{
+ "skill": "suy_tam_bad",
+ "palette": "suy_tam",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "crack_radial",
+   "t": 0.0,
+   "dur": 1.6,
+   "at": "self",
+   "offset": [
+    0,
+    -1.08,
+    0
+   ],
+   "scale": [
+    0.4,
+    1,
+    0.4
+   ],
+   "scaleTo": [
+    2.6,
+    1,
+    2.6
+   ],
+   "sweep": 0.25,
+   "erodeFrom": 0.6,
+   "ragged": 0.9,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 96,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "scale": 2.6,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "core",
+   "alpha": 0.6,
+   "flip": "ink_smoke",
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 22,
+   "speed": 2.6,
+   "spread": 1.0,
+   "life": 1.0,
+   "size": 0.3,
+   "at": "self",
+   "tone": "body",
+   "inward": true,
+   "tier": 1
+  }
+ ]
+}
