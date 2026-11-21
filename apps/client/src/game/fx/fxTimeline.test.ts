@@ -659,6 +659,28 @@ describe('VS-1 Đan sư phần 3: 4 chiêu cuối (cả 10 chiêu Đan sư theo 
     expect(Math.min(...tl.events.map((e) => e.t))).toBeGreaterThanOrEqual(0);
     expect(tl.events.some((e) => e.type === 'hitstop' || e.type === 'shake' || e.type === 'flash')).toBe(false);
   });
+  it('Dược Vũ: mưa phủ cả vùng và đã rơi ở khung hit (giọt chạm đất tại t ≈ 0, có bừng sáng), trận mây trên cao, vành mép bật ngay', () => {
+    const ev = FX_TIMELINE.get('skl_duoc_vu')!.events;
+    const drops = ev.flatMap((e) => (e.type === 'mesh' && e.shape === 'pill_orb' && e.move && (e.offset?.[1] ?? 0) > 5 ? [e] : []));
+    expect(drops.length).toBeGreaterThanOrEqual(24);
+    // Chạm đất trong ±60 ms quanh mốc trúng: ít nhất 8 giọt; đang rơi lúc trúng: thêm ít nhất 6.
+    expect(drops.filter((e) => Math.abs(e.t + e.dur) <= 0.06).length).toBeGreaterThanOrEqual(8);
+    expect(drops.filter((e) => e.t < 0 && e.t + e.dur > 0.06).length).toBeGreaterThanOrEqual(6);
+    // Phủ vùng: có giọt gần tâm (< 3 m) và sát mép (> 8 m, vùng 10 m).
+    const reach = drops.map((e) => Math.hypot(e.offset![0], e.offset![2]));
+    expect(Math.min(...reach)).toBeLessThan(3);
+    expect(Math.max(...reach)).toBeGreaterThan(8);
+    expect(Math.max(...reach)).toBeLessThanOrEqual(10);
+    // Mỗi giọt có một cú bừng sáng lúc chạm đất.
+    expect(ev.filter((e) => e.type === 'mesh' && e.shape === 'flip' && e.flip === 'spark_burst').length).toBeGreaterThanOrEqual(
+      drops.length,
+    );
+    // Trận mây trên cao ở lại ≥ 2 s; vành mép vùng bật ngay.
+    expect(ev.some((e) => e.type === 'mesh' && e.shape === 'rune_ring2' && (e.offset?.[1] ?? 0) > 5 && e.dur >= 2)).toBe(true);
+    expect(
+      ev.some((e) => e.type === 'mesh' && e.shape === 'rune_ring2' && e.fit === 'area' && e.t <= 0 && (e.sweep ?? 0.35) * e.dur <= 0.06),
+    ).toBe(true);
+  });
   it('ba chiêu có động tác: âm báo trước + âm đúng mốc trúng, cảm giác nhẹ, có vành ở lại ≥ 1,5 s', () => {
     for (const id of IDS.slice(1)) {
       const ev = all(id);

@@ -466,34 +466,65 @@ def luu_huong():
 R['skl_luu_huong_bo'] = luu_huong
 
 
+def rain_drop(t0, x, z, tier, seed, tone='body', top=6.2, fall=0.2):
+    """Một giọt linh dịch: viên đan kéo dài rơi thẳng từ `top` xuống, chạm đất thì BỪNG sáng nhỏ + gợn một vành."""
+    return [
+        mesh('pill_orb', t0, fall, at='area', offset=[x, top, z], scale=[0.45, 1.6, 0.45], sweep=0, erodeFrom=0.95, alpha=1, keepUp=True,
+             move={'to': 'area', 'offset': [x, 0.6, z], 'ease': 'in'}, tone=tone, tier=tier, seed=seed),
+        flip('spark_burst', t0 + fall - 0.01, 0.3, 2.6, at='area', offset=[x, 0.6, z], alpha=0.95, tone='rim', tier=tier),
+        mesh('rune_ring2', t0 + fall, 0.45, at='area', offset=[x, 0.12, z], scale=0.4, scaleTo=1.8, sweep=0.06, erodeFrom=0.5, alpha=0.95, shadow=False, tone='body', tier=tier, seed=seed + 100),
+    ]
+
+
 def duoc_vu():
-    """Dược Vũ (mưa thuốc hồi 4 s trong r 10; hit 0,4 s): ném viên đan lên trời, vỡ thành MƯA THUỐC: mười hai giọt đan rơi lần lượt khắp vùng,
-    mỗi giọt chạm đất gợn một vành nhỏ; vành mép vùng ở lại 2,6 s."""
-    SKY = [0, 6.0, 0]
-    drops = [(round(math.sin(i * 2.399) * (1.6 + 0.62 * i), 2), round(math.cos(i * 2.399) * (1.6 + 0.62 * i), 2), round(0.0 + 0.045 * i, 3)) for i in range(12)]
+    """Dược Vũ (mưa thuốc hồi 4 s trong r 10; hit 0,4 s): viên đan ném lên trời vỡ thành một TRẬN MÂY nhỏ trên cao (hai vành + khói), từ đó MƯA
+    giọt linh dịch ngọc rơi khắp vùng: đợt đầu chạm đất ĐÚNG khung hit (bừng sáng + gợn vành), các đợt sau rơi tiếp 1,6 s; vệt mưa mảnh xen
+    giữa; vành mép vùng bật ngay ở khung hit và ở lại 2,8 s."""
+    SKY = [0, 6.4, 0]
+    FALL = 0.2
+    # vị trí giọt: xoáy ốc góc vàng phủ đều đĩa bán kính 9,2 m (vùng thường 10 m)
+    spots = [(round(math.sin(i * 2.399) * 9.2 * math.sqrt((i + 0.6) / 30), 2), round(math.cos(i * 2.399) * 9.2 * math.sqrt((i + 0.6) / 30), 2)) for i in range(30)]
     ev = [
         parts('petal', -0.4, 14, 1.4, 1, 0.3, 0.08, at='ahead', offset=[0.2, 0.2, -0.4], inward=True, tone='body', tier=1),
         snd(-0.4, 'cast', 0.4, 1.2),
-        mesh('pill_orb', -0.3, 0.3, at='ahead', offset=[0.2, 0.3, 0.6], scale=0.4, scaleTo=0.6, sweep=0, erodeFrom=0.98, alpha=1, spin=800, keepUp=True,
+        mesh('pill_orb', -0.38, 0.16, at='ahead', offset=[0.2, 0.3, 0.6], scale=0.4, scaleTo=0.6, sweep=0, erodeFrom=0.98, alpha=1, spin=800, keepUp=True,
              move={'to': 'area', 'offset': SKY, 'ease': 'out'}, tone='body', tier=0, seed=1),
-        # vỡ trên trời
-        mesh('pill_orb', -0.02, 0.2, at='area', offset=SKY, rot=[20, 30, 0], scale=0.6, scaleTo=2.0, sweep=0, erodeFrom=0.35, alpha=1, tone='body', tier=0, seed=2),
-        mesh('burst', -0.02, 0.11, at='area', offset=SKY, scale=2.4, billboard=True, sweep=0, tone='body', cross=True, tier=0),
-        flip('spark_burst', -0.02, 0.36, 3.2, at='area', offset=SKY, alpha=0.7, tone='body', tier=0),
-        snd(0.0, 'heal', 0.75, 1.1, 0.04),
-        snd(0.05, 'rain', 0.4, 1.2, 0.05),
-        wave(0.0, 'area', 0.1, 1.0, dur=0.5, tone='body', seed=3),
-        zone_ring(0.3, 'area', 2.6, tone='body', seed=7),
-        decal('rune', 0.0, 5.0, 2.2, at='area', grow=0.25, tone='body', alpha=0.55, tier=1),
-        parts('petal', 0.0, 60, 4.0, 1, 1.6, 0.1, at='area', offset=SKY, grav=2.2, tone='body', tier=0),
-        parts('spark', 0.1, 40, 4.5, 1, 1.2, 0.07, at='area', offset=SKY, grav=3.0, tone='rim', tier=1),
+        # vỡ trên trời TRƯỚC mốc trúng 0,22 s → trận mây: hai vành nằm ngang + khói, ở lại suốt cơn mưa
+        mesh('pill_orb', -0.22, 0.2, at='area', offset=SKY, rot=[20, 30, 0], scale=0.6, scaleTo=2.2, sweep=0, erodeFrom=0.35, alpha=1, tone='body', tier=0, seed=2),
+        mesh('burst', -0.22, 0.11, at='area', offset=SKY, scale=2.8, billboard=True, sweep=0, tone='body', cross=True, tier=0),
+        mesh('rune_ring2', -0.2, 2.4, at='area', offset=[0, 6.2, 0], scale=1.2, scaleTo=4.4, sweep=0.02, erodeFrom=0.82, alpha=1, shadow=False, spin=50, tone='body', tier=0, seed=11),
+        mesh('rune_ring2', -0.16, 2.3, at='area', offset=[0, 6.6, 0], rot=[0, 30, 0], scale=0.8, scaleTo=2.6, sweep=0.02, erodeFrom=0.82, alpha=1, shadow=False, spin=-70, tone='rim', tier=1, seed=12),
+        flip('ink_smoke', -0.2, 1.8, 5.0, at='area', offset=[0.6, 6.4, 0], alpha=0.5, tone='rim', tier=0),
+        flip('ink_smoke', -0.1, 1.9, 4.2, at='area', offset=[-1.4, 6.2, 0.8], alpha=0.45, tone='body', tier=1),
+        snd(-0.2, 'rain', 0.5, 1.1, 0.05),
+        # khung hit: vành mép vùng bật ngay + sóng + chớp nhẹ ở tâm
+        mesh('rune_ring2', -0.03, 2.8, at='area', offset=[0, 0.13, 0], scale=EDGE, scaleTo=EDGE, fit='area', sweep=0.01, erodeFrom=0.8, alpha=1.0, shadow=False, tone='body', tier=0, seed=7),
+        wave(0.0, 'area', 0.1, 1.0, dur=0.5, tone='rim', seed=3),
+        mesh('burst', -0.02, 0.11, at='area', offset=[0, 0.8, 0], scale=2.2, billboard=True, sweep=0, tone='rim', tier=0),
+        decal('rune', -0.1, 6.0, 2.4, at='area', grow=0.2, tone='body', alpha=0.6, tier=1),
+        snd(0.0, 'heal', 0.8, 1.1, 0.04),
+        snd(0.0, 'impact', 0.3, 1.4, 0.05),
+        parts('petal', -0.1, 80, 5.0, 1, 1.6, 0.1, at='area', offset=SKY, grav=3.0, tone='body', tier=0),
+        parts('spark', 0.0, 60, 6.0, 1, 1.2, 0.08, at='area', offset=SKY, grav=4.0, tone='rim', tier=1),
+        parts('petal', 0.7, 50, 5.0, 1, 1.4, 0.1, at='area', offset=SKY, grav=3.0, tone='body', tier=1),
     ]
-    for i, (x, z, t0) in enumerate(drops):
-        tier = 0 if i % 3 == 0 else (1 if i % 3 == 1 else 2)
-        ev.append(mesh('pill_orb', t0, 0.22, at='area', offset=[round(x * 0.5, 2), 6.0, round(z * 0.5, 2)], scale=[0.4, 1.2, 0.4], sweep=0, erodeFrom=0.9, alpha=1, keepUp=True,
-                       move={'to': 'area', 'offset': [x, 0.5, z], 'ease': 'in'}, tone='body' if i % 2 == 0 else 'rim', tier=tier, seed=20 + i))
-        ev.append(mesh('rune_ring2', t0 + 0.22, 0.5, at='area', offset=[x, 0.12, z], scale=0.4, scaleTo=1.7, sweep=0.06, erodeFrom=0.5, alpha=0.95, shadow=False, tone='body', tier=tier, seed=40 + i))
-    ev += soft(0.0)
+    # mưa: 10 giọt chạm đất đúng khung hit, 8 giọt đang lơ lửng, 12 giọt rơi tiếp tới 1,5 s
+    for i, (x, z) in enumerate(spots):
+        if i % 3 == 0:
+            t0 = -FALL - 0.04 + 0.002 * i
+        elif i % 3 == 1:
+            t0 = -0.14 + 0.004 * i
+        else:
+            t0 = 0.25 + 0.045 * i
+        ev += rain_drop(round(t0, 3), x, z, 0 if i % 2 == 0 else (1 if i % 4 == 1 else 2), 20 + i, tone='body' if i % 2 == 0 else 'rim', fall=FALL)
+    # vệt mưa mảnh xen giữa (tự xoay theo hướng rơi), rơi liên tục
+    for i in range(18):
+        a = i * 2.399 + 1.0
+        rr = 9.0 * math.sqrt((i + 0.5) / 18)
+        x, z = round(math.sin(a) * rr, 2), round(math.cos(a) * rr, 2)
+        ev.append(mesh('spark_streak', round(-0.16 + 0.07 * i, 3), 0.18, at='area', offset=[x, 6.0, z], scale=[2.0, 2.0, 3.2], sweep=0, erodeFrom=0.7, alpha=0.9, shadow=False,
+                       move={'to': 'area', 'offset': [x + 0.3, 0.3, z], 'ease': 'linear'}, tone='rim', tier=0 if i % 2 == 0 else 1, seed=60 + i))
+    ev += soft(0.0, ms=40, sh=0.14, fl=0.06, fov=1.2)
     return {
         'skill': 'skl_duoc_vu',
         'replaces': ['duocvu'],
@@ -501,15 +532,15 @@ def duoc_vu():
         'variants': {
             # a = thêm khiên nhỏ cho mình: ba viên đan treo quanh ngực + vành chân bám theo
             'ward': [
-                *[mesh('pill_orb', 0.1 + 0.05 * i, 2.4, at='self', offset=[x, 0.2, z], rot=[30 * i, 0, 0], scale=0.34, sweep=0.2, erodeFrom=0.8, alpha=1, spin=260, follow=True, tone='body', tier=0, seed=60 + i)
+                *[mesh('pill_orb', 0.1 + 0.05 * i, 2.4, at='self', offset=[x, 0.2, z], rot=[30 * i, 0, 0], scale=0.34, sweep=0.03, erodeFrom=0.8, alpha=1, spin=260, follow=True, tone='body', tier=0, seed=160 + i)
                   for i, (x, z, _a) in enumerate(ring(3, 0.95, 0.5))],
-                mesh('rune_ring2', 0.15, 2.4, at='self', offset=[0, G + 0.14, 0], scale=1.3, scaleTo=1.3, sweep=0.1, erodeFrom=0.8, alpha=0.9, shadow=False, follow=True, tone='rim', tier=0, seed=65),
+                mesh('rune_ring2', 0.15, 2.4, at='self', offset=[0, G + 0.14, 0], scale=1.3, scaleTo=1.3, sweep=0.03, erodeFrom=0.8, alpha=0.9, shadow=False, follow=True, tone='rim', tier=0, seed=165),
             ],
-            # b = vùng rộng ×1,5: thêm một vành thứ hai quét chậm + sáu giọt rơi ở vòng ngoài
+            # b = vùng rộng ×1,5 (15 m): trận mây nở rộng hơn + mười giọt rơi ở vành ngoài 10–14,5 m
             'wide': [
-                wave(0.16, 'area', 0.3, 1.02, dur=0.6, tone='body', seed=70),
-                *[mesh('pill_orb', 0.3 + 0.08 * i, 0.3, at='area', offset=[round(x * 0.5, 2), 6.0, round(z * 0.5, 2)], scale=[0.4, 1.2, 0.4], sweep=0, erodeFrom=0.9, alpha=1, keepUp=True,
-                       move={'to': 'area', 'offset': [x, 0.5, z], 'ease': 'in'}, tone='rim', tier=0 if i % 2 == 0 else 1, seed=71 + i) for i, (x, z, _a) in enumerate(ring(6, 11.5, 0.4))],
+                mesh('rune_ring2', -0.12, 2.4, at='area', offset=[0, 6.0, 0], scale=2.0, scaleTo=6.4, sweep=0.02, erodeFrom=0.82, alpha=0.9, shadow=False, spin=40, tone='body', tier=0, seed=170),
+                *[e for i, (x, z, _a) in enumerate(ring(10, 12.4, 0.4))
+                  for e in rain_drop(round(-FALL + 0.06 * i, 3), round(x * (0.85 + 0.03 * (i % 5)), 2), round(z * (0.85 + 0.03 * (i % 5)), 2), 0 if i % 2 == 0 else 1, 171 + i, fall=FALL)],
             ],
         },
     }
