@@ -28,6 +28,7 @@ export * from './methods';
 export * from './resource';
 export * from './skillrules';
 export * from './chain';
+export * from './marks';
 export * from './artifacts';
 export * from './spirit';
 export * from './soul';

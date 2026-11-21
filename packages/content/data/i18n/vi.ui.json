@@ -680,6 +680,7 @@
   "ui.method.locked": "Đạt {realm} mới chọn được công pháp.",
   "ui.method.slot7": "Chiêu đặc trưng",
   "ui.method.slot8": "Chiêu tối thượng",
+  "ui.mark.title": "Ấn",
   "ui.method.res.kiem_y": "Kiếm ý",
   "ui.method.res.kiem_y.tip": "Đòn thường trúng đích tích 1 ô. Chiêu xả Kiếm ý mạnh thêm theo số ô; giữ đầy thì bạo kích cao hơn. Rụng hết sau 10 giây không tích.",
   "ui.method.res.huyet_khi": "Huyết khí",

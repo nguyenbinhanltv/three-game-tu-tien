@@ -1,6 +1,7 @@
 // Kiểu dữ liệu nội dung game và trạng thái nhân vật, dùng chung client/server.
 
 import type { ItemInst } from './itemtypes';
+import type { ApplyMark, ConsumeMark } from './marks';
 import type { SkillRes } from './resource';
 
 /**
@@ -586,8 +587,9 @@ export interface SkillDef {
   method?: string;
   /** Chiêu tối thượng: cần vòng sạc đầy (không dùng linh lực/hồi chiêu để giới hạn). */
   ult?: boolean;
-  /** Đánh dấu mục tiêu: trong `dur` giây, sát thương của người đánh dấu lên nó nhân thêm `mul`. */
-  mark?: { dur: number; mul: number };
+  /** VS-2c: đặt ấn lên mục tiêu trúng đòn / người được hồi, và tiêu ấn của mình để lấy thưởng. Luật ở `marks.ts`. */
+  applyMark?: ApplyMark;
+  consumeMark?: ConsumeMark;
   /** `guard`: tỉ lệ sát thương được giảm. `taunt`: bán kính nằm ở `radius`, thời gian ở `duration`. */
   reduce?: number;
   /** `hot`: tổng lượng hồi (theo % máu tối đa) chia đều trong `duration`; `healAllies` bán kính hồi cho đồng đội. */
