@@ -451,7 +451,7 @@ export class SuyFx {
       case 'tuyet':
         if (pg === 2) {
           this.at('hk_tuyet_drift', 'hk_tuyet', x, z, m.r ?? 3, { delay: m.d ?? 9, src });
-          this.glow(src, `tuyet${m.n ?? 0}`, hexOf('hk_tuyet', 'accent'), { x, z, h: 2.4, r: m.r ?? 3, dur: m.d ?? 9, opacity: 0.3 });
+          this.glow(src, `tuyet${m.n ?? 0}`, hexOf('hk_tuyet', 'accent'), { x, z, h: 4, r: m.r ?? 3, dur: m.d ?? 9, opacity: 0.4 });
         } else if (pg === 0) this.dropGlow(src, 'tuyet');
         break;
       case 'phong': {
@@ -465,6 +465,24 @@ export class SuyFx {
           this.ringOf.set(src, { n, r: m.r ?? 7 });
         } else if (pg === 2) {
           this.at('hk_phong_warn', 'hk_phong', c.x, c.z, 14, { yaw, delay: m.d ?? 3, src });
+          // Dòng cột sáng chạy xuyên sân theo chiều gió (lặp lại suốt thời gian báo): đọc hướng gió bằng chuyển động, không cần chữ.
+          const t0 = performance.now();
+          const dx = m.ox ?? 0;
+          const dz = m.oz ?? 0;
+          for (let k = 0; k < 4; k++)
+            this.glowFn(
+              src,
+              `phw${k}`,
+              hexOf('hk_phong', 'rim'),
+              () => {
+                const u = ((((performance.now() - t0) / 1000) * 9 + k * 5.5) % 22) - 11;
+                const side = (k % 2 ? 1 : -1) * 1.6;
+                const px = c.x + dx * u + dz * side;
+                const pz = c.z + dz * u - dx * side;
+                return { x: px, y: this.env.ground(px, pz), z: pz };
+              },
+              { h: 2.2, r: 1.1, dur: m.d ?? 3, opacity: 0.55, thick: 2.4 },
+            );
           const rg = this.ringOf.get(src) ?? { n: 3, r: 7 };
           // Chỗ nấp: ngay sau từng trụ theo chiều gió.
           for (let i = 0; i < rg.n; i++) {
@@ -481,6 +499,7 @@ export class SuyFx {
           }
         } else if (pg === 3 || pg === 4) {
           this.dropGlow(src, 'phs');
+          this.dropGlow(src, 'phw');
           this.at('hk_phong_blow', 'hk_phong', c.x, c.z, 14, { yaw, src });
           this.on(pg === 3 ? 'hk_phong_safe' : 'hk_phong_hit', 'hk_phong', src);
         } else {
@@ -597,7 +616,7 @@ export class SuyFx {
           const t0 = performance.now();
           const th0 = m.ox ?? 0;
           const w = m.oz ?? 0;
-          for (const [k, rr] of [3.5, 6.5, 9.5].entries()) {
+          for (const [k, rr] of [3, 5.5, 8].entries()) {
             this.glowFn(
               src,
               `luan${k}`,

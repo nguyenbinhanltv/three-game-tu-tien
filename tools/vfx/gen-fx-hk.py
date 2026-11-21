@@ -70,14 +70,14 @@ write('hk_tuyet_drift', 'hk_tuyet', [
     decal('rune', 0.3, 3.0, 8.0, at='area', grow=0.8, tone='accent', alpha=0.9, untilDelay=True, tier=0, **START),
     parts('dust', 0.0, 26, 2.2, 1.0, 1.4, 0.3, at='area', offset=[0, 2.4, 0], tone='rim', grav=2.4, tier=0, **START),
     parts('shard', 1.2, 14, 1.6, 1.0, 0.9, 0.12, at='area', offset=[0, 0.3, 0], tone='rim', grav=-0.6, tier=1, **START),
-] + ring(5, 1.7, lambda i, x, z: mesh('spike', round(1.0 + 0.06 * i, 2), 4.0, at='area', offset=[x, 0, z], rot=[-90 + (12 if i % 2 else -8), i * 72, 0], scale=[0.5, 0.5, 0.42 + 0.1 * (i % 2)], sweep=0.06, erodeFrom=0.9, tone='rim', alpha=0.95, seed=10 + i, untilDelay=True, tier=0, **START))
-+ [mesh('spike', 1.0, 4.0, at='area', offset=[0, 0, 0], rot=[-90, 0, 0], scale=[0.7, 0.7, 0.62], sweep=0.06, erodeFrom=0.9, tone='body', alpha=0.95, seed=16, untilDelay=True, tier=0, **START)])
+] + ring(5, 1.9, lambda i, x, z: mesh('spike', round(1.0 + 0.06 * i, 2), 4.0, at='area', offset=[x, 0, z], rot=[-90 + (12 if i % 2 else -8), i * 72, 0], scale=[1.3, 1.3, 0.8 + 0.25 * (i % 2)], sweep=0.06, erodeFrom=0.9, tone='rim', alpha=0.95, seed=10 + i, untilDelay=True, tier=0, **START))
++ [mesh('spike', 1.0, 4.0, at='area', offset=[0, 0, 0], rot=[-90, 0, 0], scale=[1.7, 1.7, 1.2], sweep=0.06, erodeFrom=0.9, tone='body', alpha=0.95, seed=16, untilDelay=True, tier=0, **START)])
 
 # ---- Phong Kiếp ----
 # Trụ chắn gió (vòng lặp): cụm đá cao, viền sáng.
 write('hk_phong_pillar', 'hk_phong', [
-    mesh('rock_spire', 0.0, LOOP, at='area', offset=[0, 0, 0], scale=[1.25, 3.4, 1.25], sweep=0.0, erodeFrom=HOLD, tone='body', alpha=0.98, seed=21, tier=0, **START),
-    decal('rune', 0.0, 2.0, LOOP, at='area', grow=0.01, tone='body', alpha=0.8, yaw=0, tier=1, **START),
+    mesh('rock_spire', 0.0, LOOP, at='area', offset=[0, 0, 0], scale=[2.0, 5.0, 2.0], sweep=0.0, erodeFrom=HOLD, tone='body', alpha=0.98, seed=21, tier=0, **START),
+    decal('rune', 0.0, 2.6, LOOP, at='area', grow=0.01, tone='rim', alpha=0.95, yaw=0, tier=0, **START),
 ])
 # Báo hướng gió (gốc ở tâm sân, +Z = chiều gió thổi; sống đúng `warn` giây): ba đợt vệt gió chạy dọc sân + mũi tên triện văn trên đất.
 write('hk_phong_warn', 'hk_phong', [
@@ -109,12 +109,12 @@ write('hk_phong_hit', 'hk_phong', [
 
 # ---- Lôi Kiếp ----
 ROD = [
-    mesh('rock_spire', 0.0, LOOP, at='area', offset=[0, 0, 0], scale=[0.55, 3.0, 0.55], sweep=0.0, erodeFrom=HOLD, alpha=0.98, seed=51, tier=0, **START),
-    mesh('kite', 0.0, LOOP, at='area', offset=[0, 3.0, 0], rot=[-90, 0, 0], scale=[1.6, 1.6, 1.2], sweep=0.0, erodeFrom=HOLD, alpha=0.95, seed=52, tier=0, **START),
+    mesh('rock_spire', 0.0, LOOP, at='area', offset=[0, 0, 0], scale=[1.0, 4.4, 1.0], sweep=0.0, erodeFrom=HOLD, alpha=0.98, seed=51, tier=0, **START),
+    mesh('kite', 0.0, LOOP, at='area', offset=[0, 4.3, 0], rot=[-90, 0, 0], scale=[2.6, 2.6, 1.8], sweep=0.0, erodeFrom=HOLD, alpha=0.95, seed=52, tier=0, **START),
 ]
 write('hk_loi_rod', 'hk_loi', [dict(e, tone='body' if i == 0 else 'rim') for i, e in enumerate(ROD)] + [
     decal('rune', 0.0, 2.2, LOOP, at='area', grow=0.01, tone='body', alpha=0.95, yaw=0, tier=0, **START),
-    parts('spark', 0.0, 4, 0.8, 0.5, 1.2, 0.07, at='area', offset=[0, 3.6, 0], tone='rim', grav=-0.8, tier=1, **START),
+    parts('spark', 0.0, 4, 0.8, 0.5, 1.2, 0.07, at='area', offset=[0, 5.2, 0], tone='rim', grav=-0.8, tier=1, **START),
 ])
 write('hk_loi_hot', 'hk_loi', [dict(e, tone='accent') for e in ROD] + [
     decal('rune', 0.0, 4.5, LOOP, at='area', grow=0.01, tone='accent', alpha=1.0, yaw=0, tier=0, **START),
@@ -217,8 +217,8 @@ write('hk_tuc_bad', 'hk_kho_than', [
 
 # ---- Hồn Thọ Kiếp: Hồn Châu (vòng lặp, nhặt xong là hết): viên tinh thể lơ lửng + vòng ấn ----
 write('hk_chau', 'hk_hon_tho', [
-    mesh('kite', 0.0, LOOP, at='area', offset=[0, 1.5, 0], rot=[-90, 0, 0], scale=[3.4, 3.4, 1.6], sweep=0.0, erodeFrom=HOLD, tone='rim', alpha=0.98, seed=111, tier=0, **START),
-    mesh('kite', 0.0, LOOP, at='area', offset=[0, 1.5, 0], rot=[90, 0, 0], scale=[3.4, 3.4, 0.8], sweep=0.0, erodeFrom=HOLD, tone='body', alpha=0.95, seed=112, tier=0, **START),
+    mesh('kite', 0.0, LOOP, at='area', offset=[0, 1.5, 0], rot=[-90, 0, 0], scale=[5.0, 5.0, 2.2], sweep=0.0, erodeFrom=HOLD, tone='rim', alpha=0.98, seed=111, tier=0, **START),
+    mesh('kite', 0.0, LOOP, at='area', offset=[0, 1.5, 0], rot=[90, 0, 0], scale=[5.0, 5.0, 1.1], sweep=0.0, erodeFrom=HOLD, tone='body', alpha=0.95, seed=112, tier=0, **START),
     decal('rune', 0.0, 1.8, LOOP, at='area', grow=0.01, tone='body', alpha=0.95, yaw=0, tier=0, **START),
     parts('petal', 0.0, 4, 0.8, 0.6, 1.4, 0.14, at='area', offset=[0, 1.4, 0], tone='rim', grav=-0.6, tier=1, **START),
 ])
@@ -234,17 +234,17 @@ write('hk_chau_gone', 'hk_hon_tho', [
 
 # ---- Luân Hồi Kiếp: vành bánh xe (vòng lặp ở tâm, bán kính 13 m) + báo nghiền + nghiền ----
 write('hk_luan_wheel', 'hk_luan_hoi', [
-    mesh('rune_ring2', 0.0, LOOP, at='area', offset=[0, 0.06, 0], scale=[13.0, 1, 13.0], sweep=0.0, erodeFrom=HOLD, ragged=0.3, tone='body', alpha=0.9, seed=121, tier=0, **START),
+    mesh('rune_ring2', 0.0, LOOP, at='area', offset=[0, 0.06, 0], scale=[11.0, 1, 11.0], sweep=0.0, erodeFrom=HOLD, ragged=0.3, tone='body', alpha=0.9, seed=121, tier=0, **START),
     mesh('rune_ring2', 0.0, LOOP, at='area', offset=[0, 0.07, 0], scale=[1.5, 1, 1.5], sweep=0.0, erodeFrom=HOLD, ragged=0.5, tone='accent', alpha=0.95, seed=122, tier=0, **START),
     mesh('rock_spire', 0.0, LOOP, at='area', offset=[0, 0, 0], scale=[0.7, 2.6, 0.7], sweep=0.0, erodeFrom=HOLD, tone='accent', alpha=0.95, seed=123, tier=1, **START),
 ])
 write('hk_luan_warn', 'hk_luan_hoi', [
-    mesh('rune_ring2', 0.0, 1.2, at='area', offset=[0, 0.09, 0], scale=[13.0, 1, 13.0], scaleTo=[2.0, 1, 2.0], sweep=0.05, erodeFrom=0.9, ragged=0.7, tone='accent', alpha=0.95, seed=127, untilDelay=True, tier=0, **START),
+    mesh('rune_ring2', 0.0, 1.2, at='area', offset=[0, 0.09, 0], scale=[11.0, 1, 11.0], scaleTo=[2.0, 1, 2.0], sweep=0.05, erodeFrom=0.9, ragged=0.7, tone='accent', alpha=0.95, seed=127, untilDelay=True, tier=0, **START),
     parts('dust', 0.0, 40, 6.0, 1.0, 1.0, 0.3, at='area', offset=[0, 0.5, 0], tone='accent', inward=True, tier=0, **START),
 ])
 write('hk_luan_grind', 'hk_luan_hoi', [
-    mesh('shock_cone', 0.0, 0.7, at='area', offset=[0, 0.05, 0], scale=[1.0, 0.8, 1.0], scaleTo=[13.0, 2.0, 13.0], sweep=0.25, erodeFrom=0.35, ragged=0.8, tone='accent', alpha=0.85, seed=128, tier=0),
-    mesh('crack_radial', 0.0, 2.0, at='area', offset=[0, 0.05, 0], scale=[1.0, 1, 1.0], scaleTo=[12.0, 1, 12.0], sweep=0.25, erodeFrom=0.55, ragged=0.9, tone='accent', alpha=0.8, seed=129, tier=0),
+    mesh('shock_cone', 0.0, 0.7, at='area', offset=[0, 0.05, 0], scale=[1.0, 0.8, 1.0], scaleTo=[11.0, 2.0, 11.0], sweep=0.25, erodeFrom=0.35, ragged=0.8, tone='accent', alpha=0.85, seed=128, tier=0),
+    mesh('crack_radial', 0.0, 2.0, at='area', offset=[0, 0.05, 0], scale=[1.0, 1, 1.0], scaleTo=[10.5, 1, 10.5], sweep=0.25, erodeFrom=0.55, ragged=0.9, tone='accent', alpha=0.8, seed=129, tier=0),
     parts('shard', 0.0, 40, 9.0, 1.0, 0.8, 0.16, at='area', offset=[0, 0.5, 0], tone='accent', grav=8, tier=1),
     {'type': 'shake', 't': 0.0, 'level': 0.22, 'tier': 1},
 ])

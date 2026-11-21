@@ -14,9 +14,9 @@
     0
    ],
    "scale": [
-    1.25,
-    3.4,
-    1.25
+    2.0,
+    5.0,
+    2.0
    ],
    "sweep": 0.0,
    "erodeFrom": 0.97,
@@ -30,14 +30,14 @@
    "type": "decal",
    "tex": "rune",
    "t": 0.0,
-   "r": 2.0,
+   "r": 2.6,
    "dur": 1.08,
    "at": "area",
    "grow": 0.01,
-   "tone": "body",
-   "alpha": 0.8,
+   "tone": "rim",
+   "alpha": 0.95,
    "yaw": 0,
-   "tier": 1,
+   "tier": 0,
    "from": "start"
   }
  ]
