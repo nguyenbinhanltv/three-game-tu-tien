@@ -556,6 +556,8 @@ const level = {
   spawn: { x: W(TRAM[0]), z: W(TRAM[1] + 12) },
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
   pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 80 })),
+  // Cổng vào Giới Trì Động Phủ, cách điểm gioi_tri_cua 18 m về phía tâm bản đồ.
+  portals: [{ x: W(346), z: W(269), r: 12, to: 'gioi_tri' }],
   spots: BIA.map((b) => ({ id: b.id, zone: b.zone, x: W(b.off[0]), z: W(b.off[1]) })),
   camps,
   spawns,

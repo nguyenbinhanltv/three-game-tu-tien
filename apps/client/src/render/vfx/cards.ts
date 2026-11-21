@@ -5,7 +5,7 @@ import * as THREE from 'three/webgpu';
  * (không dùng ảnh ngoài). Mã hóa cho shader `card` (render/vfx/stylized.ts): kênh R = tầng màu (0 bóng sẫm … 0,5 thân … 1 viền sáng),
  * kênh G = 1 ở phần dùng màu điểm nhấn (vàng / đỏ son), alpha = hình. Một texture mỗi thẻ.
  */
-type CardId = 'arhat' | 'phoenix' | 'ghost' | 'infant';
+type CardId = 'arhat' | 'phoenix' | 'ghost' | 'infant' | 'colossus' | 'fist';
 type Ctx = CanvasRenderingContext2D;
 const col = (tier: number, acc = 0) => `rgb(${Math.round(tier * 255)},${Math.round(acc * 255)},0)`;
 
@@ -478,6 +478,300 @@ function drawGhost(g: Ctx): void {
  * Nguyên Anh (RFX-1): hài nhi ngồi thiền kiết già trên đài sen, hào quang tròn sau lưng. Thân vàng (tầng giữa) viền vàng kim dày (tầng sáng, điểm nhấn),
  * mặt có mắt nhắm + miệng cười + chấm giữa trán (tầng sẫm), hai tay kết ấn trước ngực: đọc ra hình hài nhi ngồi thiền chứ không phải bóng trắng.
  */
+/**
+ * Cổ Thần khổng lồ (TN-5, cảnh Hóa Hình) 512×768: thân từ eo trở lên nhìn thẳng, đầu có hai sừng cong, vai rộng, hai tay gập khoe cơ
+ * (cánh tay đưa ngang, cẳng tay dựng, nắm đấm). Viền sáng (tier 1) quanh toàn thân, vân kim văn (điểm nhấn vàng) trên ngực, vai, tay, trán;
+ * thân dưới chìm dần vào mặt đất (mờ ở đáy), đỉnh đầu mờ nhẹ.
+ */
+function drawColossus(g: Ctx): void {
+  const C = 256;
+  const body = 0.46;
+  const dark = 0.2;
+  g.lineJoin = 'round';
+  g.lineCap = 'round';
+  /** Gradient ngang: lõi tối ở giữa, sáng dần ra viền (kênh R = tầng màu). */
+  const hGrad = (x0: number, x1: number, stops: [number, number][]): CanvasGradient => {
+    const gr = g.createLinearGradient(x0, 0, x1, 0);
+    for (const [p, tier] of stops) gr.addColorStop(p, col(tier));
+    return gr;
+  };
+  // Hai tay: viền sáng ngoài cùng, vào trong sáng nhạt rồi tối dần tới lõi (bốn lớp nét chồng nhau), nắm đấm có gradient tròn.
+  for (const s of [-1, 1]) {
+    const pts: [number, number][] = [
+      [C + s * 150, 292],
+      [C + s * 218, 372],
+      [C + s * 214, 214],
+    ];
+    line(g, 1, 96, pts);
+    line(g, 0.6, 80, pts);
+    line(g, 0.4, 54, pts);
+    line(g, dark, 24, pts);
+    const fx = C + s * 214;
+    const rg = g.createRadialGradient(fx, 170, 6, fx, 170, 50);
+    rg.addColorStop(0, col(0.22));
+    rg.addColorStop(0.65, col(0.42));
+    rg.addColorStop(1, col(0.62));
+    g.beginPath();
+    g.arc(fx, 170, 50, 0, Math.PI * 2);
+    g.fillStyle = rg;
+    g.fill();
+    g.strokeStyle = col(1);
+    g.lineWidth = 9;
+    g.stroke();
+    // vân trên tay: hai đai kim văn quanh cánh tay + một vạch chữ V trên nắm đấm
+    for (const [x, y, a] of [
+      [C + s * 190, 332, 0.5],
+      [C + s * 216, 288, 0.1],
+    ] as const)
+      line(
+        g,
+        0.95,
+        7,
+        [
+          [x - 26 * Math.cos(a), y + 26 * Math.sin(a)],
+          [x + 26 * Math.cos(a), y - 26 * Math.sin(a)],
+        ],
+        1,
+      );
+    line(
+      g,
+      0.95,
+      7,
+      [
+        [C + s * 190, 150],
+        [C + s * 214, 190],
+        [C + s * 238, 150],
+      ],
+      1,
+    );
+  }
+  // Thân: gradient ngang lõi tối giữa ngực, sáng dần ra hai vai.
+  g.beginPath();
+  g.moveTo(C - 168, 276);
+  g.quadraticCurveTo(C - 120, 226, C - 52, 222);
+  g.lineTo(C + 52, 222);
+  g.quadraticCurveTo(C + 120, 226, C + 168, 276);
+  g.lineTo(C + 132, 768);
+  g.lineTo(C - 132, 768);
+  g.closePath();
+  g.fillStyle = hGrad(C - 170, C + 170, [
+    [0, 0.62],
+    [0.28, 0.44],
+    [0.5, 0.22],
+    [0.72, 0.44],
+    [1, 0.62],
+  ]);
+  g.fill();
+  g.strokeStyle = col(1);
+  g.lineWidth = 10;
+  g.stroke();
+  // Bóng dưới ngực (khối cơ) để thân có khối.
+  for (const s of [-1, 1]) {
+    fillPath(
+      g,
+      dark,
+      0,
+      () => {
+        g.moveTo(C + s * 12, 372);
+        g.quadraticCurveTo(C + s * 84, 392, C + s * 126, 350);
+        g.quadraticCurveTo(C + s * 96, 440, C + s * 12, 430);
+        g.closePath();
+      },
+      0,
+    );
+  }
+  // Cổ + đầu (gradient tròn lõi tối) + hai sừng.
+  fillPath(g, 0.36, 0, () => g.rect(C - 34, 188, 68, 54), 1, 8);
+  for (const s of [-1, 1]) {
+    fillPath(
+      g,
+      body,
+      0,
+      () => {
+        g.moveTo(C + s * 40, 120);
+        g.quadraticCurveTo(C + s * 104, 96, C + s * 96, 22);
+        g.quadraticCurveTo(C + s * 64, 70, C + s * 30, 84);
+        g.closePath();
+      },
+      1,
+      8,
+    );
+  }
+  const hg = g.createRadialGradient(C, 142, 8, C, 142, 66);
+  hg.addColorStop(0, col(0.2));
+  hg.addColorStop(0.6, col(0.4));
+  hg.addColorStop(1, col(0.62));
+  g.beginPath();
+  g.ellipse(C, 142, 58, 66, 0, 0, Math.PI * 2);
+  g.fillStyle = hg;
+  g.fill();
+  g.strokeStyle = col(1);
+  g.lineWidth = 10;
+  g.stroke();
+  // Mắt (sáng) và kim văn trán.
+  for (const s of [-1, 1])
+    line(
+      g,
+      1,
+      9,
+      [
+        [C + s * 14, 140],
+        [C + s * 40, 134],
+      ],
+      1,
+    );
+  line(
+    g,
+    0.95,
+    6,
+    [
+      [C, 90],
+      [C, 112],
+    ],
+    1,
+  );
+  // Vân kim văn trên ngực: ba lớp chữ V lồng nhau, ấn tròn giữa ngực, hai đường gân vai.
+  for (let i = 0; i < 3; i++)
+    line(
+      g,
+      0.9 - i * 0.08,
+      8,
+      [
+        [C - 96 + i * 20, 292 + i * 34],
+        [C, 372 + i * 40],
+        [C + 96 - i * 20, 292 + i * 34],
+      ],
+      1,
+    );
+  g.beginPath();
+  g.arc(C, 330, 22, 0, Math.PI * 2);
+  g.strokeStyle = col(1, 1);
+  g.lineWidth = 7;
+  g.stroke();
+  for (const s of [-1, 1]) {
+    line(
+      g,
+      0.85,
+      6,
+      [
+        [C + s * 60, 238],
+        [C + s * 128, 262],
+        [C + s * 150, 300],
+      ],
+      1,
+    );
+    // vân sáng chạy dọc thân: ba đường kim văn song song từ ngực xuống đai lưng
+    for (const dx of [36, 78, 112])
+      line(
+        g,
+        0.8,
+        5,
+        [
+          [C + s * dx, 450 + dx * 0.2],
+          [C + s * (dx + 4), 560],
+          [C + s * (dx + 8), 700],
+        ],
+        1,
+      );
+  }
+  // Đai lưng kim văn.
+  line(
+    g,
+    0.9,
+    10,
+    [
+      [C - 130, 600],
+      [C + 130, 600],
+    ],
+    1,
+  );
+  for (let i = -4; i <= 4; i++)
+    line(
+      g,
+      0.8,
+      5,
+      [
+        [C + i * 28, 588],
+        [C + i * 28, 612],
+      ],
+      1,
+    );
+  // Mờ: đáy chìm vào đất, đỉnh đầu mờ nhẹ.
+  g.save();
+  g.globalCompositeOperation = 'destination-in';
+  const gr = g.createLinearGradient(0, 0, 0, 768);
+  gr.addColorStop(0, 'rgba(0,0,0,0.35)');
+  gr.addColorStop(0.1, 'rgba(0,0,0,1)');
+  gr.addColorStop(0.58, 'rgba(0,0,0,1)');
+  gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 512, 768);
+  g.restore();
+}
+
+/**
+ * Cự quyền (TN-5, Thái Cổ Quyền) 512×512: nắm đấm nhìn từ phía mặt các ngón: bốn ngón co có nếp gập sẫm và đốt ngón sáng, ngón cái ép chéo,
+ * bàn tay thấp hơn, cổ tay quấn đai; viền sáng, kim văn chữ V trên mu bàn tay.
+ */
+function drawFist(g: Ctx): void {
+  const body = 0.52;
+  const dark = 0.2;
+  g.lineJoin = 'round';
+  g.lineCap = 'round';
+  // Cổ tay + hai đai quấn.
+  fillPath(g, body, 0, () => g.roundRect(206, 396, 100, 116, 14), 1, 10);
+  for (let i = 0; i < 2; i++)
+    line(
+      g,
+      0.9,
+      9,
+      [
+        [212, 424 + i * 38],
+        [300, 424 + i * 38],
+      ],
+      1,
+    );
+  // Bàn tay (khối nền, tối hơn để các ngón nổi lên).
+  fillPath(g, 0.38, 0, () => g.roundRect(110, 214, 292, 206, 46), 1, 10);
+  // Bốn ngón co: mỗi ngón một khối, nếp gập sẫm hai chỗ, đốt ngón sáng ở đỉnh.
+  for (let i = 0; i < 4; i++) {
+    const x = 118 + i * 70;
+    const h = i === 0 || i === 3 ? 150 : 166;
+    fillPath(g, body, 0, () => g.roundRect(x, 70 + (166 - h), 66, h + 90, 28), 1, 9);
+    line(g, dark, 7, [
+      [x + 10, 186],
+      [x + 56, 186],
+    ]);
+    line(g, dark, 7, [
+      [x + 10, 232],
+      [x + 56, 232],
+    ]);
+    g.beginPath();
+    g.ellipse(x + 33, 110 + (166 - h), 20, 13, 0, 0, Math.PI * 2);
+    g.fillStyle = col(0.92, 1);
+    g.fill();
+  }
+  // Ngón cái ép chéo trước các ngón.
+  fillPath(g, body, 0, () => g.ellipse(168, 312, 86, 36, -0.38, 0, Math.PI * 2), 1, 10);
+  line(g, dark, 7, [
+    [110, 330],
+    [226, 292],
+  ]);
+  // Kim văn chữ V trên mu bàn tay + đốt cổ tay.
+  for (let i = 0; i < 3; i++)
+    line(
+      g,
+      0.9 - i * 0.05,
+      9,
+      [
+        [262, 330 + i * 22],
+        [322, 352 + i * 22],
+        [382, 330 + i * 22],
+      ],
+      1,
+    );
+}
+
 function drawInfant(g: Ctx): void {
   const C = 192;
   g.lineCap = 'round';
@@ -593,8 +887,8 @@ export function cardTexture(id: CardId): THREE.Texture {
     t = new THREE.DataTexture(new Uint8Array(16), 2, 2);
     t.needsUpdate = true;
   } else {
-    const w = id === 'arhat' ? 512 : id === 'infant' ? 384 : id === 'ghost' ? 256 : 768;
-    const h = id === 'arhat' ? 768 : id === 'infant' ? 384 : id === 'ghost' ? 512 : 640;
+    const w = id === 'arhat' || id === 'colossus' || id === 'fist' ? 512 : id === 'infant' ? 384 : id === 'ghost' ? 256 : 768;
+    const h = id === 'arhat' || id === 'colossus' ? 768 : id === 'fist' ? 512 : id === 'infant' ? 384 : id === 'ghost' ? 512 : 640;
     const cv = document.createElement('canvas');
     cv.width = w;
     cv.height = h;
@@ -603,6 +897,8 @@ export function cardTexture(id: CardId): THREE.Texture {
     if (id === 'arhat') drawArhat(g);
     else if (id === 'ghost') drawGhost(g);
     else if (id === 'infant') drawInfant(g);
+    else if (id === 'colossus') drawColossus(g);
+    else if (id === 'fist') drawFist(g);
     else drawPhoenix(g);
     t = new THREE.CanvasTexture(cv);
     t.colorSpace = THREE.NoColorSpace;

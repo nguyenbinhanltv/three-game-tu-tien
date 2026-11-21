@@ -241,7 +241,9 @@ const POSED = ALL_SKILLS.filter((s) => s.kind !== 'dash');
 for (const s of POSED) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
 // VS-2e: chiêu tư thế (`kind: 'stance'` và chiêu có `stanceOf`) mượn hình của một chiêu thường: không tính vào luật "riêng",
 // nhưng phải trùng khít pose + fx + mốc ra đòn với đúng một chiêu thường để client (tra chiêu theo fx) vẫn ra đúng động tác.
-const borrows = (s: (typeof POSED)[number]) => s.kind === 'stance' || !!s.stanceOf;
+// TN-5: chiêu tư thế có fx RIÊNG (Hóa Hình) không mượn của ai, thành chiêu có hình + động tác riêng như chiêu thường.
+const borrows = (s: (typeof POSED)[number]) =>
+  !!s.stanceOf || (s.kind === 'stance' && POSED.some((o) => o !== s && o.kind !== 'stance' && !o.stanceOf && o.fx === s.fx));
 const OWN = POSED.filter((s) => !borrows(s));
 const skillPoses = OWN.map((s) => s.pose);
 if (new Set(skillPoses).size !== skillPoses.length) err('hai skill dùng chung một pose');

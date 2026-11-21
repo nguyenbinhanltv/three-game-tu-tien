@@ -29,6 +29,7 @@ import {
   danBeat,
   danGlowVisibility,
   effectiveOpacity,
+  cothanAura,
   daoOf,
   haloVisibility,
   isCalm,
@@ -63,6 +64,8 @@ interface AuraActor {
   model: { root: THREE.Object3D };
   /** Công pháp đang tu. */
   mt: string;
+  /** Mức hóa hình Cổ Thần hiển thị 0..1 (`PlayerVis.giant`); vắng = 0. */
+  giant?: number;
 }
 
 interface RealmAuraEnv {
@@ -257,6 +260,7 @@ export class RealmAuraFx {
         const stage = auraStage(a.lv);
         const level = this.allowed.get(a.sid);
         if (stage === 0 || !level || level === 'none') continue;
+        if (cothanAura(a.mt, a.giant, this.env.mode()).hidden) continue;
         const caps = auraCaps(tier, a.sid === this.env.mySid());
         if (!caps.main) continue;
         seen.add(a.sid);
@@ -310,7 +314,7 @@ export class RealmAuraFx {
 
   private tick(a: AuraActor, stage: AuraStage, caps: AuraCaps, level: AuraLevel, dt: number): void {
     const dao = daoOf(a.mt);
-    const mode = this.env.mode();
+    const mode = cothanAura(a.mt, a.giant, this.env.mode()).mode;
     const nSwords = dao === 'kiem' && stage >= 2 ? Math.max(1, Math.round(swordCount(a.lv) * caps.orbitScale)) : 0;
     const nPetals = dao === 'dan' && stage >= 2 ? Math.max(3, Math.round(6 * caps.orbitScale)) : 0;
     // Người khác ở mức "chỉ lớp chính" thì không dựng lớp nào khác (không tốn draw call).

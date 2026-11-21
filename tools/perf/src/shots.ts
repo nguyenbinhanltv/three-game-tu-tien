@@ -45,6 +45,7 @@ import v3sets from './scenarios/v3sets';
 import v3views from './scenarios/v3views';
 import thetu from './scenarios/thetu';
 import cothan from './scenarios/cothan';
+import cothanvfx from './scenarios/cothanvfx';
 import daotu from './scenarios/daotu';
 import cotu from './scenarios/cotu';
 import rigstretch from './scenarios/rigstretch';
@@ -118,6 +119,7 @@ const SCENARIOS: Scenario[] = [
   daotu,
   cotu,
   cothan,
+  cothanvfx,
   rigstretch,
   neck,
   skinv3,

@@ -83,6 +83,8 @@ import bacHoangAssetsJson from '../data/levels/bac_hoang.assets.json';
 import vanDinhJson from '../data/levels/van_dinh.json';
 import vanDinhTerrainJson from '../data/levels/van_dinh.terrain.json';
 import vanDinhAssetsJson from '../data/levels/van_dinh.assets.json';
+import gioiTriJson from '../data/levels/gioi_tri.json';
+import gioiTriAssetsJson from '../data/levels/gioi_tri.assets.json';
 import doKiepJson from '../data/levels/do_kiep.json';
 import doKiepBhJson from '../data/levels/do_kiep_bac_hoang.json';
 import phucMachJson from '../data/levels/phuc_mach.json';
@@ -217,6 +219,11 @@ import fx_skl_hoanh_dao from '../data/fx/skl_hoanh_dao.json';
 import fx_skl_tam_dao from '../data/fx/skl_tam_dao.json';
 import fx_skl_doan_luu from '../data/fx/skl_doan_luu.json';
 import fx_skl_liet_dia_tram from '../data/fx/skl_liet_dia_tram.json';
+import fx_skl_thai_co_quyen from '../data/fx/skl_thai_co_quyen.json';
+import fx_skl_tinh_bao from '../data/fx/skl_tinh_bao.json';
+import fx_skl_huyet_cu_ho from '../data/fx/skl_huyet_cu_ho.json';
+import fx_skl_co_than_nhat_kich from '../data/fx/skl_co_than_nhat_kich.json';
+import fx_skl_hoa_hinh from '../data/fx/skl_hoa_hinh.json';
 import fx_skl_kim_cuong_bat_hoai from '../data/fx/skl_kim_cuong_bat_hoai.json';
 import fx_skl_linh_khi_ho_the from '../data/fx/skl_linh_khi_ho_the.json';
 import fx_skl_loi_dinh_nhat_kiem from '../data/fx/skl_loi_dinh_nhat_kiem.json';
@@ -292,6 +299,7 @@ import poseCoBaoJson from '../data/poses/co_bao.json';
 import poseThuCoJson from '../data/poses/thu_co.json';
 import poseHoaCoVuongJson from '../data/poses/hoa_co_vuong.json';
 import poseCoQuyenJson from '../data/poses/co_quyen.json';
+import poseHoaHinhJson from '../data/poses/hoa_hinh.json';
 import poseHuyetCuHoJson from '../data/poses/huyet_cu_ho.json';
 import poseTinhBaoJson from '../data/poses/tinh_bao.json';
 import poseNhatKichJson from '../data/poses/nhat_kich.json';
@@ -372,6 +380,7 @@ export const LEVELS: Record<string, LevelDef> = {
   thien_khuyet: thienKhuyetJson as LevelDef,
   bac_hoang: bacHoangJson as LevelDef,
   van_dinh: vanDinhJson as LevelDef,
+  gioi_tri: gioiTriJson as LevelDef,
   do_kiep: doKiepJson as LevelDef,
   do_kiep_bac_hoang: doKiepBhJson as LevelDef,
   phuc_mach: phucMachJson as LevelDef,
@@ -397,6 +406,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   thien_khuyet: thienKhuyetAssetsJson as LevelAssets,
   bac_hoang: bacHoangAssetsJson as LevelAssets,
   van_dinh: vanDinhAssetsJson as LevelAssets,
+  gioi_tri: gioiTriAssetsJson as LevelAssets,
   do_kiep: doKiepAssetsJson as LevelAssets,
   do_kiep_bac_hoang: doKiepBhAssetsJson as LevelAssets,
   phuc_mach: phucMachAssetsJson as LevelAssets,
@@ -500,6 +510,7 @@ export const POSES = [
   poseThuCoJson,
   poseHoaCoVuongJson,
   poseCoQuyenJson,
+  poseHoaHinhJson,
   poseTinhBaoJson,
   poseHuyetCuHoJson,
   poseNhatKichJson,
@@ -597,6 +608,11 @@ export const FX_TIMELINES = [
   fx_skl_tam_dao,
   fx_skl_doan_luu,
   fx_skl_liet_dia_tram,
+  fx_skl_thai_co_quyen,
+  fx_skl_tinh_bao,
+  fx_skl_huyet_cu_ho,
+  fx_skl_co_than_nhat_kich,
+  fx_skl_hoa_hinh,
   fx_skl_kim_cuong_bat_hoai,
   fx_skl_linh_khi_ho_the,
   fx_skl_loi_dinh_nhat_kiem,
