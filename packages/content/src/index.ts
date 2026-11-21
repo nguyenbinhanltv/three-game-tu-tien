@@ -8,6 +8,7 @@ import {
   resolveSkill,
   type BranchPicks,
   type CloneMethodDef,
+  type JointDef,
   type MarkDef,
   type FxTimeline,
   type ResolvedSkill,
@@ -45,6 +46,7 @@ import monstersJson from '../data/monsters.json';
 import skillsJson from '../data/skills.json';
 import methodsJson from '../data/methods.json';
 import marksJson from '../data/marks.json';
+import jointsJson from '../data/joints.json';
 import recipesJson from '../data/recipes.json';
 import artifactsJson from '../data/artifacts.json';
 import clonesJson from '../data/clones.json';
@@ -254,6 +256,8 @@ export const METHOD_SKILLS = methodsJson.skills as SkillDef[];
 /** Ấn trên mục tiêu (VS-2c, data/marks.json): id → định nghĩa. */
 export const MARKS = marksJson as MarkDef[];
 export const MARK: ReadonlyMap<string, MarkDef> = new Map(MARKS.map((m) => [m.id, m]));
+/** Hợp kích tổ đội (VS-2f, data/joints.json). */
+export const JOINTS = jointsJson as JointDef[];
 /** id chiêu → biến thức A/B (cả chiêu chung lẫn chiêu công pháp). */
 export const VARIANTS = methodsJson.variants as unknown as Record<string, { a: SkillVariant; b: SkillVariant }>;
 export const RECIPES = [...(recipesJson as RecipeDef[]), ...(alchemyJson.recipes as RecipeDef[])];
