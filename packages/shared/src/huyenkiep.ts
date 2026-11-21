@@ -142,6 +142,18 @@ export function hkSealAfter(idx: number, shift: number, n: number): number {
   return (((idx + shift) % n) + n) % n;
 }
 
+/** Phần của thời gian suy nghĩ (`think`) mà vòng ấn dùng để xoay; phần còn lại đứng yên cho người chơi bước tới. */
+export const HK_VAN_SPIN_FRAC = 0.5;
+
+/**
+ * Góc (radian) vòng ấn Vấn Tâm đã xoay sau `t` giây kể từ lúc đổi chỗ: quay `shift` bước (mỗi bước 2π/n) trong `dur` giây, vào/ra êm, rồi đứng yên.
+ * Client dùng để vẽ các ấn (trông giống nhau) quay quanh tâm: người chơi bám mắt theo ấn vừa sáng. Xoay đủ thì ấn `idx` nằm đúng chỗ ấn `hkSealAfter(idx, shift, n)`.
+ */
+export function hkVanSpinAngle(shift: number, n: number, t: number, dur: number): number {
+  const k = Math.min(1, Math.max(0, t / Math.max(1e-6, dur)));
+  return ((shift * Math.PI * 2) / n) * (k * k * (3 - 2 * k));
+}
+
 /** Góc giữa cung sinh của vòng luân hồi tại thời điểm `t` giây kể từ mốc `(theta0, dir × speed)`. */
 export function hkLuanAngle(theta0: number, omega: number, t: number): number {
   const two = Math.PI * 2;

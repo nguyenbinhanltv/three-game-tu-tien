@@ -21,6 +21,8 @@ import {
   PF_SOUL,
   inSkyBand,
   SOUL_SCOUT,
+  HK_VAN_SPIN_FRAC,
+  hkVanSpinAngle,
   hkLuanAngle,
   hkRingPos,
   tribDef,
@@ -744,7 +746,11 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
   }
 }
 
+/** Vòng ấn Vấn Tâm đang hiện của từng người: tâm, số ấn, bán kính và phép xoay đang chạy (chỉ là hình). */
+const hkVan = new Map<string, { x: number; z: number; n: number; ring: number; shift: number; t0: number; dur: number }>();
+
 function clearHkMarks(eng: Game, sid: string, prefix = ''): void {
+  if (!prefix) hkVan.delete(sid);
   for (const [k, h] of eng.hkMarks) {
     if (!k.startsWith(`${sid}:${prefix}`)) continue;
     h.stop();
@@ -805,11 +811,43 @@ function hkMark(eng: Game, m: FxMsg): void {
   } else if (kind === 'ly') {
     if (pg === 1) put('an', 0xf3c860, x, z, { h: 3, r: m.r ?? 6, dur: 40, opacity: 0.3 });
   } else if (kind === 'van') {
-    if (pg === 1)
-      ring(m.n ?? 3, m.r ?? 7, (i, px, pz) => put('a' + i, 0x7d6be0, px, pz, { h: 2.5, r: m.lv ?? 2.6, dur: 40, opacity: 0.3 }));
-    else if (pg === 2) put('show', 0xfff1c9, x, z, { h: 9, r: m.r ?? 2.6, dur: m.d ?? 1.4, opacity: 0.6, pulse: 14 });
-    else if (pg === 3) drop('show');
-    else if (pg === 4 || pg === 5) put('show', pg === 4 ? 0x8fe3b0 : 0xff5a3a, x, z, { h: 6, r: m.r ?? 2.6, dur: 0.9, opacity: 0.55 });
+    if (pg === 1) {
+      // Các cột ấn trông giống nhau và cùng quay quanh tâm theo `hkVan` (góc lệch chung): lúc đổi chỗ người chơi bám mắt theo cột vừa sáng.
+      const n = m.n ?? 3;
+      const rr = m.r ?? 7;
+      const v = { x, z, n, ring: rr, shift: 0, t0: 0, dur: 1 };
+      hkVan.set(src, v);
+      for (let i = 0; i < n; i++) {
+        const k = `${src}:van:a${i}`;
+        eng.hkMarks.get(k)?.stop();
+        eng.hkMarks.set(
+          k,
+          eng.vfx.suyBeacon(
+            () => {
+              const a = (i * Math.PI * 2) / n + hkVanSpinAngle(v.shift, n, (performance.now() - v.t0) / 1000, v.dur);
+              return at(v.x + Math.sin(a) * rr, v.z + Math.cos(a) * rr);
+            },
+            0x9d8bf0,
+            { h: 4.5, r: m.lv ?? 2.6, dur: 40, opacity: 0.5 },
+            on,
+          ),
+        );
+      }
+    } else if (pg === 2) {
+      // Lượt mới: đưa vòng về góc gốc (các cột giống nhau nên không thấy giật), rồi ấn thật sáng lên.
+      const v = hkVan.get(src);
+      if (v) v.shift = 0;
+      put('show', 0xfff1c9, x, z, { h: 9, r: m.r ?? 2.6, dur: m.d ?? 1.4, opacity: 0.6, pulse: 14 });
+    } else if (pg === 3) {
+      // Ấn tắt sáng, cả vòng quay `n` bước trong nửa đầu thời gian suy nghĩ.
+      drop('show');
+      const v = hkVan.get(src);
+      if (v) {
+        v.shift = m.n ?? 0;
+        v.t0 = performance.now();
+        v.dur = Math.max(0.4, (m.d ?? 3) * HK_VAN_SPIN_FRAC);
+      }
+    } else if (pg === 4 || pg === 5) put('show', pg === 4 ? 0x8fe3b0 : 0xff5a3a, x, z, { h: 6, r: m.r ?? 2.6, dur: 0.9, opacity: 0.55 });
   } else if (kind === 'chau') {
     const i = String(m.n ?? 0);
     if (pg === 1) put(i, 0xa7f0d8, x, z, { h: 3.5, r: 1.2, dur: m.d ?? 6, opacity: 0.55, pulse: 6 });
