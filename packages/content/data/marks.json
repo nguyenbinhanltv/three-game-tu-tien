@@ -4,5 +4,6 @@
   { "id": "tran_an", "on": "mon", "max": 1, "dur": 6, "method": "bat_dong_kim_than", "color": "ffc95a" },
   { "id": "mat_the", "on": "mon", "max": 1, "dur": 5, "method": "bat_dong_kim_than", "ampAll": 0.15, "onApply": { "stun": 1, "posture": 0.2 }, "color": "ff8a5a" },
   { "id": "moc_an", "on": "ally", "max": 1, "dur": 10, "method": "thanh_moc_dan_kinh", "color": "7dffa0" },
-  {"id": "hon_an", "on": "mon", "max": 3, "dur": 8, "method": "dan_hon_kinh", "dot": {"per": 0.08, "leech": 0.2}, "color": "b9a8ff"}
+  {"id": "hon_an", "on": "mon", "max": 3, "dur": 8, "method": "dan_hon_kinh", "dot": {"per": 0.08, "leech": 0.2}, "color": "b9a8ff"},
+  {"id": "dao_ngan", "on": "mon", "max": 3, "dur": 8, "method": "liet_nhan_dao_kinh", "color": "d9482f"}
 ]

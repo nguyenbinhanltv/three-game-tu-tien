@@ -87,5 +87,49 @@
       "gold": 300,
       "grant": "itm_hon_phien"
     }
+  },
+  {
+    "id": "dao_tu",
+    "role": "dps",
+    "methods": [
+      "liet_nhan_dao_kinh"
+    ],
+    "dao": "kiem",
+    "art": "kiem",
+    "voice": "kt",
+    "gm": "dao",
+    "weapons": [
+      "greatblade"
+    ],
+    "palette": {
+      "core": "3a0e0c",
+      "body": "9e2b22",
+      "rim": "f2b36a",
+      "accent": "c9ced4",
+      "shadow": "1a0706"
+    },
+    "tint": "f2b36a",
+    "hit": {
+      "sfx": "impact",
+      "gain": 0.18,
+      "rate": 0.85,
+      "strongOnly": true
+    },
+    "match": [
+      "dao_tu",
+      "dao_kinh"
+    ],
+    "synergy": {
+      "gives": [
+        "dao_ngan"
+      ],
+      "wants": [
+        "mat_the"
+      ]
+    },
+    "unlock": {
+      "level": 10,
+      "gold": 300
+    }
   }
 ]

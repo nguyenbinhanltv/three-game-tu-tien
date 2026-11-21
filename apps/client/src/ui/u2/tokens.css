@@ -234,6 +234,9 @@
   --u-h-crimson: #b9382e;
   --u-h-crimson-hi: #e4624f;
   /* Hồn lực (TN-2): bạc lạnh / xám tím tro, theo bảng màu hướng Hồn tu. */
+  /* Khí thế (Đao tu): vàng tàn lửa / son thẫm, theo bảng màu hướng Đao tu. */
+  --u-h-blade-hi: #f2b36a;
+  --u-h-blade-lo: #9e2b22;
   --u-h-soul-hi: #c9d4e0;
   --u-h-soul-lo: #6e6a8c;
   --u-h-glow-gold: 0 0 10px rgba(201, 164, 92, 0.28);

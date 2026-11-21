@@ -204,6 +204,12 @@ import fx_hon_reap from '../data/fx/hon_reap.json';
 import fx_hon_binh_stand from '../data/fx/hon_binh_stand.json';
 import fx_skl_kiem_vu_tam_diep from '../data/fx/skl_kiem_vu_tam_diep.json';
 import fx_skl_kim_chung_tran from '../data/fx/skl_kim_chung_tran.json';
+import fx_skl_bao_nhan from '../data/fx/skl_bao_nhan.json';
+import fx_skl_tram_son_dao from '../data/fx/skl_tram_son_dao.json';
+import fx_skl_hoanh_dao from '../data/fx/skl_hoanh_dao.json';
+import fx_skl_tam_dao from '../data/fx/skl_tam_dao.json';
+import fx_skl_doan_luu from '../data/fx/skl_doan_luu.json';
+import fx_skl_liet_dia_tram from '../data/fx/skl_liet_dia_tram.json';
 import fx_skl_kim_cuong_bat_hoai from '../data/fx/skl_kim_cuong_bat_hoai.json';
 import fx_skl_linh_khi_ho_the from '../data/fx/skl_linh_khi_ho_the.json';
 import fx_skl_loi_dinh_nhat_kiem from '../data/fx/skl_loi_dinh_nhat_kiem.json';
@@ -266,6 +272,12 @@ import poseSuuHonThuatJson from '../data/poses/suu_hon_thuat.json';
 import poseAmHonTrieuJson from '../data/poses/am_hon_trieu.json';
 import poseDinhThanThuatJson from '../data/poses/dinh_than_thuat.json';
 import poseHoangTuyenDanJson from '../data/poses/hoang_tuyen_dan.json';
+import poseBaoNhanJson from '../data/poses/bao_nhan.json';
+import poseTramSonDaoJson from '../data/poses/tram_son_dao.json';
+import poseHoanhDaoJson from '../data/poses/hoanh_dao.json';
+import poseTamDaoJson from '../data/poses/tam_dao.json';
+import poseDoanLuuJson from '../data/poses/doan_luu.json';
+import poseLietDiaTramJson from '../data/poses/liet_dia_tram.json';
 import posePhanAnhKiemAnhJson from '../data/poses/phan_anh_kiem_anh.json';
 import poseKimChungJson from '../data/poses/kim_chung.json';
 import poseSonNhacJson from '../data/poses/son_nhac.json';
@@ -445,6 +457,12 @@ export const POSES = [
   poseAmHonTrieuJson,
   poseDinhThanThuatJson,
   poseHoangTuyenDanJson,
+  poseBaoNhanJson,
+  poseTramSonDaoJson,
+  poseHoanhDaoJson,
+  poseTamDaoJson,
+  poseDoanLuuJson,
+  poseLietDiaTramJson,
   posePhanAnhKiemAnhJson,
   poseKimChungJson,
   poseSonNhacJson,
@@ -527,6 +545,12 @@ export const FX_TIMELINES = [
   fx_skl_tat_dau_thanh_binh,
   fx_skl_kiem_vu_tam_diep,
   fx_skl_kim_chung_tran,
+  fx_skl_bao_nhan,
+  fx_skl_tram_son_dao,
+  fx_skl_hoanh_dao,
+  fx_skl_tam_dao,
+  fx_skl_doan_luu,
+  fx_skl_liet_dia_tram,
   fx_skl_kim_cuong_bat_hoai,
   fx_skl_linh_khi_ho_the,
   fx_skl_loi_dinh_nhat_kiem,

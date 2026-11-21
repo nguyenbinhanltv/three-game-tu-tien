@@ -40,6 +40,8 @@ Thuật ngữ riêng của Huyền Kiếp (TN-6, `glossary.huyenKiepTerms`) đ�
 
 Hồn tu (TN-2): bốn tên chiêu **gốc** thuộc mức Cẩn trọng, chỉ giữ tên, cơ chế và mô tả tự viết: Phệ Hồn, Sưu Hồn Thuật, Định Thân Thuật, Tát Đậu Thành Binh. Còn lại **tự đặt** từ từ ghép thể loại: Dẫn Hồn Kinh (công pháp), Hồn ấn, U Ảnh Bộ, Tế Phiên, Hồn Trảo, Âm Phong, Hồn Chướng, Âm Hồn Triều, Hoàng Tuyền Dẫn và tên bốn nhánh (Sưu Hồn, Hồn Triều, Định Hồn, Hoàng Tuyền). "Hồn tu", "hồn lực", "hồn phiên" là thuật ngữ thể loại (`glossary.dao`). Không dùng tên hồn phiên riêng của truyện, không nhắc nhân vật hay tình tiết.
 
+Đao tu: toàn bộ tên **tự đặt** từ từ ghép thể loại (không chiêu nào lấy nguyên tên gốc): Liệt Nhận Đao Kinh (công pháp), Đao ngấn, Khí thế, Phá Phong Tiến, Bạo Nhận, Trảm Sơn Đao, Đao Thế, Đoạn Nhận, Quét Ngang, Hộ Đao, Hoành Đao, Tâm Đao, Đoạn Lưu, Liệt Địa Trảm và tên bốn nhánh. "Đao tu", "khí thế" là thuật ngữ thể loại. Không dùng tên đao riêng của truyện, không nhắc nhân vật hay tình tiết.
+
 Tên Hán-Việt lấy từ wiki fan, nhiều mục chỉ có một nguồn; khi người dùng sửa thì `glossary.json` là nguồn đúng. Nguồn khái niệm và độ chắc từng mục ghi ở tài liệu kế hoạch nội bộ, không đưa vào lời thoại hay UI.
 
 ## Kiểm tự động
