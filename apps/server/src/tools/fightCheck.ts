@@ -129,6 +129,7 @@ function fightOnce(level: number, method: string | undefined): Result {
   const stance = NOSTANCE ? undefined : usable.find((s) => s.kind === 'stance' && s.stance);
   const skills = usable.filter((s) => s.kind !== 'stance' && !s.stanceOf);
   const hp0 = char.hp;
+  const hpAll = mons.reduce((n, m) => n + m.s.hp, 0);
   const t0 = fake;
   for (let step = 0; step < 1200 && mons.some((m) => m.state !== MS_DEAD); step++) {
     fake += 100;
@@ -143,12 +144,20 @@ function fightOnce(level: number, method: string | undefined): Result {
     const order = [
       ...skills.filter((s) => low && (s.kind === 'shield' || s.kind === 'heal' || s.kind === 'hot')),
       ...skills.filter((s) => s.ult && p.mth.charge >= CHARGE_MAX && s.kind !== 'revive' && s.kind !== 'guard'),
-      ...skills.filter((s) => s.cd > 0 && (s.kind === 'damage' || s.kind === 'aoe' || s.kind === 'taunt' || s.kind === 'hot')),
+      // Chiêu `line` (chiêu nhánh VS-2d như Hoành Kiếm Phá Mạch) cũng là chiêu đánh: quái đứng trước mặt nên luôn trúng.
+      ...skills.filter(
+        (s) => s.cd > 0 && (s.kind === 'damage' || s.kind === 'aoe' || s.kind === 'line' || s.kind === 'taunt' || s.kind === 'hot'),
+      ),
       SKILL.get('skl_phi_kiem')!,
     ];
-    // Vào tư thế ngay khi dùng được; đang giữ tư thế thì ô bị đổi dùng chiêu tư thế.
+    // Dồn chiêu có hồi chiêu trước, hết rồi mới vào tư thế (thay cho đánh thường); đang giữ tư thế thì ô bị đổi dùng chiêu tư thế.
+    // (Vào tư thế ngay đầu trận tốn một nhịp GCD và đổi chiêu mở màn sang bản trận hệ số thấp hơn.)
     const inStance = stanceActive(p.mth.stance, fake) && stance?.id === p.mth.stance.id;
-    if (stance && !inStance && ready(stance)) {
+    const burstReady = order.some((x) => x.cd > 0 && ready(x));
+    // Tư thế hồi 45 giây: chỉ đáng bật khi trận còn dài (quái còn hơn nửa tổng máu), không bật để dứt điểm con sắp chết.
+    const hpLeft = mons.reduce((n, m) => n + (m.state === MS_DEAD ? 0 : m.s.hp), 0);
+    const longFight = hpLeft > hpAll * 0.5;
+    if (stance && !inStance && !burstReady && longFight && ready(stance)) {
       sim.onSkill(p, { id: stance.id });
       continue;
     }
