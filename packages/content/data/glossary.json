@@ -59,7 +59,7 @@
   },
   "paths": {
     "kiem_tu": "Kiếm tu",
-    "the_tu": "Hộ pháp",
+    "the_tu": "Thể tu",
     "dan_su": "Đan sư"
   },
   "joints": {
@@ -308,7 +308,7 @@
     "resonance": "Cộng hưởng",
     "roles": {
       "dps": "Kiếm tu",
-      "tank": "Hộ pháp",
+      "tank": "Thể tu",
       "support": "Đan sư"
     }
   },

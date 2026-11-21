@@ -84,7 +84,7 @@ describe('nhịp chương 2 + 3 (sim:progress)', () => {
   });
 
   it('Ngưng Khí 1 → 15 vẫn 3–4 giờ cho cả ba công pháp', () => {
-    const m = /Kiếm tu ([\d.]+) giờ, Hộ pháp ([\d.]+) giờ, Đan sư ([\d.]+) giờ/.exec(out);
+    const m = /Kiếm tu ([\d.]+) giờ, Thể tu ([\d.]+) giờ, Đan sư ([\d.]+) giờ/.exec(out);
     expect(m).not.toBeNull();
     for (const v of m!.slice(1, 4).map(Number)) {
       expect(v).toBeGreaterThanOrEqual(3);
