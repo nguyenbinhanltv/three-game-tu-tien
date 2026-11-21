@@ -8,9 +8,13 @@ export const TRUC_CO_LEVEL = 16;
 export const KET_DAN_LEVEL = 20;
 export const NGUYEN_ANH_LEVEL = 24;
 export const HOA_THAN_LEVEL = 28;
+/** Anh Biến 32–35 (chương 6, TN-3: chặng nhập giới), Vấn Đỉnh 36–39, Âm Hư 40–43, Dương Thực 44 (sơ kỳ, trần tạm). */
 export const ANH_BIEN_LEVEL = 32;
-/** Anh Biến sơ kỳ (cấp 32) là trần mới của chương 5 (`docs/DIVUC_DESIGN.md` 2.1). */
-export const MAX_LEVEL = 32;
+export const VAN_DINH_LEVEL = 36;
+export const AM_HU_LEVEL = 40;
+export const DUONG_THUC_LEVEL = 44;
+/** Dương Thực sơ kỳ (cấp 44) là trần tạm của chương 6 (TN-3, `tn3/thiet-ke.md` mục 2); trước đó là Anh Biến sơ kỳ 32 (`docs/DIVUC_DESIGN.md` 2.1). */
+export const MAX_LEVEL = 44;
 export const FLY_UNLOCK_LEVEL = 3;
 
 export const GCD = 1.0;
@@ -40,6 +44,19 @@ const XP_NEED_ADV: readonly number[] = [
   242_000,
   250_000,
   257_500, // Hóa Thần 28–31 (DIVUC_DESIGN 2.2: 2,5 giờ/cấp)
+  // Chương 6 (TN-3, tn3/thiet-ke.md mục 1): giờ/cấp × thu nhập `450 × (12+7L)`. Anh Biến 32–35 0,5 giờ (~2 giờ), Vấn Đỉnh 36–39 và Âm Hư 40–43 1,25 giờ (~10 giờ).
+  53_000,
+  54_500,
+  56_000,
+  58_000, // Anh Biến 32–35
+  148_500,
+  152_500,
+  156_500,
+  160_500, // Vấn Đỉnh 36–39
+  164_500,
+  168_000,
+  172_000,
+  176_000, // Âm Hư 40–43
 ];
 
 /** Tu vi cần để đầy cảnh giới hiện tại. */
@@ -65,6 +82,9 @@ export const REALM_MUL: readonly { from: number; mul: number }[] = [
   { from: NGUYEN_ANH_LEVEL, mul: 3.8 },
   { from: HOA_THAN_LEVEL, mul: 5.5 },
   { from: ANH_BIEN_LEVEL, mul: 7.8 },
+  { from: VAN_DINH_LEVEL, mul: 11 },
+  { from: AM_HU_LEVEL, mul: 15.5 },
+  { from: DUONG_THUC_LEVEL, mul: 22 },
 ];
 export const MONSTER_REALM_MUL = REALM_MUL;
 
@@ -76,17 +96,23 @@ export function realmMul(level: number): number {
 
 /** Đại cảnh giới của cấp: 0 Ngưng Khí, 1 Trúc Cơ, 2 Kết Đan, 3 Nguyên Anh, 4 Hóa Thần (chỉ số của `glossary.realms`). */
 export function majorRealmOf(level: number): number {
-  return level >= ANH_BIEN_LEVEL
-    ? 5
-    : level >= HOA_THAN_LEVEL
-      ? 4
-      : level >= NGUYEN_ANH_LEVEL
-        ? 3
-        : level >= KET_DAN_LEVEL
-          ? 2
-          : level >= TRUC_CO_LEVEL
-            ? 1
-            : 0;
+  return level >= DUONG_THUC_LEVEL
+    ? 8
+    : level >= AM_HU_LEVEL
+      ? 7
+      : level >= VAN_DINH_LEVEL
+        ? 6
+        : level >= ANH_BIEN_LEVEL
+          ? 5
+          : level >= HOA_THAN_LEVEL
+            ? 4
+            : level >= NGUYEN_ANH_LEVEL
+              ? 3
+              : level >= KET_DAN_LEVEL
+                ? 2
+                : level >= TRUC_CO_LEVEL
+                  ? 1
+                  : 0;
 }
 
 /** Tầng/kỳ trong đại cảnh giới của cấp, tính từ 1 (Ngưng Khí tầng 12 → 12, Kết Đan sơ kỳ → 1). Dùng cho chữ triện ở khung nhân vật. */

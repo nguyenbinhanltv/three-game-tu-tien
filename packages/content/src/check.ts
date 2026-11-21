@@ -1222,7 +1222,8 @@ for (const m of MONSTERS) if ((m.elite || m.boss) && !m.elem) err(`quái ${m.id}
 needItem(PHA_CANH_PILL, 'Phá Cảnh Đan');
 if (ITEM.get(PHA_CANH_PILL)?.use) err('Phá Cảnh Đan không có `use`: chỉ dùng qua bình cảnh (server)');
 if (!RECIPES.some((r) => r.output.id === PHA_CANH_PILL)) err('thiếu công thức luyện Phá Cảnh Đan');
-if (BOTTLENECK_LEVELS.join() !== '5,10,15,17,19,21,23,25,27,29,31') err('bình cảnh phải ở cấp 5, 10, 15, 17, 19, 21, 23, 25, 27, 29, 31');
+if (BOTTLENECK_LEVELS.join() !== '5,10,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43')
+  err('bình cảnh phải ở cấp 5, 10, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43');
 // Thang cảnh giới (E1-C): realms.json đủ 1…MAX_LEVEL, tên đúng đại cảnh giới của glossary, xpNeed tăng đều, hệ số cảnh giới tăng.
 if (REALMS.length !== MAX_LEVEL) err(`realms.json phải có ${MAX_LEVEL} cấp (đang ${REALMS.length})`);
 REALMS.forEach((r, i) => {
@@ -1238,7 +1239,8 @@ REALMS.forEach((r, i) => {
   )
     err(`xpNeed(${r.level}) phải lớn hơn cấp trước`);
 });
-if (!t(`realm.${MAX_LEVEL}`).endsWith('sơ kỳ')) err('cấp tối đa tạm là Anh Biến sơ kỳ');
+if (!t(`realm.${MAX_LEVEL}`).startsWith('Dương Thực') || !t(`realm.${MAX_LEVEL}`).endsWith('sơ kỳ'))
+  err('cấp tối đa tạm là Dương Thực sơ kỳ');
 if (!MONSTER.has('mon_tam_ma')) err('thiếu quái mon_tam_ma (bóng tâm ma của thử thách bình cảnh)');
 if (!NPCS.some((n) => n.rootChange)) err('không NPC nào đổi linh căn');
 for (const n of NPCS) if (n.rootChange) needStr(`npc.${n.id}.root`);

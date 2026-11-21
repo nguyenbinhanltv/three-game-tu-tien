@@ -5,7 +5,19 @@ import raw from '../../content/data/tribulations.json';
 import { at } from './arr';
 import { ELEM_BEATS, ELEMENTS, type Element } from './elements';
 
-export type TribId = 'truc_co' | 'ket_dan' | 'nguyen_anh' | 'hoa_than' | 'anh_bien' | 'ngu_suy' | 'huyen_ngoai' | 'huyen_noi' | 'huyen_hon';
+export type TribId =
+  | 'truc_co'
+  | 'ket_dan'
+  | 'nguyen_anh'
+  | 'hoa_than'
+  | 'anh_bien'
+  | 'van_dinh'
+  | 'am_hu'
+  | 'duong_thuc'
+  | 'ngu_suy'
+  | 'huyen_ngoai'
+  | 'huyen_noi'
+  | 'huyen_hon';
 export type TribPhaseKind = 'lei' | 'hoa' | 'tam_ma';
 /** Độ kiếp chạy ngay trong room thế giới hay room riêng (tổ đội vào cùng). */
 export type TribRoomKind = 'world' | 'tribulation';
@@ -372,6 +384,11 @@ export interface TribDef {
   stageGold?: number[];
   /** Nội tại mở khi qua đủ chuỗi. */
   law?: TribLaw;
+  /**
+   * Mốc thật mà chuỗi sẽ mở khi thang cấp đủ dài (TN-3): Ngũ Suy 59→60 (cuối Toái Niết), Huyền Kiếp sau Không Huyền. Chỉ là ghi chú dữ liệu;
+   * `from`/`to` vẫn là mốc tạm (= `MAX_LEVEL`) để GM và test chạy được, và đổi sang `milestone` khi thang cấp tới đó.
+   */
+  milestone?: { from: number; to: number };
   /** Kiếp chuỗi phải qua đủ trước khi vào chuỗi này (Huyền Kiếp: Ngoại → Nội → Hồn). */
   after?: TribId;
 }

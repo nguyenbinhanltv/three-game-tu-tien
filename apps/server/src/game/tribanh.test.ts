@@ -105,9 +105,9 @@ function lightAll(t: ReturnType<typeof setup>) {
 }
 
 describe('Nhật Thực Kiếp: dữ liệu và hàm thuần', () => {
-  it('Anh Biến là cấp 32 và trần mới; kiếp mở từ Hóa Thần đại viên mãn 31, 90 s, room riêng ở sân Bắc Hoang', () => {
+  it('Anh Biến bắt đầu ở cấp 32 (trần mới là 44 từ TN-3); kiếp mở từ Hóa Thần đại viên mãn 31, 90 s, room riêng ở sân Bắc Hoang', () => {
     expect(ANH_BIEN_LEVEL).toBe(32);
-    expect(MAX_LEVEL).toBe(32);
+    expect(MAX_LEVEL).toBe(44);
     expect(tribForLevel(31)?.id).toBe('anh_bien');
     expect(DEF.enabled).toBe(true);
     expect(DEF.item).toBe(ITEM);
@@ -119,6 +119,7 @@ describe('Nhật Thực Kiếp: dữ liệu và hàm thuần', () => {
     expect(LEVELS.do_kiep_bac_hoang.tribulation).toBe(true);
     expect(peakGated(31)).toBe(false);
     expect(parseRealmCode('ab')).toBe(32);
+    expect(parseRealmCode('ab4')).toBe(35);
     expect(parseRealmCode('ht4')).toBe(31);
   });
 
@@ -256,18 +257,18 @@ describe('Anh Biến: dữ liệu cũ khi nâng trần', () => {
 });
 
 describe('Anh Biến: nạp nhân vật và sổ cái', () => {
-  it('Character.load kẹp tu vi theo xpNeed(cấp): cấp 28 từng là trần 99.999.999 thì về xpNeed(28), cấp 32 giữ nguyên', () => {
+  it('Character.load kẹp tu vi theo xpNeed(cấp): cấp 28 từng là trần 99.999.999 thì về xpNeed(28), trần mới (44) giữ nguyên', () => {
     const a = Character.create(acc++, 'kepa' + acc);
     a.level = 28;
     a.xp = 99_999_999;
     a.save();
     expect(Character.load(a.id).xp).toBe(xpNeed(28));
     const b = Character.create(acc++, 'kepb' + acc);
-    b.level = 32;
+    b.level = MAX_LEVEL;
     b.xp = 99_999_999;
     b.save();
     expect(Character.load(b.id).xp).toBe(99_999_999);
-    expect(xpNeed(32)).toBe(99_999_999);
+    expect(xpNeed(MAX_LEVEL)).toBe(99_999_999);
   });
 
   it('ledger: tiêu Anh Biến Lộ khi vào kiếp và hoàn khi thất bại muộn đều có idem, hoàn không lặp', async () => {

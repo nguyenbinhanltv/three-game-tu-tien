@@ -234,10 +234,331 @@
         }
       ]
     },
+    "van_dinh": {
+      "_doc": "TN-3: kiếp chương 6, bản đầu. Chưa bật (item null, enabled false) cho tới khi có vật phẩm đột phá bậc 6 và cân bằng; dùng lại cơ chế có sẵn, chưa có cơ chế riêng.",
+      "from": 35,
+      "to": 36,
+      "enabled": false,
+      "item": null,
+      "room": "tribulation",
+      "element": "dao",
+      "duration": 100,
+      "firstDelay": 3,
+      "failXpLoss": 0.15,
+      "refundAfter": 50,
+      "pillMax": 3,
+      "aim": {
+        "r": 4.2,
+        "delay": 1.25
+      },
+      "extraDelay": {
+        "min": 1.2,
+        "max": 1.7
+      },
+      "extraDist": {
+        "min": 5,
+        "max": 14
+      },
+      "guard": {
+        "r": 20
+      },
+      "phases": [
+        {
+          "id": "loi",
+          "kind": "lei",
+          "end": 28,
+          "gap": 2,
+          "gapEnd": 1,
+          "aimPct": 0.3,
+          "extra": 2,
+          "extraR": 3.6,
+          "extraPct": 0.24,
+          "mechanic": "tia_xich",
+          "tiaXich": {
+            "every": 3.4,
+            "len": 16,
+            "w": 2.6,
+            "warn": 1.3,
+            "pct": 0.2,
+            "endR": 3.2,
+            "endPct": 0.2
+          }
+        },
+        {
+          "id": "hoa",
+          "kind": "hoa",
+          "end": 62,
+          "gap": 4,
+          "aimPct": 0,
+          "grid": {
+            "cols": 4,
+            "rows": 4,
+            "cell": 7,
+            "pick": 2,
+            "warn": 1.5,
+            "burn": 3,
+            "pct": 0.26
+          }
+        },
+        {
+          "id": "tam_ma",
+          "kind": "tam_ma",
+          "end": 100,
+          "gap": 2.2,
+          "aimPct": 0.17,
+          "extra": 1,
+          "extraR": 3.4,
+          "extraPct": 0.1,
+          "mechanic": "tam_canh",
+          "tamCanh": {
+            "hurt": 5,
+            "hit": 1.5,
+            "skillEvery": 4,
+            "skillWarn": 1.1,
+            "skillPow": 0.6
+          },
+          "shadows": {
+            "once": true,
+            "count": 2,
+            "levelDelta": 2,
+            "hpFrac": 1,
+            "maxAlive": 2
+          }
+        }
+      ]
+    },
+    "am_hu": {
+      "_doc": "TN-3: kiếp chương 6, bản đầu. Chưa bật (item null, enabled false) cho tới khi có vật phẩm đột phá bậc 6 và cân bằng; dùng lại cơ chế có sẵn, chưa có cơ chế riêng.",
+      "from": 39,
+      "to": 40,
+      "enabled": false,
+      "item": null,
+      "room": "tribulation",
+      "element": "am_hu",
+      "duration": 110,
+      "firstDelay": 3,
+      "failXpLoss": 0.15,
+      "refundAfter": 55,
+      "pillMax": 3,
+      "aim": {
+        "r": 4.2,
+        "delay": 1.25
+      },
+      "extraDelay": {
+        "min": 1.2,
+        "max": 1.7
+      },
+      "extraDist": {
+        "min": 5,
+        "max": 14
+      },
+      "guard": {
+        "r": 20
+      },
+      "phases": [
+        {
+          "id": "nguyen_hon",
+          "kind": "lei",
+          "end": 30,
+          "gap": 1.8,
+          "aimPct": 0.07,
+          "extra": 2,
+          "extraR": 3.6,
+          "extraPct": 0.09,
+          "mechanic": "ngu_hanh",
+          "nguHanh": {
+            "ring": 9,
+            "sealR": 3,
+            "pad": 3,
+            "first": 3,
+            "every": 5,
+            "warn": 2.2,
+            "pct": 0.2,
+            "cut": 0.8
+          }
+        },
+        {
+          "id": "phan_hon",
+          "kind": "lei",
+          "end": 70,
+          "gap": 2,
+          "aimPct": 0.11,
+          "extra": 3,
+          "extraR": 3.8,
+          "extraPct": 0.11,
+          "mechanic": "phan_than",
+          "phanThan": {
+            "life": 20,
+            "max": 4,
+            "sweeps": [
+              6,
+              17
+            ],
+            "sweepLen": 30,
+            "sweepW": 4,
+            "sweepWarn": 1.8,
+            "sweepPct": 0.2,
+            "pillarAt": 24,
+            "pillars": 3,
+            "pillarR": 4,
+            "pillarWarn": 2.5,
+            "pillarPct": 0.3,
+            "linkAt": 25,
+            "linkWarn": 2.5,
+            "linkPct": 0.35
+          },
+          "net": {
+            "lines": 3,
+            "count": 7,
+            "r": 2.1,
+            "step": 4,
+            "gap": 7,
+            "delay": 1,
+            "pct": 0.2,
+            "every": 3
+          }
+        },
+        {
+          "id": "am_hu_hop_nhat",
+          "kind": "lei",
+          "end": 110,
+          "gap": 0.9,
+          "aimPct": 0.08,
+          "extra": 2,
+          "extraR": 3.4,
+          "extraPct": 0.06,
+          "mechanic": "phan_than",
+          "phanThan": {
+            "life": 20,
+            "max": 4,
+            "absorb": 0.4
+          },
+          "shadows": {
+            "once": true,
+            "count": 2,
+            "levelDelta": 0,
+            "hpFrac": 0.4,
+            "maxAlive": 2
+          },
+          "final": {
+            "r": 11,
+            "delay": 4,
+            "pct": 0.75,
+            "defMul": 2,
+            "defMaxCut": 0.5,
+            "guardShare": 0.25,
+            "guardMax": 2,
+            "guardR": 12
+          }
+        }
+      ]
+    },
+    "duong_thuc": {
+      "_doc": "TN-3: kiếp chương 6, bản đầu. Chưa bật (item null, enabled false) cho tới khi có vật phẩm đột phá bậc 6 và cân bằng; dùng lại cơ chế có sẵn, chưa có cơ chế riêng.",
+      "from": 43,
+      "to": 44,
+      "enabled": false,
+      "item": null,
+      "room": "tribulation",
+      "element": "duong_thuc",
+      "duration": 120,
+      "firstDelay": 3,
+      "failXpLoss": 0.15,
+      "refundAfter": 60,
+      "pillMax": 3,
+      "aim": {
+        "r": 4.2,
+        "delay": 1.25
+      },
+      "extraDelay": {
+        "min": 1.2,
+        "max": 1.7
+      },
+      "extraDist": {
+        "min": 5,
+        "max": 14
+      },
+      "guard": {
+        "r": 20
+      },
+      "phases": [
+        {
+          "id": "duong_loi",
+          "kind": "lei",
+          "end": 30,
+          "gap": 1.6,
+          "aimPct": 0.07,
+          "extra": 2,
+          "extraR": 3.6,
+          "extraPct": 0.09,
+          "mechanic": "ngu_hanh",
+          "nguHanh": {
+            "ring": 9,
+            "sealR": 3,
+            "pad": 3,
+            "first": 3,
+            "every": 5,
+            "warn": 2.2,
+            "pct": 0.2,
+            "cut": 0.8
+          }
+        },
+        {
+          "id": "thuc_hoa",
+          "kind": "hoa",
+          "end": 66,
+          "gap": 4,
+          "aimPct": 0,
+          "grid": {
+            "cols": 4,
+            "rows": 4,
+            "cell": 7,
+            "pick": 2,
+            "warn": 1.5,
+            "burn": 3,
+            "pct": 0.26
+          }
+        },
+        {
+          "id": "duong_thuc_hop_nhat",
+          "kind": "lei",
+          "end": 120,
+          "gap": 0.9,
+          "aimPct": 0.08,
+          "extra": 2,
+          "extraR": 3.4,
+          "extraPct": 0.06,
+          "mechanic": "phan_than",
+          "phanThan": {
+            "life": 20,
+            "max": 4,
+            "absorb": 0.4
+          },
+          "shadows": {
+            "once": true,
+            "count": 2,
+            "levelDelta": 0,
+            "hpFrac": 0.4,
+            "maxAlive": 2
+          },
+          "final": {
+            "r": 11,
+            "delay": 4,
+            "pct": 0.75,
+            "defMul": 2,
+            "defMaxCut": 0.5,
+            "guardShare": 0.25,
+            "guardMax": 2,
+            "guardR": 12
+          }
+        }
+      ]
+    },
     "ngu_suy": {
-      "_doc": "Thiên Nhân Ngũ Suy (TN-4): kiếp dạng chuỗi, mỗi pha là một ải 40 giây (4 giây đầu điều tức). Theo thang ở glossary, Ngũ Suy nằm cuối Nhị Bộ (Toái Niết đại viên mãn, trước Không Niết); thang cấp hiện mới tới 32 nên from = to = 32 là MỐC TẠM và enabled = false: chỉ GM/test/bot mở được (`/gm trib ngu_suy [ải]`), qua chuỗi không đổi cấp. Khi thang cấp mở tới đó: dời from/to (to = from + 1), thêm vật phẩm đột phá rồi bật enabled. Suy khí không phải sát thương: thanh 0..100 mỗi ải, chạm 100 là thất bại; ải đã qua được lưu (`meta.suy`), lần sau vào tiếp.",
-      "from": 32,
-      "to": 32,
+      "_doc": "Thiên Nhân Ngũ Suy (TN-4): kiếp dạng chuỗi, mỗi pha là một ải 40 giây (4 giây đầu điều tức). Theo thang ở glossary, Ngũ Suy nằm cuối Nhị Bộ (Toái Niết đại viên mãn, trước Không Niết); thang cấp hiện mới tới 44 nên from = to = MAX_LEVEL (44) là MỐC TẠM, mốc thật ở `milestone` (59→60) và enabled = false: chỉ GM/test/bot mở được (`/gm trib ngu_suy [ải]`), qua chuỗi không đổi cấp. Khi thang cấp mở tới đó: dời from/to (to = from + 1), thêm vật phẩm đột phá rồi bật enabled. Suy khí không phải sát thương: thanh 0..100 mỗi ải, chạm 100 là thất bại; ải đã qua được lưu (`meta.suy`), lần sau vào tiếp.",
+      "from": 44,
+      "to": 44,
+      "milestone": { "from": 59, "to": 60 },
       "enabled": false,
       "chain": true,
       "item": null,
@@ -283,9 +604,10 @@
       ]
     },
     "huyen_ngoai": {
-      "_doc": "Huyền Kiếp (TN-6), chuỗi Ngoại kiếp: ba kiếp nhỏ × 35 giây (4 giây đầu điều tức). Cùng khung kiếp chuỗi với Ngũ Suy: thanh kiếp lực 0..100 (bốn số chung ở `suy`), thông số riêng ở `hk` (ý nghĩa ở packages/shared/src/huyenkiep.ts). from = to = 32 là MỐC TẠM, enabled = false: chỉ GM/test/bot mở được (`/gm trib huyen_ngoai [kiếp 1..3]`), không đổi cấp. Phải qua đủ chuỗi `after` trước. Qua đủ ba chuỗi là nâng Bản Nguyên (móc `huyenOriginTier`, chờ TN-1).",
-      "from": 32,
-      "to": 32,
+      "_doc": "Huyền Kiếp (TN-6), chuỗi Ngoại kiếp: ba kiếp nhỏ × 35 giây (4 giây đầu điều tức). Cùng khung kiếp chuỗi với Ngũ Suy: thanh kiếp lực 0..100 (bốn số chung ở `suy`), thông số riêng ở `hk` (ý nghĩa ở packages/shared/src/huyenkiep.ts). from = to = MAX_LEVEL (44) là MỐC TẠM (mốc thật ở `milestone`), enabled = false: chỉ GM/test/bot mở được (`/gm trib huyen_ngoai [kiếp 1..3]`), không đổi cấp. Phải qua đủ chuỗi `after` trước. Qua đủ ba chuỗi là nâng Bản Nguyên (móc `huyenOriginTier`, chờ TN-1).",
+      "from": 44,
+      "to": 44,
+      "milestone": { "from": 71, "to": 72 },
       "enabled": false,
       "chain": true,
       "item": null,
@@ -308,9 +630,10 @@
       ]
     },
     "huyen_noi": {
-      "_doc": "Huyền Kiếp (TN-6), chuỗi Nội kiếp: ba kiếp nhỏ × 35 giây (4 giây đầu điều tức). Cùng khung kiếp chuỗi với Ngũ Suy: thanh kiếp lực 0..100 (bốn số chung ở `suy`), thông số riêng ở `hk` (ý nghĩa ở packages/shared/src/huyenkiep.ts). from = to = 32 là MỐC TẠM, enabled = false: chỉ GM/test/bot mở được (`/gm trib huyen_noi [kiếp 1..3]`), không đổi cấp. Phải qua đủ chuỗi `after` trước. Qua đủ ba chuỗi là nâng Bản Nguyên (móc `huyenOriginTier`, chờ TN-1).",
-      "from": 32,
-      "to": 32,
+      "_doc": "Huyền Kiếp (TN-6), chuỗi Nội kiếp: ba kiếp nhỏ × 35 giây (4 giây đầu điều tức). Cùng khung kiếp chuỗi với Ngũ Suy: thanh kiếp lực 0..100 (bốn số chung ở `suy`), thông số riêng ở `hk` (ý nghĩa ở packages/shared/src/huyenkiep.ts). from = to = MAX_LEVEL (44) là MỐC TẠM (mốc thật ở `milestone`), enabled = false: chỉ GM/test/bot mở được (`/gm trib huyen_noi [kiếp 1..3]`), không đổi cấp. Phải qua đủ chuỗi `after` trước. Qua đủ ba chuỗi là nâng Bản Nguyên (móc `huyenOriginTier`, chờ TN-1).",
+      "from": 44,
+      "to": 44,
+      "milestone": { "from": 71, "to": 72 },
       "enabled": false,
       "chain": true,
       "after": "huyen_ngoai",
@@ -334,9 +657,10 @@
       ]
     },
     "huyen_hon": {
-      "_doc": "Huyền Kiếp (TN-6), chuỗi Hồn kiếp: ba kiếp nhỏ × 35 giây (4 giây đầu điều tức). Cùng khung kiếp chuỗi với Ngũ Suy: thanh kiếp lực 0..100 (bốn số chung ở `suy`), thông số riêng ở `hk` (ý nghĩa ở packages/shared/src/huyenkiep.ts). from = to = 32 là MỐC TẠM, enabled = false: chỉ GM/test/bot mở được (`/gm trib huyen_hon [kiếp 1..3]`), không đổi cấp. Phải qua đủ chuỗi `after` trước. Qua đủ ba chuỗi là nâng Bản Nguyên (móc `huyenOriginTier`, chờ TN-1).",
-      "from": 32,
-      "to": 32,
+      "_doc": "Huyền Kiếp (TN-6), chuỗi Hồn kiếp: ba kiếp nhỏ × 35 giây (4 giây đầu điều tức). Cùng khung kiếp chuỗi với Ngũ Suy: thanh kiếp lực 0..100 (bốn số chung ở `suy`), thông số riêng ở `hk` (ý nghĩa ở packages/shared/src/huyenkiep.ts). from = to = MAX_LEVEL (44) là MỐC TẠM (mốc thật ở `milestone`), enabled = false: chỉ GM/test/bot mở được (`/gm trib huyen_hon [kiếp 1..3]`), không đổi cấp. Phải qua đủ chuỗi `after` trước. Qua đủ ba chuỗi là nâng Bản Nguyên (móc `huyenOriginTier`, chờ TN-1).",
+      "from": 44,
+      "to": 44,
+      "milestone": { "from": 71, "to": 72 },
       "enabled": false,
       "chain": true,
       "after": "huyen_noi",
