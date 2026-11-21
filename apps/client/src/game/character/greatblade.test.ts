@@ -100,4 +100,21 @@ describe('Đao tu: đao lớn thủ tục', () => {
     expect(m.roughnessMap).toBeTruthy();
     expect(m.metalness).toBeGreaterThan(0.5);
   });
+
+  it('bản lưỡi rộng dần về mũi (đao), không đều bản như kiếm thẳng', () => {
+    const widthAt = (g: THREE.BufferGeometry, y: number): number => {
+      const pos = g.getAttribute('position');
+      let lo = Infinity;
+      let hi = -Infinity;
+      for (let i = 0; i < pos.count; i++)
+        if (Math.abs(pos.getY(i) - y) < 0.02) {
+          lo = Math.min(lo, pos.getX(i));
+          hi = Math.max(hi, pos.getX(i));
+        }
+      return hi - lo;
+    };
+    const L = 1.0;
+    const g = bladeGeometry(L, 0.06, 0.02, 0.1, 0);
+    expect(widthAt(g, 0.1 + L * 0.8)).toBeGreaterThan(widthAt(g, 0.1 + L * 0.1) * 1.15);
+  });
 });

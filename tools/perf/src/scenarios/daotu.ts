@@ -66,7 +66,8 @@ export default {
             await cam(page, { yaw: facing + yaw, pitch, dist });
             // đao cầm tay: ra đòn rồi chụp ngay (đao rút khi giao chiến, tra lại sau vài giây)
             if (drawn) await page.evaluate(() => window.__game!.ents.players.get(window.__game!.sid).model.attack());
-            await sleep(drawn ? 350 : 900);
+            // đao cầm tay: chờ đòn đánh xong, nhân vật về tư thế giao chiến (Sword_Idle) để thấy tay nắm chuôi
+            await sleep(drawn ? 1500 : 900);
             fs.writeFileSync(path.join(r.out, `daotu-${gname}-${drawn ? 'cam' : 'lung'}-${nm}-${size}.png`), await page.screenshot());
           }
         }
