@@ -1,0 +1,77 @@
+{
+ "item": "itm_co_huyet_tinh",
+ "stars": [
+  {
+   "star": 1,
+   "level": 28,
+   "mats": 3,
+   "gold": 600,
+   "hpPct": 0.04,
+   "reducePct": 0
+  },
+  {
+   "star": 2,
+   "level": 30,
+   "mats": 4,
+   "gold": 900,
+   "hpPct": 0.04,
+   "reducePct": 0.02
+  },
+  {
+   "star": 3,
+   "level": 32,
+   "mats": 5,
+   "gold": 1300,
+   "hpPct": 0.04,
+   "reducePct": 0.02
+  },
+  {
+   "star": 4,
+   "level": 34,
+   "mats": 6,
+   "gold": 1800,
+   "hpPct": 0.03,
+   "reducePct": 0.02
+  },
+  {
+   "star": 5,
+   "level": 36,
+   "mats": 8,
+   "gold": 2500,
+   "hpPct": 0.03,
+   "reducePct": 0.02
+  },
+  {
+   "star": 6,
+   "level": 38,
+   "mats": 10,
+   "gold": 3400,
+   "hpPct": 0.03,
+   "reducePct": 0.02
+  },
+  {
+   "star": 7,
+   "level": 40,
+   "mats": 12,
+   "gold": 4500,
+   "hpPct": 0.03,
+   "reducePct": 0.02
+  },
+  {
+   "star": 8,
+   "level": 42,
+   "mats": 14,
+   "gold": 6000,
+   "hpPct": 0.03,
+   "reducePct": 0.02
+  },
+  {
+   "star": 9,
+   "level": 44,
+   "mats": 16,
+   "gold": 8000,
+   "hpPct": 0.03,
+   "reducePct": 0.02
+  }
+ ]
+}

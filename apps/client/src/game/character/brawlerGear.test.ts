@@ -49,9 +49,9 @@ function rig(withSkin = true): THREE.Group {
 }
 
 describe('Thể tu: găng + giáp nhẹ thủ tục', () => {
-  it('hướng the_tu khai tay không; hai hướng kia vẫn cầm kiếm', () => {
+  it('hướng the_tu khai tay không; hai hướng kia vẫn cầm kiếm (Cổ Thần cũng tay không)', () => {
     expect(PATHS.find((p) => p.id === 'the_tu')!.weapons).toEqual([BRAWLER_WEAPON]);
-    for (const p of PATHS.filter((p) => p.id !== 'the_tu')) expect(p.weapons).not.toContain(BRAWLER_WEAPON);
+    for (const p of PATHS.filter((p) => p.id !== 'the_tu' && p.id !== 'co_than')) expect(p.weapons).not.toContain(BRAWLER_WEAPON);
   });
 
   it('gộp thành MỘT SkinnedMesh dùng chung bộ xương, đủ thuộc tính da, tam giác trong ngân sách', () => {

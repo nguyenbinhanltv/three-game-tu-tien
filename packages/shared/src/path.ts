@@ -56,6 +56,8 @@ export interface PathUnlock {
   level: number;
   gold: number;
   grant?: string;
+  /** TN-5: phải đang tu công pháp này lúc lĩnh ngộ (Cổ Thần đòi đang là Thể tu). */
+  from?: string;
 }
 
 /** Hướng `p` đã mở với nhân vật có danh sách hướng đã lĩnh ngộ `learned` chưa (hướng không có `unlock` luôn mở). */

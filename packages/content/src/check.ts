@@ -102,6 +102,7 @@ import {
   JOINTS,
   MARK,
   PATHS,
+  STARS,
   pathOf,
   MARKS,
   METHODS,
@@ -115,6 +116,9 @@ import { LOOT, LOOT_MATS } from './loot';
 import {
   jointErrors,
   pathErrors,
+  starErrors,
+  COTHAN_METHOD,
+  COTHAN_STAR_MAX,
   originErrors,
   ORIGIN_GROUPS,
   POSE_VOICES,
@@ -335,6 +339,16 @@ for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.
 for (const m of chainErrors(ALL_SKILLS)) err(m);
 // VS-3: hướng tu (mỗi công pháp thuộc đúng một hướng; màu, bộ động tác, ấn phối hợp hợp lệ; tên khớp glossary.paths).
 for (const e of pathErrors(PATHS, METHODS, new Set(MARKS.map((m) => m.id)), POSE_VOICES)) err(e);
+// TN-5: thang sao Cổ Thần, chiêu đòi sao chỉ thuộc Cổ Thần Quyết, điều kiện lĩnh ngộ trỏ đúng công pháp.
+for (const e of starErrors(STARS, (id) => ITEMS.some((i) => i.id === id))) err(e);
+for (const s of ALL_SKILLS) {
+  if (s.star === undefined) continue;
+  if (!Number.isInteger(s.star) || s.star < 1 || s.star > COTHAN_STAR_MAX) err(`skill ${s.id}: star phải là 1–${COTHAN_STAR_MAX}`);
+  if (s.method !== COTHAN_METHOD) err(`skill ${s.id}: star chỉ dùng cho công pháp ${COTHAN_METHOD}`);
+}
+for (const p of PATHS)
+  if (p.unlock?.from && !METHODS.some((m) => m.id === p.unlock?.from))
+    err(`path ${p.id}: unlock.from "${p.unlock.from}" không phải công pháp`);
 for (const p of PATHS) {
   if (p.unlock?.grant && !ARTIFACTS.find((a) => a.id === p.unlock?.grant)?.granted)
     err(`path ${p.id}: unlock.grant phải là pháp bảo có cờ granted`);
