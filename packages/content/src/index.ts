@@ -192,6 +192,16 @@ import fx_skl_hoi_thien_dan_lo from '../data/fx/skl_hoi_thien_dan_lo.json';
 import fx_skl_hoi_xuan_quyet from '../data/fx/skl_hoi_xuan_quyet.json';
 import fx_skl_kiem_anh_bo from '../data/fx/skl_kiem_anh_bo.json';
 import fx_skl_kiem_dan_ban_menh from '../data/fx/skl_kiem_dan_ban_menh.json';
+import fx_skl_u_anh_bo from '../data/fx/skl_u_anh_bo.json';
+import fx_skl_phe_hon from '../data/fx/skl_phe_hon.json';
+import fx_skl_suu_hon_thuat from '../data/fx/skl_suu_hon_thuat.json';
+import fx_skl_am_hon_trieu from '../data/fx/skl_am_hon_trieu.json';
+import fx_skl_dinh_than_thuat from '../data/fx/skl_dinh_than_thuat.json';
+import fx_skl_hoang_tuyen_dan from '../data/fx/skl_hoang_tuyen_dan.json';
+import fx_skl_tat_dau_thanh_binh from '../data/fx/skl_tat_dau_thanh_binh.json';
+import fx_hon_binh_hit from '../data/fx/hon_binh_hit.json';
+import fx_hon_reap from '../data/fx/hon_reap.json';
+import fx_hon_binh_stand from '../data/fx/hon_binh_stand.json';
 import fx_skl_kiem_vu_tam_diep from '../data/fx/skl_kiem_vu_tam_diep.json';
 import fx_skl_kim_chung_tran from '../data/fx/skl_kim_chung_tran.json';
 import fx_skl_bao_nhan from '../data/fx/skl_bao_nhan.json';
@@ -526,6 +536,13 @@ export const FX_TIMELINES = [
   fx_skl_hoi_xuan_quyet,
   fx_skl_kiem_anh_bo,
   fx_skl_kiem_dan_ban_menh,
+  fx_skl_u_anh_bo,
+  fx_skl_phe_hon,
+  fx_skl_suu_hon_thuat,
+  fx_skl_am_hon_trieu,
+  fx_skl_dinh_than_thuat,
+  fx_skl_hoang_tuyen_dan,
+  fx_skl_tat_dau_thanh_binh,
   fx_skl_kiem_vu_tam_diep,
   fx_skl_kim_chung_tran,
   fx_skl_bao_nhan,
@@ -642,6 +659,10 @@ export const HK_FX_TIMELINES = [
   fx_hk_van_true,
 ] as unknown as FxTimeline[];
 export const HK_FX = new Map(HK_FX_TIMELINES.map((f) => [f.skill, f]));
+
+/** TN-2: hiệu ứng tại điểm của Hồn tu (nhịp hồn binh, tia hồn thu về), client phát bằng `FxRunner.startAt` (`game/fx/honFx.ts`). */
+export const HON_FX_TIMELINES = [fx_hon_binh_hit, fx_hon_reap, fx_hon_binh_stand] as unknown as FxTimeline[];
+export const HON_FX = new Map(HON_FX_TIMELINES.map((f) => [f.skill, f]));
 /** Timeline của từng kiếp nhỏ (theo cơ chế `hk_*`), gồm cả phần chung vào/qua/trượt: ngân sách draw call kiểm theo nhóm này. */
 export const HK_FX_STAGE: Record<string, string[]> = {
   hk_tuyet: ['hk_enter', 'hk_tuyet_drift', 'suy_ok', 'suy_fail'],

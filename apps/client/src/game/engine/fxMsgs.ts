@@ -27,7 +27,7 @@ import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
 import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from '../fx/methodFx';
-import { aliasFx, FX_SILENT } from '../fx/fxAlias';
+import { HON_FX_KINDS, playHonBinh, playHonFx } from '../fx/honFx';
 import { get, pushLog, pushToast, set } from '../../ui/store';
 import { sysChannel } from '../../ui/u2/hud/chatChannel';
 import { duck, lootChime, playSting, type Sfx, sfx } from '../audio/audio';
@@ -149,11 +149,43 @@ export function updateSoulVis(eng: Game, dt: number, me: PState | undefined): vo
 }
 
 export function handleFx(eng: Game, m: FxMsg, held = false): void {
-  if (FX_SILENT.has(m.t)) return;
-  m = aliasFx(m);
   const v = eng.vfx;
   const e = eng.ents;
   if (!v || !e || eng.disposed) return;
+  // TN-2: hiệu ứng tại điểm của Hồn tu (nhịp hồn binh, tia hồn thu về) không gắn động tác nào: phát riêng rồi thôi.
+  if (HON_FX_KINDS[m.t]) {
+    const runner = eng.skillFx?.runner;
+    if (runner && !held)
+      playHonFx(
+        {
+          startAt: (tl, o) => runner.startAt(tl, o),
+          posOf: (id) => {
+            const o = e.monsters.get(id) ?? e.players.get(id);
+            return o ? { x: o.x, y: groundAt(o.x, o.z), z: o.z } : null;
+          },
+          mySid: () => eng.sid,
+          viewer: () => eng.renderPos,
+          live: () => v.pool.live,
+        },
+        m,
+      );
+    return;
+  }
+  // TN-2: Tát Đậu Thành Binh vừa ra (server báo `d` = thời gian chiêu): giữ ba hồn binh quanh người gọi tới hết giờ. Chỉ là hình.
+  if (m.t === 'honbinh' && !held && m.src) {
+    const runner = eng.skillFx?.runner;
+    if (runner)
+      playHonBinh(
+        {
+          startAt: (tl, o) => runner.startAt(tl, o),
+          caster: (sid) => (((eng.view.players.get(sid)?.fl ?? PF_DEAD) & PF_DEAD) === 0 ? (e.players.get(sid) ?? null) : null),
+          mySid: () => eng.sid,
+          after: (sec, done) => v.track(sec, () => undefined, done),
+        },
+        m.src,
+        m.d ?? 10,
+      );
+  }
   const src = m.src ?? '';
   const dst = m.dst ?? '';
   const pSrc = e.players.get(src);

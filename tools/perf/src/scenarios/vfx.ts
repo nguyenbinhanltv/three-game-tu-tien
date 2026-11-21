@@ -115,7 +115,7 @@ const SKILLS = list('--skills', 'skl_kiem_khi_tram,skl_phi_kiem');
 const FXQ = opt('--fxq', 'high');
 const PERF = flag('--perf');
 // Chiêu Hộ pháp/Đan sư mở ở cấp 16+: mặc định cấp 28 + `skills max` để chiêu ra được (cấp 12 thì chiêu bị khóa, khung chỉ có nền).
-const LEVEL = num('--level', SKILLS.some((s) => METHOD_OF[s]) ? 28 : 12);
+const LEVEL = num('--level', SKILLS.some((s) => METHOD_OF[s] || (SKILL.get(s)?.unlock ?? 0) > 12) ? 28 : 12);
 const FPS = num('--fps', 24);
 const SLOW = num('--slow', 0.25);
 const TILE = num('--tile', 40);
@@ -384,7 +384,7 @@ export default {
         }
         let cur = 'lac_kiem_quyet';
         for (const sk of SKILLS) {
-          const want = METHOD_OF[sk] ?? 'lac_kiem_quyet';
+          const want = METHOD_OF[sk] ?? SKILL.get(sk)?.method ?? 'lac_kiem_quyet';
           if (want !== cur) await method((cur = want));
           const [, kind, monId] = sk.startsWith('mon:') ? sk.split(':') : [];
           const mon = kind ? { kind, id: monId ?? MON_DEFAULT[kind] ?? 'mon_soi_xam' } : null;

@@ -50,7 +50,7 @@
     "methods": [
       "dan_hon_kinh"
     ],
-    "dao": "dan",
+    "dao": "hon",
     "art": "dan_su",
     "voice": "ds",
     "gm": "hon",
@@ -59,7 +59,7 @@
     ],
     "palette": {
       "core": "2a2338",
-      "body": "6e6a8c",
+      "body": "8f7be8",
       "rim": "c9d4e0",
       "accent": "e6dfc8",
       "shadow": "14101c"

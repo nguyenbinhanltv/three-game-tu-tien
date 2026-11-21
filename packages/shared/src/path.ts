@@ -7,7 +7,7 @@ import type { MethodRole } from './methods';
 import type { PoseVoice } from './posestyle';
 
 /** Khóa hào quang cảnh giới và hình phân thân (client có bộ hình cho từng khóa). */
-export type PathDao = 'kiem' | 'ho' | 'dan';
+export type PathDao = 'kiem' | 'ho' | 'dan' | 'hon';
 /** Khóa tranh đạo (chân dung, pháp tướng). */
 export type PathArt = 'kiem' | 'ho_phap' | 'dan_su';
 
@@ -109,7 +109,7 @@ export function pathErrors(
       if (owner.has(m)) errs.push(`${at}: công pháp ${m} đã thuộc hướng ${owner.get(m)}`);
       owner.set(m, p.id);
     }
-    if (!['kiem', 'ho', 'dan'].includes(p.dao)) errs.push(`${at}: dao lạ`);
+    if (!['kiem', 'ho', 'dan', 'hon'].includes(p.dao)) errs.push(`${at}: dao lạ`);
     if (!['kiem', 'ho_phap', 'dan_su'].includes(p.art)) errs.push(`${at}: art lạ`);
     if (!voices.includes(p.voice)) errs.push(`${at}: voice "${p.voice}" không phải bộ động tác`);
     for (const k of ['core', 'body', 'rim', 'accent', 'shadow'] as const)
