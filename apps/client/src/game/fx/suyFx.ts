@@ -101,6 +101,12 @@ export class SuyFx {
     if (this.log.length > 300) this.log.shift();
   }
 
+  /** Vị trí người xem, để cột linh quang mờ đi khi đứng sát họ. */
+  private avoid = (): { x: number; z: number } | null => {
+    const sid = this.env.mySid?.();
+    return sid ? (this.env.player(sid) ?? null) : null;
+  };
+
   private mine(src: string): boolean {
     return !!src && this.env.mySid?.() === src;
   }
@@ -174,7 +180,7 @@ export class SuyFx {
     const pos = () => fixed ?? this.env.player(o.follow!) ?? null;
     this.glows.set(
       `${src}:${slot}`,
-      v.suyBeacon(pos, color, o, () => this.env.tribOn(src)),
+      v.suyBeacon(pos, color, { ...o, avoid: this.avoid }, () => this.env.tribOn(src)),
     );
   }
 
@@ -199,7 +205,7 @@ export class SuyFx {
     };
     this.glows.set(
       `${src}:${slot}`,
-      v.suyBeacon(pos, color, o, () => this.env.tribOn(src)),
+      v.suyBeacon(pos, color, { ...o, avoid: this.avoid }, () => this.env.tribOn(src)),
     );
   }
 
@@ -426,7 +432,7 @@ export class SuyFx {
     this.dropGlow(src, slot);
     this.glows.set(
       `${src}:${slot}`,
-      v.suyBeacon(pos, color, o, () => this.env.tribOn(src)),
+      v.suyBeacon(pos, color, { ...o, avoid: this.avoid }, () => this.env.tribOn(src)),
     );
   }
 
