@@ -1,9 +1,12 @@
 import {
   clampTier,
+  pickedBranch,
+  skillGate,
   isEquipSlot,
   majorRealmOf,
   registerTerrain,
   resolveSkill,
+  type BranchPicks,
   type CloneMethodDef,
   type MarkDef,
   type FxTimeline,
@@ -112,6 +115,33 @@ import fx_fx_kiep_kd from '../data/fx/fx_kiep_kd.json';
 import fx_fx_kiep_hn from '../data/fx/fx_kiep_hn.json';
 import fx_fx_kiep_na from '../data/fx/fx_kiep_na.json';
 import fx_fx_kiep_tc from '../data/fx/fx_kiep_tc.json';
+import fx_suy_den_dark from '../data/fx/suy_den_dark.json';
+import fx_suy_den_gust from '../data/fx/suy_den_gust.json';
+import fx_suy_den_light from '../data/fx/suy_den_light.json';
+import fx_suy_den_lit from '../data/fx/suy_den_lit.json';
+import fx_suy_den_out from '../data/fx/suy_den_out.json';
+import fx_suy_den_relit from '../data/fx/suy_den_relit.json';
+import fx_suy_enter_linh from '../data/fx/suy_enter_linh.json';
+import fx_suy_enter_tam from '../data/fx/suy_enter_tam.json';
+import fx_suy_enter_the from '../data/fx/suy_enter_the.json';
+import fx_suy_enter_tho from '../data/fx/suy_enter_tho.json';
+import fx_suy_enter_thuc from '../data/fx/suy_enter_thuc.json';
+import fx_suy_fail from '../data/fx/suy_fail.json';
+import fx_suy_nhan from '../data/fx/suy_nhan.json';
+import fx_suy_nhan_end from '../data/fx/suy_nhan_end.json';
+import fx_suy_nhan_open from '../data/fx/suy_nhan_open.json';
+import fx_suy_ok from '../data/fx/suy_ok.json';
+import fx_suy_tam_bad from '../data/fx/suy_tam_bad.json';
+import fx_suy_tam_good from '../data/fx/suy_tam_good.json';
+import fx_suy_tam_miss from '../data/fx/suy_tam_miss.json';
+import fx_suy_tam_open from '../data/fx/suy_tam_open.json';
+import fx_suy_thuc_boom from '../data/fx/suy_thuc_boom.json';
+import fx_suy_thuc_brew from '../data/fx/suy_thuc_brew.json';
+import fx_suy_thuc_pulse from '../data/fx/suy_thuc_pulse.json';
+import fx_suy_thuc_void from '../data/fx/suy_thuc_void.json';
+import fx_suy_toi_hit from '../data/fx/suy_toi_hit.json';
+import fx_suy_toi_miss from '../data/fx/suy_toi_miss.json';
+import fx_suy_toi_warn from '../data/fx/suy_toi_warn.json';
 import fx_fx_soul_in from '../data/fx/fx_soul_in.json';
 import fx_fx_soul_out from '../data/fx/fx_soul_out.json';
 import fx_skl_anh_duoc_hoa_than from '../data/fx/skl_anh_duoc_hoa_than.json';
@@ -458,6 +488,58 @@ export const MON_FX_TIMELINES = [
   fx_mon_warn,
 ] as unknown as FxTimeline[];
 export const MON_FX = new Map(MON_FX_TIMELINES.map((f) => [f.skill, f]));
+/**
+ * Dòng thời gian hiệu ứng của Thiên Nhân Ngũ Suy (TN-4): `data/fx/suy_*.json`, sinh bằng `tools/vfx/gen-fx-suy.py`. Khóa theo sự kiện trên sân
+ * (suy_nhan, suy_toi_hit, suy_den_lit...); client phát tại điểm server báo (`game/fx/suyFx.ts`).
+ */
+export const SUY_FX_TIMELINES = [
+  fx_suy_den_dark,
+  fx_suy_den_gust,
+  fx_suy_den_light,
+  fx_suy_den_lit,
+  fx_suy_den_out,
+  fx_suy_den_relit,
+  fx_suy_enter_linh,
+  fx_suy_enter_tam,
+  fx_suy_enter_the,
+  fx_suy_enter_tho,
+  fx_suy_enter_thuc,
+  fx_suy_fail,
+  fx_suy_nhan,
+  fx_suy_nhan_end,
+  fx_suy_nhan_open,
+  fx_suy_ok,
+  fx_suy_tam_bad,
+  fx_suy_tam_good,
+  fx_suy_tam_miss,
+  fx_suy_tam_open,
+  fx_suy_thuc_boom,
+  fx_suy_thuc_brew,
+  fx_suy_thuc_pulse,
+  fx_suy_thuc_void,
+  fx_suy_toi_hit,
+  fx_suy_toi_miss,
+  fx_suy_toi_warn,
+] as unknown as FxTimeline[];
+export const SUY_FX = new Map(SUY_FX_TIMELINES.map((f) => [f.skill, f]));
+/** Timeline của từng ải (theo cơ chế `suy_*`), tính cả phần chung vào/qua/trượt ải: ngân sách draw call kiểm theo nhóm này. */
+export const SUY_FX_STAGE: Record<string, string[]> = {
+  suy_linh: ['suy_enter_linh', 'suy_nhan_open', 'suy_nhan', 'suy_nhan_end', 'suy_ok', 'suy_fail'],
+  suy_the: ['suy_enter_the', 'suy_toi_warn', 'suy_toi_hit', 'suy_toi_miss', 'suy_ok', 'suy_fail'],
+  suy_thuc: ['suy_enter_thuc', 'suy_thuc_brew', 'suy_thuc_pulse', 'suy_thuc_void', 'suy_thuc_boom', 'suy_ok', 'suy_fail'],
+  suy_tho: [
+    'suy_enter_tho',
+    'suy_den_lit',
+    'suy_den_dark',
+    'suy_den_gust',
+    'suy_den_out',
+    'suy_den_light',
+    'suy_den_relit',
+    'suy_ok',
+    'suy_fail',
+  ],
+  suy_tam: ['suy_enter_tam', 'suy_tam_open', 'suy_tam_good', 'suy_tam_bad', 'suy_tam_miss', 'suy_ok', 'suy_fail'],
+};
 export const ROOT = index(ROOTS);
 export const ARTIFACT = index(ARTIFACTS);
 /** Danh sách chiêu của phân thân thần niệm theo công pháp (E4-K): `data/clones.json`. */
@@ -613,6 +695,11 @@ export function skillBar(methodId: string | undefined): SkillDef[] {
   return bar;
 }
 
+/** Chiêu tư thế của công pháp (VS-2e, mỗi công pháp một chiêu `kind: 'stance'`); chưa có công pháp thì không có. */
+export function stanceSkill(methodId: string | undefined): SkillDef | undefined {
+  return methodId ? METHOD_SKILLS.find((s) => s.method === methodId && s.kind === 'stance') : undefined;
+}
+
 /** Phím tắt hàng chiêu bậc cao: Shift + số (E2-G). */
 export const TIER_MIN_UNLOCK = 16;
 /** Cấp mở thần thông ô 9 (Kết Đan sơ kỳ, E2-E). */
@@ -631,9 +718,13 @@ export function thanThong10Skill(methodId: string | undefined): SkillDef | undef
  * Thần thông của công pháp (chiêu mở ở Kết Đan sơ kỳ, cấp 20): nằm ở **ô chiêu 9** (chỉ số `BAR_SIZE` trong `Game.bar()`, phím 0).
  * Ô 10 (Hóa Thần, cấp 28) là `thanThong10Skill`. Không có công pháp thì không có thần thông.
  */
-export function thanThongSkill(methodId: string | undefined): SkillDef | undefined {
+export function thanThongSkill(methodId: string | undefined, picks?: BranchPicks): SkillDef | undefined {
   if (!methodId) return undefined;
-  return METHOD_SKILLS.find((s) => s.method === methodId && s.unlock === THAN_THONG_UNLOCK && !s.locked);
+  const at20 = METHOD_SKILLS.filter((s) => s.method === methodId && s.unlock === THAN_THONG_UNLOCK && !s.locked);
+  // VS-2d: mốc Kết Đan có hai nhánh, ô 9 là chiêu của nhánh đã chọn (chưa chọn thì tạm hiện chiêu đầu, server sẽ nhắc chọn nhánh).
+  const m = METHOD.get(methodId);
+  const picked = m ? pickedBranch(m, picks, THAN_THONG_UNLOCK) : undefined;
+  return (picked && at20.find((s) => picked.grants.includes(s.id))) ?? at20[0];
 }
 
 /**
@@ -641,13 +732,20 @@ export function thanThongSkill(methodId: string | undefined): SkillDef | undefin
  * Hàng này nằm sau ô 9 và ô 10 (chỉ số ≥ `BAR_SIZE + 2` trong `Game.bar()`), phím Shift+1…
  * Chiêu còn khóa (Nguyên Anh trở lên, cơ chế chưa làm) không có trong hàng.
  */
-export function tierBar(methodId: string | undefined): SkillDef[] {
+export function tierBar(methodId: string | undefined, picks?: BranchPicks): SkillDef[] {
   if (!methodId) return [];
-  const tt = thanThongSkill(methodId);
-  const tt10 = thanThong10Skill(methodId);
-  return METHOD_SKILLS.filter((s) => s.method === methodId && s.unlock >= TIER_MIN_UNLOCK && !s.locked && s !== tt && s !== tt10).sort(
-    (a, b) => a.unlock - b.unlock,
-  );
+  const m = METHOD.get(methodId);
+  // VS-2d: hàng này là chiêu của mốc Trúc Cơ (16) và Nguyên Anh (24); mốc Kết Đan (20) và Hóa Thần (28) nằm ở ô 9, ô 10.
+  // Mốc đã chọn nhánh chỉ hiện chiêu của nhánh đó; mốc chưa chọn hiện cả hai để người chơi thấy mình đang chọn giữa gì.
+  return METHOD_SKILLS.filter(
+    (s) =>
+      s.method === methodId &&
+      s.unlock >= TIER_MIN_UNLOCK &&
+      !s.locked &&
+      s.unlock !== THAN_THONG_UNLOCK &&
+      s.unlock !== THAN_THONG_10_UNLOCK &&
+      (!m || skillGate(m, picks, s.id) !== 'other'),
+  ).sort((a, b) => a.unlock - b.unlock);
 }
 
 /** Chiêu `skill` đã gộp cấp chiêu và biến thức theo trạng thái công pháp server gửi (null = chưa có: cấp 1, không biến thức). */

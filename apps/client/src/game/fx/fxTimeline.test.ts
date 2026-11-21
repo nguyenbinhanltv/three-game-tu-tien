@@ -571,7 +571,11 @@ describe('VS-1 Đan sư phần 2: 5 chiêu hồi/hộ (ngọc lục là chính, 
         if (e.type === 'hitstop') expect(e.ms, id).toBeLessThanOrEqual(60);
         if (e.type === 'shake') expect(e.level, id).toBeLessThanOrEqual(0.35);
         if (e.type === 'flash') expect(e.amount, id).toBeLessThanOrEqual(0.1);
-        if (e.type === 'vignette') expect(ult, id).toBe(true);
+        // Vignette: chỉ chiêu tối thượng hoặc chiêu cấp 28 (lĩnh vực lớn), và chiêu thường thì tối ≤ 0,3.
+        if (e.type === 'vignette') {
+          expect(ult || (SKILL.get(id)!.unlock ?? 0) >= 28, id).toBe(true);
+          if (!ult) expect(e.amount, id).toBeLessThanOrEqual(0.3);
+        }
         if (e.type === 'slowmo') expect(ult, id).toBe(true);
       }
       const snd = all(id)
@@ -583,6 +587,29 @@ describe('VS-1 Đan sư phần 2: 5 chiêu hồi/hộ (ngọc lục là chính, 
         id,
       ).toBe(true);
     }
+  });
+  it('khung hit không trống: vòng trận/lĩnh vực đúng bán kính vùng bật NGAY ở mốc trúng (không mọc dần)', () => {
+    for (const id of ['skl_moc_linh_tran', 'skl_thien_dan_phap_gioi']) {
+      const ev = FX_TIMELINE.get(id)!.events;
+      const edge = ev.filter(
+        (e) =>
+          e.type === 'mesh' && e.shape === 'rune_ring2' && e.fit === 'area' && e.t <= 0 && e.dur >= 3 && (e.sweep ?? 0.35) * e.dur <= 0.06,
+      );
+      expect(edge.length, id).toBeGreaterThanOrEqual(2);
+      // Vành ngoài cùng nằm đúng mép vùng (scale ≈ 1,04 vì vành ngoài của hình ở 0,96).
+      expect(Math.max(...edge.map((e) => (e.type === 'mesh' ? (e.scale as number) : 0))), id).toBeCloseTo(1.04, 2);
+      // Sen đã bung ở khung hit: bắt đầu trước mốc trúng và nở xong trong ≤ 0,1 s.
+      const lotus = ev.filter((e) => e.type === 'mesh' && e.shape === 'lotus_bloom' && e.t <= 0);
+      expect(lotus.length, id).toBeGreaterThan(0);
+      for (const e of lotus) if (e.type === 'mesh') expect((e.sweep ?? 0.35) * e.dur, id).toBeLessThanOrEqual(0.1);
+    }
+    // Thiên Đan Pháp Giới là lĩnh vực LỚN: biển sen phủ ra ngoài 8 m và có hình trên cao ≥ 6 m.
+    const pg = FX_TIMELINE.get('skl_thien_dan_phap_gioi')!.events;
+    const reach = pg
+      .flatMap((e) => (e.type === 'mesh' && e.shape === 'lotus_bloom' ? [e] : []))
+      .map((e) => Math.hypot(e.offset?.[0] ?? 0, e.offset?.[2] ?? 0));
+    expect(Math.max(...reach)).toBeGreaterThanOrEqual(11);
+    expect(pg.some((e) => e.type === 'mesh' && (e.offset?.[1] ?? 0) >= 6 && e.dur >= 3)).toBe(true);
   });
   it('vùng hồi/hộ có vành Ở LẠI ≥ 1,5 s (theo vùng thật của server, hoặc quanh thân với khiên)', () => {
     for (const id of IDS)

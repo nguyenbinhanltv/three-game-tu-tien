@@ -60,7 +60,7 @@ import {
   weaponIds,
   type GmBranch,
 } from './tools';
-import { resourceOf, setSkillLevel, skillLevelOf } from '../method';
+import { methodOf, picksOf, resourceOf, setSkillLevel, skillLevelOf } from '../method';
 import type { LevelDef, MonsterDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from '../entities';
 
@@ -114,13 +114,14 @@ export class GmSystem {
   tribulation(p: PlayerEnt, id: TribId = 'truc_co', stage?: number): string {
     const c = p.char;
     const def = tribDef(id);
+    if (this.c.level().dungeon || this.c.isDead(p) || p.trib || p.trial || this.c.inDuel(p)) return 'trib: không độ kiếp được lúc này';
+    // Đặt sau dòng kiểm bận: đang trong kiếp mà đổi tiến độ thì ải đang chạy sẽ không được lưu và nội tại pháp tắc bị mất giữa chừng.
     // Kiếp chuỗi (TN-4): `/gm trib ngu_suy [ải 1..5]` đặt lại tiến độ để vào thẳng ải đó (thưởng từng ải vẫn chỉ nhận một lần nhờ khóa chống trùng).
     if (def.chain) {
       if (stage !== undefined && Number.isInteger(stage) && stage >= 1 && stage <= def.phases.length) c.meta.suy = stage - 1;
       else if (suyDone(c.meta.suy, def)) c.meta.suy = 0;
       c.recalc();
     }
-    if (this.c.level().dungeon || this.c.isDead(p) || p.trib || p.trial || this.c.inDuel(p)) return 'trib: không độ kiếp được lúc này';
     if (c.level !== def.from) this.setLevel(p, def.from);
     if (def.to > def.from) {
       c.bk = def.from;
@@ -354,6 +355,22 @@ export class GmSystem {
         c.hp = c.mhp;
         c.mp = c.mmp;
         return say('đã hồi đầy');
+      case 'branch': {
+        // /gm branch <mốc> <id> | reset: chọn nhánh công pháp ngay (bỏ kiểm cảnh giới/giao chiến) hoặc xóa hết nhánh, không tốn linh thạch.
+        const mdef = methodOf(c.meta);
+        if (!mdef) return say('chưa chọn công pháp');
+        if (a[1] === 'reset') {
+          c.tx('gm:branch:reset', null, (d) => d.clearBranches(mdef.id));
+          p.mth.dirty = true;
+          return say('đã xóa nhánh của ' + mdef.id);
+        }
+        const tier = Number(a[1]);
+        const br = mdef.branches.find((b) => b.tier === tier && b.id === a[2]);
+        if (!br) return say('branch <mốc> <id>: ' + mdef.branches.map((b) => `${b.tier} ${b.id}`).join(' | '));
+        c.tx('gm:branch:pick', null, (d) => d.setBranch(mdef.id, br.tier, br.id));
+        p.mth.dirty = true;
+        return say(`nhánh ${br.tier} = ${br.id}; đang có: ${JSON.stringify(picksOf(c) ?? {})}`);
+      }
       case 'res': {
         // /gm res [n]: đặt tài nguyên riêng của công pháp (mặc định đầy).
         const rdef = resourceOf(c.meta);

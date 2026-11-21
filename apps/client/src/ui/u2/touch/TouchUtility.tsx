@@ -209,7 +209,7 @@ function Tier() {
   const now = useNow(100);
   return (
     <>
-      {tierBar(method?.method).map((sk, j) => {
+      {tierBar(method?.method, method?.br).map((sk, j) => {
         if (level < sk.unlock) return null;
         const rs = resolveBarSkill(method, sk);
         const ready = Math.max(cds[sk.id] ?? 0, gcdAt);

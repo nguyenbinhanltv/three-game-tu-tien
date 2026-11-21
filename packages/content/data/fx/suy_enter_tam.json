@@ -1,0 +1,66 @@
+{
+ "skill": "suy_enter_tam",
+ "palette": "suy_tam",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 6.0,
+   "dur": 3.6,
+   "at": "area",
+   "grow": 0.5,
+   "tone": "core",
+   "alpha": 0.75,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.05,
+   "dur": 1.6,
+   "at": "area",
+   "offset": [
+    0,
+    0.06,
+    0
+   ],
+   "scale": [
+    0.6,
+    1,
+    0.6
+   ],
+   "scaleTo": [
+    5.2,
+    1,
+    5.2
+   ],
+   "sweep": 0.35,
+   "erodeFrom": 0.45,
+   "ragged": 0.6,
+   "tone": "body",
+   "alpha": 0.8,
+   "seed": 4,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 36,
+   "speed": 2.2,
+   "spread": 1.0,
+   "life": 1.8,
+   "size": 0.3,
+   "at": "area",
+   "offset": [
+    0,
+    0.4,
+    0
+   ],
+   "tone": "core",
+   "inward": true,
+   "tier": 1
+  }
+ ]
+}

@@ -476,7 +476,7 @@
     0.5,
     1.4
    ],
-   "sweep": 0.1,
+   "sweep": 0.05,
    "erodeFrom": 0.62,
    "ragged": 0.15,
    "alpha": 1,
@@ -534,7 +534,7 @@
     0.5,
     1.4
    ],
-   "sweep": 0.1,
+   "sweep": 0.05,
    "erodeFrom": 0.62,
    "ragged": 0.15,
    "alpha": 1,
@@ -592,7 +592,7 @@
     0.5,
     1.4
    ],
-   "sweep": 0.1,
+   "sweep": 0.05,
    "erodeFrom": 0.62,
    "ragged": 0.15,
    "alpha": 1,
@@ -650,7 +650,7 @@
     0.5,
     1.4
    ],
-   "sweep": 0.1,
+   "sweep": 0.05,
    "erodeFrom": 0.62,
    "ragged": 0.15,
    "alpha": 1,
@@ -708,7 +708,7 @@
     0.5,
     1.4
    ],
-   "sweep": 0.1,
+   "sweep": 0.05,
    "erodeFrom": 0.62,
    "ragged": 0.15,
    "alpha": 1,
@@ -766,7 +766,7 @@
     0.5,
     1.4
    ],
-   "sweep": 0.1,
+   "sweep": 0.05,
    "erodeFrom": 0.62,
    "ragged": 0.15,
    "alpha": 1,
@@ -824,7 +824,7 @@
     0.5,
     1.4
    ],
-   "sweep": 0.1,
+   "sweep": 0.05,
    "erodeFrom": 0.62,
    "ragged": 0.15,
    "alpha": 1,
@@ -882,7 +882,7 @@
     0.5,
     1.4
    ],
-   "sweep": 0.1,
+   "sweep": 0.05,
    "erodeFrom": 0.62,
    "ragged": 0.15,
    "alpha": 1,
@@ -940,7 +940,7 @@
     0.5,
     1.4
    ],
-   "sweep": 0.1,
+   "sweep": 0.05,
    "erodeFrom": 0.62,
    "ragged": 0.15,
    "alpha": 1,

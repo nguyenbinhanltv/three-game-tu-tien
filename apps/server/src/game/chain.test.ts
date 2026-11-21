@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import { allowSkillForTest } from './testkit';
 import { groundAt, S, type CdMsg } from '@dtl/shared';
 
 // VS-2b: chuỗi chiêu khai báo trong JSON (`chain.after`, `window`). Server mở/đóng cửa sổ và tính thưởng; client chỉ nhận hạn để sáng ô.
@@ -32,7 +33,12 @@ function setup(method: string, level = 28) {
     respawn: { x: X, z: Z },
     persistPosition: false,
   });
-  const raw = sim.onSkill.bind(sim);
+  const raw0 = sim.onSkill.bind(sim);
+  // VS-2d: test cơ chế chiêu, không đi qua bước chọn nhánh công pháp.
+  const raw = (pl: Ent, msg: { id: string; t?: string }) => {
+    allowSkillForTest(pl.char, msg.id);
+    raw0(pl, msg);
+  };
   /** Bấm rồi "xả" đòn chờ ngay (hiệu quả áp liền). `sim.onSkill` gốc giữ ở `raw` cho test về đòn chờ. */
   const use = (pl: Ent, id: string, t?: string) => {
     raw(pl, { id, t });
@@ -70,7 +76,7 @@ function setup(method: string, level = 28) {
     p.mth.res = 0;
   };
   /** Sát thương trung bình của một lần dùng `id` (sau khi chạy `prep`), lấy trung bình `n` lần để bỏ ngẫu nhiên. */
-  const avg = (id: string, m: { id: string; s: { hp: number } }, prep: () => void, n = 60) => {
+  const avg = (id: string, m: { id: string; s: { hp: number } }, prep: () => void, n = 400) => {
     let sum = 0;
     for (let i = 0; i < n; i++) {
       p.flow.opened.clear();

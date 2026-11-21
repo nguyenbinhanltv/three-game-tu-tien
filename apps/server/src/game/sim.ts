@@ -66,7 +66,7 @@ import { MonsterSystem, type MonsterCtx } from './monsters';
 import { EconomySystem, type EconomyCtx } from './economy';
 import { WardrobeSystem, type WardrobeCtx } from './wardrobe';
 import { TAUNT_BOSS_MUL } from './combat/consts';
-import { resolveFor } from './method';
+import { resolveFor, branchModsOf, picksOf } from './method';
 
 /** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
 const METHOD_SEND_MS = 250;
@@ -132,6 +132,7 @@ export class GameSim {
     drainMp: (p, n) => {
       p.char.mp = Math.max(0, p.char.mp - Math.max(0, n));
     },
+    // Nguồn sát thương là chính chủ kiếp (không phải id quái): `damagePlayer` không tìm thấy quái nào để phản đòn hay tính "bị bóng đánh trúng".
     sap: (p, n) => {
       if (n > 0) this.damagePlayer(p, n, p.sid, false);
     },
@@ -1063,6 +1064,8 @@ export class GameSim {
         p.mth.sentAt = this.now;
         p.client.send(S.METHOD, {
           ...p.mth.toMsg(c.meta, this.now),
+          br: { ...(picksOf(c) ?? {}) },
+          resMods: branchModsOf(c).res,
           art: artifactMsg(c.equip, c.meta),
           buffs: buffsMsg(c.meta, Date.now()),
         });
@@ -1435,6 +1438,9 @@ export class GameSim {
   }
   onSkillVar(p: PlayerEnt, msg: unknown): void {
     return this.ecoSys.onSkillVar(p, msg);
+  }
+  onBranch(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onBranch(p, msg);
   }
   onTalk(p: PlayerEnt, msg: unknown): void {
     return this.ecoSys.onTalk(p, msg);

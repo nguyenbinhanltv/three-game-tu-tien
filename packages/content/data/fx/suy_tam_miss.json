@@ -1,0 +1,61 @@
+{
+ "skill": "suy_tam_miss",
+ "palette": "suy_tam",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.0,
+   "r": 3.0,
+   "dur": 1.2,
+   "at": "self",
+   "offset": [
+    0,
+    -1.12,
+    0
+   ],
+   "grow": 0.1,
+   "tone": "core",
+   "alpha": 0.8,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "scale": 2.2,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "core",
+   "alpha": 0.5,
+   "flip": "ink_smoke",
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 18,
+   "speed": 2.0,
+   "spread": 1.0,
+   "life": 0.9,
+   "size": 0.28,
+   "at": "self",
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "tone": "core",
+   "grav": 1.5,
+   "tier": 1
+  }
+ ]
+}

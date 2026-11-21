@@ -29,15 +29,18 @@ import {
   tribPhaseIndex,
   tribPhaseStart,
   PF_DEAD,
+  pendingTier,
 } from '@dtl/shared';
 import {
   ARTIFACT,
   hasString,
   ITEM,
   itemName,
+  METHOD,
   nextMajorRealmName,
   realmName,
   resolveBarSkill,
+  stanceSkill,
   t,
   tierBar,
   VARIANTS,
@@ -68,6 +71,7 @@ import { SkillBanner } from './u2/hud/SkillBanner';
 import { SkillCluster } from './u2/hud/SkillCluster';
 import { ResourceBar } from './u2/hud/ResourceBar';
 import { MarkChips } from './u2/hud/MarkChips';
+import { activeStance } from './stanceView';
 import { chainLines, skillMpNow } from './skillChain';
 import { TouchControls } from './u2/touch/TouchControls';
 import './u2/touch/touch.css';
@@ -315,9 +319,9 @@ function Tribulation() {
                 cls="kiep"
                 value={Math.max(0, Math.min(len, elapsed - start))}
                 max={len}
-                text={i === pi ? t('ui.trib.secs', { n: Math.ceil(left) }) : undefined}
+                text={i === pi ? t('ui.trib.secs', { n: Math.ceil(def.chain ? start + len - elapsed : left) }) : undefined}
               />
-              <div className="trib-phase-name">{t(key + p.id)}</div>
+              <div className="trib-phase-name">{def.chain && i !== pi ? t('ui.trib.suy.short', { n: i + 1 }) : t(key + p.id)}</div>
             </div>
           );
         })}
@@ -537,7 +541,10 @@ function UtilityRow() {
   const clone = useUI((s) => s.clone);
   const now = useNow(100);
   if (!char) return null;
-  const tier = tierBar(method?.method);
+  const tier = tierBar(method?.method, method?.br);
+  // VS-2d: còn mốc đủ cảnh giới mà chưa chọn nhánh thì nhắc bằng một thẻ bấm được (mở bảng Công pháp).
+  const mdefBr = method?.method ? METHOD.get(method.method) : undefined;
+  const pending = pendingTier(mdefBr, method?.br, char.level);
   return (
     <>
       <div className="u2h-slots">
@@ -609,11 +616,17 @@ function UtilityRow() {
         <div className="u2h-extras">
           <ArtifactSlot />
           <BondedSlot />
+          <StanceSlot />
           <SpiritSlot />
           <SoulSlot />
         </div>
       </div>
       <div className="u2h-chips">
+        {pending > 0 && (
+          <button type="button" className="branch-chip" data-testid="branch-chip" onClick={() => togglePanel('method')}>
+            {t('ui.branch.pending', { realm: realmName(pending) })}
+          </button>
+        )}
         <ResourceBar />
         {char.level >= CLONE_UNLOCK_LEVEL && (
           <div className={'clone-chip' + (now < clone.until ? ' on' : '')} data-testid="clone-chip" aria-label={t('ui.clone.title')}>
@@ -751,6 +764,65 @@ function BondedSlot() {
         <span className="skill-key">T</span>
         <span className="art-lv">{lv}</span>
         {left > 80 && (
+          <>
+            <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
+            {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
+          </>
+        )}
+      </button>
+    </Tooltip>
+  );
+}
+
+/** Tư thế của công pháp (VS-2e, phím Y): đang giữ thì đếm ngược, hết thì quét hồi chiêu. */
+function StanceSlot() {
+  const level = useUI((s) => s.char?.level ?? 0);
+  const method = useUI((s) => s.method);
+  const methodOff = useUI((s) => s.methodOff);
+  const cds = useUI((s) => s.cds);
+  const mp = useUI((s) => s.mp);
+  const airborne = useUI((s) => s.airborne);
+  const now = useNow(100);
+  const sk = stanceSkill(method?.method);
+  if (!sk?.stance || level < sk.unlock) return null;
+  const active = activeStance(method, now - methodOff);
+  const total = Math.max(1, sk.cd) * 1000;
+  const left = Math.max(0, (cds[sk.id] ?? 0) - now);
+  const noMp = mp < sk.mp;
+  const state = active ? 'charging' : airborne ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
+  const swaps = Object.values(sk.stance.swap)
+    .map((id) => t(`skill.${id}.name`))
+    .join(', ');
+  const lines = [
+    { text: t('ui.stance.key') },
+    ...(active ? [{ text: t('ui.stance.left', { n: Math.ceil(active.left / 1000) }), tone: 'good' as const }] : []),
+    { text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined },
+    { text: t('ui.skill.cd', { n: sk.cd }) },
+    { text: t('ui.stance.swaps', { skills: swaps }) },
+  ];
+  return (
+    <Tooltip
+      content={<TipCard title={t(`skill.${sk.id}.name`)} sub={t('ui.stance.title')} lines={lines} desc={t(`skill.${sk.id}.desc`)} />}
+    >
+      <button
+        type="button"
+        className={'skill art-slot stance-slot' + (active ? ' empowered' : '')}
+        data-testid="stance-slot"
+        data-state={state}
+        data-method="1"
+        data-active={active ? '1' : undefined}
+        aria-label={`${t(`skill.${sk.id}.name`)} (Y)`}
+        onClick={(e) => {
+          Game.current?.useStance();
+          blurAfterPointer(e);
+        }}
+      >
+        <span className="skill-icon">
+          <ContentIcon def={sk} />
+        </span>
+        <span className="skill-key">Y</span>
+        {active && <span className="skill-cd-text">{Math.ceil(active.left / 1000)}</span>}
+        {!active && left > 80 && (
           <>
             <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
             {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}

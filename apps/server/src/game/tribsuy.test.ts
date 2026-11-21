@@ -244,7 +244,34 @@ describe('Linh Lực Suy', () => {
   });
 });
 
+describe('lệnh GM', () => {
+  it('đang trong kiếp mà gõ lại /gm trib ngu_suy <ải>: bị từ chối, tiến độ không đổi', () => {
+    const { sim, p } = mk(2);
+    sim.beginTribulation(p, DEF, false);
+    const gm = (sim as unknown as { gmSys: { tribulation(p: Ent, id: string, stage?: number): string } }).gmSys;
+    expect(gm.tribulation(p, 'ngu_suy', 5)).toContain('không độ kiếp được');
+    expect(p.char.meta.suy).toBe(2);
+  });
+});
+
 describe('Nhục Thân Suy', () => {
+  it('khí huyết rỉ không kích phản đòn và không bị tính là bị quái đánh (nguồn là chính chủ kiếp)', () => {
+    vi.spyOn(Math, 'random').mockImplementation(() => 0.2);
+    const { sim, p } = mk(1);
+    const cfg = DEF.phases[1]!.suy!;
+    p.mth.reflectUntil = sim.now + 60_000;
+    p.mth.reflectMul = 0.5;
+    sim.beginTribulation(p, DEF, false);
+    const hp = sim.monsters.map((m) => m.s.hp);
+    for (let i = 0; i < (cfg.rest + 3) * 20; i++) {
+      (sim as unknown as SuyPriv).tickTribulation(p);
+      sim.now += 50;
+    }
+    expect(p.char.hp).toBeLessThan(p.char.mhp);
+    expect(sim.monsters.map((m) => m.s.hp)).toEqual(hp);
+    expect(p.trib).not.toBeNull();
+  });
+
   it('đón Tôi Thể Lôi: thanh giảm một mảng, đổi bằng khí huyết nhưng không chết', () => {
     vi.spyOn(Math, 'random').mockImplementation(() => 0.2);
     const { sim, p, priv } = mk(1);

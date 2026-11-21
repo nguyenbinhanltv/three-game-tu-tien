@@ -54,9 +54,12 @@ import {
   planDash,
   strikeDelay,
   type Terrain,
+  type ResourceMods,
+  stanceActive,
+  withStanceRes,
 } from '@dtl/shared';
 import { MARK, SKILL } from '@dtl/content';
-import { type Hot, methodOf, passiveOf, resolveFor, resourceOf, type Trail } from '../method';
+import { branchModsOf, gateOf, type Hot, methodOf, passiveOf, resolveFor, resourceOf, type Trail } from '../method';
 import { chainOf, takeChain } from '../skillflow';
 import type { DuelSystem } from '../duel';
 import type { MirrorSystem } from '../mirror';
@@ -124,6 +127,12 @@ export class CombatSystem {
     if (c.level < skill.unlock) return this.c.warn(p, 'sys.level_low');
     if (skill.method && c.meta.method !== skill.method) return this.c.warn(p, 'sys.no_method');
     if (skill.locked) return this.c.warn(p, 'sys.skill_locked');
+    // VS-2d: chiêu gắn nhánh công pháp chỉ dùng được khi đã chọn đúng nhánh ở mốc của nó.
+    const gate = gateOf(c, skill);
+    if (gate !== 'ok') return this.c.warn(p, gate === 'need' ? 'sys.branch_needed' : 'sys.branch_other');
+    // VS-2e: chiêu tư thế chỉ dùng được khi đang giữ đúng tư thế đó (client đổi ô theo tin server, server vẫn kiểm).
+    if (skill.stanceOf && !(stanceActive(p.mth.stance, this.c.now) && p.mth.stance.id === skill.stanceOf))
+      return this.c.warn(p, 'sys.stance_needed');
     if (this.airborne(p)) return this.c.warn(p, 'sys.cannot_while_flying');
     if (skill.dash) return this.onDash(p, skill, typeof m.t === 'string' ? m.t : '');
     if (p.casting || p.flow.pending) return;
@@ -434,20 +443,28 @@ export class CombatSystem {
   /** Lượng tài nguyên đang có (đã tính rụng theo thời gian); chưa có công pháp thì 0. */
   liveRes(p: PlayerEnt): number {
     const def = resourceOf(p.char.meta);
-    return def ? resNow(def, p.mth.res, p.mth.resAt, this.c.now) : 0;
+    return def ? resNow(def, p.mth.res, p.mth.resAt, this.c.now, this.resMods(p)) : 0;
+  }
+
+  /** Luật nhánh công pháp tác động lên tài nguyên của `p` (VS-2d): trần, giữ lại khi xả, nhân tích, không rụng. */
+  resMods(p: PlayerEnt): ResourceMods | undefined {
+    const base = branchModsOf(p.char).res;
+    // VS-2e: tư thế đang giữ có thể đổi luật tài nguyên (không rụng, tích nhanh hơn).
+    const st = stanceActive(p.mth.stance, this.c.now) ? SKILL.get(p.mth.stance.id)?.stance?.res : undefined;
+    return withStanceRes(base, st);
   }
 
   /** Tài nguyên đang đầy (Kiếm ý đầy: bạo kích cộng thêm). */
   resFull(p: PlayerEnt): boolean {
     const def = resourceOf(p.char.meta);
-    return !!def && this.liveRes(p) >= resMax(def);
+    return !!def && this.liveRes(p) >= resMax(def, this.resMods(p));
   }
 
   /** Tích `n` điểm tài nguyên; mỗi lần tích làm mới mốc rụng. */
   addRes(p: PlayerEnt, n: number): void {
     const def = resourceOf(p.char.meta);
     if (!def || !(n > 0)) return;
-    p.mth.res = resAdd(def, this.liveRes(p), n);
+    p.mth.res = resAdd(def, this.liveRes(p), n, this.resMods(p));
     p.mth.resAt = this.c.now;
     p.mth.dirty = true;
   }
@@ -487,7 +504,7 @@ export class CombatSystem {
   spendRes(p: PlayerEnt, skill: SkillDef): { mul: number; spent: number } {
     const def = resourceOf(p.char.meta);
     if (!def) return { mul: 1, spent: 0 };
-    const sp = resSpend(def, this.liveRes(p), skill.res, dealsDamage(skill) && skill.cd > 0);
+    const sp = resSpend(def, this.liveRes(p), skill.res, dealsDamage(skill) && skill.cd > 0, this.resMods(p));
     if (sp.spent <= 0) return { mul: 1, spent: 0 };
     p.mth.res = sp.left;
     // `sp.left` là lượng còn lại LÚC NÀY (đã trừ phần rụng): dời mốc để lần đọc sau không trừ phần rụng đó lần nữa.
@@ -521,7 +538,7 @@ export class CombatSystem {
     const def = this.markFor(p, id);
     if (!def || def.on !== 'mon') return;
     if (mon.state === MS_DEAD || (mon.owner && mon.owner !== p.sid) || this.c.now < mon.evadeUntil) return;
-    markAdd(mon.marks, def, p.sid, n, this.c.now, { mul });
+    markAdd(mon.marks, def, p.sid, n, this.c.now, { mul, durMul: branchModsOf(p.char).markDurMul });
     mon.s.mk = packMarks(mon.marks, this.c.now);
     // Mất thế: quái thường choáng, thủ lĩnh cộng thanh phá thế (không choáng thủ lĩnh bằng ấn).
     if (def.onApply) {
@@ -544,7 +561,7 @@ export class CombatSystem {
   markAlly(p: PlayerEnt, o: PlayerEnt, id: string, n = 1): void {
     const def = this.markFor(p, id);
     if (!def || def.on !== 'ally' || !this.canAssist(p, o)) return;
-    markAdd(o.marks, def, p.sid, n, this.c.now);
+    markAdd(o.marks, def, p.sid, n, this.c.now, { durMul: branchModsOf(p.char).markDurMul });
     o.s.mk = packMarks(o.marks, this.c.now);
   }
 
@@ -917,6 +934,8 @@ export class CombatSystem {
           });
         }
         if (skill.interrupt) this.c.tryInterrupt(p, mon, v?.stunOnInterrupt ?? 0);
+        // VS-2e: chiêu đánh đơn có `stun` (Chấn Sơn Quyền) làm choáng quái thường; tinh anh nửa thời gian, thủ lĩnh miễn.
+        if (skill.stun && mon.state !== MS_DEAD) this.stunMonster(p, mon, skill.stun);
         break;
       }
       case 'aoe': {
@@ -1015,6 +1034,16 @@ export class CombatSystem {
           });
           holdLock = Math.max(holdLock, off);
         });
+        break;
+      }
+      case 'stance': {
+        // VS-2e: vào tư thế. Thanh chiêu đổi ô ở client theo tin `mth`; server chỉ giữ id và hạn, và kiểm ở `onSkill`.
+        const st = skill.stance;
+        if (!st) break;
+        p.mth.stance = { id: skill.id, until: this.c.now + st.dur * 1000 };
+        if (st.reduce) p.mth.setGuard(this.c.now, st.reduce, st.dur);
+        p.mth.dirty = true;
+        this.c.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, d: st.dur, ...tag });
         break;
       }
       case 'summon': {
@@ -1417,6 +1446,11 @@ export class CombatSystem {
       for (const k of ['atk', 'def'] as const) if (sbk[k] && sbk[k]!.until <= nowMs) (delete sbk[k], (sbExpired = true));
       if (pruneBuffs(p.char.meta, nowMs) || sbExpired) {
         p.char.recalc();
+        m.dirty = true;
+      }
+      // Tư thế hết hạn (VS-2e): bỏ và báo client trả lại ô chiêu.
+      if (m.stance && now >= m.stance.until) {
+        m.stance = null;
         m.dirty = true;
       }
       // Ấn trên người (VS-2c) hết hạn: dọn và cập nhật gói bit đồng bộ.

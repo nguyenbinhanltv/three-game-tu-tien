@@ -1,0 +1,95 @@
+{
+ "skill": "suy_fail",
+ "palette": "suy_tam",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "crack_radial",
+   "t": 0.0,
+   "dur": 2.2,
+   "at": "area",
+   "offset": [
+    0,
+    0.05,
+    0
+   ],
+   "scale": [
+    0.4,
+    1,
+    0.4
+   ],
+   "scaleTo": [
+    4.2,
+    1,
+    4.2
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.6,
+   "ragged": 0.9,
+   "tone": "core",
+   "alpha": 0.95,
+   "seed": 3,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "area",
+   "offset": [
+    0,
+    0.05,
+    0
+   ],
+   "scale": [
+    4.4,
+    1.2,
+    4.4
+   ],
+   "scaleTo": [
+    0.5,
+    0.4,
+    0.5
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "ragged": 0.9,
+   "tone": "accent",
+   "alpha": 0.7,
+   "seed": 5,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 60,
+   "speed": 3.0,
+   "spread": 1.0,
+   "life": 1.4,
+   "size": 0.34,
+   "at": "area",
+   "offset": [
+    0,
+    0.8,
+    0
+   ],
+   "tone": "core",
+   "inward": true,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.1,
+   "r": 3.6,
+   "dur": 4.0,
+   "at": "area",
+   "grow": 0.3,
+   "tone": "core",
+   "alpha": 0.8,
+   "tier": 1
+  }
+ ]
+}

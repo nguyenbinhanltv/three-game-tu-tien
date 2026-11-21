@@ -213,6 +213,7 @@ export function runFrame(eng: Game): void {
     eng.ents.updateQuestMarkers(get().quests, myLevel);
   }
   if (me) eng.vfx.trails.update(dt, eng.ents.players, eng.sid, eng.camera);
+  eng.suyFx?.update();
   eng.skillFx?.update(dt, pscale);
   if (me) eng.realmAura?.update(dt);
   if (me) updateGrass(eng, dt, rp);
