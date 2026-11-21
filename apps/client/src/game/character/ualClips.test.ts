@@ -11,7 +11,7 @@ import { clipNamesOf, HUMAN_CLIPS } from './humanClips';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
-const CHARACTERS = ['chr_kiem_tu_nam', 'chr_kiem_tu_nu', 'chr_v2_nam', 'chr_v2_nu'];
+const CHARACTERS = ['chr_kiem_tu_nam', 'chr_kiem_tu_nu', 'chr_v2_nam'];
 
 // Áo/thân v2 dùng texture WebP: GLTFLoader cần `self` (môi trường node không có) và không cần ảnh thật để đo xương.
 (globalThis as { self?: unknown }).self ??= globalThis;

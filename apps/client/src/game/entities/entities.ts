@@ -401,7 +401,6 @@ export class EntityManager {
       const lookChanged =
         look.g !== v.look.g ||
         look.dye !== v.look.dye ||
-        look.hair !== v.look.hair ||
         look.set !== v.look.set ||
         look.acc !== v.look.acc ||
         look.w !== v.look.w ||
