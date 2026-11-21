@@ -19,6 +19,7 @@ import { runMechanic, soulActive, soulOut, tamCanhHit, type TribMechCtx } from '
 import { cloneAbsorb, cloneOut } from './tribnhan';
 import { riftFinal, tribCleanup } from './tribanh';
 import { suyCleanup, suyReveal, suyTamHit } from './tribsuy';
+import { hkBreath, hkHurt } from './tribhuyen';
 import type { GuardCfg, TribState } from './tribtypes';
 import type { HazardExtra, TribHost } from './tribhost';
 export type { GuardCfg, TribState, HazardExtra, TribHost };
@@ -39,6 +40,8 @@ export class TribSystem {
   soul(p: PlayerEnt): boolean {
     // Cùng phím X: trong ải Thần Thức Suy (TN-4) là ngưng thần soi lôi ẩn.
     if (suyReveal(this.h, p)) return true;
+    // Thập Tức Khô Thần (TN-6): X là điều tức theo nhịp.
+    if (hkBreath(this.h, p)) return true;
     return soulOut(this.h, p);
   }
 
@@ -61,6 +64,7 @@ export class TribSystem {
   noteHit(p: PlayerEnt, kind: 'hurt' | 'hit', dot = false): void {
     tamCanhHit(this.h, p, kind);
     suyTamHit(this.h, p, kind, dot || (kind === 'hit' && this.hurting > 0));
+    if (kind === 'hurt') hkHurt(this.h, p);
   }
 
   /** Một nhịp 50 ms cho người đang độ kiếp. */

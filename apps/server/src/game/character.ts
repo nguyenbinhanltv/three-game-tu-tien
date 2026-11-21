@@ -50,7 +50,7 @@ import { methodDefMul, methodOf, sanitizeMethodMeta, type MethodMeta } from './m
 import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta } from './artifact';
 import { log } from '../log';
 
-import { lawPassive, suyCleared } from '@dtl/shared';
+import { lawPassive, sanitizeChainMeta } from '@dtl/shared';
 import { at, emptyLook, isWardrobeKind, outfitLookFromDb, outfitLookToDb, type OutfitLook } from '@dtl/shared';
 interface CharMeta extends MethodMeta, ArtifactMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
@@ -59,6 +59,8 @@ interface CharMeta extends MethodMeta, ArtifactMeta {
   dungeonDays?: Record<string, string>;
   /** Số ải Thiên Nhân Ngũ Suy đã qua (TN-4); đủ chuỗi thì có nội tại pháp tắc. Đọc qua `suyCleared` (đã làm sạch). */
   suy?: number;
+  /** Số kiếp nhỏ đã qua của các kiếp chuỗi khác (TN-6 Huyền Kiếp: `huyen_ngoai|huyen_noi|huyen_hon`). Đọc/ghi qua `chainCleared`/`setChainCleared`. */
+  chain?: Record<string, number>;
 }
 
 /** Bản nháp thay đổi túi đồ/tiền. Chỉ thành thật khi commit trong một transaction. */
@@ -382,7 +384,7 @@ export class Character {
     if (!c.meta || typeof c.meta !== 'object') c.meta = {};
     sanitizeMethodMeta(c.meta);
     sanitizeArtifactMeta(c.meta);
-    if (c.meta.suy !== undefined) c.meta.suy = suyCleared(c.meta.suy);
+    sanitizeChainMeta(c.meta);
     if (!c.quests || typeof c.quests.active !== 'object' || !Array.isArray(c.quests.done)) c.quests = { active: {}, done: [] };
     for (const r of db.select().from(items).where(eq(items.charId, id)).all()) {
       if (r.slot >= 0 && r.slot < INV_SIZE && ITEM.has(r.itemId)) {

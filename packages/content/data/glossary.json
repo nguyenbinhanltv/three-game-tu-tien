@@ -605,6 +605,16 @@
     "pha_vong": "phá vọng",
     "law_first": "pháp tắc sơ ngộ"
   },
+  "huyenKiepTerms": {
+    "kiep_luc": "kiếp lực",
+    "cuong_phong": "cương phong",
+    "dan_loi_tru": "Dẫn Lôi Trụ",
+    "ban_menh_an": "Bản Mệnh Ấn",
+    "huyet_anh": "Huyết Ảnh",
+    "hon_chau": "Hồn Châu",
+    "cung_sinh": "cung sinh",
+    "dieu_tuc": "điều tức"
+  },
   "huyenKiepGroups": {
     "ngoai": "Ngoại kiếp",
     "noi": "Nội kiếp",

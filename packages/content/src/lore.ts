@@ -160,6 +160,8 @@ export interface LoreGlossary {
   /** Tên năm ải của Thiên Nhân Ngũ Suy (TN-4, tự đặt) và thuật ngữ riêng của chuỗi. */
   nguSuy: Record<string, string>;
   nguSuyTerms: Record<string, string>;
+  /** Thuật ngữ riêng của Huyền Kiếp (TN-6, tự đặt). */
+  huyenKiepTerms: Record<string, string>;
   huyenKiepGroups: Record<string, string>;
   huyenKiep: Record<string, Record<string, string>>;
   cuuKieu: string[];
@@ -226,6 +228,7 @@ export function checkLoreTerms(g: LoreGlossary): string[] {
   if (suyN !== 5) errors.push(`glossary.nguSuy: cần 5 ải, đang có ${suyN}`);
   distinct('glossary.nguSuy', Object.values(g.nguSuy ?? {}), errors);
   distinct('glossary.nguSuyTerms', Object.values(g.nguSuyTerms ?? {}), errors);
+  distinct('glossary.huyenKiepTerms', Object.values(g.huyenKiepTerms ?? {}), errors);
 
   if (g.cuuKieu.length !== 9) errors.push(`glossary.cuuKieu: cần 9 cầu, đang có ${g.cuuKieu.length}`);
   distinct('glossary.cuuKieu', g.cuuKieu, errors);
