@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { attribute, dot, float, length, materialColor, max, min, mix, pow, smoothstep, vec3, vec4 } from 'three/tsl';
+import { attribute, dot, float, length, materialColor, max, min, mix, pow, smoothstep, uniform, vec3, vec4 } from 'three/tsl';
 
 /**
  * Nhuộm áo nhân vật v3 (N-7): màu đạo bào chọn lúc tạo nhân vật và kênh 1 của Tủ ngoại trang (`dye3`).
@@ -92,36 +92,65 @@ const LUMA = new THREE.Vector3(0.2126, 0.7152, 0.0722);
 const lin = (hex: string): THREE.Color => new THREE.Color().setStyle(hex, THREE.SRGBColorSpace);
 const lumOf = (c: THREE.Color): number => c.r * LUMA.x + c.g * LUMA.y + c.b * LUMA.z;
 
-/**
- * Gắn nhuộm v3 vào vật liệu (bản sao riêng theo màu; hình học phải có `dyeMask`). Chồng lên `colorNode` sẵn có của vật liệu
- * (bảng màu Lạc Kiếm, voan của model giữ gốc) nếu có.
- */
-export function applyV3Dye(m: THREE.MeshStandardNodeMaterial, ref: V3DyeRef, dye: string): THREE.MeshStandardNodeMaterial {
+/** Tham số nhuộm của một vật liệu, đều là uniform: mọi vật liệu nhuộm dùng chung MỘT chương trình shader, chỉ khác giá trị. */
+export interface V3DyeUniforms {
+  /** Màu nhuộm (tuyến tính). */
+  target: ReturnType<typeof uniform<THREE.Color>>;
+  /** Hướng sắc độ của vải tham chiếu (chuẩn hóa); chế độ `neutral` không dùng. */
+  dir: ReturnType<typeof uniform<THREE.Vector3>>;
+  /** Độ sáng của vải tham chiếu. */
+  refLum: ReturnType<typeof uniform<number>>;
+  /** Số mũ nén tương phản (0,6 khi màu nhuộm sáng hơn vải gốc, không thì 1). */
+  gamma: ReturnType<typeof uniform<number>>;
+  /** 0 = `chroma`, 1 = `neutral`. */
+  neutral: ReturnType<typeof uniform<number>>;
+}
+
+/** Giá trị uniform của một cặp (vải tham chiếu, màu nhuộm). */
+export function v3DyeValues(
+  ref: V3DyeRef,
+  dye: string,
+): { target: THREE.Color; dir: THREE.Vector3; refLum: number; gamma: number; neutral: number } {
   const refC = lin(ref.ref);
   const target = lin(dye);
   const refLum = Math.max(lumOf(refC), 0.02);
-  const targetLum = lumOf(target);
+  const rm = (refC.r + refC.g + refC.b) / 3;
+  const dir = new THREE.Vector3(refC.r - rm, refC.g - rm, refC.b - rm);
+  if (dir.lengthSq() > 1e-10) dir.normalize();
+  else dir.set(0, 0, 1);
+  // Màu sáng hơn vải gốc thì nén tương phản để vùng sáng không cháy trắng (như `dye.ts`).
+  return { target, dir, refLum, gamma: lumOf(target) > refLum ? 0.6 : 1, neutral: ref.mode === 'neutral' ? 1 : 0 };
+}
+
+/**
+ * Gắn nhuộm v3 vào vật liệu (bản sao riêng theo màu; hình học phải có `dyeMask`). Chồng lên `colorNode` sẵn có của vật liệu
+ * (bảng màu Lạc Kiếm, voan của model giữ gốc) nếu có. Màu, vải tham chiếu và chế độ là uniform (`material.userData.v3Dye`), không nướng
+ * thành hằng số trong shader: người chơi xuất hiện với màu chưa gặp không gây biên dịch shader/pipeline mới.
+ */
+export function applyV3Dye(m: THREE.MeshStandardNodeMaterial, ref: V3DyeRef, dye: string): THREE.MeshStandardNodeMaterial {
+  const v = v3DyeValues(ref, dye);
+  const u: V3DyeUniforms = {
+    target: uniform(v.target),
+    dir: uniform(v.dir),
+    refLum: uniform(v.refLum),
+    gamma: uniform(v.gamma),
+    neutral: uniform(v.neutral),
+  };
   const base = m.colorNode ? vec4(m.colorNode) : materialColor;
   const c = base.rgb;
   const mean = dot(c, vec3(1 / 3, 1 / 3, 1 / 3));
   const ch = c.sub(mean);
   const mag = length(ch);
   const sat = mag.div(mean.add(1e-3));
-  let colorMask;
-  if (ref.mode === 'chroma') {
-    const rm = (refC.r + refC.g + refC.b) / 3;
-    const dir = new THREE.Vector3(refC.r - rm, refC.g - rm, refC.b - rm).normalize();
-    const cosA = dot(ch, vec3(dir.x, dir.y, dir.z)).div(max(mag, float(1e-4)));
-    colorMask = smoothstep(0.7, 0.85, cosA).mul(smoothstep(0.1, 0.2, sat));
-  } else {
-    colorMask = float(1).sub(smoothstep(0.2, 0.34, sat));
-  }
+  const cosA = dot(ch, u.dir).div(max(mag, float(1e-4)));
+  const chromaMask = smoothstep(0.7, 0.85, cosA).mul(smoothstep(0.1, 0.2, sat));
+  const neutralMask = float(1).sub(smoothstep(0.2, 0.34, sat));
+  const colorMask = mix(chromaMask, neutralMask, u.neutral);
   const geo = smoothstep(0.35, 0.65, attribute(DYE_MASK_ATTR, 'float'));
-  const ratio = dot(c, vec3(LUMA.x, LUMA.y, LUMA.z)).div(refLum);
-  // Màu sáng hơn vải gốc thì nén tương phản để vùng sáng không cháy trắng (như `dye.ts`).
-  const gamma = targetLum > refLum ? 0.6 : 1;
-  const dyed = min(vec3(target.r, target.g, target.b).mul(pow(ratio, float(gamma))), vec3(1, 1, 1));
+  const ratio = dot(c, vec3(LUMA.x, LUMA.y, LUMA.z)).div(u.refLum);
+  const dyed = min(u.target.mul(pow(ratio, u.gamma)), vec3(1, 1, 1));
   m.colorNode = vec4(mix(c, dyed, colorMask.mul(geo)), base.a);
+  m.userData.v3Dye = u;
   m.needsUpdate = true;
   return m;
 }
