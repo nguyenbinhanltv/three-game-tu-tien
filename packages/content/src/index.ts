@@ -80,6 +80,9 @@ import bacHoangJson from '../data/levels/bac_hoang.json';
 import bacHoangTerrainJson from '../data/levels/bac_hoang.terrain.json';
 import xichTanTerrainJson from '../data/levels/xich_tan_khich.terrain.json';
 import bacHoangAssetsJson from '../data/levels/bac_hoang.assets.json';
+import vanDinhJson from '../data/levels/van_dinh.json';
+import vanDinhTerrainJson from '../data/levels/van_dinh.terrain.json';
+import vanDinhAssetsJson from '../data/levels/van_dinh.assets.json';
 import doKiepJson from '../data/levels/do_kiep.json';
 import doKiepBhJson from '../data/levels/do_kiep_bac_hoang.json';
 import phucMachJson from '../data/levels/phuc_mach.json';
@@ -372,6 +375,7 @@ export const LEVELS: Record<string, LevelDef> = {
   van_hai: vanHaiJson as LevelDef,
   thien_khuyet: thienKhuyetJson as LevelDef,
   bac_hoang: bacHoangJson as LevelDef,
+  van_dinh: vanDinhJson as LevelDef,
   do_kiep: doKiepJson as LevelDef,
   do_kiep_bac_hoang: doKiepBhJson as LevelDef,
   phuc_mach: phucMachJson as LevelDef,
@@ -385,6 +389,7 @@ export const LEVELS: Record<string, LevelDef> = {
 registerTerrain(doanMachTerrainJson as unknown as TerrainDef);
 registerTerrain(thienKhuyetTerrainJson as unknown as TerrainDef); // E4-A: cao nguyên thành cổ
 registerTerrain(bacHoangTerrainJson as unknown as TerrainDef); // DV-1: hoang nguyên tro, khe Giới Khích
+registerTerrain(vanDinhTerrainJson as unknown as TerrainDef); // TN-3: Vấn Đỉnh Âm Dương Giới (chương 6)
 registerTerrain(xichTanTerrainJson as unknown as TerrainDef); // DV-3K: hẻm núi phó bản Xích Tẫn Khích
 registerTerrain(vanHaiTerrainJson as unknown as TerrainDef); // E3-A/E3-N: đảo nổi, cầu xích, sàn mây
 /** Asset client theo level (`levels/<id>.assets.json`, E1-D). */
@@ -395,6 +400,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   van_hai: vanHaiAssetsJson as LevelAssets,
   thien_khuyet: thienKhuyetAssetsJson as LevelAssets,
   bac_hoang: bacHoangAssetsJson as LevelAssets,
+  van_dinh: vanDinhAssetsJson as LevelAssets,
   do_kiep: doKiepAssetsJson as LevelAssets,
   do_kiep_bac_hoang: doKiepBhAssetsJson as LevelAssets,
   phuc_mach: phucMachAssetsJson as LevelAssets,

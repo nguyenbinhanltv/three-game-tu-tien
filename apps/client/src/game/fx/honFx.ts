@@ -72,6 +72,30 @@ export interface HonBinhEnv {
   after(sec: number, done: () => void): void;
 }
 
+/**
+ * Khung đặt hồn binh: bám vị trí người gọi nhưng lấy "phía trước" là hướng NHÌN của camera (từ camera qua người gọi), không phải hướng
+ * mặt nhân vật. Nhờ vậy cả ba hồn binh (đều có z dương trong khung này) luôn ở phía xa camera hơn người gọi, không chen vào giữa
+ * camera và nhân vật dù nhân vật đang quay mặt về đâu. Hướng chốt lúc tạo (mỗi đoạn `HON_BINH_SEG` giây tạo lại một lần).
+ */
+export function awayFromCamera(ent: FxCaster, cam: { x: number; z: number }): FxCaster {
+  const dx = ent.x - cam.x;
+  const dz = ent.z - cam.z;
+  const yaw = dx * dx + dz * dz > 1e-6 ? Math.atan2(dx, dz) : ent.yaw;
+  return {
+    get x() {
+      return ent.x;
+    },
+    get y() {
+      return ent.y;
+    },
+    get z() {
+      return ent.z;
+    },
+    yaw,
+    model: {},
+  };
+}
+
 /** Lượt gọi hồn binh mới nhất của từng người: lượt cũ thấy số khác thì tự dừng (gọi lại thay bộ cũ, như luật server). */
 const honBinhGen = new Map<string, number>();
 

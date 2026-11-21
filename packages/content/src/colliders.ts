@@ -10,6 +10,7 @@ import archSect from '../data/colliders/arch_sect.boxes.json';
 import libJson from '../data/colliders/lib.json';
 import extraLib from '../data/colliders/extra-lib.json';
 import bacHoang from '../data/colliders/bac_hoang.inst.json';
+import vanDinh from '../data/colliders/van_dinh.inst.json';
 import doKiepBacHoang from '../data/colliders/do_kiep_bac_hoang.inst.json';
 import doanMach from '../data/colliders/doan_mach.inst.json';
 import kiemTrung from '../data/colliders/kiem_trung.inst.json';
@@ -44,6 +45,7 @@ export const INST_BY_LEVEL: Record<string, InstFile> = {
   van_hai: vanHai,
   thien_khuyet: thienKhuyet,
   bac_hoang: bacHoang,
+  van_dinh: vanDinh,
   do_kiep_bac_hoang: doKiepBacHoang,
   phuc_mach: phucMach,
   kinh_nguyet: kinhNguyet,

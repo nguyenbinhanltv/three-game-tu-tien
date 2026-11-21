@@ -1,0 +1,8 @@
+{
+  "mood": "tk_dusk",
+  "glb": [],
+  "ground": { "set": "terrain-slate", "mask": "neutral" },
+  "music": ["wild_night"],
+  "features": { "sect": false, "portals": false, "lanterns": true, "lake": false, "clouds": false, "grass": false, "trees": "scatter", "beacons": true, "vegetation": false }
+  ,"minimap": "van_dinh"
+}
