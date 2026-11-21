@@ -7,6 +7,11 @@ import {
   MAX_SKILL_LEVEL,
   migrateSkillKeys,
   resolveSkill,
+  branchMods,
+  skillGate,
+  type BranchMods,
+  type BranchPicks,
+  type SkillGate,
   type MethodDef,
   type MethodMsg,
   type MethodPassive,
@@ -26,6 +31,8 @@ export interface MethodMeta {
   skillVar?: Record<string, VariantId>;
   /** Lần đổi công pháp gần nhất (ms, giờ server) để chống đổi dồn. */
   methodAt?: number;
+  /** Lần reset nhánh công pháp gần nhất (ms, giờ server) để chống reset dồn (VS-2d). */
+  branchAt?: number;
 }
 
 /** Làm sạch phần công pháp của meta khi đọc từ DB (dữ liệu hỏng/cũ: bỏ phần lạ). */
@@ -49,6 +56,7 @@ export function sanitizeMethodMeta(meta: MethodMeta): void {
   }
   meta.skillVar = vr;
   if (typeof meta.methodAt !== 'number' || !Number.isFinite(meta.methodAt)) delete meta.methodAt;
+  if (typeof meta.branchAt !== 'number' || !Number.isFinite(meta.branchAt)) delete meta.branchAt;
 }
 
 export function methodOf(meta: MethodMeta): MethodDef | undefined {
@@ -57,6 +65,28 @@ export function methodOf(meta: MethodMeta): MethodDef | undefined {
 
 export function passiveOf(meta: MethodMeta): MethodPassive | undefined {
   return methodOf(meta)?.passive;
+}
+
+/** Phần của nhân vật mà luật nhánh cần (VS-2d): công pháp đang tu, cảnh giới, bảng nhánh đã chọn theo công pháp. */
+export interface BranchOwner {
+  meta: MethodMeta;
+  level: number;
+  branches: Record<string, BranchPicks>;
+}
+
+/** Nhánh đã chọn của công pháp ĐANG tu (chưa chọn công pháp hoặc chưa chọn nhánh nào thì undefined). */
+export function picksOf(c: BranchOwner): BranchPicks | undefined {
+  return c.meta.method ? c.branches[c.meta.method] : undefined;
+}
+
+/** Luật riêng gộp từ các nhánh đã chọn của công pháp đang tu. */
+export function branchModsOf(c: BranchOwner): BranchMods {
+  return branchMods(methodOf(c.meta), picksOf(c), c.level);
+}
+
+/** Chiêu `skill` có dùng được theo nhánh không (chiêu chung và chiêu không gắn nhánh luôn `ok`). */
+export function gateOf(c: BranchOwner, skill: SkillDef): SkillGate {
+  return skill.method ? skillGate(methodOf(c.meta), picksOf(c), skill.id) : 'ok';
 }
 
 /** Tài nguyên riêng của công pháp đang tu (VS-2a); chưa chọn công pháp thì không có. */

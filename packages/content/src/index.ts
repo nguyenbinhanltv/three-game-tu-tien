@@ -1,9 +1,12 @@
 import {
   clampTier,
+  pickedBranch,
+  skillGate,
   isEquipSlot,
   majorRealmOf,
   registerTerrain,
   resolveSkill,
+  type BranchPicks,
   type CloneMethodDef,
   type MarkDef,
   type FxTimeline,
@@ -710,9 +713,13 @@ export function thanThong10Skill(methodId: string | undefined): SkillDef | undef
  * Thần thông của công pháp (chiêu mở ở Kết Đan sơ kỳ, cấp 20): nằm ở **ô chiêu 9** (chỉ số `BAR_SIZE` trong `Game.bar()`, phím 0).
  * Ô 10 (Hóa Thần, cấp 28) là `thanThong10Skill`. Không có công pháp thì không có thần thông.
  */
-export function thanThongSkill(methodId: string | undefined): SkillDef | undefined {
+export function thanThongSkill(methodId: string | undefined, picks?: BranchPicks): SkillDef | undefined {
   if (!methodId) return undefined;
-  return METHOD_SKILLS.find((s) => s.method === methodId && s.unlock === THAN_THONG_UNLOCK && !s.locked);
+  const at20 = METHOD_SKILLS.filter((s) => s.method === methodId && s.unlock === THAN_THONG_UNLOCK && !s.locked);
+  // VS-2d: mốc Kết Đan có hai nhánh, ô 9 là chiêu của nhánh đã chọn (chưa chọn thì tạm hiện chiêu đầu, server sẽ nhắc chọn nhánh).
+  const m = METHOD.get(methodId);
+  const picked = m ? pickedBranch(m, picks, THAN_THONG_UNLOCK) : undefined;
+  return (picked && at20.find((s) => picked.grants.includes(s.id))) ?? at20[0];
 }
 
 /**
@@ -720,13 +727,20 @@ export function thanThongSkill(methodId: string | undefined): SkillDef | undefin
  * Hàng này nằm sau ô 9 và ô 10 (chỉ số ≥ `BAR_SIZE + 2` trong `Game.bar()`), phím Shift+1…
  * Chiêu còn khóa (Nguyên Anh trở lên, cơ chế chưa làm) không có trong hàng.
  */
-export function tierBar(methodId: string | undefined): SkillDef[] {
+export function tierBar(methodId: string | undefined, picks?: BranchPicks): SkillDef[] {
   if (!methodId) return [];
-  const tt = thanThongSkill(methodId);
-  const tt10 = thanThong10Skill(methodId);
-  return METHOD_SKILLS.filter((s) => s.method === methodId && s.unlock >= TIER_MIN_UNLOCK && !s.locked && s !== tt && s !== tt10).sort(
-    (a, b) => a.unlock - b.unlock,
-  );
+  const m = METHOD.get(methodId);
+  // VS-2d: hàng này là chiêu của mốc Trúc Cơ (16) và Nguyên Anh (24); mốc Kết Đan (20) và Hóa Thần (28) nằm ở ô 9, ô 10.
+  // Mốc đã chọn nhánh chỉ hiện chiêu của nhánh đó; mốc chưa chọn hiện cả hai để người chơi thấy mình đang chọn giữa gì.
+  return METHOD_SKILLS.filter(
+    (s) =>
+      s.method === methodId &&
+      s.unlock >= TIER_MIN_UNLOCK &&
+      !s.locked &&
+      s.unlock !== THAN_THONG_UNLOCK &&
+      s.unlock !== THAN_THONG_10_UNLOCK &&
+      (!m || skillGate(m, picks, s.id) !== 'other'),
+  ).sort((a, b) => a.unlock - b.unlock);
 }
 
 /** Chiêu `skill` đã gộp cấp chiêu và biến thức theo trạng thái công pháp server gửi (null = chưa có: cấp 1, không biến thức). */

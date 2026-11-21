@@ -103,7 +103,7 @@ import {
   t,
 } from './index';
 import { LOOT, LOOT_MATS } from './loot';
-import { chainErrors, markDefErrors, monSkillsOf, resourceErrors, skillMarkErrors, skillResErrors } from '@dtl/shared';
+import { branchErrors, chainErrors, markDefErrors, monSkillsOf, resourceErrors, skillMarkErrors, skillResErrors } from '@dtl/shared';
 import {
   PILL_TIERS,
   ARTIFACT_MAX_LEVEL,
@@ -258,6 +258,16 @@ for (const m of METHODS) {
 for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined)) err(m);
 // VS-2b: đồ thị chuỗi chiêu (id có thật, cùng công pháp, không vòng, hệ số trong khoảng).
 for (const m of chainErrors(ALL_SKILLS)) err(m);
+// VS-2d: cây nhánh công pháp (mỗi mốc 2–3 nhánh, chiêu bậc cao nào cũng thuộc một nhánh), tên khớp glossary.branches.
+for (const m of METHODS) {
+  for (const e of branchErrors(m, ALL_SKILLS)) err(e);
+  const names = (GLOSSARY.branches as Record<string, Record<string, string>>)[m.id] ?? {};
+  for (const b of m.branches ?? []) {
+    needStr(`branch.${m.id}.${b.id}.name`);
+    needStr(`branch.${m.id}.${b.id}.desc`);
+    if (t(`branch.${m.id}.${b.id}.name`) !== names[b.id]) err(`method ${m.id} nhánh ${b.id}: tên lệch glossary.branches`);
+  }
+}
 // VS-2c: bảng ấn và chiêu đặt/tiêu ấn.
 for (const m of markDefErrors(MARKS)) err(m);
 for (const m of MARKS) {

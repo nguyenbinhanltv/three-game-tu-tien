@@ -29,12 +29,14 @@ import {
   tribPhaseIndex,
   tribPhaseStart,
   PF_DEAD,
+  pendingTier,
 } from '@dtl/shared';
 import {
   ARTIFACT,
   hasString,
   ITEM,
   itemName,
+  METHOD,
   nextMajorRealmName,
   realmName,
   resolveBarSkill,
@@ -537,7 +539,10 @@ function UtilityRow() {
   const clone = useUI((s) => s.clone);
   const now = useNow(100);
   if (!char) return null;
-  const tier = tierBar(method?.method);
+  const tier = tierBar(method?.method, method?.br);
+  // VS-2d: còn mốc đủ cảnh giới mà chưa chọn nhánh thì nhắc bằng một thẻ bấm được (mở bảng Công pháp).
+  const mdefBr = method?.method ? METHOD.get(method.method) : undefined;
+  const pending = pendingTier(mdefBr, method?.br, char.level);
   return (
     <>
       <div className="u2h-slots">
@@ -614,6 +619,11 @@ function UtilityRow() {
         </div>
       </div>
       <div className="u2h-chips">
+        {pending > 0 && (
+          <button type="button" className="branch-chip" data-testid="branch-chip" onClick={() => togglePanel('method')}>
+            {t('ui.branch.pending', { realm: realmName(pending) })}
+          </button>
+        )}
         <ResourceBar />
         {char.level >= CLONE_UNLOCK_LEVEL && (
           <div className={'clone-chip' + (now < clone.until ? ' on' : '')} data-testid="clone-chip" aria-label={t('ui.clone.title')}>

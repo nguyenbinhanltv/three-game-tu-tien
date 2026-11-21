@@ -1,6 +1,7 @@
 // Công pháp (Phase 3-5): công thức dùng chung client (hiển thị) và server (tính thật). Hàm thuần.
 // Dữ liệu (công pháp, chiêu, biến thức) nằm ở packages/content/data/methods.json.
 
+import type { BranchDef } from './branch';
 import type { ResourceDef } from './resource';
 import type { SkillDef } from './types';
 
@@ -59,6 +60,8 @@ export interface MethodDef {
   passive: MethodPassive;
   /** Tài nguyên riêng của công pháp (VS-2a): Kiếm ý / Huyết khí / Đan hỏa. Luật ở `resource.ts`. */
   resource: ResourceDef;
+  /** Nhánh công pháp (VS-2d): mỗi mốc 16/20/24/28 chọn một. Luật ở `branch.ts`. */
+  branches: BranchDef[];
 }
 
 /**

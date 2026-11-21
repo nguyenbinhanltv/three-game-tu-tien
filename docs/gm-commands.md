@@ -26,6 +26,8 @@ Playtest luôn tắt tiếng: mở game với `?mute=1` (ví dụ `?mute=1&debug
 | `heal` | `/gm heal` — hồi đầy khí huyết, linh lực. |  |
 | `die` | `/gm die` — chết ngay (thử hồi sinh). |  |
 | `charge` | `/gm charge [0-100]` — đặt vòng sạc chiêu tối thượng. | `/gm charge 100` |
+| `res` | `/gm res [n]` — đặt tài nguyên riêng của công pháp (Kiếm ý, Huyết khí, Đan hỏa); bỏ trống = đầy. | `/gm res 3` |
+| `branch` | `/gm branch <mốc> <id>` hoặc `/gm branch reset` — chọn nhánh công pháp ngay hoặc xóa hết nhánh (không tốn linh thạch). | `/gm branch 16 pha_mach` |
 | `cd` | `/gm cd` — xóa hồi chiêu, GCD, hồi thần thức. |  |
 | `dye` | `/gm dye <id màu>` — đổi màu áo. | `/gm dye attire_sect` |
 

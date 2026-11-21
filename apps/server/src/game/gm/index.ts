@@ -60,7 +60,7 @@ import {
   weaponIds,
   type GmBranch,
 } from './tools';
-import { resourceOf, setSkillLevel, skillLevelOf } from '../method';
+import { methodOf, picksOf, resourceOf, setSkillLevel, skillLevelOf } from '../method';
 import type { LevelDef, MonsterDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from '../entities';
 
@@ -355,6 +355,22 @@ export class GmSystem {
         c.hp = c.mhp;
         c.mp = c.mmp;
         return say('đã hồi đầy');
+      case 'branch': {
+        // /gm branch <mốc> <id> | reset: chọn nhánh công pháp ngay (bỏ kiểm cảnh giới/giao chiến) hoặc xóa hết nhánh, không tốn linh thạch.
+        const mdef = methodOf(c.meta);
+        if (!mdef) return say('chưa chọn công pháp');
+        if (a[1] === 'reset') {
+          c.tx('gm:branch:reset', null, (d) => d.clearBranches(mdef.id));
+          p.mth.dirty = true;
+          return say('đã xóa nhánh của ' + mdef.id);
+        }
+        const tier = Number(a[1]);
+        const br = mdef.branches.find((b) => b.tier === tier && b.id === a[2]);
+        if (!br) return say('branch <mốc> <id>: ' + mdef.branches.map((b) => `${b.tier} ${b.id}`).join(' | '));
+        c.tx('gm:branch:pick', null, (d) => d.setBranch(mdef.id, br.tier, br.id));
+        p.mth.dirty = true;
+        return say(`nhánh ${br.tier} = ${br.id}; đang có: ${JSON.stringify(picksOf(c) ?? {})}`);
+      }
       case 'res': {
         // /gm res [n]: đặt tài nguyên riêng của công pháp (mặc định đầy).
         const rdef = resourceOf(c.meta);
