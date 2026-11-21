@@ -21,6 +21,7 @@ import hires from './scenarios/hires';
 import lackiem from './scenarios/lackiem';
 import thienkhuyet from './scenarios/thienkhuyet';
 import bachoang from './scenarios/bachoang';
+import vandinh from './scenarios/vandinh';
 import doanmach from './scenarios/doanmach';
 import vanhai from './scenarios/vanhai';
 import quality from './scenarios/quality';
@@ -76,6 +77,7 @@ const SCENARIOS: Scenario[] = [
   collwalk,
   thienkhuyet,
   bachoang,
+  vandinh,
   doanmach,
   vanhai,
   map,
