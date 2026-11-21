@@ -207,3 +207,7 @@ Giới hạn: chỉ kênh 1 (vải chính) của `dye3`; kênh 2 (viền) và k�
 Triệu chứng: mảng tím (Tinh Khuyết) / xanh đen (Thần Tàng) phẳng, kéo dài dưới cằm, cổ trông dài. **Nguyên nhân**: ống "thân dưới áo" của C2 (`chr_v3_c2.py`, `_tube`) chạy tới hết xương `neck_01` với ell 1,25 và bán kính 0,7× thân, nên lòi ra khỏi cổ thật; UV của nó trỏ vào texel nền áo (`underColor`). Không phải trọng số, ARM_FIT hay mặt nạ tách lưới.
 Sửa: khóa `c2.torsoTop: "spine"` (ống dừng ở giữa `spine_03`) trong `v3sets/tinh_khuyet.json`, `v3sets/than_tang.json`. Mặc định giữ `neck`: các bộ khác chưa đổi. Chỉ đổi phần hình học ẩn trong áo; vải, UV, texture gốc không đổi.
 Đo (rigstretch, % cạnh sai): Tinh Khuyết nam Idle 0,64%, Jog −68,7%, chém −67,8%, p99 tối đa 2,64 (bản trước sửa cùng số; Jog/chém của nam vốn ~68%, chưa đạt 70%); Thần Tàng nữ Idle 0,29%, Jog −78,6%, chém −77,2%, p99 2,46. Ảnh: `pnpm shots neck --out <dir>` (cận cổ + 4 góc ở đứng/chạy/chém).
+
+### Sửa cổ đợt 2 (21/11): kinh_quang nữ, luu_ly nam+nữ, phuc_mach nữ
+
+Cùng nguyên nhân ống thân C2 (xem trên); phát hiện khi kiểm 16 model còn lại. `c2.torsoTop: "spine"` thêm cho `luu_ly` (cả hai giới), và theo giới `c2.nu` cho `kinh_quang`, `phuc_mach`. 12 model còn lại cổ sạch, không đổi. rigstretch: Idle 0,17–0,43%, p99 tối đa 2,21–2,92. Lưu ý khi chụp nhiều bộ liên tiếp bằng `pnpm shots neck`: người chơi lần trước còn trên server vài chục giây nên nhân vật chồng nhau; kịch bản nghỉ `NECK_GAP` (mặc định 30 giây) giữa các lần.
