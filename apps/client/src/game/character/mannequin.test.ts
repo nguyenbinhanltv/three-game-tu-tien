@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { baseClipOf, JOG_SPEED, lod0Slots, V3_MODELS, v3AssetOf } from './mannequin';
+import * as THREE from 'three/webgpu';
+import { baseClipOf, CHR_V3, JOG_SPEED, lod0Slots, V3_MODELS, v3AssetOf } from './mannequin';
+import { lodOf, mergeLodMeshes } from './mannequinLod';
 import type { AnimState } from './view';
 
 const st = (o: Partial<AnimState> = {}): AnimState => ({
@@ -102,5 +104,101 @@ describe('lod0Slots', () => {
     expect(lod0Slots(102001)).toBe(4);
     expect(lod0Slots(24000)).toBe(1);
     expect(lod0Slots(0)).toBe(1);
+  });
+});
+
+describe('CHR_V3 (N-7)', () => {
+  it('không có cờ URL thì nhân vật v3 bật (mặc định)', () => {
+    expect(CHR_V3).toBe(true);
+  });
+});
+
+describe('lodOf (N-7: LOD của lưới nhiều primitive)', () => {
+  it('lấy mức LOD của nhóm cha khi lưới con không có userData.lod', () => {
+    const root = new THREE.Group();
+    const lod0 = new THREE.Mesh();
+    const group = new THREE.Group();
+    group.userData.lod = 2;
+    const a = new THREE.Mesh();
+    const b = new THREE.Mesh();
+    group.add(a, b);
+    const single = new THREE.Mesh();
+    single.userData.lod = 1;
+    root.add(lod0, group, single);
+    expect([lod0, a, b, single].map((m) => lodOf(m, root))).toEqual([0, 2, 2, 1]);
+  });
+
+  it('không đọc quá gốc rig', () => {
+    const outer = new THREE.Group();
+    outer.userData.lod = 2;
+    const root = new THREE.Group();
+    const m = new THREE.Mesh();
+    root.add(m);
+    outer.add(root);
+    expect(lodOf(m, root)).toBe(0);
+  });
+});
+
+describe('mergeLodMeshes (N-7: một draw call mỗi mức LOD xa)', () => {
+  const tri = (n: number) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 9), 3));
+    g.setAttribute('skinIndex', new THREE.BufferAttribute(new Uint16Array(n * 12), 4));
+    g.setAttribute('skinWeight', new THREE.BufferAttribute(new Float32Array(n * 12), 4));
+    g.setIndex([...Array(n * 3).keys()]);
+    return g;
+  };
+  function model() {
+    const scene = new THREE.Group();
+    const bone = new THREE.Bone();
+    scene.add(bone);
+    const mat = new THREE.MeshStandardMaterial();
+    // Như asset thật: mỗi lưới một `Skeleton` riêng trên cùng danh sách xương.
+    const skinned = (g: THREE.BufferGeometry, name: string) => {
+      const m = new THREE.SkinnedMesh(g, mat);
+      m.name = name;
+      m.bind(new THREE.Skeleton([bone]), new THREE.Matrix4());
+      return m;
+    };
+    const groupOf = (lod: number, ...ms: THREE.SkinnedMesh[]) => {
+      const g = new THREE.Group();
+      g.userData.lod = lod;
+      g.add(...ms);
+      return g;
+    };
+    scene.add(skinned(tri(10), 'body'), skinned(tri(2), 'sleeve'));
+    scene.add(groupOf(1, skinned(tri(3), 'b1a'), skinned(tri(2), 'b1b')), groupOf(1, skinned(tri(1), 's1a'), skinned(tri(1), 's1b')));
+    const single = skinned(tri(2), 'b2');
+    single.userData.lod = 2;
+    scene.add(single);
+    return { scene, bone, mat };
+  }
+  const meshesAt = (scene: THREE.Object3D, lod: number) => {
+    const out: THREE.SkinnedMesh[] = [];
+    scene.traverse((o) => {
+      if ((o as THREE.SkinnedMesh).isSkinnedMesh && lodOf(o, scene) === lod) out.push(o as THREE.SkinnedMesh);
+    });
+    return out;
+  };
+
+  it('LOD1 bốn primitive gộp còn một lưới, đủ tam giác, cùng bộ xương; LOD0 và mức chỉ có một lưới giữ nguyên', () => {
+    const { scene, bone, mat } = model();
+    const made = mergeLodMeshes(scene);
+    expect(made).toHaveLength(1);
+    const l1 = meshesAt(scene, 1);
+    expect(l1).toHaveLength(1);
+    expect(l1[0]!.geometry.index!.count / 3).toBe(7);
+    expect(l1[0]!.skeleton.bones).toEqual([bone]);
+    expect(l1[0]!.material).toBe(mat);
+    expect(l1[0]!.visible).toBe(false);
+    expect(meshesAt(scene, 0).map((m) => m.name)).toEqual(['body', 'sleeve']);
+    expect(meshesAt(scene, 2).map((m) => m.name)).toEqual(['b2']);
+  });
+
+  it('thuộc tính đỉnh lệch nhau thì không gộp (để nguyên)', () => {
+    const { scene } = model();
+    meshesAt(scene, 1)[0]!.geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(9 * 4), 4));
+    expect(mergeLodMeshes(scene)).toHaveLength(0);
+    expect(meshesAt(scene, 1)).toHaveLength(4);
   });
 });

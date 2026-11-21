@@ -143,6 +143,58 @@ Video và tờ khung: `pnpm shots v3sets --out <thư mục tuyệt đối>` (nam
 
 Lỗi (video N-9): vạt áo dài bị kéo căng giữa hai chân như một tấm ván vắt ra sau khi chạy ngang, vạt sau văng ra, mảng tối quanh hông/đùi. Nguyên nhân: vạt liền phủ cả hai chân nên bị trọng số chân kéo; `share` thấp (0,6) làm nặng hơn (thử, bỏ). Sửa: `tools/blender/skins/v3sets/dan_tam.json` `skirt.share` 0,8 → **0,95** (vạt do lò xo/viên nang điều khiển, buông tự do) + viên nang đùi lớn hơn cho riêng bộ này (`SKIRT_TUNE['chr_v3_dan_tam_'] = { rMul: 1.5 }` ở `mannequin.ts`; bảng này cho phép chỉnh `spring`/`hemStiff`/`rMul` theo bộ). Xuyên áo (cặp mặt chồng, 12 tư thế, ARM_FIT 16°) không đổi: nam 3.164 → 3.188, nữ 2.900 → 2.852; đỉnh trong viên nang 16.301 → 15.914 / 19.154 → 19.056. Còn lại: mảng tối nhỏ của lớp lót sau lưng khi chạy ngang. Lưu ý: cache `assets:build` khóa theo file nguồn, đổi JSON cấu hình phải thêm `--force`. Quay: `pnpm shots v3sets --sets dan_tam [--sits chạy,chém]`.
 
+## Chuyển mặc định sang v3 (kế hoạch mục C, mã việc N-7 đợt cuối, 21/11)
+
+Từ PR này nhân vật v3 là **mặc định của người chơi**. `?chr=v1` quay về model cũ trong một bản (dự phòng); asset v3 nạp lỗi cũng tự lùi về v1. NPC giữ rig Mixamo cũ. Nguyên anh, thân xác, phân thân Ảnh Biến và bóng tâm ma dựng từ chính model v3 (`soulLook.ts`).
+
+### Lỗi có sẵn đã sửa: model bậc cao vô hình ở LOD1/LOD2
+LOD1/LOD2 của 18 model giữ gốc gồm nhiều primitive nên GLTFLoader bọc trong một `Group` mang `userData.lod`; lưới con không có `userData.lod` nên bị xếp vào LOD0, còn Group cha đã bị `AssetCache` ẩn. Hậu quả: ngoài suất LOD0 (4 người gần nhất) người mặc đồ bậc cao **không hiện** (còn bảng tên và kiếm). Ảnh duyệt các đợt nhập model đều chụp cận nên không lộ. Sửa ở `mannequinLod.ts` (`lodOf` đọc mức LOD của nhóm cha). Mọi số đo đám đông v3 trước ngày 21/11 vì thế thấp hơn thực tế.
+
+### Giới hạn nhân vật chi tiết cao
+| Biện pháp | Ở đâu | Tác dụng (50 người × 12 bộ × 2 giới, sân tông môn) |
+| --- | --- | --- |
+| Trần texture cho model của người khác: Cao 3 model đầu 2048 (normal 1024), còn lại 1024 (normal 512); Vừa mình 2048, người khác 1024/512; Thấp 1024 và 512. Mình ở Cao/Cực cao giữ đủ 4096 | `v3Detail.ts`, `AssetCache.acquire(id, { maxTexture, maxNormal })` + `capTextures` (bỏ mức mip lớn ngay sau parse, không lọc ảnh) | texture 2,44 GB → 427 MB (Vừa) |
+| Không giữ `parser` của GLTFLoader (nắm nguyên byte GLB 10–13 MB mỗi model) | `AssetCache` | heap sau GC 1503 MB → ~950 MB (v1: 936 MB) |
+| Gộp các primitive cùng LOD ≥ 1 thành một lưới | `mergeLodMeshes` | LOD1/LOD2 model bậc cao 4 draw → 1 |
+| Suất LOD1 theo tam giác (12 suất; model bậc cao 2, cơ bản 1), hết suất thì LOD2 | `entities.applyLodBudget`, `lod1Cost` | tam giác nhân vật ~0,94M → ~0,65M |
+| Từ 24 thể trong khung nhìn: suất LOD0 12 → 6 | `LOD0_CROWD` | bớt 1–2 model 99k tam giác |
+| Bóng đổ chỉ LOD0; model bậc cao của người khác không đổ bóng; kiếm ẩn ở LOD2; ngoài khung nhìn không tính ma trận xương | `MannequinCharacter.applyLod/setView` | như v1 |
+
+Trần texture chốt lúc nạp model: đổi preset có tác dụng từ lần vào room kế tiếp. Người khác mặc đúng model mình đang mặc thì dùng chung bản đầy đủ của mình.
+
+### Số đo (Chrome headless, RTX 3060 Ti, 1280×720, dpr 1, Vite dev; máy đang chạy worker khác nên CPU dao động ±2 ms)
+`pnpm bench:crowd --bots 50 --scenes san --botargs "--crowd 2048,2088,9 --level 15 --set <12 bộ> --genders m,f"`, v1 = `CROWD_QUERY='&chr=v1'`, đo liền nhau:
+
+| | draw call | tam giác | texture | CPU `frame()` p50 / p95 | heap (chưa GC) |
+| --- | --- | --- | --- | --- | --- |
+| Ngân sách | < 300 | 1–2 triệu | 512 MB | < 8 ms | |
+| WebGPU Vừa, v1 | 355 | 1,63M | 488 MB | 6,0 / 12,4 ms | 768 MB |
+| WebGPU Vừa, **v3** | **268** | 1,81M | **427 MB** | 7,8 / 14,8 ms | 1176 MB |
+| WebGPU Cao, v1 | 388 | 2,14M | 687 MB | 8,3 / 13,2 ms | 738 MB |
+| WebGPU Cao, **v3** | **301** | 2,30M | 648 MB | 10,8 / 36,3 ms | 1292 MB |
+| WebGL2 Vừa, v1 → v3 | 357 → 268 | 1,63M → 1,80M | 375 → 351 MB | 6,7 → 8,9 ms | |
+| WebGL2 Cao, v1 → v3 | 358 → 285 | 2,05M → 2,25M | 550 → 568 MB | 8,0 → 10,9 ms | |
+
+`pnpm shots n7` (preset Cao, camera sát đám đông): 50 người v1 343 draw / 2,05M → v3 235 draw / 2,08M; heap sau GC 989 MB.
+
+Đọc số: draw call và texture của v3 tốt hơn v1; tam giác hơn ~0,15M; ở Vừa mọi chỉ số trong ngân sách trừ CPU p95 (v1 cũng vượt). Ở Cao tam giác và texture vượt ngân sách chung ở cả v1 lẫn v3 (cảnh + bóng đổ + texture mặt đất 171 MB), không phải do nhân vật.
+
+**Còn nợ**: CPU khung của v3 cao hơn v1 khoảng 2 ms khi có 50 người trong khung nhìn (phần `matrix` 0,5 → 1,3 ms, `ents` 0,8 → 1,0 ms, `render` +1 ms): bộ xương Mannequin 119–127 xương (v1: 65), cây xương nằm trong cảnh nên three tính ma trận thế giới mỗi khung và `skeleton.update()` chạy cho từng lưới. v1 tránh bằng `detachRig` + `skipUnchangedSkeletons` (`skinned.ts`); chuyển cách đó sang v3 cần đổi cách gắn kiếm, IK chân và lò xo (đang bám xương trong cảnh) nên để việc riêng.
+
+### Nhuộm áo trên v3 (`game/character/v3Dye.ts`)
+Model v3 không có texture mặt nạ vải, nên nhuộm bằng hai lớp mặt nạ trong shader:
+- **Hình học**: thuộc tính đỉnh `dyeMask` tính lúc dựng mẫu từ trọng số xương; đỉnh bám đầu, cổ, bàn tay, ngón, tóc = 0. Da và tóc không bao giờ bị nhuộm, kể cả bộ vải tông ấm trùng sắc da (Liệt Mạch, Địa Long).
+- **Màu** theo model (`V3_DYE_REF`, đo cụm màu lớn nhất của texture gốc): `chroma` = texel cùng hướng sắc độ với vải chính; `neutral` = texel ít bão hòa (Huyền Giáp, Cổ Thành, Kính Quang, Vạn Kinh). Viền vàng và lớp vải phụ giữ nguyên.
+
+Khi nào nhuộm (`v3DyeHex`): màu đạo bào lúc tạo nhân vật áp lên đồ khởi đầu (không mặc bộ, màu khác mặc định); nhuộm Tủ ngoại trang (`dye3`) áp kênh 1 lên mọi model theo bộ; skin toàn thân không nhuộm. Mặc bộ mà không nhuộm tủ thì model giữ màu riêng (như áo mô-đun của v1). Vật liệu nhuộm là bản sao theo (model, màu), dùng chung giữa mọi người cùng model cùng màu. Ảnh: `pnpm shots n7 --dye`.
+
+Giới hạn: chỉ kênh 1 (vải chính) của `dye3`; kênh 2 (viền) và kênh 3 chưa có vì không tách được viền khỏi vải phụ bằng màu. Tinh Khuyết: vải chính gần đen nên lớp đổi màu là voan tím. Thêm model mới phải thêm dòng vào `V3_DYE_REF` (test `v3Dye.test.ts` bắt thiếu).
+
+### Chưa có trên v3 (v1 có)
+- Kênh viền (kênh 2) và kênh 3 của nhuộm Tủ ngoại trang.
+- Phụ kiện thủ tục theo từng món (`acc`) và vỏ kiếm theo bộ: model v3 nguyên khối đã có sẵn.
+- Bộ chưa có model riêng dùng model cùng nhánh (`V3_BRANCH_FALLBACK`).
+
 ## Sửa cổ Tinh Khuyết nam / Thần Tàng nữ (21/11)
 
 Triệu chứng: mảng tím (Tinh Khuyết) / xanh đen (Thần Tàng) phẳng, kéo dài dưới cằm, cổ trông dài. **Nguyên nhân**: ống "thân dưới áo" của C2 (`chr_v3_c2.py`, `_tube`) chạy tới hết xương `neck_01` với ell 1,25 và bán kính 0,7× thân, nên lòi ra khỏi cổ thật; UV của nó trỏ vào texel nền áo (`underColor`). Không phải trọng số, ARM_FIT hay mặt nạ tách lưới.

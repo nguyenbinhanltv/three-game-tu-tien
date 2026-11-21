@@ -160,12 +160,14 @@ interface ViewInfo {
   allowLod0: boolean;
   /** Nhân vật của mình: luôn cập nhật mỗi khung. */
   self?: boolean;
+  /** Mức LOD thấp nhất được dùng (N-7: model nhân vật nặng hết suất LOD1 thì 2); thiếu = 0. Model không có suất riêng bỏ qua. */
+  minLod?: number;
 }
 
-/** Mức LOD theo khoảng cách camera; hết suất LOD0 thì tối thiểu LOD1. */
-export function lodLevel(d: number, lodDist: readonly [number, number], allowLod0: boolean, levels: number): number {
+/** Mức LOD theo khoảng cách camera; hết suất LOD0 thì tối thiểu LOD1; `minLod` ép thêm mức sàn (hết suất LOD1 của model nặng). */
+export function lodLevel(d: number, lodDist: readonly [number, number], allowLod0: boolean, levels: number, minLod = 0): number {
   const want = d < lodDist[0] ? 0 : d < lodDist[1] ? 1 : 2;
-  return Math.max(0, Math.min(allowLod0 ? want : Math.max(1, want), levels - 1));
+  return Math.max(0, Math.min(Math.max(minLod, allowLod0 ? want : Math.max(1, want)), levels - 1));
 }
 
 interface Shot {
