@@ -22,7 +22,7 @@
     "art": "ho_phap",
     "voice": "hp",
     "gm": "hophap",
-    "weapons": ["sword"],
+    "weapons": ["fist"],
     "palette": { "core": "5a2d0b", "body": "e39a2c", "rim": "fff0c2", "accent": "ffd25a", "shadow": "2a1708" },
     "tint": "ffde96",
     "hit": { "sfx": "impact", "gain": 0.2, "rate": 1 },
