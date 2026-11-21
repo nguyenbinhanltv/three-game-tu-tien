@@ -138,7 +138,7 @@ describe('Kiếm ấn và Truy hồn (Kiếm tu)', () => {
     const b = mon(X + 5, Z + 3);
     let da = 0;
     let db = 0;
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 400; i++) {
       a.marks.length = 0;
       a.marks.push({ id: 'kiem_an', sid: p.sid, n: 3, until: p.gcdAt + 1e12 });
       fresh(p);

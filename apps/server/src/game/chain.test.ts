@@ -76,7 +76,7 @@ function setup(method: string, level = 28) {
     p.mth.res = 0;
   };
   /** Sát thương trung bình của một lần dùng `id` (sau khi chạy `prep`), lấy trung bình `n` lần để bỏ ngẫu nhiên. */
-  const avg = (id: string, m: { id: string; s: { hp: number } }, prep: () => void, n = 60) => {
+  const avg = (id: string, m: { id: string; s: { hp: number } }, prep: () => void, n = 400) => {
     let sum = 0;
     for (let i = 0; i < n; i++) {
       p.flow.opened.clear();
