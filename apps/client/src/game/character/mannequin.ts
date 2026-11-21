@@ -13,7 +13,7 @@ import { HitReact, type HitOpts } from '../combat/hitreact';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { lodLevel, mixerInterval } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
-import { attachBrawlerGear, snapshotBind, type BindSnapshot, type BrawlerGear } from './brawlerGear';
+import { attachBrawlerGear, gearShown, snapshotBind, type BindSnapshot, type BrawlerGear } from './brawlerGear';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
 import { applySkinLook, SKIN_LOOKS } from './skinLook';
@@ -731,7 +731,7 @@ export class MannequinCharacter implements CharacterView {
     if (this.disposed || this.shadow) return;
     this.gearOn = on;
     if (on && !this.gear && this.gearBind) this.gear = attachBrawlerGear(this.rig, this.gearBind, this.height);
-    this.gear?.setVisible(on && this.lodLevel === 0);
+    this.gear?.setVisible(gearShown(on, this.lodLevel));
     if (this.blade) this.blade.visible = !on;
   }
 
@@ -1183,7 +1183,7 @@ export class MannequinCharacter implements CharacterView {
     const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length);
     this.applyLod(level);
     this.lodLevel = level;
-    this.gear?.setVisible(this.gearOn && level === 0);
+    this.gear?.setVisible(gearShown(this.gearOn, level));
     this.viewDist = v.dist;
     this.viewSelf = !!v.self;
     this.interval = mixerInterval(level, v.inView, !!v.self);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { PATHS } from '@dtl/content';
-import { attachBrawlerGear, BRAWLER_WEAPON, snapshotBind } from './brawlerGear';
+import { attachBrawlerGear, BRAWLER_WEAPON, gearShown, snapshotBind } from './brawlerGear';
 
 function bone(name: string, x: number, y: number, z = 0, parent?: THREE.Object3D): THREE.Bone {
   const b = new THREE.Bone();
@@ -98,6 +98,25 @@ describe('Thể tu: găng + giáp nhẹ thủ tục', () => {
     r.getObjectByName('upperarm_l')!.rotateZ(0.6);
     r.updateMatrixWorld(true);
     expect(sample().distanceTo(before)).toBeGreaterThan(0.05);
+  });
+
+  it('chỉ vẽ ở LOD0 và khi đang là Thể tu (không tốn draw call ở xa)', () => {
+    expect(gearShown(true, 0)).toBe(true);
+    expect(gearShown(true, 1)).toBe(false);
+    expect(gearShown(true, 2)).toBe(false);
+    expect(gearShown(false, 0)).toBe(false);
+    // quay về gần sau khi ở xa: bật lại đúng theo `on`, không theo trạng thái ẩn lần trước
+    const r = rig();
+    const gear = attachBrawlerGear(r, snapshotBind(r), 1.7);
+    const m = gear.meshes[0]!;
+    for (const [on, lod, want] of [
+      [true, 2, false],
+      [true, 0, true],
+      [false, 0, false],
+    ] as const) {
+      gear.setVisible(gearShown(on, lod));
+      expect(m.visible).toBe(want);
+    }
   });
 
   it('ẩn/hiện và dọn sạch', () => {
