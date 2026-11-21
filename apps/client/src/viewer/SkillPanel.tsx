@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { METHOD_SKILLS, POSE, SKILLS, skillName, t } from '@dtl/content';
-import { POSE_VOICES, VOICED_POSES, type PoseVoice } from '@dtl/shared';
+import { methodOfVoice, POSE_VOICES, VOICED_POSES, type PoseVoice } from '@dtl/shared';
 import { poseOf } from '../game/combat/skillPose';
 import { poseClipName } from '../game/character/ikpose';
 import { timingOf } from './skillTiming';
@@ -34,7 +34,7 @@ export function SkillPanel({
   const [hit, setHit] = useState(() => Math.max(0, Number(q.get('hit') ?? 1) - 1) || 0);
   const voiced = VOICED_POSES.has(skill.pose!);
   const hits = skill.combo?.hits.length ?? 1;
-  const method = { kt: 'lac_kiem_quyet', hp: 'bat_dong_kim_than', ds: 'thanh_moc_dan_kinh' }[voice];
+  const method = methodOfVoice(voice);
   const pose = POSE.get(poseOf(skill, hits > 1 ? Math.min(hit, hits - 1) : undefined, voiced ? method : undefined))!;
   const tm = timingOf(skill, pose);
   const [paused, setPaused] = useState(false);

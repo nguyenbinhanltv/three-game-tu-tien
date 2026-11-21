@@ -57,6 +57,11 @@
     "skl_lo_hoa_hoi_nguyen": "Lô Hỏa Hồi Nguyên",
     "skl_dan_hoa_vu": "Đan Hỏa Vũ"
   },
+  "paths": {
+    "kiem_tu": "Kiếm tu",
+    "the_tu": "Hộ pháp",
+    "dan_su": "Đan sư"
+  },
   "joints": {
     "pha_the_tram": "Phá Thế Trảm",
     "moc_an_ket": "Mộc Ấn Kết"

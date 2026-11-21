@@ -1,5 +1,7 @@
 import {
   clampTier,
+  pathOfKey,
+  registerMethodVoices,
   pickedBranch,
   skillGate,
   isEquipSlot,
@@ -10,6 +12,7 @@ import {
   type CloneMethodDef,
   type JointDef,
   type MarkDef,
+  type PathDef,
   type FxTimeline,
   type ResolvedSkill,
   type TerrainDef,
@@ -47,6 +50,7 @@ import skillsJson from '../data/skills.json';
 import methodsJson from '../data/methods.json';
 import marksJson from '../data/marks.json';
 import jointsJson from '../data/joints.json';
+import pathsJson from '../data/paths.json';
 import recipesJson from '../data/recipes.json';
 import artifactsJson from '../data/artifacts.json';
 import clonesJson from '../data/clones.json';
@@ -256,6 +260,15 @@ export const METHOD_SKILLS = methodsJson.skills as SkillDef[];
 /** Ấn trên mục tiêu (VS-2c, data/marks.json): id → định nghĩa. */
 export const MARKS = marksJson as MarkDef[];
 export const MARK: ReadonlyMap<string, MarkDef> = new Map(MARKS.map((m) => [m.id, m]));
+/** Hướng tu (VS-3, data/paths.json): gom hào quang, tranh đạo, bộ động tác, bảng màu, tiếng đòn của một lối tu. */
+export const PATHS = pathsJson as PathDef[];
+export const PATH: ReadonlyMap<string, PathDef> = new Map(PATHS.map((p) => [p.id, p]));
+/** Hướng tu của một khóa (id công pháp, id hướng, hoặc bí danh cũ); không ra thì undefined. */
+export function pathOf(key: string | undefined): PathDef | undefined {
+  return pathOfKey(PATHS, key);
+}
+// Bộ động tác K-5 theo công pháp: shared giữ bảng, content nạp từ hướng tu.
+registerMethodVoices(Object.fromEntries(PATHS.flatMap((p) => p.methods.map((m) => [m, p.voice] as const))));
 /** Hợp kích tổ đội (VS-2f, data/joints.json). */
 export const JOINTS = jointsJson as JointDef[];
 /** id chiêu → biến thức A/B (cả chiêu chung lẫn chiêu công pháp). */

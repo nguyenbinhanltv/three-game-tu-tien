@@ -74,10 +74,12 @@ import {
   MARK,
   METHOD_SKILLS,
   MONSTER,
+  PATHS,
   SKILL,
   QUESTS,
   realmName,
   SKILLS,
+  t,
 } from './index';
 
 import { at } from '@dtl/shared';
@@ -108,8 +110,12 @@ const hit = (atk: number, power: number, def: number) => computeDamage(atk, powe
 // ---------- công pháp (3-10) ----------
 
 type MethodId = 'lac_kiem_quyet' | 'bat_dong_kim_than' | 'thanh_moc_dan_kinh';
-const METHOD_IDS: MethodId[] = ['lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh'];
-const METHOD_NAME: Record<MethodId, string> = { lac_kiem_quyet: 'Kiếm tu', bat_dong_kim_than: 'Hộ pháp', thanh_moc_dan_kinh: 'Đan sư' };
+// VS-3: danh sách và tên lấy từ hướng tu (thứ tự paths.json), không viết cứng.
+const METHOD_IDS = PATHS.flatMap((p) => p.methods) as MethodId[];
+const METHOD_NAME = Object.fromEntries(PATHS.flatMap((p) => p.methods.map((m) => [m, t(`path.${p.id}.name`)] as const))) as Record<
+  MethodId,
+  string
+>;
 const methodDef = (id?: MethodId) => (id ? METHODS.find((m) => m.id === id) : undefined);
 /** Từ Ngưng Khí 5 mới chọn công pháp. */
 const methodAt = (level: number, id?: MethodId) => (level >= METHOD_UNLOCK_LEVEL ? methodDef(id) : undefined);

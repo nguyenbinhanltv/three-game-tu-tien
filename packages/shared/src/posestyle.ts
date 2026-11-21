@@ -5,12 +5,23 @@
 export type PoseVoice = 'kt' | 'hp' | 'ds';
 export const POSE_VOICES: readonly PoseVoice[] = ['kt', 'hp', 'ds'];
 
-/** Công pháp → giọng. Chưa chọn công pháp (hoặc id lạ) dùng giọng kiếm tu, cũng là bản gốc của mỗi pose. */
-export const METHOD_VOICE: Readonly<Record<string, PoseVoice>> = {
-  lac_kiem_quyet: 'kt',
-  bat_dong_kim_than: 'hp',
-  thanh_moc_dan_kinh: 'ds',
-};
+/**
+ * Công pháp → giọng. Chưa chọn công pháp (hoặc id lạ) dùng giọng kiếm tu, cũng là bản gốc của mỗi pose.
+ * VS-3: bảng lấy từ hướng tu (`paths.json` → `voice`); `@dtl/content` đăng ký lúc nạp bằng `registerMethodVoices`
+ * (shared không đọc được dữ liệu content). Trước khi đăng ký thì bảng rỗng: mọi công pháp dùng giọng kiếm tu.
+ */
+const METHOD_VOICE: Record<string, PoseVoice> = {};
+
+/** Đăng ký (thay toàn bộ) bảng công pháp → giọng. Gọi một lần lúc nạp `@dtl/content`. */
+export function registerMethodVoices(table: Readonly<Record<string, PoseVoice>>): void {
+  for (const k of Object.keys(METHOD_VOICE)) delete METHOD_VOICE[k];
+  for (const [k, v] of Object.entries(table)) if ((POSE_VOICES as readonly string[]).includes(v)) METHOD_VOICE[k] = v;
+}
+
+/** Một công pháp đại diện cho giọng `v` (công pháp đầu tiên đăng ký với giọng đó); không có thì undefined. */
+export function methodOfVoice(v: PoseVoice): string | undefined {
+  return Object.keys(METHOD_VOICE).find((m) => METHOD_VOICE[m] === v);
+}
 
 /** Hậu tố id pose theo giọng (kiếm tu là bản gốc, không hậu tố). */
 export const VOICE_SUFFIX: Readonly<Record<PoseVoice, string>> = { kt: '', hp: '_hp', ds: '_ds' };
@@ -38,8 +49,6 @@ export function poseIdFor(base: string, opts: { combo?: number; method?: string 
 export function poseIdsFor(base: string, comboHits = 1): string[] {
   const out: string[] = [];
   const voices = VOICED_POSES.has(base) ? POSE_VOICES : (['kt'] as const);
-  for (const v of voices)
-    for (let i = 0; i < comboHits; i++)
-      out.push(poseIdFor(base, { combo: i, method: Object.keys(METHOD_VOICE).find((m) => METHOD_VOICE[m] === v) }));
+  for (const v of voices) for (let i = 0; i < comboHits; i++) out.push(poseIdFor(base, { combo: i, method: methodOfVoice(v) }));
   return out;
 }

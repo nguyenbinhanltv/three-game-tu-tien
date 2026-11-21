@@ -15,6 +15,7 @@ import {
   SKILL,
   skillName,
   t,
+  PATHS,
 } from '@dtl/content';
 
 /** Nhánh công pháp của `/gm kit`: kiếm tu (DPS), hộ pháp (tank), đan sư (hỗ trợ). Thứ tự khớp `METHODS`. */
@@ -25,8 +26,10 @@ export function isGmBranch(v: unknown): v is GmBranch {
   return typeof v === 'string' && (GM_BRANCHES as readonly string[]).includes(v);
 }
 
-/** Công pháp ứng với nhánh. */
-export const BRANCH_METHOD: Record<GmBranch, string> = { kiem: 'lac_kiem_quyet', hophap: 'bat_dong_kim_than', dansu: 'thanh_moc_dan_kinh' };
+/** Công pháp ứng với nhánh: công pháp đầu của hướng tu có bí danh GM đó (VS-3, `paths.json` → `gm`). */
+export const BRANCH_METHOD = Object.fromEntries(
+  GM_BRANCHES.map((b) => [b, PATHS.find((p) => p.gm === b)?.methods[0] ?? ''] as const),
+) as Record<GmBranch, string>;
 
 /** Bộ trang bị theo bậc (chỉ số 0 = bậc 1) × nhánh (kiem, hophap, dansu). Bậc chưa có vật phẩm thì dùng bậc cao nhất có. */
 const GM_TIER_SETS: readonly (readonly [string, string, string])[] = [
