@@ -11,6 +11,68 @@
   "def": "phòng ngự",
   "posture": "thế",
   "posture_broken": "mất thế",
+  "branches": {
+    "lac_kiem_quyet": {
+      "pha_mach": "Phá Mạch",
+      "tam_diep": "Tam Điệp",
+      "ngu_kiem": "Ngự Kiếm",
+      "thuan_kiem": "Thuấn Kiếm",
+      "kiem_anh": "Kiếm Ảnh",
+      "thuan_tram": "Thuấn Trảm",
+      "van_kiem": "Vạn Kiếm",
+      "nhat_kiem": "Nhất Kiếm"
+    },
+    "bat_dong_kim_than": {
+      "chan_dia": "Chấn Địa",
+      "kim_chung": "Kim Chung",
+      "son_nhac": "Sơn Nhạc",
+      "dich_son": "Dịch Sơn",
+      "thiet_than": "Thiết Thân",
+      "ho_the": "Hộ Thế",
+      "bat_dong": "Bất Động",
+      "kim_cuong": "Kim Cương"
+    },
+    "thanh_moc_dan_kinh": {
+      "moc_linh": "Mộc Linh",
+      "duoc_vu": "Dược Vũ",
+      "ho_dan": "Hộ Đan",
+      "doc_dan": "Độc Đan",
+      "hoa_than": "Hóa Thân",
+      "cuu_vien": "Cứu Viện",
+      "truong_duoc": "Trường Dược",
+      "thinh_hoa": "Thịnh Hỏa"
+    }
+  },
+  "stances": {
+    "skl_ngu_kiem_tran": "Ngự Kiếm Trận",
+    "skl_tran_kiem": "Trận Kiếm",
+    "skl_tran_kiem_tram": "Trận Kiếm Trảm",
+    "skl_tran_kiem_vu": "Trận Kiếm Vũ",
+    "skl_kim_than": "Kim Thân",
+    "skl_kim_than_quyen": "Kim Thân Quyền",
+    "skl_chan_son_quyen": "Chấn Sơn Quyền",
+    "skl_kim_than_ho_the": "Kim Thân Hộ Thế",
+    "skl_dan_lo": "Đan Lô",
+    "skl_dan_hoa_chi": "Đan Hỏa Chỉ",
+    "skl_lo_hoa_hoi_nguyen": "Lô Hỏa Hồi Nguyên",
+    "skl_dan_hoa_vu": "Đan Hỏa Vũ"
+  },
+  "joints": {
+    "pha_the_tram": "Phá Thế Trảm",
+    "moc_an_ket": "Mộc Ấn Kết"
+  },
+  "marks": {
+    "kiem_an": "Kiếm ấn",
+    "truy_hon": "Truy hồn",
+    "tran_an": "Trấn ấn",
+    "mat_the": "Mất thế",
+    "moc_an": "Mộc ấn"
+  },
+  "resources": {
+    "kiem_y": "Kiếm ý",
+    "huyet_khi": "Huyết khí",
+    "dan_hoa": "Đan hỏa"
+  },
   "realms": [
     "Ngưng Khí",
     "Trúc Cơ",
@@ -528,6 +590,24 @@
       "cam_che": "Cấm Chế",
       "sat_luc": "Sát Lục"
     }
+  },
+  "nguSuy": {
+    "linh_luc_suy": "Linh Lực Suy",
+    "nhuc_than_suy": "Nhục Thân Suy",
+    "than_thuc_suy": "Thần Thức Suy",
+    "tho_nguyen_suy": "Thọ Nguyên Suy",
+    "dao_tam_suy": "Đạo Tâm Suy"
+  },
+  "nguSuyTerms": {
+    "suy_khi": "suy khí",
+    "linh_nhan": "Linh Nhãn",
+    "toi_the_loi": "Tôi Thể Lôi",
+    "loi_an": "lôi ẩn",
+    "ngung_than": "ngưng thần",
+    "tho_dang": "Thọ Đăng",
+    "suy_phong": "suy phong",
+    "pha_vong": "phá vọng",
+    "law_first": "pháp tắc sơ ngộ"
   },
   "huyenKiepGroups": {
     "ngoai": "Ngoại kiếp",

@@ -189,6 +189,11 @@
   line-height: 1.1;
   color: var(--u-muc);
 }
+/* chữ thư pháp (tools/calli, nhóm chapter): ảnh thay chữ, chiều cao theo em của tiêu đề */
+.u2c__title .calli {
+  width: auto;
+  max-width: 100%;
+}
 .u2c__desc,
 .u2c__note {
   margin: 0;

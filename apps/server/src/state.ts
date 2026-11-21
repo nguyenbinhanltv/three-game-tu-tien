@@ -43,6 +43,8 @@ export class PlayerS extends Schema {
   @view() @type('string') art = '';
   /** id công pháp đang tu (chọn giọng động tác của chiêu, K-5), '' = chưa chọn. Chỉ để hiển thị. */
   @view() @type('string') mt = '';
+  /** Ấn đang mang (VS-2c, Mộc ấn...): gói bit `packMarks`. Chỉ để hiển thị. */
+  @view() @type('uint16') mk = 0;
 }
 
 export class MonS extends Schema {
@@ -65,6 +67,8 @@ export class MonS extends Schema {
   @view() @type('uint8') ph = 0;
   /** Thanh phá thế của boss, 0–100 (làm tròn xuống). */
   @view() @type('uint8') pz = 0;
+  /** Ấn đang mang (VS-2c): gói bit `packMarks`, mỗi loại lấy số tầng cao nhất. Không lộ ai là người đặt. */
+  @view() @type('uint16') mk = 0;
 }
 
 export class NodeS extends Schema {

@@ -39,7 +39,8 @@ export type FxShape =
 /**
  * Thư viện hình mesh có khối (VS-1, dựng ở `render/vfx/fxLib.ts`). Hậu tố cho biết dùng thế nào:
  * `slash_*` vết chém dày (toon, mặt XZ lồi +Z); `blade_*` kiếm (crystal, mũi +Z); `shock_cone|crack_radial|rift_line|rune_ring2` mặt đất (toon, mặt XZ);
- * `rubble_*` đá vỡ, `rune_array|sword_halo|dragon_sword|petal_blade` (crystal); `spark_streak` tia lửa (toon, dọc +Z).
+ * `rubble_*` đá vỡ, `rune_array|sword_halo|dragon_sword|petal_blade` (crystal); `spark_streak` tia lửa (toon, dọc +Z);
+ * `seal_block|bell_cage|rock_spire|shield_plate|diamond_cage` khối Hộ pháp (crystal, đứng +Y, đáy y = 0; rơi/bay thì thêm `keepUp`).
  */
 export type FxLibShape = (typeof FX_LIB_SHAPES)[number];
 export const FX_LIB_SHAPES = [
@@ -63,6 +64,18 @@ export const FX_LIB_SHAPES = [
   'sword_halo',
   'spark_streak',
   'petal_blade',
+  // Hộ pháp (VS-1): ấn, chuông khung, trụ đá, thuẫn, khung kim cương; đứng theo +Y, đáy ở y = 0 (kiểu `crystal`).
+  'seal_block',
+  'bell_cage',
+  'rock_spire',
+  'shield_plate',
+  'diamond_cage',
+  // Đan sư (VS-1): viên đan (`crystal`), sen nở và lưỡi lửa (`toon`; đứng +Y, đáy y = 0, `sweep` = sen nở từ tâm ra / lửa bốc lên).
+  'pill_orb',
+  'lotus_bloom',
+  'flame_tongue',
+  // Đan lô (lò luyện đan ba chân, `crystal`, đứng +Y, đáy y = 0).
+  'dan_lo',
 ] as const;
 
 /** Hình vẽ bằng shader `toon` (có lớp bóng sẫm phía sau khi `shadow` không tắt): tính thêm một nhóm draw call khi đếm ngân sách. */
@@ -80,6 +93,8 @@ export const FX_TOON_SHAPES: ReadonlySet<string> = new Set([
   'rift_line',
   'rune_ring2',
   'spark_streak',
+  'lotus_bloom',
+  'flame_tongue',
 ]);
 
 /** Atlas flipbook có sẵn (4×4 khung mỗi atlas, sinh thủ tục ở `render/vfx/flipbook.ts`). */
@@ -101,6 +116,8 @@ export interface FxBase {
   tier?: 0 | 1 | 2;
   /** Chỉ phát ở mốc trúng thứ mấy (0-based) của chiêu nhiều mốc (Kiếm Vũ Tam Điệp...); không có thì mọi mốc. */
   hit?: number | number[];
+  /** Sự kiện CHUNG bị bỏ khi biến thức đang chọn (`fx`) bằng giá trị này (biến thức thay hẳn một phần hình, không chỉ cộng thêm: Dịch Sơn Xung kéo thay vì đẩy). */
+  unless?: string;
 }
 
 export interface FxMeshEvent extends FxBase {
@@ -155,6 +172,24 @@ export interface FxMeshEvent extends FxBase {
   fit?: 'area';
   /** Hiệu ứng của quái (V5): `dur` lấy bằng thời gian báo trước `delay` của vạch (vùng sắp nổ), `dur` trong JSON chỉ là dự phòng. */
   untilDelay?: boolean;
+  /**
+   * Khối cao dựng quanh người (trụ đá, thuẫn): tự mờ dần tới ẩn khi nằm GIỮA camera và người ra chiêu, hoặc giữa camera và mục tiêu của đòn (khối trong 4 m quanh mục tiêu), để không che nhân vật
+   * và mục tiêu đứng gần; phía bên kia vẫn hiện đủ. Chỉ là hình.
+   */
+  camFade?: boolean;
+}
+
+/**
+ * Độ hiện (0..1) của một khối `camFade`: (cx, cz) = camera − người ra chiêu, (mx, mz) = khối − người ra chiêu trên mặt XZ.
+ * Khối lệch dưới ~45° so với hướng về camera thì ẩn hẳn, ngoài ~75° hiện đủ; khối sát người (< 0,5 m) không mờ.
+ */
+export function fxCamFade(cx: number, cz: number, mx: number, mz: number): number {
+  const lc = Math.hypot(cx, cz);
+  const lm = Math.hypot(mx, mz);
+  if (lc < 1e-3 || lm < 0.5) return 1;
+  const d = (cx * mx + cz * mz) / (lc * lm);
+  const k = Math.min(1, Math.max(0, (d - 0.26) / (0.7 - 0.26)));
+  return 1 - k * k * (3 - 2 * k);
 }
 
 export interface FxParticleEvent extends FxBase {
@@ -364,7 +399,8 @@ export function fxParticleCount(events: readonly FxEvent[]): number {
 export function fxEventsFor(tl: FxTimeline, combo: number, variant?: string): FxEvent[] {
   const extra = combo >= 0 ? tl.combo?.[String(combo)] : undefined;
   const vr = variant ? tl.variants?.[variant] : undefined;
-  return extra || vr ? [...tl.events, ...(extra ?? []), ...(vr ?? [])] : tl.events;
+  const base = variant && tl.events.some((e) => e.unless === variant) ? tl.events.filter((e) => e.unless !== variant) : tl.events;
+  return extra || vr ? [...base, ...(extra ?? []), ...(vr ?? [])] : base;
 }
 
 /** Bậc chất lượng hiệu ứng (cài đặt người chơi): 0 Thấp, 1 Vừa, 2 Cao. */

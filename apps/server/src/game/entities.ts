@@ -1,7 +1,7 @@
 // Kiểu thực thể của sim (R-7): người chơi, quái, vùng nổ, đạn, giao diện host. Tách khỏi sim.ts để các hệ con không import vòng.
 import type { CampDef } from '@dtl/shared';
 import type { Client } from 'colyseus';
-import type { HazardGeom, InvSlot, MonsterDef, MoveInput, MoveState, PhaseRules, SkillDef, SpawnDef, TribDef } from '@dtl/shared';
+import type { HazardGeom, InvSlot, MarkRt, MonsterDef, MoveInput, MoveState, PhaseRules, SkillDef, SpawnDef, TribDef } from '@dtl/shared';
 import type { GuardCfg, TribState } from './tribtypes';
 import type { MonS, NodeS, PlayerS } from '../state';
 import type { Character } from './character';
@@ -79,6 +79,8 @@ export interface PlayerEnt {
   skillCount: number;
   /** Trạng thái công pháp (kiếm ý/thế, vòng sạc, giảm sát thương). */
   mth: MethodRt;
+  /** Ấn đạo hữu đặt lên mình (VS-2c, Mộc ấn). Không lưu DB. */
+  marks: MarkRt[];
   saveAt: number;
   /** Không nhận vật phẩm rơi (đã hết lượt thưởng bí cảnh hôm nay). */
   noLoot: boolean;
@@ -150,8 +152,8 @@ export interface MonEnt {
   mx: MonSkillRt;
   /** Đệ tử do quái `minionOf` gọi: không rơi đồ, không tu vi. */
   minionOf?: string;
-  /** Dấu ấn của người chơi `sid` (Kiếm Ảnh Phân Quang): sát thương của người đó nhân (1 + mul) tới `until`. */
-  mark?: { sid: string; until: number; mul: number };
+  /** Ấn người chơi đặt lên quái (VS-2c: Kiếm ấn, Truy hồn, Trấn ấn, Mất thế), mỗi người đặt một mục cho mỗi loại. */
+  marks: MarkRt[];
   /** Bị khiêu khích: buộc nhắm người `sid` tới `until` (ms). */
   taunt?: { sid: string; until: number };
   /** Bị làm chậm (đòn bạo kích của bộ Hàn Giao Lân): tốc độ đuổi nhân `mul` tới `until`. */
@@ -252,10 +254,12 @@ export interface SimOptions {
   persistPosition: boolean;
 }
 
-/** Ngữ cảnh một lần áp chiêu: đòn thứ mấy của chuỗi đánh thường, hệ số nhân (combo, cường hóa). */
+/** Ngữ cảnh một lần áp chiêu: đòn thứ mấy của chuỗi đánh thường, hệ số nhân (combo, chuỗi chiêu), thưởng chuỗi lên linh lực và hồi chiêu. */
 export interface StrikeCtx {
   combo?: number;
   mul?: number;
+  mpMul?: number;
+  cdMul?: number;
 }
 
 /** Trạng thái chạy của một bãi. */

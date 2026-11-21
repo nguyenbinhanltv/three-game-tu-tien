@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import { allowSkillForTest } from './testkit';
 import { CHARGE_MAX, groundAt, MS_CHASE, MS_DEAD, PF_DEAD, S, skillUpgradeCost, type MethodMsg } from '@dtl/shared';
 
 // Công pháp (Phase 3-5): server quyết định cấp chiêu, biến thức, sạc, khiêu khích, giữ.
@@ -51,6 +52,8 @@ function setup(level = 8) {
   const raw = sim.onSkill.bind(sim);
   (sim as unknown as { onSkillRaw: typeof raw }).onSkillRaw = raw;
   sim.onSkill = (pl: Ent, msg: unknown) => {
+    // VS-2d: test cơ chế chiêu, không đi qua bước chọn nhánh công pháp.
+    allowSkillForTest(pl.char, (msg as { id?: unknown } | null)?.id);
     raw(pl, msg);
     const st = pl.flow.pending;
     if (st) {
@@ -210,14 +213,17 @@ describe('chiêu công pháp: server kiểm điều kiện', () => {
       fresh(p);
       sim.onSkill(p, { id: 'skl_phi_kiem', t: m.id });
     }
-    expect(p.mth.stacks).toBe(5);
+    expect(p.mth.res).toBe(5);
     expect(p.mth.charge).toBeGreaterThan(0);
     fresh(p);
+    const hp0 = m.s.hp;
     sim.onSkill(p, { id: 'skl_loi_dinh_nhat_kiem', t: m.id });
     // niệm 1,5 giây: kết thúc bằng tick
     sim.now += 2000;
     (sim as unknown as { finishCast(p: Ent): void }).finishCast(p);
-    expect(p.mth.stacks).toBe(1);
+    // VS-2a: Lôi Đình xả hết Kiếm ý và không tự tích lại (chỉ đòn thường tích).
+    expect(p.mth.res).toBe(0);
+    expect(m.s.hp).toBeLessThan(hp0);
   });
   it('dấu ấn Kiếm Ảnh tăng sát thương của chính người đánh dấu', () => {
     const { sim, p, mon, fresh } = setup(10);
@@ -225,8 +231,9 @@ describe('chiêu công pháp: server kiểm điều kiện', () => {
     const m = mon();
     fresh(p);
     sim.onSkill(p, { id: 'skl_phi_kiem_truy_hon', t: m.id });
-    expect(m.mark?.sid).toBe(p.sid);
-    expect(m.mark?.mul).toBeCloseTo(0.2);
+    const tr = m.marks.find((x) => x.id === 'truy_hon');
+    expect(tr?.sid).toBe(p.sid);
+    expect(tr?.n).toBe(1);
   });
 });
 
@@ -261,7 +268,8 @@ describe('khiêu khích, giữ, hồi sinh', () => {
     p.char.hp = p.char.mhp = 10_000;
     sim.damagePlayer(p, 1000, 'mon_x');
     expect(p.char.hp).toBe(10_000 - 400);
-    expect(p.mth.stacks).toBe(1);
+    // VS-2a: mất 4% khí huyết = +10 Huyết khí.
+    expect(p.mth.res).toBeCloseTo(10);
     expect(p.mth.charge).toBeGreaterThan(0);
     sim.now += 7000;
     (sim as unknown as { tickMethods(): void }).tickMethods();
@@ -269,14 +277,15 @@ describe('khiêu khích, giữ, hồi sinh', () => {
     sim.damagePlayer(p, 1000, 'mon_x');
     expect(p.char.hp).toBe(hp - 1000);
   });
-  it('thế rụng sau khi quá thời gian', () => {
+  it('Huyết khí rụng dần sau khi quá thời gian', () => {
     const { sim, p } = setup(10);
     sim.onMethod(p, { method: 'bat_dong_kim_than' });
-    sim.damagePlayer(p, 10, 'mon_x');
-    expect(p.mth.stacks).toBe(1);
+    sim.damagePlayer(p, 1, 'mon_x');
+    // Đòn nhẹ vẫn cho tối thiểu 4 điểm.
+    expect(p.mth.res).toBe(4);
     sim.now += 9000;
     (sim as unknown as { tickMethods(): void }).tickMethods();
-    expect(p.mth.stacks).toBe(0);
+    expect(p.mth.res).toBe(0);
   });
   it('Hồi Thiên Đan Lộ hồi sinh đạo hữu ngã gần, không có ai ngã thì không ra chiêu và không mất sạc', () => {
     const { sim, p, join, fresh } = setup(10);
@@ -451,7 +460,7 @@ describe('soát netcode: lỗ hổng đã vá', () => {
     m.evadeUntil = sim.now + 60_000;
     fresh(p);
     sim.onSkill(p, { id: 'skl_phi_kiem', t: m.id });
-    expect(p.mth.stacks).toBe(0);
+    expect(p.mth.res).toBe(0);
     expect(p.mth.charge).toBe(0);
   });
   it('khiêu khích bỏ qua bóng tâm ma của người khác', () => {

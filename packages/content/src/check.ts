@@ -45,6 +45,8 @@ import {
   POSE_SWORD_SWAP,
   validatePose,
   validateFxTimeline,
+  fxDrawCount,
+  FX_SKILL_DRAW_MAX,
   validateSkillPose,
   validateSkillRules,
   SKILL_ID_ALIASES,
@@ -81,6 +83,9 @@ import {
   POSES,
   FX_TIMELINES,
   MON_FX_TIMELINES,
+  SUY_FX,
+  SUY_FX_STAGE,
+  SUY_FX_TIMELINES,
   QUEST,
   QUESTS,
   CHAPTERS,
@@ -88,6 +93,9 @@ import {
   RECIPES,
   ROOTS,
   SKILLS,
+  JOINTS,
+  MARK,
+  MARKS,
   METHODS,
   METHOD,
   METHOD_SKILLS,
@@ -96,7 +104,17 @@ import {
   t,
 } from './index';
 import { LOOT, LOOT_MATS } from './loot';
-import { monSkillsOf } from '@dtl/shared';
+import {
+  jointErrors,
+  stanceErrors,
+  branchErrors,
+  chainErrors,
+  markDefErrors,
+  monSkillsOf,
+  resourceErrors,
+  skillMarkErrors,
+  skillResErrors,
+} from '@dtl/shared';
 import {
   PILL_TIERS,
   ARTIFACT_MAX_LEVEL,
@@ -108,7 +126,7 @@ import {
   SPIRIT_UNLOCK_LEVEL,
 } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
-import { PEAK_LEVELS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS, tribForLevel, peakGated } from '@dtl/shared';
+import { PEAK_LEVELS, SUY_MECHANICS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS, isSuyMechanic, tribForLevel, peakGated } from '@dtl/shared';
 import { TELE_PADS, TELE_PAD, terrainOf, questSpot, inPoly } from '@dtl/shared';
 import { checkLevel } from './levelcheck';
 import { CREDITS, CREDIT_KINDS, CREDIT_LICENSE_URL } from './index';
@@ -141,15 +159,43 @@ const POSE = new Map(POSES.map((p) => [p.id, p]));
 // Dòng thời gian hiệu ứng (VFX-V0): chiêu có thật, mốc hợp lệ, ngân sách ≤ 12 draw và ≤ 1.500 hạt mỗi chiêu.
 for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKILL.has(id) || id.startsWith('fx_'))) err(m);
 for (const f of MON_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('mon_'))) err(m);
+// TN-4: hiệu ứng Thiên Nhân Ngũ Suy. Mỗi timeline theo luật chung (≤ 12 draw); cả một ải (mọi timeline của ải hợp lại) ≤ 25 draw.
+for (const f of SUY_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('suy_'))) err(m);
+{
+  const used = new Set<string>();
+  for (const mech of SUY_MECHANICS) {
+    const keys = SUY_FX_STAGE[mech] ?? [];
+    if (!keys.length) err(`fx ngũ suy: ải ${mech} chưa có timeline`);
+    const events = keys.flatMap((k) => {
+      used.add(k);
+      const tl = SUY_FX.get(k);
+      if (!tl) err(`fx ngũ suy: ải ${mech} cần timeline ${k} (chạy python tools/vfx/gen-fx-suy.py)`);
+      return tl?.events ?? [];
+    });
+    const n = fxDrawCount(events);
+    if (n > FX_SKILL_DRAW_MAX) err(`fx ngũ suy: ải ${mech} dùng ${n} draw > ${FX_SKILL_DRAW_MAX}`);
+  }
+  for (const f of SUY_FX_TIMELINES) if (!used.has(f.skill)) err(`fx ngũ suy: timeline ${f.skill} không thuộc ải nào (SUY_FX_STAGE)`);
+}
 // Mỗi skill một động tác riêng, không dài quá GCD (chiêu niệm chú: động tác chém sau khi niệm xong cũng ≤ GCD).
 // Chiêu lướt (K-2) không có động tác riêng: dùng chung fx `dash`, hình lướt do client dựng.
 const POSED = ALL_SKILLS.filter((s) => s.kind !== 'dash');
 for (const s of POSED) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
-const skillPoses = POSED.map((s) => s.pose);
+// VS-2e: chiêu tư thế (`kind: 'stance'` và chiêu có `stanceOf`) mượn hình của một chiêu thường: không tính vào luật "riêng",
+// nhưng phải trùng khít pose + fx + mốc ra đòn với đúng một chiêu thường để client (tra chiêu theo fx) vẫn ra đúng động tác.
+const borrows = (s: (typeof POSED)[number]) => s.kind === 'stance' || !!s.stanceOf;
+const OWN = POSED.filter((s) => !borrows(s));
+const skillPoses = OWN.map((s) => s.pose);
 if (new Set(skillPoses).size !== skillPoses.length) err('hai skill dùng chung một pose');
 // Client chọn động tác theo fx của chiêu (FX của server chỉ mang loại hiệu ứng): fx phải riêng cho mỗi chiêu.
-const skillFx = POSED.map((s) => s.fx);
+const skillFx = OWN.map((s) => s.fx);
 if (new Set(skillFx).size !== skillFx.length) err('hai skill dùng chung một fx');
+for (const s of POSED.filter(borrows)) {
+  const base = OWN.find((o) => o.fx === s.fx);
+  if (!base) err(`skill ${s.id}: chiêu tư thế phải mượn fx của một chiêu thường (fx "${s.fx}" không có)`);
+  else if (base.pose !== s.pose || base.hitAt?.[0] !== s.hitAt?.[0])
+    err(`skill ${s.id}: mượn fx của ${base.id} thì pose và hitAt[0] phải trùng với nó`);
+}
 for (const id of [POSE_FLY, POSE_SKY, POSE_CAST]) if (!POSE.get(id)?.loop) err(`pose ${id} (trạng thái nền) phải có và lặp`);
 for (const [id, swap] of Object.entries(POSE_SWORD_SWAP)) {
   const p = POSE.get(id);
@@ -196,6 +242,13 @@ const needStr = (key: string) => {
 };
 
 // ---- công pháp (Phase 3-5): chiêu công pháp, nội tại, biến thức ----
+// VS-2a: `res` của chiêu phải trỏ tới tài nguyên có thật; chiêu công pháp chỉ dùng tài nguyên của chính công pháp đó.
+for (const s of [...SKILLS, ...METHOD_SKILLS]) {
+  if (!s.res) continue;
+  const owner = METHODS.find((m) => m.resource?.id === s.res!.id);
+  for (const e of skillResErrors(s.res, owner?.resource.max, `skill ${s.id}`)) err(e);
+  if (owner && s.method && s.method !== owner.id) err(`skill ${s.id}: res.id ${s.res.id} không phải tài nguyên của công pháp ${s.method}`);
+}
 for (const s of SKILLS) if (s.method || s.ult) err(`skill ${s.id}: chiêu chung không có method/ult (đặt trong methods.json)`);
 for (const m of METHODS) {
   const sig = SKILL.get(m.sig);
@@ -203,9 +256,16 @@ for (const m of METHODS) {
   if (!sig || sig.method !== m.id || sig.ult) err(`method ${m.id}: chiêu đặc trưng ${m.sig} phải thuộc công pháp và không phải tối thượng`);
   if (!ult || ult.method !== m.id || !ult.ult) err(`method ${m.id}: chiêu tối thượng ${m.ult} phải thuộc công pháp và có ult`);
   if (!/^[0-9a-f]{6}$/i.test(m.color)) err(`method ${m.id}: màu phải là hex 6 ký tự`);
-  if (m.passive.kind === 'kiem_y' || m.passive.kind === 'the') {
-    if (!(m.passive.max! >= 1 && m.passive.max! <= 9 && m.passive.perStack! > 0 && m.passive.decay! > 0))
-      err(`method ${m.id}: nội tại thiếu max/perStack/decay`);
+  // VS-2a: tài nguyên riêng của công pháp.
+  if (!m.resource) err(`method ${m.id}: thiếu resource`);
+  else {
+    for (const e of resourceErrors(m.resource, `method ${m.id}.resource`)) err(e);
+    if (METHODS.some((o) => o !== m && o.resource?.id === m.resource.id))
+      err(`method ${m.id}: tài nguyên ${m.resource.id} trùng công pháp khác`);
+    needStr(`ui.method.res.${m.resource.id}`);
+    needStr(`ui.method.res.${m.resource.id}.tip`);
+    if (t(`ui.method.res.${m.resource.id}`) !== (GLOSSARY.resources as Record<string, string>)[m.resource.id])
+      err(`method ${m.id}: tên tài nguyên lệch glossary.resources`);
   }
   needStr(`method.${m.id}.name`);
   needStr(`method.${m.id}.desc`);
@@ -216,8 +276,48 @@ for (const m of METHODS) {
     err(`method ${m.id}: chiêu lướt ${m.dash} phải thuộc công pháp và có kind dash`);
 }
 // Quy tắc thời gian/liên hoàn (K-2): hitAt trùng nhịp pose, combo, cường hóa, lướt.
-const SKILL_IDS = new Set(ALL_SKILLS.map((s) => s.id));
-for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined, SKILL_IDS)) err(m);
+for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined)) err(m);
+// VS-2b: đồ thị chuỗi chiêu (id có thật, cùng công pháp, không vòng, hệ số trong khoảng).
+for (const m of chainErrors(ALL_SKILLS)) err(m);
+// VS-2f: hợp kích tổ đội.
+for (const e of jointErrors(JOINTS, MARK)) err(e);
+for (const j of JOINTS) {
+  needStr(`joint.${j.id}.name`);
+  needStr(`joint.${j.id}.desc`);
+  if (t(`joint.${j.id}.name`) !== (GLOSSARY.joints as Record<string, string>)[j.id]) err(`joint ${j.id}: tên lệch glossary.joints`);
+}
+// VS-2e: tư thế (mỗi công pháp đúng một chiêu tư thế, đổi 3–4 ô chiêu chung, chiêu tư thế trỏ ngược về nó).
+for (const e of stanceErrors(ALL_SKILLS, new Set(SKILLS.map((s) => s.id)))) err(e);
+for (const m of METHODS) {
+  const n = METHOD_SKILLS.filter((s) => s.method === m.id && s.kind === 'stance').length;
+  if (n !== 1) err(`method ${m.id}: cần đúng một chiêu tư thế (đang có ${n})`);
+}
+for (const s of ALL_SKILLS) {
+  if ((s.stance || s.stanceOf) && t(`skill.${s.id}.name`) !== (GLOSSARY.stances as Record<string, string>)[s.id])
+    err(`chiêu tư thế ${s.id}: tên lệch glossary.stances`);
+}
+// VS-2d: cây nhánh công pháp (mỗi mốc 2–3 nhánh, chiêu bậc cao nào cũng thuộc một nhánh), tên khớp glossary.branches.
+for (const m of METHODS) {
+  for (const e of branchErrors(m, ALL_SKILLS)) err(e);
+  const names = (GLOSSARY.branches as Record<string, Record<string, string>>)[m.id] ?? {};
+  for (const b of m.branches ?? []) {
+    needStr(`branch.${m.id}.${b.id}.name`);
+    needStr(`branch.${m.id}.${b.id}.desc`);
+    if (t(`branch.${m.id}.${b.id}.name`) !== names[b.id]) err(`method ${m.id} nhánh ${b.id}: tên lệch glossary.branches`);
+  }
+}
+// VS-2c: bảng ấn và chiêu đặt/tiêu ấn.
+for (const m of markDefErrors(MARKS)) err(m);
+for (const m of MARKS) {
+  if (m.method && !METHOD.has(m.method)) err(`mark ${m.id}: công pháp ${m.method} không tồn tại`);
+  needStr(`mark.${m.id}.name`);
+  needStr(`mark.${m.id}.desc`);
+  if (t(`mark.${m.id}.name`) !== (GLOSSARY.marks as Record<string, string>)[m.id]) err(`mark ${m.id}: tên lệch glossary.marks`);
+}
+for (const s of ALL_SKILLS) for (const m of skillMarkErrors(s, MARK)) err(m);
+for (const m of MARKS) {
+  if (!ALL_SKILLS.some((s) => s.applyMark?.id === m.id || s.consumeMark?.then?.mark === m.id)) err(`mark ${m.id}: không chiêu nào đặt`);
+}
 // K-5: pose theo đòn trong chuỗi và theo giọng công pháp phải đủ bộ và khớp nhịp từng đòn.
 for (const s of ALL_SKILLS) {
   if (!s.pose) continue;
@@ -992,6 +1092,16 @@ for (const q of QUESTS) {
     if (o.type === 'kill' && !MONSTER.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
     if ((o.type === 'gather' || o.type === 'craft') && !ITEM.has(o.target ?? '')) err(`quest ${q.id}: vật phẩm không tồn tại ${o.target}`);
     if (o.type === 'talk' && !NPC.has(o.target ?? '')) err(`quest ${q.id}: npc không tồn tại ${o.target}`);
+    // Kiếp chuỗi còn mốc tạm (to = from): mục tiêu `breakthrough` tính theo cấp `to` nên sẽ tự xong ngay ở cấp `from`. Chặn cho tới khi chuỗi gắn vào thang cấp.
+    if (
+      o.type === 'breakthrough' &&
+      o.target &&
+      TRIB_DEFS[o.target as keyof typeof TRIB_DEFS]?.chain &&
+      TRIB_DEFS[o.target as keyof typeof TRIB_DEFS].to <= TRIB_DEFS[o.target as keyof typeof TRIB_DEFS].from
+    )
+      err(
+        `quest ${q.id}: breakthrough ${o.target} là kiếp chuỗi chưa gắn vào thang cấp (to = from), nhiệm vụ sẽ tự xong; chưa dùng làm mục tiêu được`,
+      );
     if (o.type === 'breakthrough' && o.target && !(TRIB_IDS as readonly string[]).includes(o.target))
       err(`quest ${q.id}: breakthrough target phải là id kiếp, không phải ${o.target}`);
   }
@@ -1304,9 +1414,15 @@ if (!at(LEVELS, 'van_lam').spawn) err('van_lam: thiếu spawn');
   for (const id of TRIB_IDS) {
     const d = TRIB_DEFS[id];
     const w = `độ kiếp ${id}`;
-    if (!peaks.has(d.from) || d.to !== d.from + 1) err(`${w}: from ${d.from} phải là đại viên mãn và to = from + 1`);
-    if (seenFrom.has(d.from)) err(`${w}: hai kiếp cùng from ${d.from}`);
-    seenFrom.add(d.from);
+    if (d.chain) {
+      // Kiếp chuỗi (TN-4): hoặc đã gắn vào thang cấp (to = from + 1), hoặc còn là mốc tạm (to = from) thì chưa được bật cho người chơi.
+      if (d.to !== d.from && d.to !== d.from + 1) err(`${w}: kiếp chuỗi cần to = from (mốc tạm) hoặc to = from + 1`);
+      if (d.to === d.from && d.enabled) err(`${w}: kiếp chuỗi chưa gắn vào thang cấp (to = from) thì không được bật`);
+    } else if (!peaks.has(d.from) || d.to !== d.from + 1) err(`${w}: from ${d.from} phải là đại viên mãn và to = from + 1`);
+    if (d.to > d.from) {
+      if (seenFrom.has(d.from)) err(`${w}: hai kiếp cùng from ${d.from}`);
+      seenFrom.add(d.from);
+    }
     if (d.item !== null && !ITEM.get(d.item)) err(`${w}: vật phẩm đột phá ${d.item} không tồn tại`);
     if (d.enabled && d.item === null) err(`${w}: bật (enabled) mà chưa có vật phẩm đột phá`);
     if (d.room !== 'world' && d.room !== 'tribulation') err(`${w}: room phải là world hoặc tribulation`);
@@ -1423,6 +1539,102 @@ if (!at(LEVELS, 'van_lam').spawn) err('van_lam: thiếu spawn');
           err(`độ kiếp ${id}/${p.id}: tam_canh cần tamCanh {hurt, hit, skillEvery, skillWarn, skillPow} và shadows`);
       }
     }
+  }
+  // Thiên Nhân Ngũ Suy (TN-4): mỗi pha của kiếp chuỗi là một ải có cơ chế `suy_*` riêng, đủ thông số và qua được bằng thao tác.
+  for (const [id, d] of Object.entries(TRIB_DEFS)) {
+    const w = `độ kiếp ${id}`;
+    const suyPhases = d.phases.filter((p) => isSuyMechanic(p.mechanic) || p.suy);
+    if (!d.chain) {
+      if (suyPhases.length) err(`${w}: cơ chế suy_* chỉ dùng trong kiếp chuỗi (chain)`);
+      if (d.stageGold || d.law) err(`${w}: stageGold/law chỉ dùng trong kiếp chuỗi`);
+      continue;
+    }
+    if (d.room !== 'tribulation') err(`${w}: kiếp chuỗi phải chạy ở room tribulation`);
+    if (suyPhases.length !== d.phases.length) err(`${w}: mọi pha của kiếp chuỗi phải là một ải suy_*`);
+    if (new Set(d.phases.map((p) => p.mechanic)).size !== d.phases.length) err(`${w}: mỗi ải phải dùng một cơ chế riêng`);
+    if (id === 'ngu_suy' && d.phases.map((p) => p.mechanic).join() !== SUY_MECHANICS.join())
+      err(`${w}: năm ải phải theo thứ tự ${SUY_MECHANICS.join(', ')}`);
+    if (!d.stageGold || d.stageGold.length !== d.phases.length || d.stageGold.some((g) => !Number.isInteger(g) || g < 0 || g > 5000))
+      err(`${w}: stageGold cần đúng ${d.phases.length} số nguyên trong [0, 5000]`);
+    const law = d.law;
+    if (!law || [law.hp, law.mp, law.atk, law.def].some((v) => !(v >= 0 && v <= 0.1)))
+      err(`${w}: law cần hp/mp/atk/def trong [0, 0,1] (nội tại nhỏ, không phá cân bằng)`);
+    if (d.failXpLoss !== 0) err(`${w}: Ngũ Suy không phạt tu vi (failXpLoss = 0)`);
+    const names = (GLOSSARY as unknown as { nguSuy?: Record<string, string> }).nguSuy ?? {};
+    d.phases.forEach((p, i) => {
+      const pw = `${w}/${p.id}`;
+      const s = p.suy;
+      const len = p.end - (d.phases[i - 1]?.end ?? 0);
+      if (!s || !(s.rest >= 0 && s.rest < len && s.start >= 0 && s.start < 100 && s.rise >= 0 && s.riseEnd >= s.rise)) {
+        err(`${pw}: thiếu hoặc sai khối suy {rest, start, rise, riseEnd >= rise}`);
+        return;
+      }
+      const act = len - s.rest;
+      const avg = (s.rise + s.riseEnd) / 2;
+      if (id === 'ngu_suy') {
+        if (names[p.id] === undefined) err(`${pw}: tên ải phải có trong glossary.nguSuy`);
+        else if (hasString(`ui.trib.${id}.${p.id}`) && t(`ui.trib.${id}.${p.id}`) !== names[p.id])
+          err(`${pw}: chuỗi ui.trib.${id}.${p.id} phải đúng tên trong glossary ("${names[p.id]}")`);
+      }
+      needStr(`sys.${p.mechanic}_start`);
+      // Không thao tác thì phải thất bại (ải không qua được bằng cách đứng chịu): riêng Thọ Nguyên Suy thất bại vì đèn tắt hết.
+      if (p.mechanic !== 'suy_tho' && !(s.start + avg * act >= 100)) err(`${pw}: đứng yên vẫn qua được (start + tăng < 100)`);
+      if (p.mechanic === 'suy_linh') {
+        const x = s.linh;
+        if (!x || !(x.ring > 0 && x.r > 0 && x.lifeEnd > 0 && x.life >= x.lifeEnd && x.cure > s.riseEnd && x.drain >= 0 && x.drain <= 0.2))
+          err(`${pw}: linh cần {ring, r, life >= lifeEnd > 0, cure > riseEnd, drain trong [0, 0,2]}`);
+      }
+      if (p.mechanic === 'suy_the') {
+        const x = s.the;
+        if (
+          !x ||
+          !(
+            x.every > x.warn &&
+            x.warn > 0 &&
+            x.r > 0 &&
+            x.dist > x.r &&
+            x.cure > 0 &&
+            x.cost >= 0 &&
+            x.cost <= 0.15 &&
+            x.bleed >= 0 &&
+            x.bleed <= 0.05
+          )
+        )
+          err(`${pw}: the cần {every > warn > 0, r, dist > r, cure, cost <= 0,15, bleed <= 0,05}`);
+        else if (!(Math.floor(act / x.every) * x.cure > avg * act)) err(`${pw}: đón đủ mọi tia vẫn không hóa giải nổi suy khí`);
+      }
+      if (p.mechanic === 'suy_thuc') {
+        const x = s.thuc;
+        if (
+          !x ||
+          !(x.sectors >= 3 && x.sectors <= 16 && x.safe >= 1 && x.safe < x.sectors && x.r > 0 && x.every > x.warn && x.warn >= 1.5) ||
+          !(x.pct > 0 && x.pct <= 0.3 && x.hurt > 0 && x.cure > 0 && x.cd > 0 && x.cdEnd >= x.cd)
+        )
+          err(`${pw}: thuc cần {sectors 3–16, 1 <= safe < sectors, r, every > warn >= 1,5, pct <= 0,3, hurt, cure, cdEnd >= cd > 0}`);
+        else if (!(Math.floor(act / x.every) * x.cure > avg * act)) err(`${pw}: né đủ mọi đợt vẫn không hóa giải nổi suy khí`);
+      }
+      if (p.mechanic === 'suy_tho') {
+        const x = s.tho;
+        if (
+          !x ||
+          !(x.lamps >= 3 && x.lamps <= 8 && x.ring > 0 && x.r > 0 && x.light > 0 && x.gustEnd > 0 && x.gust >= x.gustEnd && x.warn > 0) ||
+          !(x.per > 0 && x.cure >= 0)
+        )
+          err(`${pw}: tho cần {lamps 3–8, ring, r, light, gust >= gustEnd > 0, warn, per, cure}`);
+        else if (!(x.gustEnd + x.warn > x.light)) err(`${pw}: đèn tắt nhanh hơn thời gian thắp một ngọn, không thể giữ`);
+      }
+      if (p.mechanic === 'suy_tam') {
+        const x = s.tam;
+        if (!x || !(x.calm > 0 && x.strike >= 2 && x.hitBad > 0 && x.hitGood > 0 && x.miss >= 0 && x.hurt >= 0 && x.hpFrac >= 1))
+          err(`${pw}: tam cần {calm, strike >= 2, hitBad, hitGood, miss, hurt, hpFrac >= 1}`);
+        else if (!(Math.floor(act / (x.calm + x.strike)) * x.hitGood > avg * act - (100 - s.start)))
+          err(`${pw}: trúng đủ mọi nhịp phá vọng vẫn không giữ nổi thanh dưới 100`);
+        if (!MONSTER.get('mon_tam_ma')) err(`${pw}: thiếu quái mon_tam_ma (Tâm Ma Ảnh)`);
+      }
+    });
+    for (const k of ['sys.suy_fail', 'sys.suy_keep', 'sys.suy_stage', 'sys.suy_stage_gold', 'sys.suy_law', 'sys.suy_ok', 'sys.suy_done'])
+      needStr(k);
+    for (const k of ['label', 'rest', 'stage']) needStr(`ui.trib.suy.${k}`);
   }
   if (!tribForLevel(19)?.enabled) err('độ kiếp Kết Đan (cấp 19) phải đang bật (E2-D)');
   if (peakGated(19) || peakGated(23) || peakGated(27))

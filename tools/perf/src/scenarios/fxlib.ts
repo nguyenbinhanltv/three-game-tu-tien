@@ -1,8 +1,8 @@
 // Thư viện hình mesh VFX (VS-1): mỗi hình một ảnh 1280×720 (đặt trước mặt nhân vật, cùng camera) rồi ghép tờ xem trước.
-//   --shapes slash_thick,blade_giant   (mặc định: cả 20 hình)
+//   --shapes slash_thick,blade_giant   (mặc định: cả thư viện)   --palette bat_dong_kim_than (bảng màu, mặc định Kiếm tu)
 import path from 'node:path';
 import { FX_LIB_SHAPES, FLIP_ATLASES } from '@dtl/shared';
-import { list } from '../lib/env';
+import { list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
@@ -30,12 +30,23 @@ const LOOK: Record<string, { s: number; rot?: [number, number, number]; y?: numb
   sword_halo: { s: 2.4, y: 1.6 },
   spark_streak: { s: 1.5, rot: [-30, 0, 0], y: 1.2 },
   petal_blade: { s: 1.8, rot: [-20, 0, 0], y: 1.1 },
+  // Hộ pháp: đứng theo +Y, đáy ở mặt đất (y tính từ ngực nhân vật).
+  seal_block: { s: 1.2, y: -1.1, rot: [0, 30, 0] },
+  bell_cage: { s: 0.9, y: -1.1 },
+  rock_spire: { s: 1.6, y: -1.1, rot: [0, 40, 0] },
+  shield_plate: { s: 1.1, y: -1.1, rot: [0, 150, 0] },
+  diamond_cage: { s: 0.8, y: -1.1, rot: [0, 25, 0] },
+  // Đan sư.
+  pill_orb: { s: 0.9, y: 0.2 },
+  lotus_bloom: { s: 1.3, y: -1.1, pitch: 0.5, tone: 'accent' },
+  flame_tongue: { s: 1.4, y: -1.1, tone: 'accent' },
+  dan_lo: { s: 1.2, y: -1.1, rot: [0, 25, 0] },
 };
 
 export default {
   name: 'fxlib',
   desc: 'Thư viện hình mesh VFX (VS-1): ảnh từng hình + flipbook, cùng camera, để duyệt phong cách',
-  usage: '[--shapes slash_thick,blade_giant] [--flips]',
+  usage: '[--shapes slash_thick,blade_giant] [--palette bat_dong_kim_than] [--flips]',
   async run(r) {
     const shapes = list('--shapes', FX_LIB_SHAPES.join(','));
     const { ctx, page } = await r.open({ name: 'Afxlib', viewport: [1280, 720], dpr: 1, quality: 'high', hide: 'hud', warnings: /models/ });
@@ -45,7 +56,7 @@ export default {
       await page.evaluate(
         `(() => { const g = window.__game; const me = g.cur;
           const tl = { skill: 'x', events: [${JSON.stringify({ type: 'mesh', t: 0, dur: 3.5, sweep: 0, erodeFrom: 0.95, alpha: 1, shadow: false, ...ev })}] };
-          g.skillFx.runner.startAt(tl, { actor: { x: me.x, y: me.y, z: me.z, yaw: g.facing, model: {} }, palette: 'lac_kiem_quyet' }); })()`,
+          g.skillFx.runner.startAt(tl, { actor: { x: me.x, y: me.y, z: me.z, yaw: g.facing, model: {} }, palette: ${JSON.stringify(opt('--palette', 'lac_kiem_quyet'))} }); })()`,
       );
       await sleep(ms);
       await snap(page, r.out, `${name}.jpg`, { wait: 0 });
@@ -79,7 +90,7 @@ export default {
         for (const k of [0.15, 0.4, 0.7]) {
           await page.evaluate(
             `(() => { const g = window.__game; const me = g.cur; const tl = { skill: 'x', events: [${JSON.stringify({ type: 'mesh', t: 0, shape: 'flip', flip: a, dur: 2, scale: 2.4, alpha: 1, offset: [0, 1.5, 2.6], tone: 'body' })}] };
-              g.skillFx.runner.startAt(tl, { actor: { x: me.x, y: me.y, z: me.z, yaw: g.facing, model: {} }, palette: 'lac_kiem_quyet' }); })()`,
+              g.skillFx.runner.startAt(tl, { actor: { x: me.x, y: me.y, z: me.z, yaw: g.facing, model: {} }, palette: ${JSON.stringify(opt('--palette', 'lac_kiem_quyet'))} }); })()`,
           );
           await sleep(k * 2000);
           await snap(page, r.out, `flip-${a}-${Math.round(k * 100)}.jpg`, { wait: 0 });

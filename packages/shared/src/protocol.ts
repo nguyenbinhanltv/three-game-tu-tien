@@ -1,6 +1,8 @@
 // Giao thức mạng giữa client và server. Tên message ngắn để tiết kiệm băng thông.
 
 import type { ArtifactMsg } from './artifacts';
+import type { ResourceMods } from './resource';
+import type { StanceState } from './stance';
 import { INV_SIZE, type CharView, type Equipment, type InvSlot, type QuestView } from './types';
 
 export const PROTOCOL_VERSION = 1;
@@ -102,6 +104,8 @@ export const C = {
   SKILL_UP: 'sku',
   /** Chọn biến thức: `{ skill, v: 'a' | 'b' }` (đổi miễn phí khi không giao chiến). */
   SKILL_VAR: 'skv',
+  /** Nhánh công pháp (VS-2d): `{ a: 'pick', tier, id, r }` chọn nhánh (miễn phí), `{ a: 'reset', r }` reset cả cây (tốn linh thạch). */
+  BRANCH: 'brn',
   /** Vượt bình cảnh: `{ m: 'trial' | 'pill', r? }` (r = khóa chống trùng khi dùng đan). */
   BOTTLENECK: 'bk',
   /** Đổi linh căn ở NPC: `{ npc, root, r? }`. */
@@ -224,8 +228,17 @@ export interface MethodMsg {
   lv: Record<string, number>;
   /** id chiêu → biến thức đã chọn. */
   vr: Record<string, 'a' | 'b'>;
-  /** Kiếm ý hoặc thế (0..5). */
-  stacks: number;
+  /**
+   * Tài nguyên riêng (VS-2a) ngay sau lần tích/xả gần nhất và giờ server (ms) của lần tích gần nhất;
+   * client tự tính phần rụng theo thời gian bằng `resNow`. `resMods`: luật nhánh đang áp (trần, không rụng...).
+   */
+  res: number;
+  resAt: number;
+  resMods?: ResourceMods;
+  /** Nhánh đã chọn của công pháp đang tu (VS-2d): mốc cảnh giới → id nhánh. */
+  br?: Record<number, string>;
+  /** Tư thế đang giữ (VS-2e): id chiêu tư thế và giờ server (ms) hết hạn; không có = không ở tư thế nào. */
+  st?: StanceState;
   /** Vòng sạc chiêu tối thượng 0..100. */
   charge: number;
   /** Giảm sát thương (Kim Cương Bất Hoại) tới giờ server này (ms); 0 = không. */

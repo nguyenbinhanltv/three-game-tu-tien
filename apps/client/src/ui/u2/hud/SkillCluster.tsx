@@ -9,6 +9,8 @@ import { togglePanel, useUI } from '../../store';
 import { IconFrame } from '../Slot';
 import { LockMark } from '../patterns';
 import { blurAfterPointer, useNow } from './common';
+import { chainLines, skillMpNow } from '../../skillChain';
+import { barWithStance } from '../../stanceView';
 import { CLUSTER, clusterGeom, skillBox, type SlotPos } from './layout';
 
 /** Nhãn phím của ô thanh chiêu thứ i (khớp `Game.useSkill(i)`): 1–8, ô 9 thần thông = 0, ô 10 = `. */
@@ -37,7 +39,10 @@ export function useSkillView() {
     const ready = Math.max(cds[sk.id] ?? 0, gcdAt);
     const left = Math.max(0, ready - now);
     const total = (cds[sk.id] ?? 0) > gcdAt ? Math.max(1, rs.cd) * 1000 : 1000;
-    const noMp = !locked && mp < sk.mp;
+    // VS-2b: cửa sổ chuỗi đang mở (server báo hạn qua tin `cd`): sáng viền, tooltip báo thưởng, linh lực tính theo thưởng.
+    const chainOpen = (empowered[sk.id] ?? 0) > Date.now();
+    const mpNow = skillMpNow(sk, chainOpen);
+    const noMp = !locked && mp < mpNow;
     const charging = !locked && !!sk.ult && charge < CHARGE_MAX;
     const state: SkillState = locked
       ? 'locked'
@@ -58,8 +63,9 @@ export function useSkillView() {
       ...(lv > 1 ? [{ text: t('ui.skill.level_tag', { n: lv }) }] : []),
       ...(vr && VARIANTS[sk.id] ? [{ text: t('ui.skill.variant_tag', { name: t(`skill.${sk.id}.var.${vr}.name`) }) }] : []),
       ...(sk.ult ? [{ text: t('ui.skill.ult_charge', { n: Math.floor(charge) }), tone: charging ? ('bad' as const) : undefined }] : []),
-      ...(sk.mp ? [{ text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined }] : []),
+      ...(sk.mp ? [{ text: `${t('ui.mp')}: ${mpNow}`, tone: noMp ? ('bad' as const) : undefined }] : []),
       ...(rs.cd ? [{ text: t('ui.skill.cd', { n: rs.cd }) }] : []),
+      ...(locked ? [] : chainLines(sk, chainOpen)),
       ...(airborne && !locked ? [{ text: t('ui.skill.airborne'), tone: 'bad' as const }] : []),
       ...(noMp ? [{ text: t('ui.skill.no_mp'), tone: 'bad' as const }] : []),
     ];
@@ -74,7 +80,7 @@ export function useSkillView() {
       lines,
       queued: i === queued,
       auto: i === 0 && auto,
-      empowered: (empowered[sk.id] ?? 0) > Date.now(),
+      empowered: chainOpen,
       mcolor: sk.method,
     };
   };
@@ -138,7 +144,11 @@ function ClusterSlot({ sk, i, pos, view, main }: SlotProps) {
         <button
           type="button"
           className={
-            'u2-slot u2-skill u2h-skill' + (v.queued ? ' queued' : '') + (v.empowered ? ' empowered' : '') + (v.auto ? ' auto' : '')
+            'u2-slot u2-skill u2h-skill' +
+            (v.queued ? ' queued' : '') +
+            (v.empowered ? ' empowered' : '') +
+            (v.auto ? ' auto' : '') +
+            (sk.stanceOf ? ' in-stance' : '')
           }
           data-state={v.state}
           data-cd={cdOn ? '1' : undefined}
@@ -189,8 +199,13 @@ function QuickButton({
   pressed,
   cdFrac,
   cdText,
+  lit,
+  tip,
   onClick,
 }: {
+  /** Viền sáng (cửa sổ chuỗi chiêu đang mở) và thẻ tooltip đầy đủ thay cho nhãn ngắn. */
+  lit?: boolean;
+  tip?: ReactNode;
   pos?: SlotPos;
   icon?: ReactNode;
   sysIcon?: SysIconName;
@@ -203,10 +218,10 @@ function QuickButton({
 }) {
   return (
     <div className="u2h-cell u2h-quick" style={pos ? posStyle(pos) : undefined}>
-      <Tooltip content={<span className="u2h-tip">{`${label} · ${kbd}`}</span>}>
+      <Tooltip content={tip ?? <span className="u2h-tip">{`${label} · ${kbd}`}</span>}>
         <button
           type="button"
-          className="u2-slot u2-skill u2h-skill"
+          className={'u2-slot u2-skill u2h-skill' + (lit ? ' empowered' : '')}
           aria-pressed={pressed || undefined}
           data-cd={cdFrac ? '1' : undefined}
           aria-label={`${label} (${kbd})`}
@@ -234,17 +249,22 @@ export function SkillCluster({ layout, utility }: { layout: 'arc' | 'bar'; utili
   const wantFly = useUI((s) => s.wantFly);
   const cds = useUI((s) => s.cds);
   const char = useUI((s) => s.char);
+  const empowered = useUI((s) => s.empowered);
   const view = useSkillView();
   const now = useNow(100);
   if (!char) return null;
-  const tt = thanThongSkill(method?.method);
+  const tt = thanThongSkill(method?.method, method?.br);
   const tt10 = thanThong10Skill(method?.method);
-  const bar = [...skillBar(method?.method), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : [])];
+  const methodOff = useUI((s) => s.methodOff);
+  // VS-2e: đang giữ tư thế thì ô chiêu đổi theo tư thế.
+  const bar = barWithStance([...skillBar(method?.method), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : [])], method, now - methodOff);
   const slots: (SkillDef | null)[] = Array.from({ length: BAR_SIZE + 2 }, (_, i) => bar[i] ?? null);
   const mdef = method?.method ? METHOD.get(method.method) : undefined;
   const dash = mdef ? SKILL.get(mdef.dash) : undefined;
   const dashLeft = dash ? Math.max(0, (cds[dash.id] ?? 0) - now) : 0;
   const dashTotal = Math.max(1, (dash?.cd ?? 1) * 1000);
+  // VS-2b: chiêu lướt cũng nằm trong chuỗi (Thiết Bích Xung sau Trấn Sơn Ấn): sáng viền và có tooltip như ô chiêu.
+  const dashOpen = !!dash && (empowered[dash.id] ?? 0) > now;
   const quick = (pos: (SlotPos | undefined)[]) => [
     <QuickButton
       key="q"
@@ -255,6 +275,21 @@ export function SkillCluster({ layout, utility }: { layout: 'arc' | 'bar'; utili
       kbd="Q"
       cdFrac={dashLeft > 80 ? Math.min(1, dashLeft / dashTotal) : 0}
       cdText={dashLeft > 1000 ? String(Math.ceil(dashLeft / 1000)) : undefined}
+      lit={dashOpen}
+      tip={
+        dash ? (
+          <TipCard
+            title={t(`skill.${dash.id}.name`)}
+            sub={`${t('ui.dash')} · Q`}
+            lines={[
+              ...(dash.mp ? [{ text: `${t('ui.mp')}: ${dash.mp}` }] : []),
+              ...(dash.cd ? [{ text: t('ui.skill.cd', { n: dash.cd }) }] : []),
+              ...chainLines(dash, dashOpen),
+            ]}
+            desc={t(`skill.${dash.id}.desc`)}
+          />
+        ) : undefined
+      }
       onClick={(e) => {
         Game.current?.useDash();
         blurAfterPointer(e);

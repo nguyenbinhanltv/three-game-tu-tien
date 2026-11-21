@@ -17,6 +17,8 @@ import { ContentIcon, UiIcon } from './ContentIcon';
 import { Button, Divider, PanelWindow, Slot, TipCard, Tooltip } from './u2/win';
 import { MethodCarousel } from './u2/shell';
 import { closePanel, useUI } from './store';
+import { chainLines } from './skillChain';
+import { BranchTree } from './BranchTree';
 
 const SCROLL = 'itm_bi_tich_tan_quyen';
 
@@ -69,6 +71,11 @@ function SkillRow({
           </div>
           <div className="k-dim">{t(`skill.${sk.id}.desc`)}</div>
           {skillFacts(sk, lv, vr).length > 0 && <div className="mp-facts">{skillFacts(sk, lv, vr).join(' · ')}</div>}
+          {chainLines(sk, false).map((l) => (
+            <div key={l.text} className="mp-facts" data-testid="mp-chain">
+              {l.text}
+            </div>
+          ))}
         </div>
         <div className="mp-up">
           {lv >= MAX_SKILL_LEVEL ? (
@@ -217,6 +224,12 @@ export function MethodPanel() {
           </Button>
         </div>
       </div>
+      {cur && shown.id === cur.id && (
+        <>
+          <Divider label={t('ui.branch.title')} />
+          <BranchTree method={cur} picks={method?.br} level={char.level} gold={gold} />
+        </>
+      )}
       <Divider label={t('ui.char.skills')} />
       <div className="mp-skills">
         {bar.map((sk) => (

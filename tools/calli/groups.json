@@ -277,6 +277,105 @@
           "spacing": 0.04
         }
       ]
+    },
+    "chapter": {
+      "items": [
+        {
+          "id": "ch1",
+          "key": "ui.chapters.ch1.name",
+          "style": "ink",
+          "size": 110,
+          "spacing": 0.03
+        },
+        {
+          "id": "ch2",
+          "key": "ui.chapters.ch2.name",
+          "style": "ink",
+          "size": 110,
+          "spacing": 0.03
+        },
+        {
+          "id": "ch3",
+          "key": "ui.chapters.ch3.name",
+          "style": "ink",
+          "size": 110,
+          "spacing": 0.03
+        },
+        {
+          "id": "ch4",
+          "key": "ui.chapters.ch4.name",
+          "style": "ink",
+          "size": 110,
+          "spacing": 0.03
+        },
+        {
+          "id": "ch5",
+          "key": "ui.chapters.ch5.name",
+          "style": "ink",
+          "size": 110,
+          "spacing": 0.03
+        }
+      ]
+    },
+    "screen": {
+      "items": [
+        {
+          "id": "sub_van_lam",
+          "key": "ui.subtitle",
+          "style": "gold",
+          "size": 150,
+          "spacing": 0.03
+        },
+        {
+          "id": "sub_doan_mach",
+          "key": "ui.subtitle.doan_mach",
+          "style": "gold",
+          "size": 150,
+          "spacing": 0.03
+        },
+        {
+          "id": "sub_van_hai",
+          "key": "ui.subtitle.van_hai",
+          "style": "gold",
+          "size": 150,
+          "spacing": 0.03
+        },
+        {
+          "id": "sub_thien_khuyet",
+          "key": "ui.subtitle.thien_khuyet",
+          "style": "gold",
+          "size": 150,
+          "spacing": 0.03
+        },
+        {
+          "id": "sub_bac_hoang",
+          "key": "ui.subtitle.bac_hoang",
+          "style": "gold",
+          "size": 150,
+          "spacing": 0.03
+        },
+        {
+          "id": "dead",
+          "key": "ui.dead.title",
+          "style": "ink",
+          "size": 135,
+          "spacing": 0.03
+        },
+        {
+          "id": "dead_soul",
+          "key": "ui.dead.soul_title",
+          "style": "ink",
+          "size": 135,
+          "spacing": 0.03
+        },
+        {
+          "id": "respawn",
+          "key": "ui.dead.respawn",
+          "style": "ink",
+          "size": 100,
+          "spacing": 0.04
+        }
+      ]
     }
   }
 }

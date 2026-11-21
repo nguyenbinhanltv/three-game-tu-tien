@@ -22,7 +22,6 @@ import {
 import { TribSystem } from '../trib';
 import { ITEM_SYS, ITEMS, itemName, t } from '@dtl/content';
 import type { PlayerEnt, MonEnt, SimOptions } from '../entities';
-import { passiveOf } from '../method';
 import { RealmSystem } from '../realm';
 import { DuelSystem } from '../duel';
 import { MirrorSystem, wardMul } from '../mirror';
@@ -35,7 +34,6 @@ import { at } from '@dtl/shared';
 /** Phần GameSim mà hệ chết/hồi sinh cần. */
 export interface DeathCtx {
   abortStrike(p: PlayerEnt, refund: boolean, notify?: boolean): void;
-  addStack(p: PlayerEnt, max: number, decay: number): void;
   readonly bossDmgMul: number;
   readonly clone: CloneSystem;
   damageMonster(
@@ -54,6 +52,8 @@ export interface DeathCtx {
   endTribulation(p: PlayerEnt, success: boolean, silent: boolean): void;
   fx(m: FxMsg): void;
   gainCharge(p: PlayerEnt, n: number): void;
+  /** Nhận `dmg` sát thương (đã trừ khiên): tích tài nguyên riêng (Huyết khí). */
+  resTaken(p: PlayerEnt, dmg: number): void;
   giveXp(p: PlayerEnt, n: number, announce?: boolean): void;
   isDead(p: PlayerEnt): boolean;
   readonly mirror: MirrorSystem;
@@ -164,8 +164,7 @@ export class DeathSystem {
     if (!p.god) c.hp -= n;
     if (src && c.meta.method) {
       this.c.gainCharge(p, chargeFromTaken(n, c.mhp));
-      const pas = passiveOf(c.meta);
-      if (pas?.kind === 'the') this.c.addStack(p, pas.max ?? 5, pas.decay ?? 8);
+      this.c.resTaken(p, n);
     }
     const msg: DmgMsg = { dst: p.sid, n, src };
     if (hv) msg.hv = true;

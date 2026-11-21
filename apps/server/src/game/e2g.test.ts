@@ -1,4 +1,5 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { allowSkillForTest } from './testkit';
 import { groundAt, MS_DEAD, S } from '@dtl/shared';
 
 // E2-G: chiêu bậc 2–3 (Lạc Kiếm Quyết / Bất Động Kim Thân / Thanh Mộc Đan Kinh). Server áp sát thương tại hitAt như K-2.
@@ -42,6 +43,8 @@ function setup(method: string, level = 22) {
   const raw = sim.onSkill.bind(sim);
   // Xả đòn chờ `hitAt` ngay lúc bấm (như method.test.ts); các mốc sau của chiêu nhiều nhát chạy qua `sim.tick`.
   sim.onSkill = (pl: Ent, msg: unknown) => {
+    // VS-2d: test cơ chế chiêu, không đi qua bước chọn nhánh công pháp.
+    allowSkillForTest(pl.char, (msg as { id?: unknown } | null)?.id);
     raw(pl, msg);
     const st = pl.flow.pending;
     if (st) {
@@ -193,7 +196,7 @@ describe('E2-G: Lạc Kiếm Quyết', () => {
     setVar('skl_kiem_dan_ban_menh', 'b');
     const near = mon(X + 3, Z);
     const marked = mon(X + 9, Z);
-    marked.mark = { sid: p.sid, until: Date.now() + 60000, mul: 0.2 };
+    marked.marks.push({ id: 'truy_hon', sid: p.sid, n: 1, until: Date.now() + 60000 });
     fresh(p);
     sim.onSkill(p, { id: 'skl_kiem_dan_ban_menh' });
     wait(1100);

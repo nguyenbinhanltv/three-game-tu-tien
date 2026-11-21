@@ -13,6 +13,7 @@ import { Hud } from './Hud';
 import { RootPicker } from './Realm';
 import { Corners } from './u2/shell';
 import { Portrait } from './Art';
+import { Calli } from './calli/Calli';
 import { get, type Phase, set, useUI } from './store';
 import { FLAGS, urlParams } from '../base/flags';
 import { logger } from '../base/log';
@@ -459,7 +460,9 @@ export function App() {
     <>
       {title && (
         <div className="title-screen">
-          <div className="ts-sub">{t(phase === 'login' ? 'ui.subtitle' : regional('ui.subtitle'))}</div>
+          <div className="ts-sub">
+            <Calli k={phase === 'login' ? 'ui.subtitle' : regional('ui.subtitle')} em={3.7} />
+          </div>
           {phase === 'login' && <Login />}
           {(phase === 'connecting' || phase === 'loading' || phase === 'game') && <LoadingPanel onDone={() => setTitle(false)} />}
           {phase === 'error' && <ErrorPanel text={error} />}

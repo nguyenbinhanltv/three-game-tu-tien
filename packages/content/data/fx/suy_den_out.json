@@ -1,0 +1,73 @@
+{
+ "skill": "suy_den_out",
+ "palette": "suy_tho",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.8,
+   "at": "area",
+   "offset": [
+    0,
+    2.1,
+    0
+   ],
+   "scale": 2.2,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "core",
+   "alpha": 0.7,
+   "flip": "ink_smoke",
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.45,
+   "at": "area",
+   "offset": [
+    0,
+    1.6,
+    0
+   ],
+   "scale": [
+    0.3,
+    0.3,
+    0.3
+   ],
+   "scaleTo": [
+    1.8,
+    0.5,
+    1.8
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.4,
+   "ragged": 0.9,
+   "tone": "accent",
+   "alpha": 0.7,
+   "seed": 88,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 18,
+   "speed": 2.2,
+   "spread": 0.9,
+   "life": 1.0,
+   "size": 0.26,
+   "at": "area",
+   "offset": [
+    0,
+    1.9,
+    0
+   ],
+   "tone": "core",
+   "grav": 0.8,
+   "tier": 1
+  }
+ ]
+}

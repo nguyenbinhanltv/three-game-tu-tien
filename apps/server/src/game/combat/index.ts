@@ -5,9 +5,22 @@ import {
   CHARGE_MAX,
   type DmgMsg,
   caveBoundOf,
+  chainMp,
   healAmount,
-  stackMul,
-  stacksAlive,
+  markAdd,
+  markCount,
+  marksPrune,
+  markTake,
+  packMarks,
+  type ConsumeMark,
+  type MarkDef,
+  resAdd,
+  resFromHeal,
+  resFromTaken,
+  resMax,
+  resNow,
+  resSpend,
+  resSpendAt,
   type FxMsg,
   AIRBORNE_HEIGHT,
   elemDamageMul,
@@ -41,26 +54,40 @@ import {
   planDash,
   strikeDelay,
   type Terrain,
+  type ResourceMods,
+  stanceActive,
+  withStanceRes,
+  jointAllowed,
+  jointKey,
+  markAny,
+  markTakeAny,
+  type JointDef,
 } from '@dtl/shared';
-import { SKILL } from '@dtl/content';
-import { type Hot, methodOf, passiveOf, resolveFor, type Trail } from '../method';
-import { isEmpowered } from '../skillflow';
+import { JOINTS, MARK, SKILL, t } from '@dtl/content';
+import { parties } from '../party';
+import { branchModsOf, gateOf, type Hot, methodOf, passiveOf, resolveFor, resourceOf, type Trail } from '../method';
+import { chainOf, takeChain } from '../skillflow';
 import type { DuelSystem } from '../duel';
 import type { MirrorSystem } from '../mirror';
 import type { CloneSystem } from '../clone';
 import { pruneBuffs } from '../artifact';
 import type { MonEnt, PlayerEnt, StrikeCtx, Stomp, Summon } from '../entities';
-import { LEASH, SET_HEAL_RADIUS, TAUNT_BOSS_MUL, visualSeed } from './consts';
+import { LEASH, MARK_ALLY_RANGE, SET_HEAL_RADIUS, TAUNT_BOSS_MUL, visualSeed } from './consts';
 
 import { at } from '@dtl/shared';
 /** Phần GameSim mà hệ chiêu cần. */
 export interface CombatCtx {
+  /** Đối tượng room (khóa tra thành viên tổ đội cùng room, VS-2f). */
+  readonly room: object;
+  /** Cộng thanh phá thế của thủ lĩnh (ấn Mất thế, VS-2c). */
+  addPosture(m: MonEnt, n: number): void;
   readonly clone: CloneSystem;
   readonly duel: DuelSystem;
   duelStrike(p: PlayerEnt, o: PlayerEnt, powers: number[], elemMul: number): void;
   emit(type: string, payload: object): void;
   fx(m: FxMsg): void;
-  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul?: number, elem?: string): void;
+  /** Trả true nếu đòn có hiệu lực (quái còn sống, không miễn sát thương, không phải bóng của người khác). */
+  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul?: number, elem?: string): boolean;
   homeDist(m: MonEnt): number;
   isDead(p: PlayerEnt): boolean;
   readonly level: LevelDef;
@@ -108,12 +135,19 @@ export class CombatSystem {
     if (c.level < skill.unlock) return this.c.warn(p, 'sys.level_low');
     if (skill.method && c.meta.method !== skill.method) return this.c.warn(p, 'sys.no_method');
     if (skill.locked) return this.c.warn(p, 'sys.skill_locked');
+    // VS-2d: chiêu gắn nhánh công pháp chỉ dùng được khi đã chọn đúng nhánh ở mốc của nó.
+    const gate = gateOf(c, skill);
+    if (gate !== 'ok') return this.c.warn(p, gate === 'need' ? 'sys.branch_needed' : 'sys.branch_other');
+    // VS-2e: chiêu tư thế chỉ dùng được khi đang giữ đúng tư thế đó (client đổi ô theo tin server, server vẫn kiểm).
+    if (skill.stanceOf && !(stanceActive(p.mth.stance, this.c.now) && p.mth.stance.id === skill.stanceOf))
+      return this.c.warn(p, 'sys.stance_needed');
     if (this.airborne(p)) return this.c.warn(p, 'sys.cannot_while_flying');
     if (skill.dash) return this.onDash(p, skill, typeof m.t === 'string' ? m.t : '');
     if (p.casting || p.flow.pending) return;
     if (this.c.now < p.gcdAt - 60) return;
     if ((p.cds.get(skill.id) ?? 0) > this.c.now) return this.c.warn(p, 'sys.cooldown');
-    if (c.mp < skill.mp) return this.c.warn(p, 'sys.not_enough_mp');
+    // VS-2b: chiêu đang mở chuỗi có thể tốn ít linh lực hơn.
+    if (c.mp < chainMp(skill.mp, chainOf(p.flow, skill, this.c.now))) return this.c.warn(p, 'sys.not_enough_mp');
     if (skill.ult && p.mth.charge < CHARGE_MAX) return this.c.warn(p, 'sys.ult_not_ready');
     if (skill.kind === 'revive' && !this.reviveTarget(p, skill.allyRadius ?? 14)) return this.c.warn(p, 'sys.no_ally_dead');
     if (skill.blinkAlly && skill.kind !== 'revive' && !this.nearestAlly(p, skill.blinkAlly.range)) return this.c.warn(p, 'sys.no_ally');
@@ -150,7 +184,7 @@ export class CombatSystem {
   }
 
   /**
-   * Chiêu không niệm (K-2): chuỗi đánh thường, cường hóa, rồi áp ngay hoặc chờ `hitAt` (hình và sát thương cùng nhịp).
+   * Chiêu không niệm (K-2): chuỗi đánh thường, chuỗi chiêu (VS-2b), rồi áp ngay hoặc chờ `hitAt` (hình và sát thương cùng nhịp).
    * Linh lực, hồi chiêu, vòng sạc trừ lúc bấm; đòn bị hủy vì mục tiêu thì hoàn lại.
    */
   beginSkill(p: PlayerEnt, skill: SkillDef, targetId: string): void {
@@ -167,16 +201,16 @@ export class CombatSystem {
       const refund = passiveOf(p.char.meta)?.gcdRefund;
       if (refund && combo === skill.combo.hits.length - 1) p.gcdAt -= refund * 1000;
     }
-    if (isEmpowered(f, skill, this.c.now)) {
-      mul *= skill.empower!.powerMul;
-      f.opened.delete(skill.empower!.by);
-    }
+    // VS-2b: đang trong cửa sổ chuỗi thì nhận thưởng (sức mạnh, linh lực, hồi chiêu) và đóng cửa sổ ngay lúc bấm.
+    const ch = takeChain(f, skill, this.c.now);
+    mul *= ch.powerMul;
+    const ctx: StrikeCtx = { combo: combo >= 0 ? combo : undefined, mul, mpMul: ch.mpMul, cdMul: ch.cdMul };
     const delay = strikeDelay(skill, combo >= 0 ? combo : undefined) * 1000;
-    if (delay <= 0) return this.resolveWith(p, skill, targetId, { combo: combo >= 0 ? combo : undefined, mul });
+    if (delay <= 0) return this.resolveWith(p, skill, targetId, ctx);
     const prevCd = p.cds.get(skill.id);
     const prevCharge = p.mth.charge;
-    this.commitSkill(p, skill);
-    f.pending = { skill, target: targetId, at: this.c.now + delay, combo, mul, prevCd, prevCharge };
+    const mp = this.commitSkill(p, skill, ctx);
+    f.pending = { skill, target: targetId, at: this.c.now + delay, combo, mul, mp, prevCd, prevCharge };
     this.c.sendCd(p);
   }
 
@@ -195,7 +229,7 @@ export class CombatSystem {
       p.mth.dirty = true;
     }
     if (refund) {
-      p.char.mp = Math.min(p.char.mmp, p.char.mp + st.skill.mp);
+      p.char.mp = Math.min(p.char.mmp, p.char.mp + st.mp);
       if (st.prevCd === undefined) p.cds.delete(st.skill.id);
       else p.cds.set(st.skill.id, st.prevCd);
     }
@@ -313,16 +347,23 @@ export class CombatSystem {
     }
     // Lướt có sát thương (Thiết Bích Xung): húc mục tiêu nếu đã sát người.
     if (skill.power > 0 && tgt && (pullOnly || this.inRange(p, tgt, 3))) {
-      let mul = 1;
-      if (isEmpowered(p.flow, skill, this.c.now)) {
-        mul = skill.empower!.powerMul;
-        p.flow.opened.delete(skill.empower!.by);
-      }
+      // Lướt húc trong cửa sổ chuỗi: chỉ nhân sức mạnh, tiêu cửa sổ khi húc trúng (lướt hụt không mất chuỗi).
+      const mul = takeChain(p.flow, skill, this.c.now).powerMul;
       this.c.hitMonster(p, tgt, rs.power * mul, elemDamageMul(c.stats.elemDmg, skill.elem), skill.elem);
       // Húc choáng quái thường (hộ pháp): tinh anh nửa thời gian, boss miễn.
       // Bộ Vân Kình bậc 3 (4 món): Dịch Sơn Xung choáng thêm `dichSonStun` giây.
-      const stunSec = (rs.variant?.stun ?? skill.stun ?? 0) + (skill.id === 'skl_dich_son_xung' ? c.stats.setFx.dichSonStun : 0);
+      // VS-2c: húc quái mang Trấn ấn của mình: choáng thêm, tích Huyết khí; đủ Huyết khí thì xả ra khiến quái mất thế.
+      const cm = skill.consumeMark;
+      const took = cm && tgt.state !== MS_DEAD ? this.takeMonMark(p, tgt, cm.id) : 0;
+      const stunSec =
+        (rs.variant?.stun ?? skill.stun ?? 0) +
+        (skill.id === 'skl_dich_son_xung' ? c.stats.setFx.dichSonStun : 0) +
+        (took ? (cm?.stun ?? 0) : 0);
       if (stunSec > 0 && tgt.state !== MS_DEAD) this.stunMonster(p, tgt, stunSec);
+      if (took && cm) {
+        if (cm.res) this.addRes(p, cm.res);
+        if (cm.then && tgt.state !== MS_DEAD && this.payRes(p, cm.then.resCost)) this.markMon(p, tgt, cm.then.mark);
+      }
       // Dịch Sơn Xung: đẩy (hoặc kéo) mục tiêu.
       if (def.push && pullOnly) {
         // Kéo cả cụm quanh mục tiêu (4 m) về phía người ra chiêu, mục tiêu chính sát nhất.
@@ -405,17 +446,249 @@ export class CombatSystem {
     return o;
   }
 
-  liveStacks(p: PlayerEnt): number {
-    const pas = passiveOf(p.char.meta);
-    if (!pas || (pas.kind !== 'kiem_y' && pas.kind !== 'the')) return 0;
-    return stacksAlive(p.mth.stacks, p.mth.stackAt, this.c.now, pas.decay ?? 10);
+  // ---------- tài nguyên riêng (VS-2a): Kiếm ý / Huyết khí / Đan hỏa ----------
+
+  /** Lượng tài nguyên đang có (đã tính rụng theo thời gian); chưa có công pháp thì 0. */
+  liveRes(p: PlayerEnt): number {
+    const def = resourceOf(p.char.meta);
+    return def ? resNow(def, p.mth.res, p.mth.resAt, this.c.now, this.resMods(p)) : 0;
   }
 
-  addStack(p: PlayerEnt, max: number, decay: number): void {
-    const cur = stacksAlive(p.mth.stacks, p.mth.stackAt, this.c.now, decay);
-    p.mth.stacks = Math.min(max, cur + 1);
-    p.mth.stackAt = this.c.now;
+  /** Luật nhánh công pháp tác động lên tài nguyên của `p` (VS-2d): trần, giữ lại khi xả, nhân tích, không rụng. */
+  resMods(p: PlayerEnt): ResourceMods | undefined {
+    const base = branchModsOf(p.char).res;
+    // VS-2e: tư thế đang giữ có thể đổi luật tài nguyên (không rụng, tích nhanh hơn).
+    const st = stanceActive(p.mth.stance, this.c.now) ? SKILL.get(p.mth.stance.id)?.stance?.res : undefined;
+    return withStanceRes(base, st);
+  }
+
+  /** Tài nguyên đang đầy (Kiếm ý đầy: bạo kích cộng thêm). */
+  resFull(p: PlayerEnt): boolean {
+    const def = resourceOf(p.char.meta);
+    return !!def && this.liveRes(p) >= resMax(def, this.resMods(p));
+  }
+
+  /** Tích `n` điểm tài nguyên; mỗi lần tích làm mới mốc rụng. */
+  addRes(p: PlayerEnt, n: number): void {
+    const def = resourceOf(p.char.meta);
+    if (!def || !(n > 0)) return;
+    p.mth.res = resAdd(def, this.liveRes(p), n, this.resMods(p));
+    p.mth.resAt = this.c.now;
     p.mth.dirty = true;
+  }
+
+  /** Nhận `dmg` sát thương (đã trừ khiên): Hộ pháp tích Huyết khí. */
+  resTaken(p: PlayerEnt, dmg: number): void {
+    const def = resourceOf(p.char.meta);
+    if (def) this.addRes(p, resFromTaken(def, dmg, p.char.mhp));
+  }
+
+  /** Một nhịp sát thương theo thời gian (mộc độc, thiêu đốt) của `p` vừa nổ: Đan sư tích Đan hỏa. */
+  resDot(p: PlayerEnt): void {
+    const g = resourceOf(p.char.meta)?.gain.dot;
+    if (g) this.addRes(p, g);
+  }
+
+  /**
+   * Hồi `n` khí huyết cho `o` và báo số hồi; trả phần hồi thật (không tính phần tràn).
+   * `by`: người tạo ra lượng hồi, tích Đan hỏa theo phần hồi thật (hồi lên người đầy máu không cho gì).
+   */
+  healPlayer(o: PlayerEnt, n: number, by?: PlayerEnt | null): number {
+    if (!(n > 0)) return 0;
+    const real = Math.max(0, Math.min(o.char.mhp - o.char.hp, n));
+    o.char.hp += real;
+    this.c.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
+    if (by && real > 0) {
+      const def = resourceOf(by.char.meta);
+      if (def) this.addRes(by, resFromHeal(def, real, o.char.mhp));
+    }
+    return real;
+  }
+
+  /**
+   * Chiêu `skill` xả tài nguyên lúc áp: trả hệ số nhân hiệu quả (1 = không thưởng). Chiêu khai `res` đúng tài nguyên
+   * của mình thì theo `res`; chiêu gây sát thương có hồi chiêu mà không khai thì theo luật `auto` của tài nguyên (Huyết khí).
+   */
+  spendRes(p: PlayerEnt, skill: SkillDef): { mul: number; spent: number } {
+    const def = resourceOf(p.char.meta);
+    if (!def) return { mul: 1, spent: 0 };
+    const sp = resSpend(def, this.liveRes(p), skill.res, dealsDamage(skill) && skill.cd > 0, this.resMods(p));
+    if (sp.spent <= 0) return { mul: 1, spent: 0 };
+    p.mth.res = sp.left;
+    // `sp.left` là lượng còn lại LÚC NÀY (đã trừ phần rụng): dời mốc để lần đọc sau không trừ phần rụng đó lần nữa.
+    p.mth.resAt = resSpendAt(def, p.mth.resAt, this.c.now);
+    p.mth.dirty = true;
+    return { mul: sp.mul, spent: sp.spent };
+  }
+
+  /** Trả đúng `n` điểm tài nguyên nếu đủ (không đủ thì không trừ gì). */
+  payRes(p: PlayerEnt, n: number): boolean {
+    const cur = this.liveRes(p);
+    const def = resourceOf(p.char.meta);
+    if (!def || !(n > 0) || cur < n) return false;
+    p.mth.res = cur - n;
+    // Như `spendRes`: dời mốc để phần đã rụng không bị trừ lần nữa.
+    p.mth.resAt = resSpendAt(def, p.mth.resAt, this.c.now);
+    p.mth.dirty = true;
+    return true;
+  }
+
+  // ---------- hợp kích tổ đội (VS-2f) ----------
+
+  /** Hồi nội bộ theo cặp: khóa `jointKey` → giờ (ms) dùng lại được. */
+  jointCd = new Map<string, number>();
+
+  /** Cặp (người mở `opener`, người kết thúc `p`) có nổ được hợp kích `j` không; được thì đặt hồi nội bộ. */
+  private jointTake(j: JointDef, opener: PlayerEnt, p: PlayerEnt): boolean {
+    const key = jointKey(j.id, opener.char.id, p.char.id);
+    const ok = jointAllowed({
+      openerId: opener.char.id,
+      finisherId: p.char.id,
+      sameParty: parties.same(opener.char.id, p.char.id),
+      readyAt: this.jointCd.get(key),
+      nowMs: this.c.now,
+    });
+    if (!ok) return false;
+    this.jointCd.set(key, this.c.now + j.cd * 1000);
+    return true;
+  }
+
+  /** Thưởng chung và thông báo cho hai người. */
+  private jointReward(j: JointDef, opener: PlayerEnt, p: PlayerEnt): void {
+    if (j.charge) {
+      this.gainCharge(opener, j.charge);
+      this.gainCharge(p, j.charge);
+    }
+    if (j.res) this.addRes(opener, j.res);
+    const params = { joint: t(`joint.${j.id}.name`), a: opener.char.name, b: p.char.name };
+    this.c.sys(opener, 'sys.joint', params, 'good');
+    this.c.sys(p, 'sys.joint', params, 'good');
+  }
+
+  /**
+   * Chiêu của `p` vừa xả `resSpent` tài nguyên riêng và sắp đánh `mon`: nếu quái mang ấn mở hợp kích do một đồng đội
+   * KHÁC trong tổ đội đặt thì tiêu ấn, trả hệ số nhân sát thương lên con đó (1 = không có hợp kích).
+   */
+  jointHit(p: PlayerEnt, mon: MonEnt, resSpent: number): number {
+    if (!(resSpent > 0) || !mon.marks.length) return 1;
+    for (const j of JOINTS) {
+      if (j.finisher !== 'spend') continue;
+      const mk = markAny(mon.marks, j.mark, this.c.now);
+      const opener = mk ? this.c.players.get(mk.sid) : undefined;
+      if (!opener || !this.jointTake(j, opener, p)) continue;
+      markTakeAny(mon.marks, j.mark, this.c.now);
+      mon.s.mk = packMarks(mon.marks, this.c.now);
+      this.jointReward(j, opener, p);
+      // Ấn bị tiêu trước khi đòn tính sát thương nên đòn kết sẽ mất phần cộng `ampAll` của chính ấn đó: nhân bù lại,
+      // để "mạnh gấp `powerMul`" là so với một đòn thường vào mục tiêu đang mang ấn.
+      return (j.powerMul ?? 1) * (1 + (MARK.get(j.mark)?.ampAll ?? 0));
+    }
+    return 1;
+  }
+
+  /** `p` vừa hạ gục quái hoặc tung chiêu tối thượng: nếu đang mang ấn mở hợp kích của một đồng đội khác thì ấn kết. */
+  jointFinish(p: PlayerEnt): void {
+    if (!p.marks.length) return;
+    for (const j of JOINTS) {
+      if (j.finisher !== 'kill_or_ult') continue;
+      const mk = p.marks.find((m) => m.id === j.mark && this.c.now < m.until && m.sid !== p.sid);
+      const opener = mk ? this.c.players.get(mk.sid) : undefined;
+      if (!mk || !opener || !this.jointTake(j, opener, p)) continue;
+      markTake(p.marks, j.mark, mk.sid, this.c.now);
+      p.s.mk = packMarks(p.marks, this.c.now);
+      if (j.healPct && j.r) {
+        for (const o of parties.matesInRoom(p.char.id, this.c.room)) {
+          if (!this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > j.r) continue;
+          this.healPlayer(o, Math.round(o.char.mhp * j.healPct));
+        }
+      }
+      this.jointReward(j, opener, p);
+      return;
+    }
+  }
+
+  // ---------- ấn trên mục tiêu (VS-2c) ----------
+
+  /** Định nghĩa ấn `id` nếu `p` đặt/tiêu được: ấn có `method` thì chỉ người đang tu công pháp đó. */
+  markFor(p: PlayerEnt, id: string): MarkDef | undefined {
+    const def = MARK.get(id);
+    return def && (!def.method || def.method === p.char.meta.method) ? def : undefined;
+  }
+
+  /** Đặt `n` tầng ấn của `p` lên quái. Không lên quái đã chết, bóng tâm ma của người khác hay quái đang miễn sát thương. */
+  markMon(p: PlayerEnt, mon: MonEnt, id: string, n = 1, mul?: number): void {
+    const def = this.markFor(p, id);
+    if (!def || def.on !== 'mon') return;
+    if (mon.state === MS_DEAD || (mon.owner && mon.owner !== p.sid) || this.c.now < mon.evadeUntil) return;
+    markAdd(mon.marks, def, p.sid, n, this.c.now, { mul, durMul: branchModsOf(p.char).markDurMul });
+    mon.s.mk = packMarks(mon.marks, this.c.now);
+    // Mất thế: quái thường choáng, thủ lĩnh cộng thanh phá thế (không choáng thủ lĩnh bằng ấn).
+    if (def.onApply) {
+      if (mon.def.boss) {
+        if (def.onApply.posture) this.c.addPosture(mon, def.onApply.posture);
+      } else if (def.onApply.stun) this.stunMonster(p, mon, def.onApply.stun);
+    }
+  }
+
+  /** Tiêu ấn `id` của `p` trên quái; trả số tầng đã tiêu. */
+  takeMonMark(p: PlayerEnt, mon: MonEnt, id: string): number {
+    const def = this.markFor(p, id);
+    if (!def || !mon.marks.length) return 0;
+    const n = markTake(mon.marks, def.id, p.sid, this.c.now);
+    mon.s.mk = packMarks(mon.marks, this.c.now);
+    return n;
+  }
+
+  /** Đặt ấn của `p` lên đạo hữu `o` (kể cả chính mình). */
+  markAlly(p: PlayerEnt, o: PlayerEnt, id: string, n = 1): void {
+    const def = this.markFor(p, id);
+    if (!def || def.on !== 'ally' || !this.canAssist(p, o)) return;
+    markAdd(o.marks, def, p.sid, n, this.c.now, { durMul: branchModsOf(p.char).markDurMul });
+    o.s.mk = packMarks(o.marks, this.c.now);
+  }
+
+  /** Tiêu ấn `id` của `p` trên đạo hữu `o`; trả số tầng đã tiêu. */
+  takeAllyMark(p: PlayerEnt, o: PlayerEnt, id: string): number {
+    const def = this.markFor(p, id);
+    if (!def || !o.marks.length) return 0;
+    const n = markTake(o.marks, def.id, p.sid, this.c.now);
+    o.s.mk = packMarks(o.marks, this.c.now);
+    return n;
+  }
+
+  /** Người (kể cả mình) trong `r` mét đang mang ấn `id` do `p` đặt và còn nhận hỗ trợ được. */
+  allyBearers(p: PlayerEnt, id: string, r: number): PlayerEnt[] {
+    const def = this.markFor(p, id);
+    if (!def) return [];
+    const out: PlayerEnt[] = [];
+    for (const o of this.c.players.values()) {
+      if (!o.marks.length || markCount(o.marks, def.id, p.sid, this.c.now) <= 0) continue;
+      if (!this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
+      out.push(o);
+    }
+    return out;
+  }
+
+  /** Đan Hỏa Phong Tràn: tiêu Mộc ấn của `p`, mỗi người mang ấn nổ một vòng quanh họ (sát thương của `p`). */
+  burstAllyMarks(p: PlayerEnt, skill: SkillDef, cm: ConsumeMark, elemMul: number, tag: Partial<FxMsg>): void {
+    if (!cm.burst) return;
+    for (const o of this.allyBearers(p, cm.id, MARK_ALLY_RANGE)) {
+      if (this.takeAllyMark(p, o, cm.id) <= 0) continue;
+      this.c.fx({ t: skill.fx, src: p.sid, x: o.move.x, y: o.move.y, z: o.move.z, r: cm.burst.r, sd: visualSeed(), ...tag });
+      for (const m of this.monstersNear(o.move.x, o.move.z, cm.burst.r)) this.c.hitMonster(p, m, cm.burst.mul, elemMul, skill.elem);
+    }
+  }
+
+  /** Điểm `skill` tích cho tài nguyên của `p` mỗi lần áp (đòn thường theo `gain.basic`, chiêu khác theo `res.gain`). */
+  resGainOf(p: PlayerEnt, skill: SkillDef): number {
+    const def = resourceOf(p.char.meta);
+    if (!def) return 0;
+    return (skill.combo ? (def.gain.basic ?? 0) : 0) + (skill.res?.id === def.id ? (skill.res.gain ?? 0) : 0);
+  }
+
+  /** Đòn của chiêu `skill` lên `mon`: trúng đích thì tích tài nguyên theo chiêu. */
+  strike(p: PlayerEnt, mon: MonEnt, skill: SkillDef, power: number, elemMul: number): void {
+    if (this.c.hitMonster(p, mon, power, elemMul, skill.elem)) this.addRes(p, this.resGainOf(p, skill));
   }
 
   gainCharge(p: PlayerEnt, n: number): void {
@@ -558,12 +831,12 @@ export class CombatSystem {
     }
   }
 
-  addHot(sid: string, perSec: number, sec: number): void {
+  addHot(sid: string, perSec: number, sec: number, by?: PlayerEnt): void {
     // Mỗi người chỉ một dòng hồi theo thời gian từ cùng nguồn: dòng mới thay dòng cũ nếu mạnh hơn.
     const old = this.hots.find((h) => h.sid === sid);
     if (old && old.per > perSec && old.endAt > this.c.now + sec * 1000) return;
     if (old) this.hots.splice(this.hots.indexOf(old), 1);
-    this.hots.push({ sid, nextAt: this.c.now + 1000, endAt: this.c.now + sec * 1000, per: perSec });
+    this.hots.push({ sid, nextAt: this.c.now + 1000, endAt: this.c.now + sec * 1000, per: perSec, by: by?.sid });
   }
 
   /**
@@ -576,31 +849,35 @@ export class CombatSystem {
     for (const o of this.c.players.values()) {
       if (o === p || !this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > SET_HEAL_RADIUS) continue;
       if (hotSec > 0) {
-        this.addHot(o.sid, (amount * share) / hotSec, hotSec);
+        this.addHot(o.sid, (amount * share) / hotSec, hotSec, p);
         continue;
       }
-      const n = Math.round(amount * share);
-      o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
-      this.c.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
+      this.healPlayer(o, Math.round(amount * share), p);
     }
   }
 
   executeSkill(p: PlayerEnt, skill: SkillDef, targetId: string, ctx: StrikeCtx = {}): void {
-    this.commitSkill(p, skill);
+    this.commitSkill(p, skill, ctx);
     this.resolveSkill(p, skill, targetId, ctx);
   }
 
-  /** Trừ linh lực, đặt hồi chiêu, tiêu vòng sạc (chiêu tối thượng): tại lúc bấm (hoặc lúc niệm xong). */
-  commitSkill(p: PlayerEnt, skill: SkillDef): void {
+  /**
+   * Trừ linh lực, đặt hồi chiêu, tiêu vòng sạc (chiêu tối thượng): tại lúc bấm (hoặc lúc niệm xong).
+   * `ctx.mpMul`/`ctx.cdMul`: thưởng chuỗi chiêu (VS-2b). Trả linh lực đã trừ (để hoàn đúng khi đòn bị hủy).
+   */
+  commitSkill(p: PlayerEnt, skill: SkillDef, ctx: StrikeCtx = {}): number {
     const rs = resolveFor(p.char.meta, skill);
-    p.char.mp -= skill.mp;
-    if (rs.cd > 0) p.cds.set(skill.id, this.c.now + rs.cd * 1000);
+    const mp = Math.min(p.char.mp, Math.max(0, Math.ceil(skill.mp * (ctx.mpMul ?? 1))));
+    p.char.mp -= mp;
+    const cd = rs.cd * (ctx.cdMul ?? 1);
+    if (cd > 0) p.cds.set(skill.id, this.c.now + cd * 1000);
     if (skill.ult) {
       p.mth.charge = 0;
       p.mth.lockCharge = true;
       p.mth.dirty = true;
     }
     p.lastCombatAt = this.c.now;
+    return mp;
   }
 
   /** Áp hiệu quả của chiêu (sát thương, hồi, khiên...): tại `hitAt` hoặc ngay khi không có độ trễ. */
@@ -616,16 +893,14 @@ export class CombatSystem {
     // Chiêu tối thượng nhiều mốc: giữ khóa vòng sạc tới đòn trễ cuối (không tự nạp lại vòng sạc của chính nó).
     let holdLock = 0;
     const elemMul = elemDamageMul(c.stats.elemDmg, skill.elem);
-    // Chiêu gây sát thương tiêu thụ tầng: Lôi Đình tiêu kiếm ý; chiêu có hồi chiêu tiêu thế (đòn đánh thường thì không).
-    let mul = 1;
-    if (dealsDamage(skill)) {
-      const eat = (pas?.kind === 'kiem_y' && skill.id === 'skl_loi_dinh_nhat_kiem') || (pas?.kind === 'the' && skill.cd > 0);
-      if (eat && pas) {
-        mul = stackMul(this.liveStacks(p), pas.perStack ?? 0, pas.max ?? 5);
-        p.mth.stacks = 0;
-        p.mth.dirty = true;
-      }
-    }
+    // VS-2a: chiêu xả tài nguyên riêng lúc áp (Kiếm ý theo `res` của chiêu, Huyết khí theo luật `auto`, Đan hỏa cho chiêu hồi).
+    const { mul: resMul, spent: resSpent } = this.spendRes(p, skill);
+    let mul = dealsDamage(skill) ? resMul : 1;
+    // VS-2c: ấn chiêu này đặt và tiêu (dữ liệu của chiêu; người không tu đúng công pháp của ấn thì `markFor` trả rỗng).
+    const am = skill.applyMark;
+    const cm = skill.consumeMark;
+    // Chiêu không đánh (khiêu khích, hồi...) tích tài nguyên một lần lúc áp; chiêu `damage` tích theo từng nhát trúng (`strike`).
+    if (skill.kind !== 'damage') this.addRes(p, this.resGainOf(p, skill));
     mul *= ctx.mul ?? 1;
     // Hệ số gốc (trước thưởng riêng của từng chiêu/bộ): kiếm ảnh dùng cái này để không nhân đôi thưởng của bộ trang bị.
     const mulBase = mul;
@@ -669,12 +944,33 @@ export class CombatSystem {
             ? { t: skill.fx, src: p.sid, dst: mon.id, sd: visualSeed(), ...extra }
             : { t: skill.fx, src: p.sid, dst: mon.id, ...extra },
         );
-        if (skill.mark) {
-          const mm = skill.mark.mul + (v?.markBonus ?? 0);
-          mon.mark = { sid: p.sid, until: this.c.now + skill.mark.dur * 1000, mul: mm };
+        // VS-2f: hợp kích Phá Thế Trảm (mục tiêu mang Mất thế của đồng đội, chiêu này vừa xả tài nguyên).
+        mul *= this.jointHit(p, mon, resSpent);
+        // VS-2c: tiêu ấn của mình trên mục tiêu trước (thưởng theo số tầng), rồi mới đặt ấn mới.
+        const took = cm ? this.takeMonMark(p, mon, cm.id) : 0;
+        if (cm && took > 0) {
+          if (cm.perMark) mul *= 1 + cm.perMark * took;
+          if (cm.res) this.addRes(p, cm.res);
+          const extraHit = cm.extraHit;
+          if (extraHit) {
+            // Mỗi tầng bắn thêm một nhát, cách nhau 0,15 giây, không hưởng thưởng chuỗi/xả tài nguyên của nhát chính.
+            for (let k = 1; k <= took; k++) {
+              this.later(0.15 * k, () => {
+                if (this.c.players.get(p.sid) !== p || this.c.isDead(p) || this.airborne(p) || mon.state === MS_DEAD) return;
+                this.c.fx({ t: skill.fx, src: p.sid, dst: mon.id, ...tag });
+                this.c.hitMonster(p, mon, rs.power * extraHit, elemMul, skill.elem);
+              });
+            }
+            holdLock = Math.max(holdLock, 0.15 * took);
+          }
+        }
+        if (am && !am.last) {
+          // Phi Kiếm Truy Hồn: biến thức "ấn sâu" cộng vào hệ số của ấn, biến thức "lan" đặt thêm lên quái gần.
+          const amp = MARK.get(am.id)?.amp;
+          const mm = amp !== undefined && v?.markBonus ? amp + v.markBonus : undefined;
+          this.markMon(p, mon, am.id, am.n, mm);
           if (v?.markSpread) {
-            for (const o of this.monstersNear(mon.s.x, mon.s.z, 8, mon).slice(0, v.markSpread))
-              o.mark = { sid: p.sid, until: this.c.now + skill.mark.dur * 1000, mul: mm };
+            for (const o of this.monstersNear(mon.s.x, mon.s.z, 8, mon).slice(0, v.markSpread)) this.markMon(p, o, am.id, am.n, mm);
           }
         }
         // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.
@@ -683,14 +979,16 @@ export class CombatSystem {
           const off = offs[i] ?? 0;
           const last = i === rs.hits.length - 1;
           if (off <= 0) {
-            this.c.hitMonster(p, mon, h * mul, elemMul, skill.elem);
+            this.strike(p, mon, skill, h * mul, elemMul);
+            if (last && am?.last) this.markMon(p, mon, am.id, am.n);
             if (last && v?.knock) this.pushMonster(mon, p.move.x, p.move.z, v.knock);
             return;
           }
           this.later(off, () => {
             // Người ra chiêu phải còn trong room, còn sống, chưa bay lên; quái chưa chết.
             if (this.c.players.get(p.sid) === p && !this.c.isDead(p) && !this.airborne(p) && mon.state !== MS_DEAD) {
-              this.c.hitMonster(p, mon, h * mul, elemMul, skill.elem);
+              this.strike(p, mon, skill, h * mul, elemMul);
+              if (last && am?.last) this.markMon(p, mon, am.id, am.n);
               if (last && v?.knock) this.pushMonster(mon, p.move.x, p.move.z, v.knock);
             }
           });
@@ -720,6 +1018,8 @@ export class CombatSystem {
           });
         }
         if (skill.interrupt) this.c.tryInterrupt(p, mon, v?.stunOnInterrupt ?? 0);
+        // VS-2e: chiêu đánh đơn có `stun` (Chấn Sơn Quyền) làm choáng quái thường; tinh anh nửa thời gian, thủ lĩnh miễn.
+        if (skill.stun && mon.state !== MS_DEAD) this.stunMonster(p, mon, skill.stun);
         break;
       }
       case 'aoe': {
@@ -746,12 +1046,20 @@ export class CombatSystem {
           const dx = o.s.x - cx;
           const dz = o.s.z - cz;
           if (dx * dx + dz * dz > r * r) continue;
-          this.c.hitMonster(p, o, rs.power * mul, elemMul, skill.elem);
+          // VS-2c: tiêu ấn của mình trên từng con (Vạn Kiếm: mỗi Kiếm ấn tăng sát thương lên con đó).
+          const tookA = cm ? this.takeMonMark(p, o, cm.id) : 0;
+          const jm = this.jointHit(p, o, resSpent);
+          this.c.hitMonster(p, o, rs.power * mul * jm * (tookA && cm?.perMark ? 1 + cm.perMark * tookA : 1), elemMul, skill.elem);
           if (o.state === MS_DEAD) continue;
+          // Thiết Quyền: con mang Trấn ấn mà chiêu vừa xả đủ Huyết khí thì mất thế.
+          if (tookA && cm?.then && resSpent >= cm.then.resCost) this.markMon(p, o, cm.then.mark);
+          if (am) this.markMon(p, o, am.id, am.n);
           if (stun > 0) this.stunMonster(p, o, stun);
           if (v?.slow && !o.def.boss) o.slow = { until: this.c.now + v.slow.dur * 1000, mul: v.slow.mul };
           if (burn) o.poison = { sid: p.sid, until: this.c.now + burn.dur * 1000, nextAt: this.c.now + 1000, per: burn.per };
         }
+        // Đan Hỏa Phong Tràn: Mộc ấn trên đạo hữu nổ thành sát thương quanh họ.
+        if (cm?.burst) this.burstAllyMarks(p, skill, cm, elemMul, tag);
         // Thiên Kiếm Hóa Hình B: dư chấn đánh lại vùng cũ.
         if (v?.aftershocks) {
           const as = v.aftershocks;
@@ -800,10 +1108,12 @@ export class CombatSystem {
             inLine(p.move.x, p.move.z, ux, uz, len, def.width, o.s.x, o.s.z, o.def.scale),
         );
         const offs = hitOffsets(skill, rs.hits.length);
+        // VS-2f: hợp kích tính một lần cho mỗi con trong vệt, áp cho mọi đợt của chiêu.
+        const jm = new Map(hit.map((o) => [o, this.jointHit(p, o, resSpent)]));
         rs.hits.forEach((h, i) => {
           const off = offs[i] ?? 0;
           const run = () => {
-            for (const o of hit) if (o.state !== MS_DEAD) this.c.hitMonster(p, o, h * mul, elemMul, skill.elem);
+            for (const o of hit) if (o.state !== MS_DEAD) this.c.hitMonster(p, o, h * mul * (jm.get(o) ?? 1), elemMul, skill.elem);
           };
           if (off <= 0) return run();
           this.later(off, () => {
@@ -811,6 +1121,16 @@ export class CombatSystem {
           });
           holdLock = Math.max(holdLock, off);
         });
+        break;
+      }
+      case 'stance': {
+        // VS-2e: vào tư thế. Thanh chiêu đổi ô ở client theo tin `mth`; server chỉ giữ id và hạn, và kiểm ở `onSkill`.
+        const st = skill.stance;
+        if (!st) break;
+        p.mth.stance = { id: skill.id, until: this.c.now + st.dur * 1000 };
+        if (st.reduce) p.mth.setGuard(this.c.now, st.reduce, st.dur);
+        p.mth.dirty = true;
+        this.c.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, d: st.dur, ...tag });
         break;
       }
       case 'summon': {
@@ -845,7 +1165,7 @@ export class CombatSystem {
             elem: skill.elem ?? '',
           });
         const regen = v?.buffRegen ?? b.regen ?? 0;
-        if (regen > 0) this.addHot(p.sid, p.char.mhp * regen, sec);
+        if (regen > 0) this.addHot(p.sid, p.char.mhp * regen, sec, p);
         const st = v?.buffStomp ?? b.stomp;
         this.stomps = this.stomps.filter((o) => o.sid !== p.sid);
         if (st)
@@ -861,18 +1181,27 @@ export class CombatSystem {
         break;
       }
       case 'heal': {
-        const base = c.mhp * rs.power;
+        // Đan sư xả Đan hỏa (`res.cost`) thì lượng hồi nhân `resMul`; chuỗi chiêu nhân thêm `ctx.mul`.
+        const base = c.mhp * rs.power * resMul * (ctx.mul ?? 1);
         const recv = 1 + c.stats.healRecv;
         if (v?.hot) {
-          this.addHot(p.sid, healAmount(base * v.hot.totalMul, healMul) / v.hot.dur, v.hot.dur);
+          this.addHot(p.sid, healAmount(base * v.hot.totalMul, healMul) / v.hot.dur, v.hot.dur, p);
           this.setHealShare(p, Math.round(healAmount(base * v.hot.totalMul, healMul)), v.hot.dur);
         } else {
           const n = Math.round(healAmount(base, healMul) * recv);
-          c.hp = Math.min(c.mhp, c.hp + n);
-          this.c.emit(S.DMG, { dst: p.sid, n, heal: true } satisfies DmgMsg);
+          this.healPlayer(p, n, p);
           this.setHealShare(p, n);
         }
         this.c.fx({ t: skill.fx, src: p.sid, ...tag });
+        // VS-2c: tiêu Mộc ấn của mình: mọi đạo hữu mang ấn trong tầm được hồi theo (ấn trên chính mình chỉ bị tiêu).
+        const shareHeal = cm?.heal;
+        if (cm && shareHeal) {
+          for (const o of this.allyBearers(p, cm.id, MARK_ALLY_RANGE)) {
+            if (this.takeAllyMark(p, o, cm.id) <= 0 || o === p) continue;
+            this.healPlayer(o, Math.round(healAmount(base, healMul) * shareHeal * (1 + o.char.stats.healRecv)), p);
+            this.c.fx({ t: skill.fx, src: o.sid, dst: p.sid, ...tag });
+          }
+        }
         break;
       }
       case 'shield': {
@@ -897,11 +1226,11 @@ export class CombatSystem {
         give(p);
         this.c.fx({ t: skill.fx, src: p.sid, d: dur, ...tag });
         if (skill.party) {
-          if (v?.regen) this.addHot(p.sid, p.char.mhp * v.regen, dur);
+          if (v?.regen) this.addHot(p.sid, p.char.mhp * v.regen, dur, p);
           for (const o of this.c.players.values()) {
             if (o === p || !this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > skill.party) continue;
             give(o);
-            if (v?.regen) this.addHot(o.sid, o.char.mhp * v.regen, dur);
+            if (v?.regen) this.addHot(o.sid, o.char.mhp * v.regen, dur, p);
             this.c.fx({ t: skill.fx, src: o.sid, dst: p.sid, d: dur, ...tag });
           }
         }
@@ -931,6 +1260,7 @@ export class CombatSystem {
           o.taunt = { sid: p.sid, until: this.c.now + sec * 1000 * (o.def.boss ? TAUNT_BOSS_MUL : 1) };
           this.aggroMonster(o, p);
           this.c.hitMonster(p, o, rs.power * mul);
+          if (am) this.markMon(p, o, am.id, am.n);
         }
         if (v?.tauntGuard) p.mth.setGuard(this.c.now, v.tauntGuard, 3);
         break;
@@ -991,8 +1321,12 @@ export class CombatSystem {
             o.char.recalc();
             o.mth.dirty = true;
           }
-          const total = healAmount(o.char.mhp * rs.power * durMul * healBoost * (o === p ? (v?.selfHealMul ?? 1) : 1), healMul);
-          this.addHot(o.sid, total / sec, sec);
+          const total = healAmount(
+            o.char.mhp * rs.power * durMul * healBoost * (ctx.mul ?? 1) * (o === p ? (v?.selfHealMul ?? 1) : 1),
+            healMul,
+          );
+          this.addHot(o.sid, total / sec, sec, p);
+          if (am) this.markAlly(p, o, am.id, am.n);
           if (v?.selfShield) {
             const amount = Math.round(o.char.mhp * v.selfShield);
             if (!o.shield || o.shield.amount < amount) {
@@ -1047,9 +1381,7 @@ export class CombatSystem {
         }
         for (const o of this.c.players.values()) {
           if (o === dead || o === dead2 || !this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
-          const n = healAmount(o.char.mhp * 0.2, healMul);
-          o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
-          this.c.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
+          this.healPlayer(o, healAmount(o.char.mhp * 0.2, healMul), p);
         }
         break;
       }
@@ -1087,6 +1419,8 @@ export class CombatSystem {
       p.mth.lockCharge = false;
       p.mth.charge = 0;
     }
+    // VS-2f: tung chiêu tối thượng khi đang mang Mộc ấn của đồng đội thì ấn kết.
+    if (skill.ult) this.jointFinish(p);
     p.flow.opened.set(skill.id, this.c.now);
     this.c.sendCd(p);
   }
@@ -1143,10 +1477,7 @@ export class CombatSystem {
       while (now >= h.nextAt && h.nextAt <= h.endAt) {
         h.nextAt += 1000;
         const n = Math.round(h.per * (1 + o.char.stats.healRecv));
-        if (n > 0 && o.char.hp < o.char.mhp) {
-          o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
-          this.c.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
-        }
+        if (n > 0 && o.char.hp < o.char.mhp) this.healPlayer(o, n, h.by ? this.c.players.get(h.by) : null);
       }
       if (h.nextAt > h.endAt) this.hots.splice(i, 1);
     }
@@ -1173,7 +1504,8 @@ export class CombatSystem {
       while (now >= sm.nextAt) {
         sm.nextAt += sm.every * 1000;
         const near = this.monstersNear(owner.move.x, owner.move.z, sm.range);
-        const pool = sm.markFirst ? [...near.filter((o) => o.mark?.sid === sm.sid), ...near.filter((o) => o.mark?.sid !== sm.sid)] : near;
+        const marked = (o: MonEnt) => markCount(o.marks, 'truy_hon', sm.sid, now) > 0;
+        const pool = sm.markFirst ? [...near.filter(marked), ...near.filter((o) => !marked(o))] : near;
         const em = elemDamageMul(owner.char.stats.elemDmg, sm.elem);
         for (const o of pool.slice(0, sm.count)) {
           this.c.fx({ t: 'kiemdan_hit', src: owner.sid, dst: o.id });
@@ -1205,8 +1537,17 @@ export class CombatSystem {
         p.char.recalc();
         m.dirty = true;
       }
-      if (m.stacks > 0 && this.liveStacks(p) === 0) {
-        m.stacks = 0;
+      // Tư thế hết hạn (VS-2e): bỏ và báo client trả lại ô chiêu.
+      // (Hồi nội bộ hợp kích dọn ở cuối hàm.)
+      if (m.stance && now >= m.stance.until) {
+        m.stance = null;
+        m.dirty = true;
+      }
+      // Ấn trên người (VS-2c) hết hạn: dọn và cập nhật gói bit đồng bộ.
+      if (p.marks.length && marksPrune(p.marks, now)) p.s.mk = packMarks(p.marks, now);
+      // Tài nguyên đã rụng hết: dọn về 0 (client tự tính phần rụng từ `res`/`resAt`, không cần gửi lại từng nhịp).
+      if (m.res > 0 && this.liveRes(p) <= 0) {
+        m.res = 0;
         m.dirty = true;
       }
       if (m.guardUntil && now >= m.guardUntil) {
@@ -1219,5 +1560,7 @@ export class CombatSystem {
         m.reflectMul = 0;
       }
     }
+    // Hồi nội bộ hợp kích đã hết: dọn để bảng không phình (chỉ quét khi đã có nhiều mục).
+    if (this.jointCd.size > 64) for (const [k, at] of this.jointCd) if (now >= at) this.jointCd.delete(k);
   }
 }

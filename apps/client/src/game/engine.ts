@@ -29,6 +29,7 @@ import {
   METHOD,
   realmName,
   skillBar,
+  stanceSkill,
   thanThong10Skill,
   thanThongSkill,
   tierBar,
@@ -36,6 +37,7 @@ import {
   VARIANTS,
   t,
 } from '@dtl/content';
+import { barWithStance } from '../ui/stanceView';
 import { visibleView } from './net/aoiView';
 import { get, pushLog, pushToast, set, type TargetInfo } from '../ui/store';
 import { BlankWatch, canFallback, RENDERER_KEY } from './core/gpuGuard';
@@ -101,6 +103,9 @@ import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './combat/skillPose';
 import { SkillFx } from './fx/skillFx';
+import { SuyFx } from './fx/suyFx';
+import { groundAt } from '../base/levelCtx';
+import { PF_TRIBULATION } from '@dtl/shared';
 import { MonFx } from './fx/monFx';
 import { variantFor } from './fx/fxTimeline';
 import {
@@ -298,6 +303,8 @@ export class Game {
   /** Hiệu ứng quái/tinh anh/boss (V5). */
   monFx: MonFx | null = null;
   boltKinds = new Map<number, string>();
+  /** Dấu trên sân mới nhất của Thiên Nhân Ngũ Suy của chính mình, theo khóa `<loại>:<ô>` (chỉ bản dev, cho Playwright: `__game.suyLog`). */
+  suyLog?: Record<string, { s: string; n: number; x: number; z: number; r: number; pg: number; lv: number; at: number }>;
   /** Nhật ký vùng báo của quái (chỉ bản dev, cho Playwright: `__game.hazardLog`). */
   hazardLog?: {
     k: string;
@@ -432,6 +439,8 @@ export class Game {
   ch4Checked = false;
   ch5Checked = false;
   danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
+  /** Hiệu ứng năm ải Thiên Nhân Ngũ Suy (TN-4) theo timeline `suy_*.json`. */
+  suyFx: SuyFx | null = null;
   /** Năm Trấn Giới Bia của Nhật Thực Kiếp (của mình). */
   stelesVfx: { set(mask: number): void; stop(): void } | null = null;
   stelesMask = 0;
@@ -744,6 +753,18 @@ export class Game {
       partySids: () => new Set((get().party?.members ?? []).map((m) => m.sid).filter(Boolean)),
     });
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
+    this.suyFx = new SuyFx(this.skillFx.runner, {
+      vfx: this.vfx,
+      scene: this.scene,
+      mySid: () => this.sid,
+      player: (sid) => this.ents?.players.get(sid),
+      ground: (x, z) => groundAt(x, z),
+      tribOn: (sid) => ((this.view.players.get(sid)?.fl ?? 0) & PF_TRIBULATION) !== 0,
+      shadow: () => {
+        for (const m of this.view.monsters.values()) if (m.t === 'mon_tam_ma' && m.hp > 0) return { x: m.x, y: groundAt(m.x, m.z), z: m.z };
+        return null;
+      },
+    });
     this.vfx.particles.setQuality(get().quality);
     buildLevelB(this, this.initLevel, q);
     this.ambient = new AmbientParticles(this.vfx.particles);
@@ -1008,9 +1029,13 @@ export class Game {
   /** Thanh chiêu hiện tại: 6 chiêu chung + 2 chiêu công pháp (ô 1–8), thần thông ô 9 (chỉ số `BAR_SIZE`), ô 10 (`BAR_SIZE + 1`, Hóa Thần), rồi hàng bậc cao (Shift+số). */
   bar(): SkillDef[] {
     const m = get().method?.method;
-    const tt = thanThongSkill(m);
+    // VS-2d: ô 9 và hàng bậc cao theo nhánh công pháp đã chọn.
+    const br = get().method?.br;
+    const tt = thanThongSkill(m, br);
     const tt10 = thanThong10Skill(m);
-    return [...skillBar(m), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : []), ...tierBar(m)];
+    const bar = [...skillBar(m), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : []), ...tierBar(m, br)];
+    // VS-2e: đang giữ tư thế thì vài ô đổi thành chiêu tư thế (theo tin server; server vẫn kiểm khi nhận lệnh).
+    return barWithStance(bar, get().method, Date.now() - get().methodOff);
   }
 
   useSkill(i: number): void {
@@ -1043,6 +1068,16 @@ export class Game {
   }
 
   /** Chiêu lướt của công pháp (phím Q, không nằm trên thanh chiêu): chỉ gửi ý định, server lập đường và kiểm (K-2). */
+  /** Vào tư thế của công pháp (VS-2e, phím Y): chỉ gửi ý định, server kiểm cảnh giới, hồi chiêu, linh lực. */
+  useStance(): void {
+    const me = this.me();
+    const skill = stanceSkill(get().method?.method);
+    if (!skill || !me || me.fl & PF_DEAD) return;
+    if ((get().char?.level ?? 0) < skill.unlock) return;
+    if ((get().cds[skill.id] ?? 0) > Date.now() + 80) return;
+    this.send(C.SKILL, { id: skill.id });
+  }
+
   useDash(): void {
     const me = this.me();
     const m = METHOD.get(get().method?.method ?? '');
@@ -1411,6 +1446,8 @@ export class Game {
     this.realmAura?.dispose();
     this.realmAura = null;
     this.monFx = null;
+    this.suyFx?.dispose();
+    this.suyFx = null;
     this.vfx?.dispose();
     this.terrain?.dispose();
     this.ground?.dispose();

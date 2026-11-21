@@ -6,6 +6,7 @@
 import * as THREE from 'three/webgpu';
 import {
   FLIP_ATLASES,
+  fxCamFade,
   fxEventsFor,
   fxTierFor,
   skillTiming,
@@ -122,6 +123,8 @@ interface FxAtOpts {
   variant?: string;
   /** Mốc trúng (giây từ lúc phát), mặc định 0. */
   hitAt?: number;
+  /** Hiệu ứng của chính người xem (ải Ngũ Suy của mình, TN-4): không hạ bậc chất lượng, có rung/chớp theo cài đặt. Mặc định false (FX quái). */
+  mine?: boolean;
 }
 
 interface BladeJob {
@@ -173,6 +176,9 @@ export function scheduleEvents(
   out.sort((x, y) => x.at - y.at);
   return out;
 }
+
+/** Bán kính quanh mục tiêu (m) trong đó khối `camFade` còn được xét che mục tiêu. */
+const CAM_FADE_TGT = 4;
 
 /** Hủy ở giây `t` có làm đòn không trúng được không (chưa tới mốc trúng đầu). */
 export function cancelDropsCast(t: number, firstHit: number): boolean {
@@ -284,7 +290,7 @@ export class FxRunner {
    */
   startAt(tl: FxTimeline, o: FxAtOpts): void {
     const sid = `~mon${++this.serial}`;
-    const tier = fxTierFor(this.env.quality(), false);
+    const tier = fxTierFor(this.env.quality(), !!o.mine);
     const pal = paletteOf(o.palette);
     const events = fxEventsFor(tl, -1, o.variant);
     const q = scheduleEvents(events, [o.hitAt ?? 0], tier).map((s, idx) => ({ ...s, idx, done: false }));
@@ -292,7 +298,7 @@ export class FxRunner {
       sid,
       actor: o.actor,
       def: { id: tl.skill } as SkillDef,
-      mine: false,
+      mine: !!o.mine,
       tier,
       pal,
       q,
@@ -566,6 +572,7 @@ export class FxRunner {
           }
           m.fxK = k;
           place(m, k, isShade ? 1.08 : 1, isShade ? 0.03 * (s0[0]! + 0.5) : 0);
+          if (ev.camFade) m.fxOpacity = alpha * this.camClear(c, cam, m.position);
         }
         void head;
       },
@@ -580,6 +587,19 @@ export class FxRunner {
     // Khung đầu: đặt ngay để không lóe một khung ở gốc.
     place(main, 0, 1, 0);
     if (shade) place(shade, 0, 1.08, 0.03);
+    if (ev.camFade) main.fxOpacity = alpha * this.camClear(c, cam, main.position);
+  }
+
+  /**
+   * Độ hiện của khối `camFade`: ẩn khi nằm giữa camera và NGƯỜI RA CHIÊU, hoặc giữa camera và MỤC TIÊU của đòn (chỉ xét khối trong
+   * `CAM_FADE_TGT` m quanh mục tiêu, để mục tiêu cũ ở xa không làm ẩn nhầm). Lấy mức ẩn nhiều hơn.
+   */
+  private camClear(c: Cast, cam: THREE.Camera, p: THREE.Vector3): number {
+    let f = fxCamFade(cam.position.x - c.actor.x, cam.position.z - c.actor.z, p.x - c.actor.x, p.z - c.actor.z);
+    const tgt = this.tgtOf(c);
+    if (tgt && Math.hypot(p.x - tgt.x, p.z - tgt.z) < CAM_FADE_TGT)
+      f = Math.min(f, fxCamFade(cam.position.x - tgt.x, cam.position.z - tgt.z, p.x - tgt.x, p.z - tgt.z));
+    return f;
   }
 
   /** Ghi màu viền, độ rách và bảng màu vào tham số của lưới. */

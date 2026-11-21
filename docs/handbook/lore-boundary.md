@@ -34,13 +34,13 @@ Game mượn **thang cảnh giới, khái niệm và tên kỹ năng** của Ti�
 | `cuuKieu` | Đệ Nhất Kiều … Đệ Cửu Kiều | số thứ tự chung | chương cuối (TN-7); thử thách từng cầu tự thiết kế |
 | `coThanStars` | Nhất Tinh … Cửu Tinh | gốc | thang thể tu Cổ Thần, trục riêng không đổi sang cảnh giới (TN-5) |
 
-Chưa chốt ở TN-0: tên năm ải của Thiên Nhân Ngũ Suy (nguồn không ghi; TN-4 tự đặt, thêm vào glossary và qua `lore-keeper`).
+Tên năm ải của Thiên Nhân Ngũ Suy (TN-4, `glossary.nguSuy`) **tự đặt** vì nguồn không ghi: Linh Lực Suy, Nhục Thân Suy, Thần Thức Suy, Thọ Nguyên Suy, Đạo Tâm Suy (ghép từ thuật ngữ thể loại: linh lực, nhục thân, thần thức, thọ nguyên, đạo tâm). Thuật ngữ riêng của chuỗi ở `glossary.nguSuyTerms` cũng tự đặt: suy khí, Linh Nhãn, Tôi Thể Lôi, lôi ẩn, ngưng thần, Thọ Đăng, suy phong, phá vọng, pháp tắc sơ ngộ. Cơ chế từng ải tự thiết kế, không dựa tình tiết nào của truyện; chuỗi `ui.trib.ngu_suy.<ải>` phải khớp `glossary.nguSuy` (`content:check`).
 
 Tên Hán-Việt lấy từ wiki fan, nhiều mục chỉ có một nguồn; khi người dùng sửa thì `glossary.json` là nguồn đúng. Nguồn khái niệm và độ chắc từng mục ghi ở tài liệu kế hoạch nội bộ, không đưa vào lời thoại hay UI.
 
 ## Kiểm tự động
 
-- `packages/content/src/lore.ts`: `BANNED_NAMES` (tên truyện, nhân vật, nơi khởi đầu, tông môn, pháp bảo) và `checkLoreTerms` (đủ 14 / 9 / 9 / 4 / 9 mục, không trùng, ngũ hành khớp `glossary.elements`).
+- `packages/content/src/lore.ts`: `BANNED_NAMES` (tên truyện, nhân vật, nơi khởi đầu, tông môn, pháp bảo) và `checkLoreTerms` (đủ 14 / 5 / 9 / 9 / 4 / 9 mục, không trùng, ngũ hành khớp `glossary.elements`).
 - `pnpm content:check` quét mọi file `.json` và `.md` trong `packages/content/data/` (dữ liệu, `i18n/`, level, fx, cả tên file): khóa và chuỗi nào chứa tên cấm đều báo lỗi kèm vị trí. So dạng có dấu (không phân biệt hoa thường, theo ranh giới từ) và dạng không dấu trong chuỗi thuần ASCII (id như `npc_<tên>`, key i18n).
 - Test: `packages/content/src/lore.test.ts`.
 - Danh sách cấm chỉ chặn được tên đã liệt kê. Tên quá chung (trùng từ ghép thường gặp) không nằm trong danh sách; `lore-keeper` vẫn phải soát bằng mắt mọi nội dung có tên riêng.

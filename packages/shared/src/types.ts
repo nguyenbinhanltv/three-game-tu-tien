@@ -1,6 +1,9 @@
 // Kiểu dữ liệu nội dung game và trạng thái nhân vật, dùng chung client/server.
 
 import type { ItemInst } from './itemtypes';
+import type { ApplyMark, ConsumeMark } from './marks';
+import type { SkillRes } from './resource';
+import type { StanceDef } from './stance';
 
 /**
  * Tám ô trang bị (Phase 3-1): pháp kiếm, đạo bào, hộ uyển, vân ngoa, đai lưng, ngọc bội, giới chỉ, pháp bảo phụ.
@@ -504,7 +507,8 @@ export interface MonsterPosture {
  * damage/aoe/heal/shield: 6 chiêu chung. Chiêu công pháp (Phase 3-5) thêm: `taunt` (khiêu khích quanh mình),
  * `guard` (giảm sát thương nhận), `hot` (hồi vùng theo thời gian), `revive` (hồi sinh đồng đội gần).
  */
-export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield' | 'taunt' | 'guard' | 'hot' | 'revive' | 'dash' | 'line' | 'summon' | 'buff';
+export type SkillKind =
+  'damage' | 'aoe' | 'heal' | 'shield' | 'taunt' | 'guard' | 'hot' | 'revive' | 'dash' | 'line' | 'summon' | 'buff' | 'stance';
 
 /** Kiểu thi triển (K-2). `channel`/`charge` đã khai báo nhưng server chưa hỗ trợ (check chặn). */
 export type CastType = 'instant' | 'cast' | 'channel' | 'charge';
@@ -534,11 +538,21 @@ export interface ComboDef {
   hits: ComboHit[];
 }
 
-/** Cường hóa: sau khi chiêu `by` áp trúng, trong `window` giây chiêu này mạnh `powerMul` lần (một lần dùng, rồi tắt). */
-export interface EmpowerDef {
-  by: string;
+/**
+ * Chuỗi chiêu (VS-2b, thay `empower` của K-2): dùng chiêu này trong `window` giây sau khi một chiêu trong `after` áp xong
+ * thì được thưởng (một lần, rồi cửa sổ đóng). Luật và kiểm dữ liệu ở `chain.ts`.
+ */
+export interface ChainDef {
+  /** id các chiêu mở chuỗi: một trong số này vừa áp xong thì cửa sổ mở. */
+  after: string[];
+  /** Cửa sổ (giây) tính từ lúc chiêu mở áp xong. */
   window: number;
-  powerMul: number;
+  /** Thưởng: nhân sức mạnh (sát thương, lượng hồi), nhân linh lực tốn, nhân hồi chiêu. */
+  powerMul?: number;
+  mpMul?: number;
+  cdMul?: number;
+  /** Nhãn hình cho client (không mang luật). */
+  fx?: string;
 }
 
 /** Cửa sổ hủy (giây từ lúc bấm): từ mốc đó, di chuyển / lướt được phép hủy phần thu về. Client dùng để cắt hình; server chỉ nhận lướt sau `dash`. */
@@ -575,8 +589,13 @@ export interface SkillDef {
   method?: string;
   /** Chiêu tối thượng: cần vòng sạc đầy (không dùng linh lực/hồi chiêu để giới hạn). */
   ult?: boolean;
-  /** Đánh dấu mục tiêu: trong `dur` giây, sát thương của người đánh dấu lên nó nhân thêm `mul`. */
-  mark?: { dur: number; mul: number };
+  /** VS-2c: đặt ấn lên mục tiêu trúng đòn / người được hồi, và tiêu ấn của mình để lấy thưởng. Luật ở `marks.ts`. */
+  applyMark?: ApplyMark;
+  consumeMark?: ConsumeMark;
+  /** VS-2e: chiêu tư thế (kind 'stance'): vào tư thế `dur` giây, đổi các ô chiêu theo `swap`. Luật ở `stance.ts`. */
+  stance?: StanceDef;
+  /** VS-2e: chiêu chỉ dùng được khi đang trong tư thế của chiêu tư thế này (id). */
+  stanceOf?: string;
   /** `guard`: tỉ lệ sát thương được giảm. `taunt`: bán kính nằm ở `radius`, thời gian ở `duration`. */
   reduce?: number;
   /** `hot`: tổng lượng hồi (theo % máu tối đa) chia đều trong `duration`; `healAllies` bán kính hồi cho đồng đội. */
@@ -601,8 +620,8 @@ export interface SkillDef {
   cancel?: CancelDef;
   /** Chuỗi đánh thường liên hoàn (chiêu ô 1). */
   combo?: ComboDef;
-  /** Cửa sổ cường hóa sau khi chiêu khác áp trúng. */
-  empower?: EmpowerDef;
+  /** Chuỗi chiêu: thưởng khi dùng ngay sau một chiêu khác (xem `ChainDef`). */
+  chain?: ChainDef;
   /** Chiêu lướt (kind 'dash'). */
   dash?: DashDef;
   /** Lướt húc: choáng quái thường (giây); tinh anh chỉ nửa, boss miễn. */
@@ -641,6 +660,8 @@ export interface SkillDef {
   allyCount?: number;
   /** Hệ số từng nhát khi chiêu đánh nhiều lần trong một lần bấm (nhân `power`); `hitAt[i]` là mốc nhát i. */
   hitsMul?: number[];
+  /** VS-2a: tích/xả tài nguyên riêng của công pháp (Kiếm ý, Huyết khí, Đan hỏa). Luật ở `resource.ts`. */
+  res?: SkillRes;
 }
 
 /**

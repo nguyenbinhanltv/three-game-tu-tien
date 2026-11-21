@@ -92,6 +92,22 @@ export const wardrobe = sqliteTable(
   (t) => [primaryKey({ columns: [t.charId, t.itemId] })],
 );
 
+/**
+ * Nhánh công pháp đã chọn (VS-2d): mỗi nhân vật, mỗi công pháp, mỗi mốc cảnh giới một dòng. Chỉ ghi trong `Character.tx`
+ * (có khóa chống trùng và dòng ledger). Đổi công pháp không xóa: quay lại công pháp cũ thì nhánh cũ còn.
+ */
+export const branches = sqliteTable(
+  'branches',
+  {
+    charId: integer('char_id').notNull(),
+    method: text('method').notNull(),
+    tier: integer('tier').notNull(),
+    branch: text('branch').notNull(),
+    at: integer('at').notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.charId, t.method, t.tier] })],
+);
+
 export const ledger = sqliteTable('ledger', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   charId: integer('char_id').notNull(),
@@ -151,6 +167,14 @@ CREATE TABLE IF NOT EXISTS wardrobe (
   item_id TEXT NOT NULL,
   at INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (char_id, item_id)
+);
+CREATE TABLE IF NOT EXISTS branches (
+  char_id INTEGER NOT NULL,
+  method TEXT NOT NULL,
+  tier INTEGER NOT NULL,
+  branch TEXT NOT NULL,
+  at INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (char_id, method, tier)
 );
 CREATE TABLE IF NOT EXISTS ledger (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
