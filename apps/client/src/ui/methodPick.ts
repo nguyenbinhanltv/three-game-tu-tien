@@ -29,11 +29,15 @@ export function methodPickView(o: {
   const path = pathOf(o.id);
   const unlock = path && !pathOpen(path, o.learned) ? path.unlock : undefined;
   if (path && unlock) {
+    const fromName = unlock.from ? t(`method.${unlock.from}.name`) : '';
+    const needFrom = !!unlock.from && o.current !== unlock.from;
     const params = { realm: realmName(unlock.level), n: unlock.gold, npc: t(`npc.${METHOD_NPC}.name`) };
     return {
       label: t('ui.method.learn', { n: unlock.gold }),
-      disabled: !open || o.level < unlock.level || o.gold < unlock.gold,
-      note: unlock.grant ? t('ui.method.learn_need', { ...params, item: itemName(unlock.grant) }) : t('ui.method.learn_need_plain', params),
+      disabled: !open || o.level < unlock.level || o.gold < unlock.gold || needFrom,
+      note:
+        (unlock.grant ? t('ui.method.learn_need', { ...params, item: itemName(unlock.grant) }) : t('ui.method.learn_need_plain', params)) +
+        (unlock.from ? ' ' + t('ui.method.learn_from', { from: fromName }) : ''),
     };
   }
   const learned = !!path?.unlock;
