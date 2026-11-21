@@ -52,7 +52,7 @@ interface Flags {
   v3Side: string | null;
   /** `?v3veil=0` tắt xử lý voan alpha/sáng của model giữ gốc (đo chi phí A/B). */
   v3Veil: boolean;
-  /** `?v3off=proc,feet,twist,cloth` tắt từng hệ phụ của v3 (chẩn đoán). */
+  /** `?v3off=proc,feet,twist,cloth,park` tắt từng hệ phụ của v3 (chẩn đoán; `park` = đỗ rig ở LOD2). */
   v3Off: string[];
   /** `?headlift=<rad>` góc ngửa đầu bù clip Idle cho model giữ gốc (mặc định 0,23). */
   headLift: number;
@@ -108,7 +108,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   v3veil: { scope: 'test', doc: '0: tắt xử lý voan alpha/sáng của model giữ gốc (đo A/B chi phí)' },
   v3side: { scope: 'test', doc: 'front|double: ép mặt vẽ vật liệu model giữ gốc Tripo (so sánh voan một lớp)' },
   norobeanim: { scope: 'test', doc: 'có mặt: dùng clip UAL gốc thay clip áo bào (model giữ gốc Tripo)' },
-  v3off: { scope: 'test', doc: 'proc,feet,twist,cloth: tắt từng hệ phụ của v3 (chẩn đoán)' },
+  v3off: { scope: 'test', doc: 'proc,feet,twist,cloth,park: tắt từng hệ phụ của v3 (chẩn đoán; park = đỗ rig ở LOD2)' },
   headlift: { scope: 'test', doc: 'góc ngửa đầu bù clip Idle cho model giữ gốc (rad, mặc định 0,23)' },
   cloth: { scope: 'test', doc: '=1 vải mô phỏng Thiên Y (model v3 có vải cũ tách riêng)' },
   renderer: { scope: 'diag', doc: 'webgl2|webgpu|auto' },
