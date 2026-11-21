@@ -2,6 +2,7 @@
  * Nhịp ba pha của chiêu (K-6), hàm thuần để test: tụ lực → bùng nổ → tan.
  * Số đo lấy từ docs/AUDIT_AND_ROADMAP.md mục 7.2. Chỉ là lớp hình, không đổi luật.
  */
+import { PATHS } from '@dtl/content';
 import { FX_MAX_HDR } from '../materials/vfx';
 
 /** Đỉnh HDR (tuyến tính, kênh lớn nhất) của từng pha. */
@@ -32,12 +33,11 @@ export function capsFor(mine: boolean, ult: boolean): FxCaps {
 }
 
 /** Màu theo công pháp (art bible mục 4, nhóm linh quang). Tím chỉ cho thiên lôi/ma khí, không có ở đây. */
-export const METHOD_TINT: Record<string, number> = {
-  lac_kiem_quyet: 0xcff3ff, // spirit_sword
-  bat_dong_kim_than: 0xffde96, // spirit_gold
-  thanh_moc_dan_kinh: 0x7fe3d0, // spirit_jade
-};
-export const DEFAULT_TINT = METHOD_TINT.lac_kiem_quyet!;
+// VS-3: lấy từ hướng tu (`paths.json` → `tint`): Kiếm tu spirit_sword, Hộ pháp spirit_gold, Đan sư spirit_jade.
+export const METHOD_TINT: Record<string, number> = Object.fromEntries(
+  PATHS.flatMap((p) => p.methods.map((m) => [m, parseInt(p.tint, 16)] as const)),
+);
+export const DEFAULT_TINT = METHOD_TINT[PATHS[0]!.methods[0]!]!;
 
 export function tintOfMethod(method: string | undefined): number {
   return (method && METHOD_TINT[method]) || DEFAULT_TINT;
