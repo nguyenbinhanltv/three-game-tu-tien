@@ -62,6 +62,7 @@ import {
   xpLevelFactor,
   type BossTimerMsg,
   markAmp,
+  MARK_DOT_MS,
   marksPrune,
   packMarks,
 } from '@dtl/shared';
@@ -122,6 +123,7 @@ export interface MonsterCtx {
   /** Tài nguyên riêng (VS-2a): đang đầy không; một nhịp sát thương theo thời gian của `p` vừa nổ. */
   resFull(p: PlayerEnt): boolean;
   resDot(p: PlayerEnt): void;
+  healPlayer(o: PlayerEnt, n: number): number;
   lockCut(h: Hazard, p: PlayerEnt): { mul: number; max: number };
   readonly mirror: MirrorSystem;
   readonly monById: Map<string, MonEnt>;
@@ -441,6 +443,28 @@ export class MonsterSystem {
 
   homeDist(m: MonEnt): number {
     return Math.hypot(m.s.x - m.homeX, m.s.z - m.homeZ);
+  }
+
+  /** Nổ các nhịp `dot` của ấn trên `m`. Trả true nếu `m` chết vì nhịp này (nơi gọi dừng xử lý con này). */
+  private tickMarkDots(m: MonEnt): boolean {
+    const now = this.c.now;
+    // Duyệt bản sao: sát thương có thể làm quái chết và xóa sạch `m.marks`.
+    for (const mk of [...m.marks]) {
+      if (mk.per === undefined || mk.nextAt === undefined || now < mk.nextAt || now >= mk.until) continue;
+      mk.nextAt += MARK_DOT_MS;
+      const owner = this.c.players.get(mk.sid) ?? null;
+      // Người đặt đã rời room hoặc đã ngã: ấn không còn ai nuôi, không gây sát thương.
+      if (!owner || this.c.isDead(owner)) continue;
+      const dmg = mk.per * mk.n;
+      const before = m.s.hp;
+      this.damageMonster(m, dmg, owner, false, false, false, 0, true);
+      const dealt = Math.max(0, before - m.s.hp);
+      const leech = MARK.get(mk.id)?.dot?.leech;
+      if (leech && dealt > 0) this.c.healPlayer(owner, Math.max(1, Math.round(dealt * leech)));
+      this.c.resDot(owner);
+      if (m.state === MS_DEAD) return true;
+    }
+    return false;
   }
 
   killMonster(mon: MonEnt): void {
@@ -939,6 +963,8 @@ export class MonsterSystem {
     }
     // Ấn hết hạn (VS-2c): dọn và cập nhật gói bit đồng bộ.
     if (m.marks.length && marksPrune(m.marks, this.c.now)) m.s.mk = packMarks(m.marks, this.c.now);
+    // TN-2: ấn có sát thương theo thời gian (Hồn ấn). Mỗi nhịp: sát thương = `per` × số tầng, người đặt rút máu và tích tài nguyên.
+    if (m.marks.length && this.tickMarkDots(m)) return;
     if (m.state === MS_IDLE) {
       if (this.c.now >= m.thinkAt) {
         m.thinkAt = this.c.now + 400;

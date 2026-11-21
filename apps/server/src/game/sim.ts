@@ -366,6 +366,7 @@ export class GameSim {
       isDead: (p) => s.isDead(p),
       jointFinish: (p) => s.combat.jointFinish(p),
       resDot: (p) => s.combat.resDot(p),
+      healPlayer: (o, n) => s.combat.healPlayer(o, n),
       resFull: (p) => s.combat.resFull(p),
       lockCut: (h, p) => s.lockCut(h, p),
       get mirror() {
@@ -1179,7 +1180,9 @@ export class GameSim {
   ): void {
     return this.artSys.applyPillBuff(p, def, potency);
   }
+  /** Mỗi người được tính công hạ `mon`: nạp linh khí pháp bảo, và thu hồn nếu tu công pháp có Hồn lực (TN-2). */
   private feedArtifact(p: PlayerEnt, mon: MonEnt): void {
+    this.combat.resKill(p, mon);
     return this.artSys.feedArtifact(p, mon);
   }
   onArtifact(p: PlayerEnt): void {
