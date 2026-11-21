@@ -143,7 +143,8 @@ describe('Huyền Kiếp: bản chuẩn hành vi', () => {
         persistPosition: false,
       });
       const def = TRIB_DEFS[id];
-      const char = Character.create(7300 + ['huyen_ngoai', 'huyen_noi', 'huyen_hon'].indexOf(id), 'hkgold' + id);
+      // Linh căn cố định: mặc định chọn ngẫu nhiên bằng `randomInt` (không qua Math.random), làm lệch lượng hồi khí huyết của Hồn Châu.
+      const char = Character.create(7300 + ['huyen_ngoai', 'huyen_noi', 'huyen_hon'].indexOf(id), 'hkgold' + id, null, 'kim');
       char.level = def.from;
       char.recalc();
       char.hp = char.mhp;
@@ -162,6 +163,7 @@ describe('Huyền Kiếp: bản chuẩn hành vi', () => {
           return x.type === S.HAZARD || x.type === S.DMG || (x.type === S.FX && (t.startsWith('suy') || t === 'hkmark'));
         })
         .map((x) => JSON.stringify([x.type, { ...(x.msg as object), sd: undefined, src: undefined, dst: undefined }]));
+      if (process.env.TRIB_DUMP) writeFileSync(process.env.TRIB_DUMP + id, rows.join('\n'));
       const sha = createHash('sha1').update(rows.join('\n')).digest('hex');
       expect({ n: rows.length, ended: !p.trib, t: sim.now - t0, cleared: chainCleared(char.meta, def), sha }).toMatchSnapshot();
       expect(chainCleared(char.meta, def)).toBe(def.phases.length);
