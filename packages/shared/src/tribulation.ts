@@ -5,7 +5,7 @@ import raw from '../../content/data/tribulations.json';
 import { at } from './arr';
 import { ELEM_BEATS, ELEMENTS, type Element } from './elements';
 
-export type TribId = 'truc_co' | 'ket_dan' | 'nguyen_anh' | 'hoa_than' | 'anh_bien' | 'ngu_suy';
+export type TribId = 'truc_co' | 'ket_dan' | 'nguyen_anh' | 'hoa_than' | 'anh_bien' | 'ngu_suy' | 'huyen_ngoai' | 'huyen_noi' | 'huyen_hon';
 export type TribPhaseKind = 'lei' | 'hoa' | 'tam_ma';
 /** Độ kiếp chạy ngay trong room thế giới hay room riêng (tổ đội vào cùng). */
 export type TribRoomKind = 'world' | 'tribulation';
@@ -329,8 +329,10 @@ export interface TribPhaseDef {
   phanThan?: TribPhanThan;
   danLoi?: TribDanLoi;
   nhatThuc?: TribNhatThuc;
-  /** Ải suy (chỉ dùng khi `mechanic` là một trong `suy_*`). */
+  /** Ải suy (chỉ dùng khi `mechanic` là một trong `suy_*`); kiếp nhỏ của Huyền Kiếp (`hk_*`) dùng lại bốn số chung `rest/start/rise/riseEnd`. */
   suy?: TribSuy;
+  /** Thông số riêng của một kiếp nhỏ Huyền Kiếp (TN-6, cơ chế `hk_*`); khóa cần có của từng cơ chế ở `HK_PARAMS` (ngusuy.ts → huyenkiep.ts). */
+  hk?: Record<string, number>;
   /** Thiên lôi pha này nhuốm lửa (lôi hỏa): client đổi màu tia (HDR vẫn dưới trần). Chỉ là lớp hình. */
   hot?: boolean;
   /** Móc cơ chế riêng (tribmech.ts). */
@@ -370,6 +372,8 @@ export interface TribDef {
   stageGold?: number[];
   /** Nội tại mở khi qua đủ chuỗi. */
   law?: TribLaw;
+  /** Kiếp chuỗi phải qua đủ trước khi vào chuỗi này (Huyền Kiếp: Ngoại → Nội → Hồn). */
+  after?: TribId;
 }
 
 /** Móc cơ chế riêng hợp lệ (server cài ở apps/server/src/game/tribmech.ts; `content:check` kiểm dữ liệu chỉ dùng id trong danh sách này). */
@@ -387,6 +391,15 @@ export const TRIB_MECHANIC_IDS = [
   'suy_thuc',
   'suy_tho',
   'suy_tam',
+  'hk_tuyet',
+  'hk_phong',
+  'hk_loi',
+  'hk_tram_ly',
+  'hk_huyet_anh',
+  'hk_van_tam',
+  'hk_kho_than',
+  'hk_hon_tho',
+  'hk_luan_hoi',
 ] as const;
 
 const defs = (raw as unknown as { defs: Record<string, Omit<TribDef, 'id'>> }).defs;

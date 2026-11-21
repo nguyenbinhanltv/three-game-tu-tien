@@ -272,6 +272,8 @@ interface UIState {
   suyCdUntil: number;
   suyWaveUntil: number;
   suyLamps: number;
+  /** Huyền Kiếp (TN-6): dấu `hkmark` gần nhất của chính mình cần cho dòng nhắc (loại, trạng thái `pg`, số `n`/`lv`, mốc hết hạn, cửa sổ `r`). Chỉ là lớp hình. */
+  hkMark: { s: string; pg: number; n: number; lv: number; until: number; r: number } | null;
   cloneUntil: number;
   /** Kiếp đang độ (id trong `tribulations.json`) để HUD đọc pha. */
   tribId: string;
@@ -399,6 +401,7 @@ export const useUI = create<UIState>(() => ({
   suyCdUntil: 0,
   suyWaveUntil: 0,
   suyLamps: -1,
+  hkMark: null,
   bossLine: null,
   chapter: null,
   cine: null,

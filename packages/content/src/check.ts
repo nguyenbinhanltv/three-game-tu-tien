@@ -126,7 +126,20 @@ import {
   SPIRIT_UNLOCK_LEVEL,
 } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
-import { PEAK_LEVELS, SUY_MECHANICS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS, isSuyMechanic, tribForLevel, peakGated } from '@dtl/shared';
+import {
+  PEAK_LEVELS,
+  HK_MECHANICS,
+  HK_PARAMS,
+  HUYEN_CHAINS,
+  SUY_MECHANICS,
+  TRIB_DEFS,
+  TRIB_IDS,
+  TRIB_MECHANIC_IDS,
+  isHkMechanic,
+  isSuyMechanic,
+  tribForLevel,
+  peakGated,
+} from '@dtl/shared';
 import { TELE_PADS, TELE_PAD, terrainOf, questSpot, inPoly } from '@dtl/shared';
 import { checkLevel } from './levelcheck';
 import { CREDITS, CREDIT_KINDS, CREDIT_LICENSE_URL } from './index';
@@ -1550,6 +1563,71 @@ if (!at(LEVELS, 'van_lam').spawn) err('van_lam: thiếu spawn');
       continue;
     }
     if (d.room !== 'tribulation') err(`${w}: kiếp chuỗi phải chạy ở room tribulation`);
+    if (d.to === d.from && d.enabled) err(`${w}: kiếp chuỗi còn mốc tạm (to = from) thì không được bật`);
+    // Huyền Kiếp (TN-6): ba chuỗi × ba kiếp nhỏ `hk_*`, tên theo glossary.huyenKiep, thông số đủ theo HK_PARAMS.
+    if (d.phases.some((p) => isHkMechanic(p.mechanic))) {
+      const ci = (HUYEN_CHAINS as readonly string[]).indexOf(id);
+      const grp = ['ngoai', 'noi', 'hon'][ci];
+      if (ci < 0 || !grp) err(`${w}: cơ chế hk_* chỉ dùng trong ${HUYEN_CHAINS.join(', ')}`);
+      else {
+        const names = GLOSSARY.huyenKiep[grp as keyof typeof GLOSSARY.huyenKiep] as Record<string, string>;
+        if (d.phases.map((p) => p.id).join() !== Object.keys(names).join())
+          err(`${w}: pha phải đúng thứ tự ${Object.keys(names).join(', ')} (glossary.huyenKiep.${grp})`);
+        if (d.phases.map((p) => p.mechanic).join() !== HK_MECHANICS.slice(ci * 3, ci * 3 + 3).join())
+          err(`${w}: cơ chế phải là ${HK_MECHANICS.slice(ci * 3, ci * 3 + 3).join(', ')}`);
+        if ((d.after ?? '') !== (HUYEN_CHAINS[ci - 1] ?? '')) err(`${w}: after phải là ${HUYEN_CHAINS[ci - 1] ?? '(không có)'}`);
+        if (t(`ui.trib.${id}.title`) !== `Huyền Kiếp · ${(GLOSSARY.huyenKiepGroups as Record<string, string>)[grp]}`)
+          err(`${w}: tiêu đề lệch glossary.huyenKiepGroups`);
+        for (const p of d.phases)
+          if (hasString(`ui.trib.${id}.${p.id}`) && t(`ui.trib.${id}.${p.id}`) !== names[p.id])
+            err(`${w}/${p.id}: tên lệch glossary.huyenKiep ("${names[p.id]}")`);
+      }
+      if (!d.stageGold || d.stageGold.length !== d.phases.length || d.stageGold.some((g) => !Number.isInteger(g) || g < 0 || g > 5000))
+        err(`${w}: stageGold cần đúng ${d.phases.length} số nguyên trong [0, 5000]`);
+      if (d.law) err(`${w}: Huyền Kiếp không có law (thưởng là bậc Bản Nguyên, móc huyenOriginTier)`);
+      if (d.failXpLoss !== 0) err(`${w}: Huyền Kiếp không phạt tu vi (failXpLoss = 0)`);
+      d.phases.forEach((p, i) => {
+        const pw = `${w}/${p.id}`;
+        const s = p.suy;
+        const k = p.hk ?? {};
+        const len = p.end - (d.phases[i - 1]?.end ?? 0);
+        if (!s || !(s.rest >= 0 && s.rest < len && s.start >= 0 && s.start < 100 && s.rise >= 0 && s.riseEnd >= s.rise))
+          return err(`${pw}: thiếu hoặc sai khối suy {rest, start, rise, riseEnd >= rise}`);
+        if (!isHkMechanic(p.mechanic)) return err(`${pw}: mọi pha của Huyền Kiếp phải là một cơ chế hk_*`);
+        for (const key of HK_PARAMS[p.mechanic]) if (!(k[key]! > 0)) err(`${pw}: hk.${key} phải là số dương`);
+        for (const key of Object.keys(k))
+          if (!HK_PARAMS[p.mechanic].includes(key)) err(`${pw}: hk.${key} không thuộc cơ chế ${p.mechanic}`);
+        for (const key of ['pct', 'heal', 'bleed']) if (k[key] !== undefined && !(k[key]! <= 0.3)) err(`${pw}: hk.${key} quá 0,3`);
+        const act = len - s.rest;
+        const avg = (s.rise + s.riseEnd) / 2;
+        // Không thao tác thì phải thất bại (Tuyết Kiếp: đứng yên còn bị cộng `cold`).
+        if (!(s.start + (avg + (p.mechanic === 'hk_tuyet' ? k.cold! : 0)) * act >= 100)) err(`${pw}: đứng yên vẫn qua được`);
+        // Thao tác đủ thì phải hóa giải nổi phần tự tăng.
+        const best: Record<string, number> = {
+          hk_tuyet: k.cure! * act,
+          hk_phong: Math.floor(act / k.every!) * k.cure!,
+          hk_loi: Math.floor(act / (k.hot! / k.rods!)) * k.cure!,
+          hk_tram_ly: k.cure! * act,
+          hk_huyet_anh: 3 * k.kill!,
+          hk_van_tam: Math.floor(act / k.every!) * k.cure!,
+          hk_kho_than: k.beats! * k.cure!,
+          hk_hon_tho: Math.floor(act / k.every!) * k.cure!,
+          hk_luan_hoi: Math.floor(act / k.every!) * k.cure!,
+        };
+        if (!(best[p.mechanic]! > avg * act - (100 - s.start))) err(`${pw}: thao tác đủ vẫn không giữ nổi thanh dưới 100`);
+        if (p.mechanic === 'hk_kho_than' && !(k.beats! * k.every! <= act)) err(`${pw}: mười nhịp không vừa thời lượng kiếp`);
+        if (p.mechanic === 'hk_phong' && !(k.every! > k.warn! && k.warn! >= 2)) err(`${pw}: every > warn >= 2 (kịp chạy ra sau trụ)`);
+        if (p.mechanic === 'hk_van_tam' && !(k.every! >= k.show! + k.think! && k.seals! >= 3 && k.seals! <= 6))
+          err(`${pw}: every >= show + think, seals 3–6`);
+        if (p.mechanic === 'hk_luan_hoi' && !(k.sectors! >= 3 && k.sectors! <= 12 && k.every! > k.warn!))
+          err(`${pw}: sectors 3–12, every > warn`);
+        if (p.mechanic === 'hk_huyet_anh' && !MONSTER.get('mon_tam_ma')) err(`${pw}: thiếu quái mon_tam_ma (Huyết Ảnh)`);
+        needStr(`sys.${p.mechanic}_start`);
+      });
+      for (const key of ['fail', 'keep', 'stage', 'stage_gold', 'ok', 'done', 'need_prev']) needStr(`sys.hk_${key}`);
+      for (const key of ['label', 'short']) needStr(`ui.trib.hk.${key}`);
+      continue;
+    }
     if (suyPhases.length !== d.phases.length) err(`${w}: mọi pha của kiếp chuỗi phải là một ải suy_*`);
     if (new Set(d.phases.map((p) => p.mechanic)).size !== d.phases.length) err(`${w}: mỗi ải phải dùng một cơ chế riêng`);
     if (id === 'ngu_suy' && d.phases.map((p) => p.mechanic).join() !== SUY_MECHANICS.join())

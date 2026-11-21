@@ -36,6 +36,8 @@ Game mượn **thang cảnh giới, khái niệm và tên kỹ năng** của Ti�
 
 Tên năm ải của Thiên Nhân Ngũ Suy (TN-4, `glossary.nguSuy`) **tự đặt** vì nguồn không ghi: Linh Lực Suy, Nhục Thân Suy, Thần Thức Suy, Thọ Nguyên Suy, Đạo Tâm Suy (ghép từ thuật ngữ thể loại: linh lực, nhục thân, thần thức, thọ nguyên, đạo tâm). Thuật ngữ riêng của chuỗi ở `glossary.nguSuyTerms` cũng tự đặt: suy khí, Linh Nhãn, Tôi Thể Lôi, lôi ẩn, ngưng thần, Thọ Đăng, suy phong, phá vọng, pháp tắc sơ ngộ. Cơ chế từng ải tự thiết kế, không dựa tình tiết nào của truyện; chuỗi `ui.trib.ngu_suy.<ải>` phải khớp `glossary.nguSuy` (`content:check`).
 
+Thuật ngữ riêng của Huyền Kiếp (TN-6, `glossary.huyenKiepTerms`) đều **tự đặt** từ từ ghép thể loại: kiếp lực, cương phong, Dẫn Lôi Trụ, Bản Mệnh Ấn, Huyết Ảnh, Hồn Châu, cung sinh, điều tức. Chín tên kiếp giữ theo `glossary.huyenKiep` (TN-0, trong đó Vấn Tâm Kiếp tự đặt); cơ chế cả chín kiếp tự thiết kế, không dựa tình tiết nào của truyện.
+
 Tên Hán-Việt lấy từ wiki fan, nhiều mục chỉ có một nguồn; khi người dùng sửa thì `glossary.json` là nguồn đúng. Nguồn khái niệm và độ chắc từng mục ghi ở tài liệu kế hoạch nội bộ, không đưa vào lời thoại hay UI.
 
 ## Kiểm tự động

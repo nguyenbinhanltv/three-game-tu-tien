@@ -19,7 +19,8 @@ import {
   planSort,
   MS_DEAD,
   tribDef,
-  suyDone,
+  chainDone,
+  setChainCleared,
   TRIB_DEFS,
   type TribId,
   xpNeed,
@@ -118,8 +119,9 @@ export class GmSystem {
     // Đặt sau dòng kiểm bận: đang trong kiếp mà đổi tiến độ thì ải đang chạy sẽ không được lưu và nội tại pháp tắc bị mất giữa chừng.
     // Kiếp chuỗi (TN-4): `/gm trib ngu_suy [ải 1..5]` đặt lại tiến độ để vào thẳng ải đó (thưởng từng ải vẫn chỉ nhận một lần nhờ khóa chống trùng).
     if (def.chain) {
-      if (stage !== undefined && Number.isInteger(stage) && stage >= 1 && stage <= def.phases.length) c.meta.suy = stage - 1;
-      else if (suyDone(c.meta.suy, def)) c.meta.suy = 0;
+      if (stage !== undefined && Number.isInteger(stage) && stage >= 1 && stage <= def.phases.length)
+        setChainCleared(c.meta, def, stage - 1);
+      else if (chainDone(c.meta, def)) setChainCleared(c.meta, def, 0);
       c.recalc();
     }
     if (c.level !== def.from) this.setLevel(p, def.from);

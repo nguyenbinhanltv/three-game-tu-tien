@@ -441,6 +441,8 @@ export class Game {
   danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
   /** Hiệu ứng năm ải Thiên Nhân Ngũ Suy (TN-4) theo timeline `suy_*.json`. */
   suyFx: SuyFx | null = null;
+  /** Dấu tạm trên sân của Huyền Kiếp (TN-6, cột sáng), khóa `<sid>:<loại>:<ô>`; VFX riêng làm ở PR sau. */
+  hkMarks = new Map<string, { stop(): void }>();
   /** Năm Trấn Giới Bia của Nhật Thực Kiếp (của mình). */
   stelesVfx: { set(mask: number): void; stop(): void } | null = null;
   stelesMask = 0;
