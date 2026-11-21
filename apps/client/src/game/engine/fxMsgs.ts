@@ -307,6 +307,10 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       // Ngưng Đan Lô: cột đan hỏa mảnh và mờ (không che người), số hồi do DmgMsg heal hiện.
       v.pillar(posSrc, tint(0xffb35a), 0.8, 0.3, 2.2, 0.1);
       break;
+    case 'artreap':
+      // Hồn phiên nhiếp hồn: một tia hồn nhỏ từ quái bay về người dùng (cùng dạng tia của hồ lô, màu theo pháp bảo).
+      if (e.chestOf(src, _v)) v.swordShot(_v, posDst, tint(0xb9a8ff), 0.4, 0.5);
+      break;
     case 'artdrain':
       // Hồ Lô hút linh lực: một tia nhỏ từ quái bay về người dùng.
       if (e.chestOf(src, _v)) v.swordShot(_v, posDst, tint(0xc9a2ff), 0.45, 0.5);
