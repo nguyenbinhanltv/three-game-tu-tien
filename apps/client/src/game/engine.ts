@@ -324,6 +324,8 @@ export class Game {
     big?: boolean;
     px?: number;
     pz?: number;
+    delay?: number;
+    at?: number;
   }[];
   dmg!: DamageNumbers;
   lootFly!: LootFly;

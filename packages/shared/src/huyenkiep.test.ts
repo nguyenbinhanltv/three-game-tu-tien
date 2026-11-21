@@ -12,6 +12,7 @@ import {
   hkLuanSafe,
   hkSealAfter,
   hkSheltered,
+  hkVanSpinAngle,
   huyenKiepCleared,
   huyenOriginTier,
   isHkMechanic,
@@ -80,6 +81,27 @@ describe('Huyền Kiếp: hàm thuần', () => {
     expect(hkInRect(0, 0, 0, 20, 2.6, 0, 21)).toBe(false);
     expect(hkInRect(0, 0, 0, 20, 2.6, 0, -1)).toBe(false);
     expect(hkInRect(0, 0, Math.PI / 2, 20, 2.6, 10, 0.5)).toBe(true);
+  });
+
+  it('vòng ấn Vấn Tâm xoay đủ `shift` bước rồi dừng: ấn vừa sáng tới đúng chỗ đáp án', () => {
+    const n = 3;
+    expect(hkVanSpinAngle(1, n, 0, 1.6)).toBe(0);
+    expect(hkVanSpinAngle(2, n, -1, 1.6)).toBe(0);
+    for (const shift of [1, 2]) {
+      const end = hkVanSpinAngle(shift, n, 1.6, 1.6);
+      expect(end).toBeCloseTo((shift * Math.PI * 2) / n);
+      expect(hkVanSpinAngle(shift, n, 9, 1.6)).toBe(end);
+      // Tăng dần, không giật lùi.
+      let prev = 0;
+      for (let t = 0; t <= 1.6; t += 0.1) {
+        const a = hkVanSpinAngle(shift, n, t, 1.6);
+        expect(a).toBeGreaterThanOrEqual(prev);
+        prev = a;
+      }
+      // Ấn 0 ở góc 0; xoay xong nằm đúng góc của ấn đáp án.
+      const ans = hkSealAfter(0, shift, n);
+      expect(end % (Math.PI * 2)).toBeCloseTo((ans * Math.PI * 2) / n);
+    }
   });
 
   it('cung sinh: xoay theo thời gian, kẹp góc; tâm vòng và ngoài bán kính đều không an toàn', () => {

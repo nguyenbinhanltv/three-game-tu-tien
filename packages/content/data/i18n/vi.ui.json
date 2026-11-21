@@ -353,7 +353,7 @@
   "ui.trib.hk_tram_ly.out": "Rời vòng ấn: quay lại ngay!",
   "ui.trib.hk_huyet_anh.kills": "Đã hạ {n} Huyết Ảnh",
   "ui.trib.hk_van_tam.show": "Nhớ lấy ấn đang sáng",
-  "ui.trib.hk_van_tam.think": "Ấn đã đổi chỗ: đứng vào ấn thật ({n} s)",
+  "ui.trib.hk_van_tam.think": "Các ấn đang xoay: dõi theo ấn vừa sáng rồi đứng vào ({n} s)",
   "ui.trib.hk_kho_than.beat": "Tức thứ {n}/{max} · [X] điều tức",
   "ui.trib.hk_kho_than.now": "Tức thứ {n}/{max} · ĐIỀU TỨC [X]!",
   "ui.trib.hk_luan_hoi.warn": "Vòng luân hồi sắp nghiền: vào cung sinh!",

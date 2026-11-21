@@ -159,8 +159,15 @@ export function bindRoom(eng: Game, room: Room): void {
         big: m.big,
         px: eng.cur.x,
         pz: eng.cur.z,
+        delay: m.delay,
+        at: Date.now(),
       });
     if (import.meta.env.DEV && eng.hazardLog && eng.hazardLog.length > 200) eng.hazardLog.shift();
+    // Trảm Ly Kiếp (TN-6): vạch kiếm vô hình (chữ nhật không nguồn) hết giờ báo thì nhát chém hiện hình. Chỉ là hình.
+    if (m.sh === 'rect' && !m.src && get().suy?.id === 'hk_tram_ly') {
+      const sid = eng.sid;
+      window.setTimeout(() => !eng.disposed && eng.suyFx?.cut(sid, m.x, m.z, m.yaw ?? 0), m.delay * 1000);
+    }
     // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
     if (m.sh && eng.vfx) {
       if (Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90) telegraph(eng.vfx, m, isBossSrc(eng, m.src));

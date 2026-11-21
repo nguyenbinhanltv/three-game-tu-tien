@@ -173,10 +173,7 @@ write('hk_huyet_kill', 'hk_huyet_anh', [
 ])
 
 # ---- Vấn Tâm Kiếp ----
-write('hk_van_seal', 'hk_van_tam', [
-    mesh('seal_block', 0.0, LOOP, at='area', offset=[0, 0, 0], scale=[1.5, 1.3, 1.5], sweep=0.0, erodeFrom=HOLD, tone='body', alpha=0.95, seed=91, tier=0, **START),
-    decal('rune', 0.0, 2.6, LOOP, at='area', grow=0.01, tone='body', alpha=0.9, yaw=0, tier=0, **START),
-])
+# Thân ấn do client vẽ bằng cột linh quang quay mượt quanh tâm (không phải timeline): lúc đổi chỗ cả vòng phải xoay liên tục.
 # Ấn thật sáng (sống đúng `show` giây): khung kim cương vàng dựng trên ấn + vòng sáng.
 write('hk_van_true', 'hk_van_tam', [
     mesh('diamond_cage', 0.0, 1.4, at='area', offset=[0, 1.3, 0], scale=[1.3, 1.5, 1.3], sweep=0.1, erodeFrom=0.85, tone='accent', alpha=0.98, seed=92, keepUp=True, untilDelay=True, tier=0, **START),

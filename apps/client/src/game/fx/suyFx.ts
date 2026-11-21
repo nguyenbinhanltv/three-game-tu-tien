@@ -10,7 +10,17 @@
 //  - ngọn lửa Thọ Đăng phát sáng có trạng thái liên tục (`Vfx.suyLamps`): cháy, bị suy phong nhắm thì nhạt màu dần, tắt, đang thắp lại.
 import * as THREE from 'three/webgpu';
 import { HK_FX, SUY_FX } from '@dtl/content';
-import { hkLuanAngle, hkRingPos, suyRingPos, suySectorYaw, tribDef, type FxMsg, type FxTimeline } from '@dtl/shared';
+import {
+  HK_VAN_SPIN_FRAC,
+  hkLuanAngle,
+  hkRingPos,
+  hkVanSpinAngle,
+  suyRingPos,
+  suySectorYaw,
+  tribDef,
+  type FxMsg,
+  type FxTimeline,
+} from '@dtl/shared';
 import { FX_PALETTE } from '../../render/vfx/palette';
 import type { FxCaster, FxRunner, FxTarget } from './fxTimeline';
 import type { Vfx } from './vfx';
@@ -71,6 +81,7 @@ export class SuyFx {
   private litFor = '';
   /** Huyền Kiếp: vòng trụ chắn gió của từng người và vị trí Huyết Ảnh mới hiện gần nhất. */
   private ringOf = new Map<string, { n: number; r: number }>();
+  private vanOf = new Map<string, { shift: number; t0: number; dur: number }>();
   private lastShadow: { x: number; y: number; z: number } | null = null;
   /** Nhật ký dev cho Playwright (`__game.suyFx.log`). */
   readonly log: { key: string; at: number }[] = [];
@@ -513,16 +524,38 @@ export class SuyFx {
         break;
       case 'van':
         if (pg === 1) {
+          // Các ấn trông giống nhau và cùng quay quanh tâm (`hkVanSpinAngle`): lúc đổi chỗ người chơi bám mắt theo ấn vừa sáng.
           const n = m.n ?? 3;
-          for (let i = 0; i < n; i++) {
-            const pp = hkRingPos({ x, z }, m.r ?? 7, i, n);
-            this.setLoop(src, `an${i}`, 'hk_van_seal', 'hk_van_tam', pp.x, pp.z, m.lv ?? 2.6);
-          }
+          const rr = m.r ?? 7;
+          const v = { shift: 0, t0: 0, dur: 1 };
+          this.vanOf.set(src, v);
+          for (let i = 0; i < n; i++)
+            this.glowFn(
+              src,
+              `an${i}`,
+              hexOf('hk_van_tam', 'body'),
+              () => {
+                const a = (i * Math.PI * 2) / n + hkVanSpinAngle(v.shift, n, (performance.now() - v.t0) / 1000, v.dur);
+                const px = x + Math.sin(a) * rr;
+                const pz = z + Math.cos(a) * rr;
+                return { x: px, y: this.env.ground(px, pz), z: pz };
+              },
+              { h: 5, r: m.lv ?? 2.6, dur: 60, opacity: 0.55, thick: 2.2 },
+            );
         } else if (pg === 2) {
+          // Lượt mới: vòng về góc gốc (các ấn giống nhau nên không thấy giật), rồi ấn thật sáng lên.
+          const v = this.vanOf.get(src);
+          if (v) v.shift = 0;
           this.at('hk_van_true', 'hk_van_tam', x, z, m.r ?? 2.6, { delay: m.d ?? 1.4, src });
           this.glow(src, 'antrue', hexOf('hk_van_tam', 'accent'), { x, z, h: 11, r: m.r ?? 2.6, dur: m.d ?? 1.4, opacity: 0.6, pulse: 14 });
         } else if (pg === 3) {
           this.dropGlow(src, 'antrue');
+          const v = this.vanOf.get(src);
+          if (v) {
+            v.shift = m.n ?? 0;
+            v.t0 = performance.now();
+            v.dur = Math.max(0.4, (m.d ?? 3) * HK_VAN_SPIN_FRAC);
+          }
           this.at('hk_van_spin', 'hk_van_tam', c.x, c.z, 7, { src });
         } else if (pg === 4) this.at('hk_van_ok', 'hk_van_tam', x, z, m.r ?? 2.6, { src });
         else if (pg === 5) {
@@ -530,8 +563,8 @@ export class SuyFx {
           this.at('hk_van_true', 'hk_van_tam', x, z, m.r ?? 2.6, { delay: 0.9, src });
           this.on('hk_van_bad', 'hk_van_tam', src);
         } else {
-          this.dropLoops(src, 'an');
-          this.dropGlow(src, 'antrue');
+          this.dropGlow(src, 'an');
+          this.vanOf.delete(src);
         }
         break;
       case 'tuc':

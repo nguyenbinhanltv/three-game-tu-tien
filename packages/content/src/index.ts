@@ -171,7 +171,6 @@ import fx_hk_tuc_good from '../data/fx/hk_tuc_good.json';
 import fx_hk_tuyet_drift from '../data/fx/hk_tuyet_drift.json';
 import fx_hk_van_bad from '../data/fx/hk_van_bad.json';
 import fx_hk_van_ok from '../data/fx/hk_van_ok.json';
-import fx_hk_van_seal from '../data/fx/hk_van_seal.json';
 import fx_hk_van_spin from '../data/fx/hk_van_spin.json';
 import fx_hk_van_true from '../data/fx/hk_van_true.json';
 import fx_fx_soul_in from '../data/fx/fx_soul_in.json';
@@ -587,7 +586,6 @@ export const HK_FX_TIMELINES = [
   fx_hk_tuyet_drift,
   fx_hk_van_bad,
   fx_hk_van_ok,
-  fx_hk_van_seal,
   fx_hk_van_spin,
   fx_hk_van_true,
 ] as unknown as FxTimeline[];
@@ -599,7 +597,7 @@ export const HK_FX_STAGE: Record<string, string[]> = {
   hk_loi: ['hk_enter', 'hk_loi_rod', 'hk_loi_hot', 'hk_loi_zap', 'hk_loi_boom', 'suy_ok', 'suy_fail'],
   hk_tram_ly: ['hk_enter', 'hk_ly_seal', 'hk_ly_out', 'hk_ly_cut', 'suy_ok', 'suy_fail'],
   hk_huyet_anh: ['hk_enter', 'hk_huyet_spawn', 'hk_huyet_kill', 'suy_ok', 'suy_fail'],
-  hk_van_tam: ['hk_enter', 'hk_van_seal', 'hk_van_true', 'hk_van_spin', 'hk_van_ok', 'hk_van_bad', 'suy_ok', 'suy_fail'],
+  hk_van_tam: ['hk_enter', 'hk_van_true', 'hk_van_spin', 'hk_van_ok', 'hk_van_bad', 'suy_ok', 'suy_fail'],
   hk_kho_than: ['hk_enter', 'hk_tuc_beat', 'hk_tuc_good', 'hk_tuc_bad', 'suy_ok', 'suy_fail'],
   hk_hon_tho: ['hk_enter', 'hk_chau', 'hk_chau_get', 'hk_chau_gone', 'suy_ok', 'suy_fail'],
   hk_luan_hoi: ['hk_enter', 'hk_luan_wheel', 'hk_luan_warn', 'hk_luan_grind', 'suy_ok', 'suy_fail'],
