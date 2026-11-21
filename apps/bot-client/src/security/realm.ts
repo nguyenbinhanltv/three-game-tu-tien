@@ -150,6 +150,20 @@ export async function runRealm(_ctx: Ctx): Promise<void> {
       ca?.root === 'loi' && g1 - ((ca as CharV | null)?.gold ?? 0) === rootChangeCost(6),
       `${ca?.root}, linh thạch ${g1} → ${(ca as CharV | null)?.gold}`,
     );
+    // j. Đạo (TN-3): chưa tới Vấn Đỉnh thì mọi lệnh bị bỏ; tới rồi, nguồn khóa/lạ bị bỏ, chọn hợp lệ được đúng một lần.
+    for (const root of ['kim', 'hoa', 'sinh_tu']) a.room.send(C.DAO, { root });
+    await W(600);
+    check('Đạo: chưa đủ cấp Vấn Đỉnh thì không chọn được', !(ca as CharV | null)?.dao, `dao "${(ca as CharV | null)?.dao}"`);
+    await say(a.room, 'level 36');
+    await W(400);
+    for (const m of [{ root: 'sinh_tu' }, { root: 'rong' }, { root: 7 }, {}, null, 'kim']) a.room.send(C.DAO, m);
+    await W(600);
+    check('Đạo: nguồn khóa, id lạ, tin sai dạng bị bỏ', !(ca as CharV | null)?.dao, `dao "${(ca as CharV | null)?.dao}"`);
+    a.room.send(C.DAO, { root: 'hoa' });
+    await W(500);
+    a.room.send(C.DAO, { root: 'kim' });
+    await W(600);
+    check('Đạo: chọn hợp lệ được một lần, chọn lại bị chặn', (ca as CharV | null)?.dao === 'hoa', `dao "${(ca as CharV | null)?.dao}"`);
     await say(a.room, 'killall');
     await a.room.leave(true);
     await b.room.leave(true);

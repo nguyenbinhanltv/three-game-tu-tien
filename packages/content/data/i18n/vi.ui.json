@@ -1088,6 +1088,7 @@
   "ui.attr.src.gear": "Trang bị",
   "ui.attr.src.set": "Bộ trang bị",
   "ui.attr.src.root": "Bản Nguyên",
+  "ui.attr.src.dao": "Đạo",
   "ui.attr.src.other": "Công pháp, pháp bảo, đan dược",
   "ui.attr.elem_dmg": "Sát thương hệ: {v}%",
   "ui.attr.elem_res": "Kháng hệ: {v}%",

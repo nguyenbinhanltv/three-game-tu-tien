@@ -21,6 +21,7 @@ export * from './bodyfeel';
 export * from './items';
 export * from './inventory';
 export * from './realm';
+export * from './dao';
 export * from './equipLoot';
 export * from './upgrade';
 export * from './sets';
