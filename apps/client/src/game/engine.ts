@@ -304,7 +304,10 @@ export class Game {
   monFx: MonFx | null = null;
   boltKinds = new Map<number, string>();
   /** Dấu trên sân mới nhất của Thiên Nhân Ngũ Suy của chính mình, theo khóa `<loại>:<ô>` (chỉ bản dev, cho Playwright: `__game.suyLog`). */
-  suyLog?: Record<string, { s: string; n: number; x: number; z: number; r: number; pg: number; lv: number; at: number }>;
+  suyLog?: Record<
+    string,
+    { s: string; n: number; x: number; z: number; r: number; pg: number; lv: number; at: number; d?: number; ox?: number; oz?: number }
+  >;
   /** Nhật ký vùng báo của quái (chỉ bản dev, cho Playwright: `__game.hazardLog`). */
   hazardLog?: {
     k: string;
@@ -441,8 +444,6 @@ export class Game {
   danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
   /** Hiệu ứng năm ải Thiên Nhân Ngũ Suy (TN-4) theo timeline `suy_*.json`. */
   suyFx: SuyFx | null = null;
-  /** Dấu tạm trên sân của Huyền Kiếp (TN-6, cột sáng), khóa `<sid>:<loại>:<ô>`; VFX riêng làm ở PR sau. */
-  hkMarks = new Map<string, { stop(): void }>();
   /** Năm Trấn Giới Bia của Nhật Thực Kiếp (của mình). */
   stelesVfx: { set(mask: number): void; stop(): void } | null = null;
   stelesMask = 0;

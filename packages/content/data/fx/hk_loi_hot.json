@@ -1,0 +1,106 @@
+{
+ "skill": "hk_loi_hot",
+ "palette": "hk_loi",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.55,
+    3.0,
+    0.55
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "alpha": 0.98,
+   "seed": 51,
+   "tier": 0,
+   "from": "start",
+   "tone": "accent"
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    0,
+    3.0,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": [
+    1.6,
+    1.6,
+    1.2
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "alpha": 0.95,
+   "seed": 52,
+   "tier": 0,
+   "from": "start",
+   "tone": "accent"
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 4.5,
+   "dur": 1.08,
+   "at": "area",
+   "grow": 0.01,
+   "tone": "accent",
+   "alpha": 1.0,
+   "yaw": 0,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.0,
+   "r": 2.4,
+   "dur": 1.08,
+   "at": "area",
+   "grow": 0.01,
+   "tone": "core",
+   "alpha": 0.8,
+   "yaw": 0,
+   "tier": 1,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 6,
+   "speed": 2.4,
+   "spread": 1.0,
+   "life": 0.7,
+   "size": 0.08,
+   "at": "area",
+   "offset": [
+    0,
+    2.2,
+    0
+   ],
+   "tone": "accent",
+   "tier": 1,
+   "from": "start"
+  }
+ ]
+}

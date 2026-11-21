@@ -67,7 +67,10 @@ export interface GameDebug {
   /** Nhật ký timeline đã phát của Thiên Nhân Ngũ Suy (bản dev, TN-4). */
   suyFx?: { log: { key: string; at: number }[]; live: number } | null;
   /** Dấu trên sân mới nhất của Thiên Nhân Ngũ Suy theo khóa `<loại>:<ô>` (bản dev, TN-4). */
-  suyLog?: Record<string, { s: string; n: number; x: number; z: number; r: number; pg: number; lv: number; at: number }>;
+  suyLog?: Record<
+    string,
+    { s: string; n: number; x: number; z: number; r: number; pg: number; lv: number; at: number; d?: number; ox?: number; oz?: number }
+  >;
   gpuErrors?: string[];
   /** Bản ghi người chơi của schema; công cụ chỉ đọc vài trường. */
   me(): any;

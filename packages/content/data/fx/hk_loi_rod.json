@@ -1,0 +1,93 @@
+{
+ "skill": "hk_loi_rod",
+ "palette": "hk_loi",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.55,
+    3.0,
+    0.55
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "alpha": 0.98,
+   "seed": 51,
+   "tier": 0,
+   "from": "start",
+   "tone": "body"
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    0,
+    3.0,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": [
+    1.6,
+    1.6,
+    1.2
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "alpha": 0.95,
+   "seed": 52,
+   "tier": 0,
+   "from": "start",
+   "tone": "rim"
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 2.2,
+   "dur": 1.08,
+   "at": "area",
+   "grow": 0.01,
+   "tone": "body",
+   "alpha": 0.95,
+   "yaw": 0,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 4,
+   "speed": 0.8,
+   "spread": 0.5,
+   "life": 1.2,
+   "size": 0.07,
+   "at": "area",
+   "offset": [
+    0,
+    3.6,
+    0
+   ],
+   "tone": "rim",
+   "grav": -0.8,
+   "tier": 1,
+   "from": "start"
+  }
+ ]
+}

@@ -29,6 +29,16 @@ export const FX_PALETTE: Record<string, FxPalette> = {
   suy_thuc: { core: 0x1c1440, body: 0x7d6be0, rim: 0xeee9ff, accent: 0xff4a3a, shadow: 0x0c0920 },
   suy_tho: { core: 0x3a2a08, body: 0xffc45a, rim: 0xfff3d0, accent: 0x8fa3b8, shadow: 0x181004 },
   suy_tam: { core: 0x2a0c2e, body: 0xb04bff, rim: 0xf3e2ff, accent: 0xf3c860, shadow: 0x12061a },
+  // ---- Huyền Kiếp (TN-6): mỗi kiếp nhỏ một sắc; thân/viền sáng để nổi trên sân tối, `accent` là mối nguy hoặc tín hiệu "làm ngay".
+  hk_tuyet: { core: 0x10304a, body: 0x8fd4ff, rim: 0xf2fbff, accent: 0x5aa8ff, shadow: 0x06121e },
+  hk_phong: { core: 0x1a3a30, body: 0xd9c08a, rim: 0xf3fff4, accent: 0x7fe3c0, shadow: 0x0a1612 },
+  hk_loi: { core: 0x2a1460, body: 0xa77bff, rim: 0xf7f0ff, accent: 0xff5a3a, shadow: 0x100826 },
+  hk_tram_ly: { core: 0x1c2436, body: 0xbfd0e8, rim: 0xffffff, accent: 0xff4a3a, shadow: 0x0a0e16 },
+  hk_huyet_anh: { core: 0x3a060c, body: 0xe0283c, rim: 0xffd9c8, accent: 0xff7a5a, shadow: 0x160306 },
+  hk_van_tam: { core: 0x241848, body: 0x8f7be8, rim: 0xeee9ff, accent: 0xffd25a, shadow: 0x0e0920 },
+  hk_kho_than: { core: 0x12303a, body: 0x6fd0e0, rim: 0xeafcff, accent: 0xffd25a, shadow: 0x06141a },
+  hk_hon_tho: { core: 0x0c3324, body: 0x4fe0a0, rim: 0xe6fff2, accent: 0xa7f0d8, shadow: 0x06160f },
+  hk_luan_hoi: { core: 0x2a2208, body: 0xe8c45a, rim: 0xfff6d8, accent: 0xff5a3a, shadow: 0x120e04 },
   // ---- Quái (V5): bảng "nguy hiểm", tách khỏi bảng "của ta". Lõi rất sẫm, thân bão hòa theo ngũ hành, viền sáng ấm, điểm nhấn đỏ son/đỏ thẫm
   // để vạch báo và đòn của quái luôn đọc ra là mối nguy (không lẫn với lam ngọc/lục/hổ phách của người chơi).
   mon_kim: { core: 0x141b2b, body: 0x7f98bd, rim: 0xf4f9ff, accent: 0xff4a3a, shadow: 0x080b12 },

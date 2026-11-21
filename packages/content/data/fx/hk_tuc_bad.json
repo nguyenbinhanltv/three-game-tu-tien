@@ -1,0 +1,68 @@
+{
+ "skill": "hk_tuc_bad",
+ "palette": "hk_kho_than",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "crack_radial",
+   "t": 0.0,
+   "dur": 1.4,
+   "at": "self",
+   "offset": [
+    0,
+    -1.08,
+    0
+   ],
+   "scale": [
+    0.4,
+    1,
+    0.4
+   ],
+   "scaleTo": [
+    2.6,
+    1,
+    2.6
+   ],
+   "sweep": 0.25,
+   "erodeFrom": 0.6,
+   "ragged": 0.9,
+   "tone": "accent",
+   "alpha": 0.9,
+   "seed": 105,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "scale": 2.2,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "core",
+   "alpha": 0.55,
+   "flip": "ink_smoke",
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 16,
+   "speed": 2.0,
+   "spread": 1.0,
+   "life": 0.8,
+   "size": 0.26,
+   "at": "self",
+   "tone": "accent",
+   "inward": true,
+   "tier": 1
+  }
+ ]
+}

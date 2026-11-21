@@ -1,0 +1,49 @@
+{
+ "skill": "hk_phong_safe",
+ "palette": "hk_phong",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "self",
+   "offset": [
+    0,
+    -1.1,
+    0
+   ],
+   "scale": [
+    0.4,
+    0.4,
+    0.4
+   ],
+   "scaleTo": [
+    2.8,
+    1.0,
+    2.8
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.4,
+   "ragged": 0.6,
+   "tone": "body",
+   "alpha": 0.85,
+   "seed": 45,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "petal",
+   "t": 0.0,
+   "n": 16,
+   "speed": 2.0,
+   "spread": 0.9,
+   "life": 1.2,
+   "size": 0.16,
+   "at": "self",
+   "tone": "rim",
+   "grav": -1.0,
+   "tier": 1
+  }
+ ]
+}
