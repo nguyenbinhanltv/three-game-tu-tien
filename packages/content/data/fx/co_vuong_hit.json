@@ -1,0 +1,61 @@
+{
+ "skill": "co_vuong_hit",
+ "palette": "duong_co_kinh",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.12,
+   "at": "self",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "scale": 1.8,
+   "billboard": true,
+   "sweep": 0,
+   "tone": "rim",
+   "cross": true,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.3,
+   "flip": "spark_burst",
+   "scale": 1.8,
+   "billboard": true,
+   "at": "self",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "alpha": 0.7,
+   "tone": "body",
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 14,
+   "speed": 2.6,
+   "spread": 1,
+   "life": 0.5,
+   "size": 0.14,
+   "at": "self",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "tone": "core",
+   "grav": -0.6,
+   "tier": 1
+  }
+ ]
+}
