@@ -75,18 +75,35 @@ function setup(level = 10) {
 }
 
 describe('Kiếm ý (Lạc Kiếm Quyết)', () => {
-  it('chỉ đòn thường trúng đích mới tích; chiêu khác không tích', () => {
+  it('đòn thường trúng đích tích 1 ô; chiêu mở màn tích sẵn (Kiếm Khí Trảm 2 ô, Thiên Kiếm Vũ 1 ô một lần dù trúng nhiều quái)', () => {
     const { sim, join, mon, fresh } = setup();
     const p = join('a', 'lac_kiem_quyet');
     const m = mon();
+    mon(X + 7, Z + 1);
     fresh(p);
     sim.onSkill(p, { id: 'skl_kiem_khi_tram', t: m.id });
-    expect(p.mth.res).toBe(0);
+    expect(p.mth.res).toBe(2);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_thien_kiem_vu', t: m.id });
+    expect(p.mth.res).toBe(3);
+    p.mth.res = 0;
     for (let i = 0; i < 3; i++) {
       fresh(p);
       sim.onSkill(p, { id: 'skl_phi_kiem', t: m.id });
     }
     expect(p.mth.res).toBe(3);
+  });
+  it('chiêu mở màn chỉ tích Kiếm ý cho Kiếm tu: Hộ pháp, Đan sư và người chưa chọn công pháp không được gì', () => {
+    const { sim, join, mon, fresh } = setup();
+    for (const method of ['bat_dong_kim_than', 'thanh_moc_dan_kinh', undefined]) {
+      const p = join('o', method);
+      const m = mon();
+      for (const id of ['skl_kiem_khi_tram', 'skl_thien_kiem_vu']) {
+        fresh(p);
+        sim.onSkill(p, { id, t: m.id });
+      }
+      expect(p.mth.res, String(method)).toBe(0);
+    }
   });
   it('Lôi Đình xả hết, sát thương tăng theo số ô đã xả', () => {
     const { sim, join, mon, fresh, finishCast } = setup();
