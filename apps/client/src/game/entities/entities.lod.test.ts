@@ -40,7 +40,7 @@ function testCache(): AssetCache {
 
 async function skins(): Promise<PlayerSkins> {
   const cache = testCache();
-  const s = new PlayerSkins(cache, false);
+  const s = new PlayerSkins(cache, false, false);
   s.preload();
   const look = { g: 'm', dye: APPEARANCE.defaultDye };
   for (let i = 0; i < 100 && s.pending(look); i++) await new Promise((r) => setTimeout(r, 10));
@@ -113,6 +113,49 @@ describe('EntityManager: LOD theo camera (M3-9)', () => {
     });
     expect(shadowBehind).toBe(false);
     em.dispose();
+  });
+
+  it('suất LOD1 của nhân vật v3: hết 12 suất thì LOD2; từ 24 thể trong khung nhìn suất LOD0 giảm còn 6 (N-7)', async () => {
+    const run = async (others: number) => {
+      const em = new EntityManager(new THREE.Scene(), 'me', 'kiem_trung');
+      (em as unknown as { playerSkins: PlayerSkins }).playerSkins = await skins();
+      const cam = new THREE.PerspectiveCamera(55, 16 / 9, 0.3, 9000);
+      cam.position.set(0, 2, 8);
+      cam.lookAt(0, 1, -10);
+      cam.updateMatrixWorld();
+      em.camera = cam;
+      const players = new Map([['me', player('Minh', 0, 0)]]);
+      for (let i = 0; i < others; i++) players.set(`p${i}`, player(`P${i}`, 0, -2 - i));
+      const view: WorldView = { level: 'kiem_trung', players, monsters: new Map(), nodes: new Map() };
+      const local = { x: 0, y: 0, z: 0, yaw: 0, speed: 0, airborne: false };
+      em.update(1 / 60, view, local, '', 1);
+      const got = new Map<string, { minLod?: number; allowLod0: boolean }>();
+      for (const [sid, v] of em.players) {
+        // Giả model v3 bậc cao: 3 suất LOD0 (~99k tam giác), 2 suất LOD1 (~24k).
+        const m = v.model as unknown as {
+          lod0Cost: number;
+          lod1Cost: number;
+          setView: (x: { minLod?: number; allowLod0: boolean }) => void;
+        };
+        m.lod0Cost = 3;
+        m.lod1Cost = 2;
+        m.setView = (x) => void got.set(sid, x);
+      }
+      em.update(1 / 60, view, local, '', 1);
+      em.dispose();
+      const ids = [...Array(others).keys()];
+      return { me: got.get('me')!, minLod: ids.map((i) => got.get(`p${i}`)!.minLod), lod0: ids.filter((i) => got.get(`p${i}`)!.allowLod0) };
+    };
+    const few = await run(12);
+    expect(few.me).toMatchObject({ minLod: 0, allowLod0: true });
+    // 12 suất LOD1, mỗi model 2 suất: 6 người gần nhất; suất LOD0 thường (12): mình + 3 người.
+    expect(few.minLod).toEqual([0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2]);
+    expect(few.lod0).toEqual([0, 1, 2]);
+    // Đông người (≥ 24 trong khung nhìn): suất LOD0 còn 6 = mình + 1 người.
+    const crowd = await run(30);
+    expect(crowd.me.allowLod0).toBe(true);
+    expect(crowd.lod0).toEqual([0]);
+    expect(crowd.minLod.filter((x) => x === 0)).toHaveLength(6);
   });
 
   it('NPC và quái có xương cũng đi qua suất LOD: ngoài khung nhìn không chạy mixer', async () => {

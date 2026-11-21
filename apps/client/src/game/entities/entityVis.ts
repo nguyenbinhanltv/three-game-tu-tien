@@ -134,7 +134,7 @@ export class PlayerVis {
     public local: boolean,
     skins: PlayerSkins,
   ) {
-    this.look = lookOf(s);
+    this.look = lookOf(s, local);
     this.model = skins.create(this.look);
     this.skinPending = skins.pending(this.look);
     this.label = makeLabel(s.name, local ? '#bfe8ff' : '#ffffff', realmTag(s.lv), realmTagColor(s.lv));
@@ -321,10 +321,11 @@ export function tintOfTriple(d: readonly string[] | null | undefined): PlayerLoo
 }
 
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
-export function lookOf(s: PState): PlayerLook {
+export function lookOf(s: PState, self = false): PlayerLook {
   const base = {
     ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye, ...(s.hr ? { hair: s.hr } : {}) } : legacyAppearance(APPEARANCE, s.name)),
     w: SWORD_FORCED ?? swordModelOf(s.wp, s.wg ?? 0),
+    ...(self ? { self: true } : {}),
   };
   const look: PlayerLook = s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
   const skin = s.sn ? ITEM.get(s.sn)?.skin : undefined;

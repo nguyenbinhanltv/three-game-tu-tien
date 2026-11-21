@@ -1,5 +1,4 @@
 import * as THREE from 'three/webgpu';
-import { float, normalView, positionViewDirection, vec3 } from 'three/tsl';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { APPEARANCE, DYE, OUTFIT_COVERS, OUTFITS, scabbardOf, SET, SETS, SWORD_GLOW_TINT, SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
@@ -44,7 +43,8 @@ import {
   swordTemplateOf,
 } from './swordModel';
 import type { CharState, ClipMap } from './states';
-import { CHR_V3, MannequinPlayers, V3_ONLY_SKINS } from './mannequin';
+import { CHR_V3, MannequinPlayers, V3_LIB, V3_ONLY_SKINS, v3AssetOf } from './mannequin';
+import { applySoulLook, type SoulKind } from './soulLook';
 import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
 import { FLAGS } from '../../base/flags';
 import { logger } from '../../base/log';
@@ -59,6 +59,8 @@ export interface PlayerLook {
   hair?: string;
   /** Bộ trang bị đang quyết định màu áo/ánh kiếm (id trong sets.json; undefined = màu đã chọn). */
   set?: string;
+  /** Nhân vật của người đang chơi máy này (entities gán; không đến từ server): model v3 nạp texture đầy đủ, người khác bị chặn cỡ (N-7). */
+  self?: boolean;
   /** Asset model kiếm đang cầm (prop_kiem_*, `swordModelOf`); thiếu = kiếm mặc định. */
   w?: string;
   /** Mã phụ kiện hình dáng của đồ bộ (`accessoryCode`): hiện theo từng món đã mặc, không cần đủ 2 món. */
@@ -234,16 +236,21 @@ const K3_STATES: Partial<Record<CharState, string>> = {
 /** Chờ bao lâu sau khi dựng mẫu rồi mới nạp K-3 (ms): không chen vào đường tải trước khung game đầu. */
 const K3_DELAY = 1500;
 
-/** v1 (hai model Tripo cũ) là mặc định; `?chr=v2` bật nhân vật nền v2 (MakeHuman + đầu/tóc Tripo). */
-const CHR_V2 = FLAGS.chr === 'v2'; // Không có location (test node): v1
+/** Mặc định là v3 (`MannequinPlayers`, N-7). `?chr=v1` quay về hai model Tripo cũ (dự phòng một bản); `?chr=v2` bật nhân vật nền v2 (MakeHuman + đầu/tóc Tripo). */
+const CHR_V2 = FLAGS.chr === 'v2';
 /** Nhân vật nền v2 đang bật (chỉ khi `?chr=v2`): UI chọn kiểu tóc A/B chỉ hiện khi true. */
 export const CHR_V2_ON = CHR_V2;
 /** `?hair=b` ép kiểu tóc B khi không có lựa chọn của người chơi (thử, chụp ảnh). */
 const CHR_V2_HAIR = FLAGS.hair;
 
-/** Id asset model người chơi của giới tính (và kiểu tóc): v1 mặc định, `?chr=v2` model nền v2. Dùng cho prefetch lúc vào game. */
-export function playerModelId(g: string, hair?: string): string | null {
-  return modelOf(g, hair);
+/**
+ * Asset cần tải trước cho nhân vật mình lúc vào game: mặc định model v3 khởi đầu của giới tính + thư viện clip UAL (bộ đang mặc chưa biết
+ * trước khi server gửi nhân vật; model của bộ nạp khi dựng). `?chr=v1|v2`: model cũ của giới tính (thư viện clip Tripo do `preload.ts` thêm).
+ */
+export function playerPrefetchIds(g: string, hair?: string): string[] {
+  if (CHR_V3) return [v3AssetOf(g), V3_LIB];
+  const m = modelOf(g, hair);
+  return m ? [m] : [];
 }
 
 /** Id asset bộ đồ đệ tử tân thủ của model v2 (null nếu đang dùng model cũ). */
@@ -297,16 +304,24 @@ export class PlayerSkins {
   constructor(
     private cache: AssetCache = assets,
     readonly legacy = legacyModelsRequested(),
+    /** Dựng người chơi bằng model v3 (mặc định, N-7). `false` = đường v1/v2 cũ (`?chr=v1|v2`, và các test của đường cũ). */
+    v3 = CHR_V3,
   ) {
-    this.v3 = CHR_V3 ? new MannequinPlayers(cache) : null;
+    this.v3 = v3 ? new MannequinPlayers(cache) : null;
   }
 
-  /** `?chr=v3` (N-0): nhân vật Mannequin nguyên khối, null khi tắt. */
+  /** Nhân vật Mannequin nguyên khối (v3, mặc định từ N-7); null khi `?chr=v1|v2`. */
   private v3: MannequinPlayers | null;
+
+  /** Người chơi này đi đường cũ: v3 tắt, hoặc asset v3 của họ nạp lỗi (dự phòng trong bản còn giữ v1). */
+  private old(look: PlayerLook): boolean {
+    return !this.v3 || this.v3.failed(look.g, look.skin, look.set, look.self);
+  }
 
   preload(): void {
     if (this.legacy) return;
-    if (this.v3) this.v3.create(APPEARANCE.defaultGender);
+    // v3: model nạp theo từng người chơi (giới + bộ đang mặc) khi dựng; model cũ chỉ nạp khi NPC dùng tới hoặc v3 lỗi.
+    if (this.v3) return;
     // Giới tính mặc định nạp sớm; giới tính khác nạp khi có người chơi đó xuất hiện (`create`), khỏi tải thừa ~2,5 MB.
     const id = modelOf(APPEARANCE.defaultGender);
     if (id && PLAYER_SKINS[id]) this.load(id);
@@ -314,7 +329,12 @@ export class PlayerSkins {
 
   /** Người chơi này sẽ có model mới nhưng asset đang nạp (tạm model khối, nạp xong thì đổi). */
   pending(look: PlayerLook): boolean {
-    if (this.v3 && !this.legacy) return this.v3.pending(look.g, look.skin, look.w, look.set);
+    if (this.v3 && !this.legacy && !this.old(look)) return this.v3.pending(look.g, look.skin, look.w, look.set, look.self);
+    return this.oldPending(look);
+  }
+
+  /** `pending` của đường cũ (model Tripo v1/v2 + áo mô-đun): người chơi khi `?chr=v1|v2`, và NPC dựng từ model người chơi. */
+  private oldPending(look: PlayerLook): boolean {
     const id = modelOf(look.g, look.hair);
     if (this.legacy || !id) return false;
     // Kiếm riêng còn nạp: tạm cầm kiếm mặc định, nạp xong thì entities dựng lại (cùng cơ chế với asset nhân vật).
@@ -329,7 +349,7 @@ export class PlayerSkins {
 
   /** NPC dựng từ model người chơi (E3-H): giống `pending` nhưng theo giới tính của NPC. */
   npcPending(g: string): boolean {
-    return this.pending({ g, dye: '' });
+    return this.oldPending({ g, dye: '' });
   }
 
   /**
@@ -379,16 +399,16 @@ export class PlayerSkins {
   private skinAsset(look: PlayerLook): string | null {
     if (!look.skin || CHR_V2 || this.legacy) return null;
     // v3 dựng skin ở MannequinPlayers (asset `chr_v3_*`); skin chỉ có bản v3 thì v1 bỏ qua.
-    if (this.v3 || V3_ONLY_SKINS.has(look.skin)) return null;
+    if (!this.old(look) || V3_ONLY_SKINS.has(look.skin)) return null;
     return outfitAssetId(look.skin, modelOf(look.g, look.hair));
   }
 
   create(look: PlayerLook): CharacterView {
-    if (this.v3 && !this.legacy) {
-      const v = this.v3.create(look.g, look.skin, look.w, look.set);
-      if (v) return v;
-    }
     const dye = dyeOf(look.dye, look.set, look.tint);
+    if (this.v3 && !this.legacy && !this.old(look)) {
+      // Đang nạp: model khối cùng màu áo, `pending` báo để entities dựng lại. Không nạp model cũ làm tạm (tải thừa ~2,5 MB).
+      return this.v3.create(look.g, look.skin, look.w, look.set, look.self) ?? new Humanoid({ robe: dye.hex, trim: dye.trim, sword: true });
+    }
     const id = modelOf(look.g, look.hair);
     const skin = id ? PLAYER_SKINS[id] : undefined;
     if (id && skin && !this.legacy) this.load(id);
@@ -423,10 +443,7 @@ export class PlayerSkins {
    * Trả null nếu asset chưa nạp hoặc đang `?models=legacy` (bên gọi dùng model quái dự phòng).
    */
   createShadow(look: PlayerLook, def: MonsterDef): MonsterView | null {
-    if (this.v3 && !this.legacy) {
-      const v = this.v3.createShadow(look.g, def, look.skin, look.set);
-      if (v) return v;
-    }
+    if (this.v3 && !this.legacy && !this.old(look)) return this.v3.createShadow(look.g, def, look.skin, look.set, look.self);
     const id = modelOf(look.g, look.hair);
     const skin = id ? PLAYER_SKINS[id] : undefined;
     if (!id || !skin || this.legacy) return null;
@@ -442,7 +459,8 @@ export class PlayerSkins {
    * `soul`: trong mờ ánh ngọc, rìa vàng nhạt kiểu fresnel; `husk`: thân xác bỏ lại, xám ngọc mờ hơn nhiều.
    * Trả null nếu asset chưa nạp hoặc `?models=legacy` (bên gọi dùng hình dự phòng).
    */
-  createSoul(look: PlayerLook, kind: 'soul' | 'husk' | 'shadow'): CharacterView | null {
+  createSoul(look: PlayerLook, kind: SoulKind): CharacterView | null {
+    if (this.v3 && !this.legacy && !this.old(look)) return this.v3.createSoul(look.g, kind, look.skin, look.set, look.self);
     const id = modelOf(look.g, look.hair);
     const skin = id ? PLAYER_SKINS[id] : undefined;
     if (!id || !skin || this.legacy) return null;
@@ -452,7 +470,7 @@ export class PlayerSkins {
     return this.build(id, skin, t, this.soulMaterial(id, t, kind), undefined, undefined, true);
   }
 
-  private soulMaterial(id: string, t: Template, kind: 'soul' | 'husk' | 'shadow'): THREE.MeshStandardNodeMaterial {
+  private soulMaterial(id: string, t: Template, kind: SoulKind): THREE.MeshStandardNodeMaterial {
     const key = `${id}/${kind}`;
     let m = this.mats.get(key);
     if (m) return m;
@@ -462,29 +480,7 @@ export class PlayerSkins {
       if (!src && mesh.isMesh) src = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) ?? null;
     });
     m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0]!;
-    const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)).pow(2.2);
-    if (kind === 'soul') {
-      applyPalette(m, { dark: '#8fb7aa', light: '#eaf6ee', glow: '#f0dc9c' });
-      // Cộng sáng: thân ngọc trong mờ, rìa fresnel vàng nhạt đậm dần (đỉnh dưới ngưỡng bloom, không lóa).
-      m.emissiveNode = vec3(0.62, 0.78, 0.66)
-        .mul(0.16)
-        .add(vec3(0.94, 0.82, 0.5).mul(fres.mul(0.85)));
-      m.opacityNode = fres.mul(0.45).add(0.42);
-      m.blending = THREE.AdditiveBlending;
-    } else if (kind === 'shadow') {
-      // Phân thân Ảnh Biến (RFX-1): bóng mờ tím sẫm của chính nhân vật, rìa vàng; hòa trộn thường nên đọc được trên nền sáng.
-      applyPalette(m, { dark: '#1c0e38', light: '#5a3aa8', glow: '#e2b84a' });
-      m.emissiveNode = vec3(0.32, 0.18, 0.62)
-        .mul(0.35)
-        .add(vec3(0.95, 0.78, 0.35).mul(fres.mul(0.9)));
-      m.opacityNode = fres.mul(0.3).add(0.34);
-    } else {
-      applyPalette(m, { dark: '#3a4a46', light: '#b4c7bf', glow: '#6d8a7a' });
-      m.opacityNode = fres.mul(0.2).add(0.34);
-    }
-    m.transparent = true;
-    m.depthWrite = false;
-    m.needsUpdate = true;
+    applySoulLook(m, kind);
     this.mats.set(key, m);
     return m;
   }
