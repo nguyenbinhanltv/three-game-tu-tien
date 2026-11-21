@@ -46,6 +46,11 @@ const LEVEL = opt('--level', 'van_lam');
 requireLevel(LEVEL);
 const EXTRA_QUERY = [levelQuery(LEVEL), opt('--query', '')].filter(Boolean).join('&');
 const ONLY_POINTS = opt('--points', '').split(',').filter(Boolean);
+/** Biến `BENCH_GM="set set_luu_ly;..."`: lệnh GM chạy một lần sau khi đăng nhập (mặc bộ trang phục khi đo). */
+const PRE_GM = env('BENCH_GM', '')
+  .split(';')
+  .map((x) => x.trim())
+  .filter(Boolean);
 /** devicePixelRatio giả lập; engine lấy min(dpr, pixelRatio của preset) nên dpr 1 làm các preset chỉ khác hậu kỳ/bóng. */
 const DPR = Number(opt('--dpr', '1'));
 const { port: PORT, clientPort: CLIENT_PORT } = ports(2635, 5135);
@@ -289,6 +294,7 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
       };
     });
     await gm(page, 'level 15');
+    for (const c of PRE_GM) await gm(page, c);
     const points: Point[] = [];
     for (const wp of WAYPOINTS.filter((w) => !ONLY_POINTS.length || ONLY_POINTS.includes(w.name))) {
       await gm(page, `tp ${wp.x} ${wp.z}`);

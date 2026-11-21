@@ -1,0 +1,68 @@
+{
+ "skill": "hk_phong_hit",
+ "palette": "hk_phong",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "slash_fan",
+   "t": 0.0,
+   "dur": 0.35,
+   "at": "self",
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    2.6,
+    1,
+    2.6
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.4,
+   "ragged": 0.9,
+   "tone": "accent",
+   "alpha": 0.95,
+   "seed": 46,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.11,
+   "at": "self",
+   "scale": 1.8,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "alpha": 0.75,
+   "cross": true,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 24,
+   "speed": 5.0,
+   "spread": 0.6,
+   "life": 0.8,
+   "size": 0.28,
+   "at": "self",
+   "tone": "accent",
+   "tier": 1
+  },
+  {
+   "type": "flash",
+   "t": 0.0,
+   "amount": 0.14,
+   "tier": 0
+  }
+ ]
+}

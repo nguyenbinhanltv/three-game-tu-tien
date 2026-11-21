@@ -5,6 +5,7 @@
 // Phân thân của người khác: mờ hơn một bậc, bỏ vòng gợn khi pool đông, ẩn khi xa quá `OTHERS_FX_DIST` (xem fxBudget.ts).
 // Chỉ là lớp trình diễn; luật do server giữ (`apps/server/src/game/clone.ts`).
 
+import { PATHS } from '@dtl/content';
 import * as THREE from 'three/webgpu';
 import { CLONE_SPEED } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
@@ -17,8 +18,8 @@ import type { CharacterView } from '../character/view';
 /** Dựng bản sao của người chơi `sid` (null nếu asset chưa nạp hoặc model khối: dùng hình dự phòng). */
 type CloneMaker = (sid: string) => CharacterView | null;
 
-/** Vai trò → id công pháp để lấy bảng màu nhánh. */
-const ROLE_METHOD: Record<string, string> = { dps: 'lac_kiem_quyet', tank: 'bat_dong_kim_than', support: 'thanh_moc_dan_kinh' };
+/** Vai trò → id công pháp để lấy bảng màu nhánh (VS-3: công pháp đầu của hướng tu đầu tiên có vai đó). */
+const ROLE_METHOD: Record<string, string> = Object.fromEntries([...PATHS].reverse().map((p) => [p.role, p.methods[0]!] as const));
 const MAX_PULSES = 10;
 const FADE = 0.7;
 const OTHERS_MUL = 0.6;

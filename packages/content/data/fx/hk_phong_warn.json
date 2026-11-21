@@ -1,0 +1,163 @@
+{
+ "skill": "hk_phong_warn",
+ "palette": "hk_phong",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "gust",
+   "t": 0.0,
+   "dur": 1.1,
+   "at": "area",
+   "offset": [
+    0,
+    1.4,
+    -9
+   ],
+   "scale": [
+    3.2,
+    2.2,
+    9.0
+   ],
+   "tone": "rim",
+   "alpha": 0.85,
+   "seed": 31,
+   "move": {
+    "to": "area",
+    "offset": [
+     0,
+     1.4,
+     6
+    ],
+    "ease": "linear"
+   },
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "gust",
+   "t": 0.9,
+   "dur": 1.1,
+   "at": "area",
+   "offset": [
+    2.5,
+    1.2,
+    -9
+   ],
+   "scale": [
+    3.0,
+    2.0,
+    9.0
+   ],
+   "tone": "accent",
+   "alpha": 0.8,
+   "seed": 32,
+   "move": {
+    "to": "area",
+    "offset": [
+     2.5,
+     1.2,
+     6
+    ],
+    "ease": "linear"
+   },
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "gust",
+   "t": 1.8,
+   "dur": 1.1,
+   "at": "area",
+   "offset": [
+    -2.5,
+    1.6,
+    -9
+   ],
+   "scale": [
+    3.0,
+    2.0,
+    9.0
+   ],
+   "tone": "rim",
+   "alpha": 0.85,
+   "seed": 33,
+   "move": {
+    "to": "area",
+    "offset": [
+     -2.5,
+     1.6,
+     6
+    ],
+    "ease": "linear"
+   },
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rift_line",
+   "t": 0.0,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    0,
+    0.07,
+    -7
+   ],
+   "scale": [
+    1.6,
+    1,
+    14
+   ],
+   "sweep": 0.5,
+   "erodeFrom": 0.9,
+   "ragged": 0.5,
+   "tone": "accent",
+   "alpha": 0.85,
+   "seed": 34,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 40,
+   "speed": 6.0,
+   "spread": 0.25,
+   "life": 1.4,
+   "size": 0.26,
+   "at": "area",
+   "offset": [
+    0,
+    0.8,
+    -8
+   ],
+   "tone": "rim",
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 1.4,
+   "n": 40,
+   "speed": 6.5,
+   "spread": 0.25,
+   "life": 1.4,
+   "size": 0.26,
+   "at": "area",
+   "offset": [
+    0,
+    0.8,
+    -8
+   ],
+   "tone": "accent",
+   "tier": 1,
+   "from": "start"
+  }
+ ]
+}

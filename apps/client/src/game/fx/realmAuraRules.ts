@@ -1,5 +1,6 @@
 // Hào quang cảnh giới trên nhân vật (RFX-1): hàm thuần quyết định hiện gì, bao nhiêu, mờ bao nhiêu.
 // Chỉ là lớp hình theo `lv` server đã đồng bộ (`PState.lv`) và công pháp `mt`; không đọc/ghi luật chơi.
+import { pathOf } from '@dtl/content';
 import { ANH_BIEN_LEVEL, HOA_THAN_LEVEL, KET_DAN_LEVEL, NGUYEN_ANH_LEVEL, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
 import type { SkillDef } from '@dtl/shared';
 
@@ -18,10 +19,8 @@ export function auraStage(lv: number): AuraStage {
 
 /** Đạo theo id công pháp `PState.mt`; chưa chọn thì Kiếm tu (nhân vật mặc định). */
 export function daoOf(mt: string | undefined): AuraDao {
-  if (!mt) return 'kiem';
-  if (/kim_than|ho_phap|hophap/.test(mt)) return 'ho';
-  if (/dan_kinh|dan_su|dansu|moc_dan/.test(mt)) return 'dan';
-  return 'kiem';
+  // VS-3: tra hướng tu của công pháp (`paths.json` → `dao`), không còn regex trên id.
+  return pathOf(mt)?.dao ?? 'kiem';
 }
 
 /** Số phi kiếm xếp vòng quanh lưng: đủ 9 thanh đều từ Nguyên Anh (hạ theo preset bằng `orbitScale`). */

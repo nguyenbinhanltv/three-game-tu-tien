@@ -1,4 +1,5 @@
-import type { FxTone } from '@dtl/shared';
+import type { FxTone, PathDef } from '@dtl/shared';
+import { pathOf, PATHS } from '@dtl/content';
 
 /**
  * Bảng màu hiệu ứng theo nhánh công pháp (VFX-V0): ba tầng màu (lõi đậm, thân chủ đạo, viền sáng) + điểm nhấn + bóng sẫm.
@@ -13,13 +14,19 @@ export interface FxPalette {
   shadow: number;
 }
 
+const hex = (s: string) => parseInt(s, 16);
+/** Bảng màu của một hướng tu (VS-3, `paths.json` → `palette`). */
+const pathPalette = (p: PathDef): FxPalette => ({
+  core: hex(p.palette.core),
+  body: hex(p.palette.body),
+  rim: hex(p.palette.rim),
+  accent: hex(p.palette.accent),
+  shadow: hex(p.palette.shadow),
+});
+
 export const FX_PALETTE: Record<string, FxPalette> = {
-  // Kiếm tu (Kim/Thủy): lam ngọc và trắng, điểm vàng.
-  lac_kiem_quyet: { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xf2fdff, accent: 0xf3c860, shadow: 0x08202e },
-  // Hộ pháp (Thổ): hổ phách và vàng kim, bóng nâu.
-  bat_dong_kim_than: { core: 0x5a2d0b, body: 0xe39a2c, rim: 0xfff0c2, accent: 0xffd25a, shadow: 0x2a1708 },
-  // Đan sư (Mộc/Hỏa): ngọc lục đậm và đỏ son; viền ngả lục nhạt (không trắng) để không nhạt trên nền sáng.
-  thanh_moc_dan_kinh: { core: 0x06301f, body: 0x23b374, rim: 0x9fe9bd, accent: 0xe4452f, shadow: 0x071c13 },
+  // Hướng tu (VS-3): mỗi công pháp một bảng lấy từ `paths.json` (Kiếm tu lam ngọc, Hộ pháp hổ phách, Đan sư ngọc lục + đỏ son).
+  ...Object.fromEntries(PATHS.flatMap((p) => p.methods.map((m) => [m, pathPalette(p)] as const))),
   // Lôi: tím và trắng.
   loi: { core: 0x3a1670, body: 0x9a63ff, rim: 0xf5eeff, accent: 0xffe27a, shadow: 0x1a0c33 },
   // ---- Thiên Nhân Ngũ Suy (TN-4): mỗi ải một sắc, trầm hơn chiêu người chơi (suy kiệt). Thân/viền là thứ PHẢI BƯỚC VÀO (Linh Nhãn, Tôi Thể Lôi,
@@ -29,6 +36,16 @@ export const FX_PALETTE: Record<string, FxPalette> = {
   suy_thuc: { core: 0x1c1440, body: 0x7d6be0, rim: 0xeee9ff, accent: 0xff4a3a, shadow: 0x0c0920 },
   suy_tho: { core: 0x3a2a08, body: 0xffc45a, rim: 0xfff3d0, accent: 0x8fa3b8, shadow: 0x181004 },
   suy_tam: { core: 0x2a0c2e, body: 0xb04bff, rim: 0xf3e2ff, accent: 0xf3c860, shadow: 0x12061a },
+  // ---- Huyền Kiếp (TN-6): mỗi kiếp nhỏ một sắc; thân/viền sáng để nổi trên sân tối, `accent` là mối nguy hoặc tín hiệu "làm ngay".
+  hk_tuyet: { core: 0x10304a, body: 0x8fd4ff, rim: 0xf2fbff, accent: 0x5aa8ff, shadow: 0x06121e },
+  hk_phong: { core: 0x1a3a30, body: 0xd9c08a, rim: 0xf3fff4, accent: 0x7fe3c0, shadow: 0x0a1612 },
+  hk_loi: { core: 0x2a1460, body: 0xa77bff, rim: 0xf7f0ff, accent: 0xff5a3a, shadow: 0x100826 },
+  hk_tram_ly: { core: 0x1c2436, body: 0xbfd0e8, rim: 0xffffff, accent: 0xff4a3a, shadow: 0x0a0e16 },
+  hk_huyet_anh: { core: 0x3a060c, body: 0xe0283c, rim: 0xffd9c8, accent: 0xff7a5a, shadow: 0x160306 },
+  hk_van_tam: { core: 0x241848, body: 0x8f7be8, rim: 0xeee9ff, accent: 0xffd25a, shadow: 0x0e0920 },
+  hk_kho_than: { core: 0x12303a, body: 0x6fd0e0, rim: 0xeafcff, accent: 0xffd25a, shadow: 0x06141a },
+  hk_hon_tho: { core: 0x0c3324, body: 0x4fe0a0, rim: 0xe6fff2, accent: 0xa7f0d8, shadow: 0x06160f },
+  hk_luan_hoi: { core: 0x2a2208, body: 0xe8c45a, rim: 0xfff6d8, accent: 0xff5a3a, shadow: 0x120e04 },
   // ---- Quái (V5): bảng "nguy hiểm", tách khỏi bảng "của ta". Lõi rất sẫm, thân bão hòa theo ngũ hành, viền sáng ấm, điểm nhấn đỏ son/đỏ thẫm
   // để vạch báo và đòn của quái luôn đọc ra là mối nguy (không lẫn với lam ngọc/lục/hổ phách của người chơi).
   mon_kim: { core: 0x141b2b, body: 0x7f98bd, rim: 0xf4f9ff, accent: 0xff4a3a, shadow: 0x080b12 },
@@ -54,15 +71,17 @@ FX_PALETTE.dotpha_na = { core: 0x2a1458, body: 0x8f78e8, rim: 0xf0eaff, accent: 
 FX_PALETTE.dotpha_hn = { core: 0x4a3a12, body: 0xe6cf86, rim: 0xfff8de, accent: 0xaee0ff, shadow: 0x221a08 };
 FX_PALETTE.than_hanh = { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xdff8ff, accent: 0xf3c860, shadow: 0x08202e };
 
-const FX_PALETTE_DEFAULT = FX_PALETTE.lac_kiem_quyet!;
+/** Mặc định: bảng của hướng tu đầu tiên (Kiếm tu). */
+const FX_PALETTE_DEFAULT = FX_PALETTE[PATHS[0]!.methods[0]!]!;
 
 /** Bảng màu theo id công pháp (không biết thì kiếm tu). Khớp chuỗi con để chịu được id công pháp khác tên nhánh. */
 export function paletteOf(method: string | undefined): FxPalette {
   if (!method) return FX_PALETTE_DEFAULT;
   const hit = FX_PALETTE[method];
   if (hit) return hit;
-  if (/ho_phap|hophap|kim_than/.test(method)) return FX_PALETTE.bat_dong_kim_than!;
-  if (/dan_su|dansu|moc_dan/.test(method)) return FX_PALETTE.thanh_moc_dan_kinh!;
+  // VS-3: khóa không phải id công pháp (bí danh cũ như `ho_phap`, `dansu`) tra qua `match` của hướng tu.
+  const path = pathOf(method);
+  if (path) return FX_PALETTE[path.methods[0]!]!;
   if (/loi/.test(method)) return FX_PALETTE.loi!;
   return FX_PALETTE_DEFAULT;
 }

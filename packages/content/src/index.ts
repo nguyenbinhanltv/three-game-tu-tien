@@ -150,6 +150,35 @@ import fx_suy_thuc_void from '../data/fx/suy_thuc_void.json';
 import fx_suy_toi_hit from '../data/fx/suy_toi_hit.json';
 import fx_suy_toi_miss from '../data/fx/suy_toi_miss.json';
 import fx_suy_toi_warn from '../data/fx/suy_toi_warn.json';
+import fx_hk_chau from '../data/fx/hk_chau.json';
+import fx_hk_chau_get from '../data/fx/hk_chau_get.json';
+import fx_hk_chau_gone from '../data/fx/hk_chau_gone.json';
+import fx_hk_enter from '../data/fx/hk_enter.json';
+import fx_hk_huyet_kill from '../data/fx/hk_huyet_kill.json';
+import fx_hk_huyet_spawn from '../data/fx/hk_huyet_spawn.json';
+import fx_hk_loi_boom from '../data/fx/hk_loi_boom.json';
+import fx_hk_loi_hot from '../data/fx/hk_loi_hot.json';
+import fx_hk_loi_rod from '../data/fx/hk_loi_rod.json';
+import fx_hk_loi_zap from '../data/fx/hk_loi_zap.json';
+import fx_hk_luan_grind from '../data/fx/hk_luan_grind.json';
+import fx_hk_luan_warn from '../data/fx/hk_luan_warn.json';
+import fx_hk_luan_wheel from '../data/fx/hk_luan_wheel.json';
+import fx_hk_ly_cut from '../data/fx/hk_ly_cut.json';
+import fx_hk_ly_out from '../data/fx/hk_ly_out.json';
+import fx_hk_ly_seal from '../data/fx/hk_ly_seal.json';
+import fx_hk_phong_blow from '../data/fx/hk_phong_blow.json';
+import fx_hk_phong_hit from '../data/fx/hk_phong_hit.json';
+import fx_hk_phong_pillar from '../data/fx/hk_phong_pillar.json';
+import fx_hk_phong_safe from '../data/fx/hk_phong_safe.json';
+import fx_hk_phong_warn from '../data/fx/hk_phong_warn.json';
+import fx_hk_tuc_bad from '../data/fx/hk_tuc_bad.json';
+import fx_hk_tuc_beat from '../data/fx/hk_tuc_beat.json';
+import fx_hk_tuc_good from '../data/fx/hk_tuc_good.json';
+import fx_hk_tuyet_drift from '../data/fx/hk_tuyet_drift.json';
+import fx_hk_van_bad from '../data/fx/hk_van_bad.json';
+import fx_hk_van_ok from '../data/fx/hk_van_ok.json';
+import fx_hk_van_spin from '../data/fx/hk_van_spin.json';
+import fx_hk_van_true from '../data/fx/hk_van_true.json';
 import fx_fx_soul_in from '../data/fx/fx_soul_in.json';
 import fx_fx_soul_out from '../data/fx/fx_soul_out.json';
 import fx_skl_anh_duoc_hoa_than from '../data/fx/skl_anh_duoc_hoa_than.json';
@@ -543,6 +572,53 @@ export const SUY_FX_TIMELINES = [
   fx_suy_toi_warn,
 ] as unknown as FxTimeline[];
 export const SUY_FX = new Map(SUY_FX_TIMELINES.map((f) => [f.skill, f]));
+/**
+ * Dòng thời gian hiệu ứng của Huyền Kiếp (TN-6): `data/fx/hk_*.json`, sinh bằng `tools/vfx/gen-fx-hk.py`; client phát tại điểm server báo qua `hkmark`.
+ */
+export const HK_FX_TIMELINES = [
+  fx_hk_chau,
+  fx_hk_chau_get,
+  fx_hk_chau_gone,
+  fx_hk_enter,
+  fx_hk_huyet_kill,
+  fx_hk_huyet_spawn,
+  fx_hk_loi_boom,
+  fx_hk_loi_hot,
+  fx_hk_loi_rod,
+  fx_hk_loi_zap,
+  fx_hk_luan_grind,
+  fx_hk_luan_warn,
+  fx_hk_luan_wheel,
+  fx_hk_ly_cut,
+  fx_hk_ly_out,
+  fx_hk_ly_seal,
+  fx_hk_phong_blow,
+  fx_hk_phong_hit,
+  fx_hk_phong_pillar,
+  fx_hk_phong_safe,
+  fx_hk_phong_warn,
+  fx_hk_tuc_bad,
+  fx_hk_tuc_beat,
+  fx_hk_tuc_good,
+  fx_hk_tuyet_drift,
+  fx_hk_van_bad,
+  fx_hk_van_ok,
+  fx_hk_van_spin,
+  fx_hk_van_true,
+] as unknown as FxTimeline[];
+export const HK_FX = new Map(HK_FX_TIMELINES.map((f) => [f.skill, f]));
+/** Timeline của từng kiếp nhỏ (theo cơ chế `hk_*`), gồm cả phần chung vào/qua/trượt: ngân sách draw call kiểm theo nhóm này. */
+export const HK_FX_STAGE: Record<string, string[]> = {
+  hk_tuyet: ['hk_enter', 'hk_tuyet_drift', 'suy_ok', 'suy_fail'],
+  hk_phong: ['hk_enter', 'hk_phong_pillar', 'hk_phong_warn', 'hk_phong_blow', 'hk_phong_safe', 'hk_phong_hit', 'suy_ok', 'suy_fail'],
+  hk_loi: ['hk_enter', 'hk_loi_rod', 'hk_loi_hot', 'hk_loi_zap', 'hk_loi_boom', 'suy_ok', 'suy_fail'],
+  hk_tram_ly: ['hk_enter', 'hk_ly_seal', 'hk_ly_out', 'hk_ly_cut', 'suy_ok', 'suy_fail'],
+  hk_huyet_anh: ['hk_enter', 'hk_huyet_spawn', 'hk_huyet_kill', 'suy_ok', 'suy_fail'],
+  hk_van_tam: ['hk_enter', 'hk_van_true', 'hk_van_spin', 'hk_van_ok', 'hk_van_bad', 'suy_ok', 'suy_fail'],
+  hk_kho_than: ['hk_enter', 'hk_tuc_beat', 'hk_tuc_good', 'hk_tuc_bad', 'suy_ok', 'suy_fail'],
+  hk_hon_tho: ['hk_enter', 'hk_chau', 'hk_chau_get', 'hk_chau_gone', 'suy_ok', 'suy_fail'],
+  hk_luan_hoi: ['hk_enter', 'hk_luan_wheel', 'hk_luan_warn', 'hk_luan_grind', 'suy_ok', 'suy_fail'],
+};
 /** Timeline của từng ải (theo cơ chế `suy_*`), tính cả phần chung vào/qua/trượt ải: ngân sách draw call kiểm theo nhóm này. */
 export const SUY_FX_STAGE: Record<string, string[]> = {
   suy_linh: ['suy_enter_linh', 'suy_nhan_open', 'suy_nhan', 'suy_nhan_end', 'suy_ok', 'suy_fail'],

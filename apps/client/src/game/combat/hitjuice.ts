@@ -3,6 +3,7 @@
  * game để tiếng và phản ứng trúng đòn rơi đúng khung `hit` của máy trạng thái chiêu (K-4) thay cho `setTimeout`.
  * Hàm ở đây thuần (không đụng DOM/âm thanh) để test; server không đọc gì ở đây.
  */
+import { PATHS } from '@dtl/content';
 import type { MonsterDef } from '@dtl/shared';
 
 /** Ngữ cảnh một đòn trúng, suy từ `DmgMsg` và sự kiện `hit` của chiêu. */
@@ -123,9 +124,9 @@ export function layersOf(o: { method?: string; material: Material; crit: boolean
   if (o.crit) out.push({ sfx: 'crit', gain: 0.3, rate: 1.1 });
   if (o.material === 'stone') out.push({ sfx: 'impact', gain: 0.22, rate: 1.15 });
   else if (o.material === 'metal') out.push({ sfx: 'block', gain: 0.2, rate: 1 });
-  if (o.method === 'lac_kiem_quyet' && o.strong) out.push({ sfx: 'crit', gain: 0.18, rate: 1.2 });
-  else if (o.method === 'bat_dong_kim_than') out.push({ sfx: 'impact', gain: 0.2, rate: 1 });
-  else if (o.method === 'thanh_moc_dan_kinh') out.push({ sfx: 'cast', gain: 0.12, rate: 1.3 });
+  // VS-3: lớp tiếng theo hướng tu của công pháp (`paths.json` → `hit`); `strongOnly` = chỉ với đòn mạnh.
+  const hit = o.method ? PATHS.find((p) => p.methods.includes(o.method!))?.hit : undefined;
+  if (hit && (!hit.strongOnly || o.strong)) out.push({ sfx: hit.sfx as Layer['sfx'], gain: hit.gain, rate: hit.rate });
   // Cắt cho tổng không vượt trần.
   let sum = 0;
   const capped: Layer[] = [];

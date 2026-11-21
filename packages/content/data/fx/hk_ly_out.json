@@ -1,0 +1,48 @@
+{
+ "skill": "hk_ly_out",
+ "palette": "hk_tram_ly",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 0.8,
+   "at": "area",
+   "offset": [
+    0,
+    0.1,
+    0
+   ],
+   "scale": [
+    6.0,
+    1,
+    6.0
+   ],
+   "scaleTo": [
+    6.6,
+    1,
+    6.6
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.3,
+   "ragged": 0.8,
+   "tone": "accent",
+   "alpha": 0.95,
+   "seed": 70,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 20,
+   "speed": 3.0,
+   "spread": 1.0,
+   "life": 0.7,
+   "size": 0.08,
+   "at": "self",
+   "tone": "accent",
+   "tier": 1
+  }
+ ]
+}
