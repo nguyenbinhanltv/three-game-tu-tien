@@ -19,7 +19,7 @@ export const GREATBLADE_COLORS = {
 
 /** Chiều dài lưỡi (m) cho nhân vật cao `height` (m). */
 export function greatbladeLength(height: number): number {
-  return 0.78 * (height / 1.7) * 1.6;
+  return 0.78 * (height / 1.7) * 1.25;
 }
 
 function tinted(g: THREE.BufferGeometry, color: number): THREE.BufferGeometry {
