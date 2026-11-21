@@ -54,6 +54,8 @@ export interface CharacterView {
   setBrawlerGear?(on: boolean): void;
   /** Đao tu: thay kiếm bằng đao lớn thủ tục (model không hỗ trợ thì bỏ qua). */
   setGreatBlade?(on: boolean): void;
+  /** Cổ tu: sáo cổ thay kiếm + hũ cổ treo hông (model không hỗ trợ thì bỏ qua). */
+  setCoGear?(on: boolean): void;
   /** Màu ánh kiếm theo bộ trang bị (hex '#rrggbb'; '' = không); kiếm có ánh nhẹ dù chưa +7. */
   setWeaponTint?(hex: string): void;
   /** Bỏ động tác đang chờ (`delay`) và tắt nhanh động tác chưa tới lúc ra đòn (vd. niệm chú bị phá). */

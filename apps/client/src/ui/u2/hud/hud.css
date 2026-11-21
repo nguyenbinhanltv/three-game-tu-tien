@@ -931,6 +931,10 @@
   --rc: var(--u-h-jade-hi);
   --rc-lo: var(--u-h-jade-lo);
 }
+.res-bar[data-res='co'] {
+  --rc: var(--u-h-co-hi);
+  --rc-lo: var(--u-h-co-lo);
+}
 .res-bar[data-res='khi_the'] {
   --rc: var(--u-h-blade-hi);
   --rc-lo: var(--u-h-blade-lo);

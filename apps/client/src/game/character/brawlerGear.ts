@@ -272,7 +272,7 @@ function gearMaterial(): THREE.MeshStandardMaterial {
 }
 
 /** Gán trọng số da (một xương) cho hình `geo` đang ở hệ rig, đổi sang hệ cục bộ của mesh tham chiếu. */
-function skinTo(geo: THREE.BufferGeometry, boneIndex: number, toBone: THREE.Matrix4): THREE.BufferGeometry {
+export function skinGeometry(geo: THREE.BufferGeometry, boneIndex: number, toBone: THREE.Matrix4): THREE.BufferGeometry {
   geo.applyMatrix4(toBone);
   const n = geo.getAttribute('position').count;
   const idx = new Uint16Array(n * 4);
@@ -300,7 +300,7 @@ export function attachBrawlerGear(rig: THREE.Object3D, bind: BindSnapshot, heigh
     const bi = b ? bones.indexOf(b as THREE.Bone) : -1;
     const tb = bind.toBone.get(boneName);
     if (!geo || bi < 0 || !tb) return;
-    parts.push(skinTo(geo, bi, tb));
+    parts.push(skinGeometry(geo, bi, tb));
   };
   for (const s of ['l', 'r'] as const) {
     const sign = s === 'l' ? 1 : -1;
