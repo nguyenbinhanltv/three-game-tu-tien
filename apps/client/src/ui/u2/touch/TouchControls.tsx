@@ -233,7 +233,7 @@ function ActionCluster() {
   }, []);
   if (!char) return null;
   const g = touchCluster(compact);
-  const tt = thanThongSkill(method?.method);
+  const tt = thanThongSkill(method?.method, method?.br);
   const tt10 = thanThong10Skill(method?.method);
   const bar = [...skillBar(method?.method), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : [])];
   const slot = (i: number): SkillDef | null => bar[i] ?? null;

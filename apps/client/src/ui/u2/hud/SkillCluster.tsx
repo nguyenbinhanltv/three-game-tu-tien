@@ -248,7 +248,7 @@ export function SkillCluster({ layout, utility }: { layout: 'arc' | 'bar'; utili
   const view = useSkillView();
   const now = useNow(100);
   if (!char) return null;
-  const tt = thanThongSkill(method?.method);
+  const tt = thanThongSkill(method?.method, method?.br);
   const tt10 = thanThong10Skill(method?.method);
   const bar = [...skillBar(method?.method), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : [])];
   const slots: (SkillDef | null)[] = Array.from({ length: BAR_SIZE + 2 }, (_, i) => bar[i] ?? null);

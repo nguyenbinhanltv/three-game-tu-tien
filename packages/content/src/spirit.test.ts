@@ -20,7 +20,15 @@ describe('E2-E: thần thức, ô chiêu 9, bản mệnh pháp bảo', () => {
   });
 
   it('hàng bậc cao còn 16, 18, 22, 24, 26 theo thứ tự (không gồm 20)', () => {
-    for (const m of METHODS) expect(tierBar(m.id).map((s) => s.unlock)).toEqual([16, 18, 22, 24, 26]);
+    // VS-2d: hàng bậc cao là chiêu mốc 16 và 24; chưa chọn nhánh thì hiện cả hai chiêu mỗi mốc, chọn rồi chỉ còn chiêu của nhánh.
+    for (const m of METHODS) {
+      expect(tierBar(m.id).map((s) => s.unlock)).toEqual([16, 16, 24, 24]);
+      const picks = { 16: m.branches.find((b) => b.tier === 16)!.id, 24: m.branches.find((b) => b.tier === 24)!.id };
+      expect(tierBar(m.id, picks).map((s) => s.unlock)).toEqual([16, 24]);
+      // Ô 9 theo nhánh mốc 20 đã chọn.
+      const b20 = m.branches.filter((b) => b.tier === 20);
+      for (const b of b20) expect(b.grants).toContain(thanThongSkill(m.id, { 20: b.id })!.id);
+    }
   });
 
   it('Ngưng Đan Lô là bản mệnh, mở ở cấp Kết Đan', () => {

@@ -41,9 +41,11 @@ import {
   xpNeed,
   TELE_FREE,
   TELE_PAD,
+  sanitizePicks,
+  type BranchPicks,
 } from '@dtl/shared';
-import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT, SETS } from '@dtl/content';
-import { characters, db, items, ledger, rootForName, wardrobe } from '../db';
+import { APPEARANCE, ITEM, ITEM_SYS, METHOD, QUEST, ROOT, SETS } from '@dtl/content';
+import { branches, characters, db, items, ledger, rootForName, wardrobe } from '../db';
 import { methodDefMul, methodOf, sanitizeMethodMeta, type MethodMeta } from './method';
 import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta } from './artifact';
 import { log } from '../log';
@@ -74,6 +76,9 @@ export class InvDraft {
   root: RootId | '' = '';
   /** Lựa chọn tủ ngoại trang mới (đã kiểm ở `WardrobeSystem`); ghi cùng transaction với dòng ledger `noop`. */
   look: OutfitLook | null = null;
+  /** Nhánh công pháp (VS-2d): chọn mới và công pháp cần reset; ghi cùng transaction với phí linh thạch/dòng ledger. */
+  branchSet: { method: string; tier: number; branch: string }[] = [];
+  branchClear: string[] = [];
 
   constructor(c: Character) {
     this.inv = c.inv.map((s) => (s ? { ...s } : null));
@@ -84,6 +89,18 @@ export class InvDraft {
       if (e) this.equip[k] = { ...e };
     }
     this.gold = c.gold;
+  }
+
+  /** Chọn nhánh `branch` cho mốc `tier` của công pháp `method` (đã kiểm ở nơi gọi). */
+  setBranch(method: string, tier: number, branch: string): boolean {
+    this.branchSet.push({ method, tier, branch });
+    return true;
+  }
+
+  /** Xóa mọi nhánh đã chọn của công pháp `method`. */
+  clearBranches(method: string): boolean {
+    this.branchClear.push(method);
+    return true;
   }
 
   bump(id: string, n: number) {
@@ -251,6 +268,8 @@ export class Character {
   appearance: Appearance = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
   /** Tủ ngoại trang (P4): id món đã mở khóa (bảng `wardrobe`) và lựa chọn đang áp dụng (cột `look`). Chỉ để hiển thị, không đổi chỉ số. */
   wardrobe = new Set<string>();
+  /** Nhánh công pháp đã chọn (VS-2d, bảng `branches`): id công pháp → mốc → id nhánh. Chỉ đổi qua `tx`. */
+  branches: Record<string, BranchPicks> = {};
   look: OutfitLook = emptyLook();
   /** Cần gửi lại `S.WARDROBE` cho chủ. */
   wardrobeDirty = true;
@@ -336,6 +355,13 @@ export class Character {
     c.root = isRootId(row.root) ? row.root : rootForName(row.name);
     c.bk = row.bk === 0 || BOTTLENECK_LEVELS.includes(row.bk) ? row.bk : initialBottleneck(row.level);
     c.tele = parseTele(row.tele);
+    // Nhánh công pháp: bỏ dòng lạ (công pháp/nhánh đã gỡ khỏi dữ liệu) khi đọc, không sửa DB.
+    const rawBr: Record<string, Record<string, string>> = {};
+    for (const r of db.select().from(branches).where(eq(branches.charId, id)).all()) (rawBr[r.method] ??= {})[String(r.tier)] = r.branch;
+    for (const [mid, picks] of Object.entries(rawBr)) {
+      const clean = sanitizePicks(METHOD.get(mid), picks);
+      if (Object.keys(clean).length) c.branches[mid] = clean;
+    }
     for (const r of db.select({ itemId: wardrobe.itemId }).from(wardrobe).where(eq(wardrobe.charId, id)).all()) {
       if (isWardrobeKind(ITEM.get(r.itemId)?.kind)) c.wardrobe.add(r.itemId);
     }
@@ -560,6 +586,18 @@ export class Character {
           }
         }
         for (const id of unlock) tx.insert(wardrobe).values({ charId: this.id, itemId: id, at: ts }).onConflictDoNothing().run();
+        // Nhánh công pháp: reset trước rồi mới ghi lựa chọn mới (cùng transaction với ledger ở trên).
+        for (const m of d.branchClear) {
+          tx.delete(branches)
+            .where(and(eq(branches.charId, this.id), eq(branches.method, m)))
+            .run();
+        }
+        for (const b of d.branchSet) {
+          tx.insert(branches)
+            .values({ charId: this.id, method: b.method, tier: b.tier, branch: b.branch, at: ts })
+            .onConflictDoUpdate({ target: [branches.charId, branches.method, branches.tier], set: { branch: b.branch, at: ts } })
+            .run();
+        }
         tx.update(characters)
           .set({
             gold: d.gold,
@@ -581,6 +619,8 @@ export class Character {
       return false;
     }
     // Chỉ sau khi commit thành công mới đổi bộ nhớ và báo cho chủ.
+    for (const m of d.branchClear) delete this.branches[m];
+    for (const b of d.branchSet) (this.branches[b.method] ??= {})[b.tier] = b.branch;
     for (const id of unlock) this.wardrobe.add(id);
     if (d.look) this.look = d.look;
     if (unlock.length || d.look) this.wardrobeDirty = true;
