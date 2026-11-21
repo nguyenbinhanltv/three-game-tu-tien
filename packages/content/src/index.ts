@@ -1,5 +1,8 @@
 import {
   clampTier,
+  pathOfKey,
+  ROOT_IDS,
+  registerMethodVoices,
   pickedBranch,
   skillGate,
   isEquipSlot,
@@ -10,6 +13,7 @@ import {
   type CloneMethodDef,
   type JointDef,
   type MarkDef,
+  type PathDef,
   type FxTimeline,
   type ResolvedSkill,
   type TerrainDef,
@@ -34,6 +38,7 @@ import type {
   PoseDef,
   QuestDef,
   RealmDef,
+  OriginDef,
   RootDef,
   RecipeDef,
   SkillDef,
@@ -47,6 +52,7 @@ import skillsJson from '../data/skills.json';
 import methodsJson from '../data/methods.json';
 import marksJson from '../data/marks.json';
 import jointsJson from '../data/joints.json';
+import pathsJson from '../data/paths.json';
 import recipesJson from '../data/recipes.json';
 import artifactsJson from '../data/artifacts.json';
 import clonesJson from '../data/clones.json';
@@ -55,7 +61,7 @@ import npcsJson from '../data/npcs.json';
 import questsJson from '../data/quests.json';
 import chaptersJson from '../data/chapters.json';
 import realmsJson from '../data/realms.json';
-import rootsJson from '../data/roots.json';
+import originsJson from '../data/origins.json';
 import vanLamJson from '../data/levels/van_lam.json';
 import kiemTrungJson from '../data/levels/kiem_trung.json';
 import doanMachJson from '../data/levels/doan_mach.json';
@@ -285,6 +291,15 @@ export const METHOD_SKILLS = methodsJson.skills as SkillDef[];
 /** Ấn trên mục tiêu (VS-2c, data/marks.json): id → định nghĩa. */
 export const MARKS = marksJson as MarkDef[];
 export const MARK: ReadonlyMap<string, MarkDef> = new Map(MARKS.map((m) => [m.id, m]));
+/** Hướng tu (VS-3, data/paths.json): gom hào quang, tranh đạo, bộ động tác, bảng màu, tiếng đòn của một lối tu. */
+export const PATHS = pathsJson as PathDef[];
+export const PATH: ReadonlyMap<string, PathDef> = new Map(PATHS.map((p) => [p.id, p]));
+/** Hướng tu của một khóa (id công pháp, id hướng, hoặc bí danh cũ); không ra thì undefined. */
+export function pathOf(key: string | undefined): PathDef | undefined {
+  return pathOfKey(PATHS, key);
+}
+// Bộ động tác K-5 theo công pháp: shared giữ bảng, content nạp từ hướng tu.
+registerMethodVoices(Object.fromEntries(PATHS.flatMap((p) => p.methods.map((m) => [m, p.voice] as const))));
 /** Hợp kích tổ đội (VS-2f, data/joints.json). */
 export const JOINTS = jointsJson as JointDef[];
 /** id chiêu → biến thức A/B (cả chiêu chung lẫn chiêu công pháp). */
@@ -334,8 +349,10 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   xich_tan_khich: xichTanKhichAssetsJson as LevelAssets,
   kim_da_cung: kimDaCungAssetsJson as LevelAssets,
 };
-/** Năm linh căn ngũ hành (P3-7). */
-export const ROOTS = rootsJson as RootDef[];
+/** 14 Bản Nguyên (TN-1, data/origins.json): sáu nguồn `real` đã mở, tám nguồn khóa theo chương. */
+export const ORIGINS = originsJson as OriginDef[];
+/** Các nguồn người chơi đang được mang (`ROOT_IDS`): năm linh căn ngũ hành (P3-7). */
+export const ROOTS: RootDef[] = ORIGINS.filter((o) => (ROOT_IDS as readonly string[]).includes(o.id));
 export const GLOSSARY = glossaryJson;
 
 /** Ghi công asset bên thứ ba (nguồn duy nhất, đối chiếu với assets/LICENSES.md + meta.json bằng content:check). */
@@ -620,7 +637,9 @@ export const SUY_FX_STAGE: Record<string, string[]> = {
   ],
   suy_tam: ['suy_enter_tam', 'suy_tam_open', 'suy_tam_good', 'suy_tam_bad', 'suy_tam_miss', 'suy_ok', 'suy_fail'],
 };
-export const ROOT = index(ROOTS);
+/** Tra theo id trên CẢ 14 nguồn (nguồn nào được chọn do `isRootId` quyết định, không phải bảng này). */
+export const ROOT = index(ORIGINS);
+export const ORIGIN = ROOT;
 export const ARTIFACT = index(ARTIFACTS);
 /** Danh sách chiêu của phân thân thần niệm theo công pháp (E4-K): `data/clones.json`. */
 export const CLONE_MOVES = clonesJson as unknown as Record<string, CloneMethodDef>;

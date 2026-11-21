@@ -3,6 +3,7 @@
  * Quy tắc: tranh theo bộ của món ĐANG MẶC (`lookSet`); không có bộ → đồ đệ tử; nam/nữ theo giới tính; nền theo cảnh giới;
  * kiếm theo mẫu kiếm đang mặc. Tên tệp khớp `apps/client/public/hoa-truc/<tên>.webp` (xem tools/hoa-truc/build.py).
  */
+import { METHOD, pathOf } from '@dtl/content';
 import { lookSet, setStatuses, type SetDef } from '@dtl/shared';
 
 /** Bộ có tranh riêng (bước 1). Bộ khác chưa có tranh thì rơi về đồ đệ tử. */
@@ -64,8 +65,6 @@ export function realmTier(level: number): 0 | 1 | 2 | 3 | 4 {
   return level >= 32 ? 4 : level >= 28 ? 3 : level >= 24 ? 2 : level >= 20 ? 1 : 0;
 }
 
-const DAO_OF_METHOD: Record<string, DaoArt> = { lac_kiem_quyet: 'kiem', bat_dong_kim_than: 'ho_phap', thanh_moc_dan_kinh: 'dan_su' };
-
 /** Mẫu kiếm 3D → lớp kiếm vẽ: nhóm kiếm lạnh (hàn) dùng kiếm băng, còn lại kiếm thanh phong. */
 export function swordArt(model: string | undefined): SwordArt {
   return model && /han_/.test(model) ? 'han_quang' : 'thanh_phong';
@@ -93,6 +92,7 @@ export function pickPortrait(o: {
     full,
     setId: set && SET_ART[set.id] ? set.id : null,
     tier: realmTier(o.level),
-    dao: (o.method && DAO_OF_METHOD[o.method]) || null,
+    // VS-3: tranh đạo lấy từ hướng tu của công pháp (chỉ id công pháp có thật; chưa chọn thì không có).
+    dao: (o.method && METHOD.has(o.method) && pathOf(o.method)?.art) || null,
   };
 }

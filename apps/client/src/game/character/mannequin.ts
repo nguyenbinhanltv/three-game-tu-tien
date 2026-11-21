@@ -3,7 +3,7 @@
 // (sửa lỗi bóng T-pose). Chưa có: pose IK chiêu K-5, kiếm gắn tay, phụ kiện bộ đồ, K-3 (đi lùi/ngang), IK chân.
 // Đây là bản thử pipeline: không đổi mặc định, không đụng v1/v2.
 import * as THREE from 'three/webgpu';
-import { texture } from 'three/tsl';
+import { attribute, dot, float, fract, mix, screenCoordinate, texture, vec2, vec3, vec4 } from 'three/tsl';
 import { ClothRig } from './thienY';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
@@ -96,6 +96,12 @@ export const SKIRT_TUNE: Record<string, SkirtTune> = {
   chr_v3_dia_long_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 2 (Hộ pháp)
   chr_v3_van_kinh_nam: KIEM_TU_TUNE, // NV3-ROLL đợt 2 (Hộ pháp)
   chr_v3_van_kinh_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 2 (Hộ pháp)
+  chr_v3_luu_ly_nam: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
+  chr_v3_luu_ly_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
+  chr_v3_phuc_mach_nam: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
+  chr_v3_phuc_mach_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
+  chr_v3_than_tang_nam: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
+  chr_v3_than_tang_nu: KIEM_TU_TUNE, // NV3-ROLL đợt 3 (Đan sư)
 };
 const skirtTuneOf = (id: string): SkirtTune | undefined => Object.entries(SKIRT_TUNE).find(([k]) => id.startsWith(k))?.[1];
 /** Thông số riêng của vạt ở lò xo v2: góc lệch tối đa hẹp (12°) vì vạt nay do lò xo + va chạm điều khiển phần lớn (share 0,8): lệch rộng làm hai nửa vạt chéo nhau khi chạy. Tóc và tay áo giữ `V3_SPRING`. */
@@ -134,15 +140,15 @@ export const V3_OWN_SETS: Readonly<Record<string, string>> = {
   set_co_thanh: 'co_thanh',
   set_dia_giap: 'dia_long',
   set_van_kinh: 'van_kinh',
+  set_luu_ly: 'luu_ly',
+  set_phuc_mach: 'phuc_mach',
+  set_than_tang: 'than_tang',
 };
 const V3_BRANCH_FALLBACK: Readonly<Record<string, string>> = {
   set_lac_kiem: 'lac_kiem',
   set_han_giao: 'lac_kiem',
   set_tran_khich: 'lac_kiem',
   set_tan_thiet: 'huyen_giap',
-  set_phuc_mach: 'dan_tam',
-  set_luu_ly: 'dan_tam',
-  set_than_tang: 'dan_tam',
   set_tinh_dan_bao: 'dan_tam',
 };
 /** Asset v3 của một nhân vật (giới `g`, skin đang mặc nếu có, bộ trang bị `set`). Skin sai giới (server không cho mặc) bị bỏ qua. */
@@ -221,6 +227,12 @@ export const KEEP_ORIGINAL_ASSETS: ReadonlySet<string> = new Set([
   'chr_v3_dia_long_nu',
   'chr_v3_van_kinh_nam',
   'chr_v3_van_kinh_nu',
+  'chr_v3_luu_ly_nam',
+  'chr_v3_luu_ly_nu',
+  'chr_v3_phuc_mach_nam',
+  'chr_v3_phuc_mach_nu',
+  'chr_v3_than_tang_nam',
+  'chr_v3_than_tang_nu',
 ]);
 
 /**
@@ -236,7 +248,52 @@ function tuneTripoMaterial(m: THREE.MeshStandardNodeMaterial): void {
   // Da nhợt của Tripo (baseColor sáng ~0,8) bị nắng + env game thổi trắng/xám: hạ phản xạ khuếch tán một chút cho còn sắc hồng.
   // Ánh sáng game hơi lạnh (đo má: R−B từ 56 còn 29): bù ấm nhẹ (R giữ, G −15%, B −20%).
   m.color.setRGB(0.96, 0.82, 0.76);
+  if (FLAGS.v3Side === 'double') m.side = THREE.DoubleSide;
+  else if (FLAGS.v3Side === 'front') m.side = THREE.FrontSide;
   m.needsUpdate = true;
+}
+
+/**
+ * Voan/mép vải hở của model giữ gốc có đỉnh COLOR_0 từ `chr_v3_c2.py`: R = mặt nạ voan, A = độ phủ (`c2.veilAlpha`, `c2.borderFade`).
+ * - Độ phủ vẽ bằng dither màn hình (interleaved gradient noise, ổn định theo điểm ảnh, FXAA/pixelRatio 2 làm mịn): không sắp xếp tam giác trong một mesh,
+ *   ghi độ sâu, không vỡ lỗ; mép răng cưa tan dần. Ít hạt hơn alpha hash theo vị trí.
+ * - Voan sáng và không kim loại như tranh gốc: vật liệu Tripo chung dùng metalness 0,5 và tint ấm cho da/tóc, làm voan tối; mặt nạ gỡ cả hai.
+ * - Tấm vải mỏng hai mặt. `?v3side=front|double` ghi đè mặt vẽ để so sánh.
+ */
+export const VEIL_LOOK = { gain: 1.4, lift: 0.07, sat: 0.85, metalness: 0.0 } as const;
+function applyVeilAlpha(root: THREE.Object3D): void {
+  const seen = new Set<THREE.Material>();
+  root.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh || !mesh.geometry.hasAttribute('color')) return;
+    for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+      if (seen.has(m)) continue;
+      seen.add(m);
+      const nm = m as THREE.MeshStandardNodeMaterial;
+      const vc = attribute('color', 'vec4');
+      const mask = vc.r;
+      const base = nm.map ? texture(nm.map).rgb : vec3(1, 1, 1);
+      const warm = vec3(nm.color.r, nm.color.g, nm.color.b);
+      const tint = mix(warm, vec3(1, 1, 1), mask);
+      const bright = base
+        .mul(tint)
+        .mul(mix(float(1), float(VEIL_LOOK.gain), mask))
+        .add(mask.mul(VEIL_LOOK.lift));
+      const luma = dot(bright, vec3(0.299, 0.587, 0.114));
+      const lit = mix(bright, vec3(luma, luma, luma), mask.mul(1 - VEIL_LOOK.sat)); // voan nhạt màu như tranh gốc (texture Tripo sẫm hơn)
+      nm.vertexColors = false; // màu đỉnh đọc tay (không nhân vào albedo)
+      nm.colorNode = vec4(lit, 1);
+      nm.metalnessNode = mix(float(nm.metalness), float(VEIL_LOOK.metalness), mask);
+      nm.opacityNode = vc.a;
+      const ign = fract(fract(dot(screenCoordinate, vec2(0.06711056, 0.00583715))).mul(52.9829189));
+      nm.alphaTestNode = ign; // bỏ điểm ảnh khi độ phủ <= nhiễu (độ phủ 1 giữ nguyên)
+      nm.alphaHash = false;
+      nm.transparent = false;
+      nm.depthWrite = true;
+      if (FLAGS.v3Side !== 'front') nm.side = THREE.DoubleSide;
+      nm.needsUpdate = true;
+    }
+  });
 }
 
 /** Clip riêng cho áo bào rộng (`tools/blender/anim_robe.py`): ghi đè clip cùng tên của thư viện UAL cho asset giữ gốc. */
@@ -246,6 +303,7 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   const mats = adoptGltfMaterials(handle.scene);
   if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const m of mats) tuneTripoMaterial(m);
+  if (KEEP_ORIGINAL_ASSETS.has(handle.id) && FLAGS.v3Veil) applyVeilAlpha(handle.scene);
   const look = SKIN_LOOKS[handle.id];
   if (look) for (const m of mats) applySkinLook(m, look);
   const box = new THREE.Box3().setFromObject(handle.scene);
@@ -292,6 +350,12 @@ export const ARM_FIT: Record<string, number> = {
   chr_v3_dia_long_nu: 0,
   chr_v3_van_kinh_nam: 0,
   chr_v3_van_kinh_nu: 0,
+  chr_v3_luu_ly_nam: 0,
+  chr_v3_luu_ly_nu: 0,
+  chr_v3_phuc_mach_nam: 0,
+  chr_v3_phuc_mach_nu: 0,
+  chr_v3_than_tang_nam: 0,
+  chr_v3_than_tang_nu: 0,
 };
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
 

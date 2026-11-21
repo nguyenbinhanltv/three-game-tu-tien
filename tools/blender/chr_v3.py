@@ -1579,10 +1579,13 @@ if REPORT:
     json.dump(REP, open(REPORT, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 if not NO_EXPORT:
     os.makedirs(os.path.dirname(os.path.abspath(OUT)), exist_ok=True)
-    bpy.ops.export_scene.gltf(
+    _gx = dict(
         filepath=OUT, export_format='GLB', export_yup=True, export_skins=True, export_animations=False,
         export_extras=True, export_image_format='AUTO', use_selection=False,
     )
+    if 'DtlAlpha' in BODY.data.color_attributes:  # alpha đỉnh của C2 (voan trong suốt, mép mờ): xuất làm COLOR_0
+        _gx.update(export_vertex_color='NAME', export_vertex_color_name='DtlAlpha')
+    bpy.ops.export_scene.gltf(**_gx)
     log(f'xuất {OUT} {os.path.getsize(OUT) // 1024} KB; ' + json.dumps({k: REP[k] for k in ('tris', 'bones', 'spring_bones')}))
     if BIND_A:
         # Đặt lại góc nghỉ cục bộ của các nút xương = template UAL (clip phát tuyệt đối nên không đổi, nhưng mã client đọc "tư thế nghỉ" của xương);
