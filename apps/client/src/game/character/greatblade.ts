@@ -34,10 +34,10 @@ const U0 = 0.15;
 
 /** Màu thép vân theo (s: 0 sống → 1 cạnh, v: 0 chân → 1 mũi). */
 export function bladeSteelColor(s: number, v: number): THREE.Color {
-  const c = new THREE.Color(GREATBLADE_COLORS.steel);
+  const c = new THREE.Color(0x868c96); // thép nền sáng hơn màu chắn: cảnh không có env map nên kim loại tối dễ thành đen
   const bright = new THREE.Color(GREATBLADE_COLORS.edge);
   // thép nền sáng dần từ sống sang cạnh
-  c.lerp(bright, 0.35 + 0.4 * s);
+  c.lerp(bright, 0.3 + 0.5 * s);
   // vân thép: sọc dọc mảnh thay đổi nhẹ độ sáng
   c.multiplyScalar(0.92 + 0.08 * Math.sin(s * 52 + v * 9));
   // rãnh máu: dải tối dọc sống trong khoảng 8–72% chiều dài
@@ -63,7 +63,9 @@ export function bladeGeometry(L: number, w: number, t: number, y0: number, bend:
     const base = pos.length / 3;
     for (let j = 0; j <= BLADE_NY; j++) {
       const v = j / BLADE_NY;
-      const xe = v < 0.82 ? w : w - (2 * w * (v - 0.82)) / 0.18; // mũi vát: cạnh co về phía sống
+      // bản rộng dần về mũi (đao): 0,65w ở chân → w ở 85% chiều dài, rồi mũi vát: cạnh co về phía sống
+      const wv = v < 0.85 ? w * (0.65 + 0.35 * (v / 0.85) ** 1.3) : w;
+      const xe = v < 0.85 ? wv : w - (2 * w * (v - 0.85)) / 0.15;
       const y = y0 + v * L;
       const curve = bend * v * v; // cong về phía cạnh (+x)
       for (let i = 0; i <= BLADE_NX; i++) {
@@ -120,20 +122,31 @@ function tinted(g: THREE.BufferGeometry, color: number): THREE.BufferGeometry {
 export function greatbladeGeometry(height: number): THREE.BufferGeometry {
   const k = height / 1.7;
   const L = greatbladeLength(height);
-  const w = 0.058 * k; // nửa bản rộng
+  const w = 0.066 * k; // nửa bản rộng ở bụng lưỡi
   const t = 0.02 * k; // dày ở sống
   const y0 = 0.14 * k; // chân lưỡi (trên chắn)
   const parts: THREE.BufferGeometry[] = [];
-  parts.push(bladeGeometry(L, w, t, y0, 0.05 * k));
-  // chắn đĩa tròn đồng viền vàng tàn lửa, có vòng khắc
-  const guard = new THREE.CylinderGeometry(0.07 * k, 0.07 * k, 0.016 * k, 20);
-  guard.translate(0, y0 - 0.005 * k, 0);
+  parts.push(bladeGeometry(L, w, t, y0, 0.09 * k));
+  // chắn đồng dạng đĩa mây: một vành nhiều thùy (cánh mây) viền vàng tàn lửa, vòng khắc trong, KHÔNG phải tsuba tròn
+  const cloud = new THREE.Shape();
+  const lobes = 8;
+  for (let i = 0; i <= lobes * 8; i++) {
+    const a = (i / (lobes * 8)) * Math.PI * 2;
+    const r = (0.066 + 0.018 * Math.abs(Math.sin((a * lobes) / 2))) * k; // thùy tròn nhô ra, lõm giữa hai thùy
+    const x = Math.cos(a) * r;
+    const y = Math.sin(a) * r;
+    if (i === 0) cloud.moveTo(x, y);
+    else cloud.lineTo(x, y);
+  }
+  const guard = new THREE.ExtrudeGeometry(cloud, { depth: 0.014 * k, bevelEnabled: false });
+  guard.rotateX(-Math.PI / 2);
+  guard.translate(0, y0 - 0.012 * k, 0);
   parts.push(tinted(guard, GREATBLADE_COLORS.bronze));
-  const rim = new THREE.TorusGeometry(0.07 * k, 0.006 * k, 6, 22);
+  const rim = new THREE.TorusGeometry(0.058 * k, 0.0055 * k, 6, 24);
   rim.rotateX(Math.PI / 2);
-  rim.translate(0, y0 - 0.005 * k, 0);
+  rim.translate(0, y0 + 0.004 * k, 0);
   parts.push(tinted(rim, GREATBLADE_COLORS.ember));
-  const inner = new THREE.TorusGeometry(0.045 * k, 0.0035 * k, 5, 18);
+  const inner = new THREE.TorusGeometry(0.038 * k, 0.0035 * k, 5, 18);
   inner.rotateX(Math.PI / 2);
   inner.translate(0, y0 + 0.004 * k, 0);
   parts.push(tinted(inner, GREATBLADE_COLORS.dark));
@@ -216,7 +229,7 @@ function material(): THREE.MeshStandardMaterial {
       vertexColors: true,
       roughness: 1, // nhân với kênh G của roughnessMap
       roughnessMap: tex,
-      metalness: 0.82,
+      metalness: 0.55,
       side: THREE.DoubleSide,
     });
   }
