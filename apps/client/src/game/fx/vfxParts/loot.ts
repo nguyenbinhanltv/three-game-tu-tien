@@ -18,6 +18,21 @@ import { G } from '../../core/geo';
 import { LOOT_FX_MAX, RING_GEO, _a } from './common';
 import type { Vfx } from '../vfx';
 
+/** Camera cách điểm rơi (mặt bằng) dưới chừng này mét thì cột sáng/chớp của đồ rơi mờ hết mức; mờ dần tới `LOOT_NEAR_FULL`. */
+export const LOOT_NEAR_MIN = 6;
+/** Từ khoảng cách này trở ra hình đồ rơi hiện đủ. Camera mặc định cách nhân vật ~18 m nên đồ rơi quanh nhân vật không bị ảnh hưởng. */
+export const LOOT_NEAR_FULL = 14;
+
+/** Hệ số 0..1 theo khoảng cách camera tới điểm rơi: 0 = sát camera (ẩn/mờ nhất), 1 = đủ xa. */
+export function lootNearK(dist: number, radius: number): number {
+  return Math.min(1, Math.max(0, (dist - radius - LOOT_NEAR_MIN) / (LOOT_NEAR_FULL - LOOT_NEAR_MIN)));
+}
+
+function lootNear(v: Vfx, x: number, z: number, radius: number): number {
+  const cam = v.camera;
+  return cam ? lootNearK(Math.hypot(cam.position.x - x, cam.position.z - z), radius) : 1;
+}
+
 /**
  * Đồ rơi (M4-6), chỉ là lớp hình: viên đồ nảy ra từ `from` (ngực quái) tới một điểm quanh xác, chạm
  * đất (gọi `onLand`: chuông), cột sáng theo bậc dâng lên, nằm một lúc rồi biến mất (gọi `onCollect`
@@ -90,7 +105,10 @@ export function lootDrop(
         landed = true;
         onLand?.();
         _a.set(tx, gy, tz);
-        v.burst(_a, col, 0.5 + tier * 0.25, 0.3);
+        // Chớp lúc chạm đất là quầng cộng sáng tròn: rơi giữa camera và nhân vật thì thành quả cầu lóa che tầm nhìn (duyệt ảnh #447),
+        // nên gần camera thì thu nhỏ, rất gần thì bỏ.
+        const nb = lootNear(v, tx, tz, T.radius);
+        if (nb > 0.2) v.burst(_a, col, (0.5 + tier * 0.25) * (0.35 + 0.65 * nb), 0.3);
         for (let i = 0; i < T.sparks; i++) {
           const a = Math.random() * Math.PI * 2;
           const r = Math.random() * T.radius * 0.8;
@@ -119,8 +137,7 @@ export function lootDrop(
         beam.fxA.x = Math.min(1.1, bt / 0.25);
         beam.fxK = Math.min(1, bt / 0.8);
         // Camera sát hay nằm trong cột (nhiều món rơi chồng nhau): mặt cột che kín màn hình thành tấm trắng cháy sáng, nên mờ dần khi lại gần.
-        const cam = v.camera;
-        const near = cam ? Math.min(1, Math.max(0, (Math.hypot(cam.position.x - tx, cam.position.z - tz) - T.radius * 1.2) / 5)) : 1;
+        const near = lootNear(v, tx, tz, T.radius);
         const vis = (0.15 + 0.85 * near) * lootCrowd(v.lootActive);
         beam.fxOpacity = full ? 0 : T.alpha * out * lootPulse(tier, bt) * vis;
         if (core) {
