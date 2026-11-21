@@ -4,9 +4,9 @@
 //   hud:   đeo hồn phiên (mesh thủ tục sau lưng), thanh Hồn lực, Phệ Hồn đặt Hồn ấn lên quái, Nhiếp Hồn (phiên bay ra phất).
 // Mọi thao tác đi đường người chơi thật (bấm nút, phím chiêu); lệnh GM chỉ để dựng cảnh (cảnh giới, linh thạch, gọi quái).
 import { NPC, PATH, SKILL, t } from '@dtl/content';
-import { list } from '../lib/env';
+import { list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
-import { gm, tp } from '../lib/game';
+import { cam, gm, tp } from '../lib/game';
 import type { Run, Scenario } from '../lib/scenario';
 import { snap, snapSizes, UI_SIZES, writeJson } from '../lib/shot';
 
@@ -210,16 +210,94 @@ async function stepVfx(r: Run, sizes: string[]): Promise<Record<string, unknown>
   return log;
 }
 
+/**
+ * Ảnh duyệt #460: (a) ba hồn binh với camera mặc định và camera đảo ra phía trước mặt nhân vật; (b) đồ rơi khi camera sát và ~18 m.
+ * Chạy hai lần (`--tag truoc` trên bản main, `--tag sau` trên bản sửa) rồi so cùng góc.
+ */
+async function stepFix(r: Run, sizes: string[], tag: string): Promise<Record<string, unknown>> {
+  const log: Record<string, unknown> = {};
+  const { ctx, page } = await r.open({
+    name: 'HonFix',
+    viewport: [1920, 1080],
+    seenIntro: true,
+    query: { realm: 'nk12', at: 'rung', god: 1 },
+  });
+  await sleep(2500);
+  await gm(page, 'level 28', 1500);
+  await gm(page, `method ${HON} 3`, 1300);
+  await gm(page, 'art itm_hon_phien 1', 1300);
+  const id = 'skl_tat_dau_thanh_binh';
+  for (const sz of sizes) {
+    const [w, h] = UI_SIZES[sz] ?? UI_SIZES['1080p']!;
+    await page.setViewportSize({ width: w, height: h });
+    // (a) hồn binh
+    await gm(page, 'spawn clear', 1400);
+    await gm(page, `spawn ${VFX_MON} 2`, 1800);
+    await gm(page, 'cd', 1300);
+    await gm(page, 'charge', 1300);
+    await page.keyboard.press('Tab', { delay: 80 });
+    await sleep(400);
+    await page.evaluate((sk) => {
+      const g = window.__game as unknown as { bar(): { id: string }[]; useSkill(i: number): void };
+      g.useSkill(g.bar().findIndex((s) => s.id === sk));
+    }, id);
+    await sleep(1900);
+    await snap(page, r.out, `a1-hon-binh-camera-mac-dinh-${tag}-${sz}.jpg`, { wait: 0 });
+    const yaw = await page.evaluate(() => (window.__game as unknown as { camYaw: number }).camYaw);
+    await cam(page, { yaw: yaw + Math.PI });
+    // Hướng khung hồn binh chốt lúc tạo, mỗi HON_BINH_SEG (3,3 s) tạo lại: chờ qua một đoạn để thấy hướng theo camera mới.
+    await sleep(4500);
+    await snap(page, r.out, `a2-hon-binh-camera-truoc-mat-${tag}-${sz}.jpg`, { wait: 0 });
+    await cam(page, { yaw });
+    await gm(page, 'spawn clear', 1400);
+    await sleep(8000);
+    // (b) đồ rơi: một nhóm quanh điểm giữa nhân vật và camera
+    for (const [name, dist] of [
+      ['gan', 5],
+      ['xa18', 18],
+    ] as const) {
+      await cam(page, { yaw, dist });
+      await sleep(1200);
+      await page.evaluate(() => {
+        const g = window.__game as unknown as {
+          renderPos: { x: number; y: number; z: number };
+          vfx: { lootDrop(from: object, tier: number, slot: number): void };
+        };
+        const p = g.renderPos;
+        for (let i = 0; i < 4; i++)
+          g.vfx.lootDrop(
+            {
+              x: p.x,
+              y: p.y + 1,
+              z: p.z,
+              clone() {
+                return { ...this };
+              },
+            },
+            3,
+            i,
+          );
+      });
+      await sleep(1100);
+      await snap(page, r.out, `b-do-roi-${name}-${tag}-${sz}.jpg`, { wait: 0 });
+      await sleep(5000);
+    }
+  }
+  await ctx.close();
+  return log;
+}
+
 export default {
   name: 'hontu',
   desc: 'TN-2 Hồn tu: bảng lĩnh ngộ, thanh Hồn lực, Hồn ấn, hồn phiên (mesh thủ tục) ở 1080p + 720p',
-  usage: '[--step learn,hud,vfx] [--sizes 1080p,720p]',
+  usage: '[--step learn,hud,vfx,fix] [--tag truoc|sau] [--sizes 1080p,720p]',
   async run(r) {
     const sizes = list('--sizes', '1080p,720p');
     const steps = list('--step', 'learn,hud,vfx');
     const log: Record<string, unknown> = {};
     if (steps.includes('learn')) log.learn = await stepLearn(r, sizes);
     if (steps.includes('hud')) log.hud = await stepHud(r, sizes);
+    if (steps.includes('fix')) log.fix = await stepFix(r, sizes, opt('--tag', 'sau'));
     if (steps.includes('vfx')) log.vfx = await stepVfx(r, sizes);
     writeJson(r.out, 'hontu.json', log);
   },
