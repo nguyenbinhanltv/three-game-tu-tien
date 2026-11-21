@@ -19,8 +19,10 @@ import {
   type SysMsg,
   tribDef,
   tribForLevel,
-  suyCleared,
-  suyDone,
+  chainBlockedBy,
+  chainCleared,
+  chainDone,
+  setChainCleared,
   suyRemaining,
   type TribDef,
   type TribId,
@@ -31,7 +33,7 @@ import {
   markAmp,
 } from '@dtl/shared';
 import { TribSystem } from '../trib';
-import { itemName, MARK, MONSTER, nextMajorRealmName, realmName } from '@dtl/content';
+import { itemName, MARK, MONSTER, nextMajorRealmName, realmName, t } from '@dtl/content';
 import { type Character } from '../character';
 import type { PlayerEnt, MonEnt, Hazard, SimHost } from '../entities';
 import { visualSeed } from '../combat/consts';
@@ -76,6 +78,11 @@ export interface TribulationCtx {
   sysAll(k: string, params?: Record<string, string | number>, type?: string): void;
   readonly tribSys: TribSystem;
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
+}
+
+/** Khóa thông báo của kiếp chuỗi: Ngũ Suy dùng `sys.suy_*`, Huyền Kiếp dùng `sys.hk_*`. */
+function chainKey(def: TribDef, k: string): string {
+  return `sys.${def.id === 'ngu_suy' ? 'suy' : 'hk'}_${k}`;
 }
 
 export class TribulationSystem {
@@ -138,7 +145,10 @@ export class TribulationSystem {
     // Bình cảnh đại viên mãn phải vượt (tâm ma hoặc Phá Cảnh Đan) trước khi độ kiếp.
     if (levelUp && bottleneckBlocked(c.level, c.bk)) return this.c.warn(p, 'sys.bk_blocked');
     if (!def.enabled && !force) return this.c.warn(p, 'sys.trib_locked');
-    if (def.chain && suyDone(c.meta.suy, def)) return this.c.warn(p, 'sys.suy_done');
+    if (def.chain && chainDone(c.meta, def)) return this.c.warn(p, chainKey(def, 'done'));
+    // Chuỗi có điều kiện trước (Huyền Kiếp: Ngoại → Nội → Hồn); GM (`force`) bỏ qua để thử từng chuỗi.
+    const prev = def.chain && !force ? chainBlockedBy(c.meta, def) : null;
+    if (prev) return this.c.warn(p, 'sys.hk_need_prev', { name: t(`ui.trib.${prev.id}.title`) });
     const item = def.item;
     if (item && !force && !c.inv.some((it) => it?.id === item && !it.lk))
       return this.c.warn(p, 'sys.trib_need_pill', { item: itemName(item) });
@@ -162,7 +172,7 @@ export class TribulationSystem {
     }
     if (p.meditating) this.c.setMeditating(p, false);
     // Kiếp chuỗi (TN-4): vào tiếp từ ải chưa qua, đồng hồ kiếp bắt đầu ở đầu ải đó.
-    const stage = def.chain ? Math.min(def.phases.length - 1, suyCleared(c.meta.suy, def)) : 0;
+    const stage = def.chain ? Math.min(def.phases.length - 1, chainCleared(c.meta, def)) : 0;
     const dur = def.chain ? suyRemaining(def, stage) : def.duration;
     p.trib = {
       id: def.id,
@@ -271,7 +281,7 @@ export class TribulationSystem {
     const c = p.char;
     const def = id ? tribDef(id) : null;
     if (!def?.chain) return;
-    const have = suyCleared(c.meta.suy, def);
+    const have = chainCleared(c.meta, def);
     const ph = def.phases[idx];
     if (idx !== have || !ph) return;
     const gold = Math.max(0, Math.floor(def.stageGold?.[idx] ?? 0));
@@ -283,10 +293,10 @@ export class TribulationSystem {
       log.error(`[trib] không ghi được thưởng ải ${idx + 1} của ${def.id} cho ${c.name}: ${c.txFail}`);
       return;
     }
-    c.meta.suy = have + 1;
-    if (ok && gold > 0) this.c.sys(p, 'sys.suy_stage_gold', { n: idx + 1, max: def.phases.length, gold }, 'good');
-    else this.c.sys(p, 'sys.suy_stage', { n: idx + 1, max: def.phases.length }, 'good');
-    if (suyDone(c.meta.suy, def)) {
+    setChainCleared(c.meta, def, have + 1);
+    if (ok && gold > 0) this.c.sys(p, chainKey(def, 'stage_gold'), { n: idx + 1, max: def.phases.length, gold }, 'good');
+    else this.c.sys(p, chainKey(def, 'stage'), { n: idx + 1, max: def.phases.length }, 'good');
+    if (chainDone(c.meta, def) && def.law) {
       c.recalc();
       c.hp = c.mhp;
       c.mp = c.mmp;
@@ -312,7 +322,7 @@ export class TribulationSystem {
     if (success && chainId && def.to <= def.from) {
       // Kiếp chuỗi chưa gắn vào thang cấp: qua ải cuối là xong chuỗi, không đổi cấp (ải cuối không có `exit` nên lưu ở đây).
       this.suyCleared(p, def.phases.length - 1, chainId);
-      this.c.sysAll('sys.suy_ok', { name: c.name }, 'good');
+      this.c.sysAll(chainKey(def, 'ok'), { name: c.name, kiep: t(`ui.trib.${def.id}.title`) }, 'good');
       this.c.fx({ t: 'ascend', src: p.sid, tb: def.id });
       this.c.questEvent(p, 'breakthrough', def.id, 1);
       log.info(`[trib] ${c.name} qua đủ chuỗi ${def.id}`);
@@ -332,7 +342,7 @@ export class TribulationSystem {
       log.info(`[trib] ${c.name} đạt ${realmName(c.level)} (kiếp ${def.id})`);
     } else if (chainId && def.failXpLoss <= 0) {
       // Ngũ Suy không phạt tu vi: ải đã qua vẫn giữ, lần sau vào tiếp.
-      if (!silent) this.c.sys(p, 'sys.suy_keep', { n: suyCleared(c.meta.suy, def), max: def.phases.length }, 'info');
+      if (!silent) this.c.sys(p, chainKey(def, 'keep'), { n: chainCleared(c.meta, def), max: def.phases.length }, 'info');
     } else {
       const lost = c.loseXp(def.failXpLoss);
       if (!silent) this.c.sys(p, lost > 0 ? 'sys.trib_fail' : 'sys.trib_fail_free', { n: lost }, 'bad');

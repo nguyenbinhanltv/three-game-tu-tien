@@ -281,6 +281,83 @@
           "suy": { "rest": 4, "start": 30, "rise": 2.5, "riseEnd": 4.5, "tam": { "calm": 5, "strike": 3, "hitBad": 8, "hitGood": 30, "miss": 12, "hurt": 2, "hpFrac": 40 } }
         }
       ]
+    },
+    "huyen_ngoai": {
+      "_doc": "Huyền Kiếp (TN-6), chuỗi Ngoại kiếp: ba kiếp nhỏ × 35 giây (4 giây đầu điều tức). Cùng khung kiếp chuỗi với Ngũ Suy: thanh kiếp lực 0..100 (bốn số chung ở `suy`), thông số riêng ở `hk` (ý nghĩa ở packages/shared/src/huyenkiep.ts). from = to = 32 là MỐC TẠM, enabled = false: chỉ GM/test/bot mở được (`/gm trib huyen_ngoai [kiếp 1..3]`), không đổi cấp. Phải qua đủ chuỗi `after` trước. Qua đủ ba chuỗi là nâng Bản Nguyên (móc `huyenOriginTier`, chờ TN-1).",
+      "from": 32,
+      "to": 32,
+      "enabled": false,
+      "chain": true,
+      "item": null,
+      "room": "tribulation",
+      "element": "huyen",
+      "duration": 105,
+      "firstDelay": 6,
+      "failXpLoss": 0,
+      "refundAfter": 0,
+      "pillMax": 3,
+      "aim": { "r": 4.2, "delay": 1.4 },
+      "extraDelay": { "min": 1.3, "max": 1.8 },
+      "extraDist": { "min": 5, "max": 13 },
+      "guard": { "r": 20 },
+      "stageGold": [600, 700, 800],
+      "phases": [
+        { "id": "tuyet", "end": 35, "kind": "lei", "gap": 3.4, "aimPct": 0.06, "extra": 1, "extraR": 3.4, "extraPct": 0.05, "mechanic": "hk_tuyet", "suy": { "rest": 4, "start": 30, "rise": 3, "riseEnd": 5 }, "hk": { "still": 3, "r": 14, "cure": 9, "cold": 6, "drifts": 4, "driftR": 3, "driftEvery": 4, "driftDur": 9, "driftHurt": 10, "ring": 9 } },
+        { "id": "phong", "end": 70, "kind": "lei", "gap": 5, "aimPct": 0, "extra": 1, "extraR": 3.0, "extraPct": 0.04, "mechanic": "hk_phong", "suy": { "rest": 4, "start": 30, "rise": 2.5, "riseEnd": 4.5 }, "hk": { "pillars": 3, "ring": 7, "every": 6, "warn": 3, "shelterR": 2.2, "depth": 5, "pct": 0.14, "hurt": 22, "cure": 22 } },
+        { "id": "loi", "end": 105, "kind": "lei", "gap": 3.4, "aimPct": 0.06, "extra": 1, "extraR": 3.4, "extraPct": 0.05, "mechanic": "hk_loi", "suy": { "rest": 4, "start": 30, "rise": 4, "riseEnd": 7 }, "hk": { "rods": 3, "ring": 8, "r": 2.2, "cure": 34, "hot": 9, "boomWarn": 1.6, "boomR": 4.5, "pct": 0.16, "hurt": 12 } }
+      ]
+    },
+    "huyen_noi": {
+      "_doc": "Huyền Kiếp (TN-6), chuỗi Nội kiếp: ba kiếp nhỏ × 35 giây (4 giây đầu điều tức). Cùng khung kiếp chuỗi với Ngũ Suy: thanh kiếp lực 0..100 (bốn số chung ở `suy`), thông số riêng ở `hk` (ý nghĩa ở packages/shared/src/huyenkiep.ts). from = to = 32 là MỐC TẠM, enabled = false: chỉ GM/test/bot mở được (`/gm trib huyen_noi [kiếp 1..3]`), không đổi cấp. Phải qua đủ chuỗi `after` trước. Qua đủ ba chuỗi là nâng Bản Nguyên (móc `huyenOriginTier`, chờ TN-1).",
+      "from": 32,
+      "to": 32,
+      "enabled": false,
+      "chain": true,
+      "after": "huyen_ngoai",
+      "item": null,
+      "room": "tribulation",
+      "element": "huyen",
+      "duration": 105,
+      "firstDelay": 6,
+      "failXpLoss": 0,
+      "refundAfter": 0,
+      "pillMax": 3,
+      "aim": { "r": 4.2, "delay": 1.4 },
+      "extraDelay": { "min": 1.3, "max": 1.8 },
+      "extraDist": { "min": 5, "max": 13 },
+      "guard": { "r": 20 },
+      "stageGold": [900, 1000, 1100],
+      "phases": [
+        { "id": "tram_ly", "end": 35, "kind": "lei", "gap": 5, "aimPct": 0, "extra": 1, "extraR": 3.0, "extraPct": 0.04, "mechanic": "hk_tram_ly", "suy": { "rest": 4, "start": 30, "rise": 3, "riseEnd": 5 }, "hk": { "r": 6, "every": 3.2, "warn": 1.5, "len": 20, "w": 2.6, "pct": 0.12, "hurt": 14, "out": 9, "cure": 5.5 } },
+        { "id": "huyet_anh", "end": 70, "kind": "tam_ma", "gap": 4, "aimPct": 0.05, "extra": 1, "extraR": 3.2, "extraPct": 0.04, "mechanic": "hk_huyet_anh", "suy": { "rest": 4, "start": 30, "rise": 3, "riseEnd": 5 }, "hk": { "hpFrac": 0.35, "kill": 45, "hurt": 4, "respawn": 1.5 } },
+        { "id": "van_tam", "end": 105, "kind": "lei", "gap": 5, "aimPct": 0, "extra": 1, "extraR": 3.0, "extraPct": 0.04, "mechanic": "hk_van_tam", "suy": { "rest": 4, "start": 30, "rise": 2.5, "riseEnd": 4.5 }, "hk": { "seals": 3, "ring": 7, "r": 2.6, "show": 1.4, "think": 3.2, "every": 6, "hurt": 24, "cure": 24, "pct": 0.1 } }
+      ]
+    },
+    "huyen_hon": {
+      "_doc": "Huyền Kiếp (TN-6), chuỗi Hồn kiếp: ba kiếp nhỏ × 35 giây (4 giây đầu điều tức). Cùng khung kiếp chuỗi với Ngũ Suy: thanh kiếp lực 0..100 (bốn số chung ở `suy`), thông số riêng ở `hk` (ý nghĩa ở packages/shared/src/huyenkiep.ts). from = to = 32 là MỐC TẠM, enabled = false: chỉ GM/test/bot mở được (`/gm trib huyen_hon [kiếp 1..3]`), không đổi cấp. Phải qua đủ chuỗi `after` trước. Qua đủ ba chuỗi là nâng Bản Nguyên (móc `huyenOriginTier`, chờ TN-1).",
+      "from": 32,
+      "to": 32,
+      "enabled": false,
+      "chain": true,
+      "after": "huyen_noi",
+      "item": null,
+      "room": "tribulation",
+      "element": "huyen",
+      "duration": 105,
+      "firstDelay": 6,
+      "failXpLoss": 0,
+      "refundAfter": 0,
+      "pillMax": 3,
+      "aim": { "r": 4.2, "delay": 1.4 },
+      "extraDelay": { "min": 1.3, "max": 1.8 },
+      "extraDist": { "min": 5, "max": 13 },
+      "guard": { "r": 20 },
+      "stageGold": [1200, 1300, 1500],
+      "phases": [
+        { "id": "kho_than", "end": 35, "kind": "lei", "gap": 5, "aimPct": 0, "extra": 1, "extraR": 3.0, "extraPct": 0.04, "mechanic": "hk_kho_than", "suy": { "rest": 4, "start": 30, "rise": 3, "riseEnd": 5 }, "hk": { "beats": 10, "every": 2.9, "win": 0.45, "cure": 13, "hurt": 12, "miss": 10 } },
+        { "id": "hon_tho", "end": 70, "kind": "lei", "gap": 3.4, "aimPct": 0.06, "extra": 1, "extraR": 3.4, "extraPct": 0.05, "mechanic": "hk_hon_tho", "suy": { "rest": 4, "start": 30, "rise": 4, "riseEnd": 7 }, "hk": { "orbs": 3, "ring": 9, "r": 1.8, "life": 6, "every": 2.4, "cure": 16, "heal": 0.06, "bleed": 0.03 } },
+        { "id": "luan_hoi", "end": 105, "kind": "lei", "gap": 5, "aimPct": 0, "extra": 1, "extraR": 3.0, "extraPct": 0.04, "mechanic": "hk_luan_hoi", "suy": { "rest": 4, "start": 30, "rise": 2.5, "riseEnd": 4.5 }, "hk": { "sectors": 6, "r": 13, "speed": 0.5, "every": 4.5, "warn": 1.2, "pct": 0.14, "hurt": 22, "cure": 22 } }
+      ]
     }
   }
 }

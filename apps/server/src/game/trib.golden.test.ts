@@ -122,3 +122,51 @@ describe('Thiên Nhân Ngũ Suy: bản chuẩn hành vi', () => {
     });
   }
 });
+
+// TN-6: Huyền Kiếp. Người chơi mẫu (tribhuyen.testutil.ts) thao tác đúng cả ba kiếp nhỏ của từng chuỗi với Math.random cố định; băm vùng báo,
+// sát thương và FX của chuỗi (`suy` = thanh kiếp lực, `hkmark`, `suyok`). Đổi số trong `tribulations.json` hay luật trong tribhuyen.ts thì bản chuẩn đổi theo.
+describe('Huyền Kiếp: bản chuẩn hành vi', () => {
+  for (const id of ['huyen_ngoai', 'huyen_noi', 'huyen_hon'] as const) {
+    it(`cả chuỗi ${id}, hạt giống 2026`, async () => {
+      const { runHk } = await import('./tribhuyen.testutil');
+      const { TRIB_DEFS, TRIB_LEVEL, chainCleared } = await import('@dtl/shared');
+      const { LEVELS } = await import('@dtl/content');
+      vi.spyOn(Math, 'random').mockImplementation(rng(2026));
+      const sent: { type: string; msg: unknown }[] = [];
+      const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
+      const spawn = LEVELS[TRIB_LEVEL]!.dungeon!.spawn;
+      const sim = new GameSim(new WorldState(), host as never, {
+        levelId: TRIB_LEVEL,
+        roomName: 'tribulation',
+        spawn,
+        respawn: spawn,
+        persistPosition: false,
+      });
+      const def = TRIB_DEFS[id];
+      // Linh căn cố định: mặc định chọn ngẫu nhiên bằng `randomInt` (không qua Math.random), làm lệch lượng hồi khí huyết của Hồn Châu.
+      const char = Character.create(7300 + ['huyen_ngoai', 'huyen_noi', 'huyen_hon'].indexOf(id), 'hkgold' + id, null, 'kim');
+      char.level = def.from;
+      char.recalc();
+      char.hp = char.mhp;
+      char.mp = char.mmp;
+      const p = sim.addPlayer({ sessionId: 'hg' + id, send: () => undefined } as never, char, true, 'hg' + id);
+      p.move.x = spawn.x;
+      p.move.z = spawn.z;
+      p.move.y = groundAt(spawn.x, spawn.z);
+      sim.now = 3_000_000;
+      const t0 = sim.now;
+      expect(sim.beginTribulation(p, def, false)).toBe(true);
+      runHk(sim, p, def.duration + 5, true);
+      const rows = sent
+        .filter((x) => {
+          const t = String((x.msg as { t?: string }).t ?? '');
+          return x.type === S.HAZARD || x.type === S.DMG || (x.type === S.FX && (t.startsWith('suy') || t === 'hkmark'));
+        })
+        .map((x) => JSON.stringify([x.type, { ...(x.msg as object), sd: undefined, src: undefined, dst: undefined }]));
+      if (process.env.TRIB_DUMP) writeFileSync(process.env.TRIB_DUMP + id, rows.join('\n'));
+      const sha = createHash('sha1').update(rows.join('\n')).digest('hex');
+      expect({ n: rows.length, ended: !p.trib, t: sim.now - t0, cleared: chainCleared(char.meta, def), sha }).toMatchSnapshot();
+      expect(chainCleared(char.meta, def)).toBe(def.phases.length);
+    });
+  }
+});

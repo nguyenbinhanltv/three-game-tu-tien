@@ -34,7 +34,7 @@ export function suyState(p: PlayerEnt): AnySuy | undefined {
 export const SUY_WALK = 6;
 
 /** Đi bộ một nhịp 50 ms về phía (x, z): không dịch chuyển tức thời, để test chứng minh ải qua được với tốc độ chạy thật. */
-function put(p: PlayerEnt, x: number, z: number): void {
+export function put(p: PlayerEnt, x: number, z: number): void {
   const dx = x - p.move.x;
   const dz = z - p.move.z;
   const d = Math.hypot(dx, dz);

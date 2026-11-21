@@ -126,9 +126,9 @@ const xfers = (p: Ent) => sent.filter((s) => s.type === S.TRANSFER && s.to === p
 
 describe('dữ liệu tribulations.json', () => {
   it('bốn kiếp mở ra từ bốn đại viên mãn, pha liền mạch tới hết thời lượng', () => {
-    // Kiếp chuỗi Thiên Nhân Ngũ Suy (TN-4) chưa gắn vào thang cấp: kiểm riêng ở tribsuy.test.ts.
+    // Kiếp chuỗi (Thiên Nhân Ngũ Suy TN-4, Huyền Kiếp TN-6) chưa gắn vào thang cấp: kiểm riêng ở tribsuy.test.ts / tribhuyen.test.ts.
     const ids = TRIB_IDS.filter((i) => !TRIB_DEFS[i].chain);
-    expect(TRIB_IDS.filter((i) => TRIB_DEFS[i].chain)).toEqual(['ngu_suy']);
+    expect(TRIB_IDS.filter((i) => TRIB_DEFS[i].chain)).toEqual(['ngu_suy', 'huyen_ngoai', 'huyen_noi', 'huyen_hon']);
     expect(ids.sort()).toEqual(['anh_bien', 'hoa_than', 'ket_dan', 'nguyen_anh', 'truc_co']);
     for (const level of PEAK_LEVELS) expect(tribForLevel(level)?.from).toBe(level);
     expect(tribForLevel(16)).toBeNull();

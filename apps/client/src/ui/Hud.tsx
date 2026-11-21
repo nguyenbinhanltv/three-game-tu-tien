@@ -277,6 +277,46 @@ function SuyHint(props: {
   );
 }
 
+/** Dòng nhắc theo nhịp của kiếp nhỏ Huyền Kiếp đang chạy (TN-6). Chỉ đọc dữ liệu hình server gửi; luật ở server. */
+function HkHint(props: {
+  suy: { id: string; pg: number; mode: number; until: number };
+  mark: { s: string; pg: number; n: number; lv: number; until: number; r: number } | null;
+  now: number;
+}) {
+  const { suy, mark, now } = props;
+  const secs = (until: number) => Math.max(1, Math.ceil((until - now) / 1000));
+  let text = '';
+  let on = false;
+  if (now < suy.until && suy.id !== 'hk_luan_hoi') text = t('ui.trib.suy.rest', { n: secs(suy.until) });
+  else if (suy.id === 'hk_tuyet') {
+    on = suy.mode !== 1;
+    text = t(on ? 'ui.trib.hk_tuyet.still' : 'ui.trib.hk_tuyet.move');
+  } else if (suy.id === 'hk_tram_ly') {
+    on = suy.mode !== 1;
+    text = t(on ? 'ui.trib.hk_tram_ly.out' : 'ui.trib.hk_tram_ly.in');
+  } else if (suy.id === 'hk_huyet_anh') text = t('ui.trib.hk_huyet_anh.kills', { n: suy.mode });
+  else if (suy.id === 'hk_phong' && mark?.s === 'phong' && mark.pg === 2 && now < mark.until) {
+    on = true;
+    text = t('ui.trib.hk_phong.warn', { n: secs(mark.until) });
+  } else if (suy.id === 'hk_van_tam' && mark?.s === 'van' && now < mark.until && (mark.pg === 2 || mark.pg === 3)) {
+    on = mark.pg === 3;
+    text = mark.pg === 2 ? t('ui.trib.hk_van_tam.show') : t('ui.trib.hk_van_tam.think', { n: secs(mark.until) });
+  } else if (suy.id === 'hk_kho_than' && mark?.s === 'tuc' && mark.lv > 0) {
+    // Nhịp kế tiếp rơi vào `until`; trong ±`r` giây quanh đó là lúc điều tức.
+    on = mark.pg === 1 && Math.abs(now - mark.until) <= mark.r * 1000;
+    text = t(on ? 'ui.trib.hk_kho_than.now' : 'ui.trib.hk_kho_than.beat', { n: Math.min(mark.n, mark.lv), max: mark.lv });
+  } else if (suy.id === 'hk_luan_hoi' && mark?.s === 'luan' && mark.pg === 2 && now < mark.until) {
+    on = true;
+    text = t('ui.trib.hk_luan_hoi.warn');
+  }
+  if (!text) return null;
+  return (
+    <div className={'trib-soul trib-suy-hint' + (on ? ' on' : '')} data-testid="suy-hint" data-hk={suy.id}>
+      {text}
+    </div>
+  );
+}
+
 function Tribulation() {
   const tribEnd = useUI((s) => s.tribEnd);
   const tribId = useUI((s) => s.tribId);
@@ -290,6 +330,7 @@ function Tribulation() {
   const suyCdUntil = useUI((s) => s.suyCdUntil);
   const suyWaveUntil = useUI((s) => s.suyWaveUntil);
   const suyLamps = useUI((s) => s.suyLamps);
+  const hkMark = useUI((s) => s.hkMark);
   const now = useNow(250);
   if (!tribEnd || now >= tribEnd) return null;
   // Pha, thời lượng và lời nhắc đọc từ `tribulations.json` theo kiếp đang độ (E1-F); Trúc Cơ giữ ba pha của S2-C.
@@ -321,7 +362,11 @@ function Tribulation() {
                 max={len}
                 text={i === pi ? t('ui.trib.secs', { n: Math.ceil(def.chain ? start + len - elapsed : left) }) : undefined}
               />
-              <div className="trib-phase-name">{def.chain && i !== pi ? t('ui.trib.suy.short', { n: i + 1 }) : t(key + p.id)}</div>
+              <div className="trib-phase-name">
+                {def.chain && i !== pi
+                  ? t(def.id.startsWith('huyen_') ? 'ui.trib.hk.short' : 'ui.trib.suy.short', { n: i + 1 })
+                  : t(key + p.id)}
+              </div>
             </div>
           );
         })}
@@ -338,12 +383,18 @@ function Tribulation() {
       )}
       {suy && suy.id === ph.mechanic && (
         <div className="trib-dan trib-suy" data-testid="suy-bar" data-suy={suy.id}>
-          <ProgressBar cls="tam" value={suy.pg} max={100} text={t('ui.trib.suy.label', { n: Math.round(suy.pg) })} />
+          <ProgressBar
+            cls="tam"
+            value={suy.pg}
+            max={100}
+            text={t(suy.id.startsWith('hk_') ? 'ui.trib.hk.label' : 'ui.trib.suy.label', { n: Math.round(suy.pg) })}
+          />
         </div>
       )}
-      {suy && suy.id === ph.mechanic && (
+      {suy && suy.id === ph.mechanic && !suy.id.startsWith('hk_') && (
         <SuyHint suy={suy} now={now} cdUntil={suyCdUntil} waveUntil={suyWaveUntil} lamps={suyLamps} max={ph.suy?.tho?.lamps ?? 0} />
       )}
+      {suy && suy.id === ph.mechanic && suy.id.startsWith('hk_') && <HkHint suy={suy} mark={hkMark} now={now} />}
       {ph.mechanic === 'xuat_khieu' && (
         <div className={'trib-soul' + (now < soulUntil ? ' on' : '')} data-testid="soul-hint">
           {now < soulUntil ? t('ui.trib.xuat_khieu.on', { n: Math.ceil((soulUntil - now) / 1000) }) : t('ui.trib.xuat_khieu.hint')}
