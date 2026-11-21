@@ -194,3 +194,9 @@ Giới hạn: chỉ kênh 1 (vải chính) của `dye3`; kênh 2 (viền) và k�
 - Kênh viền (kênh 2) và kênh 3 của nhuộm Tủ ngoại trang.
 - Phụ kiện thủ tục theo từng món (`acc`) và vỏ kiếm theo bộ: model v3 nguyên khối đã có sẵn.
 - Bộ chưa có model riêng dùng model cùng nhánh (`V3_BRANCH_FALLBACK`).
+
+## Sửa cổ Tinh Khuyết nam / Thần Tàng nữ (21/11)
+
+Triệu chứng: mảng tím (Tinh Khuyết) / xanh đen (Thần Tàng) phẳng, kéo dài dưới cằm, cổ trông dài. **Nguyên nhân**: ống "thân dưới áo" của C2 (`chr_v3_c2.py`, `_tube`) chạy tới hết xương `neck_01` với ell 1,25 và bán kính 0,7× thân, nên lòi ra khỏi cổ thật; UV của nó trỏ vào texel nền áo (`underColor`). Không phải trọng số, ARM_FIT hay mặt nạ tách lưới.
+Sửa: khóa `c2.torsoTop: "spine"` (ống dừng ở giữa `spine_03`) trong `v3sets/tinh_khuyet.json`, `v3sets/than_tang.json`. Mặc định giữ `neck`: các bộ khác chưa đổi. Chỉ đổi phần hình học ẩn trong áo; vải, UV, texture gốc không đổi.
+Đo (rigstretch, % cạnh sai): Tinh Khuyết nam Idle 0,64%, Jog −68,7%, chém −67,8%, p99 tối đa 2,64 (bản trước sửa cùng số; Jog/chém của nam vốn ~68%, chưa đạt 70%); Thần Tàng nữ Idle 0,29%, Jog −78,6%, chém −77,2%, p99 2,46. Ảnh: `pnpm shots neck --out <dir>` (cận cổ + 4 góc ở đứng/chạy/chém).
