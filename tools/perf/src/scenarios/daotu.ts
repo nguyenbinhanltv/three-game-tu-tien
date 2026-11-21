@@ -59,6 +59,9 @@ export default {
             ['sau', 3.1416, 0.06, 3.0],
             ['ba-phan-tu', 0.7, 0.1, 3.0],
             ['tay', -0.8, -0.05, 1.7],
+            ['can-sau', 3.1416, 0.1, 1.35],
+            ['can-trai', -1.5708, -0.02, 1.4],
+            ['can-phai', 1.5708, -0.02, 1.4],
           ] as const) {
             await cam(page, { yaw: facing + yaw, pitch, dist });
             // đao cầm tay: ra đòn rồi chụp ngay (đao rút khi giao chiến, tra lại sau vài giây)
