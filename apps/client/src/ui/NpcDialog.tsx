@@ -7,11 +7,11 @@ import { Game, reqId } from '../game/engine';
 import { objectiveText } from './objective';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './windows/common';
 import { Button, Divider, Tabs } from './u2/win';
-import { RootTab } from './Realm';
+import { DaoTab, RootTab } from './Realm';
 import { EnhanceTab, ForgeTab, GemTab, PromoteTab, RefineTab, SalvageTab } from './UpgradeTabs';
 import { set, useUI } from './store';
 
-type Tab = 'talk' | 'shop' | 'craft' | 'enhance' | 'gem' | 'refine' | 'salvage' | 'forge' | 'promote' | 'root';
+type Tab = 'talk' | 'shop' | 'craft' | 'enhance' | 'gem' | 'refine' | 'salvage' | 'forge' | 'promote' | 'root' | 'dao';
 
 function QuestTab({ npcId }: { npcId: string }) {
   const quests = useUI((s) => s.quests);
@@ -238,6 +238,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
   if (npc.recipes) tabs.push('craft');
   if (npc.enhance) tabs.push('enhance', 'gem', 'refine', 'salvage', 'forge', 'promote');
   if (npc.rootChange) tabs.push('root');
+  if (npc.daoChoose) tabs.push('dao');
   const cur = tabs.includes(tab) ? tab : 'talk';
   return (
     <Window title={t(`npc.${npcId}.name`)} sub={t(`npc.${npcId}.title`)} onClose={() => set({ npc: null })} cls="npc" width={540}>
@@ -262,6 +263,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
       {cur === 'forge' && <ForgeTab npcId={npcId} />}
       {cur === 'promote' && <PromoteTab npcId={npcId} />}
       {cur === 'root' && <RootTab npcId={npcId} />}
+      {cur === 'dao' && <DaoTab />}
     </Window>
   );
 }

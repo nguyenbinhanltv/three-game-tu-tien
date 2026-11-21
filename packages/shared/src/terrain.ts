@@ -329,6 +329,7 @@ const TERRAIN_ALIAS: Record<string, string> = {
   kim_da_cung: 'van_lam',
   luyen_than: 'van_lam',
   do_kiep_bac_hoang: 'bac_hoang',
+  gioi_tri: 'van_dinh',
 };
 
 /** Đăng ký (hoặc thay) địa hình của một level. Trả địa hình đã dựng. */
@@ -347,7 +348,7 @@ export const VAN_LAM: Terrain = registerTerrain(VAN_LAM_TERRAIN);
  * chúng thành một cột vô hình, cổng bí cảnh/prop tông môn ở xa nhưng vô nghĩa. Hình va chạm riêng của từng bí cảnh khóa theo levelId (`collisionOf`).
  * Kiếm Trủng vẫn dùng `VAN_LAM` nguyên bản (cự kiếm có thật ở đó).
  */
-const OWN_COLLIDERS = new Set(['do_kiep', 'kim_da_cung', 'kinh_nguyet', 'luyen_than', 'phuc_mach', 'than_tang']);
+const OWN_COLLIDERS = new Set(['do_kiep', 'gioi_tri', 'kim_da_cung', 'kinh_nguyet', 'luyen_than', 'phuc_mach', 'than_tang']);
 const CLEAN = new Map<string, Terrain>();
 
 /** Địa hình của level: nhận id hoặc LevelDef (có thể trỏ `terrain` sang id khác). Ném lỗi nếu chưa đăng ký. */

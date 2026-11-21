@@ -1,0 +1,30 @@
+{
+  "mood": "tk_dusk",
+  "glb": [],
+  "ground": {
+    "set": "terrain-slate",
+    "mask": "neutral"
+  },
+  "music": [
+    "dungeon",
+    "dungeon_boss"
+  ],
+  "features": {
+    "sect": false,
+    "portals": true,
+    "lanterns": false,
+    "lake": false,
+    "clouds": false,
+    "grass": false,
+    "trees": "scatter",
+    "beacons": false,
+    "vegetation": false
+  },
+  "minimap": "van_dinh",
+  "cave": {
+    "x": 1464,
+    "z": 1384,
+    "r": 135,
+    "h": 80
+  }
+}
