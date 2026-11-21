@@ -110,7 +110,7 @@ export function huyenKiepCleared(meta: ChainMeta): number {
 
 /**
  * Bậc Bản Nguyên được nâng nhờ Huyền Kiếp: mỗi chuỗi qua đủ một bậc (0..3).
- * MÓC cho TN-1/VS-3: khung Bản Nguyên (`origins.json`) chưa có nên hiện CHƯA có hệ nào đọc giá trị này; khi có, cộng bậc theo hàm này thay vì lưu thêm trường.
+ * Server đọc ở `Character.recalc` (TN-1): `originAtTier(nguồn, bậc)` nhân thưởng của nguồn thêm 25% mỗi bậc; không lưu thêm trường.
  */
 export function huyenOriginTier(meta: ChainMeta): number {
   return HUYEN_CHAINS.filter((id) => chainDone(meta, TRIB_DEFS[id])).length;

@@ -21,8 +21,8 @@ import {
   xpNeed,
 } from './index';
 
-const hoa: RootDef = { id: 'hoa', elem: 'hoa', elemDmg: 0.08, stat: { atkPct: 0.05 } };
-const kim: RootDef = { id: 'kim', elem: 'kim', elemDmg: 0.08, stat: { critRate: 0.05 } };
+const hoa: RootDef = { id: 'hoa', group: 'real', elem: 'hoa', elemDmg: 0.08, stat: { atkPct: 0.05 }, color: 'ffffff' };
+const kim: RootDef = { id: 'kim', group: 'real', elem: 'kim', elemDmg: 0.08, stat: { critRate: 0.05 }, color: 'ffffff' };
 
 describe('bình cảnh', () => {
   it('ở Ngưng Khí 5/10/15 và hai nút mỗi đại cảnh giới sau đó (17, 19, 21, 23, 25, 27)', () => {
