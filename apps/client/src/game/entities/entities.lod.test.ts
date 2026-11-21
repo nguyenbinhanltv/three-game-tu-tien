@@ -116,7 +116,7 @@ describe('EntityManager: LOD theo camera (M3-9)', () => {
   });
 
   it('suất LOD1 của nhân vật v3: hết 12 suất thì LOD2; từ 24 thể trong khung nhìn suất LOD0 giảm còn 6 (N-7)', async () => {
-    const run = async (others: number) => {
+    const run = async (others: number, v3 = true) => {
       const em = new EntityManager(new THREE.Scene(), 'me', 'kiem_trung');
       (em as unknown as { playerSkins: PlayerSkins }).playerSkins = await skins();
       const cam = new THREE.PerspectiveCamera(55, 16 / 9, 0.3, 9000);
@@ -137,8 +137,10 @@ describe('EntityManager: LOD theo camera (M3-9)', () => {
           lod1Cost: number;
           setView: (x: { minLod?: number; allowLod0: boolean }) => void;
         };
-        m.lod0Cost = 3;
-        m.lod1Cost = 2;
+        if (v3) {
+          m.lod0Cost = 3;
+          m.lod1Cost = 2;
+        }
         m.setView = (x) => void got.set(sid, x);
       }
       em.update(1 / 60, view, local, '', 1);
@@ -156,6 +158,10 @@ describe('EntityManager: LOD theo camera (M3-9)', () => {
     expect(crowd.me.allowLod0).toBe(true);
     expect(crowd.lod0).toEqual([0]);
     expect(crowd.minLod.filter((x) => x === 0)).toHaveLength(6);
+    // 30 thể không phải v3 (model v1/quái: không khai `lod1Cost`) trong khung nhìn: suất LOD0 vẫn 12 (mình + 11), không ai bị ép LOD2.
+    const old = await run(30, false);
+    expect(old.lod0).toHaveLength(11);
+    expect(old.minLod.every((x) => x === 0)).toBe(true);
   });
 
   it('NPC và quái có xương cũng đi qua suất LOD: ngoài khung nhìn không chạy mixer', async () => {
