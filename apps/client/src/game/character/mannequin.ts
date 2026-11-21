@@ -300,7 +300,7 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   const mats = adoptGltfMaterials(handle.scene);
   if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const m of mats) tuneTripoMaterial(m);
-  if (KEEP_ORIGINAL_ASSETS.has(handle.id)) applyVeilAlpha(handle.scene);
+  if (KEEP_ORIGINAL_ASSETS.has(handle.id) && FLAGS.v3Veil) applyVeilAlpha(handle.scene);
   const look = SKIN_LOOKS[handle.id];
   if (look) for (const m of mats) applySkinLook(m, look);
   const box = new THREE.Box3().setFromObject(handle.scene);

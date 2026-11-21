@@ -52,6 +52,8 @@ interface Flags {
   noRobeAnim: boolean;
   /** `?v3side=front|double` ép mặt vẽ của vật liệu model giữ gốc Tripo (so sánh; mặc định theo cấu hình asset). */
   v3Side: string | null;
+  /** `?v3veil=0` tắt xử lý voan alpha/sáng của model giữ gốc (đo chi phí A/B). */
+  v3Veil: boolean;
   /** `?v3off=proc,feet,twist,cloth` tắt từng hệ phụ của v3 (chẩn đoán). */
   v3Off: string[];
   /** `?headlift=<rad>` góc ngửa đầu bù clip Idle cho model giữ gốc (mặc định 0,23). */
@@ -106,6 +108,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   armfit: { scope: 'test', doc: 'góc bù dang tay v3 (độ)' },
   v3pal: { scope: 'test', doc: '=0 tắt nhuộm v3' },
   ual: { scope: 'test', doc: '=0 tắt clip UAL' },
+  v3veil: { scope: 'test', doc: '0: tắt xử lý voan alpha/sáng của model giữ gốc (đo A/B chi phí)' },
   v3side: { scope: 'test', doc: 'front|double: ép mặt vẽ vật liệu model giữ gốc Tripo (so sánh voan một lớp)' },
   norobeanim: { scope: 'test', doc: 'có mặt: dùng clip UAL gốc thay clip áo bào (model giữ gốc Tripo)' },
   v3off: { scope: 'test', doc: 'proc,feet,twist,cloth: tắt từng hệ phụ của v3 (chẩn đoán)' },
@@ -175,6 +178,7 @@ export function readFlags(search: string): Flags {
     cloth: q.get('cloth') === '1',
     noRobeAnim: q.has('norobeanim'),
     v3Side: q.get('v3side'),
+    v3Veil: !off(q.get('v3veil')),
     v3Off: (q.get('v3off') ?? '').split(',').filter(Boolean),
     headLift: Number.isFinite(Number(q.get('headlift') ?? NaN)) && q.get('headlift') !== null ? Number(q.get('headlift')) : 0.23,
     renderer: q.get('renderer'),
