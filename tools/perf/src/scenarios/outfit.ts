@@ -26,6 +26,7 @@ export default {
         dpr: 2,
         quality: 'high',
         look: { g, dye: opt('--dye', 'attire_sect') },
+        query: { chr: 'v1' }, // áo mô-đun chỉ còn trên nhân vật v1 (N-7: mặc định là v3)
         extra: opt('--query', ''),
         hide: 'hud',
         warnings: /models/,

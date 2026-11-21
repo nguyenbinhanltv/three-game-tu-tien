@@ -64,7 +64,7 @@ type SkinsInternals = { swords: Map<string, { mesh: THREE.Mesh } | string> };
 
 async function run(preloadFirst: boolean): Promise<void> {
   const em = new EntityManager(new THREE.Scene(), 'me', 'kiem_trung');
-  const skins = new PlayerSkins(testCache(), false);
+  const skins = new PlayerSkins(testCache(), false, false);
   (em as unknown as { playerSkins: PlayerSkins }).playerSkins = skins;
   const look = { g: 'm', dye: APPEARANCE.defaultDye };
   skins.preload();
