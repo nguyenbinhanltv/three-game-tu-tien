@@ -5222,11 +5222,11 @@
       "id": "chr_v3_than_tang_nam",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_than_tang_nam.glb",
-      "file": "chr_v3_than_tang_nam.7d0e728df6.glb",
-      "bytes": 13028188,
-      "rawBytes": 18204912,
-      "triangles": 99016,
-      "rawTriangles": 99016,
+      "file": "chr_v3_than_tang_nam.0890931183.glb",
+      "bytes": 13027224,
+      "rawBytes": 18202896,
+      "triangles": 99000,
+      "rawTriangles": 99000,
       "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
@@ -5265,7 +5265,7 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 99016
+          "triangles": 99000
         },
         {
           "level": 1,
@@ -5297,11 +5297,11 @@
       "id": "chr_v3_than_tang_nu",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_than_tang_nu.glb",
-      "file": "chr_v3_than_tang_nu.f598d30957.glb",
-      "bytes": 13556180,
-      "rawBytes": 18800016,
-      "triangles": 98352,
-      "rawTriangles": 98352,
+      "file": "chr_v3_than_tang_nu.dc5fd1e068.glb",
+      "bytes": 13557116,
+      "rawBytes": 18798000,
+      "triangles": 98336,
+      "rawTriangles": 98336,
       "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
@@ -5340,7 +5340,7 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 98352
+          "triangles": 98336
         },
         {
           "level": 1,
@@ -5349,7 +5349,7 @@
         },
         {
           "level": 2,
-          "triangles": 7984,
+          "triangles": 7988,
           "target": 8000
         }
       ],
@@ -5372,11 +5372,11 @@
       "id": "chr_v3_tinh_khuyet_nam",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_tinh_khuyet_nam.glb",
-      "file": "chr_v3_tinh_khuyet_nam.a32d5c5986.glb",
-      "bytes": 12424756,
-      "rawBytes": 16668964,
-      "triangles": 94226,
-      "rawTriangles": 94226,
+      "file": "chr_v3_tinh_khuyet_nam.d8ea359225.glb",
+      "bytes": 12424028,
+      "rawBytes": 16667204,
+      "triangles": 94210,
+      "rawTriangles": 94210,
       "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
@@ -5415,16 +5415,16 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 94226
+          "triangles": 94210
         },
         {
           "level": 1,
-          "triangles": 23552,
-          "target": 23557
+          "triangles": 23548,
+          "target": 23553
         },
         {
           "level": 2,
-          "triangles": 8023,
+          "triangles": 8022,
           "target": 8000
         }
       ],
@@ -5447,11 +5447,11 @@
       "id": "chr_v3_tinh_khuyet_nu",
       "class": "player_v3_hi",
       "source": "assets/build/raw/chr_v3_tinh_khuyet_nu.glb",
-      "file": "chr_v3_tinh_khuyet_nu.b651b5cdb2.glb",
-      "bytes": 12182904,
-      "rawBytes": 16278616,
-      "triangles": 99518,
-      "rawTriangles": 99518,
+      "file": "chr_v3_tinh_khuyet_nu.e89f885c41.glb",
+      "bytes": 12182860,
+      "rawBytes": 16276856,
+      "triangles": 99502,
+      "rawTriangles": 99502,
       "lod0Cap": 110000,
       "skinned": true,
       "quantized": false,
@@ -5490,11 +5490,11 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 99518
+          "triangles": 99502
         },
         {
           "level": 1,
-          "triangles": 23994,
+          "triangles": 23996,
           "target": 24000
         },
         {

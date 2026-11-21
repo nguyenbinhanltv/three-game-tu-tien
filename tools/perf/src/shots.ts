@@ -44,6 +44,7 @@ import v3sets from './scenarios/v3sets';
 import v3views from './scenarios/v3views';
 import thetu from './scenarios/thetu';
 import rigstretch from './scenarios/rigstretch';
+import neck from './scenarios/neck';
 import skinv3 from './scenarios/skinv3';
 import hoatruc from './scenarios/hoatruc';
 import thiengiai from './scenarios/thiengiai';
@@ -55,6 +56,7 @@ import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
 import tn1 from './scenarios/tn1';
 import vs2 from './scenarios/vs2';
+import hontu from './scenarios/hontu';
 import realmaura from './scenarios/realmaura';
 import fxlib from './scenarios/fxlib';
 import xichkhe from './scenarios/xichkhe';
@@ -81,6 +83,7 @@ const SCENARIOS: Scenario[] = [
   vfx,
   tn1,
   vs2,
+  hontu,
   ui,
   minimap,
   chat,
@@ -108,6 +111,7 @@ const SCENARIOS: Scenario[] = [
   v3views,
   thetu,
   rigstretch,
+  neck,
   skinv3,
   divuc,
   flyover,

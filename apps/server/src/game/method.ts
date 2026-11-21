@@ -213,6 +213,7 @@ export class MethodRt {
     return {
       method: meta.method ?? '',
       lv: { ...(meta.skillLv ?? {}) },
+      ...(meta.paths?.length ? { paths: [...meta.paths] } : {}),
       vr: { ...(meta.skillVar ?? {}) },
       res: this.res,
       resAt: this.resAt,
