@@ -20,7 +20,8 @@ import {
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { gatesOf, type Gate } from '../world/gates';
-import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t } from '@dtl/content';
+import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t, pathOf as PATH_OF_METHOD } from '@dtl/content';
+import { BRAWLER_WEAPON } from '../character/brawlerGear';
 import { hoverBob, hoverTarget, stepHover } from './hover';
 import { BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
@@ -451,6 +452,7 @@ export class EntityManager {
         this.group.add(v.lo.root);
       }
       v.lo?.setItem(s.lv >= BONDED_UNLOCK_LEVEL ? BONDED_ARTIFACT_ID : '');
+      v.model.setBrawlerGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(BRAWLER_WEAPON) ?? false) : false);
       v.model.setWeaponGlow?.(s.wg ?? 0);
       v.model.setWeaponTint?.(look.set ? (SET.get(look.set)?.look.blade ?? '') : '');
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
