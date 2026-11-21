@@ -8,6 +8,8 @@ import {
   migrateSkillKeys,
   resolveSkill,
   branchMods,
+  stanceActive,
+  type StanceState,
   skillGate,
   type BranchMods,
   type BranchPicks,
@@ -155,6 +157,8 @@ export class MethodRt {
   /** Kim Chung Trấn (E2-G): phản lại tỉ lệ `reflectMul` sát thương quái đánh vào, tới `reflectUntil` (ms). */
   reflectUntil = 0;
   reflectMul = 0;
+  /** Tư thế đang giữ (VS-2e): id chiêu tư thế và lúc hết hạn (ms); null = không ở tư thế nào. Không lưu DB. */
+  stance: StanceState | null = null;
   /** Gửi lại cho client khi đổi (tối đa ~4 lần/giây). */
   dirty = true;
   sentAt = 0;
@@ -162,6 +166,7 @@ export class MethodRt {
   lockCharge = false;
 
   reset(): void {
+    this.stance = null;
     this.res = 0;
     this.charge = 0;
     this.guardUntil = 0;
@@ -195,6 +200,7 @@ export class MethodRt {
       charge: Math.min(CHARGE_MAX, Math.floor(this.charge)),
       guardUntil: now < this.guardUntil ? this.guardUntil : 0,
       now,
+      ...(stanceActive(this.stance, now) ? { st: { id: this.stance.id, until: this.stance.until } } : {}),
     };
   }
 }
