@@ -43,6 +43,20 @@
       "thinh_hoa": "Thịnh Hỏa"
     }
   },
+  "stances": {
+    "skl_ngu_kiem_tran": "Ngự Kiếm Trận",
+    "skl_tran_kiem": "Trận Kiếm",
+    "skl_tran_kiem_tram": "Trận Kiếm Trảm",
+    "skl_tran_kiem_vu": "Trận Kiếm Vũ",
+    "skl_kim_than": "Kim Thân",
+    "skl_kim_than_quyen": "Kim Thân Quyền",
+    "skl_chan_son_quyen": "Chấn Sơn Quyền",
+    "skl_kim_than_ho_the": "Kim Thân Hộ Thế",
+    "skl_dan_lo": "Đan Lô",
+    "skl_dan_hoa_chi": "Đan Hỏa Chỉ",
+    "skl_lo_hoa_hoi_nguyen": "Lô Hỏa Hồi Nguyên",
+    "skl_dan_hoa_vu": "Đan Hỏa Vũ"
+  },
   "marks": {
     "kiem_an": "Kiếm ấn",
     "truy_hon": "Truy hồn",

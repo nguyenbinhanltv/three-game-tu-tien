@@ -10,6 +10,7 @@ import { IconFrame } from '../Slot';
 import { LockMark } from '../patterns';
 import { blurAfterPointer, useNow } from './common';
 import { chainLines, skillMpNow } from '../../skillChain';
+import { barWithStance } from '../../stanceView';
 import { CLUSTER, clusterGeom, skillBox, type SlotPos } from './layout';
 
 /** Nhãn phím của ô thanh chiêu thứ i (khớp `Game.useSkill(i)`): 1–8, ô 9 thần thông = 0, ô 10 = `. */
@@ -143,7 +144,11 @@ function ClusterSlot({ sk, i, pos, view, main }: SlotProps) {
         <button
           type="button"
           className={
-            'u2-slot u2-skill u2h-skill' + (v.queued ? ' queued' : '') + (v.empowered ? ' empowered' : '') + (v.auto ? ' auto' : '')
+            'u2-slot u2-skill u2h-skill' +
+            (v.queued ? ' queued' : '') +
+            (v.empowered ? ' empowered' : '') +
+            (v.auto ? ' auto' : '') +
+            (sk.stanceOf ? ' in-stance' : '')
           }
           data-state={v.state}
           data-cd={cdOn ? '1' : undefined}
@@ -250,7 +255,9 @@ export function SkillCluster({ layout, utility }: { layout: 'arc' | 'bar'; utili
   if (!char) return null;
   const tt = thanThongSkill(method?.method, method?.br);
   const tt10 = thanThong10Skill(method?.method);
-  const bar = [...skillBar(method?.method), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : [])];
+  const methodOff = useUI((s) => s.methodOff);
+  // VS-2e: đang giữ tư thế thì ô chiêu đổi theo tư thế.
+  const bar = barWithStance([...skillBar(method?.method), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : [])], method, now - methodOff);
   const slots: (SkillDef | null)[] = Array.from({ length: BAR_SIZE + 2 }, (_, i) => bar[i] ?? null);
   const mdef = method?.method ? METHOD.get(method.method) : undefined;
   const dash = mdef ? SKILL.get(mdef.dash) : undefined;

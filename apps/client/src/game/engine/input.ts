@@ -259,6 +259,9 @@ function onKeyDown(eng: Game, e: KeyboardEvent): void {
     case 'dash':
       eng.useDash();
       break;
+    case 'stance':
+      eng.useStance();
+      break;
     case 'spirit':
       eng.spiritHold(true);
       break;

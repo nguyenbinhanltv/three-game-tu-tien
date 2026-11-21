@@ -12,6 +12,7 @@ type Action =
   | 'interact'
   | 'autorun'
   | 'dash'
+  | 'stance'
   | 'spirit'
   | 'soul'
   | 'bonded'
@@ -36,6 +37,8 @@ export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
   KeyE: 'interact',
   KeyR: 'autorun',
   KeyQ: 'dash',
+  // Tư thế của công pháp (VS-2e).
+  KeyY: 'stance',
   // Thần thức (giữ, thả để hủy) và bản mệnh pháp bảo (E2-E).
   KeyV: 'spirit',
   // Nguyên anh xuất khiếu (E3-K). Bay xuống chỉ còn Shift (X không còn là phím xuống).

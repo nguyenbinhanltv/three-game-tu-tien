@@ -1,6 +1,7 @@
 import { type CSSProperties, type PointerEvent as RPointerEvent, useEffect, useRef, useState } from 'react';
 import { PF_FLYING, PF_MEDITATING, type SkillDef } from '@dtl/shared';
 import { METHOD, SKILL, skillBar, t, thanThong10Skill, thanThongSkill } from '@dtl/content';
+import { barWithStance } from '../../stanceView';
 import { Game } from '../../../game/engine';
 import { touchTap } from '../../../game/engine/touch';
 import { isTap, joystick, JOY_RADIUS } from '../../../input/touchMode';
@@ -235,7 +236,8 @@ function ActionCluster() {
   const g = touchCluster(compact);
   const tt = thanThongSkill(method?.method, method?.br);
   const tt10 = thanThong10Skill(method?.method);
-  const bar = [...skillBar(method?.method), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : [])];
+  const methodOff = useUI((st) => st.methodOff);
+  const bar = barWithStance([...skillBar(method?.method), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : [])], method, Date.now() - methodOff);
   const slot = (i: number): SkillDef | null => bar[i] ?? null;
   const mdef = method?.method ? METHOD.get(method.method) : undefined;
   const dash = mdef ? SKILL.get(mdef.dash) : undefined;
