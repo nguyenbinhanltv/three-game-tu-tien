@@ -699,6 +699,7 @@ export class Game {
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
     this.vfx.camera = this.camera;
+    this.vfx.viewerAt = () => this.renderPos;
     this.skillFx = new SkillFx(this.vfx, {
       player: (sid) => this.ents?.players.get(sid),
       mySid: () => this.sid,

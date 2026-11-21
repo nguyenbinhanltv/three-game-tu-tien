@@ -69,6 +69,8 @@ export class Vfx {
   readonly batch = new FxBatcher(POOL);
   /** Camera để dấu chém đứng quay mặt về người xem (engine gán). */
   camera: THREE.Camera | null = null;
+  /** Vị trí người chơi của máy này (mặt bằng), để biết đồ rơi có nằm chắn giữa camera và nhân vật không. */
+  viewerAt: (() => { x: number; z: number } | null) | null = null;
   /** Số đồ rơi đang có cột sáng (hạ nhiều quái một lượt): cột, vòng, lõi cộng sáng chồng nhau thành mảng trắng lóa nên mỗi cái mờ theo số lượng (`lootCrowd`). */
   lootActive = 0;
   /** Vùng báo trước hình tròn đang sống (tâm, bán kính): vùng chồng lên nhau thì mờ bớt (`hazardStack`). */

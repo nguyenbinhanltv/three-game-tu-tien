@@ -18,19 +18,37 @@ import { G } from '../../core/geo';
 import { LOOT_FX_MAX, RING_GEO, _a } from './common';
 import type { Vfx } from '../vfx';
 
-/** Camera cách điểm rơi (mặt bằng) dưới chừng này mét thì cột sáng/chớp của đồ rơi mờ hết mức; mờ dần tới `LOOT_NEAR_FULL`. */
-export const LOOT_NEAR_MIN = 6;
-/** Từ khoảng cách này trở ra hình đồ rơi hiện đủ. Camera mặc định cách nhân vật ~18 m nên đồ rơi quanh nhân vật không bị ảnh hưởng. */
-export const LOOT_NEAR_FULL = 14;
+/** Điểm rơi gần camera hơn người chơi từ chừng này mét trở xuống thì hiện đủ (đồ rơi quanh chân nhân vật, kể cả khi zoom gần hay ở vùng camera sát). */
+export const LOOT_GAP_FULL = 1.5;
+/** Gần camera hơn người chơi từ chừng này mét trở lên thì mờ hết mức: cột/chớp nằm chắn giữa camera và nhân vật. */
+export const LOOT_GAP_HIDE = 5.5;
+/** Camera nằm trong hay sát cột (cách mép cột dưới mức đầu, tính từ mép cột) thì mờ; hiện đủ từ mức sau. */
+export const LOOT_CAM_INSIDE = 0.5;
+export const LOOT_CAM_CLEAR = 1.5;
 
-/** Hệ số 0..1 theo khoảng cách camera tới điểm rơi: 0 = sát camera (ẩn/mờ nhất), 1 = đủ xa. */
-export function lootNearK(dist: number, radius: number): number {
-  return Math.min(1, Math.max(0, (dist - radius - LOOT_NEAR_MIN) / (LOOT_NEAR_FULL - LOOT_NEAR_MIN)));
+/**
+ * Hệ số 0..1 cho cột sáng/chớp của đồ rơi, theo khoảng cách THẬT của camera (không dùng ngưỡng tuyệt đối vì camera mặc định cách người
+ * ≈ 12 m trên mặt bằng, vùng `camZones` sát hơn nữa, zoom được tới 3 m): `distCam` = camera → điểm rơi, `distViewer` = camera → người chơi
+ * (mặt bằng; `null` khi chưa biết). Mờ khi điểm rơi nằm chắn trước người chơi (gần camera hơn người từ 1,5 m, hết hẳn ở 5,5 m) hoặc camera
+ * nằm trong cột. Đồ rơi quanh chân nhân vật ở mọi góc camera mặc định cho 1.
+ */
+export function lootNearK(distCam: number, distViewer: number | null, radius: number): number {
+  const inside = Math.min(1, Math.max(0, (distCam - radius - LOOT_CAM_INSIDE) / (LOOT_CAM_CLEAR - LOOT_CAM_INSIDE)));
+  if (distViewer === null) return inside;
+  const gap = distViewer - distCam;
+  const between = Math.min(1, Math.max(0, (LOOT_GAP_HIDE - gap) / (LOOT_GAP_HIDE - LOOT_GAP_FULL)));
+  return Math.min(inside, between);
 }
 
 function lootNear(v: Vfx, x: number, z: number, radius: number): number {
   const cam = v.camera;
-  return cam ? lootNearK(Math.hypot(cam.position.x - x, cam.position.z - z), radius) : 1;
+  if (!cam) return 1;
+  const me = v.viewerAt?.() ?? null;
+  return lootNearK(
+    Math.hypot(cam.position.x - x, cam.position.z - z),
+    me ? Math.hypot(cam.position.x - me.x, cam.position.z - me.z) : null,
+    radius,
+  );
 }
 
 /**
