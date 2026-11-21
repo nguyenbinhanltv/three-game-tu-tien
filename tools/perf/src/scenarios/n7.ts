@@ -30,6 +30,33 @@ const CROWD_SETS = [
   'set_phuc_mach',
   'set_than_tang',
 ];
+/**
+ * Ảnh nhuộm (`--dye`): màu đạo bào lúc tạo nhân vật trên đồ khởi đầu (`/gm dye`), rồi nhuộm Tủ ngoại trang (`dye3`, tin `lkd`) trên các bộ:
+ * vải có sắc độ, vải tông ấm trùng sắc da, giáp trung tính. `dye3: null` = ảnh gốc không nhuộm để so.
+ */
+const DYE_SHOTS: { name: string; gm: string[]; dye3?: string[] | null }[] = [
+  { name: 'de_tu-0-mac_dinh', gm: ['set off', 'dye attire_sect'] },
+  { name: 'de_tu-1-do_son', gm: ['dye wood_cinnabar'] },
+  { name: 'de_tu-2-nga', gm: ['dye attire_ivory'] },
+  { name: 'de_tu-3-muc', gm: ['dye attire_ink'] },
+  { name: 'dan_tam-0-goc', gm: ['dye attire_sect', 'set set_dan_tam'] },
+  { name: 'dan_tam-1-tu_tim', gm: [], dye3: ['attire_rogue', 'attire_ivory', 'attire_ink'] },
+  { name: 'tinh_khuyet-1-tu_do_son', gm: ['set set_tinh_khuyet'], dye3: ['wood_cinnabar', 'attire_ivory', 'attire_ink'] },
+  { name: 'liet_mach-1-tu_luc', gm: ['set set_liet_mach'], dye3: ['wood_roof', 'attire_ivory', 'attire_ink'] },
+  { name: 'van_kinh-1-tu_lam', gm: ['set set_van_kinh'], dye3: ['attire_sect', 'attire_ivory', 'attire_ink'] },
+  { name: 'huyen_giap-1-tu_do_son', gm: ['set set_huyen_giap'], dye3: ['wood_cinnabar', 'attire_ivory', 'attire_ink'] },
+];
+
+/** Camera tự do 3/4 trước mặt nhân vật mình, đặt theo vị trí và hướng thân thật (các lượt chụp trùng góc). */
+const frontCam = (page: Page) =>
+  page.evaluate(() => {
+    const g = window.__game!;
+    const root = g.ents.players.get(g.sid).model.root as { rotation: { y: number }; position: { x: number; y: number; z: number } };
+    const a = root.rotation.y + 0.45;
+    const p = root.position;
+    g.freeCam = { x: p.x + Math.sin(a) * 3, y: p.y + 1.3, z: p.z + Math.cos(a) * 3, tx: p.x, ty: p.y + 0.92, tz: p.z, fov: 40 };
+  });
+
 const SIZES: [string, number, number][] = [
   ['1080p', 1920, 1080],
   ['720p', 1280, 720],
@@ -63,7 +90,8 @@ async function shoot(page: Page, out: string, name: string): Promise<void> {
 export default {
   name: 'n7',
   desc: 'N-7: ảnh trước/sau khi đổi mặc định sang nhân vật v3 (cận từng phái, đám đông 20–50), 1080p + 720p',
-  usage: '[--tag sau] [--query chr=v1] [--bots 20,50] [--radius 9] [--genders m,f] [--no-close] [--no-crowd] [--quality high]',
+  usage:
+    '[--dye (chỉ chụp ảnh nhuộm)] [--tag sau] [--query chr=v1] [--bots 20,50] [--radius 9] [--genders m,f] [--no-close] [--no-crowd] [--quality high]',
   env: { RATE_LIMIT_EXEMPT: 'loopback', MAX_CLIENTS: '128' },
   async run(r) {
     const tag = opt('--tag', 'sau');
@@ -73,6 +101,42 @@ export default {
     const counts = list('--bots', '20,50').map(Number);
     const radius = Number(opt('--radius', '9'));
     const stats: Record<string, unknown> = {};
+
+    if (flag('--dye')) {
+      for (const g of genders) {
+        const gname = g === 'm' ? 'nam' : 'nu';
+        const { ctx, page } = await r.open({
+          name: `N7d${g}`,
+          viewport: [1920, 1080],
+          quality,
+          look: { g },
+          extra,
+          hide: 'hud',
+          seenIntro: true,
+          warnings: /models|chr_v3|clip/,
+        });
+        await gm(page, 'level 15', 1500);
+        await gm(page, 'god on', 1100);
+        await gm(page, 'killall', 900);
+        await gm(page, `tp ${SAN.x + (g === 'm' ? 14 : 21)} ${SAN.z}`, 1500);
+        let n = 0;
+        for (const d of DYE_SHOTS) {
+          for (const c of d.gm) await gm(page, c, 1300);
+          if (d.dye3)
+            await page.evaluate(([dye, rid]) => window.__game!.send('lkd', { dye, r: rid }), [d.dye3, `n7d${Date.now()}${n++}`] as const);
+          await sleep(1500);
+          await waitModels(page, 1, 60_000);
+          await sleep(5000);
+          await frontCam(page);
+          await sleep(1500);
+          await shoot(page, r.out, `${tag}-nhuom-${d.name}-${gname}`);
+          console.log(`[shots:n7] ${tag} nhuộm ${d.name} ${gname}`);
+        }
+        await ctx.close();
+      }
+      fs.writeFileSync(path.join(r.out, `${tag}-nhuom.json`), JSON.stringify(DYE_SHOTS, null, 2));
+      return;
+    }
 
     if (!flag('--no-close')) {
       for (const g of genders) {
@@ -96,14 +160,7 @@ export default {
           await gm(page, `set ${set}`, 1500);
           await waitModels(page, 1, 60_000);
           await sleep(6000); // áo/texture nạp lười + lò xo vạt ổn định
-          // Camera tự do 3/4 trước mặt, đặt theo vị trí và hướng thân thật: hai lượt trước/sau trùng góc.
-          await page.evaluate(() => {
-            const g = window.__game!;
-            const root = g.ents.players.get(g.sid).model.root as { rotation: { y: number }; position: { x: number; y: number; z: number } };
-            const a = root.rotation.y + 0.45;
-            const p = root.position;
-            g.freeCam = { x: p.x + Math.sin(a) * 3, y: p.y + 1.3, z: p.z + Math.cos(a) * 3, tx: p.x, ty: p.y + 0.92, tz: p.z, fov: 40 };
-          });
+          await frontCam(page);
           await sleep(1500);
           await shoot(page, r.out, `${tag}-can-${phai}-${gname}`);
           console.log(`[shots:n7] ${tag} cận ${phai} ${gname} (${set})`);
