@@ -27,7 +27,7 @@ import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
 import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from '../fx/methodFx';
-import { aliasFx, FX_SILENT } from '../fx/fxAlias';
+import { HON_FX_KINDS, playHonFx } from '../fx/honFx';
 import { get, pushLog, pushToast, set } from '../../ui/store';
 import { sysChannel } from '../../ui/u2/hud/chatChannel';
 import { duck, lootChime, playSting, type Sfx, sfx } from '../audio/audio';
@@ -149,11 +149,28 @@ export function updateSoulVis(eng: Game, dt: number, me: PState | undefined): vo
 }
 
 export function handleFx(eng: Game, m: FxMsg, held = false): void {
-  if (FX_SILENT.has(m.t)) return;
-  m = aliasFx(m);
   const v = eng.vfx;
   const e = eng.ents;
   if (!v || !e || eng.disposed) return;
+  // TN-2: hiệu ứng tại điểm của Hồn tu (nhịp hồn binh, tia hồn thu về) không gắn động tác nào: phát riêng rồi thôi.
+  if (HON_FX_KINDS[m.t]) {
+    const runner = eng.skillFx?.runner;
+    if (runner && !held)
+      playHonFx(
+        {
+          startAt: (tl, o) => runner.startAt(tl, o),
+          posOf: (id) => {
+            const o = e.monsters.get(id) ?? e.players.get(id);
+            return o ? { x: o.x, y: groundAt(o.x, o.z), z: o.z } : null;
+          },
+          mySid: () => eng.sid,
+          viewer: () => eng.renderPos,
+          live: () => v.pool.live,
+        },
+        m,
+      );
+    return;
+  }
   const src = m.src ?? '';
   const dst = m.dst ?? '';
   const pSrc = e.players.get(src);
@@ -306,10 +323,6 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     case 'artheal':
       // Ngưng Đan Lô: cột đan hỏa mảnh và mờ (không che người), số hồi do DmgMsg heal hiện.
       v.pillar(posSrc, tint(0xffb35a), 0.8, 0.3, 2.2, 0.1);
-      break;
-    case 'artreap':
-      // Hồn phiên nhiếp hồn: một tia hồn nhỏ từ quái bay về người dùng (cùng dạng tia của hồ lô, màu theo pháp bảo).
-      if (e.chestOf(src, _v)) v.swordShot(_v, posDst, tint(0xb9a8ff), 0.4, 0.5);
       break;
     case 'artdrain':
       // Hồ Lô hút linh lực: một tia nhỏ từ quái bay về người dùng.

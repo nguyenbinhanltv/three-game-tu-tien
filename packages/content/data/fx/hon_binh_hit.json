@@ -1,0 +1,46 @@
+{
+ "skill": "hon_binh_hit",
+ "palette": "dan_hon_kinh",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "slash_thin",
+   "t": 0.0,
+   "dur": 0.26,
+   "at": "self",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "scale": 2.0,
+   "billboard": true,
+   "sweep": 0.35,
+   "erodeFrom": 0.4,
+   "ragged": 0.8,
+   "tone": "rim",
+   "alpha": 0.9,
+   "tier": 0,
+   "seed": 40
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 8,
+   "speed": 2.0,
+   "spread": 1.0,
+   "life": 0.4,
+   "size": 0.14,
+   "at": "self",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "tone": "body",
+   "grav": -1.2,
+   "tier": 1
+  }
+ ]
+}

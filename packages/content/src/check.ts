@@ -46,6 +46,7 @@ import {
   validatePose,
   validateFxTimeline,
   fxDrawCount,
+  fxParticleCount,
   FX_SKILL_DRAW_MAX,
   validateSkillPose,
   validateSkillRules,
@@ -86,6 +87,7 @@ import {
   HK_FX,
   HK_FX_STAGE,
   HK_FX_TIMELINES,
+  HON_FX_TIMELINES,
   SUY_FX,
   SUY_FX_STAGE,
   SUY_FX_TIMELINES,
@@ -199,6 +201,17 @@ for (const f of SUY_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => 
     if (n > FX_SKILL_DRAW_MAX) err(`fx ngũ suy: ải ${mech} dùng ${n} draw > ${FX_SKILL_DRAW_MAX}`);
   }
   for (const f of SUY_FX_TIMELINES) if (!used.has(f.skill)) err(`fx ngũ suy: timeline ${f.skill} không thuộc ải nào (SUY_FX_STAGE)`);
+}
+// TN-2: hiệu ứng tại điểm của Hồn tu. Nhịp hồn binh phát tới 3 lần mỗi giây và tia hồn phát mỗi lần quái chết nên phải rất nhẹ:
+// mỗi timeline ≤ 3 draw, ≤ 30 hạt, không khựng hình/rung/chớp.
+for (const f of HON_FX_TIMELINES) {
+  for (const m of validateFxTimeline(f, (id) => id.startsWith('hon_'))) err(m);
+  const n = fxDrawCount(f.events);
+  if (n > 3) err(`fx hồn tu: ${f.skill} dùng ${n} draw > 3`);
+  if (fxParticleCount(f.events) > 30) err(`fx hồn tu: ${f.skill} quá 30 hạt`);
+  if (f.events.some((e) => e.type === 'hitstop' || e.type === 'shake' || e.type === 'flash'))
+    err(`fx hồn tu: ${f.skill} không được khựng/rung/chớp`);
+  if (f.palette !== 'dan_hon_kinh') err(`fx hồn tu: ${f.skill} phải dùng bảng màu dan_hon_kinh`);
 }
 // TN-6: hiệu ứng Huyền Kiếp, cùng luật: mỗi timeline ≤ 12 draw, cả một kiếp nhỏ ≤ 25 draw.
 for (const f of HK_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('hk_'))) err(m);
