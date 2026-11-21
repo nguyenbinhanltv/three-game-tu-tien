@@ -292,5 +292,49 @@
       "level": 10,
       "gold": 300
     }
+  },
+  {
+    "id": "loi_tu",
+    "role": "dps",
+    "methods": [
+      "cuu_tieu_loi_kinh"
+    ],
+    "dao": "kiem",
+    "art": "kiem",
+    "voice": "kt",
+    "gm": "loi",
+    "weapons": [
+      "sword"
+    ],
+    "palette": {
+      "core": "1a1240",
+      "body": "7a5cff",
+      "rim": "e6f0ff",
+      "accent": "ffe45c",
+      "shadow": "0a0820"
+    },
+    "tint": "cfe6ff",
+    "hit": {
+      "sfx": "crit",
+      "gain": 0.16,
+      "rate": 1.1,
+      "strongOnly": true
+    },
+    "match": [
+      "loi_tu",
+      "loi_kinh"
+    ],
+    "synergy": {
+      "gives": [
+        "loi_an"
+      ],
+      "wants": [
+        "mat_the"
+      ]
+    },
+    "unlock": {
+      "level": 10,
+      "gold": 300
+    }
   }
 ]

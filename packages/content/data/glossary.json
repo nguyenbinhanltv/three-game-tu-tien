@@ -52,6 +52,12 @@
       "huyet_tran": "Huyết Trận",
       "huyet_cu": "Huyết Cự"
     },
+    "cuu_tieu_loi_kinh": {
+      "phich_lich": "Phích Lịch",
+      "loi_vong": "Lôi Võng",
+      "loi_phat": "Lôi Phạt",
+      "loi_hai": "Lôi Hải"
+    },
     "liet_nhan_dao_kinh": {
       "hoanh_dao": "Hoành Đao",
       "tam_dao": "Tâm Đao",
@@ -86,6 +92,10 @@
     "skl_doan_nhan": "Đoạn Nhận",
     "skl_quet_ngang": "Quét Ngang",
     "skl_ho_dao": "Hộ Đao",
+    "skl_loi_the": "Lôi Thể",
+    "skl_loi_chich": "Lôi Chích",
+    "skl_loi_lien": "Lôi Liên",
+    "skl_loi_giap": "Lôi Giáp",
     "skl_nuoi_co": "Nuôi Cổ",
     "skl_co_chich": "Cổ Chích",
     "skl_doc_vu": "Độc Vụ",
@@ -101,6 +111,7 @@
     "dan_su": "Đan sư",
     "hon_tu": "Hồn tu",
     "dao_tu": "Đao tu",
+    "loi_tu": "Lôi tu",
     "co_tu": "Cổ tu",
     "co_than": "Cổ Thần"
   },
@@ -116,6 +127,7 @@
     "moc_an": "Mộc ấn",
     "hon_an": "Hồn ấn",
     "dao_ngan": "Đao ngấn",
+    "loi_an": "Lôi ấn",
     "co_doc": "Cổ độc"
   },
   "resources": {
@@ -124,6 +136,7 @@
     "dan_hoa": "Đan hỏa",
     "hon_luc": "Hồn lực",
     "khi_the": "Khí thế",
+    "loi_tich": "Lôi tích",
     "co": "Cổ",
     "co_huyet": "Cổ huyết"
   },
@@ -427,6 +440,10 @@
     "npc_hai_duoc": "Hạ Thảo"
   },
   "skillsTier": {
+    "skl_phich_lich": "Phích Lịch Tuyến",
+    "skl_loi_vong": "Lôi Võng",
+    "skl_loi_phat": "Lôi Phạt",
+    "skl_loi_hai": "Lôi Hải",
     "skl_tinh_bao": "Tinh Bạo",
     "skl_huyet_cu_ho": "Huyết Cự Hộ",
     "skl_co_than_nhat_kich": "Cổ Thần Nhất Kích",

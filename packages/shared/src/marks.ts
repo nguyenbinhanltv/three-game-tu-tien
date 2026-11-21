@@ -2,13 +2,23 @@
 // Hàm thuần dùng chung server (đặt/tiêu/tính thưởng) và client (đọc gói bit để vẽ trên đầu mục tiêu).
 // Dữ liệu ở packages/content/data/marks.json; chiêu khai `applyMark` / `consumeMark` (types.ts).
 
-export type MarkId = 'kiem_an' | 'truy_hon' | 'tran_an' | 'mat_the' | 'moc_an' | 'hon_an' | 'dao_ngan' | 'co_doc';
+export type MarkId = 'kiem_an' | 'truy_hon' | 'tran_an' | 'mat_the' | 'moc_an' | 'hon_an' | 'dao_ngan' | 'co_doc' | 'loi_an';
 
 /**
  * Thứ tự cố định để gói bit vào trường đồng bộ `mk` (mỗi ấn `MARK_BITS` bit). KHÔNG đổi thứ tự, chỉ thêm vào cuối:
  * client và server phải đọc cùng một bảng.
  */
-export const MARK_ORDER: readonly MarkId[] = ['kiem_an', 'truy_hon', 'tran_an', 'mat_the', 'moc_an', 'hon_an', 'dao_ngan', 'co_doc'];
+export const MARK_ORDER: readonly MarkId[] = [
+  'kiem_an',
+  'truy_hon',
+  'tran_an',
+  'mat_the',
+  'moc_an',
+  'hon_an',
+  'dao_ngan',
+  'co_doc',
+  'loi_an',
+];
 export const MARK_BITS = 3;
 export const MARK_STACK_MAX = (1 << MARK_BITS) - 1;
 /** Nhịp sát thương của ấn có `dot` (ms). */
