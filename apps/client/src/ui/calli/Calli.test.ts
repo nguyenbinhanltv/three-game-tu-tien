@@ -23,7 +23,11 @@ describe('calliOf', () => {
 
 describe('calliFilesOf (nạp trước thẻ chiêu tối thượng)', () => {
   it('mọi chiêu tối thượng có đúng ảnh trong manifest', () => {
-    const keys = METHOD_SKILLS.filter((s) => s.ult).map((s) => `skill.${s.id}.name`);
+    // TN-2: chữ thư pháp của Tát Đậu Thành Binh làm ở PR giao diện Hồn tu (cần chạy `pnpm calli` với font ngoài repo);
+    // tới lúc đó thẻ chiêu tối thượng của nó lùi về chữ thường. Xóa ngoại lệ này khi ảnh đã vào manifest.
+    const PENDING = new Set(['skl_tat_dau_thanh_binh']);
+    const keys = METHOD_SKILLS.filter((s) => s.ult && !PENDING.has(s.id)).map((s) => `skill.${s.id}.name`);
+    expect(calliFilesOf([...PENDING].map((id) => `skill.${id}.name`))).toEqual([]);
     expect(keys.length).toBeGreaterThan(0);
     const files = calliFilesOf(keys);
     expect(files).toHaveLength(keys.length);

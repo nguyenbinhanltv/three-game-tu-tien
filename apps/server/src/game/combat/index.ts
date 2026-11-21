@@ -16,6 +16,7 @@ import {
   type MarkDef,
   resAdd,
   resFromHeal,
+  resFromKill,
   resFromTaken,
   resMax,
   resNow,
@@ -483,6 +484,22 @@ export class CombatSystem {
     if (def) this.addRes(p, resFromTaken(def, dmg, p.char.mhp));
   }
 
+  /**
+   * Thu hồn (TN-2): quái `mon` vừa chết và `p` được tính công hạ nó. Tài nguyên có `gain.kill` (Hồn lực) thì tích theo loại quái
+   * nếu `p` còn sống và đứng trong tầm; kèm hồi một phần khí huyết. Không đụng rơi đồ, linh thạch hay tu vi.
+   */
+  resKill(p: PlayerEnt, mon: MonEnt): void {
+    const def = resourceOf(p.char.meta);
+    if (!def?.gain.kill || this.c.isDead(p)) return;
+    const dist = Math.hypot(p.move.x - mon.s.x, p.move.z - mon.s.z);
+    const n = resFromKill(def, mon.def.boss ? 'boss' : mon.def.elite ? 'elite' : 'mob', dist);
+    if (!(n > 0)) return;
+    this.addRes(p, n);
+    const heal = def.gain.kill.heal;
+    if (heal) this.healPlayer(p, Math.round(p.char.mhp * heal));
+    this.c.fx({ t: 'soul_reap', src: mon.id, dst: p.sid });
+  }
+
   /** Một nhịp sát thương theo thời gian (mộc độc, thiêu đốt) của `p` vừa nổ: Đan sư tích Đan hỏa. */
   resDot(p: PlayerEnt): void {
     const g = resourceOf(p.char.meta)?.gain.dot;
@@ -620,7 +637,9 @@ export class CombatSystem {
     const def = this.markFor(p, id);
     if (!def || def.on !== 'mon') return;
     if (mon.state === MS_DEAD || (mon.owner && mon.owner !== p.sid) || this.c.now < mon.evadeUntil) return;
-    markAdd(mon.marks, def, p.sid, n, this.c.now, { mul, durMul: branchModsOf(p.char).markDurMul });
+    // TN-2: ấn có `dot` (Hồn ấn) chốt sát thương mỗi tầng theo công kích của người đặt lúc đặt.
+    const per = def.dot ? Math.max(1, Math.round(p.char.atk * def.dot.per)) : undefined;
+    markAdd(mon.marks, def, p.sid, n, this.c.now, { mul, durMul: branchModsOf(p.char).markDurMul, per });
     mon.s.mk = packMarks(mon.marks, this.c.now);
     // Mất thế: quái thường choáng, thủ lĩnh cộng thanh phá thế (không choáng thủ lĩnh bằng ấn).
     if (def.onApply) {
@@ -895,7 +914,8 @@ export class CombatSystem {
     const elemMul = skillDamageMul(c.stats, skill.elem);
     // VS-2a: chiêu xả tài nguyên riêng lúc áp (Kiếm ý theo `res` của chiêu, Huyết khí theo luật `auto`, Đan hỏa cho chiêu hồi).
     const { mul: resMul, spent: resSpent } = this.spendRes(p, skill);
-    let mul = dealsDamage(skill) ? resMul : 1;
+    // Chiêu gọi (`summon`) xả tài nguyên thì mỗi nhịp của vật gọi mạnh theo (Tát Đậu Thành Binh xả Hồn lực).
+    let mul = dealsDamage(skill) || skill.kind === 'summon' ? resMul : 1;
     // VS-2c: ấn chiêu này đặt và tiêu (dữ liệu của chiêu; người không tu đúng công pháp của ấn thì `markFor` trả rỗng).
     const am = skill.applyMark;
     const cm = skill.consumeMark;
@@ -1121,6 +1141,8 @@ export class CombatSystem {
           });
           holdLock = Math.max(holdLock, off);
         });
+        // TN-2 (Âm Hồn Triều): chiêu quét đường đặt ấn lên mọi con trong vệt còn sống sau đợt đầu.
+        if (am) for (const o of hit) if (o.state !== MS_DEAD) this.markMon(p, o, am.id, am.n);
         break;
       }
       case 'stance': {
@@ -1147,6 +1169,7 @@ export class CombatSystem {
           range: sm.range,
           power: rs.power * mul,
           markFirst: !!v?.markFirst,
+          hitFx: `${skill.fx}_hit`,
           elem: skill.elem,
         });
         this.c.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, d: sec, n: v?.count ?? sm.count, ...tag });
@@ -1508,7 +1531,7 @@ export class CombatSystem {
         const pool = sm.markFirst ? [...near.filter(marked), ...near.filter((o) => !marked(o))] : near;
         const em = skillDamageMul(owner.char.stats, sm.elem);
         for (const o of pool.slice(0, sm.count)) {
-          this.c.fx({ t: 'kiemdan_hit', src: owner.sid, dst: o.id });
+          this.c.fx({ t: sm.hitFx, src: owner.sid, dst: o.id });
           this.c.hitMonster(owner, o, sm.power, em, sm.elem);
         }
       }

@@ -1,8 +1,8 @@
 // Tài nguyên riêng của công pháp (VS-2a): Kiếm ý, Huyết khí, Đan hỏa. Hàm thuần dùng chung server (tính thật) và client (vẽ thanh).
 // Dữ liệu nằm ở packages/content/data/methods.json (`methods[].resource`, `skills[].res`).
 
-export type ResourceId = 'kiem_y' | 'huyet_khi' | 'dan_hoa';
-export const RESOURCE_IDS: readonly ResourceId[] = ['kiem_y', 'huyet_khi', 'dan_hoa'];
+export type ResourceId = 'kiem_y' | 'huyet_khi' | 'dan_hoa' | 'hon_luc';
+export const RESOURCE_IDS: readonly ResourceId[] = ['kiem_y', 'huyet_khi', 'dan_hoa', 'hon_luc'];
 
 /** Nguồn tích tài nguyên. Trường nào vắng thì nguồn đó không cho gì. */
 export interface ResourceGain {
@@ -15,6 +15,11 @@ export interface ResourceGain {
   healPct?: number;
   /** Mỗi nhịp sát thương theo thời gian (mộc độc, thiêu đốt) của mình. */
   dot?: number;
+  /**
+   * Thu hồn (TN-2): quái mình có góp sát thương chết trong `r` mét thì cộng `base` điểm (tinh anh `elite`, thủ lĩnh `boss`).
+   * `heal`: mỗi lần thu hồn hồi chừng này phần khí huyết tối đa (0–0,05).
+   */
+  kill?: { base: number; elite: number; boss: number; r: number; heal?: number };
 }
 
 export interface ResourceDef {
@@ -90,6 +95,13 @@ export function resFromTaken(def: ResourceDef, dmg: number, mhp: number): number
   return Math.max(g.takenMin ?? 0, (dmg / mhp) * 100 * g.takenPct);
 }
 
+/** Điểm thu hồn khi một quái chết cách người chơi `dist` mét (0 = ngoài tầm hoặc tài nguyên không thu hồn). */
+export function resFromKill(def: ResourceDef, kind: 'mob' | 'elite' | 'boss', dist: number): number {
+  const k = def.gain.kill;
+  if (!k || !(dist <= k.r)) return 0;
+  return kind === 'boss' ? k.boss : kind === 'elite' ? k.elite : k.base;
+}
+
 /** Điểm tích khi hồi được `healed` khí huyết thật cho người có khí huyết tối đa `mhp`. */
 export function resFromHeal(def: ResourceDef, healed: number, mhp: number): number {
   if (!def.gain.healPct || !(healed > 0) || !(mhp > 0)) return 0;
@@ -136,7 +148,14 @@ export function resourceErrors(def: ResourceDef, at: string): string[] {
   if (def.ui !== 'pips' && def.ui !== 'bar') errs.push(`${at}: ui phải là pips hoặc bar`);
   if (def.ui === 'pips' && def.max > 9) errs.push(`${at}: kiểu pips tối đa 9 ô`);
   const g = def.gain ?? {};
-  const vals = [g.basic, g.takenPct, g.takenMin, g.healPct, g.dot].filter((x) => x !== undefined);
+  const vals = [g.basic, g.takenPct, g.takenMin, g.healPct, g.dot, g.kill?.base].filter((x) => x !== undefined);
+  const k = g.kill;
+  if (k) {
+    if (!(k.base > 0 && k.elite >= k.base && k.boss >= k.elite && k.boss <= def.max))
+      errs.push(`${at}: kill cần 0 < base ≤ elite ≤ boss ≤ max`);
+    if (!(k.r > 0 && k.r <= 40)) errs.push(`${at}: kill.r trong (0; 40] mét`);
+    if (k.heal !== undefined && !(k.heal > 0 && k.heal <= 0.05)) errs.push(`${at}: kill.heal trong (0; 0,05]`);
+  }
   if (!vals.length) errs.push(`${at}: gain phải có ít nhất một nguồn tích`);
   if (vals.some((x) => !(typeof x === 'number' && x > 0 && x <= def.max))) errs.push(`${at}: gain phải dương và không quá max`);
   if (!(def.decay?.after > 0 && def.decay.after <= 60)) errs.push(`${at}: decay.after 0–60 giây`);
