@@ -219,11 +219,11 @@ describe('lớp đọc được từ xa (đèn khu ải, cột linh quang, lửa
       },
     });
     const lights = () => scene.children.filter((c) => (c as THREE.PointLight).isPointLight) as THREE.PointLight[];
-    return { fx, beacons, lampSets, lights, stops: () => lampStops };
+    return { fx, beacons, lampSets, lights, scene, stops: () => lampStops };
   }
 
   it('vào ải: thêm đúng hai đèn không đổ bóng (chủ đạo trên tâm ải, viền bám nhân vật); khép ải thì gỡ sạch', () => {
-    const { fx, lights } = mkGlow();
+    const { fx, lights, scene } = mkGlow();
     fx.bar(bar('suy_linh', { x: 4, z: 6 }));
     expect(lights()).toHaveLength(2);
     expect(lights().every((l) => !l.castShadow)).toBe(true);
@@ -237,9 +237,25 @@ describe('lớp đọc được từ xa (đèn khu ải, cột linh quang, lửa
     fx.bar(bar('suy_the', { x: 4, z: 6 }));
     expect(lights()).toHaveLength(2);
     expect(lights()[0]!.color.getHex()).not.toBe(c0);
+    // Khép ải: đèn TẮT (intensity 0) nhưng vẫn ở trong cảnh, số con của scene không đổi (đổi số đèn = dựng lại shader, khựng).
+    const n = scene.children.length;
     fx.bar(bar('suy_the', { pg: -1 }));
-    expect(lights()).toHaveLength(0);
+    expect(scene.children.length).toBe(n);
+    expect(lights().every((l) => l.intensity === 0)).toBe(true);
     expect(fx.lit).toBe(false);
+    // Cả chuỗi khép ải → ải mới: vẫn đúng hai đèn ấy, bật lại.
+    const [k0, r0] = lights();
+    for (const id of ['suy_thuc', 'suy_tho', 'suy_tam']) {
+      fx.bar(bar(id, { x: 4, z: 6 }));
+      expect(scene.children.length).toBe(n);
+      expect(lights()).toEqual([k0, r0]);
+      expect(fx.lit).toBe(true);
+      fx.bar(bar(id, { pg: -1 }));
+      expect(scene.children.length).toBe(n);
+    }
+    // Chỉ dispose() mới gỡ đèn.
+    fx.dispose();
+    expect(lights()).toHaveLength(0);
   });
 
   it('cột linh quang: Linh Nhãn dời thì cột cũ tắt; Tôi Thể Lôi sống đúng thời lượng báo; khép ải tắt hết', () => {

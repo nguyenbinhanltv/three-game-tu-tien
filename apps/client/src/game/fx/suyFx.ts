@@ -52,6 +52,7 @@ export interface SuyFxEnv {
   scene?: THREE.Scene;
 }
 
+const WHITE = new THREE.Color(0xffffff);
 const palOf = (stage: string | undefined): string => (stage && stage.startsWith('suy_') ? stage : 'suy_linh');
 const hexOf = (pal: string, tone: 'body' | 'rim' | 'accent'): number => FX_PALETTE[pal]?.[tone] ?? 0xffffff;
 
@@ -199,31 +200,35 @@ export class SuyFx {
     this.lamps.delete(src);
   }
 
-  /** Đèn chủ đạo + đèn viền cho ải của `src` (ưu tiên ải của chính mình); thêm vào cảnh một lần, đổi màu/vị trí theo ải. */
+  /**
+   * Đèn chủ đạo + đèn viền cho ải của `src` (ưu tiên ải của chính mình). Hai đèn được tạo MỘT lần ở lần vào ải đầu tiên và ở lại trong cảnh
+   * tới khi `dispose()`: đổi số đèn của cảnh buộc mọi vật liệu có chiếu sáng dựng lại pipeline (khựng), nên giữa các ải chỉ đổi màu, vị trí và
+   * `intensity` (tắt = 0), cùng quy ước với `render/lanternLights.ts`.
+   */
   private light(src: string, x: number, z: number, pal: string): void {
     const scene = this.env.scene;
     if (!scene) return;
     if (this.litFor && this.litFor !== src && !this.mine(src)) return;
     this.litFor = src;
-    if (!this.key) {
-      this.key = new THREE.PointLight(0xffffff, KEY.intensity, KEY.dist, 2);
-      this.rim = new THREE.PointLight(0xdfe9ff, RIM.intensity, RIM.dist, 2);
+    if (!this.key || !this.rim) {
+      this.key = new THREE.PointLight(0xffffff, 0, KEY.dist, 2);
+      this.rim = new THREE.PointLight(0xdfe9ff, 0, RIM.dist, 2);
       this.key.castShadow = this.rim.castShadow = false;
       scene.add(this.key, this.rim);
     }
     // Màu ải pha trắng 60%: đủ nhận ra sắc ải mà không nhuộm cả sân.
-    this.key.color.setHex(hexOf(pal, 'body')).lerp(new THREE.Color(0xffffff), 0.6);
+    this.key.color.setHex(hexOf(pal, 'body')).lerp(WHITE, 0.6);
     this.key.position.set(x, this.env.ground(x, z) + KEY.h, z);
+    this.key.intensity = KEY.intensity;
+    this.rim.intensity = RIM.intensity;
   }
 
+  /** Tắt đèn khu ải của `src` (giữ đèn trong cảnh, xem `light`). */
   private unlight(src: string): void {
     if (this.litFor !== src) return;
     this.litFor = '';
-    if (this.key) this.key.removeFromParent();
-    if (this.rim) this.rim.removeFromParent();
-    this.key?.dispose();
-    this.rim?.dispose();
-    this.key = this.rim = null;
+    if (this.key) this.key.intensity = 0;
+    if (this.rim) this.rim.intensity = 0;
   }
 
   /** Dọn mọi thứ của `src` (kiếp mới bắt đầu, ải khép, rời room). */
@@ -430,7 +435,7 @@ export class SuyFx {
 
   /** Đèn thật của khu ải đang bật? (test, bảng dev) */
   get lit(): boolean {
-    return !!this.key;
+    return !!this.key && this.key.intensity > 0;
   }
 
   dispose(): void {
@@ -442,5 +447,10 @@ export class SuyFx {
     this.loops.clear();
     this.stage.clear();
     this.offSince.clear();
+    this.key?.removeFromParent();
+    this.rim?.removeFromParent();
+    this.key?.dispose();
+    this.rim?.dispose();
+    this.key = this.rim = null;
   }
 }
