@@ -1,6 +1,8 @@
 // Lệnh GM của tài khoản thử (`/gm …`, `?realm=`, `?tribulation=`): tách từ GameSim (R-7), giữ nguyên hành vi.
 // Hệ con chỉ biết GameSim qua giao diện hẹp `GmCtx`; mọi đổi vật phẩm/tiền vẫn qua `Character.tx` (tx + idem + sổ cái).
 import {
+  isRootId,
+  ROOT_IDS,
   ARTIFACT_MAX_LEVEL,
   CHARGE_MAX,
   parseAppearance,
@@ -205,6 +207,15 @@ export class GmSystem {
         if (lv === null) return say('realm nk1…nk15 | tc | tc1…tc3');
         this.setLevel(p, lv);
         return say('level = ' + c.level);
+      }
+      case 'dao': {
+        // /gm dao <kim|moc|thuy|hoa|tho|loi|clear>: đặt hoặc xóa Đạo (TN-3), không cần đủ cấp Vấn Đỉnh.
+        if (a[1] === 'clear') delete c.meta.dao;
+        else if (isRootId(a[1])) c.meta.dao = a[1];
+        else return say('dao ' + ROOT_IDS.join(' | ') + ' | clear');
+        c.recalc();
+        c.charDirty = true;
+        return say('dao = ' + (c.meta.dao ?? 'không'));
       }
       case 'trib':
         // /gm trib [id]: kích độ kiếp ngay (mặc định Trúc Cơ: Ngưng Khí 15 viên mãn + Trúc Cơ Đan nếu thiếu).

@@ -197,6 +197,9 @@ export class TribulationSystem {
   onChangeRoot(p: PlayerEnt, msg: unknown): void {
     this.c.realm.onChangeRoot(p, msg);
   }
+  onChooseDao(p: PlayerEnt, msg: unknown): void {
+    this.c.realm.onChooseDao(p, msg);
+  }
 
   /** Bóng tâm ma của `p`: quái riêng, đứng trước mặt người chơi, đuổi đúng người đó. */
   spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }, o: { dyaw?: number; level?: number } = {}): MonEnt | null {

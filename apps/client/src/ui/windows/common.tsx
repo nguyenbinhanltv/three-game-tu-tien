@@ -52,12 +52,13 @@ export function ItemIcon({
 function useTipLines(item: InvItem, def: ItemDef, worn?: boolean): TipLine[] {
   const level = useUI((s) => s.char?.level ?? 1);
   const root = useUI((s) => s.char?.root ?? '');
+  const dao = useUI((s) => s.char?.dao ?? '');
   const equip = useUI((s) => s.equip);
   const art = useUI((s) => s.method?.art);
   const lines = itemLines(item, def);
   lines.push(...pillLines(item, def), ...artifactLines(def, art));
   const compared = !worn && isEquipSlot(def.kind);
-  if (compared) lines.push(...compareLines(level, equip, item, def, root));
+  if (compared) lines.push(...compareLines(level, equip, item, def, root, dao));
   else if (belowLevel(level, def)) lines.push({ text: t('ui.item.req', { realm: realmName(def.reqLevel!) }), tone: 'bad' });
   // Món giới hạn giới tính (skin): luôn ghi rõ, tô đỏ khi nhân vật của mình không mặc được (server cũng từ chối).
   if (def.gender)

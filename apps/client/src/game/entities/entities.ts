@@ -24,6 +24,7 @@ import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t, pathOf as PATH_OF_METHOD } f
 import { BRAWLER_WEAPON } from '../character/brawlerGear';
 import { giantScale, stepGiant } from './giant';
 import { GREATBLADE_WEAPON } from '../character/greatblade';
+import { COHU_WEAPON } from '../character/coGear';
 import { hoverBob, hoverTarget, stepHover } from './hover';
 import { COTHAN_METHOD, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
@@ -458,6 +459,7 @@ export class EntityManager {
       v.model.setGiant?.(giantScale(v.giant));
       v.model.setBrawlerGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(BRAWLER_WEAPON) ?? false) : false, s.mt === COTHAN_METHOD);
       v.model.setGreatBlade?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(GREATBLADE_WEAPON) ?? false) : false);
+      v.model.setCoGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(COHU_WEAPON) ?? false) : false);
       v.model.setWeaponGlow?.(s.wg ?? 0);
       v.model.setWeaponTint?.(look.set ? (SET.get(look.set)?.look.blade ?? '') : '');
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
