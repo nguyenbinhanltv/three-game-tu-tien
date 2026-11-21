@@ -7,7 +7,17 @@ import { sleep } from '../lib/devserver';
 import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 
-const GM: Record<string, string> = { tinh_khuyet: 'set set_tinh_khuyet', than_tang: 'set set_than_tang' };
+const GM: Record<string, string> = {
+  tinh_khuyet: 'set set_tinh_khuyet',
+  than_tang: 'set set_than_tang',
+  kinh_quang: 'set set_kinh_quang',
+  liet_mach: 'set set_liet_mach',
+  co_thanh: 'set set_co_thanh',
+  dia_long: 'set set_dia_giap',
+  van_kinh: 'set set_van_kinh',
+  luu_ly: 'set set_luu_ly',
+  phuc_mach: 'set set_phuc_mach',
+};
 
 export default {
   name: 'neck',
@@ -73,6 +83,11 @@ export default {
       };
       await sleep(500);
       await pose('idle');
+      if (env('NECK_POSES') === 'idle') {
+        await ctx.close();
+        await sleep(Number(env('NECK_GAP', '30000'))); // người chơi cũ còn trên server vài chục giây: chạy liền sẽ thấy nhân vật chồng nhau
+        continue;
+      }
       await page.keyboard.down('KeyW');
       await sleep(1300);
       await pose('jog', true);
@@ -84,6 +99,7 @@ export default {
       await pose('slash');
       await ctx.close();
       console.log(`[shots:neck] ${tag} xong`);
+      await sleep(Number(env('NECK_GAP', '30000')));
     }
   },
 } satisfies Scenario;
