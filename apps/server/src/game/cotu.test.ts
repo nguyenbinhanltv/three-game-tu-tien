@@ -33,7 +33,8 @@ const CO = 'duong_co_kinh';
 let nextAcc = 16000;
 
 function setup(level = 28) {
-  const sim: Sim = new GameSim(new WorldState(), { broadcast: () => undefined } as never, {
+  const sent: { t?: string }[] = [];
+  const sim: Sim = new GameSim(new WorldState(), { broadcast: (_type: unknown, msg: { t?: string }) => sent.push(msg) } as never, {
     levelId: 'van_lam',
     roomName: 'test',
     spawn: { x: X, z: Z },
@@ -45,7 +46,7 @@ function setup(level = 28) {
     resolvePending(p: Ent): void;
     tickMethods(): void;
     tickMonster(m: Mon, dt: number): void;
-    combat: { liveRes(p: Ent): number; summons: { sid: string; power: number; count: number }[] };
+    combat: { liveRes(p: Ent): number; summons: { sid: string; skill: string; power: number; count: number; hitFx: string }[] };
   };
   const use = (pl: Ent, id: string, t?: string) => {
     allowSkillForTest(pl.char, id);
@@ -102,7 +103,7 @@ function setup(level = 28) {
     p.mth.res = v;
     p.mth.resAt = sim.now;
   };
-  return { sim, priv, join, mon, fresh, use, pass, names, res, setRes };
+  return { sim, priv, join, mon, fresh, use, pass, names, res, setRes, sent };
 }
 
 const nearNpc = (p: Ent) => {
@@ -325,5 +326,44 @@ describe('chiêu thu và xả cổ', () => {
     setRes(p, 4);
     pass(8);
     expect(res(p)).toBe(4);
+  });
+  it('Cổ Triều rồi Hóa Cổ Vương: hai bộ cùng tồn tại và cùng phát nhịp; gọi lại đúng chiêu đó thì thay bộ cũ của chiêu đó thôi', () => {
+    const { join, mon, fresh, use, pass, priv, sent } = setup();
+    const p = join();
+    const m = mon();
+    p.mth.charge = 100;
+    fresh(p);
+    use(p, 'skl_co_trieu', m.id);
+    fresh(p);
+    use(p, 'skl_hoa_co_vuong', m.id);
+    const mine = () => priv.combat.summons.filter((s) => s.sid === p.sid);
+    expect(
+      mine()
+        .map((s) => s.skill)
+        .sort(),
+    ).toEqual(['skl_co_trieu', 'skl_hoa_co_vuong']);
+    expect(mine().find((s) => s.skill === 'skl_co_trieu')!.count).toBe(4);
+    expect(mine().find((s) => s.skill === 'skl_hoa_co_vuong')!.count).toBe(1);
+    // cả hai cùng cắn trong một nhịp: hai loại FX khác nhau tới cùng con quái
+    sent.length = 0;
+    const hp = m.s.hp;
+    pass(1, m);
+    expect(hp - m.s.hp).toBeGreaterThan(0);
+    const hits = sent.filter((x) => x.t === 'cotrieu_hit' || x.t === 'covuong_hit').map((x) => x.t);
+    expect(hits.filter((x) => x === 'cotrieu_hit')).toHaveLength(1);
+    expect(hits.filter((x) => x === 'covuong_hit')).toHaveLength(1);
+    // gọi lại Hóa Cổ Vương: vẫn đúng hai bộ (bộ Cổ Vương cũ bị thay), bộ Cổ Triều còn nguyên
+    fresh(p);
+    use(p, 'skl_hoa_co_vuong', m.id);
+    expect(
+      mine()
+        .map((s) => s.skill)
+        .sort(),
+    ).toEqual(['skl_co_trieu', 'skl_hoa_co_vuong']);
+    expect(
+      mine()
+        .map((s) => s.hitFx)
+        .sort(),
+    ).toEqual(['cotrieu_hit', 'covuong_hit']);
   });
 });

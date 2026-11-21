@@ -12,6 +12,8 @@ import type { SkillFlow } from './skillflow';
 /** Kiếm đan bản mệnh (E2-G): mỗi người một bộ, nhịp đánh theo `every`. */
 export interface Summon {
   sid: string;
+  /** Chiêu đã gọi (mỗi người một bộ cho MỖI chiêu: Cổ Triều và Hóa Cổ Vương cùng tồn tại). */
+  skill: string;
   until: number;
   nextAt: number;
   every: number;
