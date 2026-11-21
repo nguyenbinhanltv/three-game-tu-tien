@@ -233,7 +233,7 @@ describe('Trấn ấn và Mất thế (Hộ pháp)', () => {
     // So sát thương đòn thường của người khác khi có và không có Mất thế (bỏ choáng để chỉ còn phần ấn).
     const avg = (withMark: boolean) => {
       let sum = 0;
-      for (let i = 0; i < 80; i++) {
+      for (let i = 0; i < 600; i++) {
         m.stunUntil = 0;
         m.marks.length = 0;
         if (withMark) m.marks.push({ id: 'mat_the', sid: p.sid, n: 1, until: sim.now + 1e9 });
@@ -244,7 +244,7 @@ describe('Trấn ấn và Mất thế (Hộ pháp)', () => {
         use(other, 'skl_phi_kiem', m.id);
         sum += hp - m.s.hp;
       }
-      return sum / 80;
+      return sum / 600;
     };
     const base = avg(false);
     const marked = avg(true);
