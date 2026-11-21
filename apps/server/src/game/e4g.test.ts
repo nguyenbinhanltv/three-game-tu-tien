@@ -1,4 +1,5 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { allowSkillForTest } from './testkit';
 import { groundAt, MS_DEAD, PF_DEAD } from '@dtl/shared';
 
 // E4-G: chiêu Nguyên Anh (24/26) và biến thức cấp 28. Dựng sim như e2g.test.ts.
@@ -42,6 +43,8 @@ function setup(method: string, level = 22) {
   const raw = sim.onSkill.bind(sim);
   // Xả đòn chờ `hitAt` ngay lúc bấm (như method.test.ts); các mốc sau của chiêu nhiều nhát chạy qua `sim.tick`.
   sim.onSkill = (pl: Ent, msg: unknown) => {
+    // VS-2d: test cơ chế chiêu, không đi qua bước chọn nhánh công pháp.
+    allowSkillForTest(pl.char, (msg as { id?: unknown } | null)?.id);
     raw(pl, msg);
     const st = pl.flow.pending;
     if (st) {

@@ -98,7 +98,7 @@ describe('Kiếm ý (Lạc Kiếm Quyết)', () => {
       fresh(p);
       // Bỏ ngẫu nhiên của sát thương: lấy trung bình nhiều lần.
       let sum = 0;
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 300; i++) {
         p.mth.res = res;
         p.mth.resAt = sim.now;
         fresh(p);
@@ -108,7 +108,7 @@ describe('Kiếm ý (Lạc Kiếm Quyết)', () => {
         sum += hp - m.s.hp;
         expect(p.mth.res).toBe(0);
       }
-      return sum / 40;
+      return sum / 300;
     };
     const base = cast(0);
     const full = cast(5);
