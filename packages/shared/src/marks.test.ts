@@ -31,7 +31,16 @@ const HON_AN: MarkDef = {
   color: 'b9a8ff',
 };
 const DAO_NGAN: MarkDef = { id: 'dao_ngan', on: 'mon', max: 3, dur: 8, method: 'liet_nhan_dao_kinh', color: 'd9482f' };
-const ALL = [KIEM_AN, TRUY_HON, TRAN_AN, MAT_THE, MOC_AN, HON_AN, DAO_NGAN];
+const CO_DOC: MarkDef = {
+  id: 'co_doc',
+  on: 'mon',
+  max: 3,
+  dur: 10,
+  method: 'duong_co_kinh',
+  dot: { per: 0.07, leech: 0.15 },
+  color: '7fc24a',
+};
+const ALL = [KIEM_AN, TRUY_HON, TRAN_AN, MAT_THE, MOC_AN, HON_AN, DAO_NGAN, CO_DOC];
 const DEFS = new Map(ALL.map((d) => [d.id as string, d]));
 
 describe('ấn trên mục tiêu (VS-2c)', () => {

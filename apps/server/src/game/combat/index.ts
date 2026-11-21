@@ -1164,10 +1164,11 @@ export class CombatSystem {
       case 'summon': {
         const sm = skill.summon ?? { count: 1, every: 1, range: 18 };
         const sec = rs.duration ?? 10;
-        // Mỗi người một bộ kiếm đan: bộ mới thay bộ cũ.
-        this.summons = this.summons.filter((o) => o.sid !== p.sid);
+        // Mỗi người một bộ cho mỗi chiêu gọi: gọi lại đúng chiêu đó thì bộ mới thay bộ cũ, chiêu gọi khác (Cổ Triều rồi Hóa Cổ Vương) tồn tại song song.
+        this.summons = this.summons.filter((o) => !(o.sid === p.sid && o.skill === skill.id));
         this.summons.push({
           sid: p.sid,
+          skill: skill.id,
           until: this.c.now + sec * 1000,
           nextAt: this.c.now + sm.every * 1000,
           every: sm.every,

@@ -42,6 +42,8 @@ Hồn tu (TN-2): bốn tên chiêu **gốc** thuộc mức Cẩn trọng, chỉ 
 
 Đao tu: toàn bộ tên **tự đặt** từ từ ghép thể loại (không chiêu nào lấy nguyên tên gốc): Liệt Nhận Đao Kinh (công pháp), Đao ngấn, Khí thế, Phá Phong Tiến, Bạo Nhận, Trảm Sơn Đao, Đao Thế, Đoạn Nhận, Quét Ngang, Hộ Đao, Hoành Đao, Tâm Đao, Đoạn Lưu, Liệt Địa Trảm và tên bốn nhánh. "Đao tu", "khí thế" là thuật ngữ thể loại. Không dùng tên đao riêng của truyện, không nhắc nhân vật hay tình tiết.
 
+Cổ tu: toàn bộ tên **tự đặt** từ từ ghép thể loại (không chiêu nào lấy nguyên tên gốc): Dưỡng Cổ Kinh (công pháp), Cổ độc, Cổ Ảnh Bộ, Thả Cổ, Cổ Triều, Nuôi Cổ, Cổ Chích, Độc Vụ, Cổ Giáp, Hút Máu Cổ, Cổ Bạo, Thu Cổ, Hóa Cổ Vương và tên bốn nhánh. "Cổ tu", "cổ trùng", "Cổ Vương" là thuật ngữ thể loại. Không dùng tên cổ riêng của truyện, không nhắc nhân vật hay tình tiết.
+
 Tên Hán-Việt lấy từ wiki fan, nhiều mục chỉ có một nguồn; khi người dùng sửa thì `glossary.json` là nguồn đúng. Nguồn khái niệm và độ chắc từng mục ghi ở tài liệu kế hoạch nội bộ, không đưa vào lời thoại hay UI.
 
 ## Kiểm tự động
