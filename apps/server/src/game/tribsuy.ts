@@ -26,7 +26,6 @@ import {
   suyThucWave,
   tribDef,
   tribPhaseStart,
-  type SuyMechanic,
   type TribSuy,
 } from '@dtl/shared';
 import type { PlayerEnt } from './entities';
@@ -35,8 +34,9 @@ import type { TribState } from './tribtypes';
 import { registerMechanic, type TribMechCtx } from './tribmech';
 
 /** Phần chung của một ải trong `tr.mech.suy` (chỉ server giữ). */
-interface SuyState {
-  id: SuyMechanic;
+export interface SuyState {
+  /** Cơ chế đang chạy (`suy_*` của Ngũ Suy hoặc `hk_*` của Huyền Kiếp, tribhuyen.ts). */
+  id: string;
   /** Thanh suy khí 0..100. */
   pg: number;
   /** Tâm ải: chỗ người độ kiếp đứng lúc vào ải. */
@@ -100,7 +100,7 @@ interface TamState extends SuyState {
 /** Đòn rơi trong từng này ms sau nhịp phá vọng vẫn coi là của nhịp đó. */
 const TAM_GRACE_MS = 600;
 
-function stateOf<T extends SuyState>(tr: TribState | null | undefined, id: T['id']): T | undefined {
+export function stateOf<T extends SuyState>(tr: TribState | null | undefined, id: T['id']): T | undefined {
   const st = tr?.mech?.suy as SuyState | undefined;
   return st && st.id === id ? (st as T) : undefined;
 }
@@ -109,17 +109,17 @@ function grounded(p: PlayerEnt): boolean {
   return !p.move.flying;
 }
 
-function near(p: PlayerEnt, x: number, z: number, r: number): boolean {
+export function near(p: PlayerEnt, x: number, z: number, r: number): boolean {
   return grounded(p) && Math.hypot(p.move.x - x, p.move.z - z) <= r;
 }
 
-function sendBar(c: { host: TribHost; p: PlayerEnt }, st: SuyState, extra: { n?: number; d?: number } = {}): void {
+export function sendBar(c: { host: TribHost; p: PlayerEnt }, st: SuyState, extra: { n?: number; d?: number } = {}): void {
   // Tròn số nhưng không bao giờ gửi 100 khi chưa thất bại: 100 là tín hiệu "suy khí công tâm" (client phát hình thất bại).
   c.host.fx({ t: 'suy', src: c.p.sid, s: st.id, pg: Math.min(99, Math.round(st.pg)), ...extra });
 }
 
 /** Vào ải: hồi đầy (ải nào cũng bắt đầu ngang nhau, nên vào tiếp từ ải dở không thiệt), đặt tâm, mở thanh. */
-function begin(c: TribMechCtx, id: SuyMechanic): { st: SuyState; cfg: TribSuy } | null {
+export function begin(c: TribMechCtx, id: string): { st: SuyState; cfg: TribSuy } | null {
   const cfg = c.phase.suy;
   if (!cfg) return null;
   c.host.refill(c.p);
@@ -139,12 +139,12 @@ function begin(c: TribMechCtx, id: SuyMechanic): { st: SuyState; cfg: TribSuy } 
   return { st, cfg };
 }
 
-function fail(host: TribHost, p: PlayerEnt, st: SuyState): void {
+export function fail(host: TribHost, p: PlayerEnt, st: SuyState): void {
   if (st.failed) return;
   st.failed = true;
   st.pg = 100;
   host.fx({ t: 'suy', src: p.sid, s: st.id, pg: 100 });
-  host.sys(p, 'sys.suy_fail', undefined, 'bad');
+  host.sys(p, st.id.startsWith('hk_') ? 'sys.hk_fail' : 'sys.suy_fail', undefined, 'bad');
   host.end(p, false);
 }
 
@@ -152,7 +152,7 @@ function fail(host: TribHost, p: PlayerEnt, st: SuyState): void {
  * Bước chung của thanh trong một tick: thanh tự tăng theo tiến độ ải cộng `extra` %/giây của cơ chế (âm = đang hóa giải).
  * Trả `dt` (giây) đã trôi, hoặc -1 nếu ải vừa thất bại / người đã chết / còn điều tức (cơ chế không làm gì thêm).
  */
-function step(c: TribMechCtx, st: SuyState, cfg: TribSuy, extra: number): number {
+export function step(c: TribMechCtx, st: SuyState, cfg: TribSuy, extra: number): number {
   const dt = Math.min(0.25, Math.max(0, (c.now - st.last) / 1000));
   st.last = c.now;
   if ((c.p.s.fl & PF_DEAD) !== 0 || st.failed) return -1;
@@ -165,14 +165,14 @@ function step(c: TribMechCtx, st: SuyState, cfg: TribSuy, extra: number): number
   return dt;
 }
 
-function tickBar(c: TribMechCtx, st: SuyState, extra?: { n?: number; d?: number }): void {
+export function tickBar(c: TribMechCtx, st: SuyState, extra?: { n?: number; d?: number }): void {
   if (st.failed || c.now < st.sendAt) return;
   st.sendAt = c.now + 500;
   sendBar(c, st, extra);
 }
 
 /** Thoát ải (hết giờ của pha): khép thanh; chưa thất bại và còn sống thì ải này đã qua. */
-function finish(c: TribMechCtx): void {
+export function finish(c: TribMechCtx): void {
   const st = c.tr.mech?.suy as SuyState | undefined;
   if (!st) return;
   delete c.tr.mech!.suy;
@@ -431,7 +431,7 @@ registerMechanic('suy_tho', {
 
 // ---------- suy_tam: Đạo Tâm Suy ----------
 
-function dropVongAnh(host: TribHost, p: PlayerEnt): void {
+export function dropVongAnh(host: TribHost, p: PlayerEnt): void {
   for (let guard = 0; guard < 8; guard++) {
     const m = host.shadowOf(p);
     if (!m) return;
@@ -519,7 +519,7 @@ export function suyTamHit(host: TribHost, p: PlayerEnt, kind: 'hurt' | 'hit', do
 export function suyCleanup(host: TribHost, p: PlayerEnt): void {
   const st = p.trib?.mech?.suy as SuyState | undefined;
   if (!st) return;
-  if (st.id === 'suy_tam') dropVongAnh(host, p);
+  if (st.id === 'suy_tam' || st.id === 'hk_huyet_anh') dropVongAnh(host, p);
   host.fx({ t: 'suy', src: p.sid, s: st.id, pg: -1 });
 }
 
