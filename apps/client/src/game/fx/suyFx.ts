@@ -137,13 +137,49 @@ export class SuyFx {
     src: string,
     slot: string,
     color: number,
-    o: { x?: number; z?: number; follow?: string; h: number; r: number; dur: number; opacity?: number; pulse?: number },
+    o: {
+      x?: number;
+      z?: number;
+      follow?: string;
+      h: number;
+      r: number;
+      dur: number;
+      opacity?: number;
+      pulse?: number;
+      thick?: number;
+      crackle?: boolean;
+    },
   ): void {
     const v = this.env.vfx;
     if (!v) return;
     this.dropGlow(src, slot);
     const fixed = o.follow ? null : { x: o.x ?? 0, y: this.env.ground(o.x ?? 0, o.z ?? 0), z: o.z ?? 0 };
     const pos = () => fixed ?? this.env.player(o.follow!) ?? null;
+    this.glows.set(
+      `${src}:${slot}`,
+      v.suyBeacon(pos, color, o, () => this.env.tribOn(src)),
+    );
+  }
+
+  /** Quầng sáng bám nhân vật `follow`, lệch (dx, dz) theo hướng nhìn của họ. */
+  private glowAt(
+    src: string,
+    slot: string,
+    color: number,
+    follow: string,
+    dx: number,
+    dz: number,
+    o: { h: number; r: number; dur: number; opacity?: number; thick?: number },
+  ): void {
+    const v = this.env.vfx;
+    if (!v) return;
+    const pos = () => {
+      const p = this.env.player(follow);
+      if (!p) return null;
+      const c = Math.cos(p.yaw);
+      const sn = Math.sin(p.yaw);
+      return { x: p.x + c * dx + sn * dz, y: p.y, z: p.z - sn * dx + c * dz };
+    };
     this.glows.set(
       `${src}:${slot}`,
       v.suyBeacon(pos, color, o, () => this.env.tribOn(src)),
@@ -236,6 +272,17 @@ export class SuyFx {
         const d = m.d ?? 3;
         this.on('suy_tam_open', palOf(id), src, { delay: d });
         this.glow(src, 'tam', hexOf('suy_tam', 'accent'), { follow: src, h: 9, r: 3.0, dur: d, opacity: 0.4, pulse: 8 });
+        // Bốn gai vàng quanh người: mỗi gai một quầng sáng thấp để khối nổi trên sân tối.
+        for (let i = 0; i < 4; i++) {
+          const ang = ((i + 0.5) * Math.PI) / 2;
+          this.glowAt(src, `tam${i}`, hexOf('suy_tam', 'accent'), src, Math.sin(ang) * 2.6, Math.cos(ang) * 2.6, {
+            h: 2.6,
+            r: 0.9,
+            dur: d,
+            opacity: 0.55,
+            thick: 2.2,
+          });
+        }
       } else this.dropGlow(src, 'tam');
     }
   }
@@ -273,7 +320,18 @@ export class SuyFx {
         this.dropGlow(src, 'toi');
         if (pg === 1) {
           this.at('suy_toi_warn', 'suy_the', x, z, r, { delay: m.d ?? 2, src });
-          this.glow(src, 'toi', hexOf('suy_the', 'body'), { x, z, h: 12, r, dur: m.d ?? 2, opacity: 0.26, pulse: 12 });
+          // Trụ lôi quang giật sáng suốt thời gian báo: thấy ngay "sét đang giáng xuống vòng này" dù tia sét thật chỉ lóe từng nhịp.
+          this.glow(src, 'toi', hexOf('suy_the', 'rim'), {
+            x,
+            z,
+            h: 16,
+            r,
+            dur: m.d ?? 2,
+            opacity: 0.6,
+            pulse: 12,
+            thick: 1.6,
+            crackle: true,
+          });
         } else this.at(pg === 2 ? 'suy_toi_hit' : 'suy_toi_miss', 'suy_the', x, z, r, { src });
         break;
       case 'thuc':

@@ -888,7 +888,7 @@ export class Vfx {
   suyBeacon(
     pos: () => { x: number; y: number; z: number } | null,
     color: number,
-    o: { h: number; r: number; dur: number; opacity?: number; pulse?: number },
+    o: { h: number; r: number; dur: number; opacity?: number; pulse?: number; thick?: number; crackle?: boolean },
     stillOn: () => boolean = () => true,
   ): { stop(): void } {
     const col = this.fx(G.ico1, color, 0);
@@ -909,9 +909,13 @@ export class Vfx {
         const p = pos();
         if (!p) return;
         const pulse = 1 + Math.sin(t * (o.pulse ?? 3)) * 0.08;
+        // `crackle` (trụ lôi quang của Tôi Thể Lôi): bề rộng và độ sáng giật theo hai nhịp lệch pha như tia sét đang giáng, mạnh dần về cuối.
+        const k = Math.min(1, t / Math.max(0.1, o.dur));
+        const jit = o.crackle ? 0.45 + 0.55 * Math.abs(Math.sin(t * 31) * Math.sin(t * 17 + 1.3)) : 1;
+        const w = 0.16 * o.r * (o.thick ?? 1) * pulse * (o.crackle ? 0.5 + 0.5 * k + 0.35 * jit : 1);
         col.position.set(p.x, p.y + o.h * 0.5, p.z);
-        col.scale.set(0.16 * o.r * pulse, o.h, 0.16 * o.r * pulse);
-        col.fxOpacity = op * fade;
+        col.scale.set(w, o.h, w);
+        col.fxOpacity = op * fade * (o.crackle ? 0.55 + 0.45 * jit : 1);
         ring.position.set(p.x, p.y + 0.14, p.z);
         ring.scale.setScalar(o.r * (0.96 + 0.04 * pulse));
         ring.fxOpacity = Math.min(0.9, op * 1.5) * fade;
@@ -973,19 +977,19 @@ export class Vfx {
           const cool = s.state === 2 ? k : s.state === 0 ? 1 : 0;
           s.lit += (target - s.lit) * Math.min(1, dt * 9);
           const flick = 1 + Math.sin(t * 11 + i * 2.1) * 0.1 + Math.sin(t * 23 + i) * 0.05;
-          const h = (0.6 + 1.7 * s.lit) * flick;
+          const h = (0.8 + 2.4 * s.lit) * flick;
           const p = pos[i]!;
           flames[i]!.position.set(p.x, p.y + 1.75 + h * 0.5, p.z);
-          flames[i]!.scale.set(0.42 + 0.3 * s.lit, h, 0.42 + 0.3 * s.lit);
-          flames[i]!.fxOpacity = 0.6 * s.lit * fade;
+          flames[i]!.scale.set(0.45 + 0.35 * s.lit, h, 0.45 + 0.35 * s.lit);
+          flames[i]!.fxOpacity = 0.8 * s.lit * fade;
           cores[i]!.position.set(p.x, p.y + 1.85 + h * 0.3, p.z);
-          cores[i]!.scale.set(0.16, h * 0.55, 0.16);
-          cores[i]!.fxOpacity = 0.45 * s.lit * fade;
+          cores[i]!.scale.set(0.26, h * 0.55, 0.26);
+          cores[i]!.fxOpacity = 0.5 * s.lit * fade;
           tint.copy(WARM).lerp(COLD, cool);
           halos[i]!.fxColor.copy(tint);
           halos[i]!.position.set(p.x, p.y + 0.16, p.z);
           const blink = s.state === 0 ? 0.55 + 0.35 * Math.sin(t * 6 + i) : s.state === 2 ? 0.7 + 0.25 * Math.sin(t * 14) : 0.6;
-          halos[i]!.scale.setScalar(s.state === 0 ? 2.6 : 1.9 + 0.6 * s.lit);
+          halos[i]!.scale.setScalar(s.state === 0 ? 2.8 : 2.2 + 0.8 * s.lit);
           halos[i]!.fxOpacity = Math.min(0.75, blink) * fade;
         }
       },

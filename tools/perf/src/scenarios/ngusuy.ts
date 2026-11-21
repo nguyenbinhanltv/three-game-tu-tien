@@ -17,7 +17,7 @@ const SLUG = ['1-linh-luc-suy', '2-nhuc-than-suy', '3-than-thuc-suy', '4-tho-ngu
 /** Sự kiện hình đáng chụp của từng ải: khóa timeline → [tên ảnh, trễ ms sau khi phát]. */
 const EVENTS: Record<string, Record<string, [string, number]>> = {
   suy_linh: { suy_nhan_open: ['linh-nhan-mo', 350], suy_nhan_end: ['linh-nhan-doi-cho', 200], suy_ok: ['qua-ai', 350] },
-  suy_the: { suy_toi_warn: ['toi-the-loi-bao', 800], suy_toi_hit: ['don-toi-the-loi', 140], suy_ok: ['qua-ai', 350] },
+  suy_the: { suy_toi_warn: ['toi-the-loi-bao', 200], suy_toi_hit: ['don-toi-the-loi', 140], suy_ok: ['qua-ai', 350] },
   suy_thuc: {
     suy_thuc_brew: ['loi-an-dang-tu', 500],
     suy_thuc_pulse: ['ngung-than', 350],
@@ -31,7 +31,7 @@ const EVENTS: Record<string, Record<string, [string, number]>> = {
     suy_den_relit: ['den-chay-lai', 150],
     suy_ok: ['qua-ai', 350],
   },
-  suy_tam: { suy_tam_open: ['nhip-pha-vong', 500], suy_tam_good: ['pha-vong-trung', 120], suy_ok: ['qua-ai', 350] },
+  suy_tam: { suy_tam_open: ['nhip-pha-vong', 450], suy_tam_good: ['pha-vong-trung', 120], suy_ok: ['qua-ai', 350] },
 };
 
 interface Mark {
@@ -163,6 +163,7 @@ export default {
         const events = { ...(EVENTS[ph.mechanic ?? ''] ?? {}) };
         let seen = 0;
         let castAt = 0;
+        let wasStrike = false;
         let xAt = 0;
         while (T() < len + 1.5) {
           const t = T();
@@ -192,6 +193,9 @@ export default {
           } else if (ph.mechanic === 'suy_tam') {
             // Nhịp phá vọng: ra một đòn đánh thường vào Tâm Ma Ảnh; nhịp tĩnh: không làm gì.
             const strike = (await text('[data-testid=suy-hint]')).includes('Phá vọng');
+            // Đầu mỗi nhịp phá vọng chờ ~1 giây rồi mới ra đòn, để ảnh sự kiện chụp được tín hiệu vàng trước khi nó tắt vì đã trúng.
+            if (strike && !wasStrike) castAt = now + 1000;
+            wasStrike = strike;
             if (strike && now >= castAt) {
               castAt = now + 500;
               await page.evaluate(() => {
@@ -207,6 +211,16 @@ export default {
             const ev = events[log[seen]!];
             if (!ev) continue;
             delete events[log[seen]!];
+            // Vòng Tôi Thể Lôi hiện cách người vài mét, có khi ngoài khung hình: tới vòng trước rồi mới chụp lúc tia đang giáng.
+            if (log[seen] === 'suy_toi_warn') {
+              const m = (await marks()).find((x) => x.s === 'toi' && x.pg === 1);
+              if (m) {
+                await sleep(Math.max(0, 860 - (Date.now() - lastTp)));
+                lastKey = `toi:${m.at}`;
+                lastTp = Date.now();
+                await gm(page, `tp ${m.x.toFixed(1)} ${m.z.toFixed(1)}`, 0);
+              }
+            }
             await snap(page, dir, `fx-${ev[0]}-${tag}.jpg`, { wait: ev[1] });
             peak = Math.max(peak, await draws());
           }

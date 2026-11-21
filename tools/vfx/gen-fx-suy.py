@@ -112,7 +112,7 @@ write('suy_nhan_end', 'linh', [
 write('suy_toi_warn', 'the', [
     decal('rune', 0.0, 2.8, 2.2, at='area', grow=0.25, tone='body', alpha=1.0, yaw=0, untilDelay=True, tier=0, **START),
     decal('rune', 0.1, 1.4, 2.2, at='area', grow=0.3, tone='rim', alpha=0.9, yaw=45, untilDelay=True, tier=1, **START),
-    mesh('seal_block', 0.0, 2.2, at='area', offset=[0, 6.0, 0], scale=[1.5, 1.2, 1.5], sweep=0.15, erodeFrom=0.95, tone='body', alpha=0.95, seed=32, keepUp=True,
+    mesh('seal_block', 0.0, 2.2, at='area', offset=[0, 6.0, 0], scale=[2.0, 1.6, 2.0], sweep=0.05, erodeFrom=0.95, tone='rim', alpha=0.95, seed=32, keepUp=True,
          move={'to': 'area', 'offset': [0, 2.4, 0], 'ease': 'in'}, untilDelay=True, tier=0, **START),
     parts('spark', 0.0, 24, 2.0, 1.0, 1.0, 0.1, at='area', offset=[0, 2.6, 0], tone='rim', inward=True, tier=0, **START),
     {'type': 'bolt', 't': 0.2, 'from': 'start', 'at': 'area', 'offset': [0.9, 0, 0.4], 'scale': 0.9, 'thick': 2.6, 'tone': 'rim', 'seed': 34, 'tier': 0},
@@ -235,7 +235,7 @@ write('suy_tam_open', 'tam', [
     decal('rune', 0.0, 3.0, 3.0, at='self', offset=[0, -1.12, 0], grow=0.25, tone='accent', alpha=1.0, yaw=0, untilDelay=True, tier=0, **START),
     mesh('shock_cone', 0.0, 0.5, at='self', offset=[0, -1.1, 0], scale=[0.4, 0.4, 0.4], scaleTo=[3.2, 1.0, 3.2], sweep=0.3, erodeFrom=0.4, ragged=0.6, tone='rim', alpha=0.8, seed=93, tier=0, **START),
     parts('spark', 0.0, 22, 2.6, 1.0, 0.8, 0.08, at='self', tone='accent', inward=True, tier=1, **START),
-] + ring(4, 2.6, lambda i, x, z: mesh('spike', round(0.04 * i, 3), 3.0, at='self', offset=[x, -1.12, z], rot=[-90, 0, 0], scale=[0.7, 0.7, 0.75], sweep=0.15, erodeFrom=0.92, tone='accent', alpha=0.95, seed=91 + i, untilDelay=True, tier=0, **START), phase=0.5))
+] + ring(4, 2.6, lambda i, x, z: mesh('spike', round(0.04 * i, 3), 3.0, at='self', offset=[x, -1.12, z], rot=[-90, 0, 0], scale=[0.8, 0.8, 0.95], sweep=0.04, erodeFrom=0.92, tone='accent', alpha=0.95, seed=91 + i, untilDelay=True, tier=0, **START), phase=0.5))
 
 write('suy_tam_good', 'tam', [
     mesh('slash_cross', 0.0, 0.4, at='target', scale=[2.4, 1, 2.4], rot=[90, 0, 0], sweep=0.3, erodeFrom=0.4, ragged=0.7, tone='accent', alpha=0.95, seed=94, tier=0),
