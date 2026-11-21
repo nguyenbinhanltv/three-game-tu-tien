@@ -181,9 +181,11 @@ R['skl_thu_co'] = thu_co
 
 # --------------------------------------------------------------------------------------------------------------------------------
 def hoa_co_vuong():
-    """Hóa Cổ Vương (nhánh 20, triệu hồi, hit 0,5): bầy cổ dồn lên cao thành CỔ VƯƠNG: con cổ khổng lồ nhìn nghiêng lơ lửng trên đầu người chơi, hơi lệch về phía
-    trước (thân ba đốt giảm dần, hai cặp cánh, hai càng, hai râu; lõi tối có bóng đổ + viền lục sáng; camFade nên không che người). Bầy cổ xoáy quanh, sóng chấn trên đất."""
-    Y, Z = 3.0, -3.2
+    """Hóa Cổ Vương (nhánh 20, triệu hồi, hit 0,5): bầy cổ dồn lên cao thành CỔ VƯƠNG: con cổ khổng lồ nhìn nghiêng lơ lửng trên cao, LỆCH HẲN SANG BÊN người chơi
+    (x = +5 m, cao 3,2 m, ngang vai) nên không nằm trên trục camera → người chơi cũng không đè lên trục người → mục tiêu; thân ba đốt giảm dần, hai cặp cánh, hai càng, hai râu;
+    lõi tối có bóng đổ + viền lục sáng; camFade. Bầy cổ xoáy quanh, sóng chấn trên đất."""
+    Y, Z = 3.2, 1.0
+    X = 5.0
     ev = [
         parts('spark', -0.5, 32, 2.4, 1, 0.5, 0.07, at='self', offset=[0, 0.9, 0.3], inward=True, tone='rim', tier=1),
         snd(-0.5, 'cast', 0.55, 0.8),
@@ -193,18 +195,18 @@ def hoa_co_vuong():
     ]
 
     def part(shape, dx, dy, dz, sc, rot, tone, tier=0, seed=1, alpha=1.0, shadow=True):
-        k = dict(at='self', offset=[dx, Y + dy, Z + dz], rot=rot, scale=sc, sweep=0, erodeFrom=0.98, alpha=alpha, tone=tone, camFade=True, follow=True, tier=tier, seed=seed)
+        k = dict(at='self', offset=[X + dx, Y + dy, Z + dz], rot=rot, scale=sc, sweep=0, erodeFrom=0.98, alpha=alpha, tone=tone, camFade=True, follow=True, tier=tier, seed=seed)
         if not shadow:
             k['shadow'] = False
         return mesh(shape, -0.05, 3.0, **k)
 
     # CỔ VƯƠNG: một hình `co_vuong` (thân ba đốt, đầu, hai cặp cánh, hai càng, hai râu) hướng về phía trước, lõi tối có bóng đổ + lớp lục sáng nhỏ hơn đè lên (viền sáng)
-    ev.append(part('co_vuong', 0, 0, 0, 3.4, [12, 0, 0], 'core', 0, 10))
-    ev.append(part('co_vuong', 0, 0.06, 0.05, 3.1, [12, 0, 0], 'body', 0, 11, 0.9, False))
+    ev.append(part('co_vuong', 0, 0, 0, 2.6, [12, 0, 0], 'core', 0, 10))
+    ev.append(part('co_vuong', 0, 0.06, 0.05, 2.4, [12, 0, 0], 'body', 0, 11, 0.9, False))
     ev += [
-        mesh('burst', 0.0, 0.12, at='self', offset=[0, Y, Z], scale=3.4, billboard=True, sweep=0, tone='rim', cross=True, camFade=True, tier=0),
+        mesh('burst', 0.0, 0.12, at='self', offset=[X, Y, Z], scale=2.6, billboard=True, sweep=0, tone='rim', cross=True, camFade=True, tier=0),
         # bầy cổ nhỏ xoáy quanh Cổ Vương
-        parts('dust', 0.0, 26, 2.6, 1, 0.9, 0.16, at='self', offset=[0, Y, Z], tone='body', tier=0),
+        parts('dust', 0.0, 26, 2.6, 1, 0.9, 0.16, at='self', offset=[X, Y, Z], tone='body', tier=0),
         # sóng chấn trên đất
         mesh('shock_cone', 0.02, 0.6, at='self', offset=[0, -1.0, 0], scale=[1.0] * 3, scaleTo=[8.0] * 3, alpha=0.85, sweep=0.3, erodeFrom=0.3, tone='body', tier=0, seed=5),
         mesh('crack_radial', 0.02, 0.9, at='self', offset=[0, -1.08, 0], scale=3.0, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=1, seed=2),

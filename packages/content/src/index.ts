@@ -227,6 +227,11 @@ import fx_co_bay_hit from '../data/fx/co_bay_hit.json';
 import fx_co_vuong_hit from '../data/fx/co_vuong_hit.json';
 import fx_co_bay_stand from '../data/fx/co_bay_stand.json';
 import fx_co_vuong_stand from '../data/fx/co_vuong_stand.json';
+import fx_skl_thai_co_quyen from '../data/fx/skl_thai_co_quyen.json';
+import fx_skl_tinh_bao from '../data/fx/skl_tinh_bao.json';
+import fx_skl_huyet_cu_ho from '../data/fx/skl_huyet_cu_ho.json';
+import fx_skl_co_than_nhat_kich from '../data/fx/skl_co_than_nhat_kich.json';
+import fx_skl_hoa_hinh from '../data/fx/skl_hoa_hinh.json';
 import fx_skl_kim_cuong_bat_hoai from '../data/fx/skl_kim_cuong_bat_hoai.json';
 import fx_skl_linh_khi_ho_the from '../data/fx/skl_linh_khi_ho_the.json';
 import fx_skl_loi_dinh_nhat_kiem from '../data/fx/skl_loi_dinh_nhat_kiem.json';
@@ -302,6 +307,7 @@ import poseCoBaoJson from '../data/poses/co_bao.json';
 import poseThuCoJson from '../data/poses/thu_co.json';
 import poseHoaCoVuongJson from '../data/poses/hoa_co_vuong.json';
 import poseCoQuyenJson from '../data/poses/co_quyen.json';
+import poseHoaHinhJson from '../data/poses/hoa_hinh.json';
 import poseHuyetCuHoJson from '../data/poses/huyet_cu_ho.json';
 import poseTinhBaoJson from '../data/poses/tinh_bao.json';
 import poseNhatKichJson from '../data/poses/nhat_kich.json';
@@ -504,6 +510,7 @@ export const POSES = [
   poseThuCoJson,
   poseHoaCoVuongJson,
   poseCoQuyenJson,
+  poseHoaHinhJson,
   poseTinhBaoJson,
   poseHuyetCuHoJson,
   poseNhatKichJson,
@@ -601,6 +608,11 @@ export const FX_TIMELINES = [
   fx_skl_co_bao,
   fx_skl_thu_co,
   fx_skl_hoa_co_vuong,
+  fx_skl_thai_co_quyen,
+  fx_skl_tinh_bao,
+  fx_skl_huyet_cu_ho,
+  fx_skl_co_than_nhat_kich,
+  fx_skl_hoa_hinh,
   fx_skl_kim_cuong_bat_hoai,
   fx_skl_linh_khi_ho_the,
   fx_skl_loi_dinh_nhat_kiem,

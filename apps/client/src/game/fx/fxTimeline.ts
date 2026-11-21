@@ -6,6 +6,7 @@
 import * as THREE from 'three/webgpu';
 import {
   FLIP_ATLASES,
+  fxAwayFromCam,
   fxCamFade,
   fxEventsFor,
   fxTierFor,
@@ -482,6 +483,18 @@ export class FxRunner {
     const kind = shapeKind(ev.shape);
     const start = this.anchor(c, ev.at ?? 'self', ev.offset, yaw, tgt, new THREE.Vector3());
     const end = ev.move ? this.anchor(c, ev.move.to, ev.move.offset ?? ev.offset, yaw, tgt, new THREE.Vector3(), ev.move.ahead ?? 8) : null;
+    if (ev.awayFromCam) {
+      // Phía xa camera so với người ra chiêu (hướng nhìn không biết trước): đối xứng qua người nếu đang ở phía camera.
+      const cp = this.env.camera().position;
+      const [sx, sz] = fxAwayFromCam(c.actor.x, c.actor.z, cp.x, cp.z, start.x, start.z);
+      start.x = sx;
+      start.z = sz;
+      if (end) {
+        const [ex, ez] = fxAwayFromCam(c.actor.x, c.actor.z, cp.x, cp.z, end.x, end.z);
+        end.x = ex;
+        end.z = ez;
+      }
+    }
     const s0 = Array.isArray(ev.scale) ? ev.scale : [ev.scale ?? 1, ev.scale ?? 1, ev.scale ?? 1];
     const sT0 = ev.scaleTo === undefined ? s0 : Array.isArray(ev.scaleTo) ? ev.scaleTo : [ev.scaleTo, ev.scaleTo, ev.scaleTo];
     // `fit: 'area'`: kích thước theo mét tính bằng bán kính vùng của chiêu (x, z).
@@ -614,7 +627,11 @@ export class FxRunner {
             ? 1
             : ev.card === 'ghost'
               ? 2
-              : 0
+              : ev.card === 'colossus'
+                ? 6
+                : ev.card === 'fist'
+                  ? 7
+                  : 0
           : kind === 'burst' && ev.cross
             ? 1
             : 0;
