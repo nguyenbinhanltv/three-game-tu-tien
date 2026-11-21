@@ -1,0 +1,317 @@
+{
+ "skill": "skl_tat_dau_thanh_binh",
+ "events": [
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": -0.5,
+   "n": 30,
+   "speed": 1.6,
+   "spread": 1.0,
+   "life": 0.4,
+   "size": 0.18,
+   "at": "self",
+   "offset": [
+    0,
+    -0.4,
+    0
+   ],
+   "inward": true,
+   "tone": "rim",
+   "tier": 1
+  },
+  {
+   "type": "soundAt",
+   "t": -0.5,
+   "id": "cast",
+   "gain": 0.55,
+   "rate": 0.6,
+   "jitter": 0.05
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": -0.45,
+   "r": 3.0,
+   "dur": 1.2,
+   "at": "self",
+   "grow": 0.3,
+   "tone": "body",
+   "alpha": 0.85,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 6.0,
+   "dur": 4.0,
+   "at": "self",
+   "grow": 0.25,
+   "tone": "rim",
+   "alpha": 0.95,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.0,
+   "r": 5.0,
+   "dur": 3.0,
+   "at": "self",
+   "grow": 0.2,
+   "tone": "core",
+   "alpha": 0.7,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 0.9,
+   "at": "self",
+   "offset": [
+    0,
+    -1.05,
+    0
+   ],
+   "scale": [
+    1.0,
+    1,
+    1.0
+   ],
+   "scaleTo": [
+    6.2,
+    1,
+    6.2
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.5,
+   "ragged": 0.6,
+   "tone": "rim",
+   "alpha": 0.95,
+   "shadow": false,
+   "tier": 0,
+   "seed": 30
+  },
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "self",
+   "offset": [
+    0,
+    -1.05,
+    0
+   ],
+   "scale": [
+    1.0,
+    0.5,
+    1.0
+   ],
+   "scaleTo": [
+    5.5,
+    0.9,
+    5.5
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.35,
+   "ragged": 0.7,
+   "tone": "body",
+   "alpha": 0.8,
+   "shadow": false,
+   "tier": 0,
+   "seed": 31
+  },
+  {
+   "type": "mesh",
+   "shape": "crack_radial",
+   "t": 0.03,
+   "dur": 0.9,
+   "at": "self",
+   "offset": [
+    0,
+    -1.05,
+    0
+   ],
+   "scale": 4.5,
+   "alpha": 1,
+   "sweep": 0.2,
+   "erodeFrom": 0.7,
+   "shadow": false,
+   "tone": "core",
+   "tier": 1,
+   "seed": 32
+  },
+  {
+   "type": "mesh",
+   "shape": "smoke",
+   "t": 0.04,
+   "dur": 1.0,
+   "at": "self",
+   "offset": [
+    3.25,
+    -0.3,
+    3.25
+   ],
+   "scale": 1.6,
+   "scaleTo": 2.4,
+   "billboard": true,
+   "tone": "body",
+   "alpha": 0.6,
+   "move": {
+    "to": "self",
+    "offset": [
+     3.25,
+     0.9,
+     3.25
+    ],
+    "ease": "out"
+   },
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "smoke",
+   "t": 0.09,
+   "dur": 1.0,
+   "at": "self",
+   "offset": [
+    3.25,
+    -0.3,
+    -3.25
+   ],
+   "scale": 1.6,
+   "scaleTo": 2.4,
+   "billboard": true,
+   "tone": "core",
+   "alpha": 0.6,
+   "move": {
+    "to": "self",
+    "offset": [
+     3.25,
+     0.9,
+     -3.25
+    ],
+    "ease": "out"
+   },
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "smoke",
+   "t": 0.14,
+   "dur": 1.0,
+   "at": "self",
+   "offset": [
+    -3.25,
+    -0.3,
+    -3.25
+   ],
+   "scale": 1.6,
+   "scaleTo": 2.4,
+   "billboard": true,
+   "tone": "body",
+   "alpha": 0.6,
+   "move": {
+    "to": "self",
+    "offset": [
+     -3.25,
+     0.9,
+     -3.25
+    ],
+    "ease": "out"
+   },
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "smoke",
+   "t": 0.19,
+   "dur": 1.0,
+   "at": "self",
+   "offset": [
+    -3.25,
+    -0.3,
+    3.25
+   ],
+   "scale": 1.6,
+   "scaleTo": 2.4,
+   "billboard": true,
+   "tone": "core",
+   "alpha": 0.6,
+   "move": {
+    "to": "self",
+    "offset": [
+     -3.25,
+     0.9,
+     3.25
+    ],
+    "ease": "out"
+   },
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 80,
+   "speed": 4.5,
+   "spread": 1.0,
+   "life": 1.1,
+   "size": 0.22,
+   "at": "self",
+   "offset": [
+    0,
+    -0.8,
+    0
+   ],
+   "tone": "rim",
+   "grav": -2.0,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0.02,
+   "n": 30,
+   "speed": 6.0,
+   "spread": 1.0,
+   "life": 0.6,
+   "size": 0.1,
+   "at": "self",
+   "offset": [
+    0,
+    -0.6,
+    0
+   ],
+   "tone": "accent",
+   "tier": 1
+  },
+  {
+   "type": "soundAt",
+   "t": 0.0,
+   "id": "impact",
+   "gain": 0.7,
+   "rate": 0.6,
+   "jitter": 0.05
+  },
+  {
+   "type": "hitstop",
+   "t": 0.0,
+   "ms": 60
+  },
+  {
+   "type": "shake",
+   "t": 0.0,
+   "level": 0.28
+  },
+  {
+   "type": "flash",
+   "t": 0.0,
+   "amount": 0.1,
+   "tier": 0
+  }
+ ]
+}
