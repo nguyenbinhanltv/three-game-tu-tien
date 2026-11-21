@@ -143,7 +143,7 @@ describe('Huyền Kiếp: bản chuẩn hành vi', () => {
         persistPosition: false,
       });
       const def = TRIB_DEFS[id];
-      const char = Character.create(7300 + def.phases.length + id.length, 'hkgold' + id);
+      const char = Character.create(7300 + ['huyen_ngoai', 'huyen_noi', 'huyen_hon'].indexOf(id), 'hkgold' + id);
       char.level = def.from;
       char.recalc();
       char.hp = char.mhp;

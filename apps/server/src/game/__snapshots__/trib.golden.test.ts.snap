@@ -1,5 +1,15 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Huyền Kiếp: bản chuẩn hành vi > cả chuỗi huyen_hon, hạt giống 2026 1`] = `
+{
+  "cleared": 3,
+  "ended": true,
+  "n": 367,
+  "sha": "4058c4eadbd9a2255aeeba82c95061713c03040f",
+  "t": 105050,
+}
+`;
+
 exports[`Huyền Kiếp: bản chuẩn hành vi > cả chuỗi huyen_ngoai, hạt giống 2026 1`] = `
 {
   "cleared": 3,
