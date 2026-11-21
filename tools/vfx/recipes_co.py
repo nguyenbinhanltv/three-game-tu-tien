@@ -181,11 +181,8 @@ R['skl_thu_co'] = thu_co
 
 # --------------------------------------------------------------------------------------------------------------------------------
 def hoa_co_vuong():
-    """Hóa Cổ Vương (nhánh 20, triệu hồi, hit 0,5): bầy cổ dồn lên cao thành CỔ VƯƠNG: con cổ khổng lồ nhìn nghiêng lơ lửng trên cao, LỆCH HẲN SANG BÊN người chơi
-    (x = +5 m, cao 3,2 m, ngang vai) nên không nằm trên trục camera → người chơi cũng không đè lên trục người → mục tiêu; thân ba đốt giảm dần, hai cặp cánh, hai càng, hai râu;
-    lõi tối có bóng đổ + viền lục sáng; camFade. Bầy cổ xoáy quanh, sóng chấn trên đất."""
-    Y, Z = 3.2, 1.0
-    X = 5.0
+    """Hóa Cổ Vương (nhánh 20, triệu hồi, hit 0,5): cổ dồn thành một vòng sáng + sóng chấn dưới chân; bản thân CỔ VƯƠNG (con cổ khổng lồ) là hình ở lại suốt 12 giây
+    của timeline tại điểm `co_vuong_stand`, client phát theo khung "xa camera" (awayFromCamera) nên luôn ở sau-trên người chơi, không nằm giữa camera và nhân vật."""
     ev = [
         parts('spark', -0.5, 32, 2.4, 1, 0.5, 0.07, at='self', offset=[0, 0.9, 0.3], inward=True, tone='rim', tier=1),
         snd(-0.5, 'cast', 0.55, 0.8),
@@ -194,19 +191,10 @@ def hoa_co_vuong():
         snd(0.0, 'impact', 0.8, 0.7),
     ]
 
-    def part(shape, dx, dy, dz, sc, rot, tone, tier=0, seed=1, alpha=1.0, shadow=True):
-        k = dict(at='self', offset=[X + dx, Y + dy, Z + dz], rot=rot, scale=sc, sweep=0, erodeFrom=0.98, alpha=alpha, tone=tone, camFade=True, follow=True, tier=tier, seed=seed)
-        if not shadow:
-            k['shadow'] = False
-        return mesh(shape, -0.05, 3.0, **k)
-
-    # CỔ VƯƠNG: một hình `co_vuong` (thân ba đốt, đầu, hai cặp cánh, hai càng, hai râu) hướng về phía trước, lõi tối có bóng đổ + lớp lục sáng nhỏ hơn đè lên (viền sáng)
-    ev.append(part('co_vuong', 0, 0, 0, 2.6, [12, 0, 0], 'core', 0, 10))
-    ev.append(part('co_vuong', 0, 0.06, 0.05, 2.4, [12, 0, 0], 'body', 0, 11, 0.9, False))
     ev += [
-        mesh('burst', 0.0, 0.12, at='self', offset=[X, Y, Z], scale=2.6, billboard=True, sweep=0, tone='rim', cross=True, camFade=True, tier=0),
+        mesh('burst', 0.0, 0.12, at='self', offset=[0, 0.9, 0.4], scale=2.4, billboard=True, sweep=0, tone='rim', cross=True, camFade=True, tier=0),
         # bầy cổ nhỏ xoáy quanh Cổ Vương
-        parts('dust', 0.0, 26, 2.6, 1, 0.9, 0.16, at='self', offset=[X, Y, Z], tone='body', tier=0),
+        parts('dust', 0.0, 26, 2.6, 1, 0.9, 0.16, at='self', offset=[0, 1.6, 0.4], tone='body', tier=0),
         # sóng chấn trên đất
         mesh('shock_cone', 0.02, 0.6, at='self', offset=[0, -1.0, 0], scale=[1.0] * 3, scaleTo=[8.0] * 3, alpha=0.85, sweep=0.3, erodeFrom=0.3, tone='body', tier=0, seed=5),
         mesh('crack_radial', 0.02, 0.9, at='self', offset=[0, -1.08, 0], scale=3.0, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=1, seed=2),
@@ -248,12 +236,17 @@ def co_bay_stand():
 
 
 def co_vuong_stand():
-    """Cổ Vương đứng bên người gọi: một cục độc lớn lơ lửng, vòng triện nhỏ dưới nó."""
+    """Cổ Vương đứng sau-trên người gọi (khung xa camera, +z = xa camera hơn người gọi): con cổ khổng lồ có lõi tối + lớp lục sáng viền, camFade; vài hạt bụi."""
+    def part(sc, tone, tier, seed, alpha=1.0, shadow=True, dy=0.0):
+        k = dict(at='self', offset=[2.6, 3.6 + dy, 3.4], rot=[12, 0, 0], scale=sc, sweep=0, erodeFrom=0.98, alpha=alpha, tone=tone, camFade=True, follow=True, tier=tier, seed=seed)
+        if not shadow:
+            k['shadow'] = False
+        return mesh('co_vuong', 0.0, 3.6, **k)
+
     return [
-        mesh('pill_orb', 0.0, 3.6, at='self', offset=[2.2, -0.4, 1.0], scale=0.9, sweep=0.1, erodeFrom=0.9, tone='body', alpha=1, follow=True, tier=0, seed=70,
-             move={'to': 'self', 'ease': 'inOut', 'offset': [2.2, -0.2, 1.2]}),
-        mesh('ripple', 0.0, 0.6, at='self', offset=[1.6, -1.08, 1.0], scale=0.3, scaleTo=1.4, sweep=0.5, erodeFrom=0.4, tone='rim', alpha=0.7, shadow=False, tier=1, seed=71),
-        parts('dust', 0.0, 12, 1.2, 1, 0.9, 0.14, at='self', offset=[1.6, -0.4, 1.0], tone='core', grav=-1.0, tier=1),
+        part(2.4, 'core', 0, 70),
+        part(2.2, 'body', 0, 71, 0.9, False, 0.05),
+        parts('dust', 0.0, 14, 1.2, 1, 0.9, 0.14, at='self', offset=[2.6, 3.0, 3.4], tone='core', grav=-1.0, tier=1),
     ]
 
 

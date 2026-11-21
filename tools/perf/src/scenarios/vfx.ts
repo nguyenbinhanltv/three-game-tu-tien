@@ -240,6 +240,10 @@ async function press(page: Page, id: string): Promise<void> {
       g.setTarget?.(hit[0], 'mon');
     }
     g.skillFx.handle(g.sid, { kind: 'windup', skill: sk, combo: -1, index: 0, t: 0, kb: false });
+    // Cổ tu: server gửi thêm S.FX lúc ra chiêu triệu hồi (bầy cổ / Cổ Vương đứng quanh người gọi); kịch bản giả lập đúng tin đó.
+    const stand: Record<string, [string, number]> = { skl_co_trieu: ['cotrieu', 10], skl_hoa_co_vuong: ['covuong', 12] };
+    const st = stand[sk];
+    if (st) void g.onFx({ t: st[0], src: g.sid, d: st[1] });
   }, id);
 }
 

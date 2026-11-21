@@ -75,69 +75,16 @@
   },
   {
    "type": "mesh",
-   "shape": "co_vuong",
-   "t": -0.05,
-   "dur": 3.0,
-   "at": "self",
-   "offset": [
-    5.0,
-    3.2,
-    1.0
-   ],
-   "rot": [
-    12,
-    0,
-    0
-   ],
-   "scale": 2.6,
-   "sweep": 0,
-   "erodeFrom": 0.98,
-   "alpha": 1.0,
-   "tone": "core",
-   "camFade": true,
-   "follow": true,
-   "tier": 0,
-   "seed": 10
-  },
-  {
-   "type": "mesh",
-   "shape": "co_vuong",
-   "t": -0.05,
-   "dur": 3.0,
-   "at": "self",
-   "offset": [
-    5.0,
-    3.2600000000000002,
-    1.05
-   ],
-   "rot": [
-    12,
-    0,
-    0
-   ],
-   "scale": 2.4,
-   "sweep": 0,
-   "erodeFrom": 0.98,
-   "alpha": 0.9,
-   "tone": "body",
-   "camFade": true,
-   "follow": true,
-   "tier": 0,
-   "seed": 11,
-   "shadow": false
-  },
-  {
-   "type": "mesh",
    "shape": "burst",
    "t": 0.0,
    "dur": 0.12,
    "at": "self",
    "offset": [
-    5.0,
-    3.2,
-    1.0
+    0,
+    0.9,
+    0.4
    ],
-   "scale": 2.6,
+   "scale": 2.4,
    "billboard": true,
    "sweep": 0,
    "tone": "rim",
@@ -156,9 +103,9 @@
    "size": 0.16,
    "at": "self",
    "offset": [
-    5.0,
-    3.2,
-    1.0
+    0,
+    1.6,
+    0.4
    ],
    "tone": "body",
    "tier": 0
