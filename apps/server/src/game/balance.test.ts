@@ -204,8 +204,8 @@ describe('thang 28 cấp', () => {
     return { level, p, m, hitsToKill: m.hp / hit, takenFrac: taken / p.hp };
   });
 
-  it('MAX_LEVEL là 32 và chỉ số người/quái tăng nghiêm ngặt theo cấp', () => {
-    expect(MAX_LEVEL).toBe(32);
+  it('MAX_LEVEL là 44 và chỉ số người/quái tăng nghiêm ngặt theo cấp', () => {
+    expect(MAX_LEVEL).toBe(44);
     for (let i = 1; i < rows.length; i++) {
       for (const k of ['hp', 'atk', 'def'] as const) {
         expect(rows[i].p[k], `người ${k} cấp ${rows[i].level}`).toBeGreaterThan(rows[i - 1].p[k]);
