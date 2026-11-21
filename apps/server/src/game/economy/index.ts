@@ -551,7 +551,7 @@ export class EconomySystem {
     if (chk === 'max') return this.c.warn(p, 'sys.star_max');
     if (chk === 'method') return this.c.warn(p, 'sys.star_method');
     if (chk === 'level') return this.c.warn(p, 'sys.star_level', { realm: realmName(next!.level) });
-    if (this.c.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000 || p.casting || p.flow.pending) return this.c.warn(p, 'sys.branch_combat');
+    if (this.c.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000 || p.casting || p.flow.pending) return this.c.warn(p, 'sys.star_combat');
     if (!this.c.nearNpc(p, METHOD_NPC)) return this.c.warn(p, 'sys.star_far', { npc: t(`npc.${METHOD_NPC}.name`) });
     const idem = this.idem(p, m.r);
     if (!idem) return;

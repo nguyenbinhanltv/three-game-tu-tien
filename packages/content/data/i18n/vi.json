@@ -2012,6 +2012,7 @@
   "sys.star_level": "Cần đạt {realm} mới rèn được sao kế tiếp.",
   "sys.star_method": "Phải đang tu Cổ Thần Quyết mới rèn được sao.",
   "sys.star_max": "Ngươi đã rèn đủ Cửu Tinh.",
+  "sys.star_combat": "Đang giao chiến, chưa thể rèn sao.",
   "sys.star_far": "Hãy tới gặp {npc} để rèn sao.",
   "sys.star_mats": "Chưa đủ {n} Cổ Huyết Tinh hoặc linh thạch để rèn sao kế tiếp.",
   "branch.co_than_quyet.huyet_tran.name": "Huyết Trận",
