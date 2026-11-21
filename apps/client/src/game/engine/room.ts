@@ -164,7 +164,7 @@ export function bindRoom(eng: Game, room: Room): void {
       });
     if (import.meta.env.DEV && eng.hazardLog && eng.hazardLog.length > 200) eng.hazardLog.shift();
     // Trảm Ly Kiếp (TN-6): vạch kiếm vô hình (chữ nhật không nguồn) hết giờ báo thì nhát chém hiện hình. Chỉ là hình.
-    if (m.sh === 'rect' && !m.src && get().suy?.id === 'hk_tram_ly') {
+    if (m.sh === 'rect' && !m.src && useUI.getState().suy?.id === 'hk_tram_ly') {
       const sid = eng.sid;
       window.setTimeout(() => !eng.disposed && eng.suyFx?.cut(sid, m.x, m.z, m.yaw ?? 0), m.delay * 1000);
     }
