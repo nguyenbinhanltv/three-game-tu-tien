@@ -63,8 +63,8 @@ Lưu ý: hàm truyền vào `page.evaluate` không khai báo hàm có tên bên 
 | `shots:e2c`, `shots:e3m`, `shots:e4c` | `shots dungeon --level phuc_mach|`--level phuc_mach|kinh_nguyet|than_tang`|than_tang` |\|kinh_nguyet` |
 | `shots:boss`, `shots:elite`, `shots:props`, `shots:e0` | `shots asset --group `--level phuc_mach|kinh_nguyet|than_tang` / `--ids …` |
 | `shots:vfx` | `shots vfx` (bỏ `--lab3`, `--debug`) |
-| `shots:outfit`, `shots:sets` | `shots outfit` |
-| `shots:chrv2` | `shots chrv2` |
+| `shots:outfit`, `shots:sets`, `shots outfit`, `shots skin` | đã gỡ ở N-7 (áo mô-đun và skin phủ thân v1 không còn); bộ trang bị và skin trên v3: `shots v3sets`, `shots v3views`, `shots skinv3`, `shots n7` |
+| `shots:chrv2`, `shots chrv2` | đã gỡ ở N-7 (nhân vật nền v2 không còn); so v1 với v3: `shots chrv3`, `shots n7 --query chr=v1` |
 | `shots:ui2`, `shots:ui3` | `shots ui --part hud\|panels` |
 
 Đã gỡ, không có thay thế (kịch bản một lần của hạng mục đã merge; mã còn trong lịch sử git, commit ngay trước R-5): `shots:method`, `party`, `p38`, `m5`, `k1`, `k3`, `k4`, `k6`, `k7`, `e2g`, `e2codex`, `e1e`, `e3j`, `gate`, `trib`, `e2d`, `e3l`, `e2h`, `e3h`, `e3h2`, `e2e`, `e3k`, `e2f`, `e3f`, `eqicons`, `kiem`, `gm`, `tdb`, `tdc`, `ngj`, `ui4`, `ui5`, `s2b`, `e4shots` (P2-E4), và `e4title.ts` (không lệnh nào gọi). README của các hạng mục đó trong `docs/` còn nhắc lệnh cũ như ghi chép lịch sử.
