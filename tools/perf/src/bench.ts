@@ -47,7 +47,10 @@ requireLevel(LEVEL);
 const EXTRA_QUERY = [levelQuery(LEVEL), opt('--query', '')].filter(Boolean).join('&');
 const ONLY_POINTS = opt('--points', '').split(',').filter(Boolean);
 /** Biến `BENCH_GM="set set_luu_ly;..."`: lệnh GM chạy một lần sau khi đăng nhập (mặc bộ trang phục khi đo). */
-const PRE_GM = env('BENCH_GM', '').split(';').map((x) => x.trim()).filter(Boolean);
+const PRE_GM = env('BENCH_GM', '')
+  .split(';')
+  .map((x) => x.trim())
+  .filter(Boolean);
 /** devicePixelRatio giả lập; engine lấy min(dpr, pixelRatio của preset) nên dpr 1 làm các preset chỉ khác hậu kỳ/bóng. */
 const DPR = Number(opt('--dpr', '1'));
 const { port: PORT, clientPort: CLIENT_PORT } = ports(2635, 5135);

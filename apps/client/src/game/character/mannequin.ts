@@ -275,7 +275,10 @@ function applyVeilAlpha(root: THREE.Object3D): void {
       const base = nm.map ? texture(nm.map).rgb : vec3(1, 1, 1);
       const warm = vec3(nm.color.r, nm.color.g, nm.color.b);
       const tint = mix(warm, vec3(1, 1, 1), mask);
-      const bright = base.mul(tint).mul(mix(float(1), float(VEIL_LOOK.gain), mask)).add(mask.mul(VEIL_LOOK.lift));
+      const bright = base
+        .mul(tint)
+        .mul(mix(float(1), float(VEIL_LOOK.gain), mask))
+        .add(mask.mul(VEIL_LOOK.lift));
       const luma = dot(bright, vec3(0.299, 0.587, 0.114));
       const lit = mix(bright, vec3(luma, luma, luma), mask.mul(1 - VEIL_LOOK.sat)); // voan nhạt màu như tranh gốc (texture Tripo sẫm hơn)
       nm.vertexColors = false; // màu đỉnh đọc tay (không nhân vào albedo)
