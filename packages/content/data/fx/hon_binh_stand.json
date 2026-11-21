@@ -1,0 +1,163 @@
+{
+ "skill": "hon_binh_stand",
+ "palette": "dan_hon_kinh",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "soul_soldier",
+   "t": 0.0,
+   "dur": 3.6,
+   "at": "self",
+   "offset": [
+    -2.2,
+    -1.05,
+    0.9
+   ],
+   "rot": [
+    0,
+    20,
+    0
+   ],
+   "scale": 2.0,
+   "sweep": 0.1,
+   "erodeFrom": 0.9,
+   "tone": "body",
+   "alpha": 1.0,
+   "follow": true,
+   "seed": 50,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "soul_soldier",
+   "t": 0.05,
+   "dur": 3.6,
+   "at": "self",
+   "offset": [
+    2.2,
+    -1.05,
+    0.9
+   ],
+   "rot": [
+    0,
+    -20,
+    0
+   ],
+   "scale": 2.0,
+   "sweep": 0.1,
+   "erodeFrom": 0.9,
+   "tone": "body",
+   "alpha": 1.0,
+   "follow": true,
+   "seed": 51,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "soul_soldier",
+   "t": 0.1,
+   "dur": 3.6,
+   "at": "self",
+   "offset": [
+    0.0,
+    -1.05,
+    2.8
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": 2.0,
+   "sweep": 0.1,
+   "erodeFrom": 0.9,
+   "tone": "body",
+   "alpha": 1.0,
+   "follow": true,
+   "seed": 52,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    -2.2,
+    -1.08,
+    0.9
+   ],
+   "scale": 0.3,
+   "scaleTo": 1.5,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "tone": "rim",
+   "alpha": 0.8,
+   "shadow": false,
+   "seed": 54,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.05,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    2.2,
+    -1.08,
+    0.9
+   ],
+   "scale": 0.3,
+   "scaleTo": 1.5,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "tone": "rim",
+   "alpha": 0.8,
+   "shadow": false,
+   "seed": 55,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.1,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    0.0,
+    -1.08,
+    2.8
+   ],
+   "scale": 0.3,
+   "scaleTo": 1.5,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "tone": "rim",
+   "alpha": 0.8,
+   "shadow": false,
+   "seed": 56,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 18,
+   "speed": 1.4,
+   "spread": 1.0,
+   "life": 0.9,
+   "size": 0.16,
+   "at": "self",
+   "offset": [
+    0,
+    -0.6,
+    1.2
+   ],
+   "tone": "rim",
+   "grav": -1.2,
+   "tier": 1
+  }
+ ]
+}

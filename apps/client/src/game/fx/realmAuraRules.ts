@@ -7,7 +7,7 @@ import type { SkillDef } from '@dtl/shared';
 /** 0 = chưa có; 1 Kết Đan; 2 Nguyên Anh; 3 Hóa Thần; 4 Ảnh Biến (đỉnh). Các bậc cộng dồn. */
 export type AuraStage = 0 | 1 | 2 | 3 | 4;
 /** Đạo của nhân vật (theo công pháp đang tu). */
-export type AuraDao = 'kiem' | 'ho' | 'dan';
+export type AuraDao = 'kiem' | 'ho' | 'dan' | 'hon';
 
 export function auraStage(lv: number): AuraStage {
   if (lv >= ANH_BIEN_LEVEL) return 4;
