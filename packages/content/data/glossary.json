@@ -48,6 +48,10 @@
       "dinh_hon": "Định Hồn",
       "hoang_tuyen": "Hoàng Tuyền"
     },
+    "co_than_quyet": {
+      "huyet_tran": "Huyết Trận",
+      "huyet_cu": "Huyết Cự"
+    },
     "liet_nhan_dao_kinh": {
       "hoanh_dao": "Hoành Đao",
       "tam_dao": "Tâm Đao",
@@ -85,7 +89,11 @@
     "skl_nuoi_co": "Nuôi Cổ",
     "skl_co_chich": "Cổ Chích",
     "skl_doc_vu": "Độc Vụ",
-    "skl_co_giap": "Cổ Giáp"
+    "skl_co_giap": "Cổ Giáp",
+    "skl_hoa_hinh": "Hóa Hình",
+    "skl_hinh_quyen": "Hình Quyền",
+    "skl_hinh_chan": "Hình Chấn",
+    "skl_hinh_giap": "Hình Giáp"
   },
   "paths": {
     "kiem_tu": "Kiếm tu",
@@ -93,7 +101,8 @@
     "dan_su": "Đan sư",
     "hon_tu": "Hồn tu",
     "dao_tu": "Đao tu",
-    "co_tu": "Cổ tu"
+    "co_tu": "Cổ tu",
+    "co_than": "Cổ Thần"
   },
   "joints": {
     "pha_the_tram": "Phá Thế Trảm",
@@ -115,7 +124,8 @@
     "dan_hoa": "Đan hỏa",
     "hon_luc": "Hồn lực",
     "khi_the": "Khí thế",
-    "co": "Cổ"
+    "co": "Cổ",
+    "co_huyet": "Cổ huyết"
   },
   "realms": [
     "Ngưng Khí",
@@ -411,6 +421,9 @@
     "npc_hai_duoc": "Hạ Thảo"
   },
   "skillsTier": {
+    "skl_tinh_bao": "Tinh Bạo",
+    "skl_huyet_cu_ho": "Huyết Cự Hộ",
+    "skl_co_than_nhat_kich": "Cổ Thần Nhất Kích",
     "skl_hoanh_kiem_pha_mach": "Hoành Kiếm Phá Mạch",
     "skl_kiem_vu_tam_diep": "Kiếm Vũ Tam Điệp",
     "skl_kiem_dan_ban_menh": "Kiếm Đan Bản Mệnh",
@@ -517,7 +530,8 @@
     "itm_co_thanh_phien": "Cổ Thành Phiến",
     "itm_tan_giac": "Tẫn Giác",
     "itm_tinh_vu": "Tịnh Quang Vũ",
-    "itm_kim_da_mien": "Kim Dạ Miện Phiến"
+    "itm_kim_da_mien": "Kim Dạ Miện Phiến",
+    "itm_co_huyet_tinh": "Cổ Huyết Tinh"
   },
   "stationNpcs": {
     "npc_to_van_ngu": "Tô Vãn Ngư",

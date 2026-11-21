@@ -440,3 +440,30 @@
   gap: 10px;
   align-items: center;
 }
+
+.star-panel {
+  display: grid;
+  gap: 6px;
+}
+.star-pips {
+  display: flex;
+  gap: 6px;
+}
+.star-pips i {
+  width: 18px;
+  height: 18px;
+  clip-path: polygon(50% 0, 62% 36%, 100% 38%, 70% 60%, 81% 100%, 50% 76%, 19% 100%, 30% 60%, 0 38%, 38% 36%);
+  background: var(--u-gold-lo);
+  opacity: 0.45;
+}
+.star-pips i.on {
+  background: var(--u-gold);
+  opacity: 1;
+}
+.star-now,
+.star-next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}

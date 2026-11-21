@@ -32,8 +32,27 @@ import {
   BRANCH_RESET_COOLDOWN_SEC,
   branchResetCost,
   pickBlock,
+  sanitizeStars,
+  starCheck,
+  starNext,
 } from '@dtl/shared';
-import { PILL_QUALITY, ITEM, itemName, NPC, QUEST, realmName, RECIPE, SKILL, t, METHOD, VARIANTS, skillName, pathOf } from '@dtl/content';
+import {
+  PILL_QUALITY,
+  ITEM,
+  itemName,
+  NPC,
+  QUEST,
+  realmName,
+  RECIPE,
+  SKILL,
+  t,
+  METHOD,
+  VARIANTS,
+  skillName,
+  pathOf,
+  STARS,
+  GLOSSARY,
+} from '@dtl/content';
 import { type Character, isEquipSlot, sameSlot } from '../character';
 import { methodOf, passiveOf, picksOf, setSkillLevel, skillLevelOf } from '../method';
 import type { DuelSystem } from '../duel';
@@ -405,6 +424,8 @@ export class EconomySystem {
     if (path && unlock) {
       const pathName = t(`path.${path.id}.name`);
       if (c.level < unlock.level) return this.c.warn(p, 'sys.path_low', { realm: realmName(unlock.level), path: pathName });
+      if (unlock.from && c.meta.method !== unlock.from)
+        return this.c.warn(p, 'sys.path_need_from', { from: t(`method.${unlock.from}.name`), path: pathName });
       if (!this.c.nearNpc(p, METHOD_NPC)) return this.c.warn(p, 'sys.path_far', { npc: t(`npc.${METHOD_NPC}.name`), path: pathName });
       const idem = this.idem(p, m.r);
       if (idem === undefined) return;
@@ -514,6 +535,36 @@ export class EconomySystem {
     p.mth.dirty = true;
     this.c.sys(p, 'sys.branch_reset', { n: cost }, 'info');
     this.c.sendCd(p);
+  }
+
+  /**
+   * Rèn sao Cổ Thần (TN-5): `{ r }`. Sao kế tiếp do server quyết (client không gửi số sao). Gặp người truyền công pháp, đang tu
+   * Cổ Thần Quyết, đủ cảnh giới; trừ Cổ Huyết Tinh + linh thạch trong một giao dịch có khóa chống trùng + ledger, rồi mới tăng sao.
+   */
+  onStar(p: PlayerEnt, msg: unknown): void {
+    const m = msg as { r?: unknown } | null;
+    if (!m || this.c.isDead(p)) return;
+    const c = p.char;
+    const cur = sanitizeStars(c.meta.stars);
+    const next = starNext(STARS, cur);
+    const chk = starCheck(STARS, cur, c.level, c.meta.method);
+    if (chk === 'max') return this.c.warn(p, 'sys.star_max');
+    if (chk === 'method') return this.c.warn(p, 'sys.star_method');
+    if (chk === 'level') return this.c.warn(p, 'sys.star_level', { realm: realmName(next!.level) });
+    if (this.c.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000 || p.casting || p.flow.pending) return this.c.warn(p, 'sys.star_combat');
+    if (!this.c.nearNpc(p, METHOD_NPC)) return this.c.warn(p, 'sys.star_far', { npc: t(`npc.${METHOD_NPC}.name`) });
+    const idem = this.idem(p, m.r);
+    if (!idem) return;
+    const s = next!;
+    if (!c.tx(`costar:${s.star}`, idem, (d) => d.remove(STARS.item, s.mats) && d.spendGold(s.gold)))
+      return this.c.warn(p, 'sys.star_mats', { n: s.mats });
+    c.meta.stars = s.star;
+    c.recalc();
+    c.hp = Math.min(c.mhp, c.hp + Math.round(c.mhp * 0.04));
+    c.save();
+    p.mth.dirty = true;
+    this.c.sys(p, 'sys.star_up', { star: GLOSSARY.coThanStars[s.star - 1] ?? String(s.star), n: s.mats, gold: s.gold }, 'good');
+    this.c.fx({ t: 'levelup', src: p.sid });
   }
 
   /** Chọn biến thức A/B (từ cấp 3), đổi miễn phí khi không giao chiến. */

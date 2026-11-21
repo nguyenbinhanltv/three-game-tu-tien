@@ -17,6 +17,63 @@ export const BRAWLER_COLORS = {
   linen: 0xb7ac8c,
 } as const;
 
+/**
+ * Cổ Thần (TN-5): cùng bộ găng + giáp của Thể tu nhưng "nâng cấp": đổi sang huyết đồng (đỏ sẫm / đỏ đồng / vàng cổ) và thêm gai xương
+ * trên giáp vai. Thủ tục như bộ gốc: vẫn MỘT SkinnedMesh, +0 draw call so với Thể tu.
+ */
+export const COTHAN_COLORS = {
+  earth: 0x3a0d0d,
+  bronze: 0xb3322a,
+  brass: 0xe8b04a,
+} as const;
+
+const RECOLOR = new Map<number, number>([
+  [BRAWLER_COLORS.earth, COTHAN_COLORS.earth],
+  [BRAWLER_COLORS.bronze, COTHAN_COLORS.bronze],
+  [BRAWLER_COLORS.brass, COTHAN_COLORS.brass],
+]);
+
+/** Đổi màu đỉnh theo bảng `RECOLOR` (màu không có trong bảng, như vải gai, giữ nguyên). Sửa tại chỗ. */
+export function recolorGear(geo: THREE.BufferGeometry): void {
+  const attr = geo.getAttribute('color');
+  if (!attr) return;
+  const arr = attr.array as Float32Array;
+  const from = new Map<string, THREE.Color>();
+  for (const [a, b] of RECOLOR) from.set(new THREE.Color(a).getHexString(), new THREE.Color(b));
+  const c = new THREE.Color();
+  for (let i = 0; i < attr.count; i++) {
+    c.fromArray(arr, i * 3);
+    const to = from.get(c.getHexString());
+    if (to) to.toArray(arr, i * 3);
+  }
+  attr.needsUpdate = true;
+}
+
+/** Gai xương trên giáp vai trái: ba gai xếp quạt dọc cung vai, mũi hướng lên + ra. */
+export function spikeParts(shoulder: THREE.Vector3, elbow: THREE.Vector3, outward: THREE.Vector3, height: number): THREE.BufferGeometry {
+  const k = height / 1.7;
+  const arm = elbow.clone().sub(shoulder);
+  const up = outward
+    .clone()
+    .normalize()
+    .multiplyScalar(0.8)
+    .add(new THREE.Vector3(0, 1, 0))
+    .normalize();
+  const m = frame(shoulder, arm, up);
+  const g: THREE.BufferGeometry[] = [];
+  for (let i = 0; i < 3; i++) {
+    const a = -0.5 + i * 0.5;
+    const cone = new THREE.ConeGeometry(0.011 * k, (0.075 - Math.abs(a) * 0.04) * k, 6, 1);
+    cone.rotateX(Math.PI / 2); // mũi hướng +z (lên + ra)
+    cone.translate(0, (0.012 + i * 0.002) * k, 0.07 * k);
+    cone.rotateY(a);
+    g.push(put(cone, m, COTHAN_COLORS.brass));
+  }
+  const out = mergeGeometries(g, false)!;
+  for (const p of g) p.dispose();
+  return out;
+}
+
 /** Tay không: đòn thường là quyền, kiếm không rút. */
 export const BRAWLER_WEAPON = 'fist';
 
@@ -289,7 +346,7 @@ export function skinGeometry(geo: THREE.BufferGeometry, boneIndex: number, toBon
 const NONE: BrawlerGear = { meshes: [], setVisible() {}, dispose() {} };
 
 /** Dựng toàn bộ găng + giáp thành MỘT SkinnedMesh dùng chung bộ xương của mesh tham chiếu. Thiếu xương nào thì bỏ món đó. */
-export function attachBrawlerGear(rig: THREE.Object3D, bind: BindSnapshot, height: number): BrawlerGear {
+export function attachBrawlerGear(rig: THREE.Object3D, bind: BindSnapshot, height: number, ancient = false): BrawlerGear {
   const ref = bind.ref;
   if (!ref) return NONE;
   const pos = (name: string): THREE.Vector3 | null => bind.pos.get(name) ?? null;
@@ -315,6 +372,7 @@ export function attachBrawlerGear(rig: THREE.Object3D, bind: BindSnapshot, heigh
   const sh = pos('upperarm_l');
   const el = pos('lowerarm_l');
   add('upperarm_l', sh && el ? pauldronParts(sh, el, new THREE.Vector3(Math.sign(el.x - sh.x) || 1, 0, 0), height) : null);
+  if (ancient && sh && el) add('upperarm_l', spikeParts(sh, el, new THREE.Vector3(Math.sign(el.x - sh.x) || 1, 0, 0), height));
   const shr = pos('upperarm_r');
   const elr = pos('lowerarm_r');
   add('upperarm_r', shr && elr ? shoulderWrapParts(shr, elr, height) : null);
@@ -325,9 +383,10 @@ export function attachBrawlerGear(rig: THREE.Object3D, bind: BindSnapshot, heigh
   add(chestBone, chest ? sashParts(chest, height) : null);
   if (!parts.length) return NONE;
   const geo = mergeGeometries(parts, false)!;
+  if (ancient) recolorGear(geo);
   for (const p of parts) p.dispose();
   const mesh = new THREE.SkinnedMesh(geo, gearMaterial());
-  mesh.name = 'dtl_brawler_gear';
+  mesh.name = ancient ? 'dtl_cothan_gear' : 'dtl_brawler_gear';
   mesh.frustumCulled = false;
   (ref.parent ?? rig).add(mesh);
   mesh.bind(ref.skeleton, ref.bindMatrix);

@@ -51,7 +51,9 @@ export interface CharacterView {
   /** Bậc phát sáng của vũ khí theo cường hóa (0, 1 từ +7, 2 từ +10); model không hỗ trợ thì bỏ qua. */
   setWeaponGlow?(stage: number): void;
   /** Thể tu: tay không, găng + giáp nhẹ (model không hỗ trợ thì bỏ qua). */
-  setBrawlerGear?(on: boolean): void;
+  setBrawlerGear?(on: boolean, ancient?: boolean): void;
+  /** Cổ Thần hóa hình: nhân vật to lên `k` lần (1 = bình thường); model không hỗ trợ thì bỏ qua. */
+  setGiant?(k: number): void;
   /** Đao tu: thay kiếm bằng đao lớn thủ tục (model không hỗ trợ thì bỏ qua). */
   setGreatBlade?(on: boolean): void;
   /** Cổ tu: sáo cổ thay kiếm + hũ cổ treo hông (model không hỗ trợ thì bỏ qua). */

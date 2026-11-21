@@ -75,7 +75,7 @@ import { equippedArtifact, passiveValue, pruneBuffs } from '../artifact';
 import type { MonEnt, PlayerEnt, StrikeCtx, Stomp, Summon } from '../entities';
 import { LEASH, MARK_ALLY_RANGE, SET_HEAL_RADIUS, TAUNT_BOSS_MUL, visualSeed } from './consts';
 
-import { at } from '@dtl/shared';
+import { at, HOA_HINH_SKILL, sanitizeStars, starEnough } from '@dtl/shared';
 /** Phần GameSim mà hệ chiêu cần. */
 export interface CombatCtx {
   /** Đối tượng room (khóa tra thành viên tổ đội cùng room, VS-2f). */
@@ -137,6 +137,7 @@ export class CombatSystem {
     if (skill.method && c.meta.method !== skill.method) return this.c.warn(p, 'sys.no_method');
     if (skill.locked) return this.c.warn(p, 'sys.skill_locked');
     // VS-2d: chiêu gắn nhánh công pháp chỉ dùng được khi đã chọn đúng nhánh ở mốc của nó.
+    if (!starEnough(sanitizeStars(c.meta.stars), skill.star)) return this.c.warn(p, 'sys.star_low', { n: skill.star ?? 0 });
     const gate = gateOf(c, skill);
     if (gate !== 'ok') return this.c.warn(p, gate === 'need' ? 'sys.branch_needed' : 'sys.branch_other');
     // VS-2e: chiêu tư thế chỉ dùng được khi đang giữ đúng tư thế đó (client đổi ô theo tin server, server vẫn kiểm).
@@ -1163,10 +1164,11 @@ export class CombatSystem {
       case 'summon': {
         const sm = skill.summon ?? { count: 1, every: 1, range: 18 };
         const sec = rs.duration ?? 10;
-        // Mỗi người một bộ kiếm đan: bộ mới thay bộ cũ.
-        this.summons = this.summons.filter((o) => o.sid !== p.sid);
+        // Mỗi người một bộ cho mỗi chiêu gọi: gọi lại đúng chiêu đó thì bộ mới thay bộ cũ, chiêu gọi khác (Cổ Triều rồi Hóa Cổ Vương) tồn tại song song.
+        this.summons = this.summons.filter((o) => !(o.sid === p.sid && o.skill === skill.id));
         this.summons.push({
           sid: p.sid,
+          skill: skill.id,
           until: this.c.now + sec * 1000,
           nextAt: this.c.now + sm.every * 1000,
           every: sm.every,
@@ -1571,6 +1573,9 @@ export class CombatSystem {
         m.stance = null;
         m.dirty = true;
       }
+      // Hóa hình Cổ Thần (TN-5): cờ hiển thị cho mọi người trong tầm nhìn, theo đúng tư thế đang giữ.
+      const hh = stanceActive(m.stance, now) && m.stance.id === HOA_HINH_SKILL ? 1 : 0;
+      if (p.s.hh !== hh) p.s.hh = hh;
       // Ấn trên người (VS-2c) hết hạn: dọn và cập nhật gói bit đồng bộ.
       if (p.marks.length && marksPrune(p.marks, now)) p.s.mk = packMarks(p.marks, now);
       // Tài nguyên đã rụng hết: dọn về 0 (client tự tính phần rụng từ `res`/`resAt`, không cần gửi lại từng nhịp).

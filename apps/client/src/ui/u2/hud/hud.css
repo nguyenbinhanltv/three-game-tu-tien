@@ -939,6 +939,10 @@
   --rc: var(--u-h-blade-hi);
   --rc-lo: var(--u-h-blade-lo);
 }
+.res-bar[data-res='co_huyet'] {
+  --rc: var(--u-gold);
+  --rc-lo: var(--u-h-crimson);
+}
 .res-bar[data-res='hon_luc'] {
   --rc: var(--u-h-soul-hi);
   --rc-lo: var(--u-h-soul-lo);

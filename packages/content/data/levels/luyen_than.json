@@ -1,0 +1,92 @@
+{
+  "id": "luyen_than",
+  "terrain": "van_lam",
+  "spawns": [],
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1520,
+      "z": 1352
+    },
+    "exit": {
+      "x": 1520,
+      "z": 1370
+    },
+    "center": {
+      "x": 1520,
+      "z": 1300
+    },
+    "minLevel": 28,
+    "returnLevel": "bac_hoang",
+    "returnSpawn": {
+      "x": 700,
+      "z": 650
+    },
+    "bound": 90,
+    "private": true,
+    "lockAt": 2,
+    "maxRevives": 2,
+    "waves": [
+      {
+        "mons": [
+          {
+            "id": "mon_khai_mach_khoi_loi",
+            "level": 28,
+            "n": 8
+          }
+        ],
+        "delay": 8
+      },
+      {
+        "mons": [
+          {
+            "id": "mon_mach_thuong_ho_ve",
+            "level": 28,
+            "n": 4
+          },
+          {
+            "id": "elite_ho_mach_khoi_tuong",
+            "level": 28,
+            "n": 1
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_thach_tam_khoi_vuong",
+            "level": 29,
+            "n": 1
+          }
+        ],
+        "title": true
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_thon_mach_ngo_cong_vuong",
+            "level": 30,
+            "n": 1
+          }
+        ],
+        "title": true
+      }
+    ],
+    "reward": {
+      "xpPct": 0.15,
+      "gold": [
+        2000,
+        3000
+      ],
+      "level": 28,
+      "items": [
+        {
+          "item": "itm_co_huyet_tinh",
+          "chance": 1,
+          "min": 3,
+          "max": 5
+        }
+      ]
+    }
+  }
+}

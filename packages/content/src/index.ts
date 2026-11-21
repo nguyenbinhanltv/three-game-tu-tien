@@ -14,6 +14,7 @@ import {
   type JointDef,
   type MarkDef,
   type PathDef,
+  type StarTable,
   type FxTimeline,
   type ResolvedSkill,
   type TerrainDef,
@@ -91,6 +92,9 @@ import xichTanKhichJson from '../data/levels/xich_tan_khich.json';
 import xichTanKhichAssetsJson from '../data/levels/xich_tan_khich.assets.json';
 import kimDaCungJson from '../data/levels/kim_da_cung.json';
 import kimDaCungAssetsJson from '../data/levels/kim_da_cung.assets.json';
+import luyenThanJson from '../data/levels/luyen_than.json';
+import luyenThanAssetsJson from '../data/levels/luyen_than.assets.json';
+import starsJson from '../data/stars.json';
 import doKiepAssetsJson from '../data/levels/do_kiep.assets.json';
 import doKiepBhAssetsJson from '../data/levels/do_kiep_bac_hoang.assets.json';
 import glossaryJson from '../data/glossary.json';
@@ -294,6 +298,10 @@ import poseHutMauCoJson from '../data/poses/hut_mau_co.json';
 import poseCoBaoJson from '../data/poses/co_bao.json';
 import poseThuCoJson from '../data/poses/thu_co.json';
 import poseHoaCoVuongJson from '../data/poses/hoa_co_vuong.json';
+import poseCoQuyenJson from '../data/poses/co_quyen.json';
+import poseHuyetCuHoJson from '../data/poses/huyet_cu_ho.json';
+import poseTinhBaoJson from '../data/poses/tinh_bao.json';
+import poseNhatKichJson from '../data/poses/nhat_kich.json';
 import posePhanAnhKiemAnhJson from '../data/poses/phan_anh_kiem_anh.json';
 import poseKimChungJson from '../data/poses/kim_chung.json';
 import poseSonNhacJson from '../data/poses/son_nhac.json';
@@ -335,6 +343,8 @@ export const METHOD_SKILLS = methodsJson.skills as SkillDef[];
 export const MARKS = marksJson as MarkDef[];
 export const MARK: ReadonlyMap<string, MarkDef> = new Map(MARKS.map((m) => [m.id, m]));
 /** Hướng tu (VS-3, data/paths.json): gom hào quang, tranh đạo, bộ động tác, bảng màu, tiếng đòn của một lối tu. */
+/** Thang sao Cổ Thần (TN-5, stars.json). */
+export const STARS = starsJson as StarTable;
 export const PATHS = pathsJson as PathDef[];
 export const PATH: ReadonlyMap<string, PathDef> = new Map(PATHS.map((p) => [p.id, p]));
 /** Hướng tu của một khóa (id công pháp, id hướng, hoặc bí danh cũ); không ra thì undefined. */
@@ -369,6 +379,7 @@ export const LEVELS: Record<string, LevelDef> = {
   than_tang: thanTangJson as LevelDef,
   xich_tan_khich: xichTanKhichJson as LevelDef,
   kim_da_cung: kimDaCungJson as LevelDef,
+  luyen_than: luyenThanJson as LevelDef,
 };
 // Địa hình dữ liệu hóa của bản đồ mở rộng (E2-A): đăng ký khi nạp @dtl/content để server, client và công cụ cùng thấy `terrainOf('doan_mach')`.
 registerTerrain(doanMachTerrainJson as unknown as TerrainDef);
@@ -391,6 +402,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   than_tang: thanTangAssetsJson as LevelAssets,
   xich_tan_khich: xichTanKhichAssetsJson as LevelAssets,
   kim_da_cung: kimDaCungAssetsJson as LevelAssets,
+  luyen_than: luyenThanAssetsJson as LevelAssets,
 };
 /** 14 Bản Nguyên (TN-1, data/origins.json): sáu nguồn `real` đã mở, tám nguồn khóa theo chương. */
 export const ORIGINS = originsJson as OriginDef[];
@@ -485,6 +497,10 @@ export const POSES = [
   poseCoBaoJson,
   poseThuCoJson,
   poseHoaCoVuongJson,
+  poseCoQuyenJson,
+  poseTinhBaoJson,
+  poseHuyetCuHoJson,
+  poseNhatKichJson,
   posePhanAnhKiemAnhJson,
   poseKimChungJson,
   poseSonNhacJson,
