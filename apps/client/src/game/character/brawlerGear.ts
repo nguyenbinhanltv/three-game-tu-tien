@@ -20,6 +20,11 @@ export const BRAWLER_COLORS = {
 /** Tay không: đòn thường là quyền, kiếm không rút. */
 export const BRAWLER_WEAPON = 'fist';
 
+/** Găng/giáp chỉ vẽ khi đang là Thể tu VÀ ở LOD0: người xa không đáng một draw call (ngân sách 300). */
+export function gearShown(on: boolean, lodLevel: number): boolean {
+  return on && lodLevel === 0;
+}
+
 export interface BrawlerGear {
   readonly meshes: readonly THREE.Mesh[];
   /** Bật/tắt vẽ (người gọi tự gộp điều kiện: đang là Thể tu và đang ở LOD gần). */
