@@ -459,6 +459,12 @@ export class Vfx {
    * không có seed thì ngẫu nhiên tại chỗ. `flash` > 0: chớp toàn cảnh qua `onFlash` lúc tia ngược
    * bừng (và nhỏ hơn ở lần bừng thứ hai). Thời lượng 0,42 giây như bản cũ.
    */
+  /**
+   * Hệ số cỡ quầng cầu chạm đất của tia sét (mặc định 1). Ải Ngũ Suy (TN-4) hạ xuống khi đang chạy: quầng nở tới ~3 m bằng lưới ít mặt
+   * trông như khối lăng trụ mờ che tầm nhìn khi rơi sát camera, trong lúc người chơi phải đọc dấu của ải.
+   */
+  boltGlowMul = 1;
+
   lightning(x: number, y: number, z: number, color = 0xd6c4ff, scale = 1, seed?: number, flash = 0, thick = 1): void {
     const sd = seedOr(seed);
     const bolt = takeBolt();
@@ -488,7 +494,8 @@ export class Vfx {
           struck = 2;
           if (flash > 0) this.onFlash?.(flash * 0.6);
         }
-        glow.scale.set(scale * (1 + k * 2.2), scale * (0.6 + k * 1.2), scale * (1 + k * 2.2));
+        const gm = this.boltGlowMul;
+        glow.scale.set(scale * (1 + k * 2.2) * gm, scale * (0.6 + k * 1.2) * gm, scale * (1 + k * 2.2) * gm);
         glow.fxOpacity = 0.35 * (1 - k) * (k < 0.12 ? 0.3 : 1);
         ring.scale.setScalar(scale * (1 + Math.max(0, k - 0.12) * 4.5));
         ring.fxOpacity = k < 0.12 ? 0 : 0.9 * (1 - k);

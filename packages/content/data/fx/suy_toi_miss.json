@@ -4,35 +4,6 @@
  "events": [
   {
    "type": "mesh",
-   "shape": "seal_block",
-   "t": 0.0,
-   "dur": 0.5,
-   "at": "area",
-   "offset": [
-    0,
-    2.4,
-    0
-   ],
-   "scale": [
-    1.5,
-    1.2,
-    1.5
-   ],
-   "scaleTo": [
-    1.0,
-    1.6,
-    1.0
-   ],
-   "sweep": 0.0,
-   "erodeFrom": 0.1,
-   "tone": "core",
-   "alpha": 0.7,
-   "seed": 56,
-   "keepUp": true,
-   "tier": 0
-  },
-  {
-   "type": "mesh",
    "shape": "flip",
    "t": 0.0,
    "dur": 0.6,

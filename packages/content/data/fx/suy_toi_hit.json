@@ -6,8 +6,8 @@
    "type": "bolt",
    "t": 0.0,
    "at": "area",
-   "scale": 1.15,
-   "thick": 5.5,
+   "scale": 0.45,
+   "thick": 4.0,
    "tone": "rim",
    "seed": 51,
    "tier": 0
@@ -21,8 +21,8 @@
     0,
     -0.5
    ],
-   "scale": 0.9,
-   "thick": 2.0,
+   "scale": 0.3,
+   "thick": 3.6,
    "tone": "body",
    "seed": 57,
    "tier": 1
@@ -103,18 +103,18 @@
     0
    ],
    "scale": [
-    1.5,
-    1.2,
-    1.5
+    1.0,
+    0.8,
+    1.0
    ],
    "scaleTo": [
-    1.9,
-    0.5,
-    1.9
+    1.4,
+    0.4,
+    1.4
    ],
    "sweep": 0.0,
    "erodeFrom": 0.2,
-   "tone": "rim",
+   "tone": "body",
    "alpha": 0.9,
    "seed": 54,
    "keepUp": true,

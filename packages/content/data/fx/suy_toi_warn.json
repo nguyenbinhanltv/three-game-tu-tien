@@ -33,41 +33,6 @@
    "from": "start"
   },
   {
-   "type": "mesh",
-   "shape": "seal_block",
-   "t": 0.0,
-   "dur": 2.2,
-   "at": "area",
-   "offset": [
-    0,
-    6.0,
-    0
-   ],
-   "scale": [
-    2.0,
-    1.6,
-    2.0
-   ],
-   "sweep": 0.05,
-   "erodeFrom": 0.95,
-   "tone": "rim",
-   "alpha": 0.95,
-   "seed": 32,
-   "keepUp": true,
-   "move": {
-    "to": "area",
-    "offset": [
-     0,
-     2.4,
-     0
-    ],
-    "ease": "in"
-   },
-   "untilDelay": true,
-   "tier": 0,
-   "from": "start"
-  },
-  {
    "type": "particles",
    "kind": "spark",
    "t": 0.0,
@@ -89,7 +54,7 @@
   },
   {
    "type": "bolt",
-   "t": 0.2,
+   "t": 0.1,
    "from": "start",
    "at": "area",
    "offset": [
@@ -97,58 +62,58 @@
     0,
     0.4
    ],
-   "scale": 0.9,
-   "thick": 2.6,
+   "scale": 0.3,
+   "thick": 3.6,
    "tone": "rim",
    "seed": 34,
    "tier": 0
   },
   {
    "type": "bolt",
-   "t": 0.72,
+   "t": 0.65,
    "from": "start",
    "at": "area",
    "offset": [
-    -0.8,
-    0,
-    -0.6
-   ],
-   "scale": 0.95,
-   "thick": 3.0,
-   "tone": "body",
-   "seed": 35,
-   "tier": 0
-  },
-  {
-   "type": "bolt",
-   "t": 1.24,
-   "from": "start",
-   "at": "area",
-   "offset": [
-    0.2,
+    0.3,
     0,
     0.9
    ],
-   "scale": 1.0,
-   "thick": 3.4,
+   "scale": 0.3,
+   "thick": 3.6,
    "tone": "rim",
    "seed": 36,
    "tier": 0
   },
   {
    "type": "bolt",
-   "t": 1.76,
+   "t": 1.2,
    "from": "start",
    "at": "area",
    "offset": [
-    -0.3,
+    0.6,
     0,
-    -0.2
+    -0.7
    ],
-   "scale": 1.0,
-   "thick": 3.8,
+   "scale": 0.3,
+   "thick": 3.6,
+   "tone": "rim",
+   "seed": 38,
+   "tier": 0
+  },
+  {
+   "type": "bolt",
+   "t": 1.75,
+   "from": "start",
+   "at": "area",
+   "offset": [
+    0.0,
+    0,
+    0.0
+   ],
+   "scale": 0.3,
+   "thick": 3.6,
    "tone": "body",
-   "seed": 37,
+   "seed": 39,
    "tier": 0
   },
   {

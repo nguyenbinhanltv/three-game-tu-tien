@@ -207,6 +207,7 @@ describe('lớp đọc được từ xa (đèn khu ải, cột linh quang, lửa
       mySid: () => 'me',
       scene,
       vfx: {
+        boltGlowMul: 1,
         suyBeacon: (_pos, color, o) => {
           const b = { color, stopped: false, dur: o.dur };
           beacons.push(b);

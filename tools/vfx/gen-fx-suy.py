@@ -112,22 +112,20 @@ write('suy_nhan_end', 'linh', [
 write('suy_toi_warn', 'the', [
     decal('rune', 0.0, 2.8, 2.2, at='area', grow=0.25, tone='body', alpha=1.0, yaw=0, untilDelay=True, tier=0, **START),
     decal('rune', 0.1, 1.4, 2.2, at='area', grow=0.3, tone='rim', alpha=0.9, yaw=45, untilDelay=True, tier=1, **START),
-    mesh('seal_block', 0.0, 2.2, at='area', offset=[0, 6.0, 0], scale=[2.0, 1.6, 2.0], sweep=0.05, erodeFrom=0.95, tone='rim', alpha=0.95, seed=32, keepUp=True,
-         move={'to': 'area', 'offset': [0, 2.4, 0], 'ease': 'in'}, untilDelay=True, tier=0, **START),
     parts('spark', 0.0, 24, 2.0, 1.0, 1.0, 0.1, at='area', offset=[0, 2.6, 0], tone='rim', inward=True, tier=0, **START),
-    {'type': 'bolt', 't': 0.2, 'from': 'start', 'at': 'area', 'offset': [0.9, 0, 0.4], 'scale': 0.9, 'thick': 2.6, 'tone': 'rim', 'seed': 34, 'tier': 0},
-    {'type': 'bolt', 't': 0.72, 'from': 'start', 'at': 'area', 'offset': [-0.8, 0, -0.6], 'scale': 0.95, 'thick': 3.0, 'tone': 'body', 'seed': 35, 'tier': 0},
-    {'type': 'bolt', 't': 1.24, 'from': 'start', 'at': 'area', 'offset': [0.2, 0, 0.9], 'scale': 1.0, 'thick': 3.4, 'tone': 'rim', 'seed': 36, 'tier': 0},
-    {'type': 'bolt', 't': 1.76, 'from': 'start', 'at': 'area', 'offset': [-0.3, 0, -0.2], 'scale': 1.0, 'thick': 3.8, 'tone': 'body', 'seed': 37, 'tier': 0},
+    {'type': 'bolt', 't': 0.1, 'from': 'start', 'at': 'area', 'offset': [0.9, 0, 0.4], 'scale': 0.3, 'thick': 3.6, 'tone': 'rim', 'seed': 34, 'tier': 0},
+    {'type': 'bolt', 't': 0.65, 'from': 'start', 'at': 'area', 'offset': [0.3, 0, 0.9], 'scale': 0.3, 'thick': 3.6, 'tone': 'rim', 'seed': 36, 'tier': 0},
+    {'type': 'bolt', 't': 1.2, 'from': 'start', 'at': 'area', 'offset': [0.6, 0, -0.7], 'scale': 0.3, 'thick': 3.6, 'tone': 'rim', 'seed': 38, 'tier': 0},
+    {'type': 'bolt', 't': 1.75, 'from': 'start', 'at': 'area', 'offset': [0.0, 0, 0.0], 'scale': 0.3, 'thick': 3.6, 'tone': 'body', 'seed': 39, 'tier': 0},
 ] + ring(4, 2.6, lambda i, x, z: mesh('rock_spire', round(0.1 + 0.08 * i, 3), 2.2, at='area', offset=[x, 0, z], rot=[0, i * 90, 0], scale=[0.45, 0.8, 0.45], sweep=0.2, erodeFrom=0.92, tone='body', alpha=0.95, seed=40 + i, untilDelay=True, tier=0, **START), phase=0.5))
 
 write('suy_toi_hit', 'the', [
-    {'type': 'bolt', 't': 0.0, 'at': 'area', 'scale': 1.15, 'thick': 5.5, 'tone': 'rim', 'seed': 51, 'tier': 0},
-    {'type': 'bolt', 't': 0.07, 'at': 'area', 'offset': [0.7, 0, -0.5], 'scale': 0.9, 'thick': 2.0, 'tone': 'body', 'seed': 57, 'tier': 1},
+    {'type': 'bolt', 't': 0.0, 'at': 'area', 'scale': 0.45, 'thick': 4.0, 'tone': 'rim', 'seed': 51, 'tier': 0},
+    {'type': 'bolt', 't': 0.07, 'at': 'area', 'offset': [0.7, 0, -0.5], 'scale': 0.3, 'thick': 3.6, 'tone': 'body', 'seed': 57, 'tier': 1},
     {'type': 'flash', 't': 0.0, 'amount': 0.22, 'tier': 0},
     mesh('shock_cone', 0.0, 0.5, at='area', offset=[0, 0.05, 0], scale=[0.5, 0.6, 0.5], scaleTo=[3.4, 1.5, 3.4], sweep=0.3, erodeFrom=0.35, ragged=0.8, tone='rim', alpha=0.9, seed=52, tier=0),
     mesh('crack_radial', 0.02, 2.4, at='area', offset=[0, 0.05, 0], scale=[0.5, 1, 0.5], scaleTo=[2.9, 1, 2.9], sweep=0.25, erodeFrom=0.6, ragged=0.8, tone='body', alpha=0.9, seed=53, tier=0),
-    mesh('seal_block', 0.0, 0.3, at='area', offset=[0, 2.4, 0], scale=[1.5, 1.2, 1.5], scaleTo=[1.9, 0.5, 1.9], sweep=0.0, erodeFrom=0.2, tone='rim', alpha=0.9, seed=54, keepUp=True,
+    mesh('seal_block', 0.0, 0.3, at='area', offset=[0, 2.4, 0], scale=[1.0, 0.8, 1.0], scaleTo=[1.4, 0.4, 1.4], sweep=0.0, erodeFrom=0.2, tone='body', alpha=0.9, seed=54, keepUp=True,
          move={'to': 'area', 'offset': [0, 0.1, 0], 'ease': 'in'}, tier=0),
     mesh('burst', 0.0, 0.11, at='area', offset=[0, 1.1, 0], scale=2.2, billboard=True, sweep=0.0, tone='rim', alpha=0.75, cross=True, tier=0),
     parts('shard', 0.0, 24, 5.5, 0.9, 0.7, 0.14, at='area', offset=[0, 0.4, 0], tone='body', grav=9, tier=1),
@@ -136,7 +134,6 @@ write('suy_toi_hit', 'the', [
 ])
 
 write('suy_toi_miss', 'the', [
-    mesh('seal_block', 0.0, 0.5, at='area', offset=[0, 2.4, 0], scale=[1.5, 1.2, 1.5], scaleTo=[1.0, 1.6, 1.0], sweep=0.0, erodeFrom=0.1, tone='core', alpha=0.7, seed=56, keepUp=True, tier=0),
     mesh('flip', 0.0, 0.6, at='area', offset=[0, 2.2, 0], scale=2.4, billboard=True, sweep=0.0, tone='core', alpha=0.6, flip='ink_smoke', tier=1),
     parts('dust', 0.0, 16, 1.6, 1.0, 0.9, 0.28, at='area', offset=[0, 2.2, 0], tone='core', grav=1.5, tier=1),
 ])

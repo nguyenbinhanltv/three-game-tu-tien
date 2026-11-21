@@ -48,10 +48,12 @@ export interface SuyFxEnv {
   /** sid của người xem: hiệu ứng ải của chính mình không hạ bậc chất lượng, có rung/chớp theo cài đặt. */
   mySid?(): string;
   /** Lớp phát sáng (cột linh quang, lửa Thọ Đăng) và cảnh để gắn đèn; thiếu (test) thì bỏ qua các lớp này. */
-  vfx?: Pick<Vfx, 'suyBeacon' | 'suyLamps'>;
+  vfx?: Pick<Vfx, 'suyBeacon' | 'suyLamps'> & { boltGlowMul?: number };
   scene?: THREE.Scene;
 }
 
+/** Cỡ quầng cầu chạm đất của tia sét khi đang ở trong ải (1 = như các kiếp khác). */
+const BOLT_GLOW = 0.35;
 const WHITE = new THREE.Color(0xffffff);
 const palOf = (stage: string | undefined): string => (stage && stage.startsWith('suy_') ? stage : 'suy_linh');
 const hexOf = (pal: string, tone: 'body' | 'rim' | 'accent'): number => FX_PALETTE[pal]?.[tone] ?? 0xffffff;
@@ -221,6 +223,8 @@ export class SuyFx {
     this.key.position.set(x, this.env.ground(x, z) + KEY.h, z);
     this.key.intensity = KEY.intensity;
     this.rim.intensity = RIM.intensity;
+    // Trong ải: thu nhỏ quầng cầu của thiên lôi thường (xem `Vfx.boltGlowMul`).
+    if (this.env.vfx) this.env.vfx.boltGlowMul = BOLT_GLOW;
   }
 
   /** Tắt đèn khu ải của `src` (giữ đèn trong cảnh, xem `light`). */
@@ -229,6 +233,7 @@ export class SuyFx {
     this.litFor = '';
     if (this.key) this.key.intensity = 0;
     if (this.rim) this.rim.intensity = 0;
+    if (this.env.vfx) this.env.vfx.boltGlowMul = 1;
   }
 
   /** Dọn mọi thứ của `src` (kiếp mới bắt đầu, ải khép, rời room). */
@@ -332,9 +337,9 @@ export class SuyFx {
             h: 16,
             r,
             dur: m.d ?? 2,
-            opacity: 0.6,
+            opacity: 0.4,
             pulse: 12,
-            thick: 1.6,
+            thick: 0.7,
             crackle: true,
           });
         } else this.at(pg === 2 ? 'suy_toi_hit' : 'suy_toi_miss', 'suy_the', x, z, r, { src });
