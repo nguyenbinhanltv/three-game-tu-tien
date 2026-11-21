@@ -58,6 +58,7 @@ import vs2 from './scenarios/vs2';
 import realmaura from './scenarios/realmaura';
 import fxlib from './scenarios/fxlib';
 import xichkhe from './scenarios/xichkhe';
+import n7 from './scenarios/n7';
 import dungeonart from './scenarios/dungeonart';
 import collscan from './scenarios/collscan';
 
@@ -104,6 +105,7 @@ const SCENARIOS: Scenario[] = [
   chrv3anim,
   chrv3feet,
   v3sets,
+  n7,
   v3views,
   rigstretch,
   skinv3,
