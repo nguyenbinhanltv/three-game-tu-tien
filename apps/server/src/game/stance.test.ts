@@ -154,20 +154,24 @@ describe('hiệu quả trong tư thế', () => {
     expect(m.s.mf & MF_STUN).toBe(MF_STUN);
   });
   it('Đan Lô: hồi tích Đan hỏa nhanh gấp rưỡi; Lô Hỏa Hồi Nguyên hồi theo thời gian', () => {
-    const run = (stance: boolean) => {
-      const { sim, priv, p, use } = setup('thanh_moc_dan_kinh');
-      if (stance) use('skl_dan_lo');
-      p.char.hp = Math.round(p.char.mhp * 0.3);
-      p.cds.clear();
-      use('skl_hoi_xuan_quyet');
-      sim.now += 1100;
-      priv.tickMethods();
-      return priv.combat.liveRes(p);
+    // Đo trên CÙNG một nhân vật (linh căn ngẫu nhiên làm chỉ số mỗi nhân vật lệch nhau): một nhịp hồi ngoài và trong tư thế.
+    const one = setup('thanh_moc_dan_kinh');
+    const hots = () => (one.priv.combat as unknown as { hots: unknown[] }).hots;
+    const tickGain = (stance: boolean) => {
+      hots().length = 0;
+      one.p.mth.stance = stance ? { id: 'skl_dan_lo', until: one.sim.now + 60_000 } : null;
+      one.p.mth.res = 0;
+      one.p.char.hp = Math.round(one.p.char.mhp * 0.3);
+      one.p.cds.clear();
+      one.use('skl_hoi_xuan_quyet');
+      one.sim.now += 1100;
+      one.priv.tickMethods();
+      return one.priv.combat.liveRes(one.p);
     };
-    const plain = run(false);
-    const boosted = run(true);
+    const plain = tickGain(false);
+    const boosted = tickGain(true);
     expect(plain).toBeGreaterThan(0);
-    expect(boosted / plain).toBeCloseTo(1.5, 1);
+    expect(boosted / plain).toBeCloseTo(1.5, 5);
     const { sim, priv, p, use } = setup('thanh_moc_dan_kinh');
     use('skl_dan_lo');
     p.char.hp = 1;
