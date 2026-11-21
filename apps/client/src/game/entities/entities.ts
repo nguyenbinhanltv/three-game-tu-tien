@@ -112,6 +112,15 @@ const _sphere = new THREE.Sphere();
  */
 const LOD0_MAX = 12;
 /**
+ * Suất LOD1 của nhân vật v3 (N-7), tính theo tam giác LOD1 (`lod1Cost`: mỗi 12k tam giác một suất; model bậc cao ~24k = 2, model cơ bản
+ * 12k = 1): chỉ các model gần camera nhất trong khung nhìn vừa `LOD1_SLOTS` suất được LOD0/LOD1, còn lại LOD2 (~5–8k tam giác).
+ * Model không khai `lod1Cost` (v1, quái, NPC) không tính. 50 người mặc đủ bộ: ~0,94M → ~0,6M tam giác nhân vật.
+ */
+const LOD1_SLOTS = 12;
+/** Đông người: từ `CROWD_VIEW` nhân vật v3 (model khai `lod1Cost`) trong khung nhìn thì suất LOD0 giảm còn `LOD0_CROWD` (LOD0 v3 bậc cao ~99k tam giác mỗi người). Quái, NPC, model v1 không tính. */
+const CROWD_VIEW = 24;
+const LOD0_CROWD = 6;
+/**
  * Quái chỉ dựng model trong 100 m quanh mình (xóa khi quá 125 m, chừa vùng đệm để không dựng/xóa liên tục ở rìa).
  * Bãi quái dày (M-1: ~1 800 quái/km² vùng săn) nên bán kính 240 m cũ dựng cả trăm model xương không ai thấy qua sương.
  */
@@ -189,7 +198,7 @@ export class EntityManager {
   }
 
   /** Ngoại hình của mình: bóng tâm ma dựng theo đây (chỉ người độ mới thấy gần, và là bóng của chính mình). */
-  private localLook: PlayerLook = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
+  private localLook: PlayerLook = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye, self: true };
   /** Dựng model NPC (có xương theo id dữ liệu hoặc khối dự phòng). */
   private npcSkins = new NpcSkins();
 
@@ -387,7 +396,7 @@ export class EntityManager {
         this.group.add(v.model.root);
       }
       v.s = s;
-      const look = lookOf(s);
+      const look = lookOf(s, isLocal);
       if (isLocal) this.localLook = look;
       const lookChanged =
         look.g !== v.look.g ||
@@ -806,7 +815,12 @@ export class EntityManager {
     // Mình trước, rồi trong khung nhìn theo gần → xa.
     list.sort((a, b) => (a.local !== b.local ? (a.local ? -1 : 1) : a.inView !== b.inView ? (a.inView ? -1 : 1) : a.d - b.d));
     let lod0 = 0;
+    let lod1 = 0;
     let labels = 0;
+    let seen = 0;
+    // Chỉ đếm nhân vật v3 (model khai `lod1Cost`): bầy quái, NPC, người chơi v1 không làm giảm suất LOD0.
+    for (const e of list) if (e.inView && (e.model as { lod1Cost?: number }).lod1Cost !== undefined) seen++;
+    const lod0Max = seen >= CROWD_VIEW ? LOD0_CROWD : LOD0_MAX;
     const boxes = this.labelBoxes;
     boxes.length = 0;
     const pc = cam as THREE.PerspectiveCamera | null;
@@ -822,11 +836,17 @@ export class EntityManager {
       }
       if (!e.model.setView) continue;
       // Người mặc áo bộ mô-đun nhiều draw call hơn ở LOD0 (thân, áo, kiếm, vỏ, bóng): tính hai suất để cả đám đông ≤ 300 draw.
-      const m = e.model as { dressed?: boolean; lod0Cost?: number };
+      const m = e.model as { dressed?: boolean; lod0Cost?: number; lod1Cost?: number };
       const cost = m.lod0Cost !== undefined && m.lod0Cost > 2 ? m.lod0Cost : m.dressed ? 2 : 1;
-      const allow = e.local || (e.inView && lod0 + cost <= LOD0_MAX);
+      const allow = e.local || (e.inView && lod0 + cost <= lod0Max);
       if (allow) lod0 += cost;
-      e.model.setView({ dist: e.local ? 0 : e.d, inView: e.local || e.inView, allowLod0: allow, self: e.local });
+      // Hết suất LOD1 (xếp gần → xa nên là các model xa hơn) thì LOD2; nhân vật mình không tính.
+      let minLod = 0;
+      if (m.lod1Cost !== undefined && !e.local && e.inView) {
+        if (lod1 + m.lod1Cost > LOD1_SLOTS) minLod = 2;
+        else lod1 += m.lod1Cost;
+      }
+      e.model.setView({ dist: e.local ? 0 : e.d, inView: e.local || e.inView, allowLod0: allow, self: e.local, minLod });
     }
   }
 

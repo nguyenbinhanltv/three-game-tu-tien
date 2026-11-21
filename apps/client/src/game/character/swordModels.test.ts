@@ -78,7 +78,7 @@ describe('model kiếm theo trang bị', () => {
 
   for (const g of ['m', 'f'] as const) {
     it(`nhân vật ${g}: 5 kiếm đều thay kiếm cũ, rút/tra kiếm đưa kiếm mới giữa lưng và tay phải`, async () => {
-      const s = new PlayerSkins(cache());
+      const s = new PlayerSkins(cache(), undefined, false);
       s.preload();
       const dye = APPEARANCE.defaultDye;
       const hand = (m: SkinnedPlayer) => {
@@ -127,7 +127,7 @@ describe('model kiếm theo trang bị', () => {
   }
 
   it('kiếm cũ đã bị cắt khỏi lưới (không còn hai thanh kiếm)', async () => {
-    const s = new PlayerSkins(cache());
+    const s = new PlayerSkins(cache(), undefined, false);
     s.preload();
     const look = { g: 'm', dye: APPEARANCE.defaultDye };
     await ready(s, look);

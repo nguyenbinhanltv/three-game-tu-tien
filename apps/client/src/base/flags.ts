@@ -28,8 +28,8 @@ interface Flags {
   mood: 'dawn' | 'day' | 'dusk' | 'night' | null;
   /** `?fxq=low|medium|high` ép chất lượng hiệu ứng (chuỗi thô, nơi dùng kiểm lại). */
   fxq: string | null;
-  /** `?chr=v2|v3` nhân vật nền tùy chọn; mặc định v1. */
-  chr: 'v2' | 'v3' | null;
+  /** `?chr=v1|v2` quay về nhân vật cũ (N-7: mặc định là v3 Mannequin; `v1` giữ một bản làm dự phòng, `v3` = mặc định). */
+  chr: 'v1' | 'v2' | 'v3' | null;
   /** `?hair=b` ép kiểu tóc v2. */
   hair: string | null;
   /** `?v3model=a|b` chọn bản Lạc Kiếm v3/v3b (mặc định v3b2; so ảnh). */
@@ -99,7 +99,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   aura: { scope: 'diag', doc: '=0: tắt hào quang cảnh giới trên nhân vật' },
   mood: { scope: 'diag', doc: 'dawn|day|dusk|night' },
   fxq: { scope: 'diag', doc: 'low|medium|high' },
-  chr: { scope: 'test', doc: 'v2|v3 nhân vật nền tùy chọn' },
+  chr: { scope: 'user', doc: '=v1 quay về nhân vật cũ (dự phòng một bản sau N-7), =v2 nhân vật nền v2 (thử); mặc định v3' },
   hair: { scope: 'test', doc: 'ép kiểu tóc' },
   v3model: { scope: 'test', doc: '=a bản Lạc Kiếm v3 cũ' },
   jog: { scope: 'test', doc: 'tốc độ clip chạy v3' },
@@ -166,7 +166,7 @@ export function readFlags(search: string): Flags {
     aura: !off(q.get('aura')),
     mood: mood === 'dawn' || mood === 'day' || mood === 'dusk' || mood === 'night' ? mood : null,
     fxq: q.get('fxq'),
-    chr: chr === 'v2' || chr === 'v3' ? chr : null,
+    chr: chr === 'v1' || chr === 'v2' || chr === 'v3' ? chr : null,
     hair: q.get('hair'),
     v3Model: q.get('v3model'),
     jog: Number(q.get('jog')) || 0,
