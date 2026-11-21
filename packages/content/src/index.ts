@@ -285,7 +285,6 @@ import equipTemplatesJson from '../data/equipment/templates.json';
 import equipAffixesJson from '../data/equipment/affixes.json';
 import equipSetsJson from '../data/equipment/sets.json';
 import outfitsJson from '../data/equipment/outfits.json';
-import outfitCoversJson from '../data/equipment/outfit_covers.json';
 import equipSetItemsJson from '../data/equipment/setItems.json';
 import forgeJson from '../data/equipment/forge.json';
 
@@ -695,13 +694,8 @@ export const SET = index(SETS);
 
 /** Hành trình theo chương (U2-4): màn "Bản đồ chương". */
 export const CHAPTERS = chaptersJson.chapters as unknown as ChapterDef[];
-/** Áo mặc thật theo bộ trang bị: id bộ → mảnh asset (`<mảnh>_nam|nu`), xem docs/sets-retarget. */
+/** Bộ trang bị có trang phục riêng: id bộ → tên trang phục. Từ N-7 hình là model v3 nguyên khối (`V3_OWN_SETS` ở client); áo mô-đun `<mảnh>_nam|nu` đã gỡ. */
 export const OUTFITS = Object.fromEntries(Object.entries(outfitsJson).filter(([k]) => k !== '$comment')) as Record<string, string[]>;
-/** CHR-PROTO (`?chr=v2`): vùng thân nền bị che theo mảnh áo (docs/chr-v2). */
-export const OUTFIT_COVERS = Object.fromEntries(Object.entries(outfitCoversJson).filter(([k]) => k !== '$comment')) as Record<
-  string,
-  string[]
->;
 export const FORGE = forgeJson as ForgeRecipe[];
 export const FORGE_BY_ID = index(FORGE);
 

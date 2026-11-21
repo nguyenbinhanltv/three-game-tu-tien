@@ -10,7 +10,6 @@ import { runScenario, type Scenario } from './lib/scenario';
 import asset from './scenarios/asset';
 import calli from './scenarios/calli';
 import calli3d from './scenarios/calli3d';
-import chrv2 from './scenarios/chrv2';
 import calliscreen from './scenarios/calliscreen';
 import calliset from './scenarios/calliset';
 import clone from './scenarios/clone';
@@ -27,12 +26,10 @@ import vanhai from './scenarios/vanhai';
 import quality from './scenarios/quality';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
-import outfit from './scenarios/outfit';
 import points from './scenarios/points';
 import propstc from './scenarios/propstc';
 import quest4 from './scenarios/quest4';
 import quest5 from './scenarios/quest5';
-import skin from './scenarios/skin';
 import thiennhan from './scenarios/thiennhan';
 import ngusuy from './scenarios/ngusuy';
 import huyenkiep from './scenarios/huyenkiep';
@@ -47,6 +44,7 @@ import v3sets from './scenarios/v3sets';
 import v3views from './scenarios/v3views';
 import thetu from './scenarios/thetu';
 import rigstretch from './scenarios/rigstretch';
+import neck from './scenarios/neck';
 import skinv3 from './scenarios/skinv3';
 import hoatruc from './scenarios/hoatruc';
 import thiengiai from './scenarios/thiengiai';
@@ -86,9 +84,6 @@ const SCENARIOS: Scenario[] = [
   tn1,
   vs2,
   hontu,
-  outfit,
-  skin,
-  chrv2,
   ui,
   minimap,
   chat,
@@ -116,6 +111,7 @@ const SCENARIOS: Scenario[] = [
   v3views,
   thetu,
   rigstretch,
+  neck,
   skinv3,
   divuc,
   flyover,

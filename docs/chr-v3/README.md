@@ -179,7 +179,14 @@ Trần texture chốt lúc nạp model: đổi preset có tác dụng từ lần
 
 Đọc số: draw call và texture của v3 tốt hơn v1; tam giác hơn ~0,15M; ở Vừa mọi chỉ số trong ngân sách trừ CPU p95 (v1 cũng vượt). Ở Cao tam giác và texture vượt ngân sách chung ở cả v1 lẫn v3 (cảnh + bóng đổ + texture mặt đất 171 MB), không phải do nhân vật.
 
-**Còn nợ**: CPU khung của v3 cao hơn v1 khoảng 2 ms khi có 50 người trong khung nhìn (phần `matrix` 0,5 → 1,3 ms, `ents` 0,8 → 1,0 ms, `render` +1 ms): bộ xương Mannequin 119–127 xương (v1: 65), cây xương nằm trong cảnh nên three tính ma trận thế giới mỗi khung và `skeleton.update()` chạy cho từng lưới. v1 tránh bằng `detachRig` + `skipUnchangedSkeletons` (`skinned.ts`); chuyển cách đó sang v3 cần đổi cách gắn kiếm, IK chân và lò xo (đang bám xương trong cảnh) nên để việc riêng.
+**CPU khi đông người: đỗ rig ở LOD2** (`MannequinCharacter.setParked`, PR gỡ code cũ). Số ở bảng trên đo trước bước này: v3 hơn v1 khoảng 2 ms mỗi khung vì bộ xương 119–127 xương (v1: 65) nằm trong cảnh, three duyệt và tính ma trận thế giới mỗi khung, `skeleton.update()` chạy cho từng lưới. Nay ở LOD2 (phần lớn đám đông) cả cây `rig` rời khỏi cảnh, lưới LOD2 gắn thẳng vào nhân vật ở `DetachedBindMode`, ma trận xương chỉ tính lại khi mixer chạy (8 Hz) và `skeleton.update()` bỏ qua khi tư thế chưa đổi (cùng ý với `detachRig` + `skipUnchangedSkeletons` của v1). LOD0/LOD1 giữ nguyên vì kiếm, IK chân, lò xo bám xương trong cảnh. Đo xen kẽ bật/tắt (`CROWD_QUERY='&v3off=park'`), 50 người, WebGPU Vừa, hai vòng, máy đang bận:
+
+| | CPU p50 | `matrix` | `render` | `ents` |
+| --- | --- | --- | --- | --- |
+| Tắt (`?v3off=park`) | 12,2 / 11,2 ms | 1,91 / 1,79 ms | 10,5 / 9,6 ms | 1,66 / 1,41 ms |
+| Bật (mặc định) | 8,7 / 7,1 ms | 0,63 / 0,53 ms | 8,1 / 6,3 ms | 1,64 / 1,31 ms |
+
+Tức giảm khoảng 3,5–4 ms p50 trong cùng điều kiện; `matrix` về ngang v1 (0,54 ms). CPU p95 ở Cao (36 ms ở lần đo trước) chủ yếu là khung khựng lẻ (biên dịch pipeline, GC, máy bận) chứ không phải chi phí đều mỗi khung; chưa đo lại riêng. Trong lúc đỗ, xương ở hệ tọa độ model nên `bladePoints` trả false (vệt kiếm của người ở LOD2 không vẽ). Test: `mannequinPark.test.ts` (vị trí đỉnh trước/sau khi đỗ trùng nhau trên model thật).
 
 ### Nhuộm áo trên v3 (`game/character/v3Dye.ts`)
 Model v3 không có texture mặt nạ vải, nên nhuộm bằng hai lớp mặt nạ trong shader:
@@ -194,3 +201,9 @@ Giới hạn: chỉ kênh 1 (vải chính) của `dye3`; kênh 2 (viền) và k�
 - Kênh viền (kênh 2) và kênh 3 của nhuộm Tủ ngoại trang.
 - Phụ kiện thủ tục theo từng món (`acc`) và vỏ kiếm theo bộ: model v3 nguyên khối đã có sẵn.
 - Bộ chưa có model riêng dùng model cùng nhánh (`V3_BRANCH_FALLBACK`).
+
+## Sửa cổ Tinh Khuyết nam / Thần Tàng nữ (21/11)
+
+Triệu chứng: mảng tím (Tinh Khuyết) / xanh đen (Thần Tàng) phẳng, kéo dài dưới cằm, cổ trông dài. **Nguyên nhân**: ống "thân dưới áo" của C2 (`chr_v3_c2.py`, `_tube`) chạy tới hết xương `neck_01` với ell 1,25 và bán kính 0,7× thân, nên lòi ra khỏi cổ thật; UV của nó trỏ vào texel nền áo (`underColor`). Không phải trọng số, ARM_FIT hay mặt nạ tách lưới.
+Sửa: khóa `c2.torsoTop: "spine"` (ống dừng ở giữa `spine_03`) trong `v3sets/tinh_khuyet.json`, `v3sets/than_tang.json`. Mặc định giữ `neck`: các bộ khác chưa đổi. Chỉ đổi phần hình học ẩn trong áo; vải, UV, texture gốc không đổi.
+Đo (rigstretch, % cạnh sai): Tinh Khuyết nam Idle 0,64%, Jog −68,7%, chém −67,8%, p99 tối đa 2,64 (bản trước sửa cùng số; Jog/chém của nam vốn ~68%, chưa đạt 70%); Thần Tàng nữ Idle 0,29%, Jog −78,6%, chém −77,2%, p99 2,46. Ảnh: `pnpm shots neck --out <dir>` (cận cổ + 4 góc ở đứng/chạy/chém).
