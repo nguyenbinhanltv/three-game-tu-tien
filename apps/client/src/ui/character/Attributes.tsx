@@ -6,7 +6,14 @@ import { useUI } from '../store';
 import { statText } from './Overview';
 import { elemRows, STAT_GROUPS, statRows, type SourceId, type StatRow } from './stats';
 
-const SRC_TONE: Record<SourceId, 'dim' | 'good' | 'set'> = { base: 'dim', gear: 'good', set: 'set', root: 'good', other: 'good' };
+const SRC_TONE: Record<SourceId, 'dim' | 'good' | 'set'> = {
+  base: 'dim',
+  gear: 'good',
+  set: 'set',
+  root: 'good',
+  dao: 'good',
+  other: 'good',
+};
 
 function sourceText(r: StatRow, src: SourceId, v: number): string {
   const sign = v > 0 && src !== 'base' ? '+' : '';
@@ -37,8 +44,8 @@ export function Attributes() {
   const char = useUI((s) => s.char);
   const equip = useUI((s) => s.equip);
   if (!char) return null;
-  const rows = statRows(char.level, equip, char.root, char);
-  const elems = elemRows(char.level, equip, char.root);
+  const rows = statRows(char.level, equip, char.root, char, char.dao);
+  const elems = elemRows(char.level, equip, char.root, char.dao);
   return (
     <div className="char-attrs">
       {STAT_GROUPS.map((g) => (

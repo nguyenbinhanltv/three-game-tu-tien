@@ -18,7 +18,7 @@ export function Character() {
   const equip = useUI((s) => s.equip);
   const [tab, setTab] = useState<TabId>('overview');
   if (!char) return null;
-  const power = charPower(char.level, equip, char.root, char);
+  const power = charPower(char.level, equip, char.root, char, char.dao);
   const body = (
     <>
       {tab === 'overview' && <Overview />}

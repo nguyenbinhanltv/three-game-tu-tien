@@ -63,11 +63,11 @@ export function itemUses(id: string): InfoLine[] {
 }
 
 /** Món trong túi tốt hơn món đang mặc: đủ cấp, ô trống hoặc lực chiến tăng. Dùng cho mũi tên xanh trên ô túi (TD-B gọi). */
-export function isUpgrade(level: number, equip: Equipment, item: InvSlot, rootId: string): boolean {
+export function isUpgrade(level: number, equip: Equipment, item: InvSlot, rootId: string, daoId = ''): boolean {
   const def = item ? ITEM.get(item.id) : undefined;
   if (!item || !def || !isEquipSlot(def.kind)) return false;
   if ((def.reqLevel ?? 1) > level) return false;
-  return powerDelta(level, equip, item, def, rootId) > 0;
+  return powerDelta(level, equip, item, def, rootId, daoId) > 0;
 }
 
 /** Chưa đủ cấp để mặc (chữ đỏ). */

@@ -112,6 +112,8 @@ export const C = {
   BOTTLENECK: 'bk',
   /** Đổi linh căn ở NPC: `{ npc, root, r? }`. */
   ROOT: 'root',
+  /** Chọn Đạo (TN-3, từ Vấn Đỉnh, một lần): `{ root }`. */
+  DAO: 'dao',
   /** Tổ đội (P3-9): `PartyCmd`. */
   PARTY: 'pty',
   /** Tỉ thí 1v1 ở võ đài: `DuelCmd`. */
