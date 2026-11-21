@@ -57,8 +57,14 @@ import {
   type ResourceMods,
   stanceActive,
   withStanceRes,
+  jointAllowed,
+  jointKey,
+  markAny,
+  markTakeAny,
+  type JointDef,
 } from '@dtl/shared';
-import { MARK, SKILL } from '@dtl/content';
+import { JOINTS, MARK, SKILL, t } from '@dtl/content';
+import { parties } from '../party';
 import { branchModsOf, gateOf, type Hot, methodOf, passiveOf, resolveFor, resourceOf, type Trail } from '../method';
 import { chainOf, takeChain } from '../skillflow';
 import type { DuelSystem } from '../duel';
@@ -71,6 +77,8 @@ import { LEASH, MARK_ALLY_RANGE, SET_HEAL_RADIUS, TAUNT_BOSS_MUL, visualSeed } f
 import { at } from '@dtl/shared';
 /** Phần GameSim mà hệ chiêu cần. */
 export interface CombatCtx {
+  /** Đối tượng room (khóa tra thành viên tổ đội cùng room, VS-2f). */
+  readonly room: object;
   /** Cộng thanh phá thế của thủ lĩnh (ấn Mất thế, VS-2c). */
   addPosture(m: MonEnt, n: number): void;
   readonly clone: CloneSystem;
@@ -525,6 +533,80 @@ export class CombatSystem {
     return true;
   }
 
+  // ---------- hợp kích tổ đội (VS-2f) ----------
+
+  /** Hồi nội bộ theo cặp: khóa `jointKey` → giờ (ms) dùng lại được. */
+  jointCd = new Map<string, number>();
+
+  /** Cặp (người mở `opener`, người kết thúc `p`) có nổ được hợp kích `j` không; được thì đặt hồi nội bộ. */
+  private jointTake(j: JointDef, opener: PlayerEnt, p: PlayerEnt): boolean {
+    const key = jointKey(j.id, opener.char.id, p.char.id);
+    const ok = jointAllowed({
+      openerId: opener.char.id,
+      finisherId: p.char.id,
+      sameParty: parties.same(opener.char.id, p.char.id),
+      readyAt: this.jointCd.get(key),
+      nowMs: this.c.now,
+    });
+    if (!ok) return false;
+    this.jointCd.set(key, this.c.now + j.cd * 1000);
+    return true;
+  }
+
+  /** Thưởng chung và thông báo cho hai người. */
+  private jointReward(j: JointDef, opener: PlayerEnt, p: PlayerEnt): void {
+    if (j.charge) {
+      this.gainCharge(opener, j.charge);
+      this.gainCharge(p, j.charge);
+    }
+    if (j.res) this.addRes(opener, j.res);
+    const params = { joint: t(`joint.${j.id}.name`), a: opener.char.name, b: p.char.name };
+    this.c.sys(opener, 'sys.joint', params, 'good');
+    this.c.sys(p, 'sys.joint', params, 'good');
+  }
+
+  /**
+   * Chiêu của `p` vừa xả `resSpent` tài nguyên riêng và sắp đánh `mon`: nếu quái mang ấn mở hợp kích do một đồng đội
+   * KHÁC trong tổ đội đặt thì tiêu ấn, trả hệ số nhân sát thương lên con đó (1 = không có hợp kích).
+   */
+  jointHit(p: PlayerEnt, mon: MonEnt, resSpent: number): number {
+    if (!(resSpent > 0) || !mon.marks.length) return 1;
+    for (const j of JOINTS) {
+      if (j.finisher !== 'spend') continue;
+      const mk = markAny(mon.marks, j.mark, this.c.now);
+      const opener = mk ? this.c.players.get(mk.sid) : undefined;
+      if (!opener || !this.jointTake(j, opener, p)) continue;
+      markTakeAny(mon.marks, j.mark, this.c.now);
+      mon.s.mk = packMarks(mon.marks, this.c.now);
+      this.jointReward(j, opener, p);
+      // Ấn bị tiêu trước khi đòn tính sát thương nên đòn kết sẽ mất phần cộng `ampAll` của chính ấn đó: nhân bù lại,
+      // để "mạnh gấp `powerMul`" là so với một đòn thường vào mục tiêu đang mang ấn.
+      return (j.powerMul ?? 1) * (1 + (MARK.get(j.mark)?.ampAll ?? 0));
+    }
+    return 1;
+  }
+
+  /** `p` vừa hạ gục quái hoặc tung chiêu tối thượng: nếu đang mang ấn mở hợp kích của một đồng đội khác thì ấn kết. */
+  jointFinish(p: PlayerEnt): void {
+    if (!p.marks.length) return;
+    for (const j of JOINTS) {
+      if (j.finisher !== 'kill_or_ult') continue;
+      const mk = p.marks.find((m) => m.id === j.mark && this.c.now < m.until && m.sid !== p.sid);
+      const opener = mk ? this.c.players.get(mk.sid) : undefined;
+      if (!mk || !opener || !this.jointTake(j, opener, p)) continue;
+      markTake(p.marks, j.mark, mk.sid, this.c.now);
+      p.s.mk = packMarks(p.marks, this.c.now);
+      if (j.healPct && j.r) {
+        for (const o of parties.matesInRoom(p.char.id, this.c.room)) {
+          if (!this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > j.r) continue;
+          this.healPlayer(o, Math.round(o.char.mhp * j.healPct));
+        }
+      }
+      this.jointReward(j, opener, p);
+      return;
+    }
+  }
+
   // ---------- ấn trên mục tiêu (VS-2c) ----------
 
   /** Định nghĩa ấn `id` nếu `p` đặt/tiêu được: ấn có `method` thì chỉ người đang tu công pháp đó. */
@@ -862,6 +944,8 @@ export class CombatSystem {
             ? { t: skill.fx, src: p.sid, dst: mon.id, sd: visualSeed(), ...extra }
             : { t: skill.fx, src: p.sid, dst: mon.id, ...extra },
         );
+        // VS-2f: hợp kích Phá Thế Trảm (mục tiêu mang Mất thế của đồng đội, chiêu này vừa xả tài nguyên).
+        mul *= this.jointHit(p, mon, resSpent);
         // VS-2c: tiêu ấn của mình trên mục tiêu trước (thưởng theo số tầng), rồi mới đặt ấn mới.
         const took = cm ? this.takeMonMark(p, mon, cm.id) : 0;
         if (cm && took > 0) {
@@ -964,7 +1048,8 @@ export class CombatSystem {
           if (dx * dx + dz * dz > r * r) continue;
           // VS-2c: tiêu ấn của mình trên từng con (Vạn Kiếm: mỗi Kiếm ấn tăng sát thương lên con đó).
           const tookA = cm ? this.takeMonMark(p, o, cm.id) : 0;
-          this.c.hitMonster(p, o, rs.power * mul * (tookA && cm?.perMark ? 1 + cm.perMark * tookA : 1), elemMul, skill.elem);
+          const jm = this.jointHit(p, o, resSpent);
+          this.c.hitMonster(p, o, rs.power * mul * jm * (tookA && cm?.perMark ? 1 + cm.perMark * tookA : 1), elemMul, skill.elem);
           if (o.state === MS_DEAD) continue;
           // Thiết Quyền: con mang Trấn ấn mà chiêu vừa xả đủ Huyết khí thì mất thế.
           if (tookA && cm?.then && resSpent >= cm.then.resCost) this.markMon(p, o, cm.then.mark);
@@ -1023,10 +1108,12 @@ export class CombatSystem {
             inLine(p.move.x, p.move.z, ux, uz, len, def.width, o.s.x, o.s.z, o.def.scale),
         );
         const offs = hitOffsets(skill, rs.hits.length);
+        // VS-2f: hợp kích tính một lần cho mỗi con trong vệt, áp cho mọi đợt của chiêu.
+        const jm = new Map(hit.map((o) => [o, this.jointHit(p, o, resSpent)]));
         rs.hits.forEach((h, i) => {
           const off = offs[i] ?? 0;
           const run = () => {
-            for (const o of hit) if (o.state !== MS_DEAD) this.c.hitMonster(p, o, h * mul, elemMul, skill.elem);
+            for (const o of hit) if (o.state !== MS_DEAD) this.c.hitMonster(p, o, h * mul * (jm.get(o) ?? 1), elemMul, skill.elem);
           };
           if (off <= 0) return run();
           this.later(off, () => {
@@ -1332,6 +1419,8 @@ export class CombatSystem {
       p.mth.lockCharge = false;
       p.mth.charge = 0;
     }
+    // VS-2f: tung chiêu tối thượng khi đang mang Mộc ấn của đồng đội thì ấn kết.
+    if (skill.ult) this.jointFinish(p);
     p.flow.opened.set(skill.id, this.c.now);
     this.c.sendCd(p);
   }
@@ -1449,6 +1538,7 @@ export class CombatSystem {
         m.dirty = true;
       }
       // Tư thế hết hạn (VS-2e): bỏ và báo client trả lại ô chiêu.
+      // (Hồi nội bộ hợp kích dọn ở cuối hàm.)
       if (m.stance && now >= m.stance.until) {
         m.stance = null;
         m.dirty = true;
@@ -1470,5 +1560,7 @@ export class CombatSystem {
         m.reflectMul = 0;
       }
     }
+    // Hồi nội bộ hợp kích đã hết: dọn để bảng không phình (chỉ quét khi đã có nhiều mục).
+    if (this.jointCd.size > 64) for (const [k, at] of this.jointCd) if (now >= at) this.jointCd.delete(k);
   }
 }

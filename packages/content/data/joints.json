@@ -1,0 +1,4 @@
+[
+  { "id": "pha_the_tram", "mark": "mat_the", "finisher": "spend", "powerMul": 1.5, "charge": 20, "cd": 6 },
+  { "id": "moc_an_ket", "mark": "moc_an", "finisher": "kill_or_ult", "healPct": 0.08, "r": 12, "res": 20, "cd": 6 }
+]

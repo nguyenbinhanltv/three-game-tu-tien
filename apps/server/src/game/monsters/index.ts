@@ -117,6 +117,8 @@ export interface MonsterCtx {
   readonly hazards: Hazard[];
   readonly host: SimHost;
   isDead(p: PlayerEnt): boolean;
+  /** Hợp kích (VS-2f): `p` vừa hạ gục quái. */
+  jointFinish(p: PlayerEnt): void;
   /** Tài nguyên riêng (VS-2a): đang đầy không; một nhịp sát thương theo thời gian của `p` vừa nổ. */
   resFull(p: PlayerEnt): boolean;
   resDot(p: PlayerEnt): void;
@@ -418,7 +420,11 @@ export class MonsterSystem {
       const ps = mon.def.posture;
       if (ps && p) this.addPosture(mon, postureGain(ps, dmg, mon.s.mhp, heavy) * (1 + passiveValue(p.char.equip, p.char.meta, 'posture')));
     }
-    if (hp <= 0) this.killMonster(mon);
+    if (hp <= 0) {
+      this.killMonster(mon);
+      // VS-2f: người hạ gục đang mang Mộc ấn của đồng đội thì ấn kết (bóng tâm ma, đệ tử của quái không tính).
+      if (p && !mon.owner && !mon.minionOf) this.c.jointFinish(p);
+    }
   }
 
   /** Kênh mới mở không có boss ngay: boss bắt đầu ở trạng thái chờ hồi sinh. */
