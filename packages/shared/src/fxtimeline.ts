@@ -74,6 +74,8 @@ export const FX_LIB_SHAPES = [
   'pill_orb',
   'lotus_bloom',
   'flame_tongue',
+  // Đan lô (lò luyện đan ba chân, `crystal`, đứng +Y, đáy y = 0).
+  'dan_lo',
 ] as const;
 
 /** Hình vẽ bằng shader `toon` (có lớp bóng sẫm phía sau khi `shadow` không tắt): tính thêm một nhóm draw call khi đếm ngân sách. */

@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import type { FxLibShape } from '@dtl/shared';
 
 /**
- * Thư viện hình mesh VFX (VS-1): 28 hình có KHỐI (độ dày, sống lưng, mảnh vỡ) thay cho các tấm phẳng kite/spike/ripple.
+ * Thư viện hình mesh VFX (VS-1): 29 hình có KHỐI (độ dày, sống lưng, mảnh vỡ) thay cho các tấm phẳng kite/spike/ripple.
  * Dựng thủ tục bằng code (không file GLB: không cần nạp, gộp instance như mọi hình `FxShape`, thử trong test node). UV theo quy ước của shader
  * `render/vfx/stylized.ts`:
  *   - kiểu `toon`: `u` dọc hình (chiều quét/lộ dần), `v` từ mép trong (0) ra mép ngoài (1).
@@ -840,33 +840,34 @@ function lotusBloom(): THREE.BufferGeometry {
   const pos: number[] = [];
   const uvs: number[] = [];
   const idx: number[] = [];
+  // Tiết diện ngang cánh: 5 điểm trên một cung lòng máng (mép cao, sống thấp) để cánh CONG mượt chứ không gãy thành hai mặt phẳng.
+  const CROSS = [-1, -0.55, 0, 0.55, 1];
   const petal = (ang: number, r0: number, len: number, rise: number, width: number) => {
-    const segs = 7;
+    const segs = 12;
     const cs = Math.cos(ang);
     const sn = Math.sin(ang);
     const base = pos.length / 3;
+    const n = CROSS.length;
     for (let i = 0; i <= segs; i++) {
       const s = i / segs;
-      const out = r0 + len * Math.sin(s * 1.25) * 0.98;
-      const up = rise * s * s + 0.02;
-      const w = width * Math.pow(Math.sin(Math.PI * Math.pow(s, 0.7)), 0.85) + 0.004;
-      const dip = 0.07 * Math.sin(Math.PI * s);
-      for (const [side, d, v] of [
-        [-1, 0, 1],
-        [0, dip, 0],
-        [1, 0, 1],
-      ] as const) {
-        pos.push(cs * out - sn * w * side, up - d + 0.05 * Math.abs(side) * Math.sin(Math.PI * s), sn * out + cs * w * side);
-        uvs.push(s, v);
+      const out = r0 + len * Math.sin(s * 1.3) * 0.96;
+      // Cánh võng xuống ở giữa rồi vểnh lên ở đầu (đường cong chữ S nhẹ).
+      const up = rise * (0.55 * s * s + 0.45 * Math.pow(s, 4)) + 0.02;
+      const w = width * Math.pow(Math.sin(Math.PI * Math.pow(s, 0.72)), 0.8) + 0.004;
+      const cup = 0.11 * Math.sin(Math.PI * Math.min(1, s * 1.15));
+      for (const side of CROSS) {
+        pos.push(cs * out - sn * w * side, up + cup * (side * side - 0.45), sn * out + cs * w * side);
+        uvs.push(s, Math.abs(side));
       }
       if (i < segs) {
-        const q = base + i * 3;
-        idx.push(q, q + 1, q + 3, q + 1, q + 4, q + 3, q + 1, q + 2, q + 4, q + 2, q + 5, q + 4);
+        const q = base + i * n;
+        for (let k = 0; k < n - 1; k++) idx.push(q + k, q + k + 1, q + n + k, q + k + 1, q + n + k + 1, q + n + k);
       }
     }
   };
-  for (let i = 0; i < 8; i++) petal((i / 8) * Math.PI * 2, 0.14, 0.9, 0.38, 0.22);
-  for (let i = 0; i < 5; i++) petal((i / 5) * Math.PI * 2 + 0.3, 0.06, 0.5, 0.85, 0.16);
+  for (let i = 0; i < 8; i++) petal((i / 8) * Math.PI * 2, 0.14, 0.9, 0.4, 0.23);
+  // Vòng trong thấp hơn bản đầu (0,62 thay 0,85): không dựng thành búp che người/quái đứng ở tâm.
+  for (let i = 0; i < 5; i++) petal((i / 5) * Math.PI * 2 + 0.3, 0.06, 0.52, 0.62, 0.17);
   return build(pos, uvs, idx);
 }
 
@@ -904,6 +905,47 @@ function flameTongue(): THREE.BufferGeometry {
   return build(pos, uvs, idx);
 }
 
+/**
+ * Đan lô (kiểu `crystal`): lò luyện đan ba chân, thân bầu mười mặt, miệng loe, nắp vồng có núm, hai quai. Đứng +Y, đáy chân ở y = 0, cao ~1,45.
+ * `u` 0 → 1 ngang mỗi mặt nên các cạnh dọc thân lò có gân sáng (đường gân đúc); `v` theo độ cao (mọc từ đất lên bằng `sweep`).
+ */
+function danLo(): THREE.BufferGeometry {
+  const f = new Faces();
+  const H = 1.45;
+  const v = (y: number) => Math.min(1, Math.max(0, y / H));
+  const prof: [number, number][] = [
+    [0.3, 0.28],
+    [0.5, 0.44],
+    [0.56, 0.7],
+    [0.47, 0.94],
+    [0.38, 1.0],
+    [0.45, 1.06],
+    [0.4, 1.09],
+    [0.3, 1.2],
+    [0.1, 1.29],
+    [0.13, 1.33],
+    [0.14, 1.4],
+    [0.02, H],
+  ];
+  for (let i = 0; i < prof.length - 1; i++) f.frustum(10, prof[i]![0], prof[i]![1], prof[i + 1]![0], prof[i + 1]![1], v);
+  f.o = [0, 0.6, 0];
+  f.cap(10, 0.3, 0.28, v(0.28));
+  for (let k = 0; k < 3; k++) {
+    const a = (k / 3) * Math.PI * 2 + 0.5;
+    f.beam(
+      new THREE.Vector3(Math.cos(a) * 0.36, 0.36, Math.sin(a) * 0.36),
+      new THREE.Vector3(Math.cos(a) * 0.46, 0, Math.sin(a) * 0.46),
+      0.06,
+      v,
+    );
+  }
+  for (const s of [-1, 1]) {
+    f.beam(new THREE.Vector3(s * 0.5, 0.84, 0), new THREE.Vector3(s * 0.68, 0.98, 0), 0.04, v);
+    f.beam(new THREE.Vector3(s * 0.68, 0.98, 0), new THREE.Vector3(s * 0.5, 1.1, 0), 0.04, v);
+  }
+  return f.done();
+}
+
 const BUILDERS: Record<FxLibShape, () => THREE.BufferGeometry> = {
   slash_thick: slashThick,
   slash_thin: slashThin,
@@ -933,6 +975,7 @@ const BUILDERS: Record<FxLibShape, () => THREE.BufferGeometry> = {
   pill_orb: pillOrb,
   lotus_bloom: lotusBloom,
   flame_tongue: flameTongue,
+  dan_lo: danLo,
 };
 
 const cache = new Map<FxLibShape, THREE.BufferGeometry>();
