@@ -1159,6 +1159,8 @@ export class CombatSystem {
         if (st.reduce) p.mth.setGuard(this.c.now, st.reduce, st.dur);
         p.mth.dirty = true;
         this.c.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, d: st.dur, ...tag });
+        // Cổ Thần Hóa Hình (TN-5): cảnh biến hình riêng (timeline `fx_co_hoa_hinh`, loại `hoahinh`), chồng lên fx mượn của tư thế.
+        if (skill.id === HOA_HINH_SKILL) this.c.fx({ t: 'hoahinh', src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, d: st.dur, ...tag });
         break;
       }
       case 'summon': {

@@ -214,6 +214,11 @@ import fx_skl_hoanh_dao from '../data/fx/skl_hoanh_dao.json';
 import fx_skl_tam_dao from '../data/fx/skl_tam_dao.json';
 import fx_skl_doan_luu from '../data/fx/skl_doan_luu.json';
 import fx_skl_liet_dia_tram from '../data/fx/skl_liet_dia_tram.json';
+import fx_skl_thai_co_quyen from '../data/fx/skl_thai_co_quyen.json';
+import fx_skl_tinh_bao from '../data/fx/skl_tinh_bao.json';
+import fx_skl_huyet_cu_ho from '../data/fx/skl_huyet_cu_ho.json';
+import fx_skl_co_than_nhat_kich from '../data/fx/skl_co_than_nhat_kich.json';
+import fx_fx_co_hoa_hinh from '../data/fx/fx_co_hoa_hinh.json';
 import fx_skl_kim_cuong_bat_hoai from '../data/fx/skl_kim_cuong_bat_hoai.json';
 import fx_skl_linh_khi_ho_the from '../data/fx/skl_linh_khi_ho_the.json';
 import fx_skl_loi_dinh_nhat_kiem from '../data/fx/skl_loi_dinh_nhat_kiem.json';
@@ -567,6 +572,11 @@ export const FX_TIMELINES = [
   fx_skl_tam_dao,
   fx_skl_doan_luu,
   fx_skl_liet_dia_tram,
+  fx_skl_thai_co_quyen,
+  fx_skl_tinh_bao,
+  fx_skl_huyet_cu_ho,
+  fx_skl_co_than_nhat_kich,
+  fx_fx_co_hoa_hinh,
   fx_skl_kim_cuong_bat_hoai,
   fx_skl_linh_khi_ho_the,
   fx_skl_loi_dinh_nhat_kiem,

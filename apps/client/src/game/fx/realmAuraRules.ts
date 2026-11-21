@@ -1,7 +1,16 @@
 // Hào quang cảnh giới trên nhân vật (RFX-1): hàm thuần quyết định hiện gì, bao nhiêu, mờ bao nhiêu.
 // Chỉ là lớp hình theo `lv` server đã đồng bộ (`PState.lv`) và công pháp `mt`; không đọc/ghi luật chơi.
 import { pathOf } from '@dtl/content';
-import { ANH_BIEN_LEVEL, HOA_THAN_LEVEL, KET_DAN_LEVEL, NGUYEN_ANH_LEVEL, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
+import {
+  ANH_BIEN_LEVEL,
+  COTHAN_METHOD,
+  HOA_THAN_LEVEL,
+  KET_DAN_LEVEL,
+  NGUYEN_ANH_LEVEL,
+  PF_DEAD,
+  PF_FLYING,
+  PF_MEDITATING,
+} from '@dtl/shared';
 import type { SkillDef } from '@dtl/shared';
 
 /** 0 = chưa có; 1 Kết Đan; 2 Nguyên Anh; 3 Hóa Thần; 4 Ảnh Biến (đỉnh). Các bậc cộng dồn. */
@@ -21,6 +30,16 @@ export function auraStage(lv: number): AuraStage {
 export function daoOf(mt: string | undefined): AuraDao {
   // VS-3: tra hướng tu của công pháp (`paths.json` → `dao`), không còn regex trên id.
   return pathOf(mt)?.dao ?? 'kiem';
+}
+
+/**
+ * Cổ Thần (TN-5): hào quang cảnh giới quá rối trên thân đã nặng giáp (nhiều dải màu, cầu sáng, phân thân), và tím phủ thân lúc hóa hình làm
+ * nhân vật nhạt như bóng ma. Quy ước: người tu Cổ Thần chỉ giữ MỘT lớp nhẹ (mode tối đa `min`), và ẩn hẳn hào quang khi đang hóa hình
+ * (cảnh biến hình do timeline `fx_co_hoa_hinh` lo, nhân vật giữ nguyên màu gốc đậm).
+ */
+export function cothanAura(mt: string | undefined, giant: number | undefined, mode: AuraMode): { mode: AuraMode; hidden: boolean } {
+  if (mt !== COTHAN_METHOD) return { mode, hidden: false };
+  return { mode: mode === 'off' ? 'off' : 'min', hidden: (giant ?? 0) > 0.02 };
 }
 
 /** Số phi kiếm xếp vòng quanh lưng: đủ 9 thanh đều từ Nguyên Anh (hạ theo preset bằng `orbitScale`). */
