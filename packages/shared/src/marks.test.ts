@@ -30,7 +30,8 @@ const HON_AN: MarkDef = {
   dot: { per: 0.12, leech: 0.2 },
   color: 'b9a8ff',
 };
-const ALL = [KIEM_AN, TRUY_HON, TRAN_AN, MAT_THE, MOC_AN, HON_AN];
+const DAO_NGAN: MarkDef = { id: 'dao_ngan', on: 'mon', max: 3, dur: 8, method: 'liet_nhan_dao_kinh', color: 'd9482f' };
+const ALL = [KIEM_AN, TRUY_HON, TRAN_AN, MAT_THE, MOC_AN, HON_AN, DAO_NGAN];
 const DEFS = new Map(ALL.map((d) => [d.id as string, d]));
 
 describe('ấn trên mục tiêu (VS-2c)', () => {
