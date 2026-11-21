@@ -191,7 +191,7 @@ describe('Đan hỏa (Thanh Mộc Đan Kinh)', () => {
     expect(p.mth.res).toBeGreaterThan(38);
     expect(p.mth.res).toBeLessThan(46);
   });
-  it('đủ 40 Đan hỏa thì Hồi Nguyên Thuật xả ra và hồi gấp rưỡi; thiếu thì hồi thường, không trừ', () => {
+  it('đủ 40 Đan hỏa thì Hồi Nguyên Thuật xả ra và hồi thêm 10%; thiếu thì hồi thường, không trừ', () => {
     const { sim, join, fresh } = setup();
     const p = join('a', 'thanh_moc_dan_kinh');
     const heal = (res: number) => {
@@ -206,7 +206,7 @@ describe('Đan hỏa (Thanh Mộc Đan Kinh)', () => {
     // Không trừ 39 điểm; còn được cộng phần tích từ lượng hồi.
     expect(p.mth.res).toBeGreaterThan(39);
     const big = heal(40);
-    expect(big / plain).toBeCloseTo(1.5, 1);
+    expect(big / plain).toBeCloseTo(1.1, 1);
   });
   it('xả khi Đan hỏa đang rụng dần: còn lại đúng bằng trước trừ 40, không rụng hai lần', () => {
     const { sim, join, fresh, live } = setup();
