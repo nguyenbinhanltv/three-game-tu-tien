@@ -5,7 +5,7 @@ exports[`Huyền Kiếp: bản chuẩn hành vi > cả chuỗi huyen_hon, hạt 
   "cleared": 3,
   "ended": true,
   "n": 367,
-  "sha": "6cb69ae2345a12013006cddd310518c29c0b3893",
+  "sha": "861b900572c9cd08d94a22b300ea21e8dec459d8",
   "t": 105050,
 }
 `;
@@ -15,7 +15,7 @@ exports[`Huyền Kiếp: bản chuẩn hành vi > cả chuỗi huyen_ngoai, hạ
   "cleared": 3,
   "ended": true,
   "n": 322,
-  "sha": "f6842c8ea41ed92f40ee487d93cec487ae68cd80",
+  "sha": "569b12d56b53c2896ac77dddb9000f64b091cc41",
   "t": 105050,
 }
 `;
@@ -25,7 +25,7 @@ exports[`Huyền Kiếp: bản chuẩn hành vi > cả chuỗi huyen_noi, hạt 
   "cleared": 3,
   "ended": true,
   "n": 298,
-  "sha": "af6fbc68db04abafe75a9101efea12556ee105c0",
+  "sha": "1da68b1d118ae78e487dd0947c5451486c5654ef",
   "t": 105050,
 }
 `;
@@ -35,7 +35,7 @@ exports[`Thiên Nhân Ngũ Suy: bản chuẩn hành vi > cả chuỗi năm ải,
   "cleared": 5,
   "ended": true,
   "n": 733,
-  "sha": "5741dfdb49f063a328c2d62b32edab0ba9b7e00e",
+  "sha": "16042000546b698f9b34f8ea03978693ec7b0830",
   "t": 200050,
 }
 `;
@@ -45,7 +45,7 @@ exports[`Thiên Nhân Ngũ Suy: bản chuẩn hành vi > cả chuỗi năm ải,
   "cleared": 5,
   "ended": true,
   "n": 734,
-  "sha": "dce9f0f6b363452a5a5f3e0ff0acadd8b975e005",
+  "sha": "4b0afe841da140a7e5537c6e19503814b0931cc7",
   "t": 200050,
 }
 `;
@@ -55,7 +55,7 @@ exports[`Thiên Nhân Ngũ Suy: bản chuẩn hành vi > cả chuỗi năm ải,
   "cleared": 5,
   "ended": true,
   "n": 731,
-  "sha": "626d56790b58d06ebe5dd6e5ab7c3252f4080a38",
+  "sha": "f599b5664e33c7720847e8bb8511ac8c8f950182",
   "t": 200050,
 }
 `;
