@@ -1,0 +1,37 @@
+{
+  "mood": "pm",
+  "glb": [],
+  "ground": {
+    "set": "terrain-slate",
+    "mask": "neutral"
+  },
+  "music": [
+    "dungeon",
+    "dungeon_boss"
+  ],
+  "features": {
+    "sect": false,
+    "portals": true,
+    "lanterns": true,
+    "lake": false,
+    "clouds": false,
+    "grass": false,
+    "trees": "scatter",
+    "beacons": false,
+    "vegetation": false
+  },
+  "minimap": "van_lam",
+  "cave": {
+    "x": 1520,
+    "z": 1300,
+    "r": 135,
+    "h": 75
+  },
+  "phucMachArt": true,
+  "godRays": {
+    "x": 1520,
+    "z": 1280,
+    "r": 95,
+    "count": 36
+  }
+}
