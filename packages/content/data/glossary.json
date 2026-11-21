@@ -48,6 +48,10 @@
       "dinh_hon": "Định Hồn",
       "hoang_tuyen": "Hoàng Tuyền"
     },
+    "co_than_quyet": {
+      "huyet_tran": "Huyết Trận",
+      "huyet_cu": "Huyết Cự"
+    },
     "liet_nhan_dao_kinh": {
       "hoanh_dao": "Hoành Đao",
       "tam_dao": "Tâm Đao",
@@ -85,7 +89,11 @@
     "skl_nuoi_co": "Nuôi Cổ",
     "skl_co_chich": "Cổ Chích",
     "skl_doc_vu": "Độc Vụ",
-    "skl_co_giap": "Cổ Giáp"
+    "skl_co_giap": "Cổ Giáp",
+    "skl_hoa_hinh": "Hóa Hình",
+    "skl_hinh_quyen": "Hình Quyền",
+    "skl_hinh_chan": "Hình Chấn",
+    "skl_hinh_giap": "Hình Giáp"
   },
   "paths": {
     "kiem_tu": "Kiếm tu",
@@ -93,7 +101,8 @@
     "dan_su": "Đan sư",
     "hon_tu": "Hồn tu",
     "dao_tu": "Đao tu",
-    "co_tu": "Cổ tu"
+    "co_tu": "Cổ tu",
+    "co_than": "Cổ Thần"
   },
   "joints": {
     "pha_the_tram": "Phá Thế Trảm",
@@ -115,7 +124,8 @@
     "dan_hoa": "Đan hỏa",
     "hon_luc": "Hồn lực",
     "khi_the": "Khí thế",
-    "co": "Cổ"
+    "co": "Cổ",
+    "co_huyet": "Cổ huyết"
   },
   "realms": [
     "Ngưng Khí",
@@ -411,6 +421,9 @@
     "npc_hai_duoc": "Hạ Thảo"
   },
   "skillsTier": {
+    "skl_tinh_bao": "Tinh Bạo",
+    "skl_huyet_cu_ho": "Huyết Cự Hộ",
+    "skl_co_than_nhat_kich": "Cổ Thần Nhất Kích",
     "skl_hoanh_kiem_pha_mach": "Hoành Kiếm Phá Mạch",
     "skl_kiem_vu_tam_diep": "Kiếm Vũ Tam Điệp",
     "skl_kiem_dan_ban_menh": "Kiếm Đan Bản Mệnh",
@@ -517,7 +530,8 @@
     "itm_co_thanh_phien": "Cổ Thành Phiến",
     "itm_tan_giac": "Tẫn Giác",
     "itm_tinh_vu": "Tịnh Quang Vũ",
-    "itm_kim_da_mien": "Kim Dạ Miện Phiến"
+    "itm_kim_da_mien": "Kim Dạ Miện Phiến",
+    "itm_co_huyet_tinh": "Cổ Huyết Tinh"
   },
   "stationNpcs": {
     "npc_to_van_ngu": "Tô Vãn Ngư",
@@ -719,5 +733,51 @@
     "Thất Tinh",
     "Bát Tinh",
     "Cửu Tinh"
-  ]
+  ],
+  "vanDinh": {
+    "_doc": "TN-3 chương 6 (Vấn Đỉnh): tên địa danh, quái, NPC tự đặt, lore-keeper soát 2026-11-21. UI ghi \"mặt Âm Hư\"/\"mặt Dương Thực\", không để trơ tên cảnh giới.",
+    "map": {
+      "van_dinh": "Vấn Đỉnh Âm Dương Giới"
+    },
+    "faces": {
+      "am": "Mặt Âm Hư",
+      "duong": "Mặt Dương Thực"
+    },
+    "zones": {
+      "cong_gioi": "Cổng Giới",
+      "ho_hu_anh": "Hồ Hư Ảnh",
+      "rung_re_treo": "Rừng Rễ Treo",
+      "rung_dong_kho": "Rừng Đồng Khô",
+      "bac_dinh": "Bậc Đỉnh",
+      "gioi_tri": "Giới Trì"
+    },
+    "places": {
+      "chuyen_dien_tran_dai": "Chuyển Diện Trận Đài",
+      "anh_bia": "Ảnh Bia",
+      "gioi_tri_dong_phu": "Giới Trì Động Phủ"
+    },
+    "monsters": {
+      "mon_anh_hac": "Ảnh Hạc",
+      "mon_bong_re": "Bóng Rễ",
+      "mon_hu_anh_ve": "Hư Ảnh Vệ",
+      "mon_quy_ho": "Quỷ Hồ",
+      "mon_sa_no": "Sa Nô",
+      "mon_dong_giap_khoi": "Đồng Giáp Khôi",
+      "mon_kim_van_thu": "Kim Văn Thú",
+      "mon_hoa_dieu": "Hỏa Điểu",
+      "elite_anh_hac_vuong": "Ảnh Hạc Vương",
+      "elite_hu_anh_nhan": "Hư Ảnh Nhân",
+      "elite_sa_tuong": "Sa Tướng",
+      "boss_hu_anh_chu": "Hư Ảnh Chủ",
+      "boss_dinh_linh": "Đỉnh Linh",
+      "boss_phu_chu": "Phủ Chủ"
+    },
+    "npcs": {
+      "npc_thach_nghien": "Thạch Nghiên",
+      "npc_luong_tu_gioi": "Lương Tư Giới"
+    },
+    "factions": {
+      "ho_gioi_duong": "Hộ Giới Đường"
+    }
+  }
 }

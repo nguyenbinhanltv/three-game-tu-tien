@@ -102,6 +102,7 @@ import {
   JOINTS,
   MARK,
   PATHS,
+  STARS,
   pathOf,
   MARKS,
   METHODS,
@@ -115,6 +116,9 @@ import { LOOT, LOOT_MATS } from './loot';
 import {
   jointErrors,
   pathErrors,
+  starErrors,
+  COTHAN_METHOD,
+  COTHAN_STAR_MAX,
   originErrors,
   ORIGIN_GROUPS,
   POSE_VOICES,
@@ -335,6 +339,16 @@ for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.
 for (const m of chainErrors(ALL_SKILLS)) err(m);
 // VS-3: hướng tu (mỗi công pháp thuộc đúng một hướng; màu, bộ động tác, ấn phối hợp hợp lệ; tên khớp glossary.paths).
 for (const e of pathErrors(PATHS, METHODS, new Set(MARKS.map((m) => m.id)), POSE_VOICES)) err(e);
+// TN-5: thang sao Cổ Thần, chiêu đòi sao chỉ thuộc Cổ Thần Quyết, điều kiện lĩnh ngộ trỏ đúng công pháp.
+for (const e of starErrors(STARS, (id) => ITEMS.some((i) => i.id === id))) err(e);
+for (const s of ALL_SKILLS) {
+  if (s.star === undefined) continue;
+  if (!Number.isInteger(s.star) || s.star < 1 || s.star > COTHAN_STAR_MAX) err(`skill ${s.id}: star phải là 1–${COTHAN_STAR_MAX}`);
+  if (s.method !== COTHAN_METHOD) err(`skill ${s.id}: star chỉ dùng cho công pháp ${COTHAN_METHOD}`);
+}
+for (const p of PATHS)
+  if (p.unlock?.from && !METHODS.some((m) => m.id === p.unlock?.from))
+    err(`path ${p.id}: unlock.from "${p.unlock.from}" không phải công pháp`);
 for (const p of PATHS) {
   if (p.unlock?.grant && !ARTIFACTS.find((a) => a.id === p.unlock?.grant)?.granted)
     err(`path ${p.id}: unlock.grant phải là pháp bảo có cờ granted`);
@@ -1222,7 +1236,8 @@ for (const m of MONSTERS) if ((m.elite || m.boss) && !m.elem) err(`quái ${m.id}
 needItem(PHA_CANH_PILL, 'Phá Cảnh Đan');
 if (ITEM.get(PHA_CANH_PILL)?.use) err('Phá Cảnh Đan không có `use`: chỉ dùng qua bình cảnh (server)');
 if (!RECIPES.some((r) => r.output.id === PHA_CANH_PILL)) err('thiếu công thức luyện Phá Cảnh Đan');
-if (BOTTLENECK_LEVELS.join() !== '5,10,15,17,19,21,23,25,27,29,31') err('bình cảnh phải ở cấp 5, 10, 15, 17, 19, 21, 23, 25, 27, 29, 31');
+if (BOTTLENECK_LEVELS.join() !== '5,10,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43')
+  err('bình cảnh phải ở cấp 5, 10, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43');
 // Thang cảnh giới (E1-C): realms.json đủ 1…MAX_LEVEL, tên đúng đại cảnh giới của glossary, xpNeed tăng đều, hệ số cảnh giới tăng.
 if (REALMS.length !== MAX_LEVEL) err(`realms.json phải có ${MAX_LEVEL} cấp (đang ${REALMS.length})`);
 REALMS.forEach((r, i) => {
@@ -1238,7 +1253,8 @@ REALMS.forEach((r, i) => {
   )
     err(`xpNeed(${r.level}) phải lớn hơn cấp trước`);
 });
-if (!t(`realm.${MAX_LEVEL}`).endsWith('sơ kỳ')) err('cấp tối đa tạm là Anh Biến sơ kỳ');
+if (!t(`realm.${MAX_LEVEL}`).startsWith('Dương Thực') || !t(`realm.${MAX_LEVEL}`).endsWith('sơ kỳ'))
+  err('cấp tối đa tạm là Dương Thực sơ kỳ');
 if (!MONSTER.has('mon_tam_ma')) err('thiếu quái mon_tam_ma (bóng tâm ma của thử thách bình cảnh)');
 if (!NPCS.some((n) => n.rootChange)) err('không NPC nào đổi linh căn');
 for (const n of NPCS) if (n.rootChange) needStr(`npc.${n.id}.root`);

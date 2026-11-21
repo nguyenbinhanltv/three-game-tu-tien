@@ -26,8 +26,8 @@ const kim: RootDef = { id: 'kim', group: 'real', elem: 'kim', elemDmg: 0.08, sta
 
 describe('bình cảnh', () => {
   it('ở Ngưng Khí 5/10/15 và hai nút mỗi đại cảnh giới sau đó (17, 19, 21, 23, 25, 27)', () => {
-    expect(BOTTLENECK_LEVELS).toEqual([5, 10, 15, 17, 19, 21, 23, 25, 27, 29, 31]);
-    expect(PEAK_LEVELS).toEqual([15, 19, 23, 27, 31]);
+    expect(BOTTLENECK_LEVELS).toEqual([5, 10, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43]);
+    expect(PEAK_LEVELS).toEqual([15, 19, 23, 27, 31, 35, 39, 43]);
     for (let l = 1; l <= MAX_LEVEL; l++) expect(bottleneckBlocked(l, 0)).toBe(BOTTLENECK_LEVELS.includes(l));
   });
   it('vượt rồi (bk >= tầng) thì không kẹt nữa', () => {
@@ -101,6 +101,10 @@ describe('mã cảnh giới kiểm thử', () => {
     expect(parseRealmCode('nk1')).toBe(1);
     expect(parseRealmCode(' NK15 ')).toBe(15);
     expect(parseRealmCode('tc')).toBe(16);
+    expect(parseRealmCode('ab4')).toBe(35);
+    expect(parseRealmCode('vd')).toBe(36);
+    expect(parseRealmCode('ah4')).toBe(43);
+    expect(parseRealmCode('dt')).toBe(44);
     expect(parseRealmCode('tc1')).toBe(16);
     expect(parseRealmCode('tc3')).toBe(18);
     expect(parseRealmCode('tc4')).toBe(19);
@@ -121,14 +125,17 @@ describe('mã cảnh giới kiểm thử', () => {
       'kd5',
       'na5',
       'ht5',
-      'ab2',
+      'ab5',
+      'vd5',
+      'ah5',
+      'dt2',
       'tc10',
-      '33',
+      '45',
       '0',
       'nk1x',
       '1e1',
       0,
-      33,
+      45,
       2.5,
       NaN,
       null,
@@ -143,16 +150,23 @@ describe('mã cảnh giới kiểm thử', () => {
 describe('thang 28 cấp (E1-C)', () => {
   const sum = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => xpNeed(a + i)).reduce((x, y) => x + y, 0);
   it('xpNeed khớp bảng thiết kế, tích lũy 242k / 439k / 686k', () => {
-    expect(MAX_LEVEL).toBe(32);
+    expect(MAX_LEVEL).toBe(44);
     expect([16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27].map(xpNeed)).toEqual([
       56000, 59000, 62000, 65000, 102500, 107500, 112000, 117000, 162000, 168500, 174500, 181000,
     ]);
     expect(sum(16, 19)).toBe(242_000);
     expect(sum(20, 23)).toBe(439_000);
     expect(sum(24, 27)).toBe(686_000);
-    expect(xpNeed(32)).toBe(99_999_999);
+    expect(xpNeed(44)).toBe(99_999_999);
+    // Chương 6 (TN-3): Anh Biến 32–35 ~2 giờ, Vấn Đỉnh 36–39 và Âm Hư 40–43 ~5 giờ mỗi đại cảnh giới (thu nhập 450·(12+7L)/giờ).
+    expect([32, 33, 34, 35].map(xpNeed)).toEqual([53000, 54500, 56000, 58000]);
+    expect(sum(36, 39)).toBe(618_000);
+    expect(sum(40, 43)).toBe(680_500);
     expect([28, 29, 30, 31].map(xpNeed)).toEqual([234000, 242000, 250000, 257500]);
     expect(sum(28, 31)).toBe(983_500);
+    expect(realmMul(32)).toBe(7.8);
+    expect([35, 36, 39, 40, 43, 44].map(realmMul)).toEqual([7.8, 11, 11, 15.5, 15.5, 22]);
+    expect([32, 35, 36, 40, 44].map(majorRealmOf)).toEqual([5, 5, 6, 7, 8]);
     expect(xpNeed(15)).toBe(90 * 15 * 15);
   });
   it('hệ số cảnh giới 1 / 1,6 / 2,5 / 3,8 / 5,5 và đại cảnh giới', () => {
