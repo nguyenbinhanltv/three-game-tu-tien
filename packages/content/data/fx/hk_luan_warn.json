@@ -1,0 +1,57 @@
+{
+ "skill": "hk_luan_warn",
+ "palette": "hk_luan_hoi",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 1.2,
+   "at": "area",
+   "offset": [
+    0,
+    0.09,
+    0
+   ],
+   "scale": [
+    11.0,
+    1,
+    11.0
+   ],
+   "scaleTo": [
+    2.0,
+    1,
+    2.0
+   ],
+   "sweep": 0.05,
+   "erodeFrom": 0.9,
+   "ragged": 0.7,
+   "tone": "accent",
+   "alpha": 0.95,
+   "seed": 127,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 40,
+   "speed": 6.0,
+   "spread": 1.0,
+   "life": 1.0,
+   "size": 0.3,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "tone": "accent",
+   "inward": true,
+   "tier": 0,
+   "from": "start"
+  }
+ ]
+}

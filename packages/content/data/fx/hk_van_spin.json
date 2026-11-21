@@ -1,0 +1,90 @@
+{
+ "skill": "hk_van_spin",
+ "palette": "hk_van_tam",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "ribbon",
+   "t": 0.0,
+   "dur": 1.2,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": [
+    2.7,
+    2.7,
+    0.5
+   ],
+   "sweep": 0.6,
+   "erodeFrom": 0.6,
+   "ragged": 0.5,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 94,
+   "spin": 240,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ribbon",
+   "t": 0.1,
+   "dur": 1.2,
+   "at": "area",
+   "offset": [
+    0,
+    1.2,
+    0
+   ],
+   "rot": [
+    -90,
+    180,
+    0
+   ],
+   "scale": [
+    2.7,
+    2.7,
+    0.5
+   ],
+   "sweep": 0.6,
+   "erodeFrom": 0.6,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.8,
+   "seed": 95,
+   "spin": 240,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 1.0,
+   "at": "area",
+   "offset": [
+    0,
+    0.07,
+    0
+   ],
+   "scale": [
+    7.0,
+    1,
+    7.0
+   ],
+   "sweep": 0.6,
+   "erodeFrom": 0.6,
+   "ragged": 0.5,
+   "tone": "rim",
+   "alpha": 0.8,
+   "seed": 96,
+   "tier": 0
+  }
+ ]
+}

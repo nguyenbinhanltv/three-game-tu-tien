@@ -1,0 +1,83 @@
+{
+ "skill": "hk_van_ok",
+ "palette": "hk_van_tam",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "diamond_cage",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "area",
+   "offset": [
+    0,
+    1.3,
+    0
+   ],
+   "scale": [
+    1.3,
+    1.5,
+    1.3
+   ],
+   "scaleTo": [
+    2.0,
+    2.2,
+    2.0
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.2,
+   "tone": "accent",
+   "alpha": 0.95,
+   "seed": 97,
+   "keepUp": true,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.05,
+    0
+   ],
+   "scale": [
+    0.5,
+    0.6,
+    0.5
+   ],
+   "scaleTo": [
+    3.4,
+    1.4,
+    3.4
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.4,
+   "ragged": 0.6,
+   "tone": "accent",
+   "alpha": 0.9,
+   "seed": 98,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "petal",
+   "t": 0.0,
+   "n": 26,
+   "speed": 2.4,
+   "spread": 0.9,
+   "life": 1.5,
+   "size": 0.18,
+   "at": "area",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "tone": "rim",
+   "grav": -1.0,
+   "tier": 0
+  }
+ ]
+}

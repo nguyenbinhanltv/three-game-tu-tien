@@ -895,7 +895,17 @@ export class Vfx {
   suyBeacon(
     pos: () => { x: number; y: number; z: number } | null,
     color: number,
-    o: { h: number; r: number; dur: number; opacity?: number; pulse?: number; thick?: number; crackle?: boolean },
+    o: {
+      h: number;
+      r: number;
+      dur: number;
+      opacity?: number;
+      pulse?: number;
+      thick?: number;
+      crackle?: boolean;
+      /** Vị trí người xem: cột (không phải vòng dưới đất) mờ đi khi đứng sát họ, để không che nhân vật. */
+      avoid?: () => { x: number; z: number } | null | undefined;
+    },
     stillOn: () => boolean = () => true,
   ): { stop(): void } {
     const col = this.fx(G.ico1, color, 0);
@@ -920,9 +930,28 @@ export class Vfx {
         const k = Math.min(1, t / Math.max(0.1, o.dur));
         const jit = o.crackle ? 0.45 + 0.55 * Math.abs(Math.sin(t * 31) * Math.sin(t * 17 + 1.3)) : 1;
         const w = 0.16 * o.r * (o.thick ?? 1) * pulse * (o.crackle ? 0.5 + 0.5 * k + 0.35 * jit : 1);
-        col.position.set(p.x, p.y + o.h * 0.5, p.z);
-        col.scale.set(w, o.h, w);
-        col.fxOpacity = op * fade * (o.crackle ? 0.55 + 0.45 * jit : 1);
+        // Cột là khối cộng sáng: sát camera thì thành khối mờ to che tầm nhìn, quanh người thì che nhân vật (bài học #424/#432).
+        // Mờ dần, thon và thấp lại khi cách camera (mặt bằng) dưới ~20 m (ẩn hẳn dưới 8 m; camera mặc định cách người ~18 m) và khi cách người xem hoặc đường ngắm camera → người xem dưới ~3,5 m (còn 15% dưới 1,2 m). Vòng dưới đất giữ nguyên.
+        const cam = this.camera?.position;
+        const dc = cam ? Math.hypot(cam.x - p.x, cam.z - p.z) : 99;
+        const kc = Math.min(1, Math.max(0, (dc - 8) / 12));
+        const av = o.avoid?.();
+        // Khoảng cách tới ĐOẠN camera → người xem (mặt bằng), không chỉ tới người: cột đứng chắn giữa đường ngắm cũng vạch đè lên nhân vật.
+        let da = 99;
+        if (av) {
+          const sx = cam ? cam.x - av.x : 0;
+          const sz = cam ? cam.z - av.z : 0;
+          const sl = sx * sx + sz * sz;
+          const u = sl > 1e-6 ? Math.min(1, Math.max(0, ((p.x - av.x) * sx + (p.z - av.z) * sz) / sl)) : 0;
+          da = Math.hypot(p.x - (av.x + sx * u), p.z - (av.z + sz * u));
+        }
+        const ka = 0.15 + 0.85 * Math.min(1, Math.max(0, (da - 1.2) / 2.3));
+        const vis = kc * kc * (3 - 2 * kc) * ka;
+        const hc = o.h * (0.5 + 0.5 * kc);
+        col.position.set(p.x, p.y + hc * 0.5, p.z);
+        const wc = w * (0.45 + 0.55 * kc);
+        col.scale.set(wc, hc, wc);
+        col.fxOpacity = op * fade * vis * (o.crackle ? 0.55 + 0.45 * jit : 1);
         ring.position.set(p.x, p.y + 0.14, p.z);
         ring.scale.setScalar(o.r * (0.96 + 0.04 * pulse));
         ring.fxOpacity = Math.min(0.9, op * 1.5) * fade;

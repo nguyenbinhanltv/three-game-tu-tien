@@ -1,0 +1,80 @@
+{
+ "skill": "hk_luan_wheel",
+ "palette": "hk_luan_hoi",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    0,
+    0.06,
+    0
+   ],
+   "scale": [
+    11.0,
+    1,
+    11.0
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.3,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 121,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    0,
+    0.07,
+    0
+   ],
+   "scale": [
+    1.5,
+    1,
+    1.5
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.5,
+   "tone": "accent",
+   "alpha": 0.95,
+   "seed": 122,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.7,
+    2.6,
+    0.7
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "tone": "accent",
+   "alpha": 0.95,
+   "seed": 123,
+   "tier": 1,
+   "from": "start"
+  }
+ ]
+}
