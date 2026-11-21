@@ -20,13 +20,13 @@ def debris(t, at, n, r, up, scale, seed0=1, tone='core'):
     for i in range(n):
         a = i / n * math.tau + seed0
         x, z = round(math.cos(a) * r, 2), round(math.sin(a) * r, 2)
-        h = up * (0.7 + 0.3 * ((i * 37) % 10) / 10)
+        h = min(up, 2.2) * (0.7 + 0.3 * ((i * 37) % 10) / 10)  # trần 2,2 m: tảng không lơ lửng ngang đầu che mục tiêu
         shp = 'rubble_a' if i % 2 == 0 else 'rubble_c'
         rot = [35 * i, 70 * i, 15 * i]
         ev.append(mesh(shp, t, 0.22, at=at, offset=[x, 0.1, z], rot=rot, scale=scale, sweep=0, erodeFrom=0.98, alpha=1,
-                       move={'to': at, 'offset': [x * 1.15, h, z * 1.15], 'ease': 'out'}, tone=tone, tier=0 if i < 6 else 1, seed=seed0 + i))
+                       move={'to': at, 'offset': [x * 1.15, h, z * 1.15], 'ease': 'out'}, tone=tone, tier=0 if i < 6 else 1, seed=seed0 + i, camFade=True))
         ev.append(mesh(shp, t + 0.22, 0.3, at=at, offset=[x * 1.15, h, z * 1.15], rot=rot, scale=scale, scaleTo=scale * 0.8, sweep=0, erodeFrom=0.7, alpha=1,
-                       move={'to': at, 'offset': [x * 1.3, 0.1, z * 1.3], 'ease': 'in'}, tone=tone, tier=0 if i < 6 else 1, seed=seed0 + i))
+                       move={'to': at, 'offset': [x * 1.3, 0.1, z * 1.3], 'ease': 'in'}, tone=tone, tier=0 if i < 6 else 1, seed=seed0 + i, camFade=True))
     return ev
 
 
@@ -58,7 +58,7 @@ def thiet_quyen():
         parts('spark', 0.0, 50, 8, 1, 0.45, 0.1, at='area', offset=[0, 0.8, 0], tone='body', tier=0),
         parts('dust', 0.0, 60, 5, 1, 0.8, 0.3, at='area', offset=[0, 0.3, 0], tone='core', tier=1),
     ]
-    ev += debris(-0.02, 'area', 10, 2.4, 3.4, 1.3, seed0=0.5)
+    ev += debris(-0.02, 'area', 10, 2.4, 2.4, 1.0, seed0=0.5)
     ev += feel(0.0, ms=80, sh=0.55, fl=0.15, vg=0.35, fov=3.0)
     return {
         'skill': 'skl_thiet_quyen_chan_dia',
