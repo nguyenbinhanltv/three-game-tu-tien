@@ -1,0 +1,94 @@
+{
+ "skill": "hk_enter",
+ "palette": "hk_tuyet",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 6.0,
+   "dur": 3.2,
+   "at": "area",
+   "grow": 0.5,
+   "tone": "body",
+   "alpha": 0.9,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.05,
+   "dur": 1.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.06,
+    0
+   ],
+   "scale": [
+    0.6,
+    1,
+    0.6
+   ],
+   "scaleTo": [
+    5.4,
+    1,
+    5.4
+   ],
+   "sweep": 0.35,
+   "erodeFrom": 0.45,
+   "ragged": 0.6,
+   "tone": "rim",
+   "alpha": 0.85,
+   "seed": 4,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "area",
+   "offset": [
+    0,
+    0.05,
+    0
+   ],
+   "scale": [
+    0.5,
+    0.6,
+    0.5
+   ],
+   "scaleTo": [
+    4.2,
+    1.4,
+    4.2
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.4,
+   "ragged": 0.7,
+   "tone": "rim",
+   "alpha": 0.8,
+   "seed": 5,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 30,
+   "speed": 3.4,
+   "spread": 1.0,
+   "life": 1.0,
+   "size": 0.09,
+   "at": "area",
+   "offset": [
+    0,
+    0.6,
+    0
+   ],
+   "tone": "rim",
+   "tier": 1
+  }
+ ]
+}

@@ -1,0 +1,219 @@
+{
+ "skill": "hk_ly_seal",
+ "palette": "hk_tram_ly",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    0,
+    0.07,
+    0
+   ],
+   "scale": [
+    6.0,
+    1,
+    6.0
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.3,
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 61,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 2.4,
+   "dur": 1.08,
+   "at": "area",
+   "grow": 0.01,
+   "tone": "rim",
+   "alpha": 0.9,
+   "yaw": 0,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "seal_block",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1.0,
+    0.9,
+    1.0
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 62,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "blade_stuck",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    0.0,
+    0,
+    6.0
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": 1.6,
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 63,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "blade_stuck",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    5.2,
+    0,
+    3.0
+   ],
+   "rot": [
+    0,
+    60,
+    0
+   ],
+   "scale": 1.6,
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 64,
+   "tier": 1,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "blade_stuck",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    5.2,
+    0,
+    -3.0
+   ],
+   "rot": [
+    0,
+    120,
+    0
+   ],
+   "scale": 1.6,
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 65,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "blade_stuck",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    0.0,
+    0,
+    -6.0
+   ],
+   "rot": [
+    0,
+    180,
+    0
+   ],
+   "scale": 1.6,
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 66,
+   "tier": 1,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "blade_stuck",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    -5.2,
+    0,
+    -3.0
+   ],
+   "rot": [
+    0,
+    240,
+    0
+   ],
+   "scale": 1.6,
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 67,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "blade_stuck",
+   "t": 0.0,
+   "dur": 1.08,
+   "at": "area",
+   "offset": [
+    -5.2,
+    0,
+    3.0
+   ],
+   "rot": [
+    0,
+    300,
+    0
+   ],
+   "scale": 1.6,
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 68,
+   "tier": 1,
+   "from": "start"
+  }
+ ]
+}

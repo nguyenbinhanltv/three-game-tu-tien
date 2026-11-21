@@ -1,0 +1,120 @@
+{
+ "skill": "hk_phong_blow",
+ "palette": "hk_phong",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "gust",
+   "t": 0.0,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    0,
+    1.4,
+    -11
+   ],
+   "scale": [
+    5.0,
+    3.0,
+    12.0
+   ],
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 41,
+   "move": {
+    "to": "area",
+    "offset": [
+     0,
+     1.4,
+     9
+    ],
+    "ease": "out"
+   },
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "gust",
+   "t": 0.05,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    4.5,
+    1.2,
+    -11
+   ],
+   "scale": [
+    4.5,
+    2.6,
+    12.0
+   ],
+   "tone": "accent",
+   "alpha": 0.9,
+   "seed": 42,
+   "move": {
+    "to": "area",
+    "offset": [
+     4.5,
+     1.2,
+     9
+    ],
+    "ease": "out"
+   },
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "gust",
+   "t": 0.1,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    -4.5,
+    1.6,
+    -11
+   ],
+   "scale": [
+    4.5,
+    2.6,
+    12.0
+   ],
+   "tone": "accent",
+   "alpha": 0.9,
+   "seed": 43,
+   "move": {
+    "to": "area",
+    "offset": [
+     -4.5,
+     1.6,
+     9
+    ],
+    "ease": "out"
+   },
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 70,
+   "speed": 14.0,
+   "spread": 0.2,
+   "life": 0.9,
+   "size": 0.3,
+   "at": "area",
+   "offset": [
+    0,
+    1.0,
+    -10
+   ],
+   "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "shake",
+   "t": 0.0,
+   "level": 0.2,
+   "tier": 1
+  }
+ ]
+}

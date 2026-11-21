@@ -1,0 +1,60 @@
+{
+ "skill": "hk_van_bad",
+ "palette": "hk_van_tam",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "crack_radial",
+   "t": 0.0,
+   "dur": 1.6,
+   "at": "self",
+   "offset": [
+    0,
+    -1.08,
+    0
+   ],
+   "scale": [
+    0.4,
+    1,
+    0.4
+   ],
+   "scaleTo": [
+    2.8,
+    1,
+    2.8
+   ],
+   "sweep": 0.25,
+   "erodeFrom": 0.6,
+   "ragged": 0.9,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 99,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "scale": 2.4,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "core",
+   "alpha": 0.6,
+   "flip": "ink_smoke",
+   "tier": 0
+  },
+  {
+   "type": "flash",
+   "t": 0.0,
+   "amount": 0.12,
+   "tier": 0
+  }
+ ]
+}

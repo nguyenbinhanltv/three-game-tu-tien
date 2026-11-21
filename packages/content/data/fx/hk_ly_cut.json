@@ -1,0 +1,111 @@
+{
+ "skill": "hk_ly_cut",
+ "palette": "hk_tram_ly",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "slash_thick",
+   "t": 0.0,
+   "dur": 0.4,
+   "at": "area",
+   "offset": [
+    0,
+    0.9,
+    10
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "scale": [
+    3.0,
+    1,
+    11.0
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.35,
+   "ragged": 0.8,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 71,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rift_line",
+   "t": 0.0,
+   "dur": 1.6,
+   "at": "area",
+   "offset": [
+    0,
+    0.06,
+    0
+   ],
+   "scale": [
+    1.4,
+    1,
+    20
+   ],
+   "sweep": 0.25,
+   "erodeFrom": 0.5,
+   "ragged": 0.9,
+   "tone": "accent",
+   "alpha": 0.9,
+   "seed": 72,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "blade_giant",
+   "t": 0.0,
+   "dur": 0.45,
+   "at": "area",
+   "offset": [
+    0,
+    6.0,
+    10
+   ],
+   "rot": [
+    90,
+    0,
+    0
+   ],
+   "scale": 1.5,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 73,
+   "keepUp": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0,
+     1.0,
+     10
+    ],
+    "ease": "in"
+   },
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 26,
+   "speed": 7.0,
+   "spread": 0.3,
+   "life": 0.5,
+   "size": 0.09,
+   "at": "area",
+   "offset": [
+    0,
+    0.6,
+    10
+   ],
+   "tone": "rim",
+   "tier": 0
+  }
+ ]
+}

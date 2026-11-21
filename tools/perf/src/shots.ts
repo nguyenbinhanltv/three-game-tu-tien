@@ -35,6 +35,7 @@ import quest5 from './scenarios/quest5';
 import skin from './scenarios/skin';
 import thiennhan from './scenarios/thiennhan';
 import ngusuy from './scenarios/ngusuy';
+import huyenkiep from './scenarios/huyenkiep';
 import anhbien from './scenarios/anhbien';
 import fly from './scenarios/fly';
 import thanpham from './scenarios/thanpham';
@@ -91,6 +92,7 @@ const SCENARIOS: Scenario[] = [
   thiengiai,
   thiennhan,
   ngusuy,
+  huyenkiep,
   anhbien,
   thanpham,
   ual,

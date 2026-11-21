@@ -1,0 +1,68 @@
+{
+ "skill": "hk_chau_get",
+ "palette": "hk_hon_tho",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.11,
+   "at": "area",
+   "offset": [
+    0,
+    1.4,
+    0
+   ],
+   "scale": 1.8,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "alpha": 0.8,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "helix",
+   "t": 0.0,
+   "dur": 0.8,
+   "at": "self",
+   "offset": [
+    0,
+    -1.0,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": [
+    0.8,
+    0.8,
+    2.2
+   ],
+   "sweep": 0.6,
+   "erodeFrom": 0.5,
+   "ragged": 0.4,
+   "tone": "body",
+   "alpha": 0.85,
+   "spin": 300,
+   "seed": 113,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 24,
+   "speed": 2.6,
+   "spread": 1.0,
+   "life": 0.7,
+   "size": 0.09,
+   "at": "self",
+   "tone": "rim",
+   "inward": true,
+   "tier": 0
+  }
+ ]
+}

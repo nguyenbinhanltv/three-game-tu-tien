@@ -9,8 +9,18 @@
 //  - cột linh quang cộng sáng có bloom (`Vfx.suyBeacon`) ở Linh Nhãn, vòng Tôi Thể Lôi, tâm lôi ẩn, nhịp phá vọng;
 //  - ngọn lửa Thọ Đăng phát sáng có trạng thái liên tục (`Vfx.suyLamps`): cháy, bị suy phong nhắm thì nhạt màu dần, tắt, đang thắp lại.
 import * as THREE from 'three/webgpu';
-import { SUY_FX } from '@dtl/content';
-import { suyRingPos, suySectorYaw, tribDef, type FxMsg, type FxTimeline } from '@dtl/shared';
+import { HK_FX, SUY_FX } from '@dtl/content';
+import {
+  HK_VAN_SPIN_FRAC,
+  hkLuanAngle,
+  hkRingPos,
+  hkVanSpinAngle,
+  suyRingPos,
+  suySectorYaw,
+  tribDef,
+  type FxMsg,
+  type FxTimeline,
+} from '@dtl/shared';
 import { FX_PALETTE } from '../../render/vfx/palette';
 import type { FxCaster, FxRunner, FxTarget } from './fxTimeline';
 import type { Vfx } from './vfx';
@@ -55,7 +65,7 @@ export interface SuyFxEnv {
 /** Cỡ quầng cầu chạm đất của tia sét khi đang ở trong ải (1 = như các kiếp khác). */
 const BOLT_GLOW = 0.35;
 const WHITE = new THREE.Color(0xffffff);
-const palOf = (stage: string | undefined): string => (stage && stage.startsWith('suy_') ? stage : 'suy_linh');
+const palOf = (stage: string | undefined): string => (stage && (stage.startsWith('suy_') || stage.startsWith('hk_')) ? stage : 'suy_linh');
 const hexOf = (pal: string, tone: 'body' | 'rim' | 'accent'): number => FX_PALETTE[pal]?.[tone] ?? 0xffffff;
 
 export class SuyFx {
@@ -69,6 +79,10 @@ export class SuyFx {
   private key: THREE.PointLight | null = null;
   private rim: THREE.PointLight | null = null;
   private litFor = '';
+  /** Huyền Kiếp: vòng trụ chắn gió của từng người và vị trí Huyết Ảnh mới hiện gần nhất. */
+  private ringOf = new Map<string, { n: number; r: number }>();
+  private vanOf = new Map<string, { shift: number; t0: number; dur: number }>();
+  private lastShadow: { x: number; y: number; z: number } | null = null;
   /** Nhật ký dev cho Playwright (`__game.suyFx.log`). */
   readonly log: { key: string; at: number }[] = [];
 
@@ -78,7 +92,7 @@ export class SuyFx {
   ) {}
 
   private tl(key: string): FxTimeline | undefined {
-    return SUY_FX.get(key);
+    return SUY_FX.get(key) ?? HK_FX.get(key);
   }
 
   private note(key: string): void {
@@ -86,6 +100,12 @@ export class SuyFx {
     this.log.push({ key, at: performance.now() });
     if (this.log.length > 300) this.log.shift();
   }
+
+  /** Vị trí người xem, để cột linh quang mờ đi khi đứng sát họ. */
+  private avoid = (): { x: number; z: number } | null => {
+    const sid = this.env.mySid?.();
+    return sid ? (this.env.player(sid) ?? null) : null;
+  };
 
   private mine(src: string): boolean {
     return !!src && this.env.mySid?.() === src;
@@ -160,7 +180,7 @@ export class SuyFx {
     const pos = () => fixed ?? this.env.player(o.follow!) ?? null;
     this.glows.set(
       `${src}:${slot}`,
-      v.suyBeacon(pos, color, o, () => this.env.tribOn(src)),
+      v.suyBeacon(pos, color, { ...o, avoid: this.avoid }, () => this.env.tribOn(src)),
     );
   }
 
@@ -185,7 +205,7 @@ export class SuyFx {
     };
     this.glows.set(
       `${src}:${slot}`,
-      v.suyBeacon(pos, color, o, () => this.env.tribOn(src)),
+      v.suyBeacon(pos, color, { ...o, avoid: this.avoid }, () => this.env.tribOn(src)),
     );
   }
 
@@ -267,13 +287,18 @@ export class SuyFx {
       const x = m.x ?? p?.x ?? 0;
       const z = m.z ?? p?.z ?? 0;
       this.stage.set(src, { id, x, z, mode: 0 });
-      this.at('suy_enter_' + id.slice(4), palOf(id), x, z, 6, { src });
+      this.at(id.startsWith('hk_') ? 'hk_enter' : 'suy_enter_' + id.slice(4), palOf(id), x, z, 6, { src });
       this.light(src, x, z, palOf(id));
     }
     const st = this.stage.get(src)!;
     if (m.pg === 100) {
       const p = this.env.player(src);
       this.at('suy_fail', palOf(id), p?.x ?? st.x, p?.z ?? st.z, 4, { src });
+    }
+    // Trảm Ly Kiếp: vừa bước ra khỏi vòng Bản Mệnh Ấn thì vòng lóe đỏ.
+    if (id === 'hk_tram_ly' && m.n !== undefined && m.n !== st.mode) {
+      st.mode = m.n;
+      if (m.n === 0) this.at('hk_ly_out', 'hk_tram_ly', st.x, st.z, 6, { src });
     }
     // Đạo Tâm Suy: nhịp phá vọng mở thì vòng vàng + cột sáng vàng bám người hiện đúng `d` giây.
     if (id === 'suy_tam' && m.n !== undefined && m.n !== st.mode) {
@@ -391,6 +416,244 @@ export class SuyFx {
         } else this.on(pg === 2 ? 'suy_tam_miss' : 'suy_tam_bad', 'suy_tam', src);
         break;
       }
+    }
+  }
+
+  /** Cột linh quang tại vị trí do `pos` tính mỗi khung (cung sinh đang xoay). */
+  private glowFn(
+    src: string,
+    slot: string,
+    color: number,
+    pos: () => { x: number; y: number; z: number } | null,
+    o: { h: number; r: number; dur: number; opacity?: number; pulse?: number; thick?: number },
+  ): void {
+    const v = this.env.vfx;
+    if (!v) return;
+    this.dropGlow(src, slot);
+    this.glows.set(
+      `${src}:${slot}`,
+      v.suyBeacon(pos, color, { ...o, avoid: this.avoid }, () => this.env.tribOn(src)),
+    );
+  }
+
+  /** Vạch kiếm vô hình của Trảm Ly Kiếp chém xuống (gọi khi vạch báo `rect` không nguồn hết giờ; chỉ là hình). */
+  cut(src: string, x: number, z: number, yaw: number): void {
+    if (this.stage.get(src)?.id === 'hk_tram_ly') this.at('hk_ly_cut', 'hk_tram_ly', x, z, 20, { yaw, src });
+  }
+
+  /**
+   * FX `hkmark`: dấu trên sân của Huyền Kiếp (TN-6). Thứ phải chạm/bước vào (chỗ nấp, trụ nguội, ấn thật, Hồn Châu, cung sinh) có thêm cột linh quang
+   * để đọc được từ xa trên sân tối; mối nguy (đụn tuyết, trụ nóng) dùng tông `accent` của kiếp.
+   */
+  hkMark(m: FxMsg): void {
+    const src = m.src ?? '';
+    const kind = m.s ?? '';
+    const x = m.x ?? 0;
+    const z = m.z ?? 0;
+    const pg = m.pg ?? 0;
+    const st = this.stage.get(src);
+    const c = st ?? { x, z };
+    switch (kind) {
+      case 'tuyet':
+        if (pg === 2) {
+          this.at('hk_tuyet_drift', 'hk_tuyet', x, z, m.r ?? 3, { delay: m.d ?? 9, src });
+          this.glow(src, `tuyet${m.n ?? 0}`, hexOf('hk_tuyet', 'accent'), { x, z, h: 4, r: m.r ?? 3, dur: m.d ?? 9, opacity: 0.4 });
+        } else if (pg === 0) this.dropGlow(src, 'tuyet');
+        break;
+      case 'phong': {
+        const yaw = Math.atan2(m.ox ?? 0, m.oz ?? 1);
+        if (pg === 1) {
+          const n = m.n ?? 3;
+          for (let i = 0; i < n; i++) {
+            const pp = hkRingPos({ x, z }, m.r ?? 7, i, n);
+            this.setLoop(src, `pil${i}`, 'hk_phong_pillar', 'hk_phong', pp.x, pp.z, 1.4);
+          }
+          this.ringOf.set(src, { n, r: m.r ?? 7 });
+        } else if (pg === 2) {
+          this.at('hk_phong_warn', 'hk_phong', c.x, c.z, 14, { yaw, delay: m.d ?? 3, src });
+          // Dòng cột sáng chạy xuyên sân theo chiều gió (lặp lại suốt thời gian báo): đọc hướng gió bằng chuyển động, không cần chữ.
+          const t0 = performance.now();
+          const dx = m.ox ?? 0;
+          const dz = m.oz ?? 0;
+          for (let k = 0; k < 6; k++)
+            this.glowFn(
+              src,
+              `phw${k}`,
+              hexOf('hk_phong', 'rim'),
+              () => {
+                const u = ((((performance.now() - t0) / 1000) * 9 + k * 4) % 24) - 12;
+                const side = (k % 2 ? 1 : -1) * 1.6;
+                const px = c.x + dx * u + dz * side;
+                const pz = c.z + dz * u - dx * side;
+                return { x: px, y: this.env.ground(px, pz), z: pz };
+              },
+              { h: 3.6, r: 1.7, dur: m.d ?? 3, opacity: 0.7, thick: 2.6 },
+            );
+          const rg = this.ringOf.get(src) ?? { n: 3, r: 7 };
+          // Chỗ nấp: ngay sau từng trụ theo chiều gió.
+          for (let i = 0; i < rg.n; i++) {
+            const pp = hkRingPos(c, rg.r, i, rg.n);
+            this.glow(src, `phs${i}`, hexOf('hk_phong', 'accent'), {
+              x: pp.x + (m.ox ?? 0) * 2.2,
+              z: pp.z + (m.oz ?? 0) * 2.2,
+              h: 5,
+              r: 1.9,
+              dur: m.d ?? 3,
+              opacity: 0.45,
+              pulse: 10,
+            });
+          }
+        } else if (pg === 3 || pg === 4) {
+          this.dropGlow(src, 'phs');
+          this.dropGlow(src, 'phw');
+          this.at('hk_phong_blow', 'hk_phong', c.x, c.z, 14, { yaw, src });
+          this.on(pg === 3 ? 'hk_phong_safe' : 'hk_phong_hit', 'hk_phong', src);
+        } else {
+          this.dropLoops(src, 'pil');
+          this.dropGlow(src, 'phs');
+        }
+        break;
+      }
+      case 'loi': {
+        const i = m.n ?? -1;
+        if (i < 0) {
+          this.dropLoops(src, 'rod');
+          this.dropGlow(src, 'rod');
+        } else if (pg === 1) {
+          this.setLoop(src, `rod${i}`, 'hk_loi_rod', 'hk_loi', x, z, 2.2);
+          this.glow(src, `rod${i}`, hexOf('hk_loi', 'body'), { x, z, h: 9, r: 1.8, dur: 60, opacity: 0.4 });
+        } else if (pg === 2) {
+          this.at('hk_loi_zap', 'hk_loi', x, z, 3, { src });
+          this.setLoop(src, `rod${i}`, 'hk_loi_hot', 'hk_loi', x, z, m.r ?? 4.5);
+          this.glow(src, `rod${i}`, hexOf('hk_loi', 'accent'), { x, z, h: 6, r: m.r ?? 4.5, dur: m.d ?? 9, opacity: 0.3, pulse: 12 });
+        } else this.at('hk_loi_boom', 'hk_loi', x, z, m.r ?? 4.5, { src });
+        break;
+      }
+      case 'ly':
+        if (pg === 1) {
+          this.setLoop(src, 'ly', 'hk_ly_seal', 'hk_tram_ly', x, z, m.r ?? 6);
+          this.glow(src, 'ly', hexOf('hk_tram_ly', 'body'), { x, z, h: 7, r: 1.4, dur: 60, opacity: 0.35 });
+        } else {
+          this.dropLoops(src, 'ly');
+          this.dropGlow(src, 'ly');
+        }
+        break;
+      case 'huyet':
+        if (pg === 1) {
+          this.lastShadow = { x, y: this.env.ground(x, z), z };
+          this.at('hk_huyet_spawn', 'hk_huyet_anh', x, z, 3, { src });
+        } else if (pg === 2) {
+          const s = this.lastShadow;
+          this.on('hk_huyet_kill', 'hk_huyet_anh', src, { tgt: s ? { ...s, chest: 1 } : null });
+        }
+        break;
+      case 'van':
+        if (pg === 1) {
+          // Các ấn trông giống nhau và cùng quay quanh tâm (`hkVanSpinAngle`): lúc đổi chỗ người chơi bám mắt theo ấn vừa sáng.
+          const n = m.n ?? 3;
+          const rr = m.r ?? 7;
+          const v = { shift: 0, t0: 0, dur: 1 };
+          this.vanOf.set(src, v);
+          for (let i = 0; i < n; i++)
+            this.glowFn(
+              src,
+              `an${i}`,
+              hexOf('hk_van_tam', 'body'),
+              () => {
+                const a = (i * Math.PI * 2) / n + hkVanSpinAngle(v.shift, n, (performance.now() - v.t0) / 1000, v.dur);
+                const px = x + Math.sin(a) * rr;
+                const pz = z + Math.cos(a) * rr;
+                return { x: px, y: this.env.ground(px, pz), z: pz };
+              },
+              { h: 5, r: m.lv ?? 2.6, dur: 60, opacity: 0.55, thick: 2.2 },
+            );
+        } else if (pg === 2) {
+          // Lượt mới: vòng về góc gốc (các ấn giống nhau nên không thấy giật), rồi ấn thật sáng lên.
+          const v = this.vanOf.get(src);
+          if (v) v.shift = 0;
+          this.at('hk_van_true', 'hk_van_tam', x, z, m.r ?? 2.6, { delay: m.d ?? 1.4, src });
+          this.glow(src, 'antrue', hexOf('hk_van_tam', 'accent'), { x, z, h: 11, r: m.r ?? 2.6, dur: m.d ?? 1.4, opacity: 0.6, pulse: 14 });
+        } else if (pg === 3) {
+          this.dropGlow(src, 'antrue');
+          const v = this.vanOf.get(src);
+          if (v) {
+            v.shift = m.n ?? 0;
+            v.t0 = performance.now();
+            v.dur = Math.max(0.4, (m.d ?? 3) * HK_VAN_SPIN_FRAC);
+          }
+          this.at('hk_van_spin', 'hk_van_tam', c.x, c.z, 7, { src });
+        } else if (pg === 4) this.at('hk_van_ok', 'hk_van_tam', x, z, m.r ?? 2.6, { src });
+        else if (pg === 5) {
+          // Sai: lộ lại ấn thật một nhịp để biết mình nhầm ở đâu.
+          this.at('hk_van_true', 'hk_van_tam', x, z, m.r ?? 2.6, { delay: 0.9, src });
+          this.on('hk_van_bad', 'hk_van_tam', src);
+        } else {
+          this.dropGlow(src, 'an');
+          this.vanOf.delete(src);
+        }
+        break;
+      case 'tuc':
+        if (pg === 1) this.on('hk_tuc_beat', 'hk_kho_than', src, { delay: Math.max(0.3, m.d ?? 2.9) });
+        else if (pg === 2) this.on('hk_tuc_good', 'hk_kho_than', src);
+        else if (pg === 3 || pg === 4) this.on('hk_tuc_bad', 'hk_kho_than', src);
+        break;
+      case 'chau': {
+        const i = m.n ?? -1;
+        if (i < 0) {
+          this.dropLoops(src, 'chau');
+          this.dropGlow(src, 'chau');
+          break;
+        }
+        const old = this.loops.get(`${src}:chau${i}`);
+        if (pg === 1) {
+          this.setLoop(src, `chau${i}`, 'hk_chau', 'hk_hon_tho', x, z, m.r ?? 1.8);
+          this.glow(src, `chau${i}`, hexOf('hk_hon_tho', 'body'), {
+            x,
+            z,
+            h: 3.2,
+            r: 1.8,
+            dur: m.d ?? 6,
+            opacity: 0.6,
+            pulse: 6,
+            thick: 1.5,
+          });
+        } else {
+          this.loops.delete(`${src}:chau${i}`);
+          this.dropGlow(src, `chau${i}`);
+          this.at(pg === 2 ? 'hk_chau_get' : 'hk_chau_gone', 'hk_hon_tho', old?.x ?? x, old?.z ?? z, 1.8, { src });
+        }
+        break;
+      }
+      case 'luan':
+        if (pg === 1) {
+          this.setLoop(src, 'luan', 'hk_luan_wheel', 'hk_luan_hoi', x, z, m.r ?? 13);
+          // Cung sinh: ba cột sáng dọc giữa cung, chạy mượt theo góc `ox + oz × t` server báo.
+          const t0 = performance.now();
+          const th0 = m.ox ?? 0;
+          const w = m.oz ?? 0;
+          for (const [k, rr] of [3, 5.5, 8].entries()) {
+            this.glowFn(
+              src,
+              `luan${k}`,
+              hexOf('hk_luan_hoi', 'rim'),
+              () => {
+                const th = hkLuanAngle(th0, w, (performance.now() - t0) / 1000);
+                const px = x + Math.sin(th) * rr;
+                const pz = z + Math.cos(th) * rr;
+                return { x: px, y: this.env.ground(px, pz), z: pz };
+              },
+              { h: 7 - k, r: 2.2, dur: (m.d ?? 5) + 0.4, opacity: 0.5 },
+            );
+          }
+        } else if (pg === 2) this.at('hk_luan_warn', 'hk_luan_hoi', c.x, c.z, 13, { delay: m.d ?? 1.2, src });
+        else if (pg === 3 || pg === 4) {
+          this.at('hk_luan_grind', 'hk_luan_hoi', c.x, c.z, 13, { src });
+          if (pg === 4) this.on('hk_phong_hit', 'hk_luan_hoi', src);
+        } else {
+          this.dropLoops(src, 'luan');
+          this.dropGlow(src, 'luan');
+        }
+        break;
     }
   }
 
