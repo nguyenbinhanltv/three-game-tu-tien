@@ -57,6 +57,7 @@ import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
 import tn1 from './scenarios/tn1';
 import vs2 from './scenarios/vs2';
+import hontu from './scenarios/hontu';
 import realmaura from './scenarios/realmaura';
 import fxlib from './scenarios/fxlib';
 import xichkhe from './scenarios/xichkhe';
@@ -82,6 +83,7 @@ const SCENARIOS: Scenario[] = [
   vfx,
   tn1,
   vs2,
+  hontu,
   outfit,
   skin,
   chrv2,

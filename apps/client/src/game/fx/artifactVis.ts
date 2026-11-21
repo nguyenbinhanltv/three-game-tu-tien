@@ -40,8 +40,9 @@ export function idlePose(kind: ArtifactKind, t: number, speed: number, out: ArtP
       Object.assign(out, { x: 0, y: 1.22, z: -0.38, rx: -0.3, ry: 0, rz: 0, s: 1.2 });
       break;
     case 'reap':
-      // Hồn phiên: cắm chéo sau lưng lệch vai trái, lá phiên rủ ra sau; đung đưa nhẹ theo bước chạy.
-      Object.assign(out, { x: 0.2, y: 0.92, z: -0.24, rx: -0.12, ry: Math.PI / 2, rz: 0.2 + sway * 0.8, s: 1.7 });
+      // Hồn phiên: cắm chéo sau lưng, cán nghiêng ra vai trái; mặt lá phiên quay về sau (phía camera mặc định) để đọc được
+      // hình đuôi én, không quay cạnh; đỉnh phiên thấp hơn đỉnh đầu để không che đầu nhân vật. Đung đưa nhẹ theo bước chạy.
+      Object.assign(out, { x: 0.18, y: 0.68, z: -0.27, rx: -0.1, ry: 0, rz: 0.5 + sway * 0.8, s: 1.5 });
       break;
     case 'heal':
       // Ngưng Đan Lô nhỏ, lơ lửng sau lưng hơi cao và lệch vai phải (không che mặt), lắc lư nhẹ.
