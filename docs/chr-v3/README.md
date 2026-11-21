@@ -142,3 +142,9 @@ Video và tờ khung: `pnpm shots v3sets --out <thư mục tuyệt đối>` (nam
 ### N-9b: sửa vạt Đan Tâm khi chạy
 
 Lỗi (video N-9): vạt áo dài bị kéo căng giữa hai chân như một tấm ván vắt ra sau khi chạy ngang, vạt sau văng ra, mảng tối quanh hông/đùi. Nguyên nhân: vạt liền phủ cả hai chân nên bị trọng số chân kéo; `share` thấp (0,6) làm nặng hơn (thử, bỏ). Sửa: `tools/blender/skins/v3sets/dan_tam.json` `skirt.share` 0,8 → **0,95** (vạt do lò xo/viên nang điều khiển, buông tự do) + viên nang đùi lớn hơn cho riêng bộ này (`SKIRT_TUNE['chr_v3_dan_tam_'] = { rMul: 1.5 }` ở `mannequin.ts`; bảng này cho phép chỉnh `spring`/`hemStiff`/`rMul` theo bộ). Xuyên áo (cặp mặt chồng, 12 tư thế, ARM_FIT 16°) không đổi: nam 3.164 → 3.188, nữ 2.900 → 2.852; đỉnh trong viên nang 16.301 → 15.914 / 19.154 → 19.056. Còn lại: mảng tối nhỏ của lớp lót sau lưng khi chạy ngang. Lưu ý: cache `assets:build` khóa theo file nguồn, đổi JSON cấu hình phải thêm `--force`. Quay: `pnpm shots v3sets --sets dan_tam [--sits chạy,chém]`.
+
+## Sửa cổ Tinh Khuyết nam / Thần Tàng nữ (21/11)
+
+Triệu chứng: mảng tím (Tinh Khuyết) / xanh đen (Thần Tàng) phẳng, kéo dài dưới cằm, cổ trông dài. **Nguyên nhân**: ống "thân dưới áo" của C2 (`chr_v3_c2.py`, `_tube`) chạy tới hết xương `neck_01` với ell 1,25 và bán kính 0,7× thân, nên lòi ra khỏi cổ thật; UV của nó trỏ vào texel nền áo (`underColor`). Không phải trọng số, ARM_FIT hay mặt nạ tách lưới.
+Sửa: khóa `c2.torsoTop: "spine"` (ống dừng ở giữa `spine_03`) trong `v3sets/tinh_khuyet.json`, `v3sets/than_tang.json`. Mặc định giữ `neck`: các bộ khác chưa đổi. Chỉ đổi phần hình học ẩn trong áo; vải, UV, texture gốc không đổi.
+Đo (rigstretch, % cạnh sai): Tinh Khuyết nam Idle 0,64%, Jog −68,7%, chém −67,8%, p99 tối đa 2,64 (bản trước sửa cùng số; Jog/chém của nam vốn ~68%, chưa đạt 70%); Thần Tàng nữ Idle 0,29%, Jog −78,6%, chém −77,2%, p99 2,46. Ảnh: `pnpm shots neck --out <dir>` (cận cổ + 4 góc ở đứng/chạy/chém).

@@ -10,7 +10,7 @@
   "bindA": ["nam", "nu"],
   "splitCloth": true,
   "keepOriginal": true,
-  "c2": {"seamTie": 0.3, "veilStrips": 3, "veilLinks": 2, "skirtThighK": 0.5, "nam": {"handKeep": 0.07}},
+  "c2": {"torsoTop": "spine", "seamTie": 0.3, "veilStrips": 3, "veilLinks": 2, "skirtThighK": 0.5, "nam": {"handKeep": 0.07}},
   "groups": [
     {
       "name": "skirt",
