@@ -48,7 +48,6 @@
         "pose"
       ],
       "assets": [
-        "set_skin_varkessa_nu",
         "chr_v3_varkessa_nu"
       ]
     },
@@ -198,10 +197,7 @@
         "rig"
       ],
       "assets": [
-        "chr_v2_nam",
-        "chr_v2_nu",
-        "chr_v2_hb_nam",
-        "chr_v2_hb_nu"
+        "chr_v2_nam"
       ]
     },
     {

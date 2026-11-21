@@ -323,7 +323,7 @@ export function tintOfTriple(d: readonly string[] | null | undefined): PlayerLoo
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 export function lookOf(s: PState, self = false): PlayerLook {
   const base = {
-    ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye, ...(s.hr ? { hair: s.hr } : {}) } : legacyAppearance(APPEARANCE, s.name)),
+    ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name)),
     w: SWORD_FORCED ?? swordModelOf(s.wp, s.wg ?? 0),
     ...(self ? { self: true } : {}),
   };
