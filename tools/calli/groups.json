@@ -126,6 +126,13 @@
           "style": "gold",
           "size": 200,
           "spacing": 0.04
+        },
+        {
+          "id": "skl_tat_dau_thanh_binh",
+          "key": "skill.skl_tat_dau_thanh_binh.name",
+          "style": "gold",
+          "size": 200,
+          "spacing": 0.04
         }
       ]
     },

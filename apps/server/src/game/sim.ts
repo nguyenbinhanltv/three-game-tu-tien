@@ -482,6 +482,8 @@ export class GameSim {
   private readonly artSys = new ArtifactSystem(
     ((s: GameSim): ArtifactCtx => ({
       addPosture: (m, n) => s.addPosture(m, n),
+      markMon: (p, mon, id, n) => s.combat.markMon(p, mon, id, n),
+      addRes: (p, n) => s.combat.addRes(p, n),
       airborne: (p) => s.airborne(p),
       canAssist: (p, o) => s.canAssist(p, o),
       get duel() {

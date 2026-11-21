@@ -84,7 +84,8 @@
     },
     "unlock": {
       "level": 10,
-      "gold": 300
+      "gold": 300,
+      "grant": "itm_hon_phien"
     }
   }
 ]
