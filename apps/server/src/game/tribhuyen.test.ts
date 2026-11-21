@@ -151,6 +151,27 @@ describe('vào kiếp', () => {
     }
   });
 
+  it('lệnh GM: vào thẳng một kiếp nhỏ, bỏ qua điều kiện chuỗi trước; đang trong kiếp thì từ chối và không đổi tiến độ', () => {
+    let entered = '';
+    const lv = content.LEVELS[HOME_LEVEL]!;
+    const spawn = lv.spawn ?? { x: 2040, z: 2040 };
+    const sim = new GameSim(
+      new WorldState(),
+      { broadcast: () => undefined, enterTribulationRoom: (_p: unknown, d: TribDef) => ((entered = d.id), true) } as never,
+      { levelId: HOME_LEVEL, roomName: HOME_LEVEL, spawn, respawn: spawn, persistPosition: false },
+    );
+    const char = Character.create(acc++, 'hkgm' + acc);
+    const p = sim.addPlayer({ sessionId: 'g' + acc, send: () => undefined } as never, char, true, 'g' + acc);
+    const gm = (sim as unknown as { gmSys: { tribulation(p: Ent, id: string, stage?: number): string } }).gmSys;
+    gm.tribulation(p, 'huyen_noi', 2);
+    expect(entered).toBe('huyen_noi');
+    expect(chainCleared(char.meta, CHAINS[1]!)).toBe(1);
+    expect(chainCleared(char.meta, CHAINS[0]!)).toBe(0);
+    p.trib = { id: 'huyen_noi', endAt: sim.now + 1000, nextAt: sim.now, n: 0, fin: false, pills: 0 };
+    expect(gm.tribulation(p, 'huyen_noi', 3)).toContain('không độ kiếp được');
+    expect(chainCleared(char.meta, CHAINS[1]!)).toBe(1);
+  });
+
   it('đã qua đủ chuỗi thì không vào lại', () => {
     const { sim, p } = mk(CHAINS[2]!, 3, HOME_LEVEL);
     sim.onBreakthrough(p, true, 'huyen_hon');
