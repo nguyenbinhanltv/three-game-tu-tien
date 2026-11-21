@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { FxMsg } from '@dtl/shared';
 import { FX_TIMELINE, HON_FX, METHOD_SKILLS } from '@dtl/content';
 import {
+  awayFromCamera,
   HON_BINH_MAX,
   HON_BINH_SEG,
   HON_FX_DIST,
@@ -138,5 +139,32 @@ describe('ba hồn binh của Tát Đậu Thành Binh (TN-2)', () => {
     const d = mkBinh();
     playHonBinh(d.env, 'p4', 0);
     expect(d.starts).toHaveLength(0);
+  });
+});
+
+describe('hồn binh đặt theo hướng nhìn của camera (duyệt ảnh #447)', () => {
+  it('dù nhân vật quay mặt về đâu, cả ba hồn binh đều ở phía xa camera hơn nhân vật; khung bám theo vị trí nhân vật', () => {
+    const tl = HON_FX.get('hon_binh_stand')!;
+    const offs = tl.events.flatMap((e) => (e.type === 'mesh' && e.shape === 'soul_soldier' ? [e.offset as number[]] : []));
+    expect(offs).toHaveLength(3);
+    for (const cam of [
+      { x: 0, z: -18 },
+      { x: 18, z: 0 },
+      { x: -12, z: 13 },
+    ]) {
+      for (const faceYaw of [0, Math.PI / 2, Math.PI, -2.2]) {
+        const ent = { x: 4, y: 0, z: 7, yaw: faceYaw, model: {} };
+        const a = awayFromCamera(ent, cam);
+        const dPlayer = Math.hypot(ent.x - cam.x, ent.z - cam.z);
+        for (const o of offs) {
+          // Cùng phép đặt của FxRunner.anchor: x = phải, z = trước theo `yaw` của khung.
+          const wx = a.x + Math.cos(a.yaw) * o[0]! + Math.sin(a.yaw) * o[2]!;
+          const wz = a.z - Math.sin(a.yaw) * o[0]! + Math.cos(a.yaw) * o[2]!;
+          expect(Math.hypot(wx - cam.x, wz - cam.z)).toBeGreaterThan(dPlayer);
+        }
+        ent.x = 9;
+        expect(a.x).toBe(9);
+      }
+    }
   });
 });
