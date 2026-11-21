@@ -554,7 +554,10 @@
     "npc_co_bat_dich": "Cố Bất Dịch",
     "npc_mac_chieu_bia": "Mặc Chiếu",
     "npc_tinh_quang_su": "Tịnh Quang Dực Sứ",
-    "npc_tinh_quang_do": "Tịnh Quang Dực Sứ"
+    "npc_tinh_quang_do": "Tịnh Quang Dực Sứ",
+    "npc_luong_tu_gioi": "Lương Tư Giới",
+    "npc_luong_tu_gioi_dong": "Lương Tư Giới",
+    "npc_thach_nghien": "Thạch Nghiên"
   },
   "skins": {
     "itm_skin_varkessa": "Xích Diễm Ma Cơ",
