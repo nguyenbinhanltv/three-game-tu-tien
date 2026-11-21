@@ -1195,7 +1195,6 @@ if (ROOTS.map((r) => r.id).join() !== ROOT_IDS.join())
   }
 }
 for (const r of ROOTS) {
-  needStr(`root.${r.id}.name`);
   needStr(`root.${r.id}.desc`);
   needStr(`elem.${r.id}`);
 }

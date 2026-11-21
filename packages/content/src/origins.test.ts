@@ -28,8 +28,9 @@ describe('origins.json (TN-1)', () => {
     for (const o of ORIGINS) expect(t(`origin.${o.id}.name`), o.id).toBe(gl[o.group]![o.id]);
   });
 
-  it('năm nguồn ngũ hành giữ đúng số của linh căn cũ; ROOTS vẫn là năm nguồn đó', () => {
-    expect(ROOTS.map(({ id, elem, elemDmg, stat }) => ({ id, elem, elemDmg, stat }))).toEqual(LEGACY_ROOTS);
+  it('năm nguồn ngũ hành giữ đúng số của linh căn cũ; ROOTS = năm nguồn đó + Lôi (TN1-2)', () => {
+    expect(ROOTS.map((r) => r.id)).toEqual([...ROOT_IDS]);
+    expect(ROOTS.slice(0, 5).map(({ id, elem, elemDmg, stat }) => ({ id, elem, elemDmg, stat }))).toEqual(LEGACY_ROOTS);
     for (const r of LEGACY_ROOTS) expect(ROOT.get(r.id)).toBe(ORIGIN.get(r.id));
   });
 

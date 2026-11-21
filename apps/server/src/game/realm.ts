@@ -181,7 +181,7 @@ export class RealmSystem {
       return true;
     });
     if (!ok) return;
-    h.sys(p, 'sys.root_changed', { root: t(`root.${to}.name`), n: cost }, 'good');
+    h.sys(p, 'sys.root_changed', { root: t(`origin.${to}.name`), n: cost }, 'good');
     h.fx({ t: 'potion', src: p.sid });
   }
 }

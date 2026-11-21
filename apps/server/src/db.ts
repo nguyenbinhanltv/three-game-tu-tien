@@ -12,7 +12,7 @@ import {
   isEquipSlot,
   isRootId,
   isWearSlot,
-  ROOT_IDS,
+  ELEM_ROOT_IDS,
   TELE_FREE,
   TELE_PADS,
   TRUC_CO_LEVEL,
@@ -261,10 +261,11 @@ function migrateEquipSlots(sqlite: Database.Database): void {
 }
 
 /** Linh căn xác định theo tên cho nhân vật cũ (cùng tên luôn ra cùng linh căn, không cần ngẫu nhiên). */
-export function rootForName(name: string): (typeof ROOT_IDS)[number] {
+export function rootForName(name: string): (typeof ELEM_ROOT_IDS)[number] {
   let h = 0;
   for (const ch of name) h = (h * 31 + ch.codePointAt(0)!) >>> 0;
-  return at(ROOT_IDS, h % ROOT_IDS.length, 'ROOT_IDS');
+  // Chỉ trên năm nguồn ngũ hành: thêm Lôi (TN-1) không được làm đổi nguồn của nhân vật cũ.
+  return at(ELEM_ROOT_IDS, h % ELEM_ROOT_IDS.length, 'ELEM_ROOT_IDS');
 }
 
 /**
