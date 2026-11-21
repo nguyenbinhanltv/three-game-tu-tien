@@ -95,6 +95,7 @@ import {
   SKILLS,
   JOINTS,
   MARK,
+  PATHS,
   MARKS,
   METHODS,
   METHOD,
@@ -106,6 +107,8 @@ import {
 import { LOOT, LOOT_MATS } from './loot';
 import {
   jointErrors,
+  pathErrors,
+  POSE_VOICES,
   stanceErrors,
   branchErrors,
   chainErrors,
@@ -292,6 +295,15 @@ for (const m of METHODS) {
 for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined)) err(m);
 // VS-2b: đồ thị chuỗi chiêu (id có thật, cùng công pháp, không vòng, hệ số trong khoảng).
 for (const m of chainErrors(ALL_SKILLS)) err(m);
+// VS-3: hướng tu (mỗi công pháp thuộc đúng một hướng; màu, bộ động tác, ấn phối hợp hợp lệ; tên khớp glossary.paths).
+for (const e of pathErrors(PATHS, METHODS, new Set(MARKS.map((m) => m.id)), POSE_VOICES)) err(e);
+for (const p of PATHS) {
+  needStr(`path.${p.id}.name`);
+  needStr(`path.${p.id}.desc`);
+  if (t(`path.${p.id}.name`) !== (GLOSSARY.paths as Record<string, string>)[p.id]) err(`path ${p.id}: tên lệch glossary.paths`);
+  // Tên vai của công pháp (hiện trên bảng Công pháp) phải trùng tên hướng tu của nó.
+  for (const m of p.methods) if (t(`method.${m}.role`) !== t(`path.${p.id}.name`)) err(`path ${p.id}: tên lệch method.${m}.role`);
+}
 // VS-2f: hợp kích tổ đội.
 for (const e of jointErrors(JOINTS, MARK)) err(e);
 for (const j of JOINTS) {
