@@ -500,6 +500,7 @@ export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' |
     s === 'shield_plate' ||
     s === 'diamond_cage' ||
     s === 'pill_orb' ||
+    s === 'co_vuong' ||
     s === 'dan_lo'
   )
     return 'crystal';

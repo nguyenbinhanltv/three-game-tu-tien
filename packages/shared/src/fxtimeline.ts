@@ -78,6 +78,8 @@ export const FX_LIB_SHAPES = [
   'flame_tongue',
   // Đan lô (lò luyện đan ba chân, `crystal`, đứng +Y, đáy y = 0).
   'dan_lo',
+  // Cổ tu: Cổ Vương (con cổ khổng lồ: thân ba đốt, đầu, hai cặp cánh, hai càng, hai râu; `crystal`, mũi ở +Z, cánh dang ±X).
+  'co_vuong',
 ] as const;
 
 /** Hình vẽ bằng shader `toon` (có lớp bóng sẫm phía sau khi `shadow` không tắt): tính thêm một nhóm draw call khi đếm ngân sách. */

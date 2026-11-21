@@ -523,6 +523,7 @@ function petalBlade(): THREE.BufferGeometry {
 // Chuông và kim cương là KHUNG (gọng + đai) chứ không phải vỏ kín: úp quanh người mà vẫn thấy nhân vật bên trong.
 // ---------------------------------------------------------------------------------------------------------------
 type V5 = [number, number, number, number, number];
+type V3 = [number, number, number];
 
 /** Gom tam giác rời (mỗi mặt một pháp tuyến); tự lật chiều để mặt hướng ra xa điểm `o` (tâm khối). */
 class Faces {
@@ -906,6 +907,77 @@ function flameTongue(): THREE.BufferGeometry {
 }
 
 /**
+ * Cổ Vương (kiểu `crystal`): con cổ khổng lồ nhìn từ trên/sau, đầu ở +Z, dài ~2,6, sải cánh ~3: thân ba đốt giảm dần + đầu (khối đa diện thấp có khối),
+ * hai cặp cánh lá dày (dang lên, xòe ±X), hai càng cong quặp vào phía trước, hai râu. `u` ngang mỗi mặt, `v` từ đuôi (0) tới đầu/mũi (1): càng, đầu và đầu cánh sáng
+ * hơn lõi thân nên có tương phản lõi tối / viền sáng. Có lưới thấp (khoảng 300 tam giác) để dựng một lần.
+ */
+function coVuong(): THREE.BufferGeometry {
+  const f = new Faces();
+  const seg = (cx: number, cy: number, cz: number, rx: number, ry: number, rz: number, v0: number): void => {
+    const ico = new THREE.IcosahedronGeometry(1, 1).toNonIndexed();
+    const p = ico.getAttribute('position');
+    f.o = [cx, cy, cz];
+    const us = [0.2, 0.5, 0.8];
+    for (let i = 0; i < p.count; i += 3) {
+      const v = (k: number): V5 => {
+        const x = p.getX(i + k);
+        const y = p.getY(i + k);
+        const z = p.getZ(i + k);
+        return [cx + x * rx, cy + y * ry, cz + z * rz, us[k]!, Math.min(1, Math.max(0, v0 + z * 0.12))];
+      };
+      f.tri(v(0), v(1), v(2));
+    }
+  };
+  // thân ba đốt + đầu (v tăng dần về phía đầu)
+  seg(0, 0, -0.85, 0.34, 0.3, 0.42, 0.1);
+  seg(0, 0.02, -0.2, 0.46, 0.38, 0.5, 0.3);
+  seg(0, 0, 0.42, 0.34, 0.3, 0.4, 0.55);
+  seg(0, -0.02, 0.98, 0.24, 0.22, 0.26, 0.85);
+  // cánh lá dày (hình thoi dẹt có độ dày): gốc ở lưng đốt giữa, dang lên và ra hai bên
+  const leaf = (root: V3, tip: V3, wide: number, v0: number): void => {
+    const mid: V3 = [(root[0] + tip[0]) / 2, (root[1] + tip[1]) / 2, (root[2] + tip[2]) / 2];
+    const dir = new THREE.Vector3(tip[0] - root[0], tip[1] - root[1], tip[2] - root[2]).normalize();
+    const up = new THREE.Vector3(0, 1, 0);
+    const side = new THREE.Vector3().crossVectors(dir, up).normalize();
+    const nrm = new THREE.Vector3().crossVectors(side, dir).normalize();
+    const at = (c: V3, k: number, s: THREE.Vector3): V3 => [c[0] + s.x * k, c[1] + s.y * k, c[2] + s.z * k];
+    const l = at(mid, wide, side);
+    const r = at(mid, -wide, side);
+    const t = at(mid, 0.05, nrm);
+    const b = at(mid, -0.05, nrm);
+    f.o = mid;
+    const P = (q: V3, u: number, v: number): V5 => [q[0], q[1], q[2], u, v];
+    for (const [m, n] of [
+      [t, l],
+      [l, b],
+      [b, r],
+      [r, t],
+    ] as const) {
+      f.tri(P(root, 0.5, v0), P(m, 0.1, (v0 + 1) / 2), P(n, 0.9, (v0 + 1) / 2));
+      f.tri(P(tip, 0.5, 1), P(n, 0.9, (v0 + 1) / 2), P(m, 0.1, (v0 + 1) / 2));
+    }
+  };
+  for (const s of [-1, 1]) {
+    leaf([s * 0.3, 0.3, -0.1], [s * 1.55, 1.0, -0.9], 0.33, 0.3);
+    leaf([s * 0.28, 0.22, 0.2], [s * 1.35, 0.75, 0.55], 0.26, 0.45);
+  }
+  // hai càng cong quặp vào phía trước, hai râu
+  const vOf = (y: number): number => Math.min(1, Math.max(0, 0.6 + y * 0.3));
+  for (const s of [-1, 1]) {
+    const pts = [
+      new THREE.Vector3(s * 0.2, 0, 1.1),
+      new THREE.Vector3(s * 0.55, 0.02, 1.55),
+      new THREE.Vector3(s * 0.62, 0.05, 2.0),
+      new THREE.Vector3(s * 0.3, 0.05, 2.4),
+    ];
+    for (let i = 0; i < pts.length - 1; i++) f.beam(pts[i]!, pts[i + 1]!, 0.075 - i * 0.015, vOf);
+    const ant = [new THREE.Vector3(s * 0.1, 0.1, 1.15), new THREE.Vector3(s * 0.3, 0.45, 1.6), new THREE.Vector3(s * 0.55, 0.65, 2.0)];
+    for (let i = 0; i < ant.length - 1; i++) f.beam(ant[i]!, ant[i + 1]!, 0.025, vOf);
+  }
+  return f.done();
+}
+
+/**
  * Đan lô (kiểu `crystal`): lò luyện đan ba chân, thân bầu mười mặt, miệng loe, nắp vồng có núm, hai quai. Đứng +Y, đáy chân ở y = 0, cao ~1,45.
  * `u` 0 → 1 ngang mỗi mặt nên các cạnh dọc thân lò có gân sáng (đường gân đúc); `v` theo độ cao (mọc từ đất lên bằng `sweep`).
  */
@@ -976,6 +1048,7 @@ const BUILDERS: Record<FxLibShape, () => THREE.BufferGeometry> = {
   lotus_bloom: lotusBloom,
   flame_tongue: flameTongue,
   dan_lo: danLo,
+  co_vuong: coVuong,
 };
 
 const cache = new Map<FxLibShape, THREE.BufferGeometry>();

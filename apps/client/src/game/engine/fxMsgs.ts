@@ -27,6 +27,7 @@ import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
 import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from '../fx/methodFx';
+import { CO_FX_KINDS, CO_STAND_KINDS, playCoFx, playCoStand } from '../fx/coFx';
 import { awayFromCamera, HON_FX_KINDS, playHonBinh, playHonFx } from '../fx/honFx';
 import { get, pushLog, pushToast, set } from '../../ui/store';
 import { sysChannel } from '../../ui/u2/hud/chatChannel';
@@ -170,6 +171,44 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
         m,
       );
     return;
+  }
+  // Cổ tu: nhịp bầy cổ / Cổ Vương cắn (hình ở con quái bị cắn) và bầy cổ đứng quanh người gọi (server báo `d` = thời gian chiêu).
+  if (CO_FX_KINDS[m.t]) {
+    const runner = eng.skillFx?.runner;
+    if (runner && !held)
+      playCoFx(
+        {
+          startAt: (tl, o) => runner.startAt(tl, o),
+          posOf: (id) => {
+            const o = e.monsters.get(id) ?? e.players.get(id);
+            return o ? { x: o.x, y: groundAt(o.x, o.z), z: o.z } : null;
+          },
+          mySid: () => eng.sid,
+          viewer: () => eng.renderPos,
+          live: () => v.pool.live,
+        },
+        m,
+      );
+    return;
+  }
+  if (CO_STAND_KINDS[m.t] && !held && m.src) {
+    const runner = eng.skillFx?.runner;
+    if (runner)
+      playCoStand(
+        {
+          startAt: (tl, o) => runner.startAt(tl, o),
+          // "Phía trước" là hướng nhìn của camera (như hồn binh): bầy cổ và Cổ Vương luôn ở phía xa camera hơn người gọi, không chen giữa camera và nhân vật.
+          caster: (sid) => {
+            const ent = ((eng.view.players.get(sid)?.fl ?? PF_DEAD) & PF_DEAD) === 0 ? e.players.get(sid) : undefined;
+            return ent ? awayFromCamera(ent, eng.camera.position) : null;
+          },
+          mySid: () => eng.sid,
+          after: (sec, done) => v.track(sec, () => undefined, done),
+        },
+        m.src,
+        m.d ?? 10,
+        m.t,
+      );
   }
   // TN-2: Tát Đậu Thành Binh vừa ra (server báo `d` = thời gian chiêu): giữ ba hồn binh quanh người gọi tới hết giờ. Chỉ là hình.
   if (m.t === 'honbinh' && !held && m.src) {

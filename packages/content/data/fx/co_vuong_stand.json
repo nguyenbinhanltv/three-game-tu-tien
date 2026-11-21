@@ -1,0 +1,78 @@
+{
+ "skill": "co_vuong_stand",
+ "palette": "duong_co_kinh",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "co_vuong",
+   "t": 0.0,
+   "dur": 3.6,
+   "at": "self",
+   "offset": [
+    2.6,
+    3.6,
+    3.4
+   ],
+   "rot": [
+    12,
+    0,
+    0
+   ],
+   "scale": 2.4,
+   "sweep": 0,
+   "erodeFrom": 0.98,
+   "alpha": 1.0,
+   "tone": "core",
+   "camFade": true,
+   "follow": true,
+   "tier": 0,
+   "seed": 70
+  },
+  {
+   "type": "mesh",
+   "shape": "co_vuong",
+   "t": 0.0,
+   "dur": 3.6,
+   "at": "self",
+   "offset": [
+    2.6,
+    3.65,
+    3.4
+   ],
+   "rot": [
+    12,
+    0,
+    0
+   ],
+   "scale": 2.2,
+   "sweep": 0,
+   "erodeFrom": 0.98,
+   "alpha": 0.9,
+   "tone": "body",
+   "camFade": true,
+   "follow": true,
+   "tier": 0,
+   "seed": 71,
+   "shadow": false
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 14,
+   "speed": 1.2,
+   "spread": 1,
+   "life": 0.9,
+   "size": 0.14,
+   "at": "self",
+   "offset": [
+    2.6,
+    3.0,
+    3.4
+   ],
+   "tone": "core",
+   "grav": -1.0,
+   "tier": 1
+  }
+ ]
+}
