@@ -73,7 +73,7 @@ const PHAP = /scene_|van_kiem_quy_tong|kim_cuong|hoi_thien/;
 const PHAP_SOLO = /kim_cuong|hoi_thien|scene_/;
 /** Chiêu diện rộng/từ trên cao: lùi camera, ngẩng cao để thấy cả vùng. */
 const WIDE =
-  /scene_|kim_cuong|thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
+  /scene_|kim_cuong|thien_kiem_vu|van_kiem_quy_tong|tram_son_dao|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
 /** Chiêu lướt của công pháp (phím Q, `useDash`). Chiêu lướt bậc cao (Nghịch Kiếm, Dịch Sơn Xung) nằm trên thanh chiêu: bấm ô như chiêu thường. */
 const DASH = /kiem_anh_bo|thiet_bich_xung|luu_huong_bo/;
 const ULT =
@@ -398,7 +398,7 @@ export default {
             await gm(page, 'tp 2048 2150', 1500);
             if (!PHAP_SOLO.test(sk)) await gm(page, 'spawn mon_soi_xam 1', 1500);
           }
-          if (ULT.test(sk)) await gm(page, 'charge', 900);
+          if (ULT.test(sk)) await gm(page, 'charge', 1800);
           const wide = WIDE.test(sk);
           const dist = mon ? num('--mon-dist', MON_DIST[mon.kind] ?? 10) : wide ? num('--wide', 9.5) : num('--dist', 7);
           await closeCam(

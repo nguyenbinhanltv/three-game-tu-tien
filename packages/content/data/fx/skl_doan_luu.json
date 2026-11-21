@@ -47,8 +47,8 @@
     0,
     40
    ],
-   "scale": 2.4,
-   "scaleTo": 4.2,
+   "scale": 1.8,
+   "scaleTo": 3.2,
    "spin": -300,
    "sweep": 0.4,
    "erodeFrom": 0.5,
@@ -78,8 +78,8 @@
     0,
     -40
    ],
-   "scale": 2.0,
-   "scaleTo": 3.6,
+   "scale": 1.5,
+   "scaleTo": 2.8,
    "spin": 300,
    "sweep": 0.4,
    "erodeFrom": 0.5,
@@ -119,8 +119,8 @@
     0,
     -10
    ],
-   "scale": 2.8,
-   "scaleTo": 3.8,
+   "scale": 2.2,
+   "scaleTo": 3.0,
    "sweep": 0.3,
    "erodeFrom": 0.4,
    "shadow": false,

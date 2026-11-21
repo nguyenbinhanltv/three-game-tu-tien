@@ -40,12 +40,12 @@ def bao_nhan():
     ev = [
         parts('spark', -0.3, 22, 1.4, 1, 0.26, 0.07, at='self', offset=[0.2, 0, 0.4], inward=True, tone='rim', tier=1),
         snd(-0.3, 'sword', 0.5, 0.78),
-        mesh('slash_thick', -0.16, 0.3, at='ahead', offset=[0, 0.2, 0.5], rot=[0, 0, -48], scale=3.0, scaleTo=5.0, spin=300, sweep=0.4, erodeFrom=0.5, ragged=0.6, move={'to': 'target', 'ahead': 9, 'ease': 'out'}, tone='body', alpha=1, tier=0),
-        mesh('slash_thick', -0.14, 0.28, at='ahead', offset=[0, 0.2, 0.5], rot=[0, 0, -48], scale=2.0, scaleTo=3.4, spin=300, sweep=0.4, erodeFrom=0.45, ragged=0.4, shadow=False, move={'to': 'target', 'ahead': 9, 'ease': 'out'}, tone='rim', alpha=0.95, seed=4, tier=0),
-        mesh('slash_thin', -0.13, 0.32, at='ahead', offset=[0, -0.05, 0.2], rot=[0, 0, -66], scale=3.2, scaleTo=5.4, spin=260, sweep=0.35, erodeFrom=0.35, ragged=0.8, shadow=False, move={'to': 'target', 'ahead': 9, 'ease': 'out'}, tone='core', alpha=0.9, seed=9, tier=1),
+        mesh('slash_thick', -0.16, 0.3, at='ahead', offset=[0, 0.2, 0.5], rot=[0, 0, -48], scale=2.0, scaleTo=3.4, spin=300, sweep=0.4, erodeFrom=0.5, ragged=0.6, move={'to': 'target', 'ahead': 9, 'ease': 'out'}, tone='body', alpha=1, tier=0),
+        mesh('slash_thick', -0.14, 0.28, at='ahead', offset=[0, 0.2, 0.5], rot=[0, 0, -48], scale=1.4, scaleTo=2.4, spin=300, sweep=0.4, erodeFrom=0.45, ragged=0.4, shadow=False, move={'to': 'target', 'ahead': 9, 'ease': 'out'}, tone='rim', alpha=0.95, seed=4, tier=0),
+        mesh('slash_thin', -0.13, 0.32, at='ahead', offset=[0, -0.05, 0.2], rot=[0, 0, -66], scale=2.4, scaleTo=4.0, spin=260, sweep=0.35, erodeFrom=0.35, ragged=0.8, shadow=False, move={'to': 'target', 'ahead': 9, 'ease': 'out'}, tone='core', alpha=0.9, seed=9, tier=1),
         snd(-0.1, 'slash', 0.55, 0.9, 0.06),
         # vết chéo chữ X bùng ở mục tiêu
-        mesh('slash_cross', 0.0, 0.3, at='target', offset=[0, 1.0, 0], rot=[0, 0, 12], scale=3.2, scaleTo=4.4, sweep=0.3, erodeFrom=0.4, shadow=False, tone='rim', alpha=0.9, seed=3, tier=0),
+        mesh('slash_cross', 0.0, 0.3, at='target', offset=[0, 1.0, 0], rot=[0, 0, 12], scale=2.4, scaleTo=3.2, sweep=0.3, erodeFrom=0.4, shadow=False, tone='rim', alpha=0.9, seed=3, tier=0),
         snd(0.0, 'impact', 0.7, 0.85),
     ]
     ev += impact(0.0, burst=2.6)
@@ -97,9 +97,9 @@ def hoanh_dao():
     ev = [
         parts('spark', -0.4, 20, 1.3, 1, 0.3, 0.06, at='self', offset=[0, 0.1, 0.4], inward=True, tone='rim', tier=1),
         snd(-0.4, 'sword', 0.5, 0.78),
-        mesh('slash_thick', -0.22, 0.34, at='ahead', offset=[0, 0.5, 0.6], rot=[0, 0, -6], scale=3.0, scaleTo=4.8, sweep=0.35, erodeFrom=0.55, ragged=0.55, move={'to': 'ahead', 'ahead': L, 'ease': 'out'}, tone='body', alpha=1, tier=0),
-        mesh('slash_thick', -0.2, 0.32, at='ahead', offset=[0, 0.5, 0.6], rot=[0, 0, -6], scale=2.2, scaleTo=3.8, sweep=0.35, erodeFrom=0.5, ragged=0.4, shadow=False, move={'to': 'ahead', 'ahead': L, 'ease': 'out'}, tone='rim', alpha=0.95, seed=4, tier=0),
-        mesh('slash_thin', -0.18, 0.36, at='ahead', offset=[0, 0.3, 0.2], rot=[0, 0, 4], scale=3.2, scaleTo=5.2, sweep=0.3, erodeFrom=0.35, ragged=0.8, shadow=False, move={'to': 'ahead', 'ahead': L, 'ease': 'out'}, tone='core', alpha=0.9, seed=9, tier=1),
+        mesh('slash_thick', -0.22, 0.34, at='ahead', offset=[0, 0.5, 0.6], rot=[0, 0, -6], scale=2.2, scaleTo=3.6, sweep=0.35, erodeFrom=0.55, ragged=0.55, move={'to': 'ahead', 'ahead': L, 'ease': 'out'}, tone='body', alpha=1, tier=0),
+        mesh('slash_thick', -0.2, 0.32, at='ahead', offset=[0, 0.5, 0.6], rot=[0, 0, -6], scale=1.6, scaleTo=2.8, sweep=0.35, erodeFrom=0.5, ragged=0.4, shadow=False, move={'to': 'ahead', 'ahead': L, 'ease': 'out'}, tone='rim', alpha=0.95, seed=4, tier=0),
+        mesh('slash_thin', -0.18, 0.36, at='ahead', offset=[0, 0.3, 0.2], rot=[0, 0, 4], scale=2.4, scaleTo=4.0, sweep=0.3, erodeFrom=0.35, ragged=0.8, shadow=False, move={'to': 'ahead', 'ahead': L, 'ease': 'out'}, tone='core', alpha=0.9, seed=9, tier=1),
         snd(-0.2, 'slash', 0.55, 0.85, 0.06),
         mesh('rift_line', 0.0, 0.9, at='ahead', offset=[0, 0.12, 0.4], scale=[1.6, 1, L], alpha=1, sweep=0.55, erodeFrom=0.75, shadow=False, tone='core', tier=0, seed=3),
         decal('crack', 0.05, 2.2, 2.6, at='ahead', offset=[0, 0, 3.0], grow=0.12, tone='core', alpha=1, tier=1),
@@ -151,10 +151,10 @@ def doan_luu():
     ev = [
         parts('spark', -0.3, 18, 1.3, 1, 0.26, 0.06, at='self', offset=[0.2, 0, 0.4], inward=True, tone='rim', tier=1),
         snd(-0.3, 'sword', 0.5, 0.95),
-        mesh('slash_thick', -0.16, 0.26, at='ahead', offset=[0, 0.3, 0.4], rot=[0, 0, 40], scale=2.4, scaleTo=4.2, spin=-300, sweep=0.4, erodeFrom=0.5, ragged=0.5, move={'to': 'target', 'ahead': 9, 'ease': 'out'}, tone='body', alpha=1, tier=0),
-        mesh('slash_thick', -0.1, 0.26, at='ahead', offset=[0, 0.3, 0.4], rot=[0, 0, -40], scale=2.0, scaleTo=3.6, spin=300, sweep=0.4, erodeFrom=0.5, ragged=0.5, shadow=False, move={'to': 'target', 'ahead': 9, 'ease': 'out'}, tone='rim', alpha=0.95, seed=5, tier=0),
+        mesh('slash_thick', -0.16, 0.26, at='ahead', offset=[0, 0.3, 0.4], rot=[0, 0, 40], scale=1.8, scaleTo=3.2, spin=-300, sweep=0.4, erodeFrom=0.5, ragged=0.5, move={'to': 'target', 'ahead': 9, 'ease': 'out'}, tone='body', alpha=1, tier=0),
+        mesh('slash_thick', -0.1, 0.26, at='ahead', offset=[0, 0.3, 0.4], rot=[0, 0, -40], scale=1.5, scaleTo=2.8, spin=300, sweep=0.4, erodeFrom=0.5, ragged=0.5, shadow=False, move={'to': 'target', 'ahead': 9, 'ease': 'out'}, tone='rim', alpha=0.95, seed=5, tier=0),
         snd(-0.1, 'slash', 0.5, 1.05, 0.06),
-        mesh('slash_cross', 0.0, 0.3, at='target', offset=[0, 1.0, 0], rot=[0, 0, -10], scale=2.8, scaleTo=3.8, sweep=0.3, erodeFrom=0.4, shadow=False, tone='accent', alpha=0.9, seed=3, tier=0),
+        mesh('slash_cross', 0.0, 0.3, at='target', offset=[0, 1.0, 0], rot=[0, 0, -10], scale=2.2, scaleTo=3.0, sweep=0.3, erodeFrom=0.4, shadow=False, tone='accent', alpha=0.9, seed=3, tier=0),
         # vành triện ghìm dưới chân mục tiêu, ở lại trong lúc choáng
         decal('rune', 0.05, 2.6, 1.8, at='ground', grow=0.2, tone='body', alpha=0.9, tier=0),
         mesh('rune_ring2', 0.05, 1.5, at='ground', offset=[0, 0.1, 0], scale=0.45, scaleTo=0.5, sweep=0.2, erodeFrom=0.8, alpha=0.9, shadow=False, tone='rim', tier=0, seed=8),

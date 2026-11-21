@@ -47,8 +47,8 @@
     0,
     -48
    ],
-   "scale": 3.0,
-   "scaleTo": 5.0,
+   "scale": 2.0,
+   "scaleTo": 3.4,
    "spin": 300,
    "sweep": 0.4,
    "erodeFrom": 0.5,
@@ -78,8 +78,8 @@
     0,
     -48
    ],
-   "scale": 2.0,
-   "scaleTo": 3.4,
+   "scale": 1.4,
+   "scaleTo": 2.4,
    "spin": 300,
    "sweep": 0.4,
    "erodeFrom": 0.45,
@@ -111,8 +111,8 @@
     0,
     -66
    ],
-   "scale": 3.2,
-   "scaleTo": 5.4,
+   "scale": 2.4,
+   "scaleTo": 4.0,
    "spin": 260,
    "sweep": 0.35,
    "erodeFrom": 0.35,
@@ -152,8 +152,8 @@
     0,
     12
    ],
-   "scale": 3.2,
-   "scaleTo": 4.4,
+   "scale": 2.4,
+   "scaleTo": 3.2,
    "sweep": 0.3,
    "erodeFrom": 0.4,
    "shadow": false,
