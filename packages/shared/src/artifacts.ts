@@ -2,6 +2,7 @@
 // Dữ liệu (3 pháp bảo, hệ số kỹ năng) nằm ở packages/content/data/artifacts.json.
 
 import type { MarkId } from './marks';
+import type { ResourceId } from './resource';
 
 export const ARTIFACT_MAX_LEVEL = 5;
 /** Số mục tiêu quái tối đa Hồ Lô hút một lần. */
@@ -31,7 +32,8 @@ export interface ArtifactDef {
   /** Thời lượng hiệu ứng (giây): choáng quái thường (seal) hoặc khiên (shield). */
   duration?: number;
   /** Nội tại: cộng `per` mỗi cấp pháp bảo. */
-  passive: { kind: ArtifactPassiveKind; per: number };
+  /** `res` (bắt buộc với kind `soul`): nội tại chỉ có tác dụng khi công pháp đang tu dùng đúng tài nguyên riêng này. */
+  passive: { kind: ArtifactPassiveKind; per: number; res?: ResourceId };
   /** Màu hiệu ứng (hex không có `#`). Chỉ là lớp hình. */
   color: string;
   /** Bản mệnh pháp bảo (E2-E): tự có khi lên Kết Đan, không tháo, cấp theo cấp của chủ (`bondedLevel`), phím T. */

@@ -522,6 +522,42 @@ describe('hồn phiên', () => {
   });
 });
 
+describe('nội tại hồn phiên chỉ áp cho Hồn lực (review #443)', () => {
+  const mods = (sim: Sim, p: Ent) =>
+    (sim as unknown as { combat: { resMods(p: Ent): { gainMul?: number } | undefined } }).combat.resMods(p);
+  it('người tu Lạc Kiếm Quyết / Bất Động Kim Thân / Thanh Mộc Đan Kinh đeo hồn phiên: lượng tích tài nguyên không đổi', () => {
+    for (const method of ['lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh']) {
+      const { sim, join } = setup();
+      const p = join(method);
+      const before = mods(sim, p)?.gainMul ?? 1;
+      p.char.equip.artifact = { id: 'itm_hon_phien', n: 1 };
+      p.char.meta.art = { itm_hon_phien: { lv: 5, qi: 0 } };
+      p.char.recalc();
+      expect(mods(sim, p)?.gainMul ?? 1, method).toBe(before);
+    }
+  });
+  it('người tu Dẫn Hồn Kinh đeo hồn phiên: +4% mỗi cấp pháp bảo; tháo ra thì hết', () => {
+    const { sim, join } = setup();
+    const p = join();
+    expect(mods(sim, p)?.gainMul ?? 1).toBe(1);
+    p.char.equip.artifact = { id: 'itm_hon_phien', n: 1 };
+    p.char.meta.art = { itm_hon_phien: { lv: 5, qi: 0 } };
+    expect(mods(sim, p)?.gainMul).toBeCloseTo(1.2, 6);
+    delete p.char.equip.artifact;
+    expect(mods(sim, p)?.gainMul ?? 1).toBe(1);
+  });
+  it('Kiếm tu đeo hồn phiên cấp 5 đánh thường: mỗi đòn vẫn đúng 1 Kiếm ý', () => {
+    const { join, mon, fresh, use, res } = setup();
+    const p = join('lac_kiem_quyet');
+    p.char.equip.artifact = { id: 'itm_hon_phien', n: 1 };
+    p.char.meta.art = { itm_hon_phien: { lv: 5, qi: 0 } };
+    const m = mon();
+    fresh(p);
+    use(p, 'skl_phi_kiem', m.id);
+    expect(res(p)).toBe(1);
+  });
+});
+
 describe('lệnh GM', () => {
   it('/gm method dan_hon_kinh ghi luôn hướng đã lĩnh ngộ: nạp lại không bị gỡ công pháp', () => {
     const { sim, join } = setup();

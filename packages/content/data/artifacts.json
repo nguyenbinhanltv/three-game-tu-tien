@@ -11,6 +11,6 @@
     { "id": "itm_tran_hon_linh", "asset": "prop_tran_hon_linh", "kind": "seal", "skill": "art_linh", "cd": 30, "mp": 25, "radius": 14, "power": 0.35, "duration": 2.5, "passive": { "kind": "posture", "per": 0.06 }, "color": "e8c46a" },
     { "id": "itm_thanh_lien_an", "asset": "prop_thanh_lien_an", "kind": "shield", "skill": "art_an", "cd": 40, "mp": 30, "radius": 22, "power": 0.18, "duration": 4, "passive": { "kind": "def", "per": 0.03 }, "color": "9fe8c8" },
     { "id": "itm_ngung_dan_lo", "asset": "prop_ngung_dan_lo", "kind": "heal", "skill": "art_lo", "cd": 45, "mp": 40, "radius": 14, "power": 0.12, "passive": { "kind": "hp", "per": 0.02 }, "color": "ffb35a", "bonded": true },
-    { "id": "itm_hon_phien", "asset": "prop_hon_phien", "kind": "reap", "skill": "art_phien", "cd": 30, "mp": 25, "radius": 12, "power": 1, "passive": { "kind": "soul", "per": 0.04 }, "color": "b9a8ff", "granted": true, "proc": true, "reap": { "mark": "hon_an", "res": 5 } }
+    { "id": "itm_hon_phien", "asset": "prop_hon_phien", "kind": "reap", "skill": "art_phien", "cd": 30, "mp": 25, "radius": 12, "power": 1, "passive": { "kind": "soul", "per": 0.04, "res": "hon_luc" }, "color": "b9a8ff", "granted": true, "proc": true, "reap": { "mark": "hon_an", "res": 5 } }
   ]
 }

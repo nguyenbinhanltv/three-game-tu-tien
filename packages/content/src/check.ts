@@ -1786,6 +1786,9 @@ for (const a of ARTIFACTS) {
   const hasMeta = fs.existsSync(fileURLToPath(new URL(`../../../assets/source/prop/${a.asset}/meta.json`, import.meta.url)));
   if (!a.proc && !hasMeta) err(`${w}: thiếu assets/source/prop/${a.asset}/meta.json`);
   if (a.proc && hasMeta) err(`${w}: đã có asset ${a.asset}, bỏ cờ proc`);
+  if (a.passive.kind === 'soul' && !METHODS.some((m) => m.resource.id === a.passive.res))
+    err(`${w}: nội tại soul phải khai passive.res là tài nguyên riêng của một công pháp`);
+  if (a.passive.kind !== 'soul' && a.passive.res !== undefined) err(`${w}: passive.res chỉ dùng với nội tại soul`);
   if (a.kind === 'reap' && !(a.reap && MARK.get(a.reap.mark)?.on === 'mon' && a.reap.res > 0))
     err(`${w}: reap cần ấn trên quái và res dương`);
   if (a.granted) {
