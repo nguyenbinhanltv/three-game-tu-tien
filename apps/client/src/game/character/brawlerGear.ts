@@ -1,7 +1,10 @@
-// Thể tu: găng quyền + giáp nhẹ bằng mesh thủ tục, gắn vào xương của nhân vật có bộ xương (concept the_tu_gang_giap) cho
-// đến khi có GLB dựng từ Tripo. Mỗi món là MỘT mesh gộp (màu theo đỉnh, chung một vật liệu): hộ uyển + găng ×2, giáp vai
-// trái, đai chéo ngực, đai lưng, ống quyển ×2 = 7 mesh/người (chỉ người tu Thể tu, bóng đổ không dựng).
-// Dựng theo hệ trục của rig lúc bind (y lên, z trước), kích thước theo độ dài xương thật rồi `bone.attach` giữ nguyên vị trí thế giới.
+// Thể tu: găng quyền + giáp nhẹ bằng mesh thủ tục (concept the_tu_gang_giap) cho đến khi có GLB dựng từ Tripo (khi đó thay
+// file này). TOÀN BỘ gộp thành MỘT SkinnedMesh dùng chung bộ xương của nhân vật (mỗi đỉnh ăn trọng số 1 xương): +1 draw
+// call mỗi người Thể tu, chạy theo animation; màu theo đỉnh, một vật liệu chung.
+//   giáp vai trái: ba lá chồng (viền đồng thau, gờ giữa, đinh tán, hoa văn thoi) + vòm đỉnh vai
+//   găng ×2: hộ uyển hai đai đồng thau + quấn vải gai, giáp mu bàn tay, hàng giáp đốt ngón + mảnh giáp ngón
+//   đai chéo ngực + đai quấn vai phải, đai lưng có tấm vải trước hông, ống quyển có vành + gờ
+// Hình dựng theo hệ rig lúc bind (chụp ngay sau khi dựng, trước animation) rồi đổi sang hệ cục bộ của mesh da tham chiếu.
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -19,126 +22,14 @@ export const BRAWLER_WEAPON = 'fist';
 
 export interface BrawlerGear {
   readonly meshes: readonly THREE.Mesh[];
+  /** Bật/tắt vẽ (người gọi tự gộp điều kiện: đang là Thể tu và đang ở LOD gần). */
   setVisible(v: boolean): void;
   dispose(): void;
 }
 
-const Y = new THREE.Vector3(0, 1, 0);
-
-function tinted(g: THREE.BufferGeometry, color: number): THREE.BufferGeometry {
-  const out = g.index ? g.toNonIndexed() : g;
-  const c = new THREE.Color(color);
-  const n = out.getAttribute('position').count;
-  const arr = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) c.toArray(arr, i * 3);
-  out.setAttribute('color', new THREE.BufferAttribute(arr, 3));
-  out.deleteAttribute('uv');
-  return out;
-}
-
-/** Hộp/trụ đặt theo trục `dir` từ điểm `from` (gốc ở đầu gần, kéo dài `len`). */
-function along(g: THREE.BufferGeometry, from: THREE.Vector3, dir: THREE.Vector3, len: number): THREE.BufferGeometry {
-  g.translate(0, len / 2, 0);
-  g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(Y, dir.clone().normalize()));
-  g.translate(from.x, from.y, from.z);
-  return g;
-}
-
-/** Hộ uyển (trụ cụt đồng rèn + vành đồng thau) và găng (khối quyền nặng + mặt đốt tay) trên một cẳng tay → bàn tay. */
-export function gauntletGeometry(elbow: THREE.Vector3, wrist: THREE.Vector3, height: number): THREE.BufferGeometry {
-  const dir = wrist.clone().sub(elbow);
-  const fore = dir.length();
-  const d = dir.clone().normalize();
-  const k = height / 1.7;
-  const cuffFrom = elbow.clone().addScaledVector(d, fore * 0.5);
-  const cuffLen = fore * 0.5 + 0.015 * k;
-  const parts: THREE.BufferGeometry[] = [];
-  parts.push(tinted(along(new THREE.CylinderGeometry(0.052 * k, 0.045 * k, cuffLen, 10, 1), cuffFrom, d, cuffLen), BRAWLER_COLORS.bronze));
-  // vành đồng thau hai đầu hộ uyển
-  for (const t of [0, 1]) {
-    const at = cuffFrom.clone().addScaledVector(d, cuffLen * t);
-    parts.push(tinted(along(new THREE.CylinderGeometry(0.056 * k, 0.056 * k, 0.012 * k, 10, 1), at, d, 0.012 * k), BRAWLER_COLORS.brass));
-  }
-  // găng: khối nặng bao bàn tay + dải đốt tay đồng thau
-  const handLen = 0.1 * k;
-  const fist = new THREE.BoxGeometry(0.085 * k, handLen, 0.075 * k);
-  const q = new THREE.Quaternion().setFromUnitVectors(Y, d);
-  fist.translate(0, handLen / 2, 0);
-  fist.applyQuaternion(q);
-  fist.translate(wrist.x, wrist.y, wrist.z);
-  parts.push(tinted(fist, BRAWLER_COLORS.earth));
-  const knuck = new THREE.BoxGeometry(0.09 * k, 0.022 * k, 0.082 * k);
-  knuck.translate(0, handLen * 0.88, 0);
-  knuck.applyQuaternion(q);
-  knuck.translate(wrist.x, wrist.y, wrist.z);
-  parts.push(tinted(knuck, BRAWLER_COLORS.brass));
-  return mergeGeometries(parts, false)!;
-}
-
-/** Giáp vai (nửa vòm đồng + viền đồng thau), tâm ở khớp vai. */
-export function pauldronGeometry(shoulder: THREE.Vector3, outward: THREE.Vector3, height: number): THREE.BufferGeometry {
-  const k = height / 1.7;
-  const r = 0.068 * k;
-  const dome = new THREE.SphereGeometry(r, 12, 6, 0, Math.PI * 2, 0, Math.PI * 0.5);
-  dome.scale(1, 0.75, 1);
-  const rim = new THREE.TorusGeometry(r, 0.006 * k, 6, 16);
-  rim.rotateX(Math.PI / 2);
-  // vòm úp lên vai: trục hướng ra ngoài và lên, đẩy nhẹ ra ngoài khớp để ôm đầu vai
-  const axis = outward
-    .clone()
-    .normalize()
-    .multiplyScalar(0.7)
-    .add(new THREE.Vector3(0, 0.7, 0))
-    .normalize();
-  const q = new THREE.Quaternion().setFromUnitVectors(Y, axis);
-  const at = shoulder.clone().addScaledVector(outward.clone().normalize(), 0.015 * k);
-  const place = (g: THREE.BufferGeometry): THREE.BufferGeometry => {
-    g.applyQuaternion(q);
-    g.translate(at.x, at.y, at.z);
-    return g;
-  };
-  return mergeGeometries([tinted(place(dome), BRAWLER_COLORS.bronze), tinted(place(rim), BRAWLER_COLORS.brass)], false)!;
-}
-
-/** Đai lưng (vòng quanh hông) và đai chéo ngực (dải vải gai nghiêng từ vai trái xuống hông phải). */
-export function beltGeometry(waist: THREE.Vector3, height: number): THREE.BufferGeometry {
-  const k = height / 1.7;
-  const belt = new THREE.CylinderGeometry(0.15 * k, 0.15 * k, 0.05 * k, 14, 1, true);
-  belt.translate(waist.x, waist.y, waist.z);
-  const buckle = new THREE.BoxGeometry(0.05 * k, 0.05 * k, 0.012 * k);
-  buckle.translate(waist.x, waist.y, waist.z + 0.15 * k);
-  return mergeGeometries([tinted(belt, BRAWLER_COLORS.earth), tinted(buckle, BRAWLER_COLORS.brass)], false)!;
-}
-
-export function sashGeometry(chest: THREE.Vector3, height: number): THREE.BufferGeometry {
-  const k = height / 1.7;
-  // vòng dải vải nghiêng quanh thân: từ vai trái xuống hông phải, ôm theo ngực thay vì tấm phẳng
-  const g = new THREE.CylinderGeometry(0.16 * k, 0.16 * k, 0.04 * k, 18, 1, true);
-  g.scale(1.1, 1, 0.85);
-  g.rotateZ(0.65);
-  g.translate(chest.x, chest.y, chest.z);
-  return tinted(g, BRAWLER_COLORS.linen);
-}
-
-/** Ống quyển: trụ ôm cẳng chân, đồng rèn. */
-export function shinGeometry(knee: THREE.Vector3, ankle: THREE.Vector3, height: number): THREE.BufferGeometry {
-  const k = height / 1.7;
-  const d = ankle.clone().sub(knee);
-  const len = d.length() * 0.7;
-  const from = knee.clone().addScaledVector(d.clone().normalize(), d.length() * 0.18);
-  return tinted(along(new THREE.CylinderGeometry(0.058 * k, 0.045 * k, len, 10, 1), from, d, len), BRAWLER_COLORS.bronze);
-}
-
-let sharedMat: THREE.MeshStandardMaterial | null = null;
-function gearMaterial(): THREE.MeshStandardMaterial {
-  return (sharedMat ??= new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.45, side: THREE.DoubleSide }));
-}
-
-/** Ảnh chụp tư thế bind (hệ rig) của các xương cần gắn: gọi ngay sau khi dựng, trước khi animation chạy. */
-export type BindSnapshot = ReadonlyMap<string, { pos: THREE.Vector3; inv: THREE.Matrix4 }>;
-
 const GEAR_BONES = [
   'upperarm_l',
+  'upperarm_r',
   'lowerarm_l',
   'lowerarm_r',
   'hand_l',
@@ -152,61 +43,297 @@ const GEAR_BONES = [
   'spine_03',
 ];
 
+/**
+ * Ảnh chụp tư thế lúc dựng (hệ rig) các xương cần gắn + mesh da tham chiếu. Gọi ngay sau khi dựng, trước khi animation chạy.
+ * `toBone`: với mỗi xương, ma trận đổi một điểm hệ rig sang không gian đỉnh để khi da tính (bindInv · xương · xươngInv · bind)
+ * điểm đó nằm đúng chỗ cũ lúc chụp, KHÔNG giả định tư thế lúc dựng trùng tư thế bind của file.
+ */
+export interface BindSnapshot {
+  pos: ReadonlyMap<string, THREE.Vector3>;
+  toBone: ReadonlyMap<string, THREE.Matrix4>;
+  ref: THREE.SkinnedMesh | null;
+}
+
 export function snapshotBind(rig: THREE.Object3D): BindSnapshot {
   rig.updateMatrixWorld(true);
   const toRig = rig.matrixWorld.clone().invert();
-  const out = new Map<string, { pos: THREE.Vector3; inv: THREE.Matrix4 }>();
+  const pos = new Map<string, THREE.Vector3>();
+  const toBone = new Map<string, THREE.Matrix4>();
+  let ref: THREE.SkinnedMesh | null = null;
+  rig.traverse((o) => {
+    const s = o as THREE.SkinnedMesh;
+    if (!ref && s.isSkinnedMesh && s.skeleton) ref = s;
+  });
+  const r = ref as THREE.SkinnedMesh | null;
   for (const n of GEAR_BONES) {
     const b = rig.getObjectByName(n);
     if (!b) continue;
-    const m = b.matrixWorld.clone().premultiply(toRig); // xương trong hệ rig
-    out.set(n, { pos: new THREE.Vector3().setFromMatrixPosition(m), inv: m.clone().invert() });
+    pos.set(n, new THREE.Vector3().setFromMatrixPosition(b.matrixWorld.clone().premultiply(toRig)));
+    const i = r ? r.skeleton.bones.indexOf(b as THREE.Bone) : -1;
+    if (r && i >= 0 && r.skeleton.boneInverses[i]) {
+      const skin = r.bindMatrixInverse.clone().multiply(b.matrixWorld).multiply(r.skeleton.boneInverses[i]!).multiply(r.bindMatrix);
+      const vertexToWorld = r.matrixWorld.clone().multiply(skin);
+      toBone.set(n, vertexToWorld.invert().multiply(rig.matrixWorld));
+    }
   }
+  return { pos, toBone, ref: r };
+}
+
+// ---- hình học -------------------------------------------------------------------------------------------------
+
+function tinted(g: THREE.BufferGeometry, color: number): THREE.BufferGeometry {
+  const out = g.index ? g.toNonIndexed() : g;
+  const c = new THREE.Color(color);
+  const n = out.getAttribute('position').count;
+  const arr = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) c.toArray(arr, i * 3);
+  out.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+  out.deleteAttribute('uv');
   return out;
 }
 
-/** Gắn bộ găng + giáp nhẹ (dựng theo `bind`, gắn vào xương nên chạy theo animation). Thiếu xương nào thì bỏ món đó. */
+/** Hệ trục địa phương: y = `up`, z = `hint` đã trực giao hoá, gốc `at`. Hình dựng ở gốc, trục y là trục chi/khớp. */
+function frame(at: THREE.Vector3, up: THREE.Vector3, hint: THREE.Vector3): THREE.Matrix4 {
+  const y = up.clone().normalize();
+  let z = hint.clone().addScaledVector(y, -hint.dot(y));
+  if (z.lengthSq() < 1e-6) z = new THREE.Vector3(0, 0, 1).addScaledVector(y, -y.z);
+  z.normalize();
+  const x = new THREE.Vector3().crossVectors(y, z);
+  return new THREE.Matrix4().makeBasis(x, y, z).setPosition(at);
+}
+
+function put(g: THREE.BufferGeometry, m: THREE.Matrix4, color: number): THREE.BufferGeometry {
+  g.applyMatrix4(m);
+  return tinted(g, color);
+}
+
+/** Hộp nhỏ đặt trong hệ `m` ở vị trí (x, y, z) cục bộ. */
+function boxAt(
+  m: THREE.Matrix4,
+  x: number,
+  y: number,
+  z: number,
+  w: number,
+  h: number,
+  d: number,
+  color: number,
+  rotZ = 0,
+): THREE.BufferGeometry {
+  const g = new THREE.BoxGeometry(w, h, d);
+  if (rotZ) g.rotateZ(rotZ);
+  g.translate(x, y, z);
+  return put(g, m, color);
+}
+
+function ringAt(m: THREE.Matrix4, y: number, r: number, h: number, color: number): THREE.BufferGeometry {
+  const g = new THREE.CylinderGeometry(r, r, h, 14, 1, false);
+  g.translate(0, y, 0);
+  return put(g, m, color);
+}
+
+/** Cung trụ hở (một phần vòng) quanh trục y, tâm cung về +z, rộng `arc` rad. */
+function arcAt(m: THREE.Matrix4, y: number, r: number, h: number, arc: number, color: number): THREE.BufferGeometry {
+  const g = new THREE.CylinderGeometry(r, r * 0.92, h, 12, 1, true, -arc / 2, arc);
+  g.translate(0, y, 0);
+  return put(g, m, color);
+}
+
+export function gauntletParts(elbow: THREE.Vector3, wrist: THREE.Vector3, back: THREE.Vector3, height: number): THREE.BufferGeometry {
+  const k = height / 1.7;
+  const dir = wrist.clone().sub(elbow);
+  const fore = dir.length() / k; // độ dài cẳng tay theo "đơn vị người 1,7 m"
+  const m = frame(wrist, dir, back);
+  const g: THREE.BufferGeometry[] = [];
+  const s = (v: number): number => v * k;
+  // hộ uyển: ống đồng rèn nửa cẳng tay, hai đai đồng thau, hai vòng quấn vải gai gần khuỷu
+  const cuffLen = Math.min(0.5 * fore, 0.15) * k;
+  g.push(ringAt(m, -cuffLen / 2, s(0.05), cuffLen, BRAWLER_COLORS.bronze));
+  g.push(ringAt(m, -cuffLen, s(0.054), s(0.012), BRAWLER_COLORS.brass));
+  g.push(ringAt(m, -s(0.004), s(0.054), s(0.012), BRAWLER_COLORS.brass));
+  g.push(ringAt(m, -cuffLen - s(0.02), s(0.048), s(0.025), BRAWLER_COLORS.linen));
+  g.push(ringAt(m, -cuffLen - s(0.05), s(0.047), s(0.02), BRAWLER_COLORS.linen));
+  // gờ nổi dọc hộ uyển (hoa văn)
+  g.push(boxAt(m, 0, -cuffLen / 2, s(0.054), s(0.01), cuffLen * 0.8, s(0.008), BRAWLER_COLORS.brass));
+  // giáp mu bàn tay: cung cong đồng rèn + gờ giữa
+  g.push(arcAt(m, s(0.05), s(0.048), s(0.09), 2.3, BRAWLER_COLORS.bronze));
+  g.push(boxAt(m, 0, s(0.05), s(0.05), s(0.012), s(0.09), s(0.008), BRAWLER_COLORS.brass));
+  // giáp đốt ngón: hàng bốn mảnh đồng thau + mảnh giáp ngón nâu đất phía trên
+  for (let i = 0; i < 4; i++) {
+    const x = s(-0.03 + i * 0.02);
+    g.push(boxAt(m, x, s(0.1), s(0.036), s(0.018), s(0.02), s(0.014), BRAWLER_COLORS.brass));
+    g.push(boxAt(m, x, s(0.13), s(0.028), s(0.015), s(0.032), s(0.01), BRAWLER_COLORS.earth));
+  }
+  // giáp ngón cái
+  g.push(boxAt(m, s(-0.05), s(0.04), s(0.01), s(0.016), s(0.05), s(0.016), BRAWLER_COLORS.earth));
+  return mergeGeometries(g, false)!;
+}
+
+/** Giáp vai: vòm đỉnh vai + ba lá chồng dọc cánh tay (viền đồng thau, đinh tán, gờ giữa, hoa văn thoi trên lá đầu). */
+export function pauldronParts(shoulder: THREE.Vector3, elbow: THREE.Vector3, outward: THREE.Vector3, height: number): THREE.BufferGeometry {
+  const k = height / 1.7;
+  const s = (v: number): number => v * k;
+  const arm = elbow.clone().sub(shoulder);
+  const up = outward
+    .clone()
+    .normalize()
+    .multiplyScalar(0.8)
+    .add(new THREE.Vector3(0, 1, 0))
+    .normalize(); // hướng "lên + ra" của cung
+  const m = frame(shoulder, arm, up);
+  const g: THREE.BufferGeometry[] = [];
+  // vòm đỉnh vai
+  const dome = new THREE.SphereGeometry(s(0.062), 12, 6, 0, Math.PI * 2, 0, Math.PI * 0.5);
+  dome.scale(1, 0.55, 1);
+  dome.rotateX(Math.PI / 2); // đỉnh vòm hướng +z (lên + ra)
+  dome.translate(0, s(0.01), 0);
+  g.push(put(dome, m, BRAWLER_COLORS.bronze));
+  // ba lá chồng, lá sau to dần xuống cánh tay
+  for (let i = 0; i < 3; i++) {
+    const y = s(0.02 + i * 0.034);
+    const r = s(0.066 + i * 0.006);
+    g.push(arcAt(m, y, r, s(0.05), 2.5 + i * 0.1, BRAWLER_COLORS.bronze));
+    g.push(arcAt(m, y + s(0.026), r + s(0.002), s(0.008), 2.5 + i * 0.1, BRAWLER_COLORS.brass)); // viền dưới
+    g.push(boxAt(m, 0, y, r + s(0.003), s(0.009), s(0.05), s(0.007), BRAWLER_COLORS.brass)); // gờ giữa
+    for (const a of [-0.6, 0.6]) {
+      const st = new THREE.SphereGeometry(s(0.0065), 6, 4);
+      st.translate(Math.sin(a) * (r + s(0.002)), y + s(0.018), Math.cos(a) * (r + s(0.002))); // đinh tán
+      g.push(put(st, m, BRAWLER_COLORS.brass));
+    }
+  }
+  // hoa văn thoi trên lá đầu
+  g.push(boxAt(m, 0, s(0.02), s(0.075), s(0.022), s(0.022), s(0.006), BRAWLER_COLORS.brass, Math.PI / 4));
+  return mergeGeometries(g, false)!;
+}
+
+/** Đai lưng (da nâu đất) + khóa đồng thau + tấm vải gai rũ trước hông. */
+export function beltParts(waist: THREE.Vector3, height: number): THREE.BufferGeometry {
+  const k = height / 1.7;
+  const m = new THREE.Matrix4().setPosition(waist);
+  const belt = new THREE.CylinderGeometry(0.15 * k, 0.15 * k, 0.05 * k, 16, 1, true);
+  return mergeGeometries(
+    [
+      put(belt, m, BRAWLER_COLORS.earth),
+      boxAt(m, 0, 0, 0.153 * k, 0.05 * k, 0.05 * k, 0.012 * k, BRAWLER_COLORS.brass),
+      boxAt(m, 0.03 * k, -0.07 * k, 0.15 * k, 0.07 * k, 0.12 * k, 0.008 * k, BRAWLER_COLORS.linen),
+    ],
+    false,
+  )!;
+}
+
+/** Đai chéo ngực: vòng vải gai nghiêng quanh thân (vai trái xuống hông phải) + khóa tròn. */
+export function sashParts(chest: THREE.Vector3, height: number): THREE.BufferGeometry {
+  const k = height / 1.7;
+  const ring = new THREE.CylinderGeometry(0.16 * k, 0.16 * k, 0.04 * k, 18, 1, true);
+  ring.scale(1.1, 1, 0.85);
+  ring.rotateZ(0.65);
+  ring.translate(chest.x, chest.y, chest.z);
+  const clasp = new THREE.CylinderGeometry(0.018 * k, 0.018 * k, 0.01 * k, 10);
+  clasp.rotateX(Math.PI / 2);
+  clasp.translate(chest.x, chest.y + 0.005 * k, chest.z + 0.14 * k);
+  return mergeGeometries([tinted(ring, BRAWLER_COLORS.linen), tinted(clasp, BRAWLER_COLORS.brass)], false)!;
+}
+
+/** Đai quấn quanh vai phải (vải gai) + vòng đồng thau, nối với đai chéo. */
+export function shoulderWrapParts(shoulder: THREE.Vector3, elbow: THREE.Vector3, height: number): THREE.BufferGeometry {
+  const k = height / 1.7;
+  const m = frame(shoulder.clone().lerp(elbow, 0.12), elbow.clone().sub(shoulder), new THREE.Vector3(0, 0, 1));
+  return mergeGeometries(
+    [ringAt(m, 0, 0.056 * k, 0.05 * k, BRAWLER_COLORS.linen), ringAt(m, 0.03 * k, 0.057 * k, 0.01 * k, BRAWLER_COLORS.brass)],
+    false,
+  )!;
+}
+
+/** Ống quyển: trụ ôm cẳng chân đồng rèn, vành đồng thau trên/dưới, gờ giữa phía trước. */
+export function shinParts(knee: THREE.Vector3, ankle: THREE.Vector3, height: number): THREE.BufferGeometry {
+  const k = height / 1.7;
+  const d = ankle.clone().sub(knee);
+  const len = d.length() * 0.7;
+  const m = frame(knee.clone().addScaledVector(d.clone().normalize(), d.length() * 0.18), d, new THREE.Vector3(0, 0, 1));
+  // trục y của hệ hướng XUỐNG (gối → cổ chân)
+  return mergeGeometries(
+    [
+      ringAt(m, len / 2, 0.052 * k, len, BRAWLER_COLORS.bronze),
+      ringAt(m, 0.004 * k, 0.057 * k, 0.014 * k, BRAWLER_COLORS.brass),
+      ringAt(m, len - 0.004 * k, 0.05 * k, 0.014 * k, BRAWLER_COLORS.brass),
+      boxAt(m, 0, len / 2, 0.055 * k, 0.012 * k, len * 0.85, 0.008 * k, BRAWLER_COLORS.brass),
+    ],
+    false,
+  )!;
+}
+
+let sharedMat: THREE.MeshStandardMaterial | null = null;
+function gearMaterial(): THREE.MeshStandardMaterial {
+  return (sharedMat ??= new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, metalness: 0.5, side: THREE.DoubleSide }));
+}
+
+/** Gán trọng số da (một xương) cho hình `geo` đang ở hệ rig, đổi sang hệ cục bộ của mesh tham chiếu. */
+function skinTo(geo: THREE.BufferGeometry, boneIndex: number, toBone: THREE.Matrix4): THREE.BufferGeometry {
+  geo.applyMatrix4(toBone);
+  const n = geo.getAttribute('position').count;
+  const idx = new Uint16Array(n * 4);
+  const w = new Float32Array(n * 4);
+  for (let i = 0; i < n; i++) {
+    idx[i * 4] = boneIndex;
+    w[i * 4] = 1;
+  }
+  geo.setAttribute('skinIndex', new THREE.BufferAttribute(idx, 4));
+  geo.setAttribute('skinWeight', new THREE.BufferAttribute(w, 4));
+  return geo;
+}
+
+const NONE: BrawlerGear = { meshes: [], setVisible() {}, dispose() {} };
+
+/** Dựng toàn bộ găng + giáp thành MỘT SkinnedMesh dùng chung bộ xương của mesh tham chiếu. Thiếu xương nào thì bỏ món đó. */
 export function attachBrawlerGear(rig: THREE.Object3D, bind: BindSnapshot, height: number): BrawlerGear {
-  const pos = (name: string): THREE.Vector3 | null => bind.get(name)?.pos ?? null;
-  const meshes: THREE.Mesh[] = [];
-  const mount = (boneName: string, geo: THREE.BufferGeometry | null): void => {
-    const bone = rig.getObjectByName(boneName);
-    const b = bind.get(boneName);
-    if (!bone || !b || !geo) return;
-    const m = new THREE.Mesh(geo, gearMaterial());
-    m.name = `dtl_brawler_${boneName}`;
-    m.frustumCulled = false;
-    // hình dựng ở hệ rig lúc bind → đổi sang hệ cục bộ của xương bằng nghịch đảo ma trận bind
-    b.inv.decompose(m.position, m.quaternion, m.scale);
-    bone.add(m);
-    meshes.push(m);
+  const ref = bind.ref;
+  if (!ref) return NONE;
+  const pos = (name: string): THREE.Vector3 | null => bind.pos.get(name) ?? null;
+  const bones = ref.skeleton.bones;
+  const parts: THREE.BufferGeometry[] = [];
+  const add = (boneName: string, geo: THREE.BufferGeometry | null): void => {
+    const b = rig.getObjectByName(boneName);
+    const bi = b ? bones.indexOf(b as THREE.Bone) : -1;
+    const tb = bind.toBone.get(boneName);
+    if (!geo || bi < 0 || !tb) return;
+    parts.push(skinTo(geo, bi, tb));
   };
   for (const s of ['l', 'r'] as const) {
+    const sign = s === 'l' ? 1 : -1;
     const elbow = pos(`lowerarm_${s}`);
     const wrist = pos(`hand_${s}`);
-    mount(`hand_${s}`, elbow && wrist ? gauntletGeometry(elbow, wrist, height) : null);
+    // mu bàn tay hướng ra ngoài thân (A-pose, lòng bàn tay hướng đùi)
+    add(`hand_${s}`, elbow && wrist ? gauntletParts(elbow, wrist, new THREE.Vector3(sign, 0, 0), height) : null);
     const knee = pos(`calf_${s}`);
     const ankle = pos(`foot_${s}`);
-    mount(`calf_${s}`, knee && ankle ? shinGeometry(knee, ankle, height) : null);
+    add(`calf_${s}`, knee && ankle ? shinParts(knee, ankle, height) : null);
   }
   const sh = pos('upperarm_l');
   const el = pos('lowerarm_l');
-  mount('upperarm_l', sh && el ? pauldronGeometry(sh, new THREE.Vector3(Math.sign(el.x - sh.x) || 1, 0, 0), height) : null);
+  add('upperarm_l', sh && el ? pauldronParts(sh, el, new THREE.Vector3(Math.sign(el.x - sh.x) || 1, 0, 0), height) : null);
+  const shr = pos('upperarm_r');
+  const elr = pos('lowerarm_r');
+  add('upperarm_r', shr && elr ? shoulderWrapParts(shr, elr, height) : null);
   const waist = pos('spine_01');
-  mount('spine_01', waist ? beltGeometry(waist, height) : null);
-  const chest = pos('spine_03') ?? pos('spine_02');
-  mount(rig.getObjectByName('spine_03') ? 'spine_03' : 'spine_02', chest ? sashGeometry(chest, height) : null);
+  add('spine_01', waist ? beltParts(waist, height) : null);
+  const chestBone = rig.getObjectByName('spine_03') ? 'spine_03' : 'spine_02';
+  const chest = pos(chestBone);
+  add(chestBone, chest ? sashParts(chest, height) : null);
+  if (!parts.length) return NONE;
+  const geo = mergeGeometries(parts, false)!;
+  for (const p of parts) p.dispose();
+  const mesh = new THREE.SkinnedMesh(geo, gearMaterial());
+  mesh.name = 'dtl_brawler_gear';
+  mesh.frustumCulled = false;
+  (ref.parent ?? rig).add(mesh);
+  mesh.bind(ref.skeleton, ref.bindMatrix);
   return {
-    meshes,
+    meshes: [mesh],
     setVisible(v) {
-      for (const m of meshes) m.visible = v;
+      mesh.visible = v;
     },
     dispose() {
-      for (const m of meshes) {
-        m.removeFromParent();
-        m.geometry.dispose();
-      }
-      meshes.length = 0;
+      mesh.removeFromParent();
+      mesh.geometry.dispose();
     },
   };
 }
