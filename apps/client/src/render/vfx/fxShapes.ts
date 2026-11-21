@@ -407,6 +407,31 @@ function swordGeometry(): THREE.BufferGeometry {
   return mergedParts([blade, guard, hilt, pommel], 'z');
 }
 
+/**
+ * Hồn binh (TN-2): bóng lính đứng cầm giáo, chân ở gốc, cao đúng 1 (scale theo chiều cao muốn có), mặt quay +Z.
+ * Khối lớn đọc được ở 15–20 m: chân choãi, thân thuôn rộng vai, giáp vai, đầu đội mũ nhọn, giáo dựng bên tay phải cao hơn đầu.
+ * UV `v` theo độ cao để shader `crystal` mọc từ chân lên. ~230 tam giác.
+ */
+function soulSoldierGeometry(): THREE.BufferGeometry {
+  const leg = (x: number) => new THREE.CylinderGeometry(0.055, 0.04, 0.42, 5).translate(x, 0.21, 0);
+  const skirt = new THREE.CylinderGeometry(0.11, 0.17, 0.2, 6).translate(0, 0.47, 0);
+  const torso = new THREE.CylinderGeometry(0.17, 0.1, 0.3, 6).translate(0, 0.68, 0);
+  const pauldron = (x: number) => new THREE.ConeGeometry(0.085, 0.1, 5).translate(x, 0.84, 0);
+  const arm = (x: number) => new THREE.CylinderGeometry(0.04, 0.035, 0.3, 4).translate(x, 0.66, 0.02);
+  const head = new THREE.SphereGeometry(0.075, 6, 4).translate(0, 0.9, 0);
+  const helm = new THREE.ConeGeometry(0.085, 0.13, 6).translate(0, 0.985, 0);
+  const shaft = new THREE.CylinderGeometry(0.012, 0.012, 1.0, 4).translate(-0.27, 0.5, 0.06);
+  const tip = new THREE.ConeGeometry(0.04, 0.14, 4).translate(-0.27, 1.06, 0.06);
+  const g = mergedParts(
+    [leg(0.075), leg(-0.075), skirt, torso, pauldron(0.2), pauldron(-0.2), arm(0.22), arm(-0.22), head, helm, shaft, tip],
+    'y',
+    true,
+  );
+  // Chuẩn hóa: cao đúng 1 tính cả mũi giáo, để `scale` trong timeline là chiều cao theo mét.
+  g.scale(1 / 1.13, 1 / 1.13, 1 / 1.13);
+  return g;
+}
+
 const cache = new Map<string, THREE.BufferGeometry>();
 const memo = (k: string, f: () => THREE.BufferGeometry) => {
   let g = cache.get(k);
@@ -442,6 +467,8 @@ export function shapeGeometry(s: ShapeKey): THREE.BufferGeometry {
       return memo('dragon', () => dragonGeometry());
     case 'statue':
       return memo('statue', () => statueGeometry());
+    case 'soul_soldier':
+      return memo('soul_soldier', () => soulSoldierGeometry());
     case 'card':
       return QUAD_XY;
     case 'ribbon':
@@ -477,7 +504,7 @@ export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' |
   )
     return 'crystal';
   if (s === 'gust') return 'wind';
-  if (s === 'spike' || s === 'shard' || s === 'kite' || s === 'dragon' || s === 'statue') return 'crystal';
+  if (s === 'spike' || s === 'shard' || s === 'kite' || s === 'dragon' || s === 'statue' || s === 'soul_soldier') return 'crystal';
   if (s === 'burst') return 'burst';
   if (s === 'smoke') return 'decal';
   return 'toon';

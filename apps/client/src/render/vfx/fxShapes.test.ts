@@ -13,6 +13,7 @@ const SHAPES: ShapeKey[] = [
   'ribbon',
   'dragon',
   'statue',
+  'soul_soldier',
   'card',
   'gust',
 ];

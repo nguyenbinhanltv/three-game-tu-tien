@@ -6,14 +6,14 @@
    "type": "mesh",
    "shape": "slash_thin",
    "t": 0.0,
-   "dur": 0.26,
+   "dur": 0.28,
    "at": "self",
    "offset": [
     0,
     1.0,
     0
    ],
-   "scale": 2.0,
+   "scale": 2.8,
    "billboard": true,
    "sweep": 0.35,
    "erodeFrom": 0.4,

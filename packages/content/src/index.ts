@@ -201,6 +201,7 @@ import fx_skl_hoang_tuyen_dan from '../data/fx/skl_hoang_tuyen_dan.json';
 import fx_skl_tat_dau_thanh_binh from '../data/fx/skl_tat_dau_thanh_binh.json';
 import fx_hon_binh_hit from '../data/fx/hon_binh_hit.json';
 import fx_hon_reap from '../data/fx/hon_reap.json';
+import fx_hon_binh_stand from '../data/fx/hon_binh_stand.json';
 import fx_skl_kiem_vu_tam_diep from '../data/fx/skl_kiem_vu_tam_diep.json';
 import fx_skl_kim_chung_tran from '../data/fx/skl_kim_chung_tran.json';
 import fx_skl_kim_cuong_bat_hoai from '../data/fx/skl_kim_cuong_bat_hoai.json';
@@ -637,7 +638,7 @@ export const HK_FX_TIMELINES = [
 export const HK_FX = new Map(HK_FX_TIMELINES.map((f) => [f.skill, f]));
 
 /** TN-2: hiệu ứng tại điểm của Hồn tu (nhịp hồn binh, tia hồn thu về), client phát bằng `FxRunner.startAt` (`game/fx/honFx.ts`). */
-export const HON_FX_TIMELINES = [fx_hon_binh_hit, fx_hon_reap] as unknown as FxTimeline[];
+export const HON_FX_TIMELINES = [fx_hon_binh_hit, fx_hon_reap, fx_hon_binh_stand] as unknown as FxTimeline[];
 export const HON_FX = new Map(HON_FX_TIMELINES.map((f) => [f.skill, f]));
 /** Timeline của từng kiếp nhỏ (theo cơ chế `hk_*`), gồm cả phần chung vào/qua/trượt: ngân sách draw call kiểm theo nhóm này. */
 export const HK_FX_STAGE: Record<string, string[]> = {

@@ -54,6 +54,77 @@
   },
   {
    "type": "mesh",
+   "shape": "slash_thick",
+   "t": -0.05,
+   "dur": 0.4,
+   "at": "ahead",
+   "offset": [
+    0,
+    0.5,
+    0.8
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": 2.8,
+   "scaleTo": 4.6,
+   "sweep": 0.35,
+   "erodeFrom": 0.55,
+   "ragged": 0.6,
+   "move": {
+    "to": "ahead",
+    "offset": [
+     0,
+     0.5,
+     10.5
+    ],
+    "ease": "out"
+   },
+   "tone": "body",
+   "alpha": 0.95,
+   "tier": 0,
+   "seed": 70
+  },
+  {
+   "type": "mesh",
+   "shape": "slash_thick",
+   "t": 0.03,
+   "dur": 0.4,
+   "at": "ahead",
+   "offset": [
+    0,
+    0.4,
+    0.4
+   ],
+   "rot": [
+    0,
+    0,
+    6
+   ],
+   "scale": 2.2,
+   "scaleTo": 3.8,
+   "sweep": 0.35,
+   "erodeFrom": 0.5,
+   "ragged": 0.5,
+   "move": {
+    "to": "ahead",
+    "offset": [
+     0,
+     0.4,
+     8.5
+    ],
+    "ease": "out"
+   },
+   "tone": "rim",
+   "alpha": 0.9,
+   "shadow": false,
+   "tier": 1,
+   "seed": 71
+  },
+  {
+   "type": "mesh",
    "shape": "gust",
    "t": -0.05,
    "dur": 0.42,
@@ -64,9 +135,9 @@
     0.6
    ],
    "scale": [
-    2.6,
-    1.5,
-    5.0
+    3.6,
+    2.0,
+    6.0
    ],
    "tone": "rim",
    "alpha": 0.9,
@@ -94,9 +165,9 @@
     0.6
    ],
    "scale": [
-    2.6,
-    1.5,
-    5.0
+    3.6,
+    2.0,
+    6.0
    ],
    "tone": "body",
    "alpha": 0.9,
@@ -124,9 +195,9 @@
     0.6
    ],
    "scale": [
-    2.6,
-    1.5,
-    5.0
+    3.6,
+    2.0,
+    6.0
    ],
    "tone": "body",
    "alpha": 0.9,
@@ -141,6 +212,40 @@
     "ease": "out"
    },
    "tier": 1
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 2.4,
+   "dur": 2.2,
+   "at": "ahead",
+   "offset": [
+    0,
+    0,
+    2.0
+   ],
+   "grow": 0.1,
+   "tone": "rim",
+   "alpha": 0.9,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.06,
+   "r": 2.4,
+   "dur": 2.2,
+   "at": "ahead",
+   "offset": [
+    0,
+    0,
+    7.0
+   ],
+   "grow": 0.1,
+   "tone": "rim",
+   "alpha": 0.9,
+   "tier": 0
   },
   {
    "type": "mesh",

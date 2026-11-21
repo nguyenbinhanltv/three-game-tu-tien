@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { FxMsg } from '@dtl/shared';
 import { FX_TIMELINE, HON_FX, METHOD_SKILLS } from '@dtl/content';
-import { HON_FX_DIST, HON_FX_KINDS, HON_FX_LIVE_MAX, HON_PALETTE, playHonFx, type HonFxEnv } from './honFx';
+import {
+  HON_BINH_MAX,
+  HON_BINH_SEG,
+  HON_FX_DIST,
+  HON_FX_KINDS,
+  HON_FX_LIVE_MAX,
+  HON_PALETTE,
+  playHonBinh,
+  playHonFx,
+  type HonBinhEnv,
+  type HonFxEnv,
+} from './honFx';
 import { paletteOf } from '../../render/vfx/palette';
 
 function mk(o: { live?: number; viewer?: { x: number; z: number } } = {}) {
@@ -68,5 +79,64 @@ describe('hiệu ứng tại điểm của Hồn tu (TN-2)', () => {
     const pal = paletteOf(HON_PALETTE);
     expect(pal.rim).toBe(0xc9d4e0);
     expect(pal.core).toBe(0x2a2338);
+  });
+});
+
+describe('ba hồn binh của Tát Đậu Thành Binh (TN-2)', () => {
+  function mkBinh() {
+    const starts: { tl: string; mine: boolean }[] = [];
+    const timers: { sec: number; done: () => void }[] = [];
+    let alive = true;
+    const actor = { x: 0, y: 0, z: 0, yaw: 0, model: {} };
+    const env: HonBinhEnv = {
+      startAt: (tl, o) => starts.push({ tl: tl.skill, mine: !!o.mine }),
+      caster: () => (alive ? actor : null),
+      mySid: () => 'me',
+      after: (sec, done) => timers.push({ sec, done }),
+    };
+    /** Cho đồng hồ chạy hết mọi hẹn giờ đang chờ (kể cả hẹn giờ sinh ra trong lúc chạy). */
+    const run = () => {
+      let guard = 0;
+      while (timers.length && guard++ < 100) timers.shift()!.done();
+    };
+    return { env, starts, timers, run, kill: () => (alive = false) };
+  }
+  it('phát nối tiếp đủ phủ thời gian chiêu rồi dừng; hình là timeline hon_binh_stand có ba bóng lính bám theo người gọi', () => {
+    const { env, starts, timers, run } = mkBinh();
+    playHonBinh(env, 'me', 10);
+    expect(starts).toEqual([{ tl: 'hon_binh_stand', mine: true }]);
+    expect(timers[0]!.sec).toBe(HON_BINH_SEG);
+    run();
+    expect(starts).toHaveLength(Math.ceil((10 - 0.3) / HON_BINH_SEG));
+    const tl = HON_FX.get('hon_binh_stand')!;
+    const soldiers = tl.events.filter((e) => e.type === 'mesh' && e.shape === 'soul_soldier');
+    expect(soldiers).toHaveLength(3);
+    for (const e of soldiers) {
+      if (e.type !== 'mesh') continue;
+      expect(e.follow).toBe(true);
+      expect(e.dur).toBeGreaterThan(HON_BINH_SEG);
+      // Không con nào đứng sau lưng người gọi (phía camera mặc định): z trong khung người gọi luôn dương.
+      expect((e.offset as number[])[2]).toBeGreaterThan(0);
+    }
+  });
+  it('gọi lại thì bộ cũ thôi phát; người gọi ngã/rời tầm nhìn thì dừng; thời gian lạ bị chặn', () => {
+    const a = mkBinh();
+    playHonBinh(a.env, 'p1', 10);
+    playHonBinh(a.env, 'p1', 10);
+    a.run();
+    // Lượt đầu chỉ phát đúng một đoạn rồi nhường; lượt sau phát đủ.
+    expect(a.starts).toHaveLength(1 + Math.ceil((10 - 0.3) / HON_BINH_SEG));
+    const b = mkBinh();
+    playHonBinh(b.env, 'p2', 10);
+    b.kill();
+    b.run();
+    expect(b.starts).toHaveLength(1);
+    const c = mkBinh();
+    playHonBinh(c.env, 'p3', 9999);
+    c.run();
+    expect(c.starts.length).toBeLessThanOrEqual(Math.ceil(HON_BINH_MAX / HON_BINH_SEG));
+    const d = mkBinh();
+    playHonBinh(d.env, 'p4', 0);
+    expect(d.starts).toHaveLength(0);
   });
 });

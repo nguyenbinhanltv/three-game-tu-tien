@@ -45,15 +45,15 @@
     0
    ],
    "scale": [
-    1.5,
-    1.5,
-    2.6
+    2.2,
+    2.2,
+    3.0
    ],
    "sweep": 0.3,
    "erodeFrom": 0.5,
    "spin": 420,
-   "tone": "rim",
-   "alpha": 0.9,
+   "tone": "body",
+   "alpha": 0.95,
    "tier": 0,
    "seed": 5
   },
@@ -103,6 +103,36 @@
    "sweep": 0.0,
    "tone": "accent",
    "alpha": 0.7,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "smoke",
+   "t": 0.0,
+   "dur": 0.7,
+   "at": "target",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "scale": 1.8,
+   "scaleTo": 2.6,
+   "billboard": true,
+   "tone": "core",
+   "alpha": 0.7,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 2.8,
+   "dur": 2.4,
+   "at": "ground",
+   "grow": 0.12,
+   "tone": "rim",
+   "alpha": 0.95,
    "tier": 0
   },
   {

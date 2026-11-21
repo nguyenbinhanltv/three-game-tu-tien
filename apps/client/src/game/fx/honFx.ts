@@ -57,3 +57,41 @@ export function playHonFx(env: HonFxEnv, m: FxMsg): boolean {
   });
   return true;
 }
+
+/** Độ dài một đoạn hình hồn binh (giây): mesh timeline sống tối đa 4 giây nên phát nối tiếp, đoạn sau chồng lên lúc đoạn trước đang tan. */
+export const HON_BINH_SEG = 3.3;
+/** Thời gian hồn binh tối đa (giây), chặn tin lạ. */
+export const HON_BINH_MAX = 20;
+
+export interface HonBinhEnv {
+  startAt(tl: FxTimeline, o: { actor: FxCaster; palette: string; mine?: boolean }): void;
+  /** Người gọi còn trong tầm nhìn và còn sống thì trả thực thể sống (vị trí cập nhật mỗi khung) để hình bám theo; không thì null. */
+  caster(sid: string): FxCaster | null;
+  mySid(): string;
+  /** Hẹn giờ theo đồng hồ hiệu ứng của game (dừng khi game dừng): gọi `done` sau `sec` giây. */
+  after(sec: number, done: () => void): void;
+}
+
+/** Lượt gọi hồn binh mới nhất của từng người: lượt cũ thấy số khác thì tự dừng (gọi lại thay bộ cũ, như luật server). */
+const honBinhGen = new Map<string, number>();
+
+/**
+ * Giữ ba hồn binh quanh người gọi `sid` trong `sec` giây (tin S.FX `honbinh`, `d` = thời gian chiêu): phát `hon_binh_stand` nối tiếp.
+ * Người gọi rời tầm nhìn hoặc ngã thì thôi phát đoạn kế (đoạn đang chạy tự tan trong ≤ 3,6 giây).
+ */
+export function playHonBinh(env: HonBinhEnv, sid: string, sec: number): void {
+  const tl = HON_FX.get('hon_binh_stand');
+  if (!tl || !(sec > 0)) return;
+  const gen = (honBinhGen.get(sid) ?? 0) + 1;
+  honBinhGen.set(sid, gen);
+  let left = Math.min(HON_BINH_MAX, sec);
+  const step = (): void => {
+    if (honBinhGen.get(sid) !== gen || left <= 0.3) return;
+    const actor = env.caster(sid);
+    if (!actor) return;
+    env.startAt(tl, { actor, palette: HON_PALETTE, mine: sid === env.mySid() });
+    left -= HON_BINH_SEG;
+    env.after(HON_BINH_SEG, step);
+  };
+  step();
+}
