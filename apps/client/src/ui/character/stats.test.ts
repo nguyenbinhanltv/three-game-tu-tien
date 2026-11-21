@@ -61,4 +61,22 @@ describe('khối độ kiếp theo dữ liệu', () => {
     expect(breakInfo(c, []).enabled).toBe(true);
     expect(breakInfo(c, []).ready).toBe(false);
   });
+
+  it('Đạo (TN-3) là nguồn riêng: kim cộng nửa bạo kích và nửa sát thương hệ, lực chiến tăng', () => {
+    const lv = 36;
+    const rows = statRows(lv, {}, 'moc', base(lv), 'kim');
+    const crit = rows.find((r) => r.id === 'critRate')!;
+    const dao = crit.sources.find((s) => s.src === 'dao');
+    expect(dao?.v).toBeCloseTo(0.025);
+    expect(crit.sources.find((s) => s.src === 'root')).toBeUndefined();
+    expect(crit.total).toBeCloseTo(0.1 + 0.025);
+    expect(
+      statRows(lv, {}, 'moc', base(lv))
+        .find((r) => r.id === 'critRate')!
+        .sources.some((s) => s.src === 'dao'),
+    ).toBe(false);
+    expect(elemRows(lv, {}, 'moc', 'kim').find((e) => e.elem === 'kim')!.dmg).toBeCloseTo(0.04);
+    expect(elemRows(lv, {}, 'moc').find((e) => e.elem === 'kim')!.dmg).toBe(0);
+    expect(charPower(lv, {}, 'moc', base(lv), 'kim')).toBeGreaterThan(charPower(lv, {}, 'moc', base(lv)));
+  });
 });
