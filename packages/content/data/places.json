@@ -42,5 +42,11 @@
   { "id": "bh_khich_giai", "level": "bac_hoang", "x": 1024, "z": 874, "note": "Giới Khích, miệng nam; Tam Thủ Ngục Khuyển ở gần (cấp 29)" },
   { "id": "bh_xich_tan", "level": "bac_hoang", "x": 1374, "z": 624, "note": "Cổng Xích Tẫn Khích, Xích Tẫn Bình (cấp 29–30)" },
   { "id": "bh_kim_da", "level": "bac_hoang", "x": 674, "z": 614, "note": "Cổng Kim Dạ Cung, Kim Dạ Ngoại Uyển (cấp 30–31)" },
-  { "id": "bh_tran_gioi", "level": "bac_hoang", "x": 1084, "z": 554, "note": "Trấn Giới Bia, Trấn Giới Đài (cấp 31)" }
+  { "id": "bh_tran_gioi", "level": "bac_hoang", "x": 1084, "z": 554, "note": "Trấn Giới Bia, Trấn Giới Đài (cấp 31)" },
+  { "id": "vd_tram", "level": "van_dinh", "x": 1024, "z": 1546, "note": "Cổng Giới, điểm vào Vấn Đỉnh Âm Dương Giới (cấp 32–43)" },
+  { "id": "vd_ho", "level": "van_dinh", "x": 724, "z": 1254, "note": "Hồ Hư Ảnh, mặt Âm Hư (cấp 33–35)" },
+  { "id": "vd_rung_re", "level": "van_dinh", "x": 694, "z": 794, "note": "Rừng Rễ Treo, mặt Âm Hư (cấp 36–37)" },
+  { "id": "vd_dinh", "level": "van_dinh", "x": 1024, "z": 554, "note": "Bậc Đỉnh, ranh hai mặt (cấp 38–39)" },
+  { "id": "vd_dong_kho", "level": "van_dinh", "x": 1354, "z": 794, "note": "Rừng Đồng Khô, mặt Dương Thực (cấp 40–41)" },
+  { "id": "vd_gioi_tri", "level": "van_dinh", "x": 1324, "z": 1254, "note": "Giới Trì, mặt Dương Thực (cấp 42–43)" }
 ]

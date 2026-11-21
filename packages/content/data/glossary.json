@@ -413,7 +413,13 @@
     "gioi_khich": "Giới Khích",
     "cong_xich_tan_khich": "Cổng Xích Tẫn Khích",
     "cong_kim_da_cung": "Cổng Kim Dạ Cung",
-    "tran_gioi_bia": "Trấn Giới Bia"
+    "tran_gioi_bia": "Trấn Giới Bia",
+    "cong_gioi_dai": "Đài Cổng Giới",
+    "ho_guong_nuoc": "Gương Nước Hư Ảnh",
+    "goc_re_co": "Gốc Rễ Cổ",
+    "dinh_vo_danh": "Đỉnh Vô Danh",
+    "cat_dong_nong": "Cồn Đồng Nóng",
+    "gioi_tri_cua": "Cửa Giới Trì"
   },
   "poiNpcs": {
     "npc_mieu_cong": "Lão Miếu Công",
@@ -596,7 +602,10 @@
     "xac_tho_san_3": "Chỗ bạn săn ngã (Hàn Hôi Nguyên, số 3)",
     "xac_tho_san_4": "Chỗ bạn săn ngã (Khô Lộc Lâm, số 4)",
     "xac_tho_san_5": "Chỗ bạn săn ngã (Khô Lộc Lâm, số 5)",
-    "xac_tho_san_6": "Chỗ bạn săn ngã (Khô Lộc Lâm, số 6)"
+    "xac_tho_san_6": "Chỗ bạn săn ngã (Khô Lộc Lâm, số 6)",
+    "anh_bia_1": "Ảnh Bia thứ nhất (Hồ Hư Ảnh)",
+    "anh_bia_2": "Ảnh Bia thứ hai (Rừng Rễ Treo)",
+    "anh_bia_3": "Ảnh Bia thứ ba (Bậc Đỉnh)"
   },
   "divucMonsters": {
     "mon_liet_hoa_ma_nguu": "Liệt Hỏa Ma Ngưu",

@@ -72,7 +72,7 @@ let OCHRE = T.id === 'doan_mach';
 /** Level dùng bảng tro (Bắc Hoang, DV-1): hoang nguyên tro bên này, đất tro than bên kia vết nứt. */
 let ASH = T.id === 'bac_hoang';
 /** Level sân đá phiến thành cổ (Thiên Khuyết, E4-I). */
-let SLATE = T.id === 'thien_khuyet';
+let SLATE = T.id === 'thien_khuyet' || T.id === 'van_dinh';
 /** Level phó bản hẻm núi Xích Tẫn Khích (DV-3K): bảng màu đất riêng theo `TerrainDef.canyon`. */
 let XICH = T.def.canyon !== undefined && T.id === 'xich_tan_khich';
 /** Bí cảnh Kiếm Trủng (DUN-1): dùng địa hình Vân Lam nhưng bảng màu đất riêng (xám lam, tro, rỉ). */
@@ -544,7 +544,7 @@ export class Terrain {
     OCHRE = T.id === 'doan_mach';
     ASH = T.id === 'bac_hoang';
     BH_PATH = ASH ? riftPath(T.def) : [];
-    SLATE = T.id === 'thien_khuyet';
+    SLATE = T.id === 'thien_khuyet' || T.id === 'van_dinh';
     KT = levelId() === 'kiem_trung';
     PM = levelId() === 'phuc_mach';
     XICH = T.def.canyon !== undefined && T.id === 'xich_tan_khich';
