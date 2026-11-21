@@ -410,7 +410,8 @@ export class EconomySystem {
       if (idem === undefined) return;
       if (c.gold < unlock.gold) return this.c.warn(p, 'sys.not_enough_gold');
       // Vật phát kèm (hồn phiên): cùng transaction với phí; đã có sẵn (GM phát trước) thì không phát thêm. Túi đầy thì không lĩnh ngộ.
-      const grant = unlock.grant && !c.inv.some((s) => s?.id === unlock.grant) && c.equipCount(unlock.grant) === 0 ? unlock.grant : undefined;
+      const grant =
+        unlock.grant && !c.inv.some((s) => s?.id === unlock.grant) && c.equipCount(unlock.grant) === 0 ? unlock.grant : undefined;
       if (grant && !c.inv.some((s) => !s)) return this.c.warn(p, 'sys.path_bag_full', { item: itemName(grant) });
       if (!c.tx(`path:unlock:${path.id}`, idem, (d) => d.spendGold(unlock.gold) && (!grant || d.add(grant, 1))))
         return this.c.warn(p, 'sys.not_enough_gold');

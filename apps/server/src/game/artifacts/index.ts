@@ -202,7 +202,9 @@ export class ArtifactSystem {
         const rp = def.reap;
         const mk = rp ? MARK.get(rp.mark) : undefined;
         if (!rp || !mk || (mk.method && mk.method !== c.meta.method)) return this.c.warn(p, 'sys.art_reap_none');
-        const targets = near.filter((m) => (m.state === MS_CHASE || m.state === MS_ATTACK) && this.c.now >= m.evadeUntil).slice(0, REAP_MAX_TARGETS);
+        const targets = near
+          .filter((m) => (m.state === MS_CHASE || m.state === MS_ATTACK) && this.c.now >= m.evadeUntil)
+          .slice(0, REAP_MAX_TARGETS);
         if (!targets.length) return this.c.warn(p, 'sys.art_no_target');
         for (const mon of targets) {
           this.c.markMon(p, mon, rp.mark);

@@ -323,7 +323,8 @@ for (const m of chainErrors(ALL_SKILLS)) err(m);
 // VS-3: hướng tu (mỗi công pháp thuộc đúng một hướng; màu, bộ động tác, ấn phối hợp hợp lệ; tên khớp glossary.paths).
 for (const e of pathErrors(PATHS, METHODS, new Set(MARKS.map((m) => m.id)), POSE_VOICES)) err(e);
 for (const p of PATHS) {
-  if (p.unlock?.grant && !ARTIFACTS.find((a) => a.id === p.unlock?.grant)?.granted) err(`path ${p.id}: unlock.grant phải là pháp bảo có cờ granted`);
+  if (p.unlock?.grant && !ARTIFACTS.find((a) => a.id === p.unlock?.grant)?.granted)
+    err(`path ${p.id}: unlock.grant phải là pháp bảo có cờ granted`);
   needStr(`path.${p.id}.name`);
   needStr(`path.${p.id}.desc`);
   if (t(`path.${p.id}.name`) !== (GLOSSARY.paths as Record<string, string>)[p.id]) err(`path ${p.id}: tên lệch glossary.paths`);
@@ -1785,7 +1786,8 @@ for (const a of ARTIFACTS) {
   const hasMeta = fs.existsSync(fileURLToPath(new URL(`../../../assets/source/prop/${a.asset}/meta.json`, import.meta.url)));
   if (!a.proc && !hasMeta) err(`${w}: thiếu assets/source/prop/${a.asset}/meta.json`);
   if (a.proc && hasMeta) err(`${w}: đã có asset ${a.asset}, bỏ cờ proc`);
-  if (a.kind === 'reap' && !(a.reap && MARK.get(a.reap.mark)?.on === 'mon' && a.reap.res > 0)) err(`${w}: reap cần ấn trên quái và res dương`);
+  if (a.kind === 'reap' && !(a.reap && MARK.get(a.reap.mark)?.on === 'mon' && a.reap.res > 0))
+    err(`${w}: reap cần ấn trên quái và res dương`);
   if (a.granted) {
     if (def && def.sell !== 0) err(`${w}: vật phát khi lĩnh ngộ không bán được (sell 0)`);
     if (!PATHS.some((p) => p.unlock?.grant === a.id)) err(`${w}: granted nhưng không hướng tu nào phát`);
