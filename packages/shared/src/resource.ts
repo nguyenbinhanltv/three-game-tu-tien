@@ -1,8 +1,8 @@
 // Tài nguyên riêng của công pháp (VS-2a): Kiếm ý, Huyết khí, Đan hỏa. Hàm thuần dùng chung server (tính thật) và client (vẽ thanh).
 // Dữ liệu nằm ở packages/content/data/methods.json (`methods[].resource`, `skills[].res`).
 
-export type ResourceId = 'kiem_y' | 'huyet_khi' | 'dan_hoa' | 'hon_luc';
-export const RESOURCE_IDS: readonly ResourceId[] = ['kiem_y', 'huyet_khi', 'dan_hoa', 'hon_luc'];
+export type ResourceId = 'kiem_y' | 'huyet_khi' | 'dan_hoa' | 'hon_luc' | 'khi_the';
+export const RESOURCE_IDS: readonly ResourceId[] = ['kiem_y', 'huyet_khi', 'dan_hoa', 'hon_luc', 'khi_the'];
 
 /** Nguồn tích tài nguyên. Trường nào vắng thì nguồn đó không cho gì. */
 export interface ResourceGain {

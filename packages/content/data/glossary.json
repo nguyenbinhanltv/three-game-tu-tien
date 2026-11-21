@@ -47,6 +47,12 @@
       "hon_trieu": "Hồn Triều",
       "dinh_hon": "Định Hồn",
       "hoang_tuyen": "Hoàng Tuyền"
+    },
+    "liet_nhan_dao_kinh": {
+      "hoanh_dao": "Hoành Đao",
+      "tam_dao": "Tâm Đao",
+      "doan_luu": "Đoạn Lưu",
+      "liet_dia": "Liệt Địa"
     }
   },
   "stances": {
@@ -65,13 +71,18 @@
     "skl_te_phien": "Tế Phiên",
     "skl_hon_trao": "Hồn Trảo",
     "skl_am_phong": "Âm Phong",
-    "skl_hon_chuong": "Hồn Chướng"
+    "skl_hon_chuong": "Hồn Chướng",
+    "skl_dao_the": "Đao Thế",
+    "skl_doan_nhan": "Đoạn Nhận",
+    "skl_quet_ngang": "Quét Ngang",
+    "skl_ho_dao": "Hộ Đao"
   },
   "paths": {
     "kiem_tu": "Kiếm tu",
     "the_tu": "Thể tu",
     "dan_su": "Đan sư",
-    "hon_tu": "Hồn tu"
+    "hon_tu": "Hồn tu",
+    "dao_tu": "Đao tu"
   },
   "joints": {
     "pha_the_tram": "Phá Thế Trảm",
@@ -83,13 +94,15 @@
     "tran_an": "Trấn ấn",
     "mat_the": "Mất thế",
     "moc_an": "Mộc ấn",
-    "hon_an": "Hồn ấn"
+    "hon_an": "Hồn ấn",
+    "dao_ngan": "Đao ngấn"
   },
   "resources": {
     "kiem_y": "Kiếm ý",
     "huyet_khi": "Huyết khí",
     "dan_hoa": "Đan hỏa",
-    "hon_luc": "Hồn lực"
+    "hon_luc": "Hồn lực",
+    "khi_the": "Khí thế"
   },
   "realms": [
     "Ngưng Khí",
@@ -408,7 +421,11 @@
     "skl_suu_hon_thuat": "Sưu Hồn Thuật",
     "skl_am_hon_trieu": "Âm Hồn Triều",
     "skl_dinh_than_thuat": "Định Thân Thuật",
-    "skl_hoang_tuyen_dan": "Hoàng Tuyền Dẫn"
+    "skl_hoang_tuyen_dan": "Hoàng Tuyền Dẫn",
+    "skl_hoanh_dao": "Hoành Đao",
+    "skl_tam_dao": "Tâm Đao",
+    "skl_doan_luu": "Đoạn Lưu",
+    "skl_liet_dia_tram": "Liệt Địa Trảm"
   },
   "maps": {
     "van_lam": "Vân Lam Sơn Mạch",

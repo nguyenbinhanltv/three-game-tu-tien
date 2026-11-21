@@ -11,6 +11,13 @@ export const FX_ALIAS: Readonly<Record<string, string>> = {
   amhontrieu: 'hoanhkiem',
   dinhthan: 'slash',
   hoangtuyen: 'vankiem',
+  // Đao tu (PR dữ liệu + server): mượn hình tạm, PR VFX thay bằng timeline riêng
+  baonhan: 'slash',
+  tramson: 'vankiem',
+  hoanhdao: 'hoanhkiem',
+  tamdao: 'kimchung',
+  doanluu: 'slash',
+  lietdia: 'thietquyen',
 };
 
 /** Loại FX chỉ để báo cho giao diện, chưa có hình (không vẽ gì, không cảnh báo). */
