@@ -41,3 +41,17 @@ Người chơi v3 đã phát chiêu K-5 bằng clip pose chạy trên Mannequin:
 ## Số liệu gỡ ở bước C
 
 Gỡ khỏi bản tải của người chơi v3: `anim_human_base` + `anim_human_k3` + `anim_human_ual` ≈ 2,49 MB. Giữ: `anim_ual_native` (3,05 MB, đã gồm 9 clip lùi/ngang), `chr_v2_nam` (pose nguồn, 0,76 MB) cho tới khi nướng trên Mannequin hoặc thay bằng rig trần.
+
+## Sau N-7 (v3 mặc định): ai còn nạp gói clip cũ
+
+Người chơi v3 không nạp gói nào trong ba gói. Đường dự phòng `?chr=v1` chỉ còn `anim_human_base` (5 clip nền + pose K-5 nướng trên chính model); việc nạp lười `anim_human_k3` và `anim_human_ual` cho người chơi đã gỡ, nên v1 dự phòng không có đi lùi/ngang, thủ thế, trúng đòn có hướng, ngã/đứng dậy (về máy trạng thái 5 clip cũ).
+
+Clip còn dùng, đều của **NPC** (rig Mixamo, giữ nguyên theo quyết định), và clip thay khi NPC chuyển sang Mannequin:
+
+| Gói | Clip NPC còn dùng | Nạp khi nào | Thay bằng (UAL trên Mannequin) |
+| --- | --- | --- | --- |
+| `anim_human_base` | `idle` (mọi NPC có xương); `run` cho người hộ tống dựng từ model người chơi | cùng NPC ở sân tông môn | `Idle_Loop`; `Jog_Fwd_Loop` |
+| `anim_human_k3` | `walk` (người hộ tống, `NpcSkins.addWalk`) | lười, khi có nhiệm vụ hộ tống | `Walk_Loop` |
+| `anim_human_ual` | `ual_idle_fold`, `ual_idle_talk`, `ual_interact`, `ual_yes`, `ual_no` (`UAL_NPC_IDLES`) | lười, 2,5 s sau khi dựng NPC | `Idle_FoldArms_Loop`, `Idle_Talking_Loop`, `Interact`; `Yes`/`Idle_No_Loop` chưa có trong `anim_ual_native` |
+
+Muốn bỏ hẳn ba gói khỏi bản tải thì phải chuyển NPC sang Mannequin (ngoài phạm vi N-7), hoặc cắt ba gói còn đúng 8 clip trên (ước ~0,5 MB thay vì 2,4 MB; cần chạy lại job Blender của từng gói với danh sách clip rút gọn).

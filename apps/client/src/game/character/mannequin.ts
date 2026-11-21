@@ -49,8 +49,8 @@ import { logger } from '../../base/log';
 const modelsLog = logger('models');
 const thienYLog = logger('thienY');
 
-/** Nhân vật Mannequin v3 là mặc định của người chơi (N-7); chỉ tắt khi `?chr=v1` (dự phòng một bản) hoặc `?chr=v2`. */
-export const CHR_V3 = FLAGS.chr !== 'v1' && FLAGS.chr !== 'v2';
+/** Nhân vật Mannequin v3 là mặc định của người chơi (N-7); chỉ tắt khi `?chr=v1` (dự phòng một bản). */
+export const CHR_V3 = FLAGS.chr !== 'v1';
 /** `?v3anim=0` về hệ animation cũ (một clip chạy, crossfade 0,16 s, không lớp phụ) để so video trước/sau. */
 export const V3_ANIM = FLAGS.v3Anim;
 export const V3_LIB = 'anim_ual_native';
@@ -120,15 +120,6 @@ export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_korvaden: 'chr_v3_korvaden_nam',
   set_skin_shadow_wolf: 'chr_v3_shadow_wolf_nam',
 };
-/** Skin chỉ có bản v3 (v1/v2 không có asset `set_skin_<tên>_<giới>`: bỏ qua, hiện trang phục thường). Varkessa có cả v1. */
-export const V3_ONLY_SKINS: ReadonlySet<string> = new Set([
-  'set_skin_duskrella',
-  'set_skin_crimson',
-  'set_skin_noxavyra',
-  'set_skin_kings_demon',
-  'set_skin_shadow_wolf',
-  'set_skin_korvaden',
-]);
 /**
  * Model v3 theo bộ trang bị đang mặc (`PlayerLook.set`, id trong sets.json): bộ có model riêng dùng `chr_v3_<bộ>_<nam|nu>`.
  * Bộ chưa có model riêng (bậc 1 trở lên) tạm dùng model cùng nhánh: kiếm tu → Lạc Kiếm, hộ pháp → Huyền Giáp, đan sư → Đan Tâm.
@@ -538,6 +529,16 @@ export class MannequinCharacter implements CharacterView {
     }
     return Math.max(1, Math.round(tris / 12000));
   }
+  /**
+   * "Đỗ rig" ở LOD2 (N-7): cả cây `rig` (xương + mọi lưới) rời khỏi cảnh, riêng lưới LOD2 gắn thẳng vào `inner` ở `DetachedBindMode`.
+   * three không còn duyệt ~120 xương mỗi khung để tính ma trận thế giới, và `skeleton.update()` chỉ chạy khi mixer vừa chạy (8 Hz ở LOD2).
+   * Xương khi đỗ nằm trong hệ tọa độ của model (rig không có cha), nên mọi thứ đọc vị trí thế giới của xương (kiếm, IK chân, lò xo: chỉ
+   * LOD0/LOD1) không dùng được trong lúc đỗ. Cùng ý với `detachRig` + `skipUnchangedSkeletons` của `SkinnedCharacter`.
+   */
+  private parked:
+    { m: THREE.SkinnedMesh; home: THREE.Object3D; pos: THREE.Vector3; quat: THREE.Quaternion; scale: THREE.Vector3 }[] | null = null;
+  /** Tăng mỗi lần tư thế xương đổi lúc đang đỗ; `skeleton.update()` của lưới đỗ bỏ qua khi phiên bản chưa đổi. */
+  private parkVersion = 0;
   /** Vải mô phỏng Thiên Y (null nếu tắt hoặc model không có vải cũ tách riêng). */
   cloth: ClothRig | null = null;
   private clothSit = 0;
@@ -759,7 +760,7 @@ export class MannequinCharacter implements CharacterView {
     this.gearOn = on;
     if (on && !this.gear && this.gearBind) this.gear = attachBrawlerGear(this.rig, this.gearBind, this.height);
     this.gear?.setVisible(gearShown(on, this.lodLevel));
-    if (this.blade) this.blade.visible = !on;
+    if (this.blade) this.blade.visible = !on && this.lodLevel < 2;
   }
 
   private mountBlade(drawn: boolean): void {
@@ -783,7 +784,59 @@ export class MannequinCharacter implements CharacterView {
         m.castShadow = cast && i === 0;
       }
     // Kiếm (một draw call mỗi người) ẩn ở LOD xa nhất: ngoài ~55 m không còn thấy.
-    if (this.blade) this.blade.visible = level < 2;
+    // Thể tu đánh tay không: kiếm ẩn hẳn (`setBrawlerGear`), không để lượt LOD bật lại.
+    if (this.blade) this.blade.visible = level < 2 && !this.gearOn;
+  }
+
+  /** Đang đỗ rig (LOD2): xương ở hệ tọa độ model, không đọc được vị trí thế giới. */
+  get rigParked(): boolean {
+    return !!this.parked;
+  }
+
+  private setParked(on: boolean): void {
+    if (on === !!this.parked) return;
+    if (on) {
+      const list = (this.lods[2] ?? []).filter((m) => (m as THREE.SkinnedMesh).isSkinnedMesh) as THREE.SkinnedMesh[];
+      if (this.lods.length < 3 || !list.length || list.length !== this.lods[2]!.length || !this.rig.parent) return;
+      const saved: NonNullable<MannequinCharacter['parked']> = [];
+      for (const m of list) {
+        if (!m.parent) continue;
+        saved.push({ m, home: m.parent, pos: m.position.clone(), quat: m.quaternion.clone(), scale: m.scale.clone() });
+        // DetachedBindMode: đỉnh = matrixWorld(lưới) · bindMatrix⁻¹ · xương(hệ model) · boneInverse · bindMatrix, nên lưới đặt dưới `inner`
+        // với đúng biến đổi lúc bind (bindMatrix = ma trận lưới trong hệ model).
+        this.inner.add(m);
+        m.bindMatrix.decompose(m.position, m.quaternion, m.scale);
+        m.bindMode = THREE.DetachedBindMode;
+        const sk = m.skeleton;
+        let at = -1;
+        sk.update = () => {
+          if (at === this.parkVersion) return;
+          at = this.parkVersion;
+          THREE.Skeleton.prototype.update.call(sk);
+        };
+      }
+      this.inner.remove(this.rig);
+      this.parked = saved;
+      this.syncParked();
+    } else {
+      const saved = this.parked!;
+      this.parked = null;
+      this.inner.add(this.rig);
+      for (const e of saved) {
+        e.home.add(e.m);
+        e.m.position.copy(e.pos);
+        e.m.quaternion.copy(e.quat);
+        e.m.scale.copy(e.scale);
+        e.m.bindMode = THREE.AttachedBindMode;
+        delete (e.m.skeleton as { update?: unknown }).update;
+      }
+    }
+  }
+
+  /** Sau khi mixer đổi tư thế lúc đang đỗ: tính lại ma trận xương (hệ model); `skeleton.update()` chạy một lần ở lượt vẽ tới. */
+  private syncParked(): void {
+    this.rig.updateMatrixWorld(true);
+    this.parkVersion++;
   }
 
   private action(name: string): THREE.AnimationAction | null {
@@ -1219,6 +1272,7 @@ export class MannequinCharacter implements CharacterView {
   setView(v: { dist: number; inView: boolean; allowLod0: boolean; self?: boolean; minLod?: number }): void {
     const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length, v.minLod);
     this.applyLod(level, !!v.self);
+    this.setParked(level >= 2 && !this.disposed && !V3_OFF.has('park'));
     this.lodLevel = level;
     this.gear?.setVisible(gearShown(this.gearOn, level));
     this.viewDist = v.dist;
@@ -1291,6 +1345,7 @@ export class MannequinCharacter implements CharacterView {
       _tq.copy(t.restLimb).invert().multiply(t.limb.quaternion);
       t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
     }
+    if (this.parked) this.syncParked();
     if (V3_ANIM && !V3_OFF.has('proc') && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
     if (this.feet && !V3_OFF.has('feet')) {
       if (this.lodLevel === 0 && this.inner.visible) {
@@ -1454,7 +1509,7 @@ export class MannequinCharacter implements CharacterView {
   }
 
   bladePoints(base: THREE.Vector3, tip: THREE.Vector3): boolean {
-    if (!this.blade || !this.drawn) return false;
+    if (!this.blade || !this.drawn || this.parked) return false;
     this.blade.updateWorldMatrix(true, false);
     base.setFromMatrixPosition(this.blade.matrixWorld);
     tip.set(0, this.bladeLen, 0).applyMatrix4(this.blade.matrixWorld);
@@ -1463,6 +1518,7 @@ export class MannequinCharacter implements CharacterView {
 
   dispose(): void {
     if (this.disposed) return;
+    this.setParked(false); // trả lưới LOD2 về rig để dọn chung
     this.disposed = true;
     this.hit.reset();
     this.blade?.removeFromParent();

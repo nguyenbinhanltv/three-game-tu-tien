@@ -179,7 +179,14 @@ Trần texture chốt lúc nạp model: đổi preset có tác dụng từ lần
 
 Đọc số: draw call và texture của v3 tốt hơn v1; tam giác hơn ~0,15M; ở Vừa mọi chỉ số trong ngân sách trừ CPU p95 (v1 cũng vượt). Ở Cao tam giác và texture vượt ngân sách chung ở cả v1 lẫn v3 (cảnh + bóng đổ + texture mặt đất 171 MB), không phải do nhân vật.
 
-**Còn nợ**: CPU khung của v3 cao hơn v1 khoảng 2 ms khi có 50 người trong khung nhìn (phần `matrix` 0,5 → 1,3 ms, `ents` 0,8 → 1,0 ms, `render` +1 ms): bộ xương Mannequin 119–127 xương (v1: 65), cây xương nằm trong cảnh nên three tính ma trận thế giới mỗi khung và `skeleton.update()` chạy cho từng lưới. v1 tránh bằng `detachRig` + `skipUnchangedSkeletons` (`skinned.ts`); chuyển cách đó sang v3 cần đổi cách gắn kiếm, IK chân và lò xo (đang bám xương trong cảnh) nên để việc riêng.
+**CPU khi đông người: đỗ rig ở LOD2** (`MannequinCharacter.setParked`, PR gỡ code cũ). Số ở bảng trên đo trước bước này: v3 hơn v1 khoảng 2 ms mỗi khung vì bộ xương 119–127 xương (v1: 65) nằm trong cảnh, three duyệt và tính ma trận thế giới mỗi khung, `skeleton.update()` chạy cho từng lưới. Nay ở LOD2 (phần lớn đám đông) cả cây `rig` rời khỏi cảnh, lưới LOD2 gắn thẳng vào nhân vật ở `DetachedBindMode`, ma trận xương chỉ tính lại khi mixer chạy (8 Hz) và `skeleton.update()` bỏ qua khi tư thế chưa đổi (cùng ý với `detachRig` + `skipUnchangedSkeletons` của v1). LOD0/LOD1 giữ nguyên vì kiếm, IK chân, lò xo bám xương trong cảnh. Đo xen kẽ bật/tắt (`CROWD_QUERY='&v3off=park'`), 50 người, WebGPU Vừa, hai vòng, máy đang bận:
+
+| | CPU p50 | `matrix` | `render` | `ents` |
+| --- | --- | --- | --- | --- |
+| Tắt (`?v3off=park`) | 12,2 / 11,2 ms | 1,91 / 1,79 ms | 10,5 / 9,6 ms | 1,66 / 1,41 ms |
+| Bật (mặc định) | 8,7 / 7,1 ms | 0,63 / 0,53 ms | 8,1 / 6,3 ms | 1,64 / 1,31 ms |
+
+Tức giảm khoảng 3,5–4 ms p50 trong cùng điều kiện; `matrix` về ngang v1 (0,54 ms). CPU p95 ở Cao (36 ms ở lần đo trước) chủ yếu là khung khựng lẻ (biên dịch pipeline, GC, máy bận) chứ không phải chi phí đều mỗi khung; chưa đo lại riêng. Trong lúc đỗ, xương ở hệ tọa độ model nên `bladePoints` trả false (vệt kiếm của người ở LOD2 không vẽ). Test: `mannequinPark.test.ts` (vị trí đỉnh trước/sau khi đỗ trùng nhau trên model thật).
 
 ### Nhuộm áo trên v3 (`game/character/v3Dye.ts`)
 Model v3 không có texture mặt nạ vải, nên nhuộm bằng hai lớp mặt nạ trong shader:

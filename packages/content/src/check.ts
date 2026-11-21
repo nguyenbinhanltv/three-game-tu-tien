@@ -1929,15 +1929,9 @@ console.log(
   for (const q of QUESTS)
     if (q.id.startsWith('q2_') && q.id !== 'q2_thu_ha_son' && !q.requires?.startsWith('q2_'))
       err(`quest ${q.id}: chuỗi chương 2 phải requires một q2_*`);
-  // Áo mặc thật: mỗi mảnh có meta nguồn cho cả nam và nữ (bộ chưa có trong sets.json vẫn được chuẩn bị asset).
+  // Bộ có trang phục riêng (N-7: hình là model v3; áo mô-đun đã gỡ nên không còn kiểm meta nguồn từng mảnh).
   for (const [set, parts] of Object.entries(OUTFITS)) {
     if (!parts.length) err(`outfits.json: bộ ${set} không có mảnh`);
-    for (const part of parts) {
-      for (const g of ['nam', 'nu']) {
-        if (!fs.existsSync(fileURLToPath(new URL(`../../../assets/source/chr/${part}_${g}/meta.json`, import.meta.url))))
-          err(`outfits.json: ${set} thiếu assets/source/chr/${part}_${g}/meta.json`);
-      }
-    }
   }
 }
 // Chuỗi chương 3 (E3-H): q3_* nối đuôi từ q2_ket_dan tới q3_nguyen_anh; phụ s3_* nhận sau khi vào chương; mọi nhiệm vụ nhận ở NPC có thật.

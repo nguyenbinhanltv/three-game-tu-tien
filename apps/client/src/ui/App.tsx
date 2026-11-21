@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { type Appearance, genderEnabled, type Gender, HAIRS, isRootId, parseAppearance, type RootId, validName } from '@dtl/shared';
+import { type Appearance, genderEnabled, type Gender, isRootId, parseAppearance, type RootId, validName } from '@dtl/shared';
 import { APPEARANCE, hasString, t } from '@dtl/content';
 import { assets } from '../game/core/assets';
 import { playMusic, sfx, unlockAudio } from '../game/audio/audio';
 import { TitleBackdrop } from '../game/world/backdrop';
 import { lastZoneArt, regionOfArt, setBootArt } from '../game/world/bootArt';
 import { applyUiArt } from './Art';
-import { CHR_V2_ON } from '../game/character/playerSkins';
 import { Game } from '../game/engine';
 import { prefetchManifest } from '../game/core/preload';
 import { Hud } from './Hud';
@@ -61,7 +60,7 @@ function initialLook(): Appearance {
   const def: Appearance = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
   const qs = urlParams();
   const q = qs.get('dye');
-  if (q) return parseAppearance(APPEARANCE, { g: def.g, dye: q, ...(qs.get('hair') ? { hair: qs.get('hair') } : {}) }) ?? def;
+  if (q) return parseAppearance(APPEARANCE, { g: def.g, dye: q }) ?? def;
   try {
     return parseAppearance(APPEARANCE, JSON.parse(localStorage.getItem(LOOK_KEY) ?? 'null')) ?? def;
   } catch {
@@ -111,21 +110,6 @@ function LookPicker({ look, onChange }: { look: Appearance; onChange: (a: Appear
         ))}
         <span className="look-name">{t(`appearance.dye.${look.dye}`)}</span>
       </div>
-      {CHR_V2_ON && (
-        <div className="look-row">
-          <span className="look-key">{t('ui.login.hair')}</span>
-          {HAIRS.map((h) => (
-            <button
-              key={h}
-              type="button"
-              className={'look-gender' + ((look.hair ?? 'a') === h ? ' sel' : '')}
-              onClick={() => onChange({ ...look, hair: h })}
-            >
-              <span>{t(`appearance.hair.${look.g}.${h}`)}</span>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

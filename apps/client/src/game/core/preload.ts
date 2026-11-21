@@ -4,7 +4,7 @@ import { type AssetCache, assets } from './assets';
 import { HUMAN_ANIM_LIB } from '../character/animLib';
 import { MONSTER_SKINS } from '../character/monsterSkins';
 import { CHR_V3 } from '../character/mannequin';
-import { playerPrefetchIds, starterOutfitId } from '../character/playerSkins';
+import { playerPrefetchIds } from '../character/playerSkins';
 import { legacyModelsRequested } from '../character/view';
 
 /**
@@ -33,23 +33,15 @@ export function prefetchManifest(cache: AssetCache = assets): void {
  * lúc CPU dựng thế giới thủ tục. Các nơi dùng (`PlayerSkins`, `MonsterSkins`, `Game.loadSectModel`,
  * `Vfx`) vẫn `acquire` như cũ và nhận bản đã tải. Gọi nhiều lần không sao.
  */
-export function prefetchWorldAssets(
-  cache: AssetCache = assets,
-  legacy = legacyModelsRequested(),
-  gender?: string,
-  hair?: string,
-): string[] {
+export function prefetchWorldAssets(cache: AssetCache = assets, legacy = legacyModelsRequested(), gender?: string): string[] {
   const ids: [string, { pos?: { x: number; z: number }; priority?: number }][] = [];
   if (!legacy) {
     // Chỉ model của giới tính đang chọn (gợi ý từ màn đăng nhập); giới tính kia nạp khi có người chơi đó xuất hiện (PlayerSkins.create).
     const g =
       APPEARANCE.genders.find((x) => x.id === gender && genderEnabled(APPEARANCE, x.id)) ??
       APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender);
-    // Mặc định: model v3 khởi đầu của giới tính + thư viện clip UAL (N-7); `?chr=v1|v2`: model cũ.
-    for (const id of g ? playerPrefetchIds(g.id, hair) : []) ids.push([id, { priority: PREFETCH_PRIORITY.player }]);
-    // Đồ đệ tử tân thủ (~200 KB) mặc ngay khi vào: tải cùng nhân vật; các bộ trang bị (~1-1,5 MB mỗi bộ/giới) nạp lười khi mặc.
-    const starter = g ? starterOutfitId(g.id, hair) : null;
-    if (starter) ids.push([starter, { priority: PREFETCH_PRIORITY.player }]);
+    // Mặc định: model v3 khởi đầu của giới tính + thư viện clip UAL (N-7); `?chr=v1`: model cũ.
+    for (const id of g ? playerPrefetchIds(g.id) : []) ids.push([id, { priority: PREFETCH_PRIORITY.player }]);
   }
   // Thư viện clip Tripo (`anim_human_base`): người chơi v3 không dùng, chỉ còn NPC ở sân tông môn cần (xếp sau nhân vật mình).
   if (!legacy) ids.push([HUMAN_ANIM_LIB, { priority: CHR_V3 ? PREFETCH_PRIORITY.monster : PREFETCH_PRIORITY.player }]);
