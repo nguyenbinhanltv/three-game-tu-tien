@@ -5,7 +5,6 @@ import {
   MAX_SKILL_LEVEL,
   VARIANT_SWITCH_COOLDOWN_SEC,
   METHOD_UNLOCK_LEVEL,
-  methodSwitchCost,
   type SkillDef,
   skillUpgradeCost,
   variantUnlocked,
@@ -19,6 +18,7 @@ import { MethodCarousel } from './u2/shell';
 import { closePanel, useUI } from './store';
 import { chainLines } from './skillChain';
 import { BranchTree } from './BranchTree';
+import { methodPickView } from './methodPick';
 
 const SCROLL = 'itm_bi_tich_tan_quyen';
 
@@ -158,11 +158,8 @@ export function MethodPanel() {
   const open = char.level >= METHOD_UNLOCK_LEVEL;
   const g = Game.current;
   const bar = skillBar(cur?.id);
-  const pickLabel = !cur
-    ? t('ui.method.pick')
-    : shown.id === cur.id
-      ? t('ui.method.current')
-      : t('ui.method.switch', { n: methodSwitchCost(char.level) });
+  const pickOf = (id: string) => methodPickView({ id, current: cur?.id, level: char.level, gold, learned: method?.paths });
+  const pick = pickOf(shown.id);
   return (
     <PanelWindow
       title={t('ui.method.title')}
@@ -182,9 +179,7 @@ export function MethodPanel() {
         <MethodCarousel
           current={cur?.id}
           canPick={open}
-          pickLabel={(id) =>
-            !cur ? t('ui.method.pick') : id === cur.id ? t('ui.method.current') : t('ui.method.switch', { n: methodSwitchCost(char.level) })
-          }
+          pickLabel={(id) => pickOf(id).label}
           onPick={(id) => {
             g?.send(C.METHOD, { method: id, r: reqId() });
             setCarousel(false);
@@ -217,12 +212,19 @@ export function MethodPanel() {
         <div className="mp-pick">
           <Button
             variant="primary"
-            disabled={!open || shown.id === cur?.id}
+            disabled={pick.disabled}
+            data-testid="mp-pick"
             onClick={() => g?.send(C.METHOD, { method: shown.id, r: reqId() })}
           >
-            {pickLabel}
+            {pick.label}
           </Button>
+          {pick.learned && <span className="ok mp-learned">{t('ui.method.learned')}</span>}
         </div>
+        {pick.note && (
+          <div className="k-dim mp-learn-note" data-testid="mp-learn-note">
+            {pick.note}
+          </div>
+        )}
       </div>
       {cur && shown.id === cur.id && (
         <>

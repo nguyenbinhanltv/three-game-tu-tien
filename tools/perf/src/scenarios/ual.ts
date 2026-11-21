@@ -18,7 +18,7 @@ export default {
   async run(r) {
     const viewport = size('960x600');
     for (const g of list('--genders', 'm,f')) {
-      for (const chr of list('--chr', 'v1,v2')) {
+      for (const chr of list('--chr', 'v1')) {
         for (const v of list('--variants', 'old,new')) {
           const tag = `${g === 'm' ? 'nam' : 'nu'}-${chr}-${v}`;
           const dir = path.join(r.out, `_rec-${tag}`);
@@ -28,7 +28,7 @@ export default {
             viewport,
             quality: 'high',
             look: { g },
-            query: { ...(chr === 'v2' && { chr: 'v2' }), ...(v === 'old' && { ual: 0 }) },
+            query: { chr: 'v1', ...(v === 'old' && { ual: 0 }) },
             hide: 'hud',
             warnings: /models/,
             video: dir,

@@ -323,6 +323,8 @@ for (const m of chainErrors(ALL_SKILLS)) err(m);
 // VS-3: hướng tu (mỗi công pháp thuộc đúng một hướng; màu, bộ động tác, ấn phối hợp hợp lệ; tên khớp glossary.paths).
 for (const e of pathErrors(PATHS, METHODS, new Set(MARKS.map((m) => m.id)), POSE_VOICES)) err(e);
 for (const p of PATHS) {
+  if (p.unlock?.grant && !ARTIFACTS.find((a) => a.id === p.unlock?.grant)?.granted)
+    err(`path ${p.id}: unlock.grant phải là pháp bảo có cờ granted`);
   needStr(`path.${p.id}.name`);
   needStr(`path.${p.id}.desc`);
   if (t(`path.${p.id}.name`) !== (GLOSSARY.paths as Record<string, string>)[p.id]) err(`path ${p.id}: tên lệch glossary.paths`);
@@ -1780,8 +1782,19 @@ for (const a of ARTIFACTS) {
   const w = `pháp bảo ${a.id}`;
   const def = ITEM.get(a.id);
   if (!def || def.kind !== 'artifact') err(`${w}: vật phẩm phải có kind artifact`);
-  if (!fs.existsSync(fileURLToPath(new URL(`../../../assets/source/prop/${a.asset}/meta.json`, import.meta.url))))
-    err(`${w}: thiếu assets/source/prop/${a.asset}/meta.json`);
+  // `proc`: chưa có GLB, client dựng mesh thủ tục theo id asset; khi có meta.json của asset thì phải bỏ cờ.
+  const hasMeta = fs.existsSync(fileURLToPath(new URL(`../../../assets/source/prop/${a.asset}/meta.json`, import.meta.url)));
+  if (!a.proc && !hasMeta) err(`${w}: thiếu assets/source/prop/${a.asset}/meta.json`);
+  if (a.proc && hasMeta) err(`${w}: đã có asset ${a.asset}, bỏ cờ proc`);
+  if (a.passive.kind === 'soul' && !METHODS.some((m) => m.resource.id === a.passive.res))
+    err(`${w}: nội tại soul phải khai passive.res là tài nguyên riêng của một công pháp`);
+  if (a.passive.kind !== 'soul' && a.passive.res !== undefined) err(`${w}: passive.res chỉ dùng với nội tại soul`);
+  if (a.kind === 'reap' && !(a.reap && MARK.get(a.reap.mark)?.on === 'mon' && a.reap.res > 0))
+    err(`${w}: reap cần ấn trên quái và res dương`);
+  if (a.granted) {
+    if (def && def.sell !== 0) err(`${w}: vật phát khi lĩnh ngộ không bán được (sell 0)`);
+    if (!PATHS.some((p) => p.unlock?.grant === a.id)) err(`${w}: granted nhưng không hướng tu nào phát`);
+  }
   for (const k of [
     `item.${a.id}.name`,
     `item.${a.id}.desc`,
@@ -1793,10 +1806,10 @@ for (const a of ARTIFACTS) {
   if (t(`item.${a.id}.name`) !== (GLOSSARY.artifacts as Record<string, string>)[a.id]) err(`${w}: tên lệch glossary.artifacts`);
   if (!(a.cd > 0) || !(a.radius > 0) || !(a.power > 0)) err(`${w}: cd, radius, power phải > 0`);
   if (a.passive.per * ARTIFACT_MAX_LEVEL > 0.3) err(`${w}: nội tại cấp tối đa quá 30%`);
-  if (!a.bonded && !RECIPES.some((r) => r.output.id === a.id)) err(`${w}: không có công thức chế`);
-  if (a.bonded && RECIPES.some((r) => r.output.id === a.id)) err(`${w}: bản mệnh pháp bảo tự có, không có công thức chế`);
+  if (!a.bonded && !a.granted && !RECIPES.some((r) => r.output.id === a.id)) err(`${w}: không có công thức chế`);
+  if ((a.bonded || a.granted) && RECIPES.some((r) => r.output.id === a.id)) err(`${w}: bản mệnh pháp bảo tự có, không có công thức chế`);
 }
-for (const k of ['drain', 'seal', 'shield', 'heal']) if (!ARTIFACTS.some((a) => a.kind === k)) err(`thiếu pháp bảo loại ${k}`);
+for (const k of ['drain', 'seal', 'shield', 'heal', 'reap']) if (!ARTIFACTS.some((a) => a.kind === k)) err(`thiếu pháp bảo loại ${k}`);
 // Bản mệnh pháp bảo (E2-E): đúng một cái là Ngưng Đan Lô.
 {
   const bonded = ARTIFACTS.filter((a) => a.bonded);
@@ -1916,15 +1929,9 @@ console.log(
   for (const q of QUESTS)
     if (q.id.startsWith('q2_') && q.id !== 'q2_thu_ha_son' && !q.requires?.startsWith('q2_'))
       err(`quest ${q.id}: chuỗi chương 2 phải requires một q2_*`);
-  // Áo mặc thật: mỗi mảnh có meta nguồn cho cả nam và nữ (bộ chưa có trong sets.json vẫn được chuẩn bị asset).
+  // Bộ có trang phục riêng (N-7: hình là model v3; áo mô-đun đã gỡ nên không còn kiểm meta nguồn từng mảnh).
   for (const [set, parts] of Object.entries(OUTFITS)) {
     if (!parts.length) err(`outfits.json: bộ ${set} không có mảnh`);
-    for (const part of parts) {
-      for (const g of ['nam', 'nu']) {
-        if (!fs.existsSync(fileURLToPath(new URL(`../../../assets/source/chr/${part}_${g}/meta.json`, import.meta.url))))
-          err(`outfits.json: ${set} thiếu assets/source/chr/${part}_${g}/meta.json`);
-      }
-    }
   }
 }
 // Chuỗi chương 3 (E3-H): q3_* nối đuôi từ q2_ket_dan tới q3_nguyen_anh; phụ s3_* nhận sau khi vào chương; mọi nhiệm vụ nhận ở NPC có thật.

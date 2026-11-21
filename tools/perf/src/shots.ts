@@ -10,7 +10,6 @@ import { runScenario, type Scenario } from './lib/scenario';
 import asset from './scenarios/asset';
 import calli from './scenarios/calli';
 import calli3d from './scenarios/calli3d';
-import chrv2 from './scenarios/chrv2';
 import calliscreen from './scenarios/calliscreen';
 import calliset from './scenarios/calliset';
 import clone from './scenarios/clone';
@@ -27,12 +26,10 @@ import vanhai from './scenarios/vanhai';
 import quality from './scenarios/quality';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
-import outfit from './scenarios/outfit';
 import points from './scenarios/points';
 import propstc from './scenarios/propstc';
 import quest4 from './scenarios/quest4';
 import quest5 from './scenarios/quest5';
-import skin from './scenarios/skin';
 import thiennhan from './scenarios/thiennhan';
 import ngusuy from './scenarios/ngusuy';
 import huyenkiep from './scenarios/huyenkiep';
@@ -47,6 +44,7 @@ import v3sets from './scenarios/v3sets';
 import v3views from './scenarios/v3views';
 import thetu from './scenarios/thetu';
 import rigstretch from './scenarios/rigstretch';
+import neck from './scenarios/neck';
 import skinv3 from './scenarios/skinv3';
 import hoatruc from './scenarios/hoatruc';
 import thiengiai from './scenarios/thiengiai';
@@ -58,9 +56,11 @@ import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
 import tn1 from './scenarios/tn1';
 import vs2 from './scenarios/vs2';
+import hontu from './scenarios/hontu';
 import realmaura from './scenarios/realmaura';
 import fxlib from './scenarios/fxlib';
 import xichkhe from './scenarios/xichkhe';
+import n7 from './scenarios/n7';
 import dungeonart from './scenarios/dungeonart';
 import collscan from './scenarios/collscan';
 
@@ -83,9 +83,7 @@ const SCENARIOS: Scenario[] = [
   vfx,
   tn1,
   vs2,
-  outfit,
-  skin,
-  chrv2,
+  hontu,
   ui,
   minimap,
   chat,
@@ -109,9 +107,11 @@ const SCENARIOS: Scenario[] = [
   chrv3anim,
   chrv3feet,
   v3sets,
+  n7,
   v3views,
   thetu,
   rigstretch,
+  neck,
   skinv3,
   divuc,
   flyover,

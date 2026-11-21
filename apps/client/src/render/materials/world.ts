@@ -63,6 +63,26 @@ export function adoptGltfMaterials(
   return [...made.values()];
 }
 
+/** Thuộc tính PBR thường mà `MeshStandardNodeMaterial.clone()` của three r178 KHÔNG chép (nó chỉ chép các `*Node` và phần chung của `Material`). */
+const PBR_TEXTURES = ['map', 'roughnessMap', 'metalnessMap', 'normalMap', 'aoMap', 'emissiveMap', 'alphaMap', 'envMap'] as const;
+const PBR_SCALARS = ['roughness', 'metalness', 'emissiveIntensity', 'envMapIntensity', 'aoMapIntensity'] as const;
+
+/**
+ * Bản sao đầy đủ của một material thế giới (biến thể theo người chơi: nhuộm áo, linh thể): giữ node, texture, màu và thông số PBR.
+ * Texture dùng chung với bản gốc (không dispose theo bản sao).
+ */
+export function cloneWorldMaterial(src: THREE.MeshStandardNodeMaterial): THREE.MeshStandardNodeMaterial {
+  const m = src.clone();
+  const a = src as unknown as Record<string, unknown>;
+  const b = m as unknown as Record<string, unknown>;
+  for (const k of PBR_TEXTURES) b[k] = a[k] ?? null;
+  for (const k of PBR_SCALARS) if (typeof a[k] === 'number') b[k] = a[k];
+  m.color.copy(src.color);
+  m.emissive.copy(src.emissive);
+  m.normalScale.copy(src.normalScale);
+  return m;
+}
+
 /**
  * Viền sáng (rim) tách khối nhân vật khỏi nền: fresnel hẹp ở mép hình bóng, sắc nắng, mạnh hơn ở phía hướng mặt trời
  * và ở phần trên thân, gần tắt ở phía khuất nắng. Yếu có chủ ý (art bible 5.3: không rim trắng gắt); cường độ theo preset

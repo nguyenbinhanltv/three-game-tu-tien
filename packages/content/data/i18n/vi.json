@@ -1962,5 +1962,17 @@
   "branch.liet_nhan_dao_kinh.doan_luu.name": "Đoạn Lưu",
   "branch.liet_nhan_dao_kinh.doan_luu.desc": "Cắt đứt thế địch. Học Đoạn Lưu: ghìm một mục tiêu, xả Khí thế để chém mạnh hơn.",
   "branch.liet_nhan_dao_kinh.liet_dia.name": "Liệt Địa",
-  "branch.liet_nhan_dao_kinh.liet_dia.desc": "Đổi thế lấy một nhát lớn. Học Liệt Địa Trảm: xả Khí thế và Đao ngấn thành vụ nổ vùng."
+  "branch.liet_nhan_dao_kinh.liet_dia.desc": "Đổi thế lấy một nhát lớn. Học Liệt Địa Trảm: xả Khí thế và Đao ngấn thành vụ nổ vùng.",
+  "item.itm_hon_phien.name": "Hồn Phiên",
+  "item.itm_hon_phien.desc": "Lá phiên đuôi én trên cán thiết mộc, ba chuông đồng sẫm. Nhận khi lĩnh ngộ Dẫn Hồn Kinh, gắn với chủ nên không bán được. Nội tại: Hồn lực tích nhanh hơn theo cấp.",
+  "art.itm_hon_phien.skill": "Nhiếp Hồn",
+  "art.itm_hon_phien.skill.desc": "Phất phiên: tối đa 5 kẻ địch quanh {r} m nhận 1 Hồn ấn, mỗi con cho 5 Hồn lực. Chỉ người tu Dẫn Hồn Kinh mới đặt được ấn và tích Hồn lực.",
+  "art.passive.soul": "Hồn lực tích nhanh hơn +{n}%",
+  "sys.art_reap": "Nhiếp Hồn: {n} kẻ địch nhận Hồn ấn.",
+  "sys.art_reap_none": "Nhiếp Hồn cần tu Dẫn Hồn Kinh.",
+  "sys.path_bag_full": "Túi đầy: cần một ô trống để nhận {item}.",
+  "ui.method.learn": "Lĩnh ngộ ({n} linh thạch)",
+  "ui.method.learn_need": "Cần đạt {realm} và {n} linh thạch, gặp {npc} để lĩnh ngộ. Lĩnh ngộ một lần, nhận {item}.",
+  "ui.method.learn_need_plain": "Cần đạt {realm} và {n} linh thạch, gặp {npc} để lĩnh ngộ. Lĩnh ngộ một lần.",
+  "ui.method.learned": "Đã lĩnh ngộ"
 }
