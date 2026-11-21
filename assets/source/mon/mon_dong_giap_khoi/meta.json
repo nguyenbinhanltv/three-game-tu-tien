@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "mon_dong_giap_khoi",
+  "type": "mon",
+  "budgetClass": "monster",
+  "itemId": null,
+  "status": "planned",
+  "license": {
+    "source": "Chưa có model riêng: dùng model tạm wolf/ape của game (đổi màu theo monsters.json) cho tới khi người dùng dựng model Tripo từ concept",
+    "owner": "dự án Đạp Thiên Lộ (nội bộ)",
+    "date": "2026-11-22"
+  }
+}
