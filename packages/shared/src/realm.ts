@@ -108,8 +108,11 @@ export function levelAfterBottleneck(level: number): number {
 
 // ---------- linh căn ngũ hành ----------
 
-export type RootId = 'kim' | 'moc' | 'thuy' | 'hoa' | 'tho';
-export const ROOT_IDS: readonly RootId[] = ['kim', 'moc', 'thuy', 'hoa', 'tho'];
+/** Bản Nguyên người chơi mang được (TN-1): năm nguồn ngũ hành + Lôi. Tám nguồn còn lại của `origins.json` đang khóa. */
+export type RootId = 'kim' | 'moc' | 'thuy' | 'hoa' | 'tho' | 'loi';
+export const ROOT_IDS: readonly RootId[] = ['kim', 'moc', 'thuy', 'hoa', 'tho', 'loi'];
+/** Năm nguồn ngũ hành: bảng gán cố định theo tên cho nhân vật có từ trước khi có linh căn (KHÔNG thêm nguồn mới vào đây, sẽ đổi kết quả gán). */
+export const ELEM_ROOT_IDS: readonly RootId[] = ['kim', 'moc', 'thuy', 'hoa', 'tho'];
 
 export function isRootId(v: unknown): v is RootId {
   return typeof v === 'string' && (ROOT_IDS as readonly string[]).includes(v);

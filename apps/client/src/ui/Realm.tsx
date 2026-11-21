@@ -1,4 +1,4 @@
-// Cảnh giới Phase 3-7: bình cảnh (tâm ma / Phá Cảnh Đan), linh căn ngũ hành. Dùng bộ khung `ui/u2/win`.
+// Cảnh giới Phase 3-7: bình cảnh (tâm ma / Phá Cảnh Đan), Bản Nguyên (linh căn ngũ hành + Lôi, TN-1). Dùng bộ khung `ui/u2/win`.
 // Client chỉ hiển thị trạng thái server gửi (CharView) và gửi ý định; mọi phán định ở server.
 import './realm.css';
 import { useEffect, useState } from 'react';
@@ -10,13 +10,14 @@ import {
   isPeakLevel,
   peakGated,
   isRootId,
+  originOpen,
   bottleneckPill,
   type RootId,
   ROOT_IDS,
   rootChangeCost,
   TRIAL_DURATION,
 } from '@dtl/shared';
-import { itemName, nextMajorRealmName, realmName, ROOT, t } from '@dtl/content';
+import { itemName, nextMajorRealmName, ORIGINS, realmName, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { UiIcon } from './ContentIcon';
 import { Button, Divider } from './u2/win';
@@ -48,7 +49,7 @@ export function RootCard({ root }: { root: string }) {
       </span>
       <div>
         <div className="root-name">
-          {t('ui.root.title')}: {t(`root.${root}.name`)}
+          {t('ui.root.title')}: {t(`origin.${root}.name`)}
         </div>
         <div className="k-dim">{t(`root.${root}.desc`)}</div>
       </div>
@@ -140,7 +141,7 @@ export function RootPicker({ value, onChange }: { value: RootId | null; onChange
             title={t(`root.${id}.desc`)}
             onClick={() => onChange(id)}
           >
-            <UiIcon id={`root_${id}`} fallback={t(`elem.${id}`)} className="inline" /> {t(`elem.${id}`)}
+            <UiIcon id={`root_${id}`} fallback={t(`elem.${id}`)} className="inline" /> {t(`origin.${id}.name`)}
           </button>
         ))}
         <button type="button" className={'root-opt rnd' + (value === null ? ' sel' : '')} onClick={() => onChange(null)}>
@@ -148,6 +149,37 @@ export function RootPicker({ value, onChange }: { value: RootId | null; onChange
         </button>
       </div>
       <div className="k-dim root-pick-desc">{value ? t(`root.${value}.desc`) : ''}</div>
+      <LockedOrigins />
+    </div>
+  );
+}
+
+/** Tám Bản Nguyên chưa mở (TN-1): chỉ để biết phía trước còn gì, gom theo chương mở; không bấm được. */
+export function LockedOrigins() {
+  const locked = ORIGINS.filter((o) => !originOpen(o));
+  const chapters = [...new Set(locked.map((o) => o.chapter!))].sort((a, b) => a - b);
+  return (
+    <div className="root-locked" data-testid="root-locked">
+      <span className="root-locked-label">{t('ui.root.locked')}</span>
+      {chapters.map((ch) => (
+        <div key={ch} className="root-locked-row">
+          <span className="root-locked-ch">
+            <span aria-hidden="true">🔒</span> {t('ui.root.locked_at', { n: ch })}
+          </span>
+          {locked
+            .filter((o) => o.chapter === ch)
+            .map((o) => (
+              <span
+                key={o.id}
+                className="root-lock"
+                data-origin={o.id}
+                title={t('ui.root.locked_hint', { desc: t(`origin.${o.id}.desc`), n: ch })}
+              >
+                {t(`origin.${o.id}.name`)}
+              </span>
+            ))}
+        </div>
+      ))}
     </div>
   );
 }
@@ -165,15 +197,14 @@ export function RootTab({ npcId }: { npcId: string }) {
         {t('ui.root.change_desc', { n: cost })} · <UiIcon id="cur_linh_thach" fallback="💠" className="inline" /> {char.gold}
       </div>
       {ROOT_IDS.map((id) => {
-        const def = ROOT.get(id)!;
         const cur = char.root === id;
         return (
           <div key={id} className="k-card shop-row" data-root={id}>
             <span className="root-glyph" aria-hidden="true">
-              <UiIcon id={`root_${id}`} fallback={t(`elem.${def.elem}`)} />
+              <UiIcon id={`root_${id}`} fallback={t(`elem.${id}`)} />
             </span>
             <div className="shop-info">
-              <div className="item-name">{t(`root.${id}.name`)}</div>
+              <div className="item-name">{t(`origin.${id}.name`)}</div>
               <div className="k-dim">{t(`root.${id}.desc`)}</div>
             </div>
             <Button
@@ -186,6 +217,7 @@ export function RootTab({ npcId }: { npcId: string }) {
           </div>
         );
       })}
+      <LockedOrigins />
     </div>
   );
 }

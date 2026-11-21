@@ -182,6 +182,19 @@ function playerDps(level: number, atk: number, monDef: number, id?: MethodId, mo
   // Mộc độc đan sư: sát thương theo thời gian mỗi mục tiêu, không giảm theo phòng ngự, phủ `POISON_MOBS` quái trong cụm.
   const hx = m ? METHOD_SKILLS.find((s) => s.id === m.sig && s.poison) : undefined;
   if (hx?.poison && hx.unlock <= level) perSec += ((atk * hx.poison.mul * hx.poison.dur) / hx.cd) * POISON_MOBS;
+  // TN-2: ấn bào mòn (Hồn ấn) là lõi của Hồn tu, đi kèm chiêu đặc trưng nên tính ở lớp nền như mộc độc: mỗi giây mỗi tầng
+  // `dot.per` × công kích, không giảm theo phòng ngự. Số tầng giữ được = tổng (thời gian ấn / hồi chiêu) của các chiêu đặt ấn.
+  // Phần rút máu và hồi khi thu hồn KHÔNG tính vào độ trụ (ước lượng dè dặt).
+  if (m) {
+    for (const md of MARK.values()) {
+      if (!md.dot || md.method !== m.id) continue;
+      const stacks = Math.min(
+        md.max,
+        bar.filter((a) => a.unlock <= level && a.cd > 0 && a.applyMark?.id === md.id).reduce((n, a) => n + md.dur / a.cd, 0),
+      );
+      perSec += atk * md.dot.per * stacks;
+    }
+  }
   if (mode === 'base' || !m) return perSec;
 
   // ---------- lớp VS-2 ----------

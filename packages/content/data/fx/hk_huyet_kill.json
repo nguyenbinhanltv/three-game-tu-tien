@@ -1,0 +1,107 @@
+{
+ "skill": "hk_huyet_kill",
+ "palette": "hk_huyet_anh",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "slash_cross",
+   "t": 0.0,
+   "dur": 0.4,
+   "at": "target",
+   "rot": [
+    90,
+    0,
+    0
+   ],
+   "scale": [
+    2.6,
+    1,
+    2.6
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.4,
+   "ragged": 0.7,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 83,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.02,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    0,
+    -0.9,
+    0
+   ],
+   "scale": [
+    0.5,
+    0.6,
+    0.5
+   ],
+   "scaleTo": [
+    3.6,
+    1.5,
+    3.6
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.4,
+   "ragged": 0.8,
+   "tone": "body",
+   "alpha": 0.85,
+   "seed": 84,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.11,
+   "at": "target",
+   "scale": 2.4,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "alpha": 0.8,
+   "cross": true,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0.0,
+   "n": 26,
+   "speed": 6.0,
+   "spread": 0.9,
+   "life": 0.8,
+   "size": 0.14,
+   "at": "target",
+   "tone": "body",
+   "grav": 8,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "petal",
+   "t": 0.05,
+   "n": 20,
+   "speed": 2.0,
+   "spread": 0.9,
+   "life": 1.5,
+   "size": 0.18,
+   "at": "self",
+   "tone": "rim",
+   "grav": -1.0,
+   "tier": 1
+  },
+  {
+   "type": "flash",
+   "t": 0.0,
+   "amount": 0.14,
+   "tier": 0
+  }
+ ]
+}

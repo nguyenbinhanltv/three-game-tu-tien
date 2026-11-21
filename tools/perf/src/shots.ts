@@ -35,6 +35,7 @@ import quest5 from './scenarios/quest5';
 import skin from './scenarios/skin';
 import thiennhan from './scenarios/thiennhan';
 import ngusuy from './scenarios/ngusuy';
+import huyenkiep from './scenarios/huyenkiep';
 import anhbien from './scenarios/anhbien';
 import fly from './scenarios/fly';
 import thanpham from './scenarios/thanpham';
@@ -54,6 +55,7 @@ import ui from './scenarios/ui';
 import minimap from './scenarios/minimap';
 import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
+import tn1 from './scenarios/tn1';
 import vs2 from './scenarios/vs2';
 import realmaura from './scenarios/realmaura';
 import fxlib from './scenarios/fxlib';
@@ -79,6 +81,7 @@ const SCENARIOS: Scenario[] = [
   dungeon,
   asset,
   vfx,
+  tn1,
   vs2,
   outfit,
   skin,
@@ -92,6 +95,7 @@ const SCENARIOS: Scenario[] = [
   thiengiai,
   thiennhan,
   ngusuy,
+  huyenkiep,
   anhbien,
   thanpham,
   ual,

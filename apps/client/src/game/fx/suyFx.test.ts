@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SUY_FX, SUY_FX_STAGE } from '@dtl/content';
-import { FX_SKILL_DRAW_MAX, SUY_MECHANICS, fxDrawCount, type FxMsg } from '@dtl/shared';
+import { HK_FX, HK_FX_STAGE, SUY_FX, SUY_FX_STAGE } from '@dtl/content';
+import { FX_SKILL_DRAW_MAX, HK_MECHANICS, SUY_MECHANICS, fxDrawCount, type FxMsg } from '@dtl/shared';
 import * as THREE from 'three/webgpu';
 import { SuyFx } from './suyFx';
 import type { FxRunner } from './fxTimeline';
@@ -288,5 +288,87 @@ describe('lớp đọc được từ xa (đèn khu ải, cột linh quang, lửa
     ]);
     fx.mark(mark('den', { n: -1, pg: 0 }));
     expect(stops()).toBe(1);
+  });
+});
+
+describe('Huyền Kiếp (TN-6)', () => {
+  const hk = (s: string, extra: Partial<FxMsg> = {}): FxMsg => ({ t: 'hkmark', src: 'me', s, ...extra });
+
+  it('mỗi kiếp nhỏ có đủ timeline và nằm trong ngân sách draw call', () => {
+    for (const mech of HK_MECHANICS) {
+      const keys = HK_FX_STAGE[mech]!;
+      for (const k of keys) expect(HK_FX.has(k) || SUY_FX.has(k), k).toBe(true);
+      expect(fxDrawCount(keys.flatMap((k) => (HK_FX.get(k) ?? SUY_FX.get(k))!.events))).toBeLessThanOrEqual(FX_SKILL_DRAW_MAX);
+    }
+  });
+
+  it('vào kiếp dùng thẻ ấn chung với bảng màu của kiếp; Lôi: trụ nguội/nóng là hai vòng lặp, khép kiếp thì dọn', () => {
+    const { fx, calls, keys } = mk();
+    fx.bar(bar('hk_loi', { x: 0, z: 0 }));
+    expect(calls[0]).toMatchObject({ key: 'hk_enter', pal: 'hk_loi' });
+    fx.hkMark(hk('loi', { n: 0, x: 0, z: 6.5, r: 2.2, pg: 1 }));
+    fx.update();
+    expect(keys().at(-1)).toBe('hk_loi_rod');
+    fx.hkMark(hk('loi', { n: 0, x: 0, z: 6.5, r: 4.5, d: 9, pg: 2 }));
+    expect(keys().at(-1)).toBe('hk_loi_zap');
+    now += 1100;
+    fx.update();
+    expect(keys().at(-1)).toBe('hk_loi_hot');
+    fx.hkMark(hk('loi', { n: 0, x: 0, z: 6.5, r: 4.5, pg: 4 }));
+    expect(keys().at(-1)).toBe('hk_loi_boom');
+    fx.bar(bar('hk_loi', { pg: -1 }));
+    expect(fx.live).toBe(0);
+  });
+
+  it('Phong: báo gió xoay theo hướng server gửi; Hồn Châu nhặt xong là hết vòng lặp ngay', () => {
+    const { fx, calls, keys } = mk();
+    fx.bar(bar('hk_phong', { x: 0, z: 0 }));
+    fx.hkMark(hk('phong', { n: 3, x: 0, z: 0, r: 6, pg: 1 }));
+    expect(fx.live).toBe(3);
+    fx.hkMark(hk('phong', { x: 0, z: 0, ox: 1, oz: 0, d: 3, pg: 2 }));
+    expect(calls.at(-1)).toMatchObject({ key: 'hk_phong_warn', delay: 3 });
+    expect(calls.at(-1)!.yaw).toBeCloseTo(Math.PI / 2);
+    fx.hkMark(hk('phong', { x: 0, z: 0, ox: 1, oz: 0, pg: 4 }));
+    expect(keys().slice(-2)).toEqual(['hk_phong_blow', 'hk_phong_hit']);
+    fx.bar(bar('hk_hon_tho', { x: 0, z: 0 }));
+    fx.hkMark(hk('chau', { n: 2, x: 3, z: 4, r: 1.8, d: 6, pg: 1 }));
+    expect(fx.live).toBe(1);
+    fx.hkMark(hk('chau', { n: 2, x: 3, z: 4, pg: 2 }));
+    expect(fx.live).toBe(0);
+    expect(calls.at(-1)).toMatchObject({ key: 'hk_chau_get', x: 3, z: 4 });
+  });
+
+  it('Vấn Tâm: lúc đổi chỗ (pg 3) các ấn PHẢI chuyển động xoay và dừng đúng `shift` bước (không đứng yên để người chơi phải đoán)', () => {
+    const pos: (() => { x: number; z: number } | null)[] = [];
+    const runner = { startAt: () => undefined } as unknown as FxRunner;
+    const fx = new SuyFx(runner, {
+      player: () => ({ x: 0, y: 0, z: 0, yaw: 0, model: {} }),
+      ground: () => 0,
+      tribOn: () => true,
+      shadow: () => null,
+      vfx: {
+        boltGlowMul: 1,
+        suyBeacon: (p) => {
+          pos.push(p);
+          return { stop: () => undefined };
+        },
+        suyLamps: () => ({ set: () => undefined, stop: () => undefined }),
+      },
+    });
+    fx.bar(bar('hk_van_tam', { x: 0, z: 0 }));
+    fx.hkMark(hk('van', { n: 3, x: 0, z: 0, r: 6, lv: 2.6, pg: 1 }));
+    const seals = pos.slice(0, 3);
+    const at0 = seals.map((f) => f()!);
+    expect(at0[0]!.z).toBeCloseTo(6);
+    fx.hkMark(hk('van', { n: 0, x: 0, z: 6, r: 2.6, d: 1.4, pg: 2 }));
+    fx.hkMark(hk('van', { n: 1, x: 0, z: 0, r: 6, d: 3.2, pg: 3 }));
+    now += 800;
+    const mid = seals[0]!()!;
+    expect(Math.hypot(mid.x - at0[0]!.x, mid.z - at0[0]!.z)).toBeGreaterThan(1);
+    now += 3000;
+    const end = seals[0]!()!;
+    // Xoay một bước: ấn 0 tới đúng chỗ ban đầu của ấn 1.
+    expect(end.x).toBeCloseTo(at0[1]!.x, 3);
+    expect(end.z).toBeCloseTo(at0[1]!.z, 3);
   });
 });

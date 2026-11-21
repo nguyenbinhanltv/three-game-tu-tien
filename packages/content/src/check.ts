@@ -83,6 +83,9 @@ import {
   POSES,
   FX_TIMELINES,
   MON_FX_TIMELINES,
+  HK_FX,
+  HK_FX_STAGE,
+  HK_FX_TIMELINES,
   SUY_FX,
   SUY_FX_STAGE,
   SUY_FX_TIMELINES,
@@ -97,6 +100,7 @@ import {
   JOINTS,
   MARK,
   PATHS,
+  pathOf,
   MARKS,
   METHODS,
   METHOD,
@@ -195,6 +199,24 @@ for (const f of SUY_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => 
     if (n > FX_SKILL_DRAW_MAX) err(`fx ngũ suy: ải ${mech} dùng ${n} draw > ${FX_SKILL_DRAW_MAX}`);
   }
   for (const f of SUY_FX_TIMELINES) if (!used.has(f.skill)) err(`fx ngũ suy: timeline ${f.skill} không thuộc ải nào (SUY_FX_STAGE)`);
+}
+// TN-6: hiệu ứng Huyền Kiếp, cùng luật: mỗi timeline ≤ 12 draw, cả một kiếp nhỏ ≤ 25 draw.
+for (const f of HK_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('hk_'))) err(m);
+{
+  const used = new Set<string>();
+  for (const mech of HK_MECHANICS) {
+    const keys = HK_FX_STAGE[mech] ?? [];
+    if (!keys.length) err(`fx huyền kiếp: ${mech} chưa có timeline`);
+    const events = keys.flatMap((k) => {
+      used.add(k);
+      const tl = HK_FX.get(k) ?? SUY_FX.get(k);
+      if (!tl) err(`fx huyền kiếp: ${mech} cần timeline ${k} (chạy python tools/vfx/gen-fx-hk.py)`);
+      return tl?.events ?? [];
+    });
+    const n = fxDrawCount(events);
+    if (n > FX_SKILL_DRAW_MAX) err(`fx huyền kiếp: ${mech} dùng ${n} draw > ${FX_SKILL_DRAW_MAX}`);
+  }
+  for (const f of HK_FX_TIMELINES) if (!used.has(f.skill)) err(`fx huyền kiếp: timeline ${f.skill} không thuộc kiếp nào (HK_FX_STAGE)`);
 }
 // Mỗi skill một động tác riêng, không dài quá GCD (chiêu niệm chú: động tác chém sau khi niệm xong cũng ≤ GCD).
 // Chiêu lướt (K-2) không có động tác riêng: dùng chung fx `dash`, hình lướt do client dựng.
@@ -466,7 +488,9 @@ for (const it of ITEMS) {
     if (t(`ui.party.role.${role}`) !== name) err(`vai trò tổ đội ${role}: tên lệch glossary.party.roles`);
   }
   for (const m of METHODS) {
-    if (t(`method.${m.id}.role`) !== GLOSSARY.party.roles[m.role]) err(`công pháp ${m.id}: tên vai trò lệch glossary.party.roles`);
+    // Nhãn vai của công pháp là tên hướng tu của nó (ba hướng đầu trùng tên vai tổ đội; hướng mới như Hồn tu có tên riêng).
+    const pathName = (GLOSSARY.paths as Record<string, string>)[pathOf(m.id)?.id ?? ''];
+    if (t(`method.${m.id}.role`) !== pathName) err(`công pháp ${m.id}: nhãn vai phải là tên hướng tu (glossary.paths)`);
   }
   for (const k of ['gem', 'refineStone', 'dust', 'ward'] as const) if (!GLOSSARY.upgrade[k]) err(`glossary.upgrade.${k} thiếu`);
   if (t(`item.${REFINE_ITEM}.name`) !== GLOSSARY.upgrade.refineStone) err('tên Tẩy Luyện Thạch lệch glossary');
@@ -1171,7 +1195,6 @@ if (ROOTS.map((r) => r.id).join() !== ROOT_IDS.join())
   }
 }
 for (const r of ROOTS) {
-  needStr(`root.${r.id}.name`);
   needStr(`root.${r.id}.desc`);
   needStr(`elem.${r.id}`);
 }
