@@ -71,7 +71,7 @@ import { chainOf, takeChain } from '../skillflow';
 import type { DuelSystem } from '../duel';
 import type { MirrorSystem } from '../mirror';
 import type { CloneSystem } from '../clone';
-import { pruneBuffs } from '../artifact';
+import { passiveValue, pruneBuffs } from '../artifact';
 import type { MonEnt, PlayerEnt, StrikeCtx, Stomp, Summon } from '../entities';
 import { LEASH, MARK_ALLY_RANGE, SET_HEAL_RADIUS, TAUNT_BOSS_MUL, visualSeed } from './consts';
 
@@ -457,7 +457,10 @@ export class CombatSystem {
 
   /** Luật nhánh công pháp tác động lên tài nguyên của `p` (VS-2d): trần, giữ lại khi xả, nhân tích, không rụng. */
   resMods(p: PlayerEnt): ResourceMods | undefined {
-    const base = branchModsOf(p.char).res;
+    const base0 = branchModsOf(p.char).res;
+    // TN-2: nội tại `soul` của pháp bảo đang đeo (hồn phiên) nhân lượng tích tài nguyên riêng.
+    const soul = passiveValue(p.char.equip, p.char.meta, 'soul');
+    const base = soul > 0 ? { ...(base0 ?? {}), gainMul: (base0?.gainMul ?? 1) * (1 + soul) } : base0;
     // VS-2e: tư thế đang giữ có thể đổi luật tài nguyên (không rụng, tích nhanh hơn).
     const st = stanceActive(p.mth.stance, this.c.now) ? SKILL.get(p.mth.stance.id)?.stance?.res : undefined;
     return withStanceRes(base, st);

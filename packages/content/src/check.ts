@@ -323,6 +323,7 @@ for (const m of chainErrors(ALL_SKILLS)) err(m);
 // VS-3: hướng tu (mỗi công pháp thuộc đúng một hướng; màu, bộ động tác, ấn phối hợp hợp lệ; tên khớp glossary.paths).
 for (const e of pathErrors(PATHS, METHODS, new Set(MARKS.map((m) => m.id)), POSE_VOICES)) err(e);
 for (const p of PATHS) {
+  if (p.unlock?.grant && !ARTIFACTS.find((a) => a.id === p.unlock?.grant)?.granted) err(`path ${p.id}: unlock.grant phải là pháp bảo có cờ granted`);
   needStr(`path.${p.id}.name`);
   needStr(`path.${p.id}.desc`);
   if (t(`path.${p.id}.name`) !== (GLOSSARY.paths as Record<string, string>)[p.id]) err(`path ${p.id}: tên lệch glossary.paths`);
@@ -1780,8 +1781,15 @@ for (const a of ARTIFACTS) {
   const w = `pháp bảo ${a.id}`;
   const def = ITEM.get(a.id);
   if (!def || def.kind !== 'artifact') err(`${w}: vật phẩm phải có kind artifact`);
-  if (!fs.existsSync(fileURLToPath(new URL(`../../../assets/source/prop/${a.asset}/meta.json`, import.meta.url))))
-    err(`${w}: thiếu assets/source/prop/${a.asset}/meta.json`);
+  // `proc`: chưa có GLB, client dựng mesh thủ tục theo id asset; khi có meta.json của asset thì phải bỏ cờ.
+  const hasMeta = fs.existsSync(fileURLToPath(new URL(`../../../assets/source/prop/${a.asset}/meta.json`, import.meta.url)));
+  if (!a.proc && !hasMeta) err(`${w}: thiếu assets/source/prop/${a.asset}/meta.json`);
+  if (a.proc && hasMeta) err(`${w}: đã có asset ${a.asset}, bỏ cờ proc`);
+  if (a.kind === 'reap' && !(a.reap && MARK.get(a.reap.mark)?.on === 'mon' && a.reap.res > 0)) err(`${w}: reap cần ấn trên quái và res dương`);
+  if (a.granted) {
+    if (def && def.sell !== 0) err(`${w}: vật phát khi lĩnh ngộ không bán được (sell 0)`);
+    if (!PATHS.some((p) => p.unlock?.grant === a.id)) err(`${w}: granted nhưng không hướng tu nào phát`);
+  }
   for (const k of [
     `item.${a.id}.name`,
     `item.${a.id}.desc`,
@@ -1793,10 +1801,10 @@ for (const a of ARTIFACTS) {
   if (t(`item.${a.id}.name`) !== (GLOSSARY.artifacts as Record<string, string>)[a.id]) err(`${w}: tên lệch glossary.artifacts`);
   if (!(a.cd > 0) || !(a.radius > 0) || !(a.power > 0)) err(`${w}: cd, radius, power phải > 0`);
   if (a.passive.per * ARTIFACT_MAX_LEVEL > 0.3) err(`${w}: nội tại cấp tối đa quá 30%`);
-  if (!a.bonded && !RECIPES.some((r) => r.output.id === a.id)) err(`${w}: không có công thức chế`);
-  if (a.bonded && RECIPES.some((r) => r.output.id === a.id)) err(`${w}: bản mệnh pháp bảo tự có, không có công thức chế`);
+  if (!a.bonded && !a.granted && !RECIPES.some((r) => r.output.id === a.id)) err(`${w}: không có công thức chế`);
+  if ((a.bonded || a.granted) && RECIPES.some((r) => r.output.id === a.id)) err(`${w}: bản mệnh pháp bảo tự có, không có công thức chế`);
 }
-for (const k of ['drain', 'seal', 'shield', 'heal']) if (!ARTIFACTS.some((a) => a.kind === k)) err(`thiếu pháp bảo loại ${k}`);
+for (const k of ['drain', 'seal', 'shield', 'heal', 'reap']) if (!ARTIFACTS.some((a) => a.kind === k)) err(`thiếu pháp bảo loại ${k}`);
 // Bản mệnh pháp bảo (E2-E): đúng một cái là Ngưng Đan Lô.
 {
   const bonded = ARTIFACTS.filter((a) => a.bonded);

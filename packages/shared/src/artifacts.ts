@@ -1,14 +1,18 @@
 // Pháp bảo phụ (Phase 3-8): công thức dùng chung client (hiển thị) và server (tính thật). Hàm thuần.
 // Dữ liệu (3 pháp bảo, hệ số kỹ năng) nằm ở packages/content/data/artifacts.json.
 
+import type { MarkId } from './marks';
+
 export const ARTIFACT_MAX_LEVEL = 5;
 /** Số mục tiêu quái tối đa Hồ Lô hút một lần. */
 export const DRAIN_MAX_TARGETS = 5;
 /** Người chơi chỉ hưởng linh khí từ quái không thấp hơn mình quá chừng này cấp. */
 export const ARTIFACT_QI_LEVEL_GAP = 5;
 
-export type ArtifactKind = 'drain' | 'seal' | 'shield' | 'heal';
-export type ArtifactPassiveKind = 'mp' | 'posture' | 'def' | 'hp';
+export type ArtifactKind = 'drain' | 'seal' | 'shield' | 'heal' | 'reap';
+export type ArtifactPassiveKind = 'mp' | 'posture' | 'def' | 'hp' | 'soul';
+/** Số quái tối đa hồn phiên nhiếp hồn một lần (kind `reap`). */
+export const REAP_MAX_TARGETS = 5;
 
 export interface ArtifactDef {
   /** id vật phẩm (mẫu trang bị ô `artifact`). */
@@ -32,6 +36,14 @@ export interface ArtifactDef {
   color: string;
   /** Bản mệnh pháp bảo (E2-E): tự có khi lên Kết Đan, không tháo, cấp theo cấp của chủ (`bondedLevel`), phím T. */
   bonded?: boolean;
+  /**
+   * TN-2 (hồn phiên): `granted` = phát khi lĩnh ngộ hướng tu (`paths[].unlock.grant`), không có công thức chế, không bán được.
+   * `proc` = chưa có GLB: client dựng mesh thủ tục theo `asset` (`render/props/procProps.ts`); có GLB thì bỏ cờ này.
+   * `reap`: kind `reap` đặt `mark` lên tối đa `REAP_MAX_TARGETS` quái trong tầm và cho `res` điểm tài nguyên riêng mỗi con.
+   */
+  granted?: boolean;
+  proc?: boolean;
+  reap?: { mark: MarkId; res: number };
 }
 
 /** Cấp tối thiểu có bản mệnh pháp bảo (Kết Đan sơ kỳ). */

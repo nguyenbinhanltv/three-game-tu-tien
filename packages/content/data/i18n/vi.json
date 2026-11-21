@@ -1922,5 +1922,17 @@
   "branch.dan_hon_kinh.hoang_tuyen.desc": "Đổi hồn lực lấy một đòn lớn. Học Hoàng Tuyền Dẫn: xả Hồn lực và Hồn ấn thành vụ nổ vùng.",
   "sys.path_low": "Cần đạt {realm} mới lĩnh ngộ được {path}.",
   "sys.path_far": "Hãy tới gặp {npc} để lĩnh ngộ {path}.",
-  "sys.path_learned": "Ngươi đã lĩnh ngộ {path}, tốn {n} linh thạch."
+  "sys.path_learned": "Ngươi đã lĩnh ngộ {path}, tốn {n} linh thạch.",
+  "item.itm_hon_phien.name": "Hồn Phiên",
+  "item.itm_hon_phien.desc": "Lá phiên đuôi én trên cán thiết mộc, ba chuông đồng sẫm. Nhận khi lĩnh ngộ Dẫn Hồn Kinh, gắn với chủ nên không bán được. Nội tại: Hồn lực tích nhanh hơn theo cấp.",
+  "art.itm_hon_phien.skill": "Nhiếp Hồn",
+  "art.itm_hon_phien.skill.desc": "Phất phiên: tối đa 5 kẻ địch quanh {r} m nhận 1 Hồn ấn, mỗi con cho 5 Hồn lực. Chỉ người tu Dẫn Hồn Kinh mới đặt được ấn và tích Hồn lực.",
+  "art.passive.soul": "Hồn lực tích nhanh hơn +{n}%",
+  "sys.art_reap": "Nhiếp Hồn: {n} kẻ địch nhận Hồn ấn.",
+  "sys.art_reap_none": "Nhiếp Hồn cần tu Dẫn Hồn Kinh.",
+  "sys.path_bag_full": "Túi đầy: cần một ô trống để nhận {item}.",
+  "ui.method.learn": "Lĩnh ngộ ({n} linh thạch)",
+  "ui.method.learn_need": "Cần đạt {realm} và {n} linh thạch, gặp {npc} để lĩnh ngộ. Lĩnh ngộ một lần, nhận {item}.",
+  "ui.method.learn_need_plain": "Cần đạt {realm} và {n} linh thạch, gặp {npc} để lĩnh ngộ. Lĩnh ngộ một lần.",
+  "ui.method.learned": "Đã lĩnh ngộ"
 }
