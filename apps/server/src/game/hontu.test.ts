@@ -355,46 +355,63 @@ describe('chiêu Hồn tu', () => {
     const { sim, join, mon, fresh, use, res } = setup();
     const p = join();
     const m = mon();
-    fresh(p);
-    const h0 = m.s.hp;
-    use(p, 'skl_dinh_than_thuat', m.id);
-    const weak = h0 - m.s.hp;
+    /** Một lượt Định Thân Thuật với `have` Hồn lực có sẵn; trả sát thương gây ra. */
+    const cast = (have: number): number => {
+      p.mth.res = have;
+      p.mth.resAt = sim.now;
+      fresh(p);
+      const h = m.s.hp;
+      use(p, 'skl_dinh_than_thuat', m.id);
+      return h - m.s.hp;
+    };
+    cast(0);
     expect(m.s.mf & MF_STUN).toBeTruthy();
     expect(m.stunUntil).toBeGreaterThan(sim.now);
-    p.mth.res = 50;
-    p.mth.resAt = sim.now;
-    fresh(p);
-    const h1 = m.s.hp;
-    use(p, 'skl_dinh_than_thuat', m.id);
+    cast(50);
     expect(res(p)).toBe(10);
-    expect(h1 - m.s.hp).toBeGreaterThan(weak * 1.2);
+    // Thiếu 40 điểm thì chiêu vẫn ra, không trừ, không thưởng.
+    cast(39);
+    expect(res(p)).toBe(39);
+    // Thưởng ×1,5: cộng dồn nhiều lượt xen kẽ để bạo kích từng đòn không quyết định kết quả.
+    let weak = 0;
+    let strong = 0;
+    for (let i = 0; i < 60; i++) {
+      weak += cast(0);
+      strong += cast(40);
+    }
+    expect(strong / weak).toBeGreaterThan(1.25);
+    expect(strong / weak).toBeLessThan(1.75);
   });
-  it('Hoàng Tuyền Dẫn xả hết Hồn lực và thu Hồn ấn trên từng con trúng đòn', () => {
+  it('Hoàng Tuyền Dẫn xả hết Hồn lực và thu Hồn ấn: cùng một con, có 3 ấn thì chịu nhiều hơn không có ấn', () => {
     const { sim, join, mon, fresh, use, names, res } = setup();
     const p = join();
     const a = mon(X + 5, Z);
     const b = mon(X + 5, Z + 3);
-    for (let i = 0; i < 3; i++) {
+    /** Một lượt Hoàng Tuyền Dẫn với Hồn lực đầy; `marks` tầng ấn đặt sẵn lên `a` bằng luật đặt ấn thật. Trả sát thương lên `a`. */
+    const cast = (marks: number): number => {
+      const priv = sim as unknown as { combat: { markMon(p: Ent, m: Mon, id: string, n?: number): void } };
+      if (marks > 0) priv.combat.markMon(p, a, 'hon_an', marks);
+      p.mth.res = 100;
+      p.mth.resAt = sim.now;
       fresh(p);
-      use(p, 'skl_phe_hon', a.id);
-    }
-    p.mth.res = 100;
-    p.mth.resAt = sim.now;
-    fresh(p);
-    let da = 0;
-    let db = 0;
-    for (let i = 0; i < 1; i++) {
       const ha = a.s.hp;
       const hb = b.s.hp;
       use(p, 'skl_hoang_tuyen_dan', a.id);
-      da = ha - a.s.hp;
-      db = hb - b.s.hp;
+      expect(res(p)).toBe(0);
+      expect(names(a)).toEqual([]);
+      expect(hb - b.s.hp).toBeGreaterThan(0);
+      return ha - a.s.hp;
+    };
+    let marked = 0;
+    let plain = 0;
+    // Xen kẽ và cộng dồn nhiều lượt trên cùng một con: trạng thái của quái và dao động từng đòn không quyết định kết quả.
+    for (let round = 0; round < 60; round++) {
+      marked += cast(3);
+      plain += cast(0);
     }
-    expect(res(p)).toBe(0);
-    expect(names(a)).toEqual([]);
-    expect(db).toBeGreaterThan(0);
-    // Con mang 3 Hồn ấn chịu nhiều hơn rõ (3 × 15%; trừ hao dao động sát thương).
-    expect(da).toBeGreaterThan(db * 1.2);
+    // 3 tầng × 12% = +36%; biên rộng vì bạo kích làm từng đòn lệch nhiều (60 lượt mỗi bên để trung bình ổn định).
+    expect(marked / plain).toBeGreaterThan(1.15);
+    expect(marked / plain).toBeLessThan(1.6);
   });
   it('Tát Đậu Thành Binh: cần vòng sạc đầy, xả Hồn lực làm hồn binh mạnh hơn, ba hồn mỗi nhịp', () => {
     const { sim, priv, join, mon, fresh, use, res } = setup();
