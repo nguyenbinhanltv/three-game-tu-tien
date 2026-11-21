@@ -25,6 +25,7 @@ declare global {
 
 const HP = 'bat_dong_kim_than';
 const DS = 'thanh_moc_dan_kinh';
+const DAO = 'liet_nhan_dao_kinh';
 /** Công pháp của từng chiêu (V3: Hộ pháp/Đan sư); chiêu không ghi là Kiếm tu. */
 const METHOD_OF: Record<string, string> = Object.fromEntries([
   ...[
@@ -39,6 +40,7 @@ const METHOD_OF: Record<string, string> = Object.fromEntries([
     'skl_thuan_di_ho_the',
     'skl_thien_kim_phap_tuong',
   ].map((k) => [k, HP]),
+  ...['skl_bao_nhan', 'skl_tram_son_dao', 'skl_hoanh_dao', 'skl_tam_dao', 'skl_doan_luu', 'skl_liet_dia_tram'].map((k) => [k, DAO]),
   ...[
     'skl_luu_huong_bo',
     'skl_hoi_xuan_quyet',
@@ -71,9 +73,11 @@ const PHAP = /scene_|van_kiem_quy_tong|kim_cuong|hoi_thien/;
 const PHAP_SOLO = /kim_cuong|hoi_thien|scene_/;
 /** Chiêu diện rộng/từ trên cao: lùi camera, ngẩng cao để thấy cả vùng. */
 const WIDE =
-  /scene_|kim_cuong|thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
+  /scene_|kim_cuong|thien_kiem_vu|van_kiem_quy_tong|tram_son_dao|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
 /** Chiêu lướt của công pháp (phím Q, `useDash`). Chiêu lướt bậc cao (Nghịch Kiếm, Dịch Sơn Xung) nằm trên thanh chiêu: bấm ô như chiêu thường. */
 const DASH = /kiem_anh_bo|thiet_bich_xung|luu_huong_bo/;
+/** Chiêu tối thượng của Đao tu: không qua thanh chiêu (cần vòng sạc thật), chỉ phát dòng thời gian FX để duyệt hình. */
+const INJECT_ONLY = /tram_son_dao/;
 const ULT =
   /van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/;
 /** Thời lượng ghi riêng (ms game) của chiêu có niệm. */
@@ -208,8 +212,23 @@ async function press(page: Page, id: string): Promise<void> {
   if (DASH.test(id)) return page.evaluate(() => window.__game!.useDash());
   // Thuấn Di Hộ Thế/Cứu Viện cần đồng đội (server từ chối khi đứng một mình): chỉ phát dòng thời gian FX.
   const slot =
-    id === 'skl_phi_kiem' ? 0 : ALLY_ONLY.test(id) ? -1 : await page.evaluate((i) => window.__game!.bar().findIndex((s) => s.id === i), id);
-  if (slot >= 0) return page.evaluate((s) => window.__game!.useSkill(s), slot);
+    id === 'skl_phi_kiem'
+      ? 0
+      : ALLY_ONLY.test(id) || INJECT_ONLY.test(id)
+        ? -1
+        : await page.evaluate((i) => window.__game!.bar().findIndex((s) => s.id === i), id);
+  if (slot >= 0) {
+    // Chọn con quái sống gần nhất làm mục tiêu trước khi bấm: chiêu vùng neo vào mục tiêu, không chọn thì rơi về chỗ người ra chiêu
+    // và con quái đứng ngoài tầm (ảnh Liệt Địa Trảm bản nữ không trúng sói).
+    await page.evaluate(() => {
+      const g = window.__game!;
+      const near = [...g.view.monsters.entries()]
+        .filter(([, m]) => m.st !== 3)
+        .sort((a, b) => Math.hypot(a[1].x - g.cur.x, a[1].z - g.cur.z) - Math.hypot(b[1].x - g.cur.x, b[1].z - g.cur.z))[0];
+      if (near) g.setTarget?.(near[0], 'mon');
+    });
+    return page.evaluate((s) => window.__game!.useSkill(s), slot);
+  }
   await page.evaluate((sk) => {
     const g = window.__game!;
     const hit = [...g.view.monsters.entries()].find(([, m]) => m.st !== 3);
@@ -369,8 +388,8 @@ export default {
         await gm(page, 'god on', 1600);
         await method('lac_kiem_quyet');
         await gm(page, `tp ${SPOTS[spot++ % SPOTS.length].join(' ')}`, 1600);
-        // Chờ model người chơi nạp xong thư viện K-3 (trúng đòn có hướng) để động tác đủ.
-        await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.dirHits === true, undefined, {
+        // Chờ model người chơi v3 (mặc định từ N-7) nạp xong để động tác đủ.
+        await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3 === true, undefined, {
           timeout: 60_000,
           polling: 300,
         });
@@ -396,7 +415,7 @@ export default {
             await gm(page, 'tp 2048 2150', 1500);
             if (!PHAP_SOLO.test(sk)) await gm(page, 'spawn mon_soi_xam 1', 1500);
           }
-          if (ULT.test(sk)) await gm(page, 'charge', 900);
+          if (ULT.test(sk)) await gm(page, 'charge', 1800);
           const wide = WIDE.test(sk);
           const dist = mon ? num('--mon-dist', MON_DIST[mon.kind] ?? 10) : wide ? num('--wide', 9.5) : num('--dist', 7);
           await closeCam(
