@@ -109,33 +109,35 @@
    "at": "area",
    "offset": [
     0,
-    0.9,
+    1.6,
     0
    ],
-   "scale": 4.4,
+   "scale": 2.6,
    "billboard": true,
    "sweep": 0,
-   "tone": "body",
+   "tone": "core",
    "cross": true,
    "tier": 0
   },
   {
    "type": "mesh",
-   "shape": "flip",
+   "shape": "ripple",
    "t": 0.0,
-   "dur": 0.3,
-   "flip": "spark_burst",
-   "scale": 4.4,
-   "billboard": true,
+   "dur": 0.5,
    "at": "area",
    "offset": [
     0,
-    0.9,
+    0.12,
     0
    ],
-   "alpha": 0.3,
+   "scale": 0.6,
+   "scaleTo": 3.2,
+   "sweep": 0.4,
+   "erodeFrom": 0.4,
    "tone": "rim",
-   "tier": 0
+   "alpha": 0.9,
+   "tier": 0,
+   "seed": 9
   },
   {
    "type": "mesh",
@@ -199,15 +201,15 @@
    "type": "particles",
    "kind": "spark",
    "t": 0.0,
-   "n": 60,
+   "n": 40,
    "speed": 8,
    "spread": 1,
    "life": 0.5,
-   "size": 0.1,
+   "size": 0.09,
    "at": "area",
    "offset": [
     0,
-    0.9,
+    1.2,
     0
    ],
    "tone": "rim",
@@ -242,7 +244,7 @@
     0.5,
     0
    ],
-   "scale": 0.55,
+   "scale": 0.7,
    "sweep": 0,
    "erodeFrom": 0.9,
    "alpha": 1,
@@ -254,9 +256,9 @@
     "to": "area",
     "ease": "out",
     "offset": [
-     2.48,
+     3.25,
      1.54,
-     0.77
+     1.0
     ]
    }
   },
@@ -271,7 +273,7 @@
     0.5,
     0
    ],
-   "scale": 0.55,
+   "scale": 0.7,
    "sweep": 0,
    "erodeFrom": 0.9,
    "alpha": 1,
@@ -283,9 +285,9 @@
     "to": "area",
     "ease": "out",
     "offset": [
-     1.21,
+     1.59,
      2.0,
-     2.3
+     3.01
     ]
    }
   },
@@ -300,7 +302,7 @@
     0.5,
     0
    ],
-   "scale": 0.55,
+   "scale": 0.7,
    "sweep": 0,
    "erodeFrom": 0.9,
    "alpha": 1,
@@ -312,9 +314,9 @@
     "to": "area",
     "ease": "out",
     "offset": [
-     -0.77,
+     -1.0,
      1.8,
-     2.48
+     3.25
     ]
    }
   },
@@ -329,7 +331,7 @@
     0.5,
     0
    ],
-   "scale": 0.55,
+   "scale": 0.7,
    "sweep": 0,
    "erodeFrom": 0.9,
    "alpha": 1,
@@ -341,9 +343,9 @@
     "to": "area",
     "ease": "out",
     "offset": [
-     -2.3,
+     -3.01,
      1.61,
-     1.21
+     1.59
     ]
    }
   },
@@ -358,7 +360,7 @@
     0.5,
     0
    ],
-   "scale": 0.55,
+   "scale": 0.7,
    "sweep": 0,
    "erodeFrom": 0.9,
    "alpha": 1,
@@ -370,9 +372,9 @@
     "to": "area",
     "ease": "out",
     "offset": [
-     -2.48,
+     -3.25,
      2.07,
-     -0.77
+     -1.0
     ]
    }
   },
@@ -387,7 +389,7 @@
     0.5,
     0
    ],
-   "scale": 0.55,
+   "scale": 0.7,
    "sweep": 0,
    "erodeFrom": 0.9,
    "alpha": 1,
@@ -399,9 +401,9 @@
     "to": "area",
     "ease": "out",
     "offset": [
-     -1.21,
+     -1.59,
      1.87,
-     -2.3
+     -3.01
     ]
    }
   },
@@ -416,7 +418,7 @@
     0.5,
     0
    ],
-   "scale": 0.55,
+   "scale": 0.7,
    "sweep": 0,
    "erodeFrom": 0.9,
    "alpha": 1,
@@ -428,9 +430,9 @@
     "to": "area",
     "ease": "out",
     "offset": [
-     0.77,
+     1.0,
      1.67,
-     -2.48
+     -3.25
     ]
    }
   },
@@ -445,7 +447,7 @@
     0.5,
     0
    ],
-   "scale": 0.55,
+   "scale": 0.7,
    "sweep": 0,
    "erodeFrom": 0.9,
    "alpha": 1,
@@ -457,9 +459,9 @@
     "to": "area",
     "ease": "out",
     "offset": [
-     2.3,
+     3.01,
      2.13,
-     -1.21
+     -1.59
     ]
    }
   },
@@ -476,7 +478,7 @@
   {
    "type": "flash",
    "t": 0.0,
-   "amount": 0.12,
+   "amount": 0.0,
    "tier": 0
   },
   {

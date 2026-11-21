@@ -66,36 +66,6 @@
    "tier": 0
   },
   {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": -0.7,
-   "dur": 0.55,
-   "at": "self",
-   "offset": [
-    0,
-    0.8,
-    0.4
-   ],
-   "scale": 0.5,
-   "scaleTo": 1.4,
-   "sweep": 0,
-   "erodeFrom": 0.9,
-   "alpha": 1,
-   "tone": "body",
-   "camFade": true,
-   "tier": 0,
-   "seed": 8,
-   "move": {
-    "to": "self",
-    "ease": "out",
-    "offset": [
-     0.0,
-     3.4,
-     3.4
-    ]
-   }
-  },
-  {
    "type": "soundAt",
    "t": 0.0,
    "id": "impact",
@@ -105,172 +75,56 @@
   },
   {
    "type": "mesh",
-   "shape": "pill_orb",
+   "shape": "co_vuong",
    "t": -0.05,
    "dur": 3.0,
    "at": "self",
    "offset": [
-    0.0,
-    3.4,
-    3.4
+    0,
+    3.0,
+    -3.2
    ],
-   "scale": 6.0,
+   "rot": [
+    12,
+    0,
+    0
+   ],
+   "scale": 3.4,
    "sweep": 0,
    "erodeFrom": 0.98,
-   "alpha": 1,
+   "alpha": 1.0,
    "tone": "core",
    "camFade": true,
    "follow": true,
    "tier": 0,
-   "seed": 11
+   "seed": 10
   },
   {
    "type": "mesh",
-   "shape": "pill_orb",
-   "t": -0.03,
-   "dur": 2.9,
+   "shape": "co_vuong",
+   "t": -0.05,
+   "dur": 3.0,
    "at": "self",
    "offset": [
     0,
-    3.8,
-    3.4
+    3.06,
+    -3.1500000000000004
    ],
-   "scale": 4.4,
+   "rot": [
+    12,
+    0,
+    0
+   ],
+   "scale": 3.1,
    "sweep": 0,
    "erodeFrom": 0.98,
-   "alpha": 0.95,
+   "alpha": 0.9,
    "tone": "body",
-   "shadow": false,
    "camFade": true,
    "follow": true,
    "tier": 0,
-   "seed": 12
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 0.0,
-   "dur": 2.8,
-   "at": "self",
-   "offset": [
-    3.0,
-    3.4,
-    3.4
-   ],
-   "scale": 0.7,
-   "sweep": 0,
-   "erodeFrom": 0.98,
-   "alpha": 1,
-   "tone": "core",
-   "camFade": true,
-   "follow": true,
-   "tier": 1,
-   "seed": 20
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 0.0,
-   "dur": 2.8,
-   "at": "self",
-   "offset": [
-    1.5,
-    3.4,
-    6.0
-   ],
-   "scale": 0.7,
-   "sweep": 0,
-   "erodeFrom": 0.98,
-   "alpha": 1,
-   "tone": "body",
-   "camFade": true,
-   "follow": true,
-   "tier": 1,
-   "seed": 21
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 0.0,
-   "dur": 2.8,
-   "at": "self",
-   "offset": [
-    -1.5,
-    3.4,
-    6.0
-   ],
-   "scale": 0.7,
-   "sweep": 0,
-   "erodeFrom": 0.98,
-   "alpha": 1,
-   "tone": "core",
-   "camFade": true,
-   "follow": true,
-   "tier": 1,
-   "seed": 22
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 0.0,
-   "dur": 2.8,
-   "at": "self",
-   "offset": [
-    -3.0,
-    3.4,
-    3.4
-   ],
-   "scale": 0.7,
-   "sweep": 0,
-   "erodeFrom": 0.98,
-   "alpha": 1,
-   "tone": "body",
-   "camFade": true,
-   "follow": true,
-   "tier": 1,
-   "seed": 23
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 0.0,
-   "dur": 2.8,
-   "at": "self",
-   "offset": [
-    -1.5,
-    3.4,
-    0.8
-   ],
-   "scale": 0.7,
-   "sweep": 0,
-   "erodeFrom": 0.98,
-   "alpha": 1,
-   "tone": "core",
-   "camFade": true,
-   "follow": true,
-   "tier": 1,
-   "seed": 24
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 0.0,
-   "dur": 2.8,
-   "at": "self",
-   "offset": [
-    1.5,
-    3.4,
-    0.8
-   ],
-   "scale": 0.7,
-   "sweep": 0,
-   "erodeFrom": 0.98,
-   "alpha": 1,
-   "tone": "body",
-   "camFade": true,
-   "follow": true,
-   "tier": 1,
-   "seed": 25
+   "seed": 11,
+   "shadow": false
   },
   {
    "type": "mesh",
@@ -279,16 +133,34 @@
    "dur": 0.12,
    "at": "self",
    "offset": [
-    0.0,
-    3.4,
-    3.4
+    0,
+    3.0,
+    -3.2
    ],
-   "scale": 5.0,
+   "scale": 3.4,
    "billboard": true,
    "sweep": 0,
    "tone": "rim",
    "cross": true,
    "camFade": true,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 26,
+   "speed": 2.6,
+   "spread": 1,
+   "life": 0.9,
+   "size": 0.16,
+   "at": "self",
+   "offset": [
+    0,
+    3.0,
+    -3.2
+   ],
+   "tone": "body",
    "tier": 0
   },
   {
@@ -351,29 +223,11 @@
    "at": "self",
    "offset": [
     0,
-    0.4,
+    -0.6,
     0
    ],
    "tone": "core",
    "grav": -0.4,
-   "tier": 0
-  },
-  {
-   "type": "particles",
-   "kind": "spark",
-   "t": 0.0,
-   "n": 60,
-   "speed": 7,
-   "spread": 1,
-   "life": 0.6,
-   "size": 0.1,
-   "at": "self",
-   "offset": [
-    0,
-    2.0,
-    1.2
-   ],
-   "tone": "rim",
    "tier": 0
   },
   {
@@ -407,7 +261,7 @@
   {
    "type": "flash",
    "t": 0.0,
-   "amount": 0.1,
+   "amount": 0.04,
    "tier": 0
   },
   {

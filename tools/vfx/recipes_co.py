@@ -135,22 +135,22 @@ def co_bao():
         mesh('rune_ring2', -0.4, 0.4, at='area', offset=[0, 0.08, 0], scale=0.45, scaleTo=1.2, fit='area', sweep=0.04, erodeFrom=0.7, alpha=1, shadow=False, tone='rim', tier=0, seed=3),
         glob(-0.2, 0.2, [0.2, 1.0, 0.6], [0, 0.9, 0], scale=1.0, seed=5),
         snd(0.0, 'impact', 0.9, 0.75, 0.04),
-        mesh('burst', 0.0, 0.12, at='area', offset=[0, 0.9, 0], scale=4.4, billboard=True, sweep=0, tone='body', cross=True, tier=0),
-        flip('spark_burst', 0.0, 0.3, 4.4, at='area', offset=[0, 0.9, 0], alpha=0.3, tone='rim', tier=0),
+        mesh('burst', 0.0, 0.12, at='area', offset=[0, 1.6, 0], scale=2.6, billboard=True, sweep=0, tone='core', cross=True, tier=0),
+        mesh('ripple', 0.0, 0.5, at='area', offset=[0, 0.12, 0], scale=0.6, scaleTo=3.2, sweep=0.4, erodeFrom=0.4, tone='rim', alpha=0.9, tier=0, seed=9),
         mesh('shock_cone', 0.02, 0.45, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[8.0] * 3, alpha=0.8, sweep=0.3, erodeFrom=0.3, tone='body', tier=1),
         decal('scorch', 0.0, 5.5, 3.0, at='area', grow=0.1, tone='core', alpha=0.85, tier=0),
         parts('dust', 0.0, 90, 6, 1, 0.9, 0.24, at='area', offset=[0, 0.6, 0], tone='body', grav=-0.4, tier=0),
-        parts('spark', 0.0, 60, 8, 1, 0.5, 0.1, at='area', offset=[0, 0.9, 0], tone='rim', tier=0),
+        parts('spark', 0.0, 40, 8, 1, 0.5, 0.09, at='area', offset=[0, 1.2, 0], tone='rim', tier=0),
         smoke(0.04, 'area', y=0.6, scale=5.0, tone='core', alpha=0.7),
     ]
     # mảnh cổ văng: tám cục cổ bay ra rồi rơi lại, cao tối đa 2,2 m
     for i in range(8):
         a = i / 8 * math.tau + 0.3
-        x, z = round(math.cos(a) * 2.6, 2), round(math.sin(a) * 2.6, 2)
+        x, z = round(math.cos(a) * 3.4, 2), round(math.sin(a) * 3.4, 2)
         h = round(2.2 * (0.7 + 0.3 * ((i * 37) % 10) / 10), 2)
-        ev.append(mesh('pill_orb', 0.0, 0.5, at='area', offset=[0, 0.5, 0], scale=0.55, sweep=0, erodeFrom=0.9, alpha=1, tone='body' if i % 2 else 'core', camFade=True, tier=0 if i < 4 else 1, seed=40 + i,
+        ev.append(mesh('pill_orb', 0.0, 0.5, at='area', offset=[0, 0.5, 0], scale=0.7, sweep=0, erodeFrom=0.9, alpha=1, tone='body' if i % 2 else 'core', camFade=True, tier=0 if i < 4 else 1, seed=40 + i,
                        move={'to': 'area', 'ease': 'out', 'offset': [x, h, z]}))
-    ev += feel(0.0, ms=75, sh=0.45, fl=0.12, vg=0.32, fov=2.8)
+    ev += feel(0.0, ms=75, sh=0.45, fl=0.0, vg=0.32, fov=2.8)
     return {'skill': 'skl_co_bao', 'replaces': ['cobao'], 'events': ev}
 
 
@@ -181,37 +181,37 @@ R['skl_thu_co'] = thu_co
 
 # --------------------------------------------------------------------------------------------------------------------------------
 def hoa_co_vuong():
-    """Hóa Cổ Vương (nhánh 20, triệu hồi, hit 0,5): bầy cổ dồn lên cao thành CỔ VƯƠNG khổng lồ lơ lửng trên đầu người chơi (hơi lệch về phía trước, camFade
-    nên không che người), bốn nanh vươn ra, bầy cổ xoáy, sóng chấn lan trên đất. Không có khối nào đè lên người."""
-    OV = [0.0, 3.4, 3.4]
+    """Hóa Cổ Vương (nhánh 20, triệu hồi, hit 0,5): bầy cổ dồn lên cao thành CỔ VƯƠNG: con cổ khổng lồ nhìn nghiêng lơ lửng trên đầu người chơi, hơi lệch về phía
+    trước (thân ba đốt giảm dần, hai cặp cánh, hai càng, hai râu; lõi tối có bóng đổ + viền lục sáng; camFade nên không che người). Bầy cổ xoáy quanh, sóng chấn trên đất."""
+    Y, Z = 3.0, -3.2
     ev = [
         parts('spark', -0.5, 32, 2.4, 1, 0.5, 0.07, at='self', offset=[0, 0.9, 0.3], inward=True, tone='rim', tier=1),
         snd(-0.5, 'cast', 0.55, 0.8),
         decal('scorch', -0.4, 5.5, 2.0, at='self', offset=[0, -1.12, 0], grow=0.3, tone='core', alpha=0.95, tier=0),
         decal('rune', -0.4, 5.0, 1.8, at='self', offset=[0, -1.12, 0], grow=0.3, tone='rim', alpha=1, tier=0),
-        # cổ dồn lên cao: cục cổ lớn dần bay từ thân người lên trên đầu
-        mesh('pill_orb', -0.7, 0.55, at='self', offset=[0, 0.8, 0.4], scale=0.5, scaleTo=1.4, sweep=0, erodeFrom=0.9, alpha=1, tone='body', camFade=True, tier=0, seed=8,
-             move={'to': 'self', 'ease': 'out', 'offset': OV}),
         snd(0.0, 'impact', 0.8, 0.7),
-        # CỔ VƯƠNG hiện hình: thân khổng lồ lơ lửng trên cao (lõi tối có bóng + lớp lục sáng) + bốn nanh
-        mesh('pill_orb', -0.05, 3.0, at='self', offset=OV, scale=6.0, sweep=0, erodeFrom=0.98, alpha=1, tone='core', camFade=True, follow=True, tier=0, seed=11),
-        mesh('pill_orb', -0.03, 2.9, at='self', offset=[0, 3.8, 3.4], scale=4.4, sweep=0, erodeFrom=0.98, alpha=0.95, tone='body', shadow=False, camFade=True, follow=True, tier=0, seed=12),
     ]
-    # bầy cổ xoáy quanh thân Cổ Vương: sáu cục cổ nhỏ ở vòng cao, camFade
-    for i in range(6):
-        r = i / 6 * math.tau
-        ev.append(mesh('pill_orb', 0.0, 2.8, at='self', offset=[round(math.cos(r) * 3.0, 2), 3.4, round(3.4 + math.sin(r) * 3.0, 2)], scale=0.7, sweep=0, erodeFrom=0.98, alpha=1,
-                       tone='body' if i % 2 else 'core', camFade=True, follow=True, tier=1, seed=20 + i))
+
+    def part(shape, dx, dy, dz, sc, rot, tone, tier=0, seed=1, alpha=1.0, shadow=True):
+        k = dict(at='self', offset=[dx, Y + dy, Z + dz], rot=rot, scale=sc, sweep=0, erodeFrom=0.98, alpha=alpha, tone=tone, camFade=True, follow=True, tier=tier, seed=seed)
+        if not shadow:
+            k['shadow'] = False
+        return mesh(shape, -0.05, 3.0, **k)
+
+    # CỔ VƯƠNG: một hình `co_vuong` (thân ba đốt, đầu, hai cặp cánh, hai càng, hai râu) hướng về phía trước, lõi tối có bóng đổ + lớp lục sáng nhỏ hơn đè lên (viền sáng)
+    ev.append(part('co_vuong', 0, 0, 0, 3.4, [12, 0, 0], 'core', 0, 10))
+    ev.append(part('co_vuong', 0, 0.06, 0.05, 3.1, [12, 0, 0], 'body', 0, 11, 0.9, False))
     ev += [
-        mesh('burst', 0.0, 0.12, at='self', offset=OV, scale=5.0, billboard=True, sweep=0, tone='rim', cross=True, camFade=True, tier=0),
-        # sóng chấn trên đất + bầy cổ xoáy quanh chân
+        mesh('burst', 0.0, 0.12, at='self', offset=[0, Y, Z], scale=3.4, billboard=True, sweep=0, tone='rim', cross=True, camFade=True, tier=0),
+        # bầy cổ nhỏ xoáy quanh Cổ Vương
+        parts('dust', 0.0, 26, 2.6, 1, 0.9, 0.16, at='self', offset=[0, Y, Z], tone='body', tier=0),
+        # sóng chấn trên đất
         mesh('shock_cone', 0.02, 0.6, at='self', offset=[0, -1.0, 0], scale=[1.0] * 3, scaleTo=[8.0] * 3, alpha=0.85, sweep=0.3, erodeFrom=0.3, tone='body', tier=0, seed=5),
         mesh('crack_radial', 0.02, 0.9, at='self', offset=[0, -1.08, 0], scale=3.0, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=1, seed=2),
-        parts('dust', 0.0, 80, 5, 1, 1.0, 0.24, at='self', offset=[0, 0.4, 0], tone='core', grav=-0.4, tier=0),
-        parts('spark', 0.0, 60, 7, 1, 0.6, 0.1, at='self', offset=[0, 2.0, 1.2], tone='rim', tier=0),
+        parts('dust', 0.0, 80, 5, 1, 1.0, 0.24, at='self', offset=[0, -0.6, 0], tone='core', grav=-0.4, tier=0),
         smoke(0.05, 'self', y=-0.5, scale=4.0, tone='core', alpha=0.6),
     ]
-    ev += feel(0.0, ms=60, sh=0.32, fl=0.1, vg=0.3, fov=3.0)
+    ev += feel(0.0, ms=60, sh=0.32, fl=0.04, vg=0.3, fov=3.0)
     return {'skill': 'skl_hoa_co_vuong', 'replaces': ['covuong'], 'events': ev}
 
 
