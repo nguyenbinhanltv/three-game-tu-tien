@@ -194,6 +194,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.DAO, (p, m) => this.sim.onChooseDao(p, m));
     on(C.KIEU, (p, m) => this.onKieu(p, m));
     on(C.DAP, (p, m) => this.sim.kieu.onChoose(p, m));
+    on(C.KIEU_BOARD, (p) => this.sim.kieu.onBoard(p));
     on(C.PARTY, (p, m) => parties.command(p, m));
     on(C.DUEL, (p, m) => this.sim.duel.command(p, m));
     on(C.PORTAL, (p) => this.onPortal(p));
