@@ -3,17 +3,45 @@
 import { FOREST, SPAWN_POINT } from '@dtl/shared';
 import { list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
-import { cam, gm, perfSample, tp } from '../lib/game';
+import { cam, enterLevel, gm, perfSample, tp } from '../lib/game';
+import { levelPoints, requireLevel } from '../lib/levelpoints';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
 
 const VIEWS: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': [1920, 1080] };
 const YAW = Math.PI * 0.25;
-const POINTS = [
+const LEVEL = opt('--level', 'van_lam');
+/** Hướng camera iso (độ) đang dùng để đẩy điểm đứng ra phía camera: `isoyaw=` trong --query, không thì bảng hướng đã chọn (khớp ISO_YAW ở client). */
+const YAW_DEG: Record<string, number> = { van_lam: 30, van_hai: 135 };
+const standYaw = (): number => {
+  const m = /isoyaw=(-?[0-9.]+)/.exec(opt('--query', ''));
+  return (((m ? Number(m[1]) : (YAW_DEG[LEVEL] ?? 45)) as number) * Math.PI) / 180;
+};
+const VAN_LAM_POINTS = [
   { name: 'san', x: SPAWN_POINT.x, z: SPAWN_POINT.z },
   { name: 'cong-trong', x: 2048, z: 2128 },
   { name: 'cong-ngoai', x: 2048, z: 2150 },
 ];
+
+/** Điểm đo: Vân Lam đặt tay (sân, cổng); level khác lấy từ `levelPoints` (ưu tiên điểm quan tâm, vùng, boss) tối đa 4 điểm. */
+function pointsFor(): { name: string; x: number; z: number }[] {
+  if (LEVEL === 'van_lam') return VAN_LAM_POINTS;
+  const all = levelPoints(LEVEL).filter((q) => q.name !== 'trencao');
+  const pick = [
+    ...all.filter((q) => q.name.startsWith('poi_')),
+    ...all.filter((q) => q.name.startsWith('zone_')),
+    ...all.filter((q) => q.name.startsWith('boss_')),
+  ];
+  return (pick.length ? pick : all).slice(0, 4);
+}
+
+/** Điểm cảnh đánh quái: rừng Vân Lam; level khác là điểm sinh quái thường đầu tiên. */
+function fightSpot(): { x: number; z: number } {
+  if (LEVEL === 'van_lam') return { x: FOREST.x - 40, z: FOREST.z };
+  const sp =
+    requireLevel(LEVEL).spawns.find((q) => !q.mon.startsWith('boss_') && !q.mon.startsWith('elite_')) ?? requireLevel(LEVEL).spawns[0]!;
+  return { x: sp.x, z: sp.z };
+}
 
 interface IsoDbg {
   view: { monsters: Map<string, { x: number; z: number; st: number }> };
@@ -25,7 +53,7 @@ interface IsoDbg {
 export default {
   name: 'camiso',
   desc: 'Thiên Nhãn P0: camera chéo ?cam=iso vs camera cũ (ảnh duyệt + draw call/tam giác/ms khung)',
-  usage: '[--presets low,high] [--views 720p,1080p] [--cams old,iso]',
+  usage: '[--presets low,high] [--views 720p,1080p] [--cams old,iso] [--level <id>] [--query isoyaw=30]',
   async run(r) {
     const perf: Record<string, unknown> = {};
     for (const preset of list('--presets', 'low,high')) {
@@ -40,12 +68,16 @@ export default {
             extra: [iso ? 'cam=iso' : '', opt('--query', '')].filter(Boolean).join('&'),
             seenIntro: true,
           });
-          const stem = `${mode}-${preset}-${view}`;
-          await gm(page, 'level 15');
+          const stem = `${LEVEL === 'van_lam' ? '' : LEVEL + '-'}${mode}-${preset}-${view}`;
+          await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(27, requireLevel(LEVEL).minLevel ?? 0)}`);
           await gm(page, 'god on');
+          if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
+          const POINTS = pointsFor();
           // Vị trí đo: cùng điểm cho cả hai camera; camera cũ đặt cùng hướng nhìn.
           for (const p of POINTS) {
-            await tp(page, p.x, p.z);
+            // Điểm quan tâm (đình, cầu...) ở level khác: đứng ra phía camera 3,5 m để người không lẫn vào chân công trình.
+            const k = LEVEL === 'van_lam' ? 0 : 3.5;
+            await tp(page, p.x + Math.sin(standYaw()) * k, p.z + Math.cos(standYaw()) * k);
             await gm(page, 'killall', 1200);
             if (!iso) await cam(page, { yaw: YAW });
             await sleep(2500);
@@ -54,7 +86,7 @@ export default {
           }
           if (iso) {
             // Chuột phải: đi tới điểm cách tâm màn hình 200 px về phía phải-dưới; kiểm nhân vật thật sự di chuyển (ý định gửi như WASD).
-            await tp(page, SPAWN_POINT.x, SPAWN_POINT.z);
+            await tp(page, POINTS[0]!.x, POINTS[0]!.z);
             const [vw, vh] = VIEWS[view]!;
             const a = await page.evaluate(() => ({ ...(window.__game as unknown as IsoDbg).renderPos }));
             await page.mouse.move(vw / 2 + 200, vh / 2 + 120);
@@ -66,7 +98,8 @@ export default {
             await snap(page, r.out, `${stem}-chuotphai.png`);
           }
           // Cảnh đánh quái ở rừng: đứng cạnh quái, đặt con trỏ lên quái (iso), ra chiêu 1, chụp các khung sau trúng đòn.
-          await tp(page, FOREST.x - 40, FOREST.z);
+          const fs = fightSpot();
+          await tp(page, fs.x, fs.z);
           await gm(page, 'god on');
           if (!iso) await cam(page, { yaw: YAW });
           await sleep(2500);

@@ -126,6 +126,6 @@ export function rockMaterial(tex: SkyTextures): THREE.MeshStandardNodeMaterial {
 
 /** Vật liệu tán lá thẻ: alpha cắt, hai mặt, màu đỉnh nhân màu ảnh (đổi sắc theo cây). */
 export function foliageMaterial(tex: SkyTextures): THREE.MeshStandardNodeMaterial {
-  const mat = createWorldMaterial({ map: tex.foliage, vertexColors: true, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 });
+  const mat = createWorldMaterial({ map: tex.foliage, vertexColors: true, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 }); // sight-exempt: CardForest bọc withSightFade
   return mat;
 }

@@ -98,7 +98,7 @@ export class ImpostorLayer {
         t.minFilter = THREE.LinearMipmapLinearFilter;
         this.tex = t;
         const row = attribute('aRow', 'float');
-        const m = createWorldMaterial({ side: THREE.DoubleSide, alphaTest: 0.42, roughness: 1 });
+        const m = createWorldMaterial({ side: THREE.DoubleSide, alphaTest: 0.42, roughness: 1 }); // sight-exempt: bọc withSightFade ở dòng dưới
         const tex = texture(t, vec2(uv().x, uv().y.add(row).div(atlas.rows)));
         const dist = length(attribute('aPos', 'vec2').sub(this.uCam));
         m.colorNode = vec4(tex.rgb, tex.a.mul(step(this.uStart, dist)));

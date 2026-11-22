@@ -39,6 +39,8 @@ interface PropCfg {
    * xa hơn là impostor (`treeImpostor.ts`); mờ khi che giữa camera và nhân vật.
    */
   tree?: boolean;
+  /** Cây/tre/tùng cao không dùng hệ cây (impostor): chỉ mờ khi che giữa camera và nhân vật/mục tiêu (camera chéo: cây khổng lồ che cả khung). */
+  sight?: boolean;
 }
 
 /** Ô cây cách camera dưới ngưỡng này (m, ở preset Vừa) dùng mesh 3D, xa hơn dùng impostor; impostor bỏ ở `TREE_RANGE`. */
@@ -51,7 +53,7 @@ export const PROP_CFG: Record<string, PropCfg> = {
   prop_soi_nui: { range: 460, lod: [40, 100], shadow: true, tree: true },
   prop_anh_dao: { range: 460, lod: [35, 90], shadow: true, tree: true },
   prop_phong_do: { range: 460, lod: [40, 100], shadow: true, tree: true },
-  prop_truc: { range: 220, lod: [40, 100], decor: true },
+  prop_truc: { range: 220, lod: [40, 100], decor: true, sight: true },
   prop_da_dung: { range: 300, lod: [60, 140] },
   prop_da_nam: { range: 240, lod: [45, 110] },
   prop_da_phien: { range: 200, lod: [35, 90] },
@@ -67,14 +69,14 @@ export const PROP_CFG: Record<string, PropCfg> = {
   prop_tru_nham_do: { range: 420, lod: [60, 140] },
   prop_cau_da_gay: { range: 320, lod: [50, 120] },
   prop_cong_khai_mach: { range: 360, lod: [50, 120] },
-  prop_cay_goc_kho: { range: 320, lod: [40, 100] },
+  prop_cay_goc_kho: { range: 320, lod: [40, 100], sight: true },
   prop_ngung_dan_lo: { range: 150, lod: [25, 70], decor: true },
   // Vân Hải Phù Đảo (PROP_LIB, E3-A)
   prop_phu_dao_dinh: { range: 420, lod: [50, 120] },
   prop_cau_may: { range: 420, lod: [50, 120] },
   prop_kinh_ho_dai: { range: 320, lod: [40, 100] },
   prop_da_troi: { range: 420, lod: [60, 140] },
-  prop_tung_phu_dao: { range: 520, lod: [45, 110], shadow: true },
+  prop_tung_phu_dao: { range: 520, lod: [45, 110], shadow: true, sight: true },
   prop_anh_ngoc_kinh: { range: 150, lod: [25, 70], decor: true },
   // Thiên Khuyết Cổ Thành (PROP_LIB, E4-A)
   prop_tru_da_khac_van: { range: 380, lod: [50, 120] },
@@ -608,7 +610,7 @@ export class PropLayer {
     const cfg = handle.id ? PROP_CFG[handle.id] : undefined;
     const mats = adoptGltfMaterials(
       handle.scene,
-      cfg?.tree ? withSightFade : cfg?.sway ? bannerSway : cfg?.crystal ? propCrystal : undefined,
+      cfg?.tree || cfg?.sight ? withSightFade : cfg?.sway ? bannerSway : cfg?.crystal ? propCrystal : undefined,
     );
     handle.scene.updateMatrixWorld(true);
     const lods: LodMesh[][] = [];
