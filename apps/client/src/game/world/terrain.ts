@@ -44,6 +44,9 @@ import { pmGroundColor } from './phucMachArt';
 
 const TILE = 256;
 const NEAR_R = 3;
+/** Camera chéo (`?cam=iso`, tầm nhìn ~250 m): chỉ dựng ô quanh người, vài chục mét quanh người là toàn bộ khung hình. */
+const NEAR_R_ISO = 1;
+const VEG_FAR_R_ISO = 1;
 /** Vấn Đỉnh: vách dốc làm viền hai ô khác độ phân giải lệch cao hàng chục mét; viền rủ phải dài hơn mức lệch đó, nếu không khe hở ra thành lỗ sáng hình thoi ở góc vách. */
 const VD_SKIRT = 90;
 const COARSE_CELL = 32;
@@ -601,6 +604,15 @@ export class Terrain {
     return v;
   }
 
+  /** Bán kính ô (số ô) dựng lưới mịn / cây xa; đổi theo camera chéo. */
+  private nearR = NEAR_R;
+  private vegFarR = VEG_FAR_R;
+  setIso(on: boolean): void {
+    this.nearR = on ? NEAR_R_ISO : NEAR_R;
+    this.vegFarR = on ? VEG_FAR_R_ISO : VEG_FAR_R;
+    this.ctx = NaN; // ép duyệt lại để dọn ô ngoài bán kính mới
+  }
+
   private desiredRes(d: number): number {
     return d <= 1 ? 64 : 32;
   }
@@ -614,7 +626,7 @@ export class Terrain {
       this.ctz = ctz;
       for (const [key, t] of this.tiles) {
         const d = Math.max(Math.abs(t.tx - ctx), Math.abs(t.tz - ctz));
-        if (d > NEAR_R + 1) {
+        if (d > this.nearR + 1) {
           this.disposeTile(t);
           this.tiles.delete(key);
           this.coarseDirty = true;
@@ -623,7 +635,7 @@ export class Terrain {
     }
     let pending = 0;
     // Duyệt từ gần ra xa để ô dưới chân có trước.
-    for (let ring = 0; ring <= Math.max(NEAR_R, VEG_FAR_R) && budget > 0; ring++) {
+    for (let ring = 0; ring <= Math.max(this.nearR, this.vegFarR) && budget > 0; ring++) {
       for (let dz = -ring; dz <= ring && budget > 0; dz++) {
         for (let dx = -ring; dx <= ring && budget > 0; dx++) {
           if (Math.max(Math.abs(dx), Math.abs(dz)) !== ring) continue;
@@ -636,7 +648,7 @@ export class Terrain {
             t = { key, tx, tz, res: 0, mesh: null, veg: null, vegFar: null };
             this.tiles.set(key, t);
           }
-          if (ring <= NEAR_R) {
+          if (ring <= this.nearR) {
             const res = this.desiredRes(ring);
             if (t.res !== res && this.isVoidTile(tx, tz)) {
               // Level đảo nổi: ô chỉ có sàn mây phẳng không dựng lưới mịn (lưới thô đã vẽ sàn; mặt sàn lại bị mặt vực/mây che): bớt ~nửa số draw call địa hình.
@@ -666,7 +678,7 @@ export class Terrain {
             }
           }
           const wantFar = ring > VEG_NEAR_R;
-          if (ring <= VEG_FAR_R && t.vegFar !== wantFar) {
+          if (ring <= this.vegFarR && t.vegFar !== wantFar) {
             const geo = buildVegetation(tx, tz, wantFar);
             if (t.veg) {
               this.group.remove(t.veg);

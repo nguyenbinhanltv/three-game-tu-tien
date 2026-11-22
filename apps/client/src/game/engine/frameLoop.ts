@@ -433,6 +433,13 @@ function updateCamera(eng: Game, dt: number): void {
   // Thẻ chương đang hiện cũng ẩn bảng tên (tiêu đề không đè lên tên nhân vật).
   eng.ents.tagsHidden = eng.cine.active || eng.tribScene || (get().chapter?.until ?? 0) > Date.now();
   updateOcclusion(dt, eng.camera.position, _camFocus.set(rp.x, rp.y + 1.2, rp.z), rp.y, iso ? (flying ? 2 : 1) : 0);
+  // Chuyển vào/ra camera chéo: bán kính ô địa hình và bản đồ bóng đổi theo.
+  const isoOn = !!iso;
+  if (eng.iso && eng.iso.applied !== isoOn) {
+    eng.iso.applied = isoOn;
+    eng.terrain.setIso(isoOn);
+    eng.env.setIso(isoOn);
+  }
   if (iso) {
     eng.camera.updateMatrixWorld();
     iso.project(eng.camera, window.innerWidth, window.innerHeight, groundAt);

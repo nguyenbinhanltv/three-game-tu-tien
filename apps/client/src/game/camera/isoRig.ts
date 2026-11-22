@@ -18,6 +18,8 @@ export class IsoRig {
   baseFar = 0;
   /** Cảnh xa (biển mây, trời, núi nền) đang bị ẩn do iso; khôi phục khi iso tạm tắt. */
   farHidden = false;
+  /** Đã áp cấu hình dựng hình iso (ô địa hình, bóng) hay chưa. */
+  applied = false;
   /** Biển mây có hiện trước khi iso ẩn không (theo cờ của level). */
   cloudWas = true;
   readonly ring: THREE.Mesh;
