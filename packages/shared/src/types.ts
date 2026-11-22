@@ -102,6 +102,8 @@ export interface EquipRollDef {
   set?: string;
 }
 
+export type MonsterLook = 'golem' | 'wisp' | 'road';
+
 export interface MonsterDef {
   id: string;
   model: MonsterModel;
@@ -143,6 +145,8 @@ export interface MonsterDef {
   phases?: MonsterPhase[];
   /** Chỉ boss: thanh phá thế. */
   posture?: MonsterPosture;
+  /** Dáng thân thủ tục riêng (TN-7, chỉ hình): thay thân mặc định của `model`. Hitbox, tầm đánh vẫn theo `model`/`scale`. */
+  look?: MonsterLook;
 }
 
 /**

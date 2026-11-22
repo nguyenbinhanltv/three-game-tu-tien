@@ -6,6 +6,7 @@
 //   --strict: thoát mã 1 nếu TTK trung bình ngoài 3,5–8,5 s (ngưỡng của sim:progress) hoặc có ca chết.
 //   --mon <id>: ép dùng một quái thường (cấp quái = cấp thử), để đo quái mới khi đã có dữ liệu.
 //   --target <id[:cấp]>: đo MỘT quái bất kỳ (tinh anh/boss/quái phó bản) đơn lẻ ở cấp quái cho trước (mặc định = cấp thử), --pull bị bỏ qua.
+//   --god: người chơi không chết (đo TTK hạ boss thuần theo sát thương; không có --god thì "TTK" của ca chết là giờ cả nhóm bị diệt).
 //   --party <n>: n người cùng đánh một mục tiêu (phó bản 4 người); TTK là thời gian cả nhóm hạ mục tiêu, máu mất tính trung bình mỗi người.
 //   Cấp thử từ 32 trở lên mặc bộ 7 ô bậc 5 phẩm Huyền theo ilvl = cấp; `--tier 6` mặc bộ bậc 6 (mốc mặc trọn; người chơi thật pha dần, xem `CH6_GEAR_FRAC` ở sim.ts). Ở cấp 43 với `--tier 6`: Kiếm tu 3,0 s, còn lại 3,1–5,8 s.
 process.env.DB_FILE = ':memory:';
@@ -39,6 +40,8 @@ const TARGET = arg('target', '');
 const PARTY = Number(arg('party', '1'));
 const PULL = Number(arg('pull', '2'));
 const NOGEAR = process.argv.includes('--nogear');
+/** `--god`: người chơi không chết (hồi đầy máu mỗi nhịp), để đo thời gian hạ mục tiêu thuần theo sát thương (boss mà bot đứng yên bị đánh chết trước khi hạ được). */
+const GOD = process.argv.includes('--god');
 /** `--nostance`: bot không vào tư thế (đo riêng phần đóng góp của tư thế, VS-2e). */
 const NOSTANCE = process.argv.includes('--nostance');
 
@@ -192,6 +195,7 @@ function fightOnce(level: number, method: string | undefined): Result {
   for (let step = 0; step < MAX_STEPS && mons.some((m) => m.state !== MS_DEAD); step++) {
     fake += 100;
     sim.tick(100);
+    if (GOD) for (const a of party) a.char.hp = a.char.mhp;
     if (party.every((a) => a.char.hp <= 0)) return { ttk: (fake - t0) / 1000, lost: 1, dead: true };
     const target = mons.find((m) => m.state !== MS_DEAD);
     if (!target) break;

@@ -60,7 +60,7 @@ export function kieuIsFirstClear(raw: unknown, n: number): boolean {
  * Thời gian tối thiểu hợp lệ (giây) để qua cầu `n`; nhanh hơn là bất thường, không ghi tiến độ. Cầu 9 là 100 s (Hồn kiếp 105 s, đo từ lúc vào room ~108 s):
  * thiết kế gốc 120 s tính cả boss Lộ Linh, PR boss nâng lại khi pha boss có thật.
  */
-export const KIEU_MIN_CLEAR_SEC: readonly number[] = [30, 20, 150, 30, 60, 60, 80, 80, 100];
+export const KIEU_MIN_CLEAR_SEC: readonly number[] = [30, 20, 150, 30, 60, 60, 80, 80, 130];
 
 export function kieuMinClearSec(n: number): number {
   return KIEU_MIN_CLEAR_SEC[Math.max(1, Math.min(KIEU_COUNT, n)) - 1] ?? 30;

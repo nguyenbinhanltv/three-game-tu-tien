@@ -867,6 +867,7 @@ function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
     if (!inR(a.window, 4, 15) || !(a.window <= a.cycle / 2)) err(`${id}: armor.window phải trong [4; 15] giây và không quá nửa chu kỳ`);
     if (!(a.take >= 0 && a.take <= 0.4)) err(`${id}: armor.take phải trong [0; 0,4]`);
   }
+  if (m.look !== undefined && !['golem', 'wisp', 'road'].includes(m.look)) err(`${id}: look ${m.look} không hợp lệ`);
   if (ai.resist) {
     const r = ai.resist;
     if (!m.boss) err(`${id}: resist chỉ dành cho boss`);

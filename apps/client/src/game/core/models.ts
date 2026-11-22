@@ -272,6 +272,89 @@ interface MonGeo {
 }
 const MON_GEO = new Map<string, MonGeo>();
 
+/** Vết nứt ngực Thạch Tượng: mấy vệt zích zắc mảnh trước ngực (toạ độ thân ape), dùng với vật liệu cộng sáng. */
+function golemCrack(): THREE.BufferGeometry {
+  const b = new GeoBuilder();
+  const w = col(0xffffff);
+  const segs: [number, number, number, number][] = [
+    [0.02, 1.62, 0.1, 0.34],
+    [-0.04, 1.34, -0.3, 0.3],
+    [0.1, 1.12, 0.35, 0.28],
+    [-0.02, 0.9, -0.2, 0.22],
+    [-0.28, 1.3, 0.9, 0.18],
+    [0.3, 1.2, -0.8, 0.2],
+  ];
+  for (const [x, y, rz, h] of segs) b.add(G.box, mat(x, y, 0.55, 0, 0, rz, 0.05, h * 1.3, 0.05), w);
+  return b.build();
+}
+
+/**
+ * Dáng thân thủ tục riêng của boss Cửu Kiều (TN-7), cùng bộ khớp với 'ape' (hai tay ở y 1,52, hai chân dài 0,76) nên `MonsterModel` dùng lại hoạt họa.
+ * golem (Thạch Tượng): khối đá vuông, vai rêu, vết nứt ngực sáng. wisp (Đạo Linh): quầng sáng cầu, vòng đạo, áo chóp, tay như dải khói (lơ lửng nhờ `hover`).
+ * road (Lộ Linh): trụ cầu, vòng vòm sau lưng, bậc đá lơ lửng.
+ */
+function buildLook(
+  look: NonNullable<MonsterDef['look']>,
+  b: GeoBuilder,
+  g: MonGeo,
+  main: THREE.Color,
+  accent: THREE.Color,
+  dark: THREE.Color,
+): void {
+  const moss = col(0x5e7a4c);
+  const ab = new GeoBuilder();
+  const lb = new GeoBuilder();
+  g.legLen = 0.76;
+  if (look === 'golem') {
+    // Thạch Tượng: khối đá xám rêu chồng nhiều tảng lệch nhau (ico0 + jitter màu), rêu xanh ở vai/đầu; vết nứt sáng là lưới riêng (`golemCrack`).
+    const light = main.clone().multiplyScalar(1.18);
+    b.add(G.ico1, mat(0, 1.25, 0, 0.1, 0.3, 0, 0.62, 0.66, 0.5), main, 0.16);
+    b.add(G.ico0, mat(-0.34, 1.05, 0.12, 0.2, 0.5, 0.2, 0.36, 0.42, 0.3), light, 0.14);
+    b.add(G.ico0, mat(0.36, 1.4, 0.1, -0.2, 0.2, 0.3, 0.34, 0.36, 0.3), dark, 0.14);
+    b.add(G.ico0, mat(0.05, 0.7, 0, 0, 0.4, 0, 0.5, 0.3, 0.42), dark, 0.12);
+    b.add(G.ico0, mat(0, 1.95, 0.18, 0.1, 0.5, 0, 0.3, 0.27, 0.28), main, 0.14);
+    for (const sx of [-1, 1]) b.add(G.box, mat(sx * 0.09, 1.96, 0.42, 0, 0, 0, 0.1, 0.03, 0.03), accent);
+    for (const sx of [-1, 1]) {
+      b.add(G.ico0, mat(sx * 0.66, 1.72, 0, 0.2, sx * 0.4, 0, 0.36, 0.28, 0.34), light, 0.16);
+      b.add(G.ico0, mat(sx * 0.66, 1.9, 0, 0, 0, 0, 0.26, 0.1, 0.24), moss, 0.12);
+    }
+    b.add(G.ico0, mat(0.05, 2.18, 0.1, 0, 0, 0, 0.22, 0.08, 0.2), moss, 0.12);
+    b.add(G.ico0, mat(-0.2, 1.62, 0.28, 0, 0, 0, 0.18, 0.06, 0.14), moss, 0.12);
+    ab.add(G.ico0, mat(0, -0.3, 0, 0, 0.3, 0, 0.18, 0.4, 0.18), main, 0.16);
+    ab.add(G.ico0, mat(0, -0.72, 0, 0, 0.8, 0, 0.2, 0.3, 0.2), dark, 0.14);
+    ab.add(G.ico1, mat(0, -1.05, 0, 0, 0.5, 0, 0.3, 0.26, 0.3), light, 0.16);
+    lb.add(G.ico0, mat(0, -0.26, 0, 0, 0.5, 0, 0.19, 0.4, 0.19), dark, 0.14);
+    lb.add(G.ico0, mat(0, -0.62, 0.03, 0, 0.2, 0, 0.22, 0.2, 0.3), main, 0.14);
+  } else if (look === 'wisp') {
+    b.add(G.ico1, mat(0, 1.5, 0, 0, 0, 0, 0.46, 0.5, 0.46), main, 0.06);
+    b.add(G.ico0, mat(0, 1.5, 0.18, 0, 0, 0, 0.26), accent);
+    b.add(G.torus, mat(0, 1.5, -0.1, Math.PI / 2, 0, 0, 0.82, 0.82, 0.82), accent);
+    b.add(G.torus, mat(0, 1.5, -0.12, 0, 0.7, 0, 0.7, 0.7, 0.7), accent);
+    b.add(G.cone7, mat(0, 0.7, 0, Math.PI, 0, 0, 0.42, 1.1, 0.42), dark, 0.05);
+    for (const sx of [-1, 1]) b.add(G.octa, mat(sx * 0.72, 2.0, 0, 0, 0, 0, 0.12, 0.2, 0.12), accent);
+    ab.add(G.cone6, mat(0, -0.5, 0, Math.PI, 0, 0, 0.12, 1.0, 0.12), main, 0.05);
+    ab.add(G.ico0, mat(0, -1.04, 0, 0, 0, 0, 0.12), accent);
+    lb.add(G.cone6, mat(0, -0.2, 0, Math.PI, 0, 0, 0.001, 0.001, 0.001), dark);
+  } else {
+    b.add(G.taper8, mat(0, 1.2, 0, 0, 0, 0, 0.62, 2.1, 0.62), main, 0.08);
+    b.add(G.cyl8, mat(0, 0.22, 0, 0, 0, 0, 0.78, 0.3, 0.78), dark);
+    b.add(G.cyl8, mat(0, 2.34, 0, 0, 0, 0, 0.5, 0.18, 0.5), accent);
+    b.add(G.torus, mat(0, 2.0, -0.45, 0, 0, 0, 1.45, 1.45, 1.45), accent);
+    b.add(G.ico0, mat(0, 1.95, 0.5, 0, 0, 0, 0.22), accent);
+    for (const sx of [-1, 1]) {
+      b.add(G.box, mat(sx * 1.0, 0.9, 0.2, 0, sx * 0.4, 0, 0.62, 0.12, 0.42), main, 0.08);
+      b.add(G.box, mat(sx * 1.25, 1.55, -0.2, 0, sx * -0.3, 0, 0.5, 0.1, 0.34), dark);
+    }
+    ab.add(G.box, mat(0, -0.5, 0, 0, 0, 0, 0.2, 1.0, 0.34), main, 0.06);
+    ab.add(G.box, mat(0, -1.05, 0, 0, 0, 0, 0.34, 0.12, 0.5), accent);
+    lb.add(G.cyl6, mat(0, -0.36, 0, 0, 0, 0, 0.2, 0.74, 0.2), dark);
+    lb.add(G.box, mat(0, -0.72, 0.04, 0, 0, 0, 0.36, 0.1, 0.42), main);
+  }
+  g.body = b.build();
+  g.arm = ab.build();
+  g.leg = lb.build();
+}
+
 function monGeo(def: MonsterDef): MonGeo {
   let g = MON_GEO.get(def.id);
   if (g) return g;
@@ -280,6 +363,11 @@ function monGeo(def: MonsterDef): MonGeo {
   const dark = main.clone().multiplyScalar(0.6);
   const b = new GeoBuilder();
   g = { body: G.box, leg: null, arm: null, seg: null, head: null, legLen: 0.6 };
+  if (def.look) {
+    buildLook(def.look, b, g, main, accent, dark);
+    MON_GEO.set(def.id, g);
+    return g;
+  }
   if (def.model === 'wolf' || def.model === 'fox' || def.model === 'boar') {
     const boar = def.model === 'boar';
     const fox = def.model === 'fox';
@@ -369,6 +457,7 @@ export class MonsterModel implements MonsterView {
   private time = Math.random() * 10;
   private attackT = 0;
   private deadT = 0;
+  private crack: THREE.Mesh | null = null;
   height: number;
   /** Phản ứng trúng đòn (chỉ hiển thị). */
   hit: HitReact;
@@ -421,6 +510,11 @@ export class MonsterModel implements MonsterView {
     this.root.scale.setScalar(s);
     this.hit = new HitReact(this.inner.children as THREE.Mesh[]);
     this.hit.feel = HIT_FEEL[bodyClassOf(def)];
+    if (def.look === 'golem') {
+      // Vết nứt sáng của Thạch Tượng: lưới cộng sáng riêng (ngoài `inner` để HitReact không đụng), thở chậm ~4 s, tắt khi chết.
+      this.crack = new THREE.Mesh(golemCrack(), GLOW_MAT(col(def.accent).getHex(), 0.5));
+      this.root.add(this.crack);
+    }
   }
 
   attack(): void {
@@ -438,6 +532,10 @@ export class MonsterModel implements MonsterView {
     const dt = this.hit.update(realDt);
     this.inner.position.x = this.hit.shake;
     this.time += dt;
+    if (this.crack) {
+      this.crack.visible = !dead;
+      (this.crack.material as THREE.MeshBasicMaterial).opacity = 0.22 + 0.5 * (0.5 + 0.5 * Math.sin(this.time * 1.6));
+    }
     const moving = speed > 0.3 && !dead;
     if (moving) this.phase += dt * (5 + speed * 1.5);
     const sw = moving ? Math.sin(this.phase) : 0;
@@ -492,6 +590,10 @@ export class MonsterModel implements MonsterView {
   /** Geometry dùng chung theo loại quái (MON_GEO) nên chỉ trả material gốc nếu đang chớp. */
   dispose(): void {
     this.hit.reset();
+    if (this.crack) {
+      (this.crack.material as THREE.Material).dispose();
+      this.crack.geometry.dispose();
+    }
   }
 }
 

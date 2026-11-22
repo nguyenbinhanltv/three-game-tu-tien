@@ -454,7 +454,7 @@ describe('cầu 7–9: Huyền Kiếp trong sân kiếp', () => {
     }
   });
 
-  for (const c of CASES) {
+  for (const c of CASES.filter((x) => x.n !== 9)) {
     it(`cầu ${c.n}: chuỗi ${c.id} qua trọn vẹn thì ghi cầu ${c.n}; kiếp thất bại thì không`, async () => {
       const r = await mkRoom(`kieu_${c.n}`, rooms.defineTribulation(`kieu_${c.n}`));
       const p = r.join(mkChar(`k${c.n}h`, c.level, c.kieu));
@@ -488,5 +488,55 @@ describe('cầu 7–9: Huyền Kiếp trong sân kiếp', () => {
     expect(p.char.meta.kieu).toBe(8);
     expect(seen).toHaveLength(1);
     expect(seen[0]![1]).toBe('boss_lo_linh');
+  });
+
+  it('cầu 9 thật: Hồn kiếp xong thì hiện Lộ Linh, chỉ ghi cầu khi server thấy boss gục; người đánh chết thì bỏ pha', async () => {
+    const run = async (name: string, kill: (p: Ent, mon: { state: number }) => void) => {
+      const r = await mkRoom('kieu_9', rooms.defineTribulation('kieu_9'));
+      const p = r.join(mkChar(name, 47, 8));
+      const room = r.room as unknown as {
+        kieuStart: Map<number, { stage: number; at: number }>;
+        kieuBoss: { mon: { state: number } } | null;
+        tickKieuBoss(): boolean;
+        onTribulationEnd(p: Ent, def: ReturnType<typeof tribDef>, ok: boolean): void;
+      };
+      room.kieuStart ??= new Map();
+      room.kieuStart.set(p.char.id, { stage: 0, at: Date.now() - 200_000 });
+      room.onTribulationEnd(p, tribDef('huyen_hon'), true);
+      const mon = room.kieuBoss!.mon;
+      expect(mon).toBeTruthy();
+      expect(p.char.meta.kieu).toBe(8); // Hồn kiếp xong chưa ghi cầu
+      expect(room.tickKieuBoss()).toBe(true); // boss còn sống: giữ phòng
+      kill(p, mon);
+      return { p, room };
+    };
+    const win = await run('k9win', (_p, mon) => {
+      mon.state = MS_DEAD;
+    });
+    expect(win.room.tickKieuBoss()).toBe(false);
+    expect(win.p.char.meta.kieu).toBe(9);
+    const lose = await run('k9lose', (p) => {
+      p.s.fl |= PF_DEAD;
+    });
+    expect(lose.room.tickKieuBoss()).toBe(false);
+    expect(lose.p.char.meta.kieu).toBe(8);
+  });
+
+  it('cầu 9: boss gục quá nhanh bất thường thì không ghi nhưng báo người chơi (không im lặng)', async () => {
+    const r = await mkRoom('kieu_9', rooms.defineTribulation('kieu_9'));
+    const p = r.join(mkChar('k9fast', 47, 8));
+    const room = r.room as unknown as {
+      kieuStart: Map<number, { stage: number; at: number }>;
+      kieuBoss: { mon: { state: number } } | null;
+      tickKieuBoss(): boolean;
+      onTribulationEnd(p: Ent, def: ReturnType<typeof tribDef>, ok: boolean): void;
+    };
+    room.kieuStart ??= new Map();
+    room.kieuStart.set(p.char.id, { stage: 0, at: Date.now() - 10_000 });
+    room.onTribulationEnd(p, tribDef('huyen_hon'), true);
+    room.kieuBoss!.mon.state = MS_DEAD;
+    room.tickKieuBoss();
+    expect(p.char.meta.kieu).toBe(8);
+    expect(keys(p)).toContain('sys.kieu_clear_fail');
   });
 });
