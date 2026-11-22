@@ -85,7 +85,7 @@ import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { createWorldMaterial } from '../render/materials/world';
 import { GRADING_DEFAULT, type GradingName } from '../render/grading';
 import { MusicController } from './audio/music';
-import { withOccluderFade } from './world/occlusion';
+import { archWrap } from './world/occlusion';
 import { LanternLights } from '../render/lanternLights';
 import { PropLayer } from './world/props';
 import { type AssetHandle, assets } from './core/assets';
@@ -355,7 +355,7 @@ export class Game {
   sectMesh: THREE.Mesh | null = null;
   sectAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
   /** Material kiến trúc tông môn: riêng với MODEL_MAT để làm mờ vật che mà không ảnh hưởng nhân vật. */
-  sectMat = withOccluderFade(createWorldMaterial({ vertexColors: true }));
+  sectMat = archWrap(createWorldMaterial({ vertexColors: true }));
   shake = new CameraShake();
 
   // Dự đoán di chuyển.

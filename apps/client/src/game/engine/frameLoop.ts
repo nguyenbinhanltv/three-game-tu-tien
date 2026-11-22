@@ -41,7 +41,18 @@ import { type PState } from '../entities/entities';
 import { monsterPushRadius, pickPushers } from '../world/grass';
 import { postParams } from '../../render/post';
 import { updateOcclusion } from '../world/occlusion';
-import { ISO_FAR, ISO_FOV, ISO_DIST, isoCameraPos, isoLead, isoLeadTarget, isoYawFor, worldToIntent } from '../camera/iso';
+import {
+  ISO_FAR,
+  ISO_FOV,
+  ISO_DIST,
+  clampLeadFrame,
+  clampLeadSafe,
+  isoCameraPos,
+  isoLead,
+  isoLeadTarget,
+  isoYawFor,
+  worldToIntent,
+} from '../camera/iso';
 import { assets } from '../core/assets';
 import { BASE_ZONE, easeZoneCam, zoneCamera } from '../camera/camZones';
 import { isHeld } from '../../input/bindings';
@@ -385,6 +396,10 @@ function updateCamera(eng: Game, dt: number): void {
     // Đang có mục tiêu: dẫn camera về phía nó (kèm một phần con trỏ) để người và mục tiêu cùng nằm trong khung.
     const tl = eng.targetId && eng.ents.chestOf(eng.targetId, _v) ? isoLeadTarget(_v.x - rp.x, _v.z - rp.z) : null;
     const ld = tl ? { x: tl.x + cl.x * 0.4, z: tl.z + cl.z * 0.4 } : cl;
+    // Kẹp khung: người chơi luôn trong vùng an toàn; mục tiêu cũng trong vùng an toàn (tránh minimap/HUD) nếu thực hiện được, không thì ưu tiên người chơi.
+    const safe = tl ? clampLeadFrame(ld.x, ld.z, eng.camYaw, _v.x - rp.x, _v.z - rp.z) : clampLeadSafe(ld.x, ld.z, eng.camYaw);
+    ld.x = safe.x;
+    ld.z = safe.z;
     const kk = Math.min(1, dt * 3);
     iso.lead.x += (ld.x - iso.lead.x) * kk;
     iso.lead.z += (ld.z - iso.lead.z) * kk;

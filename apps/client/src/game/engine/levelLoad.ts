@@ -41,7 +41,7 @@ import { VanHaiGarden } from '../world/vanHaiGarden';
 import { applyGrading, markBloom } from '../../render/post';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { bhTod, GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../../render/grading';
-import { withOccluderFade } from '../world/occlusion';
+import { archWrap, withOccluderFade } from '../world/occlusion';
 import { LanternLights } from '../../render/lanternLights';
 import { buildMoonGate, buildPortalDisc, buildSect, moonMirrorTexture, SECT_LANTERNS } from '../world/sect';
 import { gatesToDraw } from '../world/gates';
@@ -771,7 +771,7 @@ async function loadSectModel(eng: Game, shadows: boolean): Promise<void> {
     }
     const root = handle.scene;
     // Giữ vật liệu PBR của GLB (mỗi chất liệu một material), chỉ gắn thêm làm mờ vật che.
-    eng.sectAsset = { handle, mats: adoptGltfMaterials(root, withOccluderFade) };
+    eng.sectAsset = { handle, mats: adoptGltfMaterials(root, archWrap) };
     root.position.set(SECT.x, SECT.y, SECT.z);
     root.traverse((o) => {
       const m = o as THREE.Mesh;
@@ -809,7 +809,7 @@ async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
       return;
     }
     const root = handle.scene;
-    eng.tkAsset = { handle, mats: adoptGltfMaterials(root, withOccluderFade) };
+    eng.tkAsset = { handle, mats: adoptGltfMaterials(root, archWrap) };
     root.position.set(TK_ORIGIN.x, TK_ORIGIN.y, TK_ORIGIN.z);
     root.traverse((o) => {
       const m = o as THREE.Mesh;

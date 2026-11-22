@@ -29,6 +29,8 @@ import {
 } from 'three/tsl';
 import { WORLD_SIZE } from '@dtl/shared';
 import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
+import { FLAGS } from '../../base/flags';
+import { isoTerrainDetail } from './isoDetail';
 
 /**
  * Shader mặt đất PBR (P2-A2): trộn 8 lớp texture CC0 Poly Haven theo vùng, độ dốc, độ cao.
@@ -269,6 +271,20 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   const rockCol = mix(rock, rock.mul(TOMB_TINT.mul(1.15)), bio.z);
   col = mix(col, rockCol.mul(float(0.9).add(macro.mul(0.2))), rockW);
   col = mix(col, cliff.mul(float(0.9).add(macro.mul(0.2))), cliffW);
+  if (FLAGS.isoCam && !lo) {
+    // Camera chéo (Thiên Nhãn P2b): xem isoDetail.ts. Chỉ trên đất bằng (không vách/đá/tuyết), tắt dần theo khoảng cách.
+    col = isoTerrainDetail(col, {
+      p,
+      dist,
+      flat: float(1).sub(max(max(rockW, cliffW), snowW)),
+      soil: float(1).sub(spW.mul(0.7)),
+      forest: bio.x,
+      dry: bio.y,
+      path: spW,
+      wet: wetEdge,
+      paving: pav,
+    });
+  }
   col = col.mul(groundParams.gain);
   col = mix(col, SNOW.mul(float(0.85).add(macro.mul(0.3))), noSnow ? float(0) : snowW.mul(0.9));
   // Xa thì texture nhỏ hơn điểm ảnh (mipmap mảng texture không đủ) sinh vân ô vuông: hòa dần về màu đỉnh lưới.
