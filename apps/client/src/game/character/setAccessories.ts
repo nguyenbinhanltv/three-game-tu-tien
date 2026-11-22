@@ -209,6 +209,13 @@ function paletteOf(setId: string): Pal {
       return { cloth: hex, cloth2: '#2e3338', hard: '#707880', trim, gem: '#8fd8d0' };
     case 'set_tinh_dan_bao':
       return { cloth: hex, cloth2: '#4a5052', hard: '#a8b0ae', trim, gem: '#a8f0e4' };
+    // Bậc 6 (TN-3): tím mực / đồng đỏ / bạc sương, điểm vàng đồng (hai mặt Âm–Dương của Vấn Đỉnh).
+    case 'set_vo_danh_kiem':
+      return { cloth: hex, cloth2: '#3a3158', hard: '#8a7a9c', trim, gem: '#e3c27a' };
+    case 'set_dong_dinh':
+      return { cloth: hex, cloth2: '#4a3626', hard: '#a8803c', trim, gem: '#f0d58a' };
+    case 'set_gioi_tri_dan':
+      return { cloth: hex, cloth2: '#4a4a5c', hard: '#aeb4c8', trim, gem: '#9fd6d0' };
     default:
       return { cloth: hex, cloth2: '#1d5d6c', hard: '#4aa3b4', trim, gem: '#bfe9f0' };
   }
@@ -906,6 +913,10 @@ BUILDERS.set_than_tang = BUILDERS.set_luu_ly!;
 BUILDERS.set_tran_khich = BUILDERS.set_tinh_khuyet!;
 BUILDERS.set_tan_thiet = BUILDERS.set_co_thanh!;
 BUILDERS.set_tinh_dan_bao = BUILDERS.set_than_tang!;
+// Bậc 6 (TN-3): tạm dùng lại hình bậc 5 cùng nhánh, đổi màu (`paletteOf`); model toàn thân là việc sau.
+BUILDERS.set_vo_danh_kiem = BUILDERS.set_tran_khich!;
+BUILDERS.set_dong_dinh = BUILDERS.set_tan_thiet!;
+BUILDERS.set_gioi_tri_dan = BUILDERS.set_tinh_dan_bao!;
 
 /** Ô nào của bộ nào có phụ kiện (cho test và tài liệu). */
 export function accessorySlots(setId: string): EquipSlot[] {

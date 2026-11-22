@@ -350,6 +350,28 @@
     "itm_hoa_than_ngoc_boi": "Hóa Thần Ngọc Bội",
     "itm_nguyen_quang_gioi_chi": "Nguyên Quang Giới Chỉ",
     "itm_than_tang_ngoc_boi": "Thần Tàng Ngọc Bội",
+    "itm_vdk_dao_bao": "Vô Danh Kiếm Y",
+    "itm_vdk_ho_uyen": "Vô Danh Hộ Uyển",
+    "itm_vdk_dai_lung": "Vô Danh Đai Lưng",
+    "itm_vdk_van_ngoa": "Vô Danh Vân Ngoa",
+    "itm_vdk_trang_suc": "Vô Danh Phát Quan",
+    "itm_vdh_dao_bao": "Đồng Đỉnh Hộ Giáp",
+    "itm_vdh_ho_uyen": "Đồng Đỉnh Hộ Uyển",
+    "itm_vdh_dai_lung": "Đồng Đỉnh Đai Lưng",
+    "itm_vdh_van_ngoa": "Đồng Đỉnh Vân Ngoa",
+    "itm_vdh_trang_suc": "Đồng Đỉnh Phát Quan",
+    "itm_vdd_dao_bao": "Giới Trì Đan Bào",
+    "itm_vdd_ngoc_boi": "Giới Trì Ngọc Bội",
+    "itm_vdd_dai_lung": "Giới Trì Đai Lưng",
+    "itm_vdd_gioi_chi": "Giới Trì Giới Chỉ",
+    "itm_vdd_trang_suc": "Giới Trì Phát Quan",
+    "itm_van_dinh_kiem": "Vấn Đỉnh Kiếm",
+    "itm_van_dinh_dao_bao": "Vấn Đỉnh Đạo Bào",
+    "itm_am_hu_ho_uyen": "Âm Hư Hộ Uyển",
+    "itm_duong_thuc_van_ngoa": "Dương Thực Vân Ngoa",
+    "itm_hu_gioi_dai_lung": "Hư Giới Đai Lưng",
+    "itm_van_dinh_ngoc_boi": "Vấn Đỉnh Ngọc Bội",
+    "itm_am_duong_gioi_chi": "Âm Dương Giới Chỉ",
     "itm_thu_linh_gioi_chi": "Thủ Linh Giới Chỉ"
   },
   "upgrade": {
@@ -387,7 +409,10 @@
     "set_than_tang": "Thần Tàng Đan Bào",
     "set_tran_khich": "Trấn Khích Kiếm Y",
     "set_tan_thiet": "Tẫn Thiết Hộ Giáp",
-    "set_tinh_dan_bao": "Tịnh Quang Đan Bào"
+    "set_tinh_dan_bao": "Tịnh Quang Đan Bào",
+    "set_vo_danh_kiem": "Vô Danh Kiếm Y",
+    "set_dong_dinh": "Đồng Đỉnh Hộ Giáp",
+    "set_gioi_tri_dan": "Giới Trì Đan Bào"
   },
   "party": {
     "name": "Tổ đội",
@@ -596,6 +621,7 @@
     "itm_co_thanh_phien": "Cổ Thành Phiến",
     "itm_tan_giac": "Tẫn Giác",
     "itm_tinh_vu": "Tịnh Quang Vũ",
+    "itm_hu_anh_phien": "Hư Ảnh Phiến",
     "itm_kim_da_mien": "Kim Dạ Miện Phiến",
     "itm_co_huyet_tinh": "Cổ Huyết Tinh"
   },
