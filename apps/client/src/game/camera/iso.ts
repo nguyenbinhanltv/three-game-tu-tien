@@ -19,6 +19,8 @@ export const ISO_YAW: Readonly<Record<string, number>> = {
   van_lam: (30 * Math.PI) / 180,
   // Vân Hải Phù Đảo: 135° (so với 0°, 45°, −45°): người không bị đình/cây cao che, bóng đổ dài đẹp, thấy rõ mặt nước và đảo.
   van_hai: (135 * Math.PI) / 180,
+  // Thiên Khuyết Cổ Thành: 135° (so với 0°, 45°, −45°): hàng cột đá khắc vân nằm phía sau người thay vì chắn trước; sân lát đá thấy rõ.
+  thien_khuyet: (135 * Math.PI) / 180,
 };
 /** Dẫn trước tối đa (m) theo con trỏ, tính trên mặt đất, và hệ số theo khoảng cách con trỏ tới nhân vật. */
 export const ISO_LEAD_MAX = 3.2;
