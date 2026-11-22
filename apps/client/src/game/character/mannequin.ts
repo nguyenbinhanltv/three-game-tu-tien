@@ -538,6 +538,9 @@ export class MannequinCharacter implements CharacterView {
    * Xương khi đỗ nằm trong hệ tọa độ của model (rig không có cha), nên mọi thứ đọc vị trí thế giới của xương (kiếm, IK chân, lò xo: chỉ
    * LOD0/LOD1) không dùng được trong lúc đỗ. Cùng ý với `detachRig` + `skipUnchangedSkeletons` của `SkinnedCharacter`.
    */
+  private parkedLevel = 0;
+  /** Kiếm đang được `inner` giữ (không còn là con của xương) khi đỗ ở LOD1: vị trí tính từ ma trận xương mỗi lần mixer chạy. */
+  private bladeHomed = false;
   private parked:
     { m: THREE.SkinnedMesh; home: THREE.Object3D; pos: THREE.Vector3; quat: THREE.Quaternion; scale: THREE.Vector3 }[] | null = null;
   /** Tăng mỗi lần tư thế xương đổi lúc đang đỗ; `skeleton.update()` của lưới đỗ bỏ qua khi phiên bản chưa đổi. */
@@ -824,10 +827,32 @@ export class MannequinCharacter implements CharacterView {
     if (!this.blade) return;
     this.drawn = drawn;
     const bone = drawn ? this.hand : this.scabbard;
+    this.blade.matrixAutoUpdate = true;
+    this.bladeHomed = false;
     bone?.add(this.blade);
     if (drawn) this.blade.position.set(0, 0, 0);
     else this.blade.position.copy(this.posScab);
     this.blade.quaternion.copy(drawn ? this.qHand : this.qScab);
+    if (this.parked && this.parkedLevel === 1) this.homeBlade();
+  }
+
+  /** Đỗ rig ở LOD1: kiếm rời xương, gắn vào `inner`; `placeBlade` đặt lại theo ma trận xương mỗi lần mixer chạy. */
+  private homeBlade(): void {
+    const blade = this.blade;
+    if (!blade) return;
+    this.inner.add(blade);
+    blade.matrixAutoUpdate = false;
+    this.bladeHomed = true;
+    this.placeBlade();
+  }
+
+  private placeBlade(): void {
+    const blade = this.blade;
+    const bone = this.drawn ? this.hand : this.scabbard;
+    if (!blade || !bone) return;
+    // Rig đỗ không có cha: `matrixWorld` của xương chính là ma trận trong hệ model (= hệ của `inner`).
+    blade.matrix.compose(blade.position, blade.quaternion, blade.scale).premultiply(bone.matrixWorld);
+    blade.matrixWorldNeedsUpdate = true;
   }
 
   private applyLod(level: number, self = true): void {
@@ -845,54 +870,70 @@ export class MannequinCharacter implements CharacterView {
     if (this.blade) this.blade.visible = level < 2 && !this.gearOn;
   }
 
-  /** Đang đỗ rig (LOD2): xương ở hệ tọa độ model, không đọc được vị trí thế giới. */
+  /** Đang đỗ rig (LOD1–2): xương ở hệ tọa độ model, không đọc được vị trí thế giới. */
   get rigParked(): boolean {
     return !!this.parked;
   }
 
-  private setParked(on: boolean): void {
-    if (on === !!this.parked) return;
-    if (on) {
-      const list = (this.lods[2] ?? []).filter((m) => (m as THREE.SkinnedMesh).isSkinnedMesh) as THREE.SkinnedMesh[];
-      if (this.lods.length < 3 || !list.length || list.length !== this.lods[2]!.length || !this.rig.parent) return;
-      const saved: NonNullable<MannequinCharacter['parked']> = [];
-      for (const m of list) {
-        if (!m.parent) continue;
-        saved.push({ m, home: m.parent, pos: m.position.clone(), quat: m.quaternion.clone(), scale: m.scale.clone() });
-        // DetachedBindMode: đỉnh = matrixWorld(lưới) · bindMatrix⁻¹ · xương(hệ model) · boneInverse · bindMatrix, nên lưới đặt dưới `inner`
-        // với đúng biến đổi lúc bind (bindMatrix = ma trận lưới trong hệ model).
-        this.inner.add(m);
-        m.bindMatrix.decompose(m.position, m.quaternion, m.scale);
-        m.bindMode = THREE.DetachedBindMode;
-        const sk = m.skeleton;
-        let at = -1;
-        sk.update = () => {
-          if (at === this.parkVersion) return;
-          at = this.parkVersion;
-          THREE.Skeleton.prototype.update.call(sk);
-        };
-      }
-      this.inner.remove(this.rig);
-      this.parked = saved;
-      this.syncParked();
-    } else {
-      const saved = this.parked!;
-      this.parked = null;
-      this.inner.add(this.rig);
-      for (const e of saved) {
-        e.home.add(e.m);
-        e.m.position.copy(e.pos);
-        e.m.quaternion.copy(e.quat);
-        e.m.scale.copy(e.scale);
-        e.m.bindMode = THREE.AttachedBindMode;
-        delete (e.m.skeleton as { update?: unknown }).update;
-      }
+  /**
+   * Đỗ rig theo mức LOD: 0 = không đỗ (rig trong cảnh), 1 hoặc 2 = đỗ và vẽ lưới LOD tương ứng (LOD1 cần chuyển kiếm sang `inner`, xem `homeBlade`).
+   * Đổi mức đỗ thì dỡ rồi đỗ lại.
+   */
+  private setParked(level: number): void {
+    if (level === this.parkedLevel) return;
+    if (this.parked) this.unpark();
+    if (level > 0) this.park(level);
+  }
+
+  private park(level: number): void {
+    const list = (this.lods[level] ?? []).filter((m) => (m as THREE.SkinnedMesh).isSkinnedMesh) as THREE.SkinnedMesh[];
+    if (this.lods.length <= level || !list.length || list.length !== this.lods[level]!.length || !this.rig.parent) return;
+    const saved: NonNullable<MannequinCharacter['parked']> = [];
+    for (const m of list) {
+      if (!m.parent) continue;
+      saved.push({ m, home: m.parent, pos: m.position.clone(), quat: m.quaternion.clone(), scale: m.scale.clone() });
+      // DetachedBindMode: đỉnh = matrixWorld(lưới) · bindMatrix⁻¹ · xương(hệ model) · boneInverse · bindMatrix, nên lưới đặt dưới `inner`
+      // với đúng biến đổi lúc bind (bindMatrix = ma trận lưới trong hệ model).
+      this.inner.add(m);
+      m.bindMatrix.decompose(m.position, m.quaternion, m.scale);
+      m.bindMode = THREE.DetachedBindMode;
+      const sk = m.skeleton;
+      let at = -1;
+      sk.update = () => {
+        if (at === this.parkVersion) return;
+        at = this.parkVersion;
+        THREE.Skeleton.prototype.update.call(sk);
+      };
     }
+    this.inner.remove(this.rig);
+    this.parked = saved;
+    this.parkedLevel = level;
+    if (level === 1) this.homeBlade();
+    this.syncParked();
+  }
+
+  private unpark(): void {
+    const saved = this.parked!;
+    this.parked = null;
+    this.parkedLevel = 0;
+    this.inner.add(this.rig);
+    for (const e of saved) {
+      e.home.add(e.m);
+      e.m.position.copy(e.pos);
+      e.m.quaternion.copy(e.quat);
+      e.m.scale.copy(e.scale);
+      e.m.bindMode = THREE.AttachedBindMode;
+      delete (e.m.skeleton as { update?: unknown }).update;
+    }
+    // Kiếm về lại xương (matrixAutoUpdate bật lại trong `mountBlade`).
+    if (this.bladeHomed && this.blade) this.mountBlade(this.drawn);
+    this.bladeHomed = false;
   }
 
   /** Sau khi mixer đổi tư thế lúc đang đỗ: tính lại ma trận xương (hệ model); `skeleton.update()` chạy một lần ở lượt vẽ tới. */
   private syncParked(): void {
     this.rig.updateMatrixWorld(true);
+    if (this.bladeHomed) this.placeBlade();
     this.parkVersion++;
   }
 
@@ -1334,7 +1375,7 @@ export class MannequinCharacter implements CharacterView {
   setView(v: { dist: number; inView: boolean; allowLod0: boolean; self?: boolean; minLod?: number }): void {
     const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length, v.minLod);
     this.applyLod(level, !!v.self);
-    this.setParked(level >= 2 && !this.disposed && !V3_OFF.has('park'));
+    this.setParked(this.disposed || V3_OFF.has('park') ? 0 : level >= 2 ? 2 : level === 1 && !V3_OFF.has('park1') ? 1 : 0);
     this.lodLevel = level;
     this.gear?.setVisible(gearShown(this.gearOn, level));
     this.coGear?.setVisible(gearShown(this.coOn, level));
@@ -1572,7 +1613,7 @@ export class MannequinCharacter implements CharacterView {
   }
 
   bladePoints(base: THREE.Vector3, tip: THREE.Vector3): boolean {
-    if (!this.blade || !this.drawn || this.parked) return false;
+    if (!this.blade || !this.drawn || (this.parked && !this.bladeHomed)) return false;
     this.blade.updateWorldMatrix(true, false);
     base.setFromMatrixPosition(this.blade.matrixWorld);
     tip.set(0, this.bladeLen, 0).applyMatrix4(this.blade.matrixWorld);
@@ -1581,7 +1622,7 @@ export class MannequinCharacter implements CharacterView {
 
   dispose(): void {
     if (this.disposed) return;
-    this.setParked(false); // trả lưới LOD2 về rig để dọn chung
+    this.setParked(0); // trả lưới LOD đỗ về rig để dọn chung
     this.disposed = true;
     this.hit.reset();
     this.blade?.removeFromParent();
