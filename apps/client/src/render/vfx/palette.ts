@@ -63,6 +63,10 @@ export const FX_PALETTE: Record<string, FxPalette> = {
   mon_boss: { core: 0x2a0410, body: 0xd01f3c, rim: 0xffd7a0, accent: 0xffc23a, shadow: 0x0d0206 },
 };
 
+// Hai mặt của Phủ Chủ (TN-3): Âm tím mực viền bạc sương, Dương vàng đồng viền trắng nắng (cùng palette `vd_am_*`/`vd_duong_*` của bản đồ).
+FX_PALETTE.face_am = { core: 0x1a1230, body: 0x6a5aa8, rim: 0xd8d4f0, accent: 0x9fd6d0, shadow: 0x0a0818 };
+FX_PALETTE.face_duong = { core: 0x4a3010, body: 0xd8a040, rim: 0xfff0c8, accent: 0xe86a3a, shadow: 0x201004 };
+
 // Boss: cùng thân theo hệ, viền vàng kim ấm + accent đỏ thẫm + bóng gần đen cho tương phản cao (`mon_boss_<hệ>`).
 for (const e of ['kim', 'moc', 'thuy', 'hoa', 'tho', 'neutral']) {
   const b = FX_PALETTE['mon_' + e]!;

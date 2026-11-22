@@ -3,6 +3,8 @@ import * as THREE from 'three/webgpu';
 import {
   AIRBORNE_HEIGHT,
   MF_BROKEN,
+  MF_FACE,
+  MF_FACE_T,
   MF_CHANT,
   MF_STUN,
   MS_ATTACK,
@@ -84,6 +86,9 @@ function bossFor(eng: Game, target: TargetInfo | null, x: number, z: number): Bo
   const info: BossInfo = { id, def: m.t, level: m.lv, hp: m.hp, mhp: m.mhp, cast: castOf(eng, m), mk: m.mk ?? 0 };
   if (def?.posture) info.posture = (m.pz ?? 0) / 100;
   if (def?.phases) info.marks = def.phases.map((p) => p.hp);
+  const mf = m.mf ?? 0;
+  if (def?.ai?.faces && mf & MF_FACE_T)
+    info.face = { am: (mf & MF_FACE) !== 0, left: Math.max(0, Math.ceil(((m.ce ?? 0) - eng.timeOffset - Date.now()) / 1000)) };
   return info;
 }
 

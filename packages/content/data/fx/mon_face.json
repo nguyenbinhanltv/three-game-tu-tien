@@ -1,0 +1,290 @@
+{
+ "skill": "mon_face",
+ "palette": "face_am",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.14,
+   "at": "self",
+   "offset": [
+    0,
+    1.4,
+    0
+   ],
+   "scale": 1.6,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "alpha": 0.9,
+   "tier": 0,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.45,
+   "at": "self",
+   "offset": [
+    0,
+    0.1,
+    0
+   ],
+   "scale": 0.5,
+   "scaleTo": 9.0,
+   "sweep": 0.4,
+   "erodeFrom": 0.45,
+   "ragged": 0.8,
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 31,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.08,
+   "dur": 0.55,
+   "at": "self",
+   "offset": [
+    0,
+    0.12,
+    0
+   ],
+   "scale": 0.4,
+   "scaleTo": 7.0,
+   "sweep": 0.4,
+   "erodeFrom": 0.4,
+   "tone": "accent",
+   "alpha": 0.85,
+   "seed": 32,
+   "tier": 1
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 4.2,
+   "dur": 0.8,
+   "at": "self",
+   "offset": [
+    0,
+    -0.05,
+    0
+   ],
+   "grow": 0.12,
+   "tone": "core",
+   "alpha": 0.8,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "crack",
+   "t": 0.04,
+   "r": 3.4,
+   "dur": 0.8,
+   "at": "self",
+   "offset": [
+    0,
+    -0.04,
+    0
+   ],
+   "grow": 0.12,
+   "tone": "accent",
+   "alpha": 0.85,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "smoke",
+   "t": 0.04,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "scale": 1.6,
+   "scaleTo": 3.2,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "tone": "core",
+   "alpha": 0.5,
+   "seed": 33,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0.0,
+   "n": 16,
+   "speed": 5.5,
+   "spread": 1.0,
+   "life": 0.7,
+   "size": 0.12,
+   "at": "self",
+   "offset": [
+    0,
+    0.4,
+    0
+   ],
+   "tone": "body",
+   "grav": 8,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.03,
+   "dur": 0.45,
+   "at": "self",
+   "offset": [
+    0.0,
+    0,
+    2.2
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.22,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 40,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.05,
+   "dur": 0.45,
+   "at": "self",
+   "offset": [
+    1.91,
+    0,
+    1.1
+   ],
+   "rot": [
+    -78,
+    0,
+    0
+   ],
+   "scale": 0.26,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 41,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.07,
+   "dur": 0.45,
+   "at": "self",
+   "offset": [
+    1.91,
+    0,
+    -1.1
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.3,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 42,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.09,
+   "dur": 0.45,
+   "at": "self",
+   "offset": [
+    0.0,
+    0,
+    -2.2
+   ],
+   "rot": [
+    -78,
+    0,
+    0
+   ],
+   "scale": 0.22,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 43,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.11,
+   "dur": 0.45,
+   "at": "self",
+   "offset": [
+    -1.91,
+    0,
+    -1.1
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.26,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 44,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.13,
+   "dur": 0.45,
+   "at": "self",
+   "offset": [
+    -1.91,
+    0,
+    1.1
+   ],
+   "rot": [
+    -78,
+    0,
+    0
+   ],
+   "scale": 0.3,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 45,
+   "tier": 1,
+   "camFade": true
+  }
+ ]
+}

@@ -1526,6 +1526,8 @@
   "dungeon.kinh_nguyet.wave.2": "Kính Diện Ma Quân chắn hành lang",
   "dungeon.kinh_nguyet.wave.3": "Ba gương trên trần hiện thứ tự màu",
   "dungeon.kinh_nguyet.wave.5": "Kính Nguyệt Chân Quân bước ra khỏi gương",
+  "sys.face_am": "Phủ Chủ quay mặt Âm: sát thương không còn lọt qua. Chờ mặt Dương lộ ra rồi hãy dồn chiêu.",
+  "sys.face_duong": "Mặt Dương của Phủ Chủ lộ ra: dồn chiêu ngay!",
   "sys.mirror_split": "Bốn thân hiện ra. Chỉ một thân thật, vết ngọc lam dưới chân; thần thức (V) soi ra thân thật.",
   "sys.mirror_veil": "Màn gương phủ xuống: bóng của chính ngươi đang đánh ngươi!",
   "sys.ward_buff": "{item}: giảm {n}% sát thương gương trong {s} giây.",

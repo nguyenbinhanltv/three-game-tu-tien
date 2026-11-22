@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { groundAt, type HazardMsg, MF_BURROW, MF_REFLECT, MF_WEAK, MS_CHASE, type MonsterAi, S, VALLEY } from '@dtl/shared';
+import { groundAt, type HazardMsg, MF_BURROW, MF_FACE, MF_REFLECT, MF_WEAK, MS_CHASE, type MonsterAi, S, VALLEY } from '@dtl/shared';
 
 // Nguyên tắc quái mở rộng (E1-E): server phán định theo vị trí người chơi lúc vạch nổ.
 // DB trong bộ nhớ: sim.ts kéo theo character.ts → db.ts.
@@ -435,5 +435,69 @@ describe('chant/cast đang chạy thì không mở chiêu mới', () => {
     run(800);
     expect(hazards()).toHaveLength(0);
     expect(mon.s.mf & MF_BURROW).toBe(0);
+  });
+});
+
+describe('faces: hai mặt Âm/Dương (Phủ Chủ)', () => {
+  const FACES: MonsterAi = { faces: { duong: 10, am: 6, warn: 2, take: 0 } };
+  const fxOf = (sent: Sent[], t: string) =>
+    sent.filter((x) => x.type === S.FX && (x.msg as { t: string }).t === t).map((x) => x.msg as { v?: string; d?: number });
+
+  it('mặt Dương nhận đủ sát thương; sang mặt Âm miễn hẳn (0) và có cờ MF_FACE tới lúc lật', () => {
+    const { sim, sent, mon, run } = setup(FACES);
+    run(DT);
+    expect(mon.s.mf & MF_FACE).toBe(0);
+    const a0 = mon.s.hp;
+    sim.damageMonster(mon, 100, null);
+    expect(mon.s.hp).toBe(a0 - 100);
+    run(10_000);
+    expect(mon.s.mf & MF_FACE).toBeTruthy();
+    expect(mon.s.ce).toBeGreaterThan(sim.now);
+    const a1 = mon.s.hp;
+    sim.damageMonster(mon, 5000, null);
+    expect(mon.s.hp).toBe(a1);
+    expect(sent.some((x) => x.type === S.DMG && (x.msg as { n: number }).n === 0)).toBe(true);
+    run(6_100);
+    expect(mon.s.mf & MF_FACE).toBe(0);
+    const a2 = mon.s.hp;
+    sim.damageMonster(mon, 100, null);
+    expect(mon.s.hp).toBe(a2 - 100);
+  });
+
+  it('báo trước 2 giây trước mỗi lần lật, rồi phát FX `face` đúng mặt mới; không phát lại', () => {
+    const { sent, run } = setup(FACES);
+    run(7_900);
+    expect(fxOf(sent, 'face_warn')).toHaveLength(0);
+    run(300);
+    expect(fxOf(sent, 'face_warn')).toEqual([expect.objectContaining({ v: 'am' })]);
+    expect(fxOf(sent, 'face')).toHaveLength(0);
+    run(2_000);
+    expect(fxOf(sent, 'face').map((f) => f.v)).toEqual(['am']);
+    expect(fxOf(sent, 'face_warn')).toHaveLength(1);
+    run(6_000);
+    expect(fxOf(sent, 'face').map((f) => f.v)).toEqual(['am', 'duong']);
+    expect(fxOf(sent, 'face_warn').map((f) => f.v)).toEqual(['am', 'duong']);
+  });
+
+  it('`take` > 0: mặt Âm còn lọt một phần sát thương', () => {
+    const { sim, mon, run } = setup({ faces: { duong: 10, am: 6, warn: 2, take: 0.1 } });
+    run(10_100);
+    const a0 = mon.s.hp;
+    sim.damageMonster(mon, 1000, null);
+    expect(mon.s.hp).toBe(a0 - 100);
+  });
+
+  it('bỏ trận (resetAi): đồng hồ đặt lại, vào trận lại bắt đầu bằng mặt Dương', () => {
+    const { sim, mon, run } = setup(FACES);
+    run(11_000);
+    expect(mon.s.mf & MF_FACE).toBeTruthy();
+    (sim as unknown as { resetAi(m: unknown): void }).resetAi(mon);
+    expect(mon.s.mf & MF_FACE).toBe(0);
+    mon.state = MS_CHASE;
+    run(DT);
+    expect(mon.s.mf & MF_FACE).toBe(0);
+    const a0 = mon.s.hp;
+    sim.damageMonster(mon, 100, null);
+    expect(mon.s.hp).toBe(a0 - 100);
   });
 });

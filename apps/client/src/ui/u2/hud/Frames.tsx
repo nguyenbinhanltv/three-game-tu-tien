@@ -117,6 +117,14 @@ export function BossCard() {
           <i key={f} className="u2h-boss-mark" style={{ left: f * 100 + '%' }} />
         ))}
       </div>
+      {boss.face && (
+        <div className={'u2h-boss-face ' + (boss.face.am ? 'am' : 'duong')} role="status">
+          <span className="u2h-boss-face-ico" aria-hidden="true">
+            {boss.face.am ? '陰' : '陽'}
+          </span>
+          <span className="u2h-boss-face-txt">{t(boss.face.am ? 'ui.boss.face_am' : 'ui.boss.face_duong', { n: boss.face.left })}</span>
+        </div>
+      )}
       <MarkChips mk={boss.mk} />
       {boss.posture !== undefined && (
         <div className={'gauge posture' + (boss.cast?.kind === 'broken' ? ' broken' : boss.posture >= 0.75 ? ' near' : '')}>

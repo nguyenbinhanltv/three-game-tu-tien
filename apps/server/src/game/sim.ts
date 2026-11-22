@@ -190,6 +190,12 @@ export class GameSim {
     addPosture: (m, n) => this.addPosture(m as MonEnt, n),
     minionsAlive: () => this.monsters.reduce((n, o) => n + (o.minionOf && o.state !== MS_DEAD ? 1 : 0), 0),
     monsterDef: (id) => MONSTER.get(id),
+    fx: (m) => this.emit(S.FX, m),
+    notifyNear: (m, range, key) => {
+      for (const p of this.players.values())
+        if (Math.hypot(p.move.x - m.s.x, p.move.z - m.s.z) <= range)
+          this.sys(p, key, undefined, key === 'sys.face_duong' ? 'good' : 'info');
+    },
   });
 
   /** Nuốt kéo người và vũng độc khi chết (E3-G). */
