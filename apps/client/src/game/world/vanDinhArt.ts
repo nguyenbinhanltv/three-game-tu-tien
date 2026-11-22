@@ -249,11 +249,13 @@ function scatterWallBase(ctx: VdScatterCtx): VdRubble[] {
 }
 
 /**
- * Vai vách: khối đá lớn bằng lưới thật (`prop_da_dung`, `prop_da_phien`, scale 6–14) cắm một nửa vào chân và sườn vách (0–30 m tính từ mép vùng chơi),
- * phá đường chân vách thẳng và cho vách có khối nhô ra. Chỉ đặt ở sườn thoải đến vừa (dốc hơn thì khối lơ lửng), tránh vòng cấm và collider.
- * Chỉ tô cảnh: `lean` < 0,3 nên không sinh va chạm; nằm sát ranh vùng chơi (người chơi bị chặn bởi vách).
+ * Vai vách: khối đá lớn bằng lưới thật (`prop_da_dung`, `prop_da_phien`, scale 6–14) cắm một nửa vào chân và sườn thoải của vách (0–30 m tính từ mép vùng chơi),
+ * phá đường chân vách thẳng và cho vách có khối nhô ra. Chỉ đặt ở sườn thoải đến vừa (dốc hơn thì khối lơ lửng).
+ * CÓ VA CHẠM: `colliderBake` bake collider theo lưới cho mọi prop rải (`lean` chỉ ghi thêm độ nghiêng, không quyết định có va chạm), nên mỗi khối là một vật cản
+ * thật ở vành ngoài vùng chơi (tường chặn ở cách mép 10 m). Vì thế mỗi khối chừa quanh vòng cấm (trạm, cụm quái, điểm đáng chú ý, trận, nút, NPC) một khoảng
+ * bằng bán kính vòng + cỡ khối + 4 m, và tránh collider có sẵn; kiểm ở `vanDinhArt.test.ts`.
  */
-function scatterWallShoulder(ctx: VdScatterCtx): VdRubble[] {
+export function scatterWallShoulder(ctx: VdScatterCtx): VdRubble[] {
   const { def, bounds: b } = ctx;
   const cx = def.size / 2;
   const out: VdRubble[] = [];
@@ -267,16 +269,17 @@ function scatterWallShoulder(ctx: VdScatterCtx): VdRubble[] {
       const clump = 0.35 + fbm(x * 0.009, z * 0.009, 2, def.seed + 1701) * 1.3;
       if (hash01(gx, gz, 6101) > 0.5 * Math.max(0.1, clump)) continue;
       let bad = false;
-      for (const c of ctx.clear) if ((x - c.x) ** 2 + (z - c.z) ** 2 < c.r * c.r) bad = true;
-      for (const c of ctx.colliders) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 6) ** 2) bad = true;
+      const k = hash01(gx, gz, 6143);
+      const k2 = hash01(gx, gz, 6153);
+      const s = 6 + k2 * 8;
+      const reach = s * 1.6 + 4; // cỡ khối + đệm: không chặn lối đến vòng cấm
+      for (const c of ctx.clear) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + reach) ** 2) bad = true;
+      for (const c of ctx.colliders) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + reach) ** 2) bad = true;
       if (bad) continue;
       // cắm vào sườn thoải đến vừa; sườn quá dốc thì khối đá lơ lửng trước vách
       const h0 = ctx.heightAt(x, z);
       if (Math.abs(ctx.heightAt(x + 3, z) - h0) + Math.abs(ctx.heightAt(x, z + 3) - h0) > 9) continue;
-      const k = hash01(gx, gz, 6143);
-      const k2 = hash01(gx, gz, 6153);
       const slab = hash01(gx, gz, 6163) < 0.4;
-      const s = 6 + k2 * 8;
       const v = 0.55 + k * 0.3;
       out.push({
         id: slab ? 'prop_da_phien' : 'prop_da_dung',
