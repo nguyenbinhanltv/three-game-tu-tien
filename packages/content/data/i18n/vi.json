@@ -189,6 +189,7 @@
   "sys.dao_have": "Đạo của ngươi đã định, không đổi được nữa.",
   "sys.dao_set": "Đạo đã định: {root}. Ý cảnh thêm một lớp, lĩnh vực đổi sắc.",
   "sys.kieu_lo_linh": "Hồn kiếp đã qua. Con đường ngẩng lên: Lộ Linh chắn trước mặt ngươi.",
+  "sys.kieu_clear_fail": "Lộ Linh đã gục nhưng cầu chưa được ghi. Hãy vào lại cầu thứ chín, ải cuối sẽ không bị mất.",
   "sys.kieu_far": "Đến gần {npc} rồi hãy xin vào cầu.",
   "sys.kieu_level": "Chưa đủ cảnh giới để bước lên cầu thứ {n}.",
   "sys.kieu_order": "Phải qua đủ các cầu trước. Cầu kế tiếp của ngươi là cầu thứ {n}.",

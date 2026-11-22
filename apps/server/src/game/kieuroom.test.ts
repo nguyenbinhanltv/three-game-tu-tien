@@ -521,4 +521,22 @@ describe('cầu 7–9: Huyền Kiếp trong sân kiếp', () => {
     expect(lose.room.tickKieuBoss()).toBe(false);
     expect(lose.p.char.meta.kieu).toBe(8);
   });
+
+  it('cầu 9: boss gục quá nhanh bất thường thì không ghi nhưng báo người chơi (không im lặng)', async () => {
+    const r = await mkRoom('kieu_9', rooms.defineTribulation('kieu_9'));
+    const p = r.join(mkChar('k9fast', 47, 8));
+    const room = r.room as unknown as {
+      kieuStart: Map<number, { stage: number; at: number }>;
+      kieuBoss: { mon: { state: number } } | null;
+      tickKieuBoss(): boolean;
+      onTribulationEnd(p: Ent, def: ReturnType<typeof tribDef>, ok: boolean): void;
+    };
+    room.kieuStart ??= new Map();
+    room.kieuStart.set(p.char.id, { stage: 0, at: Date.now() - 10_000 });
+    room.onTribulationEnd(p, tribDef('huyen_hon'), true);
+    room.kieuBoss!.mon.state = MS_DEAD;
+    room.tickKieuBoss();
+    expect(p.char.meta.kieu).toBe(8);
+    expect(keys(p)).toContain('sys.kieu_clear_fail');
+  });
 });

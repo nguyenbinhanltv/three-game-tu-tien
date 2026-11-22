@@ -56,7 +56,7 @@ export class TribulationRoom extends GameRoom {
   static LINGER_MS = 6000;
   static WAIT_MS = 25_000;
   /** Pha boss Lộ Linh (cầu 9) tối đa chừng này (ms) kể từ lúc boss hiện. */
-  static BOSS_MAX_MS = 360_000;
+  static BOSS_MAX_MS = 900_000;
   private startedAny = false;
   /** Số lần bắt đầu kiếp đã hẹn giờ mà chưa chạy: trong lúc đó không đóng phòng vì quá `WAIT_MS`. */
   private startPending = 0;
@@ -175,8 +175,11 @@ export class TribulationRoom extends GameRoom {
     const p = this.sim.players.get(b.sid);
     if (b.mon.state === MS_DEAD) {
       this.kieuBoss = null;
-      if (p && p.connected && (p.s.fl & PF_DEAD) === 0)
-        this.sim.kieu.onClear(p, 9, { present: true, contributed: true, elapsedSec: b.base + (Date.now() - b.at) / 1000 });
+      if (p && p.connected && (p.s.fl & PF_DEAD) === 0) {
+        const r = this.sim.kieu.onClear(p, 9, { present: true, contributed: true, elapsedSec: b.base + (Date.now() - b.at) / 1000 });
+        // Không ghi được (quá nhanh bất thường, lỗi DB): báo người chơi, đừng để mất kết quả trong im lặng.
+        if (r === 'anomaly' || r === 'db') this.sim.sys(p, 'sys.kieu_clear_fail', undefined, 'bad');
+      }
       return false;
     }
     if (!p || !p.connected || (p.s.fl & PF_DEAD) !== 0 || Date.now() - b.at > TribulationRoom.BOSS_MAX_MS) {
