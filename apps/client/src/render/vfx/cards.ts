@@ -696,6 +696,33 @@ function drawColossus(g: Ctx): void {
       ],
       1,
     );
+  // Chiều sâu: ánh sáng từ trên-trái. Viền sáng bóng ở mép vai trái, sọc tối dọc mép phải thân (mặt khuất), rồi phủ tối dần từ ngực xuống
+  // bụng (`source-atop`: chỉ làm tối phần đã vẽ, kênh R = tầng màu nên lõi thân chìm hơn còn đầu/sừng/vai giữ sáng).
+  g.save();
+  g.lineCap = 'round';
+  g.lineJoin = 'round';
+  line(g, 0.88, 5, [
+    [C - 150, 282],
+    [C - 108, 246],
+    [C - 50, 236],
+  ]);
+  line(g, 0.78, 4, [
+    [C - 138, 330],
+    [C - 122, 500],
+    [C - 112, 690],
+  ]);
+  line(g, 0.1, 22, [
+    [C + 118, 290],
+    [C + 112, 500],
+    [C + 104, 720],
+  ]);
+  g.globalCompositeOperation = 'source-atop';
+  const shade = g.createLinearGradient(0, 300, 0, 768);
+  shade.addColorStop(0, 'rgba(0,0,0,0)');
+  shade.addColorStop(1, 'rgba(0,0,0,0.5)');
+  g.fillStyle = shade;
+  g.fillRect(0, 300, 512, 468);
+  g.restore();
   // Mờ: đáy chìm vào đất, đỉnh đầu mờ nhẹ.
   g.save();
   g.globalCompositeOperation = 'destination-in';

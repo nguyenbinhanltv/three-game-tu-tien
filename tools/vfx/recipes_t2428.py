@@ -147,6 +147,15 @@ def kim_thien_co():
         a = i / 6 * math.tau
         ev.append(mesh('pill_orb', -0.1 + 0.02 * i, 0.4, at='self', offset=[round(math.cos(a) * 2.2, 2), G + 0.7, round(math.sin(a) * 2.2, 2)], scale=0.5, sweep=0, erodeFrom=0.9,
                        alpha=1, tone='accent', camFade=True, tier=0 if i < 3 else 1, seed=80 + i, move={'to': 'self', 'ease': 'in', 'offset': [0, G + 0.9, 0]}))
+    # vỏ vàng ở lại suốt thời gian giáp (8 s; mỗi khối tối đa 4 s và mốc ≤ 3 s nên nối hai đoạn 0,3–3,0 và 3,0–7,0): sáu viên cổ treo quanh thân (bám người, `camFade`) + hai vành
+    # triện dưới chân; trước đây chỉ có cú chớp ngắn nên giáp gần như vô hình sau 0,4 s (ảnh duyệt nợ hướng tu phần 2).
+    for t0, dur in ((0.3, 2.7), (3.0, 4.0)):
+        for i in range(6):
+            a = i / 6 * math.tau
+            ev.append(mesh('pill_orb', t0, dur, at='self', offset=[round(math.cos(a) * 1.05, 2), G + 0.55 + 0.45 * (i % 2), round(math.sin(a) * 1.05, 2)], rot=[25 * i, 0, 15],
+                           scale=0.62, sweep=0, erodeFrom=0.95, alpha=1, spin=120, follow=True, camFade=True, tone='accent' if i % 2 == 0 else 'core', tier=0, seed=90 + i))
+        ev.append(mesh('rune_ring2', t0, dur, at='self', offset=[0, G + 0.14, 0], scale=1.25, scaleTo=1.25, sweep=0.08, erodeFrom=0.95, alpha=0.95, shadow=False, follow=True, tone='core', tier=0, seed=96))
+        ev.append(mesh('rune_ring2', t0, dur, at='self', offset=[0, G + 0.17, 0], scale=1.05, scaleTo=1.05, sweep=0.08, erodeFrom=0.95, alpha=0.95, shadow=False, follow=True, tone='accent', tier=0, seed=97))
     return {'skill': 'skl_kim_thien_co', 'replaces': ['kimthienco'], 'events': ev}
 
 
@@ -198,9 +207,9 @@ def dia_sat_tran():
         mesh('rune_ring2', -0.3, 0.9, at='area', offset=[0, 0.12, 0], scale=0.2, scaleTo=0.97, fit='area', alpha=1, sweep=0.4, erodeFrom=0.8, shadow=False, tone='rim', tier=0, seed=33),
         snd(0.0, 'impact', 0.6, 0.8),
         mesh('crack_radial', 0.02, 1.0, at='area', offset=[0, 0.1, 0], scale=1.0, fit='area', alpha=0.85, sweep=0.15, erodeFrom=0.8, shadow=False, tone='accent', tier=0, seed=34),
-        mesh('shock_cone', 0.02, 0.5, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[7.0] * 3, alpha=0.85, sweep=0.3, erodeFrom=0.3, tone='body', tier=1, seed=35),
+        mesh('shock_cone', 0.02, 0.5, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[6.4] * 3, alpha=0.5, sweep=0.3, erodeFrom=0.3, tone='body', camFade=True, tier=1, seed=35),
         parts('dust', 0.0, 60, 5, 1, 0.9, 0.2, at='area', offset=[0, 0.4, 0], tone='core', grav=-0.3, tier=0),
-        smoke(0.05, 'area', y=0.5, scale=4.5, tone='core', alpha=0.5),
+        smoke(0.05, 'area', y=0.5, scale=4.5, tone='core', alpha=0.32),
     ]
     ev += feel(0.0, ms=60, sh=0.24, fl=0.06, vg=0.28, fov=2.0)
     return {'skill': 'skl_dia_sat_tran', 'palette': 'tran_sat', 'replaces': ['diasattran'], 'events': ev}
@@ -220,7 +229,7 @@ def thai_hu_ho_tran():
         mesh('ripple', -0.2, 0.8, at='area', offset=[0, 0.12, 0], scale=0.3, scaleTo=1.0, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.4, shadow=False, tone='body', tier=0, seed=43),
         snd(0.0, 'impact', 0.5, 1.0),
         flip('spark_burst', 0.0, 0.4, 3.0, at='self', offset=[0, 0.4, 0], alpha=0.6, tone='accent', camFade=True, tier=0),
-        mesh('shock_cone', 0.02, 0.5, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[7.0] * 3, alpha=0.7, sweep=0.3, erodeFrom=0.3, tone='body', tier=1, seed=44),
+        mesh('shock_cone', 0.02, 0.5, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[6.4] * 3, alpha=0.45, sweep=0.3, erodeFrom=0.3, tone='body', camFade=True, tier=1, seed=44),
         parts('spark', 0.0, 60, 3, 1, 1.2, 0.1, at='self', offset=[0, -0.6, 0], tone='accent', grav=1.2, tier=0),
         smoke(0.05, 'area', y=0.4, scale=4.5, tone='body', alpha=0.35),
     ]
@@ -245,10 +254,10 @@ def lac_thu_dai_tran():
         snd(0.0, 'impact', 0.7, 0.75),
         flip('spark_burst', 0.0, 0.4, 2.4, at='self', offset=[0, -0.6, 0], alpha=0.45, tone='rim', tier=0),
         mesh('crack_radial', 0.02, 1.2, at='area', offset=[0, 0.12, 0], scale=1.0, fit='area', alpha=0.85, sweep=0.15, erodeFrom=0.8, shadow=False, tone='body', tier=0, seed=54),
-        mesh('shock_cone', 0.02, 0.55, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[11.0] * 3, alpha=0.9, sweep=0.3, erodeFrom=0.3, tone='body', tier=0, seed=55),
+        mesh('shock_cone', 0.02, 0.55, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[11.0] * 3, alpha=0.55, sweep=0.3, erodeFrom=0.3, tone='body', camFade=True, tier=0, seed=55),
         parts('dust', 0.0, 100, 7, 1, 1.0, 0.22, at='self', offset=[0, -0.6, 0], tone='core', grav=-0.4, tier=0),
         parts('spark', 0.0, 50, 9, 1, 0.6, 0.08, at='self', offset=[0, -0.4, 0], tone='accent', tier=0),
-        smoke(0.05, 'self', y=-0.6, scale=6.0, tone='core', alpha=0.6, tier=1),
+        smoke(0.05, 'self', y=-0.6, scale=6.0, tone='core', alpha=0.4, tier=1),
     ]
     ev += feel(0.0, ms=60, sh=0.32, fl=0.08, vg=0.34, fov=3.4, pull=0.12)
     return {'skill': 'skl_lac_thu_dai_tran', 'palette': 'tran_sat', 'replaces': ['lacthudaitran'], 'events': ev}

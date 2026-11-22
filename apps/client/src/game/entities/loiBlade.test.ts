@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LOI_METHOD } from '@dtl/shared';
 import { PATH } from '@dtl/content';
-import { bladeLook, LOI_FLICKER_HZ } from './loiBlade';
+import { ARC_AMP, ARC_POINTS, arcFrame, bladeLook, LOI_FLICKER_HZ, loiArc } from './loiBlade';
 
 describe('kiếm điện của Lôi tu', () => {
   it('Lôi tu: ánh kiếm trắng xanh điện của hướng, phát sáng tối thiểu bậc 2; công pháp khác không đổi', () => {
@@ -30,5 +30,23 @@ describe('kiếm điện của Lôi tu', () => {
   });
   it('bộ trang bị có màu lưỡi riêng và cường hóa cao hơn vẫn thắng', () => {
     expect(bladeLook(LOI_METHOD, '#aabbcc', 3, 1.7)).toEqual({ tint: '#aabbcc', glow: 3 });
+  });
+
+  it('tia điện dọc kiếm: chỉ Lôi tu; tất định theo khung; hai đầu lưỡi bám kiếm, lệch trong biên độ; có khung ẩn để không thành dải liên tục', () => {
+    expect(loiArc(LOI_METHOD)).toBe(true);
+    expect(loiArc('lac_kiem_quyet')).toBe(false);
+    expect(loiArc(undefined)).toBe(false);
+    expect(arcFrame(5, 3)).toEqual(arcFrame(5, 3));
+    let hidden = 0;
+    for (let f = 0; f < 120; f++) {
+      const a = arcFrame(f, 7);
+      expect(a.x).toHaveLength(ARC_POINTS);
+      expect(Math.abs(a.x[0]!)).toBeLessThan(1e-9);
+      expect(Math.abs(a.y[ARC_POINTS - 1]!)).toBeLessThan(1e-9);
+      for (const v of [...a.x, ...a.y]) expect(Math.abs(v)).toBeLessThanOrEqual(ARC_AMP);
+      if (!a.vis) hidden++;
+    }
+    expect(hidden).toBeGreaterThan(8);
+    expect(hidden).toBeLessThan(50);
   });
 });

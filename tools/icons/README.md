@@ -16,3 +16,5 @@
 ## Bộ icon U2-I (2026-11-18)
 
 Atlas hiện tại do `pnpm icons:build` đóng từ **PNG 256 px của bộ U2-I** (`<DTL_ASSET_SOURCE>/2d/icon/v2/png256/`, ưu tiên cao nhất), icon không có viền (khung do `ui/u2` vẽ bằng mã). Cách sinh (tờ 3×2 mỗi lượt Codex), cắt/QC, 75 icon hệ thống SVG và dấu ấn bộ: `tools/icons/v2/README.md`. Icon hệ thống có SVG (`hud_*`, `mark_*`, `cur_*`, `st_*`, `ui_*`, `sys_*`) được `UiIcon` vẽ thẳng từ `ui/u2/sysGlyphs.ts`, không qua atlas.
+
+Bổ sung 2026-11-22 (nợ hướng tu phần 2): 9 icon chiêu mốc 24/28 của Đao tu / Cổ tu / Cấm chế sư (`skl_thuan_dao_tram`, `skl_huyet_chien_the`, `skl_doan_thien_dao`, `skl_phan_co_thuat`, `skl_kim_thien_co`, `skl_van_co_phe_the`, `skl_dia_sat_tran`, `skl_thai_hu_ho_tran`, `skl_lac_thu_dai_tran`) sinh bằng Codex ở hai tờ `s_path_2428_a/b` (3×2, khung 3:2 1536×1024) và cắt thẳng theo ô 512 px xuống 256 px (không dùng `slice_qc.py`: bước căn giữa/đệm viền làm nhòe vệt khi chủ thể chạm biên ô). Các chiêu hướng tu khác vẫn dùng emoji dự phòng.

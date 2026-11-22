@@ -166,14 +166,15 @@
     1.0
    ],
    "scaleTo": [
-    7.0,
-    7.0,
-    7.0
+    6.4,
+    6.4,
+    6.4
    ],
-   "alpha": 0.7,
+   "alpha": 0.45,
    "sweep": 0.3,
    "erodeFrom": 0.3,
    "tone": "body",
+   "camFade": true,
    "tier": 1,
    "seed": 44
   },

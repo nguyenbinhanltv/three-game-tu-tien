@@ -646,5 +646,28 @@
    "itm_skin_korvaden"
   ],
   "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 2 separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nThese are two matching COSTUME TOKEN icons (cosmetic outfit seals), the same plaque shape in two colorways, NO figures, NO armor, NO clothing, NO gothic or western imagery. Palette only: ash #2A2426, pale ash #8C8580, ember #C4412B, dark blood #6E1F24, violet #6B3FA0, dull gold #B8923A, bone #CFC6B4, rune cyan #4FB8E6, steel #5A6572.\nIcons in cell order (left to right, top to bottom): 1. an ornate dark-lacquer costume-seal plaque with gold edge and a short cord with a tassel; embossed with a stylized abstract wolf-fang and claw-slash sigil in pale ash and violet-silver, with a faint red ember spark and a dull-gold ring; 2. an ornate dark-lacquer costume-seal plaque with gold edge and a short cord with a tassel; embossed with a ring of angular carved rune glyphs in glowing rune-cyan on steel and black, with a dull-gold edge ring; Cells 3 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_path_2428_a",
+  "kind": "skill",
+  "cells": [
+   "skl_thuan_dao_tram",
+   "skl_huyet_chien_the",
+   "skl_doan_thien_dao",
+   "skl_phan_co_thuat",
+   "skl_kim_thien_co",
+   "skl_van_co_phe_the"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game skill icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nEach icon is a SKILL: a symbolic dramatic composition around ONE bold object or sigil with a light effect, not an abstract mist.\nIcons in cell order (left to right, top to bottom): 1. a broad single-edged saber blurred mid-dash with a thin pale steel streak behind it and one bright cut line, steel and ivory; 2. a clenched blood-red war aura around a fist-sized crimson heart-flame over a cracked stone ground, deep red and bronze; 3. a colossal single-edged saber cleaving down splitting a bright cloud-gap in the sky, steel blade with a gold edge glow; 4. a swarm of small jade-green and amber insects splitting into two streams falling from one clay jar, jade and amber; 5. a golden cicada shell encasing a small curled insect, glowing gold carapace with fine gold scroll patterns; 6. a vast storm cloud of countless tiny dark insects pouring down over a glowing green sigil, dark violet-black swarm with a jade glow;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_path_2428_b",
+  "kind": "skill",
+  "cells": [
+   "skl_dia_sat_tran",
+   "skl_thai_hu_ho_tran",
+   "skl_lac_thu_dai_tran"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of THREE separate original game skill icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nEach icon is a SKILL: a symbolic dramatic composition around ONE bold object or sigil with a light effect, not an abstract mist.\nIcons in cell order (left to right, top to bottom): 1. a small octagonal formation disc of dark bronze on the ground with a red sharp-edged hexagram of light and a few red spikes rising, bronze and vermilion; 2. a pale jade octagonal formation disc with a translucent dome of soft green-white light rising above it and a small bronze flag in the center, jade and gold; 3. a grand nine-by-nine square grid formation of gold lines with ten small bright nodes and one great glowing gold seal at the center, gold and ink black, with faint vermilion spikes; Cells 4 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
  }
 ]

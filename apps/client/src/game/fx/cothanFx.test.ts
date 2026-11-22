@@ -43,7 +43,8 @@ describe('VFX Cổ Thần', () => {
   it('khoảnh khắc wow của Hóa Hình: Cổ Thần khổng lồ (thẻ colossus, camFade, đứng phía trước người), sóng chấn sát đất, làm chậm + kéo máy; không phủ khối lên thân, không rải đá', () => {
     const e = evs(SCENE);
     const colossus = e.filter((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'colossus');
-    expect(colossus, 'chỉ MỘT bóng Cổ Thần, đặt ở phía xa camera').toHaveLength(1);
+    // MỘT bóng Cổ Thần (lớp thân) + MỘT lớp nền tối lệch ra sau làm độ dày giả; cả hai ở phía xa camera.
+    expect(colossus.map((x) => (x.type === 'mesh' ? x.tone : '')).sort(), 'lớp thân + lớp nền tối').toEqual(['body', 'core']);
     for (const g of colossus)
       if (g.type === 'mesh') {
         expect(g.awayFromCam, 'phía xa camera = sau lưng người chơi').toBe(true);
