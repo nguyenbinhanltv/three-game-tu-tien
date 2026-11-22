@@ -216,6 +216,7 @@ export function runFrame(eng: Game): void {
   eng.suyFx?.update();
   eng.skillFx?.update(dt, pscale);
   if (me) eng.realmAura?.update(dt);
+  if (me) eng.pathAura?.update(dt);
   if (me) updateGrass(eng, dt, rp);
   eng.vfx.update(dt, pscale);
   eng.post?.update(dt);

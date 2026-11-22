@@ -24,6 +24,8 @@ interface Flags {
   vfxWarm: boolean;
   /** `?aura=0` tắt hào quang cảnh giới (so số đo trước/sau, RFX-1). */
   aura: boolean;
+  /** `?pathaura=0` về hào quang cảnh giới mặc định cho Đao tu/Cổ tu/Cấm chế sư (so ảnh trước/sau lớp hào quang riêng của hướng). */
+  pathAura: boolean;
   /** `?mood=dawn|day|dusk|night` đổi thời điểm trong ngày (không lưu). */
   mood: 'dawn' | 'day' | 'dusk' | 'night' | null;
   /** `?fxq=low|medium|high` ép chất lượng hiệu ứng (chuỗi thô, nơi dùng kiểm lại). */
@@ -99,6 +101,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   batch: { scope: 'diag', doc: '=0: tắt gộp draw call VFX' },
   vfxwarm: { scope: 'diag', doc: '=0: tắt biên dịch trước VFX' },
   aura: { scope: 'diag', doc: '=0: tắt hào quang cảnh giới trên nhân vật' },
+  pathaura: { scope: 'diag', doc: '=0: Đao tu/Cổ tu/Cấm chế sư dùng hào quang cảnh giới mặc định thay lớp hào quang riêng của hướng' },
   mood: { scope: 'diag', doc: 'dawn|day|dusk|night' },
   fxq: { scope: 'diag', doc: 'low|medium|high' },
   chr: { scope: 'user', doc: '=v1 quay về nhân vật cũ (dự phòng một bản sau N-7, model gốc không áo mô-đun); mặc định v3' },
@@ -167,6 +170,7 @@ export function readFlags(search: string): Flags {
     batching: !off(q.get('batch')),
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
+    pathAura: !off(q.get('pathaura')),
     mood: mood === 'dawn' || mood === 'day' || mood === 'dusk' || mood === 'night' ? mood : null,
     fxq: q.get('fxq'),
     chr: chr === 'v1' || chr === 'v3' ? chr : null,
