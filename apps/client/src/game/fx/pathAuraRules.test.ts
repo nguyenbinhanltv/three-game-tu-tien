@@ -128,8 +128,34 @@ describe('vệt đao theo nhịp (không khối cố định)', () => {
     expect(slashPhase(SLASH_ACTIVE + 0.1, 0, 2)).toBe(-1);
   });
   it('vệt quét một cung hẹp (< 1,3 rad) và mỗi chu kỳ xuất phát từ hướng khác', () => {
-    const a0 = slashAngle(0, 0, 0);
-    expect(slashAngle(0, 0, 1) - a0).toBeLessThan(1.3);
-    expect(slashAngle(0, SLASH_PERIOD, 0)).not.toBeCloseTo(a0, 3);
+    const a0 = slashAngle(0, 2, 0, 0);
+    expect(slashAngle(0, 2, 0, 1) - a0).toBeLessThan(1.3);
+    expect(slashAngle(0, 2, SLASH_PERIOD, 0)).not.toBeCloseTo(a0, 3);
+  });
+});
+
+describe('vệt đao không dịch chỗ giữa đường quét', () => {
+  it('n = 2 và 3, mọi vệt: trong mỗi cửa sổ hiện, góc tăng đơn điệu và bước nhảy giữa hai khung < 0,2 rad', () => {
+    for (const n of [2, 3]) {
+      for (let i = 0; i < n; i++) {
+        let prev: number | null = null;
+        let prevCycle = -1;
+        for (let t = 0; t < 60; t += 0.01) {
+          const ph = slashPhase(t, i, n);
+          if (ph < 0) {
+            prev = null;
+            continue;
+          }
+          const a = slashAngle(i, n, t, ph);
+          if (prev !== null) {
+            expect(a - prev, `n=${n} i=${i} t=${t.toFixed(2)}`).toBeGreaterThanOrEqual(0);
+            expect(a - prev, `n=${n} i=${i} t=${t.toFixed(2)}`).toBeLessThan(0.2);
+          }
+          prev = a;
+          prevCycle = Math.floor(t);
+        }
+        expect(prevCycle).toBeGreaterThan(0);
+      }
+    }
   });
 });

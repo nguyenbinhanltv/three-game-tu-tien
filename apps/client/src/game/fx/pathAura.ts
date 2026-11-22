@@ -274,7 +274,7 @@ export class PathAuraFx {
             m.visible = false;
             continue;
           }
-          const ang = slashAngle(i, c.t, ph);
+          const ang = slashAngle(i, slashes.length, c.t, ph);
           m.position.set(c.p.x + Math.cos(ang) * 0.85, c.p.y + 0.8 + (0.3 * ((i * 5) % 3)) / 2, c.p.z + Math.sin(ang) * 0.85);
           _q.setFromAxisAngle(AX_Y, Math.PI / 2 - ang);
           _q2.setFromAxisAngle(AX_X, -Math.PI / 2);

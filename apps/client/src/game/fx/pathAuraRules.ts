@@ -90,8 +90,8 @@ export function slashPhase(t: number, i: number, n: number): number {
   return local < SLASH_ACTIVE ? local / SLASH_ACTIVE : -1;
 }
 /** Góc (rad) vệt quét tại tiến độ `ph`: cung hẹp ~1,1 rad, mỗi lần quét xuất phát từ một hướng khác (theo số chu kỳ đã qua). */
-export function slashAngle(i: number, t: number, ph: number): number {
-  const cycle = Math.floor((t + i * 0.7) / SLASH_PERIOD);
+export function slashAngle(i: number, n: number, t: number, ph: number): number {
+  const cycle = Math.floor((t + (i / Math.max(1, n)) * SLASH_PERIOD) / SLASH_PERIOD);
   const start = ((cycle * 2.399 + i * 1.7) % (Math.PI * 2)) - 0.55;
   return start + ph * 1.1;
 }
