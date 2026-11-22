@@ -2,14 +2,14 @@
 //   pnpm shots kieu --out <thư mục> [--bridge 1..9] [--sizes 1920x1080,1280x720]
 import { flag, opt, list } from '../lib/env';
 import { sleep } from '../lib/devserver';
-import { enterLevel, gm, tp, waitLevel } from '../lib/game';
+import { enterLevel, gm, skipCutscene, tp, waitLevel } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap } from '../lib/shot';
 
 export default {
   name: 'kieu',
   desc: 'TN-7: vào phòng cầu qua Dẫn Kiều Nhân bằng vé thật, chụp tab Cửu Kiều, lúc vào và lúc đợt đầu xuất hiện',
-  usage: '[--bridge 1..9] [--iso 1] [--boss 1] [--sizes 1920x1080,1280x720]',
+  usage: '[--bridge 1..9] [--iso 1] [--boss 1] [--halo 1] [--sizes 1920x1080,1280x720]',
   async run(r) {
     const n = Number(opt('--bridge', '1'));
     for (const size of list('--sizes', '1920x1080,1280x720')) {
@@ -36,6 +36,13 @@ export default {
       await page.evaluate((m) => window.__game!.send('kieu', { n: m }), n);
       await waitLevel(page, `kieu_${n}`, 3000);
       await snap(page, r.out, `kieu${n}-${viewport[1]}p-vao.png`, { wait: 800 });
+      if (n === 9 && flag('--halo')) {
+        // Cầu 9 (Đạp Thiên Kiều) là phòng độ kiếp: bỏ qua cảnh điện ảnh rồi chụp hào quang dưới chân (trước khi thiên lôi giáng).
+        await skipCutscene(page, 30);
+        await snap(page, r.out, `kieu9-${viewport[1]}p-halo.png`, { wait: 300 });
+        await snap(page, r.out, `kieu9-${viewport[1]}p-halo-30ms.png`, { wait: 30 });
+        await snap(page, r.out, `kieu9-${viewport[1]}p-halo2.png`, { wait: 1500 });
+      }
       await sleep(9000); // đợt đầu (delay 6–8 s)
       await snap(page, r.out, `kieu${n}-${viewport[1]}p-dot1.png`, { wait: 400 });
       if (flag('--boss')) {
