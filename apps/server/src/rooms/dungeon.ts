@@ -1,6 +1,6 @@
 // Room bí cảnh (R-7, tách từ rooms.ts).
 import { ServerError } from 'colyseus';
-import { MS_DEAD, PF_DEAD, type DungeonDef, type WaveDef, dungeonRoomName, at } from '@dtl/shared';
+import { MS_DEAD, PF_DEAD, type DungeonDef, type WaveDef, dungeonRoomName, at, kieuEntryDeny, kieuOfLevel } from '@dtl/shared';
 import { LEVELS, MONSTER, monsterName, t } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import { Character } from '../game/character';
@@ -8,6 +8,7 @@ import { DUNGEON_QUEST_TARGET } from '../game/dungeonquest';
 import { MirrorPuzzle } from '../game/mirrorpuzzle';
 import { SealSystem } from '../game/seal';
 import { KimDaSystem } from '../game/kimda';
+import { log } from '../log';
 import { RiftVeins, SteleHold } from '../game/xichtan';
 import type { MonEnt, PlayerEnt, SimOptions } from '../game/entities';
 import { tickets } from '../transfer';
@@ -15,17 +16,17 @@ import { GameRoom, today, type JoinAuth } from './base';
 
 export class DungeonRoom extends GameRoom {
   static levelId: string = 'kiem_trung';
-  private wave = 0;
+  protected wave = 0;
   private nextWaveAt = 0;
   private clearedAt = 0;
   /** Số lần hồi sinh đã dùng của từng nhân vật (giới hạn `DungeonDef.maxRevives`). */
   private revives = new Map<number, number>();
 
-  private get def(): DungeonDef {
+  protected get def(): DungeonDef {
     return at(LEVELS, this.levelId).dungeon!;
   }
 
-  private get dname(): string {
+  protected get dname(): string {
     return t('dungeon.' + this.levelId + '.name');
   }
 
@@ -52,6 +53,17 @@ export class DungeonRoom extends GameRoom {
       const key = (options as { dgKey?: unknown } | null)?.dgKey;
       const t = tickets.peek(auth.charId, level);
       if (!t?.dg || typeof key !== 'string' || key !== t.dg) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
+    }
+    // Phòng cầu Cửu Kiều (TN-7): kiểm lại điều kiện vào ngay lúc vào room (cấp, đúng cầu kế tiếp hoặc luyện lại), không chỉ lúc cấp vé:
+    // chặn dùng vé khi điều kiện đã đổi (vé dư của người khác không qua được vì khóa `dgKey` ở trên).
+    const kn = kieuOfLevel(level);
+    if (kn !== null) {
+      const c = Character.load(auth.charId);
+      const deny = kieuEntryDeny(c.level, c.meta.kieu, kn);
+      if (deny) {
+        log.warn(`[kieu] ${c.name} vào cầu ${kn} bị từ chối ở onAuth (${deny})`);
+        throw new ServerError(ERR_NO_TICKET, 'no_ticket');
+      }
     }
     if (!tickets.take(auth.charId, level)) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
     return { ...auth, ticket: true };
@@ -80,7 +92,7 @@ export class DungeonRoom extends GameRoom {
   }
 
   /** Về bản đồ thế giới `returnLevel` tại `returnSpawn`, bằng vé (cùng đường với mọi lần chuyển bản đồ). */
-  private leave(p: PlayerEnt): void {
+  protected leave(p: PlayerEnt): void {
     const d = this.def;
     tickets.issue(p.char.id, d.returnLevel, d.returnSpawn);
     this.sendTransfer(p, d.returnLevel);
@@ -121,6 +133,10 @@ export class DungeonRoom extends GameRoom {
    * Thưởng hoàn thành: người còn trong lượt thưởng hôm nay (chưa `noLoot` khi vào). Khóa idem theo level, nhân vật và ngày
    * nên dù director chạy lại hay người chơi vào lại cùng ngày cũng không phát hai lần.
    */
+  protected onCleared(): void {
+    this.payReward();
+  }
+
   private payReward(): void {
     const r = this.def.reward;
     if (!r) return;
@@ -158,7 +174,7 @@ export class DungeonRoom extends GameRoom {
     if (this.wave > waves.length) {
       this.clearedAt = now;
       this.sim.sysAll('sys.dungeon_clear', { name: this.dname }, 'good');
-      this.payReward();
+      this.onCleared();
       return;
     }
     if (this.wave === (this.def.lockAt ?? 2)) this.lock();
@@ -318,7 +334,7 @@ export class DungeonRoom extends GameRoom {
     this.puzzle.start();
   }
 
-  private spawnWave(w: WaveDef): void {
+  protected spawnWave(w: WaveDef): void {
     const c = this.def.center;
     if (w.puzzle) {
       this.sim.sysAll('sys.dungeon_wave', { n: this.wave, boss: t('dungeon.' + this.levelId + '.wave.' + this.wave) }, 'info');

@@ -20,5 +20,5 @@
   { "id": "npc_thach_nghien", "x": 962, "z": 548, "yaw": 3.1416, "color": "#4a6a8c", "level": "van_dinh", "daoChoose": true },
   { "id": "npc_tuan_dao_nhan", "x": 984, "z": 560, "yaw": 3.1416, "color": "#6f7f6a", "level": "van_dinh" },
   { "id": "npc_luong_tu_gioi_dong", "x": 1232, "z": 640, "yaw": 3.1416, "color": "#b8893c", "level": "van_dinh" },
-  { "id": "npc_dan_kieu_nhan", "x": 1024, "z": 1488, "yaw": 3.1416, "color": "#e8eef0", "level": "cuu_kieu" }
+  { "id": "npc_dan_kieu_nhan", "x": 1024, "z": 1488, "yaw": 3.1416, "color": "#e8eef0", "level": "cuu_kieu", "kieuGuide": true }
 ]
