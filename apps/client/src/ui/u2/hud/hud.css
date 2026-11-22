@@ -947,6 +947,10 @@
   --rc: color-mix(in srgb, var(--u-h-soul-hi) 55%, var(--u-gold-hi));
   --rc-lo: var(--u-h-soul-lo);
 }
+.res-bar[data-res='cam_luc'] {
+  --rc: color-mix(in srgb, var(--u-gold-hi) 60%, var(--u-h-cam-hi));
+  --rc-lo: var(--u-h-cam-lo);
+}
 .res-bar[data-res='hon_luc'] {
   --rc: var(--u-h-soul-hi);
   --rc-lo: var(--u-h-soul-lo);

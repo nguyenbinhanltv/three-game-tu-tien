@@ -242,6 +242,8 @@
   --u-h-blade-lo: #9e2b22;
   --u-h-soul-hi: #c9d4e0;
   --u-h-soul-lo: #6e6a8c;
+  --u-h-cam-hi: #8a7af0;
+  --u-h-cam-lo: #3a2c86;
   --u-h-glow-gold: 0 0 10px rgba(201, 164, 92, 0.28);
   --u-h-font-title: var(--font-display, 'DTL Display'), var(--serif, Georgia, serif);
   --u-h-font-body: var(--sans, 'Segoe UI', sans-serif);

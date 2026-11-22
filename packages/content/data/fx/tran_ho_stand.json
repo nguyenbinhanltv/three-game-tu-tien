@@ -1,0 +1,71 @@
+{
+ "skill": "tran_ho_stand",
+ "palette": "cam_che_kinh",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.0,
+   "r": 1.0,
+   "dur": 1.9,
+   "at": "area",
+   "grow": 0.05,
+   "tone": "core",
+   "alpha": 0.85,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 1.0,
+   "dur": 1.9,
+   "at": "area",
+   "grow": 0.05,
+   "tone": "accent",
+   "alpha": 0.95,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 1.9,
+   "at": "area",
+   "offset": [
+    0,
+    0.1,
+    0
+   ],
+   "scale": 0.98,
+   "scaleTo": 1.02,
+   "fit": "area",
+   "alpha": 0.8,
+   "sweep": 0.5,
+   "erodeFrom": 0.95,
+   "shadow": false,
+   "tone": "accent",
+   "tier": 0,
+   "seed": 31
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 22,
+   "speed": 1.0,
+   "spread": 1,
+   "life": 1.8,
+   "size": 0.08,
+   "at": "area",
+   "offset": [
+    0,
+    0.1,
+    0
+   ],
+   "tone": "rim",
+   "grav": 1.0,
+   "tier": 1
+  }
+ ]
+}
