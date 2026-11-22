@@ -100,3 +100,53 @@ export function isoLeadTarget(dx: number, dz: number): { x: number; z: number } 
   const m = Math.min(9, d * 0.5);
   return { x: (dx / d) * m, z: (dz / d) * m };
 }
+
+/**
+ * Kẹp độ lệch camera (dẫn trước) để nhân vật luôn nằm trong vùng an toàn giữa màn hình, tránh HUD trái dưới (chat) và phải dưới (thanh chiêu):
+ * ngang tối đa ±`ISO_SAFE_X` m, và người không bị đẩy xuống thấp hơn `ISO_SAFE_DOWN` m (trên mặt đất) so với tâm khung.
+ * `lx, lz`: độ lệch điểm nhìn so với người (m); `yaw`: hướng camera. Trả độ lệch đã kẹp.
+ */
+export const ISO_SAFE_X = 4.5;
+export const ISO_SAFE_DOWN = 2.2;
+export const ISO_SAFE_UP = 4.5;
+export function clampLeadSafe(lx: number, lz: number, yaw: number): { x: number; z: number } {
+  const s = Math.sin(yaw);
+  const c = Math.cos(yaw);
+  // trục màn hình trên mặt đất: phải = (cos, −sin), xuống (về phía camera) = (sin, cos)
+  let sx = lx * c - lz * s;
+  let sy = lx * s + lz * c;
+  sx = Math.max(-ISO_SAFE_X, Math.min(ISO_SAFE_X, sx));
+  // điểm nhìn dịch ra xa camera (sy < 0) thì người tụt xuống dưới tâm khung
+  sy = Math.max(-ISO_SAFE_DOWN, Math.min(ISO_SAFE_UP, sy));
+  return { x: sx * c + sy * s, z: -sx * s + sy * c };
+}
+
+/** Vùng an toàn của MỤC TIÊU trên màn hình (m trên mặt đất quanh tâm khung): ngang, và không cao hơn `ISO_TGT_UP` (minimap phải trên), không thấp hơn `ISO_TGT_DOWN`. */
+export const ISO_TGT_X = 6.5;
+export const ISO_TGT_UP = 3.3;
+export const ISO_TGT_DOWN = 4;
+
+function fitInterval(want: number, lo: number, hi: number, pLo: number, pHi: number): number {
+  // giao của vùng an toàn người chơi [pLo, pHi] và vùng an toàn mục tiêu [lo, hi]; rỗng thì ưu tiên người chơi
+  const a = Math.max(pLo, lo);
+  const b = Math.min(pHi, hi);
+  return a <= b ? Math.max(a, Math.min(b, want)) : Math.max(pLo, Math.min(pHi, want));
+}
+
+/**
+ * Kẹp độ lệch camera để người chơi VÀ mục tiêu (độ lệch thế giới `tx, tz` so với người) cùng nằm trong vùng an toàn; không thể cả hai thì ưu tiên người chơi.
+ * Không có mục tiêu thì như `clampLeadSafe`.
+ */
+export function clampLeadFrame(lx: number, lz: number, yaw: number, tx?: number, tz?: number): { x: number; z: number } {
+  if (tx === undefined || tz === undefined) return clampLeadSafe(lx, lz, yaw);
+  const s = Math.sin(yaw);
+  const c = Math.cos(yaw);
+  const wantR = lx * c - lz * s;
+  const wantD = lx * s + lz * c;
+  const tR = tx * c - tz * s;
+  const tD = tx * s + tz * c;
+  // L = vị trí điểm nhìn so với người; người ở (−Lr, −Ld), mục tiêu ở (tR − Lr, tD − Ld) so với tâm khung (D dương = xuống màn hình)
+  const lr = fitInterval(wantR, tR - ISO_TGT_X, tR + ISO_TGT_X, -ISO_SAFE_X, ISO_SAFE_X);
+  const ld = fitInterval(wantD, tD - ISO_TGT_DOWN, tD + ISO_TGT_UP, -ISO_SAFE_DOWN, ISO_SAFE_UP);
+  return { x: lr * c + ld * s, z: -lr * s + ld * c };
+}

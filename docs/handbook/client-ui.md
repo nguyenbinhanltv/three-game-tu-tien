@@ -61,3 +61,10 @@ Chỉ client, sau cờ URL; mặc định không đổi gì. Mã: `game/camera/i
 - Bóng đổ: `Environment.setIso` thu bản đồ bóng mặt trời còn ±26 m (Cực cao ±36 m) quanh người, bóng nét hơn ~2,7 lần ở cùng độ phân giải bản đồ.
 - Vật che: ngoài đường nhìn, mái/tường trong vùng 4 m quanh người ở phía camera cũng mờ (`zoneHit`); cây thẻ (`CardForest`) giờ cũng mờ như cây prop; khi ngự kiếm cây/prop ở RÌA màn hình mờ theo vị trí màn hình (`uEdge`), vì tán cây là cảnh nền thấp hơn người nên đường nhìn không chạm chúng.
 - Chưa làm ở P2a: vật liệu mặt đất iso (P2b), AO riêng (dùng GTAO có sẵn của preset Vừa/Cao), LOD prop cố định theo khoảng cách camera.
+
+### Thiên Nhãn P2b: chi tiết mặt đất iso (`?cam=iso`)
+
+- `render/materials/ground.ts` (khối `FLAGS.isoCam`): thêm lớp chi tiết tầm gần chỉ khi bật iso (shader dựng theo cờ lúc tải trang, mặc định không đổi): hạt vi mô, mảng rêu, vết nứt (đá lát và đất khô), lá rơi (rừng), sỏi (đường mòn, đất khô). Tính theo ô băm/nhiễu thủ tục, không thêm draw call hay texture; tắt dần từ 22 m ra 70 m; chỉ trên đất bằng, không vách/đá/tuyết; preset Thấp bỏ qua.
+- Chưa làm: bộ texture Codex mới cho Lạc Kiếm Tông/Vân Lam (lớp texture hiện có vẫn dùng), decal quad thật, lát đá sân tông môn (mesh GLB `arch_sect`, ngoài shader địa hình).
+
+P2b (vòng 2 sau duyệt): chi tiết mặt đất tăng rõ rệt và dùng chung `render/materials/isoDetail.ts` — địa hình (`isoTerrainDetail`: biến thiên màu macro, mảng đất trồi, rêu, nứt, lá, sỏi) và kiến trúc ngửa lên (`withIsoSurfaceDetail`, gắn qua `archWrap` cho sàn đá tông môn: tông riêng từng viên, ố, rêu ở khe, đá mẻ cạnh, nứt, lá). Camera dẫn bị kẹp (`clampLeadSafe`: ngang ±4,5 m, tụt xuống ≤ 2,2 m; khi có mục tiêu `clampLeadFrame` giữ cả mục tiêu trong vùng an toàn, tránh minimap phải trên, không thể cả hai thì ưu tiên người) để người luôn ở giữa màn hình, tránh khung chat và thanh chiêu. Lá rơi là lá thon xoay ngẫu nhiên, thưa và gom cụm; vết nứt chỉ trên đá lát/đất khô.
