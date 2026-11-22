@@ -9,6 +9,8 @@ interface Cfg {
   sway?: boolean;
   /** Vật liệu tinh thể (gradient màu đỉnh + fresnel): `propCrystal`. */
   crystal?: boolean;
+  /** Cây/tre cao: mờ khi che nhân vật (xem `sight` ở props.ts). */
+  sight?: boolean;
 }
 
 const SMALL: Cfg = { range: 110, lod: [20, 55], decor: true };
@@ -41,8 +43,8 @@ const TC_NAMES: Record<string, Cfg> = {
   lu_nuoc: SMALL,
   // hoang dã
   da_linh_khi: LARGE,
-  tre: { range: 320, lod: [40, 100], shadow: true },
-  cay_co_thu: { range: 480, lod: [55, 130], shadow: true },
+  tre: { range: 320, lod: [40, 100], shadow: true, sight: true },
+  cay_co_thu: { range: 480, lod: [55, 130], shadow: true, sight: true },
   linh_thao: { range: 160, lod: [20, 55], decor: true },
   nam_phat_sang: { range: 160, lod: [20, 55], decor: true },
   mo_co: MEDIUM,
