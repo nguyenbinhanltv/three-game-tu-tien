@@ -833,7 +833,7 @@ export class CombatSystem {
             if (this.healPlayer(o, Math.round(o.char.mhp * f.heal), owner) > 0) acted = true;
           }
         }
-        this.c.fx({ t: `${SKILL.get(f.skill)?.fx ?? 'tran'}_tick`, src: f.sid, x: f.x, z: f.z, r: f.r });
+        this.c.fx({ t: `tran_tick_${f.mode}`, src: f.sid, x: f.x, z: f.z, r: f.r });
         if (acted) this.resDot(owner);
       }
     }
@@ -1233,6 +1233,8 @@ export class CombatSystem {
           mark: formationMarks(fd),
         });
         this.c.fx({ t: skill.fx, src: p.sid, x: spot.x, y: p.move.y, z: spot.z, r: fd.r, d: fd.dur, ...tag });
+        // Hình trận đứng trên đất: loại riêng theo kiểu trận (chiêu tư thế mượn `fx` của chiêu nền nên không dùng `skill.fx` để phân biệt).
+        this.c.fx({ t: `tran_${fd.mode}`, src: p.sid, x: spot.x, y: p.move.y, z: spot.z, r: fd.r, d: fd.dur });
         break;
       }
       case 'summon': {

@@ -26,6 +26,7 @@ import { giantScale, stepGiant } from './giant';
 import { bladeLook } from './loiBlade';
 import { GREATBLADE_WEAPON } from '../character/greatblade';
 import { COHU_WEAPON } from '../character/coGear';
+import { TRAN_KY_WEAPON } from '../character/tranGear';
 import { hoverBob, hoverTarget, stepHover } from './hover';
 import { COTHAN_METHOD, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
@@ -461,6 +462,7 @@ export class EntityManager {
       v.model.setBrawlerGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(BRAWLER_WEAPON) ?? false) : false, s.mt === COTHAN_METHOD);
       v.model.setGreatBlade?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(GREATBLADE_WEAPON) ?? false) : false);
       v.model.setCoGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(COHU_WEAPON) ?? false) : false);
+      v.model.setTranKy?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(TRAN_KY_WEAPON) ?? false) : false);
       const bl = bladeLook(s.mt, look.set ? (SET.get(look.set)?.look.blade ?? '') : '', s.wg ?? 0);
       v.model.setWeaponGlow?.(bl.glow);
       v.model.setWeaponTint?.(bl.tint);

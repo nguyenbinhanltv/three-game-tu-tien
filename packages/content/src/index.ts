@@ -229,6 +229,14 @@ import fx_co_bay_hit from '../data/fx/co_bay_hit.json';
 import fx_co_vuong_hit from '../data/fx/co_vuong_hit.json';
 import fx_co_bay_stand from '../data/fx/co_bay_stand.json';
 import fx_co_vuong_stand from '../data/fx/co_vuong_stand.json';
+import fx_tran_sat_stand from '../data/fx/tran_sat_stand.json';
+import fx_tran_khon_stand from '../data/fx/tran_khon_stand.json';
+import fx_tran_ho_stand from '../data/fx/tran_ho_stand.json';
+import fx_tran_sinhtu_stand from '../data/fx/tran_sinhtu_stand.json';
+import fx_tran_sat_tick from '../data/fx/tran_sat_tick.json';
+import fx_tran_khon_tick from '../data/fx/tran_khon_tick.json';
+import fx_tran_ho_tick from '../data/fx/tran_ho_tick.json';
+import fx_tran_sinhtu_tick from '../data/fx/tran_sinhtu_tick.json';
 import fx_skl_thai_co_quyen from '../data/fx/skl_thai_co_quyen.json';
 import fx_skl_tinh_bao from '../data/fx/skl_tinh_bao.json';
 import fx_skl_huyet_cu_ho from '../data/fx/skl_huyet_cu_ho.json';
@@ -756,6 +764,18 @@ export const HON_FX = new Map(HON_FX_TIMELINES.map((f) => [f.skill, f]));
 // Cổ tu (PR VFX): hiệu ứng tại điểm (nhịp bầy cổ/Cổ Vương cắn, bầy cổ và Cổ Vương đứng quanh người gọi), client phát bằng `FxRunner.startAt` (`game/fx/coFx.ts`).
 export const CO_FX_TIMELINES = [fx_co_bay_hit, fx_co_vuong_hit, fx_co_bay_stand, fx_co_vuong_stand] as unknown as FxTimeline[];
 export const CO_FX = new Map(CO_FX_TIMELINES.map((f) => [f.skill, f]));
+/** TN-8: hình trận đứng và nhịp trận của Cấm chế sư (hiệu ứng tại điểm, `tools/vfx/recipes_tran.py`). */
+export const TRAN_FX_TIMELINES = [
+  fx_tran_sat_stand,
+  fx_tran_khon_stand,
+  fx_tran_ho_stand,
+  fx_tran_sinhtu_stand,
+  fx_tran_sat_tick,
+  fx_tran_khon_tick,
+  fx_tran_ho_tick,
+  fx_tran_sinhtu_tick,
+] as unknown as FxTimeline[];
+export const TRAN_FX = new Map(TRAN_FX_TIMELINES.map((f) => [f.skill, f]));
 /** Timeline của từng kiếp nhỏ (theo cơ chế `hk_*`), gồm cả phần chung vào/qua/trượt: ngân sách draw call kiểm theo nhóm này. */
 export const HK_FX_STAGE: Record<string, string[]> = {
   hk_tuyet: ['hk_enter', 'hk_tuyet_drift', 'suy_ok', 'suy_fail'],

@@ -1,0 +1,93 @@
+{
+ "skill": "tran_khon_stand",
+ "palette": "cam_che_kinh",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.0,
+   "r": 1.0,
+   "dur": 3.6,
+   "at": "area",
+   "grow": 0.05,
+   "tone": "core",
+   "alpha": 0.85,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 1.0,
+   "dur": 3.6,
+   "at": "area",
+   "grow": 0.05,
+   "tone": "body",
+   "alpha": 0.95,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 1.6,
+   "at": "area",
+   "offset": [
+    0,
+    0.08,
+    0
+   ],
+   "scale": 1.0,
+   "scaleTo": 0.25,
+   "fit": "area",
+   "alpha": 0.7,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "shadow": false,
+   "tone": "body",
+   "tier": 0,
+   "seed": 21
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 1.65,
+   "dur": 1.6,
+   "at": "area",
+   "offset": [
+    0,
+    0.08,
+    0
+   ],
+   "scale": 1.0,
+   "scaleTo": 0.25,
+   "fit": "area",
+   "alpha": 0.7,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "shadow": false,
+   "tone": "rim",
+   "tier": 1,
+   "seed": 22
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 14,
+   "speed": 0.9,
+   "spread": 1,
+   "life": 1.6,
+   "size": 0.14,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "tone": "body",
+   "grav": -0.3,
+   "tier": 1
+  }
+ ]
+}

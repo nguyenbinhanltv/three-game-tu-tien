@@ -49,6 +49,7 @@ import cothan from './scenarios/cothan';
 import cothanvfx from './scenarios/cothanvfx';
 import daotu from './scenarios/daotu';
 import cotu from './scenarios/cotu';
+import camche from './scenarios/camche';
 import rigstretch from './scenarios/rigstretch';
 import neck from './scenarios/neck';
 import skinv3 from './scenarios/skinv3';
@@ -120,6 +121,7 @@ const SCENARIOS: Scenario[] = [
   loitu,
   daotu,
   cotu,
+  camche,
   cothan,
   cothanvfx,
   rigstretch,

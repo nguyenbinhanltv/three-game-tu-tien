@@ -14,6 +14,7 @@ import { lodLevel, mixerInterval } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { attachBrawlerGear, gearShown, snapshotBind, type BindSnapshot, type BrawlerGear } from './brawlerGear';
 import { attachCoGear, fluteMesh } from './coGear';
+import { tranKyMesh } from './tranGear';
 import { greatbladeMesh } from './greatblade';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
@@ -807,6 +808,13 @@ export class MannequinCharacter implements CharacterView {
   setGreatBlade(on: boolean): void {
     if (on) this.swapHeld('great', () => greatbladeMesh(this.height));
     else if (this.heldKey === 'great') this.swapHeld('', () => greatbladeMesh(this.height));
+  }
+
+  /** Hướng tu Cấm chế sư: cờ trận thay cây kiếm trong tay/trên lưng; tắt thì trả kiếm gốc. */
+  setTranKy(on: boolean): void {
+    if (this.disposed || this.shadow) return;
+    if (on) this.swapHeld('tranky', () => tranKyMesh(this.height));
+    else if (this.heldKey === 'tranky') this.swapHeld('', () => tranKyMesh(this.height));
   }
 
   /** Hướng tu Cổ tu: sáo cổ thay kiếm + hũ cổ treo hông trái (chỉ vẽ ở LOD0). Tắt thì trả kiếm gốc, ẩn hũ. */
