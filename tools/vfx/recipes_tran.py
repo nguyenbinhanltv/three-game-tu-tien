@@ -3,7 +3,7 @@
 #   python tools/vfx/recipes_tran.py [id ...]      → ghi packages/content/data/fx/<id>.json
 # Màu theo bảng `cam_che_kinh`: core chàm đen, body chàm tím, rim vàng nhạt, accent vàng ấn. Mỗi kiểu một dáng để phân biệt từ xa:
 # sát = vết nứt tỏa + vòng đôi, khốn = sóng co vào, hộ = vòng sáng đầy + hạt bay lên, sinh tử = hai vòng ngược chiều.
-# Hình thấp sát đất (không che nhân vật), đoạn đứng 3,3 s phát nối tiếp (≤ 5 draw), nhịp ≤ 3 draw ≤ 30 hạt, không khựng/rung/chớp.
+# Hình thấp sát đất (không che nhân vật), đoạn đứng 1,7 s phát nối tiếp (≤ 5 draw), nhịp ≤ 3 draw ≤ 30 hạt, không khựng/rung/chớp.
 import json
 import os
 import sys
@@ -25,38 +25,38 @@ def write_point(name, events):
 def base(tone_ring='rim'):
     """Nền chung của mọi trận: triện đậm (lõi) + vành sáng, `mul` = bán kính trận."""
     return [
-        decal('scorch', 0.0, 1.0, 3.6, at='area', grow=0.05, tone='core', alpha=0.85, tier=0),
-        decal('rune', 0.0, 1.0, 3.6, at='area', grow=0.05, tone=tone_ring, alpha=0.95, tier=0),
+        decal('scorch', 0.0, 1.0, 1.9, at='area', grow=0.05, tone='core', alpha=0.85, tier=0),
+        decal('rune', 0.0, 1.0, 1.9, at='area', grow=0.05, tone=tone_ring, alpha=0.95, tier=0),
     ]
 
 
 def sat_stand():
     return base() + [
-        mesh('crack_radial', 0.0, 3.6, at='area', offset=[0, 0.05, 0], scale=1.0, fit='area', alpha=0.8, sweep=0.1, erodeFrom=0.95, shadow=False, tone='accent', tier=1, seed=11),
-        mesh('rune_ring2', 0.0, 3.6, at='area', offset=[0, 0.1, 0], scale=0.98, scaleTo=1.02, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.95, shadow=False, tone='rim', tier=0, seed=12),
+        mesh('crack_radial', 0.0, 1.9, at='area', offset=[0, 0.05, 0], scale=1.0, fit='area', alpha=0.8, sweep=0.1, erodeFrom=0.95, shadow=False, tone='accent', tier=1, seed=11),
+        mesh('rune_ring2', 0.0, 1.9, at='area', offset=[0, 0.1, 0], scale=0.98, scaleTo=1.02, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.95, shadow=False, tone='rim', tier=0, seed=12),
         parts('spark', 0.0, 16, 1.4, 1, 1.2, 0.07, at='area', offset=[0, 0.3, 0], tone='accent', grav=-0.8, tier=1),
     ]
 
 
 def khon_stand():
     return base('body') + [
-        mesh('ripple', 0.0, 1.6, at='area', offset=[0, 0.08, 0], scale=1.0, scaleTo=0.25, fit='area', alpha=0.7, sweep=0.5, erodeFrom=0.4, shadow=False, tone='body', tier=0, seed=21),
-        mesh('ripple', 1.65, 1.6, at='area', offset=[0, 0.08, 0], scale=1.0, scaleTo=0.25, fit='area', alpha=0.7, sweep=0.5, erodeFrom=0.4, shadow=False, tone='rim', tier=1, seed=22),
+        mesh('ripple', 0.0, 1.0, at='area', offset=[0, 0.08, 0], scale=1.0, scaleTo=0.25, fit='area', alpha=0.7, sweep=0.5, erodeFrom=0.4, shadow=False, tone='body', tier=0, seed=21),
+        mesh('ripple', 0.85, 1.0, at='area', offset=[0, 0.08, 0], scale=1.0, scaleTo=0.25, fit='area', alpha=0.7, sweep=0.5, erodeFrom=0.4, shadow=False, tone='rim', tier=1, seed=22),
         parts('dust', 0.0, 14, 0.9, 1, 1.6, 0.14, at='area', offset=[0, 0.2, 0], tone='body', grav=-0.3, tier=1),
     ]
 
 
 def ho_stand():
     return base('accent') + [
-        mesh('rune_ring2', 0.0, 3.6, at='area', offset=[0, 0.1, 0], scale=0.98, scaleTo=1.02, fit='area', alpha=0.8, sweep=0.5, erodeFrom=0.95, shadow=False, tone='accent', tier=0, seed=31),
+        mesh('rune_ring2', 0.0, 1.9, at='area', offset=[0, 0.1, 0], scale=0.98, scaleTo=1.02, fit='area', alpha=0.8, sweep=0.5, erodeFrom=0.95, shadow=False, tone='accent', tier=0, seed=31),
         parts('spark', 0.0, 22, 1.0, 1, 1.8, 0.08, at='area', offset=[0, 0.1, 0], tone='rim', grav=1.0, tier=1),
     ]
 
 
 def sinhtu_stand():
     return base('accent') + [
-        mesh('rune_ring2', 0.0, 3.6, at='area', offset=[0, 0.1, 0], scale=1.0, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.95, shadow=False, tone='rim', tier=0, seed=41),
-        mesh('rune_ring2', 0.0, 3.6, at='area', offset=[0, 0.12, 0], rot=[0, 0, 0], scale=0.6, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.95, shadow=False, tone='accent', tier=1, seed=42),
+        mesh('rune_ring2', 0.0, 1.9, at='area', offset=[0, 0.1, 0], scale=1.0, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.95, shadow=False, tone='rim', tier=0, seed=41),
+        mesh('rune_ring2', 0.0, 1.9, at='area', offset=[0, 0.12, 0], rot=[0, 0, 0], scale=0.6, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.95, shadow=False, tone='accent', tier=1, seed=42),
         parts('spark', 0.0, 18, 1.0, 1, 1.8, 0.08, at='area', offset=[0, 0.1, 0], tone='accent', grav=0.6, tier=1),
     ]
 

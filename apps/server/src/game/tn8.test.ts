@@ -32,7 +32,7 @@ const CCK = 'cam_che_kinh';
 let nextAcc = 18000;
 
 function setup(level = 28) {
-  const sent: { t?: string }[] = [];
+  const sent: { t?: string; fid?: number; src?: string }[] = [];
   const sim: Sim = new GameSim(new WorldState(), { broadcast: (_type: unknown, msg: { t?: string }) => sent.push(msg) } as never, {
     levelId: 'van_lam',
     roomName: 'test',
@@ -336,7 +336,7 @@ describe('thực thể trận', () => {
     expect(m.marks.some((x) => x.id === 'cam_an')).toBe(true);
   });
   it('mỗi người tối đa 3 trận: đặt trận thứ tư thì trận cũ nhất tan; người khác không bị ảnh hưởng', () => {
-    const { join, fresh, use, priv } = setup();
+    const { join, fresh, use, priv, sent } = setup();
     const p = join();
     const q = join();
     fresh(q);
@@ -351,24 +351,46 @@ describe('thực thể trận', () => {
     expect(mine).toHaveLength(3);
     expect(mine).not.toContain(ids[0]);
     expect(mine).toEqual(ids.slice(1));
+    // Mỗi tin đặt trận mang id; trận cũ nhất bị đẩy ra thì server báo `tran_end` đúng id đó (và chỉ lần đó).
+    const placed = sent.filter((m) => /^tran_(sat|khon|ho|sinhtu)$/.test(m.t ?? '')) as { fid?: number; src?: string }[];
+    expect(placed.filter((m) => m.src === p.sid).map((m) => m.fid)).toEqual(ids);
+    const ended = sent.filter((m) => m.t === 'tran_end') as { fid?: number }[];
+    expect(ended.map((m) => m.fid)).toEqual([ids[0]]);
     expect(priv.combat.formations.filter((x) => x.sid === q.sid)).toHaveLength(1);
   });
   it('trận hết hạn thì tan; chủ ngã thì mọi trận của họ tan', () => {
-    const { join, fresh, use, pass, priv, sim } = setup();
+    const { join, fresh, use, pass, priv, sim, sent } = setup();
     const p = join();
     fresh(p);
     use(p, 'skl_tue_nguyet_cam');
     expect(priv.combat.formations).toHaveLength(1);
     pass(11);
     expect(priv.combat.formations).toHaveLength(0);
+    expect(sent.some((m) => m.t === 'tran_end')).toBe(false); // hết giờ tự nhiên: không báo sớm
     fresh(p);
     use(p, 'skl_tue_nguyet_cam');
     fresh(p);
     use(p, 'skl_sinh_tu_cam');
     expect(priv.combat.formations).toHaveLength(2);
+    const open = priv.combat.formations.map((f) => f.id).sort();
     sim.damagePlayer(p, p.char.mhp * 10, 'mon_x');
     pass(1);
     expect(priv.combat.formations).toHaveLength(0);
+    expect(
+      (sent.filter((m) => m.t === 'tran_end') as { fid: number }[]).map((m) => m.fid).sort(),
+      'chủ ngã: mỗi trận báo tran_end đúng id',
+    ).toEqual(open);
+  });
+  it('chủ rời room thì trận tan và báo tran_end', () => {
+    const { join, fresh, use, pass, priv, sim, sent } = setup();
+    const p = join();
+    fresh(p);
+    use(p, 'skl_tue_nguyet_cam');
+    const id = priv.combat.formations[0]!.id;
+    sim.removePlayer(p.sid);
+    pass(1);
+    expect(priv.combat.formations).toHaveLength(0);
+    expect((sent.filter((m) => m.t === 'tran_end') as { fid: number }[]).map((m) => m.fid)).toEqual([id]);
   });
   it('Mẫu Đơn Thập Bát Cấm: cần vòng sạc đầy, xả hết Cấm lực làm trận mạnh hơn', () => {
     const { join, fresh, use, res, setRes, priv } = setup();

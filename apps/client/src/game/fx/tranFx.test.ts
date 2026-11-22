@@ -70,9 +70,9 @@ describe('playTranFx', () => {
     expect(timers).toHaveLength(0);
   });
 
-  it('trận đứng: phát nối tiếp từng đoạn tới hết `d`, đặt trận mới đúng chỗ đó thì đoạn cũ dừng', () => {
+  it('trận đứng: phát nối tiếp từng đoạn tới hết `d`', () => {
     const { e, started, timers } = env();
-    playTranFx(e, msg('tran_sat', { d: 8 }));
+    playTranFx(e, msg('tran_sat', { d: 5, fid: 1 }));
     expect(started).toHaveLength(1);
     let n = 0;
     while (timers.length && n++ < 10) {
@@ -80,22 +80,34 @@ describe('playTranFx', () => {
       expect(t.sec).toBe(TRAN_STAND_SEG);
       t.done();
     }
-    expect(started.length).toBe(3); // 8 s → 3 đoạn 3,3 s
-    const r = env();
-    playTranFx(r.e, msg('tran_ho', { d: 20 }));
-    playTranFx(r.e, msg('tran_ho', { d: 20 }));
-    expect(r.started).toHaveLength(2);
-    r.timers.shift()!.done(); // đoạn của lượt cũ tự dừng
-    expect(r.started).toHaveLength(2);
-    r.timers.shift()!.done();
-    expect(r.started).toHaveLength(3);
+    expect(started.length).toBe(Math.ceil((5 - 0.3) / TRAN_STAND_SEG));
+  });
+
+  it('server báo tran_end (trận bị đẩy ra, chủ ngã/rời) thì dừng nối đoạn; trận khác không ảnh hưởng', () => {
+    const { e, started, timers } = env();
+    playTranFx(e, msg('tran_ho', { d: 20, fid: 7 }));
+    playTranFx(e, msg('tran_sat', { d: 20, fid: 8, x: 30 }));
+    expect(started).toHaveLength(2);
+    expect(playTranFx(e, { t: 'tran_end', src: 'me', fid: 7 })).toBe(true);
+    const [a, b] = timers.splice(0, 2);
+    a!.done(); // trận 7: dừng
+    expect(started).toHaveLength(2);
+    b!.done(); // trận 8: vẫn nối
+    expect(started).toHaveLength(3);
+    expect(started[2]!.tl.skill).toBe('tran_sat_stand');
+  });
+
+  it('trận đứng thiếu id thì không vẽ (client chỉ vẽ thứ server còn giữ và báo được lúc tan)', () => {
+    const { e, started } = env();
+    playTranFx(e, msg('tran_ho', { d: 10 }));
+    expect(started).toHaveLength(0);
   });
 
   it('bỏ tin lỗi (thiếu x/z/r), trận của người khác ở xa, nhịp của người khác khi sân đông', () => {
     const { e, started } = env();
-    expect(playTranFx(e, { t: 'tran_sat', src: 'me', d: 5 })).toBe(true);
-    expect(playTranFx(e, msg('tran_sat', { r: 0 }))).toBe(true);
-    expect(playTranFx(e, msg('tran_sat', { src: 'other', x: TRAN_FX_DIST + 100 }))).toBe(true);
+    expect(playTranFx(e, { t: 'tran_sat', src: 'me', d: 5, fid: 1 })).toBe(true);
+    expect(playTranFx(e, msg('tran_sat', { r: 0, fid: 1 }))).toBe(true);
+    expect(playTranFx(e, msg('tran_sat', { src: 'other', x: TRAN_FX_DIST + 100, fid: 1 }))).toBe(true);
     expect(started).toHaveLength(0);
     const crowded = env({ live: () => 999 });
     playTranFx(crowded.e, msg('tran_tick_sat', { src: 'other' }));

@@ -11,7 +11,8 @@ export const TRAN_PALETTE = 'cam_che_kinh';
 export const TRAN_FX_DIST = 50;
 /** Số lưới VFX đang sống từ mức này thì bỏ nhịp trận của người khác (sân đông). */
 export const TRAN_FX_LIVE_MAX = 90;
-export const TRAN_STAND_SEG = 3.3;
+/** Đoạn đứng ngắn để trận bị server bỏ sớm thì hình tan trong chừng này giây (mesh đã phát không hủy giữa chừng được). */
+export const TRAN_STAND_SEG = 1.7;
 export const TRAN_STAND_MAX = 20;
 
 /** Phân loại S.FX: trả { mode, tick } nếu là tin trận, không thì null. */
@@ -19,6 +20,9 @@ export function tranKind(t: string): { mode: string; tick: boolean } | null {
   const m = /^tran_(tick_)?(sat|khon|ho|sinhtu)$/.exec(t);
   return m ? { mode: m[2]!, tick: !!m[1] } : null;
 }
+
+/** Tin báo trận tan sớm (`tran_end`). */
+export const isTranEnd = (t: string): boolean => t === 'tran_end';
 
 export interface TranEnv {
   startAt(
@@ -33,11 +37,15 @@ export interface TranEnv {
   after(sec: number, done: () => void): void;
 }
 
-/** Số lần đặt mới nhất theo vị trí chủ + kiểu: đoạn cũ thấy số khác thì tự dừng (trận bị thay thì hình cũ vẫn hết đoạn đang chạy). */
-const gen = new Map<string, number>();
+/** Trận đứng đang được vẽ, khóa theo id trận của server: bị xóa khỏi bảng (`tran_end`) thì vòng nối đoạn tự dừng. */
+const live = new Set<number>();
 
 /** Xử lý một tin S.FX trận. Trả true nếu tin thuộc nhóm trận (kể cả khi bị bỏ vì ngân sách). */
 export function playTranFx(env: TranEnv, m: FxMsg): boolean {
+  if (isTranEnd(m.t)) {
+    if (m.fid !== undefined) live.delete(m.fid);
+    return true;
+  }
   const k = tranKind(m.t);
   if (!k) return false;
   const x = m.x ?? NaN;
@@ -58,13 +66,14 @@ export function playTranFx(env: TranEnv, m: FxMsg): boolean {
     env.startAt(tl, { actor, palette: TRAN_PALETTE, area, mul: r, mine });
     return true;
   }
-  const key = `${m.src ?? ''}:${x.toFixed(2)}:${z.toFixed(2)}`;
-  const g = (gen.get(key) ?? 0) + 1;
-  gen.set(key, g);
+  // Thiếu id (tin lạ) thì không dựng trận đứng: client chỉ vẽ thứ server còn giữ và báo được lúc tan.
+  const fid = m.fid;
+  if (fid === undefined) return true;
+  live.add(fid);
   let left = Math.min(TRAN_STAND_MAX, m.d ?? 10);
   const step = (): void => {
-    if (gen.get(key) !== g || left <= 0.3) {
-      if (gen.get(key) === g) gen.delete(key);
+    if (!live.has(fid) || left <= 0.3) {
+      live.delete(fid);
       return;
     }
     env.startAt(tl, { actor, palette: TRAN_PALETTE, area, mul: r, mine });

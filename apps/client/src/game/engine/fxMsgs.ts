@@ -27,7 +27,7 @@ import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
 import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from '../fx/methodFx';
-import { playTranFx, tranKind } from '../fx/tranFx';
+import { isTranEnd, playTranFx, tranKind } from '../fx/tranFx';
 import { CO_FX_KINDS, CO_STAND_KINDS, playCoFx, playCoStand } from '../fx/coFx';
 import { awayFromCamera, HON_FX_KINDS, playHonBinh, playHonFx } from '../fx/honFx';
 import { get, pushLog, pushToast, set } from '../../ui/store';
@@ -174,7 +174,7 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     return;
   }
   // TN-8: hình trận (Cấm chế sư) và nhịp trận, vẽ đúng bán kính server báo.
-  if (tranKind(m.t)) {
+  if (tranKind(m.t) || isTranEnd(m.t)) {
     const runner = eng.skillFx?.runner;
     if (runner && !held)
       playTranFx(

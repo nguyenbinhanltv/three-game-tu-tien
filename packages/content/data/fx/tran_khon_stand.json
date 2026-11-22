@@ -7,7 +7,7 @@
    "tex": "scorch",
    "t": 0.0,
    "r": 1.0,
-   "dur": 3.6,
+   "dur": 1.9,
    "at": "area",
    "grow": 0.05,
    "tone": "core",
@@ -19,7 +19,7 @@
    "tex": "rune",
    "t": 0.0,
    "r": 1.0,
-   "dur": 3.6,
+   "dur": 1.9,
    "at": "area",
    "grow": 0.05,
    "tone": "body",
@@ -30,7 +30,7 @@
    "type": "mesh",
    "shape": "ripple",
    "t": 0.0,
-   "dur": 1.6,
+   "dur": 1.0,
    "at": "area",
    "offset": [
     0,
@@ -51,8 +51,8 @@
   {
    "type": "mesh",
    "shape": "ripple",
-   "t": 1.65,
-   "dur": 1.6,
+   "t": 0.85,
+   "dur": 1.0,
    "at": "area",
    "offset": [
     0,
