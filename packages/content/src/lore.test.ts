@@ -97,6 +97,7 @@ describe('TN-0: bộ thuật ngữ mượn trong glossary', () => {
     expect(Object.values(g.origins).flatMap((o) => Object.keys(o))).toHaveLength(14);
     expect(Object.values(g.huyenKiep).flatMap((o) => Object.keys(o))).toHaveLength(9);
     expect(g.cuuKieu).toHaveLength(9);
+    expect(Object.keys(g.cuuKieuTen)).toHaveLength(9);
     expect(g.origins.real?.loi).toBe('Lôi');
   });
 
@@ -107,6 +108,9 @@ describe('TN-0: bộ thuật ngữ mượn trong glossary', () => {
     const b = clone();
     b.cuuKieu[8] = b.cuuKieu[0]!;
     expect(checkLoreTerms(b).join()).toContain('glossary.cuuKieu: trùng tên');
+    const e = clone();
+    e.cuuKieuTen.than = e.cuuKieuTen.thach!;
+    expect(checkLoreTerms(e).join()).toContain('glossary.cuuKieuTen: trùng tên');
     const c = clone();
     c.origins.real = { loi: 'Lôi', kim: 'Kim', moc: 'Mộc', thuy: 'Thủy', hoa: 'Hỏa', tho: 'Thổ' };
     expect(checkLoreTerms(c).join()).toContain('như glossary.elements');
