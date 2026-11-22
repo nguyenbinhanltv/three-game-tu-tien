@@ -180,9 +180,10 @@ describe('Đao tu mốc 24/28', () => {
       expect(marks(m, 'dao_ngan')).toBe(0);
       return hp - m.s.hp;
     };
+    // +10%/tầng chỉ cộng 30% so với dao động bạo kích: lấy 150 mẫu để sai số nhỏ hơn hẳn ngưỡng 1,15 (30 mẫu từng đỏ trên CI).
     let low = 0;
     let high = 0;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 150; i++) {
       low += cast(0);
       high += cast(3);
     }
