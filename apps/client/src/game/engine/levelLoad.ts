@@ -59,6 +59,7 @@ import { assets } from '../core/assets';
 import { Terrain } from '../world/terrain';
 import { loadGroundTextures, resolveGroundSet } from '../../base/groundTextures';
 import { FLAGS } from '../../base/flags';
+import { kieuIndex, startKieuRoomFx } from '../fx/kieuRoomFx';
 import { LANTERN_LIGHT, QUALITY, isWebGPU, isWorldRoom } from './common';
 import type { Game } from '../engine';
 import { logger } from '../../base/log';
@@ -442,6 +443,19 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     // Thiên Lộ Giới (TN-7): đường lát đá + lan can, chuỗi cầu vòm trên biển mây, hub có mái, cổ thụ, cỏ lau, thác (dùng chung ô `vdWonders` để dọn).
     eng.vdWonders = new CkWonders({ heightAt: (x, z) => heightAt(x, z), seaY: levelTerrain().def.seaY ?? 0 });
     eng.scene.add(eng.vdWonders.group);
+  }
+  if (FLAGS.isoCam && kieuIndex(id)) {
+    // Phòng cầu Cửu Kiều (Thiên Nhãn P4-4): vòng phù văn sàn theo cầu, cầu 9 thêm hào quang Đạp Thiên dưới chân.
+    const d = LEVELS[id]?.dungeon;
+    if (d)
+      startKieuRoomFx(
+        eng.vfx,
+        kieuIndex(id),
+        d.center,
+        d.bound ?? 40,
+        (out) => (out.set(eng.renderPos.x, eng.renderPos.y, eng.renderPos.z), true),
+        () => !eng.disposed && levelId() === id,
+      );
   }
   if (id === 'van_dinh') {
     // Vấn Đỉnh (TN-3): mood đổi dần giữa hai mặt theo vị trí (xem `updateRiftMood`).

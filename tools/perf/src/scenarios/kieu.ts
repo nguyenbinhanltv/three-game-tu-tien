@@ -44,7 +44,9 @@ export default {
         await sleep(2500);
         await gm(page, 'killall', 2500);
         await gm(page, `spawn ${boss[n] ?? 'boss_thach_tuong'} 1`, 5000);
-        await sleep(3500);
+        await gm(page, 'tp 1300 1000', 1500);
+        await gm(page, 'heal', 800);
+        await sleep(300);
         await snap(page, r.out, `kieu${n}-${viewport[1]}p-boss.png`, { wait: 200 });
         await snap(page, r.out, `kieu${n}-${viewport[1]}p-boss-30ms.png`, { wait: 30 });
       }
