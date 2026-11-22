@@ -72,5 +72,5 @@ P2b (vòng 2 sau duyệt): chi tiết mặt đất tăng rõ rệt và dùng chu
 ### Thiên Nhãn P3: chuyển từng bản đồ sang iso (`?cam=iso`)
 
 - Hướng nhìn cố định riêng từng bản đồ: `ISO_YAW` trong `game/camera/iso.ts` (độ → rad). Chọn bằng ảnh so sánh với `?isoyaw=<độ>` (ví dụ `pnpm shots camiso --cams iso --query isoyaw=30`). Đã chọn: `van_lam` (Lạc Kiếm Tông + Vân Lam) 30°. Bản đồ chưa có mục thì dùng 45°.
-- Khung boss lớn (không zoom): `clampLeadFrame(..., th)` tính cả chiều cao mục tiêu khi cao > 3,2 m (`bossHeight` ở `frameLoop.ts`): đỉnh đầu boss được phép lên tới `ISO_HEAD_UP` (6,5 m trên đất quy đổi) thay vì vùng an toàn thường; nếu người chơi và boss không thể cùng vừa khung thì ưu tiên người chơi. Vùng ngang an toàn của mục tiêu `ISO_TGT_X` = 5,5 m (tránh minimap).
+- Khung boss lớn do phiên P4 (-262) phụ trách; P3 chỉ thu vùng ngang an toàn của mục tiêu `ISO_TGT_X` = 5,5 m (tránh minimap).
 - Cảnh điện ảnh và thẻ chương dùng camera cũ (iso tạm tắt khi `cine.active`/`tribScene`), đã trả `far` và cảnh xa (xem P0).
