@@ -28,6 +28,9 @@ import {
   type Quality,
   type FxMsg,
   elemCounter,
+  daoOf,
+  daoResistMul,
+  sourceElem,
   STAT_CAPS,
   counterMul,
   hazardHit,
@@ -177,7 +180,10 @@ export class MonsterSystem {
     // Cộng hưởng vai trò (tổ đội đủ Kiếm tu/Hộ pháp/Đan sư đứng gần nhau): đánh mạnh hơn một chút.
     const power = parties.resonance(p) ? power0 * (1 + RESONANCE_DMG) : power0;
     // Khắc chế ngũ hành (3-10): server tính, client chỉ nhận cờ `ke` để hiển thị.
-    const ke = elemCounter(elem, mon.def.elem);
+    // Kháng theo Bản Nguyên (TN-7): boss có `dao` đổi hệ số theo nguồn (Đạo, không có thì linh căn) của người đánh; hiển thị qua cờ `ke` (−1 bị kháng, +1 khắc).
+    const daoMul = mon.def.dao ? daoResistMul(mon.def.dao, mon.phase, sourceElem(p.char.root, daoOf(p.char.meta))) : 1;
+    const keElem = elemCounter(elem, mon.def.elem);
+    const ke = daoMul < 1 ? -1 : daoMul > 1 ? 1 : mon.def.dao ? 0 : keElem;
     // Nội tại công pháp (3-10): kiếm tu đủ kiếm ý thì bạo kích cao hơn; hộ pháp đánh cận chiến mạnh hơn.
     const pas0 = passiveOf(p.char.meta);
     let critRate = Math.min(STAT_CAPS.critRate, p.char.stats.critRate + this.c.domain.critAdd(p));
@@ -186,7 +192,7 @@ export class MonsterSystem {
     if (pas0?.melee && Math.hypot(mon.s.x - p.move.x, mon.s.z - p.move.z) <= pas0.melee.r + mon.def.scale) meleeMul += pas0.melee.mul;
     const { dmg, crit } = computeDamage(
       p.char.atk,
-      power * mul * counterMul(ke) * meleeMul,
+      power * mul * (mon.def.dao ? daoMul : counterMul(keElem)) * meleeMul,
       mon.defn,
       Math.random(),
       Math.random(),

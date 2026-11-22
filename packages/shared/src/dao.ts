@@ -5,6 +5,8 @@
 import { isRootId, type RootId } from './realm';
 import type { OriginDef } from './origin';
 import { VAN_DINH_LEVEL } from './formulas';
+import { ELEMENTS, ELEM_BEATS, type Element } from './elements';
+import type { MonsterDao } from './types';
 
 /** Cấp mở Đạo: Vấn Đỉnh sơ kỳ. */
 export const DAO_UNLOCK_LEVEL = VAN_DINH_LEVEL;
@@ -56,4 +58,23 @@ export const DAO_DOMAIN: Readonly<Record<RootId, DomainVariant>> = {
 
 export function domainVariant(dao: RootId | null): DomainVariant {
   return dao ? DAO_DOMAIN[dao] : {};
+}
+
+/** Nguồn Bản Nguyên của người chơi để boss kháng: Đạo nếu có, không thì linh căn. Chỉ ngũ hành có nghĩa ('' cho Lôi/không rõ). */
+export function sourceElem(root: string | undefined, dao: RootId | null): Element | '' {
+  const e = dao ?? root;
+  return (ELEMENTS as readonly string[]).includes(e ?? '') ? (e as Element) : '';
+}
+
+/** Hình thái (hành) của boss ở pha `ph`; '' nếu không kháng ở pha này. */
+export function daoForm(cfg: MonsterDao, ph: number): string {
+  return cfg.forms[Math.max(0, Math.min(ph, cfg.forms.length - 1))] ?? '';
+}
+
+/** Hệ số sát thương lên quái có `dao` theo nguồn người đánh: cùng hành → `same`, khắc hành → `beat`, còn lại 1. */
+export function daoResistMul(cfg: MonsterDao, ph: number, src: string): number {
+  const form = daoForm(cfg, ph);
+  if (!form || !src) return 1;
+  if (src === form) return cfg.same;
+  return ELEM_BEATS[src as Element] === form ? cfg.beat : 1;
 }

@@ -272,6 +272,70 @@ interface MonGeo {
 }
 const MON_GEO = new Map<string, MonGeo>();
 
+/**
+ * Dáng thân thủ tục riêng của boss Cửu Kiều (TN-7), cùng bộ khớp với 'ape' (hai tay ở y 1,52, hai chân dài 0,76) nên `MonsterModel` dùng lại hoạt họa.
+ * golem (Thạch Tượng): khối đá vuông, vai rêu, vết nứt ngực sáng. wisp (Đạo Linh): quầng sáng cầu, vòng đạo, áo chóp, tay như dải khói (lơ lửng nhờ `hover`).
+ * road (Lộ Linh): trụ cầu, vòng vòm sau lưng, bậc đá lơ lửng.
+ */
+function buildLook(
+  look: NonNullable<MonsterDef['look']>,
+  b: GeoBuilder,
+  g: MonGeo,
+  main: THREE.Color,
+  accent: THREE.Color,
+  dark: THREE.Color,
+): void {
+  const moss = col(0x5e7a4c);
+  const ab = new GeoBuilder();
+  const lb = new GeoBuilder();
+  g.legLen = 0.76;
+  if (look === 'golem') {
+    b.add(G.box, mat(0, 1.25, 0, 0.12, 0, 0, 1.0, 1.15, 0.72), main, 0.1);
+    b.add(G.box, mat(0, 0.66, 0, 0, 0, 0, 0.76, 0.34, 0.56), dark);
+    b.add(G.box, mat(0, 1.95, 0.18, 0, 0, 0, 0.5, 0.42, 0.46), main, 0.08);
+    b.add(G.box, mat(0, 1.88, 0.42, 0, 0, 0, 0.34, 0.07, 0.08), accent);
+    // vết nứt ngực: giáp nứt đúng nhịp, màu accent (client vẽ MF_WEAK riêng)
+    b.add(G.box, mat(0, 1.34, 0.37, 0, 0, 0.5, 0.07, 0.8, 0.04), accent);
+    b.add(G.box, mat(0.17, 1.12, 0.37, 0, 0, -0.4, 0.05, 0.42, 0.04), accent);
+    for (const sx of [-1, 1]) {
+      b.add(G.ico0, mat(sx * 0.62, 1.72, 0, 0, 0, 0, 0.4, 0.3, 0.38), main, 0.1);
+      b.add(G.cone5, mat(sx * 0.62, 1.98, 0, 0, 0, 0, 0.18, 0.2, 0.18), moss);
+    }
+    b.add(G.cone5, mat(-0.28, 1.88, -0.12, 0, 0, 0.2, 0.12, 0.3, 0.12), moss);
+    ab.add(G.box, mat(0, -0.45, 0, 0, 0, 0, 0.3, 0.9, 0.3), main, 0.08);
+    ab.add(G.box, mat(0, -1.04, 0, 0, 0, 0, 0.42, 0.34, 0.42), dark);
+    lb.add(G.box, mat(0, -0.36, 0, 0, 0, 0, 0.3, 0.74, 0.3), dark);
+    lb.add(G.box, mat(0, -0.72, 0.08, 0, 0, 0, 0.38, 0.1, 0.46), main);
+  } else if (look === 'wisp') {
+    b.add(G.ico1, mat(0, 1.5, 0, 0, 0, 0, 0.46, 0.5, 0.46), main, 0.06);
+    b.add(G.ico0, mat(0, 1.5, 0.18, 0, 0, 0, 0.26), accent);
+    b.add(G.torus, mat(0, 1.5, -0.1, Math.PI / 2, 0, 0, 0.82, 0.82, 0.82), accent);
+    b.add(G.torus, mat(0, 1.5, -0.12, 0, 0.7, 0, 0.7, 0.7, 0.7), accent);
+    b.add(G.cone7, mat(0, 0.7, 0, Math.PI, 0, 0, 0.42, 1.1, 0.42), dark, 0.05);
+    for (const sx of [-1, 1]) b.add(G.octa, mat(sx * 0.72, 2.0, 0, 0, 0, 0, 0.12, 0.2, 0.12), accent);
+    ab.add(G.cone6, mat(0, -0.5, 0, Math.PI, 0, 0, 0.12, 1.0, 0.12), main, 0.05);
+    ab.add(G.ico0, mat(0, -1.04, 0, 0, 0, 0, 0.12), accent);
+    lb.add(G.cone6, mat(0, -0.2, 0, Math.PI, 0, 0, 0.001, 0.001, 0.001), dark);
+  } else {
+    b.add(G.taper8, mat(0, 1.2, 0, 0, 0, 0, 0.62, 2.1, 0.62), main, 0.08);
+    b.add(G.cyl8, mat(0, 0.22, 0, 0, 0, 0, 0.78, 0.3, 0.78), dark);
+    b.add(G.cyl8, mat(0, 2.34, 0, 0, 0, 0, 0.5, 0.18, 0.5), accent);
+    b.add(G.torus, mat(0, 2.0, -0.45, 0, 0, 0, 1.45, 1.45, 1.45), accent);
+    b.add(G.ico0, mat(0, 1.95, 0.5, 0, 0, 0, 0.22), accent);
+    for (const sx of [-1, 1]) {
+      b.add(G.box, mat(sx * 1.0, 0.9, 0.2, 0, sx * 0.4, 0, 0.62, 0.12, 0.42), main, 0.08);
+      b.add(G.box, mat(sx * 1.25, 1.55, -0.2, 0, sx * -0.3, 0, 0.5, 0.1, 0.34), dark);
+    }
+    ab.add(G.box, mat(0, -0.5, 0, 0, 0, 0, 0.2, 1.0, 0.34), main, 0.06);
+    ab.add(G.box, mat(0, -1.05, 0, 0, 0, 0, 0.34, 0.12, 0.5), accent);
+    lb.add(G.cyl6, mat(0, -0.36, 0, 0, 0, 0, 0.2, 0.74, 0.2), dark);
+    lb.add(G.box, mat(0, -0.72, 0.04, 0, 0, 0, 0.36, 0.1, 0.42), main);
+  }
+  g.body = b.build();
+  g.arm = ab.build();
+  g.leg = lb.build();
+}
+
 function monGeo(def: MonsterDef): MonGeo {
   let g = MON_GEO.get(def.id);
   if (g) return g;
@@ -280,6 +344,11 @@ function monGeo(def: MonsterDef): MonGeo {
   const dark = main.clone().multiplyScalar(0.6);
   const b = new GeoBuilder();
   g = { body: G.box, leg: null, arm: null, seg: null, head: null, legLen: 0.6 };
+  if (def.look) {
+    buildLook(def.look, b, g, main, accent, dark);
+    MON_GEO.set(def.id, g);
+    return g;
+  }
   if (def.model === 'wolf' || def.model === 'fox' || def.model === 'boar') {
     const boar = def.model === 'boar';
     const fox = def.model === 'fox';

@@ -932,7 +932,11 @@
       "mon_thien_lo_su": "Thiên Lộ Sứ",
       "elite_may_lang_vuong": "Mây Lang Vương",
       "elite_lo_thach_tuong": "Lộ Thạch Tướng",
-      "boss_kieu_thu": "Kiều Thủ"
+      "boss_kieu_thu": "Kiều Thủ",
+      "boss_thach_tuong": "Thạch Tượng",
+      "boss_dao_linh": "Đạo Linh",
+      "boss_lo_linh": "Lộ Linh",
+      "mon_lo_anh": "Lộ Ảnh"
     }
   }
 }

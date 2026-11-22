@@ -68,7 +68,7 @@
         "delay": 8,
         "mons": [
           {
-            "id": "boss_kieu_thu",
+            "id": "boss_thach_tuong",
             "level": 45,
             "n": 1
           }

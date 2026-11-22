@@ -870,6 +870,18 @@ function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
     if (!(f.take >= 0 && f.take <= 0.2)) err(`${id}: faces.take phải trong [0; 0,2] (mặt Âm gần như miễn)`);
     if (f.am / (f.duong + f.am) > 0.45) err(`${id}: mặt Âm chiếm quá 45% chu kỳ (kéo dài trận quá mức)`);
   }
+  const dao = m.dao;
+  if (dao) {
+    if (!m.boss) err(`${id}: dao chỉ dành cho boss`);
+    if (!(dao.forms.length >= 1 && dao.forms.length <= 4)) err(`${id}: dao.forms phải có 1–4 phần tử`);
+    for (const f of dao.forms)
+      if (f !== '' && !(ELEMENTS as readonly string[]).includes(f)) err(`${id}: dao.forms có hành ${f} không hợp lệ`);
+    if (!(dao.same > 0 && dao.same < 1)) err(`${id}: dao.same phải trong (0, 1)`);
+    if (!(dao.beat > 1 && dao.beat <= 2)) err(`${id}: dao.beat phải trong (1, 2]`);
+    const nph = (m.phases?.length ?? 0) + 1;
+    if (dao.forms.length > nph) err(`${id}: dao.forms (${dao.forms.length}) nhiều hơn số pha (${nph})`);
+  }
+  if (m.look !== undefined && !['golem', 'wisp', 'road'].includes(m.look)) err(`${id}: look ${m.look} không hợp lệ`);
   if (reveal) {
     if (!inR(reveal.dur, 1, 8)) err(`${id}: reveal.dur phải trong [1; 8] giây`);
     if (!(reveal.mul > 1 && reveal.mul <= 3)) err(`${id}: reveal.mul phải trong (1, 3]`);

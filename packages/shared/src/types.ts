@@ -143,6 +143,23 @@ export interface MonsterDef {
   phases?: MonsterPhase[];
   /** Chỉ boss: thanh phá thế. */
   posture?: MonsterPosture;
+  /** Kháng theo Bản Nguyên của người đánh (TN-7, Đạo Linh/Lộ Linh), xem `MonsterDao`. */
+  dao?: MonsterDao;
+  /** Dáng thân thủ tục riêng (TN-7, chỉ hình): thay thân mặc định của `model`. Hitbox, tầm đánh vẫn theo `model`/`scale`. */
+  look?: MonsterLook;
+}
+
+export type MonsterLook = 'golem' | 'wisp' | 'road';
+
+/**
+ * Kháng theo Bản Nguyên (TN-7). Hình thái hiện tại là `forms[ph]` (ph = pha của boss, quá cuối thì lấy phần tử cuối; '' = không kháng): hành của hình thái.
+ * Nguồn của người đánh = Đạo của họ, không có Đạo thì linh căn. Nguồn cùng hành với hình thái: sát thương nhân `same` (< 1);
+ * nguồn khắc hành của hình thái (`ELEM_BEATS`): nhân `beat` (> 1); còn lại không đổi. Server tính (`daoResistMul`), client chỉ nhận cờ `ke`.
+ */
+export interface MonsterDao {
+  forms: string[];
+  same: number;
+  beat: number;
 }
 
 /**

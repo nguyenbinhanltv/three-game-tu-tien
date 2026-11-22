@@ -94,10 +94,10 @@ async function mkRoom(levelId: string) {
 }
 
 describe('dữ liệu phòng cầu', () => {
-  it('cầu 1 có 3 đợt (đợt cuối Kiều Thủ), cầu 2 một đợt Kiếm Ảnh; vào bằng vé, không có cổng thế giới', () => {
+  it('cầu 1 có 3 đợt (đợt cuối Thạch Tượng), cầu 2 một đợt Kiếm Ảnh; vào bằng vé, không có cổng thế giới', () => {
     const k1 = content.LEVELS.kieu_1!.dungeon!;
     expect(k1.waves).toHaveLength(3);
-    expect(k1.waves[2]!.mons[0]!.id).toBe('boss_kieu_thu');
+    expect(k1.waves[2]!.mons[0]!.id).toBe('boss_thach_tuong');
     expect(k1.private).toBe(true);
     expect(k1.returnLevel).toBe('cuu_kieu');
     const k2 = content.LEVELS.kieu_2!.dungeon!;
