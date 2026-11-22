@@ -5,7 +5,7 @@ import { BATCHING, BATCH_KINDS, type FxKind, type FxMesh } from '../../render/ma
 import { SIGIL_CIRCLE, SIGIL_GEO, sigilLayout, type SigilShape } from '../../render/vfx/sigil';
 import { SLASH_GEO, SLASH_INK, slashPhase } from '../../render/vfx/slash';
 import { seedOr } from '../../render/vfx/common';
-import { boltPhase, boltShape } from '../../render/vfx/lightning';
+import { BOLT_HEIGHT, boltPhase, boltShape } from '../../render/vfx/lightning';
 import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTiming } from '../../render/vfx/ink';
 import { type LootTier } from '../../render/vfx/loot';
 import { PARTICLES } from '../../render/vfx/particles';
@@ -468,10 +468,10 @@ export class Vfx {
    */
   boltGlowMul = 1;
 
-  lightning(x: number, y: number, z: number, color = 0xd6c4ff, scale = 1, seed?: number, flash = 0, thick = 1): void {
+  lightning(x: number, y: number, z: number, color = 0xd6c4ff, scale = 1, seed?: number, flash = 0, thick = 1, height = BOLT_HEIGHT): void {
     const sd = seedOr(seed);
     const bolt = takeBolt();
-    boltShape(sd, 62, 7, scale * thick, bolt.shape);
+    boltShape(sd, height, 7, scale * thick, bolt.shape);
     const m = this.fx(bolt.geo.geo, color, 1, 'bolt');
     m.fxA.z = (sd % 4000) / 100;
     const glow = this.fx(G.ico1, color, 0.35);

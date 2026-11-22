@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fxSeed } from '@dtl/shared';
 import { seededRandom, seedOr } from './common';
-import { BOLT_MAX_PTS, boltPhase, boltShape } from './lightning';
+import { BOLT_HEIGHT, BOLT_MAX_PTS, boltPhase, boltShape } from './lightning';
 import { PARTICLE_BUDGET, PARTICLE_DENSITY, Particles, densitySize } from './particles';
 import { RAIN_SWORDS, rainLayout, SwordRainFx } from './swordRain';
 
@@ -40,6 +40,14 @@ describe('boltShape', () => {
     expect(b.strands).toEqual(a.strands);
     const c = boltShape(987655, 62, 7, 1.2);
     expect(Array.from(c.pts.subarray(0, 40))).not.toEqual(Array.from(a.pts.subarray(0, 40)));
+  });
+  it('độ cao đỉnh theo tham số h (iso rút ngắn), điểm đánh vẫn ở gốc', () => {
+    const top = (h: number) => {
+      const b = boltShape(4242, h, 7, 1);
+      return b.pts[1]!; // điểm đầu thân chính là đỉnh
+    };
+    expect(top(BOLT_HEIGHT)).toBeCloseTo(BOLT_HEIGHT, 3);
+    expect(top(BOLT_HEIGHT * 0.7)).toBeCloseTo(BOLT_HEIGHT * 0.7, 3);
   });
   it('thân chính cắm đúng điểm đánh, đỉnh ở trên cao; không tràn bộ đệm', () => {
     for (let s = 1; s < 40; s++) {
