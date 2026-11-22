@@ -43,8 +43,8 @@ function frame(R) {
   const out = [];
   for (let i = 0; i < 16; i++) {
     const a = (i / 16) * PI * 2 + 0.05;
-    out.push(at(64, a, 'prop_tru_da_khac_van', 0.9 + R() * 0.2));
-    out.push(at(64, a + PI / 16, 'prop_den_long_troi', 1));
+    out.push(at(67, a, 'prop_tru_da_khac_van', 0.9 + R() * 0.2));
+    out.push(at(67, a + PI / 16, 'prop_den_long_troi', 1));
   }
   for (let i = 0; i < 4; i++) out.push(at(56, (i / 4) * PI * 2 + PI / 4, 'prop_bia_da', 1.15));
   out.push({ id: 'prop_da_phien', x: CX, z: CZ, yaw: 0, s: 4.2 });
@@ -99,7 +99,12 @@ function mirror(id, s) {
 const all = {};
 for (let n = 1; n <= 9; n++) {
   const R = rng(20261123 + n * 7919);
-  all[`kieu_${n}`] = [...frame(R), ...THEME[n](R)];
+  // Chừa cung phía nam (chỗ người chơi vào, camera đứng sau lưng): không prop nào cách tâm > 40 m trong ±0,6 rad quanh hướng +z.
+  const keep = (q) => {
+    const d = Math.hypot(q.x - CX, q.z - CZ);
+    return d <= 40 || Math.abs(Math.atan2(q.z - CZ, q.x - CX) - PI / 2) > 0.6;
+  };
+  all[`kieu_${n}`] = [...frame(R), ...THEME[n](R)].filter(keep);
 }
 
 const body = Object.entries(all)
