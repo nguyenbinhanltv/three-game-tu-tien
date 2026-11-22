@@ -64,8 +64,22 @@ describe('Vấn Đỉnh: hai mặt (TN-3 mỹ thuật)', () => {
     expect(east).toBeGreaterThan(100);
     for (const r of a) {
       expect(Math.hypot(r.x - 1024, r.z - 1546)).toBeGreaterThanOrEqual(90);
-      expect(Math.abs(r.x - cx)).toBeGreaterThanOrEqual(18);
+      // Giới Tuyến chừa trống, trừ đá tảng chân vách (ở tận mép bắc/nam, xa trục)
+      if (r.s < 2.4) expect(Math.abs(r.x - cx)).toBeGreaterThanOrEqual(14);
     }
+    // Chân vách: đá tảng lớn (scale ≥ 2,4) dọc ranh vùng chơi để che đường nối vách-nền, không có va chạm (lean < 0,35)
+    const base = a.filter((r) => r.s >= 2.4);
+    expect(base.length).toBeGreaterThan(60);
+    for (const r of base) {
+      const edge = Math.min(r.x - tr.playBounds.x0, tr.playBounds.x1 - r.x, r.z - tr.playBounds.z0, tr.playBounds.z1 - r.z);
+      expect(edge).toBeLessThanOrEqual(62);
+      expect(Math.abs(r.lean)).toBeLessThan(0.35);
+    }
+    // Lớp chi tiết mặt đất: nhiều vật nhỏ (scale < 1,1); mặt Dương có cỏ khô, mặt Âm không
+    const small = a.filter((r) => r.s < 1.1);
+    expect(small.length).toBeGreaterThan(800);
+    expect(a.filter((r) => r.id === 'prop_duong_xi' && r.x < cx).length).toBe(0);
+    expect(a.filter((r) => r.id === 'prop_duong_xi' && r.x > cx).length).toBeGreaterThan(50);
     // Vùng rễ (tây giữa) nhiều rễ cổ; mặt Dương nhiều đá đỏ đồng
     const roots = a.filter((r) => r.id === 'prop_cay_goc_kho' && r.x < cx && r.z < cx - 120 && r.z > cx - 330).length;
     expect(roots).toBeGreaterThan(20);

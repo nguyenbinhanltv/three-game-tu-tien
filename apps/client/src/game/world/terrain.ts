@@ -34,7 +34,7 @@ import { portalPaving, sectPaving } from '../../render/groundMask';
 import { nearPropTree } from './propScatter';
 import { vanHaiArt, type VhPalette } from './vanHaiArt';
 import { tkGroundColor } from './thienKhuyetArt';
-import { faceTint } from './vanDinhArt';
+import { faceTint, vdGroundColor } from './vanDinhArt';
 import { bhGroundColor, riftPath, type RiftPt } from './bacHoangArt';
 import { xichCracks, xichGroundColor } from './xichArt';
 import { ktGroundColor } from './kiemTrungArt';
@@ -230,8 +230,10 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
     return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
   }
   if (SLATE) {
-    tkGroundColor(T.def, x, z, ny, _tk);
-    if (T.id === 'van_dinh') faceTint(x - T.size / 2, _tk);
+    if (T.id === 'van_dinh') {
+      vdGroundColor(T.def, x, z, ny, _tk);
+      faceTint(x - T.size / 2, _tk);
+    } else tkGroundColor(T.def, x, z, ny, _tk);
     return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
   }
   if (XICH) {
@@ -728,7 +730,7 @@ export class Terrain {
   setGround(tex: GroundTextures | null, level: GroundLevel): void {
     setGroundTileBreak(XICH || ASH);
     setGroundStrata(isVanLam());
-    setGroundNoSnow(KT || PM);
+    setGroundNoSnow(KT || PM || T.id === 'van_dinh');
     setGroundRedStrata(
       T.id === 'doan_mach' || T.id === 'thien_khuyet' || T.id === 'van_dinh' || KT || PM,
       // Thiên Khuyết (MAP-4): vách xám ấm ↔ nâu cát, khe nứt có vỉa vàng kim; vân từ nhiễu theo tọa độ dọc vách (hết ô caro).
@@ -739,7 +741,13 @@ export class Terrain {
           ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18], blocks: true }
           : T.id === 'van_dinh'
             ? // Vấn Đỉnh (TN-3): khối đá xếp lệch xám trung tính (mood hai mặt tự ngả lam lạnh hoặc vàng đồng), vỉa sáng ngọc lam nhạt ở khe.
-              { lo: [0.09, 0.085, 0.11], hi: [0.34, 0.32, 0.32], vein: [0.55, 0.78, 0.8], blocks: true }
+              {
+                lo: [0.08, 0.075, 0.09],
+                hi: [0.36, 0.33, 0.32],
+                vein: [0.55, 0.78, 0.8],
+                tri: true,
+                center: T.def.play ? [T.def.play.cx, T.def.play.cz] : undefined,
+              }
             : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
               KT
               ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }

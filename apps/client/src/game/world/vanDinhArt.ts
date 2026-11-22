@@ -2,11 +2,26 @@
 // Tây (x < tâm) là mặt Âm Hư: rễ cổ, đá phiến lam xám, cột đổ lạnh. Đông là mặt Dương Thực: đá đỏ đồng, gốc khô, cột đồng đổ.
 // Mỗi vùng một mật độ và một bộ đồ khác nhau để nền không đơn điệu; vòng cấm quanh trạm, cụm quái, điểm đáng chú ý, trận.
 import { fbm, hash01, type TerrainDef } from '@dtl/shared';
+import { tkGroundColor } from './thienKhuyetArt';
 
 /** Mức "mặt Dương Thực" 0..1 theo vị trí: 0 ở nửa tây (mặt Âm Hư), 1 ở nửa đông; đổi dần trong ~80 m quanh Giới Tuyến. `xo` = x − nửa kích thước bản đồ. */
 export function faceBlend(xo: number): number {
   const t = Math.min(1, Math.max(0, (xo + 40) / 80));
   return t * t * (3 - 2 * t);
+}
+
+/**
+ * Màu đỉnh địa hình Vấn Đỉnh: nền như bộ đá phiến Thiên Khuyết (tính với độ dốc 0 để bỏ dải sọc/vỉa theo toạ độ trên vách, vốn thành răng cưa
+ * khi vách gồ ghề), còn vách lấy xám nâu trung tính biến thiên bằng nhiễu tần thấp; kết cấu vách do shader triplanar lo.
+ */
+export function vdGroundColor(def: TerrainDef, x: number, z: number, ny: number, out: [number, number, number]): void {
+  tkGroundColor(def, x, z, 1, out);
+  const slope = 1 - ny;
+  if (slope <= 0.12) return;
+  const k = Math.min(1, (slope - 0.12) * 4.5);
+  const n = fbm(x * 0.004, z * 0.004, 2, def.seed + 1301);
+  const c: [number, number, number] = [0.44 + n * 0.08, 0.41 + n * 0.07, 0.4 + n * 0.06];
+  for (let i = 0; i < 3; i++) out[i] = out[i]! + (c[i]! - out[i]!) * k;
 }
 
 /** Nhuộm màu đỉnh địa hình theo mặt: Âm ngả lam xám lạnh, Dương ngả vàng đồng khô (bỏ xanh rêu của bộ màu đá phiến). */
@@ -180,6 +195,97 @@ export function scatterVanDinh(ctx: VdScatterCtx): VdRubble[] {
         sink: kind === 'pillar' ? 0.5 + k2 * 0.8 : kind === 'sword' ? 0.4 : 0.1,
         tint: tintOf(xo < 0, kind, k2),
       });
+    }
+  }
+  out.push(...scatterWallBase(ctx), ...scatterDetail(ctx));
+  return out;
+}
+
+const okSpot = (ctx: VdScatterCtx, x: number, z: number, maxSlope: number, extra = 0): number | null => {
+  const h = ctx.heightAt(x, z);
+  const slope = Math.abs(ctx.heightAt(x + 3, z) - h) + Math.abs(ctx.heightAt(x, z + 3) - h);
+  if (slope > maxSlope) return null;
+  for (const c of ctx.clear) if ((x - c.x) ** 2 + (z - c.z) ** 2 < c.r * c.r) return null;
+  for (const c of ctx.colliders) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 3 + extra) ** 2) return null;
+  return h;
+};
+
+/**
+ * Chân vách: đá tảng và phiến đá lớn xếp thành đám dọc ranh vùng chơi (10–60 m tính từ mép) để che đường nối vách-nền và cho vách có chân.
+ * Chỉ tô cảnh: nghiêng nhẹ (`lean` < 0,3) nên không sinh va chạm.
+ */
+function scatterWallBase(ctx: VdScatterCtx): VdRubble[] {
+  const { def, bounds: b } = ctx;
+  const cx = def.size / 2;
+  const out: VdRubble[] = [];
+  const CELL = 15;
+  for (let gz = Math.floor(b.z0 / CELL); gz < Math.ceil(b.z1 / CELL); gz++) {
+    for (let gx = Math.floor(b.x0 / CELL); gx < Math.ceil(b.x1 / CELL); gx++) {
+      const x = (gx + 0.1 + hash01(gx, gz, 8113) * 0.8) * CELL;
+      const z = (gz + 0.1 + hash01(gx, gz, 8121) * 0.8) * CELL;
+      const edge = Math.min(x - b.x0, b.x1 - x, z - b.z0, b.z1 - z);
+      if (edge < 10 || edge > 62) continue;
+      const clump = 0.4 + fbm(x * 0.012, z * 0.012, 2, def.seed + 1101) * 1.2;
+      if (hash01(gx, gz, 8101) > 0.62 * Math.max(0.1, clump)) continue;
+      if (okSpot(ctx, x, z, 14) === null) continue;
+      const k = hash01(gx, gz, 8143);
+      const k2 = hash01(gx, gz, 8153);
+      const slab = hash01(gx, gz, 8163) < 0.35;
+      const am = x < cx;
+      const v = 0.6 + k2 * 0.3;
+      out.push({
+        id: slab ? 'prop_da_phien' : 'prop_da_dung',
+        x,
+        z,
+        yaw: k * Math.PI * 2,
+        s: slab ? 3.0 + k2 * 3.2 : 2.4 + k2 * 3.4,
+        lean: (k - 0.5) * 0.4,
+        sink: 0.9 + k * 0.9,
+        tint: am ? [v * 0.82, v * 0.88, v * 1.08] : [v * 1.15, v * 0.88, v * 0.66],
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Lớp chi tiết mặt đất (ô 11 m): đá vụn, phiến nhỏ, rễ khô, cỏ khô. Mặt Âm: đá tím mờ và rễ tím sẫm; mặt Dương: đá vụn cát, rễ khô nhạt, cụm cỏ khô vàng.
+ * Mật độ vừa phải, theo đám; vật nhỏ (scale 0,3–1,1), `lean` < 0,3 nên không có va chạm.
+ */
+function scatterDetail(ctx: VdScatterCtx): VdRubble[] {
+  const { def, bounds: b } = ctx;
+  const cx = def.size / 2;
+  const out: VdRubble[] = [];
+  const CELL = 11;
+  for (let gz = Math.floor(b.z0 / CELL); gz < Math.ceil(b.z1 / CELL); gz++) {
+    for (let gx = Math.floor(b.x0 / CELL); gx < Math.ceil(b.x1 / CELL); gx++) {
+      const x = (gx + 0.1 + hash01(gx, gz, 9113) * 0.8) * CELL;
+      const z = (gz + 0.1 + hash01(gx, gz, 9121) * 0.8) * CELL;
+      if (x < b.x0 + 70 || x > b.x1 - 70 || z < b.z0 + 70 || z > b.z1 - 70) continue;
+      if (Math.abs(x - cx) < 14) continue;
+      const clump = 0.25 + fbm(x * 0.017, z * 0.017, 2, def.seed + 2203) * 1.3;
+      if (hash01(gx, gz, 9101) > 0.3 * Math.max(0.1, clump)) continue;
+      if (okSpot(ctx, x, z, 8, -2) === null) continue;
+      const am = x < cx;
+      const r = hash01(gx, gz, 9133);
+      const k = hash01(gx, gz, 9143);
+      const k2 = hash01(gx, gz, 9153);
+      let id: string;
+      let s: number;
+      let tint: [number, number, number];
+      let lean = (k - 0.5) * 0.3;
+      if (am) {
+        const v = 0.55 + k2 * 0.3;
+        if (r < 0.55) ((id = 'prop_da_nam'), (s = 0.3 + k2 * 0.5), (tint = [v * 0.78, v * 0.7, v * 1.15]));
+        else if (r < 0.8) ((id = 'prop_da_phien'), (s = 0.4 + k2 * 0.5), (tint = [v * 0.85, v * 0.8, v * 1.2]));
+        else ((id = 'prop_cay_goc_kho'), (s = 0.35 + k2 * 0.3), (tint = [v * 0.62, v * 0.55, v * 0.78]), (lean = 0.1 + k * 0.15));
+      } else {
+        const v = 0.9 + k2 * 0.25;
+        if (r < 0.35) ((id = 'prop_da_nam'), (s = 0.3 + k2 * 0.6), (tint = [v * 1.1, v * 0.9, v * 0.68]));
+        else if (r < 0.75) ((id = 'prop_duong_xi'), (s = 0.5 + k2 * 0.7), (tint = [v * 1.0, v * 0.85, v * 0.42]));
+        else ((id = 'prop_cay_goc_kho'), (s = 0.4 + k2 * 0.35), (tint = [v * 1.0, v * 0.88, v * 0.68]), (lean = 0.1 + k * 0.15));
+      }
+      out.push({ id, x, z, yaw: k * Math.PI * 2, s, lean, sink: 0.05, tint });
     }
   }
   return out;

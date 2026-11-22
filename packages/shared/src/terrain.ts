@@ -251,7 +251,8 @@ export function makeTerrain(def: TerrainDef): Terrain {
           const t = smoothstep(playWall, playWall + r.ramp, dp);
           const s = t * r.steps;
           const f = s - Math.floor(s);
-          const stair = (Math.floor(s) + smoothstep(0.35, 0.8, f)) / r.steps;
+          // Mỗi bậc là một dốc êm (không phải mép đứng): lưới địa hình thô không răng cưa được ở đoạn vách chéo.
+          const stair = (Math.floor(s) + smoothstep(0.1, 0.92, f)) / r.steps;
           h += play.wallH * Math.min(1, stair);
         }
       }
