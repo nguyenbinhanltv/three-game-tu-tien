@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import '@dtl/content';
 import { collisionOf, gioiTriPillars, terrainOf, vdGateCircles, vdGateYaw, VD_BIA_R, VD_DINH_R } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
-import { faceBlend, faceTint, scatterVanDinh, vdMix } from './vanDinhArt';
+import { faceBlend, faceTint, scatterVanDinh, scatterWallShoulder, vdMix } from './vanDinhArt';
 import { GRADING, mixPreset, moodVariant } from '../../render/grading';
 
 const tr = terrainOf('van_dinh');
@@ -111,5 +111,24 @@ describe('Vấn Đỉnh: hai mặt (TN-3 mỹ thuật)', () => {
     // nằm trong `bound` của phó bản (người chơi/quái tới được) nên phải chặn thật
     const bound = LEVELS.gioi_tri!.dungeon!.bound!;
     for (const w of want) expect(Math.hypot(w.x - center.x, w.z - center.z)).toBeLessThanOrEqual(bound + 0);
+  });
+});
+
+describe('Vấn Đỉnh: đá vai vách (có va chạm)', () => {
+  it('chừa vòng cấm (trạm, nút, cụm quái, trận…) và collider có sẵn một khoảng bằng cỡ khối', () => {
+    const L = LEVELS.van_dinh!;
+    const clear = [
+      { x: 1024, z: 1546, r: 90 },
+      ...(L.spots ?? []).map((p) => ({ x: p.x, z: p.z, r: 10 })),
+      ...L.nodes.map((n) => ({ x: n.x, z: n.z, r: 6 })),
+      ...L.spawns.map((sp) => ({ x: sp.x, z: sp.z, r: sp.radius + 4 })),
+    ];
+    const rocks = scatterWallShoulder({ ...ctx, clear });
+    expect(rocks.length).toBeGreaterThan(20);
+    for (const r of rocks) {
+      for (const c of clear)
+        expect(Math.hypot(r.x - c.x, r.z - c.z), `${r.id}@${r.x},${r.z}`).toBeGreaterThanOrEqual(c.r + r.s * 1.6 + 4 - 1e-6);
+      for (const c of ctx.colliders) expect(Math.hypot(r.x - c.x, r.z - c.z)).toBeGreaterThanOrEqual(c.r + r.s * 1.6 + 4 - 1e-6);
+    }
   });
 });

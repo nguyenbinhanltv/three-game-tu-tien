@@ -180,6 +180,22 @@
         "sourceSha256": "c45086715b3f4e1fe45b6d6186a9c1a118f30d8f066ba2add0a1eb00f9760e86"
       }
     },
+    "layers": {
+      "canh_tung": {
+        "file": "layers/canh_tung.c13aea91a7.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 24932,
+        "sourceSha256": "ec36ce7e61403b69991f45715c01130f4a6041c45217178ba750a23976ebe1cc"
+      },
+      "suong": {
+        "file": "layers/suong.a0c141495d.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 20936,
+        "sourceSha256": "1b0f662db5da1d527f35c5ad5d7443a907afdbd81b09a429db876df591f27c36"
+      }
+    },
     "loading": {
       "bac_hoang": {
         "file": "loading/bac_hoang.0558f70dbe.webp",
@@ -293,28 +309,19 @@
         "bytes": 100876,
         "sourceSha256": "4012dfb636943d539cd20c5ecd5827868f251abd23961236129b6cd578acc84f"
       },
+      "van_dinh": {
+        "file": "loading/van_dinh.c0f805832a.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 94340,
+        "sourceSha256": "24f50ecb81241c7102e7e2c2666553e2ffa7373d64e015fbcb1a0030ba4b6f50"
+      },
       "van_hai_phu_dao": {
         "file": "loading/van_hai_phu_dao.58424c5c45.webp",
         "w": 1600,
         "h": 900,
         "bytes": 68694,
         "sourceSha256": "c408c8c69dd5ffc483a40591a160cef524f806dc0dd45d1dcb12bb1130991776"
-      }
-    },
-    "layers": {
-      "canh_tung": {
-        "file": "layers/canh_tung.c13aea91a7.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 24932,
-        "sourceSha256": "ec36ce7e61403b69991f45715c01130f4a6041c45217178ba750a23976ebe1cc"
-      },
-      "suong": {
-        "file": "layers/suong.a0c141495d.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 20936,
-        "sourceSha256": "1b0f662db5da1d527f35c5ad5d7443a907afdbd81b09a429db876df591f27c36"
       }
     }
   }
