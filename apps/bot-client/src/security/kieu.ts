@@ -101,11 +101,16 @@ export async function runKieu(_ctx?: Ctx): Promise<void> {
   // Cầu 3 là sân kiếp: không vé kiếp, khóa phòng giả, tự đặt id kiếp: đều bị từ chối.
   const t3 = await tryJoin('tribulation-kieu_3', { dev: 'kt_kieu_direct', tribRoom: 'khoa-gia' });
   const t3b = await tryJoin('tribulation-kieu_3', { dev: 'kt_kieu_direct' });
+  const t789 = [
+    await tryJoin('tribulation-kieu_7', { dev: 'kt_kieu_direct', tribRoom: 'khoa-gia' }),
+    await tryJoin('tribulation-kieu_8', { dev: 'kt_kieu_direct', tribRoom: 'khoa-gia' }),
+    await tryJoin('tribulation-kieu_9', { dev: 'kt_kieu_direct', tribRoom: 'khoa-gia' }),
+  ];
   const d9 = await tryJoin('dungeon-kieu_9', { dev: 'kt_kieu_direct', dgKey: 'khoa-gia' });
   check(
     'vào thẳng room phòng cầu không vé: bị từ chối',
-    !d1 && !d2 && !d9 && !d4 && !d5 && !d6 && !t3 && !t3b && (await health()),
-    `${d1}/${d2}/${d9}/${d4}/${d5}/${d6}/${t3}/${t3b}`,
+    !d1 && !d2 && !d9 && !d4 && !d5 && !d6 && !t3 && !t3b && !t789.some(Boolean) && (await health()),
+    `${d1}/${d2}/${d9}/${d4}/${d5}/${d6}/${t3}/${t3b}/${t789.join(',')}`,
   );
   await g.room.leave(true);
 }
