@@ -42,7 +42,10 @@ describe('boltShape', () => {
     expect(Array.from(c.pts.subarray(0, 40))).not.toEqual(Array.from(a.pts.subarray(0, 40)));
   });
   it('độ cao đỉnh theo tham số h (iso rút ngắn), điểm đánh vẫn ở gốc', () => {
-    const top = (h: number) => boltShape(4242, h, 7, 1).pts[1]!; // điểm đầu thân chính là đỉnh
+    const top = (h: number) => {
+      const b = boltShape(4242, h, 7, 1);
+      return b.pts[1]!; // điểm đầu thân chính là đỉnh
+    };
     expect(top(BOLT_HEIGHT)).toBeCloseTo(BOLT_HEIGHT, 3);
     expect(top(BOLT_HEIGHT * 0.7)).toBeCloseTo(BOLT_HEIGHT * 0.7, 3);
   });

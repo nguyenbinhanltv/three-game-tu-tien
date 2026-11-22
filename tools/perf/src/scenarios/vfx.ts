@@ -79,7 +79,7 @@ const WIDE =
 /** Chiêu lướt của công pháp (phím Q, `useDash`). Chiêu lướt bậc cao (Nghịch Kiếm, Dịch Sơn Xung) nằm trên thanh chiêu: bấm ô như chiêu thường. */
 const DASH = /kiem_anh_bo|thiet_bich_xung|luu_huong_bo/;
 /** Chiêu tối thượng của Đao tu: không qua thanh chiêu (cần vòng sạc thật), chỉ phát dòng thời gian FX để duyệt hình. */
-const INJECT_ONLY = /tram_son_dao|co_trieu/;
+const INJECT_ONLY = /tram_son_dao|co_trieu|co_than_nhat_kich|cuu_tieu_thien_loi|mau_don_cam/;
 const ULT =
   /van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/;
 /** Thời lượng ghi riêng (ms game) của chiêu có niệm. */

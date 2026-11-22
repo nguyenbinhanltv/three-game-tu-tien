@@ -23,8 +23,18 @@ import {
 import type { FxMesh } from '../../render/materials/vfx';
 import { paletteOf, toneOf, type FxPalette } from '../../render/vfx/palette';
 import { FLAGS } from '../../base/flags';
-import { ISO_BOLT_HEIGHT, ISO_CARD_ALPHA, ISO_CARD_SCALE, isoFxScaleY } from '../../render/vfx/isoFx';
 import { BOLT_HEIGHT } from '../../render/vfx/lightning';
+import { SIGIL_CIRCLE } from '../../render/vfx/sigil';
+import {
+  ISO_BOLT_FOOT_LIFE,
+  ISO_BOLT_HEIGHT,
+  isBoltGroundHit,
+  isoBehind,
+  isoBoltFootRadius,
+  ISO_CARD_ALPHA,
+  ISO_CARD_SCALE,
+  isoFxScaleY,
+} from '../../render/vfx/isoFx';
 import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
 import { DECAL_CRACK, DECAL_RUNE, DECAL_SCORCH, DECAL_SMOKE, DECAL_STRIKE } from '../../render/vfx/stylized';
 import { bladeVisible } from '../../render/vfx/bladeTrail';
@@ -481,11 +491,41 @@ export class FxRunner {
 
   // ---- mesh ----
 
+  /** Camera chéo: dấu vòng sét ở chân tia (gộp các tia chồng nhau cùng điểm trong 0,15 s) để thấy điểm rơi từ trên xuống. */
+  private boltFoot(c: Cast, ev: FxMeshEvent, p: THREE.Vector3): void {
+    const key = `${c.sid}:${Math.round(p.x * 2)},${Math.round(p.z * 2)}`;
+    const now = performance.now();
+    if (now - (this.footAt.get(key) ?? -1e9) < 150) return;
+    this.footAt.set(key, now);
+    if (this.footAt.size > 64) this.footAt.clear();
+    const w = Array.isArray(ev.scale) ? ev.scale[0]! : (ev.scale ?? 1);
+    const m = this.v.sigil(SIGIL_CIRCLE, p.x, p.z, 0, isoBoltFootRadius(w), 0, toneOf(c.pal, 'rim'), p.y + 0.16);
+    m.fxA.x = 1;
+    this.v.add(
+      ISO_BOLT_FOOT_LIFE,
+      (k) => {
+        m.fxA.z = k < 0.2 ? 1 : 0;
+        m.fxOpacity = Math.min(1, (1 - k) * 1.6) * 0.85;
+      },
+      () => this.v.drop(m),
+    );
+  }
+
+  private footAt = new Map<string, number>();
+
   private mesh(c: Cast, ev: FxMeshEvent, tgt: FxTarget | null, idx: number): void {
     const yaw = this.aim(c, tgt);
     const geo = shapeGeometry(ev.shape);
     const kind = shapeKind(ev.shape);
     const start = this.anchor(c, ev.at ?? 'self', ev.offset, yaw, tgt, new THREE.Vector3());
+    if (FLAGS.isoCam && FLAGS.isoFxCompress && isBoltGroundHit(ev.shape, ev.at)) this.boltFoot(c, ev, start);
+    if (FLAGS.isoCam && FLAGS.isoFxCompress && kind === 'card' && (ev.at ?? 'self') === 'self') {
+      // Thẻ pháp tướng của người ra chiêu: đứng phía xa camera (trên người trên màn hình), không lệch sang bên đè lên đường/vật khác.
+      const cp = this.env.camera().position;
+      const b = isoBehind(cp.x, cp.z, c.actor.x, c.actor.z);
+      start.x = b.x;
+      start.z = b.z;
+    }
     const end = ev.move ? this.anchor(c, ev.move.to, ev.move.offset ?? ev.offset, yaw, tgt, new THREE.Vector3(), ev.move.ahead ?? 8) : null;
     if (ev.awayFromCam) {
       // Phía xa camera so với người ra chiêu (hướng nhìn không biết trước): đối xứng qua người nếu đang ở phía camera.
