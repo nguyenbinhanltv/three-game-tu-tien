@@ -112,6 +112,8 @@ export interface CombatCtx {
   setMonFlags(m: MonEnt, mf: number, ce: number): void;
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src' | 'q'>): void;
   readonly terrain: Terrain;
+  /** Người độ kiếp vừa dùng một chiêu hợp lệ (phản đòn của Dương Thực Kiếp). */
+  tribSkill(p: PlayerEnt): void;
   tryInterrupt(p: PlayerEnt, mon: MonEnt, extraStun?: number): void;
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
 }
@@ -958,6 +960,7 @@ export class CombatSystem {
       p.mth.dirty = true;
     }
     p.lastCombatAt = this.c.now;
+    this.c.tribSkill(p);
     return mp;
   }
 

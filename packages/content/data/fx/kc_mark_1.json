@@ -1,0 +1,47 @@
+{
+ "skill": "kc_mark_1",
+ "palette": "kc_hoi_dao",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 1.9,
+   "dur": 3.0,
+   "at": "area",
+   "grow": 0.2,
+   "tone": "accent",
+   "alpha": 0.9,
+   "yaw": 0,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    0,
+    0.09,
+    0
+   ],
+   "scale": [
+    1.6,
+    1,
+    1.6
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.3,
+   "tone": "accent",
+   "alpha": 1.0,
+   "seed": 221,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  }
+ ]
+}

@@ -1,0 +1,61 @@
+{
+ "skill": "kc_dt_now",
+ "palette": "kc_duong_dap",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 1.0,
+   "at": "self",
+   "offset": [
+    0,
+    -1.08,
+    0
+   ],
+   "scale": [
+    3.2,
+    1,
+    3.2
+   ],
+   "scaleTo": [
+    1.2,
+    1,
+    1.2
+   ],
+   "sweep": 0.05,
+   "erodeFrom": 0.9,
+   "ragged": 0.2,
+   "tone": "rim",
+   "alpha": 1.0,
+   "seed": 252,
+   "follow": true,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 1.0,
+   "at": "self",
+   "offset": [
+    0,
+    -1.06,
+    0
+   ],
+   "scale": [
+    1.2,
+    1,
+    1.2
+   ],
+   "sweep": 0.05,
+   "erodeFrom": 0.9,
+   "ragged": 0.2,
+   "tone": "accent",
+   "alpha": 1.0,
+   "seed": 253,
+   "follow": true,
+   "tier": 0
+  }
+ ]
+}

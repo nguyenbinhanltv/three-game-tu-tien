@@ -1,0 +1,81 @@
+{
+ "skill": "kc_am_pool",
+ "palette": "kc_am_lan",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.0,
+   "r": 8.0,
+   "dur": 3.0,
+   "at": "area",
+   "grow": 7.2,
+   "tone": "core",
+   "alpha": 0.9,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 8.0,
+   "dur": 3.0,
+   "at": "area",
+   "grow": 7.2,
+   "tone": "rim",
+   "alpha": 0.55,
+   "yaw": 15,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    0,
+    0.07,
+    0
+   ],
+   "scale": [
+    1.2,
+    1,
+    1.2
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.5,
+   "tone": "accent",
+   "alpha": 0.9,
+   "seed": 241,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 18,
+   "speed": 0.8,
+   "spread": 1.0,
+   "life": 1.8,
+   "size": 0.34,
+   "at": "area",
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "tone": "body",
+   "grav": -0.5,
+   "tier": 1,
+   "from": "start"
+  }
+ ]
+}

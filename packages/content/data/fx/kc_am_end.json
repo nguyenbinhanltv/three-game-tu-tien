@@ -1,0 +1,54 @@
+{
+ "skill": "kc_am_end",
+ "palette": "kc_am_lan",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    0,
+    0.05,
+    0
+   ],
+   "scale": [
+    2.0,
+    0.6,
+    2.0
+   ],
+   "scaleTo": [
+    8.0,
+    0.8,
+    8.0
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.35,
+   "ragged": 0.8,
+   "tone": "body",
+   "alpha": 0.6,
+   "seed": 242,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 18,
+   "speed": 1.6,
+   "spread": 1.0,
+   "life": 1.0,
+   "size": 0.3,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "tone": "core",
+   "grav": 1.2,
+   "tier": 1
+  }
+ ]
+}

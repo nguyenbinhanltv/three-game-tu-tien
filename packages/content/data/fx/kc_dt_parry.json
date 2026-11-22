@@ -1,0 +1,60 @@
+{
+ "skill": "kc_dt_parry",
+ "palette": "kc_duong_dap",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "self",
+   "offset": [
+    0,
+    -1.1,
+    0
+   ],
+   "scale": [
+    1.2,
+    0.6,
+    1.2
+   ],
+   "scaleTo": [
+    5.0,
+    1.6,
+    5.0
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.35,
+   "ragged": 0.6,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 254,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 28,
+   "speed": 4.0,
+   "spread": 1.0,
+   "life": 0.7,
+   "size": 0.09,
+   "at": "self",
+   "offset": [
+    0,
+    0.4,
+    0
+   ],
+   "tone": "rim",
+   "grav": -1.4,
+   "tier": 0
+  },
+  {
+   "type": "flash",
+   "t": 0.0,
+   "amount": 0.12,
+   "tier": 0
+  }
+ ]
+}

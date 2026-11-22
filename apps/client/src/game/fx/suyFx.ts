@@ -9,9 +9,11 @@
 //  - cột linh quang cộng sáng có bloom (`Vfx.suyBeacon`) ở Linh Nhãn, vòng Tôi Thể Lôi, tâm lôi ẩn, nhịp phá vọng;
 //  - ngọn lửa Thọ Đăng phát sáng có trạng thái liên tục (`Vfx.suyLamps`): cháy, bị suy phong nhắm thì nhạt màu dần, tắt, đang thắp lại.
 import * as THREE from 'three/webgpu';
-import { HK_FX, SUY_FX } from '@dtl/content';
+import { HK_FX, KC_FX, SUY_FX } from '@dtl/content';
 import {
   HK_VAN_SPIN_FRAC,
+  gatePos,
+  unpackGates,
   hkLuanAngle,
   hkRingPos,
   hkVanSpinAngle,
@@ -92,7 +94,7 @@ export class SuyFx {
   ) {}
 
   private tl(key: string): FxTimeline | undefined {
-    return SUY_FX.get(key) ?? HK_FX.get(key);
+    return SUY_FX.get(key) ?? HK_FX.get(key) ?? KC_FX.get(key);
   }
 
   private note(key: string): void {
@@ -445,6 +447,47 @@ export class SuyFx {
    * FX `hkmark`: dấu trên sân của Huyền Kiếp (TN-6). Thứ phải chạm/bước vào (chỗ nấp, trụ nguội, ấn thật, Hồn Châu, cung sinh) có thêm cột linh quang
    * để đọc được từ xa trên sân tối; mối nguy (đụn tuyết, trụ nóng) dùng tông `accent` của kiếp.
    */
+  /**
+   * Dấu trên sân của ba cơ chế kiếp chương 6 (TN-3, FX `kcmark`): `s` = hd (hỏi đạo) | am (âm vực) | dt (đòn nhịp Dương Thực); `pg` là bước.
+   * Hình phát theo timeline `kc_*.json` (phẳng sát đất, khối cao camFade); thứ phải bước vào còn có cột linh quang cộng sáng để đọc từ xa.
+   * Luật (đáp án, vùng hại, cửa sổ phản đòn) do server quyết định: ở đây chỉ vẽ theo tin server gửi.
+   */
+  kcMark(m: FxMsg): void {
+    const src = m.src ?? '';
+    const pg = m.pg ?? 0;
+    const x = m.x ?? 0;
+    const z = m.z ?? 0;
+    switch (m.s) {
+      case 'hd': {
+        if (pg === 1) {
+          const d = m.d ?? 6;
+          const gates = unpackGates(m.lv ?? 0);
+          this.at(`kc_mark_${m.n ?? 1}`, 'kc_hoi_dao', x, z, 2, { delay: d, src });
+          for (let i = 0; i < gates.length; i++) {
+            const g = gatePos({ x, z }, m.r ?? 8, i);
+            this.at(`kc_gate_${gates[i]}`, 'kc_hoi_dao', g.x, g.z, 3, { delay: d, src });
+            this.glow(src, `kcg${i}`, hexOf('kc_hoi_dao', 'rim'), { x: g.x, z: g.z, h: 5, r: 2.2, dur: d, opacity: 0.32 });
+          }
+        } else {
+          this.dropGlow(src, 'kcg');
+          this.at('kc_hd_ok', 'kc_hoi_dao', x, z, m.r ?? 3, { src });
+          if (pg === 3) this.on('kc_hd_bad', 'kc_hoi_dao', src);
+        }
+        break;
+      }
+      case 'am':
+        if (pg === 1) this.at('kc_am_pool', 'kc_am_lan', x, z, m.r ?? 8, { delay: m.d ?? 8.7, src });
+        else if (pg === 3) this.at('kc_am_end', 'kc_am_lan', x, z, m.r ?? 8, { src });
+        break;
+      case 'dt':
+        if (pg === 1) this.at('kc_dt_wind', 'kc_duong_dap', x, z, m.r ?? 12, { delay: m.d ?? 2.4, src });
+        else if (pg === 2) this.on('kc_dt_now', 'kc_duong_dap', src);
+        else if (pg === 3) this.on('kc_dt_hit', 'kc_duong_dap', src);
+        else if (pg === 5) this.on('kc_dt_parry', 'kc_duong_dap', src);
+        break;
+    }
+  }
+
   hkMark(m: FxMsg): void {
     const src = m.src ?? '';
     const kind = m.s ?? '';

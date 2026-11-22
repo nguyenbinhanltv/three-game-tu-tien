@@ -86,6 +86,9 @@ import {
   MON_FX_TIMELINES,
   HK_FX,
   HK_FX_STAGE,
+  KC_FX,
+  KC_FX_STAGE,
+  KC_FX_TIMELINES,
   HK_FX_TIMELINES,
   HON_FX_TIMELINES,
   CO_FX_TIMELINES,
@@ -261,6 +264,30 @@ for (const f of HK_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => i
     if (n > FX_SKILL_DRAW_MAX) err(`fx huyền kiếp: ${mech} dùng ${n} draw > ${FX_SKILL_DRAW_MAX}`);
   }
   for (const f of HK_FX_TIMELINES) if (!used.has(f.skill)) err(`fx huyền kiếp: timeline ${f.skill} không thuộc kiếp nào (HK_FX_STAGE)`);
+}
+// TN-3: hiệu ứng ba cơ chế kiếp chương 6, cùng luật: mỗi timeline ≤ 12 draw, cả một cơ chế ≤ 25 draw; hình có khối cao phải camFade.
+for (const f of KC_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('kc_'))) err(m);
+{
+  const used = new Set<string>();
+  for (const [mech, keys] of Object.entries(KC_FX_STAGE)) {
+    const events = keys.flatMap((k) => {
+      used.add(k);
+      const tl = KC_FX.get(k);
+      if (!tl) err(`fx kiếp chương 6: ${mech} cần timeline ${k} (chạy python tools/vfx/gen-fx-ch6.py)`);
+      return tl?.events ?? [];
+    });
+    const n = fxDrawCount(events);
+    if (n > FX_SKILL_DRAW_MAX) err(`fx kiếp chương 6: ${mech} dùng ${n} draw > ${FX_SKILL_DRAW_MAX}`);
+  }
+  for (const f of KC_FX_TIMELINES) {
+    if (!used.has(f.skill)) err(`fx kiếp chương 6: timeline ${f.skill} không thuộc cơ chế nào (KC_FX_STAGE)`);
+    const n = fxDrawCount(f.events);
+    if (n > 12) err(`fx kiếp chương 6: ${f.skill} dùng ${n} draw > 12`);
+    if (!f.palette?.startsWith('kc_')) err(`fx kiếp chương 6: ${f.skill} phải dùng bảng màu kc_*`);
+    for (const e of f.events)
+      if (e.type === 'mesh' && (e.shape === 'rock_spire' || e.shape === 'burst') && !e.camFade)
+        err(`fx kiếp chương 6: ${f.skill} khối cao ${e.shape} thiếu camFade`);
+  }
 }
 // Mỗi skill một động tác riêng, không dài quá GCD (chiêu niệm chú: động tác chém sau khi niệm xong cũng ≤ GCD).
 // Chiêu lướt (K-2) không có động tác riêng: dùng chung fx `dash`, hình lướt do client dựng.
@@ -1674,6 +1701,75 @@ if (!at(LEVELS, 'van_lam').spawn) err('van_lam: thiếu spawn');
         )
           err(`độ kiếp ${id}/${p.id}: thiếu hoặc sai thông số nhatThuc (boss phải tồn tại)`);
         if (!d.phases.some((q) => q.danLoi)) err(`độ kiếp ${id}/${p.id}: nhat_thuc cần một pha dan_loi trước đó (bia của kiếp)`);
+      }
+      if (p.mechanic === 'hoi_dao') {
+        const x = p.hoiDao;
+        if (
+          !x ||
+          !(
+            x.ring > 0 &&
+            x.gateR > 0 &&
+            x.rounds >= 1 &&
+            x.first >= 0 &&
+            x.ask > 0 &&
+            x.rest >= 0 &&
+            x.pct > 0 &&
+            x.pct < 1 &&
+            x.heal >= 0 &&
+            x.heal < 1
+          )
+        )
+          err(`độ kiếp ${id}/${p.id}: thiếu hoặc sai thông số hoiDao`);
+        else {
+          // Ba Đạo Môn không chồng nhau, và đủ thời gian trong pha cho mọi vòng.
+          if (!(x.ring * 2 * Math.sin(Math.PI / 3) > x.gateR * 2))
+            err(`độ kiếp ${id}/${p.id}: hoiDao ba cổng chồng nhau (ring ${x.ring}, gateR ${x.gateR})`);
+          if (!(x.first + x.rounds * (x.ask + x.rest) - x.rest <= p.end - (d.phases[d.phases.indexOf(p) - 1]?.end ?? 0)))
+            err(`độ kiếp ${id}/${p.id}: pha hỏi đạo quá ngắn cho ${x.rounds} vòng`);
+        }
+      }
+      if (p.mechanic === 'am_lan') {
+        const x = p.amLan;
+        if (
+          !x ||
+          !(
+            x.ring > 0 &&
+            x.keep >= 0 &&
+            x.first >= 0 &&
+            x.every > 0 &&
+            x.seed >= 0 &&
+            x.grow > 0 &&
+            x.hold >= 0 &&
+            x.r0 > 0 &&
+            x.r1 > x.r0 &&
+            x.max >= 1 &&
+            x.tick > 0 &&
+            x.dps > 0 &&
+            x.dps * x.tick < 1
+          )
+        )
+          err(`độ kiếp ${id}/${p.id}: thiếu hoặc sai thông số amLan`);
+        // Vực lan phải chậm hơn người chạy (7 m/s) để né được.
+        else if (!((x.r1 - x.r0) / x.grow < 6)) err(`độ kiếp ${id}/${p.id}: amLan lan nhanh hơn người chạy được`);
+      }
+      if (p.mechanic === 'duong_dap') {
+        const x = p.duongDap;
+        if (
+          !x ||
+          !(
+            x.first >= 0 &&
+            x.every > x.windup &&
+            x.windup > x.win &&
+            x.win >= 0.8 &&
+            x.pct > 0 &&
+            x.pct < 0.5 &&
+            x.cut > 0 &&
+            x.cut < 1 &&
+            x.heal >= 0 &&
+            x.heal < 1
+          )
+        )
+          err(`độ kiếp ${id}/${p.id}: thiếu hoặc sai thông số duongDap (cửa sổ phản đòn >= 0,8 s cho nhịp GCD, đòn < 50% khí huyết)`);
       }
       if (p.final?.gateSteles !== undefined && !(p.final.gateSteles >= 1 && p.final.gateSteles <= 5 && d.phases.some((q) => q.danLoi)))
         err(`độ kiếp ${id}/${p.id}: gateSteles ngoài 1–5 hoặc thiếu pha dan_loi`);

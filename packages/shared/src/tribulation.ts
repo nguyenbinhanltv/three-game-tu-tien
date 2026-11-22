@@ -221,6 +221,56 @@ export interface TribNhatThuc {
 }
 
 /**
+ * Vấn Đỉnh Kiếp, cơ chế `hoi_dao` (TN-3): mỗi vòng "tâm ma hỏi đạo". Giữa sân hiện một dấu có 1–3 vành, ba Đạo Môn quanh sân (cách tâm `ring` m, bán kính `gateR`)
+ * mỗi cổng mang 1–3 vành khác nhau. Sau `ask` giây, đứng trong cổng cùng số vành với dấu giữa sân là đúng; sai hoặc không đứng cổng nào mất `pct` khí huyết tối đa.
+ * Đúng thì hồi `heal` (phân số khí huyết tối đa). `rounds` vòng, vòng đầu sau `first` giây, nghỉ `rest` giây giữa các vòng. Server chọn đáp án; client chỉ đi lại.
+ */
+export interface TribHoiDao {
+  ring: number;
+  gateR: number;
+  rounds: number;
+  first: number;
+  ask: number;
+  rest: number;
+  pct: number;
+  heal: number;
+}
+
+/**
+ * Âm Hư Kiếp, cơ chế `am_lan` (TN-3): mỗi `every` giây một "âm vực" nảy mầm ở chỗ ngẫu nhiên trong bán kính `ring` quanh tâm sân (cách người độ kiếp tối thiểu `keep` m),
+ * `seed` giây đầu chỉ là mầm (không hại), rồi lan từ `r0` tới `r1` trong `grow` giây, giữ `hold` giây rồi tan. Đứng trong bất kỳ âm vực nào đang lan, cứ `tick` giây
+ * bị bào `dps` (phân số khí huyết tối đa mỗi giây) một lần: nhiều vực chồng nhau KHÔNG cộng dồn. Tối đa `max` vực sống cùng lúc.
+ */
+export interface TribAmLan {
+  ring: number;
+  keep: number;
+  first: number;
+  every: number;
+  seed: number;
+  grow: number;
+  hold: number;
+  r0: number;
+  r1: number;
+  max: number;
+  tick: number;
+  dps: number;
+}
+
+/**
+ * Dương Thực Kiếp, cơ chế `duong_dap` (TN-3): mỗi `every` giây một "đòn nhịp" nung cả sân, ủ `windup` giây rồi giáng `pct` khí huyết tối đa lên chủ kiếp (không né bằng chỗ đứng).
+ * Dùng bất kỳ chiêu nào trong `win` giây cuối trước khi đòn giáng là phản đòn: đòn giảm `cut` (phân số) và hồi `heal` khí huyết tối đa. Dùng chiêu sớm hơn cửa sổ không tính.
+ */
+export interface TribDuongDap {
+  first: number;
+  every: number;
+  windup: number;
+  win: number;
+  pct: number;
+  cut: number;
+  heal: number;
+}
+
+/**
  * Một ải của Thiên Nhân Ngũ Suy (TN-4, cơ chế `suy_*`). Mỗi ải có một thanh suy khí 0..100: qua `rest` giây điều tức đầu ải thì thanh tăng
  * `rise` %/giây, nặng dần tới `riseEnd` ở cuối ải; chạm 100 là ải thất bại. Chỉ thao tác riêng của ải (khối cấu hình tương ứng) mới kéo thanh xuống.
  * Suy khí không phải sát thương: nó rút linh lực, khí huyết, tầm cảm ứng… theo tỉ lệ thanh.
@@ -341,6 +391,10 @@ export interface TribPhaseDef {
   phanThan?: TribPhanThan;
   danLoi?: TribDanLoi;
   nhatThuc?: TribNhatThuc;
+  /** Ba cơ chế riêng của kiếp chương 6 (TN-3). */
+  hoiDao?: TribHoiDao;
+  amLan?: TribAmLan;
+  duongDap?: TribDuongDap;
   /** Ải suy (chỉ dùng khi `mechanic` là một trong `suy_*`); kiếp nhỏ của Huyền Kiếp (`hk_*`) dùng lại bốn số chung `rest/start/rise/riseEnd`. */
   suy?: TribSuy;
   /** Thông số riêng của một kiếp nhỏ Huyền Kiếp (TN-6, cơ chế `hk_*`); khóa cần có của từng cơ chế ở `HK_PARAMS` (ngusuy.ts → huyenkiep.ts). */
@@ -403,6 +457,9 @@ export const TRIB_MECHANIC_IDS = [
   'phan_than',
   'dan_loi',
   'nhat_thuc',
+  'hoi_dao',
+  'am_lan',
+  'duong_dap',
   'suy_linh',
   'suy_the',
   'suy_thuc',

@@ -54,6 +54,7 @@ export * from './spawnrules';
 export * from './elements';
 export * from './monskill';
 export * from './tribulation';
+export * from './kiepch6';
 export * from './ngusuy';
 export * from './huyenkiep';
 export * from './propLib';
