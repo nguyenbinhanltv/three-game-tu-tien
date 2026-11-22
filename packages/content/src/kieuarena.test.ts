@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { KIEU_COUNT, KIEU_MOOD, KIEU_PROPS, kieuLevelId, propCollidersOf, propsOf } from '@dtl/shared';
-import { LEVEL_ASSETS } from './index';
+import { LEVEL_ASSETS, LEVELS } from './index';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const C = { x: 1300, z: 985 };
@@ -23,7 +23,7 @@ describe('mỹ thuật sàn chín phòng cầu (TN-7)', () => {
     expect(Object.keys(KIEU_PROPS)).toHaveLength(KIEU_COUNT);
   });
 
-  it('chừa chỗ cho cơ chế: lòng sàn (< 9 m) trống, cầu 3 (sân kiếp) trống trong 46 m trừ sảnh vào, công tắc cầu 4 cách >= 5 m', () => {
+  it('chừa chỗ cho cơ chế: lòng sàn (< 9 m) trống, cầu kiếp trống trong 14 m quanh chỗ sinh (nơi sân kiếp dựng), công tắc cầu 4 cách >= 5 m', () => {
     const SW = [
       { x: 1300, z: 963 },
       { x: 1319, z: 996 },
@@ -33,7 +33,9 @@ describe('mỹ thuật sàn chín phòng cầu (TN-7)', () => {
       for (const p of propsOf(kieuLevelId(n))) {
         const d = Math.hypot(p.x - C.x, p.z - C.z);
         expect(d, `${n}:${p.id}`).toBeGreaterThanOrEqual(9);
-        if (n === 3) expect(d, `3:${p.id}`).toBeGreaterThanOrEqual(46);
+        const lv = LEVELS[kieuLevelId(n)]!;
+        if (lv.tribulation)
+          expect(Math.hypot(p.x - lv.dungeon!.spawn.x, p.z - lv.dungeon!.spawn.z), `${n}:${p.id}`).toBeGreaterThanOrEqual(14);
         if (n === 4) for (const w of SW) expect(Math.hypot(p.x - w.x, p.z - w.z), `4:${p.id}`).toBeGreaterThanOrEqual(5);
       }
   });
@@ -49,7 +51,7 @@ describe('mỹ thuật sàn chín phòng cầu (TN-7)', () => {
 
   it('mood theo bảng KIEU_MOOD (ghi đè cả level thêm sau) và bật lớp prop', () => {
     expect(KIEU_MOOD).toHaveLength(KIEU_COUNT);
-    for (const m of KIEU_MOOD) expect(m).toMatch(/^ck_(dawn|day|dusk|night)$/);
+    for (const m of KIEU_MOOD) expect(m).toMatch(/^ckr_(dawn|day|dusk|night)$/);
     for (const [id, a] of Object.entries(LEVEL_ASSETS)) {
       const m = /^kieu_([1-9])$/.exec(id);
       if (!m) continue;

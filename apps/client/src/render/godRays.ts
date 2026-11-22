@@ -55,9 +55,13 @@ export const GOD_RAY_INTENSITY: Record<string, number> = {
   vh_dusk: 1.2,
   vh_night: 0.3,
   ck_dawn: 1.2,
+  ckr_dawn: 1.2,
   ck_day: 0.6,
+  ckr_day: 0.6,
   ck_dusk: 1.3,
+  ckr_dusk: 1.3,
   ck_night: 0.3,
+  ckr_night: 0.3,
 };
 
 interface GodRayArea {

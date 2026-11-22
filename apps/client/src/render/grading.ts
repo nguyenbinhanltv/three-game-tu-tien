@@ -71,9 +71,13 @@ export type GradingName =
   | 'vh_dusk'
   | 'vh_night'
   | 'ck_dawn'
+  | 'ckr_dawn'
   | 'ck_day'
+  | 'ckr_day'
   | 'ck_dusk'
+  | 'ckr_dusk'
   | 'ck_night'
+  | 'ckr_night'
   | 'ash_dawn'
   | 'rift'
   | 'rift_pit'
@@ -149,9 +153,13 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   vh_dusk: parse(raw.presets.vh_dusk),
   vh_night: parse(raw.presets.vh_night),
   ck_dawn: parse(raw.presets.ck_dawn),
+  ckr_dawn: parse(raw.presets.ckr_dawn),
   ck_day: parse(raw.presets.ck_day),
+  ckr_day: parse(raw.presets.ckr_day),
   ck_dusk: parse(raw.presets.ck_dusk),
+  ckr_dusk: parse(raw.presets.ckr_dusk),
   ck_night: parse(raw.presets.ck_night),
+  ckr_night: parse(raw.presets.ckr_night),
   ash_dawn: parse(raw.presets.ash_dawn),
   rift: parse(raw.presets.rift),
   rift_pit: parse(raw.presets.rift_pit),

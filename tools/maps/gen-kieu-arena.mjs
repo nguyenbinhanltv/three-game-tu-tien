@@ -28,7 +28,7 @@ function rng(seed) {
 }
 
 /** Mood theo cầu: 1 ngày, 2 hoàng hôn (đối đầu chính mình), 3 đêm (suy kiệt), 4 bình minh (hai mặt), 5 ngày (thể phách), 6 hoàng hôn, 7–8 đêm (kiếp), 9 bình minh (Đạp Thiên). */
-const MOOD = ['ck_day', 'ck_dusk', 'ck_night', 'ck_dawn', 'ck_day', 'ck_dusk', 'ck_night', 'ck_night', 'ck_dawn'];
+const MOOD = ['ckr_day', 'ckr_dusk', 'ckr_night', 'ckr_dawn', 'ckr_day', 'ckr_dusk', 'ckr_night', 'ckr_night', 'ckr_dawn'];
 
 const at = (r, a, id, s = 1, face = 'out') => ({
   id,
@@ -127,6 +127,9 @@ function inner(n, R) {
   return out;
 }
 
+/** Cầu chạy trong sân kiếp (`tribulation: true`): 3 Suy, 7, 8, 9 Huyền Kiếp. */
+const TRIB = new Set([3, 7, 8, 9]);
+
 const all = {};
 for (let n = 1; n <= 9; n++) {
   const R = rng(20261123 + n * 7919);
@@ -135,7 +138,11 @@ for (let n = 1; n <= 9; n++) {
     const d = Math.hypot(q.x - CX, q.z - CZ);
     return d <= 40 || Math.abs(Math.atan2(q.z - CZ, q.x - CX) - PI / 2) > 0.6;
   };
-  all[`kieu_${n}`] = [...frame(R), ...THEME[n](R)].filter(keep).concat(plaza(), inner(n, R));
+  all[`kieu_${n}`] = [...frame(R), ...THEME[n](R)]
+    .filter(keep)
+    .concat(TRIB.has(n) ? [] : plaza(), inner(n, R))
+    // Cầu kiếp: tâm sân kiếp là chỗ người chơi đứng lúc ải bắt đầu (gần chỗ sinh, tribsuy.begin), nên không prop nào trong 14 m quanh chỗ sinh.
+    .filter((q) => !TRIB.has(n) || Math.hypot(q.x - 1300, q.z - 1040) >= 14);
 }
 
 const body = Object.entries(all)
