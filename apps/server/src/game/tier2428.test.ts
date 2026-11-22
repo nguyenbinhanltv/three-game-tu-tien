@@ -102,7 +102,7 @@ function setup() {
 
 const NEW = {
   [DAO]: { t24: ['skl_thuan_dao_tram', 'skl_huyet_chien_the'], t28: 'skl_doan_thien_dao', b28: ['cuong_dao', 'luu_ngan'] },
-  [CO]: { t24: ['skl_phan_co_thuat', 'skl_kim_thiem_co'], t28: 'skl_van_co_phe_the', b28: ['bach_co', 'doc_to'] },
+  [CO]: { t24: ['skl_phan_co_thuat', 'skl_kim_thien_co'], t28: 'skl_van_co_phe_the', b28: ['bach_co', 'doc_to'] },
   [CCK]: { t24: ['skl_dia_sat_tran', 'skl_thai_hu_ho_tran'], t28: 'skl_lac_thu_dai_tran', b28: ['cuu_cung', 'phong_an'] },
 } as const;
 
@@ -290,7 +290,7 @@ describe('Cổ tu mốc 24/28', () => {
     const m = mon(X + 2, Z);
     fresh(p);
     setRes(p, 0);
-    use(p, 'skl_kim_thiem_co');
+    use(p, 'skl_kim_thien_co');
     expect(res(p)).toBeCloseTo(2, 5);
     const before = m.s.hp;
     const hp0 = p.char.hp;

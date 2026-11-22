@@ -129,7 +129,7 @@ def phan_co_thuat():
 R['skl_phan_co_thuat'] = phan_co_thuat
 
 
-def kim_thiem_co():
+def kim_thien_co():
     """Kim Thiền Cổ (nhánh 24, giáp vàng, hit 0,4): vỏ cổ vàng lục khép quanh thân thành vòng thấp, triện lục dưới chân; không che mặt người."""
     G = -1.1
     ev = [
@@ -147,10 +147,10 @@ def kim_thiem_co():
         a = i / 6 * math.tau
         ev.append(mesh('pill_orb', -0.1 + 0.02 * i, 0.4, at='self', offset=[round(math.cos(a) * 2.2, 2), G + 0.7, round(math.sin(a) * 2.2, 2)], scale=0.5, sweep=0, erodeFrom=0.9,
                        alpha=1, tone='accent', camFade=True, tier=0 if i < 3 else 1, seed=80 + i, move={'to': 'self', 'ease': 'in', 'offset': [0, G + 0.9, 0]}))
-    return {'skill': 'skl_kim_thiem_co', 'replaces': ['kimthiemco'], 'events': ev}
+    return {'skill': 'skl_kim_thien_co', 'replaces': ['kimthienco'], 'events': ev}
 
 
-R['skl_kim_thiem_co'] = kim_thiem_co
+R['skl_kim_thien_co'] = kim_thien_co
 
 
 def van_co_phe_the():

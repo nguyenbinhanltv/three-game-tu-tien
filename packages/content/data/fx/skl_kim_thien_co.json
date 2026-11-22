@@ -1,7 +1,7 @@
 {
- "skill": "skl_kim_thiem_co",
+ "skill": "skl_kim_thien_co",
  "replaces": [
-  "kimthiemco"
+  "kimthienco"
  ],
  "events": [
   {

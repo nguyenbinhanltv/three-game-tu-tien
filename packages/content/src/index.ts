@@ -220,7 +220,7 @@ import fx_skl_thuan_dao_tram from '../data/fx/skl_thuan_dao_tram.json';
 import fx_skl_huyet_chien_the from '../data/fx/skl_huyet_chien_the.json';
 import fx_skl_doan_thien_dao from '../data/fx/skl_doan_thien_dao.json';
 import fx_skl_phan_co_thuat from '../data/fx/skl_phan_co_thuat.json';
-import fx_skl_kim_thiem_co from '../data/fx/skl_kim_thiem_co.json';
+import fx_skl_kim_thien_co from '../data/fx/skl_kim_thien_co.json';
 import fx_skl_van_co_phe_the from '../data/fx/skl_van_co_phe_the.json';
 import fx_skl_dia_sat_tran from '../data/fx/skl_dia_sat_tran.json';
 import fx_skl_thai_hu_ho_tran from '../data/fx/skl_thai_hu_ho_tran.json';
@@ -347,7 +347,7 @@ import poseThuanDaoTramJson from '../data/poses/thuan_dao_tram.json';
 import poseHuyetChienTheJson from '../data/poses/huyet_chien_the.json';
 import poseDoanThienDaoJson from '../data/poses/doan_thien_dao.json';
 import posePhanCoThuatJson from '../data/poses/phan_co_thuat.json';
-import poseKimThiemCoJson from '../data/poses/kim_thiem_co.json';
+import poseKimThienCoJson from '../data/poses/kim_thien_co.json';
 import poseVanCoPheTheJson from '../data/poses/van_co_phe_the.json';
 import poseDiaSatTranJson from '../data/poses/dia_sat_tran.json';
 import poseThaiHuHoTranJson from '../data/poses/thai_hu_ho_tran.json';
@@ -573,7 +573,7 @@ export const POSES = [
   poseHuyetChienTheJson,
   poseDoanThienDaoJson,
   posePhanCoThuatJson,
-  poseKimThiemCoJson,
+  poseKimThienCoJson,
   poseVanCoPheTheJson,
   poseDiaSatTranJson,
   poseThaiHuHoTranJson,
@@ -678,7 +678,7 @@ export const FX_TIMELINES = [
   fx_skl_huyet_chien_the,
   fx_skl_doan_thien_dao,
   fx_skl_phan_co_thuat,
-  fx_skl_kim_thiem_co,
+  fx_skl_kim_thien_co,
   fx_skl_van_co_phe_the,
   fx_skl_dia_sat_tran,
   fx_skl_thai_hu_ho_tran,
