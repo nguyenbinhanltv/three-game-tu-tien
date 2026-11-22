@@ -10,6 +10,10 @@ import {
   realmSuppressed,
   runeRadius,
   slashTilt,
+  slashAngle,
+  slashPhase,
+  SLASH_ACTIVE,
+  SLASH_PERIOD,
   PATH_AURA_BASE,
 } from './pathAuraRules';
 import { auraWeights } from './realmAuraRules';
@@ -104,5 +108,28 @@ describe('hào quang riêng của Đao tu / Cổ tu / Cấm chế sư', () => {
   it('vệt đao xen kẽ hai bên nghiêng ngược nhau (không thành vòng đều như phi kiếm)', () => {
     expect(Math.sign(slashTilt(0))).not.toBe(Math.sign(slashTilt(1)));
     expect(slashTilt(0)).toBe(slashTilt(2));
+  });
+});
+
+describe('vệt đao theo nhịp (không khối cố định)', () => {
+  it('mỗi vệt chỉ hiện một đoạn ngắn trong chu kỳ; các vệt lệch pha; không lúc nào hiện đủ mọi vệt', () => {
+    let active = 0;
+    let all = 0;
+    let steps = 0;
+    for (let t = 0; t < 26; t += 0.05) {
+      const n = [0, 1].filter((i) => slashPhase(t, i, 2) >= 0).length;
+      active += n > 0 ? 1 : 0;
+      all += n === 2 ? 1 : 0;
+      steps++;
+    }
+    expect(active / steps).toBeLessThan(0.5);
+    expect(all).toBe(0);
+    expect(slashPhase(0, 0, 2)).toBeGreaterThanOrEqual(0);
+    expect(slashPhase(SLASH_ACTIVE + 0.1, 0, 2)).toBe(-1);
+  });
+  it('vệt quét một cung hẹp (< 1,3 rad) và mỗi chu kỳ xuất phát từ hướng khác', () => {
+    const a0 = slashAngle(0, 0, 0);
+    expect(slashAngle(0, 0, 1) - a0).toBeLessThan(1.3);
+    expect(slashAngle(0, SLASH_PERIOD, 0)).not.toBeCloseTo(a0, 3);
   });
 });

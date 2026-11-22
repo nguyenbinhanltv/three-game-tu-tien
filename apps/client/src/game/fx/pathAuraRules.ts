@@ -31,18 +31,19 @@ export interface PathAuraPalette {
   body: number;
   rim: number;
   accent: number;
+  shadow: number;
 }
 export function pathAuraPalette(mt: string | undefined): PathAuraPalette | null {
   const p = pathOf(mt)?.palette;
   if (!p || !pathAuraOf(mt)) return null;
   const hex = (s: string): number => Number.parseInt(s, 16);
-  return { core: hex(p.core), body: hex(p.body), rim: hex(p.rim), accent: hex(p.accent) };
+  return { core: hex(p.core), body: hex(p.body), rim: hex(p.rim), accent: hex(p.accent), shadow: hex(p.shadow) };
 }
 
 /** Số phần tử của lớp theo cảnh giới (tăng nhẹ theo Kết Đan/Nguyên Anh/Hóa Thần để vẫn thấy mình tiến bộ, không thêm lớp mới). */
 export const PATH_AURA_COUNT: Readonly<Record<PathAuraKind, readonly [number, number, number, number, number]>> = {
-  dao: [2, 2, 3, 3, 3],
-  co: [3, 4, 4, 5, 5],
+  dao: [2, 2, 2, 3, 3],
+  co: [3, 3, 4, 4, 4],
   cam: [1, 1, 1, 1, 1],
 };
 export function pathAuraCount(kind: PathAuraKind, stage: AuraStage): number {
@@ -75,7 +76,22 @@ export function bugOrbit(i: number, n: number, t: number): { ang: number; r: num
   const f = i / Math.max(1, n);
   const speed = (0.9 + 0.35 * ((i * 7) % 5)) * (i % 2 === 0 ? 1 : -0.8);
   const ang = t * speed + f * Math.PI * 2;
-  const r = 0.75 + 0.3 * Math.sin(t * 0.7 + i * 2.1) + 0.12 * (i % 3);
-  const y = 0.55 + 0.95 * f + 0.14 * Math.sin(t * 1.9 + i * 1.3);
+  const r = 0.7 + 0.2 * Math.sin(t * 0.7 + i * 2.1) + 0.08 * (i % 3);
+  const y = 0.5 + 0.5 * f + 0.1 * Math.sin(t * 1.9 + i * 1.3);
   return { ang, r, y };
+}
+
+/** Chu kỳ (giây) của một vệt đao: mỗi vệt chỉ hiện `SLASH_ACTIVE` giây đầu chu kỳ, các vệt lệch pha nhau. */
+export const SLASH_PERIOD = 2.6;
+export const SLASH_ACTIVE = 0.45;
+/** Tiến độ 0–1 của vệt thứ `i` trong `n` tại thời điểm `t`; âm = đang nghỉ (không vẽ). */
+export function slashPhase(t: number, i: number, n: number): number {
+  const local = (((t + (i / Math.max(1, n)) * SLASH_PERIOD) % SLASH_PERIOD) + SLASH_PERIOD) % SLASH_PERIOD;
+  return local < SLASH_ACTIVE ? local / SLASH_ACTIVE : -1;
+}
+/** Góc (rad) vệt quét tại tiến độ `ph`: cung hẹp ~1,1 rad, mỗi lần quét xuất phát từ một hướng khác (theo số chu kỳ đã qua). */
+export function slashAngle(i: number, t: number, ph: number): number {
+  const cycle = Math.floor((t + i * 0.7) / SLASH_PERIOD);
+  const start = ((cycle * 2.399 + i * 1.7) % (Math.PI * 2)) - 0.55;
+  return start + ph * 1.1;
 }

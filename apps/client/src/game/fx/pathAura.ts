@@ -33,6 +33,8 @@ import {
   pathAuraPalette,
   pathAuraStage,
   runeRadius,
+  slashAngle,
+  slashPhase,
   slashTilt,
   type PathAuraKind,
   type PathAuraPalette,
@@ -72,6 +74,7 @@ interface PathCtx {
   /** Độ hiện tổng của lớp (trọng số chế độ/chạy/chiến × độ hiện mượt). */
   w: number;
   y0: number;
+  yaw: number;
 }
 
 const hashStr = (s: string): number => {
@@ -187,33 +190,38 @@ export class PathAuraFx {
     c.cz = cam.z - p.z;
     c.w = w.main * au.vis;
     c.y0 = p.y;
+    c.yaw = a.yaw;
     for (const f of au.ups) f(c);
     this.emit(au, c, kind, dt, caps);
   }
 
   /** Hạt GPU thưa: tàn đỏ của Đao tu (chỉ khi đã yên, nền). Cổ tu/Cấm chế sư không phát hạt riêng ngoài quầng của cổ trùng. */
+  /** Hạt GPU: khí đỏ sậm của Đao tu bốc nhẹ từ vai/lưng (phía sau người, cao ngang vai), thưa; tắt ở bậc chất lượng Thấp. */
   private emit(au: PathAura, c: PathCtx, kind: PathAuraKind, dt: number, caps: AuraCaps): void {
     if (kind !== 'dao' || !caps.particles || au.vis < 0.3) return;
-    au.acc = Math.min(au.acc + dt * 2.2 * caps.particleScale * (0.4 + au.settle * 0.6), 3);
+    au.acc = Math.min(au.acc + dt * 7 * caps.particleScale * Math.min(1, c.w + 0.2), 4);
+    const bx = -Math.sin(c.yaw);
+    const bz = -Math.cos(c.yaw);
     while (au.acc >= 1) {
       au.acc -= 1;
-      const ang = Math.random() * Math.PI * 2;
-      const r = 0.45 + Math.random() * 0.5;
+      const side = (Math.random() - 0.5) * 0.7;
+      const x = c.p.x + bx * 0.22 + bz * side;
+      const z = c.p.z + bz * 0.22 - bx * side;
       this.v.particles.emit(
-        'glow',
-        c.p.x + Math.cos(ang) * r,
-        c.p.y + 0.15 + Math.random() * 0.9,
-        c.p.z + Math.sin(ang) * r,
+        'dust',
+        x,
+        c.p.y + 1.25 + Math.random() * 0.25,
+        z,
+        bx * 0.05,
+        0.28 + Math.random() * 0.15,
+        bz * 0.05,
+        1.8,
+        0.35,
+        0.9,
+        0x8a1c14,
+        0.9 * Math.min(1, c.w + 0.2),
         0,
-        0.35 + Math.random() * 0.25,
-        0,
-        1.5,
-        0.06,
-        0.0,
-        0xa3281c,
-        0.8 * c.w,
-        0,
-        0.6,
+        0.5,
       );
     }
   }
@@ -254,40 +262,50 @@ export class PathAuraFx {
     };
 
     if (kind === 'dao') {
-      // Vệt đao: lưỡi liềm (nằm ngang, lồi +Z) dựng đứng (xoay quanh X) rồi nghiêng quanh hướng tiếp tuyến; đặt ở độ cao ngực, xoay rất chậm.
+      // Vệt đao mảnh lướt qua theo nhịp, KHÔNG có khối cố định hai bên: mỗi vệt chỉ hiện ~0,45 s trong chu kỳ rồi tắt, quét một cung hẹp;
+      // khí đỏ sậm bốc nhẹ từ vai/lưng do hạt GPU lo (emit).
       const slashes: FxMesh[] = [];
       for (let i = 0; i < n; i++) slashes.push(mk(shapeGeometry('crescent'), pal.core, 'toon', pal.body));
       ups.push((c) => {
         for (let i = 0; i < slashes.length; i++) {
           const m = slashes[i]!;
-          const ang = c.t * 0.22 + (i / slashes.length) * Math.PI * 2;
-          const x = c.p.x + Math.cos(ang) * 0.95;
-          const y = c.p.y + 1.0 + 0.22 * Math.sin(i * 2.4 + 0.7) + 0.04 * Math.sin(c.t * 1.3 + i);
-          const z = c.p.z + Math.sin(ang) * 0.95;
-          m.position.set(x, y, z);
-          // Lồi hướng ra ngoài vòng: quay quanh Y theo góc tiếp tuyến, dựng đứng (X −90°), nghiêng quanh Z.
+          const ph = slashPhase(c.t, i, slashes.length);
+          if (ph < 0) {
+            m.visible = false;
+            continue;
+          }
+          const ang = slashAngle(i, c.t, ph);
+          m.position.set(c.p.x + Math.cos(ang) * 0.85, c.p.y + 0.8 + (0.3 * ((i * 5) % 3)) / 2, c.p.z + Math.sin(ang) * 0.85);
           _q.setFromAxisAngle(AX_Y, Math.PI / 2 - ang);
           _q2.setFromAxisAngle(AX_X, -Math.PI / 2);
           m.quaternion.copy(_q).multiply(_q2);
           _q2.setFromAxisAngle(AX_Z, (slashTilt(i) * Math.PI) / 180);
           m.quaternion.multiply(_q2);
-          m.scale.set(0.9, 0.9, 0.9);
-          show(m, base * c.w * fade(c, m.position));
+          m.scale.set(0.55, 0.55, 0.55);
+          show(m, base * c.w * Math.sin(Math.PI * ph) * fade(c, m.position));
         }
       });
     } else if (kind === 'co') {
-      // Cổ trùng: viên lục nhỏ + quầng mờ; mỗi con quỹ đạo riêng, dập dờn cao thấp.
+      // Cổ trùng: 3–4 viên lục bay quỹ đạo thấp quanh hông, mỗi viên có viền tối (viên lớn hơn, đậm) để nổi trên nền đá trắng + quầng mờ.
       const bugs: FxMesh[] = [];
-      for (let i = 0; i < n; i++) bugs.push(mk(G.ico1, i % 2 ? pal.body : pal.core, 'solid'));
+      const outlines: FxMesh[] = [];
+      for (let i = 0; i < n; i++) {
+        outlines.push(mk(G.ico1, pal.shadow, 'solid'));
+        bugs.push(mk(G.ico1, pal.body, 'solid'));
+      }
       ups.push((c) => {
         for (let i = 0; i < bugs.length; i++) {
           const m = bugs[i]!;
+          const ol = outlines[i]!;
           const o = bugOrbit(i, bugs.length, c.t);
           m.position.set(c.p.x + Math.cos(o.ang) * o.r, c.p.y + o.y, c.p.z + Math.sin(o.ang) * o.r);
-          m.scale.setScalar(0.07 + 0.015 * (i % 2));
+          ol.position.copy(m.position);
+          m.scale.setScalar(0.085);
+          ol.scale.setScalar(0.12);
           const f = base * c.w * fade(c, m.position);
           show(m, f);
-          halo(m.position.x, m.position.y, m.position.z, 0.26, pal.rim, f * 0.5);
+          show(ol, f);
+          halo(m.position.x, m.position.y, m.position.z, 0.3, pal.rim, f * 0.4);
         }
       });
     } else {
