@@ -411,7 +411,8 @@ export class EntityManager {
         look.w !== v.look.w ||
         look.skin !== v.look.skin ||
         look.tint?.hex !== v.look.tint?.hex ||
-        look.tint?.trim !== v.look.tint?.trim;
+        look.tint?.trim !== v.look.tint?.trim ||
+        look.tint?.accent !== v.look.tint?.accent;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
         // `create` trước: nó khởi động việc nạp lười (asset nhân vật, kiếm riêng), rồi mới hỏi còn nạp không để biết có phải dựng lại.
         const next = this.playerSkins.create(look);

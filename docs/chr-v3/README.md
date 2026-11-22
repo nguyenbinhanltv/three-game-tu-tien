@@ -188,14 +188,18 @@ Trần texture chốt lúc nạp model: đổi preset có tác dụng từ lần
 
 Tức giảm khoảng 3,5–4 ms p50 trong cùng điều kiện; `matrix` về ngang v1 (0,54 ms). CPU p95 ở Cao (36 ms ở lần đo trước) chủ yếu là khung khựng lẻ (biên dịch pipeline, GC, máy bận) chứ không phải chi phí đều mỗi khung; chưa đo lại riêng. Trong lúc đỗ, xương ở hệ tọa độ model nên `bladePoints` trả false (vệt kiếm của người ở LOD2 không vẽ). Test: `mannequinPark.test.ts` (vị trí đỉnh trước/sau khi đỗ trùng nhau trên model thật).
 
-### Nhuộm áo trên v3 (`game/character/v3Dye.ts`)
+### Nhuộm 3 kênh trên v3 (`game/character/v3Dye.ts`, `packages/shared/src/v3dye.ts`)
 Model v3 không có texture mặt nạ vải, nên nhuộm bằng hai lớp mặt nạ trong shader:
 - **Hình học**: thuộc tính đỉnh `dyeMask` tính lúc dựng mẫu từ trọng số xương; đỉnh bám đầu, cổ, bàn tay, ngón, tóc = 0. Da và tóc không bao giờ bị nhuộm, kể cả bộ vải tông ấm trùng sắc da (Liệt Mạch, Địa Long).
-- **Màu** theo model (`V3_DYE_REF`, đo cụm màu lớn nhất của texture gốc): `chroma` = texel cùng hướng sắc độ với vải chính; `neutral` = texel ít bão hòa (Huyền Giáp, Cổ Thành, Kính Quang, Vạn Kinh). Viền vàng và lớp vải phụ giữ nguyên.
+- **Màu** theo model (`V3_DYE_REF` trong `packages/shared/src/v3dye.ts`, đo trên texture gốc). Kênh 1 (vải chính): `chroma` = texel cùng hướng sắc độ với vải chính; `neutral` = texel ít bão hòa (Huyền Giáp, Cổ Thành, Kính Quang, Vạn Kinh). Kênh 2 (viền, lót, đai) và kênh 3 (tua, kim loại, điểm nhấn): texel gần một màu tham chiếu (`trim`, `accent`) trong không gian gamma 2,2 trong bán kính `r` (mép mềm 0,6r–r); hai kênh này thắng kênh 1 ở chỗ trùng, kênh 2 thắng kênh 3. Màu ngoài ba vùng giữ nguyên. Model không có vùng nào thì kênh đó không đổi gì (Đệ Tử không có kim loại riêng trong texture).
 
-Khi nào nhuộm (`v3DyeHex`): màu đạo bào lúc tạo nhân vật áp lên đồ khởi đầu (không mặc bộ, màu khác mặc định); nhuộm Tủ ngoại trang (`dye3`) áp kênh 1 lên mọi model theo bộ; skin toàn thân không nhuộm. Mặc bộ mà không nhuộm tủ thì model giữ màu riêng (như áo mô-đun của v1). Vật liệu nhuộm là bản sao theo (model, màu), dùng chung giữa mọi người cùng model cùng màu. Ảnh: `pnpm shots n7 --dye`.
+Mọi tham số (màu nhuộm, màu tham chiếu, bán kính, bật/tắt từng kênh) là uniform: ba kênh dùng chung MỘT chương trình shader, không thêm draw call hay texture. Công thức trọng số nằm hai nơi, phải khớp: `dyeWeights` (TS thuần, test + công cụ) và shader trong `applyV3Dye`.
 
-Giới hạn: chỉ kênh 1 (vải chính) của `dye3`; kênh 2 (viền) và kênh 3 chưa có vì không tách được viền khỏi vải phụ bằng màu. Tinh Khuyết: vải chính gần đen nên lớp đổi màu là voan tím. Thêm model mới phải thêm dòng vào `V3_DYE_REF` (test `v3Dye.test.ts` bắt thiếu).
+Chọn màu tham chiếu: `pnpm dye:preview [thư-mục]` đọc texture gốc Tripo trong `dtl-asset-source` (`DTL_ASSET_SOURCE` nếu nằm chỗ khác), in tỉ lệ phủ từng kênh và ghi ảnh texture | mặt nạ (đỏ = chính, lục = viền/lót, lam = kim loại); `pnpm dye:preview --clusters <id-model>` in 8 cụm màu của phần ngoài vải chính. Tất định, không dùng mạng. Lạc Kiếm v3b dùng bảng màu `v3Palette` lúc chạy nên ảnh xem trước (texture thô) chỉ gần đúng.
+
+Khi nào nhuộm (`v3DyeColors`): màu đạo bào lúc tạo nhân vật áp lên đồ khởi đầu (không mặc bộ, màu khác mặc định), chỉ kênh 1; nhuộm Tủ ngoại trang (`dye3` → `tint.hex/trim/accent`) áp cả ba kênh lên mọi model theo bộ; skin toàn thân không nhuộm. Mặc bộ mà không nhuộm tủ thì model giữ màu riêng (như áo mô-đun của v1). Vật liệu nhuộm là bản sao theo (model, màu), dùng chung giữa mọi người cùng model cùng màu. Ảnh: `pnpm shots n7 --dye`.
+
+Giới hạn: vùng viền/kim loại nhận bằng màu texel nên là xấp xỉ (nét vàng mảnh trên texture 2K nhuộm không trọn vẹn; chi tiết cùng màu với vải chính không tách được). Ảnh: `pnpm shots dye23 --out <thư mục>` (4 bộ × nam/nữ × 5 phối màu, 1080p + 720p). Tinh Khuyết: vải chính gần đen nên lớp đổi màu là voan tím. Thêm model mới phải thêm dòng vào `V3_DYE_REF` (test `v3Dye.test.ts` bắt thiếu).
 
 ### Chưa có trên v3 (v1 có)
 - Kênh viền (kênh 2) và kênh 3 của nhuộm Tủ ngoại trang.

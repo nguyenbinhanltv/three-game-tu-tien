@@ -22,7 +22,7 @@ import { applySkinLook, SKIN_LOOKS } from './skinLook';
 import { applySoulLook, type SoulKind } from './soulLook';
 import { applyV3Palette } from './v3Palette';
 import { storedQuality, type TexCap, V3TextureBudget, v3TexturePolicy } from './v3Detail';
-import { addDyeMask, applyV3Dye, v3DyeRefOf } from './v3Dye';
+import { addDyeMask, applyV3Dye, v3DyeRefOf, type V3DyeColors } from './v3Dye';
 import {
   breathOf,
   dirMix,
@@ -1779,8 +1779,8 @@ export class MannequinPlayers {
     return t && typeof t !== 'string' ? t : null;
   }
 
-  /** `self`: nhân vật của mình (texture đầy đủ theo preset); người khác dùng bản có trần texture. `dye`: màu nhuộm áo (hex) hoặc null. */
-  create(g: string, skin?: string, w?: string, set?: string, self = false, dye: string | null = null): CharacterView | null {
+  /** `self`: nhân vật của mình (texture đầy đủ theo preset); người khác dùng bản có trần texture. `dye`: bộ màu nhuộm (hex) hoặc null. */
+  create(g: string, skin?: string, w?: string, set?: string, self = false, dye: V3DyeColors | null = null): CharacterView | null {
     const t = this.get(g, skin, set, self);
     if (!t) return null;
     const mat = dye ? this.dyedMaterial(t, this.keyOf(g, skin, set, self).key, dye) : null;
@@ -1788,10 +1788,10 @@ export class MannequinPlayers {
   }
 
   /** Bản sao vật liệu của mẫu có nhuộm `dye`; null nếu model không nhuộm được (skin toàn thân) hoặc không có vật liệu. */
-  private dyedMaterial(t: MannequinTemplate, key: string, dye: string): THREE.MeshStandardNodeMaterial | null {
+  private dyedMaterial(t: MannequinTemplate, key: string, dye: V3DyeColors): THREE.MeshStandardNodeMaterial | null {
     const ref = v3DyeRefOf(t.handle.id);
     if (!ref) return null;
-    const k = `${key}/${dye.toLowerCase()}`;
+    const k = `${key}/${dye.main}/${dye.trim ?? ''}/${dye.accent ?? ''}`.toLowerCase();
     let m = this.dyeMats.get(k);
     if (m) return m;
     let src: THREE.Material | null = null;
