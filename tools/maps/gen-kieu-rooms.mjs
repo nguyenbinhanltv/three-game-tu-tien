@@ -118,6 +118,30 @@ const BRIDGES = [
     mood: 'ck_night',
     waves: [{ title: true, delay: 8, mons: [{ id: 'boss_dao_linh', level: 47, n: 1 }] }],
   },
+  {
+    // Cầu 7 Ngoại Kiếp: Huyền Kiếp ngoại (Tuyết/Phong/Lôi) trong sân kiếp, `huyen_ngoai.level = kieu_7`.
+    n: 7,
+    trib: true,
+    minLevel: 46,
+    mood: 'ck_dawn',
+    waves: [],
+  },
+  {
+    // Cầu 8 Nội Kiếp: Huyền Kiếp nội (Trảm Ly, Huyết Ảnh, Vấn Tâm), `huyen_noi.level = kieu_8`.
+    n: 8,
+    trib: true,
+    minLevel: 46,
+    mood: 'ck_dusk',
+    waves: [],
+  },
+  {
+    // Cầu 9 Đạp Thiên: Hồn kiếp (Khô Thần, Hồn Thọ, Luân Hồi), `huyen_hon.level = kieu_9`. Boss Lộ Linh cắm vào `TribulationRoom.kieuBossPhase` (PR boss).
+    n: 9,
+    trib: true,
+    minLevel: 46,
+    mood: 'ck_night',
+    waves: [],
+  },
 ];
 
 const assets = (b) => ({
