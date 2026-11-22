@@ -23,7 +23,8 @@ import {
 import type { FxMesh } from '../../render/materials/vfx';
 import { paletteOf, toneOf, type FxPalette } from '../../render/vfx/palette';
 import { FLAGS } from '../../base/flags';
-import { ISO_BOLT_SCALE, ISO_CARD_ALPHA, ISO_CARD_SCALE, isoFxScaleY } from '../../render/vfx/isoFx';
+import { ISO_BOLT_HEIGHT, ISO_CARD_ALPHA, ISO_CARD_SCALE, isoFxScaleY } from '../../render/vfx/isoFx';
+import { BOLT_HEIGHT } from '../../render/vfx/lightning';
 import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
 import { DECAL_CRACK, DECAL_RUNE, DECAL_SCORCH, DECAL_SMOKE, DECAL_STRIKE } from '../../render/vfx/stylized';
 import { bladeVisible } from '../../render/vfx/bladeTrail';
@@ -446,10 +447,11 @@ export class FxRunner {
           p.y,
           p.z,
           toneOf(c.pal, ev.tone ?? 'rim'),
-          (ev.scale ?? 1) * (FLAGS.isoCam && FLAGS.isoFxCompress ? ISO_BOLT_SCALE : 1),
+          ev.scale ?? 1,
           ev.seed ?? Math.floor(c.seed * 100 + s.idx),
           0,
           ev.thick ?? 1,
+          FLAGS.isoCam && FLAGS.isoFxCompress ? BOLT_HEIGHT * ISO_BOLT_HEIGHT : BOLT_HEIGHT,
         );
         break;
       }

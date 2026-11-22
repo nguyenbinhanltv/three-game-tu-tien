@@ -69,7 +69,10 @@ export const BOLT_MAX_PTS = MAIN_SEGS + 1 + MAX_BRANCH * (BRANCH_SEGS + 1);
  * Sinh hình tia sét từ seed. `h`: độ cao đỉnh, `spread`: độ lệch ngang của đỉnh, `scale`: bề rộng.
  * Ghi vào `out` nếu có (tránh cấp phát khi phát).
  */
-export function boltShape(seed: number, h = 62, spread = 7, scale = 1, out?: BoltShape): BoltShape {
+/** Độ cao đỉnh mặc định của tia sét (m). */
+export const BOLT_HEIGHT = 62;
+
+export function boltShape(seed: number, h = BOLT_HEIGHT, spread = 7, scale = 1, out?: BoltShape): BoltShape {
   const rnd = seededRandom(seed);
   const shape: BoltShape = out ?? { pts: new Float32Array(BOLT_MAX_PTS * 4), strands: [], n: 0 };
   shape.strands.length = 0;
