@@ -1,0 +1,8 @@
+{
+  "mood": "vh_dawn",
+  "glb": [],
+  "ground": { "set": "terrain", "mask": "neutral" },
+  "music": ["wild_cloud"],
+  "features": { "sect": false, "portals": false, "lanterns": true, "lake": false, "clouds": true, "grass": true, "trees": "scatter", "beacons": true, "vegetation": false },
+  "minimap": "cuu_kieu"
+}

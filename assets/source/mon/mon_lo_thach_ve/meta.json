@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "mon_lo_thach_ve",
+  "type": "mon",
+  "budgetClass": "monster",
+  "itemId": null,
+  "status": "planned",
+  "license": {
+    "source": "Chưa có model riêng: dùng model tạm wolf/ape/fox/serpent của game (đổi màu theo monsters.json) cho tới khi có model thủ tục từ concept Codex",
+    "owner": "dự án Đạp Thiên Lộ (nội bộ)",
+    "date": "2026-11-22"
+  }
+}

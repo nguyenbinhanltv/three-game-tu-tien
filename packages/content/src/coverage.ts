@@ -20,6 +20,7 @@ export const COVER_BY_LEVEL: Record<string, CoverStd> = {
   thien_khuyet: { p95: 65, max: 85 },
   bac_hoang: { p95: 65, max: 85 },
   van_dinh: { p95: 65, max: 85 },
+  cuu_kieu: { p95: 65, max: 90 },
 };
 const COVER_STEP = 12;
 

@@ -6,6 +6,7 @@ import { VAN_HAI_PADS } from './teleport.vanhai';
 import { THIEN_KHUYET_PADS } from './teleport.thienkhuyet';
 import { BAC_HOANG_PADS } from './teleport.bachoang';
 import { VAN_DINH_PADS } from './teleport.vandinh';
+import { CUU_KIEU_PADS } from './teleport.cuukieu';
 
 export type { TelePad } from './teleport.types';
 import type { TelePad } from './teleport.types';
@@ -35,6 +36,8 @@ export const TELE_PADS: readonly TelePad[] = [
   ...BAC_HOANG_PADS,
   // Vấn Đỉnh Âm Dương Giới (TN-3, tiền tố vd_).
   ...VAN_DINH_PADS,
+  // Thiên Lộ Giới (TN-7, tiền tố ck_).
+  ...CUU_KIEU_PADS,
 ];
 
 export const TELE_PAD = new Map(TELE_PADS.map((p) => [p.id, p]));

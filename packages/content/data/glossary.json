@@ -483,7 +483,11 @@
     "goc_re_co": "Gốc Rễ Cổ",
     "dinh_vo_danh": "Đỉnh Vô Danh",
     "cat_dong_nong": "Cồn Đồng Nóng",
-    "gioi_tri_cua": "Cửa Giới Trì"
+    "gioi_tri_cua": "Cửa Giới Trì",
+    "kieu_dau_cong": "Cổng Đầu Kiều",
+    "may_dai": "Đài Mây",
+    "bia_lo_chinh": "Bia Lộ Chính",
+    "bac_cuoi_dai": "Đài Bậc Cuối"
   },
   "poiNpcs": {
     "npc_mieu_cong": "Lão Miếu Công",
@@ -553,7 +557,8 @@
     "doan_mach": "Đoạn Mạch Cổ Cốc",
     "van_hai": "Vân Hải Phù Đảo",
     "thien_khuyet": "Thiên Khuyết Cổ Thành",
-    "bac_hoang": "Bắc Hoang Tẫn Nguyên"
+    "bac_hoang": "Bắc Hoang Tẫn Nguyên",
+    "cuu_kieu": "Thiên Lộ Giới"
   },
   "zones": {
     "sa_thach_pha": "Sa Thạch Pha",
@@ -576,7 +581,11 @@
     "khich_giai": "Khích Giai",
     "xich_tan_binh": "Xích Tẫn Bình",
     "kim_da_ngoai_uyen": "Kim Dạ Ngoại Uyển",
-    "tran_gioi_dai": "Trấn Giới Đài"
+    "tran_gioi_dai": "Trấn Giới Đài",
+    "kieu_dau": "Kiều Đầu",
+    "duong_may": "Đường Mây",
+    "bia_lo": "Bia Lộ",
+    "bac_cuoi": "Bậc Cuối"
   },
   "teleports": {
     "tp_thien_mach": "Trận Thiên Mạch Đài",
@@ -643,7 +652,8 @@
     "npc_tinh_quang_do": "Tịnh Quang Dực Sứ",
     "npc_luong_tu_gioi": "Lương Tư Giới",
     "npc_luong_tu_gioi_dong": "Lương Tư Giới",
-    "npc_thach_nghien": "Thạch Nghiên"
+    "npc_thach_nghien": "Thạch Nghiên",
+    "npc_dan_kieu_nhan": "Dẫn Kiều Nhân"
   },
   "skins": {
     "itm_skin_varkessa": "Xích Diễm Ma Cơ",
@@ -694,7 +704,10 @@
     "xac_tho_san_6": "Chỗ bạn săn ngã (Khô Lộc Lâm, số 6)",
     "anh_bia_1": "Ảnh Bia thứ nhất (Hồ Hư Ảnh)",
     "anh_bia_2": "Ảnh Bia thứ hai (Rừng Rễ Treo)",
-    "anh_bia_3": "Ảnh Bia thứ ba (Bậc Đỉnh)"
+    "anh_bia_3": "Ảnh Bia thứ ba (Bậc Đỉnh)",
+    "bia_lo_1": "Bia Lộ thứ nhất (Đường Mây)",
+    "bia_lo_2": "Bia Lộ thứ hai (Bia Lộ)",
+    "bia_lo_3": "Bia Lộ thứ ba (Bậc Cuối)"
   },
   "divucMonsters": {
     "mon_liet_hoa_ma_nguu": "Liệt Hỏa Ma Ngưu",
@@ -905,6 +918,20 @@
     },
     "factions": {
       "ho_gioi_duong": "Hộ Giới Đường"
+    }
+  },
+  "cuuKieuChuong": {
+    "_doc": "TN-7 chương 7 (Thiên Lộ Giới): tên địa danh, quái, NPC tự đặt. Tên chín cầu ở cuuKieuTen, thuật ngữ ở cuuKieuTerms.",
+    "monsters": {
+      "mon_lo_thach_ve": "Lộ Thạch Vệ",
+      "mon_may_lang": "Mây Lang",
+      "mon_bia_linh": "Bia Linh",
+      "mon_may_ho": "Mây Hồ",
+      "mon_lo_xa": "Lộ Xà",
+      "mon_thien_lo_su": "Thiên Lộ Sứ",
+      "elite_may_lang_vuong": "Mây Lang Vương",
+      "elite_lo_thach_tuong": "Lộ Thạch Tướng",
+      "boss_kieu_thu": "Kiều Thủ"
     }
   }
 }

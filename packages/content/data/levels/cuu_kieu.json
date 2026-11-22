@@ -1,0 +1,1180 @@
+{
+  "id": "cuu_kieu",
+  "minLevel": 44,
+  "spawn": {
+    "x": 1024,
+    "z": 1536
+  },
+  "zones": [
+    {
+      "id": "kieu_dau",
+      "lvMin": 44,
+      "lvMax": 44,
+      "color": "#E8EEF0",
+      "music": "wild",
+      "poly": [
+        [
+          1308,
+          1424
+        ],
+        [
+          1527,
+          1617
+        ],
+        [
+          1473,
+          1624
+        ],
+        [
+          1224,
+          1624
+        ],
+        [
+          1060,
+          1464
+        ],
+        [
+          1043,
+          1457
+        ],
+        [
+          1024,
+          1454
+        ],
+        [
+          1005,
+          1457
+        ],
+        [
+          988,
+          1464
+        ],
+        [
+          824,
+          1624
+        ],
+        [
+          749,
+          1624
+        ],
+        [
+          575,
+          1624
+        ],
+        [
+          521,
+          1617
+        ],
+        [
+          740,
+          1424
+        ],
+        [
+          1024,
+          1173
+        ]
+      ]
+    },
+    {
+      "id": "duong_may",
+      "lvMin": 44,
+      "lvMax": 45,
+      "color": "#7FB08C",
+      "music": "wild",
+      "poly": [
+        [
+          1024,
+          1084
+        ],
+        [
+          1024,
+          1164
+        ],
+        [
+          1017,
+          1179
+        ],
+        [
+          519,
+          1619
+        ],
+        [
+          484,
+          1624
+        ],
+        [
+          449,
+          1624
+        ],
+        [
+          424,
+          1604
+        ],
+        [
+          424,
+          1084
+        ],
+        [
+          425,
+          567
+        ],
+        [
+          1018,
+          953
+        ],
+        [
+          1024,
+          969
+        ]
+      ]
+    },
+    {
+      "id": "bia_lo",
+      "lvMin": 45,
+      "lvMax": 46,
+      "color": "#B8A878",
+      "music": "wild",
+      "poly": [
+        [
+          1624,
+          1084
+        ],
+        [
+          1624,
+          1604
+        ],
+        [
+          1599,
+          1624
+        ],
+        [
+          1564,
+          1624
+        ],
+        [
+          1529,
+          1619
+        ],
+        [
+          1031,
+          1179
+        ],
+        [
+          1024,
+          1164
+        ],
+        [
+          1024,
+          1084
+        ],
+        [
+          1024,
+          969
+        ],
+        [
+          1030,
+          953
+        ],
+        [
+          1623,
+          567
+        ]
+      ]
+    },
+    {
+      "id": "bac_cuoi",
+      "lvMin": 46,
+      "lvMax": 47,
+      "color": "#C9D4D6",
+      "music": "wild",
+      "poly": [
+        [
+          1535,
+          624
+        ],
+        [
+          1024,
+          957
+        ],
+        [
+          513,
+          624
+        ],
+        [
+          469,
+          595
+        ],
+        [
+          424,
+          561
+        ],
+        [
+          424,
+          429
+        ],
+        [
+          503,
+          424
+        ],
+        [
+          1299,
+          424
+        ],
+        [
+          1545,
+          424
+        ],
+        [
+          1624,
+          429
+        ],
+        [
+          1624,
+          561
+        ],
+        [
+          1579,
+          595
+        ]
+      ]
+    }
+  ],
+  "pois": [
+    {
+      "id": "kieu_dau_cong",
+      "zone": "kieu_dau",
+      "x": 1064,
+      "z": 1444,
+      "beamH": 30
+    },
+    {
+      "id": "may_dai",
+      "zone": "duong_may",
+      "x": 644,
+      "z": 1044,
+      "beamH": 30
+    },
+    {
+      "id": "bia_lo_chinh",
+      "zone": "bia_lo",
+      "x": 1404,
+      "z": 1034,
+      "beamH": 30
+    },
+    {
+      "id": "bac_cuoi_dai",
+      "zone": "bac_cuoi",
+      "x": 1024,
+      "z": 504,
+      "beamH": 30
+    }
+  ],
+  "spots": [
+    {
+      "id": "bia_lo_1",
+      "zone": "duong_may",
+      "x": 694,
+      "z": 1164
+    },
+    {
+      "id": "bia_lo_2",
+      "zone": "bia_lo",
+      "x": 1364,
+      "z": 1144
+    },
+    {
+      "id": "bia_lo_3",
+      "zone": "bac_cuoi",
+      "x": 1084,
+      "z": 584
+    }
+  ],
+  "camps": [
+    {
+      "id": "c_bac_cuoi_01",
+      "zone": "bac_cuoi",
+      "mon": "mon_bia_linh",
+      "x": 504,
+      "z": 504,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_01",
+      "zone": "duong_may",
+      "mon": "mon_lo_thach_ve",
+      "x": 524,
+      "z": 644,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_02",
+      "zone": "duong_may",
+      "mon": "mon_lo_thach_ve",
+      "x": 504,
+      "z": 1124,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_02",
+      "zone": "bac_cuoi",
+      "mon": "mon_thien_lo_su",
+      "x": 764,
+      "z": 524,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 47,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_03",
+      "zone": "bac_cuoi",
+      "mon": "mon_may_ho",
+      "x": 684,
+      "z": 684,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_03",
+      "zone": "duong_may",
+      "mon": "mon_may_lang",
+      "x": 724,
+      "z": 864,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_04",
+      "zone": "duong_may",
+      "mon": "mon_lo_xa",
+      "x": 624,
+      "z": 984,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_05",
+      "zone": "duong_may",
+      "mon": "mon_lo_thach_ve",
+      "x": 644,
+      "z": 1164,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_06",
+      "zone": "duong_may",
+      "mon": "mon_lo_thach_ve",
+      "x": 644,
+      "z": 1344,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_07",
+      "zone": "duong_may",
+      "mon": "mon_lo_xa",
+      "x": 504,
+      "z": 1544,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_04",
+      "zone": "bac_cuoi",
+      "mon": "mon_may_ho",
+      "x": 964,
+      "z": 584,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 47,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_05",
+      "zone": "bac_cuoi",
+      "mon": "mon_bia_linh",
+      "x": 844,
+      "z": 664,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 47,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_08",
+      "zone": "duong_may",
+      "mon": "mon_may_lang",
+      "x": 864,
+      "z": 924,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_09",
+      "zone": "duong_may",
+      "mon": "mon_lo_thach_ve",
+      "x": 764,
+      "z": 1044,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_10",
+      "zone": "duong_may",
+      "mon": "mon_lo_xa",
+      "x": 784,
+      "z": 1224,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_kieu_dau_01",
+      "zone": "kieu_dau",
+      "mon": "mon_may_lang",
+      "x": 784,
+      "z": 1404,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 45
+    },
+    {
+      "id": "c_kieu_dau_02",
+      "zone": "kieu_dau",
+      "mon": "mon_may_lang",
+      "x": 944,
+      "z": 1424,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_06",
+      "zone": "bac_cuoi",
+      "mon": "mon_may_ho",
+      "x": 1244,
+      "z": 624,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 47,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_07",
+      "zone": "bac_cuoi",
+      "mon": "mon_may_ho",
+      "x": 1104,
+      "z": 704,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 47,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_08",
+      "zone": "bac_cuoi",
+      "mon": "mon_may_ho",
+      "x": 1104,
+      "z": 884,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_11",
+      "zone": "duong_may",
+      "mon": "mon_may_lang",
+      "x": 924,
+      "z": 1104,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_kieu_dau_03",
+      "zone": "kieu_dau",
+      "mon": "mon_may_lang",
+      "x": 1084,
+      "z": 1244,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 45
+    },
+    {
+      "id": "c_kieu_dau_04",
+      "zone": "kieu_dau",
+      "mon": "mon_may_lang",
+      "x": 924,
+      "z": 1284,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_09",
+      "zone": "bac_cuoi",
+      "mon": "mon_thien_lo_su",
+      "x": 1224,
+      "z": 464,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_10",
+      "zone": "bac_cuoi",
+      "mon": "mon_thien_lo_su",
+      "x": 1244,
+      "z": 804,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_01",
+      "zone": "bia_lo",
+      "mon": "mon_bia_linh",
+      "x": 1244,
+      "z": 984,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_02",
+      "zone": "bia_lo",
+      "mon": "mon_may_ho",
+      "x": 1104,
+      "z": 1064,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_03",
+      "zone": "bia_lo",
+      "mon": "mon_lo_thach_ve",
+      "x": 1244,
+      "z": 1324,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_kieu_dau_05",
+      "zone": "kieu_dau",
+      "mon": "mon_may_lang",
+      "x": 1104,
+      "z": 1404,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 45
+    },
+    {
+      "id": "c_kieu_dau_06",
+      "zone": "kieu_dau",
+      "mon": "mon_may_lang",
+      "x": 1224,
+      "z": 1504,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_11",
+      "zone": "bac_cuoi",
+      "mon": "mon_thien_lo_su",
+      "x": 1384,
+      "z": 704,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 47,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_04",
+      "zone": "bia_lo",
+      "mon": "mon_bia_linh",
+      "x": 1364,
+      "z": 864,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_05",
+      "zone": "bia_lo",
+      "mon": "mon_bia_linh",
+      "x": 1404,
+      "z": 964,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_06",
+      "zone": "bia_lo",
+      "mon": "mon_bia_linh",
+      "x": 1384,
+      "z": 1084,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_07",
+      "zone": "bia_lo",
+      "mon": "mon_may_ho",
+      "x": 1384,
+      "z": 1244,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_08",
+      "zone": "bia_lo",
+      "mon": "mon_bia_linh",
+      "x": 1384,
+      "z": 1424,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_09",
+      "zone": "bia_lo",
+      "mon": "mon_may_ho",
+      "x": 1564,
+      "z": 1244,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_10",
+      "zone": "bia_lo",
+      "mon": "mon_lo_thach_ve",
+      "x": 1524,
+      "z": 1564,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_12",
+      "zone": "bac_cuoi",
+      "mon": "mon_thien_lo_su",
+      "x": 1364,
+      "z": 524,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_kieu_dau_07",
+      "zone": "kieu_dau",
+      "mon": "mon_may_lang",
+      "x": 644,
+      "z": 1524,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_12",
+      "zone": "duong_may",
+      "mon": "mon_may_lang",
+      "x": 484,
+      "z": 964,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_13",
+      "zone": "bac_cuoi",
+      "mon": "mon_may_ho",
+      "x": 644,
+      "z": 504,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_11",
+      "zone": "bia_lo",
+      "mon": "mon_may_ho",
+      "x": 1524,
+      "z": 1344,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_kieu_dau_08",
+      "zone": "kieu_dau",
+      "mon": "mon_may_lang",
+      "x": 1344,
+      "z": 1564,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_12",
+      "zone": "bia_lo",
+      "mon": "mon_bia_linh",
+      "x": 1544,
+      "z": 644,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_13",
+      "zone": "bia_lo",
+      "mon": "mon_may_ho",
+      "x": 1544,
+      "z": 884,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_13",
+      "zone": "duong_may",
+      "mon": "mon_lo_thach_ve",
+      "x": 584,
+      "z": 824,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_kieu_dau_09",
+      "zone": "kieu_dau",
+      "mon": "mon_may_lang",
+      "x": 844,
+      "z": 1544,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_14",
+      "zone": "bac_cuoi",
+      "mon": "mon_thien_lo_su",
+      "x": 1084,
+      "z": 524,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_15",
+      "zone": "bac_cuoi",
+      "mon": "mon_may_ho",
+      "x": 1544,
+      "z": 504,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_14",
+      "zone": "bia_lo",
+      "mon": "mon_lo_thach_ve",
+      "x": 1224,
+      "z": 1164,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_16",
+      "zone": "bac_cuoi",
+      "mon": "mon_may_ho",
+      "x": 924,
+      "z": 464,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_17",
+      "zone": "bac_cuoi",
+      "mon": "mon_bia_linh",
+      "x": 964,
+      "z": 764,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_14",
+      "zone": "duong_may",
+      "mon": "mon_lo_thach_ve",
+      "x": 974,
+      "z": 944,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_15",
+      "zone": "bia_lo",
+      "mon": "mon_bia_linh",
+      "x": 1524,
+      "z": 1144,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_15",
+      "zone": "duong_may",
+      "mon": "mon_lo_thach_ve",
+      "x": 504,
+      "z": 1264,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_16",
+      "zone": "duong_may",
+      "mon": "mon_lo_xa",
+      "x": 504,
+      "z": 1404,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_duong_may_17",
+      "zone": "duong_may",
+      "mon": "mon_may_lang",
+      "x": 484,
+      "z": 784,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 45,
+      "respawn": 45
+    },
+    {
+      "id": "c_kieu_dau_10",
+      "zone": "kieu_dau",
+      "mon": "mon_may_lang",
+      "x": 724,
+      "z": 1564,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_18",
+      "zone": "bac_cuoi",
+      "mon": "mon_thien_lo_su",
+      "x": 1444,
+      "z": 524,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 47,
+      "levelMax": 47,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_16",
+      "zone": "bia_lo",
+      "mon": "mon_bia_linh",
+      "x": 1524,
+      "z": 764,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_17",
+      "zone": "bia_lo",
+      "mon": "mon_lo_thach_ve",
+      "x": 1544,
+      "z": 1024,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bia_lo_18",
+      "zone": "bia_lo",
+      "mon": "mon_may_ho",
+      "x": 1544,
+      "z": 1464,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 45,
+      "levelMax": 46,
+      "respawn": 45
+    },
+    {
+      "id": "c_bac_cuoi_19",
+      "zone": "bac_cuoi",
+      "mon": "mon_may_ho",
+      "x": 804,
+      "z": 784,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 46,
+      "levelMax": 47,
+      "respawn": 45
+    }
+  ],
+  "spawns": [
+    {
+      "mon": "elite_may_lang_vuong",
+      "x": 757,
+      "z": 1515,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_may_lang_vuong",
+      "x": 1428,
+      "z": 1580,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 44,
+      "levelMax": 44,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_may_lang_vuong",
+      "x": 484,
+      "z": 673,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 45,
+      "levelMax": 45,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_may_lang_vuong",
+      "x": 946,
+      "z": 982,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 45,
+      "levelMax": 45,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_lo_thach_tuong",
+      "x": 1584,
+      "z": 775,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 46,
+      "levelMax": 46,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_lo_thach_tuong",
+      "x": 1473,
+      "z": 1174,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 46,
+      "levelMax": 46,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_lo_thach_tuong",
+      "x": 1136,
+      "z": 484,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 47,
+      "levelMax": 47,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_lo_thach_tuong",
+      "x": 749,
+      "z": 454,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 47,
+      "levelMax": 47,
+      "respawn": 240
+    },
+    {
+      "mon": "boss_kieu_thu",
+      "x": 854,
+      "z": 554,
+      "radius": 6,
+      "count": 1,
+      "levelMin": 47,
+      "levelMax": 47,
+      "respawn": 1800
+    }
+  ],
+  "nodes": [
+    {
+      "item": "itm_linh_thao",
+      "x": 744,
+      "z": 1144,
+      "radius": 60,
+      "count": 5,
+      "respawn": 60
+    },
+    {
+      "item": "itm_linh_thao",
+      "x": 1324,
+      "z": 1124,
+      "radius": 60,
+      "count": 5,
+      "respawn": 60
+    },
+    {
+      "item": "itm_linh_thao",
+      "x": 924,
+      "z": 644,
+      "radius": 60,
+      "count": 5,
+      "respawn": 60
+    }
+  ]
+}
