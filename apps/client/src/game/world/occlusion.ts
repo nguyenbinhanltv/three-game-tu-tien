@@ -18,6 +18,8 @@ import {
   vec2,
 } from 'three/tsl';
 import { OCCLUDERS } from '@dtl/shared';
+import { FLAGS } from '../../base/flags';
+import { withIsoSurfaceDetail } from '../../render/materials/isoDetail';
 
 /**
  * Làm mờ vật che giữa camera và nhân vật.
@@ -97,6 +99,11 @@ function vegFade() {
   const onTarget = tube(uTarget, uNearT, uTgtY).mul(uTgtOn);
   // Ngự kiếm: cây ở rìa màn hình là cảnh nền nhưng che góc khung nên mờ theo vị trí màn hình (không cần nằm trên đường nhìn).
   return max(max(tube(uFocus, uNear, uFeetY), onTarget), edge).mul(uVeg);
+}
+
+/** Bọc material kiến trúc: làm mờ vật che, thêm chi tiết bề mặt ngửa lên khi camera chéo (`?cam=iso`, P2b). */
+export function archWrap<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
+  return FLAGS.isoCam ? withIsoSurfaceDetail(withOccluderFade(m)) : withOccluderFade(m);
 }
 
 /** Gắn làm mờ vật che theo danh sách `OCCLUDERS` cho material kiến trúc. Gọi một lần lúc tạo. */

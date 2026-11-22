@@ -1,5 +1,41 @@
 import { describe, expect, it } from 'vitest';
-import { ISO_DIST, isoCameraPos, isoLead, ISO_LEAD_MAX, nearestTo, rayGround, worldToIntent } from './iso';
+import {
+  clampLeadSafe,
+  ISO_SAFE_DOWN,
+  ISO_SAFE_UP,
+  ISO_SAFE_X,
+  ISO_DIST,
+  isoCameraPos,
+  isoLead,
+  ISO_LEAD_MAX,
+  nearestTo,
+  rayGround,
+  worldToIntent,
+} from './iso';
+
+describe('clampLeadSafe', () => {
+  it('kẹp độ lệch ngang và độ tụt xuống để người ở vùng an toàn', () => {
+    for (const yaw of [0, 0.785, 2.2]) {
+      const s = Math.sin(yaw);
+      const c = Math.cos(yaw);
+      for (const [lx, lz] of [
+        [30, 0],
+        [0, 30],
+        [-30, 0],
+        [0, -30],
+        [20, -25],
+      ] as const) {
+        const r = clampLeadSafe(lx, lz, yaw);
+        const sx = r.x * c - r.z * s;
+        const sy = r.x * s + r.z * c;
+        expect(Math.abs(sx)).toBeLessThanOrEqual(ISO_SAFE_X + 1e-6);
+        expect(sy).toBeGreaterThanOrEqual(-ISO_SAFE_DOWN - 1e-6);
+        expect(sy).toBeLessThanOrEqual(ISO_SAFE_UP + 1e-6);
+      }
+    }
+    expect(clampLeadSafe(0.5, 0.2, 0.7)).toEqual(expect.objectContaining({ x: expect.closeTo(0.5, 5), z: expect.closeTo(0.2, 5) }));
+  });
+});
 
 describe('iso camera', () => {
   it('camera cách điểm nhìn đúng khoảng cố định', () => {

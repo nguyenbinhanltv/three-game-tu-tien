@@ -100,3 +100,23 @@ export function isoLeadTarget(dx: number, dz: number): { x: number; z: number } 
   const m = Math.min(9, d * 0.5);
   return { x: (dx / d) * m, z: (dz / d) * m };
 }
+
+/**
+ * Kẹp độ lệch camera (dẫn trước) để nhân vật luôn nằm trong vùng an toàn giữa màn hình, tránh HUD trái dưới (chat) và phải dưới (thanh chiêu):
+ * ngang tối đa ±`ISO_SAFE_X` m, và người không bị đẩy xuống thấp hơn `ISO_SAFE_DOWN` m (trên mặt đất) so với tâm khung.
+ * `lx, lz`: độ lệch điểm nhìn so với người (m); `yaw`: hướng camera. Trả độ lệch đã kẹp.
+ */
+export const ISO_SAFE_X = 4.5;
+export const ISO_SAFE_DOWN = 2.2;
+export const ISO_SAFE_UP = 4.5;
+export function clampLeadSafe(lx: number, lz: number, yaw: number): { x: number; z: number } {
+  const s = Math.sin(yaw);
+  const c = Math.cos(yaw);
+  // trục màn hình trên mặt đất: phải = (cos, −sin), xuống (về phía camera) = (sin, cos)
+  let sx = lx * c - lz * s;
+  let sy = lx * s + lz * c;
+  sx = Math.max(-ISO_SAFE_X, Math.min(ISO_SAFE_X, sx));
+  // điểm nhìn dịch ra xa camera (sy < 0) thì người tụt xuống dưới tâm khung
+  sy = Math.max(-ISO_SAFE_DOWN, Math.min(ISO_SAFE_UP, sy));
+  return { x: sx * c + sy * s, z: -sx * s + sy * c };
+}
