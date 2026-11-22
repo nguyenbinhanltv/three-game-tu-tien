@@ -43,9 +43,9 @@ def write(name, pal, events):
 # Đạo Môn n vành (gốc ở tâm cổng, bán kính cổng 3 m, sống đúng d giây): n vành đồng tâm phẳng sát đất + triện văn + một cột mảnh thấp camFade.
 RINGS = [3.0, 2.1, 1.2]
 for n in (1, 2, 3):
-    ev = [decal('rune', 0.0, 3.2, 3.0, at='area', grow=0.25, tone='body', alpha=0.9, yaw=0, untilDelay=True, tier=0, **START)]
+    ev = [decal('rune', 0.0, 3.4, 3.0, at='area', grow=0.25, tone='rim', alpha=1.0, yaw=0, untilDelay=True, tier=0, **START)]
     for i in range(n):
-        ev.append(mesh('rune_ring2', 0.05 * i, 3.0, at='area', offset=[0, 0.07 + 0.01 * i, 0], scale=[RINGS[i], 1, RINGS[i]], sweep=0.0, erodeFrom=0.97, ragged=0.3, tone='rim', alpha=0.95, seed=201 + i, untilDelay=True, tier=0, **START))
+        ev.append(mesh('rune_ring2', 0.05 * i, 3.0, at='area', offset=[0, 0.2 + 0.05 * i, 0], scale=[RINGS[i], 1, RINGS[i]], sweep=0.0, erodeFrom=0.97, ragged=0.3, tone='rim', alpha=1.0, seed=201 + i, untilDelay=True, tier=0, **START))
     ev.append(mesh('rock_spire', 0.0, 3.0, at='area', offset=[0, 0, 0], scale=[0.45, 1.5 + 0.5 * n, 0.45], sweep=0.0, erodeFrom=0.97, tone='accent', alpha=0.9, seed=210 + n, untilDelay=True, tier=1, camFade=True, **START))
     write('kc_gate_%d' % n, 'kc_hoi_dao', ev)
 
@@ -54,7 +54,7 @@ MR = [1.6, 1.1, 0.6]
 for n in (1, 2, 3):
     ev = [decal('rune', 0.0, 1.9, 3.0, at='area', grow=0.2, tone='accent', alpha=0.9, yaw=0, untilDelay=True, tier=0, **START)]
     for i in range(n):
-        ev.append(mesh('rune_ring2', 0.05 * i, 3.0, at='area', offset=[0, 0.09 + 0.01 * i, 0], scale=[MR[i], 1, MR[i]], sweep=0.0, erodeFrom=0.97, ragged=0.3, tone='accent', alpha=1.0, seed=221 + i, untilDelay=True, tier=0, **START))
+        ev.append(mesh('rune_ring2', 0.05 * i, 3.0, at='area', offset=[0, 0.24 + 0.05 * i, 0], scale=[MR[i], 1, MR[i]], sweep=0.0, erodeFrom=0.97, ragged=0.3, tone='accent', alpha=1.0, seed=221 + i, untilDelay=True, tier=0, **START))
     write('kc_mark_%d' % n, 'kc_hoi_dao', ev)
 
 # Đáp đúng (ở cổng đúng): sóng sáng lan ra + cánh hoa. Đáp sai: nứt đất dưới chân người + khói.
@@ -73,8 +73,8 @@ write('kc_hd_bad', 'kc_hoi_dao', [
 # triện văn viền sáng và khói hồn bốc nhẹ. Không khối cao.
 write('kc_am_pool', 'kc_am_lan', [
     decal('scorch', 0.0, 8.0, 3.0, at='area', grow=7.2, tone='core', alpha=0.9, untilDelay=True, tier=0, **START),
-    decal('rune', 0.0, 8.0, 3.0, at='area', grow=7.2, tone='rim', alpha=0.55, yaw=15, untilDelay=True, tier=0, **START),
-    mesh('rune_ring2', 0.0, 3.0, at='area', offset=[0, 0.07, 0], scale=[1.2, 1, 1.2], sweep=0.0, erodeFrom=0.97, ragged=0.5, tone='accent', alpha=0.9, seed=241, untilDelay=True, tier=0, **START),
+    decal('rune', 0.0, 8.0, 3.0, at='area', grow=7.2, tone='rim', alpha=0.85, yaw=15, untilDelay=True, tier=0, **START),
+    mesh('rune_ring2', 0.0, 3.0, at='area', offset=[0, 0.2, 0], scale=[1.6, 1, 1.6], sweep=0.0, erodeFrom=0.97, ragged=0.5, tone='accent', alpha=1.0, seed=241, untilDelay=True, tier=0, **START),
     parts('dust', 0.0, 18, 0.8, 1.0, 1.8, 0.34, at='area', offset=[0, 0.3, 0], tone='body', grav=-0.5, tier=1, **START),
 ])
 write('kc_am_end', 'kc_am_lan', [

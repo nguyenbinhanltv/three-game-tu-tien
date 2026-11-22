@@ -48,15 +48,14 @@ async function waitLog(page: Page, prefix: string, ok: (l: KcLog) => boolean, se
 
 async function enterTrib(page: Page, id: TribId, god: boolean): Promise<{ x: number; z: number }> {
   const def = tribDef(id);
-  await gm(page, `level ${def.from}`, 900);
-  if (god) await gm(page, 'god on', 700);
-  await gm(page, `trib ${id}`, 500);
+  if (god) await gm(page, 'god on', 1300);
+  await gm(page, `trib ${id}`, 1300);
   await waitLevel(page, 'do_kiep', 1500);
-  if (god) await gm(page, 'god on', 700);
+  if (god) await gm(page, 'god on', 1300);
   await skipCutscene(page, 10);
   // Đứng giữa sân từ đầu: tâm cơ chế là chỗ người độ kiếp đứng lúc pha bắt đầu.
   const ctr = LEVELS[tribLevelOf(def)]!.dungeon!.center;
-  await gm(page, `tp ${ctr.x} ${ctr.z}`, 600);
+  await gm(page, `tp ${ctr.x} ${ctr.z}`, 1300);
   await cam(page, CAM);
   return ctr;
 }
@@ -68,12 +67,12 @@ async function hoiDao(page: Page, dir: string): Promise<void> {
   await snapSizes(page, dir, '1-hoi-dao', SIZES, 500);
   const right = gates.indexOf(q.n);
   const g = gatePos({ x: q.x, z: q.z }, q.r, right);
-  await gm(page, `tp ${g.x.toFixed(1)} ${g.z.toFixed(1)}`, 400);
+  await gm(page, `tp ${g.x.toFixed(1)} ${g.z.toFixed(1)}`, 1200);
   await snapSizes(page, dir, '2-dung-dung-cong', SIZES, 400);
   await waitLog(page, 'kc:hd', (l) => l.pg === 2 || l.pg === 3, 10);
   await snapSizes(page, dir, '3-dap-dung', SIZES, 250);
   // Vòng sau: đứng giữa sân (không cổng nào) để thấy đáp sai.
-  await gm(page, `tp ${q.x} ${q.z}`, 300);
+  await gm(page, `tp ${q.x} ${q.z}`, 1200);
   const q2 = await waitLog(page, 'kc:hd', (l) => l.pg === 1 && l.at > Date.now() - 1500, 15);
   if (q2) {
     await snapSizes(page, dir, '4-hoi-dao-vong-sau', SIZES, 300);
@@ -124,6 +123,7 @@ async function playFull(page: Page, dir: string): Promise<string[]> {
   let hits = 0;
   let lastWin = 0;
   let lastWind = 0;
+  let lastHeal = 0;
   const seen = new Set<string>();
   while (T() < 135) {
     const dt = await logOf(page, 'kc:dt');
@@ -144,7 +144,10 @@ async function playFull(page: Page, dir: string): Promise<string[]> {
       const m = window.__game!.me();
       return m && m.mhp > 0 ? m.hp / m.mhp : 1;
     });
-    if (hp < 0.45) await gm(page, 'heal', 0);
+    if (hp < 0.45 && Date.now() - lastHeal > 1300) {
+      lastHeal = Date.now();
+      await gm(page, 'heal', 0);
+    }
     const ended = await page.evaluate(() => !document.querySelector('.trib'));
     if (T() > 20 && ended) break;
     await sleep(120);
@@ -170,7 +173,13 @@ export default {
       const dir = path.join(r.out, id);
       fs.mkdirSync(dir, { recursive: true });
       const { page } = await r.open({ name: 'Kc' + id.slice(0, 4), quality: 'high', seenIntro: true });
-      await enterTrib(page, id, !full);
+      try {
+        await enterTrib(page, id, !full);
+      } catch (e) {
+        await page.screenshot({ path: path.join(r.out, 'loi-vao-kiep.png') }).catch(() => undefined);
+        console.log('[kiepch6] không vào được room kiếp. Lỗi trang:', [...new Set(r.errors)].slice(0, 12));
+        throw e;
+      }
       if (full) {
         const res = await playFull(page, dir);
         fs.writeFileSync(path.join(dir, 'full.txt'), res.join('\n') + '\n');

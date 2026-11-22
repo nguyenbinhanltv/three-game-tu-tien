@@ -25,7 +25,7 @@
    "at": "area",
    "grow": 7.2,
    "tone": "rim",
-   "alpha": 0.55,
+   "alpha": 0.85,
    "yaw": 15,
    "untilDelay": true,
    "tier": 0,
@@ -39,19 +39,19 @@
    "at": "area",
    "offset": [
     0,
-    0.07,
+    0.2,
     0
    ],
    "scale": [
-    1.2,
+    1.6,
     1,
-    1.2
+    1.6
    ],
    "sweep": 0.0,
    "erodeFrom": 0.97,
    "ragged": 0.5,
    "tone": "accent",
-   "alpha": 0.9,
+   "alpha": 1.0,
    "seed": 241,
    "untilDelay": true,
    "tier": 0,
