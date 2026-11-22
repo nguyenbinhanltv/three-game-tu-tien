@@ -3,7 +3,7 @@ import type { FxMsg, FxTimeline } from '@dtl/shared';
 import { fxDrawCount, fxParticleCount, validateFxTimeline } from '@dtl/shared';
 import { TRAN_FX, TRAN_FX_TIMELINES } from '@dtl/content';
 import { paletteOf } from '../../render/vfx/palette';
-import { playTranFx, tranKind, TRAN_FX_DIST, TRAN_PALETTE, TRAN_STAND_SEG, type TranEnv } from './tranFx';
+import { playTranFx, tranKind, TRAN_FX_DIST, TRAN_STAND_SEG, type TranEnv } from './tranFx';
 
 const MODES = ['sat', 'khon', 'ho', 'sinhtu'];
 
@@ -31,8 +31,8 @@ describe('VFX trận Cấm chế sư: timeline', () => {
         const tl = TRAN_FX.get(`tran_${m}_${k}`)!;
         expect(tl, `${m}_${k}`).toBeDefined();
         expect(validateFxTimeline(tl, (id) => id.startsWith('tran_'))).toEqual([]);
-        expect(tl.palette).toBe(TRAN_PALETTE);
-        expect(fxDrawCount(tl.events)).toBeLessThanOrEqual(k === 'stand' ? 5 : 3);
+        expect(tl.palette).toBe(`tran_${m}`);
+        expect(fxDrawCount(tl.events)).toBeLessThanOrEqual(k === 'stand' ? 6 : 3);
         expect(fxParticleCount(tl.events)).toBeLessThanOrEqual(30);
         expect(tl.events.some((x) => x.type === 'hitstop' || x.type === 'shake' || x.type === 'flash')).toBe(false);
       }
@@ -43,9 +43,18 @@ describe('VFX trận Cấm chế sư: timeline', () => {
       for (const x of tl.events) if (x.type === 'mesh') expect(x.fit, `${tl.skill}:${x.shape}`).toBe('area');
   });
 
-  it('bảng màu cam_che_kinh có 3 tầng màu khác nhau', () => {
-    const p = paletteOf(TRAN_PALETTE);
-    expect(new Set([p.core, p.body, p.rim]).size).toBe(3);
+  it('mỗi kiểu trận một bảng màu riêng (4 thân khác nhau), mỗi bảng 3 tầng khác nhau, lõi tối hơn thân và viền sáng hơn thân', () => {
+    const lum = (c: number) => ((c >> 16) & 255) * 0.3 + ((c >> 8) & 255) * 0.59 + (c & 255) * 0.11;
+    const bodies = new Set<number>();
+    for (const m of MODES) {
+      const p = paletteOf(`tran_${m}`);
+      expect(p, m).not.toBe(paletteOf(undefined));
+      expect(new Set([p.core, p.body, p.rim]).size).toBe(3);
+      expect(lum(p.core), m).toBeLessThan(lum(p.body) - 20);
+      expect(lum(p.rim), m).toBeGreaterThan(lum(p.body) + 20);
+      bodies.add(p.body);
+    }
+    expect(bodies.size).toBe(4);
   });
 });
 

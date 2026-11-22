@@ -1,0 +1,319 @@
+{
+ "skill": "skl_phien_thien_an",
+ "palette": "cam_che_kinh",
+ "replaces": [
+  "phienthien"
+ ],
+ "events": [
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": -0.45,
+   "n": 24,
+   "speed": 1.6,
+   "spread": 1,
+   "life": 0.36,
+   "size": 0.06,
+   "at": "self",
+   "offset": [
+    0,
+    0.9,
+    0.3
+   ],
+   "inward": true,
+   "tone": "rim",
+   "tier": 1
+  },
+  {
+   "type": "soundAt",
+   "t": -0.45,
+   "id": "cast",
+   "gain": 0.5,
+   "rate": 0.85,
+   "jitter": 0.05
+  },
+  {
+   "type": "vignette",
+   "t": -0.4,
+   "amount": 0.2,
+   "ms": 450,
+   "tone": "dark",
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spark_streak",
+   "t": -0.4,
+   "dur": 0.35,
+   "at": "self",
+   "offset": [
+    0,
+    -1.05,
+    0.3
+   ],
+   "scale": 3.0,
+   "shadow": false,
+   "tone": "accent",
+   "alpha": 1,
+   "tier": 0,
+   "seed": 31,
+   "move": {
+    "to": "area",
+    "ease": "in",
+    "offset": [
+     0,
+     0.08,
+     0
+    ]
+   }
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": -0.4,
+   "r": 8.0,
+   "dur": 4.0,
+   "at": "area",
+   "grow": 0.1,
+   "tone": "core",
+   "alpha": 0.95,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": -0.4,
+   "r": 8.0,
+   "dur": 4.0,
+   "at": "area",
+   "grow": 0.1,
+   "tone": "body",
+   "alpha": 1,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": -0.4,
+   "dur": 0.45,
+   "at": "area",
+   "offset": [
+    0,
+    6.0,
+    0
+   ],
+   "scale": 0.9,
+   "fit": "area",
+   "alpha": 1,
+   "sweep": 0.1,
+   "erodeFrom": 0.95,
+   "shadow": false,
+   "tone": "accent",
+   "camFade": true,
+   "tier": 0,
+   "seed": 32,
+   "move": {
+    "to": "area",
+    "ease": "in",
+    "offset": [
+     0,
+     0.15,
+     0
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": -0.4,
+   "dur": 0.45,
+   "at": "area",
+   "offset": [
+    0,
+    6.05,
+    0
+   ],
+   "scale": 0.95,
+   "fit": "area",
+   "alpha": 1,
+   "sweep": 0.1,
+   "erodeFrom": 0.95,
+   "shadow": false,
+   "tone": "core",
+   "camFade": true,
+   "tier": 0,
+   "seed": 33,
+   "move": {
+    "to": "area",
+    "ease": "in",
+    "offset": [
+     0,
+     0.1,
+     0
+    ]
+   }
+  },
+  {
+   "type": "soundAt",
+   "t": 0.0,
+   "id": "impact",
+   "gain": 0.9,
+   "rate": 0.7,
+   "jitter": 0.04
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.12,
+   "at": "area",
+   "offset": [
+    0,
+    0.6,
+    0
+   ],
+   "scale": 3.0,
+   "billboard": true,
+   "sweep": 0,
+   "tone": "accent",
+   "cross": true,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "crack_radial",
+   "t": 0.0,
+   "dur": 1.2,
+   "at": "area",
+   "offset": [
+    0,
+    0.1,
+    0
+   ],
+   "scale": 1.0,
+   "fit": "area",
+   "alpha": 1,
+   "sweep": 0.15,
+   "erodeFrom": 0.8,
+   "shadow": false,
+   "tone": "accent",
+   "tier": 0,
+   "seed": 34
+  },
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.02,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.05,
+    0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "scaleTo": [
+    9.0,
+    9.0,
+    9.0
+   ],
+   "alpha": 0.9,
+   "sweep": 0.3,
+   "erodeFrom": 0.3,
+   "tone": "body",
+   "tier": 0,
+   "seed": 35
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 80,
+   "speed": 6,
+   "spread": 1,
+   "life": 0.9,
+   "size": 0.22,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "tone": "core",
+   "grav": -0.4,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 50,
+   "speed": 8,
+   "spread": 1,
+   "life": 0.5,
+   "size": 0.09,
+   "at": "area",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "tone": "rim",
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.04,
+   "dur": 0.9,
+   "flip": "ink_smoke",
+   "scale": 5.0,
+   "billboard": true,
+   "at": "area",
+   "offset": [
+    0,
+    0.6,
+    0
+   ],
+   "alpha": 0.6,
+   "tone": "core",
+   "tier": 1
+  },
+  {
+   "type": "hitstop",
+   "t": 0.0,
+   "ms": 75
+  },
+  {
+   "type": "shake",
+   "t": 0.0,
+   "level": 0.45
+  },
+  {
+   "type": "flash",
+   "t": 0.0,
+   "amount": 0.0,
+   "tier": 0
+  },
+  {
+   "type": "vignette",
+   "t": 0.0,
+   "amount": 0.32,
+   "ms": 300,
+   "tone": "dark",
+   "tier": 1
+  },
+  {
+   "type": "camera",
+   "t": 0.0,
+   "pull": 0,
+   "dur": 0.5,
+   "fov": 2.8,
+   "tier": 1
+  }
+ ]
+}

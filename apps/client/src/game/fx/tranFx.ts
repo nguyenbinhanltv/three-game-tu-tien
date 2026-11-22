@@ -6,7 +6,6 @@ import { TRAN_FX } from '@dtl/content';
 import type { FxCaster } from './fxTimeline';
 
 export const TRAN_MODES = ['sat', 'khon', 'ho', 'sinhtu'] as const;
-export const TRAN_PALETTE = 'cam_che_kinh';
 /** Xa hơn chừng này (mét) thì bỏ hình trận của người khác. */
 export const TRAN_FX_DIST = 50;
 /** Số lưới VFX đang sống từ mức này thì bỏ nhịp trận của người khác (sân đông). */
@@ -63,7 +62,7 @@ export function playTranFx(env: TranEnv, m: FxMsg): boolean {
   const actor: FxCaster = { x, y: env.groundAt(x, z), z, yaw: 0, model: {} };
   const area = { x, z, r };
   if (k.tick) {
-    env.startAt(tl, { actor, palette: TRAN_PALETTE, area, mul: r, mine });
+    env.startAt(tl, { actor, palette: tl.palette ?? '', area, mul: r, mine });
     return true;
   }
   // Thiếu id (tin lạ) thì không dựng trận đứng: client chỉ vẽ thứ server còn giữ và báo được lúc tan.
@@ -76,7 +75,7 @@ export function playTranFx(env: TranEnv, m: FxMsg): boolean {
       live.delete(fid);
       return;
     }
-    env.startAt(tl, { actor, palette: TRAN_PALETTE, area, mul: r, mine });
+    env.startAt(tl, { actor, palette: tl.palette ?? '', area, mul: r, mine });
     left -= TRAN_STAND_SEG;
     env.after(TRAN_STAND_SEG, step);
   };

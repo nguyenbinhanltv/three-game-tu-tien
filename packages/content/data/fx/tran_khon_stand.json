@@ -1,6 +1,6 @@
 {
  "skill": "tran_khon_stand",
- "palette": "cam_che_kinh",
+ "palette": "tran_khon",
  "events": [
   {
    "type": "decal",
@@ -11,7 +11,7 @@
    "at": "area",
    "grow": 0.05,
    "tone": "core",
-   "alpha": 0.85,
+   "alpha": 0.9,
    "tier": 0
   },
   {
@@ -23,8 +23,50 @@
    "at": "area",
    "grow": 0.05,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 1.0,
    "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 1.9,
+   "at": "area",
+   "offset": [
+    0,
+    0.06,
+    0
+   ],
+   "scale": 1.03,
+   "fit": "area",
+   "alpha": 1.0,
+   "sweep": 0.5,
+   "erodeFrom": 0.97,
+   "shadow": false,
+   "tone": "core",
+   "tier": 0,
+   "seed": 61
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 1.9,
+   "at": "area",
+   "offset": [
+    0,
+    0.1,
+    0
+   ],
+   "scale": 0.97,
+   "fit": "area",
+   "alpha": 1.0,
+   "sweep": 0.5,
+   "erodeFrom": 0.97,
+   "shadow": false,
+   "tone": "rim",
+   "tier": 0,
+   "seed": 62
   },
   {
    "type": "mesh",
@@ -34,17 +76,17 @@
    "at": "area",
    "offset": [
     0,
-    0.08,
+    0.12,
     0
    ],
    "scale": 1.0,
-   "scaleTo": 0.25,
+   "scaleTo": 0.2,
    "fit": "area",
-   "alpha": 0.7,
+   "alpha": 1.0,
    "sweep": 0.5,
    "erodeFrom": 0.4,
    "shadow": false,
-   "tone": "body",
+   "tone": "accent",
    "tier": 0,
    "seed": 21
   },
@@ -56,38 +98,19 @@
    "at": "area",
    "offset": [
     0,
-    0.08,
+    0.12,
     0
    ],
    "scale": 1.0,
-   "scaleTo": 0.25,
+   "scaleTo": 0.2,
    "fit": "area",
-   "alpha": 0.7,
+   "alpha": 1.0,
    "sweep": 0.5,
    "erodeFrom": 0.4,
    "shadow": false,
    "tone": "rim",
    "tier": 1,
    "seed": 22
-  },
-  {
-   "type": "particles",
-   "kind": "dust",
-   "t": 0.0,
-   "n": 14,
-   "speed": 0.9,
-   "spread": 1,
-   "life": 1.6,
-   "size": 0.14,
-   "at": "area",
-   "offset": [
-    0,
-    0.2,
-    0
-   ],
-   "tone": "body",
-   "grav": -0.3,
-   "tier": 1
   }
  ]
 }
