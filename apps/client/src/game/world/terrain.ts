@@ -42,6 +42,8 @@ import { pmGroundColor } from './phucMachArt';
 
 const TILE = 256;
 const NEAR_R = 3;
+/** Vấn Đỉnh: vách dốc làm viền hai ô khác độ phân giải lệch cao hàng chục mét; viền rủ phải dài hơn mức lệch đó, nếu không khe hở ra thành lỗ sáng hình thoi ở góc vách. */
+const VD_SKIRT = 90;
 const COARSE_CELL = 32;
 const VEG_NEAR_R = 2;
 const VEG_FAR_R = 4;
@@ -636,7 +638,13 @@ export class Terrain {
               continue;
             }
             if (t.res !== res) {
-              const geo = buildTileGeometry(tx * TILE, tz * TILE, TILE, res, T.def.islands ? 1.2 : (TILE / res) * 1.5 + 5);
+              const geo = buildTileGeometry(
+                tx * TILE,
+                tz * TILE,
+                TILE,
+                res,
+                T.def.islands ? 1.2 : T.id === 'van_dinh' ? VD_SKIRT : (TILE / res) * 1.5 + 5,
+              );
               if (t.mesh) {
                 this.group.remove(t.mesh);
                 t.mesh.geometry.dispose();
