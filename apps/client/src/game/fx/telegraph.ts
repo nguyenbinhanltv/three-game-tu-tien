@@ -3,7 +3,7 @@ import { type HazardMsg } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { SIGIL_CONE, SIGIL_RECT } from '../../render/vfx/sigil';
 import { FLAGS } from '../../base/flags';
-import { hazardFlash, hazardStyle, hazardStyleDanger } from '../../render/vfx/phases';
+import { hazardFlash, hazardStyle, hazardStyleDanger, ISO_HAZARD_OPACITY } from '../../render/vfx/phases';
 import type { Vfx } from './vfx';
 
 /**
@@ -39,7 +39,7 @@ export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 
     (k) => {
       s.fxA.x = k;
       s.fxA.z = hazardFlash(k, m.delay);
-      s.fxOpacity = Math.min(1, k * 10);
+      s.fxOpacity = Math.min(1, k * 10) * (FLAGS.isoCam ? ISO_HAZARD_OPACITY : 1);
     },
     () => {
       v.drop(s);

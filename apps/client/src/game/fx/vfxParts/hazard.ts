@@ -2,7 +2,7 @@
 import { groundAt } from '../../../base/levelCtx';
 import { SIGIL_CIRCLE } from '../../../render/vfx/sigil';
 import { FLAGS } from '../../../base/flags';
-import { hazardFlash, hazardStack, hazardStyle, hazardStyleDanger } from '../../../render/vfx/phases';
+import { hazardFlash, hazardStack, hazardStyle, hazardStyleDanger, ISO_HAZARD_OPACITY } from '../../../render/vfx/phases';
 import { G } from '../../core/geo';
 import { HAZARD_COLORS, HOT_BOLT, HOT_BOLT_CORE, POOL_COLOR, TRAIL_COLOR, _a } from './common';
 import type { Vfx } from '../vfx';
@@ -106,7 +106,7 @@ export function hazard(
     (k) => {
       m.fxA.x = k;
       m.fxA.z = hazardFlash(k, delay) * stack.dim;
-      m.fxOpacity = Math.min(1, k * 10);
+      m.fxOpacity = Math.min(1, k * 10) * (FLAGS.isoCam ? ISO_HAZARD_OPACITY : 1);
     },
     () => {
       v.hazards.splice(v.hazards.indexOf(mine), 1);

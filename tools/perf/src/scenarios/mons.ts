@@ -11,13 +11,20 @@ import { snap, writeJson } from '../lib/shot';
 export default {
   name: 'mons',
   desc: 'Quái/tinh anh/boss của một level: vạch báo chiêu + cảnh chết, boss thêm pha máu thấp (duyệt quái mới, soát VFX quái)',
-  usage: '[--level thien_khuyet] [--only id,id] [--frames 6]',
+  usage: '[--level thien_khuyet] [--only id,id] [--frames 6] [--view 720p|1080p]',
   async run(r) {
     const level = opt('--level', 'thien_khuyet');
     const only = list('--only', '');
     const spots = new Map<string, { x: number; z: number; lv: number }>();
     for (const s of levelSpawns(requireLevel(level))) if (!spots.has(s.mon)) spots.set(s.mon, { x: s.x, z: s.z, lv: s.levelMax });
-    const { page } = await r.open({ name: 'Mons', quality: 'high', query: { quiet: 1 }, extra: opt('--query', ''), hide: 'chat' });
+    const { page } = await r.open({
+      name: 'Mons',
+      quality: 'high',
+      viewport: opt('--view', '720p') === '1080p' ? [1920, 1080] : [1280, 720],
+      query: { quiet: 1 },
+      extra: opt('--query', ''),
+      hide: 'chat',
+    });
     await gm(page, 'level 28');
     await gm(page, 'god on');
     await enterLevel(page, level);

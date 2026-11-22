@@ -95,6 +95,7 @@ describe('vạch báo quái theo mức nguy hiểm (iso)', () => {
     expect(hazardDanger({ boss: false, r: 3.5 })).toBe(1);
     expect(hazardDanger({ boss: false, r: 2 })).toBe(0);
     expect(hazardDanger({ boss: true, r: 8, mv: 'pool' })).toBe(0);
+    expect(hazardDanger({ boss: false, r: 20, mv: 'pull' })).toBe(0);
   });
   it('màu tăng dần, thiên lôi giữ tím, HDR không vượt trần', () => {
     const c = [0, 1, 2].map((d) => hazardStyleDanger('fire', d as 0 | 1 | 2).color);
