@@ -520,6 +520,18 @@
       "reqLevel": 20
     },
     {
+      "id": "rcp_pha_canh_dan_4",
+      "npc": "npc_duoc_su",
+      "output": { "id": "itm_pha_canh_dan_4", "n": 1 },
+      "inputs": [
+        { "id": "itm_hu_anh_phien", "n": 3 },
+        { "id": "itm_yeu_dan", "n": 4 },
+        { "id": "itm_thiet_tinh", "n": 2 }
+      ],
+      "gold": 2500,
+      "reqLevel": 32
+    },
+    {
       "id": "rcp_pha_canh_dan_3",
       "npc": "npc_duoc_su",
       "output": {
