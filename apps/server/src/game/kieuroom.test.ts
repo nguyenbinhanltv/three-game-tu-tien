@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { MS_DEAD, PF_DEAD, S, TRIB_DEFS, groundAt, kieuMinClearSec, tribDef, type TransferMsg } from '@dtl/shared';
+import { KIEU_BOSS_ID, MS_DEAD, PF_DEAD, S, TRIB_DEFS, groundAt, kieuMinClearSec, tribDef, type TransferMsg } from '@dtl/shared';
 
 // TN-7: phòng cầu Cửu Kiều (cầu 1 Thạch, cầu 2 Kiếm Ảnh). Vé kiểm lại ở onAuth, đóng góp do server đếm, cầu chỉ ghi khi server thấy điều kiện qua.
 process.env.DB_FILE = ':memory:';
@@ -477,13 +477,16 @@ describe('cầu 7–9: Huyền Kiếp trong sân kiếp', () => {
     const p = r.join(mkChar('k9boss', 47, 8));
     const room = r.room as unknown as {
       kieuStart: Map<number, { stage: number; at: number }>;
-      kieuBossPhase(p: Ent): boolean;
+      kieuBossPhase: (p: Ent, elapsedSec: number) => boolean;
       onTribulationEnd(p: Ent, def: ReturnType<typeof tribDef>, ok: boolean): void;
     };
     room.kieuStart ??= new Map();
     room.kieuStart.set(p.char.id, { stage: 0, at: Date.now() - 150_000 });
-    room.kieuBossPhase = () => true;
+    const seen: [number, string][] = [];
+    room.kieuBossPhase = (_p: Ent, elapsed: number) => (seen.push([elapsed, KIEU_BOSS_ID]), true);
     room.onTribulationEnd(p, tribDef('huyen_hon'), true);
     expect(p.char.meta.kieu).toBe(8);
+    expect(seen).toHaveLength(1);
+    expect(seen[0]![1]).toBe('boss_lo_linh');
   });
 });

@@ -6,6 +6,8 @@
 import { DUONG_THUC_LEVEL, MAX_LEVEL } from './formulas';
 
 export const KIEU_COUNT = 9;
+/** Id quái của boss cuối cầu 9 (Lộ Linh). Chưa có trong `monsters.json`: PR boss thêm; chỗ cắm ở `TribulationRoom.kieuBossPhase`. */
+export const KIEU_BOSS_ID = 'boss_lo_linh';
 /** Mã (khóa i18n/level) của chín cầu theo thứ tự; khớp `glossary.cuuKieuTen`. */
 export const KIEU_IDS = ['thach', 'kiem_anh', 'suy', 'gioi', 'than', 'dao', 'ngoai', 'noi', 'dap_thien'] as const;
 export type KieuId = (typeof KIEU_IDS)[number];
