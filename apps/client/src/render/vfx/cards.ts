@@ -533,17 +533,11 @@ function drawColossus(g: Ctx): void {
         ],
         1,
       );
-    line(
-      g,
-      0.95,
-      7,
-      [
-        [C + s * 190, 150],
-        [C + s * 214, 190],
-        [C + s * 238, 150],
-      ],
-      1,
-    );
+    g.beginPath();
+    g.arc(fx, 166, 16, 0, Math.PI * 2);
+    g.strokeStyle = col(0.8, 1);
+    g.lineWidth = 5;
+    g.stroke();
   }
   // Thân: gradient ngang lõi tối giữa ngực, sáng dần ra hai vai.
   g.beginPath();
@@ -608,34 +602,28 @@ function drawColossus(g: Ctx): void {
   g.strokeStyle = col(1);
   g.lineWidth = 10;
   g.stroke();
-  // Mắt (sáng) và kim văn trán.
+  // Mắt: hai khe ngang mảnh, mờ (thần tượng cổ nhắm hờ, không phải mặt cười) và một chấm kim văn giữa trán.
   for (const s of [-1, 1])
     line(
       g,
-      1,
-      9,
+      0.7,
+      4,
       [
-        [C + s * 14, 140],
-        [C + s * 40, 134],
+        [C + s * 16, 142],
+        [C + s * 36, 142],
       ],
       1,
     );
-  line(
-    g,
-    0.95,
-    6,
-    [
-      [C, 90],
-      [C, 112],
-    ],
-    1,
-  );
+  g.beginPath();
+  g.arc(C, 100, 5, 0, Math.PI * 2);
+  g.fillStyle = col(0.95, 1);
+  g.fill();
   // Vân kim văn trên ngực: ba lớp chữ V lồng nhau, ấn tròn giữa ngực, hai đường gân vai.
-  for (let i = 0; i < 3; i++)
+  for (let i = 0; i < 2; i++)
     line(
       g,
-      0.9 - i * 0.08,
-      8,
+      0.62 - i * 0.06,
+      4,
       [
         [C - 96 + i * 20, 292 + i * 34],
         [C, 372 + i * 40],
@@ -696,32 +684,43 @@ function drawColossus(g: Ctx): void {
       ],
       1,
     );
-  // Chiều sâu: ánh sáng từ trên-trái. Viền sáng bóng ở mép vai trái, sọc tối dọc mép phải thân (mặt khuất), rồi phủ tối dần từ ngực xuống
-  // bụng (`source-atop`: chỉ làm tối phần đã vẽ, kênh R = tầng màu nên lõi thân chìm hơn còn đầu/sừng/vai giữ sáng).
+  // Chiều sâu (fresnel giả): viền sáng đều hai vai và hai bên thân; vào trong tối dần (`source-atop` làm giảm tầng màu) và TRONG dần
+  // (`destination-out` khoét alpha): lõi ngực mờ để thấy cảnh phía sau, mép đặc. Phủ tối thêm từ ngực xuống bụng.
   g.save();
   g.lineCap = 'round';
   g.lineJoin = 'round';
-  line(g, 0.88, 5, [
-    [C - 150, 282],
-    [C - 108, 246],
-    [C - 50, 236],
-  ]);
-  line(g, 0.78, 4, [
-    [C - 138, 330],
-    [C - 122, 500],
-    [C - 112, 690],
-  ]);
-  line(g, 0.1, 22, [
-    [C + 118, 290],
-    [C + 112, 500],
-    [C + 104, 720],
-  ]);
+  for (const s of [-1, 1]) {
+    line(g, 0.9, 6, [
+      [C + s * 152, 284],
+      [C + s * 110, 246],
+      [C + s * 50, 236],
+    ]);
+    line(g, 0.8, 5, [
+      [C + s * 140, 330],
+      [C + s * 124, 500],
+      [C + s * 114, 690],
+    ]);
+  }
   g.globalCompositeOperation = 'source-atop';
+  const fres = g.createLinearGradient(C - 150, 0, C + 150, 0);
+  fres.addColorStop(0, 'rgba(0,0,0,0)');
+  fres.addColorStop(0.3, 'rgba(0,0,0,0.25)');
+  fres.addColorStop(0.5, 'rgba(0,0,0,0.5)');
+  fres.addColorStop(0.7, 'rgba(0,0,0,0.25)');
+  fres.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = fres;
+  g.fillRect(C - 150, 230, 300, 538);
   const shade = g.createLinearGradient(0, 300, 0, 768);
   shade.addColorStop(0, 'rgba(0,0,0,0)');
-  shade.addColorStop(1, 'rgba(0,0,0,0.5)');
+  shade.addColorStop(1, 'rgba(0,0,0,0.45)');
   g.fillStyle = shade;
   g.fillRect(0, 300, 512, 468);
+  g.globalCompositeOperation = 'destination-out';
+  const hole = g.createRadialGradient(C, 400, 10, C, 400, 130);
+  hole.addColorStop(0, 'rgba(0,0,0,0.6)');
+  hole.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = hole;
+  g.fillRect(C - 140, 270, 280, 260);
   g.restore();
   // Mờ: đáy chìm vào đất, đỉnh đầu mờ nhẹ.
   g.save();

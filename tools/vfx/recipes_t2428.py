@@ -219,19 +219,17 @@ R['skl_dia_sat_tran'] = dia_sat_tran
 
 
 def thai_hu_ho_tran():
-    """Thái Hư Hộ Trận (nhánh 24, trận Hộ 8 m dưới chân, hit 0,5): vòng ngọc nở ra từ chân người, hạt vàng bay lên chậm; không chớp, không rung."""
+    """Thái Hư Hộ Trận (nhánh 24, trận Hộ 8 m dưới chân, hit 0,5): vòng ngọc nở ra từ chân người, hạt vàng bay lên chậm; không chớp, không rung. Không dùng `shock_cone`/`smoke`: ở sân đá trắng chúng cắt thành mặt phẳng trắng chéo cạnh người (ảnh duyệt #490)."""
     ev = [
         parts('spark', -0.5, 24, 1.8, 1, 0.4, 0.07, at='self', offset=[0, 0.8, 0.2], inward=True, tone='rim', tier=1),
         snd(-0.5, 'cast', 0.5, 1.1),
         *seal(-0.4, 'area', 8.0, 3.2),
-        mesh('rune_ring2', -0.4, 0.9, at='area', offset=[0, 0.1, 0], scale=0.2, scaleTo=1.0, fit='area', alpha=1, sweep=0.4, erodeFrom=0.8, shadow=False, tone='accent', tier=0, seed=41),
-        mesh('rune_ring2', -0.35, 0.9, at='area', offset=[0, 0.12, 0], scale=0.2, scaleTo=0.9, fit='area', alpha=1, sweep=0.4, erodeFrom=0.8, shadow=False, tone='rim', tier=0, seed=42),
-        mesh('ripple', -0.2, 0.8, at='area', offset=[0, 0.12, 0], scale=0.3, scaleTo=1.0, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.4, shadow=False, tone='body', tier=0, seed=43),
+        mesh('rune_ring2', -0.4, 0.9, at='area', offset=[0, 0.4, 0], scale=0.2, scaleTo=1.0, fit='area', alpha=1, sweep=0.4, erodeFrom=0.8, shadow=False, tone='accent', tier=0, seed=41),
+        mesh('rune_ring2', -0.35, 0.9, at='area', offset=[0, 0.42, 0], scale=0.2, scaleTo=0.9, fit='area', alpha=1, sweep=0.4, erodeFrom=0.8, shadow=False, tone='rim', tier=0, seed=42),
+        mesh('ripple', -0.2, 0.8, at='area', offset=[0, 0.42, 0], scale=0.3, scaleTo=1.0, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.4, shadow=False, tone='body', tier=0, seed=43),
         snd(0.0, 'impact', 0.5, 1.0),
         flip('spark_burst', 0.0, 0.4, 3.0, at='self', offset=[0, 0.4, 0], alpha=0.6, tone='accent', camFade=True, tier=0),
-        mesh('shock_cone', 0.02, 0.5, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[6.4] * 3, alpha=0.45, sweep=0.3, erodeFrom=0.3, tone='body', camFade=True, tier=1, seed=44),
         parts('spark', 0.0, 60, 3, 1, 1.2, 0.1, at='self', offset=[0, -0.6, 0], tone='accent', grav=1.2, tier=0),
-        smoke(0.05, 'area', y=0.4, scale=4.5, tone='body', alpha=0.35),
     ]
     return {'skill': 'skl_thai_hu_ho_tran', 'palette': 'tran_ho', 'replaces': ['thaihuhotran'], 'events': ev}
 

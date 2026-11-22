@@ -94,9 +94,9 @@
    "card": "colossus",
    "at": "self",
    "offset": [
-    0.35,
-    3.55,
-    8.1
+    0.4,
+    4.2,
+    9.8
    ],
    "billboard": true,
    "scale": [
@@ -123,8 +123,8 @@
    "at": "self",
    "offset": [
     0,
-    3.8,
-    7.5
+    4.5,
+    9.2
    ],
    "billboard": true,
    "scale": [
