@@ -1,4 +1,5 @@
-import { instantiateShapes, type LocalShape, registerCollision, type Shape } from '@dtl/shared';
+import { gioiTriPillars, instantiateShapes, type LocalShape, registerCollision, type Shape } from '@dtl/shared';
+import gioiTriLevel from '../data/levels/gioi_tri.json';
 import archKd from '../data/colliders/arch_kim_da.boxes.json';
 import archTk from '../data/colliders/arch_thien_khuyet.boxes.json';
 import archKt from '../data/colliders/arch_kiem_trung.boxes.json';
@@ -111,3 +112,20 @@ function archShapesOf(level: string): Shape[] {
 }
 
 for (const level of Object.keys(ARCH_BY_LEVEL)) registerCollision(level, archShapesOf(level));
+
+/**
+ * Giới Trì Động Phủ (TN-3): 14 cột đồng quanh sân là cảnh dựng bằng code ở client nên không có trong `gioi_tri.inst.json`; chặn bằng cột tròn cao vô hạn
+ * (`y0`/`y1` rộng) tại đúng chỗ `gioiTriPillars` dựng hình. Dùng chung công thức ở `packages/shared/src/vandinh.ts`.
+ */
+registerCollision(
+  'gioi_tri',
+  gioiTriPillars((gioiTriLevel as unknown as { dungeon: { center: { x: number; z: number } } }).dungeon.center).map((c): Shape => ({
+    k: 'cyl',
+    x: c.x,
+    z: c.z,
+    r: c.r,
+    y0: -1000,
+    y1: 1000,
+    tag: 'gioi_tri_cot_dong',
+  })),
+);

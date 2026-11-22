@@ -527,6 +527,16 @@ for (const p of PADS.slice(1)) feats.push(flat('pad_' + p.id.replace('vd_', ''),
 for (const p of POIS) feats.push(flat('poi_' + p.id, p.off, Y, 24, 70));
 for (const b of BIA) feats.push(flat(b.id, b.off, Y, 14, 50));
 [BOSS, BOSS2, BOSS3, BOSS4].forEach((b, i) => feats.push(flat('san_' + i, b.off, Y - 2, 44, 120, { detail: 1.2 })));
+// Va chạm của kiến trúc dựng bằng code ở client (`apps/client/src/game/world/vdWonders.ts`); số liệu khớp `packages/shared/src/vandinh.ts` (test chuong6/vanDinhArt giữ khớp):
+// Đỉnh Vô Danh r 6,4; ba Ảnh Bia r 1,3 (vẫn chạm `touch` 5 m từ trước mặt); hai trụ Cổng Giới Trì r 1,7 ở ±6,2 m quanh cổng theo trục ngang quay về tâm bản đồ.
+const poiOff = (id) => POIS.find((p) => p.id === id).off;
+const gateO = poiOff('gioi_tri_cua');
+const gateYaw = Math.atan2(-gateO[0], -gateO[1]);
+const wc = (x, z, r) =>
+  colliders.push({ x: Math.round((C + x) * 100) / 100, z: Math.round((C + z) * 100) / 100, r: Math.round(r * 100) / 100 });
+wc(...poiOff('dinh_vo_danh'), 6.4);
+for (const b of BIA) wc(b.off[0], b.off[1], 1.3);
+for (const k of [-1, 1]) wc(gateO[0] + k * 6.2 * Math.cos(gateYaw), gateO[1] - k * 6.2 * Math.sin(gateYaw), 1.7);
 const terrain = {
   id: 'van_dinh',
   seed: SEED,
@@ -546,7 +556,8 @@ const terrain = {
     edge: { amp: 120, r0: 300, r1: 20 },
   },
   features: feats,
-  play: { cx: PLAY.cx, cz: PLAY.cz, half: PLAY.half, wallH: 260 },
+  // Vách gồ ghề có bậc (mỹ thuật TN-3): chân vách lùi theo nhiễu, dốc dài 130 m chia 5 bậc.
+  play: { cx: PLAY.cx, cz: PLAY.cz, half: PLAY.half, wallH: 260, rough: { amp: 60, freq: 0.006, ramp: 130, steps: 5 } },
   colliders,
 };
 
@@ -555,7 +566,7 @@ const level = {
   minLevel: 32, // chương 6 từ Anh Biến sơ kỳ; server kiểm ở requestLevel
   spawn: { x: W(TRAM[0]), z: W(TRAM[1] + 12) },
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
-  pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 80 })),
+  pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 30 })),
   // Cổng vào Giới Trì Động Phủ, cách điểm gioi_tri_cua 18 m về phía tâm bản đồ.
   portals: [{ x: W(346), z: W(269), r: 12, to: 'gioi_tri' }],
   spots: BIA.map((b) => ({ id: b.id, zone: b.zone, x: W(b.off[0]), z: W(b.off[1]) })),

@@ -463,7 +463,7 @@ export class EntityManager {
       v.model.setGreatBlade?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(GREATBLADE_WEAPON) ?? false) : false);
       v.model.setCoGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(COHU_WEAPON) ?? false) : false);
       v.model.setTranKy?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(TRAN_KY_WEAPON) ?? false) : false);
-      const bl = bladeLook(s.mt, look.set ? (SET.get(look.set)?.look.blade ?? '') : '', s.wg ?? 0);
+      const bl = bladeLook(s.mt, look.set ? (SET.get(look.set)?.look.blade ?? '') : '', s.wg ?? 0, this.time);
       v.model.setWeaponGlow?.(bl.glow);
       v.model.setWeaponTint?.(bl.tint);
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.

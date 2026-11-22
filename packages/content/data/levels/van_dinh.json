@@ -339,42 +339,42 @@
       "zone": "cong_gioi",
       "x": 1084,
       "z": 1424,
-      "beamH": 80
+      "beamH": 30
     },
     {
       "id": "ho_guong_nuoc",
       "zone": "ho_hu_anh",
       "x": 654,
       "z": 1204,
-      "beamH": 80
+      "beamH": 30
     },
     {
       "id": "goc_re_co",
       "zone": "rung_re_treo",
       "x": 724,
       "z": 724,
-      "beamH": 80
+      "beamH": 30
     },
     {
       "id": "dinh_vo_danh",
       "zone": "bac_dinh",
       "x": 1024,
       "z": 464,
-      "beamH": 80
+      "beamH": 30
     },
     {
       "id": "cat_dong_nong",
       "zone": "rung_dong_kho",
       "x": 1424,
       "z": 724,
-      "beamH": 80
+      "beamH": 30
     },
     {
       "id": "gioi_tri_cua",
       "zone": "gioi_tri",
       "x": 1384,
       "z": 1304,
-      "beamH": 80
+      "beamH": 30
     }
   ],
   "portals": [

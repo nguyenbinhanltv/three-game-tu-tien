@@ -80,7 +80,15 @@ export type GradingName =
   | 'bhr_dawn'
   | 'bhr_day'
   | 'bhr_dusk'
-  | 'bhr_night';
+  | 'bhr_night'
+  | 'vda_dawn'
+  | 'vda_day'
+  | 'vda_dusk'
+  | 'vda_night'
+  | 'vdd_dawn'
+  | 'vdd_day'
+  | 'vdd_dusk'
+  | 'vdd_night';
 /** Thời điểm trong ngày (`?mood=`); level có bộ mood riêng (Đoạn Mạch: `ochre*`) đổi theo. */
 type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 
@@ -147,6 +155,14 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   bhr_day: parse(raw.presets.bhr_day),
   bhr_dusk: parse(raw.presets.bhr_dusk),
   bhr_night: parse(raw.presets.bhr_night),
+  vda_dawn: parse(raw.presets.vda_dawn),
+  vda_day: parse(raw.presets.vda_day),
+  vda_dusk: parse(raw.presets.vda_dusk),
+  vda_night: parse(raw.presets.vda_night),
+  vdd_dawn: parse(raw.presets.vdd_dawn),
+  vdd_day: parse(raw.presets.vdd_day),
+  vdd_dusk: parse(raw.presets.vdd_dusk),
+  vdd_night: parse(raw.presets.vdd_night),
 };
 
 /** Thời điểm của mood Bắc Hoang `bh_*`/`bhr_*` (mặc định bình minh). */
@@ -170,6 +186,9 @@ export function moodVariant(base: GradingName, tod: TimeOfDay): GradingName {
   // Bắc Hoang (MAP-5): bốn thời điểm, hai nửa bản đồ (`bh_*` bên này khe, `bhr_*` bên kia khe).
   if (base.startsWith('bhr_')) return `bhr_${tod}` as GradingName;
   if (base.startsWith('bh_')) return `bh_${tod}` as GradingName;
+  // Vấn Đỉnh (TN-3): hai mặt, mặt Âm Hư `vda_*` (tây) và mặt Dương Thực `vdd_*` (đông), mỗi mặt bốn thời điểm.
+  if (base.startsWith('vda_')) return `vda_${tod}` as GradingName;
+  if (base.startsWith('vdd_')) return `vdd_${tod}` as GradingName;
   // Đoạn Mạch (MAP-2): bộ bốn thời điểm riêng (đỏ son + vàng thu).
   if (base.startsWith('dm_')) return `dm_${tod}` as GradingName;
   // Vân Hải (MAP-3): bộ bốn thời điểm riêng xanh lam + bạc, có hoàng hôn.

@@ -1,6 +1,6 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
-import { KIEM_TRUNG, terrainOf, propsOf, SECT, tribDef } from '@dtl/shared';
+import { KIEM_TRUNG, padsOfLevel, vdGateYaw, terrainOf, propsOf, SECT, tribDef } from '@dtl/shared';
 import { heightAt, levelAssets, levelId, levelTerrain } from '../../base/levelCtx';
 import { LEVELS } from '@dtl/content';
 import { get } from '../../ui/store';
@@ -10,6 +10,8 @@ import { applyAtmosphere, createLanternHalos, setHeightFog, tuneAtmosphere } fro
 import { buildRiftVeil } from '../../render/riftVeil';
 import { Aurora, AURORA_BY_TOD } from '../../render/aurora';
 import { BhWonders } from '../world/bhWonders';
+import { faceBlend } from '../world/vanDinhArt';
+import { VdDungeon, VdWonders } from '../world/vdWonders';
 import { skyTopOf } from '../../render/sky';
 import { DeadTrees } from '../world/deadTrees';
 import { deadTreeSpots, KIEP_BH, riftBlend, riftPath } from '../world/bacHoangArt';
@@ -179,17 +181,20 @@ export function disposeXich(eng: Game): void {
   eng.xichRifts = [];
 }
 
-/** Mood Bắc Hoang theo vị trí: 0 ở nửa nam (`bh_<giờ>`) → 1 ở ba vùng bắc (`bhr_<giờ>`), đổi dần quanh Khích Giai. Chỉnh uniform, không biên dịch lại. */
-export function updateRiftMood(eng: Game, dt: number, z: number): void {
+/** Mood Vấn Đỉnh theo vị trí: mặt Âm Hư `vda_<giờ>` (tây) → mặt Dương Thực `vdd_<giờ>` (đông), xem `faceBlend` ở `vanDinhArt.ts`. */
+/** Mood Bắc Hoang theo vị trí: 0 ở nửa nam (`bh_<giờ>`) → 1 ở ba vùng bắc (`bhr_<giờ>`), đổi dần quanh Khích Giai; Vấn Đỉnh theo x (`faceBlend`). Chỉnh uniform, không biên dịch lại. */
+export function updateRiftMood(eng: Game, dt: number, z: number, x = 0): void {
   eng.riftMoodAcc += dt;
   if (eng.riftMoodAcc < 0.2 && eng.riftMoodT >= 0) return;
   eng.riftMoodAcc = 0;
-  const t = riftBlend(z - levelTerrain().def.size / 2);
+  const vd = levelId() === 'van_dinh';
+  const half = levelTerrain().def.size / 2;
+  const t = vd ? faceBlend(x - half) : riftBlend(z - half);
   if (Math.abs(t - eng.riftMoodT) < 0.01) return;
   eng.riftMoodT = t;
   const tod = bhTod(moodOf(eng, levelId()));
-  const near: GradingName = `bh_${tod}`;
-  const far: GradingName = `bhr_${tod}`;
+  const near: GradingName = vd ? `vda_${tod}` : `bh_${tod}`;
+  const far: GradingName = vd ? `vdd_${tod}` : `bhr_${tod}`;
   const p = mixPreset(GRADING[near], GRADING[far], t);
   if (levelId() === KIEP_BH) {
     // Sân Nhật Thực Kiếp: sương mỏng hơn, tương phản và tối hơn để thấy rõ bia, boss và đĩa nhật thực (lần quay đầu bị sương hồng làm đục).
@@ -201,7 +206,7 @@ export function updateRiftMood(eng: Game, dt: number, z: number): void {
   }
   tuneAtmosphere(eng.scene, eng.env, p, t > 0.5 ? far : near, mixHex(skyTopOf(near), skyTopOf(far), t));
   applyGrading(p);
-  eng.aurora?.setIntensity(AURORA_BY_TOD[tod], t);
+  if (!vd) eng.aurora?.setIntensity(AURORA_BY_TOD[tod], t);
 }
 
 /** Nhật thực của Nhật Thực Kiếp: từ pha Nhật thực (25 s) trời tối đen có vành lửa; trước đó chỉ là quầng mờ. Ngoài sân kiếp thì tắt. */
@@ -217,6 +222,11 @@ export function updateEclipse(eng: Game, dt: number): void {
 }
 
 export function disposeBacHoang(eng: Game): void {
+  if (eng.vdWonders) {
+    eng.scene.remove(eng.vdWonders.group);
+    eng.vdWonders.dispose();
+    eng.vdWonders = null;
+  }
   if (eng.bhWonders) {
     eng.scene.remove(eng.bhWonders.group);
     eng.bhWonders.dispose();
@@ -382,6 +392,30 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
   }
   if (id === 'bac_hoang' || id === KIEP_BH) buildBacHoang(eng);
   if (id === XICH_LEVEL) buildXich(eng, id, q);
+  if (id === 'gioi_tri') {
+    eng.vdWonders = new VdDungeon({ heightAt: (x, z) => heightAt(x, z), center: LEVELS.gioi_tri!.dungeon!.center });
+    eng.scene.add(eng.vdWonders.group);
+  }
+  if (id === 'van_dinh') {
+    // Vấn Đỉnh (TN-3): mood đổi dần giữa hai mặt theo vị trí (xem `updateRiftMood`).
+    eng.riftMood = true;
+    eng.riftMoodT = -1;
+    const L = LEVELS.van_dinh!;
+    const T = levelTerrain();
+    const poi = (pid: string) => L.pois!.find((p) => p.id === pid)!;
+    const pad = (pid: string) => padsOfLevel('van_dinh').find((p) => p.id === pid)!;
+    const gate = poi('gioi_tri_cua');
+    eng.vdWonders = new VdWonders({
+      heightAt: (x, z) => heightAt(x, z),
+      dinh: poi('dinh_vo_danh'),
+      bia: L.spots!.filter((s) => s.id.startsWith('anh_bia')),
+      cong: gate,
+      congYaw: vdGateYaw(gate, T.size / 2),
+      chuyenAm: pad('vd_chuyen_am'),
+      chuyenDuong: pad('vd_chuyen_duong'),
+    });
+    eng.scene.add(eng.vdWonders.group);
+  }
   if (F.sect) void loadSectModel(eng, q.shadows);
 }
 
