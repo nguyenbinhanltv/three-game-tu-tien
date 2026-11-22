@@ -13,12 +13,10 @@ export const DUNGEON_QUEST_TARGET: Readonly<Record<string, string>> = {
   kieu_4: 'kieu_4',
   kieu_5: 'kieu_5',
   kieu_6: 'kieu_6',
-};
-
-/** Đích phó bản chương 5 đã khai trong nhiệm vụ (DV3-H) nhưng level phó bản chưa vào. Khi level có thật thì chuyển sang bảng trên (Kim Dạ Cung đã chuyển ở DV-3E). */
-export const PENDING_DUNGEON_TARGET: Readonly<Record<string, string>> = {
-  // Chín phòng cầu Cửu Kiều (TN-7): nhiệm vụ `q7_cau_n` đã khai, level `kieu_n` làm ở các PR phòng cầu (khi có thì chuyển sang bảng trên).
   kieu_7: 'kieu_7',
   kieu_8: 'kieu_8',
   kieu_9: 'kieu_9',
 };
+
+/** Đích phó bản chương 5 đã khai trong nhiệm vụ (DV3-H) nhưng level phó bản chưa vào. Khi level có thật thì chuyển sang bảng trên (Kim Dạ Cung đã chuyển ở DV-3E). */
+export const PENDING_DUNGEON_TARGET: Readonly<Record<string, string>> = {};

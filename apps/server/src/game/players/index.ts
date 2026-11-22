@@ -137,6 +137,8 @@ export class PlayerSystem {
       lastCombatAt: 0,
       variantAt: -1e9,
       hazardWin: { until: 0, taken: 0 },
+      dodgeUntil: 0,
+      dodgeAt: -1e9,
       meditating: false,
       xpAcc: 0,
       trib: null,

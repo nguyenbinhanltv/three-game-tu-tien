@@ -135,7 +135,19 @@ export class TribulationRoom extends GameRoom {
     const st = this.kieuStart.get(p.char.id);
     this.kieuStart.delete(p.char.id);
     const elapsedSec = !st || st.stage > 0 ? Number.MAX_SAFE_INTEGER : (Date.now() - st.at) / 1000;
+    // Cầu 9: chỗ cắm boss Lộ Linh (PR boss): nếu có pha boss thì pha đó tự ghi cầu khi boss gục, không ghi ngay ở đây.
+    if (n === 9 && this.kieuBossPhase(p, elapsedSec)) return;
     this.sim.kieu.onClear(p, n, { present: true, contributed: true, elapsedSec });
+  }
+
+  /**
+   * Chỗ cắm boss Lộ Linh (`KIEU_BOSS_ID` = `boss_lo_linh`) của cầu 9 (TN-7). Gọi sau khi Hồn kiếp (`huyen_hon`) qua trọn vẹn, `elapsedSec` là giờ đã trôi
+   * (đủ để pha boss tự gọi `onClear`); trả true nếu một pha boss đã tiếp quản (khi đó pha đó phải gọi `this.sim.kieu.onClear(p, 9, …)` khi boss gục,
+   * dùng `spawnTribBoss(p, KIEU_BOSS_ID, dist)`). Hiện chưa có boss: trả false, cầu ghi ngay khi Hồn kiếp xong. Room kiếp chứa được thực thể boss
+   * (`GameSim.spawnTribBoss`, như Nhật Thực Dực Chủ), nên không cần tách room riêng cho boss.
+   */
+  protected kieuBossPhase(_p: PlayerEnt, _elapsedSec: number): boolean {
+    return false;
   }
 
   /** Đưa mọi người về nơi cũ (người chết được hồi sinh tại sân trước). */

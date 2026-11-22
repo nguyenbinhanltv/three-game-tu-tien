@@ -352,6 +352,9 @@ const TERRAIN_ALIAS: Record<string, string> = {
   kieu_4: 'cuu_kieu',
   kieu_5: 'cuu_kieu',
   kieu_6: 'cuu_kieu',
+  kieu_7: 'cuu_kieu',
+  kieu_8: 'cuu_kieu',
+  kieu_9: 'cuu_kieu',
 };
 
 /** Đăng ký (hoặc thay) địa hình của một level. Trả địa hình đã dựng. */
@@ -379,6 +382,9 @@ const OWN_COLLIDERS = new Set([
   'kieu_4',
   'kieu_5',
   'kieu_6',
+  'kieu_7',
+  'kieu_8',
+  'kieu_9',
   'kim_da_cung',
   'kinh_nguyet',
   'luyen_than',

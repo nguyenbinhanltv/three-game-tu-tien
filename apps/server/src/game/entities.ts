@@ -66,6 +66,9 @@ export interface PlayerEnt {
   variantAt: number;
   /** Cửa sổ miễn vùng nổ của quái: hết lúc `until` (ms), đã nhận `taken` (xem hazardHit). */
   hazardWin: { until: number; taken: number };
+  /** Né (P1 Thiên Nhãn): hết khung bất tử lúc `dodgeUntil`, lần né gần nhất `dodgeAt` (giờ server, ms). Không lưu DB. */
+  dodgeUntil: number;
+  dodgeAt: number;
   meditating: boolean;
   xpAcc: number;
   /** Giây đả tọa tích lũy chưa báo cho nhiệm vụ `meditate` (dẫn khí nhập thể). */
@@ -280,4 +283,9 @@ export interface CampRt {
   ranged?: MonEnt;
   /** Giờ (ms) cả cụm sẽ tái sinh, 0 = đang có quái sống. */
   respawnAt: number;
+}
+
+/** Đang trong khung bất tử (né): mọi đường gây sát thương lên người chơi phải kiểm hàm này (damagePlayer, tỉ thí...). */
+export function isInvulnerable(p: Pick<PlayerEnt, 'dodgeUntil'>, now: number): boolean {
+  return now < p.dodgeUntil;
 }

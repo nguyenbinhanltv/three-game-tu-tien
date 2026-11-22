@@ -55,6 +55,7 @@ import { type Character } from './character';
 
 import type { TestFlags } from '../testflags';
 import type { PlayerEnt, MonEnt, Hazard, Bolt, SimHost, SimOptions, NodeEnt } from './entities';
+import { isInvulnerable } from './entities';
 export type { Bolt, Hazard, MonEnt, NodeEnt, PlayerEnt, SimHost, SimOptions, Stomp, StrikeCtx, Summon, TransferOpts } from './entities';
 import { ArtifactSystem, type ArtifactCtx } from './artifacts';
 import { DeathSystem, type DeathCtx } from './death';
@@ -1192,6 +1193,9 @@ export class GameSim {
   onSkill(p: PlayerEnt, msg: unknown): void {
     return this.combat.onSkill(p, msg);
   }
+  onDodge(p: PlayerEnt, msg: unknown): void {
+    return this.combat.onDodge(p, msg);
+  }
   onDash(p: PlayerEnt, skill: SkillDef, targetId: string): void {
     return this.combat.onDash(p, skill, targetId);
   }
@@ -1219,6 +1223,8 @@ export class GameSim {
   private duelStrike(p: PlayerEnt, o: PlayerEnt, powers: number[], elemMul: number): void {
     for (const power of powers) {
       if (this.duel.foeOf(p) !== o) return;
+      // Né: khung bất tử cũng miễn đòn tỉ thí (đòn này không qua damagePlayer).
+      if (isInvulnerable(o, this.now)) continue;
       const { dmg, crit } = computeDamage(
         p.char.atk,
         power * elemMul * DUEL_DAMAGE_MUL,
