@@ -180,10 +180,10 @@ describe('Đao tu mốc 24/28', () => {
       expect(marks(m, 'dao_ngan')).toBe(0);
       return hp - m.s.hp;
     };
-    // +10%/tầng chỉ cộng 30% so với dao động bạo kích: lấy 150 mẫu để sai số nhỏ hơn hẳn ngưỡng 1,15 (30 mẫu từng đỏ trên CI).
+    // +10%/tầng chỉ cộng 30% so với dao động bạo kích: lấy 200 mẫu để sai số nhỏ hơn hẳn ngưỡng 1,15 (30 mẫu từng đỏ trên CI; các phép so cộng dồn khác cũng ≥ 60 mẫu).
     let low = 0;
     let high = 0;
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 200; i++) {
       low += cast(0);
       high += cast(3);
     }
@@ -233,7 +233,7 @@ describe('Đao tu mốc 24/28', () => {
     };
     let low = 0;
     let high = 0;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 200; i++) {
       low += run(0, 0);
       high += run(100, 3);
     }
@@ -327,7 +327,7 @@ describe('Cổ tu mốc 24/28', () => {
     };
     let low = 0;
     let high = 0;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 200; i++) {
       low += run(0, 0);
       high += run(6, 3);
     }
@@ -417,7 +417,7 @@ describe('Cấm chế sư mốc 24/28', () => {
     };
     let low = 0;
     let high = 0;
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 60; i++) {
       low += total(0);
       high += total(100);
     }
