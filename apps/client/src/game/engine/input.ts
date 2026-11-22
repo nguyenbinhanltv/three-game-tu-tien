@@ -10,6 +10,7 @@ import { QUALITY, WEBGL2_MAX_PIXELS, isWebGPU } from './common';
 import { skipCine } from './cine';
 import { bindTouch } from './touch';
 import { onClick } from './click';
+import { groundAt } from '../../base/levelCtx';
 import type { Game } from '../engine';
 
 /**
@@ -69,6 +70,19 @@ export function bindInput(eng: Game): void {
     c.focus();
     (document.activeElement as HTMLElement | null)?.blur?.();
     if (e.pointerType === 'touch') return; // cảm ứng: `engine/touch.ts`
+    if (eng.iso) {
+      // Camera chéo: chuột phải = đi tới điểm (chỉ ý định, như WASD); chuột trái = chọn/đánh. Không kéo xoay.
+      eng.iso.cursor = { x: e.clientX, y: e.clientY };
+      if (e.button === 2) {
+        eng.iso.project(eng.camera, window.innerWidth, window.innerHeight, groundAt);
+        const g = eng.iso.ground;
+        if (g && !eng.typing()) {
+          eng.iso.setDest(g.x, g.z, g.y);
+          eng.cancelQueuedSkill();
+        }
+      } else if (e.button === 0) onClick(eng, e.clientX, e.clientY);
+      return;
+    }
     if (eng.controls === 'mouse') {
       if (!eng.locked) {
         // Bấm vào màn hình để bắt đầu nhìn bằng chuột.
@@ -87,6 +101,7 @@ export function bindInput(eng: Game): void {
     c.setPointerCapture(e.pointerId);
   });
   eng.on(c, 'pointermove', (e: PointerEvent) => {
+    if (eng.iso && e.pointerType !== 'touch') eng.iso.cursor = { x: e.clientX, y: e.clientY };
     if (e.pointerType === 'touch' || !eng.dragging) return;
     // Mất pointerup (thả chuột ngoài cửa sổ, Alt+Tab): đồng bộ lại theo nút đang giữ thật.
     if (e.buttons === 0) {
@@ -118,6 +133,9 @@ export function bindInput(eng: Game): void {
   // Sự kiện này đến sau pointerup thường, lúc đó dragging đã là false nên không ảnh hưởng cú bấm.
   eng.on(c, 'lostpointercapture', () => {
     eng.dragging = false;
+  });
+  eng.on(c, 'pointerleave', () => {
+    if (eng.iso) eng.iso.cursor = null;
   });
   eng.on(document as unknown as HTMLElement, 'mousemove', (e: MouseEvent) => {
     if (!eng.locked) return;
@@ -151,6 +169,7 @@ export function bindInput(eng: Game): void {
     (e: WheelEvent) => {
       e.preventDefault();
       eng.camFrame.cancel();
+      if (eng.iso) return; // camera chéo khóa cả khoảng cách: lăn chuột không đổi camera
       eng.camDist = Math.max(3, Math.min(70, eng.camDist * (e.deltaY > 0 ? 1.12 : 0.89)));
     },
     { passive: false },
