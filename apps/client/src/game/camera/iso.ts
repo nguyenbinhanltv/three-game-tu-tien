@@ -18,6 +18,16 @@ export const ISO_LEAD_K = 0.22;
 /** Tới đích (m) thì dừng đi chuột phải. */
 export const ISO_ARRIVE = 0.45;
 
+/**
+ * Phòng boss khổng lồ có khoảng cách cố định riêng (hệ số nhân `ISO_DIST`): vẫn khóa, không zoom, nhưng cả thân boss lọt khung.
+ * Phòng nào không ghi thì 1. Thêm phòng mới ở đây.
+ */
+export const ISO_DIST_MUL: Readonly<Record<string, number>> = { kieu_5: 1.4, kieu_9: 1.4, thien_khuyet: 1.3 };
+
+export function isoDistFor(level: string): number {
+  return ISO_DIST * (ISO_DIST_MUL[level] ?? 1);
+}
+
 export function isoYawFor(level: string): number {
   return ISO_YAW[level] ?? ISO_YAW_DEFAULT;
 }
@@ -109,6 +119,8 @@ export function isoLeadTarget(dx: number, dz: number): { x: number; z: number } 
 export const ISO_SAFE_X = 4.5;
 export const ISO_SAFE_DOWN = 2.2;
 export const ISO_SAFE_UP = 4.5;
+/** Đánh boss cao: người được xuống thấp hơn (vẫn trên thanh chiêu) để nhường chỗ phía trên cho thân boss. */
+export const ISO_SAFE_DOWN_BOSS = 3.4;
 export function clampLeadSafe(lx: number, lz: number, yaw: number): { x: number; z: number } {
   const s = Math.sin(yaw);
   const c = Math.cos(yaw);
@@ -126,6 +138,17 @@ export const ISO_TGT_X = 6.5;
 export const ISO_TGT_UP = 3.3;
 export const ISO_TGT_DOWN = 4;
 
+/**
+ * Mục tiêu cao (boss): phần thân trên điểm ngực (`h` · 0,45) chiếu lên màn hình cao thêm bao nhiêu mét "tương đương mặt đất"
+ * (vật cao H nhìn nghiêng `ISO_PITCH` dịch lên H / tan(pitch) so với điểm chân). Chỉ tính khi vượt `ISO_TALL` m để quái thường không đổi.
+ */
+export const ISO_TALL = 4.5;
+/** Trần `isoTopEq` (m): boss khổng lồ không thể lọt khung khi khóa khoảng cách, nên chỉ nhường tối đa chừng này (thân vẫn ưu tiên hơn đầu). */
+export const ISO_TOP_MAX = 2;
+export function isoTopEq(height: number, pitch = ISO_PITCH): number {
+  return height > ISO_TALL ? Math.min(ISO_TOP_MAX, (height * 0.45) / Math.tan(pitch)) : 0;
+}
+
 function fitInterval(want: number, lo: number, hi: number, pLo: number, pHi: number): number {
   // giao của vùng an toàn người chơi [pLo, pHi] và vùng an toàn mục tiêu [lo, hi]; rỗng thì ưu tiên người chơi
   const a = Math.max(pLo, lo);
@@ -135,9 +158,10 @@ function fitInterval(want: number, lo: number, hi: number, pLo: number, pHi: num
 
 /**
  * Kẹp độ lệch camera để người chơi VÀ mục tiêu (độ lệch thế giới `tx, tz` so với người) cùng nằm trong vùng an toàn; không thể cả hai thì ưu tiên người chơi.
+ * `topEq` (xem `isoTopEq`): phần thân mục tiêu vượt lên trên điểm ngực, để đỉnh boss cũng nằm trong vùng an toàn (không zoom).
  * Không có mục tiêu thì như `clampLeadSafe`.
  */
-export function clampLeadFrame(lx: number, lz: number, yaw: number, tx?: number, tz?: number): { x: number; z: number } {
+export function clampLeadFrame(lx: number, lz: number, yaw: number, tx?: number, tz?: number, topEq = 0): { x: number; z: number } {
   if (tx === undefined || tz === undefined) return clampLeadSafe(lx, lz, yaw);
   const s = Math.sin(yaw);
   const c = Math.cos(yaw);
@@ -147,6 +171,6 @@ export function clampLeadFrame(lx: number, lz: number, yaw: number, tx?: number,
   const tD = tx * s + tz * c;
   // L = vị trí điểm nhìn so với người; người ở (−Lr, −Ld), mục tiêu ở (tR − Lr, tD − Ld) so với tâm khung (D dương = xuống màn hình)
   const lr = fitInterval(wantR, tR - ISO_TGT_X, tR + ISO_TGT_X, -ISO_SAFE_X, ISO_SAFE_X);
-  const ld = fitInterval(wantD, tD - ISO_TGT_DOWN, tD + ISO_TGT_UP, -ISO_SAFE_DOWN, ISO_SAFE_UP);
+  const ld = fitInterval(wantD, tD - ISO_TGT_DOWN, tD + ISO_TGT_UP - topEq, -(topEq > 0 ? ISO_SAFE_DOWN_BOSS : ISO_SAFE_DOWN), ISO_SAFE_UP);
   return { x: lr * c + ld * s, z: -lr * s + ld * c };
 }
