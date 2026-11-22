@@ -1016,6 +1016,15 @@ Mỗi icon trong atlas (tên khóa = id icon):
 | `skl_duoc_vu` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icon/v2/sheets/s_skill_05.png` |
 | `skl_hoanh_kiem_pha_mach` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icon/v2/sheets/s_skill_03.png` |
 | `skl_hoi_nguyen_thuat` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icon/v2/sheets/s_skill_01.png` |
+| `skl_thuan_dao_tram` | Sinh bởi Codex cho dự án | dự án | 2026-11-22 | `2d/icon/v2/sheets/s_path_2428_a.png` |
+| `skl_huyet_chien_the` | Sinh bởi Codex cho dự án | dự án | 2026-11-22 | `2d/icon/v2/sheets/s_path_2428_a.png` |
+| `skl_doan_thien_dao` | Sinh bởi Codex cho dự án | dự án | 2026-11-22 | `2d/icon/v2/sheets/s_path_2428_a.png` |
+| `skl_phan_co_thuat` | Sinh bởi Codex cho dự án | dự án | 2026-11-22 | `2d/icon/v2/sheets/s_path_2428_a.png` |
+| `skl_kim_thien_co` | Sinh bởi Codex cho dự án | dự án | 2026-11-22 | `2d/icon/v2/sheets/s_path_2428_a.png` |
+| `skl_van_co_phe_the` | Sinh bởi Codex cho dự án | dự án | 2026-11-22 | `2d/icon/v2/sheets/s_path_2428_a.png` |
+| `skl_dia_sat_tran` | Sinh bởi Codex cho dự án | dự án | 2026-11-22 | `2d/icon/v2/sheets/s_path_2428_b.png` |
+| `skl_thai_hu_ho_tran` | Sinh bởi Codex cho dự án | dự án | 2026-11-22 | `2d/icon/v2/sheets/s_path_2428_b.png` |
+| `skl_lac_thu_dai_tran` | Sinh bởi Codex cho dự án | dự án | 2026-11-22 | `2d/icon/v2/sheets/s_path_2428_b.png` |
 | `skl_hoi_thien_dan_lo` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icon/v2/sheets/s_skill_05.png` |
 | `skl_kiem_anh_bo` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icon/v2/sheets/s_skill_03.png` |
 | `skl_kiem_anh_phan_quang` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icon/v2/sheets/s_skill_04.png` |

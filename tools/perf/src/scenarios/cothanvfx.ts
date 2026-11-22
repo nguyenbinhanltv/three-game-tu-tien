@@ -1,11 +1,12 @@
 // TN-5 PR3 (Cổ Thần): hình các chiêu + cảnh Hóa Hình từ camera mặc định (sau lưng), HUD bật, cùng góc máy ở 1080p + 720p,
 // mỗi chiêu một ảnh +30 ms sau khung trúng đòn rồi các mốc sau, để soát "không che camera/nhân vật/mục tiêu" và khoảnh khắc wow.
 // Mọi chiêu bấm thật (server phán định); lệnh GM chỉ để dựng cảnh (cấp, sao, nhánh, vòng sạc, gọi quái).
-// Dùng: pnpm shots cothanvfx --out <thư mục tuyệt đối> [--sizes 1080p,720p] [--genders m,f]
+// Dùng: pnpm shots cothanvfx --out <thư mục tuyệt đối> [--sizes 1080p,720p] [--genders m,f] [--only ...] [--perf]
+// `--perf` (chỉ với `--only hoa-hinh`): đo khung/draw call lúc nghỉ, rồi lúc Hóa Hình lần đầu (lạnh: dựng thẻ + biên dịch shader) và lần hai (nóng), ghi `cothan-perf.json`.
 import { SKILL } from '@dtl/content';
-import { list } from '../lib/env';
+import { flag, list } from '../lib/env';
 import { sleep } from '../lib/devserver';
-import { gm } from '../lib/game';
+import { gm, perfSample } from '../lib/game';
 import type { Run, Scenario } from '../lib/scenario';
 import { snap, UI_SIZES, writeJson } from '../lib/shot';
 
@@ -120,6 +121,19 @@ async function run(r: Run, g: string, tags: string[]): Promise<Record<string, un
     // Hóa Hình: phím Y (chiêu tư thế), ảnh +30 ms sau lúc vào tư thế rồi các mốc thân to ra / bóng Cổ Thần tan.
     await gm(page, 'spawn clear', 1400);
     await gm(page, 'cd', 1300);
+    if (flag('--perf')) {
+      const rows: Record<string, unknown> = { idle: await perfSample(page) };
+      for (const round of ['lanh', 'nong']) {
+        await page.keyboard.press('y', { delay: 80 });
+        await sleep(Math.round((SKILL.get('skl_hoa_hinh')?.hitAt?.[0] ?? 0.6) * 1000) + 200);
+        rows[round] = await perfSample(page);
+        await sleep(13_000);
+        await gm(page, 'cd', 1300);
+      }
+      log[`perf-${tag}`] = rows;
+      console.log('[cothanvfx] perf', tag, JSON.stringify(rows));
+      continue;
+    }
     await page.keyboard.press('y', { delay: 80 });
     let waited = 0;
     const apply = Math.round((SKILL.get('skl_hoa_hinh')?.hitAt?.[0] ?? 0.6) * 1000);

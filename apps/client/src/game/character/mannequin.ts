@@ -16,6 +16,7 @@ import { attachBrawlerGear, gearShown, snapshotBind, type BindSnapshot, type Bra
 import { attachCoGear, fluteMesh } from './coGear';
 import { tranKyMesh } from './tranGear';
 import { greatbladeMesh } from './greatblade';
+import { SwordArc } from '../fx/swordArc';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
 import { applySkinLook, SKIN_LOOKS } from './skinLook';
@@ -568,6 +569,9 @@ export class MannequinCharacter implements CharacterView {
   private coGear: BrawlerGear | null = null;
   private coOn = false;
   private origBlade: { mesh: THREE.Mesh; len: number } | null = null;
+  /** Lôi tu: tia điện dọc kiếm (con của mesh kiếm), dựng lười khi bật lần đầu. */
+  private arc: SwordArc | null = null;
+  private arcOn = false;
   private scabbard: THREE.Object3D | null = null;
   private hand: THREE.Object3D | null = null;
   private qScab = new THREE.Quaternion();
@@ -809,6 +813,7 @@ export class MannequinCharacter implements CharacterView {
     this.bladeLen = want.len;
     this.blade.visible = true;
     this.mountBlade(this.drawn);
+    if (this.arcOn) this.syncArc();
   }
 
   /** Hướng tu cầm đao lớn (Đao tu): thay cây kiếm trong tay/trên lưng bằng đao lớn thủ tục; tắt thì trả kiếm gốc. */
@@ -822,6 +827,23 @@ export class MannequinCharacter implements CharacterView {
     if (this.disposed || this.shadow) return;
     if (on) this.swapHeld('tranky', () => tranKyMesh(this.height));
     else if (this.heldKey === 'tranky') this.swapHeld('', () => tranKyMesh(this.height));
+  }
+
+  /** Lôi tu: tia điện nhẹ dọc kiếm, kể cả kiếm đeo lưng (chỉ LOD0 và không phải bóng). Tắt thì gỡ khỏi kiếm. */
+  setWeaponArc(on: boolean): void {
+    if (this.disposed || this.shadow || on === this.arcOn) return;
+    this.arcOn = on;
+    this.syncArc();
+  }
+
+  private syncArc(): void {
+    if (!this.arcOn || !this.blade) {
+      this.arc?.detach();
+      return;
+    }
+    this.arc ??= new SwordArc();
+    this.arc.attach(this.blade, this.bladeLen);
+    this.arc.setVisible(this.lodLevel === 0 && !this.gearOn);
   }
 
   /** Hướng tu Cổ tu: sáo cổ thay kiếm + hũ cổ treo hông trái (chỉ vẽ ở LOD0). Tắt thì trả kiếm gốc, ẩn hũ. */
@@ -879,6 +901,7 @@ export class MannequinCharacter implements CharacterView {
     // Kiếm (một draw call mỗi người) ẩn ở LOD xa nhất: ngoài ~55 m không còn thấy.
     // Thể tu đánh tay không: kiếm ẩn hẳn (`setBrawlerGear`), không để lượt LOD bật lại.
     if (this.blade) this.blade.visible = level < 2 && !this.gearOn;
+    this.arc?.setVisible(level === 0 && !this.gearOn);
   }
 
   /** Đang đỗ rig (LOD1–2): xương ở hệ tọa độ model, không đọc được vị trí thế giới. */
@@ -1403,6 +1426,7 @@ export class MannequinCharacter implements CharacterView {
     this.inner.position.x = this.hit.shake;
     this.inner.position.z = 0;
     this.applyDash(realDt);
+    this.arc?.update(realDt);
     this.combatT = a.combat ? COMBAT_HOLD : Math.max(0, this.combatT - realDt);
     if (a.dead && !this.dead) {
       // Chết: bỏ đòn đang phát và đòn nối tiếp, để Death01 phát trọn.
@@ -1636,6 +1660,7 @@ export class MannequinCharacter implements CharacterView {
     this.setParked(0); // trả lưới LOD đỗ về rig để dọn chung
     this.disposed = true;
     this.hit.reset();
+    this.arc?.dispose();
     this.blade?.removeFromParent();
     for (const h of this.held.values()) {
       h.mesh.removeFromParent();

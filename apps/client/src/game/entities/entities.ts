@@ -23,7 +23,7 @@ import { gatesOf, type Gate } from '../world/gates';
 import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t, pathOf as PATH_OF_METHOD, questPathOk } from '@dtl/content';
 import { BRAWLER_WEAPON } from '../character/brawlerGear';
 import { giantScale, stepGiant } from './giant';
-import { bladeLook } from './loiBlade';
+import { bladeLook, loiArc } from './loiBlade';
 import { GREATBLADE_WEAPON } from '../character/greatblade';
 import { COHU_WEAPON } from '../character/coGear';
 import { TRAN_KY_WEAPON } from '../character/tranGear';
@@ -472,6 +472,7 @@ export class EntityManager {
       const bl = bladeLook(s.mt, look.set ? (SET.get(look.set)?.look.blade ?? '') : '', s.wg ?? 0, this.time);
       v.model.setWeaponGlow?.(bl.glow);
       v.model.setWeaponTint?.(bl.tint);
+      v.model.setWeaponArc?.(loiArc(s.mt));
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
       v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;

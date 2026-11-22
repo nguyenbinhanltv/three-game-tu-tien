@@ -173,7 +173,9 @@ def hoa_hinh():
         snd(0.0, 'impact', 1.0, 0.62, 0.04),
         snd(0.04, 'crit', 0.5, 0.7, 0.05),
         # bóng Cổ Thần khổng lồ: thẻ `colossus` đứng phía trước người chơi (camera ở sau lưng) nên người chơi nổi lên trước nó; mọc từ đất lên
-        mesh('card', -0.1, 1.6, card='colossus', at='self', offset=[0, 3.8, 7.5], billboard=True, scale=[6.0, 9.0, 1], sweep=0.22, erodeFrom=0.7, alpha=0.92, shadow=False, tone='body', camFade=True, awayFromCam=True, tier=0, seed=31),
+        # độ dày giả: một lớp nền tối (tone core) lớn hơn 6%, dịch ra sau và lệch phải-thấp 0,35 m, mờ hơn; lớp thân đứng trước nó
+        mesh('card', -0.12, 1.6, card='colossus', at='self', offset=[0.4, 4.2, 9.8], billboard=True, scale=[6.4, 9.6, 1], sweep=0.22, erodeFrom=0.7, alpha=0.55, shadow=False, tone='core', camFade=True, awayFromCam=True, tier=1, seed=33),
+        mesh('card', -0.1, 1.6, card='colossus', at='self', offset=[0, 4.5, 9.2], billboard=True, scale=[6.0, 9.0, 1], sweep=0.22, erodeFrom=0.7, alpha=0.92, shadow=False, tone='body', camFade=True, awayFromCam=True, tier=0, seed=31),
         # vành triện + lớp tối + nứt dưới chân
         decal('scorch', -0.1, 5.2, 2.8, at='self', offset=[0, G, 0], grow=0.15, tone='shadow', alpha=0.8, tier=1),
         decal('rune', 0.0, 6.0, 2.4, at='self', offset=[0, G, 0], grow=0.2, tone='body', alpha=1, tier=0),
