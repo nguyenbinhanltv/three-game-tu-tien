@@ -115,6 +115,8 @@ export class DeathSystem {
 
   damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false, ke?: 1 | -1): void {
     if (this.c.isDead(p) || this.c.soul.isScouting(p)) return;
+    // Né (P1 Thiên Nhãn): trong khung bất tử do server cấp thì không nhận sát thương.
+    if (this.c.now < p.dodgeUntil) return;
     const c = p.char;
     let n = Math.max(1, Math.round(dmg));
     // Định Thần Phù (E3-M): giảm sát thương "gương" (quái `glass`, boss gương, bóng tâm ma trong cung).

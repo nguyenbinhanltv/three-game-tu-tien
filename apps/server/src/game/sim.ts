@@ -1192,6 +1192,9 @@ export class GameSim {
   onSkill(p: PlayerEnt, msg: unknown): void {
     return this.combat.onSkill(p, msg);
   }
+  onDodge(p: PlayerEnt, msg: unknown): void {
+    return this.combat.onDodge(p, msg);
+  }
   onDash(p: PlayerEnt, skill: SkillDef, targetId: string): void {
     return this.combat.onDash(p, skill, targetId);
   }

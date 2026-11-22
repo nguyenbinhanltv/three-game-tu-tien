@@ -66,6 +66,9 @@ export interface PlayerEnt {
   variantAt: number;
   /** Cửa sổ miễn vùng nổ của quái: hết lúc `until` (ms), đã nhận `taken` (xem hazardHit). */
   hazardWin: { until: number; taken: number };
+  /** Né (P1 Thiên Nhãn): hết khung bất tử lúc `dodgeUntil`, lần né gần nhất `dodgeAt` (giờ server, ms). Không lưu DB. */
+  dodgeUntil: number;
+  dodgeAt: number;
   meditating: boolean;
   xpAcc: number;
   /** Giây đả tọa tích lũy chưa báo cho nhiệm vụ `meditate` (dẫn khí nhập thể). */
