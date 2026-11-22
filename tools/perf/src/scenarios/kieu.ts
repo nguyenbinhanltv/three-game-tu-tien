@@ -14,7 +14,14 @@ export default {
     const n = Number(opt('--bridge', '1'));
     for (const size of list('--sizes', '1920x1080,1280x720')) {
       const viewport = size.split('x').map(Number) as [number, number];
-      const { ctx, page } = await r.open({ name: `Kieu${viewport[1]}`, quality: 'high', viewport, seenIntro: true, warnings: true, ...(flag('--iso') ? { query: { cam: 'iso' } } : {}) });
+      const { ctx, page } = await r.open({
+        name: `Kieu${viewport[1]}`,
+        quality: 'high',
+        viewport,
+        seenIntro: true,
+        warnings: true,
+        ...(flag('--iso') ? { query: { cam: 'iso' } } : {}),
+      });
       await gm(page, 'level 45');
       await gm(page, 'god on');
       if (n > 1) await gm(page, `kieu ${n - 1}`);
