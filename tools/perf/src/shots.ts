@@ -75,6 +75,7 @@ import realmaura from './scenarios/realmaura';
 import fxlib from './scenarios/fxlib';
 import xichkhe from './scenarios/xichkhe';
 import dye23 from './scenarios/dye23';
+import silk from './scenarios/silk';
 import n7 from './scenarios/n7';
 import dungeonart from './scenarios/dungeonart';
 import collscan from './scenarios/collscan';
@@ -128,6 +129,7 @@ const SCENARIOS: Scenario[] = [
   v3sets,
   n7,
   dye23,
+  silk,
   v3views,
   thetu,
   loitu,
