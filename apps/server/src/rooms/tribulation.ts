@@ -10,10 +10,17 @@ import {
   tribRoomNameOf,
   type TribId,
   type DungeonDef,
+  type TribDef,
   at,
+  chainCleared,
+  kieuEntryDeny,
+  kieuOfLevel,
 } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
+import { Character } from '../game/character';
+import { DUNGEON_QUEST_TARGET } from '../game/dungeonquest';
+import { log } from '../log';
 import type { PlayerEnt, SimOptions } from '../game/entities';
 import { tickets } from '../transfer';
 import { GameRoom, type JoinAuth } from './base';
@@ -68,6 +75,16 @@ export class TribulationRoom extends GameRoom {
   static override async onAuth(token: string, options: unknown): Promise<JoinAuth> {
     const auth = await GameRoom.onAuth(token, options);
     const key = (options as { tribRoom?: unknown } | null)?.tribRoom;
+    // Cầu kiếp chuỗi của Cửu Kiều (TN-7): kiểm lại điều kiện vào ngay lúc vào room (cấp, đúng cầu kế tiếp hoặc luyện lại).
+    const kn = kieuOfLevel(this.levelId);
+    if (kn !== null) {
+      const c = Character.load(auth.charId);
+      const deny = kieuEntryDeny(c.level, c.meta.kieu, kn);
+      if (deny) {
+        log.warn(`[kieu] ${c.name} vào cầu ${kn} bị từ chối ở onAuth (${deny})`);
+        throw new ServerError(ERR_NO_TICKET, 'no_ticket');
+      }
+    }
     const t = tickets.take(auth.charId, this.levelId);
     if (!t?.trib || typeof key !== 'string' || t.trib.key !== key) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
     return { ...auth, ticket: true, spawn: t.spawn, trib: t.trib };
@@ -81,9 +98,17 @@ export class TribulationRoom extends GameRoom {
     super.onJoin(client, options, auth);
   }
 
+  /** Cầu kiếp chuỗi: số ải đã qua lúc vào (để biết lượt này là tiếp tục dở dang) và giờ vào, theo nhân vật. */
+  private kieuStart = new Map<number, { stage: number; at: number }>();
+
   override afterJoin(p: PlayerEnt): void {
     const id = tribArrivals.get(p.char.id);
     tribArrivals.delete(p.char.id);
+    if (kieuOfLevel(this.levelId) !== null) {
+      // Hook nhiệm vụ `dungeon` của chương 7 (q7_cau_n), cùng đường với phó bản thường.
+      this.sim.questEvent(p, 'dungeon', DUNGEON_QUEST_TARGET[this.levelId], 1);
+      if (id) this.kieuStart.set(p.char.id, { stage: chainCleared(p.char.meta, tribDef(id)), at: Date.now() });
+    }
     if (!id) {
       this.sim.sys(p, 'sys.trib_guard', undefined, 'info');
       return;
@@ -99,8 +124,18 @@ export class TribulationRoom extends GameRoom {
     }, TribulationRoom.START_DELAY_MS);
   }
 
-  onTribulationEnd(): void {
+  /**
+   * Kiếp xong (gọi từ `endTribulation`). Ở sân cầu Cửu Kiều: chuỗi kiếp qua trọn vẹn do SERVER thấy (success của kiếp chuỗi chỉ phát ở ải cuối) mới ghi cầu.
+   * Ải đã qua được lưu giữa các lượt nên lượt tiếp tục dở dang ngắn hơn giờ tối thiểu một cách hợp lệ: khi đó không áp giờ tối thiểu.
+   */
+  onTribulationEnd(p?: PlayerEnt, def?: TribDef, success?: boolean): void {
     this.startedAny = true;
+    const n = kieuOfLevel(this.levelId);
+    if (n === null || !p || !def?.chain || !success) return;
+    const st = this.kieuStart.get(p.char.id);
+    this.kieuStart.delete(p.char.id);
+    const elapsedSec = !st || st.stage > 0 ? Number.MAX_SAFE_INTEGER : (Date.now() - st.at) / 1000;
+    this.sim.kieu.onClear(p, n, { present: true, contributed: true, elapsedSec });
   }
 
   /** Đưa mọi người về nơi cũ (người chết được hồi sinh tại sân trước). */

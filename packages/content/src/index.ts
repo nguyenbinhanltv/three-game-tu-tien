@@ -92,6 +92,14 @@ import kieu1Json from '../data/levels/kieu_1.json';
 import kieu1AssetsJson from '../data/levels/kieu_1.assets.json';
 import kieu2Json from '../data/levels/kieu_2.json';
 import kieu2AssetsJson from '../data/levels/kieu_2.assets.json';
+import kieu3Json from '../data/levels/kieu_3.json';
+import kieu3AssetsJson from '../data/levels/kieu_3.assets.json';
+import kieu4Json from '../data/levels/kieu_4.json';
+import kieu4AssetsJson from '../data/levels/kieu_4.assets.json';
+import kieu5Json from '../data/levels/kieu_5.json';
+import kieu5AssetsJson from '../data/levels/kieu_5.assets.json';
+import kieu6Json from '../data/levels/kieu_6.json';
+import kieu6AssetsJson from '../data/levels/kieu_6.assets.json';
 import gioiTriJson from '../data/levels/gioi_tri.json';
 import gioiTriAssetsJson from '../data/levels/gioi_tri.assets.json';
 import doKiepJson from '../data/levels/do_kiep.json';
@@ -468,6 +476,10 @@ export const LEVELS: Record<string, LevelDef> = {
   gioi_tri: gioiTriJson as LevelDef,
   kieu_1: kieu1Json as LevelDef,
   kieu_2: kieu2Json as LevelDef,
+  kieu_3: kieu3Json as LevelDef,
+  kieu_4: kieu4Json as LevelDef,
+  kieu_5: kieu5Json as LevelDef,
+  kieu_6: kieu6Json as LevelDef,
   do_kiep: doKiepJson as LevelDef,
   do_kiep_bac_hoang: doKiepBhJson as LevelDef,
   phuc_mach: phucMachJson as LevelDef,
@@ -498,6 +510,10 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   gioi_tri: gioiTriAssetsJson as LevelAssets,
   kieu_1: kieu1AssetsJson as LevelAssets,
   kieu_2: kieu2AssetsJson as LevelAssets,
+  kieu_3: kieu3AssetsJson as LevelAssets,
+  kieu_4: kieu4AssetsJson as LevelAssets,
+  kieu_5: kieu5AssetsJson as LevelAssets,
+  kieu_6: kieu6AssetsJson as LevelAssets,
   do_kiep: doKiepAssetsJson as LevelAssets,
   do_kiep_bac_hoang: doKiepBhAssetsJson as LevelAssets,
   phuc_mach: phucMachAssetsJson as LevelAssets,

@@ -1,6 +1,6 @@
 // Room bản đồ thế giới (R-7, tách từ rooms.ts).
 import { ServerError } from 'colyseus';
-import { HOME_LEVEL, PF_DEAD, SPAWN_POINT, TELE_PARTY_R, worldRoomName, at } from '@dtl/shared';
+import { HOME_LEVEL, PF_DEAD, SPAWN_POINT, TELE_PARTY_R, TRIB_DEFS, TRIB_IDS, worldRoomName, at } from '@dtl/shared';
 import { LEVELS, realmName, t } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import { parties } from '../game/party';
@@ -83,6 +83,15 @@ export class WorldRoom extends GameRoom {
     }
     const plan = this.sim.kieu.plan(p, msg, mates);
     if (!plan) return;
+    // Cầu kiếp chuỗi (cầu 3 Ngũ Suy, 7–9 Huyền Kiếp): level cầu là sân kiếp. Mỗi thành viên có vé kiếp riêng (tự chạy kiếp của mình trong cùng room).
+    const tid = TRIB_IDS.find((i) => TRIB_DEFS[i].level === plan.level);
+    if (tid) {
+      for (const q of plan.members) {
+        tickets.issue(q.char.id, plan.level, null, { key: plan.dgKey, id: tid });
+        this.sendTransfer(q, plan.level, { tribRoom: plan.dgKey });
+      }
+      return;
+    }
     for (const q of plan.members) {
       tickets.issue(q.char.id, plan.level, null, undefined, plan.dgKey);
       this.sendTransfer(q, plan.level, { dgKey: plan.dgKey });
