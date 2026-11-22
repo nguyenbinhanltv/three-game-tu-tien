@@ -22,6 +22,8 @@ import {
 } from '@dtl/shared';
 import type { FxMesh } from '../../render/materials/vfx';
 import { paletteOf, toneOf, type FxPalette } from '../../render/vfx/palette';
+import { FLAGS } from '../../base/flags';
+import { isoFxHeight } from '../../render/vfx/isoFx';
 import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
 import { DECAL_CRACK, DECAL_RUNE, DECAL_SCORCH, DECAL_SMOKE, DECAL_STRIKE } from '../../render/vfx/stylized';
 import { bladeVisible } from '../../render/vfx/bladeTrail';
@@ -535,7 +537,7 @@ export class FxRunner {
     const place = (m: FxMesh, k: number, grow: number, off: number) => {
       const e = easeOut(k);
       const lerpS = (i: number) => s0f[i]! + (sT[i]! - s0f[i]!) * e;
-      m.scale.set(lerpS(0) * grow, lerpS(1) * grow, lerpS(2) * grow);
+      m.scale.set(lerpS(0) * grow, FLAGS.isoCam ? isoFxHeight(ev.shape, lerpS(1) * grow) : lerpS(1) * grow, lerpS(2) * grow);
       if (end) {
         const ek = ev.move!.ease === 'in' ? easeIn(k) : ev.move!.ease === 'linear' ? k : easeOut(k);
         m.position.lerpVectors(start, end, ek);
