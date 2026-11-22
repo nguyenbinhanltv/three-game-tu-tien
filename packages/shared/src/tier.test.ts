@@ -101,5 +101,7 @@ describe('đan phá cảnh theo bậc (E3-F)', () => {
     expect(bottleneckPill(19)).toBe('itm_pha_canh_dan_2');
     expect(bottleneckPill(21)).toBe('itm_pha_canh_dan_3');
     expect(bottleneckPill(27)).toBe('itm_pha_canh_dan_3');
+    expect(bottleneckPill(29)).toBe('itm_pha_canh_dan_3');
+    for (const l of [33, 37, 41]) expect(bottleneckPill(l)).toBe('itm_pha_canh_dan_4');
   });
 });
