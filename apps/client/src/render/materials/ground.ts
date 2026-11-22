@@ -11,6 +11,7 @@ import {
   int,
   luminance,
   max,
+  min,
   mix,
   normalGeometry,
   normalize,
@@ -96,6 +97,8 @@ interface CliffTones {
   tri?: boolean;
   /** Tâm vùng chơi (x, z): vách `tri` chọn mặt chiếu theo vị trí so với tâm (không theo pháp tuyến nhiễu), nên góc vách không còn hoa văn chữ V. */
   center?: [number, number];
+  /** Vấn Đỉnh hai mặt: bảng màu vách (tối ↔ sáng) của mặt Dương (phía đông tâm); `lo`/`hi` là của mặt Âm. Bật cả nền thủ tục hai mặt (Âm: đá phiến nứt, Dương: đất nung nứt khô + cỏ khô). */
+  duong?: { lo: [number, number, number]; hi: [number, number, number] };
 }
 const RED_TONES: CliffTones = { lo: [0.4, 0.2, 0.16], hi: [0.58, 0.52, 0.5] };
 let cliffTones: CliffTones = RED_TONES;
@@ -392,8 +395,112 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     // Vách Vấn Đỉnh: texture đá `cliff` triplanar ở BA tỉ lệ (11 m có sẵn trong `col`, 29 m và 83 m xoay trục), trộn theo nhiễu thế giới (không theo
     // khoảng cách) nên không lộ khung lặp; sắc theo `lo`/`hi` của level (mood hai mặt tự ngả lam hoặc vàng). Mọi toạ độ là toạ độ thế giới, không dùng
     // tiếp tuyến suy từ pháp tuyến nên vách gồ ghề không còn răng cưa.
-    const rockish3 = max(cliffW, rockW.mul(0.7));
     const cen = cliffTones.center ?? [WORLD_SIZE / 2, WORLD_SIZE / 2];
+    if (cliffTones.duong && !lo) {
+      // Nền hai mặt (TN-3): Âm = đá phiến tím lạnh vỡ thành tấm (Voronoi) có khe nứt + vết sương đọng; Dương = đất nung vàng cam nứt khô thành mảnh + cỏ khô.
+      // Toàn bộ theo toạ độ thế giới (không phụ thuộc UV), khe mờ dần theo khoảng cách để khỏi vân ô ở xa.
+      const tF = smoothstep(-40, 40, positionWorld.x.sub(cen[0]));
+      const farF = smoothstep(45, 190, dist);
+      const jointK = float(1).sub(farF.mul(0.8));
+      // Băm không dùng sin (sin với toạ độ ô lớn mất độ chính xác fp32 → vệt lưới dài): dạng Hoskins hash12.
+      const hsh2 = (c: Node, k: number) => {
+        const p3 = fract(vec3(c.x.add(k * 7.13), c.y.add(k * 3.71), c.x.add(k * 7.13)).mul(0.1031));
+        const q = p3.add(dot(p3, p3.yzx.add(33.33)));
+        return fract(q.x.add(q.y).mul(q.z));
+      };
+      const broad = texture(tex.mask, p.mul(0.0067).add(0.21)).a;
+      const mid = texture(tex.mask, p.mul(0.019).add(0.77)).a;
+      // Voronoi 3×3: f1 = khoảng cách tới tâm gần nhất, f2 − f1 = khoảng cách tới cạnh; id = số ngẫu nhiên của mảnh
+      const vor = (q: Node, k: number) => {
+        const ip = floor(q);
+        const fp = fract(q);
+        let f1: Node = float(8);
+        let f2: Node = float(8);
+        let id: Node = float(0);
+        for (let dy = -1; dy <= 1; dy++)
+          for (let dx = -1; dx <= 1; dx++) {
+            const g = vec2(dx, dy);
+            const cell = ip.add(g);
+            const o = vec2(hsh2(cell, k), hsh2(cell, k + 17));
+            const d = g.add(o.mul(0.9)).sub(fp).length();
+            id = select(d.lessThan(f1), hsh2(cell, k + 31), id);
+            f2 = min(max(d, f1), f2);
+            f1 = min(f1, d);
+          }
+        return { f1, edge: f2.sub(f1), id };
+      };
+      const ra = vec2(p.x.mul(0.62).add(p.y.mul(0.78)), p.y.mul(0.62).sub(p.x.mul(0.78)));
+      // Tỉ lệ ô CỐ ĐỊNH mỗi bên Giới Tuyến (đổi liên tục theo x làm ô bị kéo giãn thành sọc toả tia); chỉ màu trộn dần qua vùng chuyển.
+      const east = step(0, positionWorld.x.sub(cen[0]));
+      const s1 = mix(float(5.2), float(2.6), east);
+      const s2 = mix(float(15), float(8.5), east);
+      const v1 = vor(p.div(s1), 1);
+      const v2 = vor(ra.div(s2).add(3.7), 5);
+      const c2 = smoothstep(0.035, 0.0, v2.edge).mul(jointK);
+      // --- Âm: tấm đá phiến, kích thước tấm biến thiên (tấm nhỏ lẫn tấm lớn), mảng màu macro, viền tấm lẫn bụi, tối hơn
+      const macroA = texture(tex.mask, p.mul(0.0031).add(0.57)).a;
+      const merge = smoothstep(0.1, 0.5, v1.id); // tấm có id thấp bỏ viền ⇒ nhập với tấm bên cạnh thành tấm lớn
+      const widthA = float(0.03).add(v1.id.mul(0.07)); // bề rộng khe mỗi tấm một kiểu
+      const c1a = smoothstep(widthA, 0.0, v1.edge).mul(jointK).mul(merge);
+      let am: Node = mix(
+        vec3(0.15, 0.14, 0.2),
+        vec3(0.36, 0.34, 0.43),
+        v1.id.mul(0.4).add(v2.id.mul(0.25)).add(mid.mul(0.15)).add(macroA.mul(0.35)),
+      );
+      am = am.mul(float(0.62).add(broad.mul(0.55)).add(macroA.sub(0.5).mul(0.5)));
+      am = am.mul(float(1).sub(c1a.mul(0.6))).mul(float(1).sub(c2.mul(0.4)));
+      // bụi/sương lẫn ở viền tấm và vệt lan: sáng xám lam nhạt, đậm hơn nơi nhiễu cao
+      const dust = smoothstep(0.34, 0.04, v1.edge)
+        .mul(float(0.25).add(mid.mul(0.5)))
+        .mul(jointK);
+      am = mix(am, vec3(0.42, 0.43, 0.52), dust.mul(0.4));
+      const pool = smoothstep(0.52, 0.8, broad.mul(0.7).add(mid.mul(0.3)));
+      am = mix(am, vec3(0.5, 0.55, 0.68), pool.mul(0.22));
+      // --- Dương: đất nung nứt khô, nứt có bề rộng/độ sâu khác nhau (không đều), mảng macro sáng tối, mảnh phồng
+      const widthD = float(0.025).add(v1.id.mul(0.075));
+      const wob = hsh2(floor(p.div(0.9)), 33)
+        .sub(0.5)
+        .mul(0.05); // mép nứt lởm chởm
+      const c1d = smoothstep(widthD.add(wob), 0.0, v1.edge)
+        .mul(jointK)
+        .mul(smoothstep(0.05, 0.3, v1.id.add(mid.mul(0.25))));
+      let du: Node = mix(
+        vec3(0.54, 0.29, 0.12),
+        vec3(0.84, 0.5, 0.22),
+        v1.id.mul(0.3).add(v2.id.mul(0.2)).add(mid.mul(0.2)).add(macroA.mul(0.3)),
+      );
+      du = du.mul(float(0.66).add(broad.mul(0.5)).add(macroA.sub(0.5).mul(0.5)));
+      du = du.mul(float(1).add(smoothstep(0.55, 0.1, v1.f1).mul(0.12)));
+      du = du.mul(float(1).sub(c1d.mul(0.55))).mul(float(1).sub(c2.mul(0.4)));
+      du = mix(du, vec3(0.78, 0.62, 0.4), smoothstep(0.3, 0.05, v1.edge).mul(mid).mul(0.22).mul(jointK)); // bụi vàng ở mép nứt
+      // cỏ khô: mảng theo nhiễu thấp tần, bên trong là cụm sợi (ô 0,8 m, tâm lệch ngẫu nhiên) màu rơm
+      const grassBand = smoothstep(0.5, 0.74, texture(tex.mask, p.mul(0.0052).add(0.61)).a.mul(0.7).add(mid.mul(0.3)));
+      const gq = p.div(0.8);
+      const gc = floor(gq);
+      const gj = vec2(hsh2(gc, 11), hsh2(gc, 12));
+      const gd = fract(gq).sub(gj.mul(0.5).add(0.25)).length();
+      const tuft = smoothstep(0.26, 0.1, gd).mul(step(0.3, hsh2(gc, 13)));
+      const straw = mix(vec3(0.62, 0.5, 0.22), vec3(0.82, 0.7, 0.34), hsh2(gc, 14));
+      du = mix(
+        du,
+        straw,
+        tuft
+          .mul(grassBand)
+          .mul(float(1).sub(farF.mul(0.6)))
+          .mul(0.8),
+      );
+      du = mix(du, vec3(0.6, 0.47, 0.22), grassBand.mul(0.18));
+      const proc = mix(am, du, tF);
+      // chút chi tiết texture gốc (nhân sáng) để nền không phẳng quá; xa thì về màu trung bình
+      const det = float(0.8).add(luminance(col).mul(0.4));
+      // mặt bậc phẳng của vách (cao hơn nền chơi ~96 m) không phải nền: nếu để nền thủ tục phủ lên, nắng chiếu ngang làm chúng sáng thành hàng lỗ thoi trắng ở góc vách
+      const floorW = float(1)
+        .sub(max(rockW, cliffW.mul(1.2)))
+        .clamp(0, 1)
+        .mul(float(1).sub(smoothstep(97, 108, h)));
+      col = mix(col, proc.mul(mix(det, float(1), farF)), floorW.mul(0.94));
+    }
+    const rockish3 = max(max(cliffW, rockW.mul(0.7)), smoothstep(97, 108, h)); // trên mặt nền chơi: luôn là đá (kể cả mặt bậc phẳng)
     // Vách bắc/nam (|z − cz| lớn hơn) chiếu theo mặt XY, vách đông/tây chiếu theo ZY; chuyển trong ~100 m quanh đường chéo.
     const wXY = smoothstep(-50, 50, positionWorld.z.sub(cen[1]).abs().sub(positionWorld.x.sub(cen[0]).abs()));
     const mk = (k: number, rot: number) => {
@@ -415,13 +522,77 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const lum3 = luminance(mixed3);
     const hband = texture(tex.mask, vec2(p.x.add(p.y).mul(0.0029), h.mul(0.0041))).a; // tầng sáng/tối theo độ cao, không đều
     let rock3: Node = mix(vec3(...cliffTones.lo), vec3(...cliffTones.hi), lum3.mul(0.9).add(hband.mul(0.5)).sub(0.1).clamp(0, 1));
+    // Vân mịn của texture chỉ giữ ở gần: từ ~30 m tương phản hòa về mức trung bình (hết vân mịn lặp/răng cưa ở khoảng trung bình).
+    const fineK = float(1).sub(smoothstep(28, 130, dist).mul(0.85));
+    const texMul = mix(vec3(0.74), mixed3.mul(1.1).add(0.35), fineK);
     rock3 = rock3
       .mul(0.62)
-      .mul(mixed3.mul(1.1).add(0.35))
+      .mul(texMul)
       .mul(float(0.7).add(n1.mul(0.5)).add(hband.sub(0.5).mul(0.4)));
+    if (cliffTones.duong) {
+      const dTone = cliffTones.duong;
+      const tD = smoothstep(-40, 40, positionWorld.x.sub(cen[0]));
+      // Vách thủ tục riêng, toạ độ thế giới: hàng đá theo độ cao (méo bởi nhiễu), khối xếp lệch trong mỗi hàng, hai cỡ; khe và gờ mờ dần theo khoảng cách.
+      const uc = mix(positionWorld.z, positionWorld.x, wXY);
+      const w1 = texture(tex.mask, vec2(uc.mul(0.0047), h.mul(0.0031))).a;
+      const w2 = texture(tex.mask, vec2(uc.mul(0.0151).add(0.3), h.mul(0.0097))).a;
+      const hash = (v: Node, k: number) => fract(sin(v.mul(127.1).add(k * 311.7)).mul(43758.5453));
+      const strat = (rowsPerM: number, wob: number, blocksPerM: number, k: number) => {
+        // mỗi cột rộng (2 khối) lệch hàng một đoạn riêng ⇒ khối cao thấp khác nhau, hàng không chạy thẳng suốt vách
+        const col0 = floor(uc.mul(blocksPerM * 0.5));
+        const hy = h
+          .mul(rowsPerM)
+          .add(w1.mul(wob))
+          .add(w2.mul(wob * 0.3))
+          .add(hash(col0, k + 9).mul(2.4));
+        const ri = floor(hy);
+        const rf = fract(hy);
+        const hr = hash(ri, k);
+        const ub = uc.mul(blocksPerM).add(hr.mul(11)).add(w2.mul(0.9));
+        const ci = floor(ub);
+        const cf = fract(ub);
+        const hb = hash(ci.add(ri.mul(13.1)), k + 5);
+        const gw = float(0.035).add(hb.mul(0.04));
+        const gap = max(smoothstep(gw, 0, cf), smoothstep(float(1).sub(gw), 1, cf)).max(smoothstep(0.07, 0, rf));
+        return { hb, hr, rf, gap };
+      };
+      const big = strat(0.034, 2.6, 0.012, 1);
+      const small = strat(0.115, 1.8, 0.05, 2);
+      const lo = mix(vec3(...cliffTones.lo), vec3(...dTone.lo), tD);
+      const hi = mix(vec3(...cliffTones.hi), vec3(...dTone.hi), tD);
+      let proc: Node = mix(lo, hi, big.hb.mul(0.55).add(small.hb.mul(0.3)).add(big.hr.mul(0.15)).mul(0.9).add(0.05));
+      proc = proc
+        .mul(float(0.7).add(small.hr.mul(0.55)))
+        .mul(float(0.7).add(big.hb.mul(0.5)))
+        .mul(float(0.7).add(hband.mul(0.6)));
+      // hạt mịn ~0,7 m trên mặt khối (đá sần), mờ dần theo khoảng cách
+      const grain = hash(floor(vec2(uc.mul(1.4), h.mul(1.4))), 7);
+      proc = proc.mul(
+        float(1).add(
+          grain
+            .sub(0.5)
+            .mul(0.3)
+            .mul(float(1).sub(smoothstep(40, 200, dist))),
+        ),
+      );
+      // mỗi khối: sáng trên, tối dưới (nổi khối) mạnh hơn
+      proc = proc.mul(float(0.84).add(smoothstep(0, 1, big.rf).mul(0.3))).mul(float(0.88).add(smoothstep(0, 1, small.rf).mul(0.2)));
+      const gapK = float(1).sub(smoothstep(70, 380, dist).mul(0.8));
+      const gap = max(big.gap.mul(0.8), small.gap.mul(0.4)).mul(gapK);
+      proc = proc
+        .mul(float(1).sub(gap.mul(0.62)))
+        .mul(float(1).add(smoothstep(0.86, 1, big.rf).mul(0.2).mul(gapK)))
+        .mul(float(1).add(smoothstep(0.88, 1, small.rf).mul(0.08).mul(gapK)));
+      // vệt nước/bụi chảy dọc vách
+      const streak = texture(tex.mask, vec2(uc.mul(0.037).add(0.17), h.mul(0.0013))).a;
+      proc = proc.mul(float(0.78).add(streak.mul(0.44)));
+      // chút chi tiết texture gốc ở gần (đã giảm tương phản), còn lại là màu thủ tục
+      proc = proc.mul(mix(vec3(1), texMul.div(0.74).mul(0.82).add(0.18), 0.6));
+      rock3 = mix(rock3, proc, 0.88);
+    }
     // gờ bậc thang: mặt ít dốc (đỉnh mỗi bậc) sáng và phủ bụi; chân dốc tối
     const tread = smoothstep(0.7, 0.4, slope).mul(smoothstep(0.1, 0.3, slope));
-    rock3 = mix(rock3, rock3.mul(1.45).add(vec3(0.04, 0.035, 0.03)), tread.mul(0.8));
+    rock3 = mix(rock3, rock3.mul(1.45).add(vec3(0.04, 0.035, 0.03)), tread.mul(0.8).mul(float(1).sub(smoothstep(30, 110, dist).mul(0.9)))); // xa thì bỏ viền sáng bậc (răng cưa ở góc vách)
     if (cliffTones.vein) {
       const crack = smoothstep(
         0.03,
@@ -446,17 +617,27 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const ns = N(p.div(spScale), spLayer);
     const nr = N(p.div(9), L.rock);
     let off: Node = mix(offXZ(nb), offXZ(ns), spW);
-    off = mix(off, offXZ(nr), rockW);
+    const rockNrmK: Node = redStrata && cliffTones.tri ? float(1).sub(smoothstep(18, 80, dist).mul(0.95)) : float(1);
+    off = mix(off, offXZ(nr).mul(rockNrmK), rockW);
     let rough: Node = mix(nb.z, ns.z, spW);
     rough = mix(rough, nr.z, rockW);
+    // Vấn Đỉnh: pháp tuyến texture vách (11 m) từ xa thành vân dây thừng răng cưa dưới nắng chiếu ngang: mờ dần từ 18 m, gần như tắt ở 80 m.
+    const cliffNrmK: Node = redStrata && cliffTones.tri ? float(1).sub(smoothstep(18, 80, dist).mul(0.95)) : float(1);
     if (hi) {
       const nc = mix(offZY(N(uvZY, L.cliff)), offXY(N(uvXY, L.cliff)), wz.div(wsum));
-      off = mix(off, nc, cliffW);
+      off = mix(off, nc.mul(cliffNrmK), cliffW);
     } else {
-      off = mix(off, offXZ(nr), cliffW);
+      off = mix(off, offXZ(nr).mul(cliffNrmK), cliffW);
+    }
+    // Vấn Đỉnh: pháp tuyến đỉnh của vách bậc thang so le theo lưới ⇒ từ xa sáng tối thành răng cưa dọc; xa thì kéo về pháp tuyến danh nghĩa (hướng vào tâm vùng chơi).
+    let nShade: Node = nGeo;
+    if (redStrata && cliffTones.tri) {
+      const c0 = cliffTones.center ?? [WORLD_SIZE / 2, WORLD_SIZE / 2];
+      const wallN = normalize(vec3(float(c0[0]).sub(positionWorld.x), 0.55, float(c0[1]).sub(positionWorld.z)).mul(vec3(1, 1, 1)));
+      nShade = normalize(mix(nGeo, wallN, max(cliffW, smoothstep(97, 108, h)).mul(smoothstep(20, 90, dist))));
     }
     const nrm = normalize(
-      nGeo.add(off.mul(groundParams.normalStrength).mul(redStrata && cliffTones.pbr ? mix(float(1), float(2.4), cliffW) : float(1))),
+      nShade.add(off.mul(groundParams.normalStrength).mul(redStrata && cliffTones.pbr ? mix(float(1), float(2.4), cliffW) : float(1))),
     );
     mat.normalNode = transformNormalToView(nrm);
     mat.roughnessNode = mix(clamp(rough, 0.35, 1), float(0.7), snowW);

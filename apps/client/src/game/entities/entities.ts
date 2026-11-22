@@ -20,7 +20,7 @@ import {
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { gatesOf, type Gate } from '../world/gates';
-import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t, pathOf as PATH_OF_METHOD } from '@dtl/content';
+import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t, pathOf as PATH_OF_METHOD, questPathOk } from '@dtl/content';
 import { BRAWLER_WEAPON } from '../character/brawlerGear';
 import { giantScale, stepGiant } from './giant';
 import { bladeLook } from './loiBlade';
@@ -345,7 +345,7 @@ export class EntityManager {
   }
 
   /** Dấu ! / ? trên đầu NPC theo trạng thái nhiệm vụ. */
-  updateQuestMarkers(q: QuestView, level: number): void {
+  updateQuestMarkers(q: QuestView, level: number, pathId?: string): void {
     for (const n of this.npcs) {
       let state = 0;
       for (const def of QUESTS) {
@@ -356,7 +356,12 @@ export class EntityManager {
             const complete = def.objectives.every((o, i) => (prog[i] ?? 0) >= o.count || (o.type === 'talk' && o.target === n.id));
             state = Math.max(state, complete ? 3 : 1);
           }
-        } else if (def.giver === n.id && (!def.requires || q.done.includes(def.requires)) && (def.minLevel ?? 1) <= level) {
+        } else if (
+          def.giver === n.id &&
+          questPathOk(def, pathId) &&
+          (!def.requires || q.done.includes(def.requires)) &&
+          (def.minLevel ?? 1) <= level
+        ) {
           state = Math.max(state, 2);
         }
       }

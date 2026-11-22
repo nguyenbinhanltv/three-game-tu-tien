@@ -197,7 +197,7 @@ export function scatterVanDinh(ctx: VdScatterCtx): VdRubble[] {
       });
     }
   }
-  out.push(...scatterWallBase(ctx), ...scatterDetail(ctx));
+  out.push(...scatterWallBase(ctx), ...scatterWallShoulder(ctx), ...scatterDetail(ctx));
   return out;
 }
 
@@ -242,6 +242,54 @@ function scatterWallBase(ctx: VdScatterCtx): VdRubble[] {
         lean: (k - 0.5) * 0.4,
         sink: 0.9 + k * 0.9,
         tint: am ? [v * 0.82, v * 0.88, v * 1.08] : [v * 1.15, v * 0.88, v * 0.66],
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Vai vách: khối đá lớn bằng lưới thật (`prop_da_dung`, `prop_da_phien`, scale 6–14) cắm một nửa vào chân và sườn thoải của vách (0–30 m tính từ mép vùng chơi),
+ * phá đường chân vách thẳng và cho vách có khối nhô ra. Chỉ đặt ở sườn thoải đến vừa (dốc hơn thì khối lơ lửng).
+ * CÓ VA CHẠM: `colliderBake` bake collider theo lưới cho mọi prop rải (`lean` chỉ ghi thêm độ nghiêng, không quyết định có va chạm), nên mỗi khối là một vật cản
+ * thật ở vành ngoài vùng chơi (tường chặn ở cách mép 10 m). Vì thế mỗi khối chừa quanh vòng cấm (trạm, cụm quái, điểm đáng chú ý, trận, nút, NPC) một khoảng
+ * bằng bán kính vòng + cỡ khối + 4 m, và tránh collider có sẵn; kiểm ở `vanDinhArt.test.ts`.
+ */
+export function scatterWallShoulder(ctx: VdScatterCtx): VdRubble[] {
+  const { def, bounds: b } = ctx;
+  const cx = def.size / 2;
+  const out: VdRubble[] = [];
+  const CELL = 24;
+  for (let gz = Math.floor(b.z0 / CELL); gz < Math.ceil(b.z1 / CELL); gz++) {
+    for (let gx = Math.floor(b.x0 / CELL); gx < Math.ceil(b.x1 / CELL); gx++) {
+      const x = (gx + 0.1 + hash01(gx, gz, 6113) * 0.8) * CELL;
+      const z = (gz + 0.1 + hash01(gx, gz, 6121) * 0.8) * CELL;
+      const edge = Math.min(x - b.x0, b.x1 - x, z - b.z0, b.z1 - z);
+      if (edge < 0 || edge > 30) continue;
+      const clump = 0.35 + fbm(x * 0.009, z * 0.009, 2, def.seed + 1701) * 1.3;
+      if (hash01(gx, gz, 6101) > 0.5 * Math.max(0.1, clump)) continue;
+      let bad = false;
+      const k = hash01(gx, gz, 6143);
+      const k2 = hash01(gx, gz, 6153);
+      const s = 6 + k2 * 8;
+      const reach = s * 1.6 + 4; // cỡ khối + đệm: không chặn lối đến vòng cấm
+      for (const c of ctx.clear) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + reach) ** 2) bad = true;
+      for (const c of ctx.colliders) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + reach) ** 2) bad = true;
+      if (bad) continue;
+      // cắm vào sườn thoải đến vừa; sườn quá dốc thì khối đá lơ lửng trước vách
+      const h0 = ctx.heightAt(x, z);
+      if (Math.abs(ctx.heightAt(x + 3, z) - h0) + Math.abs(ctx.heightAt(x, z + 3) - h0) > 9) continue;
+      const slab = hash01(gx, gz, 6163) < 0.4;
+      const v = 0.55 + k * 0.3;
+      out.push({
+        id: slab ? 'prop_da_phien' : 'prop_da_dung',
+        x,
+        z,
+        yaw: k * Math.PI * 2,
+        s,
+        lean: (k - 0.5) * 0.5,
+        sink: s * (0.3 + k2 * 0.15),
+        tint: x < cx ? [v * 0.8, v * 0.86, v * 1.08] : [v * 1.12, v * 0.86, v * 0.64],
       });
     }
   }

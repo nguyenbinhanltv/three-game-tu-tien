@@ -5,7 +5,19 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-import { autoTrails, fbm, hash01, inPoly, SECT, PORTAL_POS, mulberry32, terrainOf, TRAILS } from '@dtl/shared';
+import {
+  autoTrails,
+  fbm,
+  gioiTriPillars,
+  GIOI_TRI_PILLAR_RING,
+  hash01,
+  inPoly,
+  SECT,
+  PORTAL_POS,
+  mulberry32,
+  terrainOf,
+  TRAILS,
+} from '@dtl/shared';
 import { ensureLevel } from '@dtl/content/fixtures';
 import { ROOT } from './config.js';
 
@@ -34,6 +46,12 @@ export interface MinimapMeta {
 
 /** Vùng phủ của level: vuông quanh tâm vùng chơi (± nửa cạnh + 100 m), hoặc cả thế giới nếu không có ranh. Vân Lam: SECT ± MAP_HALF. */
 export function minimapBounds(levelId: string): { x0: number; z0: number; size: number } {
+  // Phó bản dựng trên địa hình level khác (Giới Trì trên Vấn Đỉnh): chỉ phủ sân quanh tâm phó bản + lề 60 m, không phủ cả bản đồ mẹ.
+  const dg = ensureLevel(levelId)?.dungeon;
+  if (dg?.center && levelId === 'gioi_tri') {
+    const half = (dg.bound ?? 90) + 60;
+    return { x0: dg.center.x - half, z0: dg.center.z - half, size: half * 2 };
+  }
   const tr = terrainOf(levelId);
   const play = tr.def.play;
   const cy = tr.def.canyon;
@@ -215,6 +233,51 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
   if (levelId === 'van_lam') {
     ring(SECT.x, SECT.z, 95);
     ring(PORTAL_POS.x, PORTAL_POS.z, 40);
+  }
+
+  // Giới Trì (TN-3): hai nửa đĩa Âm (tây, lam) và Dương (đông, vàng), vòng 14 cột, ranh phó bản, điểm vào/ra.
+  const dgn = lv.dungeon;
+  if (levelId === 'gioi_tri' && dgn?.center) {
+    const { x: cx, z: cz } = dgn.center;
+    const AM: RGB = [120, 150, 176];
+    const DUONG: RGB = [214, 168, 84];
+    for (let j = 0; j < N; j++)
+      for (let i = 0; i < N; i++) {
+        const wx = x0 + (i + 0.5) * step;
+        const wz = z0 + (j + 0.5) * step;
+        const d = Math.hypot(wx - cx, wz - cz);
+        if (d > GIOI_TRI_PILLAR_RING + 14) continue;
+        const edge = Math.min(1, (GIOI_TRI_PILLAR_RING + 14 - d) / 10);
+        put(i, j, wx < cx ? AM : DUONG, 0.3 * edge);
+      }
+    const circ = (r: number, dash: number, gap: number, rad: number, a: number) => {
+      const pts: [number, number][] = [];
+      for (let t = 0; t <= Math.PI * 2 + 0.01; t += 0.03) pts.push([cx + Math.cos(t) * r, cz + Math.sin(t) * r]);
+      stroke(pts, rad, INK, a, dash, gap);
+    };
+    circ(dgn.bound ?? 90, 22, 10, 1.6, 0.8);
+    circ(GIOI_TRI_PILLAR_RING + 14, 40, 6, 1.1, 0.55);
+    stroke(
+      [
+        [cx, cz - GIOI_TRI_PILLAR_RING - 14],
+        [cx, cz + GIOI_TRI_PILLAR_RING + 14],
+      ],
+      1.2,
+      INK,
+      0.7,
+      8,
+      6,
+    ); // Giới Tuyến chia hai mặt
+    for (const c of gioiTriPillars({ x: cx, z: cz })) {
+      const [px, pz] = pt(c.x, c.z);
+      disc(px, pz, 6.5, INK, 0.9);
+      disc(px, pz, 3.8, PAPER, 0.9);
+    }
+    for (const m of [dgn.spawn, dgn.exit]) {
+      const [px, pz] = pt(m.x, m.z);
+      disc(px, pz, 7, INK, 0.85);
+      disc(px, pz, 4.6, TRAIL, 0.9);
+    }
   }
 
   // 7) viền giấy cũ

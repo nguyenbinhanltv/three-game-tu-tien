@@ -43,6 +43,8 @@ import { pmGroundColor } from './phucMachArt';
 
 const TILE = 256;
 const NEAR_R = 3;
+/** Vấn Đỉnh: vách dốc làm viền hai ô khác độ phân giải lệch cao hàng chục mét; viền rủ phải dài hơn mức lệch đó, nếu không khe hở ra thành lỗ sáng hình thoi ở góc vách. */
+const VD_SKIRT = 90;
 const COARSE_CELL = 32;
 const VEG_NEAR_R = 2;
 const VEG_FAR_R = 4;
@@ -641,7 +643,13 @@ export class Terrain {
               continue;
             }
             if (t.res !== res) {
-              const geo = buildTileGeometry(tx * TILE, tz * TILE, TILE, res, T.def.islands ? 1.2 : (TILE / res) * 1.5 + 5);
+              const geo = buildTileGeometry(
+                tx * TILE,
+                tz * TILE,
+                TILE,
+                res,
+                T.def.islands ? 1.2 : T.id === 'van_dinh' ? VD_SKIRT : (TILE / res) * 1.5 + 5,
+              );
               if (t.mesh) {
                 this.group.remove(t.mesh);
                 t.mesh.geometry.dispose();
@@ -747,8 +755,10 @@ export class Terrain {
           : T.id === 'van_dinh'
             ? // Vấn Đỉnh (TN-3): khối đá xếp lệch xám trung tính (mood hai mặt tự ngả lam lạnh hoặc vàng đồng), vỉa sáng ngọc lam nhạt ở khe.
               {
-                lo: [0.08, 0.075, 0.09],
-                hi: [0.36, 0.33, 0.32],
+                // Mặt Âm: đá phiến tím lạnh; mặt Dương (`duong`): đá nung vàng đồng.
+                lo: [0.1, 0.09, 0.13],
+                hi: [0.4, 0.37, 0.46],
+                duong: { lo: [0.16, 0.1, 0.06], hi: [0.64, 0.45, 0.28] },
                 vein: [0.55, 0.78, 0.8],
                 tri: true,
                 center: T.def.play ? [T.def.play.cx, T.def.play.cz] : undefined,
