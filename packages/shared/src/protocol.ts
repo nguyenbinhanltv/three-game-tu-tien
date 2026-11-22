@@ -317,6 +317,8 @@ export interface FxMsg {
   n?: number;
   /** Kiếp nào (`tribstart`): id trong `tribulations.json`; thiếu = Trúc Cơ. HUD và cảnh điện ảnh đọc pha từ dữ liệu theo id này. */
   tb?: string;
+  /** id thực thể trận (`tran_<kiểu>`, `tran_end`, `tran_tick_<kiểu>`): client khóa hình trận đứng theo id và dừng khi nhận `tran_end`. Chỉ là lớp hình. */
+  fid?: number;
   /** Tiến độ ngưng đan 0..100 (`dantran`, của chủ kiếp); -1 = Đan Trận khép lại. Chỉ là lớp hình, luật ở server. */
   pg?: number;
 }

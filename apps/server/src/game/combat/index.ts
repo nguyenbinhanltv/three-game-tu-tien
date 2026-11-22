@@ -806,12 +806,18 @@ export class CombatSystem {
    * `sat`/`sinhtu` đánh quái trong trận và gieo Cấm ấn, `khon` làm chậm (thủ lĩnh miễn) + đánh nhẹ, `ho`/`sinhtu` hồi đạo hữu hợp lệ trong trận.
    * Nhịp có tác dụng thì chủ nhận Cấm lực (nguồn `dot`).
    */
+  private endFormationFx(f: FormationState): void {
+    this.c.fx({ t: 'tran_end', src: f.sid, fid: f.id });
+  }
+
   private tickFormations(now: number): void {
     for (let i = this.formations.length - 1; i >= 0; i--) {
       const f = at(this.formations, i);
       const owner = this.c.players.get(f.sid);
       if (!owner || this.c.isDead(owner) || now >= f.until) {
         this.formations.splice(i, 1);
+        // Chủ ngã hoặc rời room: trận tan sớm, báo client (hết giờ tự nhiên thì hình cũng vừa hết).
+        if (now < f.until) this.endFormationFx(f);
         continue;
       }
       if (now < f.armAt) continue;
@@ -834,7 +840,7 @@ export class CombatSystem {
             if (this.healPlayer(o, Math.round(o.char.mhp * f.heal), owner) > 0) acted = true;
           }
         }
-        this.c.fx({ t: `${SKILL.get(f.skill)?.fx ?? 'tran'}_tick`, src: f.sid, x: f.x, z: f.z, r: f.r });
+        this.c.fx({ t: `tran_tick_${f.mode}`, src: f.sid, x: f.x, z: f.z, r: f.r, fid: f.id });
         if (acted) this.resDot(owner);
       }
     }
@@ -1216,8 +1222,10 @@ export class CombatSystem {
         const fd = skill.formation;
         if (!fd) break;
         const spot = formationSpot(fd, p.move.x, p.move.z, p.s.yaw);
-        this.formations = formationAdd(this.formations, {
-          id: ++this.formationSeq,
+        const id = ++this.formationSeq;
+        const before = this.formations;
+        this.formations = formationAdd(before, {
+          id,
           sid: p.sid,
           skill: skill.id,
           mode: fd.mode,
@@ -1233,7 +1241,11 @@ export class CombatSystem {
           heal: fd.heal,
           mark: formationMarks(fd),
         });
+        // Trận cũ nhất bị đẩy ra (đặt quá FORMATION_MAX): báo client dừng hình của nó.
+        for (const old of before) if (!this.formations.some((f) => f.id === old.id)) this.endFormationFx(old);
         this.c.fx({ t: skill.fx, src: p.sid, x: spot.x, y: p.move.y, z: spot.z, r: fd.r, d: fd.dur, ...tag });
+        // Hình trận đứng trên đất: loại riêng theo kiểu trận (chiêu tư thế mượn `fx` của chiêu nền nên không dùng `skill.fx` để phân biệt).
+        this.c.fx({ t: `tran_${fd.mode}`, src: p.sid, x: spot.x, y: p.move.y, z: spot.z, r: fd.r, d: fd.dur, fid: id });
         break;
       }
       case 'summon': {

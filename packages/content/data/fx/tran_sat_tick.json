@@ -1,0 +1,47 @@
+{
+ "skill": "tran_sat_tick",
+ "palette": "cam_che_kinh",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.1,
+    0
+   ],
+   "scale": 0.15,
+   "scaleTo": 1.0,
+   "fit": "area",
+   "alpha": 0.8,
+   "sweep": 0.4,
+   "erodeFrom": 0.4,
+   "shadow": false,
+   "tone": "accent",
+   "tier": 0,
+   "seed": 51
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 12,
+   "speed": 2.0,
+   "spread": 1,
+   "life": 0.5,
+   "size": 0.07,
+   "at": "area",
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "tone": "accent",
+   "grav": -0.5,
+   "tier": 1
+  }
+ ]
+}
