@@ -235,7 +235,7 @@
       ]
     },
     "van_dinh": {
-      "_doc": "TN-3: kiếp chương 6, bản đầu. Đã bật: đan itm_van_dinh_lo chế ở npc_duoc_su (rcp_van_dinh_lo); vẫn dùng cơ chế có sẵn, chưa có tribmech riêng.",
+      "_doc": "TN-3: kiếp chương 6, bản đầu. Đã bật: đan itm_van_dinh_lo chế ở npc_duoc_su (rcp_van_dinh_lo); pha giữa là cơ chế riêng hoi_dao (hỏi đạo: ba Đạo Môn, chọn cổng cùng số vành với dấu giữa sân).",
       "from": 35,
       "to": 36,
       "enabled": true,
@@ -285,20 +285,16 @@
           }
         },
         {
-          "id": "hoa",
-          "kind": "hoa",
+          "id": "hoi_dao",
+          "kind": "lei",
           "end": 62,
-          "gap": 4,
-          "aimPct": 0,
-          "grid": {
-            "cols": 4,
-            "rows": 4,
-            "cell": 7,
-            "pick": 2,
-            "warn": 1.5,
-            "burn": 3,
-            "pct": 0.26
-          }
+          "gap": 2.4,
+          "aimPct": 0.08,
+          "extra": 1,
+          "extraR": 3.4,
+          "extraPct": 0.06,
+          "mechanic": "hoi_dao",
+          "hoiDao": { "ring": 6, "gateR": 3, "rounds": 3, "first": 3, "ask": 6, "rest": 3, "pct": 0.28, "heal": 0.06 }
         },
         {
           "id": "tam_ma",
@@ -328,7 +324,7 @@
       ]
     },
     "am_hu": {
-      "_doc": "TN-3: kiếp chương 6, bản đầu. Đã bật: đan itm_am_hu_lo chế ở npc_duoc_su (rcp_am_hu_lo); vẫn dùng cơ chế có sẵn, chưa có tribmech riêng.",
+      "_doc": "TN-3: kiếp chương 6, bản đầu. Đã bật: đan itm_am_hu_lo chế ở npc_duoc_su (rcp_am_hu_lo); pha đầu là cơ chế riêng am_lan (âm vực lan dần, né ra ngoài, nhiều vực không cộng dồn).",
       "from": 39,
       "to": 40,
       "enabled": true,
@@ -357,25 +353,16 @@
       },
       "phases": [
         {
-          "id": "nguyen_hon",
+          "id": "am_lan",
           "kind": "lei",
           "end": 30,
-          "gap": 1.8,
-          "aimPct": 0.07,
-          "extra": 2,
-          "extraR": 3.6,
-          "extraPct": 0.09,
-          "mechanic": "ngu_hanh",
-          "nguHanh": {
-            "ring": 9,
-            "sealR": 3,
-            "pad": 3,
-            "first": 3,
-            "every": 5,
-            "warn": 2.2,
-            "pct": 0.2,
-            "cut": 0.8
-          }
+          "gap": 2.2,
+          "aimPct": 0.06,
+          "extra": 1,
+          "extraR": 3.4,
+          "extraPct": 0.06,
+          "mechanic": "am_lan",
+          "amLan": { "ring": 13, "keep": 4, "first": 3, "every": 3.5, "seed": 1.2, "grow": 6, "hold": 1.5, "r0": 1.5, "r1": 8, "max": 3, "tick": 0.5, "dps": 0.07 }
         },
         {
           "id": "phan_hon",
@@ -454,7 +441,7 @@
       ]
     },
     "duong_thuc": {
-      "_doc": "TN-3: kiếp chương 6, bản đầu. Đã bật: đan itm_duong_thuc_lo chế ở npc_duoc_su (rcp_duong_thuc_lo); vẫn dùng cơ chế có sẵn, chưa có tribmech riêng.",
+      "_doc": "TN-3: kiếp chương 6, bản đầu. Đã bật: đan itm_duong_thuc_lo chế ở npc_duoc_su (rcp_duong_thuc_lo); pha giữa là cơ chế riêng duong_dap (đòn nhịp nung sân, dùng chiêu trong cửa sổ cuối để phản đòn).",
       "from": 43,
       "to": 44,
       "enabled": true,
@@ -504,20 +491,16 @@
           }
         },
         {
-          "id": "thuc_hoa",
-          "kind": "hoa",
+          "id": "duong_dap",
+          "kind": "lei",
           "end": 66,
-          "gap": 4,
-          "aimPct": 0,
-          "grid": {
-            "cols": 4,
-            "rows": 4,
-            "cell": 7,
-            "pick": 2,
-            "warn": 1.5,
-            "burn": 3,
-            "pct": 0.26
-          }
+          "gap": 3,
+          "aimPct": 0.05,
+          "extra": 1,
+          "extraR": 3.4,
+          "extraPct": 0.05,
+          "mechanic": "duong_dap",
+          "duongDap": { "first": 4, "every": 6, "windup": 2.4, "win": 1.3, "pct": 0.42, "cut": 0.8, "heal": 0.05 }
         },
         {
           "id": "duong_thuc_hop_nhat",

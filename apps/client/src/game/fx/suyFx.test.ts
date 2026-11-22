@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { HK_FX, HK_FX_STAGE, SUY_FX, SUY_FX_STAGE } from '@dtl/content';
-import { FX_SKILL_DRAW_MAX, HK_MECHANICS, SUY_MECHANICS, fxDrawCount, type FxMsg } from '@dtl/shared';
+import { HK_FX, HK_FX_STAGE, KC_FX, KC_FX_STAGE, KC_FX_TIMELINES, SUY_FX, SUY_FX_STAGE } from '@dtl/content';
+import { FX_SKILL_DRAW_MAX, HK_MECHANICS, SUY_MECHANICS, fxDrawCount, gatePos, type FxMsg } from '@dtl/shared';
 import * as THREE from 'three/webgpu';
 import { SuyFx } from './suyFx';
 import type { FxRunner } from './fxTimeline';
@@ -370,5 +370,72 @@ describe('Huyền Kiếp (TN-6)', () => {
     // Xoay một bước: ấn 0 tới đúng chỗ ban đầu của ấn 1.
     expect(end.x).toBeCloseTo(at0[1]!.x, 3);
     expect(end.z).toBeCloseTo(at0[1]!.z, 3);
+  });
+});
+
+// TN-3: ba cơ chế kiếp chương 6 (FX `kcmark`).
+describe('SuyFx.kcMark (kiếp chương 6)', () => {
+  const kc = (s: string, extra: Partial<FxMsg> = {}): FxMsg => ({ t: 'kcmark', src: 'me', s, ...extra });
+
+  it('dữ liệu: mọi timeline kc_* có trong bảng nhóm, đúng bảng màu và trong ngân sách draw call', () => {
+    const all = new Set(Object.values(KC_FX_STAGE).flat());
+    for (const f of KC_FX_TIMELINES) {
+      expect(all.has(f.skill), f.skill).toBe(true);
+      expect(f.palette?.startsWith('kc_'), f.skill).toBe(true);
+    }
+    for (const keys of Object.values(KC_FX_STAGE)) {
+      for (const k of keys) expect(KC_FX.has(k), k).toBe(true);
+      expect(fxDrawCount(keys.flatMap((k) => KC_FX.get(k)!.events))).toBeLessThanOrEqual(FX_SKILL_DRAW_MAX);
+    }
+  });
+
+  it('hỏi đạo: dấu giữa sân đúng số vành, ba cổng đúng số vành và đúng vị trí công thức server, sống đúng d giây', () => {
+    const { fx, calls } = mk();
+    fx.kcMark(kc('hd', { n: 2, x: 100, z: 200, r: 8, d: 6, pg: 1, lv: 312 }));
+    expect(calls.map((c) => c.key)).toEqual(['kc_mark_2', 'kc_gate_3', 'kc_gate_1', 'kc_gate_2']);
+    expect(calls[0]).toMatchObject({ x: 100, z: 200, pal: 'kc_hoi_dao', delay: 6 });
+    for (let i = 0; i < 3; i++) {
+      const g = gatePos({ x: 100, z: 200 }, 8, i);
+      expect(calls[i + 1]!.x).toBeCloseTo(g.x, 6);
+      expect(calls[i + 1]!.z).toBeCloseTo(g.z, 6);
+      expect(calls[i + 1]!.delay).toBe(6);
+    }
+  });
+
+  it('hỏi đạo: 2 s cuối phát đường sáng hướng về cổng đúng, sống đúng d giây', () => {
+    const { fx, calls } = mk();
+    fx.kcMark(kc('hd', { n: 2, x: 10, z: 20, r: 6, d: 2, pg: 4, ox: 16, oz: 20 }));
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({ key: 'kc_hd_path', x: 10, z: 20, delay: 2 });
+    expect(calls[0]!.yaw).toBeCloseTo(Math.PI / 2, 6);
+  });
+
+  it('hỏi đạo: đáp đúng chỉ có sóng ở cổng đúng; đáp sai thêm vết nứt dưới chân người', () => {
+    const a = mk();
+    a.fx.kcMark(kc('hd', { n: 1, x: 5, z: 6, r: 3, pg: 2 }));
+    expect(a.keys()).toEqual(['kc_hd_ok']);
+    const b = mk();
+    b.fx.kcMark(kc('hd', { n: 1, x: 5, z: 6, r: 3, pg: 3 }));
+    expect(b.keys()).toEqual(['kc_hd_ok', 'kc_hd_bad']);
+  });
+
+  it('âm vực: nảy mầm phát vực sống đúng d giây tại chỗ server báo; tan thì phát kc_am_end', () => {
+    const { fx, calls } = mk();
+    fx.kcMark(kc('am', { n: 0, x: 3, z: 4, r: 8, d: 8.7, pg: 1 }));
+    fx.kcMark(kc('am', { n: 0, x: 3, z: 4, pg: 3 }));
+    expect(calls.map((c) => [c.key, c.x, c.z, c.delay])).toEqual([
+      ['kc_am_pool', 3, 4, 8.7],
+      ['kc_am_end', 3, 4, undefined],
+    ]);
+  });
+
+  it('đòn nhịp: ủ đòn ở tâm sân, báo cửa sổ, phản đòn và trúng đòn bám người chơi', () => {
+    const { fx, keys, calls } = mk();
+    fx.kcMark(kc('dt', { n: 1, x: 50, z: 60, r: 12, d: 2.4, pg: 1 }));
+    fx.kcMark(kc('dt', { x: 10, z: 20, d: 1, pg: 2 }));
+    fx.kcMark(kc('dt', { x: 10, z: 20, pg: 5 }));
+    fx.kcMark(kc('dt', { x: 10, z: 20, pg: 3 }));
+    expect(keys()).toEqual(['kc_dt_wind', 'kc_dt_now', 'kc_dt_parry', 'kc_dt_hit']);
+    expect(calls[0]).toMatchObject({ x: 50, z: 60, delay: 2.4, pal: 'kc_duong_dap' });
   });
 });

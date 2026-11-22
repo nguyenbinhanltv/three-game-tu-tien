@@ -1,0 +1,132 @@
+{
+ "skill": "kc_gate_2",
+ "palette": "kc_hoi_dao",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    0,
+    1.4,
+    0
+   ],
+   "scale": 3.0,
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.2,
+   "tone": "body",
+   "alpha": 0.85,
+   "seed": 200,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    0,
+    1.5,
+    0
+   ],
+   "scale": [
+    3.0,
+    1,
+    3.0
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.3,
+   "tone": "rim",
+   "alpha": 1.0,
+   "seed": 201,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.05,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    0,
+    1.56,
+    0
+   ],
+   "scale": [
+    2.2,
+    1,
+    2.2
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.3,
+   "tone": "rim",
+   "alpha": 1.0,
+   "seed": 202,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.0,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    -2.6,
+    0,
+    0
+   ],
+   "scale": [
+    0.5,
+    3.5,
+    0.5
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 211,
+   "untilDelay": true,
+   "tier": 1,
+   "camFade": true,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.0,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    2.6,
+    0,
+    0
+   ],
+   "scale": [
+    0.5,
+    3.5,
+    0.5
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 213,
+   "untilDelay": true,
+   "tier": 1,
+   "camFade": true,
+   "from": "start"
+  }
+ ]
+}

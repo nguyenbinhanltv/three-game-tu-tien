@@ -1,0 +1,94 @@
+{
+ "skill": "kc_dt_wind",
+ "palette": "kc_duong_dap",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 12.0,
+   "dur": 2.4,
+   "at": "area",
+   "grow": 0.6,
+   "tone": "body",
+   "alpha": 0.7,
+   "yaw": 0,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 2.4,
+   "at": "area",
+   "offset": [
+    0,
+    0.08,
+    0
+   ],
+   "scale": [
+    12.0,
+    1,
+    12.0
+   ],
+   "scaleTo": [
+    2.0,
+    1,
+    2.0
+   ],
+   "sweep": 0.05,
+   "erodeFrom": 0.97,
+   "ragged": 0.4,
+   "tone": "accent",
+   "alpha": 0.95,
+   "seed": 251,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 2.4,
+   "at": "area",
+   "offset": [
+    0,
+    9.0,
+    0
+   ],
+   "scale": 2.0,
+   "scaleTo": 5.0,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "alpha": 0.55,
+   "untilDelay": true,
+   "tier": 1,
+   "camFade": true,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 40,
+   "speed": 2.0,
+   "spread": 1.0,
+   "life": 1.6,
+   "size": 0.1,
+   "at": "area",
+   "offset": [
+    0,
+    0.4,
+    0
+   ],
+   "tone": "accent",
+   "inward": true,
+   "tier": 1,
+   "from": "start"
+  }
+ ]
+}

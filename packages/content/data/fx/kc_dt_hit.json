@@ -1,0 +1,90 @@
+{
+ "skill": "kc_dt_hit",
+ "palette": "kc_duong_dap",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "crack_radial",
+   "t": 0.0,
+   "dur": 1.6,
+   "at": "self",
+   "offset": [
+    0,
+    -1.08,
+    0
+   ],
+   "scale": [
+    0.4,
+    1,
+    0.4
+   ],
+   "scaleTo": [
+    3.4,
+    1,
+    3.4
+   ],
+   "sweep": 0.25,
+   "erodeFrom": 0.6,
+   "ragged": 0.9,
+   "tone": "accent",
+   "alpha": 0.95,
+   "seed": 255,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    0,
+    -1.1,
+    0
+   ],
+   "scale": [
+    1.0,
+    0.8,
+    1.0
+   ],
+   "scaleTo": [
+    6.0,
+    2.0,
+    6.0
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.35,
+   "ragged": 0.8,
+   "tone": "accent",
+   "alpha": 0.85,
+   "seed": 256,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 20,
+   "speed": 2.4,
+   "spread": 1.0,
+   "life": 0.9,
+   "size": 0.28,
+   "at": "self",
+   "tone": "body",
+   "inward": true,
+   "tier": 1
+  },
+  {
+   "type": "shake",
+   "t": 0.0,
+   "level": 0.25,
+   "tier": 1
+  },
+  {
+   "type": "flash",
+   "t": 0.0,
+   "amount": 0.16,
+   "tier": 0
+  }
+ ]
+}

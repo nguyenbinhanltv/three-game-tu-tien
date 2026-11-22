@@ -164,6 +164,21 @@ import fx_suy_thuc_void from '../data/fx/suy_thuc_void.json';
 import fx_suy_toi_hit from '../data/fx/suy_toi_hit.json';
 import fx_suy_toi_miss from '../data/fx/suy_toi_miss.json';
 import fx_suy_toi_warn from '../data/fx/suy_toi_warn.json';
+import fx_kc_am_end from '../data/fx/kc_am_end.json';
+import fx_kc_am_pool from '../data/fx/kc_am_pool.json';
+import fx_kc_dt_hit from '../data/fx/kc_dt_hit.json';
+import fx_kc_dt_now from '../data/fx/kc_dt_now.json';
+import fx_kc_dt_parry from '../data/fx/kc_dt_parry.json';
+import fx_kc_dt_wind from '../data/fx/kc_dt_wind.json';
+import fx_kc_gate_1 from '../data/fx/kc_gate_1.json';
+import fx_kc_gate_2 from '../data/fx/kc_gate_2.json';
+import fx_kc_gate_3 from '../data/fx/kc_gate_3.json';
+import fx_kc_hd_bad from '../data/fx/kc_hd_bad.json';
+import fx_kc_hd_path from '../data/fx/kc_hd_path.json';
+import fx_kc_hd_ok from '../data/fx/kc_hd_ok.json';
+import fx_kc_mark_1 from '../data/fx/kc_mark_1.json';
+import fx_kc_mark_2 from '../data/fx/kc_mark_2.json';
+import fx_kc_mark_3 from '../data/fx/kc_mark_3.json';
 import fx_hk_chau from '../data/fx/hk_chau.json';
 import fx_hk_chau_get from '../data/fx/hk_chau_get.json';
 import fx_hk_chau_gone from '../data/fx/hk_chau_gone.json';
@@ -827,6 +842,34 @@ export const HK_FX_TIMELINES = [
   fx_hk_van_true,
 ] as unknown as FxTimeline[];
 export const HK_FX = new Map(HK_FX_TIMELINES.map((f) => [f.skill, f]));
+
+/**
+ * Dòng thời gian hiệu ứng ba cơ chế kiếp chương 6 (TN-3): `data/fx/kc_*.json`, sinh bằng `tools/vfx/gen-fx-ch6.py`; client phát tại điểm server báo qua `kcmark`.
+ */
+export const KC_FX_TIMELINES = [
+  fx_kc_am_end,
+  fx_kc_am_pool,
+  fx_kc_dt_hit,
+  fx_kc_dt_now,
+  fx_kc_dt_parry,
+  fx_kc_dt_wind,
+  fx_kc_gate_1,
+  fx_kc_gate_2,
+  fx_kc_gate_3,
+  fx_kc_hd_bad,
+  fx_kc_hd_path,
+  fx_kc_hd_ok,
+  fx_kc_mark_1,
+  fx_kc_mark_2,
+  fx_kc_mark_3,
+] as unknown as FxTimeline[];
+export const KC_FX = new Map(KC_FX_TIMELINES.map((f) => [f.skill, f]));
+/** Timeline của từng cơ chế kiếp chương 6: ngân sách draw call kiểm theo nhóm này. */
+export const KC_FX_STAGE: Record<string, string[]> = {
+  hoi_dao: ['kc_gate_1', 'kc_gate_2', 'kc_gate_3', 'kc_mark_1', 'kc_mark_2', 'kc_mark_3', 'kc_hd_path', 'kc_hd_ok', 'kc_hd_bad'],
+  am_lan: ['kc_am_pool', 'kc_am_end'],
+  duong_dap: ['kc_dt_wind', 'kc_dt_now', 'kc_dt_parry', 'kc_dt_hit'],
+};
 
 /** TN-2: hiệu ứng tại điểm của Hồn tu (nhịp hồn binh, tia hồn thu về), client phát bằng `FxRunner.startAt` (`game/fx/honFx.ts`). */
 export const HON_FX_TIMELINES = [fx_hon_binh_hit, fx_hon_reap, fx_hon_binh_stand] as unknown as FxTimeline[];

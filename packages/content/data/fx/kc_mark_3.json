@@ -1,0 +1,106 @@
+{
+ "skill": "kc_mark_3",
+ "palette": "kc_hoi_dao",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    0,
+    0.9,
+    0
+   ],
+   "scale": 2.9,
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.2,
+   "tone": "body",
+   "alpha": 0.8,
+   "seed": 220,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    0,
+    1.1,
+    0
+   ],
+   "scale": [
+    2.8,
+    1,
+    2.8
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.3,
+   "tone": "accent",
+   "alpha": 1.0,
+   "seed": 221,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.05,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    0,
+    1.1600000000000001,
+    0
+   ],
+   "scale": [
+    1.9,
+    1,
+    1.9
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.3,
+   "tone": "accent",
+   "alpha": 1.0,
+   "seed": 222,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.1,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    0,
+    1.2200000000000002,
+    0
+   ],
+   "scale": [
+    1.0,
+    1,
+    1.0
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "ragged": 0.3,
+   "tone": "accent",
+   "alpha": 1.0,
+   "seed": 223,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  }
+ ]
+}
