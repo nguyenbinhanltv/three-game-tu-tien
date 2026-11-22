@@ -432,6 +432,10 @@ export const PATH: ReadonlyMap<string, PathDef> = new Map(PATHS.map((p) => [p.id
 export function pathOf(key: string | undefined): PathDef | undefined {
   return pathOfKey(PATHS, key);
 }
+/** Nhiệm vụ nhánh Hướng tu: nhận được khi nhiệm vụ không gắn hướng, hoặc `pathId` (hướng tu đang dùng) trùng. */
+export function questPathOk(q: { path?: string }, pathId: string | undefined): boolean {
+  return !q.path || q.path === pathId;
+}
 // Bộ động tác K-5 theo công pháp: shared giữ bảng, content nạp từ hướng tu.
 registerMethodVoices(Object.fromEntries(PATHS.flatMap((p) => p.methods.map((m) => [m, p.voice] as const))));
 /** Hợp kích tổ đội (VS-2f, data/joints.json). */

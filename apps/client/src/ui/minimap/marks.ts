@@ -91,6 +91,7 @@ export function buildFrame(
   partyOrder: readonly string[],
   now: number,
   flags: readonly MarkInfo[] = [],
+  pathId?: string,
 ): MinimapFrame {
   const marks: Mark[] = [];
   const px = g.renderPos.x;
@@ -194,7 +195,7 @@ export function buildFrame(
         label: t(`npc.${n.id}.name`),
         sub: t(`ui.mm.fn.${fn}`),
         desc: hasString(`npc.${n.id}.title`) ? t(`npc.${n.id}.title`) : undefined,
-        quest: npcQuestMark(n.id, QUESTS, quests, myLevel),
+        quest: npcQuestMark(n.id, QUESTS, quests, myLevel, pathId),
       });
     }
     g.view.nodes.forEach((n, id) => {

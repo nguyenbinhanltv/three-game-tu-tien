@@ -759,6 +759,8 @@ export interface QuestDef {
   rewards: { xp: number; gold: number; items?: { id: string; n: number }[] };
   /** Id Truyền Tống Trận mở khóa ngay khi nhận nhiệm vụ (E2-H: `dm_tp_tram` ở nhiệm vụ đầu chương 2). */
   unlockTele?: string[];
+  /** Nhánh theo Hướng tu (id trong paths.json): chỉ người đang tu hướng này mới nhận được (kiểm ở lúc nhận, `questPathOk`). */
+  path?: string;
 }
 
 export interface RecipeDef {

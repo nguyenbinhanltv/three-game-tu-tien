@@ -33,7 +33,7 @@ import {
   domainRadius,
 } from '@dtl/shared';
 import { groundAt, levelId, levelTerrain } from '../../base/levelCtx';
-import { LEVELS, MONSTER, resolveBarSkill, SKILLS, t } from '@dtl/content';
+import { LEVELS, MONSTER, pathOf, resolveBarSkill, SKILLS, t } from '@dtl/content';
 import { get, pushLog, pushToast, set } from '../../ui/store';
 import { frameStats, RENDER_FAIL_LIMIT, RENDERER_KEY, rendererChoice } from '../core/gpuGuard';
 import { setListener } from '../audio/audio';
@@ -210,7 +210,7 @@ export function runFrame(eng: Game): void {
   eng.scape?.update(rp.x, rp.z, now / 1000);
   if (eng.questMarkersDirty) {
     eng.questMarkersDirty = false;
-    eng.ents.updateQuestMarkers(get().quests, myLevel);
+    eng.ents.updateQuestMarkers(get().quests, myLevel, pathOf(get().method?.method)?.id);
   }
   if (me) eng.vfx.trails.update(dt, eng.ents.players, eng.sid, eng.camera);
   eng.suyFx?.update();
