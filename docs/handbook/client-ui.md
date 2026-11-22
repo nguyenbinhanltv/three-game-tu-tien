@@ -68,3 +68,9 @@ Chỉ client, sau cờ URL; mặc định không đổi gì. Mã: `game/camera/i
 - Chưa làm: bộ texture Codex mới cho Lạc Kiếm Tông/Vân Lam (lớp texture hiện có vẫn dùng), decal quad thật, lát đá sân tông môn (mesh GLB `arch_sect`, ngoài shader địa hình).
 
 P2b (vòng 2 sau duyệt): chi tiết mặt đất tăng rõ rệt và dùng chung `render/materials/isoDetail.ts` — địa hình (`isoTerrainDetail`: biến thiên màu macro, mảng đất trồi, rêu, nứt, lá, sỏi) và kiến trúc ngửa lên (`withIsoSurfaceDetail`, gắn qua `archWrap` cho sàn đá tông môn: tông riêng từng viên, ố, rêu ở khe, đá mẻ cạnh, nứt, lá). Camera dẫn bị kẹp (`clampLeadSafe`: ngang ±4,5 m, tụt xuống ≤ 2,2 m; khi có mục tiêu `clampLeadFrame` giữ cả mục tiêu trong vùng an toàn, tránh minimap phải trên, không thể cả hai thì ưu tiên người) để người luôn ở giữa màn hình, tránh khung chat và thanh chiêu. Lá rơi là lá thon xoay ngẫu nhiên, thưa và gom cụm; vết nứt chỉ trên đá lát/đất khô.
+
+### Thiên Nhãn P3: chuyển từng bản đồ sang iso (`?cam=iso`)
+
+- Hướng nhìn cố định riêng từng bản đồ: `ISO_YAW` trong `game/camera/iso.ts` (độ → rad). Chọn bằng ảnh so sánh với `?isoyaw=<độ>` (ví dụ `pnpm shots camiso --cams iso --query isoyaw=30`). Đã chọn: `van_lam` (Lạc Kiếm Tông + Vân Lam) 30°. Bản đồ chưa có mục thì dùng 45°.
+- Khung boss lớn do phiên P4 (-262) phụ trách; P3 chỉ thu vùng ngang an toàn của mục tiêu `ISO_TGT_X` = 5,5 m (tránh minimap).
+- Cảnh điện ảnh và thẻ chương dùng camera cũ (iso tạm tắt khi `cine.active`/`tribScene`), đã trả `far` và cảnh xa (xem P0).
