@@ -71,6 +71,7 @@ import { resolveFor, branchModsOf, picksOf } from './method';
 /** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
 const METHOD_SEND_MS = 250;
 import { RealmSystem } from './realm';
+import { KieuSystem } from './kieu';
 import { MonSkills } from './monskill';
 import { MonZones } from './monzone';
 import { CampSystem } from './camps';
@@ -856,6 +857,20 @@ export class GameSim {
     isDead: (p) => this.isDead(p),
     idem: (p, r) => this.idem(p, r),
     warn: (p, k, params) => this.warn(p, k, params),
+  });
+
+  /** Đạp Thiên Cửu Kiều (TN-7): vé vào cầu và ghi tiến độ `meta.kieu`. */
+  readonly kieu = new KieuSystem({
+    get now() {
+      return Date.now();
+    },
+    warn: (p, k, params) => this.warn(p, k, params),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    nearNpc: (p, id) => this.nearNpc(p, id),
+    leaveBlocker: (p) => this.leaveBlocker(p),
+    isDead: (p) => this.isDead(p),
+    giveXp: (p, n, announce) => this.giveXp(p, n, announce),
+    savePlayer: (p) => this.savePlayer(p),
   });
 
   /** Cường hóa, khảm ngọc, tẩy luyện, phân giải (P3-3). */

@@ -217,6 +217,16 @@ export class GmSystem {
         c.charDirty = true;
         return say('dao = ' + (c.meta.dao ?? 'không'));
       }
+      case 'kieu': {
+        // /gm kieu <0..9>: đặt số cầu Cửu Kiều đã qua (TN-7) để thử; không phát thưởng, không đổi cấp.
+        const n = Number(a[1]);
+        if (!Number.isInteger(n) || n < 0 || n > 9) return say('kieu 0..9');
+        c.meta.kieu = n;
+        c.recalc();
+        c.charDirty = true;
+        c.gainXp(0);
+        return say(`kieu = ${n} (trần cấp ${c.levelCap()})`);
+      }
       case 'trib':
         // /gm trib [id]: kích độ kiếp ngay (mặc định Trúc Cơ: Ngưng Khí 15 viên mãn + Trúc Cơ Đan nếu thiếu).
         return say(

@@ -16,6 +16,7 @@ import { runMisc } from './security/misc';
 import { runTeleport } from './security/teleport';
 import { runBag } from './security/bag';
 import { runWardrobe } from './security/wardrobe';
+import { runKieu } from './security/kieu';
 import { runRatelimit } from './security/ratelimit';
 import { testParamsChecks } from './security/testparams';
 import { type Ctx, join, M, P, stats, W } from './security/lib';
@@ -30,6 +31,12 @@ async function main() {
   // SECURITY_ONLY=wardrobe: chỉ chạy bài Tủ ngoại trang (P4-4).
   if (process.env.SECURITY_ONLY === 'wardrobe') {
     await runWardrobe();
+    console.log(stats.failed ? `${stats.failed} mục HỎNG` : 'Tất cả đều ĐẠT');
+    process.exit(stats.failed ? 1 : 0);
+  }
+  // SECURITY_ONLY=kieu: chỉ chạy bài Cửu Kiều (TN-7).
+  if (process.env.SECURITY_ONLY === 'kieu') {
+    await runKieu();
     console.log(stats.failed ? `${stats.failed} mục HỎNG` : 'Tất cả đều ĐẠT');
     process.exit(stats.failed ? 1 : 0);
   }
@@ -54,6 +61,7 @@ async function main() {
   await runTeleport(ctx);
   await runBag(ctx);
   await runWardrobe(ctx);
+  await runKieu(ctx);
   await runRatelimit(ctx);
   console.log(stats.failed ? `\n${stats.failed} mục HỎNG` : '\nTất cả đều ĐẠT');
   process.exit(stats.failed ? 1 : 0);

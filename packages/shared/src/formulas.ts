@@ -13,8 +13,11 @@ export const ANH_BIEN_LEVEL = 32;
 export const VAN_DINH_LEVEL = 36;
 export const AM_HU_LEVEL = 40;
 export const DUONG_THUC_LEVEL = 44;
-/** Dương Thực sơ kỳ (cấp 44) là trần tạm của chương 6 (TN-3, `tn3/thiet-ke.md` mục 2); trước đó là Anh Biến sơ kỳ 32 (`docs/DIVUC_DESIGN.md` 2.1). */
-export const MAX_LEVEL = 44;
+/**
+ * Trần cấp tuyệt đối: Dương Thực đại viên mãn (47, TN-7). Cấp 44 là Dương Thực sơ kỳ (chương 6 kết thúc ở đây); 45–47 chỉ mở dần theo số cầu
+ * Cửu Kiều đã qua (`kieuLevelCap` ở `kieu.ts`, `tn7/thiet-ke.md` mục 1). Trước đó: 44 (TN-3), 32 (`docs/DIVUC_DESIGN.md` 2.1).
+ */
+export const MAX_LEVEL = 47;
 export const FLY_UNLOCK_LEVEL = 3;
 
 export const GCD = 1.0;
@@ -57,6 +60,10 @@ const XP_NEED_ADV: readonly number[] = [
   168_000,
   172_000,
   176_000, // Âm Hư 40–43
+  // Chương 7 (TN-7): Dương Thực 44→47, ~1,7 giờ/cấp × thu nhập `450 × (12+7L)`. Cấp 47 là trần (không cần xpNeed).
+  245_000,
+  250_000,
+  255_500, // Dương Thực 44–46
 ];
 
 /** Tu vi cần để đầy cảnh giới hiện tại. */

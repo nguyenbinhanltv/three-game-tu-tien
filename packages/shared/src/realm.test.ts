@@ -105,6 +105,7 @@ describe('mã cảnh giới kiểm thử', () => {
     expect(parseRealmCode('vd')).toBe(36);
     expect(parseRealmCode('ah4')).toBe(43);
     expect(parseRealmCode('dt')).toBe(44);
+    expect(parseRealmCode('dt4')).toBe(47);
     expect(parseRealmCode('tc1')).toBe(16);
     expect(parseRealmCode('tc3')).toBe(18);
     expect(parseRealmCode('tc4')).toBe(19);
@@ -128,14 +129,14 @@ describe('mã cảnh giới kiểm thử', () => {
       'ab5',
       'vd5',
       'ah5',
-      'dt2',
+      'dt5',
       'tc10',
-      '45',
+      '48',
       '0',
       'nk1x',
       '1e1',
       0,
-      45,
+      48,
       2.5,
       NaN,
       null,
@@ -150,14 +151,16 @@ describe('mã cảnh giới kiểm thử', () => {
 describe('thang 28 cấp (E1-C)', () => {
   const sum = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => xpNeed(a + i)).reduce((x, y) => x + y, 0);
   it('xpNeed khớp bảng thiết kế, tích lũy 242k / 439k / 686k', () => {
-    expect(MAX_LEVEL).toBe(44);
+    expect(MAX_LEVEL).toBe(47);
     expect([16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27].map(xpNeed)).toEqual([
       56000, 59000, 62000, 65000, 102500, 107500, 112000, 117000, 162000, 168500, 174500, 181000,
     ]);
     expect(sum(16, 19)).toBe(242_000);
     expect(sum(20, 23)).toBe(439_000);
     expect(sum(24, 27)).toBe(686_000);
-    expect(xpNeed(44)).toBe(99_999_999);
+    expect(xpNeed(47)).toBe(99_999_999);
+    // Chương 7 (TN-7): Dương Thực 44→47 ~1,7 giờ/cấp (thu nhập 450·(12+7L)/giờ), trần mở dần theo cầu Cửu Kiều.
+    expect([44, 45, 46].map(xpNeed)).toEqual([245000, 250000, 255500]);
     // Chương 6 (TN-3): Anh Biến 32–35 ~2 giờ, Vấn Đỉnh 36–39 và Âm Hư 40–43 ~5 giờ mỗi đại cảnh giới (thu nhập 450·(12+7L)/giờ).
     expect([32, 33, 34, 35].map(xpNeed)).toEqual([53000, 54500, 56000, 58000]);
     expect(sum(36, 39)).toBe(618_000);

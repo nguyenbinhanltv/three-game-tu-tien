@@ -114,14 +114,18 @@ describe('Character: Trúc Cơ → Nguyên Anh', () => {
       expect(c.level).toBe(peak);
       expect(c.xp).toBe(xpNeed(peak));
     }
-    // Hóa Thần 28–31: 28 → 29 chặn đầy; 31 chặn đầy chờ Nhật Thực Kiếp; sau đó Anh Biến 32–35 (35 chặn đầy chờ Vấn Đỉnh Kiếp chưa bật), tới trần 44.
+    // Hóa Thần 28–31: 28 → 29 chặn đầy; 31 chặn đầy chờ Nhật Thực Kiếp; sau đó Anh Biến 32–35 (35 chặn đầy chờ Vấn Đỉnh Kiếp chưa bật), tới trần 44 → 45 (kẹt chờ Cầu 3 Cửu Kiều), 47 khi đã qua cầu 6.
     const mid = at(29, 27);
     mid.gainXp(xpNeed(29) * 2);
     expect(mid.level).toBe(29);
     expect(mid.passBottleneck()).toBe(30);
     const top = at(44, 27);
     top.gainXp(1e9);
-    expect(top.level).toBe(44);
+    expect(top.level).toBe(45);
+    const cleared = at(44, 27);
+    cleared.meta.kieu = 9;
+    cleared.gainXp(1e10);
+    expect(cleared.level).toBe(47);
   });
 
   it('chỉ số tăng theo hệ số cảnh giới khi lên Kết Đan', () => {
