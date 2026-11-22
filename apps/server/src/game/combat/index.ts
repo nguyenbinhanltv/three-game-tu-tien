@@ -83,7 +83,18 @@ import { equippedArtifact, passiveValue, pruneBuffs } from '../artifact';
 import type { MonEnt, PlayerEnt, StrikeCtx, Stomp, Summon } from '../entities';
 import { LEASH, MARK_ALLY_RANGE, SET_HEAL_RADIUS, TAUNT_BOSS_MUL, visualSeed } from './consts';
 
-import { at, HOA_HINH_SKILL, sanitizeStars, starEnough } from '@dtl/shared';
+import {
+  at,
+  DODGE_CD_MS,
+  DODGE_DIST,
+  DODGE_IFRAME_MS,
+  DODGE_MIN_GAP_MS,
+  HOA_HINH_SKILL,
+  nearestTo,
+  sanitizeAim,
+  sanitizeStars,
+  starEnough,
+} from '@dtl/shared';
 /** Phần GameSim mà hệ chiêu cần. */
 export interface CombatCtx {
   /** Đối tượng room (khóa tra thành viên tổ đội cùng room, VS-2f). */
@@ -142,6 +153,8 @@ export class CombatSystem {
     if (++p.skillCount > SKILL_MSG_PER_SEC) return;
     const m = msg as { id?: unknown; t?: unknown } | null;
     if (!m || typeof m.id !== 'string') return;
+    // Điểm ngắm theo con trỏ (Thiên Nhãn P1): chỉ là ý định, đã kẹp trong AIM_MAX_DIST; dùng để tự khóa mục tiêu và đổi hướng chiêu.
+    const aim = sanitizeAim(msg, p.move.x, p.move.z);
     const skill = SKILL.get(m.id);
     if (!skill) return;
     const c = p.char;
@@ -157,7 +170,10 @@ export class CombatSystem {
     if (skill.stanceOf && !(stanceActive(p.mth.stance, this.c.now) && p.mth.stance.id === skill.stanceOf))
       return this.c.warn(p, 'sys.stance_needed');
     if (this.airborne(p)) return this.c.warn(p, 'sys.cannot_while_flying');
-    if (skill.dash) return this.onDash(p, skill, typeof m.t === 'string' ? m.t : '');
+    if (skill.dash) {
+      if (aim) p.s.yaw = Math.atan2(aim.x - p.move.x, aim.z - p.move.z);
+      return this.onDash(p, skill, typeof m.t === 'string' ? m.t : '');
+    }
     if (p.casting || p.flow.pending) return;
     if (this.c.now < p.gcdAt - 60) return;
     if ((p.cds.get(skill.id) ?? 0) > this.c.now) return this.c.warn(p, 'sys.cooldown');
@@ -172,12 +188,14 @@ export class CombatSystem {
     const rs = resolveFor(c.meta, skill);
     let targetId = '';
     if (needsTarget(skill)) {
-      if (typeof m.t !== 'string') return this.c.warn(p, 'sys.no_target');
-      const mon = this.c.monById.get(m.t);
-      if (!mon && this.c.players.has(m.t)) {
+      // Không nêu mục tiêu mà có điểm ngắm: server tự khóa quái sống gần điểm đó nhất (client không quyết định mục tiêu).
+      const wantId = typeof m.t === 'string' ? m.t : aim ? this.aimTarget(p, aim, this.skillRange(p, skill)) : '';
+      if (!wantId) return this.c.warn(p, 'sys.no_target');
+      const mon = this.c.monById.get(wantId);
+      if (!mon && this.c.players.has(wantId)) {
         // Người chơi chỉ là mục tiêu hợp lệ của đúng đối thủ tỉ thí, và chỉ sau khi hết đếm ngược.
         const foe = this.c.duel.anyFoe(p);
-        if (!foe || foe.sid !== m.t) return this.c.warn(p, 'sys.no_target');
+        if (!foe || foe.sid !== wantId) return this.c.warn(p, 'sys.no_target');
         if (!this.c.duel.foeOf(p)) return this.c.warn(p, 'duel.not_started');
         if (!this.inRangeP(p, foe, skill.range)) return this.c.warn(p, 'sys.out_of_range');
         targetId = foe.sid;
@@ -188,6 +206,9 @@ export class CombatSystem {
         targetId = mon.id;
         p.s.yaw = Math.atan2(mon.s.x - p.move.x, mon.s.z - p.move.z);
       }
+    } else if (aim) {
+      // Chiêu hướng/vùng quanh người: quay theo con trỏ; hình và tầm vùng chiêu vẫn do server tính từ hướng này.
+      p.s.yaw = Math.atan2(aim.x - p.move.x, aim.z - p.move.z);
     }
     if (p.meditating) this.c.setMeditating(p, false);
     p.gcdAt = this.c.now + GCD * 1000;
@@ -199,6 +220,52 @@ export class CombatSystem {
       return;
     }
     this.beginSkill(p, skill, targetId);
+  }
+
+  /** Quái sống gần điểm ngắm nhất (≤ AIM_PICK_R) và trong tầm chiêu; không có thì ''. */
+  private aimTarget(p: PlayerEnt, aim: { x: number; z: number }, range: number): string {
+    const cands: { id: string; x: number; z: number }[] = [];
+    for (const o of this.c.monsters) {
+      if (o.state === MS_DEAD || (o.owner && o.owner !== p.sid) || this.c.now < o.evadeUntil) continue;
+      if (!this.inRange(p, o, range)) continue;
+      cands.push({ id: o.id, x: o.s.x, z: o.s.z });
+    }
+    return nearestTo(aim.x, aim.z, cands);
+  }
+
+  /**
+   * Né (Space, P1 Thiên Nhãn): lướt ngắn theo hướng điểm ngắm (không có thì hướng đang nhìn), lập đường bằng `planDash` (không xuyên vách),
+   * kèm khung bất tử `DODGE_IFRAME_MS` do server giữ (`damagePlayer` kiểm). Không tốn linh lực/vật phẩm; có hồi và khe tối thiểu.
+   * Mốc đặt ngay khi lệnh hợp lệ nên không dội lệnh để dò đường; hủy niệm/đòn chờ như lướt.
+   */
+  onDodge(p: PlayerEnt, msg: unknown): void {
+    if (this.c.isDead(p) || this.airborne(p) || p.trial) return;
+    if (this.c.now - p.dodgeAt < DODGE_MIN_GAP_MS) return;
+    if (this.c.now - p.dodgeAt < DODGE_CD_MS) return this.c.warn(p, 'sys.cooldown');
+    p.dodgeAt = this.c.now;
+    const aim = sanitizeAim(msg, p.move.x, p.move.z);
+    if (aim) p.s.yaw = Math.atan2(aim.x - p.move.x, aim.z - p.move.z);
+    const dir = { x: Math.sin(p.s.yaw), z: Math.cos(p.s.yaw) };
+    const plan = planDash(p.move, dir, DODGE_DIST, undefined, {
+      terrain: this.c.terrain,
+      bound: caveBoundOf(this.c.level),
+      collision: collisionOf(this.c.level),
+    });
+    if (p.meditating) this.c.setMeditating(p, false);
+    if (p.casting) this.cancelCast(p);
+    this.abortStrike(p, false);
+    p.dodgeUntil = this.c.now + DODGE_IFRAME_MS;
+    p.lastCombatAt = this.c.now;
+    const from = { x: p.move.x, z: p.move.z };
+    if (plan.dist >= 0.5) {
+      p.move.x = plan.x;
+      p.move.z = plan.z;
+      p.move.y = this.c.terrain.groundAt(plan.x, plan.z);
+      p.move.vy = 0;
+      p.move.grounded = true;
+      p.inputs.length = 0;
+    }
+    this.c.fx({ t: 'blink', src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, d: 0.25, ox: from.x, oz: from.z });
   }
 
   /**

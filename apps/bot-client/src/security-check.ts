@@ -8,6 +8,7 @@ import { C } from '@dtl/shared';
 import { runHttp } from './security/http';
 import { runTransfer } from './security/transfer';
 import { runMovement } from './security/movement';
+import { runAim } from './security/aim';
 import { runRealm } from './security/realm';
 import { runGear } from './security/gear';
 import { runParty } from './security/party';
@@ -34,6 +35,21 @@ async function main() {
     console.log(stats.failed ? `${stats.failed} mục HỎNG` : 'Tất cả đều ĐẠT');
     process.exit(stats.failed ? 1 : 0);
   }
+  // SECURITY_ONLY=aim: chỉ chạy bài điểm ngắm/né (Thiên Nhãn P1).
+  if (process.env.SECURITY_ONLY === 'aim') {
+    const { client, room, init } = await join('kiemthu');
+    void client;
+    const me = () => (room.state as { players: Map<string, P> }).players.get(init.sid)!;
+    const mons = () => (room.state as { monsters: Map<string, M> }).monsters;
+    const gm = async (cmd: string) => {
+      room.send(C.CHAT, { m: '/gm ' + cmd });
+      await W(900);
+    };
+    await W(500);
+    await runAim({ client, room, init, me, mons, gm });
+    console.log(stats.failed ? `${stats.failed} mục HỎNG` : 'Tất cả đều ĐẠT');
+    process.exit(stats.failed ? 1 : 0);
+  }
   // SECURITY_ONLY=kieu: chỉ chạy bài Cửu Kiều (TN-7).
   if (process.env.SECURITY_ONLY === 'kieu') {
     await runKieu();
@@ -53,6 +69,7 @@ async function main() {
   const ctx: Ctx = { client, room, init, me, mons, gm };
   await runTransfer(ctx);
   await runMovement(ctx);
+  await runAim(ctx);
   await runRealm(ctx);
   await runGear(ctx);
   await runParty(ctx);
