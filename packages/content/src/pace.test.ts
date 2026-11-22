@@ -89,11 +89,11 @@ describe('nhịp chương 2 + 3 (sim:progress)', () => {
 
   it('Ngưng Khí 1 → 15 vẫn 3–4 giờ cho cả ba công pháp', () => {
     const m =
-      /Kiếm tu ([\d.]+) giờ, Thể tu ([\d.]+) giờ, Đan sư ([\d.]+) giờ, Hồn tu ([\d.]+) giờ, Đao tu ([\d.]+) giờ, Cổ Thần ([\d.]+) giờ, Cổ tu ([\d.]+) giờ/.exec(
+      /Kiếm tu ([\d.]+) giờ, Thể tu ([\d.]+) giờ, Đan sư ([\d.]+) giờ, Hồn tu ([\d.]+) giờ, Đao tu ([\d.]+) giờ, Cổ Thần ([\d.]+) giờ, Cổ tu ([\d.]+) giờ, Lôi tu ([\d.]+) giờ, Cấm chế sư ([\d.]+) giờ/.exec(
         out,
       );
     expect(m).not.toBeNull();
-    for (const v of m!.slice(1, 8).map(Number)) {
+    for (const v of m!.slice(1, 10).map(Number)) {
       expect(v).toBeGreaterThanOrEqual(3);
       expect(v).toBeLessThanOrEqual(4);
     }

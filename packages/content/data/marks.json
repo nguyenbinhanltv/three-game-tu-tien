@@ -7,5 +7,6 @@
   {"id": "hon_an", "on": "mon", "max": 3, "dur": 8, "method": "dan_hon_kinh", "dot": {"per": 0.08, "leech": 0.2}, "color": "b9a8ff"},
   {"id": "dao_ngan", "on": "mon", "max": 3, "dur": 8, "method": "liet_nhan_dao_kinh", "color": "d9482f"},
   {"id": "co_doc", "on": "mon", "max": 3, "dur": 10, "method": "duong_co_kinh", "dot": {"per": 0.08, "leech": 0.15}, "color": "7fc24a"},
-  {"id": "loi_an", "on": "mon", "max": 3, "dur": 7, "method": "cuu_tieu_loi_kinh", "color": "9a7bff"}
+  {"id": "loi_an", "on": "mon", "max": 3, "dur": 7, "method": "cuu_tieu_loi_kinh", "color": "9a7bff"},
+  {"id": "cam_an", "on": "mon", "max": 3, "dur": 10, "method": "cam_che_kinh", "color": "8f82ff"}
 ]

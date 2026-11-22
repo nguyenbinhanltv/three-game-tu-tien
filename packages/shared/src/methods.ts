@@ -29,7 +29,7 @@ export type VariantId = 'a' | 'b';
 
 /** Nội tại của công pháp: tham số theo `kind` (xem methods.json). */
 export interface MethodPassive {
-  kind: 'kiem_y' | 'the' | 'dan_kinh' | 'hon_luc' | 'khi_the' | 'co' | 'co_huyet' | 'loi_tich';
+  kind: 'kiem_y' | 'the' | 'dan_kinh' | 'hon_luc' | 'khi_the' | 'co' | 'co_huyet' | 'loi_tich' | 'cam_luc';
   /** Phòng ngự cộng thêm (Kim Thân). */
   defMul?: number;
   /** Hồi phục cộng thêm (Đan Kinh). */

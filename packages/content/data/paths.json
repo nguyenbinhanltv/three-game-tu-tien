@@ -336,5 +336,48 @@
       "level": 10,
       "gold": 300
     }
+  },
+  {
+    "id": "cam_che_su",
+    "role": "dps",
+    "methods": [
+      "cam_che_kinh"
+    ],
+    "dao": "hon",
+    "art": "dan_su",
+    "voice": "ds",
+    "gm": "cam",
+    "weapons": [
+      "tran_ky"
+    ],
+    "palette": {
+      "core": "241a54",
+      "body": "6a5ae0",
+      "rim": "f4e6a8",
+      "accent": "ffd25a",
+      "shadow": "100b2a"
+    },
+    "tint": "f4e6a8",
+    "hit": {
+      "sfx": "cast",
+      "gain": 0.14,
+      "rate": 0.95
+    },
+    "match": [
+      "cam_che",
+      "cam_kinh"
+    ],
+    "synergy": {
+      "gives": [
+        "cam_an"
+      ],
+      "wants": [
+        "mat_the"
+      ]
+    },
+    "unlock": {
+      "level": 10,
+      "gold": 300
+    }
   }
 ]
