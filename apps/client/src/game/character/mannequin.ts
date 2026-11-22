@@ -10,7 +10,7 @@ import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/
 import { type AssetCache, type AssetHandle, assetKey, assets } from '../core/assets';
 import { HitReact, type HitOpts } from '../combat/hitreact';
 import { adoptGltfMaterials, cloneWorldMaterial } from '../../render/materials/world';
-import { lodLevel, mixerInterval, mixerPhase } from './skinned';
+import { lodLevel, mixerDue, mixerInterval, mixerPhase } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { attachBrawlerGear, gearShown, snapshotBind, type BindSnapshot, type BrawlerGear } from './brawlerGear';
 import { attachCoGear, fluteMesh } from './coGear';
@@ -1441,7 +1441,7 @@ export class MannequinCharacter implements CharacterView {
     }
     // Giảm tần số cập nhật xương cho người ở xa.
     this.acc += dt;
-    if (this.interval > 0 && this.acc < this.interval) return;
+    if (this.interval > 0 && !mixerDue(this.acc, this.interval)) return;
     this.blendBases(this.acc);
     if (this.loco && this.base) this.syncLoco(this.acc);
     this.mixer.update(this.acc);

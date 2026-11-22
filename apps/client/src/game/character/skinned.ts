@@ -150,6 +150,10 @@ export function mixerInterval(level: number, inView = true, self = false, dist =
 }
 
 const MIXER_SLACK = 0.0015;
+/** Đến lượt chạy mixer: `acc` (dt gộp) đã đủ `interval`, dung sai 1,5 ms để jitter rAF không đẩy nhịp 30 Hz thành 20–30 Hz lẫn lộn. */
+export function mixerDue(acc: number, interval: number): boolean {
+  return acc > 0 && acc >= interval - MIXER_SLACK;
+}
 /** Khoảng cách (m) từ đó LOD0 của người khác chỉ cập nhật mixer 30 Hz. */
 export const MID_DIST = 9;
 /** Pha khởi đầu của bộ đếm mixer, rải đều theo số thứ tự model để các model LOD1/LOD2 không cùng cập nhật một khung (giảm đỉnh p95). */
@@ -663,7 +667,7 @@ export class SkinnedCharacter implements CharacterView {
     // Hạ tần số mixer ở xa: gộp dt, cập nhật bộ xương thưa hơn.
     this.acc += dt;
     // Dung sai 1,5 ms: ở 60 khung/giây dt dao động quanh 1/60, không để LOD0 tụt xuống 30 Hz vì làm tròn.
-    if (this.acc > 0 && this.acc >= this.interval - MIXER_SLACK) {
+    if (mixerDue(this.acc, this.interval)) {
       this.mixer.update(this.acc);
       if (this.feet) this.groundFeet(this.acc, a);
       this.rig.updateMatrixWorld(true);
