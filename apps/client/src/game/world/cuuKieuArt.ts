@@ -18,8 +18,8 @@ const mix3 = (a: readonly number[], b: readonly number[], t: number): [number, n
 
 const MOSS_GREEN = [0.25, 0.33, 0.16] as const;
 const OLIVE = [0.43, 0.43, 0.21] as const;
-const DRY = [0.52, 0.45, 0.25] as const;
-const EARTH = [0.4, 0.33, 0.24] as const;
+const DRY = [0.55, 0.46, 0.26] as const;
+const EARTH = [0.44, 0.34, 0.23] as const;
 const ROCK = [0.5, 0.5, 0.45] as const;
 const CLIFF = [0.52, 0.49, 0.42] as const;
 const CLIFF_MOSS = [0.34, 0.43, 0.27] as const;
@@ -31,8 +31,8 @@ export function ckGroundColor(def: TerrainDef, x: number, z: number, ny: number,
   const macro2 = fbm(x * 0.0071, z * 0.0071, 2, def.seed + 91); // đất trần
   const macro3 = fbm(x * 0.0093, z * 0.0093, 2, def.seed + 203); // đá lộ
   let c = mix3(MOSS_GREEN, OLIVE, clamp01(0.5 + n * 1.5));
-  c = mix3(c, DRY, smooth(0.04, 0.3, macro1) * 0.85);
-  c = mix3(c, EARTH, smooth(0.16, 0.34, macro2) * 0.8);
+  c = mix3(c, DRY, smooth(-0.04, 0.2, macro1) * 0.95);
+  c = mix3(c, EARTH, smooth(0.06, 0.24, macro2) * 0.9);
   c = mix3(c, ROCK, smooth(0.2, 0.34, macro3) * 0.75);
   const k = 0.9 + m * 0.24;
   c = [c[0] * k, c[1] * k, c[2] * k];
@@ -56,7 +56,7 @@ export function ckGroundColor(def: TerrainDef, x: number, z: number, ny: number,
   }
   // Chi tiết và sắc chính đến từ texture Codex (bộ `terrain-ck`); màu đỉnh chỉ nghiêng sắc nhẹ và quyết định màu ở xa: kéo về gần xám để bớt vàng.
   const lum = c[0] * 0.299 + c[1] * 0.587 + c[2] * 0.114;
-  out[0] = lum + (c[0] - lum) * 0.55;
-  out[1] = lum + (c[1] - lum) * 0.55;
-  out[2] = lum + (c[2] - lum) * 0.55;
+  out[0] = lum + (c[0] - lum) * 0.8;
+  out[1] = lum + (c[1] - lum) * 0.8;
+  out[2] = lum + (c[2] - lum) * 0.8;
 }

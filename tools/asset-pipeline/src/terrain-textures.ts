@@ -356,7 +356,11 @@ async function main(): Promise<void> {
         .raw()
         .toBuffer();
       const tiled = makeTileable(raw, SIZE);
+      // Hạ bão hòa ~28% và độ sáng ~8%, kéo cỏ về xanh rêu (bớt xanh chanh); các lớp khác chỉ hạ nhẹ.
+      const grassy = L.layer === 'grass' || L.layer === 'forest';
       const albedo = await sharp(tiled, { raw: { width: SIZE, height: SIZE, channels: 3 } })
+        .modulate({ saturation: grassy ? 0.72 : 0.88, brightness: grassy ? 0.92 : 0.97 })
+        .linear(grassy ? [1.03, 0.98, 0.88] : [1, 1, 1], [0, 0, 0])
         .webp({ quality: 76 })
         .toBuffer();
       const hgt = heightFromRgb(tiled, SIZE);

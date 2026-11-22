@@ -6,6 +6,7 @@ import {
   applyGroundShader,
   clearGroundShader,
   setGroundRedStrata,
+  setGroundCliff,
   setGroundStrata,
   setGroundNoSnow,
   setGroundTileBreak,
@@ -744,6 +745,7 @@ export class Terrain {
     setGroundTileBreak(XICH || ASH);
     setGroundStrata(isVanLam());
     setGroundNoSnow(KT || PM || T.id === 'van_dinh');
+    setGroundCliff(T.id === 'cuu_kieu' ? 42 : 11, T.id === 'cuu_kieu');
     setGroundRedStrata(
       T.id === 'doan_mach' || T.id === 'thien_khuyet' || T.id === 'van_dinh' || KT || PM,
       // Thiên Khuyết (MAP-4): vách xám ấm ↔ nâu cát, khe nứt có vỉa vàng kim; vân từ nhiễu theo tọa độ dọc vách (hết ô caro).

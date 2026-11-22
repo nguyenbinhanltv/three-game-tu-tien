@@ -252,7 +252,7 @@ function stoneMat(tex: CkTex | null): THREE.MeshStandardNodeMaterial {
   const vc = vertexColor();
   m.colorNode = mix(vec3(luminance(c)), c, 0.5)
     .mul(mix(vec3(luminance(vc)), vc, 0.35))
-    .mul(2.1);
+    .mul(1.78);
   return m;
 }
 
@@ -495,14 +495,31 @@ export class CkWonders {
     const N = 8;
     // điểm hạ cánh: bệ tròn dày, vòng rêu, mố trụ lớn, cổng đá
     SP.forEach(([x, z, y], k) => {
-      // mố trụ bát giác chân bậc to (không dùng ống tròn trơn): hai bậc đế vuông, bệ bát giác, thân bát giác thon dần xuống, vòng rêu
-      b.box(26, 1.6, 26, x, y - 9.6, z, shade(STONE, 0.78));
-      b.box(21, 1.8, 21, x, y - 8.0, z, shade(STONE, 0.86));
-      b.cyl(12.5, 13.5, 3.4, 8, x, y - 3.2, z, shade(STONE, 0.95));
-      b.cyl(12.9, 12.9, 0.7, 8, x, y - 0.5, z, lerpHex(STONE_DARK, MOSS, 0.4));
-      b.cyl(8.6, 12.0, 150, 8, x, y - 161, z, shade(STONE, 0.85));
-      b.cyl(11.4, 11.4, 6, 8, x, y - 20, z, lerpHex(STONE_DARK, MOSS, 0.55));
-      b.cyl(10.6, 10.6, 4, 8, x, y - 48, z, lerpHex(STONE_DARK, MOSS, 0.4));
+      // mố trụ VUÔNG xây bậc (rõ ở cự ly trung, không còn tròn như cột La Mã): bệ vuông có gờ, thân gồm tám tầng đá thon dần xuống, mỗi tầng có gờ nhô,
+      // vết rêu/ố tối chảy dọc bốn mặt. Mặt trụ xoay theo hướng cầu để thẳng hàng với vòm.
+      const ny = k + 1 < SP.length ? Math.atan2(SP[k + 1]![0] - x, SP[k + 1]![1] - z) : Math.atan2(x - SP[k - 1]![0], z - SP[k - 1]![1]);
+      b.box(26, 1.6, 26, x, y - 9.6, z, shade(STONE, 0.78), ny);
+      b.box(21, 1.8, 21, x, y - 8.0, z, shade(STONE, 0.86), ny);
+      b.box(25, 3.4, 25, x, y - 3.2, z, shade(STONE, 0.95), ny);
+      b.box(27.2, 0.9, 27.2, x, y - 0.5, z, lerpHex(STONE_DARK, MOSS, 0.4), ny); // gờ bệ
+      for (let c = 0; c < 8; c++) {
+        const w = 16 + c * 1.1;
+        const top = y - 3.6 - c * 19.5;
+        b.box(w, 19.5, w, x, top - 19.5, z, shade(STONE, 0.86 - c * 0.012), ny);
+        b.box(w + 1.7, 1.1, w + 1.7, x, top - 1.1, z, lerpHex(STONE_DARK, MOSS, 0.3 + (c % 3) * 0.1), ny); // gờ nhô cuối mỗi tầng
+        // vết rêu/ố tối chảy dọc mặt từng tầng (dải mỏng nổi 0,2 m cạnh mặt, vị trí/độ dài ngẫu nhiên theo tầng và mặt)
+        for (let f = 0; f < 4; f++) {
+          for (let q = 0; q < 2; q++) {
+            if (hash01(k * 8 + c, f * 2 + q, 7609) < 0.45) continue;
+            const ang = ny + (f * Math.PI) / 2;
+            const lat = (hash01(k * 8 + c, f * 2 + q, 7611) - 0.5) * (w - 3);
+            const len = 7 + hash01(k * 8 + c, f * 2 + q, 7613) * 12;
+            const px = x + Math.sin(ang) * (w / 2 + 0.2) + Math.cos(ang) * lat;
+            const pz = z + Math.cos(ang) * (w / 2 + 0.2) - Math.sin(ang) * lat;
+            b.box(1.4 + hash01(k * 8 + c, f, 7615) * 2.4, len, 0.45, px, top - 1.4 - len, pz, lerpHex(MOSS, 0x2c3a24, 0.5), ang);
+          }
+        }
+      }
       if (k > 0 && k < SP.length - 1) {
         const nx = SP[k + 1]![0] - x;
         const nz = SP[k + 1]![1] - z;
@@ -923,7 +940,7 @@ export class CkWonders {
         new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.sin(a) * 0.34, a, Math.cos(a) * 0.34)),
         new THREE.Vector3(1, 0.65 + 0.2 * (i % 3), 1),
       );
-      tuft.add(g, lerpHex(0x4a5a2a, 0xa3a560, 0.15 + 0.17 * i), m);
+      tuft.add(g, lerpHex(0x3f4d24, 0x8a8a4c, 0.15 + 0.17 * i), m);
       g.dispose();
     }
     const tg = tuft.build();
@@ -960,7 +977,7 @@ export class CkWonders {
         o.updateMatrix();
         mesh.setMatrixAt(i, o.matrix);
         const v = 0.78 + hash01(i, 4, 8111) * 0.4;
-        mesh.setColorAt(i, tint.setRGB(v * (0.95 + r * 0.15), v, v * 0.82));
+        mesh.setColorAt(i, tint.setRGB(v * (0.92 + r * 0.2), v * 0.88, v * 0.7));
       });
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
