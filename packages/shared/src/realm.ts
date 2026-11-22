@@ -153,12 +153,12 @@ const REALM_CODES = [
   { code: 'ab', from: ANH_BIEN_LEVEL, count: 4 },
   { code: 'vd', from: VAN_DINH_LEVEL, count: 4 },
   { code: 'ah', from: AM_HU_LEVEL, count: 4 },
-  { code: 'dt', from: DUONG_THUC_LEVEL, count: 1 },
+  { code: 'dt', from: DUONG_THUC_LEVEL, count: 4 },
 ] as const;
 
 /**
  * Mã cảnh giới → cấp: `nk1`…`nk15` (Ngưng Khí tầng N), `tc`/`kd`/`na` hoặc `tc1`…`tc4` (sơ, trung, hậu kỳ, đại viên mãn;
- * `kd` Kết Đan, `na` Nguyên Anh), `ht`, `ab`, `vd`, `ah` (4 kỳ như trên), `dt` (Dương Thực sơ kỳ), hoặc số cấp 1…MAX_LEVEL.
+ * `kd` Kết Đan, `na` Nguyên Anh), `ht`, `ab`, `vd`, `ah`, `dt` (4 kỳ như trên), hoặc số cấp 1…MAX_LEVEL.
  * Sai định dạng hoặc ngoài khoảng thì trả null. Chỉ dùng cho tài khoản thử; server vẫn tự kiểm quyền.
  */
 export function parseRealmCode(code: unknown): number | null {

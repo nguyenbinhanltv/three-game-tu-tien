@@ -105,9 +105,9 @@ function lightAll(t: ReturnType<typeof setup>) {
 }
 
 describe('Nhật Thực Kiếp: dữ liệu và hàm thuần', () => {
-  it('Anh Biến bắt đầu ở cấp 32 (trần mới là 44 từ TN-3); kiếp mở từ Hóa Thần đại viên mãn 31, 90 s, room riêng ở sân Bắc Hoang', () => {
+  it('Anh Biến bắt đầu ở cấp 32 (trần mới là 47 từ TN-7); kiếp mở từ Hóa Thần đại viên mãn 31, 90 s, room riêng ở sân Bắc Hoang', () => {
     expect(ANH_BIEN_LEVEL).toBe(32);
-    expect(MAX_LEVEL).toBe(44);
+    expect(MAX_LEVEL).toBe(47);
     expect(tribForLevel(31)?.id).toBe('anh_bien');
     expect(DEF.enabled).toBe(true);
     expect(DEF.item).toBe(ITEM);

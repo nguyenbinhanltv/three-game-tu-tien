@@ -386,7 +386,7 @@ export interface TribDef {
   law?: TribLaw;
   /**
    * Mốc thật mà chuỗi sẽ mở khi thang cấp đủ dài (TN-3): Ngũ Suy 59→60 (cuối Toái Niết), Huyền Kiếp sau Không Huyền. Chỉ là ghi chú dữ liệu;
-   * `from`/`to` vẫn là mốc tạm (= `MAX_LEVEL`) để GM và test chạy được, và đổi sang `milestone` khi thang cấp tới đó.
+   * `from`/`to` vẫn là mốc tạm (= `DUONG_THUC_LEVEL` 44; mở qua cầu Cửu Kiều, TN-7) để GM và test chạy được, và đổi sang `milestone` khi thang cấp tới đó.
    */
   milestone?: { from: number; to: number };
   /** Kiếp chuỗi phải qua đủ trước khi vào chuỗi này (Huyền Kiếp: Ngoại → Nội → Hồn). */
