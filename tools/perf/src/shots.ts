@@ -15,6 +15,7 @@ import calliset from './scenarios/calliset';
 import clone from './scenarios/clone';
 import collwalk from './scenarios/collwalk';
 import divuc from './scenarios/divuc';
+import bossfaces from './scenarios/bossfaces';
 import dungeon from './scenarios/dungeon';
 import flyover from './scenarios/flyover';
 import hires from './scenarios/hires';
@@ -87,6 +88,7 @@ const SCENARIOS: Scenario[] = [
   vanhai,
   map,
   mons,
+  bossfaces,
   dungeon,
   asset,
   vfx,

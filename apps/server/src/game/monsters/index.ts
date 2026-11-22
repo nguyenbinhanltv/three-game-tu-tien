@@ -1095,6 +1095,7 @@ export class MonsterSystem {
       m.unreachableSince = 0;
     }
     const ai = m.rules.ai;
+    this.c.monSkills.face(m);
     if (!m.windUntil && this.c.monSkills.tick(m, target, d, reachable, dt)) return;
     if (m.windUntil) {
       // Đang vung chiêu chém vùng: đứng yên, giữ hướng đã khóa cho khớp vùng báo trước.

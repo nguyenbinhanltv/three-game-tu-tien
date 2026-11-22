@@ -1,0 +1,340 @@
+{
+ "skill": "mon_face",
+ "palette": "face_am",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.14,
+   "at": "self",
+   "offset": [
+    0,
+    1.4,
+    0
+   ],
+   "scale": 2.6,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "alpha": 0.9,
+   "tier": 0,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    0,
+    0.1,
+    0
+   ],
+   "scale": 0.6,
+   "scaleTo": 17.0,
+   "sweep": 0.4,
+   "erodeFrom": 0.45,
+   "ragged": 0.8,
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 31,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.08,
+   "dur": 0.55,
+   "at": "self",
+   "offset": [
+    0,
+    0.12,
+    0
+   ],
+   "scale": 0.5,
+   "scaleTo": 13.0,
+   "sweep": 0.4,
+   "erodeFrom": 0.4,
+   "tone": "accent",
+   "alpha": 0.85,
+   "seed": 32,
+   "tier": 1
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 10.0,
+   "dur": 2.4,
+   "at": "self",
+   "offset": [
+    0,
+    -0.05,
+    0
+   ],
+   "grow": 0.3,
+   "tone": "core",
+   "alpha": 0.8,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "crack",
+   "t": 0.04,
+   "r": 8.0,
+   "dur": 2.2,
+   "at": "self",
+   "offset": [
+    0,
+    -0.04,
+    0
+   ],
+   "grow": 0.12,
+   "tone": "accent",
+   "alpha": 0.85,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "smoke",
+   "t": 0.04,
+   "dur": 1.0,
+   "at": "self",
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "scale": 2.4,
+   "scaleTo": 5.0,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "tone": "core",
+   "alpha": 0.5,
+   "seed": 33,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0.0,
+   "n": 16,
+   "speed": 5.5,
+   "spread": 1.0,
+   "life": 0.7,
+   "size": 0.12,
+   "at": "self",
+   "offset": [
+    0,
+    0.4,
+    0
+   ],
+   "tone": "body",
+   "grav": 8,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.03,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    0.0,
+    0,
+    4.2
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.3,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 40,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.05,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    2.97,
+    0,
+    2.97
+   ],
+   "rot": [
+    -78,
+    0,
+    0
+   ],
+   "scale": 0.35,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 41,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.07,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    4.2,
+    0,
+    0.0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.4,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 42,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.09,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    2.97,
+    0,
+    -2.97
+   ],
+   "rot": [
+    -78,
+    0,
+    0
+   ],
+   "scale": 0.3,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 43,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.11,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    0.0,
+    0,
+    -4.2
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.35,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 44,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.13,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    -2.97,
+    0,
+    -2.97
+   ],
+   "rot": [
+    -78,
+    0,
+    0
+   ],
+   "scale": 0.4,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 45,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.15,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    -4.2,
+    0,
+    -0.0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.3,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 46,
+   "tier": 1,
+   "camFade": true
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.17,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    -2.97,
+    0,
+    2.97
+   ],
+   "rot": [
+    -78,
+    0,
+    0
+   ],
+   "scale": 0.35,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 47,
+   "tier": 1,
+   "camFade": true
+  }
+ ]
+}

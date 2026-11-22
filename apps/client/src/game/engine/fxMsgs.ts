@@ -8,6 +8,7 @@ import {
   MF_REAL,
   MF_BURROW,
   MF_CHANT,
+  MF_FACE,
   MF_REFLECT,
   MF_WEAK,
   MS_ATTACK,
@@ -25,7 +26,15 @@ import {
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
-import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
+import {
+  MON_AURA_FACE,
+  MON_AURA_REAL,
+  MON_AURA_REFLECT,
+  MON_AURA_SENSED,
+  MON_AURA_WEAK,
+  MON_BURROW_DIRT,
+  type MonFlagEdge,
+} from '../entities/monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from '../fx/methodFx';
 import { isTranEnd, playTranFx, tranKind } from '../fx/tranFx';
 import { CO_FX_KINDS, CO_STAND_KINDS, playCoFx, playCoStand } from '../fx/coFx';
@@ -334,6 +343,15 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
           ),
         1100,
       );
+    }
+    return;
+  }
+  // Boss hai mặt (TN-3): `v` là mặt mới, không phải biến thức chiêu nên xử lý riêng, trước `playVariantExtras`.
+  if (m.t === 'face' || m.t === 'face_warn') {
+    const mon = e.monsters.get(src);
+    if (mon && !held) {
+      eng.monFx?.face(mon, m.v === 'am' ? 'am' : 'duong', m.t === 'face_warn');
+      if (m.t === 'face' && Math.hypot(mon.x - eng.renderPos.x, mon.z - eng.renderPos.z) < 40) eng.shake.kick(0.5);
     }
     return;
   }
@@ -1178,6 +1196,9 @@ export function monFlagFx(eng: Game, m: MonVis, e: MonFlagEdge): void {
     );
   if (e.on & MF_SENSED)
     v.castSigil(pos, left, MON_AURA_SENSED.color, MON_AURA_SENSED.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_SENSED) !== 0);
+  // Mặt Âm của boss hai mặt: vòng tím bám chân suốt mặt Âm (`ce` = lúc lật), tắt khi cờ rơi.
+  if (e.on & MF_FACE)
+    v.castSigil(pos, left, MON_AURA_FACE.color, MON_AURA_FACE.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_FACE) !== 0);
   if (e.on & MF_CHANT) eng.monFx?.cast(m);
   if ((e.on | e.off) & MF_BURROW) {
     _v2.set(m.x, m.y + 0.4, m.z);

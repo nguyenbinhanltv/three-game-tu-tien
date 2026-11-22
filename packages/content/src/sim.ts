@@ -1353,6 +1353,9 @@ for (const lv of Object.values(LEVELS)) {
     if (boss) {
       // Boss gương (E3-M): ba bóng giả phải tìm/đánh, tránh đĩa gương, Tâm Ma Ảnh chiếm người trong màn: hiệu suất giảm.
       if (boss.mirror) dps *= DG_MIRROR_EFF;
+      // Hai mặt (TN-3): mặt Âm miễn sát thương (`take` còn lọt), chỉ đánh được trong cửa sổ Dương.
+      const fc = boss.ai?.faces;
+      if (fc) dps *= (fc.duong + fc.am * fc.take) / (fc.duong + fc.am);
       const bu = boss.ai?.burrow ?? boss.phases?.map((_, k) => phaseRules(boss!, k + 1).ai.burrow).find(Boolean);
       if (bu) dps *= 1 - bu.hide / bu.cd;
       const ch = boss.ai?.chant;

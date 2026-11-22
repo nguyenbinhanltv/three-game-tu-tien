@@ -3,6 +3,8 @@ import {
   burrowSpots,
   chargeEnd,
   coneGeom,
+  facePhase,
+  faceTakeMul,
   inHazard,
   leapPos,
   LEAP_AIR,
@@ -79,5 +81,46 @@ describe('monskill (hàm thuần quái mở rộng)', () => {
     expect(sp).toHaveLength(4);
     for (const p of sp) expect(Math.hypot(p.x - 10, p.z - 10)).toBeCloseTo(3);
     expect(monSkillsOf({ combo: { chance: 1, delay: 1, mul: 1 }, reveal: { cd: 8, dur: 2, mul: 1.5 } })).toEqual(['reveal']);
+  });
+});
+
+describe('facePhase: hai mặt Âm/Dương', () => {
+  const cfg = { duong: 14, am: 8, warn: 2, take: 0 };
+  const T = 5_000;
+
+  it('mặt Dương trước, rồi Âm, lặp theo chu kỳ 22 giây', () => {
+    expect(facePhase(cfg, T, T).face).toBe('duong');
+    expect(facePhase(cfg, T, T + 13_999).face).toBe('duong');
+    expect(facePhase(cfg, T, T + 14_000).face).toBe('am');
+    expect(facePhase(cfg, T, T + 21_999).face).toBe('am');
+    expect(facePhase(cfg, T, T + 22_000).face).toBe('duong');
+    expect(facePhase(cfg, T, T + 22_000 + 14_000).face).toBe('am');
+  });
+
+  it('lượt lật (turn) tăng đúng một ở mỗi lần lật; flipAt và left khớp', () => {
+    const a = facePhase(cfg, T, T + 3_000);
+    expect(a).toMatchObject({ turn: 0, flipAt: T + 14_000, warning: false });
+    expect(a.left).toBeCloseTo(11, 5);
+    expect(facePhase(cfg, T, T + 14_000).turn).toBe(1);
+    expect(facePhase(cfg, T, T + 22_000).turn).toBe(2);
+    expect(facePhase(cfg, T, T + 22_000 * 5 + 15_000).turn).toBe(11);
+  });
+
+  it('báo trước trong `warn` giây cuối của mỗi mặt', () => {
+    expect(facePhase(cfg, T, T + 11_999).warning).toBe(false);
+    expect(facePhase(cfg, T, T + 12_000).warning).toBe(true);
+    expect(facePhase(cfg, T, T + 13_999).warning).toBe(true);
+    expect(facePhase(cfg, T, T + 14_000).warning).toBe(false);
+    expect(facePhase(cfg, T, T + 20_000).warning).toBe(true);
+  });
+
+  it('đồng hồ chưa tới lúc bắt đầu thì coi như 0 giây', () => {
+    expect(facePhase(cfg, T, T - 500)).toMatchObject({ face: 'duong', turn: 0 });
+  });
+
+  it('faceTakeMul: Dương nhận đủ, Âm nhận `take`', () => {
+    expect(faceTakeMul(cfg, 'duong')).toBe(1);
+    expect(faceTakeMul(cfg, 'am')).toBe(0);
+    expect(faceTakeMul({ ...cfg, take: 0.1 }, 'am')).toBe(0.1);
   });
 });

@@ -62,7 +62,7 @@ export class MonS extends Schema {
   /** Trạng thái MS_*. */
   @view() @type('uint8') st = 0;
   /** Cờ MF_* (niệm chú, choáng). */
-  @view() @type('uint8') mf = 0;
+  @view() @type('uint16') mf = 0;
   /** Thời điểm server (ms) kết thúc trạng thái trong `mf`; 0 khi không có. */
   @view() @type('float64') ce = 0;
   /** Pha boss (0 = pha đầu). */

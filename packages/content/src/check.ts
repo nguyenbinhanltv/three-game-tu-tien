@@ -831,6 +831,16 @@ function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
     if (!inR(summon.delay, 1, 4)) err(`${id}: summon.delay phải trong [1; 4] giây`);
     if (!(summon.cd >= 6)) err(`${id}: summon.cd phải >= 6 giây`);
   }
+  if (ai.faces) {
+    const f = ai.faces;
+    if (!m.boss) err(`${id}: faces chỉ dành cho boss`);
+    if (!inR(f.duong, 8, 30)) err(`${id}: faces.duong phải trong [8; 30] giây (đủ dồn chiêu một đợt)`);
+    if (!inR(f.am, 4, 15)) err(`${id}: faces.am phải trong [4; 15] giây`);
+    if (!inR(f.warn, 1, 3)) err(`${id}: faces.warn phải trong [1; 3] giây (thấy báo trước khi lật)`);
+    if (!(f.am >= f.warn + 2)) err(`${id}: faces.am phải >= warn + 2`);
+    if (!(f.take >= 0 && f.take <= 0.2)) err(`${id}: faces.take phải trong [0; 0,2] (mặt Âm gần như miễn)`);
+    if (f.am / (f.duong + f.am) > 0.45) err(`${id}: mặt Âm chiếm quá 45% chu kỳ (kéo dài trận quá mức)`);
+  }
   if (reveal) {
     if (!inR(reveal.dur, 1, 8)) err(`${id}: reveal.dur phải trong [1; 8] giây`);
     if (!(reveal.mul > 1 && reveal.mul <= 3)) err(`${id}: reveal.mul phải trong (1, 3]`);

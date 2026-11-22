@@ -1,4 +1,4 @@
-import { MF_BURROW, MF_CHANT, MF_REAL, MF_REFLECT, MF_SENSED, MF_WEAK } from '@dtl/shared';
+import { MF_BURROW, MF_CHANT, MF_FACE, MF_REAL, MF_REFLECT, MF_SENSED, MF_WEAK } from '@dtl/shared';
 
 /**
  * Cờ quái mở rộng (E1-E) → hình. Chỉ là lớp trình bày: server giữ trạng thái và phán định (`mf`/`ce` của MonS).
@@ -13,7 +13,7 @@ export interface MonFlagEdge {
 
 /** Cờ vừa bật/tắt giữa hai khung (ba cờ mở rộng + cờ niệm chú, V5); null nếu không đổi. */
 export function monFlagEdge(prev: number, cur: number): MonFlagEdge | null {
-  const mask = MF_REFLECT | MF_WEAK | MF_BURROW | MF_REAL | MF_SENSED | MF_CHANT;
+  const mask = MF_REFLECT | MF_WEAK | MF_BURROW | MF_REAL | MF_SENSED | MF_CHANT | MF_FACE;
   const a = prev & mask;
   const b = cur & mask;
   if (a === b) return null;
@@ -25,6 +25,8 @@ export const MON_AURA_WEAK = { color: 0xffde96, radius: 1.9 };
 export const MON_BURROW_DIRT = 0x8a6a3a;
 /** Thể thật của boss gương (E3-M): vết ngọc lam dưới chân, bóng giả không có; thần thức soi ra thì thêm vòng vàng. */
 export const MON_AURA_REAL = { color: 0x4fb8d8, radius: 1.5 };
+/** Mặt Âm của boss hai mặt (TN-3): vòng tím sương bám chân tới lúc lật (cờ MF_FACE); mặt Dương không có vòng. */
+export const MON_AURA_FACE = { color: 0x8a7ad8, radius: 5.4 };
 export const MON_AURA_SENSED = { color: 0xffd36a, radius: 2.6 };
 
 /** Thân quái có bị ẩn không (đang chui đất). */
