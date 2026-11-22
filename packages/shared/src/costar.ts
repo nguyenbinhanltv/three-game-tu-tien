@@ -3,6 +3,8 @@
 // Dữ liệu ở packages/content/data/stars.json; sao lưu ở `characters.meta.stars` (0–9).
 
 export const COTHAN_METHOD = 'co_than_quyet';
+/** Công pháp của Lôi tu (TN-9). */
+export const LOI_METHOD = 'cuu_tieu_loi_kinh';
 export const COTHAN_STAR_MAX = 9;
 /** Chiêu tư thế Hóa Hình: đang giữ nó thì thân Cổ Thần to lớn (cờ `hh` trong state). */
 export const HOA_HINH_SKILL = 'skl_hoa_hinh';
