@@ -172,7 +172,10 @@ function playerDps(level: number, atk: number, monDef: number, id?: MethodId, mo
       ? Math.floor((s.formation.dur - s.formation.arm) / s.formation.every) * FORMATION_COVER
       : 1;
   const deals = (s: SkillDef) =>
-    s.kind === 'damage' || s.kind === 'aoe' || (s.kind === 'dash' && s.power > 0) || (s.kind === 'formation' && !!s.formation && formationHurts(s.formation.mode));
+    s.kind === 'damage' ||
+    s.kind === 'aoe' ||
+    (s.kind === 'dash' && s.power > 0) ||
+    (s.kind === 'formation' && !!s.formation && formationHurts(s.formation.mode));
   /** Xoay vòng: chiêu có hồi chiêu dùng ngay khi hồi xong, thời gian còn lại đánh đòn `basic`. */
   const rot = (skills: SkillDef[], basic: SkillDef): number => {
     let perSec = 0;
@@ -251,7 +254,12 @@ function selfSustain(level: number, id?: MethodId, mode: PlayMode = 'avg'): numb
   const m = methodAt(level, id);
   const healMul = 1 + (m?.passive.healMul ?? 0);
   const eff = mode === 'base' || !m ? 0 : mode === 'skilled' ? 1 : SKILL_EFF;
-  const sus = (s: SkillDef) => (s.kind === 'heal' || s.kind === 'hot' ? s.power * healMul : s.kind === 'shield' ? s.power : 0);
+  // TN-8: trận hồi (Hộ Trận, Sinh Tử Cấm) hồi `heal` × số nhịp có hiệu lực mỗi lần đặt.
+  const formHeal = (s: SkillDef): number =>
+    s.kind === 'formation' && s.formation?.heal
+      ? s.formation.heal * Math.floor((s.formation.dur - s.formation.arm) / s.formation.every)
+      : 0;
+  const sus = (s: SkillDef) => (s.kind === 'heal' || s.kind === 'hot' ? s.power * healMul : s.kind === 'shield' ? s.power : formHeal(s));
   let r = 0;
   for (const s of [...SKILLS, ...methodSkills(level, id)]) {
     if (s.unlock > level || s.cd <= 0) continue;

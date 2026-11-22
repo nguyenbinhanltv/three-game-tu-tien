@@ -299,10 +299,10 @@ describe('thực thể trận', () => {
     expect(ally.char.hp).toBeGreaterThan(h0[1]!);
     expect(p.char.hp).toBeGreaterThan(h0[0]!);
     expect(far.char.hp).toBe(h0[2]);
-    // một nhịp = 3% khí huyết tối đa
+    // một nhịp = 7% khí huyết tối đa
     const before = ally.char.hp;
     pass(1);
-    expect(ally.char.hp - before).toBe(Math.round(ally.char.mhp * 0.03));
+    expect(ally.char.hp - before).toBe(Math.round(ally.char.mhp * 0.07));
   });
   it('Sinh Tử Cấm vừa hồi đạo hữu vừa đánh quái trong trận mỗi nhịp', () => {
     const { join, mon, fresh, use, pass } = setup();

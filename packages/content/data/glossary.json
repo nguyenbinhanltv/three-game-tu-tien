@@ -479,7 +479,10 @@
     "skl_pha_diet_cam": "Phá Diệt Cấm",
     "skl_tue_nguyet_cam": "Tuế Nguyệt Cấm",
     "skl_sinh_tu_cam": "Sinh Tử Cấm",
-    "skl_phien_thien_an": "Phiên Thiên Ấn"
+    "skl_phien_thien_an": "Phiên Thiên Ấn",
+    "skl_mau_don_cam": "Mẫu Đơn Thập Bát Cấm",
+    "skl_phong_cam": "Phong Cấm",
+    "skl_don_dia_bo": "Độn Địa Bộ"
   },
   "maps": {
     "van_lam": "Vân Lam Sơn Mạch",
