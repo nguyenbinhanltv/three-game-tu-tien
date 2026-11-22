@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { addUpNormals } from '../../render/geoNormal';
 import { attribute, cameraPosition, float, mix, positionWorld, sin, smoothstep, texture, time, vec2, vec3 } from 'three/tsl';
 import { hash01 } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
@@ -301,6 +302,7 @@ export class DungeonFx {
     for (let i = 0; i < n; i++) this.moteSeed.push(hash01(i, 1, 6601), hash01(i, 2, 6601), hash01(i, 3, 6601));
     const pg = new THREE.BufferGeometry();
     pg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+    addUpNormals(pg);
     pg.boundingSphere = new THREE.Sphere(new THREE.Vector3(ex.x, heightAt(ex.x, ex.z) + 3, ex.z), 12);
     const pm = new THREE.PointsMaterial({
       color: r.mote,

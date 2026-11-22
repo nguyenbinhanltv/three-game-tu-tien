@@ -427,6 +427,8 @@ export interface TribDef {
   /** Người xem (hộ pháp) được vào trong bán kính này (m). */
   guard?: { r: number };
   phases: TribPhaseDef[];
+  /** Xong kiếp thì về đúng level và chỗ xuất phát (vé mang `from`), không về `returnLevel` của sân kiếp. Kiếp cũ không đặt cờ này nên giữ hành vi cũ. */
+  returnOrigin?: boolean;
   /** Level (bản đồ kiếp) của room kiếp riêng; thiếu = `do_kiep`. */
   level?: string;
   /**

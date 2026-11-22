@@ -575,6 +575,48 @@ describe('room độ kiếp riêng', () => {
     expect((owner.s.fl & PF_DEAD) === 0).toBe(true);
   });
 
+  it('kiếp chương 6 (returnOrigin): vé mang level + chỗ đứng, xong kiếp về đúng đó (cả hộ pháp); kiếp cũ vẫn về returnLevel', async () => {
+    const world = await mkRoom('van_dinh', rooms.WorldRoom);
+    // WorldRoom dựng trần có levelId của lớp gốc (van_lam); ở máy chủ thật mỗi level là một lớp con.
+    Object.defineProperty(world.room, 'levelId', { value: 'van_dinh' });
+    const owner = prime(world.join(mkChar('vdchu', 35), { ticket: false }), 35);
+    const mate = prime(world.join(mkChar('vdhp', 35), { ticket: false }), 35);
+    owner.move.x = 900;
+    owner.move.z = 700;
+    mate.move.x = 905;
+    mate.move.z = 703;
+    const enter = world.room as unknown as { enterTribulationRoom(p: Ent, d: unknown, f: boolean): boolean };
+    const party = { members: [owner.char.id, mate.char.id], leader: owner.char.id };
+    for (const m of [owner, mate]) (parties as unknown as { byChar: Map<number, unknown> }).byChar.set(m.char.id, party);
+    expect(enter.enterTribulationRoom(owner, tribDef('van_dinh'), true)).toBe(true);
+    const lt = transfer.tickets.take(owner.char.id, TRIB_LEVEL)!;
+    const mt = transfer.tickets.take(mate.char.id, TRIB_LEVEL)!;
+    expect(lt.trib!.from).toEqual({ level: 'van_dinh', x: 900, z: 700 });
+    expect(mt.trib!.from).toEqual({ level: 'van_dinh', x: 905, z: 703 });
+    expect(mt.trib!.id).toBeUndefined();
+
+    // Vào sân kiếp bằng đúng hai vé đó rồi kết thúc: cả hai về van_dinh, đúng chỗ đứng.
+    const arena = await mkRoom(TRIB_LEVEL, rooms.TribulationRoom);
+    const o2 = arena.join(owner.char, { trib: lt.trib });
+    const g2 = arena.join(mate.char, { trib: mt.trib });
+    // Thiếu đan đột phá: kiếp không bắt đầu được, mọi người bị gửi về (cùng đường với lúc hết kiếp).
+    arena.runTimers();
+    for (const [p, at] of [
+      [o2, { x: 900, z: 700 }],
+      [g2, { x: 905, z: 703 }],
+    ] as const) {
+      const back = transfer.tickets.take(p.char.id, 'van_dinh')!;
+      expect(back, p.char.name).toBeTruthy();
+      expect(back.spawn).toEqual(at);
+      expect(xfers(p).at(-1)!.level).toBe('van_dinh');
+    }
+    // Kiếp cũ (không returnOrigin) vẫn không mang `from`, về returnLevel như trước.
+    transfer.tickets.clear();
+    const old = prime(world.join(mkChar('vdcu', 27), { ticket: false }), 27);
+    enter.enterTribulationRoom(old, tribDef('hoa_than'), true);
+    expect(transfer.tickets.take(old.char.id, TRIB_LEVEL)!.trib).toEqual({ key: expect.any(String), id: 'hoa_than' });
+  });
+
   it('chưa ai bắt đầu kiếp sau WAIT_MS (vé/vật phẩm hỏng): đưa mọi người về', async () => {
     const arena = await mkRoom(TRIB_LEVEL, rooms.TribulationRoom);
     const g = arena.join(mkChar('lac', 20), { trib: { key: 'c' } });
