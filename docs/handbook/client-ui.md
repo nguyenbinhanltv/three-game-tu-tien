@@ -54,3 +54,10 @@ Chỉ client, sau cờ URL; mặc định không đổi gì. Mã: `game/camera/i
 - Camera dẫn về điểm giữa người và mục tiêu đang chọn; ống mờ cây nới rộng khi iso (nới hơn nữa khi ngự kiếm).
 - Vòng cảnh báo đất của quái/boss là vạch báo có sẵn (hazard); P1 không đổi hình, chỉ kiểm chúng vẫn đọc được ở góc chéo.
 - Kiểm: `apps/server/src/game/aim.test.ts`, `SECURITY_ONLY=aim pnpm --filter @dtl/bot-client security`, `pnpm bots --count 100` (0 dòng `refId`), `pnpm ledger:check`.
+
+### Thiên Nhãn P2a: dựng hình theo khung iso (`?cam=iso`)
+
+- Địa hình: `Terrain.setIso` chỉ giữ lưới mịn và cây xa trong bán kính 1 ô (256 m) quanh người (thường 3–4 ô); lưới thô và `far` 250 m lo phần còn lại.
+- Bóng đổ: `Environment.setIso` thu bản đồ bóng mặt trời còn ±26 m (Cực cao ±36 m) quanh người, bóng nét hơn ~2,7 lần ở cùng độ phân giải bản đồ.
+- Vật che: ngoài đường nhìn, mái/tường trong vùng 4 m quanh người ở phía camera cũng mờ (`zoneHit`); cây thẻ (`CardForest`) giờ cũng mờ như cây prop; khi ngự kiếm cây/prop ở RÌA màn hình mờ theo vị trí màn hình (`uEdge`), vì tán cây là cảnh nền thấp hơn người nên đường nhìn không chạm chúng.
+- Chưa làm ở P2a: vật liệu mặt đất iso (P2b), AO riêng (dùng GTAO có sẵn của preset Vừa/Cao), LOD prop cố định theo khoảng cách camera.

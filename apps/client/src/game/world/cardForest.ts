@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { hash01 } from '@dtl/shared';
+import { withSightFade } from './occlusion';
 import { FOLIAGE_TILE, FOLIAGE_TILE_SIZE, foliageMaterial, type SkyTextures } from './skyAssets';
 import type { PropInstance } from './propScatter';
 
@@ -186,7 +187,7 @@ export class CardForest {
   /** `trees`: các instance cây (id thuộc `CARD_TREE_IDS`). */
   constructor(trees: readonly PropInstance[], tex: SkyTextures) {
     this.group.name = 'cardForest';
-    this.mat = foliageMaterial(tex);
+    this.mat = withSightFade(foliageMaterial(tex)); // cây thẻ cũng mờ khi che nhân vật/rìa khung (camera chéo)
     const templates: [Map<string, Template>, Map<string, Template>] = [new Map(), new Map()];
     let seed = 11;
     for (const [id, sp] of Object.entries(SPECIES)) {
