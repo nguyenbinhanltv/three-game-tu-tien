@@ -25,3 +25,9 @@ export function isoFxScaleY(shape: string, sy: number, baseH: number): number {
   if (!(baseH > 1e-6) || !ISO_UPRIGHT_SHAPES.has(shape)) return sy;
   return isoFxHeight(shape, sy * baseH) / baseH;
 }
+
+/** Thẻ pháp tướng 2D (billboard, `card`) rơi/đứng trên mục tiêu phủ lên người khi nhìn từ trên xuống: thu nhỏ và giảm độ đục. */
+export const ISO_CARD_SCALE = 0.8;
+export const ISO_CARD_ALPHA = 0.55;
+/** Tia sét (`bolt`) kéo thành cột cao trên màn hình ở góc nghiêng: thu độ cao đỉnh (hệ số nhân `BOLT_HEIGHT`); bề rộng, quầng và vòng chạm đất giữ nguyên. */
+export const ISO_BOLT_HEIGHT = 0.7;
