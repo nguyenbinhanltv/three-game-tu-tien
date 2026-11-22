@@ -23,7 +23,7 @@ import {
 import type { FxMesh } from '../../render/materials/vfx';
 import { paletteOf, toneOf, type FxPalette } from '../../render/vfx/palette';
 import { FLAGS } from '../../base/flags';
-import { isoFxHeight } from '../../render/vfx/isoFx';
+import { isoFxScaleY } from '../../render/vfx/isoFx';
 import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
 import { DECAL_CRACK, DECAL_RUNE, DECAL_SCORCH, DECAL_SMOKE, DECAL_STRIKE } from '../../render/vfx/stylized';
 import { bladeVisible } from '../../render/vfx/bladeTrail';
@@ -534,10 +534,14 @@ export class FxRunner {
       shade.renderOrder = -2;
     }
     const cam = this.env.camera();
+    // Camera chéo: nén chiều cao thật (mét) của hình đứng cao; chiều cao gốc đo từ bounding box y của lưới.
+    const isoK = FLAGS.isoCam && FLAGS.isoFxCompress;
+    if (isoK && !geo.boundingBox) geo.computeBoundingBox();
+    const baseH = isoK && geo.boundingBox ? geo.boundingBox.max.y - geo.boundingBox.min.y : 1;
     const place = (m: FxMesh, k: number, grow: number, off: number) => {
       const e = easeOut(k);
       const lerpS = (i: number) => s0f[i]! + (sT[i]! - s0f[i]!) * e;
-      m.scale.set(lerpS(0) * grow, FLAGS.isoCam ? isoFxHeight(ev.shape, lerpS(1) * grow) : lerpS(1) * grow, lerpS(2) * grow);
+      m.scale.set(lerpS(0) * grow, isoK ? isoFxScaleY(ev.shape, lerpS(1) * grow, baseH) : lerpS(1) * grow, lerpS(2) * grow);
       if (end) {
         const ek = ev.move!.ease === 'in' ? easeIn(k) : ev.move!.ease === 'linear' ? k : easeOut(k);
         m.position.lerpVectors(start, end, ek);

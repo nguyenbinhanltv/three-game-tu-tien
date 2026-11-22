@@ -92,6 +92,8 @@ interface Flags {
   isoCam: boolean;
   /** `?isoyaw=<độ>` ghi đè hướng nhìn cố định của camera chéo (chỉ để chọn hướng đẹp nhất cho từng bản đồ). */
   isoYaw: number | null;
+  /** `?isofx=0` tắt nén hình VFX đứng cao ở camera chéo (so ảnh trước/sau, Thiên Nhãn P4-1). */
+  isoFxCompress: boolean;
   /** `?touch=1|0` ép bật/tắt chế độ cảm ứng (U2-6; kiểm thử, ghi đè cài đặt). */
   touch: boolean | null;
 }
@@ -103,6 +105,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
     doc: '=iso camera chéo khóa góc kiểu Action MMORPG (Thiên Nhãn P0, nguyên mẫu; chuột phải đi tới điểm, khoảng cách camera khóa cố định, không zoom)',
   },
   isoyaw: { scope: 'diag', doc: 'độ: ghi đè hướng nhìn cố định của camera chéo ?cam=iso (chọn hướng đẹp nhất cho từng bản đồ)' },
+  isofx: { scope: 'diag', doc: '=0 tắt nén hình VFX đứng cao ở ?cam=iso (so ảnh trước/sau)' },
   touch: { scope: 'user', doc: '=1 ép chế độ cảm ứng, =0 ép tắt (mặc định theo thiết bị + Cài đặt)' },
   mute: { scope: 'user', doc: 'tắt tiếng (playtest luôn bật)' },
   auto: { scope: 'test', doc: 'tự đăng nhập bằng đạo hiệu thử' },
@@ -175,6 +178,7 @@ export function readFlags(search: string): Flags {
   return {
     mute: q.get('mute') === '1',
     isoCam: q.get('cam') === 'iso',
+    isoFxCompress: q.get('isofx') !== '0',
     isoYaw: q.get('isoyaw') === null || Number.isNaN(Number(q.get('isoyaw'))) ? null : (Number(q.get('isoyaw')) * Math.PI) / 180,
     touch: q.get('touch') === '1' ? true : q.get('touch') === '0' ? false : null,
     auto: q.get('auto'),
