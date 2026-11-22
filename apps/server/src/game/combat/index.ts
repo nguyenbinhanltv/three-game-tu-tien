@@ -4,6 +4,7 @@ import {
   addCharge,
   CHARGE_MAX,
   formationAdd,
+  mergeSlow,
   formationHeals,
   formationHurts,
   formationMarks,
@@ -822,7 +823,7 @@ export class CombatSystem {
           for (const o of this.monstersNear(f.x, f.z, f.r)) {
             if (o.owner && o.owner !== f.sid) continue;
             acted = true;
-            if (f.slow !== undefined && !o.def.boss) o.slow = { until: now + f.every * 1000 + 500, mul: f.slow };
+            if (f.slow !== undefined && !o.def.boss) o.slow = mergeSlow(o.slow, { until: now + f.every * 1000 + 500, mul: f.slow }, now);
             this.c.hitMonster(owner, o, f.power, elemMul, 'thuy');
             if (o.state !== MS_DEAD && f.mark) this.markMon(owner, o, 'cam_an', 1);
           }
@@ -1130,7 +1131,7 @@ export class CombatSystem {
           if (tookA && cm?.then && resSpent >= cm.then.resCost) this.markMon(p, o, cm.then.mark);
           if (am) this.markMon(p, o, am.id, am.n);
           if (stun > 0) this.stunMonster(p, o, stun);
-          if (v?.slow && !o.def.boss) o.slow = { until: this.c.now + v.slow.dur * 1000, mul: v.slow.mul };
+          if (v?.slow && !o.def.boss) o.slow = mergeSlow(o.slow, { until: this.c.now + v.slow.dur * 1000, mul: v.slow.mul }, this.c.now);
           if (burn) o.poison = { sid: p.sid, until: this.c.now + burn.dur * 1000, nextAt: this.c.now + 1000, per: burn.per };
         }
         // Đan Hỏa Phong Tràn: Mộc ấn trên đạo hữu nổ thành sát thương quanh họ.

@@ -281,6 +281,23 @@ describe('thực thể trận', () => {
     expect(outside.slow).toBeUndefined();
     expect(boss.slow).toBeUndefined();
   });
+  it('Khốn Trận gộp làm chậm thay vì ghi đè: quái đang chậm dài/mạnh từ nguồn khác vào trận vẫn giữ hạn và hệ số cũ; nguồn yếu hơn thì được nâng', () => {
+    const { join, mon, fresh, use, pass, sim } = setup();
+    const p = join();
+    p.s.yaw = 0;
+    const strong = mon(X, Z + 4);
+    const weak = mon(X + 1, Z + 4);
+    const longUntil = sim.now + 60_000;
+    strong.slow = { until: longUntil, mul: 0.2 };
+    weak.slow = { until: sim.now + 1500, mul: 0.9 };
+    p.mth.stance = { id: 'skl_bo_tran', until: sim.now + 60_000 };
+    fresh(p);
+    use(p, 'skl_khon_tran');
+    pass(3, strong, weak);
+    expect(strong.slow).toEqual({ until: longUntil, mul: 0.2 });
+    expect(weak.slow!.mul).toBeCloseTo(0.4, 5);
+    expect(weak.slow!.until).toBeGreaterThan(sim.now);
+  });
   it('Hộ Trận hồi đạo hữu trong trận (kể cả người đặt), không hồi người ngoài trận, mỗi nhịp đúng % khí huyết tối đa', () => {
     const { join, fresh, use, pass, sim } = setup();
     const p = join();
