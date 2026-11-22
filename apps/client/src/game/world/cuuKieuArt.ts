@@ -48,12 +48,15 @@ export function ckGroundColor(def: TerrainDef, x: number, z: number, ny: number,
     const dark = 0.88 + streak * 0.28;
     const moss = clamp01((m + 0.15) * 1.6 + Math.max(0, n) * 0.5);
     let r = mix3(CLIFF, CLIFF_MOSS, moss * 0.7);
-    r = [r[0] * dark, r[1] * dark, r[2] * dark];
+    // sáng hơn (×1,5): ở xa vách chỉ còn màu đỉnh (nhân 0,62), không để vách thành mảng xanh tối
+    r = [Math.min(1, r[0] * dark * 1.5), Math.min(1, r[1] * dark * 1.5), Math.min(1, r[2] * dark * 1.45)];
     const vein = Math.pow(Math.max(0, Math.sin((x * 0.9 - z * 1.1) * 0.21 + n * 4) - 0.8) / 0.2, 2) * 0.4;
     r = mix3(r, [0.78, 0.74, 0.62], vein);
     c = mix3(c, r, a);
   }
-  out[0] = c[0];
-  out[1] = c[1];
-  out[2] = c[2];
+  // Chi tiết và sắc chính đến từ texture Codex (bộ `terrain-ck`); màu đỉnh chỉ nghiêng sắc nhẹ và quyết định màu ở xa: kéo về gần xám để bớt vàng.
+  const lum = c[0] * 0.299 + c[1] * 0.587 + c[2] * 0.114;
+  out[0] = lum + (c[0] - lum) * 0.55;
+  out[1] = lum + (c[1] - lum) * 0.55;
+  out[2] = lum + (c[2] - lum) * 0.55;
 }

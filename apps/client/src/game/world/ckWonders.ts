@@ -1,5 +1,23 @@
 import * as THREE from 'three/webgpu';
-import { attribute, clamp, float, length, mix, smoothstep, sin, time, uv, vec2, vec3 } from 'three/tsl';
+import {
+  attribute,
+  clamp,
+  float,
+  length,
+  luminance,
+  mix,
+  normalWorld,
+  positionWorld,
+  smoothstep,
+  sin,
+  texture,
+  time,
+  triplanarTexture,
+  uv,
+  vertexColor,
+  vec2,
+  vec3,
+} from 'three/tsl';
 import {
   CUU_KIEU_HUB,
   CUU_KIEU_RAIL,
@@ -219,6 +237,26 @@ function solidMat(): THREE.MeshStandardNodeMaterial {
   return new THREE.MeshStandardNodeMaterial({ vertexColors: true, roughness: 0.86, metalness: 0.03 });
 }
 
+/** Ba texture Codex của Thiên Lộ Giới (đá xây, thẻ lá RGBA, nước chảy), nạp từ `public/terrain-ck/` (xem `terrain-textures.ts --set ck`). */
+export interface CkTex {
+  masonry: THREE.Texture;
+  leaf: THREE.Texture;
+  water: THREE.Texture;
+}
+
+/** Đá xây: texture Codex chiếu triplanar theo tọa độ thế giới (không cần UV), nhân màu đỉnh (sắc từng khối đá, rêu ở chân). */
+function stoneMat(tex: CkTex | null): THREE.MeshStandardNodeMaterial {
+  if (!tex) return new THREE.MeshStandardNodeMaterial({ vertexColors: true, roughness: 0.9, metalness: 0.02 });
+  // texture Codex ngả cam và màu đỉnh cũng ấm: nhân thẳng sẽ ra đồng đỏ. Khử bão hòa texture (~50%) và màu đỉnh (~65%), chỉ giữ độ sáng từng khối đá/rêu.
+  const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9, metalness: 0.02 });
+  const c = triplanarTexture(texture(tex.masonry), null, null, float(0.11), positionWorld, normalWorld).rgb;
+  const vc = vertexColor();
+  m.colorNode = mix(vec3(luminance(c)), c, 0.5)
+    .mul(mix(vec3(luminance(vc)), vc, 0.35))
+    .mul(2.1);
+  return m;
+}
+
 function lampMat(): THREE.MeshBasicNodeMaterial {
   const m = new THREE.MeshBasicNodeMaterial({ vertexColors: true });
   markBloom(m, 0.35);
@@ -268,18 +306,49 @@ export class CkWonders {
   readonly group = new THREE.Group();
   private disposables: { dispose(): void }[] = [];
 
+  private disposed = false;
+
   constructor(private readonly inp: CkWondersInput) {
     this.group.name = 'ck-wonders';
+    // Phần không cần texture dựng ngay; cầu, lan can, cây, thác chờ texture Codex (lỗi tải thì dựng bằng vật liệu màu đỉnh).
     this.buildRoad();
-    this.buildRailings();
-    this.buildBridges();
     this.buildHub();
-    this.buildTrees();
     this.buildRocks();
     this.buildReeds();
     this.buildGroundCover();
-    this.buildCliffLedges();
-    this.buildFalls();
+    void this.loadTextures().then((tex) => {
+      if (this.disposed) {
+        if (tex) for (const t of Object.values(tex)) t.dispose();
+        return;
+      }
+      if (tex) this.disposables.push(...Object.values(tex));
+      this.buildRailings(tex);
+      this.buildBridges(tex);
+      this.buildTrees(tex);
+      this.buildFalls(tex);
+    });
+  }
+
+  /** Nạp ba texture từ `terrain-ck/manifest.json` (mục `extras`); null nếu thiếu/lỗi. */
+  private async loadTextures(): Promise<CkTex | null> {
+    try {
+      const base = `${import.meta.env.BASE_URL}terrain-ck/`;
+      const man = (await (await fetch(`${base}manifest.json`)).json()) as { extras?: Record<string, string> };
+      const ex = man.extras;
+      if (!ex?.masonry || !ex.leaf || !ex.water) return null;
+      const loader = new THREE.TextureLoader();
+      const load = async (name: string, wrap: boolean): Promise<THREE.Texture> => {
+        const t = await loader.loadAsync(`${base}${name}`);
+        t.colorSpace = THREE.SRGBColorSpace;
+        t.anisotropy = 4;
+        if (wrap) t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        return t;
+      };
+      const [masonry, leaf, water] = await Promise.all([load(ex.masonry, true), load(ex.leaf, false), load(ex.water, true)]);
+      return { masonry, leaf, water };
+    } catch {
+      return null;
+    }
   }
 
   private own<T extends { dispose(): void }>(o: T): T {
@@ -367,7 +436,7 @@ export class CkWonders {
   }
 
   /** Lan can hai bên đường: trụ có mũ, thanh ngang nối trụ, cứ ba trụ một đèn lồng. Khung "mở" của `CUU_KIEU_RAIL` là lối băng ngang (không trụ, không va chạm). */
-  private buildRailings(): void {
+  private buildRailings(tex: CkTex | null): void {
     const b = new Builder();
     const lamps = new Builder();
     const off = CUU_KIEU_ROAD_HALF + 0.35;
@@ -406,7 +475,7 @@ export class CkWonders {
         prev = p;
       });
     }
-    this.mesh(b.build(), solidMat(), 'ck-railings', true);
+    this.mesh(b.build(), stoneMat(tex), 'ck-railings', true);
     this.mesh(lamps.build(), lampMat(), 'ck-road-lanterns');
   }
 
@@ -414,7 +483,7 @@ export class CkWonders {
    * Chuỗi chín nhịp cầu vòm đá cổ trên biển mây. Mỗi nhịp: mặt cầu dày (võng lưng), lan can khối, hai vòm xây bằng khối đá dày ngả rêu ở chân, tường bụng cầu
    * (chân tường theo vòm, đỉnh theo đáy mặt cầu), mố trụ lớn chống xuống mây, cổng đá có mái ở mỗi điểm hạ cánh. Điểm đầu nối đúng cuối đường (độ cao theo địa hình).
    */
-  private buildBridges(): void {
+  private buildBridges(tex: CkTex | null): void {
     const b = new Builder();
     const lamps = new Builder();
     const span = CUU_KIEU_SPAN;
@@ -427,10 +496,14 @@ export class CkWonders {
     const N = 8;
     // điểm hạ cánh: bệ tròn dày, vòng rêu, mố trụ lớn, cổng đá
     SP.forEach(([x, z, y], k) => {
-      b.cyl(12.5, 13.5, 3.4, 22, x, y - 3.2, z, shade(STONE, 0.95));
-      b.cyl(12.9, 12.9, 0.7, 22, x, y - 0.5, z, lerpHex(STONE_DARK, MOSS, 0.4));
-      b.cyl(9.2, 12.5, 150, 18, x, y - 153, z, shade(STONE, 0.85));
-      b.cyl(11.0, 11.0, 7, 18, x, y - 14, z, lerpHex(STONE_DARK, MOSS, 0.55));
+      // mố trụ bát giác chân bậc to (không dùng ống tròn trơn): hai bậc đế vuông, bệ bát giác, thân bát giác thon dần xuống, vòng rêu
+      b.box(26, 1.6, 26, x, y - 9.6, z, shade(STONE, 0.78));
+      b.box(21, 1.8, 21, x, y - 8.0, z, shade(STONE, 0.86));
+      b.cyl(12.5, 13.5, 3.4, 8, x, y - 3.2, z, shade(STONE, 0.95));
+      b.cyl(12.9, 12.9, 0.7, 8, x, y - 0.5, z, lerpHex(STONE_DARK, MOSS, 0.4));
+      b.cyl(8.6, 12.0, 150, 8, x, y - 161, z, shade(STONE, 0.85));
+      b.cyl(11.4, 11.4, 6, 8, x, y - 20, z, lerpHex(STONE_DARK, MOSS, 0.55));
+      b.cyl(10.6, 10.6, 4, 8, x, y - 48, z, lerpHex(STONE_DARK, MOSS, 0.4));
       if (k > 0 && k < SP.length - 1) {
         const nx = SP[k + 1]![0] - x;
         const nz = SP[k + 1]![1] - z;
@@ -515,7 +588,7 @@ export class CkWonders {
       // thanh giằng giữa hai vòm
       b.box(W - 3.2, 0.9, 1.4, mid.x, baseY + ry - 0.5, mid.z, STONE_DARK, yaw);
     }
-    this.mesh(b.build(), solidMat(), 'ck-bridges', true);
+    this.mesh(b.build(), stoneMat(tex), 'ck-bridges', true);
     this.mesh(lamps.build(), lampMat(), 'ck-bridge-lanterns');
     // ánh sáng cuối chuỗi cầu: đĩa vàng nhạt phía chân trời
     const last = SP[SP.length - 1]!;
@@ -635,12 +708,12 @@ export class CkWonders {
   }
 
   /**
-   * Cây: thân dày, cong, gốc xòe, ba cành lớn; tán gồm nhiều cụm lá bất đều ở ba tầng, màu lá tối (xanh rêu, xanh đen), ngả sáng ở mặt hướng nắng.
-   * Một lưới có màu đỉnh, nhân bản theo tỉ lệ/xoay/sắc; cổ thụ (tỉ lệ ≥ 1,6) to gấp đôi cây vừa.
+   * Cây: thân dày cong, gốc xòe, ba cành lớn (lưới có màu đỉnh) + lõi tán sẫm (sáu khối nhỏ) + các thẻ lá có alpha (texture tán lá Codex) gắn quanh khung tán,
+   * nên mép tán là mép lá thật thay vì khối cầu bóng. Thẻ lá nhân bản theo cây (một lưới riêng). Cổ thụ (tỉ lệ ≥ 1,6) to gấp đôi cây vừa.
+   * Không có texture (lỗi tải): lõi tán dùng khối lớn hơn.
    */
-  private buildTrees(): void {
+  private buildTrees(tex: CkTex | null): void {
     const b = new Builder();
-    // thân cong: bốn đoạn lệch dần, gốc xòe
     b.cyl(1.7, 2.3, 1.4, 9, 0, -0.2, 0, BARK);
     const seg: [number, number, number, number][] = [
       [1.25, 1.55, 2.4, 1.4],
@@ -655,50 +728,113 @@ export class CkWonders {
       [-0.2, -1.0, 0.8, 4.4],
     ] as const)
       b.box(0.55, 5.4, 0.55, bx + 0.7, 6.3, bz, BARK, yaw, tilt);
-    const pal = [0x1f3f27, 0x26492c, 0x2e5230, 0x36592f, 0x2a4a2a];
+    // lõi tán (sẫm, che phần nhìn xuyên giữa các thẻ lá)
+    const clumps: [number, number, number, number][] = [];
     for (let i = 0; i < 16; i++) {
       const tier = i % 3;
       const ang = i * 2.399;
       const rad = 2.2 + (i % 5) * 1.25 + tier * 0.35;
-      const yy = 8.2 + tier * 1.9 + (i % 4) * 0.45;
-      const size = 2.5 + hash01(i, 3, 7301) * 2.1 - tier * 0.25;
-      b.blob(
-        size,
-        1.15,
-        0.66 + hash01(i, 5, 7303) * 0.18,
-        1.05,
+      clumps.push([
         Math.cos(ang) * rad,
-        yy,
+        8.2 + tier * 1.9 + (i % 4) * 0.45,
         Math.sin(ang) * rad,
-        pal[i % pal.length]!,
-        0x5d7c3c,
-        0.62,
-        i,
-        ang,
-      );
+        2.5 + hash01(i, 3, 7301) * 2.1 - tier * 0.25,
+      ]);
     }
-    b.blob(3.6, 1.2, 0.7, 1.1, 0.4, 13.2, 0.3, 0x2e5230, 0x6a8a44, 0.55, 40);
+    const coreK = tex ? 0.55 : 1;
+    const pal = [0x1c3a24, 0x23442a, 0x2a4b2c, 0x30522d, 0x274628];
+    clumps.forEach(([x, y, z, size], i) => {
+      if (tex && i % 2 === 1) return; // có thẻ lá: chỉ giữ nửa số khối lõi
+      b.blob(size * coreK, 1.15, 0.66, 1.05, x, y, z, pal[i % pal.length]!, 0x4d6a34, 0.5, i, i);
+    });
     const geo = b.build();
     if (!geo || !CUU_KIEU_TREES.length) return;
-    const mesh = new THREE.InstancedMesh(this.own(geo), this.own(solidMat()), CUU_KIEU_TREES.length);
-    mesh.name = 'ck-trees';
-    const o = new THREE.Object3D();
-    const tint = new THREE.Color();
-    CUU_KIEU_TREES.forEach(([x, z, s, yaw], i) => {
-      o.position.set(x, this.inp.heightAt(x, z) - 0.4, z);
-      o.rotation.set(0, yaw, 0);
-      o.scale.set(s * 0.82, s * (0.8 + hash01(i, 7, 7307) * 0.2), s * 0.82);
-      o.updateMatrix();
-      mesh.setMatrixAt(i, o.matrix);
-      const v = 0.8 + hash01(i, 3, 9201) * 0.3;
-      mesh.setColorAt(i, tint.setRGB(v, v * (0.94 + hash01(i, 5, 9203) * 0.1), v * 0.9));
+    const n = CUU_KIEU_TREES.length;
+    const place = (mesh: THREE.InstancedMesh): void => {
+      const o = new THREE.Object3D();
+      const tint = new THREE.Color();
+      CUU_KIEU_TREES.forEach(([x, z, s, yaw], i) => {
+        o.position.set(x, this.inp.heightAt(x, z) - 0.4, z);
+        o.rotation.set(0, yaw, 0);
+        o.scale.set(s * 0.82, s * (0.8 + hash01(i, 7, 7307) * 0.2), s * 0.82);
+        o.updateMatrix();
+        mesh.setMatrixAt(i, o.matrix);
+        const v = 0.78 + hash01(i, 3, 9201) * 0.32;
+        mesh.setColorAt(i, tint.setRGB(v, v * (0.94 + hash01(i, 5, 9203) * 0.1), v * 0.9));
+      });
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      mesh.computeBoundingSphere();
+      mesh.receiveShadow = true;
+      this.group.add(mesh);
+    };
+    const trunk = new THREE.InstancedMesh(this.own(geo), this.own(solidMat()), n);
+    trunk.name = 'ck-trees';
+    trunk.castShadow = true;
+    place(trunk);
+    if (!tex) return;
+    // thẻ lá: bốn thẻ quanh mỗi cụm tán, hướng ra ngoài + hơi lên, quay ngẫu nhiên; pháp tuyến hướng ra ngoài (sáng đều như tán cây)
+    const pos: number[] = [];
+    const nrm: number[] = [];
+    const uvs: number[] = [];
+    const col: number[] = [];
+    const idx: number[] = [];
+    const c = new THREE.Color();
+    let vi = 0;
+    clumps.forEach(([cx, cy, cz, size], ci) => {
+      for (let k = 0; k < 5; k++) {
+        const a = hash01(ci, k, 7501) * Math.PI * 2;
+        const el = (hash01(ci, k, 7503) - 0.25) * 1.6;
+        const dir = new THREE.Vector3(Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el)).normalize();
+        const centre = new THREE.Vector3(cx, cy, cz).addScaledVector(dir, size * 0.85);
+        const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
+        if (right.lengthSq() < 0.01) right.set(1, 0, 0);
+        const up = new THREE.Vector3().crossVectors(right, dir).normalize();
+        const roll = hash01(ci, k, 7505) * Math.PI * 2;
+        const half = 2.5 + hash01(ci, k, 7507) * 1.6;
+        const r2 = right.clone().multiplyScalar(Math.cos(roll)).addScaledVector(up, Math.sin(roll));
+        const u2 = up.clone().multiplyScalar(Math.cos(roll)).addScaledVector(right, -Math.sin(roll));
+        const v = 0.7 + hash01(ci, k, 7509) * 0.5;
+        c.setRGB(v * 0.95, v, v * 0.9);
+        for (const [sx, sy, su, sv] of [
+          [-1, -1, 0, 0],
+          [1, -1, 1, 0],
+          [1, 1, 1, 1],
+          [-1, 1, 0, 1],
+        ] as const) {
+          const p = centre
+            .clone()
+            .addScaledVector(r2, sx * half)
+            .addScaledVector(u2, sy * half);
+          pos.push(p.x, p.y, p.z);
+          nrm.push(dir.x, dir.y * 0.6 + 0.4, dir.z);
+          uvs.push(su, sv);
+          col.push(c.r, c.g, c.b);
+        }
+        idx.push(vi, vi + 1, vi + 2, vi, vi + 2, vi + 3);
+        vi += 4;
+      }
     });
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    mesh.computeBoundingSphere();
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    this.group.add(mesh);
+    const lg = new THREE.BufferGeometry();
+    lg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    lg.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
+    lg.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    lg.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    lg.setIndex(idx);
+    lg.computeBoundingSphere();
+    const lm = new THREE.MeshStandardNodeMaterial({
+      vertexColors: true,
+      side: THREE.DoubleSide,
+      roughness: 0.9,
+      metalness: 0,
+      alphaTest: 0.45,
+    });
+    const lt = texture(tex.leaf);
+    lm.colorNode = lt.rgb;
+    lm.opacityNode = lt.a;
+    const leaves = new THREE.InstancedMesh(this.own(lg), this.own(lm), n);
+    leaves.name = 'ck-leaves';
+    place(leaves);
   }
 
   /** Đá tảng: khối bất đều, đá xám xanh, rêu phủ mặt trên; va chạm ở `terrain.colliders` (~1,25 × tỉ lệ). */
@@ -744,7 +880,7 @@ export class CkWonders {
     const blade = rb.build();
     let total = 0;
     const counts = CUU_KIEU_REEDS.map(([, , r]) => {
-      const n = Math.max(10, Math.round(r * r * 0.4));
+      const n = Math.max(8, Math.round(r * r * 0.28));
       total += n;
       return n;
     });
@@ -779,21 +915,21 @@ export class CkWonders {
     const C = 1024;
     const tuft = new Builder();
     const m = new THREE.Matrix4();
-    for (let i = 0; i < 7; i++) {
-      const g = new THREE.ConeGeometry(0.075, 1.1, 3, 1, true);
+    for (let i = 0; i < 5; i++) {
+      const g = new THREE.ConeGeometry(0.085, 1.1, 3, 1, true);
       g.translate(0, 0.55, 0);
-      const a = (i / 7) * Math.PI * 2 + i * 0.4;
+      const a = (i / 5) * Math.PI * 2 + i * 0.5;
       m.compose(
         new THREE.Vector3(Math.cos(a) * 0.16, 0, Math.sin(a) * 0.16),
         new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.sin(a) * 0.34, a, Math.cos(a) * 0.34)),
         new THREE.Vector3(1, 0.65 + 0.2 * (i % 3), 1),
       );
-      tuft.add(g, lerpHex(0x4a5a2a, 0xa3a560, 0.15 + 0.12 * i), m);
+      tuft.add(g, lerpHex(0x4a5a2a, 0xa3a560, 0.15 + 0.17 * i), m);
       g.dispose();
     }
     const tg = tuft.build();
     const pts: [number, number, number, number][] = [];
-    const STEP = 7.5;
+    const STEP = 9;
     for (let gx = -600; gx <= 600; gx += STEP) {
       for (let gz = -600; gz <= 600; gz += STEP) {
         const x = C + gx + (hash01(gx, gz, 8101) - 0.5) * STEP;
@@ -878,61 +1014,10 @@ export class CkWonders {
   }
 
   /**
-   * Gờ đá rêu bám vách rìa cao nguyên: quanh rìa (mỗi 2°), ở ba độ cao trên vách một khối đá tảng bất đều đặt ra ngoài mặt vách, mặt trên phủ rêu;
-   * làm vách có khối, đổ bóng và rêu thay vì một mặt phẳng trơn. Một lưới nhân bản, chỉ để nhìn.
+   * Thác nước: mỗi thác là ba dải rộng chồng nhau bám sườn vách từ rìa cao nguyên xuống biển mây; dải dùng texture nước chảy Codex cuộn theo UV (trượt xuống,
+   * mỗi dải một tốc độ/độ lệch), mép mờ. Chân thác có ba sprite bọt sương (cộng sáng, nhấp nháy). Không có texture: dải sáng mờ như trước.
    */
-  private buildCliffLedges(): void {
-    const C = 1024;
-    const plateau = this.inp.heightAt(C, C);
-    const sea = this.inp.seaY + 6;
-    const b = new Builder();
-    b.blob(1.0, 1.2, 0.7, 1.0, 0, 0, 0, 0x7a7766, 0x56703d, 0.75, 31);
-    b.blob(0.7, 1.0, 0.65, 0.9, 1.0, -0.3, 0.5, 0x6d6a5c, 0x4c6637, 0.75, 37);
-    b.blob(0.55, 1.0, 0.6, 1.0, -0.9, -0.2, -0.4, 0x827e6c, 0x5c7642, 0.75, 43);
-    const geo = b.build();
-    if (!geo) return;
-    const pts: [number, number, number, number, number][] = [];
-    for (let deg = 0; deg < 360; deg += 2) {
-      const a = (deg * Math.PI) / 180;
-      const dx = Math.cos(a);
-      const dz = Math.sin(a);
-      let d0 = 540;
-      for (; d0 < 900; d0 += 2) if (this.inp.heightAt(C + dx * d0, C + dz * d0) < plateau - 45) break;
-      if (d0 >= 900) continue;
-      for (let f = 0; f < 3; f++) {
-        const target = plateau - (0.18 + f * 0.27 + hash01(deg, f, 6101) * 0.1) * (plateau - sea);
-        let d = d0 - 6;
-        for (; d < d0 + 160; d += 2) if (this.inp.heightAt(C + dx * d, C + dz * d) < target) break;
-        pts.push([C + dx * (d + 2.5), target + 1, C + dz * (d + 2.5), 3 + hash01(deg, f, 6103) * 5.5, hash01(deg, f, 6105)]);
-      }
-    }
-    if (!pts.length) return;
-    const mesh = new THREE.InstancedMesh(this.own(geo), this.own(solidMat()), pts.length);
-    mesh.name = 'ck-ledges';
-    const o = new THREE.Object3D();
-    const tint = new THREE.Color();
-    pts.forEach(([x, y, z, sc, r], i) => {
-      o.position.set(x, y, z);
-      o.rotation.set(0, r * 6.28, 0);
-      o.scale.set(sc * 1.3, sc * 0.75, sc * 1.1);
-      o.updateMatrix();
-      mesh.setMatrixAt(i, o.matrix);
-      const v = 0.8 + hash01(i, 2, 6107) * 0.35;
-      mesh.setColorAt(i, tint.setRGB(v, v, v * 0.96));
-    });
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    mesh.computeBoundingSphere();
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    this.group.add(mesh);
-  }
-
-  /**
-   * Thác nước: mỗi thác là ba dải rộng chồng nhau bám sườn vách từ rìa cao nguyên xuống biển mây (vệt sáng chạy xuống, mép mờ), kèm vùng bọt sương trắng nổi ở chân
-   * (đĩa phẳng mờ dần, nhấp nháy). Tất cả dải một lưới, tất cả bọt một lưới.
-   */
-  private buildFalls(): void {
+  private buildFalls(tex: CkTex | null): void {
     const C = 1024;
     const plateau = this.inp.heightAt(C, C);
     const angles = [28, 98, 158, 214, 322].map((d) => (d * Math.PI) / 180);
@@ -940,9 +1025,7 @@ export class CkWonders {
     const uvs: number[] = [];
     const ph: number[] = [];
     const idx: number[] = [];
-    const fpos: number[] = [];
-    const fuv: number[] = [];
-    const fidx: number[] = [];
+    const foams: [number, number, number][] = [];
     let vi = 0;
     angles.forEach((a, ai) => {
       const dx = Math.cos(a);
@@ -977,22 +1060,7 @@ export class CkWonders {
           }
         }
       }
-      // bọt chân thác: đĩa phẳng ở mực biển mây
-      const bx = C + dx * (baseD + 6);
-      const bz = C + dz * (baseD + 6);
-      const by = this.inp.seaY + 8;
-      const R = 40;
-      const f0 = fpos.length / 3;
-      for (const [ux, uz] of [
-        [-1, -1],
-        [1, -1],
-        [-1, 1],
-        [1, 1],
-      ] as const) {
-        fpos.push(bx + ux * R, by, bz + uz * R);
-        fuv.push(ux < 0 ? 0 : 1, uz < 0 ? 0 : 1);
-      }
-      fidx.push(f0, f0 + 1, f0 + 2, f0 + 1, f0 + 3, f0 + 2);
+      for (const off of [-12, 0, 12]) foams.push([C + dx * (baseD + 8) + -dz * off, this.inp.seaY + 9, C + dz * (baseD + 8) + dx * off]);
     });
     if (!pos.length) return;
     const g = new THREE.BufferGeometry();
@@ -1004,55 +1072,50 @@ export class CkWonders {
     const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide });
     const v = uv();
     const p = attribute('ph', 'float');
-    const stripes = sin(v.y.mul(40).add(p.mul(2.3)).sub(time.mul(6.5)))
-      .mul(0.5)
-      .add(0.5);
-    const stripes2 = sin(v.y.mul(97).sub(time.mul(11)).add(v.x.mul(9)).add(p))
-      .mul(0.5)
-      .add(0.5);
     const sheet = smoothstep(float(0), float(0.3), v.x).mul(smoothstep(float(1), float(0.7), v.x));
     const fadeTop = smoothstep(float(0), float(0.04), v.y);
     const fadeBot = smoothstep(float(1), float(0.72), v.y);
-    mat.colorNode = mix(vec3(0.8, 0.92, 0.97), vec3(1, 1, 1), stripes.mul(0.6).add(stripes2.mul(0.4)));
-    mat.opacityNode = clamp(
-      sheet
-        .mul(fadeTop)
-        .mul(fadeBot)
-        .mul(stripes.mul(0.25).add(stripes2.mul(0.15)).add(0.62)),
-      0,
-      1,
-    );
+    if (tex) {
+      // hai lớp nước cuộn ngược tốc độ để dòng chảy có chiều sâu
+      const w1 = texture(tex.water, vec2(v.x.mul(1.5).add(p.mul(0.37)), v.y.mul(2.6).sub(time.mul(0.5))));
+      const w2 = texture(tex.water, vec2(v.x.mul(2.3).add(p.mul(0.61)).add(0.4), v.y.mul(4.1).sub(time.mul(0.85))));
+      const wc = w1.rgb.mul(0.55).add(w2.rgb.mul(0.45));
+      mat.colorNode = mix(vec3(0.74, 0.9, 0.97), wc.mul(1.8), 0.75);
+      mat.opacityNode = clamp(sheet.mul(fadeTop).mul(fadeBot).mul(luminance(wc).mul(0.9).add(0.42)), 0, 1);
+    } else {
+      const stripes = sin(v.y.mul(40).add(p.mul(2.3)).sub(time.mul(6.5)))
+        .mul(0.5)
+        .add(0.5);
+      mat.colorNode = mix(vec3(0.8, 0.92, 0.97), vec3(1, 1, 1), stripes);
+      mat.opacityNode = clamp(sheet.mul(fadeTop).mul(fadeBot).mul(stripes.mul(0.25).add(0.62)), 0, 1);
+    }
     const fall = new THREE.Mesh(this.own(g), this.own(mat));
     fall.name = 'ck-falls';
     fall.renderOrder = 2;
     fall.frustumCulled = false;
     this.group.add(fall);
 
-    const fg = new THREE.BufferGeometry();
-    fg.setAttribute('position', new THREE.Float32BufferAttribute(fpos, 3));
-    fg.setAttribute('uv', new THREE.Float32BufferAttribute(fuv, 2));
-    fg.setIndex(fidx);
-    fg.computeBoundingSphere();
-    const fm = new THREE.MeshBasicNodeMaterial({
-      transparent: true,
-      depthWrite: false,
-      side: THREE.DoubleSide,
-      blending: THREE.AdditiveBlending,
-    });
+    // sprite bọt sương ở chân thác
+    const fm = new THREE.SpriteNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
     const q = length(uv().sub(vec2(0.5, 0.5))).mul(2);
-    const shimmer = sin(time.mul(1.6).add(q.mul(9)))
-      .mul(0.12)
-      .add(0.88);
-    fm.colorNode = vec3(0.9, 0.96, 1);
-    fm.opacityNode = clamp(smoothstep(float(1), float(0.1), q).mul(0.42).mul(shimmer), 0, 1);
-    const foam = new THREE.Mesh(this.own(fg), this.own(fm));
-    foam.name = 'ck-foam';
-    foam.renderOrder = 3;
-    foam.frustumCulled = false;
-    this.group.add(foam);
+    const shimmer = sin(time.mul(1.4).add(q.mul(7)))
+      .mul(0.14)
+      .add(0.86);
+    fm.colorNode = vec3(0.92, 0.97, 1);
+    fm.opacityNode = clamp(smoothstep(float(1), float(0.05), q).mul(0.5).mul(shimmer), 0, 1);
+    this.own(fm);
+    foams.forEach(([x, y, z], i) => {
+      const sp = new THREE.Sprite(fm);
+      sp.position.set(x, y, z);
+      sp.scale.setScalar(34 + hash01(i, 1, 6301) * 22);
+      sp.renderOrder = 3;
+      sp.name = 'ck-foam';
+      this.group.add(sp);
+    });
   }
 
   dispose(): void {
+    this.disposed = true;
     for (const d of this.disposables) d.dispose();
     for (const c of this.group.children) (c as THREE.InstancedMesh).dispose?.();
   }

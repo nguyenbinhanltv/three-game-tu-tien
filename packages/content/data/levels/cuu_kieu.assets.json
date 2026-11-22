@@ -1,7 +1,7 @@
 {
   "mood": "ck_dawn",
   "glb": [],
-  "ground": { "set": "terrain", "mask": "neutral" },
+  "ground": { "set": "terrain-ck", "mask": "neutral" },
   "music": ["wild_cloud"],
   "features": { "sect": false, "portals": false, "lanterns": true, "lake": false, "clouds": true, "grass": true, "trees": "scatter", "beacons": false, "vegetation": false },
   "minimap": "cuu_kieu"

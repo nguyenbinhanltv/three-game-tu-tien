@@ -1,0 +1,58 @@
+{
+  "size": 1024,
+  "layers": [
+    {
+      "layer": "grass",
+      "ph": "codex:ck_grass",
+      "a": "grass.a.de702efdfb.webp",
+      "n": "grass.n.76a2d78d72.webp"
+    },
+    {
+      "layer": "dirt",
+      "ph": "codex:ck_dirt",
+      "a": "dirt.a.baecb32ab3.webp",
+      "n": "dirt.n.d89d5f09ba.webp"
+    },
+    {
+      "layer": "forest",
+      "ph": "codex:ck_forest",
+      "a": "forest.a.60bc3f8139.webp",
+      "n": "forest.n.9331c385d2.webp"
+    },
+    {
+      "layer": "rock",
+      "ph": "codex:ck_rock",
+      "a": "rock.a.955fdb22a4.webp",
+      "n": "rock.n.89479d8414.webp"
+    },
+    {
+      "layer": "cliff",
+      "ph": "codex:ck_cliff",
+      "a": "cliff.a.ff39fe2178.webp",
+      "n": "cliff.n.22974af65e.webp"
+    },
+    {
+      "layer": "sand",
+      "ph": "codex:ck_sand",
+      "a": "sand.a.ed9dce7456.webp",
+      "n": "sand.n.f02f6577f7.webp"
+    },
+    {
+      "layer": "paving",
+      "ph": "codex:ck_paving",
+      "a": "paving.a.b1b8628a78.webp",
+      "n": "paving.n.b9385b7b29.webp"
+    },
+    {
+      "layer": "gravel",
+      "ph": "codex:ck_gravel",
+      "a": "gravel.a.f808053495.webp",
+      "n": "gravel.n.692710d08e.webp"
+    }
+  ],
+  "extras": {
+    "masonry": "masonry.6641790174.webp",
+    "water": "water.3a332be262.webp",
+    "leaf": "leaf.5731722d88.webp"
+  }
+}
