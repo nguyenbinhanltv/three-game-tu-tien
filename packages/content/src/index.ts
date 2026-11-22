@@ -540,6 +540,7 @@ for (const [id, a] of Object.entries(LEVEL_ASSETS)) {
   const n = kieuOfLevel(id);
   if (n) {
     a.mood = KIEU_MOOD[n - 1] as LevelAssets['mood'];
+    a.ground = { mask: 'neutral', set: 'terrain-slate' }; // sàn đá thay cỏ trơn (đọc được là sân đá ở ?cam=iso)
     a.features = { ...a.features, trees: 'scatter' }; // bật lớp prop (props.kieu.ts); phòng cầu không có cây thật
   }
 }

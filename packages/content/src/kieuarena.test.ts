@@ -23,19 +23,28 @@ describe('mỹ thuật sàn chín phòng cầu (TN-7)', () => {
     expect(Object.keys(KIEU_PROPS)).toHaveLength(KIEU_COUNT);
   });
 
-  it('chừa cung phía nam (chỗ vào, camera sau lưng): không prop xa hơn 40 m trong ±0,6 rad quanh +z', () => {
-    for (let n = 1; n <= KIEU_COUNT; n++) {
+  it('chừa chỗ cho cơ chế: lòng sàn (< 9 m) trống, cầu 3 (sân kiếp) trống trong 46 m trừ sảnh vào, công tắc cầu 4 cách >= 5 m', () => {
+    const SW = [
+      { x: 1300, z: 963 },
+      { x: 1319, z: 996 },
+      { x: 1281, z: 996 },
+    ];
+    for (let n = 1; n <= KIEU_COUNT; n++)
       for (const p of propsOf(kieuLevelId(n))) {
         const d = Math.hypot(p.x - C.x, p.z - C.z);
-        if (d > 40) expect(Math.abs(Math.atan2(p.z - C.z, p.x - C.x) - Math.PI / 2), `${n}:${p.id}`).toBeGreaterThan(0.6);
+        expect(d, `${n}:${p.id}`).toBeGreaterThanOrEqual(9);
+        if (n === 3) expect(d, `3:${p.id}`).toBeGreaterThanOrEqual(46);
+        if (n === 4) for (const w of SW) expect(Math.hypot(p.x - w.x, p.z - w.z), `4:${p.id}`).toBeGreaterThanOrEqual(5);
       }
-    }
   });
 
-  it('không prop nào trong lòng sàn (< 30 m, cầu 3 < 46 m): chừa chỗ boss, vạch báo, công tắc cầu 4, sân kiếp cầu 3', () => {
+  it('trụ đá cao không đứng ở cung phía nam (chỗ vào, camera sau lưng): ±0,6 rad quanh +z, xa hơn 40 m', () => {
     for (let n = 1; n <= KIEU_COUNT; n++)
-      for (const p of propsOf(kieuLevelId(n)))
-        expect(Math.hypot(p.x - C.x, p.z - C.z), `${n}:${p.id}`).toBeGreaterThanOrEqual(n === 3 ? 46 : 30);
+      for (const p of propsOf(kieuLevelId(n))) {
+        if (p.id !== 'prop_tru_da_khac_van') continue;
+        const d = Math.hypot(p.x - C.x, p.z - C.z);
+        if (d > 40) expect(Math.abs(Math.atan2(p.z - C.z, p.x - C.x) - Math.PI / 2), `${n}`).toBeGreaterThan(0.6);
+      }
   });
 
   it('mood theo bảng KIEU_MOOD (ghi đè cả level thêm sau) và bật lớp prop', () => {

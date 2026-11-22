@@ -95,6 +95,38 @@ function mirror(id, s) {
   return out;
 }
 
+/** Sảnh vào (camera chéo ?cam=iso chỉ thấy ~10 m quanh nhân vật): hai đèn và hai bia thấp quanh chỗ sinh (1300, 1040). Chỉ prop thấp. */
+function plaza() {
+  const out = [];
+  for (const sx of [-1, 1]) {
+    out.push({ id: 'prop_den_long_troi', x: r2(1300 + sx * 5.5), z: 1034, yaw: 0, s: 1 });
+    out.push({ id: 'prop_bia_da', x: r2(1300 + sx * 7.5), z: 1042, yaw: r2(-sx * 0.5), s: 0.8 });
+  }
+  return out;
+}
+
+/** Cụm thấp quanh r 13–19 để thấy trong khung iso: đá nằm, kiếm gãy, gốc khô… theo chủ đề; tránh công tắc cầu 4 (góc -90°, 30°, 150° ở r 22). */
+const LOW = {
+  1: 'prop_da_nam',
+  2: 'prop_kiem_gay',
+  4: 'prop_anh_ngoc_kinh',
+  5: 'prop_da_dung',
+  6: 'prop_lu_huong',
+  7: 'prop_mach_tinh_tru',
+  8: 'prop_den_long_troi',
+  9: 'prop_kiem_kinh_quang_cuoi',
+};
+function inner(n, R) {
+  if (n === 3) return [];
+  const out = [];
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * PI * 2 + 0.3 + R() * 0.3;
+    if (n === 4 && [-PI / 2, PI / 6, (5 * PI) / 6].some((s) => Math.abs(Math.atan2(Math.sin(a - s), Math.cos(a - s))) < 0.45)) continue;
+    out.push(at(14 + R() * 5, a, LOW[n], 0.8 + R() * 0.3, R() * PI * 2));
+  }
+  return out;
+}
+
 const all = {};
 for (let n = 1; n <= 9; n++) {
   const R = rng(20261123 + n * 7919);
@@ -103,7 +135,7 @@ for (let n = 1; n <= 9; n++) {
     const d = Math.hypot(q.x - CX, q.z - CZ);
     return d <= 40 || Math.abs(Math.atan2(q.z - CZ, q.x - CX) - PI / 2) > 0.6;
   };
-  all[`kieu_${n}`] = [...frame(R), ...THEME[n](R)].filter(keep);
+  all[`kieu_${n}`] = [...frame(R), ...THEME[n](R)].filter(keep).concat(plaza(), inner(n, R));
 }
 
 const body = Object.entries(all)
