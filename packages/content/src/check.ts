@@ -126,6 +126,7 @@ import {
   stanceErrors,
   branchErrors,
   chainErrors,
+  formationErrors,
   markDefErrors,
   monSkillsOf,
   resourceErrors,
@@ -460,6 +461,7 @@ for (const s of METHOD_SKILLS) {
   if (s.unlock >= 16 && !(s.id in GLOSSARY.skillsTier)) err(`chiêu bậc cao ${s.id}: thiếu trong glossary.skillsTier`);
   if (s.kind === 'line' && !s.line) err(`chiêu ${s.id}: kind line cần trường line`);
   if (s.kind === 'summon' && !s.summon) err(`chiêu ${s.id}: kind summon cần trường summon`);
+  for (const m of formationErrors(s)) err(m);
   if (s.kind === 'buff' && !(s.duration! > 0 && s.buff)) err(`chiêu ${s.id}: kind buff cần duration và buff`);
 }
 for (const [id, v] of Object.entries(VARIANTS)) {

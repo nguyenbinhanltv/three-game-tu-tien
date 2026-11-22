@@ -314,6 +314,12 @@ import poseHutMauCoJson from '../data/poses/hut_mau_co.json';
 import poseCoBaoJson from '../data/poses/co_bao.json';
 import poseThuCoJson from '../data/poses/thu_co.json';
 import poseHoaCoVuongJson from '../data/poses/hoa_co_vuong.json';
+import posePhongCamJson from '../data/poses/phong_cam.json';
+import poseMauDonCamJson from '../data/poses/mau_don_cam.json';
+import posePhaDietCamJson from '../data/poses/pha_diet_cam.json';
+import poseTueNguyetCamJson from '../data/poses/tue_nguyet_cam.json';
+import poseSinhTuCamJson from '../data/poses/sinh_tu_cam.json';
+import posePhienThienAnJson from '../data/poses/phien_thien_an.json';
 import poseCoQuyenJson from '../data/poses/co_quyen.json';
 import poseHoaHinhJson from '../data/poses/hoa_hinh.json';
 import poseHuyetCuHoJson from '../data/poses/huyet_cu_ho.json';
@@ -525,6 +531,12 @@ export const POSES = [
   poseCoBaoJson,
   poseThuCoJson,
   poseHoaCoVuongJson,
+  posePhongCamJson,
+  poseMauDonCamJson,
+  posePhaDietCamJson,
+  poseTueNguyetCamJson,
+  poseSinhTuCamJson,
+  posePhienThienAnJson,
   poseCoQuyenJson,
   poseHoaHinhJson,
   poseTinhBaoJson,

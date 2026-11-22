@@ -2,7 +2,7 @@
 // Tính cả máu mất mỗi lần giết (đứng yên, không né vùng) và thời gian đả tọa hồi lại.
 // Chạy: pnpm sim:progress
 
-import { combatPower, levelSpawns, TIER_MIN_ILVL, type MonsterDef, type Quality, type SkillDef } from '@dtl/shared';
+import { combatPower, formationHurts, levelSpawns, TIER_MIN_ILVL, type MonsterDef, type Quality, type SkillDef } from '@dtl/shared';
 import {
   BOTTLENECK_LEVELS,
   promoteGold,
@@ -145,6 +145,8 @@ function methodSkills(level: number, id?: MethodId): SkillDef[] {
  */
 const SKILL_EFF = 0.6;
 /** Hộ pháp có đủ 40 Huyết khí lúc tiêu Trấn ấn khoảng chừng này số lần (đánh một mình, kéo `PULL` quái). */
+/** TN-8: tỉ lệ nhịp trận trúng quái khi đánh một mình (không phải quái nào cũng đứng trong trận suốt thời gian trận). */
+const FORMATION_COVER = 0.7;
 const TANK_RES_READY = 0.7;
 /** `base`: bấm theo hồi chiêu, không dùng cơ chế VS-2 (mô hình trước VS-2); `skilled`: dùng đủ; `avg`: người chơi thật (`SKILL_EFF`). */
 type PlayMode = 'base' | 'avg' | 'skilled';
@@ -164,14 +166,23 @@ function playerDps(level: number, atk: number, monDef: number, id?: MethodId, mo
   const critMul = 1 + crit * (CRIT_MULT - 1);
   const melee = 1 + (pas?.melee?.mul ?? 0);
   const one = (s: SkillDef) => hit(atk, s.power, monDef) * critMul * melee * counterMul(elemCounter(s.elem, monElem));
-  const deals = (s: SkillDef) => s.kind === 'damage' || s.kind === 'aoe' || (s.kind === 'dash' && s.power > 0);
+  // TN-8: trận đánh theo nhịp: số nhịp có hiệu lực của một lần đặt × tỉ lệ quái đứng trong trận (đánh một mình, kéo cụm nhỏ).
+  const formHits = (s: SkillDef): number =>
+    s.kind === 'formation' && s.formation && formationHurts(s.formation.mode)
+      ? Math.floor((s.formation.dur - s.formation.arm) / s.formation.every) * FORMATION_COVER
+      : 1;
+  const deals = (s: SkillDef) =>
+    s.kind === 'damage' ||
+    s.kind === 'aoe' ||
+    (s.kind === 'dash' && s.power > 0) ||
+    (s.kind === 'formation' && !!s.formation && formationHurts(s.formation.mode));
   /** Xoay vòng: chiêu có hồi chiêu dùng ngay khi hồi xong, thời gian còn lại đánh đòn `basic`. */
   const rot = (skills: SkillDef[], basic: SkillDef): number => {
     let perSec = 0;
     let gcdUsed = 0;
     for (const s of skills) {
       if (s === basic || s.unlock > level || !deals(s) || s.cd <= 0) continue;
-      perSec += one(s) / s.cd;
+      perSec += (one(s) * formHits(s)) / s.cd;
       // Thiêu đốt của chiêu vùng (Đan Hỏa Vũ): sát thương theo thời gian, không giảm theo phòng ngự.
       if (s.burn) perSec += (atk * s.burn.mul * s.burn.dur) / s.cd;
       // Lướt không ăn GCD.
@@ -243,7 +254,12 @@ function selfSustain(level: number, id?: MethodId, mode: PlayMode = 'avg'): numb
   const m = methodAt(level, id);
   const healMul = 1 + (m?.passive.healMul ?? 0);
   const eff = mode === 'base' || !m ? 0 : mode === 'skilled' ? 1 : SKILL_EFF;
-  const sus = (s: SkillDef) => (s.kind === 'heal' || s.kind === 'hot' ? s.power * healMul : s.kind === 'shield' ? s.power : 0);
+  // TN-8: trận hồi (Hộ Trận, Sinh Tử Cấm) hồi `heal` × số nhịp có hiệu lực mỗi lần đặt.
+  const formHeal = (s: SkillDef): number =>
+    s.kind === 'formation' && s.formation?.heal
+      ? s.formation.heal * Math.floor((s.formation.dur - s.formation.arm) / s.formation.every)
+      : 0;
+  const sus = (s: SkillDef) => (s.kind === 'heal' || s.kind === 'hot' ? s.power * healMul : s.kind === 'shield' ? s.power : formHeal(s));
   let r = 0;
   for (const s of [...SKILLS, ...methodSkills(level, id)]) {
     if (s.unlock > level || s.cd <= 0) continue;

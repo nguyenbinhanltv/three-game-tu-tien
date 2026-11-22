@@ -44,6 +44,8 @@ Hồn tu (TN-2): bốn tên chiêu **gốc** thuộc mức Cẩn trọng, chỉ 
 
 Cổ tu: toàn bộ tên **tự đặt** từ từ ghép thể loại (không chiêu nào lấy nguyên tên gốc): Dưỡng Cổ Kinh (công pháp), Cổ độc, Cổ Ảnh Bộ, Thả Cổ, Cổ Triều, Nuôi Cổ, Cổ Chích, Độc Vụ, Cổ Giáp, Hút Máu Cổ, Cổ Bạo, Thu Cổ, Hóa Cổ Vương và tên bốn nhánh. "Cổ tu", "cổ trùng", "Cổ Vương" là thuật ngữ thể loại. Không dùng tên cổ riêng của truyện, không nhắc nhân vật hay tình tiết.
 
+Cấm chế sư (TN-8): năm tên **gốc** thuộc mức Cẩn trọng, chỉ giữ tên, cơ chế và mô tả tự viết: Mẫu Đơn Thập Bát Cấm, Phá Diệt Cấm, Tuế Nguyệt Cấm, Sinh Tử Cấm, Phiên Thiên Ấn. Còn lại **tự đặt** từ từ ghép thể loại: Cấm Chế Kinh (công pháp), Cấm ấn, Cấm lực, Độn Địa Bộ, Phong Cấm, Bố Trận, Cấm Chỉ, Khốn Trận, Hộ Trận và tên bốn nhánh. "Cấm chế sư", "trận pháp" là thuật ngữ thể loại. Không tông môn/NPC mới.
+
 Tên Hán-Việt lấy từ wiki fan, nhiều mục chỉ có một nguồn; khi người dùng sửa thì `glossary.json` là nguồn đúng. Nguồn khái niệm và độ chắc từng mục ghi ở tài liệu kế hoạch nội bộ, không đưa vào lời thoại hay UI.
 
 ## Kiểm tự động

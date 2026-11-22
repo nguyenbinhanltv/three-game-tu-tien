@@ -90,7 +90,7 @@ import type { ThanTangSystem } from '../thantang';
 import type { TribSystem } from '../trib';
 import type { MonZones } from '../monzone';
 
-import { at } from '@dtl/shared';
+import { at, mergeSlow } from '@dtl/shared';
 /** Bộ trang bị (P3-4): hệ số tốc độ của quái bị làm chậm (thường / boss). */
 const SET_SLOW_MUL = 0.5;
 const SET_SLOW_BOSS = 0.8;
@@ -203,7 +203,7 @@ export class MonsterSystem {
     // Bộ Hàn Giao Lân (3 món): đòn bạo kích làm chậm mục tiêu (boss chỉ chậm nhẹ).
     const slowSec = p.char.stats.setFx.critSlowSec;
     if (crit && slowSec > 0 && mon.state !== MS_DEAD)
-      mon.slow = { until: this.c.now + slowSec * 1000, mul: mon.def.boss ? SET_SLOW_BOSS : SET_SLOW_MUL };
+      mon.slow = mergeSlow(mon.slow, { until: this.c.now + slowSec * 1000, mul: mon.def.boss ? SET_SLOW_BOSS : SET_SLOW_MUL }, this.c.now);
     // Chiêu tối thượng đang ra không tự nạp lại vòng sạc của chính nó.
     if (!p.mth.lockCharge) this.c.gainCharge(p, chargeFromDealt(dmg, p.char.atk));
     return true;

@@ -30,6 +30,8 @@ export * from './methods';
 export * from './resource';
 export * from './skillrules';
 export * from './chain';
+export * from './formation';
+export * from './slow';
 export * from './marks';
 export * from './branch';
 export * from './costar';
