@@ -140,15 +140,26 @@ const HIT_CLIPS = { front: ['hit_front_1', 'hit_front_2'], back: ['hit_back'], l
  * khác); LOD1 12 Hz; LOD2 8 Hz; ngoài khung nhìn thì không cập nhật (gộp dt, vào lại khung nhìn thì bắt kịp một lần).
  * Bộ xương chỉ đổi khi mixer chạy nên CPU giảm theo. Đo 50 người ở sân: mixer là phần lớn nhất còn lại sau khi tách xương.
  */
-export function mixerInterval(level: number, inView = true, self = false): number {
+export function mixerInterval(level: number, inView = true, self = false, dist = 0): number {
   if (self) return 0;
   if (!inView) return Infinity;
-  if (level <= 0) return 1 / 60;
+  // LOD0 ở giữa tầm (> MID_DIST) chỉ còn 30 Hz: người khác cách vài mét vẫn cần mượt, nhưng ở 10–22 m khác biệt giữa 30 và 60 Hz không thấy được (v3cpu).
+  if (level <= 0) return dist > MID_DIST ? 1 / 30 : 1 / 60;
   if (level === 1) return 1 / 12;
   return 1 / 8;
 }
 
 const MIXER_SLACK = 0.0015;
+/** Đến lượt chạy mixer: `acc` (dt gộp) đã đủ `interval`, dung sai 1,5 ms để jitter rAF không đẩy nhịp 30 Hz thành 20–30 Hz lẫn lộn. */
+export function mixerDue(acc: number, interval: number): boolean {
+  return acc > 0 && acc >= interval - MIXER_SLACK;
+}
+/** Khoảng cách (m) từ đó LOD0 của người khác chỉ cập nhật mixer 30 Hz. */
+export const MID_DIST = 9;
+/** Pha khởi đầu của bộ đếm mixer, rải đều theo số thứ tự model để các model LOD1/LOD2 không cùng cập nhật một khung (giảm đỉnh p95). */
+export function mixerPhase(n: number, interval: number): number {
+  return ((n * 0.6180339887) % 1) * Math.min(interval, 1 / 12);
+}
 
 /** Thông tin nhìn của một khung (EntityManager tính theo camera, M3-9). */
 interface ViewInfo {
@@ -656,7 +667,7 @@ export class SkinnedCharacter implements CharacterView {
     // Hạ tần số mixer ở xa: gộp dt, cập nhật bộ xương thưa hơn.
     this.acc += dt;
     // Dung sai 1,5 ms: ở 60 khung/giây dt dao động quanh 1/60, không để LOD0 tụt xuống 30 Hz vì làm tròn.
-    if (this.acc > 0 && this.acc >= this.interval - MIXER_SLACK) {
+    if (mixerDue(this.acc, this.interval)) {
       this.mixer.update(this.acc);
       if (this.feet) this.groundFeet(this.acc, a);
       this.rig.updateMatrixWorld(true);
