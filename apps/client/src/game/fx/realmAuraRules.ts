@@ -4,6 +4,7 @@ import { pathOf } from '@dtl/content';
 import {
   ANH_BIEN_LEVEL,
   COTHAN_METHOD,
+  LOI_METHOD,
   HOA_THAN_LEVEL,
   KET_DAN_LEVEL,
   NGUYEN_ANH_LEVEL,
@@ -38,6 +39,8 @@ export function daoOf(mt: string | undefined): AuraDao {
  * (cảnh biến hình do timeline `fx_co_hoa_hinh` lo, nhân vật giữ nguyên màu gốc đậm).
  */
 export function cothanAura(mt: string | undefined, giant: number | undefined, mode: AuraMode): { mode: AuraMode; hidden: boolean } {
+  // TN-9: Lôi tu cũng chỉ giữ MỘT lớp nhẹ (hồ quang điện ở kiếm đã đủ), không ẩn (không có thân to).
+  if (mt === LOI_METHOD) return { mode: mode === 'off' ? 'off' : 'min', hidden: false };
   if (mt !== COTHAN_METHOD) return { mode, hidden: false };
   return { mode: mode === 'off' ? 'off' : 'min', hidden: (giant ?? 0) > 0.02 };
 }

@@ -23,6 +23,7 @@ import { gatesOf, type Gate } from '../world/gates';
 import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t, pathOf as PATH_OF_METHOD } from '@dtl/content';
 import { BRAWLER_WEAPON } from '../character/brawlerGear';
 import { giantScale, stepGiant } from './giant';
+import { bladeLook } from './loiBlade';
 import { GREATBLADE_WEAPON } from '../character/greatblade';
 import { COHU_WEAPON } from '../character/coGear';
 import { hoverBob, hoverTarget, stepHover } from './hover';
@@ -460,8 +461,9 @@ export class EntityManager {
       v.model.setBrawlerGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(BRAWLER_WEAPON) ?? false) : false, s.mt === COTHAN_METHOD);
       v.model.setGreatBlade?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(GREATBLADE_WEAPON) ?? false) : false);
       v.model.setCoGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(COHU_WEAPON) ?? false) : false);
-      v.model.setWeaponGlow?.(s.wg ?? 0);
-      v.model.setWeaponTint?.(look.set ? (SET.get(look.set)?.look.blade ?? '') : '');
+      const bl = bladeLook(s.mt, look.set ? (SET.get(look.set)?.look.blade ?? '') : '', s.wg ?? 0);
+      v.model.setWeaponGlow?.(bl.glow);
+      v.model.setWeaponTint?.(bl.tint);
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
       v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;
