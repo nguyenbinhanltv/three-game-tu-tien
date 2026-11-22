@@ -36,7 +36,8 @@ export class KieuRoom extends DungeonRoom {
 
   /** Lượt đầu mới có thưởng và rơi đồ; luyện lại (đã qua cầu này) không rơi đồ, không thưởng. */
   override noLootFor(char: Character): boolean {
-    return !kieuIsFirstClear(char.meta.kieu, this.n);
+    // Giữ cả giới hạn theo ngày của phó bản (đợt đánh đầu tiên trong ngày đánh dấu đã dùng): vào ra liên tục không cày đồ lần đầu được.
+    return super.noLootFor(char) || !kieuIsFirstClear(char.meta.kieu, this.n);
   }
 
   /** Giờ tính thời gian qua cầu bắt đầu từ lúc có người vào (gồm cả thời gian chờ đợt đầu), không phải lúc quái đầu tiên xuất hiện. */

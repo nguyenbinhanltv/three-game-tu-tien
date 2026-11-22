@@ -3,7 +3,7 @@
 //  - Đợt Kiếm Ảnh: mỗi người sống gặp bóng của chính mình; bóng định kỳ giáng vùng nổ xuống chỗ chủ đang đứng.
 //  - Xong cầu: với từng người CÓ MẶT trong room, gọi `KieuSystem.onClear` (nơi kiểm thời gian tối thiểu, lần đầu/luyện lại, ghi bằng transaction).
 // Không có tin nào từ client quyết định cầu đã qua hay chưa.
-import { MS_DEAD, shadowStats, type WaveDef } from '@dtl/shared';
+import { MS_DEAD, playerBaseStats, shadowStats, type WaveDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from '../entities';
 import type { KieuClearResult } from './index';
 
@@ -54,10 +54,16 @@ export class KieuBridge {
     for (const p of this.c.players()) {
       if (this.c.isDead(p)) continue;
       const ch = p.char;
-      const base = shadowStats(ch.level, ch.atk, ch.def);
+      // Sàn gear-độc lập: tháo đồ rồi mặc lại trong phòng không làm bóng yếu đi (bóng không thể yếu hơn chỉ số nền theo cấp).
+      const floor = playerBaseStats(ch.level);
+      const base = shadowStats(ch.level, Math.max(ch.atk, floor.atk), Math.max(ch.def, floor.def));
       const mon = this.c.spawnShadow(
         p,
-        { hp: Math.max(1, Math.round(ch.mhp * cfg.hpMul)), atk: Math.max(1, Math.round(base.atk * cfg.atkMul)), def: base.def },
+        {
+          hp: Math.max(1, Math.round(Math.max(ch.mhp, floor.hp) * cfg.hpMul)),
+          atk: Math.max(1, Math.round(base.atk * cfg.atkMul)),
+          def: base.def,
+        },
         { level: ch.level },
       );
       if (!mon) continue;
