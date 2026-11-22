@@ -9,7 +9,6 @@ import {
   CUU_KIEU_SPAN,
   CUU_KIEU_TREES,
 } from './cuukieu.art';
-import { terrainOf } from './terrain';
 
 // TN-7 mỹ thuật: dữ liệu sinh bởi gen-cuu_kieu.mjs phải hợp lý (đường liền mạch trong vùng chơi, cây né đường, chín nhịp cầu nối nhau).
 const C = 1024;
