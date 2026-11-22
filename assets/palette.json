@@ -500,12 +500,12 @@
       },
       "vdd_day": {
         "label": "Vấn Đỉnh, mặt Dương Thực, trưa nắng gắt",
-        "sunColor": "#FFE2A8", "sunIntensity": 3.0, "sunElevationDeg": 52, "skyColor": "#BFD0C8",
+        "sunColor": "#FFEFD0", "sunIntensity": 2.8, "sunElevationDeg": 52, "skyColor": "#BFD0C8",
         "skyIntensity": 0.75, "fogColor": "#E6D2A6", "fogDensity": 0.0004, "heightFogTop": 40,
         "heightFogBoost": 1.0, "fogHaze": 0.00025, "fogHazeStart": 320, "rim": 0.5,
         "shadowTint": "#46586A", "highlightTint": "#FFE9B8", "splitBalance": 0.06, "shadowAmount": 0.6,
-        "highlightAmount": 0.3, "fogScatter": 0.9, "blackLift": "#26181A", "contrast": 1.3,
-        "saturation": 1.25, "exposure": 0.88
+        "highlightAmount": 0.3, "fogScatter": 0.9, "blackLift": "#26181A", "contrast": 1.2,
+        "saturation": 1.08, "exposure": 0.9
       },
       "vdd_dusk": {
         "label": "Vấn Đỉnh, mặt Dương Thực, hoàng hôn cam đồng",

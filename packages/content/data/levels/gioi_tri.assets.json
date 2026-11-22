@@ -20,7 +20,7 @@
     "beacons": false,
     "vegetation": false
   },
-  "minimap": "van_dinh",
+  "minimap": "gioi_tri",
   "cave": {
     "x": 1464,
     "z": 1384,

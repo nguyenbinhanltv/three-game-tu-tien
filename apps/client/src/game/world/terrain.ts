@@ -742,8 +742,10 @@ export class Terrain {
           : T.id === 'van_dinh'
             ? // Vấn Đỉnh (TN-3): khối đá xếp lệch xám trung tính (mood hai mặt tự ngả lam lạnh hoặc vàng đồng), vỉa sáng ngọc lam nhạt ở khe.
               {
-                lo: [0.08, 0.075, 0.09],
-                hi: [0.36, 0.33, 0.32],
+                // Mặt Âm: đá phiến tím lạnh; mặt Dương (`duong`): đá nung vàng đồng.
+                lo: [0.1, 0.09, 0.13],
+                hi: [0.4, 0.37, 0.46],
+                duong: { lo: [0.16, 0.1, 0.06], hi: [0.64, 0.45, 0.28] },
                 vein: [0.55, 0.78, 0.8],
                 tri: true,
                 center: T.def.play ? [T.def.play.cx, T.def.play.cz] : undefined,

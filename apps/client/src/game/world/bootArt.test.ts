@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { hasString } from '@dtl/content';
 import { regionOfArt, type LoadRegion } from './bootArt';
 
-const REGIONS: LoadRegion[] = ['doan_mach', 'van_hai', 'thien_khuyet', 'bac_hoang'];
+const REGIONS: LoadRegion[] = ['doan_mach', 'van_hai', 'thien_khuyet', 'bac_hoang', 'van_dinh'];
 const KEYS = ['ui.subtitle', 'ui.load.enter', 'ui.load.env', 'ui.load.terrain', 'ui.load.sect', 'ui.load.minimap'];
 
 describe('màn tải theo vùng', () => {
   it('tranh → vùng chuỗi', () => {
     expect(regionOfArt('bac_hoang')).toBe('bac_hoang');
+    expect(regionOfArt('van_dinh')).toBe('van_dinh');
     expect(regionOfArt('doan_mach')).toBe('doan_mach');
     expect(regionOfArt('phuc_mach_quat')).toBe('doan_mach');
     expect(regionOfArt('van_hai_phu_dao')).toBe('van_hai');
