@@ -12,7 +12,7 @@ const VIEWS: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': 
 const YAW = Math.PI * 0.25;
 const LEVEL = opt('--level', 'van_lam');
 /** Hướng camera iso (độ) đang dùng để đẩy điểm đứng ra phía camera: `isoyaw=` trong --query, không thì bảng hướng đã chọn (khớp ISO_YAW ở client). */
-const YAW_DEG: Record<string, number> = { van_lam: 30, van_hai: 135, thien_khuyet: 20 };
+const YAW_DEG: Record<string, number> = { van_lam: 30, van_hai: 135, thien_khuyet: 20, doan_mach: 135 };
 const standYaw = (): number => {
   const m = /isoyaw=(-?[0-9.]+)/.exec(opt('--query', ''));
   return (((m ? Number(m[1]) : (YAW_DEG[LEVEL] ?? 45)) as number) * Math.PI) / 180;
