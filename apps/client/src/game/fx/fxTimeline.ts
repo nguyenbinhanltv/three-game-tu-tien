@@ -705,7 +705,7 @@ export class FxRunner {
     const yaw = this.aim(c, tgt);
     const gnd = ev.at === 'target' || ev.at === 'ground' ? tgt : null;
     const at = this.anchor(c, ev.at ?? 'target', ev.offset, yaw, tgt, new THREE.Vector3());
-    at.y = (gnd ? gnd.y : c.actor.y) + 0.4;
+    at.y = (gnd ? gnd.y : c.actor.y) + 0.14 + Math.min(0.5, Math.max(0, ev.lift ?? 0));
     const kind = ev.tex === 'crack' ? DECAL_CRACK : ev.tex === 'rune' ? DECAL_RUNE : ev.tex === 'strike' ? DECAL_STRIKE : DECAL_SCORCH;
     const m = this.v.fx(QUAD_XZ, toneOf(c.pal, ev.tone), ev.alpha ?? 0.95, 'decal');
     _col.setHex(c.pal.rim);

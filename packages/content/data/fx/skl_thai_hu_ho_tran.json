@@ -42,7 +42,8 @@
    "grow": 0.1,
    "tone": "core",
    "alpha": 0.95,
-   "tier": 0
+   "tier": 0,
+   "lift": 0.26
   },
   {
    "type": "decal",
@@ -54,7 +55,8 @@
    "grow": 0.1,
    "tone": "body",
    "alpha": 1,
-   "tier": 0
+   "tier": 0,
+   "lift": 0.26
   },
   {
    "type": "mesh",

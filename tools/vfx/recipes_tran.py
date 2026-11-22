@@ -26,8 +26,8 @@ def write_point(name, palette, events):
 def base(ring_tone='rim', fill=0.9):
     """Nền chung: lõi tối đậm phủ vùng + triện thân màu + vòng viền tối ngoài cùng + vòng sáng bên trong (5 draw → còn 1 cho dáng riêng)."""
     return [
-        decal('scorch', 0.0, 1.0, D, at='area', grow=0.05, tone='core', alpha=fill, tier=0),
-        decal('rune', 0.0, 1.0, D, at='area', grow=0.05, tone='body', alpha=1.0, tier=0),
+        decal('scorch', 0.0, 1.0, D, at='area', grow=0.05, tone='core', alpha=fill, tier=0, lift=0.26),
+        decal('rune', 0.0, 1.0, D, at='area', grow=0.05, tone='body', alpha=1.0, tier=0, lift=0.26),
         mesh('rune_ring2', 0.0, D, at='area', offset=[0, 0.06, 0], scale=1.03, fit='area', alpha=1.0, sweep=0.5, erodeFrom=0.97, shadow=False, tone='core', tier=0, seed=61),
         mesh('rune_ring2', 0.0, D, at='area', offset=[0, 0.1, 0], scale=0.97, fit='area', alpha=1.0, sweep=0.5, erodeFrom=0.97, shadow=False, tone=ring_tone, tier=0, seed=62),
     ]

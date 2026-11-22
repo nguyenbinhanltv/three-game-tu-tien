@@ -25,11 +25,11 @@ def smoke(t, at, y=0.6, scale=3.0, tone='core', alpha=0.5, tier=1):
     return flip('ink_smoke', t, 0.9, scale, at=at, offset=[0, y, 0], alpha=alpha, tone=tone, tier=tier)
 
 
-def seal(t, at, r, dur=3.0, tone_fill='core', tone_line='body'):
+def seal(t, at, r, dur=3.0, tone_fill='core', tone_line='body', **k):
     """Triện đậm dưới đích: lõi tối phủ + vành màu (r mét)."""
     return [
-        decal('scorch', t, r, dur, at=at, grow=0.1, tone=tone_fill, alpha=0.95, tier=0),
-        decal('rune', t, r, dur, at=at, grow=0.1, tone=tone_line, alpha=1, tier=0),
+        decal('scorch', t, r, dur, at=at, grow=0.1, tone=tone_fill, alpha=0.95, tier=0, **k),
+        decal('rune', t, r, dur, at=at, grow=0.1, tone=tone_line, alpha=1, tier=0, **k),
     ]
 
 

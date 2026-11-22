@@ -223,7 +223,7 @@ def thai_hu_ho_tran():
     ev = [
         parts('spark', -0.5, 24, 1.8, 1, 0.4, 0.07, at='self', offset=[0, 0.8, 0.2], inward=True, tone='rim', tier=1),
         snd(-0.5, 'cast', 0.5, 1.1),
-        *seal(-0.4, 'area', 8.0, 3.2),
+        *seal(-0.4, 'area', 8.0, 3.2, lift=0.26),
         mesh('rune_ring2', -0.4, 0.9, at='area', offset=[0, 0.4, 0], scale=0.2, scaleTo=1.0, fit='area', alpha=1, sweep=0.4, erodeFrom=0.8, shadow=False, tone='accent', tier=0, seed=41),
         mesh('rune_ring2', -0.35, 0.9, at='area', offset=[0, 0.42, 0], scale=0.2, scaleTo=0.9, fit='area', alpha=1, sweep=0.4, erodeFrom=0.8, shadow=False, tone='rim', tier=0, seed=42),
         mesh('ripple', -0.2, 0.8, at='area', offset=[0, 0.42, 0], scale=0.3, scaleTo=1.0, fit='area', alpha=0.9, sweep=0.5, erodeFrom=0.4, shadow=False, tone='body', tier=0, seed=43),
