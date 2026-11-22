@@ -98,7 +98,7 @@ interface Flags {
 export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test' | 'viewer'; doc: string }>> = {
   cam: {
     scope: 'diag',
-    doc: '=iso camera chéo khóa góc kiểu Action MMORPG (Thiên Nhãn P0, nguyên mẫu; chuột phải đi tới điểm, lăn chuột 3 mức zoom)',
+    doc: '=iso camera chéo khóa góc kiểu Action MMORPG (Thiên Nhãn P0, nguyên mẫu; chuột phải đi tới điểm, khoảng cách camera khóa cố định, không zoom)',
   },
   touch: { scope: 'user', doc: '=1 ép chế độ cảm ứng, =0 ép tắt (mặc định theo thiết bị + Cài đặt)' },
   mute: { scope: 'user', doc: 'tắt tiếng (playtest luôn bật)' },

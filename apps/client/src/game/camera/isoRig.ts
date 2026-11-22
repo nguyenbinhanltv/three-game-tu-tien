@@ -14,6 +14,12 @@ export class IsoRig {
   /** Đích đi tới (chuột phải). */
   dest: { x: number; z: number } | null = null;
   lead = { x: 0, z: 0 };
+  /** `camera.far` gốc, lưu lần đầu vào iso để trả lại khi cảnh điện ảnh/độ kiếp dùng camera cũ. */
+  baseFar = 0;
+  /** Cảnh xa (biển mây, trời, núi nền) đang bị ẩn do iso; khôi phục khi iso tạm tắt. */
+  farHidden = false;
+  /** Biển mây có hiện trước khi iso ẩn không (theo cờ của level). */
+  cloudWas = true;
   readonly ring: THREE.Mesh;
   readonly destMark: THREE.Mesh;
   private readonly o = { x: 0, y: 0, z: 0 };

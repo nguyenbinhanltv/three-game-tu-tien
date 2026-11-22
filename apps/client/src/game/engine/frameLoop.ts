@@ -376,7 +376,7 @@ function updateCamera(eng: Game, dt: number): void {
   let cz = tz + Math.cos(eng.camYaw) * cp * eng.camDistCur;
   const iso = eng.iso && !eng.cine.active && !eng.tribScene ? eng.iso : null;
   if (iso) {
-    // Camera chéo khóa góc: hướng cố định theo bản đồ, nghiêng cố định, 3 mức zoom, dẫn trước nhẹ theo con trỏ.
+    // Camera chéo khóa góc: hướng cố định theo bản đồ, nghiêng cố định, khoảng cách khóa (không zoom), dẫn trước nhẹ theo con trỏ.
     eng.camYaw = isoYawFor(levelId());
     const ld = iso.ground ? isoLead(iso.ground.x - rp.x, iso.ground.z - rp.z) : { x: 0, z: 0 };
     const kk = Math.min(1, dt * 3);
@@ -391,10 +391,15 @@ function updateCamera(eng: Game, dt: number): void {
     cx = p.x;
     cy = Math.max(p.y, groundAt(p.x, p.z) + 2);
     cz = p.z;
+    if (!iso.baseFar) iso.baseFar = eng.camera.far;
     if (eng.camera.far !== ISO_FAR) {
       eng.camera.far = ISO_FAR;
       eng.camera.updateProjectionMatrix();
     }
+  } else if (eng.iso?.baseFar && eng.camera.far !== eng.iso.baseFar) {
+    // Cảnh điện ảnh/độ kiếp dùng camera cũ: trả tầm xa gốc.
+    eng.camera.far = eng.iso.baseFar;
+    eng.camera.updateProjectionMatrix();
   }
   // Không để camera chui xuống đất: kéo lại gần nhân vật.
   for (let i = 0; i < 5 && !iso; i++) {
@@ -430,9 +435,17 @@ function updateCamera(eng: Game, dt: number): void {
     iso.project(eng.camera, window.innerWidth, window.innerHeight, groundAt);
     iso.updateVisuals(performance.now() / 1000);
     // Tầm nhìn ~250 m: không vẽ cảnh xa (biển mây, đảo trời, núi nền).
+    if (!iso.farHidden) iso.cloudWas = eng.env.cloudSea.group.visible;
     eng.env.cloudSea.group.visible = false;
     if (eng.lacKiemSky) eng.lacKiemSky.group.visible = false;
     if (eng.lacKiemFar) eng.lacKiemFar.group.visible = false;
+    iso.farHidden = true;
+  } else if (eng.iso?.farHidden) {
+    // Iso tạm tắt (cine/độ kiếp): hiện lại cảnh xa mà iso đã ẩn.
+    eng.env.cloudSea.group.visible = eng.iso.cloudWas;
+    if (eng.lacKiemSky) eng.lacKiemSky.group.visible = true;
+    if (eng.lacKiemFar) eng.lacKiemFar.group.visible = true;
+    eng.iso.farHidden = false;
   }
 }
 
