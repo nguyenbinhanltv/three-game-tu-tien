@@ -5,6 +5,8 @@ import { paletteOf } from '../../render/vfx/palette';
 
 const METHOD = 'cam_che_kinh';
 const OWN = ['skl_phong_cam', 'skl_mau_don_cam', 'skl_pha_diet_cam', 'skl_tue_nguyet_cam', 'skl_sinh_tu_cam', 'skl_phien_thien_an'];
+// Nhánh mốc 24/28 (tools/vfx/recipes_t2428.py): hai chiêu mốc 24 và chiêu thần thông mốc 28 có timeline riêng.
+const TIER = ['skl_dia_sat_tran', 'skl_thai_hu_ho_tran', 'skl_lac_thu_dai_tran'];
 const evs = (id: string) => fxEventsFor(FX_TIMELINE.get(id)!, -1);
 
 describe('VFX Cấm chế sư: timeline chiêu', () => {
@@ -25,7 +27,7 @@ describe('VFX Cấm chế sư: timeline chiêu', () => {
   });
 
   it('không có timeline cho chiêu tư thế / lướt / đòn thường (mượn hình chiêu nền)', () => {
-    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD && !OWN.includes(x.id)))
+    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD && !OWN.includes(x.id) && !TIER.includes(x.id)))
       expect(FX_TIMELINE.has(s.id), s.id).toBe(false);
   });
 
@@ -69,6 +71,36 @@ describe('VFX Cấm chế sư: timeline chiêu', () => {
         e.some((x) => x.type === 'camera' && (x.pull ?? 0) > 0),
         id,
       ).toBe(id === 'skl_mau_don_cam');
+    }
+  });
+
+  it('nhánh mốc 24/28: timeline riêng, trong ngân sách, hình cao camFade; chỉ chiêu thần thông (mốc 28) dùng slowmo và kéo máy', () => {
+    for (const id of TIER) {
+      const tl = FX_TIMELINE.get(id)!;
+      const sk = METHOD_SKILLS.find((s) => s.id === id)!;
+      expect(tl.replaces, id).toEqual([sk.fx]);
+      expect(
+        validateFxTimeline(tl, (x) => SKILL.has(x)),
+        id,
+      ).toEqual([]);
+      expect(fxDrawCount(evs(id)), id).toBeLessThanOrEqual(12);
+      expect(fxParticleCount(evs(id)), id).toBeLessThanOrEqual(1500);
+      expect(paletteOf(tl.palette), id).not.toBe(paletteOf(undefined));
+      const big = sk.unlock === 28;
+      expect(
+        evs(id).some((x) => x.type === 'slowmo'),
+        id,
+      ).toBe(big);
+      expect(
+        evs(id).some((x) => x.type === 'camera' && (x.pull ?? 0) > 0),
+        id,
+      ).toBe(big);
+      for (const x of evs(id)) {
+        if (x.type === 'hitstop') expect(x.ms, id).toBeLessThanOrEqual(80);
+        if (x.type !== 'mesh') continue;
+        const y = x.offset?.[1] ?? 0;
+        if (y > 2) expect(x.camFade).toBe(true);
+      }
     }
   });
 });

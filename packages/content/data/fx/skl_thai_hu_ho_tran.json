@@ -1,0 +1,218 @@
+{
+ "skill": "skl_thai_hu_ho_tran",
+ "palette": "tran_ho",
+ "replaces": [
+  "thaihuhotran"
+ ],
+ "events": [
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": -0.5,
+   "n": 24,
+   "speed": 1.8,
+   "spread": 1,
+   "life": 0.4,
+   "size": 0.07,
+   "at": "self",
+   "offset": [
+    0,
+    0.8,
+    0.2
+   ],
+   "inward": true,
+   "tone": "rim",
+   "tier": 1
+  },
+  {
+   "type": "soundAt",
+   "t": -0.5,
+   "id": "cast",
+   "gain": 0.5,
+   "rate": 1.1,
+   "jitter": 0.05
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": -0.4,
+   "r": 8.0,
+   "dur": 3.2,
+   "at": "area",
+   "grow": 0.1,
+   "tone": "core",
+   "alpha": 0.95,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": -0.4,
+   "r": 8.0,
+   "dur": 3.2,
+   "at": "area",
+   "grow": 0.1,
+   "tone": "body",
+   "alpha": 1,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": -0.4,
+   "dur": 0.9,
+   "at": "area",
+   "offset": [
+    0,
+    0.1,
+    0
+   ],
+   "scale": 0.2,
+   "scaleTo": 1.0,
+   "fit": "area",
+   "alpha": 1,
+   "sweep": 0.4,
+   "erodeFrom": 0.8,
+   "shadow": false,
+   "tone": "accent",
+   "tier": 0,
+   "seed": 41
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": -0.35,
+   "dur": 0.9,
+   "at": "area",
+   "offset": [
+    0,
+    0.12,
+    0
+   ],
+   "scale": 0.2,
+   "scaleTo": 0.9,
+   "fit": "area",
+   "alpha": 1,
+   "sweep": 0.4,
+   "erodeFrom": 0.8,
+   "shadow": false,
+   "tone": "rim",
+   "tier": 0,
+   "seed": 42
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": -0.2,
+   "dur": 0.8,
+   "at": "area",
+   "offset": [
+    0,
+    0.12,
+    0
+   ],
+   "scale": 0.3,
+   "scaleTo": 1.0,
+   "fit": "area",
+   "alpha": 0.9,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "shadow": false,
+   "tone": "body",
+   "tier": 0,
+   "seed": 43
+  },
+  {
+   "type": "soundAt",
+   "t": 0.0,
+   "id": "impact",
+   "gain": 0.5,
+   "rate": 1.0,
+   "jitter": 0.05
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.4,
+   "flip": "spark_burst",
+   "scale": 3.0,
+   "billboard": true,
+   "at": "self",
+   "offset": [
+    0,
+    0.4,
+    0
+   ],
+   "alpha": 0.6,
+   "tone": "accent",
+   "camFade": true,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.02,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.05,
+    0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "scaleTo": [
+    7.0,
+    7.0,
+    7.0
+   ],
+   "alpha": 0.7,
+   "sweep": 0.3,
+   "erodeFrom": 0.3,
+   "tone": "body",
+   "tier": 1,
+   "seed": 44
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 60,
+   "speed": 3,
+   "spread": 1,
+   "life": 1.2,
+   "size": 0.1,
+   "at": "self",
+   "offset": [
+    0,
+    -0.6,
+    0
+   ],
+   "tone": "accent",
+   "grav": 1.2,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.05,
+   "dur": 0.9,
+   "flip": "ink_smoke",
+   "scale": 4.5,
+   "billboard": true,
+   "at": "area",
+   "offset": [
+    0,
+    0.4,
+    0
+   ],
+   "alpha": 0.35,
+   "tone": "body",
+   "tier": 1
+  }
+ ]
+}

@@ -1,0 +1,492 @@
+{
+ "skill": "skl_phan_co_thuat",
+ "replaces": [
+  "phancothuat"
+ ],
+ "events": [
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": -0.45,
+   "n": 18,
+   "speed": 1.4,
+   "spread": 1,
+   "life": 0.3,
+   "size": 0.06,
+   "at": "self",
+   "offset": [
+    0.3,
+    0.9,
+    0.5
+   ],
+   "inward": true,
+   "tone": "rim",
+   "tier": 1
+  },
+  {
+   "type": "soundAt",
+   "t": -0.45,
+   "id": "cast",
+   "gain": 0.45,
+   "rate": 1.0,
+   "jitter": 0.05
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": -0.4,
+   "r": 8.0,
+   "dur": 0.9,
+   "at": "area",
+   "grow": 0.3,
+   "tone": "body",
+   "alpha": 1,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": -0.2,
+   "dur": 0.2,
+   "at": "ahead",
+   "offset": [
+    0.2,
+    1.0,
+    0.6
+   ],
+   "scale": 1.0,
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "alpha": 1,
+   "tone": "body",
+   "tier": 0,
+   "seed": 5,
+   "move": {
+    "to": "target",
+    "ease": "in",
+    "offset": [
+     0,
+     1.0,
+     0
+    ]
+   }
+  },
+  {
+   "type": "soundAt",
+   "t": 0.0,
+   "id": "impact",
+   "gain": 0.8,
+   "rate": 0.85,
+   "jitter": 0.04
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.12,
+   "at": "area",
+   "offset": [
+    0,
+    1.4,
+    0
+   ],
+   "scale": 2.4,
+   "billboard": true,
+   "sweep": 0,
+   "tone": "core",
+   "cross": true,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.12,
+    0
+   ],
+   "scale": 0.6,
+   "scaleTo": 3.6,
+   "sweep": 0.4,
+   "erodeFrom": 0.4,
+   "tone": "rim",
+   "alpha": 0.9,
+   "tier": 0,
+   "seed": 9
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.0,
+   "r": 6.0,
+   "dur": 3.0,
+   "at": "area",
+   "grow": 0.1,
+   "tone": "core",
+   "alpha": 0.85,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 80,
+   "speed": 6,
+   "spread": 1,
+   "life": 0.9,
+   "size": 0.22,
+   "at": "area",
+   "offset": [
+    0,
+    0.6,
+    0
+   ],
+   "tone": "body",
+   "grav": -0.4,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.04,
+   "dur": 0.9,
+   "flip": "ink_smoke",
+   "scale": 5.0,
+   "billboard": true,
+   "at": "area",
+   "offset": [
+    0,
+    0.6,
+    0
+   ],
+   "alpha": 0.6,
+   "tone": "core",
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "scale": 0.6,
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "alpha": 1,
+   "tone": "core",
+   "camFade": true,
+   "tier": 0,
+   "seed": 60,
+   "move": {
+    "to": "area",
+    "ease": "out",
+    "offset": [
+     2.11,
+     1.6,
+     1.15
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "scale": 0.6,
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "alpha": 1,
+   "tone": "body",
+   "camFade": true,
+   "tier": 0,
+   "seed": 61,
+   "move": {
+    "to": "area",
+    "ease": "out",
+    "offset": [
+     1.26,
+     2.2,
+     2.66
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "scale": 0.6,
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "alpha": 1,
+   "tone": "core",
+   "camFade": true,
+   "tier": 0,
+   "seed": 62,
+   "move": {
+    "to": "area",
+    "ease": "out",
+    "offset": [
+     -0.64,
+     1.6,
+     3.42
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "scale": 0.6,
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "alpha": 1,
+   "tone": "body",
+   "camFade": true,
+   "tier": 0,
+   "seed": 63,
+   "move": {
+    "to": "area",
+    "ease": "out",
+    "offset": [
+     -2.92,
+     2.2,
+     2.76
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "scale": 0.6,
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "alpha": 1,
+   "tone": "core",
+   "camFade": true,
+   "tier": 1,
+   "seed": 64,
+   "move": {
+    "to": "area",
+    "ease": "out",
+    "offset": [
+     -2.74,
+     1.6,
+     0.35
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "scale": 0.6,
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "alpha": 1,
+   "tone": "body",
+   "camFade": true,
+   "tier": 1,
+   "seed": 65,
+   "move": {
+    "to": "area",
+    "ease": "out",
+    "offset": [
+     -2.9,
+     2.2,
+     -1.58
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "scale": 0.6,
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "alpha": 1,
+   "tone": "core",
+   "camFade": true,
+   "tier": 1,
+   "seed": 66,
+   "move": {
+    "to": "area",
+    "ease": "out",
+    "offset": [
+     -1.64,
+     1.6,
+     -3.47
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "scale": 0.6,
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "alpha": 1,
+   "tone": "body",
+   "camFade": true,
+   "tier": 1,
+   "seed": 67,
+   "move": {
+    "to": "area",
+    "ease": "out",
+    "offset": [
+     0.48,
+     2.2,
+     -2.54
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "scale": 0.6,
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "alpha": 1,
+   "tone": "core",
+   "camFade": true,
+   "tier": 1,
+   "seed": 68,
+   "move": {
+    "to": "area",
+    "ease": "out",
+    "offset": [
+     2.27,
+     1.6,
+     -2.14
+    ]
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "pill_orb",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "scale": 0.6,
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "alpha": 1,
+   "tone": "body",
+   "camFade": true,
+   "tier": 1,
+   "seed": 69,
+   "move": {
+    "to": "area",
+    "ease": "out",
+    "offset": [
+     3.63,
+     2.2,
+     -0.47
+    ]
+   }
+  },
+  {
+   "type": "hitstop",
+   "t": 0.0,
+   "ms": 70
+  },
+  {
+   "type": "shake",
+   "t": 0.0,
+   "level": 0.35
+  },
+  {
+   "type": "flash",
+   "t": 0.0,
+   "amount": 0.0,
+   "tier": 0
+  },
+  {
+   "type": "vignette",
+   "t": 0.0,
+   "amount": 0.3,
+   "ms": 300,
+   "tone": "dark",
+   "tier": 1
+  },
+  {
+   "type": "camera",
+   "t": 0.0,
+   "pull": 0,
+   "dur": 0.5,
+   "fov": 2.4,
+   "tier": 1
+  }
+ ]
+}
