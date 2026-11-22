@@ -18,6 +18,11 @@ export interface V3DyeRef {
   mode: 'chroma' | 'neutral';
   /** Màu vải chính trong texture (hex sRGB, đo bằng cụm màu lớn nhất của texture gốc). */
   ref: string;
+  /**
+   * Vải tông đất ít bão hòa (Liệt Mạch, Địa Long, Phục Mạch): texture lốm đốm giữa vải và vàng nhạt nên ngưỡng `chroma` chuẩn bỏ sót
+   * từng mảng, nhuộm ra vết loang. `wide` hạ ngưỡng hướng sắc độ và độ bão hòa để màu phủ liền vùng vải.
+   */
+  wide?: boolean;
   /** Kênh 2: viền, lót, đai. Thiếu = model không có vùng này, kênh 2 không đổi gì. */
   trim?: V3DyeRegion;
   /** Kênh 3: tua, kim loại, điểm nhấn. Thiếu = như trên. */
@@ -31,9 +36,10 @@ export interface V3DyeColors {
   accent?: string;
 }
 
-const chroma = (ref: string, trim?: V3DyeRegion, accent?: V3DyeRegion): V3DyeRef => ({
+const chroma = (ref: string, trim?: V3DyeRegion, accent?: V3DyeRegion, wide = false): V3DyeRef => ({
   mode: 'chroma',
   ref,
+  ...(wide ? { wide } : {}),
   ...(trim ? { trim } : {}),
   ...(accent ? { accent } : {}),
 });
@@ -59,14 +65,15 @@ export const V3_DYE_REF: Readonly<Record<string, V3DyeRef>> = {
   chr_v3b2_lac_kiem: chroma('#3B6584', zone('#E4DEC8', 0.12), zone('#8e8b88', 0.08)),
   chr_v3_huyen_giap: neutral('#363435', zone('#5f4f42', 0.11), zone('#b8975f', 0.14)),
   chr_v3_kinh_quang: neutral('#b9b5b9', zone('#7f8c9f', 0.1), zone('#c2b296', 0.1)),
-  chr_v3_liet_mach: chroma('#ae937b', zone('#4d4034', 0.12), zone('#cdb07f', 0.09)),
+  chr_v3_liet_mach: chroma('#ae937b', zone('#4d4034', 0.1), zone('#d9bf86', 0.05), true),
   chr_v3_tinh_khuyet: chroma('#a484b5', zone('#363340', 0.1), zone('#bda381', 0.1)),
   chr_v3_co_thanh: neutral('#899084', zone('#393839', 0.1), zone('#b0986f', 0.1)),
-  chr_v3_dia_long: chroma('#836747', zone('#4a3828', 0.13), zone('#dbb172', 0.1)),
+  chr_v3_dia_long: chroma('#836747', zone('#4a3828', 0.11), zone('#dbb172', 0.08), true),
   chr_v3_van_kinh: neutral('#a7a6a3', zone('#5c636f', 0.13), zone('#c9b79c', 0.1)),
   chr_v3_luu_ly: chroma('#6d8b91', zone('#363736', 0.09), zone('#baab90', 0.1)),
-  chr_v3_phuc_mach: chroma('#9c987b', zone('#3a342a', 0.1), zone('#bbaa83', 0.1)),
-  chr_v3_than_tang: chroma('#55546a', zone('#353442', 0.1), zone('#c0a682', 0.1)),
+  chr_v3_phuc_mach: chroma('#9c987b', zone('#3a342a', 0.1), zone('#c9b57d', 0.06), true),
+  // Thần Tạng: vải chính xám tím gần trung tính (không có hướng sắc độ rõ) nên theo độ bão hòa như Huyền Giáp.
+  chr_v3_than_tang: neutral('#9c9899', zone('#40393a', 0.11), zone('#b89c75', 0.1)),
 };
 
 export function v3DyeRefOf(assetId: string): V3DyeRef | null {
@@ -117,7 +124,7 @@ export function mainWeight(linear: Rgb, ref: V3DyeRef): number {
   const dl = Math.hypot(...dv);
   const dir: Rgb = dl > 1e-5 ? [dv[0] / dl, dv[1] / dl, dv[2] / dl] : [0, 0, 1];
   const cosA = (ch[0] * dir[0] + ch[1] * dir[1] + ch[2] * dir[2]) / Math.max(mag, 1e-4);
-  return smooth(0.7, 0.85, cosA) * smooth(0.1, 0.2, sat);
+  return ref.wide ? smooth(0.2, 0.5, cosA) * smooth(0.03, 0.08, sat) : smooth(0.7, 0.85, cosA) * smooth(0.1, 0.2, sat);
 }
 
 /** Trọng số ba kênh của một texel (tuyến tính) trước khi nhân mặt nạ hình học. Kênh 2/3 thắng kênh 1; kênh 3 nhường kênh 2 ở chỗ trùng. */

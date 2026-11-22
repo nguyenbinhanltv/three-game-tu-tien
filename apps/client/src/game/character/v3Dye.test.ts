@@ -226,8 +226,19 @@ describe('nhuộm 3 kênh (kênh 2: viền/lót/đai, kênh 3: tua/kim loại)',
   it('mọi model có ít nhất vùng viền hoặc kim loại, bán kính hợp lý', () => {
     for (const [id, ref] of Object.entries(V3_DYE_REF)) {
       expect(ref.trim || ref.accent, id).toBeTruthy();
-      for (const z of [ref.trim, ref.accent]) if (z) expect(z.r, id).toBeGreaterThan(0.05);
+      for (const z of [ref.trim, ref.accent]) if (z) expect(z.r, id).toBeGreaterThanOrEqual(0.05);
       for (const z of [ref.trim, ref.accent]) if (z) expect(z.r, id).toBeLessThan(0.2);
     }
+  });
+
+  it('wide: vải tông đất ít bão hòa được phủ liền vùng, chuẩn thì bỏ sót (nguyên nhân vết loang)', () => {
+    const std: V3DyeRef = { mode: 'chroma', ref: '#ae937b' };
+    const wide: V3DyeRef = { ...std, wide: true };
+    // Texel xám be nhạt (gần trung tính) lẫn giữa vải tan.
+    const pale = hexToLinear('#d0cdc5');
+    expect(dyeWeights(pale, std).main).toBeLessThan(0.2);
+    expect(dyeWeights(pale, wide).main).toBeGreaterThan(0.8);
+    // Vải chính vẫn được phủ như cũ.
+    expect(dyeWeights(hexToLinear('#ae937b'), wide).main).toBeGreaterThan(0.9);
   });
 });

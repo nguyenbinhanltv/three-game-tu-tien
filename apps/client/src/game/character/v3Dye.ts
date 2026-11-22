@@ -114,6 +114,8 @@ export interface V3DyeUniforms {
   gamma: U<number>;
   /** 0 = `chroma`, 1 = `neutral`. */
   neutral: U<number>;
+  /** 1 = ngưỡng `chroma` rộng cho vải tông đất (`V3DyeRef.wide`). */
+  wide: U<number>;
   /** Kênh 2: viền, lót, đai. */
   trim: V3RegionUniforms;
   /** Kênh 3: tua, kim loại, điểm nhấn. */
@@ -183,6 +185,7 @@ export function applyV3Dye(m: THREE.MeshStandardNodeMaterial, ref: V3DyeRef, dye
     refLum: uniform(v.refLum),
     gamma: uniform(v.gamma),
     neutral: uniform(v.neutral),
+    wide: uniform(ref.wide ? 1 : 0),
     trim: regionUniforms(ref.trim, colors.trim),
     accent: regionUniforms(ref.accent, colors.accent),
   };
@@ -193,7 +196,9 @@ export function applyV3Dye(m: THREE.MeshStandardNodeMaterial, ref: V3DyeRef, dye
   const mag = length(ch);
   const sat = mag.div(mean.add(1e-3));
   const cosA = dot(ch, u.dir).div(max(mag, float(1e-4)));
-  const chromaMask = smoothstep(0.7, 0.85, cosA).mul(smoothstep(0.1, 0.2, sat));
+  const chromaMask = smoothstep(mix(0.7, 0.2, u.wide), mix(0.85, 0.5, u.wide), cosA).mul(
+    smoothstep(mix(0.1, 0.03, u.wide), mix(0.2, 0.08, u.wide), sat),
+  );
   const neutralMask = float(1).sub(smoothstep(0.2, 0.34, sat));
   const colorMask = mix(chromaMask, neutralMask, u.neutral);
   const geo = smoothstep(0.35, 0.65, attribute(DYE_MASK_ATTR, 'float'));
