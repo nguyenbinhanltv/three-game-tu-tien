@@ -1,0 +1,24 @@
+{
+  "mood": "ck_day",
+  "glb": [],
+  "ground": {
+    "set": "terrain-ck",
+    "mask": "neutral"
+  },
+  "music": [
+    "dungeon",
+    "dungeon_boss"
+  ],
+  "minimap": "cuu_kieu",
+  "features": {
+    "sect": false,
+    "portals": false,
+    "lanterns": true,
+    "lake": false,
+    "clouds": true,
+    "grass": false,
+    "trees": "none",
+    "beacons": false,
+    "vegetation": false
+  }
+}

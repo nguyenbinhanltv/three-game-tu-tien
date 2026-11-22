@@ -790,6 +790,8 @@ export interface NpcDef {
   rootChange?: boolean;
   /** NPC cho chọn Đạo (TN-3, từ Vấn Đỉnh): mở tab Đạo trong hộp thoại. Server vẫn tự kiểm cấp và một lần (`onChooseDao`). */
   daoChoose?: boolean;
+  /** Dẫn Kiều Nhân (TN-7): mở tab Cửu Kiều để xin vào cầu. Server vẫn tự kiểm cấp, thứ tự cầu, đứng cạnh NPC (`KieuSystem.plan`). */
+  kieuGuide?: boolean;
 }
 
 export interface SpawnDef {
@@ -929,6 +931,12 @@ export interface WaveDef {
     wrong: { mon: string; level: number; n: number };
     bossCut: number;
   };
+  /**
+   * Đợt Kiếm Ảnh (TN-7, cầu 2): không quái thường. Mỗi người có mặt gặp bóng của chính mình (quái riêng `owner`, khí huyết = `hpMul` × khí huyết
+   * tối đa của chủ, sát thương = `atkMul` × bóng chuẩn) và cứ `strikeEvery` giây bóng giáng một vùng nổ xuống chỗ chủ đang đứng (không đứng yên chịu đòn được).
+   * Đợt xong khi mọi bóng đã bị hạ.
+   */
+  shadow?: { hpMul: number; atkMul: number; strikeEvery: number; r: number; mul: number };
 }
 
 /** Thưởng khi dẹp xong phó bản, nhận một lần mỗi ngày và mỗi nhân vật (khóa idem `dungeon:<level>:<ngày>`). */
