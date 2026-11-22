@@ -45,6 +45,7 @@ import v3sets from './scenarios/v3sets';
 import v3views from './scenarios/v3views';
 import thetu from './scenarios/thetu';
 import loitu from './scenarios/loitu';
+import loivfx from './scenarios/loivfx';
 import cothan from './scenarios/cothan';
 import cothanvfx from './scenarios/cothanvfx';
 import daotu from './scenarios/daotu';
@@ -118,6 +119,7 @@ const SCENARIOS: Scenario[] = [
   v3views,
   thetu,
   loitu,
+  loivfx,
   daotu,
   cotu,
   cothan,

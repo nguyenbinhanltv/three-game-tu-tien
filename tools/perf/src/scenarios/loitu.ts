@@ -41,6 +41,8 @@ export default {
       const facing = await page.evaluate(() => window.__game!.facing as number);
       const shot = async (state: string, nm: string, size: string, yaw: number, pitch: number, dist: number) => {
         await cam(page, { yaw: facing + yaw, pitch, dist });
+        // kiếm cầm tay: ra đòn rồi chụp sau 0,9 s (kiếm chỉ rút khi giao chiến, tra lại sau vài giây) để thấy ánh kiếm điện ở tay
+        await page.evaluate(() => window.__game!.ents.players.get(window.__game!.sid).model.attack());
         await sleep(900);
         fs.writeFileSync(path.join(r.out, `loitu-${gname}-${state}-${nm}-${size}.png`), await page.screenshot());
       };
