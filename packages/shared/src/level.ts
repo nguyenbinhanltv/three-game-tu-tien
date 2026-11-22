@@ -248,6 +248,11 @@ export interface TerrainDef {
      */
     rough?: { amp: number; freq: number; ramp: number; steps: number };
   };
+  /**
+   * Cao độ lớp biển mây thấp nhất (m) của level (TN-7, Thiên Lộ Giới); hai lớp trên cao hơn 12 và 25 m. Thiếu = 96 (Vân Lam, biển mây dưới núi).
+   * Đặt thấp hơn mặt cao nguyên thì mây chỉ dày ở nơi đất thấp hơn lớp mây (rìa vách), mặt cao nguyên không bị mây phủ.
+   */
+  seaY?: number;
   /** Biome theo khu, ưu tiên từ trên xuống; mặc định 'wild'. */
   biomes?: { feature: string; biome: Biome; min: number }[];
   /** Va chạm tĩnh hình tròn của level. */

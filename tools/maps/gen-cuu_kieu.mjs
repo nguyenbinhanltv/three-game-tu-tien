@@ -207,10 +207,6 @@ for (const [x, z] of [
   addProp(LAMP, TRAM[0] + x, TRAM[1] + z, 0, 1);
 addProp('prop_ngung_dan_lo', TRAM[0] + 14, TRAM[1] + 10, 0.6, 1);
 addProp(STONE, TRAM[0] - 16, TRAM[1] + 12, 0.2, 1);
-// Đường đá: dải trụ đá và đèn dọc trục x = 0 từ Kiều Đầu lên Bậc Cuối, chừa lối vào trại; xác định theo seed
-for (let z = -360; z <= 400; z += 40) {
-  addProp(R() < 0.55 ? COL : LAMP, (R() - 0.5) * 14, z + (R() - 0.5) * 10, R() * Math.PI * 2, 0.9 + R() * 0.3);
-}
 const around = {
   kieu_dau_cong: [COL, COL, ROCK, STONE, LAMP, LAMP],
   may_dai: [ROCK, ROCK, STONE, STUMP, LAMP, LAMP],
@@ -235,13 +231,75 @@ const ELITES = [
   { zone: 'bac_cuoi', mon: 'elite_lo_thach_tuong', n: 2 },
 ];
 
+// ---- đường lát đá (mỹ thuật TN-7): đường cong từ cổng Kiều Đầu lên Bậc Cuối, lấy mẫu Catmull-Rom mỗi ~8 m. Client dựng mặt đường + lan can theo
+// các điểm này (`apps/client/src/game/world/ckWonders.ts`); camp, cây, prop né đường. ----
+const ROAD_CTRL = [
+  [0, 436],
+  [-6, 398],
+  [-90, 300],
+  [-125, 190],
+  [-85, 80],
+  [20, -10],
+  [105, -110],
+  [95, -230],
+  [30, -340],
+  [-15, -430],
+  [0, -520],
+  [0, -580],
+];
+const catmull = (p0, p1, p2, p3, t) => {
+  const t2 = t * t;
+  const t3 = t2 * t;
+  return [0, 1].map(
+    (k) =>
+      0.5 *
+      (2 * p1[k] + (-p0[k] + p2[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t2 + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t3),
+  );
+};
+const ROAD = [];
+for (let i = 0; i < ROAD_CTRL.length - 1; i++) {
+  const [p0, p1, p2, p3] = [
+    ROAD_CTRL[Math.max(0, i - 1)],
+    ROAD_CTRL[i],
+    ROAD_CTRL[i + 1],
+    ROAD_CTRL[Math.min(ROAD_CTRL.length - 1, i + 2)],
+  ];
+  const len = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+  const n = Math.max(2, Math.round(len / 8));
+  for (let k = 0; k < n; k++) ROAD.push(catmull(p0, p1, p2, p3, k / n));
+}
+ROAD.push(ROAD_CTRL[ROAD_CTRL.length - 1]);
+const ROAD_HALF = 4.5;
+const roadDist = (x, z) => {
+  let m = Infinity;
+  for (let i = 0; i < ROAD.length - 1; i++) {
+    const [ax, az] = ROAD[i];
+    const [bx, bz] = ROAD[i + 1];
+    const dx = bx - ax;
+    const dz = bz - az;
+    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+    m = Math.min(m, Math.hypot(ax + t * dx - x, az + t * dz - z));
+  }
+  return m;
+};
+// Kiều Đầu (hub): cổng vòm đá ở đầu đường, đình có mái bên tây, rạp vải bên đông (client dựng; va chạm trụ ghi vào terrain.colliders).
+const HUB = {
+  gate: { off: [0, 436], yaw: 0 },
+  pavilion: { off: [-36, 466], yaw: 0.35 },
+  tent: { off: [30, 478], yaw: -0.3 },
+};
+// Chuỗi chín nhịp cầu vòm: mười điểm hạ cánh uốn lượn ra ngoài rìa phía bắc (Bậc Cuối là điểm vào), cao dần. Chỉ để nhìn (mỗi cầu là một phòng riêng).
+const SPAN = [];
+for (let k = 0; k <= 9; k++) SPAN.push([Math.round(235 * Math.sin(0.62 * k) * 10) / 10, -586 - 44 * k, 72 + 4.2 * k]);
+
 const keep = [];
 for (const p of PADS) keep.push({ x: p.off[0], z: p.off[1], r: 10 });
 for (const p of POIS) keep.push({ x: p.off[0], z: p.off[1], r: 16 });
 keep.push({ x: TRAM[0], z: TRAM[1], r: R_IN });
 for (const b of BOSSES) keep.push({ x: b.off[0], z: b.off[1], r: 38 });
 for (const b of BIA) keep.push({ x: b.off[0], z: b.off[1], r: 10 });
-for (let z = -360; z <= 400; z += 24) keep.push({ x: 0, z, r: 14 }); // đường đá không đặt bãi quái
+for (const [x, z] of ROAD.filter((_, i) => i % 2 === 0)) keep.push({ x, z, r: ROAD_HALF + 8 });
+for (const h of Object.values(HUB)) keep.push({ x: h.off[0], z: h.off[1], r: 18 });
 
 const spawns = [];
 const eliteAt = [];
@@ -474,6 +532,69 @@ for (const c of camps) {
   delete c.oz;
 }
 
+// ---- cây cổ thụ, cây vừa, cỏ lau (RNG riêng để không đổi bố cục cụm quái). Cây có va chạm; cỏ lau chỉ để nhìn. ----
+const R2 = rng(SEED + 7);
+const nearKeep = (x, z, pad) => keep.some((q) => Math.hypot(q.x - x, q.z - z) < q.r + pad) || roadDist(x, z) < ROAD_HALF + 10;
+const TREES = [];
+const placeTrees = (n, sMin, sMax, rColl, minGap, edgeBias) => {
+  for (let k = 0; k < 4000 && n > 0; k++) {
+    const x = BOX.x0 + 40 + R2() * (BOX.x1 - BOX.x0 - 80);
+    const z = BOX.z0 + 40 + R2() * (BOX.z1 - BOX.z0 - 80);
+    if (!zoneOfOffset(x, z, 12)) continue;
+    if (nearKeep(x, z, 6) || TREES.some((t) => Math.hypot(t[0] - x, t[1] - z) < minGap)) continue;
+    if (edgeBias && Math.max(Math.abs(x), Math.abs(z)) < 380 && R2() < 0.75) continue; // thưa ở giữa, dày ở rìa
+    const s = Math.round((sMin + R2() * (sMax - sMin)) * 100) / 100;
+    TREES.push([Math.round(x * 10) / 10, Math.round(z * 10) / 10, s, Math.round(R2() * 628) / 100, rColl]);
+    n--;
+  }
+};
+placeTrees(24, 1.05, 1.55, 1.6, 48, false);
+placeTrees(100, 0.55, 0.95, 0.7, 20, true);
+for (const t of TREES)
+  colliders.push({ x: Math.round((C + t[0]) * 100) / 100, z: Math.round((C + t[1]) * 100) / 100, r: Math.round(t[4] * t[2] * 100) / 100 });
+const REEDS = [];
+for (let k = 0; k < 6000 && REEDS.length < 150; k++) {
+  const x = BOX.x0 + 20 + R2() * (BOX.x1 - BOX.x0 - 40);
+  const z = BOX.z0 + 20 + R2() * (BOX.z1 - BOX.z0 - 40);
+  const d = roadDist(x, z);
+  const rim = Math.max(Math.abs(x), Math.abs(z));
+  if (!zoneOfOffset(x, z, 8) || (nearKeep(x, z, 2) && d >= ROAD_HALF + 10)) continue;
+  if (!((d > ROAD_HALF + 4 && d < 45) || rim > 540)) continue;
+  if (TREES.some((t) => Math.hypot(t[0] - x, t[1] - z) < 8)) continue;
+  if (REEDS.some((r) => Math.hypot(r[0] - x, r[1] - z) < 16)) continue;
+  REEDS.push([Math.round(x * 10) / 10, Math.round(z * 10) / 10, Math.round((5 + R2() * 5) * 10) / 10]);
+}
+// Va chạm hub: bốn trụ đình, hai trụ cổng vòm (khớp ckWonders.ts: trụ đình ±5,6 × ±3,6 quay theo yaw; trụ cổng ±6,4 m).
+const hubColl = (h, pts, r) => {
+  const cs = Math.cos(h.yaw);
+  const sn = Math.sin(h.yaw);
+  for (const [lx, lz] of pts)
+    colliders.push({
+      x: Math.round((C + h.off[0] + lx * cs + lz * sn) * 100) / 100,
+      z: Math.round((C + h.off[1] - lx * sn + lz * cs) * 100) / 100,
+      r,
+    });
+};
+hubColl(
+  HUB.pavilion,
+  [
+    [-5.6, -3.6],
+    [5.6, -3.6],
+    [-5.6, 3.6],
+    [5.6, 3.6],
+  ],
+  0.8,
+);
+hubColl(
+  HUB.gate,
+  [
+    [-6.4, 0],
+    [6.4, 0],
+  ],
+  1.5,
+);
+console.log('cây', TREES.length, 'cỏ lau', REEDS.length, 'điểm đường', ROAD.length);
+
 // ---- tài nguyên (tạm: linh thảo; chương 7 chưa có nguyên liệu hái riêng) ----
 const nodes = [
   { item: 'itm_linh_thao', x: W(-280), z: W(120), radius: 60, count: 5, respawn: 60 },
@@ -503,17 +624,19 @@ const terrain = {
     baseOct: 4,
     ridgeOct: 3,
     level: Y,
-    baseAmp: 13,
+    baseAmp: 15,
     ridgeAmp: 44,
     maskFreq: 0.0011,
     maskOct: 2,
     maskLo: -0.35,
     maskHi: 0.25,
-    edge: { amp: 120, r0: 300, r1: 20 },
+    edge: { amp: 45, r0: 260, r1: 30 },
   },
   features: feats,
   // Vách gồ ghề có bậc (mỹ thuật TN-3): chân vách lùi theo nhiễu, dốc dài 130 m chia 5 bậc.
-  play: { cx: PLAY.cx, cz: PLAY.cz, half: PLAY.half, wallH: 260, rough: { amp: 60, freq: 0.006, ramp: 130, steps: 5 } },
+  // Rìa cao nguyên tụt xuống biển mây (wallH ÂM): ngoài chân rìa đất rơi 210 m, biển mây thấp (`seaY`) phủ phía dưới, núi viền xa dựng bằng `natural.edge`.
+  seaY: 4,
+  play: { cx: PLAY.cx, cz: PLAY.cz, half: PLAY.half, wallH: -210, rough: { amp: 45, freq: 0.007, ramp: 80, steps: 2 } },
   colliders,
 };
 
@@ -532,6 +655,22 @@ const level = {
 const out = (rel, text) => fs.writeFileSync(path.join(ROOT, rel), text);
 out('packages/content/data/levels/cuu_kieu.terrain.json', JSON.stringify(terrain, null, 2) + '\n');
 out('packages/content/data/levels/cuu_kieu.json', JSON.stringify(level, null, 2) + '\n');
+const art = (name, rows) =>
+  `export const ${name} = [\n${rows.map((r) => '  ' + JSON.stringify(r).replace(/,/g, ', ')).join(',\n')},\n] as const;`;
+const roadW = ROAD.map(([x, z]) => [Math.round((C + x) * 10) / 10, Math.round((C + z) * 10) / 10]);
+out(
+  'packages/shared/src/cuukieu.art.ts',
+  `// Dữ liệu mỹ thuật Thiên Lộ Giới (TN-7): đường lát đá, cây, cỏ lau, chuỗi cầu, hub. SINH BẰNG tools/maps/gen-cuu_kieu.mjs: sửa ở đó rồi chạy lại.\n// Tọa độ thế giới (m). Chỉ để dựng hình ở client (va chạm cây/trụ đã nằm trong terrain.colliders).\n\n/** Đường tim mặt đường (x, z), cách nhau ~8 m; nửa bề rộng ${ROAD_HALF} m. */\n${art('CUU_KIEU_ROAD', roadW)}\nexport const CUU_KIEU_ROAD_HALF = ${ROAD_HALF};\n\n/** Cây: [x, z, tỉ lệ, xoay, bán kính va chạm tại tỉ lệ 1]; tỉ lệ ≥ 1 là cổ thụ. */\n${art(
+    'CUU_KIEU_TREES',
+    TREES.map((t) => [W(t[0]), W(t[1]), t[2], t[3], t[4]]),
+  )}\n\n/** Bụi cỏ lau trắng: [x, z, bán kính]. */\n${art(
+    'CUU_KIEU_REEDS',
+    REEDS.map((r) => [W(r[0]), W(r[1]), r[2]]),
+  )}\n\n/** Mười điểm hạ cánh của chín nhịp cầu vòm (x, z, độ cao mặt cầu); nhịp k nối điểm k−1 với điểm k. */\n${art(
+    'CUU_KIEU_SPAN',
+    SPAN.map((p) => [W(p[0]), W(p[1]), p[2]]),
+  )}\n\n/** Hub Kiều Đầu: cổng vòm ở đầu đường, đình có mái, rạp vải. */\nexport const CUU_KIEU_HUB = {\n  gate: { x: ${W(HUB.gate.off[0])}, z: ${W(HUB.gate.off[1])}, yaw: ${HUB.gate.yaw} },\n  pavilion: { x: ${W(HUB.pavilion.off[0])}, z: ${W(HUB.pavilion.off[1])}, yaw: ${HUB.pavilion.yaw} },\n  tent: { x: ${W(HUB.tent.off[0])}, z: ${W(HUB.tent.off[1])}, yaw: ${HUB.tent.yaw} },\n} as const;\n`,
+);
 const propLines = props.map((p) => `  { id: '${p.id}', x: ${p.x}, z: ${p.z}, yaw: ${p.yaw}, s: ${p.s} },`);
 out(
   'packages/shared/src/props.cuukieu.ts',

@@ -12,6 +12,7 @@ import { Aurora, AURORA_BY_TOD } from '../../render/aurora';
 import { BhWonders } from '../world/bhWonders';
 import { faceBlend } from '../world/vanDinhArt';
 import { VdDungeon, VdWonders } from '../world/vdWonders';
+import { CkWonders } from '../world/ckWonders';
 import { skyTopOf } from '../../render/sky';
 import { DeadTrees } from '../world/deadTrees';
 import { deadTreeSpots, KIEP_BH, riftBlend, riftPath } from '../world/bacHoangArt';
@@ -435,6 +436,11 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.faceMoodAm = eng.faceMoodDuong = 0;
     eng.faceMoodApplied = -9;
     eng.vdWonders = new VdDungeon({ heightAt: (x, z) => heightAt(x, z), center: LEVELS.gioi_tri!.dungeon!.center });
+    eng.scene.add(eng.vdWonders.group);
+  }
+  if (id === 'cuu_kieu') {
+    // Thiên Lộ Giới (TN-7): đường lát đá + lan can, chuỗi cầu vòm trên biển mây, hub có mái, cổ thụ, cỏ lau, thác (dùng chung ô `vdWonders` để dọn).
+    eng.vdWonders = new CkWonders({ heightAt: (x, z) => heightAt(x, z) });
     eng.scene.add(eng.vdWonders.group);
   }
   if (id === 'van_dinh') {

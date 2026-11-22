@@ -33,6 +33,7 @@ import { withSightFade } from './occlusion';
 import { portalPaving, sectPaving } from '../../render/groundMask';
 import { nearPropTree } from './propScatter';
 import { vanHaiArt, type VhPalette } from './vanHaiArt';
+import { ckGroundColor } from './cuuKieuArt';
 import { tkGroundColor } from './thienKhuyetArt';
 import { faceTint, vdGroundColor } from './vanDinhArt';
 import { bhGroundColor, riftPath, type RiftPt } from './bacHoangArt';
@@ -227,6 +228,10 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
   }
   if (PM) {
     pmGroundColor(x, z, ny, _tk);
+    return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
+  }
+  if (T.id === 'cuu_kieu') {
+    ckGroundColor(T.def, x, z, ny, _tk);
     return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
   }
   if (SLATE) {
