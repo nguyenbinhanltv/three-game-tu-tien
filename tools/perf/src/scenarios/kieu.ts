@@ -9,7 +9,7 @@ import { snap } from '../lib/shot';
 export default {
   name: 'kieu',
   desc: 'TN-7: vào phòng cầu qua Dẫn Kiều Nhân bằng vé thật, chụp tab Cửu Kiều, lúc vào và lúc đợt đầu xuất hiện',
-  usage: '[--bridge 1|2] [--iso 1] [--sizes 1920x1080,1280x720]',
+  usage: '[--bridge 1..9] [--iso 1] [--boss 1] [--sizes 1920x1080,1280x720]',
   async run(r) {
     const n = Number(opt('--bridge', '1'));
     for (const size of list('--sizes', '1920x1080,1280x720')) {
@@ -38,6 +38,16 @@ export default {
       await snap(page, r.out, `kieu${n}-${viewport[1]}p-vao.png`, { wait: 800 });
       await sleep(9000); // đợt đầu (delay 6–8 s)
       await snap(page, r.out, `kieu${n}-${viewport[1]}p-dot1.png`, { wait: 400 });
+      if (flag('--boss')) {
+        // Triệu hồi boss của cầu bằng GM (đợt thật xuất hiện chậm), rồi chụp khung boss (thêm ảnh ngay sau 30 ms).
+        const boss: Record<number, string> = { 5: 'boss_thach_tuong', 9: 'boss_lo_linh' };
+        await sleep(2500);
+        await gm(page, 'killall', 2500);
+        await gm(page, `spawn ${boss[n] ?? 'boss_thach_tuong'} 1`, 5000);
+        await sleep(3500);
+        await snap(page, r.out, `kieu${n}-${viewport[1]}p-boss.png`, { wait: 200 });
+        await snap(page, r.out, `kieu${n}-${viewport[1]}p-boss-30ms.png`, { wait: 30 });
+      }
       await ctx.close();
     }
   },

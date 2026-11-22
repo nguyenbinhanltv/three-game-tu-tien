@@ -96,6 +96,8 @@ describe('clampLeadFrame', () => {
 describe('isoDistFor', () => {
   it('phòng boss khổng lồ xa hơn, phòng thường giữ ISO_DIST', () => {
     expect(isoDistFor('lac_kiem_tong')).toBe(ISO_DIST);
+    // bản đồ mở có boss ngoài trời (Thiên Khuyết) giữ khoảng cách chung ở mọi nơi
+    expect(isoDistFor('thien_khuyet')).toBe(ISO_DIST);
     expect(isoDistFor('kieu_5')).toBeGreaterThan(ISO_DIST);
     expect(isoDistFor('kieu_9')).toBe(isoDistFor('kieu_5'));
   });

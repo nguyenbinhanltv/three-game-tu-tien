@@ -22,7 +22,7 @@ export const ISO_ARRIVE = 0.45;
  * Phòng boss khổng lồ có khoảng cách cố định riêng (hệ số nhân `ISO_DIST`): vẫn khóa, không zoom, nhưng cả thân boss lọt khung.
  * Phòng nào không ghi thì 1. Thêm phòng mới ở đây.
  */
-export const ISO_DIST_MUL: Readonly<Record<string, number>> = { kieu_5: 1.4, kieu_9: 1.4, thien_khuyet: 1.3 };
+export const ISO_DIST_MUL: Readonly<Record<string, number>> = { kieu_5: 1.4, kieu_9: 1.4 };
 
 export function isoDistFor(level: string): number {
   return ISO_DIST * (ISO_DIST_MUL[level] ?? 1);
