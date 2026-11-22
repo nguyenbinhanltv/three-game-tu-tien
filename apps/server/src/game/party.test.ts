@@ -422,6 +422,19 @@ describe('tỉ thí', () => {
     expect(s.sim.duel.inDuel(b)).toBe(false);
   });
 
+  it('né (khung bất tử) miễn cả đòn tỉ thí; hết khung thì trúng lại', () => {
+    const s = setup();
+    const { a, b } = duelUp(s);
+    startFight(s);
+    a.dodgeUntil = s.sim.now + 450;
+    const hp = a.char.hp;
+    hit(s, b, a, 3);
+    expect(a.char.hp).toBe(hp);
+    a.dodgeUntil = 0;
+    hit(s, b, a, 3);
+    expect(a.char.hp).toBeLessThan(hp);
+  });
+
   it('người thứ ba không đánh được người đang tỉ thí, cũng không hồi máu cho họ', () => {
     const s = setup();
     const { a, b } = duelUp(s);

@@ -33,6 +33,9 @@ const uFeetY = uniform(0);
 const uNear = uniform(0);
 /** Mức mờ của cây trong ống tầm nhìn (0 khi camera quá gần). */
 const uVeg = uniform(0);
+/** Ống mờ cây: mờ hẳn trong `uVegIn`, hết mờ ở `uVegOut` (m). Camera chéo nới rộng: tán cây gần camera che cả góc màn hình, không chỉ đường thẳng tới nhân vật. */
+const uVegIn = uniform(1.1);
+const uVegOut = uniform(2.2);
 const uSlots = Array.from({ length: SLOTS }, () => uniform(new THREE.Vector4()));
 
 /** Nhiễu gradient đan xen theo tọa độ màn hình: dither ổn định, không cần texture. */
@@ -57,7 +60,7 @@ function vegFade() {
   const dir = seg.div(len);
   const t = clamp(dot(positionWorld.sub(uCam), dir), 0, len);
   const d = length(positionWorld.sub(uCam.add(dir.mul(t))));
-  const inside = float(1).sub(smoothstep(1.1, 2.2, d));
+  const inside = float(1).sub(smoothstep(uVegIn, uVegOut, d));
   return inside
     .mul(uVeg)
     .mul(nearer)
@@ -95,7 +98,10 @@ function segDist2(px: number, pz: number, ax: number, az: number, bx: number, bz
  * Gọi mỗi khung sau khi đặt camera. `chest`: điểm camera nhìn vào trên nhân vật; `feetY`: chân.
  * Chỉ ghi số vào uniform có sẵn, không cấp phát.
  */
-export function updateOcclusion(dt: number, cam: THREE.Vector3, chest: THREE.Vector3, feetY: number, iso = false): void {
+export function updateOcclusion(dt: number, cam: THREE.Vector3, chest: THREE.Vector3, feetY: number, wide: 0 | 1 | 2 = 0): void {
+  const iso = wide > 0;
+  uVegIn.value = wide === 2 ? 4.5 : wide === 1 ? 3.2 : 1.1;
+  uVegOut.value = wide === 2 ? 8.5 : wide === 1 ? 6.4 : 2.2;
   uCam.value.copy(cam);
   uFocus.value.copy(chest);
   uFeetY.value = feetY;

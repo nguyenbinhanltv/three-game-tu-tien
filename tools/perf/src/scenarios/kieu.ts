@@ -1,5 +1,5 @@
 // TN-7: phòng cầu Cửu Kiều (cầu 1 Thạch, cầu 2 Kiếm Ảnh) qua đường thật: Dẫn Kiều Nhân (tab Cửu Kiều) → vé một lần → room cầu → ảnh lúc vào và lúc quái/bóng xuất hiện.
-//   pnpm shots kieu --out <thư mục> [--bridge 1|2] [--sizes 1920x1080,1280x720]
+//   pnpm shots kieu --out <thư mục> [--bridge 1..9] [--sizes 1920x1080,1280x720]
 import { flag, opt, list } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { enterLevel, gm, tp, waitLevel } from '../lib/game';
@@ -22,7 +22,7 @@ export default {
         warnings: true,
         ...(flag('--iso') ? { query: { cam: 'iso' } } : {}),
       });
-      await gm(page, 'level 45');
+      await gm(page, n >= 7 ? 'level 46' : 'level 45');
       await gm(page, 'god on');
       if (n > 1) await gm(page, `kieu ${n - 1}`);
       await enterLevel(page, 'cuu_kieu');

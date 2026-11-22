@@ -6,6 +6,8 @@
 import { DUONG_THUC_LEVEL, MAX_LEVEL } from './formulas';
 
 export const KIEU_COUNT = 9;
+/** Id quái của boss cuối cầu 9 (Lộ Linh). Chưa có trong `monsters.json`: PR boss thêm; chỗ cắm ở `TribulationRoom.kieuBossPhase`. */
+export const KIEU_BOSS_ID = 'boss_lo_linh';
 /** Mã (khóa i18n/level) của chín cầu theo thứ tự; khớp `glossary.cuuKieuTen`. */
 export const KIEU_IDS = ['thach', 'kiem_anh', 'suy', 'gioi', 'than', 'dao', 'ngoai', 'noi', 'dap_thien'] as const;
 export type KieuId = (typeof KIEU_IDS)[number];
@@ -54,8 +56,11 @@ export function kieuIsFirstClear(raw: unknown, n: number): boolean {
   return n === kieuCleared(raw) + 1;
 }
 
-/** Thời gian tối thiểu hợp lệ (giây) để qua cầu `n`; nhanh hơn là bất thường, không ghi tiến độ. */
-export const KIEU_MIN_CLEAR_SEC: readonly number[] = [30, 20, 150, 30, 60, 60, 80, 80, 120];
+/**
+ * Thời gian tối thiểu hợp lệ (giây) để qua cầu `n`; nhanh hơn là bất thường, không ghi tiến độ. Cầu 9 là 100 s (Hồn kiếp 105 s, đo từ lúc vào room ~108 s):
+ * thiết kế gốc 120 s tính cả boss Lộ Linh, PR boss nâng lại khi pha boss có thật.
+ */
+export const KIEU_MIN_CLEAR_SEC: readonly number[] = [30, 20, 150, 30, 60, 60, 80, 80, 100];
 
 export function kieuMinClearSec(n: number): number {
   return KIEU_MIN_CLEAR_SEC[Math.max(1, Math.min(KIEU_COUNT, n)) - 1] ?? 30;

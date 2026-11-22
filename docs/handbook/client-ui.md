@@ -41,8 +41,16 @@
 
 Chỉ client, sau cờ URL; mặc định không đổi gì. Mã: `game/camera/iso.ts` (hàm thuần, có test), `game/camera/isoRig.ts` (trạng thái: con trỏ, đích, vòng ngắm), nối ở `game/engine/frameLoop.ts` (`updateCamera`, `buildInput`, `fireSkill`) và `game/engine/input.ts`.
 
-- Camera phối cảnh FOV 32°, nghiêng 52°, hướng cố định theo bản đồ (`ISO_YAW`, mặc định 45°), khoảng cách khóa cố định 22 m (không zoom, lăn chuột không đổi camera), `far` 250 m, ẩn biển mây/trời xa/núi nền; bám nhân vật, dẫn trước tối đa 3,2 m theo con trỏ; rung máy giữ nguyên; ngự kiếm lùi xa ×1,35.
+- Camera phối cảnh FOV 32°, nghiêng 52°, hướng cố định theo bản đồ (`ISO_YAW`, mặc định 45°), khoảng cách khóa cố định 20 m (không zoom, lăn chuột không đổi camera), `far` 250 m, ẩn biển mây/trời xa/núi nền; bám nhân vật, dẫn trước tối đa 3,2 m theo con trỏ; rung máy giữ nguyên; ngự kiếm lùi xa ×1,35.
 - Chuột phải = đi tới điểm: client chiếu con trỏ xuống `heightAt` rồi đổi hướng tới đích thành `mx/mz` như WASD (server vẫn quyết định vị trí). WASD giữ nguyên (theo trục camera cố định) và hủy đích. Con trỏ hiện vòng ngắm trên đất.
 - Chiêu cần mục tiêu tự khóa quái sống gần con trỏ nhất (≤ 5 m trên đất), không có thì rơi về tab-target cũ. Không đổi giao thức.
 - Vật che: `updateOcclusion(..., iso)` nới lề trúng vật 2,4 m để mái/tường phủ lên nhân vật cũng mờ.
 - Chụp/đo: `pnpm shots camiso --out <thư mục>` (cũ vs iso, Thấp/Cao, 720p/1080p, zoom, chuột phải, đánh quái, ngự kiếm).
+
+### Thiên Nhãn P1: ngắm lên server và né (camera chéo)
+
+- Tin `C.SKILL` có thể kèm `ax, az` (điểm con trỏ trên đất). Server (`apps/server/src/game/combat/index.ts`) kiểm hữu hạn, kẹp trong `AIM_MAX_DIST` (45 m) quanh người (`packages/shared/src/aim.ts`). Chiêu cần mục tiêu mà không nêu `t`: server tự khóa quái sống gần điểm ngắm nhất (≤ `AIM_PICK_R` 5 m) và trong tầm chiêu. Chiêu hướng/lướt quay theo điểm ngắm; hình và tầm vùng chiêu vẫn do server tính từ hướng đó.
+- Né: `C.DODGE` (Space ở chế độ iso; ngự kiếm vẫn dùng Space bay lên). Server lập đường bằng `planDash` (≤ 6 m, không xuyên vách), cấp khung bất tử 450 ms (`p.dodgeUntil`, `damagePlayer` bỏ qua), hồi 2,5 s, khe tối thiểu 0,4 s, hủy niệm/đòn chờ như lướt; không tốn linh lực/vật phẩm (không đụng sổ cái).
+- Camera dẫn về điểm giữa người và mục tiêu đang chọn; ống mờ cây nới rộng khi iso (nới hơn nữa khi ngự kiếm).
+- Vòng cảnh báo đất của quái/boss là vạch báo có sẵn (hazard); P1 không đổi hình, chỉ kiểm chúng vẫn đọc được ở góc chéo.
+- Kiểm: `apps/server/src/game/aim.test.ts`, `SECURITY_ONLY=aim pnpm --filter @dtl/bot-client security`, `pnpm bots --count 100` (0 dòng `refId`), `pnpm ledger:check`.
