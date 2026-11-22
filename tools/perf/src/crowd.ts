@@ -457,7 +457,7 @@ type Point = {
   fps: number;
   cpuMs: { p50: number; p95: number; p99: number; max: number };
   gpuMs: { p50: number; p95: number } | null;
-  parts: Record<string, { mean: number; p95: number }>;
+  parts: Record<string, { mean: number; p50: number; p95: number }>;
   drawCalls: { p50: number; max: number };
   triangles: { p50: number; max: number };
   textures: number;
@@ -824,7 +824,13 @@ async function measure(
   for (const [k, v] of Object.entries(raw.parts)) {
     const s = [...v].sort((a, b) => a - b);
     // Phần không chạy mỗi khung vẫn tính trung bình trên mọi khung đã ghi.
-    parts[k] = { mean: round(v.reduce((a, b) => a + b, 0) / Math.max(1, raw.frames.length)), p95: round(quant(s, 0.95)) };
+    // p50 chống nhiễu của khung biên dịch pipeline (hàng trăm ms) kéo trung bình lên.
+    const padded = s.length < raw.frames.length ? [...new Array<number>(raw.frames.length - s.length).fill(0), ...s] : s;
+    parts[k] = {
+      mean: round(v.reduce((a, b) => a + b, 0) / Math.max(1, raw.frames.length)),
+      p50: round(quant(padded, 0.5)),
+      p95: round(quant(s, 0.95)),
+    };
   }
   return {
     scene: sc.name,
