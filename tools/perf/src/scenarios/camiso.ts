@@ -11,6 +11,12 @@ import { snap, writeJson } from '../lib/shot';
 const VIEWS: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': [1920, 1080] };
 const YAW = Math.PI * 0.25;
 const LEVEL = opt('--level', 'van_lam');
+/** Hướng camera iso (độ) đang dùng để đẩy điểm đứng ra phía camera: `isoyaw=` trong --query, không thì bảng hướng đã chọn (khớp ISO_YAW ở client). */
+const YAW_DEG: Record<string, number> = { van_lam: 30, van_hai: 135 };
+const standYaw = (): number => {
+  const m = /isoyaw=(-?[0-9.]+)/.exec(opt('--query', ''));
+  return (((m ? Number(m[1]) : (YAW_DEG[LEVEL] ?? 45)) as number) * Math.PI) / 180;
+};
 const VAN_LAM_POINTS = [
   { name: 'san', x: SPAWN_POINT.x, z: SPAWN_POINT.z },
   { name: 'cong-trong', x: 2048, z: 2128 },
@@ -69,7 +75,9 @@ export default {
           const POINTS = pointsFor();
           // Vị trí đo: cùng điểm cho cả hai camera; camera cũ đặt cùng hướng nhìn.
           for (const p of POINTS) {
-            await tp(page, p.x, p.z);
+            // Điểm quan tâm (đình, cầu...) ở level khác: đứng ra phía camera 3,5 m để người không lẫn vào chân công trình.
+            const k = LEVEL === 'van_lam' ? 0 : 3.5;
+            await tp(page, p.x + Math.sin(standYaw()) * k, p.z + Math.cos(standYaw()) * k);
             await gm(page, 'killall', 1200);
             if (!iso) await cam(page, { yaw: YAW });
             await sleep(2500);

@@ -11,6 +11,7 @@ import { DoanMachFalls, fallSpots } from './doanMachFalls';
 import { logger } from '../../base/log';
 import { assets, type AssetHandle } from '../core/assets';
 import { adoptGltfMaterials } from '../../render/materials/world';
+import { withSightFade } from './occlusion';
 
 /**
  * Cảnh Đoạn Mạch (MAP-2, chỉ để nhìn, không va chạm): rừng phong thẻ lá alpha theo cụm (đỏ/cam/vàng, mỗi cây là thân + tán xoè bằng các thẻ
@@ -590,7 +591,7 @@ export class DoanMachArt {
     for (const kind of [0, 1, 2] as const) {
       const mine = trees.filter((t) => t.kind === kind);
       const map = canopyTexture(kind);
-      const mat = createWorldMaterial({ vertexColors: true, map, alphaTest: 0.45, roughness: 0.8, side: THREE.DoubleSide });
+      const mat = withSightFade(createWorldMaterial({ vertexColors: true, map, alphaTest: 0.45, roughness: 0.8, side: THREE.DoubleSide }));
       const mesh = new THREE.InstancedMesh(canopyGeo, mat, Math.max(1, mine.length));
       mesh.name = `maple-canopy-${kind}`;
       mesh.frustumCulled = false;
