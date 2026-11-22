@@ -943,6 +943,10 @@
   --rc: var(--u-gold);
   --rc-lo: var(--u-h-crimson);
 }
+.res-bar[data-res='loi_tich'] {
+  --rc: color-mix(in srgb, var(--u-h-soul-hi) 55%, var(--u-gold-hi));
+  --rc-lo: var(--u-h-soul-lo);
+}
 .res-bar[data-res='hon_luc'] {
   --rc: var(--u-h-soul-hi);
   --rc-lo: var(--u-h-soul-lo);

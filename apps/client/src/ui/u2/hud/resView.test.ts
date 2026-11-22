@@ -15,6 +15,7 @@ describe('thanh tài nguyên riêng (VS-2a)', () => {
       'huyet_khi',
       'khi_the',
       'kiem_y',
+      'loi_tich',
     ]);
     expect(def('kiem_y').ui).toBe('pips');
     expect(def('huyet_khi').ui).toBe('bar');
