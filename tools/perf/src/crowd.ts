@@ -729,6 +729,13 @@ async function measure(
   arrived: boolean,
 ): Promise<Point> {
   await sleep(WARMUP * 1000);
+  // `CROWD_HIDE=1,15`: ẩn nhánh cấp 1 của cảnh theo chỉ số (đo chi phí biên của từng nhóm; ảnh hưởng mọi số đo sau đó).
+  if (env('CROWD_HIDE')) {
+    await page.evaluate((idx) => {
+      const g = window.__game as any;
+      for (const i of idx.split(',').map(Number)) if (g.scene.children[i]) g.scene.children[i].visible = false;
+    }, env('CROWD_HIDE'));
+  }
   // Xoay camera một vòng trước khi ghi: pipeline của prop/skin chỉ biên dịch lần đầu thấy (hàng trăm ms mỗi khung) và sẽ dồn vào cửa sổ đo nếu bỏ qua.
   // `--cold` bỏ bước này để đo đúng cú khựng lần đầu thấy.
   if (!args.includes('--cold')) {
