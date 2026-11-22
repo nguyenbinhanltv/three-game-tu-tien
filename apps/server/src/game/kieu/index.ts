@@ -2,11 +2,16 @@
 // luật thuần ở `packages/shared/src/kieu.ts`. Phòng cầu (phó bản/kiếp chuỗi) gọi `onClear` khi chính server thấy điều kiện qua đã đạt,
 // không có tin "đã qua" nào từ client. Thiết kế và chống gian: artifact tn7/thiet-ke.md mục 5.
 import { randomUUID } from 'node:crypto';
+import { eq, like, sql } from 'drizzle-orm';
 import {
   canChooseDap,
   hasDapTitle,
   isDapId,
+  KIEU_BOARD_COOLDOWN_MS,
+  KIEU_BOARD_MAX,
   KIEU_RETICKET_SEC,
+  type KieuBoardMsg,
+  S,
   KIEU_XP_FRAC,
   kieuCleared,
   kieuClearOk,
@@ -20,6 +25,7 @@ import {
 import { LEVELS, realmName, t } from '@dtl/content';
 import type { PlayerEnt } from '../entities';
 import { log } from '../../log';
+import { characters, db, ledger } from '../../db';
 
 /** NPC cấp vé (Dẫn Kiều Nhân, ở Kiều Đầu). */
 export const KIEU_NPC = 'npc_dan_kieu_nhan';
@@ -93,6 +99,36 @@ export class KieuSystem {
     }
     for (const q of members) this.lastIssue.set(q.char.id, this.c.now);
     return { level, dgKey: randomUUID(), members };
+  }
+
+  /** Lần xin bảng gần nhất của từng nhân vật (ms theo `ctx.now`). */
+  private readonly lastBoard = new Map<number, number>();
+
+  /**
+   * Bảng Thiên Lộ (`C.KIEU_BOARD`): những người đã qua cầu 9, theo thời điểm ghi (cũ trước), tối đa `KIEU_BOARD_MAX`. Nguồn là dòng sổ cái `kieu:clear:<nhân vật>:9`
+   * (server ghi, không ai sửa được); tên lấy từ bảng nhân vật. Giãn cách mỗi người để không bị dùng làm đường truy vấn dồn.
+   */
+  onBoard(p: PlayerEnt): void {
+    const last = this.lastBoard.get(p.char.id) ?? -Infinity;
+    if (this.c.now - last < KIEU_BOARD_COOLDOWN_MS) return;
+    this.lastBoard.set(p.char.id, this.c.now);
+    const where = like(ledger.idem, 'kieu:clear:%:9');
+    const rows = db
+      .select({ name: characters.name, ts: ledger.ts })
+      .from(ledger)
+      .innerJoin(characters, eq(characters.id, ledger.charId))
+      .where(where)
+      .orderBy(ledger.ts)
+      .limit(KIEU_BOARD_MAX)
+      .all();
+    const total =
+      db
+        .select({ n: sql<number>`count(*)` })
+        .from(ledger)
+        .where(where)
+        .get()?.n ?? 0;
+    const msg: KieuBoardMsg = { rows, total };
+    p.client.send(S.KIEU_BOARD, msg);
   }
 
   /**

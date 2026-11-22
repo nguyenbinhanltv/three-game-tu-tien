@@ -255,3 +255,34 @@ describe('kết game: chọn nguồn Cực nguyên (Đạp Thiên)', () => {
     expect(p.char.view().dap).toBe('');
   });
 });
+
+describe('Bảng Thiên Lộ', () => {
+  it('chỉ liệt kê người đã qua cầu 9, theo thời điểm ghi; giãn cách giữa hai lần xin', () => {
+    vi.useFakeTimers();
+    const { join, sys } = setup();
+    const a = join(47, 8);
+    const b = join(47, 8);
+    const c = join(47, 3);
+    expect(sys.onClear(a, 9, OK)).toBe('ok');
+    vi.advanceTimersByTime(5000);
+    expect(sys.onClear(b, 9, OK)).toBe('ok');
+    const got: { type: string; msg: { rows: { name: string; ts: number }[]; total: number } }[] = [];
+    (c as unknown as { client: { send: (t: string, m: unknown) => void } }).client = {
+      send: (type: string, msg: unknown) => void got.push({ type, msg: msg as never }),
+    };
+    sys.onBoard(c);
+    expect(got).toHaveLength(1);
+    expect(got[0]!.type).toBe('kbd');
+    const names = got[0]!.msg.rows.map((r) => r.name);
+    expect(names.slice(-2)).toEqual([a.char.name, b.char.name]);
+    expect(names).not.toContain(c.char.name);
+    expect(got[0]!.msg.total).toBeGreaterThanOrEqual(2);
+    const ts = got[0]!.msg.rows.map((r) => r.ts);
+    expect([...ts].sort((x, y) => x - y)).toEqual(ts);
+    sys.onBoard(c); // trong giãn cách: bỏ qua
+    expect(got).toHaveLength(1);
+    vi.advanceTimersByTime(2500);
+    sys.onBoard(c);
+    expect(got).toHaveLength(2);
+  });
+});
