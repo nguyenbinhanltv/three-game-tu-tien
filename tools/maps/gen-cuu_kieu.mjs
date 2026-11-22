@@ -601,18 +601,25 @@ for (let k = 0; k < 6000 && ROCKS.length < 64; k++) {
   ROCKS.push([Math.round(x * 10) / 10, Math.round(z * 10) / 10, sc, Math.round(R2() * 628) / 100]);
   colliders.push({ x: Math.round((C + x) * 100) / 100, z: Math.round((C + z) * 100) / 100, r: Math.round(1.25 * sc * 100) / 100 });
 }
-// Lan can hai bên đường: một vòng va chạm nhỏ ở mỗi trụ (chừa các khung "mở").
-for (const [fx, fz, yaw, open] of RAIL) {
-  if (open) continue;
+// Lan can hai bên đường: vòng va chạm r 0,55 ở mỗi trụ VÀ hai vòng trung gian dọc thanh ngang giữa hai trụ đóng liên tiếp (tâm cách nhau 1,5 m): khe giữa
+// hai vòng ~0,4 m, hẹp hơn thân người chơi (PLAYER_RADIUS 0,5 → rộng 1 m) nên không đi xuyên lan can được. Khung "mở" (lối băng ngang) thì không vòng nào.
+const railPost = ([fx, fz, yaw], side) => {
+  const off = ROAD_HALF + 0.35;
+  return [fx + Math.cos(yaw) * off * side, fz - Math.sin(yaw) * off * side];
+};
+const pushRail = (x, z) => colliders.push({ x: Math.round((C + x) * 100) / 100, z: Math.round((C + z) * 100) / 100, r: 0.55 });
+RAIL.forEach((f, i) => {
+  if (f[3]) return;
   for (const side of [-1, 1]) {
-    const off = ROAD_HALF + 0.35;
-    colliders.push({
-      x: Math.round((C + fx + Math.cos(yaw) * off * side) * 100) / 100,
-      z: Math.round((C + fz - Math.sin(yaw) * off * side) * 100) / 100,
-      r: 0.55,
-    });
+    const [x, z] = railPost(f, side);
+    pushRail(x, z);
+    const g = RAIL[i + 1];
+    if (g && !g[3]) {
+      const [x2, z2] = railPost(g, side);
+      for (const t of [1 / 3, 2 / 3]) pushRail(x + (x2 - x) * t, z + (z2 - z) * t);
+    }
   }
-}
+});
 const REEDS = [];
 for (let k = 0; k < 6000 && REEDS.length < 150; k++) {
   const x = BOX.x0 + 20 + R2() * (BOX.x1 - BOX.x0 - 40);
