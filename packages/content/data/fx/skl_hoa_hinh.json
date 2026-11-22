@@ -89,14 +89,42 @@
   {
    "type": "mesh",
    "shape": "card",
+   "t": -0.12,
+   "dur": 1.6,
+   "card": "colossus",
+   "at": "self",
+   "offset": [
+    0.4,
+    4.2,
+    9.8
+   ],
+   "billboard": true,
+   "scale": [
+    6.4,
+    9.6,
+    1
+   ],
+   "sweep": 0.22,
+   "erodeFrom": 0.7,
+   "alpha": 0.55,
+   "shadow": false,
+   "tone": "core",
+   "camFade": true,
+   "awayFromCam": true,
+   "tier": 1,
+   "seed": 33
+  },
+  {
+   "type": "mesh",
+   "shape": "card",
    "t": -0.1,
    "dur": 1.6,
    "card": "colossus",
    "at": "self",
    "offset": [
     0,
-    3.8,
-    7.5
+    4.5,
+    9.2
    ],
    "billboard": true,
    "scale": [

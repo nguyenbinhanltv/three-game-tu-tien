@@ -50,6 +50,8 @@ export interface CharacterView {
   perform?(pose: string, o?: PerformOpts): boolean;
   /** Bậc phát sáng của vũ khí theo cường hóa (0, 1 từ +7, 2 từ +10); model không hỗ trợ thì bỏ qua. */
   setWeaponGlow?(stage: number): void;
+  /** Lôi tu: tia điện nhẹ dọc kiếm, kể cả kiếm đeo lưng (model không hỗ trợ thì bỏ qua). */
+  setWeaponArc?(on: boolean): void;
   /** Thể tu: tay không, găng + giáp nhẹ (model không hỗ trợ thì bỏ qua). */
   setBrawlerGear?(on: boolean, ancient?: boolean): void;
   /** Cổ Thần hóa hình: nhân vật to lên `k` lần (1 = bình thường); model không hỗ trợ thì bỏ qua. */

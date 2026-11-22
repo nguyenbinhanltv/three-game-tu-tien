@@ -26,3 +26,31 @@ export function bladeLook(mt: string | undefined, setBlade: string, glow: number
   const tint = setBlade || (pal ? mixHex(pal.rim, pal.body, MIX[frame % MIX.length]!) : '');
   return { tint, glow: Math.max(glow, 2) };
 }
+
+/** Số điểm gãy của tia điện dọc lưỡi (đoạn = ARC_POINTS - 1) và biên độ lệch tối đa (m) ở giữa lưỡi. */
+export const ARC_POINTS = 9;
+export const ARC_AMP = 0.06;
+/** Tia điện đổi dạng ~12 lần/giây (cùng nhịp chập chờn của ánh kiếm); chỉ hiện ~80% số khung để không thành một dải sáng liên tục. */
+export const ARC_HZ = LOI_FLICKER_HZ;
+const hash01 = (n: number): number => {
+  const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return s - Math.floor(s);
+};
+
+/** Hướng tu có kiếm điện (tia điện nhẹ dọc kiếm, kể cả lúc kiếm còn trên lưng). */
+export const loiArc = (mt: string | undefined): boolean => mt === LOI_METHOD;
+
+/**
+ * Tia điện của khung `frame`: độ lệch ngang (m) của từng điểm gãy theo hai trục vuông góc (`x`, `y`) và độ hiện của khung (0 = ẩn).
+ * Tất định theo `frame` và `seed`; hai đầu lưỡi lệch 0 (tia bám vào kiếm), lệch lớn nhất ở giữa.
+ */
+export function arcFrame(frame: number, seed = 0): { x: number[]; y: number[]; vis: number } {
+  const x: number[] = [];
+  const y: number[] = [];
+  for (let i = 0; i < ARC_POINTS; i++) {
+    const env = Math.sin((Math.PI * i) / (ARC_POINTS - 1));
+    x.push((hash01(frame * 31 + i * 7 + seed) - 0.5) * 2 * ARC_AMP * env);
+    y.push((hash01(frame * 17 + i * 13 + seed + 5) - 0.5) * 2 * ARC_AMP * env);
+  }
+  return { x, y, vis: hash01(frame * 3 + seed + 11) < 0.8 ? 1 : 0 };
+}
