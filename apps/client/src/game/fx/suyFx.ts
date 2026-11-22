@@ -85,8 +85,8 @@ export class SuyFx {
   private ringOf = new Map<string, { n: number; r: number }>();
   private vanOf = new Map<string, { shift: number; t0: number; dur: number }>();
   private lastShadow: { x: number; y: number; z: number } | null = null;
-  /** Nhãn số Hán nổi trên Đạo Môn của hỏi đạo (TN-3): sprite chữ trên canvas, hết `until` (giây `performance.now`) thì gỡ. */
-  private labels: { src: string; sprite: THREE.Sprite; until: number }[] = [];
+  /** Vật tạm của hỏi đạo (TN-3): nhãn số và vòng cổng vẽ thẳng bằng lưới, hết `until` (giây `performance.now`) thì gỡ. */
+  private temps: { src: string; obj: THREE.Object3D; until: number; free: () => void }[] = [];
   /** Nhật ký dev cho Playwright (`__game.suyFx.log`). */
   readonly log: { key: string; at: number }[] = [];
 
@@ -450,39 +450,104 @@ export class SuyFx {
    * FX `hkmark`: dấu trên sân của Huyền Kiếp (TN-6). Thứ phải chạm/bước vào (chỗ nấp, trụ nguội, ấn thật, Hồn Châu, cung sinh) có thêm cột linh quang
    * để đọc được từ xa trên sân tối; mối nguy (đụn tuyết, trụ nóng) dùng tông `accent` của kiếp.
    */
-  /** Số Hán một/hai/ba trên đỉnh cổng/dấu: sprite chữ lớn, sáng, luôn quay về camera, sống `dur` giây. */
-  private numeral(src: string, x: number, z: number, h: number, n: number, dur: number, color: number): void {
+  /**
+   * Nhãn số trên đỉnh cổng/dấu: sprite canvas, chữ vàng #F2C14E viền tối trên nền trong suốt, số Ả Rập lớn kèm số Hán nhỏ (一/二/三), tắt thử độ sâu để không bị
+   * đá sân che, luôn quay về camera, sống `dur` giây. Vẽ canvas không phụ thuộc font tải muộn: font hệ thống có CJK + dự phòng, và chỉ vẽ lại một lần khi
+   * `document.fonts.ready` (nếu có) để chữ không trống.
+   */
+  private numeral(src: string, x: number, z: number, h: number, n: number, dur: number): void {
     const scene = this.env.scene;
     if (!scene || typeof document === 'undefined') return;
     const cv = document.createElement('canvas');
-    cv.width = cv.height = 128;
-    const g = cv.getContext('2d');
-    if (!g) return;
-    g.font = 'bold 104px "Noto Serif", "Songti SC", serif';
-    g.textAlign = 'center';
-    g.textBaseline = 'middle';
-    g.lineWidth = 10;
-    g.strokeStyle = 'rgba(40,20,70,0.95)';
-    g.strokeText(['', '一', '二', '三'][n] ?? String(n), 64, 68);
-    g.fillStyle = '#' + color.toString(16).padStart(6, '0');
-    g.fillText(['', '一', '二', '三'][n] ?? String(n), 64, 68);
+    cv.width = cv.height = 256;
+    const han = ['', '一', '二', '三'][n] ?? '';
+    const draw = (): void => {
+      const g = cv.getContext('2d');
+      if (!g) return;
+      g.clearRect(0, 0, 256, 256);
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.lineJoin = 'round';
+      g.lineWidth = 16;
+      g.strokeStyle = 'rgba(26,14,50,0.95)';
+      g.fillStyle = '#F2C14E';
+      g.font = 'bold 150px "Noto Serif SC", "Noto Serif", "Microsoft YaHei", "SimSun", "Songti SC", serif';
+      g.strokeText(String(n), 128, 92);
+      g.fillText(String(n), 128, 92);
+      g.font = 'bold 96px "Noto Serif SC", "Microsoft YaHei", "SimSun", "Songti SC", "Noto Sans CJK SC", serif';
+      g.strokeText(han, 128, 200);
+      g.fillText(han, 128, 200);
+    };
+    draw();
     const tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.needsUpdate = true;
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false }));
-    sprite.scale.set(3.6, 3.6, 1);
+    void document.fonts?.ready.then(() => {
+      draw();
+      tex.needsUpdate = true;
+    });
+    const sprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, toneMapped: false }),
+    );
+    sprite.scale.set(3.4, 3.4, 1);
     sprite.position.set(x, this.env.ground(x, z) + h, z);
-    sprite.renderOrder = 20;
+    sprite.renderOrder = 30;
     scene.add(sprite);
-    this.labels.push({ src, sprite, until: performance.now() / 1000 + dur });
+    this.addTemp(src, sprite, dur, () => {
+      tex.dispose();
+      sprite.material.dispose();
+    });
+  }
+
+  /**
+   * Vòng cổng của hỏi đạo vẽ thẳng bằng lưới phẳng (không qua timeline): `n` vành đồng tâm + đĩa mờ, tắt thử độ sâu và `renderOrder` cao nên các tấm đá
+   * sân không che được. Nằm cao 0,15 m trên mặt đất; mỏng và trong để người đứng trong cổng vẫn thấy rõ nhân vật.
+   */
+  private gateRings(src: string, x: number, z: number, r: number, n: number, dur: number, color: number): void {
+    const scene = this.env.scene;
+    if (!scene) return;
+    const group = new THREE.Group();
+    const mats: THREE.Material[] = [];
+    const geos: THREE.BufferGeometry[] = [];
+    const add = (geo: THREE.BufferGeometry, opacity: number): void => {
+      const mat = new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity,
+        depthWrite: false,
+        depthTest: false,
+        side: THREE.DoubleSide,
+        toneMapped: false,
+      });
+      const m = new THREE.Mesh(geo, mat);
+      m.rotation.x = -Math.PI / 2;
+      m.renderOrder = 25;
+      group.add(m);
+      mats.push(mat);
+      geos.push(geo);
+    };
+    add(new THREE.CircleGeometry(r, 40), 0.18);
+    for (let i = 0; i < n; i++) {
+      const out = r * (1 - 0.26 * i);
+      add(new THREE.RingGeometry(out - 0.2, out, 48), 0.9);
+    }
+    group.position.set(x, this.env.ground(x, z) + 0.15, z);
+    scene.add(group);
+    this.addTemp(src, group, dur, () => {
+      for (const m of mats) m.dispose();
+      for (const g of geos) g.dispose();
+    });
+  }
+
+  private addTemp(src: string, obj: THREE.Object3D, dur: number, free: () => void): void {
+    this.temps.push({ src, obj, until: performance.now() / 1000 + dur, free });
   }
 
   private dropLabels(src: string | null, now = Infinity): void {
-    this.labels = this.labels.filter((l) => {
+    this.temps = this.temps.filter((l) => {
       if ((src !== null && l.src !== src) || l.until > now) return true;
-      l.sprite.removeFromParent();
-      l.sprite.material.map?.dispose();
-      l.sprite.material.dispose();
+      l.obj.removeFromParent();
+      l.free();
       return false;
     });
   }
@@ -516,10 +581,12 @@ export class SuyFx {
             this.at(`kc_gate_${gates[i]}`, 'kc_hoi_dao', g.x, g.z, 3, { delay: d, src });
             // Số vành đọc từ xa bằng số cột sáng: cổng `n` vành có `n` cột xếp ngang (cùng cách với dấu giữa sân).
             this.pillars(src, `kcg${i}`, g.x, g.z, gates[i] ?? 1, d, 'rim');
-            this.numeral(src, g.x, g.z, 3.8, gates[i] ?? 1, d, 0xffe08a);
+            this.numeral(src, g.x, g.z, 3.8, gates[i] ?? 1, d);
+            this.gateRings(src, g.x, g.z, 3, gates[i] ?? 1, d, hexOf('kc_hoi_dao', 'rim'));
           }
           this.pillars(src, 'kcgm', x, z, m.n ?? 1, d, 'accent');
-          this.numeral(src, x, z, 3.4, m.n ?? 1, d, 0xffd25a);
+          this.numeral(src, x, z, 3.4, m.n ?? 1, d);
+          this.gateRings(src, x, z, 2.2, m.n ?? 1, d, hexOf('kc_hoi_dao', 'accent'));
         } else if (pg === 4) {
           // 2 s cuối: đường sáng mờ từ dấu giữa sân tới cổng đúng (server báo điểm cổng ở ox/oz; dài đúng bán kính vòng).
           this.at('kc_hd_path', 'kc_hoi_dao', x, z, m.r ?? 6, { yaw: Math.atan2((m.ox ?? x) - x, (m.oz ?? z) - z), delay: m.d ?? 2, src });
@@ -772,7 +839,7 @@ export class SuyFx {
 
   /** Mỗi khung: phát lại vòng lặp tới hạn; đèn viền bám nhân vật; chủ hết độ kiếp (lỡ tin khép ải) thì dọn. */
   update(): void {
-    if (this.labels.length) this.dropLabels(null, performance.now() / 1000);
+    if (this.temps.length) this.dropLabels(null, performance.now() / 1000);
     if (this.loops.size === 0 && this.stage.size === 0) return;
     const now = performance.now() / 1000;
     for (const src of new Set([...this.stage.keys(), ...[...this.loops.values()].map((l) => l.src)])) {
