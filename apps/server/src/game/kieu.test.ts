@@ -219,3 +219,39 @@ describe('ghi tiến độ cầu', () => {
     expect(p.char.mhp / base).toBeLessThan(1.06);
   });
 });
+
+describe('kết game: chọn nguồn Cực nguyên (Đạp Thiên)', () => {
+  it('phải đủ chín cầu, đứng cạnh NPC, chỉ chọn một lần, id lạ bị bỏ qua', () => {
+    const { join, sys, warns, setNear } = setup();
+    const p = join(47, 8);
+    sys.onChoose(p, { id: 'sat_luc' });
+    expect(p.char.meta.dap).toBeUndefined();
+    expect(warns).toContain('sys.dap_locked');
+    p.char.meta.kieu = 9;
+    for (const bad of [null, undefined, {}, { id: 'kim' }, { id: 7 }, { id: '__proto__' }, 'sat_luc']) sys.onChoose(p, bad);
+    expect(p.char.meta.dap).toBeUndefined();
+    setNear(false);
+    sys.onChoose(p, { id: 'sat_luc' });
+    expect(p.char.meta.dap).toBeUndefined();
+    setNear(true);
+    const atk0 = p.char.atk;
+    sys.onChoose(p, { id: 'sat_luc' });
+    expect(p.char.meta.dap).toBe('sat_luc');
+    expect(p.char.atk).toBeGreaterThan(atk0 * 1.05);
+    sys.onChoose(p, { id: 'cam_che' });
+    expect(p.char.meta.dap).toBe('sat_luc');
+    expect(warns).toContain('sys.dap_have');
+    expect(p.char.view().dap).toBe('sat_luc');
+    expect(p.char.view().kieu).toBe(9);
+  });
+
+  it('meta.dap bị sửa bậy khi tải: chuỗi lạ coi như chưa chọn', () => {
+    const { join } = setup();
+    const p = join(47, 9);
+    const before = p.char.mhp;
+    (p.char.meta as { dap?: string }).dap = 'khong_co';
+    p.char.recalc();
+    expect(p.char.mhp).toBe(before);
+    expect(p.char.view().dap).toBe('');
+  });
+});
