@@ -18,6 +18,8 @@ import {
   type FxTimeline,
   type ResolvedSkill,
   type TerrainDef,
+  kieuOfLevel,
+  KIEU_MOOD,
 } from '@dtl/shared';
 import type {
   ArtifactDef,
@@ -505,6 +507,11 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   kim_da_cung: kimDaCungAssetsJson as LevelAssets,
   luyen_than: luyenThanAssetsJson as LevelAssets,
 };
+// Mood phòng cầu Cửu Kiều (TN-7): bảng `KIEU_MOOD` (sinh bởi tools/maps/gen-kieu-arena.mjs) ghi đè `assets.mood` để cầu 3–9 (level thêm sau) tự theo.
+for (const [id, a] of Object.entries(LEVEL_ASSETS)) {
+  const n = kieuOfLevel(id);
+  if (n) a.mood = KIEU_MOOD[n - 1] as LevelAssets['mood'];
+}
 /** 14 Bản Nguyên (TN-1, data/origins.json): sáu nguồn `real` đã mở, tám nguồn khóa theo chương. */
 export const ORIGINS = originsJson as OriginDef[];
 /** Các nguồn người chơi đang được mang (`ROOT_IDS`): năm linh căn ngũ hành (P3-7) + Lôi (TN-1). */
