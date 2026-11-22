@@ -45,7 +45,9 @@ import {
   ISO_FAR,
   ISO_FOV,
   ISO_DIST,
+  isoDistFor,
   clampLeadFrame,
+  isoTopEq,
   clampLeadSafe,
   isoCameraPos,
   isoLead,
@@ -397,13 +399,14 @@ function updateCamera(eng: Game, dt: number): void {
     const tl = eng.targetId && eng.ents.chestOf(eng.targetId, _v) ? isoLeadTarget(_v.x - rp.x, _v.z - rp.z) : null;
     const ld = tl ? { x: tl.x + cl.x * 0.4, z: tl.z + cl.z * 0.4 } : cl;
     // Kẹp khung: người chơi luôn trong vùng an toàn; mục tiêu cũng trong vùng an toàn (tránh minimap/HUD) nếu thực hiện được, không thì ưu tiên người chơi.
-    const safe = tl ? clampLeadFrame(ld.x, ld.z, eng.camYaw, _v.x - rp.x, _v.z - rp.z) : clampLeadSafe(ld.x, ld.z, eng.camYaw);
+    const top = tl && eng.targetId ? isoTopEq(eng.ents.monsters.get(eng.targetId)?.model.height ?? 0) : 0;
+    const safe = tl ? clampLeadFrame(ld.x, ld.z, eng.camYaw, _v.x - rp.x, _v.z - rp.z, top) : clampLeadSafe(ld.x, ld.z, eng.camYaw);
     ld.x = safe.x;
     ld.z = safe.z;
     const kk = Math.min(1, dt * 3);
     iso.lead.x += (ld.x - iso.lead.x) * kk;
     iso.lead.z += (ld.z - iso.lead.z) * kk;
-    const wantD = ISO_DIST * (flying ? 1.35 : 1) * (1 + pull);
+    const wantD = isoDistFor(levelId()) * (flying ? 1.35 : 1) * (1 + pull);
     iso.distCur += (wantD - iso.distCur) * Math.min(1, dt * 6);
     tx = rp.x + iso.lead.x;
     ty = rp.y + 1.0;
