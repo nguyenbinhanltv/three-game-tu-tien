@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { ISO_BOLT_HEIGHT, ISO_CARD_ALPHA, ISO_CARD_SCALE, ISO_UPRIGHT_MAX, ISO_UPRIGHT_SOFT, isoFxHeight, isoFxScaleY } from './isoFx';
+import {
+  ISO_BOLT_HEIGHT,
+  isBoltGroundHit,
+  isoBehind,
+  isoBoltFootRadius,
+  ISO_CARD_ALPHA,
+  ISO_CARD_SCALE,
+  ISO_UPRIGHT_MAX,
+  ISO_UPRIGHT_SOFT,
+  isoFxHeight,
+  isoFxScaleY,
+} from './isoFx';
 
 describe('isoFxHeight', () => {
   it('hình thấp, hình nằm đất, pháp tướng và gai giữ nguyên', () => {
@@ -38,5 +49,27 @@ describe('hằng số iso cho thẻ và sét', () => {
     expect(ISO_CARD_ALPHA).toBeLessThan(1);
     expect(ISO_BOLT_HEIGHT).toBeGreaterThan(0.5);
     expect(ISO_BOLT_HEIGHT).toBeLessThan(1);
+  });
+});
+
+describe('vòng sét ở chân tia', () => {
+  it('chỉ tia nhắm xuống đất/mục tiêu, bán kính trong [1.6, 3.2]', () => {
+    expect(isBoltGroundHit('bolt_b', 'target')).toBe(true);
+    expect(isBoltGroundHit('bolt', 'ground')).toBe(true);
+    expect(isBoltGroundHit('bolt', 'self')).toBe(false);
+    expect(isBoltGroundHit('slash_thick', 'target')).toBe(false);
+    expect(isoBoltFootRadius(0.1)).toBe(1.6);
+    expect(isoBoltFootRadius(1.1)).toBeCloseTo(2.5, 6);
+    expect(isoBoltFootRadius(9)).toBe(3.2);
+  });
+});
+
+describe('isoBehind', () => {
+  it('nằm phía xa camera, đúng khoảng cách', () => {
+    const b = isoBehind(10, 10, 0, 0, 4.5);
+    expect(Math.hypot(b.x, b.z)).toBeCloseTo(4.5, 6);
+    expect(b.x).toBeLessThan(0);
+    expect(b.z).toBeLessThan(0);
+    expect(isoBehind(3, 3, 3, 3)).toEqual({ x: 3, z: 3 });
   });
 });

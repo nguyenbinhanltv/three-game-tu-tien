@@ -31,3 +31,23 @@ export const ISO_CARD_SCALE = 0.8;
 export const ISO_CARD_ALPHA = 0.55;
 /** Tia sét (`bolt`) kéo thành cột cao trên màn hình ở góc nghiêng: thu độ cao đỉnh (hệ số nhân `BOLT_HEIGHT`); bề rộng, quầng và vòng chạm đất giữ nguyên. */
 export const ISO_BOLT_HEIGHT = 0.7;
+
+/** Vòng sét ở điểm rơi của tia (`bolt*` nhắm mục tiêu/đất): bán kính theo bề ngang tia, trong [1.6, 3.2] m; thời gian sống (s). */
+export const ISO_BOLT_FOOT_LIFE = 0.55;
+export function isoBoltFootRadius(widthScale: number): number {
+  return Math.min(3.2, Math.max(1.6, 1.4 + widthScale));
+}
+/** Tia nhắm xuống đất/mục tiêu (không phải tia phóng từ người). */
+export function isBoltGroundHit(shape: string, at: string | undefined): boolean {
+  return shape.startsWith('bolt') && (at === 'target' || at === 'ground');
+}
+
+/** Thẻ pháp tướng neo vào người (`at: self`): đặt cách người chừng này (m) về phía XA camera, giữa màn hình phía trên người, thay vì lệch sang bên/trước. */
+export const ISO_CARD_BEHIND = 4.5;
+/** Vị trí (x, z) phía xa camera so với người (ax, az), cách `dist` m trên mặt đất. Camera trùng người thì giữ chỗ người. */
+export function isoBehind(camX: number, camZ: number, ax: number, az: number, dist = ISO_CARD_BEHIND): { x: number; z: number } {
+  const dx = ax - camX;
+  const dz = az - camZ;
+  const l = Math.hypot(dx, dz);
+  return l < 1e-3 ? { x: ax, z: az } : { x: ax + (dx / l) * dist, z: az + (dz / l) * dist };
+}
