@@ -1,3 +1,4 @@
+import { FLAGS } from '../../base/flags';
 import { levelId } from '../../base/levelCtx';
 import { baseOf } from '../../base/quality';
 import * as THREE from 'three/webgpu';
@@ -462,7 +463,7 @@ export class PropLayer {
       if (!t) continue;
       if (!c.meshes) this.buildCell(c, t);
       const dc = Math.hypot(c.cx - camX, c.cz - camZ);
-      const lv = dc < cfg.lod[0] * scale ? 0 : dc < cfg.lod[1] * scale ? 1 : 2;
+      const lv = dc < cfg.lod[0] * scale * FLAGS.propLod0 ? 0 : dc < cfg.lod[1] * scale ? 1 : 2;
       this.setLevel(c, Math.min(lv, t.lods.length - 1));
       if (c.meshes && c.level >= 0) vis += c.meshes[c.level]!.length;
     }
