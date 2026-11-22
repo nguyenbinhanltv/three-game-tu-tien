@@ -59,7 +59,7 @@ Kênh nhuộm: 1 = vải chính, 2 = vải phụ/lót, 3 = viền kim loại/tua
 | `wp` | `c.equip.weapon.id` | `visualEquip.weapon.id` (chỉ model kiếm; `wg` vẫn theo kiếm thật) |
 | `dye3` (mới) | – | chuỗi `"a,b,c"` hoặc `''`, `@view` |
 
-Chỉ thêm 1 trường `dye3` vào `PlayerS`; `sk/sa/wp` giữ nguyên tên nên client v1 và v3 đều tự đúng. Client v1: kênh 1 → `hex`, kênh 2 → `trim` (v1 chỉ có hai màu); kênh 3 dành cho v3. Hơn nữa khi `dye3` rỗng, client dùng `dye` cũ như hiện nay. Dòng hiển thị này còn dùng cho người *khác* nhìn thấy, nên mọi thứ qua `StateView` (AOI) như `sn`; kiểm chứng bằng `pnpm bots --count 100` không có `refId`.
+Chỉ thêm 1 trường `dye3` vào `PlayerS`; `sk/sa/wp` giữ nguyên tên nên client v1 và v3 đều tự đúng. Client v1: kênh 1 → `hex`, kênh 2 → `trim` (v1 chỉ có hai màu); v3 dùng cả ba (`tint.accent` là kênh 3: tua, kim loại). Hơn nữa khi `dye3` rỗng, client dùng `dye` cũ như hiện nay. Dòng hiển thị này còn dùng cho người *khác* nhìn thấy, nên mọi thứ qua `StateView` (AOI) như `sn`; kiểm chứng bằng `pnpm bots --count 100` không có `refId`.
 
 Với v3: tủ chỉ đổi *id vật phẩm hiển thị*; lớp v3 (worker -226) map id → mảnh mô-đun và đọc `dye3` cho 3 kênh, không cần đổi giao thức.
 

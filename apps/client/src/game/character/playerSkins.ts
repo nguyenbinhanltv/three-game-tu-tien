@@ -40,7 +40,7 @@ import {
 import type { CharState, ClipMap } from './states';
 import { CHR_V3, MannequinPlayers, V3_LIB, v3AssetOf } from './mannequin';
 import { applySoulLook, type SoulKind } from './soulLook';
-import { v3DyeHex } from './v3Dye';
+import { v3DyeColors } from './v3Dye';
 import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
 import { logger } from '../../base/log';
 
@@ -58,8 +58,8 @@ export interface PlayerLook {
   w?: string;
   /** Mã phụ kiện hình dáng của đồ bộ (`accessoryCode`): hiện theo từng món đã mặc, không cần đủ 2 món. */
   acc?: string;
-  /** Nhuộm tủ ngoại trang (P4): màu vải chính + viền; thắng cả màu bộ. Nhân vật v3 dùng kênh vải chính (`v3Dye.ts`), viền chưa có. */
-  tint?: { hex: string; trim: string };
+  /** Nhuộm tủ ngoại trang (P4): vải chính + viền (+ kênh 3 tua/kim loại `accent`); thắng cả màu bộ. Nhân vật v1 dùng hai kênh đầu, v3 dùng cả ba (`v3Dye.ts`). */
+  tint?: { hex: string; trim: string; accent?: string };
   /** Skin đang mặc ở ô ngoại hình (`ItemDef.skin`, vd. `set_skin_varkessa`): lưới phủ toàn thân, đè mọi trang phục. */
   skin?: string;
 }
@@ -151,7 +151,7 @@ function modelOf(g: string): string | null {
   return own ?? APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender)?.model ?? null;
 }
 
-function dyeOf(id: string, set?: string, tint?: { hex: string; trim: string }) {
+function dyeOf(id: string, set?: string, tint?: { hex: string; trim: string; accent?: string }) {
   if (tint) return { id: `tint:${tint.hex}:${tint.trim}`, hex: tint.hex, trim: tint.trim, accent: tint.trim };
   const look = set ? SET.get(set)?.look : undefined;
   // Bộ trang bị nhuộm áo bằng chính cơ chế `applyDye` (tham số material), id riêng để không đụng cache màu thường.
@@ -240,7 +240,7 @@ export class PlayerSkins {
     if (this.v3 && !this.legacy && !this.old(look)) {
       // Đang nạp: model khối cùng màu áo, `pending` báo để entities dựng lại. Không nạp model cũ làm tạm (tải thừa ~2,5 MB).
       return (
-        this.v3.create(look.g, look.skin, look.w, look.set, look.self, v3DyeHex(look, DYE, APPEARANCE.defaultDye)) ??
+        this.v3.create(look.g, look.skin, look.w, look.set, look.self, v3DyeColors(look, DYE, APPEARANCE.defaultDye)) ??
         new Humanoid({ robe: dye.hex, trim: dye.trim, sword: true })
       );
     }

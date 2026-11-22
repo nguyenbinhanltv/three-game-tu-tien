@@ -73,6 +73,7 @@ import hontu from './scenarios/hontu';
 import realmaura from './scenarios/realmaura';
 import fxlib from './scenarios/fxlib';
 import xichkhe from './scenarios/xichkhe';
+import dye23 from './scenarios/dye23';
 import n7 from './scenarios/n7';
 import dungeonart from './scenarios/dungeonart';
 import collscan from './scenarios/collscan';
@@ -125,6 +126,7 @@ const SCENARIOS: Scenario[] = [
   chrv3feet,
   v3sets,
   n7,
+  dye23,
   v3views,
   thetu,
   loitu,

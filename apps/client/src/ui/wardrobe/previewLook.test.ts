@@ -16,13 +16,13 @@ describe('draftLook (xem trước Tủ ngoại trang)', () => {
     expect(l.tint).toBeUndefined();
   });
 
-  it('ghi đè kiếm đổi model, nhuộm ba kênh đổi tint (kênh 1 = vải, kênh 2 = viền)', () => {
+  it('ghi đè kiếm đổi model, nhuộm ba kênh đổi tint (kênh 1 = vải, kênh 2 = viền, kênh 3 = kim loại)', () => {
     const d = draftFrom({ over: {} });
     d.over.weapon = 'itm_moc_kiem';
     d.dye = [b!.id, c!.id, a!.id];
     const l = draftLook(base, { weapon: { id: 'itm_thanh_phong_kiem', n: 1 } }, d);
     expect(l.w).toBe(swordModelOf('itm_moc_kiem'));
-    expect(l.tint).toEqual({ hex: b!.hex, trim: c!.hex });
+    expect(l.tint).toEqual({ hex: b!.hex, trim: c!.hex, accent: a!.hex });
   });
 
   it('ô nháp null hiện đúng món đang mặc; không sửa trang bị thật', () => {
