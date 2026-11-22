@@ -23,6 +23,13 @@ const common = {
   nodes: [],
 };
 
+// Ba cột công tắc của cầu 4 (tam giác quanh tâm sàn, bán kính ~22 m).
+const SWITCHES = [
+  { x: CENTER.x, z: CENTER.z - 22 },
+  { x: CENTER.x + 19, z: CENTER.z + 11 },
+  { x: CENTER.x - 19, z: CENTER.z + 11 },
+];
+
 const dungeon = (o) => ({
   spawn: SPAWN,
   exit: EXIT,
@@ -32,8 +39,9 @@ const dungeon = (o) => ({
   returnSpawn: RETURN,
   bound: 70,
   private: true,
-  lockAt: 1,
+  ...(o.waves.length ? { lockAt: 1 } : {}),
   maxRevives: 2,
+  ...(o.timeLimit ? { timeLimit: o.timeLimit } : {}),
   waves: o.waves,
 });
 
@@ -72,6 +80,44 @@ const BRIDGES = [
       { delay: 6, title: true, mons: [], shadow: { hpMul: 2.5, atkMul: 1.5, strikeEvery: 6, r: 4.5, mul: 1.6 } },
     ],
   },
+  {
+    // Cầu 3 Suy: Thiên Nhân Ngũ Suy chạy trong room kiếp (level kiếp, `tribulations.json` ngu_suy.level = kieu_3), không có đợt quái.
+    n: 3,
+    trib: true,
+    minLevel: 44,
+    mood: 'ck_dusk',
+    waves: [],
+  },
+  {
+    // Cầu 4 Giới: ba cột công tắc (đố gương: chạm đúng thứ tự, sai thì quái phạt, đúng thì boss yếu đi) rồi ba Vệ Kiều lật mặt Âm/Dương.
+    n: 4,
+    minLevel: 45,
+    mood: 'ck_dawn',
+    waves: [
+      {
+        delay: 6,
+        title: true,
+        mons: [],
+        puzzle: { points: SWITCHES, secs: 40, wrong: { mon: 'mon_lo_thach_ve', level: 45, n: 3 }, bossCut: 0.1 },
+      },
+      { title: true, delay: 6, mons: [{ id: 'boss_ve_kieu', level: 46, n: 3 }] },
+    ],
+  },
+  {
+    // Cầu 5 Thân: boss giáp phá theo chu kỳ (30 s, cửa sổ 8 s), giới hạn 240 s.
+    n: 5,
+    minLevel: 45,
+    mood: 'ck_day',
+    timeLimit: 240,
+    waves: [{ title: true, delay: 8, mons: [{ id: 'boss_thach_tuong', level: 46, n: 1 }] }],
+  },
+  {
+    // Cầu 6 Đạo: boss kháng theo Bản Nguyên của người đánh, ba hình thái.
+    n: 6,
+    minLevel: 45,
+    mood: 'ck_night',
+    waves: [{ title: true, delay: 8, mons: [{ id: 'boss_dao_linh', level: 47, n: 1 }] }],
+  },
 ];
 
 const assets = (b) => ({
@@ -95,7 +141,7 @@ const assets = (b) => ({
 });
 
 for (const b of BRIDGES) {
-  const level = { id: `kieu_${b.n}`, ...common, dungeon: dungeon(b) };
+  const level = { id: `kieu_${b.n}`, ...common, ...(b.trib ? { tribulation: true } : {}), dungeon: dungeon(b) };
   fs.writeFileSync(path.join(ROOT, `packages/content/data/levels/kieu_${b.n}.json`), JSON.stringify(level, null, 2) + '\n');
   fs.writeFileSync(path.join(ROOT, `packages/content/data/levels/kieu_${b.n}.assets.json`), JSON.stringify(assets(b), null, 2) + '\n');
 }

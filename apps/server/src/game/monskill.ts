@@ -5,7 +5,10 @@
 // breakPosture/tryInterrupt (cancel).
 
 import {
+  armorTakeMul,
   burrowSpots,
+  daoOf,
+  resistMul,
   chargeEnd,
   coneGeom,
   facePhase,
@@ -41,7 +44,7 @@ import {
 interface MxPlayer {
   sid: string;
   move: { x: number; y: number; z: number };
-  char: { mhp: number };
+  char: { mhp: number; root: string; meta: { dao?: unknown } };
 }
 
 type Act =
@@ -61,6 +64,10 @@ export interface MonSkillRt {
   sensedUntil: number;
   /** Hai mặt (TN-3): lúc (ms) vào trận để tính chu kỳ (0 = chưa vào) và mặt/lượt lật đã báo. */
   faceAt: number;
+  /** Giáp phá (TN-7): lúc (ms) của đòn đầu trúng, mốc tính chu kỳ (0 = chưa bị đánh). */
+  armorAt: number;
+  /** Trạng thái giáp đã báo cho người chơi: 0 còn giáp, 1 sắp vỡ (báo trước), 2 đang vỡ. */
+  armorState: 0 | 1 | 2;
   face: 'duong' | 'am';
   faceTurn: number;
   /** Lượt lật đã phát FX báo trước. */
@@ -80,6 +87,8 @@ export function newRt(): MonSkillRt {
     weakUntil: 0,
     sensedUntil: 0,
     faceAt: 0,
+    armorAt: 0,
+    armorState: 0,
     face: 'duong',
     faceTurn: 0,
     faceWarned: -1,
@@ -106,6 +115,8 @@ interface MxMon {
   chant: unknown;
   cast: unknown;
   rules: { ai: MonsterAi };
+  /** Pha boss (0 = pha đầu): chỉ số hình thái của boss kháng nguồn. */
+  phase: number;
   mx: MonSkillRt;
   /** Là đệ tử của quái này (id). */
   minionOf?: string;
@@ -138,6 +149,8 @@ interface MonSkillHost {
 
 /** Tầm (m) nhận dòng báo lật mặt. */
 const FACE_NOTICE_RANGE = 120;
+/** Báo trước (giây) khi cửa sổ phá giáp sắp mở. */
+const ARMOR_WARN = 2;
 
 type Ender = 'charge' | 'leap' | 'burrow' | 'summon';
 
@@ -186,6 +199,22 @@ export class MonSkills {
       });
     }
     if (dirty || !(rt.bits & MF_FACE_T) || (rt.face === 'am') !== ((rt.bits & MF_FACE) !== 0)) this.refresh(m, now);
+  }
+
+  /**
+   * Giáp phá theo chu kỳ (TN-7, Thạch Tượng): báo cho người chơi quanh boss khi cửa sổ phá giáp sắp mở (`ARMOR_WARN` giây trước), đang mở, và khi giáp liền lại.
+   * Gọi mỗi tick khi đang giao chiến (như `face`), không chỉ khi trúng đòn. Mốc chu kỳ là đòn đầu trúng (`armorAt`); chưa bị đánh thì chưa báo.
+   */
+  armor(m: MxMon): void {
+    const cfg = m.rules.ai.armor;
+    const rt = m.mx;
+    if (!cfg || !rt.armorAt) return;
+    const t = ((this.h.now() - rt.armorAt) / 1000) % cfg.cycle;
+    const open = t >= cfg.cycle - cfg.window;
+    const next: 0 | 1 | 2 = open ? 2 : t >= cfg.cycle - cfg.window - ARMOR_WARN ? 1 : 0;
+    if (next === rt.armorState) return;
+    rt.armorState = next;
+    this.h.notifyNear(m, FACE_NOTICE_RANGE, next === 2 ? 'sys.armor_break' : next === 1 ? 'sys.armor_warn' : 'sys.armor_seal');
   }
 
   /**
@@ -500,6 +529,13 @@ export class MonSkills {
       if (k <= 0) return -1;
       dmg = Math.round(dmg * k);
     }
+    // Giáp phá theo chu kỳ (TN-7, cầu 5): mốc chu kỳ là đòn đầu trúng; ngoài cửa sổ phá giáp chỉ nhận `take`.
+    if (ai.armor) {
+      if (!m.mx.armorAt) m.mx.armorAt = now;
+      dmg = Math.round(dmg * armorTakeMul(ai.armor, now - m.mx.armorAt));
+    }
+    // Kháng theo Bản Nguyên (TN-7, cầu 6): theo Đạo của người đánh (chưa chọn Đạo thì Bản Nguyên gốc) và hình thái hiện tại của boss.
+    if (ai.resist && p) dmg = Math.round(dmg * resistMul(ai.resist, m.phase, daoOf(p.char.meta) ?? p.char.root));
     let n = dmg;
     const rf = ai.reflect;
     if (rf && p && !dot && reflectPhase(rf, m.mx.reflect, now) === 'on') {
@@ -532,6 +568,8 @@ export class MonSkills {
     rt.weakUntil = 0;
     rt.sensedUntil = 0;
     rt.faceAt = 0;
+    rt.armorAt = 0;
+    rt.armorState = 0;
     rt.face = 'duong';
     rt.faceTurn = 0;
     rt.faceWarned = -1;

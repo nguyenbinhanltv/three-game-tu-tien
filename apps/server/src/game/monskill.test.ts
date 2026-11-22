@@ -501,3 +501,82 @@ describe('faces: hai mặt Âm/Dương (Phủ Chủ)', () => {
     expect(mon.s.hp).toBe(a0 - 100);
   });
 });
+
+describe('armor: giáp phá theo chu kỳ (Thạch Tượng, TN-7)', () => {
+  const ARMOR: MonsterAi = { armor: { cycle: 30, window: 8, take: 0.15 } };
+
+  it('ngoài cửa sổ nhận `take`, cửa sổ cuối chu kỳ nhận đủ; mốc là đòn đầu trúng', () => {
+    const { sim, mon } = setup(ARMOR);
+    mon.s.hp = mon.s.mhp = 1e7;
+    const dmg = (n: number) => {
+      const a = mon.s.hp;
+      sim.damageMonster(mon, n, null);
+      return a - mon.s.hp;
+    };
+    sim.now = T0;
+    expect(dmg(1000)).toBe(150); // đòn đầu đặt mốc, ở đầu chu kỳ: giáp còn
+    sim.now = T0 + 21_000;
+    expect(dmg(1000)).toBe(150); // còn một giây trước cửa sổ (22 s)
+    sim.now = T0 + 23_000;
+    expect(dmg(1000)).toBe(1000); // trong cửa sổ 22–30 s
+    sim.now = T0 + 31_000;
+    expect(dmg(1000)).toBe(150); // chu kỳ mới
+    sim.now = T0 + 55_000;
+    expect(dmg(1000)).toBe(1000);
+  });
+});
+
+describe('resist: kháng theo Bản Nguyên (Đạo Linh, TN-7)', () => {
+  const RESIST: MonsterAi = { resist: { forms: ['kim', 'thuy', 'hoa'], same: 0.35, counter: 1.5 } };
+
+  function hit(root: string, dao: string | undefined, phase: number) {
+    const { sim, mon, p } = setup(RESIST);
+    (p.char as Record<string, unknown>).root = root;
+    if (dao) (p.char.meta as Record<string, unknown>).dao = dao;
+    mon.phase = phase;
+    mon.s.hp = mon.s.mhp = 1e7;
+    const a = mon.s.hp;
+    sim.damageMonster(mon, 1000, p as never);
+    return a - mon.s.hp;
+  }
+
+  it('cùng hệ hình thái thì giảm, hệ khắc hình thái thì tăng, còn lại nguyên; hình thái đổi theo pha', () => {
+    expect(hit('kim', undefined, 0)).toBe(350); // hình thái Kim, người Kim
+    expect(hit('hoa', undefined, 0)).toBe(1500); // Hỏa khắc Kim
+    expect(hit('moc', undefined, 0)).toBe(1000); // Mộc không liên quan Kim
+    expect(hit('kim', undefined, 1)).toBe(1000); // hình thái Thủy: Kim không liên quan
+    expect(hit('tho', undefined, 1)).toBe(1500); // Thổ khắc Thủy
+    expect(hit('hoa', undefined, 2)).toBe(350); // hình thái Hỏa
+  });
+
+  it('có Đạo thì theo Đạo, không theo Bản Nguyên gốc', () => {
+    expect(hit('kim', 'hoa', 0)).toBe(1500); // gốc Kim nhưng Đạo Hỏa: Hỏa khắc Kim
+    expect(hit('hoa', 'kim', 0)).toBe(350);
+  });
+});
+
+describe('armor: tín hiệu cho người chơi (TN-7)', () => {
+  const ARMOR: MonsterAi = { armor: { cycle: 30, window: 8, take: 0.15 } };
+
+  it('báo trước 2 s, báo khi giáp vỡ và khi liền lại, đúng mốc chu kỳ, không báo lặp; chưa bị đánh thì im', () => {
+    const { sim, mon, p, run } = setup(ARMOR);
+    const got: string[] = [];
+    (p.client as { send: (t: string, m: unknown) => void }).send = (t, m) => {
+      if (t === S.SYS) got.push((m as { k: string }).k);
+    };
+    mon.s.hp = mon.s.mhp = 1e7;
+    run(25_000);
+    expect(got.filter((k) => k.startsWith('sys.armor'))).toEqual([]); // chưa trúng đòn nào: chưa có mốc
+    sim.damageMonster(mon, 10, null); // mốc chu kỳ = lúc này
+    run(19_500);
+    expect(got.filter((k) => k.startsWith('sys.armor'))).toEqual([]);
+    run(1_000); // 20,5 s: vào khoảng báo trước
+    expect(got.filter((k) => k.startsWith('sys.armor'))).toEqual(['sys.armor_warn']);
+    run(2_000); // 22,5 s: giáp vỡ
+    expect(got.filter((k) => k.startsWith('sys.armor'))).toEqual(['sys.armor_warn', 'sys.armor_break']);
+    run(6_000); // 28,5 s: vẫn mở, không báo lặp
+    expect(got.filter((k) => k.startsWith('sys.armor')).length).toBe(2);
+    run(2_000); // 30,5 s: liền lại
+    expect(got.filter((k) => k.startsWith('sys.armor'))).toEqual(['sys.armor_warn', 'sys.armor_break', 'sys.armor_seal']);
+  });
+});
