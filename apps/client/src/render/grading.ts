@@ -70,6 +70,10 @@ export type GradingName =
   | 'vh_day'
   | 'vh_dusk'
   | 'vh_night'
+  | 'ck_dawn'
+  | 'ck_day'
+  | 'ck_dusk'
+  | 'ck_night'
   | 'ash_dawn'
   | 'rift'
   | 'rift_pit'
@@ -144,6 +148,10 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   vh_day: parse(raw.presets.vh_day),
   vh_dusk: parse(raw.presets.vh_dusk),
   vh_night: parse(raw.presets.vh_night),
+  ck_dawn: parse(raw.presets.ck_dawn),
+  ck_day: parse(raw.presets.ck_day),
+  ck_dusk: parse(raw.presets.ck_dusk),
+  ck_night: parse(raw.presets.ck_night),
   ash_dawn: parse(raw.presets.ash_dawn),
   rift: parse(raw.presets.rift),
   rift_pit: parse(raw.presets.rift_pit),
@@ -189,6 +197,8 @@ export function moodVariant(base: GradingName, tod: TimeOfDay): GradingName {
   // Vấn Đỉnh (TN-3): hai mặt, mặt Âm Hư `vda_*` (tây) và mặt Dương Thực `vdd_*` (đông), mỗi mặt bốn thời điểm.
   if (base.startsWith('vda_')) return `vda_${tod}` as GradingName;
   if (base.startsWith('vdd_')) return `vdd_${tod}` as GradingName;
+  // Thiên Lộ Giới (TN-7): bốn thời điểm riêng, sương thấp dưới mặt cao nguyên, trời trong để thấy chuỗi cầu ở xa.
+  if (base.startsWith('ck_')) return `ck_${tod}` as GradingName;
   // Đoạn Mạch (MAP-2): bộ bốn thời điểm riêng (đỏ son + vàng thu).
   if (base.startsWith('dm_')) return `dm_${tod}` as GradingName;
   // Vân Hải (MAP-3): bộ bốn thời điểm riêng xanh lam + bạc, có hoàng hôn.

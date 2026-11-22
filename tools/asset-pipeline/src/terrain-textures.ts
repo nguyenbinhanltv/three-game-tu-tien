@@ -86,6 +86,59 @@ export const SNOW_LAYERS = [
   { layer: 'gravel', ph: 'proc:grit', author: 'thủ tục (tools/asset-pipeline)' },
 ] as const;
 
+/**
+ * Bộ ck cho Thiên Lộ Giới (TN-7, vòng mỹ thuật 3): tám lớp do Codex sinh (ảnh nguồn `texture/ck/<tên>.png` ngoài repo, KHÔNG commit), làm liền mạch bằng
+ * trộn lệch (`makeTileable`), pháp tuyến dựng từ độ sáng. Cùng thứ tự lớp (khớp `GROUND_LAYER`), ra `public/terrain-ck/`, nạp lười khi vào level
+ * (`levels/cuu_kieu.assets.json` `ground.set`). Ngoài tám lớp còn ba texture riêng cho kiến trúc/cảnh: `masonry.webp` (đá xây, cầu/cổng/lan can),
+ * `leaf.webp` (thẻ lá RGBA, khử nền magenta) và `water.webp` (nước chảy cho thác), ghi cùng thư mục và liệt kê ở `manifest.json` mục `extras`.
+ */
+export const CK_LAYERS = [
+  { layer: 'grass', ph: 'codex:ck_grass', author: 'Codex (sinh ảnh, dự án)' },
+  { layer: 'dirt', ph: 'codex:ck_dirt', author: 'Codex (sinh ảnh, dự án)' },
+  { layer: 'forest', ph: 'codex:ck_forest', author: 'Codex (sinh ảnh, dự án)' },
+  { layer: 'rock', ph: 'codex:ck_rock', author: 'Codex (sinh ảnh, dự án)' },
+  { layer: 'cliff', ph: 'codex:ck_cliff', author: 'Codex (sinh ảnh, dự án)' },
+  { layer: 'sand', ph: 'codex:ck_sand', author: 'Codex (sinh ảnh, dự án)' },
+  { layer: 'paving', ph: 'codex:ck_paving', author: 'Codex (sinh ảnh, dự án)' },
+  { layer: 'gravel', ph: 'codex:ck_gravel', author: 'Codex (sinh ảnh, dự án)' },
+] as const;
+
+/**
+ * Làm một ô RGB `n × n` liền mạch bằng trộn lệch: ảnh gốc ở giữa, ảnh dịch nửa ô ở rìa, trọng số lõi mượt (hết đường nối ở mép; đường nối mới nằm ở
+ * giữa ảnh dịch, nơi ảnh gốc chiếm hết). Đủ cho texture tự nhiên (cỏ, đất, đá); không dành cho họa tiết có đường thẳng dài.
+ */
+function makeTileable(src: Buffer, n: number): Buffer {
+  const out = Buffer.alloc(n * n * 3);
+  const half = n >> 1;
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      const wx = Math.min(x, n - 1 - x) / half; // 0 ở mép, 1 ở giữa
+      const wy = Math.min(y, n - 1 - y) / half;
+      const smooth = (t: number) => t * t * (3 - 2 * t);
+      const w = smooth(Math.min(1, wx * 1.6)) * smooth(Math.min(1, wy * 1.6));
+      const i = (y * n + x) * 3;
+      const j = (((y + half) % n) * n + ((x + half) % n)) * 3;
+      for (let c = 0; c < 3; c++) out[i + c] = Math.round(src[i + c]! * w + src[j + c]! * (1 - w));
+    }
+  }
+  return out;
+}
+
+/** Độ cao 0..1 từ độ sáng của ảnh RGB (làm mờ nhẹ, tuần hoàn) để dựng pháp tuyến cho lớp Codex. */
+function heightFromRgb(rgb: Buffer, n: number): Float32Array {
+  const lum = new Float32Array(n * n);
+  for (let i = 0; i < n * n; i++) lum[i] = (rgb[i * 3]! * 0.299 + rgb[i * 3 + 1]! * 0.587 + rgb[i * 3 + 2]! * 0.114) / 255;
+  const out = new Float32Array(n * n);
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      let a = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) a += lum[((y + dy + n) % n) * n + ((x + dx + n) % n)]!;
+      out[y * n + x] = a / 9;
+    }
+  }
+  return out;
+}
+
 // ---- tuyết thủ tục: ô liền mạch (nhiễu giá trị tuần hoàn), không có dấu chân/vết bánh xe như bộ snow_* của Poly Haven ----
 function hash2(x: number, y: number, seed: number): number {
   let h = (x * 374761393 + y * 668265263 + seed * 2246822519) | 0;
@@ -224,9 +277,11 @@ const OUT = path.join(
         ? 'terrain-ash'
         : SET === 'snow'
           ? 'terrain-snow'
-          : SET === 'lackiem'
-            ? 'terrain-lk'
-            : 'terrain',
+          : SET === 'ck'
+            ? 'terrain-ck'
+            : SET === 'lackiem'
+              ? 'terrain-lk'
+              : 'terrain',
 );
 /** Bộ `lackiem` (MAP-1 bản B, chỉ Vân Lam/Kiếm Trủng): màu 2048², pháp tuyến/nhám 1024² (client giải mã ở nửa kích thước albedo); bộ khác 1024². */
 const LK = SET === 'lackiem';
@@ -280,8 +335,46 @@ async function main(): Promise<void> {
   const written = new Map<string, string>();
   const manifest: { layer: string; ph: string; a: string; n: string }[] = [];
   const layers: readonly { layer: string; ph: string; author: string; tint?: readonly number[] }[] =
-    SET === 'ochre' ? OCHRE_LAYERS : SET === 'slate' ? SLATE_LAYERS : SET === 'ash' ? ASH_LAYERS : SET === 'snow' ? SNOW_LAYERS : LAYERS;
+    SET === 'ochre'
+      ? OCHRE_LAYERS
+      : SET === 'slate'
+        ? SLATE_LAYERS
+        : SET === 'ash'
+          ? ASH_LAYERS
+          : SET === 'snow'
+            ? SNOW_LAYERS
+            : SET === 'ck'
+              ? CK_LAYERS
+              : LAYERS;
   for (const L of layers) {
+    if (L.ph.startsWith('codex:')) {
+      const file = path.join(SRC, 'ck', `${L.ph.slice(6)}.png`);
+      if (!existsSync(file)) throw new Error(`thiếu ảnh nguồn Codex ${file} (sinh bằng Codex, xem docs/handbook/assets.md)`);
+      const raw = await sharp(await readFile(file))
+        .resize(SIZE, SIZE)
+        .removeAlpha()
+        .raw()
+        .toBuffer();
+      const tiled = makeTileable(raw, SIZE);
+      // Hạ bão hòa ~28% và độ sáng ~8%, kéo cỏ về xanh rêu (bớt xanh chanh); các lớp khác chỉ hạ nhẹ.
+      const grassy = L.layer === 'grass' || L.layer === 'forest';
+      const albedo = await sharp(tiled, { raw: { width: SIZE, height: SIZE, channels: 3 } })
+        .modulate({ saturation: grassy ? 0.72 : 0.88, brightness: grassy ? 0.92 : 0.97 })
+        .linear(grassy ? [1.03, 0.98, 0.88] : [1, 1, 1], [0, 0, 0])
+        .webp({ quality: 76 })
+        .toBuffer();
+      const hgt = heightFromRgb(tiled, SIZE);
+      const rough = new Float32Array(SIZE * SIZE).fill(0.82);
+      const nraw = procNormal(hgt, rough, SIZE, L.layer === 'cliff' || L.layer === 'rock' ? 5 : 3);
+      const n = await sharp(nraw, { raw: { width: SIZE, height: SIZE, channels: 3 } })
+        .resize(NSIZE, NSIZE)
+        .webp({ quality: 78 })
+        .toBuffer();
+      const entry = { layer: L.layer, ph: L.ph, a: await emit(L.layer, 'a', albedo, written), n: await emit(L.layer, 'n', n, written) };
+      manifest.push(entry);
+      console.log(`[terrain] ${L.layer} (${L.ph}): a ${(albedo.length / 1024) | 0} KB, n ${(n.length / 1024) | 0} KB`);
+      continue;
+    }
     if (L.ph.startsWith('proc:')) {
       const ps = procSnow(L.ph.slice(5), SIZE);
       const albedo = await sharp(ps.rgb, { raw: { width: SIZE, height: SIZE, channels: 3 } })
@@ -310,6 +403,67 @@ async function main(): Promise<void> {
     const entry = { layer: L.layer, ph: L.ph, a: await emit(L.layer, 'a', ar, written), n: await emit(L.layer, 'n', n, written) };
     manifest.push(entry);
     console.log(`[terrain] ${L.layer} (${L.ph}): a ${(ar.length / 1024) | 0} KB, n ${(n.length / 1024) | 0} KB`);
+  }
+  if (SET === 'ck') {
+    const extras: Record<string, string> = {};
+    const put = async (key: string, buf: Buffer): Promise<void> => {
+      const name = `${key}.${createHash('sha1').update(buf).digest('hex').slice(0, 10)}.webp`;
+      await writeFile(path.join(OUT, name), buf);
+      extras[key] = name;
+      console.log(`[terrain] extra ${key}: ${(buf.length / 1024) | 0} KB`);
+    };
+    // đá xây: liền mạch (trộn lệch), 1024² cho cầu/cổng/lan can (triplanar ở client)
+    const mRaw = await sharp(await readFile(path.join(SRC, 'ck', 'ck_masonry.png')))
+      .resize(1024, 1024)
+      .removeAlpha()
+      .raw()
+      .toBuffer();
+    await put(
+      'masonry',
+      await sharp(makeTileable(mRaw, 1024), { raw: { width: 1024, height: 1024, channels: 3 } })
+        .webp({ quality: 78 })
+        .toBuffer(),
+    );
+    // nước chảy: liền mạch theo chiều dọc (cuộn UV), 512²
+    const wRaw = await sharp(await readFile(path.join(SRC, 'ck', 'ck_water.png')))
+      .resize(512, 512)
+      .removeAlpha()
+      .raw()
+      .toBuffer();
+    await put(
+      'water',
+      await sharp(makeTileable(wRaw, 512), { raw: { width: 512, height: 512, channels: 3 } })
+        .webp({ quality: 78 })
+        .toBuffer(),
+    );
+    // thẻ lá: khử nền magenta (khóa màu theo khoảng cách tới #FF00FF, mép mềm), khử viền magenta ở mép lá, 512²
+    const lRaw = await sharp(await readFile(path.join(SRC, 'ck', 'ck_leaf.png')))
+      .resize(512, 512)
+      .removeAlpha()
+      .raw()
+      .toBuffer();
+    const rgba = Buffer.alloc(512 * 512 * 4);
+    for (let i = 0; i < 512 * 512; i++) {
+      const r = lRaw[i * 3]!;
+      const g = lRaw[i * 3 + 1]!;
+      const b = lRaw[i * 3 + 2]!;
+      const mag = Math.max(0, Math.min(r, b) - g); // độ "magenta": r và b cùng cao, g thấp
+      const a = Math.min(1, Math.max(0, 1 - (mag - 40) / 90));
+      // khử viền: kéo r,b về g khi pixel nhiễm magenta
+      const k = Math.min(1, mag / 160);
+      rgba[i * 4] = Math.round(r - (r - g) * k * 0.9);
+      rgba[i * 4 + 1] = g;
+      rgba[i * 4 + 2] = Math.round(b - (b - g) * k * 0.9);
+      rgba[i * 4 + 3] = Math.round(a * 255);
+    }
+    await put(
+      'leaf',
+      await sharp(rgba, { raw: { width: 512, height: 512, channels: 4 } })
+        .webp({ quality: 80, alphaQuality: 85 })
+        .toBuffer(),
+    );
+    await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify({ size: SIZE, layers: manifest, extras }, null, 2) + '\n');
+    return;
   }
   if (SET !== 'terrain' && !LK) {
     await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify({ size: SIZE, layers: manifest }, null, 2) + '\n');

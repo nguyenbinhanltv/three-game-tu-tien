@@ -24,6 +24,7 @@ export * from './inventory';
 export * from './realm';
 export * from './dao';
 export * from './kieu';
+export * from './cuukieu.art';
 export * from './vandinh';
 export * from './equipLoot';
 export * from './upgrade';

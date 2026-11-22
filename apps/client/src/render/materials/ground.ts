@@ -82,6 +82,13 @@ export function setGroundNoSnow(on: boolean): void {
  * Vân vách sa thạch xám-đỏ (MAP-2 Đoạn Mạch): tầng ngang theo độ cao + khe dọc như `strata`, nhưng không đổi ngưỡng tuyết
  * và ngả xám-đỏ thay vì lam nhạt. Tắt ở level khác.
  */
+/** Tỉ lệ texture vách (m mỗi ô, mặc định 11) và chế độ vách mềm (Thiên Lộ Giới, TN-7): phối thêm lớp tỉ lệ lớn, macro và gradient sáng dần lên đỉnh. */
+let cliffUv = 11;
+let cliffSoft = false;
+export function setGroundCliff(uv: number, soft: boolean): void {
+  cliffUv = uv;
+  cliffSoft = soft;
+}
 let redStrata = false;
 /** Hai màu vách (tối ↔ sáng) và vỉa nứt tùy chọn của vân vách theo nhiễu (không dùng khung texture 11 m, nên không ra ô caro). */
 interface CliffTones {
@@ -243,11 +250,22 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   const wx = nGeo.x.abs().pow(wPow);
   const wz = nGeo.z.abs().pow(wPow);
   const wsum = wx.add(wz).max(0.0001);
-  const uvXY = vec2(positionWorld.x, positionWorld.y.negate()).div(11);
-  const uvZY = vec2(positionWorld.z, positionWorld.y.negate()).div(11);
+  const uvXY = vec2(positionWorld.x, positionWorld.y.negate()).div(cliffUv);
+  const uvZY = vec2(positionWorld.z, positionWorld.y.negate()).div(cliffUv);
   let cliff: Node;
   if (lo) cliff = rock;
   else cliff = mix(A(uvZY, L.cliff), A(uvXY, L.cliff), wz.div(wsum));
+  if (cliffSoft && !lo) {
+    // Vách rất cao (~140 m): phối thêm một lớp tỉ lệ lớn hơn (×2,7) để phá lặp ô, nhân macro tỉ lệ lớn (mảng sáng/tối) và gradient sáng dần lên đỉnh.
+    const c2 = mix(A(uvZY.div(2.7).add(0.31), L.cliff), A(uvXY.div(2.7).add(0.31), L.cliff), wz.div(wsum));
+    const cm = texture(tex.mask, positionWorld.xz.mul(0.0061).add(positionWorld.y.mul(0.0043))).a;
+    const grade = mix(float(1.15), float(1.9), smoothstep(8, 78, positionWorld.y));
+    // nhuộm ấm nhẹ (kéo khỏi xanh lam của ánh sáng môi trường), nhân macro + gradient
+    cliff = mix(cliff, c2, 0.4)
+      .mul(grade)
+      .mul(float(0.75).add(cm.mul(0.6)))
+      .mul(vec3(1.12, 1.0, 0.86));
+  }
   const rockCol = mix(rock, rock.mul(TOMB_TINT.mul(1.15)), bio.z);
   col = mix(col, rockCol.mul(float(0.9).add(macro.mul(0.2))), rockW);
   col = mix(col, cliff.mul(float(0.9).add(macro.mul(0.2))), cliffW);
