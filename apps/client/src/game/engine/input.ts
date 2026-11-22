@@ -220,6 +220,11 @@ function onKeyDown(eng: Game, e: KeyboardEvent): void {
   }
   if (preventsDefault(code)) e.preventDefault();
   if (e.repeat) return;
+  // Camera chéo: Space = né về phía con trỏ (server kiểm hồi, quãng, khung bất tử). Ngự kiếm vẫn dùng Space để bay lên.
+  if (eng.iso && code === 'Space' && !eng.wantFly && !eng.cur.flying) {
+    eng.send(C.DODGE, eng.iso.aimMsg());
+    return;
+  }
   eng.keys.press(code);
   // Bắt đầu di chuyển thì hủy chiêu đang chờ (M1-11).
   if (isMoveKey(eng, code, action)) eng.cancelQueuedSkill();

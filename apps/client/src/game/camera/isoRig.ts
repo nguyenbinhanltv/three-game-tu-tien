@@ -59,6 +59,11 @@ export class IsoRig {
     this.ground = rayGround(this.o, this.d, ground);
   }
 
+  /** Điểm ngắm gửi kèm ý định (chiêu, né); rỗng khi con trỏ không chạm đất. Server kiểm và kẹp lại. */
+  aimMsg(): { ax: number; az: number } | Record<string, never> {
+    return this.ground ? { ax: this.ground.x, az: this.ground.z } : {};
+  }
+
   /** Quái sống gần con trỏ nhất (id rỗng nếu không có hoặc con trỏ ngoài đất). */
   pickMonster(cands: Iterable<{ id: string; x: number; z: number }>): string {
     return this.ground ? nearestTo(this.ground.x, this.ground.z, cands) : '';

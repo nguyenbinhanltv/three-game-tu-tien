@@ -74,6 +74,8 @@ export const MF_MX_MASK = MF_REFLECT | MF_WEAK | MF_BURROW | MF_REAL | MF_SENSED
 export const C = {
   INPUT: 'in',
   SKILL: 'sk',
+  /** Né (Space): `{ ax?, az? }` điểm hướng né trên đất; server kiểm hồi, quãng, khung bất tử. */
+  DODGE: 'dg',
   MEDITATE: 'med',
   GATHER: 'gat',
   USE: 'use',

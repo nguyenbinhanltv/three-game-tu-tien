@@ -7,7 +7,7 @@
 export const ISO_FOV = 32;
 export const ISO_PITCH = (52 * Math.PI) / 180;
 /** Khoảng cách cố định camera→điểm nhìn (m). Khóa cả góc lẫn khoảng cách: không zoom. */
-export const ISO_DIST = 22;
+export const ISO_DIST = 20;
 export const ISO_FAR = 250;
 /** Hướng nhìn mặc định (rad). 45° chéo: bản đồ nào cần hướng khác thì thêm vào `ISO_YAW`. */
 export const ISO_YAW_DEFAULT = Math.PI * 0.25;
@@ -15,8 +15,6 @@ export const ISO_YAW: Readonly<Record<string, number>> = {};
 /** Dẫn trước tối đa (m) theo con trỏ, tính trên mặt đất, và hệ số theo khoảng cách con trỏ tới nhân vật. */
 export const ISO_LEAD_MAX = 3.2;
 export const ISO_LEAD_K = 0.22;
-/** Bán kính chọn quái quanh con trỏ chiếu xuống đất (m). */
-export const ISO_PICK_R = 5;
 /** Tới đích (m) thì dừng đi chuột phải. */
 export const ISO_ARRIVE = 0.45;
 
@@ -93,16 +91,12 @@ export function worldToIntent(dx: number, dz: number, yaw: number): { mx: number
   return { mx: c * nx - s * nz, mz: -(s * nx + c * nz) };
 }
 
-/** Quái sống gần điểm (px, pz) nhất trong bán kính `r`; rỗng nếu không có. */
-export function nearestTo(px: number, pz: number, cands: Iterable<{ id: string; x: number; z: number }>, r = ISO_PICK_R): string {
-  let best = '';
-  let bd = r;
-  for (const c of cands) {
-    const d = Math.hypot(c.x - px, c.z - pz);
-    if (d <= bd) {
-      bd = d;
-      best = c.id;
-    }
-  }
-  return best;
+export { nearestTo } from '@dtl/shared';
+
+/** Dẫn về phía mục tiêu đang chọn (dx, dz = mục tiêu − nhân vật): kéo camera tới 50% khoảng cách (điểm giữa người và mục tiêu), tối đa 9 m, để cả hai nằm trong khung. */
+export function isoLeadTarget(dx: number, dz: number): { x: number; z: number } {
+  const d = Math.hypot(dx, dz);
+  if (d < 1e-4) return { x: 0, z: 0 };
+  const m = Math.min(9, d * 0.5);
+  return { x: (dx / d) * m, z: (dz / d) * m };
 }

@@ -41,7 +41,7 @@ import { type PState } from '../entities/entities';
 import { monsterPushRadius, pickPushers } from '../world/grass';
 import { postParams } from '../../render/post';
 import { updateOcclusion } from '../world/occlusion';
-import { ISO_FAR, ISO_FOV, ISO_DIST, isoCameraPos, isoLead, isoYawFor, worldToIntent } from '../camera/iso';
+import { ISO_FAR, ISO_FOV, ISO_DIST, isoCameraPos, isoLead, isoLeadTarget, isoYawFor, worldToIntent } from '../camera/iso';
 import { assets } from '../core/assets';
 import { BASE_ZONE, easeZoneCam, zoneCamera } from '../camera/camZones';
 import { isHeld } from '../../input/bindings';
@@ -96,7 +96,7 @@ export function fireSkill(eng: Game, i: number): void {
     }
     eng.faceTargetUntil = performance.now() + 900;
   }
-  eng.send(C.SKILL, { id: skill.id, t: needTarget ? eng.targetId : undefined });
+  eng.send(C.SKILL, { id: skill.id, t: needTarget ? eng.targetId : undefined, ...eng.iso?.aimMsg() });
   predictSkill(eng, i, skill, needTarget);
 }
 
@@ -378,7 +378,10 @@ function updateCamera(eng: Game, dt: number): void {
   if (iso) {
     // Camera chéo khóa góc: hướng cố định theo bản đồ, nghiêng cố định, khoảng cách khóa (không zoom), dẫn trước nhẹ theo con trỏ.
     eng.camYaw = isoYawFor(levelId());
-    const ld = iso.ground ? isoLead(iso.ground.x - rp.x, iso.ground.z - rp.z) : { x: 0, z: 0 };
+    const cl = iso.ground ? isoLead(iso.ground.x - rp.x, iso.ground.z - rp.z) : { x: 0, z: 0 };
+    // Đang có mục tiêu: dẫn camera về phía nó (kèm một phần con trỏ) để người và mục tiêu cùng nằm trong khung.
+    const tl = eng.targetId && eng.ents.chestOf(eng.targetId, _v) ? isoLeadTarget(_v.x - rp.x, _v.z - rp.z) : null;
+    const ld = tl ? { x: tl.x + cl.x * 0.4, z: tl.z + cl.z * 0.4 } : cl;
     const kk = Math.min(1, dt * 3);
     iso.lead.x += (ld.x - iso.lead.x) * kk;
     iso.lead.z += (ld.z - iso.lead.z) * kk;
@@ -429,7 +432,7 @@ function updateCamera(eng: Game, dt: number): void {
   tribFx(eng, dt);
   // Thẻ chương đang hiện cũng ẩn bảng tên (tiêu đề không đè lên tên nhân vật).
   eng.ents.tagsHidden = eng.cine.active || eng.tribScene || (get().chapter?.until ?? 0) > Date.now();
-  updateOcclusion(dt, eng.camera.position, _camFocus.set(rp.x, rp.y + 1.2, rp.z), rp.y, !!iso);
+  updateOcclusion(dt, eng.camera.position, _camFocus.set(rp.x, rp.y + 1.2, rp.z), rp.y, iso ? (flying ? 2 : 1) : 0);
   if (iso) {
     eng.camera.updateMatrixWorld();
     iso.project(eng.camera, window.innerWidth, window.innerHeight, groundAt);
@@ -564,7 +567,7 @@ function tickCombat(eng: Game, now: number, me: PState | undefined): void {
         predictSkill(eng, 0, eng.bar()[0] ?? SKILLS[0]!, true);
         eng.lastAttackSend = now;
         eng.faceTargetUntil = now + 600;
-        eng.send(C.SKILL, { id: SKILLS[0]!.id, t: eng.targetId });
+        eng.send(C.SKILL, { id: SKILLS[0]!.id, t: eng.targetId, ...eng.iso?.aimMsg() });
       }
     }
   }
