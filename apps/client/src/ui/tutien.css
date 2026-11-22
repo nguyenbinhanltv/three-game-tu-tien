@@ -328,3 +328,8 @@
   z-index: 55;
   pointer-events: none;
 }
+/* Hộp thoại NPC mở: thông báo nổi hạ xuống đáy màn hình để không đè dòng phụ đề của hộp thoại ("ĐÃ HỒI ĐẦY" đè lên tên chức vụ NPC). */
+.hud:has(.npc) .toasts {
+  top: auto;
+  bottom: 150px;
+}
