@@ -35,8 +35,7 @@ import { markBloom } from '../../render/post';
 
 /**
  * Kiến trúc và cảnh quan Thiên Lộ Giới (TN-7, mỹ thuật), dựng bằng code, không asset ngoài, chỉ để nhìn:
- *  - **Con đường lát đá** uốn từ cổng Kiều Đầu lên Bậc Cuối (phiến đá ấm, bó vỉa) và **lan can** hai bên (trụ, thanh ngang, đèn lồng; có va chạm ở `terrain.colliders`,
- *    chừa lối băng ngang, xem `CUU_KIEU_RAIL`);
+ *  - **Con đường lát đá** uốn từ cổng Kiều Đầu lên Bậc Cuối (phiến đá ấm, bó vỉa) và **lan can** hai bên (trụ, thanh ngang, đèn lồng; có va chạm ở `terrain.colliders`: vòng ở mỗi trụ + hai vòng trung gian dọc thanh ngang (khe ~0,4 m < thân người chơi), chừa lối băng ngang, xem `CUU_KIEU_RAIL`);
  *  - **Chuỗi chín nhịp cầu vòm đá cổ** trên biển mây: vòm xây bằng khối đá dày màu ấm, rêu ở chân, tường bụng cầu, mặt cầu dày, lan can khối, mố trụ lớn, cổng đá;
  *  - **Kiều Đầu**: cổng vòm đá có mái, đình hai tầng mái ngói, rạp vải với lửa trại, đèn lồng;
  *  - **Cổ thụ** tán nhiều lớp bất đều, cây vừa, **đá tảng** rêu phủ, **cỏ lau trắng**, cỏ chân và hoa nhỏ, **thác nước** rộng có bọt ở chân.
