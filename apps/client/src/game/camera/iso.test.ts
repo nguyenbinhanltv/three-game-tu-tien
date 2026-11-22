@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   clampLeadFrame,
   clampLeadSafe,
+  ISO_HEIGHT_TO_GROUND,
+  ISO_HEAD_UP,
   ISO_TGT_UP,
   ISO_TGT_X,
   ISO_SAFE_DOWN,
@@ -65,6 +67,16 @@ describe('clampLeadFrame', () => {
     expect(Math.abs(me.r)).toBeLessThanOrEqual(ISO_SAFE_X + 1e-6);
     expect(me.d).toBeLessThanOrEqual(ISO_SAFE_DOWN + 1e-6);
     expect(me.d).toBeGreaterThanOrEqual(-ISO_SAFE_UP - 1e-6);
+  });
+  it('boss cao: đỉnh đầu boss nằm trong khung (đẩy tâm khung lên phía boss)', () => {
+    const t = { x: 0, z: -4 }; // boss ở phía xa camera (yaw 0: camera ở +z)
+    const h = 5;
+    const a = clampLeadFrame(0, -4, 0, t.x, t.z, 0);
+    const b = clampLeadFrame(0, -4, 0, t.x, t.z, h);
+    // lệch xuống (d) của đầu boss so với tâm khung: tD − h·k − Ld ≥ −ISO_TGT_UP khi còn khả thi
+    const headD = (l: { x: number; z: number }) => t.z - h * ISO_HEIGHT_TO_GROUND - l.z;
+    expect(headD(b)).toBeGreaterThanOrEqual(headD(a) - 1e-6);
+    expect(headD(b)).toBeGreaterThanOrEqual(-ISO_HEAD_UP - 1e-6);
   });
   it('không có mục tiêu thì như clampLeadSafe', () => {
     expect(clampLeadFrame(30, 5, 0.3)).toEqual(clampLeadSafe(30, 5, 0.3));

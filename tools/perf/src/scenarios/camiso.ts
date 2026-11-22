@@ -37,7 +37,7 @@ export default {
             renderer: opt('--renderer', 'webgpu'),
             quality: preset,
             viewport: VIEWS[view]!,
-            extra: iso ? 'cam=iso' : '',
+            extra: [iso ? 'cam=iso' : '', opt('--query', '')].filter(Boolean).join('&'),
             seenIntro: true,
           });
           const stem = `${mode}-${preset}-${view}`;

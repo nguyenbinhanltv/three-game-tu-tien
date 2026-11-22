@@ -338,6 +338,13 @@ export function runFrame(eng: Game): void {
   }
 }
 
+/** Chiều cao (m) của mục tiêu đang khóa nếu là quái lớn (boss ~scale 3,6): để khung giữ được cả đầu. 0 với quái thường. */
+function bossHeight(eng: Game): number {
+  const m = eng.ents.monsters.get(eng.targetId);
+  const h = m?.model.height ?? 0;
+  return h > 3.2 ? h : 0;
+}
+
 function updateCamera(eng: Game, dt: number): void {
   const rp = eng.renderPos;
   const flying = eng.cur.flying;
@@ -397,7 +404,9 @@ function updateCamera(eng: Game, dt: number): void {
     const tl = eng.targetId && eng.ents.chestOf(eng.targetId, _v) ? isoLeadTarget(_v.x - rp.x, _v.z - rp.z) : null;
     const ld = tl ? { x: tl.x + cl.x * 0.4, z: tl.z + cl.z * 0.4 } : cl;
     // Kẹp khung: người chơi luôn trong vùng an toàn; mục tiêu cũng trong vùng an toàn (tránh minimap/HUD) nếu thực hiện được, không thì ưu tiên người chơi.
-    const safe = tl ? clampLeadFrame(ld.x, ld.z, eng.camYaw, _v.x - rp.x, _v.z - rp.z) : clampLeadSafe(ld.x, ld.z, eng.camYaw);
+    const safe = tl
+      ? clampLeadFrame(ld.x, ld.z, eng.camYaw, _v.x - rp.x, _v.z - rp.z, bossHeight(eng))
+      : clampLeadSafe(ld.x, ld.z, eng.camYaw);
     ld.x = safe.x;
     ld.z = safe.z;
     const kk = Math.min(1, dt * 3);

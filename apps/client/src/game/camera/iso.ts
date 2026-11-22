@@ -4,6 +4,8 @@
  */
 
 /** Quy ước như camera cũ: camera nằm ở (target + (sin yaw, cos yaw) · khoảng cách ngang). */
+import { FLAGS } from '../../base/flags';
+
 export const ISO_FOV = 32;
 export const ISO_PITCH = (52 * Math.PI) / 180;
 /** Khoảng cách cố định camera→điểm nhìn (m). Khóa cả góc lẫn khoảng cách: không zoom. */
@@ -11,7 +13,11 @@ export const ISO_DIST = 20;
 export const ISO_FAR = 250;
 /** Hướng nhìn mặc định (rad). 45° chéo: bản đồ nào cần hướng khác thì thêm vào `ISO_YAW`. */
 export const ISO_YAW_DEFAULT = Math.PI * 0.25;
-export const ISO_YAW: Readonly<Record<string, number>> = {};
+/** Hướng nhìn cố định riêng từng bản đồ (độ → rad). Chọn bằng ảnh so sánh `?isoyaw=` (docs/handbook/client-ui.md). */
+export const ISO_YAW: Readonly<Record<string, number>> = {
+  // Lạc Kiếm Tông + Vân Lam: lệch 30° so với trục bắc–nam của tông môn để thấy cả mặt trước lẫn mặt bên công trình, lát đá không thành lưới thẳng phẳng (so với 0°, −30°, 45°).
+  van_lam: (30 * Math.PI) / 180,
+};
 /** Dẫn trước tối đa (m) theo con trỏ, tính trên mặt đất, và hệ số theo khoảng cách con trỏ tới nhân vật. */
 export const ISO_LEAD_MAX = 3.2;
 export const ISO_LEAD_K = 0.22;
@@ -19,7 +25,7 @@ export const ISO_LEAD_K = 0.22;
 export const ISO_ARRIVE = 0.45;
 
 export function isoYawFor(level: string): number {
-  return ISO_YAW[level] ?? ISO_YAW_DEFAULT;
+  return FLAGS.isoYaw ?? ISO_YAW[level] ?? ISO_YAW_DEFAULT;
 }
 
 export interface IsoPose {
@@ -122,7 +128,11 @@ export function clampLeadSafe(lx: number, lz: number, yaw: number): { x: number;
 }
 
 /** Vùng an toàn của MỤC TIÊU trên màn hình (m trên mặt đất quanh tâm khung): ngang, và không cao hơn `ISO_TGT_UP` (minimap phải trên), không thấp hơn `ISO_TGT_DOWN`. */
-export const ISO_TGT_X = 6.5;
+export const ISO_TGT_X = 5.5;
+/** Đỉnh đầu boss lớn được phép lên gần mép trên khung (nửa chiều cao khung ≈ 7,3 m trên đất), không bị minimap phải trên chắn vì boss rộng. */
+export const ISO_HEAD_UP = 6.5;
+/** 1 m chiều cao hiện lên màn hình bằng ngần ấy mét trên mặt đất (cos/sin của góc nghiêng 52°). */
+export const ISO_HEIGHT_TO_GROUND = Math.cos(ISO_PITCH) / Math.sin(ISO_PITCH);
 export const ISO_TGT_UP = 3.3;
 export const ISO_TGT_DOWN = 4;
 
@@ -137,7 +147,7 @@ function fitInterval(want: number, lo: number, hi: number, pLo: number, pHi: num
  * Kẹp độ lệch camera để người chơi VÀ mục tiêu (độ lệch thế giới `tx, tz` so với người) cùng nằm trong vùng an toàn; không thể cả hai thì ưu tiên người chơi.
  * Không có mục tiêu thì như `clampLeadSafe`.
  */
-export function clampLeadFrame(lx: number, lz: number, yaw: number, tx?: number, tz?: number): { x: number; z: number } {
+export function clampLeadFrame(lx: number, lz: number, yaw: number, tx?: number, tz?: number, th = 0): { x: number; z: number } {
   if (tx === undefined || tz === undefined) return clampLeadSafe(lx, lz, yaw);
   const s = Math.sin(yaw);
   const c = Math.cos(yaw);
@@ -147,6 +157,13 @@ export function clampLeadFrame(lx: number, lz: number, yaw: number, tx?: number,
   const tD = tx * s + tz * c;
   // L = vị trí điểm nhìn so với người; người ở (−Lr, −Ld), mục tiêu ở (tR − Lr, tD − Ld) so với tâm khung (D dương = xuống màn hình)
   const lr = fitInterval(wantR, tR - ISO_TGT_X, tR + ISO_TGT_X, -ISO_SAFE_X, ISO_SAFE_X);
-  const ld = fitInterval(wantD, tD - ISO_TGT_DOWN, tD + ISO_TGT_UP, -ISO_SAFE_DOWN, ISO_SAFE_UP);
+  // Boss lớn: đầu boss (cao `th` m) hiện lên màn hình ~th·cot(nghiêng) m trên đất, nên đỉnh đầu mới là cạnh trên cần giữ trong khung.
+  const ld = fitInterval(
+    wantD,
+    tD - ISO_TGT_DOWN,
+    tD - th * ISO_HEIGHT_TO_GROUND + (th > 0 ? ISO_HEAD_UP : ISO_TGT_UP),
+    -ISO_SAFE_DOWN,
+    ISO_SAFE_UP,
+  );
   return { x: lr * c + ld * s, z: -lr * s + ld * c };
 }
