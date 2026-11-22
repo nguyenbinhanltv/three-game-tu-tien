@@ -284,3 +284,8 @@ export interface CampRt {
   /** Giờ (ms) cả cụm sẽ tái sinh, 0 = đang có quái sống. */
   respawnAt: number;
 }
+
+/** Đang trong khung bất tử (né): mọi đường gây sát thương lên người chơi phải kiểm hàm này (damagePlayer, tỉ thí...). */
+export function isInvulnerable(p: Pick<PlayerEnt, 'dodgeUntil'>, now: number): boolean {
+  return now < p.dodgeUntil;
+}

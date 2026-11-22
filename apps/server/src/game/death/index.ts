@@ -22,6 +22,7 @@ import {
 import { TribSystem } from '../trib';
 import { ITEM_SYS, ITEMS, itemName, STARS, t } from '@dtl/content';
 import type { PlayerEnt, MonEnt, SimOptions } from '../entities';
+import { isInvulnerable } from '../entities';
 import { RealmSystem } from '../realm';
 import { DuelSystem } from '../duel';
 import { MirrorSystem, wardMul } from '../mirror';
@@ -116,7 +117,7 @@ export class DeathSystem {
   damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false, ke?: 1 | -1): void {
     if (this.c.isDead(p) || this.c.soul.isScouting(p)) return;
     // Né (P1 Thiên Nhãn): trong khung bất tử do server cấp thì không nhận sát thương.
-    if (this.c.now < p.dodgeUntil) return;
+    if (isInvulnerable(p, this.c.now)) return;
     const c = p.char;
     let n = Math.max(1, Math.round(dmg));
     // Định Thần Phù (E3-M): giảm sát thương "gương" (quái `glass`, boss gương, bóng tâm ma trong cung).
