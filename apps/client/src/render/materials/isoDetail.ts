@@ -1,6 +1,10 @@
 import * as THREE from 'three/webgpu';
 import {
   clamp,
+  cos,
+  length,
+  normalize,
+  select,
   dot,
   float,
   floor,
@@ -86,6 +90,62 @@ export function leafShapes(p: Node, cell: number, prob: number, cluster: Node, k
   return { cover: smoothstep(1, 0.6, e).mul(present), rnd: hash2(id, k + 5.9) };
 }
 
+/** Khoảng cách từ điểm `q` tới đoạn a→b (2D). */
+function segDist(q: Node, a: Node, b: Node): Node {
+  const ba = b.sub(a);
+  const t = clamp(dot(q.sub(a), ba).div(dot(ba, ba).max(1e-6)), 0, 1);
+  return length(q.sub(a).sub(ba.mul(t)));
+}
+
+/**
+ * Vết nứt NGẮN, GÃY KHÚC: mỗi ô lưới `cell` m có xác suất `prob` một vết xuất phát từ KHE (cạnh ô) đi vào trong, gồm hai đoạn thẳng gãy góc,
+ * mép lởm chởm theo nhiễu; không bao giờ là đường cong dài uốn lượn. Trả độ phủ 0..1.
+ */
+export function shortCracks(p: Node, cell: number, prob: number, k: number): Node {
+  const q = p.div(cell);
+  const id = floor(q);
+  const f = fract(q).sub(0.5).mul(cell);
+  const present = step(hash2(id, k), float(prob));
+  const h = cell / 2;
+  const side = floor(hash2(id, k + 2).mul(4));
+  const off = hash2(id, k + 3)
+    .sub(0.5)
+    .mul(cell * 0.8);
+  const a = select(
+    side.lessThan(1),
+    vec2(-h, off),
+    select(side.lessThan(2), vec2(h, off), select(side.lessThan(3), vec2(off, -h), vec2(off, h))),
+  );
+  const inward = normalize(a.negate().add(vec2(0.0001, 0)));
+  const j1 = hash2(id, k + 4)
+    .sub(0.5)
+    .mul(1.1);
+  const d1 = vec2(inward.x.mul(cos(j1)).sub(inward.y.mul(j1.sin())), inward.x.mul(j1.sin()).add(inward.y.mul(cos(j1))));
+  const b = a.add(
+    d1.mul(
+      hash2(id, k + 5)
+        .mul(0.45)
+        .add(0.25),
+    ),
+  );
+  const j2 = hash2(id, k + 6)
+    .sub(0.5)
+    .mul(2.0);
+  const d2 = vec2(d1.x.mul(cos(j2)).sub(d1.y.mul(j2.sin())), d1.x.mul(j2.sin()).add(d1.y.mul(cos(j2))));
+  const c2 = b.add(
+    d2.mul(
+      hash2(id, k + 7)
+        .mul(0.3)
+        .add(0.12),
+    ),
+  );
+  // mép lởm chởm: nhiễu mịn làm lệch điểm đo
+  const jag = vnoise(p.mul(9)).sub(0.5).mul(0.035);
+  const g = f.add(vec2(jag, jag.negate()));
+  const d = segDist(g, a, b).min(segDist(g, b, c2));
+  return smoothstep(0.016, 0.004, d).mul(present);
+}
+
 export interface TerrainDetailIn {
   /** Tọa độ thế giới xz. */
   p: Node;
@@ -133,14 +193,9 @@ export function isoTerrainDetail(col: Node, t: TerrainDetailIn): Node {
     .add(vnoise(p.mul(1.3)).mul(0.4));
   const mossW = smoothstep(0.52, 0.72, mossN).mul(t.forest.mul(0.6).add(0.35).add(t.wet.mul(0.5)).add(t.paving.mul(0.6)));
   c = mix(c, c.mul(vec3(0.5, 0.82, 0.38)), clamp(mossW, 0, 1).mul(flat).mul(0.9));
-  // vết nứt: đường mảnh (ridge), CHỈ trên đá lát và đất khô hẳn (không trên cỏ)
-  const crackN = vnoise(p.mul(0.8).add(vec2(5.2, 1.7)))
-    .sub(0.5)
-    .abs();
-  const crack = float(1)
-    .sub(smoothstep(0.0, 0.02, crackN))
-    .mul(t.paving.mul(0.3).add(smoothstep(0.55, 0.9, t.dry).mul(0.7)));
-  c = c.mul(float(1).sub(clamp(crack, 0, 1).mul(flat).mul(0.5)));
+  // vết nứt NGẮN gãy khúc từ khe viên (xem shortCracks), CHỈ trên đá lát và đất khô hẳn (không trên cỏ)
+  const crack = shortCracks(p, 2.2, 0.55, 21).mul(t.paving.mul(0.7).add(smoothstep(0.55, 0.9, t.dry).mul(0.7)));
+  c = c.mul(float(1).sub(clamp(crack, 0, 1).mul(flat).mul(0.55)));
   // lá rơi: lá thon xoay ngẫu nhiên, thưa, gom cụm (nhiều ở rừng và mép lát/ẩm), không rải đều
   const leaf = leafShapes(p, 0.5, 0.55, t.forest.mul(0.8).add(0.25).add(t.wet.mul(0.6)).add(t.paving.mul(0.4)), 11);
   const leafCol = mix(
@@ -150,12 +205,13 @@ export function isoTerrainDetail(col: Node, t: TerrainDetailIn): Node {
   ).mul(float(0.75).add(leaf.rnd.mul(0.5)));
   c = mix(c, leafCol, leaf.cover.mul(flat).mul(t.soil).mul(0.92));
   // sỏi: hạt sáng/tối 0,05–0,12 m, nhiều trên đường mòn, đất khô, đất trồi
-  const peb = specks(p, 0.5, 0.14, 0.04, 0.09, 31);
+  const peb = specks(p, 0.5, 0.3, 0.025, 0.085, 31);
   const pebCol = mix(vec3(0.44, 0.41, 0.36), vec3(0.24, 0.22, 0.2), peb.rnd);
   c = mix(
     c,
     pebCol,
     peb.cover
+      .mul(smoothstep(0.5, 0.78, vnoise(p.mul(0.23).add(41))))
       .mul(flat)
       .mul(clamp(t.path.mul(0.8).add(t.dry.mul(0.6)).add(patch.mul(0.9)), 0, 1))
       .mul(0.95),
@@ -203,20 +259,12 @@ export function withIsoSurfaceDetail<M extends THREE.MeshStandardNodeMaterial>(m
     1,
   );
   tint = mix(tint, vec3(0.5, 0.78, 0.38), moss.mul(0.85));
-  // đá mẻ cạnh: vết sẫm lởm chởm ở cạnh viên
-  const chip = edge.mul(step(0.62, vnoise(p.mul(5.5)))).mul(0.5);
+  // đá mẻ cạnh: vài vết sẫm lởm chởm ở cạnh viên (thưa, không đều)
+  const chip = edge.mul(smoothstep(0.7, 0.85, vnoise(p.mul(2.7).add(13)))).mul(0.3);
   mul = mul.mul(float(1).sub(chip));
-  // vết nứt
-  const crackN = vnoise(p.mul(0.9).add(vec2(2.2, 6.1)))
-    .sub(0.5)
-    .abs();
-  mul = mul.mul(
-    float(1).sub(
-      float(1)
-        .sub(smoothstep(0.0, 0.03, crackN))
-        .mul(0.32),
-    ),
-  );
+  // vết nứt NGẮN gãy khúc từ khe viên (cùng lưới viên lát)
+  const crack = shortCracks(p.add(vec2(0.31, 0.17).mul(2.4)), 2.4, 0.6, 5);
+  mul = mul.mul(float(1).sub(crack.mul(0.5)));
   // lá rơi trên sàn đá: rất thưa, gom ở mép viên lát
   const leaf = leafShapes(p, 0.55, 0.4, edge.mul(0.9).add(0.1), 11);
   const leafCol = mix(vec3(0.46, 0.3, 0.11), vec3(0.36, 0.14, 0.07), leaf.rnd).mul(float(0.75).add(leaf.rnd.mul(0.5)));

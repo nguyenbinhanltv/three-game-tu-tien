@@ -4,6 +4,8 @@
  */
 
 /** Quy ước như camera cũ: camera nằm ở (target + (sin yaw, cos yaw) · khoảng cách ngang). */
+import { FLAGS } from '../../base/flags';
+
 export const ISO_FOV = 32;
 export const ISO_PITCH = (52 * Math.PI) / 180;
 /** Khoảng cách cố định camera→điểm nhìn (m). Khóa cả góc lẫn khoảng cách: không zoom. */
@@ -11,7 +13,11 @@ export const ISO_DIST = 20;
 export const ISO_FAR = 250;
 /** Hướng nhìn mặc định (rad). 45° chéo: bản đồ nào cần hướng khác thì thêm vào `ISO_YAW`. */
 export const ISO_YAW_DEFAULT = Math.PI * 0.25;
-export const ISO_YAW: Readonly<Record<string, number>> = {};
+/** Hướng nhìn cố định riêng từng bản đồ (độ → rad). Chọn bằng ảnh so sánh `?isoyaw=` (docs/handbook/client-ui.md). */
+export const ISO_YAW: Readonly<Record<string, number>> = {
+  // Lạc Kiếm Tông + Vân Lam: lệch 30° so với trục bắc–nam của tông môn để thấy cả mặt trước lẫn mặt bên công trình, lát đá không thành lưới thẳng phẳng (so với 0°, −30°, 45°).
+  van_lam: (30 * Math.PI) / 180,
+};
 /** Dẫn trước tối đa (m) theo con trỏ, tính trên mặt đất, và hệ số theo khoảng cách con trỏ tới nhân vật. */
 export const ISO_LEAD_MAX = 3.2;
 export const ISO_LEAD_K = 0.22;
@@ -19,7 +25,7 @@ export const ISO_LEAD_K = 0.22;
 export const ISO_ARRIVE = 0.45;
 
 export function isoYawFor(level: string): number {
-  return ISO_YAW[level] ?? ISO_YAW_DEFAULT;
+  return FLAGS.isoYaw ?? ISO_YAW[level] ?? ISO_YAW_DEFAULT;
 }
 
 export interface IsoPose {
@@ -122,7 +128,7 @@ export function clampLeadSafe(lx: number, lz: number, yaw: number): { x: number;
 }
 
 /** Vùng an toàn của MỤC TIÊU trên màn hình (m trên mặt đất quanh tâm khung): ngang, và không cao hơn `ISO_TGT_UP` (minimap phải trên), không thấp hơn `ISO_TGT_DOWN`. */
-export const ISO_TGT_X = 6.5;
+export const ISO_TGT_X = 5.5;
 export const ISO_TGT_UP = 3.3;
 export const ISO_TGT_DOWN = 4;
 
