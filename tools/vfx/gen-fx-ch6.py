@@ -43,18 +43,19 @@ def write(name, pal, events):
 # Đạo Môn n vành (gốc ở tâm cổng, bán kính cổng 3 m, sống đúng d giây): n vành đồng tâm phẳng sát đất + triện văn + một cột mảnh thấp camFade.
 RINGS = [3.5, 2.5, 1.5]
 for n in (1, 2, 3):
-    ev = [decal('rune', 0.0, 3.9, 3.0, at='area', grow=0.25, tone='rim', alpha=1.0, yaw=0, untilDelay=True, tier=0, **START)]
+    # Sàn sân kiếp có các tấm đá nhô cao hơn mặt đất: đĩa/vòng đặt cao 0,55 m trở lên để không chìm dưới tấm.
+    ev = [mesh('ripple', 0.0, 3.0, at='area', offset=[0, 0.5, 0], scale=3.5, sweep=0.0, erodeFrom=0.97, ragged=0.2, tone='body', alpha=0.85, seed=200, untilDelay=True, tier=0, **START)]
     for i in range(n):
-        ev.append(mesh('rune_ring2', 0.05 * i, 3.0, at='area', offset=[0, 0.2 + 0.05 * i, 0], scale=[RINGS[i], 1, RINGS[i]], sweep=0.0, erodeFrom=0.97, ragged=0.3, tone='rim', alpha=1.0, seed=201 + i, untilDelay=True, tier=0, **START))
+        ev.append(mesh('rune_ring2', 0.05 * i, 3.0, at='area', offset=[0, 0.6 + 0.06 * i, 0], scale=[RINGS[i], 1, RINGS[i]], sweep=0.0, erodeFrom=0.97, ragged=0.3, tone='rim', alpha=1.0, seed=201 + i, untilDelay=True, tier=0, **START))
     ev.append(mesh('rock_spire', 0.0, 3.0, at='area', offset=[0, 0, 0], scale=[0.45, 1.5 + 0.5 * n, 0.45], sweep=0.0, erodeFrom=0.97, tone='accent', alpha=0.9, seed=210 + n, untilDelay=True, tier=1, camFade=True, **START))
     write('kc_gate_%d' % n, 'kc_hoi_dao', ev)
 
 # Dấu hỏi giữa sân n vành: nhỏ hơn, tông accent vàng, chỉ vòng phẳng + triện (không khối cao: người độ kiếp đứng ngay đây lúc bắt đầu).
 MR = [2.8, 1.9, 1.0]
 for n in (1, 2, 3):
-    ev = [decal('rune', 0.0, 3.2, 3.0, at='area', grow=0.2, tone='accent', alpha=1.0, yaw=0, untilDelay=True, tier=0, **START)]
+    ev = [mesh('ripple', 0.0, 3.0, at='area', offset=[0, 0.5, 0], scale=2.9, sweep=0.0, erodeFrom=0.97, ragged=0.2, tone='body', alpha=0.8, seed=220, untilDelay=True, tier=0, **START)]
     for i in range(n):
-        ev.append(mesh('rune_ring2', 0.05 * i, 3.0, at='area', offset=[0, 0.24 + 0.05 * i, 0], scale=[MR[i], 1, MR[i]], sweep=0.0, erodeFrom=0.97, ragged=0.3, tone='accent', alpha=1.0, seed=221 + i, untilDelay=True, tier=0, **START))
+        ev.append(mesh('rune_ring2', 0.05 * i, 3.0, at='area', offset=[0, 0.7 + 0.06 * i, 0], scale=[MR[i], 1, MR[i]], sweep=0.0, erodeFrom=0.97, ragged=0.3, tone='accent', alpha=1.0, seed=221 + i, untilDelay=True, tier=0, **START))
     write('kc_mark_%d' % n, 'kc_hoi_dao', ev)
 
 # Đáp đúng (ở cổng đúng): sóng sáng lan ra + cánh hoa. Đáp sai: nứt đất dưới chân người + khói.
@@ -74,12 +75,12 @@ write('kc_hd_bad', 'kc_hoi_dao', [
 # Mầm (1,2 s đầu, chưa hại): vòng accent hồng nhỏ nhấp nháy. Vực lan (sau mầm): vùng tím-đen đặc mọc từ tâm tới 8 m, viền sáng lan ra theo (hai vòng nối nhau gần khớp
 # bán kính server), triện văn rim sáng; khi lan hết giữ vòng viền 8 m.
 write('kc_am_pool', 'kc_am_lan', [
-    mesh('rune_ring2', 0.0, 1.2, at='area', offset=[0, 0.2, 0], scale=[1.2, 1, 1.2], scaleTo=[1.9, 1, 1.9], sweep=0.0, erodeFrom=0.9, ragged=0.4, tone='accent', alpha=1.0, seed=243, tier=0, **START),
-    decal('scorch', 1.2, 8.0, 3.0, at='area', grow=6.0, tone='core', alpha=1.0, untilDelay=True, tier=0, **START),
-    decal('rune', 1.2, 8.0, 3.0, at='area', grow=6.0, tone='body', alpha=0.9, yaw=15, untilDelay=True, tier=0, **START),
-    mesh('rune_ring2', 1.2, 1.8, at='area', offset=[0, 0.22, 0], scale=[1.5, 1, 1.5], scaleTo=[3.8, 1, 3.8], sweep=0.0, erodeFrom=0.9, ragged=0.4, tone='rim', alpha=1.0, seed=241, tier=0, **START),
-    mesh('rune_ring2', 3.0, 4.0, at='area', offset=[0, 0.22, 0], scale=[3.8, 1, 3.8], scaleTo=[8.0, 1, 8.0], sweep=0.0, erodeFrom=0.97, ragged=0.3, tone='accent', alpha=1.0, seed=244, untilDelay=True, tier=0, **START),
-    parts('dust', 1.2, 22, 0.8, 1.0, 1.8, 0.34, at='area', offset=[0, 0.3, 0], tone='body', grav=-0.5, tier=1, **START),
+    mesh('rune_ring2', 0.0, 1.2, at='area', offset=[0, 0.6, 0], scale=[1.2, 1, 1.2], scaleTo=[1.9, 1, 1.9], sweep=0.0, erodeFrom=0.9, ragged=0.4, tone='accent', alpha=1.0, seed=243, tier=0, **START),
+    mesh('ripple', 1.2, 1.8, at='area', offset=[0, 0.5, 0], scale=1.5, scaleTo=3.8, sweep=0.0, erodeFrom=0.95, ragged=0.3, tone='core', alpha=1.0, seed=246, tier=0, **START),
+    mesh('ripple', 3.0, 4.0, at='area', offset=[0, 0.5, 0], scale=3.8, scaleTo=8.0, sweep=0.0, erodeFrom=0.99, ragged=0.3, tone='core', alpha=1.0, seed=247, untilDelay=True, tier=0, **START),
+    mesh('rune_ring2', 1.2, 1.8, at='area', offset=[0, 0.62, 0], scale=[1.5, 1, 1.5], scaleTo=[3.8, 1, 3.8], sweep=0.0, erodeFrom=0.9, ragged=0.4, tone='rim', alpha=1.0, seed=241, tier=0, **START),
+    mesh('rune_ring2', 3.0, 4.0, at='area', offset=[0, 0.62, 0], scale=[3.8, 1, 3.8], scaleTo=[8.0, 1, 8.0], sweep=0.0, erodeFrom=0.99, ragged=0.3, tone='accent', alpha=1.0, seed=244, untilDelay=True, tier=0, **START),
+    parts('dust', 1.2, 22, 0.8, 1.0, 1.8, 0.34, at='area', offset=[0, 0.5, 0], tone='body', grav=-0.5, tier=1, **START),
 ])
 write('kc_am_end', 'kc_am_lan', [
     mesh('shock_cone', 0.0, 0.7, at='area', offset=[0, 0.05, 0], scale=[2.0, 0.6, 2.0], scaleTo=[8.0, 0.8, 8.0], sweep=0.3, erodeFrom=0.35, ragged=0.8, tone='body', alpha=0.6, seed=242, tier=1),

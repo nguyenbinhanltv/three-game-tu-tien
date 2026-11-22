@@ -61,11 +61,22 @@ async function enterTrib(page: Page, id: TribId, god: boolean): Promise<{ x: num
 }
 
 async function hoiDao(page: Page, dir: string): Promise<void> {
-  const q = await waitLog(page, 'kc:hd', (l) => l.pg === 1, 45);
-  if (!q) throw new Error('không thấy câu hỏi đạo');
+  const q = await waitLog(page, 'kc:hd', (l) => l.pg === 1, 75);
+  if (!q) {
+    console.log(
+      '[kiepch6] suyLog:',
+      JSON.stringify(await page.evaluate(() => window.__game!.suyLog ?? null)),
+      'hp',
+      JSON.stringify(await page.evaluate(() => window.__game!.me()?.hp)),
+    );
+    throw new Error('không thấy câu hỏi đạo');
+  }
   const gates = unpackGates(q.lv);
   await cam(page, { pitch: 0.62, dist: 42, yaw: 0.35 });
-  console.log('[kiepch6] timeline đã phát:', JSON.stringify(await page.evaluate(() => window.__game!.suyFx?.log.map((l) => l.key) ?? null)));
+  console.log(
+    '[kiepch6] timeline đã phát:',
+    JSON.stringify(await page.evaluate(() => window.__game!.suyFx?.log.map((l) => l.key) ?? null)),
+  );
   await snapSizes(page, dir, '1-hoi-dao', SIZES, 500);
   const right = gates.indexOf(q.n);
   const g = gatePos({ x: q.x, z: q.z }, q.r, right);
@@ -99,7 +110,7 @@ async function skill(page: Page): Promise<void> {
 }
 
 async function duongThuc(page: Page, dir: string): Promise<void> {
-  const wind = await waitLog(page, 'kc:dt', (l) => l.pg === 1, 45);
+  const wind = await waitLog(page, 'kc:dt', (l) => l.pg === 1, 75);
   if (!wind) throw new Error('không thấy đòn nhịp');
   await sleep(900);
   await snapSizes(page, dir, '1-u-don', SIZES, 100);

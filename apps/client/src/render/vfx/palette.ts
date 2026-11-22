@@ -53,7 +53,7 @@ export const FX_PALETTE: Record<string, FxPalette> = {
   hk_luan_hoi: { core: 0x2a2208, body: 0xe8c45a, rim: 0xfff6d8, accent: 0xff5a3a, shadow: 0x120e04 },
   // ---- Kiếp chương 6 (TN-3): hỏi đạo (lam đạo, dấu vàng), âm vực (tím âm, mối nguy hồng đỏ), đòn nhịp Dương Thực (đồng cam). ----
   kc_hoi_dao: { core: 0x1a1840, body: 0x6f8cf0, rim: 0xe9efff, accent: 0xffd25a, shadow: 0x090a1c },
-  kc_am_lan: { core: 0x1a1230, body: 0xa070ff, rim: 0xe2d4ff, accent: 0xff4f86, shadow: 0x0a0716 },
+  kc_am_lan: { core: 0x2a1a50, body: 0xa070ff, rim: 0xe2d4ff, accent: 0xff4f86, shadow: 0x0a0716 },
   kc_duong_dap: { core: 0x3a1a06, body: 0xe8a43a, rim: 0xfff1c9, accent: 0xff5a2a, shadow: 0x160a02 },
   // ---- Quái (V5): bảng "nguy hiểm", tách khỏi bảng "của ta". Lõi rất sẫm, thân bão hòa theo ngũ hành, viền sáng ấm, điểm nhấn đỏ son/đỏ thẫm
   // để vạch báo và đòn của quái luôn đọc ra là mối nguy (không lẫn với lam ngọc/lục/hổ phách của người chơi).
