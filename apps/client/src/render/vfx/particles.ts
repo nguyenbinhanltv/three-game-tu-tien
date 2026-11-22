@@ -124,6 +124,11 @@ class Layer {
     if (glow) markBloom(mat, 0.5);
 
     this.sprite = new THREE.Sprite(mat);
+    // Lượt AO ghi `normalView` vào MRT; hình dùng chung của Sprite không có thuộc tính normal nên TSL cảnh báo mỗi lần dựng material.
+    // Bản sao riêng có normal (0,0,1) (hạt luôn quay mặt về camera).
+    const geo = this.sprite.geometry.clone();
+    geo.setAttribute('normal', new THREE.Float32BufferAttribute([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1], 3));
+    this.sprite.geometry = geo;
     // Số instance vẽ bám theo phần bộ đệm có thể còn hạt sống (xem `flush`), tối thiểu 1.
     this.sprite.count = 1;
     this.sprite.frustumCulled = false;

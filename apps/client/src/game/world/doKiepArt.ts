@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { addUpNormals } from '../../render/geoNormal';
 import {
   atan,
   float,
@@ -175,6 +176,7 @@ export class DoKiepArt {
     for (let i = 0; i < MOTE_N; i++) this.seeds.push(hash01(i, 1, 9901), hash01(i, 2, 9901), hash01(i, 3, 9901), hash01(i, 4, 9901));
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(MOTE_N * 3), 3));
+    addUpNormals(g);
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(CENTER.x, this.y0 + 10, CENTER.z), 90);
     const m = new THREE.PointsMaterial({
       color: 0xcdbfff,
@@ -193,6 +195,7 @@ export class DoKiepArt {
     // mưa: các vệt dài 1,6 m rơi nghiêng trong trụ r 62 quanh đài
     const rg = new THREE.BufferGeometry();
     rg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(RAIN_N * 6), 3));
+    addUpNormals(rg);
     rg.boundingSphere = new THREE.Sphere(new THREE.Vector3(CENTER.x, this.y0 + 20, CENTER.z), 90);
     for (let i = 0; i < RAIN_N; i++) this.rainSeed.push(hash01(i, 1, 5501), hash01(i, 2, 5501), hash01(i, 3, 5501));
     const rm = new THREE.LineBasicMaterial({
@@ -211,6 +214,7 @@ export class DoKiepArt {
     // hồ quang giữa các đầu thu lôi kề nhau
     const ag = new THREE.BufferGeometry();
     ag.setAttribute('position', new THREE.BufferAttribute(new Float32Array(ARCS.length * ARC_SEG * 6), 3));
+    addUpNormals(ag);
     ag.boundingSphere = new THREE.Sphere(new THREE.Vector3(CENTER.x, this.y0 + 12, CENTER.z), 60);
     const am = new THREE.LineBasicMaterial({
       color: 0xd8ccff,
