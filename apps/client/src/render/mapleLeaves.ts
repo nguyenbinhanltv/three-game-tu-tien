@@ -12,6 +12,8 @@ export const leafParams = {
   cam: uniform(new THREE.Vector3()),
   groundY: uniform(0),
   light: uniform(1),
+  /** Hệ số chiều cao hộp lá (1 = 26 m; camera chéo ?cam=iso: thấp, để lá không bay ngay trước ống kính camera cao 15 m và phóng to thành mảng đỏ). */
+  heightK: uniform(1),
 };
 
 export const LEAF_LIGHT: Record<string, number> = {
@@ -106,7 +108,11 @@ export class MapleLeaves {
     const raw = vec3(sd.x.mul(BOX.x), sd.y.mul(BOX.y), sd.z.mul(BOX.z))
       .add(wind.mul(t))
       .add(vec3(sin(t.mul(1.3).add(sd.w)).mul(1.4), pr.y.negate().mul(t), cos(t.mul(1.1).add(sd.w.mul(2))).mul(1.4)));
-    const wrapped = vec3(mod(raw.x.sub(leafParams.cam.x), BOX.x), mod(raw.y, BOX.y), mod(raw.z.sub(leafParams.cam.z), BOX.z));
+    const wrapped = vec3(
+      mod(raw.x.sub(leafParams.cam.x), BOX.x),
+      mod(raw.y, BOX.y).mul(leafParams.heightK),
+      mod(raw.z.sub(leafParams.cam.z), BOX.z),
+    );
     const center = vec3(
       leafParams.cam.x.add(wrapped.x).sub(BOX.x / 2),
       leafParams.groundY.add(wrapped.y).add(0.4),
@@ -153,7 +159,8 @@ export class MapleLeaves {
   }
 
   /** Mỗi khung: đặt tâm hộp cuộn vòng ở camera và cao độ mặt đất bên dưới. */
-  update(cam: THREE.Vector3, groundY: number): void {
+  update(cam: THREE.Vector3, groundY: number, heightK = 1): void {
+    leafParams.heightK.value = heightK;
     leafParams.cam.value.copy(cam);
     leafParams.groundY.value = groundY;
   }

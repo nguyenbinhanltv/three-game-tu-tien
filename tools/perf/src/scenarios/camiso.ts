@@ -118,10 +118,10 @@ export default {
               }
               return best;
             });
-          // Đưa người tới sát quái gần nhất (~5 m) để khung đánh thấy cả người lẫn mục tiêu, rồi lấy lại quái gần nhất.
+          // Đưa người tới sát quái gần nhất (~5 m, về phía camera để quái nằm trên người trong khung) để khung đánh thấy cả người lẫn mục tiêu, rồi lấy lại quái gần nhất.
           let mon = await nearest();
           if (mon) {
-            await gm(page, `tp ${Math.round(mon.x - 5)} ${Math.round(mon.z)}`, 1500);
+            await gm(page, `tp ${Math.round(mon.x + Math.sin(standYaw()) * 5)} ${Math.round(mon.z + Math.cos(standYaw()) * 5)}`, 1500);
             mon = (await nearest()) ?? mon;
           }
           if (mon) {
