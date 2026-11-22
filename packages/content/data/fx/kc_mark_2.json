@@ -6,12 +6,12 @@
    "type": "decal",
    "tex": "rune",
    "t": 0.0,
-   "r": 1.9,
+   "r": 3.2,
    "dur": 3.0,
    "at": "area",
    "grow": 0.2,
    "tone": "accent",
-   "alpha": 0.9,
+   "alpha": 1.0,
    "yaw": 0,
    "untilDelay": true,
    "tier": 0,
@@ -29,9 +29,9 @@
     0
    ],
    "scale": [
-    1.6,
+    2.8,
     1,
-    1.6
+    2.8
    ],
    "sweep": 0.0,
    "erodeFrom": 0.97,
@@ -55,9 +55,9 @@
     0
    ],
    "scale": [
-    1.1,
+    1.9,
     1,
-    1.1
+    1.9
    ],
    "sweep": 0.0,
    "erodeFrom": 0.97,

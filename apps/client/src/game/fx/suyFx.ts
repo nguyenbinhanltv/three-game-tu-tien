@@ -447,6 +447,14 @@ export class SuyFx {
    * FX `hkmark`: dấu trên sân của Huyền Kiếp (TN-6). Thứ phải chạm/bước vào (chỗ nấp, trụ nguội, ấn thật, Hồn Châu, cung sinh) có thêm cột linh quang
    * để đọc được từ xa trên sân tối; mối nguy (đụn tuyết, trụ nóng) dùng tông `accent` của kiếp.
    */
+  /** `n` cột linh quang xếp ngang quanh (x, z), cách nhau 1,3 m, sống `dur` giây (đánh số vành của hỏi đạo). */
+  private pillars(src: string, slot: string, x: number, z: number, n: number, dur: number, tone: 'rim' | 'accent'): void {
+    for (let k = 0; k < n; k++) {
+      const off = (k - (n - 1) / 2) * 1.3;
+      this.glow(src, `${slot}_${k}`, hexOf('kc_hoi_dao', tone), { x: x + off, z, h: 7, r: 0.45, dur, opacity: 0.55, thick: 1 });
+    }
+  }
+
   /**
    * Dấu trên sân của ba cơ chế kiếp chương 6 (TN-3, FX `kcmark`): `s` = hd (hỏi đạo) | am (âm vực) | dt (đòn nhịp Dương Thực); `pg` là bước.
    * Hình phát theo timeline `kc_*.json` (phẳng sát đất, khối cao camFade); thứ phải bước vào còn có cột linh quang cộng sáng để đọc từ xa.
@@ -466,8 +474,10 @@ export class SuyFx {
           for (let i = 0; i < gates.length; i++) {
             const g = gatePos({ x, z }, m.r ?? 8, i);
             this.at(`kc_gate_${gates[i]}`, 'kc_hoi_dao', g.x, g.z, 3, { delay: d, src });
-            this.glow(src, `kcg${i}`, hexOf('kc_hoi_dao', 'rim'), { x: g.x, z: g.z, h: 5, r: 2.2, dur: d, opacity: 0.32 });
+            // Số vành đọc từ xa bằng số cột sáng: cổng `n` vành có `n` cột xếp ngang (cùng cách với dấu giữa sân).
+            this.pillars(src, `kcg${i}`, g.x, g.z, gates[i] ?? 1, d, 'rim');
           }
+          this.pillars(src, 'kcgm', x, z, m.n ?? 1, d, 'accent');
         } else {
           this.dropGlow(src, 'kcg');
           this.at('kc_hd_ok', 'kc_hoi_dao', x, z, m.r ?? 3, { src });

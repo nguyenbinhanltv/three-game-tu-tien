@@ -294,7 +294,7 @@
           "extraR": 3.4,
           "extraPct": 0.06,
           "mechanic": "hoi_dao",
-          "hoiDao": { "ring": 8, "gateR": 3, "rounds": 3, "first": 3, "ask": 6, "rest": 3, "pct": 0.28, "heal": 0.06 }
+          "hoiDao": { "ring": 7, "gateR": 3.5, "rounds": 3, "first": 3, "ask": 6, "rest": 3, "pct": 0.28, "heal": 0.06 }
         },
         {
           "id": "tam_ma",
@@ -500,7 +500,7 @@
           "extraR": 3.4,
           "extraPct": 0.05,
           "mechanic": "duong_dap",
-          "duongDap": { "first": 4, "every": 6, "windup": 2.4, "win": 1, "pct": 0.42, "cut": 0.8, "heal": 0.05 }
+          "duongDap": { "first": 4, "every": 6, "windup": 2.4, "win": 1.3, "pct": 0.42, "cut": 0.8, "heal": 0.05 }
         },
         {
           "id": "duong_thuc_hop_nhat",

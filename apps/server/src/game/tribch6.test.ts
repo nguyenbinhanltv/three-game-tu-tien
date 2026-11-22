@@ -473,6 +473,96 @@ describe('kiếp thật: Vấn Đỉnh, Âm Hư, Dương Thực dùng cơ chế 
   });
 });
 
+describe('duong_dap qua onSkill thật (ý định ghi ở onSkill, trước kiểm mục tiêu)', () => {
+  const cfg = phaseOf(DT, 'duong_dap').duongDap!;
+  /** Vào pha Dương đáp (giây 30) với khí huyết đầy; trả tiện ích bấm chiêu và đọc đòn đang ủ. */
+  function inPhase() {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const t = setup('duong_thuc');
+    t.begin();
+    t.run(DT.phases[0]!.end + 0.2, () => {
+      t.p.char.hp = t.p.char.mhp;
+    });
+    expect(t.p.trib?.pi).toBe(1);
+    const beat = () => mech.duongDapOf(t.p.trib)?.beat ?? null;
+    const press = (id: string) => {
+      t.p.cds.clear();
+      t.p.char.mp = t.p.char.mmp;
+      t.p.gcdAt = 0;
+      t.sim.onSkill(t.p, { id });
+    };
+    return { t, beat, press };
+  }
+
+  it('đánh thường không cần mục tiêu (sân không có quái) vẫn phản đòn trong cửa sổ', () => {
+    const { t, beat, press } = inPhase();
+    // Chạy từng nhịp tới khi cửa sổ mở.
+    let b = beat();
+    t.run(DT.phases[1]!.end - 0.3, () => {
+      b = beat();
+      t.p.char.hp = t.p.char.mhp;
+      if (b && !b.parried && t.sim.now >= b.impactAt - cfg.win * 1000 + 100 && t.sim.now < b.impactAt - 200) {
+        press('skl_phi_kiem');
+      }
+    });
+    expect(mech.duongDapOf(t.p.trib)!.parries).toBeGreaterThanOrEqual(1);
+  });
+
+  it('chiêu bấm TRƯỚC cửa sổ không tính, chiêu bấm trong cửa sổ tính ngay lúc bấm (kể cả chiêu niệm cần mục tiêu mà sân không có: không phụ thuộc lúc niệm xong)', () => {
+    const { t, press } = inPhase();
+    const st = () => mech.duongDapOf(t.p.trib)!;
+    let early = false;
+    let inWin = false;
+    t.run(DT.phases[1]!.end - 0.3, () => {
+      t.p.char.hp = t.p.char.mhp;
+      const b = st().beat;
+      if (!b) return;
+      const left = (b.impactAt - t.sim.now) / 1000;
+      // Nhịp 1: bấm chiêu niệm 1,5 s khi còn 2,0 s (ngoài cửa sổ): không tính, kể cả khi chiêu đó (nếu niệm được) sẽ xong trong cửa sổ.
+      if (st().n === 1 && !early && left <= 2.0) {
+        early = true;
+        press('skl_loi_dinh_nhat_kiem');
+        expect(b.parried).toBe(false);
+      }
+      // Nhịp 2: bấm chiêu niệm ngay khi cửa sổ mở: tính ngay lúc bấm.
+      if (st().n === 2 && !inWin && left <= cfg.win - 0.1) {
+        inWin = true;
+        press('skl_loi_dinh_nhat_kiem');
+        expect(b.parried).toBe(true);
+      }
+    });
+    expect(early && inWin).toBe(true);
+    expect(st().parries).toBe(1);
+  });
+
+  it('đi hết pha, phản đòn mọi nhịp bằng đánh thường, KHÔNG hồi máu bằng GM: sống và phản đòn đủ mọi nhịp; không phản đòn thì chịu đòn nặng hơn nhiều', () => {
+    const play = (parry: boolean) => {
+      const { t, press } = inPhase();
+      const st0 = mech.duongDapOf(t.p.trib)!;
+      const hp0 = t.p.char.hp;
+      const t0 = t.sim.now;
+      const cx = t.p.move.x;
+      t.run(DT.phases[1]!.end - 0.3, () => {
+        // Né thiên lôi thường như người chơi thật: đổi chỗ mỗi 1,25 s (bằng độ trễ của tia nhắm) giữa hai điểm cách nhau 10 m.
+        t.goto({ x: cx + (Math.floor((t.sim.now - t0) / 1250) % 2 === 0 ? 0 : 10), z: t.p.move.z });
+        const b = st0.beat;
+        if (parry && b && !b.parried && t.sim.now >= b.impactAt - cfg.win * 1000 + 100) press('skl_phi_kiem');
+      });
+      return { beats: st0.n, parries: st0.parries, taken: st0.taken, alive: !!t.p.trib && t.p.char.hp > 0, hp0 };
+    };
+    const good = play(true);
+    expect(good.beats).toBeGreaterThanOrEqual(4);
+    expect(good.parries).toBe(good.beats);
+    expect(good.alive).toBe(true);
+    expect(good.taken).toBeLessThan(good.hp0 * 0.5);
+    const idle = play(false);
+    expect(idle.parries).toBe(0);
+    // Không phản đòn: hai đòn trọn (84% khí huyết) đã chết giữa pha, tức kiếp thất bại; phản đòn mọi nhịp thì qua pha với dưới nửa khí huyết bị mất.
+    expect(idle.alive).toBe(false);
+    expect(idle.taken).toBeGreaterThanOrEqual(good.taken * 2);
+  });
+});
+
 describe('dữ liệu: ba kiếp đã thay pha mượn bằng cơ chế riêng', () => {
   it('mỗi kiếp có đúng một pha cơ chế mới; thời lượng và mốc pha khớp tổng', () => {
     expect(VD.phases.map((p) => p.mechanic)).toEqual(['tia_xich', 'hoi_dao', 'tam_canh']);

@@ -68,7 +68,7 @@ export class TribSystem {
     if (kind === 'hurt') hkHurt(this.h, p);
   }
 
-  /** Người độ kiếp vừa dùng một chiêu hợp lệ: trong cửa sổ cuối của đòn nhịp Dương Thực Kiếp là phản đòn (`duong_dap`). */
+  /** Người độ kiếp vừa bấm một chiêu được server chấp nhận (qua GCD, hồi chiêu, linh lực; chưa kiểm mục tiêu): trong cửa sổ cuối của đòn nhịp Dương Thực Kiếp là phản đòn (`duong_dap`). */
   noteSkill(p: PlayerEnt): void {
     if (p.trib) duongDapSkill(this.h, p, p.trib);
   }

@@ -112,7 +112,7 @@ export interface CombatCtx {
   setMonFlags(m: MonEnt, mf: number, ce: number): void;
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src' | 'q'>): void;
   readonly terrain: Terrain;
-  /** Người độ kiếp vừa dùng một chiêu hợp lệ (phản đòn của Dương Thực Kiếp). */
+  /** Người độ kiếp vừa bấm một chiêu mà server chấp nhận (trước kiểm mục tiêu): phản đòn của Dương Thực Kiếp. */
   tribSkill(p: PlayerEnt): void;
   tryInterrupt(p: PlayerEnt, mon: MonEnt, extraStun?: number): void;
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
@@ -166,6 +166,9 @@ export class CombatSystem {
     if (skill.ult && p.mth.charge < CHARGE_MAX) return this.c.warn(p, 'sys.ult_not_ready');
     if (skill.kind === 'revive' && !this.reviveTarget(p, skill.allyRadius ?? 14)) return this.c.warn(p, 'sys.no_ally_dead');
     if (skill.blinkAlly && skill.kind !== 'revive' && !this.nearestAlly(p, skill.blinkAlly.range)) return this.c.warn(p, 'sys.no_ally');
+    // Ý định dùng chiêu đã qua mọi kiểm của server (sống, GCD, hồi chiêu, linh lực, không niệm/đang chờ đòn) nhưng CHƯA kiểm mục tiêu và tầm:
+    // trong sân độ kiếp không có quái, nên chiêu cần mục tiêu vẫn tính là phản đòn (Dương Thực Kiếp), và chiêu có niệm tính từ lúc bấm.
+    this.c.tribSkill(p);
     const rs = resolveFor(c.meta, skill);
     let targetId = '';
     if (needsTarget(skill)) {
@@ -960,7 +963,6 @@ export class CombatSystem {
       p.mth.dirty = true;
     }
     p.lastCombatAt = this.c.now;
-    this.c.tribSkill(p);
     return mp;
   }
 

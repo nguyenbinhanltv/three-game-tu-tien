@@ -64,6 +64,8 @@ async function hoiDao(page: Page, dir: string): Promise<void> {
   const q = await waitLog(page, 'kc:hd', (l) => l.pg === 1, 45);
   if (!q) throw new Error('không thấy câu hỏi đạo');
   const gates = unpackGates(q.lv);
+  await cam(page, { pitch: 0.62, dist: 42, yaw: 0.35 });
+  console.log('[kiepch6] timeline đã phát:', JSON.stringify(await page.evaluate(() => window.__game!.suyFx?.log.map((l) => l.key) ?? null)));
   await snapSizes(page, dir, '1-hoi-dao', SIZES, 500);
   const right = gates.indexOf(q.n);
   const g = gatePos({ x: q.x, z: q.z }, q.r, right);
@@ -84,12 +86,12 @@ async function hoiDao(page: Page, dir: string): Promise<void> {
 async function amLan(page: Page, dir: string): Promise<void> {
   const first = await waitLog(page, 'kc:am', (l) => l.pg === 1, 40);
   if (!first) throw new Error('không thấy âm vực nảy mầm');
-  await cam(page, { pitch: 0.55, dist: 34, yaw: 0.35 });
-  await snapSizes(page, dir, '1-mam', SIZES, 250);
-  await sleep(2500);
-  await snapSizes(page, dir, '2-lan-dan', SIZES, 200);
-  await sleep(3500);
-  await snapSizes(page, dir, '3-da-lan', SIZES, 200);
+  await cam(page, { pitch: 0.6, dist: 36, yaw: 0.35 });
+  await snapSizes(page, dir, '1-mam', SIZES, 100);
+  await sleep(3200);
+  await snapSizes(page, dir, '2-lan-dan', SIZES, 100);
+  await sleep(3000);
+  await snapSizes(page, dir, '3-da-lan', SIZES, 100);
 }
 
 async function skill(page: Page): Promise<void> {

@@ -285,8 +285,8 @@ function land(c: TribMechCtx, st: DuongDapState, cfg: TribDuongDap, parried: boo
 }
 
 /**
- * Người độ kiếp vừa dùng một chiêu (server đã chấp nhận chiêu đó: đủ linh lực, hết hồi chiêu, không choáng). Trong cửa sổ cuối của đòn nhịp thì là phản đòn.
- * Dùng chiêu sớm hơn cửa sổ không tính; dùng nhiều lần trong cửa sổ cũng chỉ phản đòn một lần. Trả true nếu vừa phản đòn.
+ * Người độ kiếp vừa bấm một chiêu mà server chấp nhận (qua GCD, hồi chiêu, linh lực, không đang niệm; chưa kiểm mục tiêu). Trong cửa sổ cuối của đòn nhịp thì là phản đòn.
+ * Bấm sớm hơn cửa sổ không tính (kể cả chiêu niệm xong trong cửa sổ: tính theo lúc bấm); bấm nhiều lần trong cửa sổ cũng chỉ phản đòn một lần. Trả true nếu vừa phản đòn.
  */
 export function duongDapSkill(host: TribHost, p: PlayerEnt, tr: TribState): boolean {
   const b = duongDapOf(tr)?.beat;
