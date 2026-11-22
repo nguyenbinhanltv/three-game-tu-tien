@@ -1,28 +1,60 @@
 import * as THREE from 'three/webgpu';
-import { clamp, float, mix, smoothstep, sin, time, uv, vec3 } from 'three/tsl';
-import { CUU_KIEU_HUB, CUU_KIEU_REEDS, CUU_KIEU_ROAD, CUU_KIEU_ROAD_HALF, CUU_KIEU_SPAN, CUU_KIEU_TREES, hash01 } from '@dtl/shared';
+import { attribute, clamp, float, length, mix, smoothstep, sin, time, uv, vec2, vec3 } from 'three/tsl';
+import {
+  CUU_KIEU_HUB,
+  CUU_KIEU_RAIL,
+  CUU_KIEU_REEDS,
+  CUU_KIEU_ROAD,
+  CUU_KIEU_ROAD_HALF,
+  CUU_KIEU_ROCKS,
+  CUU_KIEU_SPAN,
+  CUU_KIEU_TREES,
+  fbm,
+  hash01,
+} from '@dtl/shared';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { markBloom } from '../../render/post';
 
 /**
- * Kiến trúc và cảnh quan Thiên Lộ Giới (TN-7, mỹ thuật), dựng bằng code, không asset ngoài, chỉ để nhìn (va chạm trụ/cây đã nằm trong `terrain.colliders`):
- *  - **Con đường lát đá** uốn từ cổng Kiều Đầu lên Bậc Cuối (phiến đá, bó vỉa) và **lan can** hai bên (trụ, thanh ngang, đèn lồng);
- *  - **Chuỗi chín nhịp cầu vòm đá** nối nhau trên biển mây phía bắc (mặt cầu võng, vòm đôi, lan can, trụ chống xuống mây, đèn) và ánh sáng cuối đường;
- *  - **Kiều Đầu**: cổng vòm đá có mái ở đầu đường, đình hai tầng mái ngói, rạp vải với lửa trại, đèn lồng;
- *  - **Cổ thụ**, cây vừa, **cỏ lau trắng**, **thác nước** đổ từ rìa cao nguyên xuống biển mây.
- * Dữ liệu vị trí từ `cuukieu.art.ts` (sinh bởi `tools/maps/gen-cuu_kieu.mjs`). Khoảng 12 draw call.
+ * Kiến trúc và cảnh quan Thiên Lộ Giới (TN-7, mỹ thuật), dựng bằng code, không asset ngoài, chỉ để nhìn:
+ *  - **Con đường lát đá** uốn từ cổng Kiều Đầu lên Bậc Cuối (phiến đá ấm, bó vỉa) và **lan can** hai bên (trụ, thanh ngang, đèn lồng; có va chạm ở `terrain.colliders`,
+ *    chừa lối băng ngang, xem `CUU_KIEU_RAIL`);
+ *  - **Chuỗi chín nhịp cầu vòm đá cổ** trên biển mây: vòm xây bằng khối đá dày màu ấm, rêu ở chân, tường bụng cầu, mặt cầu dày, lan can khối, mố trụ lớn, cổng đá;
+ *  - **Kiều Đầu**: cổng vòm đá có mái, đình hai tầng mái ngói, rạp vải với lửa trại, đèn lồng;
+ *  - **Cổ thụ** tán nhiều lớp bất đều, cây vừa, **đá tảng** rêu phủ, **cỏ lau trắng**, cỏ chân và hoa nhỏ, **thác nước** rộng có bọt ở chân.
+ * Dữ liệu vị trí từ `cuukieu.art.ts` (sinh bởi `tools/maps/gen-cuu_kieu.mjs`). Khoảng 20 draw call.
  */
 
 export interface CkWondersInput {
   heightAt(x: number, z: number): number;
+  /** Cao độ lớp biển mây thấp nhất (`TerrainDef.seaY`). */
+  seaY: number;
 }
 
-const STONE = 0xa9b1ab;
-const STONE_DARK = 0x8e9690;
+const STONE = 0xb4a688;
+const STONE_LIGHT = 0xc6b99c;
+const STONE_DARK = 0x8a7d66;
+const MOSS = 0x5f7040;
 const WOOD = 0x5a3a28;
+const BARK = 0x3e2d20;
 const ROOF = 0x2e4d49;
 const BRONZE = 0xa07c42;
 const CLOTH = 0xe9e0c8;
 const LANTERN = 0xffa24a;
+
+const tmpA = new THREE.Color();
+const tmpB = new THREE.Color();
+/** Pha hai màu (số hex) theo t ∈ [0,1]. */
+function lerpHex(a: number, b: number, t: number): number {
+  return tmpA
+    .set(a)
+    .lerp(tmpB.set(b), Math.min(1, Math.max(0, t)))
+    .getHex();
+}
+/** Nhân sáng/tối một màu hex. */
+function shade(a: number, k: number): number {
+  return tmpA.set(a).multiplyScalar(k).getHex();
+}
 
 /** Gom hình nguyên thủy đã đặt chỗ vào một lưới có màu đỉnh (một draw call cho cả khối). */
 class Builder {
@@ -48,6 +80,60 @@ class Builder {
       this.col.push(this.c.r, this.c.g, this.c.b);
     }
     if (g !== geo) g.dispose();
+  }
+
+  /**
+   * Khối cầu thấp bất đều (tán cây, đá): đỉnh lệch theo nhiễu băm theo vị trí (đỉnh trùng vị trí lệch như nhau nên không nứt), pháp tuyến tính lại (mặt phẳng nhỏ),
+   * màu: `color` ở thân, ngả `top` ở mặt hướng lên (rêu, lá sáng), tối hơn ở đáy.
+   */
+  blob(
+    r: number,
+    sx: number,
+    sy: number,
+    sz: number,
+    x: number,
+    y: number,
+    z: number,
+    color: number,
+    top: number,
+    amp: number,
+    seed: number,
+    yaw = 0,
+  ): void {
+    const g0 = new THREE.IcosahedronGeometry(1, 1);
+    g0.deleteAttribute('normal');
+    g0.deleteAttribute('uv');
+    const gi = mergeVertices(g0, 1e-4); // gộp đỉnh trùng để pháp tuyến mượt (tán lá tròn trịa, không 'mặt phẳng nhỏ')
+    g0.dispose();
+    const p = gi.getAttribute('position');
+    for (let i = 0; i < p.count; i++) {
+      const h = Math.sin(p.getX(i) * 12.9898 + p.getY(i) * 78.233 + p.getZ(i) * 37.719 + seed * 9.31) * 43758.5453;
+      const k = 1 + amp * (h - Math.floor(h) - 0.5);
+      p.setXYZ(i, p.getX(i) * k, p.getY(i) * k, p.getZ(i) * k);
+    }
+    gi.computeVertexNormals();
+    const g = gi.toNonIndexed();
+    gi.dispose();
+    this.m.compose(
+      new THREE.Vector3(x, y, z),
+      new THREE.Quaternion().setFromEuler(new THREE.Euler(0, yaw, 0)),
+      new THREE.Vector3(r * sx, r * sy, r * sz),
+    );
+    this.nm.getNormalMatrix(this.m);
+    const na = g.getAttribute('normal');
+    const pg = g.getAttribute('position');
+    for (let i = 0; i < pg.count; i++) {
+      this.v.set(pg.getX(i), pg.getY(i), pg.getZ(i)).applyMatrix4(this.m);
+      this.pos.push(this.v.x, this.v.y, this.v.z);
+      this.v.set(na.getX(i), na.getY(i), na.getZ(i)).applyMatrix3(this.nm).normalize();
+      this.nrm.push(this.v.x, this.v.y, this.v.z);
+      const up = Math.min(1, Math.max(0, this.v.y * 1.4 - 0.1));
+      const down = Math.min(1, Math.max(0, -this.v.y));
+      this.c.set(lerpHex(color, top, up));
+      this.c.multiplyScalar(1 - down * 0.35);
+      this.col.push(this.c.r, this.c.g, this.c.b);
+    }
+    g.dispose();
   }
 
   /** Hộp `w × h × d`, tâm đáy ở (x, y, z), xoay `ry` quanh y và `rx` quanh x (độ dốc). */
@@ -82,25 +168,37 @@ class Builder {
   }
 
   /**
-   * Cung vòm đá: nửa elip trong mặt phẳng đứng chứa hướng `yaw` (rad quanh y, 0 = +z), bán kính dọc hướng `rx` × đứng `ry`, ghép từ các phiến hộp
-   * dày `thick` (hướng kính) × rộng `depth` (ngang), tâm elip ở (x, y, z). Chân vòm ở độ cao `y`.
+   * Cung vòm xây bằng khối đá: nửa elip trong mặt phẳng đứng chứa hướng `yaw` (rad quanh y, 0 = +z), bán kính dọc hướng `rx` × đứng `ry`, ghép từ `n` phiến hộp
+   * dày `thick` (hướng kính) × rộng `depth` (ngang), mỗi phiến một sắc đá riêng, ngả rêu ở chân vòm; tâm elip ở (x, y, z), chân vòm ở độ cao `y`.
    */
-  arch(rx: number, ry: number, thick: number, depth: number, x: number, y: number, z: number, color: number, yaw: number): void {
-    const N = 22;
+  arch(rx: number, ry: number, thick: number, depth: number, x: number, y: number, z: number, yaw: number, n = 18, seed = 0): void {
     const fx = Math.sin(yaw);
     const fz = Math.cos(yaw);
     let prev: [number, number] | null = null;
-    for (let i = 0; i <= N; i++) {
-      const a = (i / N) * Math.PI;
+    for (let i = 0; i <= n; i++) {
+      const a = (i / n) * Math.PI;
       const u = Math.cos(a) * rx;
       const v = Math.sin(a) * ry;
       if (prev) {
         const du = u - prev[0];
         const dv = v - prev[1];
         const len = Math.hypot(du, dv);
-        const mu = (u + prev[0]) / 2;
-        const mv = (v + prev[1]) / 2;
-        this.box(depth, thick, len + 0.12, x + fx * mu, y + mv - thick / 2, z + fz * mu, color, yaw, -Math.atan2(dv, du));
+        const foot = Math.max(0, 1 - Math.min(i, n - i + 1) / (n * 0.28));
+        let col = shade(STONE, 0.88 + hash01(i, seed, 7101) * 0.26);
+        col = lerpHex(col, MOSS, foot * 0.55 + hash01(i, seed, 7103) * 0.12);
+        // phiến khóa và phiến dày xen kẽ: lồi nhẹ ra ngoài
+        const t2 = thick + (i % 2 ? 0.35 : 0);
+        this.box(
+          depth,
+          t2,
+          len + 0.1,
+          x + fx * ((u + prev[0]) / 2),
+          y + (v + prev[1]) / 2 - t2 / 2,
+          z + fz * ((u + prev[0]) / 2),
+          col,
+          yaw,
+          -Math.atan2(dv, du),
+        );
       }
       prev = [u, v];
     }
@@ -118,7 +216,7 @@ class Builder {
 }
 
 function solidMat(): THREE.MeshStandardNodeMaterial {
-  return new THREE.MeshStandardNodeMaterial({ vertexColors: true, roughness: 0.82, metalness: 0.04 });
+  return new THREE.MeshStandardNodeMaterial({ vertexColors: true, roughness: 0.86, metalness: 0.03 });
 }
 
 function lampMat(): THREE.MeshBasicNodeMaterial {
@@ -177,7 +275,10 @@ export class CkWonders {
     this.buildBridges();
     this.buildHub();
     this.buildTrees();
+    this.buildRocks();
     this.buildReeds();
+    this.buildGroundCover();
+    this.buildCliffLedges();
     this.buildFalls();
   }
 
@@ -204,7 +305,7 @@ export class CkWonders {
     const c = new THREE.Color();
     const hw = CUU_KIEU_ROAD_HALF;
     const frames = roadSamples(2.7);
-    /** Tứ giác p00-p10-p11-p01 (hai tam giác). */
+    /** Tứ giác p00-p10-p11-p01 (hai tam giác), mặt hướng lên. */
     const quad = (p00: THREE.Vector3, p10: THREE.Vector3, p11: THREE.Vector3, p01: THREE.Vector3, color: number): void => {
       c.set(color);
       const up = (p10.x - p00.x) * (p11.z - p00.z) - (p10.z - p00.z) * (p11.x - p00.x);
@@ -226,25 +327,22 @@ export class CkWonders {
     };
     const gap = 0.07;
     frames.forEach((f, i) => {
-      const h = hash01(i, 7, 9101);
-      const base = 0.86 + h * 0.2;
-      const tone = (k: number): number => {
-        const v = Math.min(1, base * k);
-        return (
-          ((Math.round(((STONE >> 16) & 255) * v) & 255) << 16) |
-          ((Math.round(((STONE >> 8) & 255) * v) & 255) << 8) |
-          (Math.round((STONE & 255) * v) & 255)
-        );
-      };
-      // hai phiến cạnh nhau, mỗi phiến một sắc riêng; dz = chiều dài phiến
       const len = 2.7 - gap;
-      for (const [o0, o1, k] of [
-        [-hw + gap, -gap / 2, 1],
-        [gap / 2, hw - gap, 0.94 + hash01(i, 11, 9103) * 0.1],
+      for (const [o0, o1] of [
+        [-hw + gap, -gap / 2],
+        [gap / 2, hw - gap],
       ] as const) {
-        quad(at(f, o0, 0, 0.1), at(f, o1, 0, 0.1), at(f, o1, len, 0.1), at(f, o0, len, 0.1), tone(k));
+        const base = 0.82 + hash01(i, o0 < 0 ? 1 : 2, 9101) * 0.3;
+        // phiến đá ấm, thỉnh thoảng ngả rêu ở mép
+        const mossy = hash01(i, o0 < 0 ? 3 : 4, 9107) > 0.82 ? 0.35 : 0;
+        quad(
+          at(f, o0, 0, 0.1),
+          at(f, o1, 0, 0.1),
+          at(f, o1, len, 0.1),
+          at(f, o0, len, 0.1),
+          lerpHex(shade(STONE_LIGHT, base), MOSS, mossy),
+        );
       }
-      // bó vỉa hai bên
       for (const s of [-1, 1]) {
         const o0 = s * hw;
         const o1 = s * (hw + 0.7);
@@ -258,7 +356,7 @@ export class CkWonders {
     geo.computeBoundingSphere();
     const mat = new THREE.MeshStandardNodeMaterial({
       vertexColors: true,
-      roughness: 0.9,
+      roughness: 0.92,
       metalness: 0,
       side: THREE.DoubleSide,
       polygonOffset: true,
@@ -268,33 +366,42 @@ export class CkWonders {
     this.mesh(geo, mat, 'ck-road');
   }
 
-  /** Lan can hai bên đường: trụ có mũ cách ~4,5 m, thanh ngang nối trụ, cứ ba trụ một đèn lồng. */
+  /** Lan can hai bên đường: trụ có mũ, thanh ngang nối trụ, cứ ba trụ một đèn lồng. Khung "mở" của `CUU_KIEU_RAIL` là lối băng ngang (không trụ, không va chạm). */
   private buildRailings(): void {
     const b = new Builder();
     const lamps = new Builder();
     const off = CUU_KIEU_ROAD_HALF + 0.35;
-    const frames = roadSamples(4.5);
     for (const side of [-1, 1]) {
       let prev: THREE.Vector3 | null = null;
-      frames.forEach((f, i) => {
-        // bỏ lan can ở lối vào cổng Kiều Đầu (12 m đầu) để người đi vào thoáng
-        const nx = Math.cos(f.yaw) * off * side;
-        const nz = -Math.sin(f.yaw) * off * side;
-        const x = f.x + nx;
-        const z = f.z + nz;
+      CUU_KIEU_RAIL.forEach(([fx, fz, yaw, open], i) => {
+        if (open) {
+          prev = null;
+          return;
+        }
+        const x = fx + Math.cos(yaw) * off * side;
+        const z = fz - Math.sin(yaw) * off * side;
         const y = this.inp.heightAt(x, z);
         const p = new THREE.Vector3(x, y, z);
-        if (i > 2) {
-          b.box(0.55, 1.5, 0.55, x, y - 0.1, z, STONE, f.yaw);
-          b.box(0.85, 0.22, 0.85, x, y + 1.4, z, STONE_DARK, f.yaw);
-          if (i % 3 === 0) lamps.box(0.36, 0.5, 0.36, x, y + 1.62, z, LANTERN, f.yaw);
-          if (prev) {
-            const dx = x - prev.x;
-            const dz = z - prev.z;
-            const dy = y - prev.y;
-            const L = Math.hypot(dx, dz);
-            b.box(0.26, 0.28, L, (x + prev.x) / 2, (y + prev.y) / 2 + 0.86, (z + prev.z) / 2, Math.atan2(dx, dz), -Math.atan2(dy, L));
-          }
+        const k = 0.88 + hash01(i, side, 9401) * 0.22;
+        b.box(0.62, 1.55, 0.62, x, y - 0.1, z, shade(STONE, k), yaw);
+        b.box(0.92, 0.24, 0.92, x, y + 1.45, z, shade(STONE_DARK, k), yaw);
+        if (i % 3 === 0) lamps.box(0.36, 0.5, 0.36, x, y + 1.7, z, LANTERN, yaw);
+        if (prev) {
+          const dx = x - prev.x;
+          const dz = z - prev.z;
+          const dy = y - prev.y;
+          const L = Math.hypot(dx, dz);
+          b.box(
+            0.3,
+            0.3,
+            L,
+            (x + prev.x) / 2,
+            (y + prev.y) / 2 + 0.86,
+            (z + prev.z) / 2,
+            shade(STONE, k * 0.95),
+            Math.atan2(dx, dz),
+            -Math.atan2(dy, L),
+          );
         }
         prev = p;
       });
@@ -303,85 +410,118 @@ export class CkWonders {
     this.mesh(lamps.build(), lampMat(), 'ck-road-lanterns');
   }
 
-  /** Chuỗi chín nhịp cầu vòm nối nhau trên biển mây: mặt cầu võng, hai vòm, lan can, trụ chống xuống mây, đèn ở mỗi điểm hạ cánh. */
+  /**
+   * Chuỗi chín nhịp cầu vòm đá cổ trên biển mây. Mỗi nhịp: mặt cầu dày (võng lưng), lan can khối, hai vòm xây bằng khối đá dày ngả rêu ở chân, tường bụng cầu
+   * (chân tường theo vòm, đỉnh theo đáy mặt cầu), mố trụ lớn chống xuống mây, cổng đá có mái ở mỗi điểm hạ cánh. Điểm đầu nối đúng cuối đường (độ cao theo địa hình).
+   */
   private buildBridges(): void {
     const b = new Builder();
     const lamps = new Builder();
     const span = CUU_KIEU_SPAN;
-    const W = 8.4;
-    const N = 10;
-    for (let k = 0; k < span.length; k++) {
-      const [x, z, y] = span[k]!;
-      // điểm hạ cánh: bệ tròn, trụ chống xuống biển mây
-      b.cyl(10.5, 11, 2.6, 20, x, y - 2.5, z, STONE);
-      b.cyl(5.6, 8.5, 150, 14, x, y - 152, z, STONE_DARK);
-      b.cyl(11.2, 11.2, 0.5, 20, x, y - 0.4, z, STONE_DARK);
-      // cổng đá ở điểm hạ cánh (hai trụ, xà, mái nhỏ): để chín nhịp đọc ra là chín cầu
-      const gy =
-        k + 1 < span.length ? Math.atan2(span[k + 1]![0] - x, span[k + 1]![1] - z) : Math.atan2(x - span[k - 1]![0], z - span[k - 1]![1]);
-      if (k > 0 && k < span.length - 1) {
+    const [x0, z0, y0raw] = span[0]!;
+    // dời cả chuỗi để nhịp đầu chạm đúng mặt đất ở cuối đường
+    const dy = this.inp.heightAt(x0, z0) + 0.45 - y0raw;
+    const SP = span.map(([x, z, y]) => [x, z, y + dy] as const);
+    const W = 9.6;
+    const DECK_T = 2.8;
+    const N = 8;
+    // điểm hạ cánh: bệ tròn dày, vòng rêu, mố trụ lớn, cổng đá
+    SP.forEach(([x, z, y], k) => {
+      b.cyl(12.5, 13.5, 3.4, 22, x, y - 3.2, z, shade(STONE, 0.95));
+      b.cyl(12.9, 12.9, 0.7, 22, x, y - 0.5, z, lerpHex(STONE_DARK, MOSS, 0.4));
+      b.cyl(9.2, 12.5, 150, 18, x, y - 153, z, shade(STONE, 0.85));
+      b.cyl(11.0, 11.0, 7, 18, x, y - 14, z, lerpHex(STONE_DARK, MOSS, 0.55));
+      if (k > 0 && k < SP.length - 1) {
+        const nx = SP[k + 1]![0] - x;
+        const nz = SP[k + 1]![1] - z;
+        const gy = Math.atan2(nx, nz);
         for (const s of [-1, 1]) {
-          const px = x + Math.cos(gy) * s * 5.2;
-          const pz = z - Math.sin(gy) * s * 5.2;
-          b.box(1.5, 9.5, 1.5, px, y, pz, STONE, gy);
-          b.box(2.0, 0.6, 2.0, px, y + 9.5, pz, BRONZE, gy);
-          lamps.box(0.55, 0.8, 0.55, px, y + 10.1, pz, LANTERN, gy);
+          const px = x + Math.cos(gy) * s * 5.6;
+          const pz = z - Math.sin(gy) * s * 5.6;
+          b.box(1.9, 10.5, 1.9, px, y, pz, shade(STONE, 0.95), gy);
+          b.box(2.5, 0.8, 2.5, px, y + 10.5, pz, STONE_DARK, gy);
+          b.box(1.5, 0.5, 1.5, px, y + 11.3, pz, BRONZE, gy);
+          lamps.box(0.6, 0.85, 0.6, px, y + 11.8, pz, LANTERN, gy);
         }
-        b.box(12.4, 1.1, 1.8, x, y + 9.6, z, STONE, gy);
-        b.roof(14.2, 4.4, 2.2, x, y + 10.7, z, ROOF, gy);
+        b.box(13.6, 1.3, 2.2, x, y + 10.6, z, STONE, gy);
+        b.roof(15.4, 5.2, 2.6, x, y + 11.9, z, ROOF, gy);
       }
-    }
-    for (let k = 1; k < span.length; k++) {
-      const [ax, az, ay] = span[k - 1]!;
-      const [bx, bz, by] = span[k]!;
+    });
+    for (let k = 1; k < SP.length; k++) {
+      const [ax, az, ay] = SP[k - 1]!;
+      const [bx, bz, by] = SP[k]!;
       const dx = bx - ax;
       const dz = bz - az;
       const L = Math.hypot(dx, dz);
-      // lưng cầu cong như cầu đá vòm: độ cao lưng ~20% nhịp (6–18 m), vòm dưới đỡ vừa chạm đáy mặt cầu
       const HUMP = Math.min(18, Math.max(6, L * 0.2));
       const yaw = Math.atan2(dx, dz);
       const fx = dx / L;
       const fz = dz / L;
       const nx = fz;
       const nz = -fx;
-      const pt = (t: number): { x: number; y: number; z: number } => ({
+      /** Mặt trên của mặt cầu tại t. */
+      const top = (t: number): { x: number; y: number; z: number } => ({
         x: ax + dx * t,
         z: az + dz * t,
         y: ay + (by - ay) * t + HUMP * Math.sin(Math.PI * t),
       });
       for (let i = 0; i < N; i++) {
-        const p0 = pt(i / N);
-        const p1 = pt((i + 1) / N);
+        const p0 = top(i / N);
+        const p1 = top((i + 1) / N);
         const sl = Math.hypot(p1.x - p0.x, p1.z - p0.z);
+        const len = Math.hypot(sl, p1.y - p0.y) + 0.06;
         const pitch = -Math.atan2(p1.y - p0.y, sl);
         const mx = (p0.x + p1.x) / 2;
         const mz = (p0.z + p1.z) / 2;
         const my = (p0.y + p1.y) / 2;
-        b.box(W, 1.0, Math.hypot(sl, p1.y - p0.y) + 0.05, mx, my - 1.0, mz, STONE, yaw, pitch);
+        const kk = 0.9 + hash01(i, k, 7201) * 0.2;
+        b.box(W, DECK_T, len, mx, my - DECK_T, mz, shade(STONE, kk), yaw, pitch);
+        b.box(W - 1.6, 0.3, len, mx, my - 0.25, mz, shade(STONE_LIGHT, kk), yaw, pitch); // mặt lát
         for (const s of [-1, 1]) {
-          const px = mx + nx * s * (W / 2 - 0.3);
-          const pz = mz + nz * s * (W / 2 - 0.3);
-          b.box(0.55, 1.1, Math.hypot(sl, p1.y - p0.y) + 0.05, px, my - 0.1, pz, STONE_DARK, yaw, pitch);
+          const px = mx + nx * s * (W / 2 - 0.55);
+          const pz = mz + nz * s * (W / 2 - 0.55);
+          b.box(1.1, 1.5, len, px, my - 0.1, pz, shade(STONE_DARK, kk), yaw, pitch);
+          b.box(1.5, 0.28, len * 0.98, px, my + 1.4, pz, shade(STONE, kk * 1.05), yaw, pitch);
           if (i % 2 === 0) {
-            b.box(0.8, 1.7, 0.8, px, p0.y - 0.5, pz, STONE, yaw);
-            if (i % 4 === 0) lamps.box(0.4, 0.5, 0.4, px, p0.y + 1.25, pz, LANTERN, yaw);
+            b.box(1.7, 2.3, 1.7, px, p0.y - 0.35, pz, shade(STONE, kk), yaw);
+            if (i % 4 === 0) lamps.box(0.45, 0.6, 0.45, px, p0.y + 2.0, pz, LANTERN, yaw);
           }
         }
       }
-      // hai vòm đỡ mặt cầu, chân vòm chôn vào bệ hai đầu
-      const mid = pt(0.5);
+      // vòm đôi xây bằng khối đá dày; đỉnh vòm chạm đáy mặt cầu ở giữa nhịp
+      const rx = L / 2 - 1.2;
+      const ry = HUMP * 1.02;
+      const thick = 3.0;
+      const mid = top(0.5);
+      const baseY = mid.y - DECK_T + 0.35 - ry - thick / 2;
       for (const s of [-1, 1]) {
-        b.arch(L / 2 - 1.2, HUMP + 1.2, 1.6, 1.7, mid.x + nx * s * 3.0, (ay + by) / 2 - 2.6, mid.z + nz * s * 3.0, STONE, yaw);
+        b.arch(rx, ry, thick, 3.6, mid.x + nx * s * (W / 2 - 2.0), baseY, mid.z + nz * s * (W / 2 - 2.0), yaw, 18, k * 2 + (s > 0 ? 1 : 0));
       }
-      // thanh ngang giữa hai vòm
-      b.box(W - 1.4, 0.8, 1.2, mid.x, mid.y - HUMP * 0.45, mid.z, STONE_DARK, yaw);
+      // tường bụng cầu (spandrel): khối đá lấp giữa vòm và mặt cầu, chân theo vòm
+      const M = 14;
+      for (let i = 0; i < M; i++) {
+        const t = (i + 0.5) / M;
+        const u = (t - 0.5) * 2 * rx;
+        const archTop = baseY + ry * Math.sqrt(Math.max(0, 1 - (u / rx) ** 2)) + thick / 2;
+        const deckBottom = top(t).y - DECK_T;
+        const h = deckBottom - archTop + 0.5;
+        if (h < 0.4) continue;
+        const p = top(t);
+        for (const s of [-1, 1]) {
+          const col = lerpHex(shade(STONE, 0.8 + hash01(i, k * 3 + (s > 0 ? 1 : 0), 7207) * 0.3), MOSS, hash01(i, k, 7209) * 0.35);
+          b.box(L / M + 0.2, h, 2.4, p.x + nx * s * (W / 2 - 1.4), archTop - 0.25, p.z + nz * s * (W / 2 - 1.4), col, yaw);
+        }
+      }
+      // thanh giằng giữa hai vòm
+      b.box(W - 3.2, 0.9, 1.4, mid.x, baseY + ry - 0.5, mid.z, STONE_DARK, yaw);
     }
     this.mesh(b.build(), solidMat(), 'ck-bridges', true);
     this.mesh(lamps.build(), lampMat(), 'ck-bridge-lanterns');
-    // ánh sáng cuối chuỗi cầu: đĩa vàng nhạt phía chân trời, và hai chùm mờ
-    const last = span[span.length - 1]!;
-    const halo = new THREE.Mesh(this.own(new THREE.CircleGeometry(95, 40)), this.own(glowMat(0xffd9a0, 0.42)));
-    halo.position.set(last[0], last[2] + 42, last[1] - 150);
+    // ánh sáng cuối chuỗi cầu: đĩa vàng nhạt phía chân trời
+    const last = SP[SP.length - 1]!;
+    const halo = new THREE.Mesh(this.own(new THREE.CircleGeometry(95, 40)), this.own(glowMat(0xffd9a0, 0.34)));
+    halo.position.set(last[0] + 60, last[2] + 46, last[1] - 130);
+    halo.rotation.y = Math.atan2(last[0] + 60 - 1024, last[1] - 130 - 1024) + Math.PI;
     halo.name = 'ck-bridge-halo';
     this.group.add(halo);
   }
@@ -398,24 +538,24 @@ export class CkWonders {
       cz - lx * Math.sin(yaw) + lz * Math.cos(yaw),
     ];
 
-    // Cổng vòm đá: hai trụ, vòm, xà, mái ngói, hai đèn lồng treo
+    // Cổng vòm đá: hai trụ, vòm xây khối, xà, mái ngói, hai đèn lồng treo
     {
       const g = CUU_KIEU_HUB.gate;
       const y0 = H(g.x, g.z);
       for (const s of [-1, 1]) {
         const [px, pz] = rot(g.x, g.z, g.yaw, s * 6.4, 0);
-        b.box(2.8, 1.0, 2.8, px, y0 - 0.2, pz, STONE_DARK, g.yaw);
-        b.box(2.2, 10.2, 2.2, px, y0 + 0.7, pz, STONE, g.yaw);
-        b.box(2.9, 0.8, 2.9, px, y0 + 10.7, pz, BRONZE, g.yaw);
+        b.box(3.0, 1.1, 3.0, px, y0 - 0.2, pz, STONE_DARK, g.yaw);
+        b.box(2.3, 10.2, 2.3, px, y0 + 0.8, pz, shade(STONE, 0.95), g.yaw);
+        b.box(3.0, 0.8, 3.0, px, y0 + 10.8, pz, BRONZE, g.yaw);
       }
-      b.arch(5.4, 3.8, 1.2, 2.4, g.x, y0 + 8.1, g.z, STONE, g.yaw + Math.PI / 2);
-      b.box(15.8, 1.3, 2.6, g.x, y0 + 11.3, g.z, STONE, g.yaw);
-      b.roof(19.5, 7.2, 3.8, g.x, y0 + 12.5, g.z, ROOF, g.yaw);
-      b.box(8, 0.5, 0.6, g.x, y0 + 16.2, g.z, BRONZE, g.yaw);
+      b.arch(5.4, 3.8, 1.3, 2.6, g.x, y0 + 8.1, g.z, g.yaw + Math.PI / 2, 14, 99);
+      b.box(15.8, 1.3, 2.8, g.x, y0 + 11.4, g.z, STONE, g.yaw);
+      b.roof(19.5, 7.4, 3.8, g.x, y0 + 12.6, g.z, ROOF, g.yaw);
+      b.box(8, 0.5, 0.6, g.x, y0 + 16.3, g.z, BRONZE, g.yaw);
       for (const s of [-1, 1]) {
         const [lx, lz] = rot(g.x, g.z, g.yaw, s * 4.2, 0);
-        b.box(0.1, 1.6, 0.1, lx, y0 + 9.4, lz, WOOD, g.yaw);
-        lamps.box(0.8, 1.1, 0.8, lx, y0 + 8.3, lz, LANTERN, g.yaw);
+        b.box(0.1, 1.6, 0.1, lx, y0 + 9.5, lz, WOOD, g.yaw);
+        lamps.box(0.8, 1.1, 0.8, lx, y0 + 8.4, lz, LANTERN, g.yaw);
       }
     }
 
@@ -441,7 +581,6 @@ export class CkWonders {
       b.box(9.8, 0.6, 6.2, p.x, y0 + 10.2, p.z, WOOD, p.yaw);
       b.roof(12.5, 8.5, 3.0, p.x, y0 + 10.7, p.z, ROOF, p.yaw);
       b.cyl(0.12, 0.2, 1.6, 6, p.x, y0 + 13.5, p.z, BRONZE);
-      // quán: bàn, thùng, hũ
       const [tx, tz] = rot(p.x, p.z, p.yaw, 0, -1.2);
       b.box(4.2, 1.0, 1.4, tx, y0 + 0.95, tz, WOOD, p.yaw);
       for (const [lx, lz] of [
@@ -452,7 +591,6 @@ export class CkWonders {
         const [bx, bz] = rot(p.x, p.z, p.yaw, lx, lz);
         b.cyl(0.6, 0.55, 1.2, 10, bx, y0 + 0.95, bz, WOOD);
       }
-      // cột cờ nhỏ trước đình, cờ lụa
       const [fx, fz] = rot(p.x, p.z, p.yaw, 8.6, 5.4);
       b.cyl(0.1, 0.14, 6.5, 6, fx, H(fx, fz), fz, WOOD);
       cloth.box(0.05, 2.6, 1.5, fx, H(fx, fz) + 3.8, fz + 0.8, 0x7fb08c, p.yaw);
@@ -496,29 +634,50 @@ export class CkWonders {
     this.mesh(flames.build(), lampMat(), 'ck-hub-fire');
   }
 
-  /** Cổ thụ và cây vừa: thân thon + tán dẹt nhiều cụm (một lưới có màu đỉnh, nhân bản theo tỉ lệ/xoay). */
+  /**
+   * Cây: thân dày, cong, gốc xòe, ba cành lớn; tán gồm nhiều cụm lá bất đều ở ba tầng, màu lá tối (xanh rêu, xanh đen), ngả sáng ở mặt hướng nắng.
+   * Một lưới có màu đỉnh, nhân bản theo tỉ lệ/xoay/sắc; cổ thụ (tỉ lệ ≥ 1,6) to gấp đôi cây vừa.
+   */
   private buildTrees(): void {
     const b = new Builder();
-    const m = new THREE.Matrix4();
-    b.cyl(0.55, 1.15, 6.8, 9, 0, 0, 0, 0x4d3324);
-    b.cyl(0.3, 0.55, 3.2, 7, 0.5, 5.6, 0.2, 0x4d3324);
-    b.cyl(0.4, 0.8, 3.4, 7, -0.9, 4.8, -0.3, 0x4d3324);
-    const clumps: [number, number, number, number, number][] = [
-      [0, 9.0, 0, 5.8, 0x2c5733],
-      [4.2, 8.0, 1.4, 4.4, 0x356538],
-      [-4.0, 8.2, -1.8, 4.6, 0x2c5733],
-      [1.0, 11.0, -2.8, 4.0, 0x3f7240],
-      [-1.4, 10.8, 3.0, 3.8, 0x356538],
-      [-5.6, 10.2, 2.4, 3.0, 0x3f7240],
-      [5.4, 10.6, -2.0, 3.2, 0x4a7a44],
-      [0.4, 12.4, 0.6, 3.0, 0x4a7a44],
+    // thân cong: bốn đoạn lệch dần, gốc xòe
+    b.cyl(1.7, 2.3, 1.4, 9, 0, -0.2, 0, BARK);
+    const seg: [number, number, number, number][] = [
+      [1.25, 1.55, 2.4, 1.4],
+      [1.05, 1.25, 2.2, 3.7],
+      [0.85, 1.05, 2.0, 5.8],
+      [0.6, 0.85, 1.9, 7.6],
     ];
-    for (const [x, y, z, r, color] of clumps) {
-      const g = new THREE.IcosahedronGeometry(1, 1);
-      m.compose(new THREE.Vector3(x, y, z), new THREE.Quaternion(), new THREE.Vector3(r, r * 0.62, r));
-      b.add(g, color, m);
-      g.dispose();
+    seg.forEach(([rt, rb, h, y], i) => b.cyl(rt, rb, h, 8, 0.28 * i + 0.1 * i * i * 0.2, y, 0.12 * i, shade(BARK, 1 + i * 0.04)));
+    for (const [bx, bz, tilt, yaw] of [
+      [0.9, 0.2, 0.9, 0.4],
+      [-0.7, 0.9, 0.85, 2.6],
+      [-0.2, -1.0, 0.8, 4.4],
+    ] as const)
+      b.box(0.55, 5.4, 0.55, bx + 0.7, 6.3, bz, BARK, yaw, tilt);
+    const pal = [0x1f3f27, 0x26492c, 0x2e5230, 0x36592f, 0x2a4a2a];
+    for (let i = 0; i < 16; i++) {
+      const tier = i % 3;
+      const ang = i * 2.399;
+      const rad = 2.2 + (i % 5) * 1.25 + tier * 0.35;
+      const yy = 8.2 + tier * 1.9 + (i % 4) * 0.45;
+      const size = 2.5 + hash01(i, 3, 7301) * 2.1 - tier * 0.25;
+      b.blob(
+        size,
+        1.15,
+        0.66 + hash01(i, 5, 7303) * 0.18,
+        1.05,
+        Math.cos(ang) * rad,
+        yy,
+        Math.sin(ang) * rad,
+        pal[i % pal.length]!,
+        0x5d7c3c,
+        0.62,
+        i,
+        ang,
+      );
     }
+    b.blob(3.6, 1.2, 0.7, 1.1, 0.4, 13.2, 0.3, 0x2e5230, 0x6a8a44, 0.55, 40);
     const geo = b.build();
     if (!geo || !CUU_KIEU_TREES.length) return;
     const mesh = new THREE.InstancedMesh(this.own(geo), this.own(solidMat()), CUU_KIEU_TREES.length);
@@ -526,13 +685,42 @@ export class CkWonders {
     const o = new THREE.Object3D();
     const tint = new THREE.Color();
     CUU_KIEU_TREES.forEach(([x, z, s, yaw], i) => {
-      o.position.set(x, this.inp.heightAt(x, z) - 0.3, z);
+      o.position.set(x, this.inp.heightAt(x, z) - 0.4, z);
       o.rotation.set(0, yaw, 0);
-      o.scale.setScalar(s * 0.95);
+      o.scale.set(s * 0.82, s * (0.8 + hash01(i, 7, 7307) * 0.2), s * 0.82);
       o.updateMatrix();
       mesh.setMatrixAt(i, o.matrix);
-      const v = 0.88 + hash01(i, 3, 9201) * 0.28;
-      mesh.setColorAt(i, tint.setRGB(v, v * (0.96 + hash01(i, 5, 9203) * 0.1), v * 0.95));
+      const v = 0.8 + hash01(i, 3, 9201) * 0.3;
+      mesh.setColorAt(i, tint.setRGB(v, v * (0.94 + hash01(i, 5, 9203) * 0.1), v * 0.9));
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    mesh.computeBoundingSphere();
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    this.group.add(mesh);
+  }
+
+  /** Đá tảng: khối bất đều, đá xám xanh, rêu phủ mặt trên; va chạm ở `terrain.colliders` (~1,25 × tỉ lệ). */
+  private buildRocks(): void {
+    const b = new Builder();
+    b.blob(1.7, 1.1, 0.72, 0.95, 0, 0.5, 0, 0x6f776a, 0x4f6a3a, 0.7, 11);
+    b.blob(1.0, 1.0, 0.8, 0.9, 1.5, 0.2, 0.7, 0x77806f, 0x56703d, 0.7, 17);
+    b.blob(0.75, 1.0, 0.8, 1.0, -1.3, 0.1, -0.8, 0x6a7266, 0x4c6637, 0.7, 23);
+    const geo = b.build();
+    if (!geo || !CUU_KIEU_ROCKS.length) return;
+    const mesh = new THREE.InstancedMesh(this.own(geo), this.own(solidMat()), CUU_KIEU_ROCKS.length);
+    mesh.name = 'ck-rocks';
+    const o = new THREE.Object3D();
+    const tint = new THREE.Color();
+    CUU_KIEU_ROCKS.forEach(([x, z, s, yaw], i) => {
+      o.position.set(x, this.inp.heightAt(x, z) - 0.25 * s, z);
+      o.rotation.set(0, yaw, 0);
+      o.scale.setScalar(s);
+      o.updateMatrix();
+      mesh.setMatrixAt(i, o.matrix);
+      const v = 0.82 + hash01(i, 9, 7401) * 0.3;
+      mesh.setColorAt(i, tint.setRGB(v, v, v * 0.97));
     });
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
@@ -573,8 +761,7 @@ export class CkWonders {
         const z = cz + Math.sin(a) * d;
         o.position.set(x, this.inp.heightAt(x, z) - 0.05, z);
         o.rotation.set((hash01(pi, i, 9307) - 0.5) * 0.4, hash01(pi, i, 9311) * Math.PI * 2, (hash01(pi, i, 9313) - 0.5) * 0.4);
-        const sc = 0.75 + hash01(pi, i, 9317) * 0.7;
-        o.scale.set(1, sc, 1);
+        o.scale.set(1, 0.75 + hash01(pi, i, 9317) * 0.7, 1);
         o.updateMatrix();
         mesh.setMatrixAt(k++, o.matrix);
       }
@@ -584,56 +771,285 @@ export class CkWonders {
     this.group.add(mesh);
   }
 
-  /** Thác nước: dải mỏng bám sườn vách từ rìa cao nguyên xuống biển mây, vệt sáng chạy xuống. */
+  /**
+   * Phủ đất tầm trung: chùm cỏ cao 0,8–1,9 m trải đều trên cao nguyên (lưới 11 m lệch ngẫu nhiên, mật độ theo nhiễu: dày ở vùng ẩm, thưa ở mảng đất khô), tránh đường/rìa/dốc;
+   * và các đốm hoa nhỏ (trắng, vàng nhạt, tím, hồng) thành cụm. Hai lưới nhân bản, không va chạm.
+   */
+  private buildGroundCover(): void {
+    const C = 1024;
+    const tuft = new Builder();
+    const m = new THREE.Matrix4();
+    for (let i = 0; i < 7; i++) {
+      const g = new THREE.ConeGeometry(0.075, 1.1, 3, 1, true);
+      g.translate(0, 0.55, 0);
+      const a = (i / 7) * Math.PI * 2 + i * 0.4;
+      m.compose(
+        new THREE.Vector3(Math.cos(a) * 0.16, 0, Math.sin(a) * 0.16),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.sin(a) * 0.34, a, Math.cos(a) * 0.34)),
+        new THREE.Vector3(1, 0.65 + 0.2 * (i % 3), 1),
+      );
+      tuft.add(g, lerpHex(0x4a5a2a, 0xa3a560, 0.15 + 0.12 * i), m);
+      g.dispose();
+    }
+    const tg = tuft.build();
+    const pts: [number, number, number, number][] = [];
+    const STEP = 7.5;
+    for (let gx = -600; gx <= 600; gx += STEP) {
+      for (let gz = -600; gz <= 600; gz += STEP) {
+        const x = C + gx + (hash01(gx, gz, 8101) - 0.5) * STEP;
+        const z = C + gz + (hash01(gx, gz, 8103) - 0.5) * STEP;
+        if (Math.max(Math.abs(x - C), Math.abs(z - C)) > 640) continue;
+        const dens = 0.55 + fbm(x * 0.012, z * 0.012, 2, 4141) * 1.1;
+        if (hash01(gx, gz, 8105) > dens) continue;
+        const h = this.inp.heightAt(x, z);
+        if (h < this.inp.heightAt(C, C) - 40) continue;
+        const sl = Math.abs(this.inp.heightAt(x + 3, z) - h) + Math.abs(this.inp.heightAt(x, z + 3) - h);
+        if (sl > 3.2) continue;
+        let near = Infinity;
+        for (let i = 0; i < CUU_KIEU_ROAD.length; i += 2)
+          near = Math.min(near, Math.hypot(CUU_KIEU_ROAD[i]![0] - x, CUU_KIEU_ROAD[i]![1] - z));
+        if (near < CUU_KIEU_ROAD_HALF + 2.5) continue;
+        pts.push([x, z, h, hash01(gx, gz, 8107)]);
+      }
+    }
+    if (tg && pts.length) {
+      const mesh = new THREE.InstancedMesh(this.own(tg), this.own(solidMat()), pts.length);
+      mesh.name = 'ck-tufts';
+      const o = new THREE.Object3D();
+      const tint = new THREE.Color();
+      pts.forEach(([x, z, h, r], i) => {
+        o.position.set(x, h - 0.05, z);
+        o.rotation.set(0, r * 40, 0);
+        const sc = 0.75 + r * 0.9;
+        o.scale.set(sc, sc * (0.9 + hash01(i, 2, 8109) * 0.7), sc);
+        o.updateMatrix();
+        mesh.setMatrixAt(i, o.matrix);
+        const v = 0.78 + hash01(i, 4, 8111) * 0.4;
+        mesh.setColorAt(i, tint.setRGB(v * (0.95 + r * 0.15), v, v * 0.82));
+      });
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      mesh.computeBoundingSphere();
+      mesh.receiveShadow = true;
+      this.group.add(mesh);
+    }
+    // hoa nhỏ theo cụm
+    const flowers: [number, number, number, number][] = [];
+    for (let c = 0; c < 130; c++) {
+      const cx = C + (hash01(c, 1, 8201) - 0.5) * 1200;
+      const cz = C + (hash01(c, 2, 8203) - 0.5) * 1200;
+      const kind = hash01(c, 3, 8205);
+      for (let i = 0; i < 26; i++) {
+        const a = hash01(c, i, 8207) * Math.PI * 2;
+        const d = Math.sqrt(hash01(c, i, 8209)) * 5.5;
+        const x = cx + Math.cos(a) * d;
+        const z = cz + Math.sin(a) * d;
+        if (Math.max(Math.abs(x - C), Math.abs(z - C)) > 630) continue;
+        const h = this.inp.heightAt(x, z);
+        if (h < this.inp.heightAt(C, C) - 40) continue;
+        flowers.push([x, z, h, kind]);
+      }
+    }
+    if (flowers.length) {
+      const fg = new THREE.CircleGeometry(0.2, 5);
+      fg.rotateX(-Math.PI / 2 + 0.35);
+      const mesh = new THREE.InstancedMesh(
+        this.own(fg),
+        this.own(new THREE.MeshStandardNodeMaterial({ roughness: 0.8, metalness: 0, side: THREE.DoubleSide })),
+        flowers.length,
+      );
+      mesh.name = 'ck-flowers';
+      const o = new THREE.Object3D();
+      const tint = new THREE.Color();
+      const pal = [0xf4f0e6, 0xf2d878, 0xb59ad6, 0xe8a0b4];
+      flowers.forEach(([x, z, h, kind], i) => {
+        o.position.set(x, h + 0.34 + hash01(i, 6, 8211) * 0.25, z);
+        o.rotation.set(0, hash01(i, 5, 8213) * 6.28, 0);
+        o.scale.setScalar(0.8 + hash01(i, 7, 8215) * 0.9);
+        o.updateMatrix();
+        mesh.setMatrixAt(i, o.matrix);
+        mesh.setColorAt(i, tint.set(pal[Math.min(3, Math.floor((kind + hash01(i, 8, 8217) * 0.3) * 4)) % 4]!));
+      });
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      mesh.computeBoundingSphere();
+      this.group.add(mesh);
+    }
+  }
+
+  /**
+   * Gờ đá rêu bám vách rìa cao nguyên: quanh rìa (mỗi 2°), ở ba độ cao trên vách một khối đá tảng bất đều đặt ra ngoài mặt vách, mặt trên phủ rêu;
+   * làm vách có khối, đổ bóng và rêu thay vì một mặt phẳng trơn. Một lưới nhân bản, chỉ để nhìn.
+   */
+  private buildCliffLedges(): void {
+    const C = 1024;
+    const plateau = this.inp.heightAt(C, C);
+    const sea = this.inp.seaY + 6;
+    const b = new Builder();
+    b.blob(1.0, 1.2, 0.7, 1.0, 0, 0, 0, 0x7a7766, 0x56703d, 0.75, 31);
+    b.blob(0.7, 1.0, 0.65, 0.9, 1.0, -0.3, 0.5, 0x6d6a5c, 0x4c6637, 0.75, 37);
+    b.blob(0.55, 1.0, 0.6, 1.0, -0.9, -0.2, -0.4, 0x827e6c, 0x5c7642, 0.75, 43);
+    const geo = b.build();
+    if (!geo) return;
+    const pts: [number, number, number, number, number][] = [];
+    for (let deg = 0; deg < 360; deg += 2) {
+      const a = (deg * Math.PI) / 180;
+      const dx = Math.cos(a);
+      const dz = Math.sin(a);
+      let d0 = 540;
+      for (; d0 < 900; d0 += 2) if (this.inp.heightAt(C + dx * d0, C + dz * d0) < plateau - 45) break;
+      if (d0 >= 900) continue;
+      for (let f = 0; f < 3; f++) {
+        const target = plateau - (0.18 + f * 0.27 + hash01(deg, f, 6101) * 0.1) * (plateau - sea);
+        let d = d0 - 6;
+        for (; d < d0 + 160; d += 2) if (this.inp.heightAt(C + dx * d, C + dz * d) < target) break;
+        pts.push([C + dx * (d + 2.5), target + 1, C + dz * (d + 2.5), 3 + hash01(deg, f, 6103) * 5.5, hash01(deg, f, 6105)]);
+      }
+    }
+    if (!pts.length) return;
+    const mesh = new THREE.InstancedMesh(this.own(geo), this.own(solidMat()), pts.length);
+    mesh.name = 'ck-ledges';
+    const o = new THREE.Object3D();
+    const tint = new THREE.Color();
+    pts.forEach(([x, y, z, sc, r], i) => {
+      o.position.set(x, y, z);
+      o.rotation.set(0, r * 6.28, 0);
+      o.scale.set(sc * 1.3, sc * 0.75, sc * 1.1);
+      o.updateMatrix();
+      mesh.setMatrixAt(i, o.matrix);
+      const v = 0.8 + hash01(i, 2, 6107) * 0.35;
+      mesh.setColorAt(i, tint.setRGB(v, v, v * 0.96));
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    mesh.computeBoundingSphere();
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    this.group.add(mesh);
+  }
+
+  /**
+   * Thác nước: mỗi thác là ba dải rộng chồng nhau bám sườn vách từ rìa cao nguyên xuống biển mây (vệt sáng chạy xuống, mép mờ), kèm vùng bọt sương trắng nổi ở chân
+   * (đĩa phẳng mờ dần, nhấp nháy). Tất cả dải một lưới, tất cả bọt một lưới.
+   */
   private buildFalls(): void {
-    const C = 1024; // tâm bản đồ (size 2048)
+    const C = 1024;
     const plateau = this.inp.heightAt(C, C);
     const angles = [28, 98, 158, 214, 322].map((d) => (d * Math.PI) / 180);
-    const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide });
-    const v = uv();
-    const stripes = sin(v.y.mul(48).sub(time.mul(7)))
-      .mul(0.5)
-      .add(0.5);
-    const sheet = smoothstep(float(0), float(0.28), v.x).mul(smoothstep(float(1), float(0.72), v.x));
-    const fadeTop = smoothstep(float(0), float(0.05), v.y);
-    const fadeBot = smoothstep(float(1), float(0.6), v.y);
-    mat.colorNode = mix(vec3(0.82, 0.93, 0.98), vec3(1, 1, 1), stripes);
-    mat.opacityNode = clamp(sheet.mul(fadeTop).mul(fadeBot).mul(stripes.mul(0.4).add(0.58)), 0, 1);
-    this.own(mat);
-    for (const a of angles) {
+    const pos: number[] = [];
+    const uvs: number[] = [];
+    const ph: number[] = [];
+    const idx: number[] = [];
+    const fpos: number[] = [];
+    const fuv: number[] = [];
+    const fidx: number[] = [];
+    let vi = 0;
+    angles.forEach((a, ai) => {
       const dx = Math.cos(a);
       const dz = Math.sin(a);
       let d0 = 540;
       for (; d0 < 880; d0 += 2) if (this.inp.heightAt(C + dx * d0, C + dz * d0) < plateau - 45) break;
-      const pos: number[] = [];
-      const uvs: number[] = [];
-      const idx: number[] = [];
-      const hw = 5.8;
-      const rows = 30;
-      for (let r = 0; r <= rows; r++) {
-        const d = d0 - 4 + r * 4.4;
-        const x = C + dx * d;
-        const z = C + dz * d;
-        const y = this.inp.heightAt(x, z) + 0.7;
-        for (const s of [-1, 1]) {
-          pos.push(x + -dz * hw * s, y, z + dx * hw * s);
-          uvs.push(s < 0 ? 0 : 1, r / rows);
-        }
-        if (r < rows) {
-          const i = r * 2;
-          idx.push(i, i + 1, i + 2, i + 1, i + 3, i + 2);
+      const sheets = [
+        { off: -13, hw: 10, phase: 0.0 },
+        { off: 0, hw: 14, phase: 1.7 },
+        { off: 13.5, hw: 10.5, phase: 3.1 },
+      ];
+      let baseD = d0 + 40;
+      for (const sh of sheets) {
+        const rows = 34;
+        const first = vi;
+        for (let r = 0; r <= rows; r++) {
+          const d = d0 - 4 + r * 4.0;
+          const cx = C + dx * d + -dz * sh.off;
+          const cz = C + dz * d + dx * sh.off;
+          // nhấc ra ngoài mặt vách (vách gần thẳng đứng, lưới địa hình thô nên dải áp sát sẽ bị chôn)
+          const y = this.inp.heightAt(cx, cz) + 1.2 + (sh.off === 0 ? 0.2 : 0);
+          if (y > this.inp.seaY + 6) baseD = Math.max(baseD, d);
+          for (const s of [-1, 1]) {
+            pos.push(cx + dx * 2.4 + -dz * sh.hw * s, y, cz + dz * 2.4 + dx * sh.hw * s);
+            uvs.push(s < 0 ? 0 : 1, r / rows);
+            ph.push(sh.phase + ai);
+            vi++;
+          }
+          if (r < rows) {
+            const i = first + r * 2;
+            idx.push(i, i + 1, i + 2, i + 1, i + 3, i + 2);
+          }
         }
       }
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-      g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-      g.setIndex(idx);
-      g.computeBoundingSphere();
-      const m = new THREE.Mesh(this.own(g), mat);
-      m.name = 'ck-fall';
-      m.renderOrder = 2;
-      this.group.add(m);
-    }
+      // bọt chân thác: đĩa phẳng ở mực biển mây
+      const bx = C + dx * (baseD + 6);
+      const bz = C + dz * (baseD + 6);
+      const by = this.inp.seaY + 8;
+      const R = 40;
+      const f0 = fpos.length / 3;
+      for (const [ux, uz] of [
+        [-1, -1],
+        [1, -1],
+        [-1, 1],
+        [1, 1],
+      ] as const) {
+        fpos.push(bx + ux * R, by, bz + uz * R);
+        fuv.push(ux < 0 ? 0 : 1, uz < 0 ? 0 : 1);
+      }
+      fidx.push(f0, f0 + 1, f0 + 2, f0 + 1, f0 + 3, f0 + 2);
+    });
+    if (!pos.length) return;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    g.setAttribute('ph', new THREE.Float32BufferAttribute(ph, 1));
+    g.setIndex(idx);
+    g.computeBoundingSphere();
+    const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide });
+    const v = uv();
+    const p = attribute('ph', 'float');
+    const stripes = sin(v.y.mul(40).add(p.mul(2.3)).sub(time.mul(6.5)))
+      .mul(0.5)
+      .add(0.5);
+    const stripes2 = sin(v.y.mul(97).sub(time.mul(11)).add(v.x.mul(9)).add(p))
+      .mul(0.5)
+      .add(0.5);
+    const sheet = smoothstep(float(0), float(0.3), v.x).mul(smoothstep(float(1), float(0.7), v.x));
+    const fadeTop = smoothstep(float(0), float(0.04), v.y);
+    const fadeBot = smoothstep(float(1), float(0.72), v.y);
+    mat.colorNode = mix(vec3(0.8, 0.92, 0.97), vec3(1, 1, 1), stripes.mul(0.6).add(stripes2.mul(0.4)));
+    mat.opacityNode = clamp(
+      sheet
+        .mul(fadeTop)
+        .mul(fadeBot)
+        .mul(stripes.mul(0.25).add(stripes2.mul(0.15)).add(0.62)),
+      0,
+      1,
+    );
+    const fall = new THREE.Mesh(this.own(g), this.own(mat));
+    fall.name = 'ck-falls';
+    fall.renderOrder = 2;
+    fall.frustumCulled = false;
+    this.group.add(fall);
+
+    const fg = new THREE.BufferGeometry();
+    fg.setAttribute('position', new THREE.Float32BufferAttribute(fpos, 3));
+    fg.setAttribute('uv', new THREE.Float32BufferAttribute(fuv, 2));
+    fg.setIndex(fidx);
+    fg.computeBoundingSphere();
+    const fm = new THREE.MeshBasicNodeMaterial({
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+    });
+    const q = length(uv().sub(vec2(0.5, 0.5))).mul(2);
+    const shimmer = sin(time.mul(1.6).add(q.mul(9)))
+      .mul(0.12)
+      .add(0.88);
+    fm.colorNode = vec3(0.9, 0.96, 1);
+    fm.opacityNode = clamp(smoothstep(float(1), float(0.1), q).mul(0.42).mul(shimmer), 0, 1);
+    const foam = new THREE.Mesh(this.own(fg), this.own(fm));
+    foam.name = 'ck-foam';
+    foam.renderOrder = 3;
+    foam.frustumCulled = false;
+    this.group.add(foam);
   }
 
   dispose(): void {

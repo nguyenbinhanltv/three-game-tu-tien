@@ -369,7 +369,7 @@
       "ck_dusk": {
         "label": "Thiên Lộ — hoàng hôn đồng ấm",
         "sunColor": "#FFB67A", "sunIntensity": 3.0, "sunElevationDeg": 9,
-        "skyColor": "#C9B2B0", "skyIntensity": 0.8,
+        "skyColor": "#D2BEB8", "skyIntensity": 1.15,
         "fogColor": "#D8C2B4", "fogDensity": 0.00012, "heightFogTop": 40, "heightFogBoost": 1.3,
         "fogHaze": 0.0005, "fogHazeStart": 170, "fogScatter": 0.8, "rim": 0.7,
         "shadowTint": "#3A4C6A", "highlightTint": "#FFD0A0", "splitBalance": 0.15,
@@ -379,7 +379,7 @@
       "ck_night": {
         "label": "Thiên Lộ — đêm trăng bạc trên biển mây",
         "sunColor": "#C8D8F4", "sunIntensity": 1.8, "sunElevationDeg": 40,
-        "skyColor": "#2E4C84", "skyIntensity": 1.0,
+        "skyColor": "#3A5A94", "skyIntensity": 1.3,
         "fogColor": "#1E3250", "fogDensity": 0.0002, "heightFogTop": 40, "heightFogBoost": 1.3,
         "fogHaze": 0.0005, "fogHazeStart": 140, "fogScatter": 0.35, "rim": 1.0,
         "shadowTint": "#0A1A38", "highlightTint": "#E4ECFF", "splitBalance": -0.2,

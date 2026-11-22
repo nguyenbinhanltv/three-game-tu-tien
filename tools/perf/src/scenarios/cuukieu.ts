@@ -22,7 +22,7 @@ export const VIEWS: View[] = [
   { name: 'bialo', stand: [1324, 1084], eye: [1290, 9, 1160], at: [1360, 10, 1010], fov: 60 },
   { name: 'bacCuoi', stand: [1024, 640], eye: [1000, 12, 720], at: [1024, 18, 560], fov: 58 },
   { name: 'boss', stand: [854, 554], eye: [900, 9, 640], at: [850, 8, 540], fov: 58 },
-  { name: 'chuoiCau', stand: [1024, 520], eye: [990, 26, 560], at: [1060, 46, 200], fov: 64 },
+  { name: 'chuoiCau', stand: [1100, 560], eye: [1090, 24, 565], at: [1190, 52, 210], fov: 64 },
   { name: 'thac', stand: [380, 590], eye: [270, -22, 520], at: [371, 6, 584], fov: 66 },
   { name: 'toanCanh', stand: [1024, 1300], eye: [1100, 34, 1580], at: [1000, 14, 1000], fov: 58 },
 ];

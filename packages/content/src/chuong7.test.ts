@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DUONG_THUC_LEVEL, MAX_LEVEL, padsOfLevel, TELE_PAD } from '@dtl/shared';
+import { CUU_KIEU_RAIL, CUU_KIEU_ROAD_HALF, DUONG_THUC_LEVEL, MAX_LEVEL, padsOfLevel, TELE_PAD, terrainOf } from '@dtl/shared';
 import { LEVELS, MONSTER, NPC } from './index';
 
 // TN-7: khung bản đồ Thiên Lộ Giới (chương 7): cấp 44–47, mọi quái trong cụm/tinh anh/boss có thật, NPC cấp vé đứng ở trạm, trận truyền tống đủ.
@@ -36,5 +36,21 @@ describe('chương 7 Thiên Lộ Giới', () => {
   it('năm trận truyền tống ck_*: trạm + mỗi vùng một trận', () => {
     const pads = padsOfLevel('cuu_kieu');
     expect(pads.map((p) => p.id).sort()).toEqual(['ck_tp_bac_cuoi', 'ck_tp_bia_lo', 'ck_tp_duong_may', 'ck_tp_kieu_dau', 'ck_tp_tram']);
+  });
+
+  it('lan can có va chạm (server chặn đi xuyên) ở mọi trụ trừ các lối băng ngang', () => {
+    const cols = terrainOf('cuu_kieu').def.colliders;
+    const off = CUU_KIEU_ROAD_HALF + 0.35;
+    let posts = 0;
+    for (const [fx, fz, yaw, open] of CUU_KIEU_RAIL) {
+      for (const side of [-1, 1]) {
+        const x = fx + Math.cos(yaw) * off * side;
+        const z = fz - Math.sin(yaw) * off * side;
+        const hit = cols.some((c) => Math.hypot(c.x - x, c.z - z) < 0.3 && c.r >= 0.5 && c.r <= 0.6);
+        expect(hit, `${open ? 'lối mở' : 'trụ'} ${x.toFixed(1)},${z.toFixed(1)}`).toBe(!open);
+        if (!open) posts++;
+      }
+    }
+    expect(posts).toBeGreaterThan(300);
   });
 });

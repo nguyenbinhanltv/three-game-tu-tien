@@ -440,7 +440,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
   }
   if (id === 'cuu_kieu') {
     // Thiên Lộ Giới (TN-7): đường lát đá + lan can, chuỗi cầu vòm trên biển mây, hub có mái, cổ thụ, cỏ lau, thác (dùng chung ô `vdWonders` để dọn).
-    eng.vdWonders = new CkWonders({ heightAt: (x, z) => heightAt(x, z) });
+    eng.vdWonders = new CkWonders({ heightAt: (x, z) => heightAt(x, z), seaY: levelTerrain().def.seaY ?? 0 });
     eng.scene.add(eng.vdWonders.group);
   }
   if (id === 'van_dinh') {

@@ -33,6 +33,8 @@ function rng(seed) {
 }
 const R = rng(SEED);
 const W = (o) => Math.round(C + o);
+/** Toạ độ thế giới chính xác 0,01 m (để hình vẽ khớp va chạm đã ghi vào terrain.colliders). */
+const Wp = (o) => Math.round((C + o) * 100) / 100;
 
 // ---- vùng: ô Voronoi có trọng số (power diagram). Dòng đi: Kiều Đầu (trại) → Đường Mây (tây) → Bia Lộ (đông) → Bậc Cuối (bắc). `lv` là cấp thiết kế. ----
 const ZONES = [
@@ -290,7 +292,42 @@ const HUB = {
 };
 // Chuỗi chín nhịp cầu vòm: mười điểm hạ cánh uốn lượn ra ngoài rìa phía bắc (Bậc Cuối là điểm vào), cao dần. Chỉ để nhìn (mỗi cầu là một phòng riêng).
 const SPAN = [];
-for (let k = 0; k <= 9; k++) SPAN.push([Math.round(235 * Math.sin(0.62 * k) * 10) / 10, -586 - 44 * k, 72 + 4.2 * k]);
+{
+  // Chín nhịp dài 60 m trên một cung bán kính 380 m: nhịp đầu đi thẳng về phía bắc từ điểm cuối đường, rồi uốn dần sang đông (vẫn trong bản đồ 2048 m).
+  let x = 0;
+  let z = -586;
+  let phi = 0;
+  for (let k = 0; k <= 9; k++) {
+    SPAN.push([Math.round(x * 10) / 10, Math.round(z * 10) / 10, Math.round((72 + 4.2 * k) * 10) / 10]);
+    x += Math.sin(phi) * 60;
+    z -= Math.cos(phi) * 60;
+    phi += 60 / 380;
+  }
+}
+// Khung đường mỗi 4,5 m [x, z, yaw, mở]: lan can đặt hai bên ở các khung đóng; khung "mở" là lối băng ngang (đầu, cuối, và hai khung mỗi 45 m) để đường không chia đôi bản đồ.
+const RAIL = [];
+{
+  let carry = 0;
+  for (let i = 0; i < ROAD.length - 1; i++) {
+    const [ax, az] = ROAD[i];
+    const [bx, bz] = ROAD[i + 1];
+    const len = Math.hypot(bx - ax, bz - az);
+    const yaw = Math.atan2(bx - ax, bz - az);
+    for (let sdist = carry; sdist < len; sdist += 4.5) {
+      const t = sdist / len;
+      RAIL.push([
+        Math.round((ax + (bx - ax) * t) * 100) / 100,
+        Math.round((az + (bz - az) * t) * 100) / 100,
+        Math.round(yaw * 1000) / 1000,
+        0,
+      ]);
+      carry = sdist + 4.5 - len;
+    }
+  }
+  RAIL.forEach((f, i) => {
+    if (i < 3 || RAIL.length - i <= 3 || i % 10 === 5 || i % 10 === 6) f[3] = 1;
+  });
+}
 
 const keep = [];
 for (const p of PADS) keep.push({ x: p.off[0], z: p.off[1], r: 10 });
@@ -548,10 +585,34 @@ const placeTrees = (n, sMin, sMax, rColl, minGap, edgeBias) => {
     n--;
   }
 };
-placeTrees(24, 1.05, 1.55, 1.6, 48, false);
+placeTrees(8, 1.7, 2.2, 1.6, 70, false);
+placeTrees(22, 1.05, 1.5, 1.6, 48, false);
 placeTrees(100, 0.55, 0.95, 0.7, 20, true);
 for (const t of TREES)
   colliders.push({ x: Math.round((C + t[0]) * 100) / 100, z: Math.round((C + t[1]) * 100) / 100, r: Math.round(t[4] * t[2] * 100) / 100 });
+// Đá tảng rêu phủ: tạo hình cho đồng cỏ; có va chạm (bán kính ~ 1,3 × tỉ lệ).
+const ROCKS = [];
+for (let k = 0; k < 6000 && ROCKS.length < 64; k++) {
+  const x = BOX.x0 + 30 + R2() * (BOX.x1 - BOX.x0 - 60);
+  const z = BOX.z0 + 30 + R2() * (BOX.z1 - BOX.z0 - 60);
+  if (!zoneOfOffset(x, z, 10) || nearKeep(x, z, 4) || roadDist(x, z) < ROAD_HALF + 7) continue;
+  if (TREES.some((t) => Math.hypot(t[0] - x, t[1] - z) < 6) || ROCKS.some((r) => Math.hypot(r[0] - x, r[1] - z) < 20)) continue;
+  const sc = Math.round((0.9 + R2() * 2.3) * 100) / 100;
+  ROCKS.push([Math.round(x * 10) / 10, Math.round(z * 10) / 10, sc, Math.round(R2() * 628) / 100]);
+  colliders.push({ x: Math.round((C + x) * 100) / 100, z: Math.round((C + z) * 100) / 100, r: Math.round(1.25 * sc * 100) / 100 });
+}
+// Lan can hai bên đường: một vòng va chạm nhỏ ở mỗi trụ (chừa các khung "mở").
+for (const [fx, fz, yaw, open] of RAIL) {
+  if (open) continue;
+  for (const side of [-1, 1]) {
+    const off = ROAD_HALF + 0.35;
+    colliders.push({
+      x: Math.round((C + fx + Math.cos(yaw) * off * side) * 100) / 100,
+      z: Math.round((C + fz - Math.sin(yaw) * off * side) * 100) / 100,
+      r: 0.55,
+    });
+  }
+}
 const REEDS = [];
 for (let k = 0; k < 6000 && REEDS.length < 150; k++) {
   const x = BOX.x0 + 20 + R2() * (BOX.x1 - BOX.x0 - 40);
@@ -593,7 +654,7 @@ hubColl(
   ],
   1.5,
 );
-console.log('cây', TREES.length, 'cỏ lau', REEDS.length, 'điểm đường', ROAD.length);
+console.log('cây', TREES.length, 'đá', ROCKS.length, 'khung lan can', RAIL.length, 'cỏ lau', REEDS.length, 'điểm đường', ROAD.length);
 
 // ---- tài nguyên (tạm: linh thảo; chương 7 chưa có nguyên liệu hái riêng) ----
 const nodes = [
@@ -662,13 +723,19 @@ out(
   'packages/shared/src/cuukieu.art.ts',
   `// Dữ liệu mỹ thuật Thiên Lộ Giới (TN-7): đường lát đá, cây, cỏ lau, chuỗi cầu, hub. SINH BẰNG tools/maps/gen-cuu_kieu.mjs: sửa ở đó rồi chạy lại.\n// Tọa độ thế giới (m). Chỉ để dựng hình ở client (va chạm cây/trụ đã nằm trong terrain.colliders).\n\n/** Đường tim mặt đường (x, z), cách nhau ~8 m; nửa bề rộng ${ROAD_HALF} m. */\n${art('CUU_KIEU_ROAD', roadW)}\nexport const CUU_KIEU_ROAD_HALF = ${ROAD_HALF};\n\n/** Cây: [x, z, tỉ lệ, xoay, bán kính va chạm tại tỉ lệ 1]; tỉ lệ ≥ 1 là cổ thụ. */\n${art(
     'CUU_KIEU_TREES',
-    TREES.map((t) => [W(t[0]), W(t[1]), t[2], t[3], t[4]]),
+    TREES.map((t) => [Wp(t[0]), Wp(t[1]), t[2], t[3], t[4]]),
+  )}\n\n/** Khung đường mỗi 4,5 m: [x, z, yaw, mở]; lan can ở khung đóng (0), khung mở (1) là lối băng ngang. */\n${art(
+    'CUU_KIEU_RAIL',
+    RAIL.map((f) => [Wp(f[0]), Wp(f[1]), f[2], f[3]]),
+  )}\n\n/** Đá tảng: [x, z, tỉ lệ, xoay]; va chạm bán kính ~1,25 × tỉ lệ. */\n${art(
+    'CUU_KIEU_ROCKS',
+    ROCKS.map((r) => [Wp(r[0]), Wp(r[1]), r[2], r[3]]),
   )}\n\n/** Bụi cỏ lau trắng: [x, z, bán kính]. */\n${art(
     'CUU_KIEU_REEDS',
-    REEDS.map((r) => [W(r[0]), W(r[1]), r[2]]),
+    REEDS.map((r) => [Wp(r[0]), Wp(r[1]), r[2]]),
   )}\n\n/** Mười điểm hạ cánh của chín nhịp cầu vòm (x, z, độ cao mặt cầu); nhịp k nối điểm k−1 với điểm k. */\n${art(
     'CUU_KIEU_SPAN',
-    SPAN.map((p) => [W(p[0]), W(p[1]), p[2]]),
+    SPAN.map((p) => [Wp(p[0]), Wp(p[1]), p[2]]),
   )}\n\n/** Hub Kiều Đầu: cổng vòm ở đầu đường, đình có mái, rạp vải. */\nexport const CUU_KIEU_HUB = {\n  gate: { x: ${W(HUB.gate.off[0])}, z: ${W(HUB.gate.off[1])}, yaw: ${HUB.gate.yaw} },\n  pavilion: { x: ${W(HUB.pavilion.off[0])}, z: ${W(HUB.pavilion.off[1])}, yaw: ${HUB.pavilion.yaw} },\n  tent: { x: ${W(HUB.tent.off[0])}, z: ${W(HUB.tent.off[1])}, yaw: ${HUB.tent.yaw} },\n} as const;\n`,
 );
 const propLines = props.map((p) => `  { id: '${p.id}', x: ${p.x}, z: ${p.z}, yaw: ${p.yaw}, s: ${p.s} },`);
