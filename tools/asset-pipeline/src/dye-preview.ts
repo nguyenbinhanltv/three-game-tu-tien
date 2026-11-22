@@ -1,5 +1,5 @@
-// Xem trước mặt nạ nhuộm 3 kênh của nhân vật v3 (`apps/client/src/game/character/packages/shared/src/v3dye.ts`): đọc texture gốc Tripo trong
-// `dtl-asset-source` (`DTL_ASSET_SOURCE` hoặc `../dtl-asset-source`), tính trọng số ba kênh bằng ĐÚNG hàm của client, in tỉ lệ phủ và
+// Xem trước mặt nạ nhuộm 3 kênh của nhân vật v3 (`packages/shared/src/v3dye.ts`): đọc texture gốc Tripo trong
+// `dtl-asset-source` (`DTL_ASSET_SOURCE` hoặc `../dtl-asset-source`), tính trọng số ba kênh bằng ĐÚNG hàm dùng chung của client (`@dtl/shared`), in tỉ lệ phủ và
 // ghi ảnh ghép (texture | mặt nạ: đỏ = vải chính, lục = viền/lót, lam = kim loại/điểm nhấn) vào thư mục đích. Tất định, không dùng mạng.
 //   pnpm dye:preview [thư-mục-đích] [id-model ...]     (mặc định: $TEMP/dye-preview, mọi model)
 //   pnpm dye:preview --clusters <id-model>             in 8 cụm màu của phần texture NGOÀI vải chính (để chọn màu tham chiếu viền/kim loại)

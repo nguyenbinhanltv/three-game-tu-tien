@@ -99,17 +99,18 @@ describe('mặt nạ nhuộm theo xương', () => {
     });
     const g = new THREE.BufferGeometry();
     // Gốc xương Head ở y = 0 (không có neck_01: ngưỡng = y Head): đỉnh 0 và 2 ở y = −1 (dưới đầu), đỉnh 1 ở y = 0,5 (trên đầu: luôn 0 dù bám xương thân).
-    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, -1, 0, 0, 0.5, 0, 0, -1, 0]), 3));
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, -1, 0, 0, 0.5, 0, 0, -1, 0, 0.3, 0.5, 0]), 3));
     // Đỉnh 0: toàn thân; đỉnh 1: toàn thân nhưng nằm trên đầu (mặt, tóc bám xương thân vẫn không nhuộm); đỉnh 2: 25% tay, 75% thân.
-    g.setAttribute('skinIndex', new THREE.BufferAttribute(new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0]), 4));
-    g.setAttribute('skinWeight', new THREE.BufferAttribute(new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 0.25, 0.75, 0, 0]), 4));
+    g.setAttribute('skinIndex', new THREE.BufferAttribute(new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0]), 4));
+    g.setAttribute('skinWeight', new THREE.BufferAttribute(new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 0.25, 0.75, 0, 0, 1, 0, 0, 0]), 4));
     const mesh = new THREE.SkinnedMesh(g, new THREE.MeshStandardMaterial());
     mesh.bind(new THREE.Skeleton(bones), new THREE.Matrix4());
     const scene = new THREE.Group();
     scene.add(mesh);
     addDyeMask(scene);
     const a = g.getAttribute(DYE_MASK_ATTR);
-    expect([a.getX(0), a.getX(1), a.getX(2)]).toEqual([1, 0, 0.75]);
+    // Đỉnh 3 ở y = 0,5 nhưng cách trục cổ 0,3 m (vai giáp, cổ áo đứng): vẫn nhuộm được.
+    expect([a.getX(0), a.getX(1), a.getX(2), a.getX(3)]).toEqual([1, 0, 0.75, 1]);
     addDyeMask(scene);
     expect(g.getAttribute(DYE_MASK_ATTR)).toBe(a);
   });

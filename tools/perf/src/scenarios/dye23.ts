@@ -1,5 +1,5 @@
 // Nhuộm kênh 2 (viền/lót/đai) và kênh 3 (tua/kim loại) của nhân vật v3: ảnh trước/sau ở 1080p và 720p.
-// Mỗi bộ × giới: ảnh gốc, "chỉ kênh 1" (như trước đây) rồi vài phối màu đủ 3 kênh (tin `lkd`). Cùng góc 3/4 trước mặt.
+// Mỗi bộ × giới: ảnh gốc (`0-goc`, chưa nhuộm, mốc so), ba kênh cùng một màu (`1-ba-kenh-cung-mau`: viền và kim loại cũng đỏ) rồi vài phối màu khác nhau (tin `lkd`). Mốc "chỉ kênh 1 như trước PR" cần build main. Cùng góc 3/4 trước mặt.
 //   pnpm shots dye23 --out <thư mục> [--sets set_dan_tam,set_huyen_giap,...] [--genders m,f] [--quality high] [--query chr=v1]
 import path from 'node:path';
 import type { Page } from 'playwright';
@@ -14,7 +14,7 @@ const SETS = ['set_dan_tam', 'set_huyen_giap', 'set_liet_mach', 'set_than_tang']
 /** Phối màu [kênh 1, kênh 2, kênh 3]; `null` = không nhuộm. */
 const MIXES: { name: string; dye3: string[] | null }[] = [
   { name: '0-goc', dye3: null },
-  { name: '1-chi-kenh1', dye3: ['wood_cinnabar', 'wood_cinnabar', 'wood_cinnabar'] },
+  { name: '1-ba-kenh-cung-mau', dye3: ['wood_cinnabar', 'wood_cinnabar', 'wood_cinnabar'] },
   { name: '2-do-ngoc-den', dye3: ['wood_cinnabar', 'attire_ivory', 'attire_ink'] },
   { name: '3-lam-do-ngoc', dye3: ['attire_sect', 'wood_cinnabar', 'attire_ivory'] },
   { name: '4-tim-luc-ngoc', dye3: ['attire_rogue', 'wood_roof', 'attire_ivory'] },

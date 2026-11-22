@@ -30,6 +30,9 @@ export function isUndyedBone(name: string): boolean {
 export const DYE_MASK_ATTR = 'dyeMask';
 /** Ngưỡng đầu = gốc xương `neck_01` hạ đoạn này (m) để lấy cả cằm, hàm dưới; thiếu `neck_01` thì lấy gốc `Head` (cách cổ cỡ đó). */
 const NECK_DROP = 0.08;
+/** Vùng đầu quanh trục cổ (elip trên mặt phẳng ngang, m): hẹp theo bề ngang (hẹp hơn vai, nửa rộng vai ~0,2), dài theo chiều trước-sau (mũi, cằm, búi tóc). */
+const HEAD_HALF_WIDTH = 0.13;
+const HEAD_HALF_DEPTH = 0.22;
 
 /**
  * Thêm thuộc tính đỉnh `dyeMask` (1 = nhuộm được, 0 = đầu/tay/tóc) cho mọi lưới skin trong `scene` (một lần mỗi hình học). Gọi lúc dựng mẫu,
@@ -48,20 +51,22 @@ export function addDyeMask(scene: THREE.Object3D): void {
     const skip = m.skeleton.bones.map((b) => isUndyedBone(b.name));
     // Đỉnh mặt/tóc không bám xương `Head` đủ nặng (nhiều đỉnh chia trọng số cho cổ, vai): thêm điều kiện theo độ cao ở tư thế bind,
     // đỉnh cao hơn gốc cổ không bao giờ nhuộm.
-    const bindY = (name: string): number | null => {
+    const bindPos = (name: string): THREE.Vector3 | null => {
       const k = m.skeleton.bones.findIndex((b) => b.name === name);
       const inv = k >= 0 ? m.skeleton.boneInverses[k] : undefined;
-      return inv ? new THREE.Vector3().setFromMatrixPosition(inv.clone().invert()).y : null;
+      return inv ? new THREE.Vector3().setFromMatrixPosition(inv.clone().invert()) : null;
     };
-    // Gốc cổ (`neck_01`); thiếu thì lấy gốc `Head` hạ một đoạn.
-    const neckY = (bindY('neck_01') ?? (bindY('Head') ?? Infinity) + NECK_DROP) - NECK_DROP;
-    const headInv = Number.isFinite(neckY);
-    const headY = neckY;
+    // Trục cổ: `neck_01`; thiếu thì lấy gốc `Head` (cách cổ cỡ NECK_DROP, dịch xuống để ngưỡng độ cao vẫn như nhau).
+    const neck = bindPos('neck_01') ?? bindPos('Head')?.sub(new THREE.Vector3(0, NECK_DROP, 0)) ?? null;
     const pos = g.getAttribute('position');
     const v = new THREE.Vector3();
     const out = new Float32Array(si.count);
     for (let i = 0; i < si.count; i++) {
-      if (headInv && v.fromBufferAttribute(pos, i).applyMatrix4(m.bindMatrix).y > headY) continue;
+      // Chỉ trong ống quanh trục cổ (elip HEAD_HALF_WIDTH × HEAD_HALF_DEPTH) mới áp ngưỡng độ cao: vai giáp, cổ áo đứng, mũ trùm nằm ngoài ống này.
+      if (neck) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(m.bindMatrix);
+        if (v.y > neck.y - NECK_DROP && Math.hypot((v.x - neck.x) / HEAD_HALF_WIDTH, (v.z - neck.z) / HEAD_HALF_DEPTH) < 1) continue;
+      }
       let w = 0;
       let total = 0;
       for (let k = 0; k < 4; k++) {
