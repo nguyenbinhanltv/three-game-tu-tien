@@ -122,6 +122,8 @@ export const C = {
   KIEU: 'kieu',
   /** Chọn nguồn Cực nguyên ở kết game (TN-7, sau chín cầu, một lần): `{ id }` (`DapId`). Server kiểm đủ chín cầu, đứng cạnh Dẫn Kiều Nhân, chưa chọn. */
   DAP: 'dap',
+  /** Xin Bảng Thiên Lộ (TN-7): không tham số. Server trả `S.KIEU_BOARD` (`KieuBoardMsg`), giãn cách `KIEU_BOARD_COOLDOWN_MS`. */
+  KIEU_BOARD: 'kbd',
   /** Tổ đội (P3-9): `PartyCmd`. */
   PARTY: 'pty',
   /** Tỉ thí 1v1 ở võ đài: `DuelCmd`. */
@@ -190,6 +192,8 @@ export const S = {
   CLONE_STATE: 'clonest',
   /** Tủ ngoại trang của mình (`WardrobeMsg`): gửi khi vào phòng, mở khóa món mới, đổi lựa chọn. */
   WARDROBE: 'wd',
+  /** Bảng Thiên Lộ (`KieuBoardMsg`): trả lời `C.KIEU_BOARD`. */
+  KIEU_BOARD: 'kbd',
 } as const;
 
 export interface InitMsg {
