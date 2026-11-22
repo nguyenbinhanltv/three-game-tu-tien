@@ -1,3 +1,4 @@
+import { FLAGS } from '../base/flags';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import './tutien.css';
@@ -562,7 +563,7 @@ export function Hud() {
       <TrialBanner />
       <BagWarn />
       {mouseLook && <div className="crosshair" />}
-      {controls === 'mouse' && mode !== 'touch' && !mouseLook && !npc && !panel && !dead && <LockHint />}
+      {controls === 'mouse' && !FLAGS.isoCam && mode !== 'touch' && !mouseLook && !npc && !panel && !dead && <LockHint />}
       {hint && !npc && <div className="hint">{hint}</div>}
       <CastBar />
       <SkillBanner />
