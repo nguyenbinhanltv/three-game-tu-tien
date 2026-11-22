@@ -3,7 +3,7 @@
 // `MonsterSummon`, `MonsterReveal`); trạng thái chạy ở apps/server/src/game/monskill.ts.
 
 import type { HazardGeom } from './combat';
-import type { MonsterAi, MonsterBurrow, MonsterReflect, MonsterReveal } from './types';
+import type { MonsterAi, MonsterBurrow, MonsterFaces, MonsterReflect, MonsterReveal } from './types';
 
 /** Thời gian bay của nhảy đập (giây, cuối khoảng báo trước): quái rời chỗ cũ và đáp đúng lúc vạch nổ. */
 export const LEAP_AIR = 0.35;
@@ -165,4 +165,41 @@ export function trailSpots(x: number, z: number, yaw: number, len: number, r: nu
     out.push({ x: x + Math.sin(yaw) * d, z: z + Math.cos(yaw) * d });
   }
   return out;
+}
+
+/** Mặt của boss hai mặt lúc `nowMs` (đồng hồ server), tính từ `startMs` (lúc vào trận). */
+export interface FacePhase {
+  face: 'duong' | 'am';
+  /** Giây tới lần lật kế tiếp. */
+  left: number;
+  /** Lần lật kế tiếp (ms, đồng hồ server). */
+  flipAt: number;
+  /** Đã vào khoảng báo trước (`warn` giây cuối của mặt hiện tại). */
+  warning: boolean;
+  /** Chỉ số lần lật đã qua (0 = mặt Dương đầu tiên); đổi giá trị = vừa lật. */
+  turn: number;
+}
+
+/** Mặt Dương lộ trước, rồi mặt Âm, lặp theo chu kỳ `duong + am`. `startMs` ≤ `nowMs`. */
+export function facePhase(cfg: MonsterFaces, startMs: number, nowMs: number): FacePhase {
+  const dMs = cfg.duong * 1000;
+  const aMs = cfg.am * 1000;
+  const cycle = dMs + aMs;
+  const el = Math.max(0, nowMs - startMs);
+  const k = Math.floor(el / cycle);
+  const t = el - k * cycle;
+  const duong = t < dMs;
+  const flipAt = startMs + k * cycle + (duong ? dMs : cycle);
+  return {
+    face: duong ? 'duong' : 'am',
+    left: (flipAt - nowMs) / 1000,
+    flipAt,
+    warning: flipAt - nowMs <= cfg.warn * 1000,
+    turn: k * 2 + (duong ? 0 : 1),
+  };
+}
+
+/** Sát thương boss hai mặt nhận ở mặt `face` (mặt Dương nhận đủ). */
+export function faceTakeMul(cfg: MonsterFaces, face: 'duong' | 'am'): number {
+  return face === 'am' ? cfg.take : 1;
 }

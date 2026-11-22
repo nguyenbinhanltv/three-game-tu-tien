@@ -117,6 +117,8 @@ import fx_mon_boom_cone from '../data/fx/mon_boom_cone.json';
 import fx_mon_boom_line from '../data/fx/mon_boom_line.json';
 import fx_mon_cast from '../data/fx/mon_cast.json';
 import fx_mon_death from '../data/fx/mon_death.json';
+import fx_mon_face from '../data/fx/mon_face.json';
+import fx_mon_face_warn from '../data/fx/mon_face_warn.json';
 import fx_mon_hit from '../data/fx/mon_hit.json';
 import fx_mon_strike from '../data/fx/mon_strike.json';
 import fx_mon_warn from '../data/fx/mon_warn.json';
@@ -705,6 +707,8 @@ export const MON_FX_TIMELINES = [
   fx_mon_boom_line,
   fx_mon_cast,
   fx_mon_death,
+  fx_mon_face,
+  fx_mon_face_warn,
   fx_mon_hit,
   fx_mon_strike,
   fx_mon_warn_cone,

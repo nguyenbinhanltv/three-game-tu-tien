@@ -356,6 +356,8 @@ export interface MonsterAi {
   reflect?: MonsterReflect;
   summon?: MonsterSummon;
   reveal?: MonsterReveal;
+  /** Hai mặt Âm/Dương (TN-3, Phủ Chủ trong Giới Trì): xem `MonsterFaces`. */
+  faces?: MonsterFaces;
   /** Neo (DV-2 đợt 4: gốc khe của Thủ Khích Dực Chủ): đứng trong `r` mét quanh chỗ sinh ra thì hồi `pct` khí huyết tối đa mỗi giây; kéo ra xa thì hết. */
   anchor?: MonsterAnchor;
 }
@@ -459,6 +461,18 @@ export interface MonsterSummon {
   max: number;
   r: number;
   delay: number;
+}
+
+/**
+ * Hai mặt Âm/Dương (TN-3, boss phó bản Giới Trì). Từ lúc vào trận boss lộ mặt Dương `duong` giây (nhận đủ sát thương), rồi quay mặt Âm
+ * `am` giây (sát thương nhận nhân `take`, 0 = miễn hẳn), cứ thế lặp. Server báo trước `warn` giây trước mỗi lần lật (FX `face_warn`) và
+ * gắn cờ `MF_FACE` suốt mặt Âm (`ce` = lúc lật tiếp). Mặt theo đồng hồ server từ lúc vào trận: client chỉ vẽ.
+ */
+export interface MonsterFaces {
+  duong: number;
+  am: number;
+  warn: number;
+  take: number;
 }
 
 /**

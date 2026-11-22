@@ -64,7 +64,11 @@ export const MF_BURROW = 32;
 export const MF_REAL = 64;
 /** Thần thức soi ra thể thật: sáng vàng tới `ce`. */
 export const MF_SENSED = 128;
-export const MF_MX_MASK = MF_REFLECT | MF_WEAK | MF_BURROW | MF_REAL | MF_SENSED;
+/** Hai mặt (TN-3): boss đang quay mặt Âm, nhận sát thương theo `faces.take` (thường 0); `ce` = lúc lật sang mặt Dương. */
+export const MF_FACE = 256;
+/** Boss hai mặt đang giao chiến (cả mặt Dương lẫn Âm): `ce` = lúc lật tiếp, để client đếm ngược. */
+export const MF_FACE_T = 512;
+export const MF_MX_MASK = MF_REFLECT | MF_WEAK | MF_BURROW | MF_REAL | MF_SENSED | MF_FACE | MF_FACE_T;
 
 /** Client → server. */
 export const C = {

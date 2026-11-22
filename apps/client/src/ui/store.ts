@@ -63,6 +63,8 @@ export interface BossInfo {
   posture?: number;
   /** Ngưỡng máu (0–1) chuyển pha, vẽ thành vạch trên thanh máu. */
   marks?: number[];
+  /** Boss hai mặt (TN-3): đang quay mặt Âm (miễn sát thương) hay mặt Dương, và số giây (làm tròn lên) tới lần lật. */
+  face?: { am: boolean; left: number };
 }
 
 /** Câu thoại ngắn của boss (letterbox không khóa điều khiển). `until` theo đồng hồ client (ms). */

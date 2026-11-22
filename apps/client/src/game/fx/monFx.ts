@@ -140,6 +140,23 @@ export class MonFx {
     this.note('mon_cast', m.id);
   }
 
+  /**
+   * Boss hai mặt (TN-3, Phủ Chủ) lật mặt (`warn` = false, FX `face`) hoặc sắp lật (`warn` = true, FX `face_warn`, siết vòng trong `d` giây).
+   * `face` là mặt MỚI: chọn bảng màu `face_am`/`face_duong`. Mọi khối cao của timeline có `camFade` để không che người chơi/boss.
+   */
+  face(m: MonLike, face: 'am' | 'duong', warn: boolean): void {
+    const key = warn ? 'mon_face_warn' : 'mon_face';
+    const tl = this.tl(key);
+    if (!tl || !this.near(m.x, m.z) || !this.gap(key, m.id, 0.5)) return;
+    this.runner.startAt(tl, {
+      actor: this.actorOf(m),
+      palette: 'face_' + face,
+      tgt: null,
+      mul: Math.min(2.6, monScale(m.model.height)),
+    });
+    this.note(key, m.id);
+  }
+
   /** Quái gục: tan thành hạt. */
   death(m: MonLike): void {
     const tl = this.tl('mon_death');

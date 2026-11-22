@@ -19,6 +19,8 @@ describe('FX quái (V5)', () => {
       'mon_bolt_muzzle',
       'mon_bolt_impact',
       'mon_death',
+      'mon_face',
+      'mon_face_warn',
     ]) {
       const tl = MON_FX.get(k);
       expect(tl, k).toBeTruthy();

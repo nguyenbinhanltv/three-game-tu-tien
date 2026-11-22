@@ -8,9 +8,13 @@ import {
   burrowSpots,
   chargeEnd,
   coneGeom,
+  facePhase,
+  faceTakeMul,
   leapPos,
   lineGeom,
   MF_BURROW,
+  MF_FACE,
+  MF_FACE_T,
   MF_MX_MASK,
   MF_REAL,
   MF_REFLECT,
@@ -24,6 +28,7 @@ import {
   summonRoom,
   summonSpots,
   yawTo,
+  type FxMsg,
   type HazardGeom,
   type HazardMsg,
   type MonSkillName,
@@ -54,6 +59,12 @@ export interface MonSkillRt {
   weakUntil: number;
   /** Thần thức soi ra thể thật (E3-M) tới lúc này (ms). */
   sensedUntil: number;
+  /** Hai mặt (TN-3): lúc (ms) vào trận để tính chu kỳ (0 = chưa vào) và mặt/lượt lật đã báo. */
+  faceAt: number;
+  face: 'duong' | 'am';
+  faceTurn: number;
+  /** Lượt lật đã phát FX báo trước. */
+  faceWarned: number;
   /** id đệ tử đã gọi. */
   minions: string[];
   /** Cờ MF_* và `ce` do chiêu này giữ (sim ghép với cờ chú/choáng). */
@@ -62,7 +73,20 @@ export interface MonSkillRt {
 }
 
 export function newRt(): MonSkillRt {
-  return { next: {}, act: null, reflect: null, weakUntil: 0, sensedUntil: 0, minions: [], bits: 0, ce: 0 };
+  return {
+    next: {},
+    act: null,
+    reflect: null,
+    weakUntil: 0,
+    sensedUntil: 0,
+    faceAt: 0,
+    face: 'duong',
+    faceTurn: 0,
+    faceWarned: -1,
+    minions: [],
+    bits: 0,
+    ce: 0,
+  };
 }
 
 /** Phần của quái mà chiêu cần (MonEnt thỏa cấu trúc này). */
@@ -106,7 +130,14 @@ interface MonSkillHost {
   /** Số đệ tử còn sống trong cả room. */
   minionsAlive(): number;
   monsterDef(id: string): MonsterDef | undefined;
+  /** Phát FX (lật mặt, báo trước lật) cho cả room. */
+  fx(m: FxMsg): void;
+  /** Báo mọi người trong tầm (m) quanh quái bằng một dòng hệ thống (khóa i18n). */
+  notifyNear(m: MxMon, range: number, key: string): void;
 }
+
+/** Tầm (m) nhận dòng báo lật mặt. */
+const FACE_NOTICE_RANGE = 120;
 
 type Ender = 'charge' | 'leap' | 'burrow' | 'summon';
 
@@ -116,6 +147,45 @@ export class MonSkills {
   /** Quái đang chui đất: miễn mọi sát thương, không bị đánh trúng. */
   underground(m: MxMon): boolean {
     return m.mx.act?.k === 'burrow' && m.mx.act.phase === 0;
+  }
+
+  /**
+   * Hai mặt (TN-3): đồng hồ mặt Âm/Dương của boss theo thời gian server từ lúc vào trận. Gọi mỗi tick khi đang giao chiến (kể cả lúc vung chiêu)
+   * để cờ `MF_FACE` và FX lật/báo trước đúng giờ. Không có `faces` thì bỏ qua.
+   */
+  face(m: MxMon): void {
+    const cfg = m.rules.ai.faces;
+    if (!cfg) return;
+    const now = this.h.now();
+    const rt = m.mx;
+    if (!rt.faceAt) {
+      rt.faceAt = now;
+      rt.face = 'duong';
+      rt.faceTurn = 0;
+      rt.faceWarned = -1;
+    }
+    const ph = facePhase(cfg, rt.faceAt, now);
+    let dirty = false;
+    if (ph.turn !== rt.faceTurn) {
+      rt.faceTurn = ph.turn;
+      rt.face = ph.face;
+      dirty = true;
+      this.h.fx({ t: 'face', src: m.id, x: m.s.x, y: m.s.y, z: m.s.z, v: ph.face });
+      this.h.notifyNear(m, FACE_NOTICE_RANGE, ph.face === 'am' ? 'sys.face_am' : 'sys.face_duong');
+    }
+    if (ph.warning && rt.faceWarned !== ph.turn) {
+      rt.faceWarned = ph.turn;
+      this.h.fx({
+        t: 'face_warn',
+        src: m.id,
+        x: m.s.x,
+        y: m.s.y,
+        z: m.s.z,
+        v: ph.face === 'duong' ? 'am' : 'duong',
+        d: Math.max(0.3, ph.left),
+      });
+    }
+    if (dirty || !(rt.bits & MF_FACE_T) || (rt.face === 'am') !== ((rt.bits & MF_FACE) !== 0)) this.refresh(m, now);
   }
 
   /**
@@ -397,6 +467,13 @@ export class MonSkills {
       bits |= MF_WEAK;
       ce = Math.max(ce, rt.weakUntil);
     }
+    const fc = m.rules.ai.faces;
+    if (fc && rt.faceAt) {
+      // `MF_FACE_T`: đang trong trận hai mặt (client đếm ngược tới `ce`); `MF_FACE`: đang quay mặt Âm.
+      bits |= MF_FACE_T;
+      if (rt.face === 'am') bits |= MF_FACE;
+      ce = Math.max(ce, facePhase(fc, rt.faceAt, now).flipAt);
+    }
     if (m.def.mirror) bits |= MF_REAL;
     if (rt.sensedUntil > now) {
       bits |= MF_SENSED;
@@ -416,6 +493,13 @@ export class MonSkills {
     if (this.underground(m)) return -1;
     const ai = m.rules.ai;
     const now = this.h.now();
+    // Hai mặt: cập nhật đồng hồ trước khi tính (một đòn trúng đúng giây lật vẫn theo mặt hiện tại của server); mặt Âm nhận `take` (0 = miễn).
+    if (ai.faces) {
+      this.face(m);
+      const k = faceTakeMul(ai.faces, m.mx.face);
+      if (k <= 0) return -1;
+      dmg = Math.round(dmg * k);
+    }
     let n = dmg;
     const rf = ai.reflect;
     if (rf && p && !dot && reflectPhase(rf, m.mx.reflect, now) === 'on') {
@@ -447,6 +531,10 @@ export class MonSkills {
     rt.reflect = null;
     rt.weakUntil = 0;
     rt.sensedUntil = 0;
+    rt.faceAt = 0;
+    rt.face = 'duong';
+    rt.faceTurn = 0;
+    rt.faceWarned = -1;
     rt.next = {};
     rt.bits = 0;
     rt.ce = 0;
