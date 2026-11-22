@@ -1,7 +1,8 @@
 // Bài kiểm tra bảo mật: Cửu Kiều (TN-7). Server quyết định: client chỉ xin "vào cầu n"; không có tin "đã qua cầu", vé chỉ cấp khi đủ
 // cấp, đúng cầu kế tiếp, đứng cạnh Dẫn Kiều Nhân và cầu đã mở. Mọi tin sai/spam không được cấp vé (không có S.TRANSFER) và không làm hỏng server.
+import { Client } from 'colyseus.js';
 import { C, S } from '@dtl/shared';
-import { W, check, health, join, type Ctx } from './lib';
+import { WS, W, check, health, join, type Ctx } from './lib';
 
 export async function runKieu(_ctx?: Ctx): Promise<void> {
   const g = await join('kt_kieu' + (Date.now() % 100000));
@@ -81,5 +82,20 @@ export async function runKieu(_ctx?: Ctx): Promise<void> {
   }
   await W(1000);
   check('spam xin cầu: server sống, không vé', xfers === 0 && (await health()), `xfers=${xfers}`);
+
+  // Vào thẳng room phòng cầu (không qua Dẫn Kiều Nhân): không vé, vé không khóa nhóm, cầu chưa có room: đều bị từ chối ở onAuth.
+  const tryJoin = async (name: string, opts: Record<string, unknown>) => {
+    try {
+      const r = await new Client(WS).joinOrCreate(name, opts);
+      await r.leave(true);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const d1 = await tryJoin('dungeon-kieu_1', { dev: 'kt_kieu_direct' });
+  const d2 = await tryJoin('dungeon-kieu_2', { dev: 'kt_kieu_direct', dgKey: 'khoa-gia' });
+  const d9 = await tryJoin('dungeon-kieu_9', { dev: 'kt_kieu_direct', dgKey: 'khoa-gia' });
+  check('vào thẳng room phòng cầu không vé: bị từ chối', !d1 && !d2 && !d9 && (await health()), `${d1}/${d2}/${d9}`);
   await g.room.leave(true);
 }

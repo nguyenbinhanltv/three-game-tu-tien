@@ -15,6 +15,12 @@ export function kieuLevelId(n: number): string {
   return `kieu_${n}`;
 }
 
+/** Số thứ tự cầu (1..9) của level phòng cầu `kieu_<n>`; null nếu không phải phòng cầu. */
+export function kieuOfLevel(levelId: string): number | null {
+  const m = /^kieu_([1-9])$/.exec(levelId);
+  return m ? Number(m[1]) : null;
+}
+
 /** Số cầu đã qua (làm sạch: số nguyên trong [0, 9]). `raw` lấy từ `meta.kieu`, có thể hỏng. */
 export function kieuCleared(raw: unknown): number {
   const n = typeof raw === 'number' && Number.isFinite(raw) ? Math.floor(raw) : 0;

@@ -1,0 +1,79 @@
+{
+  "id": "kieu_1",
+  "terrain": "cuu_kieu",
+  "spawns": [],
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1300,
+      "z": 1040
+    },
+    "exit": {
+      "x": 1300,
+      "z": 1048
+    },
+    "center": {
+      "x": 1300,
+      "z": 985
+    },
+    "minLevel": 44,
+    "returnLevel": "cuu_kieu",
+    "returnSpawn": {
+      "x": 1024,
+      "z": 1500
+    },
+    "bound": 70,
+    "private": true,
+    "lockAt": 1,
+    "maxRevives": 2,
+    "waves": [
+      {
+        "delay": 8,
+        "title": true,
+        "mons": [
+          {
+            "id": "mon_lo_thach_ve",
+            "level": 44,
+            "n": 6
+          },
+          {
+            "id": "mon_may_lang",
+            "level": 44,
+            "n": 2
+          }
+        ]
+      },
+      {
+        "title": true,
+        "mons": [
+          {
+            "id": "mon_bia_linh",
+            "level": 44,
+            "n": 4
+          },
+          {
+            "id": "mon_lo_xa",
+            "level": 44,
+            "n": 4
+          },
+          {
+            "id": "mon_may_ho",
+            "level": 44,
+            "n": 2
+          }
+        ]
+      },
+      {
+        "title": true,
+        "delay": 8,
+        "mons": [
+          {
+            "id": "boss_kieu_thu",
+            "level": 45,
+            "n": 1
+          }
+        ]
+      }
+    ]
+  }
+}
