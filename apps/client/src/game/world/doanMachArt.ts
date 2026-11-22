@@ -688,8 +688,9 @@ export class DoanMachArt {
   }
 
   /** Mỗi khung: lá phong bám theo camera. */
-  update(cam: THREE.Vector3): void {
-    this.leaves?.update(cam, heightAt(cam.x, cam.z));
+  update(cam: THREE.Vector3, iso = false): void {
+    // Camera chéo: hộp lá bám theo điểm nhìn (người), cao ≤ 5 m, lá không ở sát ống kính.
+    this.leaves?.update(cam, heightAt(cam.x, cam.z), iso ? 0.2 : 1);
   }
 
   dispose(): void {
