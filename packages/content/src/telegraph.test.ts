@@ -34,7 +34,7 @@ function* moves(): Generator<{ mon: string; key: string; v: Record<string, numbe
 describe('vòng cảnh báo đủ thời gian né', () => {
   it('mọi đòn có vạch báo nạp ≥ khung né + phản xạ', () => {
     const bad = [...moves()]
-      .filter((x) => !NO_TELEGRAPH.has(x.key.replace(/^p\d+\./, '')) && !ALLOWED.has(`${x.mon}.${x.key}`) && x.v.delay < MIN_DELAY)
+      .filter((x) => !NO_TELEGRAPH.has(x.key.replace(/^p\d+\./, '')) && !ALLOWED.has(`${x.mon}.${x.key}`) && (x.v.delay ?? 0) < MIN_DELAY)
       .map((x) => `${x.mon}.${x.key}=${x.v.delay}`);
     expect(bad).toEqual([]);
   });
