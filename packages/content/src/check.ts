@@ -1228,6 +1228,15 @@ for (const q of QUESTS) {
   if (!NPC.has(q.giver)) err(`quest ${q.id}: giver không tồn tại`);
   if (!NPC.has(q.turnin)) err(`quest ${q.id}: turnin không tồn tại`);
   if (q.requires && !QUEST.has(q.requires)) err(`quest ${q.id}: requires không tồn tại ${q.requires}`);
+  if (q.path) {
+    // Nhánh Hướng tu: hướng phải có thật, nhiệm vụ không được nằm trên đường chính duy nhất của chương (người hướng khác sẽ kẹt).
+    if (!PATHS.some((p) => p.id === q.path)) err(`quest ${q.id}: path ${q.path} không phải hướng tu`);
+    const dep = q.requires ? QUEST.get(q.requires) : undefined;
+    if (dep && dep.path && dep.path !== q.path) err(`quest ${q.id}: requires nhiệm vụ của hướng khác (${dep.path})`);
+    for (const o of q.objectives) if (o.type === 'breakthrough') err(`quest ${q.id}: nhánh hướng không dùng mục tiêu breakthrough`);
+  }
+  for (const q2 of QUESTS)
+    if (q2.requires === q.id && !q2.path && q.path) err(`quest ${q2.id}: requires nhiệm vụ nhánh hướng ${q.id}, người hướng khác sẽ kẹt`);
   for (const o of q.objectives) {
     const pend =
       !!o.target &&
