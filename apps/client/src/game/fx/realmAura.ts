@@ -20,6 +20,8 @@ import { G } from '../core/geo';
 import { groundAt } from '../../base/levelCtx';
 import type { CharacterView, SkillEvent } from '../character/view';
 import { OTHERS_FX_DIST } from './fxBudget';
+import { FLAGS } from '../../base/flags';
+import { realmSuppressed } from './pathAuraRules';
 import type { Vfx } from './vfx';
 import {
   AURA_COMBAT_SEC,
@@ -54,7 +56,7 @@ import {
 } from './realmAuraRules';
 
 /** Người chơi như hào quang cần đọc (khớp `PlayerVis`). */
-interface AuraActor {
+export interface AuraActor {
   sid: string;
   yaw: number;
   fl: number;
@@ -68,7 +70,7 @@ interface AuraActor {
   giant?: number;
 }
 
-interface RealmAuraEnv {
+export interface RealmAuraEnv {
   players(): Iterable<AuraActor>;
   mySid(): string;
   camera(): THREE.Camera;
@@ -261,6 +263,8 @@ export class RealmAuraFx {
         const level = this.allowed.get(a.sid);
         if (stage === 0 || !level || level === 'none') continue;
         if (cothanAura(a.mt, a.giant, this.env.mode()).hidden) continue;
+        // Đao tu / Cổ tu / Cấm chế sư có lớp hào quang riêng (pathAura.ts) thay cho hào quang cảnh giới: không vẽ chồng hai hệ.
+        if (realmSuppressed(a.mt, FLAGS.pathAura)) continue;
         const caps = auraCaps(tier, a.sid === this.env.mySid());
         if (!caps.main) continue;
         seen.add(a.sid);
