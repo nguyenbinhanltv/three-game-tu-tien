@@ -33,24 +33,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_c",
-   "t": -0.25,
-   "dur": 0.08750000000000001,
+   "shape": "bolt",
+   "t": -0.28,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
     0.9,
     0.9,
-    10
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "core",
    "alpha": 0.85,
    "camFade": true,
@@ -59,24 +63,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_c",
-   "t": -0.25,
-   "dur": 0.08750000000000001,
+   "shape": "bolt",
+   "t": -0.28,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
     0.558,
     0.558,
-    10
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "body",
    "alpha": 1.0,
    "camFade": true,
@@ -85,24 +93,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_c",
-   "t": -0.25,
-   "dur": 0.08750000000000001,
+   "shape": "bolt",
+   "t": -0.28,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
     0.27,
     0.27,
-    10
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "rim",
    "alpha": 1.0,
    "camFade": true,
@@ -111,24 +123,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt",
-   "t": -0.18,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_b",
+   "t": -0.22,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    1.0,
-    1.0,
-    10
+    0.9,
+    0.9,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "core",
    "alpha": 0.85,
    "camFade": true,
@@ -137,24 +153,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt",
-   "t": -0.18,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_b",
+   "t": -0.22,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    0.62,
-    0.62,
-    10
+    0.558,
+    0.558,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "body",
    "alpha": 1.0,
    "camFade": true,
@@ -163,24 +183,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt",
-   "t": -0.18,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_b",
+   "t": -0.22,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    0.3,
-    0.3,
-    10
+    0.27,
+    0.27,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "rim",
    "alpha": 1.0,
    "camFade": true,
@@ -189,24 +213,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_b",
-   "t": -0.11,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_c",
+   "t": -0.16,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    1.1,
-    1.1,
-    10
+    0.9,
+    0.9,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "core",
    "alpha": 0.85,
    "camFade": true,
@@ -215,24 +243,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_b",
-   "t": -0.11,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_c",
+   "t": -0.16,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    0.682,
-    0.682,
-    10
+    0.558,
+    0.558,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "body",
    "alpha": 1.0,
    "camFade": true,
@@ -241,24 +273,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_b",
-   "t": -0.11,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_c",
+   "t": -0.16,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    0.33,
-    0.33,
-    10
+    0.27,
+    0.27,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "rim",
    "alpha": 1.0,
    "camFade": true,
@@ -267,24 +303,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_c",
-   "t": -0.04,
-   "dur": 0.08750000000000001,
+   "shape": "bolt",
+   "t": -0.1,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
     0.9,
     0.9,
-    10
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "core",
    "alpha": 0.85,
    "camFade": true,
@@ -293,24 +333,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_c",
-   "t": -0.04,
-   "dur": 0.08750000000000001,
+   "shape": "bolt",
+   "t": -0.1,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
     0.558,
     0.558,
-    10
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "body",
    "alpha": 1.0,
    "camFade": true,
@@ -319,24 +363,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_c",
-   "t": -0.04,
-   "dur": 0.08750000000000001,
+   "shape": "bolt",
+   "t": -0.1,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
     0.27,
     0.27,
-    10
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "rim",
    "alpha": 1.0,
    "camFade": true,
@@ -345,24 +393,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt",
-   "t": 0.03,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_b",
+   "t": -0.04,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    1.0,
-    1.0,
-    10
+    0.9,
+    0.9,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "core",
    "alpha": 0.85,
    "camFade": true,
@@ -371,24 +423,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt",
-   "t": 0.03,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_b",
+   "t": -0.04,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    0.62,
-    0.62,
-    10
+    0.558,
+    0.558,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "body",
    "alpha": 1.0,
    "camFade": true,
@@ -397,24 +453,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt",
-   "t": 0.03,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_b",
+   "t": -0.04,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    0.3,
-    0.3,
-    10
+    0.27,
+    0.27,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "rim",
    "alpha": 1.0,
    "camFade": true,
@@ -423,24 +483,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_b",
-   "t": 0.1,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_c",
+   "t": 0.02,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    1.1,
-    1.1,
-    10
+    0.9,
+    0.9,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "core",
    "alpha": 0.85,
    "camFade": true,
@@ -449,24 +513,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_b",
-   "t": 0.1,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_c",
+   "t": 0.02,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    0.682,
-    0.682,
-    10
+    0.558,
+    0.558,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "body",
    "alpha": 1.0,
    "camFade": true,
@@ -475,24 +543,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_b",
-   "t": 0.1,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_c",
+   "t": 0.02,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    0.33,
-    0.33,
-    10
+    0.27,
+    0.27,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "rim",
    "alpha": 1.0,
    "camFade": true,
@@ -501,24 +573,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_c",
-   "t": 0.17,
-   "dur": 0.08750000000000001,
+   "shape": "bolt",
+   "t": 0.08,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
     0.9,
     0.9,
-    10
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "core",
    "alpha": 0.85,
    "camFade": true,
@@ -527,24 +603,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_c",
-   "t": 0.17,
-   "dur": 0.08750000000000001,
+   "shape": "bolt",
+   "t": 0.08,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
     0.558,
     0.558,
-    10
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "body",
    "alpha": 1.0,
    "camFade": true,
@@ -553,24 +633,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_c",
-   "t": 0.17,
-   "dur": 0.08750000000000001,
+   "shape": "bolt",
+   "t": 0.08,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
     0.27,
     0.27,
-    10
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "rim",
    "alpha": 1.0,
    "camFade": true,
@@ -579,24 +663,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt",
-   "t": 0.24,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_b",
+   "t": 0.14,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    1.0,
-    1.0,
-    10
+    0.9,
+    0.9,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "core",
    "alpha": 0.85,
    "camFade": true,
@@ -605,24 +693,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt",
-   "t": 0.24,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_b",
+   "t": 0.14,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    0.62,
-    0.62,
-    10
+    0.558,
+    0.558,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "body",
    "alpha": 1.0,
    "camFade": true,
@@ -631,24 +723,28 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt",
-   "t": 0.24,
-   "dur": 0.08750000000000001,
+   "shape": "bolt_b",
+   "t": 0.14,
+   "dur": 0.11,
    "at": "self",
    "offset": [
     0,
-    1.0,
-    0.5
+    0.0,
+    0.4
    ],
    "scale": [
-    0.3,
-    0.3,
-    10
+    0.27,
+    0.27,
+    5.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
+   "move": {
+    "to": "target",
+    "ease": "linear"
+   },
    "tone": "rim",
    "alpha": 1.0,
    "camFade": true,
@@ -658,25 +754,25 @@
   {
    "type": "mesh",
    "shape": "bolt",
-   "t": -0.1,
+   "t": -0.08,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
     0.0,
     0.0,
-    3.0
+    0.0
    ],
    "scale": [
-    0.4464000000000001,
-    0.4464000000000001,
-    6.0
+    1.08,
+    1.08,
+    9.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
-   "tone": "body",
-   "alpha": 1.0,
+   "tone": "core",
+   "alpha": 0.85,
    "camFade": true,
    "tier": 1,
    "seed": 60,
@@ -689,24 +785,24 @@
   {
    "type": "mesh",
    "shape": "bolt",
-   "t": -0.1,
+   "t": -0.08,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
     0.0,
     0.0,
-    3.0
+    0.0
    ],
    "scale": [
-    0.21600000000000003,
-    0.21600000000000003,
-    6.0
+    0.6696000000000001,
+    0.6696000000000001,
+    9.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "alpha": 1.0,
    "camFade": true,
    "tier": 0,
@@ -719,26 +815,57 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_b",
-   "t": -0.04,
+   "shape": "bolt",
+   "t": -0.08,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
     0.0,
     0.0,
-    3.0
+    0.0
    ],
    "scale": [
-    0.496,
-    0.496,
-    6.0
+    0.324,
+    0.324,
+    9.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
-   "tone": "body",
+   "tone": "rim",
    "alpha": 1.0,
+   "camFade": true,
+   "tier": 0,
+   "seed": 62,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "bolt_b",
+   "t": -0.02,
+   "dur": 0.075,
+   "at": "target",
+   "offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.2,
+    1.2,
+    9.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
+   "tone": "core",
+   "alpha": 0.85,
    "camFade": true,
    "tier": 1,
    "seed": 70,
@@ -751,24 +878,24 @@
   {
    "type": "mesh",
    "shape": "bolt_b",
-   "t": -0.04,
+   "t": -0.02,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
     0.0,
     0.0,
-    3.0
+    0.0
    ],
    "scale": [
-    0.24,
-    0.24,
-    6.0
+    0.744,
+    0.744,
+    9.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "alpha": 1.0,
    "camFade": true,
    "tier": 0,
@@ -781,26 +908,57 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt_c",
-   "t": 0.02,
+   "shape": "bolt_b",
+   "t": -0.02,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
     0.0,
     0.0,
-    3.0
+    0.0
    ],
    "scale": [
-    0.5456000000000001,
-    0.5456000000000001,
-    6.0
+    0.36,
+    0.36,
+    9.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
-   "tone": "body",
+   "tone": "rim",
    "alpha": 1.0,
+   "camFade": true,
+   "tier": 0,
+   "seed": 72,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "bolt_c",
+   "t": 0.04,
+   "dur": 0.075,
+   "at": "target",
+   "offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.32,
+    1.32,
+    9.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
+   "tone": "core",
+   "alpha": 0.85,
    "camFade": true,
    "tier": 1,
    "seed": 80,
@@ -813,24 +971,24 @@
   {
    "type": "mesh",
    "shape": "bolt_c",
-   "t": 0.02,
+   "t": 0.04,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
     0.0,
     0.0,
-    3.0
+    0.0
    ],
    "scale": [
-    0.264,
-    0.264,
-    6.0
+    0.8184,
+    0.8184,
+    9.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "alpha": 1.0,
    "camFade": true,
    "tier": 0,
@@ -843,26 +1001,57 @@
   },
   {
    "type": "mesh",
-   "shape": "bolt",
-   "t": 0.08,
+   "shape": "bolt_c",
+   "t": 0.04,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
     0.0,
     0.0,
-    3.0
+    0.0
    ],
    "scale": [
-    0.4464000000000001,
-    0.4464000000000001,
-    6.0
+    0.396,
+    0.396,
+    9.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
-   "tone": "body",
+   "tone": "rim",
    "alpha": 1.0,
+   "camFade": true,
+   "tier": 0,
+   "seed": 82,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "bolt",
+   "t": 0.1,
+   "dur": 0.075,
+   "at": "target",
+   "offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.08,
+    1.08,
+    9.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
+   "tone": "core",
+   "alpha": 0.85,
    "camFade": true,
    "tier": 1,
    "seed": 90,
@@ -875,24 +1064,24 @@
   {
    "type": "mesh",
    "shape": "bolt",
-   "t": 0.08,
+   "t": 0.1,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
     0.0,
     0.0,
-    3.0
+    0.0
    ],
    "scale": [
-    0.21600000000000003,
-    0.21600000000000003,
-    6.0
+    0.6696000000000001,
+    0.6696000000000001,
+    9.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
    "ragged": 0.0,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "alpha": 1.0,
    "camFade": true,
    "tier": 0,
@@ -904,73 +1093,237 @@
    ]
   },
   {
-   "type": "decal",
-   "tex": "strike",
-   "t": 0.0,
-   "r": 2.8,
-   "dur": 1.8,
-   "at": "self",
+   "type": "mesh",
+   "shape": "bolt",
+   "t": 0.1,
+   "dur": 0.075,
+   "at": "target",
    "offset": [
-    0,
-    -1.1,
-    3.0
+    0.0,
+    0.0,
+    0.0
    ],
-   "grow": 0.1,
-   "tone": "accent",
-   "alpha": 1,
-   "tier": 0
+   "scale": [
+    0.324,
+    0.324,
+    9.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
+   "tone": "rim",
+   "alpha": 1.0,
+   "camFade": true,
+   "tier": 0,
+   "seed": 92,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
   },
   {
    "type": "mesh",
-   "shape": "flip",
-   "t": 0.02,
-   "dur": 1.0,
-   "flip": "dust_kick",
-   "scale": 2.2,
-   "billboard": true,
-   "at": "self",
+   "shape": "bolt_b",
+   "t": 0.16,
+   "dur": 0.075,
+   "at": "target",
    "offset": [
-    0,
-    -0.7,
-    3.0
+    0.0,
+    0.0,
+    0.0
    ],
-   "alpha": 0.55,
+   "scale": [
+    1.2,
+    1.2,
+    9.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
    "tone": "core",
-   "tier": 1
+   "alpha": 0.85,
+   "camFade": true,
+   "tier": 1,
+   "seed": 100,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
   },
   {
-   "type": "particles",
-   "kind": "spark",
-   "t": 0.03,
-   "n": 26,
-   "speed": 6,
-   "spread": 1,
-   "life": 0.5,
-   "size": 0.08,
-   "at": "self",
+   "type": "mesh",
+   "shape": "bolt_b",
+   "t": 0.16,
+   "dur": 0.075,
+   "at": "target",
    "offset": [
-    0,
-    -0.3,
-    3.0
+    0.0,
+    0.0,
+    0.0
    ],
+   "scale": [
+    0.744,
+    0.744,
+    9.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
+   "tone": "body",
+   "alpha": 1.0,
+   "camFade": true,
+   "tier": 0,
+   "seed": 101,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "bolt_b",
+   "t": 0.16,
+   "dur": 0.075,
+   "at": "target",
+   "offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    0.36,
+    0.36,
+    9.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
    "tone": "rim",
-   "tier": 1
+   "alpha": 1.0,
+   "camFade": true,
+   "tier": 0,
+   "seed": 102,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
   },
   {
    "type": "mesh",
    "shape": "bolt_c",
-   "t": -0.05,
+   "t": 0.22,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
     0.0,
     0.0,
-    6.0
+    0.0
+   ],
+   "scale": [
+    1.32,
+    1.32,
+    9.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
+   "tone": "core",
+   "alpha": 0.85,
+   "camFade": true,
+   "tier": 1,
+   "seed": 110,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "bolt_c",
+   "t": 0.22,
+   "dur": 0.075,
+   "at": "target",
+   "offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    0.8184,
+    0.8184,
+    9.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
+   "tone": "body",
+   "alpha": 1.0,
+   "camFade": true,
+   "tier": 0,
+   "seed": 111,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "bolt_c",
+   "t": 0.22,
+   "dur": 0.075,
+   "at": "target",
+   "offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    0.396,
+    0.396,
+    9.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
+   "tone": "rim",
+   "alpha": 1.0,
+   "camFade": true,
+   "tier": 0,
+   "seed": 112,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "bolt_c",
+   "t": -0.04,
+   "dur": 0.075,
+   "at": "target",
+   "offset": [
+    1.6,
+    0.0,
+    0.8
    ],
    "scale": [
     0.4464000000000001,
     0.4464000000000001,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -990,18 +1343,18 @@
   {
    "type": "mesh",
    "shape": "bolt_c",
-   "t": -0.05,
+   "t": -0.04,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    1.6,
     0.0,
-    0.0,
-    6.0
+    0.8
    ],
    "scale": [
     0.21600000000000003,
     0.21600000000000003,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1021,18 +1374,18 @@
   {
    "type": "mesh",
    "shape": "bolt",
-   "t": 0.01,
+   "t": 0.02,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    1.6,
     0.0,
-    0.0,
-    6.0
+    0.8
    ],
    "scale": [
     0.496,
     0.496,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1052,18 +1405,18 @@
   {
    "type": "mesh",
    "shape": "bolt",
-   "t": 0.01,
+   "t": 0.02,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    1.6,
     0.0,
-    0.0,
-    6.0
+    0.8
    ],
    "scale": [
     0.24,
     0.24,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1083,18 +1436,18 @@
   {
    "type": "mesh",
    "shape": "bolt_b",
-   "t": 0.07,
+   "t": 0.08,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    1.6,
     0.0,
-    0.0,
-    6.0
+    0.8
    ],
    "scale": [
     0.5456000000000001,
     0.5456000000000001,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1114,18 +1467,18 @@
   {
    "type": "mesh",
    "shape": "bolt_b",
-   "t": 0.07,
+   "t": 0.08,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    1.6,
     0.0,
-    0.0,
-    6.0
+    0.8
    ],
    "scale": [
     0.264,
     0.264,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1145,18 +1498,18 @@
   {
    "type": "mesh",
    "shape": "bolt_c",
-   "t": 0.13,
+   "t": 0.14,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    1.6,
     0.0,
-    0.0,
-    6.0
+    0.8
    ],
    "scale": [
     0.4464000000000001,
     0.4464000000000001,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1176,18 +1529,18 @@
   {
    "type": "mesh",
    "shape": "bolt_c",
-   "t": 0.13,
+   "t": 0.14,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    1.6,
     0.0,
-    0.0,
-    6.0
+    0.8
    ],
    "scale": [
     0.21600000000000003,
     0.21600000000000003,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1205,73 +1558,82 @@
    ]
   },
   {
-   "type": "decal",
-   "tex": "strike",
-   "t": 0.05,
-   "r": 2.8,
-   "dur": 1.8,
-   "at": "self",
+   "type": "mesh",
+   "shape": "bolt",
+   "t": 0.2,
+   "dur": 0.075,
+   "at": "target",
    "offset": [
-    0,
-    -1.1,
-    6.0
+    1.6,
+    0.0,
+    0.8
    ],
-   "grow": 0.1,
-   "tone": "accent",
-   "alpha": 1,
-   "tier": 1
+   "scale": [
+    0.496,
+    0.496,
+    7.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
+   "tone": "body",
+   "alpha": 1.0,
+   "camFade": true,
+   "tier": 1,
+   "seed": 105,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
   },
   {
    "type": "mesh",
-   "shape": "flip",
-   "t": 0.07,
-   "dur": 1.0,
-   "flip": "dust_kick",
-   "scale": 2.2,
-   "billboard": true,
-   "at": "self",
+   "shape": "bolt",
+   "t": 0.2,
+   "dur": 0.075,
+   "at": "target",
    "offset": [
-    0,
-    -0.7,
-    6.0
+    1.6,
+    0.0,
+    0.8
    ],
-   "alpha": 0.55,
-   "tone": "core",
-   "tier": 1
-  },
-  {
-   "type": "particles",
-   "kind": "spark",
-   "t": 0.08,
-   "n": 26,
-   "speed": 6,
-   "spread": 1,
-   "life": 0.5,
-   "size": 0.08,
-   "at": "self",
-   "offset": [
-    0,
-    -0.3,
-    6.0
+   "scale": [
+    0.24,
+    0.24,
+    7.0
    ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
    "tone": "rim",
-   "tier": 1
+   "alpha": 1.0,
+   "camFade": true,
+   "tier": 0,
+   "seed": 106,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
   },
   {
    "type": "mesh",
    "shape": "bolt_b",
    "t": 0.0,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    -1.6,
     0.0,
-    0.0,
-    9.0
+    -0.8
    ],
    "scale": [
     0.4464000000000001,
     0.4464000000000001,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1293,16 +1655,16 @@
    "shape": "bolt_b",
    "t": 0.0,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    -1.6,
     0.0,
-    0.0,
-    9.0
+    -0.8
    ],
    "scale": [
     0.21600000000000003,
     0.21600000000000003,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1324,16 +1686,16 @@
    "shape": "bolt_c",
    "t": 0.06,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    -1.6,
     0.0,
-    0.0,
-    9.0
+    -0.8
    ],
    "scale": [
     0.496,
     0.496,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1355,16 +1717,16 @@
    "shape": "bolt_c",
    "t": 0.06,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    -1.6,
     0.0,
-    0.0,
-    9.0
+    -0.8
    ],
    "scale": [
     0.24,
     0.24,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1386,16 +1748,16 @@
    "shape": "bolt",
    "t": 0.12,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    -1.6,
     0.0,
-    0.0,
-    9.0
+    -0.8
    ],
    "scale": [
     0.5456000000000001,
     0.5456000000000001,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1417,16 +1779,16 @@
    "shape": "bolt",
    "t": 0.12,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    -1.6,
     0.0,
-    0.0,
-    9.0
+    -0.8
    ],
    "scale": [
     0.264,
     0.264,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1448,16 +1810,16 @@
    "shape": "bolt_b",
    "t": 0.18,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    -1.6,
     0.0,
-    0.0,
-    9.0
+    -0.8
    ],
    "scale": [
     0.4464000000000001,
     0.4464000000000001,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1479,16 +1841,16 @@
    "shape": "bolt_b",
    "t": 0.18,
    "dur": 0.075,
-   "at": "self",
+   "at": "target",
    "offset": [
+    -1.6,
     0.0,
-    0.0,
-    9.0
+    -0.8
    ],
    "scale": [
     0.21600000000000003,
     0.21600000000000003,
-    6.0
+    7.0
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -1506,57 +1868,66 @@
    ]
   },
   {
-   "type": "decal",
-   "tex": "strike",
-   "t": 0.1,
-   "r": 2.8,
-   "dur": 1.8,
-   "at": "self",
+   "type": "mesh",
+   "shape": "bolt_c",
+   "t": 0.24,
+   "dur": 0.075,
+   "at": "target",
    "offset": [
-    0,
-    -1.1,
-    9.0
+    -1.6,
+    0.0,
+    -0.8
    ],
-   "grow": 0.1,
-   "tone": "accent",
-   "alpha": 1,
-   "tier": 1
+   "scale": [
+    0.496,
+    0.496,
+    7.0
+   ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
+   "tone": "body",
+   "alpha": 1.0,
+   "camFade": true,
+   "tier": 1,
+   "seed": 110,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
   },
   {
    "type": "mesh",
-   "shape": "flip",
-   "t": 0.12,
-   "dur": 1.0,
-   "flip": "dust_kick",
-   "scale": 2.2,
-   "billboard": true,
-   "at": "self",
+   "shape": "bolt_c",
+   "t": 0.24,
+   "dur": 0.075,
+   "at": "target",
    "offset": [
-    0,
-    -0.7,
-    9.0
+    -1.6,
+    0.0,
+    -0.8
    ],
-   "alpha": 0.55,
-   "tone": "core",
-   "tier": 1
-  },
-  {
-   "type": "particles",
-   "kind": "spark",
-   "t": 0.13,
-   "n": 26,
-   "speed": 6,
-   "spread": 1,
-   "life": 0.5,
-   "size": 0.08,
-   "at": "self",
-   "offset": [
-    0,
-    -0.3,
-    9.0
+   "scale": [
+    0.24,
+    0.24,
+    7.0
    ],
+   "sweep": 0,
+   "erodeFrom": 0.7,
+   "ragged": 0.0,
+   "shadow": false,
    "tone": "rim",
-   "tier": 1
+   "alpha": 1.0,
+   "camFade": true,
+   "tier": 0,
+   "seed": 111,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
   },
   {
    "type": "soundAt",
@@ -1570,68 +1941,177 @@
    "type": "soundAt",
    "t": 0.0,
    "id": "impact",
-   "gain": 0.65,
+   "gain": 0.7,
    "rate": 1.0,
    "jitter": 0.05
   },
   {
    "type": "mesh",
-   "shape": "rift_line",
+   "shape": "flip",
    "t": 0.0,
-   "dur": 1.4,
-   "at": "self",
+   "dur": 0.6,
+   "flip": "spark_burst",
+   "scale": 3.6,
+   "billboard": true,
+   "at": "target",
    "offset": [
     0,
-    -1.0,
-    0.4
+    0.9,
+    0
+   ],
+   "alpha": 0.95,
+   "tone": "accent",
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.12,
+   "at": "target",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "scale": 2.8,
+   "billboard": true,
+   "sweep": 0,
+   "tone": "rim",
+   "cross": true,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.8,
+   "at": "ground",
+   "offset": [
+    0,
+    0.0,
+    0
    ],
    "scale": [
-    1.6,
-    1,
-    10
+    0.6,
+    0.6,
+    0.6
    ],
+   "scaleTo": [
+    3.8,
+    3.8,
+    3.8
+   ],
+   "alpha": 0.9,
+   "sweep": 0.3,
+   "erodeFrom": 0.3,
+   "shadow": false,
+   "tone": "body",
+   "tier": 1,
+   "seed": 3,
+   "camFade": false
+  },
+  {
+   "type": "mesh",
+   "shape": "crack_radial",
+   "t": 0.02,
+   "dur": 1.4,
+   "at": "ground",
+   "scale": 3.2,
    "alpha": 1,
-   "sweep": 0.55,
-   "erodeFrom": 0.75,
+   "sweep": 0.2,
+   "erodeFrom": 0.7,
    "shadow": false,
    "tone": "core",
    "tier": 0,
-   "seed": 3
+   "seed": 2
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.03,
+   "dur": 1.0,
+   "flip": "dust_kick",
+   "scale": 2.6,
+   "billboard": true,
+   "at": "ground",
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "alpha": 0.6,
+   "tone": "core",
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 70,
+   "speed": 9,
+   "spread": 1,
+   "life": 0.5,
+   "size": 0.09,
+   "at": "target",
+   "offset": [
+    0,
+    1.0,
+    0
+   ],
+   "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "strike",
+   "t": 0.0,
+   "r": 3.4,
+   "dur": 1.8,
+   "at": "target",
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "grow": 0.1,
+   "tone": "accent",
+   "alpha": 1,
+   "tier": 0
   },
   {
    "type": "decal",
    "tex": "scorch",
-   "t": 0.04,
-   "r": 3.0,
-   "dur": 2.8,
-   "at": "self",
+   "t": 0.02,
+   "r": 2.8,
+   "dur": 3.0,
+   "at": "ground",
    "offset": [
     0,
-    -1.1,
-    5.0
+    0.0,
+    0
    ],
-   "grow": 0.1,
+   "grow": 0.08,
    "tone": "shadow",
    "alpha": 0.85,
    "tier": 0
   },
   {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.1,
-   "dur": 0.6,
-   "flip": "spark_burst",
-   "scale": 3.0,
-   "billboard": true,
-   "at": "self",
+   "type": "decal",
+   "tex": "crack",
+   "t": 0.02,
+   "r": 2.94,
+   "dur": 2.6,
+   "at": "ground",
    "offset": [
     0,
     0.0,
-    9.5
+    0
    ],
-   "alpha": 0.95,
-   "tone": "accent",
-   "tier": 0
+   "grow": 0.1,
+   "tone": "core",
+   "alpha": 1,
+   "tier": 1
   },
   {
    "type": "hitstop",
@@ -1641,12 +2121,12 @@
   {
    "type": "shake",
    "t": 0.0,
-   "level": 0.3
+   "level": 0.32
   },
   {
    "type": "flash",
    "t": 0.0,
-   "amount": 0.16,
+   "amount": 0.2,
    "tier": 0
   },
   {

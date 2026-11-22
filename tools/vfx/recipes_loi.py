@@ -130,26 +130,34 @@ R['skl_cuu_tieu_thien_loi'] = cuu_tieu
 
 # --------------------------------------------------------------------------------------------------------------------------------
 def phich_lich():
-    """Phích Lịch Tuyến (nhánh 16, hit 0,4): một tia sét dài 10 m nối từ người ra phía trước, chập chờn zigzag rẽ nhánh; ba cột sét đánh xuống dọc đường."""
-    L = 10
+    """Phích Lịch Tuyến (nhánh 16, hit 0,4): tia sét bay từ người ra mục tiêu (neo `target`, KHÔNG neo theo hướng nhìn: chiêu đường thẳng không có
+    `tgt` thì hướng là hướng nhìn của người chơi, dễ lệch khỏi mục tiêu), chập chờn zigzag rẽ nhánh; nổ tại mục tiêu: ba cột sét + chớp + vết cháy."""
     ev = [
         parts('spark', -0.4, 20, 1.3, 1, 0.3, 0.06, at='self', offset=[0, 0.2, 0.4], inward=True, tone='rim', tier=1),
         snd(-0.4, 'cast', 0.5, 1.1),
     ]
-    ev += flicker(-0.25, 8, 0.07, 'self', [0, 1.0, 0.5], None, 1.0, L, seed=2, thin=False)
-    for i, d in enumerate([3.0, 6.0, 9.0]):
-        ev += column(-0.1 + 0.05 * i, 'self', 0.0, d, 6.0, 0.8, n=4, step=0.06, seed=60 + i * 5, thin=True)
-        ev.append(decal('strike', 0.0 + 0.05 * i, 2.8, 1.8, at='self', offset=[0, -1.1, d], grow=0.1, tone='accent', alpha=1, tier=1 if i else 0))
-        ev.append(flip('dust_kick', 0.02 + 0.05 * i, 1.0, 2.2, at='self', offset=[0, -0.7, d], alpha=0.55, tone='core', tier=1))
-        ev.append(parts('spark', 0.03 + 0.05 * i, 26, 6, 1, 0.5, 0.08, at='self', offset=[0, -0.3, d], tone='rim', tier=1))
+    # tia nối: mỗi khung là một tia ngắn bay từ người tới mục tiêu (hướng mũi theo hướng bay), luân phiên ba biến thể
+    for k in range(8):
+        for i, (tone, kk, al) in enumerate([('core', 1.0, 0.85), ('body', 0.62, 1.0), ('rim', 0.3, 1.0)]):
+            ev.append(mesh(BV[k % 3], -0.28 + k * 0.06, 0.11, at='self', offset=[0, 0.0, 0.4], scale=[0.9 * kk, 0.9 * kk, 5.0], sweep=0, erodeFrom=0.7, ragged=0.0, shadow=False,
+                           move={'to': 'target', 'ease': 'linear'}, tone=tone, alpha=al, camFade=True, tier=0 if i else 1, seed=2 + 10 * k + i))
+    # nổ tại mục tiêu: ba cột sét (một chính, hai phụ), chớp vàng, vết cháy, nứt, bụi
+    ev += column(-0.08, 'target', 0.0, 0.0, 9.0, 1.2, n=6, step=0.06, seed=60)
+    ev += column(-0.04, 'target', 1.6, 0.8, 7.0, 0.8, n=5, step=0.06, seed=65, thin=True)
+    ev += column(0.0, 'target', -1.6, -0.8, 7.0, 0.8, n=5, step=0.06, seed=70, thin=True)
     ev += [
         snd(-0.2, 'slash', 0.5, 1.3, 0.06),
-        snd(0.0, 'impact', 0.65, 1.0),
-        mesh('rift_line', 0.0, 1.4, at='self', offset=[0, -1.0, 0.4], scale=[1.6, 1, L], alpha=1, sweep=0.55, erodeFrom=0.75, shadow=False, tone='core', tier=0, seed=3),
-        decal('scorch', 0.04, 3.0, 2.8, at='self', offset=[0, -1.1, 5.0], grow=0.1, tone='shadow', alpha=0.85, tier=0),
-        flip('spark_burst', 0.1, 0.6, 3.0, at='self', offset=[0, 0.0, L - 0.5], alpha=0.95, tone='accent', tier=0),
+        snd(0.0, 'impact', 0.7, 1.0),
+        flip('spark_burst', 0.0, 0.6, 3.6, at='target', offset=[0, 0.9, 0], alpha=0.95, tone='accent', tier=0),
+        mesh('burst', 0.0, 0.12, at='target', offset=[0, 1.0, 0], scale=2.8, billboard=True, sweep=0, tone='rim', cross=True, tier=0),
+        ring_wave(0.0, 'ground', 0.6, 3.8, 0.8, tone='body', alpha=0.9, seed=3),
+        mesh('crack_radial', 0.02, 1.4, at='ground', scale=3.2, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='core', tier=0, seed=2),
+        flip('dust_kick', 0.03, 1.0, 2.6, at='ground', offset=[0, 0.5, 0], alpha=0.6, tone='core', tier=1),
+        parts('spark', 0.0, 70, 9, 1, 0.5, 0.09, at='target', offset=[0, 1.0, 0], tone='rim', tier=0),
     ]
-    ev += feel(0.0, ms=70, sh=0.3, fl=0.16, vg=0.28, fov=2.0)
+    ev += strike(0.0, 'target', 3.4, 1.8)
+    ev += dark_ground(0.02, 'ground', 2.8)
+    ev += feel(0.0, ms=70, sh=0.32, fl=0.2, vg=0.28, fov=2.0)
     return {'skill': 'skl_phich_lich', 'replaces': ['phichlich'], 'events': ev}
 
 
