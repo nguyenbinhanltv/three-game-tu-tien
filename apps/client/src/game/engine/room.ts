@@ -33,7 +33,7 @@ import {
   type CloneStateMsg,
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
-import { MONSTER, t } from '@dtl/content';
+import { MONSTER, pathOf, t } from '@dtl/content';
 import { minimapHooks } from '../../ui/minimap/model';
 import { visibleView } from '../net/aoiView';
 import { pushLog, set, useUI } from '../../ui/store';
@@ -137,7 +137,11 @@ export function bindRoom(eng: Game, room: Room): void {
     for (const k in m.em) empowered[k] = m.em[k]! + off;
     set({ cds, gcdAt: m.gcd + off, empowered });
   });
-  room.onMessage(S.METHOD, (m: MethodMsg) => set({ method: m, methodOff: Date.now() - m.now }));
+  room.onMessage(S.METHOD, (m: MethodMsg) => {
+    // Dấu ! của nhiệm vụ nhánh Hướng tu phụ thuộc hướng đang tu: dựng lại khi hướng đổi (kể cả lúc tin này tới sau S.QUESTS).
+    if (pathOf(m.method)?.id !== pathOf(useUI.getState().method?.method)?.id) eng.questMarkersDirty = true;
+    set({ method: m, methodOff: Date.now() - m.now });
+  });
   room.onMessage(S.SYS, (m: SysMsg) => onSys(eng, m));
   room.onMessage(S.FX, (m: FxMsg) => eng.onFx(m));
   room.onMessage(S.DMG, (m: DmgMsg) => onDmg(eng, m));
