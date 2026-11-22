@@ -41,6 +41,7 @@ import { type PState } from '../entities/entities';
 import { monsterPushRadius, pickPushers } from '../world/grass';
 import { postParams } from '../../render/post';
 import { updateOcclusion } from '../world/occlusion';
+import { ISO_FAR, ISO_FOV, ISO_DIST, isoCameraPos, isoLead, isoYawFor, worldToIntent } from '../camera/iso';
 import { assets } from '../core/assets';
 import { BASE_ZONE, easeZoneCam, zoneCamera } from '../camera/camZones';
 import { isHeld } from '../../input/bindings';
@@ -58,6 +59,10 @@ const loadLog = logger('load');
 const gpuLog = logger('gpu');
 const qualityLog = logger('quality');
 
+function* liveMonsters(eng: Game): Generator<{ id: string; x: number; z: number }> {
+  for (const [id, m] of eng.ents.monsters) if (m.s.st !== MS_DEAD) yield { id, x: m.x, z: m.z };
+}
+
 /** Gửi ý định dùng chiêu lên server (tự chọn mục tiêu nếu cần). Server vẫn kiểm mọi điều kiện. */
 export function fireSkill(eng: Game, i: number): void {
   const skill = eng.bar()[i];
@@ -71,6 +76,11 @@ export function fireSkill(eng: Game, i: number): void {
     return;
   }
   if (needTarget) {
+    // Camera chéo: chiêu đơn tự khóa quái gần con trỏ nhất (client chỉ chọn mục tiêu; server vẫn kiểm tầm). Không có thì rơi về tab-target.
+    if (eng.iso) {
+      const near = eng.iso.pickMonster(liveMonsters(eng));
+      if (near && near !== eng.targetId) eng.setTarget(near, 'mon');
+    }
     const cur = eng.ents.monsters.get(eng.targetId);
     if (!cur || cur.s.st === MS_DEAD) {
       const id = eng.ents.nextTarget('', eng.cur.x, eng.cur.z);
@@ -176,7 +186,7 @@ export function runFrame(eng: Game): void {
   }
 
   // Camera quay bằng phím mũi tên trái/phải.
-  if (!eng.typing()) {
+  if (!eng.typing() && !eng.iso) {
     // Camera điều khiển được hoàn toàn bằng bàn phím: ← → xoay, ↑ ↓ ngẩng/cúi, - = thu phóng.
     const k = eng.keys.held;
     const turn = eng.controls === 'turn';
@@ -344,7 +354,7 @@ function updateCamera(eng: Game, dt: number): void {
     fovKick = f.amt * Math.min(1, f.t / 0.15) * Math.max(0, Math.min(1, (f.dur - f.t) / 0.6));
     if (f.t >= f.dur) eng.fxFov = null;
   }
-  const wantFov = zc.fov + ultPunch + fovKick;
+  const wantFov = (eng.iso && !eng.cine.active && !eng.tribScene ? ISO_FOV : zc.fov) + ultPunch + fovKick;
   if (Math.abs(eng.camera.fov - wantFov) > 0.01) {
     eng.camera.fov = wantFov;
     eng.camera.updateProjectionMatrix();
@@ -357,15 +367,37 @@ function updateCamera(eng: Game, dt: number): void {
   eng.camDistCur += (want - eng.camDistCur) * Math.min(1, dt * 6);
   const pitch = Math.max(-0.45, Math.min(1.45, eng.camPitch + zc.pitchAdd + eng.camFrame.pitchAdd));
   const cp = Math.cos(pitch);
-  const tx = rp.x;
+  let tx = rp.x;
   // Kiểu FPS: nhìn qua đầu nhân vật để tâm ngắm không bị nhân vật che.
-  const ty = rp.y + (eng.controls === 'mouse' ? 2.5 : 1.6);
-  const tz = rp.z;
+  let ty = rp.y + (eng.controls === 'mouse' ? 2.5 : 1.6);
+  let tz = rp.z;
   let cx = tx + Math.sin(eng.camYaw) * cp * eng.camDistCur;
   let cy = ty + Math.sin(pitch) * eng.camDistCur;
   let cz = tz + Math.cos(eng.camYaw) * cp * eng.camDistCur;
+  const iso = eng.iso && !eng.cine.active && !eng.tribScene ? eng.iso : null;
+  if (iso) {
+    // Camera chéo khóa góc: hướng cố định theo bản đồ, nghiêng cố định, 3 mức zoom, dẫn trước nhẹ theo con trỏ.
+    eng.camYaw = isoYawFor(levelId());
+    const ld = iso.ground ? isoLead(iso.ground.x - rp.x, iso.ground.z - rp.z) : { x: 0, z: 0 };
+    const kk = Math.min(1, dt * 3);
+    iso.lead.x += (ld.x - iso.lead.x) * kk;
+    iso.lead.z += (ld.z - iso.lead.z) * kk;
+    const wantD = ISO_DIST * (flying ? 1.35 : 1) * (1 + pull);
+    iso.distCur += (wantD - iso.distCur) * Math.min(1, dt * 6);
+    tx = rp.x + iso.lead.x;
+    ty = rp.y + 1.0;
+    tz = rp.z + iso.lead.z;
+    const p = isoCameraPos(tx, ty, tz, iso.distCur, eng.camYaw);
+    cx = p.x;
+    cy = Math.max(p.y, groundAt(p.x, p.z) + 2);
+    cz = p.z;
+    if (eng.camera.far !== ISO_FAR) {
+      eng.camera.far = ISO_FAR;
+      eng.camera.updateProjectionMatrix();
+    }
+  }
   // Không để camera chui xuống đất: kéo lại gần nhân vật.
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 5 && !iso; i++) {
     const g = groundAt(cx, cz) + 0.7;
     if (cy >= g) break;
     const k = 0.78;
@@ -392,7 +424,16 @@ function updateCamera(eng: Game, dt: number): void {
   tribFx(eng, dt);
   // Thẻ chương đang hiện cũng ẩn bảng tên (tiêu đề không đè lên tên nhân vật).
   eng.ents.tagsHidden = eng.cine.active || eng.tribScene || (get().chapter?.until ?? 0) > Date.now();
-  updateOcclusion(dt, eng.camera.position, _camFocus.set(tx, rp.y + 1.2, tz), rp.y);
+  updateOcclusion(dt, eng.camera.position, _camFocus.set(rp.x, rp.y + 1.2, rp.z), rp.y, !!iso);
+  if (iso) {
+    eng.camera.updateMatrixWorld();
+    iso.project(eng.camera, window.innerWidth, window.innerHeight, groundAt);
+    iso.updateVisuals(performance.now() / 1000);
+    // Tầm nhìn ~250 m: không vẽ cảnh xa (biển mây, đảo trời, núi nền).
+    eng.env.cloudSea.group.visible = false;
+    if (eng.lacKiemSky) eng.lacKiemSky.group.visible = false;
+    if (eng.lacKiemFar) eng.lacKiemFar.group.visible = false;
+  }
 }
 
 /** Cỏ rạp theo mình + 5 người/quái gần nhất (chỉ đọc vị trí đã nội suy của EntityManager). */
@@ -591,6 +632,16 @@ function buildInput(eng: Game): MoveInput {
     if (isHeld(k, 'down')) f |= IN_DOWN;
   }
   if (eng.wantFly) f |= IN_FLY;
+  // Đi bằng chuột phải: cùng ý định mx/mz như WASD (hướng tới đích theo trục camera). WASD hoặc cần ảo hủy đích.
+  const iso = eng.iso;
+  if (iso?.dest) {
+    if (mx !== 0 || mz !== 0 || typing || iso.arrived(eng.cur.x, eng.cur.z)) iso.dest = null;
+    else {
+      const w = worldToIntent(iso.dest.x - eng.cur.x, iso.dest.z - eng.cur.z, eng.camYaw);
+      mx = w.mx;
+      mz = w.mz;
+    }
+  }
   eng.seq++;
   return { s: eng.seq, mx, mz, yaw: eng.camYaw, f };
 }

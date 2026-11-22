@@ -22,6 +22,8 @@ const MAX_FADE = 0.78;
 const FADE_RATE = 5;
 /** Đoạn nhìn cắt hình tròn khi khoảng cách < r + PAD. */
 const PAD = 0.6;
+/** Camera chéo: tia nhìn dốc, mái/tường rộng hơn dấu chân nên nới lề để mái phủ lên nhân vật cũng mờ. */
+const PAD_ISO = 2.4;
 
 const uCam = uniform(new THREE.Vector3());
 const uFocus = uniform(new THREE.Vector3());
@@ -93,7 +95,7 @@ function segDist2(px: number, pz: number, ax: number, az: number, bx: number, bz
  * Gọi mỗi khung sau khi đặt camera. `chest`: điểm camera nhìn vào trên nhân vật; `feetY`: chân.
  * Chỉ ghi số vào uniform có sẵn, không cấp phát.
  */
-export function updateOcclusion(dt: number, cam: THREE.Vector3, chest: THREE.Vector3, feetY: number): void {
+export function updateOcclusion(dt: number, cam: THREE.Vector3, chest: THREE.Vector3, feetY: number, iso = false): void {
   uCam.value.copy(cam);
   uFocus.value.copy(chest);
   uFeetY.value = feetY;
@@ -103,7 +105,7 @@ export function updateOcclusion(dt: number, cam: THREE.Vector3, chest: THREE.Vec
   const k = dt * FADE_RATE;
   for (let i = 0; i < OCCLUDERS.length; i++) {
     const o = OCCLUDERS[i]!;
-    const rr = o.r + PAD;
+    const rr = o.r + (iso ? PAD_ISO : PAD);
     const hit = segDist2(o.x, o.z, cam.x, cam.z, chest.x, chest.z) < rr * rr;
     fade[i] = hit ? Math.min(1, fade[i]! + k) : Math.max(0, fade[i]! - k);
   }
