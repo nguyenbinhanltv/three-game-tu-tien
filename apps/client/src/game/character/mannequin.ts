@@ -2,11 +2,34 @@
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
 import * as THREE from 'three/webgpu';
-import { attribute, dot, float, fract, mix, screenCoordinate, texture, vec2, vec3, vec4 } from 'three/tsl';
+import {
+  attribute,
+  cameraViewMatrix,
+  diffuseColor,
+  dot,
+  float,
+  fract,
+  max,
+  mix,
+  normalView,
+  normalize,
+  positionViewDirection,
+  pow,
+  saturate,
+  screenCoordinate,
+  smoothstep,
+  sqrt,
+  texture,
+  transformDirection,
+  vec2,
+  vec3,
+  vec4,
+} from 'three/tsl';
+import { skyParams } from '../../render/sky';
 import { ClothRig } from './thienY';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
-import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/shared';
+import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, silkTier, v3SilkOf, type MonsterDef, type V3Silk } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assetKey, assets } from '../core/assets';
 import { HitReact, type HitOpts } from '../combat/hitreact';
 import { adoptGltfMaterials, cloneWorldMaterial } from '../../render/materials/world';
@@ -264,7 +287,40 @@ function tuneTripoMaterial(m: THREE.MeshStandardNodeMaterial): void {
  * - Tấm vải mỏng hai mặt. `?v3side=front|double` ghi đè mặt vẽ để so sánh.
  */
 export const VEIL_LOOK = { gain: 1.4, lift: 0.07, sat: 0.85, metalness: 0.0 } as const;
-function applyVeilAlpha(root: THREE.Object3D): void {
+
+/**
+ * Độ bóng lụa cho voan (`V3Silk`, dữ liệu ở `packages/shared/src/v3silk.ts`): ánh viền fresnel pha màu vải ĐÃ NHUỘM (đọc `diffuseColor` sau `colorNode`,
+ * nên nhuộm 3 kênh tự theo), vệt dị hướng Kajiya-Kay (sợi chạy dọc, +Y theo khung nhìn) theo hướng nắng, ánh xuyên khi ngược sáng, và độ trong nhẹ khi nhìn thẳng.
+ * Tất cả nằm trong shader của vật liệu có sẵn (phát sáng cộng thêm + độ phủ), nhân mặt nạ voan: không thêm draw call hay texture.
+ * `tier` 1 = chỉ ánh viền + độ trong; 2 = thêm vệt dị hướng và ánh xuyên. Thấp (0) không gọi hàm này.
+ */
+function silkNodes(silk: V3Silk, mask: ReturnType<typeof float>, tier: 1 | 2) {
+  const n = normalView;
+  const v = positionViewDirection;
+  const nv = saturate(dot(n, v));
+  const rim = pow(float(1).sub(nv), silk.sheenPow);
+  const c = new THREE.Color(silk.sheenColor);
+  const tintCol = mix(vec3(c.r, c.g, c.b), diffuseColor.rgb.mul(1.6), silk.tint);
+  let glow = tintCol.mul(rim.mul(silk.sheen));
+  if (tier === 2) {
+    const l = normalize(transformDirection(skyParams.sunDir, cameraViewMatrix));
+    const up = transformDirection(vec3(0, 1, 0), cameraViewMatrix);
+    const t = normalize(up.sub(n.mul(dot(up, n))).add(vec3(1e-4, 0, 0)));
+    const h = normalize(l.add(v));
+    const th = dot(t, h);
+    const kk = pow(sqrt(max(float(1).sub(th.mul(th)), float(0))), float(silk.anisoPow));
+    const lit = smoothstep(-0.05, 0.35, dot(n, l));
+    const streak = kk.mul(lit).mul(silk.aniso);
+    // Ngược sáng: nắng xuyên qua lụa về phía mắt, mạnh ở mép (nv thấp).
+    const back = pow(saturate(dot(v, l.negate())), float(3))
+      .mul(float(0.35).add(rim.mul(0.65)))
+      .mul(silk.back);
+    glow = glow.add(skyParams.sunColor.mul(streak)).add(tintCol.mul(skyParams.sunColor).mul(back));
+  }
+  return { emissive: glow.mul(mask), clear: float(1).sub(nv.mul(nv).mul(silk.clear).mul(mask)) };
+}
+
+function applyVeilAlpha(root: THREE.Object3D, silk?: V3Silk, tier: 0 | 1 | 2 = 0): void {
   const seen = new Set<THREE.Material>();
   root.traverse((o) => {
     const mesh = o as THREE.Mesh;
@@ -288,6 +344,13 @@ function applyVeilAlpha(root: THREE.Object3D): void {
       nm.colorNode = vec4(lit, 1);
       nm.metalnessNode = mix(float(nm.metalness), float(VEIL_LOOK.metalness), mask);
       nm.opacityNode = vc.a;
+      if (silk && tier !== 0) {
+        const sn = silkNodes(silk, mask, tier);
+        const baseRough = nm.roughnessNode ?? float(nm.roughness);
+        nm.roughnessNode = mix(baseRough, float(silk.roughness), mask);
+        nm.emissiveNode = sn.emissive;
+        nm.opacityNode = vc.a.mul(sn.clear);
+      }
       const ign = fract(fract(dot(screenCoordinate, vec2(0.06711056, 0.00583715))).mul(52.9829189));
       nm.alphaTestNode = ign; // bỏ điểm ảnh khi độ phủ <= nhiễu (độ phủ 1 giữ nguyên)
       nm.alphaHash = false;
@@ -306,7 +369,10 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   const mats = adoptGltfMaterials(handle.scene);
   if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const m of mats) tuneTripoMaterial(m);
-  if (KEEP_ORIGINAL_ASSETS.has(handle.id) && FLAGS.v3Veil) applyVeilAlpha(handle.scene);
+  if (KEEP_ORIGINAL_ASSETS.has(handle.id) && FLAGS.v3Veil) {
+    const silk = FLAGS.v3Silk ? v3SilkOf(handle.id) : undefined;
+    applyVeilAlpha(handle.scene, silk, silk ? silkTier(storedQuality()) : 0);
+  }
   const look = SKIN_LOOKS[handle.id];
   if (look) for (const m of mats) applySkinLook(m, look);
   // Mặt nạ nhuộm theo xương (đầu/tay/tóc không nhuộm): thêm trước khi gộp lưới để mọi lưới cùng bộ thuộc tính.
