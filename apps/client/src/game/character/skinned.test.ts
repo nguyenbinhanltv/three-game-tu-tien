@@ -8,7 +8,7 @@ import { MONSTER } from '@dtl/content';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../core/assets';
 import { MonsterModel } from '../core/models';
 import { MONSTER_SKINS, MonsterSkins } from './monsterSkins';
-import { lodLevel, mixerInterval, SkinnedMonster } from './skinned';
+import { lodLevel, MID_DIST, mixerInterval, mixerPhase, SkinnedMonster } from './skinned';
 import { baseState, clipFor } from './states';
 import { type AnimState, legacyModelsRequested } from './view';
 
@@ -104,6 +104,20 @@ describe('máy trạng thái', () => {
     expect(mixerInterval(1)).toBeGreaterThanOrEqual(1 / 15);
     expect(mixerInterval(2)).toBeGreaterThan(mixerInterval(1));
     expect(mixerInterval(0, false)).toBe(Infinity);
+    // LOD0 người khác ở giữa tầm: 30 Hz; gần hoặc chính mình: nguyên 60 Hz.
+    expect(mixerInterval(0, true, false, MID_DIST + 1)).toBeCloseTo(1 / 30);
+    expect(mixerInterval(0, true, false, MID_DIST - 1)).toBeCloseTo(1 / 60);
+    expect(mixerInterval(0, true, true, MID_DIST + 10)).toBe(0);
+    expect(mixerInterval(1, true, false, 30)).toBeCloseTo(1 / 12);
+  });
+
+  it('pha mixer rải đều, không vượt một chu kỳ', () => {
+    const ph = Array.from({ length: 40 }, (_, i) => mixerPhase(i + 1, 1 / 12));
+    for (const p of ph) {
+      expect(p).toBeGreaterThanOrEqual(0);
+      expect(p).toBeLessThan(1 / 12);
+    }
+    expect(new Set(ph.map((p) => Math.floor(p * 12 * 5))).size).toBe(5);
   });
 
   it('LOD theo khoảng cách camera, hết suất LOD0 thì tối thiểu LOD1', () => {

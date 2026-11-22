@@ -10,7 +10,7 @@ import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/
 import { type AssetCache, type AssetHandle, assetKey, assets } from '../core/assets';
 import { HitReact, type HitOpts } from '../combat/hitreact';
 import { adoptGltfMaterials, cloneWorldMaterial } from '../../render/materials/world';
-import { lodLevel, mixerInterval } from './skinned';
+import { lodLevel, mixerInterval, mixerPhase } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { attachBrawlerGear, gearShown, snapshotBind, type BindSnapshot, type BrawlerGear } from './brawlerGear';
 import { attachCoGear, fluteMesh } from './coGear';
@@ -368,6 +368,7 @@ const V3_OFF = new Set(FLAGS.v3Off);
 export function lod0Slots(tris: number): number {
   return Math.max(1, Math.ceil(tris / 34000));
 }
+let phaseSeq = 0;
 const IDENT = new THREE.Matrix4();
 const _w = new THREE.Quaternion();
 const _pw = new THREE.Quaternion();
@@ -467,7 +468,7 @@ export class MannequinCharacter implements CharacterView {
   private lods: THREE.Mesh[][] = [];
   private lodDist: [number, number] = [22, 55];
   private interval = 0;
-  private acc = 0;
+  private acc = mixerPhase(++phaseSeq, 1 / 12);
   private base: THREE.AnimationAction | null = null;
   private baseName = '';
   private shot: THREE.AnimationAction | null = null;
@@ -1321,6 +1322,11 @@ export class MannequinCharacter implements CharacterView {
     if (!this.shot && !o.noFlash) this.oneShot(o.heavy ? 'Hit_Knockback' : 'Hit_Chest', o.heavy ? 1.2 : 1.4);
   }
 
+  /** Mức LOD hiện tại (cho `EntityManager.lodStats` và đo hiệu năng). */
+  get lod(): number {
+    return this.lodLevel;
+  }
+
   setViewDistance(d: number): void {
     this.setView({ dist: d, inView: true, allowLod0: true, self: d <= 0 });
   }
@@ -1334,7 +1340,7 @@ export class MannequinCharacter implements CharacterView {
     this.coGear?.setVisible(gearShown(this.coOn, level));
     this.viewDist = v.dist;
     this.viewSelf = !!v.self;
-    this.interval = mixerInterval(level, v.inView, !!v.self);
+    this.interval = mixerInterval(level, v.inView, !!v.self, v.dist);
     // Ngoài khung nhìn: bỏ cả cây xương khỏi lượt tính ma trận và lượt dựng danh sách vẽ (như `SkinnedCharacter`).
     this.inner.visible = v.inView;
     this.inner.matrixWorldAutoUpdate = v.inView;
