@@ -29,6 +29,7 @@ import {
 } from 'three/tsl';
 import { WORLD_SIZE } from '@dtl/shared';
 import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
+import { FLAGS } from '../../base/flags';
 
 /**
  * Shader mặt đất PBR (P2-A2): trộn 8 lớp texture CC0 Poly Haven theo vùng, độ dốc, độ cao.
@@ -112,6 +113,33 @@ let cliffTones: CliffTones = RED_TONES;
 export function setGroundRedStrata(on: boolean, tones: CliffTones = RED_TONES): void {
   redStrata = on;
   cliffTones = tones;
+}
+
+/** Băm ô → [0,1) (không texture, ổn định theo tọa độ thế giới). */
+const hash2 = (c: Node, k = 0) => fract(sin(dot(c, vec2(127.1, 311.7)).add(k * 74.7)).mul(43758.5453));
+/** Nhiễu giá trị 2D mượt, [0,1). */
+function vnoise(q: Node): Node {
+  const i = floor(q);
+  const f = fract(q);
+  const u = f.mul(f).mul(float(3).sub(f.mul(2)));
+  const a = hash2(i);
+  const b = hash2(i.add(vec2(1, 0)));
+  const c = hash2(i.add(vec2(0, 1)));
+  const d = hash2(i.add(vec2(1, 1)));
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+/** Chấm tròn mềm trong ô lưới `cell` m: có mặt với xác suất `prob`, lệch ngẫu nhiên trong ô, bán kính r0..r1 (m). Trả (độ phủ, băm cho màu). */
+function specks(p: Node, cell: number, prob: number, r0: number, r1: number, k: number): { cover: Node; rnd: Node } {
+  const q = p.div(cell);
+  const id = floor(q);
+  const rnd = hash2(id, k);
+  const off = vec2(hash2(id, k + 1.3), hash2(id, k + 2.7))
+    .mul(0.6)
+    .add(0.2);
+  const dm = fract(q).sub(off).length().mul(cell);
+  const r = mix(float(r0), float(r1), hash2(id, k + 4.1));
+  const present = step(rnd, float(prob));
+  return { cover: smoothstep(r, r.mul(0.55), dm).mul(present), rnd: hash2(id, k + 5.9) };
 }
 
 /** Gắn node shader vào `mat`. Gọi lại khi đổi preset (đổi cấu hình, `needsUpdate`). */
@@ -269,6 +297,49 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   const rockCol = mix(rock, rock.mul(TOMB_TINT.mul(1.15)), bio.z);
   col = mix(col, rockCol.mul(float(0.9).add(macro.mul(0.2))), rockW);
   col = mix(col, cliff.mul(float(0.9).add(macro.mul(0.2))), cliffW);
+  if (FLAGS.isoCam && !lo) {
+    // Camera chéo (Thiên Nhãn P2b): mặt đất chiếm ~70% khung và nhìn ở 15–45 m nên thêm chi tiết tầm gần theo ô băm thủ tục (không draw call):
+    // hạt vi mô, rêu, lá rơi, sỏi, vết nứt. Chỉ trên đất bằng (không vách/đá/tuyết), tắt dần từ 22 m ra 70 m để xa không nhiễu.
+    const near = float(1).sub(smoothstep(22, 70, dist));
+    const flat = float(1)
+      .sub(max(max(rockW, cliffW), snowW))
+      .mul(near);
+    const soil = float(1).sub(spW.mul(0.7)); // lá/rêu ít hơn trên đường mòn, sân lát
+    // hạt vi mô: tương phản sáng/tối theo nhiễu 0,45 m và 1,7 m
+    const grain = vnoise(p.mul(2.2))
+      .mul(0.55)
+      .add(vnoise(p.mul(0.6).add(9.1)).mul(0.45));
+    col = col.mul(mix(float(1), float(0.82).add(grain.mul(0.36)), flat.mul(0.9)));
+    // rêu: mảng sẫm xanh theo nhiễu ~4 m, nhiều hơn ở chỗ ẩm (rừng, mép đường) và quanh phiến lát
+    const mossN = vnoise(p.mul(0.27).add(3.3))
+      .mul(0.65)
+      .add(vnoise(p.mul(1.1)).mul(0.35));
+    const mossW = smoothstep(0.58, 0.78, mossN).mul(bio.x.mul(0.6).add(0.3).add(wetEdge.mul(0.4)).add(pav.mul(0.5)));
+    col = mix(col, col.mul(vec3(0.55, 0.78, 0.45)), clamp(mossW, 0, 1).mul(flat).mul(0.75));
+    // vết nứt: đường mảnh theo nhiễu (ridge), chủ yếu trên đá lát và đất khô
+    const crackN = vnoise(p.mul(0.85).add(vec2(5.2, 1.7)))
+      .sub(0.5)
+      .abs();
+    const crack = float(1)
+      .sub(smoothstep(0.0, 0.028, crackN))
+      .mul(pav.mul(0.9).add(bio.y.mul(0.7)));
+    col = col.mul(float(1).sub(clamp(crack, 0, 1).mul(flat).mul(0.55)));
+    // lá rơi: chấm ôm 0,07–0,13 m, sắc vàng/đỏ gạch/xanh úa, nhiều ở rừng
+    const leaf = specks(p, 0.7, 0.2, 0.07, 0.13, 11);
+    const leafCol = mix(mix(vec3(0.62, 0.38, 0.12), vec3(0.5, 0.2, 0.1), leaf.rnd), vec3(0.45, 0.5, 0.18), step(0.7, leaf.rnd));
+    col = mix(col, leafCol, leaf.cover.mul(flat).mul(soil).mul(bio.x.mul(0.7).add(0.25)).mul(0.85));
+    // sỏi: hạt xám nhạt, nhiều trên đường mòn/đất khô
+    const peb = specks(p, 0.55, 0.14, 0.04, 0.09, 31);
+    const pebCol = mix(vec3(0.5, 0.48, 0.44), vec3(0.34, 0.33, 0.31), peb.rnd);
+    col = mix(
+      col,
+      pebCol,
+      peb.cover
+        .mul(flat)
+        .mul(spW.mul(0.8).add(bio.y.mul(0.6)).add(0.12))
+        .mul(0.9),
+    );
+  }
   col = col.mul(groundParams.gain);
   col = mix(col, SNOW.mul(float(0.85).add(macro.mul(0.3))), noSnow ? float(0) : snowW.mul(0.9));
   // Xa thì texture nhỏ hơn điểm ảnh (mipmap mảng texture không đủ) sinh vân ô vuông: hòa dần về màu đỉnh lưới.
