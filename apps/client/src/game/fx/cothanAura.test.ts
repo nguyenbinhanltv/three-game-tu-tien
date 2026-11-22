@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COTHAN_METHOD } from '@dtl/shared';
+import { COTHAN_METHOD, LOI_METHOD } from '@dtl/shared';
 import { cothanAura } from './realmAuraRules';
 
 describe('hào quang cảnh giới của Cổ Thần (TN-5)', () => {
@@ -18,5 +18,9 @@ describe('hào quang cảnh giới của Cổ Thần (TN-5)', () => {
       expect(cothanAura(mt, 1, 'full')).toEqual({ mode: 'full', hidden: false });
       expect(cothanAura(mt, 0, 'std')).toEqual({ mode: 'std', hidden: false });
     }
+  });
+  it('Lôi tu chỉ giữ một lớp nhẹ và không bao giờ bị ẩn (không có thân to)', () => {
+    for (const m of ['min', 'std', 'full'] as const) expect(cothanAura(LOI_METHOD, 1, m)).toEqual({ mode: 'min', hidden: false });
+    expect(cothanAura(LOI_METHOD, 0, 'off')).toEqual({ mode: 'off', hidden: false });
   });
 });
