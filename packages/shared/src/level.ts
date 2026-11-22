@@ -237,7 +237,17 @@ export interface TerrainDef {
    */
   canyon?: { cx: number; cz: number; halfW: number; halfL: number; wallH: number; rise: number; wobble: number; rib: number };
   /** Ranh vùng chơi: ô vuông bo tròn quanh tâm, vách dựng lên sau `half - 10`. */
-  play?: { cx: number; cz: number; half: number; wallH: number };
+  play?: {
+    cx: number;
+    cz: number;
+    half: number;
+    wallH: number;
+    /**
+     * Vách gồ ghề có bậc (TN-3, Vấn Đỉnh): chân vách lùi ra thêm tới `amp` m theo nhiễu tần số `freq` (không bao giờ lấn vào vùng chơi),
+     * dốc kéo dài `ramp` m thay vì 60 m và chia `steps` bậc thang (gờ nhô). Thiếu = vách phẳng như các level cũ.
+     */
+    rough?: { amp: number; freq: number; ramp: number; steps: number };
+  };
   /** Biome theo khu, ưu tiên từ trên xuống; mặc định 'wild'. */
   biomes?: { feature: string; biome: Biome; min: number }[];
   /** Va chạm tĩnh hình tròn của level. */

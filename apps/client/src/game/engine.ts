@@ -828,6 +828,7 @@ export class Game {
   deadTrees: DeadTrees | null = null;
   /** Bắc Hoang (MAP-5 PR2): xác cự thú, cột tà trận, băng, vết nứt dị vực; cực quang. */
   bhWonders: BhWonders | null = null;
+  vdWonders: { group: THREE.Group; dispose(): void } | null = null;
   aurora: Aurora | null = null;
   riftMood = false;
   riftMoodT = -1;

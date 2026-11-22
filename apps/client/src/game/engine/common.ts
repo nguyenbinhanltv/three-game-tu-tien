@@ -180,6 +180,14 @@ export const LANTERN_LIGHT: Record<string, number> = {
   bhr_day: 0.9,
   bhr_dusk: 1.4,
   bhr_night: 1.0,
+  vda_dawn: 1.2,
+  vda_day: 0.9,
+  vda_dusk: 1.4,
+  vda_night: 1.0,
+  vdd_dawn: 0.8,
+  vdd_day: 0.5,
+  vdd_dusk: 1.2,
+  vdd_night: 1.0,
 };
 
 /** Hiệu ứng của chính mình → nhạc ngắn trong manifest.music (tools/audio/compose/sting_*.mjs). */

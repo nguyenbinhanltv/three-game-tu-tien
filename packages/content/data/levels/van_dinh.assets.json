@@ -1,5 +1,5 @@
 {
-  "mood": "tk_dusk",
+  "mood": "vda_dawn",
   "glb": [],
   "ground": { "set": "terrain-slate", "mask": "neutral" },
   "music": ["wild_night"],

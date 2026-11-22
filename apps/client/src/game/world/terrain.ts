@@ -34,6 +34,7 @@ import { portalPaving, sectPaving } from '../../render/groundMask';
 import { nearPropTree } from './propScatter';
 import { vanHaiArt, type VhPalette } from './vanHaiArt';
 import { tkGroundColor } from './thienKhuyetArt';
+import { faceTint, vdGroundColor } from './vanDinhArt';
 import { bhGroundColor, riftPath, type RiftPt } from './bacHoangArt';
 import { xichCracks, xichGroundColor } from './xichArt';
 import { ktGroundColor } from './kiemTrungArt';
@@ -229,7 +230,10 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
     return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
   }
   if (SLATE) {
-    tkGroundColor(T.def, x, z, ny, _tk);
+    if (T.id === 'van_dinh') {
+      vdGroundColor(T.def, x, z, ny, _tk);
+      faceTint(x - T.size / 2, _tk);
+    } else tkGroundColor(T.def, x, z, ny, _tk);
     return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
   }
   if (XICH) {
@@ -726,22 +730,31 @@ export class Terrain {
   setGround(tex: GroundTextures | null, level: GroundLevel): void {
     setGroundTileBreak(XICH || ASH);
     setGroundStrata(isVanLam());
-    setGroundNoSnow(KT || PM);
+    setGroundNoSnow(KT || PM || T.id === 'van_dinh');
     setGroundRedStrata(
-      T.id === 'doan_mach' || T.id === 'thien_khuyet' || KT || PM,
+      T.id === 'doan_mach' || T.id === 'thien_khuyet' || T.id === 'van_dinh' || KT || PM,
       // Thiên Khuyết (MAP-4): vách xám ấm ↔ nâu cát, khe nứt có vỉa vàng kim; vân từ nhiễu theo tọa độ dọc vách (hết ô caro).
       T.id === 'doan_mach'
         ? // Đoạn Mạch (POLISH-1): vách đá PBR thật nhuộm đỏ nâu, không dùng nhiễu tạo sọc.
           { lo: [0.3, 0.14, 0.1], hi: [0.62, 0.4, 0.28], pbr: true }
         : T.id === 'thien_khuyet'
           ? { lo: [0.2, 0.18, 0.17], hi: [0.5, 0.45, 0.4], vein: [0.85, 0.6, 0.18], blocks: true }
-          : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
-            KT
-            ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }
-            : // Phục Mạch (DUN-1 PR2): vách sa thạch nâu đỏ sẫm, khe nứt có vỉa mạch tinh lục.
-              PM
-              ? { lo: [0.1, 0.07, 0.05], hi: [0.3, 0.2, 0.13], vein: [0.25, 0.7, 0.55] }
-              : undefined,
+          : T.id === 'van_dinh'
+            ? // Vấn Đỉnh (TN-3): khối đá xếp lệch xám trung tính (mood hai mặt tự ngả lam lạnh hoặc vàng đồng), vỉa sáng ngọc lam nhạt ở khe.
+              {
+                lo: [0.08, 0.075, 0.09],
+                hi: [0.36, 0.33, 0.32],
+                vein: [0.55, 0.78, 0.8],
+                tri: true,
+                center: T.def.play ? [T.def.play.cx, T.def.play.cz] : undefined,
+              }
+            : // Kiếm Trủng (DUN-1): vách xám lam lạnh, khe nứt có vỉa thép sáng.
+              KT
+              ? { lo: [0.05, 0.06, 0.08], hi: [0.17, 0.19, 0.23], vein: [0.45, 0.65, 0.8] }
+              : // Phục Mạch (DUN-1 PR2): vách sa thạch nâu đỏ sẫm, khe nứt có vỉa mạch tinh lục.
+                PM
+                ? { lo: [0.1, 0.07, 0.05], hi: [0.3, 0.2, 0.13], vein: [0.25, 0.7, 0.55] }
+                : undefined,
     );
     if (tex) applyGroundShader(this.material, tex, level);
     else clearGroundShader(this.material);

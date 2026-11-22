@@ -2,6 +2,7 @@ import { LEVELS } from '@dtl/content';
 import { FLAGS } from '../../base/flags';
 import { scatterVanHai } from './vanHaiScatter';
 import { scatterThienKhuyet } from './thienKhuyetArt';
+import { scatterVanDinh } from './vanDinhArt';
 import { type BhScatterCtx, riftPath, scatterBacHoang } from './bacHoangArt';
 import { scatterXich, XICH_LEVEL, xichCracks } from './xichArt';
 import {
@@ -14,6 +15,7 @@ import {
   featureWeight,
   FOREST,
   HAND_PROPS,
+  padsOfLevel,
   THIEN_CONG_PROPS,
   hash01,
   heightAt,
@@ -369,6 +371,7 @@ function allPropsRaw(level: string): PropInstance[] {
     if (level === 'van_hai') list.push(...scatterVanHai(list));
     if (level === 'thien_khuyet') list.push(...scatterTk(list));
     if (level === 'bac_hoang') list.push(...scatterBh(list));
+    if (level === 'van_dinh') list.push(...scatterVd(list));
     if (level === XICH_LEVEL) list.push(...scatterXichProps(list));
     levelCache.set(level, list);
   }
@@ -469,6 +472,38 @@ export function bhCtx(placed: readonly { x: number; z: number }[]): BhScatterCtx
 function scatterBh(placed: readonly PropInstance[]): PropInstance[] {
   const tr = terrainOf('bac_hoang');
   return scatterBacHoang(bhCtx(placed)).map((r) => ({
+    id: r.id,
+    x: r.x,
+    y: tr.heightAt(r.x, r.z) - r.sink,
+    z: r.z,
+    yaw: r.yaw,
+    s: r.s,
+    lean: r.lean,
+    tint: r.tint,
+  }));
+}
+
+/** Rễ, đá, gốc khô, cột đổ rải theo vùng và theo mặt ở Vấn Đỉnh (TN-3): phần tính ở `vanDinhArt.ts`. */
+function scatterVd(placed: readonly PropInstance[]): PropInstance[] {
+  const L = LEVELS.van_dinh!;
+  const tr = terrainOf('van_dinh');
+  const clear: Circle[] = [
+    { x: L.spawn?.x ?? 1024, z: L.spawn?.z ?? 1036, r: 90 },
+    ...(L.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: 6 })),
+    ...L.spawns.filter((sp) => sp.radius > 4).map((sp) => ({ x: sp.x, z: sp.z, r: sp.radius + 4 })),
+    ...(L.pois ?? []).map((p) => ({ x: p.x, z: p.z, r: 14 })),
+    ...(L.spots ?? []).map((p) => ({ x: p.x, z: p.z, r: 10 })),
+    ...padsOfLevel('van_dinh').map((p) => ({ x: p.x, z: p.z, r: 12 })),
+    ...L.nodes.map((n) => ({ x: n.x, z: n.z, r: 6 })),
+    ...placed.map((p) => ({ x: p.x, z: p.z, r: 5 })),
+  ];
+  return scatterVanDinh({
+    def: tr.def,
+    bounds: tr.playBounds,
+    heightAt: (x, z) => tr.heightAt(x, z),
+    clear,
+    colliders: tr.colliders,
+  }).map((r) => ({
     id: r.id,
     x: r.x,
     y: tr.heightAt(r.x, r.z) - r.sink,
