@@ -8,7 +8,7 @@ import { MONSTER } from '@dtl/content';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../core/assets';
 import { MonsterModel } from '../core/models';
 import { MONSTER_SKINS, MonsterSkins } from './monsterSkins';
-import { lodLevel, MID_DIST, mixerInterval, mixerPhase, SkinnedMonster } from './skinned';
+import { lodLevel, MID_DIST, mixerDue, mixerInterval, mixerPhase, SkinnedMonster } from './skinned';
 import { baseState, clipFor } from './states';
 import { type AnimState, legacyModelsRequested } from './view';
 
@@ -109,6 +109,17 @@ describe('máy trạng thái', () => {
     expect(mixerInterval(0, true, false, MID_DIST - 1)).toBeCloseTo(1 / 60);
     expect(mixerInterval(0, true, true, MID_DIST + 10)).toBe(0);
     expect(mixerInterval(1, true, false, 30)).toBeCloseTo(1 / 12);
+  });
+
+  it('mixerDue: dt = 1/60 − 0,3 ms hai khung liền vẫn đủ nhịp 30 Hz (jitter không nuốt khung)', () => {
+    const dt = 1 / 60 - 0.0003;
+    const iv = mixerInterval(0, true, false, MID_DIST + 1);
+    expect(mixerDue(dt, iv)).toBe(false);
+    expect(mixerDue(dt * 2, iv)).toBe(true);
+    // Nhịp 60 Hz: dt hơi thiếu vẫn chạy mỗi khung; LOD1 12 Hz đúng 5 khung; ngoài khung nhìn không bao giờ.
+    expect(mixerDue(dt, mixerInterval(0))).toBe(true);
+    expect(mixerDue(dt * 5, mixerInterval(1))).toBe(true);
+    expect(mixerDue(10, mixerInterval(0, false))).toBe(false);
   });
 
   it('pha mixer rải đều, không vượt một chu kỳ', () => {
