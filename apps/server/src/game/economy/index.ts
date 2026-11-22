@@ -50,6 +50,7 @@ import {
   VARIANTS,
   skillName,
   pathOf,
+  questPathOk,
   STARS,
   GLOSSARY,
 } from '@dtl/content';
@@ -610,6 +611,7 @@ export class EconomySystem {
       if (c.quests.active[q.id] || c.quests.done.includes(q.id)) return;
       if (q.requires && !c.quests.done.includes(q.requires)) return;
       if ((q.minLevel ?? 1) > c.level) return this.c.warn(p, 'sys.level_low');
+      if (!questPathOk(q, pathOf(c.meta.method)?.id)) return this.c.warn(p, 'sys.quest_path');
       if (!this.c.nearNpc(p, q.giver)) return this.c.warn(p, 'sys.too_far');
       c.quests.active[q.id] = q.objectives.map((o) => {
         if (o.type === 'level') return Math.min(o.count, c.level);

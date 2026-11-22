@@ -1,7 +1,7 @@
 import { type MouseEvent as RMouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { areaKey, biomeAt, levelAssets, levelTerrain } from '../../base/levelCtx';
-import { LEVELS, t } from '@dtl/content';
+import { LEVELS, pathOf, t } from '@dtl/content';
 import { Game } from '../../game/engine';
 import { TipCard, Tooltip } from '../u2/win';
 import { togglePanel, useUI } from '../store';
@@ -138,7 +138,7 @@ export function Minimap() {
       const me = g.view.players.get(g.sid);
       const lv = me?.lv ?? st.char?.level ?? 1;
       const order = st.party ? st.party.members.map((m) => m.sid) : [];
-      const frame = buildFrame(g, st.quests, st.trackQuest, lv, order, nowT, st.marks);
+      const frame = buildFrame(g, st.quests, st.trackQuest, lv, order, nowT, st.marks, pathOf(st.method?.method)?.id);
       // Bản đồ xoay theo camera (vành la bàn cũng xoay): hướng Bắc lệch `yaw` so với phía trên màn hình.
       const v: View = { cx: g.renderPos.x, cz: g.renderPos.z, span, size: D, rot: g.yaw };
       viewRef.current = v;

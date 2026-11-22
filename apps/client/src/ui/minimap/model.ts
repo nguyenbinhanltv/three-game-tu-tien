@@ -78,7 +78,7 @@ export function npcFunction(n: NpcDef): NpcFn {
  * Dấu nhiệm vụ trên đầu NPC — cùng luật với dấu ! / ? ở EntityManager.updateQuestMarkers:
  * trả nhiệm vụ xong > nhận nhiệm vụ mới > nhiệm vụ đang làm dở.
  */
-export function npcQuestMark(npcId: string, quests: readonly QuestDef[], q: QuestView, level: number): QuestMark {
+export function npcQuestMark(npcId: string, quests: readonly QuestDef[], q: QuestView, level: number, pathId?: string): QuestMark {
   let state: QuestMark = '';
   const rank = { '': 0, wait: 1, give: 2, turn: 3 } as const;
   const bump = (s: QuestMark) => {
@@ -92,7 +92,13 @@ export function npcQuestMark(npcId: string, quests: readonly QuestDef[], q: Ques
         const complete = def.objectives.every((o, i) => (prog[i] ?? 0) >= o.count || (o.type === 'talk' && o.target === npcId));
         bump(complete ? 'turn' : 'wait');
       }
-    } else if (def.giver === npcId && (!def.requires || q.done.includes(def.requires)) && (def.minLevel ?? 1) <= level) bump('give');
+    } else if (
+      def.giver === npcId &&
+      (!def.path || def.path === pathId) &&
+      (!def.requires || q.done.includes(def.requires)) &&
+      (def.minLevel ?? 1) <= level
+    )
+      bump('give');
   }
   return state;
 }

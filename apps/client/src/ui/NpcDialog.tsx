@@ -2,7 +2,7 @@ import { Portrait } from './Art';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import { useState } from 'react';
 import { C, sellPrice } from '@dtl/shared';
-import { hasString, ITEM, itemName, METHOD, NPC, PILL_QUALITY, QUESTS, realmName, RECIPES, t } from '@dtl/content';
+import { hasString, ITEM, itemName, METHOD, NPC, pathOf, PILL_QUALITY, questPathOk, QUESTS, realmName, RECIPES, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './objective';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './windows/common';
@@ -16,9 +16,15 @@ type Tab = 'talk' | 'shop' | 'craft' | 'enhance' | 'gem' | 'refine' | 'salvage' 
 function QuestTab({ npcId }: { npcId: string }) {
   const quests = useUI((s) => s.quests);
   const level = useUI((s) => s.char?.level ?? 1);
+  const pathId = pathOf(useUI((s) => s.method?.method))?.id;
   const g = Game.current;
   const offers = QUESTS.filter(
-    (q) => q.giver === npcId && !quests.active[q.id] && !quests.done.includes(q.id) && (!q.requires || quests.done.includes(q.requires)),
+    (q) =>
+      q.giver === npcId &&
+      !quests.active[q.id] &&
+      !quests.done.includes(q.id) &&
+      questPathOk(q, pathId) &&
+      (!q.requires || quests.done.includes(q.requires)),
   );
   const turnins = QUESTS.filter((q) => q.turnin === npcId && quests.active[q.id]);
   return (
