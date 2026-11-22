@@ -70,20 +70,27 @@ export default {
           await gm(page, 'god on');
           if (!iso) await cam(page, { yaw: YAW });
           await sleep(2500);
-          const mon = await page.evaluate(() => {
-            const g = window.__game as unknown as IsoDbg;
-            let best: { x: number; z: number } | null = null;
-            let bd = 1e9;
-            for (const m of g.view.monsters.values()) {
-              if (m.st === 4) continue;
-              const d = Math.hypot(m.x - g.renderPos.x, m.z - g.renderPos.z);
-              if (d < bd) {
-                bd = d;
-                best = m;
+          const nearest = () =>
+            page.evaluate(() => {
+              const g = window.__game as unknown as IsoDbg;
+              let best: { x: number; z: number } | null = null;
+              let bd = 1e9;
+              for (const m of g.view.monsters.values()) {
+                if (m.st === 4) continue;
+                const d = Math.hypot(m.x - g.renderPos.x, m.z - g.renderPos.z);
+                if (d < bd) {
+                  bd = d;
+                  best = m;
+                }
               }
-            }
-            return best;
-          });
+              return best;
+            });
+          // Đưa người tới sát quái gần nhất (~5 m) để khung đánh thấy cả người lẫn mục tiêu, rồi lấy lại quái gần nhất.
+          let mon = await nearest();
+          if (mon) {
+            await gm(page, `tp ${Math.round(mon.x - 5)} ${Math.round(mon.z)}`, 1500);
+            mon = (await nearest()) ?? mon;
+          }
           if (mon) {
             if (iso) {
               // Đặt con trỏ lên quái gần nhất: chiêu đơn phải tự khóa đúng quái đó.
