@@ -73,7 +73,8 @@ export class Environment {
   private setShadowQuality(ultra: boolean): void {
     if (!this.sun.castShadow) return;
     const size = ultra ? 4096 : 2048;
-    const half = ultra ? 110 : 70;
+    // Camera chéo: một tầng bóng ôm sát khung hình (±26 m, ±36 m ở Cực cao) cho nét hơn ~2,7 lần.
+    const half = this.isoShadow ? (ultra ? 36 : 26) * this.isoK : ultra ? 110 : 70;
     const sh = this.sun.shadow;
     if (sh.mapSize.x !== size) {
       sh.mapSize.set(size, size);
@@ -89,7 +90,18 @@ export class Environment {
   }
 
   private preset = 'medium';
+  private isoShadow = false;
+  private isoK = 1;
   private seaFor = 'van_lam';
+
+  /** Bật/tắt bản đồ bóng ôm khung hình cho camera chéo; `k` = khoảng cách camera / khoảng cách chuẩn (ngự kiếm lùi xa thì bóng rộng theo). */
+  setIso(on: boolean, k = 1): void {
+    const kk = Math.max(1, k);
+    if (this.isoShadow === on && Math.abs(this.isoK - kk) < 0.03) return;
+    this.isoShadow = on;
+    this.isoK = kk;
+    this.setShadowQuality(this.preset === 'ultra');
+  }
 
   /**
    * Đổi level (E1-D): biển mây nướng lại theo địa hình mới (dispose bản cũ, reset texture module), hồ chỉ hiện khi level có hồ.
