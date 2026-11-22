@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   clampLeadFrame,
+  isoTopEq,
+  isoDistFor,
   clampLeadSafe,
   ISO_TGT_UP,
   ISO_TGT_X,
   ISO_SAFE_DOWN,
   ISO_SAFE_UP,
+  ISO_SAFE_DOWN_BOSS,
   ISO_SAFE_X,
   ISO_DIST,
   isoCameraPos,
@@ -66,8 +69,37 @@ describe('clampLeadFrame', () => {
     expect(me.d).toBeLessThanOrEqual(ISO_SAFE_DOWN + 1e-6);
     expect(me.d).toBeGreaterThanOrEqual(-ISO_SAFE_UP - 1e-6);
   });
+  it('boss cao: đỉnh thân cũng trong vùng an toàn, người vẫn trong vùng an toàn', () => {
+    const yaw = 0.785;
+    const t = { x: -3, z: -3 }; // boss phía xa camera (lên màn hình)
+    const topEq = isoTopEq(6);
+    expect(topEq).toBeGreaterThan(1.5);
+    expect(isoTopEq(40)).toBe(2);
+    const l = clampLeadFrame(t.x * 0.5, t.z * 0.5, yaw, t.x, t.z, topEq);
+    const tg = project(l.x, l.z, yaw, t.x, t.z);
+    const me = project(l.x, l.z, yaw, 0, 0);
+    expect(tg.d - topEq).toBeGreaterThanOrEqual(-ISO_TGT_UP - 1e-6);
+    expect(me.d).toBeGreaterThanOrEqual(-ISO_SAFE_UP - 1e-6);
+    expect(me.d).toBeLessThanOrEqual(ISO_SAFE_DOWN_BOSS + 1e-6);
+    // không có topEq thì đỉnh boss tụt ra ngoài khung
+    const l0 = clampLeadFrame(t.x * 0.5, t.z * 0.5, yaw, t.x, t.z);
+    expect(project(l0.x, l0.z, yaw, t.x, t.z).d - topEq).toBeLessThan(tg.d - topEq + 1e-9);
+  });
+  it('quái thấp không đổi (topEq = 0)', () => {
+    expect(isoTopEq(3)).toBe(0);
+  });
   it('không có mục tiêu thì như clampLeadSafe', () => {
     expect(clampLeadFrame(30, 5, 0.3)).toEqual(clampLeadSafe(30, 5, 0.3));
+  });
+});
+
+describe('isoDistFor', () => {
+  it('phòng boss khổng lồ xa hơn, phòng thường giữ ISO_DIST', () => {
+    expect(isoDistFor('lac_kiem_tong')).toBe(ISO_DIST);
+    // bản đồ mở có boss ngoài trời (Thiên Khuyết) giữ khoảng cách chung ở mọi nơi
+    expect(isoDistFor('thien_khuyet')).toBe(ISO_DIST);
+    expect(isoDistFor('kieu_5')).toBeGreaterThan(ISO_DIST);
+    expect(isoDistFor('kieu_9')).toBe(isoDistFor('kieu_5'));
   });
 });
 
