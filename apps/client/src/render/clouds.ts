@@ -33,6 +33,8 @@ import { skyParams } from './sky';
  * vào texture RG thô 16 m/ô. Màu mây ăn theo sương (xa thì hòa vào sương qua `scene.fogNode`) và ánh nắng.
  */
 const GRID = 256;
+/** Cao độ lớp thấp nhất mặc định (Vân Lam); level đặt `TerrainDef.seaY` thì cả ba lớp dời theo. */
+const SEA_Y0 = 96;
 const LAYERS = [
   { y: 96, alpha: 0.95, scale: 1 / 420, speed: 1.0, seed: 0 },
   { y: 108, alpha: 0.8, scale: 1 / 340, speed: 1.6, seed: 0.37 },
@@ -106,7 +108,7 @@ function layerMaterial(layer: (typeof LAYERS)[number]): THREE.MeshBasicNodeMater
   const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.FrontSide });
   const range = Math.max(1, hMax - hMin);
   const WORLD_SIZE = levelTerrain().size;
-  const ly = float(layer.y);
+  const ly = float(layer.y + (levelTerrain().def.seaY ?? SEA_Y0) - SEA_Y0);
   const shaded = Fn(() => {
     const p = positionWorld.xz;
     const t = time.mul(layer.speed);
@@ -160,7 +162,7 @@ export class CloudSea {
     LAYERS.forEach((l, i) => {
       const m = new THREE.Mesh(geo, layerMaterial(l));
       m.scale.set(7000, 1, 7000);
-      m.position.y = l.y;
+      m.position.y = l.y + (levelTerrain().def.seaY ?? SEA_Y0) - SEA_Y0;
       m.frustumCulled = false;
       // Trước mọi VFX (renderOrder 0, mực -2) để VFX không bị mây phủ lên; lớp cao vẽ sau lớp thấp.
       m.renderOrder = -9 + i;

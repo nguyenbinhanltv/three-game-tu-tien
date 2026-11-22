@@ -6,6 +6,7 @@ import {
   applyGroundShader,
   clearGroundShader,
   setGroundRedStrata,
+  setGroundCliff,
   setGroundStrata,
   setGroundNoSnow,
   setGroundTileBreak,
@@ -33,6 +34,7 @@ import { withSightFade } from './occlusion';
 import { portalPaving, sectPaving } from '../../render/groundMask';
 import { nearPropTree } from './propScatter';
 import { vanHaiArt, type VhPalette } from './vanHaiArt';
+import { ckGroundColor } from './cuuKieuArt';
 import { tkGroundColor } from './thienKhuyetArt';
 import { faceTint, vdGroundColor } from './vanDinhArt';
 import { bhGroundColor, riftPath, type RiftPt } from './bacHoangArt';
@@ -229,6 +231,10 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
   }
   if (PM) {
     pmGroundColor(x, z, ny, _tk);
+    return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
+  }
+  if (T.id === 'cuu_kieu') {
+    ckGroundColor(T.def, x, z, ny, _tk);
     return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
   }
   if (SLATE) {
@@ -739,6 +745,7 @@ export class Terrain {
     setGroundTileBreak(XICH || ASH);
     setGroundStrata(isVanLam());
     setGroundNoSnow(KT || PM || T.id === 'van_dinh');
+    setGroundCliff(T.id === 'cuu_kieu' ? 42 : 11, T.id === 'cuu_kieu');
     setGroundRedStrata(
       T.id === 'doan_mach' || T.id === 'thien_khuyet' || T.id === 'van_dinh' || KT || PM,
       // Thiên Khuyết (MAP-4): vách xám ấm ↔ nâu cát, khe nứt có vỉa vàng kim; vân từ nhiễu theo tọa độ dọc vách (hết ô caro).
