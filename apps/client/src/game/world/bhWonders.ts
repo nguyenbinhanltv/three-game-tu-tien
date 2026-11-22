@@ -24,6 +24,7 @@ import { hash01 } from '@dtl/shared';
 import { markBloom } from '../../render/post';
 import { vnoise } from '../../render/vfx/common';
 import type { RiftPt } from './bacHoangArt';
+import { withSightFade } from './occlusion';
 
 /**
  * Điểm nhấn Bắc Hoang (MAP-5 PR2, phong cách B), toàn bộ dựng bằng code, không asset ngoài:
@@ -760,7 +761,7 @@ export class BhWonders {
     const e = new THREE.Euler();
 
     // Xác cự thú
-    const boneMat = own(boneMaterial());
+    const boneMat = own(withSightFade(boneMaterial())); // camera chéo: xương sườn vòm cao che người thì mờ
     const boneGeo = own(beastSkeleton());
     const bones = new THREE.InstancedMesh(boneGeo, boneMat, BEAST_SPOTS.length);
     bones.name = 'bh-beast-bones';
@@ -774,7 +775,7 @@ export class BhWonders {
     bones.castShadow = true;
     bones.receiveShadow = true;
     this.group.add(bones);
-    const driftMat = own(new THREE.MeshStandardNodeMaterial({ color: 0xe6edff, roughness: 0.78, metalness: 0 }));
+    const driftMat = own(withSightFade(new THREE.MeshStandardNodeMaterial({ color: 0xe6edff, roughness: 0.78, metalness: 0 })));
     const drifts = new THREE.InstancedMesh(own(beastDrifts()), driftMat, BEAST_SPOTS.length);
     drifts.name = 'bh-beast-drifts';
     BEAST_SPOTS.forEach((s, i) => {
@@ -788,10 +789,10 @@ export class BhWonders {
     this.group.add(drifts);
 
     // Cột tà trận
-    const stoneMat = own(new THREE.MeshStandardNodeMaterial({ color: 0x2b2735, roughness: 0.62, metalness: 0.15 }));
+    const stoneMat = own(withSightFade(new THREE.MeshStandardNodeMaterial({ color: 0x2b2735, roughness: 0.62, metalness: 0.15 })));
     const stone = new THREE.InstancedMesh(own(pillarStoneGeometry()), stoneMat, PILLAR_SPOTS.length);
     stone.name = 'bh-pillar-stone';
-    const runeMat = own(runeMaterial());
+    const runeMat = own(withSightFade(runeMaterial()));
     markBloom(runeMat, 0.5);
     const runes = new THREE.InstancedMesh(own(pillarRuneGeometry()), runeMat, PILLAR_SPOTS.length);
     runes.name = 'bh-pillar-runes';
