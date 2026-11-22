@@ -165,6 +165,9 @@ export interface LoreGlossary {
   huyenKiepGroups: Record<string, string>;
   huyenKiep: Record<string, Record<string, string>>;
   cuuKieu: string[];
+  /** Tên chín cầu (TN-7, tự đặt) và thuật ngữ riêng của chương Cửu Kiều. */
+  cuuKieuTen: Record<string, string>;
+  cuuKieuTerms: Record<string, string>;
   coThanStars: string[];
 }
 
@@ -232,6 +235,10 @@ export function checkLoreTerms(g: LoreGlossary): string[] {
 
   if (g.cuuKieu.length !== 9) errors.push(`glossary.cuuKieu: cần 9 cầu, đang có ${g.cuuKieu.length}`);
   distinct('glossary.cuuKieu', g.cuuKieu, errors);
+  const tenN = Object.keys(g.cuuKieuTen ?? {}).length;
+  if (tenN !== 9) errors.push(`glossary.cuuKieuTen: cần 9 tên cầu, đang có ${tenN}`);
+  distinct('glossary.cuuKieuTen', Object.values(g.cuuKieuTen ?? {}), errors);
+  distinct('glossary.cuuKieuTerms', Object.values(g.cuuKieuTerms ?? {}), errors);
   if (g.coThanStars.length !== 9) errors.push(`glossary.coThanStars: cần 9 sao, đang có ${g.coThanStars.length}`);
   distinct('glossary.coThanStars', g.coThanStars, errors);
 

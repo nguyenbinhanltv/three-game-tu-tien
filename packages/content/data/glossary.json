@@ -774,6 +774,35 @@
     "Đệ Bát Kiều",
     "Đệ Cửu Kiều"
   ],
+  "cuuKieuTen": {
+    "thach": "Thạch Kiều",
+    "kiem_anh": "Kiếm Ảnh Kiều",
+    "suy": "Suy Kiều",
+    "gioi": "Giới Kiều",
+    "than": "Thân Kiều",
+    "dao": "Đạo Kiều",
+    "ngoai": "Ngoại Kiếp Kiều",
+    "noi": "Nội Kiếp Kiều",
+    "dap_thien": "Đạp Thiên Kiều"
+  },
+  "cuuKieuTerms": {
+    "thien_lo_gioi": "Thiên Lộ Giới",
+    "kieu_dau": "Kiều Đầu",
+    "duong_may": "Đường Mây",
+    "bia_lo": "Bia Lộ",
+    "bac_cuoi": "Bậc Cuối",
+    "dan_kieu_nhan": "Dẫn Kiều Nhân",
+    "kieu_thu": "Kiều Thủ",
+    "kiem_anh": "Kiếm Ảnh",
+    "ve_kieu": "Vệ Kiều",
+    "thach_tuong": "Thạch Tượng",
+    "dao_linh": "Đạo Linh",
+    "lo_linh": "Lộ Linh",
+    "kieu_luc": "Kiều Lực",
+    "bang_thien_lo": "Bảng Thiên Lộ",
+    "luyen_kieu": "Luyện Kiều",
+    "danh_hieu": "Đạp Thiên"
+  },
   "coThanStars": [
     "Nhất Tinh",
     "Nhị Tinh",
