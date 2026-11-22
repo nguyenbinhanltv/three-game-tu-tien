@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { FLAGS } from '../../base/flags';
 import { baseOf } from '../../base/quality';
 import { CloudSea } from '../../render/clouds';
 import { createSky, setSkyQuality, setSunDirection } from '../../render/sky';
@@ -107,8 +108,20 @@ export class Environment {
     this.lake.group.visible = f.lake;
   }
 
+  /** Thời gian (s) từ lần vẽ lại bản đồ bóng gần nhất. */
+  private shadowAge = Infinity;
+
   update(dt: number, camera: THREE.Camera, focus: THREE.Vector3): void {
     this.t += dt;
+    // Pass bóng vẽ lại cả cảnh (~1,5 ms CPU): màn 60 Hz chỉ vẽ lại bản đồ bóng mỗi 2 khung (bản đồ cũ vẫn khớp ma trận bóng cũ, lệch ≤ 1 khung ≈ 10 cm khi chạy);
+    // màn ≤ 50 Hz vẽ mỗi khung. `?shadowhz=0` tắt giới hạn.
+    if (this.sun.castShadow) {
+      const minAge = FLAGS.shadowHz > 0 ? 1 / FLAGS.shadowHz : 0;
+      this.shadowAge += dt;
+      const due = this.shadowAge >= minAge - 0.0015;
+      if (due) this.shadowAge = 0;
+      this.sun.shadow.autoUpdate = due;
+    }
     this.sky.position.copy(camera.position);
     // Bóng đổ bám theo người chơi.
     this.sun.target.position.copy(focus);

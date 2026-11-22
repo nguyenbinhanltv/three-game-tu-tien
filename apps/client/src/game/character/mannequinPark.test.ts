@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 import { AssetCache, type Manifest } from '../core/assets';
 import { nodeGltfLoader } from '../core/gltfTestLoader';
 import { MannequinCharacter, mannequinTemplate, V3_LIB } from './mannequin';
+import { swordTemplateOf } from './swordModel';
+import { partExtras } from './sword';
 import type { AnimState } from './view';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
@@ -92,6 +94,71 @@ describe('MannequinCharacter: đỗ rig ở LOD2 (N-7)', { timeout: 60000 }, () 
       expect(maxDiff(worldVerts(scene, mesh), moved)).toBeGreaterThan(1e-3);
       c.dispose();
       expect(x.rig.parent).toBe(x.inner);
+      handle.release();
+      lib.release();
+    });
+  }
+});
+
+describe('MannequinCharacter: đỗ rig ở LOD1 (v3cpu)', { timeout: 60000 }, () => {
+  for (const id of ['chr_v3_de_tu_nam', 'chr_v3_tinh_khuyet_nu']) {
+    it(`${id}: lưới LOD1 và kiếm vẽ đúng chỗ như khi rig còn trong cảnh; đỗ chuyển LOD1 ↔ LOD2 ↔ LOD0 sạch`, async () => {
+      const [handle, lib, sw] = await Promise.all([cache.acquire(id), cache.acquire(V3_LIB), cache.acquire('prop_kiem_thanh_phong')]);
+      const sword = swordTemplateOf(sw.scene, partExtras(sw.scene), () => sw.release());
+      expect(sword).not.toBeNull();
+      const c = new MannequinCharacter(mannequinTemplate(handle, lib), false, sword);
+      const scene = new THREE.Scene();
+      scene.add(c.root);
+      c.root.position.set(-5, 1, 9);
+      c.root.rotation.y = -0.6;
+      const x = c as unknown as Inner & { blade: THREE.Object3D | null };
+      const mesh = x.lods[1]![0]!;
+      expect(x.lods[1]!.every((m) => (m as THREE.SkinnedMesh).isSkinnedMesh)).toBe(true);
+      const combat = { ...ANIM, combat: true };
+      c.setView({ dist: 5, inView: true, allowLod0: true });
+      for (let i = 0; i < 30; i++) c.update(1 / 60, combat);
+      const ref = worldVerts(scene, mesh);
+      const blade = x.blade!;
+      scene.updateMatrixWorld(true);
+      const bladeRef = blade.matrixWorld.clone();
+
+      // LOD1: rig rời cảnh, lưới đúng chỗ, kiếm theo tay đúng chỗ cũ (mixer chưa chạy lại nên tư thế không đổi).
+      c.setView({ dist: 30, inView: true, allowLod0: false });
+      expect(c.rigParked).toBe(true);
+      expect(x.rig.parent).toBeNull();
+      expect(mesh.parent).toBe(x.inner);
+      expect(maxDiff(ref, worldVerts(scene, mesh))).toBeLessThan(1e-4);
+      expect(blade.parent).toBe(x.inner);
+      scene.updateMatrixWorld(true);
+      expect(
+        blade.matrixWorld.equals(bladeRef) || blade.matrixWorld.elements.every((e, i) => Math.abs(e - bladeRef.elements[i]!) < 1e-4),
+      ).toBe(true);
+      const a = new THREE.Vector3();
+      const b = new THREE.Vector3();
+      expect(c.bladePoints(a, b)).toBe(true);
+
+      // Đi chuyển: kiếm đi theo thân.
+      const d = new THREE.Vector3(3, 0, -2);
+      c.root.position.add(d);
+      scene.updateMatrixWorld(true);
+      expect(blade.matrixWorld.elements[12]).toBeCloseTo(bladeRef.elements[12]! + d.x, 3);
+      expect(blade.matrixWorld.elements[14]).toBeCloseTo(bladeRef.elements[14]! + d.z, 3);
+
+      // LOD1 → LOD2 (kiếm ẩn, về xương) → LOD1 → LOD0: không để kiếm treo ở `inner`.
+      c.setView({ dist: 200, inView: true, allowLod0: false });
+      expect(x.rig.parent).toBeNull();
+      expect(blade.parent).not.toBe(x.inner);
+      c.setView({ dist: 30, inView: true, allowLod0: false });
+      expect(blade.parent).toBe(x.inner);
+      c.setView({ dist: 5, inView: true, allowLod0: true });
+      expect(c.rigParked).toBe(false);
+      expect(x.rig.parent).toBe(x.inner);
+      expect(blade.parent).not.toBe(x.inner);
+      expect(blade.matrixAutoUpdate).toBe(true);
+
+      // Dispose lúc đang đỗ ở LOD1 không ném lỗi.
+      c.setView({ dist: 30, inView: true, allowLod0: false });
+      c.dispose();
       handle.release();
       lib.release();
     });

@@ -34,6 +34,8 @@ interface Flags {
   v3Model: string | null;
   /** `?jog=<số>` ép tốc độ clip chạy v3 (chụp). */
   jog: number;
+  /** `?shadowhz=<số>` tần suất vẽ lại bản đồ bóng mặt trời tối đa (Hz); 0 = mỗi khung; mặc định 50 (v3cpu). */
+  shadowHz: number;
   /** `?v3anim=0` về hệ animation cũ của v3 (so video trước/sau). */
   v3Anim: boolean;
   /** `?v3feet=0` tắt IK chân bám đất + bước chân xoay tại chỗ của v3 (so video trước/sau). */
@@ -100,6 +102,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   chr: { scope: 'user', doc: '=v1 quay về nhân vật cũ (dự phòng một bản sau N-7, model gốc không áo mô-đun); mặc định v3' },
   v3model: { scope: 'test', doc: '=a bản Lạc Kiếm v3 cũ' },
   jog: { scope: 'test', doc: 'tốc độ clip chạy v3' },
+  shadowhz: { scope: 'test', doc: 'tần suất vẽ lại bản đồ bóng tối đa (Hz, 0 = mỗi khung, mặc định 50)' },
   v3anim: { scope: 'test', doc: '=0 hệ animation v3 cũ' },
   v3feet: { scope: 'test', doc: '=0 tắt IK chân bám đất + bước chân xoay tại chỗ của v3' },
   armfit: { scope: 'test', doc: 'góc bù dang tay v3 (độ)' },
@@ -166,6 +169,7 @@ export function readFlags(search: string): Flags {
     chr: chr === 'v1' || chr === 'v3' ? chr : null,
     v3Model: q.get('v3model'),
     jog: Number(q.get('jog')) || 0,
+    shadowHz: q.get('shadowhz') === null ? 50 : Math.max(0, Number(q.get('shadowhz')) || 0),
     v3Anim: !off(q.get('v3anim')),
     v3Feet: !off(q.get('v3feet')),
     armFit: q.get('armfit') === null || Number.isNaN(Number(q.get('armfit'))) ? null : Number(q.get('armfit')),
