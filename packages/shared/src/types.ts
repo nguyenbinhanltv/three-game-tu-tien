@@ -1174,6 +1174,10 @@ export interface CharView {
   root: string;
   /** Đạo (TN-3, từ Vấn Đỉnh): nguồn đã chọn, '' = chưa chọn. */
   dao: string;
+  /** Nguồn Cực nguyên đã chọn ở kết game (TN-7, `DapId`), '' = chưa chọn. */
+  dap: string;
+  /** Số cầu Cửu Kiều đã qua (0..9, TN-7); 9 = có danh hiệu Đạp Thiên. */
+  kieu: number;
   /** Bình cảnh đã vượt cao nhất (0, 5, 10, 15). */
   bk: number;
   /** Giây còn lại của thử thách tâm ma đang chạy (0 = không có). */

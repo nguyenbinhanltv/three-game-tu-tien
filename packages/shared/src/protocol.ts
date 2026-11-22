@@ -120,6 +120,8 @@ export const C = {
   DAO: 'dao',
   /** Xin vào cầu Đạp Thiên Cửu Kiều (TN-7): `{ n }` (1..9). Server kiểm cấp, tiến độ, NPC, đồng đội rồi mới cấp vé một lần. */
   KIEU: 'kieu',
+  /** Chọn nguồn Cực nguyên ở kết game (TN-7, sau chín cầu, một lần): `{ id }` (`DapId`). Server kiểm đủ chín cầu, đứng cạnh Dẫn Kiều Nhân, chưa chọn. */
+  DAP: 'dap',
   /** Tổ đội (P3-9): `PartyCmd`. */
   PARTY: 'pty',
   /** Tỉ thí 1v1 ở võ đài: `DuelCmd`. */
