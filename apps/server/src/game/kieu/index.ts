@@ -2,7 +2,7 @@
 // luật thuần ở `packages/shared/src/kieu.ts`. Phòng cầu (phó bản/kiếp chuỗi) gọi `onClear` khi chính server thấy điều kiện qua đã đạt,
 // không có tin "đã qua" nào từ client. Thiết kế và chống gian: artifact tn7/thiet-ke.md mục 5.
 import { randomUUID } from 'node:crypto';
-import { eq, like, sql } from 'drizzle-orm';
+import { and, gte, inArray, lt } from 'drizzle-orm';
 import {
   canChooseDap,
   hasDapTitle,
@@ -49,6 +49,46 @@ export interface KieuPlan {
   level: string;
   dgKey: string;
   members: PlayerEnt[];
+}
+
+const BOARD_TTL_MS = 5000;
+const BOARD_IDEM = /^kieu:clear:\d+:9$/;
+let boardCache: { at: number; msg: KieuBoardMsg } | null = null;
+
+/** Dựng Bảng Thiên Lộ từ sổ cái (một truy vấn khoảng theo chỉ mục `idem` + một truy vấn tên theo id), cache chung `BOARD_TTL_MS`. */
+export function boardCached(now: number): KieuBoardMsg {
+  if (boardCache && now - boardCache.at < BOARD_TTL_MS) return boardCache.msg;
+  const found = db
+    .select({ charId: ledger.charId, idem: ledger.idem, ts: ledger.ts })
+    .from(ledger)
+    // 'kieu:clear:' ≤ idem < 'kieu:clear;' ( ';' đứng ngay sau ':' ): chỉ các khóa cùng tiền tố, đi theo chỉ mục UNIQUE.
+    .where(and(gte(ledger.idem, 'kieu:clear:'), lt(ledger.idem, 'kieu:clear;')))
+    .all()
+    .filter((r) => r.idem !== null && BOARD_IDEM.test(r.idem))
+    .sort((a, b) => a.ts - b.ts);
+  const top = found.slice(0, KIEU_BOARD_MAX);
+  const names = new Map<number, string>();
+  if (top.length)
+    for (const c of db
+      .select({ id: characters.id, name: characters.name })
+      .from(characters)
+      .where(
+        inArray(
+          characters.id,
+          top.map((r) => r.charId),
+        ),
+      )
+      .all())
+      names.set(c.id, c.name);
+  const rows = top.flatMap((r) => (names.has(r.charId) ? [{ name: names.get(r.charId)!, ts: r.ts }] : []));
+  const msg: KieuBoardMsg = { rows, total: found.length };
+  boardCache = { at: now, msg };
+  return msg;
+}
+
+/** Bỏ cache bảng (có người vừa qua cầu 9, hoặc test). */
+export function resetBoardCache(): void {
+  boardCache = null;
 }
 
 export type KieuClearResult = 'ok' | 'dup' | 'practice' | 'anomaly' | 'db';
@@ -106,29 +146,14 @@ export class KieuSystem {
 
   /**
    * Bảng Thiên Lộ (`C.KIEU_BOARD`): những người đã qua cầu 9, theo thời điểm ghi (cũ trước), tối đa `KIEU_BOARD_MAX`. Nguồn là dòng sổ cái `kieu:clear:<nhân vật>:9`
-   * (server ghi, không ai sửa được); tên lấy từ bảng nhân vật. Giãn cách mỗi người để không bị dùng làm đường truy vấn dồn.
+   * (server ghi, không ai sửa được). Truy vấn theo KHOẢNG trên cột `idem` (dùng chỉ mục UNIQUE, không quét cả sổ cái; `LIKE` của SQLite không tận dụng được chỉ mục),
+   * lọc đúng đuôi `:9` trong JS; kết quả cache dùng chung mọi người `BOARD_TTL_MS` và làm mới ngay khi có người vừa qua cầu 9. Giãn cách mỗi người chống dồn tin.
    */
   onBoard(p: PlayerEnt): void {
     const last = this.lastBoard.get(p.char.id) ?? -Infinity;
     if (this.c.now - last < KIEU_BOARD_COOLDOWN_MS) return;
     this.lastBoard.set(p.char.id, this.c.now);
-    const where = like(ledger.idem, 'kieu:clear:%:9');
-    const rows = db
-      .select({ name: characters.name, ts: ledger.ts })
-      .from(ledger)
-      .innerJoin(characters, eq(characters.id, ledger.charId))
-      .where(where)
-      .orderBy(ledger.ts)
-      .limit(KIEU_BOARD_MAX)
-      .all();
-    const total =
-      db
-        .select({ n: sql<number>`count(*)` })
-        .from(ledger)
-        .where(where)
-        .get()?.n ?? 0;
-    const msg: KieuBoardMsg = { rows, total };
-    p.client.send(S.KIEU_BOARD, msg);
+    p.client.send(S.KIEU_BOARD, boardCached(Date.now()));
   }
 
   /**
@@ -177,6 +202,7 @@ export class KieuSystem {
       return 'db';
     }
     c.meta.kieu = n;
+    if (n === 9) resetBoardCache();
     c.recalc();
     c.hp = Math.min(c.hp, c.mhp);
     c.mp = Math.min(c.mp, c.mmp);
