@@ -6,7 +6,7 @@
    "type": "decal",
    "tex": "rune",
    "t": 0.0,
-   "r": 8.0,
+   "r": 4.6,
    "dur": 2.0,
    "at": "self",
    "offset": [
@@ -24,7 +24,7 @@
    "type": "decal",
    "tex": "rune",
    "t": 0.1,
-   "r": 5.4,
+   "r": 3.0,
    "dur": 1.9,
    "at": "self",
    "offset": [
@@ -50,8 +50,8 @@
     0.08,
     0
    ],
-   "scale": 14.0,
-   "scaleTo": 3.0,
+   "scale": 8.0,
+   "scaleTo": 2.0,
    "sweep": 0.5,
    "erodeFrom": 0.5,
    "ragged": 0.7,

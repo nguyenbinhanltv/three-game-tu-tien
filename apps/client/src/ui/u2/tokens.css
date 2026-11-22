@@ -54,6 +54,13 @@
   --u-muc-dim: #5c4c34; /* chữ phụ trên giấy; ≥ AA trên cả --u-giay và --u-giay-lo */
   --u-chu: #efe6d0; /* chữ trên nền tối */
   --u-chu-dim: #bfae87;
+  /* Boss hai mặt (TN-3): chữ, viền, nền chỉ báo mặt Âm (tím lạnh) / mặt Dương (vàng cam). */
+  --u-face-am: #d8d4f0;
+  --u-face-am-line: #8a7ad8;
+  --u-face-am-bg: #261a48;
+  --u-face-duong: #fff0c8;
+  --u-face-duong-line: #e8a040;
+  --u-face-duong-bg: #6e3a0c;
 
   /* ── Ngọc Thanh (celadon) cho nền sơn thủy, bảng sáng, màn tĩnh ── */
   --u-thanh-0: #f3f6f1;

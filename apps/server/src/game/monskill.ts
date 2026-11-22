@@ -14,6 +14,7 @@ import {
   lineGeom,
   MF_BURROW,
   MF_FACE,
+  MF_FACE_T,
   MF_MX_MASK,
   MF_REAL,
   MF_REFLECT,
@@ -184,7 +185,7 @@ export class MonSkills {
         d: Math.max(0.3, ph.left),
       });
     }
-    if (dirty || (rt.face === 'am') !== ((rt.bits & MF_FACE) !== 0)) this.refresh(m, now);
+    if (dirty || !(rt.bits & MF_FACE_T) || (rt.face === 'am') !== ((rt.bits & MF_FACE) !== 0)) this.refresh(m, now);
   }
 
   /**
@@ -467,8 +468,10 @@ export class MonSkills {
       ce = Math.max(ce, rt.weakUntil);
     }
     const fc = m.rules.ai.faces;
-    if (fc && rt.faceAt && rt.face === 'am') {
-      bits |= MF_FACE;
+    if (fc && rt.faceAt) {
+      // `MF_FACE_T`: đang trong trận hai mặt (client đếm ngược tới `ce`); `MF_FACE`: đang quay mặt Âm.
+      bits |= MF_FACE_T;
+      if (rt.face === 'am') bits |= MF_FACE;
       ce = Math.max(ce, facePhase(fc, rt.faceAt, now).flipAt);
     }
     if (m.def.mirror) bits |= MF_REAL;

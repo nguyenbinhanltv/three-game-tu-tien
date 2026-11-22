@@ -49,7 +49,7 @@ import { SLOWMO, _camFocus, _shakeLook, _shakePos, _v, isWebGPU } from './common
 import { runCine } from './cine';
 import { applyDmg, ensureCloneVis, updateSoulVis } from './fxMsgs';
 import { syncHud } from './hudSync';
-import { updateEclipse, updateRiftMood } from './levelLoad';
+import { updateEclipse, updateFaceMood, updateRiftMood } from './levelLoad';
 import type { Game } from '../engine';
 import { logger } from '../../base/log';
 
@@ -223,6 +223,7 @@ export function runFrame(eng: Game): void {
   setListener(rp.x, rp.z, eng.camYaw);
   eng.env.update(dt, eng.camera, rp);
   if (eng.riftMood) updateRiftMood(eng, dt, rp.z, rp.x);
+  if (levelId() === 'gioi_tri') updateFaceMood(eng, dt);
   eng.aurora?.update(eng.camera.position);
   updateEclipse(eng, dt);
   eng.lanterns?.update(_v.set(rp.x, rp.y, rp.z));

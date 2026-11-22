@@ -9,6 +9,7 @@ import {
   MF_BURROW,
   MF_CHANT,
   MF_FACE,
+  MF_FACE_T,
   MF_REFLECT,
   MF_WEAK,
   MS_ATTACK,
@@ -27,6 +28,7 @@ import {
 import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
 import {
+  MON_AURA_DUONG,
   MON_AURA_FACE,
   MON_AURA_REAL,
   MON_AURA_REFLECT,
@@ -1139,7 +1141,13 @@ export function applyDmg(
       if (eng.hitSoundLog.length > 200) eng.hitSoundLog.shift();
     }
   }
-  const text = m.heal ? `+${m.n}` : m.n === 0 ? t('ui.absorbed') : mine ? `-${m.n}` : `${m.n}${m.crit ? '!' : ''}`;
+  const text = m.heal
+    ? `+${m.n}`
+    : m.n === 0
+      ? t(((eng.view.monsters.get(m.dst)?.mf ?? 0) & MF_FACE) !== 0 ? 'ui.immune' : 'ui.absorbed')
+      : mine
+        ? `-${m.n}`
+        : `${m.n}${m.crit ? '!' : ''}`;
   // Đứng đúng trận môn khắc chế (Thiên Nhân Kiếp, cờ `ke` do server tính): chỉ thêm chữ báo.
   eng.dmg.spawn(m.ke === 1 && !m.heal ? `${text} ${t('ui.dmg.ke')}` : text, _v, cls);
 }
@@ -1197,8 +1205,14 @@ export function monFlagFx(eng: Game, m: MonVis, e: MonFlagEdge): void {
   if (e.on & MF_SENSED)
     v.castSigil(pos, left, MON_AURA_SENSED.color, MON_AURA_SENSED.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_SENSED) !== 0);
   // Mặt Âm của boss hai mặt: vòng tím bám chân suốt mặt Âm (`ce` = lúc lật), tắt khi cờ rơi.
-  if (e.on & MF_FACE)
-    v.castSigil(pos, left, MON_AURA_FACE.color, MON_AURA_FACE.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_FACE) !== 0);
+  // Mặt Âm: khiên mờ tím bao thân + vòng tím dưới chân (mặt sai: không đánh được). Mặt Dương: viền vàng cam dưới chân (đang dễ tổn thương).
+  const mfOf = () => eng.view.monsters.get(id)?.mf ?? 0;
+  if (e.on & MF_FACE) {
+    v.castSigil(pos, left, MON_AURA_FACE.color, MON_AURA_FACE.radius, () => (mfOf() & MF_FACE) !== 0);
+    v.shield(pos, left, () => (mfOf() & MF_FACE) !== 0, MON_AURA_FACE.color, Math.min(3, Math.max(1.4, m.model.height / 1.3)), 0.4);
+  }
+  if (e.off & MF_FACE ? (mfOf() & MF_FACE_T) !== 0 : (e.on & MF_FACE_T) !== 0 && (mfOf() & MF_FACE) === 0)
+    v.castSigil(pos, left, MON_AURA_DUONG.color, MON_AURA_DUONG.radius, () => (mfOf() & MF_FACE_T) !== 0 && (mfOf() & MF_FACE) === 0);
   if (e.on & MF_CHANT) eng.monFx?.cast(m);
   if ((e.on | e.off) & MF_BURROW) {
     _v2.set(m.x, m.y + 0.4, m.z);

@@ -1,8 +1,8 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
-import { KIEM_TRUNG, padsOfLevel, vdGateYaw, terrainOf, propsOf, SECT, tribDef } from '@dtl/shared';
+import { KIEM_TRUNG, padsOfLevel, vdGateYaw, terrainOf, propsOf, SECT, tribDef, MF_FACE, MF_FACE_T, MS_DEAD } from '@dtl/shared';
 import { heightAt, levelAssets, levelId, levelTerrain } from '../../base/levelCtx';
-import { LEVELS } from '@dtl/content';
+import { LEVELS, MONSTER } from '@dtl/content';
 import { get } from '../../ui/store';
 import { Butterflies, BUTTERFLY_LEVELS } from '../world/butterflies';
 import { Grass } from '../world/grass';
@@ -102,6 +102,8 @@ function buildBacHoang(eng: Game): void {
   const T = levelTerrain();
   eng.riftMood = true;
   eng.riftMoodT = -1;
+  eng.faceMoodAm = eng.faceMoodDuong = 0;
+  eng.faceMoodApplied = -9;
   eng.rift = buildRiftVeil(riftPath(T.def), (x, z) => heightAt(x, z), { violet: true });
   eng.scene.add(eng.rift.group);
   eng.deadTrees = new DeadTrees(deadTreeSpots(bhCtx(propsOf('bac_hoang')), 700), (x, z) => heightAt(x, z));
@@ -207,6 +209,44 @@ export function updateRiftMood(eng: Game, dt: number, z: number, x = 0): void {
   tuneAtmosphere(eng.scene, eng.env, p, t > 0.5 ? far : near, mixHex(skyTopOf(near), skyTopOf(far), t));
   applyGrading(p);
   if (!vd) eng.aurora?.setIntensity(AURORA_BY_TOD[tod], t);
+}
+
+/**
+ * Phòng Giới Trì (TN-3): màu cả phòng đổi theo mặt của Phủ Chủ để người chơi đọc ra mặt nào đang bật, chuyển trong ~0,5 s.
+ * Mặt Âm = tím lạnh, tối, sương thấp dày; mặt Dương = vàng cam sáng. Không có boss hai mặt đang đánh thì về mood gốc của level.
+ * Chỉ là lớp hình: mặt do server quyết định (cờ MF_FACE/MF_FACE_T của quái). Chỉnh uniform, không biên dịch lại.
+ */
+export function updateFaceMood(eng: Game, dt: number): void {
+  let tAm = 0;
+  let tDu = 0;
+  eng.view.monsters.forEach((m) => {
+    if (m.st === MS_DEAD || !((m.mf ?? 0) & MF_FACE_T) || !MONSTER.get(m.t)?.ai?.faces) return;
+    if ((m.mf ?? 0) & MF_FACE) tAm = 1;
+    else tDu = 1;
+  });
+  const k = Math.min(1, dt * 6);
+  eng.faceMoodAm += (tAm - eng.faceMoodAm) * k;
+  eng.faceMoodDuong += (tDu - eng.faceMoodDuong) * k;
+  const wA = Math.abs(eng.faceMoodAm) < 0.004 ? 0 : eng.faceMoodAm;
+  const wD = Math.abs(eng.faceMoodDuong) < 0.004 ? 0 : eng.faceMoodDuong;
+  const sig = wA * 7 + wD * 3;
+  if (Math.abs(sig - eng.faceMoodApplied) < 0.01) return;
+  eng.faceMoodApplied = sig;
+  const base = GRADING[eng.levelMood];
+  const am = mixPreset(base, GRADING.vda_night, 1);
+  am.fogDensity *= 1.7;
+  am.heightFogBoost *= 2;
+  am.heightFogTop *= 1.4;
+  am.exposure *= 0.82;
+  am.saturation *= 0.9;
+  const du = mixPreset(base, GRADING.vdd_day, 1);
+  du.exposure *= 1.14;
+  du.sunIntensity *= 1.25;
+  du.fogDensity *= 0.7;
+  const p = mixPreset(mixPreset(base, am, wA), du, wD);
+  const name: GradingName = wA > 0.5 ? 'vda_night' : wD > 0.5 ? 'vdd_day' : eng.levelMood;
+  tuneAtmosphere(eng.scene, eng.env, p, name, mixHex(mixHex(skyTopOf(eng.levelMood), skyTopOf('vda_night'), wA), skyTopOf('vdd_day'), wD));
+  applyGrading(p);
 }
 
 /** Nhật thực của Nhật Thực Kiếp: từ pha Nhật thực (25 s) trời tối đen có vành lửa; trước đó chỉ là quầng mờ. Ngoài sân kiếp thì tắt. */

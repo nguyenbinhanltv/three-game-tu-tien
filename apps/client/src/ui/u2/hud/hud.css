@@ -194,6 +194,37 @@
 .u2h-boss-hp {
   position: relative;
 }
+/* Boss hai mặt (TN-3): biểu tượng Âm/Dương + đếm ngược lần lật, màu theo mặt (tím lạnh / vàng cam). */
+.u2h-boss-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 2px 10px;
+  border-radius: 3px;
+  font-size: var(--u-fs-2);
+  letter-spacing: 0.04em;
+  transition:
+    background-color 0.4s,
+    color 0.4s,
+    border-color 0.4s;
+  border: 1px solid;
+}
+.u2h-boss-face.am {
+  color: var(--u-face-am);
+  border-color: var(--u-face-am-line);
+  background: color-mix(in srgb, var(--u-face-am-bg) 80%, transparent);
+}
+.u2h-boss-face.duong {
+  color: var(--u-face-duong);
+  border-color: var(--u-face-duong-line);
+  background: color-mix(in srgb, var(--u-face-duong-bg) 80%, transparent);
+}
+.u2h-boss-face-ico {
+  font-size: 1.35em;
+  line-height: 1;
+}
 .u2h-boss-mark {
   position: absolute;
   top: 0;

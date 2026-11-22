@@ -833,6 +833,10 @@ export class Game {
   riftMood = false;
   riftMoodT = -1;
   riftMoodAcc = 0;
+  /** Phòng Giới Trì: trọng số mood mặt Âm / mặt Dương của boss hai mặt (0..1, đổi dần ~0,5 s) và trọng số đã áp lần cuối. */
+  faceMoodAm = 0;
+  faceMoodDuong = 0;
+  faceMoodApplied = -9;
 
   /** Xích Tẫn Khích (DV-3K): vết nứt phát sáng trên sàn hẻm (3 vết × 2 draw call), đèn nhấn quanh bia giữ và ba khe mạch. `?xichart=0` tắt để so ảnh. */
   xichRifts: RiftVeil[] = [];

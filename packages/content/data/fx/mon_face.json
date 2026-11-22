@@ -13,7 +13,7 @@
     1.4,
     0
    ],
-   "scale": 2.6,
+   "scale": 1.6,
    "billboard": true,
    "sweep": 0.0,
    "tone": "rim",
@@ -25,15 +25,15 @@
    "type": "mesh",
    "shape": "ripple",
    "t": 0.0,
-   "dur": 0.6,
+   "dur": 0.45,
    "at": "self",
    "offset": [
     0,
     0.1,
     0
    ],
-   "scale": 0.6,
-   "scaleTo": 17.0,
+   "scale": 0.5,
+   "scaleTo": 9.0,
    "sweep": 0.4,
    "erodeFrom": 0.45,
    "ragged": 0.8,
@@ -53,8 +53,8 @@
     0.12,
     0
    ],
-   "scale": 0.5,
-   "scaleTo": 13.0,
+   "scale": 0.4,
+   "scaleTo": 7.0,
    "sweep": 0.4,
    "erodeFrom": 0.4,
    "tone": "accent",
@@ -66,15 +66,15 @@
    "type": "decal",
    "tex": "rune",
    "t": 0.0,
-   "r": 10.0,
-   "dur": 2.4,
+   "r": 4.2,
+   "dur": 0.8,
    "at": "self",
    "offset": [
     0,
     -0.05,
     0
    ],
-   "grow": 0.3,
+   "grow": 0.12,
    "tone": "core",
    "alpha": 0.8,
    "tier": 0
@@ -83,8 +83,8 @@
    "type": "decal",
    "tex": "crack",
    "t": 0.04,
-   "r": 8.0,
-   "dur": 2.2,
+   "r": 3.4,
+   "dur": 0.8,
    "at": "self",
    "offset": [
     0,
@@ -100,15 +100,15 @@
    "type": "mesh",
    "shape": "smoke",
    "t": 0.04,
-   "dur": 1.0,
+   "dur": 0.6,
    "at": "self",
    "offset": [
     0,
     0.3,
     0
    ],
-   "scale": 2.4,
-   "scaleTo": 5.0,
+   "scale": 1.6,
+   "scaleTo": 3.2,
    "sweep": 0.5,
    "erodeFrom": 0.4,
    "tone": "core",
@@ -140,19 +140,19 @@
    "type": "mesh",
    "shape": "spike",
    "t": 0.03,
-   "dur": 0.7,
+   "dur": 0.45,
    "at": "self",
    "offset": [
     0.0,
     0,
-    4.2
+    2.2
    ],
    "rot": [
     -90,
     0,
     0
    ],
-   "scale": 0.3,
+   "scale": 0.22,
    "sweep": 0.2,
    "erodeFrom": 0.55,
    "tone": "body",
@@ -165,19 +165,19 @@
    "type": "mesh",
    "shape": "spike",
    "t": 0.05,
-   "dur": 0.7,
+   "dur": 0.45,
    "at": "self",
    "offset": [
-    2.97,
+    1.91,
     0,
-    2.97
+    1.1
    ],
    "rot": [
     -78,
     0,
     0
    ],
-   "scale": 0.35,
+   "scale": 0.26,
    "sweep": 0.2,
    "erodeFrom": 0.55,
    "tone": "rim",
@@ -190,19 +190,19 @@
    "type": "mesh",
    "shape": "spike",
    "t": 0.07,
-   "dur": 0.7,
+   "dur": 0.45,
    "at": "self",
    "offset": [
-    4.2,
+    1.91,
     0,
-    0.0
+    -1.1
    ],
    "rot": [
     -90,
     0,
     0
    ],
-   "scale": 0.4,
+   "scale": 0.3,
    "sweep": 0.2,
    "erodeFrom": 0.55,
    "tone": "body",
@@ -215,19 +215,19 @@
    "type": "mesh",
    "shape": "spike",
    "t": 0.09,
-   "dur": 0.7,
+   "dur": 0.45,
    "at": "self",
    "offset": [
-    2.97,
+    0.0,
     0,
-    -2.97
+    -2.2
    ],
    "rot": [
     -78,
     0,
     0
    ],
-   "scale": 0.3,
+   "scale": 0.22,
    "sweep": 0.2,
    "erodeFrom": 0.55,
    "tone": "rim",
@@ -240,19 +240,19 @@
    "type": "mesh",
    "shape": "spike",
    "t": 0.11,
-   "dur": 0.7,
+   "dur": 0.45,
    "at": "self",
    "offset": [
-    0.0,
+    -1.91,
     0,
-    -4.2
+    -1.1
    ],
    "rot": [
     -90,
     0,
     0
    ],
-   "scale": 0.35,
+   "scale": 0.26,
    "sweep": 0.2,
    "erodeFrom": 0.55,
    "tone": "body",
@@ -265,74 +265,24 @@
    "type": "mesh",
    "shape": "spike",
    "t": 0.13,
-   "dur": 0.7,
+   "dur": 0.45,
    "at": "self",
    "offset": [
-    -2.97,
+    -1.91,
     0,
-    -2.97
+    1.1
    ],
    "rot": [
     -78,
-    0,
-    0
-   ],
-   "scale": 0.4,
-   "sweep": 0.2,
-   "erodeFrom": 0.55,
-   "tone": "rim",
-   "alpha": 0.9,
-   "seed": 45,
-   "tier": 1,
-   "camFade": true
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.15,
-   "dur": 0.7,
-   "at": "self",
-   "offset": [
-    -4.2,
-    0,
-    -0.0
-   ],
-   "rot": [
-    -90,
     0,
     0
    ],
    "scale": 0.3,
    "sweep": 0.2,
    "erodeFrom": 0.55,
-   "tone": "body",
-   "alpha": 0.9,
-   "seed": 46,
-   "tier": 1,
-   "camFade": true
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.17,
-   "dur": 0.7,
-   "at": "self",
-   "offset": [
-    -2.97,
-    0,
-    2.97
-   ],
-   "rot": [
-    -78,
-    0,
-    0
-   ],
-   "scale": 0.35,
-   "sweep": 0.2,
-   "erodeFrom": 0.55,
    "tone": "rim",
    "alpha": 0.9,
-   "seed": 47,
+   "seed": 45,
    "tier": 1,
    "camFade": true
   }

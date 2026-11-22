@@ -44,9 +44,9 @@ def ring(n, radius, f):
 
 # Báo trước (2 giây): triện văn dưới chân boss siết dần, gợn thu vào, tàn sáng hút về. Phẳng sát đất nên đọc rõ từ xa; một cột sáng mảnh camFade.
 write('mon_face_warn', [
-    decal('rune', 0.0, 8.0, 2.0, at='self', offset=[0, -0.05, 0], grow=0.3, tone='accent', alpha=0.95, tier=0, **START),
-    decal('rune', 0.1, 5.4, 1.9, at='self', offset=[0, -0.04, 0], grow=0.25, yaw=22, tone='rim', alpha=0.7, tier=1, **START),
-    mesh('ripple', 0.0, 1.0, at='self', offset=[0, 0.08, 0], scale=14.0, scaleTo=3.0, sweep=0.5, erodeFrom=0.5, ragged=0.7, tone='body', alpha=0.85, seed=21, tier=0, **START),
+    decal('rune', 0.0, 4.6, 2.0, at='self', offset=[0, -0.05, 0], grow=0.3, tone='accent', alpha=0.95, tier=0, **START),
+    decal('rune', 0.1, 3.0, 1.9, at='self', offset=[0, -0.04, 0], grow=0.25, yaw=22, tone='rim', alpha=0.7, tier=1, **START),
+    mesh('ripple', 0.0, 1.0, at='self', offset=[0, 0.08, 0], scale=8.0, scaleTo=2.0, sweep=0.5, erodeFrom=0.5, ragged=0.7, tone='body', alpha=0.85, seed=21, tier=0, **START),
     mesh('ripple', 0.9, 1.0, at='self', offset=[0, 0.09, 0], scale=14.0, scaleTo=3.0, sweep=0.5, erodeFrom=0.5, ragged=0.7, tone='accent', alpha=0.85, seed=22, tier=0, **START),
     mesh('smoke', 0.0, 1.9, at='self', offset=[0, 0.2, 0], scale=4.0, scaleTo=1.6, sweep=0.6, erodeFrom=0.4, tone='core', alpha=0.45, seed=23, tier=1, camFade=True, **START),
     parts('spark', 0.0, 18, 1.8, 3.0, 1.2, 0.08, at='self', offset=[0, 0.3, 0], tone='rim', inward=True, tier=1, **START),
@@ -54,13 +54,13 @@ write('mon_face_warn', [
 
 # Lật mặt: chớp, hai gợn lan ra, vòng gai rạn trồi lần lượt, khói, mảnh bắn lên. Tất cả khối cao có camFade.
 flip = [
-    mesh('burst', 0.0, 0.14, at='self', offset=[0, 1.4, 0], scale=2.6, billboard=True, sweep=0.0, tone='rim', alpha=0.9, tier=0, camFade=True),
-    mesh('ripple', 0.0, 0.6, at='self', offset=[0, 0.1, 0], scale=0.6, scaleTo=17.0, sweep=0.4, erodeFrom=0.45, ragged=0.8, tone='body', alpha=0.95, seed=31, tier=0),
-    mesh('ripple', 0.08, 0.55, at='self', offset=[0, 0.12, 0], scale=0.5, scaleTo=13.0, sweep=0.4, erodeFrom=0.4, tone='accent', alpha=0.85, seed=32, tier=1),
-    decal('rune', 0.0, 10.0, 2.4, at='self', offset=[0, -0.05, 0], grow=0.3, tone='core', alpha=0.8, tier=0),
-    decal('crack', 0.04, 8.0, 2.2, at='self', offset=[0, -0.04, 0], grow=0.12, tone='accent', alpha=0.85, tier=1),
-    mesh('smoke', 0.04, 1.0, at='self', offset=[0, 0.3, 0], scale=2.4, scaleTo=5.0, sweep=0.5, erodeFrom=0.4, tone='core', alpha=0.5, seed=33, tier=1, camFade=True),
+    mesh('burst', 0.0, 0.14, at='self', offset=[0, 1.4, 0], scale=1.6, billboard=True, sweep=0.0, tone='rim', alpha=0.9, tier=0, camFade=True),
+    mesh('ripple', 0.0, 0.45, at='self', offset=[0, 0.1, 0], scale=0.5, scaleTo=9.0, sweep=0.4, erodeFrom=0.45, ragged=0.8, tone='body', alpha=0.95, seed=31, tier=0),
+    mesh('ripple', 0.08, 0.55, at='self', offset=[0, 0.12, 0], scale=0.4, scaleTo=7.0, sweep=0.4, erodeFrom=0.4, tone='accent', alpha=0.85, seed=32, tier=1),
+    decal('rune', 0.0, 4.2, 0.8, at='self', offset=[0, -0.05, 0], grow=0.12, tone='core', alpha=0.8, tier=0),
+    decal('crack', 0.04, 3.4, 0.8, at='self', offset=[0, -0.04, 0], grow=0.12, tone='accent', alpha=0.85, tier=1),
+    mesh('smoke', 0.04, 0.6, at='self', offset=[0, 0.3, 0], scale=1.6, scaleTo=3.2, sweep=0.5, erodeFrom=0.4, tone='core', alpha=0.5, seed=33, tier=1, camFade=True),
     parts('shard', 0.0, 16, 5.5, 1.0, 0.7, 0.12, at='self', offset=[0, 0.4, 0], tone='body', grav=8, tier=0),
 ]
-flip += ring(8, 4.2, lambda i, x, z: mesh('spike', round(0.03 + 0.02 * i, 3), 0.7, at='self', offset=[x, 0, z], rot=[-90 if i % 2 == 0 else -78, 0, 0], scale=round(0.3 + 0.05 * (i % 3), 2), sweep=0.2, erodeFrom=0.55, tone='rim' if i % 2 else 'body', alpha=0.9, seed=40 + i, tier=1, camFade=True))
+flip += ring(6, 2.2, lambda i, x, z: mesh('spike', round(0.03 + 0.02 * i, 3), 0.45, at='self', offset=[x, 0, z], rot=[-90 if i % 2 == 0 else -78, 0, 0], scale=round(0.22 + 0.04 * (i % 3), 2), sweep=0.2, erodeFrom=0.55, tone='rim' if i % 2 else 'body', alpha=0.9, seed=40 + i, tier=1, camFade=True))
 write('mon_face', flip)

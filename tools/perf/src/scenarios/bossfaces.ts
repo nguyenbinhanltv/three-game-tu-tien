@@ -6,7 +6,7 @@ import { MF_FACE } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
 import { list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
-import { cam, enterLevel, gm, hideUi, skipCutscene, tp, waitLevel } from '../lib/game';
+import { cam, enterLevel, gm, skipCutscene, tp, waitLevel } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snapSizes, writeJson } from '../lib/shot';
 
@@ -43,7 +43,6 @@ export default {
     await waitLevel(page, id);
     await skipCutscene(page, 10);
     await gm(page, 'god on', 1000);
-    await hideUi(page, 'hud');
     await gm(page, 'killall', 700);
     await gm(page, `tp ${c.x} ${c.z + 16}`, 1100);
     // Hướng nhìn: về phía bắc của bí cảnh (-z), cùng quy ước dungeonart (yaw 0 sau hiệu chỉnh: bí cảnh Giới Trì dựng quay mặt -z).
@@ -68,7 +67,8 @@ export default {
     // Boss vào trận khi bị đánh/đuổi tới mình: `hurt` nhẹ để chắc chắn nó giao chiến và bắt đầu đồng hồ mặt.
     await gm(page, 'hurt 95', 400);
     const t0 = Date.now();
-    await snapSizes(page, r.out, '01-mat-duong', sizes, 600);
+    // Chờ dòng toast của lệnh GM tan (che thanh boss) rồi mới chụp mặt Dương.
+    await snapSizes(page, r.out, '01-mat-duong', sizes, 4500);
     // Báo trước: 2 giây trước lật (mặt Dương 14 s): chờ tới ~giây 12,3 từ lúc vào trận.
     await sleep(Math.max(0, 12_400 - (Date.now() - t0)));
     await snapSizes(page, r.out, '02-bao-truoc', sizes, 0);
