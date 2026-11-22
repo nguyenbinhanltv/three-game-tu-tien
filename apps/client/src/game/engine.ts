@@ -1317,7 +1317,9 @@ export class Game {
   }
 
   setControls(mode: string): void {
-    this.controls = mode === 'strafe' || mode === 'turn' ? mode : this.iso ? 'strafe' : 'mouse';
+    // Camera chéo luôn dùng 'strafe' và không ghi đè tuỳ chọn đã lưu của camera thường.
+    if (this.iso) return;
+    this.controls = mode === 'strafe' || mode === 'turn' ? mode : 'mouse';
     if (this.controls !== 'mouse') releaseLock(this);
     localStorage.setItem('dtl.controls', this.controls);
     set({ controls: this.controls });
