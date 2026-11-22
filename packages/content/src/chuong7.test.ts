@@ -3,13 +3,14 @@ import {
   CUU_KIEU_RAIL,
   CUU_KIEU_ROAD_HALF,
   DUONG_THUC_LEVEL,
+  kieuMinLevel,
   MAX_LEVEL,
   padsOfLevel,
   PLAYER_RADIUS,
   TELE_PAD,
   terrainOf,
 } from '@dtl/shared';
-import { LEVELS, MONSTER, NPC } from './index';
+import { CHAPTERS, LEVELS, MONSTER, NPC, QUESTS } from './index';
 
 // TN-7: khung bản đồ Thiên Lộ Giới (chương 7): cấp 44–47, mọi quái trong cụm/tinh anh/boss có thật, NPC cấp vé đứng ở trạm, trận truyền tống đủ.
 describe('chương 7 Thiên Lộ Giới', () => {
@@ -75,5 +76,35 @@ describe('chương 7 Thiên Lộ Giới', () => {
       }
     });
     expect(segs).toBeGreaterThan(300);
+  });
+
+  it('chuỗi q7_* nối liền từ q6_dung_thuc, minLevel không giảm, mở trận trạm, chín cầu theo thứ tự và chốt ở q7_dap_thien', () => {
+    const q7 = QUESTS.filter((q) => q.id.startsWith('q7_'));
+    expect(q7.length).toBeGreaterThanOrEqual(14);
+    let prev = 'q6_dung_thuc';
+    let lv = 0;
+    for (const q of q7) {
+      expect(q.requires, q.id).toBe(prev);
+      expect(q.minLevel ?? 1, q.id).toBeGreaterThanOrEqual(lv);
+      lv = q.minLevel ?? 1;
+      prev = q.id;
+    }
+    expect(q7.at(-1)!.id).toBe('q7_dap_thien');
+    expect(q7[0]!.unlockTele).toContain('ck_tp_tram');
+    expect(lv).toBeLessThanOrEqual(MAX_LEVEL);
+    const cau = q7.filter((q) => q.id.startsWith('q7_cau_'));
+    expect(cau.map((q) => q.objectives[0]!.target)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `kieu_${n}`));
+    // cầu n cần cấp ≥ kieuMinLevel(n): nhiệm vụ không được mở sớm hơn điều kiện vào cầu
+    cau.forEach((q, i) => expect(q.minLevel ?? 1, q.id).toBeGreaterThanOrEqual(kieuMinLevel(i + 1)));
+  });
+
+  it('chương ch7 trỏ đúng level, nhiệm vụ chốt và boss thế giới; nhiệm vụ phụ không nằm trên đường chính', () => {
+    const ch = CHAPTERS.find((c) => c.id === 'ch7')!;
+    expect(ch.level).toBe('cuu_kieu');
+    expect(ch.levels).toEqual([DUONG_THUC_LEVEL, MAX_LEVEL]);
+    expect(ch.closeQuest).toBe('q7_dap_thien');
+    expect(ch.nodes.some((n) => n.kind === 'boss' && n.ref === 'boss_kieu_thu')).toBe(true);
+    const main = new Set(QUESTS.filter((q) => q.id.startsWith('q7_')).map((q) => q.requires));
+    for (const q of QUESTS.filter((x) => x.id.startsWith('s7_'))) expect(main.has(q.id), q.id).toBe(false);
   });
 });
