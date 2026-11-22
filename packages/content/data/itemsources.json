@@ -13,6 +13,7 @@
  ],
  "gem_hoa_2": [
   "boss_huyet_lang_vuong",
+  "boss_lo_linh",
   "elite_loi_van_su_vuong"
  ],
  "gem_kim_1": [
@@ -174,6 +175,7 @@
   "boss_dao_linh",
   "boss_dinh_linh",
   "boss_kieu_thu",
+  "boss_lo_linh",
   "boss_thach_tuong",
   "boss_ve_kieu",
   "elite_lo_thach_tuong",
@@ -375,6 +377,7 @@
   "boss_kieu_thu",
   "boss_kim_da_ma_hau",
   "boss_kinh_nguyet_chan_quan",
+  "boss_lo_linh",
   "boss_phu_chu",
   "boss_tam_thu_nguc_khuyen",
   "boss_tan_hoa_kiem_co",
@@ -467,6 +470,7 @@
   "boss_kieu_thu",
   "boss_kim_da_ma_hau",
   "boss_kinh_nguyet_chan_quan",
+  "boss_lo_linh",
   "boss_phu_chu",
   "boss_tam_thu_nguc_khuyen",
   "boss_tan_hoa_kiem_co",
