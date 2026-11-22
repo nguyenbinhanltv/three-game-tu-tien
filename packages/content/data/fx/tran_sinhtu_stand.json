@@ -1,6 +1,6 @@
 {
  "skill": "tran_sinhtu_stand",
- "palette": "cam_che_kinh",
+ "palette": "tran_sinhtu",
  "events": [
   {
    "type": "decal",
@@ -11,7 +11,7 @@
    "at": "area",
    "grow": 0.05,
    "tone": "core",
-   "alpha": 0.85,
+   "alpha": 0.9,
    "tier": 0
   },
   {
@@ -22,9 +22,30 @@
    "dur": 1.9,
    "at": "area",
    "grow": 0.05,
-   "tone": "accent",
-   "alpha": 0.95,
+   "tone": "body",
+   "alpha": 1.0,
    "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "rune_ring2",
+   "t": 0.0,
+   "dur": 1.9,
+   "at": "area",
+   "offset": [
+    0,
+    0.06,
+    0
+   ],
+   "scale": 1.03,
+   "fit": "area",
+   "alpha": 1.0,
+   "sweep": 0.5,
+   "erodeFrom": 0.97,
+   "shadow": false,
+   "tone": "core",
+   "tier": 0,
+   "seed": 61
   },
   {
    "type": "mesh",
@@ -37,15 +58,15 @@
     0.1,
     0
    ],
-   "scale": 1.0,
+   "scale": 0.97,
    "fit": "area",
-   "alpha": 0.9,
+   "alpha": 1.0,
    "sweep": 0.5,
-   "erodeFrom": 0.95,
+   "erodeFrom": 0.97,
    "shadow": false,
-   "tone": "rim",
+   "tone": "accent",
    "tier": 0,
-   "seed": 41
+   "seed": 62
   },
   {
    "type": "mesh",
@@ -58,19 +79,14 @@
     0.12,
     0
    ],
-   "rot": [
-    0,
-    0,
-    0
-   ],
-   "scale": 0.6,
+   "scale": 0.55,
    "fit": "area",
-   "alpha": 0.9,
+   "alpha": 1.0,
    "sweep": 0.5,
-   "erodeFrom": 0.95,
+   "erodeFrom": 0.97,
    "shadow": false,
-   "tone": "accent",
-   "tier": 1,
+   "tone": "rim",
+   "tier": 0,
    "seed": 42
   },
   {

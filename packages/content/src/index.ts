@@ -220,6 +220,12 @@ import fx_skl_tam_dao from '../data/fx/skl_tam_dao.json';
 import fx_skl_doan_luu from '../data/fx/skl_doan_luu.json';
 import fx_skl_liet_dia_tram from '../data/fx/skl_liet_dia_tram.json';
 import fx_skl_tha_co from '../data/fx/skl_tha_co.json';
+import fx_skl_phong_cam from '../data/fx/skl_phong_cam.json';
+import fx_skl_mau_don_cam from '../data/fx/skl_mau_don_cam.json';
+import fx_skl_pha_diet_cam from '../data/fx/skl_pha_diet_cam.json';
+import fx_skl_tue_nguyet_cam from '../data/fx/skl_tue_nguyet_cam.json';
+import fx_skl_sinh_tu_cam from '../data/fx/skl_sinh_tu_cam.json';
+import fx_skl_phien_thien_an from '../data/fx/skl_phien_thien_an.json';
 import fx_skl_co_trieu from '../data/fx/skl_co_trieu.json';
 import fx_skl_hut_mau_co from '../data/fx/skl_hut_mau_co.json';
 import fx_skl_co_bao from '../data/fx/skl_co_bao.json';
@@ -646,6 +652,12 @@ export const FX_TIMELINES = [
   fx_skl_liet_dia_tram,
   fx_skl_tha_co,
   fx_skl_co_trieu,
+  fx_skl_phong_cam,
+  fx_skl_mau_don_cam,
+  fx_skl_pha_diet_cam,
+  fx_skl_tue_nguyet_cam,
+  fx_skl_sinh_tu_cam,
+  fx_skl_phien_thien_an,
   fx_skl_hut_mau_co,
   fx_skl_co_bao,
   fx_skl_thu_co,

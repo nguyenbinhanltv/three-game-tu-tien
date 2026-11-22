@@ -1,6 +1,6 @@
 {
  "skill": "tran_khon_tick",
- "palette": "cam_che_kinh",
+ "palette": "tran_khon",
  "events": [
   {
    "type": "mesh",
@@ -10,17 +10,17 @@
    "at": "area",
    "offset": [
     0,
-    0.1,
+    0.14,
     0
    ],
    "scale": 0.15,
    "scaleTo": 1.0,
    "fit": "area",
-   "alpha": 0.8,
+   "alpha": 1.0,
    "sweep": 0.4,
    "erodeFrom": 0.4,
    "shadow": false,
-   "tone": "body",
+   "tone": "accent",
    "tier": 0,
    "seed": 52
   },
@@ -39,7 +39,7 @@
     0.3,
     0
    ],
-   "tone": "body",
+   "tone": "rim",
    "grav": -0.5,
    "tier": 1
   }
