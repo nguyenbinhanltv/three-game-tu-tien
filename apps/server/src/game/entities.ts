@@ -227,6 +227,8 @@ export interface SimHost {
   broadcastExcept?(type: string, msg: unknown, except: ReadonlySet<string>): void;
   /** Bí cảnh: gọi khi một quái không hồi sinh bị hạ. */
   onMonsterKilled?(m: MonEnt): void;
+  /** Phòng cầu Cửu Kiều (TN-7): người chơi vừa gây sát thương lên quái (bộ đếm đóng góp của server). */
+  onPlayerHitMonster?(p: PlayerEnt, m: MonEnt): void;
   /**
    * Chuyển người chơi sang bản đồ khác (E1-B): room kiểm điều kiện, cấp vé một lần, lưu nhân vật rồi báo client vào room mới.
    * Trả false nếu bị chặn (đã báo lý do cho người chơi). Không có (test) thì từ chối.

@@ -66,12 +66,20 @@ function setup() {
 
 const OK = { present: true, contributed: true, elapsedSec: 999 };
 
+// Các cầu thật (dữ liệu) bị gỡ/thay bằng giả trong test cho từng ca; khôi phục sau mỗi ca.
+const REAL: Record<string, unknown> = {};
+beforeAll(() => {
+  for (const k of Object.keys(LEVELS)) if (k.startsWith('kieu_')) REAL[k] = LEVELS[k];
+});
 afterEach(() => {
   vi.useRealTimers();
   for (const k of Object.keys(LEVELS)) if (k.startsWith('kieu_')) delete (LEVELS as Record<string, unknown>)[k];
+  Object.assign(LEVELS, REAL);
 });
 
+/** Chỉ các cầu `ns` mở (giả); cầu khác đóng, kể cả cầu có dữ liệu thật. */
 function openBridges(...ns: number[]) {
+  for (const k of Object.keys(LEVELS)) if (k.startsWith('kieu_')) delete (LEVELS as Record<string, unknown>)[k];
   for (const n of ns) (LEVELS as Record<string, unknown>)[`kieu_${n}`] = { dungeon: { private: true } };
 }
 
@@ -79,6 +87,7 @@ describe('xin vé vào cầu', () => {
   it('chỉ cấp vé cầu kế tiếp, không nhảy cóc, không khi xa NPC, không cầu chưa mở', () => {
     const { join, sys, warns, setNear } = setup();
     const p = join(44);
+    openBridges();
     expect(sys.plan(p, { n: 1 }, [])).toBeNull();
     expect(warns).toContain('sys.kieu_closed');
     openBridges(1, 2, 3);

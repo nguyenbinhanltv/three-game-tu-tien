@@ -24,6 +24,7 @@ import thienkhuyet from './scenarios/thienkhuyet';
 import bachoang from './scenarios/bachoang';
 import vandinh from './scenarios/vandinh';
 import cuukieu from './scenarios/cuukieu';
+import kieu from './scenarios/kieu';
 import doanmach from './scenarios/doanmach';
 import vanhai from './scenarios/vanhai';
 import quality from './scenarios/quality';
@@ -92,6 +93,7 @@ const SCENARIOS: Scenario[] = [
   bachoang,
   vandinh,
   cuukieu,
+  kieu,
   doanmach,
   vanhai,
   map,

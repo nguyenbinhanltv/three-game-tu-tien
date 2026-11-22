@@ -1,0 +1,44 @@
+{
+  "id": "kieu_2",
+  "terrain": "cuu_kieu",
+  "spawns": [],
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1300,
+      "z": 1040
+    },
+    "exit": {
+      "x": 1300,
+      "z": 1048
+    },
+    "center": {
+      "x": 1300,
+      "z": 985
+    },
+    "minLevel": 44,
+    "returnLevel": "cuu_kieu",
+    "returnSpawn": {
+      "x": 1024,
+      "z": 1500
+    },
+    "bound": 70,
+    "private": true,
+    "lockAt": 1,
+    "maxRevives": 2,
+    "waves": [
+      {
+        "delay": 6,
+        "title": true,
+        "mons": [],
+        "shadow": {
+          "hpMul": 2.5,
+          "atkMul": 1.5,
+          "strikeEvery": 6,
+          "r": 4.5,
+          "mul": 1.6
+        }
+      }
+    ]
+  }
+}

@@ -1,8 +1,23 @@
 import { Portrait } from './Art';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import { useState } from 'react';
-import { C, sellPrice } from '@dtl/shared';
-import { hasString, ITEM, itemName, METHOD, NPC, pathOf, PILL_QUALITY, questPathOk, QUESTS, realmName, RECIPES, t } from '@dtl/content';
+import { C, KIEU_COUNT, KIEU_IDS, kieuCleared, kieuEntryDeny, kieuMinLevel, sellPrice } from '@dtl/shared';
+import {
+  GLOSSARY,
+  hasString,
+  ITEM,
+  LEVELS,
+  itemName,
+  METHOD,
+  NPC,
+  pathOf,
+  PILL_QUALITY,
+  questPathOk,
+  QUESTS,
+  realmName,
+  RECIPES,
+  t,
+} from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './objective';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './windows/common';
@@ -11,7 +26,7 @@ import { DaoTab, RootTab } from './Realm';
 import { EnhanceTab, ForgeTab, GemTab, PromoteTab, RefineTab, SalvageTab } from './UpgradeTabs';
 import { set, useUI } from './store';
 
-type Tab = 'talk' | 'shop' | 'craft' | 'enhance' | 'gem' | 'refine' | 'salvage' | 'forge' | 'promote' | 'root' | 'dao';
+type Tab = 'talk' | 'shop' | 'craft' | 'enhance' | 'gem' | 'refine' | 'salvage' | 'forge' | 'promote' | 'root' | 'dao' | 'kieu';
 
 function QuestTab({ npcId }: { npcId: string }) {
   const quests = useUI((s) => s.quests);
@@ -235,6 +250,40 @@ function CraftTab({ npcId }: { npcId: string }) {
   );
 }
 
+/** Tab Cửu Kiều (TN-7) ở Dẫn Kiều Nhân: chín cầu theo thứ tự. Chỉ gửi ý định `{ n }`; server kiểm mọi điều kiện và cấp vé. */
+function KieuTab() {
+  const char = useUI((s) => s.char);
+  if (!char) return null;
+  const done = kieuCleared(char.kieu);
+  const g = Game.current;
+  return (
+    <div className="shop-list">
+      <Divider label={t('ui.kieu.title')} />
+      <div className="k-dim">{t('ui.kieu.desc')}</div>
+      {Array.from({ length: KIEU_COUNT }, (_, i) => i + 1).map((n) => {
+        const open = !!LEVELS[`kieu_${n}`]?.dungeon;
+        const deny = kieuEntryDeny(char.level, char.kieu, n);
+        const practice = n <= done;
+        const state = practice ? t('ui.kieu.done') : n === done + 1 ? t('ui.kieu.next') : t('ui.kieu.locked');
+        const note = !open ? t('ui.kieu.soon') : deny === 'level' ? t('ui.kieu.need_level', { realm: realmName(kieuMinLevel(n)) }) : '';
+        return (
+          <div key={n} className="k-card shop-row" data-kieu={n}>
+            <div className="shop-info">
+              <div className="item-name">
+                {n}. {GLOSSARY.cuuKieuTen[KIEU_IDS[n - 1]!]}
+              </div>
+              <div className="k-dim">{[state, note].filter(Boolean).join(' · ')}</div>
+            </div>
+            <Button variant="primary" disabled={!open || deny !== null} onClick={() => g?.send(C.KIEU, { n })}>
+              {practice ? t('ui.kieu.practice') : t('ui.kieu.enter')}
+            </Button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function NpcDialog({ npcId }: { npcId: string }) {
   const npc = NPC.get(npcId);
   const [tab, setTab] = useState<Tab>('talk');
@@ -245,6 +294,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
   if (npc.enhance) tabs.push('enhance', 'gem', 'refine', 'salvage', 'forge', 'promote');
   if (npc.rootChange) tabs.push('root');
   if (npc.daoChoose) tabs.push('dao');
+  if (npc.kieuGuide) tabs.push('kieu');
   const cur = tabs.includes(tab) ? tab : 'talk';
   return (
     <Window title={t(`npc.${npcId}.name`)} sub={t(`npc.${npcId}.title`)} onClose={() => set({ npc: null })} cls="npc" width={540}>
@@ -270,6 +320,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
       {cur === 'promote' && <PromoteTab npcId={npcId} />}
       {cur === 'root' && <RootTab npcId={npcId} />}
       {cur === 'dao' && <DaoTab />}
+      {cur === 'kieu' && <KieuTab />}
     </Window>
   );
 }

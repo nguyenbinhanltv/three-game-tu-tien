@@ -217,6 +217,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.sim.onRespawn(p);
   }
   onMonsterKilled(_m: MonEnt): void {}
+  onPlayerHitMonster(_p: PlayerEnt, _m: MonEnt): void {}
 
   /**
    * Xác thực ở mức class: Colyseus gọi trước khi giữ chỗ hay tạo room,

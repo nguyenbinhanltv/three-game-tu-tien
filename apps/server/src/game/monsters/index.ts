@@ -407,6 +407,7 @@ export class MonsterSystem {
     if (p?.trib && dmg > 0 && mon.owner === p.sid) this.c.tribSys.noteHit(p, 'hit', dot);
     if (p) {
       mon.threat.set(p.sid, (mon.threat.get(p.sid) ?? 0) + dmg);
+      if (dmg > 0) this.c.host.onPlayerHitMonster?.(p, mon);
       if (mon.state === MS_IDLE || (mon.state === MS_RETURN && this.homeDist(mon) < LEASH * 0.7)) {
         this.resetAi(mon);
         mon.target = p.sid;

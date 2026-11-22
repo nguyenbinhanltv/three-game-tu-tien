@@ -1337,7 +1337,9 @@ console.log('\nPhó bản (nhóm 4 × cấp thấp nhất)   đợt   sạch thu
 for (const lv of Object.values(LEVELS)) {
   const d = lv.dungeon;
   if (!d || lv.tribulation || !d.waves.length) continue;
-  const L = Math.min(...d.waves.flatMap((w) => w.mons.map((m) => m.level)));
+  // Phòng cầu toàn đợt Kiếm Ảnh không có quái nào: lấy cấp vào cầu làm cấp thiết kế.
+  const mlv = d.waves.flatMap((w) => w.mons.map((m) => m.level));
+  const L = mlv.length ? Math.min(...mlv) : d.minLevel;
   const pl = player(L);
   const rows: string[] = [];
   let total = DG_ENTRY;
@@ -1345,6 +1347,15 @@ for (const lv of Object.values(LEVELS)) {
     // Đợt giải đố ba gương (E3-M): không quái; tốn thời gian đố (đọc thứ tự, chạy ba cột, thường dư vài giây) cộng nghỉ.
     if (w.puzzle) {
       const tp = (w.delay ?? 6) + w.puzzle.secs * 0.75 + DG_REGROUP;
+      total += tp;
+      rows.push(`${i + 1}:${tp.toFixed(0)}s`);
+      return;
+    }
+    // Đợt Kiếm Ảnh (TN-7, cầu 2): bóng của chính người chơi (khí huyết = hpMul × khí huyết chủ, giáp = 40% giáp chủ); mỗi người đánh bóng riêng song song,
+    // nên thời gian là của một người, không chia cho nhóm. Hiệu suất như đánh boss (phải né vùng nổ định kỳ).
+    if (w.shadow) {
+      const dps = playerDps(L, pl.atk, Math.round(pl.def * 0.4), 'lac_kiem_quyet') * DG_EFF_BOSS;
+      const tp = (w.delay ?? 6) + (pl.hp * w.shadow.hpMul) / dps;
       total += tp;
       rows.push(`${i + 1}:${tp.toFixed(0)}s`);
       return;

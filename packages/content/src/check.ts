@@ -57,6 +57,7 @@ import {
   TIER_MUL,
   PROMOTE_MAT,
   TIER_MIN_ILVL,
+  kieuOfLevel,
 } from '@dtl/shared';
 import {
   thanThongSkill,
@@ -1513,7 +1514,14 @@ for (const lv of Object.values(LEVELS)) {
   if (lv.tribulation) {
     if (d.waves.length) err(`${w}: sân độ kiếp không có đợt quái`);
   } else {
-    if (!(ret?.portals ?? []).some((q) => q.to === lv.id)) err(`${w}: ${d.returnLevel} không có cổng dẫn vào`);
+    // Phòng cầu Cửu Kiều vào bằng vé của Dẫn Kiều Nhân (KieuSystem.plan), không có cổng trên bản đồ thế giới.
+    if (kieuOfLevel(lv.id) === null && !(ret?.portals ?? []).some((q) => q.to === lv.id))
+      err(`${w}: ${d.returnLevel} không có cổng dẫn vào`);
+    if (kieuOfLevel(lv.id) !== null) {
+      if (!d.private) err(`${w}: phòng cầu phải là phó bản riêng (private)`);
+      if (!NPCS.some((n) => n.id === 'npc_dan_kieu_nhan' && n.level === d.returnLevel))
+        err(`${w}: returnLevel ${d.returnLevel} không có Dẫn Kiều Nhân`);
+    }
     if (!d.waves.length) err(`${w}: thiếu đợt quái`);
   }
   for (const wv of d.waves) for (const g of wv.mons) if (!MONSTER.get(g.id)) err(`${w}: quái ${g.id} không tồn tại`);
@@ -1556,6 +1564,13 @@ for (const lv of Object.values(LEVELS)) {
         if (!(g.at >= 0 && g.at < sl.secs && g.n >= 1)) err(`${ww}: tiếp viện phải có at trong [0; secs) và n ≥ 1`);
       }
       if (!wv.title) err(`${ww}: đợt giữ bia phải có title`);
+    }
+    if (wv.shadow) {
+      const sh = wv.shadow;
+      if (kieuOfLevel(lv.id) === null) err(`${ww}: đợt Kiếm Ảnh chỉ dùng ở phòng cầu`);
+      if (!(sh.hpMul > 0 && sh.hpMul <= 3 && sh.atkMul > 0 && sh.atkMul <= 4)) err(`${ww}: shadow hpMul ∈ (0; 3], atkMul ∈ (0; 4]`);
+      if (!(sh.strikeEvery >= 3 && sh.r >= 2 && sh.r <= 8 && sh.mul > 0)) err(`${ww}: shadow strikeEvery ≥ 3 s, r 2–8 m, mul > 0`);
+      if (!wv.title) err(`${ww}: đợt Kiếm Ảnh phải có title`);
     }
     if (wv.puzzle) {
       const pz = wv.puzzle;

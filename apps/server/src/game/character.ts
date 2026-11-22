@@ -522,6 +522,7 @@ export class Character {
       gold: this.gold,
       root: this.root,
       dao: daoOf(this.meta) ?? '',
+      kieu: kieuCleared(this.meta.kieu),
       bk: this.bk,
       trial: this.trialEndsAt > 0 ? Math.max(0, Math.ceil((this.trialEndsAt - Date.now()) / 1000)) : 0,
       retry: Math.max(0, Math.ceil((this.retryAt - Date.now()) / 1000)),
