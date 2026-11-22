@@ -18,15 +18,13 @@
 //     --no-build (dùng lại bản build tạm lần trước)   --renderer webgpu|webgl2   --headed   --channel chrome|msedge|chromium
 // Biến môi trường: PORT, CLIENT_PORT (mặc định 2655/5155), BENCH_CHANNEL.
 
-import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
-import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
-import zlib from 'node:zlib';
 import type { Browser } from 'playwright';
 import { createDevServer, listeningPids, ROOT, sleep } from './lib/devserver';
-import { args, env, opt, ports, childEnv } from './lib/env';
+import { buildClient, serveDist } from './lib/dist';
+import { args, env, opt, ports } from './lib/env';
 import { launchChrome } from './lib/browser';
 
 const OUT_DIR = path.join(ROOT, 'bench/results');
@@ -45,75 +43,6 @@ const DIST = path.join(os.tmpdir(), `dtl-load-dist-${PORT}`);
 const LONG_MS = 50;
 /** Mục tiêu M6-1. */
 const TARGET_FIRST_FRAME_MS = 2000;
-
-// ---------- build + phục vụ tĩnh có gzip ----------
-
-function build(): void {
-  if (NO_BUILD && fs.existsSync(path.join(DIST, 'index.html'))) {
-    console.log(`[load] dùng lại bản build ${DIST}`);
-    return;
-  }
-  console.log(`[load] vite build → ${DIST}`);
-  execFileSync('pnpm', ['--filter', '@dtl/client', 'exec', 'vite', 'build', '--outDir', DIST, '--emptyOutDir', '--logLevel', 'warn'], {
-    cwd: ROOT,
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
-    env: { ...childEnv(), VITE_SERVER_URL: `ws://localhost:${PORT}` },
-  });
-}
-
-const MIME: Record<string, string> = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.svg': 'image/svg+xml',
-  '.wasm': 'application/wasm',
-  '.glb': 'model/gltf-binary',
-  '.png': 'image/png',
-  '.webp': 'image/webp',
-  '.woff2': 'font/woff2',
-  '.webm': 'audio/webm',
-  '.m4a': 'audio/mp4',
-  '.ktx2': 'image/ktx2',
-};
-/** Loại file CDN nén (GLB meshopt, ảnh, font, âm thanh đã nén sẵn). */
-const GZIP = new Set(['.html', '.js', '.css', '.json', '.svg', '.wasm']);
-
-function serveDist(): Promise<http.Server> {
-  const gz = new Map<string, Buffer>();
-  const srv = http.createServer((req, res) => {
-    try {
-      const url = new URL(req.url ?? '/', 'http://x');
-      let file = path.normalize(path.join(DIST, decodeURIComponent(url.pathname)));
-      if (!file.startsWith(DIST)) {
-        res.writeHead(403).end();
-        return;
-      }
-      if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) file = path.join(DIST, 'index.html');
-      const ext = path.extname(file);
-      const headers: Record<string, string> = { 'content-type': MIME[ext] ?? 'application/octet-stream' };
-      headers['cache-control'] =
-        url.pathname.startsWith('/assets/') && !url.pathname.endsWith('manifest.json') ? 'public, max-age=31536000, immutable' : 'no-cache';
-      let body: Buffer = fs.readFileSync(file);
-      if (GZIP.has(ext) && /\bgzip\b/.test(String(req.headers['accept-encoding'] ?? ''))) {
-        let z = gz.get(file);
-        if (!z) gz.set(file, (z = zlib.gzipSync(body, { level: 9 })));
-        body = z;
-        headers['content-encoding'] = 'gzip';
-      }
-      headers['content-length'] = String(body.length);
-      res.writeHead(200, headers);
-      res.end(body);
-    } catch {
-      res.writeHead(500).end();
-    }
-  });
-  return new Promise((resolve, reject) => {
-    srv.once('error', reject);
-    srv.listen(CLIENT_PORT, () => resolve(srv));
-  });
-}
 
 // ---------- đo trong trang ----------
 
@@ -419,10 +348,10 @@ function previous(): { login?: LoginRun[]; game?: GameRun[]; file: string } | nu
 async function main(): Promise<void> {
   const busy = listeningPids([CLIENT_PORT]);
   if (busy.size) throw new Error(`cổng ${CLIENT_PORT} đang bận (có thể của worktree khác: không dùng, không kill). Chọn CLIENT_PORT khác.`);
-  build();
+  buildClient({ dist: DIST, serverPort: PORT, reuse: NO_BUILD, tag: 'load' });
   const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'load', command: 'pnpm bench:load', serverOnly: true });
   await dev.start();
-  const srv = await serveDist();
+  const srv = await serveDist(DIST, CLIENT_PORT);
   console.log(`[load] phục vụ bản build ở http://localhost:${CLIENT_PORT} (gzip), mạng ${MBPS} Mbps / ${LATENCY} ms`);
   const browser = await launchChrome({ channel: CHANNEL, headed: HEADED, tag: 'load' });
   const login: LoginRun[] = [];

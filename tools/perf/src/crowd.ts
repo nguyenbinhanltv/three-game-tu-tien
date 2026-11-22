@@ -26,6 +26,8 @@
 //   --bots 50,100   --scenes san,rung,boss,dungeon   --renderers webgpu,webgl2   --presets medium,high
 //   --seconds 10 (mỗi điểm)   --warmup 5   --size 1280x720   --dpr 1   --channel chrome|msedge|chromium   --headed
 //   --screenshot: chụp ảnh giữa vòng xoay camera (bench/results/crowd-<cảnh>-<bot>-<backend>-<preset>.png)
+//   --build: đo bản build production (server riêng + vite build tạm, gzip); --no-build dùng lại bản build cũ
+//   --cold: không xoay camera trước khi ghi (cửa sổ đo gồm cả biên dịch pipeline lần đầu thấy)
 //   --profile: ghi CPU profile trong lúc đo (Chrome DevTools mở được), in 25 hàm tốn self-time nhất; làm CPU khung cao hơn
 // Biến môi trường: PORT, CLIENT_PORT, BENCH_CHANNEL.
 
@@ -38,6 +40,7 @@ import type { Browser, Page } from 'playwright';
 import { createDevServer, ROOT, sleep } from './lib/devserver';
 import { args, env, opt, ports } from './lib/env';
 import { Bots } from './lib/bots';
+import { buildClient, serveDist } from './lib/dist';
 import { launchChrome } from './lib/browser';
 import { gm } from './lib/game';
 
@@ -117,11 +120,15 @@ const SCENE_DEFS: Record<string, Scene> = {
 };
 
 // ---------- server ----------
+/** `--build`: đo trên bản build production (vite build vào thư mục tạm, phục vụ gzip) thay vì Vite dev; `--no-build` dùng lại bản build tạm cũ. */
+const PROD = args.includes('--build') || args.includes('--no-build');
+const DIST = path.join(os.tmpdir(), `dtl-crowd-dist-${PORT}`);
 const dev = createDevServer({
   port: PORT,
   clientPort: CLIENT_PORT,
   tag: 'crowd',
   command: 'pnpm bench:crowd',
+  serverOnly: PROD,
   env: { RATE_LIMIT_EXEMPT: 'loopback', MAX_CLIENTS: '128' },
 });
 
@@ -371,7 +378,11 @@ function initScript(preset: string, port: number): void {
             let named = object;
             while (named && !named.name && named.parent) named = named.parent;
             const geo = object.geometry?.name || `${object.geometry?.type ?? '?'}/${object.geometry?.attributes?.position?.count ?? 0}v`;
-            const k = `${dst} | ${kind} | ${material?.type ?? '?'}:${material?.name || '-'} | ${named?.name || '-'} | ${geo}`;
+            // Chỉ số nhánh cấp 1 của cảnh chứa object (khớp thứ tự `sceneNodes`): tìm nguồn của lưới không tên.
+            let top = object;
+            while (top.parent && top.parent !== g.scene) top = top.parent;
+            const ti = (g.scene.children as unknown[]).indexOf(top);
+            const k = `${dst} | ${kind} | ${material?.type ?? '?'}:${material?.name || '-'} | ${named?.name || '-'}@${ti} | ${geo}`;
             B.probeOut[k] = (B.probeOut[k] ?? 0) + 1;
           }
           return direct(object, material, ...rest);
@@ -483,6 +494,9 @@ type Point = {
   attrUploadKBps: [string, number][];
   /** Số node theo nhánh con cấp 1 của scene. */
   sceneNodes: string[];
+  bigNodes?: string[];
+  probeByYaw?: Record<string, [string, number][]>;
+  dump?: string[];
   /** Material/object của pipeline tạo mới trong lúc đo (tối đa 40). */
   newPipelines: string[];
   /** Mảnh gộp VFX đã tạo (kiểu|hình|renderOrder|mảnh) tính từ lúc vào game: mỗi mảnh biên dịch shader ở lần vẽ đầu. */
@@ -715,6 +729,18 @@ async function measure(
   arrived: boolean,
 ): Promise<Point> {
   await sleep(WARMUP * 1000);
+  // Xoay camera một vòng trước khi ghi: pipeline của prop/skin chỉ biên dịch lần đầu thấy (hàng trăm ms mỗi khung) và sẽ dồn vào cửa sổ đo nếu bỏ qua.
+  // `--cold` bỏ bước này để đo đúng cú khựng lần đầu thấy.
+  if (!args.includes('--cold')) {
+    await page.evaluate((cam) => {
+      window.__crowd.cam = { t0: performance.now(), dur: 10_000, pitch: cam.pitch, dist: cam.dist };
+    }, CAM);
+    await sleep(11_000);
+    await page.evaluate(() => {
+      window.__crowd.cam = null;
+    });
+    await sleep(2000);
+  }
   if (process.argv.includes('--feetab')) await feetAB(page);
   const roomName = await page.evaluate(() => window.__game!.room?.name as string);
   await page.evaluate(
@@ -769,6 +795,36 @@ async function measure(
     for (const [k, ms] of topSelf(profile, 25)) console.log(`  ${ms.toFixed(0).padStart(6)} ms  ${k}`);
     await cdp.detach().catch(() => undefined);
   }
+  // `CROWD_YAWS=0.25,0.5,0.75` (phần của vòng xoay): đầu dò thêm ở các hướng nhìn khác (draw call thay đổi mạnh theo hướng).
+  await page.evaluate((v) => ((window as any).__dumpIdx = v), env('CROWD_DUMP'));
+  const probeByYaw: Record<string, [string, number][]> = {};
+  for (const f of env('CROWD_YAWS').split(',').filter(Boolean).map(Number)) {
+    await page.evaluate(
+      ({ f, cam }) => {
+        const B = window.__crowd;
+        B.cam = { t0: performance.now() - f * 1e9, dur: 1e9, pitch: cam.pitch, dist: cam.dist };
+        B.probeOut = {};
+        B.probe = 1;
+      },
+      { f, cam: CAM },
+    );
+    await sleep(500);
+    const out = await page.evaluate(() => {
+      window.__crowd.probe = 0;
+      return window.__crowd.probeOut;
+    });
+    probeByYaw[String(f)] = Object.entries(out).sort((x, y) => y[1] - x[1]);
+    // `--screenshot` + `CROWD_YAWS`: ảnh cùng hướng nhìn để so trước/sau (`CROWD_TAG` đặt nhãn vào tên file).
+    if (SCREENSHOT) {
+      fs.mkdirSync(OUT_DIR, { recursive: true });
+      await page.screenshot({
+        path: path.join(
+          OUT_DIR,
+          `crowd-${sc.name}-${nBots}-${backend}-${preset}-${VW}x${VH}-yaw${f}${env('CROWD_TAG') ? '-' + env('CROWD_TAG') : ''}.png`,
+        ),
+      });
+    }
+  }
   // Đầu dò draw call ở góc camera cuối vòng (cùng hướng bắt đầu).
   await page.evaluate(() => (window.__crowd.probe = 1));
   await sleep(300);
@@ -800,6 +856,47 @@ async function measure(
         });
         return `${c.name || c.type} ${n} node (${auto} auto)`;
       }),
+      // `CROWD_DUMP=1,14`: liệt kê node con của các nhánh cấp 1 theo chỉ số (loại, tên, đỉnh, đổ bóng, userData) để truy nguồn của lưới không tên.
+      dump: ((idx: string) =>
+        idx
+          .split(',')
+          .filter(Boolean)
+          .map((i) => {
+            const rows: string[] = [];
+            (g.scene.children[Number(i)] as any)?.traverse((o: any) => {
+              if (o.isMesh || o.isInstancedMesh)
+                rows.push(
+                  `${o.type} ${o.name || '-'} v${o.geometry?.attributes?.position?.count ?? 0}${o.count ? ' x' + o.count : ''} cast=${o.castShadow ? 1 : 0} vis=${o.visible ? 1 : 0} ud=${Object.keys(o.userData ?? {}).join(',')} mat=${o.material?.name || '-'}`,
+                );
+            });
+            return [`#${i}: ${rows.length} mesh`, ...rows].join(' ;; ');
+          }))(((window as any).__dumpIdx as string) ?? ''),
+      // Nhánh con của các nhánh lớn (> 500 node), đi sâu vào nhánh to nhất: tìm chỗ tốn quét cảnh/tính ma trận.
+      bigNodes: (() => {
+        const count = (o: any) => {
+          let n = 0;
+          let auto = 0;
+          let mesh = 0;
+          o.traverse((x: any) => {
+            n++;
+            if (x.matrixAutoUpdate) auto++;
+            if (x.isMesh) mesh++;
+          });
+          return { n, auto, mesh };
+        };
+        const out: string[] = [];
+        const walk = (o: any, path: string, depth: number) => {
+          const kids = (o.children as any[]).map((c) => ({ c, ...count(c) })).sort((x, y) => y.n - x.n);
+          for (const k of kids.slice(0, 8)) {
+            const nm = `${path}/${k.c.name || k.c.type}`;
+            out.push(`${nm} ${k.n} node (${k.auto} auto, ${k.mesh} mesh${k.c.visible ? '' : ', ẩn'})`);
+          }
+          const top = kids[0];
+          if (top && top.n > 300 && depth < 4) walk(top.c, `${path}/${top.c.name || top.c.type}`, depth + 1);
+        };
+        for (const c of g.scene.children as any[]) if (count(c).n > 500) walk(c, c.name || c.type, 0);
+        return out;
+      })(),
       fxBuckets: [...(g.vfx.batch.created as string[])],
       long: B.long,
       rx: B.rx,
@@ -872,6 +969,9 @@ async function measure(
       .sort((a, b) => b[1] - a[1])
       .slice(0, 40),
     sceneNodes: raw.sceneNodes,
+    bigNodes: raw.bigNodes,
+    probeByYaw,
+    dump: raw.dump,
     attrUploadKBps: Object.entries(raw.uploads as Record<string, number>)
       .map(([k, b]) => [k, round(b / 1024 / secs, 1)] as [string, number])
       .sort((a, b) => b[1] - a[1])
@@ -1029,7 +1129,9 @@ function printTable(points: Point[]): void {
 // ---------- main ----------
 async function main(): Promise<void> {
   const started = new Date();
+  if (PROD) buildClient({ dist: DIST, serverPort: PORT, reuse: args.includes('--no-build'), tag: 'crowd' });
   await dev.start();
+  const staticSrv = PROD ? await serveDist(DIST, CLIENT_PORT) : null;
   const browser = await launchChrome({ channel: CHANNEL, headed: HEADED, tag: 'crowd' });
   const points: Point[] = [];
   const errors: string[] = [];
@@ -1059,6 +1161,7 @@ async function main(): Promise<void> {
   } finally {
     await bots.stop();
     await browser.close().catch(() => undefined);
+    staticSrv?.close();
     dev.stop();
   }
 
@@ -1083,6 +1186,7 @@ async function main(): Promise<void> {
         browser: `${CHANNEL} ${browser.version()}${HEADED ? '' : ' headless'}`,
         machine: { platform: `${os.platform()} ${os.release()}`, cpu: os.cpus()[0]?.model ?? '', cores: os.cpus().length },
         settings: {
+          prod: PROD,
           bots: BOTS,
           scenes: SCENES,
           secondsPerPoint: SECONDS,
@@ -1099,7 +1203,7 @@ async function main(): Promise<void> {
           'kbpsDown/Up: byte WebSocket của client đo tới server game',
           'tickP95Ms: lớn nhất của tick p95 room chứa client đo (cửa sổ ~1200 tick gần nhất) trong lúc đo',
           'MAX_CLIENTS=128: mọi bot chung một kênh với client đo (server thật mở kênh mới ở 50 người)',
-          'chạy trên Vite dev server: CPU khung hơi cao hơn bản build',
+          PROD ? 'chạy trên bản build production (vite build, gzip)' : 'chạy trên Vite dev server: CPU khung hơi cao hơn bản build',
         ],
         errors,
         botLog,
