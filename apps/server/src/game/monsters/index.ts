@@ -1097,6 +1097,7 @@ export class MonsterSystem {
     }
     const ai = m.rules.ai;
     this.c.monSkills.face(m);
+    this.c.monSkills.armor(m);
     if (!m.windUntil && this.c.monSkills.tick(m, target, d, reachable, dt)) return;
     if (m.windUntil) {
       // Đang vung chiêu chém vùng: đứng yên, giữ hướng đã khóa cho khớp vùng báo trước.
