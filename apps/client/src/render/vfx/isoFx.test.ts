@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ISO_UPRIGHT_MAX, ISO_UPRIGHT_SOFT, isoFxHeight, isoFxScaleY } from './isoFx';
+import { ISO_BOLT_SCALE, ISO_CARD_ALPHA, ISO_CARD_SCALE, ISO_UPRIGHT_MAX, ISO_UPRIGHT_SOFT, isoFxHeight, isoFxScaleY } from './isoFx';
 
 describe('isoFxHeight', () => {
   it('hình thấp, hình nằm đất, pháp tướng và gai giữ nguyên', () => {
@@ -28,5 +28,15 @@ describe('isoFxScaleY', () => {
     expect(isoFxScaleY('rock_spire', 4, 1)).toBeCloseTo(isoFxHeight('rock_spire', 4), 6);
     expect(isoFxScaleY('spike', 5, 3)).toBe(5);
     expect(isoFxScaleY('rock_spire', 5, 0)).toBe(5);
+  });
+});
+
+describe('hằng số iso cho thẻ và sét', () => {
+  it('thu nhỏ và mờ, không về 0', () => {
+    expect(ISO_CARD_SCALE).toBeLessThan(1);
+    expect(ISO_CARD_ALPHA).toBeGreaterThan(0.3);
+    expect(ISO_CARD_ALPHA).toBeLessThan(1);
+    expect(ISO_BOLT_SCALE).toBeGreaterThan(0.5);
+    expect(ISO_BOLT_SCALE).toBeLessThan(1);
   });
 });
