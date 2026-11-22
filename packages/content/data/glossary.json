@@ -62,19 +62,31 @@
       "hoanh_dao": "Hoành Đao",
       "tam_dao": "Tâm Đao",
       "doan_luu": "Đoạn Lưu",
-      "liet_dia": "Liệt Địa"
+      "liet_dia": "Liệt Địa",
+      "thuan_dao": "Thuấn Đao",
+      "huyet_chien": "Huyết Chiến",
+      "cuong_dao": "Cuồng Đao",
+      "luu_ngan": "Lưu Ngấn"
     },
     "duong_co_kinh": {
       "hut_mau": "Hút Máu",
       "co_bao": "Cổ Bạo",
       "thu_co": "Thu Cổ",
-      "co_vuong": "Cổ Vương"
+      "co_vuong": "Cổ Vương",
+      "phan_co": "Phân Cổ",
+      "kim_thiem": "Kim Thiền",
+      "bach_co": "Bách Cổ",
+      "doc_to": "Độc Tổ"
     },
     "cam_che_kinh": {
       "pha_diet": "Phá Diệt",
       "tue_nguyet": "Tuế Nguyệt",
       "sinh_tu": "Sinh Tử",
-      "phien_thien": "Phiên Thiên"
+      "phien_thien": "Phiên Thiên",
+      "dia_sat": "Địa Sát",
+      "thai_hu": "Thái Hư",
+      "cuu_cung": "Cửu Cung",
+      "phong_an": "Phong Ấn"
     }
   },
   "stances": {
@@ -490,14 +502,23 @@
     "skl_tam_dao": "Tâm Đao",
     "skl_doan_luu": "Đoạn Lưu",
     "skl_liet_dia_tram": "Liệt Địa Trảm",
+    "skl_thuan_dao_tram": "Thuấn Đao Trảm",
+    "skl_huyet_chien_the": "Huyết Chiến Thể",
+    "skl_doan_thien_dao": "Đoạn Thiên Đao",
     "skl_hut_mau_co": "Hút Máu Cổ",
     "skl_co_bao": "Cổ Bạo",
     "skl_thu_co": "Thu Cổ",
     "skl_hoa_co_vuong": "Hóa Cổ Vương",
+    "skl_phan_co_thuat": "Phân Cổ Thuật",
+    "skl_kim_thiem_co": "Kim Thiền Cổ",
+    "skl_van_co_phe_the": "Vạn Cổ Phệ Thể",
     "skl_pha_diet_cam": "Phá Diệt Cấm",
     "skl_tue_nguyet_cam": "Tuế Nguyệt Cấm",
     "skl_sinh_tu_cam": "Sinh Tử Cấm",
     "skl_phien_thien_an": "Phiên Thiên Ấn",
+    "skl_dia_sat_tran": "Địa Sát Trận",
+    "skl_thai_hu_ho_tran": "Thái Hư Hộ Trận",
+    "skl_lac_thu_dai_tran": "Lạc Thư Đại Trận",
     "skl_mau_don_cam": "Mẫu Đơn Thập Bát Cấm",
     "skl_phong_cam": "Phong Cấm",
     "skl_don_dia_bo": "Độn Địa Bộ"
