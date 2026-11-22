@@ -1,8 +1,8 @@
 // Sinh mỹ thuật sàn chín phòng cầu Cửu Kiều (TN-7): packages/shared/src/props.kieu.ts, tất định.
 //   node tools/maps/gen-kieu-arena.mjs   (rồi prettier --write, pnpm content:check)
 // Chín phòng cầu dùng chung một bãi phẳng của địa hình `cuu_kieu` (tâm 1300, 985; sàn `bound` 70 m; xem gen-kieu-rooms.mjs), nên bãi cỏ trống là mặt bằng chung.
-// Ở đây mỗi cầu có bố cục prop riêng quanh sàn: vòng trụ đá + đèn lồng ở mép, bốn bia mốc, phiến đá trung tâm, và một cụm chủ đề đúng cơ chế của cầu.
-// Prop chỉ để nhìn (không `r`, không va chạm): ranh giới do `bound` giữ. Cụm chủ đề đặt cách tâm >= 20 m và ngoài các điểm sinh quái/boss (spawn người chơi
+// Ở đây mỗi cầu có bố cục prop riêng quanh sàn: vòng trụ đá + đèn lồng ở mép, bốn bia mốc, và một cụm chủ đề đúng cơ chế của cầu.
+// Prop chỉ để nhìn (không `r`, không va chạm): ranh giới do `bound` giữ. Cụm chủ đề đặt cách tâm >= 30 m (cầu 3, sân Ngũ Suy: >= 46 m; cầu 4 công tắc ở <= 22 m) và ngoài các điểm sinh quái/boss (spawn người chơi
 // ở (1300, 1040), boss đứng gần tâm) để không che người chơi hay vạch báo. Chủ đề ánh sáng (mood) theo bảng KIEU_MOOD (cùng file).
 // Tên cầu theo glossary.cuuKieuTen; mood dùng bốn mood ck_* của Thiên Lộ Giới (nhịp ngày trải dài theo chín cầu: bình minh → ngày → hoàng hôn → đêm → bình minh Đạp Thiên).
 
@@ -38,7 +38,7 @@ const at = (r, a, id, s = 1, face = 'out') => ({
   s,
 });
 
-/** Khung chung: 16 trụ đá + 16 đèn xen kẽ ở mép sàn (r 64), 4 bia ở bốn hướng (r 56), phiến đá lớn giữa sàn. */
+/** Khung chung: 16 trụ đá + 16 đèn xen kẽ ở mép sàn (r 64), 4 bia ở bốn hướng (r 56), (không đặt gì ở giữa sàn: boss, vạch báo, công tắc cầu 4, sân kiếp cầu 3 dựng ở đó). */
 function frame(R) {
   const out = [];
   for (let i = 0; i < 16; i++) {
@@ -47,18 +47,17 @@ function frame(R) {
     out.push(at(67, a + PI / 16, 'prop_den_long_troi', 1));
   }
   for (let i = 0; i < 4; i++) out.push(at(56, (i / 4) * PI * 2 + PI / 4, 'prop_bia_da', 1.15));
-  out.push({ id: 'prop_da_phien', x: CX, z: CZ, yaw: 0, s: 4.2 });
   return out;
 }
 
 /** Cụm chủ đề theo cầu (id lấy từ assets/source/prop). */
 const THEME = {
   // 1 Thạch: đá vụn rải quanh sàn như cầu vừa nứt
-  1: (R) => ring(R, 10, 36, 52, 'prop_da_dung', 0.8, 1.3).concat(ring(R, 8, 24, 44, 'prop_da_nam', 0.8, 1.2)),
+  1: (R) => ring(R, 10, 36, 52, 'prop_da_dung', 0.8, 1.3).concat(ring(R, 8, 30, 44, 'prop_da_nam', 0.8, 1.2)),
   // 2 Kiếm Ảnh: kiếm gãy cắm thành vòng quanh sàn, đối đầu chính mình
-  2: (R) => ring(R, 14, 30, 30, 'prop_kiem_gay', 1, 1.4).concat(ring(R, 6, 46, 50, 'prop_kiem_kinh_quang', 0.8, 1)),
+  2: (R) => ring(R, 14, 31, 31, 'prop_kiem_gay', 1, 1.4).concat(ring(R, 6, 46, 50, 'prop_kiem_kinh_quang', 0.8, 1)),
   // 3 Suy: gốc khô, cỏ rũ, đá nằm (suy kiệt)
-  3: (R) => ring(R, 12, 30, 52, 'prop_cay_goc_kho', 0.9, 1.3).concat(ring(R, 10, 20, 46, 'prop_duong_xi', 0.9, 1.4)),
+  3: (R) => ring(R, 10, 46, 54, 'prop_cay_goc_kho', 0.9, 1.3).concat(ring(R, 8, 46, 52, 'prop_duong_xi', 0.9, 1.4)),
   // 4 Giới: hai dãy gương đối xứng qua trục, Âm/Dương
   4: () => mirror('prop_anh_ngoc_kinh', 1.2).concat(mirror('prop_phu_dao_dinh', 1)),
   // 5 Thân: trụ đá lớn quanh sàn như đấu trường thể phách
@@ -66,7 +65,7 @@ const THEME = {
   // 6 Đạo: sáu bia đạo ứng sáu nguồn, lư hương
   6: () =>
     Array.from({ length: 6 }, (_, i) => at(38, (i / 6) * PI * 2, 'prop_tung_phu_dao', 1.1)).concat(
-      Array.from({ length: 3 }, (_, i) => at(24, (i / 3) * PI * 2 + 0.5, 'prop_lu_huong', 1.2)),
+      Array.from({ length: 3 }, (_, i) => at(32, (i / 3) * PI * 2 + 0.5, 'prop_lu_huong', 1.2)),
     ),
   // 7 Ngoại Kiếp: cột mạch tinh hứng lôi
   7: (R) => ring(R, 10, 36, 44, 'prop_mach_tinh_tru', 1.1, 1.5).concat(ring(R, 8, 52, 54, 'prop_tru_nham_do', 1, 1.3)),
@@ -76,7 +75,7 @@ const THEME = {
   9: (R) =>
     ring(R, 4, 42, 44, 'prop_cau_may', 1.2, 1.5)
       .concat(ring(R, 4, 50, 52, 'prop_cau_da_gay', 1, 1.2))
-      .concat(ring(R, 8, 28, 30, 'prop_kiem_kinh_quang_cuoi', 0.9, 1.1)),
+      .concat(ring(R, 8, 32, 34, 'prop_kiem_kinh_quang_cuoi', 0.9, 1.1)),
 };
 
 function ring(R, n, r0, r1, id, s0, s1) {

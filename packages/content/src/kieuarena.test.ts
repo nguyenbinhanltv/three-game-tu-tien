@@ -32,6 +32,12 @@ describe('mỹ thuật sàn chín phòng cầu (TN-7)', () => {
     }
   });
 
+  it('không prop nào trong lòng sàn (< 30 m, cầu 3 < 46 m): chừa chỗ boss, vạch báo, công tắc cầu 4, sân kiếp cầu 3', () => {
+    for (let n = 1; n <= KIEU_COUNT; n++)
+      for (const p of propsOf(kieuLevelId(n)))
+        expect(Math.hypot(p.x - C.x, p.z - C.z), `${n}:${p.id}`).toBeGreaterThanOrEqual(n === 3 ? 46 : 30);
+  });
+
   it('mood theo bảng KIEU_MOOD (ghi đè cả level thêm sau) và bật lớp prop', () => {
     expect(KIEU_MOOD).toHaveLength(KIEU_COUNT);
     for (const m of KIEU_MOOD) expect(m).toMatch(/^ck_(dawn|day|dusk|night)$/);
