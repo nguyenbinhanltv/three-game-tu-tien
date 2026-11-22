@@ -38,9 +38,10 @@ const GM_TIER_SETS: readonly (readonly [string, string, string])[] = [
   ['set_kinh_quang', 'set_van_kinh', 'set_luu_ly'],
   ['set_tinh_khuyet', 'set_co_thanh', 'set_than_tang'],
   ['set_tran_khich', 'set_tan_thiet', 'set_tinh_dan_bao'],
+  ['set_vo_danh_kiem', 'set_dong_dinh', 'set_gioi_tri_dan'],
 ];
 
-export const GM_MAX_TIER = 5;
+export const GM_MAX_TIER = 6;
 /** Bậc cao nhất đang có vật phẩm trang bị. */
 const GM_TIER_AVAILABLE = GM_TIER_SETS.length;
 

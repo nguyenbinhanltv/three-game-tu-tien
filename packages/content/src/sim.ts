@@ -6,6 +6,7 @@ import { combatPower, formationHurts, levelSpawns, TIER_MIN_ILVL, type MonsterDe
 import {
   BOTTLENECK_LEVELS,
   promoteGold,
+  PROMOTE_MAT,
   PROMOTE_MAT_COUNT,
   TIER_INCOME_HOUR,
   counterMul,
@@ -3091,7 +3092,7 @@ function ch5Timeline(id: MethodId) {
 // ---------- Nhịp chương 6 (TN-3): Anh Biến (cấp 32) → độ kiếp Dương Thực (cấp 43→44, trần tạm) ----------
 // Cùng cách dựng chương 5 nhưng dữ liệu là Vấn Đỉnh: cụm quái `van_dinh.json` (cấp 32–43), nhiệm vụ `q6_*` + `s6_*`, phó bản Giới Trì (cấp 42), hai boss ngoài trời
 // (Hư Ảnh Chủ 39, Đỉnh Linh 43), thử thách tâm ma ở bình cảnh, ba lần chế Lộ và độ kiếp (Vấn Đỉnh 35, Âm Hư 39, Dương Thực 43; chưa mô phỏng cơ chế kiếp, lấy tỉ lệ qua
-// giả định ghi rõ). Chưa có trang bị bậc 6: người chơi mặc bộ bậc 5 cùng ilvl theo cấp. Mục tiêu 12 giờ ±12% (`tn3/thiet-ke.md` mục 1).
+// giả định ghi rõ). Trang bị bậc 6 (Thăng Bậc/chế bằng Hư Ảnh + Đồng Văn Phiến) pha dần từ bộ bậc 5 theo `CH6_GEAR_FRAC`. Mục tiêu 12 giờ ±12% (`tn3/thiet-ke.md` mục 1).
 const CH6_TARGET_H = 12;
 const CH6_TOL = 0.12;
 const CH6_ELITE_EVERY = 900;
@@ -3112,10 +3113,19 @@ const CH6_LO: Record<number, { trib: string; recipe: string }> = {
   43: { trib: 'duong_thuc', recipe: 'rcp_duong_thuc_lo' },
 };
 
+/** Tỉ lệ mặc đồ bậc 6 (phẩm Linh) kỳ vọng ở từng cấp 32..43 (phần còn lại là bộ bậc 5); từ 43 mặc trọn bậc 6. Hư Ảnh/Đồng Văn Phiến vào túi dần từ quái chương 6. */
+const CH6_GEAR_FRAC = [0, 0, 0, 0, 0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1];
+
 function ch6Player(level: number, id: MethodId): { atk: number; def: number; hp: number } {
-  const t5 = fullSetTier(level, CH6_GEAR_Q, HOA_THAN_LEVEL);
+  const frac = CH6_GEAR_FRAC[Math.min(CH6_GEAR_FRAC.length - 1, level - ANH_BIEN_LEVEL)] ?? 1;
+  const prev = fullSetTier(level, CH6_GEAR_Q, HOA_THAN_LEVEL);
+  const t6 = fullSetTier(level, CH6_GEAR_Q, ANH_BIEN_LEVEL);
   const pas = methodAt(level, id)?.passive;
-  return { atk: t5.atk, def: Math.round(t5.def * (1 + (pas?.defMul ?? 0))), hp: Math.round(t5.hp * (1 + (pas?.hpMul ?? 0))) };
+  return {
+    atk: prev.atk + frac * (t6.atk - prev.atk),
+    def: Math.round((prev.def + frac * (t6.def - prev.def)) * (1 + (pas?.defMul ?? 0))),
+    hp: Math.round((prev.hp + frac * (t6.hp - prev.hp)) * (1 + (pas?.hpMul ?? 0))),
+  };
 }
 
 function ch6Camps(level: number) {
@@ -3269,7 +3279,7 @@ function ch6Timeline(id: MethodId) {
 {
   const out = new Map<MethodId, ReturnType<typeof ch6Timeline>>(METHOD_IDS.map((m) => [m, ch6Timeline(m)] as const));
   console.log(
-    `\nNhịp chương 6 (TN-3): Anh Biến cấp ${ANH_BIEN_LEVEL} → độ kiếp Dương Thực (cấp ${DUONG_THUC_LEVEL - 1}), một mình, đồ bậc 5 theo ilvl (phẩm ${CH6_GEAR_Q}); ` +
+    `\nNhịp chương 6 (TN-3): Anh Biến cấp ${ANH_BIEN_LEVEL} → độ kiếp Dương Thực (cấp ${DUONG_THUC_LEVEL - 1}), một mình, đồ bậc 5 pha dần sang bậc 6 (phẩm ${CH6_GEAR_Q}); ` +
       `tinh anh 1 con/${CH6_ELITE_EVERY / 60} phút săn; ba kiếp qua ${pct(CH6_TRIB_PASS)} (giả định)`,
   );
   console.log('cấp  bãi                                   TTK  mất/lần  giết  tinh anh (TTK/mất)  giờ cấp');
@@ -3338,6 +3348,34 @@ function ch6Timeline(id: MethodId) {
     );
     if (!carried && have(m) < nd * 1.3) {
       console.error(`LỖI: ${m} ≈ ${have(m).toFixed(1)} không đủ dư (cần ${nd.toFixed(1)} × 1,3) cho chương 6`);
+      process.exitCode = 1;
+    }
+  }
+  // Bậc 6: Thăng Bậc 7 ô thường (20 Hư Ảnh Phiến + phí mỗi ô) và chế trọn một bộ (nguyên liệu theo `forge.json`) — chọn một trong hai theo ô, nên mỗi đường phải đủ riêng.
+  const t6 = ITEMS.filter((i) => i.tier === 6 && !i.set);
+  const promoteMat = at(PROMOTE_MAT, 6) as string;
+  const promoteNeed = PROMOTE_MAT_COUNT * t6.length;
+  const setNeed: Record<string, number> = {};
+  for (const f of FORGE) {
+    if (f.output.startsWith('itm_vdk_')) for (const inp of f.inputs) setNeed[inp.id] = (setNeed[inp.id] ?? 0) + inp.n;
+  }
+  const loNeed = Object.values(CH6_LO).reduce(
+    (n, { recipe }) => n + (RECIPE.get(recipe)!.inputs.find((i) => i.id === promoteMat)?.n ?? 0) / CH6_TRIB_PASS,
+    0,
+  );
+  console.log(
+    `  bậc 6: Thăng Bậc ${t6.length} ô cần ${promoteNeed} ${promoteMat} (${promoteGold(6)} linh thạch mỗi ô, ≈ ${(t6.length * promoteGold(6)).toFixed(0)}); chế bộ Kiếm cần ${Object.entries(
+      setNeed,
+    )
+      .map(([m, n]) => `${n} ${m}`)
+      .join(', ')}; ` +
+      `${promoteMat} ≈ ${have(promoteMat).toFixed(0)} và itm_dong_van_phien ≈ ${have('itm_dong_van_phien').toFixed(0)} trong chương (Lộ cần thêm ${loNeed.toFixed(0)}).`,
+  );
+  if (have(promoteMat) < (promoteNeed + loNeed) * 0.6)
+    console.log('  (ghi chú: Thăng Bậc cả 7 ô cùng lúc không đủ trong chương 6; người chơi chọn ô cần hơn là Thăng Bậc hết)');
+  for (const [m, n] of Object.entries(setNeed)) {
+    if ((CH6_MATS as readonly string[]).includes(m) && have(m) < (n + (m === promoteMat ? loNeed : 0)) * 1.3) {
+      console.error(`LỖI: ${m} ≈ ${have(m).toFixed(1)} không đủ chế một bộ bậc 6 (cần ${n} + Lộ)`);
       process.exitCode = 1;
     }
   }

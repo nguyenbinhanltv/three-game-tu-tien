@@ -14,7 +14,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const here = path.join(root, 'tools/calli');
 const outDir = path.join(root, 'apps/client/public/assets/calli');
 const manifestPath = path.join(root, 'apps/client/src/base/calliManifest.json'); // client import được (tra theo i18n key)
-const BUDGET = 2 * 1024 * 1024; // tổng ảnh thư pháp < 2 MB
+const BUDGET = 2.25 * 1024 * 1024; // tổng ảnh thư pháp < 2,25 MB (nâng từ 2 MB ở TN-3: thêm tên ba bộ bậc 6)
 const read = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
 const groups = read(path.join(here, 'groups.json')).groups;
 const i18n = {};
