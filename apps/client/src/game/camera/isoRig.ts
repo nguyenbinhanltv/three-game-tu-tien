@@ -18,6 +18,8 @@ export class IsoRig {
   readonly look = new THREE.Vector3();
   /** `camera.far` gốc, lưu lần đầu vào iso để trả lại khi cảnh điện ảnh/độ kiếp dùng camera cũ. */
   baseFar = 0;
+  /** Tỉ lệ khoảng cách camera do địa hình che (1 = không che), co ngay khi bị che, nở ra từ từ. */
+  occ = 1;
   /** Cảnh xa (biển mây, trời, núi nền) đang bị ẩn do iso; khôi phục khi iso tạm tắt. */
   farHidden = false;
   /** Đã áp cấu hình dựng hình iso (ô địa hình, bóng) hay chưa. */

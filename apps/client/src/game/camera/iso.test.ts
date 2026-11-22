@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   clampLeadFrame,
+  isoClearScale,
+  ISO_OCC_MIN,
   isoTopEq,
   isoDistFor,
   clampLeadSafe,
@@ -100,6 +102,25 @@ describe('isoDistFor', () => {
     expect(isoDistFor('thien_khuyet')).toBe(ISO_DIST);
     expect(isoDistFor('kieu_5')).toBeGreaterThan(ISO_DIST);
     expect(isoDistFor('kieu_9')).toBe(isoDistFor('kieu_5'));
+  });
+});
+
+describe('isoClearScale', () => {
+  const look = { x: 0, y: 1, z: 0 };
+  const cam = { x: 14, y: 16, z: 14 };
+  it('đất phẳng thấp: không co', () => {
+    expect(isoClearScale(look, cam, () => 0)).toBe(1);
+  });
+  it('vách chắn giữa đoạn: co lại tới khi camera ở phía trước vách', () => {
+    // vách cao 30 m ở x > 6 (xa điểm nhìn hơn 6 m)
+    const wall = (x: number) => (x > 6 ? 30 : 0);
+    const k = isoClearScale(look, cam, wall);
+    expect(k).toBeLessThan(1);
+    expect(k).toBeGreaterThanOrEqual(ISO_OCC_MIN);
+    expect(look.x + (cam.x - look.x) * k).toBeLessThanOrEqual(6.5);
+  });
+  it('bị chắn hoàn toàn: dừng ở mức tối thiểu', () => {
+    expect(isoClearScale(look, cam, () => 100)).toBe(ISO_OCC_MIN);
   });
 });
 
