@@ -80,6 +80,9 @@ import bacHoangJson from '../data/levels/bac_hoang.json';
 import bacHoangTerrainJson from '../data/levels/bac_hoang.terrain.json';
 import xichTanTerrainJson from '../data/levels/xich_tan_khich.terrain.json';
 import bacHoangAssetsJson from '../data/levels/bac_hoang.assets.json';
+import cuuKieuJson from '../data/levels/cuu_kieu.json';
+import cuuKieuTerrainJson from '../data/levels/cuu_kieu.terrain.json';
+import cuuKieuAssetsJson from '../data/levels/cuu_kieu.assets.json';
 import vanDinhJson from '../data/levels/van_dinh.json';
 import vanDinhTerrainJson from '../data/levels/van_dinh.terrain.json';
 import vanDinhAssetsJson from '../data/levels/van_dinh.assets.json';
@@ -436,6 +439,7 @@ export const LEVELS: Record<string, LevelDef> = {
   thien_khuyet: thienKhuyetJson as LevelDef,
   bac_hoang: bacHoangJson as LevelDef,
   van_dinh: vanDinhJson as LevelDef,
+  cuu_kieu: cuuKieuJson as LevelDef,
   gioi_tri: gioiTriJson as LevelDef,
   do_kiep: doKiepJson as LevelDef,
   do_kiep_bac_hoang: doKiepBhJson as LevelDef,
@@ -451,6 +455,7 @@ registerTerrain(doanMachTerrainJson as unknown as TerrainDef);
 registerTerrain(thienKhuyetTerrainJson as unknown as TerrainDef); // E4-A: cao nguyên thành cổ
 registerTerrain(bacHoangTerrainJson as unknown as TerrainDef); // DV-1: hoang nguyên tro, khe Giới Khích
 registerTerrain(vanDinhTerrainJson as unknown as TerrainDef); // TN-3: Vấn Đỉnh Âm Dương Giới (chương 6)
+registerTerrain(cuuKieuTerrainJson as unknown as TerrainDef); // TN-7: Thiên Lộ Giới (chương 7, Cửu Kiều)
 registerTerrain(xichTanTerrainJson as unknown as TerrainDef); // DV-3K: hẻm núi phó bản Xích Tẫn Khích
 registerTerrain(vanHaiTerrainJson as unknown as TerrainDef); // E3-A/E3-N: đảo nổi, cầu xích, sàn mây
 /** Asset client theo level (`levels/<id>.assets.json`, E1-D). */
@@ -462,6 +467,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   thien_khuyet: thienKhuyetAssetsJson as LevelAssets,
   bac_hoang: bacHoangAssetsJson as LevelAssets,
   van_dinh: vanDinhAssetsJson as LevelAssets,
+  cuu_kieu: cuuKieuAssetsJson as LevelAssets,
   gioi_tri: gioiTriAssetsJson as LevelAssets,
   do_kiep: doKiepAssetsJson as LevelAssets,
   do_kiep_bac_hoang: doKiepBhAssetsJson as LevelAssets,

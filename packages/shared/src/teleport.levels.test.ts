@@ -21,6 +21,9 @@ describe('padsOfLevel', () => {
     const vd = padsOfLevel('van_dinh');
     expect(vd).toHaveLength(7);
     expect(vd.every((p) => p.level === 'van_dinh' && p.id.startsWith('vd_'))).toBe(true);
-    expect(dm.length + vl.length + vh.length + tk.length + bh.length + vd.length).toBe(TELE_PADS.length);
+    const ck = padsOfLevel('cuu_kieu');
+    expect(ck).toHaveLength(5);
+    expect(ck.every((p) => p.level === 'cuu_kieu' && p.id.startsWith('ck_'))).toBe(true);
+    expect(dm.length + vl.length + vh.length + tk.length + bh.length + vd.length + ck.length).toBe(TELE_PADS.length);
   });
 });
