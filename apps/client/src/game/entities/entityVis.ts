@@ -312,7 +312,7 @@ function labelY(m: CharacterView): number {
 
 const DYE_IDS: ReadonlySet<string> = new Set(APPEARANCE.dyes.map((d) => d.id));
 
-/** Nhuộm 3 kênh → màu v1 (kênh 1 = vải chính `hex`, kênh 2 = viền `trim`; kênh 3 dành cho nhân vật v3). Sai định dạng thì bỏ. */
+/** Nhuộm 3 kênh → màu (kênh 1 = vải chính `hex`, kênh 2 = viền `trim`, kênh 3 = tua/kim loại `accent`; v1 dùng hai kênh đầu, v3 dùng cả ba). Sai định dạng thì bỏ. */
 export function tintOf(dye3: string | undefined): PlayerLook['tint'] {
   return tintOfTriple(dye3 ? decodeDye3(DYE_IDS, dye3) : undefined);
 }
@@ -321,7 +321,8 @@ export function tintOf(dye3: string | undefined): PlayerLook['tint'] {
 export function tintOfTriple(d: readonly string[] | null | undefined): PlayerLook['tint'] {
   const a = d ? DYE.get(d[0] ?? '') : undefined;
   const b = d ? DYE.get(d[1] ?? '') : undefined;
-  return a && b ? { hex: a.hex, trim: b.hex } : undefined;
+  const c = d ? DYE.get(d[2] ?? '') : undefined;
+  return a && b ? { hex: a.hex, trim: b.hex, ...(c ? { accent: c.hex } : {}) } : undefined;
 }
 
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */

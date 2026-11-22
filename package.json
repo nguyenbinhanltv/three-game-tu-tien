@@ -34,6 +34,7 @@
     "assets:sky-textures": "pnpm --filter @dtl/asset-pipeline exec tsx src/sky-textures.ts",
     "assets:grass-cards": "pnpm --filter @dtl/asset-pipeline exec tsx src/grass-cards.ts",
     "assets:hires": "pnpm --filter @dtl/asset-pipeline exec tsx src/hires.ts",
+    "dye:preview": "pnpm --filter @dtl/asset-pipeline exec tsx src/dye-preview.ts",
     "assets:validate": "pnpm --filter @dtl/asset-pipeline run validate",
     "assets:impostor": "pnpm --filter @dtl/asset-pipeline run impostor",
     "audio:build": "node tools/audio/build.mjs",
