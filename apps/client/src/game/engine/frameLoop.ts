@@ -46,7 +46,7 @@ import { assets } from '../core/assets';
 import { BASE_ZONE, easeZoneCam, zoneCamera } from '../camera/camZones';
 import { isHeld } from '../../input/bindings';
 import { ULT_FOV, ultFovAt } from '../combat/hitjuice';
-import { SLOWMO, _camFocus, _shakeLook, _shakePos, _v, isWebGPU } from './common';
+import { SLOWMO, _camFocus, _shakeLook, _shakePos, _v, _v2, isWebGPU } from './common';
 import { runCine } from './cine';
 import { applyDmg, ensureCloneVis, updateSoulVis } from './fxMsgs';
 import { syncHud } from './hudSync';
@@ -432,7 +432,9 @@ function updateCamera(eng: Game, dt: number): void {
   tribFx(eng, dt);
   // Thẻ chương đang hiện cũng ẩn bảng tên (tiêu đề không đè lên tên nhân vật).
   eng.ents.tagsHidden = eng.cine.active || eng.tribScene || (get().chapter?.until ?? 0) > Date.now();
-  updateOcclusion(dt, eng.camera.position, _camFocus.set(rp.x, rp.y + 1.2, rp.z), rp.y, iso ? (flying ? 2 : 1) : 0);
+  // Camera chéo: mục tiêu đang khóa (quái còn sống) cũng được giữ không bị vật che.
+  const hasTgt = !!iso && !!eng.targetId && eng.targetKind === 'mon' && eng.ents.chestOf(eng.targetId, _v2);
+  updateOcclusion(dt, eng.camera.position, _camFocus.set(rp.x, rp.y + 1.2, rp.z), rp.y, iso ? (flying ? 2 : 1) : 0, hasTgt ? _v2 : null);
   // Chuyển vào/ra camera chéo: bán kính ô địa hình và bản đồ bóng đổi theo.
   const isoOn = !!iso;
   if (eng.iso && eng.iso.applied !== isoOn) {
