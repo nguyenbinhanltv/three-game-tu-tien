@@ -610,7 +610,15 @@ export class PropLayer {
     const cfg = handle.id ? PROP_CFG[handle.id] : undefined;
     const mats = adoptGltfMaterials(
       handle.scene,
-      cfg?.tree || cfg?.sight ? withSightFade : cfg?.sway ? bannerSway : cfg?.crystal ? propCrystal : undefined,
+      cfg?.crystal && cfg.sight
+        ? (m) => withSightFade(propCrystal(m)) // tinh thể cao (cột tà Dị Vực): vừa phát sáng vừa mờ khi che người
+        : cfg?.tree || cfg?.sight
+          ? withSightFade
+          : cfg?.sway
+            ? bannerSway
+            : cfg?.crystal
+              ? propCrystal
+              : undefined,
     );
     handle.scene.updateMatrixWorld(true);
     const lods: LodMesh[][] = [];

@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { hash01 } from '@dtl/shared';
 import type { DeadTreeSpot } from './bacHoangArt';
+import { withSightFade } from './occlusion';
 
 /**
  * Cây chết thủ tục của Bắc Hoang (DV-3I): ba kiểu thân trụi cành dựng bằng code (thân cong thon dần, cành chẻ đệ quy, không lá), mỗi kiểu một `InstancedMesh`
@@ -117,7 +118,7 @@ export class DeadTrees {
 
   constructor(spots: readonly DeadTreeSpot[], heightAt: (x: number, z: number) => number) {
     this.group.name = 'dead-trees';
-    this.mat = new THREE.MeshStandardNodeMaterial({ color: 0xffffff, roughness: 0.96, metalness: 0 });
+    this.mat = withSightFade(new THREE.MeshStandardNodeMaterial({ color: 0xffffff, roughness: 0.96, metalness: 0 })); // camera chéo: cây khô cao che người thì mờ
     const m = new THREE.Matrix4();
     const q = new THREE.Quaternion();
     const e = new THREE.Euler();
