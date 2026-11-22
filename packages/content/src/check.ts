@@ -860,6 +860,23 @@ function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
     if (!inR(summon.delay, 1, 4)) err(`${id}: summon.delay phải trong [1; 4] giây`);
     if (!(summon.cd >= 6)) err(`${id}: summon.cd phải >= 6 giây`);
   }
+  if (ai.armor) {
+    const a = ai.armor;
+    if (!m.boss) err(`${id}: armor chỉ dành cho boss`);
+    if (!inR(a.cycle, 15, 60)) err(`${id}: armor.cycle phải trong [15; 60] giây`);
+    if (!inR(a.window, 4, 15) || !(a.window <= a.cycle / 2)) err(`${id}: armor.window phải trong [4; 15] giây và không quá nửa chu kỳ`);
+    if (!(a.take >= 0 && a.take <= 0.4)) err(`${id}: armor.take phải trong [0; 0,4]`);
+  }
+  if (m.look !== undefined && !['golem', 'wisp', 'road'].includes(m.look)) err(`${id}: look ${m.look} không hợp lệ`);
+  if (ai.resist) {
+    const r = ai.resist;
+    if (!m.boss) err(`${id}: resist chỉ dành cho boss`);
+    const nph = (m.phases?.length ?? 0) + 1;
+    if (r.forms.length !== nph) err(`${id}: resist.forms (${r.forms.length}) phải bằng số pha (${nph})`);
+    for (const f of r.forms) if (!ROOT_IDS.includes(f as never)) err(`${id}: resist.forms có hệ lạ ${f}`);
+    if (!(r.same > 0 && r.same <= 0.6)) err(`${id}: resist.same phải trong (0; 0,6]`);
+    if (!(r.counter >= 1 && r.counter <= 2)) err(`${id}: resist.counter phải trong [1; 2]`);
+  }
   if (ai.faces) {
     const f = ai.faces;
     if (!m.boss) err(`${id}: faces chỉ dành cho boss`);
@@ -870,18 +887,6 @@ function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
     if (!(f.take >= 0 && f.take <= 0.2)) err(`${id}: faces.take phải trong [0; 0,2] (mặt Âm gần như miễn)`);
     if (f.am / (f.duong + f.am) > 0.45) err(`${id}: mặt Âm chiếm quá 45% chu kỳ (kéo dài trận quá mức)`);
   }
-  const dao = m.dao;
-  if (dao) {
-    if (!m.boss) err(`${id}: dao chỉ dành cho boss`);
-    if (!(dao.forms.length >= 1 && dao.forms.length <= 4)) err(`${id}: dao.forms phải có 1–4 phần tử`);
-    for (const f of dao.forms)
-      if (f !== '' && !(ELEMENTS as readonly string[]).includes(f)) err(`${id}: dao.forms có hành ${f} không hợp lệ`);
-    if (!(dao.same > 0 && dao.same < 1)) err(`${id}: dao.same phải trong (0, 1)`);
-    if (!(dao.beat > 1 && dao.beat <= 2)) err(`${id}: dao.beat phải trong (1, 2]`);
-    const nph = (m.phases?.length ?? 0) + 1;
-    if (dao.forms.length > nph) err(`${id}: dao.forms (${dao.forms.length}) nhiều hơn số pha (${nph})`);
-  }
-  if (m.look !== undefined && !['golem', 'wisp', 'road'].includes(m.look)) err(`${id}: look ${m.look} không hợp lệ`);
   if (reveal) {
     if (!inR(reveal.dur, 1, 8)) err(`${id}: reveal.dur phải trong [1; 8] giây`);
     if (!(reveal.mul > 1 && reveal.mul <= 3)) err(`${id}: reveal.mul phải trong (1, 3]`);
@@ -1598,6 +1603,7 @@ for (const lv of Object.values(LEVELS)) {
     if (wv.title && !hasString(`dungeon.${lv.id}.wave.${i + 1}`)) err(`${ww}: thiếu chuỗi dungeon.${lv.id}.wave.${i + 1}`);
   });
   if (!lv.tribulation && !hasString(`dungeon.${lv.id}.name`)) err(`${w}: thiếu chuỗi dungeon.${lv.id}.name`);
+  if (d.timeLimit !== undefined && !(d.timeLimit >= 60 && d.timeLimit <= 900)) err(`${w}: timeLimit phải trong [60; 900] giây`);
   if (d.maxRevives !== undefined && !(d.maxRevives >= 0)) err(`${w}: maxRevives không hợp lệ`);
   if (d.lockAt !== undefined && !(d.lockAt >= 1 && d.lockAt <= d.waves.length)) err(`${w}: lockAt ngoài số đợt`);
   const rw = d.reward;

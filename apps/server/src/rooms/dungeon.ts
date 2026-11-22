@@ -18,7 +18,7 @@ export class DungeonRoom extends GameRoom {
   static levelId: string = 'kiem_trung';
   protected wave = 0;
   private nextWaveAt = 0;
-  private clearedAt = 0;
+  protected clearedAt = 0;
   /** Số lần hồi sinh đã dùng của từng nhân vật (giới hạn `DungeonDef.maxRevives`). */
   private revives = new Map<number, number>();
 

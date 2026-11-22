@@ -31,7 +31,6 @@
   "mon_thien_lo_su"
  ],
  "gem_kim_2": [
-  "boss_dao_linh",
   "boss_dinh_linh",
   "boss_kiem_khoi",
   "boss_kieu_thu",
@@ -75,6 +74,7 @@
   "boss_thach_tuong",
   "boss_thien_khuyet_thu_linh",
   "boss_thu_mo_tuong",
+  "boss_ve_kieu",
   "elite_hoi_giac_cu_thu",
   "elite_lo_thach_tuong",
   "elite_sa_tuong",
@@ -95,6 +95,7 @@
   "mon_van_hac"
  ],
  "gem_thuy_2": [
+  "boss_dao_linh",
   "boss_han_giao",
   "boss_hu_anh_chu",
   "boss_van_hai_kinh_vuong",
@@ -176,6 +177,7 @@
   "boss_kieu_thu",
   "boss_lo_linh",
   "boss_thach_tuong",
+  "boss_ve_kieu",
   "elite_lo_thach_tuong",
   "elite_may_lang_vuong",
   "elite_sa_tuong",
@@ -385,6 +387,7 @@
   "boss_thon_mach_ngo_cong_vuong",
   "boss_thu_khich_duc_chu",
   "boss_van_hai_kinh_vuong",
+  "boss_ve_kieu",
   "boss_vo_dien_than_quan",
   "elite_anh_hac_vuong",
   "elite_cot_kiem_thong_linh",
@@ -480,6 +483,7 @@
   "boss_tu_nhan_ma_tuong",
   "boss_tu_quang_duc_chu",
   "boss_van_hai_kinh_vuong",
+  "boss_ve_kieu",
   "boss_vo_dien_than_quan",
   "boss_xich_tan_cu_khoi",
   "mon_u_minh_lang"

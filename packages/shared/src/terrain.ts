@@ -348,6 +348,10 @@ const TERRAIN_ALIAS: Record<string, string> = {
   // Phòng cầu Cửu Kiều (TN-7): chín level riêng, mặt đất mượn bãi phẳng của Thiên Lộ Giới.
   kieu_1: 'cuu_kieu',
   kieu_2: 'cuu_kieu',
+  kieu_3: 'cuu_kieu',
+  kieu_4: 'cuu_kieu',
+  kieu_5: 'cuu_kieu',
+  kieu_6: 'cuu_kieu',
 };
 
 /** Đăng ký (hoặc thay) địa hình của một level. Trả địa hình đã dựng. */
@@ -371,6 +375,10 @@ const OWN_COLLIDERS = new Set([
   'gioi_tri',
   'kieu_1',
   'kieu_2',
+  'kieu_3',
+  'kieu_4',
+  'kieu_5',
+  'kieu_6',
   'kim_da_cung',
   'kinh_nguyet',
   'luyen_than',

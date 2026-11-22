@@ -129,6 +129,7 @@ import { type SkillEvent } from './character/view';
 import { HitQueue, SwingGuard, type HitSoundLog } from './combat/hitjuice';
 import { debugAllowed, readTestParams } from './core/testParams';
 import { CharPreview } from './camera/charPreview';
+import { IsoRig } from './camera/isoRig';
 import { currentSearch, FLAGS } from '../base/flags';
 import { LoginOptions, QUALITY, isWebGPU, isWorldRoom, levelOfInit, levelOfRoom, serverUrl } from './engine/common';
 import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from './engine/frameLoop';
@@ -381,7 +382,9 @@ export class Game {
    * 'turn': A/D xoay hướng nhìn (chơi không cần chuột).
    * 'strafe': A/D bước ngang, giữ chuột kéo để xoay.
    */
-  controls: string = get().controls;
+  controls: string = FLAGS.isoCam ? 'strafe' : get().controls;
+  /** Camera chéo khóa góc (`?cam=iso`, Thiên Nhãn P0); null = camera cũ. */
+  iso: IsoRig | null = FLAGS.isoCam ? new IsoRig() : null;
   /** Con trỏ đang bị khóa vào canvas (đang nhìn bằng chuột). */
   locked = false;
   /** Người chơi muốn nhìn bằng chuột: tự khóa lại con trỏ sau khi đóng bảng. */
@@ -702,6 +705,7 @@ export class Game {
     mark('sect');
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
+    if (this.iso) this.scene.add(this.iso.ring, this.iso.destMark);
     this.vfx.camera = this.camera;
     this.vfx.viewerAt = () => this.renderPos;
     this.skillFx = new SkillFx(this.vfx, {
@@ -1313,6 +1317,8 @@ export class Game {
   }
 
   setControls(mode: string): void {
+    // Camera chéo luôn dùng 'strafe' và không ghi đè tuỳ chọn đã lưu của camera thường.
+    if (this.iso) return;
     this.controls = mode === 'strafe' || mode === 'turn' ? mode : 'mouse';
     if (this.controls !== 'mouse') releaseLock(this);
     localStorage.setItem('dtl.controls', this.controls);
@@ -1459,6 +1465,7 @@ export class Game {
     duckHold('npc', 0);
     duckHold('cine', 0);
     this.charPreview?.dispose();
+    this.iso?.dispose();
     this.ents?.dispose();
     this.skillFx?.dispose();
     this.skillFx = null;

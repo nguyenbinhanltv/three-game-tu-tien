@@ -30,6 +30,7 @@ import vanhai from './scenarios/vanhai';
 import quality from './scenarios/quality';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
+import camiso from './scenarios/camiso';
 import points from './scenarios/points';
 import propstc from './scenarios/propstc';
 import quest4 from './scenarios/quest4';
@@ -82,6 +83,7 @@ import dungeonart from './scenarios/dungeonart';
 import collscan from './scenarios/collscan';
 
 const SCENARIOS: Scenario[] = [
+  camiso,
   points,
   collscan,
   propstc,
