@@ -14,6 +14,8 @@ export class IsoRig {
   /** Đích đi tới (chuột phải). */
   dest: { x: number; z: number } | null = null;
   lead = { x: 0, z: 0 };
+  /** Điểm camera nhìn vào khung này (người + dẫn trước): tâm bản đồ bóng đặt ở đây. */
+  readonly look = new THREE.Vector3();
   /** `camera.far` gốc, lưu lần đầu vào iso để trả lại khi cảnh điện ảnh/độ kiếp dùng camera cũ. */
   baseFar = 0;
   /** Cảnh xa (biển mây, trời, núi nền) đang bị ẩn do iso; khôi phục khi iso tạm tắt. */

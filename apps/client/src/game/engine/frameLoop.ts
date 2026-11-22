@@ -232,7 +232,10 @@ export function runFrame(eng: Game): void {
   eng.post?.update(dt);
   updateCamera(eng, dt);
   setListener(rp.x, rp.z, eng.camYaw);
-  eng.env.update(dt, eng.camera, rp);
+  // Camera chéo: bóng ôm khung hình nên tâm bóng là điểm camera nhìn (người + dẫn trước), và rộng thêm theo khoảng cách camera lúc ngự kiếm.
+  const isoLook = eng.iso?.applied ? eng.iso.look : null;
+  if (isoLook) eng.env.setIso(true, eng.iso!.distCur / ISO_DIST);
+  eng.env.update(dt, eng.camera, isoLook ?? rp);
   if (eng.riftMood) updateRiftMood(eng, dt, rp.z, rp.x);
   if (levelId() === 'gioi_tri') updateFaceMood(eng, dt);
   eng.aurora?.update(eng.camera.position);
@@ -390,6 +393,7 @@ function updateCamera(eng: Game, dt: number): void {
     tx = rp.x + iso.lead.x;
     ty = rp.y + 1.0;
     tz = rp.z + iso.lead.z;
+    iso.look.set(tx, ty, tz);
     const p = isoCameraPos(tx, ty, tz, iso.distCur, eng.camYaw);
     cx = p.x;
     cy = Math.max(p.y, groundAt(p.x, p.z) + 2);
