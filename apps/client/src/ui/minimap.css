@@ -57,7 +57,7 @@
   position: relative;
   min-width: 190px;
   max-width: 100%;
-  height: 30px;
+  min-height: 30px;
   padding: 0 var(--u-sp-6);
   display: flex;
   align-items: center;
@@ -67,7 +67,8 @@
   font-size: var(--u-fs-3);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  white-space: nowrap;
+  text-align: center;
+  line-height: 1.15;
   color: var(--u-gold-text);
   background: linear-gradient(180deg, var(--u-son-lo), var(--u-ink-1));
   border-top: var(--u-line-1) solid var(--u-gold);
@@ -77,9 +78,16 @@
   transform-origin: 50% 0;
   animation: mm2-unroll 0.7s var(--u-ease) both;
 }
+/* Tên vùng dài: co chữ trước, quá dài nữa thì xuống dòng (không cắt "…"). */
+.mm2-band[data-long] {
+  font-size: calc(var(--u-fs-3) * 0.82);
+  letter-spacing: 0.06em;
+}
+.mm2-band[data-long='2'] {
+  padding-block: 3px;
+}
 .mm2-band span {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 @keyframes mm2-unroll {
   from {

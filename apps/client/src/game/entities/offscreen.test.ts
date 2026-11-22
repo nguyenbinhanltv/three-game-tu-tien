@@ -97,6 +97,16 @@ describe('questGoal', () => {
   });
 });
 
+describe('mục tiêu vào phó bản → cổng', () => {
+  it('q6_gioi_tri: đích là cổng gioi_tri của Vấn Đỉnh; ở level khác không có cổng thì không chỉ', () => {
+    const goal = { kind: 'gate', to: 'gioi_tri' } as const;
+    expect(questGoal(QUEST.get('q6_gioi_tri')!, [0], NPCS)).toEqual(goal);
+    const portal = LEVELS.van_dinh!.portals!.find((p) => p.to === 'gioi_tri')!;
+    expect(nearestGoalSpot(goal, 0, 0, new Map(), new Map(), LEVELS.van_dinh)).toEqual({ x: portal.x, z: portal.z });
+    expect(nearestGoalSpot(goal, 0, 0, new Map(), new Map(), LEVELS.van_lam)).toBeNull();
+  });
+});
+
 describe('nearestGoalSpot', () => {
   const lv = LEVELS.van_lam!;
   it('chọn con quái sống gần nhất, bỏ con đã chết', () => {

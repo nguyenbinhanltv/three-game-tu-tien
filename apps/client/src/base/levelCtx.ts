@@ -66,5 +66,7 @@ export function sameLayout(a: string, b: string): boolean {
 export function areaKey(level: string, biome: string): string {
   // Phó bản mở rộng (E2-C) dùng tên phó bản; Kiếm Trủng giữ `ui.zone.dungeon`.
   if (LEVELS[level]?.dungeon && !LEVELS[level].tribulation && level !== 'kiem_trung') return `dungeon.${level}.name`;
+  // Sân độ kiếp có tên riêng (không phải "Kiếm Trủng" theo biome mặc định).
+  if (LEVELS[level]?.tribulation) return `map.${level}`;
   return biome === 'wild' && level !== 'van_lam' && level !== 'kiem_trung' ? `map.${level}` : `ui.zone.${biome}`;
 }

@@ -25,6 +25,8 @@ import { GameRoom, type JoinAuth } from './base';
  * `returnLevel`; chưa ai bắt đầu kiếp sau `WAIT_MS` cũng đưa về (vé hỏng, mất vật phẩm giữa đường).
  */
 const tribArrivals = new Map<number, TribId | undefined>();
+/** Nơi xuất phát của người vào bằng vé `returnOrigin` (theo nhân vật); xong kiếp về đó. */
+const tribOrigins = new Map<number, { level: string; x: number; z: number }>();
 
 /** Lớp room độ kiếp cho một level kiếp: `tribulation` (do_kiep) hoặc `tribulation-<id>` (sân riêng, ví dụ Nhật Thực Kiếp). */
 export function defineTribulation(levelId: string): typeof TribulationRoom {
@@ -74,6 +76,8 @@ export class TribulationRoom extends GameRoom {
   /** Lưu id kiếp theo nhân vật để `afterJoin` (không nhận `auth`) biết có phải người độ kiếp không. */
   override onJoin(client: Client, options: unknown, auth: JoinAuth): void {
     tribArrivals.set(auth.charId, auth.trib?.id ? (auth.trib.id as TribId) : undefined);
+    if (auth.trib?.from) tribOrigins.set(auth.charId, auth.trib.from);
+    else tribOrigins.delete(auth.charId);
     super.onJoin(client, options, auth);
   }
 
@@ -109,8 +113,14 @@ export class TribulationRoom extends GameRoom {
       if (now - (this.sentBack.get(p.sid) ?? 0) < 8000) continue;
       this.sentBack.set(p.sid, now);
       if ((p.s.fl & PF_DEAD) !== 0) this.sim.onRespawn(p);
-      tickets.issue(p.char.id, d.returnLevel, d.returnSpawn);
-      this.sendTransfer(p, d.returnLevel);
+      const o = tribOrigins.get(p.char.id);
+      if (o && LEVELS[o.level] && !LEVELS[o.level]!.dungeon) {
+        tickets.issue(p.char.id, o.level, { x: o.x, z: o.z });
+        this.sendTransfer(p, o.level);
+      } else {
+        tickets.issue(p.char.id, d.returnLevel, d.returnSpawn);
+        this.sendTransfer(p, d.returnLevel);
+      }
     }
   }
 

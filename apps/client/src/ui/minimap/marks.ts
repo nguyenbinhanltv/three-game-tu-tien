@@ -62,7 +62,11 @@ export function questOverlay(
   const qid = trackedQuestId(quests, trackPin);
   const def = qid ? QUEST.get(qid) : undefined;
   const goal = def && questGoal(def, quests.active[qid]!, NPCS);
-  if (def && goal && level === 'van_lam') {
+  if (def && goal && goal.kind === 'gate') {
+    // Cổng phó bản của level đang đứng (không ràng van_lam: Vấn Đỉnh cũng có cổng Giới Trì).
+    const g = LEVELS[level]?.portals?.find((q) => q.to === goal.to);
+    if (g) goalPoint = { x: g.x, z: g.z, label: t(`quest.${qid}.name`) };
+  } else if (def && goal && goal.kind !== 'gate' && level === 'van_lam') {
     const label = t(`quest.${qid}.name`);
     if (goal.kind === 'npc') {
       const n = NPC.get(goal.npc);

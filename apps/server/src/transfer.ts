@@ -12,7 +12,7 @@ export interface Ticket {
   spawn: { x: number; z: number } | null;
   exp: number;
   /** Vé vào room độ kiếp (E1-F): khóa room (mỗi lần độ kiếp một room) và kiếp cần bắt đầu khi tới nơi (thiếu = hộ pháp, chỉ xem và chắn). */
-  trib?: { key: string; id?: string };
+  trib?: { key: string; id?: string; from?: { level: string; x: number; z: number } };
   /** Vé vào phó bản riêng (E2-C): khóa room của nhóm; room kiểm khớp với `options.dgKey` client gửi. */
   dg?: string;
 }

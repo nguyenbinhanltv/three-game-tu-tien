@@ -175,11 +175,15 @@ export function avoidRects(
 }
 
 /** Đích của nhiệm vụ đang theo dõi, chưa gắn vị trí. */
-type QuestGoal = { kind: 'npc'; npc: string; turnin: boolean } | { kind: 'mon'; mon: string } | { kind: 'node'; item: string };
+type QuestGoal =
+  | { kind: 'npc'; npc: string; turnin: boolean }
+  | { kind: 'mon'; mon: string }
+  | { kind: 'node'; item: string }
+  | { kind: 'gate'; to: string };
 
 /**
  * Đích của nhiệm vụ: xong hết thì về NPC trả; không thì mục tiêu đầu tiên chưa xong có chỗ để chỉ
- * (nói chuyện → NPC, diệt → quái, hái → điểm hái, luyện → NPC có lò đan). Cảnh giới/ngự kiếm/đột phá
+ * (nói chuyện → NPC, diệt → quái, hái → điểm hái, vào phó bản → cổng dẫn tới phó bản đó, luyện → NPC có lò đan). Cảnh giới/ngự kiếm/đột phá
  * không có chỗ cụ thể nên bỏ qua.
  */
 export function questGoal(def: QuestDef, prog: number[], npcs: readonly NpcDef[]): QuestGoal | null {
@@ -191,6 +195,7 @@ export function questGoal(def: QuestDef, prog: number[], npcs: readonly NpcDef[]
     if (o.type === 'talk' && o.target) return { kind: 'npc', npc: o.target, turnin: false };
     if (o.type === 'kill' && o.target) return { kind: 'mon', mon: o.target };
     if (o.type === 'gather' && o.target) return { kind: 'node', item: o.target };
+    if (o.type === 'dungeon' && o.target) return { kind: 'gate', to: o.target };
     if (o.type === 'enhance') {
       const n = npcs.find((x) => x.enhance);
       if (n) return { kind: 'npc', npc: n.id, turnin: false };
@@ -243,13 +248,18 @@ interface NodeLike extends Pt {
  * Trả id thực thể (để bám vị trí mượt mỗi khung) hoặc một điểm tĩnh.
  */
 export function nearestGoalSpot(
-  goal: { kind: 'mon'; mon: string } | { kind: 'node'; item: string },
+  goal: { kind: 'mon'; mon: string } | { kind: 'node'; item: string } | { kind: 'gate'; to: string },
   px: number,
   pz: number,
   monsters: ReadonlyMap<string, MonLike>,
   nodes: ReadonlyMap<string, NodeLike>,
   level: LevelDef | undefined,
 ): { id: string } | { x: number; z: number } | null {
+  if (goal.kind === 'gate') {
+    // Cổng dẫn tới phó bản của nhiệm vụ: điểm tĩnh trong dữ liệu level (không có ở level khác thì không chỉ).
+    const g = level?.portals?.find((q) => q.to === goal.to);
+    return g ? { x: g.x, z: g.z } : null;
+  }
   let best = Infinity;
   let id = '';
   if (goal.kind === 'mon') {

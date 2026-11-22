@@ -420,10 +420,12 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
         if (Math.hypot(m.move.x - p.move.x, m.move.z - p.move.z) <= r) mates.push(m);
       }
     }
-    tickets.issue(p.char.id, level, null, { key, id: def.id });
+    // Kiếp `returnOrigin` (chương 6): vé mang level + chỗ đứng, xong kiếp về đúng đó (hộ pháp cũng về chỗ của chính họ).
+    const from = (who: PlayerEnt) => (def.returnOrigin ? { from: { level: this.levelId, x: who.move.x, z: who.move.z } } : {});
+    tickets.issue(p.char.id, level, null, { key, id: def.id, ...from(p) });
     this.sendTransfer(p, level, opts);
     for (const m of mates) {
-      tickets.issue(m.char.id, level, null, { key });
+      tickets.issue(m.char.id, level, null, { key, ...from(m) });
       this.sendTransfer(m, level, opts);
     }
     return true;
