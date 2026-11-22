@@ -71,8 +71,10 @@ P2b (vòng 2 sau duyệt): chi tiết mặt đất tăng rõ rệt và dùng chu
 
 ### Thiên Nhãn P3: chuyển từng bản đồ sang iso (`?cam=iso`)
 
-- Hướng nhìn cố định riêng từng bản đồ: `ISO_YAW` trong `game/camera/iso.ts` (độ → rad). Chọn bằng ảnh so sánh với `?isoyaw=<độ>` (ví dụ `pnpm shots camiso --cams iso --query isoyaw=30`). Đã chọn: `van_lam` (Lạc Kiếm Tông + Vân Lam) 30°, `van_hai` (Vân Hải Phù Đảo) 135°. Kịch bản `camiso` nhận `--level <id>` (điểm lấy từ `levelPoints`: poi, vùng, boss; cảnh đánh ở điểm sinh quái thường đầu tiên). Bản đồ chưa có mục thì dùng 45°.
+- Hướng nhìn cố định riêng từng bản đồ: `ISO_YAW` trong `game/camera/iso.ts` (độ → rad). Chọn bằng ảnh so sánh với `?isoyaw=<độ>` (ví dụ `pnpm shots camiso --cams iso --query isoyaw=30`). Đã chọn: `van_lam` (Lạc Kiếm Tông + Vân Lam) 30°, `van_hai` (Vân Hải Phù Đảo) 135°, `thien_khuyet` (Thiên Khuyết Cổ Thành) 20°. Kịch bản `camiso` nhận `--level <id>` (điểm lấy từ `levelPoints`: poi, vùng, boss; cảnh đánh ở điểm sinh quái thường đầu tiên). Bản đồ chưa có mục thì dùng 45°.
 - Khung boss lớn do phiên P4 (-262) phụ trách; P3 chỉ thu vùng ngang an toàn của mục tiêu `ISO_TGT_X` = 5,5 m (tránh minimap).
 - Cảnh điện ảnh và thẻ chương dùng camera cũ (iso tạm tắt khi `cine.active`/`tribScene`), đã trả `far` và cảnh xa (xem P0).
 
 Cây cao không thuộc hệ cây (`tree`) vẫn mờ được: cờ `sight` trong `PROP_CFG`/`TC_PROP_CFG` (`props.ts`, `propTcCfg.ts`) gắn `withSightFade` mà không đi vào impostor. Đã bật cho `prop_tung_phu_dao`, `prop_truc`, `prop_cay_goc_kho`, `cay_co_thu`, `tre`; prop cây cao mới nên đặt `sight: true` (hoặc `tree: true` nếu muốn impostor).
+
+Cột/bia/trụ đá cao cũng bật `sight` (`prop_mach_tinh_tru`, `prop_tru_nham_do`, `prop_tru_da_khac_van`, `prop_dai_tinh_bai`, `prop_tuong_da_vo_si`, `cot_da_do`, `cot_tran`) để mờ khi che người/mục tiêu ở camera chéo. Lưu ý `sight` thay thế `sway`/`crystal` (cùng chọn một hàm bọc material), nên không đặt chung với hai cờ đó.

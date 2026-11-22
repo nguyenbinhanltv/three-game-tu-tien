@@ -65,8 +65,8 @@ export const PROP_CFG: Record<string, PropCfg> = {
   prop_duong_xi: { range: 120, lod: [20, 55], decor: true },
   prop_lau: { range: 150, lod: [25, 70], decor: true },
   // Đoạn Mạch Cổ Cốc (PROP_LIB, E2-A)
-  prop_mach_tinh_tru: { range: 380, lod: [50, 120] },
-  prop_tru_nham_do: { range: 420, lod: [60, 140] },
+  prop_mach_tinh_tru: { range: 380, lod: [50, 120], sight: true },
+  prop_tru_nham_do: { range: 420, lod: [60, 140], sight: true },
   prop_cau_da_gay: { range: 320, lod: [50, 120] },
   prop_cong_khai_mach: { range: 360, lod: [50, 120] },
   prop_cay_goc_kho: { range: 320, lod: [40, 100], sight: true },
@@ -79,10 +79,10 @@ export const PROP_CFG: Record<string, PropCfg> = {
   prop_tung_phu_dao: { range: 520, lod: [45, 110], shadow: true, sight: true },
   prop_anh_ngoc_kinh: { range: 150, lod: [25, 70], decor: true },
   // Thiên Khuyết Cổ Thành (PROP_LIB, E4-A)
-  prop_tru_da_khac_van: { range: 380, lod: [50, 120] },
-  prop_dai_tinh_bai: { range: 360, lod: [50, 120] },
+  prop_tru_da_khac_van: { range: 380, lod: [50, 120], sight: true },
+  prop_dai_tinh_bai: { range: 360, lod: [50, 120], sight: true },
   prop_cong_thanh_vo: { range: 520, lod: [60, 150] },
-  prop_tuong_da_vo_si: { range: 420, lod: [60, 140] },
+  prop_tuong_da_vo_si: { range: 420, lod: [60, 140], sight: true },
   prop_den_long_troi: { range: 220, lod: [30, 80], decor: true },
   // Thiên Công Khai Vật (PROP-1)
   ...TC_PROP_CFG,
