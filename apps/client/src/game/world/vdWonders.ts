@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
 
+import { gioiTriPillars } from '@dtl/shared';
 import { markBloom } from '../../render/post';
 
 /**
@@ -138,17 +139,16 @@ export class VdDungeon {
       return o;
     };
     const { x: cx, z: cz } = inp.center;
-    const N = 14;
-    const R = 74;
+    // Vị trí cột lấy từ `gioiTriPillars` (shared): cùng công thức với va chạm của phó bản.
+    const spots = gioiTriPillars(inp.center);
+    const N = spots.length;
     const geo = own(new THREE.CylinderGeometry(1.5, 2.1, 24, 10));
     geo.translate(0, 12, 0);
     const pillars = new THREE.InstancedMesh(geo, own(bronzeMat()), N);
     pillars.name = 'vd-dungeon-pillars';
     const o = new THREE.Object3D();
     for (let i = 0; i < N; i++) {
-      const a = (i / N) * Math.PI * 2;
-      const x = cx + Math.cos(a) * R;
-      const z = cz + Math.sin(a) * R;
+      const { x, z } = spots[i]!;
       o.position.set(x, inp.heightAt(x, z) - 0.5, z);
       o.updateMatrix();
       pillars.setMatrixAt(i, o.matrix);

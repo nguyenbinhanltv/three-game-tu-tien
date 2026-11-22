@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import '@dtl/content';
-import { terrainOf } from '@dtl/shared';
+import { collisionOf, gioiTriPillars, terrainOf, vdGateCircles, vdGateYaw, VD_BIA_R, VD_DINH_R } from '@dtl/shared';
+import { LEVELS } from '@dtl/content';
 import { faceBlend, faceTint, scatterVanDinh, vdMix } from './vanDinhArt';
 import { GRADING, mixPreset, moodVariant } from '../../render/grading';
 
@@ -83,5 +84,32 @@ describe('Vấn Đỉnh: hai mặt (TN-3 mỹ thuật)', () => {
     // Vùng rễ (tây giữa) nhiều rễ cổ; mặt Dương nhiều đá đỏ đồng
     const roots = a.filter((r) => r.id === 'prop_cay_goc_kho' && r.x < cx && r.z < cx - 120 && r.z > cx - 330).length;
     expect(roots).toBeGreaterThan(20);
+  });
+
+  it('va chạm của kiến trúc dựng bằng code: vòng ở tâm Đỉnh Vô Danh, ba Ảnh Bia và hai trụ Cổng Giới Trì (server cho đi xuyên nếu thiếu)', () => {
+    const L = LEVELS.van_dinh!;
+    const has = (x: number, z: number, r: number) =>
+      tr.colliders.some((c) => Math.hypot(c.x - x, c.z - z) < 0.05 && Math.abs(c.r - r) < 0.05);
+    const dinh = L.pois!.find((p) => p.id === 'dinh_vo_danh')!;
+    expect(has(dinh.x, dinh.z, VD_DINH_R)).toBe(true);
+    for (const b of L.spots!.filter((q) => q.id.startsWith('anh_bia'))) expect(has(b.x, b.z, VD_BIA_R), b.id).toBe(true);
+    const gate = L.pois!.find((p) => p.id === 'gioi_tri_cua')!;
+    const pillars = vdGateCircles(gate, vdGateYaw(gate, tr.def.size / 2));
+    expect(pillars).toHaveLength(2);
+    for (const c of pillars) expect(has(c.x, c.z, c.r), `trụ cổng ${c.x.toFixed(1)}`).toBe(true);
+    // hai trụ cách nhau ~12,4 m (như dựng hình) và chừa lối đi giữa (≥ 8 m giữa hai mép)
+    expect(Math.hypot(pillars[0]!.x - pillars[1]!.x, pillars[0]!.z - pillars[1]!.z)).toBeCloseTo(12.4, 1);
+  });
+
+  it('phó bản gioi_tri: 14 cột đồng quanh sân đều có hình va chạm riêng đúng chỗ dựng hình', () => {
+    const center = LEVELS.gioi_tri!.dungeon!.center;
+    const want = gioiTriPillars(center);
+    expect(want).toHaveLength(14);
+    const cyls = collisionOf('gioi_tri').shapes.filter((s) => s.k === 'cyl' && s.tag === 'gioi_tri_cot_dong');
+    expect(cyls).toHaveLength(14);
+    for (const w of want) expect(cyls.some((s) => s.k === 'cyl' && Math.hypot(s.x - w.x, s.z - w.z) < 0.01 && s.r === w.r)).toBe(true);
+    // nằm trong `bound` của phó bản (người chơi/quái tới được) nên phải chặn thật
+    const bound = LEVELS.gioi_tri!.dungeon!.bound!;
+    for (const w of want) expect(Math.hypot(w.x - center.x, w.z - center.z)).toBeLessThanOrEqual(bound + 0);
   });
 });

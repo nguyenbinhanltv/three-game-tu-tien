@@ -527,6 +527,16 @@ for (const p of PADS.slice(1)) feats.push(flat('pad_' + p.id.replace('vd_', ''),
 for (const p of POIS) feats.push(flat('poi_' + p.id, p.off, Y, 24, 70));
 for (const b of BIA) feats.push(flat(b.id, b.off, Y, 14, 50));
 [BOSS, BOSS2, BOSS3, BOSS4].forEach((b, i) => feats.push(flat('san_' + i, b.off, Y - 2, 44, 120, { detail: 1.2 })));
+// Va chạm của kiến trúc dựng bằng code ở client (`apps/client/src/game/world/vdWonders.ts`); số liệu khớp `packages/shared/src/vandinh.ts` (test chuong6/vanDinhArt giữ khớp):
+// Đỉnh Vô Danh r 6,4; ba Ảnh Bia r 1,3 (vẫn chạm `touch` 5 m từ trước mặt); hai trụ Cổng Giới Trì r 1,7 ở ±6,2 m quanh cổng theo trục ngang quay về tâm bản đồ.
+const poiOff = (id) => POIS.find((p) => p.id === id).off;
+const gateO = poiOff('gioi_tri_cua');
+const gateYaw = Math.atan2(-gateO[0], -gateO[1]);
+const wc = (x, z, r) =>
+  colliders.push({ x: Math.round((C + x) * 100) / 100, z: Math.round((C + z) * 100) / 100, r: Math.round(r * 100) / 100 });
+wc(...poiOff('dinh_vo_danh'), 6.4);
+for (const b of BIA) wc(b.off[0], b.off[1], 1.3);
+for (const k of [-1, 1]) wc(gateO[0] + k * 6.2 * Math.cos(gateYaw), gateO[1] - k * 6.2 * Math.sin(gateYaw), 1.7);
 const terrain = {
   id: 'van_dinh',
   seed: SEED,

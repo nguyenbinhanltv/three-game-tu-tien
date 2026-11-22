@@ -1,6 +1,6 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
-import { KIEM_TRUNG, padsOfLevel, terrainOf, propsOf, SECT, tribDef } from '@dtl/shared';
+import { KIEM_TRUNG, padsOfLevel, vdGateYaw, terrainOf, propsOf, SECT, tribDef } from '@dtl/shared';
 import { heightAt, levelAssets, levelId, levelTerrain } from '../../base/levelCtx';
 import { LEVELS } from '@dtl/content';
 import { get } from '../../ui/store';
@@ -410,7 +410,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
       dinh: poi('dinh_vo_danh'),
       bia: L.spots!.filter((s) => s.id.startsWith('anh_bia')),
       cong: gate,
-      congYaw: Math.atan2(T.size / 2 - gate.x, T.size / 2 - gate.z),
+      congYaw: vdGateYaw(gate, T.size / 2),
       chuyenAm: pad('vd_chuyen_am'),
       chuyenDuong: pad('vd_chuyen_duong'),
     });
