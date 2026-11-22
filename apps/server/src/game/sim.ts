@@ -472,6 +472,7 @@ export class GameSim {
         return s.players;
       },
       resetAi: (m) => s.resetAi(m),
+      tribSkill: (p) => s.tribSys.noteSkill(p),
       sendCd: (p) => s.sendCd(p),
       setFlag: (p, flag, on) => s.setFlag(p, flag, on),
       setMeditating: (p, on) => s.setMeditating(p, on),

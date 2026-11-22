@@ -9,9 +9,11 @@
 //  - cột linh quang cộng sáng có bloom (`Vfx.suyBeacon`) ở Linh Nhãn, vòng Tôi Thể Lôi, tâm lôi ẩn, nhịp phá vọng;
 //  - ngọn lửa Thọ Đăng phát sáng có trạng thái liên tục (`Vfx.suyLamps`): cháy, bị suy phong nhắm thì nhạt màu dần, tắt, đang thắp lại.
 import * as THREE from 'three/webgpu';
-import { HK_FX, SUY_FX } from '@dtl/content';
+import { HK_FX, KC_FX, SUY_FX } from '@dtl/content';
 import {
   HK_VAN_SPIN_FRAC,
+  gatePos,
+  unpackGates,
   hkLuanAngle,
   hkRingPos,
   hkVanSpinAngle,
@@ -83,6 +85,8 @@ export class SuyFx {
   private ringOf = new Map<string, { n: number; r: number }>();
   private vanOf = new Map<string, { shift: number; t0: number; dur: number }>();
   private lastShadow: { x: number; y: number; z: number } | null = null;
+  /** Vật tạm của hỏi đạo (TN-3): nhãn số và vòng cổng vẽ thẳng bằng lưới, hết `until` (giây `performance.now`) thì gỡ. */
+  private temps: { src: string; obj: THREE.Object3D; until: number; free: () => void }[] = [];
   /** Nhật ký dev cho Playwright (`__game.suyFx.log`). */
   readonly log: { key: string; at: number }[] = [];
 
@@ -92,7 +96,7 @@ export class SuyFx {
   ) {}
 
   private tl(key: string): FxTimeline | undefined {
-    return SUY_FX.get(key) ?? HK_FX.get(key);
+    return SUY_FX.get(key) ?? HK_FX.get(key) ?? KC_FX.get(key);
   }
 
   private note(key: string): void {
@@ -258,6 +262,7 @@ export class SuyFx {
 
   /** Dọn mọi thứ của `src` (kiếp mới bắt đầu, ải khép, rời room). */
   clear(src: string): void {
+    this.dropLabels(src);
     this.dropLoops(src);
     this.dropGlow(src);
     this.dropLamps(src);
@@ -445,6 +450,167 @@ export class SuyFx {
    * FX `hkmark`: dấu trên sân của Huyền Kiếp (TN-6). Thứ phải chạm/bước vào (chỗ nấp, trụ nguội, ấn thật, Hồn Châu, cung sinh) có thêm cột linh quang
    * để đọc được từ xa trên sân tối; mối nguy (đụn tuyết, trụ nóng) dùng tông `accent` của kiếp.
    */
+  /**
+   * Nhãn số trên đỉnh cổng/dấu: sprite canvas, chữ vàng #F2C14E viền tối trên nền trong suốt, số Ả Rập lớn kèm số Hán nhỏ (一/二/三), tắt thử độ sâu để không bị
+   * đá sân che, luôn quay về camera, sống `dur` giây. Vẽ canvas không phụ thuộc font tải muộn: font hệ thống có CJK + dự phòng, và chỉ vẽ lại một lần khi
+   * `document.fonts.ready` (nếu có) để chữ không trống.
+   */
+  private numeral(src: string, x: number, z: number, h: number, n: number, dur: number): void {
+    const scene = this.env.scene;
+    if (!scene || typeof document === 'undefined') return;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 256;
+    const han = ['', '一', '二', '三'][n] ?? '';
+    const draw = (): void => {
+      const g = cv.getContext('2d');
+      if (!g) return;
+      g.clearRect(0, 0, 256, 256);
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.lineJoin = 'round';
+      g.lineWidth = 16;
+      g.strokeStyle = 'rgba(26,14,50,0.95)';
+      g.fillStyle = '#F2C14E';
+      g.font = 'bold 150px "Noto Serif SC", "Noto Serif", "Microsoft YaHei", "SimSun", "Songti SC", serif';
+      g.strokeText(String(n), 128, 92);
+      g.fillText(String(n), 128, 92);
+      g.font = 'bold 96px "Noto Serif SC", "Microsoft YaHei", "SimSun", "Songti SC", "Noto Sans CJK SC", serif';
+      g.strokeText(han, 128, 200);
+      g.fillText(han, 128, 200);
+    };
+    draw();
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.needsUpdate = true;
+    void document.fonts?.ready.then(() => {
+      draw();
+      tex.needsUpdate = true;
+    });
+    const sprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, toneMapped: false }),
+    );
+    sprite.scale.set(3.4, 3.4, 1);
+    sprite.position.set(x, this.env.ground(x, z) + h, z);
+    sprite.renderOrder = 30;
+    scene.add(sprite);
+    this.addTemp(src, sprite, dur, () => {
+      tex.dispose();
+      sprite.material.dispose();
+    });
+  }
+
+  /**
+   * Vòng cổng của hỏi đạo vẽ thẳng bằng lưới phẳng (không qua timeline): `n` vành đồng tâm + đĩa mờ, tắt thử độ sâu và `renderOrder` cao nên các tấm đá
+   * sân không che được. Nằm cao 0,15 m trên mặt đất; mỏng và trong để người đứng trong cổng vẫn thấy rõ nhân vật.
+   */
+  private gateRings(src: string, x: number, z: number, r: number, n: number, dur: number, color: number): void {
+    const scene = this.env.scene;
+    if (!scene) return;
+    const group = new THREE.Group();
+    const mats: THREE.Material[] = [];
+    const geos: THREE.BufferGeometry[] = [];
+    const add = (geo: THREE.BufferGeometry, opacity: number): void => {
+      const mat = new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity,
+        depthWrite: false,
+        depthTest: false,
+        side: THREE.DoubleSide,
+        toneMapped: false,
+      });
+      const m = new THREE.Mesh(geo, mat);
+      m.rotation.x = -Math.PI / 2;
+      m.renderOrder = 25;
+      group.add(m);
+      mats.push(mat);
+      geos.push(geo);
+    };
+    add(new THREE.CircleGeometry(r, 40), 0.18);
+    for (let i = 0; i < n; i++) {
+      const out = r * (1 - 0.26 * i);
+      add(new THREE.RingGeometry(out - 0.2, out, 48), 0.9);
+    }
+    group.position.set(x, this.env.ground(x, z) + 0.15, z);
+    scene.add(group);
+    this.addTemp(src, group, dur, () => {
+      for (const m of mats) m.dispose();
+      for (const g of geos) g.dispose();
+    });
+  }
+
+  private addTemp(src: string, obj: THREE.Object3D, dur: number, free: () => void): void {
+    this.temps.push({ src, obj, until: performance.now() / 1000 + dur, free });
+  }
+
+  private dropLabels(src: string | null, now = Infinity): void {
+    this.temps = this.temps.filter((l) => {
+      if ((src !== null && l.src !== src) || l.until > now) return true;
+      l.obj.removeFromParent();
+      l.free();
+      return false;
+    });
+  }
+
+  /** `n` cột linh quang xếp ngang quanh (x, z), cách nhau 1,3 m, sống `dur` giây (đánh số vành của hỏi đạo). */
+  private pillars(src: string, slot: string, x: number, z: number, n: number, dur: number, tone: 'rim' | 'accent'): void {
+    for (let k = 0; k < n; k++) {
+      const off = (k - (n - 1) / 2) * 1.3;
+      this.glow(src, `${slot}_${k}`, hexOf('kc_hoi_dao', tone), { x: x + off, z, h: 7, r: 0.45, dur, opacity: 0.55, thick: 1 });
+    }
+  }
+
+  /**
+   * Dấu trên sân của ba cơ chế kiếp chương 6 (TN-3, FX `kcmark`): `s` = hd (hỏi đạo) | am (âm vực) | dt (đòn nhịp Dương Thực); `pg` là bước.
+   * Hình phát theo timeline `kc_*.json` (phẳng sát đất, khối cao camFade); thứ phải bước vào còn có cột linh quang cộng sáng để đọc từ xa.
+   * Luật (đáp án, vùng hại, cửa sổ phản đòn) do server quyết định: ở đây chỉ vẽ theo tin server gửi.
+   */
+  kcMark(m: FxMsg): void {
+    const src = m.src ?? '';
+    const pg = m.pg ?? 0;
+    const x = m.x ?? 0;
+    const z = m.z ?? 0;
+    switch (m.s) {
+      case 'hd': {
+        if (pg === 1) {
+          const d = m.d ?? 6;
+          const gates = unpackGates(m.lv ?? 0);
+          this.at(`kc_mark_${m.n ?? 1}`, 'kc_hoi_dao', x, z, 2, { delay: d, src });
+          for (let i = 0; i < gates.length; i++) {
+            const g = gatePos({ x, z }, m.r ?? 8, i);
+            this.at(`kc_gate_${gates[i]}`, 'kc_hoi_dao', g.x, g.z, 3, { delay: d, src });
+            // Số vành đọc từ xa bằng số cột sáng: cổng `n` vành có `n` cột xếp ngang (cùng cách với dấu giữa sân).
+            this.pillars(src, `kcg${i}`, g.x, g.z, gates[i] ?? 1, d, 'rim');
+            this.numeral(src, g.x, g.z, 3.8, gates[i] ?? 1, d);
+            this.gateRings(src, g.x, g.z, 3, gates[i] ?? 1, d, hexOf('kc_hoi_dao', 'rim'));
+          }
+          this.pillars(src, 'kcgm', x, z, m.n ?? 1, d, 'accent');
+          this.numeral(src, x, z, 3.4, m.n ?? 1, d);
+          this.gateRings(src, x, z, 2.2, m.n ?? 1, d, hexOf('kc_hoi_dao', 'accent'));
+        } else if (pg === 4) {
+          // 2 s cuối: đường sáng mờ từ dấu giữa sân tới cổng đúng (server báo điểm cổng ở ox/oz; dài đúng bán kính vòng).
+          this.at('kc_hd_path', 'kc_hoi_dao', x, z, m.r ?? 6, { yaw: Math.atan2((m.ox ?? x) - x, (m.oz ?? z) - z), delay: m.d ?? 2, src });
+        } else {
+          this.dropLabels(src);
+          this.dropGlow(src, 'kcg');
+          this.at('kc_hd_ok', 'kc_hoi_dao', x, z, m.r ?? 3, { src });
+          if (pg === 3) this.on('kc_hd_bad', 'kc_hoi_dao', src);
+        }
+        break;
+      }
+      case 'am':
+        if (pg === 1) this.at('kc_am_pool', 'kc_am_lan', x, z, m.r ?? 8, { delay: m.d ?? 8.7, src });
+        else if (pg === 3) this.at('kc_am_end', 'kc_am_lan', x, z, m.r ?? 8, { src });
+        break;
+      case 'dt':
+        if (pg === 1) this.at('kc_dt_wind', 'kc_duong_dap', x, z, m.r ?? 12, { delay: m.d ?? 2.4, src });
+        else if (pg === 2) this.on('kc_dt_now', 'kc_duong_dap', src);
+        else if (pg === 3) this.on('kc_dt_hit', 'kc_duong_dap', src);
+        else if (pg === 5) this.on('kc_dt_parry', 'kc_duong_dap', src);
+        break;
+    }
+  }
+
   hkMark(m: FxMsg): void {
     const src = m.src ?? '';
     const kind = m.s ?? '';
@@ -673,6 +839,7 @@ export class SuyFx {
 
   /** Mỗi khung: phát lại vòng lặp tới hạn; đèn viền bám nhân vật; chủ hết độ kiếp (lỡ tin khép ải) thì dọn. */
   update(): void {
+    if (this.temps.length) this.dropLabels(null, performance.now() / 1000);
     if (this.loops.size === 0 && this.stage.size === 0) return;
     const now = performance.now() / 1000;
     for (const src of new Set([...this.stage.keys(), ...[...this.loops.values()].map((l) => l.src)])) {
@@ -707,6 +874,7 @@ export class SuyFx {
   }
 
   dispose(): void {
+    this.dropLabels(null);
     for (const src of [...this.stage.keys(), this.litFor]) if (src) this.clear(src);
     for (const h of this.glows.values()) h.stop();
     for (const h of this.lamps.values()) h.stop();

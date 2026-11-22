@@ -588,6 +588,24 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     case 'hkmark':
       hkMark(eng, m);
       break;
+    case 'kcmark':
+      // Kiếp chương 6 (TN-3): hình do SuyFx.kcMark; luật ở server.
+      eng.suyFx?.kcMark(m);
+      if (import.meta.env.DEV && (m.src ?? '') === eng.sid)
+        (eng.suyLog ??= {})[`kc:${m.s}:${m.n ?? 0}`] = {
+          s: `kc_${m.s}`,
+          n: m.n ?? 0,
+          x: m.x ?? 0,
+          z: m.z ?? 0,
+          r: m.r ?? 0,
+          pg: m.pg ?? 0,
+          lv: m.lv ?? 0,
+          at: Date.now(),
+          d: m.d ?? 0,
+          ox: 0,
+          oz: 0,
+        };
+      break;
     case 'suyreveal':
       if (src === eng.sid) set({ suyCdUntil: Date.now() + (m.d ?? 0) * 1000 });
       break;
