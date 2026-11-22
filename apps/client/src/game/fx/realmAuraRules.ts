@@ -39,8 +39,9 @@ export function daoOf(mt: string | undefined): AuraDao {
  * (cảnh biến hình do timeline `fx_co_hoa_hinh` lo, nhân vật giữ nguyên màu gốc đậm).
  */
 export function cothanAura(mt: string | undefined, giant: number | undefined, mode: AuraMode): { mode: AuraMode; hidden: boolean } {
-  // TN-9: Lôi tu cũng chỉ giữ MỘT lớp nhẹ (hồ quang điện ở kiếm đã đủ), không ẩn (không có thân to).
-  if (mt === LOI_METHOD) return { mode: mode === 'off' ? 'off' : 'min', hidden: false };
+  // TN-9: lớp `main` luôn được vẽ ở mọi chế độ nên 'min' vẫn quấn dải tím/vàng quanh thân (rối, như lỗi Cổ Thần trước). Lôi tu bỏ hẳn hào quang
+  // cảnh giới: hồ quang điện ở kiếm (`loiBlade.ts`) là dấu hiệu duy nhất, đọc rõ hơn và không phủ lên thân.
+  if (mt === LOI_METHOD) return { mode: 'off', hidden: true };
   if (mt !== COTHAN_METHOD) return { mode, hidden: false };
   return { mode: mode === 'off' ? 'off' : 'min', hidden: (giant ?? 0) > 0.02 };
 }

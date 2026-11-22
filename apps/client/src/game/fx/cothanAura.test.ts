@@ -19,8 +19,8 @@ describe('hào quang cảnh giới của Cổ Thần (TN-5)', () => {
       expect(cothanAura(mt, 0, 'std')).toEqual({ mode: 'std', hidden: false });
     }
   });
-  it('Lôi tu chỉ giữ một lớp nhẹ và không bao giờ bị ẩn (không có thân to)', () => {
-    for (const m of ['min', 'std', 'full'] as const) expect(cothanAura(LOI_METHOD, 1, m)).toEqual({ mode: 'min', hidden: false });
-    expect(cothanAura(LOI_METHOD, 0, 'off')).toEqual({ mode: 'off', hidden: false });
+  it('Lôi tu bỏ hẳn hào quang cảnh giới (lớp main luôn vẽ nên min vẫn quấn dải tím), mọi công pháp khác không bị ảnh hưởng', () => {
+    for (const m of ['off', 'min', 'std', 'full'] as const) expect(cothanAura(LOI_METHOD, 0, m)).toEqual({ mode: 'off', hidden: true });
+    expect(cothanAura('bat_dong_kim_than', 0, 'full')).toEqual({ mode: 'full', hidden: false });
   });
 });

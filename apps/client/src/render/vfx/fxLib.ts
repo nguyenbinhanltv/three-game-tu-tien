@@ -88,6 +88,42 @@ function arcBlade(arcDeg: number, width: number, thick: number, segs = 40, rows 
   return build(pos, uvs, idx);
 }
 
+// Tia sét (TN-9): dải mảnh zigzag dọc +Z (0 → 1) có hai nhánh rẽ, hai dải vuông góc nhau (một dải lệch theo X, một theo Y) nên nhìn từ mọi phía vẫn
+// thấy đường gấp khúc. Biên độ lệch tính theo đơn vị của chiều RỘNG (nhân với scale x/y), mảnh ở hai đầu, nhọn ở mũi. `u` dọc, `v` ngang dải 0..1.
+// Ba biến thể (`seed`) cho cùng một vị trí phát ra ba đường khác nhau: phát luân phiên theo khung để sét chập chờn.
+function boltStrips(seed: number): THREE.BufferGeometry {
+  const r = rng(seed);
+  const pos: number[] = [];
+  const uvs: number[] = [];
+  const idx: number[] = [];
+  /** Một dải: tâm đi từ (z0) tới (z1) theo trục `axis`, lệch bên `off(u)`; rộng `w(u)`. */
+  const strip = (axis: 'x' | 'y', z0: number, z1: number, off0: number, amp: number, w0: number, segs: number, driftTo = 0): void => {
+    const base = pos.length / 3;
+    let o = off0;
+    for (let i = 0; i <= segs; i++) {
+      const u = i / segs;
+      const taper = Math.pow(Math.sin(Math.PI * Math.min(1, u * 0.92 + 0.04)), 0.6);
+      o = i === 0 ? off0 : (i % 2 ? 1 : -1) * amp * (0.55 + 0.9 * r()) + driftTo * u * 0.3;
+      const z = z0 + (z1 - z0) * u;
+      const w = w0 * (0.35 + 0.65 * taper) * (i === segs ? 0.2 : 1);
+      if (axis === 'x') pos.push(o - w, 0, z, o + w, 0, z);
+      else pos.push(0, o - w, z, 0, o + w, z);
+      uvs.push(u, 0, u, 1);
+      if (i < segs) {
+        const q = base + i * 2;
+        idx.push(q, q + 1, q + 2, q + 1, q + 3, q + 2, q + 1, q, q + 2, q + 3, q + 1, q + 2);
+      }
+    }
+  };
+  for (const axis of ['x', 'y'] as const) {
+    strip(axis, 0, 1, 0, 0.9, 0.07, 14);
+    // hai nhánh rẽ ngắn, lệch về hai bên, từ khoảng 1/3 và 2/3 thân
+    strip(axis, 0.3, 0.62, 0.35, 0.5, 0.04, 5, -1.2);
+    strip(axis, 0.55, 0.88, -0.3, 0.45, 0.035, 5, 1.1);
+  }
+  return build(pos, uvs, idx);
+}
+
 const rollArc = (g: THREE.BufferGeometry, deg: number, scale = 1): THREE.BufferGeometry => g.scale(scale, scale, scale).rotateZ(deg * DEG);
 
 const slashThick = () => arcBlade(170, 0.55, 0.12);
@@ -1021,6 +1057,9 @@ function danLo(): THREE.BufferGeometry {
 const BUILDERS: Record<FxLibShape, () => THREE.BufferGeometry> = {
   slash_thick: slashThick,
   slash_thin: slashThin,
+  bolt: () => boltStrips(7),
+  bolt_b: () => boltStrips(19),
+  bolt_c: () => boltStrips(43),
   slash_cross: slashCross,
   slash_fan: slashFan,
   blade_flying: bladeFlying,
