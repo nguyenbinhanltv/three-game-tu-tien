@@ -1301,6 +1301,11 @@ export class GameSim {
   fireBolts(m: MonEnt, c: MonsterCaster, yaw: number, lift = 0): void {
     return this.monSys.fireBolts(m, c, yaw, lift);
   }
+  /** Quái của sân kiếp (Nhật Thực Dực Chủ, Lộ Linh cầu 9): đứng `dist` mét trước người chơi, đuổi người đó, không rơi đồ. */
+  spawnTribBoss(p: PlayerEnt, id: string, dist: number): MonEnt | null {
+    return this.tribHub.spawnTribBoss(p, id, dist);
+  }
+
   private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): boolean {
     return this.monSys.hitMonster(p, mon, basePower, mul, elem);
   }

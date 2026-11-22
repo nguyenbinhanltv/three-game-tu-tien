@@ -15,13 +15,15 @@ import {
   chainCleared,
   kieuEntryDeny,
   kieuOfLevel,
+  KIEU_BOSS_ID,
+  MS_DEAD,
 } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import { Character } from '../game/character';
 import { DUNGEON_QUEST_TARGET } from '../game/dungeonquest';
 import { log } from '../log';
-import type { PlayerEnt, SimOptions } from '../game/entities';
+import type { MonEnt, PlayerEnt, SimOptions } from '../game/entities';
 import { tickets } from '../transfer';
 import { GameRoom, type JoinAuth } from './base';
 
@@ -34,6 +36,9 @@ import { GameRoom, type JoinAuth } from './base';
 const tribArrivals = new Map<number, TribId | undefined>();
 /** Nơi xuất phát của người vào bằng vé `returnOrigin` (theo nhân vật); xong kiếp về đó. */
 const tribOrigins = new Map<number, { level: string; x: number; z: number }>();
+
+/** Khoảng cách (m) boss Lộ Linh hiện trước người chơi. */
+const KIEU_BOSS_DIST = 14;
 
 /** Lớp room độ kiếp cho một level kiếp: `tribulation` (do_kiep) hoặc `tribulation-<id>` (sân riêng, ví dụ Nhật Thực Kiếp). */
 export function defineTribulation(levelId: string): typeof TribulationRoom {
@@ -50,6 +55,8 @@ export class TribulationRoom extends GameRoom {
   static START_DELAY_MS = 3500;
   static LINGER_MS = 6000;
   static WAIT_MS = 25_000;
+  /** Pha boss Lộ Linh (cầu 9) tối đa chừng này (ms) kể từ lúc boss hiện. */
+  static BOSS_MAX_MS = 360_000;
   private startedAny = false;
   /** Số lần bắt đầu kiếp đã hẹn giờ mà chưa chạy: trong lúc đó không đóng phòng vì quá `WAIT_MS`. */
   private startPending = 0;
@@ -146,8 +153,37 @@ export class TribulationRoom extends GameRoom {
    * dùng `spawnTribBoss(p, KIEU_BOSS_ID, dist)`). Hiện chưa có boss: trả false, cầu ghi ngay khi Hồn kiếp xong. Room kiếp chứa được thực thể boss
    * (`GameSim.spawnTribBoss`, như Nhật Thực Dực Chủ), nên không cần tách room riêng cho boss.
    */
-  protected kieuBossPhase(_p: PlayerEnt, _elapsedSec: number): boolean {
-    return false;
+  protected kieuBossPhase(p: PlayerEnt, elapsedSec: number): boolean {
+    const mon = this.sim.spawnTribBoss(p, KIEU_BOSS_ID, KIEU_BOSS_DIST);
+    if (!mon) return false;
+    this.kieuBoss = { mon, sid: p.sid, base: elapsedSec, at: Date.now() };
+    this.idleSince = 0;
+    this.sim.sys(p, 'sys.kieu_lo_linh', undefined, 'info');
+    return true;
+  }
+
+  /** Pha boss Lộ Linh đang chạy (cầu 9): boss, người đánh, giờ đã trôi trước pha (Hồn kiếp) và lúc bắt đầu pha. */
+  private kieuBoss: { mon: MonEnt; sid: string; base: number; at: number } | null = null;
+
+  /**
+   * Nhịp kiểm pha boss: boss gục → SERVER ghi cầu (`onClear`, giờ = Hồn kiếp + pha boss, người còn trong room); người đánh chết/rời hoặc quá `BOSS_MAX_MS`
+   * thì bỏ pha (không ghi, vé cấp lại như mọi lần thua), room về nếp cũ (đóng sau `LINGER_MS`). Trả true nếu pha còn chạy (giữ phòng, không đưa ai về).
+   */
+  private tickKieuBoss(): boolean {
+    const b = this.kieuBoss;
+    if (!b) return false;
+    const p = this.sim.players.get(b.sid);
+    if (b.mon.state === MS_DEAD) {
+      this.kieuBoss = null;
+      if (p && p.connected && (p.s.fl & PF_DEAD) === 0)
+        this.sim.kieu.onClear(p, 9, { present: true, contributed: true, elapsedSec: b.base + (Date.now() - b.at) / 1000 });
+      return false;
+    }
+    if (!p || !p.connected || (p.s.fl & PF_DEAD) !== 0 || Date.now() - b.at > TribulationRoom.BOSS_MAX_MS) {
+      this.kieuBoss = null;
+      return false;
+    }
+    return true;
   }
 
   /** Đưa mọi người về nơi cũ (người chết được hồi sinh tại sân trước). */
@@ -174,7 +210,7 @@ export class TribulationRoom extends GameRoom {
   private director(): void {
     const now = Date.now();
     if (this.sim.players.size === 0) return;
-    const active = [...this.sim.players.values()].some((p) => p.trib);
+    const active = [...this.sim.players.values()].some((p) => p.trib) || this.tickKieuBoss();
     if (active) {
       this.startedAny = true;
       this.idleSince = 0;
