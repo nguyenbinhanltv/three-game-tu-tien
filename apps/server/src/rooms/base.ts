@@ -192,6 +192,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.BOTTLENECK, (p, m) => this.sim.onBottleneck(p, m));
     on(C.ROOT, (p, m) => this.sim.onChangeRoot(p, m));
     on(C.DAO, (p, m) => this.sim.onChooseDao(p, m));
+    on(C.KIEU, (p, m) => this.onKieu(p, m));
     on(C.PARTY, (p, m) => parties.command(p, m));
     on(C.DUEL, (p, m) => this.sim.duel.command(p, m));
     on(C.PORTAL, (p) => this.onPortal(p));
@@ -209,6 +210,8 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
   }
 
   onPortal(_p: PlayerEnt): void {}
+  /** Xin vào cầu Cửu Kiều: chỉ room thế giới xử lý (ghi đè ở `WorldRoom`). */
+  onKieu(_p: PlayerEnt, _m: unknown): void {}
   /** Phó bản ghi đè để giới hạn số lần hồi sinh. */
   onRespawn(p: PlayerEnt): void {
     this.sim.onRespawn(p);

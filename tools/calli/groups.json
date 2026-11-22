@@ -277,6 +277,27 @@
           "spacing": 0.04
         },
         {
+          "id": "set_vo_danh_kiem",
+          "key": "set.set_vo_danh_kiem.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_dong_dinh",
+          "key": "set.set_dong_dinh.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
+          "id": "set_gioi_tri_dan",
+          "key": "set.set_gioi_tri_dan.name",
+          "style": "gold",
+          "size": 110,
+          "spacing": 0.04
+        },
+        {
           "id": "de_tu",
           "key": "ui.hoatruc.de_tu",
           "style": "gold",

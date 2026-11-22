@@ -122,7 +122,8 @@ import {
   setHitStopOn,
 } from './fx/fxSettings';
 import type { AuraCombat, AuraMode, AuraOthers } from './fx/realmAuraRules';
-import { RealmAuraFx } from './fx/realmAura';
+import { RealmAuraFx, type RealmAuraEnv } from './fx/realmAura';
+import { PathAuraFx } from './fx/pathAura';
 import { type FxQuality } from '@dtl/shared';
 import { type SkillEvent } from './character/view';
 import { HitQueue, SwingGuard, type HitSoundLog } from './combat/hitjuice';
@@ -300,6 +301,8 @@ export class Game {
   skillFx: SkillFx | null = null;
   /** Hào quang cảnh giới trên nhân vật (RFX-1). */
   realmAura: RealmAuraFx | null = null;
+  /** Hào quang riêng của Đao tu/Cổ tu/Cấm chế sư (thay hào quang cảnh giới của ba hướng này). */
+  pathAura: PathAuraFx | null = null;
   /** Hiệu ứng quái/tinh anh/boss (V5). */
   monFx: MonFx | null = null;
   boltKinds = new Map<number, string>();
@@ -508,6 +511,7 @@ export class Game {
     for (const fn of this.skillListeners) fn(sid, e);
     this.skillFx?.handle(sid, e);
     this.realmAura?.handle(sid, e);
+    this.pathAura?.handle(sid, e);
     if (import.meta.env.DEV) {
       this.skillLog.push({ sid, e, at: performance.now() });
       if (this.skillLog.length > 200) this.skillLog.shift();
@@ -746,7 +750,7 @@ export class Game {
         },
       },
     });
-    this.realmAura = new RealmAuraFx(this.vfx, {
+    const auraEnv: RealmAuraEnv = {
       players: () => this.ents?.players.values() ?? [],
       mySid: () => this.sid,
       camera: () => this.camera,
@@ -759,7 +763,9 @@ export class Game {
       others: auraOthersOf,
       combat: auraCombatOf,
       partySids: () => new Set((get().party?.members ?? []).map((m) => m.sid).filter(Boolean)),
-    });
+    };
+    this.realmAura = new RealmAuraFx(this.vfx, auraEnv);
+    this.pathAura = new PathAuraFx(this.vfx, auraEnv);
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
     this.suyFx = new SuyFx(this.skillFx.runner, {
       vfx: this.vfx,
@@ -1458,6 +1464,8 @@ export class Game {
     this.skillFx = null;
     this.realmAura?.dispose();
     this.realmAura = null;
+    this.pathAura?.dispose();
+    this.pathAura = null;
     this.monFx = null;
     this.suyFx?.dispose();
     this.suyFx = null;

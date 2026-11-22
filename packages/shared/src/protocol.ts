@@ -118,6 +118,8 @@ export const C = {
   ROOT: 'root',
   /** Chọn Đạo (TN-3, từ Vấn Đỉnh, một lần): `{ root }`. */
   DAO: 'dao',
+  /** Xin vào cầu Đạp Thiên Cửu Kiều (TN-7): `{ n }` (1..9). Server kiểm cấp, tiến độ, NPC, đồng đội rồi mới cấp vé một lần. */
+  KIEU: 'kieu',
   /** Tổ đội (P3-9): `PartyCmd`. */
   PARTY: 'pty',
   /** Tỉ thí 1v1 ở võ đài: `DuelCmd`. */

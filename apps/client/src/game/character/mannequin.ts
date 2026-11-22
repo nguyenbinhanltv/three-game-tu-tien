@@ -148,6 +148,9 @@ const V3_BRANCH_FALLBACK: Readonly<Record<string, string>> = {
   set_tran_khich: 'lac_kiem',
   set_tan_thiet: 'huyen_giap',
   set_tinh_dan_bao: 'dan_tam',
+  set_vo_danh_kiem: 'lac_kiem',
+  set_dong_dinh: 'huyen_giap',
+  set_gioi_tri_dan: 'dan_tam',
 };
 /** Asset v3 của một nhân vật (giới `g`, skin đang mặc nếu có, bộ trang bị `set`). Skin sai giới (server không cho mặc) bị bỏ qua. */
 export function v3AssetOf(g: string, skin?: string, set?: string): string {

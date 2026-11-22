@@ -64,8 +64,8 @@ describe('quyền tham số kiểm thử', () => {
       'kd5',
       'ht5',
       'ab5',
-      'dt2',
-      '45',
+      'dt5',
+      '48',
       '0',
       -1,
       1.5,
@@ -425,7 +425,7 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
 
   it('kit: tham số sai không đổi gì; bậc 4 dùng bộ bậc 4 (Tinh Khuyết Kiếm chung)', () => {
     const { char, run } = join(true);
-    for (const bad of ['kit', 'kit 0 kiem', 'kit 6 kiem', 'kit 2 xyz', 'kit 2 kiem +abc']) {
+    for (const bad of ['kit', 'kit 0 kiem', 'kit 7 kiem', 'kit 2 xyz', 'kit 2 kiem +abc']) {
       expect(run(bad), bad).toContain('/gm kit');
       expect(char.equip.weapon, bad).toBeUndefined();
     }
@@ -447,7 +447,7 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
   });
 
   it('mọi bậc × nhánh dựng được kế hoạch hợp lệ (id có thật, đúng ô, không trùng ô)', () => {
-    for (let tier = 1; tier <= 5; tier++) {
+    for (let tier = 1; tier <= 6; tier++) {
       for (const br of tools.GM_BRANCHES) {
         const plan = tools.planKit(tier, br);
         expect(

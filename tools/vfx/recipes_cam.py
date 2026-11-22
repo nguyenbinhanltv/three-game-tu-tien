@@ -35,7 +35,8 @@ def seal(t, at, r, dur=3.0, tone_fill='core', tone_line='body'):
 
 # --------------------------------------------------------------------------------------------------------------------------------
 def phong_cam():
-    """Phong Cấm (đặc trưng, hit 0,3): bùa cấm bay dọc vết nứt tới mục tiêu, ấn triện khóa dưới chân nó."""
+    """Phong Cấm (đặc trưng, hit 0,3): bùa cấm bay dọc vết nứt tới mục tiêu, rồi ba vòng ấn khóa siết quanh thân nó (lõi đậm, thân đỏ tía, viền vàng mảnh)
+    và triện khóa dưới chân. Không còn chớp vàng phủ kín mục tiêu (ảnh duyệt #473: mục tiêu sáng vàng nhạt, không đọc ra ấn phong)."""
     ev = [
         parts('spark', -0.3, 18, 1.3, 1, 0.26, 0.06, at='self', offset=[0.2, 0.2, 0.4], inward=True, tone='rim', tier=1),
         snd(-0.3, 'cast', 0.45, 1.15),
@@ -43,17 +44,23 @@ def phong_cam():
         mesh('spark_streak', -0.2, 0.2, at='ahead', offset=[0.1, 0.9, 0.4], scale=1.8, shadow=False, tone='rim', alpha=0.95, tier=1, seed=2,
              move={'to': 'target', 'ease': 'in', 'offset': [0, 1.0, 0]}),
         snd(-0.15, 'slash', 0.4, 1.2, 0.06),
-        mesh('burst', 0.0, 0.12, at='target', offset=[0, 1.0, 0], scale=2.8, billboard=True, sweep=0, tone='body', cross=True, tier=0),
-        flip('spark_burst', 0.0, 0.34, 3.2, at='target', offset=[0, 1.0, 0], alpha=0.9, tone='accent', tier=0),
-        parts('spark', 0.0, 30, 6, 1, 0.4, 0.08, at='target', offset=[0, 1.0, 0], tone='rim', tier=1),
+        snd(0.0, 'impact', 0.5, 1.1),
+        # ba vòng ấn quanh thân mục tiêu, siết từ ngoài vào (thấp / giữa / cao); mỗi vòng ba tầng: lõi đậm lớn nhất, thân đỏ tía, viền vàng nhỏ nhất
+    ]
+    for k, (y, r0, r1) in enumerate([(0.35, 1.35, 0.95), (1.0, 1.5, 1.05), (1.65, 1.3, 0.9)]):
+        t = 0.0 + 0.03 * k
+        ev += [
+            mesh('rune_ring2', t, 1.6, at='target', offset=[0, y, 0], scale=r0 * 1.12, scaleTo=r1 * 1.12, sweep=0.15, erodeFrom=0.85, alpha=1, shadow=False, tone='core', camFade=True, tier=0, seed=20 + k),
+            mesh('rune_ring2', t + 0.01, 1.6, at='target', offset=[0, y, 0], scale=r0, scaleTo=r1, sweep=0.15, erodeFrom=0.85, alpha=1, shadow=False, tone='body', camFade=True, tier=0, seed=30 + k),
+            mesh('rune_ring2', t + 0.02, 1.6, at='target', offset=[0, y, 0], scale=r0 * 0.9, scaleTo=r1 * 0.9, sweep=0.15, erodeFrom=0.85, alpha=0.9, shadow=False, tone='accent', camFade=True, tier=1, seed=40 + k),
+        ]
+    ev += [
+        parts('spark', 0.0, 14, 5, 1, 0.35, 0.07, at='target', offset=[0, 1.0, 0], tone='rim', tier=1),
         *seal(0.02, 'ground', 3.6, 3.0),
-        mesh('rune_ring2', 0.02, 1.4, at='ground', offset=[0, 0.1, 0], scale=1.5, scaleTo=2.2, sweep=0.2, erodeFrom=0.85, alpha=1, shadow=False, tone='core', tier=0, seed=5),
-        mesh('rune_ring2', 0.04, 1.4, at='ground', offset=[0, 0.12, 0], scale=1.35, scaleTo=2.0, sweep=0.2, erodeFrom=0.85, alpha=1, shadow=False, tone='body', tier=0, seed=15),
         mesh('crack_radial', 0.03, 1.0, at='ground', offset=[0, 0.06, 0], scale=3.4, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='accent', tier=0, seed=6),
         smoke(0.03, 'ground', y=0.5, scale=2.4, tone='body', alpha=0.4),
-        snd(0.0, 'impact', 0.5, 1.1),
     ]
-    ev += feel(0.0, ms=70, sh=0.22, fl=0.1, vg=0.28, fov=1.6)
+    ev += feel(0.0, ms=70, sh=0.22, fl=0.0, vg=0.28, fov=1.6)
     return {'skill': 'skl_phong_cam', 'palette': 'tran_sat', 'replaces': ['phongcam'], 'events': ev}
 
 

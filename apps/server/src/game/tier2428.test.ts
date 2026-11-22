@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { allowSkillForTest } from './testkit';
 import { branchMods, groundAt, skillGate } from '@dtl/shared';
 import { METHOD } from '@dtl/content';
@@ -100,6 +100,16 @@ function setup() {
   return { sim, priv, join, mon, fresh, use, pass, res, setRes, marks };
 }
 
+/** Cố định ngẫu nhiên (bạo kích, biên độ sát thương) quanh phép đo để so hai lần chạy không bị nhiễu: một mẫu mỗi bên là đủ. */
+const fixed = <T>(fn: () => T): T => {
+  const rnd = vi.spyOn(Math, 'random').mockReturnValue(0.99);
+  try {
+    return fn();
+  } finally {
+    rnd.mockRestore();
+  }
+};
+
 const NEW = {
   [DAO]: { t24: ['skl_thuan_dao_tram', 'skl_huyet_chien_the'], t28: 'skl_doan_thien_dao', b28: ['cuong_dao', 'luu_ngan'] },
   [CO]: { t24: ['skl_phan_co_thuat', 'skl_kim_thien_co'], t28: 'skl_van_co_phe_the', b28: ['bach_co', 'doc_to'] },
@@ -180,14 +190,10 @@ describe('Đao tu mốc 24/28', () => {
       expect(marks(m, 'dao_ngan')).toBe(0);
       return hp - m.s.hp;
     };
-    let low = 0;
-    let high = 0;
-    for (let i = 0; i < 30; i++) {
-      low += cast(0);
-      high += cast(3);
-    }
+    // Mỗi tầng Đao ngấn +10%: ba tầng cho đúng 1,3 lần khi ngẫu nhiên cố định.
+    const [low, high] = fixed(() => [cast(0), cast(3)] as const);
     expect(low).toBeGreaterThan(0);
-    expect(high).toBeGreaterThan(low * 1.15);
+    expect(high / low).toBeCloseTo(1.3, 1);
   });
   it('Huyết Chiến Thể tích ngay 30 Khí thế và giậm đất mỗi giây quanh thân (quái trong 5 m bị đánh, ngoài thì không)', () => {
     const { join, mon, fresh, use, pass, res, setRes } = setup();
@@ -230,12 +236,8 @@ describe('Đao tu mốc 24/28', () => {
       expect(marks(b, 'dao_ngan')).toBe(0);
       return hp[0]! - a.s.hp;
     };
-    let low = 0;
-    let high = 0;
-    for (let i = 0; i < 30; i++) {
-      low += run(0, 0);
-      high += run(100, 3);
-    }
+    const [low, high] = fixed(() => [run(0, 0), run(100, 3)] as const);
+    expect(low).toBeGreaterThan(0);
     expect(high).toBeGreaterThan(low * 1.3);
   });
   it('nhánh Cuồng Đao tích Khí thế nhanh hơn 30%; nhánh Lưu Ngấn giữ Đao ngấn lâu hơn 50%', () => {
@@ -324,12 +326,8 @@ describe('Cổ tu mốc 24/28', () => {
       expect(marks(b, 'co_doc')).toBe(0);
       return hp[0]! - a.s.hp;
     };
-    let low = 0;
-    let high = 0;
-    for (let i = 0; i < 30; i++) {
-      low += run(0, 0);
-      high += run(6, 3);
-    }
+    const [low, high] = fixed(() => [run(0, 0), run(6, 3)] as const);
+    expect(low).toBeGreaterThan(0);
     expect(high).toBeGreaterThan(low * 1.3);
   });
   it('nhánh Bách Cổ nâng trần Cổ lên 8; nhánh Độc Tổ giữ Cổ độc lâu hơn 50%', () => {
@@ -414,12 +412,7 @@ describe('Cấm chế sư mốc 24/28', () => {
       pass(13, m);
       return hp - m.s.hp;
     };
-    let low = 0;
-    let high = 0;
-    for (let i = 0; i < 12; i++) {
-      low += total(0);
-      high += total(100);
-    }
+    const [low, high] = fixed(() => [total(0), total(100)] as const);
     expect(low).toBeGreaterThan(0);
     expect(high).toBeGreaterThan(low * 1.1);
   });

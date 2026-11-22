@@ -1320,8 +1320,8 @@ REALMS.forEach((r, i) => {
   )
     err(`xpNeed(${r.level}) phải lớn hơn cấp trước`);
 });
-if (!t(`realm.${MAX_LEVEL}`).startsWith('Dương Thực') || !t(`realm.${MAX_LEVEL}`).endsWith('sơ kỳ'))
-  err('cấp tối đa tạm là Dương Thực sơ kỳ');
+if (!t(`realm.${MAX_LEVEL}`).startsWith('Dương Thực') || !t(`realm.${MAX_LEVEL}`).endsWith('đại viên mãn'))
+  err('cấp tối đa (TN-7) là Dương Thực đại viên mãn');
 if (!MONSTER.has('mon_tam_ma')) err('thiếu quái mon_tam_ma (bóng tâm ma của thử thách bình cảnh)');
 if (!NPCS.some((n) => n.rootChange)) err('không NPC nào đổi linh căn');
 for (const n of NPCS) if (n.rootChange) needStr(`npc.${n.id}.root`);

@@ -47,7 +47,7 @@ function setup() {
 }
 
 describe('dữ liệu bộ', () => {
-  it('mười sáu bộ, mỗi món trỏ đúng bộ, công thức chế bậc 1 chỉ ra món của bộ Lạc Kiếm', () => {
+  it('mười chín bộ, mỗi món trỏ đúng bộ, công thức chế bậc 1 chỉ ra món của bộ Lạc Kiếm', () => {
     expect(SETS.map((s) => s.id)).toEqual([
       'set_lac_kiem',
       'set_huyen_giap',
@@ -65,6 +65,9 @@ describe('dữ liệu bộ', () => {
       'set_tran_khich',
       'set_tan_thiet',
       'set_tinh_dan_bao',
+      'set_vo_danh_kiem',
+      'set_dong_dinh',
+      'set_gioi_tri_dan',
     ]);
     for (const s of SETS) for (const pid of s.pieces) expect(ITEM.get(pid)?.set).toBe(s.id);
     for (const f of FORGE.filter((x) => x.id.startsWith('frg_lk_'))) expect(ITEM.get(f.output)?.set).toBe('set_lac_kiem');

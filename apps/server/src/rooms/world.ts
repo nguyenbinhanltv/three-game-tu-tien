@@ -68,6 +68,26 @@ export class WorldRoom extends GameRoom {
       this.sendTransfer(m, portal.to, opts);
     }
   }
+
+  /**
+   * Xin vào cầu Cửu Kiều (TN-7): `KieuSystem.plan` quyết (cấp, tiến độ, NPC, đồng đội); room chỉ cấp vé một lần cho từng người rồi chuyển sang
+   * room cầu. Đồng đội cùng tổ đội, trong tầm, tự phải đủ điều kiện.
+   */
+  override onKieu(p: PlayerEnt, msg: unknown): void {
+    const mates: PlayerEnt[] = [];
+    if (parties.partyOf(p.char.id)) {
+      for (const m of parties.matesInRoom(p.char.id, this)) {
+        if (m === p || m.char.id === p.char.id) continue;
+        if (Math.hypot(m.move.x - p.move.x, m.move.z - p.move.z) <= TELE_PARTY_R) mates.push(m);
+      }
+    }
+    const plan = this.sim.kieu.plan(p, msg, mates);
+    if (!plan) return;
+    for (const q of plan.members) {
+      tickets.issue(q.char.id, plan.level, null, undefined, plan.dgKey);
+      this.sendTransfer(q, plan.level, { dgKey: plan.dgKey });
+    }
+  }
 }
 
 async function worldAuth(cls: { levelId: string }, token: string, options: unknown): Promise<JoinAuth> {
