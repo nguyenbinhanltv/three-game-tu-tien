@@ -189,6 +189,14 @@ const HALO_INTENSITY: Record<string, number> = {
   bhr_day: 0.5,
   bhr_dusk: 0.9,
   bhr_night: 1.0,
+  vda_dawn: 0.7,
+  vda_day: 0.5,
+  vda_dusk: 0.9,
+  vda_night: 1.0,
+  vdd_dawn: 0.5,
+  vdd_day: 0.3,
+  vdd_dusk: 0.8,
+  vdd_night: 0.9,
 };
 
 /** Cột linh quang (M-5, render/beacons.ts): yếu ban ngày, rõ ban đêm. */
@@ -236,6 +244,14 @@ const BEACON_INTENSITY: Record<string, number> = {
   bhr_day: 0.45,
   bhr_dusk: 0.8,
   bhr_night: 1,
+  vda_dawn: 0.18,
+  vda_day: 0.12,
+  vda_dusk: 0.22,
+  vda_night: 0.4,
+  vdd_dawn: 0.18,
+  vdd_day: 0.12,
+  vdd_dusk: 0.22,
+  vdd_night: 0.4,
 };
 export const beaconParams = { intensity: uniform(0.3) };
 

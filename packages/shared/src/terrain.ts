@@ -240,7 +240,21 @@ export function makeTerrain(def: TerrainDef): Terrain {
     // Ranh vùng chơi: ngay sau chân vách địa hình dựng đứng lên, đi tới đó gặp vách.
     if (play) {
       const dPlay = playDist(x, z);
-      if (dPlay > playWall) h += play.wallH * smoothstep(playWall, playWall + 60, dPlay);
+      const r = play.rough;
+      if (!r) {
+        if (dPlay > playWall) h += play.wallH * smoothstep(playWall, playWall + 60, dPlay);
+      } else {
+        // Chân vách lùi ra theo nhiễu (chỉ ra ngoài), dốc dài, chia bậc: mỗi bậc là một sườn dốc rồi một gờ gần phẳng.
+        const back = Math.min(1, Math.max(0, 0.5 + 0.5 * fbm(x * r.freq, z * r.freq, 3, seed + 611))) * r.amp;
+        const dp = dPlay - back;
+        if (dp > playWall) {
+          const t = smoothstep(playWall, playWall + r.ramp, dp);
+          const s = t * r.steps;
+          const f = s - Math.floor(s);
+          const stair = (Math.floor(s) + smoothstep(0.35, 0.8, f)) / r.steps;
+          h += play.wallH * Math.min(1, stair);
+        }
+      }
     }
     return h;
   }

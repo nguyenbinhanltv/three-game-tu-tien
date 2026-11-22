@@ -546,7 +546,8 @@ const terrain = {
     edge: { amp: 120, r0: 300, r1: 20 },
   },
   features: feats,
-  play: { cx: PLAY.cx, cz: PLAY.cz, half: PLAY.half, wallH: 260 },
+  // Vách gồ ghề có bậc (mỹ thuật TN-3): chân vách lùi theo nhiễu, dốc dài 130 m chia 5 bậc.
+  play: { cx: PLAY.cx, cz: PLAY.cz, half: PLAY.half, wallH: 260, rough: { amp: 60, freq: 0.006, ramp: 130, steps: 5 } },
   colliders,
 };
 
@@ -555,7 +556,7 @@ const level = {
   minLevel: 32, // chương 6 từ Anh Biến sơ kỳ; server kiểm ở requestLevel
   spawn: { x: W(TRAM[0]), z: W(TRAM[1] + 12) },
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
-  pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 80 })),
+  pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 30 })),
   // Cổng vào Giới Trì Động Phủ, cách điểm gioi_tri_cua 18 m về phía tâm bản đồ.
   portals: [{ x: W(346), z: W(269), r: 12, to: 'gioi_tri' }],
   spots: BIA.map((b) => ({ id: b.id, zone: b.zone, x: W(b.off[0]), z: W(b.off[1]) })),

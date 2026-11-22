@@ -211,7 +211,13 @@
     "cx": 1024,
     "cz": 1024,
     "half": 760,
-    "wallH": 260
+    "wallH": 260,
+    "rough": {
+      "amp": 60,
+      "freq": 0.006,
+      "ramp": 130,
+      "steps": 5
+    }
   },
   "colliders": [
     {

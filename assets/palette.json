@@ -457,6 +457,74 @@
         "shadowTint": "#08041A", "highlightTint": "#B080FF", "splitBalance": -0.25,
         "blackLift": "#0C0A18", "contrast": 1.25, "saturation": 0.55, "exposure": 1.22
       },
+      "vda_dawn": {
+        "label": "Vấn Đỉnh, mặt Âm Hư, bình minh lam tím",
+        "sunColor": "#C8D2F0", "sunIntensity": 1.8, "sunElevationDeg": 8, "skyColor": "#6E7FA0",
+        "skyIntensity": 0.9, "fogColor": "#7E86A6", "fogDensity": 0.0011, "heightFogTop": 60,
+        "heightFogBoost": 2.2, "fogHaze": 0.00168, "fogHazeStart": 50, "fogScatter": 0.85,
+        "rim": 0.9, "shadowTint": "#2F3C66", "highlightTint": "#DDE4FF", "splitBalance": -0.1,
+        "blackLift": "#160E2C", "contrast": 1.18, "saturation": 0.62, "exposure": 1.1
+      },
+      "vda_day": {
+        "label": "Vấn Đỉnh, mặt Âm Hư, ngày sương bạc",
+        "sunColor": "#DDE3F4", "sunIntensity": 2.4, "sunElevationDeg": 26, "skyColor": "#8E9BBA",
+        "skyIntensity": 0.9, "fogColor": "#98A2C0", "fogDensity": 0.0009, "heightFogTop": 60,
+        "heightFogBoost": 2, "fogHaze": 0.0006, "fogHazeStart": 110, "fogScatter": 0.8,
+        "rim": 0.7, "shadowTint": "#2F3C66", "highlightTint": "#E8ECFF", "splitBalance": -0.05,
+        "blackLift": "#1A1826", "contrast": 1.22, "saturation": 0.66, "exposure": 1.05
+      },
+      "vda_dusk": {
+        "label": "Vấn Đỉnh, mặt Âm Hư, hoàng hôn tím",
+        "sunColor": "#B8A6E6", "sunIntensity": 2, "sunElevationDeg": 5, "skyColor": "#4E4A7C",
+        "skyIntensity": 0.9, "fogColor": "#5A5686", "fogDensity": 0.0012, "heightFogTop": 58,
+        "heightFogBoost": 2.2, "fogHaze": 0.0018, "fogHazeStart": 45, "fogScatter": 0.9,
+        "rim": 1, "shadowTint": "#241E4A", "highlightTint": "#D8C8FF", "splitBalance": -0.15,
+        "blackLift": "#120A26", "contrast": 1.22, "saturation": 0.72, "exposure": 1.12
+      },
+      "vda_night": {
+        "label": "Vấn Đỉnh, mặt Âm Hư, đêm trăng không nguồn",
+        "sunColor": "#7E90D0", "sunIntensity": 0.9, "sunElevationDeg": 20, "skyColor": "#1C2040",
+        "skyIntensity": 1, "fogColor": "#242A52", "fogDensity": 0.001, "heightFogTop": 58,
+        "heightFogBoost": 2, "fogHaze": 0.0011, "fogHazeStart": 70, "fogScatter": 0.3,
+        "rim": 1.1, "shadowTint": "#141A3A", "highlightTint": "#9FB0F0", "splitBalance": -0.25,
+        "blackLift": "#0C0A18", "contrast": 1.25, "saturation": 0.6, "exposure": 1.1
+      },
+      "vdd_dawn": {
+        "label": "Vấn Đỉnh, mặt Dương Thực, bình minh đồng",
+        "sunColor": "#FFC27A", "sunIntensity": 3.6, "sunElevationDeg": 10, "skyColor": "#D8B88A",
+        "skyIntensity": 0.8, "fogColor": "#E0C08E", "fogDensity": 0.00035, "heightFogTop": 70,
+        "heightFogBoost": 1.4, "fogHaze": 0.0007, "fogHazeStart": 180, "rim": 0.6,
+        "shadowTint": "#4A4258", "highlightTint": "#FFD590", "splitBalance": 0.1, "shadowAmount": 0.6,
+        "highlightAmount": 0.35, "fogScatter": 1.1, "blackLift": "#2A1A1E", "contrast": 1.3,
+        "saturation": 1.22, "exposure": 1
+      },
+      "vdd_day": {
+        "label": "Vấn Đỉnh, mặt Dương Thực, trưa nắng gắt",
+        "sunColor": "#FFE2A8", "sunIntensity": 4, "sunElevationDeg": 52, "skyColor": "#BFD0C8",
+        "skyIntensity": 0.75, "fogColor": "#E6D2A6", "fogDensity": 0.0004, "heightFogTop": 40,
+        "heightFogBoost": 1.3, "fogHaze": 0.0006, "fogHazeStart": 200, "rim": 0.5,
+        "shadowTint": "#46586A", "highlightTint": "#FFE9B8", "splitBalance": 0.06, "shadowAmount": 0.6,
+        "highlightAmount": 0.3, "fogScatter": 0.9, "blackLift": "#26181A", "contrast": 1.3,
+        "saturation": 1.25, "exposure": 1
+      },
+      "vdd_dusk": {
+        "label": "Vấn Đỉnh, mặt Dương Thực, hoàng hôn cam đồng",
+        "sunColor": "#FF9A4A", "sunIntensity": 3, "sunElevationDeg": 5, "skyColor": "#8E5A4A",
+        "skyIntensity": 0.75, "fogColor": "#B8745A", "fogDensity": 0.0006, "heightFogTop": 35,
+        "heightFogBoost": 1.6, "fogHaze": 0.0009, "fogHazeStart": 160, "rim": 0.75,
+        "shadowTint": "#3A2A4A", "highlightTint": "#FFB070", "splitBalance": 0.05, "shadowAmount": 0.3,
+        "highlightAmount": 0.55, "fogScatter": 1.2, "blackLift": "#2C1A2E", "contrast": 1.32,
+        "saturation": 1.2, "exposure": 1
+      },
+      "vdd_night": {
+        "label": "Vấn Đỉnh, mặt Dương Thực, đêm đồng nguội",
+        "sunColor": "#8AA0C8", "sunIntensity": 1, "sunElevationDeg": 18, "skyColor": "#20222E",
+        "skyIntensity": 1, "fogColor": "#2E2A30", "fogDensity": 0.0005, "heightFogTop": 60,
+        "heightFogBoost": 1.4, "fogHaze": 0.0016, "fogHazeStart": 90, "rim": 0.9,
+        "shadowTint": "#161A2C", "highlightTint": "#A0B4D8", "splitBalance": -0.2, "shadowAmount": 0.5,
+        "highlightAmount": 0.3, "fogScatter": 0.6, "blackLift": "#161224", "contrast": 1.14,
+        "saturation": 0.9, "exposure": 1.1
+      },
       "dm_dawn": {
         "label": "Đoạn Mạch — bình minh phong đỏ",
         "sunColor": "#FFB070", "sunIntensity": 2.9, "sunElevationDeg": 12, "skyColor": "#D9B49A",

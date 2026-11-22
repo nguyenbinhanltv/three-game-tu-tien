@@ -222,7 +222,7 @@ export function runFrame(eng: Game): void {
   updateCamera(eng, dt);
   setListener(rp.x, rp.z, eng.camYaw);
   eng.env.update(dt, eng.camera, rp);
-  if (eng.riftMood) updateRiftMood(eng, dt, rp.z);
+  if (eng.riftMood) updateRiftMood(eng, dt, rp.z, rp.x);
   eng.aurora?.update(eng.camera.position);
   updateEclipse(eng, dt);
   eng.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
