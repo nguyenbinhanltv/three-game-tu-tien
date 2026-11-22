@@ -18,4 +18,7 @@ export const SET_EMBLEMS: Record<string, string> = {
   tan_thiet: 'M3 9 H21 L18 14 H6 Z M10 14 V19 M14 14 V19 M6 19 H18 M17 4 q-2 2 0 4',
   tinh_dan_bao:
     'M12 20 C6 19 4 13 6 9 C9 11 12 14 12 20 M12 20 C18 19 20 13 18 9 C15 11 12 14 12 20 M12 20 C9 15 9 8 12 3 C15 8 15 15 12 20 M12 1 V3',
+  vo_danh_kiem: 'M12 2 L15 10 L22 12 L15 14 L12 22 L9 14 L2 12 L9 10 Z M12 7 V17',
+  dong_dinh: 'M6 8 H18 V12 Q18 18 12 20 Q6 18 6 12 Z M4 8 H20 M9 20 V22 M15 20 V22 M9 4 V8 M15 4 V8',
+  gioi_tri_dan: 'M12 3 A9 9 0 1 0 12 21 A9 9 0 1 0 12 3 M12 3 A4.5 4.5 0 0 1 12 12 A4.5 4.5 0 0 0 12 21',
 };

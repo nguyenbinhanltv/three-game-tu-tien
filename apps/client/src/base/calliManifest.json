@@ -390,5 +390,29 @@
     "w": 1221,
     "h": 240,
     "hash": "d483209272b4"
+  },
+  "set_vo_danh_kiem": {
+    "key": "set.set_vo_danh_kiem.name",
+    "text": "Vô Danh Kiếm Y",
+    "file": "outfit-set_vo_danh_kiem.3cffe9284563.png",
+    "w": 602,
+    "h": 159,
+    "hash": "3cffe9284563"
+  },
+  "set_dong_dinh": {
+    "key": "set.set_dong_dinh.name",
+    "text": "Đồng Đỉnh Hộ Giáp",
+    "file": "outfit-set_dong_dinh.4ad8585ffa87.png",
+    "w": 655,
+    "h": 161,
+    "hash": "4ad8585ffa87"
+  },
+  "set_gioi_tri_dan": {
+    "key": "set.set_gioi_tri_dan.name",
+    "text": "Giới Trì Đan Bào",
+    "file": "outfit-set_gioi_tri_dan.6c94c8f66a2f.png",
+    "w": 577,
+    "h": 121,
+    "hash": "6c94c8f66a2f"
   }
 }

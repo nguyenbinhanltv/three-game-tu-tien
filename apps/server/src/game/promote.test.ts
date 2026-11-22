@@ -147,7 +147,39 @@ describe('Thăng Bậc', () => {
     expect(t.slotOf('itm_tkh_trang_suc')).toBeGreaterThanOrEqual(0);
     expect(t.count(M5)).toBe(1);
     expect(t.c.gold).toBe(7);
-    t.send('promote', { i: t.slotOf('itm_tkh_dao_bao') });
+    // TN-3 mở bậc 6: áo bộ bậc 5 thăng tiếp được (xem test dưới), chỉ bậc 6 mới khóa.
+  });
+
+  it('bậc 5 → bậc 6 (TN-3): kiếm và áo bộ thăng đúng đích, trừ 20 Hư Ảnh Phiến + phí, ghi sổ cái, gửi lại cùng khóa không trừ hai lần; bậc 6 không thăng tiếp được', () => {
+    const t = setup(36);
+    const M6 = PROMOTE_MAT[6]!;
+    expect(M6).toBe('itm_hu_anh_phien');
+    t.give(
+      (d) => (
+        d.addRolled('itm_gioi_quang_kiem', 33, 3),
+        d.addRolled('itm_tkh_dao_bao', 33, 3),
+        d.add(M6, PROMOTE_MAT_COUNT * 2 + 1),
+        d.addGold(promoteGold(6) * 2 + 7)
+      ),
+    );
+    t.send('promote', { i: t.slotOf('itm_gioi_quang_kiem') }, 'req-kiem-6');
+    t.send('promote', { i: t.slotOf('itm_tkh_dao_bao') }, 'req-bao-6');
+    expect(t.slotOf('itm_van_dinh_kiem')).toBeGreaterThanOrEqual(0);
+    expect(t.slotOf('itm_vdk_dao_bao')).toBeGreaterThanOrEqual(0);
+    expect(t.count(M6)).toBe(1);
+    expect(t.c.gold).toBe(7);
+    const after = t.c.inv[t.slotOf('itm_vdk_dao_bao')]!;
+    expect(after.inst!.q).toBe(3);
+    expect(after.inst!.ilvl).toBeGreaterThanOrEqual(33);
+    // cùng khóa gửi lại: không trừ thêm, không thăng thêm
+    t.send('promote', { i: 0 }, 'req-bao-6');
+    expect(t.count(M6)).toBe(1);
+    expect(t.c.gold).toBe(7);
+    const rows = sqlite
+      .prepare("SELECT ref, delta FROM ledger WHERE char_id = ? AND reason LIKE 'promote:%' AND kind = 'item' AND ref = ?")
+      .all(t.c.id, M6) as { ref: string; delta: number }[];
+    expect(rows.reduce((n, r) => n + r.delta, 0)).toBe(-PROMOTE_MAT_COUNT * 2);
+    t.send('promote', { i: t.slotOf('itm_vdk_dao_bao') });
     expect(t.warns).toContain('sys.promote_locked');
   });
 

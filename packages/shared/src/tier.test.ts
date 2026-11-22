@@ -60,14 +60,16 @@ describe('bậc trang bị', () => {
 
 describe('Thăng Bậc (hàm thuần)', () => {
   it('chỉ bậc đã mở mới thăng được; phí = 0,4 × thu nhập giờ chương đích; cường hóa trừ 3 tối thiểu +0', () => {
-    expect(TIER_OPEN).toBe(5);
+    expect(TIER_OPEN).toBe(6);
     expect(promoteOpen(1)).toBe(true);
     expect(promoteOpen(2)).toBe(true);
     expect(promoteOpen(3)).toBe(true);
     expect(promoteOpen(4)).toBe(true);
-    expect(promoteOpen(5)).toBe(false);
+    expect(promoteOpen(5)).toBe(true);
+    expect(promoteOpen(6)).toBe(false);
     expect(promoteGold(4)).toBe(3520);
     expect(promoteGold(5)).toBe(4080);
+    expect(promoteGold(6)).toBe(4640);
     expect(promoteGold(2)).toBe(2400);
     expect(promoteGold(3)).toBe(2960);
     expect(promotePlus(7)).toBe(4);

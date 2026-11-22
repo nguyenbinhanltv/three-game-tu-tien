@@ -1,19 +1,20 @@
 // Đánh thử trong sim server thật (đồng hồ giả, không mạng): người chơi đứng yên, xoay vòng chiêu, đánh `PULL` quái hợp cấp cùng lúc.
 // Đối chiếu số trong `pnpm sim:progress` (TTK và máu mất mỗi lần giết) với luật thật của server (khắc chế, nội tại công pháp, quái, khiên).
-// Chạy: pnpm --filter @dtl/server fight:check [--runs 6] [--levels 4,10,15,20,28] [--pull 2] [--nogear] [--mon <id>]
+// Chạy: pnpm --filter @dtl/server fight:check [--runs 6] [--levels 4,10,15,20,28] [--pull 2] [--nogear] [--tier 6] [--mon <id>]
 //   Quái chọn từ điểm sinh của MỌI level (E1-G): bãi quái thường có khoảng cấp gần cấp thử nhất. Cấp thử ngoài mọi khoảng cấp của quái hiện có
 //   (Trúc Cơ trở lên khi chưa có bản đồ mở rộng) thì dùng quái gần nhất với cấp quái = cấp thử, đánh dấu `*` (ngoại suy theo hệ số cảnh giới).
 //   --strict: thoát mã 1 nếu TTK trung bình ngoài 3,5–8,5 s (ngưỡng của sim:progress) hoặc có ca chết.
 //   --mon <id>: ép dùng một quái thường (cấp quái = cấp thử), để đo quái mới khi đã có dữ liệu.
 //   --target <id[:cấp]>: đo MỘT quái bất kỳ (tinh anh/boss/quái phó bản) đơn lẻ ở cấp quái cho trước (mặc định = cấp thử), --pull bị bỏ qua.
 //   --party <n>: n người cùng đánh một mục tiêu (phó bản 4 người); TTK là thời gian cả nhóm hạ mục tiêu, máu mất tính trung bình mỗi người.
-//   Cấp thử từ 32 trở lên mặc bộ 7 ô bậc 5 phẩm Huyền theo ilvl = cấp (chưa có đồ bậc 6; cùng giả định `ch6Player` của sim.ts).
+//   Cấp thử từ 32 trở lên mặc bộ 7 ô bậc 5 phẩm Huyền theo ilvl = cấp; `--tier 6` mặc bộ bậc 6 (mốc mặc trọn; người chơi thật pha dần, xem `CH6_GEAR_FRAC` ở sim.ts). Ở cấp 43 với `--tier 6`: Kiếm tu 3,0 s, còn lại 3,1–5,8 s.
 process.env.DB_FILE = ':memory:';
 
 import {
   CHARGE_MAX,
   droppableSlots,
   groundAt,
+  ANH_BIEN_LEVEL,
   HOA_THAN_LEVEL,
   rollItemInstance,
   seededRng,
@@ -80,12 +81,16 @@ function gearFor(level: number): Record<string, string> {
   return g;
 }
 
-/** Bộ bậc 5 (reqLevel Hóa Thần) cho cấp ≥ 32: mỗi ô thường phẩm Huyền, ilvl = cấp; roll tất định theo cấp. */
+/** `--tier 6`: đo với bộ bậc 6 (reqLevel Anh Biến) thay cho bộ bậc 5 từ cấp 32 (người chơi thật pha dần, đây là mốc mặc trọn bậc 6). */
+const GEAR_REQ =
+  process.argv.includes('--tier') && process.argv[process.argv.indexOf('--tier') + 1] === '6' ? ANH_BIEN_LEVEL : HOA_THAN_LEVEL;
+
+/** Bộ bậc 5 (hoặc 6 với `--tier 6`) cho cấp ≥ 32: mỗi ô thường phẩm Huyền, ilvl = cấp; roll tất định theo cấp. */
 function tier5Gear(level: number): Record<string, { id: string; n: number; inst: ReturnType<typeof rollItemInstance> }> {
   const rng = seededRng(2000 + level);
   const out: Record<string, { id: string; n: number; inst: ReturnType<typeof rollItemInstance> }> = {};
   for (const sl of droppableSlots(ITEM_SYS, ITEMS)) {
-    const tpl = at(templatesFor(ITEMS, sl, HOA_THAN_LEVEL), 0);
+    const tpl = at(templatesFor(ITEMS, sl, GEAR_REQ), 0);
     out[sl] = { id: tpl.id, n: 1, inst: rollItemInstance(ITEM_SYS, sl, level, 1, rng, tpl.tier) };
   }
   return out;
