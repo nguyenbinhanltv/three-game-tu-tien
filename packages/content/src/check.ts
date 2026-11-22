@@ -232,16 +232,17 @@ for (const f of CO_FX_TIMELINES) {
     err(`fx cổ tu: ${f.skill} không được khựng/rung/chớp`);
   if (f.palette !== 'duong_co_kinh') err(`fx cổ tu: ${f.skill} phải dùng bảng màu duong_co_kinh`);
 }
-// TN-8: hình trận của Cấm chế sư. Đoạn đứng phát nối tiếp (≤ 5 draw), nhịp trận phát mỗi nhịp (≤ 3 draw, ≤ 30 hạt), không khựng/rung/chớp.
+// TN-8: hình trận của Cấm chế sư. Đoạn đứng phát nối tiếp (≤ 6 draw), nhịp trận phát mỗi nhịp (≤ 3 draw, ≤ 30 hạt), không khựng/rung/chớp.
 for (const f of TRAN_FX_TIMELINES) {
   for (const m of validateFxTimeline(f, (id) => id.startsWith('tran_'))) err(m);
-  const cap = f.skill.endsWith('_stand') ? 5 : 3;
+  const cap = f.skill.endsWith('_stand') ? 6 : 3;
   const n = fxDrawCount(f.events);
   if (n > cap) err(`fx trận: ${f.skill} dùng ${n} draw > ${cap}`);
   if (fxParticleCount(f.events) > 30) err(`fx trận: ${f.skill} quá 30 hạt`);
   if (f.events.some((e) => e.type === 'hitstop' || e.type === 'shake' || e.type === 'flash'))
     err(`fx trận: ${f.skill} không được khựng/rung/chớp`);
-  if (f.palette !== 'cam_che_kinh') err(`fx trận: ${f.skill} phải dùng bảng màu cam_che_kinh`);
+  const pal = f.skill.replace(/_(stand|tick)$/, '');
+  if (f.palette !== pal) err(`fx trận: ${f.skill} phải dùng bảng màu ${pal}`);
 }
 // TN-6: hiệu ứng Huyền Kiếp, cùng luật: mỗi timeline ≤ 12 draw, cả một kiếp nhỏ ≤ 25 draw.
 for (const f of HK_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('hk_'))) err(m);

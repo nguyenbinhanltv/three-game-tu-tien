@@ -29,6 +29,11 @@ export const FX_PALETTE: Record<string, FxPalette> = {
   ...Object.fromEntries(PATHS.flatMap((p) => p.methods.map((m) => [m, pathPalette(p)] as const))),
   // Lôi: tím và trắng.
   loi: { core: 0x3a1670, body: 0x9a63ff, rim: 0xf5eeff, accent: 0xffe27a, shadow: 0x1a0c33 },
+  // ---- Trận Cấm chế sư (TN-8): mỗi kiểu trận một sắc, lõi rất đậm + viền sáng để nổi trên nền đá trắng (sát đỏ tía, khốn lam, hộ ngọc lục, sinh tử tím + vàng).
+  tran_sat: { core: 0x3a0820, body: 0xd02a6a, rim: 0xffd6e4, accent: 0xffd25a, shadow: 0x1a0410 },
+  tran_khon: { core: 0x0a1650, body: 0x3a62f0, rim: 0xd4e4ff, accent: 0x9adcff, shadow: 0x050a28 },
+  tran_ho: { core: 0x063a30, body: 0x26c79a, rim: 0xdcfff1, accent: 0xfff0a0, shadow: 0x031c18 },
+  tran_sinhtu: { core: 0x24105e, body: 0x9a5af0, rim: 0xf2e8ff, accent: 0xffd25a, shadow: 0x100628 },
   // ---- Thiên Nhân Ngũ Suy (TN-4): mỗi ải một sắc, trầm hơn chiêu người chơi (suy kiệt). Thân/viền là thứ PHẢI BƯỚC VÀO (Linh Nhãn, Tôi Thể Lôi,
   // Thọ Đăng); `accent` là mối nguy của ải (lôi ẩn đỏ son, suy phong xám lam) hoặc nhịp phá vọng (vàng).
   suy_linh: { core: 0x0b2a3a, body: 0x3fb6c9, rim: 0xe6fbff, accent: 0xa7f0d8, shadow: 0x061820 },
