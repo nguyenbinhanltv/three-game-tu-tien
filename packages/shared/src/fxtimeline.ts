@@ -253,6 +253,8 @@ export interface FxDecalEvent extends FxBase {
   yaw?: number;
   /** Hiệu ứng của quái (V5): `dur` lấy bằng thời gian báo trước `delay` của vạch. */
   untilDelay?: boolean;
+  /** Nâng decal thêm (m, 0–0,5; mặc định 0) cho chỗ nền có ô đá nhô cao hơn mặt phẳng decal (sân lát đá tông môn). */
+  lift?: number;
 }
 
 export interface FxTrailEvent extends FxBase {
