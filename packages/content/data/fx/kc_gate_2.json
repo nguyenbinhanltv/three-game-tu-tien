@@ -10,10 +10,10 @@
    "at": "area",
    "offset": [
     0,
-    0.5,
+    1.4,
     0
    ],
-   "scale": 3.5,
+   "scale": 3.0,
    "sweep": 0.0,
    "erodeFrom": 0.97,
    "ragged": 0.2,
@@ -32,13 +32,13 @@
    "at": "area",
    "offset": [
     0,
-    0.6,
+    1.5,
     0
    ],
    "scale": [
-    3.5,
+    3.0,
     1,
-    3.5
+    3.0
    ],
    "sweep": 0.0,
    "erodeFrom": 0.97,
@@ -58,13 +58,13 @@
    "at": "area",
    "offset": [
     0,
-    0.6599999999999999,
+    1.56,
     0
    ],
    "scale": [
-    2.5,
+    2.2,
     1,
-    2.5
+    2.2
    ],
    "sweep": 0.0,
    "erodeFrom": 0.97,
@@ -83,20 +83,46 @@
    "dur": 3.0,
    "at": "area",
    "offset": [
-    0,
+    -2.6,
     0,
     0
    ],
    "scale": [
-    0.45,
-    2.5,
-    0.45
+    0.5,
+    3.5,
+    0.5
    ],
    "sweep": 0.0,
    "erodeFrom": 0.97,
-   "tone": "accent",
-   "alpha": 0.9,
-   "seed": 212,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 211,
+   "untilDelay": true,
+   "tier": 1,
+   "camFade": true,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.0,
+   "dur": 3.0,
+   "at": "area",
+   "offset": [
+    2.6,
+    0,
+    0
+   ],
+   "scale": [
+    0.5,
+    3.5,
+    0.5
+   ],
+   "sweep": 0.0,
+   "erodeFrom": 0.97,
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 213,
    "untilDelay": true,
    "tier": 1,
    "camFade": true,

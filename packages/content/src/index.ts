@@ -171,6 +171,7 @@ import fx_kc_gate_1 from '../data/fx/kc_gate_1.json';
 import fx_kc_gate_2 from '../data/fx/kc_gate_2.json';
 import fx_kc_gate_3 from '../data/fx/kc_gate_3.json';
 import fx_kc_hd_bad from '../data/fx/kc_hd_bad.json';
+import fx_kc_hd_path from '../data/fx/kc_hd_path.json';
 import fx_kc_hd_ok from '../data/fx/kc_hd_ok.json';
 import fx_kc_mark_1 from '../data/fx/kc_mark_1.json';
 import fx_kc_mark_2 from '../data/fx/kc_mark_2.json';
@@ -850,6 +851,7 @@ export const KC_FX_TIMELINES = [
   fx_kc_gate_2,
   fx_kc_gate_3,
   fx_kc_hd_bad,
+  fx_kc_hd_path,
   fx_kc_hd_ok,
   fx_kc_mark_1,
   fx_kc_mark_2,
@@ -858,7 +860,7 @@ export const KC_FX_TIMELINES = [
 export const KC_FX = new Map(KC_FX_TIMELINES.map((f) => [f.skill, f]));
 /** Timeline của từng cơ chế kiếp chương 6: ngân sách draw call kiểm theo nhóm này. */
 export const KC_FX_STAGE: Record<string, string[]> = {
-  hoi_dao: ['kc_gate_1', 'kc_gate_2', 'kc_gate_3', 'kc_mark_1', 'kc_mark_2', 'kc_mark_3', 'kc_hd_ok', 'kc_hd_bad'],
+  hoi_dao: ['kc_gate_1', 'kc_gate_2', 'kc_gate_3', 'kc_mark_1', 'kc_mark_2', 'kc_mark_3', 'kc_hd_path', 'kc_hd_ok', 'kc_hd_bad'],
   am_lan: ['kc_am_pool', 'kc_am_end'],
   duong_dap: ['kc_dt_wind', 'kc_dt_now', 'kc_dt_parry', 'kc_dt_hit'],
 };

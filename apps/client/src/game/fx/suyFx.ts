@@ -85,6 +85,8 @@ export class SuyFx {
   private ringOf = new Map<string, { n: number; r: number }>();
   private vanOf = new Map<string, { shift: number; t0: number; dur: number }>();
   private lastShadow: { x: number; y: number; z: number } | null = null;
+  /** Nhãn số Hán nổi trên Đạo Môn của hỏi đạo (TN-3): sprite chữ trên canvas, hết `until` (giây `performance.now`) thì gỡ. */
+  private labels: { src: string; sprite: THREE.Sprite; until: number }[] = [];
   /** Nhật ký dev cho Playwright (`__game.suyFx.log`). */
   readonly log: { key: string; at: number }[] = [];
 
@@ -260,6 +262,7 @@ export class SuyFx {
 
   /** Dọn mọi thứ của `src` (kiếp mới bắt đầu, ải khép, rời room). */
   clear(src: string): void {
+    this.dropLabels(src);
     this.dropLoops(src);
     this.dropGlow(src);
     this.dropLamps(src);
@@ -447,6 +450,43 @@ export class SuyFx {
    * FX `hkmark`: dấu trên sân của Huyền Kiếp (TN-6). Thứ phải chạm/bước vào (chỗ nấp, trụ nguội, ấn thật, Hồn Châu, cung sinh) có thêm cột linh quang
    * để đọc được từ xa trên sân tối; mối nguy (đụn tuyết, trụ nóng) dùng tông `accent` của kiếp.
    */
+  /** Số Hán một/hai/ba trên đỉnh cổng/dấu: sprite chữ lớn, sáng, luôn quay về camera, sống `dur` giây. */
+  private numeral(src: string, x: number, z: number, h: number, n: number, dur: number, color: number): void {
+    const scene = this.env.scene;
+    if (!scene || typeof document === 'undefined') return;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 128;
+    const g = cv.getContext('2d');
+    if (!g) return;
+    g.font = 'bold 104px "Noto Serif", "Songti SC", serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.lineWidth = 10;
+    g.strokeStyle = 'rgba(40,20,70,0.95)';
+    g.strokeText(['', '一', '二', '三'][n] ?? String(n), 64, 68);
+    g.fillStyle = '#' + color.toString(16).padStart(6, '0');
+    g.fillText(['', '一', '二', '三'][n] ?? String(n), 64, 68);
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.needsUpdate = true;
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false }));
+    sprite.scale.set(3.6, 3.6, 1);
+    sprite.position.set(x, this.env.ground(x, z) + h, z);
+    sprite.renderOrder = 20;
+    scene.add(sprite);
+    this.labels.push({ src, sprite, until: performance.now() / 1000 + dur });
+  }
+
+  private dropLabels(src: string | null, now = Infinity): void {
+    this.labels = this.labels.filter((l) => {
+      if ((src !== null && l.src !== src) || l.until > now) return true;
+      l.sprite.removeFromParent();
+      l.sprite.material.map?.dispose();
+      l.sprite.material.dispose();
+      return false;
+    });
+  }
+
   /** `n` cột linh quang xếp ngang quanh (x, z), cách nhau 1,3 m, sống `dur` giây (đánh số vành của hỏi đạo). */
   private pillars(src: string, slot: string, x: number, z: number, n: number, dur: number, tone: 'rim' | 'accent'): void {
     for (let k = 0; k < n; k++) {
@@ -476,9 +516,15 @@ export class SuyFx {
             this.at(`kc_gate_${gates[i]}`, 'kc_hoi_dao', g.x, g.z, 3, { delay: d, src });
             // Số vành đọc từ xa bằng số cột sáng: cổng `n` vành có `n` cột xếp ngang (cùng cách với dấu giữa sân).
             this.pillars(src, `kcg${i}`, g.x, g.z, gates[i] ?? 1, d, 'rim');
+            this.numeral(src, g.x, g.z, 3.8, gates[i] ?? 1, d, 0xffe08a);
           }
           this.pillars(src, 'kcgm', x, z, m.n ?? 1, d, 'accent');
+          this.numeral(src, x, z, 3.4, m.n ?? 1, d, 0xffd25a);
+        } else if (pg === 4) {
+          // 2 s cuối: đường sáng mờ từ dấu giữa sân tới cổng đúng (server báo điểm cổng ở ox/oz; dài đúng bán kính vòng).
+          this.at('kc_hd_path', 'kc_hoi_dao', x, z, m.r ?? 6, { yaw: Math.atan2((m.ox ?? x) - x, (m.oz ?? z) - z), delay: m.d ?? 2, src });
         } else {
+          this.dropLabels(src);
           this.dropGlow(src, 'kcg');
           this.at('kc_hd_ok', 'kc_hoi_dao', x, z, m.r ?? 3, { src });
           if (pg === 3) this.on('kc_hd_bad', 'kc_hoi_dao', src);
@@ -726,6 +772,7 @@ export class SuyFx {
 
   /** Mỗi khung: phát lại vòng lặp tới hạn; đèn viền bám nhân vật; chủ hết độ kiếp (lỡ tin khép ải) thì dọn. */
   update(): void {
+    if (this.labels.length) this.dropLabels(null, performance.now() / 1000);
     if (this.loops.size === 0 && this.stage.size === 0) return;
     const now = performance.now() / 1000;
     for (const src of new Set([...this.stage.keys(), ...[...this.loops.values()].map((l) => l.src)])) {
@@ -760,6 +807,7 @@ export class SuyFx {
   }
 
   dispose(): void {
+    this.dropLabels(null);
     for (const src of [...this.stage.keys(), this.litFor]) if (src) this.clear(src);
     for (const h of this.glows.values()) h.stop();
     for (const h of this.lamps.values()) h.stop();

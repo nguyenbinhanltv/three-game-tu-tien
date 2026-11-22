@@ -1,5 +1,18 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { PF_DEAD, amInside, gatePos, groundAt, hoiDaoAnswer, seededRng, tribDef, xpNeed, type FxMsg, type TribPhaseDef } from '@dtl/shared';
+import {
+  HOI_DAO_HINT_SEC,
+  PF_DEAD,
+  amInside,
+  gatePos,
+  unpackGates,
+  groundAt,
+  hoiDaoAnswer,
+  seededRng,
+  tribDef,
+  xpNeed,
+  type FxMsg,
+  type TribPhaseDef,
+} from '@dtl/shared';
 import type { TribHost } from './tribhost';
 import type { TribState } from './tribtypes';
 
@@ -136,6 +149,23 @@ describe('hoi_dao: hỏi đạo', () => {
     });
     expect(s2.wrong).toBe(1);
     expect(g.calls.damage).toHaveLength(1);
+  });
+
+  it('đúng 2 s cuối mỗi vòng báo MỘT lần đường sáng từ dấu giữa sân tới đúng cổng đúng (điểm khớp công thức server)', () => {
+    const f = start();
+    const st = mech.hoiDaoOf(f.tr)!;
+    f.run(VD, ph, cfg.first + cfg.rounds * (cfg.ask + cfg.rest));
+    const hints = f.calls.fx.filter((m) => m.s === 'hd' && m.pg === 4);
+    expect(hints).toHaveLength(cfg.rounds);
+    const asks = f.calls.fx.filter((m) => m.s === 'hd' && m.pg === 1);
+    for (let i = 0; i < hints.length; i++) {
+      const round = { mark: asks[i]!.n!, gates: unpackGates(asks[i]!.lv!) };
+      const g = gatePos(st, cfg.ring, hoiDaoAnswer(round));
+      expect(hints[i]!.ox).toBeCloseTo(g.x, 6);
+      expect(hints[i]!.oz).toBeCloseTo(g.z, 6);
+      expect(hints[i]!.d).toBe(HOI_DAO_HINT_SEC);
+    }
+    expect(HOI_DAO_HINT_SEC).toBeLessThan(cfg.ask);
   });
 
   it('tất định theo seed: cùng nhân vật và giờ kiếp ra cùng dãy câu hỏi; khác giờ ra dãy khác', () => {

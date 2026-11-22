@@ -294,7 +294,7 @@
           "extraR": 3.4,
           "extraPct": 0.06,
           "mechanic": "hoi_dao",
-          "hoiDao": { "ring": 7, "gateR": 3.5, "rounds": 3, "first": 3, "ask": 6, "rest": 3, "pct": 0.28, "heal": 0.06 }
+          "hoiDao": { "ring": 6, "gateR": 3, "rounds": 3, "first": 3, "ask": 6, "rest": 3, "pct": 0.28, "heal": 0.06 }
         },
         {
           "id": "tam_ma",

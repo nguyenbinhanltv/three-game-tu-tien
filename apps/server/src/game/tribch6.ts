@@ -16,6 +16,7 @@ import {
   gatePos,
   hoiDaoAnswer,
   hoiDaoGateAt,
+  HOI_DAO_HINT_SEC,
   hoiDaoRound,
   packGates,
   seededRng,
@@ -37,7 +38,7 @@ function mark(
   host: TribHost,
   p: PlayerEnt,
   s: 'hd' | 'am' | 'dt',
-  m: { n?: number; x?: number; z?: number; r?: number; d?: number; pg: number; lv?: number },
+  m: { n?: number; x?: number; z?: number; r?: number; d?: number; pg: number; lv?: number; ox?: number; oz?: number },
 ): void {
   host.fx({ t: 'kcmark', src: p.sid, s, ...m });
 }
@@ -60,6 +61,8 @@ export interface HoiDaoState {
   /** Vòng đang chờ trả lời và mốc chốt đáp án (ms). */
   round: HoiDaoRound | null;
   deadline: number;
+  /** Đã báo đường sáng gợi ý cho vòng này. */
+  hinted: boolean;
   right: number;
   wrong: number;
 }
@@ -80,6 +83,7 @@ registerMechanic('hoi_dao', {
       nextAt: c.now + cfg.first * 1000,
       round: null,
       deadline: 0,
+      hinted: false,
       right: 0,
       wrong: 0,
     };
@@ -92,6 +96,12 @@ registerMechanic('hoi_dao', {
     if (!cfg || !st || (c.p.s.fl & PF_DEAD) !== 0) return;
     if (st.round) {
       if (c.now >= st.deadline) resolveRound(c, st);
+      else if (!st.hinted && c.now >= st.deadline - HOI_DAO_HINT_SEC * 1000) {
+        // 2 s cuối: đường sáng mờ từ dấu giữa sân tới Đạo Môn đúng (chỉ là gợi ý đọc; luật vẫn do server chốt).
+        st.hinted = true;
+        const g = gatePos(st, cfg.ring, hoiDaoAnswer(st.round));
+        mark(c.host, c.p, 'hd', { n: st.round.mark, x: st.x, z: st.z, r: cfg.ring, d: HOI_DAO_HINT_SEC, pg: 4, ox: g.x, oz: g.z });
+      }
       return;
     }
     if (st.n >= cfg.rounds || c.now < st.nextAt) return;
@@ -99,6 +109,7 @@ registerMechanic('hoi_dao', {
     if (c.phase.end - c.elapsed < cfg.ask + 0.2) return;
     const round = hoiDaoRound(st.rng(), st.rng(), st.rng());
     st.round = round;
+    st.hinted = false;
     st.deadline = c.now + cfg.ask * 1000;
     mark(c.host, c.p, 'hd', { n: round.mark, x: st.x, z: st.z, r: cfg.ring, d: cfg.ask, pg: 1, lv: packGates(round.gates) });
     c.host.sys(c.p, 'sys.hoi_dao_ask', { n: round.mark, sec: cfg.ask }, 'info');

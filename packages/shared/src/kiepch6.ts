@@ -5,6 +5,9 @@
 
 import type { TribAmLan, TribDuongDap, TribHoiDao } from './tribulation';
 
+/** Còn từng này giây trước hạn thì server báo đường sáng từ dấu giữa sân tới Đạo Môn đúng (gợi ý đọc, không đổi luật). */
+export const HOI_DAO_HINT_SEC = 2;
+
 /** Số Đạo Môn và số vành lớn nhất (1..GATE_COUNT). */
 export const GATE_COUNT = 3;
 

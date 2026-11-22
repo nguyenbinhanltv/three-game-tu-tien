@@ -51,7 +51,11 @@ async function enterTrib(page: Page, id: TribId, god: boolean): Promise<{ x: num
   if (god) await gm(page, 'god on', 1300);
   await gm(page, `trib ${id}`, 1300);
   await waitLevel(page, 'do_kiep', 1500);
-  if (god) await gm(page, 'god on', 1300);
+  // Room kiếp là sim mới: `god` của room thế giới không theo sang. Gửi hai lần (chat giới hạn tốc độ có thể bỏ một lệnh) trước khi pha lôi đầu tiên.
+  if (god) {
+    await gm(page, 'god on', 1300);
+    await gm(page, 'god on', 1300);
+  }
   await skipCutscene(page, 10);
   // Đứng giữa sân từ đầu: tâm cơ chế là chỗ người độ kiếp đứng lúc pha bắt đầu.
   const ctr = LEVELS[tribLevelOf(def)]!.dungeon!.center;
@@ -72,7 +76,7 @@ async function hoiDao(page: Page, dir: string): Promise<void> {
     throw new Error('không thấy câu hỏi đạo');
   }
   const gates = unpackGates(q.lv);
-  await cam(page, { pitch: 0.62, dist: 42, yaw: 0.35 });
+  await cam(page, { pitch: 0.5, dist: 36, yaw: 0.35 });
   console.log(
     '[kiepch6] timeline đã phát:',
     JSON.stringify(await page.evaluate(() => window.__game!.suyFx?.log.map((l) => l.key) ?? null)),
@@ -89,6 +93,8 @@ async function hoiDao(page: Page, dir: string): Promise<void> {
   const q2 = await waitLog(page, 'kc:hd', (l) => l.pg === 1 && l.at > Date.now() - 1500, 15);
   if (q2) {
     await snapSizes(page, dir, '4-hoi-dao-vong-sau', SIZES, 300);
+    // 2 s cuối: đường sáng mờ từ dấu tới cổng đúng.
+    if (await waitLog(page, 'kc:hd', (l) => l.pg === 4, 8)) await snapSizes(page, dir, '4b-duong-chi-cong-dung', SIZES, 300);
     await waitLog(page, 'kc:hd', (l) => l.pg === 3, 10);
     await snapSizes(page, dir, '5-dap-sai', SIZES, 250);
   }

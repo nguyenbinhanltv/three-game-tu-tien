@@ -402,6 +402,14 @@ describe('SuyFx.kcMark (kiếp chương 6)', () => {
     }
   });
 
+  it('hỏi đạo: 2 s cuối phát đường sáng hướng về cổng đúng, sống đúng d giây', () => {
+    const { fx, calls } = mk();
+    fx.kcMark(kc('hd', { n: 2, x: 10, z: 20, r: 6, d: 2, pg: 4, ox: 16, oz: 20 }));
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({ key: 'kc_hd_path', x: 10, z: 20, delay: 2 });
+    expect(calls[0]!.yaw).toBeCloseTo(Math.PI / 2, 6);
+  });
+
   it('hỏi đạo: đáp đúng chỉ có sóng ở cổng đúng; đáp sai thêm vết nứt dưới chân người', () => {
     const a = mk();
     a.fx.kcMark(kc('hd', { n: 1, x: 5, z: 6, r: 3, pg: 2 }));
