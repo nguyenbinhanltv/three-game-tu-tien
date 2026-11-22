@@ -102,8 +102,6 @@ function buildBacHoang(eng: Game): void {
   const T = levelTerrain();
   eng.riftMood = true;
   eng.riftMoodT = -1;
-  eng.faceMoodAm = eng.faceMoodDuong = 0;
-  eng.faceMoodApplied = -9;
   eng.rift = buildRiftVeil(riftPath(T.def), (x, z) => heightAt(x, z), { violet: true });
   eng.scene.add(eng.rift.group);
   eng.deadTrees = new DeadTrees(deadTreeSpots(bhCtx(propsOf('bac_hoang')), 700), (x, z) => heightAt(x, z));
@@ -433,6 +431,9 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
   if (id === 'bac_hoang' || id === KIEP_BH) buildBacHoang(eng);
   if (id === XICH_LEVEL) buildXich(eng, id, q);
   if (id === 'gioi_tri') {
+    // Mood mặt Âm/Dương của Phủ Chủ: đặt lại mỗi lần dựng phòng để vào lại không còn màu mặt Âm của lần trước.
+    eng.faceMoodAm = eng.faceMoodDuong = 0;
+    eng.faceMoodApplied = -9;
     eng.vdWonders = new VdDungeon({ heightAt: (x, z) => heightAt(x, z), center: LEVELS.gioi_tri!.dungeon!.center });
     eng.scene.add(eng.vdWonders.group);
   }
