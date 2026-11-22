@@ -55,6 +55,18 @@ export async function runKieu(_ctx?: Ctx): Promise<void> {
   await W(500);
   check('đã qua 8 cầu nhưng xa NPC: vẫn không vé', xfers === 0, `xfers=${xfers}`);
 
+  // Chọn nguồn Cực nguyên (kết game): chưa đủ chín cầu / xa NPC / id lạ: không có hiệu lực, server sống (không có kênh đọc meta nên chỉ kiểm sống + không transfer).
+  for (const b of [{ id: 'sat_luc' }, { id: 'kim' }, { id: 7 }, { id: '__proto__' }, {}, null, undefined, 'sat_luc', []]) {
+    g.room.send(C.DAP, b);
+    await W(100);
+  }
+  await chat('/gm kieu 9');
+  for (const id of ['khoi_nguyen', 'tich_diet', 'cam_che', 'sat_luc']) {
+    g.room.send(C.DAP, { id });
+    await W(100);
+  }
+  check('chọn nguồn Cực nguyên sai/lạ/xa NPC: bị bỏ qua, server sống', xfers === 0 && (await health()), `xfers=${xfers}`);
+
   // Spam 200 tin trong ~2 s: server sống, vẫn không có vé.
   for (let i = 0; i < 200; i++) {
     g.room.send(C.KIEU, { n: 1 + (i % 9) });

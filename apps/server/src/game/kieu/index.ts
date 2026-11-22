@@ -3,6 +3,9 @@
 // không có tin "đã qua" nào từ client. Thiết kế và chống gian: artifact tn7/thiet-ke.md mục 5.
 import { randomUUID } from 'node:crypto';
 import {
+  canChooseDap,
+  hasDapTitle,
+  isDapId,
   KIEU_RETICKET_SEC,
   KIEU_XP_FRAC,
   kieuCleared,
@@ -90,6 +93,26 @@ export class KieuSystem {
     }
     for (const q of members) this.lastIssue.set(q.char.id, this.c.now);
     return { level, dgKey: randomUUID(), members };
+  }
+
+  /**
+   * Chọn nguồn Cực nguyên ở kết game (`C.DAP { id }`): phải đủ chín cầu (`meta.kieu` do server ghi), đứng cạnh Dẫn Kiều Nhân, chưa chọn, không chết/độ kiếp.
+   * Chọn một lần, không đổi; thưởng là cộng phần trăm chỉ số trong `Character.recalc` (không tạo vật phẩm/tiền nên không cần ledger).
+   */
+  onChoose(p: PlayerEnt, msg: unknown): void {
+    const m = msg as { id?: unknown } | null;
+    const c = p.char;
+    if (!m || !isDapId(m.id) || this.c.isDead(p) || p.trib || p.trial) return;
+    if (!hasDapTitle(c.meta)) return this.c.warn(p, 'sys.dap_locked');
+    if (!canChooseDap(c.meta)) return this.c.warn(p, 'sys.dap_have');
+    if (!this.c.nearNpc(p, KIEU_NPC)) return this.c.warn(p, 'sys.kieu_far', { npc: t(`npc.${KIEU_NPC}.name`) });
+    c.meta.dap = m.id;
+    c.recalc();
+    c.hp = Math.min(c.mhp, Math.max(c.hp, Math.round(c.mhp * 0.5)));
+    c.charDirty = true;
+    this.c.savePlayer(p);
+    this.c.sys(p, 'sys.dap_set', { origin: t(`origin.${m.id}.name`) }, 'good');
+    log.info(`[kieu] ${c.name} đạp thiên, chọn nguồn ${m.id}`);
   }
 
   /**

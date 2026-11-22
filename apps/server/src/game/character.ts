@@ -38,6 +38,8 @@ import {
   kieuCleared,
   kieuLevelCap,
   kieuPower,
+  dapBonus,
+  dapOf,
   type ObjectiveType,
   playerBaseStats,
   type QuestView,
@@ -73,6 +75,8 @@ interface CharMeta extends MethodMeta, ArtifactMeta {
   dungeonDay?: string;
   /** Như `dungeonDay` nhưng theo từng phó bản (E2-C): level → ngày nhận thưởng gần nhất. */
   dungeonDays?: Record<string, string>;
+  /** Nguồn Cực nguyên đã chọn ở kết game (TN-7, một lần). Chỉ `KieuSystem.onChoose` ghi; đọc qua `dapOf` (đã làm sạch). */
+  dap?: string;
   /** Số ải Thiên Nhân Ngũ Suy đã qua (TN-4); đủ chuỗi thì có nội tại pháp tắc. Đọc qua `suyCleared` (đã làm sạch). */
   suy?: number;
   /** Số cầu Đạp Thiên Cửu Kiều đã qua (TN-7, 0..9); chỉ `KieuSystem` ghi. Đọc qua `kieuCleared` (đã làm sạch). */
@@ -404,6 +408,7 @@ export class Character {
     sanitizeArtifactMeta(c.meta);
     sanitizeChainMeta(c.meta);
     if (c.meta.kieu !== undefined) c.meta.kieu = kieuCleared(c.meta.kieu);
+    if (c.meta.dap !== undefined && !dapOf(c.meta)) delete c.meta.dap;
     if (!c.quests || typeof c.quests.active !== 'object' || !Array.isArray(c.quests.done)) c.quests = { active: {}, done: [] };
     for (const r of db.select().from(items).where(eq(items.charId, id)).all()) {
       if (r.slot >= 0 && r.slot < INV_SIZE && ITEM.has(r.itemId)) {
@@ -468,15 +473,17 @@ export class Character {
     const law = lawPassive(this.meta.suy);
     // Kiều Lực (TN-7): mỗi cầu Cửu Kiều đã qua cộng 1% bốn chỉ số gốc, cộng dồn với pháp tắc.
     const kp = kieuPower(this.meta.kieu);
+    // Nguồn Cực nguyên của kết game (TN-7): cộng dồn tiếp.
+    const dp = dapBonus(this.meta);
     const lawAdd = law ?? { hp: 0, mp: 0, atk: 0, def: 0 };
     const st =
-      law || kp > 0
+      law || kp > 0 || dapOf(this.meta)
         ? {
             ...st0,
-            hp: Math.round(st0.hp * (1 + lawAdd.hp + kp)),
-            mp: Math.round(st0.mp * (1 + lawAdd.mp + kp)),
-            atk: Math.round(st0.atk * (1 + lawAdd.atk + kp)),
-            def: Math.round(st0.def * (1 + lawAdd.def + kp)),
+            hp: Math.round(st0.hp * (1 + lawAdd.hp + kp + dp.hp)),
+            mp: Math.round(st0.mp * (1 + lawAdd.mp + kp + dp.mp)),
+            atk: Math.round(st0.atk * (1 + lawAdd.atk + kp + dp.atk)),
+            def: Math.round(st0.def * (1 + lawAdd.def + kp + dp.def)),
           }
         : st0;
     // Đan tăng sức đang chạy (P3-8): công/thủ nhân thêm, bạo kích cộng thẳng.
@@ -522,6 +529,8 @@ export class Character {
       gold: this.gold,
       root: this.root,
       dao: daoOf(this.meta) ?? '',
+      dap: dapOf(this.meta) ?? '',
+      kieu: kieuCleared(this.meta.kieu),
       bk: this.bk,
       trial: this.trialEndsAt > 0 ? Math.max(0, Math.ceil((this.trialEndsAt - Date.now()) / 1000)) : 0,
       retry: Math.max(0, Math.ceil((this.retryAt - Date.now()) / 1000)),
