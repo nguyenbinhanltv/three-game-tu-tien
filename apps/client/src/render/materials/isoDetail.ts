@@ -56,6 +56,35 @@ export function specks(p: Node, cell: number, prob: number, r0: number, r1: numb
   return { cover: smoothstep(r, r.mul(0.55), dm).mul(present), rnd: hash2(id, k + 5.9) };
 }
 
+/**
+ * Lá rơi hình lá thon (nhọn hai đầu), xoay ngẫu nhiên, kích thước/màu biến thiên, MẬT ĐỘ THƯA và GOM CỤM theo nhiễu (không rải đều):
+ * trong cụm xác suất `prob`, ngoài cụm gần như không có. `cluster` 0..1 nhân thêm mật độ (rừng, mép lát...).
+ */
+export function leafShapes(p: Node, cell: number, prob: number, cluster: Node, k: number): { cover: Node; rnd: Node } {
+  const q = p.div(cell);
+  const id = floor(q);
+  const rnd = hash2(id, k);
+  const off = vec2(hash2(id, k + 1.3), hash2(id, k + 2.7))
+    .mul(0.5)
+    .add(0.25);
+  const local = fract(q).sub(off).mul(cell);
+  const ang = hash2(id, k + 3.3).mul(6.2832);
+  const ca = ang.cos();
+  const sa = ang.sin();
+  const lx = local.x.mul(ca).add(local.y.mul(sa));
+  const ly = local.y.mul(ca).sub(local.x.mul(sa));
+  const a = mix(float(0.07), float(0.16), hash2(id, k + 4.1)); // nửa dài
+  const taper = float(1).sub(lx.div(a).abs().mul(0.75)).max(0.12);
+  const b = a.mul(0.36).mul(taper);
+  const e = lx
+    .div(a)
+    .mul(lx.div(a))
+    .add(ly.div(b).mul(ly.div(b)));
+  const clusterN = smoothstep(0.52, 0.74, vnoise(p.mul(0.17).add(k)));
+  const present = step(rnd, clamp(float(prob).mul(clusterN).mul(cluster).add(0.006), 0, 1));
+  return { cover: smoothstep(1, 0.6, e).mul(present), rnd: hash2(id, k + 5.9) };
+}
+
 export interface TerrainDetailIn {
   /** Tọa độ thế giới xz. */
   p: Node;
@@ -103,27 +132,31 @@ export function isoTerrainDetail(col: Node, t: TerrainDetailIn): Node {
     .add(vnoise(p.mul(1.3)).mul(0.4));
   const mossW = smoothstep(0.52, 0.72, mossN).mul(t.forest.mul(0.6).add(0.35).add(t.wet.mul(0.5)).add(t.paving.mul(0.6)));
   c = mix(c, c.mul(vec3(0.5, 0.82, 0.38)), clamp(mossW, 0, 1).mul(flat).mul(0.9));
-  // vết nứt: đường mảnh (ridge), nhiều trên đá lát và đất khô/đất trồi
+  // vết nứt: đường mảnh (ridge), CHỈ trên đá lát và đất khô hẳn (không trên cỏ)
   const crackN = vnoise(p.mul(0.8).add(vec2(5.2, 1.7)))
     .sub(0.5)
     .abs();
   const crack = float(1)
     .sub(smoothstep(0.0, 0.035, crackN))
-    .mul(t.paving.mul(0.9).add(t.dry.mul(0.7)).add(patch.mul(0.8)));
+    .mul(t.paving.mul(0.9).add(smoothstep(0.55, 0.9, t.dry).mul(0.7)));
   c = c.mul(float(1).sub(clamp(crack, 0, 1).mul(flat).mul(0.7)));
-  // lá rơi: chấm 0,09–0,17 m, vàng/đỏ gạch/xanh úa, nhiều ở rừng
-  const leaf = specks(p, 0.62, 0.22, 0.08, 0.15, 11);
-  const leafCol = mix(mix(vec3(0.55, 0.36, 0.12), vec3(0.45, 0.17, 0.08), leaf.rnd), vec3(0.34, 0.42, 0.14), step(0.7, leaf.rnd));
-  c = mix(c, leafCol, leaf.cover.mul(flat).mul(t.soil).mul(t.forest.mul(0.7).add(0.4)).mul(0.95));
+  // lá rơi: lá thon xoay ngẫu nhiên, thưa, gom cụm (nhiều ở rừng và mép lát/ẩm), không rải đều
+  const leaf = leafShapes(p, 0.5, 0.55, t.forest.mul(0.8).add(0.25).add(t.wet.mul(0.6)).add(t.paving.mul(0.4)), 11);
+  const leafCol = mix(
+    mix(vec3(0.5, 0.33, 0.11), vec3(0.4, 0.15, 0.07), leaf.rnd),
+    mix(vec3(0.3, 0.4, 0.12), vec3(0.55, 0.45, 0.14), leaf.rnd),
+    step(0.62, hash2(vec2(leaf.rnd.mul(91.7), 3.1))),
+  ).mul(float(0.75).add(leaf.rnd.mul(0.5)));
+  c = mix(c, leafCol, leaf.cover.mul(flat).mul(t.soil).mul(0.92));
   // sỏi: hạt sáng/tối 0,05–0,12 m, nhiều trên đường mòn, đất khô, đất trồi
-  const peb = specks(p, 0.5, 0.2, 0.05, 0.12, 31);
-  const pebCol = mix(vec3(0.66, 0.63, 0.57), vec3(0.3, 0.29, 0.27), peb.rnd);
+  const peb = specks(p, 0.5, 0.14, 0.04, 0.09, 31);
+  const pebCol = mix(vec3(0.44, 0.41, 0.36), vec3(0.24, 0.22, 0.2), peb.rnd);
   c = mix(
     c,
     pebCol,
     peb.cover
       .mul(flat)
-      .mul(clamp(t.path.mul(0.8).add(t.dry.mul(0.6)).add(patch.mul(0.9)).add(0.18), 0, 1))
+      .mul(clamp(t.path.mul(0.8).add(t.dry.mul(0.6)).add(patch.mul(0.9)), 0, 1))
       .mul(0.95),
   );
   return c;
@@ -183,9 +216,10 @@ export function withIsoSurfaceDetail<M extends THREE.MeshStandardNodeMaterial>(m
         .mul(0.32),
     ),
   );
-  const leaf = specks(p, 0.7, 0.22, 0.09, 0.16, 11);
-  const leafCol = mix(vec3(0.5, 0.33, 0.12), vec3(0.42, 0.17, 0.08), leaf.rnd);
+  // lá rơi trên sàn đá: rất thưa, gom ở mép viên lát
+  const leaf = leafShapes(p, 0.55, 0.4, edge.mul(0.9).add(0.1), 11);
+  const leafCol = mix(vec3(0.46, 0.3, 0.11), vec3(0.36, 0.14, 0.07), leaf.rnd).mul(float(0.75).add(leaf.rnd.mul(0.5)));
   const base = materialColor.rgb.mul(mix(float(1), mul, w)).mul(mix(vec3(1), tint, w));
-  m.colorNode = vec3(mix(base, leafCol, leaf.cover.mul(w).mul(0.85)));
+  m.colorNode = vec3(mix(base, leafCol, leaf.cover.mul(w).mul(0.8)));
   return m;
 }

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  clampLeadFrame,
   clampLeadSafe,
+  ISO_TGT_UP,
+  ISO_TGT_X,
   ISO_SAFE_DOWN,
   ISO_SAFE_UP,
   ISO_SAFE_X,
@@ -34,6 +37,37 @@ describe('clampLeadSafe', () => {
       }
     }
     expect(clampLeadSafe(0.5, 0.2, 0.7)).toEqual(expect.objectContaining({ x: expect.closeTo(0.5, 5), z: expect.closeTo(0.2, 5) }));
+  });
+});
+
+describe('clampLeadFrame', () => {
+  const project = (lx: number, lz: number, yaw: number, ox: number, oz: number) => {
+    const s = Math.sin(yaw);
+    const c = Math.cos(yaw);
+    // vị trí (phải, xuống) của điểm cách người (ox, oz) so với tâm khung khi điểm nhìn lệch (lx, lz)
+    return { r: (ox - lx) * c - (oz - lz) * s, d: (ox - lx) * s + (oz - lz) * c };
+  };
+  it('mục tiêu vừa tầm: cả người và mục tiêu trong vùng an toàn', () => {
+    for (const yaw of [0, 0.785, 2.2]) {
+      const t = { x: 9 * Math.cos(1), z: 9 * Math.sin(1) };
+      const l = clampLeadFrame(t.x * 0.5, t.z * 0.5, yaw, t.x, t.z);
+      const me = project(l.x, l.z, yaw, 0, 0);
+      const tg = project(l.x, l.z, yaw, t.x, t.z);
+      expect(Math.abs(me.r)).toBeLessThanOrEqual(ISO_SAFE_X + 1e-6);
+      expect(me.d).toBeLessThanOrEqual(ISO_SAFE_DOWN + 1e-6);
+      expect(Math.abs(tg.r)).toBeLessThanOrEqual(ISO_TGT_X + 1e-6);
+      expect(tg.d).toBeGreaterThanOrEqual(-ISO_TGT_UP - 1e-6);
+    }
+  });
+  it('mục tiêu quá xa: ưu tiên người chơi trong vùng an toàn', () => {
+    const l = clampLeadFrame(20, -20, 0.785, 40, -40);
+    const me = project(l.x, l.z, 0.785, 0, 0);
+    expect(Math.abs(me.r)).toBeLessThanOrEqual(ISO_SAFE_X + 1e-6);
+    expect(me.d).toBeLessThanOrEqual(ISO_SAFE_DOWN + 1e-6);
+    expect(me.d).toBeGreaterThanOrEqual(-ISO_SAFE_UP - 1e-6);
+  });
+  it('không có mục tiêu thì như clampLeadSafe', () => {
+    expect(clampLeadFrame(30, 5, 0.3)).toEqual(clampLeadSafe(30, 5, 0.3));
   });
 });
 
