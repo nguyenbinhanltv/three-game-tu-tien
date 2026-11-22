@@ -202,6 +202,34 @@ describe('qua cầu 1: server thấy hạ hết quái', () => {
 });
 
 describe('cầu 2: Kiếm Ảnh', () => {
+  it('chủ bóng rời room giữa đợt: bóng mồ côi bị gỡ, người còn lại hạ bóng của mình thì phòng ghi cầu', async () => {
+    const r = await mkRoom('kieu_2');
+    const a = r.join(mkChar('kla', 44, 1));
+    const b = r.join(mkChar('klb', 44, 1));
+    let now = 50_000_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+    r.room.bridge.startedAt = 0;
+    r.room.nextWaveAt = now + 1;
+    now += 10_000;
+    r.room.director();
+    const shadows = r.sim.monsters.filter((m) => m.state !== MS_DEAD);
+    expect(shadows).toHaveLength(2);
+    r.sim.removePlayer(a.sid); // A rớt mạng
+    now += 1000;
+    r.room.bridge.tick();
+    const left = r.sim.monsters.filter((m) => m.state !== MS_DEAD);
+    expect(left).toHaveLength(1);
+    expect(left[0]!.owner).toBe(b.sid);
+    now += 25_000;
+    r.room.onPlayerHitMonster(b, left[0]!);
+    left[0]!.state = MS_DEAD;
+    r.room.director(); // hẹn
+    now += 10_000;
+    r.room.director(); // hết đợt
+    expect(r.room.clearedAt).toBeGreaterThan(0);
+    expect(b.char.meta.kieu).toBe(2);
+  });
+
   it('mỗi người sống có một bóng riêng, bóng giáng vùng nổ xuống chỗ chủ; đợt chỉ xong khi hạ bóng', async () => {
     const r = await mkRoom('kieu_2');
     const a = r.join(mkChar('ksa', 44, 1));

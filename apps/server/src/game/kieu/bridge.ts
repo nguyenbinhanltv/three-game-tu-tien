@@ -15,6 +15,8 @@ export interface BridgeCtx {
   /** Vùng nổ báo trước `delay` giây tại (x, z), sát thương = `mul` × `atk` của nguồn. */
   strike(x: number, z: number, r: number, delay: number, mul: number, src: string, atk: number): void;
   sys(p: PlayerEnt, key: string, params?: Record<string, string | number>, type?: 'good' | 'bad' | 'info' | 'xp'): void;
+  /** Gỡ lặng lẽ một bóng mất chủ (không rơi đồ, không tính hạ). */
+  dismiss(m: MonEnt): void;
   clear(p: PlayerEnt, n: number, o: { present: boolean; contributed: boolean; elapsedSec: number }): KieuClearResult;
 }
 
@@ -73,7 +75,7 @@ export class KieuBridge {
     return this.shadows.length;
   }
 
-  /** Định kỳ (~500 ms): bóng còn sống giáng vùng nổ xuống chỗ chủ; bóng của người đã chết/rời room không giáng. */
+  /** Định kỳ (~500 ms): bóng còn sống giáng vùng nổ xuống chỗ chủ; bóng của người đã chết không giáng, bóng của người đã rời room bị gỡ. */
   tick(): void {
     const cfg = this.cfg;
     if (!cfg || this.shadows.length === 0) return;
@@ -81,10 +83,16 @@ export class KieuBridge {
     const byId = new Map<string, PlayerEnt>();
     for (const p of this.c.players()) byId.set(p.sid, p);
     for (const sh of this.shadows) {
-      if (sh.mon.state === MS_DEAD || now < sh.nextAt) continue;
-      sh.nextAt = now + cfg.strikeEvery * 1000;
+      if (sh.mon.state === MS_DEAD) continue;
       const p = byId.get(sh.owner);
-      if (!p || this.c.isDead(p)) continue;
+      // Chủ đã rời room (rớt mạng/thoát): chỉ chủ đánh được bóng nên bóng mồ côi sẽ giữ phòng không bao giờ xong. Gỡ nó.
+      if (!p) {
+        this.c.dismiss(sh.mon);
+        continue;
+      }
+      if (now < sh.nextAt) continue;
+      sh.nextAt = now + cfg.strikeEvery * 1000;
+      if (this.c.isDead(p)) continue;
       this.c.strike(p.move.x, p.move.z, cfg.r, 1.2, cfg.mul, sh.mon.id, sh.mon.atk);
     }
   }

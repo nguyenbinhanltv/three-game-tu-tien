@@ -1,6 +1,6 @@
 // Room phòng cầu Cửu Kiều (TN-7): phó bản riêng (vé một lần) + luật qua cầu của server (`game/kieu/bridge.ts`).
 // Điều kiện qua cầu do chính room thấy (hết đợt quái/hạ mọi Kiếm Ảnh), không có tin nào từ client. Kiểm vào cửa lần hai ở `DungeonRoom.onAuth`.
-import { PF_DEAD, kieuIsFirstClear, kieuOfLevel, type WaveDef } from '@dtl/shared';
+import { MS_DEAD, PF_DEAD, kieuIsFirstClear, kieuOfLevel, type WaveDef } from '@dtl/shared';
 import { LEVELS, t } from '@dtl/content';
 import type { Character } from '../game/character';
 import type { MonEnt, PlayerEnt } from '../game/entities';
@@ -25,6 +25,13 @@ export class KieuRoom extends DungeonRoom {
       spawnShadow: (p, st, o) => sim.spawnShadow(p, st, o),
       strike: (x, z, r, delay, mul, src, atk) => sim.addHazard({ x, z, r }, delay, mul, false, 'spirit', src, atk),
       sys: (p, k, params, type) => sim.sys(p, k, params, type),
+      dismiss: (m) => {
+        if (m.state === MS_DEAD) return;
+        m.s.hp = 0;
+        m.state = MS_DEAD;
+        m.s.st = MS_DEAD;
+        m.removeAt = Date.now() + 500;
+      },
       clear: (p, n, o) => sim.kieu.onClear(p, n, o),
     }));
   }
