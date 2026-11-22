@@ -21,6 +21,8 @@ export const ISO_YAW: Readonly<Record<string, number>> = {
   van_hai: (135 * Math.PI) / 180,
   // Thiên Khuyết Cổ Thành: 20°. 135° đặt camera ra sau cổng Thần Tàng Điện (mặt sau một mặt che kín nửa khung); 0°/20°/45° nhìn từ phía trước cổng, cột đá cao đã mờ nhờ `sight`.
   thien_khuyet: (20 * Math.PI) / 180,
+  // Đoạn Mạch Cổ Cốc: 135° (so với 0°, 45°, −45°): cầu đá và lan can hiện dài theo đường chéo, người không bị cầu/vách che.
+  doan_mach: (135 * Math.PI) / 180,
 };
 /** Dẫn trước tối đa (m) theo con trỏ, tính trên mặt đất, và hệ số theo khoảng cách con trỏ tới nhân vật. */
 export const ISO_LEAD_MAX = 3.2;
