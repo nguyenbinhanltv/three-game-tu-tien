@@ -84,9 +84,11 @@ export const PHA_CANH_PILL = 'itm_pha_canh_dan';
 export const PHA_CANH_PILL_2 = 'itm_pha_canh_dan_2';
 /** Vân Phá Cảnh Đan (E3-F): dùng cho bình cảnh từ Kết Đan tầng 21 trở lên. */
 export const PHA_CANH_PILL_3 = 'itm_pha_canh_dan_3';
+/** Hư Phá Cảnh Đan (TN-3): dùng cho bình cảnh từ Anh Biến tầng 33 trở lên (chương 6). */
+export const PHA_CANH_PILL_4 = 'itm_pha_canh_dan_4';
 /** Đan phá cảnh cần dùng ở bình cảnh tại cấp `level`. */
 export function bottleneckPill(level: number): string {
-  return level >= 21 ? PHA_CANH_PILL_3 : level >= 17 ? PHA_CANH_PILL_2 : PHA_CANH_PILL;
+  return level >= 33 ? PHA_CANH_PILL_4 : level >= 21 ? PHA_CANH_PILL_3 : level >= 17 ? PHA_CANH_PILL_2 : PHA_CANH_PILL;
 }
 
 /**
