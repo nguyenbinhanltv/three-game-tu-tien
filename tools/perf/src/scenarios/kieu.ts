@@ -15,7 +15,7 @@ export default {
     for (const size of list('--sizes', '1920x1080,1280x720')) {
       const viewport = size.split('x').map(Number) as [number, number];
       const { ctx, page } = await r.open({ name: `Kieu${viewport[1]}`, quality: 'high', viewport, seenIntro: true, warnings: true });
-      await gm(page, 'level 45');
+      await gm(page, n >= 7 ? 'level 46' : 'level 45');
       await gm(page, 'god on');
       if (n > 1) await gm(page, `kieu ${n - 1}`);
       await enterLevel(page, 'cuu_kieu');

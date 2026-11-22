@@ -1,10 +1,11 @@
 // Kiểm tay TN-7 qua Colyseus thật: vào Thiên Lộ Giới → xin vé ở Dẫn Kiều Nhân → vào room phòng cầu → (cầu 1) /gm killall từng đợt,
 // (cầu 2) hạ Kiếm Ảnh → ghi `char.kieu` và về Kiều Đầu. Dùng `/gm god on` để bot không chết; đóng góp được đếm khi quái có tên bot trong threat,
 // `/gm killall` hạ quái qua đường sát thương thật nên tính là đóng góp.
-// Chạy: PORT=2793 pnpm --filter @dtl/bot-client exec tsx src/kieu-e2e.ts [1|2|3|5|6]   (server dev có AUTH_DEV_BYPASS=1)
+// Chạy: PORT=2793 pnpm --filter @dtl/bot-client exec tsx src/kieu-e2e.ts [1|2|3|5|6|7|8|9]   (server dev có AUTH_DEV_BYPASS=1)
 import { Client, type Room } from 'colyseus.js';
 import { C, ROOM_WORLD, S, type TransferMsg } from '@dtl/shared';
 import { runSuyBot } from './suy-bot';
+import { runHkBot } from './hk-bot';
 
 const PORT = process.env.PORT ?? '2793';
 const WS = `ws://localhost:${PORT}`;
@@ -53,7 +54,7 @@ async function main() {
   await gm('level 44');
   await gm('god on');
   if (n > 1) await gm(`kieu ${n - 1}`);
-  await gm('level 45');
+  await gm(n >= 7 ? 'level 46' : 'level 45');
   await gm('tp ck_tram');
   await until(() => v.transfer !== null, 8000, 'chuyển sang Thiên Lộ Giới').catch((e) => {
     console.log('sys:', v.sys.join(','));
@@ -74,16 +75,16 @@ async function main() {
   r = await client.joinOrCreate(t.room, { dev: name, ...t.options });
   v = watch(r);
   log('vào room', r.name, 'sys:', v.sys.join(','));
-  if (n === 3) {
-    // Cầu 3 Suy: bot tự chơi đủ năm ải Ngũ Suy trong sân kiếp (suy-bot.ts), server ghi cầu khi chuỗi qua trọn vẹn.
+  if (n === 3 || n >= 7) {
+    // Cầu kiếp chuỗi: bot tự chơi (cầu 3: năm ải Ngũ Suy, suy-bot.ts; cầu 7–9: ba kiếp nhỏ Huyền Kiếp, hk-bot.ts), server ghi cầu khi chuỗi qua trọn vẹn.
     await gm('god on');
-    const bot = runSuyBot(r, r.sessionId);
+    const bot = n === 3 ? runSuyBot(r, r.sessionId) : runHkBot(r, r.sessionId);
     await until(() => v.sys.includes('sys.kieu_clear'), 260_000, 'qua đủ năm ải Ngũ Suy').catch((e) => {
       console.log('sys:', v.sys.join(','), '| ngũ suy:', bot.seen.join(','), JSON.stringify(bot.peak));
       throw e;
     });
     bot.stop();
-    log('XONG cầu 3; ải đã thấy', bot.seen.join(','));
+    log('XONG cầu', n, '; ải đã thấy', bot.seen.join(','));
     process.exit(0);
   }
   // chờ đợt đầu sinh quái; `/gm killall` hạ quái quanh bot qua damageMonster nên tên bot vào threat (đóng góp do server đếm)

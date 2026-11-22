@@ -438,3 +438,52 @@ describe('cầu 4: ba cột công tắc rồi ba Vệ Kiều', () => {
     expect(p.char.meta.kieu).toBe(4);
   });
 });
+
+describe('cầu 7–9: Huyền Kiếp trong sân kiếp', () => {
+  const CASES = [
+    { n: 7, id: 'huyen_ngoai', level: 46, kieu: 6 },
+    { n: 8, id: 'huyen_noi', level: 46, kieu: 7 },
+    { n: 9, id: 'huyen_hon', level: 47, kieu: 8 },
+  ] as const;
+
+  it('mỗi chuỗi Huyền Kiếp gắn đúng level cầu; cầu là sân kiếp có room tribulation-kieu_n', () => {
+    for (const c of CASES) {
+      expect(tribDef(c.id).level).toBe(`kieu_${c.n}`);
+      expect(content.LEVELS[`kieu_${c.n}`]!.tribulation).toBe(true);
+      expect(rooms.roomNameOf(`kieu_${c.n}`)).toBe(`tribulation-kieu_${c.n}`);
+    }
+  });
+
+  for (const c of CASES) {
+    it(`cầu ${c.n}: chuỗi ${c.id} qua trọn vẹn thì ghi cầu ${c.n}; kiếp thất bại thì không`, async () => {
+      const r = await mkRoom(`kieu_${c.n}`, rooms.defineTribulation(`kieu_${c.n}`));
+      const p = r.join(mkChar(`k${c.n}h`, c.level, c.kieu));
+      const room = r.room as unknown as {
+        kieuStart: Map<number, { stage: number; at: number }>;
+        onTribulationEnd(p: Ent, def: ReturnType<typeof tribDef>, ok: boolean): void;
+      };
+      room.kieuStart ??= new Map();
+      room.kieuStart.set(p.char.id, { stage: 0, at: Date.now() - 150_000 });
+      room.onTribulationEnd(p, tribDef(c.id), false);
+      expect(p.char.meta.kieu).toBe(c.kieu);
+      room.kieuStart.set(p.char.id, { stage: 0, at: Date.now() - 150_000 });
+      room.onTribulationEnd(p, tribDef(c.id), true);
+      expect(p.char.meta.kieu).toBe(c.n);
+    });
+  }
+
+  it('cầu 9: pha boss Lộ Linh (chỗ cắm) tiếp quản thì Hồn kiếp xong chưa ghi cầu', async () => {
+    const r = await mkRoom('kieu_9', rooms.defineTribulation('kieu_9'));
+    const p = r.join(mkChar('k9boss', 47, 8));
+    const room = r.room as unknown as {
+      kieuStart: Map<number, { stage: number; at: number }>;
+      kieuBossPhase(p: Ent): boolean;
+      onTribulationEnd(p: Ent, def: ReturnType<typeof tribDef>, ok: boolean): void;
+    };
+    room.kieuStart ??= new Map();
+    room.kieuStart.set(p.char.id, { stage: 0, at: Date.now() - 150_000 });
+    room.kieuBossPhase = () => true;
+    room.onTribulationEnd(p, tribDef('huyen_hon'), true);
+    expect(p.char.meta.kieu).toBe(8);
+  });
+});
