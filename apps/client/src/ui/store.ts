@@ -1,3 +1,5 @@
+import { FLAGS } from '../base/flags';
+import { initialSkillLayout } from './skillLayoutDefault';
 import { isQuality } from '../base/quality';
 import { create } from 'zustand';
 import type {
@@ -436,7 +438,7 @@ export const useUI = create<UIState>(() => ({
   auraCombat: auraCombatOf(),
   offscreen: localStorage.getItem('dtl.offscreen') !== '0',
   chapterCards: localStorage.getItem('dtl.chapterCards') !== '0',
-  skillLayout: localStorage.getItem('dtl.skillLayout') === 'bar' ? 'bar' : 'arc',
+  skillLayout: initialSkillLayout(localStorage.getItem('dtl.skillLayout'), FLAGS.isoCam),
   questCollapsed: localStorage.getItem('dtl.questCollapsed') === '1',
   chatCollapsed: localStorage.getItem('dtl.chatCollapsed') === '1',
   chatTab: readChatTab(),
