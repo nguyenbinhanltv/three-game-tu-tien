@@ -15,6 +15,7 @@ import {
   step,
   vec2,
   vec3,
+  vec4,
 } from 'three/tsl';
 
 /**
@@ -137,9 +138,9 @@ export function isoTerrainDetail(col: Node, t: TerrainDetailIn): Node {
     .sub(0.5)
     .abs();
   const crack = float(1)
-    .sub(smoothstep(0.0, 0.035, crackN))
-    .mul(t.paving.mul(0.9).add(smoothstep(0.55, 0.9, t.dry).mul(0.7)));
-  c = c.mul(float(1).sub(clamp(crack, 0, 1).mul(flat).mul(0.7)));
+    .sub(smoothstep(0.0, 0.02, crackN))
+    .mul(t.paving.mul(0.3).add(smoothstep(0.55, 0.9, t.dry).mul(0.7)));
+  c = c.mul(float(1).sub(clamp(crack, 0, 1).mul(flat).mul(0.5)));
   // lá rơi: lá thon xoay ngẫu nhiên, thưa, gom cụm (nhiều ở rừng và mép lát/ẩm), không rải đều
   const leaf = leafShapes(p, 0.5, 0.55, t.forest.mul(0.8).add(0.25).add(t.wet.mul(0.6)).add(t.paving.mul(0.4)), 11);
   const leafCol = mix(
@@ -219,7 +220,9 @@ export function withIsoSurfaceDetail<M extends THREE.MeshStandardNodeMaterial>(m
   // lá rơi trên sàn đá: rất thưa, gom ở mép viên lát
   const leaf = leafShapes(p, 0.55, 0.4, edge.mul(0.9).add(0.1), 11);
   const leafCol = mix(vec3(0.46, 0.3, 0.11), vec3(0.36, 0.14, 0.07), leaf.rnd).mul(float(0.75).add(leaf.rnd.mul(0.5)));
-  const base = materialColor.rgb.mul(mix(float(1), mul, w)).mul(mix(vec3(1), tint, w));
-  m.colorNode = vec3(mix(base, leafCol, leaf.cover.mul(w).mul(0.8)));
+  // Giữ alpha (map/alphaTest/transparent của GLB: song cửa, lan can, phướn, lá) và colorNode riêng nếu material đã có.
+  const src: Node = m.colorNode ? vec4(m.colorNode) : vec4(materialColor);
+  const base = src.rgb.mul(mix(float(1), mul, w)).mul(mix(vec3(1), tint, w));
+  m.colorNode = vec4(mix(base, leafCol, leaf.cover.mul(w).mul(0.8)), src.a);
   return m;
 }
