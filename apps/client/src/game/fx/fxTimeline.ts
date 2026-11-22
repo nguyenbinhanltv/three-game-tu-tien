@@ -23,7 +23,8 @@ import {
 import type { FxMesh } from '../../render/materials/vfx';
 import { paletteOf, toneOf, type FxPalette } from '../../render/vfx/palette';
 import { FLAGS } from '../../base/flags';
-import { isoFxScaleY } from '../../render/vfx/isoFx';
+import { ISO_BOLT_HEIGHT, ISO_CARD_ALPHA, ISO_CARD_SCALE, isoFxScaleY } from '../../render/vfx/isoFx';
+import { BOLT_HEIGHT } from '../../render/vfx/lightning';
 import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
 import { DECAL_CRACK, DECAL_RUNE, DECAL_SCORCH, DECAL_SMOKE, DECAL_STRIKE } from '../../render/vfx/stylized';
 import { bladeVisible } from '../../render/vfx/bladeTrail';
@@ -450,6 +451,7 @@ export class FxRunner {
           ev.seed ?? Math.floor(c.seed * 100 + s.idx),
           0,
           ev.thick ?? 1,
+          FLAGS.isoCam && FLAGS.isoFxCompress ? BOLT_HEIGHT * ISO_BOLT_HEIGHT : BOLT_HEIGHT,
         );
         break;
       }
@@ -508,7 +510,7 @@ export class FxRunner {
     const sT = fitS(sT0);
     const seed = ((ev.seed ?? c.seed + idx * 1.7) % 50) + 0.37;
     const color = toneOf(c.pal, ev.tone);
-    const alpha = ev.alpha ?? 0.95;
+    const alpha = (ev.alpha ?? 0.95) * (FLAGS.isoCam && FLAGS.isoFxCompress && kind === 'card' ? ISO_CARD_ALPHA : 1);
     const sweep = ev.sweep ?? 0.35;
     const erodeFrom = ev.erodeFrom ?? 0.5;
     const spin = (ev.spin ?? 0) * DEG;
@@ -538,10 +540,15 @@ export class FxRunner {
     const isoK = FLAGS.isoCam && FLAGS.isoFxCompress;
     if (isoK && !geo.boundingBox) geo.computeBoundingBox();
     const baseH = isoK && geo.boundingBox ? geo.boundingBox.max.y - geo.boundingBox.min.y : 1;
+    const cardK = isoK && kind === 'card' ? ISO_CARD_SCALE : 1;
     const place = (m: FxMesh, k: number, grow: number, off: number) => {
       const e = easeOut(k);
       const lerpS = (i: number) => s0f[i]! + (sT[i]! - s0f[i]!) * e;
-      m.scale.set(lerpS(0) * grow, isoK ? isoFxScaleY(ev.shape, lerpS(1) * grow, baseH) : lerpS(1) * grow, lerpS(2) * grow);
+      m.scale.set(
+        lerpS(0) * grow * cardK,
+        (isoK ? isoFxScaleY(ev.shape, lerpS(1) * grow, baseH) : lerpS(1) * grow) * cardK,
+        lerpS(2) * grow,
+      );
       if (end) {
         const ek = ev.move!.ease === 'in' ? easeIn(k) : ev.move!.ease === 'linear' ? k : easeOut(k);
         m.position.lerpVectors(start, end, ek);
