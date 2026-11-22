@@ -23,6 +23,7 @@ import { objectiveText } from './objective';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './windows/common';
 import { Button, Divider, Tabs } from './u2/win';
 import { DaoTab, RootTab } from './Realm';
+import { DapSection } from './DapSection';
 import { EnhanceTab, ForgeTab, GemTab, PromoteTab, RefineTab, SalvageTab } from './UpgradeTabs';
 import { set, useUI } from './store';
 
@@ -280,6 +281,8 @@ function KieuTab() {
           </div>
         );
       })}
+      {/* Kết game (TN-7): mục Đạp Thiên hiện khi đủ chín cầu, cùng một tab */}
+      <DapSection />
     </div>
   );
 }

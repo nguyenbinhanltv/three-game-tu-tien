@@ -554,3 +554,29 @@ describe('resist: kháng theo Bản Nguyên (Đạo Linh, TN-7)', () => {
     expect(hit('hoa', 'kim', 0)).toBe(350);
   });
 });
+
+describe('armor: tín hiệu cho người chơi (TN-7)', () => {
+  const ARMOR: MonsterAi = { armor: { cycle: 30, window: 8, take: 0.15 } };
+
+  it('báo trước 2 s, báo khi giáp vỡ và khi liền lại, đúng mốc chu kỳ, không báo lặp; chưa bị đánh thì im', () => {
+    const { sim, mon, p, run } = setup(ARMOR);
+    const got: string[] = [];
+    (p.client as { send: (t: string, m: unknown) => void }).send = (t, m) => {
+      if (t === S.SYS) got.push((m as { k: string }).k);
+    };
+    mon.s.hp = mon.s.mhp = 1e7;
+    run(25_000);
+    expect(got.filter((k) => k.startsWith('sys.armor'))).toEqual([]); // chưa trúng đòn nào: chưa có mốc
+    sim.damageMonster(mon, 10, null); // mốc chu kỳ = lúc này
+    run(19_500);
+    expect(got.filter((k) => k.startsWith('sys.armor'))).toEqual([]);
+    run(1_000); // 20,5 s: vào khoảng báo trước
+    expect(got.filter((k) => k.startsWith('sys.armor'))).toEqual(['sys.armor_warn']);
+    run(2_000); // 22,5 s: giáp vỡ
+    expect(got.filter((k) => k.startsWith('sys.armor'))).toEqual(['sys.armor_warn', 'sys.armor_break']);
+    run(6_000); // 28,5 s: vẫn mở, không báo lặp
+    expect(got.filter((k) => k.startsWith('sys.armor')).length).toBe(2);
+    run(2_000); // 30,5 s: liền lại
+    expect(got.filter((k) => k.startsWith('sys.armor'))).toEqual(['sys.armor_warn', 'sys.armor_break', 'sys.armor_seal']);
+  });
+});

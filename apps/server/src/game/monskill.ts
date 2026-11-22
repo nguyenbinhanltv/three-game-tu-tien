@@ -66,6 +66,8 @@ export interface MonSkillRt {
   faceAt: number;
   /** Giáp phá (TN-7): lúc (ms) của đòn đầu trúng, mốc tính chu kỳ (0 = chưa bị đánh). */
   armorAt: number;
+  /** Trạng thái giáp đã báo cho người chơi: 0 còn giáp, 1 sắp vỡ (báo trước), 2 đang vỡ. */
+  armorState: 0 | 1 | 2;
   face: 'duong' | 'am';
   faceTurn: number;
   /** Lượt lật đã phát FX báo trước. */
@@ -86,6 +88,7 @@ export function newRt(): MonSkillRt {
     sensedUntil: 0,
     faceAt: 0,
     armorAt: 0,
+    armorState: 0,
     face: 'duong',
     faceTurn: 0,
     faceWarned: -1,
@@ -146,6 +149,8 @@ interface MonSkillHost {
 
 /** Tầm (m) nhận dòng báo lật mặt. */
 const FACE_NOTICE_RANGE = 120;
+/** Báo trước (giây) khi cửa sổ phá giáp sắp mở. */
+const ARMOR_WARN = 2;
 
 type Ender = 'charge' | 'leap' | 'burrow' | 'summon';
 
@@ -194,6 +199,22 @@ export class MonSkills {
       });
     }
     if (dirty || !(rt.bits & MF_FACE_T) || (rt.face === 'am') !== ((rt.bits & MF_FACE) !== 0)) this.refresh(m, now);
+  }
+
+  /**
+   * Giáp phá theo chu kỳ (TN-7, Thạch Tượng): báo cho người chơi quanh boss khi cửa sổ phá giáp sắp mở (`ARMOR_WARN` giây trước), đang mở, và khi giáp liền lại.
+   * Gọi mỗi tick khi đang giao chiến (như `face`), không chỉ khi trúng đòn. Mốc chu kỳ là đòn đầu trúng (`armorAt`); chưa bị đánh thì chưa báo.
+   */
+  armor(m: MxMon): void {
+    const cfg = m.rules.ai.armor;
+    const rt = m.mx;
+    if (!cfg || !rt.armorAt) return;
+    const t = ((this.h.now() - rt.armorAt) / 1000) % cfg.cycle;
+    const open = t >= cfg.cycle - cfg.window;
+    const next: 0 | 1 | 2 = open ? 2 : t >= cfg.cycle - cfg.window - ARMOR_WARN ? 1 : 0;
+    if (next === rt.armorState) return;
+    rt.armorState = next;
+    this.h.notifyNear(m, FACE_NOTICE_RANGE, next === 2 ? 'sys.armor_break' : next === 1 ? 'sys.armor_warn' : 'sys.armor_seal');
   }
 
   /**
@@ -547,6 +568,8 @@ export class MonSkills {
     rt.weakUntil = 0;
     rt.sensedUntil = 0;
     rt.faceAt = 0;
+    rt.armorAt = 0;
+    rt.armorState = 0;
     rt.face = 'duong';
     rt.faceTurn = 0;
     rt.faceWarned = -1;
