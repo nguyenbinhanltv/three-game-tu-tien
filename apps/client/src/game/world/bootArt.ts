@@ -24,6 +24,9 @@ const LEVEL_ART: Record<string, string> = {
   xich_tan_khich: 'bac_hoang',
   kim_da_cung: 'bac_hoang',
   do_kiep_bac_hoang: 'bac_hoang',
+  // Chương 6: tranh riêng Âm Dương Giới (Giới Trì dùng chung).
+  van_dinh: 'van_dinh',
+  gioi_tri: 'van_dinh',
 };
 
 /** Id ảnh theo vị trí: khớp tên vùng ở `zone.<id>` của i18n, riêng tông môn/Kiếm Trủng theo biome. */
@@ -109,12 +112,13 @@ export async function setBootArt(id: string, mode: 'title' | 'zone'): Promise<vo
 }
 
 /** Vùng chuỗi của tranh màn tải: quyết định phụ đề và các dòng tải theo vùng (Vân Lam là mặc định, không hậu tố). */
-export type LoadRegion = 'van_lam' | 'doan_mach' | 'van_hai' | 'thien_khuyet' | 'bac_hoang';
+export type LoadRegion = 'van_lam' | 'doan_mach' | 'van_hai' | 'thien_khuyet' | 'bac_hoang' | 'van_dinh';
 const REGION_OF_ART: Record<string, LoadRegion> = {
   doan_mach: 'doan_mach',
   phuc_mach_quat: 'doan_mach',
   van_hai_phu_dao: 'van_hai',
   thien_khuyet_co_thanh: 'thien_khuyet',
   bac_hoang: 'bac_hoang',
+  van_dinh: 'van_dinh',
 };
 export const regionOfArt = (art: string): LoadRegion => REGION_OF_ART[art] ?? 'van_lam';
