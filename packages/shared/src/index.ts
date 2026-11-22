@@ -18,6 +18,7 @@ export * from './projectile';
 export * from './appearance';
 export * from './wardrobe';
 export * from './v3dye';
+export * from './v3silk';
 export * from './bodyfeel';
 export * from './items';
 export * from './inventory';
