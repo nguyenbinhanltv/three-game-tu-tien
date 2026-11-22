@@ -1385,6 +1385,12 @@ for (const lv of Object.values(LEVELS)) {
       // Hai mặt (TN-3): mặt Âm miễn sát thương (`take` còn lọt), chỉ đánh được trong cửa sổ Dương.
       const fc = boss.ai?.faces;
       if (fc) dps *= (fc.duong + fc.am * fc.take) / (fc.duong + fc.am);
+      // Giáp phá theo chu kỳ (TN-7, cầu 5): đội dồn đòn vào cửa sổ phá giáp; ngoài cửa sổ vẫn đánh nhưng nhận `take`.
+      const ar = boss.ai?.armor;
+      if (ar) dps *= (ar.take * (ar.cycle - ar.window) + ar.window) / ar.cycle;
+      // Kháng nguồn (TN-7, cầu 6): nhóm bốn người đủ Bản Nguyên khác nhau; trung bình theo năm hệ (1 cùng hệ, 1 khắc hệ, 3 trung tính).
+      const rs = boss.ai?.resist;
+      if (rs) dps *= (rs.same + rs.counter + 3) / 5;
       const bu = boss.ai?.burrow ?? boss.phases?.map((_, k) => phaseRules(boss!, k + 1).ai.burrow).find(Boolean);
       if (bu) dps *= 1 - bu.hide / bu.cd;
       const ch = boss.ai?.chant;

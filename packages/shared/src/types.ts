@@ -358,8 +358,32 @@ export interface MonsterAi {
   reveal?: MonsterReveal;
   /** Hai mặt Âm/Dương (TN-3, Phủ Chủ trong Giới Trì): xem `MonsterFaces`. */
   faces?: MonsterFaces;
+  /** Giáp phá theo chu kỳ (TN-7, Thạch Tượng cầu 5): ngoài cửa sổ phá giáp chỉ nhận `take` sát thương; xem `MonsterArmor`. */
+  armor?: MonsterArmor;
+  /** Kháng theo Bản Nguyên của người đánh (TN-7, Đạo Linh cầu 6): xem `MonsterResist`. */
+  resist?: MonsterResist;
   /** Neo (DV-2 đợt 4: gốc khe của Thủ Khích Dực Chủ): đứng trong `r` mét quanh chỗ sinh ra thì hồi `pct` khí huyết tối đa mỗi giây; kéo ra xa thì hết. */
   anchor?: MonsterAnchor;
+}
+
+/**
+ * Giáp phá theo chu kỳ (TN-7, cầu 5): kể từ đòn đầu tiên trúng boss, cứ `cycle` giây có một cửa sổ `window` giây (ở CUỐI chu kỳ) giáp vỡ, nhận đủ sát thương;
+ * ngoài cửa sổ nhận `take` (0..1) sát thương. Buộc cả đội dồn sát thương vào đúng nhịp.
+ */
+export interface MonsterArmor {
+  cycle: number;
+  window: number;
+  take: number;
+}
+
+/**
+ * Kháng theo Bản Nguyên (TN-7, cầu 6): boss có `forms.length` hình thái, hình thái `i` ứng với `phase === i` (đổi theo ngưỡng máu `phases`) và mang hệ `forms[i]`.
+ * Người đánh có Đạo (hoặc Bản Nguyên gốc nếu chưa chọn) cùng hệ hình thái nhận `same` (giảm); hệ khắc hình thái nhận `counter` (tăng); còn lại nguyên.
+ */
+export interface MonsterResist {
+  forms: string[];
+  same: number;
+  counter: number;
 }
 
 export interface MonsterAnchor {
@@ -972,6 +996,8 @@ export interface DungeonDef {
   lockAt?: number;
   /** Số lần hồi sinh tối đa của mỗi người trong phó bản; hết thì bị đưa ra ngoài. Bỏ trống = không giới hạn (Kiếm Trủng). */
   maxRevives?: number;
+  /** Giới hạn thời gian cả lượt (giây, từ lúc có người vào); hết giờ mà chưa xong thì mọi người bị đưa ra (cầu 5 Cửu Kiều). Bỏ trống = không giới hạn. */
+  timeLimit?: number;
   /** Thưởng hoàn thành (nhận một lần mỗi ngày); bỏ trống = chỉ có rơi đồ của quái. */
   reward?: DungeonReward;
 }

@@ -3,7 +3,8 @@
 // `MonsterSummon`, `MonsterReveal`); trạng thái chạy ở apps/server/src/game/monskill.ts.
 
 import type { HazardGeom } from './combat';
-import type { MonsterAi, MonsterBurrow, MonsterFaces, MonsterReflect, MonsterReveal } from './types';
+import { ELEM_BEATS } from './elements';
+import type { MonsterAi, MonsterArmor, MonsterBurrow, MonsterFaces, MonsterReflect, MonsterResist, MonsterReveal } from './types';
 
 /** Thời gian bay của nhảy đập (giây, cuối khoảng báo trước): quái rời chỗ cũ và đáp đúng lúc vạch nổ. */
 export const LEAP_AIR = 0.35;
@@ -197,6 +198,26 @@ export function facePhase(cfg: MonsterFaces, startMs: number, nowMs: number): Fa
     warning: flipAt - nowMs <= cfg.warn * 1000,
     turn: k * 2 + (duong ? 0 : 1),
   };
+}
+
+/** Hệ số sát thương của boss giáp phá sau `elapsedMs` kể từ đòn đầu: 1 trong cửa sổ cuối chu kỳ, `take` ngoài đó. */
+export function armorTakeMul(cfg: MonsterArmor, elapsedMs: number): number {
+  const t = Math.max(0, elapsedMs / 1000) % cfg.cycle;
+  return t >= cfg.cycle - cfg.window ? 1 : cfg.take;
+}
+
+/** Cửa sổ phá giáp đang mở không (cho client/HUD và test). */
+export function armorOpen(cfg: MonsterArmor, elapsedMs: number): boolean {
+  return armorTakeMul(cfg, elapsedMs) === 1;
+}
+
+/** Hệ số sát thương theo Bản Nguyên `elem` của người đánh lên hình thái `form` của boss kháng nguồn. */
+export function resistMul(cfg: MonsterResist, form: number, elem: string | undefined): number {
+  const f = cfg.forms[Math.max(0, Math.min(cfg.forms.length - 1, form))];
+  if (!elem || !f) return 1;
+  if (elem === f) return cfg.same;
+  if (ELEM_BEATS[elem as keyof typeof ELEM_BEATS] === f) return cfg.counter;
+  return 1;
 }
 
 /** Sát thương boss hai mặt nhận ở mặt `face` (mặt Dương nhận đủ). */

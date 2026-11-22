@@ -38,13 +38,27 @@ export class KieuRoom extends DungeonRoom {
 
   override onCreate(options: unknown): void {
     super.onCreate(options);
-    this.clock.setInterval(() => this.bridge.tick(), 500);
+    this.clock.setInterval(() => {
+      this.bridge.tick();
+      this.checkTimeLimit();
+    }, 500);
   }
 
   /** Lượt đầu mới có thưởng và rơi đồ; luyện lại (đã qua cầu này) không rơi đồ, không thưởng. */
   override noLootFor(char: Character): boolean {
     // Giữ cả giới hạn theo ngày của phó bản (đợt đánh đầu tiên trong ngày đánh dấu đã dùng): vào ra liên tục không cày đồ lần đầu được.
     return super.noLootFor(char) || !kieuIsFirstClear(char.meta.kieu, this.n);
+  }
+
+  /** Giới hạn thời gian (cầu 5): hết giờ mà chưa xong thì mọi người bị đưa ra, vé cấp lại theo `KIEU_RETICKET_SEC`; không ghi cầu. */
+  private checkTimeLimit(): void {
+    const lim = this.def.timeLimit;
+    const started = this.bridge.startedAt;
+    if (!lim || !started || this.clearedAt || this.sim.players.size === 0) return;
+    if (Date.now() - started < lim * 1000) return;
+    this.clearedAt = Date.now() + 3600_000; // dừng director, không sinh đợt mới
+    this.sim.sysAll('sys.kieu_timeout', undefined, 'bad');
+    for (const p of this.sim.players.values()) this.leave(p);
   }
 
   /** Giờ tính thời gian qua cầu bắt đầu từ lúc có người vào (gồm cả thời gian chờ đợt đầu), không phải lúc quái đầu tiên xuất hiện. */

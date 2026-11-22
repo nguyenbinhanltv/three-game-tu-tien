@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  armorOpen,
+  armorTakeMul,
   burrowSpots,
+  resistMul,
   chargeEnd,
   coneGeom,
   facePhase,
@@ -122,5 +125,27 @@ describe('facePhase: hai mặt Âm/Dương', () => {
     expect(faceTakeMul(cfg, 'duong')).toBe(1);
     expect(faceTakeMul(cfg, 'am')).toBe(0);
     expect(faceTakeMul({ ...cfg, take: 0.1 }, 'am')).toBe(0.1);
+  });
+});
+
+describe('giáp phá và kháng nguồn (TN-7)', () => {
+  const armor = { cycle: 30, window: 8, take: 0.15 };
+  it('armorTakeMul: giáp còn ở đầu chu kỳ, vỡ ở cửa sổ cuối, lặp lại mỗi chu kỳ', () => {
+    expect(armorTakeMul(armor, 0)).toBe(0.15);
+    expect(armorTakeMul(armor, 21_999)).toBe(0.15);
+    expect(armorTakeMul(armor, 22_000)).toBe(1);
+    expect(armorTakeMul(armor, 29_999)).toBe(1);
+    expect(armorTakeMul(armor, 30_000)).toBe(0.15);
+    expect(armorOpen(armor, 52_000)).toBe(true);
+    expect(armorTakeMul(armor, -5)).toBe(0.15);
+  });
+  const rs = { forms: ['kim', 'thuy', 'hoa'], same: 0.35, counter: 1.5 };
+  it('resistMul: cùng hệ giảm, khắc hệ tăng, còn lại nguyên; hình thái ngoài khoảng kẹp về đầu/cuối', () => {
+    expect(resistMul(rs, 0, 'kim')).toBe(0.35);
+    expect(resistMul(rs, 0, 'hoa')).toBe(1.5);
+    expect(resistMul(rs, 0, 'moc')).toBe(1);
+    expect(resistMul(rs, 0, undefined)).toBe(1);
+    expect(resistMul(rs, 9, 'hoa')).toBe(0.35);
+    expect(resistMul(rs, -1, 'kim')).toBe(0.35);
   });
 });

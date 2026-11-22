@@ -5,7 +5,10 @@
 // breakPosture/tryInterrupt (cancel).
 
 import {
+  armorTakeMul,
   burrowSpots,
+  daoOf,
+  resistMul,
   chargeEnd,
   coneGeom,
   facePhase,
@@ -41,7 +44,7 @@ import {
 interface MxPlayer {
   sid: string;
   move: { x: number; y: number; z: number };
-  char: { mhp: number };
+  char: { mhp: number; root: string; meta: { dao?: unknown } };
 }
 
 type Act =
@@ -61,6 +64,8 @@ export interface MonSkillRt {
   sensedUntil: number;
   /** Hai mặt (TN-3): lúc (ms) vào trận để tính chu kỳ (0 = chưa vào) và mặt/lượt lật đã báo. */
   faceAt: number;
+  /** Giáp phá (TN-7): lúc (ms) của đòn đầu trúng, mốc tính chu kỳ (0 = chưa bị đánh). */
+  armorAt: number;
   face: 'duong' | 'am';
   faceTurn: number;
   /** Lượt lật đã phát FX báo trước. */
@@ -80,6 +85,7 @@ export function newRt(): MonSkillRt {
     weakUntil: 0,
     sensedUntil: 0,
     faceAt: 0,
+    armorAt: 0,
     face: 'duong',
     faceTurn: 0,
     faceWarned: -1,
@@ -106,6 +112,8 @@ interface MxMon {
   chant: unknown;
   cast: unknown;
   rules: { ai: MonsterAi };
+  /** Pha boss (0 = pha đầu): chỉ số hình thái của boss kháng nguồn. */
+  phase: number;
   mx: MonSkillRt;
   /** Là đệ tử của quái này (id). */
   minionOf?: string;
@@ -500,6 +508,13 @@ export class MonSkills {
       if (k <= 0) return -1;
       dmg = Math.round(dmg * k);
     }
+    // Giáp phá theo chu kỳ (TN-7, cầu 5): mốc chu kỳ là đòn đầu trúng; ngoài cửa sổ phá giáp chỉ nhận `take`.
+    if (ai.armor) {
+      if (!m.mx.armorAt) m.mx.armorAt = now;
+      dmg = Math.round(dmg * armorTakeMul(ai.armor, now - m.mx.armorAt));
+    }
+    // Kháng theo Bản Nguyên (TN-7, cầu 6): theo Đạo của người đánh (chưa chọn Đạo thì Bản Nguyên gốc) và hình thái hiện tại của boss.
+    if (ai.resist && p) dmg = Math.round(dmg * resistMul(ai.resist, m.phase, daoOf(p.char.meta) ?? p.char.root));
     let n = dmg;
     const rf = ai.reflect;
     if (rf && p && !dot && reflectPhase(rf, m.mx.reflect, now) === 'on') {

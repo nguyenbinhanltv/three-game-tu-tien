@@ -860,6 +860,22 @@ function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
     if (!inR(summon.delay, 1, 4)) err(`${id}: summon.delay phải trong [1; 4] giây`);
     if (!(summon.cd >= 6)) err(`${id}: summon.cd phải >= 6 giây`);
   }
+  if (ai.armor) {
+    const a = ai.armor;
+    if (!m.boss) err(`${id}: armor chỉ dành cho boss`);
+    if (!inR(a.cycle, 15, 60)) err(`${id}: armor.cycle phải trong [15; 60] giây`);
+    if (!inR(a.window, 4, 15) || !(a.window <= a.cycle / 2)) err(`${id}: armor.window phải trong [4; 15] giây và không quá nửa chu kỳ`);
+    if (!(a.take >= 0 && a.take <= 0.4)) err(`${id}: armor.take phải trong [0; 0,4]`);
+  }
+  if (ai.resist) {
+    const r = ai.resist;
+    if (!m.boss) err(`${id}: resist chỉ dành cho boss`);
+    const nph = (m.phases?.length ?? 0) + 1;
+    if (r.forms.length !== nph) err(`${id}: resist.forms (${r.forms.length}) phải bằng số pha (${nph})`);
+    for (const f of r.forms) if (!ROOT_IDS.includes(f as never)) err(`${id}: resist.forms có hệ lạ ${f}`);
+    if (!(r.same > 0 && r.same <= 0.6)) err(`${id}: resist.same phải trong (0; 0,6]`);
+    if (!(r.counter >= 1 && r.counter <= 2)) err(`${id}: resist.counter phải trong [1; 2]`);
+  }
   if (ai.faces) {
     const f = ai.faces;
     if (!m.boss) err(`${id}: faces chỉ dành cho boss`);
@@ -1586,6 +1602,7 @@ for (const lv of Object.values(LEVELS)) {
     if (wv.title && !hasString(`dungeon.${lv.id}.wave.${i + 1}`)) err(`${ww}: thiếu chuỗi dungeon.${lv.id}.wave.${i + 1}`);
   });
   if (!lv.tribulation && !hasString(`dungeon.${lv.id}.name`)) err(`${w}: thiếu chuỗi dungeon.${lv.id}.name`);
+  if (d.timeLimit !== undefined && !(d.timeLimit >= 60 && d.timeLimit <= 900)) err(`${w}: timeLimit phải trong [60; 900] giây`);
   if (d.maxRevives !== undefined && !(d.maxRevives >= 0)) err(`${w}: maxRevives không hợp lệ`);
   if (d.lockAt !== undefined && !(d.lockAt >= 1 && d.lockAt <= d.waves.length)) err(`${w}: lockAt ngoài số đợt`);
   const rw = d.reward;

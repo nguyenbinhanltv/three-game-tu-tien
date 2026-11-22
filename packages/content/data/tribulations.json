@@ -542,6 +542,7 @@
     },
     "ngu_suy": {
       "_doc": "Thiên Nhân Ngũ Suy (TN-4): kiếp dạng chuỗi, mỗi pha là một ải 40 giây (4 giây đầu điều tức). Theo thang ở glossary, Ngũ Suy nằm cuối Nhị Bộ (Toái Niết đại viên mãn, trước Không Niết); thang cấp hiện mới tới 44 nên from = to = MAX_LEVEL (44) là MỐC TẠM, mốc thật ở `milestone` (59→60) và enabled = false: chỉ GM/test/bot mở được (`/gm trib ngu_suy [ải]`), qua chuỗi không đổi cấp. Khi thang cấp mở tới đó: dời from/to (to = from + 1), thêm vật phẩm đột phá rồi bật enabled. Suy khí không phải sát thương: thanh 0..100 mỗi ải, chạm 100 là thất bại; ải đã qua được lưu (`meta.suy`), lần sau vào tiếp.",
+      "level": "kieu_3",
       "from": 44,
       "to": 44,
       "milestone": { "from": 59, "to": 60 },

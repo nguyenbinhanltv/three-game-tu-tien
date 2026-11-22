@@ -1,0 +1,71 @@
+{
+  "id": "kieu_4",
+  "terrain": "cuu_kieu",
+  "spawns": [],
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1300,
+      "z": 1040
+    },
+    "exit": {
+      "x": 1300,
+      "z": 1048
+    },
+    "center": {
+      "x": 1300,
+      "z": 985
+    },
+    "minLevel": 45,
+    "returnLevel": "cuu_kieu",
+    "returnSpawn": {
+      "x": 1024,
+      "z": 1500
+    },
+    "bound": 70,
+    "private": true,
+    "lockAt": 1,
+    "maxRevives": 2,
+    "waves": [
+      {
+        "delay": 6,
+        "title": true,
+        "mons": [],
+        "puzzle": {
+          "points": [
+            {
+              "x": 1300,
+              "z": 963
+            },
+            {
+              "x": 1319,
+              "z": 996
+            },
+            {
+              "x": 1281,
+              "z": 996
+            }
+          ],
+          "secs": 40,
+          "wrong": {
+            "mon": "mon_lo_thach_ve",
+            "level": 45,
+            "n": 3
+          },
+          "bossCut": 0.1
+        }
+      },
+      {
+        "title": true,
+        "delay": 6,
+        "mons": [
+          {
+            "id": "boss_ve_kieu",
+            "level": 46,
+            "n": 3
+          }
+        ]
+      }
+    ]
+  }
+}
