@@ -1,0 +1,54 @@
+{
+ "skill": "kc_hd_ok",
+ "palette": "kc_hoi_dao",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "shock_cone",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "area",
+   "offset": [
+    0,
+    0.05,
+    0
+   ],
+   "scale": [
+    0.6,
+    0.7,
+    0.6
+   ],
+   "scaleTo": [
+    3.6,
+    1.4,
+    3.6
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.4,
+   "ragged": 0.6,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 231,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "petal",
+   "t": 0.0,
+   "n": 22,
+   "speed": 2.2,
+   "spread": 0.9,
+   "life": 1.4,
+   "size": 0.16,
+   "at": "area",
+   "offset": [
+    0,
+    0.8,
+    0
+   ],
+   "tone": "rim",
+   "grav": -1.0,
+   "tier": 0
+  }
+ ]
+}

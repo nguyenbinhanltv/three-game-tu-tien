@@ -18,6 +18,7 @@ import type { PlayerEnt } from './entities';
 import { runMechanic, soulActive, soulOut, tamCanhHit, type TribMechCtx } from './tribmech';
 import { cloneAbsorb, cloneOut } from './tribnhan';
 import { riftFinal, tribCleanup } from './tribanh';
+import { duongDapSkill } from './tribch6';
 import { suyCleanup, suyReveal, suyTamHit } from './tribsuy';
 import { hkBreath, hkHurt } from './tribhuyen';
 import type { GuardCfg, TribState } from './tribtypes';
@@ -65,6 +66,11 @@ export class TribSystem {
     tamCanhHit(this.h, p, kind);
     suyTamHit(this.h, p, kind, dot || (kind === 'hit' && this.hurting > 0));
     if (kind === 'hurt') hkHurt(this.h, p);
+  }
+
+  /** Người độ kiếp vừa bấm một chiêu được server chấp nhận (qua GCD, hồi chiêu, linh lực; chưa kiểm mục tiêu): trong cửa sổ cuối của đòn nhịp Dương Thực Kiếp là phản đòn (`duong_dap`). */
+  noteSkill(p: PlayerEnt): void {
+    if (p.trib) duongDapSkill(this.h, p, p.trib);
   }
 
   /** Một nhịp 50 ms cho người đang độ kiếp. */

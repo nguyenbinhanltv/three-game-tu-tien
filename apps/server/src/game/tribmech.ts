@@ -9,6 +9,7 @@
 //   ngu_hanh    Hóa Thần, pha Ngũ hành lôi: tia mang hành xoay Kim→Mộc→Thủy→Hỏa→Thổ mỗi 5 s, 5 trận môn, đứng đúng trận môn giảm 80% (cờ `ke`).
 //   dan_loi     Anh Biến, pha Dẫn lôi: năm Trấn Giới Bia của kiếp sáng khi tia rơi gần (tribanh.ts).
 //   nhat_thuc   Anh Biến, pha Nhật thực: Nhật Thực Dực Chủ dập bia, thiên lôi đánh cả hắn (tribanh.ts).
+//   hoi_dao, am_lan, duong_dap  Kiếp chương 6 (TN-3): Vấn Đỉnh hỏi đạo, Âm Hư âm vực lan, Dương Thực đòn nhịp phản đòn (tribch6.ts).
 //   hk_*        Huyền Kiếp (TN-6): chín kiếp nhỏ của ba chuỗi Ngoại/Nội/Hồn (tribhuyen.ts).
 //   suy_*       Thiên Nhân Ngũ Suy (TN-4): năm ải suy kiệt, mỗi ải một thao tác riêng (tribsuy.ts).
 //   phan_than   Hóa Thần, pha Thần niệm / Hợp nhất: phím G tạo phân thân thần niệm; phân thân chắn thay 40% ở pha cuối.
@@ -59,6 +60,9 @@ for (const id of TRIB_MECHANIC_IDS) {
     id === 'phan_than' ||
     id === 'dan_loi' ||
     id === 'nhat_thuc' ||
+    id === 'hoi_dao' ||
+    id === 'am_lan' ||
+    id === 'duong_dap' ||
     isSuyMechanic(id) ||
     isHkMechanic(id)
   )
