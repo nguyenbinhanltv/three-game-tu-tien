@@ -2,7 +2,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   groundAt,
   HOME_LEVEL,
-  MAX_LEVEL,
+  DUONG_THUC_LEVEL,
   PF_TRIBULATION,
   S,
   SUY_MECHANICS,
@@ -109,7 +109,7 @@ describe('dữ liệu Ngũ Suy', () => {
     expect(DEF.enabled).toBe(false);
     expect(DEF.phases.map((p) => p.mechanic)).toEqual([...SUY_MECHANICS]);
     expect(DEF.stageGold).toHaveLength(N);
-    expect(DEF.from).toBe(MAX_LEVEL);
+    expect(DEF.from).toBe(DUONG_THUC_LEVEL); // chưa gắn vào thang cấp (from = to): chỉ Cửu Kiều cầu 3 mở (TN-7)
     expect(tribForLevel(DEF.from)).toBeNull();
     expect(lawPassive(N - 1)).toBeNull();
     expect(lawPassive(N)).toEqual(DEF.law);
@@ -121,7 +121,7 @@ describe('vào kiếp', () => {
     const { sim, p } = mk(0, HOME_LEVEL);
     sim.onBreakthrough(p);
     expect(p.trib).toBeNull();
-    expect(keys(p)).toContain('sys.max_level');
+    expect(keys(p)).toContain('sys.trib_need_xp');
     // Có id (đường GM) mà không `force`: kiếp chưa bật thì vẫn bị chặn.
     const b = mk(0, HOME_LEVEL);
     b.sim.onBreakthrough(b.p, false, 'ngu_suy');

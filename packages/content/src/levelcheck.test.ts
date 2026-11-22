@@ -58,9 +58,9 @@ describe('checkLevel: bắt lỗi trên level thử', () => {
 
   it('id quái không tồn tại, cấp vượt thang, spawn ngoài vùng chơi', () => {
     expect(bad((l) => Object.assign(at(l.camps!, 0), { mon: 'mon_khong_co' }))).toMatch(/quái không tồn tại mon_khong_co/);
-    expect(bad((l) => Object.assign(at(l.zones!, 1), { lvMax: 45 }))).toMatch(/khoảng cấp 20–45 không hợp lệ/);
+    expect(bad((l) => Object.assign(at(l.zones!, 1), { lvMax: 48 }))).toMatch(/khoảng cấp 20–48 không hợp lệ/);
     expect(bad((l) => Object.assign(at(l.spawns, 0), { x: 5 }))).toMatch(/ngoài vùng chơi/);
-    expect(bad((l) => Object.assign(at(l.spawns, 0), { levelMax: 45 }))).toMatch(/cấp 16–45 không hợp lệ/);
+    expect(bad((l) => Object.assign(at(l.spawns, 0), { levelMax: 48 }))).toMatch(/cấp 16–48 không hợp lệ/);
   });
 
   it('thiếu tinh anh trong vùng', () => {

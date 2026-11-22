@@ -34,6 +34,10 @@ import {
   wearableBy,
   MAX_ENHANCE,
   MAX_LEVEL,
+  DUONG_THUC_LEVEL,
+  kieuCleared,
+  kieuLevelCap,
+  kieuPower,
   type ObjectiveType,
   playerBaseStats,
   type QuestView,
@@ -71,6 +75,8 @@ interface CharMeta extends MethodMeta, ArtifactMeta {
   dungeonDays?: Record<string, string>;
   /** Số ải Thiên Nhân Ngũ Suy đã qua (TN-4); đủ chuỗi thì có nội tại pháp tắc. Đọc qua `suyCleared` (đã làm sạch). */
   suy?: number;
+  /** Số cầu Đạp Thiên Cửu Kiều đã qua (TN-7, 0..9); chỉ `KieuSystem` ghi. Đọc qua `kieuCleared` (đã làm sạch). */
+  kieu?: number;
   /** Số kiếp nhỏ đã qua của các kiếp chuỗi khác (TN-6 Huyền Kiếp: `huyen_ngoai|huyen_noi|huyen_hon`). Đọc/ghi qua `chainCleared`/`setChainCleared`. */
   chain?: Record<string, number>;
 }
@@ -397,6 +403,7 @@ export class Character {
     sanitizeMethodMeta(c.meta);
     sanitizeArtifactMeta(c.meta);
     sanitizeChainMeta(c.meta);
+    if (c.meta.kieu !== undefined) c.meta.kieu = kieuCleared(c.meta.kieu);
     if (!c.quests || typeof c.quests.active !== 'object' || !Array.isArray(c.quests.done)) c.quests = { active: {}, done: [] };
     for (const r of db.select().from(items).where(eq(items.charId, id)).all()) {
       if (r.slot >= 0 && r.slot < INV_SIZE && ITEM.has(r.itemId)) {
@@ -459,15 +466,19 @@ export class Character {
     );
     // Pháp tắc sơ ngộ (TN-4): qua đủ Thiên Nhân Ngũ Suy thì bốn chỉ số gốc cộng thêm theo `tribulations.json`.
     const law = lawPassive(this.meta.suy);
-    const st = law
-      ? {
-          ...st0,
-          hp: Math.round(st0.hp * (1 + law.hp)),
-          mp: Math.round(st0.mp * (1 + law.mp)),
-          atk: Math.round(st0.atk * (1 + law.atk)),
-          def: Math.round(st0.def * (1 + law.def)),
-        }
-      : st0;
+    // Kiều Lực (TN-7): mỗi cầu Cửu Kiều đã qua cộng 1% bốn chỉ số gốc, cộng dồn với pháp tắc.
+    const kp = kieuPower(this.meta.kieu);
+    const lawAdd = law ?? { hp: 0, mp: 0, atk: 0, def: 0 };
+    const st =
+      law || kp > 0
+        ? {
+            ...st0,
+            hp: Math.round(st0.hp * (1 + lawAdd.hp + kp)),
+            mp: Math.round(st0.mp * (1 + lawAdd.mp + kp)),
+            atk: Math.round(st0.atk * (1 + lawAdd.atk + kp)),
+            def: Math.round(st0.def * (1 + lawAdd.def + kp)),
+          }
+        : st0;
     // Đan tăng sức đang chạy (P3-8): công/thủ nhân thêm, bạo kích cộng thẳng.
     const now = Date.now();
     const buffCrit = buffMag(this.meta.buffs, 'crit', now);
@@ -672,14 +683,22 @@ export class Character {
     return [...out];
   }
 
-  /** Cộng tu vi. Trả về số cấp vừa lên (tự lên giữa các nút bình cảnh; dừng ở bình cảnh chưa vượt và ở đại viên mãn 15/19/23/27). */
+  /** Trần cấp của nhân vật: từ Dương Thực mở dần theo số cầu Cửu Kiều đã qua (TN-7), trước đó là `MAX_LEVEL`. */
+  levelCap(): number {
+    return this.level >= DUONG_THUC_LEVEL ? kieuLevelCap(this.meta.kieu) : MAX_LEVEL;
+  }
+
+  /**
+   * Cộng tu vi. Trả về số cấp vừa lên (tự lên giữa các nút bình cảnh; dừng ở bình cảnh chưa vượt, ở đại viên mãn 15/19/23/27 và ở trần cấp
+   * theo cầu). `n = 0` chỉ để áp lại trần sau khi mở cầu mới (tu vi đã đầy thì lên cấp ngay).
+   */
   gainXp(n: number): number {
-    if (n <= 0) return 0;
+    if (n < 0) return 0;
     let ups = 0;
     this.xp += n;
     for (;;) {
       const need = xpNeed(this.level);
-      if (isPeakLevel(this.level) || this.level >= MAX_LEVEL || bottleneckBlocked(this.level, this.bk)) {
+      if (isPeakLevel(this.level) || this.level >= this.levelCap() || bottleneckBlocked(this.level, this.bk)) {
         // Viên mãn (15/19/23/27) hoặc kẹt bình cảnh (chưa vượt): phải độ kiếp / vượt bình cảnh mới lên tiếp,
         // tu vi không vượt quá mức đầy.
         if (this.xp > need) this.xp = need;
