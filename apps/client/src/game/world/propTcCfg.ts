@@ -61,10 +61,10 @@ const TC_NAMES: Record<string, Cfg> = {
   linh_thach: { ...BEACON, crystal: true },
   xich_bua: { range: 260, lod: [40, 100] },
   // Dị Vực
-  xuong_cu_thu: LARGE,
-  cot_ta_mau_tim: { ...BEACON, crystal: true },
+  xuong_cu_thu: { ...LARGE, sight: true },
+  cot_ta_mau_tim: { ...BEACON, crystal: true, sight: true },
   tinh_the_tim: { ...BEACON, crystal: true },
-  chan_dong_do_nat: LARGE,
+  chan_dong_do_nat: { ...LARGE, sight: true },
   co_rach: { ...MEDIUM, sway: true },
 };
 

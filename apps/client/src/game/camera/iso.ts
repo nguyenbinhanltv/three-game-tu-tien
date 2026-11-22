@@ -23,6 +23,8 @@ export const ISO_YAW: Readonly<Record<string, number>> = {
   thien_khuyet: (20 * Math.PI) / 180,
   // Đoạn Mạch Cổ Cốc: 135° (so với 0°, 45°, −45°): cầu đá và lan can hiện dài theo đường chéo, người không bị cầu/vách che.
   doan_mach: (135 * Math.PI) / 180,
+  // Bắc Hoang: 45° (so với 0°, −45°, 135°): −45° ra sắc lam nhợt phẳng, 135° đặt cột tà/xác thú che một bên khung; 45° giữ tương phản tím–tuyết và người luôn thoáng.
+  bac_hoang: (45 * Math.PI) / 180,
 };
 /** Dẫn trước tối đa (m) theo con trỏ, tính trên mặt đất, và hệ số theo khoảng cách con trỏ tới nhân vật. */
 export const ISO_LEAD_MAX = 3.2;
