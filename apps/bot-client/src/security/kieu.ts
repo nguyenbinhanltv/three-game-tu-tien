@@ -67,6 +67,13 @@ export async function runKieu(_ctx?: Ctx): Promise<void> {
   }
   check('chọn nguồn Cực nguyên sai/lạ/xa NPC: bị bỏ qua, server sống', xfers === 0 && (await health()), `xfers=${xfers}`);
 
+  // Bảng Thiên Lộ: spam xin bảng (giãn cách phía server) và tin kèm tham số lạ: server sống, không chuyển room.
+  for (let i = 0; i < 60; i++) {
+    g.room.send(C.KIEU_BOARD, i % 3 ? undefined : { n: 'x'.repeat(500) });
+    await W(15);
+  }
+  check('spam xin Bảng Thiên Lộ: server sống', xfers === 0 && (await health()), `xfers=${xfers}`);
+
   // Spam 200 tin trong ~2 s: server sống, vẫn không có vé.
   for (let i = 0; i < 200; i++) {
     g.room.send(C.KIEU, { n: 1 + (i % 9) });

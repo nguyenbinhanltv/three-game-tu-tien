@@ -255,3 +255,56 @@ describe('kết game: chọn nguồn Cực nguyên (Đạp Thiên)', () => {
     expect(p.char.view().dap).toBe('');
   });
 });
+
+describe('Bảng Thiên Lộ', () => {
+  it('chỉ liệt kê khóa đúng dạng kieu:clear:<số>:9, theo thời điểm; khóa đuôi :19, tiền tố khác hoặc cầu khác không lọt; giãn cách và cache', async () => {
+    vi.useFakeTimers();
+    const { resetBoardCache } = await import('./kieu');
+    resetBoardCache();
+    const { join, sys } = setup();
+    const a = join(47, 8);
+    const b = join(47, 8);
+    const c = join(47, 3);
+    // khóa rác cố tình nằm cạnh khóa thật trong khoảng quét
+    const now = Date.now();
+    for (const [i, idem] of [
+      `kieu:clear:${c.char.id}:19`,
+      `kieu:clear:${c.char.id}:9x`,
+      `kieu:clear:${c.char.id}:1`,
+      `kieu:clearx:${c.char.id}:9`,
+      `kieu:clear:abc:9`,
+    ].entries())
+      db.insert(ledger)
+        .values({ charId: c.char.id, kind: 'noop', ref: '', delta: 0, reason: 'test', idem, ts: now + i })
+        .run();
+    expect(sys.onClear(a, 9, OK)).toBe('ok');
+    vi.advanceTimersByTime(5000);
+    expect(sys.onClear(b, 9, OK)).toBe('ok');
+    const got: { type: string; msg: { rows: { name: string; ts: number }[]; total: number } }[] = [];
+    (c as unknown as { client: { send: (t: string, m: unknown) => void } }).client = {
+      send: (type: string, msg: unknown) => void got.push({ type, msg: msg as never }),
+    };
+    sys.onBoard(c);
+    expect(got).toHaveLength(1);
+    expect(got[0]!.type).toBe('kbd');
+    const names = got[0]!.msg.rows.map((r) => r.name);
+    expect(names.slice(-2)).toEqual([a.char.name, b.char.name]);
+    expect(names).not.toContain(c.char.name); // c chưa qua cầu 9: mọi khóa rác của c đều bị loại
+    const ts = got[0]!.msg.rows.map((r) => r.ts);
+    expect([...ts].sort((x, y) => x - y)).toEqual(ts);
+    const total = got[0]!.msg.total;
+    sys.onBoard(c); // trong giãn cách: bỏ qua
+    expect(got).toHaveLength(1);
+    vi.advanceTimersByTime(2500);
+    sys.onBoard(c); // trong TTL cache: cùng kết quả, không truy vấn lại
+    expect(got).toHaveLength(2);
+    expect(got[1]!.msg.total).toBe(total);
+    // người mới qua cầu 9 làm mới cache ngay
+    const d = join(47, 8);
+    expect(sys.onClear(d, 9, OK)).toBe('ok');
+    vi.advanceTimersByTime(2500);
+    sys.onBoard(c);
+    expect(got[2]!.msg.total).toBe(total + 1);
+    expect(got[2]!.msg.rows.map((r) => r.name)).toContain(d.char.name);
+  });
+});

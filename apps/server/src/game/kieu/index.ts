@@ -2,11 +2,16 @@
 // luật thuần ở `packages/shared/src/kieu.ts`. Phòng cầu (phó bản/kiếp chuỗi) gọi `onClear` khi chính server thấy điều kiện qua đã đạt,
 // không có tin "đã qua" nào từ client. Thiết kế và chống gian: artifact tn7/thiet-ke.md mục 5.
 import { randomUUID } from 'node:crypto';
+import { and, gte, inArray, lt } from 'drizzle-orm';
 import {
   canChooseDap,
   hasDapTitle,
   isDapId,
+  KIEU_BOARD_COOLDOWN_MS,
+  KIEU_BOARD_MAX,
   KIEU_RETICKET_SEC,
+  type KieuBoardMsg,
+  S,
   KIEU_XP_FRAC,
   kieuCleared,
   kieuClearOk,
@@ -20,6 +25,7 @@ import {
 import { LEVELS, realmName, t } from '@dtl/content';
 import type { PlayerEnt } from '../entities';
 import { log } from '../../log';
+import { characters, db, ledger } from '../../db';
 
 /** NPC cấp vé (Dẫn Kiều Nhân, ở Kiều Đầu). */
 export const KIEU_NPC = 'npc_dan_kieu_nhan';
@@ -43,6 +49,46 @@ export interface KieuPlan {
   level: string;
   dgKey: string;
   members: PlayerEnt[];
+}
+
+const BOARD_TTL_MS = 5000;
+const BOARD_IDEM = /^kieu:clear:\d+:9$/;
+let boardCache: { at: number; msg: KieuBoardMsg } | null = null;
+
+/** Dựng Bảng Thiên Lộ từ sổ cái (một truy vấn khoảng theo chỉ mục `idem` + một truy vấn tên theo id), cache chung `BOARD_TTL_MS`. */
+export function boardCached(now: number): KieuBoardMsg {
+  if (boardCache && now - boardCache.at < BOARD_TTL_MS) return boardCache.msg;
+  const found = db
+    .select({ charId: ledger.charId, idem: ledger.idem, ts: ledger.ts })
+    .from(ledger)
+    // 'kieu:clear:' ≤ idem < 'kieu:clear;' ( ';' đứng ngay sau ':' ): chỉ các khóa cùng tiền tố, đi theo chỉ mục UNIQUE.
+    .where(and(gte(ledger.idem, 'kieu:clear:'), lt(ledger.idem, 'kieu:clear;')))
+    .all()
+    .filter((r) => r.idem !== null && BOARD_IDEM.test(r.idem))
+    .sort((a, b) => a.ts - b.ts);
+  const top = found.slice(0, KIEU_BOARD_MAX);
+  const names = new Map<number, string>();
+  if (top.length)
+    for (const c of db
+      .select({ id: characters.id, name: characters.name })
+      .from(characters)
+      .where(
+        inArray(
+          characters.id,
+          top.map((r) => r.charId),
+        ),
+      )
+      .all())
+      names.set(c.id, c.name);
+  const rows = top.flatMap((r) => (names.has(r.charId) ? [{ name: names.get(r.charId)!, ts: r.ts }] : []));
+  const msg: KieuBoardMsg = { rows, total: found.length };
+  boardCache = { at: now, msg };
+  return msg;
+}
+
+/** Bỏ cache bảng (có người vừa qua cầu 9, hoặc test). */
+export function resetBoardCache(): void {
+  boardCache = null;
 }
 
 export type KieuClearResult = 'ok' | 'dup' | 'practice' | 'anomaly' | 'db';
@@ -95,6 +141,21 @@ export class KieuSystem {
     return { level, dgKey: randomUUID(), members };
   }
 
+  /** Lần xin bảng gần nhất của từng nhân vật (ms theo `ctx.now`). */
+  private readonly lastBoard = new Map<number, number>();
+
+  /**
+   * Bảng Thiên Lộ (`C.KIEU_BOARD`): những người đã qua cầu 9, theo thời điểm ghi (cũ trước), tối đa `KIEU_BOARD_MAX`. Nguồn là dòng sổ cái `kieu:clear:<nhân vật>:9`
+   * (server ghi, không ai sửa được). Truy vấn theo KHOẢNG trên cột `idem` (dùng chỉ mục UNIQUE, không quét cả sổ cái; `LIKE` của SQLite không tận dụng được chỉ mục),
+   * lọc đúng đuôi `:9` trong JS; kết quả cache dùng chung mọi người `BOARD_TTL_MS` và làm mới ngay khi có người vừa qua cầu 9. Giãn cách mỗi người chống dồn tin.
+   */
+  onBoard(p: PlayerEnt): void {
+    const last = this.lastBoard.get(p.char.id) ?? -Infinity;
+    if (this.c.now - last < KIEU_BOARD_COOLDOWN_MS) return;
+    this.lastBoard.set(p.char.id, this.c.now);
+    p.client.send(S.KIEU_BOARD, boardCached(Date.now()));
+  }
+
   /**
    * Chọn nguồn Cực nguyên ở kết game (`C.DAP { id }`): phải đủ chín cầu (`meta.kieu` do server ghi), đứng cạnh Dẫn Kiều Nhân, chưa chọn, không chết/độ kiếp.
    * Chọn một lần, không đổi; thưởng là cộng phần trăm chỉ số trong `Character.recalc` (không tạo vật phẩm/tiền nên không cần ledger).
@@ -141,6 +202,7 @@ export class KieuSystem {
       return 'db';
     }
     c.meta.kieu = n;
+    if (n === 9) resetBoardCache();
     c.recalc();
     c.hp = Math.min(c.hp, c.mhp);
     c.mp = Math.min(c.mp, c.mmp);
