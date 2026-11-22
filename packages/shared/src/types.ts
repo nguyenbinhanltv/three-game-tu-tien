@@ -790,6 +790,8 @@ export interface NpcDef {
   rootChange?: boolean;
   /** NPC cho chọn Đạo (TN-3, từ Vấn Đỉnh): mở tab Đạo trong hộp thoại. Server vẫn tự kiểm cấp và một lần (`onChooseDao`). */
   daoChoose?: boolean;
+  /** NPC cấp vé vào cầu Cửu Kiều (TN-7): mở tab Thiên Lộ (xin cầu kế tiếp, chọn nguồn Cực nguyên sau chín cầu, Bảng Thiên Lộ). Server tự kiểm mọi điều kiện. */
+  kieuGuide?: boolean;
 }
 
 export interface SpawnDef {

@@ -22,6 +22,7 @@ import {
   type InvMsg,
   type QuestView,
   type WardrobeMsg,
+  type KieuBoardMsg,
   ROOM_DUNGEON,
   S,
   type SysMsg,
@@ -115,6 +116,7 @@ export function bindRoom(eng: Game, room: Room): void {
   });
   room.onMessage(S.INV, (m: InvMsg) => set({ inv: applyInvMsg(useUI.getState().inv, m), equip: m.equip }));
   room.onMessage(S.WARDROBE, (m: WardrobeMsg) => set({ wardrobe: m }));
+  room.onMessage(S.KIEU_BOARD, (m: KieuBoardMsg) => set({ kieuBoard: m }));
   room.onMessage(S.QUESTS, (q: QuestView) => {
     set({ quests: q });
     eng.questMarkersDirty = true;

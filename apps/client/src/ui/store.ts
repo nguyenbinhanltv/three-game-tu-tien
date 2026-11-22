@@ -13,6 +13,7 @@ import type {
   QuestView,
   SpiritHit,
   WardrobeMsg,
+  KieuBoardMsg,
 } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio/audio';
 import { auraCombatOf, auraModeOf, auraOthersOf, fxQuality, hitStopOn } from '../game/fx/fxSettings';
@@ -236,6 +237,8 @@ interface UIState {
   equip: Equipment;
   /** Tủ ngoại trang của mình (`S.WARDROBE`): món đã mở khóa và lựa chọn đang áp dụng. */
   wardrobe: WardrobeMsg;
+  /** Bảng Thiên Lộ (`S.KIEU_BOARD`), null = chưa xin. */
+  kieuBoard: KieuBoardMsg | null;
   quests: QuestView;
   hp: number;
   mhp: number;
@@ -375,6 +378,7 @@ export const useUI = create<UIState>(() => ({
   inv: [],
   equip: {},
   wardrobe: { owned: [], look: { over: {} } },
+  kieuBoard: null,
   quests: { active: {}, done: [] },
   hp: 1,
   mhp: 1,
