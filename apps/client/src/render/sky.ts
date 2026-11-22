@@ -133,6 +133,14 @@ const TOP: Record<string, number> = {
   bhr_day: 0x3a2e70,
   bhr_dusk: 0x20103e,
   bhr_night: 0x08041c,
+  vda_dawn: 0x3c4a78,
+  vda_day: 0x5a6a9a,
+  vda_dusk: 0x2c2858,
+  vda_night: 0x0a0e24,
+  vdd_dawn: 0x8a9ac0,
+  vdd_day: 0x7fb0c0,
+  vdd_dusk: 0x5a3c58,
+  vdd_night: 0x080a14,
 };
 
 /** Màu đỉnh trời của preset (để trộn mood theo vị trí). */
