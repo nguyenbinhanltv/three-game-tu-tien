@@ -47,6 +47,7 @@ import {
   ISO_DIST,
   isoDistFor,
   clampLeadFrame,
+  isoClearScale,
   isoTopEq,
   clampLeadSafe,
   isoCameraPos,
@@ -412,7 +413,11 @@ function updateCamera(eng: Game, dt: number): void {
     ty = rp.y + 1.0;
     tz = rp.z + iso.lead.z;
     iso.look.set(tx, ty, tz);
-    const p = isoCameraPos(tx, ty, tz, iso.distCur, eng.camYaw);
+    let p = isoCameraPos(tx, ty, tz, iso.distCur, eng.camYaw);
+    // Địa hình/vách nằm giữa camera và điểm nhìn: kéo camera lại gần (co ngay, nở từ từ) để không nhìn xuyên mặt vách từ phía sau.
+    const need = isoClearScale({ x: tx, y: ty, z: tz }, p, groundAt);
+    iso.occ = need < iso.occ ? need : Math.min(need, iso.occ + dt * 0.8);
+    if (iso.occ < 1) p = isoCameraPos(tx, ty, tz, iso.distCur * iso.occ, eng.camYaw);
     cx = p.x;
     cy = Math.max(p.y, groundAt(p.x, p.z) + 2);
     cz = p.z;

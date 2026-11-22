@@ -19,6 +19,8 @@ export const ISO_YAW: Readonly<Record<string, number>> = {
   van_lam: (30 * Math.PI) / 180,
   // Vân Hải Phù Đảo: 135° (so với 0°, 45°, −45°): người không bị đình/cây cao che, bóng đổ dài đẹp, thấy rõ mặt nước và đảo.
   van_hai: (135 * Math.PI) / 180,
+  // Thiên Khuyết Cổ Thành: 20°. 135° đặt camera ra sau cổng Thần Tàng Điện (mặt sau một mặt che kín nửa khung); 0°/20°/45° nhìn từ phía trước cổng, cột đá cao đã mờ nhờ `sight`.
+  thien_khuyet: (20 * Math.PI) / 180,
 };
 /** Dẫn trước tối đa (m) theo con trỏ, tính trên mặt đất, và hệ số theo khoảng cách con trỏ tới nhân vật. */
 export const ISO_LEAD_MAX = 3.2;
@@ -181,4 +183,37 @@ export function clampLeadFrame(lx: number, lz: number, yaw: number, tx?: number,
   const lr = fitInterval(wantR, tR - ISO_TGT_X, tR + ISO_TGT_X, -ISO_SAFE_X, ISO_SAFE_X);
   const ld = fitInterval(wantD, tD - ISO_TGT_DOWN, tD + ISO_TGT_UP - topEq, -(topEq > 0 ? ISO_SAFE_DOWN_BOSS : ISO_SAFE_DOWN), ISO_SAFE_UP);
   return { x: lr * c + ld * s, z: -lr * s + ld * c };
+}
+
+/** Tỉ lệ nhỏ nhất camera được kéo lại gần điểm nhìn khi bị địa hình/vách che (như camera cũ: không để camera nằm sau vách). */
+export const ISO_OCC_MIN = 0.3;
+
+/**
+ * Tỉ lệ (ISO_OCC_MIN..1) khoảng cách camera để đoạn điểm nhìn → camera không cắt địa hình: thử từng bước co 0,85 cho tới khi mọi điểm mẫu trên đoạn
+ * cao hơn mặt đất `margin` m. `ground(x, z)` = độ cao đất. Camera giữ nguyên hướng và độ nghiêng, chỉ lại gần điểm nhìn.
+ */
+export function isoClearScale(
+  look: { x: number; y: number; z: number },
+  cam: { x: number; y: number; z: number },
+  ground: (x: number, z: number) => number,
+  margin = 0.8,
+): number {
+  let k = 1;
+  for (let i = 0; i < 9; i++) {
+    let blocked = false;
+    for (let s = 2; s <= 10; s++) {
+      const f = (s / 10) * k;
+      const x = look.x + (cam.x - look.x) * f;
+      const y = look.y + (cam.y - look.y) * f;
+      const z = look.z + (cam.z - look.z) * f;
+      if (ground(x, z) + margin > y) {
+        blocked = true;
+        break;
+      }
+    }
+    if (!blocked) return Math.max(ISO_OCC_MIN, k);
+    k *= 0.85;
+    if (k < ISO_OCC_MIN) return ISO_OCC_MIN;
+  }
+  return Math.max(ISO_OCC_MIN, k);
 }
