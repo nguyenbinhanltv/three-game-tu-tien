@@ -40,23 +40,44 @@ describe('VFX Lôi tu', () => {
     }
   });
 
-  it('sét là tia mảnh (slash_thin): chiêu đánh có ít nhất hai tia lệch nhau; điểm đánh có decal strike', () => {
-    for (const id of ['skl_loi_an_kich', 'skl_cuu_tieu_thien_loi', 'skl_phich_lich', 'skl_loi_phat', 'skl_loi_hai']) {
+  it('sét là hình zigzag có nhánh (bolt): chớp chập chờn qua ≥ 2 biến thể, mỗi tia ba lớp lồng nhau (core/body/rim); điểm đánh có decal strike', () => {
+    for (const id of ['skl_loi_an_kich', 'skl_cuu_tieu_thien_loi', 'skl_phich_lich', 'skl_loi_phat', 'skl_loi_hai', 'skl_loi_vong']) {
       const e = evs(id);
-      expect(e.filter((x) => x.type === 'mesh' && x.shape === 'slash_thin').length, id).toBeGreaterThanOrEqual(2);
+      const bolts = e.filter((x) => x.type === 'mesh' && x.shape.startsWith('bolt'));
+      expect(new Set(bolts.map((x) => (x.type === 'mesh' ? x.shape : ''))).size, `${id}: biến thể`).toBeGreaterThanOrEqual(2);
+      expect(new Set(bolts.map((x) => (x.type === 'mesh' ? x.t : 0))).size, `${id}: số khung chớp`).toBeGreaterThanOrEqual(4);
+      const tones = new Set(bolts.map((x) => (x.type === 'mesh' ? x.tone : '')));
+      expect(tones.has('body') && tones.has('rim'), `${id}: thân + lõi`).toBe(true);
+      if (id !== 'skl_loi_vong')
+        expect(
+          e.some((x) => x.type === 'decal' && x.tex === 'strike'),
+          id,
+        ).toBe(true);
+    }
+    // chiêu chính có đủ viền tối (core) quanh tia
+    for (const id of ['skl_loi_an_kich', 'skl_cuu_tieu_thien_loi', 'skl_loi_phat']) {
       expect(
-        e.some((x) => x.type === 'decal' && x.tex === 'strike'),
+        evs(id).some((x) => x.type === 'mesh' && x.shape.startsWith('bolt') && x.tone === 'core'),
         id,
       ).toBe(true);
     }
+  });
+
+  it('Lôi Phạt là CỘT sét lớn giáng từ trời: cột đứng (rot -90° quanh X) cao ≥ 10 m ở mục tiêu, lõi trắng (rim) và viền tối', () => {
+    const cols = evs('skl_loi_phat').filter(
+      (x) => x.type === 'mesh' && x.shape.startsWith('bolt') && x.at === 'target' && x.rot?.[0] === -90,
+    );
+    expect(cols.length).toBeGreaterThan(0);
+    const tallest = Math.max(...cols.map((x) => (x.type === 'mesh' && Array.isArray(x.scale) ? x.scale[2]! : 0)));
+    expect(tallest).toBeGreaterThanOrEqual(10);
+    expect(new Set(cols.map((x) => (x.type === 'mesh' ? x.tone : ''))).size).toBeGreaterThanOrEqual(3);
   });
 
   it('không che camera/nhân vật/mục tiêu: mọi tia rơi từ trên cao đều camFade; không khối nào follow thân; đá có trần', () => {
     for (const id of OWN) {
       for (const x of evs(id)) {
         if (x.type !== 'mesh') continue;
-        const high = (x.offset?.[1] ?? 0) > 3;
-        if (high && x.shape === 'slash_thin' && x.at !== 'ahead') expect(x.camFade, `${id}:${x.shape}`).toBe(true);
+        if (x.shape.startsWith('bolt')) expect(x.camFade, `${id}:${x.shape}`).toBe(true);
         if (x.shape.startsWith('rubble_') && x.move?.offset) expect(x.move.offset[1]!, `${id}:${x.shape}`).toBeLessThanOrEqual(2.2);
       }
     }

@@ -40,7 +40,7 @@ export type FxShape =
 
 /**
  * Thư viện hình mesh có khối (VS-1, dựng ở `render/vfx/fxLib.ts`). Hậu tố cho biết dùng thế nào:
- * `slash_*` vết chém dày (toon, mặt XZ lồi +Z); `blade_*` kiếm (crystal, mũi +Z); `shock_cone|crack_radial|rift_line|rune_ring2` mặt đất (toon, mặt XZ);
+ * `slash_*` vết chém dày (toon, mặt XZ lồi +Z); `bolt|bolt_b|bolt_c` tia sét zigzag có nhánh rẽ (toon, dọc +Z, ba biến thể để chập chờn); `blade_*` kiếm (crystal, mũi +Z); `shock_cone|crack_radial|rift_line|rune_ring2` mặt đất (toon, mặt XZ);
  * `rubble_*` đá vỡ, `rune_array|sword_halo|dragon_sword|petal_blade` (crystal); `spark_streak` tia lửa (toon, dọc +Z);
  * `seal_block|bell_cage|rock_spire|shield_plate|diamond_cage` khối Hộ pháp (crystal, đứng +Y, đáy y = 0; rơi/bay thì thêm `keepUp`).
  */
@@ -50,6 +50,9 @@ export const FX_LIB_SHAPES = [
   'slash_thin',
   'slash_cross',
   'slash_fan',
+  'bolt',
+  'bolt_b',
+  'bolt_c',
   'blade_flying',
   'blade_stuck',
   'blade_giant',
@@ -92,6 +95,9 @@ export const FX_TOON_SHAPES: ReadonlySet<string> = new Set([
   'slash_thin',
   'slash_cross',
   'slash_fan',
+  'bolt',
+  'bolt_b',
+  'bolt_c',
   'shock_cone',
   'crack_radial',
   'rift_line',
