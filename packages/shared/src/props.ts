@@ -6,6 +6,7 @@ import { VAN_HAI_PROPS } from './props.vanhai';
 import { THIEN_KHUYET_PROPS } from './props.thienkhuyet';
 import { BAC_HOANG_PROPS } from './props.bachoang';
 import { VAN_DINH_PROPS } from './props.vandinh';
+import { CUU_KIEU_PROPS } from './props.cuukieu';
 import { PHUC_MACH_PROPS } from './props.phucmach';
 import { KINH_NGUYET_PROPS } from './props.kinhnguyet';
 import { THAN_TANG_PROPS } from './props.thantang';
@@ -119,6 +120,7 @@ const PROP_LEVELS: Record<string, readonly HandProp[]> = {
   thien_khuyet: THIEN_KHUYET_PROPS,
   bac_hoang: BAC_HOANG_PROPS,
   van_dinh: VAN_DINH_PROPS,
+  cuu_kieu: CUU_KIEU_PROPS,
   phuc_mach: PHUC_MACH_PROPS,
   kinh_nguyet: KINH_NGUYET_PROPS,
   than_tang: THAN_TANG_PROPS,
@@ -149,7 +151,7 @@ export function propCollidersOf(levelId: string): { x: number; z: number; r: num
   )
     return [];
   if (levelId === 'doan_mach') return DOAN_MACH_PROPS.filter((p) => p.r).map((p) => ({ x: p.x, z: p.z, r: p.r as number }));
-  if (levelId === 'thien_khuyet' || levelId === 'bac_hoang' || levelId === 'van_dinh') return []; // va chạm trụ/cổng/tượng nằm trong terrain.colliders (nhiều vòng mỗi prop)
+  if (levelId === 'thien_khuyet' || levelId === 'bac_hoang' || levelId === 'van_dinh' || levelId === 'cuu_kieu') return []; // va chạm trụ/cổng/tượng nằm trong terrain.colliders (nhiều vòng mỗi prop)
   if (levelId === 'van_hai') return VAN_HAI_PROPS.filter((p) => p.r).map((p) => ({ x: p.x, z: p.z, r: p.r as number }));
   return levelId in PROP_LEVELS ? PROP_COLLIDERS : [];
 }

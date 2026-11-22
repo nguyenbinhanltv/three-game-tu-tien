@@ -48,5 +48,9 @@
   { "id": "vd_rung_re", "level": "van_dinh", "x": 694, "z": 794, "note": "Rừng Rễ Treo, mặt Âm Hư (cấp 36–37)" },
   { "id": "vd_dinh", "level": "van_dinh", "x": 1024, "z": 554, "note": "Bậc Đỉnh, ranh hai mặt (cấp 38–39)" },
   { "id": "vd_dong_kho", "level": "van_dinh", "x": 1354, "z": 794, "note": "Rừng Đồng Khô, mặt Dương Thực (cấp 40–41)" },
-  { "id": "vd_gioi_tri", "level": "van_dinh", "x": 1324, "z": 1254, "note": "Giới Trì, mặt Dương Thực (cấp 42–43)" }
+  { "id": "vd_gioi_tri", "level": "van_dinh", "x": 1324, "z": 1254, "note": "Giới Trì, mặt Dương Thực (cấp 42–43)" },
+  { "id": "ck_tram", "level": "cuu_kieu", "x": 1024, "z": 1524, "note": "Kiều Đầu, điểm vào Thiên Lộ Giới (cấp 44–47)" },
+  { "id": "ck_duong_may", "level": "cuu_kieu", "x": 724, "z": 1084, "note": "Đường Mây, nửa tây (cấp 44–45)" },
+  { "id": "ck_bia_lo", "level": "cuu_kieu", "x": 1324, "z": 1084, "note": "Bia Lộ, nửa đông (cấp 45–46)" },
+  { "id": "ck_bac_cuoi", "level": "cuu_kieu", "x": 964, "z": 644, "note": "Bậc Cuối, sân trước chín cầu; Kiều Thủ ở gần (cấp 46–47)" }
 ]

@@ -56,6 +56,7 @@ import {
   AM_HU_LEVEL,
   ANH_BIEN_LEVEL,
   DUONG_THUC_LEVEL,
+  MAX_LEVEL,
   VAN_DINH_LEVEL,
   MAX_SKILL_LEVEL,
   skillUpgradeCost,
@@ -560,11 +561,27 @@ VS-2: sát thương mỗi giây so với bấm theo hồi chiêu (đúng cơ ch�
       process.exitCode = 1;
     }
   }
-  console.log(
-    `Chương 6: ${ch6Hours.toFixed(2)} giờ (mốc 12 giờ ±${TOL * 100}%); trần tạm ${realmName(DUONG_THUC_LEVEL)} (cấp ${DUONG_THUC_LEVEL}).`,
-  );
+  console.log(`Chương 6: ${ch6Hours.toFixed(2)} giờ (mốc 12 giờ ±${TOL * 100}%); Dương Thực sơ kỳ (cấp ${DUONG_THUC_LEVEL}) mở chương 7.`);
   if (Math.abs(ch6Hours / 12 - 1) > TOL) {
     console.error(`LỖI: chương 6 ra ${ch6Hours.toFixed(2)} giờ, ngoài 12 giờ ±${TOL * 100}%`);
+    process.exitCode = 1;
+  }
+
+  // Chương 7 (TN-7, `tn7/thiet-ke.md` mục 1): Dương Thực 44→47, ~1,7 giờ/cấp theo thu nhập thiết kế (3 cấp ≈ 5,1 giờ cày; cộng 9 cầu ~4 giờ ≈ 8 giờ cả chương).
+  // Trần mở dần theo cầu (`kieuLevelCap`), nên thời gian thực có thể dài hơn nếu người chơi kẹt chờ cầu; bảng này chỉ kiểm đường cong tu vi.
+  console.log('\nChương 7 (TN-7): Dương Thực 44 → 47 theo thu nhập thiết kế (khung; chưa mô phỏng quái cuu_kieu)');
+  console.log('cảnh giới              xpNeed  thu nhập/giờ  giờ/cấp');
+  let ch7Hours = 0;
+  for (let l = DUONG_THUC_LEVEL; l < MAX_LEVEL; l++) {
+    const h = xpNeed(l) / designIncome(l);
+    ch7Hours += h;
+    console.log(
+      `${realmName(l).padEnd(22)} ${String(xpNeed(l)).padStart(7)} ${designIncome(l).toFixed(0).padStart(12)} ${h.toFixed(2).padStart(8)}`,
+    );
+  }
+  console.log(`Chương 7: ${ch7Hours.toFixed(2)} giờ cày (mốc 5,1 giờ ±${TOL * 100}%); trần ${realmName(MAX_LEVEL)} (cấp ${MAX_LEVEL}).`);
+  if (Math.abs(ch7Hours / 5.1 - 1) > TOL) {
+    console.error(`LỖI: chương 7 ra ${ch7Hours.toFixed(2)} giờ cày, ngoài 5,1 giờ ±${TOL * 100}%`);
     process.exitCode = 1;
   }
 
