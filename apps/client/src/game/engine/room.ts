@@ -42,11 +42,16 @@ import { sfx } from '../audio/audio';
 import { BOLT_VIEW_DIST, boltAge } from '../../render/vfx/projectile';
 import { EntityManager, type WorldView } from '../entities/entities';
 import { MapVis } from '../world/mapVis';
+import { hazardDanger } from '../../render/vfx/phases';
 import { telegraph } from '../fx/telegraph';
 import { HAZARD_COLORS } from '../fx/vfx';
 import { isWorldRoom, levelOfInit } from './common';
 import { isBossSrc, lightningFlash, monFlagFx, monsterInk, onDmg, onSys, resetSound, shakeForHazard, volumeAt } from './fxMsgs';
 import type { Game } from '../engine';
+
+function hazardDangerOf(eng: Game, m: HazardMsg): 0 | 1 | 2 {
+  return hazardDanger({ boss: isBossSrc(eng, m.src), mv: m.mv, big: m.big, r: m.r });
+}
 
 export function applyInit(eng: Game, init: InitMsg): void {
   eng.sid = init.sid;
@@ -176,7 +181,8 @@ export function bindRoom(eng: Game, room: Room): void {
     }
     // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
     if (m.sh && eng.vfx) {
-      if (Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90) telegraph(eng.vfx, m, isBossSrc(eng, m.src));
+      if (Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90)
+        telegraph(eng.vfx, m, isBossSrc(eng, m.src), hazardDangerOf(eng, m));
       // Vạch pháp trận cũ giữ nguyên; boss thêm nhấp nháy dọc vạch (`mon_warn_line|cone`, V5).
       eng.monFx?.warn(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
     } else if (m.mv === 'trail') eng.vfx?.trailPool(m.x, m.z, m.r, m.delay, m.dur ?? 8);
@@ -195,6 +201,7 @@ export function bindRoom(eng: Game, room: Room): void {
         isBossSrc(eng, m.src),
         m.hot,
         hsrc ? () => !eng.disposed && !!eng.monFx?.boom(m, eng.ents?.monsters.get(m.src ?? '') ?? hsrc) : undefined,
+        hazardDangerOf(eng, m),
       );
     }
     // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).

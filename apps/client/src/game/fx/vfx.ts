@@ -1173,8 +1173,9 @@ export class Vfx {
     boss = false,
     hot = false,
     quiet?: () => boolean,
+    danger?: 0 | 1 | 2,
   ): void {
-    return hazard(this, x, z, r, delay, kind, seed, flash, boss, hot, quiet);
+    return hazard(this, x, z, r, delay, kind, seed, flash, boss, hot, quiet, danger);
   }
 
   /**

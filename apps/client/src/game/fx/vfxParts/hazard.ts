@@ -1,7 +1,8 @@
 // R-8: tách từ game/vfx.ts (hàm nhận `v: Vfx`, trước là phương thức của lớp Vfx).
 import { groundAt } from '../../../base/levelCtx';
 import { SIGIL_CIRCLE } from '../../../render/vfx/sigil';
-import { hazardFlash, hazardStack, hazardStyle } from '../../../render/vfx/phases';
+import { FLAGS } from '../../../base/flags';
+import { hazardFlash, hazardStack, hazardStyle, hazardStyleDanger } from '../../../render/vfx/phases';
 import { G } from '../../core/geo';
 import { HAZARD_COLORS, HOT_BOLT, HOT_BOLT_CORE, POOL_COLOR, TRAIL_COLOR, _a } from './common';
 import type { Vfx } from '../vfx';
@@ -83,9 +84,10 @@ export function hazard(
   boss = false,
   hot = false,
   quiet?: () => boolean,
+  danger: 0 | 1 | 2 = boss ? 2 : 1,
 ): void {
   const y = groundAt(x, z);
-  const style = hazardStyle(kind, boss);
+  const style = FLAGS.isoCam ? hazardStyleDanger(kind, danger) : hazardStyle(kind, boss);
   const color = kind === 'lightning' ? (hot ? HOT_BOLT : (HAZARD_COLORS[kind] ?? style.color)) : style.color;
   // Mặt đất không phẳng: nâng theo điểm cao nhất quanh vòng (giới hạn để không lơ lửng quá).
   let top = y;

@@ -99,6 +99,30 @@ export function hazardStyle(kind: string, boss: boolean): { color: number; gain:
   return { color, gain: hdrGain(color, 1) };
 }
 
+/**
+ * Thiên Nhãn P4: mức nguy hiểm của vạch báo (0 nhẹ, 1 vừa, 2 chí mạng) suy từ dữ liệu đã có (server không gửi sát thương).
+ * Boss, thiên kiếp lớn (`big`), vòng rộng ≥ 6 m hoặc đòn lao/nhảy là mức 2; quái thường đánh vòng rộng ≥ 3 m hoặc đòn
+ * lao/nhảy/chém là mức 1; còn lại mức 0. Vũng/chiêu triệu hồi không sát thương ngay là mức 0.
+ */
+export function hazardDanger(o: { boss: boolean; mv?: string; big?: boolean; r: number }): 0 | 1 | 2 {
+  if (o.mv === 'summon' || o.mv === 'pool' || o.mv === 'trail') return 0;
+  if (o.boss || o.big || o.r >= 6 || o.mv === 'charge' || o.mv === 'leap') return 2;
+  if (o.r >= 3 || o.mv === 'line' || o.mv === 'burrow') return 1;
+  return 0;
+}
+
+/** Màu vạch theo mức nguy hiểm trên nền đất sáng/tối đều đọc được: hổ phách → cam son → đỏ tươi. Thiên lôi giữ tím sét. */
+export const HAZARD_DANGER_COLORS = [0xe0a63a, 0xdc5a2c, 0xff2a4a] as const;
+/** Hệ số nhân HDR theo mức (mức cao sáng hơn, vẫn dưới trần `FX_MAX_HDR`). */
+export const HAZARD_DANGER_GAIN = [1, 1.1, 1.25] as const;
+
+/** Như `hazardStyle` nhưng theo mức nguy hiểm (chỉ dùng ở camera iso). */
+export function hazardStyleDanger(kind: string, danger: 0 | 1 | 2): { color: number; gain: number } {
+  if (kind === 'lightning') return hazardStyle(kind, false);
+  const color = HAZARD_DANGER_COLORS[danger];
+  return { color, gain: hdrGain(color, 1) * HAZARD_DANGER_GAIN[danger] };
+}
+
 /** 1 trong `HAZARD_FLASH` giây cuối của thời gian báo `delay`, còn lại 0 (tiến độ k 0..1). */
 export function hazardFlash(k: number, delay: number): number {
   return k * delay >= delay - HAZARD_FLASH ? 1 : 0;

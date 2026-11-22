@@ -2,7 +2,8 @@ import * as THREE from 'three/webgpu';
 import { type HazardMsg } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { SIGIL_CONE, SIGIL_RECT } from '../../render/vfx/sigil';
-import { hazardFlash, hazardStyle } from '../../render/vfx/phases';
+import { FLAGS } from '../../base/flags';
+import { hazardFlash, hazardStyle, hazardStyleDanger } from '../../render/vfx/phases';
 import type { Vfx } from './vfx';
 
 /**
@@ -16,9 +17,9 @@ import type { Vfx } from './vfx';
 
 const _p = new THREE.Vector3();
 
-export function telegraph(v: Vfx, m: HazardMsg, boss = false): void {
+export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 = boss ? 2 : 1): void {
   if (!m.sh || !(m.r > 0) || !(m.delay > 0)) return;
-  const style = hazardStyle(m.kind, boss);
+  const style = FLAGS.isoCam ? hazardStyleDanger(m.kind, danger) : hazardStyle(m.kind, boss);
   const light = m.hot && m.kind === 'lightning' ? 0xff9a5a : style.color;
   const yaw = m.yaw ?? 0;
   const fx = Math.sin(yaw);

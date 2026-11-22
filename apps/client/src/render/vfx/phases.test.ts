@@ -12,6 +12,8 @@ import {
   FADE_MIN,
   hazardFlash,
   hazardStyle,
+  hazardDanger,
+  hazardStyleDanger,
   hdrGain,
   HDR_BURST,
   HDR_GATHER,
@@ -82,6 +84,22 @@ describe('K-6 nhịp ba pha', () => {
       const r = maxRadiusFor(d, 55, 16 / 9);
       expect(screenCover(r, d, 55, 16 / 9)).toBeCloseTo(0.25, 3);
     }
+  });
+});
+
+describe('vạch báo quái theo mức nguy hiểm (iso)', () => {
+  it('boss/lớn/lao nhảy là mức 2, vũng và triệu hồi mức 0', () => {
+    expect(hazardDanger({ boss: true, r: 2 })).toBe(2);
+    expect(hazardDanger({ boss: false, r: 7 })).toBe(2);
+    expect(hazardDanger({ boss: false, r: 2, mv: 'charge' })).toBe(2);
+    expect(hazardDanger({ boss: false, r: 3.5 })).toBe(1);
+    expect(hazardDanger({ boss: false, r: 2 })).toBe(0);
+    expect(hazardDanger({ boss: true, r: 8, mv: 'pool' })).toBe(0);
+  });
+  it('màu tăng dần, thiên lôi giữ tím, HDR không vượt trần', () => {
+    const c = [0, 1, 2].map((d) => hazardStyleDanger('fire', d as 0 | 1 | 2).color);
+    expect(new Set(c).size).toBe(3);
+    expect(hazardStyleDanger('lightning', 2).color).toBe(0xb48cff);
   });
 });
 
