@@ -59,6 +59,7 @@ import {
   KIEU_COUNT,
   KIEU_XP_FRAC,
   kieuGold,
+  kieuMinLevel,
   kieuPower,
   MAX_LEVEL,
   VAN_DINH_LEVEL,
@@ -3415,15 +3416,16 @@ function ch6Timeline(id: MethodId) {
 
 // ---------- Nhịp chương 7 (TN-7): Dương Thực 44 → 47 ở Thiên Lộ Giới + chín cầu ----------
 // Cùng cách dựng chương 6 nhưng dữ liệu là `cuu_kieu`: cụm quái (cấp 44–47), nhiệm vụ `q7_*` + `s7_*`, boss thế giới Kiều Thủ (cấp 45), tinh anh. Điểm khác:
-// - Mỗi cấp 44/45/46 phải lên đủ xpNeed; cấp 47 là trần nên không còn tu vi để cày. Trần mở theo cầu: cầu 1–2 ở cấp 44, cầu 3 ở 45 (mở trần 46),
-//   cầu 4–6 ở 46 (cầu 6 mở trần 47), cầu 7–9 ở trần 47 (không cộng tu vi, chỉ tốn thời gian).
+// - Mỗi cấp 44/45/46 phải lên đủ xpNeed; cấp 47 là trần nên không còn tu vi để cày. Cầu n làm ở cấp `kieuMinLevel(n)` (1–3 ở 44, 4–6 ở 45, 7–9 ở 46).
 // - Mỗi cầu lần đầu thưởng `KIEU_XP_FRAC` × xpNeed cấp hiện tại + `kieuGold(n)` và tốn `CH7_BRIDGE_MIN[n-1]` phút (giả định; phòng cầu chưa đo bằng bot).
 // - Đồ bậc 6 trọn bộ (từ cấp 43) nhân Kiều Lực (+1%/cầu đã qua khi bắt đầu cấp đó).
 // Mục tiêu ~8 giờ ±12% cả chương (`tn7/thiet-ke.md` mục 1).
 const CH7_TARGET_H = 8;
 const CH7_TOL = 0.12;
 const CH7_BRIDGE_MIN = [35, 30, 20, 35, 35, 40, 15, 15, 45] as const;
-const CH7_BRIDGES_AT: Record<number, number[]> = { 44: [1, 2], 45: [3], 46: [4, 5, 6], 47: [7, 8, 9] };
+/** Cầu làm ở cấp thấp nhất được vào (`kieuMinLevel`: 1–3 ở 44, 4–6 ở 45, 7–9 ở 46) nên xp thưởng cầu và xp nhiệm vụ `q7_cau_N` (minLevel khớp) cùng rơi vào đúng cấp đó; qua cầu 3 thì trần 46, qua cầu 6 trần 47 (`kieuLevelCap`), không chặn thứ tự này. Cấp 47 không còn cầu. */
+const CH7_BRIDGES_AT: Record<number, number[]> = {};
+for (let n = 1; n <= KIEU_COUNT; n++) (CH7_BRIDGES_AT[kieuMinLevel(n)] ??= []).push(n);
 const CH7_BOSSES: Record<number, string[]> = { 45: ['boss_kieu_thu'] };
 
 function ch7Camps(level: number) {
