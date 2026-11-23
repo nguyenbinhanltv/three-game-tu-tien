@@ -1,5 +1,16 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { AIM_MAX_DIST, DODGE_CD_MS, DODGE_DIST, DODGE_IFRAME_MS, groundAt, S, sanitizeAim, type CdMsg, type FxMsg } from '@dtl/shared';
+import {
+  AIM_MAX_DIST,
+  DODGE_MIN_GAP_MS,
+  DODGE_RECHARGE_MS,
+  DODGE_DIST,
+  DODGE_IFRAME_MS,
+  groundAt,
+  S,
+  sanitizeAim,
+  type CdMsg,
+  type FxMsg,
+} from '@dtl/shared';
 
 // Thiên Nhãn P1: điểm ngắm (kẹp, tự khóa phía server, đổi hướng chiêu) và né Space (hồi, quãng, khung bất tử do server giữ).
 process.env.DB_FILE = ':memory:';
@@ -144,18 +155,31 @@ describe('né (Space)', () => {
     sim.damagePlayer(p, 50, '');
     expect(p.char.hp).toBeLessThan(hp);
   });
-  it('hồi: né lại trước DODGE_CD_MS không có tác dụng, không gia hạn khung bất tử; spam không dò đường', () => {
+  it('hai lượt nạp (S5): né liền hai lần được, lần ba bị chặn; không gia hạn khung bất tử; spam không dò đường', () => {
     const { sim, p } = setup();
     sim.onDodge(p, { ax: X + 20, az: Z });
-    const until = p.dodgeUntil;
+    const until1 = p.dodgeUntil;
+    sim.now += DODGE_MIN_GAP_MS + 10;
+    sim.onDodge(p, { ax: X + 20, az: Z });
+    expect(p.dodgeUntil).toBeGreaterThan(until1);
+    expect(p.dodge.charges).toBe(0);
+    const until2 = p.dodgeUntil;
     const x = p.move.x;
-    sim.now += 1000;
+    sim.now += DODGE_MIN_GAP_MS + 10;
     sim.onDodge(p, { ax: X + 20, az: Z });
-    expect(p.dodgeUntil).toBe(until);
+    expect(p.dodgeUntil).toBe(until2);
     expect(p.move.x).toBe(x);
-    sim.now += DODGE_CD_MS;
-    sim.onDodge(p, { ax: X + 20, az: Z });
+  });
+  it('nạp tuần tự: sau DODGE_RECHARGE_MS có lại một lượt, sau hai lần có đủ hai', () => {
+    const { sim, p } = setup();
+    sim.onDodge(p, {});
+    sim.now += DODGE_MIN_GAP_MS + 10;
+    sim.onDodge(p, {});
+    sim.now += DODGE_RECHARGE_MS;
+    const until = p.dodgeUntil;
+    sim.onDodge(p, {});
     expect(p.dodgeUntil).toBeGreaterThan(until);
+    expect(p.dodge.charges).toBe(0);
   });
   it('người chết không né được', () => {
     const { sim, p } = setup();
