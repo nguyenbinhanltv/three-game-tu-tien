@@ -8,6 +8,7 @@ import {
   openWindow,
   overlaps,
   topWindow,
+  withoutPreviewPeer,
   type Viewport,
   type WinState,
   winRect,
@@ -95,5 +96,18 @@ describe('fitWindows', () => {
     const fitted = fitWindows(l, () => small);
     for (const w of fitted) expect(w.x + winRect(w, small).w).toBeLessThanOrEqual(small.vw);
     expect(fitWindows(fitted, () => small)).toBe(fitted);
+  });
+});
+
+describe('cửa sổ dùng chung khung xem trước 3D', () => {
+  const win = (id: WinState['id']): WinState => ({ id, x: 0, y: 0, z: 1 });
+  it('mở Nhân vật thì bỏ Tủ ngoại trang đang mở, và ngược lại', () => {
+    expect(withoutPreviewPeer([win('wardrobe'), win('bag')], 'char').map((w) => w.id)).toEqual(['bag']);
+    expect(withoutPreviewPeer([win('char')], 'wardrobe')).toEqual([]);
+  });
+  it('cửa sổ khác không bị đóng; không có đồng chủ thì giữ nguyên', () => {
+    const l = [win('bag'), win('char')];
+    expect(withoutPreviewPeer(l, 'bag')).toBe(l);
+    expect(withoutPreviewPeer([win('bag')], 'char').map((w) => w.id)).toEqual(['bag']);
   });
 });

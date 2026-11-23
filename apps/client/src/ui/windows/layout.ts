@@ -169,6 +169,15 @@ export function closeWindow(list: readonly WinState[], id: WinId): WinState[] {
   return list.filter((w) => w.id !== id);
 }
 
+/** Hai cửa sổ cùng dùng khung xem trước 3D duy nhất của game (`CharPreview`): mở cái này thì đóng cái kia. */
+const PREVIEW_PEER: Partial<Record<WinId, WinId>> = { char: 'wardrobe', wardrobe: 'char' };
+
+/** Danh sách cửa sổ sau khi bỏ cửa sổ "đồng chủ" xem trước 3D của `id` (nếu đang mở). Hàm thuần để mở cửa sổ qua store gọi. */
+export function withoutPreviewPeer(list: readonly WinState[], id: WinId): readonly WinState[] {
+  const peer = PREVIEW_PEER[id];
+  return peer && list.some((w) => w.id === peer) ? closeWindow(list, peer) : list;
+}
+
 /** Cửa sổ trên cùng (Esc đóng cái này) hoặc null. */
 export function topWindow(list: readonly WinState[]): WinState | null {
   let best: WinState | null = null;
