@@ -214,6 +214,12 @@ for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKIL
       (id) => PATH.has(id),
     ))
       err(m);
+    // Thẻ là nguồn ý đồ: `impactFrame` phải khớp việc timeline có sự kiện `impact`.
+    const tl = FX_TIMELINES.find((t) => t.skill === card.skillId);
+    const hasImpact = !!tl?.events.some((e) => e.type === 'impact');
+    if (tl && !!card.impactFrame !== hasImpact) {
+      err(`vfxcard ${card.skillId}: impactFrame=${!!card.impactFrame} nhưng timeline ${hasImpact ? 'có' : 'không có'} sự kiện impact`);
+    }
     // Texture KTX2 do vfx-forge ghi vào manifest; `proc:*` là atlas thủ tục có sẵn.
     for (const t of card.textures) {
       if (t.id.startsWith('proc:')) {
