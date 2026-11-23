@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { float, mix, normalView, normalWorld, positionViewDirection } from 'three/tsl';
+import { diffuseColor, float, mix, normalView, normalWorld, positionViewDirection, smoothstep, uniform, vec3 } from 'three/tsl';
 import { rimParams } from '../atmosphere';
 import { skyParams } from '../sky';
 import { registerDerived } from './derived';
@@ -93,11 +93,57 @@ export function rimLight(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardN
   const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)).pow(2.6);
   const sunSide = normalWorld.dot(skyParams.sunDir).mul(0.5).add(0.5);
   const up = normalWorld.y.mul(0.5).add(0.5);
-  m.emissiveNode = rimParams.color.mul(
-    fres
-      .mul(mix(float(0.25), float(1), sunSide))
-      .mul(mix(float(0.6), float(1), up))
-      .mul(rimParams.strength),
-  );
+  // Hero light (Chân Cảnh C1): đèn phụ bám camera + viền theo hướng tu, CHỈ cho mesh có `userData.hero` (mình, đồng đội).
+  // Không phải đèn thật (không thêm bóng, không đổi cảnh): một thành phần sáng trong không gian nhìn, nhân với màu gốc của vật liệu.
+  const fillDir = vec3(-0.3, 0.55, 0.78).normalize();
+  const fill = normalView.dot(fillDir).clamp(0, 1).mul(HERO_FILL);
+  const heroRim = float(1)
+    .sub(normalView.dot(positionViewDirection).clamp(0, 1))
+    .pow(2.2)
+    .mul(mix(float(0.55), float(1), up))
+    .mul(HERO_RIM);
+  const hero = heroParams.k.mul(heroParams.enabled);
+  m.emissiveNode = rimParams.color
+    .mul(
+      fres
+        .mul(mix(float(0.25), float(1), sunSide))
+        .mul(mix(float(0.6), float(1), up))
+        .mul(rimParams.strength),
+    )
+    .add(diffuseColor.rgb.mul(fill).mul(hero))
+    .add(heroParams.tint.mul(heroRim).mul(hero));
+  return m;
+}
+
+/** Cường độ đèn phụ (nhân màu gốc) và viền hướng tu của hero light. */
+export const HERO_FILL = 0.28;
+export const HERO_RIM = 1.5;
+
+/**
+ * Tham số hero light theo TỪNG VẬT (`onObjectUpdate`): mesh mang `userData.hero = { k, tint }` (k 0–1, tint số hex) thì vật liệu
+ * dùng chung vẫn cho mỗi nhân vật một màu riêng. `enabled` là công tắc chung (Cài đặt "Viền nhân vật").
+ */
+export const heroParams = {
+  enabled: uniform(1),
+  k: uniform(0).onObjectUpdate((frame) => {
+    const h = frame.object?.userData.hero as { k: number } | undefined;
+    heroParams.k.value = h ? h.k : 0;
+  }),
+  tint: uniform(new THREE.Color(1, 1, 1)).onObjectUpdate((frame) => {
+    const h = frame.object?.userData.hero as { tint: number } | undefined;
+    heroParams.tint.value.setHex(h ? h.tint : 0xffffff);
+  }),
+};
+
+/**
+ * Vật liệu "ma" cho viền khi bị che (Chân Cảnh C1): vẽ lại thân nhân vật CHỈ ở điểm sau một vật khác (`depthFunc` GREATER, không ghi
+ * sâu), mực tối mờ, đậm ở mép (fresnel) để thành đường viền mảnh. Nơi dùng gắn vào bản sao SkinnedMesh dùng chung xương.
+ */
+export function createHeroGhostMaterial(): THREE.MeshBasicNodeMaterial {
+  const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, fog: false });
+  m.depthFunc = THREE.GreaterDepth;
+  const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1));
+  m.colorNode = vec3(0.04, 0.05, 0.08);
+  m.opacityNode = smoothstep(float(0.0), float(1), fres).mul(0.7).add(0.12).mul(heroParams.enabled);
   return m;
 }

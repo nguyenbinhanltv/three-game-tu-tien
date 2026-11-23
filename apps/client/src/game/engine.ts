@@ -119,6 +119,7 @@ import {
   staticFxOn,
   setImpactFrameOn,
   setStaticFxOn,
+  setHeroRimOn,
   realmAuraOn,
   setAuraCombat,
   setAuraMode,
@@ -284,6 +285,8 @@ export class Game {
   kimDaArt: KimDaArt | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
   butterflies: Butterflies | null = null;
+  /** Hero light (C1): tổ đội đã dựng thành tập sid (so tham chiếu để biết khi nào đổi). */
+  heroPartyRef: unknown = undefined;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */
   ambient!: AmbientParticles;
   pushers: Pusher[] = Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
@@ -1328,6 +1331,11 @@ export class Game {
   setImpactFrame(on: boolean): void {
     setImpactFrameOn(on);
     set({ impactFrame: on });
+  }
+
+  setHeroRim(on: boolean): void {
+    setHeroRimOn(on);
+    set({ heroRim: on });
   }
 
   setStaticFx(on: boolean): void {

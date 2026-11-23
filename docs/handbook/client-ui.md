@@ -80,3 +80,10 @@ P2b (vòng 2 sau duyệt): chi tiết mặt đất tăng rõ rệt và dùng chu
 Cây cao không thuộc hệ cây (`tree`) vẫn mờ được: cờ `sight` trong `PROP_CFG`/`TC_PROP_CFG` (`props.ts`, `propTcCfg.ts`) gắn `withSightFade` mà không đi vào impostor. Đã bật cho `prop_tung_phu_dao`, `prop_truc`, `prop_cay_goc_kho`, `cay_co_thu`, `tre`; prop cây cao mới nên đặt `sight: true` (hoặc `tree: true` nếu muốn impostor).
 
 Cột/bia/trụ đá cao cũng bật `sight` (`prop_mach_tinh_tru`, `prop_tru_nham_do`, `prop_tru_da_khac_van`, `prop_dai_tinh_bai`, `prop_tuong_da_vo_si`, `cot_da_do`, `cot_tran`) để mờ khi che người/mục tiêu ở camera chéo. Lưu ý `sight` thay thế `sway`/`crystal` (cùng chọn một hàm bọc material), nên không đặt chung với hai cờ đó.
+
+## Hero light và tỉ lệ nhân vật (Chân Cảnh C1/C2)
+
+- `apps/client/src/game/character/hero.ts` + `rimLight` trong `render/materials/world.ts`: nhân vật của MÌNH và đồng đội (theo `PartyMsg`) có (a) đèn phụ bám camera + viền Fresnel theo màu hướng tu (`paths.json` → `palette.rim`), ghi theo từng mesh bằng `userData.hero` (uniform `onObjectUpdate`, không đèn thật, không thêm bóng), (b) viền tối mảnh khi bị vật che: bản sao thân (SkinnedMesh dùng chung xương) vẽ chỉ ở điểm sau vật khác, tối đa `HERO_GHOST_MAX` (mỗi bản sao một draw call), (c) vòng chân tương phản (một InstancedMesh, 1 draw call).
+- C2: phóng vai ×1,12, đầu ×1,06, bàn tay ×1,10–1,14 bằng scale xương (`HERO_PROPORTIONS`, tên xương chuẩn hóa của UE5 Mannequin; gán lại mỗi khung SAU mixer vì clip nướng có kênh scale), áp cho mọi người chơi v3, không sửa model.
+- Tắt: Cài đặt "Viền nhân vật" (`dtl.heroRim`, chỉ viền/đèn/vòng chân) hoặc `?hero=0` (tắt cả tỉ lệ để so ảnh).
+- Soát: `pnpm shots herolight` (cảnh, đo draw call, `--bots N` đám đông, `--query hero=0` đối chứng) và `pnpm shots herocheck` (cận cảnh nam/nữ × bộ v3 × đứng/chạy/lướt/đòn nặng/đả tọa/ngự kiếm, tắt vs bật, đo tay xuyên thân).
