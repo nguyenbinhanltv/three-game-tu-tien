@@ -101,12 +101,12 @@
      Chia cho --ui-scale vì `zoom` của HUD nhân lại mọi độ dài tính từ vh/vw. */
   --s: var(--ui-scale, 1);
   position: absolute;
-  top: calc((100vh / var(--s) - 136px) / 2);
+  top: calc((100vh / var(--s) - var(--h-win-bottom, 136px)) / 2);
   left: calc(50vw / var(--s));
   transform: translate(-50%, -50%);
   width: var(--w, 430px);
   max-width: calc(100vw / var(--s) - 24px);
-  max-height: calc(100vh / var(--s) - 152px);
+  max-height: calc(100vh / var(--s) - var(--h-win-bottom, 136px) - 16px);
   display: flex;
 }
 .k-window > .k-panel {
@@ -835,4 +835,32 @@
 }
 .set-fps {
   margin-bottom: var(--u-sp-2);
+}
+
+/* Cài đặt: mục nâng cao thu gọn + chip báo còn nội dung bên dưới (Chân Cảnh U13) */
+.set-adv {
+  margin-top: var(--u-sp-2);
+  border-top: 1px solid var(--u-gold-line);
+  padding-top: var(--u-sp-2);
+}
+.set-adv > summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: var(--u-fs-2);
+  padding: var(--u-sp-1) 0;
+}
+.set-end {
+  height: 1px;
+}
+.set-cue {
+  position: sticky;
+  bottom: 0;
+  margin-top: var(--u-sp-2);
+  padding: var(--u-sp-1) var(--u-sp-3);
+  text-align: center;
+  font-size: var(--u-fs-1);
+  font-weight: 700;
+  color: var(--u-son-text);
+  background: var(--u-son);
+  pointer-events: none;
 }

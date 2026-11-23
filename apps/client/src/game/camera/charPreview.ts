@@ -11,6 +11,10 @@ const previewLog = logger('preview');
 /** Rộng phải là bội số của 64: WebGPU đọc texture theo hàng căn 256 byte (three không bù phần đệm). */
 const PREVIEW_W = 256;
 const PREVIEW_H = 352;
+/** Lề (tỉ lệ chiều cao nhân vật) chừa mỗi phía khi dựng khung: 0 = vừa khít (cắt chân). */
+const PREVIEW_MARGIN = 0.09;
+/** Số mẫu khử răng cưa của render target xem trước. */
+const PREVIEW_SAMPLES = 4;
 /** Khung hình/giây của xem trước. */
 const PREVIEW_FPS = 30;
 /** Quá mức này (ms CPU trung bình mỗi lần vẽ, tính trên cửa sổ `BUDGET_WINDOW` lần) thì lùi về chân dung 2D. */
@@ -135,8 +139,9 @@ export class CharPreview {
     this.model.setView?.({ dist: 0, inView: true, allowLod0: true, self: true });
     const h = this.model.height;
     const fov = (this.camera.fov * Math.PI) / 180;
-    const d = (h * 0.5) / Math.tan(fov / 2);
-    this.camera.position.set(0, h * 0.54, d);
+    // Chừa lề trên/dưới (PREVIEW_MARGIN) để không cắt chân và mũ/tóc; tâm nhìn hạ nhẹ để bàn chân cách mép dưới.
+    const d = (h * (0.5 + PREVIEW_MARGIN)) / Math.tan(fov / 2);
+    this.camera.position.set(0, h * 0.5, d);
     this.camera.lookAt(0, h * 0.5, 0);
     this.camera.updateMatrixWorld();
   }
@@ -190,7 +195,7 @@ export class CharPreview {
   private renderToTarget(): void {
     const r = this.host.renderer;
     if (!this.rt) {
-      this.rt = new THREE.RenderTarget(PREVIEW_W, PREVIEW_H, { type: THREE.UnsignedByteType, depthBuffer: true, samples: 0 });
+      this.rt = new THREE.RenderTarget(PREVIEW_W, PREVIEW_H, { type: THREE.UnsignedByteType, depthBuffer: true, samples: PREVIEW_SAMPLES });
     }
     const prevRT = r.getRenderTarget();
     const prevAlpha = r.getClearAlpha();

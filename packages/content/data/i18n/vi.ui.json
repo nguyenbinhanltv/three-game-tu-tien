@@ -503,6 +503,8 @@
   "ui.settings.group_combat": "Hiệu ứng chiến đấu và thị giác",
   "ui.settings.colliders": "Khung va chạm",
   "ui.settings.colliders_hint": "Vẽ vòng va chạm của vật cản (chỉ bản thử, để kiểm lỗi đi xuyên vật).",
+  "ui.settings.advanced": "Nâng cao (hiệu ứng, hào quang)",
+  "ui.settings.scroll_more": "Còn thêm bên dưới: cuộn xuống",
   "ui.settings.info": "Xem giải thích",
   "ui.settings.quality": "Chất lượng đồ họa",
   "ui.settings.q.low": "Thấp",

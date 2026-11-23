@@ -8,6 +8,7 @@ import {
   BOSS_MAX_W,
   designArea,
   hudBoxes,
+  windowClear,
   modeOf,
   QUEST_COLLAPSED_H,
   SAFE,
@@ -42,6 +43,7 @@ export function hudVars(mode: HudMode, o: HudOpts = {}): CSSProperties {
   // Chat theo kích thước người chơi kéo, kẹp theo vùng thiết kế hiện tại (không đè cụm kỹ năng).
   const area = designArea(window.innerWidth, window.innerHeight, uiScale());
   const chat = hudBoxes(area.W, area.H, m, o).chat;
+  const clear = windowClear(area.W, area.H, m, o);
   const v: Record<string, string> = {
     '--h-safe': SAFE + 'px',
     '--h-tl-w': z.tl.w + 'px',
@@ -63,6 +65,8 @@ export function hudVars(mode: HudMode, o: HudOpts = {}): CSSProperties {
     '--h-skills-h': b.skills.h + 'px',
     '--h-util-w': UTILITY.w + 'px',
     '--h-util-h': UTILITY.h + 'px',
+    // Cửa sổ giữa (`.k-window`) chừa đáy đúng bằng khối thanh chiêu + máu thật (U13).
+    ...(clear ? { '--h-win-bottom': clear.bottom + 'px' } : {}),
   };
   return v as CSSProperties;
 }
