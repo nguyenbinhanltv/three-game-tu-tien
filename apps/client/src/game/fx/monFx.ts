@@ -9,6 +9,7 @@ import { monPaletteKey } from '../../render/vfx/palette';
 import { groundAt } from '../../base/levelCtx';
 import type { FxCaster, FxRunner, FxTarget } from './fxTimeline';
 import { OTHERS_FX_LIVE_MAX } from './fxBudget';
+import { moveOfHazard } from './monMove';
 
 /** Xa hơn mức này (m, tới camera) thì không phát FX quái. */
 const MON_FX_DIST = 60;
@@ -75,6 +76,19 @@ export class MonFx {
 
   private tl(key: string): FxTimeline | undefined {
     return MON_FX.get(key);
+  }
+
+  /**
+   * Timeline riêng của một chiêu quái (V-P9): thử `<khóa>__<quái>__<chiêu>`, rồi `<khóa>__<quái>`, rồi khóa chung. Chiêu đoán từ hình + bán kính + thời gian báo
+   * của vạch (`moveOfHazard`) vì HazardMsg không mang tên chiêu. Không có timeline riêng thì giữ đúng hành vi cũ.
+   */
+  private tlFor(key: string, src: MonLike | undefined, h?: Pick<HazardMsg, 'r' | 'delay' | 'sh'>): FxTimeline | undefined {
+    if (src) {
+      const mv = h ? moveOfHazard(MONSTER.get(src.s.t), h) : undefined;
+      const own = (mv ? this.tl(`${key}__${src.s.t}__${mv}`) : undefined) ?? this.tl(`${key}__${src.s.t}`);
+      if (own) return own;
+    }
+    return this.tl(key);
   }
 
   private note(key: string, id: string): void {
@@ -184,7 +198,7 @@ export class MonFx {
     const boss = this.bossOf(src);
     // Vùng tròn: mọi quái; đường/nón: chỉ boss (nhấp nháy dọc vạch, vạch pháp trận cũ vẫn chạy).
     const key = !h.sh ? 'mon_warn' : boss ? (h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone') : undefined;
-    const tl = key ? this.tl(key) : undefined;
+    const tl = key ? this.tlFor(key, src, h) : undefined;
     if (!tl || !key) return;
     const y = groundAt(h.x, h.z);
     this.runner.startAt(tl, {
@@ -203,7 +217,7 @@ export class MonFx {
   boom(h: HazardMsg, src: MonLike | undefined): boolean {
     if (!src || h.mv === 'pull' || h.mv === 'pool' || h.mv === 'trail' || h.mv === 'summon') return false;
     const key = h.sh === 'rect' ? 'mon_boom_line' : h.sh === 'cone' ? 'mon_boom_cone' : 'mon_boom_circle';
-    const tl = this.tl(key);
+    const tl = this.tlFor(key, src, h);
     if (!tl || !this.near(h.x, h.z)) return false;
     const y = groundAt(h.x, h.z);
     this.runner.startAt(tl, {
