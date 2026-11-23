@@ -897,7 +897,7 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
  * Không phóng: các lớp phủ cả màn hình dùng vw/vh (cảnh điện ảnh, thẻ chương, lời boss, letterbox).
  * `zoom` nhân mọi độ dài bên trong, kể cả vw/vh, nên giới hạn theo khung nhìn phải chia lại cho hệ số.
  */
-.hud > :not(.right-col, .cine, .chapter-card, .boss-line, .trib-bar, .crosshair, .ult-card, .death),
+.hud > :not(.right-col, .cine, .chapter-card, .boss-line, .trib-bar, .crosshair, .ult-card, .death, .recap),
 .hud > .death > .k-panel,
 .right-col > .tracker,
 .right-col > .minimap-wrap,

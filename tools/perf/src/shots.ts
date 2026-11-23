@@ -80,6 +80,7 @@ import minimap from './scenarios/minimap';
 import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
 import tn1 from './scenarios/tn1';
+import recap from './scenarios/recap';
 import tipchieu from './scenarios/tipchieu';
 import vs2 from './scenarios/vs2';
 import hontu from './scenarios/hontu';
@@ -117,6 +118,7 @@ const SCENARIOS: Scenario[] = [
   asset,
   vfx,
   tn1,
+  recap,
   tipchieu,
   vs2,
   hontu,
