@@ -150,6 +150,14 @@ export const ISO_SAFE_DOWN = 2.2;
 export const ISO_SAFE_UP = 4.5;
 /** Đánh boss cao: người được xuống thấp hơn (vẫn trên thanh chiêu) để nhường chỗ phía trên cho thân boss. */
 export const ISO_SAFE_DOWN_BOSS = 3.4;
+/** Đánh boss cao đứng lệch ngang: người được lệch khỏi tâm tới chừng này (m) để thân boss không bị cắt ở mép phải/trái (vẫn tránh chat/minimap). */
+export const ISO_SAFE_X_BOSS = 7;
+/**
+ * Tầm (m) để mục tiêu/boss được đưa vào khung: xa hơn thì nằm ngoài màn hình (≈ ±13 m quanh người), dẫn camera về phía nó chỉ đẩy người sát mép.
+ * Chưa chọn mục tiêu mà có boss (quái cao hơn `ISO_TALL`) trong tầm này thì vẫn đưa boss vào khung.
+ */
+export const ISO_LEAD_RANGE = 16;
+export const ISO_BOSS_RANGE = ISO_LEAD_RANGE;
 export function clampLeadSafe(lx: number, lz: number, yaw: number): { x: number; z: number } {
   const s = Math.sin(yaw);
   const c = Math.cos(yaw);
@@ -178,6 +186,19 @@ export function isoTopEq(height: number, pitch = ISO_PITCH): number {
   return height > ISO_TALL ? Math.min(ISO_TOP_MAX, (height * 0.45) / Math.tan(pitch)) : 0;
 }
 
+/** Mục tiêu đang chọn có đủ gần để dẫn khung về phía nó không. */
+export function isoLeadable(dist: number): boolean {
+  return dist <= ISO_LEAD_RANGE;
+}
+
+/**
+ * Quái này có nên được đưa vào khung khi chưa chọn mục tiêu: phải là BOSS (không phải quái/tinh anh to), cao hơn `ISO_TALL`, còn sống và trong
+ * `ISO_BOSS_RANGE` m. Quái thường to đứng yên không kéo camera (khung khóa cố định của Thiên Nhãn).
+ */
+export function isoFrameBoss(isBoss: boolean, height: number, dist: number, dead: boolean): boolean {
+  return isBoss && !dead && height > ISO_TALL && dist <= ISO_BOSS_RANGE;
+}
+
 function fitInterval(want: number, lo: number, hi: number, pLo: number, pHi: number): number {
   // giao của vùng an toàn người chơi [pLo, pHi] và vùng an toàn mục tiêu [lo, hi]; rỗng thì ưu tiên người chơi
   const a = Math.max(pLo, lo);
@@ -199,7 +220,8 @@ export function clampLeadFrame(lx: number, lz: number, yaw: number, tx?: number,
   const tR = tx * c - tz * s;
   const tD = tx * s + tz * c;
   // L = vị trí điểm nhìn so với người; người ở (−Lr, −Ld), mục tiêu ở (tR − Lr, tD − Ld) so với tâm khung (D dương = xuống màn hình)
-  const lr = fitInterval(wantR, tR - ISO_TGT_X, tR + ISO_TGT_X, -ISO_SAFE_X, ISO_SAFE_X);
+  const safeX = topEq > 0 ? ISO_SAFE_X_BOSS : ISO_SAFE_X;
+  const lr = fitInterval(wantR, tR - ISO_TGT_X, tR + ISO_TGT_X, -safeX, safeX);
   const ld = fitInterval(wantD, tD - ISO_TGT_DOWN, tD + ISO_TGT_UP - topEq, -(topEq > 0 ? ISO_SAFE_DOWN_BOSS : ISO_SAFE_DOWN), ISO_SAFE_UP);
   return { x: lr * c + ld * s, z: -lr * s + ld * c };
 }
