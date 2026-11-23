@@ -46,7 +46,7 @@
     ],
     "dao": "ho",
     "art": "ho_phap",
-    "voice": "hp",
+    "voice": "tt",
     "gm": "hophap",
     "weapons": [
       "fist"
@@ -345,7 +345,7 @@
     ],
     "dao": "hon",
     "art": "dan_su",
-    "voice": "ds",
+    "voice": "cs",
     "gm": "cam",
     "weapons": [
       "tran_ky"

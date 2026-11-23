@@ -1,0 +1,29 @@
+{
+  "skillId": "skl_tran_son_an",
+  "idea": "Trấn Sơn Ấn: Giậm chân hạ ấn, kẻ địch trong 12 mét bị buộc quay sang đánh ngươi trong 5 giây và chịu 50% công kích. Tích 20 Huyết khí. Kẻ bị khiêu khích mang Trấn ấn 6 giây.",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 500
+  },
+  "footprint": {
+    "lengthM": 24,
+    "widthM": 24,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 246,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

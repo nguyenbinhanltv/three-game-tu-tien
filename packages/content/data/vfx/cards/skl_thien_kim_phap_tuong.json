@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_thien_kim_phap_tuong",
+  "idea": "Thiên Kim Pháp Tướng: Thần thông tối thượng: pháp tướng bằng vàng khổng lồ hiện sau lưng trong 12 giây, giảm 25% sát thương nhận và cứ vài giây giậm xuống gây 80% công kích. Cần cảnh giới Hóa Thần.",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "spike",
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 600,
+    "impactMs": 80,
+    "lingerMs": 400
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 301,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}
