@@ -17,7 +17,7 @@ import type {
   KieuBoardMsg,
 } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio/audio';
-import { auraCombatOf, auraModeOf, auraOthersOf, fxQuality, hitStopOn } from '../game/fx/fxSettings';
+import { auraCombatOf, auraModeOf, auraOthersOf, fxQuality, hitStopOn, impactFrameOn, staticFxOn } from '../game/fx/fxSettings';
 import type { AuraCombat, AuraMode, AuraOthers } from '../game/fx/realmAuraRules';
 import { uiScale } from './uiScale';
 import {
@@ -309,6 +309,9 @@ interface UIState {
   /** Chất lượng hiệu ứng chiêu và khựng hình (VFX-V0). */
   fxQuality: 'low' | 'medium' | 'high';
   hitStop: boolean;
+  /** Khung va chạm và chế độ tĩnh (V-P0). */
+  impactFrame: boolean;
+  staticFx: boolean;
   /** Hào quang cảnh giới trên nhân vật (RFX-1). */
   auraMode: AuraMode;
   auraOthers: AuraOthers;
@@ -426,6 +429,8 @@ export const useUI = create<UIState>(() => ({
   camShake: localStorage.getItem('dtl.camShake') !== '0',
   fxQuality: fxQuality(),
   hitStop: hitStopOn(),
+  impactFrame: impactFrameOn(),
+  staticFx: staticFxOn(),
   auraMode: auraModeOf(),
   auraOthers: auraOthersOf(),
   auraCombat: auraCombatOf(),

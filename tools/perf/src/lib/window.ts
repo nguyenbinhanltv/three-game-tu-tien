@@ -35,6 +35,16 @@ export interface HazardLog {
 /** Vector3 của three: công cụ đọc x/y/z, bench còn gọi clone()/add()/copy(). */
 type Vec = { x: number; y: number; z: number; [method: string]: any };
 
+/** `window.__vfxlab`: điều khiển thời gian và đồng hồ ngân sách của phòng thử VFX. */
+export interface VfxLabDebug {
+  cast(skill: string): boolean;
+  pause(on: boolean): void;
+  scale(x: number): void;
+  step(ms: number): void;
+  budget(): { drawCalls: number; triangles: number; fxLive: number; particles: number; particleBudget: number; screenCover: number; overdraw: number };
+  skills(): string[];
+}
+
 /** `window.__game`: phần ổn định có kiểu; phần ruột engine mà bench cố ý bọc/đọc (renderer, vfx, monFx…) để `any`. */
 export interface GameDebug {
   frames: number;
@@ -103,6 +113,8 @@ export interface ViewerDebug {
 declare global {
   interface Window {
     __game?: GameDebug;
+    /** Phòng thử VFX (`?vfxlab=1`, apps/client/src/game/debug/vfxLab.ts). */
+    __vfxlab?: VfxLabDebug;
     __viewer?: ViewerDebug;
     gc?: () => void;
   }

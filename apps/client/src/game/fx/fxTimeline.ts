@@ -9,6 +9,7 @@ import {
   fxAwayFromCam,
   fxCamFade,
   fxEventsFor,
+  fxHierarchy,
   fxTierFor,
   skillTiming,
   type FxAnchor,
@@ -73,6 +74,12 @@ export interface FxRunnerEnv {
   hitStopOn(): boolean;
   shake(level: number, dir?: { x: number; z: number }): void;
   flash(amount: number): void;
+  /** Khung va chạm (V-P0): 1–2 khung tương phản cao ám màu. */
+  impact(frames: number, tint: 'ink' | 'warm' | 'cool'): void;
+  /** Công tắc khung va chạm trong Cài đặt. */
+  impactOn(): boolean;
+  /** Chế độ tĩnh (giảm hiệu ứng người khác mạnh hơn, bỏ khung va chạm). */
+  staticOn(): boolean;
   /** Kéo camera ra xa nhẹ (pháp tướng): hệ số khoảng cách thêm và thời lượng (giây). */
   camPull(pull: number, dur: number): void;
   /** Đẩy góc nhìn thêm `deg` độ cùng nhịp `camPull` (VS-1). */
@@ -120,6 +127,8 @@ interface Cast {
   tgt?: FxTarget | null;
   area?: { x: number; z: number; r: number };
   mul: number;
+  /** Hệ số độ sáng theo luật thứ bậc (`fxHierarchy`): 1 cho chiêu của mình. */
+  amul: number;
   delay?: number;
   variant?: string;
 }
@@ -257,7 +266,8 @@ export class FxRunner {
       seed: ++this.serial * 7.31,
       dist,
       firstHit: Math.min(...tm.hitAt),
-      mul: 1,
+      mul: fxHierarchy(mine, this.env.staticOn()).size,
+      amul: fxHierarchy(mine, this.env.staticOn()).alpha,
       emitted: 0,
     });
     this.pump(this.casts.get(sid)!, e.t);
@@ -290,7 +300,8 @@ export class FxRunner {
       seed: ++this.serial * 7.31,
       dist,
       firstHit: Infinity,
-      mul: 1,
+      mul: fxHierarchy(mine, this.env.staticOn()).size,
+      amul: fxHierarchy(mine, this.env.staticOn()).alpha,
       emitted: 0,
     };
     // Không có đồng hồ animation của chiêu: chạy theo dt (đồng hồ dự phòng).
@@ -323,6 +334,7 @@ export class FxRunner {
       tgt: o.tgt,
       area: o.area,
       mul: o.mul ?? 1,
+      amul: 1,
       delay: o.delay,
       variant: o.variant,
       emitted: 0,
@@ -483,6 +495,9 @@ export class FxRunner {
       case 'flash':
         if (c.mine) this.env.flash(Math.min(0.3, ev.amount));
         break;
+      case 'impact':
+        if (c.mine && this.env.impactOn() && !this.env.staticOn()) this.env.impact(ev.frames, ev.tint ?? 'ink');
+        break;
       case 'sound':
         this.env.sound(ev.id, ev.gain ?? 1, c.sid);
         break;
@@ -550,7 +565,7 @@ export class FxRunner {
     const sT = fitS(sT0);
     const seed = ((ev.seed ?? c.seed + idx * 1.7) % 50) + 0.37;
     const color = toneOf(c.pal, ev.tone);
-    const alpha = (ev.alpha ?? 0.95) * (FLAGS.isoFxCompress && kind === 'card' ? ISO_CARD_ALPHA : 1);
+    const alpha = (ev.alpha ?? 0.95) * c.amul * (FLAGS.isoFxCompress && kind === 'card' ? ISO_CARD_ALPHA : 1);
     const sweep = ev.sweep ?? 0.35;
     const erodeFrom = ev.erodeFrom ?? 0.5;
     const spin = (ev.spin ?? 0) * DEG;

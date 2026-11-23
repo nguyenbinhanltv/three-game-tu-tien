@@ -70,6 +70,9 @@ export const postParams = {
   hit: uniform(0),
   /** 0..1: chớp sáng toàn màn hình (sấm độ kiếp...), tự giảm dần. */
   flash: uniform(0),
+  /** 0..1: khung va chạm (V-P0): tương phản cao + ám màu `impactColor`, tự hết sau `impactFrames` khung hình. */
+  impact: uniform(0),
+  impactColor: uniform(new THREE.Color(0.8, 0.8, 0.8)),
   /** 0..1: chớp tối/sáng ở viền khung hình (VS-1 `vignette`), tự giảm dần; `punchLight` = 1 → viền sáng, 0 → viền tối. */
   punch: uniform(0),
   punchLight: uniform(0),
@@ -253,6 +256,9 @@ export class PostPipeline {
     const edge = smoothstep(0.3, 0.75, length(fromCenter));
     g = vec3(mix(g, vec3(0.75, 0.05, 0.04), edge.mul(postParams.hit).mul(0.55)));
     g = vec3(mix(g, vec3(1, 0.98, 0.94), postParams.flash.mul(0.75)));
+    // Khung va chạm: bớt sắc, kéo tương phản mạnh quanh 0,5 rồi ám màu.
+    const imp = vec3(mix(vec3(luminance(g)), g, 0.35)).sub(0.5).mul(2.4).add(0.5);
+    g = vec3(mix(g, clamp(imp.mul(postParams.impactColor), 0, 1), postParams.impact.mul(0.9)));
     const punchEdge = smoothstep(0.22, 0.78, length(fromCenter));
     const punchTone = postParams.punchLight.mul(0.95).add(0.03);
     g = vec3(mix(g, vec3(punchTone, punchTone, punchTone.mul(0.97).add(0.01)), punchEdge.mul(postParams.punch).mul(2.4).min(0.9)));
@@ -315,6 +321,14 @@ export class PostPipeline {
     postParams.flash.value = Math.max(postParams.flash.value, Math.min(1, amount));
   }
 
+  private impactLeft = 0;
+
+  /** Khung va chạm (V-P0): `frames` khung hình (1–2) tương phản cao, ám `tint`. */
+  impactFrame(frames: number, tint: 'ink' | 'warm' | 'cool'): void {
+    postParams.impactColor.value.set(tint === 'warm' ? 0xfff0d0 : tint === 'cool' ? 0xd0e8ff : 0xdcdcdc);
+    this.impactLeft = Math.max(this.impactLeft, Math.min(2, Math.max(1, Math.round(frames))) + 1);
+  }
+
   /** Chớp tối/sáng ở viền khung hình (VS-1): `amount` 0..0,5 tự tan tuyến tính trong `ms`. */
   punch(amount: number, tone: 'dark' | 'light', ms: number): void {
     postParams.punch.value = Math.max(postParams.punch.value, Math.min(0.5, amount));
@@ -330,6 +344,9 @@ export class PostPipeline {
   }
 
   update(dt: number): void {
+    // Đếm theo khung hình thật (không theo dt): đúng 1–2 khung kể cả khi chậm thời gian.
+    postParams.impact.value = this.impactLeft > 1 ? 1 : 0;
+    if (this.impactLeft > 0) this.impactLeft--;
     if (postParams.punch.value > 0) postParams.punch.value = Math.max(0, postParams.punch.value - dt * this.punchRate);
     if (postParams.hit.value > 0) postParams.hit.value = Math.max(0, postParams.hit.value - dt * 2.2);
     if (postParams.flash.value > 0) postParams.flash.value = Math.max(0, postParams.flash.value - dt * 4);

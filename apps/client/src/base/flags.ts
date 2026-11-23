@@ -20,6 +20,8 @@ interface Flags {
   legacyModels: boolean;
   /** `?batch=0` tắt gộp draw call VFX (chẩn đoán hiệu năng). */
   batching: boolean;
+  /** `?vfxlab=1` (chỉ dev) phòng thử VFX: gắn `window.__vfxlab` (tạm dừng, chậm, bước đơn, đồng hồ ngân sách) cho `pnpm shots vfxlab`. */
+  vfxLab: boolean;
   /** `?vfxwarm=0` tắt biên dịch trước VFX (chẩn đoán). */
   vfxWarm: boolean;
   /** `?aura=0` tắt hào quang cảnh giới (so số đo trước/sau, RFX-1). */
@@ -107,6 +109,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   debug: { scope: 'diag', doc: 'bảng F3 + dòng số đo ở bản build' },
   models: { scope: 'diag', doc: '=legacy: model khối (dự phòng)' },
   batch: { scope: 'diag', doc: '=0: tắt gộp draw call VFX' },
+  vfxlab: { scope: 'test', doc: '=1 (dev): phòng thử VFX, gắn window.__vfxlab; dùng với pnpm shots vfxlab' },
   vfxwarm: { scope: 'diag', doc: '=0: tắt biên dịch trước VFX' },
   aura: { scope: 'diag', doc: '=0: tắt hào quang cảnh giới trên nhân vật' },
   pathaura: { scope: 'diag', doc: '=0: Đao tu/Cổ tu/Cấm chế sư dùng hào quang cảnh giới mặc định thay lớp hào quang riêng của hướng' },
@@ -179,6 +182,7 @@ export function readFlags(search: string): Flags {
     debug: q.has('debug'),
     legacyModels: q.get('models') === 'legacy',
     batching: !off(q.get('batch')),
+    vfxLab: q.get('vfxlab') === '1',
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
     pathAura: !off(q.get('pathaura')),

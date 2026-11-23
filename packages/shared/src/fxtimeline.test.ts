@@ -8,6 +8,7 @@ import {
   fxEventsFor,
   fxParticleCount,
   fxTierFor,
+  fxHierarchy,
   validateFxTimeline,
   type FxTimeline,
 } from './fxtimeline';
@@ -191,5 +192,20 @@ describe('dòng thời gian hiệu ứng', () => {
       expect(ok(m).join()).toMatch(/sự kiện mesh >/);
       expect(ok(m.slice(0, FX_MESH_MAX)).join()).not.toMatch(/sự kiện mesh >/);
     });
+  });
+});
+
+describe('luật thứ bậc và khung va chạm (V-P0)', () => {
+  it('chiêu của mình nguyên vẹn, đồng đội giảm 50%, chế độ tĩnh 25%', () => {
+    expect(fxHierarchy(true, false)).toEqual({ size: 1, alpha: 1 });
+    expect(fxHierarchy(true, true)).toEqual({ size: 1, alpha: 1 });
+    expect(fxHierarchy(false, false)).toEqual({ size: 0.5, alpha: 0.5 });
+    expect(fxHierarchy(false, true)).toEqual({ size: 0.25, alpha: 0.25 });
+  });
+  it('impact chỉ cho 1–2 khung', () => {
+    const ok: FxTimeline = { skill: 'a', events: [{ type: 'impact', t: 0, frames: 2 }] };
+    expect(validateFxTimeline(ok, () => true)).toEqual([]);
+    const bad = { skill: 'a', events: [{ type: 'impact', t: 0, frames: 3 }] } as unknown as FxTimeline;
+    expect(validateFxTimeline(bad, () => true).join()).toMatch(/impact frames/);
   });
 });
