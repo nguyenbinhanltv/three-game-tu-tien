@@ -250,6 +250,25 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@24.19.2)(tsx@4.23.15)
 
+  tools/vfx-forge:
+    dependencies:
+      sharp:
+        specifier: 0.35.5
+        version: 0.35.5(@types/node@24.19.2)
+    devDependencies:
+      '@types/node':
+        specifier: ^24.19.2
+        version: 24.19.2
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@24.19.2)(tsx@4.23.15)
+
 packages:
 
   '@babel/code-frame@7.29.7':
@@ -2876,8 +2895,8 @@ packages:
     resolution: {integrity: sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==}
     engines: {node: '>= 0.8'}
 
-  stb-vorbis@0.0.7:
-    resolution: {integrity: sha512-OsD8Vm9EcStsiYGUBSqJ88gBPwDYR1Uv57bV/KZhu6Li1kzjm0fO+iiTkm79bZ1L2I/z6IrA1wkWHu3xQYY7Hw==}
+  stb-vorbis@0.0.8:
+    resolution: {integrity: sha512-Ie2aMUt/su9FkfDefNy0Zmbx1U3/UO8MQU0vpdPfrymgGL4DaWXt17aT6KX7ZjrpLHicij4x+e3pTtGQEP3duw==}
     engines: {node: '>=18'}
 
   std-env@3.10.0:
@@ -5895,7 +5914,7 @@ snapshots:
   spessasynth_core@4.4.10:
     dependencies:
       fflate: 0.8.3
-      stb-vorbis: 0.0.7
+      stb-vorbis: 0.0.8
 
   stackback@0.0.2: {}
 
@@ -5903,7 +5922,7 @@ snapshots:
 
   statuses@2.0.2: {}
 
-  stb-vorbis@0.0.7: {}
+  stb-vorbis@0.0.8: {}
 
   std-env@3.10.0: {}
 
