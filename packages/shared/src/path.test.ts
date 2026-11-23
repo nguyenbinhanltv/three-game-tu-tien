@@ -22,7 +22,7 @@ const METHODS = [
   { id: 'b_m', role: 'tank' as const },
   { id: 'c_m', role: 'support' as const },
 ];
-const VOICES = ['kt', 'hp', 'ds', 'dt'];
+const VOICES = ['kt', 'hp', 'ds', 'dt', 'lt'];
 
 describe('hướng tu (VS-3)', () => {
   it('tra theo id công pháp, id hướng, rồi mới tới chuỗi con trong match; không ra thì undefined', () => {

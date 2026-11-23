@@ -59,6 +59,7 @@ import { Panels } from './windows/Panels';
 import { TrialBanner } from './Realm';
 import { Calli, preloadCalli } from './calli/Calli';
 import { BagWarn } from './BagWarn';
+import { Recap } from './Recap';
 import { type BossLine, type ChapterCard, togglePanel, useUI } from './store';
 import { HubBar } from './u2/hud/HubBar';
 import { ChapterMap } from './chapters/ChapterMap';
@@ -554,6 +555,7 @@ export function Hud() {
       <Tribulation />
       <TrialBanner />
       <BagWarn />
+      <Recap />
       {hint && !npc && <div className="hint">{hint}</div>}
       <CastBar />
       <SkillBanner />
