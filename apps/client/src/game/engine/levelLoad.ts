@@ -44,7 +44,7 @@ import { bhTod, GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MO
 import { archWrap, withOccluderFade } from '../world/occlusion';
 import { LanternLights } from '../../render/lanternLights';
 import { buildMoonGate, buildPortalDisc, buildSect, moonMirrorTexture, SECT_LANTERNS } from '../world/sect';
-import { gatesToDraw } from '../world/gates';
+import { gateFlat, gatesToDraw } from '../world/gates';
 import {
   buildCaveShell,
   buildCrystalGlow,
@@ -321,7 +321,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
   }
   if (F.portals || (LEVELS[id]?.portals?.length ?? 0) > 0) {
     eng.gateDiscs = gatesToDraw(id).map((g) => {
-      const d = buildPortalDisc(g.x, g.z, g.color, g.flat);
+      const d = buildPortalDisc(g.x, g.z, g.color, gateFlat(g, FLAGS.isoCam));
       d.userData.op = g.opacity ?? 0.55;
       return d;
     });

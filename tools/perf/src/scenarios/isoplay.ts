@@ -30,7 +30,7 @@ export default {
   name: 'isoplay',
   desc: 'Thiên Nhãn P5b: chơi thử ?cam=iso qua từng chương (đi chuột phải, né, ra chiêu, đo khung, lỗi console)',
   usage:
-    '[--only van_lam,cuu_kieu] [--views 1280x720] [--hazard 1: chờ vòng cảnh báo của quái rồi chụp thêm] [--query mood=night] [--portal 1: chụp cổng phó bản + cột linh quang]',
+    '[--only van_lam,cuu_kieu] [--views 1280x720] [--hazard 1: chờ vòng cảnh báo của quái rồi chụp thêm] [--query mood=night] [--portal 1: chụp cổng phó bản + cột linh quang] [--probe 1: liệt kê mesh cộng sáng gần cổng]',
   async run(r) {
     const only = list('--only', '');
     const [vw, vh] = opt('--views', '1280x720').split('x').map(Number) as [number, number];
@@ -63,6 +63,49 @@ export default {
             await tp(page, portal.x + 3, portal.z + 3);
             await sleep(1500);
             await snap(page, r.out, `c${st.ch}-${st.level}-cot-sang.png`, { wait: 400 });
+            if (flag('--probe')) {
+              // Liệt kê mesh lớn gần cổng (tìm thứ vẽ cột/quầng): tên, vị trí, cỡ, kiểu pha trộn.
+              const found = await page.evaluate(
+                ([px, pz]) => {
+                  const g = window.__game as unknown as { scene: { traverse(f: (o: unknown) => void): void } };
+                  const out: unknown[] = [];
+                  g.scene.traverse((o) => {
+                    const m = o as {
+                      isMesh?: boolean;
+                      name?: string;
+                      position: { x: number; y: number; z: number };
+                      material?: { blending?: number };
+                      scale: { x: number; y: number; z: number };
+                      visible: boolean;
+                      parent?: { name?: string };
+                    };
+                    if (!m.isMesh || !m.visible) return;
+                    const d = Math.hypot(m.position.x - px, m.position.z - pz);
+                    if (d < 40)
+                      out.push({
+                        n: m.name || m.parent?.name || '?',
+                        d: Math.round(d),
+                        y: Math.round(m.position.y),
+                        s: [m.scale.x, m.scale.y, m.scale.z].map((v) => Math.round(v * 10) / 10),
+                        add: m.material?.blending === 2,
+                      });
+                  });
+                  return out.filter((e) => (e as { add: boolean }).add).slice(0, 25);
+                },
+                [portal.x, portal.z],
+              );
+              console.log('[isoplay] probe', JSON.stringify(found));
+              // Tắt cột linh quang (Beacons) rồi chụp: còn cột sáng thì nó không phải Beacons.
+              const had = await page.evaluate(() => {
+                const g = window.__game as unknown as { beacons?: { mesh: { visible: boolean } } | null };
+                if (!g.beacons) return false;
+                g.beacons.mesh.visible = false;
+                return true;
+              });
+              await sleep(600);
+              await snap(page, r.out, `c${st.ch}-${st.level}-cot-sang-tat-beacons.png`, { wait: 200 });
+              console.log('[isoplay] beacons', had);
+            }
           }
         }
         // Đi bằng chuột phải: bấm lệch tâm màn hình, chờ ~2,5 s.
