@@ -5,6 +5,7 @@
 //   pnpm --filter @dtl/vfx-forge forge check [--out <thư mục>]    kiểm manifest (CI)
 //   pnpm --filter @dtl/vfx-forge forge concept --card <skillId> --shot <ảnh chụp game> [--ref <ảnh mẫu đã duyệt>]... --out <thư mục ngoài repo>
 //   pnpm --filter @dtl/vfx-forge forge texture --card <skillId> --kind flipbook|slash|decal|noise|ramp --name <tên> [--grid 4x4] [--ref <ảnh>]... --out <thư mục ngoài repo>
+//   pnpm --filter @dtl/vfx-forge forge cards --path <id hướng tu>    sinh thẻ chiêu cho mọi chiêu chưa có thẻ (V-P2..P8)
 //   (concept/texture gọi Codex; thêm --dry chỉ in prompt)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,6 +15,7 @@ import { sampleSlashFlipbook, sampleTileNoise } from './samples.js';
 import { checkManifest, forge } from './pipeline.js';
 import { toPng } from './io.js';
 import { conceptJob, runCodex, textureJob } from './codex.js';
+import { writeCards } from './cards.js';
 import type { TextureKind } from './prompts.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -83,6 +85,16 @@ async function main(): Promise<void> {
     const res = await runCodex(job);
     if (!res.file) throw new Error(`Codex không ra ảnh (mã thoát ${res.code ?? 'không có'}); xem log: ${res.log}`);
     console.log(`đã sinh ${res.file}`);
+  } else if (cmd === 'cards') {
+    const pid = flag('--path');
+    if (!pid) throw new Error('dùng: cards --path <id hướng tu>');
+    const i18n: Record<string, string> = {};
+    const dir = path.join(root, 'packages/content/data/i18n');
+    for (const f of fs.readdirSync(dir))
+      if (f.endsWith('.json')) Object.assign(i18n, JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')));
+    const r = writeCards(pid, root, i18n);
+    console.log(`thẻ mới: ${r.written.join(' ') || '(không)'}
+đã có: ${r.skipped.join(' ') || '(không)'}`);
   } else if (cmd === 'check') {
     const errs = checkManifest(flag('--out') ?? DEFAULT_OUT);
     for (const e of errs) console.error(e);

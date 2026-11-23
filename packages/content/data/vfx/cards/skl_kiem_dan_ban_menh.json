@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_kiem_dan_ban_menh",
+  "idea": "Kiếm Đan Bản Mệnh: Phóng ra kiếm đan bản mệnh lượn quanh thân trong 10 giây, mỗi giây đâm kẻ địch gần nhất trong 18 mét một nhát 40% công kích.",
+  "element": "kim",
+  "path": "kiem_tu",
+  "shapeLang": [
+    "ring",
+    "burst",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 500,
+    "impactMs": 80,
+    "lingerMs": 500
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 160,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

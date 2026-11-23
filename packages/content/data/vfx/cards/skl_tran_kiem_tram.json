@@ -1,0 +1,40 @@
+{
+  "skillId": "skl_tran_kiem_tram",
+  "idea": "Trận Kiếm Trảm: Chiêu tư thế. Cả trận cùng chém một nhát gây 170% công kích, khắc 1 tầng Kiếm ấn và tích 1 ô Kiếm ý.",
+  "element": "kim",
+  "path": "kiem_tu",
+  "shapeLang": [
+    "arc",
+    "burst",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 280,
+    "impactMs": 80,
+    "lingerMs": 620
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 10,
+    "particles": 207,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [
+    {
+      "id": "proc:slash_streak",
+      "kind": "flipbook"
+    },
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    }
+  ],
+  "impactFrame": true
+}
