@@ -34,7 +34,7 @@ const WIN_WIDTH: Record<WinId, number> = {
   char: 560,
   quests: 460,
   help: 520,
-  settings: 430,
+  settings: 540,
   map: 980,
   method: 600,
   party: 460,

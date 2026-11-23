@@ -82,7 +82,7 @@ export function Settings() {
   // Khung va chạm chỉ có ở bản thử hoặc `?debug`.
   const debugOk = Game.current?.debugOk === true;
   return (
-    <PanelWindow title={t('ui.settings')} onClose={() => closePanel('settings')}>
+    <PanelWindow title={t('ui.settings')} onClose={() => closePanel('settings')} width={540}>
       <Tabs
         label={t('ui.settings.tabs')}
         value={tab}
