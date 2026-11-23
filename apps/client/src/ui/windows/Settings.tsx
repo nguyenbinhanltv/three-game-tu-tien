@@ -4,11 +4,12 @@ import { t } from '@dtl/content';
 import { getVolume, isMuted, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../../game/audio/audio';
 import { Game } from '../../game/engine';
 import { AURA_COMBATS, AURA_MODES, AURA_OTHERS } from '../../game/fx/realmAuraRules';
-import { Button, Divider, PanelWindow, Segmented, Slider } from '../u2/win';
+import { Button, Divider, PanelWindow, Segmented, Slider, Tabs } from '../u2/win';
 import { setReduceMotion, useReduceMotion } from '../u2/shell';
 import { closePanel, openPanel, set, setHudPref, useUI } from '../store';
 import { setUiScaleUser, uiScaleUser } from '../uiScale';
 import { setTouchPref, useTouchState, type TouchPref } from '../../input/touchMode';
+import { PRESET_IDS, PRESETS, presetOf, type PresetId } from './settingsPresets';
 
 /** Thanh trượt âm lượng cho master và từng bus; thả tay thì phát thử một âm trên bus đó. */
 function VolumeSlider({ k }: { k: VolumeKey }) {
@@ -35,7 +36,12 @@ function VolumeSlider({ k }: { k: VolumeKey }) {
   );
 }
 
+/** Cài đặt chia bốn nhóm (Chân Cảnh U11): Đồ họa (mức nhanh, chất lượng, hiệu ứng chiến đấu, khí tức), Âm thanh, Điều khiển, Giao diện. */
+const TABS = ['graphics', 'audio', 'controls', 'interface'] as const;
+type TabId = (typeof TABS)[number];
+
 export function Settings() {
+  const [tab, setTab] = useState<TabId>('graphics');
   const quality = useUI((s) => s.quality);
   const qualityLock = useUI((s) => s.qualityLock);
   const qualityHint = useUI((s) => s.qualityHint);
@@ -53,6 +59,7 @@ export function Settings() {
   const auraCombat = useUI((s) => s.auraCombat);
   const offscreen = useUI((s) => s.offscreen);
   const chapterCards = useUI((s) => s.chapterCards);
+  const colliders = useUI((s) => s.debugColliders);
   const [mute, setMute] = useState(isMuted());
   const skillLayout = useUI((s) => s.skillLayout);
   const touchPref = useTouchState((s) => s.pref);
@@ -63,168 +70,227 @@ export function Settings() {
     { value: true, label: t('ui.settings.cam_shake_on') },
     { value: false, label: t('ui.settings.cam_shake_off') },
   ];
+  const preset = presetOf({ quality, fxQuality: fxQ, impactFrame, heroRim });
+  const applyPreset = (id: PresetId) => {
+    const g = Game.current;
+    const p = PRESETS[id];
+    g?.setQuality(p.quality);
+    g?.setFxQuality(p.fxQuality);
+    g?.setImpactFrame(p.impactFrame);
+    g?.setHeroRim(p.heroRim);
+  };
+  // Khung va chạm chỉ có ở bản thử hoặc `?debug`.
+  const debugOk = Game.current?.debugOk === true;
   return (
     <PanelWindow title={t('ui.settings')} onClose={() => closePanel('settings')}>
-      <Divider label={t('ui.settings.touch')} />
-      <Segmented
-        label={t('ui.settings.touch')}
-        value={touchPref}
-        onChange={(m: TouchPref) => setTouchPref(m)}
-        options={(['auto', 'on', 'off'] as const).map((m) => ({ value: m, label: t('ui.settings.touch.' + m) }))}
+      <Tabs
+        label={t('ui.settings.tabs')}
+        value={tab}
+        onChange={(id) => setTab(id as TabId)}
+        items={TABS.map((id) => ({ id, label: t('ui.settings.tab.' + id) }))}
       />
-      <div className="k-dim">{t('ui.settings.touch_hint')}</div>
-      <Divider label={t('ui.settings.quality')} />
-      <Segmented
-        label={t('ui.settings.quality')}
-        value={quality}
-        onChange={(q) => Game.current?.setQuality(q)}
-        options={QUALITIES.map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))}
-      />
-      {qualityHint && !hintSeen && (
-        <div className="k-dim" data-testid="quality-hint">
-          {t('ui.settings.quality_suggest', { q: t('ui.settings.q.' + qualityHint) })}{' '}
-          <Button
-            onClick={() => {
-              Game.current?.setQuality(qualityHint);
-              Game.current?.dismissQualityHint();
-            }}
-          >
-            {t('ui.settings.quality_apply')}
-          </Button>{' '}
-          <Button onClick={() => Game.current?.dismissQualityHint()}>{t('ui.settings.quality_dismiss')}</Button>
+      {tab === 'graphics' && (
+        <div data-testid="settings-graphics">
+          <Divider label={t('ui.settings.preset')} />
+          <Segmented
+            label={t('ui.settings.preset')}
+            value={preset ?? 'custom'}
+            onChange={(id: PresetId | 'custom') => id !== 'custom' && applyPreset(id)}
+            options={[
+              ...PRESET_IDS.map((id) => ({ value: id as PresetId | 'custom', label: t('ui.settings.preset.' + id) })),
+              ...(preset ? [] : [{ value: 'custom' as const, label: t('ui.settings.preset.custom') }]),
+            ]}
+          />
+          <div className="k-dim">{t('ui.settings.preset_hint')}</div>
+          <Divider label={t('ui.settings.quality')} />
+          <Segmented
+            label={t('ui.settings.quality')}
+            value={quality}
+            onChange={(q) => Game.current?.setQuality(q)}
+            options={QUALITIES.map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))}
+          />
+          {qualityHint && !hintSeen && (
+            <div className="k-dim" data-testid="quality-hint">
+              {t('ui.settings.quality_suggest', { q: t('ui.settings.q.' + qualityHint) })}{' '}
+              <Button
+                onClick={() => {
+                  Game.current?.setQuality(qualityHint);
+                  Game.current?.dismissQualityHint();
+                }}
+              >
+                {t('ui.settings.quality_apply')}
+              </Button>{' '}
+              <Button onClick={() => Game.current?.dismissQualityHint()}>{t('ui.settings.quality_dismiss')}</Button>
+            </div>
+          )}
+          <Segmented
+            label={t('ui.settings.quality_lock')}
+            value={qualityLock}
+            onChange={(on) => Game.current?.setQualityLock(on)}
+            options={onOff}
+          />
+          <div className="k-dim">{t('ui.settings.quality_lock_hint')}</div>
+          <div className="k-dim">{t('ui.settings.quality_hint')}</div>
+          <div className="k-dim">{t('ui.settings.fps', { n: fps })}</div>
+          <Divider label={t('ui.settings.group_combat')} />
+          <Slider
+            label={t('ui.settings.cam_shake')}
+            value={camShake}
+            min={0}
+            max={100}
+            step={5}
+            format={(n) => n + '%'}
+            onChange={(n) => Game.current?.setCamShake(n)}
+          />
+          <Slider
+            label={t('ui.settings.hit_stop')}
+            value={hitStop}
+            min={0}
+            max={100}
+            step={5}
+            format={(n) => n + '%'}
+            onChange={(n) => Game.current?.setHitStop(n)}
+          />
+          <Segmented
+            label={t('ui.settings.fx_quality')}
+            value={fxQ}
+            onChange={(q) => Game.current?.setFxQuality(q)}
+            options={(['low', 'medium', 'high'] as const).map((q) => ({ value: q, label: t('ui.settings.fxq.' + q) }))}
+          />
+          <div className="k-dim">{t('ui.settings.fx_quality_hint')}</div>
+          <Segmented
+            label={t('ui.settings.impact_frame')}
+            value={impactFrame}
+            onChange={(on) => Game.current?.setImpactFrame(on)}
+            options={onOff}
+          />
+          <Segmented label={t('ui.settings.hero_rim')} value={heroRim} onChange={(on) => Game.current?.setHeroRim(on)} options={onOff} />
+          <div className="k-dim">{t('ui.settings.hero_rim_hint')}</div>
+          <Segmented label={t('ui.settings.fx_static')} value={staticFx} onChange={(on) => Game.current?.setStaticFx(on)} options={onOff} />
+          <div className="k-dim">{t('ui.settings.fx_static_hint')}</div>
+          {debugOk && (
+            <>
+              <Segmented
+                label={t('ui.settings.colliders')}
+                value={colliders}
+                onChange={(on) => Game.current?.setDebugColliders(on)}
+                options={onOff}
+              />
+              <div className="k-dim">{t('ui.settings.colliders_hint')}</div>
+            </>
+          )}
+          <Divider label={t('ui.settings.realm_aura')} />
+          <Segmented
+            label={t('ui.settings.realm_aura')}
+            value={auraMode}
+            onChange={(m) => Game.current?.setAuraMode(m)}
+            options={AURA_MODES.map((m) => ({ value: m, label: t('ui.settings.aura.mode.' + m) }))}
+          />
+          <div className="k-dim">{t('ui.settings.aura_others')}</div>
+          <Segmented
+            label={t('ui.settings.aura_others')}
+            value={auraOthers}
+            onChange={(m) => Game.current?.setAuraOthers(m)}
+            options={AURA_OTHERS.map((m) => ({ value: m, label: t('ui.settings.aura.others.' + m) }))}
+          />
+          <div className="k-dim">{t('ui.settings.aura_combat')}</div>
+          <Segmented
+            label={t('ui.settings.aura_combat')}
+            value={auraCombat}
+            onChange={(m) => Game.current?.setAuraCombat(m)}
+            options={AURA_COMBATS.map((m) => ({ value: m, label: t('ui.settings.aura.combat.' + m) }))}
+          />
+          <div className="k-dim">{t('ui.settings.realm_aura_hint')}</div>
         </div>
       )}
-      <Segmented
-        label={t('ui.settings.quality_lock')}
-        value={qualityLock}
-        onChange={(on) => Game.current?.setQualityLock(on)}
-        options={onOff}
-      />
-      <div className="k-dim">{t('ui.settings.quality_lock_hint')}</div>
-      <div className="k-dim">{t('ui.settings.quality_hint')}</div>
-      <div className="k-dim">{t('ui.settings.fps', { n: fps })}</div>
-      <Divider label={t('ui.settings.cam_shake')} />
-      <Slider
-        label={t('ui.settings.cam_shake')}
-        value={camShake}
-        min={0}
-        max={100}
-        step={5}
-        format={(n) => n + '%'}
-        onChange={(n) => Game.current?.setCamShake(n)}
-      />
-      <Slider
-        label={t('ui.settings.hit_stop')}
-        value={hitStop}
-        min={0}
-        max={100}
-        step={5}
-        format={(n) => n + '%'}
-        onChange={(n) => Game.current?.setHitStop(n)}
-      />
-      <Divider label={t('ui.settings.fx_quality')} />
-      <Segmented
-        label={t('ui.settings.fx_quality')}
-        value={fxQ}
-        onChange={(q) => Game.current?.setFxQuality(q)}
-        options={(['low', 'medium', 'high'] as const).map((q) => ({ value: q, label: t('ui.settings.fxq.' + q) }))}
-      />
-      <div className="k-dim">{t('ui.settings.fx_quality_hint')}</div>
-      <Segmented
-        label={t('ui.settings.impact_frame')}
-        value={impactFrame}
-        onChange={(on) => Game.current?.setImpactFrame(on)}
-        options={onOff}
-      />
-      <Segmented label={t('ui.settings.hero_rim')} value={heroRim} onChange={(on) => Game.current?.setHeroRim(on)} options={onOff} />
-      <div className="k-dim">{t('ui.settings.hero_rim_hint')}</div>
-      <Segmented label={t('ui.settings.fx_static')} value={staticFx} onChange={(on) => Game.current?.setStaticFx(on)} options={onOff} />
-      <div className="k-dim">{t('ui.settings.fx_static_hint')}</div>
-      <Divider label={t('ui.settings.realm_aura')} />
-      <Segmented
-        label={t('ui.settings.realm_aura')}
-        value={auraMode}
-        onChange={(m) => Game.current?.setAuraMode(m)}
-        options={AURA_MODES.map((m) => ({ value: m, label: t('ui.settings.aura.mode.' + m) }))}
-      />
-      <div className="k-dim">{t('ui.settings.aura_others')}</div>
-      <Segmented
-        label={t('ui.settings.aura_others')}
-        value={auraOthers}
-        onChange={(m) => Game.current?.setAuraOthers(m)}
-        options={AURA_OTHERS.map((m) => ({ value: m, label: t('ui.settings.aura.others.' + m) }))}
-      />
-      <div className="k-dim">{t('ui.settings.aura_combat')}</div>
-      <Segmented
-        label={t('ui.settings.aura_combat')}
-        value={auraCombat}
-        onChange={(m) => Game.current?.setAuraCombat(m)}
-        options={AURA_COMBATS.map((m) => ({ value: m, label: t('ui.settings.aura.combat.' + m) }))}
-      />
-      <div className="k-dim">{t('ui.settings.realm_aura_hint')}</div>
-      <Divider label={t('ui.settings.offscreen')} />
-      <Segmented label={t('ui.settings.offscreen')} value={offscreen} onChange={(on) => Game.current?.setOffscreen(on)} options={onOff} />
-      <div className="k-dim">{t('ui.settings.offscreen_hint')}</div>
-      <Divider label={t('ui.settings.chapter')} />
-      <Segmented
-        label={t('ui.settings.chapter')}
-        value={chapterCards}
-        onChange={(on) => Game.current?.setChapterCards(on)}
-        options={onOff}
-      />
-      <div className="k-dim">{t('ui.settings.chapter_hint')}</div>
-      <Divider label={t('ui.settings.uiscale')} />
-      <Segmented
-        label={t('ui.settings.uiscale')}
-        value={uiMul}
-        onChange={(m) => {
-          setUiScaleUser(m);
-          setUiMul(m);
-        }}
-        options={[0.8, 1, 1.2, 1.4].map((m) => ({ value: m, label: t('ui.settings.uiscale.' + m) }))}
-      />
-      <div className="k-dim">{t('ui.settings.uiscale_hint')}</div>
-      <Divider label={t('ui.settings.skill_layout')} />
-      <Segmented
-        label={t('ui.settings.skill_layout')}
-        value={skillLayout}
-        onChange={(m) => setHudPref('skillLayout', m)}
-        options={(['arc', 'bar'] as const).map((m) => ({ value: m, label: t('ui.settings.skill_layout.' + m) }))}
-      />
-      <div className="k-dim">{t('ui.settings.skill_layout_hint')}</div>
-      <Divider label={t('ui.settings.reduce_motion')} />
-      <Segmented label={t('ui.settings.reduce_motion')} value={reduceMotion} onChange={setReduceMotion} options={onOff} />
-      <div className="k-dim">{t('ui.settings.reduce_motion_hint')}</div>
-      <Divider label={t('ui.settings.sound')} />
-      <Segmented
-        label={t('ui.settings.sound')}
-        value={!mute}
-        onChange={(on) => {
-          setMuted(!on);
-          setMute(!on);
-        }}
-        options={[
-          { value: true, label: t('ui.settings.sound_on') },
-          { value: false, label: t('ui.settings.sound_off') },
-        ]}
-      />
-      {VOLUME_KEYS.map((k) => (
-        <VolumeSlider key={k} k={k} />
-      ))}
-      <Divider label={t('ui.settings.credits')} />
-      <div>
-        <Button onClick={() => openPanel('credits')}>{t('ui.settings.credits_open')}</Button>
-      </div>
-      <div>
-        <Button
-          onClick={() => {
-            Game.current?.dispose();
-            set({ phase: 'login', windows: [], needName: false, log: [] });
-          }}
-        >
-          {t('ui.settings.logout')}
-        </Button>
-      </div>
+      {tab === 'audio' && (
+        <div data-testid="settings-audio">
+          <Divider label={t('ui.settings.sound')} />
+          <Segmented
+            label={t('ui.settings.sound')}
+            value={!mute}
+            onChange={(on) => {
+              setMuted(!on);
+              setMute(!on);
+            }}
+            options={[
+              { value: true, label: t('ui.settings.sound_on') },
+              { value: false, label: t('ui.settings.sound_off') },
+            ]}
+          />
+          {VOLUME_KEYS.map((k) => (
+            <VolumeSlider key={k} k={k} />
+          ))}
+        </div>
+      )}
+      {tab === 'controls' && (
+        <div data-testid="settings-controls">
+          <Divider label={t('ui.settings.touch')} />
+          <Segmented
+            label={t('ui.settings.touch')}
+            value={touchPref}
+            onChange={(m: TouchPref) => setTouchPref(m)}
+            options={(['auto', 'on', 'off'] as const).map((m) => ({ value: m, label: t('ui.settings.touch.' + m) }))}
+          />
+          <div className="k-dim">{t('ui.settings.touch_hint')}</div>
+          <Divider label={t('ui.settings.skill_layout')} />
+          <Segmented
+            label={t('ui.settings.skill_layout')}
+            value={skillLayout}
+            onChange={(m) => setHudPref('skillLayout', m)}
+            options={(['arc', 'bar'] as const).map((m) => ({ value: m, label: t('ui.settings.skill_layout.' + m) }))}
+          />
+          <div className="k-dim">{t('ui.settings.skill_layout_hint')}</div>
+          <Divider label={t('ui.settings.offscreen')} />
+          <Segmented
+            label={t('ui.settings.offscreen')}
+            value={offscreen}
+            onChange={(on) => Game.current?.setOffscreen(on)}
+            options={onOff}
+          />
+          <div className="k-dim">{t('ui.settings.offscreen_hint')}</div>
+        </div>
+      )}
+      {tab === 'interface' && (
+        <div data-testid="settings-interface">
+          <Divider label={t('ui.settings.uiscale')} />
+          <Segmented
+            label={t('ui.settings.uiscale')}
+            value={uiMul}
+            onChange={(m) => {
+              setUiScaleUser(m);
+              setUiMul(m);
+            }}
+            options={[0.8, 1, 1.2, 1.4].map((m) => ({ value: m, label: t('ui.settings.uiscale.' + m) }))}
+          />
+          <div className="k-dim">{t('ui.settings.uiscale_hint')}</div>
+          <Divider label={t('ui.settings.chapter')} />
+          <Segmented
+            label={t('ui.settings.chapter')}
+            value={chapterCards}
+            onChange={(on) => Game.current?.setChapterCards(on)}
+            options={onOff}
+          />
+          <div className="k-dim">{t('ui.settings.chapter_hint')}</div>
+          <Divider label={t('ui.settings.reduce_motion')} />
+          <Segmented label={t('ui.settings.reduce_motion')} value={reduceMotion} onChange={setReduceMotion} options={onOff} />
+          <div className="k-dim">{t('ui.settings.reduce_motion_hint')}</div>
+          <Divider label={t('ui.settings.credits')} />
+          <div>
+            <Button onClick={() => openPanel('credits')}>{t('ui.settings.credits_open')}</Button>
+          </div>
+          <div>
+            <Button
+              onClick={() => {
+                Game.current?.dispose();
+                set({ phase: 'login', windows: [], needName: false, log: [] });
+              }}
+            >
+              {t('ui.settings.logout')}
+            </Button>
+          </div>
+        </div>
+      )}
     </PanelWindow>
   );
 }
