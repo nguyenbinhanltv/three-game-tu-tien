@@ -13,7 +13,7 @@ import { snap } from '../lib/shot';
 export default {
   name: 'daotuhit',
   desc: 'Đao tu giọng `dt`: ba đòn thường + Kiếm Khí Trảm, ảnh tụ lực/+30/+150 ms, tùy chọn video',
-  usage: '[--tag sau|truoc] [--gender m|f] [--slowmo 0.1] [--video 1]',
+  usage: '[--tag sau|truoc] [--gender m|f] [--slowmo 0.1] [--video 1] [--method liet_nhan_dao_kinh] [--set set_dia_giap]',
   async run(r) {
     const tag = opt('--tag', 'sau');
     const g = opt('--gender', 'm');
@@ -33,8 +33,8 @@ export default {
     });
     await gm(page, 'level 15', 1500);
     await gm(page, 'god on', 1200);
-    await gm(page, 'set set_dia_giap', 1500);
-    await gm(page, 'method liet_nhan_dao_kinh 5', 1200);
+    await gm(page, `set ${opt('--set', 'set_dia_giap')}`, 1500);
+    await gm(page, `method ${opt('--method', 'liet_nhan_dao_kinh')} 5`, 1200);
     await gm(page, 'killall', 800);
     await gm(page, 'tp 2048 2088', 1500);
     await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
