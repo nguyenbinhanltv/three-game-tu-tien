@@ -63,6 +63,9 @@ export { HAZARD_COLORS } from './vfxParts/common';
 
 let rainModel: Promise<void> | null = null;
 
+/** Lưới vẽ ấm vật liệu cộng sáng của model khối, tạo một lần (xem `warmKinds`). */
+let glowWarm: THREE.Mesh | null = null;
+
 export class Vfx {
   group = new THREE.Group();
   readonly pool = POOL;
@@ -125,16 +128,14 @@ export class Vfx {
 
   /** Vẽ ấm một lưới cho mỗi kiểu material (cỡ 0, độ trong 0). */
   warmKinds(): void {
-    const glow = glowWarmMesh();
+    // Lưới ấm giữ sống suốt phiên (singleton) và KHÔNG dispose: dispose material làm three xóa render object và (usedTimes về 0) cả pipeline/program vừa biên dịch,
+    // con Thạch Tượng đầu tiên lại phải dựng lại từ đầu. Chỉ gắn vào cảnh vài khung rồi gỡ ra.
+    const glow = (glowWarm ??= glowWarmMesh());
     this.group.add(glow);
     this.add(
       0.15,
       () => {},
-      () => {
-        this.group.remove(glow);
-        glow.geometry.dispose();
-        (glow.material as THREE.Material).dispose();
-      },
+      () => this.group.remove(glow),
     );
     for (const kind of [
       'bolt',

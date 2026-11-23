@@ -280,7 +280,10 @@ const MON_GEO = new Map<string, MonGeo>();
 export function glowWarmMesh(): THREE.Mesh {
   const b = new GeoBuilder();
   b.add(G.box, mat(0, 0, 0, 0, 0, 0, 1e-3, 1e-3, 1e-3), col(0xffffff));
-  return new THREE.Mesh(b.build(), GLOW_MAT(0xffffff, 0.5));
+  const m = new THREE.Mesh(b.build(), GLOW_MAT(0xffffff, 0.5));
+  // Đặt ở gốc thế giới, xa khung nhìn: không tắt cắt khung thì three bỏ qua lưới và pipeline không được biên dịch.
+  m.frustumCulled = false;
+  return m;
 }
 
 /** Vết nứt ngực Thạch Tượng: mấy vệt zích zắc mảnh trước ngực (toạ độ thân ape), dùng với vật liệu cộng sáng. */
