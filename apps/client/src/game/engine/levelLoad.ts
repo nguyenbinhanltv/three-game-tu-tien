@@ -874,6 +874,8 @@ async function loadXkModel(eng: Game, shadows: boolean): Promise<void> {
     origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
     prefix: 'xk',
     material: xkMaterialFor,
+    // cụm cột bazan cao đổ bóng đen đặc (môi trường tối, không có ánh bù) phủ nửa khung ở camera chéo: bỏ đổ bóng, vẫn nhận bóng
+    noShadow: /basalt/,
   });
 }
 

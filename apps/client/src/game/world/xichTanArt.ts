@@ -7,6 +7,7 @@ import { createLanternHalos } from '../../render/atmosphere';
 import { getCloudNoise } from '../../render/noiseTex';
 import { DungeonFx } from './dungeonFx';
 import { xichCracks } from './xichArt';
+import { withSightFade } from './occlusion';
 
 /**
  * Cảnh Xích Tẫn Khích (DUN-1 PR6; chỉ để nhìn, không đổi vùng boss/đợt quái/bia giữ/ba khe mạch/cổng): hẻm núi lửa tàn đỏ-đen.
@@ -76,7 +77,7 @@ export function xkMaterialFor(name: string): THREE.Material | null {
     const ash = smoothstep(0.5, 0.85, normalWorld.y);
     const base = vertexColor().mul(float(0.7).add(fine.mul(0.35)).add(speck.mul(0.15)));
     const withAsh = mix(base, vec3(0.4, 0.39, 0.38).mul(float(0.75).add(speck.mul(0.45))), ash.mul(0.9));
-    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.88, metalness: 0.04, name });
+    const m = withSightFade(new THREE.MeshStandardNodeMaterial({ roughness: 0.88, metalness: 0.04, name })); // camera chéo: cột/gai bazan che người thì mờ
     m.colorNode = withAsh.mul(float(1).sub(crack.mul(0.7)));
     const low = smoothstep(6.0, 0.0, positionLocal.y);
     m.emissiveNode = vec3(1.0, 0.34, 0.08)
