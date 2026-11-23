@@ -351,6 +351,8 @@ describe('VS-1 Hộ pháp: 10 chiêu làm lại (đồng/nâu/đá, mỗi chiêu
     for (const [id, hero] of Object.entries(HERO)) {
       const shapes = new Set(all(id).flatMap((e) => (e.type === 'mesh' ? [e.shape] : [])));
       for (const h of hero) expect(shapes.has(h as 'burst'), `${id}:${h}`).toBe(true);
+      // V-P1: Thiết Quyền Chấn Địa dựng lại theo concept đã duyệt (vòng sóng xung kích + gai hổ phách, kiểu mực), nên được dùng ripple/spike.
+      if (id === 'skl_thiet_quyen_chan_dia') continue;
       for (const old of ['spike', 'ripple', 'helix', 'kite'] as const) expect(shapes.has(old), `${id}:${old}`).toBe(false);
     }
     // Ấn, chuông, kim cương chỉ thuộc về một chiêu.
@@ -360,7 +362,8 @@ describe('VS-1 Hộ pháp: 10 chiêu làm lại (đồng/nâu/đá, mỗi chiêu
     }
   });
   it('chỉ tông đồng/nâu/đá (body, core, shadow): không accent vàng chanh, không rim kem', () => {
-    for (const id of Object.keys(HERO))
+    for (const id of Object.keys(HERO).filter((x) => x !== 'skl_thiet_quyen_chan_dia'))
+      // V-P1: vòng sóng vàng sáng dùng tông accent theo concept
       for (const e of all(id)) {
         const tone = (e as { tone?: string }).tone;
         if (tone !== undefined && e.type !== 'vignette') expect(['body', 'core', 'shadow'], `${id}:${e.type}`).toContain(tone);
