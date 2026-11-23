@@ -107,7 +107,7 @@ export interface VfxLabApi {
 }
 
 /** Gắn `window.__vfxlab` (gọi một lần khi tạo Game, chỉ khi `?vfxlab=1` ở bản dev). */
-export function installVfxLab(g: Game, onHazard: (g: Game, m: HazardMsg) => void): void {
+export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => void): void {
   const api: VfxLabApi = {
     cast(skill) {
       const gg = g as unknown as {
@@ -152,7 +152,7 @@ export function installVfxLab(g: Game, onHazard: (g: Game, m: HazardMsg) => void
           >
         | undefined;
       const cfg = ai?.[mv] ?? def?.phases?.map((p) => (p.ai as typeof ai)?.[mv]).find(Boolean);
-      if (!def || !hit || !cfg || !gg.monFx) return false;
+      if (!def || !hit || !cfg || !gg.monFx || !onHazard) return false;
       gg.monFx.bypass = true; // phòng thử: FX do `onHazard` phát, bỏ chặn của `lab`
       const [id, b] = hit;
       const yaw = Math.atan2(gg.cur.x - b.x, gg.cur.z - b.z);
