@@ -87,6 +87,23 @@ export function caveBoundOf(level: { dungeon?: { center: { x: number; z: number 
   return d?.bound ? { x: d.center.x, z: d.center.z, r: d.bound } : undefined;
 }
 
+/**
+ * Cao độ mặt đứng hiệu dụng tại (x, z) cho người đang ở độ cao `curY`: heightmap, hoặc mặt đi được của va chạm 3D (ván cầu, bậc, phiến, sàn) trong tầm bước lên.
+ * `travelRise`: độ cao tối đa có thể lên thêm trên quãng vừa dịch chuyển (dịch chuyển tức thời đi xa: `dist * DASH_MAX_SLOPE`, vì ván/bậc dốc nâng mặt đứng hơn một bước lên).
+ * Mọi nơi server đặt lại y sau khi dịch chuyển tức thời (né, lướt, đẩy lùi, hồi thân xác…) phải dùng hàm này, không `groundAt` thuần: x/z nằm trên ván cầu mà y về đáy hác là rơi.
+ */
+export function standingY(
+  terrain: Pick<Terrain, 'groundAt'>,
+  collision: CollisionSet | undefined,
+  x: number,
+  z: number,
+  curY: number,
+  travelRise = 0,
+): number {
+  const g = terrain.groundAt(x, z);
+  return collision && collision.size ? Math.max(g, collision.standY(x, z, curY + STEP_UP + travelRise)) : g;
+}
+
 /** Độ dốc đi LÊN lớn nhất quanh (x, z) (m cao / m ngang, tám hướng, mẫu cách 0,15 m): ở vai mép đảo/cầu (một phía là vực) không tính là dốc, chỉ vách phía trước mới tính. */
 function groundSlope(groundAt: (x: number, z: number) => number, x: number, z: number): number {
   const d = 0.15;

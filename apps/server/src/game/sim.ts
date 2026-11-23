@@ -2,7 +2,8 @@ import { TickProf } from './tickprof';
 import type { Client } from 'colyseus';
 import {
   blockedAt,
-  STEP_UP,
+  standingY,
+  DASH_MAX_SLOPE,
   bottleneckReady,
   collisionOf,
   type CollisionSet,
@@ -226,7 +227,7 @@ export class GameSim {
       e.move.x = plan.x;
       e.move.z = plan.z;
       // Mặt đứng hiệu dụng (gồm bậc/phiến đá đi được), không chỉ heightmap: khỏi đặt người vào trong hộp rồi giật khi `push` đẩy ra.
-      e.move.y = Math.max(this.terrain.groundAt(plan.x, plan.z), this.collision.standY(plan.x, plan.z, e.move.y + STEP_UP));
+      e.move.y = standingY(this.terrain, this.collision, plan.x, plan.z, e.move.y, plan.dist * DASH_MAX_SLOPE);
       e.move.vy = 0;
       e.move.grounded = true;
       e.inputs.length = 0;
@@ -805,6 +806,7 @@ export class GameSim {
     sys: (p, k, params, type) => this.sys(p, k, params, type),
     fx: (m) => this.fx(m),
     groundAt: (x, z) => this.terrain.groundAt(x, z),
+    standY: (x, z, y) => standingY(this.terrain, this.collision, x, z, y),
     inDuel: (p) => this.duel.inDuel(p),
     stopMeditate: (p) => this.setMeditating(p, false),
     respawnPoint: () => this.opts.respawn,

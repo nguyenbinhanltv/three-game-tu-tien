@@ -5,7 +5,10 @@ import {
   bridgeModel,
   bridgeSurfaceT,
   collisionOf,
+  DASH_MAX_SLOPE,
   IN_JUMP,
+  planDash,
+  standingY,
   type MoveState,
   stepMove,
   VAN_LAM,
@@ -104,5 +107,36 @@ describe('Cầu treo Lạc Kiếm đi được (server stepMove + va chạm chun
   it('hác thật: đáy sâu hơn hai đầu cầu ≥ 12 m, hai đầu cầu không bị khoét', () => {
     const mid = T.groundAt((M.ax + M.bx) / 2, (M.az + M.bz) / 2);
     expect(Math.min(M.ya, M.yb) - mid).toBeGreaterThanOrEqual(12);
+  });
+
+  // Server đặt y sau dịch chuyển tức thời (né Space, lướt, đẩy lùi, thuấn di, hồi thân xác) bằng `standingY` (shared), không `groundAt` thuần.
+  it('né/lướt/đẩy lùi trên cầu (dọc nhịp và vuông góc): y vẫn ở mặt ván, không rơi xuống đáy hác', () => {
+    const along = { x: M.dx, z: M.dz };
+    const across = { x: -M.dz, z: M.dx };
+    for (const t0 of [0.3, 0.5, 0.7])
+      for (const [name, dir] of [
+        ['dọc +', along],
+        ['dọc −', { x: -along.x, z: -along.z }],
+        ['ngang +', across],
+        ['ngang −', { x: -across.x, z: -across.z }],
+      ] as const) {
+        const x = M.ax + M.dx * M.len * t0;
+        const z = M.az + M.dz * M.len * t0;
+        const s: MoveState = { x, z, y: cauTreoDeckY(M, t0), vy: 0, grounded: true, flying: false };
+        const plan = planDash(s, dir, 6, undefined, { terrain: T, collision: col });
+        const t1 = bridgeSurfaceT(M, plan.x, plan.z, 0.01);
+        expect(t1, `${name} t0=${t0}: điểm đến phải còn trên ván`).not.toBeNull();
+        const y = standingY(T, col, plan.x, plan.z, s.y, plan.dist * DASH_MAX_SLOPE);
+        expect(Math.abs(y - cauTreoDeckY(M, t1!)), `${name} t0=${t0}`).toBeLessThan(0.3);
+        // cách cũ (heightmap thuần) rơi xuống đáy hác: chứng minh test có răng
+        expect(s.y - T.groundAt(plan.x, plan.z)).toBeGreaterThan(8);
+      }
+  });
+
+  it('standingY: đứng dưới đáy hác thì vẫn là mặt đất, không nhảy lên ván', () => {
+    const mx = (M.ax + M.bx) / 2;
+    const mz = (M.az + M.bz) / 2;
+    const g = T.groundAt(mx, mz);
+    expect(standingY(T, col, mx, mz, g)).toBeCloseTo(g, 5);
   });
 });

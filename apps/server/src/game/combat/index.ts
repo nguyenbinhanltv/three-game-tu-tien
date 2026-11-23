@@ -62,6 +62,7 @@ import {
   hitOffsets,
   collisionOf,
   planDash,
+  standingY,
   strikeDelay,
   type Terrain,
   type ResourceMods,
@@ -264,7 +265,7 @@ export class CombatSystem {
     if (plan.dist >= 0.5) {
       p.move.x = plan.x;
       p.move.z = plan.z;
-      p.move.y = this.c.terrain.groundAt(plan.x, plan.z);
+      p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, p.move.y, plan.dist * DASH_MAX_SLOPE);
       p.move.vy = 0;
       p.move.grounded = true;
       p.inputs.length = 0;
@@ -403,7 +404,7 @@ export class CombatSystem {
     const from = { x: p.move.x, z: p.move.z, y: p.move.y };
     p.move.x = plan.x;
     p.move.z = plan.z;
-    p.move.y = this.c.terrain.groundAt(plan.x, plan.z);
+    p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, p.move.y, plan.dist * DASH_MAX_SLOPE);
     p.move.vy = 0;
     p.move.grounded = true;
     p.inputs.length = 0;
@@ -1643,7 +1644,7 @@ export class CombatSystem {
     if (plan.dist < 0.5) return 0;
     p.move.x = plan.x;
     p.move.z = plan.z;
-    p.move.y = this.c.terrain.groundAt(plan.x, plan.z);
+    p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, p.move.y, plan.dist * DASH_MAX_SLOPE);
     p.move.vy = 0;
     p.move.grounded = true;
     p.inputs.length = 0;
