@@ -140,7 +140,7 @@ export function detectGrid(r: Raster): Grid {
   let best: Grid = { cols: 1, rows: 1, ratio: 1 };
   for (const cols of GRID_SIZES) {
     for (const rows of GRID_SIZES) {
-      if (cols * rows <= best.cols * best.rows || w % cols || h % rows) continue;
+      if (cols * rows <= best.cols * best.rows) continue;
       let sum = 0;
       let cnt = 0;
       for (let k = 1; k < cols; k++) {
@@ -161,7 +161,7 @@ export function detectGrid(r: Raster): Grid {
           let s = 0;
           let n = 0;
           for (let y = Math.floor(cy * ch); y < Math.floor((cy + 1) * ch); y += 2) {
-            for (let x = Math.floor(cx * cw); x < Math.floor((cx + 1) * cw); x += 2, n++) s += a(x, y);
+            for (let x = Math.floor(cx * cw); x < Math.floor((cx + 1) * cw); x += 2, n++) s += a(Math.min(w - 1, x), Math.min(h - 1, y));
           }
           if (n && s / n > 0.02 * mean) live++;
         }

@@ -90,3 +90,15 @@ describe('forge end to end', () => {
     await expect(forge({ id: 'Bad Id', input: 'x', outDir: 'y', ktx: false }, '.')).rejects.toThrow(/id/);
   });
 });
+
+describe('ảnh cỡ lẻ (Codex hay ra 1254 px)', () => {
+  it('dò đúng 4×4 khi cạnh không chia hết cho 4', async () => {
+    const { default: sharp } = await import('sharp');
+    const { loadRaster, toRgba8 } = await import('./io.js');
+    const base = sampleSlashFlipbook(4, 128, 'black');
+    const png = await sharp(toRgba8(base), { raw: { width: base.w, height: base.h, channels: 4 } }).resize(510, 510).png().toBuffer();
+    const r = await loadRaster(png);
+    expect(510 % 4).not.toBe(0);
+    expect(detectGrid(extractAlpha(r))).toMatchObject({ cols: 4, rows: 4 });
+  });
+});

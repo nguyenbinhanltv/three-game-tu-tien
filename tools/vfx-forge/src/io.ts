@@ -55,6 +55,16 @@ export function encodeKtx2(toktx: string, png: string, out: string, srgb: boolea
   if (r.status !== 0 || !fs.existsSync(out)) throw new Error(`toktx lỗi: ${(r.stdout + r.stderr).trim()}`);
 }
 
+/** Co ảnh để mỗi ô lưới có cạnh là bội số của 4 (ảnh Codex hay có cỡ lẻ như 1254): khung cắt đều, nén KTX2 không lệch. */
+export async function snapToGrid(r: Raster, g: { cols: number; rows: number }): Promise<Raster> {
+  const cw = Math.max(4, Math.round(r.w / g.cols / 4) * 4);
+  const ch = Math.max(4, Math.round(r.h / g.rows / 4) * 4);
+  const w = cw * g.cols;
+  const h = ch * g.rows;
+  if (w === r.w && h === r.h) return r;
+  return loadRaster(await rawOf(r).resize(w, h, { kernel: 'lanczos3' }).png().toBuffer());
+}
+
 export const tmpDir = (): string => fs.mkdtempSync(path.join(os.tmpdir(), 'dtl-vfxforge-'));
 
 /** Contact sheet: lưới các khung trên nền ca-rô, mỗi ô `cell` px, để duyệt mắt trước khi vào game. */

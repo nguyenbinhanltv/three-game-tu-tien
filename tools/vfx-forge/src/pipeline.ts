@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { balance, defringe, detectGrid, extractAlpha, packChannels, parseGrid, stats, type AlphaMode, type Raster } from './forge.js';
-import { contactSheet, encodeKtx2, findToktx, fitRaster, loadRaster, toPng, tmpDir } from './io.js';
+import { contactSheet, encodeKtx2, findToktx, fitRaster, loadRaster, snapToGrid, toPng, tmpDir } from './io.js';
 
 /** Dòng ghi nguồn bắt buộc cho mọi texture vào repo. */
 export const SOURCE_NOTE = 'Codex-generated, dự án sở hữu';
@@ -72,7 +72,7 @@ export async function forge(o: ForgeOpts, root: string): Promise<ForgeResult> {
     for (const x of [eroder, dist]) if (x && (x.w !== r.w || x.h !== r.h)) throw new Error('ảnh ăn mòn/méo phải cùng cỡ với ảnh nguồn');
     r = packChannels(r, { erode: eroder, distort: dist });
   }
-  r = await fitRaster(r, o.max ?? 1024);
+  r = await snapToGrid(await fitRaster(r, o.max ?? 1024), g);
   const st = stats(r);
   if (pack === 'color' && st.cover > 0.9) warnings.push(`phủ ${(st.cover * 100).toFixed(0)}% khung: ảnh nền đen chưa tách được? Kiểm --mode`);
   if (g.cols * g.rows > 1 && (r.w % g.cols || r.h % g.rows)) warnings.push('cỡ ảnh không chia hết cho lưới');

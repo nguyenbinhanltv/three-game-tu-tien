@@ -1,0 +1,42 @@
+import { describe, expect, it } from 'vitest';
+import type { VfxCard } from '@dtl/shared';
+import { conceptPrompt, texturePrompt, type PalHex, type StyleSheet } from './prompts.js';
+
+const style: StyleSheet = {
+  name: 'T',
+  summary: 's',
+  ramp: { core: 'c', body: 'b', rim: 'r' },
+  stroke: { minWidthPctOfFrame: 3, note: 'n' },
+  contrast: 'k',
+  forbidden: ['đỏ, cam'],
+  perspective: 'p',
+  approvedSamples: 'a',
+};
+const pal: PalHex = { core: '0a3f5e', body: '2cc7dc', rim: 'f2fdff', accent: 'f3c860', shadow: '08202e' };
+const card = {
+  skillId: 'x',
+  idea: 'vệt kiếm khí',
+  shapeLang: ['arc', 'line'],
+  timing: { anticipationMs: 280, impactMs: 60, lingerMs: 400 },
+  footprint: { lengthM: 9, widthM: 2.5, heightM: 2 },
+} as unknown as VfxCard;
+
+describe('prompts', () => {
+  it('concept: đủ 4 khung, màu hướng tu, cấm đỏ cam, đính phối cảnh', () => {
+    const p = conceptPrompt(card, style, pal);
+    expect(p).toMatch(/2x2/);
+    expect(p).toMatch(/#2CC7DC/);
+    expect(p).toMatch(/đỏ, cam/);
+    expect(p).toMatch(/FIRST attached image/);
+    expect(p).toMatch(/280 ms/);
+  });
+  it('flipbook: nền đen và lưới đúng', () => {
+    const p = texturePrompt('flipbook', card, style, pal, '8x8');
+    expect(p).toMatch(/8x8/);
+    expect(p).toMatch(/#000000/);
+  });
+  it('noise: xám, lát được; ramp: ba tông', () => {
+    expect(texturePrompt('noise', card, style, pal)).toMatch(/tileable/);
+    expect(texturePrompt('ramp', card, style, pal)).toMatch(/#0A3F5E/);
+  });
+});
