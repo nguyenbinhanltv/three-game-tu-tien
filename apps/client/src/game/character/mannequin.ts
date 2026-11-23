@@ -1,7 +1,7 @@
 // Nhân vật v3 (N-0 → N-7): model nguyên khối có bộ xương UE5 Mannequin (`chr_v3_*`, tools/blender/chr_v3.py) phát
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
-import { DEATH_DIR_TTL, DEATH_TURN_S, dashClipOf, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
+import { DEATH_DIR_TTL, DEATH_TURN_S, dashClipOf, holdHipsInPlace, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
 import { boneKey } from './ikpose';
 import { applyProportions, proportionBones, type BoneScale } from './hero';
 import * as THREE from 'three/webgpu';
@@ -394,7 +394,10 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   for (const c of lib.animations) {
     const cl = (over.get(c.name) ?? c).clone();
     for (const t of cl.tracks) {
-      if (t.name === 'pelvis.position') for (let i = 0; i < t.values.length; i++) t.values[i]! *= k;
+      if (t.name === 'pelvis.position') {
+        for (let i = 0; i < t.values.length; i++) t.values[i]! *= k;
+        if (c.name === 'Sword_Dash') holdHipsInPlace(t.values);
+      }
     }
     clips.set(c.name, cl);
   }

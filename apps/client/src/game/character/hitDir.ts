@@ -47,3 +47,19 @@ export const DEATH_TURN_S = 0.14;
 export function dashClipOf(strike: boolean, has: (clip: string) => boolean): 'Sword_Dash' | 'Roll' {
   return strike && has('Sword_Dash') ? 'Sword_Dash' : 'Roll';
 }
+
+/**
+ * Khử chuyển động gốc của clip lướt (Sword_Dash): kênh vị trí hông giữ nguyên trục cao nhất (độ cao hông), hai trục ngang bị giữ ở giá trị khung đầu.
+ * Chỗ đứng do vị trí thật (server) và `dashOff` quyết định; clip chỉ tạo dáng, không tự lao ra khỏi vòng chân. Sửa trực tiếp `values` (ba số mỗi khung).
+ */
+export function holdHipsInPlace(values: ArrayLike<number> & { [i: number]: number }): void {
+  const n = Math.floor(values.length / 3);
+  if (n < 2) return;
+  let up = 0;
+  for (let a = 1; a < 3; a++) if (Math.abs(values[a]!) > Math.abs(values[up]!)) up = a;
+  for (let a = 0; a < 3; a++) {
+    if (a === up) continue;
+    const v0 = values[a]!;
+    for (let i = 1; i < n; i++) values[i * 3 + a] = v0;
+  }
+}
