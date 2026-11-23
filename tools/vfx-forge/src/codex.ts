@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { PATH } from '@dtl/content';
 import type { VfxCard } from '@dtl/shared';
+import { quoteArg } from './quote.js';
 import { conceptPrompt, DEFAULT_RUN_NOTE, texturePrompt, type PalHex, type StyleSheet, type TextureKind } from './prompts.js';
 
 export function loadCard(root: string, skillId: string): VfxCard {
@@ -40,11 +41,6 @@ export interface CodexResult {
   code: number | null;
   /** File log stdout+stderr cạnh prompt, để chẩn đoán (thiếu codex trong PATH, lỗi xác thực...). */
   log: string;
-}
-
-/** Bọc một tham số cho cmd.exe khi chạy qua shell (Windows): có dấu cách/ký tự đặc biệt thì đặt trong ngoặc kép. */
-export function quoteArg(a: string): string {
-  return /^[\w@%+=:,./\-]+$/.test(a) && !/[%^&|<>]/.test(a) ? a : `"${a.replace(/"/g, '\\"').replace(/%/g, '%%')}"`;
 }
 
 /** Chạy một việc Codex. Prompt và log (stdout+stderr) được lưu cạnh ảnh để tái lập và chẩn đoán. */

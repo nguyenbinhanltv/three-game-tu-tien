@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { VfxCard } from '@dtl/shared';
+import { quoteArg } from './quote.js';
 import { conceptPrompt, texturePrompt, type PalHex, type StyleSheet } from './prompts.js';
 
 const style: StyleSheet = {
@@ -42,8 +43,7 @@ describe('prompts', () => {
 });
 
 describe('quoteArg', () => {
-  it('quote đường dẫn có dấu cách hoặc ký tự cmd', async () => {
-    const { quoteArg } = await import('./codex.js');
+  it('quote đường dẫn có dấu cách hoặc ký tự cmd', () => {
     expect(quoteArg('C:/a b/c.png')).toBe('"C:/a b/c.png"');
     expect(quoteArg('a&b')).toBe('"a&b"');
     expect(quoteArg('exec')).toBe('exec');
