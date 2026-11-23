@@ -369,9 +369,9 @@
     height: 78px;
   }
 }
-@media (max-height: 820px) {
+@media (max-height: 950px) {
   :root:root .ngj-card .look-gender .look-face {
-    height: 52px;
+    height: 56px;
   }
   #root .ts-card.u2-card .login-tag {
     margin: 0 0 2px;
@@ -387,6 +387,15 @@
     flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
+  }
+}
+@media (max-height: 700px) {
+  #root .ts-card.u2-card .login-hint,
+  #root .ts-card.u2-card .login-tag {
+    display: none;
+  }
+  .root-opt {
+    height: 28px;
   }
 }
 @media (max-height: 640px) {
