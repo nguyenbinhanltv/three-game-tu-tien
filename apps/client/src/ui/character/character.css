@@ -147,3 +147,33 @@
   gap: var(--u-sp-3);
   min-width: 0;
 }
+
+/* Giữa bảng Nhân vật: chọn tranh Họa Trúc hoặc xem trước 3D xoay được (Chân Cảnh U10) */
+.equip-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--u-sp-1);
+  min-width: 0;
+}
+.equip-view-tabs {
+  display: inline-flex;
+  border: 1px solid var(--u-gold-line);
+}
+.equip-view-tabs button {
+  padding: 2px var(--u-sp-3);
+  font: inherit;
+  font-size: var(--u-fs-1);
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.equip-view-tabs button[aria-selected='true'] {
+  background: var(--u-gold-lo);
+  color: var(--u-chu);
+}
+.equip-center .wd-pv-stage {
+  width: 100%;
+  min-width: 160px;
+}

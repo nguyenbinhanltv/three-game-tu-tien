@@ -86,6 +86,7 @@ import tipchieu from './scenarios/tipchieu';
 import uxhint from './scenarios/uxhint';
 import nameplate from './scenarios/nameplate';
 import partyframe from './scenarios/partyframe';
+import charbag from './scenarios/charbag';
 import vs2 from './scenarios/vs2';
 import hontu from './scenarios/hontu';
 import realmaura from './scenarios/realmaura';
@@ -128,6 +129,7 @@ const SCENARIOS: Scenario[] = [
   uxhint,
   nameplate,
   partyframe,
+  charbag,
   vs2,
   hontu,
   ui,

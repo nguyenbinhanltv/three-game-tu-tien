@@ -13,6 +13,7 @@ import { dropFromDrag } from '../bag/Bag';
 import { useBagDrag } from '../bag/dnd';
 import { itemKindOk } from '../bag/model';
 import { HoaTruc } from './HoaTruc';
+import { CharPreview3D } from '../CharPreview3D';
 import { pickPortrait } from './portraitPick';
 import './hoatruc.css';
 import { statRows, type StatId } from './stats';
@@ -25,6 +26,12 @@ const BOARD_RIGHT: WearSlot[] = ['robe', 'boots', 'jade', 'artifact', 'skin'];
 function EquipBoard() {
   const equip = useUI((s) => s.equip);
   const [sel, setSel] = useState<WearSlot | null>(null);
+  // Giữa khung: tranh Họa Trúc (mặc định) hoặc mô hình 3D xoay được; nhớ lựa chọn.
+  const [view, setView] = useState<'art' | '3d'>(() => (localStorage.getItem('dtl.charView') === '3d' ? '3d' : 'art'));
+  const pickView = (v: 'art' | '3d') => {
+    setView(v);
+    localStorage.setItem('dtl.charView', v);
+  };
   const drag = useBagDrag((d) => d.drag);
   const g = Game.current;
   const level = useUI((s) => s.char?.level ?? 1);
@@ -73,7 +80,27 @@ function EquipBoard() {
     <div className="equip-board">
       <div className="equip-board-grid">
         <div className="equip-col">{BOARD_LEFT.map(cell)}</div>
-        <HoaTruc q={Math.max(0, best)} pick={pick} />
+        <div className="equip-center" data-view={view}>
+          <div className="equip-view-tabs" role="tablist" aria-label={t('ui.char.view')}>
+            {(['art', '3d'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={view === v}
+                data-testid={`char-view-${v}`}
+                onClick={() => pickView(v)}
+              >
+                {t('ui.char.view.' + v)}
+              </button>
+            ))}
+          </div>
+          {view === 'art' ? (
+            <HoaTruc q={Math.max(0, best)} pick={pick} />
+          ) : (
+            <CharPreview3D look={() => Game.current!.ents.localLookNow()} deps={[equip]} />
+          )}
+        </div>
         <div className="equip-spacer" />
         <div className="equip-col">{BOARD_RIGHT.map(cell)}</div>
       </div>
