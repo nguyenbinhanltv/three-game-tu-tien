@@ -1,7 +1,7 @@
 // Tủ ngoại trang (P4-3, docs/wardrobe/README.md): chọn dáng đã mở khóa để HIỂN THỊ thay cho món đang mặc, nhuộm 3 kênh.
 // Chỉ gửi ý định (C.LOOK_SET / LOOK_DYE / LOOK_RESET); server kiểm sở hữu, ô, giới tính. Không đổi chỉ số. Miễn phí.
 // Khung trái là xem trước 3D (xoay được) của bản nháp, nên thấy dáng + màu trước khi Áp dụng.
-import { type PointerEvent as RPointerEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { C, DISPLAY_SLOTS, DYE_CHANNELS, type DisplaySlot } from '@dtl/shared';
 import { APPEARANCE, ITEM, itemName, t } from '@dtl/content';
 import { Game, reqId } from '../../game/engine';
@@ -12,6 +12,7 @@ import { gearQuality } from '../gear';
 import { draftFrom, itemsForSlot, lookKey, planApply, withChannel, type Draft, type LookCmd } from './model';
 import { closeWardrobe } from './nav';
 import { draftLook } from './previewLook';
+import { CharPreview3D } from '../CharPreview3D';
 import './wardrobe.css';
 
 /** Server giãn 200 ms giữa hai lần đổi (cùng chặn với mặc/tháo đồ): gửi lần lượt, cách nhau một chút. */
@@ -24,58 +25,15 @@ function send(cmd: LookCmd): void {
   else g.send(C.LOOK_DYE, { dye: cmd.dye, r: reqId() });
 }
 
-/** Xem trước 3D của bản nháp: vẽ bằng `CharPreview` của game (cùng đường dựng nhân vật), kéo chuột để xoay. */
+/** Xem trước 3D của bản nháp (dùng chung `CharPreview3D`). */
 function Preview({ draft }: { draft: Draft }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  const drag = useRef<number | null>(null);
-  const [failed, setFailed] = useState(false);
   const equip = useUI((s) => s.equip);
-
-  useEffect(() => {
-    const g = Game.current;
-    const cv = canvas.current;
-    if (!g || !cv) return;
-    const pv = g.preview;
-    pv.onFail = () => setFailed(true);
-    pv.attach(cv);
-    return () => {
-      pv.onFail = null;
-      pv.detach();
-      g.ents.setPreviewLook(null);
-    };
-  }, []);
-
-  useEffect(() => {
-    const g = Game.current;
-    if (g) g.ents.setPreviewLook(draftLook(g.ents.localLookNow(), equip, draft));
-  }, [draft, equip]);
-
-  const down = (e: RPointerEvent<HTMLDivElement>) => {
-    drag.current = e.clientX;
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-  const move = (e: RPointerEvent<HTMLDivElement>) => {
-    if (drag.current === null) return;
-    Game.current?.preview.rotate(e.clientX - drag.current);
-    drag.current = e.clientX;
-  };
-  const up = () => void (drag.current = null);
   return (
-    <div className="wd-pv">
-      <div
-        className="wd-pv-stage"
-        data-testid="wardrobe-preview"
-        onPointerDown={down}
-        onPointerMove={move}
-        onPointerUp={up}
-        onPointerCancel={up}
-        role="img"
-        aria-label={t('ui.wardrobe.preview')}
-      >
-        {failed ? <div className="k-dim">{t('ui.wardrobe.preview_off')}</div> : <canvas ref={canvas} />}
-      </div>
-      <div className="k-dim wd-pv-hint">{t('ui.wardrobe.drag')}</div>
-    </div>
+    <CharPreview3D
+      testId="wardrobe-preview"
+      look={() => draftLook(Game.current!.ents.localLookNow(), equip, draft)}
+      deps={[draft, equip]}
+    />
   );
 }
 
