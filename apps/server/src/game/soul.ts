@@ -33,6 +33,8 @@ interface SoulHost {
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string): void;
   fx(m: FxMsg): void;
   groundAt(x: number, z: number): number;
+  /** Mặt đứng hiệu dụng (gồm ván cầu/bậc) cho người đang ở độ cao y: hồi thân xác đang đứng trên cầu không rơi xuống hác. */
+  standY(x: number, z: number, y: number): number;
   inDuel(p: PlayerEnt): boolean;
   stopMeditate(p: PlayerEnt): void;
   /** Điểm hồi sinh của room. */
@@ -167,7 +169,7 @@ export class SoulSystem {
     p.move.z = s.bz;
     p.move.vy = 0;
     p.move.flying = s.bFlying;
-    const g = this.h.groundAt(s.bx, s.bz);
+    const g = s.bFlying ? this.h.groundAt(s.bx, s.bz) : this.h.standY(s.bx, s.bz, s.by);
     p.move.y = s.bFlying ? Math.max(s.by, g) : g;
     p.move.grounded = !s.bFlying;
     p.inputs.length = 0;

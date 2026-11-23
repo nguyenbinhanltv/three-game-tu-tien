@@ -3,6 +3,7 @@
 import { at } from './arr';
 import { describe, expect, it } from 'vitest';
 import { fbm, lerp, ridged, smoothstep } from './noise';
+import { gorgeDrop, TC_GORGE } from './tieucanh';
 import {
   COLLIDERS,
   type Feature,
@@ -261,6 +262,9 @@ function legacyHeightAt(x: number, z: number): number {
 
   w = legacyFeatureWeight(SECT, x, z);
   if (w > 0) h = lerp(h, SECT.y, w);
+
+  // Hác dưới cầu treo Lạc Kiếm (Chân Cảnh M2) là thay đổi có chủ ý so với bản gốc E1-A: cộng vào bản chép để phần còn lại vẫn so từng bit.
+  h -= gorgeDrop(TC_GORGE, x, z);
 
   // Ranh vùng chơi: ngay sau chân vách (PLAY_WALL) địa hình dựng đứng lên, đi tới đó gặp vách.
   const dPlay = playDist(x, z);
