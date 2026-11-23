@@ -166,6 +166,7 @@ import {
   tribForLevel,
   peakGated,
 } from '@dtl/shared';
+import { isHitTier } from '@dtl/shared';
 import { TELE_PADS, TELE_PAD, terrainOf, questSpot, inPoly } from '@dtl/shared';
 import { checkLevel } from './levelcheck';
 import { CREDITS, CREDIT_KINDS, CREDIT_LICENSE_URL, PATH } from './index';
@@ -418,6 +419,15 @@ for (const m of METHODS) {
     err(`method ${m.id}: chiêu lướt ${m.dash} phải thuộc công pháp và có kind dash`);
 }
 // Quy tắc thời gian/liên hoàn (K-2): hitAt trùng nhịp pose, combo, cường hóa, lướt.
+for (const s of ALL_SKILLS) {
+  if (s.tier !== undefined && !isHitTier(s.tier)) err(`skill ${s.id}: tier phải là light/medium/heavy/finisher`);
+  for (const h of s.combo?.hits ?? []) if (h.tier !== undefined && !isHitTier(h.tier)) err(`skill ${s.id}: combo.hits[].tier không hợp lệ`);
+}
+for (const m of MONSTERS) {
+  if (m.tier !== undefined && !isHitTier(m.tier)) err(`monster ${m.id}: tier phải là light/medium/heavy/finisher`);
+  if (m.poise !== undefined && !isHitTier(m.poise)) err(`monster ${m.id}: poise phải là light/medium/heavy/finisher`);
+  if (m.boss && m.poise === 'light') err(`monster ${m.id}: thủ lĩnh phải có poise từ medium trở lên (miễn khựng nhẹ)`);
+}
 for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined)) err(m);
 // VS-2b: đồ thị chuỗi chiêu (id có thật, cùng công pháp, không vòng, hệ số trong khoảng).
 for (const m of chainErrors(ALL_SKILLS)) err(m);

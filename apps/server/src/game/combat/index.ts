@@ -71,6 +71,8 @@ import {
   markAny,
   markTakeAny,
   type JointDef,
+  strikeTier,
+  type HitTier,
 } from '@dtl/shared';
 import { JOINTS, MARK, SKILL, t } from '@dtl/content';
 import { parties } from '../party';
@@ -107,7 +109,7 @@ export interface CombatCtx {
   emit(type: string, payload: object): void;
   fx(m: FxMsg): void;
   /** Trả true nếu đòn có hiệu lực (quái còn sống, không miễn sát thương, không phải bóng của người khác). */
-  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul?: number, elem?: string): boolean;
+  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul?: number, elem?: string, tier?: HitTier): boolean;
   homeDist(m: MonEnt): number;
   isDead(p: PlayerEnt): boolean;
   readonly level: LevelDef;
@@ -434,7 +436,7 @@ export class CombatSystem {
     if (skill.power > 0 && tgt && (pullOnly || this.inRange(p, tgt, 3))) {
       // Lướt húc trong cửa sổ chuỗi: chỉ nhân sức mạnh, tiêu cửa sổ khi húc trúng (lướt hụt không mất chuỗi).
       const mul = takeChain(p.flow, skill, this.c.now).powerMul;
-      this.c.hitMonster(p, tgt, rs.power * mul, skillDamageMul(c.stats, skill.elem), skill.elem);
+      this.c.hitMonster(p, tgt, rs.power * mul, skillDamageMul(c.stats, skill.elem), skill.elem, skill.tier);
       // Húc choáng quái thường (hộ pháp): tinh anh nửa thời gian, boss miễn.
       // Bộ Vân Kình bậc 3 (4 món): Dịch Sơn Xung choáng thêm `dichSonStun` giây.
       // VS-2c: húc quái mang Trấn ấn của mình: choáng thêm, tích Huyết khí; đủ Huyết khí thì xả ra khiến quái mất thế.
@@ -795,8 +797,8 @@ export class CombatSystem {
   }
 
   /** Đòn của chiêu `skill` lên `mon`: trúng đích thì tích tài nguyên theo chiêu. */
-  strike(p: PlayerEnt, mon: MonEnt, skill: SkillDef, power: number, elemMul: number): void {
-    if (this.c.hitMonster(p, mon, power, elemMul, skill.elem)) this.addRes(p, this.resGainOf(p, skill));
+  strike(p: PlayerEnt, mon: MonEnt, skill: SkillDef, power: number, elemMul: number, combo?: number): void {
+    if (this.c.hitMonster(p, mon, power, elemMul, skill.elem, strikeTier(skill, combo))) this.addRes(p, this.resGainOf(p, skill));
   }
 
   gainCharge(p: PlayerEnt, n: number): void {
@@ -1133,7 +1135,7 @@ export class CombatSystem {
           const off = offs[i] ?? 0;
           const last = i === rs.hits.length - 1;
           if (off <= 0) {
-            this.strike(p, mon, skill, h * mul, elemMul);
+            this.strike(p, mon, skill, h * mul, elemMul, ctx.combo);
             if (last && am?.last) this.markMon(p, mon, am.id, am.n);
             if (last && v?.knock) this.pushMonster(mon, p.move.x, p.move.z, v.knock);
             return;
@@ -1141,7 +1143,7 @@ export class CombatSystem {
           this.later(off, () => {
             // Người ra chiêu phải còn trong room, còn sống, chưa bay lên; quái chưa chết.
             if (this.c.players.get(p.sid) === p && !this.c.isDead(p) && !this.airborne(p) && mon.state !== MS_DEAD) {
-              this.strike(p, mon, skill, h * mul, elemMul);
+              this.strike(p, mon, skill, h * mul, elemMul, ctx.combo);
               if (last && am?.last) this.markMon(p, mon, am.id, am.n);
               if (last && v?.knock) this.pushMonster(mon, p.move.x, p.move.z, v.knock);
             }

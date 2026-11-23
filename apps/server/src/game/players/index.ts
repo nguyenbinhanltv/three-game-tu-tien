@@ -2,6 +2,11 @@
 import type { Client } from 'colyseus';
 import {
   COMBAT_REGEN_DELAY,
+  PF_STAGGER,
+  PLAYER_STAGGER_GAP_MS,
+  planDash,
+  playerReaction,
+  type HitTier,
   caveBoundOf,
   wearableBy,
   glowStage,
@@ -36,6 +41,7 @@ import {
   skyFlightUnlocked,
   type Terrain,
 } from '@dtl/shared';
+import { hitReactCfg } from '../hitreactCfg';
 import { TribSystem } from '../trib';
 import { ITEM, realmName, SETS } from '@dtl/content';
 import { PlayerS, type WorldState } from '../../state';
@@ -139,6 +145,8 @@ export class PlayerSystem {
       hazardWin: { until: 0, taken: 0 },
       dodgeUntil: 0,
       dodgeAt: -1e9,
+      staggerUntil: 0,
+      staggerOkAt: 0,
       meditating: false,
       xpAcc: 0,
       trib: null,
@@ -294,6 +302,42 @@ export class PlayerSystem {
     p.lastInputAt = this.c.now;
   }
 
+  /**
+   * Chân Cảnh S1: người chơi trúng đòn của quái. Khựng ngắn (≤ `PLAYER_STAGGER_MAX_MS`) và đẩy lùi theo cấp đòn, do server quyết:
+   * vị trí sau đẩy lùi lập bằng `planDash` (kiểm địa hình, vòng va chạm của level, mép hang) nên không xuyên tường; client không
+   * gửi được vị trí này. Sau mỗi lần có `PLAYER_STAGGER_GAP_MS` miễn khựng để nhiều đòn liên tiếp không khóa người chơi.
+   * Không áp khi độ kiếp, thử thách tâm ma, thám thính, đang bay, hoặc đang bất tử (né).
+   */
+  hitReact(p: PlayerEnt, tier: HitTier, fromX: number, fromZ: number): void {
+    if (!hitReactCfg.enabled) return;
+    const r = playerReaction(tier);
+    if (r.staggerMs <= 0 && r.knockM <= 0) return;
+    if (this.c.isDead(p) || p.trib || p.trial || p.move.flying || this.c.soul.isScouting(p)) return;
+    if (this.c.now < p.staggerOkAt) return;
+    p.staggerUntil = this.c.now + r.staggerMs;
+    p.staggerOkAt = p.staggerUntil + PLAYER_STAGGER_GAP_MS;
+    this.c.setFlag(p, PF_STAGGER, r.staggerMs > 0);
+    if (r.knockM <= 0) return;
+    let dx = p.move.x - fromX;
+    let dz = p.move.z - fromZ;
+    const l = Math.hypot(dx, dz);
+    if (l < 1e-3) return;
+    dx /= l;
+    dz /= l;
+    const plan = planDash(p.move, { x: dx, z: dz }, r.knockM, undefined, {
+      terrain: this.c.terrain,
+      bound: caveBoundOf(this.c.level),
+      collision: collisionOf(this.c.level),
+    });
+    if (plan.dist < 0.05) return;
+    p.move.x = plan.x;
+    p.move.z = plan.z;
+    p.move.y = this.c.terrain.groundAt(plan.x, plan.z);
+    p.move.vy = 0;
+    p.move.grounded = true;
+    p.inputs?.splice(0);
+  }
+
   canFly(p: PlayerEnt): boolean {
     return !this.c.isDead(p) && !p.trib && (this.c.soul.isScouting(p) || canFlyAt(p.char.level, p.char.mp, p.move.x, p.move.y, p.move.z));
   }
@@ -312,7 +356,7 @@ export class PlayerSystem {
     const ghost = this.c.soul.ghostOf(p);
     stepMove(p.move, inp, {
       canFly,
-      frozen: dead || this.c.tribSys.soulFrozen(p),
+      frozen: dead || this.c.tribSys.soulFrozen(p) || this.c.now < p.staggerUntil,
       speedMul: 1,
       terrain: this.c.terrain,
       collision: collisionOf(this.c.level),
@@ -353,6 +397,7 @@ export class PlayerSystem {
       p.budget -= STEP;
     }
 
+    if (p.s.fl & PF_STAGGER && this.c.now >= p.staggerUntil) this.c.setFlag(p, PF_STAGGER, false);
     this.c.realm.tick(p);
     const dead = this.c.isDead(p);
     if (!dead) {
