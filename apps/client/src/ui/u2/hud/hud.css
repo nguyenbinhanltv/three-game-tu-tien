@@ -1148,21 +1148,25 @@
   width: 12px;
   height: 12px;
 }
-.res-bar.dock[data-full] {
+/* Quầng sáng đặt ở phần tử bọc: clip-path của .res-bar.dock sẽ cắt drop-shadow nếu để cùng phần tử */
+.u2h-dock > .k-tip-host:has(> .res-bar.dock[data-full]) {
   animation: u2h-res-glow 1.2s ease-in-out infinite;
 }
 .res-bar.dock[data-full] .res-track {
   box-shadow: 0 0 12px 2px var(--rc);
 }
 @keyframes u2h-res-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px var(--u-gold));
+  }
   50% {
-    filter: drop-shadow(0 0 6px var(--rc));
-    border-color: var(--rc);
+    filter: drop-shadow(0 0 12px var(--u-gold-hi));
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .res-bar.dock[data-full] {
+  .u2h-dock > .k-tip-host:has(> .res-bar.dock[data-full]) {
     animation: none;
-    filter: drop-shadow(0 0 6px var(--rc));
+    filter: drop-shadow(0 0 7px var(--u-gold-hi));
   }
 }
