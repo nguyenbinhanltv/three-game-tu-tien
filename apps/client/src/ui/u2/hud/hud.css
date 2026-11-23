@@ -1074,3 +1074,47 @@
 .stance-slot[data-active] {
   filter: drop-shadow(0 0 6px var(--u-h-gold-hi));
 }
+
+/* ───────── Chân Cảnh U1: máu/linh lực + buff ở chân thanh chiêu (thanh ngang PC), thẻ nhân vật gọn, khung tổ đội dưới thẻ ───────── */
+.u2h-skills[data-layout='bar'] {
+  bottom: calc(var(--h-safe) + var(--h-dock-h) + var(--h-dock-gap));
+}
+.u2h-dock {
+  left: calc(var(--h-W) / 2);
+  bottom: var(--h-safe);
+  transform: translateX(-50%);
+  width: var(--h-dock-w);
+  height: var(--h-dock-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--u-sp-1);
+  pointer-events: none;
+}
+.u2h-dock > * {
+  pointer-events: auto;
+}
+.u2h-dock-bars {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--u-sp-2);
+}
+.u2h-dock .buff-row {
+  min-height: 24px;
+}
+.u2h-tl.lite {
+  align-items: center;
+}
+.u2h-tl.lite .u2h-portrait {
+  width: 56px;
+  height: 56px;
+}
+.u2h-tl.lite .u2h-pc-main {
+  gap: var(--u-sp-2);
+}
+.pty-frame {
+  left: var(--h-safe);
+  top: calc(var(--h-safe) + var(--h-tl-h) + 10px);
+}
