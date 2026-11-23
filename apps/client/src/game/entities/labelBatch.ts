@@ -140,6 +140,9 @@ class LabelBatch {
     const cx = ox + 256;
     const put = (t: string, y: number, font: string, fill: string) => {
       g.font = font;
+      // Tên dài (tinh anh: "Huyết Nha Lang · Tinh anh") thu nhỏ chữ vừa ô atlas thay vì bị cắt hai đầu.
+      const wpx = g.measureText(t).width;
+      if (wpx > CELL_W - 28) g.font = font.replace(/(\d+)px/, (_m, n: string) => `${Math.floor((Number(n) * (CELL_W - 28)) / wpx)}px`);
       g.lineWidth = 7;
       g.strokeStyle = 'rgba(8,12,20,0.85)';
       g.strokeText(t, cx, oy + y);
