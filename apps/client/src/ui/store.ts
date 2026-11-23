@@ -1,4 +1,3 @@
-import { FLAGS } from '../base/flags';
 import { initialSkillLayout } from './skillLayoutDefault';
 import { isQuality } from '../base/quality';
 import { create } from 'zustand';
@@ -141,8 +140,6 @@ export interface DebugInfo {
   visible: boolean;
   /** Thẻ phần tử đang focus, ví dụ 'CANVAS', 'INPUT', 'BODY'. */
   active: string;
-  pointerLock: boolean;
-  controls: string;
   /** 8 sự kiện phím gần nhất, cũ trước mới sau; `ago` tính bằng ms. */
   events: { id: number; kind: 'down' | 'up' | 'clear'; code: string; ago: number }[];
   /** Ping ước tính (ms), 0 nếu chưa đo được. */
@@ -330,10 +327,6 @@ interface UIState {
   offscreen: boolean;
   /** Nhiệm vụ đang theo dõi (chỉ báo ngoài màn hình trỏ tới đích của nó); '' = nhiệm vụ đầu tiên trong danh sách. */
   trackQuest: string;
-  /** Kiểu điều khiển: 'mouse' (nhìn bằng chuột kiểu FPS), 'turn' (A/D xoay) hoặc 'strafe' (kéo chuột). */
-  controls: string;
-  /** Con trỏ đang bị khóa để nhìn bằng chuột. */
-  mouseLook: boolean;
   /** Ô chiêu đang chờ hết GCD để gửi (M1-11), -1 nếu không có. */
   queuedSkill: number;
   /** Công pháp: cấp chiêu, biến thức, kiếm ý/thế, vòng sạc (server gửi). null = chưa nhận. */
@@ -438,16 +431,12 @@ export const useUI = create<UIState>(() => ({
   auraCombat: auraCombatOf(),
   offscreen: localStorage.getItem('dtl.offscreen') !== '0',
   chapterCards: localStorage.getItem('dtl.chapterCards') !== '0',
-  skillLayout: initialSkillLayout(localStorage.getItem('dtl.skillLayout'), FLAGS.isoCam),
+  skillLayout: initialSkillLayout(localStorage.getItem('dtl.skillLayout'), true),
   questCollapsed: localStorage.getItem('dtl.questCollapsed') === '1',
   chatCollapsed: localStorage.getItem('dtl.chatCollapsed') === '1',
   chatTab: readChatTab(),
   chatSize: readChatSize(),
   trackQuest: localStorage.getItem('dtl.trackQuest') ?? '',
-  controls: ['turn', 'strafe'].includes(localStorage.getItem('dtl.controls') ?? '')
-    ? (localStorage.getItem('dtl.controls') as string)
-    : 'mouse',
-  mouseLook: false,
   queuedSkill: -1,
   method: null,
   methodOff: 0,

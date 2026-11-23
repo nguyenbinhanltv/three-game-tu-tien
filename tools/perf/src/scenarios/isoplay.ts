@@ -1,4 +1,4 @@
-// Thiên Nhãn P5b: chơi thử tự động bằng `?cam=iso` qua các chương: mỗi bản đồ vào bằng GM, đi bằng chuột phải, né Space, ra chiêu vào một quái
+// Thiên Nhãn P5b: chơi thử tự động bằng camera chéo qua các chương: mỗi bản đồ vào bằng GM, đi bằng chuột phải, né Space, ra chiêu vào một quái
 // (tự khóa theo con trỏ), đo khung/draw call, gom lỗi console. Ảnh + số đo ghi vào thư mục ra (`isoplay.json`).
 //   pnpm shots isoplay --out <thư mục> [--only van_lam,cuu_kieu] [--views 1280x720]
 import { LEVELS } from '@dtl/content';
@@ -28,7 +28,7 @@ interface Pos {
 
 export default {
   name: 'isoplay',
-  desc: 'Thiên Nhãn P5b: chơi thử ?cam=iso qua từng chương (đi chuột phải, né, ra chiêu, đo khung, lỗi console)',
+  desc: 'Thiên Nhãn P5b: chơi thử camera chéo qua từng chương (đi chuột phải, né, ra chiêu, đo khung, lỗi console)',
   usage:
     '[--only van_lam,cuu_kieu] [--views 1280x720] [--hazard 1: chờ vòng cảnh báo của quái rồi chụp thêm] [--query mood=night] [--portal 1: chụp cổng phó bản + cột linh quang] [--probe 1: liệt kê mesh cộng sáng gần cổng]',
   async run(r) {

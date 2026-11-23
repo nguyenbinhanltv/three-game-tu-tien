@@ -2,8 +2,7 @@ import * as THREE from 'three/webgpu';
 import { type HazardMsg } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { SIGIL_CONE, SIGIL_RECT } from '../../render/vfx/sigil';
-import { FLAGS } from '../../base/flags';
-import { hazardFlash, hazardStyle, hazardStyleDanger, ISO_HAZARD_OPACITY } from '../../render/vfx/phases';
+import { hazardFlash, hazardStyleDanger, ISO_HAZARD_OPACITY } from '../../render/vfx/phases';
 import type { Vfx } from './vfx';
 
 /**
@@ -19,7 +18,7 @@ const _p = new THREE.Vector3();
 
 export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 = boss ? 2 : 1): void {
   if (!m.sh || !(m.r > 0) || !(m.delay > 0)) return;
-  const style = FLAGS.isoCam ? hazardStyleDanger(m.kind, danger) : hazardStyle(m.kind, boss);
+  const style = hazardStyleDanger(m.kind, danger);
   const light = m.hot && m.kind === 'lightning' ? 0xff9a5a : style.color;
   const yaw = m.yaw ?? 0;
   const fx = Math.sin(yaw);
@@ -39,7 +38,7 @@ export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 
     (k) => {
       s.fxA.x = k;
       s.fxA.z = hazardFlash(k, m.delay);
-      s.fxOpacity = Math.min(1, k * 10) * (FLAGS.isoCam ? ISO_HAZARD_OPACITY : 1);
+      s.fxOpacity = Math.min(1, k * 10) * ISO_HAZARD_OPACITY;
     },
     () => {
       v.drop(s);

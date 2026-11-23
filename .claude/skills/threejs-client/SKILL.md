@@ -40,9 +40,9 @@ description: Quy ước code client Three.js của Đạp Thiên Lộ — render
 
 ## Camera và input
 
-- Camera góc thứ ba, chuột phải xoay, lăn chuột zoom. Camera theo khu (P2-E4, `game/camera/camZones.ts`) nhân khoảng cách/cộng góc ngẩng/đổi FOV theo vùng, trọng số giảm mượt qua ranh; cảnh điện ảnh (`game/camera/cutscene.ts`: mở đầu, boss xuất hiện, chuyển pha), thẻ chương và cảnh độ kiếp/chết là lớp riêng, bỏ qua được và không đổi luật. Chưa có raycast Rapier cho camera.
+- Camera chéo khóa góc là mặc định (Thiên Nhãn, P5c): `game/camera/iso.ts` + `isoRig.ts`, hướng cố định theo bản đồ (`ISO_YAW`), khoảng cách khóa, không xoay, không zoom, chuột phải đi tới điểm; vật che mờ qua `withSightFade`/`archWrap` (`game/world/occlusion.ts`) — prop/cây/vách cao mới phải bật `sight`. Camera cũ (chuột phải xoay, lăn chuột zoom, khóa con trỏ kiểu FPS) đã gỡ; chỉ cảnh điện ảnh (`cine`) tự đặt camera. Camera theo khu (P2-E4, `game/camera/camZones.ts`) nhân khoảng cách/cộng góc ngẩng/đổi FOV theo vùng, trọng số giảm mượt qua ranh; cảnh điện ảnh (`game/camera/cutscene.ts`: mở đầu, boss xuất hiện, chuyển pha), thẻ chương và cảnh độ kiếp/chết là lớp riêng, bỏ qua được và không đổi luật. Chưa có raycast Rapier cho camera.
 - Phím: WASD, Space nhảy, Tab chọn mục tiêu, phím số cho thanh chiêu 8 ô, F ngự kiếm, Z đả tọa, B/C/L/V/P/M/H/O mở bảng (xem `KEY_ACTIONS`). Map phím trong `apps/client/src/input/bindings.ts` để sau này cho người chơi đổi.
-- Pointer lock chỉ khi giữ chuột phải; UI React vẫn nhận click.
+- Chuột: phải = đi tới điểm, trái = chọn/đánh (UI React vẫn nhận click); Space = né về phía con trỏ. Không khóa con trỏ, không kéo xoay camera.
 
 ## UI
 

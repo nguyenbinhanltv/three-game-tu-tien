@@ -1,5 +1,5 @@
 /**
- * Thiên Nhãn P0: camera chéo khóa góc (`?cam=iso`). Toàn hàm thuần, không đụng Three.js để test được.
+ * Thiên Nhãn P0: camera chéo khóa góc (mặc định). Toàn hàm thuần, không đụng Three.js để test được.
  * Camera phối cảnh FOV hẹp, nghiêng cố định, hướng cố định theo bản đồ, khoảng cách cố định, không xoay, không zoom.
  */
 

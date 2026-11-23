@@ -1,7 +1,7 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
-import { C, PF_DEAD, BAR_SIZE, CLONE_UNLOCK_LEVEL } from '@dtl/shared';
+import { C, BAR_SIZE, CLONE_UNLOCK_LEVEL } from '@dtl/shared';
 import { t } from '@dtl/content';
-import { closeTopPanel, get, pushToast, set, setHudPref, togglePanel, useUI } from '../../ui/store';
+import { closeTopPanel, get, pushToast, set, setHudPref, togglePanel } from '../../ui/store';
 import { closeChapters, toggleChapters, useChapters } from '../../ui/chapters/chaptersStore';
 import { unlockAudio } from '../audio/audio';
 import { budgetPixelRatio } from '../../render/post';
@@ -22,7 +22,6 @@ function setHidden(eng: Game, hidden: boolean): void {
   if (hidden) {
     eng.renderer.setAnimationLoop(null);
     eng.cancelQueuedSkill();
-    eng.dragging = false;
     return;
   }
   eng.lastT = performance.now();
@@ -83,115 +82,22 @@ export function bindInput(eng: Game): void {
       } else if (e.button === 0) onClick(eng, e.clientX, e.clientY);
       return;
     }
-    if (eng.controls === 'mouse') {
-      if (!eng.locked) {
-        // Bấm vào màn hình để bắt đầu nhìn bằng chuột.
-        eng.wantLock = true;
-        requestLock(eng);
-      } else if (e.button === 0) {
-        // Đang khóa con trỏ: bấm chuột trái = chọn / đánh thứ gần tâm ngắm nhất (ngắm mềm, không cần chính xác).
-        onClick(eng, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight * 0.2);
-      }
-      return;
-    }
-    eng.dragging = true;
-    eng.dragMoved = 0;
-    eng.lastPX = e.clientX;
-    eng.lastPY = e.clientY;
-    c.setPointerCapture(e.pointerId);
   });
   eng.on(c, 'pointermove', (e: PointerEvent) => {
     if (eng.iso && e.pointerType !== 'touch') eng.iso.cursor = { x: e.clientX, y: e.clientY };
-    if (e.pointerType === 'touch' || !eng.dragging) return;
-    // Mất pointerup (thả chuột ngoài cửa sổ, Alt+Tab): đồng bộ lại theo nút đang giữ thật.
-    if (e.buttons === 0) {
-      eng.dragging = false;
-      return;
-    }
-    const dx = e.clientX - eng.lastPX;
-    const dy = e.clientY - eng.lastPY;
-    eng.lastPX = e.clientX;
-    eng.lastPY = e.clientY;
-    eng.dragMoved += Math.abs(dx) + Math.abs(dy);
-    if (eng.dragMoved > 4) {
-      eng.camFrame.cancel();
-      eng.camYaw -= dx * 0.0055;
-      eng.camPitch = Math.max(-0.45, Math.min(1.45, eng.camPitch + dy * 0.0045));
-    }
-  });
-  eng.on(c, 'pointerup', (e: PointerEvent) => {
-    if (e.pointerType === 'touch' || !eng.dragging) return;
-    eng.dragging = false;
-    try {
-      c.releasePointerCapture(e.pointerId);
-    } catch {
-      /* con trỏ không còn được giữ (đã nhả hoặc sự kiện cũ) */
-    }
-    if (eng.dragMoved <= 4 && e.button === 0) onClick(eng, e.clientX, e.clientY);
-  });
-  // Mất capture mà không có pointerup (trình duyệt hủy, đổi cửa sổ): dừng kéo ngay, không chờ pointermove.
-  // Sự kiện này đến sau pointerup thường, lúc đó dragging đã là false nên không ảnh hưởng cú bấm.
-  eng.on(c, 'lostpointercapture', () => {
-    eng.dragging = false;
   });
   eng.on(c, 'pointerleave', () => {
     if (eng.iso) eng.iso.cursor = null;
   });
-  eng.on(document as unknown as HTMLElement, 'mousemove', (e: MouseEvent) => {
-    if (!eng.locked) return;
-    eng.mouseLook(e.movementX, e.movementY);
-  });
-  eng.on(document as unknown as HTMLElement, 'pointerlockchange', () => {
-    eng.locked = document.pointerLockElement === c;
-    set({ mouseLook: eng.locked });
-    // Người chơi tự thả chuột (Esc): không tự khóa lại cho tới khi họ bấm vào màn hình.
-    if (!eng.locked && !eng.selfUnlock) eng.wantLock = false;
-    eng.selfUnlock = false;
-    eng.dragging = false;
-  });
-  // Mở bảng, hộp thoại, chat hay khi trọng thương: thả con trỏ để bấm được giao diện; đóng lại thì khóa tiếp.
-  eng.listeners.push(
-    useUI.subscribe((st) => {
-      const need = st.phase !== 'game' || st.windows.length > 0 || !!st.npc || st.chatOpen || (st.flags & PF_DEAD) !== 0;
-      if (need === eng.uiNeedsCursor) return;
-      eng.uiNeedsCursor = need;
-      if (need && eng.locked) {
-        eng.selfUnlock = true;
-        document.exitPointerLock();
-      } else if (!need && eng.wantLock && eng.controls === 'mouse' && !eng.locked) {
-        requestLock(eng);
-      }
-    }),
-  );
   eng.on(
     c,
     'wheel',
     (e: WheelEvent) => {
       e.preventDefault();
-      eng.camFrame.cancel();
-      if (eng.iso) return; // camera chéo khóa cả khoảng cách: lăn chuột không đổi camera
-      eng.camDist = Math.max(3, Math.min(70, eng.camDist * (e.deltaY > 0 ? 1.12 : 0.89)));
+      eng.camFrame.cancel(); // camera chéo khóa cả khoảng cách: lăn chuột không đổi camera
     },
     { passive: false },
   );
-}
-
-function requestLock(eng: Game): void {
-  if (eng.uiNeedsCursor) return;
-  try {
-    const r = eng.canvas.requestPointerLock() as unknown as Promise<void> | undefined;
-    if (r && typeof r.catch === 'function') r.catch(() => {});
-  } catch {
-    /* trình duyệt từ chối (chưa có thao tác người dùng): chờ lần bấm sau */
-  }
-}
-
-export function releaseLock(eng: Game): void {
-  eng.wantLock = false;
-  if (eng.locked) {
-    eng.selfUnlock = true;
-    document.exitPointerLock();
-  }
 }
 
 export function onResize(eng: Game): void {
@@ -227,7 +133,7 @@ function onKeyDown(eng: Game, e: KeyboardEvent): void {
   }
   eng.keys.press(code);
   // Bắt đầu di chuyển thì hủy chiêu đang chờ (M1-11).
-  if (isMoveKey(eng, code, action)) eng.cancelQueuedSkill();
+  if (isMoveKey(code, action)) eng.cancelQueuedSkill();
   // Ô chiêu 9, thần thông Kết Đan (E2-E): phím 0 (phím 9 vẫn là pháp bảo phụ).
   if (code === 'Digit0' && !e.shiftKey) {
     if (eng.bar().length > BAR_SIZE) eng.useSkill(BAR_SIZE);
@@ -344,22 +250,12 @@ function onKeyDown(eng: Game, e: KeyboardEvent): void {
       if (eng.debugOk) set({ debugOpen: !get().debugOpen });
       eng.hudAt = 0;
       break;
-    case 'mouseLock':
-      // Alt: thả hoặc khóa lại con trỏ khi đang ở chế độ nhìn bằng chuột.
-      e.preventDefault();
-      if (eng.controls !== 'mouse') break;
-      if (eng.locked) releaseLock(eng);
-      else {
-        eng.wantLock = true;
-        requestLock(eng);
-      }
-      break;
   }
 }
 
-/** Phím làm nhân vật bắt đầu di chuyển. Kiểu 'turn': A/D xoay hướng nhìn nên không tính. */
-function isMoveKey(eng: Game, code: string, action: string | undefined): boolean {
+/** Phím làm nhân vật bắt đầu di chuyển. */
+function isMoveKey(code: string, action: string | undefined): boolean {
   if (action === 'autorun') return true;
   if (isKeyFor(code, 'forward') || isKeyFor(code, 'back') || isKeyFor(code, 'up')) return true;
-  return eng.controls !== 'turn' && (isKeyFor(code, 'left') || isKeyFor(code, 'right'));
+  return isKeyFor(code, 'left') || isKeyFor(code, 'right');
 }

@@ -135,7 +135,7 @@ import { LoginOptions, QUALITY, isWebGPU, isWorldRoom, levelOfInit, levelOfRoom,
 import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from './engine/frameLoop';
 import { handleFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
 import { fxTargetOf } from './engine/hudSync';
-import { bindInput, onResize, releaseLock } from './engine/input';
+import { bindInput, onResize } from './engine/input';
 import {
   applyGround,
   buildLevelA,
@@ -377,20 +377,8 @@ export class Game {
 
   // Camera & input.
   camYaw = 0;
-  /**
-   * 'mouse': nhìn bằng chuột kiểu FPS (khóa con trỏ, rê chuột là xoay), A/D bước ngang.
-   * 'turn': A/D xoay hướng nhìn (chơi không cần chuột).
-   * 'strafe': A/D bước ngang, giữ chuột kéo để xoay.
-   */
-  controls: string = FLAGS.isoCam ? 'strafe' : get().controls;
-  /** Camera chéo khóa góc (`?cam=iso`, Thiên Nhãn P0); null = camera cũ. */
-  iso: IsoRig | null = FLAGS.isoCam ? new IsoRig() : null;
-  /** Con trỏ đang bị khóa vào canvas (đang nhìn bằng chuột). */
-  locked = false;
-  /** Người chơi muốn nhìn bằng chuột: tự khóa lại con trỏ sau khi đóng bảng. */
-  wantLock = false;
-  selfUnlock = false;
-  uiNeedsCursor = false;
+  /** Camera chéo khóa góc (Thiên Nhãn). */
+  iso: IsoRig | null = new IsoRig();
   camPitch = 0.38;
   camDist = 13;
   camDistCur = 13;
@@ -422,10 +410,6 @@ export class Game {
   skillPoses = new SkillPoses();
   /** Cần ảo cảm ứng (U2-6): ý định di chuyển thay WASD, null khi thả. */
   touchMove: { mx: number; mz: number } | null = null;
-  dragging = false;
-  dragMoved = 0;
-  lastPX = 0;
-  lastPY = 0;
   autorun = false;
   wantFly = false;
   flyLostAt = 0;
@@ -946,13 +930,6 @@ export class Game {
     return !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT');
   }
 
-  /** Xoay camera theo độ dịch chuột (điểm ảnh). */
-  mouseLook(dx: number, dy: number): void {
-    if (dx || dy) this.camFrame.cancel();
-    this.camYaw -= dx * 0.0026;
-    this.camPitch = Math.max(-0.45, Math.min(1.45, this.camPitch + dy * 0.0022));
-  }
-
   // ---------- thao tác của người chơi (UI cũng gọi) ----------
 
   /** Xin truyền tống tới trận `id` (server kiểm mở khóa, giao chiến, hồi chiêu). Không `id` = hủy lượt niệm. */
@@ -1316,15 +1293,6 @@ export class Game {
     return this.camYaw;
   }
 
-  setControls(mode: string): void {
-    // Camera chéo luôn dùng 'strafe' và không ghi đè tuỳ chọn đã lưu của camera thường.
-    if (this.iso) return;
-    this.controls = mode === 'strafe' || mode === 'turn' ? mode : 'mouse';
-    if (this.controls !== 'mouse') releaseLock(this);
-    localStorage.setItem('dtl.controls', this.controls);
-    set({ controls: this.controls });
-  }
-
   /** Đích của chiêu gần nhất của mỗi người ra chiêu (từ S.FX), cho hiệu ứng timeline của người khác. */
   fxDst = new Map<string, string>();
   /** Vùng (S.FX x, z, r) và biến thức của chiêu gần nhất của mỗi người ra chiêu, cho timeline hiệu ứng. */
@@ -1455,7 +1423,6 @@ export class Game {
     this.disposed = true;
     this.leaving = true;
     if (document.pointerLockElement) document.exitPointerLock();
-    set({ mouseLook: false });
     this.renderer?.setAnimationLoop(null);
     for (const off of this.listeners) off();
     this.music.dispose();

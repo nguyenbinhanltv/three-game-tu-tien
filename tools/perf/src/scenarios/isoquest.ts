@@ -1,4 +1,4 @@
-// Thiên Nhãn P5b: làm nhiệm vụ mỗi chương bằng `?cam=iso` qua giao diện thật: tới NPC giao, mở hội thoại, bấm "Nhận", bắn sự kiện mục tiêu
+// Thiên Nhãn P5b: làm nhiệm vụ mỗi chương bằng camera chéo qua giao diện thật: tới NPC giao, mở hội thoại, bấm "Nhận", bắn sự kiện mục tiêu
 // bằng GM (`qev`), tới NPC trả, bấm "Hoàn thành", kiểm nhiệm vụ đã vào danh sách đã xong. Ảnh + `isoquest.json`.
 //   pnpm shots isoquest --out <thư mục> [--only 1,3] [--per 2]
 import { NPC, QUESTS } from '@dtl/content';
@@ -21,7 +21,7 @@ const CHAPTERS = [
 
 export default {
   name: 'isoquest',
-  desc: 'Thiên Nhãn P5b: nhận/làm/trả nhiệm vụ mỗi chương qua hội thoại NPC ở ?cam=iso',
+  desc: 'Thiên Nhãn P5b: nhận/làm/trả nhiệm vụ mỗi chương qua hội thoại NPC ở camera chéo',
   usage: '[--only 1,3] [--per 2]',
   async run(r) {
     const only = list('--only', '').map(Number);

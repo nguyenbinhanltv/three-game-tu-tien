@@ -321,7 +321,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
   }
   if (F.portals || (LEVELS[id]?.portals?.length ?? 0) > 0) {
     eng.gateDiscs = gatesToDraw(id).map((g) => {
-      const flat = gateFlat(g, FLAGS.isoCam);
+      const flat = gateFlat(g, true);
       const d = buildPortalDisc(g.x, g.z, g.color, flat);
       d.userData.op = g.opacity ?? 0.55;
       if (flat && !g.flat) {
@@ -452,7 +452,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.vdWonders = new CkWonders({ heightAt: (x, z) => heightAt(x, z), seaY: levelTerrain().def.seaY ?? 0 });
     eng.scene.add(eng.vdWonders.group);
   }
-  if (FLAGS.isoCam && kieuIndex(id)) {
+  if (kieuIndex(id)) {
     // Phòng cầu Cửu Kiều (Thiên Nhãn P4-4): vòng phù văn sàn theo cầu, cầu 9 thêm hào quang Đạp Thiên dưới chân.
     const d = LEVELS[id]?.dungeon;
     if (d)
@@ -532,7 +532,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
         ...pois.filter((p) => p.beamH && !(id === 'bac_hoang' && p.id === 'gioi_khich')).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })),
         ...portalBeams,
       ],
-      FLAGS.isoCam,
+      true,
     );
     eng.beacons.mesh.visible = isWorldRoom(get().room);
     eng.scene.add(eng.beacons.mesh);

@@ -88,8 +88,6 @@ interface Flags {
   tcProps: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
   butterflies: boolean;
-  /** Camera chéo khóa góc là mặc định (Thiên Nhãn P5c); cờ `?cam=` đã bỏ. Còn tồn tại tới khi gỡ nhánh camera cũ (P5c-2). */
-  isoCam: boolean;
   /** `?isoyaw=<độ>` ghi đè hướng nhìn cố định của camera chéo (chỉ để chọn hướng đẹp nhất cho từng bản đồ). */
   isoYaw: number | null;
   /** `?isofx=0` tắt nén hình VFX đứng cao ở camera chéo (so ảnh trước/sau, Thiên Nhãn P4-1). */
@@ -173,7 +171,6 @@ export function readFlags(search: string): Flags {
   const chr = q.get('chr');
   return {
     mute: q.get('mute') === '1',
-    isoCam: true,
     isoFxCompress: q.get('isofx') !== '0',
     isoYaw: q.get('isoyaw') === null || Number.isNaN(Number(q.get('isoyaw'))) ? null : (Number(q.get('isoyaw')) * Math.PI) / 180,
     touch: q.get('touch') === '1' ? true : q.get('touch') === '0' ? false : null,
