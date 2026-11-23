@@ -487,7 +487,7 @@ export class RealmAuraFx {
         1.3,
         0.07,
         0.0,
-        0xff9a4a,
+        DAO_LOOK.dan.mote,
         0.9,
         0,
         0.8,
@@ -760,7 +760,7 @@ export class RealmAuraFx {
       } else if (dao === 'dan' && ok(orbitRole)) {
         const petals: FxMesh[] = [];
         for (let i = 0; i < nPetals; i++) petals.push(mk(shapeGeometry('kite'), 0xf2d86b, 'crystal', look.rim));
-        const orbs = [0, 1, 2].map(() => mk(G.ico1, 0xff9a4a, 'solid'));
+        const orbs = [0, 1, 2].map(() => mk(G.ico1, look.mote, 'solid'));
         ups.push((c) => {
           const n = petals.length;
           for (let i = 0; i < n; i++) {
