@@ -115,6 +115,10 @@ import {
   fxQuality,
   hitStopOn,
   hitStopPctOf,
+  impactFrameOn,
+  staticFxOn,
+  setImpactFrameOn,
+  setStaticFxOn,
   realmAuraOn,
   setAuraCombat,
   setAuraMode,
@@ -132,6 +136,8 @@ import { debugAllowed, readTestParams } from './core/testParams';
 import { CharPreview } from './camera/charPreview';
 import { IsoRig } from './camera/isoRig';
 import { currentSearch, FLAGS } from '../base/flags';
+import { installVfxLab } from './debug/vfxLab';
+import { VFX_LAB } from './engine/common';
 import { LoginOptions, QUALITY, isWebGPU, isWorldRoom, levelOfInit, levelOfRoom, serverUrl } from './engine/common';
 import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from './engine/frameLoop';
 import { handleFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
@@ -214,6 +220,7 @@ export class Game {
           Game.current = g;
           // Để tiện gỡ lỗi từ console của trình duyệt.
           (window as unknown as { __game?: Game }).__game = g;
+          if (VFX_LAB) installVfxLab(g);
           g.start().catch((err) => {
             engineLog.error(err);
             set({ phase: 'error', error: t('ui.err.webgl') + ' ' + String(err?.message ?? err) });
@@ -704,6 +711,13 @@ export class Game {
         hitStopOn,
         shake: (level, dir) => this.shake.kick(level, dir),
         flash: (a) => this.post?.flash(a),
+        impact: (frames, tint) => this.post?.impactFrame(frames, tint),
+        impactOn: impactFrameOn,
+        staticOn: staticFxOn,
+        hostile: (sid) => {
+          const d = get().duel;
+          return !!d && d.phase !== 'end' && d.foe === sid;
+        },
         camPull: (pull, dur) => {
           if (this.shake.enabled) this.fxPull = { amt: pull, dur, t: 0 };
         },
@@ -1309,6 +1323,16 @@ export class Game {
   setHitStop(n: number): void {
     setHitStopPct(n);
     set({ hitStop: hitStopPctOf() });
+  }
+
+  setImpactFrame(on: boolean): void {
+    setImpactFrameOn(on);
+    set({ impactFrame: on });
+  }
+
+  setStaticFx(on: boolean): void {
+    setStaticFxOn(on);
+    set({ staticFx: on });
   }
 
   setAuraMode(m: AuraMode): void {

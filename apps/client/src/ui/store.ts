@@ -18,7 +18,7 @@ import type {
 } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio/audio';
 import { readPct } from '../game/camera/shake';
-import { auraCombatOf, auraModeOf, auraOthersOf, fxQuality, hitStopPctOf } from '../game/fx/fxSettings';
+import { auraCombatOf, auraModeOf, auraOthersOf, fxQuality, hitStopPctOf, impactFrameOn, staticFxOn } from '../game/fx/fxSettings';
 import type { AuraCombat, AuraMode, AuraOthers } from '../game/fx/realmAuraRules';
 import { uiScale } from './uiScale';
 import {
@@ -312,6 +312,9 @@ interface UIState {
   fxQuality: 'low' | 'medium' | 'high';
   /** Cường độ khựng hình 0–100%. */
   hitStop: number;
+  /** Khung va chạm và chế độ tĩnh (V-P0). */
+  impactFrame: boolean;
+  staticFx: boolean;
   /** Hào quang cảnh giới trên nhân vật (RFX-1). */
   auraMode: AuraMode;
   auraOthers: AuraOthers;
@@ -429,6 +432,8 @@ export const useUI = create<UIState>(() => ({
   camShake: readPct('dtl.camShakePct', 'dtl.camShake'),
   fxQuality: fxQuality(),
   hitStop: hitStopPctOf(),
+  impactFrame: impactFrameOn(),
+  staticFx: staticFxOn(),
   auraMode: auraModeOf(),
   auraOthers: auraOthersOf(),
   auraCombat: auraCombatOf(),
