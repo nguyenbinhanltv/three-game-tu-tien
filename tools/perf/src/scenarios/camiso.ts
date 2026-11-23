@@ -1,5 +1,5 @@
-// Thiên Nhãn P0: ảnh duyệt + số đo camera chéo (mặc định) so với camera cũ, cùng vị trí, preset Thấp/Cao, 720p/1080p.
-// Ảnh: cũ vs iso, đánh quái (khung sau trúng đòn), trong/ngoài công trình (mái cổng tam quan), ngự kiếm.
+// Thiên Nhãn P0: ảnh duyệt + số đo camera chéo (mặc định), cùng vị trí, preset Thấp/Cao, 720p/1080p.
+// Ảnh: đánh quái (khung sau trúng đòn), trong/ngoài công trình (mái cổng tam quan), ngự kiếm, điểm cố định của bí cảnh.
 import { LEVELS } from '@dtl/content';
 import { FOREST, SPAWN_POINT } from '@dtl/shared';
 import { list, opt } from '../lib/env';
@@ -73,7 +73,7 @@ interface IsoDbg {
 
 export default {
   name: 'camiso',
-  desc: 'Thiên Nhãn P0: camera chéo camera chéo vs camera cũ (ảnh duyệt + draw call/tam giác/ms khung)',
+  desc: 'Thiên Nhãn: ảnh duyệt camera chéo (mặc định) theo bản đồ/phó bản + draw call/tam giác/ms khung',
   usage: '[--presets low,high] [--views 720p,1080p] [--cams old,iso] [--level <id>] [--query isoyaw=30]',
   async run(r) {
     const perf: Record<string, unknown> = {};

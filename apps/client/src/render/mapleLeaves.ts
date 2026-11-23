@@ -12,7 +12,7 @@ export const leafParams = {
   cam: uniform(new THREE.Vector3()),
   groundY: uniform(0),
   light: uniform(1),
-  /** Hệ số chiều cao hộp lá (1 = 26 m; camera chéo camera chéo: thấp, để lá không bay ngay trước ống kính camera cao 15 m và phóng to thành mảng đỏ). */
+  /** Hệ số chiều cao hộp lá (1 = 26 m; camera chéo: thấp, để lá không bay ngay trước ống kính camera cao 15 m và phóng to thành mảng đỏ). */
   heightK: uniform(1),
 };
 

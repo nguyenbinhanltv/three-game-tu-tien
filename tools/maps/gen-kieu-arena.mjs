@@ -95,7 +95,7 @@ function mirror(id, s) {
   return out;
 }
 
-/** Sảnh vào (camera chéo camera chéo chỉ thấy ~10 m quanh nhân vật): hai đèn và hai bia thấp quanh chỗ sinh (1300, 1040). Chỉ prop thấp. */
+/** Sảnh vào (camera chéo chỉ thấy ~10 m quanh nhân vật): hai đèn và hai bia thấp quanh chỗ sinh (1300, 1040). Chỉ prop thấp. */
 function plaza() {
   const out = [];
   for (const sx of [-1, 1]) {
