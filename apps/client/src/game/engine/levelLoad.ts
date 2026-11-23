@@ -328,6 +328,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
         // Iso: đĩa dựng đứng đổi sang nằm phẳng thì mờ và nhỏ (như vòng cổng phẳng trong hang), không thành mảng sáng chói phủ góc màn hình.
         d.userData.op = Math.min(d.userData.op as number, ISO_GATE_OPACITY);
         d.scale.multiplyScalar(ISO_GATE_SCALE);
+        d.userData.isoFlat = true; // không đánh dấu bloom: bloom làm đĩa chói thành mảng trắng
       }
       return d;
     });
@@ -362,7 +363,8 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
       }
     }
     if (eng.gateDiscs.length) eng.scene.add(...eng.gateDiscs);
-    for (const disc of eng.gateDiscs) if (disc.name !== 'moon-gate') markBloom(disc.material as THREE.Material, 0.8);
+    for (const disc of eng.gateDiscs)
+      if (disc.name !== 'moon-gate' && !disc.userData.isoFlat) markBloom(disc.material as THREE.Material, 0.8);
     // Cung gương: vòng ra nằm trên sàn gương (cao hơn 0,08 m của sàn), không bị sàn cắt thành bán nguyệt.
     if (levelAssets(id).palace) for (const disc of eng.gateDiscs) disc.position.y += 0.2;
   }

@@ -23,7 +23,7 @@ const GOLD = 0xffd27a;
  * cổng phó bản trong hang. Cổng gương Kính Nguyệt (`to === 'kinh_nguyet'`) có mặt gương dựng đứng thiết kế riêng nên giữ nguyên.
  */
 /** Đĩa cổng phẳng ở iso: độ đục tối đa và hệ số cỡ (so với đĩa phẳng thường, bán kính 4,2 m → ≈ 3 m). */
-export const ISO_GATE_OPACITY = 0.22;
+export const ISO_GATE_OPACITY = 0.16;
 export const ISO_GATE_SCALE = 0.7;
 
 export function gateFlat(g: Pick<Gate, 'flat' | 'to'>, iso: boolean): boolean {
