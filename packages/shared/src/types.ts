@@ -1,5 +1,6 @@
 // Kiểu dữ liệu nội dung game và trạng thái nhân vật, dùng chung client/server.
 
+import type { HitTier } from './hittier';
 import type { ItemInst } from './itemtypes';
 import type { ApplyMark, ConsumeMark } from './marks';
 import type { SkillRes } from './resource';
@@ -129,6 +130,10 @@ export interface MonsterDef {
   boss?: boolean;
   /** Tinh anh: có tên riêng, máu gấp bốn quái thường cùng loài, một kỹ năng riêng, rơi Huyền phẩm. */
   elite?: boolean;
+  /** Chân Cảnh S1: cấp đòn của các đòn đặc biệt của quái (combo, vùng nổ, đạn); bỏ trống thì suy theo thủ lĩnh/thường (`monsterHitTier`). */
+  tier?: HitTier;
+  /** Chân Cảnh S1: đòn dưới cấp này không làm quái khựng/lùi (`poiseOf`). */
+  poise?: HitTier;
   /** Sát thương của quái này là "gương" (E3-M): Định Thần Phù giảm. */
   glass?: boolean;
   /** Cơ chế cung gương của boss (E3-M), xem `MonsterMirror`. */
@@ -605,6 +610,8 @@ export interface DashDef {
 /** Một đòn của chuỗi đánh thường: hệ số, lúc áp (giây từ lúc bấm), đòn đẩy lùi (chỉ hiển thị). */
 export interface ComboHit {
   power: number;
+  /** Cấp đòn (bỏ trống: suy từ `power`, đòn `kb` tối thiểu vừa). */
+  tier?: HitTier;
   hitAt: number;
   kb?: boolean;
 }
@@ -640,6 +647,8 @@ export interface CancelDef {
 
 export interface SkillDef {
   id: string;
+  /** Chân Cảnh S1: cấp đòn của chiêu (bỏ trống: suy từ `power` bằng `hitTierOfPower`). */
+  tier?: HitTier;
   kind: SkillKind;
   icon: string;
   iconFallback?: string;
