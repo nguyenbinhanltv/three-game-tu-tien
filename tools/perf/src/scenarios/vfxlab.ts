@@ -62,7 +62,8 @@ async function run(r: Run, skill: string, sizes: string[], at: number[]): Promis
     viewport: [1920, 1080],
     seenIntro: true,
     look: { g: 'm' },
-    query: { realm: 'nk12', god: 1, chr: 'v3', vfxlab: 1, quiet: 1 },
+    query: { realm: 'nk12', god: 1, chr: 'v3', vfxlab: 1, quiet: 1, mood: opt('--mood', '') || undefined },
+    ...(opt('--clip', '') ? { video: path.join(r.out, 'clip') } : {}),
     hide: 'hud',
   });
   page.on('pageerror', (e) => console.log('[pageerror]', String(e).slice(0, 400)));
@@ -82,6 +83,17 @@ async function run(r: Run, skill: string, sizes: string[], at: number[]): Promis
     if (e) g.setTarget?.(e[0], 'mon');
   }, mon);
   await sleep(600);
+  if (opt('--clip', '')) {
+    // Clip thời gian thật (không tạm dừng): ra chiêu hai lần, cách nhau 3 s; video webm nằm ở <out>/clip.
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await sleep(800);
+    for (let i = 0; i < 2; i++) {
+      await page.evaluate((s) => window.__vfxlab!.cast(s), skill);
+      await sleep(3000);
+    }
+    await ctx.close();
+    return { skill, clip: true };
+  }
   const out: Record<string, unknown> = { skill, hitMs, card: card?.budget ?? null, shots: {} as Record<string, unknown> };
   const shots = out.shots as Record<string, unknown>;
   for (const tag of sizes) {
@@ -172,7 +184,8 @@ async function run(r: Run, skill: string, sizes: string[], at: number[]): Promis
 export default {
   name: 'vfxlab',
   desc: 'V-P0 phòng thử VFX: một chiêu ở 0/+30/+150/+400 ms sau trúng đòn, 720p + 1080p, đồng hồ ngân sách, concept cạnh game',
-  usage: '--skill <id> --out <dir> [--dummies 1..5] [--mon <id>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400]',
+  usage:
+    '--skill <id> --out <dir> [--mood night] [--clip 1] [--dummies 1..5] [--mon <id>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400]',
   dry() {
     if (opt('--skill', '')) return false;
     console.log('thiếu --skill <id chiêu>');

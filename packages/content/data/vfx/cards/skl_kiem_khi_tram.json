@@ -3,14 +3,33 @@
   "idea": "Một vệt kiếm khí lam ngọc hình cung lướt từ người ra chiêu tới mục tiêu, mép sáng, lõi tối, tan dần theo nhiễu rồi để lại vài tia lửa.",
   "element": "kim",
   "path": "kiem_tu",
-  "shapeLang": ["arc", "line"],
-  "timing": { "anticipationMs": 280, "impactMs": 60, "lingerMs": 400 },
-  "footprint": { "lengthM": 9, "widthM": 2.5, "heightM": 2 },
+  "shapeLang": [
+    "arc",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 280,
+    "impactMs": 60,
+    "lingerMs": 400
+  },
+  "footprint": {
+    "lengthM": 9,
+    "widthM": 2.5,
+    "heightM": 2
+  },
   "colorRole": "own",
   "telegraph": false,
-  "budget": { "drawCalls": 6, "particles": 120, "screenCover": 0.08, "overdraw": 3 },
+  "budget": {
+    "drawCalls": 6,
+    "particles": 450,
+    "screenCover": 0.08,
+    "overdraw": 3
+  },
   "textures": [
-    { "id": "proc:slash_streak", "kind": "flipbook" }
+    {
+      "id": "proc:slash_streak",
+      "kind": "flipbook"
+    }
   ],
-  "impactFrame": false
+  "impactFrame": true
 }

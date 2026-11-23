@@ -84,7 +84,7 @@ const coreOf = (body: N) => body.mul(body).mul(0.42);
 /**
  * `toon`: lưỡi liềm, vòng, dải xoắn... UV: `u` dọc hình (chiều quét), `v` từ mép trong (0) ra mép ngoài (1).
  * Lõi đậm ở trong, thân, viền sáng ngoài cùng; mép trong rách; mọc theo đầu quét; tan theo nhiễu.
- * `fxA.w` ≥ 0,5: lớp bóng (một màu `fxColor`, mờ 0,7), cùng hình.
+ * `fxA.w` = 1: lớp bóng (một màu `fxColor`, mờ 0,7), cùng hình; = 2: kiểu mực (lõi tối rộng, thân bão hòa, viền sáng mảnh, đuôi không mờ).
  */
 export function toonNodes(U: FxUniforms): { color: N; opacity: N } {
   const st = uv();
@@ -93,7 +93,8 @@ export function toonNodes(U: FxUniforms): { color: N; opacity: N } {
   const head = U.a.x;
   const erode = U.a.y;
   const seed = U.a.z;
-  const shadow = step(0.5, U.a.w);
+  const shadow = step(0.5, U.a.w).mul(step(U.a.w, 1.5));
+  const ink = step(1.5, U.a.w);
   const rag = U.b.w;
   const one = float(1);
   const body = U.color;
@@ -108,10 +109,17 @@ export function toonNodes(U: FxUniforms): { color: N; opacity: N } {
 
   // Tầng màu theo v (có xô lệch nhiễu nhẹ để ranh giữa các tầng không thẳng như thước).
   const s = v.add(flow.sub(0.5).mul(0.14));
-  const lit = ramp3(s, coreOf(body), body, rim);
+  const litStd = ramp3(s, coreOf(body), body, rim);
+  // Mực: lõi tối tới v 0,62, thân bão hòa, viền chỉ từ v 0,93 và pha 45% với thân (không trắng bệch trên nền sáng).
+  const litInk = ramp3(s, coreOf(body), body.mul(1.08), mix(body, rim, 0.45), 0.62, 0.93);
+  const lit = mix(litStd, litInk, ink);
   const hot = one.sub(U.k).pow(2).mul(0.3).add(1);
   const color = select(shadow.greaterThan(0.5), body, min(lit.mul(hot), U.maxHdr));
-  const a = reveal.mul(alive).mul(ends).mul(cut).mul(trail.mul(0.35).add(0.65));
+  const a = reveal
+    .mul(alive)
+    .mul(ends)
+    .mul(cut)
+    .mul(mix(trail.mul(0.35).add(0.65), one, ink));
   return { color, opacity: U.opacity.mul(a).mul(select(shadow.greaterThan(0.5), float(0.7), one)) };
 }
 
@@ -220,6 +228,10 @@ export const DECAL_SCORCH = 2;
 export const DECAL_SMOKE = 3;
 /** Chỗ sét đánh xuống đất: vũng sáng, tia nứt, vòng xung kích (Storm & Wind, CC BY 4.0, xem credits.json). */
 export const DECAL_STRIKE = 4;
+/** Vòng triện văn kiểu mực (V-P1): màu thân đậm, không pha viền sáng, không tăng HDR; đọc được trên nền đá trắng. */
+export const DECAL_RUNE_INK = 5;
+/** Vết nứt kiểu mực (V-P1): nứt màu thân đậm trên nền tối, không nóng sáng pha viền (nứt kiểu cũ ngả kem/trắng trên nền đá sáng). */
+export const DECAL_CRACK_INK = 6;
 
 /** Texture vòng triện văn (canvas thủ tục, nạp lười). */
 let runeTex: THREE.Texture | null = null;
@@ -427,11 +439,15 @@ export function decalNodes(U: FxUniforms): { color: N; opacity: N } {
   const strikeGlow = clamp(pool.add(rays).add(ring), 0, 1).mul(smoothstep(1, 0.75, r));
   const strikeCol = min(mix(rim, body, clamp(pool.add(rays.mul(0.5)), 0, 1)).mul(1.1), U.maxHdr);
 
-  const isStrike = step(3.5, kind);
+  const isStrike = step(3.5, kind).mul(step(kind, 4.5));
+  const isRuneInk = step(4.5, kind).mul(step(kind, 5.5));
+  const isCrackInk = step(5.5, kind);
+  const crackInkCol = mix(vec3(0.02, 0.02, 0.025), body.mul(0.85), crack);
+  const runeInkCol = body.mul(0.9);
   const isCrack = step(-0.5, kind).mul(step(kind, 0.5));
   const isRune = step(0.5, kind).mul(step(kind, 1.5));
   const isScorch = step(1.5, kind).mul(step(kind, 2.5));
-  const color = select(
+  const baseCol = select(
     isStrike.greaterThan(0.5),
     strikeCol,
     select(
@@ -440,13 +456,15 @@ export function decalNodes(U: FxUniforms): { color: N; opacity: N } {
       select(isRune.greaterThan(0.5), runeCol, select(isScorch.greaterThan(0.5), scorchCol, smokeCol)),
     ),
   );
-  const a = select(
+  const color = select(isCrackInk.greaterThan(0.5), crackInkCol, select(isRuneInk.greaterThan(0.5), runeInkCol, baseCol));
+  const baseA = select(
     isStrike.greaterThan(0.5),
     strikeGlow,
     select(isCrack.greaterThan(0.5), crackA, select(isRune.greaterThan(0.5), runeA, select(isScorch.greaterThan(0.5), scorchA, smokeA))),
   );
+  const a = select(isCrackInk.greaterThan(0.5), crackA, select(isRuneInk.greaterThan(0.5), runeA, baseA));
   // Smoke và strike tự quản lý mờ (xói mòn / theo k); các kiểu khác mờ theo `fade` trực tiếp.
-  const fadeMul = select(step(2.5, kind).greaterThan(0.5), one, one.sub(fade));
+  const fadeMul = select(step(2.5, kind).mul(step(kind, 4.5)).greaterThan(0.5), one, one.sub(fade));
   return { color, opacity: U.opacity.mul(a).mul(fadeMul) };
 }
 
