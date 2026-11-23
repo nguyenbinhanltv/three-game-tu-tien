@@ -17,7 +17,8 @@ import type {
   KieuBoardMsg,
 } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio/audio';
-import { auraCombatOf, auraModeOf, auraOthersOf, fxQuality, hitStopOn, impactFrameOn, staticFxOn } from '../game/fx/fxSettings';
+import { readPct } from '../game/camera/shake';
+import { auraCombatOf, auraModeOf, auraOthersOf, fxQuality, hitStopPctOf, impactFrameOn, staticFxOn } from '../game/fx/fxSettings';
 import type { AuraCombat, AuraMode, AuraOthers } from '../game/fx/realmAuraRules';
 import { uiScale } from './uiScale';
 import {
@@ -305,10 +306,12 @@ interface UIState {
   /** Preset gợi ý theo GPU (null tới khi đọc xong adapter, hoặc khi bằng mức hiện tại). */
   qualityHint: string | null;
   qualityHintSeen: boolean;
-  camShake: boolean;
+  /** Cường độ rung màn hình 0–100%. */
+  camShake: number;
   /** Chất lượng hiệu ứng chiêu và khựng hình (VFX-V0). */
   fxQuality: 'low' | 'medium' | 'high';
-  hitStop: boolean;
+  /** Cường độ khựng hình 0–100%. */
+  hitStop: number;
   /** Khung va chạm và chế độ tĩnh (V-P0). */
   impactFrame: boolean;
   staticFx: boolean;
@@ -426,9 +429,9 @@ export const useUI = create<UIState>(() => ({
   qualityLock: localStorage.getItem('dtl.qualityLock') === '1',
   qualityHint: null,
   qualityHintSeen: localStorage.getItem('dtl.qualityHintSeen') === '1',
-  camShake: localStorage.getItem('dtl.camShake') !== '0',
+  camShake: readPct('dtl.camShakePct', 'dtl.camShake'),
   fxQuality: fxQuality(),
-  hitStop: hitStopOn(),
+  hitStop: hitStopPctOf(),
   impactFrame: impactFrameOn(),
   staticFx: staticFxOn(),
   auraMode: auraModeOf(),

@@ -31,7 +31,7 @@ import { CloneSystem } from '../clone';
 import { DomainSystem } from '../domain';
 import { parties } from '../party';
 
-import { at, COTHAN_METHOD, monsterHitTier, sanitizeStars, starBonus, type HitTier } from '@dtl/shared';
+import { at, COTHAN_METHOD, monsterHitTier, sanitizeStars, starBonus, tierRank, type HitTier } from '@dtl/shared';
 /** Phần GameSim mà hệ chết/hồi sinh cần. */
 export interface DeathCtx {
   /** Chân Cảnh S1: khựng/đẩy lùi người chơi trúng đòn của quái ở (fromX, fromZ). */
@@ -177,6 +177,9 @@ export class DeathSystem {
       this.c.resTaken(p, n);
     }
     const msg: DmgMsg = { dst: p.sid, n, src };
+    // Cấp đòn của quái đánh mình (client dùng cho hit-stop/rung); khựng/đẩy lùi thật tính sau khi trừ máu.
+    const atk = src ? this.c.monById.get(src) : undefined;
+    if (atk && atk.state !== MS_DEAD) msg.tr = tierRank(monsterHitTier(atk.def, hv)) as 0 | 1 | 2 | 3;
     if (hv) msg.hv = true;
     if (ke) msg.ke = ke;
     this.c.emit(S.DMG, msg);

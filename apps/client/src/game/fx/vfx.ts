@@ -1203,18 +1203,33 @@ export class Vfx {
 }
 
 /** Số sát thương bay lên, vẽ bằng DOM. */
+/** Số thường lên cùng mục tiêu trong khoảng này (giây) thì gom. */
+const MERGE_WINDOW = 0.22;
+
 export class DamageNumbers {
-  items: { el: HTMLDivElement; pos: THREE.Vector3; t: number; dx: number; lift: number | null }[] = [];
+  items: { el: HTMLDivElement; pos: THREE.Vector3; t: number; dx: number; lift: number | null; key?: string; sum?: number }[] = [];
   pool: HTMLDivElement[] = [];
   constructor(private layer: HTMLElement) {}
 
-  spawn(text: string, pos: THREE.Vector3, cls: string): void {
+  /**
+   * Hiện một số. Số thường (`cls` = 'hit') liên tiếp lên cùng `key` (mục tiêu) trong `MERGE_WINDOW` giây thì gom vào số đang bay
+   * (cộng dồn, không bật số mới) để đòn nhỏ dồn dập không phủ kín màn hình. Vị trí ngang lệch ngẫu nhiên, cỡ cố định theo lớp CSS.
+   */
+  spawn(text: string, pos: THREE.Vector3, cls: string, key?: string, n?: number): void {
+    if (key && n !== undefined && cls.startsWith('hit') && !cls.includes(' ')) {
+      const it = this.items.find((o) => o.key === key && o.t < MERGE_WINDOW && o.sum !== undefined);
+      if (it) {
+        it.sum = (it.sum ?? 0) + n;
+        it.el.textContent = String(it.sum);
+        return;
+      }
+    }
     if (this.items.length > 40) return;
     const el = this.pool.pop() ?? document.createElement('div');
     el.className = 'dmg ' + cls;
     el.textContent = text;
     this.layer.appendChild(el);
-    this.items.push({ el, pos: pos.clone(), t: 0, dx: (Math.random() - 0.5) * 40, lift: null });
+    this.items.push({ el, pos: pos.clone(), t: 0, dx: (Math.random() - 0.5) * 40, lift: null, key, sum: cls === 'hit' ? n : undefined });
   }
 
   update(dt: number, camera: THREE.Camera, w: number, h: number, avoid: readonly Box[] = []): void {
