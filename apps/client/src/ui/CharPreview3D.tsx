@@ -1,5 +1,5 @@
 // Xem trước 3D nhân vật xoay được bằng cách kéo chuột (Chân Cảnh U10): vẽ bằng `CharPreview` của game (cùng đường dựng nhân vật).
-// Dùng ở Tủ ngoại trang (bản nháp) và bảng Nhân vật (đang mặc). Chỉ một khung xem trước tồn tại cùng lúc: tủ thay chỗ bảng nhân vật.
+// Dùng ở Tủ ngoại trang (bản nháp) và bảng Nhân vật (đang mặc). Chỉ một khung xem trước tồn tại cùng lúc: `openPanel` (ui/store.ts) đóng cửa sổ kia khi mở `char` hoặc `wardrobe`.
 import { type PointerEvent as RPointerEvent, useEffect, useRef, useState } from 'react';
 import { t } from '@dtl/content';
 import { Game } from '../game/engine';
