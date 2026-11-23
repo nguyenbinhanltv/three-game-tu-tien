@@ -65,6 +65,34 @@ interface Batch {
   start: number[];
 }
 
+/**
+ * Ngân sách CPU chung của mọi vải mô phỏng trong một khung: nhân vật nào tới lượt mà ngân sách khung đã cạn thì hoãn (dồn `dt`, lần sau mô phỏng bù),
+ * nhưng hoãn quá `maxLagS` thì buộc chạy để không bị đứng hình. Đồng hồ tiêm vào để kiểm bằng test.
+ */
+export class ClothBudget {
+  private frameStart = -1e9;
+  private spent = 0;
+  constructor(
+    readonly budgetMs = 0.5,
+    readonly maxLagS = 0.08,
+    private now: () => number = () => performance.now(),
+  ) {}
+  /** Được chạy lúc này không? `pendingS`: dt đã dồn do bị hoãn. */
+  allow(pendingS: number): boolean {
+    const t = this.now();
+    if (t - this.frameStart > 6) {
+      this.frameStart = t;
+      this.spent = 0;
+    }
+    return this.spent < this.budgetMs || pendingS >= this.maxLagS;
+  }
+  /** Ghi chi phí (ms) đã tốn của lần chạy vừa xong. */
+  charge(ms: number): void {
+    this.spent += ms;
+  }
+}
+export const CLOTH_BUDGET = new ClothBudget();
+
 export class ClothRig {
   readonly sims: ClothSim[] = [];
   private grids: ClothGrid[] = [];
@@ -77,6 +105,7 @@ export class ClothRig {
   private normals: Float32Array[] = [];
   private skinned: THREE.SkinnedMesh;
   private acc = 0;
+  private pending = 0;
   private t = 0;
   private lastRoot = new THREE.Vector3();
   private fresh = true;
@@ -219,8 +248,12 @@ export class ClothRig {
    * Cập nhật mỗi khung (khi `active`). `sit` 0..1: phình viên nang chân để vải phủ lên đùi khi ngồi. `freshMatrices`: ma trận thế giới của rig đã được cập nhật
    * trong khung này (bỏ qua cập nhật lặp, tốn nhất).
    */
-  update(dt: number, sit = 0, freshMatrices = false): void {
+  update(dtIn: number, sit = 0, freshMatrices = false): void {
     if (!this.active) return;
+    this.pending += dtIn;
+    if (!CLOTH_BUDGET.allow(this.pending)) return;
+    const dt = this.pending;
+    this.pending = 0;
     const t0 = performance.now();
     if (!freshMatrices) this.root.updateMatrixWorld(true);
     const bind = this.skinned.bindMatrix;
@@ -292,6 +325,7 @@ export class ClothRig {
       b.nor.needsUpdate = true;
     }
     const ms = performance.now() - t0;
+    CLOTH_BUDGET.charge(ms);
     this.msAvg += (ms - this.msAvg) * 0.1;
   }
 
