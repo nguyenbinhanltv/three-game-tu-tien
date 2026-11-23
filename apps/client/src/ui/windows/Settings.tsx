@@ -1,14 +1,15 @@
 import { QUALITIES } from '../../base/quality';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { t } from '@dtl/content';
 import { getVolume, isMuted, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../../game/audio/audio';
 import { Game } from '../../game/engine';
 import { AURA_COMBATS, AURA_MODES, AURA_OTHERS } from '../../game/fx/realmAuraRules';
-import { Button, Divider, PanelWindow, Segmented, Slider, Tabs } from '../u2/win';
+import { Button, Divider, PanelWindow, Segmented, Slider, Tabs, Tooltip } from '../u2/win';
 import { setReduceMotion, useReduceMotion } from '../u2/shell';
 import { closePanel, openPanel, set, setHudPref, useUI } from '../store';
 import { setUiScaleUser, uiScaleUser } from '../uiScale';
 import { setTouchPref, useTouchState, type TouchPref } from '../../input/touchMode';
+type SegProps<V extends string | number | boolean> = Parameters<typeof Segmented<V>>[0];
 import { PRESET_IDS, PRESETS, presetOf, type PresetId } from './settingsPresets';
 
 /** Thanh trượt âm lượng cho master và từng bus; thả tay thì phát thử một âm trên bus đó. */
@@ -33,6 +34,35 @@ function VolumeSlider({ k }: { k: VolumeKey }) {
       }}
       onCommit={preview}
     />
+  );
+}
+
+/** Nhãn hiển thị + biểu tượng (i) mở gợi ý dài trong tooltip (thay cho đoạn chữ xám dưới mỗi cài đặt). */
+function Field({ label, hint, bare, children }: { label: string; hint?: string; bare?: boolean; children: ReactNode }) {
+  return (
+    <div className="set-field">
+      {(!bare || hint) && (
+        <div className="set-label">
+          {!bare && <span>{label}</span>}
+          {hint && (
+            <Tooltip content={<div className="set-tip">{hint}</div>}>
+              <button type="button" className="set-info" aria-label={t('ui.settings.info')}>
+                i
+              </button>
+            </Tooltip>
+          )}
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
+
+function LSeg<V extends string | number | boolean>({ bare, hint, ...p }: SegProps<V> & { bare?: boolean; hint?: string }) {
+  return (
+    <Field label={p.label ?? ''} hint={hint} bare={bare}>
+      <Segmented {...p} />
+    </Field>
   );
 }
 
@@ -93,23 +123,18 @@ export function Settings() {
         <div data-testid="settings-graphics">
           <Divider label={t('ui.settings.preset')} />
           {/* Không khớp preset nào (đã chỉnh riêng) thì không ô nào sáng. */}
-          <Segmented
+          <LSeg
+            bare
+            hint={t('ui.settings.preset_hint')}
             label={t('ui.settings.preset')}
             value={(preset ?? '') as PresetId}
             onChange={(id: PresetId) => applyPreset(id)}
             options={PRESET_IDS.map((id) => ({ value: id, label: t('ui.settings.preset.' + id) }))}
           />
-          <div className="k-dim">{t('ui.settings.preset_hint')}</div>
           <Divider label={t('ui.settings.quality')} />
-          <Segmented
-            label={t('ui.settings.quality')}
-            value={quality}
-            onChange={(q) => Game.current?.setQuality(q)}
-            options={QUALITIES.map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))}
-          />
           {qualityHint && !hintSeen && (
-            <div className="k-dim" data-testid="quality-hint">
-              {t('ui.settings.quality_suggest', { q: t('ui.settings.q.' + qualityHint) })}{' '}
+            <div className="set-suggest" data-testid="quality-hint">
+              <span>{t('ui.settings.quality_suggest', { q: t('ui.settings.q.' + qualityHint) })}</span>
               <Button
                 onClick={() => {
                   Game.current?.setQuality(qualityHint);
@@ -117,19 +142,26 @@ export function Settings() {
                 }}
               >
                 {t('ui.settings.quality_apply')}
-              </Button>{' '}
+              </Button>
               <Button onClick={() => Game.current?.dismissQualityHint()}>{t('ui.settings.quality_dismiss')}</Button>
             </div>
           )}
-          <Segmented
+          <LSeg
+            bare
+            hint={t('ui.settings.quality_hint')}
+            label={t('ui.settings.quality')}
+            value={quality}
+            onChange={(q) => Game.current?.setQuality(q)}
+            options={QUALITIES.map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))}
+          />
+          <LSeg
+            hint={t('ui.settings.quality_lock_hint')}
             label={t('ui.settings.quality_lock')}
             value={qualityLock}
             onChange={(on) => Game.current?.setQualityLock(on)}
             options={onOff}
           />
-          <div className="k-dim">{t('ui.settings.quality_lock_hint')}</div>
-          <div className="k-dim">{t('ui.settings.quality_hint')}</div>
-          <div className="k-dim">{t('ui.settings.fps', { n: fps })}</div>
+          <div className="k-dim set-fps">{t('ui.settings.fps', { n: fps })}</div>
           <Divider label={t('ui.settings.group_combat')} />
           <Slider
             label={t('ui.settings.cam_shake')}
@@ -149,62 +181,72 @@ export function Settings() {
             format={(n) => n + '%'}
             onChange={(n) => Game.current?.setHitStop(n)}
           />
-          <Segmented
+          <LSeg
             label={t('ui.settings.fx_quality')}
             value={fxQ}
             onChange={(q) => Game.current?.setFxQuality(q)}
             options={(['low', 'medium', 'high'] as const).map((q) => ({ value: q, label: t('ui.settings.fxq.' + q) }))}
+            hint={t('ui.settings.fx_quality_hint')}
           />
-          <div className="k-dim">{t('ui.settings.fx_quality_hint')}</div>
-          <Segmented
+          <LSeg
             label={t('ui.settings.impact_frame')}
             value={impactFrame}
             onChange={(on) => Game.current?.setImpactFrame(on)}
             options={onOff}
           />
-          <Segmented label={t('ui.settings.hero_rim')} value={heroRim} onChange={(on) => Game.current?.setHeroRim(on)} options={onOff} />
-          <div className="k-dim">{t('ui.settings.hero_rim_hint')}</div>
-          <Segmented label={t('ui.settings.fx_static')} value={staticFx} onChange={(on) => Game.current?.setStaticFx(on)} options={onOff} />
-          <div className="k-dim">{t('ui.settings.fx_static_hint')}</div>
+          <LSeg
+            label={t('ui.settings.hero_rim')}
+            value={heroRim}
+            onChange={(on) => Game.current?.setHeroRim(on)}
+            options={onOff}
+            hint={t('ui.settings.hero_rim_hint')}
+          />
+          <LSeg
+            label={t('ui.settings.fx_static')}
+            value={staticFx}
+            onChange={(on) => Game.current?.setStaticFx(on)}
+            options={onOff}
+            hint={t('ui.settings.fx_static_hint')}
+          />
           {debugOk && (
             <>
-              <Segmented
+              <LSeg
                 label={t('ui.settings.colliders')}
                 value={colliders}
                 onChange={(on) => Game.current?.setDebugColliders(on)}
                 options={onOff}
+                hint={t('ui.settings.colliders_hint')}
               />
-              <div className="k-dim">{t('ui.settings.colliders_hint')}</div>
             </>
           )}
           <Divider label={t('ui.settings.realm_aura')} />
-          <Segmented
+          <LSeg
+            bare
             label={t('ui.settings.realm_aura')}
             value={auraMode}
             onChange={(m) => Game.current?.setAuraMode(m)}
             options={AURA_MODES.map((m) => ({ value: m, label: t('ui.settings.aura.mode.' + m) }))}
           />
-          <div className="k-dim">{t('ui.settings.aura_others')}</div>
-          <Segmented
+          <LSeg
             label={t('ui.settings.aura_others')}
             value={auraOthers}
             onChange={(m) => Game.current?.setAuraOthers(m)}
             options={AURA_OTHERS.map((m) => ({ value: m, label: t('ui.settings.aura.others.' + m) }))}
           />
-          <div className="k-dim">{t('ui.settings.aura_combat')}</div>
-          <Segmented
+          <LSeg
             label={t('ui.settings.aura_combat')}
             value={auraCombat}
             onChange={(m) => Game.current?.setAuraCombat(m)}
             options={AURA_COMBATS.map((m) => ({ value: m, label: t('ui.settings.aura.combat.' + m) }))}
+            hint={t('ui.settings.realm_aura_hint')}
           />
-          <div className="k-dim">{t('ui.settings.realm_aura_hint')}</div>
         </div>
       )}
       {tab === 'audio' && (
         <div data-testid="settings-audio">
           <Divider label={t('ui.settings.sound')} />
-          <Segmented
+          <LSeg
+            bare
             label={t('ui.settings.sound')}
             value={!mute}
             onChange={(on) => {
@@ -224,35 +266,39 @@ export function Settings() {
       {tab === 'controls' && (
         <div data-testid="settings-controls">
           <Divider label={t('ui.settings.touch')} />
-          <Segmented
+          <LSeg
+            bare
             label={t('ui.settings.touch')}
             value={touchPref}
             onChange={(m: TouchPref) => setTouchPref(m)}
             options={(['auto', 'on', 'off'] as const).map((m) => ({ value: m, label: t('ui.settings.touch.' + m) }))}
+            hint={t('ui.settings.touch_hint')}
           />
-          <div className="k-dim">{t('ui.settings.touch_hint')}</div>
           <Divider label={t('ui.settings.skill_layout')} />
-          <Segmented
+          <LSeg
+            bare
             label={t('ui.settings.skill_layout')}
             value={skillLayout}
             onChange={(m) => setHudPref('skillLayout', m)}
             options={(['arc', 'bar'] as const).map((m) => ({ value: m, label: t('ui.settings.skill_layout.' + m) }))}
+            hint={t('ui.settings.skill_layout_hint')}
           />
-          <div className="k-dim">{t('ui.settings.skill_layout_hint')}</div>
           <Divider label={t('ui.settings.offscreen')} />
-          <Segmented
+          <LSeg
+            bare
             label={t('ui.settings.offscreen')}
             value={offscreen}
             onChange={(on) => Game.current?.setOffscreen(on)}
             options={onOff}
+            hint={t('ui.settings.offscreen_hint')}
           />
-          <div className="k-dim">{t('ui.settings.offscreen_hint')}</div>
         </div>
       )}
       {tab === 'interface' && (
         <div data-testid="settings-interface">
           <Divider label={t('ui.settings.uiscale')} />
-          <Segmented
+          <LSeg
+            bare
             label={t('ui.settings.uiscale')}
             value={uiMul}
             onChange={(m) => {
@@ -260,19 +306,26 @@ export function Settings() {
               setUiMul(m);
             }}
             options={[0.8, 1, 1.2, 1.4].map((m) => ({ value: m, label: t('ui.settings.uiscale.' + m) }))}
+            hint={t('ui.settings.uiscale_hint')}
           />
-          <div className="k-dim">{t('ui.settings.uiscale_hint')}</div>
           <Divider label={t('ui.settings.chapter')} />
-          <Segmented
+          <LSeg
+            bare
             label={t('ui.settings.chapter')}
             value={chapterCards}
             onChange={(on) => Game.current?.setChapterCards(on)}
             options={onOff}
+            hint={t('ui.settings.chapter_hint')}
           />
-          <div className="k-dim">{t('ui.settings.chapter_hint')}</div>
           <Divider label={t('ui.settings.reduce_motion')} />
-          <Segmented label={t('ui.settings.reduce_motion')} value={reduceMotion} onChange={setReduceMotion} options={onOff} />
-          <div className="k-dim">{t('ui.settings.reduce_motion_hint')}</div>
+          <LSeg
+            bare
+            label={t('ui.settings.reduce_motion')}
+            value={reduceMotion}
+            onChange={setReduceMotion}
+            options={onOff}
+            hint={t('ui.settings.reduce_motion_hint')}
+          />
           <Divider label={t('ui.settings.credits')} />
           <div>
             <Button onClick={() => openPanel('credits')}>{t('ui.settings.credits_open')}</Button>
