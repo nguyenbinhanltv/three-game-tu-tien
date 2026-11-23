@@ -37,7 +37,14 @@ function readQuality(): FxQuality {
 }
 
 let quality: FxQuality = readQuality();
-let hitStop = typeof localStorage === 'undefined' || localStorage.getItem(KEY_STOP) !== '0';
+const KEY_STOP_PCT = 'dtl.hitStopPct';
+/** Cường độ khựng hình 0–100% (Cài đặt); chưa có thì theo công tắc cũ. */
+let hitStopPct = (() => {
+  if (typeof localStorage === 'undefined') return 100;
+  const v = localStorage.getItem(KEY_STOP_PCT);
+  if (v !== null && Number.isFinite(Number(v))) return Math.max(0, Math.min(100, Math.round(Number(v))));
+  return localStorage.getItem(KEY_STOP) === '0' ? 0 : 100;
+})();
 
 const lsGet = (k: string): string | null => (typeof localStorage === 'undefined' ? null : localStorage.getItem(k));
 const lsSet = (k: string, v: string): void => {
@@ -86,10 +93,13 @@ export function setFxQuality(q: FxQuality): void {
   quality = q;
   if (typeof localStorage !== 'undefined') localStorage.setItem(KEY, q);
 }
-export const hitStopOn = (): boolean => hitStop;
-export function setHitStopOn(on: boolean): void {
-  hitStop = on;
-  if (typeof localStorage !== 'undefined') localStorage.setItem(KEY_STOP, on ? '1' : '0');
+export const hitStopOn = (): boolean => hitStopPct > 0;
+export const hitStopPctOf = (): number => hitStopPct;
+/** Hệ số nhân thời gian khựng hình (0–1). */
+export const hitStopScale = (): number => hitStopPct / 100;
+export function setHitStopPct(n: number): void {
+  hitStopPct = Math.max(0, Math.min(100, Math.round(n)));
+  if (typeof localStorage !== 'undefined') localStorage.setItem(KEY_STOP_PCT, String(hitStopPct));
 }
 
 let impactFrame = typeof localStorage === 'undefined' || localStorage.getItem(KEY_IMPACT) !== '0';

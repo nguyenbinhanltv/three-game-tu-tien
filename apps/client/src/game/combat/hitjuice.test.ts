@@ -18,6 +18,7 @@ import {
   SHAKE_LEVEL,
   ULT_FOV,
   ultFovAt,
+  tierFromTr,
   whooshDelay,
   type HitCtx,
 } from './hitjuice';
@@ -59,7 +60,7 @@ describe('bảng hit-stop (7.3)', () => {
       expect(r.attacker).toBeLessThanOrEqual(HIT_STOP_CAP);
       if (!o.ult && !(o.crit && o.heavy)) expect(r.target).toBeLessThanOrEqual(0.07);
     }
-    expect(HIT_STOP_CAP).toBe(0.09);
+    expect(HIT_STOP_CAP).toBe(0.11);
   });
   it('người khác ra đòn: người đánh không khựng; hệ số hạng thân chỉ giảm', () => {
     expect(hitStopOf(c({ byMe: false, crit: true })).attacker).toBe(0);
@@ -69,7 +70,7 @@ describe('bảng hit-stop (7.3)', () => {
 });
 
 describe('hit-stop trong HitReact', () => {
-  it('ghi đè `stop` theo bảng, nhân hệ số hạng thân, kẹp trần 90 ms', async () => {
+  it('ghi đè `stop` theo bảng, nhân hệ số hạng thân, kẹp trần 110 ms', async () => {
     const { HitReact } = await import('./hitreact');
     const h = new HitReact([]);
     h.feel = HIT_FEEL.boss;
@@ -79,7 +80,7 @@ describe('hit-stop trong HitReact', () => {
     expect(h.update(0.05)).toBeCloseTo(0.05 - 0.0175, 5);
     const h2 = new HitReact([]);
     h2.hitStop(5);
-    expect(h2.update(0.2)).toBeCloseTo(0.2 - 0.09, 5);
+    expect(h2.update(0.2)).toBeCloseTo(0.2 - 0.11, 5);
   });
   it('đòn thường 40 ms chỉ khựng trong 40 ms', async () => {
     const { HitReact } = await import('./hitreact');
@@ -245,5 +246,38 @@ describe('SwingGuard (cờ đang vung tự hết hạn)', () => {
     expect(g.active('a', 10)).toBe(false);
     expect(g.active('b', 10)).toBe(true);
     expect(g.active('zzz', 10)).toBe(false);
+  });
+});
+
+describe('cấp đòn từ server (Chân Cảnh S1)', () => {
+  it('hit-stop theo HIT_TIER: 0 / 40 / 70 / 110 ms, người đánh nửa và chỉ khi là mình', () => {
+    expect(hitStopOf(c({ tier: 'light' }))).toEqual({ target: 0, attacker: 0 });
+    expect(hitStopOf(c({ tier: 'medium' }))).toEqual({ target: 0.04, attacker: 0.02 });
+    expect(hitStopOf(c({ tier: 'heavy' })).target).toBe(0.07);
+    expect(hitStopOf(c({ tier: 'finisher' })).target).toBe(0.11);
+    expect(hitStopOf(c({ tier: 'finisher', byMe: false })).attacker).toBe(0);
+  });
+  it('bạo kích nâng đòn nhẹ lên tối thiểu vừa', () => {
+    expect(hitStopOf(c({ tier: 'light', crit: true })).target).toBe(0.04);
+  });
+  it('rung theo biên độ bảng, lấy max với bảng cũ, người ngoài cuộc không rung', () => {
+    expect(shakeOf(c({ tier: 'finisher' }))).toBeCloseTo(0.09 / 0.22, 5);
+    expect(shakeOf(c({ tier: 'finisher', byMe: false, victimIsMe: false }))).toBe(0);
+    expect(shakeOf(c({ tier: 'light', ult: true }))).toBe(SHAKE_LEVEL.ult);
+    expect(shakeOf(c({ tier: 'light' }))).toBe(0);
+  });
+});
+
+describe('tin sát thương không có `tr` (nguồn không phân cấp)', () => {
+  it('tierFromTr: vắng = undefined (bảng cũ), 0 = nhẹ đã phân cấp', () => {
+    expect(tierFromTr(undefined)).toBeUndefined();
+    expect(tierFromTr(0)).toBe('light');
+    expect(tierFromTr(2)).toBe('heavy');
+  });
+  it('hv lên mình từ nguồn không phân cấp vẫn có victimHeavy; có tr=0 thì không khựng', () => {
+    const ctx = c({ victimIsMe: true, byMe: false, heavy: true, tier: tierFromTr(undefined) });
+    expect(hitStopOf(ctx).target).toBe(0.06);
+    expect(shakeOf(ctx)).toBe(SHAKE_LEVEL.victimHeavy);
+    expect(hitStopOf({ ...ctx, tier: tierFromTr(0) }).target).toBe(0);
   });
 });

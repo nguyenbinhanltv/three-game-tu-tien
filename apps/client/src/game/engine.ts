@@ -55,6 +55,7 @@ import { EntityManager, type PState, type WorldView } from './entities/entities'
 import { Environment } from './world/env';
 import { AmbientParticles } from './world/ambient';
 import { Butterflies } from './world/butterflies';
+import { Breakables } from './world/breakables';
 import { Grass, GRASS_PUSH_SLOTS, type Pusher } from './world/grass';
 import { setHeightFog } from '../render/atmosphere';
 import { type RiftVeil } from '../render/riftVeil';
@@ -114,6 +115,7 @@ import {
   auraOthersOf,
   fxQuality,
   hitStopOn,
+  hitStopPctOf,
   impactFrameOn,
   staticFxOn,
   setImpactFrameOn,
@@ -123,7 +125,7 @@ import {
   setAuraMode,
   setAuraOthers,
   setFxQuality,
-  setHitStopOn,
+  setHitStopPct,
 } from './fx/fxSettings';
 import type { AuraCombat, AuraMode, AuraOthers } from './fx/realmAuraRules';
 import { RealmAuraFx, type RealmAuraEnv } from './fx/realmAura';
@@ -283,6 +285,8 @@ export class Game {
   kimDaArt: KimDaArt | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
   butterflies: Butterflies | null = null;
+  /** Vật thể vỡ của level (S1c), null nếu level không có. */
+  breakables: Breakables | null = null;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */
   ambient!: AmbientParticles;
   pushers: Pusher[] = Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
@@ -1320,9 +1324,9 @@ export class Game {
     set({ fxQuality: q });
   }
 
-  setHitStop(on: boolean): void {
-    setHitStopOn(on);
-    set({ hitStop: on });
+  setHitStop(n: number): void {
+    setHitStopPct(n);
+    set({ hitStop: hitStopPctOf() });
   }
 
   setImpactFrame(on: boolean): void {
@@ -1362,9 +1366,9 @@ export class Game {
     set({ qualityHintSeen: true });
   }
 
-  setCamShake(on: boolean): void {
-    this.shake.setEnabled(on);
-    set({ camShake: on });
+  setCamShake(n: number): void {
+    this.shake.setPct(n);
+    set({ camShake: this.shake.pct });
   }
 
   /** Đổi preset lúc chạy có thể đổi bộ texture mặt đất (2K ↔ 1024² ở Vân Lam): nạp bộ đúng rồi thay, giải phóng bộ cũ. */

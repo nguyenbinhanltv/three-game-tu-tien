@@ -27,6 +27,7 @@ import {
   CHARGE_MAX,
   needsTarget,
   PF_SOUL,
+  PF_STAGGER,
   SOUL_RANGE,
   SOUL_SCOUT,
   skyFlightUnlocked,
@@ -247,6 +248,7 @@ export function runFrame(eng: Game): void {
   eng.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
   if (me) eng.ambient.update(dt, eng.camera.position, rp);
   if (me) eng.butterflies?.update(dt, rp);
+  eng.breakables?.update(dt);
   if (eng.mapVis && me) {
     const st = get();
     eng.mapVis.setOpen(st.tele.open);
@@ -653,7 +655,8 @@ function moveCtx(_eng: Game, me: PState): MoveCtx {
   const scouting = (me.fl & PF_SOUL) !== 0 && soul.k === SOUL_SCOUT && !dead;
   return {
     canFly: !dead && (me.fl & PF_TRIBULATION) === 0 && (scouting || canFlyAt(me.lv, me.mp, me.x, me.y, me.z)),
-    frozen: dead,
+    // Khựng do trúng đòn (S1): server không cho đi trong lúc cờ `PF_STAGGER` bật, dự đoán đứng yên để không bị kéo lại.
+    frozen: dead || (me.fl & PF_STAGGER) !== 0,
     speedMul: 1,
     terrain: levelTerrain(),
     collision: collisionOf(levelId()),
