@@ -6,7 +6,7 @@
    "kind": "spark",
    "t": -0.5,
    "n": 26,
-   "speed": 2.0,
+   "speed": 2,
    "spread": 1,
    "life": 0.4,
    "size": 0.07,
@@ -65,7 +65,8 @@
    "grow": 0.25,
    "tone": "body",
    "alpha": 0.85,
-   "tier": 0
+   "tier": 0,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -130,15 +131,15 @@
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "shield",
    "gain": 0.85,
-   "rate": 1.0,
+   "rate": 1,
    "jitter": 0.03
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "heal",
    "gain": 0.45,
    "rate": 1.15,
@@ -201,12 +202,13 @@
    "follow": true,
    "tone": "body",
    "tier": 0,
-   "seed": 6
+   "seed": 6,
+   "ink": true
   },
   {
    "type": "mesh",
    "shape": "rune_ring2",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.6,
    "at": "self",
    "offset": [
@@ -222,7 +224,8 @@
    "shadow": false,
    "tone": "body",
    "tier": 0,
-   "seed": 3
+   "seed": 3,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -232,7 +235,7 @@
    "at": "self",
    "offset": [
     0,
-    -1.0,
+    -1,
     0
    ],
    "scale": 12.48,
@@ -243,12 +246,13 @@
    "shadow": false,
    "tone": "core",
    "tier": 1,
-   "seed": 7
+   "seed": 7,
+   "ink": true
   },
   {
    "type": "particles",
    "kind": "spark",
-   "t": 0.0,
+   "t": 0,
    "n": 34,
    "speed": 5,
    "spread": 1,
@@ -266,11 +270,11 @@
   {
    "type": "particles",
    "kind": "petal",
-   "t": 0.0,
+   "t": 0,
    "n": 20,
    "speed": 2.2,
    "spread": 1,
-   "life": 1.0,
+   "life": 1,
    "size": 0.1,
    "at": "self",
    "offset": [
@@ -278,7 +282,7 @@
     -0.7200000000000001,
     0
    ],
-   "grav": -1.0,
+   "grav": -1,
    "tone": "body",
    "tier": 1
   },
@@ -303,7 +307,7 @@
     "offset": [
      0.31,
      0.1,
-     1.0
+     1
     ],
     "ease": "out"
    },
@@ -320,7 +324,7 @@
    "offset": [
     0.31,
     0.1,
-    1.0
+    1
    ],
    "rot": [
     0,
@@ -559,24 +563,24 @@
   },
   {
    "type": "hitstop",
-   "t": 0.0,
+   "t": 0,
    "ms": 45,
    "tier": 1
   },
   {
    "type": "shake",
-   "t": 0.0,
+   "t": 0,
    "level": 0.15
   },
   {
    "type": "flash",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.06,
    "tier": 1
   },
   {
    "type": "camera",
-   "t": 0.0,
+   "t": 0,
    "pull": 0,
    "dur": 0.5,
    "fov": 1.2,

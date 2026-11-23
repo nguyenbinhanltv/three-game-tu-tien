@@ -1,0 +1,130 @@
+{
+ "skill": "skl_dan_hoa_chi",
+ "events": [
+  {
+   "type": "soundAt",
+   "t": 0,
+   "id": "heal",
+   "gain": 0.5,
+   "rate": 1,
+   "jitter": 0.05
+  },
+  {
+   "type": "impact",
+   "t": 0,
+   "frames": 1,
+   "tint": "cool",
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "t": 0.01,
+   "dur": 0.5,
+   "at": "ahead",
+   "sweep": 0.15,
+   "erodeFrom": 0.5,
+   "ragged": 0.6,
+   "tone": "body",
+   "alpha": 1,
+   "tier": 0,
+   "shape": "kite",
+   "offset": [
+    -1.0499999999999998,
+    0.2,
+    2.4000000000000004
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1.6500000000000001,
+    1.6500000000000001,
+    9
+   ],
+   "seed": 1105
+  },
+  {
+   "type": "mesh",
+   "t": 0.03,
+   "dur": 0.5,
+   "at": "ahead",
+   "sweep": 0.15,
+   "erodeFrom": 0.5,
+   "ragged": 0.6,
+   "tone": "rim",
+   "alpha": 1,
+   "tier": 0,
+   "shape": "kite",
+   "offset": [
+    0,
+    0.2,
+    2.4000000000000004
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1.6500000000000001,
+    1.6500000000000001,
+    9
+   ],
+   "seed": 1106
+  },
+  {
+   "type": "mesh",
+   "t": 0.05,
+   "dur": 0.5,
+   "at": "ahead",
+   "sweep": 0.15,
+   "erodeFrom": 0.5,
+   "ragged": 0.6,
+   "tone": "body",
+   "alpha": 1,
+   "tier": 0,
+   "shape": "kite",
+   "offset": [
+    1.0499999999999998,
+    0.2,
+    2.4000000000000004
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1.6500000000000001,
+    1.6500000000000001,
+    9
+   ],
+   "seed": 1107
+  },
+  {
+   "type": "mesh",
+   "t": 0.02,
+   "dur": 0.6,
+   "at": "self",
+   "sweep": 0.05,
+   "erodeFrom": 0.1,
+   "ragged": 0.6,
+   "tone": "body",
+   "alpha": 0.6,
+   "tier": 0,
+   "shape": "rune_ring2",
+   "offset": [
+    0,
+    0.12,
+    0
+   ],
+   "scale": 0.8999999999999999,
+   "scaleTo": 3,
+   "ink": true,
+   "shadow": true,
+   "seed": 1108
+  }
+ ]
+}

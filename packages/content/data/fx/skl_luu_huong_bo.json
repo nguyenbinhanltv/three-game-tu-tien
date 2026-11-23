@@ -6,7 +6,7 @@
  "events": [
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "cast",
    "gain": 0.3,
    "rate": 1.4,
@@ -15,13 +15,13 @@
   {
    "type": "mesh",
    "shape": "lotus_bloom",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.9,
    "at": "self",
    "offset": [
     0,
     -1.008,
-    8.0
+    8
    ],
    "rot": [
     0,
@@ -44,13 +44,13 @@
   {
    "type": "mesh",
    "shape": "burst",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.1,
    "at": "self",
    "offset": [
     0,
     0,
-    8.0
+    8
    ],
    "scale": 1.2,
    "billboard": true,
@@ -61,7 +61,7 @@
   {
    "type": "particles",
    "kind": "petal",
-   "t": 0.0,
+   "t": 0,
    "n": 26,
    "speed": 2.4,
    "spread": 1,
@@ -71,7 +71,7 @@
    "offset": [
     0,
     0,
-    8.0
+    8
    ],
    "grav": 0.6,
    "tone": "body",
@@ -132,7 +132,7 @@
    "at": "self",
    "offset": [
     0,
-    -1.0,
+    -1,
     0
    ],
    "scale": 0.5,
@@ -143,7 +143,8 @@
    "shadow": false,
    "tone": "body",
    "tier": 0,
-   "seed": 3
+   "seed": 3,
+   "ink": true
   },
   {
    "type": "particles",
@@ -181,7 +182,7 @@
    "offset": [
     -0.35,
     -1.02,
-    7.0
+    7
    ],
    "rot": [
     -70,
@@ -362,7 +363,7 @@
     "offset": [
      0.5599999999999999,
      0.17999999999999994,
-     1.0
+     1
     ],
     "ease": "out"
    },

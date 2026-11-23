@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_dan_hoa_vu",
+  "idea": "Đan Hỏa Vũ: Chiêu tư thế. Mưa lửa đan quanh mục tiêu gây 120% công kích hệ hỏa trong 6 mét và thiêu đốt 3 giây, mỗi giây 15% công kích.",
+  "element": "hoa",
+  "path": "dan_su",
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 420,
+    "impactMs": 80,
+    "lingerMs": 530
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 12,
+    "heightM": 6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 4,
+    "particles": 120,
+    "screenCover": 0.35,
+    "overdraw": 6
+  },
+  "textures": [],
+  "impactFrame": true
+}

@@ -1,0 +1,34 @@
+{
+  "skillId": "skl_luu_huong_bo",
+  "idea": "Lưu Hương Bộ: Nhẹ bước lùi nhanh 8 mét theo làn hương lá, kéo giãn khoảng cách với kẻ địch. Không xuyên vách, không dùng được khi ngự kiếm.",
+  "element": "vo",
+  "path": "dan_su",
+  "shapeLang": [
+    "burst",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 300,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 10,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 150,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [
+    {
+      "id": "proc:ink_smoke",
+      "kind": "flipbook"
+    }
+  ]
+}

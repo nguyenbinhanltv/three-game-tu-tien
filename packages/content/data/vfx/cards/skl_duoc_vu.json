@@ -1,0 +1,39 @@
+{
+  "skillId": "skl_duoc_vu",
+  "idea": "Dược Vũ: Tay áo vung lên, mưa lá rơi hồi tổng cộng 25% khí huyết tối đa trong 4 giây cho ngươi và đạo hữu trong 10 mét.",
+  "element": "moc",
+  "path": "dan_su",
+  "shapeLang": [
+    "burst",
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 550
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 366,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [
+    {
+      "id": "proc:ink_smoke",
+      "kind": "flipbook"
+    },
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    }
+  ]
+}

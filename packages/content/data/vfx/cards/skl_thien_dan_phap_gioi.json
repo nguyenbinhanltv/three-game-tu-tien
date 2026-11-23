@@ -1,0 +1,34 @@
+{
+  "skillId": "skl_thien_dan_phap_gioi",
+  "idea": "Thiên Đan Pháp Giới: Thần thông tối thượng: mở pháp giới 14 mét trong 12 giây, mỗi giây hồi 8% khí huyết và giải hiệu ứng xấu cho đạo hữu. Cần cảnh giới Hóa Thần.",
+  "element": "moc",
+  "path": "dan_su",
+  "shapeLang": [
+    "burst",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 600,
+    "impactMs": 80,
+    "lingerMs": 400
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 11,
+    "particles": 477,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    }
+  ]
+}
