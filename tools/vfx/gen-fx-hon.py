@@ -13,6 +13,10 @@
 import json
 import math
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from area_fit import fit_area  # noqa: E402
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'packages', 'content', 'data', 'fx')
 M = 'dan_hon_kinh'
@@ -143,7 +147,7 @@ write('skl_dinh_than_thuat', [
 ])
 
 # ---- Hoàng Tuyền Dẫn (vùng 9 m quanh mục tiêu): mặt đất mở thành vũng sẫm, vòng triện loang rộng, khói thấp; không cột sáng ----
-write('skl_hoang_tuyen_dan', [
+write('skl_hoang_tuyen_dan', fit_area([
     parts('dust', -0.5, 24, 1.4, 1.0, 0.4, 0.18, at='self', offset=[0, -0.2, 0.2], inward=True, tone='rim', tier=1),
     sound(-0.5, 'cast', 0.5, 0.6),
     decal('rune', -0.35, 8.0, 1.2, at='area', grow=0.3, tone='body', alpha=0.75, tier=0),
@@ -158,7 +162,7 @@ write('skl_hoang_tuyen_dan', [
     {'type': 'hitstop', 't': 0.0, 'ms': 65},
     {'type': 'shake', 't': 0.0, 'level': 0.3},
     {'type': 'flash', 't': 0.0, 'amount': 0.08, 'tier': 0},
-])
+], 9.0))  # vùng 6 m (area_fit.py)
 
 # ---- Tát Đậu Thành Binh (tối thượng, gọi hồn binh) ----
 # Khoảnh khắc triệu: vòng triện lớn loang quanh người (bán kính ~6 m, vừa vùng hồn binh hoạt động gần), sóng xung thấp, khói hồn bốc
