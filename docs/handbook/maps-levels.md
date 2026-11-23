@@ -51,3 +51,7 @@
 ## Trần độ dốc đi bộ
 
 Mọi bản đồ: lối đi/đường chính phải dốc ≤ `WALK_MAX_SLOPE_DEG` (30°, `packages/shared/src/walkslope.ts`); dốc hơn thì đường vòng thoải, bậc thang hoặc bỏ lối. Test quét heightmap bằng `maxPathSlope` và `walkableRouteLength` (mẫu: `packages/shared/src/tieucanh.test.ts`, doc `docs/map/lac-kiem-tieu-canh.md`).
+
+## Đài bát quái giữa sân Lạc Kiếm
+
+`prop_bat_quai` (`tools/blender/thien_cong_kit.py`) dựng ĐÚNG kích thước (bán kính 10,2 m), không nhân `scale` khi đặt: UV tính theo tọa độ cục bộ của mảnh nên nhân tỉ lệ làm texture/vân đá to theo và thành đĩa bị kéo dọc. Đĩa đá lục sẫm (khác tông lát sân ngọc trắng), vành ngoài ngọc nhạt, hai vòng khảm vàng nhạt (vành nổi 0,035 m: mỏng hơn thì z-fight), tám quái khảm vàng trên khung đá đen. Sửa xong: `pnpm assets:build --only arch_sect --force` rồi `pnpm colliders:arch --id arch_sect --origin 2048,150,2048 --level van_lam` (test chống lệch ở `archcollider.test.ts`).

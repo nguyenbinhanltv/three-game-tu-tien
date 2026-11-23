@@ -1263,14 +1263,50 @@ def _(b):
         b.cylinder(math.sin(ang) * 0.14 + k * 0.03, 0.95 + k * 0.3, math.cos(ang) * 0.1, 0.14 - k * 0.012, 0.34, TIMBER_D, 8, 0.12 - k * 0.012)
 
 
+BAT_QUAI_STONE = paint(0x2B3533, 'stone')  # đá lục sẫm: tách hẳn khỏi lát sân ngọc trắng
+BAT_QUAI_INLAY = paint(0xCFA955, 'lamp')  # vàng nhạt khảm (lamp: sáng nhẹ, kim loại thường không có env map nên tối đen)
+
+
+def _annulus(b, y, r0, r1, color, seg=48):
+    """Mặt vành khăn nằm ngang (ngửa lên) ở độ cao y, từ bán kính r0 tới r1."""
+    for i in range(seg):
+        a0, a1 = i / seg * math.tau, (i + 1) / seg * math.tau
+        b.face([(math.cos(a0) * r1, y, math.sin(a0) * r1), (math.cos(a1) * r1, y, math.sin(a1) * r1), (math.cos(a1) * r0, y, math.sin(a1) * r0), (math.cos(a0) * r0, y, math.sin(a0) * r0)], color)
+
+
+def _ring_band(b, r0, r1, y0, h, color, seg=48):
+    """Vành đá nổi có thành trong/ngoài/mặt trên (bậc nổi h so với mặt đĩa)."""
+    b.cylinder(0, y0, 0, r1, h, color, seg, smooth=False, cap=False)
+    _annulus(b, y0 + h, r0, r1, color, seg)
+    for i in range(seg):  # thành trong (quay vào tâm)
+        a0, a1 = i / seg * math.tau, (i + 1) / seg * math.tau
+        b.face([(math.cos(a1) * r0, y0, math.sin(a1) * r0), (math.cos(a0) * r0, y0, math.sin(a0) * r0), (math.cos(a0) * r0, y0 + h, math.sin(a0) * r0), (math.cos(a1) * r0, y0 + h, math.sin(a1) * r0)], color)
+
+
 @part('prop_bat_quai', 'prop')
 def _(b):
-    r = 3.0
-    b.cylinder(0, 0, 0, r, 0.1, JADE_SHADE, 24)
-    b.cylinder(0, 0.1, 0, 0.7, 0.03, JADE_GREEN, 16)
-    for k in range(8):
+    """Đài bát quái giữa sân, dựng ĐÚNG kích thước thật (bán kính 10,2 m; không nhân tỉ lệ để UV/texture đúng): đĩa đá lục sẫm dày 0,34 m, vành nổi
+    ngoài, hai vòng khảm vàng nhạt, tám quái (ba hào mỗi quái: hào dương liền, hào âm đứt) khảm vàng trên nền đá đen chìm, tâm để trống cho cự kiếm."""
+    R = 10.2
+    top = 0.34
+    b.cylinder(0, 0, 0, R, top, BAT_QUAI_STONE, 48, smooth=False)  # đĩa đá, mặt trên là nắp
+    _ring_band(b, R - 0.9, R, top, 0.1, JADE_SHADE)  # vành nổi ngọc nhạt viền ngoài (nhắc tông sân, tách khỏi đĩa sẫm)
+    for rr in (4.6, 8.7):  # hai vòng khảm vàng: vành nổi 0,035 m rộng 0,24 m (mỏng hơn thì z-fight với mặt đĩa, vỡ thành mảnh)
+        _ring_band(b, rr - 0.12, rr + 0.12, top, 0.035, BAT_QUAI_INLAY)
+    bits = (7, 6, 5, 4, 3, 2, 1, 0)  # Càn, Đoài, Ly, Chấn, Tốn, Khảm, Cấn, Khôn (bit 1 = hào dương)
+    for k, code in enumerate(bits):
         a = k / 8 * math.tau
-        b.box(math.cos(a) * 2.0, 0.12, math.sin(a) * 2.0, 1.1, 0.04, 0.5, JADE_GREEN, yaw=-a)
+        tx, tz = -math.sin(a), math.cos(a)  # tiếp tuyến
+        yaw = math.atan2(-tz, tx)  # trục x của hộp (c, -s) trùng tiếp tuyến
+        for line in range(3):
+            rr = 5.5 + line * 0.9
+            cxl, czl = math.cos(a) * rr, math.sin(a) * rr
+            yang = bool(code >> (2 - line) & 1)
+            segs = [(0.0, 2.9)] if yang else [(-0.95 - 0.0, 0.9), (0.95, 0.9)]
+            for off, ln in segs:
+                px, pz = cxl + tx * off, czl + tz * off
+                b.box(px, top + 0.02, pz, ln + 0.22, 0.04, 0.46, BAT_QUAI_STONE, yaw=yaw)  # khung đá đen nổi nhẹ: tạo chiều sâu quanh đường khảm
+                b.box(px, top + 0.045, pz, ln, 0.03, 0.26, BAT_QUAI_INLAY, yaw=yaw)  # đường khảm vàng
 
 
 @part('prop_gia_binh_khi', 'prop')
