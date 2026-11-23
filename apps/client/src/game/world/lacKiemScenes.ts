@@ -677,7 +677,7 @@ export class LacKiemScenes {
     this.scatter = scatter;
     this.group.add(scatter.group);
     // Đá tảng/đá rêu: vật liệu đá PBR của kit (ba mặt chiếu + pháp tuyến), ô lặp ~3 m cho vật nhỏ; vật khác giữ vật liệu GLB gốc.
-    const rock = tex ? withSightFade(rockMaterial(tex, 1 / 3)) : undefined;
+    const rock = tex ? withSightFade(rockMaterial(tex, 1 / 3, true)) : undefined;
     if (rock) this.mats.push(rock);
     await Promise.all([...o.places].map(([id, list]) => scatter.add(id, list, id === 'prop_tc_da_reu' ? rock : undefined)));
   }

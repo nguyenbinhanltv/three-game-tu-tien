@@ -7,6 +7,7 @@ import {
   luminance,
   mix,
   normalGeometry,
+  normalLocal,
   normalize,
   positionWorld,
   texture,
@@ -93,13 +94,14 @@ export const FOLIAGE_TILE: Record<'pine' | 'maple' | 'bamboo' | 'peach' | 'oak' 
 };
 
 /**
- * Vật liệu đá vách đảo: màu đỉnh (tầng đá ấm/lạnh, rêu) nhân với albedo chiếu ba mặt phẳng, pháp tuyến + nhám từ texture PBR.
+ * `instanced`: true khi dùng trên InstancedMesh (xoay theo instance). Vật liệu đá vách đảo: màu đỉnh (tầng đá ấm/lạnh, rêu) nhân với albedo chiếu ba mặt phẳng, pháp tuyến + nhám từ texture PBR.
  * Pháp tuyến cộng lệch theo ba mặt chiếu (cùng cách `render/materials/ground.ts`), mềm hơn flat shading của bản A.
  */
-export function rockMaterial(tex: SkyTextures, tile = 1 / 13): THREE.MeshStandardNodeMaterial {
+export function rockMaterial(tex: SkyTextures, tile = 1 / 13, instanced = false): THREE.MeshStandardNodeMaterial {
   const mat = createWorldMaterial({ roughness: 0.9 });
   const p = positionWorld;
-  const nGeo = normalize(normalGeometry);
+  // InstancedMesh: ma trận instance chỉ áp vào `normalLocal`, không vào `normalGeometry` (pháp tuyến thô) → dùng `normalLocal` để trọng số và chiếu sáng theo đúng hướng đã xoay (nhóm cha chỉ tịnh tiến).
+  const nGeo = normalize(instanced ? normalLocal : normalGeometry);
   const w: Node = vec3(abs(nGeo.x).pow(4), abs(nGeo.y).pow(4), abs(nGeo.z).pow(4));
   const wsum = w.x.add(w.y).add(w.z).max(0.0001);
   const scale = float(tile);
