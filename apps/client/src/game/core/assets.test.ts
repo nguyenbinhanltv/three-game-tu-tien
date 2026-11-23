@@ -292,3 +292,14 @@ describe('AssetCache', () => {
     expect([...mats].some((m) => m.metalness > 0)).toBe(true);
   });
 });
+
+describe('boxDown', () => {
+  it('thu RGBA8 2×2 về 1×1 bằng trung bình, giữ nguyên khi đã đủ nhỏ', async () => {
+    const { boxDown } = await import('./assets');
+    const d = new Uint8Array([0, 0, 0, 255, 100, 200, 50, 255, 100, 0, 0, 255, 200, 200, 250, 255]);
+    const r = boxDown({ data: d, width: 2, height: 2 }, 1);
+    expect([r.width, r.height]).toEqual([1, 1]);
+    expect([...r.data]).toEqual([100, 100, 75, 255]);
+    expect(boxDown({ data: d, width: 2, height: 2 }, 4).data).toBe(d);
+  });
+});
