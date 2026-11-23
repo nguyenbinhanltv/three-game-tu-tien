@@ -1,0 +1,29 @@
+{
+  "skillId": "skl_dinh_than_thuat",
+  "idea": "Định Thân Thuật: Gây 140% công kích và ghìm mục tiêu 2 giây (tinh anh một nửa, thủ lĩnh miễn). Có đủ 40 Hồn lực thì xả 40 để sát thương mạnh thêm 50%.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "ring",
+    "spike"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 500
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 5,
+    "particles": 145,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

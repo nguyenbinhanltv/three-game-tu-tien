@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_hon_trao",
+  "idea": "Hồn Trảo: Chiêu tư thế. Vuốt hồn gây 115% công kích, tích 5 Hồn lực.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "arc",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 260,
+    "impactMs": 80,
+    "lingerMs": 540
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 5,
+    "particles": 120,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [],
+  "impactFrame": true
+}

@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_phe_hon",
+  "idea": "Phệ Hồn: Cắn vào hồn mục tiêu gây 220% công kích, đặt 1 Hồn ấn và tích 6 Hồn lực.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "line",
+    "arc",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 300,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 168,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_hoang_tuyen_dan",
+  "idea": "Hoàng Tuyền Dẫn: Mở một vùng 6 mét gây 220% công kích, xả hết Hồn lực (mỗi điểm cộng 0,5%). Thu Hồn ấn của ngươi trên từng kẻ địch trúng đòn: mỗi tầng cộng 12% sát thương lên con đó.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "ring",
+    "spike",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 500,
+    "impactMs": 80,
+    "lingerMs": 500
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 12,
+    "heightM": 6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 6,
+    "particles": 241,
+    "screenCover": 0.35,
+    "overdraw": 6
+  },
+  "textures": []
+}

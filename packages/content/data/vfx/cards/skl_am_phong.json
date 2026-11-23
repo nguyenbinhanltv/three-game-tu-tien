@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_am_phong",
+  "idea": "Âm Phong: Chiêu tư thế. Gió âm quét vùng 6 mét gây 130% công kích, mỗi kẻ địch trúng nhận 1 Hồn ấn.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 420,
+    "impactMs": 80,
+    "lingerMs": 530
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 12,
+    "heightM": 6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 4,
+    "particles": 120,
+    "screenCover": 0.35,
+    "overdraw": 6
+  },
+  "textures": [],
+  "impactFrame": true
+}

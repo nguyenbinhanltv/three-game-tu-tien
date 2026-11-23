@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_am_hon_trieu",
+  "idea": "Âm Hồn Triều: Đẩy một làn hồn dài 12 mét gây 200% công kích lên mọi kẻ địch trên đường, mỗi con nhận 1 Hồn ấn. Dùng trong 4 giây sau Phệ Hồn tốn ít hơn 30% linh lực.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "arc",
+    "cloud",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 3,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 11,
+    "particles": 204,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

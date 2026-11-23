@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_hon_chuong",
+  "idea": "Hồn Chướng: Chiêu tư thế. Màn hồn che thân: khiên bằng 12% khí huyết tối đa trong 6 giây.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 380,
+    "impactMs": 80,
+    "lingerMs": 520
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 4,
+    "particles": 120,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [],
+  "impactFrame": true
+}

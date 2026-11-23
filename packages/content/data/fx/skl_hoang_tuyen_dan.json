@@ -7,7 +7,7 @@
    "t": -0.5,
    "n": 24,
    "speed": 1.4,
-   "spread": 1.0,
+   "spread": 1,
    "life": 0.4,
    "size": 0.18,
    "at": "self",
@@ -38,35 +38,24 @@
    "grow": 0.3,
    "tone": "body",
    "alpha": 0.75,
-   "tier": 0
-  },
-  {
-   "type": "decal",
-   "tex": "scorch",
-   "t": 0.0,
-   "r": 5.667,
-   "dur": 3.0,
-   "at": "area",
-   "grow": 0.12,
-   "tone": "core",
-   "alpha": 0.9,
-   "tier": 0
+   "tier": 0,
+   "ink": true
   },
   {
    "type": "mesh",
    "shape": "rune_ring2",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.8,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.07,
-    0.0
+    0
    ],
    "scale": [
-    1.0,
     1,
-    1.0
+    1,
+    1
    ],
    "scaleTo": [
     5.733,
@@ -76,22 +65,23 @@
    "sweep": 0.3,
    "erodeFrom": 0.5,
    "ragged": 0.6,
-   "tone": "rim",
+   "tone": "body",
    "alpha": 0.9,
    "shadow": false,
    "tier": 0,
-   "seed": 20
+   "seed": 20,
+   "ink": true
   },
   {
    "type": "mesh",
    "shape": "shock_cone",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.45,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.05,
-    0.0
+    0
    ],
    "scale": [
     0.667,
@@ -110,7 +100,8 @@
    "alpha": 0.75,
    "shadow": false,
    "tier": 0,
-   "seed": 21
+   "seed": 21,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -119,9 +110,9 @@
    "dur": 0.9,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.05,
-    0.0
+    0
    ],
    "scale": 4.333,
    "alpha": 1,
@@ -130,7 +121,8 @@
    "shadow": false,
    "tone": "core",
    "tier": 0,
-   "seed": 22
+   "seed": 22,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -157,7 +149,7 @@
    "dur": 0.9,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.8,
     -2.667
    ],
@@ -189,17 +181,17 @@
   {
    "type": "particles",
    "kind": "dust",
-   "t": 0.0,
+   "t": 0,
    "n": 60,
-   "speed": 3.0,
-   "spread": 1.0,
-   "life": 1.0,
+   "speed": 3,
+   "spread": 1,
+   "life": 1,
    "size": 0.22,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.4,
-    0.0
+    0
    ],
    "tone": "rim",
    "grav": -1.8,
@@ -210,22 +202,22 @@
    "kind": "shard",
    "t": 0.02,
    "n": 24,
-   "speed": 5.0,
-   "spread": 1.0,
+   "speed": 5,
+   "spread": 1,
    "life": 0.6,
    "size": 0.1,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.3,
-    0.0
+    0
    ],
    "tone": "accent",
    "tier": 1
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "impact",
    "gain": 0.7,
    "rate": 0.6,
@@ -233,17 +225,17 @@
   },
   {
    "type": "hitstop",
-   "t": 0.0,
+   "t": 0,
    "ms": 65
   },
   {
    "type": "shake",
-   "t": 0.0,
+   "t": 0,
    "level": 0.3
   },
   {
    "type": "flash",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.08,
    "tier": 0
   }

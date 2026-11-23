@@ -7,7 +7,7 @@
    "t": -0.3,
    "n": 14,
    "speed": 1.2,
-   "spread": 1.0,
+   "spread": 1,
    "life": 0.28,
    "size": 0.16,
    "at": "self",
@@ -45,7 +45,7 @@
     "ease": "in",
     "offset": [
      0,
-     1.0,
+     1,
      0
     ]
    },
@@ -70,7 +70,7 @@
     "ease": "in",
     "offset": [
      0,
-     1.0,
+     1,
      0
     ]
    },
@@ -81,12 +81,12 @@
   {
    "type": "mesh",
    "shape": "slash_cross",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.34,
    "at": "target",
    "offset": [
     0,
-    1.0,
+    1,
     0
    ],
    "scale": 2.6,
@@ -94,10 +94,11 @@
    "sweep": 0.3,
    "erodeFrom": 0.45,
    "ragged": 0.8,
-   "tone": "rim",
+   "tone": "body",
    "alpha": 0.95,
    "tier": 0,
-   "seed": 3
+   "seed": 3,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -107,7 +108,7 @@
    "at": "target",
    "offset": [
     0,
-    1.0,
+    1,
     0
    ],
    "scale": 1.6,
@@ -129,18 +130,19 @@
   {
    "type": "mesh",
    "shape": "ripple",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.5,
    "at": "ground",
    "scale": 0.6,
-   "scaleTo": 3.0,
+   "scaleTo": 3,
    "sweep": 0.5,
    "erodeFrom": 0.4,
    "tone": "body",
    "alpha": 0.8,
    "shadow": false,
    "tier": 0,
-   "seed": 4
+   "seed": 4,
+   "ink": true
   },
   {
    "type": "decal",
@@ -150,17 +152,18 @@
    "dur": 2.6,
    "at": "ground",
    "grow": 0.14,
-   "tone": "core",
+   "tone": "body",
    "alpha": 0.95,
-   "tier": 0
+   "tier": 0,
+   "ink": true
   },
   {
    "type": "particles",
    "kind": "dust",
-   "t": 0.0,
+   "t": 0,
    "n": 22,
    "speed": 2.2,
-   "spread": 1.0,
+   "spread": 1,
    "life": 0.7,
    "size": 0.18,
    "at": "target",
@@ -176,16 +179,16 @@
   {
    "type": "particles",
    "kind": "spark",
-   "t": 0.0,
+   "t": 0,
    "n": 16,
-   "speed": 5.0,
-   "spread": 1.0,
+   "speed": 5,
+   "spread": 1,
    "life": 0.35,
    "size": 0.07,
    "at": "target",
    "offset": [
     0,
-    1.0,
+    1,
     0
    ],
    "tone": "accent",
@@ -193,7 +196,7 @@
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "impact",
    "gain": 0.5,
    "rate": 0.8,
@@ -201,12 +204,12 @@
   },
   {
    "type": "hitstop",
-   "t": 0.0,
+   "t": 0,
    "ms": 45
   },
   {
    "type": "shake",
-   "t": 0.0,
+   "t": 0,
    "level": 0.12
   }
  ]
