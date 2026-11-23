@@ -125,13 +125,13 @@ export function runCodex(job: CodexJob): Promise<CodexResult> {
       if (done) return;
       done = true;
       clearTimeout(t);
-      killTree(p.pid); // luôn dọn cây tiến trình con (thoát bình thường thì no-op)
       if (note) log.write(`\n[vfx-forge] ${note}\n`);
       log.end(() => resolve({ file: fs.existsSync(out) ? out : rescueFromCodexStore(logFile, out), code, log: logFile }));
     };
     const t = setTimeout(
       () => {
-        killTree(p.pid);
+        // chỉ giết khi tiến trình CHƯA thoát (PID đã thoát có thể bị Windows tái dùng cho tiến trình khác)
+        if (p.exitCode === null && p.signalCode === null) killTree(p.pid);
         finish(null, 'quá giờ');
       },
       job.timeoutMs ?? 5 * 60_000,
