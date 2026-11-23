@@ -1,0 +1,94 @@
+// Chân Cảnh C4 (Thiên Y pilot): Tinh Khuyết nữ, lò xo hiện tại (`lo-xo`) so với vải mô phỏng `?cloth=1` (`thien-y`).
+// Mỗi bản: đứng, chạy, lướt, đòn nặng, đả tọa, ngự kiếm; ảnh cận cảnh mỗi tình huống + đo ms/khung của vải (cloth.stats) và số đỉnh.
+//   pnpm shots clothcheck --out <thư mục> [--variants lo-xo,thien-y] [--size 1280x720|1920x1080]
+import { sleep } from '../lib/devserver';
+import { list, size } from '../lib/env';
+import { cam, gm } from '../lib/game';
+import type { Scenario } from '../lib/scenario';
+import { writeJson } from '../lib/shot';
+import path from 'node:path';
+
+export default {
+  name: 'clothcheck',
+  desc: 'C4: Tinh Khuyết nữ lò xo vs vải Thiên Y (?cloth=1): đứng/chạy/lướt/đòn nặng/đả tọa/ngự kiếm + đo ms/khung của vải',
+  usage: '[--variants lo-xo,thien-y] [--size 1920x1080]',
+  async run(r) {
+    const viewport = size('1920x1080');
+    const variants = list('--variants', 'lo-xo,thien-y');
+    const result: Record<string, unknown> = {};
+    for (const variant of variants) {
+      const tag = `tinh-khuyet-nu-${variant}-${viewport[1]}p`;
+      const { page } = await r.open({
+        name: `C${variant}`,
+        viewport,
+        quality: 'high',
+        look: { g: 'f' },
+        query: { chr: 'v3', cam: 'iso', ...(variant === 'thien-y' ? { cloth: '1' } : {}) },
+        hide: 'hud',
+        warnings: /models|chr_v3|clip/,
+      });
+      await gm(page, 'level 15', 1500);
+      await gm(page, 'god on', 1200);
+      await gm(page, 'set set_tinh_khuyet', 1500);
+      await gm(page, 'killall', 800);
+      await gm(page, 'tp 2048 2088', 1500);
+      await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+        timeout: 60_000,
+        polling: 300,
+      });
+      await sleep(3500);
+      const shot = async (n: string) => {
+        const c = (await page.evaluate(`(() => {
+          var g = window.__game; var v = g.renderPos.clone(); v.y += 0.9; v.project(g.camera);
+          return { x: (v.x * 0.5 + 0.5) * innerWidth, y: (-v.y * 0.5 + 0.5) * innerHeight };
+        })()`)) as { x: number; y: number };
+        const w = Math.round(viewport[0] * 0.3);
+        const h = Math.round(viewport[1] * 0.5);
+        const x = Math.max(0, Math.min(viewport[0] - w, Math.round(c.x - w / 2)));
+        const y = Math.max(0, Math.min(viewport[1] - h, Math.round(c.y - h / 2)));
+        await page.screenshot({ path: path.join(r.out, `${tag}-${n}.png`), clip: { x, y, width: w, height: h } });
+      };
+      const hold = async (keys: string[], ms: number) => {
+        for (const k of keys) await page.keyboard.down(k);
+        await sleep(ms);
+        for (const k of keys) await page.keyboard.up(k);
+      };
+      const stats = () =>
+        page.evaluate(`(() => { var g = window.__game; var c = g.ents.players.get(g.sid).model.cloth; return c ? c.stats : null; })()`);
+      const ms: Record<string, unknown> = {};
+      await sleep(1200);
+      await shot('1-dung');
+      ms.dung = await stats();
+      for (const k of ['KeyS', 'KeyD']) await page.keyboard.down(k);
+      await sleep(1400);
+      await shot('2-chay');
+      ms.chay = await stats();
+      for (const k of ['KeyS', 'KeyD']) await page.keyboard.up(k);
+      await hold(['KeyS', 'KeyD'], 400);
+      await page.keyboard.press('KeyQ');
+      await sleep(250);
+      await shot('3-luot');
+      await sleep(900);
+      await gm(page, 'spawn mon_soi_xam 1', 2500);
+      await page.evaluate(() => window.__game!.useSkill(1));
+      await sleep(400);
+      await shot('4-don-nang');
+      await sleep(900);
+      await gm(page, 'killall', 800);
+      await page.keyboard.press('KeyZ');
+      await sleep(1800);
+      await shot('5-da-toa');
+      ms.datoa = await stats();
+      await page.keyboard.press('KeyW');
+      await sleep(500);
+      await page.evaluate(() => window.__game!.toggleFly());
+      await sleep(2200);
+      await shot('6-ngu-kiem');
+      ms.ngukiem = await stats();
+      await page.evaluate(() => window.__game!.toggleFly());
+      result[tag] = ms;
+      await page.close();
+    }
+    writeJson(r.out, `clothcheck-${viewport[1]}p-${variants.join('_')}.json`, result);
+  },
+} satisfies Scenario;
