@@ -35,7 +35,13 @@ interface Row {
 const ROWS: Row[] = [];
 const basic = SK.get('skl_phi_kiem') as SkillDef;
 for (const voice of POSE_VOICES) {
-  const method = { kt: 'lac_kiem_quyet', hp: 'bat_dong_kim_than', ds: 'thanh_moc_dan_kinh', dt: 'liet_nhan_dao_kinh' }[voice];
+  const method = {
+    kt: 'lac_kiem_quyet',
+    hp: 'bat_dong_kim_than',
+    ds: 'thanh_moc_dan_kinh',
+    dt: 'liet_nhan_dao_kinh',
+    lt: 'cuu_tieu_loi_kinh',
+  }[voice];
   basic.combo!.hits.forEach((h, i) =>
     ROWS.push({ id: poseIdFor('phi_kiem', { combo: i, method }), skill: basic.id, voice, nine: true, hitAt: h.hitAt, swing: true }),
   );
@@ -76,6 +82,8 @@ const RANGE: Record<
   ds: { drop: [0.02, 0.05], twist: [20, 30 * ISO_AMP], reachZ: [0.5, 0.65], hold: 0.06, over: [0.09, 0.11] },
   // C3c: đao tu (đại đao hai tay): hạ hông giữa kiếm tu và hộ pháp, xoay rộng, tụ lực lâu.
   dt: { drop: [0.12, 0.16], twist: [30, 34 * ISO_AMP], reachZ: [0.6, 0.8], hold: 0.07, over: [0.1, 0.14] },
+  // C3d: lôi tu (tay trái triệu lôi, kiếm bổ từ trên xuống, theo đà dài).
+  lt: { drop: [0.04, 0.08], twist: [26, 32 * ISO_AMP], reachZ: [0.65, 1.0], hold: 0.05, over: [0.15, 0.19] },
 };
 
 /** Mô tả số đo một pose (cũng dùng để in bảng trong docs/k5-poses). */
@@ -217,7 +225,7 @@ describe('K-5: ba giọng đo được', () => {
     });
   }
   it('ba giọng khác nhau rõ rệt ở cùng một đòn', () => {
-    const of = (v: 'kt' | 'hp' | 'ds' | 'dt') => measure(ROWS.find((r) => r.skill === 'skl_kiem_khi_tram' && r.voice === v)!);
+    const of = (v: 'kt' | 'hp' | 'ds' | 'dt' | 'lt') => measure(ROWS.find((r) => r.skill === 'skl_kiem_khi_tram' && r.voice === v)!);
     const kt = of('kt');
     const hp = of('hp');
     const ds = of('ds');
