@@ -8,6 +8,8 @@
 # Tránh che: hình cao đều `camFade`, ấn rơi cao ≤ 6 m. Ngân sách: chiêu ≤ 12 draw cả chiêu, hitstop ≤ 80 ms.
 import os
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from area_fit import fit_area_skill, fit_area  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from recipes_vs1 import cam, decal, feel, flip, mesh, parts, slow, snd, vig, write  # noqa: E402
@@ -188,7 +190,7 @@ def phien_thien_an():
     return {'skill': 'skl_phien_thien_an', 'palette': 'cam_che_kinh', 'replaces': ['phienthien'], 'events': ev}
 
 
-R['skl_phien_thien_an'] = phien_thien_an
+R['skl_phien_thien_an'] = lambda: fit_area_skill(phien_thien_an(), 8.0)  # vùng 6 m (area_fit.py)
 
 
 if __name__ == '__main__':

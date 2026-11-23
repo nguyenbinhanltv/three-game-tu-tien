@@ -11,6 +11,8 @@ import json
 import math
 import os
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from area_fit import fit_area_skill, fit_area  # noqa: E402
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../packages/content/data/fx')
 
@@ -295,7 +297,7 @@ def thien_kiem_vu():
     }
 
 
-R['skl_thien_kiem_vu'] = thien_kiem_vu
+R['skl_thien_kiem_vu'] = lambda: fit_area_skill(thien_kiem_vu(), 9.0)  # vùng 6 m (area_fit.py)
 
 
 # --------------------------------------------------------------------------------------------------------------------------------
