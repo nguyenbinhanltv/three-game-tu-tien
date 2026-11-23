@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three/webgpu';
-import { applyProportions, forgetHero, HERO_DEFAULT_TINT, HERO_PROPORTIONS, proportionBones, setHero } from './hero';
+import { applyProportions, forgetHero, HERO_DEFAULT_TINT, HERO_PROPORTIONS, heroTintOf, proportionBones, setHero } from './hero';
 import { boneKey } from './ikpose';
 
 function rig(): THREE.Object3D {
@@ -58,5 +58,30 @@ describe('hero light: userData theo mesh', () => {
     forgetHero(root);
     setHero(root, 1, 1);
     expect(c.userData.hero).toEqual({ k: 1, tint: 1 });
+  });
+});
+
+describe('màu viền luôn hợp lệ (hồi quy C1: tint không được undefined/NaN)', () => {
+  it('heroTintOf: hex có/không có #, thiếu hoặc sai thì màu mặc định', () => {
+    expect(heroTintOf('c8a96e')).toBe(0xc8a96e);
+    expect(heroTintOf('#38bdf8')).toBe(0x38bdf8);
+    for (const bad of [undefined, null, '', 'zzzz', '#', 'ffffffff1', '-12']) {
+      const v = heroTintOf(bad as string | undefined);
+      expect(Number.isFinite(v)).toBe(true);
+      expect(v).toBe(HERO_DEFAULT_TINT);
+    }
+  });
+});
+
+describe('vật liệu bản sao viền (hồi quy C1: không dùng MeshBasicNodeMaterial)', () => {
+  it('là MeshStandardNodeMaterial không đèn, trong suốt, không ghi sâu', async () => {
+    const { createHeroGhostMaterial } = await import('../../render/materials/world');
+    const m = createHeroGhostMaterial();
+    expect((m as unknown as { isMeshStandardNodeMaterial?: boolean }).isMeshStandardNodeMaterial).toBe(true);
+    expect((m as unknown as { isMeshBasicNodeMaterial?: boolean }).isMeshBasicNodeMaterial).toBeFalsy();
+    expect(m.lights).toBe(false);
+    expect(m.transparent).toBe(true);
+    expect(m.depthWrite).toBe(false);
+    expect(m.depthNode).toBeTruthy();
   });
 });
