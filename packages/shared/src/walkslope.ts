@@ -45,7 +45,12 @@ export function walkableRouteLength(
   groundAt: (x: number, z: number) => number,
   from: readonly [number, number],
   to: readonly [number, number],
-  opts: { box: { x0: number; z0: number; x1: number; z1: number }; cell?: number; maxSlope?: number; blocked?: (x: number, z: number) => boolean },
+  opts: {
+    box: { x0: number; z0: number; x1: number; z1: number };
+    cell?: number;
+    maxSlope?: number;
+    blocked?: (x: number, z: number) => boolean;
+  },
 ): number | null {
   const cell = opts.cell ?? 2;
   const cap = opts.maxSlope ?? WALK_MAX_SLOPE;

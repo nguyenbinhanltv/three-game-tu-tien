@@ -20,7 +20,19 @@ import {
   viewportLinearDepth,
   viewZToOrthographicDepth,
 } from 'three/tsl';
-import { BRIDGE_A, BRIDGE_B, hash01, SCENE_GLB, SECT, TC_BRIDGE, TC_GATE, TC_LOI_VACH, TC_POND, type SceneGlb, type SceneGlbId } from '@dtl/shared';
+import {
+  BRIDGE_A,
+  BRIDGE_B,
+  hash01,
+  SCENE_GLB,
+  SECT,
+  TC_BRIDGE,
+  TC_GATE,
+  TC_LOI_VACH,
+  TC_POND,
+  type SceneGlb,
+  type SceneGlbId,
+} from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { assets } from '../core/assets';
 import { vnoise } from '../../render/materials/isoDetail';

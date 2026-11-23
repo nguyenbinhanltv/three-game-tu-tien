@@ -40,7 +40,8 @@ describe('Lạc Kiếm Tông: trần độ dốc đi bộ', () => {
       for (let k = 0; k <= n; k++) {
         const x = ax + ((bx - ax) * k) / n;
         const z = az + ((bz - az) * k) / n;
-        for (const s of solids) expect(Math.hypot(x - s.x, z - s.z), `vật tại ${s.x - O.x}, ${s.z - O.z}`).toBeGreaterThan(s.r + PLAYER_RADIUS + 0.3);
+        for (const s of solids)
+          expect(Math.hypot(x - s.x, z - s.z), `vật tại ${s.x - O.x}, ${s.z - O.z}`).toBeGreaterThan(s.r + PLAYER_RADIUS + 0.3);
       }
     }
   });
