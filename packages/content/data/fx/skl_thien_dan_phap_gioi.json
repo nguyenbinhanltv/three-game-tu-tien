@@ -6,14 +6,14 @@
    "kind": "spark",
    "t": -0.6,
    "n": 60,
-   "speed": 3.0,
+   "speed": 3,
    "spread": 1,
    "life": 0.55,
    "size": 0.09,
    "at": "area",
    "offset": [
     0,
-    7.0,
+    7,
     0
    ],
    "inward": true,
@@ -40,13 +40,14 @@
    "type": "decal",
    "tex": "rune",
    "t": -0.55,
-   "r": 8.0,
+   "r": 8,
    "dur": 3.4,
    "at": "area",
    "grow": 0.4,
    "tone": "body",
    "alpha": 0.85,
-   "tier": 0
+   "tier": 0,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -56,7 +57,7 @@
    "at": "area",
    "offset": [
     0,
-    7.0,
+    7,
     0
    ],
    "scale": 0.2,
@@ -72,12 +73,12 @@
   {
    "type": "mesh",
    "shape": "pill_orb",
-   "t": 0.0,
+   "t": 0,
    "dur": 3.8,
    "at": "area",
    "offset": [
     0,
-    7.0,
+    7,
     0
    ],
    "rot": [
@@ -103,10 +104,10 @@
    "at": "area",
    "offset": [
     0,
-    7.0,
+    7,
     0
    ],
-   "scale": 5.0,
+   "scale": 5,
    "billboard": true,
    "sweep": 0,
    "tone": "body",
@@ -121,7 +122,7 @@
    "at": "area",
    "offset": [
     0,
-    1.0,
+    1,
     0
    ],
    "scale": 3.4,
@@ -136,12 +137,12 @@
    "t": -0.02,
    "dur": 0.4,
    "flip": "spark_burst",
-   "scale": 6.0,
+   "scale": 6,
    "billboard": true,
    "at": "area",
    "offset": [
     0,
-    7.0,
+    7,
     0
    ],
    "alpha": 0.8,
@@ -168,7 +169,8 @@
    "spin": 40,
    "tone": "body",
    "tier": 0,
-   "seed": 11
+   "seed": 11,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -193,9 +195,10 @@
    "alpha": 1,
    "shadow": false,
    "spin": -60,
-   "tone": "accent",
+   "tone": "body",
    "tier": 0,
-   "seed": 12
+   "seed": 12,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -270,7 +273,7 @@
   {
    "type": "mesh",
    "shape": "flame_tongue",
-   "t": 0.0,
+   "t": 0,
    "dur": 1.1,
    "at": "area",
    "offset": [
@@ -304,7 +307,7 @@
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "heal",
    "gain": 0.95,
    "rate": 0.8,
@@ -312,7 +315,7 @@
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "impact",
    "gain": 0.6,
    "rate": 0.85,
@@ -350,11 +353,12 @@
    "fit": "area",
    "sweep": 0.01,
    "erodeFrom": 0.8,
-   "alpha": 1.0,
+   "alpha": 1,
    "shadow": false,
    "tone": "body",
    "tier": 0,
-   "seed": 7
+   "seed": 7,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -374,9 +378,10 @@
    "erodeFrom": 0.8,
    "alpha": 0.9,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "tier": 0,
-   "seed": 8
+   "seed": 8,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -398,12 +403,13 @@
    "shadow": false,
    "tone": "core",
    "tier": 1,
-   "seed": 9
+   "seed": 9,
+   "ink": true
   },
   {
    "type": "mesh",
    "shape": "rune_ring2",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.5,
    "at": "area",
    "offset": [
@@ -412,15 +418,16 @@
     0
    ],
    "scale": 0.08,
-   "scaleTo": 1.0,
+   "scaleTo": 1,
    "fit": "area",
    "sweep": 0.04,
    "erodeFrom": 0.7,
    "alpha": 1,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "tier": 0,
-   "seed": 3
+   "seed": 3,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -434,15 +441,16 @@
     0
    ],
    "scale": 0.08,
-   "scaleTo": 1.0,
+   "scaleTo": 1,
    "fit": "area",
    "sweep": 0.04,
    "erodeFrom": 0.7,
    "alpha": 0.9,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "tier": 1,
-   "seed": 4
+   "seed": 4,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -456,21 +464,22 @@
     0
    ],
    "scale": 0.08,
-   "scaleTo": 1.0,
+   "scaleTo": 1,
    "fit": "area",
    "sweep": 0.04,
    "erodeFrom": 0.7,
    "alpha": 0.9,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "tier": 1,
-   "seed": 5
+   "seed": 5,
+   "ink": true
   },
   {
    "type": "mesh",
    "shape": "lotus_bloom",
    "t": -0.07,
-   "dur": 3.0,
+   "dur": 3,
    "at": "area",
    "offset": [
     0,
@@ -483,9 +492,9 @@
     0
    ],
    "scale": [
-    5.0,
+    5,
     0.42,
-    5.0
+    5
    ],
    "sweep": 0.03,
    "erodeFrom": 0.62,
@@ -498,16 +507,16 @@
   {
    "type": "particles",
    "kind": "petal",
-   "t": 0.0,
+   "t": 0,
    "n": 110,
-   "speed": 5.0,
+   "speed": 5,
    "spread": 1,
-   "life": 2.0,
+   "life": 2,
    "size": 0.13,
    "at": "area",
    "offset": [
     0,
-    7.0,
+    7,
     0
    ],
    "grav": 1.8,
@@ -519,14 +528,14 @@
    "kind": "petal",
    "t": 0.3,
    "n": 60,
-   "speed": 4.0,
+   "speed": 4,
    "spread": 1,
    "life": 1.8,
    "size": 0.12,
    "at": "area",
    "offset": [
     0,
-    7.0,
+    7,
     0
    ],
    "grav": 1.6,
@@ -536,7 +545,7 @@
   {
    "type": "particles",
    "kind": "spark",
-   "t": 0.0,
+   "t": 0,
    "n": 60,
    "speed": 9,
    "spread": 1,
@@ -545,7 +554,7 @@
    "at": "area",
    "offset": [
     0,
-    7.0,
+    7,
     0
    ],
    "tone": "rim",
@@ -1092,7 +1101,7 @@
   {
    "type": "mesh",
    "shape": "petal_blade",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.9,
    "at": "area",
    "offset": [
@@ -1461,23 +1470,23 @@
   },
   {
    "type": "hitstop",
-   "t": 0.0,
+   "t": 0,
    "ms": 60
   },
   {
    "type": "shake",
-   "t": 0.0,
+   "t": 0,
    "level": 0.3
   },
   {
    "type": "flash",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.1,
    "tier": 0
   },
   {
    "type": "vignette",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.3,
    "ms": 320,
    "tone": "dark",
@@ -1487,8 +1496,8 @@
    "type": "camera",
    "t": -0.1,
    "pull": 0.2,
-   "dur": 2.0,
-   "fov": 4.0,
+   "dur": 2,
+   "fov": 4,
    "tier": 1
   }
  ],
@@ -1498,7 +1507,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.12,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      1.69,
@@ -1532,7 +1541,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.15,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      7.08,
@@ -1566,7 +1575,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.18,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      8.33,
@@ -1600,7 +1609,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.21,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      4.7,
@@ -1634,7 +1643,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.24,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      -1.69,
@@ -1668,7 +1677,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.27,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      -7.08,
@@ -1702,7 +1711,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.3,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      -8.33,
@@ -1736,7 +1745,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.33,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      -4.7,
@@ -1778,7 +1787,7 @@
      0
     ],
     "scale": 0.2,
-    "scaleTo": 1.0,
+    "scaleTo": 1,
     "fit": "area",
     "sweep": 0.04,
     "erodeFrom": 0.7,
@@ -1794,7 +1803,7 @@
     "type": "mesh",
     "shape": "pill_orb",
     "t": 0.12,
-    "dur": 3.0,
+    "dur": 3,
     "at": "area",
     "offset": [
      1.69,
@@ -1819,7 +1828,7 @@
     "type": "mesh",
     "shape": "pill_orb",
     "t": 0.15,
-    "dur": 3.0,
+    "dur": 3,
     "at": "area",
     "offset": [
      7.08,
@@ -1844,7 +1853,7 @@
     "type": "mesh",
     "shape": "pill_orb",
     "t": 0.18,
-    "dur": 3.0,
+    "dur": 3,
     "at": "area",
     "offset": [
      8.33,
@@ -1869,7 +1878,7 @@
     "type": "mesh",
     "shape": "pill_orb",
     "t": 0.21,
-    "dur": 3.0,
+    "dur": 3,
     "at": "area",
     "offset": [
      4.7,
@@ -1894,7 +1903,7 @@
     "type": "mesh",
     "shape": "pill_orb",
     "t": 0.24,
-    "dur": 3.0,
+    "dur": 3,
     "at": "area",
     "offset": [
      -1.69,
@@ -1919,7 +1928,7 @@
     "type": "mesh",
     "shape": "pill_orb",
     "t": 0.27,
-    "dur": 3.0,
+    "dur": 3,
     "at": "area",
     "offset": [
      -7.08,
@@ -1944,7 +1953,7 @@
     "type": "mesh",
     "shape": "pill_orb",
     "t": 0.3,
-    "dur": 3.0,
+    "dur": 3,
     "at": "area",
     "offset": [
      -8.33,
@@ -1969,7 +1978,7 @@
     "type": "mesh",
     "shape": "pill_orb",
     "t": 0.33,
-    "dur": 3.0,
+    "dur": 3,
     "at": "area",
     "offset": [
      -4.7,
@@ -1994,7 +2003,7 @@
     "type": "mesh",
     "shape": "rune_ring2",
     "t": 0.3,
-    "dur": 3.0,
+    "dur": 3,
     "at": "area",
     "offset": [
      0,

@@ -13,9 +13,9 @@
    "offset": [
     0,
     -0.6,
-    -0.4
+    -0.72
    ],
-   "scale": 1.4,
+   "scale": 2.1,
    "billboard": true,
    "tone": "core",
    "alpha": 0.7,
@@ -32,8 +32,16 @@
     -1.1,
     0
    ],
-   "scale": 0.3,
-   "scaleTo": 1.5,
+   "scale": [
+    0.54,
+    0.3,
+    0.54
+   ],
+   "scaleTo": [
+    2.7,
+    1.5,
+    2.7
+   ],
    "sweep": 0.5,
    "erodeFrom": 0.4,
    "tone": "body",

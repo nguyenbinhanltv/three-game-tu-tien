@@ -157,7 +157,7 @@ import {
   precompile,
   unloadLevel,
 } from './engine/levelLoad';
-import { applyInit, bindRoom, rebind } from './engine/room';
+import { applyInit, bindRoom, onHazard, rebind } from './engine/room';
 import { logger } from '../base/log';
 
 const levelLog = logger('level');
@@ -224,7 +224,7 @@ export class Game {
           Game.current = g;
           // Để tiện gỡ lỗi từ console của trình duyệt.
           (window as unknown as { __game?: Game }).__game = g;
-          if (VFX_LAB) installVfxLab(g);
+          if (VFX_LAB) installVfxLab(g, onHazard);
           g.start().catch((err) => {
             engineLog.error(err);
             set({ phase: 'error', error: t('ui.err.webgl') + ' ' + String(err?.message ?? err) });

@@ -1,0 +1,34 @@
+{
+  "skillId": "skl_ngung_dan_ho_the",
+  "idea": "Ngưng Đan Hộ Thế: Thần thông: ngưng đan quang thành quầng sáng, cả đội trong 12 mét nhận khiên bằng 15% khí huyết tối đa trong 10 giây.",
+  "element": "moc",
+  "path": "dan_su",
+  "shapeLang": [
+    "burst",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 500,
+    "impactMs": 80,
+    "lingerMs": 500
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 204,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    }
+  ]
+}

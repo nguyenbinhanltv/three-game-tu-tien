@@ -38,6 +38,7 @@ type Vec = { x: number; y: number; z: number; [method: string]: any };
 /** `window.__vfxlab`: điều khiển thời gian và đồng hồ ngân sách của phòng thử VFX. */
 export interface VfxLabDebug {
   cast(skill: string): boolean;
+  castMon(mon: string, mv: string): boolean;
   pause(on: boolean): void;
   scale(x: number): void;
   step(ms: number): void;

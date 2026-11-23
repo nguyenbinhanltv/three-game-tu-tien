@@ -41,6 +41,7 @@ import {
   savePos,
   topWindow,
   type Viewport,
+  withoutPreviewPeer,
   type WinId,
   type WinState,
 } from './windows/layout';
@@ -520,9 +521,9 @@ export function pushToast(text: string, type = 'info'): void {
   setTimeout(() => useUI.setState((s) => ({ toasts: s.toasts.filter((x) => x.id !== id) })), 3200);
 }
 
-/** Mở một cửa sổ (đã mở thì đưa lên trên). Mở cửa sổ tắt hội thoại NPC như trước. */
+/** Mở một cửa sổ (đã mở thì đưa lên trên). Mở cửa sổ tắt hội thoại NPC như trước. Nhân vật và Tủ ngoại trang loại trừ nhau (`withoutPreviewPeer`). */
 export function openPanel(p: Panel): void {
-  useUI.setState((s) => ({ windows: openWindow(s.windows, p, viewportFor(p), loadSavedPos(p)).list, npc: null }));
+  useUI.setState((s) => ({ windows: openWindow(withoutPreviewPeer(s.windows, p), p, viewportFor(p), loadSavedPos(p)).list, npc: null }));
 }
 
 export function closePanel(p: Panel): void {
