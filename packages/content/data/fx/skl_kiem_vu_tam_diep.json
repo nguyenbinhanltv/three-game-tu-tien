@@ -21,8 +21,8 @@
     0,
     -32
    ],
-   "scale": 1.4,
-   "scaleTo": 2.3,
+   "scale": 2.38,
+   "scaleTo": 3.91,
    "sweep": 0.4,
    "erodeFrom": 0.5,
    "ragged": 0.6,
@@ -32,7 +32,8 @@
     "to": "target",
     "ease": "out"
    },
-   "tier": 0
+   "tier": 0,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -51,8 +52,8 @@
     0,
     150
    ],
-   "scale": 1.4,
-   "scaleTo": 2.3,
+   "scale": 2.38,
+   "scaleTo": 3.91,
    "sweep": 0.4,
    "erodeFrom": 0.5,
    "ragged": 0.6,
@@ -62,7 +63,8 @@
     "to": "target",
     "ease": "out"
    },
-   "tier": 0
+   "tier": 0,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -81,18 +83,19 @@
     0,
     -88
    ],
-   "scale": 1.8,
-   "scaleTo": 2.8,
+   "scale": 3.06,
+   "scaleTo": 4.76,
    "sweep": 0.4,
    "erodeFrom": 0.5,
    "ragged": 0.55,
-   "tone": "rim",
+   "tone": "body",
    "seed": 4,
    "move": {
     "to": "target",
     "ease": "out"
    },
-   "tier": 0
+   "tier": 0,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -100,9 +103,9 @@
    "t": 0.04,
    "dur": 0.1,
    "at": "target",
-   "scale": 1.0,
+   "scale": 1,
    "billboard": true,
-   "sweep": 0.0,
+   "sweep": 0,
    "tone": "body",
    "tier": 0
   },
@@ -160,14 +163,14 @@
    "offset": [
     1.1,
     0,
-    0.0
+    0
    ],
    "rot": [
     -90,
     0,
     0
    ],
-   "scale": 0.42,
+   "scale": 0.714,
    "sweep": 0.2,
    "erodeFrom": 0.5,
    "tone": "body",
@@ -191,7 +194,7 @@
     0,
     0
    ],
-   "scale": 0.42,
+   "scale": 0.714,
    "sweep": 0.2,
    "erodeFrom": 0.5,
    "tone": "body",
@@ -215,7 +218,7 @@
     0,
     0
    ],
-   "scale": 0.42,
+   "scale": 0.714,
    "sweep": 0.2,
    "erodeFrom": 0.5,
    "tone": "body",
@@ -239,7 +242,7 @@
     0,
     0
    ],
-   "scale": 0.42,
+   "scale": 0.714,
    "sweep": 0.2,
    "erodeFrom": 0.5,
    "tone": "body",
@@ -263,7 +266,7 @@
     0,
     0
    ],
-   "scale": 0.42,
+   "scale": 0.714,
    "sweep": 0.2,
    "erodeFrom": 0.5,
    "tone": "body",
@@ -281,7 +284,8 @@
    "grow": 0.12,
    "tone": "body",
    "alpha": 0.95,
-   "tier": 1
+   "tier": 1,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -290,13 +294,14 @@
    "dur": 0.5,
    "hit": 2,
    "at": "ground",
-   "scale": 0.3,
-   "scaleTo": 2.0,
+   "scale": 0.51,
+   "scaleTo": 3.4,
    "sweep": 0.4,
    "erodeFrom": 0.4,
    "tone": "body",
    "tier": 1,
-   "seed": 8
+   "seed": 8,
+   "ink": true
   }
  ],
  "variants": {

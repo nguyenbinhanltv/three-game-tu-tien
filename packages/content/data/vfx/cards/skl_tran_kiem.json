@@ -1,0 +1,28 @@
+{
+  "skillId": "skl_tran_kiem",
+  "idea": "Trận Kiếm: Chiêu tư thế. Một thanh kiếm trong trận đâm mục tiêu gây 115% công kích, tích 1 ô Kiếm ý.",
+  "element": "kim",
+  "path": "kiem_tu",
+  "shapeLang": [
+    "arc"
+  ],
+  "timing": {
+    "anticipationMs": 260,
+    "impactMs": 80,
+    "lingerMs": 540
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 230,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

@@ -47,14 +47,8 @@ async function coverage(base: Buffer, shot: Buffer): Promise<number> {
   return diff / n;
 }
 
-async function run(r: Run, skill: string, sizes: string[], at: number[]): Promise<Record<string, unknown>> {
-  const def = SKILL.get(skill);
-  if (!def) throw new Error(`không có chiêu ${skill}`);
-  const hitMs = Math.round((def.hitAt?.[0] ?? 0.3) * 1000);
-  const card = (() => {
-    const f = path.resolve(import.meta.dirname, '../../../../packages/content/data/vfx/cards', `${skill}.json`);
-    return fs.existsSync(f) ? (JSON.parse(fs.readFileSync(f, 'utf8')) as CardBudget) : null;
-  })();
+async function run(r: Run, skills: string[], sizes: string[], at: number[]): Promise<Record<string, unknown>[]> {
+  for (const sk of skills) if (!SKILL.get(sk)) throw new Error(`không có chiêu ${sk}`);
   const mon = opt('--mon', DEFAULT_MON);
   const dummies = Math.min(5, Math.max(1, num('--dummies', 1)));
   const { ctx, page } = await r.open({
@@ -84,108 +78,124 @@ async function run(r: Run, skill: string, sizes: string[], at: number[]): Promis
   }, mon);
   await sleep(600);
   if (opt('--clip', '')) {
-    // Clip thời gian thật (không tạm dừng): ra chiêu hai lần, cách nhau 3 s; video webm nằm ở <out>/clip.
+    // Clip thời gian thật (không tạm dừng): mỗi chiêu ra hai lần, cách nhau 3 s; video webm nằm ở <out>/clip.
     await page.setViewportSize({ width: 1280, height: 720 });
     await sleep(800);
-    for (let i = 0; i < 2; i++) {
-      await page.evaluate((s) => window.__vfxlab!.cast(s), skill);
-      await sleep(3000);
+    for (const skill of skills) {
+      for (let i = 0; i < 2; i++) {
+        await page.evaluate((sk) => window.__vfxlab!.cast(sk), skill);
+        await sleep(3000);
+      }
     }
     await ctx.close();
-    return { skill, clip: true };
+    return skills.map((skill) => ({ skill, clip: true }));
   }
-  const out: Record<string, unknown> = { skill, hitMs, card: card?.budget ?? null, shots: {} as Record<string, unknown> };
-  const shots = out.shots as Record<string, unknown>;
-  for (const tag of sizes) {
-    const [w, h] = UI_SIZES[tag] ?? UI_SIZES['1080p']!;
-    await page.setViewportSize({ width: w, height: h });
-    await page.evaluate(() => {
-      window.__vfxlab!.pause(true);
-    });
-    await sleep(500);
-    await frame(page);
-    const base = await snap(page, r.out, `base-${tag}.jpg`, { wait: 0 });
-    const files: Buffer[] = [];
-    let clock = 0; // ms trình diễn đã trôi từ lúc ra chiêu
-    await page.evaluate((s) => window.__vfxlab!.cast(s), skill);
-    const rows: Record<string, unknown>[] = [];
-    for (const ms of at) {
-      const want = hitMs + ms;
-      if (want > clock) {
-        await advance(page, want - clock);
-        clock = want;
-      }
+  const results: Record<string, unknown>[] = [];
+  for (const skill of skills) {
+    const outDir = skills.length > 1 ? path.join(r.out, skill) : r.out;
+    const def = SKILL.get(skill)!;
+    const hitMs = Math.round((def.hitAt?.[0] ?? 0.3) * 1000);
+    const card = (() => {
+      const f = path.resolve(import.meta.dirname, '../../../../packages/content/data/vfx/cards', `${skill}.json`);
+      return fs.existsSync(f) ? (JSON.parse(fs.readFileSync(f, 'utf8')) as CardBudget) : null;
+    })();
+    const out: Record<string, unknown> = { skill, hitMs, card: card?.budget ?? null, shots: {} as Record<string, unknown> };
+    const shots = out.shots as Record<string, unknown>;
+    for (const tag of sizes) {
+      const [w, h] = UI_SIZES[tag] ?? UI_SIZES['1080p']!;
+      await page.setViewportSize({ width: w, height: h });
+      await page.evaluate(() => {
+        window.__vfxlab!.pause(true);
+      });
+      await sleep(500);
       await frame(page);
-      const buf = await snap(page, r.out, `${skill}-${tag}-${ms >= 0 ? '+' : ''}${ms}ms.jpg`, { wait: 0 });
-      files.push(buf);
-      const b = await page.evaluate(() => window.__vfxlab!.budget());
-      const cover = await coverage(base, buf);
-      rows.push({ ms, ...b, pixelCover: Number(cover.toFixed(3)) });
-    }
-    shots[tag] = rows;
-    // Dải 4 khung cạnh nhau (thu nhỏ) để duyệt nhanh.
-    const cellW = 480;
-    const cellH = Math.round((cellW * h) / w);
-    const tiles = await Promise.all(files.map((f) => sharp(f).resize(cellW, cellH).jpeg({ quality: 85 }).toBuffer()));
-    await sharp({ create: { width: cellW * tiles.length, height: cellH, channels: 3, background: '#111' } })
-      .composite(tiles.map((input, i) => ({ input, left: i * cellW, top: 0 })))
-      .jpeg({ quality: 88 })
-      .toFile(path.join(r.out, `${skill}-${tag}-strip.jpg`));
-    // Concept cạnh khung +30 ms (nếu có).
-    const concept = opt('--concept', '');
-    if (concept) {
-      const i30 = Math.max(0, at.indexOf(30));
-      const left = await sharp(concept)
-        .resize(960, Math.round((960 * h) / w), { fit: 'cover' })
-        .jpeg()
-        .toBuffer();
-      const right = await sharp(files[i30]!)
-        .resize(960, Math.round((960 * h) / w))
-        .jpeg()
-        .toBuffer();
-      const ch = Math.round((960 * h) / w);
-      await sharp({ create: { width: 1920, height: ch, channels: 3, background: '#111' } })
-        .composite([
-          { input: left, left: 0, top: 0 },
-          { input: right, left: 960, top: 0 },
-        ])
+      const base = await snap(page, outDir, `base-${tag}.jpg`, { wait: 0 });
+      // Số đo nền (hạt môi trường, draw call cảnh) trừ khỏi số đo lúc ra chiêu để chỉ còn phần của chiêu.
+      const b0 = await page.evaluate(() => window.__vfxlab!.budget());
+      const files: Buffer[] = [];
+      let clock = 0; // ms trình diễn đã trôi từ lúc ra chiêu
+      await page.evaluate((s) => window.__vfxlab!.cast(s), skill);
+      const rows: Record<string, unknown>[] = [];
+      for (const ms of at) {
+        const want = hitMs + ms;
+        if (want > clock) {
+          await advance(page, want - clock);
+          clock = want;
+        }
+        await frame(page);
+        const buf = await snap(page, outDir, `${skill}-${tag}-${ms >= 0 ? '+' : ''}${ms}ms.jpg`, { wait: 0 });
+        files.push(buf);
+        const raw = await page.evaluate(() => window.__vfxlab!.budget());
+        const b = { ...raw, particles: Math.max(0, raw.particles - b0.particles), drawCalls: Math.max(0, raw.drawCalls - b0.drawCalls) };
+        const cover = await coverage(base, buf);
+        rows.push({ ms, ...b, pixelCover: Number(cover.toFixed(3)) });
+      }
+      shots[tag] = rows;
+      // Dải 4 khung cạnh nhau (thu nhỏ) để duyệt nhanh.
+      const cellW = 480;
+      const cellH = Math.round((cellW * h) / w);
+      const tiles = await Promise.all(files.map((f) => sharp(f).resize(cellW, cellH).jpeg({ quality: 85 }).toBuffer()));
+      await sharp({ create: { width: cellW * tiles.length, height: cellH, channels: 3, background: '#111' } })
+        .composite(tiles.map((input, i) => ({ input, left: i * cellW, top: 0 })))
         .jpeg({ quality: 88 })
-        .toFile(path.join(r.out, `${skill}-${tag}-concept-vs-game.jpg`));
+        .toFile(path.join(outDir, `${skill}-${tag}-strip.jpg`));
+      // Concept cạnh khung +30 ms (nếu có).
+      const concept = opt('--concept', '');
+      if (concept) {
+        const i30 = Math.max(0, at.indexOf(30));
+        const left = await sharp(concept)
+          .resize(960, Math.round((960 * h) / w), { fit: 'cover' })
+          .jpeg()
+          .toBuffer();
+        const right = await sharp(files[i30]!)
+          .resize(960, Math.round((960 * h) / w))
+          .jpeg()
+          .toBuffer();
+        const ch = Math.round((960 * h) / w);
+        await sharp({ create: { width: 1920, height: ch, channels: 3, background: '#111' } })
+          .composite([
+            { input: left, left: 0, top: 0 },
+            { input: right, left: 960, top: 0 },
+          ])
+          .jpeg({ quality: 88 })
+          .toFile(path.join(outDir, `${skill}-${tag}-concept-vs-game.jpg`));
+      }
+      await page.evaluate(() => {
+        window.__vfxlab!.pause(false);
+      });
+      await sleep(2500);
     }
-    await page.evaluate(() => {
-      window.__vfxlab!.pause(false);
-    });
-    await sleep(2500);
-  }
-  // Đối chiếu ngân sách thẻ chiêu: lấy số lớn nhất qua các khung.
-  const worst = { drawCalls: 0, particles: 0, screenCover: 0, overdraw: 0, pixelCover: 0 };
-  for (const rows of Object.values(shots) as Record<string, number>[][]) {
-    for (const x of rows) {
-      worst.drawCalls = Math.max(worst.drawCalls, x.drawCalls ?? 0);
-      worst.particles = Math.max(worst.particles, x.particles ?? 0);
-      worst.screenCover = Math.max(worst.screenCover, x.screenCover ?? 0);
-      worst.overdraw = Math.max(worst.overdraw, x.overdraw ?? 0);
-      worst.pixelCover = Math.max(worst.pixelCover, x.pixelCover ?? 0);
+    // Đối chiếu ngân sách thẻ chiêu: lấy số lớn nhất qua các khung.
+    const worst = { drawCalls: 0, particles: 0, screenCover: 0, overdraw: 0, pixelCover: 0 };
+    for (const rows of Object.values(shots) as Record<string, number>[][]) {
+      for (const x of rows) {
+        worst.drawCalls = Math.max(worst.drawCalls, x.drawCalls ?? 0);
+        worst.particles = Math.max(worst.particles, x.particles ?? 0);
+        worst.screenCover = Math.max(worst.screenCover, x.screenCover ?? 0);
+        worst.overdraw = Math.max(worst.overdraw, x.overdraw ?? 0);
+        worst.pixelCover = Math.max(worst.pixelCover, x.pixelCover ?? 0);
+      }
     }
-  }
-  out.worst = worst;
-  if (card) {
-    const b = card.budget;
-    out.overBudget = [
-      worst.particles > b.particles && `hạt ${worst.particles} > ${b.particles}`,
-      worst.screenCover > b.screenCover && `phủ ước lượng ${worst.screenCover.toFixed(2)} > ${b.screenCover}`,
-      worst.overdraw > b.overdraw && `overdraw ${worst.overdraw} > ${b.overdraw}`,
-    ].filter(Boolean);
+    out.worst = worst;
+    if (card) {
+      const b = card.budget;
+      out.overBudget = [
+        worst.particles > b.particles && `hạt ${worst.particles} > ${b.particles}`,
+        worst.screenCover > b.screenCover && `phủ ước lượng ${worst.screenCover.toFixed(2)} > ${b.screenCover}`,
+        worst.overdraw > b.overdraw && `overdraw ${worst.overdraw} > ${b.overdraw}`,
+      ].filter(Boolean);
+    }
+    results.push(out);
   }
   await ctx.close();
-  return out;
+  return results;
 }
 
 export default {
   name: 'vfxlab',
   desc: 'V-P0 phòng thử VFX: một chiêu ở 0/+30/+150/+400 ms sau trúng đòn, 720p + 1080p, đồng hồ ngân sách, concept cạnh game',
   usage:
-    '--skill <id> --out <dir> [--mood night] [--clip 1] [--dummies 1..5] [--mon <id>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400]',
+    '--skill <id[,id...]> --out <dir> [--mood night] [--clip 1] [--dummies 1..5] [--mon <id>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400]',
   dry() {
     if (opt('--skill', '')) return false;
     console.log('thiếu --skill <id chiêu>');
@@ -193,15 +203,20 @@ export default {
     return true;
   },
   async run(r) {
-    const skill = opt('--skill', '');
+    const skills = list('--skill', '');
     const sizes = list('--sizes', '720p,1080p');
     const at = list('--at', '0,30,150,400').map(Number);
-    const res = await run(r, skill, sizes, at);
-    writeJson(r.out, `${skill}-vfxlab.json`, res);
-    console.log(
-      'đồng hồ ngân sách (xấu nhất):',
-      JSON.stringify(res.worst),
-      res.overBudget ? `vượt: ${(res.overBudget as string[]).join('; ') || 'không'}` : '',
-    );
+    const results = await run(r, skills, sizes, at);
+    for (const res of results) {
+      if (res.clip) continue;
+      const sk = res.skill as string;
+      writeJson(skills.length > 1 ? path.join(r.out, sk) : r.out, `${sk}-vfxlab.json`, res);
+      console.log(
+        sk,
+        'ngân sách (xấu nhất):',
+        JSON.stringify(res.worst),
+        res.overBudget ? `vượt: ${(res.overBudget as string[]).join('; ') || 'không'}` : '',
+      );
+    }
   },
 } satisfies Scenario;

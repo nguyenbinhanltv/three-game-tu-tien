@@ -19,18 +19,19 @@
    "type": "decal",
    "tex": "rune",
    "t": -0.35,
-   "r": 2.0,
+   "r": 2,
    "dur": 1.4,
    "at": "self",
    "grow": 0.3,
-   "tone": "core",
+   "tone": "body",
    "alpha": 0.9,
-   "tier": 1
+   "tier": 1,
+   "ink": true
   },
   {
    "type": "mesh",
    "shape": "ripple",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.6,
    "at": "self",
    "offset": [
@@ -38,18 +39,19 @@
     -1.1,
     0
    ],
-   "scale": 0.3,
-   "scaleTo": 1.9,
+   "scale": 0.51,
+   "scaleTo": 3.23,
    "sweep": 0.45,
    "erodeFrom": 0.4,
    "tone": "core",
    "tier": 0,
-   "seed": 2
+   "seed": 2,
+   "ink": true
   },
   {
    "type": "mesh",
    "shape": "kite",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.8,
    "at": "self",
    "offset": [
@@ -63,9 +65,9 @@
     0
    ],
    "scale": [
-    0.6,
-    0.6,
-    1.5
+    1.02,
+    1.02,
+    2.55
    ],
    "sweep": 0.2,
    "erodeFrom": 0.55,
@@ -91,9 +93,9 @@
     0
    ],
    "scale": [
-    0.6,
-    0.6,
-    1.5
+    1.02,
+    1.02,
+    2.55
    ],
    "sweep": 0.2,
    "erodeFrom": 0.55,
@@ -105,24 +107,24 @@
   {
    "type": "mesh",
    "shape": "burst",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.11,
    "at": "self",
    "scale": 1.1,
    "billboard": true,
-   "sweep": 0.0,
+   "sweep": 0,
    "tone": "rim",
    "tier": 0
   },
   {
    "type": "mesh",
    "shape": "helix",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.7,
    "at": "self",
    "offset": [
     0,
-    -1.0,
+    -1,
     0
    ],
    "rot": [

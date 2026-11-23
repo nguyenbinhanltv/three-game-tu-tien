@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_thuan_di_tram",
+  "idea": "Thuấn Di Trảm: Thuấn di tới trước mặt kẻ địch rồi chém xuống 320% công kích. Cần cảnh giới Nguyên Anh.",
+  "element": "kim",
+  "path": "kiem_tu",
+  "shapeLang": [
+    "burst",
+    "ring",
+    "spiral"
+  ],
+  "timing": {
+    "anticipationMs": 200,
+    "impactMs": 80,
+    "lingerMs": 750
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 11,
+    "particles": 139,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

@@ -13,7 +13,7 @@
    "at": "self",
    "offset": [
     0,
-    1.0,
+    1,
     0.3
    ],
    "inward": true,
@@ -42,28 +42,30 @@
    "t": -0.6,
    "dur": 1.2,
    "at": "area",
-   "scale": 1.0,
+   "scale": 1,
    "scaleTo": 1.05,
    "fit": "area",
    "alpha": 1,
    "sweep": 0.5,
    "erodeFrom": 0.85,
    "shadow": false,
-   "tone": "accent",
+   "tone": "body",
    "tier": 0,
-   "seed": 2
+   "seed": 2,
+   "ink": true
   },
   {
    "type": "decal",
    "tex": "rune",
    "t": -0.6,
-   "r": 12.0,
+   "r": 12,
    "dur": 1.8,
    "at": "area",
    "grow": 0.3,
-   "tone": "accent",
+   "tone": "body",
    "alpha": 1,
-   "tier": 0
+   "tier": 0,
+   "ink": true
   },
   {
    "type": "soundAt",
@@ -81,12 +83,12 @@
    "at": "area",
    "offset": [
     0,
-    30.0,
+    30,
     0
    ],
    "scale": [
-    9.0,
-    9.0,
+    9,
+    9,
     6.5
    ],
    "sweep": 0,
@@ -97,7 +99,7 @@
     "ease": "in",
     "offset": [
      0,
-     7.0,
+     7,
      0
     ]
    },
@@ -113,13 +115,13 @@
    "at": "area",
    "offset": [
     0,
-    38.0,
+    38,
     0
    ],
    "scale": [
-    7.0,
-    7.0,
-    8.0
+    7,
+    7,
+    8
    ],
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -129,7 +131,7 @@
     "ease": "in",
     "offset": [
      0,
-     15.0,
+     15,
      0
     ]
    },
@@ -140,12 +142,12 @@
   {
    "type": "mesh",
    "shape": "blade_stuck",
-   "t": 0.0,
+   "t": 0,
    "dur": 1.1,
    "at": "area",
    "offset": [
     0,
-    7.0,
+    7,
     0
    ],
    "rot": [
@@ -154,8 +156,8 @@
     0
    ],
    "scale": [
-    9.0,
-    9.0,
+    9,
+    9,
     6.5
    ],
    "sweep": 0,
@@ -175,14 +177,14 @@
   },
   {
    "type": "slowmo",
-   "t": 0.0,
+   "t": 0,
    "scale": 0.35,
    "ms": 250,
    "tier": 2
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "impact",
    "gain": 0.9,
    "rate": 0.75,
@@ -199,7 +201,7 @@
   {
    "type": "mesh",
    "shape": "flip",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.4,
    "flip": "spark_burst",
    "scale": 4.2,
@@ -217,7 +219,7 @@
   {
    "type": "particles",
    "kind": "spark",
-   "t": 0.0,
+   "t": 0,
    "n": 90,
    "speed": 10,
    "spread": 1,
@@ -240,13 +242,13 @@
    "at": "area",
    "offset": [
     9.5,
-    16.0,
-    0.0
+    16,
+    0
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -255,8 +257,8 @@
     "ease": "in",
     "offset": [
      9.5,
-     3.0,
-     0.0
+     3,
+     0
     ]
    },
    "tone": "body",
@@ -273,7 +275,7 @@
    "offset": [
     9.5,
     18.7,
-    0.0
+    0
    ],
    "scale": [
     2.72,
@@ -288,7 +290,7 @@
     "offset": [
      9.5,
      5.7,
-     0.0
+     0
     ]
    },
    "tone": "rim",
@@ -300,12 +302,12 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": -0.05,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
     9.5,
-    3.0,
-    0.0
+    3,
+    0
    ],
    "rot": [
     90,
@@ -315,7 +317,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -332,13 +334,13 @@
    "at": "area",
    "offset": [
     8.23,
-    16.0,
+    16,
     4.75
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -347,7 +349,7 @@
     "ease": "in",
     "offset": [
      8.23,
-     3.0,
+     3,
      4.75
     ]
    },
@@ -360,11 +362,11 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": -0.02,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
     8.23,
-    3.0,
+    3,
     4.75
    ],
    "rot": [
@@ -375,7 +377,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -392,13 +394,13 @@
    "at": "area",
    "offset": [
     4.75,
-    16.0,
+    16,
     8.23
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -407,7 +409,7 @@
     "ease": "in",
     "offset": [
      4.75,
-     3.0,
+     3,
      8.23
     ]
    },
@@ -452,11 +454,11 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": 0.01,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
     4.75,
-    3.0,
+    3,
     8.23
    ],
    "rot": [
@@ -467,7 +469,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -483,14 +485,14 @@
    "dur": 0.3,
    "at": "area",
    "offset": [
-    0.0,
-    16.0,
+    0,
+    16,
     9.5
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -498,8 +500,8 @@
     "to": "area",
     "ease": "in",
     "offset": [
-     0.0,
-     3.0,
+     0,
+     3,
      9.5
     ]
    },
@@ -512,11 +514,11 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": 0.04,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
-    0.0,
-    3.0,
+    0,
+    3,
     9.5
    ],
    "rot": [
@@ -527,7 +529,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -544,13 +546,13 @@
    "at": "area",
    "offset": [
     -4.75,
-    16.0,
+    16,
     8.23
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -559,7 +561,7 @@
     "ease": "in",
     "offset": [
      -4.75,
-     3.0,
+     3,
      8.23
     ]
    },
@@ -604,11 +606,11 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": 0.07,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
     -4.75,
-    3.0,
+    3,
     8.23
    ],
    "rot": [
@@ -619,7 +621,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -636,13 +638,13 @@
    "at": "area",
    "offset": [
     -8.23,
-    16.0,
+    16,
     4.75
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -651,7 +653,7 @@
     "ease": "in",
     "offset": [
      -8.23,
-     3.0,
+     3,
      4.75
     ]
    },
@@ -664,11 +666,11 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": 0.1,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
     -8.23,
-    3.0,
+    3,
     4.75
    ],
    "rot": [
@@ -679,7 +681,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -696,13 +698,13 @@
    "at": "area",
    "offset": [
     -9.5,
-    16.0,
-    0.0
+    16,
+    0
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -711,8 +713,8 @@
     "ease": "in",
     "offset": [
      -9.5,
-     3.0,
-     0.0
+     3,
+     0
     ]
    },
    "tone": "body",
@@ -729,7 +731,7 @@
    "offset": [
     -9.5,
     18.7,
-    0.0
+    0
    ],
    "scale": [
     2.72,
@@ -744,7 +746,7 @@
     "offset": [
      -9.5,
      5.7,
-     0.0
+     0
     ]
    },
    "tone": "rim",
@@ -756,12 +758,12 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": 0.13,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
     -9.5,
-    3.0,
-    0.0
+    3,
+    0
    ],
    "rot": [
     90,
@@ -771,7 +773,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -788,13 +790,13 @@
    "at": "area",
    "offset": [
     -8.23,
-    16.0,
+    16,
     -4.75
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -803,7 +805,7 @@
     "ease": "in",
     "offset": [
      -8.23,
-     3.0,
+     3,
      -4.75
     ]
    },
@@ -816,11 +818,11 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": 0.16,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
     -8.23,
-    3.0,
+    3,
     -4.75
    ],
    "rot": [
@@ -831,7 +833,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -848,13 +850,13 @@
    "at": "area",
    "offset": [
     -4.75,
-    16.0,
+    16,
     -8.23
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -863,7 +865,7 @@
     "ease": "in",
     "offset": [
      -4.75,
-     3.0,
+     3,
      -8.23
     ]
    },
@@ -908,11 +910,11 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": 0.19,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
     -4.75,
-    3.0,
+    3,
     -8.23
    ],
    "rot": [
@@ -923,7 +925,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -939,14 +941,14 @@
    "dur": 0.3,
    "at": "area",
    "offset": [
-    -0.0,
-    16.0,
+    0,
+    16,
     -9.5
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -954,8 +956,8 @@
     "to": "area",
     "ease": "in",
     "offset": [
-     -0.0,
-     3.0,
+     0,
+     3,
      -9.5
     ]
    },
@@ -968,11 +970,11 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": 0.22,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
-    -0.0,
-    3.0,
+    0,
+    3,
     -9.5
    ],
    "rot": [
@@ -983,7 +985,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -1000,13 +1002,13 @@
    "at": "area",
    "offset": [
     4.75,
-    16.0,
+    16,
     -8.23
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -1015,7 +1017,7 @@
     "ease": "in",
     "offset": [
      4.75,
-     3.0,
+     3,
      -8.23
     ]
    },
@@ -1060,11 +1062,11 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": 0.25,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
     4.75,
-    3.0,
+    3,
     -8.23
    ],
    "rot": [
@@ -1075,7 +1077,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -1092,13 +1094,13 @@
    "at": "area",
    "offset": [
     8.23,
-    16.0,
+    16,
     -4.75
    ],
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.95,
@@ -1107,7 +1109,7 @@
     "ease": "in",
     "offset": [
      8.23,
-     3.0,
+     3,
      -4.75
     ]
    },
@@ -1120,11 +1122,11 @@
    "type": "mesh",
    "shape": "blade_stuck",
    "t": 0.28,
-   "dur": 1.0,
+   "dur": 1,
    "at": "area",
    "offset": [
     8.23,
-    3.0,
+    3,
     -4.75
    ],
    "rot": [
@@ -1135,7 +1137,7 @@
    "scale": [
     3.4,
     3.4,
-    3.0
+    3
    ],
    "sweep": 0,
    "erodeFrom": 0.6,
@@ -1156,16 +1158,17 @@
     3.15
    ],
    "scaleTo": [
-    12.0,
-    12.0,
-    12.0
+    12,
+    12,
+    12
    ],
    "alpha": 0.75,
    "sweep": 0.3,
    "erodeFrom": 0.3,
    "shadow": false,
-   "tone": "rim",
-   "tier": 1
+   "tone": "body",
+   "tier": 1,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1180,49 +1183,21 @@
    "shadow": false,
    "tone": "core",
    "tier": 0,
-   "seed": 2
+   "seed": 2,
+   "ink": true
   },
   {
    "type": "decal",
    "tex": "crack",
    "t": 0.04,
-   "r": 9.0,
+   "r": 9,
    "dur": 2.6,
    "at": "area",
    "grow": 0.12,
-   "tone": "core",
-   "alpha": 1,
-   "tier": 1
-  },
-  {
-   "type": "decal",
-   "tex": "scorch",
-   "t": 0.04,
-   "r": 7.2,
-   "dur": 3.0,
-   "at": "area",
-   "grow": 0.1,
-   "tone": "shadow",
-   "alpha": 0.75,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.03,
-   "dur": 0.6,
-   "flip": "dust_kick",
-   "scale": 2.4,
-   "billboard": true,
-   "at": "area",
-   "offset": [
-    0,
-    0.45,
-    0
-   ],
-   "alpha": 0.5,
    "tone": "body",
-   "tier": 1
+   "alpha": 1,
+   "tier": 1,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1430,23 +1405,23 @@
   },
   {
    "type": "hitstop",
-   "t": 0.0,
+   "t": 0,
    "ms": 70
   },
   {
    "type": "shake",
-   "t": 0.0,
+   "t": 0,
    "level": 0.5
   },
   {
    "type": "flash",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.08,
    "tier": 0
   },
   {
    "type": "vignette",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.4,
    "ms": 300,
    "tone": "dark",
@@ -1454,10 +1429,10 @@
   },
   {
    "type": "camera",
-   "t": 0.0,
+   "t": 0,
    "pull": 0.15,
    "dur": 0.5,
-   "fov": 4.0,
+   "fov": 4,
    "tier": 1
   }
  ],
@@ -1470,7 +1445,7 @@
     "dur": 0.9,
     "at": "area",
     "scale": 0.1,
-    "scaleTo": 1.0,
+    "scaleTo": 1,
     "fit": "area",
     "alpha": 0.85,
     "sweep": 0.5,
@@ -1484,7 +1459,7 @@
     "t": 0.04,
     "id": "ice_spike",
     "gain": 0.9,
-    "rate": 1.0,
+    "rate": 1,
     "jitter": 0.03
    },
    {
@@ -1492,7 +1467,7 @@
     "t": 0.32,
     "id": "ice_hit",
     "gain": 0.8,
-    "rate": 1.0,
+    "rate": 1,
     "jitter": 0.03
    }
   ],

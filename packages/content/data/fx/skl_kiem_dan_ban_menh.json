@@ -30,12 +30,13 @@
    "grow": 0.3,
    "tone": "body",
    "alpha": 0.85,
-   "tier": 1
+   "tier": 1,
+   "ink": true
   },
   {
    "type": "mesh",
    "shape": "ripple",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.6,
    "at": "self",
    "offset": [
@@ -43,18 +44,19 @@
     -1.1,
     0
    ],
-   "scale": 0.3,
-   "scaleTo": 1.8,
+   "scale": 0.51,
+   "scaleTo": 3.06,
    "sweep": 0.5,
    "erodeFrom": 0.4,
    "tone": "body",
    "tier": 0,
-   "seed": 3
+   "seed": 3,
+   "ink": true
   },
   {
    "type": "mesh",
    "shape": "burst",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.11,
    "at": "self",
    "offset": [
@@ -64,19 +66,19 @@
    ],
    "scale": 1.2,
    "billboard": true,
-   "sweep": 0.0,
+   "sweep": 0,
    "tone": "accent",
    "tier": 0
   },
   {
    "type": "mesh",
    "shape": "kite",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.5,
    "at": "self",
    "offset": [
     0.5,
-    -1.0,
+    -1,
     0.2
    ],
    "rot": [
@@ -85,9 +87,9 @@
     0
    ],
    "scale": [
-    0.3,
-    0.3,
-    0.8
+    0.51,
+    0.51,
+    1.36
    ],
    "sweep": 0.2,
    "erodeFrom": 0.7,
@@ -103,7 +105,7 @@
    "at": "self",
    "offset": [
     -0.5,
-    -1.0,
+    -1,
     0.2
    ],
    "rot": [
@@ -112,9 +114,9 @@
     0
    ],
    "scale": [
-    0.3,
-    0.3,
-    0.8
+    0.51,
+    0.51,
+    1.36
    ],
    "sweep": 0.2,
    "erodeFrom": 0.7,
@@ -125,12 +127,12 @@
   {
    "type": "mesh",
    "shape": "helix",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.8,
    "at": "self",
    "offset": [
     0,
-    -1.0,
+    -1,
     0
    ],
    "rot": [
@@ -154,7 +156,7 @@
   {
    "type": "particles",
    "kind": "spark",
-   "t": 0.0,
+   "t": 0,
    "n": 22,
    "speed": 3.5,
    "spread": 1,
