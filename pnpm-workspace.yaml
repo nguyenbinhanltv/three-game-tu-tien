@@ -5,6 +5,7 @@ packages:
   - "tools/perf"
   - "tools/audio"
   - "tools/calli"
+  - "tools/vfx-forge"
 onlyBuiltDependencies:
   - better-sqlite3
   - esbuild
