@@ -49,6 +49,8 @@ import {
   clampLeadFrame,
   isoClearScale,
   isoTopEq,
+  isoFrameBoss,
+  isoLeadable,
   clampLeadSafe,
   isoCameraPos,
   isoLead,
@@ -397,10 +399,23 @@ function updateCamera(eng: Game, dt: number): void {
     eng.camYaw = isoYawFor(levelId());
     const cl = iso.ground ? isoLead(iso.ground.x - rp.x, iso.ground.z - rp.z) : { x: 0, z: 0 };
     // Đang có mục tiêu: dẫn camera về phía nó (kèm một phần con trỏ) để người và mục tiêu cùng nằm trong khung.
-    const tl = eng.targetId && eng.ents.chestOf(eng.targetId, _v) ? isoLeadTarget(_v.x - rp.x, _v.z - rp.z) : null;
+    // Chưa chọn mục tiêu mà có boss lớn trong tầm: vẫn đưa boss gần nhất vào khung (người đứng trong vòng của boss không bị cắt boss).
+    let frameId =
+      eng.targetId && eng.ents.chestOf(eng.targetId, _v) && isoLeadable(Math.hypot(_v.x - rp.x, _v.z - rp.z)) ? eng.targetId : '';
+    if (!frameId) {
+      let bd = Infinity;
+      for (const [id, m] of eng.ents.monsters) {
+        const d = Math.hypot(m.x - rp.x, m.z - rp.z);
+        if (d < bd && isoFrameBoss(m.model.height, d, m.s.st === MS_DEAD)) {
+          bd = d;
+          frameId = id;
+        }
+      }
+    }
+    const tl = frameId && eng.ents.chestOf(frameId, _v) ? isoLeadTarget(_v.x - rp.x, _v.z - rp.z) : null;
     const ld = tl ? { x: tl.x + cl.x * 0.4, z: tl.z + cl.z * 0.4 } : cl;
     // Kẹp khung: người chơi luôn trong vùng an toàn; mục tiêu cũng trong vùng an toàn (tránh minimap/HUD) nếu thực hiện được, không thì ưu tiên người chơi.
-    const top = tl && eng.targetId ? isoTopEq(eng.ents.monsters.get(eng.targetId)?.model.height ?? 0) : 0;
+    const top = tl && frameId ? isoTopEq(eng.ents.monsters.get(frameId)?.model.height ?? 0) : 0;
     const safe = tl ? clampLeadFrame(ld.x, ld.z, eng.camYaw, _v.x - rp.x, _v.z - rp.z, top) : clampLeadSafe(ld.x, ld.z, eng.camYaw);
     ld.x = safe.x;
     ld.z = safe.z;
