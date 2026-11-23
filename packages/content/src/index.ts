@@ -247,6 +247,10 @@ import fx_skl_kim_than from '../data/fx/skl_kim_than.json';
 import fx_skl_kim_than_quyen from '../data/fx/skl_kim_than_quyen.json';
 import fx_skl_chan_son_quyen from '../data/fx/skl_chan_son_quyen.json';
 import fx_skl_kim_than_ho_the from '../data/fx/skl_kim_than_ho_the.json';
+import fx_skl_dan_lo from '../data/fx/skl_dan_lo.json';
+import fx_skl_dan_hoa_chi from '../data/fx/skl_dan_hoa_chi.json';
+import fx_skl_lo_hoa_hoi_nguyen from '../data/fx/skl_lo_hoa_hoi_nguyen.json';
+import fx_skl_dan_hoa_vu from '../data/fx/skl_dan_hoa_vu.json';
 import fx_skl_kiem_anh_bo from '../data/fx/skl_kiem_anh_bo.json';
 import fx_skl_kiem_dan_ban_menh from '../data/fx/skl_kiem_dan_ban_menh.json';
 import fx_skl_u_anh_bo from '../data/fx/skl_u_anh_bo.json';
@@ -791,6 +795,10 @@ export const FX_TIMELINES = [
   fx_skl_hoi_thien_dan_lo,
   fx_skl_hoi_xuan_quyet,
   fx_skl_kiem_anh_bo,
+  fx_skl_dan_lo,
+  fx_skl_dan_hoa_chi,
+  fx_skl_lo_hoa_hoi_nguyen,
+  fx_skl_dan_hoa_vu,
   fx_skl_kim_than,
   fx_skl_kim_than_quyen,
   fx_skl_chan_son_quyen,

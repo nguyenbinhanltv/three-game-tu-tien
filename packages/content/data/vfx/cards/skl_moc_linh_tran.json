@@ -1,0 +1,35 @@
+{
+  "skillId": "skl_moc_linh_tran",
+  "idea": "Mộc Linh Trận: Ấn xuống đất mở linh trận lá ngọc: trong 8 giây hồi 6% khí huyết mỗi giây cho đạo hữu trong 8 mét, đồng thời gieo độc lên quái trong trận.",
+  "element": "moc",
+  "path": "dan_su",
+  "shapeLang": [
+    "ring",
+    "burst",
+    "spiral"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 550
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 11,
+    "particles": 316,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    }
+  ]
+}

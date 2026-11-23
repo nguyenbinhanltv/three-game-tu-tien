@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_dan_hoa_chi",
+  "idea": "Đan Hỏa Chỉ: Chiêu tư thế. Điểm một tia đan hỏa gây 105% công kích hệ hỏa, tích 6 Đan hỏa.",
+  "element": "hoa",
+  "path": "dan_su",
+  "shapeLang": [
+    "line",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 260,
+    "impactMs": 80,
+    "lingerMs": 540
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 4,
+    "particles": 120,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [],
+  "impactFrame": true
+}
