@@ -1,5 +1,6 @@
 // Quái (R-7): AI từng tick, hồi sinh, vùng nổ (Hazard), đạn, sát thương/chết/rơi đồ của quái, pha và thế của boss.
 // Tách nguyên văn từ GameSim, chỉ nhận giao diện hẹp `MonsterCtx`; sát thương lên người vẫn qua damagePlayer của sim.
+import { noteDealt } from '../matchstats';
 import {
   BOLT_MAX_LIFE,
   BOLT_MAX_LIVE,
@@ -445,6 +446,8 @@ export class MonsterSystem {
     dmg = mxDmg;
     // Khe mạch (DV-3D): boss có `rift` không chết vì sát thương, chỉ về 1 máu; chỉ gột hết tầng cháy (GameSim.purifyMonster) mới hạ được.
     const hp = Math.max(mon.def.rift ? 1 : 0, mon.s.hp - dmg);
+    // Tổng kết trận (U5): chỉ tính phần sát thương thật (không vượt máu còn lại), không tính bóng tâm ma của độ kiếp.
+    if (!mon.owner) noteDealt(p, mon.s.hp - hp);
     mon.s.hp = hp;
     const msg: DmgMsg = { dst: mon.id, n: dmg };
     if (crit) msg.crit = true;

@@ -1,9 +1,10 @@
 // Room bí cảnh (R-7, tách từ rooms.ts).
 import { ServerError } from 'colyseus';
-import { MS_DEAD, PF_DEAD, type DungeonDef, type WaveDef, dungeonRoomName, at, kieuEntryDeny, kieuOfLevel } from '@dtl/shared';
+import { MS_DEAD, PF_DEAD, S, type DungeonDef, type WaveDef, dungeonRoomName, at, kieuEntryDeny, kieuOfLevel } from '@dtl/shared';
 import { LEVELS, MONSTER, monsterName, t } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import { Character } from '../game/character';
+import { recapOf } from '../game/matchstats';
 import { DUNGEON_QUEST_TARGET } from '../game/dungeonquest';
 import { MirrorPuzzle } from '../game/mirrorpuzzle';
 import { SealSystem } from '../game/seal';
@@ -17,6 +18,8 @@ import { GameRoom, today, type JoinAuth } from './base';
 export class DungeonRoom extends GameRoom {
   static levelId: string = 'kiem_trung';
   protected wave = 0;
+  /** Lúc bắt đầu đợt đầu (ms): tính thời gian trận cho bảng tổng kết. */
+  private startedAt = 0;
   private nextWaveAt = 0;
   protected clearedAt = 0;
   /** Số lần hồi sinh đã dùng của từng nhân vật (giới hạn `DungeonDef.maxRevives`). */
@@ -137,6 +140,12 @@ export class DungeonRoom extends GameRoom {
     this.payReward();
   }
 
+  /** Bảng tổng kết trận (U5): server tổng hợp từ bộ đếm tại điểm sát thương/hồi máu thật, gửi cho từng người còn trong phòng. */
+  private sendRecap(now: number): void {
+    const msg = recapOf(this.sim.players.values(), this.levelId, (now - this.startedAt) / 1000, (p) => (p.s.fl & PF_DEAD) !== 0);
+    for (const p of this.sim.players.values()) p.client.send(S.RECAP, msg);
+  }
+
   private payReward(): void {
     const r = this.def.reward;
     if (!r) return;
@@ -170,10 +179,12 @@ export class DungeonRoom extends GameRoom {
     if (!this.nextWaveAt) this.nextWaveAt = now + (waves[this.wave]?.delay ?? 6) * 1000;
     if (now < this.nextWaveAt) return;
     this.nextWaveAt = 0;
+    if (!this.startedAt) this.startedAt = now;
     this.wave++;
     if (this.wave > waves.length) {
       this.clearedAt = now;
       this.sim.sysAll('sys.dungeon_clear', { name: this.dname }, 'good');
+      this.sendRecap(now);
       this.onCleared();
       return;
     }

@@ -1,4 +1,5 @@
 // Độ kiếp phía sim (R-7): onBreakthrough, bắt đầu/kết thúc kiếp, hộ pháp, bóng tâm ma, thế thân
+import { noteHeal } from '../matchstats';
 import {
   computeDamage,
   type DmgMsg,
@@ -271,7 +272,9 @@ export class TribulationSystem {
   /** Hồi `n` khí huyết (kẹp theo tối đa, tính hồi phục nhận vào) và báo số. */
   healPlayer(p: PlayerEnt, n: number): void {
     const amt = Math.max(1, Math.round(n * (1 + p.char.stats.healRecv)));
+    const before = p.char.hp;
     p.char.hp = Math.min(p.char.mhp, p.char.hp + amt);
+    noteHeal(p, p.char.hp - before);
     this.c.emit(S.DMG, { dst: p.sid, n: amt, heal: true } satisfies DmgMsg);
   }
 
