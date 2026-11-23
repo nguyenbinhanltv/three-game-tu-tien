@@ -6,6 +6,7 @@ import { useUI } from '../../store';
 import { Bar } from '../index';
 import { TipCard, Tooltip } from '../win';
 import { useNow } from './common';
+import { ResourceBar } from './ResourceBar';
 
 const BUFF_ICON: Record<string, string> = { atk: 'buff_atk', def: 'buff_def', crit: 'buff_crit' };
 
@@ -54,6 +55,7 @@ export function VitalsDock() {
   if (!char) return null;
   return (
     <section className="u2h-zone u2h-dock" aria-label={t('ui.hp')} data-testid="vitals-dock">
+      <ResourceBar dock />
       <div className="u2h-dock-bars">
         <Bar kind="hp" value={hp} max={mhp} text={`${hp} / ${mhp}`} label={t('ui.hp')} />
         <Bar kind="mp" value={mp} max={mmp} text={`${mp} / ${mmp}`} label={t('ui.mp')} />

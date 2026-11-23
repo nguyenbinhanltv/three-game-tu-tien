@@ -1118,3 +1118,45 @@
   left: var(--h-safe);
   top: calc(var(--h-safe) + var(--h-tl-h) + 10px);
 }
+
+/* Thanh Đạo Thế (Chân Cảnh U2): tài nguyên hướng tu thành thanh nổi bật giữa HUD, phát sáng khi đầy */
+.res-bar.dock {
+  width: 62%;
+  margin: 0;
+  padding: 2px 10px;
+  justify-content: space-between;
+  border-radius: 0;
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%);
+}
+.res-bar.dock .res-track {
+  flex: 1;
+  width: auto;
+  height: 10px;
+}
+.res-bar.dock .res-pips {
+  flex: 1;
+  justify-content: center;
+  gap: 12px;
+}
+.res-bar.dock .res-pips i {
+  width: 12px;
+  height: 12px;
+}
+.res-bar.dock[data-full] {
+  animation: u2h-res-glow 1.2s ease-in-out infinite;
+}
+.res-bar.dock[data-full] .res-track {
+  box-shadow: 0 0 12px 2px var(--rc);
+}
+@keyframes u2h-res-glow {
+  50% {
+    filter: drop-shadow(0 0 6px var(--rc));
+    border-color: var(--rc);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .res-bar.dock[data-full] {
+    animation: none;
+    filter: drop-shadow(0 0 6px var(--rc));
+  }
+}
