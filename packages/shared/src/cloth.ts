@@ -159,8 +159,14 @@ export function panelGrid(
   widen = 1,
   dir: V3 = [0, -1, 0],
   boneAt?: (r: number, c: number) => string,
+  /** Độ phồng (m) vuông góc tấm (có dấu): giữa bề ngang phồng nhiều nhất, tăng dần về gấu; hai tấm phồng ngược dấu tạo ống hai lớp. */
+  bow = 0,
 ): ClothGrid {
   const rest = new Float32Array(nu * nv * 3);
+  const ax: V3 = [p1[0]! - p0[0]!, p1[1]! - p0[1]!, p1[2]! - p0[2]!];
+  // pháp tuyến tấm = trục ngang × hướng rủ
+  const nrm: V3 = [ax[1]! * dir[2]! - ax[2]! * dir[1]!, ax[2]! * dir[0]! - ax[0]! * dir[2]!, ax[0]! * dir[1]! - ax[1]! * dir[0]!];
+  const nl = Math.hypot(nrm[0]!, nrm[1]!, nrm[2]!) || 1;
   const mid: [number, number, number] = [(p0[0]! + p1[0]!) / 2, (p0[1]! + p1[1]!) / 2, (p0[2]! + p1[2]!) / 2];
   for (let r = 0; r < nv; r++) {
     const t = r / (nv - 1);
@@ -170,7 +176,8 @@ export function panelGrid(
       const i = (r * nu + c) * 3;
       for (let a = 0; a < 3; a++) {
         const base = p0[a]! + (p1[a]! - p0[a]!) * s;
-        rest[i + a]! = mid[a]! + (base - mid[a]!) * k + dir[a]! * drop * t;
+        rest[i + a]! =
+          mid[a]! + (base - mid[a]!) * k + dir[a]! * drop * t + (nrm[a]! / nl) * bow * Math.sin(Math.PI * s) * (0.35 + 0.65 * t);
       }
     }
   }
