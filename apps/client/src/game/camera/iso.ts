@@ -30,6 +30,14 @@ export const ISO_YAW: Readonly<Record<string, number>> = {
   gioi_tri: (135 * Math.PI) / 180,
   // Thiên Lộ Giới: 45° (so với 0°, −45°, 135°): đường lát chạy chéo khung, trụ đá không xếp thành hàng che người.
   cuu_kieu: (45 * Math.PI) / 180,
+  // Phó bản ch2–ch5 (so 0°, 45°, −45°, 135° ở 4 điểm + cảnh đánh): đều sàn phẳng thoáng nên giữ 45°; riêng Xích Tẫn Khích −45° (0°/45°/135° để cụm cột bazan chồng lên khung đánh) và Kính Nguyệt không dùng 135° (mái đình chắn nửa khung).
+  kiem_trung: (45 * Math.PI) / 180,
+  kim_da_cung: (45 * Math.PI) / 180,
+  kinh_nguyet: (45 * Math.PI) / 180,
+  luyen_than: (45 * Math.PI) / 180,
+  phuc_mach: (45 * Math.PI) / 180,
+  than_tang: (45 * Math.PI) / 180,
+  xich_tan_khich: (-45 * Math.PI) / 180,
   // Chín phòng cầu dùng chung địa hình Thiên Lộ Giới: cùng 45°.
   ...Object.fromEntries(Array.from({ length: 9 }, (_, i) => [`kieu_${i + 1}`, (45 * Math.PI) / 180])),
 };

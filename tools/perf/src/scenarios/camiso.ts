@@ -22,6 +22,7 @@ const YAW_DEG: Record<string, number> = {
   van_dinh: 135,
   gioi_tri: 135,
   cuu_kieu: 45,
+  xich_tan_khich: -45,
 };
 const standYaw = (): number => {
   const m = /isoyaw=(-?[0-9.]+)/.exec(opt('--query', ''));
