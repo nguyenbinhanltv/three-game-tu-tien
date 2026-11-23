@@ -110,7 +110,8 @@ export interface IsoRun {
   backend: string;
   viewport: string;
   quick: boolean;
-  firstLoadMB: number | null;
+  /** Byte đã giải nén từ Vite dev server tới lúc vào game (+6 s stream); KHÔNG phải tải lần đầu của bản build, không so với ngân sách 30 MB (dùng `pnpm bench:load`). */
+  devBytesMB: number | null;
   points: IsoPoint[];
   errors: string[];
 }
@@ -165,7 +166,10 @@ const fmt = (n: number): string => (n >= 10_000 ? `${(n / 1000).toFixed(0)}k` : 
 export function toMarkdown(run: IsoRun, deltas: Delta[] = []): string {
   const L: string[] = [];
   L.push(`# perf:iso ${run.date}`, '', `GPU: ${run.adapter || '?'} · ${run.backend} · ${run.viewport}${run.quick ? ' · --quick' : ''}`);
-  if (run.firstLoadMB !== null) L.push(`Tải lần đầu: **${run.firstLoadMB} MB**`);
+  if (run.devBytesMB !== null)
+    L.push(
+      `Byte đã giải nén từ dev server tới lúc vào game: ${run.devBytesMB} MB (không phải tải lần đầu của bản build; đo cái đó bằng \`pnpm bench:load\`)`,
+    );
   L.push('');
   for (const preset of [...new Set(run.points.map((p) => p.preset))]) {
     L.push(
