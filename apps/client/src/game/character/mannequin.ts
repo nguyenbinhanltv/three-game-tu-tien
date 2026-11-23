@@ -1,7 +1,7 @@
 // Nhân vật v3 (N-0 → N-7): model nguyên khối có bộ xương UE5 Mannequin (`chr_v3_*`, tools/blender/chr_v3.py) phát
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
-import { DEATH_DIR_TTL, DEATH_TURN_S, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
+import { DEATH_DIR_TTL, DEATH_TURN_S, dashClipOf, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
 import { boneKey } from './ikpose';
 import { applyProportions, proportionBones, type BoneScale } from './hero';
 import * as THREE from 'three/webgpu';
@@ -1449,14 +1449,15 @@ export class MannequinCharacter implements CharacterView {
   }
 
   /** Lướt hiển thị: hình xuất phát từ (fromX, fromZ) rồi trượt về chỗ thật trong `dur` giây; phát clip lăn UAL co vừa thời gian lướt. */
-  dashFrom(fromX: number, fromZ: number, dur: number): void {
+  dashFrom(fromX: number, fromZ: number, dur: number, strike = false): void {
     if (this.dead) return;
     this.dashOff = { fx: fromX, fz: fromZ, t: 0, dur: Math.max(0.1, dur) };
     this.cancelRecovery('dash');
     // Chiêu còn sống mà chưa bị hủy thì giữ động tác chiêu; dash-cancel (đã hủy thu về, tắt dần 0,12 s) thì vẫn lăn.
     if (this.perf && !this.perf.cancelled) return;
-    const len = this.tpl.clips.get('Roll')?.duration ?? 0;
-    if (len > 0) this.oneShot('Roll', Math.min(3, Math.max(1, len / this.dashOff.dur)));
+    const clip = dashClipOf(strike, (n) => this.tpl.clips.has(n));
+    const len = this.tpl.clips.get(clip)?.duration ?? 0;
+    if (len > 0) this.oneShot(clip, Math.min(3, Math.max(1, len / this.dashOff.dur)));
   }
 
   knockdown(): void {

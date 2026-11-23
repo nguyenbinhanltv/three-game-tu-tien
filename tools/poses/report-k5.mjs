@@ -1,4 +1,4 @@
-// K-5: bảng số đo năm giọng (kiếm tu, hộ pháp, đan sư, đao tu, lôi tu) từ chính dữ liệu pose (khung khóa, không nội suy). `node tools/poses/report-k5.mjs` in bảng markdown.
+// K-5: bảng số đo bảy giọng (kiếm tu, hộ pháp, đan sư, đao tu, lôi tu, hồn tu, cổ tu) từ chính dữ liệu pose (khung khóa, không nội suy). `node tools/poses/report-k5.mjs` in bảng markdown.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,13 +11,15 @@ const tip = (k) => {
   return k.handR.map((x, i) => x + (k.sword[i] / l) * 0.9);
 };
 const rows = [];
-/** Giọng: hậu tố id pose + nhãn (đủ năm giọng của `PoseVoice`: kt, hp, ds, dt, lt). */
+/** Giọng: hậu tố id pose + nhãn (đủ bảy giọng của `PoseVoice`: kt, hp, ds, dt, lt, ht, ct). */
 const VOICES = [
   ['', 'kiếm tu'],
   ['_hp', 'hộ pháp'],
   ['_ds', 'đan sư'],
   ['_dt', 'đao tu'],
   ['_lt', 'lôi tu'],
+  ['_ht', 'hồn tu'],
+  ['_ct', 'cổ tu'],
 ];
 for (const [skill, base] of [
   ['Đòn thường 1', 'phi_kiem'],

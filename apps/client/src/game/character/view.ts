@@ -68,7 +68,7 @@ export interface CharacterView {
   /** Di chuyển/lướt hủy phần thu về của động tác chiêu đang phát, nếu đã qua mốc hủy trong dữ liệu chiêu (K-4). */
   cancelRecovery?(kind: 'move' | 'dash'): boolean;
   /** Lướt hiển thị: hình bắt đầu ở (fromX, fromZ) thế giới rồi trượt về vị trí thật trong `dur` giây (K-4). */
-  dashFrom?(fromX: number, fromZ: number, dur: number): void;
+  dashFrom?(fromX: number, fromZ: number, dur: number, strike?: boolean): void;
   /** Bị hất ngã rồi đứng dậy (K-4). */
   knockdown?(): void;
   /** Đồng hồ animation chiêu đang phát (K-6): bùng nổ VFX hẹn theo đồng hồ này để khớp hitAt kể cả khi hit-stop. */

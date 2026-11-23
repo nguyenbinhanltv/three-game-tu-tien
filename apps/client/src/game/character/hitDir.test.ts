@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FLINCH_BY_TIER, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
+import { FLINCH_BY_TIER, dashClipOf, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
 
 // Người bị đánh nhìn về +z (yaw 0).
 describe('trúng đòn theo hướng (C3b)', () => {
@@ -46,5 +46,14 @@ describe('ngã chết ra xa người hạ gục', () => {
       expect(d).toBeLessThanOrEqual(Math.PI + 1e-9);
     }
     expect(deathYawOffset(1, 0, 0)).toBe(0);
+  });
+});
+
+describe('clip lướt theo loại chiêu (C3e)', () => {
+  it('lướt có sát thương dùng Sword_Dash khi có clip; lướt thuần, hoặc thiếu clip, thì lăn', () => {
+    const all = () => true;
+    expect(dashClipOf(true, all)).toBe('Sword_Dash');
+    expect(dashClipOf(false, all)).toBe('Roll');
+    expect(dashClipOf(true, (n) => n === 'Roll')).toBe('Roll');
   });
 });

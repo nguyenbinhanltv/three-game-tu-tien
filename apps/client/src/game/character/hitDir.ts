@@ -42,3 +42,8 @@ export function deathYawOffset(yaw: number, dx: number, dz: number): number {
 export const DEATH_DIR_TTL = 1.5;
 /** Thời gian (giây) xoay thân sang hướng ngã. */
 export const DEATH_TURN_S = 0.14;
+
+/** Clip lướt (C3e): chiêu lướt có sát thương (húc, lao xuyên) dùng `Sword_Dash` của UAL (vung đao khi lao); lướt di chuyển/né thuần dùng `Roll`. Thiếu clip thì lăn. */
+export function dashClipOf(strike: boolean, has: (clip: string) => boolean): 'Sword_Dash' | 'Roll' {
+  return strike && has('Sword_Dash') ? 'Sword_Dash' : 'Roll';
+}
