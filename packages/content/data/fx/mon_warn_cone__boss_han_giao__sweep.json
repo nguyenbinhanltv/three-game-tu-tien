@@ -1,0 +1,44 @@
+{
+ "skill": "mon_warn_cone__boss_han_giao__sweep",
+ "palette": "mon_boss_thuy",
+ "events": [
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 22,
+   "speed": 2.2,
+   "spread": 0.5,
+   "life": 1.2,
+   "size": 0.1,
+   "at": "area",
+   "tone": "accent",
+   "tier": 1,
+   "inward": true,
+   "offset": [
+    0,
+    0.3,
+    4
+   ]
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.4,
+   "n": 18,
+   "speed": 2.2,
+   "spread": 0.5,
+   "life": 1.0,
+   "size": 0.1,
+   "at": "area",
+   "tone": "rim",
+   "tier": 1,
+   "inward": true,
+   "offset": [
+    0,
+    0.3,
+    7
+   ]
+  }
+ ]
+}

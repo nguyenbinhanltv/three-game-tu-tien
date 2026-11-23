@@ -270,6 +270,8 @@ export interface FxDecalEvent extends FxBase {
   yaw?: number;
   /** Hiệu ứng của quái (V5): `dur` lấy bằng thời gian báo trước `delay` của vạch. */
   untilDelay?: boolean;
+  /** Vẽ ĐÈ lên mọi vật (không thử độ sâu): vạch báo của boss phải đọc được khi thân boss dài nằm đè lên vùng (V-P9). Chỉ dùng cho cảnh báo của địch. */
+  top?: boolean;
   /** Nâng decal thêm (m, 0–0,5; mặc định 0) cho chỗ nền có ô đá nhô cao hơn mặt phẳng decal (sân lát đá tông môn). */
   lift?: number;
 }

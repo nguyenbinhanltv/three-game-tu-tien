@@ -147,6 +147,12 @@ import fx_mon_strike from '../data/fx/mon_strike.json';
 import fx_mon_warn from '../data/fx/mon_warn.json';
 import fx_mon_warn_cone from '../data/fx/mon_warn_cone.json';
 import fx_mon_warn_line from '../data/fx/mon_warn_line.json';
+import fx_mon_warn__boss_han_giao__slam from '../data/fx/mon_warn__boss_han_giao__slam.json';
+import fx_mon_boom_circle__boss_han_giao__slam from '../data/fx/mon_boom_circle__boss_han_giao__slam.json';
+import fx_mon_warn__boss_han_giao__chant from '../data/fx/mon_warn__boss_han_giao__chant.json';
+import fx_mon_boom_circle__boss_han_giao__chant from '../data/fx/mon_boom_circle__boss_han_giao__chant.json';
+import fx_mon_warn_cone__boss_han_giao__sweep from '../data/fx/mon_warn_cone__boss_han_giao__sweep.json';
+import fx_mon_boom_cone__boss_han_giao__sweep from '../data/fx/mon_boom_cone__boss_han_giao__sweep.json';
 import fx_fx_blink from '../data/fx/fx_blink.json';
 import fx_fx_dotpha_kd from '../data/fx/fx_dotpha_kd.json';
 import fx_fx_dotpha_hn from '../data/fx/fx_dotpha_hn.json';
@@ -894,6 +900,12 @@ export const MON_FX_TIMELINES = [
   fx_mon_warn_cone,
   fx_mon_warn_line,
   fx_mon_warn,
+  fx_mon_warn__boss_han_giao__slam,
+  fx_mon_boom_circle__boss_han_giao__slam,
+  fx_mon_warn__boss_han_giao__chant,
+  fx_mon_boom_circle__boss_han_giao__chant,
+  fx_mon_warn_cone__boss_han_giao__sweep,
+  fx_mon_boom_cone__boss_han_giao__sweep,
 ] as unknown as FxTimeline[];
 export const MON_FX = new Map(MON_FX_TIMELINES.map((f) => [f.skill, f]));
 /**

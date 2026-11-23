@@ -91,6 +91,14 @@ export class MonFx {
     return this.tl(key);
   }
 
+  /** Chiêu này có timeline vạch báo RIÊNG (không phải timeline chung theo hệ)? Khi có, `room.ts` bỏ pháp trận cũ (V-P9). */
+  ownWarn(h: Pick<HazardMsg, 'r' | 'delay' | 'sh'>, src: MonLike | undefined): boolean {
+    if (!src || !(h.r > 0) || !(h.delay > 0)) return false;
+    const key = !h.sh ? 'mon_warn' : h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone';
+    const mv = moveOfHazard(MONSTER.get(src.s.t), h);
+    return !!((mv ? this.tl(`${key}__${src.s.t}__${mv}`) : undefined) ?? this.tl(`${key}__${src.s.t}`));
+  }
+
   private note(key: string, id: string): void {
     if (!import.meta.env.DEV) return;
     this.log.push({ key, id, at: performance.now() });

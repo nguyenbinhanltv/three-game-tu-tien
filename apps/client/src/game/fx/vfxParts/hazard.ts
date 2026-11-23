@@ -84,6 +84,8 @@ export function hazard(
   hot = false,
   quiet?: () => boolean,
   danger: 0 | 1 | 2 = boss ? 2 : 1,
+  /** Chiêu có timeline vạch báo riêng (V-P9, `MonFx.ownWarn`): không vẽ pháp trận cũ, chỉ giữ nhịp nổ + hình nổ. */
+  noRing = false,
 ): void {
   const y = groundAt(x, z);
   const style = hazardStyleDanger(kind, danger);
@@ -98,18 +100,19 @@ export function hazard(
   const mine = { x, z, r };
   const stack = hazardStack(v.hazards, mine);
   v.hazards.push(mine);
-  const m = v.sigil(SIGIL_CIRCLE, x, z, 0, r, 0, color, Math.min(top, y + 1.2) + 0.22);
-  m.fxColor.multiplyScalar((kind !== 'lightning' ? style.gain : 1) * stack.dim);
+  const m = noRing ? null : v.sigil(SIGIL_CIRCLE, x, z, 0, r, 0, color, Math.min(top, y + 1.2) + 0.22);
+  m?.fxColor.multiplyScalar((kind !== 'lightning' ? style.gain : 1) * stack.dim);
   v.add(
     delay,
     (k) => {
+      if (!m) return;
       m.fxA.x = k;
       m.fxA.z = hazardFlash(k, delay) * stack.dim;
       m.fxOpacity = Math.min(1, k * 10) * ISO_HAZARD_OPACITY;
     },
     () => {
       v.hazards.splice(v.hazards.indexOf(mine), 1);
-      v.drop(m);
+      if (m) v.drop(m);
       // `quiet` (V5): gọi lúc nổ; trả true khi timeline `mon_boom_*` (game/monFx.ts) thật sự đã vẽ nổ thì không vẽ hình cũ chồng lên.
       // Vùng chồng lên nhau (`stack.fx` false) không vẽ nổ như cũ (tránh cộng sáng thành mảng trắng); vùng đầu tiên mới dùng timeline mới.
       if (!stack.fx) return;

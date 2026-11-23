@@ -798,7 +798,7 @@ export class FxRunner {
           : ev.tex === 'strike'
             ? DECAL_STRIKE
             : DECAL_SCORCH;
-    const m = this.v.fx(QUAD_XZ, toneOf(c.pal, ev.tone), ev.alpha ?? 0.95, 'decal');
+    const m = this.v.fx(QUAD_XZ, toneOf(c.pal, ev.tone), ev.alpha ?? 0.95, ev.top ? 'decalTop' : 'decal');
     _col.setHex(c.pal.rim);
     m.fxB.set(_col.r, _col.g, _col.b, 0);
     m.fxA.z = (c.seed + idx * 3.3) % 40;
