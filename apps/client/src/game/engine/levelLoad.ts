@@ -1010,7 +1010,7 @@ interface DungeonModelOpts {
   /** Tên lưới không đổ bóng (vách/trần hang chặn nắng của đèn trời: nếu đổ bóng thì cả sàn tối đen). */
   noShadow?: RegExp;
   /** Thay vật liệu glTF theo tên (trả null = giữ nguyên). Vật liệu mới được giải phóng cùng asset. */
-  material?: (name: string) => THREE.Material | null;
+  material?: (name: string, meshName: string) => THREE.Material | null;
   /** Bọc mọi vật liệu glTF còn lại (vd. làm mờ khi che người ở camera chéo). */
   wrap?: (m: THREE.MeshStandardNodeMaterial) => THREE.MeshStandardNodeMaterial;
 }
@@ -1031,17 +1031,19 @@ async function loadDungeonModel(eng: Game, shadows: boolean, o: DungeonModelOpts
     eng.ktAsset = { handle, mats: adoptGltfMaterials(root, o.wrap) };
     root.position.set(o.origin.x, o.origin.y, o.origin.z);
     if (o.material) {
-      const made = new Map<THREE.Material, THREE.Material>();
+      const made = new Map<string, THREE.Material>();
       root.traverse((n) => {
         const m = n as THREE.Mesh;
         if (!m.isMesh) return;
         const src = m.material as THREE.Material;
-        let rep = made.get(src);
+        const meshName = m.name || m.parent?.name || '';
+        const key = `${src.uuid}|${meshName.replace(/_\d+$/, '')}`;
+        let rep = made.get(key);
         if (!rep) {
-          const r = o.material!(src.name);
+          const r = o.material!(src.name, meshName);
           if (!r) return;
           rep = r;
-          made.set(src, r);
+          made.set(key, r);
           eng.ktAsset!.mats.push(r);
         }
         m.material = rep;

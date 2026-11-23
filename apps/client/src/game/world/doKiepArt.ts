@@ -84,7 +84,7 @@ function dkKeepOut(x: number, z: number, minR: number): boolean {
 /** Nhiễu dither khung hình (interleaved gradient) cho maskNode: bằng cách của `occlusion.ts`. */
 const ignDither = () => fract(float(52.9829189).mul(fract(dot(screenCoordinate.xy, vec2(0.06711056, 0.00583715)))));
 
-export function dkMaterialFor(name: string): THREE.Material | null {
+export function dkMaterialFor(name: string, meshName = ''): THREE.Material | null {
   if (name.endsWith('_rune')) {
     const m = withSightFade(new THREE.MeshStandardNodeMaterial({ roughness: 0.55, metalness: 0.2, name }));
     const n = texture(getCloudNoise(), positionWorld.xz.mul(0.05).add(time.mul(0.02))).g;
@@ -113,16 +113,15 @@ export function dkMaterialFor(name: string): THREE.Material | null {
     m.colorNode = mix(base, base.mul(0.35), soot.mul(0.7));
     return m;
   }
-  if (name.endsWith('_char')) {
-    // Vết cháy sét/muội: tấm phẳng sát đất (đĩa, tia cháy, mảng muội của lát đá) từ trên cao thành hình chữ nhật đen đặc. Không đo theo bán kính của
-    // mesh (gốc là gốc cả đài, không phải tâm từng vết): thay bằng nhiễu theo toạ độ thế giới + dither (maskNode, không cần pass trong suốt),
-    // áp cho mọi mảnh mỏng sát đất kể cả mép bên 3 cm. Phần có khối (gốc cây cháy, tảng) giữ đặc.
+  if (name.endsWith('_char') && /scorch|paving/.test(meshName)) {
+    // Vết cháy sét/muội PHẲNG (đĩa + tia của `dk_scorch*`, mảng muội của `dk_paving`): từ trên cao thành hình chữ nhật đen đặc. Nhận theo tên object
+    // (cùng vật liệu `_char` với gốc cây/tảng cháy nên không tách được theo tên vật liệu hay độ cao: mảng muội của đài nằm ở y 0,43). Nhiễu theo toạ độ
+    // thế giới + dither (maskNode, không cần pass trong suốt), không phụ thuộc gốc mesh. Gốc cây/tảng giữ đặc (vật liệu GLB gốc).
     const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.95, metalness: 0, name });
-    const thin = step(positionLocal.y, 0.12);
     const n = texture(getCloudNoise(), positionWorld.xz.mul(0.35)).g;
     const cover = float(0.3).add(smoothstep(0.35, 0.75, n).mul(0.4));
     m.colorNode = vertexColor().mul(0.8);
-    m.maskNode = mix(float(1), step(ignDither(), cover), thin).greaterThan(0.5);
+    m.maskNode = step(ignDither(), cover).greaterThan(0.5);
     return m;
   }
   return null;
