@@ -81,6 +81,10 @@ Cây cao không thuộc hệ cây (`tree`) vẫn mờ được: cờ `sight` tro
 
 Cột/bia/trụ đá cao cũng bật `sight` (`prop_mach_tinh_tru`, `prop_tru_nham_do`, `prop_tru_da_khac_van`, `prop_dai_tinh_bai`, `prop_tuong_da_vo_si`, `cot_da_do`, `cot_tran`) để mờ khi che người/mục tiêu ở camera chéo. Lưu ý `sight` thay thế `sway`/`crystal` (cùng chọn một hàm bọc material), nên không đặt chung với hai cờ đó.
 
+## Vật thể vỡ (Chân Cảnh S1c)
+
+- `apps/client/src/game/world/breakables.ts`: vò, bia, cọc vỡ khi chiêu CỦA MÌNH cấp `vừa` trở lên (xem `docs/handbook/gameplay-systems.md`, mục cấp đòn) trúng quái hoặc ra đòn gần vật. Chỉ là hình ở client: server không biết, không va chạm, không rơi đồ. Thêm vật mới: một `BreakableSpec` vào `BREAKABLES_BY_LEVEL` (hiện có `van_lam`, Lạc Kiếm Tông). `?brk=0` tắt. Ảnh: `pnpm shots breakables --out <thư mục> [--view 720p|1080p] [--tag truoc|sau] [--query brk=0]`.
+
 ## Hero light và tỉ lệ nhân vật (Chân Cảnh C1/C2)
 
 - `apps/client/src/game/character/hero.ts` + `rimLight` trong `render/materials/world.ts`: nhân vật của MÌNH và đồng đội (theo `PartyMsg`) có (a) đèn phụ bám camera + viền Fresnel theo màu hướng tu (`paths.json` → `palette.rim`), ghi theo từng mesh bằng `userData.hero` (uniform `onObjectUpdate`, không đèn thật, không thêm bóng), (b) viền tối mảnh khi bị vật che: bản sao thân (SkinnedMesh dùng chung xương) vẽ chỉ ở điểm sau vật khác, tối đa `HERO_GHOST_MAX` (mỗi bản sao một draw call), (c) vòng chân tương phản (một InstancedMesh, 1 draw call).

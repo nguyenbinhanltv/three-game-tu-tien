@@ -5,6 +5,7 @@ import { heightAt, levelAssets, levelId, levelTerrain } from '../../base/levelCt
 import { LEVELS, MONSTER } from '@dtl/content';
 import { get } from '../../ui/store';
 import { Butterflies, BUTTERFLY_LEVELS } from '../world/butterflies';
+import { Breakables, BREAKABLES_BY_LEVEL } from '../world/breakables';
 import { Grass } from '../world/grass';
 import { applyAtmosphere, createLanternHalos, setHeightFog, tuneAtmosphere } from '../../render/atmosphere';
 import { buildRiftVeil } from '../../render/riftVeil';
@@ -26,6 +27,7 @@ import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
 import { DoanMachArt } from '../world/doanMachArt';
 import { KiemTrungArt, ktMaterialFor } from '../world/kiemTrungArt';
+import { bakeDungeonCells, planDungeonBake, type DungeonBakeInput } from '../world/dungeonBake';
 import { PhucMachArt, PM_DOME, PM_OCULI, pmMaterialFor } from '../world/phucMachArt';
 import { buildMoonDomeShell, KN_DOME, knMaterialFor, KinhNguyetArt } from '../world/kinhNguyetArt';
 import { buildVaultDome, ThanTangArt, TT_DOME, ttMaterialFor } from '../world/thanTangArt';
@@ -620,6 +622,11 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.butterflies.setQuality(get().quality);
     eng.scene.add(eng.butterflies.mesh);
   }
+  const brk = BREAKABLES_BY_LEVEL[id];
+  if (brk && FLAGS.breakables) {
+    eng.breakables = new Breakables(brk);
+    eng.scene.add(eng.breakables.group);
+  }
 }
 
 /** Gắn bộ texture mặt đất (nếu đã nạp) vào địa hình hiện tại theo khai báo của level. */
@@ -727,6 +734,7 @@ export function unloadLevel(eng: Game): void {
     drop(eng.ktAsset.handle.scene);
     eng.ktAsset.handle.release();
     for (const m of eng.ktAsset.mats) m.dispose();
+    for (const g of eng.ktAsset.geos) g.dispose();
     eng.ktAsset = null;
   }
   if (eng.thienKhuyetSky) {
@@ -773,6 +781,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.godRays.mesh);
     eng.godRays.dispose();
     eng.godRays = null;
+  }
+  if (eng.breakables) {
+    drop(eng.breakables.group);
+    eng.breakables.dispose();
+    eng.breakables = null;
   }
   if (eng.butterflies) {
     drop(eng.butterflies.mesh);
@@ -1028,7 +1041,7 @@ async function loadDungeonModel(eng: Game, shadows: boolean, o: DungeonModelOpts
       return;
     }
     const root = handle.scene;
-    eng.ktAsset = { handle, mats: adoptGltfMaterials(root, o.wrap) };
+    eng.ktAsset = { handle, mats: adoptGltfMaterials(root, o.wrap), geos: [] };
     root.position.set(o.origin.x, o.origin.y, o.origin.z);
     if (o.material) {
       const made = new Map<string, THREE.Material>();
@@ -1075,7 +1088,26 @@ async function loadDungeonModel(eng: Game, shadows: boolean, o: DungeonModelOpts
       groups.set(key, g);
     });
     root.clear();
-    for (const { mesh, mats } of groups.values()) {
+    const bake = !FLAGS.noBake && planDungeonBake([...groups.values()].map((g) => ({ geo: g.mesh.geometry, count: g.mats.length })));
+    const baked: DungeonBakeInput[] = [];
+    const rest: { mesh: THREE.Mesh; mats: THREE.Matrix4[] }[] = [];
+    for (const g of groups.values()) {
+      if (bake) baked.push({ mesh: g.mesh, mats: g.mats, cast: shadows && !o.noShadow?.test(g.mesh.name) });
+      else rest.push(g);
+    }
+    if (bake) {
+      // O2: vật trang trí bí cảnh đứng yên → nướng ma trận vào đỉnh, gộp theo (vật liệu, đổ bóng, ô 32 m). Một InstancedMesh cho mỗi lưới × vật liệu
+      // (hàng trăm) thành vài chục lưới theo ô; frustumCulled bật nên ô ngoài khung nhìn (và ngoài khung bóng) không tốn lượt vẽ.
+      for (const b of bakeDungeonCells(baked)) {
+        const mesh = new THREE.Mesh(b.geometry, b.material);
+        mesh.castShadow = b.cast;
+        mesh.receiveShadow = shadows;
+        mesh.name = `${o.prefix}-${b.name}`;
+        root.add(mesh);
+        eng.ktAsset!.geos.push(b.geometry);
+      }
+    }
+    for (const { mesh, mats } of rest) {
       const im = new THREE.InstancedMesh(mesh.geometry, mesh.material, mats.length);
       mats.forEach((mt, i) => im.setMatrixAt(i, mt));
       im.instanceMatrix.needsUpdate = true;

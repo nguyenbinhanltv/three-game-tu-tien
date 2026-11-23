@@ -68,6 +68,8 @@ interface Flags {
   headLift: number;
   /** `?renderer=webgl2|webgpu|auto` (xem `rendererChoice`). */
   renderer: string | null;
+  /** `?nobake=1` giữ InstancedMesh cho vật trang trí bí cảnh (không nướng/gộp theo ô, O2): đối chứng trước/sau. */
+  noBake: boolean;
   /** `?gputime=1` bật timestamp query (chỉ công cụ đo). */
   gpuTime: boolean;
   /** `?slowmo=<0.05..1>` chậm thời gian hiển thị (chỉ dev). */
@@ -92,6 +94,8 @@ interface Flags {
   butterflies: boolean;
   /** `?hero=0` tắt viền nhân vật (hero light, C1). */
   hero: boolean;
+  /** `?brk=0` tắt vật thể vỡ (vò, bia, cọc). */
+  breakables: boolean;
   /** `?isoyaw=<độ>` ghi đè hướng nhìn cố định của camera chéo (chỉ để chọn hướng đẹp nhất cho từng bản đồ). */
   isoYaw: number | null;
   /** `?isofx=0` tắt nén hình VFX đứng cao ở camera chéo (so ảnh trước/sau, Thiên Nhãn P4-1). */
@@ -135,6 +139,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   headlift: { scope: 'test', doc: 'góc ngửa đầu bù clip Idle cho model giữ gốc (rad, mặc định 0,23)' },
   cloth: { scope: 'test', doc: '=1 vải mô phỏng Thiên Y (model v3 có vải cũ tách riêng)' },
   renderer: { scope: 'diag', doc: 'webgl2|webgpu|auto' },
+  nobake: { scope: 'diag', doc: '=1 không gộp vật trang trí bí cảnh (đối chứng O2)' },
   gputime: { scope: 'diag', doc: '=1 timestamp query (công cụ đo)' },
   slowmo: { scope: 'diag', doc: 'chậm hiển thị (dev)' },
   quiet: { scope: 'diag', doc: '=1 bỏ nháy trúng đòn (dev)' },
@@ -147,6 +152,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   tc: { scope: 'diag', doc: '=0 ẩn bộ prop Thiên Công Khai Vật (PROP-1, so ảnh/đo)' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
   hero: { scope: 'diag', doc: '=0 tắt viền nhân vật (hero light)' },
+  brk: { scope: 'diag', doc: '=0 tắt vật thể vỡ (vò, bia, cọc)' },
   god: { scope: 'test', doc: 'bất tử (server kiểm lại, xem testParams.ts)' },
   at: { scope: 'test', doc: 'vào ở điểm đặt tên hoặc x,z (testParams.ts)' },
   realm: { scope: 'test', doc: 'đặt cảnh giới lúc vào (testParams.ts)' },
@@ -209,6 +215,7 @@ export function readFlags(search: string): Flags {
     v3Off: (q.get('v3off') ?? '').split(',').filter(Boolean),
     headLift: Number.isFinite(Number(q.get('headlift') ?? NaN)) && q.get('headlift') !== null ? Number(q.get('headlift')) : 0.23,
     renderer: q.get('renderer'),
+    noBake: q.get('nobake') === '1',
     gpuTime: q.get('gputime') === '1',
     slowmo: Math.min(1, Math.max(0.05, Number(q.get('slowmo')) || 1)),
     quiet: q.get('quiet') === '1',
@@ -221,6 +228,7 @@ export function readFlags(search: string): Flags {
     tcProps: !off(q.get('tc')),
     butterflies: !off(q.get('bf')),
     hero: !off(q.get('hero')),
+    breakables: !off(q.get('brk')),
   };
 }
 

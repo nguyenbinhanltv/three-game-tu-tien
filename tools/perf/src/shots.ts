@@ -17,6 +17,7 @@ import collwalk from './scenarios/collwalk';
 import divuc from './scenarios/divuc';
 import herocheck from './scenarios/herocheck';
 import herolight from './scenarios/herolight';
+import breakables from './scenarios/breakables';
 import hitfeel from './scenarios/hitfeel';
 import bossfaces from './scenarios/bossfaces';
 import dungeon from './scenarios/dungeon';
@@ -161,6 +162,7 @@ const SCENARIOS: Scenario[] = [
   divuc,
   herocheck,
   herolight,
+  breakables,
   hitfeel,
   flyover,
   xichkhe,

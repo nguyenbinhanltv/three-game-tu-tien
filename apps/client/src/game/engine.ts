@@ -55,6 +55,7 @@ import { EntityManager, type PState, type WorldView } from './entities/entities'
 import { Environment } from './world/env';
 import { AmbientParticles } from './world/ambient';
 import { Butterflies } from './world/butterflies';
+import { Breakables } from './world/breakables';
 import { Grass, GRASS_PUSH_SLOTS, type Pusher } from './world/grass';
 import { setHeightFog } from '../render/atmosphere';
 import { type RiftVeil } from '../render/riftVeil';
@@ -265,7 +266,7 @@ export class Game {
   /** GLB kiến trúc Thiên Khuyết (MAP-4). */
   tkAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
   /** GLB cảnh Kiếm Trủng (cự kiếm, vành núi đá, mộ, bia, xương…), DUN-1. */
-  ktAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
+  ktAsset: { handle: AssetHandle; mats: THREE.Material[]; geos: THREE.BufferGeometry[] } | null = null;
   /** Vân Hải (MAP-3): thuyền tiên, cá kình mây, cầu vòng linh khí, hải đăng. */
   vanHaiWow: VanHaiWow | null = null;
   vanHaiGarden: VanHaiGarden | null = null;
@@ -287,6 +288,8 @@ export class Game {
   butterflies: Butterflies | null = null;
   /** Hero light (C1): tổ đội đã dựng thành tập sid (so tham chiếu để biết khi nào đổi). */
   heroPartyRef: unknown = undefined;
+  /** Vật thể vỡ của level (S1c), null nếu level không có. */
+  breakables: Breakables | null = null;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */
   ambient!: AmbientParticles;
   pushers: Pusher[] = Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
@@ -926,7 +929,8 @@ export class Game {
       this.minimap = renderMinimap(320);
       this.terrain.update(this.cur.x, this.cur.z, 8);
       this.vfx.rewarm();
-      if (!isWebGPU(this.renderer)) await precompile(this);
+      // Cả WebGPU: không biên dịch trước thì lần đầu thấy vật mới (giữa phòng cầu kieu_7) render đứng ~1,7 s (perf:iso, longFrames).
+      await precompile(this);
       return true;
     } finally {
       if (seq === this.levelSeq && get().phase === 'loading') set({ phase: prevPhase === 'loading' ? 'game' : prevPhase });
@@ -1506,6 +1510,7 @@ export class Game {
     this.tkAsset = null;
     this.ktAsset?.handle.release();
     for (const m of this.ktAsset?.mats ?? []) m.dispose();
+    for (const g of this.ktAsset?.geos ?? []) g.dispose();
     this.ktAsset = null;
     for (const m of this.sectAsset?.mats ?? []) m.dispose();
     this.sectAsset = null;
