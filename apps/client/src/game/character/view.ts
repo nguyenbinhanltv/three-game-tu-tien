@@ -68,6 +68,8 @@ export interface CharacterView {
   /** Di chuyển/lướt hủy phần thu về của động tác chiêu đang phát, nếu đã qua mốc hủy trong dữ liệu chiêu (K-4). */
   cancelRecovery?(kind: 'move' | 'dash'): boolean;
   /** Lướt hiển thị: hình bắt đầu ở (fromX, fromZ) thế giới rồi trượt về vị trí thật trong `dur` giây (K-4). */
+  /** Vị trí ngang thật của thân đang vẽ (đã cộng độ lệch lướt/trượt), để vòng chân luôn nằm dưới chân. Ghi vào `out` (x, z). */
+  footXZ?(out: { x: number; z: number }): void;
   dashFrom?(fromX: number, fromZ: number, dur: number, strike?: boolean): void;
   /** Bị hất ngã rồi đứng dậy (K-4). */
   knockdown?(): void;

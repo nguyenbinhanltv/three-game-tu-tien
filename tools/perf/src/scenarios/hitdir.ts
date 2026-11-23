@@ -44,7 +44,7 @@ export default {
       query: { chr: 'v3', cam: 'iso', ...(mode === 'stills' ? { slowmo: slow } : {}) },
       hide: 'hud',
       warnings: /models|chr_v3|clip/,
-      ...(mode === 'video' ? { video: videoDir } : {}),
+      ...(mode === 'video' || mode === 'dash' ? { video: videoDir } : {}),
     });
     await gm(page, 'level 15', 1500);
     await gm(page, 'god on', 1200);
@@ -67,11 +67,26 @@ export default {
           var g = window.__game; var m = g.ents.players.get(g.sid).model; var y = m.root.rotation.y;
           m.dashFrom(g.cur.x - Math.sin(y) * 3, g.cur.z - Math.cos(y) * 3, 0.35, ${strike});
         })()`);
-        for (const ms of [100, 220]) {
-          await sleep(ms - (ms === 220 ? 100 : 0));
+        let prev = 0;
+        for (const ms of [40, 100, 160, 220]) {
+          await sleep(ms - prev);
+          prev = ms;
           await snap(page, r.out, `${tag}-luot-${name}-plus${ms}ms.png`, { wait: 0 });
         }
       }
+      // Video: lướt tấn công lặp 4 lần, vòng chân phải luôn dưới chân.
+      for (let i = 0; i < 4; i++) {
+        await sleep(1400);
+        await page.evaluate(`(() => {
+          var g = window.__game; var m = g.ents.players.get(g.sid).model; var y = m.root.rotation.y;
+          m.dashFrom(g.cur.x - Math.sin(y) * 3, g.cur.z - Math.cos(y) * 3, 0.35, true);
+        })()`);
+      }
+      await sleep(1500);
+      const vd = page.video();
+      await ctx.close();
+      if (vd) fs.copyFileSync(await vd.path(), path.join(r.out, `${tag}-luot.webm`));
+      fs.rmSync(videoDir, { recursive: true, force: true });
       return;
     }
     const label = (t: string) => page.evaluate(`(${LABEL})(${JSON.stringify(t)})`);

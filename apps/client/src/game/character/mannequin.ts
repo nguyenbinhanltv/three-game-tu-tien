@@ -1229,6 +1229,13 @@ export class MannequinCharacter implements CharacterView {
     this.emitAtk('windup', 0, hitIn);
   }
 
+  footXZ(out: { x: number; z: number }): void {
+    this.inner.updateWorldMatrix(true, false);
+    const e = this.inner.matrixWorld.elements;
+    out.x = e[12]!;
+    out.z = e[14]!;
+  }
+
   /** Cộng độ lệch lướt vào `inner` (hệ nhân vật): nội suy từ điểm xuất phát tới vị trí thật của root, đúng dù gói vị trí mới tới trước hay sau. */
   private applyDash(realDt: number): void {
     const d = this.dashOff;
