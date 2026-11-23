@@ -3,7 +3,10 @@
 // Không đổi luật chơi: chỉ nhân dt trình diễn, phát hình chiêu qua `skillFx.handle` và đo số liệu dựng hình.
 
 import * as THREE from 'three/webgpu';
-import { FX_TIMELINE, SKILL } from '@dtl/content';
+import { FX_TIMELINE, MONSTER, SKILL } from '@dtl/content';
+import type { HazardMsg } from '@dtl/shared';
+import { onHazard } from '../engine/room';
+import { movesOf } from '../fx/monMove';
 import { FxMesh } from '../../render/materials/vfx';
 import { PARTICLES } from '../../render/vfx/particles';
 import type { Game } from '../engine';
@@ -88,6 +91,12 @@ export function measureBudget(g: Game): LabBudget {
 export interface VfxLabApi {
   /** Phát hình chiêu `skill` như thể mình vừa ra: mục tiêu là quái gần nhất còn sống (nếu có). Trả true nếu có mục tiêu. */
   cast(skill: string): boolean;
+  /**
+   * V-P9: phát vạch báo + vùng nổ của chiêu `mv` (slam/chant/sweep/line/...) của quái đứng trong cảnh (spawn bằng GM `spawn`), đi đúng đường S.HAZARD của game
+   * (`onHazard`): vòng báo cũ, `monFx.warn/boom` riêng từng chiêu, rung, âm. Vùng tròn đặt dưới chân người chơi (nện) hoặc dưới chân boss (niệm); nón/chữ nhật từ boss
+   * hướng về người chơi. Trả false nếu không có quái hoặc chiêu.
+   */
+  castMon(mon: string, mv: string): boolean;
   pause(on: boolean): void;
   /** Hệ số thời gian trình diễn (0,25 = chậm gấp 4). */
   scale(x: number): void;
@@ -119,6 +128,47 @@ export function installVfxLab(g: Game): void {
       if (tl?.trigger === 'fx') gg.skillFx.startFromFx(gg.sid, tl);
       else gg.skillFx.handle(gg.sid, { kind: 'windup', skill, combo: -1, index: 0, t: 0, kb: false });
       return !!hit;
+    },
+    castMon(mon, mv) {
+      const gg = g as unknown as {
+        view: { monsters: Map<string, { t: string; x: number; z: number; st: number }> };
+        cur: { x: number; z: number };
+        monFx: { bypass: boolean } | null;
+      };
+      const def = MONSTER.get(mon);
+      const hit = [...gg.view.monsters.entries()].find(([, m]) => m.t === mon && m.st !== 3);
+      const ai = def?.ai as
+        | Record<
+            string,
+            | {
+                r: number;
+                delay: number;
+                mul?: number;
+                kind?: HazardMsg['kind'];
+                shape?: string;
+                w?: number;
+                cone?: { r: number; w: number; delay: number };
+              }
+            | undefined
+          >
+        | undefined;
+      const cfg = ai?.[mv] ?? def?.phases?.map((p) => (p.ai as typeof ai)?.[mv]).find(Boolean);
+      if (!def || !hit || !cfg || !gg.monFx) return false;
+      gg.monFx.bypass = true; // phòng thử: FX do `onHazard` phát, bỏ chặn của `lab`
+      const [id, b] = hit;
+      const yaw = Math.atan2(gg.cur.x - b.x, gg.cur.z - b.z);
+      const kind = cfg.kind ?? 'frost';
+      const known = movesOf(def).some((m) => m.move === mv);
+      if (!known) return false;
+      const base: Partial<HazardMsg> = { delay: cfg.delay, kind, src: id, r: cfg.r };
+      let m: HazardMsg;
+      if (mv === 'sweep' || mv === 'line' || mv === 'charge') {
+        const rect = cfg.shape === 'rect' || mv !== 'sweep';
+        m = { ...base, x: b.x, z: b.z, yaw, sh: rect ? 'rect' : 'cone', w: cfg.w } as HazardMsg;
+      } else if (mv === 'chant') m = { ...base, x: b.x, z: b.z } as HazardMsg;
+      else m = { ...base, x: gg.cur.x, z: gg.cur.z } as HazardMsg;
+      onHazard(g, m);
+      return true;
     },
     pause(on) {
       state.paused = on;
