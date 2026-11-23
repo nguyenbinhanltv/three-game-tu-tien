@@ -347,17 +347,40 @@
   animation: none;
 }
 
-/* Đăng nhập / tạo nhân vật trên màn thấp (Chân Cảnh, lỗi "không thấy nút vào game"): khung cuộn được, thanh hành động dính đáy,
-   ảnh ngoại hình và hàng "Chưa ngộ được" thấp hơn. Vùng cao khung được đặt ở `.ts-card` (styles.css). */
-#root .ts-card.u2-card .login-actions {
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  margin: 8px -28px 0;
-  padding: 8px 28px 12px;
-  background: linear-gradient(180deg, transparent, var(--u-thanh-0) 14px);
+/* Đăng nhập / tạo nhân vật trên màn thấp (lỗi "không thấy nút vào game"): thẻ là cột flex, nội dung cuộn trong `.login-scroll`,
+   thanh hành động `.login-actions` nằm NGOÀI vùng cuộn (nền đặc, viền + chuyển mờ phía trên) nên không đè lên gì. Cao tối đa ở `.ts-card`. */
+#root .ts-card.login-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
 }
-#root .ts-card.u2-card .login-actions .login-error {
+#root .ts-card.login-card .login-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-bottom: 8px;
+}
+#root .ts-card.login-card .login-actions {
+  position: relative;
+  flex: none;
+  margin: 0 -28px;
+  padding: 10px 28px 12px;
+  background: var(--u-thanh-0);
+  border-top: 1px solid var(--u-gold-line);
+}
+#root .ts-card.login-card .login-actions::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -15px;
+  height: 14px;
+  background: linear-gradient(180deg, transparent, var(--u-thanh-0));
+  pointer-events: none;
+}
+#root .ts-card.login-card .login-actions .login-error {
   margin: 0 0 6px;
 }
 @media (max-height: 1000px) {
@@ -401,5 +424,9 @@
 @media (max-height: 640px) {
   :root:root .ngj-card .look-gender .look-face {
     display: none;
+  }
+  #root .ts-card.login-card .login-form {
+    margin-top: 4px;
+    gap: 4px;
   }
 }
