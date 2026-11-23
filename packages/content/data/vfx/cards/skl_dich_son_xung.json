@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_dich_son_xung",
+  "idea": "Dịch Sơn Xung: Vai húc tới mục tiêu trong 8 mét, gây 130% công kích và hất kẻ địch ra xa sáu mét.",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "spike",
+    "arc",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 300,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 10,
+    "particles": 251,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

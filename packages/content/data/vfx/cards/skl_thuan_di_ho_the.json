@@ -1,0 +1,29 @@
+{
+  "skillId": "skl_thuan_di_ho_the",
+  "idea": "Thuấn Di Hộ Thế: Thuấn di tới đồng đội gần nhất và phủ lên người đó lớp khiên bằng 20% khí huyết tối đa. Cần cảnh giới Nguyên Anh.",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "line",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 250,
+    "impactMs": 80,
+    "lingerMs": 400
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 236,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

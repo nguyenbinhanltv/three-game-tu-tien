@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_kim_than_ho_the",
+  "idea": "Kim Thân Hộ Thế: Chiêu tư thế. Dựng lá chắn bằng 12% khí huyết tối đa trong 6 giây.",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 380,
+    "impactMs": 80,
+    "lingerMs": 520
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 4,
+    "particles": 120,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [],
+  "impactFrame": true
+}

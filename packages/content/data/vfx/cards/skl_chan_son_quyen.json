@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_chan_son_quyen",
+  "idea": "Chấn Sơn Quyền: Chiêu tư thế. Quyền nặng gây 200% công kích và làm quái thường choáng nửa giây (tinh anh ngắn hơn, thủ lĩnh miễn).",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 280,
+    "impactMs": 80,
+    "lingerMs": 620
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 4,
+    "particles": 120,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [],
+  "impactFrame": true
+}
