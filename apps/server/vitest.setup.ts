@@ -4,3 +4,8 @@ import { INST_BY_LEVEL } from '@dtl/content';
 import { collisionOf } from '@dtl/shared';
 
 for (const level of Object.keys(INST_BY_LEVEL)) collisionOf(level).clear();
+
+// Chân Cảnh S1: tắt đẩy lùi/khựng mặc định (test đo sát thương lặp hàng trăm lần lên một con quái); `hitreact.test.ts` bật lại.
+import { hitReactCfg } from './src/game/hitreactCfg';
+
+hitReactCfg.enabled = false;

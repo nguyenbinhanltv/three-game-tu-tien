@@ -35,6 +35,10 @@ import {
   type HazardMsg,
   inHazard,
   isHeavyHit,
+  BOSS_STAGGER_GAP_MS,
+  monsterReaction,
+  resolveTier,
+  type HitTier,
   MF_BROKEN,
   MF_CHANT,
   MF_STUN,
@@ -71,6 +75,7 @@ import { ITEM_SYS, ITEMS, itemName, MARK, MONSTER, monsterName, t } from '@dtl/c
 import { lootOf } from '@dtl/content/loot';
 import { MonS } from '../../state';
 import { type Character } from '../character';
+import { hitReactCfg } from '../hitreactCfg';
 import { LEASH, visualSeed } from '../combat/consts';
 import { passiveOf } from '../method';
 import { newRt } from '../monskill';
@@ -105,6 +110,8 @@ const boltCount = (c: MonsterCaster) => Math.max(1, Math.min(5, c.n ?? 1));
 
 /** Phần GameSim mà hệ quái cần. */
 export interface MonsterCtx {
+  /** Đẩy quái ra xa (kiểm địa hình): xem `CombatSystem.pushMonster`. */
+  pushMonster(mon: MonEnt, fx: number, fz: number, dist: number): void;
   readonly bolts: Bolt[];
   readonly camps: CampSystem;
   damagePlayer(p: PlayerEnt, dmg: number, src: string, hv?: boolean, ke?: 1 | -1): void;
@@ -171,7 +178,7 @@ export class MonsterSystem {
    * `mul`: hệ số sát thương hệ (linh căn, dòng phụ); không đổi việc đòn có nặng hay không (theo `power` gốc).
    * Trả true nếu đòn có hiệu lực (nơi gọi dùng để tích tài nguyên riêng theo chiêu).
    */
-  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): boolean {
+  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string, tier?: HitTier): boolean {
     // Ấn trên quái (VS-2c): ấn của chính người đánh cộng theo tầng (Truy hồn), ấn chung (Mất thế) cộng cho mọi người.
     const power0 = basePower * (1 + markAmp(mon.marks, MARK, p.sid, this.c.now));
     // Cộng hưởng vai trò (tổ đội đủ Kiếm tu/Hộ pháp/Đan sư đứng gần nhau): đánh mạnh hơn một chút.
@@ -193,13 +200,16 @@ export class MonsterSystem {
       critRate,
       p.char.stats.critMul,
     );
-    const stunned = this.c.now < mon.stunUntil;
+    // Khựng do đòn (S1) không tính là choáng để nhận thêm sát thương: chuỗi đòn không tự lên điểm cân bằng.
+    const stunned = this.c.now < mon.stunUntil && !(this.c.now < mon.staggerUntil && mon.stunUntil === mon.staggerUntil);
     const heavy = isHeavyHit(power);
     // `hv` (lớp hình) tính cả lúc choáng; phá thế chỉ cộng phần đòn nặng cho chiêu hệ số cao thật.
     // Đòn không có hiệu lực (quái đã chết, đang miễn sát thương, bóng tâm ma của người khác) không cho kiếm ý/sạc.
     const lands = mon.state !== MS_DEAD && !(mon.owner && mon.owner !== p.sid) && this.c.now >= mon.evadeUntil;
     this.damageMonster(mon, vulnerableDamage(dmg, stunned), p, crit, stunned || heavy, heavy, ke);
     if (!lands) return false;
+    // Chân Cảnh S1: đẩy lùi / khựng / ngã theo cấp đòn (dữ liệu `tier` của chiêu, không thì suy từ hệ số gốc) và độ chống của quái.
+    if (mon.state !== MS_DEAD) this.reactMonster(mon, resolveTier(tier, basePower), p.move.x, p.move.z);
     // Bộ Hàn Giao Lân (3 món): đòn bạo kích làm chậm mục tiêu (boss chỉ chậm nhẹ).
     const slowSec = p.char.stats.setFx.critSlowSec;
     if (crit && slowSec > 0 && mon.state !== MS_DEAD)
@@ -207,6 +217,37 @@ export class MonsterSystem {
     // Chiêu tối thượng đang ra không tự nạp lại vòng sạc của chính nó.
     if (!p.mth.lockCharge) this.c.gainCharge(p, chargeFromDealt(dmg, p.char.atk));
     return true;
+  }
+
+  /**
+   * Chân Cảnh S1: phản ứng của quái trước đòn cấp `tier` từ (fromX, fromZ). Bảng và độ chống ở `monsterReaction`.
+   * Khựng/ngã = choáng ngắn `stunUntil` (cắt chiêu đang dở như `stun`), không ghi đè choáng dài hơn đang có. Thủ lĩnh không bị đẩy,
+   * chỉ khựng khi đòn đủ cấp `poise` và cách lần khựng trước `BOSS_STAGGER_GAP_MS` (thanh phá thế vẫn là đường chính để làm boss quỵ).
+   */
+  reactMonster(mon: MonEnt, tier: HitTier, fromX: number, fromZ: number): void {
+    if (!hitReactCfg.enabled || mon.owner || this.c.now < mon.evadeUntil) return;
+    const r = monsterReaction(mon.def, tier);
+    if (r.knockM > 0) this.c.pushMonster(mon, fromX, fromZ, r.knockM * (mon.def.elite ? 2 : 1));
+    const ms = Math.max(r.staggerMs, r.knockdownMs);
+    if (ms <= 0 || mon.state === MS_DEAD) return;
+    if (mon.def.boss) {
+      if (this.c.now < mon.staggerOkAt || this.c.now < mon.stunUntil) return;
+      mon.staggerOkAt = this.c.now + BOSS_STAGGER_GAP_MS;
+    }
+    // Đang niệm chú / ra chiêu có báo trước thì là siêu giáp: khựng không phá (chỉ ngắt chú và thanh phá thế làm việc đó).
+    // Quái thường chỉ có đòn cắn/combo: khựng cắt các đòn đó như choáng ngắn.
+    const busy = mon.chant || mon.cast || mon.mx.act || this.c.now < mon.windUntil || mon.comboAt > 0;
+    if (busy && (mon.def.boss || mon.def.elite || mon.chant)) return;
+    const until = this.c.now + ms;
+    if (until <= mon.stunUntil) return;
+    this.c.monSkills.cancel(mon);
+    mon.cast = null;
+    mon.windUntil = 0;
+    mon.comboAt = 0;
+    mon.comboTarget = '';
+    mon.stunUntil = until;
+    mon.staggerUntil = until;
+    this.setMonFlags(mon, MF_STUN, until);
   }
 
   /** Chiêu ngắt trúng boss: phá chú nếu đúng cửa sổ. Mục tiêu, tầm, GCD, hồi chiêu đã kiểm ở onSkill. */
@@ -666,6 +707,8 @@ export class MonsterSystem {
       phase: 0,
       rules: phaseRules(def, 0),
       posture: 0,
+      staggerUntil: 0,
+      staggerOkAt: 0,
       lastHitAt: 0,
       sweepAt: 0,
       windUntil: 0,
@@ -1031,9 +1074,11 @@ export class MonsterSystem {
     }
     if (m.stunUntil) {
       if (this.c.now < m.stunUntil) return;
+      // Khựng do đòn (S1) hết thì đánh lại ngay; chỉ choáng thật (ngắt chú, phá thế, choáng chiêu) mới chậm nhịp 600 ms.
+      const onlyStagger = m.stunUntil === m.staggerUntil;
       m.stunUntil = 0;
       this.setMonFlags(m, 0, 0);
-      m.attackAt = Math.max(m.attackAt, this.c.now + 600);
+      if (!onlyStagger) m.attackAt = Math.max(m.attackAt, this.c.now + 600);
     }
     if (m.taunt) {
       const tp = this.c.players.get(m.taunt.sid);

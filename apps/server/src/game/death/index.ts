@@ -31,9 +31,11 @@ import { CloneSystem } from '../clone';
 import { DomainSystem } from '../domain';
 import { parties } from '../party';
 
-import { at, COTHAN_METHOD, sanitizeStars, starBonus } from '@dtl/shared';
+import { at, COTHAN_METHOD, monsterHitTier, sanitizeStars, starBonus, type HitTier } from '@dtl/shared';
 /** Phần GameSim mà hệ chết/hồi sinh cần. */
 export interface DeathCtx {
+  /** Chân Cảnh S1: khựng/đẩy lùi người chơi trúng đòn của quái ở (fromX, fromZ). */
+  hitReact(p: PlayerEnt, tier: HitTier, fromX: number, fromZ: number): void;
   abortStrike(p: PlayerEnt, refund: boolean, notify?: boolean): void;
   readonly bossDmgMul: number;
   readonly clone: CloneSystem;
@@ -181,6 +183,11 @@ export class DeathSystem {
     // Tâm cảnh (E3-L): bị Tâm Ma Ảnh của chính mình đánh trúng thì giảm.
     if (p.trib && src && this.c.monById.get(src)?.owner === p.sid) this.c.tribSys.noteHit(p, 'hurt');
     if (c.hp <= 0) this.killPlayer(p);
+    else if (src) {
+      // Chân Cảnh S1: chỉ quái đánh mới khựng/đẩy lùi (đòn từ nguồn khác như hố độc, kiếp, tỉ thí không gọi).
+      const a = this.c.monById.get(src);
+      if (a && a.state !== MS_DEAD) this.c.hitReact(p, monsterHitTier(a.def, hv), a.s.x, a.s.z);
+    }
   }
 
   killPlayer(p: PlayerEnt): void {

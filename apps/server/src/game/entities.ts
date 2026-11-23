@@ -69,6 +69,9 @@ export interface PlayerEnt {
   /** Né (P1 Thiên Nhãn): hết khung bất tử lúc `dodgeUntil`, lần né gần nhất `dodgeAt` (giờ server, ms). Không lưu DB. */
   dodgeUntil: number;
   dodgeAt: number;
+  /** Chân Cảnh S1: khựng vì trúng đòn đến lúc này (giờ server, ms): không đi được. `staggerOkAt`: sau mốc này mới khựng/đẩy lùi tiếp (chống khóa liên tục). Không lưu DB. */
+  staggerUntil: number;
+  staggerOkAt: number;
   meditating: boolean;
   xpAcc: number;
   /** Giây đả tọa tích lũy chưa báo cho nhiệm vụ `meditate` (dẫn khí nhập thể). */
@@ -146,6 +149,9 @@ export interface MonEnt {
   chantAt: number;
   /** Bị ngắt chú hoặc mất thế: choáng tới lúc này, nhận thêm sát thương. */
   stunUntil: number;
+  /** Chân Cảnh S1: khựng/ngã do đòn (không phải choáng nhận thêm sát thương) đến lúc này; `staggerOkAt`: thủ lĩnh khựng lại được sau mốc này. */
+  staggerUntil: number;
+  staggerOkAt: number;
   /** Pha boss (0 = pha đầu) và bộ chiêu/nhịp của pha đó (quái thường luôn ở pha 0). */
   phase: number;
   rules: PhaseRules;

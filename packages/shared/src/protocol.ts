@@ -38,6 +38,8 @@ export const PF_SHIELD = 32;
 export const PF_DUEL = 64;
 /** Nguyên anh đã xuất khiếu (E3-K): đang thám thính hoặc vừa thoát ra khi tử vong; hiển thị bóng anh. */
 export const PF_SOUL = 128;
+/** Đang khựng vì trúng đòn (Chân Cảnh S1): server không cho đi trong lúc này (≤ `PLAYER_STAGGER_MAX_MS`); client dùng để dự đoán đứng yên và vào dáng trúng đòn. */
+export const PF_STAGGER = 256;
 
 // Trạng thái quái (trường `st`).
 export const MS_IDLE = 0;
