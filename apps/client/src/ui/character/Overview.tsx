@@ -13,6 +13,7 @@ import { dropFromDrag } from '../bag/Bag';
 import { useBagDrag } from '../bag/dnd';
 import { itemKindOk } from '../bag/model';
 import { HoaTruc } from './HoaTruc';
+import { readCharView, writeCharView, type CharView } from './charView';
 import { CharPreview3D } from '../CharPreview3D';
 import { pickPortrait } from './portraitPick';
 import './hoatruc.css';
@@ -27,10 +28,10 @@ function EquipBoard() {
   const equip = useUI((s) => s.equip);
   const [sel, setSel] = useState<WearSlot | null>(null);
   // Giữa khung: tranh Họa Trúc (mặc định) hoặc mô hình 3D xoay được; nhớ lựa chọn.
-  const [view, setView] = useState<'art' | '3d'>(() => (localStorage.getItem('dtl.charView') === '3d' ? '3d' : 'art'));
-  const pickView = (v: 'art' | '3d') => {
+  const [view, setView] = useState<CharView>(readCharView);
+  const pickView = (v: CharView) => {
     setView(v);
-    localStorage.setItem('dtl.charView', v);
+    writeCharView(v);
   };
   const drag = useBagDrag((d) => d.drag);
   const g = Game.current;
