@@ -18,6 +18,18 @@ export interface Gate {
 const BLUE = 0x8fdcff;
 const GOLD = 0xffd27a;
 
+/**
+ * Camera chéo (`?cam=iso`, nhìn xuống 52°): đĩa cổng dựng đứng (tròn 5,6 × 7 m) hiện thành elip khổng lồ phủ góc màn hình. Vẽ nằm phẳng trên đất như
+ * cổng phó bản trong hang. Cổng gương Kính Nguyệt (`to === 'kinh_nguyet'`) có mặt gương dựng đứng thiết kế riêng nên giữ nguyên.
+ */
+/** Đĩa cổng phẳng ở iso: độ đục tối đa và hệ số cỡ (so với đĩa phẳng thường, bán kính 4,2 m → ≈ 3 m). */
+export const ISO_GATE_OPACITY = 0.16;
+export const ISO_GATE_SCALE = 0.7;
+
+export function gateFlat(g: Pick<Gate, 'flat' | 'to'>, iso: boolean): boolean {
+  return !!g.flat || (iso && g.to !== 'kinh_nguyet');
+}
+
 /** Cổng cần vẽ (đĩa sáng) ở level. Vân Lam và Kiếm Trủng dùng chung cảnh nên cả hai đĩa luôn hiện (hành vi cũ). */
 export function gatesToDraw(level: string): Gate[] {
   // Kiếm Trủng (DUN-1): chỉ vẽ cổng ra, là vòng trận phẳng mờ trên nền (vòng hoa văn + hạt do `kiemTrungArt.ts` dựng); đĩa vàng đứng cũ bị cháy sáng.

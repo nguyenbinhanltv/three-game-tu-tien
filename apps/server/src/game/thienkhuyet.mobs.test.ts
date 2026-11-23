@@ -153,12 +153,12 @@ describe('quái thường', () => {
 });
 
 describe('tinh anh', () => {
-  it('Thạch Tượng Đại Tướng: giáng kiếm line 14×3 và quét nón 12 m', () => {
+  it('Thạch Tượng Đại Tướng: giáng kiếm line 14×3 và quét nón 7 m (hạ từ 12 m cho camera iso)', () => {
     const a = setup('elite_thach_tuong_dai_tuong', 26, 8);
     a.run(3000);
     const hz = a.hazards();
     expect(hz.some((h) => h.mv === 'line' && h.r === 14 && h.w === 3)).toBe(true);
-    expect(hz.some((h) => h.sh === 'cone' && h.r === 12)).toBe(true);
+    expect(hz.some((h) => h.sh === 'cone' && h.r === 7)).toBe(true);
   });
 
   it('Dạ Minh Lộc Vương: quầng sao r 6 báo 1,3 s, húc lao line 14×2', () => {
