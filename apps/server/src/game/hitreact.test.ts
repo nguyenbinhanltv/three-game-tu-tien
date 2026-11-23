@@ -348,6 +348,6 @@ describe('tin sát thương mang cấp đòn `tr` (S1b)', () => {
     h.call(sim, q, mon, 2.3, 1);
     h.call(sim, q, mon, 4.6, 1);
     const dmg = sent.filter((s) => s.msg.dst === mon.id && typeof s.msg.n === 'number');
-    expect(dmg.map((d) => d.msg.tr)).toEqual([undefined, 2, 3]);
+    expect(dmg.map((d) => d.msg.tr)).toEqual([0, 2, 3]);
   });
 });

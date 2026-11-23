@@ -4,7 +4,7 @@
  * Hàm ở đây thuần (không đụng DOM/âm thanh) để test; server không đọc gì ở đây.
  */
 import { PATHS } from '@dtl/content';
-import { HIT_TIER, tierRank, type HitTier, type MonsterDef } from '@dtl/shared';
+import { HIT_TIER, HIT_TIER_ORDER, tierRank, type HitTier, type MonsterDef } from '@dtl/shared';
 
 /** Ngữ cảnh một đòn trúng, suy từ `DmgMsg` và sự kiện `hit` của chiêu. */
 export interface HitCtx {
@@ -66,6 +66,11 @@ export function hitStopOf(c: HitCtx): StopPair {
 }
 
 /** Mức rung camera (thang của `CameraShake`, quy tắc lấy max) cho đòn của mình trúng / mình trúng đòn; 0 = không rung. */
+/** Cấp đòn từ `DmgMsg.tr`: vắng (`undefined`) = server không phân cấp, trả `undefined` để dùng bảng cũ; `0` là nhẹ đã phân cấp. */
+export function tierFromTr(tr: number | undefined): HitTier | undefined {
+  return tr === undefined ? undefined : HIT_TIER_ORDER[tr];
+}
+
 /** Mét dịch camera ứng với mức rung 1 (khớp `AMP` của `CameraShake`). */
 export const SHAKE_AMP_M = 0.22;
 export const SHAKE_LEVEL = { combo3: 0.12, crit: 0.3, ult: 0.6, victimHeavy: 0.5 } as const;

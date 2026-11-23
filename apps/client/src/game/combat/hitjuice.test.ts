@@ -18,6 +18,7 @@ import {
   SHAKE_LEVEL,
   ULT_FOV,
   ultFovAt,
+  tierFromTr,
   whooshDelay,
   type HitCtx,
 } from './hitjuice';
@@ -264,5 +265,19 @@ describe('cấp đòn từ server (Chân Cảnh S1)', () => {
     expect(shakeOf(c({ tier: 'finisher', byMe: false, victimIsMe: false }))).toBe(0);
     expect(shakeOf(c({ tier: 'light', ult: true }))).toBe(SHAKE_LEVEL.ult);
     expect(shakeOf(c({ tier: 'light' }))).toBe(0);
+  });
+});
+
+describe('tin sát thương không có `tr` (nguồn không phân cấp)', () => {
+  it('tierFromTr: vắng = undefined (bảng cũ), 0 = nhẹ đã phân cấp', () => {
+    expect(tierFromTr(undefined)).toBeUndefined();
+    expect(tierFromTr(0)).toBe('light');
+    expect(tierFromTr(2)).toBe('heavy');
+  });
+  it('hv lên mình từ nguồn không phân cấp vẫn có victimHeavy; có tr=0 thì không khựng', () => {
+    const ctx = c({ victimIsMe: true, byMe: false, heavy: true, tier: tierFromTr(undefined) });
+    expect(hitStopOf(ctx).target).toBe(0.06);
+    expect(shakeOf(ctx)).toBe(SHAKE_LEVEL.victimHeavy);
+    expect(hitStopOf({ ...ctx, tier: tierFromTr(0) }).target).toBe(0);
   });
 });

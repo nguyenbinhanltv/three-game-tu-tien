@@ -451,8 +451,7 @@ export class MonsterSystem {
     if (hv) msg.hv = true;
     if (ke) msg.ke = ke;
     // Chân Cảnh S1: cấp đòn của lần đánh này (chỉ lớp hình ở client).
-    const tr = this.dmgTier ? tierRank(this.dmgTier) : 0;
-    if (tr > 0) msg.tr = tr as 1 | 2 | 3;
+    if (this.dmgTier) msg.tr = tierRank(this.dmgTier) as 0 | 1 | 2 | 3;
     if (p) msg.src = p.sid;
     this.c.emit(S.DMG, msg);
     // Tâm cảnh (E3-L): đánh trúng Tâm Ma Ảnh của mình thì hồi.

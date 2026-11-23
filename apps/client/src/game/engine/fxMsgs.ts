@@ -24,7 +24,6 @@ import {
   inSkyBand,
   SOUL_SCOUT,
   tribDef,
-  HIT_TIER_ORDER,
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
@@ -58,7 +57,7 @@ import { SHAKE } from '../camera/shake';
 import { fxTriggered, replacedFx } from '../fx/skillFx';
 import { type SkillEvent } from '../character/view';
 import { hitStopScale } from '../fx/fxSettings';
-import { hitPitch, hitStopOf, layersOf, materialOf, shakeOf, WHOOSH_GAIN, whooshDelay, type HitCtx } from '../combat/hitjuice';
+import { hitPitch, hitStopOf, layersOf, materialOf, shakeOf, tierFromTr, WHOOSH_GAIN, whooshDelay, type HitCtx } from '../combat/hitjuice';
 import { DASH_LOOKBACK, HIT_CTX_TTL, HIT_WAIT, KNOCKDOWN_FRAC, QUIET, SKILL_INFO, STINGS, _v, _v2 } from './common';
 import { chapter, danCine, phaseCine, skipCine } from './cine';
 import { bossSay, pruneRareLoot } from './hudSync';
@@ -1100,8 +1099,8 @@ export function applyDmg(
     ult: !!skill?.ult,
     victimIsMe: mine,
     byMe,
-    // Cấp đòn do server báo (`tr`: hạng 1–3; vắng = nhẹ): bảng hit-stop/rung theo `HIT_TIER` dùng chung.
-    tier: HIT_TIER_ORDER[m.tr ?? 0],
+    // Cấp đòn do server báo (`tr` 0–3); vắng = nguồn không phân cấp → bảng cũ (`victimHeavy`, `crit`...).
+    tier: tierFromTr(m.tr),
   };
   // Hit feel chỉ là lớp hình. Rung camera theo bảng (lấy max, có hướng nguồn → đích); công tắc "Rung màn hình" do `CameraShake` tôn trọng.
   const stopK = hitStopScale();
