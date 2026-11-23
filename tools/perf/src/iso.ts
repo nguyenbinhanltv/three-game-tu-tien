@@ -80,6 +80,7 @@ function initScript(preset: string): void {
     gpuOk: false,
     dropGpu: false,
     pipes: 0,
+    pipes0: 0,
     pipeNames: [] as string[],
     patched: null as unknown,
   };
@@ -254,6 +255,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     B.parts = {};
     B.gpu = [];
     B.dropGpu = true;
+    B.pipes0 = B.pipes;
     B.pipeNames = []; // khung dài chỉ được gán cho pipeline biên dịch TRONG lần đo này
     B.rec = true;
   });
@@ -283,6 +285,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
       frames: B.frames as number[][],
       passes: B.passes as Record<string, number>,
       long: B.long as IsoPoint['longFrames'],
+      newPipes: (B.pipes - B.pipes0) as number,
       parts: B.parts as Record<string, number[]>,
       gpu: B.gpu as number[],
       textures: g.renderer.info.memory.textures as number,
@@ -368,6 +371,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     monsters: raw.monsters,
     byCat: bucketGroups(src.groups),
     longFrames: raw.long,
+    newPipelines: raw.newPipes,
     passes: Object.fromEntries(Object.entries(raw.passes).map(([k, v]) => [k, round(v / Math.max(1, raw.frames.length), 1)])),
     kinds: kinds as IsoPoint['kinds'],
     topGroups: src.groups.slice(0, 6).map(({ key, dc: d, tris, shadow }) => ({ key, dc: d, tris, shadow })),
