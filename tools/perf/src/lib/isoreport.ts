@@ -7,10 +7,20 @@ export const CATS: Cat[] = ['địa hình', 'kiến trúc/đá', 'prop/cây', 'c
 export function categorize(key: string): Cat {
   const k = key.toLowerCase();
   if (/grass|\bco\b|cỏ|flower|reed|foliage-blade|linh_?thao/.test(k)) return 'cỏ';
-  if (/vfx|\bfx\b|particle|spark|aura|decal|ring|halo|trail|bolt|hazard|telegraph|slash|beam|lightning|lei|mist|cloud|butterfl|firefl|petal|leaf-fall|dmg|float/.test(k)) return 'VFX';
+  if (
+    /vfx|\bfx\b|particle|spark|aura|decal|ring|halo|trail|bolt|hazard|telegraph|slash|beam|lightning|lei|mist|cloud|butterfl|firefl|petal|leaf-fall|dmg|float/.test(
+      k,
+    )
+  )
+    return 'VFX';
   if (/player|monster|mon_|boss|npc|skin|body|hair|head|sword|weapon|char|ent[s_-]|avatar|clone|soul|v3/.test(k)) return 'nhân vật/quái';
   if (/terrain|ground|tile|water|lake|river|sea|ocean|sky|dome/.test(k)) return 'địa hình';
-  if (/sect|arch|build|pagoda|roof|wall|bridge|cliff|rock|stone|boulder|pillar|gate|hall|tower|kit|palace|temple|ruin|mesa|spire|vách|dinh/.test(k)) return 'kiến trúc/đá';
+  if (
+    /sect|arch|build|pagoda|roof|wall|bridge|cliff|rock|stone|boulder|pillar|gate|hall|tower|kit|palace|temple|ruin|mesa|spire|vách|dinh/.test(
+      k,
+    )
+  )
+    return 'kiến trúc/đá';
   if (/prop|tree|plant|bamboo|pine|lantern|banner|flag|bush|rack|stele|statue/.test(k)) return 'prop/cây';
   if (/post|ui|overlay|label|sprite/.test(k)) return 'UI/hậu kỳ';
   return 'khác';
@@ -25,7 +35,10 @@ export interface Group {
 
 /** Cộng draw call/tam giác theo nhóm lớn; `shadow` là số lượt đổ bóng thêm (mỗi mesh castShadow tốn thêm một lượt vẽ). */
 export function bucketGroups(groups: Group[]): Record<Cat, { dc: number; tris: number; shadow: number }> {
-  const out = Object.fromEntries(CATS.map((c) => [c, { dc: 0, tris: 0, shadow: 0 }])) as Record<Cat, { dc: number; tris: number; shadow: number }>;
+  const out = Object.fromEntries(CATS.map((c) => [c, { dc: 0, tris: 0, shadow: 0 }])) as Record<
+    Cat,
+    { dc: number; tris: number; shadow: number }
+  >;
   for (const g of groups) {
     const b = out[categorize(g.key)];
     b.dc += g.dc;
@@ -155,7 +168,11 @@ export function toMarkdown(run: IsoRun, deltas: Delta[] = []): string {
   if (run.firstLoadMB !== null) L.push(`Tải lần đầu: **${run.firstLoadMB} MB**`);
   L.push('');
   for (const preset of [...new Set(run.points.map((p) => p.preset))]) {
-    L.push(`## Preset ${preset}`, '', '| điểm | DC p50 | tam giác | CPU p50/p95 ms | GPU p95 ms | tex MB | mat | geo | GPU mem MB | render ms | ents ms | vfx ms |');
+    L.push(
+      `## Preset ${preset}`,
+      '',
+      '| điểm | DC p50 | tam giác | CPU p50/p95 ms | GPU p95 ms | tex MB | mat | geo | GPU mem MB | render ms | ents ms | vfx ms |',
+    );
     L.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|');
     for (const p of run.points.filter((q) => q.preset === preset)) {
       L.push(

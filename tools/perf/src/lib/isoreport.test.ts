@@ -23,7 +23,17 @@ const pt = (id: string, dc: number, cpu: number, preset = 'high'): IsoPoint => (
   byCat: bucketGroups([]),
   topGroups: [],
 });
-const run = (points: IsoPoint[]): IsoRun => ({ version: 1, date: 'd', adapter: 'x', backend: 'WebGPU', viewport: '1280x720', quick: false, firstLoadMB: 20, points, errors: [] });
+const run = (points: IsoPoint[]): IsoRun => ({
+  version: 1,
+  date: 'd',
+  adapter: 'x',
+  backend: 'WebGPU',
+  viewport: '1280x720',
+  quick: false,
+  firstLoadMB: 20,
+  points,
+  errors: [],
+});
 
 describe('isoreport', () => {
   it('quant/stat', () => {

@@ -64,7 +64,15 @@ function initScript(preset: string): void {
   localStorage.setItem('dtl.qualityLock', '1');
   const w = window as any;
   const tex = new Map<object, number>();
-  const B = { rec: false, frames: [] as number[][], dc: [] as number[], parts: {} as Record<string, number[]>, gpu: [] as number[], gpuOk: false, patched: null as unknown };
+  const B = {
+    rec: false,
+    frames: [] as number[][],
+    dc: [] as number[],
+    parts: {} as Record<string, number[]>,
+    gpu: [] as number[],
+    gpuOk: false,
+    patched: null as unknown,
+  };
   w.__iso = B;
   w.__isoTexBytes = () => {
     let s = 0;
@@ -72,7 +80,20 @@ function initScript(preset: string): void {
     return s;
   };
   const COMPS: Record<number, number> = { 1021: 1, 1022: 4, 1023: 4, 1026: 1, 1027: 1, 1028: 1, 1029: 1, 1030: 2, 1031: 2, 1033: 4 };
-  const TYPE_B: Record<number, number> = { 1009: 1, 1010: 1, 1011: 2, 1012: 2, 1013: 4, 1014: 4, 1015: 4, 1016: 2, 1017: 2, 1018: 2, 1020: 4, 35902: 4 };
+  const TYPE_B: Record<number, number> = {
+    1009: 1,
+    1010: 1,
+    1011: 2,
+    1012: 2,
+    1013: 4,
+    1014: 4,
+    1015: 4,
+    1016: 2,
+    1017: 2,
+    1018: 2,
+    1020: 4,
+    35902: 4,
+  };
   const HALF = new Set([33776, 33777, 36196, 37492, 36283, 36284, 35840, 35841]);
   const bytesOf = (t: any, o: any): number => {
     const w0 = Math.max(1, o?.width ?? t.image?.width ?? 1);
@@ -82,7 +103,8 @@ function initScript(preset: string): void {
     const bpp = t.isCompressedTexture ? (HALF.has(t.format) ? 0.5 : 1) : (COMPS[t.format] ?? 4) * (TYPE_B[t.type] ?? 1);
     const samples = Math.max(1, t.isRenderTargetTexture ? (o?.sampleCount ?? 1) : 1);
     let total = 0;
-    for (let l = 0; l < levels; l++) total += Math.max(1, w0 >> l) * Math.max(1, h0 >> l) * (t.is3DTexture ? Math.max(1, d0 >> l) : d0) * bpp;
+    for (let l = 0; l < levels; l++)
+      total += Math.max(1, w0 >> l) * Math.max(1, h0 >> l) * (t.is3DTexture ? Math.max(1, d0 >> l) : d0) * bpp;
     return total * samples;
   };
   let cur: Record<string, number> = {};
@@ -224,7 +246,13 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
       if (!o.visible) return;
       if ((o.isMesh || o.isPoints || o.isLine) && o.geometry) {
         const mat = Array.isArray(o.material) ? o.material[0] : o.material;
-        const k = o.isSkinnedMesh ? 'skin' : o.isInstancedMesh ? 'instanced' : /Basic|Line|Points|Sprite/.test(mat?.type ?? '') ? 'basic' : 'static';
+        const k = o.isSkinnedMesh
+          ? 'skin'
+          : o.isInstancedMesh
+            ? 'instanced'
+            : /Basic|Line|Points|Sprite/.test(mat?.type ?? '')
+              ? 'basic'
+              : 'static';
         const n = (o.geometry.index ? o.geometry.index.count : (o.geometry.attributes.position?.count ?? 0)) / 3;
         out[k]!.dc++;
         out[k]!.tris += Math.round(n * (o.isInstancedMesh ? o.count : 1));
@@ -286,7 +314,11 @@ function pointsOf(t: Target): { name: string; x: number; z: number }[] {
     ];
   }
   const all = levelPoints(t.id).filter((p) => p.name !== 'trencao');
-  const pick = [...all.filter((p) => p.name.startsWith('poi_')), ...all.filter((p) => p.name.startsWith('zone_')), ...all.filter((p) => p.name.startsWith('boss_'))];
+  const pick = [
+    ...all.filter((p) => p.name.startsWith('poi_')),
+    ...all.filter((p) => p.name.startsWith('zone_')),
+    ...all.filter((p) => p.name.startsWith('boss_')),
+  ];
   return (pick.length ? pick : all).slice(0, 4);
 }
 
@@ -324,7 +356,8 @@ async function dungeonEnter(page: Page, t: Target): Promise<void> {
 async function fight(page: Page, t: Target, preset: string): Promise<IsoPoint> {
   const lv = LEVELS[t.id]!;
   // Quái thường nằm ở `camps`; `spawns` chỉ có tinh anh/boss.
-  const sp = lv.camps?.find((c) => !c.mon.startsWith('boss_') && !c.mon.startsWith('elite_')) ?? lv.spawns.find((s) => !s.mon.startsWith('boss_'));
+  const sp =
+    lv.camps?.find((c) => !c.mon.startsWith('boss_') && !c.mon.startsWith('elite_')) ?? lv.spawns.find((s) => !s.mon.startsWith('boss_'));
   const mon = sp?.mon ?? lv.dungeon?.waves[0]?.mons.find((m) => !m.id.startsWith('boss_'))?.id ?? lv.dungeon?.waves[0]?.mons[0]?.id;
   if (!mon) throw new Error(`không tìm được quái để gọi ở ${t.id}`);
   const spot = sp ? { x: sp.x, z: sp.z } : lv.dungeon ? { x: lv.dungeon.center.x, z: lv.dungeon.center.z + 16 } : { x: 0, z: 0 };
@@ -342,15 +375,30 @@ async function fight(page: Page, t: Target, preset: string): Promise<IsoPoint> {
   });
 }
 
-async function runPreset(browser: Awaited<ReturnType<typeof launchChrome>>, preset: string, errors: string[], meta: Partial<IsoRun>): Promise<IsoPoint[]> {
+async function runPreset(
+  browser: Awaited<ReturnType<typeof launchChrome>>,
+  preset: string,
+  errors: string[],
+  meta: Partial<IsoRun>,
+): Promise<IsoPoint[]> {
   const ctx = await browser.newContext({ viewport: { width: VW, height: VH } });
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})(${JSON.stringify(preset)});` });
   const page = await ctx.newPage();
   watchErrors(page, { tag: preset, into: errors });
   let bytes = 0;
-  page.on('response', (r) => void r.body().then((b) => (bytes += b.length), () => undefined));
+  page.on(
+    'response',
+    (r) =>
+      void r.body().then(
+        (b) => (bytes += b.length),
+        () => undefined,
+      ),
+  );
   const name = `Iso${preset[0]}${Date.now() % 10000}`;
-  await page.goto(gameUrl(CLIENT_PORT, { debug: 1, auto: name, gputime: 1, cine: 0 }, { renderer: RENDERER }), { waitUntil: 'load', timeout: 120_000 });
+  await page.goto(gameUrl(CLIENT_PORT, { debug: 1, auto: name, gputime: 1, cine: 0 }, { renderer: RENDERER }), {
+    waitUntil: 'load',
+    timeout: 120_000,
+  });
   await waitInGame(page);
   await sleep(6000);
   if (meta.firstLoadMB === null || meta.firstLoadMB === undefined) meta.firstLoadMB = round(bytes / 1048576, 1);
@@ -404,8 +452,14 @@ async function runPreset(browser: Awaited<ReturnType<typeof launchChrome>>, pres
 function listGpus(): string[] {
   if (process.platform !== 'win32') return [];
   try {
-    const o = execFileSync('powershell', ['-NoProfile', '-Command', '(Get-CimInstance Win32_VideoController).Name'], { encoding: 'utf8', timeout: 15_000 });
-    return o.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+    const o = execFileSync('powershell', ['-NoProfile', '-Command', '(Get-CimInstance Win32_VideoController).Name'], {
+      encoding: 'utf8',
+      timeout: 15_000,
+    });
+    return o
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+      .filter(Boolean);
   } catch {
     return [];
   }

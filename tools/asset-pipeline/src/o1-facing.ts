@@ -58,7 +58,11 @@ export function analyze(doc: Document, asset: string, yawDeg: number | null, tol
       const doubleSided = prim.getMaterial()?.getDoubleSided() ?? false;
       const get = (i: number): number[] => {
         const v = pos.getElement(idx ? idx.getScalar(i) : i, [0, 0, 0]);
-        return [m[0]! * v[0]! + m[4]! * v[1]! + m[8]! * v[2]! + m[12]!, m[1]! * v[0]! + m[5]! * v[1]! + m[9]! * v[2]! + m[13]!, m[2]! * v[0]! + m[6]! * v[1]! + m[10]! * v[2]! + m[14]!];
+        return [
+          m[0]! * v[0]! + m[4]! * v[1]! + m[8]! * v[2]! + m[12]!,
+          m[1]! * v[0]! + m[5]! * v[1]! + m[9]! * v[2]! + m[13]!,
+          m[2]! * v[0]! + m[6]! * v[1]! + m[10]! * v[2]! + m[14]!,
+        ];
       };
       for (let i = 0; i + 2 < n; i += 3) {
         const a = get(i);
@@ -92,7 +96,11 @@ export function analyze(doc: Document, asset: string, yawDeg: number | null, tol
     }
   }
   const hidden: FacingResult['hidden'] = {};
-  for (const t of tols) hidden[t] = { byCount: tris ? Math.round((cnt[t]! / tris) * 1000) / 10 : 0, byArea: totalArea ? Math.round((area[t]! / totalArea) * 1000) / 10 : 0 };
+  for (const t of tols)
+    hidden[t] = {
+      byCount: tris ? Math.round((cnt[t]! / tris) * 1000) / 10 : 0,
+      byArea: totalArea ? Math.round((area[t]! / totalArea) * 1000) / 10 : 0,
+    };
   return { asset, yawDeg, tris, doubleSidedTris: ds, hidden };
 }
 
@@ -100,7 +108,9 @@ async function main(): Promise<void> {
   const argv = process.argv.slice(2).filter((a) => a !== '--');
   const opt = (k: string, d: string) => (argv.includes(k) ? argv[argv.indexOf(k) + 1]! : d);
   const tols = opt('--tol', '0,20,30').split(',').map(Number);
-  const dir = argv.find((a) => !a.startsWith('--') && fs.existsSync(a) && fs.statSync(a).isDirectory()) ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../apps/client/public/assets');
+  const dir =
+    argv.find((a) => !a.startsWith('--') && fs.existsSync(a) && fs.statSync(a).isDirectory()) ??
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../apps/client/public/assets');
   const io = await createIO();
   const out: FacingResult[] = [];
   const files = fs.readdirSync(dir).filter((f) => /^(arch|prop)_.*\.glb$/.test(f));
@@ -121,8 +131,14 @@ async function main(): Promise<void> {
   };
   console.log('asset | yaw | tris | 2 mặt % | ' + tols.map((t) => `ẩn@${t}° (số/diện tích)`).join(' | '));
   for (const r of out.sort((a, b) => b.tris - a.tris))
-    console.log(`${r.asset} | ${r.yawDeg ?? 'ngẫu nhiên'} | ${r.tris} | ${Math.round((r.doubleSidedTris / Math.max(1, r.tris)) * 100)} | ` + tols.map((t) => `${r.hidden[t]!.byCount}/${r.hidden[t]!.byArea}%`).join(' | '));
-  console.log('\nTổng theo số tam giác: ' + (['arch', 'prop'] as const).map((k) => `${k}: ` + tols.map((t) => `@${t}° ${sum(k, t)}%`).join(', ')).join(' · '));
+    console.log(
+      `${r.asset} | ${r.yawDeg ?? 'ngẫu nhiên'} | ${r.tris} | ${Math.round((r.doubleSidedTris / Math.max(1, r.tris)) * 100)} | ` +
+        tols.map((t) => `${r.hidden[t]!.byCount}/${r.hidden[t]!.byArea}%`).join(' | '),
+    );
+  console.log(
+    '\nTổng theo số tam giác: ' +
+      (['arch', 'prop'] as const).map((k) => `${k}: ` + tols.map((t) => `@${t}° ${sum(k, t)}%`).join(', ')).join(' · '),
+  );
   const o = opt('--out', '');
   if (o) fs.writeFileSync(o, JSON.stringify(out, null, 1));
 }
