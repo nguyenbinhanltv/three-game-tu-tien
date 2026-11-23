@@ -8,6 +8,7 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import basisJsUrl from 'three/addons/libs/basis/basis_transcoder.js?url';
 import basisWasmUrl from 'three/addons/libs/basis/basis_transcoder.wasm?url';
 import { logger } from '../../base/log';
+import { FLAGS } from '../../base/flags';
 
 const assetLog = logger('asset');
 
@@ -154,6 +155,55 @@ export function capTextures(root: THREE.Object3D, maxTexture = Infinity, maxNorm
     }
   });
   return shrunk;
+}
+
+/**
+ * Chân Cảnh O4′ (heap JS): bản sao texture phía CPU (normal map RGBA8 `DataTexture`, mip KTX2 của `CompressedTexture`) vẫn nằm trong heap sau khi đã lên GPU:
+ * đo `heap3` ở rừng Vân Lam ≈ 188 MB trên ~290 texture. Gắn `onUpdate` (three gọi sau lần tải lên GPU đầu tiên, như `groundTextures`) để bỏ dữ liệu CPU.
+ * An toàn vì mỗi texture chỉ tải lên một lần (một renderer; lùi WebGL2 nạp lại cả trang) và bản gốc trong cache bị parse lại khi nạp lại asset.
+ * `?keeptex=1` giữ nguyên để đối chứng.
+ */
+export function freeTexturesAfterUpload(root: THREE.Object3D): number {
+  const seen = new Set<THREE.Texture>();
+  const groups = new Map<unknown, THREE.Texture[]>();
+  root.traverse((o) => {
+    const mats = (o as THREE.Mesh).material;
+    if (!mats) return;
+    for (const mat of Array.isArray(mats) ? mats : [mats]) {
+      for (const v of Object.values(mat)) {
+        const tex = v as THREE.Texture | null;
+        if (!tex || !tex.isTexture || seen.has(tex)) continue;
+        seen.add(tex);
+        // GLTFLoader tạo nhiều `Texture` (khác sampler/kênh) dùng chung một `Source`/mip: chỉ bỏ dữ liệu khi MỌI texture dùng chung đã lên GPU,
+        // nếu không texture lên sau ghi dữ liệu rỗng (`writeTexture` lỗi).
+        const key = tex.source ?? tex;
+        const g = groups.get(key);
+        if (g) g.push(tex);
+        else groups.set(key, [tex]);
+      }
+    }
+  });
+  for (const group of groups.values()) {
+    let pending = group.length;
+    for (const tex of group) {
+      const prev = tex.onUpdate;
+      tex.onUpdate = (t) => {
+        prev?.(t);
+        tex.onUpdate = prev;
+        if (--pending === 0) for (const x of group) freeCpuCopy(x);
+      };
+    }
+  }
+  return seen.size;
+}
+
+function freeCpuCopy(t: THREE.Texture): void {
+  const c = t as THREE.CompressedTexture;
+  if (c.isCompressedTexture) {
+    for (const m of c.mipmaps ?? []) (m as { data: unknown }).data = null;
+  } else if ((t as THREE.DataTexture).isDataTexture) {
+    (t.image as { data: unknown }).data = null;
+  }
 }
 
 /** Tiến độ nạp theo byte (kích thước lấy từ manifest), cộng dồn mọi asset đã yêu cầu. */
@@ -573,6 +623,8 @@ export class AssetCache {
         .then((g) => {
           // Trần texture của bản nạp này; bản không trần cũng đi qua để bỏ các mức mip giữ tạm.
           capTextures(g.scene, opts.maxTexture, opts.maxNormal ?? opts.maxTexture);
+          // Chỉ kiến trúc: nhân vật/quái/prop dùng `Texture.clone()` về sau (nhuộm màu, bộ trang phục) và clone chép chung mip với bản gốc nên không được bỏ dữ liệu.
+          if (!FLAGS.keepTex && /^(arch|mon|elite|boss)_|^prop_(?!kiem|phi_kiem)/.test(id)) freeTexturesAfterUpload(g.scene);
           // Chỉ giữ cảnh và clip: `parser` của GLTFLoader còn nắm nguyên byte GLB + ảnh KTX2 nhúng (10–13 MB mỗi model nhân vật bậc cao).
           const slim = { scene: g.scene, animations: g.animations } as GLTF;
           entry.gltf = slim;
