@@ -44,7 +44,7 @@ import { bhTod, GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MO
 import { archWrap, withOccluderFade } from '../world/occlusion';
 import { LanternLights } from '../../render/lanternLights';
 import { buildMoonGate, buildPortalDisc, buildSect, moonMirrorTexture, SECT_LANTERNS } from '../world/sect';
-import { gateFlat, gatesToDraw } from '../world/gates';
+import { ISO_GATE_OPACITY, ISO_GATE_SCALE, gateFlat, gatesToDraw } from '../world/gates';
 import {
   buildCaveShell,
   buildCrystalGlow,
@@ -321,8 +321,14 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
   }
   if (F.portals || (LEVELS[id]?.portals?.length ?? 0) > 0) {
     eng.gateDiscs = gatesToDraw(id).map((g) => {
-      const d = buildPortalDisc(g.x, g.z, g.color, gateFlat(g, FLAGS.isoCam));
+      const flat = gateFlat(g, FLAGS.isoCam);
+      const d = buildPortalDisc(g.x, g.z, g.color, flat);
       d.userData.op = g.opacity ?? 0.55;
+      if (flat && !g.flat) {
+        // Iso: đĩa dựng đứng đổi sang nằm phẳng thì mờ và nhỏ (như vòng cổng phẳng trong hang), không thành mảng sáng chói phủ góc màn hình.
+        d.userData.op = Math.min(d.userData.op as number, ISO_GATE_OPACITY);
+        d.scale.multiplyScalar(ISO_GATE_SCALE);
+      }
       return d;
     });
     // Cổng vào Kính Nguyệt Cung: thêm vành gương nguyệt quanh đĩa để thấy rõ cổng.
