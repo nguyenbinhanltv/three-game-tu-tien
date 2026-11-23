@@ -23,7 +23,7 @@ import {
 } from 'three/tsl';
 
 /**
- * Chi tiết mặt đất cho camera chéo (Thiên Nhãn P2b, chỉ khi `?cam=iso`): mặt đất chiếm ~70% khung và nhìn ở 15–45 m nên cần chi tiết tầm gần rõ:
+ * Chi tiết mặt đất cho camera chéo (Thiên Nhãn P2b): mặt đất chiếm ~70% khung và nhìn ở 15–45 m nên cần chi tiết tầm gần rõ:
  * biến thiên màu macro, mảng đất trồi trong cỏ, rêu, vết ố, vết nứt, lá rơi, sỏi, đá mẻ. Toàn bộ theo nhiễu/ô băm thủ tục theo tọa độ thế giới:
  * không texture mới, không draw call.
  */

@@ -29,7 +29,6 @@ import {
 } from 'three/tsl';
 import { WORLD_SIZE } from '@dtl/shared';
 import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
-import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
 
 /**
@@ -271,7 +270,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   const rockCol = mix(rock, rock.mul(TOMB_TINT.mul(1.15)), bio.z);
   col = mix(col, rockCol.mul(float(0.9).add(macro.mul(0.2))), rockW);
   col = mix(col, cliff.mul(float(0.9).add(macro.mul(0.2))), cliffW);
-  if (FLAGS.isoCam && !lo) {
+  if (!lo) {
     // Camera chéo (Thiên Nhãn P2b): xem isoDetail.ts. Chỉ trên đất bằng (không vách/đá/tuyết), tắt dần theo khoảng cách.
     col = isoTerrainDetail(col, {
       p,

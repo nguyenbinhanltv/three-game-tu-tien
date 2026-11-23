@@ -144,8 +144,10 @@ export class VdDungeon {
     // Vị trí cột lấy từ `gioiTriPillars` (shared): cùng công thức với va chạm của phó bản.
     const spots = gioiTriPillars(inp.center);
     const N = spots.length;
-    const geo = own(new THREE.CylinderGeometry(1.5, 2.1, 24, 10));
-    geo.translate(0, 12, 0);
+    // Camera chéo: cột cao 24 m chiếu thành dải chéo rất dài (mờ còn thành dải cam phẳng che nửa khung): hạ còn 11 m.
+    const PILLAR_H = 11;
+    const geo = own(new THREE.CylinderGeometry(1.5, 2.1, PILLAR_H, 10));
+    geo.translate(0, PILLAR_H / 2, 0);
     const pillars = new THREE.InstancedMesh(geo, own(bronzeMat()), N);
     pillars.name = 'vd-dungeon-pillars';
     const o = new THREE.Object3D();
@@ -159,7 +161,7 @@ export class VdDungeon {
     pillars.computeBoundingSphere();
     pillars.castShadow = true;
     const y = inp.heightAt(cx, cz) + 0.12;
-    const rune = new THREE.Mesh(own(groundRuneGeometry(26)), own(glowMat(GOLD, 0.26)));
+    const rune = new THREE.Mesh(own(groundRuneGeometry(26)), own(glowMat(GOLD, 0.12)));
     rune.position.set(cx, y, cz);
     const west = new THREE.Mesh(own(halfDiscGeometry(26, -1)), own(glowMat(TEAL, 0.06)));
     west.position.set(cx, y - 0.02, cz);

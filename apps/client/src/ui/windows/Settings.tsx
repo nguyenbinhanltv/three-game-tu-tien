@@ -41,7 +41,6 @@ export function Settings() {
   const qualityHint = useUI((s) => s.qualityHint);
   const hintSeen = useUI((s) => s.qualityHintSeen);
   const fps = useUI((s) => s.fps);
-  const controls = useUI((s) => s.controls);
   const camShake = useUI((s) => s.camShake);
   const reduceMotion = useReduceMotion();
   const fxQ = useUI((s) => s.fxQuality);
@@ -63,14 +62,6 @@ export function Settings() {
   ];
   return (
     <PanelWindow title={t('ui.settings')} onClose={() => closePanel('settings')}>
-      <Divider label={t('ui.settings.controls')} />
-      <Segmented
-        label={t('ui.settings.controls')}
-        value={controls}
-        onChange={(m) => Game.current?.setControls(m)}
-        options={['mouse', 'turn', 'strafe'].map((m) => ({ value: m, label: t('ui.settings.controls.' + m) }))}
-      />
-      <div className="k-dim">{t('ui.settings.controls_hint.' + controls)}</div>
       <Divider label={t('ui.settings.touch')} />
       <Segmented
         label={t('ui.settings.touch')}

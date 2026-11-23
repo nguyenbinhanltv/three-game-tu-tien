@@ -27,7 +27,6 @@ type Action =
   | 'settings'
   | 'chat'
   | 'cancel'
-  | 'mouseLock'
   | 'debug';
 
 export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
@@ -58,14 +57,11 @@ export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
   KeyO: 'settings',
   Enter: 'chat',
   Escape: 'cancel',
-  AltLeft: 'mouseLock',
-  AltRight: 'mouseLock',
   F3: 'debug',
 };
 
 /** Thao tác giữ phím (đọc mỗi khung từ tập phím đang giữ). */
-type HeldAction =
-  'forward' | 'back' | 'left' | 'right' | 'up' | 'down' | 'camLeft' | 'camRight' | 'camUp' | 'camDown' | 'zoomIn' | 'zoomOut';
+type HeldAction = 'forward' | 'back' | 'left' | 'right' | 'up' | 'down';
 
 export const HELD: Readonly<Record<HeldAction, readonly string[]>> = {
   forward: ['KeyW'],
@@ -75,12 +71,6 @@ export const HELD: Readonly<Record<HeldAction, readonly string[]>> = {
   /** Nhảy khi đi bộ, bay lên khi ngự kiếm. */
   up: ['Space'],
   down: ['ShiftLeft'],
-  camLeft: ['ArrowLeft'],
-  camRight: ['ArrowRight'],
-  camUp: ['ArrowUp'],
-  camDown: ['ArrowDown'],
-  zoomIn: ['Equal', 'NumpadAdd'],
-  zoomOut: ['Minus', 'NumpadSubtract'],
 };
 
 const HELD_OF = new Map<string, HeldAction[]>();

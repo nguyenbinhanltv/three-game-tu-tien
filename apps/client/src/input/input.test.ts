@@ -11,7 +11,6 @@ describe('bindings', () => {
     expect(KEY_ACTIONS.KeyI).toBe('bag');
     expect(KEY_ACTIONS.KeyJ).toBe('quests');
     expect(KEY_ACTIONS.Escape).toBe('cancel');
-    expect(KEY_ACTIONS.AltRight).toBe('mouseLock');
     expect(KEY_ACTIONS.F3).toBe('debug');
     expect(HELD.down).toEqual(['ShiftLeft']);
   });
@@ -32,7 +31,7 @@ describe('bindings', () => {
   });
 
   it('isHeld/isKeyFor/preventsDefault', () => {
-    expect(isHeld(new Set(['NumpadAdd']), 'zoomIn')).toBe(true);
+    expect(isHeld(new Set(['KeyW']), 'forward')).toBe(true);
     expect(isHeld(new Set(['KeyW']), 'back')).toBe(false);
     expect(isKeyFor('ShiftLeft', 'down')).toBe(true);
     expect(isKeyFor('KeyW', 'left')).toBe(false);

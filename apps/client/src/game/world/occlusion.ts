@@ -18,7 +18,6 @@ import {
   vec2,
 } from 'three/tsl';
 import { OCCLUDERS } from '@dtl/shared';
-import { FLAGS } from '../../base/flags';
 import { withIsoSurfaceDetail } from '../../render/materials/isoDetail';
 
 /**
@@ -101,9 +100,9 @@ function vegFade() {
   return max(max(tube(uFocus, uNear, uFeetY), onTarget), edge).mul(uVeg);
 }
 
-/** Bọc material kiến trúc: làm mờ vật che, thêm chi tiết bề mặt ngửa lên khi camera chéo (`?cam=iso`, P2b). */
+/** Bọc material kiến trúc: làm mờ vật che, thêm chi tiết bề mặt ngửa lên khi camera chéo (camera chéo, P2b). */
 export function archWrap<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
-  return FLAGS.isoCam ? withIsoSurfaceDetail(withOccluderFade(m)) : withOccluderFade(m);
+  return withIsoSurfaceDetail(withOccluderFade(m));
 }
 
 /** Gắn làm mờ vật che theo danh sách `OCCLUDERS` cho material kiến trúc. Gọi một lần lúc tạo. */

@@ -44,7 +44,7 @@ import { pmGroundColor } from './phucMachArt';
 
 const TILE = 256;
 const NEAR_R = 3;
-/** Camera chéo (`?cam=iso`, tầm nhìn ~250 m): chỉ dựng ô quanh người, vài chục mét quanh người là toàn bộ khung hình. */
+/** Camera chéo (mặc định, tầm nhìn ~250 m): chỉ dựng ô quanh người, vài chục mét quanh người là toàn bộ khung hình. */
 const NEAR_R_ISO = 1;
 const VEG_FAR_R_ISO = 1;
 /** Vấn Đỉnh: vách dốc làm viền hai ô khác độ phân giải lệch cao hàng chục mét; viền rủ phải dài hơn mức lệch đó, nếu không khe hở ra thành lỗ sáng hình thoi ở góc vách. */
