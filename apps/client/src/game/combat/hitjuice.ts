@@ -4,7 +4,7 @@
  * Hàm ở đây thuần (không đụng DOM/âm thanh) để test; server không đọc gì ở đây.
  */
 import { PATHS } from '@dtl/content';
-import type { MonsterDef } from '@dtl/shared';
+import { HIT_TIER, tierRank, type HitTier, type MonsterDef } from '@dtl/shared';
 
 /** Ngữ cảnh một đòn trúng, suy từ `DmgMsg` và sự kiện `hit` của chiêu. */
 export interface HitCtx {
@@ -21,6 +21,8 @@ export interface HitCtx {
   victimIsMe: boolean;
   /** Người ra đòn là mình. */
   byMe: boolean;
+  /** Cấp đòn do server báo (Chân Cảnh S1, `DmgMsg.tr`); có thì bảng hit-stop/rung theo `HIT_TIER` dùng chung. */
+  tier?: HitTier;
 }
 
 export const HIT_STOP = {
@@ -35,7 +37,7 @@ export const HIT_STOP = {
   victimHeavy: 0.06,
 } as const;
 /** Trần khựng của mọi thực thể (giây). */
-export const HIT_STOP_CAP = HIT_STOP.top.target;
+export const HIT_STOP_CAP = HIT_TIER.finisher.stopMs / 1000;
 
 export interface StopPair {
   /** Khựng của người bị đánh (giây, trước hệ số hạng thân). */
@@ -46,6 +48,12 @@ export interface StopPair {
 
 /** Bảng hit-stop (mục 7.3 của AUDIT_AND_ROADMAP). Hệ số hạng thân do `HitReact` nhân sau (≤ 1, nên không vượt trần). */
 export function hitStopOf(c: HitCtx): StopPair {
+  if (c.tier !== undefined) {
+    // Bạo kích nâng tối thiểu lên đòn vừa; người đánh khựng nửa thời gian mục tiêu và chỉ khi là mình.
+    const t = c.crit && tierRank(c.tier) < tierRank('medium') ? 'medium' : c.tier;
+    const target = HIT_TIER[t].stopMs / 1000;
+    return { target, attacker: c.byMe ? target / 2 : 0 };
+  }
   let r: StopPair;
   if (c.ult || (c.crit && c.heavy)) r = { ...HIT_STOP.top };
   else if (c.crit) r = { ...HIT_STOP.crit };
@@ -58,10 +66,14 @@ export function hitStopOf(c: HitCtx): StopPair {
 }
 
 /** Mức rung camera (thang của `CameraShake`, quy tắc lấy max) cho đòn của mình trúng / mình trúng đòn; 0 = không rung. */
+/** Mét dịch camera ứng với mức rung 1 (khớp `AMP` của `CameraShake`). */
+export const SHAKE_AMP_M = 0.22;
 export const SHAKE_LEVEL = { combo3: 0.12, crit: 0.3, ult: 0.6, victimHeavy: 0.5 } as const;
 
 export function shakeOf(c: HitCtx): number {
   let lv = 0;
+  // Cấp đòn do server báo: biên độ theo bảng dùng chung (m dịch nhẹ, không xoay camera) đổi sang thang `CameraShake`; lấy max với bảng cũ.
+  if (c.tier !== undefined && (c.byMe || c.victimIsMe)) lv = HIT_TIER[c.tier].shakeAmp / SHAKE_AMP_M;
   if (c.byMe) {
     if (c.ult) lv = SHAKE_LEVEL.ult;
     else if (c.crit) lv = SHAKE_LEVEL.crit;

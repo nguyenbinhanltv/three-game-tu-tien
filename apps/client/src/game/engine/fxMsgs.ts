@@ -24,6 +24,7 @@ import {
   inSkyBand,
   SOUL_SCOUT,
   tribDef,
+  HIT_TIER_ORDER,
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
@@ -56,6 +57,7 @@ import { skipOthersFx } from '../fx/fxBudget';
 import { SHAKE } from '../camera/shake';
 import { fxTriggered, replacedFx } from '../fx/skillFx';
 import { type SkillEvent } from '../character/view';
+import { hitStopScale } from '../fx/fxSettings';
 import { hitPitch, hitStopOf, layersOf, materialOf, shakeOf, WHOOSH_GAIN, whooshDelay, type HitCtx } from '../combat/hitjuice';
 import { DASH_LOOKBACK, HIT_CTX_TTL, HIT_WAIT, KNOCKDOWN_FRAC, QUIET, SKILL_INFO, STINGS, _v, _v2 } from './common';
 import { chapter, danCine, phaseCine, skipCine } from './cine';
@@ -1098,9 +1100,13 @@ export function applyDmg(
     ult: !!skill?.ult,
     victimIsMe: mine,
     byMe,
+    // Cấp đòn do server báo (`tr`: hạng 1–3; vắng = nhẹ): bảng hit-stop/rung theo `HIT_TIER` dùng chung.
+    tier: HIT_TIER_ORDER[m.tr ?? 0],
   };
   // Hit feel chỉ là lớp hình. Rung camera theo bảng (lấy max, có hướng nguồn → đích); công tắc "Rung màn hình" do `CameraShake` tôn trọng.
-  const stops = hitStopOf(hc);
+  const stopK = hitStopScale();
+  const stops0 = hitStopOf(hc);
+  const stops = { target: stops0.target * stopK, attacker: stops0.attacker * stopK };
   if (!m.heal && m.n > 0) {
     const lv = shakeOf(hc);
     if (lv > 0) eng.shake.kick(lv, dirOf(eng, m.src, m.dst) ?? undefined);
@@ -1167,7 +1173,11 @@ export function applyDmg(
         ? `-${m.n}`
         : `${m.n}${m.crit ? '!' : ''}`;
   // Đứng đúng trận môn khắc chế (Thiên Nhân Kiếp, cờ `ke` do server tính): chỉ thêm chữ báo.
-  eng.dmg.spawn(m.ke === 1 && !m.heal ? `${text} ${t('ui.dmg.ke')}` : text, _v, cls);
+  // Phân cấp số: thường / nặng (`hv`) / chí mạng / phá giáp (khắc chế, `ke`); đòn nhẹ nhỏ gom lại theo mục tiêu.
+  const heavyNum = cls === 'hit' && (m.tr ?? 0) >= 2;
+  const keNum = m.ke === 1 && !m.heal;
+  const cls2 = cls + (heavyNum ? ' hv' : '') + (keNum && (cls === 'hit' || cls === 'crit') ? ' ke' : '');
+  eng.dmg.spawn(keNum ? `${text} ${t('ui.dmg.ke')}` : text, _v, cls2, m.dst, !m.heal && !m.crit && !m.ke && m.n > 0 ? m.n : undefined);
 }
 
 /** Vệt mực mờ dưới chân nạn nhân đòn nặng (M4-14), tối đa một vệt mỗi 0,4 giây mỗi nạn nhân. */

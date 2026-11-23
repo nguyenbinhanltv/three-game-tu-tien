@@ -101,7 +101,24 @@ export function Settings() {
       <div className="k-dim">{t('ui.settings.quality_hint')}</div>
       <div className="k-dim">{t('ui.settings.fps', { n: fps })}</div>
       <Divider label={t('ui.settings.cam_shake')} />
-      <Segmented label={t('ui.settings.cam_shake')} value={camShake} onChange={(on) => Game.current?.setCamShake(on)} options={onOff} />
+      <Slider
+        label={t('ui.settings.cam_shake')}
+        value={camShake}
+        min={0}
+        max={100}
+        step={5}
+        format={(n) => n + '%'}
+        onChange={(n) => Game.current?.setCamShake(n)}
+      />
+      <Slider
+        label={t('ui.settings.hit_stop')}
+        value={hitStop}
+        min={0}
+        max={100}
+        step={5}
+        format={(n) => n + '%'}
+        onChange={(n) => Game.current?.setHitStop(n)}
+      />
       <Divider label={t('ui.settings.fx_quality')} />
       <Segmented
         label={t('ui.settings.fx_quality')}
@@ -110,7 +127,6 @@ export function Settings() {
         options={(['low', 'medium', 'high'] as const).map((q) => ({ value: q, label: t('ui.settings.fxq.' + q) }))}
       />
       <div className="k-dim">{t('ui.settings.fx_quality_hint')}</div>
-      <Segmented label={t('ui.settings.hit_stop')} value={hitStop} onChange={(on) => Game.current?.setHitStop(on)} options={onOff} />
       <Divider label={t('ui.settings.realm_aura')} />
       <Segmented
         label={t('ui.settings.realm_aura')}

@@ -37,6 +37,7 @@ import {
   isHeavyHit,
   BOSS_STAGGER_GAP_MS,
   monsterReaction,
+  tierRank,
   resolveTier,
   type HitTier,
   MF_BROKEN,
@@ -178,6 +179,9 @@ export class MonsterSystem {
    * `mul`: hệ số sát thương hệ (linh căn, dòng phụ); không đổi việc đòn có nặng hay không (theo `power` gốc).
    * Trả true nếu đòn có hiệu lực (nơi gọi dùng để tích tài nguyên riêng theo chiêu).
    */
+  /** Cấp đòn của lần `hitMonster` đang chạy, để `damageMonster` ghi vào tin sát thương. */
+  private dmgTier: HitTier | undefined;
+
   hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string, tier?: HitTier): boolean {
     // Ấn trên quái (VS-2c): ấn của chính người đánh cộng theo tầng (Truy hồn), ấn chung (Mất thế) cộng cho mọi người.
     const power0 = basePower * (1 + markAmp(mon.marks, MARK, p.sid, this.c.now));
@@ -206,10 +210,13 @@ export class MonsterSystem {
     // `hv` (lớp hình) tính cả lúc choáng; phá thế chỉ cộng phần đòn nặng cho chiêu hệ số cao thật.
     // Đòn không có hiệu lực (quái đã chết, đang miễn sát thương, bóng tâm ma của người khác) không cho kiếm ý/sạc.
     const lands = mon.state !== MS_DEAD && !(mon.owner && mon.owner !== p.sid) && this.c.now >= mon.evadeUntil;
+    const tierUsed = resolveTier(tier, basePower);
+    this.dmgTier = tierUsed;
     this.damageMonster(mon, vulnerableDamage(dmg, stunned), p, crit, stunned || heavy, heavy, ke);
+    this.dmgTier = undefined;
     if (!lands) return false;
     // Chân Cảnh S1: đẩy lùi / khựng / ngã theo cấp đòn (dữ liệu `tier` của chiêu, không thì suy từ hệ số gốc) và độ chống của quái.
-    if (mon.state !== MS_DEAD) this.reactMonster(mon, resolveTier(tier, basePower), p.move.x, p.move.z);
+    if (mon.state !== MS_DEAD) this.reactMonster(mon, tierUsed, p.move.x, p.move.z);
     // Bộ Hàn Giao Lân (3 món): đòn bạo kích làm chậm mục tiêu (boss chỉ chậm nhẹ).
     const slowSec = p.char.stats.setFx.critSlowSec;
     if (crit && slowSec > 0 && mon.state !== MS_DEAD)
@@ -443,6 +450,9 @@ export class MonsterSystem {
     if (crit) msg.crit = true;
     if (hv) msg.hv = true;
     if (ke) msg.ke = ke;
+    // Chân Cảnh S1: cấp đòn của lần đánh này (chỉ lớp hình ở client).
+    const tr = this.dmgTier ? tierRank(this.dmgTier) : 0;
+    if (tr > 0) msg.tr = tr as 1 | 2 | 3;
     if (p) msg.src = p.sid;
     this.c.emit(S.DMG, msg);
     // Tâm cảnh (E3-L): đánh trúng Tâm Ma Ảnh của mình thì hồi.

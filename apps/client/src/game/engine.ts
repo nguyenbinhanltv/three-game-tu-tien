@@ -114,12 +114,13 @@ import {
   auraOthersOf,
   fxQuality,
   hitStopOn,
+  hitStopPctOf,
   realmAuraOn,
   setAuraCombat,
   setAuraMode,
   setAuraOthers,
   setFxQuality,
-  setHitStopOn,
+  setHitStopPct,
 } from './fx/fxSettings';
 import type { AuraCombat, AuraMode, AuraOthers } from './fx/realmAuraRules';
 import { RealmAuraFx, type RealmAuraEnv } from './fx/realmAura';
@@ -1305,9 +1306,9 @@ export class Game {
     set({ fxQuality: q });
   }
 
-  setHitStop(on: boolean): void {
-    setHitStopOn(on);
-    set({ hitStop: on });
+  setHitStop(n: number): void {
+    setHitStopPct(n);
+    set({ hitStop: hitStopPctOf() });
   }
 
   setAuraMode(m: AuraMode): void {
@@ -1337,9 +1338,9 @@ export class Game {
     set({ qualityHintSeen: true });
   }
 
-  setCamShake(on: boolean): void {
-    this.shake.setEnabled(on);
-    set({ camShake: on });
+  setCamShake(n: number): void {
+    this.shake.setPct(n);
+    set({ camShake: this.shake.pct });
   }
 
   /** Đổi preset lúc chạy có thể đổi bộ texture mặt đất (2K ↔ 1024² ở Vân Lam): nạp bộ đúng rồi thay, giải phóng bộ cũ. */

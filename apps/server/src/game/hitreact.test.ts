@@ -323,3 +323,31 @@ describe('quái đánh xa miễn đẩy/khựng (giữ cân bằng cấp 10)', (
     expect(mon.stunUntil).toBe(0);
   });
 });
+
+describe('tin sát thương mang cấp đòn `tr` (S1b)', () => {
+  it('quái trúng đòn nặng: DmgMsg.tr = 2; đòn nhẹ không có tr; thủ lĩnh đánh hv: tr = 2', () => {
+    const sent: { type: string; msg: Record<string, unknown> }[] = [];
+    const { sim, mon, X, Z } = setup('mon_soi_xam');
+    (sim as unknown as { room: { broadcast: (t: string, m: unknown) => void } }).room ??= { broadcast() {} };
+    const orig = (sim as unknown as { emit(t: string, m: object): void }).emit.bind(sim);
+    (sim as unknown as { emit(t: string, m: object): void }).emit = (t, m) => {
+      sent.push({ type: t, msg: m as Record<string, unknown> });
+      orig(t, m);
+    };
+    const q = {
+      sid: 'p1',
+      move: { x: X, y: groundAt(X, Z - 2), z: Z - 2 },
+      char: { atk: 50, stats: { critRate: 0, critMul: 1.5, setFx: { critSlowSec: 0 } }, meta: {}, equip: {}, level: 1 },
+      mth: { lockCharge: true },
+    };
+    sim.players.set('p1', q as never);
+    mon.s.hp = mon.s.mhp = 1_000_000;
+    sim.now = 1_000_000;
+    const h = (sim as unknown as { hitMonster(p: unknown, m: unknown, pw: number, mul: number): boolean }).hitMonster;
+    h.call(sim, q, mon, 0.9, 1);
+    h.call(sim, q, mon, 2.3, 1);
+    h.call(sim, q, mon, 4.6, 1);
+    const dmg = sent.filter((s) => s.msg.dst === mon.id && typeof s.msg.n === 'number');
+    expect(dmg.map((d) => d.msg.tr)).toEqual([undefined, 2, 3]);
+  });
+});
