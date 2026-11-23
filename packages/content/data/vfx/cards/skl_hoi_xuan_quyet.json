@@ -1,0 +1,34 @@
+{
+  "skillId": "skl_hoi_xuan_quyet",
+  "idea": "Hồi Xuân Quyết: Gió xuân mang mưa, hồi tổng cộng 40% khí huyết tối đa trong 6 giây cho ngươi và đạo hữu trong 10 mét, đồng thời gieo mộc độc lên quái trong 10 mét: mỗi giây gây 40% công kích trong 8 giây. Người được chữa mang Mộc ấn 10 giây.",
+  "element": "moc",
+  "path": "dan_su",
+  "shapeLang": [
+    "burst",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 550
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 10,
+    "particles": 217,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    }
+  ]
+}

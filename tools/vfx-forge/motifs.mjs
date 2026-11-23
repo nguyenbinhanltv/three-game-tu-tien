@@ -250,6 +250,53 @@ const MOTIFS = {
     ring(at, 0.12, R * 0.3, R * 0.8, 0, 0.9),
     ring(at, 0.14, R * 0.3, R * 1.2, 0.06, 0.6),
   ],
+  // Hồi phục: sen nở giữa thân + vòng ấn + vài cánh sen cao (lotus_bloom đứng +Y, sweep = nở từ tâm).
+  lotus: (at, R) => [
+    mesh({
+      shape: 'lotus_bloom',
+      t: -0.05,
+      dur: 0.9,
+      at,
+      offset: [0, 0, 0],
+      scale: R * 0.55,
+      sweep: 0.5,
+      erodeFrom: 0.6,
+      ragged: 0.5,
+      alpha: 0.9,
+      tone: BODY,
+      ink: true,
+      seed: S(),
+    }),
+    ring(at, 0.12, R * 0.3, R * 0.9, 0, 0.85),
+    ring(at, 0.14, R * 0.25, R * 1.4, 0.06, 0.55),
+    ...Array.from({ length: 6 }, (_, i) => {
+      const a = (i / 6) * Math.PI * 2;
+      return upBlade(at, r2(Math.cos(a) * R * 0.9), r2(Math.sin(a) * R * 0.9), R * 0.9, R * 0.16, 0.03 + (i % 3) * 0.02, 'rim', 0.9);
+    }),
+  ],
+  // Mưa lá: cánh lá (petal_blade) rơi quanh thân, kèm vòng nhẹ.
+  leaves: (at, R) => [
+    ring(at, 0.12, R * 0.3, R * 1.1, 0, 0.7),
+    ...Array.from({ length: 12 }, (_, i) => {
+      const a = (i / 12) * Math.PI * 2 + (i % 2) * 0.3;
+      const rr = R * (0.5 + (i % 3) * 0.35);
+      return mesh({
+        shape: 'petal_blade',
+        t: 0.02 * i,
+        dur: 0.8,
+        at,
+        offset: [r2(Math.cos(a) * rr), R * 1.2, r2(Math.sin(a) * rr)],
+        rot: [20 * (i % 3), i * 30, 0],
+        scale: R * 0.14,
+        sweep: 0.1,
+        erodeFrom: 0.5,
+        alpha: 0.95,
+        tone: i % 2 ? 'rim' : BODY,
+        seed: S(),
+        move: { to: at, offset: [r2(Math.cos(a) * rr), 0.1, r2(Math.sin(a) * rr)], ease: 'in' },
+      });
+    }),
+  ],
   pillar: (at, R) => [
     upBlade(at, 0, 0, 16, R * 1.1, -0.04, BODY, 0.9),
     upBlade(at, 0, 0, 16, R * 0.7, -0.04, 'rim', 1),

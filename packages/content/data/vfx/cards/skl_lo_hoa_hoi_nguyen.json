@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_lo_hoa_hoi_nguyen",
+  "idea": "Lô Hỏa Hồi Nguyên: Chiêu tư thế. Hơi ấm lò đan hồi 7% khí huyết trong 2 giây cho ngươi và đạo hữu trong 10 mét.",
+  "element": "moc",
+  "path": "dan_su",
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 550
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 6,
+    "particles": 120,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [],
+  "impactFrame": true
+}

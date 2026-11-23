@@ -1,0 +1,34 @@
+{
+  "skillId": "skl_thuan_di_cuu_vien",
+  "idea": "Thuấn Di Cứu Viện: Thuấn di tới đồng đội ngã gần nhất và hồi sinh với 40% khí huyết. Cần cảnh giới Nguyên Anh.",
+  "element": "moc",
+  "path": "dan_su",
+  "shapeLang": [
+    "burst",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 200,
+    "impactMs": 80,
+    "lingerMs": 450
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 10,
+    "particles": 225,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    }
+  ]
+}
