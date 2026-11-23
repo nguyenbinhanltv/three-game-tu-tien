@@ -1,0 +1,29 @@
+{
+  "skillId": "skl_anh_thiet_than",
+  "idea": "Anh Thiết Thân: Nguyên anh hóa sắt che thân trong 8 giây, nhận thay 30% sát thương cho đồng đội gần. Cần cảnh giới Nguyên Anh.",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 350,
+    "impactMs": 80,
+    "lingerMs": 500
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 168,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

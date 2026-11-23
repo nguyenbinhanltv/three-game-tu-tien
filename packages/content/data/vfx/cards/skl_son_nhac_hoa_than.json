@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_son_nhac_hoa_than",
+  "idea": "Sơn Nhạc Hóa Thân: Thần thông: thân hóa ngọc thạch, phình lớn 1,3 lần trong 10 giây, giảm 20% sát thương nhận.",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "spike",
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 600,
+    "impactMs": 80,
+    "lingerMs": 400
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 256,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

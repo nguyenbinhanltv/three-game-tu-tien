@@ -37,12 +37,14 @@ const basic = SK.get('skl_phi_kiem') as SkillDef;
 for (const voice of POSE_VOICES) {
   const method = {
     kt: 'lac_kiem_quyet',
-    hp: 'bat_dong_kim_than',
+    hp: 'co_than_quyet',
     ds: 'thanh_moc_dan_kinh',
     dt: 'liet_nhan_dao_kinh',
     lt: 'cuu_tieu_loi_kinh',
     ht: 'dan_hon_kinh',
     ct: 'duong_co_kinh',
+    tt: 'bat_dong_kim_than',
+    cs: 'cam_che_kinh',
   }[voice];
   basic.combo!.hits.forEach((h, i) =>
     ROWS.push({ id: poseIdFor('phi_kiem', { combo: i, method }), skill: basic.id, voice, nine: true, hitAt: h.hitAt, swing: true }),
@@ -88,6 +90,10 @@ const RANGE: Record<
   ht: { drop: [0.02, 0.05], twist: [22, 24 * ISO_AMP], reachZ: [0.55, 0.65], hold: 0.06, over: [0.12, 0.14] },
   // C3e: cổ tu (khom thấp, vồ như rắn): hạ hông sâu, tầm tay thấp, quá đà ngắn.
   ct: { drop: [0.1, 0.14], twist: [24, 26 * ISO_AMP], reachZ: [0.5, 0.62], hold: 0.07, over: [0.07, 0.09] },
+  // C3f: thể tu (quyền, đấm thẳng liên hoàn): hạ hông vừa, xoay mạnh, tụ lực ngắn, dừng gắt.
+  tt: { drop: [0.11, 0.15], twist: [33, 35 * ISO_AMP], reachZ: [0.62, 0.78], hold: 0.05, over: [0.05, 0.07] },
+  // C3f: cấm chế sư (vung trận kỳ cung tròn rộng, đứng thẳng): gần như không hạ hông, tay vươn cao.
+  cs: { drop: [0.01, 0.04], twist: [25, 27 * ISO_AMP], reachZ: [0.55, 0.68], hold: 0.06, over: [0.09, 0.11] },
   // C3d: lôi tu (tay trái triệu lôi, kiếm bổ từ trên xuống, theo đà dài).
   lt: { drop: [0.04, 0.08], twist: [26, 32 * ISO_AMP], reachZ: [0.65, 1.0], hold: 0.05, over: [0.15, 0.19] },
 };
@@ -231,7 +237,7 @@ describe('K-5: ba giọng đo được', () => {
     });
   }
   it('ba giọng khác nhau rõ rệt ở cùng một đòn', () => {
-    const of = (v: 'kt' | 'hp' | 'ds' | 'dt' | 'lt' | 'ht' | 'ct') =>
+    const of = (v: 'kt' | 'hp' | 'ds' | 'dt' | 'lt' | 'ht' | 'ct' | 'tt' | 'cs') =>
       measure(ROWS.find((r) => r.skill === 'skl_kiem_khi_tram' && r.voice === v)!);
     const kt = of('kt');
     const hp = of('hp');

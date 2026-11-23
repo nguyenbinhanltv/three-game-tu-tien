@@ -15,7 +15,7 @@ import { float, materialEmissive, normalView, positionViewDirection, uniform, ve
 import { PF_DEAD, PF_FLYING, PF_MEDITATING, type FxQuality } from '@dtl/shared';
 import type { FxKind, FxMesh } from '../../render/materials/vfx';
 import { shapeGeometry, swordFxGeometry, QUAD_XZ } from '../../render/vfx/fxShapes';
-import { DECAL_RUNE } from '../../render/vfx/stylized';
+import { DECAL_RUNE, DECAL_RUNE_INK } from '../../render/vfx/stylized';
 import { G } from '../core/geo';
 import { groundAt } from '../../base/levelCtx';
 import type { CharacterView, SkillEvent } from '../character/view';
@@ -93,6 +93,12 @@ export interface RealmAuraEnv {
 
 /** Số người khác gần nhất được vẽ hào quang, theo bậc chất lượng (Thấp tắt hẳn). */
 const OTHERS_MAX = [0, 4, 8] as const;
+/** Bán kính nhìn thấy (m) của ấn dưới chân theo cảnh giới: tăng dần, Nguyên Anh trở lên rộng hơn để đọc được từ camera chéo (C5). */
+/** Độ nâng ấn khỏi mặt đất (m): đá lát sân tông môn nhô lên so với địa hình, thấp hơn thì ấn chìm dưới gạch và chỉ lộ ở khe. */
+const SEAL_LIFT = 0.16;
+const SEAL_RADIUS: Readonly<Record<AuraStage, number>> = [0, 1.8, 2.0, 2.2, 2.4];
+/** Ấn của người khác mờ hơn của mình (thứ bậc thị giác: mình rõ nhất, đám đông không rối). */
+const SEAL_OTHERS = 0.65;
 /** Độ nhấc người khỏi đất khi Nguyên Anh trở lên (m). */
 const LIFT = 0.2;
 /** Số phân thân Ảnh Biến (chốt 3). */
@@ -595,13 +601,15 @@ export class RealmAuraFx {
       m.quaternion.copy(_q.setFromUnitVectors(AX_Z, dir));
     };
     // Vai của từng lớp theo cảnh giới (xem bảng ở `realmAuraRules.ts`): cảnh giới mới THAY lớp chính, lớp cũ co về nền.
-    const orbitRole: LayerRole = stage === 2 ? 'main' : stage === 3 ? 'sub' : 'extra';
+    // C5: ấn trận dưới chân là lớp CHÍNH; các lớp quanh người (kim đan + tia xoáy, vòng kiếm/đan, phù văn lưng) lùi một bậc để camera chéo bớt rối.
+    const ground = FLAGS.auraGround;
+    const orbitRole: LayerRole = stage === 2 ? (ground ? 'sub' : 'main') : stage === 3 && !ground ? 'sub' : 'extra';
     const infantRole: LayerRole = stage === 2 || dao === 'ho' ? 'sub' : 'extra';
-    const runeRole: LayerRole = stage === 3 ? 'main' : 'sub';
+    const runeRole: LayerRole = stage === 3 && !ground ? 'main' : 'sub';
 
     // ---------- Kết Đan: kim đan (chính ở Kết Đan, từ Nguyên Anh co về nền) + tia linh khí xoáy ốc (phụ, chỉ ở Kết Đan) ----------
     {
-      const coreRole: LayerRole = stage === 1 ? 'main' : 'bg';
+      const coreRole: LayerRole = stage === 1 && !ground ? 'main' : stage === 1 ? 'sub' : 'bg';
       if (ok(coreRole)) {
         const core = mk(G.ico1, GOLD.core, 'solid');
         ups.push((c) => {
@@ -612,22 +620,58 @@ export class RealmAuraFx {
           halo(core.position.x, core.position.y, core.position.z, 0.5 + c.beat * 0.3, GOLD.core, c.vDan * wh * (0.12 + c.beat * 0.22));
         });
       }
-      if (stage === 1 && ok('sub')) {
+      if (stage === 1 && ok(ground ? 'extra' : 'sub')) {
         const spiral = mk(shapeGeometry('helix'), GOLD.body, 'toon', GOLD.rim);
         ups.push((c) => {
           // Tia xoáy ốc: trục +Z của hình xoắn dựng đứng, quay quanh trục dọc, bay lên.
           spiral.position.set(c.p.x, c.p.y + 0.08, c.p.z);
           spiral.quaternion.copy(_q.setFromAxisAngle(AX_Y, c.t * 1.8)).multiply(UPRIGHT);
           spiral.scale.set(3.3, 3.3, 2.1 + c.beat * 0.2);
-          show(c, spiral, c.vDan * 0.95, 'sub');
+          show(c, spiral, c.vDan * 0.95, ground ? 'extra' : 'sub');
         });
       }
+    }
+
+    if (ground && stage >= 1 && ok('main')) {
+      // ---------- C5: ấn trận dưới chân (chính, mọi cảnh giới từ Kết Đan) ----------
+      // Hai vòng triện văn quay ngược chiều nằm sát sàn: vòng ngoài màu cảnh giới, vòng trong màu hướng tu (DAO_LOOK); lớn dần theo cảnh giới, chớp nhẹ theo nhịp kim đan.
+      // Cùng loại `decal` gộp instance với các lớp khác nên không thêm draw call theo người.
+      // Màu đậm hơn bảng thân (viền không dùng trắng): ấn phải đọc được trên nền đá sáng của sân/đường (ảnh C5 đầu tiên: viền bạc-trắng chìm vào gạch).
+      const realmCol =
+        stage >= 4
+          ? { b: 0x5a2fc0, r: 0xe0b020 }
+          : stage >= 3
+            ? { b: 0x1c3b9c, r: 0x4f86ff }
+            : stage >= 2
+              ? { b: 0xb86e08, r: 0xf0b020 }
+              : { b: 0xc27a0c, r: 0xffc83a };
+      _col.setHex(look.body).multiplyScalar(0.62);
+      const pathBody = _col.getHex();
+      const outer = mk(QUAD_XZ, realmCol.b, 'decal', realmCol.r);
+      outer.fxA.set(1, 0, seed * 30, DECAL_RUNE);
+      outer.fxK = 1;
+      const inner = mk(QUAD_XZ, pathBody, 'decal', look.body);
+      inner.fxA.set(1, 0, seed * 30 + 7, DECAL_RUNE_INK);
+      inner.fxK = 1;
+      const r0 = SEAL_RADIUS[stage]!;
+      const own = sid === this.env.mySid() ? 1 : SEAL_OTHERS;
+      ups.push((c) => {
+        const pulse = stage === 1 ? 1 + c.beat * 0.05 : 1;
+        outer.position.set(c.p.x, c.y0 + SEAL_LIFT, c.p.z);
+        outer.rotation.y = c.t * 0.25;
+        outer.scale.set(r0 * pulse, 1, r0 * pulse);
+        show(c, outer, c.gate * 0.95 * own, 'main');
+        inner.position.set(c.p.x, c.y0 + SEAL_LIFT + 0.02, c.p.z);
+        inner.rotation.y = -c.t * 0.4;
+        inner.scale.set(r0 * 0.62 * pulse, 1, r0 * 0.62 * pulse);
+        show(c, inner, c.gate * 0.85 * own, 'main');
+      });
     }
 
     if (stage >= 2) {
       // Trận đồ mực mỏng dưới chân (triện văn): lớp chính của Hộ pháp ở Nguyên Anh, còn lại là nền. Vàng → bạc → tím-vàng theo tầng.
       const feetRole: LayerRole = dao === 'ho' && stage === 2 ? 'main' : 'bg';
-      if (ok(feetRole)) {
+      if (ok(feetRole) && !ground) {
         const fr =
           stage >= 4 ? { b: VIOLET.body, r: VIOLET.rim } : stage >= 3 ? { b: SILVER.body, r: SILVER.rim } : { b: GOLD.body, r: GOLD.rim };
         const feet = mk(QUAD_XZ, fr.b, 'decal', fr.r);

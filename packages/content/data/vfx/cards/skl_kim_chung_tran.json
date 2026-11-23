@@ -1,0 +1,29 @@
+{
+  "skillId": "skl_kim_chung_tran",
+  "idea": "Kim Chung Trấn: Chuông vàng úp thân trong 6 giây: giảm 30% sát thương nhận và phản lại 20% sát thương quái đánh vào ngươi.",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 550
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 212,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}
