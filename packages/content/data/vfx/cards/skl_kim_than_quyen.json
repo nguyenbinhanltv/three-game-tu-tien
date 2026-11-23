@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_kim_than_quyen",
+  "idea": "Kim Thân Quyền: Chiêu tư thế. Một quyền gây 120% công kích, tích 8 Huyết khí.",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "arc",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 260,
+    "impactMs": 80,
+    "lingerMs": 540
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 120,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [],
+  "impactFrame": true
+}

@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_thiet_bich_xung",
+  "idea": "Thiết Bích Xung: Lao 8 mét tới mục tiêu và húc gây 120% công kích và làm quái thường choáng 1 giây (tinh anh nửa giây, boss miễn). Không xuyên vách, không dùng được khi ngự kiếm. Húc kẻ mang Trấn ấn: choáng thêm nửa giây, tích 10 Huyết khí; có đủ 40 Huyết khí thì xả ra khiến nó m",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "ring",
+    "line",
+    "arc"
+  ],
+  "timing": {
+    "anticipationMs": 300,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 12,
+    "particles": 243,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

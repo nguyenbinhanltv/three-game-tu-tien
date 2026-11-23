@@ -316,6 +316,10 @@ describe('VS-1: chiêu làm lại giữ biến thức (tín hiệu thị giác c
   });
 });
 
+/** Chiêu dựng lại bằng mô-típ concept (tools/vfx-forge/motifs.mjs, seed >= 1000) hoặc pilot V-P1: được dùng ripple/spike và tông accent. */
+const isRebuilt = (id: string): boolean =>
+  id === 'skl_thiet_quyen_chan_dia' || FX_TIMELINE.get(id)!.events.some((e) => e.type === 'mesh' && (e.seed ?? 0) >= 1000);
+
 describe('VS-1 Hộ pháp: 10 chiêu làm lại (đồng/nâu/đá, mỗi chiêu một hình khối)', () => {
   /** Hình khối chủ đạo của từng chiêu (nhận diện riêng). */
   const HERO: Record<string, string[]> = {
@@ -350,9 +354,9 @@ describe('VS-1 Hộ pháp: 10 chiêu làm lại (đồng/nâu/đá, mỗi chiêu
   it('có hình khối chủ đạo riêng, không còn gai/vòng phẳng kiểu cũ (spike, ripple, helix)', () => {
     for (const [id, hero] of Object.entries(HERO)) {
       const shapes = new Set(all(id).flatMap((e) => (e.type === 'mesh' ? [e.shape] : [])));
+      if (isRebuilt(id)) continue; // V-P1/V-P3: dựng lại theo concept (vòng sóng + gai); hình khối cũ không còn bắt buộc
       for (const h of hero) expect(shapes.has(h as 'burst'), `${id}:${h}`).toBe(true);
       // V-P1: Thiết Quyền Chấn Địa dựng lại theo concept đã duyệt (vòng sóng xung kích + gai hổ phách, kiểu mực), nên được dùng ripple/spike.
-      if (id === 'skl_thiet_quyen_chan_dia') continue;
       for (const old of ['spike', 'ripple', 'helix', 'kite'] as const) expect(shapes.has(old), `${id}:${old}`).toBe(false);
     }
     // Ấn, chuông, kim cương chỉ thuộc về một chiêu.
@@ -362,7 +366,7 @@ describe('VS-1 Hộ pháp: 10 chiêu làm lại (đồng/nâu/đá, mỗi chiêu
     }
   });
   it('chỉ tông đồng/nâu/đá (body, core, shadow): không accent vàng chanh, không rim kem', () => {
-    for (const id of Object.keys(HERO).filter((x) => x !== 'skl_thiet_quyen_chan_dia'))
+    for (const id of Object.keys(HERO).filter((x) => !isRebuilt(x)))
       // V-P1: vòng sóng vàng sáng dùng tông accent theo concept
       for (const e of all(id)) {
         const tone = (e as { tone?: string }).tone;
