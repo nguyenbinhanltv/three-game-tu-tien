@@ -23,9 +23,10 @@ const mesh = (o) => ({
 let seq = 1000;
 const S = () => seq++;
 
+let RING = 'ripple';
 const ring = (at, y, R0, R1, t, a, tone = BODY) =>
   mesh({
-    shape: 'ripple',
+    shape: RING,
     t,
     dur: 0.6,
     at,
@@ -171,6 +172,82 @@ const MOTIFS = {
       return upBlade(at, r2(Math.cos(a) * R * 1.1), r2(Math.sin(a) * R * 1.1), R * 1.0, R * 0.22, 0.03 + (i % 3) * 0.02, 'rim', 0.9);
     }),
   ],
+  // Vết cào nhiều vệt song song (dash): vệt mảnh rim/body dài, mờ dần, lệch ngang.
+  claw: (at, R) => [
+    ...[-1.5, -0.5, 0.5, 1.5].map((k, i) =>
+      arc('ahead', 'slash_thin', 0, 0, R * 1.0, R * 1.8, i * 0.02, i % 2 ? 'rim' : BODY, 0.85, [k * R * 0.22, 0.25, 1 + i * 0.3]),
+    ),
+    ring(at, 0.12, R * 0.3, R * 0.9, 0.02, 0.6),
+  ],
+  // Mũi xung kích (dash vai): nêm kite nằm ngang dài phía trước + vòng bụi nhỏ.
+  pulse: (at, R) => [
+    ...[-0.35, 0, 0.35].map((k, i) =>
+      mesh({
+        shape: 'kite',
+        t: 0.01 + i * 0.02,
+        dur: 0.5,
+        at: 'ahead',
+        offset: [k * R, 0.2, R * 0.8],
+        rot: [0, 0, 0],
+        scale: [R * 0.35, R * 0.35, R * 2.6],
+        sweep: 0.15,
+        erodeFrom: 0.5,
+        alpha: 1,
+        tone: i === 1 ? 'rim' : BODY,
+        seed: S(),
+      }),
+    ),
+    ring(at, 0.12, R * 0.3, R * 1.0, 0.02, 0.6),
+  ],
+  // Cung quét mảnh: hai cung mỏng lệch nhau, không đặc.
+  sweep: (at, R) => [
+    arc(at, 'slash_thin', 0, 15, R * 1.3, R * 2.1, 0, BODY, 0.85),
+    arc(at, 'slash_thin', 0, 40, R * 1.1, R * 1.8, 0.03, 'rim', 0.8, [0.3, 0.35, 0.2]),
+    arc(at, 'slash_thin', 0, -10, R * 1.0, R * 1.6, 0.05, BODY, 0.75, [-0.3, 0.25, -0.2]),
+  ],
+  // Vòng ấn nhiều tầng không đĩa đặc: 3 vòng rune đồng tâm.
+  seals: (at, R) => [
+    ring(at, 0.12, R * 0.3, R * 0.7, 0, 0.8),
+    ring(at, 0.14, R * 0.25, R * 1.0, 0.05, 0.6),
+    ring(at, 0.16, R * 0.2, R * 1.4, 0.1, 0.4),
+  ],
+  // Chuông: chuông cao trùm thân (bell_cage) + vòng ấn dưới chân.
+  bell: (at, R) => [
+    mesh({
+      shape: 'bell_cage',
+      t: -0.02,
+      dur: 0.9,
+      at,
+      offset: [0, 0, 0],
+      scale: [R * 1.1, R * 1.2, R * 1.1],
+      sweep: 0.2,
+      erodeFrom: 0.7,
+      alpha: 0.9,
+      tone: BODY,
+      seed: S(),
+    }),
+    ring(at, 0.12, R * 0.3, R * 0.9, 0, 0.9),
+    ring(at, 0.14, R * 0.3, R * 1.3, 0.06, 0.6),
+  ],
+  // Pháp tướng: thẻ pháp tướng khổng lồ đứng sau lưng + vòng ấn.
+  titan: (at, R) => [
+    mesh({
+      shape: 'statue',
+      t: -0.1,
+      dur: 1.4,
+      at,
+      offset: [0, 0, -3],
+      scale: R * 0.3,
+      awayFromCam: true,
+      sweep: 0.3,
+      erodeFrom: 0.75,
+      alpha: 0.6,
+      tone: BODY,
+      seed: S(),
+    }),
+    ring(at, 0.12, R * 0.3, R * 0.8, 0, 0.9),
+    ring(at, 0.14, R * 0.3, R * 1.2, 0.06, 0.6),
+  ],
   pillar: (at, R) => [
     upBlade(at, 0, 0, 16, R * 1.1, -0.04, BODY, 0.9),
     upBlade(at, 0, 0, 16, R * 0.7, -0.04, 'rim', 1),
@@ -191,6 +268,7 @@ const isOldKit = (e) =>
 for (const spec of process.argv.slice(2)) {
   const [id, motif, anchor, R, tone] = spec.split(':');
   BODY = tone || 'body';
+  RING = process.env.RING || 'ripple';
   if (!MOTIFS[motif]) throw new Error(`mô-típ lạ: ${motif}`);
   const p = `packages/content/data/fx/${id}.json`;
   const t = JSON.parse(fs.readFileSync(p, 'utf8'));

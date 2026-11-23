@@ -370,304 +370,66 @@
    "sweep": 0.05,
    "erodeFrom": 0.1,
    "ragged": 0.6,
-   "tone": "body",
-   "alpha": 0.85,
+   "tone": "accent",
+   "alpha": 0.95,
    "tier": 0,
-   "shape": "ripple",
+   "shape": "rune_ring2",
    "offset": [
     0,
     0.12,
     0
    ],
-   "scale": 2.8,
-   "scaleTo": 6.72,
+   "scale": 1.8399999999999999,
+   "scaleTo": 4.6,
    "ink": true,
    "shadow": true,
-   "seed": 1046
+   "seed": 1044
   },
   {
    "type": "mesh",
-   "t": 0.06,
+   "t": 0.05,
    "dur": 0.6,
    "at": "self",
    "sweep": 0.05,
    "erodeFrom": 0.1,
    "ragged": 0.6,
-   "tone": "body",
-   "alpha": 0.55,
+   "tone": "accent",
+   "alpha": 0.8,
    "tier": 0,
-   "shape": "ripple",
+   "shape": "rune_ring2",
    "offset": [
     0,
     0.14,
     0
    ],
-   "scale": 2.2399999999999998,
-   "scaleTo": 9.52,
+   "scale": 1.38,
+   "scaleTo": 6.8999999999999995,
    "ink": true,
    "shadow": true,
-   "seed": 1047
+   "seed": 1045
   },
   {
    "type": "mesh",
-   "t": 0.01,
-   "dur": 0.7,
+   "t": 0.1,
+   "dur": 0.6,
    "at": "self",
-   "sweep": 0.1,
-   "erodeFrom": 0.6,
+   "sweep": 0.05,
+   "erodeFrom": 0.1,
    "ragged": 0.6,
    "tone": "accent",
-   "alpha": 0.95,
+   "alpha": 0.6,
    "tier": 0,
-   "shape": "kite",
-   "offset": [
-    5.6,
-    7.279999999999999,
-    0
-   ],
-   "rot": [
-    90,
-    0,
-    0
-   ],
-   "scale": [
-    1.568,
-    1.568,
-    7.279999999999999
-   ],
-   "seed": 1048
-  },
-  {
-   "type": "mesh",
-   "t": 0.025,
-   "dur": 0.7,
-   "at": "self",
-   "sweep": 0.1,
-   "erodeFrom": 0.6,
-   "ragged": 0.6,
-   "tone": "rim",
-   "alpha": 0.95,
-   "tier": 0,
-   "shape": "kite",
-   "offset": [
-    3.96,
-    7.279999999999999,
-    3.96
-   ],
-   "rot": [
-    90,
-    0,
-    0
-   ],
-   "scale": [
-    1.568,
-    1.568,
-    7.279999999999999
-   ],
-   "seed": 1049
-  },
-  {
-   "type": "mesh",
-   "t": 0.04,
-   "dur": 0.7,
-   "at": "self",
-   "sweep": 0.1,
-   "erodeFrom": 0.6,
-   "ragged": 0.6,
-   "tone": "accent",
-   "alpha": 0.95,
-   "tier": 0,
-   "shape": "kite",
+   "shape": "rune_ring2",
    "offset": [
     0,
-    7.279999999999999,
-    5.6
-   ],
-   "rot": [
-    90,
-    0,
+    0.16,
     0
    ],
-   "scale": [
-    1.568,
-    1.568,
-    7.279999999999999
-   ],
-   "seed": 1050
-  },
-  {
-   "type": "mesh",
-   "t": 0.055,
-   "dur": 0.7,
-   "at": "self",
-   "sweep": 0.1,
-   "erodeFrom": 0.6,
-   "ragged": 0.6,
-   "tone": "rim",
-   "alpha": 0.95,
-   "tier": 0,
-   "shape": "kite",
-   "offset": [
-    -3.96,
-    7.279999999999999,
-    3.96
-   ],
-   "rot": [
-    90,
-    0,
-    0
-   ],
-   "scale": [
-    1.568,
-    1.568,
-    7.279999999999999
-   ],
-   "seed": 1051
-  },
-  {
-   "type": "mesh",
-   "t": 0.01,
-   "dur": 0.7,
-   "at": "self",
-   "sweep": 0.1,
-   "erodeFrom": 0.6,
-   "ragged": 0.6,
-   "tone": "accent",
-   "alpha": 0.95,
-   "tier": 0,
-   "shape": "kite",
-   "offset": [
-    -5.6,
-    7.279999999999999,
-    0
-   ],
-   "rot": [
-    90,
-    0,
-    0
-   ],
-   "scale": [
-    1.568,
-    1.568,
-    7.279999999999999
-   ],
-   "seed": 1052
-  },
-  {
-   "type": "mesh",
-   "t": 0.025,
-   "dur": 0.7,
-   "at": "self",
-   "sweep": 0.1,
-   "erodeFrom": 0.6,
-   "ragged": 0.6,
-   "tone": "rim",
-   "alpha": 0.95,
-   "tier": 0,
-   "shape": "kite",
-   "offset": [
-    -3.96,
-    7.279999999999999,
-    -3.96
-   ],
-   "rot": [
-    90,
-    0,
-    0
-   ],
-   "scale": [
-    1.568,
-    1.568,
-    7.279999999999999
-   ],
-   "seed": 1053
-  },
-  {
-   "type": "mesh",
-   "t": 0.04,
-   "dur": 0.7,
-   "at": "self",
-   "sweep": 0.1,
-   "erodeFrom": 0.6,
-   "ragged": 0.6,
-   "tone": "accent",
-   "alpha": 0.95,
-   "tier": 0,
-   "shape": "kite",
-   "offset": [
-    0,
-    7.279999999999999,
-    -5.6
-   ],
-   "rot": [
-    90,
-    0,
-    0
-   ],
-   "scale": [
-    1.568,
-    1.568,
-    7.279999999999999
-   ],
-   "seed": 1054
-  },
-  {
-   "type": "mesh",
-   "t": 0.055,
-   "dur": 0.7,
-   "at": "self",
-   "sweep": 0.1,
-   "erodeFrom": 0.6,
-   "ragged": 0.6,
-   "tone": "rim",
-   "alpha": 0.95,
-   "tier": 0,
-   "shape": "kite",
-   "offset": [
-    3.96,
-    7.279999999999999,
-    -3.96
-   ],
-   "rot": [
-    90,
-    0,
-    0
-   ],
-   "scale": [
-    1.568,
-    1.568,
-    7.279999999999999
-   ],
-   "seed": 1055
-  },
-  {
-   "type": "mesh",
-   "t": 0.02,
-   "dur": 0.7,
-   "at": "self",
-   "sweep": 0.1,
-   "erodeFrom": 0.6,
-   "ragged": 0.6,
-   "tone": "accent",
-   "alpha": 0.5,
-   "tier": 0,
-   "shape": "kite",
-   "offset": [
-    0,
-    10.08,
-    0
-   ],
-   "rot": [
-    90,
-    0,
-    0
-   ],
-   "scale": [
-    2.8,
-    2.8,
-    10.08
-   ],
-   "seed": 1056
+   "scale": 0.9199999999999999,
+   "scaleTo": 9.2,
+   "ink": true,
+   "shadow": true,
+   "seed": 1046
   }
  ],
  "variants": {
