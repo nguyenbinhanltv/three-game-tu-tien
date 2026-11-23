@@ -55,6 +55,7 @@ import { EntityManager, type PState, type WorldView } from './entities/entities'
 import { Environment } from './world/env';
 import { AmbientParticles } from './world/ambient';
 import { Butterflies } from './world/butterflies';
+import { Breakables } from './world/breakables';
 import { Grass, GRASS_PUSH_SLOTS, type Pusher } from './world/grass';
 import { setHeightFog } from '../render/atmosphere';
 import { type RiftVeil } from '../render/riftVeil';
@@ -284,6 +285,8 @@ export class Game {
   kimDaArt: KimDaArt | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
   butterflies: Butterflies | null = null;
+  /** Vật thể vỡ của level (S1c), null nếu level không có. */
+  breakables: Breakables | null = null;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */
   ambient!: AmbientParticles;
   pushers: Pusher[] = Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
