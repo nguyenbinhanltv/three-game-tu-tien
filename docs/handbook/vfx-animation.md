@@ -38,3 +38,9 @@
 ## Co hình VFX vùng theo bán kính (Thiên Nhãn P5a-2)
 
 AoE nhắm điểm thường có bán kính 6 m (`radius` trong `packages/content/data/methods.json`). Timeline của `skl_hoang_tuyen_dan`, `skl_loi_hai`, `skl_phien_thien_an`, `skl_thien_kiem_vu` được recipe dựng theo cỡ cũ (9/8 m) rồi co bằng `tools/vfx/area_fit.py` (`fit_area` / `fit_area_skill`, hằng `AOE_R` = 6): offset ngang và scale ngang của hình nằm đất, bán kính decal `rune/scorch/crack` neo `area`. Đổi bán kính chiêu thì đổi `AOE_R`/R cũ ở recipe rồi sinh lại (`python tools/vfx/recipes_loi.py skl_loi_hai`, `recipes_cam.py skl_phien_thien_an`, `recipes_vs1.py skl_thien_kiem_vu`, `gen-fx-hon.py`), không sửa tay JSON. Chiêu dùng fx cũ `rain`/`slash` lấy bán kính từ tin server nên tự co.
+
+## Trúng đòn theo hướng, ngã chết theo hướng (Chân Cảnh C3b)
+
+- `apps/client/src/game/character/hitDir.ts` (hàm thuần, có test): `hitSideOf` (trước/sau/trái/phải từ hướng nhìn và hướng giật), `hitClipOf` (nặng → `Hit_Knockback`; nhẹ → `Hit_Chest`, sau gáy → `Hit_Head`; thư viện UAL chỉ có ba clip trúng đòn này), `flinchAmpOf` (biên độ giật thân theo cấp đòn S1 `DmgMsg.tr`: 0,10/0,16/0,26/0,36 rad; không có `tr` thì theo cờ cũ), `deathYawOffset` (xoay thân phụ `inner.rotation.y` trong 0,14 s lúc chết để `Death01` ngã ngửa ra xa người hạ gục; chỉ khi đòn cuối cách chết ≤ 1,5 s).
+- Không thêm sự kiện timeline VFX mới (VFX vẫn khớp `hit` của pose); hướng đòn lấy từ vị trí người đánh/nạn nhân như `hitReact` cũ.
+- Quay/chụp: `pnpm shots hitdir --out <thư mục> --mode video [--die front|back] [--gender m|f]` (webm ~15 s) và `--mode stills` (ảnh +30/+150 ms sau đòn nặng, chết +0,6/+1,8 s).
