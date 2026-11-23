@@ -5,7 +5,7 @@ import { sleep } from '../lib/devserver';
 import fs from 'node:fs';
 import { Bots } from '../lib/bots';
 import { list, num, size } from '../lib/env';
-import { cam, gm } from '../lib/game';
+import { gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { writeJson } from '../lib/shot';
 import path from 'node:path';

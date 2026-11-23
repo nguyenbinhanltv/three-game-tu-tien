@@ -20,6 +20,8 @@ export const THIEN_Y_SHEER: Record<string, number> = {
   sleeve_rb: 0.85,
   ribbon_l: 0.9,
   ribbon_r: 0.9,
+  ribbon_bl: 0.9,
+  ribbon_br: 0.9,
 };
 
 /** Ba lớp váy xếp tầng: trong (ngà, ngắn), giữa (sao xanh lam), ngoài (voan tím, rộng + dài nhất). */
@@ -138,7 +140,7 @@ export function fitThienY(inp: ThienYInput, opt: ThienYOptions = {}): ClothGrid[
     const nuS = opt.sleeveCols ?? 12;
     const rows = opt.sleeveRows ?? 8;
     // Tay áo hai lớp phồng ngược nhau (trước/sau): nhìn từ trên là ống cong, không phải tấm phẳng bung như cánh.
-    const bow = 0.07 * k;
+    const bow = 0.1 * k;
     for (const [lay, sign] of [
       ['a', 1],
       ['b', -1],
@@ -148,32 +150,45 @@ export function fitThienY(inp: ThienYInput, opt: ThienYOptions = {}): ClothGrid[
           `sleeve_${sd}${lay}`,
           p0,
           p1,
-          drop * 0.8,
+          drop * 0.65,
           nuS,
           rows,
           { bone: `upperarm_${sd}`, w: [1, 0.55, 0.2] },
-          1.5,
+          1.2,
           [0, -1, 0],
           (_r, c) => (c < nuS / 2 ? `upperarm_${sd}` : `lowerarm_${sd}`),
           bow * sign * (sd === 'l' ? 1 : -1),
         ),
       );
     }
-    // Dải lụa buộc ở hông (chuỗi verlet hẹp): treo từ cạnh hông ra sau, dài ~0,55 m, mỏng, phấp phới.
+    // Dải lụa (chuỗi verlet): hai dải buộc ở hông ra sau + hai dải ở bả vai buông xuống lưng; dài/rộng để thấy được ở góc chéo.
     const pel2 = joint('pelvis');
-    const sx = (sd === 'l' ? 1 : -1) * 0.14 * k;
+    const sp3 = joint('spine_03');
+    const sx = (sd === 'l' ? 1 : -1) * 0.15 * k;
     out.push(
       panelGrid(
         `ribbon_${sd}`,
-        [pel2[0] + sx, pel2[1] + 0.02 * k, pel2[2] - 0.12 * k],
-        [pel2[0] + sx * 1.1, pel2[1] + 0.02 * k, pel2[2] - 0.17 * k],
-        0.55 * k,
-        2,
-        10,
+        [pel2[0] + sx, pel2[1] + 0.02 * k, pel2[2] - 0.1 * k],
+        [pel2[0] + sx * 1.35, pel2[1] + 0.02 * k, pel2[2] - 0.2 * k],
+        0.95 * k,
+        3,
+        12,
         { bone: 'pelvis', w: [1, 0.5, 0.2] },
-        1.4,
+        1.6,
         [0, -1, 0],
         () => 'pelvis',
+      ),
+      panelGrid(
+        `ribbon_b${sd}`,
+        [sp3[0] + sx * 0.55, sp3[1] - 0.02 * k, sp3[2] - 0.13 * k],
+        [sp3[0] + sx * 0.95, sp3[1] - 0.02 * k, sp3[2] - 0.17 * k],
+        1.15 * k,
+        3,
+        12,
+        { bone: 'spine_03', w: [1, 0.5, 0.2] },
+        1.5,
+        [0, -1, 0],
+        () => 'spine_03',
       ),
     );
   }

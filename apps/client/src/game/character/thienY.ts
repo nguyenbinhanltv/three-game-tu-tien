@@ -16,7 +16,7 @@ import {
 } from '@dtl/shared';
 
 /** Màu trung bình (0..1, sRGB) của texture các lưới cũ ở đúng các UV đỉnh của chúng; không đọc được thì màu tím nhạt mặc định. */
-export function averageTexColor(meshes: THREE.Mesh[]): [number, number, number] {
+export function averageTexColor(meshes: THREE.Mesh[], palette?: [number, number, number][]): [number, number, number] {
   const def: [number, number, number] = [0.72, 0.65, 0.9];
   try {
     let r = 0,
@@ -43,6 +43,7 @@ export function averageTexColor(meshes: THREE.Mesh[]): [number, number, number] 
         g += d[1]!;
         b += d[2]!;
         n++;
+        if (palette && palette.length < 24 && n % 7 === 0) palette.push([d[0]! / 255, d[1]! / 255, d[2]! / 255]);
       }
     }
     return n ? [r / n / 255, g / n / 255, b / n / 255] : def;
@@ -52,8 +53,8 @@ export function averageTexColor(meshes: THREE.Mesh[]): [number, number, number] 
 }
 
 /** Texture voan: màu áo (đậm hơn ở trên, nhạt ở gấu), alpha giảm dần về gấu và mờ ở hai mép; v = 0 ở hàng ghim. */
-export function voanTexture(c: [number, number, number]): THREE.Texture {
-  const W = 8;
+export function voanTexture(c: [number, number, number], palette: [number, number, number][] = []): THREE.Texture {
+  const W = 32;
   const H = 64;
   const cv = document.createElement('canvas');
   cv.width = W;
@@ -63,12 +64,15 @@ export function voanTexture(c: [number, number, number]): THREE.Texture {
   for (let y = 0; y < H; y++)
     for (let x = 0; x < W; x++) {
       const t = y / (H - 1);
-      const edge = Math.min(1, Math.min(x, W - 1 - x) / 1.5 + 0.35);
+      const edge = Math.min(1, Math.min(x, W - 1 - x) / 4 + 0.35);
       const k = 0.78 + 0.32 * t;
       const i = (y * W + x) * 4;
-      img.data[i] = Math.min(255, c[0] * 255 * k);
-      img.data[i + 1] = Math.min(255, c[1] * 255 * k);
-      img.data[i + 2] = Math.min(255, c[2] * 255 * k);
+      // hoa văn từ áo: sọc dọc (nếp vải) lấy màu từ bảng màu mẫu của tay áo cũ, pha 55% với màu trung bình để không loang
+      const pc = palette.length ? palette[(Math.floor(x / 2) * 5 + Math.floor(y / 14) * 3) % palette.length]! : c;
+      const m = palette.length ? 0.45 : 0;
+      img.data[i] = Math.min(255, (c[0] * (1 - m) + pc[0] * m) * 255 * k);
+      img.data[i + 1] = Math.min(255, (c[1] * (1 - m) + pc[1] * m) * 255 * k);
+      img.data[i + 2] = Math.min(255, (c[2] * (1 - m) + pc[2] * m) * 255 * k);
       img.data[i + 3] = 255 * (0.92 - 0.45 * t) * edge;
     }
   cx.putImageData(img, 0, 0);
@@ -90,7 +94,7 @@ const PARAMS: Record<string, ClothParams> = {
   // Biên độ giới hạn (dây neo ngắn): lướt/đòn nặng không bung tay áo ra như cánh.
   sleeve: { ...CLOTH_DEFAULT, tether: 0.3, tetherPow: 1.6, damping: 0.96, iterations: 2 },
   // Dải lụa: nhẹ (trọng lực thấp), phấp phới nhưng neo trong ~0,4 m.
-  ribbon: { ...CLOTH_DEFAULT, gravity: 4.5, tether: 0.4, tetherPow: 1.0, damping: 0.985, iterations: 2, bend: 0.05 },
+  ribbon: { ...CLOTH_DEFAULT, gravity: 7.5, tether: 0.4, tetherPow: 1.0, damping: 0.985, iterations: 2, bend: 0.05 },
 };
 const paramsOf = (id: string): ClothParams => PARAMS[id] ?? PARAMS.sleeve!;
 
@@ -183,9 +187,12 @@ export class ClothRig {
   private acc = 0;
   private pending = 0;
   private pen = 0;
+  /** Mức khép tay áo [trái, phải] 0..1 theo độ nhấc cánh tay (tính mỗi khung). */
+  private fold = [0, 0];
   private penMax = 0;
   /** Bật đo xuyên thân (kịch bản chụp): đếm đỉnh vải nằm trong viên nang mỗi khung mô phỏng. */
   measurePen = false;
+  private palette: [number, number, number][] = [];
   private tint: [number, number, number] = [0.72, 0.65, 0.9];
   private t = 0;
   private lastRoot = new THREE.Vector3();
@@ -228,7 +235,10 @@ export class ClothRig {
       }
     }
     // Màu voan = trung bình texture tay áo cũ, pha 45% về tông áo ấm (hồng nhạt) để không lệch xanh so với thân áo.
-    const avg = averageTexColor(oldMeshes.filter((m) => m.name.includes('oldsleeve')));
+    const avg = averageTexColor(
+      oldMeshes.filter((m) => m.name.includes('oldsleeve')),
+      this.palette,
+    );
     this.tint = [avg[0] * 0.55 + 0.8 * 0.45, avg[1] * 0.55 + 0.68 * 0.45, avg[2] * 0.55 + 0.72 * 0.45];
     this.grids = fitThienY({ joint, skirtPts: skirtPos, sleevePts: sleevePos, height }, opt);
     for (const g of this.grids)
@@ -271,7 +281,7 @@ export class ClothRig {
       geo.setIndex(new THREE.BufferAttribute(index, 1));
       const mat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        map: !solid ? voanTexture(this.tint) : (opt.map ?? null),
+        map: !solid ? voanTexture(this.tint, this.palette) : (opt.map ?? null),
         roughness: 0.85,
         metalness: 0,
         side: THREE.DoubleSide,
@@ -342,12 +352,29 @@ export class ClothRig {
     if (!freshMatrices) this.root.updateMatrixWorld(true);
     const bind = this.skinned.bindMatrix;
     for (const p of this.pins.values()) p.m.copy(p.bone.matrixWorld).multiply(p.ibm).multiply(bind);
+    for (let sd = 0; sd < 2; sd++) {
+      const ua = this.pins.get(`upperarm_${sd === 0 ? 'l' : 'r'}`);
+      const la = this.pins.get(`lowerarm_${sd === 0 ? 'l' : 'r'}`);
+      if (!ua || !la) continue;
+      _a.setFromMatrixPosition(ua.bone.matrixWorld);
+      _v.setFromMatrixPosition(la.bone.matrixWorld).sub(_a);
+      const up = _v.y / (_v.length() || 1); // -1 buông xuống, 0 ngang, 1 giơ thẳng lên
+      this.fold[sd] = Math.min(0.7, Math.max(0, (up + 0.55) / 0.9) * 0.7);
+    }
     // vị trí đích: skin của vị trí nghỉ theo xương ghim của từng đỉnh (cho MỌI đỉnh: dây neo cần)
     this.grids.forEach((g, gi) => {
       const tgt = this.targets[gi]!;
       for (let i = 0; i < g.nu * g.nv; i++) {
         const pm = this.pins.get(g.pinBone[i]!)!;
         _v.set(g.rest[3 * i]!, g.rest[3 * i + 1]!, g.rest[3 * i + 2]!).applyMatrix4(pm.m);
+        if (g.id.startsWith('sleeve')) {
+          // khép tấm về trục cánh tay khi tay nhấc cao (giới hạn góc bung): kéo đỉnh về gốc xương ghim tay áo theo mức nhấc
+          const f = this.fold[g.id.charAt(7) === 'l' ? 0 : 1]!;
+          if (f > 0) {
+            _a.setFromMatrixPosition(pm.bone.matrixWorld);
+            _v.lerp(_a, f);
+          }
+        }
         tgt[3 * i] = _v.x;
         tgt[3 * i + 1] = _v.y;
         tgt[3 * i + 2] = _v.z;
