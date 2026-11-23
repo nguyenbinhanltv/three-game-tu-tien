@@ -43,7 +43,17 @@ describe('CameraShake', async () => {
     expect(s.level).toBe(0);
     s.kick(1);
     expect(s.level).toBe(0);
-    expect(store.get('dtl.camShake')).toBe('0');
+    expect(store.get('dtl.camShakePct')).toBe('0');
     expect(new CameraShake().enabled).toBe(false);
+  });
+
+  it('cường độ 50% nhân mức rung; cường độ cũ (công tắc tắt) đọc thành 0%', () => {
+    const s = new CameraShake();
+    s.setPct(50);
+    s.kick(1);
+    expect(s.level).toBeCloseTo(0.5, 5);
+    store.clear();
+    store.set('dtl.camShake', '0');
+    expect(new CameraShake().pct).toBe(0);
   });
 });

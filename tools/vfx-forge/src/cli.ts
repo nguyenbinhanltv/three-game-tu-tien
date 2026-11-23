@@ -3,6 +3,9 @@
 //        [--erode <ảnh xám>] [--distort <ảnh xám>] [--max 1024] [--no-ktx] [--out <thư mục>] [--sheets <thư mục>] [--note <chữ>]
 //   pnpm --filter @dtl/vfx-forge forge sample --out <thư mục>    sinh ảnh mẫu (flipbook nền đen 4x4 và 8x8, bản trong suốt, noise)
 //   pnpm --filter @dtl/vfx-forge forge check [--out <thư mục>]    kiểm manifest (CI)
+//   pnpm --filter @dtl/vfx-forge forge concept --card <skillId> --shot <ảnh chụp game> [--ref <ảnh mẫu đã duyệt>]... --out <thư mục ngoài repo>
+//   pnpm --filter @dtl/vfx-forge forge texture --card <skillId> --kind flipbook|slash|decal|noise|ramp --name <tên> [--grid 4x4] [--ref <ảnh>]... --out <thư mục ngoài repo>
+//   (concept/texture gọi Codex; thêm --dry chỉ in prompt)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,12 +13,15 @@ import type { AlphaMode } from './forge.js';
 import { sampleSlashFlipbook, sampleTileNoise } from './samples.js';
 import { checkManifest, forge } from './pipeline.js';
 import { toPng } from './io.js';
+import { conceptJob, runCodex, textureJob } from './codex.js';
+import type { TextureKind } from './prompts.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const DEFAULT_OUT = path.join(root, 'apps/client/public/assets/vfx');
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
+const flags = (n: string): string[] => argv.flatMap((a, i) => (a === n && argv[i + 1] ? [argv[i + 1]!] : []));
 const flag = (n: string, d?: string): string | undefined => {
   const i = argv.indexOf(n);
   return i >= 0 ? (argv[i + 1] ?? d) : d;
@@ -55,6 +61,28 @@ async function main(): Promise<void> {
     const e = res.entry;
     console.log(`${e.id}: ${e.file} ${e.size.join('×')} lưới ${e.grid.cols}×${e.grid.rows} ${e.format} ${(e.bytes / 1024).toFixed(1)} KB`);
     for (const w of res.warnings) console.warn(`cảnh báo: ${w}`);
+  } else if (cmd === 'concept' || cmd === 'texture') {
+    const card = flag('--card');
+    const out = flag('--out');
+    if (!card || !out) throw new Error(`dùng: ${cmd} --card <skillId> --out <thư mục>`);
+    let job;
+    if (cmd === 'concept') {
+      const shot = flag('--shot');
+      if (!shot) throw new Error('concept cần --shot <ảnh chụp game camera chéo>');
+      job = conceptJob(root, card, shot, flags('--ref'), out);
+    } else {
+      const kind = flag('--kind') as TextureKind | undefined;
+      const name = flag('--name');
+      if (!kind || !name) throw new Error('texture cần --kind và --name');
+      job = textureJob(root, card, kind, name, flag('--grid') ?? '4x4', flags('--ref'), out);
+    }
+    if (argv.includes('--dry')) {
+      console.log(job.prompt);
+      return;
+    }
+    const res = await runCodex(job);
+    if (!res.file) throw new Error(`Codex không ra ảnh (mã thoát ${res.code ?? 'không có'}); xem log: ${res.log}`);
+    console.log(`đã sinh ${res.file}`);
   } else if (cmd === 'check') {
     const errs = checkManifest(flag('--out') ?? DEFAULT_OUT);
     for (const e of errs) console.error(e);

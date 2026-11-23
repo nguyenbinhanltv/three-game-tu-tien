@@ -899,10 +899,10 @@
   --sz: 44px;
 }
 
-/* ───────── dải tên chiêu vệt mực (giữa-dưới) ───────── */
+/* ───────── dải tên chiêu vệt mực (giữa-trên, dưới khung mục tiêu: camera chéo đặt người và mục tiêu quanh giữa màn hình, nên không đặt ở giữa-dưới) ───────── */
 .u2h-banner {
   left: calc(var(--h-W) / 2);
-  bottom: 230px;
+  top: 96px;
   transform: translateX(-50%);
   pointer-events: none;
   animation: u2h-banner-out var(--u-dur-open) var(--u-ease) 1050ms both;

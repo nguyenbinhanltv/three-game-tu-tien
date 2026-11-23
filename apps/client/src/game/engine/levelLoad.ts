@@ -5,6 +5,7 @@ import { heightAt, levelAssets, levelId, levelTerrain } from '../../base/levelCt
 import { LEVELS, MONSTER } from '@dtl/content';
 import { get } from '../../ui/store';
 import { Butterflies, BUTTERFLY_LEVELS } from '../world/butterflies';
+import { Breakables, BREAKABLES_BY_LEVEL } from '../world/breakables';
 import { Grass } from '../world/grass';
 import { applyAtmosphere, createLanternHalos, setHeightFog, tuneAtmosphere } from '../../render/atmosphere';
 import { buildRiftVeil } from '../../render/riftVeil';
@@ -621,6 +622,11 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.butterflies.setQuality(get().quality);
     eng.scene.add(eng.butterflies.mesh);
   }
+  const brk = BREAKABLES_BY_LEVEL[id];
+  if (brk && FLAGS.breakables) {
+    eng.breakables = new Breakables(brk);
+    eng.scene.add(eng.breakables.group);
+  }
 }
 
 /** Gắn bộ texture mặt đất (nếu đã nạp) vào địa hình hiện tại theo khai báo của level. */
@@ -775,6 +781,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.godRays.mesh);
     eng.godRays.dispose();
     eng.godRays = null;
+  }
+  if (eng.breakables) {
+    drop(eng.breakables.group);
+    eng.breakables.dispose();
+    eng.breakables = null;
   }
   if (eng.butterflies) {
     drop(eng.butterflies.mesh);
