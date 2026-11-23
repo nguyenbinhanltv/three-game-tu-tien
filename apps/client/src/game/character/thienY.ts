@@ -28,22 +28,25 @@ export function averageTexColor(meshes: THREE.Mesh[], palette?: [number, number,
       const img = mat.map?.image as CanvasImageSource & { width: number; height: number };
       const uv = m.geometry.getAttribute('uv');
       if (!img || !uv || !img.width) continue;
+      // thu nhỏ về 64×64 một lần rồi đọc cả khối (getImageData từng điểm trên texture gốc 2K+ tốn vài ms lúc tạo model)
+      const S = 64;
       const cv = document.createElement('canvas');
-      cv.width = img.width;
-      cv.height = img.height;
+      cv.width = S;
+      cv.height = S;
       const cx = cv.getContext('2d', { willReadFrequently: true });
       if (!cx) continue;
-      cx.drawImage(img, 0, 0);
+      cx.drawImage(img, 0, 0, S, S);
+      const px = cx.getImageData(0, 0, S, S).data;
       const step = Math.max(1, Math.floor(uv.count / 200));
       for (let i = 0; i < uv.count; i += step) {
-        const x = Math.min(cv.width - 1, Math.max(0, Math.floor(uv.getX(i) * cv.width)));
-        const y = Math.min(cv.height - 1, Math.max(0, Math.floor((mat.map!.flipY ? 1 - uv.getY(i) : uv.getY(i)) * cv.height)));
-        const d = cx.getImageData(x, y, 1, 1).data;
-        r += d[0]!;
-        g += d[1]!;
-        b += d[2]!;
+        const x = Math.min(S - 1, Math.max(0, Math.floor(uv.getX(i) * S)));
+        const y = Math.min(S - 1, Math.max(0, Math.floor((mat.map!.flipY ? 1 - uv.getY(i) : uv.getY(i)) * S)));
+        const o = (y * S + x) * 4;
+        r += px[o]!;
+        g += px[o + 1]!;
+        b += px[o + 2]!;
         n++;
-        if (palette && palette.length < 24 && n % 7 === 0) palette.push([d[0]! / 255, d[1]! / 255, d[2]! / 255]);
+        if (palette && palette.length < 24 && n % 7 === 0) palette.push([px[o]! / 255, px[o + 1]! / 255, px[o + 2]! / 255]);
       }
     }
     return n ? [r / n / 255, g / n / 255, b / n / 255] : def;
@@ -305,6 +308,8 @@ export class ClothRig {
       this.normals.push(new Float32Array(g.nu * g.nv * 3));
     });
 
+    this.warm();
+
     // ---- viên nang va chạm (thế giới): hông, đùi, cẳng, thân, tay ----
     const spec: [string, string, number][] = [
       ['pelvis', 'spine_01', 0.11],
@@ -327,6 +332,16 @@ export class ClothRig {
         this.capOut.push({ ax: 0, ay: 0, az: 0, bx: 0, by: 0, bz: 0, r: r * k });
       }
     }
+  }
+
+  /** Chạy thử vài bước giải ở lúc dựng model (JIT + bộ nhớ) để khung đầu tiên hiện vải không đột biến vài ms. */
+  private warm(): void {
+    this.grids.forEach((g, gi) => {
+      const sim = this.sims[gi]!;
+      sim.reset(g.rest);
+      for (let i = 0; i < 6; i++) sim.step(1 / 60, g.rest, [], [0, 0, 0], -1e9);
+      sim.normals(this.normals[gi]!);
+    });
   }
 
   /** Hiện vải mô phỏng và ẩn vải cũ (hoặc ngược lại khi LOD xa/khuất). */

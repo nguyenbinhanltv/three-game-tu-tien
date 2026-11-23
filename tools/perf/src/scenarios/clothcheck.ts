@@ -4,30 +4,46 @@
 import { sleep } from '../lib/devserver';
 import fs from 'node:fs';
 import { Bots } from '../lib/bots';
-import { list, num, size } from '../lib/env';
+import { list, num, opt, size } from '../lib/env';
 import { gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { writeJson } from '../lib/shot';
 import path from 'node:path';
 
+/** Bộ v3 có lưới vải tách riêng (`--split-cloth`): id bộ → lệnh GM mặc bộ. */
+const SET_GM: Record<string, string> = {
+  co_thanh: 'set set_co_thanh',
+  dia_long: 'set set_dia_giap',
+  kinh_quang: 'set set_kinh_quang',
+  liet_mach: 'set set_liet_mach',
+  luu_ly: 'set set_luu_ly',
+  phuc_mach: 'set set_phuc_mach',
+  than_tang: 'set set_than_tang',
+  tinh_khuyet: 'set set_tinh_khuyet',
+  van_kinh: 'set set_van_kinh',
+};
+
 export default {
   name: 'clothcheck',
   desc: 'C4: Tinh Khuyết nữ lò xo vs vải Thiên Y (?cloth=1): đứng/chạy/lướt/đòn nặng/đả tọa/ngự kiếm + đo ms/khung của vải',
-  usage: '[--variants lo-xo,thien-y] [--size 1920x1080] [--video 1] [--bots 9]',
+  usage: '[--set tinh_khuyet] [--gender f|m] [--variants lo-xo,thien-y] [--size 1920x1080] [--video 1] [--bots 9]',
   env: { RATE_LIMIT_EXEMPT: 'loopback', MAX_CLIENTS: '64' },
   async run(r) {
     const viewport = size('1920x1080');
     const variants = list('--variants', 'lo-xo,thien-y');
+    const setId = opt('--set', 'tinh_khuyet');
+    const gen = opt('--gender', 'f');
+    const gname = gen === 'm' ? 'nam' : 'nu';
     const result: Record<string, unknown> = {};
     const video = num('--video', 0) > 0;
     const nBots = num('--bots', 0);
     for (const variant of variants) {
-      const tag = `tinh-khuyet-nu-${variant}-${viewport[1]}p`;
+      const tag = `${setId}-${gname}-${variant}-${viewport[1]}p`;
       const { page } = await r.open({
         name: `C${variant}`,
         viewport,
         quality: 'high',
-        look: { g: 'f' },
+        look: { g: gen },
         query: { chr: 'v3', cam: 'iso', ...(variant === 'thien-y' ? { cloth: '1' } : {}) },
         hide: 'hud',
         warnings: /models|chr_v3|clip/,
@@ -37,9 +53,9 @@ export default {
       if (bots)
         await bots.start(nBots, `cb${variant.slice(0, 2)}`, [
           '--genders',
-          'f',
+          gen,
           '--set',
-          'set_tinh_khuyet',
+          SET_GM[setId]!.replace('set ', ''),
           '--level',
           '15',
           '--crowd',
@@ -48,7 +64,7 @@ export default {
         ]);
       await gm(page, 'level 15', 1500);
       await gm(page, 'god on', 1200);
-      await gm(page, 'set set_tinh_khuyet', 1500);
+      await gm(page, SET_GM[setId] ?? `set set_${setId}`, 1500);
       await gm(page, 'killall', 800);
       await gm(page, 'tp 2048 2088', 1500);
       await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
@@ -124,6 +140,6 @@ export default {
         fs.rmSync(path.join(r.out, `_rec-${variant}`), { recursive: true, force: true });
       } else await page.close();
     }
-    writeJson(r.out, `clothcheck-${viewport[1]}p-${variants.join('_')}.json`, result);
+    writeJson(r.out, `clothcheck-${setId}-${gname}-${viewport[1]}p-${variants.join('_')}.json`, result);
   },
 } satisfies Scenario;
