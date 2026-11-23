@@ -161,7 +161,7 @@
     0,
     0
    ],
-   "scale": 1.4,
+   "scale": 2.52,
    "sweep": 0,
    "erodeFrom": 0.98,
    "alpha": 1,
@@ -174,7 +174,7 @@
     ],
     "ease": "out"
    },
-   "tone": "core",
+   "tone": "body",
    "tier": 0,
    "seed": 0.5,
    "camFade": true
@@ -195,7 +195,7 @@
     0,
     0
    ],
-   "scale": 1.4,
+   "scale": 2.52,
    "scaleTo": 0.8,
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -209,7 +209,7 @@
     ],
     "ease": "in"
    },
-   "tone": "core",
+   "tone": "body",
    "tier": 0,
    "seed": 0.5,
    "camFade": true
@@ -230,7 +230,7 @@
     70,
     15
    ],
-   "scale": 1.4,
+   "scale": 2.52,
    "sweep": 0,
    "erodeFrom": 0.98,
    "alpha": 1,
@@ -243,7 +243,7 @@
     ],
     "ease": "out"
    },
-   "tone": "core",
+   "tone": "body",
    "tier": 0,
    "seed": 1.5,
    "camFade": true
@@ -264,7 +264,7 @@
     70,
     15
    ],
-   "scale": 1.4,
+   "scale": 2.52,
    "scaleTo": 0.8,
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -278,7 +278,7 @@
     ],
     "ease": "in"
    },
-   "tone": "core",
+   "tone": "body",
    "tier": 0,
    "seed": 1.5,
    "camFade": true
@@ -299,7 +299,7 @@
     140,
     30
    ],
-   "scale": 1.4,
+   "scale": 2.52,
    "sweep": 0,
    "erodeFrom": 0.98,
    "alpha": 1,
@@ -312,7 +312,7 @@
     ],
     "ease": "out"
    },
-   "tone": "core",
+   "tone": "body",
    "tier": 0,
    "seed": 2.5,
    "camFade": true
@@ -333,7 +333,7 @@
     140,
     30
    ],
-   "scale": 1.4,
+   "scale": 2.52,
    "scaleTo": 0.8,
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -347,7 +347,7 @@
     ],
     "ease": "in"
    },
-   "tone": "core",
+   "tone": "body",
    "tier": 0,
    "seed": 2.5,
    "camFade": true
@@ -368,7 +368,7 @@
     210,
     45
    ],
-   "scale": 1.4,
+   "scale": 2.52,
    "sweep": 0,
    "erodeFrom": 0.98,
    "alpha": 1,
@@ -381,7 +381,7 @@
     ],
     "ease": "out"
    },
-   "tone": "core",
+   "tone": "body",
    "tier": 0,
    "seed": 3.5,
    "camFade": true
@@ -402,7 +402,7 @@
     210,
     45
    ],
-   "scale": 1.4,
+   "scale": 2.52,
    "scaleTo": 0.8,
    "sweep": 0,
    "erodeFrom": 0.7,
@@ -416,7 +416,7 @@
     ],
     "ease": "in"
    },
-   "tone": "core",
+   "tone": "body",
    "tier": 0,
    "seed": 3.5,
    "camFade": true
@@ -477,8 +477,8 @@
    "sweep": 0.05,
    "erodeFrom": 0.08,
    "ragged": 0.6,
-   "tone": "body",
-   "alpha": 0.7,
+   "tone": "accent",
+   "alpha": 0.9,
    "ink": true,
    "shadow": true,
    "seed": 3,
@@ -504,7 +504,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 1,
    "tier": 1
   },
@@ -528,7 +528,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 2,
    "tier": 1
   },
@@ -552,7 +552,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 3,
    "tier": 1
   },
@@ -576,7 +576,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 4,
    "tier": 1
   },
@@ -600,7 +600,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 5,
    "tier": 1
   },
@@ -624,7 +624,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 6,
    "tier": 1
   },
@@ -648,7 +648,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 7,
    "tier": 1
   },
@@ -672,7 +672,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 8,
    "tier": 1
   },
@@ -696,7 +696,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 9,
    "tier": 1
   },
@@ -720,7 +720,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 10,
    "tier": 1
   },
@@ -744,7 +744,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 11,
    "tier": 1
   },
@@ -768,7 +768,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 12,
    "tier": 1
   },
@@ -792,7 +792,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 13,
    "tier": 1
   },
@@ -816,7 +816,7 @@
    "sweep": 0.15,
    "erodeFrom": 0.45,
    "alpha": 1,
-   "tone": "body",
+   "tone": "accent",
    "seed": 14,
    "tier": 1
   }
