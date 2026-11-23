@@ -47,3 +47,29 @@ export function groundFootprint(
   }
   return out;
 }
+
+/** Camera tối thiểu để suy ra vùng thấy (khớp `THREE.PerspectiveCamera`, không import three vào UI). */
+export interface CamLike {
+  position: V3;
+  quaternion: { x: number; y: number; z: number; w: number };
+  fov: number;
+  aspect: number;
+}
+
+/** Vùng mặt đất camera thấy: hướng nhìn = trục −Z của camera quay theo quaternion. */
+export function footprintOfCamera(cam: CamLike, groundY: number): { x: number; z: number }[] {
+  const q = cam.quaternion;
+  const fwd = { x: -2 * (q.x * q.z + q.w * q.y), y: -2 * (q.y * q.z - q.w * q.x), z: -(1 - 2 * (q.x * q.x + q.y * q.y)) };
+  return groundFootprint(cam.position, fwd, cam.fov, cam.aspect, groundY);
+}
+
+/** Điểm (x, z) có nằm trong đa giác không (đa giác lồi hay lõm đều được). */
+export function pointInPoly(poly: readonly { x: number; z: number }[], x: number, z: number): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i]!;
+    const b = poly[j]!;
+    if (a.z > z !== b.z > z && x < ((b.x - a.x) * (z - a.z)) / (b.z - a.z) + a.x) inside = !inside;
+  }
+  return inside;
+}

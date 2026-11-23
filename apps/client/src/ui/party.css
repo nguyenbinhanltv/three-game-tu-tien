@@ -195,3 +195,38 @@
 .hud.duel-on .toasts {
   top: 142px;
 }
+
+/* Buff đan của đồng đội và chỉ báo ngoài tầm nhìn (Chân Cảnh U9) */
+.pty-row {
+  position: relative;
+}
+.buff-row.small {
+  justify-content: flex-start;
+  margin-top: 3px;
+  gap: 4px;
+}
+.buff-row.small .buff-chip {
+  font-size: 10px;
+}
+.buff-row.small .buff-chip .content-icon,
+.buff-row.small .buff-chip .sys-glyph {
+  width: 16px;
+  height: 16px;
+}
+.pty-away {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--u-gold-hi);
+  text-shadow: 0 1px 2px var(--u-ink-0);
+}
+.pty-away svg path {
+  fill: var(--u-gold-hi);
+}
+.pty-row[data-away='1'] {
+  border-left-color: var(--u-gold-hi);
+}

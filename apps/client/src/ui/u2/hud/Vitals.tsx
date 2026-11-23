@@ -10,15 +10,22 @@ import { ResourceBar } from './ResourceBar';
 
 const BUFF_ICON: Record<string, string> = { atk: 'buff_atk', def: 'buff_def', crit: 'buff_crit' };
 
-/** Hàng đan tăng sức đang có hiệu lực (P3-8), kèm thời gian còn lại. */
-export function BuffRow() {
-  const buffs = useUI((s) => s.method?.buffs);
-  const off = useUI((s) => s.methodOff);
-  const now = useNow(1000);
+/** Chip đan tăng sức kèm đếm giờ (dùng cho mình ở chân thanh chiêu và cho đồng đội ở khung tổ đội). `off` = độ lệch giờ server → giờ máy. */
+export function BuffChips({
+  buffs,
+  off,
+  now,
+  small,
+}: {
+  buffs: Record<string, [number, number]> | undefined;
+  off: number;
+  now: number;
+  small?: boolean;
+}) {
   const list = Object.entries(buffs ?? {}).filter(([, [, until]]) => until + off > now);
   if (!list.length) return null;
   return (
-    <div className="buff-row" aria-label={t('ui.buff.title')}>
+    <div className={'buff-row' + (small ? ' small' : '')} aria-label={t('ui.buff.title')}>
       {list.map(([kind, [mag, until]]) => {
         const left = Math.max(0, Math.ceil((until + off - now) / 1000));
         return (
@@ -43,6 +50,14 @@ export function BuffRow() {
       })}
     </div>
   );
+}
+
+/** Hàng đan tăng sức của mình (P3-8), kèm thời gian còn lại. */
+export function BuffRow() {
+  const buffs = useUI((s) => s.method?.buffs);
+  const off = useUI((s) => s.methodOff);
+  const now = useNow(1000);
+  return <BuffChips buffs={buffs} off={off} now={now} />;
 }
 
 /** Máu (trái) + linh lực (phải) quanh chân thanh chiêu, buff dưới thanh máu. Chỉ dùng ở bố cục thanh ngang PC. */
