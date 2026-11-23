@@ -18,7 +18,7 @@
 
 ## Luật thứ bậc thị giác (runtime)
 
-Chiêu của mình > cảnh báo địch > chiêu đồng đội (`fxHierarchy`: giảm 50% độ sáng và kích thước) > hào quang/môi trường. **Chế độ tĩnh** (Cài đặt) giảm đồng đội còn 25% và tắt khung va chạm.
+Chiêu của mình > cảnh báo địch > chiêu đồng đội (`fxHierarchy`: giảm 50% độ sáng và kích thước) > hào quang/môi trường. **Chế độ tĩnh** (Cài đặt) giảm đồng đội còn 25% độ sáng, tắt khung va chạm, chớp và viền.
 
 ## Khung va chạm
 

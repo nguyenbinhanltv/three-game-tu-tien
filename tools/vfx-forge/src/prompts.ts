@@ -105,4 +105,5 @@ ${sb}`;
 }
 
 /** Phần mềm chạy Codex đọc tiêu đề này để biết cần đính kèm những ảnh nào (xem codex.ts). */
-export const DEFAULT_RUN_NOTE = 'Use the built-in image generation tool to create exactly ONE image from the brief below, then copy the generated PNG to ./OUT in the current directory (shell copy). Do nothing else.';
+export const DEFAULT_RUN_NOTE =
+  'Use the built-in image generation tool to create exactly ONE image from the brief below, then copy the generated PNG to ./OUT in the current directory (shell copy). Do nothing else.';

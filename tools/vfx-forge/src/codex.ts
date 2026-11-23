@@ -13,7 +13,8 @@ export function loadCard(root: string, skillId: string): VfxCard {
   return JSON.parse(fs.readFileSync(f, 'utf8')) as VfxCard;
 }
 
-export const loadStyle = (root: string): StyleSheet => JSON.parse(fs.readFileSync(path.join(root, 'tools/vfx-forge/style-sheet.json'), 'utf8')) as StyleSheet;
+export const loadStyle = (root: string): StyleSheet =>
+  JSON.parse(fs.readFileSync(path.join(root, 'tools/vfx-forge/style-sheet.json'), 'utf8')) as StyleSheet;
 
 /** Bảng màu của hướng tu trong thẻ (paths.json → palette). */
 export function paletteOfCard(card: VfxCard): PalHex {
@@ -61,7 +62,15 @@ export function conceptJob(root: string, skillId: string, shot: string, refs: st
   return { name: `${skillId}_concept`, prompt: conceptPrompt(card, loadStyle(root), paletteOfCard(card)), images: [shot, ...refs], outDir };
 }
 
-export function textureJob(root: string, skillId: string, kind: TextureKind, name: string, grid: string, refs: string[], outDir: string): CodexJob {
+export function textureJob(
+  root: string,
+  skillId: string,
+  kind: TextureKind,
+  name: string,
+  grid: string,
+  refs: string[],
+  outDir: string,
+): CodexJob {
   const card = loadCard(root, skillId);
   return { name, prompt: texturePrompt(kind, card, loadStyle(root), paletteOfCard(card), grid), images: refs, outDir };
 }
