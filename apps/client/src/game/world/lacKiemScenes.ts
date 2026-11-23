@@ -1,5 +1,22 @@
 import * as THREE from 'three/webgpu';
-import { abs, cameraFar, cameraNear, clamp, float, length, mix, positionView, positionWorld, sin, smoothstep, time, uv, vec3, viewportLinearDepth, viewZToOrthographicDepth } from 'three/tsl';
+import {
+  abs,
+  cameraFar,
+  cameraNear,
+  clamp,
+  float,
+  length,
+  mix,
+  positionView,
+  positionWorld,
+  sin,
+  smoothstep,
+  time,
+  uv,
+  vec3,
+  viewportLinearDepth,
+  viewZToOrthographicDepth,
+} from 'three/tsl';
 import { hash01, SECT } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { withSightFade } from './occlusion';
@@ -84,13 +101,7 @@ export const SCENES: TieuCanh[] = [
     pieces: [
       {
         k: 'loi_vach',
-        pts: [
-          [-92, 54],
-          [-104, 56],
-          [-116, 60],
-          [-128, 64],
-          BRIDGE_A,
-        ],
+        pts: [[-92, 54], [-104, 56], [-116, 60], [-128, 64], BRIDGE_A],
       },
       { k: 'da', x: -108, z: 50, r: 0.9 },
       { k: 'da', x: -122, z: 70, r: 1.0 },
@@ -182,7 +193,20 @@ export class Mesher {
   }
 
   /** Đặt hình `g` tại (x, y, z) với kích thước (sx, sy, sz), xoay yaw quanh Y (sau nghiêng rx quanh X, rz quanh Z). */
-  put(g: THREE.BufferGeometry, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: THREE.Color, yaw = 0, rx = 0, rz = 0, seed = 0): void {
+  put(
+    g: THREE.BufferGeometry,
+    x: number,
+    y: number,
+    z: number,
+    sx: number,
+    sy: number,
+    sz: number,
+    color: THREE.Color,
+    yaw = 0,
+    rx = 0,
+    rz = 0,
+    seed = 0,
+  ): void {
     this.e.set(rx, yaw, rz, 'YXZ');
     this.q.setFromEuler(this.e);
     this.m.compose(this.v.set(x, y, z), this.q, this.s.set(sx, sy, sz));
@@ -199,7 +223,20 @@ export class Mesher {
     this.put(CONE, x, y, z, d, h, d, color, yaw);
   }
   rock(x: number, y: number, z: number, r: number, color: THREE.Color, seed: number): void {
-    this.put(ROCK, x, y, z, r * (0.9 + hash01(seed, 1, 5) * 0.4), r * (0.55 + hash01(seed, 2, 5) * 0.3), r * (0.9 + hash01(seed, 3, 5) * 0.4), color, hash01(seed, 4, 5) * 6.28, 0, 0, seed);
+    this.put(
+      ROCK,
+      x,
+      y,
+      z,
+      r * (0.9 + hash01(seed, 1, 5) * 0.4),
+      r * (0.55 + hash01(seed, 2, 5) * 0.3),
+      r * (0.9 + hash01(seed, 3, 5) * 0.4),
+      color,
+      hash01(seed, 4, 5) * 6.28,
+      0,
+      0,
+      seed,
+    );
   }
   /** Đoạn thẳng dày `t` từ a đến b (dây, xà). */
   seg(a: THREE.Vector3, b: THREE.Vector3, t: number, color: THREE.Color): void {
@@ -305,7 +342,14 @@ function ao(o: Out, p: Extract<ScenePiece, { k: 'ao' }>, i: number): void {
   for (let k = 0; k < n; k++) {
     const a = (k / n) * Math.PI * 2;
     const rr = p.r + 0.4 + hash01(k, i, 2) * 0.5;
-    o.stone.rock(p.x + Math.cos(a) * rr, gy(p.x + Math.cos(a) * rr, p.z + Math.sin(a) * rr) + 0.1, p.z + Math.sin(a) * rr, 0.4 + hash01(k, i, 3) * 0.4, k % 3 ? C.stone : C.stoneDark, k + i * 31);
+    o.stone.rock(
+      p.x + Math.cos(a) * rr,
+      gy(p.x + Math.cos(a) * rr, p.z + Math.sin(a) * rr) + 0.1,
+      p.z + Math.sin(a) * rr,
+      0.4 + hash01(k, i, 3) * 0.4,
+      k % 3 ? C.stone : C.stoneDark,
+      k + i * 31,
+    );
   }
   for (let k = 0; k < 9; k++) {
     const a = hash01(k, i, 4) * Math.PI * 2;
@@ -340,7 +384,7 @@ function cauTreo(o: Out, p: Extract<ScenePiece, { k: 'cau_treo' }>): void {
     const t = (i + 0.5) / N;
     const x = p.ax + dx * len * t;
     const z = p.az + dz * len * t;
-    o.wood.put(BOX, x, deck(t), z, hw * 2, 0.12, 1.0, i % 2 ? C.wood : C.woodDark, yaw, (deck((i + 1) / N) - deck(i / N)) / 1.2 * -1);
+    o.wood.put(BOX, x, deck(t), z, hw * 2, 0.12, 1.0, i % 2 ? C.wood : C.woodDark, yaw, ((deck((i + 1) / N) - deck(i / N)) / 1.2) * -1);
   }
   for (const side of [-1, 1]) {
     const r = rail(side);
@@ -385,7 +429,16 @@ function loiVach(o: Out, pts: [number, number][]): void {
       const z = az + dz * d;
       const y = gy(x, z);
       const jx = (hash01(Math.floor(acc), 1, 8) - 0.5) * 0.3;
-      o.stone.box(x + jx, y + 0.05, z, 1.9, 0.14, 1.3, (Math.floor(acc) & 1 ? C.stone : C.stoneDark), yaw + (hash01(Math.floor(acc), 2, 8) - 0.5) * 0.2);
+      o.stone.box(
+        x + jx,
+        y + 0.05,
+        z,
+        1.9,
+        0.14,
+        1.3,
+        Math.floor(acc) & 1 ? C.stone : C.stoneDark,
+        yaw + (hash01(Math.floor(acc), 2, 8) - 0.5) * 0.2,
+      );
       acc++;
     }
     // cọc bên mép dốc phía thấp hơn
@@ -406,7 +459,14 @@ function loiVach(o: Out, pts: [number, number][]): void {
 }
 
 function build(): Out & { meshes: THREE.Mesh[] } {
-  const o: Out & { meshes: THREE.Mesh[] } = { stone: new Mesher(), wood: new Mesher(), glow: new Mesher(), water: [], mist: [], meshes: [] };
+  const o: Out & { meshes: THREE.Mesh[] } = {
+    stone: new Mesher(),
+    wood: new Mesher(),
+    glow: new Mesher(),
+    water: [],
+    mist: [],
+    meshes: [],
+  };
   let i = 0;
   for (const sc of SCENES) {
     for (const p of sc.pieces) {
@@ -496,11 +556,21 @@ export class LacKiemScenes {
       mat.opacityNode = float(0.88).mul(smoothstep(1.0, 0.94, d));
       mat.emissiveNode = vec3(0.02, 0.06, 0.07);
     } else {
-      const drift = sin(positionWorld.x.mul(0.11).add(time.mul(0.12))).mul(sin(positionWorld.z.mul(0.09).sub(time.mul(0.1)))).mul(0.5).add(0.5);
+      const drift = sin(positionWorld.x.mul(0.11).add(time.mul(0.12)))
+        .mul(sin(positionWorld.z.mul(0.09).sub(time.mul(0.1))))
+        .mul(0.5)
+        .add(0.5);
       mat.colorNode = vec3(0.62, 0.72, 0.74);
       mat.emissiveNode = vec3(0.05, 0.07, 0.08);
       // Mềm mép theo độ sâu: sương mờ dần về 0 khi sát mặt đất (không lộ đường cắt phẳng với địa hình).
-      const soft = clamp(viewportLinearDepth.sub(viewZToOrthographicDepth(positionView.z, cameraNear, cameraFar)).mul(cameraFar.sub(cameraNear)).div(3.0), 0, 1);
+      const soft = clamp(
+        viewportLinearDepth
+          .sub(viewZToOrthographicDepth(positionView.z, cameraNear, cameraFar))
+          .mul(cameraFar.sub(cameraNear))
+          .div(3.0),
+        0,
+        1,
+      );
       mat.opacityNode = smoothstep(1.0, 0.05, d).mul(abs(drift).mul(0.5).add(0.25)).mul(0.5).mul(soft);
     }
     this.mats.push(mat);

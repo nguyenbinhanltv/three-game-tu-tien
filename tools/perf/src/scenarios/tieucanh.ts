@@ -22,7 +22,8 @@ const SIZES: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': 
 export default {
   name: 'tieucanh',
   desc: 'Chân Cảnh M: ảnh tiểu cảnh Lạc Kiếm Tông (6 điểm × 4 giờ × 720p/1080p, camera chéo) + đo hiệu năng + clip đi bộ',
-  usage: '[--tag truoc|sau] [--moods dawn,day,dusk,night] [--views 720p,1080p] [--points a,b|all] [--perf 1] [--hit 1] [--clip 1 --secs 40]',
+  usage:
+    '[--tag truoc|sau] [--moods dawn,day,dusk,night] [--views 720p,1080p] [--points a,b|all] [--perf 1] [--hit 1] [--clip 1 --secs 40]',
   async run(r) {
     const tag = opt('--tag', 'sau');
     const only = list('--points', 'all');
@@ -33,7 +34,9 @@ export default {
         const [x, z] = q.split(',').map(Number) as [number, number];
         return { name: `at${i}`, x, z };
       });
-    const pts = [...POINTS.filter((p) => only.includes('all') || only.includes(p.name)), ...extra].filter((p) => !extra.length || extra.includes(p) || flag('--with-base'));
+    const pts = [...POINTS.filter((p) => only.includes('all') || only.includes(p.name)), ...extra].filter(
+      (p) => !extra.length || extra.includes(p) || flag('--with-base'),
+    );
     const perf: Record<string, unknown> = {};
     for (const view of list('--views', '720p,1080p')) {
       for (const mood of list('--moods', 'dawn,day,dusk,night')) {
