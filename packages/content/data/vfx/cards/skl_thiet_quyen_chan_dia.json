@@ -3,12 +3,34 @@
   "idea": "Hộ pháp giáng nắm đấm xuống đất: sóng xung kích hổ phách tỏa thành vòng tròn từ chân, đất nứt hình tia, đá vụn bắn lên rồi rơi, kẻ địch quanh người choáng.",
   "element": "tho",
   "path": "the_tu",
-  "shapeLang": ["ring", "burst", "spike"],
-  "timing": { "anticipationMs": 350, "impactMs": 90, "lingerMs": 900 },
-  "footprint": { "lengthM": 12, "widthM": 12, "heightM": 2 },
+  "shapeLang": [
+    "ring",
+    "burst",
+    "spike"
+  ],
+  "timing": {
+    "anticipationMs": 350,
+    "impactMs": 90,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 12,
+    "heightM": 2
+  },
   "colorRole": "own",
   "telegraph": false,
-  "budget": { "drawCalls": 12, "particles": 500, "screenCover": 0.3, "overdraw": 4 },
-  "textures": [{ "id": "proc:dust_kick", "kind": "flipbook" }],
+  "budget": {
+    "drawCalls": 12,
+    "particles": 500,
+    "screenCover": 0.35,
+    "overdraw": 4
+  },
+  "textures": [
+    {
+      "id": "proc:dust_kick",
+      "kind": "flipbook"
+    }
+  ],
   "impactFrame": true
 }
