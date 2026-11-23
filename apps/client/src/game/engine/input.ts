@@ -10,7 +10,7 @@ import { QUALITY, WEBGL2_MAX_PIXELS, isWebGPU } from './common';
 import { skipCine } from './cine';
 import { bindTouch } from './touch';
 import { onClick } from './click';
-import { groundAt } from '../../base/levelCtx';
+import { pickGround } from '../camera/pickGround';
 import type { Game } from '../engine';
 
 /**
@@ -73,7 +73,7 @@ export function bindInput(eng: Game): void {
       // Camera chéo: chuột phải = đi tới điểm (chỉ ý định, như WASD); chuột trái = chọn/đánh. Không kéo xoay.
       eng.iso.cursor = { x: e.clientX, y: e.clientY };
       if (e.button === 2) {
-        eng.iso.project(eng.camera, window.innerWidth, window.innerHeight, groundAt);
+        eng.iso.project(eng.camera, window.innerWidth, window.innerHeight, pickGround(eng.renderPos));
         const g = eng.iso.ground;
         if (g && !eng.typing()) {
           eng.iso.setDest(g.x, g.z, g.y);

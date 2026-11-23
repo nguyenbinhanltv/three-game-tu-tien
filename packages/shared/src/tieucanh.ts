@@ -1,9 +1,9 @@
-import { hash01 } from './noise';
+import { hash01, smoothstep } from './noise';
 
 /**
  * Tiểu cảnh Lạc Kiếm Tông (Chân Cảnh M1+M2): bố cục các vật đặc, DÙNG CHUNG client (dựng hình `lacKiemScenes.ts`) và server (va chạm, qua
  * `registerTerrain`), tọa độ tương đối tâm tông môn (SECT: 2048, 2048). COL-1: mọi vật nhìn thấy cao ≥ 0,6 m phải chặn; chỉ ao, phiến lối men vách,
- * dây/ván cầu treo cao và lớp sương/nước là đi xuyên được. Cột cổng bài chừa lối 9 m ở giữa.
+ * và lớp sương/nước là đi xuyên được; cầu treo có va chạm riêng (cautreo.ts: ván đi được + lan can đặc). Cột cổng bài chừa lối 9 m ở giữa.
  */
 export const TC_ORIGIN = { x: 2048, z: 2048 } as const;
 
@@ -46,7 +46,41 @@ export const BRIDGE_B: [number, number] = [
 ];
 
 /**
- * Lối men vách (tọa độ tương đối tâm tông môn): từ sân tới đầu cầu treo. Đi vòng có điểm quặt để dốc ≤ ~22° (trần đi bộ 30°, xem walkslope.ts);
+ * Hác thật dưới cầu treo (khoét vào heightmap, client và server cùng đọc qua `TerrainDef.gorges`): rãnh dọc trục hác (vuông góc nhịp cầu), sâu thêm `depth` m
+ * ở giữa, hẹp hơn nhịp cầu (halfW < half) nên hai bờ và hai đầu cầu giữ nguyên độ cao. Tọa độ thế giới.
+ */
+export interface GorgeDef {
+  cx: number;
+  cz: number;
+  /** Hướng trục dọc hác (rad). */
+  dir: number;
+  halfL: number;
+  halfW: number;
+  depth: number;
+}
+export const TC_GORGE: GorgeDef = {
+  cx: TC_ORIGIN.x + TC_BRIDGE.cx,
+  cz: TC_ORIGIN.z + TC_BRIDGE.cz,
+  dir: TC_BRIDGE.dir - Math.PI / 2,
+  halfL: 42,
+  halfW: 15,
+  depth: 5,
+};
+
+/** Độ sâu (m) hác `g` khoét thêm tại (x, z) thế giới. */
+export function gorgeDrop(g: GorgeDef, x: number, z: number): number {
+  const dx = x - g.cx;
+  const dz = z - g.cz;
+  if (dx * dx + dz * dz > (g.halfL + g.halfW) * (g.halfL + g.halfW)) return 0;
+  const c = Math.cos(g.dir);
+  const sn = Math.sin(g.dir);
+  const v = dx * c + dz * sn;
+  const u = -dx * sn + dz * c;
+  return g.depth * smoothstep(g.halfW, g.halfW * 0.3, Math.abs(u)) * smoothstep(g.halfL, g.halfL * 0.6, Math.abs(v));
+}
+
+/**
+ * Lối men vách (tọa độ tương đối tâm tông môn): từ sân tới đầu cầu treo. Đi vòng có điểm quặt để dốc ≤ ~22°, rồi tiến vào đầu cầu theo đúng trục nhịp (giữa hai cột đá) (trần đi bộ 30°, xem walkslope.ts);
  * thẳng theo sườn dốc tới 30°+ rồi đứt ở vách 6 m. Test `tieucanh.test.ts` quét heightmap lối này.
  */
 export const TC_LOI_VACH: [number, number][] = [
@@ -54,10 +88,9 @@ export const TC_LOI_VACH: [number, number][] = [
   [-98.5, 55.5],
   [-107.5, 64.5],
   [-116.5, 73.5],
-  [-119.5, 76.5],
-  [-119.5, 87],
-  [-125.5, 81],
-  [-131.5, 75],
+  [-119.5, 78],
+  [-125.5, 73.5],
+  [-135.7, 63],
   [BRIDGE_A[0], BRIDGE_A[1]],
 ];
 
@@ -83,6 +116,18 @@ const pondRim = (): SceneGlb[] =>
       { sink: 0.15 },
     );
   });
+
+/** Cột đá đỏ hai đầu cầu: cách trục cầu `TC_POST_OFF` m mỗi bên (đủ xa ván 3 m + lan can để không đè va chạm cầu), dọc theo pháp tuyến của nhịp. */
+const TC_POST_OFF = 2.7;
+const bridgePosts = (): SceneGlb[] => {
+  const nx = -Math.sin(TC_BRIDGE.dir);
+  const nz = Math.cos(TC_BRIDGE.dir);
+  // pháp tuyến của hướng (cos dir, sin dir) là (−sin dir, cos dir)
+  const out: SceneGlb[] = [];
+  for (const [ex, ez] of [BRIDGE_A, BRIDGE_B])
+    for (const side of [-1, 1]) out.push(glb('prop_tc_cot_da_do', ex + nx * TC_POST_OFF * side, ez + nz * TC_POST_OFF * side, 4.6, 0.2));
+  return out;
+};
 
 /** Vật GLB của từng tiểu cảnh (id cảnh khớp `SCENES` ở client). */
 export const SCENE_GLB: Record<string, SceneGlb[]> = {
@@ -127,11 +172,8 @@ export const SCENE_GLB: Record<string, SceneGlb[]> = {
     ...bamboo(-108, 62, 2),
   ],
   cau_treo: [
-    glb('prop_tc_cot_da_do', BRIDGE_A[0] + 2.2, BRIDGE_A[1] - 0.6, 4.6, 0.2),
-    glb('prop_tc_cot_da_do', BRIDGE_A[0] - 2.2, BRIDGE_A[1] + 0.6, 4.6, 0.2),
-    glb('prop_tc_cot_da_do', BRIDGE_B[0] + 2.2, BRIDGE_B[1] - 0.6, 4.6, 0.2),
-    glb('prop_tc_cot_da_do', BRIDGE_B[0] - 2.2, BRIDGE_B[1] + 0.6, 4.6, 0.2),
-    glb('prop_tc_tre', BRIDGE_A[0] + 9, BRIDGE_A[1] - 1, 6, 0.1),
+    ...bridgePosts(),
+    glb('prop_tc_tre', BRIDGE_A[0] + 5, BRIDGE_A[1] + 9, 6, 0.1),
     glb('prop_tc_da_reu', BRIDGE_B[0] - 5, BRIDGE_B[1] + 3, 2.4, 0.9),
     glb('prop_tc_da_reu', BRIDGE_A[0] - 5, BRIDGE_A[1] - 3, 2.4, 0.3),
     glb('prop_tc_den_da', BRIDGE_B[0] + 4, BRIDGE_B[1] + 1, 2.5, 0.2),
