@@ -14,7 +14,8 @@ const LEGACY = {
     hit: { sfx: 'crit', gain: 0.18, rate: 1.2, strongOnly: true },
   },
   bat_dong_kim_than: {
-    voice: 'hp',
+    // C3f: thể tu tách khỏi giọng hộ pháp `hp` (nay dùng cho cổ thần) sang giọng riêng `tt` (quyền thuật); mọi trường khác giữ nguyên bảng cũ.
+    voice: 'tt',
     gm: 'hophap',
     art: 'ho_phap',
     dao: 'ho',
