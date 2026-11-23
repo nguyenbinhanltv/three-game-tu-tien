@@ -45,6 +45,8 @@ export function Settings() {
   const reduceMotion = useReduceMotion();
   const fxQ = useUI((s) => s.fxQuality);
   const hitStop = useUI((s) => s.hitStop);
+  const impactFrame = useUI((s) => s.impactFrame);
+  const staticFx = useUI((s) => s.staticFx);
   const auraMode = useUI((s) => s.auraMode);
   const auraOthers = useUI((s) => s.auraOthers);
   const auraCombat = useUI((s) => s.auraCombat);
@@ -111,6 +113,14 @@ export function Settings() {
       />
       <div className="k-dim">{t('ui.settings.fx_quality_hint')}</div>
       <Segmented label={t('ui.settings.hit_stop')} value={hitStop} onChange={(on) => Game.current?.setHitStop(on)} options={onOff} />
+      <Segmented
+        label={t('ui.settings.impact_frame')}
+        value={impactFrame}
+        onChange={(on) => Game.current?.setImpactFrame(on)}
+        options={onOff}
+      />
+      <Segmented label={t('ui.settings.fx_static')} value={staticFx} onChange={(on) => Game.current?.setStaticFx(on)} options={onOff} />
+      <div className="k-dim">{t('ui.settings.fx_static_hint')}</div>
       <Divider label={t('ui.settings.realm_aura')} />
       <Segmented
         label={t('ui.settings.realm_aura')}

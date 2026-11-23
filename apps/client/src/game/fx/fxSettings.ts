@@ -18,6 +18,8 @@ import {
  */
 const KEY = 'dtl.fxQuality';
 const KEY_STOP = 'dtl.hitStop';
+const KEY_IMPACT = 'dtl.impactFrame';
+const KEY_STATIC = 'dtl.fxStatic';
 const KEY_AURA = 'dtl.realmAura';
 const KEY_AURA_MODE = 'dtl.auraMode';
 const KEY_AURA_OTHERS = 'dtl.auraOthers';
@@ -88,6 +90,22 @@ export const hitStopOn = (): boolean => hitStop;
 export function setHitStopOn(on: boolean): void {
   hitStop = on;
   if (typeof localStorage !== 'undefined') localStorage.setItem(KEY_STOP, on ? '1' : '0');
+}
+
+let impactFrame = typeof localStorage === 'undefined' || localStorage.getItem(KEY_IMPACT) !== '0';
+/** Khung va chạm (V-P0): 1–2 khung tương phản cao lúc trúng đòn; người nhạy sáng có thể tắt. */
+export const impactFrameOn = (): boolean => impactFrame;
+export function setImpactFrameOn(on: boolean): void {
+  impactFrame = on;
+  if (typeof localStorage !== 'undefined') localStorage.setItem(KEY_IMPACT, on ? '1' : '0');
+}
+
+let fxStatic = typeof localStorage !== 'undefined' && localStorage.getItem(KEY_STATIC) === '1';
+/** Chế độ tĩnh (V-P0): người không thích rối mắt. Không khung va chạm/chớp, hiệu ứng người khác giảm mạnh hơn (xem `fxHierarchy`). */
+export const staticFxOn = (): boolean => fxStatic;
+export function setStaticFxOn(on: boolean): void {
+  fxStatic = on;
+  if (typeof localStorage !== 'undefined') localStorage.setItem(KEY_STATIC, on ? '1' : '0');
 }
 
 /** Hệ số số hạt theo chất lượng, người khác giảm một nửa. */

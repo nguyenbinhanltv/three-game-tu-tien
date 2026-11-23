@@ -226,6 +226,9 @@ export function reqId(): string {
 /** Chỉ bản dev, để chụp ảnh đúng khung: `?slowmo=0.25` chậm thời gian hiển thị (đứng yên, không di chuyển). */
 export const SLOWMO = import.meta.env.DEV ? FLAGS.slowmo : 1;
 
+/** Chỉ bản dev: phòng thử VFX (`?vfxlab=1`), xem `game/debug/vfxLab.ts`. */
+export const VFX_LAB = import.meta.env.DEV && FLAGS.vfxLab;
+
 /** Chỉ bản dev, để chụp ảnh VFX chiêu: `?quiet=1` bỏ nháy trúng đòn và cầu nổ cú cắn trên chính mình (quái vẫn đánh, không đổi luật). */
 export const QUIET = import.meta.env.DEV && FLAGS.quiet;
 

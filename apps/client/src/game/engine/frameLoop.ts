@@ -62,7 +62,8 @@ import { assets } from '../core/assets';
 import { BASE_ZONE, easeZoneCam, zoneCamera } from '../camera/camZones';
 import { isHeld } from '../../input/bindings';
 import { ULT_FOV, ultFovAt } from '../combat/hitjuice';
-import { SLOWMO, _camFocus, _shakeLook, _shakePos, _v, _v2, isWebGPU } from './common';
+import { labDt } from '../debug/vfxLab';
+import { SLOWMO, VFX_LAB, _camFocus, _shakeLook, _shakePos, _v, _v2, isWebGPU } from './common';
 import { runCine } from './cine';
 import { applyDmg, ensureCloneVis, updateSoulVis } from './fxMsgs';
 import { syncHud } from './hudSync';
@@ -148,7 +149,8 @@ export function runFrame(eng: Game): void {
   if (eng.disposed || eng.compiling > 0) return;
   eng.renderer.info.reset();
   const now = performance.now();
-  const dt = Math.min(0.1, (now - eng.lastT) / 1000) * SLOWMO;
+  const rawDt = Math.min(0.1, (now - eng.lastT) / 1000) * SLOWMO;
+  const dt = VFX_LAB ? labDt(rawDt) : rawDt;
   eng.lastT = now;
   eng.frames++;
   // Sát thương chờ khung `hit` mà quá hạn (hoạt ảnh bị hủy, model khối cũ): phát luôn, theo đồng hồ game.

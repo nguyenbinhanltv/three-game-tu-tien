@@ -111,6 +111,16 @@ export const FX_TOON_SHAPES: ReadonlySet<string> = new Set([
 export const FLIP_ATLASES = ['ink_smoke', 'spark_burst', 'dust_kick', 'slash_streak'] as const;
 export type FlipAtlas = (typeof FLIP_ATLASES)[number];
 
+/**
+ * Luật thứ bậc thị giác (V-P0): 1 chiêu của mình, 2 chiêu/cảnh báo của địch (kể cả đối thủ đấu pháp), 3 chiêu đồng đội, 4 hào quang/môi trường.
+ * Chỉ chiêu đồng đội (không phải mình, không thù địch) tự giảm độ sáng 50%; chế độ tĩnh giảm còn 25%. Kích thước và vị trí giữ nguyên (`size` luôn 1)
+ * để hình vẫn khớp tầm đánh thật; số hạt của người khác đã giảm riêng ở `particleScale`.
+ */
+export function fxHierarchy(mine: boolean, staticMode: boolean, hostile = false): { size: number; alpha: number } {
+  if (mine || hostile) return { size: 1, alpha: 1 };
+  return { size: 1, alpha: staticMode ? 0.25 : 0.5 };
+}
+
 /** Bố trí gốc của sự kiện. */
 /** `area`: tâm vùng của chiêu diện rộng (`S.FX` x,z; không có thì như `ground`). `ground`: chân mục tiêu (mặt đất dưới chân); không có mục tiêu thì 5 m trước mặt, ngang chân người ra chiêu. */
 export type FxAnchor = 'self' | 'target' | 'ahead' | 'ground' | 'area' | 'origin';
@@ -332,6 +342,16 @@ export interface FxFlashEvent extends FxBase {
   amount: number;
 }
 
+/**
+ * Khung va chạm (V-P0): 1–2 khung hình tương phản cao ám màu ngay lúc trúng đòn (chỉ chiêu của mình, có công tắc tắt ở Cài đặt).
+ * `tint`: `ink` ám xám mực, `warm` ám vàng nhạt, `cool` ám lam nhạt (KHÔNG có đỏ/cam: dành riêng cho cảnh báo của địch).
+ */
+export interface FxImpactEvent extends FxBase {
+  type: 'impact';
+  frames: 1 | 2;
+  tint?: 'ink' | 'warm' | 'cool';
+}
+
 export interface FxSoundEvent extends FxBase {
   type: 'sound';
   id: string;
@@ -344,6 +364,7 @@ export type FxEvent =
   | FxDecalEvent
   | FxTrailEvent
   | FxHitstopEvent
+  | FxImpactEvent
   | FxShakeEvent
   | FxFlashEvent
   | FxSoundEvent
@@ -451,6 +472,7 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (!Number.isFinite(e.t) || Math.abs(e.t) > 3) errs.push(`${p}: mốc t=${e.t} ngoài [-3, 3]`);
       if (e.type === 'mesh' && !(e.dur > 0 && e.dur <= 4)) errs.push(`${p}: mesh ${e.shape} dur=${e.dur} ngoài (0, 4]`);
       if (e.type === 'decal' && !(e.dur > 0 && e.dur <= 8)) errs.push(`${p}: decal dur=${e.dur} ngoài (0, 8]`);
+      if (e.type === 'impact' && ![1, 2].includes(e.frames)) errs.push(`${p}: impact frames ${e.frames} ngoài 1–2`);
       if (e.type === 'hitstop' && !(e.ms >= 40 && e.ms <= 80)) errs.push(`${p}: hitstop ${e.ms} ms ngoài 40–80`);
       if (e.type === 'shake' && !(e.level >= 0 && e.level <= 0.6)) errs.push(`${p}: rung ${e.level} ngoài 0–0,6`);
       if (e.type === 'flash' && !(e.amount >= 0 && e.amount <= 0.3)) errs.push(`${p}: chớp ${e.amount} ngoài 0–0,3`);

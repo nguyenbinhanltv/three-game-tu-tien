@@ -19,6 +19,7 @@
   "dependencies": {
     "@dtl/shared": "workspace:*",
     "playwright": "~1.63.0",
+    "sharp": "0.35.5",
     "@dtl/content": "workspace:*"
   },
   "devDependencies": {
