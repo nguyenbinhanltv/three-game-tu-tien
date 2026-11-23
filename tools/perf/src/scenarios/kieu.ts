@@ -49,9 +49,44 @@ export default {
         // Triệu hồi boss của cầu bằng GM (đợt thật xuất hiện chậm), rồi chụp khung boss (thêm ảnh ngay sau 30 ms).
         const boss: Record<number, string> = { 5: 'boss_thach_tuong', 9: 'boss_lo_linh' };
         await sleep(2500);
+        console.log(
+          '[kieu] khung:',
+          JSON.stringify(
+            await page.evaluate(() => {
+              const g = window.__game!;
+              const me = g.cur;
+              return {
+                me: [Math.round(me.x), Math.round(me.z)],
+                target: g.targetId,
+                mons: [...g.view.monsters.entries()]
+                  .filter(([, m]) => m.st !== 4)
+                  .map(([id, m]) => ({
+                    id,
+                    t: m.t,
+                    d: Math.round(Math.hypot(m.x - me.x, m.z - me.z)),
+                    dx: Math.round(m.x - me.x),
+                    dz: Math.round(m.z - me.z),
+                  })),
+              };
+            }),
+          ),
+        );
         await gm(page, 'killall', 2500);
         await gm(page, `spawn ${boss[n] ?? 'boss_thach_tuong'} 1`, 5000);
-        await gm(page, 'tp 1300 1000', 1500);
+        // Đặt người cách boss ~7 m (lệch ngang) trong vòng sàn, rồi chờ camera dẫn khung hội tụ.
+        const b = await page.evaluate(() => {
+          const m = [...window.__game!.view.monsters.values()].find((x) => x.st !== 4 && String(x.t).startsWith('boss_'));
+          return m ? { x: m.x, z: m.z } : null;
+        });
+        if (b) {
+          // Gửi lại lệnh tới khi người thật sự ở gần boss (GM bị giới hạn nhịp có thể bỏ lệnh), rồi chờ camera dẫn khung hội tụ.
+          for (let tries = 0; tries < 6; tries++) {
+            await gm(page, `tp ${Math.round(b.x - 7)} ${Math.round(b.z + 3)}`, 1500);
+            const d = await page.evaluate((bb) => Math.hypot(window.__game!.cur.x - bb.x, window.__game!.cur.z - bb.z), b);
+            if (d < 12) break;
+          }
+        }
+        await sleep(3000);
         await gm(page, 'heal', 800);
         await sleep(300);
         await snap(page, r.out, `kieu${n}-${viewport[1]}p-boss.png`, { wait: 200 });

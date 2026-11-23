@@ -4,6 +4,10 @@ import {
   isoClearScale,
   ISO_OCC_MIN,
   isoTopEq,
+  isoFrameBoss,
+  isoLeadable,
+  ISO_LEAD_RANGE,
+  ISO_SAFE_X_BOSS,
   isoDistFor,
   clampLeadSafe,
   ISO_TGT_UP,
@@ -92,6 +96,31 @@ describe('clampLeadFrame', () => {
   });
   it('không có mục tiêu thì như clampLeadSafe', () => {
     expect(clampLeadFrame(30, 5, 0.3)).toEqual(clampLeadSafe(30, 5, 0.3));
+  });
+});
+
+describe('khung boss lệch ngang', () => {
+  it('boss cao cho phép người lệch ngang tới ISO_SAFE_X_BOSS để cả hai lọt khung', () => {
+    const yaw = 0;
+    // boss cách người 11 m về bên phải (r = +11): quái thường kẹt ở ISO_SAFE_X, boss cao kéo khung xa hơn
+    const normal = clampLeadFrame(5, 0, yaw, 11, 0, 0);
+    const tall = clampLeadFrame(5, 0, yaw, 11, 0, isoTopEq(8));
+    expect(tall.x).toBeGreaterThan(normal.x);
+    expect(Math.abs(tall.x)).toBeLessThanOrEqual(ISO_SAFE_X_BOSS + 1e-6);
+    // sau khi kẹp, boss ở (11 - lead) so với tâm khung: gần tâm hơn bản thường
+    expect(11 - tall.x).toBeLessThan(11 - normal.x);
+  });
+  it('isoLeadable: mục tiêu ngoài màn hình (> ISO_LEAD_RANGE) không kéo khung', () => {
+    expect(isoLeadable(10)).toBe(true);
+    expect(isoLeadable(ISO_LEAD_RANGE)).toBe(true);
+    expect(isoLeadable(30)).toBe(false);
+  });
+  it('isoFrameBoss: chỉ boss cao, còn sống, trong tầm; quái/tinh anh to không phải boss thì không', () => {
+    expect(isoFrameBoss(true, 7, 10, false)).toBe(true);
+    expect(isoFrameBoss(false, 7, 10, false)).toBe(false); // tinh anh/quái to, không phải boss
+    expect(isoFrameBoss(true, 3, 10, false)).toBe(false);
+    expect(isoFrameBoss(true, 7, 30, false)).toBe(false);
+    expect(isoFrameBoss(true, 7, 10, true)).toBe(false);
   });
 });
 
