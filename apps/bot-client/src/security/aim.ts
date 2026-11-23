@@ -1,5 +1,5 @@
 // Bài kiểm tra bảo mật: điểm ngắm và né của camera chéo (Thiên Nhãn P1). Client chỉ gửi ý định; server kẹp, kiểm tầm, hồi, quãng.
-import { C, DODGE_CD_MS, DODGE_DIST } from '@dtl/shared';
+import { C, DODGE_CD_MS, DODGE_CHARGES, DODGE_DIST } from '@dtl/shared';
 import { W, check, health, join, type Ctx, type M, type P } from './lib';
 
 /**
@@ -24,7 +24,7 @@ export async function runAim(_ctx: Ctx): Promise<void> {
   room.send(C.INPUT, { s: seq++, mx: 0, mz: 0, yaw: 0, f: 0 });
   await W(300);
 
-  // 1. Né: một lần né hợp lệ phải đi được; sau đó điểm ngắm rác và spam trong thời gian hồi không đưa đi thêm (tổng ≤ DODGE_DIST).
+  // 1. Né: một lần né hợp lệ phải đi được; sau đó điểm ngắm rác và spam không đưa đi quá DODGE_CHARGES lượt (S5: tổng ≤ DODGE_CHARGES × DODGE_DIST).
   const x0 = me().x;
   const z0 = me().z;
   await W(1200);
@@ -44,8 +44,8 @@ export async function runAim(_ctx: Ctx): Promise<void> {
   const moved = Math.hypot(me().x - x0, me().z - z0);
   check(
     'né: điểm ngắm rác và spam trong thời gian hồi không đi thêm',
-    moved <= DODGE_DIST + 1,
-    `tổng ${moved.toFixed(2)} m (giới hạn ${DODGE_DIST})`,
+    moved <= DODGE_CHARGES * DODGE_DIST + 1,
+    `tổng ${moved.toFixed(2)} m (giới hạn ${DODGE_CHARGES * DODGE_DIST})`,
   );
   check('server còn sống sau tin né/ngắm rác', await health());
 

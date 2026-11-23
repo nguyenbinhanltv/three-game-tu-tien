@@ -87,7 +87,8 @@ import { LEASH, MARK_ALLY_RANGE, SET_HEAL_RADIUS, TAUNT_BOSS_MUL, visualSeed } f
 
 import {
   at,
-  DODGE_CD_MS,
+  DASH_IFRAME_MS,
+  dodgeSpend,
   DODGE_DIST,
   DODGE_IFRAME_MS,
   DODGE_MIN_GAP_MS,
@@ -243,7 +244,7 @@ export class CombatSystem {
   onDodge(p: PlayerEnt, msg: unknown): void {
     if (this.c.isDead(p) || this.airborne(p) || p.trial) return;
     if (this.c.now - p.dodgeAt < DODGE_MIN_GAP_MS) return;
-    if (this.c.now - p.dodgeAt < DODGE_CD_MS) return this.c.warn(p, 'sys.cooldown');
+    if (!dodgeSpend(p.dodge, this.c.now)) return this.c.warn(p, 'sys.cooldown');
     p.dodgeAt = this.c.now;
     const aim = sanitizeAim(msg, p.move.x, p.move.z);
     if (aim) p.s.yaw = Math.atan2(aim.x - p.move.x, aim.z - p.move.z);
@@ -268,6 +269,7 @@ export class CombatSystem {
       p.inputs.length = 0;
     }
     this.c.fx({ t: 'blink', src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, d: 0.25, ox: from.x, oz: from.z });
+    this.c.sendCd(p);
   }
 
   /**
@@ -395,6 +397,8 @@ export class CombatSystem {
     if (cdSec > 0) p.cds.set(skill.id, this.c.now + cdSec * 1000);
     p.flow.lastDashAt = this.c.now;
     p.lastCombatAt = this.c.now;
+    // Lướt đúng lúc xuyên vòng cảnh báo (S5): khung bất tử ngắn, không cộng dồn với khung né đang có.
+    p.dodgeUntil = Math.max(p.dodgeUntil, this.c.now + DASH_IFRAME_MS);
     const from = { x: p.move.x, z: p.move.z, y: p.move.y };
     p.move.x = plan.x;
     p.move.z = plan.z;
