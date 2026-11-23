@@ -50,3 +50,25 @@ describe('quoteArg', () => {
     expect(quoteArg('-C')).toBe('-C');
   });
 });
+
+describe('monConceptPrompt', () => {
+  const mon = {
+    monId: 'boss_han_giao',
+    move: 'slam',
+    idea: 'nện đuôi',
+    palette: { core: '0a2a55', body: '3a8cf0', rim: 'ffe9b0', accent: 'ff1f3d' },
+    zone: { shape: 'circle', r: 5.5, at: 'target' },
+    timing: { anticipationMs: 1700, impactMs: 120, lingerMs: 700 },
+    readability: 'vành đỏ rõ',
+  } as unknown as import('@dtl/shared').MonVfxCard;
+  it('đủ hình vùng đúng mét, đỏ cho cảnh báo, màu hệ cho vùng nổ, 4 khung', async () => {
+    const { monConceptPrompt, zoneWords } = await import('./prompts.js');
+    const p = monConceptPrompt(mon, style);
+    expect(p).toMatch(/radius 5\.5 m/);
+    expect(p).toMatch(/#FF1F3D/);
+    expect(p).toMatch(/#3A8CF0/);
+    expect(p).toMatch(/2x2/);
+    expect(p).toMatch(/1700 ms/);
+    expect(zoneWords({ shape: 'cone', r: 14, w: 35, at: 'forward' })).toMatch(/half-angle 35/);
+  });
+});
