@@ -154,7 +154,7 @@ function initScript(preset: string): void {
         be.createRenderPipeline = (...a: unknown[]) => {
           const ro = a[0] as any;
           B.pipes++;
-          if (B.pipeNames.length >= 12) B.pipeNames.shift();
+          if (B.pipeNames.length >= 12) B.pipeNames.shift(); // vòng đệm: luôn là các pipeline MỚI NHẤT
           B.pipeNames.push(
             `${ro?.material?.name || ro?.material?.type}/${ro?.object?.name || ro?.object?.parent?.name || ro?.object?.type} ${ro?.object?.geometry?.attributes?.position?.count ?? 0}v o${ro?.object?.renderOrder ?? 0}`,
           );
@@ -251,6 +251,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     B.parts = {};
     B.gpu = [];
     B.dropGpu = true;
+    B.pipeNames = []; // khung dài chỉ được gán cho pipeline biên dịch TRONG lần đo này
     B.rec = true;
   });
   const t0 = Date.now();
