@@ -99,6 +99,8 @@ export interface IsoPoint {
   byCat: Record<Cat, { dc: number; tris: number; shadow: number }>;
   /** Draw call/tam giác theo loại đối tượng: skin (nhân vật/quái), instanced, basic (VFX/trời/sương), tĩnh (kiến trúc/địa hình/prop gộp). */
   kinds?: Record<'skin' | 'instanced' | 'basic' | 'static', { dc: number; tris: number; shadow: number }>;
+  /** Tối đa 8 khung CPU > 12 ms (chẩn đoán spike): thời điểm, ms, thời gian từng hệ. */
+  longFrames?: { at: number; dt: number; parts: Record<string, number> }[];
   /** Mesh nặng nhất theo draw call (top 6) để lần theo nguyên nhân. */
   topGroups: Group[];
 }

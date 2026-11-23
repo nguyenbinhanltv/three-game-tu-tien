@@ -9,7 +9,7 @@
 // không bị trần 60 fps che. Camera đứng yên ở góc chéo khóa của level (không xoay, không zoom).
 //
 //   pnpm perf:iso [--presets medium,high,ultra] [--seconds 4] [--size 1280x720] [--out <thư mục>] [--baseline <iso-*.json>]
-//                 [--only van_lam,kiem_trung,kieu_3,trib:do_kiep,fight] [--quick] [--igpu] [--renderer webgpu|webgl2] [--channel chrome|chromium]
+//                 [--only van_lam,kiem_trung,kieu_3,trib:do_kiep,fight] [--quick] [--igpu] [--noshadow] [--query a=b] [--renderer webgpu|webgl2] [--channel chrome|chromium]
 // `--quick`: preset high, 2 giây/điểm, chỉ Vân Lam + một bí cảnh + một phòng cầu + cảnh đánh (cho máy người dùng tự chạy).
 // `--igpu`: ép GPU tiết kiệm điện (`--force_low_power_gpu`) để đo iGPU Intel/AMD nếu máy có.
 // Ra: iso-<ngày>.json + iso-<ngày>.md (+ so baseline) trong `--out` (mặc định bench/results). Server dev tự chạy ở cổng riêng và luôn tắt khi xong.
@@ -31,6 +31,8 @@ const QUICK = flag('--quick');
 const PRESETS = list('--presets', QUICK ? 'high' : 'medium,high,ultra');
 const SECONDS = Number(opt('--seconds', QUICK ? '2' : '4'));
 const [VW, VH] = size('1280x720');
+const NOSHADOW = flag('--noshadow');
+const EXTRA = opt('--query', '');
 const RENDERER = opt('--renderer', 'webgpu');
 const ONLY = list('--only', '');
 const { port: PORT, clientPort: CLIENT_PORT } = ports(2685, 5185);
@@ -66,6 +68,7 @@ function initScript(preset: string): void {
   const tex = new Map<object, number>();
   const B = {
     rec: false,
+    long: [] as { at: number; dt: number; parts: Record<string, number> }[],
     frames: [] as number[][],
     dc: [] as number[],
     parts: {} as Record<string, number[]>,
@@ -159,6 +162,12 @@ function initScript(preset: string): void {
       frame.call(g);
       const dt = performance.now() - t0;
       if (!B.rec || !r) return;
+      if (dt > 12 && B.long.length < 8)
+        B.long.push({
+          at: Math.round(performance.now()),
+          dt: Math.round(dt * 10) / 10,
+          parts: Object.fromEntries(Object.entries(cur).map(([k, v]) => [k, Math.round(v * 10) / 10])),
+        });
       B.frames.push([dt, r.info.render.drawCalls ?? r.info.render.calls, r.info.render.triangles]);
       for (const [k, v] of Object.entries(cur)) (B.parts[k] ??= []).push(v);
       gpuFrames++;
@@ -192,9 +201,12 @@ function initScript(preset: string): void {
 
 /** Đặt chỗ đo: bắt đầu ghi, chờ `SECONDS` (có thể kèm hàm chạy chiêu), dừng, gom số liệu. */
 async function measure(page: Page, id: string, target: Target, preset: string, during?: () => Promise<void>): Promise<IsoPoint> {
+  // A/B: `--noshadow` tắt đèn đổ bóng của mặt trời (đo phần CPU/GPU do bóng).
+  if (NOSHADOW) await page.evaluate(() => void ((window as any).__game.env.sun.castShadow = false));
   await page.evaluate(() => {
     const B = (window as any).__iso;
     B.frames = [];
+    B.long = [];
     B.parts = {};
     B.gpu = [];
     B.rec = true;
@@ -223,6 +235,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     const mem = (performance as any).memory;
     return {
       frames: B.frames as number[][],
+      long: B.long as IsoPoint['longFrames'],
       parts: B.parts as Record<string, number[]>,
       gpu: B.gpu as number[],
       textures: g.renderer.info.memory.textures as number,
@@ -287,6 +300,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     jsHeapMB: raw.heap === null ? null : mb(raw.heap),
     monsters: raw.monsters,
     byCat: bucketGroups(src.groups),
+    longFrames: raw.long,
     kinds: kinds as IsoPoint['kinds'],
     topGroups: src.groups.slice(0, 6).map(({ key, dc: d, tris, shadow }) => ({ key, dc: d, tris, shadow })),
   };
@@ -328,6 +342,9 @@ async function dungeonEnter(page: Page, t: Target): Promise<void> {
   await gm(page, `level ${Math.min(60, Math.max(15, dg.minLevel + 2))}`);
   await gm(page, 'god on');
   if (t.kind === 'trib') {
+    // Đang trong một kiếp trước (65–80 s) thì `/gm trib` bị từ chối: chờ kiếp kết thúc và được đưa ra ngoài.
+    await page.waitForFunction(() => !/^do_kiep/.test(window.__game?.shownLevel ?? ''), undefined, { timeout: 150_000, polling: 500 });
+    await sleep(2000);
     await gm(page, `trib ${TRIB[t.id]}`, 500);
     await waitLevel(page, t.id, 1500);
   } else if (t.kind === 'kieu') {
@@ -395,7 +412,7 @@ async function runPreset(
       ),
   );
   const name = `Iso${preset[0]}${Date.now() % 10000}`;
-  await page.goto(gameUrl(CLIENT_PORT, { debug: 1, auto: name, gputime: 1, cine: 0 }, { renderer: RENDERER }), {
+  await page.goto(gameUrl(CLIENT_PORT, { debug: 1, auto: name, gputime: 1, cine: 0 }, { renderer: RENDERER, extra: EXTRA }), {
     waitUntil: 'load',
     timeout: 120_000,
   });

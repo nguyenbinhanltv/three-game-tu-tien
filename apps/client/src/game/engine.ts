@@ -922,7 +922,8 @@ export class Game {
       this.minimap = renderMinimap(320);
       this.terrain.update(this.cur.x, this.cur.z, 8);
       this.vfx.rewarm();
-      if (!isWebGPU(this.renderer)) await precompile(this);
+      // Cả WebGPU: không biên dịch trước thì lần đầu thấy vật mới (giữa phòng cầu kieu_7) render đứng ~1,7 s (perf:iso, longFrames).
+      await precompile(this);
       return true;
     } finally {
       if (seq === this.levelSeq && get().phase === 'loading') set({ phase: prevPhase === 'loading' ? 'game' : prevPhase });
