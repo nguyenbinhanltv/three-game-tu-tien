@@ -4,7 +4,9 @@
   "element": "kim",
   "path": "kiem_tu",
   "shapeLang": [
-    "arc"
+    "ring",
+    "burst",
+    "line"
   ],
   "timing": {
     "anticipationMs": 260,
@@ -19,8 +21,8 @@
   "colorRole": "own",
   "telegraph": false,
   "budget": {
-    "drawCalls": 8,
-    "particles": 230,
+    "drawCalls": 9,
+    "particles": 176,
     "screenCover": 0.2,
     "overdraw": 4
   },

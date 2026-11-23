@@ -4,7 +4,9 @@
   "element": "kim",
   "path": "kiem_tu",
   "shapeLang": [
-    "arc"
+    "arc",
+    "burst",
+    "line"
   ],
   "timing": {
     "anticipationMs": 280,
@@ -19,10 +21,20 @@
   "colorRole": "own",
   "telegraph": false,
   "budget": {
-    "drawCalls": 8,
-    "particles": 230,
+    "drawCalls": 10,
+    "particles": 207,
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": []
+  "textures": [
+    {
+      "id": "proc:slash_streak",
+      "kind": "flipbook"
+    },
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    }
+  ],
+  "impactFrame": true
 }

@@ -239,6 +239,10 @@ import fx_skl_hoanh_kiem_pha_mach from '../data/fx/skl_hoanh_kiem_pha_mach.json'
 import fx_skl_hoi_nguyen_thuat from '../data/fx/skl_hoi_nguyen_thuat.json';
 import fx_skl_hoi_thien_dan_lo from '../data/fx/skl_hoi_thien_dan_lo.json';
 import fx_skl_hoi_xuan_quyet from '../data/fx/skl_hoi_xuan_quyet.json';
+import fx_skl_ngu_kiem_tran from '../data/fx/skl_ngu_kiem_tran.json';
+import fx_skl_tran_kiem from '../data/fx/skl_tran_kiem.json';
+import fx_skl_tran_kiem_tram from '../data/fx/skl_tran_kiem_tram.json';
+import fx_skl_tran_kiem_vu from '../data/fx/skl_tran_kiem_vu.json';
 import fx_skl_kiem_anh_bo from '../data/fx/skl_kiem_anh_bo.json';
 import fx_skl_kiem_dan_ban_menh from '../data/fx/skl_kiem_dan_ban_menh.json';
 import fx_skl_u_anh_bo from '../data/fx/skl_u_anh_bo.json';
@@ -735,6 +739,10 @@ export const FX_TIMELINES = [
   fx_skl_hoi_thien_dan_lo,
   fx_skl_hoi_xuan_quyet,
   fx_skl_kiem_anh_bo,
+  fx_skl_ngu_kiem_tran,
+  fx_skl_tran_kiem,
+  fx_skl_tran_kiem_tram,
+  fx_skl_tran_kiem_vu,
   fx_skl_kiem_dan_ban_menh,
   fx_skl_u_anh_bo,
   fx_skl_phe_hon,

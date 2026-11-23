@@ -149,6 +149,296 @@
    "back": true,
    "tone": "rim",
    "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0,
+   "dur": 0.55,
+   "at": "target",
+   "offset": [
+    0,
+    0.12,
+    0
+   ],
+   "scale": 0.96,
+   "scaleTo": 2.4,
+   "sweep": 0.05,
+   "erodeFrom": 0.08,
+   "ragged": 0.6,
+   "tone": "body",
+   "alpha": 0.8,
+   "ink": true,
+   "shadow": true,
+   "seed": 9,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.01,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    2.4,
+    0,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.77,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 1,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.025,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    1.94,
+    0,
+    1.41
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.54,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 2,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.04,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    0.74,
+    0,
+    2.28
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.77,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 3,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.01,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    -0.74,
+    0,
+    2.28
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.54,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 4,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.025,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    -1.94,
+    0,
+    1.41
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.77,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 5,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.04,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    -2.4,
+    0,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.54,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 6,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.01,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    -1.94,
+    0,
+    -1.41
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.77,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 7,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.025,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    -0.74,
+    0,
+    -2.28
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.54,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 8,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.04,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    0.74,
+    0,
+    -2.28
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.77,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 9,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.01,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    1.94,
+    0,
+    -1.41
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.54,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 10,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "slash_thick",
+   "t": -0.02,
+   "dur": 0.4,
+   "at": "target",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "rot": [
+    0,
+    25,
+    0
+   ],
+   "scale": 3.12,
+   "scaleTo": 5.04,
+   "sweep": 0.4,
+   "erodeFrom": 0.4,
+   "ragged": 0.7,
+   "tone": "body",
+   "alpha": 0.9,
+   "ink": true,
+   "seed": 4,
+   "tier": 0
   }
  ],
  "variants": {

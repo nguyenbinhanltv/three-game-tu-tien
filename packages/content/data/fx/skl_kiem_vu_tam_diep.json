@@ -302,6 +302,296 @@
    "tier": 1,
    "seed": 8,
    "ink": true
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0,
+   "dur": 0.55,
+   "at": "target",
+   "offset": [
+    0,
+    0.12,
+    0
+   ],
+   "scale": 0.8800000000000001,
+   "scaleTo": 2.2,
+   "sweep": 0.05,
+   "erodeFrom": 0.08,
+   "ragged": 0.6,
+   "tone": "body",
+   "alpha": 0.8,
+   "ink": true,
+   "shadow": true,
+   "seed": 9,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.01,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    2.2,
+    0,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.7,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 1,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.025,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    1.78,
+    0,
+    1.29
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.49,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 2,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.04,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    0.68,
+    0,
+    2.09
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.7,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 3,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.01,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    -0.68,
+    0,
+    2.09
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.49,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 4,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.025,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    -1.78,
+    0,
+    1.29
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.7,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 5,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.04,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    -2.2,
+    0,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.49,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 6,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.01,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    -1.78,
+    0,
+    -1.29
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.7,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 7,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.025,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    -0.68,
+    0,
+    -2.09
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.49,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 8,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.04,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    0.68,
+    0,
+    -2.09
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.7,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 9,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.01,
+   "dur": 0.6,
+   "at": "target",
+   "offset": [
+    1.78,
+    0,
+    -1.29
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.49,
+   "sweep": 0.15,
+   "erodeFrom": 0.45,
+   "alpha": 1,
+   "tone": "body",
+   "seed": 10,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "slash_thick",
+   "t": -0.02,
+   "dur": 0.4,
+   "at": "target",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "rot": [
+    0,
+    25,
+    0
+   ],
+   "scale": 2.8600000000000003,
+   "scaleTo": 4.620000000000001,
+   "sweep": 0.4,
+   "erodeFrom": 0.4,
+   "ragged": 0.7,
+   "tone": "body",
+   "alpha": 0.9,
+   "ink": true,
+   "seed": 4,
+   "tier": 0
   }
  ],
  "variants": {
