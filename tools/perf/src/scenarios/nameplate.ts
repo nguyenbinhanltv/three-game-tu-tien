@@ -18,9 +18,10 @@ export default {
       query: { realm: 'nk15', at: 'tong_mon', god: 1 },
     });
     await sleep(2500);
-    await gm(page, 'spawn mon_soi_xam 3', 1800);
-    await gm(page, 'spawn elite_huyet_nha_lang', 1800);
-    await gm(page, 'hurt 70', 1800);
+    // Chat có giới hạn tần suất: mỗi lệnh cách nhau ≥ 3 s.
+    await gm(page, 'spawn elite_huyet_nha_lang', 3200);
+    await gm(page, 'spawn mon_soi_xam 2', 3200);
+    await gm(page, 'hurt 70', 3200);
     await sleep(2500);
     for (const tag of sizes) {
       const [w, h] = UI_SIZES[tag] ?? UI_SIZES['1080p']!;
