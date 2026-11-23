@@ -15,6 +15,7 @@ import { DECAL_STRIKE } from '../../render/vfx/stylized';
 import { maxRadiusFor } from '../../render/vfx/phases';
 import { BoltFx, HALO_GEO, SHADOW_GEO } from '../../render/vfx/projectile';
 import { Trails } from '../../render/vfx/trail';
+import { glowWarmMesh } from '../core/models';
 import { assets } from '../core/assets';
 import { PREFETCH_PRIORITY } from '../core/preload';
 import { G } from '../core/geo';
@@ -124,6 +125,17 @@ export class Vfx {
 
   /** Vẽ ấm một lưới cho mỗi kiểu material (cỡ 0, độ trong 0). */
   warmKinds(): void {
+    const glow = glowWarmMesh();
+    this.group.add(glow);
+    this.add(
+      0.15,
+      () => {},
+      () => {
+        this.group.remove(glow);
+        glow.geometry.dispose();
+        (glow.material as THREE.Material).dispose();
+      },
+    );
     for (const kind of [
       'bolt',
       'vortex',

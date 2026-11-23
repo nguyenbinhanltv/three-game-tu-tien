@@ -272,6 +272,17 @@ interface MonGeo {
 }
 const MON_GEO = new Map<string, MonGeo>();
 
+/**
+ * Lưới "vẽ ấm" cho vật liệu cộng sáng của model khối (vết nứt Thạch Tượng, quầng...): cùng bố cục đỉnh (vị trí, pháp tuyến, màu đỉnh của `GeoBuilder`) và cùng cấu hình
+ * `GLOW_MAT` nên pipeline biên dịch ở đây được dùng lại; không có thì con quái đầu tiên có lưới này khựng ~250 ms ở lần vẽ đầu (đo bằng perf:iso `longFrames`).
+ * Người gọi đặt vào cảnh vài khung rồi bỏ và dispose.
+ */
+export function glowWarmMesh(): THREE.Mesh {
+  const b = new GeoBuilder();
+  b.add(G.box, mat(0, 0, 0, 0, 0, 0, 1e-3, 1e-3, 1e-3), col(0xffffff));
+  return new THREE.Mesh(b.build(), GLOW_MAT(0xffffff, 0.5));
+}
+
 /** Vết nứt ngực Thạch Tượng: mấy vệt zích zắc mảnh trước ngực (toạ độ thân ape), dùng với vật liệu cộng sáng. */
 function golemCrack(): THREE.BufferGeometry {
   const b = new GeoBuilder();
