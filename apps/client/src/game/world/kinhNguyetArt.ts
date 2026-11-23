@@ -315,6 +315,9 @@ function buildPond(x: number, z: number, rad: number): THREE.Mesh {
   return mesh;
 }
 
+/** Bán kính (m) quanh camera chéo ngoài đó vật không vào lượt phản chiếu sàn gương (khung hình ~±25 m, cộng chiều cao vật phản chiếu). */
+const REFLECT_FAR = 70;
+
 export class KinhNguyetArt {
   readonly group = new THREE.Group();
   private readonly fx: DungeonFx;
@@ -347,7 +350,22 @@ export class KinhNguyetArt {
         if (now >= sweepAt) {
           sweepAt = now + 500;
           hidden = [];
+          const cam = (frame as { camera?: THREE.Camera } | undefined)?.camera?.position;
           scene?.traverse((o) => {
+            // O2: vật xa camera chéo hơn `REFLECT_FAR` m (theo mặt phẳng ngang, trừ bán kính bao) không thể hiện lên phần sàn nằm trong khung → bỏ khỏi lượt phản chiếu.
+            const m = o as THREE.Mesh;
+            if (cam && m.isMesh && !(m as THREE.InstancedMesh).isInstancedMesh && m.geometry) {
+              if (!m.geometry.boundingSphere) m.geometry.computeBoundingSphere();
+              const bs = m.geometry.boundingSphere!;
+              const e = m.matrixWorld.elements;
+              const sc = Math.max(Math.hypot(e[0]!, e[1]!, e[2]!), Math.hypot(e[8]!, e[9]!, e[10]!));
+              const cx = e[0]! * bs.center.x + e[4]! * bs.center.y + e[8]! * bs.center.z + e[12]!;
+              const cz = e[2]! * bs.center.x + e[6]! * bs.center.y + e[10]! * bs.center.z + e[14]!;
+              if (Math.hypot(cx - cam.x, cz - cam.z) - bs.radius * sc > REFLECT_FAR) {
+                hidden.push(o);
+                return;
+              }
+            }
             if (
               o === hide ||
               o.name === 'label-batch' ||

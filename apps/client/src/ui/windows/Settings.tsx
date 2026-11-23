@@ -47,6 +47,7 @@ export function Settings() {
   const hitStop = useUI((s) => s.hitStop);
   const impactFrame = useUI((s) => s.impactFrame);
   const staticFx = useUI((s) => s.staticFx);
+  const heroRim = useUI((s) => s.heroRim);
   const auraMode = useUI((s) => s.auraMode);
   const auraOthers = useUI((s) => s.auraOthers);
   const auraCombat = useUI((s) => s.auraCombat);
@@ -135,6 +136,8 @@ export function Settings() {
         onChange={(on) => Game.current?.setImpactFrame(on)}
         options={onOff}
       />
+      <Segmented label={t('ui.settings.hero_rim')} value={heroRim} onChange={(on) => Game.current?.setHeroRim(on)} options={onOff} />
+      <div className="k-dim">{t('ui.settings.hero_rim_hint')}</div>
       <Segmented label={t('ui.settings.fx_static')} value={staticFx} onChange={(on) => Game.current?.setStaticFx(on)} options={onOff} />
       <div className="k-dim">{t('ui.settings.fx_static_hint')}</div>
       <Divider label={t('ui.settings.realm_aura')} />

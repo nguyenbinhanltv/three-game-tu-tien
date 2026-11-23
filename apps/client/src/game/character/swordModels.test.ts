@@ -115,7 +115,8 @@ describe('model kiếm theo trang bị', () => {
         const near = new THREE.Vector3()
           .setFromMatrixPosition(p.bladeHolder.matrixWorld)
           .distanceTo(new THREE.Vector3().setFromMatrixPosition(hand(m).matrixWorld));
-        expect(near, `${g}/${w} tâm chuôi cách bàn tay`).toBeLessThan(0.2);
+        // Tay phóng 10–14% (C2, bone scale) kéo tâm chuôi xa bàn tay theo tỉ lệ: ngưỡng 0,2 → 0,26.
+        expect(near, `${g}/${w} tâm chuôi cách bàn tay`).toBeLessThan(0.26);
         expect(back.distanceTo(new THREE.Box3().setFromObject(p.blade!).getCenter(new THREE.Vector3()))).toBeGreaterThan(0.05);
         // Vỏ sáng +10 chạy trên model mới.
         m.setWeaponGlow(2);

@@ -22,7 +22,7 @@ describe('HUD layout: hộp vùng không chồng lấn', () => {
             const { W, H } = designArea(w, h, s);
             const b = hudBoxes(W, H, modeOf(s), { questCollapsed, chatCollapsed, skillLayout });
             expect(overlaps(b)).toEqual([]);
-            for (const k of ['tl', 'tc', 'hub', 'map', 'quest', 'chat', 'skills', 'utility'] as const) {
+            for (const k of ['tl', 'tc', 'hub', 'map', 'quest', 'chat', 'skills', 'utility', 'dock'] as const) {
               const x = b[k];
               expect(x.x, k).toBeGreaterThanOrEqual(0);
               expect(x.y, k).toBeGreaterThanOrEqual(0);

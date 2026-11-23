@@ -1,3 +1,4 @@
+import type * as THREE from 'three/webgpu';
 import { currentSearch } from '../../base/flags';
 import { decodeDye3, TRUC_CO_LEVEL } from '@dtl/shared';
 import { swordOverride } from '../core/testParams';
@@ -120,6 +121,9 @@ export class PlayerVis {
   lo: ArtifactVis | null = null;
   /** Công pháp đang tu (từ `s.mt`): chọn giọng động tác của chiêu. */
   mt = '';
+  /** Hero light (C1): model đã đặt viền, màu viền đang dùng (-1 chưa đặt, -2 đã tắt). */
+  heroRoot: THREE.Object3D | null = null;
+  heroTint = -1;
   /** Vận tốc hiển thị đã làm mượt (m/s) để suy ra đi lùi/ngang so với hướng nhìn (K-4). */
   mvx = 0;
   mvz = 0;

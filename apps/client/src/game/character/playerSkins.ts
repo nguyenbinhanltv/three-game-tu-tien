@@ -15,6 +15,8 @@ import {
   disposeAccessories,
 } from './setAccessories';
 import { boneKey } from './ikpose';
+import { proportionBones } from './hero';
+import { FLAGS } from '../../base/flags';
 import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
 import { applyDye } from './dye';
 import { applyPalette } from './monsterSkins';
@@ -606,6 +608,8 @@ export class SkinnedPlayer extends SkinnedCharacter {
       });
       ribbons.setNear(this.lod === 0);
     }
+    // Tỉ lệ đọc từ trên (C2): chỉ thân người chơi; `?hero=0` tắt để so ảnh.
+    if (FLAGS.hero) this.proportions = proportionBones(this.rig, boneKey);
     const fly = buildFlySword();
     this.flySword = fly.group;
     this.flyAura = fly.aura;
