@@ -159,7 +159,8 @@ const MOTIFS = {
   ],
   pillar: (at, R) => [
     upBlade(at, 0, 0, 16, R * 1.1, -0.04, 'body', 0.9),
-    upBlade(at, 0, 0, 16, R * 0.45, -0.04, 'rim', 1),
+    upBlade(at, 0, 0, 16, R * 0.7, -0.04, 'rim', 1),
+    upBlade(at, 0, 0, 16, R * 0.3, -0.03, 'rim', 1),
     ring(at, 0.12, R * 0.4, R * 1.2, 0, 0.85),
     ring(at, 0.14, R * 0.3, R * 1.7, 0.06, 0.55),
   ],
