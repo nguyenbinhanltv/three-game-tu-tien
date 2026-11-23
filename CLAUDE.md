@@ -32,6 +32,7 @@ tools/asset-pipeline  optimize.ts (gltf-transform, LOD, meshopt, KTX2, hash, man
 tools/perf         size.ts (pnpm size), bench.ts (bench:client), load.ts (bench:load), crowd.ts (bench:crowd), compat.ts (compat), shots.ts + scenarios/ (pnpm shots <kịch bản>), lib/ (phần chung: cổng, server dev, Chrome tắt tiếng, đăng nhập thử, GM, chụp, kiểu window.__game), Playwright
 tools/maps         gen-<level>.mjs: sinh level (levels/*.json) từ mã
 tools/poses        gen-k5.mjs, report-k5.mjs: pose chiêu K-5
+tools/vfx-forge    lò rèn texture VFX (Codex → KTX2 + contact sheet + manifest), prompt Codex, style-sheet.json (`pnpm vfx:forge`, `vfx:check`)
 tools/vfx          gen-fx-*.py, recipes_*.py: sinh timeline VFX (data/fx/*.json)
 tools/ui           contrast.mjs: kiểm WCAG AA token chữ
 tools/docs         check.mjs (media docs), check-paths.mjs (đường dẫn trong CLAUDE.md/handbook/skill)
@@ -57,6 +58,7 @@ CLAUDE.md giữ phần lõi. Chi tiết từng hệ thống và lệnh nằm ở
 | `client-ui.md` | UI Ngọc Giản, cửa sổ, kit, minimap, client nhiều level, lùi WebGL2, hiệu năng client |
 | `maps-levels.md` | bản đồ, phó bản, mỹ thuật từng level, truyền tống, `map:report` |
 | `monsters.md` | quái, tinh anh, boss, kiểu chiêu quái |
+| `vfx-forge.md` | quy trình Họa Pháp Lô (thẻ chiêu, vfx-forge, Codex, phòng thử `?vfxlab`) |
 | `vfx-animation.md` | VFX timeline, animation K-*, nhân vật v2/v3, kiếm, pose |
 | `assets.md` | pipeline asset, KTX2, cây, bướm, Dị Vực |
 | `audio.md` | SFX, nhạc tự soạn, cân âm lượng |
