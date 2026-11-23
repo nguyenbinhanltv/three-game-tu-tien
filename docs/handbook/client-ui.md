@@ -41,7 +41,7 @@
 
 > P5c-1: iso là camera mặc định ở mọi nơi, kể cả sân độ kiếp (`do_kiep*`: thiên lôi nhìn rõ từ trên). Chỉ cảnh điện ảnh (`cine.active`) còn dùng camera cảnh riêng. Chạy `pnpm shots` không cần cờ camera.
 
-Chỉ client, sau cờ URL; mặc định không đổi gì. Mã: `game/camera/iso.ts` (hàm thuần, có test), `game/camera/isoRig.ts` (trạng thái: con trỏ, đích, vòng ngắm), nối ở `game/engine/frameLoop.ts` (`updateCamera`, `buildInput`, `fireSkill`) và `game/engine/input.ts`.
+Chỉ client; từ P5c là camera mặc định (camera cũ đã gỡ: không còn xoay/zoom/khóa con trỏ, không còn tùy chọn kiểu điều khiển trong Cài đặt). Mã: `game/camera/iso.ts` (hàm thuần, có test), `game/camera/isoRig.ts` (trạng thái: con trỏ, đích, vòng ngắm), nối ở `game/engine/frameLoop.ts` (`updateCamera`, `buildInput`, `fireSkill`) và `game/engine/input.ts`.
 
 - Camera phối cảnh FOV 32°, nghiêng 52°, hướng cố định theo bản đồ (`ISO_YAW`, mặc định 45°), khoảng cách khóa cố định 20 m (không zoom, lăn chuột không đổi camera), `far` 250 m, ẩn biển mây/trời xa/núi nền; bám nhân vật, dẫn trước tối đa 3,2 m theo con trỏ; rung máy giữ nguyên; ngự kiếm lùi xa ×1,35.
 - Chuột phải = đi tới điểm: client chiếu con trỏ xuống `heightAt` rồi đổi hướng tới đích thành `mx/mz` như WASD (server vẫn quyết định vị trí). WASD giữ nguyên (theo trục camera cố định) và hủy đích. Con trỏ hiện vòng ngắm trên đất.
@@ -57,21 +57,21 @@ Chỉ client, sau cờ URL; mặc định không đổi gì. Mã: `game/camera/i
 - Vòng cảnh báo đất của quái/boss là vạch báo có sẵn (hazard); P1 không đổi hình, chỉ kiểm chúng vẫn đọc được ở góc chéo.
 - Kiểm: `apps/server/src/game/aim.test.ts`, `SECURITY_ONLY=aim pnpm --filter @dtl/bot-client security`, `pnpm bots --count 100` (0 dòng `refId`), `pnpm ledger:check`.
 
-### Thiên Nhãn P2a: dựng hình theo khung iso (`?cam=iso`)
+### Thiên Nhãn P2a: dựng hình theo khung iso (mặc định)
 
 - Địa hình: `Terrain.setIso` chỉ giữ lưới mịn và cây xa trong bán kính 1 ô (256 m) quanh người (thường 3–4 ô); lưới thô và `far` 250 m lo phần còn lại.
 - Bóng đổ: `Environment.setIso` thu bản đồ bóng mặt trời còn ±26 m (Cực cao ±36 m) quanh người, bóng nét hơn ~2,7 lần ở cùng độ phân giải bản đồ.
 - Vật che: ngoài đường nhìn, mái/tường trong vùng 4 m quanh người ở phía camera cũng mờ (`zoneHit`); cây thẻ (`CardForest`) giờ cũng mờ như cây prop; khi ngự kiếm cây/prop ở RÌA màn hình mờ theo vị trí màn hình (`uEdge`), vì tán cây là cảnh nền thấp hơn người nên đường nhìn không chạm chúng.
 - Chưa làm ở P2a: vật liệu mặt đất iso (P2b), AO riêng (dùng GTAO có sẵn của preset Vừa/Cao), LOD prop cố định theo khoảng cách camera.
 
-### Thiên Nhãn P2b: chi tiết mặt đất iso (`?cam=iso`)
+### Thiên Nhãn P2b: chi tiết mặt đất iso (mặc định)
 
 - `render/materials/ground.ts` (khối `FLAGS.isoCam`): thêm lớp chi tiết tầm gần chỉ khi bật iso (shader dựng theo cờ lúc tải trang, mặc định không đổi): hạt vi mô, mảng rêu, vết nứt (đá lát và đất khô), lá rơi (rừng), sỏi (đường mòn, đất khô). Tính theo ô băm/nhiễu thủ tục, không thêm draw call hay texture; tắt dần từ 22 m ra 70 m; chỉ trên đất bằng, không vách/đá/tuyết; preset Thấp bỏ qua.
 - Chưa làm: bộ texture Codex mới cho Lạc Kiếm Tông/Vân Lam (lớp texture hiện có vẫn dùng), decal quad thật, lát đá sân tông môn (mesh GLB `arch_sect`, ngoài shader địa hình).
 
 P2b (vòng 2 sau duyệt): chi tiết mặt đất tăng rõ rệt và dùng chung `render/materials/isoDetail.ts` — địa hình (`isoTerrainDetail`: biến thiên màu macro, mảng đất trồi, rêu, nứt, lá, sỏi) và kiến trúc ngửa lên (`withIsoSurfaceDetail`, gắn qua `archWrap` cho sàn đá tông môn: tông riêng từng viên, ố, rêu ở khe, đá mẻ cạnh, nứt, lá). Camera dẫn bị kẹp (`clampLeadSafe`: ngang ±4,5 m, tụt xuống ≤ 2,2 m; khi có mục tiêu `clampLeadFrame` giữ cả mục tiêu trong vùng an toàn, tránh minimap phải trên, không thể cả hai thì ưu tiên người) để người luôn ở giữa màn hình, tránh khung chat và thanh chiêu. Lá rơi là lá thon xoay ngẫu nhiên, thưa và gom cụm; vết nứt chỉ trên đá lát/đất khô.
 
-### Thiên Nhãn P3: chuyển từng bản đồ sang iso (`?cam=iso`)
+### Thiên Nhãn P3: chuyển từng bản đồ sang iso (mặc định)
 
 - Hướng nhìn cố định riêng từng bản đồ: `ISO_YAW` trong `game/camera/iso.ts` (độ → rad). Chọn bằng ảnh so sánh với `?isoyaw=<độ>` (ví dụ `pnpm shots camiso --cams iso --query isoyaw=30`). Đã chọn: `van_lam` (Lạc Kiếm Tông + Vân Lam) 30°, `van_hai` (Vân Hải Phù Đảo) 135°, `thien_khuyet` (Thiên Khuyết Cổ Thành) 20°, `doan_mach` (Đoạn Mạch Cổ Cốc) 135°, `bac_hoang` (Bắc Hoang) 45°. `van_dinh` (Vấn Đỉnh) và `gioi_tri` (Giới Trì) 135°. Phó bản ch2–ch5 (`kiem_trung`, `kim_da_cung`, `kinh_nguyet`, `luyen_than`, `phuc_mach`, `than_tang`) 45°, `xich_tan_khich` −45°. `cuu_kieu` (Thiên Lộ Giới) và chín phòng `kieu_1..9` 45° (phòng cầu chụp bằng `pnpm shots kieu --iso 1 --bridge <n> --boss 1`). `camiso` cũng chạy được với bí cảnh có cổng (vào bằng cổng thật, 4 điểm cố định quanh tâm, gọi quái đợt đầu để đánh). Prop cao có `sight` (cột tà, xác thú, cây khô; prop `crystal` + `sight` soạn chung ở `props.ts`). Kịch bản `camiso` nhận `--level <id>` (điểm lấy từ `levelPoints`: poi, vùng, boss; cảnh đánh ở điểm sinh quái thường đầu tiên). Bản đồ chưa có mục thì dùng 45°.
 - Khung boss lớn do phiên P4 (-262) phụ trách; P3 chỉ thu vùng ngang an toàn của mục tiêu `ISO_TGT_X` = 5,5 m (tránh minimap).

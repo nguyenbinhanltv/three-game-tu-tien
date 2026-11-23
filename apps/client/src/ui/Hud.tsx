@@ -1,4 +1,3 @@
-import { FLAGS } from '../base/flags';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import './tutien.css';
@@ -485,11 +484,6 @@ function DeathOverlay() {
   );
 }
 
-/** Gợi ý khóa chuột: hiện 6 giây mỗi lần chuột được thả rồi tự mờ, không nằm lì giữa màn hình che nhân vật. */
-function LockHint() {
-  return <div className="hint lock fading">{t('ui.hint.lock')}</div>;
-}
-
 function Corner() {
   const fps = useUI((s) => s.fps);
   const perf = useUI((s) => s.perf);
@@ -503,10 +497,6 @@ function Corner() {
 export function Hud() {
   const hint = useUI((s) => s.hint);
   const npc = useUI((s) => s.npc);
-  const panel = useUI((s) => s.windows.length > 0);
-  const controls = useUI((s) => s.controls);
-  const mouseLook = useUI((s) => s.mouseLook);
-  const dead = useUI((s) => (s.flags & PF_DEAD) !== 0);
   const hasBoss = useUI((s) => s.boss !== null);
   const chapter = useUI((s) => s.chapter);
   const bossLine = useUI((s) => s.bossLine);
@@ -562,8 +552,6 @@ export function Hud() {
       <Tribulation />
       <TrialBanner />
       <BagWarn />
-      {mouseLook && <div className="crosshair" />}
-      {controls === 'mouse' && !FLAGS.isoCam && mode !== 'touch' && !mouseLook && !npc && !panel && !dead && <LockHint />}
       {hint && !npc && <div className="hint">{hint}</div>}
       <CastBar />
       <SkillBanner />

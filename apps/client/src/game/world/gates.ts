@@ -19,7 +19,7 @@ const BLUE = 0x8fdcff;
 const GOLD = 0xffd27a;
 
 /**
- * Camera chéo (`?cam=iso`, nhìn xuống 52°): đĩa cổng dựng đứng (tròn 5,6 × 7 m) hiện thành elip khổng lồ phủ góc màn hình. Vẽ nằm phẳng trên đất như
+ * Camera chéo (mặc định, nhìn xuống 52°): đĩa cổng dựng đứng (tròn 5,6 × 7 m) hiện thành elip khổng lồ phủ góc màn hình. Vẽ nằm phẳng trên đất như
  * cổng phó bản trong hang. Cổng gương Kính Nguyệt (`to === 'kinh_nguyet'`) có mặt gương dựng đứng thiết kế riêng nên giữ nguyên.
  */
 /** Đĩa cổng phẳng ở iso: độ đục tối đa và hệ số cỡ (so với đĩa phẳng thường, bán kính 4,2 m → ≈ 3 m). */

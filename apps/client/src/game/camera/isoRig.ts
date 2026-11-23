@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { ISO_ARRIVE, ISO_DIST, nearestTo, rayGround } from './iso';
 
 /**
- * Trạng thái runtime của camera chéo (`?cam=iso`): con trỏ, đích đi chuột phải, vòng ngắm trên đất.
+ * Trạng thái runtime của camera chéo (mặc định): con trỏ, đích đi chuột phải, vòng ngắm trên đất.
  * Chỉ ý định; vị trí cuối do server quyết định (đích chỉ đổi thành mx/mz như WASD).
  */
 export class IsoRig {

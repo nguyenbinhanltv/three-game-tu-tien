@@ -1,5 +1,5 @@
 /**
- * Thiên Nhãn P4-1: chỉnh hình VFX cho camera chéo (`?cam=iso`, nhìn xuống 52°). Hàm thuần để test.
+ * Thiên Nhãn P4-1: chỉnh hình VFX cho camera chéo (mặc định, nhìn xuống 52°). Hàm thuần để test.
  *
  * Hình đứng cao (cột đá, lồng, khối ấn) dựng trên người/mục tiêu sẽ che chính người đó khi nhìn từ trên xuống, nên nén chiều cao THẬT (mét):
  * tới `ISO_UPRIGHT_SOFT` m giữ nguyên, phần vượt chỉ còn `ISO_UPRIGHT_KEEP` và không quá `ISO_UPRIGHT_MAX`. Hình nằm đất (vòng, vết chém,

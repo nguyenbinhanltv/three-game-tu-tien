@@ -372,8 +372,6 @@ export function DebugPanel() {
             el: d.active || none,
           })}
         </dd>
-        <dt>{t('ui.debug.pointer')}</dt>
-        <dd>{t('ui.debug.pointer_v', { mode: d.controls, lock: yn(d.pointerLock) })}</dd>
         <dt>{t('ui.debug.ping')}</dt>
         <dd>{d.ping > 0 ? t('ui.debug.ping_v', { n: d.ping }) : none}</dd>
         <dt>{t('ui.debug.room')}</dt>

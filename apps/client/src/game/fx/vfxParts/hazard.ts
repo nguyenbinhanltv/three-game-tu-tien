@@ -1,8 +1,7 @@
 // R-8: tách từ game/vfx.ts (hàm nhận `v: Vfx`, trước là phương thức của lớp Vfx).
 import { groundAt } from '../../../base/levelCtx';
 import { SIGIL_CIRCLE } from '../../../render/vfx/sigil';
-import { FLAGS } from '../../../base/flags';
-import { hazardFlash, hazardStack, hazardStyle, hazardStyleDanger, ISO_HAZARD_OPACITY } from '../../../render/vfx/phases';
+import { hazardFlash, hazardStack, hazardStyleDanger, ISO_HAZARD_OPACITY } from '../../../render/vfx/phases';
 import { G } from '../../core/geo';
 import { HAZARD_COLORS, HOT_BOLT, HOT_BOLT_CORE, POOL_COLOR, TRAIL_COLOR, _a } from './common';
 import type { Vfx } from '../vfx';
@@ -87,7 +86,7 @@ export function hazard(
   danger: 0 | 1 | 2 = boss ? 2 : 1,
 ): void {
   const y = groundAt(x, z);
-  const style = FLAGS.isoCam ? hazardStyleDanger(kind, danger) : hazardStyle(kind, boss);
+  const style = hazardStyleDanger(kind, danger);
   const color = kind === 'lightning' ? (hot ? HOT_BOLT : (HAZARD_COLORS[kind] ?? style.color)) : style.color;
   // Mặt đất không phẳng: nâng theo điểm cao nhất quanh vòng (giới hạn để không lơ lửng quá).
   let top = y;
@@ -106,7 +105,7 @@ export function hazard(
     (k) => {
       m.fxA.x = k;
       m.fxA.z = hazardFlash(k, delay) * stack.dim;
-      m.fxOpacity = Math.min(1, k * 10) * (FLAGS.isoCam ? ISO_HAZARD_OPACITY : 1);
+      m.fxOpacity = Math.min(1, k * 10) * ISO_HAZARD_OPACITY;
     },
     () => {
       v.hazards.splice(v.hazards.indexOf(mine), 1);

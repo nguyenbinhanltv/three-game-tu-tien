@@ -201,20 +201,6 @@ export function runFrame(eng: Game): void {
     eng.facing += d * Math.min(1, dt * 14);
   }
 
-  // Camera quay bằng phím mũi tên trái/phải.
-  if (!eng.typing() && !eng.iso) {
-    // Camera điều khiển được hoàn toàn bằng bàn phím: ← → xoay, ↑ ↓ ngẩng/cúi, - = thu phóng.
-    const k = eng.keys.held;
-    const turn = eng.controls === 'turn';
-    if ((['camLeft', 'camRight', 'camUp', 'camDown', 'zoomIn', 'zoomOut'] as const).some((a) => isHeld(k, a))) eng.camFrame.cancel();
-    if (isHeld(k, 'camLeft') || (turn && isHeld(k, 'left'))) eng.camYaw += dt * 2.1;
-    if (isHeld(k, 'camRight') || (turn && isHeld(k, 'right'))) eng.camYaw -= dt * 2.1;
-    if (isHeld(k, 'camUp')) eng.camPitch = Math.min(1.45, eng.camPitch + dt * 1.1);
-    if (isHeld(k, 'camDown')) eng.camPitch = Math.max(-0.45, eng.camPitch - dt * 1.1);
-    if (isHeld(k, 'zoomIn')) eng.camDist = Math.max(3, eng.camDist * (1 - dt * 1.4));
-    if (isHeld(k, 'zoomOut')) eng.camDist = Math.min(70, eng.camDist * (1 + dt * 1.4));
-  }
-
   const rp = eng.renderPos;
   eng.terrain.update(rp.x, rp.z, eng.started ? 1 : 8);
   const myLevel = get().char?.level ?? 1;
@@ -388,7 +374,7 @@ function updateCamera(eng: Game, dt: number): void {
   const cp = Math.cos(pitch);
   let tx = rp.x;
   // Kiểu FPS: nhìn qua đầu nhân vật để tâm ngắm không bị nhân vật che.
-  let ty = rp.y + (eng.controls === 'mouse' ? 2.5 : 1.6);
+  let ty = rp.y + 1.6;
   let tz = rp.z;
   let cx = tx + Math.sin(eng.camYaw) * cp * eng.camDistCur;
   let cy = ty + Math.sin(pitch) * eng.camDistCur;
@@ -682,11 +668,8 @@ function buildInput(eng: Game): MoveInput {
   let mz = 0;
   let f = 0;
   if (!typing) {
-    // Kiểu "xoay": A/D quay hướng nhìn (xử lý ở frame), không bước ngang.
-    if (eng.controls !== 'turn') {
-      if (isHeld(k, 'right')) mx += 1;
-      if (isHeld(k, 'left')) mx -= 1;
-    }
+    if (isHeld(k, 'right')) mx += 1;
+    if (isHeld(k, 'left')) mx -= 1;
     if (isHeld(k, 'forward')) mz += 1;
     if (isHeld(k, 'back')) mz -= 1;
     if (eng.autorun && mz === 0) mz = 1;

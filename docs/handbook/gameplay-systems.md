@@ -43,7 +43,7 @@
 
 ## Cân bằng theo ngắm tay (camera iso, Thiên Nhãn P5a)
 
-Số đo ngày 2026-11-23, camera `?cam=iso` (FOV 32°, nghiêng 52°, khoảng cách khóa 20 m, 16:9):
+Số đo ngày 2026-11-23, camera camera chéo (FOV 32°, nghiêng 52°, khoảng cách khóa 20 m, 16:9):
 
 - **Vùng đất nhìn thấy:** rộng ≈ 20 m ngang quanh điểm nhìn; theo chiều sâu từ ≈ 6 m trước tới ≈ 9 m sau điểm nhìn (≈ 15 m). Con trỏ chỉ chạm được trong vùng này (cộng dẫn trước tối đa 3,2 m), nên điểm ngắm thực tế ≤ ~13 m quanh người; `AIM_MAX_DIST` 45 m chỉ là trần chống gian lận.
 - **Tầm chiêu:** gần như mọi chiêu sát thương/vùng có tầm 26 m (một số 30 m). Vẫn dùng được: tab-target và tự khóa (bán kính `AIM_PICK_R` 5 m) đưa mục tiêu ngoài màn hình vào tầm, chỉ báo ngoài màn hình (`offscreen`) hiện hướng. Chưa chỉnh.

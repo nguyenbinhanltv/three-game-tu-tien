@@ -409,7 +409,6 @@ function debugInfo(eng: Game, me: PState, fps: number): DebugInfo {
   on(me.fl & PF_TRIBULATION, 'tribulation');
   on(eng.autorun, 'autorun');
   on(eng.autoAttack, 'auto_attack');
-  on(eng.dragging, 'dragging');
   on(eng.typing(), 'typing');
   const now = performance.now();
   return {
@@ -419,8 +418,6 @@ function debugInfo(eng: Game, me: PState, fps: number): DebugInfo {
     focus: document.hasFocus(),
     visible: !document.hidden,
     active: document.activeElement?.tagName ?? '',
-    pointerLock: eng.locked,
-    controls: eng.controls,
     events: eng.keys.log.map((e) => ({ id: e.id, kind: e.kind, code: e.code, ago: Math.round(now - e.at) })),
     ping: Math.round(eng.ping),
     room: get().room,
