@@ -136,6 +136,7 @@ function ClusterSlot({ sk, i, pos, view, main }: SlotProps) {
   return (
     <div className="u2h-cell" style={style} data-main={main ? '1' : undefined}>
       <Tooltip
+        avoidCenter
         content={
           <TipCard
             title={t(`skill.${sk.id}.name`)}
@@ -223,7 +224,7 @@ function QuickButton({
 }) {
   return (
     <div className="u2h-cell u2h-quick" style={pos ? posStyle(pos) : undefined}>
-      <Tooltip content={tip ?? <span className="u2h-tip">{`${label} · ${kbd}`}</span>}>
+      <Tooltip avoidCenter content={tip ?? <span className="u2h-tip">{`${label} · ${kbd}`}</span>}>
         <button
           type="button"
           className={'u2-slot u2-skill u2h-skill' + (lit ? ' empowered' : '')}
