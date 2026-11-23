@@ -71,6 +71,7 @@ import {
   markAny,
   markTakeAny,
   type JointDef,
+  strikeTier,
   type HitTier,
 } from '@dtl/shared';
 import { JOINTS, MARK, SKILL, t } from '@dtl/content';
@@ -796,8 +797,8 @@ export class CombatSystem {
   }
 
   /** Đòn của chiêu `skill` lên `mon`: trúng đích thì tích tài nguyên theo chiêu. */
-  strike(p: PlayerEnt, mon: MonEnt, skill: SkillDef, power: number, elemMul: number): void {
-    if (this.c.hitMonster(p, mon, power, elemMul, skill.elem, skill.tier)) this.addRes(p, this.resGainOf(p, skill));
+  strike(p: PlayerEnt, mon: MonEnt, skill: SkillDef, power: number, elemMul: number, combo?: number): void {
+    if (this.c.hitMonster(p, mon, power, elemMul, skill.elem, strikeTier(skill, combo))) this.addRes(p, this.resGainOf(p, skill));
   }
 
   gainCharge(p: PlayerEnt, n: number): void {
@@ -1134,7 +1135,7 @@ export class CombatSystem {
           const off = offs[i] ?? 0;
           const last = i === rs.hits.length - 1;
           if (off <= 0) {
-            this.strike(p, mon, skill, h * mul, elemMul);
+            this.strike(p, mon, skill, h * mul, elemMul, ctx.combo);
             if (last && am?.last) this.markMon(p, mon, am.id, am.n);
             if (last && v?.knock) this.pushMonster(mon, p.move.x, p.move.z, v.knock);
             return;
@@ -1142,7 +1143,7 @@ export class CombatSystem {
           this.later(off, () => {
             // Người ra chiêu phải còn trong room, còn sống, chưa bay lên; quái chưa chết.
             if (this.c.players.get(p.sid) === p && !this.c.isDead(p) && !this.airborne(p) && mon.state !== MS_DEAD) {
-              this.strike(p, mon, skill, h * mul, elemMul);
+              this.strike(p, mon, skill, h * mul, elemMul, ctx.combo);
               if (last && am?.last) this.markMon(p, mon, am.id, am.n);
               if (last && v?.knock) this.pushMonster(mon, p.move.x, p.move.z, v.knock);
             }

@@ -1,7 +1,7 @@
 // Cấp đòn (Chân Cảnh S1: "đòn có trọng lượng"). Một bảng hằng số duy nhất cho cả server (đẩy lùi, khựng, ngã: quyết định thật)
 // và client (hit-stop, rung camera: chỉ trình diễn). Không đổi góc camera: rung chỉ dịch nhẹ.
 import { HEAVY_POWER } from './combat';
-import type { HitTier, MonsterDef } from './types';
+import type { HitTier, MonsterDef, SkillDef } from './types';
 
 export const HIT_TIER_ORDER: readonly HitTier[] = ['light', 'medium', 'heavy', 'finisher'];
 
@@ -50,6 +50,17 @@ export function hitTierOfPower(power: number): HitTier {
   return 'light';
 }
 
+/**
+ * Cấp của một đòn chiêu: đòn chuỗi `combo` thì theo `hits[combo].tier`, đòn `kb` tối thiểu `medium`; không thì theo `tier` của chiêu.
+ * Trả `undefined` nếu dữ liệu không ghi cấp nào (nơi gọi suy từ hệ số bằng `resolveTier`).
+ */
+export function strikeTier(skill: Pick<SkillDef, 'tier' | 'combo'>, combo?: number): HitTier | undefined {
+  const h = combo !== undefined ? skill.combo?.hits[combo] : undefined;
+  if (h?.tier) return h.tier;
+  if (h?.kb) return tierRank(skill.tier ?? 'light') >= tierRank('medium') ? skill.tier : 'medium';
+  return skill.tier;
+}
+
 /** Cấp hiệu lực: dữ liệu ghi rõ thì theo dữ liệu, không thì suy từ hệ số. */
 export function resolveTier(explicit: HitTier | undefined, power: number): HitTier {
   return explicit ?? hitTierOfPower(power);
@@ -80,7 +91,8 @@ export function monsterReaction(def: Pick<MonsterDef, 'boss' | 'elite' | 'poise'
   const k = def.elite ? 0.5 : 1;
   if (def.boss) return { knockM: 0, staggerMs: spec.staggerMs, knockdownMs: 0 };
   if (tier === 'finisher') return { knockM: spec.knockM * k, staggerMs: 0, knockdownMs: MONSTER_KNOCKDOWN_MS * k };
-  return { knockM: spec.knockM * k, staggerMs: spec.staggerMs * k, knockdownMs: 0 };
+  // Đòn vừa chỉ đẩy nhẹ: khựng làm quái mất nhịp đánh nên giữ cho đòn nặng trở lên (cân bằng DPS quái, đo bằng fight:check).
+  return { knockM: spec.knockM * k, staggerMs: tier === 'medium' ? 0 : spec.staggerMs * k, knockdownMs: 0 };
 }
 
 /**

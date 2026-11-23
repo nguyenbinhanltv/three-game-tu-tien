@@ -215,3 +215,90 @@ describe('quái bị người chơi đánh', () => {
     expect(mon.stunUntil).toBe(0);
   });
 });
+
+describe('chuỗi đòn thường và siêu giáp (sửa theo review)', () => {
+  it('strikeTier: đòn kb của chuỗi tối thiểu vừa, đòn thường theo chiêu', async () => {
+    const { strikeTier, SKILL } = await import('@dtl/content').then(async (c) => ({ ...(await import('@dtl/shared')), SKILL: c.SKILL }));
+    const sk = SKILL.get('skl_phi_kiem')!;
+    expect(strikeTier(sk, 0)).toBe('light');
+    expect(strikeTier(sk, 2)).toBe('medium');
+    expect(strikeTier({ tier: 'light', combo: { window: 1, hits: [{ power: 1, hitAt: 0, kb: true }] } }, 0)).toBe('medium');
+    expect(strikeTier({ tier: 'heavy', combo: { window: 1, hits: [{ power: 1, hitAt: 0, kb: true }] } }, 0)).toBe('heavy');
+    expect(strikeTier({ tier: 'light', combo: { window: 1, hits: [{ power: 1, hitAt: 0, tier: 'finisher' }] } }, 0)).toBe('finisher');
+  });
+
+  it('đòn 3 của chuỗi Phi Kiếm đẩy/khựng quái thường, đòn 1 thì không', () => {
+    const { sim, mon, X, Z } = setup('mon_soi_xam');
+    const q = {
+      sid: 'p1',
+      move: { x: X, y: groundAt(X, Z - 2), z: Z - 2 },
+      char: { atk: 50, stats: { critRate: 0, critMul: 1.5, setFx: { critSlowSec: 0 } }, meta: {}, equip: {}, level: 1 },
+      mth: { lockCharge: true },
+    };
+    sim.players.set('p1', q as never);
+    mon.s.hp = mon.s.mhp = 1_000_000;
+    sim.now = 1_000_000;
+    const sk = (sim as unknown as { combat: { strike(p: unknown, m: unknown, s: unknown, pw: number, em: number, c?: number): void } })
+      .combat;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const skill = {
+      id: 'x',
+      elem: undefined,
+      tier: 'light',
+      combo: {
+        window: 2,
+        hits: [
+          { power: 0.9, hitAt: 0 },
+          { power: 0.9, hitAt: 0 },
+          { power: 1.4, hitAt: 0, kb: true },
+        ],
+      },
+    };
+    const z0 = mon.s.z;
+    sk.strike(q, mon, skill, 0.9, 1, 0);
+    expect(mon.stunUntil).toBe(0);
+    sk.strike(q, mon, skill, 1.4, 1, 2);
+    expect(mon.s.z - z0).toBeGreaterThan(0.3); // đòn vừa: đẩy nhẹ, quái thường không khựng (giữ nhịp đánh)
+    expect(mon.stunUntil).toBe(0);
+  });
+
+  it('boss đang niệm chú trúng đòn nặng: không khựng, cờ chú nguyên vẹn', () => {
+    const { sim, mon, X, Z } = setup('mon_thiet_boi_tru');
+    (mon.def as { boss?: boolean }).boss = true;
+    const q = {
+      sid: 'p1',
+      move: { x: X, y: groundAt(X, Z - 2), z: Z - 2 },
+      char: { atk: 50, stats: { critRate: 0, critMul: 1.5, setFx: { critSlowSec: 0 } }, meta: {}, equip: {}, level: 1 },
+      mth: { lockCharge: true },
+    };
+    sim.players.set('p1', q as never);
+    mon.s.hp = mon.s.mhp = 1_000_000;
+    sim.now = 1_000_000;
+    mon.chant = { startAt: sim.now - 500, endAt: sim.now + 1500 };
+    const h = (sim as unknown as { hitMonster(p: unknown, m: unknown, pw: number, mul: number): boolean }).hitMonster;
+    h.call(sim, q, mon, 4.6, 1);
+    expect(mon.stunUntil).toBe(0);
+    expect(mon.chant).not.toBeNull();
+  });
+
+  it('khựng hết thì không cộng 600 ms nhịp đánh', () => {
+    const { sim, mon, X, Z } = setup('mon_soi_xam');
+    const q = {
+      sid: 'p1',
+      move: { x: X, y: groundAt(X, Z - 2), z: Z - 2 },
+      char: { atk: 50, stats: { critRate: 0, critMul: 1.5, setFx: { critSlowSec: 0 } }, meta: {}, equip: {}, level: 1 },
+      mth: { lockCharge: true },
+    };
+    sim.players.set('p1', q as never);
+    mon.s.hp = mon.s.mhp = 1_000_000;
+    sim.now = 1_000_000;
+    mon.attackAt = 0;
+    (sim as unknown as { hitMonster(p: unknown, m: unknown, pw: number, mul: number): boolean }).hitMonster(q, mon, 2.3, 1);
+    expect(mon.stunUntil).toBeGreaterThan(sim.now);
+    sim.players.clear();
+    sim.now = mon.stunUntil + 1;
+    (sim as unknown as { tickMonster(m: unknown, dt: number): void }).tickMonster(mon, 0.05);
+    expect(mon.stunUntil).toBe(0);
+    expect(mon.attackAt).toBeLessThan(sim.now + 600);
+  });
+});

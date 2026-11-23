@@ -234,6 +234,10 @@ export class MonsterSystem {
       if (this.c.now < mon.staggerOkAt || this.c.now < mon.stunUntil) return;
       mon.staggerOkAt = this.c.now + BOSS_STAGGER_GAP_MS;
     }
+    // Đang niệm chú / ra chiêu có báo trước thì là siêu giáp: khựng không phá (chỉ ngắt chú và thanh phá thế làm việc đó).
+    // Quái thường chỉ có đòn cắn/combo: khựng cắt các đòn đó như choáng ngắn.
+    const busy = mon.chant || mon.cast || mon.mx.act || this.c.now < mon.windUntil || mon.comboAt > 0;
+    if (busy && (mon.def.boss || mon.def.elite || mon.chant)) return;
     const until = this.c.now + ms;
     if (until <= mon.stunUntil) return;
     this.c.monSkills.cancel(mon);
@@ -1070,9 +1074,11 @@ export class MonsterSystem {
     }
     if (m.stunUntil) {
       if (this.c.now < m.stunUntil) return;
+      // Khựng do đòn (S1) hết thì đánh lại ngay; chỉ choáng thật (ngắt chú, phá thế, choáng chiêu) mới chậm nhịp 600 ms.
+      const onlyStagger = m.stunUntil === m.staggerUntil;
       m.stunUntil = 0;
       this.setMonFlags(m, 0, 0);
-      m.attackAt = Math.max(m.attackAt, this.c.now + 600);
+      if (!onlyStagger) m.attackAt = Math.max(m.attackAt, this.c.now + 600);
     }
     if (m.taunt) {
       const tp = this.c.players.get(m.taunt.sid);
