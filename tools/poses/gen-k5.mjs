@@ -127,6 +127,25 @@ const VOICES = {
     spine3: 10,
     spine5: 18,
   },
+  // Lôi tu (C3d): tay trái giơ cao "triệu lôi", kiếm bổ từ trên xuống; nhanh, gọn, theo đà dài. Giữ 0,05 s như kiếm tu (tụ lực ngắn, giật).
+  lt: {
+    drop: 0.06,
+    hipY5: -0.1,
+    hipZ5: 0.12,
+    twist: 30,
+    hold: 0.05,
+    over: 0.17,
+    reachZ: 0.84,
+    reachY: 0.56,
+    footR5: [-0.14, 0, 0.3],
+    footL5: [0.15, 0, -0.2],
+    handL3: [0.08, 0.5, 0.2],
+    handL5: [0.14, 0.92, 0.1],
+    elbowL5: [0.8, 0.2, -0.3],
+    spine3: 4,
+    spine5: 12,
+    lift: 0.2,
+  },
   // Tròn, mềm, tay áo.
   ds: {
     drop: 0.035, // 0,02–0,05
@@ -311,8 +330,26 @@ function swingFrames(swingId, voice, over) {
     edge: S.load.edge,
     handL: V.handL3,
     elbowL: GUARD.elbowL,
-    footR: voice === 'hp' ? [-0.26, 0, 0.1] : voice === 'ds' ? [-0.14, 0, 0.1] : voice === 'dt' ? [-0.22, 0, 0.14] : GUARD.footR,
-    footL: voice === 'hp' ? [0.26, 0, -0.1] : voice === 'ds' ? [0.15, 0, -0.2] : voice === 'dt' ? [0.22, 0, -0.12] : GUARD.footL,
+    footR:
+      voice === 'hp'
+        ? [-0.26, 0, 0.1]
+        : voice === 'ds'
+          ? [-0.14, 0, 0.1]
+          : voice === 'dt'
+            ? [-0.22, 0, 0.14]
+            : voice === 'lt'
+              ? [-0.13, 0, 0.12]
+              : GUARD.footR,
+    footL:
+      voice === 'hp'
+        ? [0.26, 0, -0.1]
+        : voice === 'ds'
+          ? [0.15, 0, -0.2]
+          : voice === 'dt'
+            ? [0.22, 0, -0.12]
+            : voice === 'lt'
+              ? [0.15, 0, -0.16]
+              : GUARD.footL,
   };
   const f5 = {
     hipsPos: [0, V.hipY5, V.hipZ5],
@@ -343,18 +380,18 @@ function emit(id, skillId, hitAt, nine, frs) {
 
 // ---- Đòn thường: 3 đòn × 3 giọng ----
 const BASIC = SK.get('skl_phi_kiem');
-const SUF = { kt: '', kx: '', hp: '_hp', ds: '_ds', dt: '_dt' };
+const SUF = { kt: '', kx: '', hp: '_hp', ds: '_ds', dt: '_dt', lt: '_lt' };
 /** Giọng thực dùng cho chiêu mẫu VFX-V1: kiếm tu dùng bản cường điệu `kx`. */
-const VX = { kt: 'kx', hp: 'hp', ds: 'ds', dt: 'dt' };
-for (const voice of ['kt', 'hp', 'ds', 'dt']) {
+const VX = { kt: 'kx', hp: 'hp', ds: 'ds', dt: 'dt', lt: 'lt' };
+for (const voice of ['kt', 'hp', 'ds', 'dt', 'lt']) {
   BASIC.combo.hits.forEach((h, i) => {
     const id = `phi_kiem${i === 0 ? '' : `_${i + 1}`}${SUF[voice]}`;
     const { f3, f5 } = swingFrames(['d1', 'd2', 'd3'][i], VX[voice]);
     emit(id, 'skl_phi_kiem', h.hitAt, true, (w, rec) => frames({ w, rec, voice: VX[voice], f3, f5, nine: true, arc: voice === 'ds' }));
   });
 }
-// ---- Kiếm Khí Trảm ×4 giọng ----
-for (const voice of ['kt', 'hp', 'ds', 'dt']) {
+// ---- Kiếm Khí Trảm ×5 giọng ----
+for (const voice of ['kt', 'hp', 'ds', 'dt', 'lt']) {
   const { f3, f5 } = swingFrames('kkt', VX[voice]);
   emit(`kiem_khi_tram${SUF[voice]}`, 'skl_kiem_khi_tram', SK.get('skl_kiem_khi_tram').hitAt[0], true, (w, rec) =>
     frames({ w, rec, voice: VX[voice], f3, f5, nine: true, arc: voice === 'ds' }),
