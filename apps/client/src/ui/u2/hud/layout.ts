@@ -106,7 +106,7 @@ export function skillBox(W: number, H: number, layout: SkillLayout = 'arc'): Box
 }
 
 /** Khối máu/linh lực + buff dưới thanh chiêu giữa dưới (chỉ bố cục thanh ngang PC). */
-export const DOCK = { w: 640, h: 50, gap: 6 } as const;
+export const DOCK = { w: 640, h: 76, gap: 6 } as const;
 /** Thẻ nhân vật gọn (máu/linh lực đã xuống chân thanh chiêu): chân dung + tên + cảnh giới + tu vi. */
 export const TL_LITE_H = 84;
 

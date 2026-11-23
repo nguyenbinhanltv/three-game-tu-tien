@@ -803,6 +803,7 @@
   "ui.method.res.dan_hoa": "Đan hỏa",
   "ui.method.res.dan_hoa.tip": "Hồi được khí huyết thật và mộc độc phát tác thì tích. Xả cho chiêu hồi và chiêu đan hỏa mạnh hơn. Sau 12 giây không tích thì rụng dần.",
   "ui.method.res.value": "{n}/{max}",
+  "ui.method.res.full": "Đầy",
   "ui.method.charge": "Sạc",
   "ui.method.charge_full": "Sạc đầy, ra chiêu được",
   "ui.method.charge_tip": "Gây hoặc nhận sát thương để sạc.",
