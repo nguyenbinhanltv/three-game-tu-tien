@@ -257,7 +257,10 @@ export class PostPipeline {
     g = vec3(mix(g, vec3(0.75, 0.05, 0.04), edge.mul(postParams.hit).mul(0.55)));
     g = vec3(mix(g, vec3(1, 0.98, 0.94), postParams.flash.mul(0.75)));
     // Khung va chạm: bớt sắc, kéo tương phản mạnh quanh 0,5 rồi ám màu.
-    const imp = vec3(mix(vec3(luminance(g)), g, 0.35)).sub(0.5).mul(2.4).add(0.5);
+    const imp = vec3(mix(vec3(luminance(g)), g, 0.35))
+      .sub(0.5)
+      .mul(2.4)
+      .add(0.5);
     g = vec3(mix(g, clamp(imp.mul(postParams.impactColor), 0, 1), postParams.impact.mul(0.9)));
     const punchEdge = smoothstep(0.22, 0.78, length(fromCenter));
     const punchTone = postParams.punchLight.mul(0.95).add(0.03);

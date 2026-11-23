@@ -80,6 +80,8 @@ export interface FxRunnerEnv {
   impactOn(): boolean;
   /** Chế độ tĩnh (giảm hiệu ứng người khác mạnh hơn, bỏ khung va chạm). */
   staticOn(): boolean;
+  /** `sid` là đối thủ đấu pháp của mình (chiêu của địch phải đọc rõ, không bị giảm theo luật thứ bậc). */
+  hostile(sid: string): boolean;
   /** Kéo camera ra xa nhẹ (pháp tướng): hệ số khoảng cách thêm và thời lượng (giây). */
   camPull(pull: number, dur: number): void;
   /** Đẩy góc nhìn thêm `deg` độ cùng nhịp `camPull` (VS-1). */
@@ -266,8 +268,8 @@ export class FxRunner {
       seed: ++this.serial * 7.31,
       dist,
       firstHit: Math.min(...tm.hitAt),
-      mul: fxHierarchy(mine, this.env.staticOn()).size,
-      amul: fxHierarchy(mine, this.env.staticOn()).alpha,
+      mul: 1,
+      amul: fxHierarchy(mine, this.env.staticOn(), this.env.hostile(sid)).alpha,
       emitted: 0,
     });
     this.pump(this.casts.get(sid)!, e.t);
@@ -300,8 +302,8 @@ export class FxRunner {
       seed: ++this.serial * 7.31,
       dist,
       firstHit: Infinity,
-      mul: fxHierarchy(mine, this.env.staticOn()).size,
-      amul: fxHierarchy(mine, this.env.staticOn()).alpha,
+      mul: 1,
+      amul: fxHierarchy(mine, this.env.staticOn(), this.env.hostile(sid)).alpha,
       emitted: 0,
     };
     // Không có đồng hồ animation của chiêu: chạy theo dt (đồng hồ dự phòng).
@@ -487,13 +489,13 @@ export class FxRunner {
         if (c.mine) this.env.slowmo(ev.scale, ev.ms);
         break;
       case 'vignette':
-        if (c.mine) this.env.vignette(ev.amount, ev.tone ?? 'dark', ev.ms);
+        if (c.mine && !this.env.staticOn()) this.env.vignette(ev.amount, ev.tone ?? 'dark', ev.ms);
         break;
       case 'soundAt':
         this.env.soundRate(ev.id, ev.gain ?? 1, c.sid, (ev.rate ?? 1) * (1 + (Math.random() * 2 - 1) * (ev.jitter ?? 0)));
         break;
       case 'flash':
-        if (c.mine) this.env.flash(Math.min(0.3, ev.amount));
+        if (c.mine && !this.env.staticOn()) this.env.flash(Math.min(0.3, ev.amount));
         break;
       case 'impact':
         if (c.mine && this.env.impactOn() && !this.env.staticOn()) this.env.impact(ev.frames, ev.tint ?? 'ink');

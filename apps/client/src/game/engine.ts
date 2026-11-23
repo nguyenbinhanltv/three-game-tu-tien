@@ -713,6 +713,10 @@ export class Game {
         impact: (frames, tint) => this.post?.impactFrame(frames, tint),
         impactOn: impactFrameOn,
         staticOn: staticFxOn,
+        hostile: (sid) => {
+          const d = get().duel;
+          return !!d && d.phase !== 'end' && d.foe === sid;
+        },
         camPull: (pull, dur) => {
           if (this.shake.enabled) this.fxPull = { amt: pull, dur, t: 0 };
         },

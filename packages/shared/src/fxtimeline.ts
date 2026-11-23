@@ -112,13 +112,13 @@ export const FLIP_ATLASES = ['ink_smoke', 'spark_burst', 'dust_kick', 'slash_str
 export type FlipAtlas = (typeof FLIP_ATLASES)[number];
 
 /**
- * Luật thứ bậc thị giác (V-P0): 1 chiêu của mình, 2 cảnh báo của địch, 3 chiêu đồng đội, 4 hào quang/môi trường.
- * Chiêu đồng đội tự giảm 50% độ sáng và kích thước; chế độ tĩnh giảm còn 25%. Chiêu của mình luôn nguyên vẹn.
+ * Luật thứ bậc thị giác (V-P0): 1 chiêu của mình, 2 chiêu/cảnh báo của địch (kể cả đối thủ đấu pháp), 3 chiêu đồng đội, 4 hào quang/môi trường.
+ * Chỉ chiêu đồng đội (không phải mình, không thù địch) tự giảm độ sáng 50%; chế độ tĩnh giảm còn 25%. Kích thước và vị trí giữ nguyên (`size` luôn 1)
+ * để hình vẫn khớp tầm đánh thật; số hạt của người khác đã giảm riêng ở `particleScale`.
  */
-export function fxHierarchy(mine: boolean, staticMode: boolean): { size: number; alpha: number } {
-  if (mine) return { size: 1, alpha: 1 };
-  const k = staticMode ? 0.25 : 0.5;
-  return { size: k, alpha: k };
+export function fxHierarchy(mine: boolean, staticMode: boolean, hostile = false): { size: number; alpha: number } {
+  if (mine || hostile) return { size: 1, alpha: 1 };
+  return { size: 1, alpha: staticMode ? 0.25 : 0.5 };
 }
 
 /** Bố trí gốc của sự kiện. */

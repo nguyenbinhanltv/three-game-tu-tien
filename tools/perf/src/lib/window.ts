@@ -41,7 +41,15 @@ export interface VfxLabDebug {
   pause(on: boolean): void;
   scale(x: number): void;
   step(ms: number): void;
-  budget(): { drawCalls: number; triangles: number; fxLive: number; particles: number; particleBudget: number; screenCover: number; overdraw: number };
+  budget(): {
+    drawCalls: number;
+    triangles: number;
+    fxLive: number;
+    particles: number;
+    particleBudget: number;
+    screenCover: number;
+    overdraw: number;
+  };
   skills(): string[];
 }
 
