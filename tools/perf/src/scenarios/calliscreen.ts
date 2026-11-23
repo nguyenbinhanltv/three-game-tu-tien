@@ -24,7 +24,11 @@ export default {
       ] as const) {
         if (!parts.includes(part)) continue;
         const ctx = await r.browser.newContext({ viewport: { width: viewport[0], height: viewport[1] } });
-        if (art) await ctx.addInitScript((a) => localStorage.setItem('dtl.lastZone', a), art);
+        if (art)
+          await ctx.addInitScript((a) => {
+            localStorage.setItem('dtl.lastZone', a);
+            localStorage.setItem('dtl.lastLevel', 'thien_khuyet');
+          }, art);
         const page = await ctx.newPage();
         if (plain) await page.route('**/assets/calli/**', (rt) => rt.abort());
         await page.goto(gameUrl(r.clientPort, art ? { auto: 'Cscr' + (Date.now() % 1000) } : {}), { waitUntil: 'load' });

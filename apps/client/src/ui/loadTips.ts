@@ -14,18 +14,14 @@ export function firstTipIndex(seed: number): number {
   return Math.abs(Math.floor(seed)) % TIP_COUNT;
 }
 
-/** Khóa i18n tên nơi đến theo id tranh màn tải (`bootArt`): bản đồ/bí cảnh dùng tên có sẵn, vùng ở Vân Lam dùng `zone.<id>`. */
-const PLACE_KEY: Record<string, string> = {
-  load_song: 'ui.load.place.load_song',
-  doan_mach: 'map.doan_mach',
-  van_hai_phu_dao: 'map.van_hai',
-  thien_khuyet_co_thanh: 'map.thien_khuyet',
-  bac_hoang: 'map.bac_hoang',
-  van_dinh: 'map.van_dinh',
-  phuc_mach_quat: 'dungeon.phuc_mach_quat.name',
-  kiem_trung: 'dungeon.kiem_trung.name',
-};
-
-export function placeKey(art: string): string {
-  return PLACE_KEY[art] ?? `zone.${art}`;
+/**
+ * Khóa i18n tên nơi đến theo **level đích** (nhiều level dùng chung một tranh nên không suy từ tranh): bí cảnh `dungeon.<id>.name`,
+ * bản đồ `map.<id>`; chỉ khi không có (Vân Lam, đi theo vùng) mới dùng tranh: tông môn `ui.load.place.load_song`, vùng `zone.<tranh>`.
+ * `has` = hàm kiểm khóa tồn tại (truyền `hasString`).
+ */
+export function placeKey(level: string, art: string, has: (k: string) => boolean): string {
+  if (level) {
+    for (const k of [`dungeon.${level}.name`, `map.${level}`]) if (has(k)) return k;
+  }
+  return art === 'load_song' ? 'ui.load.place.load_song' : `zone.${art}`;
 }

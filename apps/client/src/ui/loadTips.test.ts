@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hasString } from '@dtl/content';
+import { hasString, t } from '@dtl/content';
 import { firstTipIndex, placeKey, tipKey, TIP_COUNT } from './loadTips';
 
 describe('mẹo màn tải', () => {
@@ -20,23 +20,34 @@ describe('mẹo màn tải', () => {
   });
 });
 
-describe('tên nơi đến ở màn tải', () => {
-  it('mọi id tranh có chuỗi tên', () => {
-    for (const art of [
-      'load_song',
-      'doan_mach',
-      'van_hai_phu_dao',
-      'thien_khuyet_co_thanh',
-      'bac_hoang',
-      'van_dinh',
-      'phuc_mach_quat',
-      'kiem_trung',
-      'thung_lung',
-      'suoi_thanh_khe',
-      'rung_linh_thao',
-      'vach_da_ngoc',
-      'ho_suong_mu',
-    ])
-      expect(hasString(placeKey(art)), art).toBe(true);
+describe('tên nơi đến ở màn tải (theo level đích)', () => {
+  const name = (level: string, art: string) => t(placeKey(level, art, hasString));
+  it('level dùng chung một tranh vẫn ra đúng tên riêng', () => {
+    expect(name('kinh_nguyet', 'van_hai_phu_dao')).toBe(t('dungeon.kinh_nguyet.name'));
+    expect(name('van_hai', 'van_hai_phu_dao')).toBe(t('map.van_hai'));
+    expect(name('than_tang', 'thien_khuyet_co_thanh')).toBe(t('dungeon.than_tang.name'));
+    expect(name('thien_khuyet', 'thien_khuyet_co_thanh')).toBe(t('map.thien_khuyet'));
+    expect(name('phuc_mach', 'doan_mach')).toBe(t('dungeon.phuc_mach.name'));
+    expect(name('doan_mach', 'doan_mach')).toBe(t('map.doan_mach'));
+    expect(name('gioi_tri', 'van_dinh')).toBe(t('dungeon.gioi_tri.name'));
+    expect(name('kim_da_cung', 'bac_hoang')).toBe(t('dungeon.kim_da_cung.name'));
+    expect(name('do_kiep_bac_hoang', 'bac_hoang')).toBe(t('map.do_kiep_bac_hoang'));
+  });
+  it('phòng Cửu Kiều (không có trong LEVEL_ART) ra tên kiều, không phải Lạc Kiếm Tông', () => {
+    expect(name('kieu_3', 'load_song')).toBe(t('map.kieu_3'));
+  });
+  it('Vân Lam đi theo vùng: tông môn và các vùng', () => {
+    expect(name('van_lam', 'load_song')).toBe(t('ui.load.place.load_song'));
+    expect(name('van_lam', 'ho_suong_mu')).toBe(t('zone.ho_suong_mu'));
+    expect(name('', 'thung_lung')).toBe(t('zone.thung_lung'));
+  });
+  it('mọi tên khóa trả về đều có chuỗi', () => {
+    for (const [lv, art] of [
+      ['van_lam', 'load_song'],
+      ['van_lam', 'vach_da_ngoc'],
+      ['kiem_trung', 'kiem_trung'],
+      ['', 'load_song'],
+    ] as const)
+      expect(hasString(placeKey(lv, art, hasString)), `${lv}/${art}`).toBe(true);
   });
 });

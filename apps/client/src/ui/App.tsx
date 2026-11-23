@@ -5,7 +5,7 @@ import { firstTipIndex, placeKey, tipKey } from './loadTips';
 import { assets } from '../game/core/assets';
 import { playMusic, sfx, unlockAudio } from '../game/audio/audio';
 import { TitleBackdrop } from '../game/world/backdrop';
-import { lastZoneArt, regionOfArt, setBootArt } from '../game/world/bootArt';
+import { lastLevel, lastZoneArt, regionOfArt, setBootArt } from '../game/world/bootArt';
 import { applyUiArt } from './Art';
 import { Game } from '../game/engine';
 import { prefetchManifest } from '../game/core/preload';
@@ -257,7 +257,7 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
     return () => window.clearInterval(id);
   }, []);
   const place = (() => {
-    const k = placeKey(lastZoneArt());
+    const k = placeKey(lastLevel(), lastZoneArt(), hasString);
     return hasString(k) ? t(k) : '';
   })();
   const done = useRef(onDone);
