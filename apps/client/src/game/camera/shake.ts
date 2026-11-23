@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { SHAKE_DIR_SHARE, SHAKE_LEVEL } from '../combat/hitjuice';
+import { SHAKE_AMP_M, SHAKE_DIR_SHARE, SHAKE_LEVEL } from '../combat/hitjuice';
 
 /**
  * Rung camera. Mức rung là một biến duy nhất: mỗi sự kiện đặt `level = max(level, mức)`
@@ -23,12 +23,23 @@ export const SHAKE = {
 
 const DECAY = 2.2;
 /** Mét dịch chuyển ứng với mức 1. Nhỏ để không chóng mặt. */
-const AMP = 0.22;
+const AMP = SHAKE_AMP_M;
 /** Phần theo hướng đòn tắt nhanh gấp chừng này lần rung ngẫu nhiên. */
 const DIR_DECAY = 3;
 
+/** Đọc cường độ lưu (0–100); chưa có thì theo công tắc bật/tắt cũ (mặc định 100). */
+export function readPct(key: string, legacyKey: string): number {
+  const v = Number(localStorage.getItem(key));
+  if (localStorage.getItem(key) !== null && Number.isFinite(v)) return Math.max(0, Math.min(100, Math.round(v)));
+  return localStorage.getItem(legacyKey) === '0' ? 0 : 100;
+}
+
 export class CameraShake {
-  enabled = localStorage.getItem('dtl.camShake') !== '0';
+  /** Cường độ 0–100% (Cài đặt); 0 = tắt. Khóa cũ `dtl.camShake` = '0' đổi thành 0%. */
+  pct = readPct('dtl.camShakePct', 'dtl.camShake');
+  get enabled(): boolean {
+    return this.pct > 0;
+  }
   level = 0;
   private t = 0;
   /** Xung theo hướng đòn (hệ thế giới, đơn vị vector đã chuẩn hóa) và mức còn lại; tắt nhanh hơn rung ngẫu nhiên (khung đầu). */
@@ -41,6 +52,7 @@ export class CameraShake {
    * Chỉ đòn thắng mức đang có mới đặt lại hướng, nên đòn dồn dập không xoay hướng loạn.
    */
   kick(level: number, dir?: { x: number; z: number }): void {
+    level *= this.pct / 100;
     if (!this.enabled || level <= this.level) return;
     this.level = level;
     const len = dir ? Math.hypot(dir.x, dir.z) : 0;
@@ -51,10 +63,15 @@ export class CameraShake {
     } else this.dirLevel = 0;
   }
 
+  /** Tương thích công tắc cũ: bật = 100%, tắt = 0%. */
   setEnabled(on: boolean): void {
-    this.enabled = on;
-    if (!on) this.level = this.dirLevel = 0;
-    localStorage.setItem('dtl.camShake', on ? '1' : '0');
+    this.setPct(on ? 100 : 0);
+  }
+
+  setPct(n: number): void {
+    this.pct = Math.max(0, Math.min(100, Math.round(n)));
+    if (this.pct === 0) this.level = this.dirLevel = 0;
+    localStorage.setItem('dtl.camShakePct', String(this.pct));
   }
 
   /** Cập nhật và ghi độ lệch cho vị trí camera (`pos`) và điểm nhìn (`look`). */
