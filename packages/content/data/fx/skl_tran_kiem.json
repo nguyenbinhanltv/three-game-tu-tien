@@ -183,10 +183,10 @@
     20,
     0
    ],
-   "scale": 4.4,
-   "scaleTo": 6.4,
+   "scale": 6.6000000000000005,
+   "scaleTo": 9.600000000000001,
    "ink": true,
-   "seed": 189
+   "seed": 106
   },
   {
    "type": "mesh",
@@ -210,10 +210,10 @@
     20,
     0
    ],
-   "scale": 5.2,
-   "scaleTo": 8.4,
+   "scale": 7.800000000000001,
+   "scaleTo": 12.600000000000001,
    "ink": true,
-   "seed": 190
+   "seed": 107
   },
   {
    "type": "mesh",
@@ -237,10 +237,10 @@
     20,
     0
    ],
-   "scale": 5.2,
-   "scaleTo": 8.4,
+   "scale": 7.800000000000001,
+   "scaleTo": 12.600000000000001,
    "ink": true,
-   "seed": 191
+   "seed": 108
   },
   {
    "type": "mesh",
@@ -264,10 +264,10 @@
     20,
     0
    ],
-   "scale": 5.2,
-   "scaleTo": 8.4,
+   "scale": 7.800000000000001,
+   "scaleTo": 12.600000000000001,
    "ink": true,
-   "seed": 192
+   "seed": 109
   },
   {
    "type": "mesh",
@@ -291,10 +291,10 @@
     20,
     0
    ],
-   "scale": 5.2,
-   "scaleTo": 8.4,
+   "scale": 7.800000000000001,
+   "scaleTo": 12.600000000000001,
    "ink": true,
-   "seed": 193
+   "seed": 110
   },
   {
    "type": "mesh",
@@ -313,11 +313,11 @@
     0.12,
     0
    ],
-   "scale": 0.6,
-   "scaleTo": 2,
+   "scale": 0.8999999999999999,
+   "scaleTo": 3,
    "ink": true,
    "shadow": true,
-   "seed": 194
+   "seed": 111
   }
  ],
  "combo": {
