@@ -1,0 +1,23 @@
+{
+  "name": "Họa Pháp Lô v1",
+  "summary": "Hiệu ứng chiêu cách điệu tương phản cao: hai tông lõi tối + viền sáng, nét dày vừa, hình khối lớn đọc được từ camera chéo 52°.",
+  "ramp": {
+    "core": "tông tối đậm của hướng tu, chiếm 15–25% diện tích, đặt ở tâm vệt",
+    "body": "tông chủ đạo bão hòa của hướng tu, chiếm 50–60%",
+    "rim": "tông sáng ở mép, chiếm 10–20%, không cháy trắng toàn bộ (chỉ điểm sáng nhỏ nhất được gần trắng)"
+  },
+  "stroke": {
+    "minWidthPctOfFrame": 3,
+    "note": "nét không mảnh hơn 3% cạnh khung; tránh chi tiết li ti sẽ biến mất khi thu nhỏ ở 720p"
+  },
+  "contrast": "lõi tối và viền sáng cách nhau ít nhất 4:1 độ chói; nền đen thuần (#000000) cho flipbook, không có bóng đổ, không có nền trời",
+  "forbidden": [
+    "đỏ, cam, đỏ cam (dành riêng cho cảnh báo của địch)",
+    "chữ, logo, watermark, khung viền",
+    "hạt li ti hàng trăm chấm nhỏ",
+    "người, mặt người, vũ khí thật",
+    "bố cục lệch tâm ra mép khung (cắt vệt)"
+  ],
+  "perspective": "camera chéo khóa góc: nghiêng 52° so với mặt đất, FOV 32°; mọi hình nhìn từ góc đó, vệt chém nằm trên mặt phẳng nghiêng chứ không chính diện",
+  "approvedSamples": "Đính kèm ảnh mẫu đã duyệt gần nhất (--ref) vào MỌI prompt để giữ cùng phong cách; không chép nguyên ảnh mẫu."
+}
