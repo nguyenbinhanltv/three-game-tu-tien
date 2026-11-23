@@ -1,0 +1,83 @@
+/* Bảng tổng kết trận (Chân Cảnh U5). Màu theo token --u-*. */
+.recap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.recap .recap-panel {
+  pointer-events: auto;
+  width: min(640px, 92vw);
+}
+.recap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--u-fs-2);
+  font-variant-numeric: tabular-nums;
+}
+.recap-table thead th {
+  padding: var(--u-sp-1) var(--u-sp-2);
+  text-align: right;
+  font-weight: 700;
+  border-bottom: 1px solid var(--u-p-edge-dim);
+}
+.recap-table thead th:first-child,
+.recap-table tbody th {
+  text-align: left;
+}
+.recap-table td,
+.recap-table tbody th {
+  padding: var(--u-sp-2);
+  text-align: right;
+  border-bottom: 1px solid var(--u-p-edge-dim);
+}
+.recap-table tbody th {
+  font-weight: 600;
+}
+.recap-name {
+  display: block;
+}
+.recap-lv {
+  display: block;
+  font-size: var(--u-fs-1);
+  font-weight: 400;
+  opacity: 0.75;
+}
+.recap-table tr.me {
+  background: color-mix(in srgb, var(--u-gold) 18%, transparent);
+}
+.recap-table tr.dead .recap-name {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+.recap-dealt {
+  position: relative;
+  min-width: 150px;
+}
+.recap-bar {
+  position: absolute;
+  inset: 4px 0 4px auto;
+  width: calc(100% * var(--p, 0));
+  background: color-mix(in srgb, var(--u-h-crimson) 35%, transparent);
+}
+.recap-num {
+  position: relative;
+  font-weight: 700;
+}
+.recap-dealt em {
+  position: relative;
+  margin-left: var(--u-sp-2);
+  font-style: normal;
+  opacity: 0.8;
+}
+.recap-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--u-sp-3);
+}
+.hud > .recap > .k-panel {
+  zoom: var(--ui-scale, 1);
+  max-width: calc(92vw / var(--ui-scale, 1));
+}

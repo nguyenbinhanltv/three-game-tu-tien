@@ -1,4 +1,5 @@
 // Chết và hồi sinh của người chơi (R-7): sát thương lên người, killPlayer, onRespawn, thưởng phó bản
+import { noteReflect, noteTaken } from '../matchstats';
 import {
   chargeFromTaken,
   RESONANCE_DEF,
@@ -144,8 +145,11 @@ export class DeathSystem {
     // Kim Chung Trấn (E2-G): phản một phần sát thương (sau khi giảm) về quái đánh mình.
     if (this.c.now < p.mth.reflectUntil && src) {
       const attacker = this.c.monById.get(src);
-      if (attacker && attacker.state !== MS_DEAD && !(attacker.owner && attacker.owner !== p.sid))
-        this.c.damageMonster(attacker, Math.max(1, Math.round(n * p.mth.reflectMul)), p);
+      if (attacker && attacker.state !== MS_DEAD && !(attacker.owner && attacker.owner !== p.sid)) {
+        const back = Math.max(1, Math.round(n * p.mth.reflectMul));
+        this.c.damageMonster(attacker, back, p);
+        noteReflect(p, back);
+      }
     }
     if (parties.resonance(p)) n = Math.max(1, Math.round(n * (1 - RESONANCE_DEF)));
     if (p.shield) {
@@ -156,7 +160,9 @@ export class DeathSystem {
       if (reflect > 0 && absorbed > 0 && src) {
         const attacker = this.c.monById.get(src);
         if (attacker && attacker.state !== MS_DEAD && !(attacker.owner && attacker.owner !== p.sid)) {
-          this.c.damageMonster(attacker, Math.max(1, Math.round(absorbed * reflect)), p);
+          const back = Math.max(1, Math.round(absorbed * reflect));
+          this.c.damageMonster(attacker, back, p);
+          noteReflect(p, back);
         }
       }
       n -= absorbed;
@@ -171,7 +177,10 @@ export class DeathSystem {
       this.c.emit(S.DMG, { dst: p.sid, n: 0, src } satisfies DmgMsg);
       return;
     }
-    if (!p.god) c.hp -= n;
+    if (!p.god) {
+      noteTaken(p, Math.min(n, c.hp));
+      c.hp -= n;
+    }
     if (src && c.meta.method) {
       this.c.gainCharge(p, chargeFromTaken(n, c.mhp));
       this.c.resTaken(p, n);

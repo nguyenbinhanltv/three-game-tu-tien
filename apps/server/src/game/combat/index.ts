@@ -1,5 +1,6 @@
 // Chiêu và công pháp của người chơi (R-7): onSkill/onDash, resolveSkill, hồi/hộ thể/triệu hồi, tickMethods.
 // Tách nguyên văn từ GameSim, chỉ nhận giao diện hẹp `CombatCtx`; mọi sát thương vẫn qua damageMonster/damagePlayer của sim.
+import { noteHeal } from '../matchstats';
 import {
   addCharge,
   CHARGE_MAX,
@@ -609,6 +610,7 @@ export class CombatSystem {
     if (!(n > 0)) return 0;
     const real = Math.max(0, Math.min(o.char.mhp - o.char.hp, n));
     o.char.hp += real;
+    noteHeal(by ?? o, real);
     this.c.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
     if (by && real > 0) {
       const def = resourceOf(by.char.meta);

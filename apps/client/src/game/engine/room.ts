@@ -11,6 +11,7 @@ import {
   type InviteMsg,
   type MarkMsg,
   type PartyMsg,
+  type RecapMsg,
   TELE_PAD,
   type TeleMsg,
   type DmgMsg,
@@ -236,6 +237,8 @@ export function bindRoom(eng: Game, room: Room): void {
   });
   room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, m.c === 'party' ? 'party' : 'chat', m.from));
   // Tổ đội và tỉ thí (P3-9): chỉ hiển thị; mọi phán định ở server. Giờ server đổi sang đồng hồ client.
+  // Bảng tổng kết trận (U5): số liệu do server tổng hợp, client chỉ hiển thị.
+  room.onMessage(S.RECAP, (m: RecapMsg) => set({ recap: m }));
   room.onMessage(S.PARTY, (m: PartyMsg | null) => set({ party: m }));
   // Truyền Tống Trận và điểm đánh dấu (M-4): chỉ hiển thị; server quyết định. Thời gian còn lại đổi sang đồng hồ client.
   room.onMessage(S.TELE, (m: TeleMsg) => {
