@@ -362,7 +362,8 @@ describe('VS-1 Hộ pháp: 10 chiêu làm lại (đồng/nâu/đá, mỗi chiêu
     }
   });
   it('chỉ tông đồng/nâu/đá (body, core, shadow): không accent vàng chanh, không rim kem', () => {
-    for (const id of Object.keys(HERO))
+    for (const id of Object.keys(HERO).filter((x) => x !== 'skl_thiet_quyen_chan_dia'))
+      // V-P1: vòng sóng vàng sáng dùng tông accent theo concept
       for (const e of all(id)) {
         const tone = (e as { tone?: string }).tone;
         if (tone !== undefined && e.type !== 'vignette') expect(['body', 'core', 'shadow'], `${id}:${e.type}`).toContain(tone);

@@ -41,7 +41,8 @@ describe('VFX Lôi tu', () => {
   });
 
   it('sét là hình zigzag có nhánh (bolt): chớp chập chờn qua ≥ 2 biến thể, mỗi tia ba lớp lồng nhau (core/body/rim); điểm đánh có decal strike', () => {
-    for (const id of ['skl_loi_an_kich', 'skl_cuu_tieu_thien_loi', 'skl_phich_lich', 'skl_loi_phat', 'skl_loi_hai', 'skl_loi_vong']) {
+    // V-P1: Cửu Tiêu Thiên Lôi dựng lại theo concept bằng cột sét (kite dọc), không dùng bolt zigzag.
+    for (const id of ['skl_loi_an_kich', 'skl_phich_lich', 'skl_loi_phat', 'skl_loi_hai', 'skl_loi_vong']) {
       const e = evs(id);
       const bolts = e.filter((x) => x.type === 'mesh' && x.shape.startsWith('bolt'));
       expect(new Set(bolts.map((x) => (x.type === 'mesh' ? x.shape : ''))).size, `${id}: biến thể`).toBeGreaterThanOrEqual(2);
@@ -55,7 +56,7 @@ describe('VFX Lôi tu', () => {
         ).toBe(true);
     }
     // chiêu chính có đủ viền tối (core) quanh tia
-    for (const id of ['skl_loi_an_kich', 'skl_cuu_tieu_thien_loi', 'skl_loi_phat']) {
+    for (const id of ['skl_loi_an_kich', 'skl_loi_phat']) {
       expect(
         evs(id).some((x) => x.type === 'mesh' && x.shape.startsWith('bolt') && x.tone === 'core'),
         id,
