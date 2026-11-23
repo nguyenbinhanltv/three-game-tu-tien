@@ -45,6 +45,9 @@ import {
   POSE_SWORD_SWAP,
   validatePose,
   validateFxTimeline,
+  validateVfxCard,
+  FLIP_ATLASES,
+  type VfxCard,
   fxDrawCount,
   fxParticleCount,
   FX_SKILL_DRAW_MAX,
@@ -165,7 +168,7 @@ import {
 } from '@dtl/shared';
 import { TELE_PADS, TELE_PAD, terrainOf, questSpot, inPoly } from '@dtl/shared';
 import { checkLevel } from './levelcheck';
-import { CREDITS, CREDIT_KINDS, CREDIT_LICENSE_URL } from './index';
+import { CREDITS, CREDIT_KINDS, CREDIT_LICENSE_URL, PATH } from './index';
 
 import { at } from '@dtl/shared';
 import { checkLoreTerms, scanBannedDir } from './lore';
@@ -194,6 +197,23 @@ for (const p of POSES) for (const m of validatePose(p)) err(m);
 const POSE = new Map(POSES.map((p) => [p.id, p]));
 // Dòng thời gian hiệu ứng (VFX-V0): chiêu có thật, mốc hợp lệ, ngân sách ≤ 12 draw và ≤ 1.500 hạt mỗi chiêu.
 for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKILL.has(id) || id.startsWith('fx_'))) err(m);
+// Thẻ chiêu VFX (V-P0): mỗi file data/vfx/cards/<skillId>.json, tên file = skillId; chiêu và hướng tu có thật, ngân sách trong trần.
+{
+  const dir = new URL('../data/vfx/cards/', import.meta.url);
+  const manifestUrl = new URL('../../../apps/client/public/assets/vfx/manifest.json', import.meta.url);
+  const vfxTexIds = new Set<string>(fs.existsSync(manifestUrl) ? (JSON.parse(fs.readFileSync(manifestUrl, 'utf8')) as { id: string }[]).map((e) => e.id) : []);
+  for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.json'))) {
+    const card = JSON.parse(fs.readFileSync(new URL(f, dir), 'utf8')) as VfxCard;
+    if (f !== `${card.skillId}.json`) err(`vfxcard ${f}: tên file phải là ${card.skillId}.json`);
+    for (const m of validateVfxCard(card, (id) => SKILL.has(id), (id) => PATH.has(id))) err(m);
+    // Texture KTX2 do vfx-forge ghi vào manifest; `proc:*` là atlas thủ tục có sẵn.
+    for (const t of card.textures) {
+      if (t.id.startsWith('proc:')) {
+        if (!(FLIP_ATLASES as readonly string[]).includes(t.id.slice(5))) err(`vfxcard ${card.skillId}: atlas thủ tục lạ ${t.id}`);
+      } else if (!vfxTexIds.has(t.id)) err(`vfxcard ${card.skillId}: texture ${t.id} chưa có trong assets/vfx/manifest.json`);
+    }
+  }
+}
 for (const f of MON_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('mon_'))) err(m);
 // TN-4: hiệu ứng Thiên Nhân Ngũ Suy. Mỗi timeline theo luật chung (≤ 12 draw); cả một ải (mọi timeline của ải hợp lại) ≤ 25 draw.
 for (const f of SUY_FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => id.startsWith('suy_'))) err(m);
