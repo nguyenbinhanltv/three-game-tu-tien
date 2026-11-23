@@ -115,11 +115,12 @@ describe('khung boss lệch ngang', () => {
     expect(isoLeadable(ISO_LEAD_RANGE)).toBe(true);
     expect(isoLeadable(30)).toBe(false);
   });
-  it('isoFrameBoss: chỉ quái cao, còn sống, trong tầm', () => {
-    expect(isoFrameBoss(7, 10, false)).toBe(true);
-    expect(isoFrameBoss(3, 10, false)).toBe(false);
-    expect(isoFrameBoss(7, 30, false)).toBe(false);
-    expect(isoFrameBoss(7, 10, true)).toBe(false);
+  it('isoFrameBoss: chỉ boss cao, còn sống, trong tầm; quái/tinh anh to không phải boss thì không', () => {
+    expect(isoFrameBoss(true, 7, 10, false)).toBe(true);
+    expect(isoFrameBoss(false, 7, 10, false)).toBe(false); // tinh anh/quái to, không phải boss
+    expect(isoFrameBoss(true, 3, 10, false)).toBe(false);
+    expect(isoFrameBoss(true, 7, 30, false)).toBe(false);
+    expect(isoFrameBoss(true, 7, 10, true)).toBe(false);
   });
 });
 

@@ -406,7 +406,7 @@ function updateCamera(eng: Game, dt: number): void {
       let bd = Infinity;
       for (const [id, m] of eng.ents.monsters) {
         const d = Math.hypot(m.x - rp.x, m.z - rp.z);
-        if (d < bd && isoFrameBoss(m.model.height, d, m.s.st === MS_DEAD)) {
+        if (d < bd && isoFrameBoss(!!MONSTER.get(m.s.t)?.boss, m.model.height, d, m.s.st === MS_DEAD)) {
           bd = d;
           frameId = id;
         }

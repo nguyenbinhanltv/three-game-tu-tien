@@ -171,14 +171,17 @@ export function isoTopEq(height: number, pitch = ISO_PITCH): number {
   return height > ISO_TALL ? Math.min(ISO_TOP_MAX, (height * 0.45) / Math.tan(pitch)) : 0;
 }
 
-/** Quái này có nên được đưa vào khung khi chưa chọn mục tiêu: cao hơn `ISO_TALL`, còn sống và trong `ISO_BOSS_RANGE` m. */
 /** Mục tiêu đang chọn có đủ gần để dẫn khung về phía nó không. */
 export function isoLeadable(dist: number): boolean {
   return dist <= ISO_LEAD_RANGE;
 }
 
-export function isoFrameBoss(height: number, dist: number, dead: boolean): boolean {
-  return !dead && height > ISO_TALL && dist <= ISO_BOSS_RANGE;
+/**
+ * Quái này có nên được đưa vào khung khi chưa chọn mục tiêu: phải là BOSS (không phải quái/tinh anh to), cao hơn `ISO_TALL`, còn sống và trong
+ * `ISO_BOSS_RANGE` m. Quái thường to đứng yên không kéo camera (khung khóa cố định của Thiên Nhãn).
+ */
+export function isoFrameBoss(isBoss: boolean, height: number, dist: number, dead: boolean): boolean {
+  return isBoss && !dead && height > ISO_TALL && dist <= ISO_BOSS_RANGE;
 }
 
 function fitInterval(want: number, lo: number, hi: number, pLo: number, pHi: number): number {
