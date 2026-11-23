@@ -70,6 +70,8 @@ interface Flags {
   renderer: string | null;
   /** `?nobake=1` giữ InstancedMesh cho vật trang trí bí cảnh (không nướng/gộp theo ô, O2): đối chứng trước/sau. */
   noBake: boolean;
+  /** `?keeptex=1` giữ bản sao texture phía CPU sau khi đã lên GPU (đối chứng heap JS, O4′). */
+  keepTex: boolean;
   /** `?fullnormal=1` giữ pháp tuyến 2K của GLB kiến trúc (không thu về 1K): đối chứng bộ nhớ texture. */
   fullNormal: boolean;
   /** `?gputime=1` bật timestamp query (chỉ công cụ đo). */
@@ -142,6 +144,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   cloth: { scope: 'test', doc: '=1 vải mô phỏng Thiên Y (model v3 có vải cũ tách riêng)' },
   renderer: { scope: 'diag', doc: 'webgl2|webgpu|auto' },
   fullnormal: { scope: 'diag', doc: '=1 giữ pháp tuyến 2K của GLB kiến trúc (đối chứng bộ nhớ texture)' },
+  keeptex: { scope: 'diag', doc: '=1 giữ bản sao texture CPU sau khi tải lên GPU (đối chứng heap JS)' },
   nobake: { scope: 'diag', doc: '=1 không gộp vật trang trí bí cảnh (đối chứng O2)' },
   gputime: { scope: 'diag', doc: '=1 timestamp query (công cụ đo)' },
   slowmo: { scope: 'diag', doc: 'chậm hiển thị (dev)' },
@@ -219,6 +222,7 @@ export function readFlags(search: string): Flags {
     headLift: Number.isFinite(Number(q.get('headlift') ?? NaN)) && q.get('headlift') !== null ? Number(q.get('headlift')) : 0.23,
     renderer: q.get('renderer'),
     noBake: q.get('nobake') === '1',
+    keepTex: q.get('keeptex') === '1',
     fullNormal: q.get('fullnormal') === '1',
     gpuTime: q.get('gputime') === '1',
     slowmo: Math.min(1, Math.max(0.05, Number(q.get('slowmo')) || 1)),
