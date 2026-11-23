@@ -14,8 +14,8 @@ const rows = [];
 for (const [skill, ids] of [
   ['Đòn thường 1', ['phi_kiem', 'phi_kiem_hp', 'phi_kiem_ds']],
   ['Đòn thường 2', ['phi_kiem_2', 'phi_kiem_2_hp', 'phi_kiem_2_ds']],
-  ['Đòn thường 3', ['phi_kiem_3', 'phi_kiem_3_hp', 'phi_kiem_3_ds']],
-  ['Kiếm Khí Trảm', ['kiem_khi_tram', 'kiem_khi_tram_hp', 'kiem_khi_tram_ds']],
+  ['Đòn thường 3', ['phi_kiem_3', 'phi_kiem_3_hp', 'phi_kiem_3_ds', 'phi_kiem_3_dt']],
+  ['Kiếm Khí Trảm', ['kiem_khi_tram', 'kiem_khi_tram_hp', 'kiem_khi_tram_ds', 'kiem_khi_tram_dt']],
 ]) {
   ids.forEach((id, i) => {
     const p = P(id);
