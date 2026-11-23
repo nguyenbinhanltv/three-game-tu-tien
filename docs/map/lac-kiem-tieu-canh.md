@@ -20,7 +20,7 @@ vật dưới 0,6 m (linh thảo), ao, phiến lối men vách, dây/ván cầu 
 | 5 | Cầu Treo Vân Hác | (−146, 91), dài 44 m | Cầu treo hai tháp son, sàn ván võng, dây lan can | Chính cầu (mờ khi che người) | Hác sâu ~11 m + sương thấp |
 | 6 | Thạch Lâm | (96, −8) | Cụm đá tảng + bia nghiêng | Đèn đá | Cỏ |
 
-Điểm chụp chuẩn (`pnpm shots tieucanh`): `congbai (0,114)`, `aosen (−60,58)`, `kiembia (66,58)`, `loivach (−116,62)`, `cautreo (−150,84)`, `thachlam (96,−8)`.
+Điểm chụp chuẩn (`pnpm shots tieucanh`): `congbai (0,114)`, `aosen (−60,58)`, `kiembia (66,58)`, `loivach (−112,69)`, `cautreo (−134,72)`, `thachlam (96,−8)`.
 
 ## M2: chiều sâu dọc, vì sao chọn như vậy
 
@@ -28,7 +28,7 @@ vật dưới 0,6 m (linh thảo), ao, phiến lối men vách, dây/ván cầu 
 vài hác tự nhiên sâu 10–30 m ở vành ngoài. Chọn hác tại (−146, 91): sâu ~11 m (hác 26 m sâu quá, cầu nằm ngoài khung camera 12 m).
 
 - **Cầu treo là cầu cao nối hai bờ, người đi dưới hác được** (không có mặt cầu đi được). Heightmap không đổi; hác có áo đá tầng phủ sườn dốc, suối và sương dưới đáy.
-- **Lối men vách** bám địa hình (đi được), dẫn từ sân tới đầu cầu.
+- **Lối men vách** bám địa hình (đi được), dẫn từ sân tới đầu cầu. Bản đầu đi thẳng theo sườn tới 30°+ rồi đứt ở vách 6 m; nay đi vòng có một điểm quặt (`TC_LOI_VACH` ở `tieucanh.ts`), dốc ≤ ~22°, đầu cầu dời lên bờ cao (`TC_BRIDGE.cx` −143,2).
 - Cầu thật sự đi được cần đổi địa hình dùng chung (`bridges` của `terrain.ts` hiện chỉ cho level đảo) hoặc khoét hác trong shared:
   đây là quyết định cho người dùng (xem báo cáo PR), không làm trong pilot.
 
@@ -40,3 +40,9 @@ không lộ đường cắt với địa hình.
 ## Ngân sách
 
 +5 draw call, ~<60k tam giác (test `lacKiemScenes.test.ts`). Số đo thật trước/sau: xem PR.
+
+## Trần độ dốc đi bộ (mọi bản đồ)
+
+Không có lối/đường chính nào buộc người chơi leo dốc gắt. `WALK_MAX_SLOPE_DEG = 30` (`packages/shared/src/walkslope.ts`). Dốc hơn thì làm đường vòng
+thoải (điểm quặt), bậc thang hoặc bỏ lối. Đây là chuẩn kiểm khi dựng level, không chặn di chuyển lúc chơi. Test `tieucanh.test.ts` quét heightmap lối men vách,
+kiểm không vật đặc nào chắn lối, và tìm đường đi bộ (Dijkstra `walkableRouteLength`) từ tâm tông môn tới mọi điểm nhấn. Bản đồ mới thêm test cùng kiểu.

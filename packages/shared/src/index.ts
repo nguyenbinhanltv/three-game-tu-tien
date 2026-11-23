@@ -6,6 +6,7 @@ export * from './level';
 export * from './props';
 export { KIEU_MOOD, KIEU_PROPS } from './props.kieu';
 export * from './tieucanh';
+export * from './walkslope';
 export { THIEN_CONG_PROPS, thienCongColliders, type TcProp } from './props.thiencong';
 export * from './trails';
 export * from './terrain';

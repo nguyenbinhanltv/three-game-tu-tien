@@ -14,8 +14,8 @@ export const POINTS: { name: string; x: number; z: number }[] = [
   { name: 'congbai', x: 0, z: 114 },
   { name: 'aosen', x: -60, z: 58 },
   { name: 'kiembia', x: 66, z: 58 },
-  { name: 'loivach', x: -116, z: 62 },
-  { name: 'cautreo', x: -136, z: 80 },
+  { name: 'loivach', x: -112, z: 69 },
+  { name: 'cautreo', x: -134, z: 72 },
   { name: 'thachlam', x: 96, z: -8 },
 ];
 /** Lộ trình clip (tương đối tâm): cổng bài → đại lộ → ao sen → lối men vách → cầu treo → kiếm bia. */

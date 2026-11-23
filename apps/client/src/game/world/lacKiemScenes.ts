@@ -20,7 +20,7 @@ import {
   viewportLinearDepth,
   viewZToOrthographicDepth,
 } from 'three/tsl';
-import { BRIDGE_A, BRIDGE_B, hash01, SCENE_GLB, SECT, TC_BRIDGE, TC_GATE, TC_POND, type SceneGlb, type SceneGlbId } from '@dtl/shared';
+import { BRIDGE_A, BRIDGE_B, hash01, SCENE_GLB, SECT, TC_BRIDGE, TC_GATE, TC_LOI_VACH, TC_POND, type SceneGlb, type SceneGlbId } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { assets } from '../core/assets';
 import { vnoise } from '../../render/materials/isoDetail';
@@ -75,18 +75,18 @@ export const SCENES: TieuCanh[] = [
   { id: 'kiem_bia', at: [66, 58], pieces: [...glbs('kiem_bia'), { k: 'suong', x: 66, z: 64, r: 12, dy: 0.5 }] },
   {
     id: 'loi_vach',
-    at: [-116, 62],
+    at: [-112, 69],
     pieces: [
       {
         k: 'loi_vach',
-        pts: [[-92, 54], [-104, 56], [-116, 60], [-128, 64], BRIDGE_A],
+        pts: TC_LOI_VACH,
       },
       ...glbs('loi_vach'),
     ],
   },
   {
     id: 'cau_treo',
-    at: [-136, 80],
+    at: [-134, 72],
     pieces: [
       { k: 'hac', x: BR.cx, z: BR.cz, dir: BR.dir - Math.PI / 2, len: 34, wid: 22 },
       { k: 'cau_treo', ax: BRIDGE_A[0], az: BRIDGE_A[1], bx: BRIDGE_B[0], bz: BRIDGE_B[1], lift: 0.35 },

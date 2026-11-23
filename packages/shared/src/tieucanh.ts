@@ -35,7 +35,7 @@ export const TC_GATE = { x: 0, z: 120, yaw: 0, w: 9, pillarR: 0.9 } as const;
 /** Ao sen. */
 export const TC_POND = { x: -62, z: 66, r: 8.5 } as const;
 /** Cầu treo qua hác: tâm, hướng (rad), nửa nhịp (m). Hai đầu cầu là hai bờ hác (đo từ heightmap). */
-export const TC_BRIDGE = { cx: -146, cz: 91, dir: (105 * Math.PI) / 180, half: 22 } as const;
+export const TC_BRIDGE = { cx: -143.2, cz: 91, dir: (105 * Math.PI) / 180, half: 22 } as const;
 export const BRIDGE_A: [number, number] = [
   TC_BRIDGE.cx - Math.cos(TC_BRIDGE.dir) * TC_BRIDGE.half,
   TC_BRIDGE.cz - Math.sin(TC_BRIDGE.dir) * TC_BRIDGE.half,
@@ -43,6 +43,22 @@ export const BRIDGE_A: [number, number] = [
 export const BRIDGE_B: [number, number] = [
   TC_BRIDGE.cx + Math.cos(TC_BRIDGE.dir) * TC_BRIDGE.half,
   TC_BRIDGE.cz + Math.sin(TC_BRIDGE.dir) * TC_BRIDGE.half,
+];
+
+/**
+ * Lối men vách (tọa độ tương đối tâm tông môn): từ sân tới đầu cầu treo. Đi vòng có điểm quặt để dốc ≤ ~22° (trần đi bộ 30°, xem walkslope.ts);
+ * thẳng theo sườn dốc tới 30°+ rồi đứt ở vách 6 m. Test `tieucanh.test.ts` quét heightmap lối này.
+ */
+export const TC_LOI_VACH: [number, number][] = [
+  [-92, 54],
+  [-98.5, 55.5],
+  [-107.5, 64.5],
+  [-116.5, 73.5],
+  [-119.5, 76.5],
+  [-119.5, 87],
+  [-125.5, 81],
+  [-131.5, 75],
+  [BRIDGE_A[0], BRIDGE_A[1]],
 ];
 
 const glb = (id: SceneGlbId, x: number, z: number, h: number, yaw = 0, o: Partial<SceneGlb> = {}): SceneGlb => ({ id, x, z, yaw, h, ...o });
@@ -149,7 +165,6 @@ export function sceneGlbRadius(g: SceneGlb): number {
       return 0.3;
     case 'prop_tc_hang_rao_tre':
       return 0.9;
-    case 'prop_tc_da_reu':
     case 'prop_tc_da_reu':
       return g.h < 0.6 ? 0 : Math.min(1.6, g.h * 0.5);
     default:
