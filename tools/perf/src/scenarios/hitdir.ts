@@ -28,7 +28,7 @@ const hitJs = (side: string, tier: number, heavy: boolean) => `(() => {
 export default {
   name: 'hitdir',
   desc: 'C3b: trúng đòn 4 hướng × cấp đòn + ngã chết ra xa người hạ gục (video ~15 s hoặc ảnh +30/+150 ms)',
-  usage: '--mode video|stills [--die front|back] [--gender m|f] [--slowmo 0.1]',
+  usage: '--mode video|stills|dash [--die front|back] [--gender m|f] [--slowmo 0.1]',
   async run(r) {
     const mode = opt('--mode', 'video');
     const g = opt('--gender', 'm');
@@ -44,7 +44,7 @@ export default {
       query: { chr: 'v3', cam: 'iso', ...(mode === 'stills' ? { slowmo: slow } : {}) },
       hide: 'hud',
       warnings: /models|chr_v3|clip/,
-      ...(mode === 'video' ? { video: videoDir } : {}),
+      ...(mode === 'video' || mode === 'dash' ? { video: videoDir } : {}),
     });
     await gm(page, 'level 15', 1500);
     await gm(page, 'god on', 1200);
@@ -56,6 +56,39 @@ export default {
     });
     await sleep(3500);
     await cam(page, { pitch: 0.9, dist: 6 });
+    if (mode === 'dash') {
+      // C3e: lướt tấn công (`Sword_Dash`) so với lướt thuần (`Roll`): gọi `dashFrom` trượt 3 m về phía trước, chụp +100/+220 ms thật.
+      for (const [name, strike] of [
+        ['lan', false],
+        ['dao', true],
+      ] as const) {
+        await sleep(2500);
+        await page.evaluate(`(() => {
+          var g = window.__game; var m = g.ents.players.get(g.sid).model; var y = m.root.rotation.y;
+          m.dashFrom(g.cur.x - Math.sin(y) * 3, g.cur.z - Math.cos(y) * 3, 0.35, ${strike});
+        })()`);
+        let prev = 0;
+        for (const ms of [40, 100, 160, 220]) {
+          await sleep(ms - prev);
+          prev = ms;
+          await snap(page, r.out, `${tag}-luot-${name}-plus${ms}ms.png`, { wait: 0 });
+        }
+      }
+      // Video: lướt tấn công lặp 4 lần, vòng chân phải luôn dưới chân.
+      for (let i = 0; i < 4; i++) {
+        await sleep(1400);
+        await page.evaluate(`(() => {
+          var g = window.__game; var m = g.ents.players.get(g.sid).model; var y = m.root.rotation.y;
+          m.dashFrom(g.cur.x - Math.sin(y) * 3, g.cur.z - Math.cos(y) * 3, 0.35, true);
+        })()`);
+      }
+      await sleep(1500);
+      const vd = page.video();
+      await ctx.close();
+      if (vd) fs.copyFileSync(await vd.path(), path.join(r.out, `${tag}-luot.webm`));
+      fs.rmSync(videoDir, { recursive: true, force: true });
+      return;
+    }
     const label = (t: string) => page.evaluate(`(${LABEL})(${JSON.stringify(t)})`);
     if (mode === 'stills') {
       for (const [side, tier, heavy] of [
