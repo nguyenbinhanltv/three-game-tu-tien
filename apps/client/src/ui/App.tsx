@@ -173,22 +173,28 @@ function Login() {
       <p className="login-tag">{t('ui.tagline')}</p>
 
       {needName && token ? (
-        <div className="login-form">
-          <label>{t('ui.login.need_name')}</label>
-          <input
-            autoFocus
-            value={name}
-            maxLength={14}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && submitName()}
-          />
-          <div className="login-hint">{t('ui.login.name_rule')}</div>
-          <LookPicker look={look} onChange={setLook} />
-          <RootPicker value={root} onChange={setRoot} />
-          <button className="btn primary" onClick={submitName}>
-            {t('ui.login.enter')}
-          </button>
-        </div>
+        <>
+          <div className="login-form">
+            <label>{t('ui.login.need_name')}</label>
+            <input
+              autoFocus
+              value={name}
+              maxLength={14}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && submitName()}
+            />
+            <div className="login-hint">{t('ui.login.name_rule')}</div>
+            <LookPicker look={look} onChange={setLook} />
+            <RootPicker value={root} onChange={setRoot} />
+          </div>
+          {/* Thanh hành động dính đáy khung: nút vào game (và lỗi) luôn thấy dù nội dung phía trên phải cuộn. */}
+          <div className="login-actions">
+            {(err || nameError) && <div className="login-error">{nameError || err}</div>}
+            <button className="btn primary" onClick={submitName}>
+              {t('ui.login.enter')}
+            </button>
+          </div>
+        </>
       ) : (
         <>
           {GOOGLE_CLIENT_ID && (
@@ -212,6 +218,11 @@ function Login() {
               <div className="login-hint">{t('ui.login.dev_hint')}</div>
               <LookPicker look={look} onChange={setLook} />
               <RootPicker value={root} onChange={setRoot} />
+            </div>
+          )}
+          {DEV_LOGIN && (
+            <div className="login-actions">
+              {(err || nameError) && <div className="login-error">{nameError || err}</div>}
               <button className="btn primary" onClick={submitDev}>
                 {t('ui.login.enter')}
               </button>
@@ -220,7 +231,6 @@ function Login() {
           {!GOOGLE_CLIENT_ID && !DEV_LOGIN && <div className="login-error">{t('ui.login.no_method')}</div>}
         </>
       )}
-      {(err || nameError) && <div className="login-error">{nameError || err}</div>}
     </div>
   );
 }
