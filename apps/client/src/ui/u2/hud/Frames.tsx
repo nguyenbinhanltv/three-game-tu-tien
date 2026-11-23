@@ -36,7 +36,7 @@ export function TargetCastBar({ cast }: { cast: TargetCast }) {
 }
 
 /** Thẻ người chơi góc trái trên: chân dung vòng ngọc + tên + cảnh giới + sinh lực / linh lực / tu vi (+ nút đột phá khi đủ điều kiện). */
-export function PlayerCard() {
+export function PlayerCard({ lite = false }: { lite?: boolean }) {
   const char = useUI((s) => s.char);
   const hp = useUI((s) => s.hp);
   const mhp = useUI((s) => s.mhp);
@@ -51,7 +51,7 @@ export function PlayerCard() {
   const full = goal.ready || (flags & PF_TRIBULATION) !== 0 || (char.level === NGUNG_KHI_MAX && char.xp >= char.xpNeed);
   const female = Game.current?.view?.players.get(Game.current.sid)?.g === 'f';
   return (
-    <section className={'u2h-zone u2h-tl u2h-card' + (goal.ready ? ' can-break' : '')} aria-label={t('ui.char')}>
+    <section className={'u2h-zone u2h-tl u2h-card' + (goal.ready ? ' can-break' : '') + (lite ? ' lite' : '')} aria-label={t('ui.char')}>
       <div className="u2h-portrait" aria-hidden="true">
         <Portrait id={female ? 'player_f' : 'player_m'} className="u2h-face" />
         <JadeRing />
@@ -61,8 +61,12 @@ export function PlayerCard() {
           <span className="u2h-name">{char.name}</span>
           <Badge tone="ngoc">{realmName(char.level)}</Badge>
         </div>
-        <Bar kind="hp" value={hp} max={mhp} text={`${hp} / ${mhp}`} label={t('ui.hp')} />
-        <Bar kind="mp" value={mp} max={mmp} text={`${mp} / ${mmp}`} label={t('ui.mp')} />
+        {!lite && (
+          <>
+            <Bar kind="hp" value={hp} max={mhp} text={`${hp} / ${mhp}`} label={t('ui.hp')} />
+            <Bar kind="mp" value={mp} max={mmp} text={`${mp} / ${mmp}`} label={t('ui.mp')} />
+          </>
+        )}
         <div className="u2h-xp">
           <Bar
             kind="xp"

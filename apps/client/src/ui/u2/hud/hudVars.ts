@@ -3,6 +3,8 @@ import { uiScale } from '../../uiScale';
 import { useTouchMode } from '../../../input/touchMode';
 import {
   BOSS_H,
+  DOCK,
+  TL_LITE_H,
   BOSS_MAX_W,
   designArea,
   hudBoxes,
@@ -43,7 +45,10 @@ export function hudVars(mode: HudMode, o: HudOpts = {}): CSSProperties {
   const v: Record<string, string> = {
     '--h-safe': SAFE + 'px',
     '--h-tl-w': z.tl.w + 'px',
-    '--h-tl-h': z.tl.h + 'px',
+    '--h-tl-h': (o.skillLayout === 'bar' ? TL_LITE_H : z.tl.h) + 'px',
+    '--h-dock-w': DOCK.w + 'px',
+    '--h-dock-h': DOCK.h + 'px',
+    '--h-dock-gap': DOCK.gap + 'px',
     '--h-hub-w': z.hubW + 'px',
     '--h-hub-h': z.hubH + 'px',
     '--h-map-w': z.mapW + 'px',

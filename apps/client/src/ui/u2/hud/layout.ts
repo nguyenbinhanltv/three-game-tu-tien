@@ -33,6 +33,8 @@ interface HudBoxes {
   skills: Box;
   /** Ô tiện ích (pháp bảo, đan lô, thần thức, nguyên anh), hàng chiêu bậc cao, buff: bên trái cụm kỹ năng (bar: nằm trong hộp skills). */
   utility: Box;
+  /** Khối máu/linh lực + buff dưới thanh chiêu (rỗng khi bố cục cung/cảm ứng). */
+  dock: Box;
 }
 
 export interface HudOpts {
@@ -60,8 +62,8 @@ export function designArea(w: number, h: number, scale: number): { W: number; H:
 
 /** Kích thước từng khối theo chế độ (đơn vị thiết kế). */
 export const SIZES = {
-  standard: { tl: { w: 420, h: 120 }, hubH: 48, hubW: 372, mapW: 236, mapH: 250, questW: 372, questH: 128, chatW: 420, chatH: 240 },
-  compact: { tl: { w: 380, h: 118 }, hubH: 44, hubW: 340, mapW: 204, mapH: 220, questW: 340, questH: 109, chatW: 380, chatH: 190 },
+  standard: { tl: { w: 420, h: 120 }, hubH: 48, hubW: 372, mapW: 236, mapH: 250, questW: 372, questH: 104, chatW: 420, chatH: 240 },
+  compact: { tl: { w: 380, h: 118 }, hubH: 44, hubW: 340, mapW: 204, mapH: 220, questW: 340, questH: 92, chatW: 380, chatH: 190 },
 } as const;
 export const QUEST_COLLAPSED_H = 34;
 const CHAT_COLLAPSED_H = 34;
@@ -95,13 +97,18 @@ export function skillBox(W: number, H: number, layout: SkillLayout = 'arc'): Box
   if (layout === 'bar') {
     const w = 640;
     const h = 150; // hàng 10 ô + hàng tiện ích
-    return { x: Math.round((W - w) / 2), y: H - SAFE - h, w, h };
+    return { x: Math.round((W - w) / 2), y: H - SAFE - DOCK.h - DOCK.gap - h, w, h };
   }
   const reach = CLUSTER.outerR + CLUSTER.outerD / 2;
   const w = Math.round(reach + CLUSTER.mainCx - SAFE);
   const h = Math.round(reach + CLUSTER.mainCy - SAFE);
   return { x: W - SAFE - w, y: H - SAFE - h, w, h };
 }
+
+/** Khối máu/linh lực + buff dưới thanh chiêu giữa dưới (chỉ bố cục thanh ngang PC). */
+export const DOCK = { w: 640, h: 50, gap: 6 } as const;
+/** Thẻ nhân vật gọn (máu/linh lực đã xuống chân thanh chiêu): chân dung + tên + cảnh giới + tu vi. */
+export const TL_LITE_H = 84;
 
 export const UTILITY = { w: 600, h: 112 } as const;
 
@@ -131,7 +138,8 @@ export function chatLimits(W: number, H: number, mode: Exclude<HudMode, 'touch'>
   const util = utilityBox(skills, o.skillLayout ?? 'arc');
   const right = Math.min(skills.x, util.w > 0 ? util.x : Infinity);
   const maxW = Math.max(CHAT_MIN.w, Math.floor(right - 12 - SAFE));
-  const maxH = Math.max(CHAT_MIN.h, Math.floor(H - SAFE - (SAFE + z.tl.h + 12)));
+  const tlH = (o.skillLayout ?? 'arc') === 'bar' ? TL_LITE_H : z.tl.h;
+  const maxH = Math.max(CHAT_MIN.h, Math.floor(H - SAFE - (SAFE + tlH + 12)));
   return { maxW, maxH };
 }
 
@@ -139,7 +147,8 @@ export function chatLimits(W: number, H: number, mode: Exclude<HudMode, 'touch'>
 export function hudBoxes(W: number, H: number, mode: HudMode = 'standard', o: HudOpts = {}): HudBoxes {
   if (mode === 'touch') return touchBoxes(W, H, o);
   const z = SIZES[mode];
-  const tl: Box = { x: SAFE, y: SAFE, w: z.tl.w, h: z.tl.h };
+  const bar = (o.skillLayout ?? 'arc') === 'bar';
+  const tl: Box = { x: SAFE, y: SAFE, w: z.tl.w, h: bar ? TL_LITE_H : z.tl.h };
   const trX = W - SAFE - z.hubW;
   const hub: Box = { x: trX, y: SAFE, w: z.hubW, h: z.hubH };
   const map: Box = { x: W - SAFE - z.mapW, y: hub.y + hub.h + 12, w: z.mapW, h: z.mapH };
@@ -158,7 +167,8 @@ export function hudBoxes(W: number, H: number, mode: HudMode = 'standard', o: Hu
   const bossW = Math.max(0, Math.min(BOSS_MAX_W, W - 2 * (SAFE + side) - SAFE));
   const tc: Box = { x: Math.round((W - bossW) / 2), y: SAFE, w: bossW, h: BOSS_H };
   const skills = skillBox(W, H, o.skillLayout ?? 'arc');
-  return { mode, W, H, tl, tc, hub, map, quest, chat, skills, utility: utilityBox(skills, o.skillLayout ?? 'arc') };
+  const dock: Box = bar ? { x: skills.x, y: H - SAFE - DOCK.h, w: DOCK.w, h: DOCK.h } : { x: skills.x, y: skills.y, w: 0, h: 0 };
+  return { mode, W, H, tl, tc, hub, map, quest, chat, skills, utility: utilityBox(skills, o.skillLayout ?? 'arc'), dock };
 }
 
 /** Bố cục cảm ứng ngang/dọc/tablet (chỉ chuẩn bị): lề 8, cụm kỹ năng dưới phải, hub gom lại thành một nút. */
@@ -177,7 +187,7 @@ function touchBoxes(W: number, H: number, o: HudOpts): HudBoxes {
   const chatH = o.chatCollapsed ? 28 : 64;
   const chat: Box = { x: m, y: H - m - 120 - 8 - chatH, w: portrait ? W - 3 * m - sw : 220, h: chatH };
   const skills: Box = { x: W - m - sw, y: H - m - sh, w: sw, h: sh };
-  return { mode: 'touch', W, H, tl, tc, hub, map, quest, chat, skills, utility: { x: skills.x, y: skills.y, w: 0, h: 0 } };
+  return { mode: 'touch', W, H, tl, tc, hub, map, quest, chat, skills, utility: { x: skills.x, y: skills.y, w: 0, h: 0 }, dock: { x: skills.x, y: skills.y, w: 0, h: 0 } };
 }
 
 function intersects(a: Box, b: Box): boolean {
@@ -186,7 +196,7 @@ function intersects(a: Box, b: Box): boolean {
 
 /** Tên các cặp hộp đang giao nhau (rỗng = hợp lệ). `tc` (boss) chỉ có mặt khi đánh boss nhưng vẫn phải chừa chỗ. */
 export function overlaps(b: HudBoxes): string[] {
-  const keys = ['tl', 'tc', 'hub', 'map', 'quest', 'chat', 'skills', 'utility'] as const;
+  const keys = ['tl', 'tc', 'hub', 'map', 'quest', 'chat', 'skills', 'utility', 'dock'] as const;
   const out: string[] = [];
   for (let i = 0; i < keys.length; i++) {
     for (let j = i + 1; j < keys.length; j++) {
