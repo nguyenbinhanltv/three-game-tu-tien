@@ -1,0 +1,14 @@
+{
+  "skillId": "skl_cuu_tieu_thien_loi",
+  "idea": "Chiêu cuối Lôi tu: pháp trận hiện dưới chân mục tiêu, trời tụ lôi, một cột sét tím trắng giáng thẳng xuống kèm nhánh rẽ, nổ vòng sáng và để lại vết rạn cháy tan dần.",
+  "element": "loi",
+  "path": "loi_tu",
+  "shapeLang": ["line", "ring", "spike"],
+  "timing": { "anticipationMs": 600, "impactMs": 100, "lingerMs": 1000 },
+  "footprint": { "lengthM": 7, "widthM": 7, "heightM": 14 },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": { "drawCalls": 12, "particles": 700, "screenCover": 0.3, "overdraw": 5 },
+  "textures": [{ "id": "proc:spark_burst", "kind": "flipbook" }],
+  "impactFrame": true
+}

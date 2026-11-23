@@ -46,16 +46,16 @@
    "at": "ahead",
    "offset": [
     0,
-    0.1,
+    0.35,
     0.5
    ],
    "rot": [
     0,
     0,
-    -62
+    -28
    ],
-   "scale": 2,
-   "scaleTo": 3.4,
+   "scale": 3.4,
+   "scaleTo": 5.6,
    "spin": 330,
    "sweep": 0.4,
    "erodeFrom": 0.3,
@@ -66,7 +66,7 @@
     "ease": "out"
    },
    "tone": "body",
-   "alpha": 0.85,
+   "alpha": 0.8,
    "tier": 0
   },
   {
@@ -77,16 +77,16 @@
    "at": "ahead",
    "offset": [
     0,
-    -0.05,
-    0.2
+    0.3,
+    0.3
    ],
    "rot": [
     0,
     0,
-    -78
+    -31
    ],
-   "scale": 2.6,
-   "scaleTo": 4.6,
+   "scale": 4.4,
+   "scaleTo": 7.8,
    "spin": 280,
    "sweep": 0.35,
    "erodeFrom": 0.35,
@@ -110,16 +110,16 @@
    "at": "ahead",
    "offset": [
     0,
-    -0.05,
-    0.2
+    0.3,
+    0.3
    ],
    "rot": [
     0,
     0,
-    -70
+    -28
    ],
-   "scale": 2.2,
-   "scaleTo": 4.2,
+   "scale": 3.7,
+   "scaleTo": 7.1,
    "spin": 280,
    "sweep": 0.35,
    "erodeFrom": 0.25,
@@ -143,16 +143,16 @@
    "at": "ahead",
    "offset": [
     0,
-    -0.05,
-    0.2
+    0.3,
+    0.3
    ],
    "rot": [
     0,
     0,
-    -86
+    -34
    ],
-   "scale": 1.8,
-   "scaleTo": 3.6,
+   "scale": 3.1,
+   "scaleTo": 6.1,
    "spin": 280,
    "sweep": 0.35,
    "erodeFrom": 0.2,
