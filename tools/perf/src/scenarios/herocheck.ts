@@ -55,16 +55,18 @@ const PEN_INSTALL = `(() => {
 export default {
   name: 'herocheck',
   desc: 'C2: tỉ lệ nhân vật v3 (nam/nữ, nhiều bộ) ở đứng/chạy/lướt/đòn nặng/đả tọa/ngự kiếm, tắt vs bật `?hero`; ảnh cận cảnh + đo xuyên tay',
-  usage: '[--genders m,f] [--sets de_tu,huyen_giap,dan_tam] [--size 640x600]',
+  usage: '[--genders m,f] [--sets de_tu,huyen_giap,dan_tam] [--variants tat,bat] [--size 1920x1080] (một lệnh mỗi ô để không lẫn nhân vật)',
   async run(r) {
     const viewport = size('1920x1080');
     const genders = list('--genders', 'm,f');
     const sets = list('--sets', 'de_tu,huyen_giap,dan_tam');
+    // Mỗi lần chạy một server riêng: chạy từng (giới, bộ, bản) bằng một lệnh riêng thì không có nhân vật của lượt khác đứng cạnh.
+    const variants = list('--variants', 'tat,bat') as ('tat' | 'bat')[];
     const result: Record<string, Record<string, number>> = {};
     for (const g of genders) {
       const gname = g === 'm' ? 'nam' : 'nu';
       for (const s of sets) {
-        for (const variant of ['tat', 'bat'] as const) {
+        for (const variant of variants) {
           const tag = `${gname}-${s}-${variant}`;
           const { page } = await r.open({
             name: `H${g}${s}${variant}`,
@@ -84,6 +86,14 @@ export default {
             timeout: 60_000,
             polling: 300,
           });
+          // Chỉ một client trong thế giới: nhân vật của lượt trước còn giữ chỗ chờ nối lại thì chờ nó biến mất (tối đa 3 phút).
+          await page
+            .waitForFunction(
+              `(() => { var g = window.__game; var ids = []; g.view.players.forEach(function (_v, k) { ids.push(k); }); return ids.every(function (k) { return k === g.sid; }); })()`,
+              undefined,
+              { timeout: 180_000, polling: 1000 },
+            )
+            .catch(() => console.log('[shots:herocheck] cảnh báo: còn người chơi khác trong cảnh'));
           await sleep(3500);
           await page.evaluate(PEN_INSTALL);
           const mark = (name: string) => page.evaluate(`window.__pen.name = ${JSON.stringify(name)}`);
@@ -94,8 +104,8 @@ export default {
               var g = window.__game; var v = g.renderPos.clone(); v.y += 0.9; v.project(g.camera);
               return { x: (v.x * 0.5 + 0.5) * innerWidth, y: (-v.y * 0.5 + 0.5) * innerHeight };
             })()`)) as { x: number; y: number };
-            const w = 300;
-            const h = 340;
+            const w = 400;
+            const h = 440;
             const x = Math.max(0, Math.min(viewport[0] - w, Math.round(c.x - w / 2)));
             const y = Math.max(0, Math.min(viewport[1] - h, Math.round(c.y - h / 2)));
             await page.screenshot({ path: path.join(r.out, `${tag}-${n}.png`), clip: { x, y, width: w, height: h } });
@@ -149,6 +159,6 @@ export default {
         }
       }
     }
-    writeJson(r.out, 'pen.json', result);
+    writeJson(r.out, `pen-${genders.join('')}-${sets.join('')}-${variants.join('')}.json`, result);
   },
 } satisfies Scenario;

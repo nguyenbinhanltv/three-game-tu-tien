@@ -1,5 +1,19 @@
 import * as THREE from 'three/webgpu';
-import { diffuseColor, float, mix, normalView, normalWorld, positionViewDirection, smoothstep, uniform, vec3 } from 'three/tsl';
+import {
+  cameraFar,
+  cameraNear,
+  diffuseColor,
+  float,
+  mix,
+  normalView,
+  normalWorld,
+  positionView,
+  positionViewDirection,
+  smoothstep,
+  uniform,
+  vec3,
+  viewZToPerspectiveDepth,
+} from 'three/tsl';
 import { rimParams } from '../atmosphere';
 import { skyParams } from '../sky';
 import { registerDerived } from './derived';
@@ -115,6 +129,9 @@ export function rimLight(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardN
   return m;
 }
 
+/** Độ lệch độ sâu (m) của bản sao viền tối: dưới mức này coi là tự che, không vẽ. */
+export const HERO_GHOST_BIAS = 0.6;
+
 /** Cường độ đèn phụ (nhân màu gốc) và viền hướng tu của hero light. */
 export const HERO_FILL = 0.28;
 export const HERO_RIM = 1.5;
@@ -142,6 +159,9 @@ export const heroParams = {
 export function createHeroGhostMaterial(): THREE.MeshBasicNodeMaterial {
   const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, fog: false });
   m.depthFunc = THREE.GreaterDepth;
+  // Chống tự che: dời độ sâu bản sao về phía camera `HERO_GHOST_BIAS` m, nên chỉ điểm thân nằm SAU vật khác quá ngần ấy mới được vẽ.
+  // Tay đè thân, tóc sau đầu, chân bắt chéo (cách nhau dưới ngưỡng) không bị phủ mực; vật cảnh che thật (cây, tường, mái) thì xa hơn.
+  m.depthNode = viewZToPerspectiveDepth(positionView.z.add(HERO_GHOST_BIAS), cameraNear, cameraFar);
   const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1));
   m.colorNode = vec3(0.04, 0.05, 0.08);
   m.opacityNode = smoothstep(float(0.0), float(1), fres).mul(0.7).add(0.12).mul(heroParams.enabled);
