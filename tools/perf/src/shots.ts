@@ -15,6 +15,8 @@ import calliset from './scenarios/calliset';
 import clone from './scenarios/clone';
 import collwalk from './scenarios/collwalk';
 import divuc from './scenarios/divuc';
+import breakables from './scenarios/breakables';
+import hitfeel from './scenarios/hitfeel';
 import bossfaces from './scenarios/bossfaces';
 import dungeon from './scenarios/dungeon';
 import flyover from './scenarios/flyover';
@@ -156,6 +158,8 @@ const SCENARIOS: Scenario[] = [
   neck,
   skinv3,
   divuc,
+  breakables,
+  hitfeel,
   flyover,
   xichkhe,
   dungeonart,

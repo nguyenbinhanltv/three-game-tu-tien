@@ -349,6 +349,8 @@ export interface DmgMsg {
   hv?: boolean;
   /** Khắc chế ngũ hành (server tính): 1 chiêu khắc hệ quái, -1 bị hệ quái khắc. Chỉ hiển thị. */
   ke?: 1 | -1;
+  /** Cấp đòn (Chân Cảnh S1): hạng trong `HIT_TIER_ORDER` (0 nhẹ, 1 vừa, 2 nặng, 3 chiêu cuối); VẮNG = server không phân cấp (nguồn khác quái/hitMonster) nên client dùng bảng cũ. Chỉ là lớp hình (hit-stop, rung, cỡ số). */
+  tr?: 0 | 1 | 2 | 3;
 }
 
 export interface ChatMsg {

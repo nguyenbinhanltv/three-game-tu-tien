@@ -298,6 +298,14 @@
 .dmg-layer .dmg.hit {
   color: var(--u-x-hf1ebdc);
 }
+.dmg-layer .dmg.hit.hv {
+  font-size: calc(25px * var(--s));
+  font-weight: 900;
+}
+.dmg-layer .dmg.hit.ke,
+.dmg-layer .dmg.crit.ke {
+  color: var(--u-h-jade-hi);
+}
 .dmg-layer .dmg.crit {
   color: var(--u-x-hffd45a);
   font: 900 calc(30px * var(--s)) var(--u-p-font-serif, var(--serif));
