@@ -99,6 +99,13 @@ export default {
         page.evaluate(
           `(() => { var g = window.__game; var n = 0, ms = 0, all = 0, v3 = 0, withCloth = 0; g.ents.players.forEach(function (e) { all++; var m = e.model; if (m && m.v3) v3++; var c = m && m.cloth; if (c) withCloth++; if (c && c.active) { n++; ms += c.stats.ms; } }); var b = window.__game.ents.players.get(window.__game.sid).model.cloth.budget; return { frameAvgMs: b.avg, frameMaxMs: b.max, players: all, v3: v3, withCloth: withCloth, rigs: n, totalMs: ms }; })()`,
         );
+      if (variant === 'thien-y')
+        console.log(
+          '[clothcheck] oldsleeve:',
+          await page.evaluate(
+            `(() => { var g = window.__game; var c = g.ents.players.get(g.sid).model.cloth; return c.oldMeshes.map(function (m) { var mt = m.material; return m.name + ' map=' + !!(mt && mt.map) + ' img=' + (mt && mt.map && mt.map.image && (mt.map.image.constructor.name + ':' + mt.map.image.width)) + ' uv=' + !!m.geometry.getAttribute('uv') + ' color=' + (mt && mt.color && mt.color.getHexString()); }).join(' | '); })()`,
+          ),
+        );
       await sleep(bots ? 6000 : 1200);
       if (bots) console.log('[clothcheck] cảnh đông:', JSON.stringify(await crowd()));
       await shot('1-dung');

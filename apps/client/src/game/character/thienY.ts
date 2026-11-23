@@ -118,6 +118,9 @@ export interface ClothStats {
   /** Số đỉnh vải nằm trong viên nang thân/chân (< 0,85 r) ở khung vừa mô phỏng, và lớn nhất từ lúc bật `measurePen`. */
   pen: number;
   penMax: number;
+  /** Màu voan (0..1) và số màu mẫu lấy được từ texture tay áo cũ (0 = không đọc được, dùng màu mặc định). */
+  tint: [number, number, number];
+  palette: number;
   verts: number;
   /** ms trung bình mỗi `update` (cửa sổ trượt ngắn). */
   ms: number;
@@ -195,6 +198,9 @@ export class ClothRig {
   private penMax = 0;
   /** Bật đo xuyên thân (kịch bản chụp): đếm đỉnh vải nằm trong viên nang mỗi khung mô phỏng. */
   measurePen = false;
+  private uvBox: { l: number[]; r: number[] } = { l: [1, 1, 0, 0], r: [1, 1, 0, 0] };
+  /** Texture của áo (dùng chung với lưới cũ, KHÔNG dispose ở đây). */
+  private sleeveMap: THREE.Texture | null = null;
   private palette: [number, number, number][] = [];
   private tint: [number, number, number] = [0.72, 0.65, 0.9];
   private t = 0;
@@ -236,6 +242,19 @@ export class ClothRig {
         if (target === 'skirt') skirtPos.push(p.getX(i), p.getY(i), p.getZ(i));
         else sleevePos[p.getX(i) >= 0 ? 'l' : 'r'].push(p.getX(i), p.getY(i), p.getZ(i));
       }
+      const uvA = om.geometry.getAttribute('uv');
+      if (target === 'sleeve' && uvA) {
+        // hộp UV của từng tay áo cũ (trái/phải theo dấu x): voan mới lấy chính vùng texture đó của áo (texture KTX2 đọc không được trên CPU nên dùng thẳng trên GPU)
+        for (let i = 0; i < uvA.count; i++) {
+          const b = this.uvBox[p.getX(i) >= 0 ? 'l' : 'r'];
+          b[0] = Math.min(b[0], uvA.getX(i));
+          b[1] = Math.min(b[1], uvA.getY(i));
+          b[2] = Math.max(b[2], uvA.getX(i));
+          b[3] = Math.max(b[3], uvA.getY(i));
+        }
+        const mm = (om.material as THREE.MeshStandardMaterial).map;
+        if (mm && !this.sleeveMap) this.sleeveMap = mm;
+      }
     }
     // Màu voan = trung bình texture tay áo cũ, pha 45% về tông áo ấm (hồng nhạt) để không lệch xanh so với thân áo.
     const avg = averageTexColor(
@@ -267,12 +286,29 @@ export class ClothRig {
       }
       const pos = new Float32Array(nv * 3),
         uv = new Float32Array(nv * 2),
+        col = new Float32Array(nv * 4).fill(1),
         index = new Uint32Array(ni);
       let ii = 0;
       ids.forEach((gi, n) => {
         const g = this.grids[gi]!;
         pos.set(g.rest, start[n]! * 3);
-        uv.set(/^(sleeve|ribbon)/.test(g.id) ? g.uv : atlasUv(g), start[n]! * 2);
+        if (/^(sleeve|ribbon)/.test(g.id) && this.sleeveMap) {
+          const b = this.uvBox[g.id.endsWith('l') || g.id.endsWith('la') || g.id.endsWith('lb') ? 'l' : 'r'];
+          const du = Math.max(1e-4, b[2]! - b[0]!),
+            dv = Math.max(1e-4, b[3]! - b[1]!);
+          for (let i = 0; i < g.nu * g.nv; i++) {
+            uv[(start[n]! + i) * 2] = b[0]! + g.uv[2 * i]! * du;
+            uv[(start[n]! + i) * 2 + 1] = b[1]! + g.uv[2 * i + 1]! * dv;
+          }
+        } else uv.set(/^(sleeve|ribbon)/.test(g.id) ? g.uv : atlasUv(g), start[n]! * 2);
+        // alpha đỉnh (voan): đặc ở hàng ghim, mờ dần về gấu và ở hai mép
+        for (let r = 0; r < g.nv; r++)
+          for (let c = 0; c < g.nu; c++) {
+            const o = (start[n]! + r * g.nu + c) * 4;
+            const edge = g.nu > 2 ? Math.min(1, Math.min(c, g.nu - 1 - c) / 2 + 0.4) : 1;
+            col[o] = col[o + 1] = col[o + 2] = 1;
+            col[o + 3] = (0.92 - 0.5 * (r / (g.nv - 1))) * edge;
+          }
         for (let i = 0; i < g.index.length; i++) index[ii++] = g.index[i]! + start[n]!;
       });
       const geo = new THREE.BufferGeometry();
@@ -281,10 +317,12 @@ export class ClothRig {
       geo.setAttribute('position', pa);
       geo.setAttribute('normal', na);
       geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+      if (!solid) geo.setAttribute('color', new THREE.BufferAttribute(col, 4));
       geo.setIndex(new THREE.BufferAttribute(index, 1));
       const mat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        map: !solid ? voanTexture(this.tint, this.palette) : (opt.map ?? null),
+        map: !solid ? (this.sleeveMap ?? voanTexture(this.tint, this.palette)) : (opt.map ?? null),
+        vertexColors: !solid,
         roughness: 0.85,
         metalness: 0,
         side: THREE.DoubleSide,
@@ -488,7 +526,7 @@ export class ClothRig {
   }
 
   get stats(): ClothStats {
-    return { verts: this.nVerts, ms: this.msAvg, pen: this.pen, penMax: this.penMax };
+    return { verts: this.nVerts, ms: this.msAvg, pen: this.pen, penMax: this.penMax, tint: this.tint, palette: this.palette.length };
   }
 
   dispose(): void {
@@ -496,7 +534,7 @@ export class ClothRig {
       this.root.remove(b.mesh);
       b.mesh.geometry.dispose();
       const mat = b.mesh.material as THREE.MeshStandardMaterial;
-      mat.map?.dispose(); // texture riêng của từng nhân vật (TextureLoader ở mannequin.ts); dispose lặp lại vô hại
+      if (mat.map !== this.sleeveMap) mat.map?.dispose(); // texture riêng của từng nhân vật (TextureLoader ở mannequin.ts); dispose lặp lại vô hại
       mat.dispose();
     }
   }
