@@ -1,9 +1,22 @@
 // Bài kiểm tra bảo mật: điểm ngắm và né của camera chéo (Thiên Nhãn P1). Client chỉ gửi ý định; server kẹp, kiểm tầm, hồi, quãng.
 import { C, DODGE_CD_MS, DODGE_DIST } from '@dtl/shared';
-import { W, check, health, type Ctx } from './lib';
+import { W, check, health, join, type Ctx, type M, type P } from './lib';
 
-export async function runAim(ctx: Ctx): Promise<void> {
-  const { room, me, mons, gm } = ctx;
+/**
+ * Bài này tự vào một nhân vật riêng (không dùng `ctx.room`): bài `movement` ngay trước nó kết thúc bằng `room.leave(true)` trên chính phòng
+ * dùng chung, nên trong bộ đầy đủ `ctx.room` đã đóng, né gửi vào hư không và "né hợp lệ có di chuyển" ra 0,00 m (chạy riêng thì đạt vì chưa
+ * có bài nào rời phòng). Nhân vật mới cũng không thừa hưởng hồi né/khe 0,4 s hay trạng thái bay/chết từ các bài trước.
+ */
+export async function runAim(_ctx: Ctx): Promise<void> {
+  const g = await join('ngamthu');
+  const room = g.room;
+  const me = () => (room.state as { players: Map<string, P> }).players.get(g.init.sid)!;
+  const mons = () => (room.state as { monsters: Map<string, M> }).monsters;
+  const gm = async (cmd: string) => {
+    room.send(C.CHAT, { m: '/gm ' + cmd });
+    await W(900);
+  };
+  await W(500);
   await gm('level 15');
   await gm('tp 2048 2088');
   await gm('heal');
@@ -70,4 +83,5 @@ export async function runAim(ctx: Ctx): Promise<void> {
       `máu ${hp} → ${mons().get(far)?.hp}, cách ${fd.toFixed(0)} m`,
     );
   }
+  await room.leave(true);
 }

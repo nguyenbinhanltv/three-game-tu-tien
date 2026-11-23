@@ -1,0 +1,106 @@
+// Thiên Nhãn P5b: chơi thử tự động bằng `?cam=iso` qua các chương: mỗi bản đồ vào bằng GM, đi bằng chuột phải, né Space, ra chiêu vào một quái
+// (tự khóa theo con trỏ), đo khung/draw call, gom lỗi console. Ảnh + số đo ghi vào thư mục ra (`isoplay.json`).
+//   pnpm shots isoplay --out <thư mục> [--only van_lam,cuu_kieu] [--views 1280x720]
+import { levelSpawns } from '@dtl/shared';
+import { list, opt } from '../lib/env';
+import { sleep } from '../lib/devserver';
+import { enterLevel, gm, perfSample, skipCutscene } from '../lib/game';
+import { requireLevel } from '../lib/levelpoints';
+import type { Scenario } from '../lib/scenario';
+import { snap, writeJson } from '../lib/shot';
+
+/** Chương → bản đồ chơi thử (cấp GM để vào được và đánh được). */
+const STOPS = [
+  { ch: 1, level: 'van_lam', lv: 8 },
+  { ch: 3, level: 'doan_mach', lv: 22 },
+  { ch: 4, level: 'van_hai', lv: 24 },
+  { ch: 4, level: 'thien_khuyet', lv: 26 },
+  { ch: 5, level: 'bac_hoang', lv: 30 },
+  { ch: 6, level: 'van_dinh', lv: 40 },
+  { ch: 7, level: 'cuu_kieu', lv: 46 },
+];
+
+interface Pos {
+  x: number;
+  z: number;
+}
+
+export default {
+  name: 'isoplay',
+  desc: 'Thiên Nhãn P5b: chơi thử ?cam=iso qua từng chương (đi chuột phải, né, ra chiêu, đo khung, lỗi console)',
+  usage: '[--only van_lam,cuu_kieu] [--views 1280x720]',
+  async run(r) {
+    const only = list('--only', '');
+    const [vw, vh] = opt('--views', '1280x720').split('x').map(Number) as [number, number];
+    const { page } = await r.open({
+      name: 'IsoPlay',
+      quality: 'high',
+      viewport: [vw, vh],
+      query: { cam: 'iso' },
+      seenIntro: true,
+      hide: undefined,
+    });
+    const pos = (): Promise<Pos> => page.evaluate(() => ({ x: window.__game!.renderPos.x, z: window.__game!.renderPos.z }));
+    const dist = (a: Pos, b: Pos) => Math.round(Math.hypot(a.x - b.x, a.z - b.z) * 10) / 10;
+    const log: Record<string, unknown>[] = [];
+    await gm(page, 'god on');
+    for (const st of STOPS) {
+      if (only.length && !only.includes(st.level)) continue;
+      const rec: Record<string, unknown> = { ch: st.ch, level: st.level, lv: st.lv };
+      try {
+        await gm(page, `level ${st.lv}`, 900);
+        await gm(page, 'god on', 400);
+        await enterLevel(page, st.level);
+        await skipCutscene(page, 20);
+        await snap(page, r.out, `c${st.ch}-${st.level}-vao.png`, { wait: 600 });
+        // Đi bằng chuột phải: bấm lệch tâm màn hình, chờ ~2,5 s.
+        const p0 = await pos();
+        await page.mouse.click(vw / 2 + vw * 0.15, vh / 2 - vh * 0.12, { button: 'right' });
+        await sleep(2500);
+        const p1 = await pos();
+        rec.moveRightClick = dist(p0, p1);
+        // Né Space.
+        await page.keyboard.press('Space');
+        await sleep(700);
+        rec.dodge = dist(p1, await pos());
+        // Chiêu: gọi một quái của bãi đầu tiên ngay cạnh người, trỏ chuột lên nó, bấm chiêu 1 vài lần.
+        const spawn = levelSpawns(requireLevel(st.level)).find((s) => !s.mon.startsWith('boss_'));
+        if (spawn) {
+          await gm(page, `spawn ${spawn.mon} 1`, 2500);
+          const mon = await page.evaluate(() => {
+            const g = window.__game!;
+            const m = [...g.view.monsters.values()]
+              .filter((x) => x.st !== 4)
+              .map((x) => ({ x: x.x, z: x.z, hp: x.hp, mhp: x.mhp, d: Math.hypot(x.x - g.cur.x, x.z - g.cur.z) }))
+              .sort((a, b) => a.d - b.d)[0];
+            return m ?? null;
+          });
+          rec.spawn = { id: spawn.mon, found: !!mon, dist: mon ? Math.round(mon.d * 10) / 10 : null };
+          if (mon) {
+            for (let i = 0; i < 6; i++) {
+              await page.evaluate(() => window.__game!.useSkill(0));
+              await sleep(700);
+            }
+            await snap(page, r.out, `c${st.ch}-${st.level}-danh.png`, { wait: 200 });
+            const after = await page.evaluate(() => {
+              const g = window.__game!;
+              const m = [...g.view.monsters.values()]
+                .filter((x) => x.st !== 4)
+                .sort((a, b) => Math.hypot(a.x - g.cur.x, a.z - g.cur.z) - Math.hypot(b.x - g.cur.x, b.z - g.cur.z))[0];
+              return m ? m.hp : 0;
+            });
+            rec.damaged = after < mon.hp;
+            rec.autoTarget = await page.evaluate(() => !!window.__game!.targetId);
+          }
+        }
+        const perf = await perfSample(page);
+        rec.perf = { drawCalls: perf.drawCalls, triangles: perf.triangles, frameMs: perf.frameMs };
+      } catch (e) {
+        rec.error = e instanceof Error ? e.message.slice(0, 300) : String(e);
+      }
+      log.push(rec);
+      console.log('[isoplay]', JSON.stringify(rec));
+    }
+    writeJson(r.out, 'isoplay.json', log);
+  },
+} satisfies Scenario;

@@ -10,6 +10,8 @@
 import math
 import os
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from area_fit import fit_area_skill, fit_area  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from recipes_vs1 import cam, decal, feel, flash, flip, mesh, parts, shake, slow, snd, stop, vig, write  # noqa: E402
@@ -259,7 +261,7 @@ def loi_hai():
     return {'skill': 'skl_loi_hai', 'replaces': ['loihai'], 'events': ev}
 
 
-R['skl_loi_hai'] = loi_hai
+R['skl_loi_hai'] = lambda: fit_area_skill(loi_hai(), 8.0)  # vùng 6 m (area_fit.py)
 
 
 if __name__ == '__main__':
