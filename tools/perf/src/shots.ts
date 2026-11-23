@@ -26,6 +26,7 @@ import dungeon from './scenarios/dungeon';
 import flyover from './scenarios/flyover';
 import hires from './scenarios/hires';
 import lackiem from './scenarios/lackiem';
+import tieucanh from './scenarios/tieucanh';
 import thienkhuyet from './scenarios/thienkhuyet';
 import bachoang from './scenarios/bachoang';
 import vandinh from './scenarios/vandinh';
@@ -104,6 +105,7 @@ const SCENARIOS: Scenario[] = [
   calli,
   calli3d,
   lackiem,
+  tieucanh,
   collwalk,
   thienkhuyet,
   bachoang,
