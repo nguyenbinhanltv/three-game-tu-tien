@@ -1120,8 +1120,14 @@
 }
 
 /* Thanh Đạo Thế (Chân Cảnh U2): tài nguyên hướng tu thành thanh nổi bật giữa HUD, phát sáng khi đầy */
-.res-bar.dock {
+.u2h-dock > .k-tip-host {
+  display: block;
   width: 62%;
+}
+.res-bar.dock {
+  display: flex;
+  width: 100%;
+  white-space: nowrap;
   margin: 0;
   padding: 2px 10px;
   justify-content: space-between;
