@@ -9,7 +9,8 @@ export async function runHitReact(): Promise<void> {
   const x0 = me().x;
   const z0 = me().z;
   // Tin giả: vị trí sau đẩy lùi, đặt/xóa khựng, thêm trường vào input và chiêu. Server chỉ đọc mx/mz/yaw/f.
-  for (const type of ['kb', 'knock', 'stagger', 'pos', 'move', 'knockback']) room.send(type, { x: x0 + 40, z: z0 + 40, y: 500, ms: 0, until: 0 });
+  for (const type of ['kb', 'knock', 'stagger', 'pos', 'move', 'knockback'])
+    room.send(type, { x: x0 + 40, z: z0 + 40, y: 500, ms: 0, until: 0 });
   room.send(C.INPUT, { s: 1, mx: 0, mz: 0, yaw: 0, f: 0, x: x0 + 40, z: z0 + 40, kx: 30, kz: 30, staggerUntil: 0 });
   room.send(C.SKILL, { id: 'skl_phi_kiem', t: 'khong-co', kx: 30, kz: 30, tier: 'finisher' });
   await W(700);

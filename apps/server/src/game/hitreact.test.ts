@@ -148,14 +148,9 @@ describe('người chơi trúng đòn quái', () => {
 
 describe('quái bị người chơi đánh', () => {
   const hit = (sim: Sim, p: unknown, mon: unknown, power: number, tier?: string) =>
-    (sim as unknown as { hitMonster(p: unknown, m: unknown, power: number, mul: number, elem: undefined, tier?: string): boolean }).hitMonster(
-      p,
-      mon,
-      power,
-      1,
-      undefined,
-      tier,
-    );
+    (
+      sim as unknown as { hitMonster(p: unknown, m: unknown, power: number, mul: number, elem: undefined, tier?: string): boolean }
+    ).hitMonster(p, mon, power, 1, undefined, tier);
 
   function attacker(sim: Sim, X: number, Z: number) {
     const q = {

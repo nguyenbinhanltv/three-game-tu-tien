@@ -23,7 +23,8 @@ const boss = { boss: true, elite: false } as const;
 describe('bảng cấp đòn', () => {
   it('tăng dần theo cấp', () => {
     for (const k of ['stopMs', 'shakeAmp', 'shakeMs', 'knockM', 'staggerMs'] as const) {
-      for (let i = 1; i < HIT_TIER_ORDER.length; i++) expect(HIT_TIER[HIT_TIER_ORDER[i]!][k]).toBeGreaterThanOrEqual(HIT_TIER[HIT_TIER_ORDER[i - 1]!][k]);
+      for (let i = 1; i < HIT_TIER_ORDER.length; i++)
+        expect(HIT_TIER[HIT_TIER_ORDER[i]!][k]).toBeGreaterThanOrEqual(HIT_TIER[HIT_TIER_ORDER[i - 1]!][k]);
     }
     expect(HIT_TIER.light.stopMs).toBe(0);
     expect(HIT_TIER.finisher.stopMs).toBe(110);
