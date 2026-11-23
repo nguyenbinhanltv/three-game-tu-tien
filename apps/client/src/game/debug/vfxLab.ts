@@ -5,7 +5,6 @@
 import * as THREE from 'three/webgpu';
 import { FX_TIMELINE, MONSTER, SKILL } from '@dtl/content';
 import type { HazardMsg } from '@dtl/shared';
-import { onHazard } from '../engine/room';
 import { movesOf } from '../fx/monMove';
 import { FxMesh } from '../../render/materials/vfx';
 import { PARTICLES } from '../../render/vfx/particles';
@@ -108,7 +107,7 @@ export interface VfxLabApi {
 }
 
 /** Gắn `window.__vfxlab` (gọi một lần khi tạo Game, chỉ khi `?vfxlab=1` ở bản dev). */
-export function installVfxLab(g: Game): void {
+export function installVfxLab(g: Game, onHazard: (g: Game, m: HazardMsg) => void): void {
   const api: VfxLabApi = {
     cast(skill) {
       const gg = g as unknown as {
