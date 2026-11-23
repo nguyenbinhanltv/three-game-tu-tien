@@ -250,10 +250,10 @@ export class ClothRig {
         // hộp UV của từng tay áo cũ (trái/phải theo dấu x): voan mới lấy chính vùng texture đó của áo (texture KTX2 đọc không được trên CPU nên dùng thẳng trên GPU)
         for (let i = 0; i < uvA.count; i++) {
           const b = this.uvBox[p.getX(i) >= 0 ? 'l' : 'r'];
-          b[0] = Math.min(b[0], uvA.getX(i));
-          b[1] = Math.min(b[1], uvA.getY(i));
-          b[2] = Math.max(b[2], uvA.getX(i));
-          b[3] = Math.max(b[3], uvA.getY(i));
+          b[0] = Math.min(b[0]!, uvA.getX(i));
+          b[1] = Math.min(b[1]!, uvA.getY(i));
+          b[2] = Math.max(b[2]!, uvA.getX(i));
+          b[3] = Math.max(b[3]!, uvA.getY(i));
         }
         const mm = (om.material as THREE.MeshStandardMaterial).map;
         if (mm && !this.sleeveMap) this.sleeveMap = mm;
