@@ -1,10 +1,11 @@
 {
   "skillId": "skl_te_phien",
-  "idea": "Tế Phiên: Vào tư thế 10 giây: dựng hồn phiên, Hồn lực không tan. Ba ô chiêu đổi thành chiêu phiên (Hồn Trảo, Âm Phong, Hồn Chướng).",
+  "idea": "Dựng hồn phiên: lá cờ khói hồn tím-đen cao dựng sau lưng, đuôi cờ uốn bay, sợi hồn xoáy quanh chân, viền sáng lạnh.",
   "element": "thuy",
   "path": "hon_tu",
   "shapeLang": [
-    "ring"
+    "cloud",
+    "spiral"
   ],
   "timing": {
     "anticipationMs": 400,

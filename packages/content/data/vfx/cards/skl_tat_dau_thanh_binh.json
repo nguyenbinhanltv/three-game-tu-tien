@@ -1,12 +1,11 @@
 {
   "skillId": "skl_tat_dau_thanh_binh",
-  "idea": "Tát Đậu Thành Binh: Chiêu tối thượng. Xả hết Hồn lực, gọi ba hồn binh theo ngươi 10 giây; mỗi giây mỗi hồn đánh một kẻ địch trong 18 mét gây 45% công kích, mỗi điểm Hồn lực đã xả cộng 0,6%.",
+  "idea": "Ba hồn binh bóng lính khói tím-đen đứng quanh người ra chiêu, thân tan thành đuôi khói, mắt sáng lạnh, khói hồn cuộn dưới chân.",
   "element": "thuy",
   "path": "hon_tu",
   "shapeLang": [
-    "ring",
-    "spike",
-    "cloud"
+    "cloud",
+    "spiral"
   ],
   "timing": {
     "anticipationMs": 500,

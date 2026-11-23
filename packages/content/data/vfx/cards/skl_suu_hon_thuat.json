@@ -1,12 +1,11 @@
 {
   "skillId": "skl_suu_hon_thuat",
-  "idea": "Sưu Hồn Thuật: Gây 200% công kích và thu hết Hồn ấn của ngươi trên mục tiêu: mỗi tầng đánh thêm một nhát 25%, thu được ấn thì tích 8 Hồn lực. Dùng trong 4 giây sau Phệ Hồn mạnh thêm 25%.",
+  "idea": "Sưu hồn: sợi hồn xanh lam sáng bị rút ra khỏi mục tiêu bay về người ra chiêu theo đường uốn, nền khói tím-đen.",
   "element": "thuy",
   "path": "hon_tu",
   "shapeLang": [
     "spiral",
-    "ring",
-    "burst"
+    "line"
   ],
   "timing": {
     "anticipationMs": 200,

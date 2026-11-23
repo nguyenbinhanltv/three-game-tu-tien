@@ -1,11 +1,11 @@
 {
   "skillId": "skl_u_anh_bo",
-  "idea": "U Ảnh Bộ: Lướt 8 mét tới sát mục tiêu như một cái bóng. Trong 3 giây sau đó Phệ Hồn mạnh thêm 40%. Không xuyên vách, không dùng được khi đang bay.",
+  "idea": "Hồn tu hóa bóng đen lướt tới mục tiêu: vệt khói hồn tím-đen kéo thành đuôi dài, viền sáng lạnh, để lại vài sợi hồn tan dần.",
   "element": "vo",
   "path": "hon_tu",
   "shapeLang": [
     "cloud",
-    "ring"
+    "line"
   ],
   "timing": {
     "anticipationMs": 300,

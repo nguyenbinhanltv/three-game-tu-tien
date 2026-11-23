@@ -1,11 +1,11 @@
 {
   "skillId": "skl_dinh_than_thuat",
-  "idea": "Định Thân Thuật: Gây 140% công kích và ghìm mục tiêu 2 giây (tinh anh một nửa, thủ lĩnh miễn). Có đủ 40 Hồn lực thì xả 40 để sát thương mạnh thêm 50%.",
+  "idea": "Định thần: bàn tay hồn mờ ghìm xuống mục tiêu, xích khói tím-đen quấn quanh, viền sáng lạnh.",
   "element": "thuy",
   "path": "hon_tu",
   "shapeLang": [
-    "ring",
-    "spike"
+    "spike",
+    "cloud"
   ],
   "timing": {
     "anticipationMs": 400,

@@ -1,11 +1,11 @@
 {
   "skillId": "skl_am_phong",
-  "idea": "Âm Phong: Chiêu tư thế. Gió âm quét vùng 6 mét gây 130% công kích, mỗi kẻ địch trúng nhận 1 Hồn ấn.",
+  "idea": "Gió âm: xoáy khói hồn tím-đen cuộn quanh mục tiêu như lốc, lõi tối đặc, viền sáng lạnh, sợi hồn bị cuốn lên.",
   "element": "thuy",
   "path": "hon_tu",
   "shapeLang": [
-    "ring",
-    "line"
+    "spiral",
+    "cloud"
   ],
   "timing": {
     "anticipationMs": 420,

@@ -1,11 +1,11 @@
 {
   "skillId": "skl_hon_chuong",
-  "idea": "Hồn Chướng: Chiêu tư thế. Màn hồn che thân: khiên bằng 12% khí huyết tối đa trong 6 giây.",
+  "idea": "Màn hồn che thân: bức màn khói hồn tím-đen dày bao quanh người như tấm vải bay, gờ sáng lạnh, mặt hồn mờ lộ trong khói.",
   "element": "thuy",
   "path": "hon_tu",
   "shapeLang": [
-    "ring",
-    "line"
+    "cloud",
+    "ring"
   ],
   "timing": {
     "anticipationMs": 380,

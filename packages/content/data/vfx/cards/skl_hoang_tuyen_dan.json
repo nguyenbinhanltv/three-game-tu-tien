@@ -1,11 +1,10 @@
 {
   "skillId": "skl_hoang_tuyen_dan",
-  "idea": "Hoàng Tuyền Dẫn: Mở một vùng 6 mét gây 220% công kích, xả hết Hồn lực (mỗi điểm cộng 0,5%). Thu Hồn ấn của ngươi trên từng kẻ địch trúng đòn: mỗi tầng cộng 12% sát thương lên con đó.",
+  "idea": "Hoàng tuyền đạn: quả cầu khói hồn tím-đen nổ trong vùng 6 mét, nhiều mặt hồn mờ bay ra thành đuôi khói, viền sáng lạnh.",
   "element": "thuy",
   "path": "hon_tu",
   "shapeLang": [
-    "ring",
-    "spike",
+    "burst",
     "cloud"
   ],
   "timing": {

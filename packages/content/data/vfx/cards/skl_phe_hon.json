@@ -1,12 +1,11 @@
 {
   "skillId": "skl_phe_hon",
-  "idea": "Phệ Hồn: Cắn vào hồn mục tiêu gây 220% công kích, đặt 1 Hồn ấn và tích 6 Hồn lực.",
+  "idea": "Một bàn tay hồn mờ xanh lam tối chộp xuống cắn vào hồn mục tiêu: khói đặc lõi tím-đen, các ngón như sợi khói, viền sáng lạnh, vài sợi hồn bị kéo ra.",
   "element": "thuy",
   "path": "hon_tu",
   "shapeLang": [
-    "line",
-    "arc",
-    "cloud"
+    "cloud",
+    "spike"
   ],
   "timing": {
     "anticipationMs": 300,

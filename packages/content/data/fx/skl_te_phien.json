@@ -19,71 +19,102 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.6,
+   "dur": 0.9,
    "at": "self",
-   "sweep": 0.05,
-   "erodeFrom": 0.1,
-   "ragged": 0.6,
+   "sweep": 0.5,
+   "erodeFrom": 0.5,
+   "ragged": 0.7,
    "tone": "body",
-   "alpha": 0.8,
+   "alpha": 0.95,
    "tier": 0,
-   "shape": "rune_ring2",
+   "shape": "helix",
    "offset": [
     0,
-    0.12,
+    0,
     0
    ],
-   "scale": 2.4,
-   "scaleTo": 5.6,
+   "scale": [
+    2.7,
+    4.199999999999999,
+    2.7
+   ],
    "ink": true,
    "shadow": true,
-   "seed": 1000
+   "seed": 1132
   },
   {
    "type": "mesh",
    "t": 0.05,
-   "dur": 0.6,
+   "dur": 0.9,
    "at": "self",
-   "sweep": 0.05,
-   "erodeFrom": 0.1,
-   "ragged": 0.6,
-   "tone": "body",
-   "alpha": 0.6,
+   "sweep": 0.5,
+   "erodeFrom": 0.5,
+   "ragged": 0.7,
+   "tone": "rim",
+   "alpha": 0.85,
    "tier": 0,
-   "shape": "rune_ring2",
+   "shape": "helix",
    "offset": [
     0,
-    0.14,
+    0,
     0
    ],
-   "scale": 2,
-   "scaleTo": 8,
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "scale": [
+    3.5999999999999996,
+    5.4,
+    3.5999999999999996
+   ],
    "ink": true,
-   "shadow": true,
-   "seed": 1001
+   "seed": 1133
   },
   {
    "type": "mesh",
-   "t": 0.1,
-   "dur": 0.6,
+   "t": 0,
+   "dur": 0.95,
    "at": "self",
-   "sweep": 0.05,
-   "erodeFrom": 0.1,
+   "sweep": 0.2,
+   "erodeFrom": 0.4,
    "ragged": 0.6,
    "tone": "body",
-   "alpha": 0.4,
+   "alpha": 0.5,
    "tier": 0,
-   "shape": "rune_ring2",
+   "shape": "flip",
+   "flip": "ink_smoke",
    "offset": [
     0,
-    0.16,
+    0.8,
     0
    ],
-   "scale": 1.6,
-   "scaleTo": 11.2,
-   "ink": true,
-   "shadow": true,
-   "seed": 1002
+   "scale": 4.800000000000001,
+   "billboard": true,
+   "seed": 1134
+  },
+  {
+   "type": "mesh",
+   "t": 0.01,
+   "dur": 0.95,
+   "at": "self",
+   "sweep": 0.2,
+   "erodeFrom": 0.4,
+   "ragged": 0.6,
+   "tone": "shadow",
+   "alpha": 0.95,
+   "tier": 0,
+   "shape": "flip",
+   "flip": "ink_smoke",
+   "offset": [
+    0,
+    0.8,
+    0
+   ],
+   "scale": 3.5999999999999996,
+   "billboard": true,
+   "seed": 1135
   }
  ]
 }
