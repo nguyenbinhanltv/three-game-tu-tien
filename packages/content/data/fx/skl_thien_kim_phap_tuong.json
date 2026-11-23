@@ -423,24 +423,29 @@
   },
   {
    "type": "mesh",
-   "t": -0.1,
-   "dur": 1.4,
+   "t": -0.3,
+   "dur": 1.6,
    "at": "self",
    "sweep": 0.3,
-   "erodeFrom": 0.75,
+   "erodeFrom": 0.6,
    "ragged": 0.6,
    "tone": "accent",
-   "alpha": 0.6,
+   "alpha": 0.95,
    "tier": 0,
-   "shape": "statue",
+   "shape": "card",
+   "card": "arhat",
    "offset": [
-    0,
-    0,
-    -3
+    -3.4,
+    3.2,
+    6
    ],
-   "scale": 1.95,
-   "awayFromCam": true,
-   "seed": 1016
+   "billboard": true,
+   "scale": [
+    4.875,
+    7.280000000000001,
+    1
+   ],
+   "seed": 1000
   },
   {
    "type": "mesh",
@@ -463,7 +468,7 @@
    "scaleTo": 5.2,
    "ink": true,
    "shadow": true,
-   "seed": 1017
+   "seed": 1001
   },
   {
    "type": "mesh",
@@ -486,7 +491,7 @@
    "scaleTo": 7.8,
    "ink": true,
    "shadow": true,
-   "seed": 1018
+   "seed": 1002
   }
  ],
  "variants": {
