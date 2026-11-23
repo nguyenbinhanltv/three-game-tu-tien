@@ -1251,3 +1251,11 @@
     filter: drop-shadow(0 0 7px var(--u-gold-hi));
   }
 }
+
+/* Gợi ý tương tác (E…) nằm trên thanh chiêu thanh ngang + khối sinh lực (U1), không đè ô chiêu */
+.hud[data-skills='bar'] .hint {
+  bottom: calc(var(--h-safe) + var(--h-dock-h) + var(--h-dock-gap) + 160px);
+}
+.hud[data-skills='bar'] .hint.lock {
+  bottom: calc(var(--h-safe) + var(--h-dock-h) + var(--h-dock-gap) + 200px);
+}

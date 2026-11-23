@@ -4,12 +4,25 @@ import { uiScale } from '../../uiScale';
 
 const GAP = 8;
 const MARGIN = 8;
+/** Nửa bề rộng cột giữa màn hình được chừa cho nhân vật (px màn hình). */
+const CENTER_CLEAR = 90;
 
 /**
  * Chú giải: hiện sau 250 ms khi rê chuột, ngay khi focus bàn phím, ẩn khi rời hoặc nhấn Esc. Vẽ `position: fixed` qua portal
  * ra `document.body` (bảng có `filter` và `clip-path` nên tip không thể nằm trong); ưu tiên phía trên, tự lật xuống khi hết chỗ và ép vào trong màn hình.
  */
-export function Tooltip({ content, children, tipClass }: { content: ReactNode; children: ReactNode; tipClass?: string }) {
+export function Tooltip({
+  content,
+  children,
+  tipClass,
+  avoidCenter = false,
+}: {
+  content: ReactNode;
+  children: ReactNode;
+  tipClass?: string;
+  /** Camera chéo đặt nhân vật giữa màn hình: chú giải của thanh chiêu lệch khỏi cột giữa (±CENTER_CLEAR) để không che nhân vật. */
+  avoidCenter?: boolean;
+}) {
   const id = useId();
   const host = useRef<HTMLSpanElement>(null);
   const tip = useRef<HTMLDivElement>(null);
@@ -36,11 +49,17 @@ export function Tooltip({ content, children, tipClass }: { content: ReactNode; c
     if (y < MARGIN) y = a.bottom + GAP;
     // Hết chỗ cả hai phía (chú giải dài): ép vào trong màn hình, chấp nhận che nhẹ ô gốc thay vì tràn mép dưới.
     y = Math.max(MARGIN, Math.min(y, window.innerHeight - b.height - MARGIN));
-    const x = Math.min(Math.max(MARGIN, a.left + a.width / 2 - b.width / 2), window.innerWidth - b.width - MARGIN);
+    let x = a.left + a.width / 2 - b.width / 2;
+    if (avoidCenter) {
+      // Ô bên trái giữa: chú giải mọc về bên trái; ô bên phải: mọc về bên phải; luôn cách tâm màn hình ≥ CENTER_CLEAR.
+      const mid = window.innerWidth / 2;
+      x = a.left + a.width / 2 < mid ? Math.min(a.right - b.width, mid - CENTER_CLEAR - b.width) : Math.max(a.left, mid + CENTER_CLEAR);
+    }
+    x = Math.min(Math.max(MARGIN, x), window.innerWidth - b.width - MARGIN);
     // Tip được phóng bằng `zoom: var(--ui-scale)`: left/top của chính nó cũng bị nhân, nên chia lại để ra đúng px màn hình.
     const s = uiScale();
     setPos({ x: x / s, y: y / s });
-  }, [open, content]);
+  }, [open, content, avoidCenter]);
 
   return (
     <span
