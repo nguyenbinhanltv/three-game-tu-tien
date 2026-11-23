@@ -18,6 +18,7 @@ import {
   S,
   CHAT_MAX_LEN,
 } from '@dtl/shared';
+import { buffsMsg } from './artifact';
 import { methodOf } from './method';
 import type { PlayerEnt } from './entities';
 
@@ -356,6 +357,7 @@ class PartyManager {
     const members: PartyMember[] = party.members.map((id) => {
       const e = this.reg.get(id);
       const o = e?.p;
+      const bf = o ? buffsMsg(o.char.meta, Date.now()) : undefined;
       return {
         id,
         sid: o?.sid ?? '',
@@ -369,6 +371,7 @@ class PartyManager {
         lead: party.leader === id,
         room: e ? this.roomName(e) : '',
         dead: !!o && (o.s.fl & PF_DEAD) !== 0,
+        ...(bf && Object.keys(bf).length ? { bf } : {}),
       };
     });
     return { members, loot: party.loot, res: this.resonance(viewer) };

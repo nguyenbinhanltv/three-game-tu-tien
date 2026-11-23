@@ -7,6 +7,9 @@ import { Game } from '../game/engine';
 import { UiIcon } from './ContentIcon';
 import { Button, Divider, PanelWindow, ProgressBar } from './u2/win';
 import { set, togglePanel, useUI } from './store';
+import { footprintOfCamera, pointInPoly } from './minimap/footprint';
+import { allyBearing } from './partyView';
+import { BuffChips } from './u2/hud/Vitals';
 
 function useNow(ms: number): number {
   const [now, setNow] = useState(Date.now());
@@ -30,7 +33,68 @@ function RoleTag({ role }: { role: PartyMember['role'] }) {
   );
 }
 
-/** Khung tổ đội dưới khung nhân vật: máu và linh lực của từng thành viên (kể cả mình). */
+/**
+ * Chỉ báo đồng đội ngoài tầm nhìn (U9): đồng đội ở cùng bản đồ nhưng điểm đứng không nằm trong vùng mặt đất camera chéo đang thấy
+ * thì hiện mũi tên theo hướng trên màn hình và khoảng cách (m). Chỉ hiển thị, vị trí lấy từ state server.
+ */
+function useAway(sid: string): { deg: number; dist: number } | null {
+  useNow(250);
+  const g = Game.current;
+  const o = sid && g?.view ? g.view.players.get(sid) : undefined;
+  if (!g || !o || sid === g.sid) return null;
+  const me = g.renderPos;
+  if (pointInPoly(footprintOfCamera(g.camera, me.y), o.x, o.z)) return null;
+  return allyBearing(o.x - me.x, o.z - me.z, g.yaw);
+}
+
+function PartyRow({ m, me }: { m: PartyMember; me: boolean }) {
+  const away = useAway(m.sid);
+  const off = useUI((s) => s.methodOff);
+  const now = useNow(1000);
+  return (
+    <div
+      className={'pty-row' + (m.dead ? ' dead' : '') + (!m.room ? ' off' : '') + (me ? ' me' : '')}
+      data-testid="pty-row"
+      data-away={away ? '1' : undefined}
+    >
+      <div className="pty-head">
+        <span className="pty-name">
+          {m.lead && (
+            <i className="pty-crown" title={t('ui.party.leader')}>
+              <UiIcon id="ui_sao" fallback="♛" className="inline" />
+            </i>
+          )}
+          {m.name || '…'}
+        </span>
+        <RoleTag role={m.role} />
+        <span className="pty-lv">{m.room ? realmName(m.lv) : t('ui.party.offline')}</span>
+      </div>
+      {m.room && (
+        <>
+          <ProgressBar cls="hp ally" value={m.hp} max={m.mhp} text={`${m.hp} / ${m.mhp}`} label={t('ui.hp')} />
+          <div className="pty-mp">
+            <i style={{ width: (m.mmp > 0 ? Math.min(100, (m.mp / m.mmp) * 100) : 0) + '%' }} />
+          </div>
+          {(away || (m.bf && Object.keys(m.bf).length > 0)) && (
+            <div className="pty-sub">
+              <BuffChips buffs={m.bf} off={off} now={now} small />
+              {away && (
+                <span className="pty-away" role="status" title={t('ui.party.away')}>
+                  <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" style={{ transform: `rotate(${away.deg}deg)` }}>
+                    <path d="M6 1 L10 10 L6 8 L2 10 Z" />
+                  </svg>
+                  {t('ui.party.away_dist', { n: Math.round(away.dist) })}
+                </span>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Khung tổ đội dưới khung nhân vật: máu, linh lực, buff đan của từng thành viên (kể cả mình) và chỉ báo ngoài tầm nhìn. */
 export function PartyFrame() {
   const party = useUI((s) => s.party);
   const sid = Game.current?.sid;
@@ -43,28 +107,7 @@ export function PartyFrame() {
         </div>
       )}
       {party.members.map((m) => (
-        <div key={m.id} className={'pty-row' + (m.dead ? ' dead' : '') + (!m.room ? ' off' : '') + (m.sid && m.sid === sid ? ' me' : '')}>
-          <div className="pty-head">
-            <span className="pty-name">
-              {m.lead && (
-                <i className="pty-crown" title={t('ui.party.leader')}>
-                  <UiIcon id="ui_sao" fallback="♛" className="inline" />
-                </i>
-              )}
-              {m.name || '…'}
-            </span>
-            <RoleTag role={m.role} />
-            <span className="pty-lv">{m.room ? realmName(m.lv) : t('ui.party.offline')}</span>
-          </div>
-          {m.room && (
-            <>
-              <ProgressBar cls="hp ally" value={m.hp} max={m.mhp} text={`${m.hp} / ${m.mhp}`} label={t('ui.hp')} />
-              <div className="pty-mp">
-                <i style={{ width: (m.mmp > 0 ? Math.min(100, (m.mp / m.mmp) * 100) : 0) + '%' }} />
-              </div>
-            </>
-          )}
-        </div>
+        <PartyRow key={m.id} m={m} me={!!m.sid && m.sid === sid} />
       ))}
     </div>
   );
