@@ -1,6 +1,8 @@
 // Nhân vật v3 (N-0 → N-7): model nguyên khối có bộ xương UE5 Mannequin (`chr_v3_*`, tools/blender/chr_v3.py) phát
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
+import { boneKey } from './ikpose';
+import { applyProportions, proportionBones, type BoneScale } from './hero';
 import * as THREE from 'three/webgpu';
 import {
   attribute,
@@ -522,6 +524,11 @@ function shadowMaterial(): THREE.MeshStandardNodeMaterial {
 }
 
 export class MannequinCharacter implements CharacterView {
+  /** Bật tỉ lệ đọc từ trên (C2): phóng vai, tay, đầu, bàn tay cầm kiếm bằng scale xương, không sửa model. Chỉ gọi cho người chơi. */
+  enableProportions(): void {
+    this.proportions = proportionBones(this.rig, boneKey);
+  }
+
   readonly root = new THREE.Group();
   readonly hit: HitReact;
   readonly height: number;
@@ -532,6 +539,8 @@ export class MannequinCharacter implements CharacterView {
   }
   grounded = true;
   steps = 0;
+  /** Tỉ lệ đọc từ trên (C2): xương cần scale mỗi khung sau mixer (chỉ người chơi, xem `enableProportions`). */
+  private proportions: BoneScale[] = [];
   attacks = 0;
   private inner = new THREE.Group();
   private rig: THREE.Object3D;
@@ -1546,6 +1555,7 @@ export class MannequinCharacter implements CharacterView {
     this.blendBases(this.acc);
     if (this.loco && this.base) this.syncLoco(this.acc);
     this.mixer.update(this.acc);
+    if (this.proportions.length) applyProportions(this.proportions);
     for (const t of V3_OFF.has('twist') ? [] : this.twists) {
       _tq.copy(t.restLimb).invert().multiply(t.limb.quaternion);
       t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
@@ -1875,7 +1885,9 @@ export class MannequinPlayers {
     const t = this.get(g, skin, set, self);
     if (!t) return null;
     const mat = dye ? this.dyedMaterial(t, this.keyOf(g, skin, set, self).key, dye) : null;
-    return new MannequinCharacter(t, false, this.sword(w ?? SWORD_MODEL_DEFAULT), mat);
+    const ch = new MannequinCharacter(t, false, this.sword(w ?? SWORD_MODEL_DEFAULT), mat);
+    if (FLAGS.hero) ch.enableProportions();
+    return ch;
   }
 
   /** Bản sao vật liệu của mẫu có nhuộm `dye`; null nếu model không nhuộm được (skin toàn thân) hoặc không có vật liệu. */

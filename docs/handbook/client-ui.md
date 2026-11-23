@@ -84,3 +84,10 @@ Cột/bia/trụ đá cao cũng bật `sight` (`prop_mach_tinh_tru`, `prop_tru_nh
 ## Vật thể vỡ (Chân Cảnh S1c)
 
 - `apps/client/src/game/world/breakables.ts`: vò, bia, cọc vỡ khi chiêu CỦA MÌNH cấp `vừa` trở lên (xem `docs/handbook/gameplay-systems.md`, mục cấp đòn) trúng quái hoặc ra đòn gần vật. Chỉ là hình ở client: server không biết, không va chạm, không rơi đồ. Thêm vật mới: một `BreakableSpec` vào `BREAKABLES_BY_LEVEL` (hiện có `van_lam`, Lạc Kiếm Tông). `?brk=0` tắt. Ảnh: `pnpm shots breakables --out <thư mục> [--view 720p|1080p] [--tag truoc|sau] [--query brk=0]`.
+
+## Hero light và tỉ lệ nhân vật (Chân Cảnh C1/C2)
+
+- `apps/client/src/game/character/hero.ts` + `rimLight` trong `render/materials/world.ts`: nhân vật của MÌNH và đồng đội (theo `PartyMsg`) có (a) đèn phụ bám camera + viền Fresnel theo màu hướng tu (`paths.json` → `palette.rim`), ghi theo từng mesh bằng `userData.hero` (uniform `onObjectUpdate`, không đèn thật, không thêm bóng), (b) viền tối mảnh khi bị vật che: bản sao thân (SkinnedMesh dùng chung xương) vẽ chỉ ở điểm sau vật khác, tối đa `HERO_GHOST_MAX` (mỗi bản sao một draw call), (c) vòng chân tương phản (một InstancedMesh, 1 draw call).
+- C2: phóng vai ×1,12, đầu ×1,06, bàn tay ×1,10–1,14 bằng scale xương (`HERO_PROPORTIONS`, tên xương chuẩn hóa của UE5 Mannequin; gán lại mỗi khung SAU mixer vì clip nướng có kênh scale), áp cho mọi người chơi v3, không sửa model.
+- Tắt: Cài đặt "Viền nhân vật" (`dtl.heroRim`, chỉ viền/đèn/vòng chân) hoặc `?hero=0` (tắt cả tỉ lệ để so ảnh).
+- Soát: `pnpm shots herolight` (cảnh, đo draw call, `--bots N` đám đông, `--query hero=0` đối chứng) và `pnpm shots herocheck` (cận cảnh nam/nữ × bộ v3 × đứng/chạy/lướt/đòn nặng/đả tọa/ngự kiếm, tắt vs bật, đo tay xuyên thân).

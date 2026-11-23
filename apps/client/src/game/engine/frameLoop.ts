@@ -66,6 +66,8 @@ import { ULT_FOV, ultFovAt } from '../combat/hitjuice';
 import { labDt } from '../debug/vfxLab';
 import { SLOWMO, VFX_LAB, _camFocus, _shakeLook, _shakePos, _v, _v2, isWebGPU } from './common';
 import { runCine } from './cine';
+import { heroParams } from '../../render/materials/world';
+import { heroRimOn } from '../fx/fxSettings';
 import { applyDmg, ensureCloneVis, updateSoulVis } from './fxMsgs';
 import { syncHud } from './hudSync';
 import { updateEclipse, updateFaceMood, updateRiftMood } from './levelLoad';
@@ -210,6 +212,15 @@ export function runFrame(eng: Game): void {
   // Chậm thời gian TRÌNH DIỄN (VS-1 `slowmo`): chỉ animation/hình/hạt; di chuyển, dự đoán, camera, âm thanh dùng dt thật.
   const pscale = eng.presentationScale(performance.now());
   const vdt = dt * pscale;
+  // Hero light (C1): công tắc chung + tập đồng đội (đổi khi tổ đội đổi).
+  const heroOn = heroRimOn();
+  if (heroParams.enabled.value !== (heroOn ? 1 : 0)) heroParams.enabled.value = heroOn ? 1 : 0;
+  const party = get().party;
+  if (!heroOn) eng.ents.heroSids = null;
+  else if (eng.heroPartyRef !== party || !eng.ents.heroSids) {
+    eng.heroPartyRef = party;
+    eng.ents.heroSids = new Set(party?.members.map((m) => m.sid).filter(Boolean) ?? []);
+  }
   if (me) {
     // Đối số đầu LUÔN là dt thật (nội suy vị trí người khác/quái, hover, hộ tống, animation của thực thể không phải mình); `vdt` chỉ cho animation nhân vật mình.
     eng.ents.update(
@@ -221,6 +232,7 @@ export function runFrame(eng: Game): void {
       vdt,
     );
   }
+  eng.ents.syncHero();
   if (me) eng.steps?.update(eng.ents, eng.sid, rp, !eng.cur.grounded && !eng.cur.flying);
   eng.scape?.update(rp.x, rp.z, now / 1000);
   if (eng.questMarkersDirty) {
