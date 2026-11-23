@@ -2,7 +2,18 @@
 // tông rim/accent của hình toon đổi sang body (viền trắng chìm trên nền đá sáng), bỏ khói bụi trắng (flip dust_kick) và vết cháy (decal scorch).
 // Dùng: node tools/vfx-forge/ink-pass.mjs <id chiêu>...   (chạy lại an toàn: không đổi gì thêm)
 import fs from 'node:fs';
-const TOON = new Set(['slash_thick', 'slash_thin', 'slash_cross', 'slash_fan', 'crack_radial', 'rift_line', 'rune_ring2', 'shock_cone', 'ripple', 'crescent']);
+const TOON = new Set([
+  'slash_thick',
+  'slash_thin',
+  'slash_cross',
+  'slash_fan',
+  'crack_radial',
+  'rift_line',
+  'rune_ring2',
+  'shock_cone',
+  'ripple',
+  'crescent',
+]);
 for (const id of process.argv.slice(2)) {
   const p = `packages/content/data/fx/${id}.json`;
   const t = JSON.parse(fs.readFileSync(p, 'utf8'));
