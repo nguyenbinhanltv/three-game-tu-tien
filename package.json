@@ -19,6 +19,7 @@
     "bots": "pnpm --filter @dtl/bot-client start",
     "ledger:check": "pnpm --filter @dtl/server ledger:check",
     "size": "pnpm --filter @dtl/perf size",
+    "perf:iso": "pnpm --filter @dtl/perf iso --",
     "bench:client": "pnpm --filter @dtl/perf bench",
     "bench:switch": "pnpm --filter @dtl/perf bench --switch 20",
     "compat": "pnpm --filter @dtl/perf compat",
