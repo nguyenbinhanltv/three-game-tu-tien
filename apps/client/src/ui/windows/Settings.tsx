@@ -121,17 +121,21 @@ export function Settings() {
       />
       {tab === 'graphics' && (
         <div data-testid="settings-graphics">
-          <Divider label={t('ui.settings.preset')} />
           {/* Không khớp preset nào (đã chỉnh riêng) thì không ô nào sáng. */}
           <LSeg
-            bare
             hint={t('ui.settings.preset_hint')}
             label={t('ui.settings.preset')}
             value={(preset ?? '') as PresetId}
             onChange={(id: PresetId) => applyPreset(id)}
             options={PRESET_IDS.map((id) => ({ value: id, label: t('ui.settings.preset.' + id) }))}
           />
-          <Divider label={t('ui.settings.quality')} />
+          <LSeg
+            hint={t('ui.settings.quality_hint')}
+            label={t('ui.settings.quality')}
+            value={quality}
+            onChange={(q) => Game.current?.setQuality(q)}
+            options={QUALITIES.map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))}
+          />
           {qualityHint && !hintSeen && (
             <div className="set-suggest" data-testid="quality-hint">
               <span>{t('ui.settings.quality_suggest', { q: t('ui.settings.q.' + qualityHint) })}</span>
@@ -146,14 +150,6 @@ export function Settings() {
               <Button onClick={() => Game.current?.dismissQualityHint()}>{t('ui.settings.quality_dismiss')}</Button>
             </div>
           )}
-          <LSeg
-            bare
-            hint={t('ui.settings.quality_hint')}
-            label={t('ui.settings.quality')}
-            value={quality}
-            onChange={(q) => Game.current?.setQuality(q)}
-            options={QUALITIES.map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))}
-          />
           <LSeg
             hint={t('ui.settings.quality_lock_hint')}
             label={t('ui.settings.quality_lock')}

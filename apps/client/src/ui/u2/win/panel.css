@@ -830,7 +830,7 @@
   background: var(--u-wash-gold);
 }
 .set-suggest > span {
-  flex: 1 1 auto;
+  flex: 1 1 100%;
   font-weight: 600;
 }
 .set-fps {
