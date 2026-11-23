@@ -16,7 +16,12 @@ const H = 315;
 const times = ['0', '30', '150', '400'];
 const cidx = [1, 1, 2, 3]; // khung concept: dồn lực/va chạm/+150/tan → dùng va chạm cho 0 và +30
 const shot = (sk, tag, ms, sub = 'final') => path.join(dir, sub, sk, `${sk}-${tag}-+${ms}ms.jpg`);
-const tile = async (f) => (fs.existsSync(f) ? sharp(f).resize(W, H).jpeg().toBuffer() : sharp({ create: { width: W, height: H, channels: 3, background: '#333' } }).jpeg().toBuffer());
+const tile = async (f) =>
+  fs.existsSync(f)
+    ? sharp(f).resize(W, H).jpeg().toBuffer()
+    : sharp({ create: { width: W, height: H, channels: 3, background: '#333' } })
+        .jpeg()
+        .toBuffer();
 const conceptTile = async (sk, c) => {
   const f = path.join(dir, 'concepts', `${sk}_concept.png`);
   if (!fs.existsSync(f)) return tile('');
@@ -35,12 +40,29 @@ const dark = [];
 for (const [r, sk] of skills.entries()) {
   const comp = [];
   for (let i = 0; i < 4; i++) comp.push({ input: await conceptTile(sk, cidx[i]), left: i * W, top: 0 });
-  for (const [k, tag] of ['720p', '1080p'].entries()) for (let i = 0; i < 4; i++) comp.push({ input: await tile(shot(sk, tag, times[i])), left: i * W, top: H * (k + 1) });
-  await sharp({ create: { width: W * 4, height: H * 3, channels: 3, background: '#111' } }).composite(comp).jpeg({ quality: 88 }).toFile(path.join(dir, `${sk}-concept-vs-game.jpg`));
-  over.push({ input: await conceptTile(sk, 1), left: 0, top: r * H }, { input: await tile(shot(sk, '1080p', 30)), left: W, top: r * H }, { input: await tile(shot(sk, '1080p', 150)), left: 2 * W, top: r * H });
-  dark.push({ input: await tile(shot(sk, '1080p', 30, 'dark')), left: 0, top: r * H }, { input: await tile(shot(sk, '1080p', 150, 'dark')), left: W, top: r * H });
+  for (const [k, tag] of ['720p', '1080p'].entries())
+    for (let i = 0; i < 4; i++) comp.push({ input: await tile(shot(sk, tag, times[i])), left: i * W, top: H * (k + 1) });
+  await sharp({ create: { width: W * 4, height: H * 3, channels: 3, background: '#111' } })
+    .composite(comp)
+    .jpeg({ quality: 88 })
+    .toFile(path.join(dir, `${sk}-concept-vs-game.jpg`));
+  over.push(
+    { input: await conceptTile(sk, 1), left: 0, top: r * H },
+    { input: await tile(shot(sk, '1080p', 30)), left: W, top: r * H },
+    { input: await tile(shot(sk, '1080p', 150)), left: 2 * W, top: r * H },
+  );
+  dark.push(
+    { input: await tile(shot(sk, '1080p', 30, 'dark')), left: 0, top: r * H },
+    { input: await tile(shot(sk, '1080p', 150, 'dark')), left: W, top: r * H },
+  );
   console.log('bảng', sk);
 }
-await sharp({ create: { width: W * 3, height: H * skills.length, channels: 3, background: '#111' } }).composite(over).jpeg({ quality: 85 }).toFile(path.join(dir, 'tong-quan.jpg'));
-await sharp({ create: { width: W * 2, height: H * skills.length, channels: 3, background: '#111' } }).composite(dark).jpeg({ quality: 85 }).toFile(path.join(dir, 'nen-toi.jpg'));
+await sharp({ create: { width: W * 3, height: H * skills.length, channels: 3, background: '#111' } })
+  .composite(over)
+  .jpeg({ quality: 85 })
+  .toFile(path.join(dir, 'tong-quan.jpg'));
+await sharp({ create: { width: W * 2, height: H * skills.length, channels: 3, background: '#111' } })
+  .composite(dark)
+  .jpeg({ quality: 85 })
+  .toFile(path.join(dir, 'nen-toi.jpg'));
 console.log('xong');
