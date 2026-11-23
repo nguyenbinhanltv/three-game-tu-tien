@@ -7,7 +7,6 @@ import {
   PLAYER_STAGGER_GAP_MS,
   planDash,
   standingY,
-  DASH_MAX_SLOPE,
   playerReaction,
   type HitTier,
   caveBoundOf,
@@ -336,7 +335,7 @@ export class PlayerSystem {
     if (plan.dist < 0.05) return;
     p.move.x = plan.x;
     p.move.z = plan.z;
-    p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, p.move.y, plan.dist * DASH_MAX_SLOPE);
+    p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, plan.y);
     p.move.vy = 0;
     p.move.grounded = true;
     p.inputs?.splice(0);

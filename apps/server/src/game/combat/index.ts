@@ -265,7 +265,7 @@ export class CombatSystem {
     if (plan.dist >= 0.5) {
       p.move.x = plan.x;
       p.move.z = plan.z;
-      p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, p.move.y, plan.dist * DASH_MAX_SLOPE);
+      p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, plan.y);
       p.move.vy = 0;
       p.move.grounded = true;
       p.inputs.length = 0;
@@ -383,7 +383,7 @@ export class CombatSystem {
     const close = !!stop && Math.hypot(stop.x - p.move.x, stop.z - p.move.z) <= stop.r + 1;
     const plan =
       close || pullOnly
-        ? { x: p.move.x, z: p.move.z, dist: 0, blocked: true }
+        ? { x: p.move.x, z: p.move.z, y: p.move.y, dist: 0, blocked: true }
         : planDash(p.move, dir, dashDist, stop, {
             terrain: this.c.terrain,
             bound: caveBoundOf(this.c.level),
@@ -404,7 +404,7 @@ export class CombatSystem {
     const from = { x: p.move.x, z: p.move.z, y: p.move.y };
     p.move.x = plan.x;
     p.move.z = plan.z;
-    p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, p.move.y, plan.dist * DASH_MAX_SLOPE);
+    p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, plan.y);
     p.move.vy = 0;
     p.move.grounded = true;
     p.inputs.length = 0;
@@ -1644,7 +1644,7 @@ export class CombatSystem {
     if (plan.dist < 0.5) return 0;
     p.move.x = plan.x;
     p.move.z = plan.z;
-    p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, p.move.y, plan.dist * DASH_MAX_SLOPE);
+    p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, plan.y);
     p.move.vy = 0;
     p.move.grounded = true;
     p.inputs.length = 0;

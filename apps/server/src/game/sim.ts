@@ -3,7 +3,6 @@ import type { Client } from 'colyseus';
 import {
   blockedAt,
   standingY,
-  DASH_MAX_SLOPE,
   bottleneckReady,
   collisionOf,
   type CollisionSet,
@@ -227,7 +226,7 @@ export class GameSim {
       e.move.x = plan.x;
       e.move.z = plan.z;
       // Mặt đứng hiệu dụng (gồm bậc/phiến đá đi được), không chỉ heightmap: khỏi đặt người vào trong hộp rồi giật khi `push` đẩy ra.
-      e.move.y = standingY(this.terrain, this.collision, plan.x, plan.z, e.move.y, plan.dist * DASH_MAX_SLOPE);
+      e.move.y = standingY(this.terrain, this.collision, plan.x, plan.z, plan.y);
       e.move.vy = 0;
       e.move.grounded = true;
       e.inputs.length = 0;

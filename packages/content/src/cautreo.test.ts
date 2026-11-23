@@ -5,7 +5,6 @@ import {
   bridgeModel,
   bridgeSurfaceT,
   collisionOf,
-  DASH_MAX_SLOPE,
   IN_JUMP,
   planDash,
   standingY,
@@ -126,10 +125,28 @@ describe('Cầu treo Lạc Kiếm đi được (server stepMove + va chạm chun
         const plan = planDash(s, dir, 6, undefined, { terrain: T, collision: col });
         const t1 = bridgeSurfaceT(M, plan.x, plan.z, 0.01);
         expect(t1, `${name} t0=${t0}: điểm đến phải còn trên ván`).not.toBeNull();
-        const y = standingY(T, col, plan.x, plan.z, s.y, plan.dist * DASH_MAX_SLOPE);
+        const y = standingY(T, col, plan.x, plan.z, plan.y);
         expect(Math.abs(y - cauTreoDeckY(M, t1!)), `${name} t0=${t0}`).toBeLessThan(0.3);
         // cách cũ (heightmap thuần) rơi xuống đáy hác: chứng minh test có răng
         expect(s.y - T.groundAt(plan.x, plan.z)).toBeGreaterThan(8);
+      }
+  });
+
+  it('lướt dài từ ĐÁY hác dưới cầu (15–30 m, dọc trục hác, tới sát đáy): không bị đặt lên ván cầu phía trên', () => {
+    const mx = (M.ax + M.bx) / 2;
+    const mz = (M.az + M.bz) / 2;
+    const axis = { x: -M.dz, z: M.dx };
+    for (const d of [15, 22, 30])
+      for (const sign of [-1, 1]) {
+        const dir = { x: axis.x * sign, z: axis.z * sign };
+        const s: MoveState = { x: mx - dir.x * 6, z: mz - dir.z * 6, y: 0, vy: 0, grounded: true, flying: false };
+        s.y = T.groundAt(s.x, s.z);
+        const plan = planDash(s, dir, d, undefined, { terrain: T, collision: col });
+        const y = standingY(T, col, plan.x, plan.z, plan.y);
+        expect(
+          Math.abs(y - T.groundAt(plan.x, plan.z)),
+          `d=${d} sign=${sign} đi tới ${plan.x.toFixed(1)},${plan.z.toFixed(1)}`,
+        ).toBeLessThan(0.6);
       }
   });
 
