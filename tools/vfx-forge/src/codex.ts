@@ -1,6 +1,6 @@
 // Gọi Codex sinh ảnh cho quy trình Họa Pháp Lô (cùng cách các script tools/codex-assets: `codex exec` + công cụ tạo ảnh có sẵn).
 // Ảnh ra để ở thư mục `--out` NGOÀI repo (artifact phiên / dtl-asset-source); chỉ texture đã qua lò rèn mới vào repo (KTX2).
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -86,6 +86,23 @@ export function rescueFromCodexStore(logFile: string, out: string): string | nul
 }
 
 /** Chạy một việc Codex. Prompt và log (stdout+stderr) được lưu cạnh ảnh để tái lập và chẩn đoán. */
+/** Giết cả cây tiến trình (shell + codex + con): `p.kill()` với shell:true chỉ giết shell, để lại codex mồ côi làm nghẽn dịch vụ. */
+export function killTree(pid: number | undefined): void {
+  if (!pid) return;
+  if (process.platform === 'win32') spawnSync('taskkill', ['/T', '/F', '/PID', String(pid)]);
+  else {
+    try {
+      process.kill(-pid, 'SIGKILL');
+    } catch {
+      try {
+        process.kill(pid, 'SIGKILL');
+      } catch {
+        /* đã thoát */
+      }
+    }
+  }
+}
+
 export function runCodex(job: CodexJob): Promise<CodexResult> {
   fs.mkdirSync(job.outDir, { recursive: true });
   const out = path.join(job.outDir, `${job.name}.png`);
@@ -108,12 +125,13 @@ export function runCodex(job: CodexJob): Promise<CodexResult> {
       if (done) return;
       done = true;
       clearTimeout(t);
+      killTree(p.pid); // luôn dọn cây tiến trình con (thoát bình thường thì no-op)
       if (note) log.write(`\n[vfx-forge] ${note}\n`);
       log.end(() => resolve({ file: fs.existsSync(out) ? out : rescueFromCodexStore(logFile, out), code, log: logFile }));
     };
     const t = setTimeout(
       () => {
-        p.kill();
+        killTree(p.pid);
         finish(null, 'quá giờ');
       },
       job.timeoutMs ?? 5 * 60_000,
