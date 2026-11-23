@@ -337,5 +337,5 @@
   animation: ts-line-in 0.4s ease-out both;
 }
 #root .ts-card.u2-card .ts-tip b {
-  color: var(--u-gold-text);
+  color: var(--u-son);
 }

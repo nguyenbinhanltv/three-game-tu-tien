@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { type Appearance, genderEnabled, type Gender, isRootId, parseAppearance, type RootId, validName } from '@dtl/shared';
 import { APPEARANCE, hasString, t } from '@dtl/content';
-import { firstTipIndex, tipKey } from './loadTips';
+import { firstTipIndex, placeKey, tipKey } from './loadTips';
 import { assets } from '../game/core/assets';
 import { playMusic, sfx, unlockAudio } from '../game/audio/audio';
 import { TitleBackdrop } from '../game/world/backdrop';
@@ -257,7 +257,7 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
     return () => window.clearInterval(id);
   }, []);
   const place = (() => {
-    const k = `zone.${lastZoneArt()}`;
+    const k = placeKey(lastZoneArt());
     return hasString(k) ? t(k) : '';
   })();
   const done = useRef(onDone);
