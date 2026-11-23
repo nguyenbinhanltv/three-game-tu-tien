@@ -9,7 +9,7 @@
 // không bị trần 60 fps che. Camera đứng yên ở góc chéo khóa của level (không xoay, không zoom).
 //
 //   pnpm perf:iso [--presets medium,high,ultra] [--seconds 4] [--size 1280x720] [--out <thư mục>] [--baseline <iso-*.json>]
-//                 [--only van_lam,kiem_trung,kieu_3,trib:do_kiep,fight] [--quick] [--igpu] [--noshadow] [--query a=b] [--renderer webgpu|webgl2] [--channel chrome|chromium]
+//                 [--only van_lam,kiem_trung,kieu_3,trib:do_kiep,fight] [--quick] [--igpu] [--noshadow] [--dump-inst] [--query a=b] [--renderer webgpu|webgl2] [--channel chrome|chromium]
 // `--quick`: preset high, 2 giây/điểm, chỉ Vân Lam + một bí cảnh + một phòng cầu + cảnh đánh (cho máy người dùng tự chạy).
 // `--igpu`: ép GPU tiết kiệm điện (`--force_low_power_gpu`) để đo iGPU Intel/AMD nếu máy có.
 // Ra: iso-<ngày>.json + iso-<ngày>.md (+ so baseline) trong `--out` (mặc định bench/results). Server dev tự chạy ở cổng riêng và luôn tắt khi xong.
@@ -68,12 +68,14 @@ function initScript(preset: string): void {
   const tex = new Map<object, number>();
   const B = {
     rec: false,
+    passes: {} as Record<string, number>,
     long: [] as { at: number; dt: number; parts: Record<string, number> }[],
     frames: [] as number[][],
     dc: [] as number[],
     parts: {} as Record<string, number[]>,
     gpu: [] as number[],
     gpuOk: false,
+    dropGpu: false,
     patched: null as unknown,
   };
   w.__iso = B;
@@ -146,6 +148,20 @@ function initScript(preset: string): void {
           destroy(t);
         };
       }
+      if (r && !r.__isoProbed && typeof r._renderObjectDirect === 'function') {
+        r.__isoProbed = true;
+        const direct = Object.getPrototypeOf(r)._renderObjectDirect.bind(r);
+        r._handleObjectFunction = r._renderObjectDirect = (object: any, material: any, ...rest: unknown[]) => {
+          if (B.rec) {
+            const rt = r.getRenderTarget();
+            const dst = rt ? rt.texture?.name || (rt.depthTexture && !rt.texture?.isTexture ? 'depth' : 'rt') : 'screen';
+            const kind = object.isSkinnedMesh ? 'skin' : object.isInstancedMesh ? 'inst' : object.isBatchedMesh ? 'batch' : 'mesh';
+            const k = `${dst}|${kind}|${material?.type ?? '?'}`;
+            B.passes[k] = (B.passes[k] ?? 0) + 1;
+          }
+          return direct(object, material, ...rest);
+        };
+      }
       wrapPart(g.terrain, 'update', 'terrain');
       wrapPart(g.ents, 'update', 'ents');
       wrapPart(g.vfx, 'update', 'vfx');
@@ -161,15 +177,14 @@ function initScript(preset: string): void {
       const t0 = performance.now();
       frame.call(g);
       const dt = performance.now() - t0;
-      if (!B.rec || !r) return;
-      if (dt > 12 && B.long.length < 8)
-        B.long.push({
-          at: Math.round(performance.now()),
-          dt: Math.round(dt * 10) / 10,
-          parts: Object.fromEntries(Object.entries(cur).map(([k, v]) => [k, Math.round(v * 10) / 10])),
-        });
-      B.frames.push([dt, r.info.render.drawCalls ?? r.info.render.calls, r.info.render.triangles]);
-      for (const [k, v] of Object.entries(cur)) (B.parts[k] ??= []).push(v);
+      if (!r) return;
+      if (B.rec) {
+        B.frames.push([dt, r.info.render.drawCalls ?? r.info.render.calls, r.info.render.triangles]);
+        for (const [k, v] of Object.entries(cur)) (B.parts[k] ??= []).push(v);
+      }
+      // GPU: resolve ở MỌI khung kể cả lúc không ghi. `resolveTimestampsAsync` trả TỔNG thời gian mọi query từ lần resolve trước và pool chỉ có 2048 query;
+      // không xả thì giữa hai điểm đo (enterLevel, tp, sleep…) query dồn lại và mẫu đầu = tổng hàng trăm khung chia cho vài khung. Lô đầu sau khi bật ghi
+      // (`B.dropGpu`) có thể gồm khung trước lúc ghi nên bị bỏ.
       gpuFrames++;
       if (be?.trackTimestamp && !gpuPending) {
         gpuPending = true;
@@ -178,6 +193,10 @@ function initScript(preset: string): void {
         Promise.all([r.resolveTimestampsAsync('render'), r.resolveTimestampsAsync('compute')])
           .then(([a, b]: [number | undefined, number | undefined]) => {
             const ms = (a ?? 0) + (b ?? 0);
+            if (B.dropGpu) {
+              B.dropGpu = false;
+              return;
+            }
             if (ms > 0 && B.rec) {
               B.gpu.push(ms / n);
               B.gpuOk = true;
@@ -207,8 +226,10 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     const B = (window as any).__iso;
     B.frames = [];
     B.long = [];
+    B.passes = {};
     B.parts = {};
     B.gpu = [];
+    B.dropGpu = true;
     B.rec = true;
   });
   const t0 = Date.now();
@@ -235,6 +256,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     const mem = (performance as any).memory;
     return {
       frames: B.frames as number[][],
+      passes: B.passes as Record<string, number>,
       long: B.long as IsoPoint['longFrames'],
       parts: B.parts as Record<string, number[]>,
       gpu: B.gpu as number[],
@@ -248,6 +270,26 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     };
   });
   const src = await drawSources(page, 40);
+  if (flag('--dump-inst')) {
+    // Chẩn đoán O2: liệt kê InstancedMesh hiện có theo (cha gần nhất có tên | tên | số đỉnh | vật liệu) với số bản và có đổ bóng không.
+    const dump = await page.evaluate(() => {
+      const m = new Map<string, { n: number; inst: number; shadow: number; verts: number }>();
+      (window as any).__game.scene.traverse((o: any) => {
+        if (!o.isInstancedMesh || !o.visible) return;
+        let par = o.parent;
+        while (par && !par.name) par = par.parent;
+        const k = `${par?.name ?? '-'} | ${o.name || '·'} | ${o.geometry.attributes.position.count}v | ${(Array.isArray(o.material) ? o.material[0] : o.material)?.name || o.material?.type}`;
+        const e = m.get(k) ?? { n: 0, inst: 0, shadow: 0, verts: o.geometry.attributes.position.count };
+        e.n++;
+        e.inst += o.count;
+        if (o.castShadow) e.shadow++;
+        m.set(k, e);
+      });
+      return [...m.entries()].sort((a, b) => b[1].n - a[1].n).slice(0, 25);
+    });
+    console.log(`  --- instanced ${id}:\n` + dump.map(([k, v]) => `    ${v.n}× ${k} · bản ${v.inst} · đổ bóng ${v.shadow}`).join('\n'));
+  }
+
   const kinds = await page.evaluate(() => {
     const out: Record<string, { dc: number; tris: number; shadow: number }> = {
       skin: { dc: 0, tris: 0, shadow: 0 },
@@ -301,6 +343,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     monsters: raw.monsters,
     byCat: bucketGroups(src.groups),
     longFrames: raw.long,
+    passes: Object.fromEntries(Object.entries(raw.passes).map(([k, v]) => [k, round(v / Math.max(1, raw.frames.length), 1)])),
     kinds: kinds as IsoPoint['kinds'],
     topGroups: src.groups.slice(0, 6).map(({ key, dc: d, tris, shadow }) => ({ key, dc: d, tris, shadow })),
   };
@@ -402,15 +445,15 @@ async function runPreset(
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})(${JSON.stringify(preset)});` });
   const page = await ctx.newPage();
   watchErrors(page, { tag: preset, into: errors });
+  // Byte ĐÃ GIẢI NÉN của mọi response từ Vite dev server (module TS chưa gộp, HMR, source map) tới lúc vào game: KHÔNG so được với ngân sách tải lần đầu
+  // (đo bằng `pnpm bench:load` trên bản build có gzip). Ngắt listener sau khi chốt số để không giữ body suốt lần chạy.
   let bytes = 0;
-  page.on(
-    'response',
-    (r) =>
-      void r.body().then(
-        (b) => (bytes += b.length),
-        () => undefined,
-      ),
-  );
+  const onResponse = (r: import('playwright').Response) =>
+    void r.body().then(
+      (b) => (bytes += b.length),
+      () => undefined,
+    );
+  page.on('response', onResponse);
   const name = `Iso${preset[0]}${Date.now() % 10000}`;
   await page.goto(gameUrl(CLIENT_PORT, { debug: 1, auto: name, gputime: 1, cine: 0 }, { renderer: RENDERER, extra: EXTRA }), {
     waitUntil: 'load',
@@ -418,7 +461,8 @@ async function runPreset(
   });
   await waitInGame(page);
   await sleep(6000);
-  if (meta.firstLoadMB === null || meta.firstLoadMB === undefined) meta.firstLoadMB = round(bytes / 1048576, 1);
+  page.off('response', onResponse);
+  if (meta.devBytesMB === null || meta.devBytesMB === undefined) meta.devBytesMB = round(bytes / 1048576, 1);
   await skipCutscene(page);
   if (!meta.adapter) {
     Object.assign(
@@ -510,7 +554,7 @@ async function main(): Promise<void> {
     backend: meta.backend ?? '?',
     viewport: `${VW}x${VH}`,
     quick: QUICK,
-    firstLoadMB: meta.firstLoadMB ?? null,
+    devBytesMB: meta.devBytesMB ?? null,
     points,
     errors,
   };

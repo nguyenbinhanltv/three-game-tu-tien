@@ -30,7 +30,7 @@ const run = (points: IsoPoint[]): IsoRun => ({
   backend: 'WebGPU',
   viewport: '1280x720',
   quick: false,
-  firstLoadMB: 20,
+  devBytesMB: 20,
   points,
   errors: [],
 });
