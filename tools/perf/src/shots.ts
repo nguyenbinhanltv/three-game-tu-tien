@@ -15,6 +15,7 @@ import calliset from './scenarios/calliset';
 import clone from './scenarios/clone';
 import collwalk from './scenarios/collwalk';
 import divuc from './scenarios/divuc';
+import daotuhit from './scenarios/daotuhit';
 import hitdir from './scenarios/hitdir';
 import herocheck from './scenarios/herocheck';
 import herolight from './scenarios/herolight';
@@ -163,6 +164,7 @@ const SCENARIOS: Scenario[] = [
   neck,
   skinv3,
   divuc,
+  daotuhit,
   hitdir,
   herocheck,
   herolight,
