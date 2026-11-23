@@ -75,6 +75,7 @@ function initScript(preset: string): void {
     parts: {} as Record<string, number[]>,
     gpu: [] as number[],
     gpuOk: false,
+    dropGpu: false,
     patched: null as unknown,
   };
   w.__iso = B;
@@ -176,15 +177,20 @@ function initScript(preset: string): void {
       const t0 = performance.now();
       frame.call(g);
       const dt = performance.now() - t0;
-      if (!B.rec || !r) return;
-      if (dt > 12 && B.long.length < 8)
-        B.long.push({
-          at: Math.round(performance.now()),
-          dt: Math.round(dt * 10) / 10,
-          parts: Object.fromEntries(Object.entries(cur).map(([k, v]) => [k, Math.round(v * 10) / 10])),
-        });
-      B.frames.push([dt, r.info.render.drawCalls ?? r.info.render.calls, r.info.render.triangles]);
-      for (const [k, v] of Object.entries(cur)) (B.parts[k] ??= []).push(v);
+      if (!r) return;
+      if (B.rec) {
+        if (dt > 12 && B.long.length < 8)
+          B.long.push({
+            at: Math.round(performance.now()),
+            dt: Math.round(dt * 10) / 10,
+            parts: Object.fromEntries(Object.entries(cur).map(([k, v]) => [k, Math.round(v * 10) / 10])),
+          });
+        B.frames.push([dt, r.info.render.drawCalls ?? r.info.render.calls, r.info.render.triangles]);
+        for (const [k, v] of Object.entries(cur)) (B.parts[k] ??= []).push(v);
+      }
+      // GPU: resolve ở MỌI khung kể cả lúc không ghi. `resolveTimestampsAsync` trả TỔNG thời gian mọi query từ lần resolve trước và pool chỉ có 2048 query;
+      // không xả thì giữa hai điểm đo (enterLevel, tp, sleep…) query dồn lại và mẫu đầu = tổng hàng trăm khung chia cho vài khung. Lô đầu sau khi bật ghi
+      // (`B.dropGpu`) có thể gồm khung trước lúc ghi nên bị bỏ.
       gpuFrames++;
       if (be?.trackTimestamp && !gpuPending) {
         gpuPending = true;
@@ -193,6 +199,10 @@ function initScript(preset: string): void {
         Promise.all([r.resolveTimestampsAsync('render'), r.resolveTimestampsAsync('compute')])
           .then(([a, b]: [number | undefined, number | undefined]) => {
             const ms = (a ?? 0) + (b ?? 0);
+            if (B.dropGpu) {
+              B.dropGpu = false;
+              return;
+            }
             if (ms > 0 && B.rec) {
               B.gpu.push(ms / n);
               B.gpuOk = true;
@@ -225,6 +235,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     B.passes = {};
     B.parts = {};
     B.gpu = [];
+    B.dropGpu = true;
     B.rec = true;
   });
   const t0 = Date.now();
@@ -440,15 +451,15 @@ async function runPreset(
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})(${JSON.stringify(preset)});` });
   const page = await ctx.newPage();
   watchErrors(page, { tag: preset, into: errors });
+  // Byte ĐÃ GIẢI NÉN của mọi response từ Vite dev server (module TS chưa gộp, HMR, source map) tới lúc vào game: KHÔNG so được với ngân sách tải lần đầu
+  // (đo bằng `pnpm bench:load` trên bản build có gzip). Ngắt listener sau khi chốt số để không giữ body suốt lần chạy.
   let bytes = 0;
-  page.on(
-    'response',
-    (r) =>
-      void r.body().then(
-        (b) => (bytes += b.length),
-        () => undefined,
-      ),
-  );
+  const onResponse = (r: import('playwright').Response) =>
+    void r.body().then(
+      (b) => (bytes += b.length),
+      () => undefined,
+    );
+  page.on('response', onResponse);
   const name = `Iso${preset[0]}${Date.now() % 10000}`;
   await page.goto(gameUrl(CLIENT_PORT, { debug: 1, auto: name, gputime: 1, cine: 0 }, { renderer: RENDERER, extra: EXTRA }), {
     waitUntil: 'load',
@@ -456,7 +467,8 @@ async function runPreset(
   });
   await waitInGame(page);
   await sleep(6000);
-  if (meta.firstLoadMB === null || meta.firstLoadMB === undefined) meta.firstLoadMB = round(bytes / 1048576, 1);
+  page.off('response', onResponse);
+  if (meta.devBytesMB === null || meta.devBytesMB === undefined) meta.devBytesMB = round(bytes / 1048576, 1);
   await skipCutscene(page);
   if (!meta.adapter) {
     Object.assign(
@@ -548,7 +560,7 @@ async function main(): Promise<void> {
     backend: meta.backend ?? '?',
     viewport: `${VW}x${VH}`,
     quick: QUICK,
-    firstLoadMB: meta.firstLoadMB ?? null,
+    devBytesMB: meta.devBytesMB ?? null,
     points,
     errors,
   };
