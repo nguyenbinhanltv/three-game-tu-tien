@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_kim_than",
+  "idea": "Kim Thân: Vào tư thế 10 giây: thân hóa kim cang, sát thương nhận giảm 20%. Ba ô chiêu đổi thành chiêu quyền (Kim Thân Quyền, Chấn Sơn Quyền, Kim Thân Hộ Thế).",
+  "element": "tho",
+  "path": "the_tu",
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 600,
+    "impactMs": 80,
+    "lingerMs": 400
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 4,
+    "particles": 120,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": [],
+  "impactFrame": true
+}
