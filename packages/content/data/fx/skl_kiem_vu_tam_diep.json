@@ -569,7 +569,7 @@
   {
    "type": "mesh",
    "shape": "slash_thick",
-   "t": -0.02,
+   "t": 0,
    "dur": 0.4,
    "at": "target",
    "offset": [

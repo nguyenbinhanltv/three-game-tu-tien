@@ -45,7 +45,7 @@ const mk = (anchor, R, tone) => {
   ev.push({
     type: 'mesh',
     shape: 'slash_thick',
-    t: -0.02,
+    t: 0,
     dur: 0.4,
     at: anchor,
     offset: [0, 0.2, 0],
