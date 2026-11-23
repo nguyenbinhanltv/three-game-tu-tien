@@ -92,6 +92,25 @@ export function assetKey(id: string, o: AcquireOptions = {}): string {
 
 type MipLevel = { data: Uint8Array; width: number; height: number };
 
+/** Thu RGBA8 về cạnh ≤ `cap` bằng lọc hộp (trung bình khối k×k, k = lũy thừa 2 nhỏ nhất đủ thu). */
+export function boxDown(src: MipLevel, cap: number): MipLevel {
+  let k = 1;
+  while (Math.max(src.width, src.height) / k > cap) k *= 2;
+  if (k === 1) return src;
+  const w = src.width / k;
+  const h = src.height / k;
+  const out = new Uint8Array(w * h * 4);
+  const n = k * k;
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++)
+      for (let c = 0; c < 4; c++) {
+        let sum = 0;
+        for (let dy = 0; dy < k; dy++) for (let dx = 0; dx < k; dx++) sum += src.data[((y * k + dy) * src.width + x * k + dx) * 4 + c]!;
+        out[(y * w + x) * 4 + c] = Math.round(sum / n);
+      }
+  return { data: out, width: w, height: h };
+}
+
 /**
  * Áp trần cạnh texture cho mọi vật liệu trong `root` (gọi một lần ngay sau khi parse, trước lần vẽ đầu): texture nén bỏ các mức mip
  * đầu; normal map đã giải RGBA8 (`plainDataTexture`) đổi sang mức mip có sẵn trong tệp. Luôn bỏ các mức mip giữ tạm. Trả số texture đã thu nhỏ.
@@ -125,7 +144,9 @@ export function capTextures(root: THREE.Object3D, maxTexture = Infinity, maxNorm
           const img = tex.image as MipLevel;
           if (Math.max(img.width, img.height) <= cap) continue;
           const lv = spare.find((m) => Math.max(m.width, m.height) <= cap) ?? spare[spare.length - 1]!;
-          tex.image = { data: lv.data, width: lv.width, height: lv.height };
+          // Mức mip có sẵn không phải lúc nào cũng là Uint8Array dùng được (UASTC giải RGBA8 trên WebGPU: `data` rỗng): khi đó lọc hộp từ mức 0.
+          const ok = lv.data instanceof Uint8Array && lv.data.length === lv.width * lv.height * 4;
+          tex.image = ok ? { data: lv.data, width: lv.width, height: lv.height } : boxDown(img as MipLevel, cap);
         } else continue;
         tex.needsUpdate = true;
         shrunk++;

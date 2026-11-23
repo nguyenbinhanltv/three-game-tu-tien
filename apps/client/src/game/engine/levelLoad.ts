@@ -802,7 +802,7 @@ export function unloadLevel(eng: Game): void {
 async function loadSectModel(eng: Game, shadows: boolean): Promise<void> {
   try {
     await assets.attach(eng.renderer);
-    const handle = await assets.acquire('arch_sect', { pos: { x: SECT.x, z: SECT.z } });
+    const handle = await assets.acquire('arch_sect', archOpts({ x: SECT.x, z: SECT.z }));
     if (eng.disposed || !levelAssets(levelId()).features.sect || eng.sectAsset) {
       handle.release();
       return;
@@ -840,7 +840,7 @@ async function loadSectModel(eng: Game, shadows: boolean): Promise<void> {
 async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
   try {
     await assets.attach(eng.renderer);
-    const handle = await assets.acquire('arch_thien_khuyet', { pos: { x: TK_ORIGIN.x, z: TK_ORIGIN.z } });
+    const handle = await assets.acquire('arch_thien_khuyet', archOpts({ x: TK_ORIGIN.x, z: TK_ORIGIN.z }));
     const sky = levelAssets(levelId()).thienKhuyetSky;
     if (eng.disposed || !sky || eng.tkAsset) {
       handle.release();
@@ -1007,6 +1007,16 @@ async function loadPmModel(eng: Game, shadows: boolean): Promise<void> {
   });
 }
 
+/**
+ * Chân Cảnh O-tex: GLB kiến trúc có pháp tuyến 2K (UASTC), trên WebGPU giải ra RGBA8 ≈ 21 MB mỗi tấm. Camera chéo cách 20 m nên mức mip 1K vẫn nhỏ hơn
+ * một điểm ảnh màn hình; `capTextures` bỏ mức 2K ngay sau khi parse (không lên GPU). `?fullnormal=1` để đối chứng.
+ */
+const ARCH_NORMAL_MAX = 1024;
+const archOpts = (pos: { x: number; z: number }): { pos: { x: number; z: number }; maxNormal?: number } => ({
+  pos,
+  ...(FLAGS.fullNormal ? {} : { maxNormal: ARCH_NORMAL_MAX }),
+});
+
 interface DungeonModelOpts {
   asset: string;
   enabled: () => boolean;
@@ -1035,7 +1045,7 @@ interface DungeonModelOpts {
 async function loadDungeonModel(eng: Game, shadows: boolean, o: DungeonModelOpts): Promise<void> {
   try {
     await assets.attach(eng.renderer);
-    const handle = await assets.acquire(o.asset, { pos: { x: o.origin.x, z: o.origin.z } });
+    const handle = await assets.acquire(o.asset, archOpts({ x: o.origin.x, z: o.origin.z }));
     if (eng.disposed || !o.enabled() || eng.ktAsset) {
       handle.release();
       return;
