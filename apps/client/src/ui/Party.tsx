@@ -75,16 +75,20 @@ function PartyRow({ m, me }: { m: PartyMember; me: boolean }) {
           <div className="pty-mp">
             <i style={{ width: (m.mmp > 0 ? Math.min(100, (m.mp / m.mmp) * 100) : 0) + '%' }} />
           </div>
-          <BuffChips buffs={m.bf} off={off} now={now} small />
+          {(away || (m.bf && Object.keys(m.bf).length > 0)) && (
+            <div className="pty-sub">
+              <BuffChips buffs={m.bf} off={off} now={now} small />
+              {away && (
+                <span className="pty-away" role="status" title={t('ui.party.away')}>
+                  <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" style={{ transform: `rotate(${away.deg}deg)` }}>
+                    <path d="M6 1 L10 10 L6 8 L2 10 Z" />
+                  </svg>
+                  {t('ui.party.away_dist', { n: Math.round(away.dist) })}
+                </span>
+              )}
+            </div>
+          )}
         </>
-      )}
-      {away && (
-        <span className="pty-away" role="status" title={t('ui.party.away')}>
-          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" style={{ transform: `rotate(${away.deg}deg)` }}>
-            <path d="M6 1 L10 10 L6 8 L2 10 Z" />
-          </svg>
-          {t('ui.party.away_dist', { n: Math.round(away.dist) })}
-        </span>
       )}
     </div>
   );

@@ -27,17 +27,20 @@ export default {
     // Đồng đội (b) dùng Định Thần Phù: buff có đếm giờ hiện ở khung tổ đội của a.
     await gm(b.page, 'bag clear', 1500);
     await gm(b.page, 'give itm_dinh_than_phu 1', 1500);
+    await tp(a.page, 2048, 2060);
+    await tp(b.page, 2048 + 45, 2060 - 30);
+    await sleep(2500);
+    // Định Thần Phù chỉ 10 giây: dùng ngay trước khi chụp.
     for (let slot = 0; slot < 6; slot++, await sleep(250))
       await b.page.evaluate(([sl, rid]) => window.__game!.send('use', { slot: sl, r: rid }), [slot, `pf-${slot}-${Date.now()}`] as const);
     await sleep(1500);
-    await tp(a.page, 2048, 2060);
-    await tp(b.page, 2048 + 45, 2060 - 30);
-    await sleep(3000);
+    await sleep(1200);
     for (const tag of sizes) {
       const [w, h] = UI_SIZES[tag] ?? UI_SIZES['1080p']!;
       await a.page.setViewportSize({ width: w, height: h });
       await snap(a.page, r.out, `party-${tag}.jpg`, { wait: 900 });
     }
+    await snap(b.page, r.out, 'party-b-1080p.jpg', { wait: 300 });
     await a.ctx.close();
     await b.ctx.close();
   },
