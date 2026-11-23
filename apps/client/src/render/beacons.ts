@@ -23,7 +23,7 @@ const RINGS = 8;
  * Camera chéo (`?cam=iso`, nhìn xuống 52°): cột cao 30 m, chân rộng 10 m kéo thành vệt/quầng sáng phủ nửa màn hình. Hạ cột còn `ISO_BEACON_HEIGHT_MUL`, thu bán kính còn `ISO_BEACON_RADIUS_MUL` và cho phần trên
  * tắt sớm hơn (`ISO_BEACON_FADE_FROM` thay cho 0,55 của chiều cao) để vẫn thấy điểm cổng nhưng không che vùng chiến.
  */
-export const ISO_BEACON_HEIGHT_MUL = 0.25;
+export const ISO_BEACON_HEIGHT_MUL = 0.13;
 export const ISO_BEACON_FADE_FROM = 0.2;
 /** Iso: bán kính cột (chân 5,2 m → ≈ 2 m) và quầng mềm (gấp 3 → gấp 1,8 lần cột) thu nhỏ để chỉ còn trụ ngắn/vầng sáng quanh cổng, không phủ nửa màn hình. */
 export const ISO_BEACON_RADIUS_MUL = 0.4;

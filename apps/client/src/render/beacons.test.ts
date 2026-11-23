@@ -13,7 +13,7 @@ describe('cột linh quang ở camera iso', () => {
   it('hạ thấp ở iso, giữ nguyên ở camera cũ', () => {
     expect(beaconHeight(30, false)).toBe(30);
     expect(beaconHeight(30, true)).toBeCloseTo(30 * ISO_BEACON_HEIGHT_MUL, 6);
-    expect(beaconHeight(30, true)).toBeLessThan(15);
+    expect(beaconHeight(30, true)).toBeLessThan(5);
   });
   it('iso: bán kính và quầng nhỏ hơn nhiều, camera cũ giữ nguyên', () => {
     expect(beaconRadiusMul(false)).toBe(1);
