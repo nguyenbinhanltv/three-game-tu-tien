@@ -1,10 +1,11 @@
 // Thiên Nhãn P5b: chơi thử tự động bằng `?cam=iso` qua các chương: mỗi bản đồ vào bằng GM, đi bằng chuột phải, né Space, ra chiêu vào một quái
 // (tự khóa theo con trỏ), đo khung/draw call, gom lỗi console. Ảnh + số đo ghi vào thư mục ra (`isoplay.json`).
 //   pnpm shots isoplay --out <thư mục> [--only van_lam,cuu_kieu] [--views 1280x720]
+import { LEVELS } from '@dtl/content';
 import { levelSpawns } from '@dtl/shared';
-import { list, opt } from '../lib/env';
+import { flag, list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
-import { enterLevel, gm, perfSample, skipCutscene } from '../lib/game';
+import { enterLevel, gm, perfSample, resetHazards, skipCutscene, tp, waitHazard } from '../lib/game';
 import { requireLevel } from '../lib/levelpoints';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
@@ -28,7 +29,8 @@ interface Pos {
 export default {
   name: 'isoplay',
   desc: 'Thiên Nhãn P5b: chơi thử ?cam=iso qua từng chương (đi chuột phải, né, ra chiêu, đo khung, lỗi console)',
-  usage: '[--only van_lam,cuu_kieu] [--views 1280x720]',
+  usage:
+    '[--only van_lam,cuu_kieu] [--views 1280x720] [--hazard 1: chờ vòng cảnh báo của quái rồi chụp thêm] [--query mood=night] [--portal 1: chụp cổng phó bản + cột linh quang]',
   async run(r) {
     const only = list('--only', '');
     const [vw, vh] = opt('--views', '1280x720').split('x').map(Number) as [number, number];
@@ -37,6 +39,7 @@ export default {
       quality: 'high',
       viewport: [vw, vh],
       query: { cam: 'iso' },
+      extra: opt('--query', ''),
       seenIntro: true,
       hide: undefined,
     });
@@ -53,6 +56,15 @@ export default {
         await enterLevel(page, st.level);
         await skipCutscene(page, 20);
         await snap(page, r.out, `c${st.ch}-${st.level}-vao.png`, { wait: 600 });
+        if (flag('--portal')) {
+          // Cột linh quang của cổng phó bản: dịch người tới cổng đầu tiên dẫn vào phó bản rồi chụp.
+          const portal = (LEVELS[st.level]?.portals ?? []).find((q) => LEVELS[q.to]?.dungeon);
+          if (portal) {
+            await tp(page, portal.x + 3, portal.z + 3);
+            await sleep(1500);
+            await snap(page, r.out, `c${st.ch}-${st.level}-cot-sang.png`, { wait: 400 });
+          }
+        }
         // Đi bằng chuột phải: bấm lệch tâm màn hình, chờ ~2,5 s.
         const p0 = await pos();
         await page.mouse.click(vw / 2 + vw * 0.15, vh / 2 - vh * 0.12, { button: 'right' });
@@ -90,6 +102,15 @@ export default {
               return m ? m.hp : 0;
             });
             rec.damaged = after < mon.hp;
+            if (flag('--hazard')) {
+              // Chờ tinh anh ra chiêu có vạch báo, chụp lúc đang nạp (ảnh duyệt cỡ vòng cảnh báo ở iso).
+              await resetHazards(page);
+              rec.hazard = await waitHazard(page, 15_000);
+              if (rec.hazard) {
+                await sleep(500);
+                await snap(page, r.out, `c${st.ch}-${st.level}-bao-hieu.png`, { wait: 100 });
+              }
+            }
             rec.autoTarget = await page.evaluate(() => !!window.__game!.targetId);
           }
         }
