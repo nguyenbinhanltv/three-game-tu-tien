@@ -8,6 +8,7 @@ import { levelId } from '../../base/levelCtx';
  * (lưu localStorage), lần đầu là Lạc Kiếm Tông. Thiếu ảnh hoặc tải lỗi thì giữ nền sương CSS của #boot.
  */
 const KEY = 'dtl.lastZone';
+const LEVEL_KEY = 'dtl.lastLevel';
 const DEFAULT_ZONE = 'load_song';
 
 /** Level riêng có một tranh màn tải chung (E2): bản đồ nào chưa có ảnh thì rơi về logic vùng Vân Lam. */
@@ -51,6 +52,7 @@ export function rememberLevel(id: string): void {
   last = art;
   try {
     localStorage.setItem(KEY, art);
+    localStorage.setItem(LEVEL_KEY, id);
   } catch {
     /* localStorage bị chặn: bỏ qua */
   }
@@ -65,6 +67,15 @@ export function rememberZone(x: number, z: number): void {
     localStorage.setItem(KEY, id);
   } catch {
     /* localStorage bị chặn: bỏ qua */
+  }
+}
+
+/** Level đích của lần chuyển gần nhất (đặt ở `rememberLevel`); rỗng nếu chưa có: màn tải lấy tên nơi đến theo level này. */
+export function lastLevel(): string {
+  try {
+    return localStorage.getItem(LEVEL_KEY) || '';
+  } catch {
+    return '';
   }
 }
 
