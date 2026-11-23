@@ -25,6 +25,7 @@ import { GodRays } from '../../render/godRays';
 import { CARD_TREE_IDS, CardForest } from '../world/cardForest';
 import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
+import { LacKiemScenes } from '../world/lacKiemScenes';
 import { DoanMachArt } from '../world/doanMachArt';
 import { KiemTrungArt, ktMaterialFor } from '../world/kiemTrungArt';
 import { bakeDungeonCells, planDungeonBake, type DungeonBakeInput } from '../world/dungeonBake';
@@ -545,6 +546,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.lacKiemSky.group);
     eng.lacKiemGarden = new LacKiemGarden();
     eng.scene.add(eng.lacKiemGarden.group);
+    if (FLAGS.scenes) {
+      eng.lacKiemScenes = new LacKiemScenes();
+      eng.scene.add(eng.lacKiemScenes.group);
+    }
   }
   const tkSky = levelAssets(id).thienKhuyetSky;
   if (tkSky) {
@@ -756,6 +761,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.kiemTrungArt.group);
     eng.kiemTrungArt.dispose();
     eng.kiemTrungArt = null;
+  }
+  if (eng.lacKiemScenes) {
+    drop(eng.lacKiemScenes.group);
+    eng.lacKiemScenes.dispose();
+    eng.lacKiemScenes = null;
   }
   if (eng.lacKiemGarden) {
     drop(eng.lacKiemGarden.group);

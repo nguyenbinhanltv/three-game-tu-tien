@@ -1,6 +1,7 @@
 import { CollisionSet } from './collision';
 import { fbm, lerp, ridged, smoothstep } from './noise';
 import { thienCongColliders } from './props.thiencong';
+import { lacKiemSceneColliders } from './tieucanh';
 import {
   type Biome,
   type CircleCollider,
@@ -360,7 +361,7 @@ const TERRAIN_ALIAS: Record<string, string> = {
 /** Đăng ký (hoặc thay) địa hình của một level. Trả địa hình đã dựng. */
 export function registerTerrain(def: TerrainDef): Terrain {
   // Va chạm của bộ prop PROP-1 (client và server cùng cộng ở đây để khớp nhau).
-  const extra = thienCongColliders(def.id);
+  const extra = [...thienCongColliders(def.id), ...(def.id === 'van_lam' ? lacKiemSceneColliders() : [])]; // + tiểu cảnh Lạc Kiếm (tieucanh.ts)
   const t = makeTerrain(extra.length ? { ...def, colliders: [...def.colliders, ...extra] } : def);
   REGISTRY.set(def.id, t);
   return t;
