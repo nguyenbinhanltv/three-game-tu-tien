@@ -296,6 +296,8 @@
   "ui.boss.posture": "Thế",
   "ui.boss.say": "“{text}”",
   "ui.boss.hp": "{pct}%",
+  "ui.boss.layers": "×{n}",
+  "ui.boss.phase": "Pha {n}/{max}",
   "ui.trib.left": "Di chuyển liên tục để né thiên lôi",
   "ui.trib.truc_co.title": "Thiên kiếp giáng lâm",
   "ui.trib.truc_co.loi_van_tu": "Lôi vân tụ",
