@@ -3,6 +3,7 @@ import type { Client } from 'colyseus';
 import {
   COMBAT_REGEN_DELAY,
   PF_STAGGER,
+  newDodgeBank,
   PLAYER_STAGGER_GAP_MS,
   planDash,
   playerReaction,
@@ -145,6 +146,7 @@ export class PlayerSystem {
       hazardWin: { until: 0, taken: 0 },
       dodgeUntil: 0,
       dodgeAt: -1e9,
+      dodge: newDodgeBank(),
       staggerUntil: 0,
       staggerOkAt: 0,
       meditating: false,

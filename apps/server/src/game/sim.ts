@@ -92,7 +92,7 @@ import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg } from './artifact';
 import { log } from '../log';
 
-import { at, type HitTier, type TribId } from '@dtl/shared';
+import { at, dodgeRefill, type HitTier, type TribId } from '@dtl/shared';
 const INTERACT_RANGE = 9;
 
 export class GameSim {
@@ -1159,6 +1159,8 @@ export class GameSim {
     const m: CdMsg = { cds, gcd: p.gcdAt, now: Date.now() };
     const em = chainDeadlines(p.flow, this.now);
     if (Object.keys(em).length) m.em = em;
+    dodgeRefill(p.dodge, this.now);
+    m.dg = [p.dodge.charges, p.dodge.nextAt];
     p.client.send(S.CD, m);
   }
 

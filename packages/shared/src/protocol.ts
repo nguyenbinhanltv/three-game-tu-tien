@@ -282,6 +282,8 @@ export interface CdMsg {
   now: number;
   /** id chiêu đang được cường hóa → lúc hết hạn (ms, giờ server cùng gốc với `cds`): client sáng viền ô chiêu. */
   em?: Record<string, number>;
+  /** Né (Chân Cảnh S5): [số lượt còn, lúc nạp xong lượt kế (ms, cùng gốc với `cds`)]. */
+  dg?: [number, number];
 }
 
 export interface SysMsg {
