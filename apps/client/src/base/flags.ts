@@ -88,7 +88,7 @@ interface Flags {
   tcProps: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
   butterflies: boolean;
-  /** `?cam=iso` camera chéo khóa góc (Thiên Nhãn P0, nguyên mẫu; mặc định camera cũ). */
+  /** Camera chéo khóa góc là mặc định (Thiên Nhãn P5c); cờ `?cam=` đã bỏ. Còn tồn tại tới khi gỡ nhánh camera cũ (P5c-2). */
   isoCam: boolean;
   /** `?isoyaw=<độ>` ghi đè hướng nhìn cố định của camera chéo (chỉ để chọn hướng đẹp nhất cho từng bản đồ). */
   isoYaw: number | null;
@@ -100,12 +100,8 @@ interface Flags {
 
 /** Mô tả từng tham số, để người sau biết cờ nào còn sống. */
 export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test' | 'viewer'; doc: string }>> = {
-  cam: {
-    scope: 'diag',
-    doc: '=iso camera chéo khóa góc kiểu Action MMORPG (Thiên Nhãn P0, nguyên mẫu; chuột phải đi tới điểm, khoảng cách camera khóa cố định, không zoom)',
-  },
-  isoyaw: { scope: 'diag', doc: 'độ: ghi đè hướng nhìn cố định của camera chéo ?cam=iso (chọn hướng đẹp nhất cho từng bản đồ)' },
-  isofx: { scope: 'diag', doc: '=0 tắt nén hình VFX đứng cao ở ?cam=iso (so ảnh trước/sau)' },
+  isoyaw: { scope: 'diag', doc: 'độ: ghi đè hướng nhìn cố định của camera chéo (chọn hướng đẹp nhất cho từng bản đồ)' },
+  isofx: { scope: 'diag', doc: '=0 tắt nén hình VFX đứng cao ở camera chéo (debug, so ảnh trước/sau)' },
   touch: { scope: 'user', doc: '=1 ép chế độ cảm ứng, =0 ép tắt (mặc định theo thiết bị + Cài đặt)' },
   mute: { scope: 'user', doc: 'tắt tiếng (playtest luôn bật)' },
   auto: { scope: 'test', doc: 'tự đăng nhập bằng đạo hiệu thử' },
@@ -177,7 +173,7 @@ export function readFlags(search: string): Flags {
   const chr = q.get('chr');
   return {
     mute: q.get('mute') === '1',
-    isoCam: q.get('cam') === 'iso',
+    isoCam: true,
     isoFxCompress: q.get('isofx') !== '0',
     isoYaw: q.get('isoyaw') === null || Number.isNaN(Number(q.get('isoyaw'))) ? null : (Number(q.get('isoyaw')) * Math.PI) / 180,
     touch: q.get('touch') === '1' ? true : q.get('touch') === '0' ? false : null,

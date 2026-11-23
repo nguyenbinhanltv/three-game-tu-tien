@@ -79,7 +79,7 @@ export default {
     const perf: Record<string, unknown> = {};
     for (const preset of list('--presets', 'low,high')) {
       for (const view of list('--views', '720p,1080p')) {
-        for (const mode of list('--cams', 'old,iso')) {
+        for (const mode of list('--cams', 'iso')) {
           const iso = mode === 'iso';
           const { ctx, page } = await r.open({
             name: `Iso${preset[0]}${view[0]}${mode[0]}`,
