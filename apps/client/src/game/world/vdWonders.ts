@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 
 import { gioiTriPillars } from '@dtl/shared';
 import { markBloom } from '../../render/post';
+import { withSightFade } from './occlusion';
 
 /**
  * Kiến trúc riêng của Vấn Đỉnh Âm Dương Giới (TN-3, mỹ thuật), dựng bằng code, không asset ngoài, chỉ để nhìn (không va chạm):
@@ -34,7 +35,8 @@ const TEAL = 0x7fe0d4;
 const GOLD = 0xffc060;
 
 function bronzeMat(): THREE.MeshStandardNodeMaterial {
-  return new THREE.MeshStandardNodeMaterial({ color: BRONZE, roughness: 0.46, metalness: 0.75 });
+  // camera chéo: đỉnh, cột 24 m, cổng, khung bia đều mờ khi che người/mục tiêu
+  return withSightFade(new THREE.MeshStandardNodeMaterial({ color: BRONZE, roughness: 0.46, metalness: 0.75 }));
 }
 function glowMat(color: number, opacity: number): THREE.MeshBasicNodeMaterial {
   const m = new THREE.MeshBasicNodeMaterial({
@@ -208,7 +210,7 @@ export class VdWonders {
     slabGeo.translate(0, 4.2, 0);
     const slab = new THREE.InstancedMesh(
       slabGeo,
-      own(new THREE.MeshStandardNodeMaterial({ color: OBSIDIAN, roughness: 0.3, metalness: 0.55 })),
+      own(withSightFade(new THREE.MeshStandardNodeMaterial({ color: OBSIDIAN, roughness: 0.3, metalness: 0.55 }))),
       inp.bia.length,
     );
     slab.name = 'vd-bia-slab';
@@ -217,13 +219,15 @@ export class VdWonders {
     const mirror = new THREE.InstancedMesh(
       mirrorGeo,
       own(
-        new THREE.MeshStandardNodeMaterial({
-          color: 0xaad0dc,
-          roughness: 0.08,
-          metalness: 0.9,
-          emissive: new THREE.Color(0x2a5560),
-          emissiveIntensity: 0.6,
-        }),
+        withSightFade(
+          new THREE.MeshStandardNodeMaterial({
+            color: 0xaad0dc,
+            roughness: 0.08,
+            metalness: 0.9,
+            emissive: new THREE.Color(0x2a5560),
+            emissiveIntensity: 0.6,
+          }),
+        ),
       ),
       inp.bia.length,
     );

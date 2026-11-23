@@ -1,9 +1,10 @@
 // Thiên Nhãn P0: ảnh duyệt + số đo camera chéo (`?cam=iso`) so với camera cũ, cùng vị trí, preset Thấp/Cao, 720p/1080p.
 // Ảnh: cũ vs iso, đánh quái (khung sau trúng đòn), trong/ngoài công trình (mái cổng tam quan), ngự kiếm.
+import { LEVELS } from '@dtl/content';
 import { FOREST, SPAWN_POINT } from '@dtl/shared';
 import { list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
-import { cam, enterLevel, gm, perfSample, tp } from '../lib/game';
+import { cam, enterLevel, gm, perfSample, skipCutscene, tp, waitLevel } from '../lib/game';
 import { levelPoints, requireLevel } from '../lib/levelpoints';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
@@ -12,11 +13,27 @@ const VIEWS: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': 
 const YAW = Math.PI * 0.25;
 const LEVEL = opt('--level', 'van_lam');
 /** Hướng camera iso (độ) đang dùng để đẩy điểm đứng ra phía camera: `isoyaw=` trong --query, không thì bảng hướng đã chọn (khớp ISO_YAW ở client). */
-const YAW_DEG: Record<string, number> = { van_lam: 30, van_hai: 135, thien_khuyet: 20, doan_mach: 135, bac_hoang: 45 };
+const YAW_DEG: Record<string, number> = {
+  van_lam: 30,
+  van_hai: 135,
+  thien_khuyet: 20,
+  doan_mach: 135,
+  bac_hoang: 45,
+  van_dinh: 135,
+  gioi_tri: 135,
+};
 const standYaw = (): number => {
   const m = /isoyaw=(-?[0-9.]+)/.exec(opt('--query', ''));
   return (((m ? Number(m[1]) : (YAW_DEG[LEVEL] ?? 45)) as number) * Math.PI) / 180;
 };
+/** Bí cảnh có cổng (không phải sân độ kiếp): vào bằng cổng thật ở level nhà, điểm đo là các vị trí cố định so với tâm bí cảnh. */
+const DG = LEVELS[LEVEL]?.dungeon;
+const DG_OFFSETS: [string, number, number][] = [
+  ['vao', 0, 50],
+  ['giua', 0, 16],
+  ['tay', -30, 24],
+  ['dong', 30, 24],
+];
 const VAN_LAM_POINTS = [
   { name: 'san', x: SPAWN_POINT.x, z: SPAWN_POINT.z },
   { name: 'cong-trong', x: 2048, z: 2128 },
@@ -26,6 +43,7 @@ const VAN_LAM_POINTS = [
 /** Điểm đo: Vân Lam đặt tay (sân, cổng); level khác lấy từ `levelPoints` (ưu tiên điểm quan tâm, vùng, boss) tối đa 4 điểm. */
 function pointsFor(): { name: string; x: number; z: number }[] {
   if (LEVEL === 'van_lam') return VAN_LAM_POINTS;
+  if (DG) return DG_OFFSETS.map(([name, dx, dz]) => ({ name: `dg_${name}`, x: DG.center.x + dx, z: DG.center.z + dz }));
   const all = levelPoints(LEVEL).filter((q) => q.name !== 'trencao');
   const pick = [
     ...all.filter((q) => q.name.startsWith('poi_')),
@@ -38,6 +56,7 @@ function pointsFor(): { name: string; x: number; z: number }[] {
 /** Điểm cảnh đánh quái: rừng Vân Lam; level khác là điểm sinh quái thường đầu tiên. */
 function fightSpot(): { x: number; z: number } {
   if (LEVEL === 'van_lam') return { x: FOREST.x - 40, z: FOREST.z };
+  if (DG) return { x: DG.center.x, z: DG.center.z + 16 };
   const sp =
     requireLevel(LEVEL).spawns.find((q) => !q.mon.startsWith('boss_') && !q.mon.startsWith('elite_')) ?? requireLevel(LEVEL).spawns[0]!;
   return { x: sp.x, z: sp.z };
@@ -69,9 +88,21 @@ export default {
             seenIntro: true,
           });
           const stem = `${LEVEL === 'van_lam' ? '' : LEVEL + '-'}${mode}-${preset}-${view}`;
-          await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(27, requireLevel(LEVEL).minLevel ?? 0)}`);
+          await gm(page, `level ${LEVEL === 'van_lam' ? 15 : DG ? DG.minLevel + 2 : Math.max(27, requireLevel(LEVEL).minLevel ?? 0)}`);
           await gm(page, 'god on');
-          if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
+          if (DG) {
+            const portal = LEVELS[DG.returnLevel]?.portals?.find((q) => q.to === LEVEL);
+            if (!portal) throw new Error(`level ${LEVEL} không có cổng vào`);
+            await enterLevel(page, DG.returnLevel);
+            await tp(page, DG.returnSpawn.x, DG.returnSpawn.z);
+            await sleep(1500);
+            await tp(page, portal.x, portal.z);
+            await sleep(1500);
+            await page.keyboard.press('KeyE');
+            await waitLevel(page, LEVEL);
+            await skipCutscene(page, 10);
+            await gm(page, 'god on', 1000);
+          } else if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
           const POINTS = pointsFor();
           // Vị trí đo: cùng điểm cho cả hai camera; camera cũ đặt cùng hướng nhìn.
           for (const p of POINTS) {
@@ -119,6 +150,11 @@ export default {
               return best;
             });
           // Đưa người tới sát quái gần nhất (~5 m, về phía camera để quái nằm trên người trong khung) để khung đánh thấy cả người lẫn mục tiêu, rồi lấy lại quái gần nhất.
+          if (DG) {
+            // Phó bản: gọi một quái của đợt đầu ngay trước mặt (đợt thật chỉ ra theo giờ).
+            const first = DG.waves[0]!.mons.find((q) => !q.id.startsWith('boss_'))?.id ?? DG.waves[0]!.mons[0]!.id;
+            await gm(page, `spawn ${first} 1`, 2500);
+          }
           let mon = await nearest();
           if (mon) {
             await gm(page, `tp ${Math.round(mon.x + Math.sin(standYaw()) * 5)} ${Math.round(mon.z + Math.cos(standYaw()) * 5)}`, 1500);

@@ -25,6 +25,9 @@ export const ISO_YAW: Readonly<Record<string, number>> = {
   doan_mach: (135 * Math.PI) / 180,
   // Bắc Hoang: 45° (so với 0°, −45°, 135°): −45° ra sắc lam nhợt phẳng, 135° đặt cột tà/xác thú che một bên khung; 45° giữ tương phản tím–tuyết và người luôn thoáng.
   bac_hoang: (45 * Math.PI) / 180,
+  // Vấn Đỉnh + Giới Trì: 135° (so với 0°, 45°, −45°): đỉnh đồng khổng lồ lùi ra sau người thay vì đè lên nửa khung, vẫn lộ vòng phù văn và vách nứt.
+  van_dinh: (135 * Math.PI) / 180,
+  gioi_tri: (135 * Math.PI) / 180,
 };
 /** Dẫn trước tối đa (m) theo con trỏ, tính trên mặt đất, và hệ số theo khoảng cách con trỏ tới nhân vật. */
 export const ISO_LEAD_MAX = 3.2;
