@@ -14,7 +14,8 @@ const LEGACY = {
     hit: { sfx: 'crit', gain: 0.18, rate: 1.2, strongOnly: true },
   },
   bat_dong_kim_than: {
-    voice: 'hp',
+    // C3f: thể tu tách khỏi giọng hộ pháp `hp` (nay dùng cho cổ thần) sang giọng riêng `tt` (quyền thuật); mọi trường khác giữ nguyên bảng cũ.
+    voice: 'tt',
     gm: 'hophap',
     art: 'ho_phap',
     dao: 'ho',
@@ -94,6 +95,12 @@ describe('hướng tu khớp các bảng cứng trước VS-3', () => {
       'phi_kiem_ct',
       'phi_kiem_2_ct',
       'phi_kiem_3_ct',
+      'phi_kiem_tt',
+      'phi_kiem_2_tt',
+      'phi_kiem_3_tt',
+      'phi_kiem_cs',
+      'phi_kiem_2_cs',
+      'phi_kiem_3_cs',
     ]);
   });
 });
