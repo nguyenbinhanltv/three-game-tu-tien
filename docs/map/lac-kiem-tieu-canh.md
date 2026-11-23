@@ -4,8 +4,10 @@ Camera chéo khóa góc (FOV 32°, pitch 52°, cách ~20 m, yaw Vân Lam 30°) c
 **điểm nhấn** (nhìn là nhớ), **tiền cảnh** (vật gần camera, tự mờ khi che người/mục tiêu) và **đáy** (nước, sương, vực).
 Người chơi nhìn khung đó ~90% thời gian, nên bản đồ được lập theo khung, không theo công trình.
 
-Mã nguồn: `apps/client/src/game/world/lacKiemScenes.ts` (`SCENES`, tọa độ tương đối tâm tông môn). Chỉ để nhìn: không va chạm,
-không ảnh hưởng server, tất định, tắt bằng `?scenes=0`. Năm mesh gộp (đá, gỗ/vải, đèn phát sáng, nước, sương) cho cả bản đồ.
+Mã nguồn: `apps/client/src/game/world/lacKiemScenes.ts` (`SCENES`, tọa độ tương đối tâm tông môn). Hình chỉ dựng ở client (tắt bằng `?scenes=0`),
+tất định. **Vật đặc có va chạm (COL-1)**: bố cục các vật GLB, cột cổng bài, ao, cầu nằm ở `packages/shared/src/tieucanh.ts`
+(`SCENE_GLB`, `lacKiemSceneColliders`, cộng vào terrain Vân Lam trong `registerTerrain`), client và server cùng đọc. Cột cổng chừa lối 9 m;
+vật dưới 0,6 m (linh thảo), ao, phiến lối men vách, dây/ván cầu treo cao, sương và nước không chặn. Prop PBR của kit (đá rêu, đèn đá, bia, kiếm gãy, tre, cột đá đỏ) rải bằng `GlbScatter` (mỗi loại ≈ 2 draw call), phần thủ tục chỉ còn cổng, cầu, đường, ao, hác.
 
 ## Bảng tiểu cảnh
 
@@ -25,7 +27,7 @@ không ảnh hưởng server, tất định, tắt bằng `?scenes=0`. Năm mesh
 Địa hình Lạc Kiếm là lòng chảo: sân phẳng r 95 m, quanh là đồi dâng cao dần, **không có vực thật**. Quét heightmap (độ sâu so với hai bờ cách 44 m) chỉ thấy
 vài hác tự nhiên sâu 10–30 m ở vành ngoài. Chọn hác tại (−146, 91): sâu ~11 m (hác 26 m sâu quá, cầu nằm ngoài khung camera 12 m).
 
-- **Cầu treo là cầu cao nối hai bờ, người đi dưới hác được** (không có mặt cầu đi được). Va chạm/heightmap không đổi.
+- **Cầu treo là cầu cao nối hai bờ, người đi dưới hác được** (không có mặt cầu đi được). Heightmap không đổi; hác có áo đá tầng phủ sườn dốc, suối và sương dưới đáy.
 - **Lối men vách** bám địa hình (đi được), dẫn từ sân tới đầu cầu.
 - Cầu thật sự đi được cần đổi địa hình dùng chung (`bridges` của `terrain.ts` hiện chỉ cho level đảo) hoặc khoét hác trong shared:
   đây là quyết định cho người dùng (xem báo cáo PR), không làm trong pilot.

@@ -1,44 +1,52 @@
 import * as THREE from 'three/webgpu';
 import {
   abs,
+  attribute,
   cameraFar,
   cameraNear,
   clamp,
   float,
   length,
   mix,
+  normalWorld,
   positionView,
   positionWorld,
   sin,
   smoothstep,
   time,
   uv,
+  vec2,
   vec3,
   viewportLinearDepth,
   viewZToOrthographicDepth,
 } from 'three/tsl';
-import { hash01, SECT } from '@dtl/shared';
+import { BRIDGE_A, BRIDGE_B, hash01, SCENE_GLB, SECT, TC_BRIDGE, TC_GATE, TC_POND, type SceneGlb, type SceneGlbId } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
+import { assets } from '../core/assets';
+import { vnoise } from '../../render/materials/isoDetail';
+import { createWorldMaterial } from '../../render/materials/world';
+import { GlbScatter, type GlbPlace } from './glbScatter';
 import { withSightFade } from './occlusion';
+import { loadSkyTextures, rockMaterial } from './skyAssets';
 
 /**
  * Tiểu cảnh Lạc Kiếm Tông (Chân Cảnh M1+M2, pilot): mỗi khung ~20 × 12 m của camera chéo có một điểm nhấn, một lớp tiền cảnh tự mờ khi che
- * người (`withSightFade`) và một lớp "đáy" (nước, sương dưới hác). Toàn bộ là hình thủ tục chỉ để nhìn, KHÔNG va chạm, tất định, không
- * ảnh hưởng server. Bản đồ tiểu cảnh và lý do chọn chỗ: `docs/map/lac-kiem-tieu-canh.md`.
- *
- * Draw call: đá + gỗ/vải + đèn phát sáng + nước + sương = 5 mesh gộp cho cả bản đồ (không theo số tiểu cảnh).
- * Tọa độ trong `SCENES` tương đối tâm tông môn (SECT); độ cao lấy từ địa hình hiện có (không đổi heightmap/va chạm).
+ * người (`withSightFade`) và một lớp "đáy" (nước, suối, sương dưới hác). Chỉ để nhìn: KHÔNG va chạm, tất định, không đụng server/heightmap.
+ * Đá, đèn, bia, tre là prop PBR có sẵn của kit (GLB, `GlbScatter`); phần thủ tục chỉ còn công trình (cổng, cầu, đường), ao, hác.
+ * Bản đồ tiểu cảnh và lý do chọn chỗ: `docs/map/lac-kiem-tieu-canh.md`. Tọa độ trong `SCENES` tương đối tâm tông môn (SECT).
  */
 
+export type GlbId = SceneGlbId;
+
 export type ScenePiece =
+  | ({ k: 'glb' } & SceneGlb)
   | { k: 'cong_bai'; x: number; z: number; yaw: number; w: number }
-  | { k: 'den_da'; x: number; z: number }
-  | { k: 'bia'; x: number; z: number; h: number; yaw: number }
-  | { k: 'kiem_da'; x: number; z: number; h: number; tilt: number; yaw: number }
-  | { k: 'da'; x: number; z: number; r: number }
   | { k: 'ao'; x: number; z: number; r: number }
   | { k: 'cau_treo'; ax: number; az: number; bx: number; bz: number; lift: number }
   | { k: 'loi_vach'; pts: [number, number][] }
+  /** Hác sâu: áo đá phủ sườn dốc + suối dưới đáy + sương. (x, z) tâm; `dir` hướng dọc hác (rad). */
+  | { k: 'hac'; x: number; z: number; dir: number; len: number; wid: number }
+  /** Sương thấp sát đất (đáy cho cảnh phẳng). */
   | { k: 'suong'; x: number; z: number; r: number; dy: number };
 
 export interface TieuCanh {
@@ -48,53 +56,23 @@ export interface TieuCanh {
   pieces: ScenePiece[];
 }
 
-/** Hướng cầu treo: tâm và góc đo được từ heightmap (hác sâu ~11 m, rộng 44 m: đủ cao để thấy cầu trong khung camera chéo); hai đầu cầu là đỉnh hai bờ. */
-const BR = { cx: -146, cz: 91, dir: (105 * Math.PI) / 180, half: 22 };
-export const BRIDGE_A: [number, number] = [BR.cx - Math.cos(BR.dir) * BR.half, BR.cz - Math.sin(BR.dir) * BR.half];
-export const BRIDGE_B: [number, number] = [BR.cx + Math.cos(BR.dir) * BR.half, BR.cz + Math.sin(BR.dir) * BR.half];
-
-const lanternRow = (x: number, z0: number, z1: number, n: number): ScenePiece[] =>
-  Array.from({ length: n }, (_, i) => ({ k: 'den_da' as const, x, z: z0 + ((z1 - z0) * i) / (n - 1) }));
+export { BRIDGE_A, BRIDGE_B };
+const BR = TC_BRIDGE;
+/** Vật GLB của một cảnh, đọc từ shared (cùng nguồn với va chạm server). */
+const glbs = (id: string): ScenePiece[] => (SCENE_GLB[id] ?? []).map((g) => ({ k: 'glb' as const, ...g }));
 
 export const SCENES: TieuCanh[] = [
   {
     id: 'cong_bai',
-    at: [0, 112],
-    pieces: [
-      { k: 'cong_bai', x: 0, z: 120, yaw: 0, w: 9 },
-      ...lanternRow(-6.5, 96, 140, 5),
-      ...lanternRow(6.5, 96, 140, 5),
-      { k: 'da', x: -14, z: 124, r: 1.0 },
-      { k: 'da', x: 15, z: 118, r: 1.2 },
-      { k: 'da', x: 13, z: 128, r: 0.8 },
-    ],
+    at: [0, 114],
+    pieces: [{ k: 'cong_bai', ...TC_GATE }, ...glbs('cong_bai'), { k: 'suong', x: 0, z: 124, r: 16, dy: 0.7 }],
   },
   {
     id: 'ao_sen',
-    at: [-62, 52],
-    pieces: [
-      { k: 'ao', x: -62, z: 66, r: 8.5 },
-      { k: 'da', x: -70, z: 58, r: 1.0 },
-      { k: 'da', x: -52, z: 72, r: 0.8 },
-      { k: 'den_da', x: -53, z: 60 },
-      { k: 'bia', x: -74, z: 72, h: 2.2, yaw: 0.5 },
-    ],
+    at: [-60, 58],
+    pieces: [{ k: 'ao', ...TC_POND }, ...glbs('ao_sen'), { k: 'suong', x: TC_POND.x, z: TC_POND.z, r: 13, dy: 0.5 }],
   },
-  {
-    id: 'kiem_bia',
-    at: [66, 52],
-    pieces: [
-      { k: 'bia', x: 66, z: 64, h: 3.4, yaw: -0.4 },
-      { k: 'kiem_da', x: 60.5, z: 62, h: 4.2, tilt: 0.12, yaw: 0.3 },
-      { k: 'kiem_da', x: 62, z: 69, h: 3.4, tilt: -0.1, yaw: -0.5 },
-      { k: 'kiem_da', x: 71, z: 68, h: 4.6, tilt: 0.16, yaw: 1.2 },
-      { k: 'kiem_da', x: 72, z: 60, h: 3.0, tilt: -0.14, yaw: 2.4 },
-      { k: 'kiem_da', x: 66, z: 56, h: 3.8, tilt: 0.1, yaw: 3.0 },
-      { k: 'den_da', x: 58, z: 70 },
-      { k: 'den_da', x: 74, z: 55 },
-      { k: 'da', x: 76, z: 66, r: 1.3 },
-    ],
-  },
+  { id: 'kiem_bia', at: [66, 58], pieces: [...glbs('kiem_bia'), { k: 'suong', x: 66, z: 64, r: 12, dy: 0.5 }] },
   {
     id: 'loi_vach',
     at: [-116, 62],
@@ -103,69 +81,59 @@ export const SCENES: TieuCanh[] = [
         k: 'loi_vach',
         pts: [[-92, 54], [-104, 56], [-116, 60], [-128, 64], BRIDGE_A],
       },
-      { k: 'da', x: -108, z: 50, r: 0.9 },
-      { k: 'da', x: -122, z: 70, r: 1.0 },
-      { k: 'da', x: -112, z: 66, r: 0.6 },
-      { k: 'den_da', x: -98, z: 60 },
+      ...glbs('loi_vach'),
     ],
   },
   {
     id: 'cau_treo',
-    at: [BR.cx, BR.cz + 8],
+    at: [-136, 80],
     pieces: [
+      { k: 'hac', x: BR.cx, z: BR.cz, dir: BR.dir - Math.PI / 2, len: 34, wid: 22 },
       { k: 'cau_treo', ax: BRIDGE_A[0], az: BRIDGE_A[1], bx: BRIDGE_B[0], bz: BRIDGE_B[1], lift: 0.35 },
-      { k: 'suong', x: BR.cx, z: BR.cz, r: 30, dy: 3.2 },
-      { k: 'den_da', x: BRIDGE_B[0] + 3, z: BRIDGE_B[1] + 1 },
-      { k: 'da', x: BRIDGE_B[0] - 4, z: BRIDGE_B[1] + 3, r: 1.8 },
+      ...glbs('cau_treo'),
     ],
   },
-  {
-    id: 'thach_lam',
-    at: [96, -6],
-    pieces: [
-      { k: 'da', x: 96, z: -12, r: 1.8 },
-      { k: 'da', x: 101, z: -6, r: 1.1 },
-      { k: 'da', x: 92, z: -4, r: 1.2 },
-      { k: 'bia', x: 99, z: -2, h: 2.6, yaw: 2.6 },
-      { k: 'den_da', x: 90, z: -14 },
-    ],
-  },
+  { id: 'thach_lam', at: [96, -8], pieces: [...glbs('thach_lam'), { k: 'suong', x: 96, z: -8, r: 13, dy: 0.5 }] },
 ];
 
 // ---------- hình thủ tục ----------
 
 const BOX = new THREE.BoxGeometry(1, 1, 1);
-const CYL = new THREE.CylinderGeometry(0.5, 0.5, 1, 7);
-const CONE = new THREE.ConeGeometry(0.5, 1, 6);
-const ROCK = (() => {
-  // Đá tảng: nhị thập diện chia một lần, đỉnh xô lệch tất định để không giống khối pha lê đều cạnh.
-  const g = new THREE.IcosahedronGeometry(1, 1);
+const CYL = new THREE.CylinderGeometry(0.5, 0.5, 1, 8);
+const PETAL = new THREE.SphereGeometry(0.5, 6, 4);
+const PAD = (() => {
+  // Lá sen: đĩa tròn khuyết một rãnh, mép cong lên.
+  const g = new THREE.CircleGeometry(1, 28, 0.35, Math.PI * 2 - 0.35);
+  g.rotateX(-Math.PI / 2);
   const p = g.attributes.position as THREE.BufferAttribute;
   for (let i = 0; i < p.count; i++) {
-    const k = 0.78 + hash01(Math.round(p.getX(i) * 40), Math.round(p.getY(i) * 40), Math.round(p.getZ(i) * 40)) * 0.38;
-    p.setXYZ(i, p.getX(i) * k, p.getY(i) * k, p.getZ(i) * k);
+    const r = Math.hypot(p.getX(i), p.getZ(i));
+    p.setY(i, 0.04 + r * r * 0.12);
   }
   return g;
 })();
-const DISC = new THREE.CylinderGeometry(1, 1, 1, 10);
 
-/** Bảng màu bán tả thực, hơi lạnh (sương sớm): đá xám lục, sơn son, gỗ, ngọc. */
+/** Bảng màu bán tả thực, hơi lạnh (sương sớm). */
 const C = {
-  stone: new THREE.Color('#7d8884'),
-  stoneDark: new THREE.Color('#566260'),
-  jade: new THREE.Color('#6f9a88'),
-  lacquer: new THREE.Color('#8b2a22'),
-  wood: new THREE.Color('#6a4b32'),
+  lacquer: new THREE.Color('#7a2a22'),
+  wood: new THREE.Color('#6c4c33'),
   woodDark: new THREE.Color('#4a3524'),
-  rope: new THREE.Color('#a48a62'),
-  tile: new THREE.Color('#3f5a5c'),
-  moss: new THREE.Color('#58724a'),
-  lotus: new THREE.Color('#e8b4c0'),
-  pad: new THREE.Color('#4d7a45'),
-  sword: new THREE.Color('#aab6bf'),
+  woodLight: new THREE.Color('#8a6a48'),
+  rope: new THREE.Color('#a8905f'),
+  tile: new THREE.Color('#3c5558'),
+  pad: new THREE.Color('#3f6a3c'),
+  padVein: new THREE.Color('#78a060'),
+  petal: new THREE.Color('#f1d3dc'),
+  petalTip: new THREE.Color('#d97f9a'),
+  heart: new THREE.Color('#e8c860'),
+  slab: new THREE.Color('#8a948f'),
+  slabDark: new THREE.Color('#5f6a66'),
+  earth: new THREE.Color('#7a6e45'),
+  moss: new THREE.Color('#74904c'),
+  lamp: new THREE.Color('#ffc874'),
 };
 
-/** Gộp nhiều hình có màu đỉnh vào một BufferGeometry không chỉ mục (pháp tuyến phẳng, kiểu cách điệu). */
+/** Gộp nhiều hình có màu đỉnh vào một BufferGeometry không chỉ mục (pháp tuyến phẳng). */
 export class Mesher {
   private pos: number[] = [];
   private col: number[] = [];
@@ -177,14 +145,18 @@ export class Mesher {
   private readonly tmp = new THREE.Color();
   tris = 0;
 
-  private push(g: THREE.BufferGeometry, color: THREE.Color, seed: number): void {
+  private push(g: THREE.BufferGeometry, color: THREE.Color, seed: number, tip?: THREE.Color): void {
     const ng = g.index ? g.toNonIndexed() : g;
     const p = ng.attributes.position as THREE.BufferAttribute;
     const k = 0.9 + hash01(seed, 7, 3) * 0.2;
-    this.tmp.copy(color).multiplyScalar(k);
     const v = new THREE.Vector3();
     for (let i = 0; i < p.count; i++) {
-      v.fromBufferAttribute(p, i).applyMatrix4(this.m);
+      v.fromBufferAttribute(p, i);
+      this.tmp.copy(color);
+      // màu đổi theo vị trí cục bộ của đỉnh (cánh sen: gốc → ngọn; lá sen: tâm → mép)
+      if (tip) this.tmp.lerp(tip, Math.min(1, Math.max(0, g === PAD ? Math.hypot(v.x, v.z) : (v.y + 0.5) * 1.2)));
+      this.tmp.multiplyScalar(k);
+      v.applyMatrix4(this.m);
       this.pos.push(v.x, v.y, v.z);
       this.col.push(this.tmp.r, this.tmp.g, this.tmp.b);
     }
@@ -192,7 +164,6 @@ export class Mesher {
     if (ng !== g) ng.dispose();
   }
 
-  /** Đặt hình `g` tại (x, y, z) với kích thước (sx, sy, sz), xoay yaw quanh Y (sau nghiêng rx quanh X, rz quanh Z). */
   put(
     g: THREE.BufferGeometry,
     x: number,
@@ -205,38 +176,18 @@ export class Mesher {
     yaw = 0,
     rx = 0,
     rz = 0,
-    seed = 0,
+    tip?: THREE.Color,
   ): void {
     this.e.set(rx, yaw, rz, 'YXZ');
     this.q.setFromEuler(this.e);
     this.m.compose(this.v.set(x, y, z), this.q, this.s.set(sx, sy, sz));
-    this.push(g, color, seed + Math.floor(x * 7 + z * 13));
+    this.push(g, color, Math.floor(x * 7 + z * 13), tip);
   }
-
   box(x: number, y: number, z: number, sx: number, sy: number, sz: number, color: THREE.Color, yaw = 0, rx = 0, rz = 0): void {
     this.put(BOX, x, y, z, sx, sy, sz, color, yaw, rx, rz);
   }
   cyl(x: number, y: number, z: number, d: number, h: number, color: THREE.Color): void {
     this.put(CYL, x, y, z, d, h, d, color);
-  }
-  cone(x: number, y: number, z: number, d: number, h: number, color: THREE.Color, yaw = 0): void {
-    this.put(CONE, x, y, z, d, h, d, color, yaw);
-  }
-  rock(x: number, y: number, z: number, r: number, color: THREE.Color, seed: number): void {
-    this.put(
-      ROCK,
-      x,
-      y,
-      z,
-      r * (0.9 + hash01(seed, 1, 5) * 0.4),
-      r * (0.55 + hash01(seed, 2, 5) * 0.3),
-      r * (0.9 + hash01(seed, 3, 5) * 0.4),
-      color,
-      hash01(seed, 4, 5) * 6.28,
-      0,
-      0,
-      seed,
-    );
   }
   /** Đoạn thẳng dày `t` từ a đến b (dây, xà). */
   seg(a: THREE.Vector3, b: THREE.Vector3, t: number, color: THREE.Color): void {
@@ -246,7 +197,6 @@ export class Mesher {
     this.m.compose(this.v.copy(a).add(b).multiplyScalar(0.5), this.q, this.s.set(t, t, len));
     this.push(BOX, color, Math.floor(a.x * 3 + a.z * 5));
   }
-
   geometry(): THREE.BufferGeometry {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
@@ -261,107 +211,120 @@ export class Mesher {
 }
 
 const gy = (x: number, z: number): number => heightAt(SECT.x + x, SECT.z + z);
-/** Điểm thế giới → cục bộ nhóm (nhóm đặt tại SECT, nên tọa độ tương đối tông môn). */
-const P = (x: number, z: number, dy = 0): THREE.Vector3 => new THREE.Vector3(x, gy(x, z) + dy, z);
 
+interface Disc {
+  x: number;
+  y: number;
+  z: number;
+  r: number;
+}
 interface Out {
   stone: Mesher;
   wood: Mesher;
   glow: Mesher;
-  /** Mảnh nước/sương: dựng riêng (đĩa phẳng). */
-  water: { x: number; y: number; z: number; r: number }[];
-  mist: { x: number; y: number; z: number; r: number }[];
+  plants: Mesher;
+  places: Map<GlbId, GlbPlace[]>;
+  ponds: Disc[];
+  mist: Disc[];
+  /** Lưới phụ dựng riêng: áo đá hác, bờ ao, dải suối. */
+  extra: { geo: THREE.BufferGeometry; kind: 'skin' | 'bank' | 'stream' }[];
 }
 
 function congBai(o: Out, p: Extract<ScenePiece, { k: 'cong_bai' }>): void {
   const { wood, stone } = o;
   const s = Math.sin(p.yaw);
   const c = Math.cos(p.yaw);
-  const at = (lx: number, ly: number) => [p.x + c * lx, gy(p.x, p.z) + ly, p.z - s * lx] as const;
+  const y0 = gy(p.x, p.z);
+  const at = (lx: number, ly: number) => [p.x + c * lx, y0 + ly, p.z - s * lx] as const;
   const half = p.w / 2;
   for (const sx of [-1, 1]) {
     const [x, y, z] = at(sx * half, 0);
-    stone.box(x, y + 0.35, z, 1.5, 0.7, 1.5, C.stoneDark, p.yaw);
-    wood.cyl(x, y + 3.6, z, 0.75, 6.2, C.lacquer);
-    stone.box(x, y + 6.9, z, 1.1, 0.35, 1.1, C.stone, p.yaw);
+    stone.box(x, y + 0.4, z, 1.7, 0.8, 1.7, C.slabDark, p.yaw);
+    wood.cyl(x, y + 3.9, z, 0.78, 6.2, C.lacquer);
+    stone.box(x, y + 7.1, z, 1.2, 0.35, 1.2, C.slab, p.yaw);
   }
   const [bx, by, bz] = at(0, 0);
-  wood.box(bx, by + 6.0, bz, p.w + 1.4, 0.5, 0.7, C.lacquer, p.yaw);
-  wood.box(bx, by + 7.15, bz, p.w + 3.0, 0.4, 1.4, C.woodDark, p.yaw);
-  // mái ngói hai tầng, đỉnh nhọn nhẹ
-  wood.box(bx, by + 7.7, bz, p.w + 2.2, 0.5, 1.9, C.tile, p.yaw, 0, 0);
-  wood.box(bx, by + 8.25, bz, p.w * 0.55, 0.45, 1.3, C.tile, p.yaw);
-  wood.box(bx, by + 6.6, bz, p.w - 0.6, 0.5, 0.35, C.woodDark, p.yaw);
+  wood.box(bx, by + 6.1, bz, p.w + 1.4, 0.5, 0.7, C.lacquer, p.yaw);
+  wood.box(bx, by + 5.3, bz, p.w - 0.6, 0.35, 0.35, C.woodDark, p.yaw);
+  wood.box(bx, by + 7.35, bz, p.w + 3.2, 0.4, 1.5, C.woodDark, p.yaw);
+  wood.box(bx, by + 7.9, bz, p.w + 2.4, 0.5, 2.0, C.tile, p.yaw);
+  wood.box(bx, by + 8.5, bz, p.w * 0.55, 0.45, 1.4, C.tile, p.yaw);
+  for (const sx of [-1, 1]) {
+    const [x, y, z] = at(sx * (p.w / 2 + 1.5), 0);
+    wood.box(x, y + 8.15, z, 0.6, 0.35, 2.0, C.tile, p.yaw, 0, sx * 0.5);
+  }
 }
 
-function denDa(o: Out, x: number, z: number): void {
-  const y = gy(x, z);
-  const { stone, glow } = o;
-  stone.box(x, y + 0.25, z, 0.9, 0.5, 0.9, C.stoneDark);
-  stone.cyl(x, y + 1.0, z, 0.38, 1.0, C.stone);
-  stone.box(x, y + 1.75, z, 0.95, 0.5, 0.95, C.stone);
-  glow.box(x, y + 1.75, z, 0.55, 0.34, 0.55, new THREE.Color('#ffc874'));
-  stone.cone(x, y + 2.3, z, 1.5, 0.55, C.tile, Math.PI / 6);
-  stone.cyl(x, y + 2.7, z, 0.2, 0.25, C.jade);
-}
-
-function bia(o: Out, p: Extract<ScenePiece, { k: 'bia' }>): void {
-  const y = gy(p.x, p.z);
-  const { stone } = o;
-  stone.box(p.x, y + 0.25, p.z, 1.4, 0.5, 0.8, C.stoneDark, p.yaw);
-  stone.box(p.x, y + 0.5 + p.h / 2, p.z, 0.95, p.h, 0.28, C.stone, p.yaw);
-  stone.box(p.x, y + 0.5 + p.h + 0.12, p.z, 1.12, 0.26, 0.4, C.stoneDark, p.yaw);
-  // vệt phù văn ngọc trên mặt bia
-  stone.box(p.x - Math.sin(p.yaw) * 0.16, y + 0.5 + p.h * 0.55, p.z - Math.cos(p.yaw) * 0.16, 0.5, p.h * 0.5, 0.04, C.jade, p.yaw);
-}
-
-function kiemDa(o: Out, p: Extract<ScenePiece, { k: 'kiem_da' }>): void {
-  const y = gy(p.x, p.z);
-  const { stone } = o;
-  // thân kiếm đá cắm xuống đất, nghiêng nhẹ; mũi chôn nên chỉ thấy phần trên
-  stone.put(BOX, p.x, y + p.h * 0.5, p.z, 0.34, p.h, 0.09, C.sword, p.yaw, 0, p.tilt);
-  const tx = p.x - Math.sin(p.tilt) * p.h * 0.46 * Math.cos(p.yaw);
-  stone.put(BOX, tx, y + p.h * 0.96, p.z, 0.9, 0.14, 0.2, C.stoneDark, p.yaw, 0, p.tilt);
-  stone.put(BOX, tx, y + p.h * 1.06, p.z, 0.16, 0.5, 0.16, C.woodDark, p.yaw, 0, p.tilt);
-  stone.rock(p.x, y + 0.12, p.z, 0.55, C.stoneDark, Math.floor(p.x * 5 + p.z));
-}
-
-function da(o: Out, x: number, z: number, r: number, i: number): void {
-  const y = gy(x, z);
-  o.stone.rock(x, y + r * 0.2, z, r, C.stone, i);
-  if (r > 1) o.stone.rock(x + r * 0.7, y + r * 0.1, z - r * 0.4, r * 0.5, C.stoneDark, i + 11);
-  // rêu phủ đỉnh
-  o.stone.put(ROCK, x, y + r * 0.62, z, r * 0.7, r * 0.18, r * 0.7, C.moss, 0, 0, 0, i);
-}
-
+/** Ao sen: bờ đất nhô quanh (nước nằm trong lòng chảo giả), mặt nước nhiều sắc, lá sen và hoa sen đúng hình. */
 function ao(o: Out, p: Extract<ScenePiece, { k: 'ao' }>, i: number): void {
   const y = gy(p.x, p.z);
-  // đáy = nước: mặt nước thấp hơn đất quanh ao 0,35 m nên nhìn như hõm; đáy ao tối do không có lưới đất hạ, nên mặt nước hơi nổi + viền đá.
-  o.water.push({ x: p.x, y: y + 0.1, z: p.z, r: p.r });
-  const n = 16;
-  for (let k = 0; k < n; k++) {
-    const a = (k / n) * Math.PI * 2;
-    const rr = p.r + 0.4 + hash01(k, i, 2) * 0.5;
-    o.stone.rock(
-      p.x + Math.cos(a) * rr,
-      gy(p.x + Math.cos(a) * rr, p.z + Math.sin(a) * rr) + 0.1,
-      p.z + Math.sin(a) * rr,
-      0.4 + hash01(k, i, 3) * 0.4,
-      k % 3 ? C.stone : C.stoneDark,
-      k + i * 31,
-    );
+  o.ponds.push({ x: p.x, y: y + 0.22, z: p.z, r: p.r });
+  const seg = 40;
+  const pos: number[] = [];
+  const col: number[] = [];
+  const idx: number[] = [];
+  const rings = [p.r - 0.2, p.r + 0.5, p.r + 1.2, p.r + 2.2];
+  const lift = [0.18, 0.4, 0.28, 0.0];
+  for (let k = 0; k <= seg; k++) {
+    const a = (k / seg) * Math.PI * 2;
+    rings.forEach((r, ri) => {
+      const x = p.x + Math.cos(a) * r;
+      const z = p.z + Math.sin(a) * r;
+      pos.push(x, gy(x, z) + lift[ri]! + (hash01(k, i, 3) - 0.5) * 0.06, z);
+      const c = ri <= 1 ? C.earth : C.moss;
+      col.push(c.r, c.g, c.b);
+    });
   }
-  for (let k = 0; k < 9; k++) {
+  const n = rings.length;
+  for (let k = 0; k < seg; k++)
+    for (let ri = 0; ri < n - 1; ri++) {
+      const a = k * n + ri;
+      idx.push(a, a + n, a + 1, a + 1, a + n, a + n + 1);
+    }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  o.extra.push({ geo: g, kind: 'bank' });
+  for (let k = 0; k < 12; k++) {
     const a = hash01(k, i, 4) * Math.PI * 2;
-    const rr = Math.sqrt(hash01(k, i, 5)) * (p.r - 1.4);
+    const rr = Math.sqrt(hash01(k, i, 5)) * (p.r - 1.6);
     const lx = p.x + Math.cos(a) * rr;
     const lz = p.z + Math.sin(a) * rr;
-    o.stone.put(DISC, lx, y + 0.16, lz, 0.55 + hash01(k, i, 6) * 0.35, 0.04, 0.55 + hash01(k, i, 6) * 0.35, C.pad);
-    if (k % 3 === 0) o.stone.put(CONE, lx, y + 0.34, lz, 0.26, 0.3, 0.26, C.lotus);
+    const sz = 0.5 + hash01(k, i, 6) * 0.55;
+    o.plants.put(PAD, lx, y + 0.23, lz, sz, 1, sz, C.pad, hash01(k, i, 9) * 6.28, 0, 0, C.padVein);
+    if (k % 3 === 0) lotus(o, lx + sz * 0.4, y + 0.3, lz, hash01(k, i, 11));
   }
 }
 
-/** Cầu treo cao nối hai bờ hác: sàn ván võng, hai dây lan can, cọc, tháp đầu cầu. Người đi dưới hác (cầu cao ≥ 7 m so với đáy). */
+function lotus(o: Out, x: number, y: number, z: number, r: number): void {
+  const rings = [
+    { n: 6, tilt: 0.5, len: 0.34, h: 0.14 },
+    { n: 5, tilt: 0.95, len: 0.3, h: 0.2 },
+  ];
+  for (const ring of rings)
+    for (let k = 0; k < ring.n; k++) {
+      const a = (k / ring.n) * Math.PI * 2 + r * 3;
+      o.plants.put(
+        PETAL,
+        x + Math.cos(a) * 0.1,
+        y + ring.h,
+        z + Math.sin(a) * 0.1,
+        0.16,
+        0.06,
+        ring.len,
+        C.petal,
+        -a + Math.PI / 2,
+        -ring.tilt,
+        0,
+        C.petalTip,
+      );
+    }
+  o.plants.put(CYL, x, y + 0.18, z, 0.12, 0.08, 0.12, C.heart);
+}
+
+/** Cầu treo gỗ: sàn ván, hai dầm dọc, hai dây lan can + dây dưới, cọc đỡ, xà ngang đầu cầu; cột đá hai đầu là prop kit. */
 function cauTreo(o: Out, p: Extract<ScenePiece, { k: 'cau_treo' }>): void {
   const ya = gy(p.ax, p.az) + p.lift;
   const yb = gy(p.bx, p.bz) + p.lift;
@@ -373,47 +336,48 @@ function cauTreo(o: Out, p: Extract<ScenePiece, { k: 'cau_treo' }>): void {
   const yaw = Math.atan2(dx, dz);
   const sag = 1.6;
   const deck = (t: number) => ya + (yb - ya) * t - sag * 4 * t * (1 - t);
-  const N = Math.round(len / 1.2);
+  const N = Math.round(len / 0.9);
   const hw = 1.5;
-  const rail = (side: number): THREE.Vector3[] =>
-    Array.from({ length: N + 1 }, (_, i) => {
-      const t = i / N;
-      return new THREE.Vector3(p.ax + dx * len * t + nx * hw * side, deck(t) + 1.15, p.az + dz * len * t + nz * hw * side);
-    });
   for (let i = 0; i < N; i++) {
     const t = (i + 0.5) / N;
-    const x = p.ax + dx * len * t;
-    const z = p.az + dz * len * t;
-    o.wood.put(BOX, x, deck(t), z, hw * 2, 0.12, 1.0, i % 2 ? C.wood : C.woodDark, yaw, ((deck((i + 1) / N) - deck(i / N)) / 1.2) * -1);
+    const slope = (deck((i + 1) / N) - deck(i / N)) / (len / N);
+    const col = [C.wood, C.woodDark, C.woodLight][(i * 7) % 3]!;
+    o.wood.put(BOX, p.ax + dx * len * t, deck(t), p.az + dz * len * t, hw * 2, 0.1, 0.78, col, yaw, -slope);
   }
+  for (const side of [-0.9, 0.9])
+    for (let i = 0; i < N; i += 2) {
+      const t0 = i / N;
+      const t1 = Math.min(1, (i + 2) / N);
+      o.wood.seg(
+        new THREE.Vector3(p.ax + dx * len * t0 + nx * side, deck(t0) - 0.12, p.az + dz * len * t0 + nz * side),
+        new THREE.Vector3(p.ax + dx * len * t1 + nx * side, deck(t1) - 0.12, p.az + dz * len * t1 + nz * side),
+        0.14,
+        C.woodDark,
+      );
+    }
   for (const side of [-1, 1]) {
-    const r = rail(side);
-    for (let i = 0; i < r.length - 1; i++) {
-      o.wood.seg(r[i]!, r[i + 1]!, 0.07, C.rope);
-      o.wood.seg(r[i]!.clone().setY(r[i]!.y - 0.7), r[i + 1]!.clone().setY(r[i + 1]!.y - 0.7), 0.05, C.rope);
+    const pt = (t: number, up: number) =>
+      new THREE.Vector3(p.ax + dx * len * t + nx * hw * side, deck(t) + up, p.az + dz * len * t + nz * hw * side);
+    for (let i = 0; i < N; i++) {
+      o.wood.seg(pt(i / N, 1.15), pt((i + 1) / N, 1.15), 0.08, C.rope);
+      o.wood.seg(pt(i / N, 0.55), pt((i + 1) / N, 0.55), 0.05, C.rope);
     }
-    for (let i = 0; i < r.length; i += 3) {
-      const b = r[i]!;
-      o.wood.box(b.x, b.y - 0.55, b.z, 0.12, 1.2, 0.12, C.woodDark);
+    for (let i = 0; i <= N; i += 3) {
+      const b = pt(i / N, 0);
+      o.wood.box(b.x, b.y + 0.6, b.z, 0.11, 1.25, 0.11, C.woodDark);
     }
   }
-  // tháp đầu cầu: hai trụ son + xà ngang
   for (const e of [0, 1] as const) {
     const ex = e ? p.bx : p.ax;
     const ez = e ? p.bz : p.az;
     const ey = e ? yb : ya;
-    for (const side of [-1, 1]) {
-      o.wood.cyl(ex + nx * (hw + 0.2) * side, ey + 1.7, ez + nz * (hw + 0.2) * side, 0.4, 3.4, C.lacquer);
-      o.stone.box(ex + nx * (hw + 0.2) * side, ey + 0.2, ez + nz * (hw + 0.2) * side, 0.95, 0.4, 0.95, C.stoneDark, yaw);
-    }
-    o.wood.box(ex, ey + 3.5, ez, hw * 2 + 1.6, 0.3, 0.5, C.lacquer, yaw);
-    o.wood.box(ex, ey + 3.85, ez, hw * 2 + 2.4, 0.22, 1.1, C.tile, yaw);
-    o.glow.box(ex + nx * (hw + 0.2), ey + 3.0, ez + nz * (hw + 0.2), 0.3, 0.45, 0.3, new THREE.Color('#ffc874'));
-    o.glow.box(ex - nx * (hw + 0.2), ey + 3.0, ez - nz * (hw + 0.2), 0.3, 0.45, 0.3, new THREE.Color('#ffc874'));
+    o.wood.box(ex, ey + 3.6, ez, hw * 2 + 3.2, 0.3, 0.45, C.lacquer, yaw);
+    o.wood.box(ex, ey + 4.0, ez, hw * 2 + 3.6, 0.2, 1.1, C.tile, yaw);
+    for (const side of [-1, 1]) o.glow.box(ex + nx * (hw + 0.4) * side, ey + 3.0, ez + nz * (hw + 0.4) * side, 0.28, 0.42, 0.28, C.lamp);
   }
 }
 
-/** Lối men vách: đường phiến đá bậc thang bám sườn (theo địa hình, đi được), cọc gỗ + dây bên mép dốc. */
+/** Lối men vách: phiến đá bậc thang bám sườn (đi được, theo địa hình), cọc gỗ + dây phía dốc. */
 function loiVach(o: Out, pts: [number, number][]): void {
   let acc = 0;
   const posts: THREE.Vector3[] = [];
@@ -427,65 +391,146 @@ function loiVach(o: Out, pts: [number, number][]): void {
     for (let d = 0; d < len; d += 1.7) {
       const x = ax + dx * d;
       const z = az + dz * d;
-      const y = gy(x, z);
-      const jx = (hash01(Math.floor(acc), 1, 8) - 0.5) * 0.3;
       o.stone.box(
-        x + jx,
-        y + 0.05,
+        x + (hash01(acc, 1, 8) - 0.5) * 0.3,
+        gy(x, z) + 0.04,
         z,
         1.9,
         0.14,
         1.3,
-        Math.floor(acc) & 1 ? C.stone : C.stoneDark,
-        yaw + (hash01(Math.floor(acc), 2, 8) - 0.5) * 0.2,
+        acc & 1 ? C.slab : C.slabDark,
+        yaw + (hash01(acc, 2, 8) - 0.5) * 0.2,
       );
       acc++;
     }
-    // cọc bên mép dốc phía thấp hơn
     for (let d = 0; d <= len; d += 5) {
       const x = ax + dx * d;
       const z = az + dz * d;
-      const side = gy(x + -dz * 3, z + dx * 3) < gy(x + dz * 3, z - dx * 3) ? 1 : -1;
+      const side = gy(x - dz * 3, z + dx * 3) < gy(x + dz * 3, z - dx * 3) ? 1 : -1;
       const px = x - dz * 1.7 * side;
       const pz = z + dx * 1.7 * side;
-      const base = P(px, pz);
-      o.wood.box(base.x, base.y + 0.55, base.z, 0.16, 1.1, 0.16, C.woodDark);
-      posts.push(new THREE.Vector3(base.x, base.y + 1.0, base.z));
+      const y = gy(px, pz);
+      o.wood.box(px, y + 0.55, pz, 0.16, 1.1, 0.16, C.woodDark);
+      posts.push(new THREE.Vector3(px, y + 1.0, pz));
     }
   }
-  for (let i = 0; i < posts.length - 1; i++) {
+  for (let i = 0; i < posts.length - 1; i++)
     if (posts[i]!.distanceTo(posts[i + 1]!) < 8) o.wood.seg(posts[i]!, posts[i + 1]!, 0.06, C.rope);
-  }
 }
 
-function build(): Out & { meshes: THREE.Mesh[] } {
-  const o: Out & { meshes: THREE.Mesh[] } = {
+/**
+ * Hác: (1) áo đá phủ sườn dốc (lưới theo đúng heightmap + 0.06 m, shader bỏ chỗ phẳng nên cỏ vẫn lộ) tạo vách đá tầng; (2) suối chảy theo
+ * đường thấp nhất dưới đáy; (3) sương mềm và đá tảng dọc suối. Địa hình/va chạm không đổi.
+ */
+function hac(o: Out, p: Extract<ScenePiece, { k: 'hac' }>): void {
+  const ca = Math.cos(p.dir);
+  const sa = Math.sin(p.dir);
+  const step = 1.4;
+  const nu = Math.round((p.len * 2) / step);
+  const nv = Math.round((p.wid * 2) / step);
+  const pos: number[] = [];
+  const col: number[] = [];
+  const idx: number[] = [];
+  const at = (u: number, v: number): [number, number] => [p.x + ca * u - sa * v, p.z + sa * u + ca * v];
+  const cc = new THREE.Color();
+  for (let j = 0; j <= nv; j++)
+    for (let i = 0; i <= nu; i++) {
+      const [x, z] = at(-p.len + i * step, -p.wid + j * step);
+      const y = gy(x, z);
+      const sl = Math.min(1, Math.hypot(gy(x + 1, z) - gy(x - 1, z), gy(x, z + 1) - gy(x, z - 1)) / 2);
+      const bump = (hash01(Math.round(x * 1.7), Math.round(z * 1.7), 3) - 0.3) * 0.5 * sl;
+      pos.push(x, y + 0.1 + Math.max(0, bump), z);
+      const band = 0.5 + 0.5 * Math.sin(y * 1.9 + hash01(Math.round(x), Math.round(z), 5) * 0.8);
+      cc.set('#6d6a60')
+        .lerp(new THREE.Color('#8e8576'), band)
+        .lerp(C.moss, Math.max(0, 0.55 - sl) * 0.5);
+      col.push(cc.r, cc.g, cc.b);
+    }
+  const row = nu + 1;
+  for (let j = 0; j < nv; j++)
+    for (let i = 0; i < nu; i++) {
+      const a = j * row + i;
+      idx.push(a, a + row, a + 1, a + 1, a + row, a + row + 1);
+    }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  o.extra.push({ geo: g, kind: 'skin' });
+
+  const line: [number, number][] = [];
+  let lastV = 0;
+  for (let u = -p.len; u <= p.len; u += 2) {
+    let best = 1e9;
+    let bv = lastV;
+    for (let v = -p.wid * 0.6; v <= p.wid * 0.6; v += 1) {
+      const [x, z] = at(u, v);
+      const h = gy(x, z);
+      if (h < best) {
+        best = h;
+        bv = v;
+      }
+    }
+    lastV = lastV * 0.5 + bv * 0.5;
+    line.push(at(u, lastV));
+  }
+  const sp: number[] = [];
+  const su: number[] = [];
+  const si: number[] = [];
+  line.forEach(([x, z], k) => {
+    const [x2, z2] = line[Math.min(line.length - 1, k + 1)]!;
+    const [x1, z1] = line[Math.max(0, k - 1)]!;
+    const tl = Math.hypot(x2 - x1, z2 - z1) || 1;
+    const nx = -(z2 - z1) / tl;
+    const nz = (x2 - x1) / tl;
+    const w = 1.5 + 0.6 * Math.sin(k * 0.7);
+    for (const sgn of [-1, 1]) {
+      const px = x + nx * w * sgn;
+      const pz = z + nz * w * sgn;
+      sp.push(px, gy(x, z) + 0.2, pz);
+      su.push(sgn < 0 ? 0 : 1, k * 0.35);
+    }
+    if (k < line.length - 1) {
+      const a = k * 2;
+      si.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);
+    }
+  });
+  const sg = new THREE.BufferGeometry();
+  sg.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3));
+  sg.setAttribute('uv', new THREE.Float32BufferAttribute(su, 2));
+  sg.setIndex(si);
+  sg.computeVertexNormals();
+  o.extra.push({ geo: sg, kind: 'stream' });
+  const [mx, mz] = line[Math.floor(line.length / 2)]!;
+  o.mist.push({ x: mx, y: gy(mx, mz) + 1.8, z: mz, r: 24 });
+}
+
+function build(): Out {
+  const o: Out = {
     stone: new Mesher(),
     wood: new Mesher(),
     glow: new Mesher(),
-    water: [],
+    plants: new Mesher(),
+    places: new Map(),
+    ponds: [],
     mist: [],
-    meshes: [],
+    extra: [],
   };
   let i = 0;
-  for (const sc of SCENES) {
+  for (const sc of SCENES)
     for (const p of sc.pieces) {
       i++;
       switch (p.k) {
+        case 'glb': {
+          const l = o.places.get(p.id) ?? [];
+          l.push({ x: p.x, z: p.z, yaw: p.yaw, h: p.h, rx: p.rx, rz: p.rz, sink: p.sink });
+          o.places.set(p.id, l);
+          if (p.id === 'prop_tc_den_da') o.glow.box(p.x, gy(p.x, p.z) + p.h * 0.62, p.z, 0.4, 0.3, 0.4, C.lamp);
+          break;
+        }
         case 'cong_bai':
           congBai(o, p);
-          break;
-        case 'den_da':
-          denDa(o, p.x, p.z);
-          break;
-        case 'bia':
-          bia(o, p);
-          break;
-        case 'kiem_da':
-          kiemDa(o, p);
-          break;
-        case 'da':
-          da(o, p.x, p.z, p.r, i);
           break;
         case 'ao':
           ao(o, p, i);
@@ -496,98 +541,187 @@ function build(): Out & { meshes: THREE.Mesh[] } {
         case 'loi_vach':
           loiVach(o, p.pts);
           break;
+        case 'hac':
+          hac(o, p);
+          break;
         case 'suong':
           o.mist.push({ x: p.x, y: gy(p.x, p.z) + p.dy, z: p.z, r: p.r });
           break;
       }
     }
-  }
   return o;
 }
 
-/** Số tam giác các lưới gộp + số đĩa nước/sương (cho test ngân sách; dựng lại từ đầu, không đụng GPU). */
-export function sceneStats(): { tris: number; water: number; mist: number } {
+/** Thống kê dựng (test ngân sách; không đụng GPU): tam giác phần thủ tục + số bản đặt GLB. */
+export function sceneStats(): { tris: number; ponds: number; mist: number; glbPlaces: number; glbKinds: number } {
   const o = build();
-  return { tris: o.stone.tris + o.wood.tris + o.glow.tris, water: o.water.length, mist: o.mist.length };
+  let g = 0;
+  for (const l of o.places.values()) g += l.length;
+  let ex = 0;
+  for (const e of o.extra) ex += (e.geo.index?.count ?? 0) / 3;
+  return {
+    tris: o.stone.tris + o.wood.tris + o.glow.tris + o.plants.tris + ex,
+    ponds: o.ponds.length,
+    mist: o.mist.length,
+    glbPlaces: g,
+    glbKinds: o.places.size,
+  };
 }
+
+/** Làm mềm mép theo độ sâu: 0 khi mặt phẳng chạm đất/vật phía sau, 1 khi cách ≥ `k` m. */
+const softDepth = (k: number) =>
+  clamp(
+    viewportLinearDepth
+      .sub(viewZToOrthographicDepth(positionView.z, cameraNear, cameraFar))
+      .mul(cameraFar.sub(cameraNear))
+      .div(k),
+    0,
+    1,
+  );
 
 export class LacKiemScenes {
   readonly group = new THREE.Group();
   private geos: THREE.BufferGeometry[] = [];
   private mats: THREE.Material[] = [];
-  /** Tam giác của lưới gộp (kiểm ngân sách trong test/bench). */
+  private scatter: GlbScatter | null = null;
+  private disposed = false;
+  /** Tam giác phần thủ tục (GLB tính riêng ở `scatter.tris`). */
   readonly tris: number;
 
   constructor() {
     this.group.name = 'lac-kiem-scenes';
     this.group.position.set(SECT.x, 0, SECT.z);
     const o = build();
-    this.tris = o.stone.tris + o.wood.tris + o.glow.tris;
-    const solid = (side: THREE.Side = THREE.FrontSide) =>
-      withSightFade(new THREE.MeshStandardNodeMaterial({ vertexColors: true, roughness: 0.88, metalness: 0.02, side }));
+    this.tris = o.stone.tris + o.wood.tris + o.glow.tris + o.plants.tris;
+    void this.init(o);
+  }
+
+  private async init(o: Out): Promise<void> {
+    const tex = await loadSkyTextures();
+    if (this.disposed) return;
+    const stoneMat = withSightFade(tex ? rockMaterial(tex) : createWorldMaterial({ vertexColors: true, roughness: 0.9 }));
+    const wood = createWorldMaterial({ roughness: 0.8, side: THREE.DoubleSide }); // màu đỉnh đọc qua colorNode (không bật vertexColors để khỏi nhân đôi)
+    const p = positionWorld;
+    const grain = vnoise(vec2(p.x.add(p.z).mul(2.2), p.y.mul(18)))
+      .mul(0.34)
+      .add(0.83);
+    wood.colorNode = attribute('color', 'vec3').mul(grain);
+    withSightFade(wood);
+    const plant = createWorldMaterial({ vertexColors: true, roughness: 0.55, side: THREE.DoubleSide });
+    const glow = withSightFade(new THREE.MeshBasicNodeMaterial({ vertexColors: true, toneMapped: false }));
+    this.mats.push(stoneMat, wood, plant, glow);
     const add = (m: Mesher, mat: THREE.Material, name: string, shadow: boolean) => {
       if (m.empty) return;
       const g = m.geometry();
       this.geos.push(g);
-      this.mats.push(mat);
       const mesh = new THREE.Mesh(g, mat);
       mesh.name = name;
       mesh.castShadow = shadow;
       mesh.receiveShadow = true;
-      mesh.frustumCulled = true;
       this.group.add(mesh);
     };
-    add(o.stone, solid(), 'tc-da', true);
-    add(o.wood, solid(THREE.DoubleSide), 'tc-go', true);
-    const glowMat = withSightFade(new THREE.MeshBasicNodeMaterial({ vertexColors: true, toneMapped: false }));
-    add(o.glow, glowMat, 'tc-den', false);
-    this.addDiscs(o.water, true);
-    this.addDiscs(o.mist, false);
+    add(o.stone, stoneMat, 'tc-da', true);
+    add(o.wood, wood, 'tc-go', true);
+    add(o.plants, plant, 'tc-cay', false);
+    add(o.glow, glow, 'tc-den', false);
+
+    const skin = tex ? rockMaterial(tex) : createWorldMaterial({ vertexColors: true, roughness: 0.9 });
+    skin.maskNode = normalWorld.y.lessThan(float(0.86));
+    skin.polygonOffset = true;
+    skin.polygonOffsetFactor = -2;
+    skin.polygonOffsetUnits = -2; // chỉ phủ chỗ dốc: chỗ phẳng để cỏ lộ ra
+    const bank = createWorldMaterial({ roughness: 0.95 });
+    bank.colorNode = attribute('color', 'vec3').mul(vnoise(positionWorld.xz.mul(1.7)).mul(0.5).add(0.7));
+    const stream = this.waterMaterial('stream');
+    this.mats.push(skin, bank);
+    for (const e of o.extra) {
+      this.geos.push(e.geo);
+      const mesh = new THREE.Mesh(e.geo, e.kind === 'skin' ? skin : e.kind === 'bank' ? bank : stream);
+      mesh.name = `tc-${e.kind}`;
+      mesh.receiveShadow = true;
+      if (e.kind === 'stream') mesh.renderOrder = 1;
+      this.group.add(mesh);
+    }
+    this.addDiscs(o.ponds, this.waterMaterial('pond'), 'tc-nuoc', 1);
+    this.addDiscs(o.mist, this.mistMaterial(), 'tc-suong', 2);
+
+    const scatter = new GlbScatter(assets, gy);
+    this.scatter = scatter;
+    this.group.add(scatter.group);
+    await Promise.all([...o.places].map(([id, list]) => scatter.add(id, list)));
   }
 
-  /** Đĩa phẳng: nước ao (trong, gợn sóng chậm) hoặc sương hác (mờ dần ra mép, cắt bởi địa hình nên chỉ thấy trong hác). */
-  private addDiscs(list: { x: number; y: number; z: number; r: number }[], water: boolean): void {
-    if (!list.length) return;
-    const mat = new THREE.MeshStandardNodeMaterial({ transparent: true, depthWrite: false, roughness: water ? 0.12 : 1, metalness: 0 });
-    const d = length(uv().sub(0.5)).mul(2);
-    const rip = sin(positionWorld.x.mul(1.7).add(time.mul(0.8))).mul(sin(positionWorld.z.mul(1.3).sub(time.mul(0.6))));
-    if (water) {
-      mat.colorNode = mix(vec3(0.1, 0.27, 0.3), vec3(0.34, 0.6, 0.62), rip.mul(0.5).add(0.5).mul(0.35));
-      mat.opacityNode = float(0.88).mul(smoothstep(1.0, 0.94, d));
-      mat.emissiveNode = vec3(0.02, 0.06, 0.07);
-    } else {
-      const drift = sin(positionWorld.x.mul(0.11).add(time.mul(0.12)))
-        .mul(sin(positionWorld.z.mul(0.09).sub(time.mul(0.1))))
+  /** Nước: ao sâu ở giữa, nông và ngả vàng lục ven bờ, sóng gợn + vòng lan; suối chảy dọc dải có bọt. */
+  private waterMaterial(kind: 'pond' | 'stream'): THREE.MeshStandardNodeMaterial {
+    const mat = new THREE.MeshStandardNodeMaterial({ transparent: true, depthWrite: false, roughness: 0.3, metalness: 0.0 });
+    const p = positionWorld;
+    const rip = sin(p.x.mul(2.3).add(time.mul(0.9)))
+      .mul(sin(p.z.mul(1.9).sub(time.mul(0.7))))
+      .mul(0.5)
+      .add(vnoise(p.xz.mul(1.3).add(time.mul(0.2))).mul(0.5));
+    if (kind === 'pond') {
+      const d = length(uv().sub(0.5)).mul(2);
+      const deep = vec3(0.012, 0.055, 0.07);
+      const mid = vec3(0.04, 0.15, 0.15);
+      const shallow = vec3(0.2, 0.3, 0.2);
+      const base = mix(mix(deep, mid, smoothstep(0.1, 0.65, d)), shallow, smoothstep(0.7, 0.98, d));
+      const ring = sin(d.mul(26).sub(time.mul(1.6)))
+        .mul(smoothstep(0.55, 0.0, d))
         .mul(0.5)
         .add(0.5);
-      mat.colorNode = vec3(0.62, 0.72, 0.74);
-      mat.emissiveNode = vec3(0.05, 0.07, 0.08);
-      // Mềm mép theo độ sâu: sương mờ dần về 0 khi sát mặt đất (không lộ đường cắt phẳng với địa hình).
-      const soft = clamp(
-        viewportLinearDepth
-          .sub(viewZToOrthographicDepth(positionView.z, cameraNear, cameraFar))
-          .mul(cameraFar.sub(cameraNear))
-          .div(3.0),
-        0,
-        1,
+      mat.colorNode = base.add(vec3(0.05, 0.09, 0.09).mul(rip.mul(0.5).add(ring.mul(0.25))));
+      mat.emissiveNode = vec3(0.05, 0.08, 0.1).mul(float(0.5).add(rip.mul(0.5)));
+      mat.opacityNode = float(0.93).mul(smoothstep(1.0, 0.9, d));
+    } else {
+      const u = uv();
+      const flow = sin(
+        u.y
+          .mul(18)
+          .sub(time.mul(3.2))
+          .add(vnoise(vec2(u.x.mul(6), u.y.mul(3))).mul(5)),
       );
-      mat.opacityNode = smoothstep(1.0, 0.05, d).mul(abs(drift).mul(0.5).add(0.25)).mul(0.5).mul(soft);
+      const foam = smoothstep(0.55, 0.95, flow.mul(0.5).add(0.5)).mul(abs(u.x.sub(0.5)).mul(2).add(0.2));
+      mat.colorNode = mix(vec3(0.07, 0.2, 0.2), vec3(0.62, 0.74, 0.74), foam.mul(0.7));
+      mat.emissiveNode = vec3(0.05, 0.09, 0.1).add(vec3(0.1).mul(foam));
+      mat.opacityNode = float(0.88).mul(smoothstep(0.0, 0.18, u.x).mul(smoothstep(1.0, 0.82, u.x)));
     }
     this.mats.push(mat);
-    const geo = new THREE.CircleGeometry(1, water ? 28 : 36);
+    return mat;
+  }
+
+  /** Sương thấp: nhiễu trôi, mờ dần ra mép, mềm theo độ sâu (không lộ đường cắt với địa hình). */
+  private mistMaterial(): THREE.MeshStandardNodeMaterial {
+    const mat = new THREE.MeshStandardNodeMaterial({ transparent: true, depthWrite: false, roughness: 1, metalness: 0 });
+    const d = length(uv().sub(0.5)).mul(2);
+    const p = positionWorld;
+    const drift = vnoise(p.xz.mul(0.16).add(vec2(time.mul(0.18), time.mul(0.07))))
+      .mul(0.6)
+      .add(vnoise(p.xz.mul(0.4).sub(time.mul(0.1))).mul(0.4));
+    mat.colorNode = vec3(0.66, 0.74, 0.76);
+    mat.emissiveNode = vec3(0.07, 0.09, 0.1);
+    mat.opacityNode = smoothstep(1.0, 0.05, d).mul(drift.mul(0.8).add(0.2)).mul(softDepth(5)).mul(0.2);
+    this.mats.push(mat);
+    return mat;
+  }
+
+  private addDiscs(list: Disc[], mat: THREE.Material, name: string, order: number): void {
+    if (!list.length) return;
+    const geo = new THREE.CircleGeometry(1, 40);
     geo.rotateX(-Math.PI / 2);
     this.geos.push(geo);
     for (const w of list) {
       const m = new THREE.Mesh(geo, mat);
       m.position.set(w.x, w.y, w.z);
       m.scale.setScalar(w.r);
-      m.name = water ? 'tc-nuoc' : 'tc-suong';
-      m.renderOrder = water ? 1 : 2;
+      m.name = name;
+      m.renderOrder = order;
       this.group.add(m);
     }
   }
 
   dispose(): void {
+    this.disposed = true;
+    this.scatter?.dispose();
     for (const g of this.geos) g.dispose();
     for (const m of this.mats) m.dispose();
   }
