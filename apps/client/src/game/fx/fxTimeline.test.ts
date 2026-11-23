@@ -351,6 +351,8 @@ describe('VS-1 Hộ pháp: 10 chiêu làm lại (đồng/nâu/đá, mỗi chiêu
     for (const [id, hero] of Object.entries(HERO)) {
       const shapes = new Set(all(id).flatMap((e) => (e.type === 'mesh' ? [e.shape] : [])));
       for (const h of hero) expect(shapes.has(h as 'burst'), `${id}:${h}`).toBe(true);
+      // V-P1: Thiết Quyền Chấn Địa dựng lại theo concept đã duyệt (vòng sóng xung kích + gai hổ phách, kiểu mực), nên được dùng ripple/spike.
+      if (id === 'skl_thiet_quyen_chan_dia') continue;
       for (const old of ['spike', 'ripple', 'helix', 'kite'] as const) expect(shapes.has(old), `${id}:${old}`).toBe(false);
     }
     // Ấn, chuông, kim cương chỉ thuộc về một chiêu.
