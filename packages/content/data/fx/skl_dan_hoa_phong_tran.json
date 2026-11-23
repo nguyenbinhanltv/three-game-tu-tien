@@ -20,7 +20,7 @@
     -0.5
    ],
    "inward": true,
-   "tone": "accent",
+   "tone": "rim",
    "tier": 1
   },
   {
@@ -53,7 +53,7 @@
    "erodeFrom": 0.98,
    "alpha": 1,
    "spin": 500,
-   "tone": "accent",
+   "tone": "rim",
    "tier": 0,
    "seed": 1
   },
@@ -84,7 +84,7 @@
      0
     ]
    },
-   "tone": "accent",
+   "tone": "rim",
    "tier": 0,
    "seed": 1
   },
@@ -192,7 +192,7 @@
    "erodeFrom": 0.35,
    "alpha": 1,
    "spin": 300,
-   "tone": "accent",
+   "tone": "rim",
    "tier": 0,
    "seed": 8
   },
@@ -210,7 +210,7 @@
    "scale": 2.4,
    "billboard": true,
    "sweep": 0,
-   "tone": "accent",
+   "tone": "rim",
    "cross": true,
    "tier": 0
   },
@@ -229,7 +229,7 @@
     0
    ],
    "alpha": 0.9,
-   "tone": "accent",
+   "tone": "rim",
    "tier": 0
   },
   {
@@ -252,7 +252,7 @@
    "erodeFrom": 0.62,
    "ragged": 0.15,
    "alpha": 1,
-   "tone": "accent",
+   "tone": "rim",
    "tier": 0,
    "seed": 5
   },
@@ -398,7 +398,7 @@
     0.8,
     0
    ],
-   "tone": "accent",
+   "tone": "rim",
    "tier": 0
   },
   {
@@ -488,7 +488,7 @@
    "alpha": 1,
    "shadow": true,
    "camFade": true,
-   "tone": "accent",
+   "tone": "rim",
    "tier": 0,
    "seed": 50
   },
@@ -560,7 +560,7 @@
    "alpha": 1,
    "shadow": true,
    "camFade": true,
-   "tone": "accent",
+   "tone": "rim",
    "tier": 0,
    "seed": 52
   },
@@ -596,7 +596,7 @@
    "alpha": 1,
    "shadow": false,
    "camFade": true,
-   "tone": "accent",
+   "tone": "rim",
    "tier": 1,
    "seed": 53
   },
@@ -668,7 +668,7 @@
    "alpha": 1,
    "shadow": false,
    "camFade": true,
-   "tone": "accent",
+   "tone": "rim",
    "tier": 1,
    "seed": 55
   },
@@ -696,7 +696,7 @@
     "ease": "out"
    },
    "shadow": false,
-   "tone": "accent",
+   "tone": "rim",
    "alpha": 1,
    "seed": 1,
    "tier": 0
@@ -760,7 +760,7 @@
     "ease": "out"
    },
    "shadow": false,
-   "tone": "accent",
+   "tone": "rim",
    "alpha": 1,
    "seed": 2,
    "tier": 0
@@ -796,7 +796,7 @@
     ],
     "ease": "out"
    },
-   "tone": "accent",
+   "tone": "rim",
    "tier": 0,
    "seed": 71
   },
@@ -824,7 +824,7 @@
     "ease": "out"
    },
    "shadow": false,
-   "tone": "accent",
+   "tone": "rim",
    "alpha": 1,
    "seed": 3,
    "tier": 0
@@ -860,7 +860,7 @@
     ],
     "ease": "out"
    },
-   "tone": "accent",
+   "tone": "rim",
    "tier": 0,
    "seed": 72
   },
@@ -888,7 +888,7 @@
     "ease": "out"
    },
    "shadow": false,
-   "tone": "accent",
+   "tone": "rim",
    "alpha": 1,
    "seed": 4,
    "tier": 0
@@ -952,7 +952,7 @@
     "ease": "out"
    },
    "shadow": false,
-   "tone": "accent",
+   "tone": "rim",
    "alpha": 1,
    "seed": 5,
    "tier": 1
@@ -988,7 +988,7 @@
     ],
     "ease": "out"
    },
-   "tone": "accent",
+   "tone": "rim",
    "tier": 1,
    "seed": 74
   },
@@ -1016,7 +1016,7 @@
     "ease": "out"
    },
    "shadow": false,
-   "tone": "accent",
+   "tone": "rim",
    "alpha": 1,
    "seed": 6,
    "tier": 1
@@ -1052,7 +1052,7 @@
     ],
     "ease": "out"
    },
-   "tone": "accent",
+   "tone": "rim",
    "tier": 1,
    "seed": 75
   },
@@ -1080,7 +1080,7 @@
     "ease": "out"
    },
    "shadow": false,
-   "tone": "accent",
+   "tone": "rim",
    "alpha": 1,
    "seed": 7,
    "tier": 1

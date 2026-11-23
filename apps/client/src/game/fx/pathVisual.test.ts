@@ -8,7 +8,7 @@ import { DEFAULT_TINT, METHOD_TINT, tintOfMethod } from '../../render/vfx/phases
 const OLD_PALETTE = {
   lac_kiem_quyet: { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xf2fdff, accent: 0xf3c860, shadow: 0x08202e },
   bat_dong_kim_than: { core: 0x5a2d0b, body: 0xe39a2c, rim: 0xfff0c2, accent: 0xffd25a, shadow: 0x2a1708 },
-  thanh_moc_dan_kinh: { core: 0x06301f, body: 0x23b374, rim: 0x9fe9bd, accent: 0xe4452f, shadow: 0x071c13 },
+  thanh_moc_dan_kinh: { core: 0x06301f, body: 0x23b374, rim: 0x9fe9bd, accent: 0xf2d86b, shadow: 0x071c13 },
 };
 const OLD_TINT = { lac_kiem_quyet: 0xcff3ff, bat_dong_kim_than: 0xffde96, thanh_moc_dan_kinh: 0x7fe3d0 };
 
