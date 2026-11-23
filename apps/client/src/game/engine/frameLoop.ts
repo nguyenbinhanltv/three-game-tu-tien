@@ -210,6 +210,7 @@ export function runFrame(eng: Game): void {
   eng.budget.mark('move');
   const rp = eng.renderPos;
   eng.terrain.update(rp.x, rp.z, eng.started ? 1 : 8);
+  eng.budget.mark('world'); // streaming ô địa hình tính cho thế giới, không phải hoạt ảnh
   const myLevel = get().char?.level ?? 1;
   // Chậm thời gian TRÌNH DIỄN (VS-1 `slowmo`): chỉ animation/hình/hạt; di chuyển, dự đoán, camera, âm thanh dùng dt thật.
   const pscale = eng.presentationScale(performance.now());
@@ -243,12 +244,15 @@ export function runFrame(eng: Game): void {
     eng.questMarkersDirty = false;
     eng.ents.updateQuestMarkers(get().quests, myLevel, pathOf(get().method?.method)?.id);
   }
+  eng.budget.mark('world'); // dấu nhiệm vụ trên đầu thực thể
   if (me) eng.vfx.trails.update(dt, eng.ents.players, eng.sid, eng.camera);
   eng.suyFx?.update();
   eng.skillFx?.update(dt, pscale);
   if (me) eng.realmAura?.update(dt);
   if (me) eng.pathAura?.update(dt);
+  eng.budget.mark('fx');
   if (me) updateGrass(eng, dt, rp);
+  eng.budget.mark('world'); // bãi cỏ
   eng.vfx.update(dt, pscale);
   eng.post?.update(dt);
   eng.budget.mark('fx');
