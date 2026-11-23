@@ -56,11 +56,13 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
     viewport: [1920, 1080],
     seenIntro: true,
     look: { g: 'm' },
-    query: { realm: 'nk12', god: 1, chr: 'v3', vfxlab: 1, quiet: 1, mood: opt('--mood', '') || undefined },
+    query: { realm: 'nk12', god: 1, chr: 'v3', vfxlab: 1, quiet: 1, hero: 0, mood: opt('--mood', '') || undefined },
     ...(opt('--clip', '') ? { video: path.join(r.out, 'clip') } : {}),
     hide: 'hud',
   });
   page.on('pageerror', (e) => console.log('[pageerror]', String(e).slice(0, 400)));
+  // Chờ vào game xong (tải client chậm thì 2,5 s không đủ): __game và __vfxlab đều đã gắn.
+  await page.waitForFunction(() => !!window.__game && !!window.__vfxlab, undefined, { timeout: 120_000 });
   await sleep(2500);
   await gm(page, 'level 32', 1500);
   await gm(page, 'tp 2048 2095', 1800);
