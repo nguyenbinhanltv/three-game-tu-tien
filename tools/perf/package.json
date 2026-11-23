@@ -6,6 +6,7 @@
   "scripts": {
     "size": "tsx src/size.ts",
     "bench": "tsx src/bench.ts",
+    "iso": "tsx src/iso.ts",
     "typecheck": "tsc -p tsconfig.json",
     "compat": "tsx src/compat.ts",
     "load": "tsx src/load.ts",
