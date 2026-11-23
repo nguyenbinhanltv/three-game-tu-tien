@@ -981,7 +981,7 @@ export class EntityManager {
    * Phản ứng trúng đòn khi nhận S.DMG (chỉ hiển thị). `delay` để khớp lúc đạn bay tới.
    * Người ra đòn là mình thì mình cũng khựng.
    */
-  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number, heavy = false, stop?: StopPair): void {
+  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number, heavy = false, stop?: StopPair, tier?: number): void {
     const vd = this.players.get(dst) ?? this.monsters.get(dst);
     if (!vd) return;
     const vs = src && src !== dst ? (this.players.get(src) ?? this.monsters.get(src)) : undefined;
@@ -990,6 +990,7 @@ export class EntityManager {
     vd.model.hitReact({
       crit,
       heavy,
+      tier,
       delay,
       noStop,
       stop: stop?.target,
