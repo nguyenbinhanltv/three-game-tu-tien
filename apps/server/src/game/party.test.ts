@@ -509,3 +509,21 @@ describe('tỉ thí', () => {
     expect(s.sim.duel.inDuel(a)).toBe(false);
   });
 });
+
+describe('buff đồng đội trong khung tổ đội (U9)', () => {
+  it('tổ đội gửi buff đan đang có hiệu lực của từng người, hết hạn thì bỏ', () => {
+    const { join, team, last } = setup();
+    const [a, b] = [join('a'), join('b')];
+    team(a, b);
+    b.char.meta.buffs = { atk: { m: 0.2, until: Date.now() + 60_000 } };
+    parties.sendState(parties.partyOf(a.char.id)!);
+    const msg = last(a, S.PARTY) as { members: { id: number; bf?: Record<string, [number, number]> }[] };
+    const mb = msg.members.find((m) => m.id === b.char.id)!;
+    expect(mb.bf?.atk?.[0]).toBeCloseTo(0.2);
+    expect(msg.members.find((m) => m.id === a.char.id)!.bf).toBeUndefined();
+    b.char.meta.buffs = { atk: { m: 0.2, until: Date.now() - 1 } };
+    parties.sendState(parties.partyOf(a.char.id)!);
+    const msg2 = last(a, S.PARTY) as { members: { id: number; bf?: unknown }[] };
+    expect(msg2.members.find((m) => m.id === b.char.id)!.bf).toBeUndefined();
+  });
+});
