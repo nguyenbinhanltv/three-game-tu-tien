@@ -51,6 +51,8 @@ async function run(r: Run, mon: string, moves: string[], sizes: string[], at: nu
   await gm(page, 'spawn clear', 1400);
   await gm(page, `spawn ${mon} 1`, 2500);
   await gm(page, 'tp 2048 2078', 1800);
+  await page.evaluate(() => window.__vfxlab!.monLab(true));
+  await sleep(9000); // model boss nạp xong + vạch báo/FX server đang chạy dở tan hết
   await gm(page, 'cd', 1300);
   await sleep(600);
   const results: Record<string, unknown>[] = [];
@@ -64,6 +66,7 @@ async function run(r: Run, mon: string, moves: string[], sizes: string[], at: nu
       await page.setViewportSize({ width: w, height: h });
       await page.evaluate(() => window.__vfxlab!.pause(true));
       await sleep(500);
+      await page.evaluate('window.__game.clearTarget()'); // không vòng chọn mục tiêu dưới chân boss (đỏ, dễ lẫn với vạch báo)
       await frame(page);
       await snap(page, outDir, `base-${tag}.jpg`, { wait: 0 });
       const b0 = await page.evaluate(() => window.__vfxlab!.budget());

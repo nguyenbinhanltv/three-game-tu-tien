@@ -30,6 +30,8 @@ Sự kiện timeline `{ "type": "impact", "t": 0, "frames": 1|2, "tint": "ink|wa
 - **Phòng thử quái**: `pnpm shots vfxmon --mon boss_han_giao --move slam,chant,sweep --out <thư mục> [--sizes 720p,1080p] [--at -1200,-600,0,30,150,400] [--mood night] [--clip 1]`: dùng `?vfxlab=1` + `__vfxlab.castMon(mon, move)` đi đúng đường S.HAZARD của game (`onHazard` tách khỏi `room.ts`; `setTimeout` của vùng nổ đổi sang đồng hồ trình diễn trong phòng thử để tua được). Mốc âm = trước lúc nổ (vạch báo nạp), 0 = lúc nổ.
 - **Luật màu**: vạch báo của địch đỏ/cam (`accent` của bảng `mon_*`, boss `mon_boss_<hệ>` accent đỏ thẫm), phải rõ ở góc 52°, đúng HÌNH và BÁN KÍNH vùng server (không vẽ rộng/hẹp hơn hitbox), nhịp nạp ≥ ngưỡng né (`delay` của chiêu). Màu hệ (xanh băng...) dành cho vùng nổ/dư ba, không dùng cho vạch báo.
 
+- **Thẻ chiêu quái** (V-P9b): `packages/content/data/vfx/cards/mon/<monId>__<chiêu>.json` (`MonVfxCard` ở `packages/shared/src/vfxcard.ts`): `zone` (hình + bán kính + tâm), `palette` (hex, `accent` đỏ cảnh báo), nhịp nạp, `readability`. `content:check` bắt buộc `zone.shape/r` và nhịp nạp bằng `ai` của quái (vẽ vùng lệch hitbox là lỗi). Concept: `pnpm vfx:forge concept --mon-card <monId>__<chiêu> --shot <ảnh nền phòng thử> --out <thư mục ngoài repo>` (4 khung: vạch báo vừa hiện, nạp ~60%, lúc nổ, +150 ms). Codex đôi khi sinh ảnh xong mà bước sao chép hỏng hoặc treo: forge tự lấy ảnh từ `~/.codex/generated_images/<session id>/`. Ảnh nền sạch: `pnpm shots vfxmon` (đã tắt vạch báo của AI server và vòng chọn mục tiêu).
+
 ## Ảnh ở đâu
 
 Ảnh Codex, concept, contact sheet, ảnh phòng thử: artifact phiên hoặc `dtl-asset-source`, KHÔNG commit. Chỉ texture đã qua lò rèn (KTX2 + dòng nguồn trong manifest) vào repo.
