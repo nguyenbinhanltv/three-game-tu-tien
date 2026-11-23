@@ -201,11 +201,18 @@ for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKIL
 {
   const dir = new URL('../data/vfx/cards/', import.meta.url);
   const manifestUrl = new URL('../../../apps/client/public/assets/vfx/manifest.json', import.meta.url);
-  const vfxTexIds = new Set<string>(fs.existsSync(manifestUrl) ? (JSON.parse(fs.readFileSync(manifestUrl, 'utf8')) as { id: string }[]).map((e) => e.id) : []);
+  const vfxTexIds = new Set<string>(
+    fs.existsSync(manifestUrl) ? (JSON.parse(fs.readFileSync(manifestUrl, 'utf8')) as { id: string }[]).map((e) => e.id) : [],
+  );
   for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.json'))) {
     const card = JSON.parse(fs.readFileSync(new URL(f, dir), 'utf8')) as VfxCard;
     if (f !== `${card.skillId}.json`) err(`vfxcard ${f}: tên file phải là ${card.skillId}.json`);
-    for (const m of validateVfxCard(card, (id) => SKILL.has(id), (id) => PATH.has(id))) err(m);
+    for (const m of validateVfxCard(
+      card,
+      (id) => SKILL.has(id),
+      (id) => PATH.has(id),
+    ))
+      err(m);
     // Texture KTX2 do vfx-forge ghi vào manifest; `proc:*` là atlas thủ tục có sẵn.
     for (const t of card.textures) {
       if (t.id.startsWith('proc:')) {

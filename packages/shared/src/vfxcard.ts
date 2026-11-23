@@ -80,9 +80,9 @@ export function validateVfxCard(c: VfxCard, isSkill: (id: string) => boolean, is
   if (!f || !(f.lengthM > 0 && f.widthM > 0 && f.heightM > 0) || f.lengthM > 40 || f.widthM > 40 || f.heightM > 20) {
     e.push(`${at}: footprint không hợp lệ (mỗi chiều > 0, dài/rộng <= 40 m, cao <= 20 m)`);
   }
-  // Đỏ/cam dành riêng cho cảnh báo địch: chiêu của người chơi không được xin `warn`.
-  if (c.colorRole === 'warn' && c.telegraph === false) e.push(`${at}: colorRole warn mà không có telegraph`);
-  if (c.colorRole !== 'own' && c.colorRole !== 'warn') e.push(`${at}: colorRole lạ`);
+  // Đỏ/cam dành riêng cho cảnh báo địch. Thẻ hiện chỉ dành cho chiêu của người chơi (`isSkill`) nên chặn mọi `warn`; mở lại khi có thẻ của quái.
+  if (c.colorRole === 'warn') e.push(`${at}: colorRole warn chỉ dành cho cảnh báo của địch, chiêu người chơi phải dùng own`);
+  else if (c.colorRole !== 'own') e.push(`${at}: colorRole lạ`);
   const b = c.budget;
   const cap = VFX_CARD_CAPS;
   if (!b) e.push(`${at}: thiếu budget`);

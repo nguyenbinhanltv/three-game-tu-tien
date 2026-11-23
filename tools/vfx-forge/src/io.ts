@@ -46,11 +46,16 @@ export function findToktx(root: string): string | null {
   return c.find((x) => fs.existsSync(x)) ?? null;
 }
 
-/** ETC1S có mip. `srgb` cho texture màu; dữ liệu đóng kênh (R/G/B) dùng linear và chất lượng cao hơn để G không vỡ bậc. */
+/**
+ * KTX2 có mip. Màu sRGB: ETC1S (q192). Dữ liệu đóng kênh (R mặt nạ, G ngưỡng ăn mòn, B méo; `srgb` = false): UASTC như normal map ở
+ * tools/asset-pipeline/src/ktx.ts, vì ETC1S lưu mỗi khối 4×4 một màu gốc + điều biến độ sáng nên ba kênh độc lập bị trộn và vỡ khối ở mép tan.
+ */
 export function encodeKtx2(toktx: string, png: string, out: string, srgb: boolean): void {
-  const q = srgb ? ['--clevel', '3', '--qlevel', '192'] : ['--clevel', '3', '--qlevel', '224'];
   const script = /\.m?js$/.test(toktx);
-  const args = ['--t2', '--genmipmap', '--assign_oetf', srgb ? 'srgb' : 'linear', '--encode', 'etc1s', ...q, out, png];
+  const enc = srgb
+    ? ['--encode', 'etc1s', '--clevel', '3', '--qlevel', '192']
+    : ['--encode', 'uastc', '--uastc_quality', '2', '--uastc_rdo_l', '1.0', '--zcmp', '18'];
+  const args = ['--t2', '--genmipmap', '--assign_oetf', srgb ? 'srgb' : 'linear', ...enc, out, png];
   const r = spawnSync(script ? process.execPath : toktx, script ? [toktx, ...args] : args, { encoding: 'utf8' });
   if (r.status !== 0 || !fs.existsSync(out)) throw new Error(`toktx lỗi: ${(r.stdout + r.stderr).trim()}`);
 }
@@ -79,5 +84,8 @@ export async function contactSheet(r: Raster, g: { cols: number; rows: number },
       layers.push({ input: png, left: col * cell + 1, top: row * cell + 1 });
     }
   }
-  return sharp(checker, { raw: { width: W, height: H, channels: 3 } }).composite(layers).png().toBuffer();
+  return sharp(checker, { raw: { width: W, height: H, channels: 3 } })
+    .composite(layers)
+    .png()
+    .toBuffer();
 }
