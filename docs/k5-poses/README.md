@@ -78,3 +78,7 @@ Các số còn lại của bảng spec (chân bước tới 0,38 m / hai chân r
 ## C3a: cường điệu thân người cho camera chéo 52° (Chân Cảnh)
 
 `tools/poses/gen-k5.mjs` có `ISO_AMP = 1,18` (mặc định): ở MỌI pose, hông xoay (`hips.rot`), cột sống (`spine`) và đầu lệch khỏi thế thủ (khung 0) nhiều hơn 18%. Thời gian, IK tay/kiếm/chân và `hit` không đổi nên luật chiêu, `hitAt`, khớp VFX giữ nguyên. Trần xoay hông của từng giọng trong `k5poses.test.ts` nới theo cùng hệ số (kt 45° → 53°, hp 25° → 29,5°, ds 30° → 35,4°). Muốn bản gốc để so: `ISO_AMP=1 node tools/poses/gen-k5.mjs` (nhớ sinh lại mặc định sau đó).
+
+## C3c: giọng thứ tư `dt` (đao tu, Chân Cảnh)
+
+`PoseVoice` thêm `dt` (hậu tố `_dt`, `paths.json` → `dao_tu.voice = "dt"`): đại đao hai tay, ở giữa kiếm tu và hộ pháp. Số đo của giọng (khung 3/5, trong `VOICES.dt` của `tools/poses/gen-k5.mjs`; trần kiểm ở `RANGE.dt` của `k5poses.test.ts`): hạ hông 0,14 m, xoay hông 34° (×`ISO_AMP`), giữ 0,07 s (tụ lực lâu), quá đà 0,12, tầm tay 0,68 m, bước dài 0,36 m, tay trái nắm gần tay phải. Có 4 pose có giọng: `phi_kiem_dt`, `phi_kiem_2_dt`, `phi_kiem_3_dt` (đòn thường 3 đòn) và `kiem_khi_tram_dt`; các chiêu khác của đao tu giữ pose riêng như trước. Thời gian, `hit`, luật chiêu không đổi. Ảnh/video: `pnpm shots daotuhit --out <thư mục> [--tag sau|truoc] [--gender m|f] [--video 1]` (bản trước = đặt `voice` về `kt` rồi chạy lại).
