@@ -74,7 +74,8 @@ export async function forge(o: ForgeOpts, root: string): Promise<ForgeResult> {
   }
   r = await snapToGrid(await fitRaster(r, o.max ?? 1024), g);
   const st = stats(r);
-  if (pack === 'color' && st.cover > 0.9) warnings.push(`phủ ${(st.cover * 100).toFixed(0)}% khung: ảnh nền đen chưa tách được? Kiểm --mode`);
+  if (pack === 'color' && st.cover > 0.9)
+    warnings.push(`phủ ${(st.cover * 100).toFixed(0)}% khung: ảnh nền đen chưa tách được? Kiểm --mode`);
   if (g.cols * g.rows > 1 && (r.w % g.cols || r.h % g.rows)) warnings.push('cỡ ảnh không chia hết cho lưới');
 
   fs.mkdirSync(o.outDir, { recursive: true });
@@ -92,14 +93,18 @@ export async function forge(o: ForgeOpts, root: string): Promise<ForgeResult> {
       file = `${o.id}.ktx2`;
       fs.rmSync(path.join(o.outDir, `${o.id}.png`), { force: true });
     } else {
-      if (o.ktx !== false) warnings.push('không tìm thấy toktx: xuất PNG (cài KTX-Software hoặc đặt TOKTX, rồi chạy lại để ra KTX2 trước khi commit)');
+      if (o.ktx !== false)
+        warnings.push('không tìm thấy toktx: xuất PNG (cài KTX-Software hoặc đặt TOKTX, rồi chạy lại để ra KTX2 trước khi commit)');
       fs.writeFileSync(path.join(o.outDir, file), png);
     }
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
   const bytes = fs.statSync(path.join(o.outDir, file)).size;
-  const sha = createHash('sha256').update(fs.readFileSync(path.join(o.outDir, file))).digest('hex').slice(0, 12);
+  const sha = createHash('sha256')
+    .update(fs.readFileSync(path.join(o.outDir, file)))
+    .digest('hex')
+    .slice(0, 12);
   if (o.sheetDir) {
     fs.mkdirSync(o.sheetDir, { recursive: true });
     fs.writeFileSync(path.join(o.sheetDir, `${o.id}.contact.png`), await contactSheet(r, g));
@@ -140,6 +145,7 @@ export function checkManifest(outDir: string, budgetBytes = 3 * 1024 * 1024): st
       if (e.format === 'png') errs.push(`vfx-forge: ${e.id} còn là PNG, cần KTX2 trước khi commit`);
     }
   }
-  if (total > budgetBytes) errs.push(`vfx-forge: tổng texture VFX ${(total / 1048576).toFixed(2)} MB vượt ${(budgetBytes / 1048576).toFixed(1)} MB`);
+  if (total > budgetBytes)
+    errs.push(`vfx-forge: tổng texture VFX ${(total / 1048576).toFixed(2)} MB vượt ${(budgetBytes / 1048576).toFixed(1)} MB`);
   return errs;
 }

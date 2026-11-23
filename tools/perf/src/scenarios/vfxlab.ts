@@ -40,7 +40,8 @@ async function coverage(base: Buffer, shot: Buffer): Promise<number> {
   const n = a.info.width * a.info.height;
   let diff = 0;
   for (let i = 0; i < n; i++) {
-    const d = Math.abs(a.data[i * 3]! - b[i * 3]!) + Math.abs(a.data[i * 3 + 1]! - b[i * 3 + 1]!) + Math.abs(a.data[i * 3 + 2]! - b[i * 3 + 2]!);
+    const d =
+      Math.abs(a.data[i * 3]! - b[i * 3]!) + Math.abs(a.data[i * 3 + 1]! - b[i * 3 + 1]!) + Math.abs(a.data[i * 3 + 2]! - b[i * 3 + 2]!);
     if (d > 45) diff++;
   }
   return diff / n;
@@ -73,7 +74,10 @@ async function run(r: Run, skill: string, sizes: string[], at: number[]): Promis
   await gm(page, 'tp 2048 2088', 1800);
   await gm(page, 'cd', 1300);
   await page.evaluate((m) => {
-    const g = window.__game as unknown as { view: { monsters: Map<string, { t: string; st: number }> }; setTarget?: (id: string, kind: string) => void };
+    const g = window.__game as unknown as {
+      view: { monsters: Map<string, { t: string; st: number }> };
+      setTarget?: (id: string, kind: string) => void;
+    };
     const e = [...g.view.monsters.entries()].find(([, v]) => v.t === m && v.st !== 3);
     if (e) g.setTarget?.(e[0], 'mon');
   }, mon);
@@ -119,8 +123,14 @@ async function run(r: Run, skill: string, sizes: string[], at: number[]): Promis
     const concept = opt('--concept', '');
     if (concept) {
       const i30 = Math.max(0, at.indexOf(30));
-      const left = await sharp(concept).resize(960, Math.round((960 * h) / w), { fit: 'cover' }).jpeg().toBuffer();
-      const right = await sharp(files[i30]!).resize(960, Math.round((960 * h) / w)).jpeg().toBuffer();
+      const left = await sharp(concept)
+        .resize(960, Math.round((960 * h) / w), { fit: 'cover' })
+        .jpeg()
+        .toBuffer();
+      const right = await sharp(files[i30]!)
+        .resize(960, Math.round((960 * h) / w))
+        .jpeg()
+        .toBuffer();
       const ch = Math.round((960 * h) / w);
       await sharp({ create: { width: 1920, height: ch, channels: 3, background: '#111' } })
         .composite([
@@ -175,6 +185,10 @@ export default {
     const at = list('--at', '0,30,150,400').map(Number);
     const res = await run(r, skill, sizes, at);
     writeJson(r.out, `${skill}-vfxlab.json`, res);
-    console.log('đồng hồ ngân sách (xấu nhất):', JSON.stringify(res.worst), res.overBudget ? `vượt: ${(res.overBudget as string[]).join('; ') || 'không'}` : '');
+    console.log(
+      'đồng hồ ngân sách (xấu nhất):',
+      JSON.stringify(res.worst),
+      res.overBudget ? `vượt: ${(res.overBudget as string[]).join('; ') || 'không'}` : '',
+    );
   },
 } satisfies Scenario;

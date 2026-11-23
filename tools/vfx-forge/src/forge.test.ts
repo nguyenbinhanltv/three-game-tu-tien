@@ -26,7 +26,8 @@ describe('extractAlpha', () => {
 describe('detectGrid', () => {
   it('nhận 4×4', () => expect(detectGrid(extractAlpha(sampleSlashFlipbook(4, 128, 'black')))).toMatchObject({ cols: 4, rows: 4 }));
   it('nhận 8×8', () => expect(detectGrid(extractAlpha(sampleSlashFlipbook(8, 64, 'black')))).toMatchObject({ cols: 8, rows: 8 }));
-  it('ảnh trống → 1×1', () => expect(detectGrid({ w: 64, h: 64, data: new Float32Array(64 * 64 * 4) })).toMatchObject({ cols: 1, rows: 1 }));
+  it('ảnh trống → 1×1', () =>
+    expect(detectGrid({ w: 64, h: 64, data: new Float32Array(64 * 64 * 4) })).toMatchObject({ cols: 1, rows: 1 }));
 });
 
 describe('balance / defringe / pack', () => {
@@ -74,7 +75,10 @@ describe('forge end to end', () => {
       const input = path.join(tmp, 'in.png');
       fs.writeFileSync(input, await toPng(sampleSlashFlipbook(4, 128, 'black')));
       const out = path.join(tmp, 'out');
-      const res = await forge({ id: 'test_slash', input, outDir: out, sheetDir: path.join(tmp, 'sheets'), ktx: false, pack: 'packed' }, tmp);
+      const res = await forge(
+        { id: 'test_slash', input, outDir: out, sheetDir: path.join(tmp, 'sheets'), ktx: false, pack: 'packed' },
+        tmp,
+      );
       expect(res.entry.grid).toEqual({ cols: 4, rows: 4 });
       expect(res.entry.source).toMatch(/Codex-generated/);
       expect(fs.existsSync(path.join(out, 'test_slash.png'))).toBe(true);
