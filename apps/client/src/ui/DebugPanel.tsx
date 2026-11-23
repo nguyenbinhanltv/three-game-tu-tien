@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { C, MAX_LEVEL, PF_TRIBULATION } from '@dtl/shared';
 import {
   ITEMS,
@@ -42,6 +42,14 @@ function PerfRows({ p }: { p: DebugPerf }) {
       <dd className="gpu-info">{p.gpu}</dd>
       <dt>{t('ui.debug.frame')}</dt>
       <dd className={tone(p.cpuMs, BUDGET.cpuMs)}>{t('ui.debug.frame_v', { avg: p.cpuMs.toFixed(1), max: p.cpuMaxMs.toFixed(1) })}</dd>
+      {p.budget.map((b) => (
+        <Fragment key={b.section}>
+          <dt className="sub">{t(`ui.debug.budget.${b.section}`)}</dt>
+          <dd className={tone(b.avg, b.limit)}>
+            {t('ui.debug.budget_v', { avg: b.avg.toFixed(2), max: b.max.toFixed(1), limit: b.limit })}
+          </dd>
+        </Fragment>
+      ))}
       <dt>{t('ui.debug.draw')}</dt>
       <dd className={tone(p.drawCalls, BUDGET.drawCalls)}>{t('ui.debug.draw_v', { n: p.drawCalls })}</dd>
       <dt>{t('ui.debug.tri')}</dt>

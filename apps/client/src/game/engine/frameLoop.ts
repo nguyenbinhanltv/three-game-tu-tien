@@ -152,6 +152,7 @@ export function runFrame(eng: Game): void {
   if (eng.disposed || eng.compiling > 0) return;
   eng.renderer.info.reset();
   const now = performance.now();
+  eng.budget.begin();
   const rawDt = Math.min(0.1, (now - eng.lastT) / 1000) * SLOWMO;
   const dt = VFX_LAB ? labDt(rawDt) : rawDt;
   eng.lastT = now;
@@ -206,8 +207,10 @@ export function runFrame(eng: Game): void {
     eng.facing += d * Math.min(1, dt * 14);
   }
 
+  eng.budget.mark('move');
   const rp = eng.renderPos;
   eng.terrain.update(rp.x, rp.z, eng.started ? 1 : 8);
+  eng.budget.mark('world'); // streaming ô địa hình tính cho thế giới, không phải hoạt ảnh
   const myLevel = get().char?.level ?? 1;
   // Chậm thời gian TRÌNH DIỄN (VS-1 `slowmo`): chỉ animation/hình/hạt; di chuyển, dự đoán, camera, âm thanh dùng dt thật.
   const pscale = eng.presentationScale(performance.now());
@@ -234,19 +237,25 @@ export function runFrame(eng: Game): void {
   }
   eng.ents.syncHero();
   if (me) eng.steps?.update(eng.ents, eng.sid, rp, !eng.cur.grounded && !eng.cur.flying);
+  eng.budget.mark('anim');
   eng.scape?.update(rp.x, rp.z, now / 1000);
+  eng.budget.mark('world');
   if (eng.questMarkersDirty) {
     eng.questMarkersDirty = false;
     eng.ents.updateQuestMarkers(get().quests, myLevel, pathOf(get().method?.method)?.id);
   }
+  eng.budget.mark('world'); // dấu nhiệm vụ trên đầu thực thể
   if (me) eng.vfx.trails.update(dt, eng.ents.players, eng.sid, eng.camera);
   eng.suyFx?.update();
   eng.skillFx?.update(dt, pscale);
   if (me) eng.realmAura?.update(dt);
   if (me) eng.pathAura?.update(dt);
+  eng.budget.mark('fx');
   if (me) updateGrass(eng, dt, rp);
+  eng.budget.mark('world'); // bãi cỏ
   eng.vfx.update(dt, pscale);
   eng.post?.update(dt);
+  eng.budget.mark('fx');
   updateCamera(eng, dt);
   setListener(rp.x, rp.z, eng.camYaw);
   // Camera chéo: bóng ôm khung hình nên tâm bóng là điểm camera nhìn (người + dẫn trước), và rộng thêm theo khoảng cách camera lúc ngự kiếm.
@@ -286,8 +295,10 @@ export function runFrame(eng: Game): void {
       (disc.userData.op ?? 0.55) + Math.sin(now * 0.003) * (disc.userData.still ? 0.08 : disc.userData.op ? disc.userData.op * 0.35 : 0.2);
     if (disc.userData.mirrorTex) (disc.userData.mirrorTex as THREE.Texture).rotation = now * 0.00006;
   }
+  eng.budget.mark('world');
   tickSkillQueue(eng, now);
   tickCombat(eng, now, me);
+  eng.budget.mark('logic');
   // Cập nhật ma trận cả cảnh MỘT lần mỗi khung (M3-9): để tự động thì mỗi pass (cảnh chính, bóng) duyệt lại
   // toàn bộ cây, kể cả ~60 xương của mỗi nhân vật có xương.
   eng.scene.updateMatrixWorld();
@@ -300,6 +311,7 @@ export function runFrame(eng: Game): void {
     renderLog.error(e);
     if (++eng.renderFails >= RENDER_FAIL_LIMIT) eng.fallbackToWebGL2('render-error');
   }
+  eng.budget.mark('render');
   // renderer.info không tự reset (M1-6): lúc này là tổng của MỌI pass trong khung (bóng, cảnh, hậu kỳ).
   const ri = eng.renderer.info.render;
   eng.lastRender.drawCalls = ri.drawCalls ?? ri.calls;
@@ -310,6 +322,7 @@ export function runFrame(eng: Game): void {
   eng.lootFly.update(dt);
   if (me && eng.started) eng.offscreen.update(eng.camera, window.innerWidth, window.innerHeight, rp);
 
+  eng.budget.mark('ui');
   eng.fpsAcc += dt;
   eng.fpsFrames++;
   const cpu = performance.now() - now;
@@ -333,6 +346,8 @@ export function runFrame(eng: Game): void {
       monsters: eng.ents.monsters.values(),
     });
   }
+  eng.budget.mark('ui');
+  eng.budget.end();
   if (!eng.started && me && eng.terrain.ready && eng.frames > 4) {
     eng.started = true;
     eng.loadStats.worldReady = Math.round(performance.now() - eng.startedAt);
