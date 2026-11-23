@@ -44,7 +44,7 @@ import { bhTod, GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MO
 import { archWrap, withOccluderFade, withSightFade } from '../world/occlusion';
 import { LanternLights } from '../../render/lanternLights';
 import { buildMoonGate, buildPortalDisc, buildSect, moonMirrorTexture, SECT_LANTERNS } from '../world/sect';
-import { gatesToDraw } from '../world/gates';
+import { ISO_GATE_OPACITY, ISO_GATE_SCALE, gateFlat, gatesToDraw } from '../world/gates';
 import {
   buildCaveShell,
   buildCrystalGlow,
@@ -321,8 +321,15 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
   }
   if (F.portals || (LEVELS[id]?.portals?.length ?? 0) > 0) {
     eng.gateDiscs = gatesToDraw(id).map((g) => {
-      const d = buildPortalDisc(g.x, g.z, g.color, g.flat);
+      const flat = gateFlat(g, FLAGS.isoCam);
+      const d = buildPortalDisc(g.x, g.z, g.color, flat);
       d.userData.op = g.opacity ?? 0.55;
+      if (flat && !g.flat) {
+        // Iso: đĩa dựng đứng đổi sang nằm phẳng thì mờ và nhỏ (như vòng cổng phẳng trong hang), không thành mảng sáng chói phủ góc màn hình.
+        d.userData.op = Math.min(d.userData.op as number, ISO_GATE_OPACITY);
+        d.scale.multiplyScalar(ISO_GATE_SCALE);
+        d.userData.isoFlat = true; // không đánh dấu bloom: bloom làm đĩa chói thành mảng trắng
+      }
       return d;
     });
     // Cổng vào Kính Nguyệt Cung: thêm vành gương nguyệt quanh đĩa để thấy rõ cổng.
@@ -356,7 +363,8 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
       }
     }
     if (eng.gateDiscs.length) eng.scene.add(...eng.gateDiscs);
-    for (const disc of eng.gateDiscs) if (disc.name !== 'moon-gate') markBloom(disc.material as THREE.Material, 0.8);
+    for (const disc of eng.gateDiscs)
+      if (disc.name !== 'moon-gate' && !disc.userData.isoFlat) markBloom(disc.material as THREE.Material, 0.8);
     // Cung gương: vòng ra nằm trên sàn gương (cao hơn 0,08 m của sàn), không bị sàn cắt thành bán nguyệt.
     if (levelAssets(id).palace) for (const disc of eng.gateDiscs) disc.position.y += 0.2;
   }
@@ -519,10 +527,13 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     id === 'van_lam' ? [] : (LEVELS[id]?.portals ?? []).filter((q) => LEVELS[q.to]?.dungeon).map((q) => ({ x: q.x, z: q.z, h: 30 }));
   if (F.beacons && (pois.length || portalBeams.length)) {
     // Giới Khích (Bắc Hoang) tự có vệt sáng riêng (render/riftVeil.ts), không thêm cột linh quang nón.
-    eng.beacons = new Beacons([
-      ...pois.filter((p) => p.beamH && !(id === 'bac_hoang' && p.id === 'gioi_khich')).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })),
-      ...portalBeams,
-    ]);
+    eng.beacons = new Beacons(
+      [
+        ...pois.filter((p) => p.beamH && !(id === 'bac_hoang' && p.id === 'gioi_khich')).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })),
+        ...portalBeams,
+      ],
+      FLAGS.isoCam,
+    );
     eng.beacons.mesh.visible = isWorldRoom(get().room);
     eng.scene.add(eng.beacons.mesh);
   }
