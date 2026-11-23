@@ -225,7 +225,8 @@ export class MonsterSystem {
    * chỉ khựng khi đòn đủ cấp `poise` và cách lần khựng trước `BOSS_STAGGER_GAP_MS` (thanh phá thế vẫn là đường chính để làm boss quỵ).
    */
   reactMonster(mon: MonEnt, tier: HitTier, fromX: number, fromZ: number): void {
-    if (!hitReactCfg.enabled || mon.owner || this.c.now < mon.evadeUntil) return;
+    // Quái đánh xa (caster) giữ khoảng cách và đánh bằng chú: đẩy/khựng làm nó ra khỏi tầm hay mất nhịp chú, đo bằng fight:check thấy hạ chậm hơn nên miễn hẳn.
+    if (!hitReactCfg.enabled || mon.owner || mon.def.ai?.caster || this.c.now < mon.evadeUntil) return;
     const r = monsterReaction(mon.def, tier);
     if (r.knockM > 0) this.c.pushMonster(mon, fromX, fromZ, r.knockM * (mon.def.elite ? 2 : 1));
     const ms = Math.max(r.staggerMs, r.knockdownMs);

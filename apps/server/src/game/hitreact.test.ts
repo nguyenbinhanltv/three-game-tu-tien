@@ -302,3 +302,24 @@ describe('chuỗi đòn thường và siêu giáp (sửa theo review)', () => {
     expect(mon.attackAt).toBeLessThan(sim.now + 600);
   });
 });
+
+describe('quái đánh xa miễn đẩy/khựng (giữ cân bằng cấp 10)', () => {
+  it('Hỏa Vân Hổ (caster) trúng đòn nặng và chiêu cuối: không lùi, không khựng', () => {
+    const { sim, mon, X, Z } = setup('mon_hoa_van_ho');
+    const q = {
+      sid: 'p1',
+      move: { x: X, y: groundAt(X, Z - 2), z: Z - 2 },
+      char: { atk: 50, stats: { critRate: 0, critMul: 1.5, setFx: { critSlowSec: 0 } }, meta: {}, equip: {}, level: 1 },
+      mth: { lockCharge: true },
+    };
+    sim.players.set('p1', q as never);
+    mon.s.hp = mon.s.mhp = 1_000_000;
+    sim.now = 1_000_000;
+    const z0 = mon.s.z;
+    const h = (sim as unknown as { hitMonster(p: unknown, m: unknown, pw: number, mul: number): boolean }).hitMonster;
+    h.call(sim, q, mon, 2.3, 1);
+    h.call(sim, q, mon, 4.6, 1);
+    expect(mon.s.z).toBe(z0);
+    expect(mon.stunUntil).toBe(0);
+  });
+});
