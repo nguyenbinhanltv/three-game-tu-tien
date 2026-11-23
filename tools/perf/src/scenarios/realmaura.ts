@@ -16,12 +16,16 @@ const DAO: Record<string, { method: string; ult: string; cap: string; label: str
   dan: { method: 'thanh_moc_dan_kinh', ult: 'skl_hoi_thien_dan_lo', cap: 'skl_thien_dan_phap_gioi', label: 'dansu' },
 };
 const REALMS: Record<string, { lv: number; label: string }> = {
+  nk: { lv: 15, label: 'ngungkhi' },
   kd: { lv: 20, label: 'ketdan' },
   na: { lv: 24, label: 'nguyenanh' },
   hn: { lv: 28, label: 'hoathan' },
   ab: { lv: 32, label: 'anhbien' },
 };
 
+/** `--iso`: ảnh ở camera chéo mặc định (Chân Cảnh C5); `--party5`: cảnh 5 người cùng đứng ở sân tông môn. */
+const ISO = flag('--iso');
+const ISO_VIEWS: [string, number, number][] = [['iso', 0, 0]];
 const VIEWS: [string, number, number][] = [
   ['sau', Math.PI + 0.5, 0.16], // camera sau lưng nhân vật
   ['truoc', 0.5, 0.16], // nhìn thẳng mặt
@@ -106,7 +110,7 @@ export default {
   name: 'realmaura',
   desc: 'Hào quang cảnh giới trên nhân vật: 4 cảnh giới × 3 đạo (1080p + 720p), dãy khung pháp tướng, video, đo hiệu năng trước/sau',
   usage:
-    '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--mood day|night] [--mode off|min|std|full] [--run] [--video] [--perf] [--budget] [--cmp] [--settings] [--others N] [--only stills|phantom]',
+    '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--mood day|night] [--mode off|min|std|full] [--run] [--video] [--body: hào quang kiểu cũ quanh người] [--perf] [--budget] [--cmp] [--settings] [--others N] [--only stills|phantom]',
   async run(r) {
     const daos = list('--daos', 'kiem,ho,dan');
     const realms = list('--realms', 'kd,na,hn,ab');
@@ -118,8 +122,12 @@ export default {
     const mood = opt('--mood', '');
     /** Chế độ Hào quang khi chụp (mặc định Chuẩn, như người chơi); `--mode full` để so bản cũ. */
     const mode = opt('--mode', 'std');
-    const query = { fxq, ...(mood ? { mood } : {}), ...(flag('--off') ? { aura: 0 } : {}) };
+    const query = { fxq, ...(mood ? { mood } : {}), ...(flag('--off') ? { aura: 0 } : {}), ...(flag('--body') ? { auraground: 0 } : {}) };
 
+    if (flag('--party5')) {
+      await party5(r, realms, quality, fxq, mode);
+      return;
+    }
     if (flag('--perf')) {
       await perf(r, daos, num('--others', 4), quality, fxq, mode);
       return;
@@ -161,8 +169,9 @@ export default {
         const re = REALMS[rk];
         await setup(page, dao, re.lv);
         if (only !== 'phantom') {
-          for (const [vn, yaw, pitch] of VIEWS) {
-            await cam(page, { yaw, pitch, dist: 4.4 });
+          for (const [vn, yaw, pitch] of ISO ? ISO_VIEWS : VIEWS) {
+            // `--iso`: giữ camera chéo khóa góc mặc định của game (không đặt lại camera), để duyệt hào quang đúng góc người chơi thấy.
+            if (!ISO) await cam(page, { yaw, pitch, dist: 4.4 });
             await sleep(4600); // đứng yên > 3 s: lớp phụ/nền đã mở (Chuẩn)
             await shotBoth(page, r.out, `${d.label}-${re.label}-${vn}`, vw, vh);
           }
@@ -259,6 +268,37 @@ async function videos(r: Parameters<Scenario['run']>[0], daos: string[], quality
       .map((f) => ({ f, t: fs.statSync(path.join(dir, f)).mtimeMs }))
       .sort((a, b) => b.t - a.t);
     if (vids[0]) fs.renameSync(path.join(dir, vids[0].f), path.join(r.out, `video-${d.label}-hoathan.webm`));
+  }
+}
+
+/** Cảnh 5 người (C5): mình + 4 phiên khác đứng quanh nhau ở sân tông môn, cùng cảnh giới `re`; ảnh ở camera chéo mặc định, 1080p + 720p. */
+async function party5(r: Parameters<Scenario['run']>[0], realms: string[], quality: string, fxq: string, mode: string): Promise<void> {
+  const keys = Object.keys(DAO);
+  for (const rk of realms) {
+    const re = REALMS[rk];
+    const { ctx, page } = await r.open({
+      name: 'Ap5',
+      viewport: [1920, 1080],
+      dpr: 1,
+      quality,
+      query: { fxq, ...(flag('--body') ? { auraground: 0 } : {}) },
+      hide: 'hud',
+      warnings: /models/,
+    });
+    await page.evaluate(`window.__game.setAuraMode(${JSON.stringify(mode)})`);
+    await setup(page, keys[0]!, re.lv);
+    const extra: { close(): Promise<void> }[] = [];
+    for (let i = 0; i < 4; i++) {
+      const o = await r.open({ name: `Ap5o${i}`, viewport: [640, 360], dpr: 1, quality: 'low', hide: 'hud', warnings: /models/ });
+      await setup(o.page, keys[(i + 1) % keys.length]!, re.lv);
+      await gm(o.page, `tp ${2044 + i * 2.6} ${2094 + (i % 2) * 2.4}`, 800);
+      extra.push(o.ctx);
+    }
+    await gm(page, 'tp 2048 2090', 1500);
+    await sleep(6000); // đứng yên > 3 s: lớp phụ/nền mở
+    await shotBoth(page, r.out, `party5-${re.label}`, 1920, 1080);
+    for (const c of extra) await c.close();
+    await ctx.close();
   }
 }
 
