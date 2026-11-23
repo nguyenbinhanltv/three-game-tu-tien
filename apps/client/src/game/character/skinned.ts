@@ -1,3 +1,4 @@
+import { applyProportions, type BoneScale } from './hero';
 import * as THREE from 'three/webgpu';
 import { bodyClassOf, canCancel, HIT_FEEL, hitDirOf, hitsPassed, lungeOffset, type MonsterDef, type SkillTiming } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
@@ -234,6 +235,8 @@ export class SkinnedCharacter implements CharacterView {
   readonly mixer: THREE.AnimationMixer;
   /** Mesh theo mức LOD (chỉ số = mức). */
   private lods: THREE.Mesh[][] = [];
+  /** Tỉ lệ đọc từ trên (C2): xương cần scale mỗi khung sau mixer; rỗng = không dùng. */
+  protected proportions: BoneScale[] = [];
   protected lodLevel = -1;
   private lodDist: [number, number];
   private clips = new Map<string, THREE.AnimationClip>();
@@ -669,6 +672,7 @@ export class SkinnedCharacter implements CharacterView {
     // Dung sai 1,5 ms: ở 60 khung/giây dt dao động quanh 1/60, không để LOD0 tụt xuống 30 Hz vì làm tròn.
     if (mixerDue(this.acc, this.interval)) {
       this.mixer.update(this.acc);
+      if (this.proportions.length) applyProportions(this.proportions);
       if (this.feet) this.groundFeet(this.acc, a);
       this.rig.updateMatrixWorld(true);
       this.acc = 0;

@@ -112,6 +112,15 @@ export function setImpactFrameOn(on: boolean): void {
 
 let fxStatic = typeof localStorage !== 'undefined' && localStorage.getItem(KEY_STATIC) === '1';
 /** Chế độ tĩnh (V-P0): người không thích rối mắt. Không khung va chạm/chớp, hiệu ứng người khác giảm mạnh hơn (xem `fxHierarchy`). */
+const KEY_HERO = 'dtl.heroRim';
+let heroRim = !(typeof localStorage !== 'undefined' && localStorage.getItem(KEY_HERO) === '0') && FLAGS.hero;
+/** Viền nhân vật (hero light, Chân Cảnh C1): mặc định bật; `?hero=0` tắt cho lần nạp đó. */
+export const heroRimOn = (): boolean => heroRim;
+export function setHeroRimOn(on: boolean): void {
+  heroRim = on;
+  if (typeof localStorage !== 'undefined') localStorage.setItem(KEY_HERO, on ? '1' : '0');
+}
+
 export const staticFxOn = (): boolean => fxStatic;
 export function setStaticFxOn(on: boolean): void {
   fxStatic = on;

@@ -94,6 +94,8 @@ interface Flags {
   tcProps: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
   butterflies: boolean;
+  /** `?hero=0` tắt viền nhân vật (hero light, C1). */
+  hero: boolean;
   /** `?brk=0` tắt vật thể vỡ (vò, bia, cọc). */
   breakables: boolean;
   /** `?isoyaw=<độ>` ghi đè hướng nhìn cố định của camera chéo (chỉ để chọn hướng đẹp nhất cho từng bản đồ). */
@@ -152,6 +154,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   bhart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Bắc Hoang' },
   tc: { scope: 'diag', doc: '=0 ẩn bộ prop Thiên Công Khai Vật (PROP-1, so ảnh/đo)' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
+  hero: { scope: 'diag', doc: '=0 tắt viền nhân vật (hero light)' },
   brk: { scope: 'diag', doc: '=0 tắt vật thể vỡ (vò, bia, cọc)' },
   god: { scope: 'test', doc: 'bất tử (server kiểm lại, xem testParams.ts)' },
   at: { scope: 'test', doc: 'vào ở điểm đặt tên hoặc x,z (testParams.ts)' },
@@ -228,6 +231,7 @@ export function readFlags(search: string): Flags {
     cinematics: !off(q.get('cine')),
     tcProps: !off(q.get('tc')),
     butterflies: !off(q.get('bf')),
+    hero: !off(q.get('hero')),
     breakables: !off(q.get('brk')),
   };
 }

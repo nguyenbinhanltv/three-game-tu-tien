@@ -475,6 +475,8 @@
   "ui.settings.fx_quality_hint": "Thấp bớt chi tiết (chỉ hình chính); chiêu của người khác luôn giảm một bậc.",
   "ui.settings.hit_stop": "Khựng hình khi đánh trúng",
   "ui.settings.impact_frame": "Khung va chạm (chớp tương phản 1–2 khung)",
+  "ui.settings.hero_rim": "Viền nhân vật",
+  "ui.settings.hero_rim_hint": "Viền sáng theo hướng tu cho nhân vật của bạn và đồng đội, và viền tối khi bị vật che.",
   "ui.settings.fx_static": "Chế độ hiệu ứng tĩnh",
   "ui.settings.fx_static_hint": "Giảm mạnh hiệu ứng của người khác và tắt khung va chạm cho đỡ rối mắt.",
   "ui.settings.realm_aura": "Hào quang cảnh giới",
