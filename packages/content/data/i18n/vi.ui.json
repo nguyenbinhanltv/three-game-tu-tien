@@ -1499,5 +1499,8 @@
   "ui.wardrobe.worn": "Đang mặc (gốc)",
   "ui.wardrobe.preview": "Xem trước nhân vật",
   "ui.wardrobe.preview_off": "Máy chậm: tắt xem trước 3D",
+  "ui.char.view": "Kiểu xem nhân vật",
+  "ui.char.view.art": "Tranh",
+  "ui.char.view.3d": "3D",
   "ui.wardrobe.drag": "Kéo để xoay"
 }
