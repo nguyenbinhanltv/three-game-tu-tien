@@ -50,6 +50,77 @@ import { isWorldRoom, levelOfInit } from './common';
 import { isBossSrc, lightningFlash, monFlagFx, monsterInk, onDmg, onSys, resetSound, shakeForHazard, volumeAt } from './fxMsgs';
 import type { Game } from '../engine';
 
+/** Chạy sau `sec` giây: đồng hồ thật, trừ phòng thử VFX (`?vfxlab=1`) dùng đồng hồ trình diễn để tua/tạm dừng được đúng mili giây. */
+function later(eng: Game, sec: number, fn: () => void): void {
+  if (eng.monFx?.lab && eng.vfx) eng.vfx.add(sec, () => {}, fn);
+  else window.setTimeout(fn, sec * 1000);
+}
+
+/** Vạch báo của server (S.HAZARD). Tách ra để phòng thử VFX phát lại đúng đường này cho chiêu của quái (V-P9). */
+export function onHazard(eng: Game, m: HazardMsg): void {
+  if (import.meta.env.DEV)
+    (eng.hazardLog ??= []).push({
+      k: m.kind,
+      mv: m.mv,
+      sh: m.sh ?? 'circle',
+      src: m.src ?? '',
+      boss: isBossSrc(eng, m.src),
+      t: eng.view.monsters.get(m.src ?? '')?.t ?? '',
+      x: m.x,
+      z: m.z,
+      r: m.r,
+      yaw: m.yaw,
+      w: m.w,
+      big: m.big,
+      px: eng.cur.x,
+      pz: eng.cur.z,
+      delay: m.delay,
+      at: Date.now(),
+    });
+  if (import.meta.env.DEV && eng.hazardLog && eng.hazardLog.length > 200) eng.hazardLog.shift();
+  // Trảm Ly Kiếp (TN-6): vạch kiếm vô hình (chữ nhật không nguồn) hết giờ báo thì nhát chém hiện hình. Chỉ là hình.
+  if (m.sh === 'rect' && !m.src && useUI.getState().suy?.id === 'hk_tram_ly') {
+    const sid = eng.sid;
+    later(eng, m.delay, () => !eng.disposed && eng.suyFx?.cut(sid, m.x, m.z, m.yaw ?? 0));
+  }
+  // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
+  if (m.sh && eng.vfx) {
+    if (Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90) telegraph(eng.vfx, m, isBossSrc(eng, m.src), hazardDangerOf(eng, m));
+    // Vạch pháp trận cũ giữ nguyên; boss thêm nhấp nháy dọc vạch (`mon_warn_line|cone`, V5).
+    eng.monFx?.warn(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
+  } else if (m.mv === 'trail') eng.vfx?.trailPool(m.x, m.z, m.r, m.delay, m.dur ?? 8);
+  else if (m.mv === 'pool') eng.vfx?.venomPool(m.x, m.z, m.r, m.delay, m.dur ?? 6, m.kind);
+  else {
+    const hsrc = m.src ? eng.ents?.monsters.get(m.src) : undefined;
+    eng.monFx?.warn(m, hsrc);
+    eng.vfx?.hazard(
+      m.x,
+      m.z,
+      m.r,
+      m.delay,
+      m.kind,
+      m.sd,
+      lightningFlash(eng, m),
+      isBossSrc(eng, m.src),
+      m.hot,
+      hsrc ? () => !eng.disposed && !!eng.monFx?.boom(m, eng.ents?.monsters.get(m.src ?? '') ?? hsrc) : undefined,
+      hazardDangerOf(eng, m),
+    );
+  }
+  // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).
+  if (m.src) eng.ents?.monsters.get(m.src)?.model.bossMove?.(m.sh ? 'sweep' : 'slam', m.delay);
+  // Vòng kéo (Nuốt) và vũng độc không nổ: không âm nện/rung màn hình.
+  if (m.mv === 'pull' || m.mv === 'pool' || m.mv === 'trail') return;
+  const vol = volumeAt(eng, m.x, m.z);
+  const bsrc = m.src ? eng.ents?.monsters.get(m.src) : undefined;
+  // Vùng tròn: `Vfx.hazard` tự gọi `boom` lúc nổ và chỉ bỏ hình cũ khi nó thật sự phát; vùng chữ nhật/nón (telegraph) gọi ở đây.
+  if (bsrc && m.sh) later(eng, m.delay, () => (eng.disposed ? 0 : eng.monFx?.boom(m, eng.ents?.monsters.get(m.src ?? '') ?? bsrc)));
+  later(eng, m.delay, () => {
+    sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
+    shakeForHazard(eng, m);
+  });
+}
+
 function hazardDangerOf(eng: Game, m: HazardMsg): 0 | 1 | 2 {
   return hazardDanger({ boss: isBossSrc(eng, m.src), mv: m.mv, big: m.big, r: m.r });
 }
@@ -155,69 +226,7 @@ export function bindRoom(eng: Game, room: Room): void {
   room.onMessage(S.DMG, (m: DmgMsg) => onDmg(eng, m));
   room.onMessage(S.HAZARD, (m: HazardMsg) => {
     if (eng.monFx?.lab) return;
-    if (import.meta.env.DEV)
-      (eng.hazardLog ??= []).push({
-        k: m.kind,
-        mv: m.mv,
-        sh: m.sh ?? 'circle',
-        src: m.src ?? '',
-        boss: isBossSrc(eng, m.src),
-        t: eng.view.monsters.get(m.src ?? '')?.t ?? '',
-        x: m.x,
-        z: m.z,
-        r: m.r,
-        yaw: m.yaw,
-        w: m.w,
-        big: m.big,
-        px: eng.cur.x,
-        pz: eng.cur.z,
-        delay: m.delay,
-        at: Date.now(),
-      });
-    if (import.meta.env.DEV && eng.hazardLog && eng.hazardLog.length > 200) eng.hazardLog.shift();
-    // Trảm Ly Kiếp (TN-6): vạch kiếm vô hình (chữ nhật không nguồn) hết giờ báo thì nhát chém hiện hình. Chỉ là hình.
-    if (m.sh === 'rect' && !m.src && useUI.getState().suy?.id === 'hk_tram_ly') {
-      const sid = eng.sid;
-      window.setTimeout(() => !eng.disposed && eng.suyFx?.cut(sid, m.x, m.z, m.yaw ?? 0), m.delay * 1000);
-    }
-    // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
-    if (m.sh && eng.vfx) {
-      if (Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90)
-        telegraph(eng.vfx, m, isBossSrc(eng, m.src), hazardDangerOf(eng, m));
-      // Vạch pháp trận cũ giữ nguyên; boss thêm nhấp nháy dọc vạch (`mon_warn_line|cone`, V5).
-      eng.monFx?.warn(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
-    } else if (m.mv === 'trail') eng.vfx?.trailPool(m.x, m.z, m.r, m.delay, m.dur ?? 8);
-    else if (m.mv === 'pool') eng.vfx?.venomPool(m.x, m.z, m.r, m.delay, m.dur ?? 6, m.kind);
-    else {
-      const hsrc = m.src ? eng.ents?.monsters.get(m.src) : undefined;
-      eng.monFx?.warn(m, hsrc);
-      eng.vfx?.hazard(
-        m.x,
-        m.z,
-        m.r,
-        m.delay,
-        m.kind,
-        m.sd,
-        lightningFlash(eng, m),
-        isBossSrc(eng, m.src),
-        m.hot,
-        hsrc ? () => !eng.disposed && !!eng.monFx?.boom(m, eng.ents?.monsters.get(m.src ?? '') ?? hsrc) : undefined,
-        hazardDangerOf(eng, m),
-      );
-    }
-    // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).
-    if (m.src) eng.ents?.monsters.get(m.src)?.model.bossMove?.(m.sh ? 'sweep' : 'slam', m.delay);
-    // Vòng kéo (Nuốt) và vũng độc không nổ: không âm nện/rung màn hình.
-    if (m.mv === 'pull' || m.mv === 'pool' || m.mv === 'trail') return;
-    const vol = volumeAt(eng, m.x, m.z);
-    const bsrc = m.src ? eng.ents?.monsters.get(m.src) : undefined;
-    // Vùng tròn: `Vfx.hazard` tự gọi `boom` lúc nổ và chỉ bỏ hình cũ khi nó thật sự phát; vùng chữ nhật/nón (telegraph) gọi ở đây.
-    if (bsrc && m.sh)
-      setTimeout(() => (eng.disposed ? 0 : eng.monFx?.boom(m, eng.ents?.monsters.get(m.src ?? '') ?? bsrc)), m.delay * 1000);
-    setTimeout(() => {
-      sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
-      shakeForHazard(eng, m);
-    }, m.delay * 1000);
+    onHazard(eng, m);
   });
   room.onMessage(S.BOLT, (m: BoltMsg) => {
     if (eng.monFx?.lab) return;
