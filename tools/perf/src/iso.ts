@@ -179,6 +179,12 @@ function initScript(preset: string): void {
       const dt = performance.now() - t0;
       if (!r) return;
       if (B.rec) {
+        if (dt > 12 && B.long.length < 8)
+          B.long.push({
+            at: Math.round(performance.now()),
+            dt: Math.round(dt * 10) / 10,
+            parts: Object.fromEntries(Object.entries(cur).map(([k, v]) => [k, Math.round(v * 10) / 10])),
+          });
         B.frames.push([dt, r.info.render.drawCalls ?? r.info.render.calls, r.info.render.triangles]);
         for (const [k, v] of Object.entries(cur)) (B.parts[k] ??= []).push(v);
       }
