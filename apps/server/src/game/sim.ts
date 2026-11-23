@@ -92,7 +92,7 @@ import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg } from './artifact';
 import { log } from '../log';
 
-import { at, type TribId } from '@dtl/shared';
+import { at, type HitTier, type TribId } from '@dtl/shared';
 const INTERACT_RANGE = 9;
 
 export class GameSim {
@@ -354,6 +354,7 @@ export class GameSim {
         return s.camps;
       },
       damagePlayer: (p, dmg, src, hv, ke) => s.damagePlayer(p, dmg, src, hv, ke),
+      pushMonster: (mon, fx, fz, dist) => s.combat.pushMonster(mon, fx, fz, dist),
       get domain() {
         return s.domain;
       },
@@ -451,7 +452,7 @@ export class GameSim {
       duelStrike: (p, o, powers, elemMul) => s.duelStrike(p, o, powers, elemMul),
       emit: (type, payload) => s.emit(type, payload),
       fx: (m) => s.fx(m),
-      hitMonster: (p, mon, basePower, mul, elem) => s.hitMonster(p, mon, basePower, mul, elem),
+      hitMonster: (p, mon, basePower, mul, elem, tier) => s.hitMonster(p, mon, basePower, mul, elem, tier),
       homeDist: (m) => s.homeDist(m),
       isDead: (p) => s.isDead(p),
       get level() {
@@ -520,6 +521,7 @@ export class GameSim {
   /** Chết và hồi sinh của người chơi (R-7) (R-7): xem `game/death/`. */
   private readonly deathSys = new DeathSystem(
     ((s: GameSim): DeathCtx => ({
+      hitReact: (p, tier, fx, fz) => s.plSys.hitReact(p, tier, fx, fz),
       abortStrike: (p, refund, notify) => s.abortStrike(p, refund, notify),
       resTaken: (p, n) => s.combat.resTaken(p, n),
       get bossDmgMul() {
@@ -1306,8 +1308,8 @@ export class GameSim {
     return this.tribHub.spawnTribBoss(p, id, dist);
   }
 
-  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): boolean {
-    return this.monSys.hitMonster(p, mon, basePower, mul, elem);
+  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string, tier?: HitTier): boolean {
+    return this.monSys.hitMonster(p, mon, basePower, mul, elem, tier);
   }
   private homeDist(m: MonEnt): number {
     return this.monSys.homeDist(m);

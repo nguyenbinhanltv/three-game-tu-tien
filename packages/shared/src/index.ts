@@ -12,6 +12,7 @@ export * from './collision';
 export * from './movement';
 export * from './formulas';
 export * from './combat';
+export * from './hittier';
 export * from './boss';
 export * from './types';
 export * from './protocol';

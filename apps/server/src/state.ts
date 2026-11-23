@@ -14,7 +14,7 @@ export class PlayerS extends Schema {
   /** Đang đứng trên mặt đất. */
   @view() @type('boolean') gr = true;
   /** Cờ PF_*. */
-  @view() @type('uint8') fl = 0;
+  @view() @type('uint16') fl = 0;
   @view() @type('uint8') lv = 1;
   @view() @type('int32') hp = 1;
   @view() @type('int32') mhp = 1;
