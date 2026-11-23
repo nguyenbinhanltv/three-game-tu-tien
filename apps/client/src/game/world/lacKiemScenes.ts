@@ -31,7 +31,7 @@ import { loadSkyTextures, rockMaterial } from './skyAssets';
 
 /**
  * Tiểu cảnh Lạc Kiếm Tông (Chân Cảnh M1+M2, pilot): mỗi khung ~20 × 12 m của camera chéo có một điểm nhấn, một lớp tiền cảnh tự mờ khi che
- * người (`withSightFade`) và một lớp "đáy" (nước, suối, sương dưới hác). Chỉ để nhìn: KHÔNG va chạm, tất định, không đụng server/heightmap.
+ * người (`withSightFade`) và một lớp "đáy" (nước, suối, sương dưới hác). Hình tất định, không đổi heightmap; vật GLB đặc + cột cổng bài có va chạm COL-1 dùng chung client/server qua `lacKiemSceneColliders` (shared/tieucanh.ts, cộng trong `registerTerrain`).
  * Đá, đèn, bia, tre là prop PBR có sẵn của kit (GLB, `GlbScatter`); phần thủ tục chỉ còn công trình (cổng, cầu, đường), ao, hác.
  * Bản đồ tiểu cảnh và lý do chọn chỗ: `docs/map/lac-kiem-tieu-canh.md`. Tọa độ trong `SCENES` tương đối tâm tông môn (SECT).
  */

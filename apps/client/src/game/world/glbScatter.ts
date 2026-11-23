@@ -58,7 +58,16 @@ export class GlbScatter {
     const owned = adoptGltfMaterials(root, withSightFade);
     this.mats.push(...owned);
     root.updateMatrixWorld(true);
-    const box = new THREE.Box3().setFromObject(root);
+    // Prop của kit có node anh em `<tên>_lod1/_lod2` (`userData.lod = k`) trong cùng file: chỉ lấy LOD0, nếu không các mảnh chồng nhau (z-fight) và tam giác nhân ~1,6.
+    const isExtraLod = (o: THREE.Object3D): boolean => {
+      for (let n: THREE.Object3D | null = o; n; n = n.parent) if (typeof n.userData.lod === 'number' && n.userData.lod > 0) return true;
+      return false;
+    };
+    const box = new THREE.Box3();
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh && !isExtraLod(m)) box.expandByObject(m);
+    });
     const size = box.getSize(new THREE.Vector3());
     const dim = Math.max(size.x, size.y, size.z, 1e-6);
     const center = box.getCenter(new THREE.Vector3());
@@ -67,7 +76,7 @@ export class GlbScatter {
     const byMat = new Map<THREE.Material, THREE.BufferGeometry[]>();
     root.traverse((o) => {
       const m = o as THREE.Mesh;
-      if (!m.isMesh || Array.isArray(m.material)) return;
+      if (!m.isMesh || Array.isArray(m.material) || isExtraLod(m)) return;
       const rel = new THREE.Matrix4().multiplyMatrices(toOrigin, m.matrixWorld);
       const g = bakeGeometry(m.geometry, rel);
       if (material) {
