@@ -972,4 +972,3 @@ function SoulSlot() {
     </Tooltip>
   );
 }
-

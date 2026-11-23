@@ -187,7 +187,20 @@ function touchBoxes(W: number, H: number, o: HudOpts): HudBoxes {
   const chatH = o.chatCollapsed ? 28 : 64;
   const chat: Box = { x: m, y: H - m - 120 - 8 - chatH, w: portrait ? W - 3 * m - sw : 220, h: chatH };
   const skills: Box = { x: W - m - sw, y: H - m - sh, w: sw, h: sh };
-  return { mode: 'touch', W, H, tl, tc, hub, map, quest, chat, skills, utility: { x: skills.x, y: skills.y, w: 0, h: 0 }, dock: { x: skills.x, y: skills.y, w: 0, h: 0 } };
+  return {
+    mode: 'touch',
+    W,
+    H,
+    tl,
+    tc,
+    hub,
+    map,
+    quest,
+    chat,
+    skills,
+    utility: { x: skills.x, y: skills.y, w: 0, h: 0 },
+    dock: { x: skills.x, y: skills.y, w: 0, h: 0 },
+  };
 }
 
 function intersects(a: Box, b: Box): boolean {
