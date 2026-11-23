@@ -669,7 +669,7 @@ function UtilityRow({ bar }: { bar: boolean }) {
             {t('ui.branch.pending', { realm: realmName(pending) })}
           </button>
         )}
-        <ResourceBar />
+        {!bar && <ResourceBar />}
         {char.level >= CLONE_UNLOCK_LEVEL && (
           <div className={'clone-chip' + (now < clone.until ? ' on' : '')} data-testid="clone-chip" aria-label={t('ui.clone.title')}>
             <span className="clone-key">G</span>
