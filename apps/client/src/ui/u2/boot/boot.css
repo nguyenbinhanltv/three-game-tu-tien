@@ -340,13 +340,9 @@
   color: var(--u-son);
 }
 
-/* Dòng bối cảnh: mỗi dòng mới hiện lại trong ~0,17 s; bắt đầu từ độ mờ cao để không bị đọc thành chữ mờ khi dòng đổi nhanh */
+/* Dòng bối cảnh: mực đậm, đổi dòng tức thì (không hiệu ứng mờ dần: dòng đổi mỗi ~0,17 s nên luôn bị bắt giữa chừng thành chữ mờ) */
 #root .ts-card.u2-card .ts-line {
   color: var(--u-muc);
-  animation: ts-line-in-u12 0.16s ease-out both;
-}
-@keyframes ts-line-in-u12 {
-  from {
-    opacity: 0.65;
-  }
+  font-style: normal;
+  animation: none;
 }
