@@ -69,13 +69,15 @@ function initScript(preset: string): void {
   const B = {
     rec: false,
     passes: {} as Record<string, number>,
-    long: [] as { at: number; dt: number; parts: Record<string, number> }[],
+    long: [] as { at: number; dt: number; parts: Record<string, number>; pipes: number; pipeNames: string[] }[],
     frames: [] as number[][],
     dc: [] as number[],
     parts: {} as Record<string, number[]>,
     gpu: [] as number[],
     gpuOk: false,
     dropGpu: false,
+    pipes: 0,
+    pipeNames: [] as string[],
     patched: null as unknown,
   };
   w.__iso = B;
@@ -147,6 +149,17 @@ function initScript(preset: string): void {
           tex.delete(t);
           destroy(t);
         };
+        // Chẩn đoán khung dài: đếm pipeline mới và ghi tên vật liệu/đối tượng (biên dịch lúc vẽ lần đầu).
+        const pipe = be.createRenderPipeline.bind(be);
+        be.createRenderPipeline = (...a: unknown[]) => {
+          const ro = a[0] as any;
+          B.pipes++;
+          if (B.pipeNames.length < 40)
+            B.pipeNames.push(
+              `${ro?.material?.name || ro?.material?.type}/${ro?.object?.name || ro?.object?.parent?.name || ro?.object?.type}`,
+            );
+          return pipe(...a);
+        };
       }
       if (r && !r.__isoProbed && typeof r._renderObjectDirect === 'function') {
         r.__isoProbed = true;
@@ -181,6 +194,8 @@ function initScript(preset: string): void {
       if (B.rec) {
         if (dt > 12 && B.long.length < 8)
           B.long.push({
+            pipes: B.pipes,
+            pipeNames: B.pipeNames.slice(-4),
             at: Math.round(performance.now()),
             dt: Math.round(dt * 10) / 10,
             parts: Object.fromEntries(Object.entries(cur).map(([k, v]) => [k, Math.round(v * 10) / 10])),
