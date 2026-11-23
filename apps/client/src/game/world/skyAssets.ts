@@ -96,13 +96,13 @@ export const FOLIAGE_TILE: Record<'pine' | 'maple' | 'bamboo' | 'peach' | 'oak' 
  * Vật liệu đá vách đảo: màu đỉnh (tầng đá ấm/lạnh, rêu) nhân với albedo chiếu ba mặt phẳng, pháp tuyến + nhám từ texture PBR.
  * Pháp tuyến cộng lệch theo ba mặt chiếu (cùng cách `render/materials/ground.ts`), mềm hơn flat shading của bản A.
  */
-export function rockMaterial(tex: SkyTextures): THREE.MeshStandardNodeMaterial {
+export function rockMaterial(tex: SkyTextures, tile = 1 / 13): THREE.MeshStandardNodeMaterial {
   const mat = createWorldMaterial({ roughness: 0.9 });
   const p = positionWorld;
   const nGeo = normalize(normalGeometry);
   const w: Node = vec3(abs(nGeo.x).pow(4), abs(nGeo.y).pow(4), abs(nGeo.z).pow(4));
   const wsum = w.x.add(w.y).add(w.z).max(0.0001);
-  const scale = float(1 / 13);
+  const scale = float(tile);
   const uvX: Node = vec2(p.z, p.y.negate()).mul(scale); // mặt chiếu theo trục x (nhìn từ +x): u = z, v = -y
   const uvY: Node = vec2(p.x, p.z).mul(scale);
   const uvZ: Node = vec2(p.x, p.y.negate()).mul(scale);

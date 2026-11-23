@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { type AssetCache, type AssetHandle } from '../core/assets';
 import { adoptGltfMaterials } from '../../render/materials/world';
+import { hash01 } from '@dtl/shared';
 import { withSightFade } from './occlusion';
 import { bakeGeometry } from './props';
 
@@ -39,7 +40,8 @@ export class GlbScatter {
     this.group.name = 'glb-scatter';
   }
 
-  async add(id: string, places: readonly GlbPlace[]): Promise<void> {
+  /** `material`: thay mọi vật liệu của asset bằng vật liệu này (vd. đá PBR của kit); mảnh thiếu màu đỉnh được thêm màu xám trung tính. */
+  async add(id: string, places: readonly GlbPlace[], material?: THREE.Material): Promise<void> {
     if (!places.length) return;
     let handle: AssetHandle;
     try {
@@ -67,9 +69,19 @@ export class GlbScatter {
       const m = o as THREE.Mesh;
       if (!m.isMesh || Array.isArray(m.material)) return;
       const rel = new THREE.Matrix4().multiplyMatrices(toOrigin, m.matrixWorld);
-      const list = byMat.get(m.material) ?? [];
-      list.push(bakeGeometry(m.geometry, rel));
-      byMat.set(m.material, list);
+      const g = bakeGeometry(m.geometry, rel);
+      if (material) {
+        // vật liệu thay thế chỉ cần position/normal/color (float): bỏ uv… và đồng bộ màu đỉnh để các mảnh gộp được
+        const n = g.getAttribute('position').count;
+        const col = new Float32Array(n * 3);
+        for (let i = 0; i < n; i++) col.fill(0.52 + 0.1 * hash01(i, 3, 9), i * 3, i * 3 + 3); // xám trung tính: sắc đá do texture PBR, bỏ màu đỉnh gốc (ngả cam/rêu)
+        for (const name of Object.keys(g.attributes)) if (name !== 'position' && name !== 'normal') g.deleteAttribute(name);
+        g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+      }
+      const key = material ?? m.material;
+      const list = byMat.get(key) ?? [];
+      list.push(g);
+      byMat.set(key, list);
     });
     const mw = new THREE.Matrix4();
     const q = new THREE.Quaternion();

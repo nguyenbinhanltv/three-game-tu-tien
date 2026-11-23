@@ -94,16 +94,26 @@ export default {
           query: { mood, cam: 'iso', quiet: 1 },
           extra: opt('--query', ''),
           seenIntro: true,
-          hide: 'hud', // ảnh tiểu cảnh: không HUD/chat (không banner chat spam)
           warnings: true,
         });
-        await gm(page, 'level 15');
-        await gm(page, 'god on');
+        await gm(page, 'level 15', 2500);
+        await gm(page, 'god on', 2500);
+        await gm(page, 'killall', 2500);
         let first = true;
         for (const p of pts) {
           await tp(page, SECT.x + p.x, SECT.z + p.z);
-          await gm(page, 'killall', 800);
-          await snap(page, r.out, `${tag}-${view}-${mood}-${p.name}.png`, { wait: first ? 6000 : 2400 }); // lần đầu chờ GLB prop nạp
+          // HUD bật như lúc chơi: chờ đủ lâu giữa các lệnh GM để không dính banner "nói nhanh quá", và chờ GLB prop nạp ở lần đầu
+          await snap(page, r.out, `${tag}-${view}-${mood}-${p.name}.png`, { wait: first ? 7000 : 4500 });
+          if (first)
+            perf[`camDist-${view}-${mood}`] = await page.evaluate(() => {
+              const g = window.__game as unknown as {
+                camera: { position: { x: number; y: number; z: number } };
+                renderPos: { x: number; y: number; z: number };
+              };
+              const c = g.camera.position;
+              const t = g.renderPos;
+              return Math.hypot(c.x - t.x, c.y - (t.y + 1), c.z - t.z);
+            });
           first = false;
           if (flag('--perf')) perf[`${view}-${mood}-${p.name}`] = await perfSample(page);
         }

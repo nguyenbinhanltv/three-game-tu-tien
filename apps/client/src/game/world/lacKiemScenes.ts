@@ -100,6 +100,9 @@ export const SCENES: TieuCanh[] = [
 
 const BOX = new THREE.BoxGeometry(1, 1, 1);
 const CYL = new THREE.CylinderGeometry(0.5, 0.5, 1, 8);
+/** Cột sơn son: thân thon dần lên, 28 cạnh. */
+const COL14 = new THREE.CylinderGeometry(0.42, 0.5, 1, 28);
+const RING = new THREE.CylinderGeometry(0.56, 0.56, 1, 28);
 const PETAL = new THREE.SphereGeometry(0.5, 6, 4);
 const PAD = (() => {
   // Lá sen: đĩa tròn khuyết một rãnh, mép cong lên.
@@ -128,9 +131,12 @@ const C = {
   heart: new THREE.Color('#e8c860'),
   slab: new THREE.Color('#8a948f'),
   slabDark: new THREE.Color('#5f6a66'),
+  slabLight: new THREE.Color('#a5aca4'),
   earth: new THREE.Color('#7a6e45'),
   moss: new THREE.Color('#74904c'),
   lamp: new THREE.Color('#ffc874'),
+  lacquerDeep: new THREE.Color('#5c1d18'),
+  gold: new THREE.Color('#b8923a'),
 };
 
 /** Gộp nhiều hình có màu đỉnh vào một BufferGeometry không chỉ mục (pháp tuyến phẳng). */
@@ -221,6 +227,8 @@ interface Disc {
 interface Out {
   stone: Mesher;
   wood: Mesher;
+  /** Phần sơn son (cột, xà): vật liệu bóng, vân sơn dọc. */
+  lac: Mesher;
   glow: Mesher;
   plants: Mesher;
   places: Map<GlbId, GlbPlace[]>;
@@ -231,7 +239,7 @@ interface Out {
 }
 
 function congBai(o: Out, p: Extract<ScenePiece, { k: 'cong_bai' }>): void {
-  const { wood, stone } = o;
+  const { wood, stone, lac } = o;
   const s = Math.sin(p.yaw);
   const c = Math.cos(p.yaw);
   const y0 = gy(p.x, p.z);
@@ -239,19 +247,26 @@ function congBai(o: Out, p: Extract<ScenePiece, { k: 'cong_bai' }>): void {
   const half = p.w / 2;
   for (const sx of [-1, 1]) {
     const [x, y, z] = at(sx * half, 0);
-    stone.box(x, y + 0.4, z, 1.7, 0.8, 1.7, C.slabDark, p.yaw);
-    wood.cyl(x, y + 3.9, z, 0.78, 6.2, C.lacquer);
-    stone.box(x, y + 7.1, z, 1.2, 0.35, 1.2, C.slab, p.yaw);
+    // bệ đá hai bậc + cột thon sơn son có hai đai đồng + đầu cột đá
+    stone.box(x, y + 0.25, z, 2.1, 0.5, 2.1, C.slabDark, p.yaw);
+    stone.box(x, y + 0.7, z, 1.6, 0.4, 1.6, C.slab, p.yaw);
+    lac.put(COL14, x, y + 4.1, z, 1.55, 6.8, 1.55, C.lacquer);
+    lac.put(RING, x, y + 1.15, z, 1.0, 0.22, 1.0, C.gold);
+    lac.put(RING, x, y + 6.2, z, 0.92, 0.22, 0.92, C.gold);
+    stone.box(x, y + 7.65, z, 1.3, 0.4, 1.3, C.slab, p.yaw);
   }
   const [bx, by, bz] = at(0, 0);
-  wood.box(bx, by + 6.1, bz, p.w + 1.4, 0.5, 0.7, C.lacquer, p.yaw);
-  wood.box(bx, by + 5.3, bz, p.w - 0.6, 0.35, 0.35, C.woodDark, p.yaw);
-  wood.box(bx, by + 7.35, bz, p.w + 3.2, 0.4, 1.5, C.woodDark, p.yaw);
-  wood.box(bx, by + 7.9, bz, p.w + 2.4, 0.5, 2.0, C.tile, p.yaw);
-  wood.box(bx, by + 8.5, bz, p.w * 0.55, 0.45, 1.4, C.tile, p.yaw);
+  // xà ngang sơn son có viền sậm, hai đầu xà nhô ra khỏi cột
+  lac.box(bx, by + 6.3, bz, p.w + 1.8, 0.55, 0.75, C.lacquer, p.yaw);
+  lac.box(bx, by + 6.02, bz, p.w + 1.9, 0.1, 0.82, C.lacquerDeep, p.yaw);
+  lac.box(bx, by + 6.58, bz, p.w + 1.9, 0.1, 0.82, C.gold, p.yaw);
+  lac.box(bx, by + 5.3, bz, p.w - 0.8, 0.35, 0.4, C.lacquer, p.yaw);
+  wood.box(bx, by + 7.55, bz, p.w + 3.2, 0.4, 1.5, C.woodDark, p.yaw);
+  wood.box(bx, by + 8.05, bz, p.w + 2.4, 0.5, 2.0, C.tile, p.yaw);
+  wood.box(bx, by + 8.65, bz, p.w * 0.55, 0.45, 1.4, C.tile, p.yaw);
   for (const sx of [-1, 1]) {
     const [x, y, z] = at(sx * (p.w / 2 + 1.5), 0);
-    wood.box(x, y + 8.15, z, 0.6, 0.35, 2.0, C.tile, p.yaw, 0, sx * 0.5);
+    wood.box(x, y + 8.3, z, 0.6, 0.35, 2.0, C.tile, p.yaw, 0, sx * 0.5);
   }
 }
 
@@ -371,7 +386,7 @@ function cauTreo(o: Out, p: Extract<ScenePiece, { k: 'cau_treo' }>): void {
     const ex = e ? p.bx : p.ax;
     const ez = e ? p.bz : p.az;
     const ey = e ? yb : ya;
-    o.wood.box(ex, ey + 3.6, ez, hw * 2 + 3.2, 0.3, 0.45, C.lacquer, yaw);
+    o.lac.box(ex, ey + 3.6, ez, hw * 2 + 3.2, 0.3, 0.45, C.lacquer, yaw);
     o.wood.box(ex, ey + 4.0, ez, hw * 2 + 3.6, 0.2, 1.1, C.tile, yaw);
     for (const side of [-1, 1]) o.glow.box(ex + nx * (hw + 0.4) * side, ey + 3.0, ez + nz * (hw + 0.4) * side, 0.28, 0.42, 0.28, C.lamp);
   }
@@ -388,18 +403,21 @@ function loiVach(o: Out, pts: [number, number][]): void {
     const dx = (bx - ax) / len;
     const dz = (bz - az) / len;
     const yaw = Math.atan2(dx, dz);
-    for (let d = 0; d < len; d += 1.7) {
+    for (let d = 0; d < len; d += 1.5) {
       const x = ax + dx * d;
       const z = az + dz * d;
+      const slope = (gy(x + dx * 0.8, z + dz * 0.8) - gy(x - dx * 0.8, z - dz * 0.8)) / 1.6;
+      // phiến lát nối tiếp (dài 1,6 m, cách 1,5 m), nghiêng theo dốc, mặt hơi nổi để không chìm vào sườn
       o.stone.box(
-        x + (hash01(acc, 1, 8) - 0.5) * 0.3,
-        gy(x, z) + 0.04,
+        x + (hash01(acc, 1, 8) - 0.5) * 0.2,
+        gy(x, z) + 0.07,
         z,
         1.9,
-        0.14,
-        1.3,
-        acc & 1 ? C.slab : C.slabDark,
-        yaw + (hash01(acc, 2, 8) - 0.5) * 0.2,
+        0.16,
+        1.6,
+        acc & 1 ? C.slab : C.slabLight,
+        yaw + (hash01(acc, 2, 8) - 0.5) * 0.12,
+        -slope,
       );
       acc++;
     }
@@ -510,6 +528,7 @@ function build(): Out {
   const o: Out = {
     stone: new Mesher(),
     wood: new Mesher(),
+    lac: new Mesher(),
     glow: new Mesher(),
     plants: new Mesher(),
     places: new Map(),
@@ -560,7 +579,7 @@ export function sceneStats(): { tris: number; ponds: number; mist: number; glbPl
   let ex = 0;
   for (const e of o.extra) ex += (e.geo.index?.count ?? 0) / 3;
   return {
-    tris: o.stone.tris + o.wood.tris + o.glow.tris + o.plants.tris + ex,
+    tris: o.stone.tris + o.wood.tris + o.lac.tris + o.glow.tris + o.plants.tris + ex,
     ponds: o.ponds.length,
     mist: o.mist.length,
     glbPlaces: g,
@@ -592,7 +611,7 @@ export class LacKiemScenes {
     this.group.name = 'lac-kiem-scenes';
     this.group.position.set(SECT.x, 0, SECT.z);
     const o = build();
-    this.tris = o.stone.tris + o.wood.tris + o.glow.tris + o.plants.tris;
+    this.tris = o.stone.tris + o.wood.tris + o.lac.tris + o.glow.tris + o.plants.tris;
     void this.init(o);
   }
 
@@ -621,7 +640,16 @@ export class LacKiemScenes {
       this.group.add(mesh);
     };
     add(o.stone, stoneMat, 'tc-da', true);
+    // sơn son: bóng hơn gỗ, vân sơn dọc theo thân + loang nhẹ
+    const lacMat = createWorldMaterial({ roughness: 0.34, side: THREE.DoubleSide });
+    const sheen = vnoise(vec2(p.x.add(p.z).mul(5), p.y.mul(0.9)))
+      .mul(0.22)
+      .add(0.86);
+    lacMat.colorNode = attribute('color', 'vec3').mul(sheen);
+    withSightFade(lacMat);
+    this.mats.push(lacMat);
     add(o.wood, wood, 'tc-go', true);
+    add(o.lac, lacMat, 'tc-son', true);
     add(o.plants, plant, 'tc-cay', false);
     add(o.glow, glow, 'tc-den', false);
 
@@ -648,7 +676,10 @@ export class LacKiemScenes {
     const scatter = new GlbScatter(assets, gy);
     this.scatter = scatter;
     this.group.add(scatter.group);
-    await Promise.all([...o.places].map(([id, list]) => scatter.add(id, list)));
+    // Đá tảng/đá rêu: vật liệu đá PBR của kit (ba mặt chiếu + pháp tuyến), ô lặp ~3 m cho vật nhỏ; vật khác giữ vật liệu GLB gốc.
+    const rock = tex ? withSightFade(rockMaterial(tex, 1 / 3)) : undefined;
+    if (rock) this.mats.push(rock);
+    await Promise.all([...o.places].map(([id, list]) => scatter.add(id, list, id === 'prop_tc_da_reu' ? rock : undefined)));
   }
 
   /** Nước: ao sâu ở giữa, nông và ngả vàng lục ven bờ, sóng gợn + vòng lan; suối chảy dọc dải có bọt. */
