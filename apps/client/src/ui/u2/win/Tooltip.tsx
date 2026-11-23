@@ -87,12 +87,15 @@ export function TipCard({
   sub,
   lines,
   desc,
+  diagram,
 }: {
   title: string;
   rarity?: number;
   sub?: string;
   lines?: { text: string; tone?: 'good' | 'bad' | 'dim' | 'set' }[];
   desc?: string;
+  /** Hình minh họa (vùng chiêu) đặt giữa các dòng chỉ số và mô tả. */
+  diagram?: ReactNode;
 }) {
   return (
     <div>
@@ -105,6 +108,7 @@ export function TipCard({
           {l.text}
         </div>
       ))}
+      {diagram && <div className="k-tip-diagram">{diagram}</div>}
       {desc && <div className="k-tip-desc">{desc}</div>}
     </div>
   );
