@@ -2,15 +2,18 @@ import * as THREE from 'three/webgpu';
 import { addUpNormals } from '../../render/geoNormal';
 import {
   atan,
+  dot,
   float,
+  fract,
   length,
   mix,
-  normalLocal,
   normalWorld,
   positionLocal,
   positionWorld,
+  screenCoordinate,
   sin,
   smoothstep,
+  step,
   texture,
   time,
   uniform,
@@ -78,6 +81,9 @@ function dkKeepOut(x: number, z: number, minR: number): boolean {
  *  - `_volt` (vết nứt/phù văn điện tím-trắng): sáng yếu, bừng mạnh theo chớp (HDR để bloom bắt);
  *  - `_jade` (đá cháy xém): thớ nhiễu theo toạ độ thế giới, mặt ngửa phủ muội đen.
  */
+/** Nhiễu dither khung hình (interleaved gradient) cho maskNode: bằng cách của `occlusion.ts`. */
+const ignDither = () => fract(float(52.9829189).mul(fract(dot(screenCoordinate.xy, vec2(0.06711056, 0.00583715)))));
+
 export function dkMaterialFor(name: string): THREE.Material | null {
   if (name.endsWith('_rune')) {
     const m = withSightFade(new THREE.MeshStandardNodeMaterial({ roughness: 0.55, metalness: 0.2, name }));
@@ -108,13 +114,15 @@ export function dkMaterialFor(name: string): THREE.Material | null {
     return m;
   }
   if (name.endsWith('_char')) {
-    // Vết cháy sét: tấm phẳng 2×2 m (pháp tuyến hướng lên) từ trên cao thành hình chữ nhật đen đặc; làm mờ viền theo bán kính để thành vệt than tan dần.
-    // Phần có khối (gốc cây cháy, tảng) giữ đặc.
-    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.95, metalness: 0, transparent: true, name });
-    const flat = smoothstep(0.97, 0.995, normalLocal.y);
-    const fall = smoothstep(1.0, 0.25, length(positionLocal.xz).div(1.0));
+    // Vết cháy sét/muội: tấm phẳng sát đất (đĩa, tia cháy, mảng muội của lát đá) từ trên cao thành hình chữ nhật đen đặc. Không đo theo bán kính của
+    // mesh (gốc là gốc cả đài, không phải tâm từng vết): thay bằng nhiễu theo toạ độ thế giới + dither (maskNode, không cần pass trong suốt),
+    // áp cho mọi mảnh mỏng sát đất kể cả mép bên 3 cm. Phần có khối (gốc cây cháy, tảng) giữ đặc.
+    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.95, metalness: 0, name });
+    const thin = step(positionLocal.y, 0.12);
+    const n = texture(getCloudNoise(), positionWorld.xz.mul(0.35)).g;
+    const cover = float(0.3).add(smoothstep(0.35, 0.75, n).mul(0.4));
     m.colorNode = vertexColor().mul(0.8);
-    m.opacityNode = mix(float(1), fall.mul(0.5), flat);
+    m.maskNode = mix(float(1), step(ignDither(), cover), thin).greaterThan(0.5);
     return m;
   }
   return null;
