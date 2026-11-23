@@ -27,7 +27,7 @@ const COLORS = ['Lam', 'Đỏ', 'Vàng', 'Tím'];
 export default {
   name: 'dungeon',
   desc: 'Chạy hết một phó bản bằng tài khoản thử bất tử: cổng, từng đợt, vạch báo + pha boss, giải đố, hoàn thành',
-  usage: '[--level phuc_mach|kinh_nguyet|<id phó bản>] [--video 1: quay webm cả lượt vào thư mục --out]',
+  usage: '[--level phuc_mach|kinh_nguyet|<id phó bản>] [--video 1: quay webm cả lượt vào thư mục --out] [--query cam=iso]',
   async run(r) {
     const id = opt('--level', 'phuc_mach');
     const dg = LEVELS[id]?.dungeon;
@@ -43,6 +43,7 @@ export default {
       name: 'Dg',
       quality: 'high',
       query: { quiet: 1 },
+      extra: opt('--query', ''),
       hide: 'chat',
       video: opt('--video', '') ? r.out : undefined,
     });
