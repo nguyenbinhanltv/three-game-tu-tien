@@ -82,7 +82,7 @@ describe('lacKiemScenes (Chân Cảnh M1+M2)', () => {
       for (const o of SECT_ARCH_CIRCLES) expect(Math.hypot(c.x - o.x, c.z - o.z), `đè kiến trúc ${o.x},${o.z}`).toBeGreaterThan(c.r + o.r);
       for (const b of boxes) expect(distBox(c.x, c.z, b), `xuyên hộp ${b.tag ?? ''} ${b.x},${b.z}`).toBeGreaterThan(c.r - 0.2);
     }
-  });
+  }, 30_000); // nạp va chạm arch_sect nặng: mặc định 5 s không đủ trên CI chậm
 
   it('stepMove (server) không cho người đi vào trong một đèn đá của tiểu cảnh', () => {
     const lamp = own.find((c) => c.r === 0.45)!;
