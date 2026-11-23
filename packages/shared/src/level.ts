@@ -2,6 +2,7 @@
 // va chạm và vị trí các khu. Đơn vị: mét. x về phía đông, z về phía nam.
 
 import { PROP_COLLIDERS } from './props';
+import { type GorgeDef, TC_GORGE } from './tieucanh';
 
 export const WORLD_SIZE = 4096;
 export const WORLD_MARGIN = 24;
@@ -224,6 +225,8 @@ export interface TerrainDef {
   voidFloor?: number;
   /** Cầu xích nối các đảo (E3-N). */
   bridges?: BridgeDef[];
+  /** Hác khoét thêm vào địa hình (Chân Cảnh M2: hác dưới cầu treo Lạc Kiếm), trừ độ cao `gorgeDrop`. */
+  gorges?: GorgeDef[];
   /** Hồ gương nông trên đảo (E3-I): lòng chảo lõm `depth` m, đi bộ được (không phải `water`), client vẽ mặt nước phẳng. */
   ponds?: { x: number; z: number; r: number; depth: number }[];
   /** Đảo giả (E3-N): chỉ để vẽ, KHÔNG vào `heightAt` (bước lên là rơi xuống sàn mây); thần thức làm chúng mờ đi. */
@@ -262,6 +265,7 @@ export interface TerrainDef {
 /** Địa hình Vân Lam Sơn Mạch (và Kiếm Trủng, cùng một thế giới). Kết quả giống hệt `heightAt` cũ từng bit. */
 export const VAN_LAM_TERRAIN: TerrainDef = {
   id: 'van_lam',
+  gorges: [TC_GORGE],
   seed: TERRAIN_SEED,
   size: WORLD_SIZE,
   margin: WORLD_MARGIN,

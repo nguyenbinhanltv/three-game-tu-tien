@@ -1,4 +1,13 @@
-import { gioiTriPillars, instantiateShapes, type LocalShape, registerCollision, type Shape } from '@dtl/shared';
+import {
+  bridgeModel,
+  bridgeShapes,
+  gioiTriPillars,
+  instantiateShapes,
+  type LocalShape,
+  registerCollision,
+  type Shape,
+  VAN_LAM,
+} from '@dtl/shared';
 import gioiTriLevel from '../data/levels/gioi_tri.json';
 import archKd from '../data/colliders/arch_kim_da.boxes.json';
 import archTk from '../data/colliders/arch_thien_khuyet.boxes.json';
@@ -114,6 +123,9 @@ function archShapesOf(level: string): Shape[] {
 }
 
 for (const level of Object.keys(ARCH_BY_LEVEL)) registerCollision(level, archShapesOf(level));
+
+/** Cầu treo Lạc Kiếm đi được (Chân Cảnh M2): ván dốc theo võng + lan can đặc, dựng từ mô hình chung `cautreo.ts` (cùng nguồn với hình ở client). */
+registerCollision('van_lam', bridgeShapes(bridgeModel(VAN_LAM.groundAt)));
 
 /**
  * Giới Trì Động Phủ (TN-3): 14 cột đồng quanh sân là cảnh dựng bằng code ở client nên không có trong `gioi_tri.inst.json`; chặn bằng cột tròn cao vô hạn
