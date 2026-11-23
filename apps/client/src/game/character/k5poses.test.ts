@@ -65,13 +65,15 @@ for (const [id, skill, voice] of [
 ] as const)
   ROWS.push({ id, skill, voice, nine: false, hitAt: SK.get(skill)!.hitAt![0]!, swing: false });
 
+/** C3: hông xoay cường điệu `ISO_AMP` lần (tools/poses/gen-k5.mjs) để đọc rõ ở camera chéo; trần xoay của từng giọng nới theo. */
+const ISO_AMP = 1.18;
 const RANGE: Record<
   PoseVoice,
   { drop: [number, number]; twist: [number, number]; reachZ: [number, number]; hold: number; over: [number, number] }
 > = {
-  kt: { drop: [0.06, 0.1], twist: [35, 45], reachZ: [0.75, 2], hold: 0.05, over: [0.14, 0.16] },
-  hp: { drop: [0.16, 0.22], twist: [20, 25], reachZ: [0.45, 0.6], hold: 0.08, over: [0.04, 0.06] },
-  ds: { drop: [0.02, 0.05], twist: [20, 30], reachZ: [0.5, 0.65], hold: 0.06, over: [0.09, 0.11] },
+  kt: { drop: [0.06, 0.1], twist: [35, 45 * ISO_AMP], reachZ: [0.75, 2], hold: 0.05, over: [0.14, 0.16] },
+  hp: { drop: [0.16, 0.22], twist: [20, 25 * ISO_AMP], reachZ: [0.45, 0.6], hold: 0.08, over: [0.04, 0.06] },
+  ds: { drop: [0.02, 0.05], twist: [20, 30 * ISO_AMP], reachZ: [0.5, 0.65], hold: 0.06, over: [0.09, 0.11] },
 };
 
 /** Mô tả số đo một pose (cũng dùng để in bảng trong docs/k5-poses). */
