@@ -32,6 +32,7 @@ import {
 } from '@dtl/shared';
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { markBloom } from '../../render/post';
+import { withSightFade } from './occlusion';
 
 /**
  * Kiến trúc và cảnh quan Thiên Lộ Giới (TN-7, mỹ thuật), dựng bằng code, không asset ngoài, chỉ để nhìn:
@@ -712,10 +713,10 @@ export class CkWonders {
       flames.box(0.5, 0.9, 0.5, fx, y0 + 0.3, fz, 0xffb060, 0.7);
       lamps.box(0.4, 0.55, 0.4, t.x + 3.2, y0 + 2.7, rot(t.x, t.z, t.yaw, 0, 3.0)[1], LANTERN);
     }
-    this.mesh(b.build(), solidMat(), 'ck-hub', true);
+    this.mesh(b.build(), withSightFade(solidMat()), 'ck-hub', true); // camera chéo: tòa Kiều Đầu mờ khi che người
     this.mesh(
       cloth.build(),
-      new THREE.MeshStandardNodeMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, side: THREE.DoubleSide }),
+      withSightFade(new THREE.MeshStandardNodeMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, side: THREE.DoubleSide })),
       'ck-hub-cloth',
       true,
     );
@@ -784,7 +785,7 @@ export class CkWonders {
       mesh.receiveShadow = true;
       this.group.add(mesh);
     };
-    const trunk = new THREE.InstancedMesh(this.own(geo), this.own(solidMat()), n);
+    const trunk = new THREE.InstancedMesh(this.own(geo), this.own(withSightFade(solidMat())), n);
     trunk.name = 'ck-trees';
     trunk.castShadow = true;
     place(trunk);
@@ -838,13 +839,15 @@ export class CkWonders {
     lg.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
     lg.setIndex(idx);
     lg.computeBoundingSphere();
-    const lm = new THREE.MeshStandardNodeMaterial({
-      vertexColors: true,
-      side: THREE.DoubleSide,
-      roughness: 0.9,
-      metalness: 0,
-      alphaTest: 0.45,
-    });
+    const lm = withSightFade(
+      new THREE.MeshStandardNodeMaterial({
+        vertexColors: true,
+        side: THREE.DoubleSide,
+        roughness: 0.9,
+        metalness: 0,
+        alphaTest: 0.45,
+      }),
+    );
     const lt = texture(tex.leaf);
     lm.colorNode = lt.rgb;
     lm.opacityNode = lt.a;
