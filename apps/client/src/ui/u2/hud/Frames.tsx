@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { NGUNG_KHI_MAX, PF_TRIBULATION } from '@dtl/shared';
 import { MarkChips } from './MarkChips';
 import { monsterName, realmName, t } from '@dtl/content';
@@ -6,6 +7,7 @@ import { Portrait } from '../../Art';
 import { breakGoal } from '../../breakGoal';
 import { openPanel, type TargetCast, useUI } from '../../store';
 import { Badge, Bar, Button, JadeRing } from '../index';
+import { bossLayers, bossPhase, layerColor } from '../../bossBar';
 import { blurAfterPointer, useNow } from './common';
 
 /** Thanh niệm chú/choáng của mục tiêu (boss). Đoạn đầu tô tối là lúc hộ chú, chưa phá chú được. */
@@ -100,26 +102,34 @@ export function BossCard() {
   if (!boss) return null;
   // Làm tròn xuống, nhưng còn sống thì tối thiểu 1% (không hiện 100% khi đã mất máu, không hiện 0% khi chưa chết).
   const pct = boss.hp > 0 && boss.mhp > 0 ? Math.max(1, Math.floor((boss.hp / boss.mhp) * 100)) : 0;
+  const layer = bossLayers(boss.hp, boss.mhp);
+  const phase = bossPhase(boss.hp, boss.mhp, boss.marks);
   return (
     <section className="u2h-zone u2h-tc u2h-card" key={boss.id} aria-label={monsterName(boss.def)}>
       <div className="u2h-boss-head">
         <span className="u2h-boss-name">{monsterName(boss.def)}</span>
         <span className="u2h-boss-sub">
           {t(`mon.${boss.def}.title`)} · {t('ui.level_short', { n: boss.level })}
+          {phase && ` · ${t('ui.boss.phase', phase)}`}
         </span>
       </div>
       <div className="u2h-boss-hp">
-        <Bar
-          kind="boss"
-          value={boss.hp}
-          max={boss.mhp}
-          text={`${boss.hp} / ${boss.mhp} · ${t('ui.boss.hp', { pct })}`}
-          label={t('ui.hp')}
-        />
-        {/* Vạch chuyển pha: báo trước boss sẽ đổi chiêu ở mức máu này. */}
-        {boss.marks?.map((f) => (
-          <i key={f} className="u2h-boss-mark" style={{ left: f * 100 + '%' }} />
-        ))}
+        {/* Nhiều lớp: lớp đang đánh tô màu của nó, lớp kế dưới lộ ra làm nền khi lớp trên cạn; ×N = số lớp còn lại. */}
+        <div
+          className="u2h-boss-bar"
+          role="progressbar"
+          aria-label={t('ui.hp')}
+          aria-valuemin={0}
+          aria-valuemax={boss.mhp}
+          aria-valuenow={boss.hp}
+          data-layer={layerColor(layer)}
+          data-under={layer.cur > 0 ? layerColor(layer, layer.cur - 1) : undefined}
+          style={{ '--p': layer.frac } as CSSProperties}
+        >
+          <div className="u2h-boss-fill" />
+          <div className="u2h-boss-text">{`${boss.hp} / ${boss.mhp} · ${t('ui.boss.hp', { pct })}`}</div>
+          {layer.n > 1 && <span className="u2h-boss-layers">{t('ui.boss.layers', { n: layer.cur + 1 })}</span>}
+        </div>
       </div>
       {boss.face && (
         <div className={'u2h-boss-face ' + (boss.face.am ? 'am' : 'duong')} role="status">
@@ -129,16 +139,18 @@ export function BossCard() {
           <span className="u2h-boss-face-txt">{t(boss.face.am ? 'ui.boss.face_am' : 'ui.boss.face_duong', { n: boss.face.left })}</span>
         </div>
       )}
-      <MarkChips mk={boss.mk} />
-      {boss.posture !== undefined && (
-        <div className={'gauge posture' + (boss.cast?.kind === 'broken' ? ' broken' : boss.posture >= 0.75 ? ' near' : '')}>
-          <div className="gauge-in">
-            <div className="gauge-fill" style={{ width: (boss.cast?.kind === 'broken' ? 100 : boss.posture * 100) + '%' }} />
+      <div className="u2h-boss-aux">
+        <MarkChips mk={boss.mk} />
+        {boss.posture !== undefined && (
+          <div className={'gauge posture' + (boss.cast?.kind === 'broken' ? ' broken' : boss.posture >= 0.75 ? ' near' : '')}>
+            <div className="gauge-in">
+              <div className="gauge-fill" style={{ width: (boss.cast?.kind === 'broken' ? 100 : boss.posture * 100) + '%' }} />
+            </div>
+            <div className="gauge-label">{t('ui.boss.posture')}</div>
           </div>
-          <div className="gauge-label">{t('ui.boss.posture')}</div>
-        </div>
-      )}
-      {boss.cast && <TargetCastBar cast={boss.cast} />}
+        )}
+        {boss.cast && <TargetCastBar cast={boss.cast} />}
+      </div>
     </section>
   );
 }
