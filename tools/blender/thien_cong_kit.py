@@ -97,6 +97,7 @@ def _find_font(name='Charm-Bold.ttf'):
     return None
 
 
+_MISSING_FONTS = set()
 UNSLANT = 0.3  # Charm Bold nghiêng ~17°: cắt thẳng cho chữ biển/hoành phi
 
 PBR_FILES = {}  # khóa chất liệu -> {'normal': path, 'rough': path}
@@ -465,6 +466,9 @@ class KB(bs.Builder):
 
         path = _find_font(font)
         if not path:
+            if font not in _MISSING_FONTS:  # lặng lẽ bỏ chữ làm biển cổng/chữ khắc biến mất khỏi GLB (từng xảy ra khi build ở worktree không có ../dtl-asset-source đầy đủ)
+                _MISSING_FONTS.add(font)
+                print(f'[thien_cong] !!! THIẾU FONT {font}: chữ khắc bị bỏ qua (biển cổng, bia...). Đặt DTL_ASSET_SOURCE=<thư mục dtl-asset-source đầy đủ> rồi build lại.', flush=True)
             return
         cu = bpy.data.curves.new('txt', 'FONT')
         cu.body = body
