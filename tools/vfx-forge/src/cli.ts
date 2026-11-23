@@ -80,9 +80,9 @@ async function main(): Promise<void> {
       console.log(job.prompt);
       return;
     }
-    const file = await runCodex(job);
-    if (!file) throw new Error('Codex không ra ảnh (xem prompt đã lưu cạnh thư mục ra)');
-    console.log(`đã sinh ${file}`);
+    const res = await runCodex(job);
+    if (!res.file) throw new Error(`Codex không ra ảnh (mã thoát ${res.code ?? 'không có'}); xem log: ${res.log}`);
+    console.log(`đã sinh ${res.file}`);
   } else if (cmd === 'check') {
     const errs = checkManifest(flag('--out') ?? DEFAULT_OUT);
     for (const e of errs) console.error(e);

@@ -40,3 +40,13 @@ describe('prompts', () => {
     expect(texturePrompt('ramp', card, style, pal)).toMatch(/#0A3F5E/);
   });
 });
+
+describe('quoteArg', () => {
+  it('quote đường dẫn có dấu cách hoặc ký tự cmd', async () => {
+    const { quoteArg } = await import('./codex.js');
+    expect(quoteArg('C:/a b/c.png')).toBe('"C:/a b/c.png"');
+    expect(quoteArg('a&b')).toBe('"a&b"');
+    expect(quoteArg('exec')).toBe('exec');
+    expect(quoteArg('-C')).toBe('-C');
+  });
+});

@@ -33,27 +33,55 @@ export interface CodexJob {
   timeoutMs?: number;
 }
 
-/** Chạy một việc Codex; trả đường dẫn PNG hoặc null nếu Codex không ra ảnh. Prompt cũng được lưu cạnh ảnh để tái lập. */
-export function runCodex(job: CodexJob): Promise<string | null> {
+export interface CodexResult {
+  /** Đường dẫn PNG, hoặc null nếu Codex không ra ảnh. */
+  file: string | null;
+  /** Mã thoát của codex (null nếu không chạy được hoặc bị ngắt do quá giờ). */
+  code: number | null;
+  /** File log stdout+stderr cạnh prompt, để chẩn đoán (thiếu codex trong PATH, lỗi xác thực...). */
+  log: string;
+}
+
+/** Bọc một tham số cho cmd.exe khi chạy qua shell (Windows): có dấu cách/ký tự đặc biệt thì đặt trong ngoặc kép. */
+export function quoteArg(a: string): string {
+  return /^[\w@%+=:,./\-]+$/.test(a) && !/[%^&|<>]/.test(a) ? a : `"${a.replace(/"/g, '\\"').replace(/%/g, '%%')}"`;
+}
+
+/** Chạy một việc Codex. Prompt và log (stdout+stderr) được lưu cạnh ảnh để tái lập và chẩn đoán. */
+export function runCodex(job: CodexJob): Promise<CodexResult> {
   fs.mkdirSync(job.outDir, { recursive: true });
   const out = path.join(job.outDir, `${job.name}.png`);
+  const logFile = path.join(job.outDir, `${job.name}.log`);
   fs.writeFileSync(path.join(job.outDir, `${job.name}.prompt.txt`), job.prompt + '\n');
   const body = `${DEFAULT_RUN_NOTE.replace('./OUT', `./${job.name}.png`)}\n\n${job.prompt}\n`;
   const args = ['exec', '--skip-git-repo-check', '--sandbox', 'workspace-write', '-C', job.outDir];
   for (const i of job.images) args.push('-i', path.resolve(i));
   args.push('-');
+  const win = process.platform === 'win32';
+  const log = fs.createWriteStream(logFile);
   return new Promise((resolve) => {
-    const p = spawn('codex', args, { stdio: ['pipe', 'ignore', 'ignore'], shell: process.platform === 'win32' });
+    // Windows cần shell để chạy codex.cmd; khi đó Node nối tham số bằng dấu cách không quote nên tự quote từng tham số.
+    const p = spawn('codex', win ? args.map(quoteArg) : args, { stdio: ['pipe', 'pipe', 'pipe'], shell: win });
+    p.stdout.pipe(log, { end: false });
+    p.stderr.pipe(log, { end: false });
     p.stdin.end(body);
-    const t = setTimeout(() => p.kill(), job.timeoutMs ?? 8 * 60_000);
-    p.on('close', () => {
+    let done = false;
+    const finish = (code: number | null, note?: string) => {
+      if (done) return;
+      done = true;
       clearTimeout(t);
-      resolve(fs.existsSync(out) ? out : null);
-    });
-    p.on('error', () => {
-      clearTimeout(t);
-      resolve(null);
-    });
+      if (note) log.write(`\n[vfx-forge] ${note}\n`);
+      log.end(() => resolve({ file: fs.existsSync(out) ? out : null, code, log: logFile }));
+    };
+    const t = setTimeout(
+      () => {
+        p.kill();
+        finish(null, 'quá giờ');
+      },
+      job.timeoutMs ?? 8 * 60_000,
+    );
+    p.on('close', (code) => finish(code));
+    p.on('error', (e) => finish(null, `không chạy được codex: ${e.message}`));
   });
 }
 
