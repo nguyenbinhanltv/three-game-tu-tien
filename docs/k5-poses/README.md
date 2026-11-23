@@ -74,3 +74,7 @@ Các số còn lại của bảng spec (chân bước tới 0,38 m / hai chân r
 
 - [`game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp`](game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp)
 - [`game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp`](game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp)
+
+## C3a: cường điệu thân người cho camera chéo 52° (Chân Cảnh)
+
+`tools/poses/gen-k5.mjs` có `ISO_AMP = 1,18` (mặc định): ở MỌI pose, hông xoay (`hips.rot`), cột sống (`spine`) và đầu lệch khỏi thế thủ (khung 0) nhiều hơn 18%. Thời gian, IK tay/kiếm/chân và `hit` không đổi nên luật chiêu, `hitAt`, khớp VFX giữ nguyên. Trần xoay hông của từng giọng trong `k5poses.test.ts` nới theo cùng hệ số (kt 45° → 53°, hp 25° → 29,5°, ds 30° → 35,4°). Muốn bản gốc để so: `ISO_AMP=1 node tools/poses/gen-k5.mjs` (nhớ sinh lại mặc định sau đó).

@@ -39,6 +39,7 @@ import { MonsterSkins } from '../character/monsterSkins';
 import { NPC_SKINS, NpcSkins } from '../character/npcSkins';
 import { type PlayerLook, PlayerSkins } from '../character/playerSkins';
 import { HeadBars } from './headBars';
+import { forgetHero, HeroGhosts, HeroRing, HERO_DEFAULT_TINT, setHero } from '../character/hero';
 import type { StopPair } from '../combat/hitjuice';
 import { ArtifactVis } from '../fx/artifactVis';
 import { PState, MState, PlayerVis, MonVis, lookOf } from './entityVis';
@@ -174,6 +175,10 @@ const _monAnim: AnimState = { speed: 0, flying: false, meditating: false, dead: 
 export class EntityManager {
   group = new THREE.Group();
   players = new Map<string, PlayerVis>();
+  /** Hero light (C1): sid đồng đội cần viền (mình luôn có); null = tắt toàn bộ. */
+  heroSids: ReadonlySet<string> | null = null;
+  private heroGhosts = new HeroGhosts();
+  private heroRing = new HeroRing();
   monsters = new Map<string, MonVis>();
   nodes = new Map<string, THREE.Group>();
   npcs: NpcVis[] = [];
@@ -334,6 +339,43 @@ export class EntityManager {
     this.escorts.delete(id);
   }
 
+  /** Hero light (C1): mình và đồng đội có viền theo hướng tu + bản sao viền tối khi bị che; còn lại tắt. */
+  private updateHero(v: PlayerVis, s: PState, isLocal: boolean): void {
+    const on = this.heroSids !== null && (isLocal || this.heroSids.has(v.sid));
+    const root = v.model.root;
+    if (v.heroRoot !== root) {
+      if (v.heroRoot) this.heroGhosts.release(v.heroRoot);
+      forgetHero(root);
+      v.heroRoot = root;
+      v.heroTint = -1;
+    }
+    if (!on) {
+      if (v.heroTint !== -2) {
+        setHero(root, 0, 0);
+        this.heroGhosts.release(root);
+        v.heroTint = -2;
+      }
+      return;
+    }
+    const rim = PATH_OF_METHOD(s.mt)?.palette?.rim;
+    const tint = rim ? Number.parseInt(rim, 16) : HERO_DEFAULT_TINT;
+    if (v.heroTint !== tint) {
+      setHero(root, 1, tint);
+      v.heroTint = tint;
+    }
+    if (!this.heroGhosts.has(root)) this.heroGhosts.attach(root);
+  }
+
+  /** Đồng bộ bản sao viền tối với mesh gốc (LOD). Gọi mỗi khung sau cập nhật người chơi. */
+  syncHero(): void {
+    this.heroGhosts.sync();
+    const ring = this.heroRing;
+    if (!ring.mesh.parent) this.group.add(ring.mesh);
+    ring.begin();
+    for (const v of this.players.values()) if (v.heroTint !== -1 && v.heroTint !== -2 && (v.fl & PF_FLYING) === 0) ring.add(v.x, v.y, v.z);
+    ring.end();
+  }
+
   /** Gắn model NPC vào cảnh: vị trí, hướng theo dữ liệu, nhãn và dấu nhiệm vụ theo chiều cao model. */
   private placeNpc(n: NpcVis): void {
     const root = n.model.root;
@@ -409,6 +451,7 @@ export class EntityManager {
         this.group.add(v.model.root);
       }
       v.s = s;
+      this.updateHero(v, s, isLocal);
       const look = lookOf(s, isLocal);
       if (isLocal) this.localLook = look;
       const lookChanged =
@@ -531,6 +574,7 @@ export class EntityManager {
       if (!s || far) {
         this.group.remove(v.model.root);
         v.dispose();
+        this.heroGhosts.release(v.model.root);
         this.players.delete(sid);
       }
     }
@@ -1095,6 +1139,8 @@ export class EntityManager {
   }
 
   dispose(): void {
+    this.heroGhosts.dispose();
+    this.heroRing.dispose();
     for (const v of this.players.values()) v.dispose();
     for (const v of this.monsters.values()) v.dispose();
     this.skins.dispose();

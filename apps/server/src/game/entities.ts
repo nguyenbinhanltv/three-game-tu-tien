@@ -1,5 +1,5 @@
 // Kiểu thực thể của sim (R-7): người chơi, quái, vùng nổ, đạn, giao diện host. Tách khỏi sim.ts để các hệ con không import vòng.
-import type { CampDef } from '@dtl/shared';
+import type { CampDef, DodgeBank } from '@dtl/shared';
 import type { Client } from 'colyseus';
 import type { HazardGeom, InvSlot, MarkRt, MonsterDef, MoveInput, MoveState, PhaseRules, SkillDef, SpawnDef, TribDef } from '@dtl/shared';
 import type { GuardCfg, TribState } from './tribtypes';
@@ -69,6 +69,8 @@ export interface PlayerEnt {
   /** Né (P1 Thiên Nhãn): hết khung bất tử lúc `dodgeUntil`, lần né gần nhất `dodgeAt` (giờ server, ms). Không lưu DB. */
   dodgeUntil: number;
   dodgeAt: number;
+  /** Kho lượt né (S5): số lượt còn và mốc nạp. Không lưu DB. */
+  dodge: DodgeBank;
   /** Chân Cảnh S1: khựng vì trúng đòn đến lúc này (giờ server, ms): không đi được. `staggerOkAt`: sau mốc này mới khựng/đẩy lùi tiếp (chống khóa liên tục). Không lưu DB. */
   staggerUntil: number;
   staggerOkAt: number;

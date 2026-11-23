@@ -737,6 +737,24 @@ for (const [id, skill, voice, tpl] of [
   emit(id, skill, SK.get(skill).hitAt[0], false, (w, rec) => frames({ w, rec, voice, f3, f5, nine: false }));
 }
 
+/**
+ * Chân Cảnh C3 (đọc rõ ở camera chéo 52°): cường điệu thân người ở MỌI pose. Hông xoay, cột sống (cúi/xoắn) và đầu lệch khỏi thế thủ (khung 0)
+ * nhiều hơn `ISO_AMP` lần; thời gian, IK tay/kiếm/chân, `hit` không đổi nên luật chiêu và khớp VFX giữ nguyên. `ISO_AMP=1 node tools/poses/gen-k5.mjs`
+ * ghi lại bản gốc để so trước/sau.
+ */
+export const ISO_AMP = Number(process.env.ISO_AMP ?? 1.18);
+function isoAmplify(p) {
+  const g = p.keys[0];
+  if (!g) return;
+  const base = (k, n) => (n === 'hipsRot' ? g.hips?.rot : g[n]);
+  for (const k of p.keys.slice(1)) {
+    for (const n of ['spine', 'head']) if (k[n] && g[n]) k[n] = v3(k[n].map((x, i) => g[n][i] + (x - g[n][i]) * ISO_AMP));
+    if (k.hips?.rot && g.hips?.rot) k.hips.rot = v3(k.hips.rot.map((x, i) => g.hips.rot[i] + (x - g.hips.rot[i]) * ISO_AMP));
+  }
+  void base;
+}
+for (const p of POSES) isoAmplify(p);
+
 /** Một khóa một dòng cho dễ đọc diff. */
 function fmt(p) {
   const head = `{\n  "id": ${JSON.stringify(p.id)},\n  "duration": ${p.duration},\n  "loop": false,\n  "hit": ${JSON.stringify(p.hit)},\n  "keys": [\n`;
