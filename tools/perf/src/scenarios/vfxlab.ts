@@ -62,6 +62,7 @@ async function run(r: Run, skill: string, sizes: string[], at: number[]): Promis
     viewport: [1920, 1080],
     seenIntro: true,
     look: { g: 'm' },
+    extra: opt('--query', ''),
     query: { realm: 'nk12', god: 1, chr: 'v3', vfxlab: 1, quiet: 1, mood: opt('--mood', '') || undefined },
     ...(opt('--clip', '') ? { video: path.join(r.out, 'clip') } : {}),
     hide: 'hud',

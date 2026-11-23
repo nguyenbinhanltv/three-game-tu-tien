@@ -39,7 +39,7 @@ import { MonsterSkins } from '../character/monsterSkins';
 import { NPC_SKINS, NpcSkins } from '../character/npcSkins';
 import { type PlayerLook, PlayerSkins } from '../character/playerSkins';
 import { HeadBars } from './headBars';
-import { forgetHero, HeroGhosts, HeroRing, HERO_DEFAULT_TINT, setHero } from '../character/hero';
+import { forgetHero, HeroGhosts, HeroRing, heroTintOf, setHero } from '../character/hero';
 import type { StopPair } from '../combat/hitjuice';
 import { ArtifactVis } from '../fx/artifactVis';
 import { PState, MState, PlayerVis, MonVis, lookOf } from './entityVis';
@@ -357,8 +357,7 @@ export class EntityManager {
       }
       return;
     }
-    const rim = PATH_OF_METHOD(s.mt)?.palette?.rim;
-    const tint = rim ? Number.parseInt(rim, 16) : HERO_DEFAULT_TINT;
+    const tint = heroTintOf(PATH_OF_METHOD(s.mt)?.palette?.rim);
     if (v.heroTint !== tint) {
       setHero(root, 1, tint);
       v.heroTint = tint;

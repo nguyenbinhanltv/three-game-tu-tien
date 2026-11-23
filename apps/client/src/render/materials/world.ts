@@ -148,7 +148,7 @@ export const heroParams = {
   }),
   tint: uniform(new THREE.Color(1, 1, 1)).onObjectUpdate((frame) => {
     const h = frame.object?.userData.hero as { tint: number } | undefined;
-    heroParams.tint.value.setHex(h ? h.tint : 0xffffff);
+    heroParams.tint.value.setHex(h && Number.isFinite(h.tint) ? h.tint : 0xffffff);
   }),
 };
 
@@ -156,8 +156,12 @@ export const heroParams = {
  * Vật liệu "ma" cho viền khi bị che (Chân Cảnh C1): vẽ lại thân nhân vật CHỈ ở điểm sau một vật khác (`depthFunc` GREATER, không ghi
  * sâu), mực tối mờ, đậm ở mép (fresnel) để thành đường viền mảnh. Nơi dùng gắn vào bản sao SkinnedMesh dùng chung xương.
  */
-export function createHeroGhostMaterial(): THREE.MeshBasicNodeMaterial {
-  const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, fog: false });
+export function createHeroGhostMaterial(): THREE.MeshStandardNodeMaterial {
+  // Lưu ý: KHÔNG dùng `MeshBasicNodeMaterial` ở đây. Trên cảnh có pass MRT + vật vẽ trong lượt trong suốt (phòng thử VFX, chr=v3) vật liệu Basic
+  // tự dựng làm three báo `TypeError: Cannot read properties of undefined (reading 'r')` ở `NodeUniformsGroup.updateColor` mỗi khung (lỗi hồi quy
+  // của C1, khoanh bằng cách đổi từng phần của vật liệu). Dùng `MeshStandardNodeMaterial` tắt đèn (`lights = false`) cho cùng kết quả không lỗi.
+  const m = new THREE.MeshStandardNodeMaterial({ transparent: true, depthWrite: false, fog: false });
+  m.lights = false;
   m.depthFunc = THREE.GreaterDepth;
   // Chống tự che: dời độ sâu bản sao về phía camera `HERO_GHOST_BIAS` m, nên chỉ điểm thân nằm SAU vật khác quá ngần ấy mới được vẽ.
   // Tay đè thân, tóc sau đầu, chân bắt chéo (cách nhau dưới ngưỡng) không bị phủ mực; vật cảnh che thật (cây, tường, mái) thì xa hơn.
@@ -165,5 +169,6 @@ export function createHeroGhostMaterial(): THREE.MeshBasicNodeMaterial {
   const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1));
   m.colorNode = vec3(0.04, 0.05, 0.08);
   m.opacityNode = smoothstep(float(0.0), float(1), fres).mul(0.7).add(0.12).mul(heroParams.enabled);
+  m.emissiveNode = vec3(0, 0, 0);
   return m;
 }
