@@ -257,7 +257,12 @@ const MOTIFS = {
   ],
 };
 
-const isMotif = (e) => e.type === 'mesh' && typeof e.seed === 'number' && e.seed >= 1000;
+// Dấu nhận mô-típ: seed >= 1000 (script hiện tại). Bản đầu của script (đã merge ở #548/#561 cho Kiếm tu và còn sót ở vài chiêu Hộ pháp) dùng seed 100-299:
+// nhận thêm dải đó CHỈ cho các hình script sinh (ripple/kite/slash_thin/slash_thick/rune_ring2/bell_cage/statue) để chạy lại không nhân đôi hình.
+// Timeline viết tay của các chiêu `skl_*` không có sự kiện seed 100-299 ở các hình này (đã quét); thẻ pháp tướng seed ~960 (`card`) KHÔNG bị nhận nhầm.
+const LEGACY_SHAPES = new Set(['ripple', 'kite', 'slash_thin', 'slash_thick', 'rune_ring2', 'bell_cage', 'statue']);
+const isMotif = (e) =>
+  e.type === 'mesh' && typeof e.seed === 'number' && (e.seed >= 1000 || (e.seed >= 100 && e.seed < 300 && LEGACY_SHAPES.has(e.shape)));
 // bộ va chạm cũ của impact-kit.mjs (ripple seed 9 ink; kite dur 0.6 rot -90; slash_thick seed 4 rot y 25)
 const isOldKit = (e) =>
   e.type === 'mesh' &&

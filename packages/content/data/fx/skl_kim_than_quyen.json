@@ -28,164 +28,6 @@
   },
   {
    "type": "mesh",
-   "t": 0,
-   "dur": 0.45,
-   "at": "target",
-   "sweep": 0.45,
-   "erodeFrom": 0.35,
-   "ragged": 0.8,
-   "tone": "accent",
-   "alpha": 0.95,
-   "tier": 0,
-   "shape": "slash_thick",
-   "offset": [
-    0,
-    0.3,
-    0
-   ],
-   "rot": [
-    0,
-    20,
-    0
-   ],
-   "scale": 8.8,
-   "scaleTo": 12.8,
-   "ink": true,
-   "seed": 222
-  },
-  {
-   "type": "mesh",
-   "t": 0.02,
-   "dur": 0.45,
-   "at": "target",
-   "sweep": 0.45,
-   "erodeFrom": 0.35,
-   "ragged": 0.8,
-   "tone": "accent",
-   "alpha": 0.9,
-   "tier": 0,
-   "shape": "slash_thin",
-   "offset": [
-    -1.0499999999999998,
-    0.3,
-    -0.75
-   ],
-   "rot": [
-    0,
-    20,
-    0
-   ],
-   "scale": 10.4,
-   "scaleTo": 16.8,
-   "ink": true,
-   "seed": 223
-  },
-  {
-   "type": "mesh",
-   "t": 0.045,
-   "dur": 0.45,
-   "at": "target",
-   "sweep": 0.45,
-   "erodeFrom": 0.35,
-   "ragged": 0.8,
-   "tone": "rim",
-   "alpha": 0.9,
-   "tier": 0,
-   "shape": "slash_thin",
-   "offset": [
-    -0.35,
-    0.3,
-    -0.25
-   ],
-   "rot": [
-    0,
-    20,
-    0
-   ],
-   "scale": 10.4,
-   "scaleTo": 16.8,
-   "ink": true,
-   "seed": 224
-  },
-  {
-   "type": "mesh",
-   "t": 0.07,
-   "dur": 0.45,
-   "at": "target",
-   "sweep": 0.45,
-   "erodeFrom": 0.35,
-   "ragged": 0.8,
-   "tone": "accent",
-   "alpha": 0.9,
-   "tier": 0,
-   "shape": "slash_thin",
-   "offset": [
-    0.35,
-    0.3,
-    0.25
-   ],
-   "rot": [
-    0,
-    20,
-    0
-   ],
-   "scale": 10.4,
-   "scaleTo": 16.8,
-   "ink": true,
-   "seed": 225
-  },
-  {
-   "type": "mesh",
-   "t": 0.09500000000000001,
-   "dur": 0.45,
-   "at": "target",
-   "sweep": 0.45,
-   "erodeFrom": 0.35,
-   "ragged": 0.8,
-   "tone": "rim",
-   "alpha": 0.9,
-   "tier": 0,
-   "shape": "slash_thin",
-   "offset": [
-    1.0499999999999998,
-    0.3,
-    0.75
-   ],
-   "rot": [
-    0,
-    20,
-    0
-   ],
-   "scale": 10.4,
-   "scaleTo": 16.8,
-   "ink": true,
-   "seed": 226
-  },
-  {
-   "type": "mesh",
-   "t": 0.02,
-   "dur": 0.6,
-   "at": "target",
-   "sweep": 0.05,
-   "erodeFrom": 0.1,
-   "ragged": 0.6,
-   "tone": "accent",
-   "alpha": 0.6,
-   "tier": 0,
-   "shape": "ripple",
-   "offset": [
-    0,
-    0.12,
-    0
-   ],
-   "scale": 1.2,
-   "scaleTo": 4,
-   "ink": true,
-   "shadow": true,
-   "seed": 227
-  },
-  {
-   "type": "mesh",
    "t": 0.01,
    "dur": 0.5,
    "at": "ahead",
@@ -211,7 +53,7 @@
     1.0499999999999998,
     7.800000000000001
    ],
-   "seed": 1000
+   "seed": 1022
   },
   {
    "type": "mesh",
@@ -240,7 +82,7 @@
     1.0499999999999998,
     7.800000000000001
    ],
-   "seed": 1001
+   "seed": 1023
   },
   {
    "type": "mesh",
@@ -269,7 +111,7 @@
     1.0499999999999998,
     7.800000000000001
    ],
-   "seed": 1002
+   "seed": 1024
   },
   {
    "type": "mesh",
@@ -292,7 +134,7 @@
    "scaleTo": 3,
    "ink": true,
    "shadow": true,
-   "seed": 1003
+   "seed": 1025
   }
  ]
 }
