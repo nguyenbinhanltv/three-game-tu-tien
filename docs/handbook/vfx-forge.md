@@ -18,11 +18,11 @@
 
 ## Luật thứ bậc thị giác (runtime)
 
-Chiêu của mình > cảnh báo địch > chiêu đồng đội (`fxHierarchy`: giảm 50% độ sáng và kích thước) > hào quang/môi trường. **Chế độ tĩnh** (Cài đặt) giảm đồng đội còn 25% độ sáng, tắt khung va chạm, chớp và viền.
+Chiêu của mình > cảnh báo địch > chiêu đồng đội (`fxHierarchy`: chỉ giảm 50% độ sáng, kích thước và vị trí giữ nguyên; đối thủ đấu pháp không bị giảm) > hào quang/môi trường. **Chế độ tĩnh** (Cài đặt) giảm đồng đội còn 25% độ sáng, tắt khung va chạm, chớp và viền.
 
 ## Khung va chạm
 
-Sự kiện timeline `{ "type": "impact", "t": 0, "frames": 1|2, "tint": "ink|warm|cool" }`: 1–2 khung hậu kỳ tương phản cao ám màu (`render/post.ts`). Chỉ chiêu của mình, tắt được ở Cài đặt ("Khung va chạm"). Không có tint đỏ/cam.
+Sự kiện timeline `{ "type": "impact", "t": 0, "frames": 1|2, "tint": "ink|warm|cool" }`: 1–2 khung hậu kỳ tương phản cao ám màu (`render/post.ts`). Chỉ chiêu của mình, tắt được ở Cài đặt ("Khung va chạm") và tự tắt khi bật chế độ tĩnh (cùng `flash`, `vignette`). Không có tint đỏ/cam.
 
 ## Ảnh ở đâu
 
