@@ -9,7 +9,7 @@ import { uiScale } from '../uiScale';
 import { useHudMode } from '../u2/hud/hudVars';
 import { ancientMap } from './ancient';
 import { drawMinimap, type HitPt } from './draw';
-import { groundFootprint } from './footprint';
+import { footprintOfCamera } from './footprint';
 import { fogFor } from './fog';
 import { inkMap } from './ink';
 import { buildFrame } from './marks';
@@ -64,19 +64,6 @@ function tipOf(m: Mark): { title: string; sub?: string; desc?: string; lines: { 
  * Minimap "La Bàn Thiên Cơ" (U2-7): vành ngọc + đồng 24 hướng xoay theo camera, lòng thủy mặc dựng từ địa hình, sương phủ vùng chưa đi,
  * dải lụa tên khu vực (tự mở khi vào vùng mới) kèm tọa độ, ba hạt ngọc ở vành trái-dưới (phóng +, thu −, bản đồ lớn).
  */
-/** Vùng mặt đất camera đang thấy, từ camera của engine (hướng nhìn = trục −Z của camera quay theo quaternion). */
-function footOf(g: NonNullable<typeof Game.current>) {
-  const cam = g.camera;
-  const q = cam.quaternion;
-  // Quay vector (0,0,−1) bằng quaternion q.
-  const fwd = {
-    x: -2 * (q.x * q.z + q.w * q.y),
-    y: -2 * (q.y * q.z - q.w * q.x),
-    z: -(1 - 2 * (q.x * q.x + q.y * q.y)),
-  };
-  return groundFootprint(cam.position, fwd, cam.fov, cam.aspect, g.renderPos.y);
-}
-
 export function Minimap() {
   const D = DISC[useHudMode() === 'compact' ? 'compact' : 'standard'];
   const ref = useRef<HTMLCanvasElement>(null);
@@ -168,7 +155,7 @@ export function Minimap() {
         { ink: inkMap(), ancient: ancientMap(levelAssets(st.level).minimap), fog, sky: skyOf(g.levelMood ?? ''), labels },
         g.yaw,
         hits.current,
-        footOf(g),
+        footprintOfCamera(g.camera, g.renderPos.y),
       );
       // Tooltip theo con trỏ: chọn lại theo từng khung (biểu tượng đang chuyển động) nhưng chỉ cập nhật React khi nội dung đổi.
       const m = mouse.current;

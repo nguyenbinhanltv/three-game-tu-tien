@@ -128,6 +128,8 @@ export interface PartyMember {
   /** Đang ở room nào ('' = ngoại tuyến). */
   room: string;
   dead: boolean;
+  /** Đan tăng sức đang có hiệu lực (Chân Cảnh U9): loại → [mức, hạn theo giờ server ms]; bỏ trống = không có buff. */
+  bf?: Record<string, [number, number]>;
 }
 
 /** Server → client (S.PARTY): trạng thái tổ đội của mình; `null` khi không có tổ đội. */
