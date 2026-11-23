@@ -28,6 +28,10 @@ export const ISO_YAW: Readonly<Record<string, number>> = {
   // Vấn Đỉnh + Giới Trì: 135° (so với 0°, 45°, −45°): đỉnh đồng khổng lồ lùi ra sau người thay vì đè lên nửa khung, vẫn lộ vòng phù văn và vách nứt.
   van_dinh: (135 * Math.PI) / 180,
   gioi_tri: (135 * Math.PI) / 180,
+  // Thiên Lộ Giới: 45° (so với 0°, −45°, 135°): đường lát chạy chéo khung, trụ đá không xếp thành hàng che người.
+  cuu_kieu: (45 * Math.PI) / 180,
+  // Chín phòng cầu dùng chung địa hình Thiên Lộ Giới: cùng 45°.
+  ...Object.fromEntries(Array.from({ length: 9 }, (_, i) => [`kieu_${i + 1}`, (45 * Math.PI) / 180])),
 };
 /** Dẫn trước tối đa (m) theo con trỏ, tính trên mặt đất, và hệ số theo khoảng cách con trỏ tới nhân vật. */
 export const ISO_LEAD_MAX = 3.2;
