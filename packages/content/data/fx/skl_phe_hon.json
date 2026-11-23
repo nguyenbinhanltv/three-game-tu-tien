@@ -35,11 +35,11 @@
    "dur": 0.22,
    "at": "ahead",
    "offset": [
-    0.18,
+    0.324,
     0.1,
-    0.9
+    1.62
    ],
-   "scale": 5.4,
+   "scale": 8.1,
    "move": {
     "to": "target",
     "ease": "in",
@@ -60,11 +60,11 @@
    "dur": 0.2,
    "at": "ahead",
    "offset": [
-    -0.54,
+    -0.972,
     0.4,
-    0.72
+    1.296
    ],
-   "scale": 3.9,
+   "scale": 5.85,
    "move": {
     "to": "target",
     "ease": "in",
@@ -89,7 +89,7 @@
     1,
     0
    ],
-   "scale": 3.9,
+   "scale": 5.85,
    "billboard": true,
    "sweep": 0.3,
    "erodeFrom": 0.45,
@@ -111,8 +111,8 @@
     1,
     0
    ],
-   "scale": 2.4,
-   "scaleTo": 3.3,
+   "scale": 3.6,
+   "scaleTo": 4.95,
    "billboard": true,
    "tone": "core",
    "alpha": 0.7,
@@ -134,14 +134,14 @@
    "dur": 0.5,
    "at": "ground",
    "scale": [
-    1.08,
+    1.944,
     0.6,
-    1.08
+    1.944
    ],
    "scaleTo": [
-    5.4,
+    9.72,
     3,
-    5.4
+    9.72
    ],
    "sweep": 0.5,
    "erodeFrom": 0.4,
@@ -156,7 +156,7 @@
    "type": "decal",
    "tex": "rune",
    "t": 0.03,
-   "r": 3.96,
+   "r": 7.128,
    "dur": 2.6,
    "at": "ground",
    "grow": 0.14,
