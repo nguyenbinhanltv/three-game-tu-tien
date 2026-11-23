@@ -121,6 +121,7 @@ export interface ClothStats {
   /** Màu voan (0..1) và số màu mẫu lấy được từ texture tay áo cũ (0 = không đọc được, dùng màu mặc định). */
   tint: [number, number, number];
   palette: number;
+  penBy: Record<string, number>;
   verts: number;
   /** ms trung bình mỗi `update` (cửa sổ trượt ngắn). */
   ms: number;
@@ -155,7 +156,7 @@ export class ClothBudget {
   avg = 0;
   max = 0;
   constructor(
-    readonly budgetMs = 0.5,
+    readonly budgetMs = 0.4,
     readonly maxLagS = 0.08,
     private now: () => number = () => performance.now(),
   ) {}
@@ -193,6 +194,8 @@ export class ClothRig {
   private acc = 0;
   private pending = 0;
   private pen = 0;
+  /** Đỉnh xuyên lớn nhất theo từng lưới vải (id → số đỉnh), để biết lưới nào gây xuyên. */
+  penBy: Record<string, number> = {};
   /** Mức khép tay áo [trái, phải] 0..1 theo độ nhấc cánh tay (tính mỗi khung). */
   private fold = [0, 0];
   private penMax = 0;
@@ -412,7 +415,7 @@ export class ClothRig {
       _a.setFromMatrixPosition(ua.bone.matrixWorld);
       _v.setFromMatrixPosition(la.bone.matrixWorld).sub(_a);
       const up = _v.y / (_v.length() || 1); // -1 buông xuống, 0 ngang, 1 giơ thẳng lên
-      this.fold[sd] = Math.min(0.7, Math.max(0, (up + 0.55) / 0.9) * 0.7);
+      this.fold[sd] = Math.min(0.4, Math.max(0, (up + 0.55) / 0.9) * 0.4);
     }
     // vị trí đích: skin của vị trí nghỉ theo xương ghim của từng đỉnh (cho MỌI đỉnh: dây neo cần)
     this.grids.forEach((g, gi) => {
@@ -465,7 +468,8 @@ export class ClothRig {
     }
     if (this.measurePen) {
       let n = 0;
-      for (const sim of this.sims)
+      this.sims.forEach((sim, gi) => {
+        let ng = 0;
         for (let i = 0; i < sim.n; i++) {
           const px = sim.pos[3 * i]!,
             py = sim.pos[3 * i + 1]!,
@@ -482,11 +486,15 @@ export class ClothRig {
               dy = py - (c.ay + by * t),
               dz = pz - (c.az + bz * t);
             if (dx * dx + dy * dy + dz * dz < c.r * c.r * 0.7225) {
-              n++;
+              ng++;
               break;
             }
           }
         }
+        n += ng;
+        const id = this.grids[gi]!.id;
+        if (ng > (this.penBy[id] ?? 0)) this.penBy[id] = ng;
+      });
       this.pen = n;
       if (n > this.penMax) this.penMax = n;
     }
@@ -526,7 +534,15 @@ export class ClothRig {
   }
 
   get stats(): ClothStats {
-    return { verts: this.nVerts, ms: this.msAvg, pen: this.pen, penMax: this.penMax, tint: this.tint, palette: this.palette.length };
+    return {
+      verts: this.nVerts,
+      ms: this.msAvg,
+      pen: this.pen,
+      penMax: this.penMax,
+      tint: this.tint,
+      palette: this.palette.length,
+      penBy: this.penBy,
+    };
   }
 
   dispose(): void {

@@ -34,15 +34,19 @@ export default {
     const setId = opt('--set', 'tinh_khuyet');
     const gen = opt('--gender', 'f');
     const gname = gen === 'm' ? 'nam' : 'nu';
+    // Hướng chạy chọn chỗ trống (không cây/băng rôn): `--run KeyW,KeyA`.
+    const RUN = list('--run', 'KeyW,KeyA');
     const result: Record<string, unknown> = {};
     const video = num('--video', 0) > 0;
     const nBots = num('--bots', 0);
     for (const variant of variants) {
-      const tag = `${setId}-${gname}-${variant}-${viewport[1]}p`;
+      const dpr = num('--dpr', 1);
+      const tag = `${setId}-${gname}-${variant}-${viewport[1]}p${dpr > 1 ? '-can' : ''}`;
       const { page } = await r.open({
         name: `C${variant}`,
         viewport,
         quality: 'high',
+        dpr,
         look: { g: gen },
         query: { chr: 'v3', cam: 'iso', ...(variant === 'thien-y' ? { cloth: '1' } : {}) },
         hide: 'hud',
@@ -77,8 +81,10 @@ export default {
           var g = window.__game; var v = g.renderPos.clone(); v.y += 0.9; v.project(g.camera);
           return { x: (v.x * 0.5 + 0.5) * innerWidth, y: (-v.y * 0.5 + 0.5) * innerHeight };
         })()`)) as { x: number; y: number };
-        const w = Math.round(viewport[0] * 0.3);
-        const h = Math.round(viewport[1] * 0.5);
+        // Cắt ĐÚNG độ phân giải gốc (không phóng): 1080p cắt 400×440 px, 720p 300×330 px; `--dpr 2` kết xuất gấp đôi và cắt 200×220 px CSS (ảnh cận 400×440 px thật).
+        const base = viewport[0] >= 1900 ? 400 : 300;
+        const w = Math.round(base / dpr);
+        const h = Math.round((base * 1.1) / dpr);
         const x = Math.max(0, Math.min(viewport[0] - w, Math.round(c.x - w / 2)));
         const y = Math.max(0, Math.min(viewport[1] - h, Math.round(c.y - h / 2)));
         await page.screenshot({ path: path.join(r.out, `${tag}-${n}.png`), clip: { x, y, width: w, height: h } });
@@ -110,12 +116,12 @@ export default {
       if (bots) console.log('[clothcheck] cảnh đông:', JSON.stringify(await crowd()));
       await shot('1-dung');
       ms.dung = await stats();
-      for (const k of ['KeyS', 'KeyD']) await page.keyboard.down(k);
+      for (const k of RUN) await page.keyboard.down(k);
       await sleep(1400);
       await shot('2-chay');
       ms.chay = await stats();
-      for (const k of ['KeyS', 'KeyD']) await page.keyboard.up(k);
-      await hold(['KeyS', 'KeyD'], 400);
+      for (const k of RUN) await page.keyboard.up(k);
+      await hold(RUN, 400);
       await page.keyboard.press('KeyQ');
       await sleep(250);
       await shot('3-luot');
