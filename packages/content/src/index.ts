@@ -368,6 +368,14 @@ import posePhiKiemLtJson from '../data/poses/phi_kiem_lt.json';
 import posePhiKiem2LtJson from '../data/poses/phi_kiem_2_lt.json';
 import posePhiKiem3LtJson from '../data/poses/phi_kiem_3_lt.json';
 import poseKiemKhiTramLtJson from '../data/poses/kiem_khi_tram_lt.json';
+import posePhiKiemHtJson from '../data/poses/phi_kiem_ht.json';
+import posePhiKiem2HtJson from '../data/poses/phi_kiem_2_ht.json';
+import posePhiKiem3HtJson from '../data/poses/phi_kiem_3_ht.json';
+import poseKiemKhiTramHtJson from '../data/poses/kiem_khi_tram_ht.json';
+import posePhiKiemCtJson from '../data/poses/phi_kiem_ct.json';
+import posePhiKiem2CtJson from '../data/poses/phi_kiem_2_ct.json';
+import posePhiKiem3CtJson from '../data/poses/phi_kiem_3_ct.json';
+import poseKiemKhiTramCtJson from '../data/poses/kiem_khi_tram_ct.json';
 import poseHoanhKiemJson from '../data/poses/hoanh_kiem.json';
 import poseThuanDiTramJson from '../data/poses/thuan_di_tram.json';
 import poseThienKiemHoaHinhJson from '../data/poses/thien_kiem_hoa_hinh.json';
@@ -636,6 +644,14 @@ export const POSES = [
   posePhiKiem2LtJson,
   posePhiKiem3LtJson,
   poseKiemKhiTramLtJson,
+  posePhiKiemHtJson,
+  posePhiKiem2HtJson,
+  posePhiKiem3HtJson,
+  poseKiemKhiTramHtJson,
+  posePhiKiemCtJson,
+  posePhiKiem2CtJson,
+  posePhiKiem3CtJson,
+  poseKiemKhiTramCtJson,
   poseHoanhKiemJson,
   poseThuanDiTramJson,
   poseThienKiemHoaHinhJson,

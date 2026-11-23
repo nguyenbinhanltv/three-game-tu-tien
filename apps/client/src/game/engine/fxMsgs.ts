@@ -281,9 +281,11 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
   if (!held) {
     // Động tác chiêu; đòn của mình đang vào thế thì giữ hiệu ứng + tiếng tới đúng lúc ra đòn.
     // Lướt (K-2): hình trượt từ chỗ cũ tới chỗ server đặt, và cắt phần thu về của chiêu đang phát (K-4).
-    if (pSrc && eng.skillPoses.dashOf(m.t)) {
+    const dashSkill = pSrc ? eng.skillPoses.dashOf(m.t) : undefined;
+    if (pSrc && dashSkill) {
       const from = e.posAgo(src, DASH_LOOKBACK);
-      if (from) pSrc.model.dashFrom?.(from.x, from.z, m.d ?? 0.3);
+      // Lướt có sát thương (Thiết Bích Xung, Nghịch Kiếm Chuyển Phong…) vung đao khi lao (C3e); lướt thuần vẫn lăn.
+      if (from) pSrc.model.dashFrom?.(from.x, from.z, m.d ?? 0.3, (dashSkill.power ?? 0) > 0);
     }
     const dstV = dst ? (e.monsters.get(dst) ?? e.players.get(dst)) : undefined;
     const gap =
