@@ -1,5 +1,7 @@
 // Thanh máu boss nhiều lớp (Chân Cảnh U3): hàm thuần, chỉ để hiển thị từ máu/máu tối đa server gửi (không quyết định gì).
 
+import { bossPhaseAt } from '@dtl/shared';
+
 /** Mỗi lớp ứng khoảng 12.000 máu, từ 1 đến 6 lớp: boss nhỏ vẫn là một thanh. */
 const LAYER_HP = 12000;
 export const BOSS_LAYERS_MAX = 6;
@@ -28,9 +30,17 @@ export function layerColor(layer: BossLayers, k = layer.cur): number {
   return (layer.n - 1 - k) % BOSS_LAYER_COLORS;
 }
 
-/** Pha hiện tại (1…) theo các ngưỡng máu chuyển pha `marks` (0–1, giảm dần hay không đều đều được); `max` là số pha. */
+/** Pha hiện tại (1…) theo các ngưỡng máu chuyển pha `marks` (0–1, giảm dần); `max` là số pha. */
 export function bossPhase(hp: number, mhp: number, marks: readonly number[] | undefined): { n: number; max: number } | null {
   if (!marks?.length || !(mhp > 0)) return null;
-  const f = hp / mhp;
-  return { n: 1 + marks.filter((m) => f < m).length, max: marks.length + 1 };
+  // Quy tắc pha dùng chung với server (`bossPhaseAt`, chuyển pha khi máu ≤ ngưỡng): không chép lại ở client.
+  return {
+    n:
+      1 +
+      bossPhaseAt(
+        hp / mhp,
+        marks.map((m) => ({ hp: m })),
+      ),
+    max: marks.length + 1,
+  };
 }

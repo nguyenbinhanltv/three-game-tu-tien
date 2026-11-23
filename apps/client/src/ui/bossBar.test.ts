@@ -27,6 +27,9 @@ describe('thanh máu boss nhiều lớp', () => {
     expect(bossPhase(100, 100, [0.7, 0.4])).toEqual({ n: 1, max: 3 });
     expect(bossPhase(60, 100, [0.7, 0.4])).toEqual({ n: 2, max: 3 });
     expect(bossPhase(30, 100, [0.7, 0.4])).toEqual({ n: 3, max: 3 });
+    // đúng ngưỡng: server đã sang pha kế (frac <= hp)
+    expect(bossPhase(70, 100, [0.7, 0.4])).toEqual({ n: 2, max: 3 });
+    expect(bossPhase(40, 100, [0.7, 0.4])).toEqual({ n: 3, max: 3 });
     expect(bossPhase(30, 100, undefined)).toBeNull();
   });
 });
