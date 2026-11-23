@@ -2,14 +2,18 @@ import * as THREE from 'three/webgpu';
 import { addUpNormals } from '../../render/geoNormal';
 import {
   atan,
+  dot,
   float,
+  fract,
   length,
   mix,
   normalWorld,
   positionLocal,
   positionWorld,
+  screenCoordinate,
   sin,
   smoothstep,
+  step,
   texture,
   time,
   uniform,
@@ -24,6 +28,7 @@ import { createLanternHalos } from '../../render/atmosphere';
 import { getCloudNoise } from '../../render/noiseTex';
 import { postParams } from '../../render/post';
 import { DungeonFx } from './dungeonFx';
+import { withSightFade } from './occlusion';
 
 /**
  * Cảnh Độ Kiếp (DUN-1 PR7; chỉ để nhìn, không đổi kịch bản kiếp/vòng trận môn/điểm đứng): Thiên Lôi Đài trên đỉnh núi, giữa biển mây giông.
@@ -76,17 +81,21 @@ function dkKeepOut(x: number, z: number, minR: number): boolean {
  *  - `_volt` (vết nứt/phù văn điện tím-trắng): sáng yếu, bừng mạnh theo chớp (HDR để bloom bắt);
  *  - `_jade` (đá cháy xém): thớ nhiễu theo toạ độ thế giới, mặt ngửa phủ muội đen.
  */
-export function dkMaterialFor(name: string): THREE.Material | null {
+/** Nhiễu dither khung hình (interleaved gradient) cho maskNode: bằng cách của `occlusion.ts`. */
+const ignDither = () => fract(float(52.9829189).mul(fract(dot(screenCoordinate.xy, vec2(0.06711056, 0.00583715)))));
+
+export function dkMaterialFor(name: string, meshName = ''): THREE.Material | null {
   if (name.endsWith('_rune')) {
-    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.55, metalness: 0.2, name });
+    const m = withSightFade(new THREE.MeshStandardNodeMaterial({ roughness: 0.55, metalness: 0.2, name }));
     const n = texture(getCloudNoise(), positionWorld.xz.mul(0.05).add(time.mul(0.02))).g;
     const slow = float(0.5).add(sin(time.mul(0.9).add(n.mul(6))).mul(0.12));
     m.colorNode = vec3(0.04, 0.035, 0.03);
-    m.emissiveNode = vertexColor().mul(slow.mul(1.5).add(flashU.mul(1.4)));
+    // camera chéo nhìn từ trên: tám tia/vòng vàng dài dịu lại (đỡ cắt khung như lỗi hình), vẫn bừng theo chớp
+    m.emissiveNode = vertexColor().mul(slow.mul(0.95).add(flashU.mul(1.4)));
     return m;
   }
   if (name.endsWith('_volt')) {
-    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.4, metalness: 0, name });
+    const m = withSightFade(new THREE.MeshStandardNodeMaterial({ roughness: 0.4, metalness: 0, name }));
     const n = texture(getCloudNoise(), positionWorld.xz.mul(0.4).add(time.mul(0.15))).g;
     const crawl = float(0.55).add(sin(time.mul(3.0).add(n.mul(10))).mul(0.3));
     m.colorNode = vec3(0.05, 0.04, 0.08);
@@ -100,8 +109,19 @@ export function dkMaterialFor(name: string): THREE.Material | null {
     const speck = texture(nz, wp.xy.mul(6.0).add(wp.z.mul(2.6))).b;
     const soot = smoothstep(0.55, 0.95, normalWorld.y).mul(smoothstep(0.35, 0.7, texture(nz, wp.xz.mul(0.3)).a));
     const base = vertexColor().mul(float(0.7).add(fine.mul(0.38)).add(speck.mul(0.16)));
-    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.8, metalness: 0.02, name });
+    const m = withSightFade(new THREE.MeshStandardNodeMaterial({ roughness: 0.8, metalness: 0.02, name }));
     m.colorNode = mix(base, base.mul(0.35), soot.mul(0.7));
+    return m;
+  }
+  if (name.endsWith('_char') && /scorch|paving/.test(meshName)) {
+    // Vết cháy sét/muội PHẲNG (đĩa + tia của `dk_scorch*`, mảng muội của `dk_paving`): từ trên cao thành hình chữ nhật đen đặc. Nhận theo tên object
+    // (cùng vật liệu `_char` với gốc cây/tảng cháy nên không tách được theo tên vật liệu hay độ cao: mảng muội của đài nằm ở y 0,43). Nhiễu theo toạ độ
+    // thế giới + dither (maskNode, không cần pass trong suốt), không phụ thuộc gốc mesh. Gốc cây/tảng giữ đặc (vật liệu GLB gốc).
+    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.95, metalness: 0, name });
+    const n = texture(getCloudNoise(), positionWorld.xz.mul(0.35)).g;
+    const cover = float(0.3).add(smoothstep(0.35, 0.75, n).mul(0.4));
+    m.colorNode = vertexColor().mul(0.8);
+    m.maskNode = step(ignDither(), cover).greaterThan(0.5);
     return m;
   }
   return null;
@@ -231,9 +251,9 @@ export class DoKiepArt {
 
     // đá vụn bay lơ lửng quanh đài, xoay chậm và nhích lên xuống
     const dgeo = new THREE.IcosahedronGeometry(1, 0);
-    const dmat = new THREE.MeshStandardNodeMaterial({ roughness: 0.85, metalness: 0 });
+    const dmat = withSightFade(new THREE.MeshStandardNodeMaterial({ roughness: 0.85, metalness: 0 }));
     const dn = texture(getCloudNoise(), positionWorld.xz.mul(0.9).add(positionWorld.y.mul(0.6))).g;
-    dmat.colorNode = vec3(0.1, 0.1, 0.13).mul(float(0.7).add(dn.mul(0.6)));
+    dmat.colorNode = vec3(0.16, 0.15, 0.2).mul(float(0.7).add(dn.mul(0.6)));
     const crack = smoothstep(0.58, 0.62, dn).mul(smoothstep(0.66, 0.62, dn));
     dmat.emissiveNode = vec3(0.62, 0.45, 1.0).mul(crack.mul(float(0.6).add(flashU.mul(1.6))));
     this.debris = new THREE.InstancedMesh(dgeo, dmat, DEBRIS_N);
@@ -398,11 +418,12 @@ export class DoKiepArt {
       const s2 = this.debrisSeed[i * 4 + 2]!;
       const s3 = this.debrisSeed[i * 4 + 3]!;
       const ang = s0 * Math.PI * 2 + t * 0.03 * (0.5 + s3);
-      const rad = 9 + s1 * 36;
-      const y = this.y0 + 4 + s2 * 14 + Math.sin(t * 0.4 + s3 * 9) * 0.8;
+      // camera chéo: đá thấp và nhỏ, không bay tới ngang tầm camera (từ trên thành tấm đen đặc che người)
+      const rad = 14 + s1 * 32;
+      const y = this.y0 + 1.2 + s2 * 4 + Math.sin(t * 0.4 + s3 * 9) * 0.4;
       this.tmp.position.set(CENTER.x + Math.cos(ang) * rad, y, CENTER.z + Math.sin(ang) * rad);
       this.tmp.rotation.set(t * 0.15 * s0 + s3 * 6, t * 0.12 * s1 + s2 * 6, s0 * 2);
-      const sc = 0.3 + s3 * s3 * 1.0;
+      const sc = 0.25 + s3 * s3 * 0.55;
       this.tmp.scale.set(sc * (0.8 + s0 * 0.5), sc, sc * (0.7 + s1 * 0.6));
       this.tmp.updateMatrix();
       this.debris.setMatrixAt(i, this.tmp.matrix);

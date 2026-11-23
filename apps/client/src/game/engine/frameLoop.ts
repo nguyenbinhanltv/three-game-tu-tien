@@ -373,7 +373,7 @@ function updateCamera(eng: Game, dt: number): void {
     fovKick = f.amt * Math.min(1, f.t / 0.15) * Math.max(0, Math.min(1, (f.dur - f.t) / 0.6));
     if (f.t >= f.dur) eng.fxFov = null;
   }
-  const wantFov = (eng.iso && !eng.cine.active && !eng.tribScene ? ISO_FOV : zc.fov) + ultPunch + fovKick;
+  const wantFov = (eng.iso && !eng.cine.active ? ISO_FOV : zc.fov) + ultPunch + fovKick;
   if (Math.abs(eng.camera.fov - wantFov) > 0.01) {
     eng.camera.fov = wantFov;
     eng.camera.updateProjectionMatrix();
@@ -393,7 +393,7 @@ function updateCamera(eng: Game, dt: number): void {
   let cx = tx + Math.sin(eng.camYaw) * cp * eng.camDistCur;
   let cy = ty + Math.sin(pitch) * eng.camDistCur;
   let cz = tz + Math.cos(eng.camYaw) * cp * eng.camDistCur;
-  const iso = eng.iso && !eng.cine.active && !eng.tribScene ? eng.iso : null;
+  const iso = eng.iso && !eng.cine.active ? eng.iso : null;
   if (iso) {
     // Camera chéo khóa góc: hướng cố định theo bản đồ, nghiêng cố định, khoảng cách khóa (không zoom), dẫn trước nhẹ theo con trỏ.
     eng.camYaw = isoYawFor(levelId());

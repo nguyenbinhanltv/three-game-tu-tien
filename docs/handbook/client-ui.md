@@ -37,7 +37,9 @@
 - Hào quang riêng của Đao tu/Cổ tu/Cấm chế sư (nợ #473): `apps/client/src/game/fx/pathAura.ts` + luật thuần `pathAuraRules.ts`. Mỗi hướng MỘT lớp nhẹ THAY hào quang cảnh giới (`realmSuppressed`): Đao tu khí đỏ sậm bốc từ vai/lưng + vài vệt đao mảnh lướt theo nhịp (không khối cố định), Cổ tu 3–4 cổ trùng viền tối bay thấp quanh hông, Cấm chế sư văn trận mờ dưới chân (nền tối + vành triện). Màu theo `paths.json` palette; mờ khi chạy/giao chiến, ẩn khi hóa hình/bay/chết/độ kiếp/xuất khiếu, camFade cho khối ở thân. `?pathaura=0` về hào quang cảnh giới cũ (so ảnh); ảnh trước/sau: `pnpm shots pathaura --out <dir>`. Đo draw call mỗi người (`pnpm shots pathaura --perf`, cấp 32 đứng yên, 2026-11-22): lớp riêng của hướng +0 (Đao tu) / +1 (Cổ tu) / +2 (Cấm chế sư) draw so với tắt hào quang, thay hào quang cảnh giới mặc định +8 đến +10; dưới ngưỡng 5 nên không cần gộp.
 - Mục Đạp Thiên (TN-7 kết game, `apps/client/src/ui/DapView.tsx` thuần + `DapSection.tsx` nối store/Game, test `DapView.test.tsx` bằng `renderToString`; zustand trả trạng thái ban đầu khi render phía server nên test không đi qua store): nằm TRONG tab Cửu Kiều ở Dẫn Kiều Nhân (một tab duy nhất, xin vé từng cầu ở tab đó), chỉ hiện khi đủ chín cầu (`char.kieu`): danh hiệu Đạp Thiên, lời kết, nút mở bảng ghi công (`Credits` có sẵn), bốn nguồn Cực nguyên chọn MỘT lần (`C.DAP`, khóa sau khi chọn) và Bảng Thiên Lộ (`S.KIEU_BOARD` vào `useUI.kieuBoard`, xin khi mục hiện ra). Client chỉ hiển thị `CharView` và gửi ý định. Chưa có: hiệu ứng cảnh kết.
 
-## Thiên Nhãn P0: camera chéo khóa góc (`?cam=iso`, nguyên mẫu)
+## Thiên Nhãn P0: camera chéo khóa góc (nay là mặc định, P5c; cờ `?cam=` đã bỏ)
+
+> P5c-1: iso là camera mặc định ở mọi nơi, kể cả sân độ kiếp (`do_kiep*`: thiên lôi nhìn rõ từ trên). Chỉ cảnh điện ảnh (`cine.active`) còn dùng camera cảnh riêng. Chạy `pnpm shots` không cần cờ camera.
 
 Chỉ client, sau cờ URL; mặc định không đổi gì. Mã: `game/camera/iso.ts` (hàm thuần, có test), `game/camera/isoRig.ts` (trạng thái: con trỏ, đích, vòng ngắm), nối ở `game/engine/frameLoop.ts` (`updateCamera`, `buildInput`, `fireSkill`) và `game/engine/input.ts`.
 
