@@ -11,6 +11,7 @@ import type {
   MarkInfo,
   MethodMsg,
   PartyMsg,
+  RecapMsg,
   QuestView,
   SpiritHit,
   WardrobeMsg,
@@ -169,6 +170,8 @@ export interface DebugPerf {
   /** CPU của `Game.frame()` (ms): trung bình và lớn nhất trong khoảng lấy mẫu. */
   cpuMs: number;
   cpuMaxMs: number;
+  /** CPU theo hệ so với hạn mức (base/frameBudget.ts), trung bình/đỉnh trong cùng khoảng lấy mẫu. */
+  budget: { section: string; avg: number; max: number; limit: number }[];
   drawCalls: number;
   triangles: number;
   geometries: number;
@@ -354,6 +357,8 @@ interface UIState {
   ultCard: { id: number; skill: string; color: string; until: number } | null;
   /** Tổ đội của mình (P3-9); null = không có. */
   party: PartyMsg | null;
+  /** Bảng tổng kết trận (U5) do server gửi sau khi hoàn thành bí cảnh; null = không hiện. */
+  recap: RecapMsg | null;
   tele: TeleState;
   spirit: SpiritState;
   soul: SoulState;
@@ -462,6 +467,7 @@ export const useUI = create<UIState>(() => ({
   methodOff: 0,
   ultCard: null,
   party: null,
+  recap: null,
   tele: { open: [], cast: null, cdUntil: 0 },
   spirit: { open: false, chUntil: 0, cdUntil: 0, r: 60 },
   soul: { open: false, k: 0, until: 0, bx: 0, by: 0, bz: 0, to: null, cdUntil: 0, deathCdUntil: 0 },

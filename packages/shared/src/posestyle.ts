@@ -1,9 +1,9 @@
 // K-5: chọn pose theo công pháp ("ba ngôn ngữ động tác") và theo đòn trong chuỗi đánh thường.
 // Chỉ là lớp hình ở client; không ảnh hưởng luật (thời gian chiêu vẫn lấy từ `skills.json`).
 
-/** Giọng động tác: kiếm tu (nhanh, thẳng, xa), hộ pháp (nặng, thấp, gần), đan sư (tròn, mềm, tay áo). */
-export type PoseVoice = 'kt' | 'hp' | 'ds';
-export const POSE_VOICES: readonly PoseVoice[] = ['kt', 'hp', 'ds'];
+/** Giọng động tác: kiếm tu (nhanh, thẳng, xa), hộ pháp (nặng, thấp, gần), đan sư (tròn, mềm, tay áo), đao tu (Chân Cảnh C3c: nặng, rộng, hai tay cầm đao lớn), lôi tu (C3d: nhanh, gọn, tay trái triệu lôi lên cao, kiếm bổ từ trên xuống), hồn tu (C3e: trôi, vẫy cờ hồn theo cung rộng, bước lùi dài), cổ tu (C3e: khom thấp, vồ ra như rắn, tay trái cào), thể tu (C3f: quyền thuật, đấm thẳng liên hoàn, bước chéo), cấm chế sư (C3f: vung trận kỳ cung tròn rộng, tay trái kết ấn). */
+export type PoseVoice = 'kt' | 'hp' | 'ds' | 'dt' | 'lt' | 'ht' | 'ct' | 'tt' | 'cs';
+export const POSE_VOICES: readonly PoseVoice[] = ['kt', 'hp', 'ds', 'dt', 'lt', 'ht', 'ct', 'tt', 'cs'];
 
 /**
  * Công pháp → giọng. Chưa chọn công pháp (hoặc id lạ) dùng giọng kiếm tu, cũng là bản gốc của mỗi pose.
@@ -24,7 +24,17 @@ export function methodOfVoice(v: PoseVoice): string | undefined {
 }
 
 /** Hậu tố id pose theo giọng (kiếm tu là bản gốc, không hậu tố). */
-export const VOICE_SUFFIX: Readonly<Record<PoseVoice, string>> = { kt: '', hp: '_hp', ds: '_ds' };
+export const VOICE_SUFFIX: Readonly<Record<PoseVoice, string>> = {
+  kt: '',
+  hp: '_hp',
+  ds: '_ds',
+  dt: '_dt',
+  lt: '_lt',
+  ht: '_ht',
+  ct: '_ct',
+  tt: '_tt',
+  cs: '_cs',
+};
 
 /** Pose gốc có đủ ba giọng: đòn thường (3 đòn) và Kiếm Khí Trảm. Các chiêu khác chỉ một giọng (của công pháp chiêu hoặc kiếm tu). */
 export const VOICED_POSES: ReadonlySet<string> = new Set(['phi_kiem', 'kiem_khi_tram']);

@@ -59,6 +59,7 @@ import { Panels } from './windows/Panels';
 import { TrialBanner } from './Realm';
 import { Calli, preloadCalli } from './calli/Calli';
 import { BagWarn } from './BagWarn';
+import { Recap } from './Recap';
 import { type BossLine, type ChapterCard, togglePanel, useUI } from './store';
 import { HubBar } from './u2/hud/HubBar';
 import { ChapterMap } from './chapters/ChapterMap';
@@ -70,6 +71,7 @@ import { ChatBox } from './u2/hud/Chat';
 import { SkillBanner } from './u2/hud/SkillBanner';
 import { SkillCluster } from './u2/hud/SkillCluster';
 import { ResourceBar } from './u2/hud/ResourceBar';
+import { BuffRow, VitalsDock } from './u2/hud/Vitals';
 import { MarkChips } from './u2/hud/MarkChips';
 import { activeStance } from './stanceView';
 import { chainLines, skillMpNow } from './skillChain';
@@ -531,7 +533,8 @@ export function Hud() {
       style={hudVars(mode, { skillLayout, questCollapsed, chatCollapsed, chatSize })}
     >
       <TribBars />
-      <PlayerCard />
+      <PlayerCard lite={mode !== 'touch' && skillLayout === 'bar'} />
+      {mode !== 'touch' && skillLayout === 'bar' && <VitalsDock />}
       <PartyFrame />
       <InviteStack />
       <DuelBanner />
@@ -552,10 +555,11 @@ export function Hud() {
       <Tribulation />
       <TrialBanner />
       <BagWarn />
+      <Recap />
       {hint && !npc && <div className="hint">{hint}</div>}
       <CastBar />
       <SkillBanner />
-      {mode === 'touch' ? <TouchControls /> : <SkillCluster layout={skillLayout} utility={<UtilityRow />} />}
+      {mode === 'touch' ? <TouchControls /> : <SkillCluster layout={skillLayout} utility={<UtilityRow bar={skillLayout === 'bar'} />} />}
       <ChatBox />
       <Panels />
       {npc && <NpcDialog npcId={npc} />}
@@ -570,7 +574,7 @@ export function Hud() {
  * Ô tiện ích cạnh cụm kỹ năng (U2-2): pháp bảo phụ (9), đan lô (T), thần thức (V), nguyên anh (X), chip phân thân (G), dấu chồng
  * công pháp, hàng chiêu bậc cao (Shift+số) và buff. Giữ nguyên logic cũ; chỉ đổi chỗ đặt.
  */
-function UtilityRow() {
+function UtilityRow({ bar }: { bar: boolean }) {
   const char = useUI((s) => s.char);
   const cds = useUI((s) => s.cds);
   const gcdAt = useUI((s) => s.gcdAt);
@@ -667,7 +671,7 @@ function UtilityRow() {
             {t('ui.branch.pending', { realm: realmName(pending) })}
           </button>
         )}
-        <ResourceBar />
+        {!bar && <ResourceBar />}
         {char.level >= CLONE_UNLOCK_LEVEL && (
           <div className={'clone-chip' + (now < clone.until ? ' on' : '')} data-testid="clone-chip" aria-label={t('ui.clone.title')}>
             <span className="clone-key">G</span>
@@ -678,7 +682,7 @@ function UtilityRow() {
                 : t('ui.clone.title')}
           </div>
         )}
-        <BuffRow />
+        {!bar && <BuffRow />}
       </div>
     </>
   );
@@ -968,42 +972,5 @@ function SoulSlot() {
         )}
       </button>
     </Tooltip>
-  );
-}
-
-const BUFF_ICON: Record<string, string> = { atk: 'buff_atk', def: 'buff_def', crit: 'buff_crit' };
-
-/** Hàng đan tăng sức đang có hiệu lực (P3-8), kèm thời gian còn lại. */
-function BuffRow() {
-  const buffs = useUI((s) => s.method?.buffs);
-  const off = useUI((s) => s.methodOff);
-  const now = useNow(1000);
-  const list = Object.entries(buffs ?? {}).filter(([, [, until]]) => until + off > now);
-  if (!list.length) return null;
-  return (
-    <div className="buff-row" aria-label={t('ui.buff.title')}>
-      {list.map(([kind, [mag, until]]) => {
-        const left = Math.max(0, Math.ceil((until + off - now) / 1000));
-        return (
-          <Tooltip
-            key={kind}
-            content={
-              <TipCard
-                title={t('ui.buff.title')}
-                lines={[
-                  { text: `${t('ui.pill.buff.' + kind)} +${Math.round(mag * 100)}%`, tone: 'good' },
-                  { text: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`, tone: 'dim' },
-                ]}
-              />
-            }
-          >
-            <span className="buff-chip">
-              <UiIcon id={BUFF_ICON[kind] ?? 'buff_atk'} fallback={ITEM.get(BUFF_ICON[kind]!)?.iconFallback ?? '✦'} />
-              <em>{left >= 60 ? t('ui.buff.min', { n: Math.ceil(left / 60) }) : t('ui.buff.sec', { n: left })}</em>
-            </span>
-          </Tooltip>
-        );
-      })}
-    </div>
   );
 }

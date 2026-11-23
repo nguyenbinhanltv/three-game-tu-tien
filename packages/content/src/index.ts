@@ -239,6 +239,10 @@ import fx_skl_hoanh_kiem_pha_mach from '../data/fx/skl_hoanh_kiem_pha_mach.json'
 import fx_skl_hoi_nguyen_thuat from '../data/fx/skl_hoi_nguyen_thuat.json';
 import fx_skl_hoi_thien_dan_lo from '../data/fx/skl_hoi_thien_dan_lo.json';
 import fx_skl_hoi_xuan_quyet from '../data/fx/skl_hoi_xuan_quyet.json';
+import fx_skl_ngu_kiem_tran from '../data/fx/skl_ngu_kiem_tran.json';
+import fx_skl_tran_kiem from '../data/fx/skl_tran_kiem.json';
+import fx_skl_tran_kiem_tram from '../data/fx/skl_tran_kiem_tram.json';
+import fx_skl_tran_kiem_vu from '../data/fx/skl_tran_kiem_vu.json';
 import fx_skl_kiem_anh_bo from '../data/fx/skl_kiem_anh_bo.json';
 import fx_skl_kiem_dan_ban_menh from '../data/fx/skl_kiem_dan_ban_menh.json';
 import fx_skl_u_anh_bo from '../data/fx/skl_u_anh_bo.json';
@@ -352,6 +356,30 @@ import posePhiKiem2DsJson from '../data/poses/phi_kiem_2_ds.json';
 import posePhiKiem3DsJson from '../data/poses/phi_kiem_3_ds.json';
 import poseKiemKhiTramHpJson from '../data/poses/kiem_khi_tram_hp.json';
 import poseKiemKhiTramDsJson from '../data/poses/kiem_khi_tram_ds.json';
+import posePhiKiemDtJson from '../data/poses/phi_kiem_dt.json';
+import posePhiKiem2DtJson from '../data/poses/phi_kiem_2_dt.json';
+import posePhiKiem3DtJson from '../data/poses/phi_kiem_3_dt.json';
+import poseKiemKhiTramDtJson from '../data/poses/kiem_khi_tram_dt.json';
+import posePhiKiemLtJson from '../data/poses/phi_kiem_lt.json';
+import posePhiKiem2LtJson from '../data/poses/phi_kiem_2_lt.json';
+import posePhiKiem3LtJson from '../data/poses/phi_kiem_3_lt.json';
+import poseKiemKhiTramLtJson from '../data/poses/kiem_khi_tram_lt.json';
+import posePhiKiemHtJson from '../data/poses/phi_kiem_ht.json';
+import posePhiKiem2HtJson from '../data/poses/phi_kiem_2_ht.json';
+import posePhiKiem3HtJson from '../data/poses/phi_kiem_3_ht.json';
+import poseKiemKhiTramHtJson from '../data/poses/kiem_khi_tram_ht.json';
+import posePhiKiemCtJson from '../data/poses/phi_kiem_ct.json';
+import posePhiKiem2CtJson from '../data/poses/phi_kiem_2_ct.json';
+import posePhiKiem3CtJson from '../data/poses/phi_kiem_3_ct.json';
+import poseKiemKhiTramCtJson from '../data/poses/kiem_khi_tram_ct.json';
+import posePhiKiemTtJson from '../data/poses/phi_kiem_tt.json';
+import posePhiKiem2TtJson from '../data/poses/phi_kiem_2_tt.json';
+import posePhiKiem3TtJson from '../data/poses/phi_kiem_3_tt.json';
+import poseKiemKhiTramTtJson from '../data/poses/kiem_khi_tram_tt.json';
+import posePhiKiemCsJson from '../data/poses/phi_kiem_cs.json';
+import posePhiKiem2CsJson from '../data/poses/phi_kiem_2_cs.json';
+import posePhiKiem3CsJson from '../data/poses/phi_kiem_3_cs.json';
+import poseKiemKhiTramCsJson from '../data/poses/kiem_khi_tram_cs.json';
 import poseHoanhKiemJson from '../data/poses/hoanh_kiem.json';
 import poseThuanDiTramJson from '../data/poses/thuan_di_tram.json';
 import poseThienKiemHoaHinhJson from '../data/poses/thien_kiem_hoa_hinh.json';
@@ -612,6 +640,30 @@ export const POSES = [
   posePhiKiem3DsJson,
   poseKiemKhiTramHpJson,
   poseKiemKhiTramDsJson,
+  posePhiKiemDtJson,
+  posePhiKiem2DtJson,
+  posePhiKiem3DtJson,
+  poseKiemKhiTramDtJson,
+  posePhiKiemLtJson,
+  posePhiKiem2LtJson,
+  posePhiKiem3LtJson,
+  poseKiemKhiTramLtJson,
+  posePhiKiemHtJson,
+  posePhiKiem2HtJson,
+  posePhiKiem3HtJson,
+  poseKiemKhiTramHtJson,
+  posePhiKiemCtJson,
+  posePhiKiem2CtJson,
+  posePhiKiem3CtJson,
+  poseKiemKhiTramCtJson,
+  posePhiKiemTtJson,
+  posePhiKiem2TtJson,
+  posePhiKiem3TtJson,
+  poseKiemKhiTramTtJson,
+  posePhiKiemCsJson,
+  posePhiKiem2CsJson,
+  posePhiKiem3CsJson,
+  poseKiemKhiTramCsJson,
   poseHoanhKiemJson,
   poseThuanDiTramJson,
   poseThienKiemHoaHinhJson,
@@ -735,6 +787,10 @@ export const FX_TIMELINES = [
   fx_skl_hoi_thien_dan_lo,
   fx_skl_hoi_xuan_quyet,
   fx_skl_kiem_anh_bo,
+  fx_skl_ngu_kiem_tran,
+  fx_skl_tran_kiem,
+  fx_skl_tran_kiem_tram,
+  fx_skl_tran_kiem_vu,
   fx_skl_kiem_dan_ban_menh,
   fx_skl_u_anh_bo,
   fx_skl_phe_hon,

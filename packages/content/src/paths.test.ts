@@ -14,7 +14,8 @@ const LEGACY = {
     hit: { sfx: 'crit', gain: 0.18, rate: 1.2, strongOnly: true },
   },
   bat_dong_kim_than: {
-    voice: 'hp',
+    // C3f: thể tu tách khỏi giọng hộ pháp `hp` (nay dùng cho cổ thần) sang giọng riêng `tt` (quyền thuật); mọi trường khác giữ nguyên bảng cũ.
+    voice: 'tt',
     gm: 'hophap',
     art: 'ho_phap',
     dao: 'ho',
@@ -71,7 +72,7 @@ describe('hướng tu khớp các bảng cứng trước VS-3', () => {
     ];
     for (const k of keys) expect(pathOf(k)?.dao ?? 'kiem', String(k)).toBe(legacyDao(k));
   });
-  it('danh sách pose ba giọng vẫn sinh đủ như trước', () => {
+  it('danh sách pose các giọng vẫn sinh đủ (ba giọng cũ + đao tu C3c + lôi tu C3d)', () => {
     expect(poseIdsFor('phi_kiem', 3)).toEqual([
       'phi_kiem',
       'phi_kiem_2',
@@ -82,6 +83,24 @@ describe('hướng tu khớp các bảng cứng trước VS-3', () => {
       'phi_kiem_ds',
       'phi_kiem_2_ds',
       'phi_kiem_3_ds',
+      'phi_kiem_dt',
+      'phi_kiem_2_dt',
+      'phi_kiem_3_dt',
+      'phi_kiem_lt',
+      'phi_kiem_2_lt',
+      'phi_kiem_3_lt',
+      'phi_kiem_ht',
+      'phi_kiem_2_ht',
+      'phi_kiem_3_ht',
+      'phi_kiem_ct',
+      'phi_kiem_2_ct',
+      'phi_kiem_3_ct',
+      'phi_kiem_tt',
+      'phi_kiem_2_tt',
+      'phi_kiem_3_tt',
+      'phi_kiem_cs',
+      'phi_kiem_2_cs',
+      'phi_kiem_3_cs',
     ]);
   });
 });

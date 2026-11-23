@@ -53,12 +53,16 @@ export function formationSlots(
 
 // ---- Vùng quan tâm (AOI) ----
 
-/** Quái thường và người chơi: vào tầm nhìn khi cách ≤ AOI_IN, rời khi > AOI_OUT (trễ để không nhấp nháy ở mép). */
-export const AOI_IN = 160;
-export const AOI_OUT = 190;
-/** Boss (client vẽ tới ~280 m): tầm rộng hơn. */
-export const AOI_BOSS_IN = 300;
-export const AOI_BOSS_OUT = 330;
+/**
+ * Quái thường và người chơi: vào tầm nhìn khi cách ≤ AOI_IN, rời khi > AOI_OUT (trễ để không nhấp nháy ở mép).
+ * Camera chéo khóa góc (Thiên Nhãn) chỉ thấy ~±30 m ngang, ~45 m sâu (phòng boss khổng lồ ×1,4), nên 120/140 m còn dư nhiều lần cho vạch báo,
+ * chiêu tầm xa và chấm minimap gần; trước là 160/190 cho camera xoay tự do (Chân Cảnh O5).
+ */
+export const AOI_IN = 120;
+export const AOI_OUT = 140;
+/** Boss (vạch báo/chiêu rộng, thấy từ xa hơn quái thường): tầm rộng hơn. */
+export const AOI_BOSS_IN = 200;
+export const AOI_BOSS_OUT = 230;
 /** Chu kỳ cập nhật AOI (ms). */
 export const AOI_PERIOD_MS = 200;
 

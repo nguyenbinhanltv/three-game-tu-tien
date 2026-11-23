@@ -16,6 +16,7 @@ export * from './formulas';
 export * from './combat';
 export * from './hittier';
 export * from './boss';
+export * from './recap';
 export * from './types';
 export * from './protocol';
 export * from './pose';

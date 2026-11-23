@@ -46,7 +46,7 @@
     ],
     "dao": "ho",
     "art": "ho_phap",
-    "voice": "hp",
+    "voice": "tt",
     "gm": "hophap",
     "weapons": [
       "fist"
@@ -128,7 +128,7 @@
     ],
     "dao": "hon",
     "art": "dan_su",
-    "voice": "ds",
+    "voice": "ht",
     "gm": "hon",
     "weapons": [
       "banner"
@@ -172,7 +172,7 @@
     ],
     "dao": "kiem",
     "art": "kiem",
-    "voice": "kt",
+    "voice": "dt",
     "gm": "dao",
     "weapons": [
       "greatblade"
@@ -258,7 +258,7 @@
     ],
     "dao": "dan",
     "art": "dan_su",
-    "voice": "ds",
+    "voice": "ct",
     "gm": "co",
     "weapons": [
       "cohu"
@@ -301,7 +301,7 @@
     ],
     "dao": "kiem",
     "art": "kiem",
-    "voice": "kt",
+    "voice": "lt",
     "gm": "loi",
     "weapons": [
       "sword"
@@ -345,7 +345,7 @@
     ],
     "dao": "hon",
     "art": "dan_su",
-    "voice": "ds",
+    "voice": "cs",
     "gm": "cam",
     "weapons": [
       "tran_ky"

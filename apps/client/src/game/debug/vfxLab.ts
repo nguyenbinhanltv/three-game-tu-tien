@@ -3,7 +3,7 @@
 // Không đổi luật chơi: chỉ nhân dt trình diễn, phát hình chiêu qua `skillFx.handle` và đo số liệu dựng hình.
 
 import * as THREE from 'three/webgpu';
-import { SKILL } from '@dtl/content';
+import { FX_TIMELINE, SKILL } from '@dtl/content';
 import { FxMesh } from '../../render/materials/vfx';
 import { PARTICLES } from '../../render/vfx/particles';
 import type { Game } from '../engine';
@@ -28,7 +28,7 @@ export interface LabBudget {
   fxLive: number;
   particles: number;
   particleBudget: number;
-  /** Ước lượng phủ màn hình (0..1) từ khối bao các lưới hiệu ứng trên lưới 64×36. Cận trên; số thật đo bằng so ảnh trong CLI. */
+  /** Ước lượng phủ màn hình (0..1) từ khối bao các lưới hiệu ứng KHÔNG gộp (các kiểu gộp instanced không có trong cảnh nên chưa tính) trên lưới 64×36. Cận trên; số thật đo bằng so ảnh trong CLI. */
   screenCover: number;
   /** Ước lượng overdraw: số lưới hiệu ứng chồng nhau nhiều nhất ở một ô. */
   overdraw: number;
@@ -43,12 +43,15 @@ const _s = new THREE.Sphere();
 export function measureBudget(g: Game): LabBudget {
   const cells = new Uint8Array(GW * GH);
   let fxLive = 0;
-  g.scene.traverse((o) => {
-    if (!(o instanceof FxMesh) || !o.visible) return;
+  const seen = new Set<FxMesh>();
+  const visit = (o: THREE.Object3D) => {
+    if (!(o instanceof FxMesh) || !o.visible || seen.has(o)) return;
+    seen.add(o);
     fxLive++;
     const geo = o.geometry;
     if (!geo.boundingSphere) geo.computeBoundingSphere();
     if (!geo.boundingSphere) return;
+    o.updateWorldMatrix(true, false);
     _s.copy(geo.boundingSphere).applyMatrix4(o.matrixWorld);
     _v.copy(_s.center).project(g.camera);
     if (_v.z > 1) return;
@@ -61,7 +64,8 @@ export function measureBudget(g: Game): LabBudget {
     const y0 = Math.max(0, Math.floor((0.5 - (_v.y + rNdc) * 0.5) * GH));
     const y1 = Math.min(GH - 1, Math.floor((0.5 - (_v.y - rNdc) * 0.5) * GH));
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) cells[y * GW + x] = Math.min(255, cells[y * GW + x]! + 1);
-  });
+  };
+  g.scene.traverse(visit);
   let covered = 0;
   let over = 0;
   for (const c of cells) {
@@ -102,7 +106,7 @@ export function installVfxLab(g: Game): void {
         view: { monsters: Map<string, { x: number; z: number; st: number }> };
         fxArea: Map<string, { x: number; z: number; r: number }>;
         fxDst: Map<string, string>;
-        skillFx: { handle(sid: string, e: object): void };
+        skillFx: { handle(sid: string, e: object): void; startFromFx(sid: string, tl: object): void };
         sid: string;
       };
       const hit = [...gg.view.monsters.entries()].find(([, m]) => m.st !== 3);
@@ -110,7 +114,10 @@ export function installVfxLab(g: Game): void {
         gg.fxArea.set(gg.sid, { x: hit[1].x, z: hit[1].z, r: 9 });
         gg.fxDst.set(gg.sid, hit[0]);
       }
-      gg.skillFx.handle(gg.sid, { kind: 'windup', skill, combo: -1, index: 0, t: 0, kb: false });
+      // Timeline kích theo S.FX (lướt, thuấn di...): chạy đường `startFromFx` như khi nhận tin từ server; còn lại phát từ sự kiện `windup`.
+      const tl = FX_TIMELINE.get(skill);
+      if (tl?.trigger === 'fx') gg.skillFx.startFromFx(gg.sid, tl);
+      else gg.skillFx.handle(gg.sid, { kind: 'windup', skill, combo: -1, index: 0, t: 0, kb: false });
       return !!hit;
     },
     pause(on) {

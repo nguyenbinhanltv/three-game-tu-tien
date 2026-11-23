@@ -15,6 +15,7 @@ import { DECAL_STRIKE } from '../../render/vfx/stylized';
 import { maxRadiusFor } from '../../render/vfx/phases';
 import { BoltFx, HALO_GEO, SHADOW_GEO } from '../../render/vfx/projectile';
 import { Trails } from '../../render/vfx/trail';
+import { glowWarmMesh } from '../core/models';
 import { assets } from '../core/assets';
 import { PREFETCH_PRIORITY } from '../core/preload';
 import { G } from '../core/geo';
@@ -61,6 +62,9 @@ const vfxLog = logger('vfx');
 export { HAZARD_COLORS } from './vfxParts/common';
 
 let rainModel: Promise<void> | null = null;
+
+/** Lưới vẽ ấm vật liệu cộng sáng của model khối, tạo một lần (xem `warmKinds`). */
+let glowWarm: THREE.Mesh | null = null;
 
 export class Vfx {
   group = new THREE.Group();
@@ -124,6 +128,15 @@ export class Vfx {
 
   /** Vẽ ấm một lưới cho mỗi kiểu material (cỡ 0, độ trong 0). */
   warmKinds(): void {
+    // Lưới ấm giữ sống suốt phiên (singleton) và KHÔNG dispose: dispose material làm three xóa render object và (usedTimes về 0) cả pipeline/program vừa biên dịch,
+    // con Thạch Tượng đầu tiên lại phải dựng lại từ đầu. Chỉ gắn vào cảnh vài khung rồi gỡ ra.
+    const glow = (glowWarm ??= glowWarmMesh());
+    this.group.add(glow);
+    this.add(
+      0.15,
+      () => {},
+      () => this.group.remove(glow),
+    );
     for (const kind of [
       'bolt',
       'vortex',

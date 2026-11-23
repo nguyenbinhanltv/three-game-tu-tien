@@ -152,6 +152,8 @@ export function drawMinimap(
   layers: { ink: InkMap | null; ancient: AncientMap | null; fog: Fog | null; sky: Sky; labels: RimLabels },
   yaw: number,
   hits: HitPt[],
+  /** Vùng mặt đất camera đang thấy (U8): hình thang vẽ dưới biểu tượng để thấy hướng camera. */
+  foot?: readonly { x: number; z: number }[] | null,
 ): void {
   const size = v.size;
   const half = size / 2;
@@ -217,6 +219,27 @@ export function drawMinimap(
     ctx.strokeStyle = P.goldLo;
     ctx.stroke();
     ctx.setLineDash([]);
+  }
+
+  // 2b) tầm nhìn camera (U8): camera chéo khóa góc nên hình thang đứng yên theo bản đồ, chỉ dời theo người chơi
+  if (foot && foot.length >= 3) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(half, half, inner, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.beginPath();
+    foot.forEach((p, i) => {
+      const c = project(v, p.x, p.z, _p);
+      if (i === 0) ctx.moveTo(c.x, c.y);
+      else ctx.lineTo(c.x, c.y);
+    });
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fill();
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = P.goldLo;
+    ctx.stroke();
+    ctx.restore();
   }
 
   // 3) biểu tượng

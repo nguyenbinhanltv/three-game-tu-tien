@@ -198,13 +198,15 @@ describe('thần thức', () => {
     sim.spirit.command(p, { on: true });
     advance(SPIRIT_CHANNEL_MS + 200);
     expect(scans()[0].r).toBe(80);
-    expect(scans()[0].hits.some((h) => h.k === 'node' && Math.abs(h.x - node.s.x) < 0.2)).toBe(true);
+    // So cả x lẫn z: chỉ so x thì điểm hái khác có x gần bằng (bản đồ có nhiều điểm) làm test chập chờn.
+    const isNode = (h: { k: string; x: number; z: number }) => h.k === 'node' && Math.hypot(h.x - node.s.x, h.z - node.s.z) < 0.2;
+    expect(scans()[0].hits.some(isNode)).toBe(true);
     advance(SPIRIT_CD_MS);
     node.s.on = false;
     node.respawnAt = Infinity;
     sim.spirit.command(p, { on: true });
     advance(SPIRIT_CHANNEL_MS + 200);
-    expect(scans()[1].hits.some((h) => h.k === 'node' && Math.abs(h.x - node.s.x) < 0.2)).toBe(false);
+    expect(scans()[1].hits.some(isNode)).toBe(false);
   });
 
   it('số điểm trả về bị chặn trần, boss được giữ (gọi trực tiếp quét, không tick để quái khỏi giao chiến)', () => {

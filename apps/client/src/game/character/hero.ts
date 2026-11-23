@@ -10,6 +10,13 @@ import { createHeroGhostMaterial, heroParams } from '../../render/materials/worl
 
 /** Màu viền mặc định khi chưa có công pháp/hướng tu (vàng nắng sớm, cùng sắc viền nắng). */
 export const HERO_DEFAULT_TINT = 0xf2c47e;
+/** Màu viền (số hex) từ chuỗi hex của bảng màu hướng tu (`palette.rim`, có hoặc không có `#`); thiếu/sai thì màu mặc định, không bao giờ NaN. */
+export function heroTintOf(rim: string | undefined | null): number {
+  if (!rim) return HERO_DEFAULT_TINT;
+  const n = Number.parseInt(rim.replace(/^#/, ''), 16);
+  return Number.isFinite(n) && n >= 0 && n <= 0xffffff ? n : HERO_DEFAULT_TINT;
+}
+
 /** Số bản sao viền tối tối đa cùng lúc (mỗi bản sao = một draw call: mình + tối đa 3 đồng đội). */
 export const HERO_GHOST_MAX = 4;
 

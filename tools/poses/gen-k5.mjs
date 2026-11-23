@@ -109,6 +109,117 @@ const VOICES = {
     spine3: 12,
     spine5: 16,
   },
+  // Đao tu (C3c): đại đao hai tay. Tụ lực lâu (hold 0,07), hạ hông sâu, xoay rộng, bước dài rồi bổ/quét nặng; tay trái nắm gần tay phải.
+  dt: {
+    drop: 0.14,
+    hipY5: -0.21,
+    hipZ5: 0.16,
+    twist: 34,
+    hold: 0.07,
+    over: 0.12,
+    reachZ: 0.68,
+    reachY: 0.22,
+    footR5: [-0.22, 0, 0.36],
+    footL5: [0.22, 0, -0.18],
+    handL3: [0.06, 0.3, 0.3],
+    handL5: [0.02, 0.34, 0.5],
+    elbowL5: [0.7, -0.5, -0.2],
+    spine3: 10,
+    spine5: 18,
+  },
+  // Lôi tu (C3d): tay trái giơ cao "triệu lôi", kiếm bổ từ trên xuống; nhanh, gọn, theo đà dài. Giữ 0,05 s như kiếm tu (tụ lực ngắn, giật).
+  lt: {
+    drop: 0.06,
+    hipY5: -0.1,
+    hipZ5: 0.12,
+    twist: 30,
+    hold: 0.05,
+    over: 0.17,
+    reachZ: 0.84,
+    reachY: 0.56,
+    footR5: [-0.14, 0, 0.3],
+    footL5: [0.15, 0, -0.2],
+    handL3: [0.08, 0.5, 0.2],
+    handL5: [0.14, 0.92, 0.1],
+    elbowL5: [0.8, 0.2, -0.3],
+    spine3: 4,
+    spine5: 12,
+    lift: 0.2,
+  },
+  // Hồn tu (C3e): trôi nhẹ, vẫy cờ hồn theo cung rộng ngang vai, bước lùi dài; tay trái giữ cán cờ gần ngực.
+  ht: {
+    drop: 0.03,
+    hipY5: -0.08,
+    hipZ5: 0.0,
+    twist: 24,
+    hold: 0.06,
+    over: 0.13,
+    reachZ: 0.6,
+    reachY: 0.42,
+    footR5: [-0.14, 0, 0.16],
+    footL5: [0.15, 0, -0.3],
+    handL3: [0.1, 0.4, 0.3],
+    handL5: [0.2, 0.5, 0.4],
+    elbowL5: [0.7, -0.3, -0.3],
+    spine3: 6,
+    spine5: 8,
+    lift: 0.5,
+  },
+  // Cổ tu (C3e): khom thấp, vồ ra như rắn (thân gập sâu), tay trái cào về trước.
+  ct: {
+    drop: 0.12,
+    hipY5: -0.2,
+    hipZ5: 0.1,
+    twist: 26,
+    hold: 0.07,
+    over: 0.08,
+    reachZ: 0.56,
+    reachY: 0.1,
+    footR5: [-0.2, 0, 0.28],
+    footL5: [0.2, 0, -0.1],
+    handL3: [0.06, 0.25, 0.3],
+    handL5: [-0.1, 0.22, 0.5],
+    elbowL5: [0.6, -0.7, -0.1],
+    spine3: 14,
+    spine5: 20,
+  },
+  // Thể tu (C3f): quyền thuật, đấm thẳng liên hoàn; hông xoay mạnh, bước chéo vững, nắm tay trái hộ cằm. Tụ lực ngắn, dừng gắt.
+  tt: {
+    drop: 0.13,
+    hipY5: -0.18,
+    hipZ5: 0.14,
+    twist: 35,
+    hold: 0.05,
+    over: 0.06,
+    reachZ: 0.7,
+    reachY: 0.26,
+    footR5: [-0.2, 0, 0.3],
+    footL5: [0.2, 0, -0.16],
+    handL3: [0.08, 0.5, 0.2],
+    handL5: [0.1, 0.5, 0.24],
+    elbowL5: [0.7, -0.4, -0.2],
+    spine3: 10,
+    spine5: 14,
+  },
+  // Cấm chế sư (C3f): vung trận kỳ theo cung tròn rộng, đứng thẳng; tay trái dang ra kết ấn.
+  cs: {
+    drop: 0.02,
+    hipY5: -0.06,
+    hipZ5: 0.02,
+    twist: 27,
+    hold: 0.06,
+    over: 0.1,
+    reachZ: 0.62,
+    reachY: 0.5,
+    footR5: [-0.15, 0, 0.18],
+    footL5: [0.16, 0, -0.2],
+    handL3: [0.3, 0.45, 0.1],
+    handL5: [0.5, 0.55, 0.12],
+    elbowL5: [0.9, 0.1, -0.5],
+    spine3: 4,
+    spine5: 8,
+    lift: 0.35,
+  },
   // Tròn, mềm, tay áo.
   ds: {
     drop: 0.035, // 0,02–0,05
@@ -274,6 +385,41 @@ function frames({ w, rec, voice, f3, f5, nine, arc }) {
 }
 
 /** Khung tụ lực và khung trúng của một đòn chém, theo giọng. */
+/** Chân ở khung 3 (tụ lực) của từng giọng [chân phải, chân trái]; giọng không ghi dùng thế thủ (kiếm tu). */
+const FOOT3 = {
+  hp: [
+    [-0.26, 0, 0.1],
+    [0.26, 0, -0.1],
+  ],
+  ds: [
+    [-0.14, 0, 0.1],
+    [0.15, 0, -0.2],
+  ],
+  dt: [
+    [-0.22, 0, 0.14],
+    [0.22, 0, -0.12],
+  ],
+  lt: [
+    [-0.13, 0, 0.12],
+    [0.15, 0, -0.16],
+  ],
+  ht: [
+    [-0.14, 0, 0.1],
+    [0.15, 0, -0.24],
+  ],
+  ct: [
+    [-0.2, 0, 0.16],
+    [0.2, 0, -0.1],
+  ],
+  tt: [
+    [-0.2, 0, 0.18],
+    [0.2, 0, -0.12],
+  ],
+  cs: [
+    [-0.14, 0, 0.1],
+    [0.16, 0, -0.22],
+  ],
+};
 function swingFrames(swingId, voice, over) {
   const S = SWINGS[swingId];
   const V = VOICES[voice];
@@ -293,8 +439,8 @@ function swingFrames(swingId, voice, over) {
     edge: S.load.edge,
     handL: V.handL3,
     elbowL: GUARD.elbowL,
-    footR: voice === 'hp' ? [-0.26, 0, 0.1] : voice === 'ds' ? [-0.14, 0, 0.1] : GUARD.footR,
-    footL: voice === 'hp' ? [0.26, 0, -0.1] : voice === 'ds' ? [0.15, 0, -0.2] : GUARD.footL,
+    footR: (FOOT3[voice] ?? [GUARD.footR, GUARD.footL])[0],
+    footL: (FOOT3[voice] ?? [GUARD.footR, GUARD.footL])[1],
   };
   const f5 = {
     hipsPos: [0, V.hipY5, V.hipZ5],
@@ -325,18 +471,18 @@ function emit(id, skillId, hitAt, nine, frs) {
 
 // ---- Đòn thường: 3 đòn × 3 giọng ----
 const BASIC = SK.get('skl_phi_kiem');
-const SUF = { kt: '', kx: '', hp: '_hp', ds: '_ds' };
+const SUF = { kt: '', kx: '', hp: '_hp', ds: '_ds', dt: '_dt', lt: '_lt', ht: '_ht', ct: '_ct', tt: '_tt', cs: '_cs' };
 /** Giọng thực dùng cho chiêu mẫu VFX-V1: kiếm tu dùng bản cường điệu `kx`. */
-const VX = { kt: 'kx', hp: 'hp', ds: 'ds' };
-for (const voice of ['kt', 'hp', 'ds']) {
+const VX = { kt: 'kx', hp: 'hp', ds: 'ds', dt: 'dt', lt: 'lt', ht: 'ht', ct: 'ct', tt: 'tt', cs: 'cs' };
+for (const voice of ['kt', 'hp', 'ds', 'dt', 'lt', 'ht', 'ct', 'tt', 'cs']) {
   BASIC.combo.hits.forEach((h, i) => {
     const id = `phi_kiem${i === 0 ? '' : `_${i + 1}`}${SUF[voice]}`;
     const { f3, f5 } = swingFrames(['d1', 'd2', 'd3'][i], VX[voice]);
     emit(id, 'skl_phi_kiem', h.hitAt, true, (w, rec) => frames({ w, rec, voice: VX[voice], f3, f5, nine: true, arc: voice === 'ds' }));
   });
 }
-// ---- Kiếm Khí Trảm ×3 giọng ----
-for (const voice of ['kt', 'hp', 'ds']) {
+// ---- Kiếm Khí Trảm ×7 giọng ----
+for (const voice of ['kt', 'hp', 'ds', 'dt', 'lt', 'ht', 'ct', 'tt', 'cs']) {
   const { f3, f5 } = swingFrames('kkt', VX[voice]);
   emit(`kiem_khi_tram${SUF[voice]}`, 'skl_kiem_khi_tram', SK.get('skl_kiem_khi_tram').hitAt[0], true, (w, rec) =>
     frames({ w, rec, voice: VX[voice], f3, f5, nine: true, arc: voice === 'ds' }),
@@ -736,6 +882,24 @@ for (const [id, skill, voice, tpl] of [
   const f5 = { ...GUARD, ...g.f5 };
   emit(id, skill, SK.get(skill).hitAt[0], false, (w, rec) => frames({ w, rec, voice, f3, f5, nine: false }));
 }
+
+/**
+ * Chân Cảnh C3 (đọc rõ ở camera chéo 52°): cường điệu thân người ở MỌI pose. Hông xoay, cột sống (cúi/xoắn) và đầu lệch khỏi thế thủ (khung 0)
+ * nhiều hơn `ISO_AMP` lần; thời gian, IK tay/kiếm/chân, `hit` không đổi nên luật chiêu và khớp VFX giữ nguyên. `ISO_AMP=1 node tools/poses/gen-k5.mjs`
+ * ghi lại bản gốc để so trước/sau.
+ */
+export const ISO_AMP = Number(process.env.ISO_AMP ?? 1.18);
+function isoAmplify(p) {
+  const g = p.keys[0];
+  if (!g) return;
+  const base = (k, n) => (n === 'hipsRot' ? g.hips?.rot : g[n]);
+  for (const k of p.keys.slice(1)) {
+    for (const n of ['spine', 'head']) if (k[n] && g[n]) k[n] = v3(k[n].map((x, i) => g[n][i] + (x - g[n][i]) * ISO_AMP));
+    if (k.hips?.rot && g.hips?.rot) k.hips.rot = v3(k.hips.rot.map((x, i) => g.hips.rot[i] + (x - g.hips.rot[i]) * ISO_AMP));
+  }
+  void base;
+}
+for (const p of POSES) isoAmplify(p);
 
 /** Một khóa một dòng cho dễ đọc diff. */
 function fmt(p) {

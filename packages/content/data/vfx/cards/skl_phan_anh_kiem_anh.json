@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_phan_anh_kiem_anh",
+  "idea": "Phân Anh Kiếm Ảnh: Nguyên anh phân ra một đạo kiếm ảnh, lặp lại mỗi chiêu gây sát thương ngươi tung trong 10 giây bằng 60% sức mạnh. Cần cảnh giới Nguyên Anh.",
+  "element": "thuy",
+  "path": "kiem_tu",
+  "shapeLang": [
+    "ring",
+    "line",
+    "burst"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 126,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

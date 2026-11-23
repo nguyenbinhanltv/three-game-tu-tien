@@ -53,6 +53,7 @@ import { Cutscene } from './camera/cutscene';
 import { LootFly } from './fx/lootFly';
 import { EntityManager, type PState, type WorldView } from './entities/entities';
 import { Environment } from './world/env';
+import { FrameBudget, type SectionStat } from '../base/frameBudget';
 import { AmbientParticles } from './world/ambient';
 import { Butterflies } from './world/butterflies';
 import { Breakables } from './world/breakables';
@@ -540,6 +541,10 @@ export class Game {
   cpuAcc = 0;
   cpuMax = 0;
   cpuAvg = 0;
+  /** Đồng hồ ngân sách CPU theo hệ (base/frameBudget.ts); bảng F3 và cảnh báo vượt đọc `budgetStats` mỗi lần đồng bộ HUD. */
+  readonly budget = new FrameBudget();
+  budgetStats: SectionStat[] = [];
+  budgetWarnAt = 0;
   cpuPeak = 0;
   colliderViz: ColliderViz | null = null;
   /** performance.now() lúc gửi input, theo seq & 127 (để ước tính ping). */

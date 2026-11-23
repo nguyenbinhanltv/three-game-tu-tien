@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { allowSkillForTest } from './testkit';
-import { groundAt, MS_DEAD, S } from '@dtl/shared';
+import { DASH_IFRAME_MS, groundAt, MS_DEAD, S } from '@dtl/shared';
 
 // E2-G: chiêu bậc 2–3 (Lạc Kiếm Quyết / Bất Động Kim Thân / Thanh Mộc Đan Kinh). Server áp sát thương tại hitAt như K-2.
 process.env.DB_FILE = ':memory:';
@@ -216,6 +216,8 @@ describe('E2-G: Lạc Kiếm Quyết', () => {
     const x0 = p.move.x;
     sim.onSkill(p, { id: 'skl_nghich_kiem_chuyen_phong' });
     expect(p.move.x).toBeGreaterThan(x0 + 6);
+    // S5: lướt cho khung bất tử ngắn (xuyên vòng cảnh báo).
+    expect(p.dodgeUntil - sim.now).toBe(DASH_IFRAME_MS);
     expect(lost(a)).toBeGreaterThan(0);
     expect(lost(b)).toBeGreaterThan(0);
     expect(lost(off)).toBe(0);

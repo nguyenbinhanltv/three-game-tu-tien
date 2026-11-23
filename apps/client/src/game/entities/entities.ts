@@ -39,7 +39,7 @@ import { MonsterSkins } from '../character/monsterSkins';
 import { NPC_SKINS, NpcSkins } from '../character/npcSkins';
 import { type PlayerLook, PlayerSkins } from '../character/playerSkins';
 import { HeadBars } from './headBars';
-import { forgetHero, HeroGhosts, HeroRing, HERO_DEFAULT_TINT, setHero } from '../character/hero';
+import { forgetHero, HeroGhosts, HeroRing, heroTintOf, setHero } from '../character/hero';
 import type { StopPair } from '../combat/hitjuice';
 import { ArtifactVis } from '../fx/artifactVis';
 import { PState, MState, PlayerVis, MonVis, lookOf } from './entityVis';
@@ -132,11 +132,16 @@ const LOD0_CROWD = 6;
  */
 const MON_NEAR = 100;
 const MON_FAR = 125;
+/** Boss: dựng khi cách ≤ BOSS_NEAR, xóa khi > BOSS_FAR; luôn trong AOI_BOSS_IN/OUT của server (spawnrules.ts, 200/230), nếu không boss chưa tới đã bị xóa. */
+const BOSS_NEAR = 190;
+const BOSS_FAR = 230;
 /**
  * Số nhãn tên tối đa (gần camera nhất, trong khung nhìn); mình và mục tiêu luôn có. Mỗi nhãn là một sprite = một draw
  * call trong suốt; giữa đám đông 50 người, nhãn của người xa hơn bị che lấp, hiện không giúp gì.
  */
 const LABEL_MAX = 16;
+/** Quái thường chỉ hiện bảng tên trong bán kính này (m) khi không giao chiến. */
+const PLATE_NEAR = 18;
 /**
  * Rộng tấm nhãn trên màn hình (px, ở hệ số UI 1) được kẹp trong khoảng này (P2-E4); chữ chiếm chừng 62%.
  * Trần 240 để tên không to hơn chữ HUD khi camera sát; sàn 160 để dòng cảnh giới còn đọc được khi camera xa.
@@ -354,8 +359,7 @@ export class EntityManager {
       }
       return;
     }
-    const rim = PATH_OF_METHOD(s.mt)?.palette?.rim;
-    const tint = rim ? Number.parseInt(rim, 16) : HERO_DEFAULT_TINT;
+    const tint = heroTintOf(PATH_OF_METHOD(s.mt)?.palette?.rim);
     if (v.heroTint !== tint) {
       setHero(root, 1, tint);
       v.heroTint = tint;
@@ -369,7 +373,15 @@ export class EntityManager {
     const ring = this.heroRing;
     if (!ring.mesh.parent) this.group.add(ring.mesh);
     ring.begin();
-    for (const v of this.players.values()) if (v.heroTint !== -1 && v.heroTint !== -2 && (v.fl & PF_FLYING) === 0) ring.add(v.x, v.y, v.z);
+    const f = { x: 0, z: 0 };
+    for (const v of this.players.values()) {
+      if (v.heroTint === -1 || v.heroTint === -2 || (v.fl & PF_FLYING) !== 0) continue;
+      // Vòng theo thân đang vẽ (có độ lệch lướt), không theo vị trí thật: lướt hiển thị trượt thân từ điểm cũ về, vòng phải đi cùng.
+      f.x = v.x;
+      f.z = v.z;
+      v.model?.footXZ?.(f);
+      ring.add(f.x, v.y, f.z);
+    }
     ring.end();
   }
 
@@ -582,11 +594,11 @@ export class EntityManager {
       const d2 = (s.x - local.x) ** 2 + (s.z - local.z) ** 2;
       if (!v) {
         const mdef = MONSTER.get(s.t);
-        if (!mdef || d2 > (mdef.boss ? 240 : MON_NEAR) ** 2) return;
+        if (!mdef || d2 > (mdef.boss ? BOSS_NEAR : MON_NEAR) ** 2) return;
         v = new MonVis(id, s, this.skins);
         this.monsters.set(id, v);
         this.group.add(v.model.root);
-      } else if (d2 > (v.model.def && MONSTER.get(s.t)?.boss ? 280 : MON_FAR) ** 2) {
+      } else if (d2 > (v.model.def && MONSTER.get(s.t)?.boss ? BOSS_FAR : MON_FAR) ** 2) {
         this.group.remove(v.model.root);
         v.dispose();
         this.monsters.delete(id);
@@ -663,7 +675,9 @@ export class EntityManager {
           a,
         );
       }
-      if (v.label) v.label.visible = !dead && !monHidden(mf) && d2 < 70 * 70 && id !== this.hudBossId;
+      // Bảng tên (U7): quái thường chỉ hiện khi ở gần, đang giao chiến hoặc là mục tiêu (camera chéo thấy cả bầy từ xa nên không gắn tên khắp nơi); tinh anh/boss luôn hiện.
+      const named = engaged || d2 < PLATE_NEAR * PLATE_NEAR || !!v.model.def.elite || !!v.model.def.boss;
+      if (v.label) v.label.visible = !dead && !monHidden(mf) && named && d2 < 70 * 70 && id !== this.hudBossId;
       v.wasAttack = s.st === MS_ATTACK;
     });
     for (const [id, v] of this.monsters) {
@@ -981,7 +995,7 @@ export class EntityManager {
    * Phản ứng trúng đòn khi nhận S.DMG (chỉ hiển thị). `delay` để khớp lúc đạn bay tới.
    * Người ra đòn là mình thì mình cũng khựng.
    */
-  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number, heavy = false, stop?: StopPair): void {
+  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number, heavy = false, stop?: StopPair, tier?: number): void {
     const vd = this.players.get(dst) ?? this.monsters.get(dst);
     if (!vd) return;
     const vs = src && src !== dst ? (this.players.get(src) ?? this.monsters.get(src)) : undefined;
@@ -990,6 +1004,7 @@ export class EntityManager {
     vd.model.hitReact({
       crit,
       heavy,
+      tier,
       delay,
       noStop,
       stop: stop?.target,

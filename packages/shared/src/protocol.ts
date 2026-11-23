@@ -198,6 +198,8 @@ export const S = {
   WARDROBE: 'wd',
   /** Bảng Thiên Lộ (`KieuBoardMsg`): trả lời `C.KIEU_BOARD`. */
   KIEU_BOARD: 'kbd',
+  /** Bảng tổng kết trận sau bí cảnh (`RecapMsg`, Chân Cảnh U5): server tổng hợp, gửi một lần khi hoàn thành. */
+  RECAP: 'recap',
 } as const;
 
 export interface InitMsg {
@@ -282,6 +284,8 @@ export interface CdMsg {
   now: number;
   /** id chiêu đang được cường hóa → lúc hết hạn (ms, giờ server cùng gốc với `cds`): client sáng viền ô chiêu. */
   em?: Record<string, number>;
+  /** Né (Chân Cảnh S5): [số lượt còn, lúc nạp xong lượt kế (ms, cùng gốc với `cds`)]. */
+  dg?: [number, number];
 }
 
 export interface SysMsg {

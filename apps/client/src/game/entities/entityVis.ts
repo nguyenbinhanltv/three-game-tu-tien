@@ -10,7 +10,7 @@ import { disposeLabel, Humanoid, makeLabel } from '../core/models';
 import { type CharacterView, type MonsterView, type SkillEvent } from '../character/view';
 import { MonsterSkins } from '../character/monsterSkins';
 import { type PlayerLook, PlayerSkins } from '../character/playerSkins';
-import { BAR_ALLY, BAR_BOSS, BAR_ENEMY } from './headBars';
+import { BAR_ALLY, BAR_BOSS, BAR_ELITE, BAR_ENEMY } from './headBars';
 import { HpTrail } from './hpTrail';
 import { markLabelSpec } from './markLabel';
 import { ArtifactVis } from '../fx/artifactVis';
@@ -226,7 +226,7 @@ export class MonVis {
     const def = MONSTER.get(s.t)!;
     this.model = skins.create(def);
     this.skinPending = skins.pending(def);
-    this.bar = new BarState(def.boss ? 3 : 1.5, def.boss ? BAR_BOSS : BAR_ENEMY);
+    this.bar = new BarState(def.boss ? 3 : def.elite ? 2.2 : 1.5, def.boss ? BAR_BOSS : def.elite ? BAR_ELITE : BAR_ENEMY);
     this.barY = this.model.height + 0.35 * def.scale;
     this.radius = bodyRadiusOf(def);
     this.x = s.x;

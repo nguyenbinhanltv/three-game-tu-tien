@@ -74,3 +74,26 @@ Các số còn lại của bảng spec (chân bước tới 0,38 m / hai chân r
 
 - [`game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp`](game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp)
 - [`game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp`](game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp)
+
+## C3a: cường điệu thân người cho camera chéo 52° (Chân Cảnh)
+
+`tools/poses/gen-k5.mjs` có `ISO_AMP = 1,18` (mặc định): ở MỌI pose, hông xoay (`hips.rot`), cột sống (`spine`) và đầu lệch khỏi thế thủ (khung 0) nhiều hơn 18%. Thời gian, IK tay/kiếm/chân và `hit` không đổi nên luật chiêu, `hitAt`, khớp VFX giữ nguyên. Trần xoay hông của từng giọng trong `k5poses.test.ts` nới theo cùng hệ số (kt 45° → 53°, hp 25° → 29,5°, ds 30° → 35,4°). Muốn bản gốc để so: `ISO_AMP=1 node tools/poses/gen-k5.mjs` (nhớ sinh lại mặc định sau đó).
+
+## C3c: giọng thứ tư `dt` (đao tu, Chân Cảnh)
+
+`PoseVoice` thêm `dt` (hậu tố `_dt`, `paths.json` → `dao_tu.voice = "dt"`): đại đao hai tay, ở giữa kiếm tu và hộ pháp. Số đo của giọng (khung 3/5, trong `VOICES.dt` của `tools/poses/gen-k5.mjs`; trần kiểm ở `RANGE.dt` của `k5poses.test.ts`): hạ hông 0,14 m, xoay hông 34° (×`ISO_AMP`), giữ 0,07 s (tụ lực lâu), quá đà 0,12, tầm tay 0,68 m, bước dài 0,36 m, tay trái nắm gần tay phải. Có 4 pose có giọng: `phi_kiem_dt`, `phi_kiem_2_dt`, `phi_kiem_3_dt` (đòn thường 3 đòn) và `kiem_khi_tram_dt`; các chiêu khác của đao tu giữ pose riêng như trước. Thời gian, `hit`, luật chiêu không đổi. Ảnh/video: `pnpm shots daotuhit --out <thư mục> [--tag sau|truoc] [--gender m|f] [--video 1]` (bản trước = đặt `voice` về `kt` rồi chạy lại).
+
+## C3d: giọng thứ năm `lt` (lôi tu, Chân Cảnh)
+
+`PoseVoice` thêm `lt` (hậu tố `_lt`, `paths.json` → `loi_tu.voice = "lt"`): tay trái giơ cao "triệu lôi" (`handL5` y 0,92), kiếm bổ từ trên xuống, tụ lực ngắn (giữ 0,05 s như kiếm tu), theo đà dài (quá đà 0,17), tầm tay cao (`reachY` 0,56). Trần kiểm ở `RANGE.lt` của `k5poses.test.ts`. 4 pose có giọng: `phi_kiem_lt`, `phi_kiem_2_lt`, `phi_kiem_3_lt`, `kiem_khi_tram_lt`. Thời gian, `hit`, luật chiêu không đổi. Hồn tu, cổ tu, cấm chế sư (đan sư `ds`) và cổ thần (hộ pháp `hp`) vẫn dùng giọng chung. Ảnh/video: `pnpm shots daotuhit --method cuu_tieu_loi_kinh --set off --video 1 [--tag sau|truoc] [--gender m|f]`.
+
+## C3e: hai giọng `ht` (hồn tu) và `ct` (cổ tu), clip lướt tấn công
+
+- `ht` (hậu tố `_ht`, `paths.json` → `hon_tu.voice = "ht"`): trôi nhẹ, vẫy cờ hồn theo cung rộng ngang vai (hạ hông 0,03 m, quá đà 0,13, tầm tay 0,60, bước lùi dài). `ct` (`_ct`, `co_tu.voice = "ct"`): khom thấp vồ như rắn (hạ hông 0,12 m, cột sống gập 14°→20°, tầm tay thấp 0,56, quá đà ngắn 0,08, tay trái cào). Mỗi giọng 4 pose có giọng (`phi_kiem`, `_2`, `_3`, `kiem_khi_tram`); trần kiểm ở `RANGE.ht/ct` của `k5poses.test.ts`. Cấm chế sư vẫn dùng giọng đan sư; thể tu và cổ thần dùng hộ pháp (giữ nguyên, chưa có giọng riêng).
+- Lướt tấn công: chiêu `dash` có `power > 0` (Thiết Bích Xung, Nghịch Kiếm Chuyển Phong, Dịch Sơn Xung, Cự Bộ Xung) phát clip UAL `Sword_Dash` thay `Roll` (`dashClipOf` ở `hitDir.ts`; lướt thuần/né vẫn `Roll`). Ảnh: `pnpm shots hitdir --mode dash` (lăn vs lướt đao, +100/+220 ms).
+
+## C3f — thể tu (`tt`) và cấm chế sư (`cs`)
+
+- `tt` (thể tu, quyền thuật): hạ hông 0,13, xoay hông 35°, tụ lực ngắn 0,05 s, dừng gắt (quá đà 0,06), bước chéo, nắm tay trái hộ cằm. Tách khỏi `hp` (hộ pháp/cổ thần giữ nguyên).
+- `cs` (cấm chế sư, vung trận kỳ): gần như không hạ hông (0,02), xoay 27°, tay vươn cao (reachY 0,5, mũi kỳ hất 0,35), tay trái dang ra kết ấn. Tách khỏi `ds` (đan sư giữ nguyên).
+- Sinh lại: `node tools/poses/gen-k5.mjs`; ảnh: `pnpm shots daotuhit --method bat_dong_kim_than|cam_che_kinh --tag <tên> [--video 1]`.

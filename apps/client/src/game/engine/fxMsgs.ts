@@ -281,9 +281,11 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
   if (!held) {
     // Động tác chiêu; đòn của mình đang vào thế thì giữ hiệu ứng + tiếng tới đúng lúc ra đòn.
     // Lướt (K-2): hình trượt từ chỗ cũ tới chỗ server đặt, và cắt phần thu về của chiêu đang phát (K-4).
-    if (pSrc && eng.skillPoses.dashOf(m.t)) {
+    const dashSkill = pSrc ? eng.skillPoses.dashOf(m.t) : undefined;
+    if (pSrc && dashSkill) {
       const from = e.posAgo(src, DASH_LOOKBACK);
-      if (from) pSrc.model.dashFrom?.(from.x, from.z, m.d ?? 0.3);
+      // Lướt có sát thương (Thiết Bích Xung, Nghịch Kiếm Chuyển Phong…) vung đao khi lao (C3e); lướt thuần vẫn lăn.
+      if (from) pSrc.model.dashFrom?.(from.x, from.z, m.d ?? 0.3, (dashSkill.power ?? 0) > 0);
     }
     const dstV = dst ? (e.monsters.get(dst) ?? e.players.get(dst)) : undefined;
     const gap =
@@ -1136,7 +1138,7 @@ export function applyDmg(
   if (mine && !m.heal && m.n > 0) eng.post?.hit(m.n / Math.max(1, eng.me()?.mhp ?? 1), !!m.crit || !!m.hv);
   if (m.hv && !m.heal && m.n > 0) heavyInk(eng, m.dst, m.src);
   if (!m.heal && m.n > 0 && !(QUIET && m.dst === eng.sid))
-    eng.ents.hitReact(m.dst, m.src, !!m.crit, m.src && eng.view.players.has(m.src) ? 0.2 : 0, !!m.hv, stops);
+    eng.ents.hitReact(m.dst, m.src, !!m.crit, m.src && eng.view.players.has(m.src) ? 0.2 : 0, !!m.hv, stops, m.tr);
   // Boss đánh nặng (≥ KNOCKDOWN_FRAC máu tối đa) thì người bị đánh ngã rồi đứng dậy; chỉ hình, người chơi vẫn đi lại được và kéo dậy sớm khi di chuyển.
   if (!m.heal && m.hv && m.n > 0 && m.src) {
     const victim = eng.ents.players.get(m.dst);

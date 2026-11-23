@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DODGE_CD_MS, DODGE_IFRAME_MS, RUN_SPEED } from '@dtl/shared';
+import { DODGE_RECHARGE_MS, DODGE_IFRAME_MS, RUN_SPEED } from '@dtl/shared';
 import { MONSTER } from './index';
 
 /**
@@ -39,9 +39,9 @@ describe('vòng cảnh báo đủ thời gian né', () => {
     expect(bad).toEqual([]);
   });
   it('hồi né dài hơn khung bất tử và đủ để thở giữa hai đòn cùng loại', () => {
-    expect(DODGE_CD_MS).toBeGreaterThan(DODGE_IFRAME_MS);
+    expect(DODGE_RECHARGE_MS).toBeGreaterThan(DODGE_IFRAME_MS);
     // Đòn cùng loại của một quái không lặp nhanh hơn hồi né + nạp (nếu không không thể né cả hai).
-    const quick = [...moves()].filter((x) => typeof x.v.cd === 'number' && x.v.cd * 1000 < DODGE_CD_MS - DODGE_IFRAME_MS);
+    const quick = [...moves()].filter((x) => typeof x.v.cd === 'number' && x.v.cd * 1000 < DODGE_RECHARGE_MS - DODGE_IFRAME_MS);
     expect(quick.map((x) => `${x.mon}.${x.key}`)).toEqual([]);
   });
   it('chạy thoát vòng nhỏ kịp trong thời gian nạp thì không cần né; vòng lớn thì buộc phải né', () => {

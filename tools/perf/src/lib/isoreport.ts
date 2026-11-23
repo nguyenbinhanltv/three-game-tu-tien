@@ -102,7 +102,9 @@ export interface IsoPoint {
   /** Lượt vẽ mỗi khung theo `<đích vẽ>|<loại>|<vật liệu>` (đích: screen, tên render target, depth…): thấy bóng/hậu kỳ chiếm bao nhiêu draw call. */
   passes?: Record<string, number>;
   /** Tối đa 8 khung CPU > 12 ms (chẩn đoán spike): thời điểm, ms, thời gian từng hệ. */
-  longFrames?: { at: number; dt: number; parts: Record<string, number> }[];
+  /** Pipeline biên dịch MỚI trong khoảng đo (mỗi cái có thể là một khung đứng khi lần đầu thấy vật). */
+  newPipelines?: number;
+  longFrames?: { at: number; dt: number; parts: Record<string, number>; pipes?: number; pipeNames?: string[] }[];
   /** Mesh nặng nhất theo draw call (top 6) để lần theo nguyên nhân. */
   topGroups: Group[];
 }

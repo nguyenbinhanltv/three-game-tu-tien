@@ -9,7 +9,7 @@
 // không bị trần 60 fps che. Camera đứng yên ở góc chéo khóa của level (không xoay, không zoom).
 //
 //   pnpm perf:iso [--presets medium,high,ultra] [--seconds 4] [--size 1280x720] [--out <thư mục>] [--baseline <iso-*.json>]
-//                 [--only van_lam,kiem_trung,kieu_3,trib:do_kiep,fight] [--quick] [--igpu] [--noshadow] [--dump-inst] [--query a=b] [--renderer webgpu|webgl2] [--channel chrome|chromium]
+//                 [--only van_lam,kiem_trung,kieu_3,trib:do_kiep,fight] [--quick] [--igpu] [--noshadow] [--bots 10] [--dump-inst] [--query a=b] [--renderer webgpu|webgl2] [--channel chrome|chromium]
 // `--quick`: preset high, 2 giây/điểm, chỉ Vân Lam + một bí cảnh + một phòng cầu + cảnh đánh (cho máy người dùng tự chạy).
 // `--igpu`: ép GPU tiết kiệm điện (`--force_low_power_gpu`) để đo iGPU Intel/AMD nếu máy có.
 // Ra: iso-<ngày>.json + iso-<ngày>.md (+ so baseline) trong `--out` (mặc định bench/results). Server dev tự chạy ở cổng riêng và luôn tắt khi xong.
@@ -20,6 +20,7 @@ import type { Page } from 'playwright';
 import { LEVELS } from '@dtl/content';
 import { FOREST, LAKE, SPAWN_POINT } from '@dtl/shared';
 import { createDevServer, sleep } from './lib/devserver';
+import { Bots } from './lib/bots';
 import { flag, list, opt, outDir, ports, size } from './lib/env';
 import { gameUrl, launchChrome, reportErrors, watchErrors } from './lib/browser';
 import { drawSources } from './lib/drawsrc';
@@ -31,6 +32,8 @@ const QUICK = flag('--quick');
 const PRESETS = list('--presets', QUICK ? 'high' : 'medium,high,ultra');
 const SECONDS = Number(opt('--seconds', QUICK ? '2' : '4'));
 const [VW, VH] = size('1280x720');
+/** `--bots N`: chỉ đo cảnh đông người (N bot cấp 15 đánh quái quanh rừng Vân Lam, client đo đứng giữa): `van_lam/dong<N>`. */
+const BOTS = Number(opt('--bots', '0'));
 const NOSHADOW = flag('--noshadow');
 const EXTRA = opt('--query', '');
 const RENDERER = opt('--renderer', 'webgpu');
@@ -69,13 +72,16 @@ function initScript(preset: string): void {
   const B = {
     rec: false,
     passes: {} as Record<string, number>,
-    long: [] as { at: number; dt: number; parts: Record<string, number> }[],
+    long: [] as { at: number; dt: number; parts: Record<string, number>; pipes: number; pipeNames: string[] }[],
     frames: [] as number[][],
     dc: [] as number[],
     parts: {} as Record<string, number[]>,
     gpu: [] as number[],
     gpuOk: false,
     dropGpu: false,
+    pipes: 0,
+    pipes0: 0,
+    pipeNames: [] as string[],
     patched: null as unknown,
   };
   w.__iso = B;
@@ -147,6 +153,17 @@ function initScript(preset: string): void {
           tex.delete(t);
           destroy(t);
         };
+        // Chẩn đoán khung dài: đếm pipeline mới và ghi tên vật liệu/đối tượng (biên dịch lúc vẽ lần đầu).
+        const pipe = be.createRenderPipeline.bind(be);
+        be.createRenderPipeline = (...a: unknown[]) => {
+          const ro = a[0] as any;
+          B.pipes++;
+          if (B.pipeNames.length >= 12) B.pipeNames.shift(); // vòng đệm: luôn là các pipeline MỚI NHẤT
+          B.pipeNames.push(
+            `${ro?.material?.name || ro?.material?.type}/${ro?.object?.name || ro?.object?.parent?.name || ro?.object?.type} ${ro?.object?.geometry?.attributes?.position?.count ?? 0}v o${ro?.object?.renderOrder ?? 0}`,
+          );
+          return pipe(...a);
+        };
       }
       if (r && !r.__isoProbed && typeof r._renderObjectDirect === 'function') {
         r.__isoProbed = true;
@@ -181,6 +198,8 @@ function initScript(preset: string): void {
       if (B.rec) {
         if (dt > 12 && B.long.length < 8)
           B.long.push({
+            pipes: B.pipes,
+            pipeNames: B.pipeNames.slice(-4),
             at: Math.round(performance.now()),
             dt: Math.round(dt * 10) / 10,
             parts: Object.fromEntries(Object.entries(cur).map(([k, v]) => [k, Math.round(v * 10) / 10])),
@@ -236,6 +255,8 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     B.parts = {};
     B.gpu = [];
     B.dropGpu = true;
+    B.pipes0 = B.pipes;
+    B.pipeNames = []; // khung dài chỉ được gán cho pipeline biên dịch TRONG lần đo này
     B.rec = true;
   });
   const t0 = Date.now();
@@ -264,6 +285,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
       frames: B.frames as number[][],
       passes: B.passes as Record<string, number>,
       long: B.long as IsoPoint['longFrames'],
+      newPipes: (B.pipes - B.pipes0) as number,
       parts: B.parts as Record<string, number[]>,
       gpu: B.gpu as number[],
       textures: g.renderer.info.memory.textures as number,
@@ -349,6 +371,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     monsters: raw.monsters,
     byCat: bucketGroups(src.groups),
     longFrames: raw.long,
+    newPipelines: raw.newPipes,
     passes: Object.fromEntries(Object.entries(raw.passes).map(([k, v]) => [k, round(v / Math.max(1, raw.frames.length), 1)])),
     kinds: kinds as IsoPoint['kinds'],
     topGroups: src.groups.slice(0, 6).map(({ key, dc: d, tris, shadow }) => ({ key, dc: d, tris, shadow })),
@@ -489,6 +512,18 @@ async function runPreset(
     );
   }
   const out: IsoPoint[] = [];
+  if (BOTS > 0) {
+    // Cảnh đông người: không `killall` (bot cần quái), client tới giữa rừng, chờ bot kéo tới rồi đo.
+    const t: Target = { id: 'van_lam', kind: 'fight' };
+    await gm(page, 'level 15');
+    await gm(page, 'god on');
+    await tp(page, FOREST.x, FOREST.z);
+    await sleep(12_000);
+    out.push(await measure(page, `van_lam/dong${BOTS}`, t, preset));
+    console.log(`  [${preset}] van_lam/dong${BOTS}: dc ${out.at(-1)!.drawCalls.p50}, cpu p95 ${out.at(-1)!.cpuMs.p95} ms`);
+    await ctx.close().catch(() => undefined);
+    return out;
+  }
   const ts = targets();
   for (const t of ts) {
     try {
@@ -533,7 +568,14 @@ function listGpus(): string[] {
 }
 
 async function main(): Promise<void> {
-  const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'perf-iso', command: 'pnpm perf:iso' });
+  const dev = createDevServer({
+    port: PORT,
+    clientPort: CLIENT_PORT,
+    tag: 'perf-iso',
+    command: 'pnpm perf:iso',
+    ...(BOTS > 0 ? { env: { RATE_LIMIT_EXEMPT: 'loopback', MAX_CLIENTS: '128' } } : {}),
+  });
+  const bots = new Bots(PORT);
   const gpus = listGpus();
   console.log(`[perf:iso] GPU máy: ${gpus.join(' | ') || '(không đọc được)'}`);
   const errors: string[] = [];
@@ -542,6 +584,10 @@ async function main(): Promise<void> {
   let browser: Awaited<ReturnType<typeof launchChrome>> | undefined;
   try {
     await dev.start();
+    if (BOTS > 0)
+      console.log(
+        `[perf:iso] ${await bots.start(BOTS, 'iso', ['--level', '15', '--fight', `${FOREST.x},${FOREST.z},40`, '--tp'])} bot đã vào`,
+      );
     browser = await launchChrome({
       channel: opt('--channel', 'chrome'),
       args: ['--disable-gpu-vsync', '--disable-frame-rate-limit', ...(flag('--igpu') ? ['--force_low_power_gpu'] : [])],
@@ -550,6 +596,7 @@ async function main(): Promise<void> {
     for (const preset of PRESETS) points.push(...(await runPreset(browser, preset, errors, meta)));
   } finally {
     await browser?.close().catch(() => undefined);
+    await bots.stop();
     dev.stop();
   }
   const date = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');

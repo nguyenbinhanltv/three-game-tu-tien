@@ -34,6 +34,8 @@ import { fitFactor } from '../core/screenFit';
 export const BAR_ENEMY = 0;
 export const BAR_ALLY = 1;
 export const BAR_BOSS = 2;
+/** Tinh anh (Chân Cảnh U7): khung vàng, rộng hơn quái thường, 6 đoạn. */
+export const BAR_ELITE = 3;
 
 /** Đủ cho mọi quái trong bán kính hiển thị và 50 người chơi; vượt quá thì các thanh push sau bị bỏ. */
 const CAPACITY = 256;
@@ -49,6 +51,9 @@ const C = {
   enemyBot: color('#4a1612'), // son đỏ tối
   bossTop: color('#c94a3c'),
   bossBot: color('#3a1f4c'), // chìm vào spirit_demonic
+  eliteTop: color('#e0a93a'), // vàng đồng sáng
+  eliteBot: color('#5a2a12'),
+  eliteFrame: color('#f2d58a'), // khung tinh anh sáng hơn đồng thau thường
   allyTop: color('#86bd68'), // cỏ nắng leaf_grass
   allyBot: color('#1c4630'), // lá
 };
@@ -73,8 +78,9 @@ export class HeadBars {
     // Chiều cao (m) theo độ rộng: rộng 1,5 → 0,165; boss rộng 3 → 0,24.
     const h = float(0.09).add(w.mul(0.05));
     const kind = B.z;
-    const isBoss = step(1.5, kind);
-    const isAlly = step(0.5, kind).mul(float(1).sub(isBoss));
+    const isElite = step(2.5, kind);
+    const isBoss = step(1.5, kind).mul(float(1).sub(isElite));
+    const isAlly = step(0.5, kind).mul(float(1).sub(step(1.5, kind)));
 
     const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, fog: false });
     // Billboard: lấy tâm trong view space rồi cộng góc của quad theo trục màn hình.
@@ -105,8 +111,16 @@ export class HeadBars {
       .mul(float(1).sub(inHp));
     // Gradient dọc: trên sáng, dưới tối (uv.y = 1 ở trên).
     const vy = clamp(py.sub(border).div(max(h.sub(border.mul(2)), 1e-4)), 0, 1);
-    const topCol = select(isBoss.greaterThan(0.5), C.bossTop, select(isAlly.greaterThan(0.5), C.allyTop, C.enemyTop));
-    const botCol = select(isBoss.greaterThan(0.5), C.bossBot, select(isAlly.greaterThan(0.5), C.allyBot, C.enemyBot));
+    const topCol = select(
+      isElite.greaterThan(0.5),
+      C.eliteTop,
+      select(isBoss.greaterThan(0.5), C.bossTop, select(isAlly.greaterThan(0.5), C.allyTop, C.enemyTop)),
+    );
+    const botCol = select(
+      isElite.greaterThan(0.5),
+      C.eliteBot,
+      select(isBoss.greaterThan(0.5), C.bossBot, select(isAlly.greaterThan(0.5), C.allyBot, C.enemyBot)),
+    );
     const grad = mix(botCol, topCol, vy.mul(vy.mul(-0.6).add(1.6)));
     // Mép sáng: dải mảnh ở trên cùng phần máu.
     const rim = smoothstep(0.72, 0.9, vy);
@@ -119,7 +133,7 @@ export class HeadBars {
     const base = mix(mix(bg, fill, inHp), trailCol, inTrail);
 
     // Vạch chia: thường 4 đoạn, boss 10 đoạn; chỉ khắc trên phần có máu/đoạn trễ.
-    const segs = select(isBoss.greaterThan(0.5), float(10), float(4));
+    const segs = select(isBoss.greaterThan(0.5), float(10), select(isElite.greaterThan(0.5), float(6), float(4)));
     const st = t.mul(segs);
     const tickW = ft.mul(segs).mul(1.2);
     const tick = float(1).sub(smoothstep(0, tickW, abs(fract(st.add(0.5)).sub(0.5))));
@@ -130,7 +144,7 @@ export class HeadBars {
     const ticked = mix(base, C.ink, tickMask.mul(0.55));
 
     // Viền đồng thau giữa mép ngoài và phần trong; viền trên sáng hơn viền dưới.
-    const frame = C.bronze.mul(vy.mul(0.5).add(0.55));
+    const frame = mix(C.bronze, C.eliteFrame, isElite).mul(vy.mul(0.5).add(0.55));
     mat.colorNode = mix(frame, ticked, inner);
     mat.opacityNode = outer.mul(B.w).mul(mix(float(0.9), float(1), inner));
 
@@ -158,16 +172,17 @@ export class HeadBars {
 
   /**
    * Thêm một thanh. `x,y,z`: tâm thanh trong thế giới; `width` (m); `hp`, `trail`: 0..1;
-   * `kind`: BAR_ENEMY | BAR_ALLY | BAR_BOSS; `alpha`: 0..1.
+   * `kind`: BAR_ENEMY | BAR_ALLY | BAR_BOSS | BAR_ELITE; `alpha`: 0..1.
    */
   push(x: number, y: number, z: number, width: number, hp: number, trail: number, kind: number, alpha = 1): void {
     if (this.n >= CAPACITY) return;
     const c = this.cam;
     if (c.vh > 0) {
       // Thanh máu không to khổng lồ khi camera sát, cũng không bé tí khi xa: rộng trên màn hình trong [min, max] px.
-      const boss = kind >= 1.5;
+      const boss = kind >= 1.5 && kind < 2.5;
+      const elite = kind >= 2.5;
       const d = Math.hypot(x - c.x, y - c.y, z - c.z);
-      width *= fitFactor(width, d, c.fov, c.vh, boss ? 100 : 44, boss ? 300 : 120);
+      width *= fitFactor(width, d, c.fov, c.vh, boss ? 100 : elite ? 64 : 44, boss ? 300 : elite ? 170 : 120);
     }
     const i = this.n++ * 4;
     this.a[i] = x;
