@@ -86,3 +86,8 @@ Các số còn lại của bảng spec (chân bước tới 0,38 m / hai chân r
 ## C3d: giọng thứ năm `lt` (lôi tu, Chân Cảnh)
 
 `PoseVoice` thêm `lt` (hậu tố `_lt`, `paths.json` → `loi_tu.voice = "lt"`): tay trái giơ cao "triệu lôi" (`handL5` y 0,92), kiếm bổ từ trên xuống, tụ lực ngắn (giữ 0,05 s như kiếm tu), theo đà dài (quá đà 0,17), tầm tay cao (`reachY` 0,56). Trần kiểm ở `RANGE.lt` của `k5poses.test.ts`. 4 pose có giọng: `phi_kiem_lt`, `phi_kiem_2_lt`, `phi_kiem_3_lt`, `kiem_khi_tram_lt`. Thời gian, `hit`, luật chiêu không đổi. Hồn tu, cổ tu, cấm chế sư (đan sư `ds`) và cổ thần (hộ pháp `hp`) vẫn dùng giọng chung. Ảnh/video: `pnpm shots daotuhit --method cuu_tieu_loi_kinh --set off --video 1 [--tag sau|truoc] [--gender m|f]`.
+
+## C3e: hai giọng `ht` (hồn tu) và `ct` (cổ tu), clip lướt tấn công
+
+- `ht` (hậu tố `_ht`, `paths.json` → `hon_tu.voice = "ht"`): trôi nhẹ, vẫy cờ hồn theo cung rộng ngang vai (hạ hông 0,03 m, quá đà 0,13, tầm tay 0,60, bước lùi dài). `ct` (`_ct`, `co_tu.voice = "ct"`): khom thấp vồ như rắn (hạ hông 0,12 m, cột sống gập 14°→20°, tầm tay thấp 0,56, quá đà ngắn 0,08, tay trái cào). Mỗi giọng 4 pose có giọng (`phi_kiem`, `_2`, `_3`, `kiem_khi_tram`); trần kiểm ở `RANGE.ht/ct` của `k5poses.test.ts`. Cấm chế sư vẫn dùng giọng đan sư; thể tu và cổ thần dùng hộ pháp (giữ nguyên, chưa có giọng riêng).
+- Lướt tấn công: chiêu `dash` có `power > 0` (Thiết Bích Xung, Nghịch Kiếm Chuyển Phong, Dịch Sơn Xung, Cự Bộ Xung) phát clip UAL `Sword_Dash` thay `Roll` (`dashClipOf` ở `hitDir.ts`; lướt thuần/né vẫn `Roll`). Ảnh: `pnpm shots hitdir --mode dash` (lăn vs lướt đao, +100/+220 ms).

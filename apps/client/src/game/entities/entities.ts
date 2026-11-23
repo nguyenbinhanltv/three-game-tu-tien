@@ -371,7 +371,15 @@ export class EntityManager {
     const ring = this.heroRing;
     if (!ring.mesh.parent) this.group.add(ring.mesh);
     ring.begin();
-    for (const v of this.players.values()) if (v.heroTint !== -1 && v.heroTint !== -2 && (v.fl & PF_FLYING) === 0) ring.add(v.x, v.y, v.z);
+    const f = { x: 0, z: 0 };
+    for (const v of this.players.values()) {
+      if (v.heroTint === -1 || v.heroTint === -2 || (v.fl & PF_FLYING) !== 0) continue;
+      // Vòng theo thân đang vẽ (có độ lệch lướt), không theo vị trí thật: lướt hiển thị trượt thân từ điểm cũ về, vòng phải đi cùng.
+      f.x = v.x;
+      f.z = v.z;
+      v.model?.footXZ?.(f);
+      ring.add(f.x, v.y, f.z);
+    }
     ring.end();
   }
 
