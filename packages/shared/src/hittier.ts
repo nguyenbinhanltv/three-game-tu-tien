@@ -1,10 +1,8 @@
 // Cấp đòn (Chân Cảnh S1: "đòn có trọng lượng"). Một bảng hằng số duy nhất cho cả server (đẩy lùi, khựng, ngã: quyết định thật)
 // và client (hit-stop, rung camera: chỉ trình diễn). Không đổi góc camera: rung chỉ dịch nhẹ.
 import { HEAVY_POWER } from './combat';
-import type { MonsterDef } from './types';
+import type { HitTier, MonsterDef } from './types';
 
-/** Nhẹ, vừa, nặng, chiêu cuối. */
-export type HitTier = 'light' | 'medium' | 'heavy' | 'finisher';
 export const HIT_TIER_ORDER: readonly HitTier[] = ['light', 'medium', 'heavy', 'finisher'];
 
 export function isHitTier(v: unknown): v is HitTier {

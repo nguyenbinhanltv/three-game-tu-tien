@@ -1,6 +1,5 @@
 // Kiểu dữ liệu nội dung game và trạng thái nhân vật, dùng chung client/server.
 
-import type { HitTier } from './hittier';
 import type { ItemInst } from './itemtypes';
 import type { ApplyMark, ConsumeMark } from './marks';
 import type { SkillRes } from './resource';
@@ -104,6 +103,9 @@ export interface EquipRollDef {
 }
 
 export type MonsterLook = 'golem' | 'wisp' | 'road';
+
+/** Cấp đòn (Chân Cảnh S1): nhẹ, vừa, nặng, chiêu cuối. Bảng hằng số ở `hittier.ts`. */
+export type HitTier = 'light' | 'medium' | 'heavy' | 'finisher';
 
 export interface MonsterDef {
   id: string;
