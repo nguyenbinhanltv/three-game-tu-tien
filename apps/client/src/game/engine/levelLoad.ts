@@ -519,10 +519,13 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     id === 'van_lam' ? [] : (LEVELS[id]?.portals ?? []).filter((q) => LEVELS[q.to]?.dungeon).map((q) => ({ x: q.x, z: q.z, h: 30 }));
   if (F.beacons && (pois.length || portalBeams.length)) {
     // Giới Khích (Bắc Hoang) tự có vệt sáng riêng (render/riftVeil.ts), không thêm cột linh quang nón.
-    eng.beacons = new Beacons([
-      ...pois.filter((p) => p.beamH && !(id === 'bac_hoang' && p.id === 'gioi_khich')).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })),
-      ...portalBeams,
-    ]);
+    eng.beacons = new Beacons(
+      [
+        ...pois.filter((p) => p.beamH && !(id === 'bac_hoang' && p.id === 'gioi_khich')).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })),
+        ...portalBeams,
+      ],
+      FLAGS.isoCam,
+    );
     eng.beacons.mesh.visible = isWorldRoom(get().room);
     eng.scene.add(eng.beacons.mesh);
   }

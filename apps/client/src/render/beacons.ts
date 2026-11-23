@@ -19,6 +19,18 @@ const HALO_SCALE = 3;
 const SEGS = 18;
 const RINGS = 8;
 
+/**
+ * Camera chéo (`?cam=iso`, nhìn xuống 52°): cột cao 30 m kéo thành vệt sáng dài tới mép trên màn hình. Hạ cột còn `ISO_BEACON_HEIGHT_MUL` và cho phần trên
+ * tắt sớm hơn (`ISO_BEACON_FADE_FROM` thay cho 0,55 của chiều cao) để vẫn thấy điểm cổng nhưng không che vùng chiến.
+ */
+export const ISO_BEACON_HEIGHT_MUL = 0.4;
+export const ISO_BEACON_FADE_FROM = 0.2;
+
+/** Chiều cao cột (m) thực dùng: iso thì hạ thấp. */
+export function beaconHeight(h: number, iso: boolean): number {
+  return iso ? h * ISO_BEACON_HEIGHT_MUL : h;
+}
+
 interface BeaconPoint {
   x: number;
   z: number;
@@ -58,7 +70,7 @@ function beaconGeometry(): THREE.BufferGeometry {
   return g;
 }
 
-function beaconMaterial(halo = false): THREE.MeshBasicNodeMaterial {
+function beaconMaterial(halo = false, iso = false): THREE.MeshBasicNodeMaterial {
   const mat = new THREE.MeshBasicNodeMaterial({
     transparent: true,
     depthWrite: false,
@@ -69,7 +81,7 @@ function beaconMaterial(halo = false): THREE.MeshBasicNodeMaterial {
   const h = uv().y;
   const around = uv().x;
   // Sáng ở chân, tắt dần tới đỉnh; chân cột tắt nhẹ để không có mép cứng trên đất.
-  const vertical = smoothstep(0, 0.06, h).mul(float(1).sub(smoothstep(0.55, 1, h)));
+  const vertical = smoothstep(0, 0.06, h).mul(float(1).sub(smoothstep(iso ? ISO_BEACON_FADE_FROM : 0.55, 1, h)));
   // Dải sáng trôi lên chậm, lệch pha theo góc quanh trục.
   const flow = sin(
     h
@@ -109,20 +121,24 @@ export class Beacons {
   readonly mesh: THREE.InstancedMesh;
   private halo: THREE.InstancedMesh;
 
-  constructor(points: readonly BeaconPoint[]) {
-    this.mesh = new THREE.InstancedMesh(beaconGeometry(), beaconMaterial(), Math.max(1, points.length));
+  constructor(points: readonly BeaconPoint[], iso = false) {
+    this.mesh = new THREE.InstancedMesh(beaconGeometry(), beaconMaterial(false, iso), Math.max(1, points.length));
     this.mesh.name = 'beacons';
     this.mesh.frustumCulled = false;
     this.mesh.renderOrder = 4;
     this.mesh.count = points.length;
     const m = new THREE.Matrix4();
     points.forEach((p, i) => {
-      m.compose(new THREE.Vector3(p.x, heightAt(p.x, p.z) - 0.5, p.z), new THREE.Quaternion(), new THREE.Vector3(1, p.h, 1));
+      m.compose(
+        new THREE.Vector3(p.x, heightAt(p.x, p.z) - 0.5, p.z),
+        new THREE.Quaternion(),
+        new THREE.Vector3(1, beaconHeight(p.h, iso), 1),
+      );
       this.mesh.setMatrixAt(i, m);
     });
     this.mesh.instanceMatrix.needsUpdate = true;
     // Quầng mềm: cùng hình học, nón rộng hơn, con của lõi (hiện/ẩn theo lõi).
-    this.halo = new THREE.InstancedMesh(this.mesh.geometry, beaconMaterial(true), Math.max(1, points.length));
+    this.halo = new THREE.InstancedMesh(this.mesh.geometry, beaconMaterial(true, iso), Math.max(1, points.length));
     this.halo.frustumCulled = false;
     this.halo.renderOrder = 4;
     this.halo.count = points.length;
@@ -130,7 +146,7 @@ export class Beacons {
       m.compose(
         new THREE.Vector3(p.x, heightAt(p.x, p.z) - 0.5, p.z),
         new THREE.Quaternion(),
-        new THREE.Vector3(HALO_SCALE, p.h, HALO_SCALE),
+        new THREE.Vector3(HALO_SCALE, beaconHeight(p.h, iso), HALO_SCALE),
       );
       this.halo.setMatrixAt(i, m);
     });
