@@ -92,14 +92,12 @@ export function Settings() {
       {tab === 'graphics' && (
         <div data-testid="settings-graphics">
           <Divider label={t('ui.settings.preset')} />
+          {/* Không khớp preset nào (đã chỉnh riêng) thì không ô nào sáng. */}
           <Segmented
             label={t('ui.settings.preset')}
-            value={preset ?? 'custom'}
-            onChange={(id: PresetId | 'custom') => id !== 'custom' && applyPreset(id)}
-            options={[
-              ...PRESET_IDS.map((id) => ({ value: id as PresetId | 'custom', label: t('ui.settings.preset.' + id) })),
-              ...(preset ? [] : [{ value: 'custom' as const, label: t('ui.settings.preset.custom') }]),
-            ]}
+            value={(preset ?? '') as PresetId}
+            onChange={(id: PresetId) => applyPreset(id)}
+            options={PRESET_IDS.map((id) => ({ value: id, label: t('ui.settings.preset.' + id) }))}
           />
           <div className="k-dim">{t('ui.settings.preset_hint')}</div>
           <Divider label={t('ui.settings.quality')} />
