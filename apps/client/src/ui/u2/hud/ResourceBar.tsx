@@ -7,7 +7,8 @@ import { TipCard, Tooltip } from '../win';
 import { useNow } from './common';
 import { resView } from './resView';
 
-export function ResourceBar() {
+/** `dock`: thanh Đạo Thế nổi bật giữa HUD (Chân Cảnh U2), đặt trong khối sinh lực dưới thanh chiêu; mặc định là chip nhỏ trong ô tiện ích. */
+export function ResourceBar({ dock = false }: { dock?: boolean }) {
   const method = useUI((s) => s.method);
   const off = useUI((s) => s.methodOff);
   const now = useNow(100);
@@ -20,7 +21,7 @@ export function ResourceBar() {
   return (
     <Tooltip content={<TipCard title={name} sub={value} desc={t(`ui.method.res.${def.id}.tip`)} />}>
       <div
-        className="res-bar"
+        className={'res-bar' + (dock ? ' dock' : '')}
         data-testid="res-bar"
         data-res={def.id}
         data-ui={def.ui}
@@ -48,7 +49,7 @@ export function ResourceBar() {
             <span className="res-track">
               <i style={{ '--v': rv.max > 0 ? rv.v / rv.max : 0 } as CSSProperties} />
             </span>
-            <span className="res-n">{n}</span>
+            <span className="res-n">{dock && rv.full ? t('ui.method.res.full') : n}</span>
           </>
         )}
       </div>

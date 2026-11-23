@@ -132,6 +132,9 @@ const LOD0_CROWD = 6;
  */
 const MON_NEAR = 100;
 const MON_FAR = 125;
+/** Boss: dựng khi cách ≤ BOSS_NEAR, xóa khi > BOSS_FAR; luôn trong AOI_BOSS_IN/OUT của server (spawnrules.ts, 200/230), nếu không boss chưa tới đã bị xóa. */
+const BOSS_NEAR = 190;
+const BOSS_FAR = 230;
 /**
  * Số nhãn tên tối đa (gần camera nhất, trong khung nhìn); mình và mục tiêu luôn có. Mỗi nhãn là một sprite = một draw
  * call trong suốt; giữa đám đông 50 người, nhãn của người xa hơn bị che lấp, hiện không giúp gì.
@@ -582,11 +585,11 @@ export class EntityManager {
       const d2 = (s.x - local.x) ** 2 + (s.z - local.z) ** 2;
       if (!v) {
         const mdef = MONSTER.get(s.t);
-        if (!mdef || d2 > (mdef.boss ? 240 : MON_NEAR) ** 2) return;
+        if (!mdef || d2 > (mdef.boss ? BOSS_NEAR : MON_NEAR) ** 2) return;
         v = new MonVis(id, s, this.skins);
         this.monsters.set(id, v);
         this.group.add(v.model.root);
-      } else if (d2 > (v.model.def && MONSTER.get(s.t)?.boss ? 280 : MON_FAR) ** 2) {
+      } else if (d2 > (v.model.def && MONSTER.get(s.t)?.boss ? BOSS_FAR : MON_FAR) ** 2) {
         this.group.remove(v.model.root);
         v.dispose();
         this.monsters.delete(id);
@@ -981,7 +984,7 @@ export class EntityManager {
    * Phản ứng trúng đòn khi nhận S.DMG (chỉ hiển thị). `delay` để khớp lúc đạn bay tới.
    * Người ra đòn là mình thì mình cũng khựng.
    */
-  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number, heavy = false, stop?: StopPair): void {
+  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number, heavy = false, stop?: StopPair, tier?: number): void {
     const vd = this.players.get(dst) ?? this.monsters.get(dst);
     if (!vd) return;
     const vs = src && src !== dst ? (this.players.get(src) ?? this.monsters.get(src)) : undefined;
@@ -990,6 +993,7 @@ export class EntityManager {
     vd.model.hitReact({
       crit,
       heavy,
+      tier,
       delay,
       noStop,
       stop: stop?.target,
