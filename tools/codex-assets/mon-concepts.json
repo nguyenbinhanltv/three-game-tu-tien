@@ -1,0 +1,48 @@
+{
+  "_doc": "C6 đợt 1: concept 4 hướng cho quái/boss còn dựng bằng khối (models.ts) để người dùng tự dựng Multiview → 3D trên Tripo web. Mô tả hình ảnh (tiếng Anh, đưa vào prompt Codex) bám docs/art-bible.md v3 (bán tả thực điện ảnh), màu lấy từ monsters.json, KHÔNG chép IP/nhân vật truyện. `pose`: biped = A-pose; quad = đứng bốn chân chuẩn. `cls`/`poly`: lớp ngân sách assets/budgets.json và Polycount khi dựng Tripo (docs/tripo-runbook.md mục 6). `dir`: thư mục trong dtl-asset-source/3d.",
+  "mon_yeu_lang": {
+    "vi": "Yêu Lang", "chapter": "ch1 Vân Lam", "dir": "quai", "cls": "monster", "poly": 8000, "pose": "quad", "rig": "quadruped", "scale": 1.3,
+    "colors": "charcoal-violet fur #3D3A4F, violet accent #A05CFF",
+    "desc": "a demonic wolf, about 40 percent larger than an ordinary grey wolf: powerful heavy shoulders and an oversized head, shaggy charcoal-violet fur in clumped strand masses, a ridge of pale bone-like spikes along the spine, thick forelegs with dark claws, faintly glowing violet eyes and a few thin wisps of violet miasma clinging to the shoulders (painted into the fur, not floating particles)"
+  },
+  "mon_u_minh_lang": {
+    "vi": "U Minh Lang", "chapter": "ch1 Vân Lam", "dir": "quai", "cls": "monster", "poly": 8000, "pose": "quad", "rig": "quadruped", "scale": 1.45,
+    "colors": "deep navy fur #1F2A44, cyan accent #6FE3FF",
+    "desc": "a spectral netherworld wolf, even larger and lankier than a demon wolf: deep navy tattered fur with a ragged mane, ribs and shoulder blades faintly visible under thin skin, glowing cyan ghost-fire veins running along the legs and spine, cyan eyes, paws that fade into pale cyan mist at the tips, a long thin tail"
+  },
+  "mon_kiem_linh": {
+    "vi": "Kiếm Linh", "chapter": "ch1 Kiếm Trủng", "dir": "quai", "cls": "monster", "poly": 8000, "pose": "quad", "rig": "quadruped", "scale": 1.2,
+    "colors": "mist-silver #B9C4D6, sky accent #7FD4FF",
+    "desc": "a fox spirit (decided: the Sword Spirit keeps a fox shape): slender fox body with pale mist-silver fur, semi-translucent at the legs and the big tail so they fade into pale blue light, thin metallic sword-blade patterns etched along the flanks and ears, glowing sky-blue eyes. NO floating swords and NO weapons in the image (small swords are modelled separately)"
+  },
+  "mon_tt_cot_ve": {
+    "vi": "Cốt Vệ Kiếm Thủ", "chapter": "ch4 Thần Tàng Điện", "dir": "quai", "cls": "monster", "poly": 8000, "pose": "biped", "rig": "biped",
+    "scale": 1.0, "colors": "aged bone #CFC8B4, pale gold trim #E8D8A0",
+    "desc": "a skeletal temple guard swordsman: human-sized skeleton in aged ivory bone wearing worn lamellar plate armor with pale gold trim, a plain straight one-handed sword held loosely in the right hand pointing down, empty dark eye sockets with a faint gold glint, tattered sash at the waist"
+  },
+  "mon_tt_thach_tuong": {
+    "vi": "Thạch Tượng Võ Sĩ", "chapter": "ch4 Thần Tàng Điện", "dir": "quai", "cls": "monster", "poly": 8000, "pose": "biped", "rig": "biped",
+    "scale": 1.15, "colors": "weathered grey stone #9A958A, gold inlay #D8C070",
+    "desc": "a stone statue warrior brought to life: broad and heavy humanoid carved from weathered grey stone with moss in the cracks, gold inlay along the chiseled armor edges, huge fists and thick forearms, a stern carved face with blank eyes, a slightly glowing gold rune on the chest"
+  },
+  "mon_tt_chien_ma": {
+    "vi": "Cổ Thành Chiến Ma", "chapter": "ch4 Thần Tàng Điện", "dir": "quai", "cls": "monster", "poly": 8000, "pose": "quad", "rig": "quadruped", "scale": 1.1,
+    "colors": "dark plum-black #3A2F3F, ember accent #FF8A4A",
+    "desc": "an ancient city's war fiend in the shape of an armored hound-like beast: lean muscular body in dark plum-black hide, rusted iron plate barding on the shoulders, chest and flanks, a horned skull-like head, glowing ember-orange cracks in the hide and in the seams of the armor, short heavy legs with iron-shod claws"
+  },
+  "boss_xich_tan_cu_khoi": {
+    "vi": "Xích Tẫn Cự Khôi", "chapter": "ch5 Xích Tẫn Khích", "dir": "boss", "cls": "boss", "poly": 20000, "pose": "biped", "rig": "biped",
+    "scale": 1.5, "colors": "black volcanic rock #2A2426, ember-red #C4412B",
+    "desc": "a colossal obsidian-and-basalt golem guarding a rift hall: huge squat torso, small head sunk between enormous shoulders, massive fists like boulders, a hinged furnace cavity in the chest whose iron shutters are slightly open and glow ember-red, glowing red cracks running across the rock plates, hanging iron chains at the waist. Bulky readable silhouette"
+  },
+  "boss_tu_nhan_ma_tuong": {
+    "vi": "Tử Nhận Ma Tướng", "chapter": "ch5 Xích Tẫn Khích", "dir": "boss", "cls": "boss", "poly": 20000, "pose": "biped", "rig": "biped",
+    "scale": 1.25, "colors": "dark wine plate #3A1C22, violet flame #6B3FA0",
+    "desc": "an otherworld invader general in a dark fantasy style (not Chinese): tall armored commander in dark wine-black plate armor with jagged pauldrons and a horned visor helm, a tattered long cape, a heavy greatsword whose edge burns with violet flame held in the RIGHT hand only, blade pointing straight down along the outside of the right leg (clearly visible from front and back), the left hand empty and open away from the body, violet glow in the visor slits and armor seams"
+  },
+  "boss_tu_quang_duc_chu": {
+    "vi": "Tử Quang Dực Chủ", "chapter": "ch5 Xích Tẫn Khích", "dir": "boss", "cls": "boss", "poly": 20000, "pose": "biped", "rig": "biped",
+    "scale": 1.4, "colors": "deep indigo #241634, violet glow #6B3FA0",
+    "desc": "a fallen winged lord of an otherworld dynasty: tall gaunt humanoid in deep indigo robes and slim black plate, a pair of huge tattered violet-membrane wings held half-open and angled up-and-back in a V shape behind the shoulders (NOT spread flat to the sides; tips rise above the head) with bone-like ribs and glowing violet veins, so the wings stay readable from the front, the side and the back, a pale thin face under a crown of dark thorn spikes, long clawed hands, a faint violet halo of embers"
+  }
+}
