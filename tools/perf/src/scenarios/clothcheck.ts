@@ -2,7 +2,9 @@
 // Mỗi bản: đứng, chạy, lướt, đòn nặng, đả tọa, ngự kiếm; ảnh cận cảnh mỗi tình huống + đo ms/khung của vải (cloth.stats) và số đỉnh.
 //   pnpm shots clothcheck --out <thư mục> [--variants lo-xo,thien-y] [--size 1280x720|1920x1080]
 import { sleep } from '../lib/devserver';
-import { list, size } from '../lib/env';
+import fs from 'node:fs';
+import { Bots } from '../lib/bots';
+import { list, num, size } from '../lib/env';
 import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { writeJson } from '../lib/shot';
@@ -11,11 +13,14 @@ import path from 'node:path';
 export default {
   name: 'clothcheck',
   desc: 'C4: Tinh Khuyết nữ lò xo vs vải Thiên Y (?cloth=1): đứng/chạy/lướt/đòn nặng/đả tọa/ngự kiếm + đo ms/khung của vải',
-  usage: '[--variants lo-xo,thien-y] [--size 1920x1080]',
+  usage: '[--variants lo-xo,thien-y] [--size 1920x1080] [--video 1] [--bots 9]',
+  env: { RATE_LIMIT_EXEMPT: 'loopback', MAX_CLIENTS: '64' },
   async run(r) {
     const viewport = size('1920x1080');
     const variants = list('--variants', 'lo-xo,thien-y');
     const result: Record<string, unknown> = {};
+    const video = num('--video', 0) > 0;
+    const nBots = num('--bots', 0);
     for (const variant of variants) {
       const tag = `tinh-khuyet-nu-${variant}-${viewport[1]}p`;
       const { page } = await r.open({
@@ -26,7 +31,21 @@ export default {
         query: { chr: 'v3', cam: 'iso', ...(variant === 'thien-y' ? { cloth: '1' } : {}) },
         hide: 'hud',
         warnings: /models|chr_v3|clip/,
+        ...(video ? { video: path.join(r.out, `_rec-${variant}`) } : {}),
       });
+      const bots = nBots > 0 ? new Bots(r.port) : null;
+      if (bots)
+        await bots.start(nBots, `cb${variant.slice(0, 2)}`, [
+          '--genders',
+          'f',
+          '--set',
+          'set_tinh_khuyet',
+          '--level',
+          '15',
+          '--crowd',
+          '2048,2088,6',
+          '--tp',
+        ]);
       await gm(page, 'level 15', 1500);
       await gm(page, 'god on', 1200);
       await gm(page, 'set set_tinh_khuyet', 1500);
@@ -56,7 +75,16 @@ export default {
       const stats = () =>
         page.evaluate(`(() => { var g = window.__game; var c = g.ents.players.get(g.sid).model.cloth; return c ? c.stats : null; })()`);
       const ms: Record<string, unknown> = {};
-      await sleep(1200);
+      await page.evaluate(
+        `(() => { var g = window.__game; var c = g.ents.players.get(g.sid).model.cloth; if (c) c.measurePen = true; })()`,
+      );
+      // Tổng vải của mọi nhân vật trong cảnh: số bộ vải đang mô phỏng, tổng ms/khung (trung bình trượt), đỉnh xuyên thân lớn nhất của mình.
+      const crowd = () =>
+        page.evaluate(
+          `(() => { var g = window.__game; var n = 0, ms = 0, all = 0, v3 = 0, withCloth = 0; g.ents.players.forEach(function (e) { all++; var m = e.model; if (m && m.v3) v3++; var c = m && m.cloth; if (c) withCloth++; if (c && c.active) { n++; ms += c.stats.ms; } }); var b = window.__game.ents.players.get(window.__game.sid).model.cloth.budget; return { frameAvgMs: b.avg, frameMaxMs: b.max, players: all, v3: v3, withCloth: withCloth, rigs: n, totalMs: ms }; })()`,
+        );
+      await sleep(bots ? 6000 : 1200);
+      if (bots) console.log('[clothcheck] cảnh đông:', JSON.stringify(await crowd()));
       await shot('1-dung');
       ms.dung = await stats();
       for (const k of ['KeyS', 'KeyD']) await page.keyboard.down(k);
@@ -85,9 +113,16 @@ export default {
       await sleep(2200);
       await shot('6-ngu-kiem');
       ms.ngukiem = await stats();
+      if (nBots > 0) ms.dong = await crowd();
       await page.evaluate(() => window.__game!.toggleFly());
       result[tag] = ms;
-      await page.close();
+      if (bots) await bots.stop();
+      if (video) {
+        const vid = page.video();
+        await page.context().close();
+        if (vid) fs.copyFileSync(await vid.path(), path.join(r.out, `${tag}.webm`));
+        fs.rmSync(path.join(r.out, `_rec-${variant}`), { recursive: true, force: true });
+      } else await page.close();
     }
     writeJson(r.out, `clothcheck-${viewport[1]}p-${variants.join('_')}.json`, result);
   },

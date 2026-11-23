@@ -10,8 +10,16 @@ describe('ClothBudget', () => {
     expect(b.allow(0)).toBe(true);
     b.charge(0.3);
     expect(b.allow(0.016)).toBe(false);
+    expect(b.allow(0.016, 0.01)).toBe(false);
     t = 16.7;
     expect(b.allow(0.016)).toBe(true);
+  });
+  it('tính cả chi phí ước tính: còn 0,2 ms mà vải tốn 0,33 thì hoãn', () => {
+    const b = new ClothBudget(0.5, 0.08, () => 0);
+    expect(b.allow(0, 0.33)).toBe(true); // đầu tiên luôn chạy
+    b.charge(0.33);
+    expect(b.allow(0.016, 0.33)).toBe(false);
+    expect(b.allow(0.016, 0.1)).toBe(true);
   });
   it('hoãn quá maxLag thì buộc chạy', () => {
     const b = new ClothBudget(0.5, 0.08, () => 0);

@@ -12,7 +12,15 @@ export const THIEN_Y_ATLAS: Record<string, readonly [number, number, number, num
 };
 
 /** Lưới trong suốt (voan, tay áo): alpha theo `alpha`, mép dưới mờ dần. Lớp còn lại đặc. */
-export const THIEN_Y_SHEER: Record<string, number> = { skirt_out: 0.8, sleeve_l: 0.85, sleeve_r: 0.85 };
+export const THIEN_Y_SHEER: Record<string, number> = {
+  skirt_out: 0.8,
+  sleeve_la: 0.85,
+  sleeve_lb: 0.85,
+  sleeve_ra: 0.85,
+  sleeve_rb: 0.85,
+  ribbon_l: 0.9,
+  ribbon_r: 0.9,
+};
 
 /** Ba lớp váy xếp tầng: trong (ngà, ngắn), giữa (sao xanh lam), ngoài (voan tím, rộng + dài nhất). */
 const SKIRT_LAYERS = [
@@ -128,18 +136,44 @@ export function fitThienY(inp: ThienYInput, opt: ThienYOptions = {}): ClothGrid[
     const top = (p0[1] + p1[1]) / 2;
     const drop = Math.max((top - pct(ysl, 0.03)) * 0.92, 0.2 * k);
     const nuS = opt.sleeveCols ?? 12;
+    const rows = opt.sleeveRows ?? 8;
+    // Tay áo hai lớp phồng ngược nhau (trước/sau): nhìn từ trên là ống cong, không phải tấm phẳng bung như cánh.
+    const bow = 0.07 * k;
+    for (const [lay, sign] of [
+      ['a', 1],
+      ['b', -1],
+    ] as const) {
+      out.push(
+        panelGrid(
+          `sleeve_${sd}${lay}`,
+          p0,
+          p1,
+          drop * 0.8,
+          nuS,
+          rows,
+          { bone: `upperarm_${sd}`, w: [1, 0.55, 0.2] },
+          1.5,
+          [0, -1, 0],
+          (_r, c) => (c < nuS / 2 ? `upperarm_${sd}` : `lowerarm_${sd}`),
+          bow * sign * (sd === 'l' ? 1 : -1),
+        ),
+      );
+    }
+    // Dải lụa buộc ở hông (chuỗi verlet hẹp): treo từ cạnh hông ra sau, dài ~0,55 m, mỏng, phấp phới.
+    const pel2 = joint('pelvis');
+    const sx = (sd === 'l' ? 1 : -1) * 0.14 * k;
     out.push(
       panelGrid(
-        `sleeve_${sd}`,
-        p0,
-        p1,
-        drop,
-        nuS,
-        opt.sleeveRows ?? 8,
-        { bone: `upperarm_${sd}`, w: [1, 0.55, 0.2] },
-        1.8,
+        `ribbon_${sd}`,
+        [pel2[0] + sx, pel2[1] + 0.02 * k, pel2[2] - 0.12 * k],
+        [pel2[0] + sx * 1.1, pel2[1] + 0.02 * k, pel2[2] - 0.17 * k],
+        0.55 * k,
+        2,
+        10,
+        { bone: 'pelvis', w: [1, 0.5, 0.2] },
+        1.4,
         [0, -1, 0],
-        (_r, c) => (c < nuS / 2 ? `upperarm_${sd}` : `lowerarm_${sd}`),
+        () => 'pelvis',
       ),
     );
   }
