@@ -10,7 +10,7 @@ import { snap, UI_SIZES } from '../lib/shot';
 export default {
   name: 'calliscreen',
   desc: 'Chữ thư pháp ở màn tiêu đề/tải, Bản đồ chương, màn chết ở 720p + 1080p; --plain = bản trước',
-  usage: '[--sizes 720p,1080p] [--parts title,load,chapters,dead] [--plain]',
+  usage: '[--sizes 720p,1080p] [--parts title,load,chapters,dead] [--plain] [--loadwait 700]',
   async run(r) {
     const plain = flag('--plain');
     const tag = plain ? 'truoc' : 'sau';
@@ -28,7 +28,7 @@ export default {
         const page = await ctx.newPage();
         if (plain) await page.route('**/assets/calli/**', (rt) => rt.abort());
         await page.goto(gameUrl(r.clientPort, art ? { auto: 'Cscr' + (Date.now() % 1000) } : {}), { waitUntil: 'load' });
-        await sleep(art ? 700 : 3500);
+        await sleep(art ? Number(list('--loadwait', '700')[0]) : 3500);
         await snap(page, r.out, `${tag}-${part}-${size}.jpg`);
         await ctx.close();
       }

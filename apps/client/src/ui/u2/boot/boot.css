@@ -339,3 +339,14 @@
 #root .ts-card.u2-card .ts-tip b {
   color: var(--u-son);
 }
+
+/* Dòng bối cảnh: mỗi dòng mới hiện lại trong ~0,17 s; bắt đầu từ độ mờ cao để không bị đọc thành chữ mờ khi dòng đổi nhanh */
+#root .ts-card.u2-card .ts-line {
+  color: var(--u-muc);
+  animation: ts-line-in-u12 0.16s ease-out both;
+}
+@keyframes ts-line-in-u12 {
+  from {
+    opacity: 0.65;
+  }
+}
