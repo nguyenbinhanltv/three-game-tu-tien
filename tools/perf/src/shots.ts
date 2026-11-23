@@ -26,6 +26,7 @@ import dungeon from './scenarios/dungeon';
 import flyover from './scenarios/flyover';
 import hires from './scenarios/hires';
 import lackiem from './scenarios/lackiem';
+import tieucanh from './scenarios/tieucanh';
 import thienkhuyet from './scenarios/thienkhuyet';
 import bachoang from './scenarios/bachoang';
 import vandinh from './scenarios/vandinh';
@@ -84,6 +85,7 @@ import recap from './scenarios/recap';
 import tipchieu from './scenarios/tipchieu';
 import uxhint from './scenarios/uxhint';
 import nameplate from './scenarios/nameplate';
+import partyframe from './scenarios/partyframe';
 import vs2 from './scenarios/vs2';
 import hontu from './scenarios/hontu';
 import realmaura from './scenarios/realmaura';
@@ -103,6 +105,7 @@ const SCENARIOS: Scenario[] = [
   calli,
   calli3d,
   lackiem,
+  tieucanh,
   collwalk,
   thienkhuyet,
   bachoang,
@@ -124,6 +127,7 @@ const SCENARIOS: Scenario[] = [
   tipchieu,
   uxhint,
   nameplate,
+  partyframe,
   vs2,
   hontu,
   ui,

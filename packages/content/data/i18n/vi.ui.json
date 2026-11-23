@@ -948,6 +948,8 @@
   "ui.party.role.dps": "Kiếm tu",
   "ui.party.role.tank": "Thể tu",
   "ui.party.role.support": "Đan sư",
+  "ui.party.away": "Đồng đội ngoài tầm nhìn",
+  "ui.party.away_dist": "{n} m",
   "ui.party.res": "Cộng hưởng",
   "ui.party.res_tip": "Đủ Kiếm tu, Thể tu, Đan sư đứng gần nhau: +5% tu vi, +5% sát thương, −5% sát thương nhận.",
   "ui.party.res_off": "Cần đủ ba vai trò (Kiếm tu, Thể tu, Đan sư) đứng gần nhau để cộng hưởng.",

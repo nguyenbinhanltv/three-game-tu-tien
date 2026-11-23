@@ -100,6 +100,8 @@ interface Flags {
   hero: boolean;
   /** `?brk=0` tắt vật thể vỡ (vò, bia, cọc). */
   breakables: boolean;
+  /** `?scenes=0` tắt tiểu cảnh Lạc Kiếm (cổng bài, ao sen, kiếm bia, cầu treo; Chân Cảnh M1+M2): ảnh đối chứng (chỉ tắt hình; va chạm vẫn còn, ảnh có thể có tường vô hình). */
+  scenes: boolean;
   /** `?isoyaw=<độ>` ghi đè hướng nhìn cố định của camera chéo (chỉ để chọn hướng đẹp nhất cho từng bản đồ). */
   isoYaw: number | null;
   /** `?isofx=0` tắt nén hình VFX đứng cao ở camera chéo (so ảnh trước/sau, Thiên Nhãn P4-1). */
@@ -158,6 +160,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   tc: { scope: 'diag', doc: '=0 ẩn bộ prop Thiên Công Khai Vật (PROP-1, so ảnh/đo)' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
   hero: { scope: 'diag', doc: '=0 tắt viền nhân vật (hero light)' },
+  scenes: { scope: 'diag', doc: '=0 tắt HÌNH tiểu cảnh Lạc Kiếm (Chân Cảnh M1+M2); va chạm vật đặc vẫn còn (shared)' },
   brk: { scope: 'diag', doc: '=0 tắt vật thể vỡ (vò, bia, cọc)' },
   god: { scope: 'test', doc: 'bất tử (server kiểm lại, xem testParams.ts)' },
   at: { scope: 'test', doc: 'vào ở điểm đặt tên hoặc x,z (testParams.ts)' },
@@ -237,6 +240,7 @@ export function readFlags(search: string): Flags {
     butterflies: !off(q.get('bf')),
     hero: !off(q.get('hero')),
     breakables: !off(q.get('brk')),
+    scenes: !off(q.get('scenes')),
   };
 }
 

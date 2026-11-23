@@ -68,6 +68,7 @@ import { Beacons } from '../render/beacons';
 import type { GodRays } from '../render/godRays';
 import type { CardForest } from './world/cardForest';
 import type { LacKiemGarden } from './world/lacKiemGarden';
+import type { LacKiemScenes } from './world/lacKiemScenes';
 import type { DoanMachArt } from './world/doanMachArt';
 import type { KiemTrungArt } from './world/kiemTrungArt';
 import type { PhucMachArt } from './world/phucMachArt';
@@ -273,6 +274,8 @@ export class Game {
   vanHaiGarden: VanHaiGarden | null = null;
   /** Vườn hoa, lùm trúc, đá rêu quanh tông môn (MAP-1). */
   lacKiemGarden: LacKiemGarden | null = null;
+  /** Tiểu cảnh Lạc Kiếm (Chân Cảnh M1+M2): cổng bài, ao sen, kiếm bia, lối men vách, cầu treo. */
+  lacKiemScenes: LacKiemScenes | null = null;
   /** Cây thẻ alpha thay cây Tripo ở Lạc Kiếm (MAP-1 bản B). */
   cardForest: CardForest | null = null;
   doanMachArt: DoanMachArt | null = null;
