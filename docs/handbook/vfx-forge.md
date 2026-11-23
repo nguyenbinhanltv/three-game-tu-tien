@@ -24,6 +24,12 @@ Chiêu của mình > cảnh báo địch > chiêu đồng đội (`fxHierarchy`:
 
 Sự kiện timeline `{ "type": "impact", "t": 0, "frames": 1|2, "tint": "ink|warm|cool" }`: 1–2 khung hậu kỳ tương phản cao ám màu (`render/post.ts`). Chỉ chiêu của mình, tắt được ở Cài đặt ("Khung va chạm") và tự tắt khi bật chế độ tĩnh (cùng `flash`, `vignette`). Không có tint đỏ/cam.
 
+## VFX quái/boss (V-P9)
+
+- **Timeline riêng theo chiêu quái**: `MonFx` (`game/fx/monFx.ts`) tìm `mon_warn|mon_warn_line|mon_warn_cone|mon_boom_circle|mon_boom_line|mon_boom_cone` theo thứ tự `<khóa>__<quái>__<chiêu>`, `<khóa>__<quái>`, rồi khóa chung (hành vi cũ). `HazardMsg` không mang tên chiêu nên `game/fx/monMove.ts` (`moveOfHazard`) đoán từ hình + bán kính + thời gian báo khớp với `ai`/`phases[].ai` của quái (slam, chant, sweep, line, charge, leap, burrow/emerge); không khớp thì dùng timeline chung. Tên file mẫu: mon_warn + hai gạch dưới + id quái + hai gạch dưới + tên chiêu (đuôi .json) trong thư mục data/fx của packages/content (khai báo import ở `packages/content/src/index.ts`, thêm vào `MON_FX_TIMELINES`).
+- **Phòng thử quái**: `pnpm shots vfxmon --mon boss_han_giao --move slam,chant,sweep --out <thư mục> [--sizes 720p,1080p] [--at -1200,-600,0,30,150,400] [--mood night] [--clip 1]`: dùng `?vfxlab=1` + `__vfxlab.castMon(mon, move)` đi đúng đường S.HAZARD của game (`onHazard` tách khỏi `room.ts`; `setTimeout` của vùng nổ đổi sang đồng hồ trình diễn trong phòng thử để tua được). Mốc âm = trước lúc nổ (vạch báo nạp), 0 = lúc nổ.
+- **Luật màu**: vạch báo của địch đỏ/cam (`accent` của bảng `mon_*`, boss `mon_boss_<hệ>` accent đỏ thẫm), phải rõ ở góc 52°, đúng HÌNH và BÁN KÍNH vùng server (không vẽ rộng/hẹp hơn hitbox), nhịp nạp ≥ ngưỡng né (`delay` của chiêu). Màu hệ (xanh băng...) dành cho vùng nổ/dư ba, không dùng cho vạch báo.
+
 ## Ảnh ở đâu
 
 Ảnh Codex, concept, contact sheet, ảnh phòng thử: artifact phiên hoặc `dtl-asset-source`, KHÔNG commit. Chỉ texture đã qua lò rèn (KTX2 + dòng nguồn trong manifest) vào repo.

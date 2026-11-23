@@ -17,6 +17,7 @@ import collwalk from './scenarios/collwalk';
 import divuc from './scenarios/divuc';
 import daotuhit from './scenarios/daotuhit';
 import hitdir from './scenarios/hitdir';
+import clothcheck from './scenarios/clothcheck';
 import herocheck from './scenarios/herocheck';
 import herolight from './scenarios/herolight';
 import breakables from './scenarios/breakables';
@@ -66,6 +67,7 @@ import daotu from './scenarios/daotu';
 import cotu from './scenarios/cotu';
 import camchevfx from './scenarios/camchevfx';
 import vfxlab from './scenarios/vfxlab';
+import vfxmon from './scenarios/vfxmon';
 import path2428vfx from './scenarios/path2428vfx';
 import pathaura from './scenarios/pathaura';
 import camche from './scenarios/camche';
@@ -85,6 +87,8 @@ import recap from './scenarios/recap';
 import tipchieu from './scenarios/tipchieu';
 import uxhint from './scenarios/uxhint';
 import nameplate from './scenarios/nameplate';
+import partyframe from './scenarios/partyframe';
+import charbag from './scenarios/charbag';
 import vs2 from './scenarios/vs2';
 import hontu from './scenarios/hontu';
 import realmaura from './scenarios/realmaura';
@@ -126,6 +130,8 @@ const SCENARIOS: Scenario[] = [
   tipchieu,
   uxhint,
   nameplate,
+  partyframe,
+  charbag,
   vs2,
   hontu,
   ui,
@@ -163,6 +169,7 @@ const SCENARIOS: Scenario[] = [
   cotu,
   camchevfx,
   vfxlab,
+  vfxmon,
   path2428vfx,
   pathaura,
   camche,
@@ -174,6 +181,7 @@ const SCENARIOS: Scenario[] = [
   divuc,
   daotuhit,
   hitdir,
+  clothcheck,
   herocheck,
   herolight,
   breakables,

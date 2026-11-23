@@ -23,7 +23,7 @@
    "t": -0.4,
    "id": "cast",
    "gain": 0.4,
-   "rate": 1.0,
+   "rate": 1,
    "jitter": 0.05
   },
   {
@@ -31,12 +31,13 @@
    "tex": "rune",
    "t": -0.36,
    "r": 5.4,
-   "dur": 3.0,
+   "dur": 3,
    "at": "area",
    "grow": 0.2,
    "tone": "body",
    "alpha": 0.8,
-   "tier": 0
+   "tier": 0,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -54,11 +55,12 @@
    "fit": "area",
    "sweep": 0.01,
    "erodeFrom": 0.8,
-   "alpha": 1.0,
+   "alpha": 1,
    "shadow": false,
    "tone": "body",
    "tier": 0,
-   "seed": 7
+   "seed": 7,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -80,12 +82,13 @@
    "shadow": false,
    "tone": "core",
    "tier": 1,
-   "seed": 8
+   "seed": 8,
+   "ink": true
   },
   {
    "type": "mesh",
    "shape": "rune_ring2",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.45,
    "at": "area",
    "offset": [
@@ -94,15 +97,16 @@
     0
    ],
    "scale": 0.1,
-   "scaleTo": 1.0,
+   "scaleTo": 1,
    "fit": "area",
    "sweep": 0.04,
    "erodeFrom": 0.7,
    "alpha": 1,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "tier": 0,
-   "seed": 3
+   "seed": 3,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -149,7 +153,7 @@
    "t": -0.02,
    "dur": 0.36,
    "flip": "spark_burst",
-   "scale": 3.0,
+   "scale": 3,
    "billboard": true,
    "at": "area",
    "offset": [
@@ -209,7 +213,7 @@
    "scale": [
     35,
     35,
-    1.0
+    1
    ],
    "sweep": 0.03,
    "erodeFrom": 0.8,
@@ -224,7 +228,7 @@
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "heal",
    "gain": 0.75,
    "rate": 0.9,
@@ -232,7 +236,7 @@
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "impact",
    "gain": 0.4,
    "rate": 1.2,
@@ -241,9 +245,9 @@
   {
    "type": "particles",
    "kind": "petal",
-   "t": 0.0,
+   "t": 0,
    "n": 50,
-   "speed": 4.0,
+   "speed": 4,
    "spread": 1,
    "life": 1.3,
    "size": 0.11,
@@ -260,7 +264,7 @@
   {
    "type": "particles",
    "kind": "spark",
-   "t": 0.0,
+   "t": 0,
    "n": 26,
    "speed": 5,
    "spread": 1,
@@ -292,9 +296,9 @@
     0
    ],
    "scale": [
-    6.0,
-    3.0,
-    3.0
+    6,
+    3,
+    3
    ],
    "sweep": 0.02,
    "erodeFrom": 0.82,
@@ -321,9 +325,9 @@
     0
    ],
    "scale": [
-    6.0,
-    3.0,
-    3.0
+    6,
+    3,
+    3
    ],
    "sweep": 0.02,
    "erodeFrom": 0.82,
@@ -350,9 +354,9 @@
     0
    ],
    "scale": [
-    6.0,
-    3.0,
-    3.0
+    6,
+    3,
+    3
    ],
    "sweep": 0.02,
    "erodeFrom": 0.82,
@@ -379,9 +383,9 @@
     0
    ],
    "scale": [
-    6.0,
-    3.0,
-    3.0
+    6,
+    3,
+    3
    ],
    "sweep": 0.02,
    "erodeFrom": 0.82,
@@ -408,9 +412,9 @@
     0
    ],
    "scale": [
-    6.0,
-    3.0,
-    3.0
+    6,
+    3,
+    3
    ],
    "sweep": 0.02,
    "erodeFrom": 0.82,
@@ -437,9 +441,9 @@
     0
    ],
    "scale": [
-    6.0,
-    3.0,
-    3.0
+    6,
+    3,
+    3
    ],
    "sweep": 0.02,
    "erodeFrom": 0.82,
@@ -466,9 +470,9 @@
     0
    ],
    "scale": [
-    6.0,
-    3.0,
-    3.0
+    6,
+    3,
+    3
    ],
    "sweep": 0.02,
    "erodeFrom": 0.82,
@@ -495,9 +499,9 @@
     0
    ],
    "scale": [
-    6.0,
-    3.0,
-    3.0
+    6,
+    3,
+    3
    ],
    "sweep": 0.02,
    "erodeFrom": 0.82,
@@ -524,9 +528,9 @@
     0
    ],
    "scale": [
-    6.0,
-    3.0,
-    3.0
+    6,
+    3,
+    3
    ],
    "sweep": 0.02,
    "erodeFrom": 0.82,
@@ -553,9 +557,9 @@
     0
    ],
    "scale": [
-    6.0,
-    3.0,
-    3.0
+    6,
+    3,
+    3
    ],
    "sweep": 0.02,
    "erodeFrom": 0.82,
@@ -577,15 +581,16 @@
     0
    ],
    "scale": 0.08,
-   "scaleTo": 1.0,
+   "scaleTo": 1,
    "fit": "area",
    "sweep": 0.04,
    "erodeFrom": 0.7,
    "alpha": 0.9,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "tier": 0,
-   "seed": 60
+   "seed": 60,
+   "ink": true
   },
   {
    "type": "particles",
@@ -594,7 +599,7 @@
    "n": 24,
    "speed": 3.4,
    "spread": 1,
-   "life": 1.0,
+   "life": 1,
    "size": 0.1,
    "at": "area",
    "offset": [
@@ -618,15 +623,16 @@
     0
    ],
    "scale": 0.08,
-   "scaleTo": 1.0,
+   "scaleTo": 1,
    "fit": "area",
    "sweep": 0.04,
    "erodeFrom": 0.7,
    "alpha": 0.9,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "tier": 1,
-   "seed": 61
+   "seed": 61,
+   "ink": true
   },
   {
    "type": "particles",
@@ -635,7 +641,7 @@
    "n": 24,
    "speed": 3.4,
    "spread": 1,
-   "life": 1.0,
+   "life": 1,
    "size": 0.1,
    "at": "area",
    "offset": [
@@ -659,15 +665,16 @@
     0
    ],
    "scale": 0.08,
-   "scaleTo": 1.0,
+   "scaleTo": 1,
    "fit": "area",
    "sweep": 0.04,
    "erodeFrom": 0.7,
    "alpha": 0.9,
    "shadow": false,
-   "tone": "rim",
+   "tone": "body",
    "tier": 1,
-   "seed": 62
+   "seed": 62,
+   "ink": true
   },
   {
    "type": "particles",
@@ -676,7 +683,7 @@
    "n": 24,
    "speed": 3.4,
    "spread": 1,
-   "life": 1.0,
+   "life": 1,
    "size": 0.1,
    "at": "area",
    "offset": [
@@ -690,24 +697,24 @@
   },
   {
    "type": "hitstop",
-   "t": 0.0,
+   "t": 0,
    "ms": 45,
    "tier": 1
   },
   {
    "type": "shake",
-   "t": 0.0,
+   "t": 0,
    "level": 0.18
   },
   {
    "type": "flash",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.07,
    "tier": 1
   },
   {
    "type": "camera",
-   "t": 0.0,
+   "t": 0,
    "pull": 0,
    "dur": 0.5,
    "fov": 1.5,
@@ -719,7 +726,7 @@
    {
     "type": "mesh",
     "shape": "lotus_bloom",
-    "t": 0.0,
+    "t": 0,
     "dur": 2.6,
     "at": "area",
     "offset": [
@@ -764,7 +771,7 @@
     "scale": [
      26,
      26,
-     1.0
+     1
     ],
     "sweep": 0.03,
     "erodeFrom": 0.8,
@@ -793,7 +800,7 @@
      0
     ],
     "scale": [
-     5.0,
+     5,
      2.6,
      2.6
     ],
@@ -821,7 +828,7 @@
      0
     ],
     "scale": [
-     5.0,
+     5,
      2.6,
      2.6
     ],
@@ -849,7 +856,7 @@
      0
     ],
     "scale": [
-     5.0,
+     5,
      2.6,
      2.6
     ],
@@ -877,7 +884,7 @@
      0
     ],
     "scale": [
-     5.0,
+     5,
      2.6,
      2.6
     ],
@@ -905,7 +912,7 @@
      0
     ],
     "scale": [
-     5.0,
+     5,
      2.6,
      2.6
     ],
@@ -933,7 +940,7 @@
      0
     ],
     "scale": [
-     5.0,
+     5,
      2.6,
      2.6
     ],
@@ -961,7 +968,7 @@
      0
     ],
     "scale": [
-     5.0,
+     5,
      2.6,
      2.6
     ],
@@ -989,7 +996,7 @@
      0
     ],
     "scale": [
-     5.0,
+     5,
      2.6,
      2.6
     ],
@@ -1017,7 +1024,7 @@
      0
     ],
     "scale": [
-     5.0,
+     5,
      2.6,
      2.6
     ],
@@ -1045,7 +1052,7 @@
      0
     ],
     "scale": [
-     5.0,
+     5,
      2.6,
      2.6
     ],
@@ -1062,7 +1069,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.06,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      3.16,
@@ -1081,7 +1088,7 @@
     ],
     "scaleTo": [
      0.9,
-     2.0,
+     2,
      0.9
     ],
     "sweep": 0.16,
@@ -1096,7 +1103,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.09,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      6.6,
@@ -1115,7 +1122,7 @@
     ],
     "scaleTo": [
      0.9,
-     2.0,
+     2,
      0.9
     ],
     "sweep": 0.16,
@@ -1130,7 +1137,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.12,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      3.43,
@@ -1149,7 +1156,7 @@
     ],
     "scaleTo": [
      0.9,
-     2.0,
+     2,
      0.9
     ],
     "sweep": 0.16,
@@ -1164,7 +1171,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.15,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      -3.16,
@@ -1183,7 +1190,7 @@
     ],
     "scaleTo": [
      0.9,
-     2.0,
+     2,
      0.9
     ],
     "sweep": 0.16,
@@ -1198,7 +1205,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.18,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      -6.6,
@@ -1217,7 +1224,7 @@
     ],
     "scaleTo": [
      0.9,
-     2.0,
+     2,
      0.9
     ],
     "sweep": 0.16,
@@ -1232,7 +1239,7 @@
     "type": "mesh",
     "shape": "flame_tongue",
     "t": 0.21,
-    "dur": 1.0,
+    "dur": 1,
     "at": "area",
     "offset": [
      -3.43,
@@ -1251,7 +1258,7 @@
     ],
     "scaleTo": [
      0.9,
-     2.0,
+     2,
      0.9
     ],
     "sweep": 0.16,

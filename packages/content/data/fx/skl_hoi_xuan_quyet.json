@@ -147,10 +147,10 @@
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "heal",
    "gain": 0.85,
-   "rate": 1.0,
+   "rate": 1,
    "jitter": 0.04
   },
   {
@@ -193,7 +193,7 @@
   {
    "type": "mesh",
    "shape": "rune_ring2",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.5,
    "at": "area",
    "offset": [
@@ -202,7 +202,7 @@
     0
    ],
    "scale": 0.12,
-   "scaleTo": 1.0,
+   "scaleTo": 1,
    "fit": "area",
    "sweep": 0.04,
    "erodeFrom": 0.7,
@@ -210,7 +210,8 @@
    "shadow": false,
    "tone": "body",
    "tier": 0,
-   "seed": 3
+   "seed": 3,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -230,15 +231,16 @@
    "erodeFrom": 0.7,
    "alpha": 0.7,
    "shadow": false,
-   "tone": "accent",
+   "tone": "body",
    "tier": 1,
-   "seed": 4
+   "seed": 4,
+   "ink": true
   },
   {
    "type": "mesh",
    "shape": "rune_ring2",
    "t": 0.32,
-   "dur": 3.0,
+   "dur": 3,
    "at": "area",
    "offset": [
     0,
@@ -254,24 +256,26 @@
    "shadow": false,
    "tone": "body",
    "tier": 0,
-   "seed": 7
+   "seed": 7,
+   "ink": true
   },
   {
    "type": "decal",
    "tex": "rune",
-   "t": 0.0,
-   "r": 5.0,
+   "t": 0,
+   "r": 5,
    "dur": 2.4,
    "at": "area",
    "grow": 0.25,
    "tone": "body",
    "alpha": 0.6,
-   "tier": 1
+   "tier": 1,
+   "ink": true
   },
   {
    "type": "particles",
    "kind": "petal",
-   "t": 0.0,
+   "t": 0,
    "n": 44,
    "speed": 2.6,
    "spread": 1,
@@ -290,7 +294,7 @@
   {
    "type": "particles",
    "kind": "spark",
-   "t": 0.0,
+   "t": 0,
    "n": 30,
    "speed": 4.5,
    "spread": 1,
@@ -741,27 +745,27 @@
   },
   {
    "type": "hitstop",
-   "t": 0.0,
+   "t": 0,
    "ms": 40,
    "tier": 1
   },
   {
    "type": "shake",
-   "t": 0.0,
+   "t": 0,
    "level": 0.12
   },
   {
    "type": "flash",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.05,
    "tier": 1
   },
   {
    "type": "camera",
-   "t": 0.0,
+   "t": 0,
    "pull": 0,
    "dur": 0.5,
-   "fov": 1.0,
+   "fov": 1,
    "tier": 1
   }
  ],

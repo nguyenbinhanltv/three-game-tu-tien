@@ -29,7 +29,7 @@ const LEGACY = {
     art: 'dan_su',
     dao: 'dan',
     tint: '7fe3d0',
-    palette: { core: '06301f', body: '23b374', rim: '9fe9bd', accent: 'e4452f', shadow: '071c13' },
+    palette: { core: '06301f', body: '23b374', rim: '9fe9bd', accent: 'f2d86b', shadow: '071c13' },
     hit: { sfx: 'cast', gain: 0.12, rate: 1.3 },
   },
 } as const;

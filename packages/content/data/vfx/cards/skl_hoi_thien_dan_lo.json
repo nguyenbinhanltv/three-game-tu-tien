@@ -1,0 +1,34 @@
+{
+  "skillId": "skl_hoi_thien_dan_lo",
+  "idea": "Hồi Thiên Đan Lộ: Chiêu tối thượng. Hồi sinh đạo hữu ngã gần nhất trong 14 mét với 50% khí huyết; đạo hữu còn đứng quanh đó được hồi 20%. Cần đầy vòng sạc linh khí.",
+  "element": "vo",
+  "path": "dan_su",
+  "shapeLang": [
+    "burst",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 450,
+    "impactMs": 80,
+    "lingerMs": 550
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 12,
+    "particles": 303,
+    "screenCover": 0.35,
+    "overdraw": 6
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    }
+  ]
+}

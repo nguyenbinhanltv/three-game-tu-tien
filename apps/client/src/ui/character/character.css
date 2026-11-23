@@ -147,3 +147,47 @@
   gap: var(--u-sp-3);
   min-width: 0;
 }
+
+/* Giữa bảng Nhân vật: chọn tranh Họa Trúc hoặc xem trước 3D xoay được (Chân Cảnh U10). Phủ cả lưới, hai cột ô nổi lên trên. */
+.equip-board-grid > .equip-center {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.equip-center > .hoatruc {
+  position: absolute;
+  inset: 0;
+}
+.equip-view-tabs {
+  position: absolute;
+  top: var(--u-sp-2);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: inline-flex;
+  border: 1px solid var(--u-gold-line);
+  background: var(--u-ink-veil);
+}
+.equip-view-tabs button {
+  padding: 2px var(--u-sp-3);
+  font: inherit;
+  font-size: var(--u-fs-1);
+  color: var(--u-chu);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.equip-view-tabs button[aria-selected='true'] {
+  background: var(--u-gold-lo);
+}
+.equip-center > .wd-pv {
+  position: absolute;
+  inset: 0;
+  padding: 34px 62px var(--u-sp-3);
+}
+.equip-center > .wd-pv .wd-pv-stage {
+  height: calc(100% - 20px);
+  aspect-ratio: 190 / 262;
+  width: auto;
+  background: var(--u-thanh-1);
+}
