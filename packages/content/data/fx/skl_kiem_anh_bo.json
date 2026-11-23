@@ -7,19 +7,19 @@
   {
    "type": "mesh",
    "shape": "burst",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.11,
    "at": "self",
-   "scale": 1.0,
+   "scale": 1,
    "billboard": true,
-   "sweep": 0.0,
+   "sweep": 0,
    "tone": "rim",
    "tier": 0
   },
   {
    "type": "mesh",
    "shape": "kite",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.45,
    "at": "self",
    "offset": [
@@ -28,9 +28,9 @@
     0.2
    ],
    "scale": [
-    0.5,
-    0.5,
-    1.3
+    0.85,
+    0.85,
+    2.21
    ],
    "sweep": 0.1,
    "erodeFrom": 0.2,
@@ -42,7 +42,7 @@
   {
    "type": "mesh",
    "shape": "helix",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.3,
    "at": "ahead",
    "offset": [
@@ -51,9 +51,9 @@
     3.6
    ],
    "scale": [
-    1.0,
-    1.0,
-    7.0
+    1,
+    1,
+    7
    ],
    "sweep": 0.2,
    "erodeFrom": 0.2,
@@ -65,7 +65,7 @@
   {
    "type": "mesh",
    "shape": "ripple",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.4,
    "at": "self",
    "offset": [
@@ -73,18 +73,19 @@
     -1.1,
     0
    ],
-   "scale": 0.3,
-   "scaleTo": 1.4,
+   "scale": 0.51,
+   "scaleTo": 2.38,
    "sweep": 0.4,
    "erodeFrom": 0.4,
    "tone": "body",
    "tier": 1,
-   "seed": 4
+   "seed": 4,
+   "ink": true
   },
   {
    "type": "particles",
    "kind": "spark",
-   "t": 0.0,
+   "t": 0,
    "n": 22,
    "speed": 9,
    "spread": 0.12,
@@ -94,7 +95,7 @@
    "offset": [
     0,
     -0.4,
-    1.0
+    1
    ],
    "tone": "accent",
    "tier": 0
@@ -102,7 +103,7 @@
   {
    "type": "particles",
    "kind": "dust",
-   "t": 0.0,
+   "t": 0,
    "n": 10,
    "speed": 2,
    "spread": 0.7,
@@ -111,11 +112,169 @@
    "at": "self",
    "offset": [
     0,
-    -1.0,
+    -1,
     0
    ],
    "tone": "body",
    "tier": 1
+  },
+  {
+   "type": "mesh",
+   "t": 0,
+   "dur": 0.45,
+   "at": "self",
+   "sweep": 0.45,
+   "erodeFrom": 0.35,
+   "ragged": 0.8,
+   "tone": "body",
+   "alpha": 0.95,
+   "tier": 0,
+   "shape": "slash_thick",
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "rot": [
+    0,
+    20,
+    0
+   ],
+   "scale": 4.840000000000001,
+   "scaleTo": 7.040000000000001,
+   "ink": true,
+   "seed": 100
+  },
+  {
+   "type": "mesh",
+   "t": 0.02,
+   "dur": 0.45,
+   "at": "self",
+   "sweep": 0.45,
+   "erodeFrom": 0.35,
+   "ragged": 0.8,
+   "tone": "body",
+   "alpha": 0.9,
+   "tier": 0,
+   "shape": "slash_thin",
+   "offset": [
+    -1.0499999999999998,
+    0.3,
+    -0.75
+   ],
+   "rot": [
+    0,
+    20,
+    0
+   ],
+   "scale": 5.720000000000001,
+   "scaleTo": 9.240000000000002,
+   "ink": true,
+   "seed": 101
+  },
+  {
+   "type": "mesh",
+   "t": 0.045,
+   "dur": 0.45,
+   "at": "self",
+   "sweep": 0.45,
+   "erodeFrom": 0.35,
+   "ragged": 0.8,
+   "tone": "rim",
+   "alpha": 0.9,
+   "tier": 0,
+   "shape": "slash_thin",
+   "offset": [
+    -0.35,
+    0.3,
+    -0.25
+   ],
+   "rot": [
+    0,
+    20,
+    0
+   ],
+   "scale": 5.720000000000001,
+   "scaleTo": 9.240000000000002,
+   "ink": true,
+   "seed": 102
+  },
+  {
+   "type": "mesh",
+   "t": 0.07,
+   "dur": 0.45,
+   "at": "self",
+   "sweep": 0.45,
+   "erodeFrom": 0.35,
+   "ragged": 0.8,
+   "tone": "body",
+   "alpha": 0.9,
+   "tier": 0,
+   "shape": "slash_thin",
+   "offset": [
+    0.35,
+    0.3,
+    0.25
+   ],
+   "rot": [
+    0,
+    20,
+    0
+   ],
+   "scale": 5.720000000000001,
+   "scaleTo": 9.240000000000002,
+   "ink": true,
+   "seed": 103
+  },
+  {
+   "type": "mesh",
+   "t": 0.09500000000000001,
+   "dur": 0.45,
+   "at": "self",
+   "sweep": 0.45,
+   "erodeFrom": 0.35,
+   "ragged": 0.8,
+   "tone": "rim",
+   "alpha": 0.9,
+   "tier": 0,
+   "shape": "slash_thin",
+   "offset": [
+    1.0499999999999998,
+    0.3,
+    0.75
+   ],
+   "rot": [
+    0,
+    20,
+    0
+   ],
+   "scale": 5.720000000000001,
+   "scaleTo": 9.240000000000002,
+   "ink": true,
+   "seed": 104
+  },
+  {
+   "type": "mesh",
+   "t": 0.02,
+   "dur": 0.6,
+   "at": "self",
+   "sweep": 0.05,
+   "erodeFrom": 0.1,
+   "ragged": 0.6,
+   "tone": "body",
+   "alpha": 0.6,
+   "tier": 0,
+   "shape": "ripple",
+   "offset": [
+    0,
+    0.12,
+    0
+   ],
+   "scale": 0.66,
+   "scaleTo": 2.2,
+   "ink": true,
+   "shadow": true,
+   "seed": 105
   }
  ]
 }

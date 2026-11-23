@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_tran_kiem_vu",
+  "idea": "Trận Kiếm Vũ: Chiêu tư thế. Kiếm trận đổ xuống quanh mục tiêu, gây 130% công kích lên mọi kẻ địch trong 6 mét, tích 1 ô Kiếm ý.",
+  "element": "kim",
+  "path": "kiem_tu",
+  "shapeLang": [
+    "ring",
+    "arc",
+    "spike"
+  ],
+  "timing": {
+    "anticipationMs": 420,
+    "impactMs": 80,
+    "lingerMs": 530
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 12,
+    "heightM": 6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 11,
+    "particles": 160,
+    "screenCover": 0.35,
+    "overdraw": 6
+  },
+  "textures": []
+}

@@ -1,0 +1,30 @@
+{
+  "skillId": "skl_kiem_vu_tam_diep",
+  "idea": "Kiếm Vũ Tam Điệp: Kiếm múa ba nhịp liền trong một hơi thở, ba nhát lần lượt gây 110%, 110% rồi 180% công kích lên mục tiêu. Mỗi nhát trúng đích tích 1 ô Kiếm ý. Nhát cuối khắc 1 tầng Kiếm ấn.",
+  "element": "kim",
+  "path": "kiem_tu",
+  "shapeLang": [
+    "arc",
+    "burst",
+    "spike"
+  ],
+  "timing": {
+    "anticipationMs": 200,
+    "impactMs": 80,
+    "lingerMs": 400
+  },
+  "footprint": {
+    "lengthM": 8,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 120,
+    "screenCover": 0.2,
+    "overdraw": 4
+  },
+  "textures": []
+}

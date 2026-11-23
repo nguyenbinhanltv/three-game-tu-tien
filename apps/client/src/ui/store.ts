@@ -170,6 +170,8 @@ export interface DebugPerf {
   /** CPU của `Game.frame()` (ms): trung bình và lớn nhất trong khoảng lấy mẫu. */
   cpuMs: number;
   cpuMaxMs: number;
+  /** CPU theo hệ so với hạn mức (base/frameBudget.ts), trung bình/đỉnh trong cùng khoảng lấy mẫu. */
+  budget: { section: string; avg: number; max: number; limit: number }[];
   drawCalls: number;
   triangles: number;
   geometries: number;

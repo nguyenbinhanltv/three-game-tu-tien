@@ -755,3 +755,37 @@
   opacity: 0.85;
   pointer-events: none;
 }
+
+/* Minh họa vùng chiêu trong chú giải (Chân Cảnh U4) */
+.k-tip-diagram {
+  margin-top: var(--u-sp-2);
+  display: flex;
+  justify-content: center;
+}
+.sk-shape {
+  background: color-mix(in srgb, var(--u-ink-0) 55%, transparent);
+  border: 1px solid var(--u-p-edge-dim);
+}
+.sk-shape .sk-area {
+  fill: color-mix(in srgb, var(--u-h-crimson) 45%, transparent);
+  stroke: var(--u-h-crimson);
+  stroke-width: 1.5;
+}
+.sk-shape .sk-range,
+.sk-shape .sk-arrow {
+  fill: none;
+  stroke: var(--u-gold-hi);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.sk-shape .sk-arrow {
+  stroke-dasharray: none;
+}
+.sk-shape .sk-hit {
+  fill: var(--u-h-crimson);
+}
+.sk-shape .sk-self {
+  fill: var(--u-h-jade-hi);
+  stroke: var(--u-ink-0);
+  stroke-width: 1;
+}
