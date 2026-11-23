@@ -165,6 +165,11 @@ export interface FxMeshEvent extends FxBase {
   erodeFrom?: number;
   /** Mép rách 0..1 (mặc định 0,5). */
   ragged?: number;
+  /**
+   * Kiểu "mực" (V-P1, chỉ hình `toon`): lõi tối rộng, thân bão hòa, viền sáng chỉ còn một vệt mảnh sát mép và không mờ dần theo đuôi,
+   * để đọc được trên nền đá trắng (viền pha trắng không chìm). Lớp bóng sẫm vẫn bật như thường.
+   */
+  ink?: boolean;
   /** Quay hình mặt về camera (burst, smoke). */
   billboard?: boolean;
   /** Hình `burst`: thêm vạch chéo ngang-dọc kiểu tia lửa va chạm (EdgeFlux "clash"), dùng cho đòn kim loại trúng đích. */
@@ -251,6 +256,8 @@ export interface FxDecalEvent extends FxBase {
   type: 'decal';
   /** `crack` vết nứt phát sáng, `rune` vòng triện văn, `scorch` vết cháy mờ. */
   tex: 'crack' | 'rune' | 'scorch' | 'strike';
+  /** Kiểu mực (V-P1, `rune` và `crack`): màu thân đậm, không pha viền sáng/HDR/nóng sáng, đọc được trên nền sáng. */
+  ink?: boolean;
   at?: FxAnchor;
   offset?: [number, number, number];
   r: number;

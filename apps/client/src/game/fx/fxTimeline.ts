@@ -37,7 +37,15 @@ import {
   isoFxScaleY,
 } from '../../render/vfx/isoFx';
 import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
-import { DECAL_CRACK, DECAL_RUNE, DECAL_SCORCH, DECAL_SMOKE, DECAL_STRIKE } from '../../render/vfx/stylized';
+import {
+  DECAL_CRACK,
+  DECAL_CRACK_INK,
+  DECAL_RUNE,
+  DECAL_RUNE_INK,
+  DECAL_SCORCH,
+  DECAL_SMOKE,
+  DECAL_STRIKE,
+} from '../../render/vfx/stylized';
 import { bladeVisible } from '../../render/vfx/bladeTrail';
 import type { SkillEvent } from '../character/view';
 import { emitCount } from './fxSettings';
@@ -508,7 +516,7 @@ export class FxRunner {
 
   // ---- mesh ----
 
-  /** Camera chéo: dấu vòng sét ở chân tia (gộp các tia chồng nhau cùng điểm trong 0,15 s) để thấy điểm rơi từ trên xuống. */
+  /** Camera chéo: dấu vòng sét ở chân tia (gộp các tia chồng nhau cùng điểm trong 0,15 s) để thấy điểm rơi từ trên xuống. `ink`: vòng theo tông thân (đọc được trên nền sáng) thay vì viền gần trắng. */
   private boltFoot(c: Cast, ev: FxMeshEvent, p: THREE.Vector3): void {
     const key = `${c.sid}:${Math.round(p.x * 2)},${Math.round(p.z * 2)}`;
     const now = performance.now();
@@ -516,13 +524,13 @@ export class FxRunner {
     this.footAt.set(key, now);
     if (this.footAt.size > 64) this.footAt.clear();
     const w = Array.isArray(ev.scale) ? ev.scale[0]! : (ev.scale ?? 1);
-    const m = this.v.sigil(SIGIL_CIRCLE, p.x, p.z, 0, isoBoltFootRadius(w), 0, toneOf(c.pal, 'rim'), p.y + 0.16);
+    const m = this.v.sigil(SIGIL_CIRCLE, p.x, p.z, 0, isoBoltFootRadius(w), 0, toneOf(c.pal, ev.ink ? 'body' : 'rim'), p.y + 0.16);
     m.fxA.x = 1;
     this.v.add(
       ISO_BOLT_FOOT_LIFE,
       (k) => {
         m.fxA.z = k < 0.2 ? 1 : 0;
-        m.fxOpacity = Math.min(1, (1 - k) * 1.6) * 0.85;
+        m.fxOpacity = Math.min(1, (1 - k) * 1.6) * (ev.ink ? 0.5 : 0.85);
       },
       () => this.v.drop(m),
     );
@@ -690,21 +698,23 @@ export class FxRunner {
     _col.setHex(pal.rim);
     m.fxB.set(_col.r, _col.g, _col.b, ev.ragged ?? 0.5);
     m.fxA.w =
-      kind === 'decal'
-        ? DECAL_SMOKE
-        : kind === 'card'
-          ? ev.card === 'phoenix'
-            ? 1
-            : ev.card === 'ghost'
-              ? 2
-              : ev.card === 'colossus'
-                ? 6
-                : ev.card === 'fist'
-                  ? 7
-                  : 0
-          : kind === 'burst' && ev.cross
-            ? 1
-            : 0;
+      kind === 'toon' && ev.ink
+        ? 2
+        : kind === 'decal'
+          ? DECAL_SMOKE
+          : kind === 'card'
+            ? ev.card === 'phoenix'
+              ? 1
+              : ev.card === 'ghost'
+                ? 2
+                : ev.card === 'colossus'
+                  ? 6
+                  : ev.card === 'fist'
+                    ? 7
+                    : 0
+            : kind === 'burst' && ev.cross
+              ? 1
+              : 0;
     m.fxA.z = ev.seed ?? 0;
   }
 
@@ -776,7 +786,18 @@ export class FxRunner {
     const gnd = ev.at === 'target' || ev.at === 'ground' ? tgt : null;
     const at = this.anchor(c, ev.at ?? 'target', ev.offset, yaw, tgt, new THREE.Vector3());
     at.y = (gnd ? gnd.y : c.actor.y) + 0.14 + Math.min(0.5, Math.max(0, ev.lift ?? 0));
-    const kind = ev.tex === 'crack' ? DECAL_CRACK : ev.tex === 'rune' ? DECAL_RUNE : ev.tex === 'strike' ? DECAL_STRIKE : DECAL_SCORCH;
+    const kind =
+      ev.tex === 'crack'
+        ? ev.ink
+          ? DECAL_CRACK_INK
+          : DECAL_CRACK
+        : ev.tex === 'rune'
+          ? ev.ink
+            ? DECAL_RUNE_INK
+            : DECAL_RUNE
+          : ev.tex === 'strike'
+            ? DECAL_STRIKE
+            : DECAL_SCORCH;
     const m = this.v.fx(QUAD_XZ, toneOf(c.pal, ev.tone), ev.alpha ?? 0.95, 'decal');
     _col.setHex(c.pal.rim);
     m.fxB.set(_col.r, _col.g, _col.b, 0);

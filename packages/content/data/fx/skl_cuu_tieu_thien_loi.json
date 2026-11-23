@@ -55,9 +55,10 @@
    "dur": 1.4,
    "at": "target",
    "grow": 0.3,
-   "tone": "core",
+   "tone": "body",
    "alpha": 1,
-   "tier": 0
+   "tier": 0,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -78,7 +79,8 @@
    "shadow": true,
    "tone": "core",
    "tier": 0,
-   "seed": 2
+   "seed": 2,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -109,7 +111,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -140,7 +143,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -171,7 +175,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -202,7 +207,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -233,7 +239,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -264,7 +271,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -295,7 +303,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -326,7 +335,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -357,7 +367,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -388,7 +399,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -419,7 +431,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -450,7 +463,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -481,7 +495,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -512,7 +527,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -543,7 +559,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -574,7 +591,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -605,7 +623,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -636,7 +655,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -667,7 +687,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -698,7 +719,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -729,7 +751,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -760,7 +783,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -791,7 +815,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -822,7 +847,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -853,7 +879,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -884,7 +911,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -915,7 +943,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -946,7 +975,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -977,7 +1007,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1008,7 +1039,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1039,7 +1071,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1070,7 +1103,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1101,7 +1135,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1132,7 +1167,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1163,7 +1199,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1194,7 +1231,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1225,7 +1263,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1256,7 +1295,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1287,7 +1327,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1318,7 +1359,8 @@
     -90,
     0,
     0
-   ]
+   ],
+   "ink": true
   },
   {
    "type": "slowmo",
@@ -1353,24 +1395,6 @@
   },
   {
    "type": "mesh",
-   "shape": "flip",
-   "t": 0,
-   "dur": 0.6,
-   "flip": "spark_burst",
-   "scale": 3.2,
-   "billboard": true,
-   "at": "target",
-   "offset": [
-    0,
-    1.2,
-    0
-   ],
-   "alpha": 0.8,
-   "tone": "accent",
-   "tier": 0
-  },
-  {
-   "type": "mesh",
    "shape": "crack_radial",
    "t": -0.02,
    "dur": 1.6,
@@ -1382,7 +1406,8 @@
    "shadow": false,
    "tone": "core",
    "tier": 0,
-   "seed": 2
+   "seed": 2,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1401,18 +1426,19 @@
     1
    ],
    "scaleTo": [
-    5,
-    5,
-    5
+    4,
+    4,
+    4
    ],
-   "alpha": 0.6,
+   "alpha": 0.35,
    "sweep": 0.3,
    "erodeFrom": 0.3,
    "shadow": false,
    "tone": "body",
    "tier": 1,
    "seed": 3,
-   "camFade": false
+   "camFade": false,
+   "ink": true
   },
   {
    "type": "decal",
@@ -1444,9 +1470,10 @@
     0
    ],
    "grow": 0.1,
-   "tone": "core",
+   "tone": "body",
    "alpha": 1,
-   "tier": 1
+   "tier": 1,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1475,7 +1502,8 @@
    "shadow": false,
    "tone": "body",
    "tier": 0,
-   "seed": 50
+   "seed": 50,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1502,9 +1530,10 @@
    "sweep": 0.55,
    "erodeFrom": 0.75,
    "shadow": false,
-   "tone": "accent",
+   "tone": "body",
    "tier": 0,
-   "seed": 51
+   "seed": 51,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1533,7 +1562,8 @@
    "shadow": false,
    "tone": "body",
    "tier": 1,
-   "seed": 52
+   "seed": 52,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1560,9 +1590,10 @@
    "sweep": 0.55,
    "erodeFrom": 0.75,
    "shadow": false,
-   "tone": "accent",
+   "tone": "body",
    "tier": 1,
-   "seed": 53
+   "seed": 53,
+   "ink": true
   },
   {
    "type": "mesh",
@@ -1591,7 +1622,8 @@
    "shadow": false,
    "tone": "body",
    "tier": 1,
-   "seed": 54
+   "seed": 54,
+   "ink": true
   },
   {
    "type": "particles",
