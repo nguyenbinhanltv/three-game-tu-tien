@@ -41,7 +41,7 @@ import { VanHaiGarden } from '../world/vanHaiGarden';
 import { applyGrading, markBloom } from '../../render/post';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { bhTod, GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../../render/grading';
-import { archWrap, withOccluderFade } from '../world/occlusion';
+import { archWrap, withOccluderFade, withSightFade } from '../world/occlusion';
 import { LanternLights } from '../../render/lanternLights';
 import { buildMoonGate, buildPortalDisc, buildSect, moonMirrorTexture, SECT_LANTERNS } from '../world/sect';
 import { gatesToDraw } from '../world/gates';
@@ -874,6 +874,7 @@ async function loadXkModel(eng: Game, shadows: boolean): Promise<void> {
     origin: { x: c.x, y: heightAt(c.x, c.z), z: c.z },
     prefix: 'xk',
     material: xkMaterialFor,
+    wrap: withSightFade, // gai/cột/đèn lồng bazan, dung nham: mờ khi nằm giữa camera và người/mục tiêu
     // cụm cột bazan cao đổ bóng đen đặc (môi trường tối, không có ánh bù) phủ nửa khung ở camera chéo: bỏ đổ bóng, vẫn nhận bóng
     noShadow: /basalt/,
   });
@@ -999,6 +1000,8 @@ interface DungeonModelOpts {
   noShadow?: RegExp;
   /** Thay vật liệu glTF theo tên (trả null = giữ nguyên). Vật liệu mới được giải phóng cùng asset. */
   material?: (name: string) => THREE.Material | null;
+  /** Bọc mọi vật liệu glTF còn lại (vd. làm mờ khi che người ở camera chéo). */
+  wrap?: (m: THREE.MeshStandardNodeMaterial) => THREE.MeshStandardNodeMaterial;
 }
 
 /**
@@ -1014,7 +1017,7 @@ async function loadDungeonModel(eng: Game, shadows: boolean, o: DungeonModelOpts
       return;
     }
     const root = handle.scene;
-    eng.ktAsset = { handle, mats: adoptGltfMaterials(root) };
+    eng.ktAsset = { handle, mats: adoptGltfMaterials(root, o.wrap) };
     root.position.set(o.origin.x, o.origin.y, o.origin.z);
     if (o.material) {
       const made = new Map<THREE.Material, THREE.Material>();

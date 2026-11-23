@@ -47,7 +47,7 @@ function xkKeepOut(x: number, z: number, minR: number): boolean {
  */
 export function xkMaterialFor(name: string): THREE.Material | null {
   if (name.endsWith('_ember')) {
-    const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.9, metalness: 0, name });
+    const m = withSightFade(new THREE.MeshStandardNodeMaterial({ roughness: 0.9, metalness: 0, name }));
     const wp = positionWorld;
     const flick = float(0.9).add(
       texture(getCloudNoise(), wp.xz.mul(0.08).add(time.mul(0.03)))
