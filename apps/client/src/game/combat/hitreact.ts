@@ -29,6 +29,8 @@ export interface HitOpts {
   crit?: boolean;
   /** Đòn nặng (cờ `hv` từ server): khựng lâu hơn, giật lùi và rung mạnh hơn. */
   heavy?: boolean;
+  /** Cấp đòn S1 (`DmgMsg.tr`: 0 nhẹ … 3 chiêu cuối): biên độ giật thân theo cấp; vắng = theo cờ `crit`/`heavy`. */
+  tier?: number;
   /** Hướng giật lùi trong hệ thế giới (không cần chuẩn hóa). Bỏ trống = không giật lùi. */
   dirX?: number;
   dirZ?: number;

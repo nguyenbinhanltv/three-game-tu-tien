@@ -1118,3 +1118,136 @@
   left: var(--h-safe);
   top: calc(var(--h-safe) + var(--h-tl-h) + 10px);
 }
+
+/* Thanh máu boss nhiều lớp (Chân Cảnh U3): lớp đang đánh tô màu riêng, lớp kế dưới lộ ra làm nền; ×N = số lớp còn lại */
+.u2h-boss-bar {
+  --c: var(--u-cut-s);
+  --lc: var(--u-h-crimson);
+  --uc: var(--u-bar-track);
+  position: relative;
+  height: 22px;
+  background: var(--uc);
+  clip-path: polygon(var(--c) 0, 100% 0, calc(100% - var(--c)) 100%, 0 100%);
+}
+.u2h-boss-fill {
+  position: absolute;
+  inset: 2px;
+  right: auto;
+  width: calc((100% - 4px) * var(--p, 0));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--lc) 70%, var(--u-chu)), var(--lc));
+  clip-path: polygon(var(--c) 0, 100% 0, calc(100% - var(--c)) 100%, 0 100%);
+  transition: width var(--u-dur) var(--u-ease);
+}
+.u2h-boss-bar[data-layer='0'] {
+  --lc: var(--u-h-crimson);
+}
+.u2h-boss-bar[data-layer='1'] {
+  --lc: var(--u-h-gold-lo);
+}
+.u2h-boss-bar[data-layer='2'] {
+  --lc: var(--u-h-jade-lo);
+}
+.u2h-boss-bar[data-layer='3'] {
+  --lc: var(--u-h-co-lo);
+}
+.u2h-boss-bar[data-layer='4'] {
+  --lc: var(--u-h-soul-lo);
+}
+.u2h-boss-bar[data-under='0'] {
+  --uc: var(--u-h-crimson);
+}
+.u2h-boss-bar[data-under='1'] {
+  --uc: var(--u-h-gold-lo);
+}
+.u2h-boss-bar[data-under='2'] {
+  --uc: var(--u-h-jade-lo);
+}
+.u2h-boss-bar[data-under='3'] {
+  --uc: var(--u-h-co-lo);
+}
+.u2h-boss-bar[data-under='4'] {
+  --uc: var(--u-h-soul-lo);
+}
+.u2h-boss-bar[data-under] {
+  background: color-mix(in srgb, var(--uc) 55%, var(--u-bar-track));
+}
+.u2h-boss-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: var(--u-fs-1);
+  color: var(--u-chu);
+  text-shadow:
+    0 1px 2px var(--u-ink-0),
+    0 0 2px var(--u-ink-0);
+}
+.u2h-boss-layers {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--u-font-head);
+  font-weight: 800;
+  font-size: var(--u-fs-3);
+  color: var(--u-gold-hi);
+  text-shadow: 0 1px 2px var(--u-ink-0);
+}
+/* chỗ chừa cho thanh choáng/phá giáp (S2) và ấn: không nhảy bố cục khi hiện/ẩn */
+.u2h-boss-aux {
+  min-height: 14px;
+}
+
+/* Thanh Đạo Thế (Chân Cảnh U2): tài nguyên hướng tu thành thanh nổi bật giữa HUD, phát sáng khi đầy */
+.u2h-dock > .k-tip-host {
+  display: block;
+  width: 62%;
+}
+.res-bar.dock {
+  display: flex;
+  width: 100%;
+  white-space: nowrap;
+  margin: 0;
+  padding: 2px 10px;
+  justify-content: space-between;
+  border-radius: 0;
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%);
+}
+.res-bar.dock .res-track {
+  flex: 1;
+  width: auto;
+  height: 10px;
+}
+.res-bar.dock .res-pips {
+  flex: 1;
+  justify-content: center;
+  gap: 12px;
+}
+.res-bar.dock .res-pips i {
+  width: 12px;
+  height: 12px;
+}
+/* Quầng sáng đặt ở phần tử bọc: clip-path của .res-bar.dock sẽ cắt drop-shadow nếu để cùng phần tử */
+.u2h-dock > .k-tip-host:has(> .res-bar.dock[data-full]) {
+  animation: u2h-res-glow 1.2s ease-in-out infinite;
+}
+.res-bar.dock[data-full] .res-track {
+  box-shadow: 0 0 12px 2px var(--rc);
+}
+@keyframes u2h-res-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px var(--u-gold));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px var(--u-gold-hi));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .u2h-dock > .k-tip-host:has(> .res-bar.dock[data-full]) {
+    animation: none;
+    filter: drop-shadow(0 0 7px var(--u-gold-hi));
+  }
+}

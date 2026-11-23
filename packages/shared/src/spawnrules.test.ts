@@ -82,8 +82,10 @@ describe('AOI', () => {
     expect(aoiVisible(d(AOI_BOSS_IN - 1), false, true)).toBe(true);
     expect(aoiVisible(d(AOI_BOSS_OUT + 1), true, true)).toBe(false);
     expect(AOI_OUT).toBeGreaterThan(AOI_IN);
-    // client chỉ vẽ quái thường tới 125 m, boss tới 280 m
-    expect(AOI_IN).toBeGreaterThan(125);
-    expect(AOI_BOSS_IN).toBeGreaterThan(280);
+    // client dựng model quái thường trong MON_NEAR = 100 m, boss trong BOSS_NEAR = 190 m (entities.ts): server phải gửi xa hơn, kèm biên
+    expect(AOI_IN).toBeGreaterThanOrEqual(110);
+    expect(AOI_BOSS_IN).toBeGreaterThanOrEqual(200);
+    // camera chéo thấy tối đa ~45 m sâu; phòng boss khổng lồ ISO_DIST_MUL = 1,4 → ~63 m: AOI thường phải rộng hơn nhiều lần
+    expect(AOI_IN).toBeGreaterThan(63 * 1.5);
   });
 });

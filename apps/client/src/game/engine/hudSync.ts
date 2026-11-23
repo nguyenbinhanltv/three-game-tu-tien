@@ -1,5 +1,7 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
+import { logger } from '../../base/log';
+import { overBudget, TOTAL_BUDGET_MS, totalMs } from '../../base/frameBudget';
 import {
   AIRBORNE_HEIGHT,
   MF_BROKEN,
@@ -34,6 +36,8 @@ import { BOSS_BAR_RANGE, keepMonsterTarget } from '../combat/targetRange';
 import { isWebGPU } from './common';
 import { canCine, chapter, checkBossIntro, startCine } from './cine';
 import type { Game } from '../engine';
+
+const hudLog = logger('perf');
 
 export function pruneRareLoot(eng: Game): void {
   const now = performance.now();
@@ -170,6 +174,8 @@ export function syncHud(eng: Game, me: PState | undefined): void {
   const fps = eng.fpsAcc > 0 ? Math.round(eng.fpsFrames / eng.fpsAcc) : 0;
   eng.cpuAvg = eng.fpsFrames > 0 ? eng.cpuAcc / eng.fpsFrames : 0;
   eng.cpuPeak = eng.cpuMax;
+  eng.budgetStats = eng.budget.snapshot();
+  warnOverBudget(eng);
   eng.cpuAcc = 0;
   eng.cpuMax = 0;
   eng.fpsAcc = 0;
@@ -427,6 +433,24 @@ function debugInfo(eng: Game, me: PState, fps: number): DebugInfo {
   };
 }
 
+/**
+ * Cảnh báo vượt ngân sách (O6): khi đã vào game, không đang biên dịch trước, một hệ có trung bình vượt hạn mức (hoặc tổng > 8 ms), ghi một dòng log
+ * tối đa mỗi 15 giây, nêu hệ nặng nhất. Chỉ trong bản dev hoặc `?debug`, để khỏi ồn log của người chơi.
+ */
+function warnOverBudget(eng: Game): void {
+  if (!(import.meta.env.DEV || eng.debugPerf) || !eng.started || eng.compiling > 0) return;
+  const over = overBudget(eng.budgetStats);
+  const total = totalMs(eng.budgetStats);
+  if (!over.length && total <= TOTAL_BUDGET_MS) return;
+  const now = performance.now();
+  if (now - eng.budgetWarnAt < 15_000) return;
+  eng.budgetWarnAt = now;
+  hudLog.warn(
+    `vượt ngân sách CPU: tổng ${total.toFixed(1)}/${TOTAL_BUDGET_MS} ms; ` +
+      over.map((s) => `${s.section} ${s.avg.toFixed(1)}/${s.limit} ms (đỉnh ${s.max.toFixed(1)})`).join(', '),
+  );
+}
+
 function debugPerfInfo(eng: Game, fps: number): DebugPerf {
   const mem = eng.renderer.info.memory;
   const lod = eng.ents.lodStats();
@@ -439,6 +463,7 @@ function debugPerfInfo(eng: Game, fps: number): DebugPerf {
     fps,
     cpuMs: eng.cpuAvg,
     cpuMaxMs: eng.cpuPeak,
+    budget: eng.budgetStats,
     drawCalls: eng.lastRender.drawCalls,
     triangles: eng.lastRender.triangles,
     geometries: mem.geometries,

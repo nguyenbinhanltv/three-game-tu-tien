@@ -10,6 +10,8 @@ import { IconFrame } from '../Slot';
 import { LockMark } from '../patterns';
 import { blurAfterPointer, useNow } from './common';
 import { chainLines, skillMpNow } from '../../skillChain';
+import { skillShape, skillStatLines } from '../../skillTip';
+import { SkillShapeDiagram } from './SkillShapeDiagram';
 import { barWithStance } from '../../stanceView';
 import { CLUSTER, clusterGeom, skillBox, type SlotPos } from './layout';
 
@@ -60,6 +62,7 @@ export function useSkillView() {
     const lv = method?.lv[sk.id] ?? 1;
     const vr = method?.vr[sk.id];
     const lines = [
+      ...skillStatLines(sk, rs, char?.atk ?? 0),
       ...(lv > 1 ? [{ text: t('ui.skill.level_tag', { n: lv }) }] : []),
       ...(vr && VARIANTS[sk.id] ? [{ text: t('ui.skill.variant_tag', { name: t(`skill.${sk.id}.var.${vr}.name`) }) }] : []),
       ...(sk.ult ? [{ text: t('ui.skill.ult_charge', { n: Math.floor(charge) }), tone: charging ? ('bad' as const) : undefined }] : []),
@@ -78,6 +81,7 @@ export function useSkillView() {
       charging,
       charge,
       lines,
+      shape: skillShape(sk, rs),
       queued: i === queued,
       auto: i === 0 && auto,
       empowered: chainOpen,
@@ -137,6 +141,7 @@ function ClusterSlot({ sk, i, pos, view, main }: SlotProps) {
             title={t(`skill.${sk.id}.name`)}
             sub={v.locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined}
             lines={v.lines}
+            diagram={v.shape ? <SkillShapeDiagram shape={v.shape} /> : undefined}
             desc={t(`skill.${sk.id}.desc`)}
           />
         }
@@ -265,6 +270,9 @@ export function SkillCluster({ layout, utility }: { layout: 'arc' | 'bar'; utili
   const dashTotal = Math.max(1, (dash?.cd ?? 1) * 1000);
   // VS-2b: chiêu lướt cũng nằm trong chuỗi (Thiết Bích Xung sau Trấn Sơn Ấn): sáng viền và có tooltip như ô chiêu.
   const dashOpen = !!dash && (empowered[dash.id] ?? 0) > now;
+  const atk = char.atk;
+  const dashRs = dash ? resolveBarSkill(method, dash) : undefined;
+  const dashShape = dash ? skillShape(dash, dashRs) : null;
   const quick = (pos: (SlotPos | undefined)[]) => [
     <QuickButton
       key="q"
@@ -282,10 +290,12 @@ export function SkillCluster({ layout, utility }: { layout: 'arc' | 'bar'; utili
             title={t(`skill.${dash.id}.name`)}
             sub={`${t('ui.dash')} · Q`}
             lines={[
+              ...(dash && dashRs ? skillStatLines(dash, dashRs, atk) : []),
               ...(dash.mp ? [{ text: `${t('ui.mp')}: ${dash.mp}` }] : []),
               ...(dash.cd ? [{ text: t('ui.skill.cd', { n: dash.cd }) }] : []),
               ...chainLines(dash, dashOpen),
             ]}
+            diagram={dashShape ? <SkillShapeDiagram shape={dashShape} /> : undefined}
             desc={t(`skill.${dash.id}.desc`)}
           />
         ) : undefined
