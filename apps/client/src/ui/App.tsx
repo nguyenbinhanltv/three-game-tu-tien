@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { type Appearance, genderEnabled, type Gender, isRootId, parseAppearance, type RootId, validName } from '@dtl/shared';
 import { APPEARANCE, hasString, t } from '@dtl/content';
+import { firstTipIndex, tipKey } from './loadTips';
 import { assets } from '../game/core/assets';
 import { playMusic, sfx, unlockAudio } from '../game/audio/audio';
 import { TitleBackdrop } from '../game/world/backdrop';
@@ -248,6 +249,17 @@ const ASSET_SHARE = 0.2;
 function LoadingPanel({ onDone }: { onDone: () => void }) {
   const [line, setLine] = useState('');
   const bar = useRef<HTMLDivElement>(null);
+  const pct = useRef<HTMLSpanElement>(null);
+  // Mẹo chơi xoay vòng mỗi 6 giây; chỉ số đầu ngẫu nhiên để mỗi lần vào một mẹo khác.
+  const [tip, setTip] = useState(() => firstTipIndex(Date.now() / 1000));
+  useEffect(() => {
+    const id = window.setInterval(() => setTip((i) => i + 1), 6000);
+    return () => window.clearInterval(id);
+  }, []);
+  const place = (() => {
+    const k = `zone.${lastZoneArt()}`;
+    return hasString(k) ? t(k) : '';
+  })();
   const done = useRef(onDone);
   done.current = onDone;
   useEffect(() => {
@@ -288,6 +300,7 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
       if (ready) push('ui.load.ready');
       shown += (target - shown) * 0.3;
       if (bar.current) bar.current.style.transform = `scaleX(${shown.toFixed(4)})`;
+      if (pct.current) pct.current.textContent = Math.round(shown * 100) + '%';
       if (queue.length && now - shownAt >= LINE_MS) {
         setLine(t(queue.shift()!));
         shownAt = now;
@@ -301,12 +314,23 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
   return (
     <div className={'ts-card ts-loading' + ' ngj-card u2-card'} role="status" aria-live="polite">
       <Corners material="paper" />
+      {place && (
+        <p className="ts-place" data-testid="load-place">
+          {place}
+        </p>
+      )}
       <p className="ts-line" key={line}>
         {line}
       </p>
       <div className="ts-bar">
         <div ref={bar} className="ts-bar-fill" />
       </div>
+      <p className="ts-pct" aria-hidden="true">
+        <span ref={pct}>0%</span>
+      </p>
+      <p className="ts-tip" key={tip} data-testid="load-tip">
+        <b>{t('ui.tip.label')}</b> {t(tipKey(tip))}
+      </p>
     </div>
   );
 }
