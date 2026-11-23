@@ -94,6 +94,12 @@ describe('hướng tu khớp các bảng cứng trước VS-3', () => {
       'phi_kiem_ct',
       'phi_kiem_2_ct',
       'phi_kiem_3_ct',
+      'phi_kiem_tt',
+      'phi_kiem_2_tt',
+      'phi_kiem_3_tt',
+      'phi_kiem_cs',
+      'phi_kiem_2_cs',
+      'phi_kiem_3_cs',
     ]);
   });
 });
