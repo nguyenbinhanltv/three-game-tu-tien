@@ -10,7 +10,7 @@ import { snap, UI_SIZES } from '../lib/shot';
 export default {
   name: 'calliscreen',
   desc: 'Chữ thư pháp ở màn tiêu đề/tải, Bản đồ chương, màn chết ở 720p + 1080p; --plain = bản trước',
-  usage: '[--sizes 720p,1080p] [--parts title,load,chapters,dead] [--plain]',
+  usage: '[--sizes 720p,1080p] [--parts title,load,chapters,dead] [--plain] [--loadwait 700]',
   async run(r) {
     const plain = flag('--plain');
     const tag = plain ? 'truoc' : 'sau';
@@ -24,11 +24,15 @@ export default {
       ] as const) {
         if (!parts.includes(part)) continue;
         const ctx = await r.browser.newContext({ viewport: { width: viewport[0], height: viewport[1] } });
-        if (art) await ctx.addInitScript((a) => localStorage.setItem('dtl.lastZone', a), art);
+        if (art)
+          await ctx.addInitScript((a) => {
+            localStorage.setItem('dtl.lastZone', a);
+            localStorage.setItem('dtl.lastLevel', 'thien_khuyet');
+          }, art);
         const page = await ctx.newPage();
         if (plain) await page.route('**/assets/calli/**', (rt) => rt.abort());
         await page.goto(gameUrl(r.clientPort, art ? { auto: 'Cscr' + (Date.now() % 1000) } : {}), { waitUntil: 'load' });
-        await sleep(art ? 700 : 3500);
+        await sleep(art ? Number(list('--loadwait', '700')[0]) : 3500);
         await snap(page, r.out, `${tag}-${part}-${size}.jpg`);
         await ctx.close();
       }
