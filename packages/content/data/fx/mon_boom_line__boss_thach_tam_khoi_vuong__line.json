@@ -3,32 +3,13 @@
  "palette": "mon_boss_tho",
  "events": [
   {
-   "type": "mesh",
-   "shape": "burst",
-   "t": 0,
-   "dur": 0.16,
-   "at": "area",
-   "tone": "rim",
-   "alpha": 0.36,
-   "seed": 0,
-   "tier": 0,
-   "offset": [
-    0.0,
-    0.48,
-    0.8
-   ],
-   "scale": 1.2,
-   "billboard": true,
-   "sweep": 0
-  },
-  {
    "type": "decal",
    "tex": "jade_crack",
    "t": 0,
    "r": 1,
    "dur": 2.4,
    "at": "area",
-   "grow": 0.06,
+   "grow": 0.05,
    "tone": "body",
    "alpha": 1.0,
    "tier": 0,
@@ -46,7 +27,7 @@
    "r": 1,
    "dur": 2.4,
    "at": "area",
-   "grow": 0.06,
+   "grow": 0.05,
    "tone": "body",
    "alpha": 1.0,
    "tier": 0,
@@ -91,7 +72,7 @@
    "seed": 490,
    "tier": 0,
    "offset": [
-    -1.2,
+    -1.16,
     0.0,
     0.96
    ],
@@ -110,7 +91,7 @@
    "seed": 491,
    "tier": 0,
    "offset": [
-    1.2,
+    1.16,
     0.0,
     0.96
    ],
@@ -129,9 +110,9 @@
    "seed": 492,
    "tier": 1,
    "offset": [
-    -1.2,
+    -1.16,
     0.0,
-    2.48
+    1.976
    ],
    "scale": 0.96,
    "sweep": 0.2,
@@ -148,9 +129,9 @@
    "seed": 493,
    "tier": 1,
    "offset": [
-    1.2,
+    1.16,
     0.0,
-    2.48
+    1.976
    ],
    "scale": 1.152,
    "sweep": 0.2,
@@ -167,9 +148,9 @@
    "seed": 494,
    "tier": 0,
    "offset": [
-    -1.2,
+    -1.16,
     0.0,
-    4.0
+    2.984
    ],
    "scale": 1.152,
    "sweep": 0.2,
@@ -186,9 +167,9 @@
    "seed": 495,
    "tier": 0,
    "offset": [
-    1.2,
+    1.16,
     0.0,
-    4.0
+    2.984
    ],
    "scale": 0.768,
    "sweep": 0.2,
@@ -205,9 +186,9 @@
    "seed": 496,
    "tier": 1,
    "offset": [
-    -1.2,
+    -1.16,
     0.0,
-    5.52
+    4.0
    ],
    "scale": 0.768,
    "sweep": 0.2,
@@ -224,9 +205,9 @@
    "seed": 497,
    "tier": 1,
    "offset": [
-    1.2,
+    1.16,
     0.0,
-    5.52
+    4.0
    ],
    "scale": 0.96,
    "sweep": 0.2,
@@ -243,9 +224,9 @@
    "seed": 498,
    "tier": 0,
    "offset": [
-    -1.2,
+    -1.16,
     0.0,
-    7.04
+    5.016
    ],
    "scale": 0.96,
    "sweep": 0.2,
@@ -262,9 +243,9 @@
    "seed": 499,
    "tier": 0,
    "offset": [
-    1.2,
+    1.16,
     0.0,
-    7.04
+    5.016
    ],
    "scale": 1.152,
    "sweep": 0.2,
@@ -272,123 +253,199 @@
   },
   {
    "type": "mesh",
-   "shape": "flip",
+   "shape": "rock_spire",
+   "t": 0.125,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1,
+   "seed": 500,
+   "tier": 1,
+   "offset": [
+    -1.16,
+    0.0,
+    6.024
+   ],
+   "scale": 1.152,
+   "sweep": 0.2,
+   "erodeFrom": 0.6
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.125,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1,
+   "seed": 501,
+   "tier": 1,
+   "offset": [
+    1.16,
+    0.0,
+    6.024
+   ],
+   "scale": 0.768,
+   "sweep": 0.2,
+   "erodeFrom": 0.6
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.15000000000000002,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1,
+   "seed": 502,
+   "tier": 0,
+   "offset": [
+    -1.16,
+    0.0,
+    7.04
+   ],
+   "scale": 0.768,
+   "sweep": 0.2,
+   "erodeFrom": 0.6
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
+   "t": 0.15000000000000002,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1,
+   "seed": 503,
+   "tier": 0,
+   "offset": [
+    1.16,
+    0.0,
+    7.04
+   ],
+   "scale": 0.96,
+   "sweep": 0.2,
+   "erodeFrom": 0.6
+  },
+  {
+   "type": "mesh",
+   "shape": "rock_spire",
    "t": 0.0,
    "dur": 0.9,
    "at": "area",
    "tone": "body",
-   "alpha": 0.95,
-   "seed": 500,
+   "alpha": 1,
+   "seed": 520,
    "tier": 0,
-   "flip": "earth_flip",
-   "scale": 1.04,
    "offset": [
-    -0.56,
-    0.72,
-    1.2
+    0.0,
+    0.0,
+    0.8
    ],
-   "sweep": 0
+   "scale": 0.64,
+   "sweep": 0.2,
+   "erodeFrom": 0.6
   },
   {
    "type": "mesh",
-   "shape": "flip",
+   "shape": "rock_spire",
    "t": 0.02,
    "dur": 0.9,
    "at": "area",
    "tone": "body",
-   "alpha": 0.95,
-   "seed": 501,
-   "tier": 1,
-   "flip": "earth_flip",
-   "scale": 1.16,
+   "alpha": 1,
+   "seed": 521,
+   "tier": 0,
    "offset": [
     0.0,
-    0.72,
-    2.32
+    0.0,
+    2.0
    ],
-   "sweep": 0
+   "scale": 0.64,
+   "sweep": 0.2,
+   "erodeFrom": 0.6
   },
   {
    "type": "mesh",
-   "shape": "flip",
+   "shape": "rock_spire",
    "t": 0.04,
    "dur": 0.9,
    "at": "area",
    "tone": "body",
-   "alpha": 0.95,
-   "seed": 502,
+   "alpha": 1,
+   "seed": 522,
    "tier": 0,
-   "flip": "earth_flip",
-   "scale": 1.28,
    "offset": [
-    0.56,
-    0.72,
-    3.44
+    0.0,
+    0.0,
+    3.2
    ],
-   "sweep": 0
+   "scale": 0.64,
+   "sweep": 0.2,
+   "erodeFrom": 0.6
   },
   {
    "type": "mesh",
-   "shape": "flip",
+   "shape": "rock_spire",
    "t": 0.06,
    "dur": 0.9,
    "at": "area",
    "tone": "body",
-   "alpha": 0.95,
-   "seed": 503,
-   "tier": 1,
-   "flip": "earth_flip",
-   "scale": 1.04,
+   "alpha": 1,
+   "seed": 523,
+   "tier": 0,
    "offset": [
-    -0.56,
-    0.72,
-    4.56
+    0.0,
+    0.0,
+    4.4
    ],
-   "sweep": 0
+   "scale": 0.64,
+   "sweep": 0.2,
+   "erodeFrom": 0.6
   },
   {
    "type": "mesh",
-   "shape": "flip",
+   "shape": "rock_spire",
    "t": 0.08,
    "dur": 0.9,
    "at": "area",
    "tone": "body",
-   "alpha": 0.95,
-   "seed": 504,
+   "alpha": 1,
+   "seed": 524,
    "tier": 0,
-   "flip": "earth_flip",
-   "scale": 1.16,
    "offset": [
     0.0,
-    0.72,
-    5.68
+    0.0,
+    5.6
    ],
-   "sweep": 0
+   "scale": 0.64,
+   "sweep": 0.2,
+   "erodeFrom": 0.6
   },
   {
    "type": "mesh",
-   "shape": "flip",
+   "shape": "rock_spire",
    "t": 0.1,
    "dur": 0.9,
    "at": "area",
    "tone": "body",
-   "alpha": 0.95,
-   "seed": 505,
-   "tier": 1,
-   "flip": "earth_flip",
-   "scale": 1.28,
+   "alpha": 1,
+   "seed": 525,
+   "tier": 0,
    "offset": [
-    0.56,
-    0.72,
+    0.0,
+    0.0,
     6.8
    ],
-   "sweep": 0
+   "scale": 0.64,
+   "sweep": 0.2,
+   "erodeFrom": 0.6
   },
   {
    "type": "particles",
    "kind": "dust",
    "t": 0,
-   "n": 28,
+   "n": 30,
    "speed": 4,
    "spread": 0.5,
    "life": 0.9,
@@ -407,11 +464,11 @@
    "type": "particles",
    "kind": "shard",
    "t": 0.0,
-   "n": 26,
+   "n": 34,
    "speed": 8,
    "spread": 0.5,
    "life": 0.7,
-   "size": 0.11,
+   "size": 0.12,
    "at": "area",
    "tone": "body",
    "tier": 0,

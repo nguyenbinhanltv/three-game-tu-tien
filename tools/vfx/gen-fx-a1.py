@@ -244,16 +244,14 @@ write(f'mon_boom_line__{B}__line', unmul([
     parts('shard', 0.0, 30, 8, 0.5, 0.7, 0.12, 'body', offset=[0, 0.4, 12], grav=8, tier=0),
 ], 3.75), PAL[B])
 write(f'mon_warn__{B}__chant', warn_circle(0.85, 70, -20, spark=26), PAL[B])
-write(f'mon_boom_circle__{B}__chant', [
-    mesh('burst', 0, 0.16, 'rim', 0.32, 0, offset=[0, 0.7, 0], scale=1.4, billboard=True, sweep=0),
+write(f'mon_boom_circle__{B}__chant', unmul([
     decal('jade_crack', 0, 4, 2.8, 'body', 1.0, 0.03, top=False, untilDelay=False, lift=LIFT),
-    ripple(0, 'rim', 0.9, 2),
-    *flip_ring('earth_flip', 9, 8.0, 0.0, 2.3, 440),
-    *flip_ring('earth_flip', 5, 3.5, 0.05, 2.0, 450),
+    # kích thước/vị trí theo mét thật (unmul): vòng r 14 m; không dùng ripple/burst (tạo mảng trắng phẳng ở vùng lớn)
+    *flip_ring('earth_flip', 9, 9.0, 0.0, 1.6, 440),
+    *flip_ring('earth_flip', 5, 4.5, 0.05, 1.5, 450),
     parts('dust', 0, 40, 5, 1, 1.0, 0.3, 'core', offset=[0, 0.2, 0], grav=0.8),
-    parts('shard', 0, 36, 7, 1, 0.8, 0.12, 'rim', offset=[0, 0.3, 0], grav=8, tier=0),
-], PAL[B])
-
+    parts('shard', 0, 36, 7, 1, 0.8, 0.12, 'body', offset=[0, 0.3, 0], grav=8, tier=0),
+], 3.5), PAL[B])
 # ================= Thạch Tâm Khôi Vương (thổ/ngọc lam): hố nứt hình sao, sóng đá =================
 B = 'boss_thach_tam_khoi_vuong'
 write(f'mon_warn__{B}__leap', warn_circle(1.2, 25, -60), PAL[B])
@@ -270,16 +268,15 @@ write(f'mon_boom_circle__{B}__leap', unmul([
 ], 1.125), PAL[B])
 write(f'mon_warn_line__{B}__line', warn_strip(1.3, 10, 3), PAL[B])
 write(f'mon_boom_line__{B}__line', unmul([
-    mesh('burst', 0, 0.16, 'rim', 0.36, 0, offset=[0, 0.6, 1.0], scale=1.5, billboard=True, sweep=0),
-    decal('jade_crack', 0, 1, 2.4, 'body', 1.0, 0.06, top=False, untilDelay=False, strip=[10, 3], lift=LIFT),
-    decal('jade_crack', 0, 1, 2.4, 'body', 1.0, 0.06, top=False, untilDelay=False, strip=[10, 3], lift=0.36),
+    # sóng đá nâu + khe ngọc lam chạy HẾT chiều dài dải 10×3 m: decal dải hai lớp, khe nứt, hai hàng gai đá dày, đá vụn; KHÔNG có đỏ
+    decal('jade_crack', 0, 1, 2.4, 'body', 1.0, 0.05, top=False, untilDelay=False, strip=[10, 3], lift=LIFT),
+    decal('jade_crack', 0, 1, 2.4, 'body', 1.0, 0.05, top=False, untilDelay=False, strip=[10, 3], lift=0.36),
     rift(10, 1.0, tone='rim', seed=80),
-    *spires(10, 5, 1.5, 1.2, 490),  # sóng đá: gai trồi hai bên dải
-    *flip_line('earth_flip', 6, 10, 0.0, 1.3, 500, step=0.02, jitter=0.7),
-    parts('dust', 0, 28, 4, 0.5, 0.9, 0.26, 'core', offset=[0, 0.2, 4], grav=0.8, tier=0),
-    parts('shard', 0.0, 26, 8, 0.5, 0.7, 0.11, 'body', offset=[0, 0.4, 5], grav=8, tier=0),
+    *spires(10, 7, 1.45, 1.2, 490),
+    *[mesh('rock_spire', 0.0 + i * 0.02, 0.9, 'body', 1, 520 + i, offset=[0, 0, 1.0 + i * 1.5], scale=0.8, sweep=0.2, erodeFrom=0.6) for i in range(6)],  # gai giữa dải
+    parts('dust', 0, 30, 4, 0.5, 0.9, 0.26, 'core', offset=[0, 0.2, 4], grav=0.8, tier=0),
+    parts('shard', 0.0, 34, 8, 0.5, 0.7, 0.12, 'body', offset=[0, 0.4, 5], grav=8, tier=0),
 ], 1.25), PAL[B])
-
 # ================= Thôn Mạch Ngô Công Vương (mộc/độc): gai rễ gỗ, bào tử xanh lục =================
 B = 'boss_thon_mach_ngo_cong_vuong'
 cast_ring(B, 12)
