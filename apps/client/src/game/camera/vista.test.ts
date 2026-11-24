@@ -44,6 +44,18 @@ describe('vista', () => {
     for (let i = 0; i < 120; i++) r.update(1 / 60, false, s, true);
     expect(r.amount).toBeCloseTo(1);
   });
+  it('giao chiến thì đóng mượt, hết giao chiến thì mở lại (kể cả ngự kiếm)', () => {
+    const r = new VistaRig();
+    const s = VISTA_SPOTS[0]!;
+    for (let i = 0; i < 120; i++) r.update(1 / 60, false, s, true);
+    expect(r.amount).toBeCloseTo(1);
+    const mid = r.update(1 / 60, false, s, true, true);
+    expect(mid).toBeLessThan(1);
+    for (let i = 0; i < 120; i++) r.update(1 / 60, true, s, true, true);
+    expect(r.amount).toBe(0);
+    for (let i = 0; i < 120; i++) r.update(1 / 60, false, s, true, false);
+    expect(r.amount).toBeCloseTo(1);
+  });
   it('cờ tắt thì không mở', () => {
     const r = new VistaRig();
     for (let i = 0; i < 60; i++) r.update(1 / 60, true, null, false);

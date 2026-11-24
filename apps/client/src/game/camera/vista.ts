@@ -66,12 +66,10 @@ export class VistaRig {
   }
 
   /** `want` do vòng khung quyết: đang ngự kiếm, hoặc đứng trong điểm ngắm cảnh chưa thoát. */
-  update(dt: number, flying: boolean, spot: VistaSpot | null, enabled: boolean): number {
-    if (!spot || spot.id !== this.dismissed) {
-      if (!spot) this.dismissed = null;
-    }
+  update(dt: number, flying: boolean, spot: VistaSpot | null, enabled: boolean, combat = false): number {
+    if (!spot && !combat) this.dismissed = null;
     const inSpot = !!spot && spot.id !== this.dismissed;
-    const want = enabled && (flying || inSpot) ? 1 : 0;
+    const want = enabled && !combat && (flying || inSpot) ? 1 : 0;
     const step = Math.min(dt, 0.1) * VISTA.rate;
     this.raw = want > this.raw ? Math.min(want, this.raw + step) : Math.max(want, this.raw - step);
     this.amount = ease(this.raw);
