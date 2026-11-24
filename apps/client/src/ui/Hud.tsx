@@ -153,7 +153,7 @@ function UltCardView() {
           <div className="cutin-ink" />
           <img className="cutin-art" src={`${import.meta.env.BASE_URL}assets/cutin/${card.cutin}.webp`} alt="" draggable={false} />
           <div className="cutin-name">
-            <Calli k={`skill.${card.skill}.name`} em={4.2} />
+            <Calli k={`skill.${card.skill}.name`} em={1.5} />
           </div>
         </div>
       )}

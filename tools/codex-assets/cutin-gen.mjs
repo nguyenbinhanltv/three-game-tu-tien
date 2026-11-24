@@ -5,6 +5,7 @@
 // (xem `--pack`: node tools/codex-assets/cutin-gen.mjs --pack). Quá giờ thì giết cả cây tiến trình con (taskkill /T trên Windows), không để codex treo.
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -52,6 +53,25 @@ function killTree(p) {
   } catch {}
 }
 
+/** Codex sinh ảnh xong nhưng bước chép ra thư mục việc hay treo (sandbox Windows): ảnh vẫn nằm ở ~/.codex/generated_images/<session>/; chép PNG mới nhất ra `out`. */
+function rescue(logFile, out) {
+  try {
+    const sid = /session id:\s*([0-9a-f-]{20,})/i.exec(fs.readFileSync(logFile, 'utf8'))?.[1];
+    const dir = sid && path.join(os.homedir(), '.codex', 'generated_images', sid);
+    if (!dir || !fs.existsSync(dir)) return false;
+    const pngs = fs
+      .readdirSync(dir)
+      .filter((f) => f.toLowerCase().endsWith('.png'))
+      .map((f) => ({ f, t: fs.statSync(path.join(dir, f)).mtimeMs }))
+      .sort((a, b) => b.t - a.t);
+    if (!pngs.length) return false;
+    fs.copyFileSync(path.join(dir, pngs[0].f), out);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function run(id) {
   const set = SETS[id];
   const ref = path.join(refDir, set.ref);
@@ -75,7 +95,10 @@ function run(id) {
       if (done) return;
       done = true;
       clearTimeout(t);
-      log.end(() => resolve({ id, ok: fs.existsSync(out), note }));
+      log.end(() => {
+        const rescued = !fs.existsSync(out) && rescue(path.join(outDir, `${id}.log`), out);
+        resolve({ id, ok: fs.existsSync(out), note: rescued ? `${note ?? ''} (đã cứu ảnh từ kho codex)`.trim() : note });
+      });
     };
     const t = setTimeout(() => {
       killTree(p);
@@ -88,7 +111,9 @@ function run(id) {
 
 if (pack) {
   // Nén PNG nguồn thành WebP ≤ 1600 px ngang cho game.
-  const { default: sharp } = await import('sharp');
+  // `sharp` là phụ thuộc của tools/perf (không phải của gói này): nạp qua createRequire từ đó.
+  const { createRequire } = await import('node:module');
+  const sharp = createRequire(path.join(root, 'tools/perf/package.json'))('sharp');
   const dst = path.join(root, 'apps/client/public/assets/cutin');
   fs.mkdirSync(dst, { recursive: true });
   for (const id of Object.keys(SETS)) {
@@ -97,7 +122,16 @@ if (pack) {
       console.log(`bỏ qua ${id}: chưa có ${src}`);
       continue;
     }
-    await sharp(src).resize({ width: 1600 }).webp({ quality: 82 }).toFile(path.join(dst, `${id}.webp`));
+    // Nền đen thuần → trong suốt: alpha = smoothstep theo kênh sáng nhất (mép mềm), giữ nguyên màu. Các nếp vải rất tối thành lỗ trong suốt, bù bằng lớp mực tối phía sau trong UI.
+    const { data, info } = await sharp(src).resize({ width: 1600 }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    for (let i = 0; i < data.length; i += 4) {
+      const m = Math.max(data[i], data[i + 1], data[i + 2]);
+      const u = Math.min(1, Math.max(0, (m - 4) / 22));
+      data[i + 3] = Math.round(u * u * (3 - 2 * u) * 255);
+    }
+    await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+      .webp({ quality: 84, alphaQuality: 90 })
+      .toFile(path.join(dst, `${id}.webp`));
     console.log(`đã nén ${id}.webp (${(fs.statSync(path.join(dst, `${id}.webp`)).size / 1024).toFixed(0)} KB)`);
   }
 } else {

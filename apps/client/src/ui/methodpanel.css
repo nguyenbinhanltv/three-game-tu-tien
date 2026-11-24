@@ -468,6 +468,26 @@
   align-items: baseline;
 }
 
+/* Thẻ có cut-in sống 0,9 s thay vì 0,6 s (viền sáng + tên chiêu cũ giữ nhịp với tranh). */
+.ult-card:has(.cutin) {
+  animation: cutin-outer 0.9s ease-out forwards;
+}
+@keyframes cutin-outer {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* Có cut-in thì tên chiêu nằm trong khối cut-in, bỏ tên giữa màn hình. */
+.ult-card:has(.cutin) .ult-card-name {
+  display: none;
+}
 /* ---------- cut-in chiêu cuối (Thân Pháp T7): tranh Codex quét ngang + mực loang + tên chiêu; chỉ hình, không nhận chuột/phím ---------- */
 .ult-card .cutin {
   position: absolute;
@@ -477,6 +497,7 @@
   height: 52%;
   overflow: hidden;
   animation: cutin-band 0.9s ease-out forwards;
+  mask-image: linear-gradient(180deg, transparent 0%, var(--u-ink-0) 12%, var(--u-ink-0) 86%, transparent 100%);
 }
 .cutin-ink {
   position: absolute;
@@ -493,13 +514,18 @@
   height: 100%;
   width: auto;
   max-width: none;
-  mix-blend-mode: screen;
   animation: cutin-sweep 0.9s cubic-bezier(0.16, 0.8, 0.3, 1) forwards;
 }
 .cutin-name {
   position: absolute;
   left: 7%;
-  bottom: 12%;
+  bottom: 16%;
+  font: 700 clamp(30px, 4.2vw, 60px) var(--u-p-font-serif);
+  letter-spacing: 0.16em;
+  color: color-mix(in srgb, var(--mc) 55%, var(--u-gold-text));
+  text-shadow:
+    0 0 22px var(--mc),
+    0 2px 5px var(--u-ink-0);
   filter: drop-shadow(0 2px 10px color-mix(in srgb, var(--u-ink-0) 70%, transparent));
   animation: cutin-name 0.9s ease-out forwards;
 }
@@ -544,6 +570,7 @@
     transform: translateX(10px);
   }
 }
+:root[data-reduce-motion='true'] .ult-card:has(.cutin),
 :root[data-reduce-motion='true'] .ult-card .cutin,
 :root[data-reduce-motion='true'] .cutin-art,
 :root[data-reduce-motion='true'] .cutin-name {

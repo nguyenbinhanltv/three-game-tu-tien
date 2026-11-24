@@ -2,7 +2,7 @@
 // 720p + 1080p, dừng thời gian bằng `window.__animlab` để khung đúng từng mili giây; đo CPU xương (mục `anim` của FrameBudget) lúc đứng yên và lúc chạy;
 // tùy chọn đặt ảnh tham chiếu cạnh khung đỉnh đòn, và quay clip thời gian thật (đứng, chạy, từng chiêu) để so trước/sau (`--thanphap 0|1`).
 // Dùng: pnpm shots animlab --out <thư mục tuyệt đối> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1]
-//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...]
+//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
 import path from 'node:path';
 import sharp from 'sharp';
 import { list, opt } from '../lib/env';
@@ -38,13 +38,13 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
   const clip = opt('--clip', '');
   const { ctx, page } = await r.open({
     name: 'AL',
-    viewport: [1920, 1080],
+    viewport: clip ? (UI_SIZES[opt('--clip-size', '720p')] ?? [1280, 720]) : [1920, 1080],
     seenIntro: true,
     look: { g: opt('--gender', 'm') },
     extra: opt('--query', ''),
     query: { realm: 'nk12', god: 1, chr: 'v3', animlab: 1, quiet: 1, thanphap: opt('--thanphap', '0') === '1' ? 1 : undefined },
     ...(clip ? { video: path.join(r.out, 'clip') } : {}),
-    hide: 'hud',
+    hide: opt('--cutin', '') ? undefined : 'hud',
   });
   page.on('pageerror', (e) => console.log('[pageerror]', String(e).slice(0, 400)));
   await page.waitForFunction(() => !!window.__game && !!window.__animlab, undefined, { timeout: 120_000 });
@@ -54,6 +54,25 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
   await gm(page, 'spawn clear', 1400);
   await gm(page, 'cd', 1300);
   const out: Record<string, unknown> = { thanphap: opt('--thanphap', '0') === '1', poses: {} };
+  const cut = opt('--cutin', '');
+  if (cut) {
+    // Cut-in chiêu cuối (T7): thời gian thật (có khựng), chụp ở các mốc sau khi phát.
+    const marks = list('--cutin-at', '0.1,0.25,0.45,0.7').map(Number);
+    await page.evaluate(() => window.__animlab!.cam('iso'));
+    await sleep(500);
+    const ok = await page.evaluate((s) => window.__animlab!.cutin(s), cut);
+    if (!ok) throw new Error(`chiêu ${cut} chưa có tranh cut-in`);
+    let t = 0;
+    for (const m of marks) {
+      await sleep(Math.max(0, (m - t) * 1000));
+      t = m;
+      // Ghim mọi animation CSS (thẻ cut-in) đúng mốc `m`: chụp ảnh chậm hơn 0,3 s nên không thể dựa vào đồng hồ thật.
+      await page.evaluate((ms) => document.getAnimations().forEach((a) => ((a.currentTime = ms), a.pause())), m * 1000);
+      await snap(page, r.out, `cutin-${cut}-${Math.round(m * 1000)}ms.jpg`, { wait: 0 });
+    }
+    await ctx.close();
+    return { ...out, cutin: cut };
+  }
   if (opt('--cpu', '') || clip) {
     out.cpu = {
       idle: await cpuRun(page, 5),
@@ -61,7 +80,6 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
     };
   }
   if (clip) {
-    await page.setViewportSize({ width: 1280, height: 720 });
     await sleep(800);
     for (const cam of cams) {
       await page.evaluate((c) => window.__animlab!.cam(c as never), cam);
@@ -157,7 +175,7 @@ export default {
   name: 'animlab',
   desc: 'TP-0 phòng thử animation: 4 khung khóa (dồn lực/đỉnh/+30ms/thu) ở camera chéo + cận, 720p + 1080p, CPU xương, clip trước/sau',
   usage:
-    '--out <dir> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1] [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...]',
+    '--out <dir> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1] [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]',
   async run(r) {
     const poses = list('--pose', 'kiem_khi_tram,phi_kiem,thien_kiem_vu');
     const cams = list('--cams', 'iso,close');
