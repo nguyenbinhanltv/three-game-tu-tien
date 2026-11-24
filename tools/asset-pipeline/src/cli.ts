@@ -99,7 +99,12 @@ else if (cmd === 'lock') {
     console.warn(`[lock] CẢNH BÁO ${k}: nhị phân mới không có hash trong tên (cần <tên>.<hash10>.<đuôi>); assets:validate sẽ báo lỗi`);
 } else if (cmd === 'push') {
   try {
-    const r = await push({ dry: args.includes('--dry'), only: flag('--only'), noLock: args.includes('--no-lock') });
+    const r = await push({
+      dry: args.includes('--dry'),
+      only: flag('--only'),
+      noLock: args.includes('--no-lock'),
+      mutable: args.includes('--mutable'),
+    });
     console.log(
       `[push] ${r.total} file trong sổ, ${r.present} đã có trên R2, ${args.includes('--dry') ? 'sẽ đẩy' : 'đã đẩy'} ${r.uploaded.length} (${mb(r.uploadedBytes)}), ${r.failed.length} lỗi${r.lockChanged ? ', sổ khóa đã cập nhật' : ''}`,
     );

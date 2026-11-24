@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { planPush, PushConflictError } from '../push.js';
+import { isMutableKey, planPush, PushConflictError } from '../push.js';
+import { compareListing } from './verify.js';
 import { hasContentHash, type Lock, unhashedBinaries } from './lock.js';
 
 const sha = (c: string) => c.repeat(64).slice(0, 64);
@@ -74,5 +75,68 @@ describe('nhị phân mới phải có hash trong tên', () => {
       'audio/x.ogg': { sha256: sha('e'), bytes: 1 },
     });
     expect(unhashedBinaries(L, new Set(['map/cu.webp']))).toEqual(['audio/x.ogg', 'map/moi.webp']);
+  });
+});
+
+describe('json/văn bản tên cố định (manifest): chỉ main được ghi đè', () => {
+  const M = 'assets/manifest.json';
+  const L = lock({ [M]: { sha256: sha('a'), bytes: 100 }, 'x/a.0123456789.glb': { sha256: sha('b'), bytes: 10 } });
+  const keys = Object.keys(L.files);
+
+  it('isMutableKey: json/txt có, nhị phân không', () => {
+    expect(isMutableKey(M)).toBe(true);
+    expect(isMutableKey('audio/manifest.json')).toBe(true);
+    expect(isMutableKey('x/a.glb')).toBe(false);
+    expect(isMutableKey('x/a.0123456789.webp')).toBe(false);
+  });
+
+  it('manifest lệch: nhánh (allowMutable=false) → HOÃN, không ghi, không xung đột; main (true) → ghi đè; nhị phân vẫn xung đột', async () => {
+    const remote = new Map([
+      [M, { size: 50 }],
+      ['x/a.0123456789.glb', { size: 99 }],
+    ]);
+    const branch = await planPush({ keys, lock: L, remote, remoteSha: async () => sha('a') });
+    expect(branch.todo).toEqual([]);
+    expect(branch.deferred).toEqual([M]);
+    expect(branch.overwrites).toEqual([]);
+    expect(branch.conflicts.map((c) => c.key)).toEqual(['x/a.0123456789.glb']);
+    const main = await planPush({ keys, lock: L, remote, remoteSha: async () => sha('a'), allowMutable: true });
+    expect(main.todo).toEqual([M]);
+    expect(main.overwrites).toEqual([M]);
+    expect(main.deferred).toEqual([]);
+  });
+
+  it('manifest chưa có trên R2 → tạo mới được cả ở nhánh', async () => {
+    const p = await planPush({ keys: [M], lock: L, remote: new Map(), remoteSha: async () => undefined });
+    expect(p.todo).toEqual([M]);
+  });
+
+  it('manifest cùng kích thước nhưng sha khác → ghi đè (main); cùng sha → bỏ qua', async () => {
+    const remote = new Map([[M, { size: 100 }]]);
+    const diff = await planPush({ keys: [M], lock: L, remote, remoteSha: async () => sha('z'), allowMutable: true });
+    expect(diff.overwrites).toEqual([M]);
+    const same = await planPush({ keys: [M], lock: L, remote, remoteSha: async () => sha('a') });
+    expect(same.todo).toEqual([]);
+    expect(same.present).toBe(1);
+  });
+});
+
+describe('validate không đỏ vì manifest lệch R2 ở nhánh', () => {
+  it('compareListing: kích thước manifest lệch được miễn, nhị phân lệch vẫn lỗi, thiếu hẳn vẫn lỗi', () => {
+    const L = lock({
+      'assets/manifest.json': { sha256: sha('a'), bytes: 100 },
+      'x/a.0123456789.glb': { sha256: sha('b'), bytes: 10 },
+      'audio/manifest.json': { sha256: sha('c'), bytes: 5 },
+    });
+    const errs = compareListing(
+      L,
+      new Map([
+        ['assets/manifest.json', { size: 7 }],
+        ['x/a.0123456789.glb', { size: 11 }],
+      ]),
+    );
+    expect(errs.join('|')).not.toMatch(/assets\/manifest\.json: kích thước/);
+    expect(errs.join('|')).toMatch(/x\/a\.0123456789\.glb: kích thước/);
+    expect(errs.join('|')).toMatch(/audio\/manifest\.json: chưa có trên R2/);
   });
 });
