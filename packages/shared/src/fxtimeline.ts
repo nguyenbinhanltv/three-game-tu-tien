@@ -159,6 +159,23 @@ export const FX_SPRITES = [
   'loi_sparks',
   'loi_mark',
   'loi_arcs_pair',
+  // Vân Hải A2 (kiểu tô "thủy": lõi chàm, thân xanh biển, bọt trắng; tiền tố `thuy_`) và Kính Nguyệt (kiểu tô "nguyệt": thép sẫm → bạc → trắng; tiền tố `nguyet_`)
+  'thuy_whirl',
+  'thuy_foam_ring',
+  'thuy_jet',
+  'thuy_wave',
+  'thuy_spout',
+  'thuy_spray',
+  'thuy_arc',
+  'thuy_beam',
+  'nguyet_blade',
+  'nguyet_slash',
+  'nguyet_scar',
+  'nguyet_shards',
+  'nguyet_burst',
+  'nguyet_ring',
+  'nguyet_beam',
+  'nguyet_halo',
 ] as const;
 export type FxSprite = (typeof FX_SPRITES)[number];
 

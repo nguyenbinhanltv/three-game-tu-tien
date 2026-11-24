@@ -585,7 +585,25 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const lWhite = vec3(0.97, 1.0, 1.0);
   const lT = smoothstep(0.1, 0.78, spLum.sqrt());
   const lRamp = mix(mix(mix(lCore, lBody, smoothstep(0.04, 0.4, lT)), lRim, smoothstep(0.36, 0.72, lT)), lWhite, smoothstep(0.78, 1.0, lT));
-  const spStyled = mix(spLift, lRamp, step(0.5, U.a.x));
+  // Kiểu "thủy" (`fxA.x` = 2): lõi chàm tối, thân xanh biển, viền xanh nhạt, bọt trắng ở phần sáng nhất.
+  const wCore = vec3(0.008, 0.035, 0.12);
+  const wBody = vec3(0.06, 0.3, 0.62);
+  const wRim = vec3(0.55, 0.84, 1.0);
+  const wWhite = vec3(0.97, 1.0, 1.0);
+  const wT = smoothstep(0.1, 0.78, spLum.sqrt());
+  const wRamp = mix(mix(mix(wCore, wBody, smoothstep(0.04, 0.42, wT)), wRim, smoothstep(0.4, 0.74, wT)), wWhite, smoothstep(0.76, 1.0, wT));
+  // Kiểu "nguyệt" (`fxA.x` = 3): thép sẫm xanh → bạc xanh → trắng bạc (lưỡi trăng sáng ở rìa, không ngả tím).
+  const mCore = vec3(0.02, 0.035, 0.07);
+  const mBody = vec3(0.34, 0.44, 0.62);
+  const mRim = vec3(0.8, 0.9, 1.0);
+  const mWhite = vec3(1.0, 1.0, 1.0);
+  const mT = smoothstep(0.1, 0.78, spLum.sqrt());
+  const mRamp = mix(
+    mix(mix(mCore, mBody, smoothstep(0.04, 0.45, mT)), mRim, smoothstep(0.42, 0.76, mT)),
+    mWhite,
+    smoothstep(0.78, 1.0, mT),
+  );
+  const spStyled = mix(mix(mix(spLift, lRamp, step(0.5, U.a.x)), wRamp, step(1.5, U.a.x)), mRamp, step(2.5, U.a.x));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)
