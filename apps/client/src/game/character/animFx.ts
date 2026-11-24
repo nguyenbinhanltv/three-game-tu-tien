@@ -24,6 +24,8 @@ export interface AnimFxFlags {
   cutin: boolean;
   /** T2: xung bắt đầu/dừng/pivot (`LocoImpulse`); tắt riêng để so sánh với phần còn lại của lớp loco. */
   impulse: boolean;
+  /** T5: ragdoll nhẹ (khớp lò xo lỏng) khi trúng đòn/ngã/chết. */
+  ragdoll: boolean;
 }
 
 /** Trạng thái cờ chạy (mặc định theo `?thanphap=1`); phòng thử đổi được. */
@@ -37,6 +39,7 @@ export const ANIM_FX: AnimFxFlags = {
   idle: FLAGS.thanPhap,
   cutin: FLAGS.thanPhap,
   impulse: FLAGS.thanPhap,
+  ragdoll: FLAGS.thanPhap,
 };
 
 /** T6: thông số lò xo sống động hơn `V3_SPRING` (130/8/30°): tần số riêng thấp hơn, cản nhẹ hơn, góc rộng hơn; ở góc chéo tóc/dải đọc được rõ. */

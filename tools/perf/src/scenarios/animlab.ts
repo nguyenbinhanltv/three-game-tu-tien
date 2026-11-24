@@ -102,6 +102,17 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       await sleep(1000);
       await page.keyboard.up('a');
       await sleep(900);
+      // T5: trúng đòn nhẹ/nặng từ bốn phía rồi ngã (đòn nặng + knockdown).
+      for (const [from, tier, knock] of [
+        ['front', 0, false],
+        ['left', 1, false],
+        ['back', 2, false],
+        ['right', 2, false],
+        ['front', 3, true],
+      ] as const) {
+        await page.evaluate((a) => window.__animlab!.hitSelf(a[0], a[1], a[2]), [from, tier, knock] as const);
+        await sleep(from === 'front' && knock ? 2200 : 1300);
+      }
       for (const p of poses) {
         for (let i = 0; i < 2; i++) {
           await page.evaluate((x) => window.__animlab!.perform(x), p);

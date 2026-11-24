@@ -2,6 +2,7 @@
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
 import { BladeSmear, smearWindow } from '../fx/bladeSmear';
+import { impulseOfTier, RagLite, RAG_JOINTS } from './ragdollLite';
 import {
   accelLean,
   ANIM_FX,
@@ -714,6 +715,8 @@ export class MannequinCharacter implements CharacterView {
   /** T2: tốc độ khung trước và gia tốc đã làm mượt; T3: thời gian đứng yên liên tục và mốc idle kế. */
   private lastSpeed = 0;
   private loco2 = new LocoImpulse();
+  /** T5: ragdoll nhẹ (tạo lười ở lần trúng đòn đầu khi bật cờ). */
+  private rag: RagLite | null = null;
   private accel = 0;
   private stillT = 0;
   private idleAfter = 7;
@@ -1510,6 +1513,14 @@ export class MannequinCharacter implements CharacterView {
     if (this.dead) return;
     this.chain = this.tpl.clips.has('LayToIdle') ? 'LayToIdle' : null;
     this.oneShot('Hit_Knockback');
+    if (ANIM_FX.ragdoll && this.lodLevel === 0) {
+      // Ngã: xung mạnh theo hướng đòn cuối, khớp mềm hẳn trong lúc nằm.
+      const lh = this.lastHit;
+      const d = flinchDirOf(this.root.rotation.y, lh.dx, lh.dz);
+      const r = (this.rag ??= new RagLite());
+      r.impulse(d.pitch, d.roll, impulseOfTier(3, true, false));
+      r.loose = 1;
+    }
   }
 
   hitReact(o: HitOpts): void {
@@ -1522,6 +1533,10 @@ export class MannequinCharacter implements CharacterView {
         age: -(o.delay ?? 0),
         ...flinchDirOf(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0),
       };
+    if (ANIM_FX.ragdoll && this.lodLevel === 0) {
+      const d = flinchDirOf(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0);
+      (this.rag ??= new RagLite()).impulse(d.pitch, d.roll, impulseOfTier(o.tier, !!o.heavy, !!o.crit));
+    }
     // Clip theo phía bị đánh (C3b): nặng ngã lùi; nhẹ chạm ngực (trước/bên) hoặc giật đầu (sau gáy).
     const clip = hitClipOf(hitSideOf(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0), !!o.heavy || (o.tier ?? 0) >= 2);
     if (!this.shot && !o.noFlash) this.oneShot(clip, clip === 'Hit_Knockback' ? 1.2 : 1.4);
@@ -1567,6 +1582,13 @@ export class MannequinCharacter implements CharacterView {
       this.shot?.stop();
       this.shot = null;
       this.chain = null;
+    }
+    if (a.dead && !this.dead && ANIM_FX.ragdoll && this.lodLevel === 0) {
+      const lh = this.lastHit;
+      const d = flinchDirOf(this.root.rotation.y, lh.dx, lh.dz);
+      const r = (this.rag ??= new RagLite());
+      r.impulse(d.pitch, d.roll, impulseOfTier(3, true, false));
+      r.loose = 1;
     }
     this.dead = a.dead;
     if (this.dead && this.deathTurn.t < 1) {
@@ -1774,6 +1796,19 @@ export class MannequinCharacter implements CharacterView {
         this.idleAfter = 6 + Math.random() * 5;
       } else if (a.speed > 0.5 && this.perf && this.perf.id.startsWith('kiem_idle')) this.abortPerform();
     }
+    // T5: ragdoll nhẹ cộng lên tư thế clip (thân trên, đầu, tay); độ lỏng hồi về 0 sau ~1,2 s, riêng lúc chết giữ lỏng.
+    const rg = this.rag;
+    if (rg && ANIM_FX.ragdoll && this.lodLevel === 0 && this.viewDist < 30) {
+      rg.loose = a.dead ? 1 : Math.max(0, rg.loose - dt * 0.8);
+      if (rg.active) {
+        rg.update(dt);
+        for (const j of RAG_JOINTS) {
+          const bone = b[j] ?? null;
+          rotateWorld(bone, rgt, rg.ang[j][0]);
+          rotateWorld(bone, fwd, rg.ang[j][1] * this.side);
+        }
+      }
+    } else if (rg?.active) rg.reset();
     // Thở (cộng thêm, chỉ biên độ nhỏ).
     if (free) rotateWorld(b.spine_03 ?? null, rgt, breathOf(this.clock, a.speed < 0.3));
     // Giật nhẹ khi trúng đòn: thân ngửa ra sau rồi về.
