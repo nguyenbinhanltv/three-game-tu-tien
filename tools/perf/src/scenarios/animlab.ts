@@ -2,7 +2,7 @@
 // 720p + 1080p, dừng thời gian bằng `window.__animlab` để khung đúng từng mili giây; đo CPU xương (mục `anim` của FrameBudget) lúc đứng yên và lúc chạy;
 // tùy chọn đặt ảnh tham chiếu cạnh khung đỉnh đòn, và quay clip thời gian thật (đứng, chạy, từng chiêu) để so trước/sau (`--thanphap 0|1`).
 // Dùng: pnpm shots animlab --out <thư mục tuyệt đối> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1]
-//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--stills tp1b|tp2|tp2mon|b3] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
+//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--stills tp1b|tp2|tp2mon|b3] [--stills-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
 import path from 'node:path';
 import sharp from 'sharp';
 import { list, opt } from '../lib/env';
@@ -60,7 +60,9 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
   const stillsMode = opt('--stills', '');
   if (stillsMode) {
     // Ảnh tĩnh PNG (không quay video: video Playwright của game WebGPU ra khung trắng). Cắt quanh nhân vật ở tâm khung, phóng ×2.
-    await page.setViewportSize({ width: 1280, height: 720 });
+    const [svw, svh] = UI_SIZES[opt('--stills-size', '720p')] ?? [1280, 720];
+    const sk = svw / 1280; // hệ số cắt ảnh theo cỡ màn hình (720p = 1)
+    await page.setViewportSize({ width: svw, height: svh });
     await sleep(800);
     const shot = async (name: string, wide = false) => {
       const clip = wide ? { x: 240, y: 60, width: 800, height: 600 } : { x: 520, y: 250, width: 240, height: 220 };
@@ -87,7 +89,7 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
         await sleep(wait);
       };
       const snapC = async (name: string) => {
-        const buf = await page.screenshot({ clip: { x: 340, y: 40, width: 600, height: 640 }, type: 'png' });
+        const buf = await page.screenshot({ clip: { x: 340 * sk, y: 40 * sk, width: 600 * sk, height: 640 * sk }, type: 'png' });
         await sharp(buf)
           .resize(420, 448)
           .png()
@@ -139,6 +141,15 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       const peak: Record<string, number> = {};
       for (const row of series) for (const [n, v] of Object.entries(row)) if (v !== null) peak[n] = Math.max(peak[n] ?? 0, v);
       console.log('  biên độ xương (rad), đỉnh sau dừng:', JSON.stringify(peak), 'nghỉ:', JSON.stringify(rest));
+      // Khung thật: chạy → dừng, đặt camera cận theo người ngay khi dừng rồi chụp (lò xo còn đung đưa).
+      for (const k of ['side', 'front'] as const) {
+        await sleep(900);
+        await page.keyboard.down('w');
+        await sleep(1400);
+        await page.keyboard.up('w');
+        await cam(k, 0);
+        await snapC(k === 'side' ? '5-dung-suon' : '6-dung-truoc');
+      }
       // (2) xoay thẳng xương tassel khi tạm dừng, camera cận trước + sườn.
       await sleep(1200);
       for (const k of ['front', 'side'] as const) {
