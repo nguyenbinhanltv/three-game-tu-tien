@@ -14,6 +14,8 @@ import {
   idleDue,
   idlePoseFor,
   leanBoost,
+  LOCO_CLAMP,
+  LocoImpulse,
   SPRING_TP,
 } from './animFx';
 import { DEATH_DIR_TTL, DEATH_TURN_S, dashClipOf, holdHipsInPlace, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
@@ -711,6 +713,7 @@ export class MannequinCharacter implements CharacterView {
   private lean = 0;
   /** T2: tốc độ khung trước và gia tốc đã làm mượt; T3: thời gian đứng yên liên tục và mốc idle kế. */
   private lastSpeed = 0;
+  private loco2 = new LocoImpulse();
   private accel = 0;
   private stillT = 0;
   private idleAfter = 7;
@@ -1746,7 +1749,19 @@ export class MannequinCharacter implements CharacterView {
       rotateWorld(b.spine_02 ?? null, rgt, pitch * 0.35);
       rotateWorld(b.spine_03 ?? null, rgt, pitch * 0.25);
       this.inner.position.y -= glideDip(a.speed);
-    }
+      // Xung bắt đầu/dừng/pivot (lò xo tắt dần): chúi/ngả, nghiêng, hạ hông.
+      const li = this.loco2;
+      li.update(dt, a.speed, this.yawRate);
+      const cl = (x: number, m: number) => Math.max(-m, Math.min(m, x));
+      const lp = cl(li.pitch, LOCO_CLAMP.pitch);
+      const lr = cl(li.roll, LOCO_CLAMP.roll);
+      rotateWorld(b.spine_01 ?? null, rgt, lp * 0.4);
+      rotateWorld(b.spine_02 ?? null, rgt, lp * 0.35);
+      rotateWorld(b.spine_03 ?? null, rgt, lp * 0.25);
+      rotateWorld(b.spine_02 ?? null, fwd, lr * 0.5 * this.side);
+      rotateWorld(b.spine_03 ?? null, fwd, lr * 0.5 * this.side);
+      this.inner.position.y += cl(li.dip, LOCO_CLAMP.dip);
+    } else if (this.loco2.dip !== 0 || this.loco2.pitch !== 0) this.loco2.reset();
     // T3: đứng yên lâu thì tự chơi một idle đặc trưng (xoay kiếm khi đang cầm kiếm, chắp tay ngắm trời khi tay không); bỏ ngay khi di chuyển.
     if (ANIM_FX.idle) {
       const still = free && a.speed < 0.3 && !this.perf && !a.combat && !a.casting && this.baseName !== 'Sitting_Idle_Loop';
