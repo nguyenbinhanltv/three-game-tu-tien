@@ -269,7 +269,9 @@ export function checkStandard2(c: VfxCard, events: readonly TlEvent[], ult: bool
     if (x.type !== 'mesh' && x.type !== 'decal' && x.type !== 'particles') continue;
     const tone = x.tone ?? 'body';
     if (ctx.redTones.has(tone)) {
-      e.push(`${at}: dùng tông ${tone}${x.tone ? '' : ' (mặc định khi không khai tone)'} (đỏ/cam theo bảng màu hướng tu) — dành cho cảnh báo của địch`);
+      e.push(
+        `${at}: dùng tông ${tone}${x.tone ? '' : ' (mặc định khi không khai tone)'} (đỏ/cam theo bảng màu hướng tu) — dành cho cảnh báo của địch`,
+      );
       break;
     }
   }
