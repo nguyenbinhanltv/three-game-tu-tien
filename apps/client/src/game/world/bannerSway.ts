@@ -1,5 +1,5 @@
 import type * as THREE from 'three/webgpu';
-import { float, instanceIndex, positionLocal, sin, time, uv, vec3 } from 'three/tsl';
+import { float, instanceIndex, positionLocal, sin, smoothstep, time, uv, vec3 } from 'three/tsl';
 
 /**
  * Gió cho phướn (PROP-1): material vải (`cloth`) của GLB lưu trọng số lắc ở UV.x (0 ở mép treo, 1 ở đầu tự do; vải không có texture
@@ -25,6 +25,10 @@ export function bannerSway(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandar
   return m;
 }
 
+/** Phần treo của prop nằm ở x > 0,3 m và y > 1,5 m (cột tre và đế ở x ≈ 0 hoặc y ≈ 0 đứng yên). */
+const LANTERN_ARM_X = [0.25, 0.45] as const;
+const LANTERN_ARM_Y = [1.4, 1.6] as const;
+
 /** Đỉnh chỗ treo của lồng đèn giấy `prop_tc_long_den_giay` (m, hình học đã nướng ma trận nút): đèn nằm 1,84–2,76 m, cần treo ~2,85 m. */
 const LANTERN_PIVOT_Y = 2.85;
 /** Thân đèn dưới điểm treo (m) tại đó độ lắc đạt tối đa. */
@@ -32,12 +36,13 @@ const LANTERN_HANG = 0.9;
 
 /**
  * Đèn lồng lắc (M4): con lắc quanh điểm treo, biên độ tỉ lệ với độ thấp so với điểm treo (đèn lắc nhiều, cần treo đứng yên), hai tần số lệch pha theo instance
- * nên cả hàng đèn không đồng bộ, thêm nhịp "gió giật" chậm. Chỉ áp cho vật liệu `lamp` của prop có cờ `lantern` (đèn đá cũng dùng vật liệu `lamp` nhưng không lắc).
+ * nên cả hàng đèn không đồng bộ, thêm nhịp "gió giật" chậm. Áp cho MỌI vật liệu của prop có cờ `lantern` (giấy, nan, vòng, nắp, dây, tua) với CÙNG một độ dịch, để cả cụm treo
+ * lắc như một khối; cột tre và đế được loại theo vị trí cục bộ (không theo tên vật liệu: tua và nan dùng chung vật liệu với phần đứng yên). Thay hẳn `bannerSway` cho prop này.
  */
 export function lanternSway(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardNodeMaterial {
-  if (!m.name.includes('lamp')) return m;
   const p = positionLocal;
-  const w = float(LANTERN_PIVOT_Y).sub(p.y).div(LANTERN_HANG).clamp(0, 1);
+  const arm = smoothstep(LANTERN_ARM_X[0], LANTERN_ARM_X[1], p.x).mul(smoothstep(LANTERN_ARM_Y[0], LANTERN_ARM_Y[1], p.y));
+  const w = float(LANTERN_PIVOT_Y).sub(p.y).div(LANTERN_HANG).clamp(0, 1).mul(arm);
   const phase = instanceIndex.toFloat().mul(2.39);
   const gust = sin(time.mul(0.31).add(phase.mul(0.37)))
     .mul(0.5)

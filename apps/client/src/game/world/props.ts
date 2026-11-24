@@ -617,7 +617,7 @@ export class PropLayer {
         : cfg?.tree || cfg?.sight
           ? withSightFade
           : cfg?.lantern
-            ? (m) => bannerSway(lanternSway(m))
+            ? lanternSway
             : cfg?.sway
               ? bannerSway
               : cfg?.crystal

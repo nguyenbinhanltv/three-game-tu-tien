@@ -7,7 +7,7 @@ interface Cfg {
   shadow?: boolean;
   /** Vải đung đưa theo gió: shader đọc trọng số ở UV.x của material `cloth` (0 mép treo → 1 đầu tự do). */
   sway?: boolean;
-  /** Lồng đèn giấy lắc như con lắc (M4): `lanternSway` (kèm `sway` để vải/tua đèn cũng bay). */
+  /** Lồng đèn giấy lắc như con lắc (M4): `lanternSway` (thay hẳn `bannerSway`: cả cụm treo dịch chung một độ lắc). */
   lantern?: boolean;
   /** Vật liệu tinh thể (gradient màu đỉnh + fresnel): `propCrystal`. */
   crystal?: boolean;
@@ -37,7 +37,7 @@ const TC_NAMES: Record<string, Cfg> = {
   sap_hang: { range: 260, lod: [35, 90] },
   vo_ruou: SMALL,
   gio_thuoc: SMALL,
-  long_den_giay: { range: 220, lod: [30, 80], decor: true, sway: true, lantern: true },
+  long_den_giay: { range: 220, lod: [30, 80], decor: true, lantern: true },
   xe_keo: MEDIUM,
   thung_go: SMALL,
   hang_rao_tre: { range: 200, lod: [30, 80], decor: true },
