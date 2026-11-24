@@ -72,3 +72,9 @@ Lần đầu (bụi cỏ hai tông + nét cọ xoay theo dốc) bị người d�
 ## Cảnh thử đo khớp (đạt)
 
 `?paintedlab=1` (`render/painted/lab/`) dựng cánh đồng của painted-valley (đất, lá mảnh, hoa, Kuwahara paint 3) bằng TSL dịch từng dòng; `tools/painted-compare/ref-capture.mjs` chụp tham chiếu (giờ 15,5, thời gian đóng băng, camera 52°/20 m/FOV 32°, 1080p) và `lab-capture.mjs` chụp bản của ta rồi `compare.mjs` tính SSIM và ΔE. **Kết quả: SSIM 0,931, ΔE00 trung bình 1,82** (ngưỡng ≥ 0,90 và ≤ 5). Dải trên cùng của ảnh (khoảng 7%) còn khác: đất ở xa phía sau đỉnh đồi chưa vẽ trong cảnh thử. Bài học TSL rút ra (`.toVar()` trong `select` phải bọc `Fn` + `varyingProperty`) ở skill `tsl-shaders-vfx`, mục "Bẫy three r178 / TSL".
+
+## Phản hồi chiến đấu, VFX và bloom dưới Họa Cảnh
+
+- Pass cuối `paintedOutput` (`render/painted/frame.ts`) nhận thêm hai móc: `aberration` (quang sai màu khi trúng đòn, lấy mẫu lệch R/B) và `overlay` (lớp phủ ở không gian hiển thị). `PostPipeline` truyền `feedbackLayers` (`render/post.ts`) làm `overlay`, nên `hit()`, `flash()`, `impactFrame()`, `punch()`, nhuộm chuyển pha và mực khi chết vẫn hoạt động như chuỗi thường.
+- Kuwahara bỏ qua điểm sáng HDR: ảnh trả về ảnh gốc dần khi độ chói đi từ 1,3 đến 2,2, để VFX (chuẩn HPL2) và nhân vật rực sáng không bị nhòe.
+- Bloom TẮT khi `?style=painted` (quyết định tạm: painted-valley không có bloom; VFX sẽ mất quầng sáng). Khi Họa Cảnh thành mặc định (P10) cần quyết định riêng: bật lại bloom chỉ cho lớp VFX hay chấp nhận không có.

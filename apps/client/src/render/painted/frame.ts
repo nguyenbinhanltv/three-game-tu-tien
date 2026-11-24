@@ -9,6 +9,7 @@ import {
   screenSize,
   screenUV,
   select,
+  smoothstep,
   step,
   uniform,
   vec2,
@@ -31,6 +32,10 @@ export interface PaintedOutputOpts {
   paint: number;
   exposure: number;
   vignette: number;
+  /** Độ lệch quang sai màu (UV, 0 = không): R/B lấy mẫu lệch hướng ra mép (trúng đòn). */
+  aberration?: N;
+  /** Lớp phủ ở không gian hiển thị (sau sRGB): chớp, viền trúng đòn, khung va chạm… */
+  overlay?: (rgb: N) => N;
 }
 
 /**
@@ -97,6 +102,8 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
     // a finer brush for what is near: grass at your feet keeps its blades, the far country goes to flat paint
     const away: N = float(0.12).div(max1(float(1).sub(tDepth.sample(uv).r)));
     // (what is painted already keeps its detail)
+    // VFX/điểm sáng HDR (độ chói 1,3..2,2 mờ dần về ảnh gốc) không bị nhòe (nguyên tắc 5: VFX giữ chuẩn HPL2)
+    const hiLum: N = dot(c0.rgb, vec3(0.2126, 0.7152, 0.0722));
     const done: N = c0.a.lessThan(0.6);
     // The brush is broadest in the middle distance, where grass is a mass. Near, it leaves the strokes of the blades alone; far off,
     // where a house is a few pixels across, it leaves those alone too.
@@ -104,13 +111,19 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
     const useOne: N = away.lessThan(16).or(away.greaterThan(140));
     const wide: N = rWide >= 2 ? kuwahara(uv, 2) : kuwahara(uv, 1);
     const one: N = kuwahara(uv, 1);
-    c = select(done, c0.rgb, select(useOne, one, wide));
+    const painted: N = select(done, c0.rgb, select(useOne, one, wide));
+    c = mix(painted, c0.rgb, smoothstep(1.3, 2.2, hiLum));
   } else {
     c = c0.rgb;
   }
   // (the line is the colour under it: only for a figure, which writes a small alpha; none here)
   const d: N = uv.sub(0.5);
   c = c.mul(float(1).sub(float(o.vignette).mul(dot(d, d)).mul(1.6)));
+  if (o.aberration) {
+    // quang sai màu khi trúng đòn (0 khi không trúng): kênh R/B lấy mẫu lệch ra mép
+    const ca: N = d.mul(o.aberration);
+    c = vec3(c.r.add(hdr(uv.add(ca)).r.sub(c0.r).mul(0.6)), c.g, c.b.add(hdr(uv.sub(ca)).b.sub(c0.b).mul(0.6)));
+  }
   c = c.mul(o.exposure);
   // đêm Họa Cảnh: giữ ít tông (sáng/tối của bản vẽ), nhuộm lam ánh trăng, tối rõ nhưng còn đọc được hình
   const ln: N = dot(c, vec3(0.2126, 0.7152, 0.0722));
@@ -133,6 +146,7 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
       step(0.0031308, x),
     );
   c = toSrgb(c);
+  if (o.overlay) c = o.overlay(c);
   const n: N = fract(fract(dot(screenCoordinate.xy, vec2(0.06711056, 0.00583715))).mul(52.9829189));
   return vec4(c.add(n.sub(0.5).div(255)), 1);
 }
