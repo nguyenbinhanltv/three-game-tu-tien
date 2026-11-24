@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { calliOf } from '../../base/calli';
 import { logger } from '../../base/log';
 import { createWorldMaterial } from '../../render/materials/world';
+import { ASSET_BASE } from '../../base/assetBase';
 
 const log = logger('sectSigns');
 
@@ -21,7 +22,7 @@ const cache = new Map<string, THREE.Texture>();
 function textureOf(file: string): THREE.Texture {
   let tex = cache.get(file);
   if (!tex) {
-    tex = new THREE.TextureLoader().load(`/assets/calli/${file}`);
+    tex = new THREE.TextureLoader().load(`${ASSET_BASE}assets/calli/${file}`);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 8;
     cache.set(file, tex);

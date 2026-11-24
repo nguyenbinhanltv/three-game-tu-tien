@@ -5,6 +5,7 @@ import { useReduceMotion } from '../u2/shell';
 import { motionAt } from './hoaMotion';
 import { TierBack, TierFront, tierUrl } from './TierLayers';
 import type { PortraitPick } from './portraitPick';
+import { ASSET_BASE, ASSET_CROSS_ORIGIN } from '../../base/assetBase';
 
 /** Đường dẫn tranh (nạp lười khi mở bảng, không nằm trong tải đầu). */
 const url = tierUrl;
@@ -12,7 +13,7 @@ const url = tierUrl;
 /** Tâm thân từng tranh (0–1 theo bề ngang ảnh, `tools/hoa-truc/centers.py`): tay áo/lụa bay lệch nên tâm khung ≠ tâm người. */
 let centers: Promise<Record<string, { cx?: number }>> | undefined;
 function loadCenters(): Promise<Record<string, { cx?: number }>> {
-  centers ??= fetch(`${import.meta.env.BASE_URL}hoa-truc/manifest.json`)
+  centers ??= fetch(`${ASSET_BASE}hoa-truc/manifest.json`)
     .then((r) => (r.ok ? r.json() : {}))
     .catch(() => ({}));
   return centers;
@@ -24,6 +25,7 @@ function load(name: string): Promise<HTMLImageElement | null> {
   if (!p) {
     p = new Promise((resolve) => {
       const im = new Image();
+      im.crossOrigin = ASSET_CROSS_ORIGIN ?? null;
       im.onload = () => resolve(im);
       im.onerror = () => resolve(null);
       im.src = url(name);

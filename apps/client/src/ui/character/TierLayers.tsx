@@ -3,9 +3,10 @@ import { realmName } from '@dtl/content';
 import { useUI } from '../store';
 import { brushColumns, renderBrushName } from './brushName';
 import type { PortraitPick } from './portraitPick';
+import { ASSET_BASE } from '../../base/assetBase';
 
 /** Đường dẫn ảnh tranh/lớp (nạp lười khi mở bảng, không nằm trong tải đầu). */
-export const tierUrl = (name: string): string => `${import.meta.env.BASE_URL}hoa-truc/${name}.webp`;
+export const tierUrl = (name: string): string => `${ASSET_BASE}hoa-truc/${name}.webp`;
 const url = tierUrl;
 
 /** Vân phù: các nét "chữ" tự tạo (xác định theo seed, KHÔNG phải chữ Hán thật) xếp quanh một vành elip. */

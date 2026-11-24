@@ -9,10 +9,10 @@ import { SkillPanel } from './SkillPanel';
 import { skillForId } from './skillTiming';
 import { currentSearch, urlParams } from '../base/flags';
 import { logger } from '../base/log';
+import { ASSET_BASE } from '../base/assetBase';
 
 const viewerLog = logger('viewer');
 
-const BASE_URL = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL;
 /** Chỉ nhận đường dẫn tương đối cùng origin tới .glb/.gltf, không có "..". */
 const SAFE_PATH = /^[\w\-./]+\.(glb|gltf)$/i;
 
@@ -22,7 +22,7 @@ const m = (n: number) => n.toLocaleString('vi-VN', { maximumFractionDigits: 2 })
 function resolveFile(file: string): string | null {
   const p = file.replace(/^\/+/, '');
   if (!SAFE_PATH.test(p) || p.includes('..')) return null;
-  return BASE_URL + p;
+  return ASSET_BASE + p;
 }
 
 export function AssetViewer() {

@@ -7,6 +7,10 @@
     "build": "tsx src/cli.ts build",
     "optimize": "tsx src/cli.ts optimize",
     "validate": "tsx src/cli.ts validate",
+    "lock": "tsx src/cli.ts lock",
+    "push": "tsx src/cli.ts push",
+    "pull": "tsx src/cli.ts pull",
+    "gc": "tsx src/cli.ts gc",
     "impostor": "tsx src/impostor.ts",
     "minimap": "tsx src/minimap.ts",
     "typecheck": "tsc -p tsconfig.json",
@@ -16,6 +20,7 @@
     "colliders:prop": "tsx src/propboxes.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1176.0",
     "@dtl/content": "workspace:*",
     "@dtl/shared": "workspace:*",
     "@gltf-transform/core": "^4.5.1",

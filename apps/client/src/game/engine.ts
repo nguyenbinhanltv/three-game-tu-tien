@@ -162,6 +162,7 @@ import {
 } from './engine/levelLoad';
 import { applyInit, bindRoom, onHazard, rebind } from './engine/room';
 import { logger } from '../base/log';
+import { ASSET_BASE } from '../base/assetBase';
 
 const levelLog = logger('level');
 const engineLog = logger('engine');
@@ -903,7 +904,7 @@ export class Game {
       await Promise.all([
         newSet
           ? loadGroundTextures(
-              import.meta.env.BASE_URL,
+              ASSET_BASE,
               {
                 get aborted() {
                   return self.disposed;
@@ -1406,7 +1407,7 @@ export class Game {
     try {
       const self = this;
       const next = await loadGroundTextures(
-        import.meta.env.BASE_URL,
+        ASSET_BASE,
         {
           get aborted() {
             return self.disposed;
