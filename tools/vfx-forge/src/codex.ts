@@ -1,17 +1,36 @@
 // Gọi Codex sinh ảnh cho quy trình Họa Pháp Lô (cùng cách các script tools/codex-assets: `codex exec` + công cụ tạo ảnh có sẵn).
 // Ảnh ra để ở thư mục `--out` NGOÀI repo (artifact phiên / dtl-asset-source); chỉ texture đã qua lò rèn mới vào repo (KTX2).
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { PATH } from '@dtl/content';
-import type { VfxCard } from '@dtl/shared';
+import type { MonVfxCard, VfxCard } from '@dtl/shared';
 import { quoteArg } from './quote.js';
-import { conceptPrompt, DEFAULT_RUN_NOTE, texturePrompt, type PalHex, type StyleSheet, type TextureKind } from './prompts.js';
+import {
+  conceptPrompt,
+  DEFAULT_RUN_NOTE,
+  monConceptPrompt,
+  texturePrompt,
+  type PalHex,
+  type StyleSheet,
+  type TextureKind,
+} from './prompts.js';
 
 export function loadCard(root: string, skillId: string): VfxCard {
   const f = path.join(root, 'packages/content/data/vfx/cards', `${skillId}.json`);
   if (!fs.existsSync(f)) throw new Error(`chưa có thẻ chiêu ${skillId} (${f})`);
   return JSON.parse(fs.readFileSync(f, 'utf8')) as VfxCard;
+}
+
+export function loadMonCard(root: string, id: string): MonVfxCard {
+  const f = path.join(root, 'packages/content/data/vfx/cards/mon', `${id}.json`);
+  if (!fs.existsSync(f)) throw new Error(`chưa có thẻ chiêu quái ${id} (${f})`);
+  return JSON.parse(fs.readFileSync(f, 'utf8')) as MonVfxCard;
+}
+
+export function monConceptJob(root: string, id: string, shot: string, refs: string[], outDir: string): CodexJob {
+  return { name: `${id}_concept`, prompt: monConceptPrompt(loadMonCard(root, id), loadStyle(root)), images: [shot, ...refs], outDir };
 }
 
 export const loadStyle = (root: string): StyleSheet =>
@@ -43,7 +62,47 @@ export interface CodexResult {
   log: string;
 }
 
+/**
+ * Codex sinh ảnh xong nhưng bước `Copy-Item` ra thư mục việc đôi khi hỏng (sandbox của Codex trên Windows: "Failed to create unified exec process") hoặc treo tới quá giờ.
+ * Ảnh vẫn nằm ở `~/.codex/generated_images/<session id>/`: đọc session id từ log và chép PNG mới nhất ra `out`. Trả null nếu không có.
+ */
+export function rescueFromCodexStore(logFile: string, out: string): string | null {
+  try {
+    const sid = /session id:\s*([0-9a-f-]{20,})/i.exec(fs.readFileSync(logFile, 'utf8'))?.[1];
+    if (!sid) return null;
+    const dir = path.join(os.homedir(), '.codex', 'generated_images', sid);
+    if (!fs.existsSync(dir)) return null;
+    const pngs = fs
+      .readdirSync(dir)
+      .filter((f) => f.toLowerCase().endsWith('.png'))
+      .map((f) => ({ f, t: fs.statSync(path.join(dir, f)).mtimeMs }))
+      .sort((a, b) => b.t - a.t);
+    if (!pngs.length) return null;
+    fs.copyFileSync(path.join(dir, pngs[0]!.f), out);
+    return out;
+  } catch {
+    return null;
+  }
+}
+
 /** Chạy một việc Codex. Prompt và log (stdout+stderr) được lưu cạnh ảnh để tái lập và chẩn đoán. */
+/** Giết cả cây tiến trình (shell + codex + con): `p.kill()` với shell:true chỉ giết shell, để lại codex mồ côi làm nghẽn dịch vụ. */
+export function killTree(pid: number | undefined): void {
+  if (!pid) return;
+  if (process.platform === 'win32') spawnSync('taskkill', ['/T', '/F', '/PID', String(pid)]);
+  else {
+    try {
+      process.kill(-pid, 'SIGKILL');
+    } catch {
+      try {
+        process.kill(pid, 'SIGKILL');
+      } catch {
+        /* đã thoát */
+      }
+    }
+  }
+}
+
 export function runCodex(job: CodexJob): Promise<CodexResult> {
   fs.mkdirSync(job.outDir, { recursive: true });
   const out = path.join(job.outDir, `${job.name}.png`);
@@ -67,14 +126,15 @@ export function runCodex(job: CodexJob): Promise<CodexResult> {
       done = true;
       clearTimeout(t);
       if (note) log.write(`\n[vfx-forge] ${note}\n`);
-      log.end(() => resolve({ file: fs.existsSync(out) ? out : null, code, log: logFile }));
+      log.end(() => resolve({ file: fs.existsSync(out) ? out : rescueFromCodexStore(logFile, out), code, log: logFile }));
     };
     const t = setTimeout(
       () => {
-        p.kill();
+        // chỉ giết khi tiến trình CHƯA thoát (PID đã thoát có thể bị Windows tái dùng cho tiến trình khác)
+        if (p.exitCode === null && p.signalCode === null) killTree(p.pid);
         finish(null, 'quá giờ');
       },
-      job.timeoutMs ?? 8 * 60_000,
+      job.timeoutMs ?? 5 * 60_000,
     );
     p.on('close', (code) => finish(code));
     p.on('error', (e) => finish(null, `không chạy được codex: ${e.message}`));

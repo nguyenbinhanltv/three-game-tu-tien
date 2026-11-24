@@ -46,8 +46,12 @@ import {
   validatePose,
   validateFxTimeline,
   validateVfxCard,
+  checkStandard2,
+  isRedOrange,
+  validateMonVfxCard,
   FLIP_ATLASES,
   type VfxCard,
+  type MonVfxCard,
   fxDrawCount,
   fxParticleCount,
   FX_SKILL_DRAW_MAX,
@@ -214,6 +218,21 @@ for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKIL
       (id) => PATH.has(id),
     ))
       err(m);
+    // Chuẩn "Họa Pháp Lô 2": thẻ khai `standard: 2` thì kiểm các luật đo được trên timeline (xem `checkStandard2`).
+    if (card.standard === 2) {
+      const tl2 = FX_TIMELINES.find((t) => t.skill === card.skillId);
+      const pal = PATH.get(card.path)?.palette as Record<string, string> | undefined;
+      const redTones = new Set(
+        Object.entries(pal ?? {})
+          .filter(([, hex]) => isRedOrange(hex))
+          .map(([tone]) => tone),
+      );
+      for (const m of checkStandard2(card, tl2?.events ?? [], !!SKILL.get(card.skillId)?.ult, {
+        redTones,
+        hitAt: SKILL.get(card.skillId)?.hitAt?.[0],
+      }))
+        err(m);
+    }
     // Thẻ là nguồn ý đồ: `impactFrame` phải khớp việc timeline có sự kiện `impact`.
     const tl = FX_TIMELINES.find((t) => t.skill === card.skillId);
     const hasImpact = !!tl?.events.some((e) => e.type === 'impact');
@@ -225,6 +244,30 @@ for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKIL
       if (t.id.startsWith('proc:')) {
         if (!(FLIP_ATLASES as readonly string[]).includes(t.id.slice(5))) err(`vfxcard ${card.skillId}: atlas thủ tục lạ ${t.id}`);
       } else if (!vfxTexIds.has(t.id)) err(`vfxcard ${card.skillId}: texture ${t.id} chưa có trong assets/vfx/manifest.json`);
+    }
+  }
+}
+// Thẻ chiêu VFX của quái/boss (V-P9): data/vfx/cards/mon/<monId>__<move>.json; vùng và nhịp nạp phải bằng `ai` của quái (không vẽ nói dối hitbox).
+{
+  const dir = new URL('../data/vfx/cards/mon/', import.meta.url);
+  const moveOf = (key: string) => {
+    const [monId, mv] = key.split(':');
+    const def = MONSTER.get(monId!) as
+      | {
+          ai?: Record<string, { r: number; delay: number; shape?: string; cone?: { r: number; delay: number } } | undefined>;
+          phases?: { ai?: Record<string, { r: number; delay: number; shape?: string } | undefined> }[];
+        }
+      | undefined;
+    const c = def?.ai?.[mv!] ?? def?.phases?.map((p) => p.ai?.[mv!]).find(Boolean);
+    if (!c) return undefined;
+    const shape = mv === 'sweep' ? (c.shape === 'rect' ? 'rect' : 'cone') : mv === 'line' || mv === 'charge' ? 'rect' : 'circle';
+    return { r: c.r, delay: c.delay, shape: shape as 'circle' | 'cone' | 'rect' };
+  };
+  if (fs.existsSync(dir)) {
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.json'))) {
+      const card = JSON.parse(fs.readFileSync(new URL(f, dir), 'utf8')) as MonVfxCard;
+      if (f !== `${card.monId}__${card.move}.json`) err(`vfxcard mon ${f}: tên file phải là ${card.monId}__${card.move}.json`);
+      for (const m of validateMonVfxCard(card, { move: moveOf, exists: (id) => MONSTER.has(id) })) err(m);
     }
   }
 }

@@ -31,6 +31,8 @@ import {
 } from '../game/fx/fxSettings';
 import type { AuraCombat, AuraMode, AuraOthers } from '../game/fx/realmAuraRules';
 import { uiScale } from './uiScale';
+import { isTouchMode } from '../input/touchMode';
+import { modeOf, windowClear } from './u2/hud/layout';
 import {
   closeWindow,
   fitWindows,
@@ -566,7 +568,18 @@ export function panelScale(p: Panel): number {
 
 function viewportFor(p: Panel): Viewport {
   const k = panelScale(p);
-  return { vw: window.innerWidth / k, vh: window.innerHeight / k };
+  const vw = window.innerWidth / k;
+  const vh = window.innerHeight / k;
+  // Chừa đúng theo khối HUD đang hiện (thanh chiêu + máu, cột góc phải), tính từ `u2/hud/layout.ts`.
+  const mode = modeOf(uiScale(), isTouchMode());
+  return {
+    vw,
+    vh,
+    clear:
+      p === 'map'
+        ? null
+        : windowClear(vw, vh, mode, { skillLayout: useUI.getState().skillLayout, questCollapsed: useUI.getState().questCollapsed }),
+  };
 }
 
 // Đổi cỡ cửa sổ trình duyệt: co các bảng đang mở vào khung nhìn mới (UI-5, 1366×768 không bị tràn mép).

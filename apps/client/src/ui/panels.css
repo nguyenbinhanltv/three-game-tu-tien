@@ -920,7 +920,7 @@ body > .k-tip {
   position: static;
   transform: none;
   /* Không để bảng tràn xuống thanh chiêu dù người chơi kéo thấp. */
-  max-height: max(240px, calc(100vh / var(--s) - var(--y, 0px) - 140px));
+  max-height: max(240px, calc(100vh / var(--s) - var(--y, 0px) - var(--h-win-bottom, 136px) - 4px));
 }
 .win-host .k-head {
   cursor: grab;

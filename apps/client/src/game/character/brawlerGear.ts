@@ -18,13 +18,13 @@ export const BRAWLER_COLORS = {
 } as const;
 
 /**
- * Cổ Thần (TN-5): cùng bộ găng + giáp của Thể tu nhưng "nâng cấp": đổi sang huyết đồng (đỏ sẫm / đỏ đồng / vàng cổ) và thêm gai xương
+ * Cổ Thần (TN-5): cùng bộ găng + giáp của Thể tu nhưng "nâng cấp": đổi sang nâu đất / nâu đồng / hổ phách (24/11, bỏ đỏ) và thêm gai xương
  * trên giáp vai. Thủ tục như bộ gốc: vẫn MỘT SkinnedMesh, +0 draw call so với Thể tu.
  */
 export const COTHAN_COLORS = {
-  earth: 0x3a0d0d,
-  bronze: 0xb3322a,
-  brass: 0xe8b04a,
+  earth: 0x2a1d12,
+  bronze: 0x7a5a3a,
+  brass: 0xe0bc40,
 } as const;
 
 const RECOLOR = new Map<number, number>([
