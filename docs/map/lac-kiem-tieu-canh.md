@@ -30,6 +30,24 @@ vài hác tự nhiên sâu 10–30 m ở vành ngoài. Chọn hác tại (−146
 - **Cầu treo ĐI ĐƯỢC** (PR cầu treo): hác khoét thật vào heightmap dùng chung (`TerrainDef.gorges`, `TC_GORGE` ở `tieucanh.ts`, sâu thêm 5 m, đáy ~17 m dưới mặt cầu giữa nhịp); mặt cầu là hộp `walk` dốc theo võng + hai lan can đặc cao 2,4 m (`cautreo.ts`, đăng ký va chạm trong `content/colliders.ts`), server quyết định vị trí trên ván bằng `stepMove`, client dự đoán cùng dữ liệu. Không rơi khỏi cầu (lan can cao hơn tầm nhảy, hai đầu hở); đi dưới đáy hác ngay dưới cầu không bị hút lên ván. Tiếng bước chân gỗ trên ván (`surface.ts`), chuột phải/ngắm trên ván chọn mặt cầu (`camera/pickGround.ts`). Hác có áo đá tầng phủ sườn dốc, suối và sương dưới đáy.
 - **Lối men vách** bám địa hình (đi được), dẫn từ sân tới đầu cầu. Bản đầu đi thẳng theo sườn tới 30°+ rồi đứt ở vách 6 m; nay đi vòng có một điểm quặt (`TC_LOI_VACH` ở `tieucanh.ts`), dốc ≤ ~22°, đầu cầu dời lên bờ cao (`TC_BRIDGE.cx` −143,2).
 
+## M3: sáu tiểu cảnh kể chuyện trên mặt đất
+
+Không phủ cả bản đồ (đã thử lớp "wash" nhiễu toàn sân: đắt, nhạt, bỏ). Thay vào đó 6 tiểu cảnh đặt tay ở chỗ người chơi chắc chắn đi qua, bám prop có sẵn, đọc được trong một giây từ camera chéo
+(`apps/client/src/game/world/lacKiemGround.ts`, `vignettes()`, tắt bằng `?ground=0`). Chỉ là decal dẹt bám địa hình (≤ 0,15 m, không che người/mục tiêu), client-only, tất định, không va chạm. HAI mesh = 2 draw call:
+`ground` (một shader chọn mẫu theo thuộc tính `aK`: vệt chân + bánh xe, nứt, nứt tỏa tia, rễ + rêu, rêu dải, lá gom, đá vụn, ấn trận phát sáng nhẹ) và `puddle` (phản chiếu trời + lá nổi).
+
+| # | Tiểu cảnh (điểm chụp, tương đối tâm) | Kể chuyện gì |
+|---|---|---|
+| 1 | Bãi tập kiếm bỏ hoang (66, 58) | kiếm gãy cắm đất, vệt chân xoáy tròn quanh bia, ấn kiếm trận cũ mờ dưới đất, đống lá, vũng đọng bên đá |
+| 2 | Vũng nước sau mưa trước cổng bài (8, 106) | vũng phản chiếu trời với lá rơi nổi, rễ cỏ bên đá |
+| 3 | Gốc cổ thụ bên ao (−55, 55) | rễ trồi tỏa quanh đèn đá và linh thảo cúng, rêu men theo rễ, đường mòn vòng bờ ao |
+| 4 | Lối mòn đệ tử (84, 22) | vệt bánh xe đẩy + dấu chân dẫn ra thạch lâm, đá vụn rơi vãi, vũng bên đường |
+| 5 | Sân luyện công (9, 46) | ấn trận khắc chìm dưới đá lát, gạch nứt tỏa tia từ chỗ một chưởng đánh xuống |
+| 6 | Chân tường sơn môn (30, 85) | dải rêu men theo khe chân tường, lá gom thành đống ở góc |
+
+Bẫy: đường lát đá trước cổng bài và phiến lối men vách là vật 3D nằm TRÊN đất nên decal ở đó bị che (cho nên không đặt). Dải tam giác phải quay mặt lên (đã gặp: mặt dưới bị cắt nên mất vết chân). Cộng sáng (additive) làm ấn trận trắng bệch giữa ngày, dùng pha trộn thường + phát sáng nhẹ. Màu decal bị ánh sáng ngày nhân lên nên phải chọn tối hơn tưởng tượng (màu đất 0,07 ra vệt nâu vừa phải). Camera chéo xoay 30°: decal đặt lệch tâm so với điểm đứng sẽ rơi ra góc khung, đặt tâm decal sát điểm đứng.
+Ngân sách đo (`pnpm shots tieucanh --perf 1`, A/B `--query "&ground=0"`, 6 điểm × ngày/hoàng hôn × 720p/1080p): +2 draw call (96,5 → 98,0), +~4k tam giác (+0,5%), khung 8,35 → 8,37 ms (máy khóa nhịp 8,33 ms: chênh trung vị 0,0 ms, ≤ ~0,1 ms). Ảnh cận: `--dpr 2`.
+
 ## Sight fade (bắt buộc)
 
 Mọi vật cao dùng `withSightFade` (đèn phát sáng cũng vậy): mờ khi nằm giữa camera và người/mục tiêu. Sương hác mềm mép theo độ sâu (`viewportLinearDepth`),
