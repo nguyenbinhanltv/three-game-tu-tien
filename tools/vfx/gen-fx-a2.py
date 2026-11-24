@@ -19,8 +19,8 @@ LIFT = 0.35
 
 
 def sp(name, t, dur, size, x=0.0, y=0.0, z=0.0, k=1.0, alpha=0.95, erode=0.35, flat=False, aim=False, to=None, size_to=None, seed=0, tone='body'):
-    """Một sprite (mét thật; `k` = hệ số mul của vùng để chia ngược). `to` = (x, z) đích trượt tới (mét thật)."""
-    e = mesh('sprite', t, dur, tone, alpha, seed, sprite=name, scale=round(size / k, 3), scaleTo=round((size_to or size) / k, 3),
+    """Một sprite: `size` = cạnh ô vuông bằng mét thật (scale của mesh là NỬA cạnh vì ô rộng 2 đơn vị); `k` = hệ số mul của vùng để chia ngược. `to` = (x, z) đích trượt tới (mét thật)."""
+    e = mesh('sprite', t, dur, tone, alpha, seed, sprite=name, scale=round(size / 2 / k, 3), scaleTo=round((size_to or size) / 2 / k, 3),
              offset=[round(x / k, 3), round(y / k, 3), round(z / k, 3)], erodeFrom=erode, sweep=0, ragged=0.5, tier=0)
     if flat:
         e['billboard'] = False
@@ -43,11 +43,11 @@ cast_ring(B, 8, PW)
 write(f'mon_warn__{B}__slam', warn_circle(1.5, 35, -50), PW)
 write(f'mon_boom_circle__{B}__slam', [  # r7: mul 1,75 (viết theo r=4)
     decal('scorch', 0, 4, 2.6, 'core', 0.95, 0.02, top=False, untilDelay=False, lift=LIFT),  # vũng nước sẫm
-    sp('thuy_whirl', 0.0, 1.1, 8.6, y=0.4, flat=True, erode=0.45, seed=1100),
-    sp('thuy_foam_ring', 0.03, 0.95, 9.0, y=0.45, flat=True, alpha=0.9, erode=0.4, seed=1101),
-    sp('thuy_spray', 0.02, 0.55, 6.0, y=0.5, flat=True, alpha=0.9, erode=0.2, seed=1102),
-    sp('thuy_spout', 0.03, 0.8, 4.6, y=2.2, alpha=0.95, erode=0.4, seed=1103),
-    *[sp('thuy_jet', 0.02 + i * 0.03, 0.7, 3.6, x=p[0], y=1.6, z=p[1], alpha=0.95, erode=0.35, seed=1104 + i) for i, p in enumerate(ring_pts(4, 2.9))],
+    sp('thuy_whirl', 0.0, 0.9, 8.0, y=0.4, flat=True, alpha=0.8, erode=0.3, seed=1100),
+    sp('thuy_foam_ring', 0.03, 0.8, 8.4, y=0.45, flat=True, alpha=0.7, erode=0.3, seed=1101),
+    sp('thuy_spray', 0.02, 0.5, 5.0, y=0.5, flat=True, alpha=0.75, erode=0.15, seed=1102),
+    sp('thuy_spout', 0.03, 0.7, 5.0, y=2.5, k=1.75, alpha=0.9, erode=0.3, seed=1103),
+    *[sp('thuy_jet', 0.02 + i * 0.03, 0.6, 3.6, x=p[0], y=1.8, z=p[1], k=1.75, alpha=0.9, erode=0.3, seed=1104 + i) for i, p in enumerate(ring_pts(4, 4.6))],
     parts('dust', 0, 40, 4, 0.9, 1.0, 0.26, 'rim', offset=[0, 0.3, 0], grav=0.8),  # bọt trắng
     parts('shard', 0, 34, 7, 0.9, 0.8, 0.1, 'body', offset=[0, 0.3, 0], grav=10, tier=0),  # giọt nước bắn
 ], PW)
@@ -78,11 +78,11 @@ K = 1.0
 write(f'mon_warn__{B}__chant', warn_circle(1.2, 70, -20, spark=24), PW)
 write(f'mon_boom_circle__{B}__chant', [  # r8, mul 2
     decal('scorch', 0, 4, 2.8, 'core', 0.95, 0.03, top=False, untilDelay=False, lift=LIFT),
-    sp('thuy_whirl', 0.0, 1.3, 8.8, y=0.4, flat=True, erode=0.5, seed=1400),  # xoáy hút vào tâm
-    sp('thuy_foam_ring', 0.04, 1.05, 9.2, y=0.45, flat=True, alpha=0.9, erode=0.45, seed=1401),
-    sp('thuy_spray', 0.02, 0.6, 6.4, y=0.5, flat=True, alpha=0.9, erode=0.2, seed=1402),
-    sp('thuy_spout', 0.03, 0.95, 5.4, y=2.6, alpha=0.95, erode=0.45, seed=1403),
-    *[sp('thuy_jet', 0.02 + i * 0.03, 0.75, 3.8, x=p[0], y=1.7, z=p[1], alpha=0.95, erode=0.35, seed=1404 + i) for i, p in enumerate(ring_pts(5, 3.0))],
+    sp('thuy_whirl', 0.0, 1.1, 8.0, y=0.4, flat=True, alpha=0.8, erode=0.4, seed=1400),  # xoáy hút vào tâm
+    sp('thuy_foam_ring', 0.04, 0.95, 8.4, y=0.45, flat=True, alpha=0.7, erode=0.35, seed=1401),
+    sp('thuy_spray', 0.02, 0.55, 5.4, y=0.5, flat=True, alpha=0.75, erode=0.15, seed=1402),
+    sp('thuy_spout', 0.03, 0.85, 5.6, y=2.7, k=2.0, alpha=0.9, erode=0.4, seed=1403),
+    *[sp('thuy_jet', 0.02 + i * 0.03, 0.65, 3.8, x=p[0], y=1.9, z=p[1], k=2.0, alpha=0.9, erode=0.3, seed=1404 + i) for i, p in enumerate(ring_pts(5, 5.4))],
     parts('dust', 0, 44, 4, 1, 1.0, 0.26, 'rim', offset=[0, 0.3, 0], grav=0.8),
     parts('shard', 0, 36, 5, 1, 0.9, 0.1, 'body', offset=[0, 0.3, 0], grav=8, tier=0),
 ], PW)
@@ -93,11 +93,11 @@ PK = 'mon_boss_kim'
 write(f'mon_warn__{B}__slam', warn_circle(1.6, 35, -50), PK)
 write(f'mon_boom_circle__{B}__slam', [  # r5, mul 1,25
     decal('steel_crack', 0, 4, 2.4, 'core', 0.85, 0.02, top=False, untilDelay=False, lift=LIFT),  # mặt gương tối
-    sp('nguyet_scar', 0.0, 1.3, 8.6, y=0.4, flat=True, erode=0.5, seed=1500),  # vết trăng trên đất
-    sp('nguyet_ring', 0.03, 1.0, 8.0, y=0.45, flat=True, alpha=0.85, erode=0.4, seed=1501),
-    sp('nguyet_burst', 0.02, 0.7, 7.2, y=0.5, flat=True, alpha=0.95, erode=0.3, seed=1502),
-    *[sp('nguyet_blade', 0.05 * i, 0.85, 5.2, x=p[0], y=1.3, z=p[1], alpha=1.0, erode=0.4, seed=1503 + i) for i, p in enumerate(ring_pts(3, 2.2, 0.9))],
-    *[sp('nguyet_shards', 0.03 + 0.04 * i, 0.8, 3.6, x=p[0], y=1.1, z=p[1], alpha=0.95, erode=0.4, seed=1510 + i) for i, p in enumerate(ring_pts(2, 3.0, 2.2))],
+    sp('nguyet_scar', 0.0, 1.1, 7.6, y=0.4, flat=True, alpha=0.85, erode=0.4, seed=1500),  # vết trăng trên đất
+    sp('nguyet_ring', 0.03, 0.9, 7.2, y=0.45, flat=True, alpha=0.75, erode=0.35, seed=1501),
+    sp('nguyet_burst', 0.02, 0.6, 6.4, y=0.5, flat=True, alpha=0.85, erode=0.25, seed=1502),
+    *[sp('nguyet_blade', 0.05 * i, 0.8, 5.6, x=p[0], y=1.5, z=p[1], k=1.25, alpha=1.0, erode=0.35, seed=1503 + i) for i, p in enumerate(ring_pts(3, 2.6, 0.9))],
+    *[sp('nguyet_shards', 0.03 + 0.04 * i, 0.75, 3.8, x=p[0], y=1.2, z=p[1], k=1.25, alpha=0.95, erode=0.35, seed=1510 + i) for i, p in enumerate(ring_pts(2, 3.6, 2.2))],
     parts('shard', 0, 34, 6, 0.9, 0.8, 0.1, 'rim', offset=[0, 0.3, 0], grav=9, tier=0),
     parts('spark', 0, 24, 5, 0.9, 0.8, 0.08, 'rim', offset=[0, 0.4, 0], grav=2, tier=0),
 ], PK)
