@@ -1,0 +1,33 @@
+{
+  "monId": "boss_dia_mach_long",
+  "move": "chant",
+  "idea": "Địa Mạch Long niệm địa chấn: vòng cảnh báo ĐỎ rất lớn bán kính 14 m quanh boss, vân nứt đất đỏ lan dần ra rìa và bụi dâng trong lúc niệm; hết niệm đĩa đỏ đậm dần rồi mặt đất sụp thành vòng xoáy đá vỡ nâu, ánh ngọc lam trào ra từ khe nứt, gây choáng.",
+  "element": "tho",
+  "palette": {
+    "core": "3a2308",
+    "body": "b07a32",
+    "rim": "ffe7b0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "ring",
+    "spiral"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 14,
+    "at": "self"
+  },
+  "timing": {
+    "anticipationMs": 900,
+    "impactMs": 160,
+    "lingerMs": 900
+  },
+  "readability": "Vòng đỏ mỏng lúc niệm rồi đặc ở 0,9 s cuối; khối đá vỡ nâu + khe ngọc lam đọc rõ trên nền sáng; rìa 14 m phải chính xác.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}
