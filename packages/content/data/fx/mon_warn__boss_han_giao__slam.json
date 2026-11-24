@@ -11,27 +11,11 @@
    "at": "area",
    "grow": 0.04,
    "tone": "accent",
-   "alpha": 0.3,
+   "alpha": 0.9,
    "tier": 0,
    "from": "start",
    "top": true,
    "yaw": -50,
-   "untilDelay": true
-  },
-  {
-   "type": "decal",
-   "tex": "scorch",
-   "t": 0,
-   "r": 4,
-   "dur": 2,
-   "at": "area",
-   "grow": 1.6,
-   "tone": "accent",
-   "alpha": 0.5,
-   "tier": 0,
-   "from": "start",
-   "top": true,
-   "yaw": 0,
    "untilDelay": true
   },
   {

@@ -82,6 +82,7 @@ async function run(r: Run, mon: string, moves: string[], sizes: string[], at: nu
           await advance(page, want - clock);
           clock = want;
         }
+        await page.evaluate('window.__game.clearTarget()'); // cast làm hiện vòng chọn mục tiêu thù địch (đỏ), dễ lẫn với vạch báo
         await frame(page);
         const buf = await snap(page, outDir, `${mv}-${tag}-${ms >= 0 ? '+' : ''}${ms}ms.jpg`, { wait: 0 });
         files.push(buf);

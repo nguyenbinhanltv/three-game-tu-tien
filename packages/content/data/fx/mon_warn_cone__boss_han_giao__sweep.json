@@ -11,7 +11,7 @@
    "at": "area",
    "grow": 0.04,
    "tone": "accent",
-   "alpha": 0.3,
+   "alpha": 0.9,
    "tier": 0,
    "from": "start",
    "top": true,

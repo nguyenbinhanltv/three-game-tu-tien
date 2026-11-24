@@ -72,8 +72,7 @@ def mist(t, dur, alpha, seed, scale=1.0, tone='core'):
 def warn_disc(delay_grow, yaw_a=35, yaw_b=-50):
     """Vạch báo = ĐĨA đỏ: nền mờ thấy rõ viền hitbox ngay từ đầu + đĩa đỏ/vân nứt (warn_crack) tô dần từ tâm ra rìa theo tiến độ nạp."""
     return [
-        decal('warn_crack', 0, 4, 2, 'accent', 0.3, 0.04, yaw=yaw_b),  # viền + vân mờ: hitbox đọc được ngay
-        decal('scorch', 0, 4, 2, 'accent', 0.5, delay_grow, yaw=0),  # tô đỏ dần
+        decal('warn_crack', 0, 4, 2, 'accent', 0.9, 0.04, yaw=yaw_b),  # viền + vân mờ: hitbox đọc được ngay
         decal('warn_crack', 0, 4, 2, 'accent', 0.95, delay_grow, yaw=yaw_a),  # vân nứt đỏ sáng lan từ tâm
     ]
 
@@ -117,7 +116,7 @@ write('mon_boom_circle__boss_han_giao__chant', [
 
 # ---------------- SWEEP: quạt r 14, nửa góc 35° ----------------
 write('mon_warn_cone__boss_han_giao__sweep', [
-    decal('warn_crack', 0, 8, 1.6, 'accent', 0.3, 0.04, sector=35),  # quạt mờ: viền hitbox đọc ngay
+    decal('warn_crack', 0, 8, 1.6, 'accent', 0.9, 0.04, sector=35),  # quạt mờ: viền hitbox đọc ngay
     decal('warn_crack', 0, 8, 1.6, 'accent', 0.95, 1.4, sector=35),  # vân nứt đỏ nạp từ tâm ra cung
     parts('spark', 0, 22, 2.2, 0.5, 1.2, 0.1, 'accent', inward=True, offset=[0, 0.3, 4]),
     parts('spark', 0.4, 18, 2.2, 0.5, 1.0, 0.1, 'rim', inward=True, offset=[0, 0.3, 7]),

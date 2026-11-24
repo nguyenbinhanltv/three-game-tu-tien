@@ -70,8 +70,16 @@ export function mapDecalNodes(U: FxUniforms): { color: N; opacity: N } {
     .mul(fan);
   const base = s.rgb.mul(tint).mul(heat.mul(0.55).add(0.7));
   const lit = mix(base, U.b.xyz.mul(1.3), edge.mul(1.0));
-  const alpha = max(s.a, edge.mul(1.0));
-  return { color: min(lit, U.maxHdr), opacity: U.opacity.mul(alpha).mul(mask).mul(reveal).mul(float(1).sub(U.a.y)) };
+  // Nền đặc dưới vân (các khe của ảnh Codex trong suốt): vạch báo = đĩa đỏ, băng = đĩa xanh thẫm; đọc được trên nền sáng ban ngày.
+  const navy = vec3(0.04, 0.17, 0.42);
+  const fillCol = mix(U.color.mul(0.8), navy, step(0.5, sel));
+  const fillA = float(0.5)
+    .mul(mask)
+    .mul(float(1).sub(smoothstep(0.93, 0.985, r)));
+  const top = max(s.a, edge);
+  const alpha = max(top, fillA);
+  const lit2 = mix(fillCol, lit, min(top.mul(1.6), 1));
+  return { color: min(lit2, U.maxHdr), opacity: U.opacity.mul(alpha).mul(mask).mul(reveal).mul(float(1).sub(U.a.y)) };
 }
 
 /** `mapFlip`: flipbook 4×4 của ảnh Codex (`ice_flip`): khung = ⌊k × 16⌋, trộn mềm với khung kế; quay mặt về camera. */
