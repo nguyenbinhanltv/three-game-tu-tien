@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { bobOf, EXAG_GAIN, exagBlend, exagGain, leanBoost } from './animFx';
+import { POSE } from '@dtl/content';
+import { accelLean, bobOf, EXAG_GAIN, exagBlend, exagGain, glideDip, glideLean, IDLE_POSES, idleDue, idlePoseFor, leanBoost } from './animFx';
 import { closeCam, keyMoments } from '../debug/animLab';
 
 describe('Thân Pháp T1 (cường điệu)', () => {
@@ -47,5 +48,27 @@ describe('animlab', () => {
     expect(Math.hypot(c.x - 10, c.z - 20)).toBeCloseTo(3.6, 9);
     expect(c.y).toBeGreaterThan(2 + 1.2);
     expect(c.fov).toBe(28);
+  });
+});
+
+describe('Thân Pháp T2/T3 (di chuyển, idle)', () => {
+  it('tăng tốc chúi tới, phanh ngả sau, có trần', () => {
+    expect(accelLean(8)).toBeGreaterThan(0);
+    expect(accelLean(-8)).toBeLessThan(0);
+    expect(accelLean(1000)).toBe(0.16);
+    expect(accelLean(-1000)).toBe(-0.16);
+  });
+  it('lướt thấp chỉ khi chạy', () => {
+    expect(glideLean(0)).toBe(0);
+    expect(glideLean(1)).toBeLessThan(glideLean(5.4));
+    expect(glideDip(5.4)).toBeCloseTo(0.04, 9);
+    expect(glideDip(0)).toBe(0);
+  });
+  it('idle: chọn pose theo thế kiếm, tới lượt sau 7 s đứng yên', () => {
+    expect(idlePoseFor(true)).toBe('kiem_idle_xoay');
+    expect(idlePoseFor(false)).toBe('kiem_idle_chap_tay');
+    expect(idleDue(6.9)).toBe(false);
+    expect(idleDue(7)).toBe(true);
+    expect(POSE.has(IDLE_POSES.drawn) && POSE.has(IDLE_POSES.free)).toBe(true);
   });
 });

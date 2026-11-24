@@ -2,7 +2,7 @@
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
 import { BladeSmear, smearWindow } from '../fx/bladeSmear';
-import { ANIM_FX, bobOf, exagGain, EXAG_GAIN, leanBoost } from './animFx';
+import { accelLean, ANIM_FX, bobOf, exagGain, EXAG_GAIN, glideDip, glideLean, idleDue, idlePoseFor, leanBoost, SPRING_TP } from './animFx';
 import { DEATH_DIR_TTL, DEATH_TURN_S, dashClipOf, holdHipsInPlace, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
 import { boneKey } from './ikpose';
 import { applyProportions, proportionBones, type BoneScale } from './hero';
@@ -696,6 +696,11 @@ export class MannequinCharacter implements CharacterView {
   private lastYaw = NaN;
   private yawRate = 0;
   private lean = 0;
+  /** T2: tốc độ khung trước và gia tốc đã làm mượt; T3: thời gian đứng yên liên tục và mốc idle kế. */
+  private lastSpeed = 0;
+  private accel = 0;
+  private stillT = 0;
+  private idleAfter = 7;
   /** Tư thế nghỉ của các xương cường điệu (Thân Pháp T1), chụp lúc dựng rig. */
   private exagRest = new Map<string, THREE.Quaternion>();
   private turnLag = 0;
@@ -782,7 +787,7 @@ export class MannequinCharacter implements CharacterView {
       const skirt = defs.filter((d) => d.bone.startsWith('dtl_o_skirt_'));
       const sleeve = tune?.sleeve ? defs.filter((d) => isSleeve(d.bone)) : [];
       const rest = defs.filter((d) => !d.bone.startsWith('dtl_o_skirt_') && !(tune?.sleeve && isSleeve(d.bone)));
-      if (rest.length && !shadow) this.springs = new SpringBones(this.rig, rest, V3_SPRING, colliderDefs(this.rig, tpl.height));
+      if (rest.length && !shadow) this.springs = new SpringBones(this.rig, rest, ANIM_FX.spring ? SPRING_TP : V3_SPRING, colliderDefs(this.rig, tpl.height));
       if (sleeve.length && !shadow)
         this.sleeveSprings = new SpringBones(this.rig, sleeve, { ...V3_SPRING, ...tune!.sleeve }, colliderDefs(this.rig, tpl.height));
       if (skirt.length && !shadow)
@@ -1718,6 +1723,26 @@ export class MannequinCharacter implements CharacterView {
     if (ANIM_FX.exaggerate && free && !this.perf && !this.shotUpper) this.exaggerate(a.speed);
     this.inner.position.y =
       ANIM_FX.bounce && free && !this.perf && !this.shotUpper ? bobOf(this.loco ? this.locoPhase : 0, a.speed) : 0;
+    // T2 (cờ ?thanphap): lướt thấp khi chạy, chúi tới khi tăng tốc (bắt đầu chạy), ngả ra sau khi phanh (dừng). Hạ hông cộng vào độ nảy.
+    if (dt > 1e-3) this.accel += (Math.max(-40, Math.min(40, (a.speed - this.lastSpeed) / dt)) - this.accel) * Math.min(1, dt * 12);
+    this.lastSpeed = a.speed;
+    if (ANIM_FX.loco && free && !this.perf && !this.shotUpper) {
+      const pitch = glideLean(a.speed) + accelLean(this.accel);
+      rotateWorld(b.spine_01 ?? null, rgt, pitch * 0.4);
+      rotateWorld(b.spine_02 ?? null, rgt, pitch * 0.35);
+      rotateWorld(b.spine_03 ?? null, rgt, pitch * 0.25);
+      this.inner.position.y -= glideDip(a.speed);
+    }
+    // T3: đứng yên lâu thì tự chơi một idle đặc trưng (xoay kiếm khi đang cầm kiếm, chắp tay ngắm trời khi tay không); bỏ ngay khi di chuyển.
+    if (ANIM_FX.idle) {
+      const still = free && a.speed < 0.3 && !this.perf && !a.combat && !a.casting && this.baseName !== 'Sitting_Idle_Loop';
+      this.stillT = still ? this.stillT + dt : 0;
+      if (still && idleDue(this.stillT, this.idleAfter)) {
+        this.perform(idlePoseFor(this.drawn), { skill: 'idle' });
+        this.stillT = 0;
+        this.idleAfter = 6 + Math.random() * 5;
+      } else if (a.speed > 0.5 && this.perf && this.perf.id.startsWith('kiem_idle')) this.abortPerform();
+    }
     // Thở (cộng thêm, chỉ biên độ nhỏ).
     if (free) rotateWorld(b.spine_03 ?? null, rgt, breathOf(this.clock, a.speed < 0.3));
     // Giật nhẹ khi trúng đòn: thân ngửa ra sau rồi về.

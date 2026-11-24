@@ -114,7 +114,14 @@ export function installAnimLab(g: Game): void {
       const m = self();
       return !!m?.perform && m.perform(pose, { skill: pose });
     },
-    clock: () => self()?.performClock?.() ?? null,
+    clock() {
+      const m = self();
+      const c = m?.performClock?.();
+      if (c) return c;
+      // Chiêu phát từ phòng thử không có `timing`: đọc thẳng đồng hồ pose của model v3.
+      const p = (m as unknown as { perf?: { t: number; id: string } | null } | undefined)?.perf;
+      return p ? { t: p.t, skill: p.id } : null;
+    },
     poseInfo(pose) {
       const d = POSE.get(pose);
       return d ? { duration: d.duration, hit: d.hit ?? [] } : null;

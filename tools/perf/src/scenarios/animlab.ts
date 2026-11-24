@@ -2,7 +2,7 @@
 // 720p + 1080p, dừng thời gian bằng `window.__animlab` để khung đúng từng mili giây; đo CPU xương (mục `anim` của FrameBudget) lúc đứng yên và lúc chạy;
 // tùy chọn đặt ảnh tham chiếu cạnh khung đỉnh đòn, và quay clip thời gian thật (đứng, chạy, từng chiêu) để so trước/sau (`--thanphap 0|1`).
 // Dùng: pnpm shots animlab --out <thư mục tuyệt đối> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1]
-//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f]
+//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...]
 import path from 'node:path';
 import sharp from 'sharp';
 import { list, opt } from '../lib/env';
@@ -13,6 +13,8 @@ import { snap, UI_SIZES, writeJson } from '../lib/shot';
 
 type Page = Awaited<ReturnType<Run['open']>>['page'];
 const STEP_MS = 10;
+/** Số khung chờ (không tiến thời gian) trước khi chụp: ảnh trình duyệt trễ vài khung so với trạng thái xương. */
+const SETTLE_FRAMES = Number(process.env.ANIMLAB_SETTLE ?? 4);
 const frame = (page: Page) => page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
 
 async function advance(page: Page, ms: number): Promise<void> {
@@ -85,7 +87,10 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
   for (const pose of poses) {
     const info = await page.evaluate((p) => window.__animlab!.poseInfo(p), pose);
     if (!info) throw new Error(`không có pose ${pose}`);
-    const moments = await page.evaluate((p) => window.__animlab!.moments(p), pose);
+    const custom = list('--times', '').map(Number);
+    const moments = custom.length
+      ? custom.map((at, i) => ({ name: `t${String(i).padStart(2, '0')}_${Math.round(at * 1000)}`, at }))
+      : await page.evaluate((p) => window.__animlab!.moments(p), pose);
     const rows: Record<string, unknown>[] = [];
     for (const cam of cams) {
       for (const tag of sizes) {
@@ -104,9 +109,10 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
             await advance(page, want - clock);
             clock = want;
           }
-          await frame(page);
+          for (let k = 0; k < SETTLE_FRAMES; k++) await frame(page);
           files.push(await snap(page, r.out, `${pose}-${cam}-${tag}-${m.name}.jpg`, { wait: 0 }));
-          rows.push({ cam, size: tag, moment: m.name, ms: want });
+          const ck = await page.evaluate(() => window.__animlab!.clock());
+          rows.push({ cam, size: tag, moment: m.name, ms: want, poseT: ck ? Number(ck.t.toFixed(3)) : null, dbg: await page.evaluate(() => { const m = (window.__game as any).ents.players.get((window.__game as any).sid).model; const u = m.perf?.upper; const hb = m.rig?.getObjectByName('hand_r'); const w = hb ? hb.getWorldPosition(new (hb.position.constructor as any)()) : null; return { upT: u ? +u.time.toFixed(3) : null, upW: u ? +u.getEffectiveWeight().toFixed(2) : null, hand: w ? [w.x, w.y, w.z].map((v: number) => +v.toFixed(2)) : null, root: m.root.position.y }; }) });
         }
         const cw = 480;
         const ch = Math.round((cw * h) / w);
@@ -151,7 +157,7 @@ export default {
   name: 'animlab',
   desc: 'TP-0 phòng thử animation: 4 khung khóa (dồn lực/đỉnh/+30ms/thu) ở camera chéo + cận, 720p + 1080p, CPU xương, clip trước/sau',
   usage:
-    '--out <dir> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1] [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f]',
+    '--out <dir> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1] [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...]',
   async run(r) {
     const poses = list('--pose', 'kiem_khi_tram,phi_kiem,thien_kiem_vu');
     const cams = list('--cams', 'iso,close');
