@@ -52,6 +52,8 @@ interface PreviewStats {
 export class CharPreview {
   private scene = new THREE.Scene();
   private fitted = 0;
+  /** Số lần vẽ của model hiện tại (đặt về 0 mỗi `rebuild`), để đo hộp bao sau khi tư thế nghỉ đã áp. */
+  private sinceBuild = 0;
   private camera = new THREE.PerspectiveCamera(28, PREVIEW_W / PREVIEW_H, 0.1, 40);
   private rt: THREE.RenderTarget | null = null;
   private model: CharacterView | null = null;
@@ -139,6 +141,7 @@ export class CharPreview {
     this.scene.add(this.model.root);
     this.model.setView?.({ dist: 0, inView: true, allowLod0: true, self: true });
     this.fitted = 0;
+    this.sinceBuild = 0;
     this.fit(0, this.model.height);
   }
 
@@ -183,7 +186,8 @@ export class CharPreview {
     m.update(step, IDLE);
     this.scene.updateMatrixWorld();
     // Đo lại hộp bao khi tư thế nghỉ đã áp (vài khung đầu), rồi thôi.
-    if (this.fitted < 2 && this.stats.frames >= 2 + this.fitted * 20) {
+    this.sinceBuild++;
+    if (this.fitted < 2 && this.sinceBuild >= 2 + this.fitted * 20) {
       this.fitted++;
       this.fit(0, m.height);
     }
