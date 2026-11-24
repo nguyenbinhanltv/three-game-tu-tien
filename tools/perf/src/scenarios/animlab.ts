@@ -2,7 +2,7 @@
 // 720p + 1080p, dừng thời gian bằng `window.__animlab` để khung đúng từng mili giây; đo CPU xương (mục `anim` của FrameBudget) lúc đứng yên và lúc chạy;
 // tùy chọn đặt ảnh tham chiếu cạnh khung đỉnh đòn, và quay clip thời gian thật (đứng, chạy, từng chiêu) để so trước/sau (`--thanphap 0|1`).
 // Dùng: pnpm shots animlab --out <thư mục tuyệt đối> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1]
-//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
+//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
 import path from 'node:path';
 import sharp from 'sharp';
 import { list, opt } from '../lib/env';
@@ -49,6 +49,9 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
   page.on('pageerror', (e) => console.log('[pageerror]', String(e).slice(0, 400)));
   await page.waitForFunction(() => !!window.__game && !!window.__animlab, undefined, { timeout: 120_000 });
   await sleep(2500);
+  // `--fx impulse=0,smear=0`: tắt/bật riêng từng lớp Thân Pháp để so sánh A/B từng PR.
+  const fxSet = Object.fromEntries(list('--fx', '').map((kv) => [kv.split('=')[0], kv.split('=')[1] !== '0']));
+  if (Object.keys(fxSet).length) await page.evaluate((f) => window.__animlab!.fx(f), fxSet);
   await gm(page, 'level 32', 1500);
   await gm(page, 'tp 2048 2095', 1800);
   await gm(page, 'spawn clear', 1400);
@@ -91,6 +94,14 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       await sleep(2500);
       await page.keyboard.up('w');
       await sleep(1200);
+      // Pivot: đổi hướng gấp khi đang chạy (w → a không nhả), rồi dừng.
+      await page.keyboard.down('w');
+      await sleep(1300);
+      await page.keyboard.up('w');
+      await page.keyboard.down('a');
+      await sleep(1000);
+      await page.keyboard.up('a');
+      await sleep(900);
       for (const p of poses) {
         for (let i = 0; i < 2; i++) {
           await page.evaluate((x) => window.__animlab!.perform(x), p);
@@ -196,7 +207,7 @@ export default {
   name: 'animlab',
   desc: 'TP-0 phòng thử animation: 4 khung khóa (dồn lực/đỉnh/+30ms/thu) ở camera chéo + cận, 720p + 1080p, CPU xương, clip trước/sau',
   usage:
-    '--out <dir> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1] [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]',
+    '--out <dir> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1] [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]',
   async run(r) {
     const poses = list('--pose', 'kiem_khi_tram,phi_kiem,thien_kiem_vu');
     const cams = list('--cams', 'iso,close');

@@ -1751,7 +1751,8 @@ export class MannequinCharacter implements CharacterView {
       this.inner.position.y -= glideDip(a.speed);
       // Xung bắt đầu/dừng/pivot (lò xo tắt dần): chúi/ngả, nghiêng, hạ hông.
       const li = this.loco2;
-      li.update(dt, a.speed, this.yawRate);
+      if (ANIM_FX.impulse) li.update(dt, a.speed, this.yawRate);
+      else if (li.dip !== 0) li.reset();
       const cl = (x: number, m: number) => Math.max(-m, Math.min(m, x));
       const lp = cl(li.pitch, LOCO_CLAMP.pitch);
       const lr = cl(li.roll, LOCO_CLAMP.roll);

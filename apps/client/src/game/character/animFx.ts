@@ -22,6 +22,8 @@ export interface AnimFxFlags {
   idle: boolean;
   /** T7: cut-in chiêu cuối (khựng 0,5 s + tranh Codex quét ngang + tên chiêu); chỉ Kiếm tu trong pilot. */
   cutin: boolean;
+  /** T2: xung bắt đầu/dừng/pivot (`LocoImpulse`); tắt riêng để so sánh với phần còn lại của lớp loco. */
+  impulse: boolean;
 }
 
 /** Trạng thái cờ chạy (mặc định theo `?thanphap=1`); phòng thử đổi được. */
@@ -34,6 +36,7 @@ export const ANIM_FX: AnimFxFlags = {
   loco: FLAGS.thanPhap,
   idle: FLAGS.thanPhap,
   cutin: FLAGS.thanPhap,
+  impulse: FLAGS.thanPhap,
 };
 
 /** T6: thông số lò xo sống động hơn `V3_SPRING` (130/8/30°): tần số riêng thấp hơn, cản nhẹ hơn, góc rộng hơn; ở góc chéo tóc/dải đọc được rõ. */
