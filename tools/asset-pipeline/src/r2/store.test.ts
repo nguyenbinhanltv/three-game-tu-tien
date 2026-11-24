@@ -133,3 +133,12 @@ describe('an toàn hardlink', () => {
     expect(await verifyInStore(store, sha(data), data.length)).toBe(true);
   });
 });
+
+describe('chống path traversal', () => {
+  it('storeFile từ chối sha256 không phải 64 hex', () => {
+    expect(() => storeFile(tmp, '../../etc/passwd')).toThrow();
+    expect(() => storeFile(tmp, 'ab')).toThrow();
+    expect(() => storeFile(tmp, 'A'.repeat(64))).toThrow();
+    expect(storeFile(tmp, 'a'.repeat(64)).startsWith(path.resolve(tmp))).toBe(true);
+  });
+});
