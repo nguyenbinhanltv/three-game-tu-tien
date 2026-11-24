@@ -16,7 +16,8 @@
   "zone": {
     "shape": "cone",
     "r": 18,
-    "at": "forward"
+    "at": "forward",
+    "w": 40
   },
   "timing": {
     "anticipationMs": 1500,

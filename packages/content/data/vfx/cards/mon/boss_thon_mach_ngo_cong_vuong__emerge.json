@@ -16,7 +16,8 @@
   "zone": {
     "shape": "cone",
     "r": 14,
-    "at": "self"
+    "at": "self",
+    "w": 35
   },
   "timing": {
     "anticipationMs": 1500,

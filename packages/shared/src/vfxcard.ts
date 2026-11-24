@@ -145,7 +145,10 @@ export interface MonVfxCard {
 
 export function validateMonVfxCard(
   c: MonVfxCard,
-  mon: { move(id: string): { r: number; delay: number; shape: MonVfxCardZone['shape'] } | undefined; exists(id: string): boolean },
+  mon: {
+    move(id: string): { r: number; delay: number; shape: MonVfxCardZone['shape']; w?: number } | undefined;
+    exists(id: string): boolean;
+  },
 ): string[] {
   const e: string[] = [];
   const at = `vfxcard mon ${c.monId}:${c.move}`;
@@ -155,6 +158,11 @@ export function validateMonVfxCard(
   else {
     if (c.zone.shape !== mv.shape) e.push(`${at}: zone.shape ${c.zone.shape} ≠ server ${mv.shape}`);
     if (Math.abs(c.zone.r - mv.r) > 0.01) e.push(`${at}: zone.r ${c.zone.r} ≠ server ${mv.r} (vùng vẽ phải bằng vùng server)`);
+    // Nón: nửa góc (độ); chữ nhật: bề rộng (m). Thẻ phải ghi `zone.w` và khớp server khi server có số này (concept vẽ đúng hình, không đoán).
+    if (c.zone.shape !== 'circle' && mv.w !== undefined) {
+      if (c.zone.w === undefined) e.push(`${at}: zone.w thiếu (${c.zone.shape === 'cone' ? 'nửa góc độ' : 'bề rộng m'}), server ${mv.w}`);
+      else if (Math.abs(c.zone.w - mv.w) > 0.01) e.push(`${at}: zone.w ${c.zone.w} ≠ server ${mv.w}`);
+    }
     if (c.move !== 'chant' && Math.abs(c.timing.anticipationMs - mv.delay * 1000) > 1) {
       e.push(`${at}: timing.anticipationMs ${c.timing.anticipationMs} ≠ delay server ${mv.delay * 1000} ms`);
     }

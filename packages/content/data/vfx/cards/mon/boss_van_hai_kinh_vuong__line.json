@@ -16,7 +16,8 @@
   "zone": {
     "shape": "rect",
     "r": 40,
-    "at": "forward"
+    "at": "forward",
+    "w": 6
   },
   "timing": {
     "anticipationMs": 2000,
