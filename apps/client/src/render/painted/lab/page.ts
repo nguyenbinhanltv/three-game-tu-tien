@@ -25,6 +25,8 @@ export interface PaintedLab {
   apply(d: RefDump): Promise<void>;
   render(): void;
   info(): { drawCalls: number; triangles: number; frames: number };
+  /** Mã shader (vertex/fragment) mà TSL sinh cho một ô lá `mid` (soi lỗi biên dịch/ngữ nghĩa). */
+  shader(): Promise<{ vertex: string; fragment: string }>;
   /** Đọc khung cuối (sRGB 8 bit, RGBA, hàng trên trước) qua render target; base64 để chuyển ra khỏi trang. */
   readback(): Promise<{ width: number; height: number; ms: number; b64: string }>;
 }
@@ -183,6 +185,11 @@ export async function startPaintedLab(host: HTMLElement): Promise<void> {
       for (let i = 0; i < data.length; i += 32768) bin += String.fromCharCode(...data.subarray(i, i + 32768));
       rt.dispose();
       return { width: w, height: h, ms: Math.round(ms), b64: btoa(bin) };
+    },
+    async shader() {
+      const mid = blades.rings.find((r) => r.ring.name === 'mid')!.tiles[0]!.mesh;
+      const { vertexShader, fragmentShader } = await renderer.debug.getShaderAsync(scene, camera, mid);
+      return { vertex: vertexShader, fragment: fragmentShader };
     },
     info() {
       return { drawCalls: renderer.info.render.drawCalls, triangles: renderer.info.render.triangles, frames };
