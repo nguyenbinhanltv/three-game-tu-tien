@@ -1,5 +1,7 @@
 // Đẩy asset lên R2: dựng lại sổ khóa từ đĩa, so với bucket, chỉ upload file thiếu hoặc lệch.
 //   pnpm assets:push [--dry] [--only <đường dẫn hoặc tiền tố>] [--no-lock]
+// R2 BẤT BIẾN: push TỪ CHỐI (không upload gì cả) nếu một khóa đã có trên R2 với kích thước hoặc sha256 khác sổ khóa; không có cờ ghi đè.
+//   Đổi nội dung = đổi tên: `<tên>.<hash10>.<đuôi>` (xem docs/handbook/assets.md).
 // Khóa R2 đọc từ biến môi trường / .env.local (xem r2/env.ts), không bao giờ được in ra.
 
 import fs from 'node:fs';
@@ -22,6 +24,24 @@ export interface PushReport {
   uploadedBytes: number;
   failed: { key: string; error: string }[];
   lockChanged: boolean;
+  /** Khóa đã có trên R2 với nội dung khác sổ khóa (push từ chối). */
+  conflicts: PushConflict[];
+}
+
+export interface PushConflict {
+  key: string;
+  reason: string;
+}
+
+export class PushConflictError extends Error {
+  constructor(readonly conflicts: PushConflict[]) {
+    super(
+      `TỪ CHỐI ghi đè ${conflicts.length} khóa đã có trên R2 với nội dung khác (R2 bất biến: main và các nhánh khác đang tải các khóa này):\n` +
+        conflicts.map((c) => `  - ${c.key}: ${c.reason}`).join('\n') +
+        '\nCách sửa: đóng file ra tên MỚI theo hash nội dung `<tên>.<hash10>.<đuôi>` (hash10 = sha256sum <file> | cut -c1-10), sửa chỗ tham chiếu, chạy lại `pnpm assets:lock` và push khóa mới; ' +
+        'hoặc đưa file đang ở đĩa về đúng bản của sổ khóa main nếu bạn chỉ vô tình đổi nội dung.',
+    );
+  }
 }
 
 export async function listBucket(s3: S3Client, bucket: string, prefix?: string): Promise<Map<string, { size: number; modified?: Date }>> {
@@ -44,6 +64,43 @@ async function remoteSha(s3: S3Client, bucket: string, key: string): Promise<str
   }
 }
 
+export interface PlanInput {
+  keys: string[];
+  lock: Lock;
+  remote: Map<string, { size: number }>;
+  /** sha256 lưu trong metadata của đối tượng R2 (undefined nếu đối tượng cũ không có metadata). */
+  remoteSha: (key: string) => Promise<string | undefined>;
+}
+
+export interface PushPlan {
+  todo: string[];
+  present: number;
+  conflicts: PushConflict[];
+  /** Tên cố định cùng kích thước nhưng R2 không có metadata sha: không kiểm được, coi như đã có. */
+  unverified: string[];
+}
+
+/** Phân loại từng khóa: chưa có → upload; có và khớp → bỏ qua; có nhưng khác kích thước/sha → XUNG ĐỘT (không bao giờ ghi đè). */
+export async function planPush({ keys, lock, remote, remoteSha: shaOf }: PlanInput): Promise<PushPlan> {
+  const plan: PushPlan = { todo: [], present: 0, conflicts: [], unverified: [] };
+  for (const key of keys) {
+    const r = remote.get(key);
+    const e = lock.files[key]!;
+    if (!r) plan.todo.push(key);
+    else if (r.size !== e.bytes) plan.conflicts.push({ key, reason: `R2 có ${r.size} byte, sổ khóa ${e.bytes} byte` });
+    // Tên cố định (không hash) cùng kích thước vẫn có thể khác nội dung: so sha256 lưu trong metadata.
+    else if (!isHashedName(key)) {
+      const sha = await shaOf(key);
+      if (sha === undefined) {
+        plan.unverified.push(key);
+        plan.present++;
+      } else if (sha !== e.sha256) plan.conflicts.push({ key, reason: 'cùng kích thước nhưng sha256 trên R2 khác sổ khóa' });
+      else plan.present++;
+    } else plan.present++;
+  }
+  return plan;
+}
+
 export async function push(opts: PushOptions = {}): Promise<PushReport> {
   const env = loadR2Env();
   const s3 = makeClient(env);
@@ -52,18 +109,15 @@ export async function push(opts: PushOptions = {}): Promise<PushReport> {
 
   const keys = Object.keys(lock.files).filter((k) => !opts.only || k === opts.only || k.startsWith(opts.only));
   const remote = await listBucket(s3, env.bucket);
-  const todo: string[] = [];
-  let present = 0;
-  for (const key of keys) {
-    const r = remote.get(key);
-    const e = lock.files[key];
-    if (!r || r.size !== e.bytes) todo.push(key);
-    // Tên cố định (không hash) cùng kích thước vẫn có thể khác nội dung: so sha256 lưu trong metadata.
-    else if (!isHashedName(key) && (await remoteSha(s3, env.bucket, key)) !== e.sha256) todo.push(key);
-    else present++;
-  }
+  const { todo, present, conflicts, unverified } = await planPush({ keys, lock, remote, remoteSha: (k) => remoteSha(s3, env.bucket, k) });
+  if (unverified.length)
+    console.warn(
+      `[push] cảnh báo: ${unverified.length} khóa tên cố định cùng kích thước nhưng R2 không có metadata sha256, không kiểm được nội dung`,
+    );
 
-  const report: PushReport = { total: keys.length, present, uploaded: [], uploadedBytes: 0, failed: [], lockChanged };
+  const report: PushReport = { total: keys.length, present, uploaded: [], uploadedBytes: 0, failed: [], lockChanged, conflicts };
+  // R2 bất biến: có xung đột thì không upload gì cả (kể cả file không xung đột), để người chạy sửa rồi chạy lại.
+  if (conflicts.length && !opts.dry) throw new PushConflictError(conflicts);
   if (opts.dry) {
     report.uploaded = todo;
     report.uploadedBytes = todo.reduce((n, k) => n + lock.files[k].bytes, 0);
