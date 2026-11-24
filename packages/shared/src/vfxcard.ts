@@ -57,7 +57,19 @@ export interface VfxCard {
   textures: VfxCardTextures[];
   /** Có khung va chạm (impact frame) không; mặc định false. */
   impactFrame?: boolean;
+  /**
+   * Chuẩn "Họa Pháp Lô 2" (24/11): đặt `2` để bật kiểm tự động (`checkStandard2`) cho thẻ này; thẻ cũ (không có) không bị kiểm.
+   * Khi bật thì `silhouette` và `materials` là bắt buộc.
+   */
+  standard?: 2;
+  /** Hình nhận diện riêng của chiêu (silhouette test: nhìn bóng đen vẫn phân biệt được với chiêu khác); không trùng với thẻ khác trong cùng hướng. */
+  silhouette?: string;
+  /** Lớp chất liệu ngoài mặt phẳng trơn: texture vẽ tay (flipbook từ Codex), khói/hạt, vân nứt, biến dạng (distort). */
+  materials?: VfxMaterial[];
 }
+
+export const VFX_MATERIALS = ['flipbook', 'smoke', 'particles', 'crack', 'distort'] as const;
+export type VfxMaterial = (typeof VFX_MATERIALS)[number];
 
 /** Trần ngân sách theo kiểu chiêu: không thẻ nào được xin quá. */
 export const VFX_CARD_CAPS: VfxCardBudget = { drawCalls: 12, particles: 1500, screenCover: 0.35, overdraw: 6 };
@@ -161,5 +173,119 @@ export function validateMonVfxCard(
     e.push(`${at}: budget ngoài trần`);
   else if (!(b.screenCover > 0 && b.screenCover <= cap.screenCover) || !(b.overdraw >= 1 && b.overdraw <= cap.overdraw))
     e.push(`${at}: budget phủ/overdraw ngoài trần`);
+  return e;
+}
+
+// ---- Chuẩn "Họa Pháp Lô 2" (24/11): kiểm tự động phần đo được trên dữ liệu (thẻ + timeline) ----
+
+/** Hình chỉ là khuôn chung (vòng/lưỡi/tia): không được là hình chính của chiêu theo chuẩn 2. */
+const GENERIC_SHAPES: ReadonlySet<string> = new Set([
+  'rune_ring2',
+  'ripple',
+  'slash_thin',
+  'slash_thick',
+  'slash_cross',
+  'slash_fan',
+  'crescent',
+  'kite',
+  'spike',
+  'burst',
+  'shock_cone',
+]);
+
+/** Tông màu (khóa `FxTone`) mà bảng màu hướng tu đang là đỏ/cam: truyền từ nơi gọi (cần `paths.json`). */
+export interface Standard2Ctx {
+  /** Tông của hướng tu có sắc đỏ/cam (HSL: đỏ-cam 0–45° hoặc 345–360°, bão hòa > 0,45). Chiêu người chơi không được dùng. */
+  redTones: ReadonlySet<string>;
+  /** `hitAt[0]` của chiêu (giây từ lúc bấm): đổi `t` của sự kiện `from: "start"` về mốc trúng. Không truyền = 0. */
+  hitAt?: number;
+}
+
+interface TlEvent {
+  type: string;
+  /** Giây so với mốc trúng (âm = trước). */
+  t?: number;
+  /** `start`: `t` tính từ lúc bấm chiêu (không phải mốc trúng). */
+  from?: 'hit' | 'start';
+  shape?: string;
+  tone?: string;
+  tex?: string;
+  flip?: string;
+}
+
+/** Đỏ/cam theo HSL (hex 6 ký tự, không #). */
+export function isRedOrange(hex: string): boolean {
+  const n = parseInt(hex, 16);
+  const r = ((n >> 16) & 255) / 255;
+  const g = ((n >> 8) & 255) / 255;
+  const b = (n & 255) / 255;
+  const mx = Math.max(r, g, b);
+  const mn = Math.min(r, g, b);
+  const d = mx - mn;
+  if (d < 1e-6) return false;
+  const l = (mx + mn) / 2;
+  const sat = d / (1 - Math.abs(2 * l - 1));
+  let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  h *= 60;
+  if (h < 0) h += 360;
+  return sat > 0.45 && (h <= 45 || h >= 345);
+}
+
+/**
+ * Các luật của chuẩn 2 đo được từ dữ liệu: thẻ khai `silhouette` + `materials`; timeline có lớp chất liệu thật khớp `materials`; hình chính không chỉ là khuôn chung
+ * (vòng rune/lưỡi liềm/tia); không dùng tông đỏ/cam của bảng hướng tu; có đủ ba nhịp (sự kiện trước hitAt, tại hitAt, sau hitAt); phủ màn hình ≤ 0,2 (trừ chiêu cuối: ≤ 0,35).
+ * Phần đo trên ảnh (tương phản nền sáng, % đỏ) ở `pnpm shots vfxlab`.
+ */
+export function checkStandard2(c: VfxCard, events: readonly TlEvent[], ult: boolean, ctx: Standard2Ctx): string[] {
+  if (c.standard !== 2) return [];
+  const e: string[] = [];
+  const at = `vfxcard ${c.skillId} (chuẩn 2)`;
+  if (!c.silhouette || c.silhouette.trim().length < 10) e.push(`${at}: thiếu silhouette (>= 10 ký tự)`);
+  if (!c.materials?.length) e.push(`${at}: thiếu materials (>= 1 lớp chất liệu)`);
+  const has = (m: VfxMaterial): boolean =>
+    m === 'particles'
+      ? events.some((x) => x.type === 'particles')
+      : m === 'flipbook'
+        ? events.some((x) => x.type === 'mesh' && x.shape === 'flip')
+        : m === 'smoke'
+          ? events.some((x) => x.type === 'mesh' && (x.shape === 'smoke' || (x.shape === 'flip' && /smoke|dust/.test(x.flip ?? ''))))
+          : m === 'crack'
+            ? events.some((x) => (x.type === 'decal' && x.tex === 'crack') || (x.type === 'mesh' && String(x.shape).startsWith('crack')))
+            : events.some((x) => x.type === 'distort');
+  for (const m of c.materials ?? []) if (!has(m)) e.push(`${at}: khai materials "${m}" nhưng timeline không có lớp đó`);
+  const meshes = events.filter((x) => x.type === 'mesh');
+  if (meshes.length && meshes.every((x) => GENERIC_SHAPES.has(String(x.shape)))) {
+    e.push(`${at}: mọi hình đều là khuôn chung (vòng/lưỡi/tia); cần ít nhất một hình riêng (khói, sợi, thân vật, thẻ, flipbook...)`);
+  }
+  if (
+    events.some((x) => x.type === 'decal' && x.tex === 'rune') &&
+    meshes.filter((x) => String(x.shape) === 'rune_ring2').length > 0 &&
+    meshes.length < 6
+  ) {
+    e.push(`${at}: vòng ấn rune dưới chân làm hình chính (rune + rune_ring2, ít hình khác)`);
+  }
+  // Client tô sự kiện hình không khai tone bằng `body` (render/vfx/palette.ts), nên tính cả trường hợp đó.
+  for (const x of events) {
+    if (x.type !== 'mesh' && x.type !== 'decal' && x.type !== 'particles') continue;
+    const tone = x.tone ?? 'body';
+    if (ctx.redTones.has(tone)) {
+      e.push(
+        `${at}: dùng tông ${tone}${x.tone ? '' : ' (mặc định khi không khai tone)'} (đỏ/cam theo bảng màu hướng tu) — dành cho cảnh báo của địch`,
+      );
+      break;
+    }
+  }
+  const hit = ctx.hitAt ?? 0;
+  // Mọi `t` quy về mốc trúng: `from: "start"` thì trừ `hitAt` (t tính từ lúc bấm).
+  const rel = (x: TlEvent): number => (x.t ?? 0) - (x.from === 'start' ? hit : 0);
+  const vis = events.filter((x) => x.type === 'mesh' || x.type === 'decal' || x.type === 'particles');
+  if (!vis.some((x) => rel(x) < -0.05) && c.timing.anticipationMs >= 150)
+    e.push(`${at}: thiếu nhịp báo trước (không có sự kiện hình trước mốc trúng dù anticipationMs ${c.timing.anticipationMs})`);
+  if (!vis.some((x) => Math.abs(rel(x)) <= 0.05))
+    e.push(`${at}: thiếu điểm nhấn lúc trúng (không có sự kiện hình ở ±50 ms quanh mốc trúng)`);
+  if (!vis.some((x) => rel(x) >= 0.15)) e.push(`${at}: thiếu dư ba (không có sự kiện hình từ +150 ms trở đi)`);
+  const cap = ult ? 0.35 : 0.2;
+  if (c.budget.screenCover > cap)
+    e.push(`${at}: budget.screenCover ${c.budget.screenCover} > ${cap}${ult ? '' : ' (chỉ chiêu cuối được tới 0,35)'}`);
   return e;
 }
