@@ -21,7 +21,7 @@ export const PAINTED = {
   meadow: [0x6b9a3c, 0x2f5a44],
   meadowLight: [0x9bbf4e, 0x4a7a4c],
   /** Đất đường mòn, bờ đất. */
-  earth: [0xb98f5c, 0x6b5560],
+  earth: [0xc8b98a, 0x8a7d72],
   /** Đá, vách núi gần. */
   rock: [0xa9a597, 0x575a70],
   /** Tán cây lá rộng và lá kim. */

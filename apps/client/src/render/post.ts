@@ -27,6 +27,8 @@ import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { gaussianBlur } from 'three/addons/tsl/display/GaussianBlurNode.js';
 import type { Node } from 'three/webgpu';
 import { getCloudNoise } from './noiseTex';
+import { FLAGS } from '../base/flags';
+import { paintedOutput } from './painted/frame';
 import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
 
 /**
@@ -175,6 +177,47 @@ export function hideRenderables(root: THREE.Object3D, keep: THREE.Object3D): () 
   };
 }
 
+/**
+ * Lớp phản hồi chiến đấu ở không gian hiển thị (đọc uniform `postParams`): viền trúng đòn, chớp, khung va chạm, viền `punch`, nhuộm chuyển pha, mực khi chết.
+ * Dùng chung cho chuỗi thường và cho Họa Cảnh (`?style=painted`), để `hit()/flash()/impactFrame()/punch()` không mất tác dụng.
+ */
+function feedbackLayers(rgb: Node, fromCenter: Node): Node {
+  let g = rgb;
+  // Trúng đòn: viền đỏ ở mép. Chớp: sáng trắng cả màn.
+  const edge = smoothstep(0.3, 0.75, length(fromCenter));
+  g = vec3(mix(g, vec3(0.75, 0.05, 0.04), edge.mul(postParams.hit).mul(0.55)));
+  g = vec3(mix(g, vec3(1, 0.98, 0.94), postParams.flash.mul(0.75)));
+  // Khung va chạm: bớt sắc, kéo tương phản mạnh quanh 0,5 rồi ám màu.
+  const imp = vec3(mix(vec3(luminance(g)), g, 0.35))
+    .sub(0.5)
+    .mul(2.4)
+    .add(0.5);
+  g = vec3(mix(g, clamp(imp.mul(postParams.impactColor), 0, 1), postParams.impact.mul(0.9)));
+  const punchEdge = smoothstep(0.22, 0.78, length(fromCenter));
+  const punchTone = postParams.punchLight.mul(0.95).add(0.03);
+  g = vec3(mix(g, vec3(punchTone, punchTone, punchTone.mul(0.97).add(0.01)), punchEdge.mul(postParams.punch).mul(2.4).min(0.9)));
+  // Nhuộm thoáng qua (chuyển pha): giữ độ sáng, đổi sắc vùng tối nhiều hơn vùng sáng.
+  const pl = luminance(g);
+  g = vec3(mix(g, postParams.pulseColor.mul(pl.mul(1.15).add(0.06)), postParams.pulse.mul(0.65)));
+
+  // Chết (P2-B5): cảnh nhạt màu, tối dần, rồi mực loang từ mép vào giữa theo vân nhiễu 3 tầng. Viền mực đậm hơn lõi.
+  g = vec3(mix(g, vec3(luminance(g)).mul(float(1).sub(postParams.inkDesat.mul(0.3))), postParams.inkDesat.mul(0.88)));
+  // Một lần lấy mẫu texture nhiễu dùng chung (R/G/B = ba tầng chi tiết) thay cho nhiễu hash 3 tầng mỗi điểm ảnh.
+  const inkSample = texture(getCloudNoise(), screenUV.mul(vec2(1.05, 0.78)));
+  const inkN = inkSample.r.mul(0.5).add(inkSample.g.mul(0.3)).add(inkSample.b.mul(0.2));
+  const inkV = length(fromCenter).mul(1.414).add(inkN.sub(0.5).mul(0.62));
+  const inkEdge = float(1.5).sub(postParams.ink.mul(1.75));
+  const inkMask = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.1), inkV);
+  const inkRim = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.02), inkV).mul(
+    float(1).sub(smoothstep(inkEdge.add(0.02), inkEdge.add(0.16), inkV)),
+  );
+  const inkCol = mix(vec3(0.05, 0.055, 0.07), vec3(0.012, 0.014, 0.022), inkRim.add(inkV.mul(0.25)).min(1));
+  // Lõi màn mỏng hơn để còn lờ mờ thấy nhân vật; mép dày đặc.
+  const inkBody = mix(float(0.72), float(0.95), smoothstep(0.1, 0.85, length(fromCenter).mul(1.414)));
+  g = vec3(mix(g, inkCol, inkMask.mul(inkBody)));
+  return g;
+}
+
 export class PostPipeline {
   readonly bloom: boolean;
   private readonly key: string;
@@ -199,6 +242,20 @@ export class PostPipeline {
     this.post.outputColorTransform = false;
     const scenePass = pass(scene, camera, { samples: opts.msaa });
     this.scenePass = scenePass;
+    if (FLAGS.style === 'painted') {
+      // Họa Cảnh: pass cuối của painted-valley (Kuwahara, vignette, đường cong họa sĩ, sRGB); không ACES, chỉnh màu, hạt phim, bloom, AO, FXAA
+      setBloomActive(false);
+      const fromCenterP = screenUV.sub(0.5);
+      this.post.outputNode = paintedOutput(scenePass, {
+        paint: FLAGS.paint ?? 3,
+        exposure: 1,
+        vignette: 0.14,
+        // phản hồi chiến đấu giữ nguyên (hit/flash/impact/punch/pulse/mực chết); quang sai màu khi trúng đòn lấy mẫu lệch R/B của ảnh gốc
+        aberration: postParams.hit.mul(0.012),
+        overlay: (g) => feedbackLayers(g, fromCenterP),
+      });
+      return;
+    }
     if (opts.bloom || opts.ao) {
       const targets: Record<string, Node> = { output };
       if (opts.bloom) targets.bloom = vec4(0, 0, 0, output.a);
@@ -252,38 +309,7 @@ export class PostPipeline {
     const gc = clamp(g, 0, 1);
     g = vec3(mix(gc, gc.mul(gc).mul(vec3(3).sub(gc.mul(2))), postParams.contrast.sub(1).mul(2.5)));
     g = vec3(mix(vec3(luminance(g)), g, postParams.saturation));
-    // Trúng đòn: viền đỏ ở mép. Chớp: sáng trắng cả màn.
-    const edge = smoothstep(0.3, 0.75, length(fromCenter));
-    g = vec3(mix(g, vec3(0.75, 0.05, 0.04), edge.mul(postParams.hit).mul(0.55)));
-    g = vec3(mix(g, vec3(1, 0.98, 0.94), postParams.flash.mul(0.75)));
-    // Khung va chạm: bớt sắc, kéo tương phản mạnh quanh 0,5 rồi ám màu.
-    const imp = vec3(mix(vec3(luminance(g)), g, 0.35))
-      .sub(0.5)
-      .mul(2.4)
-      .add(0.5);
-    g = vec3(mix(g, clamp(imp.mul(postParams.impactColor), 0, 1), postParams.impact.mul(0.9)));
-    const punchEdge = smoothstep(0.22, 0.78, length(fromCenter));
-    const punchTone = postParams.punchLight.mul(0.95).add(0.03);
-    g = vec3(mix(g, vec3(punchTone, punchTone, punchTone.mul(0.97).add(0.01)), punchEdge.mul(postParams.punch).mul(2.4).min(0.9)));
-    // Nhuộm thoáng qua (chuyển pha): giữ độ sáng, đổi sắc vùng tối nhiều hơn vùng sáng.
-    const pl = luminance(g);
-    g = vec3(mix(g, postParams.pulseColor.mul(pl.mul(1.15).add(0.06)), postParams.pulse.mul(0.65)));
-
-    // Chết (P2-B5): cảnh nhạt màu, tối dần, rồi mực loang từ mép vào giữa theo vân nhiễu 3 tầng. Viền mực đậm hơn lõi.
-    g = vec3(mix(g, vec3(luminance(g)).mul(float(1).sub(postParams.inkDesat.mul(0.3))), postParams.inkDesat.mul(0.88)));
-    // Một lần lấy mẫu texture nhiễu dùng chung (R/G/B = ba tầng chi tiết) thay cho nhiễu hash 3 tầng mỗi điểm ảnh.
-    const inkSample = texture(getCloudNoise(), screenUV.mul(vec2(1.05, 0.78)));
-    const inkN = inkSample.r.mul(0.5).add(inkSample.g.mul(0.3)).add(inkSample.b.mul(0.2));
-    const inkV = length(fromCenter).mul(1.414).add(inkN.sub(0.5).mul(0.62));
-    const inkEdge = float(1.5).sub(postParams.ink.mul(1.75));
-    const inkMask = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.1), inkV);
-    const inkRim = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.02), inkV).mul(
-      float(1).sub(smoothstep(inkEdge.add(0.02), inkEdge.add(0.16), inkV)),
-    );
-    const inkCol = mix(vec3(0.05, 0.055, 0.07), vec3(0.012, 0.014, 0.022), inkRim.add(inkV.mul(0.25)).min(1));
-    // Lõi màn mỏng hơn để còn lờ mờ thấy nhân vật; mép dày đặc.
-    const inkBody = mix(float(0.72), float(0.95), smoothstep(0.1, 0.85, length(fromCenter).mul(1.414)));
-    g = vec3(mix(g, inkCol, inkMask.mul(inkBody)));
+    g = vec3(feedbackLayers(g, fromCenter));
 
     const graded = vec4(g, 1);
     let ldrRgb = graded.rgb;

@@ -57,7 +57,7 @@ import { FrameBudget, type SectionStat } from '../base/frameBudget';
 import { AmbientParticles } from './world/ambient';
 import { Butterflies } from './world/butterflies';
 import { Breakables } from './world/breakables';
-import { Grass, GRASS_PUSH_SLOTS, type Pusher } from './world/grass';
+import { type GrassLayer, GRASS_PUSH_SLOTS, type Pusher } from './world/grass';
 import { setHeightFog } from '../render/atmosphere';
 import { type RiftVeil } from '../render/riftVeil';
 import { DeadTrees } from './world/deadTrees';
@@ -261,7 +261,7 @@ export class Game {
   terrain!: Terrain;
   env!: Environment;
   /** Cỏ tương tác quanh người chơi (V4); preset Thấp tắt. */
-  grass!: Grass;
+  grass!: GrassLayer;
   props: PropLayer | null = null;
   /** Cột linh quang ở các điểm đáng chú ý (M-5); chỉ hiện ở thế giới chính. */
   beacons: Beacons | null = null;
