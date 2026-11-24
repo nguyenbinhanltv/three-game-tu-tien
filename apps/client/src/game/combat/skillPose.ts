@@ -1,6 +1,7 @@
 import { comboNext, GCD, lungeReach, poseIdFor, skillTiming, usesStrikeTiming, type SkillDef } from '@dtl/shared';
 import { METHOD_SKILLS, POSE, SKILL, SKILLS } from '@dtl/content';
 import type { CharacterView, PerformOpts } from '../character/view';
+import { ANIM_FX } from '../character/animFx';
 
 /** FX của chiêu → chiêu (mỗi chiêu một fx riêng trong skills.json). */
 // Chiêu tư thế (VS-2e) mượn fx + pose của một chiêu thường: tra theo fx luôn ra chiêu thường đó. Chiêu tư thế có fx RIÊNG (Hóa Hình của
@@ -43,7 +44,9 @@ export function performOpts(skill: SkillDef, combo: number | undefined, gap: num
 export function poseOf(skill: SkillDef, combo?: number, method?: string): string {
   const base = skill.pose!;
   const id = poseIdFor(base, { combo, method });
-  return POSE.has(id) ? id : base;
+  const chosen = POSE.has(id) ? id : base;
+  // Thân Pháp T4 (cờ ?thanphap): bản pose-to-pose `<id>_tp` nếu có; giữ nguyên thời lượng và khung trúng nên không đổi nhịp combat.
+  return ANIM_FX.poses && POSE.has(`${chosen}_tp`) ? `${chosen}_tp` : chosen;
 }
 
 /** Lúc ra đòn (giây trong clip) của động tác chiêu `skill` (đúng pose `poseId` nếu đã chọn), 0 nếu không có. */

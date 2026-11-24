@@ -13,7 +13,7 @@ Phụ: `s4_den_troi` (8 đèn trời, `touch`), `s4_ban_khac` (`scan` 5 poi củ
 - **Sửa lỗi cũ**: `DungeonRoom.afterJoin` phát `questEvent('dungeon', undefined)` nên `q2_phuc_mach` và `q3_kinh_nguyet` (có `target`) không bao giờ tiến triển trong chơi thật (chỉ `/gm qev` chạy). Nay phát kèm đích theo level (`DUNGEON_QUEST_TARGET` ở `rooms.ts`: `phuc_mach_quat`, `kinh_nguyet_cung`, `than_tang_dien`). Kiếm Trủng không đích, vẫn khớp mục tiêu `dungeon` không khai `target`.
 - Level `thien_khuyet.json` thêm `spots` (8 đèn trời, 3 môn phong ấn) và `escorts` (`esc_mac_chieu`), sinh bằng `tools/maps/gen-thien-khuyet.mjs`. Client `questSpots.ts` vẽ mảnh sáng theo tiền tố (lam gương nước, hổ phách đèn trời, lục bích môn phong ấn).
 - Thẻ chương `ch4` (`game/chapter.ts`, engine kiểm lần đầu tới `thien_khuyet`).
-- `pnpm shots quest4 --out <thư mục>`: thẻ chương + hội thoại.
+- `pnpm shots quest4 --out <thư mục>` (kịch bản đã gỡ ở tối ưu Đợt C): thẻ chương + hội thoại.
 
 ## Số đo
 

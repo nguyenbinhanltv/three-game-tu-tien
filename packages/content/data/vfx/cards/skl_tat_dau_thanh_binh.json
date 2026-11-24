@@ -1,0 +1,36 @@
+{
+  "skillId": "skl_tat_dau_thanh_binh",
+  "idea": "Ba hồn binh bóng lính khói tím-đen đứng quanh người ra chiêu, thân tan thành đuôi khói, mắt sáng lạnh, khói hồn cuộn dưới chân.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "cloud",
+    "spiral"
+  ],
+  "timing": {
+    "anticipationMs": 500,
+    "impactMs": 80,
+    "lingerMs": 500
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 180,
+    "screenCover": 0.2,
+    "overdraw": 6
+  },
+  "textures": [],
+  "silhouette": "ba bóng lính cầm giáo bằng khói đứng thành thế tam giác quanh người, thân dưới tan thành đuôi khói cuộn, mỗi lính hai điểm mắt sáng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles",
+    "smoke"
+  ]
+}

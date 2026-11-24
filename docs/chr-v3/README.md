@@ -175,7 +175,7 @@ Trần texture chốt lúc nạp model: đổi preset có tác dụng từ lần
 | WebGL2 Vừa, v1 → v3 | 357 → 268 | 1,63M → 1,80M | 375 → 351 MB | 6,7 → 8,9 ms | |
 | WebGL2 Cao, v1 → v3 | 358 → 285 | 2,05M → 2,25M | 550 → 568 MB | 8,0 → 10,9 ms | |
 
-`pnpm shots n7` (preset Cao, camera sát đám đông): 50 người v1 343 draw / 2,05M → v3 235 draw / 2,08M; heap sau GC 989 MB.
+`pnpm shots n7` (kịch bản đã gỡ ở tối ưu Đợt C) (preset Cao, camera sát đám đông): 50 người v1 343 draw / 2,05M → v3 235 draw / 2,08M; heap sau GC 989 MB.
 
 Đọc số: draw call và texture của v3 tốt hơn v1; tam giác hơn ~0,15M; ở Vừa mọi chỉ số trong ngân sách trừ CPU p95 (v1 cũng vượt). Ở Cao tam giác và texture vượt ngân sách chung ở cả v1 lẫn v3 (cảnh + bóng đổ + texture mặt đất 171 MB), không phải do nhân vật.
 
@@ -197,7 +197,7 @@ Mọi tham số (màu nhuộm, màu tham chiếu, bán kính, bật/tắt từng
 
 Chọn màu tham chiếu: `pnpm dye:preview [thư-mục]` đọc texture gốc Tripo trong `dtl-asset-source` (`DTL_ASSET_SOURCE` nếu nằm chỗ khác), in tỉ lệ phủ từng kênh và ghi ảnh texture | mặt nạ (đỏ = chính, lục = viền/lót, lam = kim loại); `pnpm dye:preview --clusters <id-model>` in 8 cụm màu của phần ngoài vải chính. Tất định, không dùng mạng. Lạc Kiếm v3b dùng bảng màu `v3Palette` lúc chạy nên ảnh xem trước (texture thô) chỉ gần đúng.
 
-Khi nào nhuộm (`v3DyeColors`): màu đạo bào lúc tạo nhân vật áp lên đồ khởi đầu (không mặc bộ, màu khác mặc định), chỉ kênh 1; nhuộm Tủ ngoại trang (`dye3` → `tint.hex/trim/accent`) áp cả ba kênh lên mọi model theo bộ; skin toàn thân không nhuộm. Mặc bộ mà không nhuộm tủ thì model giữ màu riêng (như áo mô-đun của v1). Vật liệu nhuộm là bản sao theo (model, màu), dùng chung giữa mọi người cùng model cùng màu. Ảnh: `pnpm shots n7 --dye`.
+Khi nào nhuộm (`v3DyeColors`): màu đạo bào lúc tạo nhân vật áp lên đồ khởi đầu (không mặc bộ, màu khác mặc định), chỉ kênh 1; nhuộm Tủ ngoại trang (`dye3` → `tint.hex/trim/accent`) áp cả ba kênh lên mọi model theo bộ; skin toàn thân không nhuộm. Mặc bộ mà không nhuộm tủ thì model giữ màu riêng (như áo mô-đun của v1). Vật liệu nhuộm là bản sao theo (model, màu), dùng chung giữa mọi người cùng model cùng màu. Ảnh: `pnpm shots n7 --dye` (kịch bản đã gỡ ở tối ưu Đợt C).
 
 Giới hạn: vùng viền/kim loại nhận bằng màu texel nên là xấp xỉ (nét vàng mảnh trên texture 2K nhuộm không trọn vẹn; chi tiết cùng màu với vải chính không tách được). Ảnh: `pnpm shots dye23 --out <thư mục>` (4 bộ × nam/nữ × 5 phối màu, 1080p + 720p). Tinh Khuyết: vải chính gần đen nên lớp đổi màu là voan tím. Thêm model mới phải thêm dòng vào `V3_DYE_REF` (test `v3Dye.test.ts` bắt thiếu).
 

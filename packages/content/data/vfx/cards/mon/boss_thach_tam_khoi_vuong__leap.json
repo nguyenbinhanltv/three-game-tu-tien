@@ -1,0 +1,33 @@
+{
+  "monId": "boss_thach_tam_khoi_vuong",
+  "move": "leap",
+  "idea": "Thạch Tâm Khôi Vương nhảy đè: vòng cảnh báo ĐỎ tròn đúng 4,5 m dưới chân người bị nhắm, vân nứt đỏ tỏa từ tâm và đĩa đỏ tô dần theo nhịp nạp 1,2 s; khi hạ xuống nổ ra hố nứt đá hình sao, mảnh đá nâu văng tung, cột bụi và ánh ngọc lam lóe ở lõi tim đá.",
+  "element": "tho",
+  "palette": {
+    "core": "3a2308",
+    "body": "b07a32",
+    "rim": "ffe7b0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "burst",
+    "spike"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 4.5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1200,
+    "impactMs": 120,
+    "lingerMs": 700
+  },
+  "readability": "Đĩa đỏ đặc đúng 4,5 m, đọc rõ trên nền sáng; đá nâu + tia ngọc lam ở nổ, không có đỏ.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

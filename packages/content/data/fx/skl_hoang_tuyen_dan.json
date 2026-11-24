@@ -7,7 +7,7 @@
    "t": -0.5,
    "n": 24,
    "speed": 1.4,
-   "spread": 1.0,
+   "spread": 1,
    "life": 0.4,
    "size": 0.18,
    "at": "self",
@@ -29,177 +29,19 @@
    "jitter": 0.05
   },
   {
-   "type": "decal",
-   "tex": "rune",
-   "t": -0.35,
-   "r": 5.333,
-   "dur": 1.2,
-   "at": "area",
-   "grow": 0.3,
-   "tone": "body",
-   "alpha": 0.75,
-   "tier": 0
-  },
-  {
-   "type": "decal",
-   "tex": "scorch",
-   "t": 0.0,
-   "r": 5.667,
-   "dur": 3.0,
-   "at": "area",
-   "grow": 0.12,
-   "tone": "core",
-   "alpha": 0.9,
-   "tier": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "rune_ring2",
-   "t": 0.0,
-   "dur": 0.8,
-   "at": "area",
-   "offset": [
-    0.0,
-    0.07,
-    0.0
-   ],
-   "scale": [
-    1.0,
-    1,
-    1.0
-   ],
-   "scaleTo": [
-    5.733,
-    1,
-    5.733
-   ],
-   "sweep": 0.3,
-   "erodeFrom": 0.5,
-   "ragged": 0.6,
-   "tone": "rim",
-   "alpha": 0.9,
-   "shadow": false,
-   "tier": 0,
-   "seed": 20
-  },
-  {
-   "type": "mesh",
-   "shape": "shock_cone",
-   "t": 0.0,
-   "dur": 0.45,
-   "at": "area",
-   "offset": [
-    0.0,
-    0.05,
-    0.0
-   ],
-   "scale": [
-    0.667,
-    0.5,
-    0.667
-   ],
-   "scaleTo": [
-    4.667,
-    0.9,
-    4.667
-   ],
-   "sweep": 0.3,
-   "erodeFrom": 0.35,
-   "ragged": 0.7,
-   "tone": "body",
-   "alpha": 0.75,
-   "shadow": false,
-   "tier": 0,
-   "seed": 21
-  },
-  {
-   "type": "mesh",
-   "shape": "crack_radial",
-   "t": 0.03,
-   "dur": 0.9,
-   "at": "area",
-   "offset": [
-    0.0,
-    0.05,
-    0.0
-   ],
-   "scale": 4.333,
-   "alpha": 1,
-   "sweep": 0.2,
-   "erodeFrom": 0.7,
-   "shadow": false,
-   "tone": "core",
-   "tier": 0,
-   "seed": 22
-  },
-  {
-   "type": "mesh",
-   "shape": "smoke",
-   "t": 0.05,
-   "dur": 0.9,
-   "at": "area",
-   "offset": [
-    2.307,
-    0.8,
-    1.333
-   ],
-   "scale": 1.8,
-   "scaleTo": 2.6,
-   "billboard": true,
-   "tone": "body",
-   "alpha": 0.65,
-   "tier": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "smoke",
-   "t": 0.11,
-   "dur": 0.9,
-   "at": "area",
-   "offset": [
-    0.0,
-    0.8,
-    -2.667
-   ],
-   "scale": 1.8,
-   "scaleTo": 2.6,
-   "billboard": true,
-   "tone": "core",
-   "alpha": 0.65,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "smoke",
-   "t": 0.17,
-   "dur": 0.9,
-   "at": "area",
-   "offset": [
-    -2.307,
-    0.8,
-    1.333
-   ],
-   "scale": 1.8,
-   "scaleTo": 2.6,
-   "billboard": true,
-   "tone": "core",
-   "alpha": 0.65,
-   "tier": 1
-  },
-  {
    "type": "particles",
    "kind": "dust",
-   "t": 0.0,
+   "t": 0,
    "n": 60,
-   "speed": 3.0,
-   "spread": 1.0,
-   "life": 1.0,
+   "speed": 3,
+   "spread": 1,
+   "life": 1,
    "size": 0.22,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.4,
-    0.0
+    0
    ],
    "tone": "rim",
    "grav": -1.8,
@@ -210,22 +52,22 @@
    "kind": "shard",
    "t": 0.02,
    "n": 24,
-   "speed": 5.0,
-   "spread": 1.0,
+   "speed": 5,
+   "spread": 1,
    "life": 0.6,
    "size": 0.1,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.3,
-    0.0
+    0
    ],
    "tone": "accent",
    "tier": 1
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "impact",
    "gain": 0.7,
    "rate": 0.6,
@@ -233,19 +75,413 @@
   },
   {
    "type": "hitstop",
-   "t": 0.0,
+   "t": 0,
    "ms": 65
   },
   {
    "type": "shake",
-   "t": 0.0,
+   "t": 0,
    "level": 0.3
   },
   {
    "type": "flash",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.08,
    "tier": 0
+  },
+  {
+   "type": "mesh",
+   "t": -0.27,
+   "dur": 0.3,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.9,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.95,
+   "tier": 0,
+   "seed": 1000,
+   "shape": "sprite",
+   "sprite": "hon_orb",
+   "billboard": true,
+   "offset": [
+    0,
+    1.5,
+    0
+   ],
+   "scale": 1.32,
+   "scaleTo": 2.42
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": -0.27,
+   "n": 12,
+   "speed": 1.7,
+   "spread": 1,
+   "life": 0.26,
+   "size": 0.07,
+   "at": "target",
+   "offset": [
+    0,
+    1.5,
+    0
+   ],
+   "tone": "rim",
+   "tier": 1,
+   "inward": true
+  },
+  {
+   "type": "mesh",
+   "t": 0,
+   "dur": 0.18,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.2,
+   "ragged": 0.5,
+   "tone": "rim",
+   "alpha": 0.7,
+   "tier": 0,
+   "seed": 1001,
+   "shape": "sprite",
+   "sprite": "hon_orb",
+   "billboard": true,
+   "offset": [
+    0,
+    1.5,
+    0
+   ],
+   "scale": 2.42,
+   "scaleTo": 3.3
+  },
+  {
+   "type": "mesh",
+   "t": 0,
+   "dur": 0.7,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.15,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.92,
+   "tier": 0,
+   "seed": 1002,
+   "shape": "sprite",
+   "sprite": "hon_face_scream",
+   "billboard": true,
+   "offset": [
+    0.96,
+    1.5,
+    0.3
+   ],
+   "scale": 1.87,
+   "scaleTo": 2.2,
+   "move": {
+    "to": "target",
+    "offset": [
+     3.25,
+     1.6,
+     1
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "t": 0.01,
+   "dur": 0.7,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.15,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.92,
+   "tier": 0,
+   "seed": 1003,
+   "shape": "sprite",
+   "sprite": "hon_face_grin",
+   "billboard": true,
+   "offset": [
+    0.47,
+    1.5,
+    0.88
+   ],
+   "scale": 1.87,
+   "scaleTo": 2.2,
+   "move": {
+    "to": "target",
+    "offset": [
+     1.59,
+     2.2,
+     3.01
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "t": 0.02,
+   "dur": 0.7,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.15,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.92,
+   "tier": 0,
+   "seed": 1004,
+   "shape": "sprite",
+   "sprite": "hon_face_horn",
+   "billboard": true,
+   "offset": [
+    -0.3,
+    1.5,
+    0.96
+   ],
+   "scale": 1.87,
+   "scaleTo": 2.2,
+   "move": {
+    "to": "target",
+    "offset": [
+     -1,
+     1.6,
+     3.25
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "t": 0.03,
+   "dur": 0.7,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.15,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.92,
+   "tier": 0,
+   "seed": 1005,
+   "shape": "sprite",
+   "sprite": "hon_face_sad",
+   "billboard": true,
+   "offset": [
+    -0.88,
+    1.5,
+    0.47
+   ],
+   "scale": 1.87,
+   "scaleTo": 2.2,
+   "move": {
+    "to": "target",
+    "offset": [
+     -3.01,
+     2.2,
+     1.59
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "t": 0.04,
+   "dur": 0.7,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.15,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.92,
+   "tier": 0,
+   "seed": 1006,
+   "shape": "sprite",
+   "sprite": "hon_wraith",
+   "billboard": true,
+   "offset": [
+    -0.96,
+    1.5,
+    -0.3
+   ],
+   "scale": 1.87,
+   "scaleTo": 2.2,
+   "move": {
+    "to": "target",
+    "offset": [
+     -3.25,
+     1.6,
+     -1
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "t": 0.05,
+   "dur": 0.7,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.15,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.92,
+   "tier": 0,
+   "seed": 1007,
+   "shape": "sprite",
+   "sprite": "hon_face_pale",
+   "billboard": true,
+   "offset": [
+    -0.47,
+    1.5,
+    -0.88
+   ],
+   "scale": 1.87,
+   "scaleTo": 2.2,
+   "move": {
+    "to": "target",
+    "offset": [
+     -1.59,
+     2.2,
+     -3.01
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "t": 0.06,
+   "dur": 0.7,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.15,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.92,
+   "tier": 0,
+   "seed": 1008,
+   "shape": "sprite",
+   "sprite": "hon_face_scream",
+   "billboard": true,
+   "offset": [
+    0.3,
+    1.5,
+    -0.96
+   ],
+   "scale": 1.87,
+   "scaleTo": 2.2,
+   "move": {
+    "to": "target",
+    "offset": [
+     1,
+     1.6,
+     -3.25
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "t": 0.07,
+   "dur": 0.7,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.15,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.92,
+   "tier": 0,
+   "seed": 1009,
+   "shape": "sprite",
+   "sprite": "hon_face_horn",
+   "billboard": true,
+   "offset": [
+    0.88,
+    1.5,
+    -0.47
+   ],
+   "scale": 1.87,
+   "scaleTo": 2.2,
+   "move": {
+    "to": "target",
+    "offset": [
+     3.01,
+     2.2,
+     -1.59
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "t": 0.02,
+   "dur": 0.7,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.15,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.5,
+   "tier": 0,
+   "seed": 1010,
+   "shape": "sprite",
+   "sprite": "hon_swarm9",
+   "billboard": true,
+   "offset": [
+    0,
+    1.6,
+    0
+   ],
+   "scale": 3.52,
+   "scaleTo": 3.52
+  },
+  {
+   "type": "mesh",
+   "t": 0.18,
+   "dur": 0.7,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.25,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.6,
+   "tier": 0,
+   "seed": 1011,
+   "shape": "sprite",
+   "sprite": "hon_wisps",
+   "billboard": true,
+   "offset": [
+    0,
+    2,
+    0
+   ],
+   "scale": 3.52,
+   "scaleTo": 3.52,
+   "move": {
+    "to": "target",
+    "offset": [
+     0,
+     3.6,
+     0
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 12,
+   "speed": 3.5,
+   "spread": 1,
+   "life": 0.35,
+   "size": 0.07,
+   "at": "target",
+   "offset": [
+    0,
+    1.5,
+    0
+   ],
+   "tone": "rim",
+   "tier": 1
   }
  ]
 }

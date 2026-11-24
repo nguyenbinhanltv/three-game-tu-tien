@@ -1,0 +1,34 @@
+{
+  "monId": "boss_dia_mach_long",
+  "move": "line",
+  "idea": "Địa Mạch Long thổi long mạch: dải chữ nhật cảnh báo ĐỎ cực dài 30 m rộng 4 m từ miệng boss về phía người chơi, vân nứt đỏ chạy dọc theo nhịp nạp 2 s; nổ ra một khe nứt đất dài bùng ra tia sáng ngọc lam và gai đá nâu nhọn trồi hai bên khe, bụi đất tung.",
+  "element": "tho",
+  "palette": {
+    "core": "3a2308",
+    "body": "b07a32",
+    "rim": "ffe7b0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "line",
+    "spike"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 30,
+    "w": 4,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 2000,
+    "impactMs": 160,
+    "lingerMs": 900
+  },
+  "readability": "Dải đỏ rộng đúng 4 m, tô lan từ gốc ra xa trong 2 s; gai đá nâu + ánh ngọc lam đọc rõ, khác hẳn vạch đỏ; thân rồng dài không che dải.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

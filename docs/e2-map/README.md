@@ -65,14 +65,14 @@ Muốn 100 % điểm ≤ 70 m phải nâng trần mật độ lên ≈ 150 quái
 
 | | |
 | --- | --- |
-| Bố cục nhìn từ trên (map:report: địa hình, ranh vùng, bãi quái, tinh anh vàng, boss đỏ) | ![](layout-topdown.webp) |
+| Bố cục nhìn từ trên (map:report: địa hình, ranh vùng, bãi quái, tinh anh vàng, boss đỏ) | *(ảnh đã gỡ khỏi repo)* |
 | Nền minimap (đồng mức mực, ranh vùng, đường mòn tỏa từ trạm) | _(ảnh đã gỡ)_ |
-| Bản đồ lớn (phím M) | ![](worldmap.webp) |
-| Sa Thạch Pha | ![](zone-sa-thach-pha.webp) |
+| Bản đồ lớn (phím M) | *(ảnh đã gỡ khỏi repo)* |
+| Sa Thạch Pha | *(ảnh đã gỡ khỏi repo)* |
 | Khô Hà Đạo | _(ảnh đã gỡ)_ |
-| Hoang Sa Huyệt | ![](zone-hoang-sa-huyet.webp) |
+| Hoang Sa Huyệt | *(ảnh đã gỡ khỏi repo)* |
 | Cựu Mỏ Khu | _(ảnh đã gỡ)_ |
-| Cầu Đá Gãy | ![](poi-cau-da-gay.webp) |
+| Cầu Đá Gãy | *(ảnh đã gỡ khỏi repo)* |
 | Mạch Tinh Trụ | _(ảnh đã gỡ)_ |
 | Cổng Mỏ Khai Mạch | _(ảnh đã gỡ)_ |
 | Vách Đứt Mạch | _(ảnh đã gỡ)_ |

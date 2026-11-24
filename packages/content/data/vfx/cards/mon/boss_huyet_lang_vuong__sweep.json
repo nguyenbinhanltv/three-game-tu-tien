@@ -1,0 +1,34 @@
+{
+  "monId": "boss_huyet_lang_vuong",
+  "move": "sweep",
+  "idea": "Huyết Lang Vương phun hỏa lãng quét hình quạt: mặt quạt ĐỎ đúng bán kính 10 m, nửa góc 50° từ miệng boss về phía người chơi, vân nứt đỏ lan từ gốc ra cung theo nhịp nạp 1,2 s; nổ ra một làn sóng lửa-tro hình quạt quét ra, đầu sóng trắng vàng, đuôi tro đen và đốm than.",
+  "element": "hoa",
+  "palette": {
+    "core": "1c0a08",
+    "body": "e8741f",
+    "rim": "fff0c0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "cloud",
+    "arc"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 10,
+    "w": 50,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1200,
+    "impactMs": 120,
+    "lingerMs": 700
+  },
+  "readability": "Hai cạnh quạt đỏ sắc, đọc được góc 50° không rộng hơn; sóng nổ lõi tối đầu trắng vàng để không lẫn vạch báo đỏ.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

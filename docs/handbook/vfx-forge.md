@@ -25,9 +25,25 @@
 | 5 | Ba nhịp: báo trước → trúng (+30 ms có điểm nhấn) → dư ba | `checkStandard2`: có sự kiện hình trước mốc trúng (nếu `anticipationMs` ≥ 150), quanh ±50 ms, và từ +150 ms |
 | 6 | Đúng màu hướng tu, không đỏ/cam cho chiêu người chơi | `checkStandard2` chặn tông (`body/core/rim/accent/shadow`) của bảng hướng tu mà HSL là đỏ/cam; `vfxlab` đo `redShare` ≤ 3% |
 | 7 | Ngân sách: phủ ≤ 0,2 (chiêu cuối ≤ 0,35), draw/hạt theo thẻ | `checkStandard2` + `vfxlab` (`overBudget`) |
-| 8 | Ảnh duyệt 720p + 1080p, ngày + đêm, khung báo/0/+30/+150, clip chiêu cuối | `pnpm shots vfxlab --skill ... [--mood night] [--clip 1]` + `tools/vfx-forge/table.mjs` |
+| 8 | Ảnh duyệt 720p + 1080p, ngày + đêm, khung báo/0/+30/+150, clip chiêu cuối | `pnpm shots vfxlab --skill ... [--mood night] [--clip 1]` |
 
 Bật kiểm cho một thẻ bằng cách thêm vào thẻ `"standard": 2`, `"silhouette": "<mô tả hình riêng>"`, `"materials": ["smoke", ...]` (giá trị: `flipbook|smoke|particles|crack|distort`). Thẻ cũ không có `standard` thì không bị kiểm (đợt làm lại sẽ bật dần). Phần đo trên ảnh của `vfxlab` chỉ cảnh báo (cột `overBudget`), vì ảnh có lẫn chuyển động của nhân vật/hình nộm. Mẫu tham chiếu chất lượng: concept Hàn Giao (quái).
+
+## Sprite vẽ tay (Họa Pháp Lô 2, từ đợt Hồn tu)
+
+Hình có hình dạng riêng (bàn tay, mặt hồn, lính giáo, phướn, lốc xoáy, sóng, sợi hồn...) không dựng bằng lưới thủ tục mà dùng **sprite Codex vẽ**:
+
+1. **Vẽ**: `pnpm --filter @dtl/vfx-forge forge sprites --name <tên> --prompt-file <txt> [--ref <bảng concept đã duyệt>]... --out <thư mục ngoài repo>` gọi Codex vẽ MỘT bảng lưới đều (4×2) mỗi ô một sprite trên nền xanh chroma `#00FF00`; prompt dặn không dùng xanh lục trong hình và mép phải mềm như khói. Hồn tu đã có ba bảng (v1: bàn tay, mặt, lính, phướn, xích, vuốt; v2: lốc, màn, sóng, quả cầu hồn, sọ, bóng trùm, roi khói, sợi hồn; v3: sợi hồn chữ S, vòng khói, mặt thương khóc, mặt quỷ sừng, bàn tay xương, chùm 9 mặt).
+2. **Đóng atlas**: `node tools/vfx-forge/sprite-pack.mjs --sheet <bảng1.png>:4:2 --sheet <bảng2.png>:4:2 --sheet <bảng3.png>:4:2 [--preview <jpg>]` tách nền (alpha mềm từ độ lệch xanh lục, khử viền), cắt khung bao từng ô, thu vừa ô vuông 512 và xếp nối tiếp vào `apps/client/public/hoa-truc/vfx_sprites.webp`: lưới **4 cột × 6 hàng = 24 ô** (`SPRITE_COLS`/`SPRITE_ROWS` ở `render/vfx/art.ts`), thứ tự ô = `FX_SPRITES` trong `packages/shared/src/fxtimeline.ts` (hàng trên trước, trái sang phải). Thêm sprite mới: thêm tên vào CUỐI `FX_SPRITES`, tăng `SPRITE_ROWS` nếu hết ô, đóng lại atlas với đủ các bảng theo thứ tự.
+3. **Đẩy atlas lên R2** (nhị phân KHÔNG commit, xem CLAUDE.md "Không commit nhị phân"): `pnpm assets:push --only hoa-truc/vfx_sprites.webp` (cập nhật `assets/asset-lock.json` rồi upload; thử trước bằng `--dry`), commit sổ khóa. Máy khác/sau merge: `pnpm assets:pull`. Client nạp qua `ASSET_BASE` (`base/assetBase.ts`) ở `spriteAtlas()`; test `sprites.test.ts` kiểm atlas có trong sổ khóa.
+4. **Dùng trong timeline**: sự kiện `mesh` với `shape: "sprite"`, `sprite: "<tên>"` (billboard mặc định); `scale` là mét của ô vuông (nội dung chiếm ~35–60%); `alpha`, `erodeFrom`, `move` như mọi mesh; sprite tan dần TUYẾN TÍNH từ `erodeFrom` (như khói mỏng đi). Kiểu vật liệu riêng `sprite` (`spriteNodes` ở `render/vfx/stylized.ts`) KHÔNG gộp instance: hai lần thử gộp chung với `art` làm sprite chập chờn khi ra nhiều chiêu liên tiếp, nên **mỗi sprite là một draw call**. Ngân sách: draw call mỗi chiêu ≤ 12 (kiểm bởi `validateFx`/`content:check`); chiêu nhiều sprite (Hoàng Tuyền Đạn: 12) phải khai `budget.drawCalls` thật trong thẻ, đừng khai thấp.
+5. **Màu**: shader tô sprite bằng bảng tím âm hồn (hue ~270–285°): lõi mực gần đen tím → thân tím đậm → viền tím nhạt/trắng lạnh, theo độ sáng của tranh; chi tiết vẽ tay (ngón tay, mặt, lưỡi giáo) nhuốm tím. Tone `rim` của sự kiện chỉ nâng phần chi tiết sáng (lớp điểm nhấn ngắn), không nâng cả thân. Hướng tu khác cần ramp riêng thì tách tham số trong `spriteNodes`, đừng sửa hue của Hồn tu.
+6. **Không đặt `camFade`** cho sprite nằm trên đầu mục tiêu: nó mờ gần hết mọi thứ trong 4 m quanh mục tiêu.
+7. **Ba nhịp**: báo trước (`t < 0`: bản mờ nhỏ + hạt `inward`), trúng (`t = 0`: hình bật gần đủ cỡ + lớp sáng lạnh ngắn), dư ba (`t ≥ 0,17`: hình mỏng dần + sợi hồn bay lên). Chiêu lướt kích theo S.FX (`trigger: fx`) kẹp mọi mốc ≥ 0 nên không có báo trước: khai `timing.anticipationMs: 0` trong thẻ.
+8. Thẻ khai `standard: 2`, `materials: ["sprite", "particles"]` (+ `"smoke"` nếu có khói `flip`); `checkStandard2` kiểm timeline có sự kiện `sprite`.
+9. `node tools/vfx-forge/hon-tu.mjs [id...]` là bộ sinh timeline 11 chiêu Hồn tu (chạy lại an toàn, bỏ mesh seed ≥ 1000 rồi dựng lại, giữ âm thanh/rung/hitstop/hạt viết tay); hệ số cỡ theo chiêu ở `SCALE`.
+
+**Đo phủ màn hình**: `node tools/vfx-forge/cover.mjs [id chiêu...]` (chạy ở gốc repo) là ƯỚC LƯỢNG có trọng số, tất định, từ timeline: Σ (bình phương cỡ × alpha × phần còn lại sau khi tan) của các tấm `sprite`/`flip` đang sống, chia diện tích khung camera chéo (cách 20 m, FOV dọc 32°, 16:9 = 20,4 × 11,5 m); in giá trị ở +30 ms và đỉnh. KHÔNG phải cận trên: bỏ ribbon/helix/decal/hạt, nhân alpha và phần tan, không trừ chồng nhau hay phần trong suốt của tranh. Dùng nó để khai `budget.screenCover` của thẻ (≤ 0,2; chiêu cuối ≤ 0,35) và PHẢI kèm số xác nhận bằng ảnh: `pixelCover` của `pnpm shots vfxlab` ở khung 0 và +150 ms (khung +30 ms hay dính rung hitstop làm lệch cả khung). `pixelCover` so với ảnh nền chụp trước khi ra chiêu nên bị lệch khi nền đổi (giờ/mây/rung): khung chưa có hình vẫn có thể báo 0,4; nếu một lượt báo gần như bằng nhau ở mọi khung thì lượt đó lệch nền, bỏ và chụp lại (`screenCover` của phòng thử là ước lượng theo hình cầu bao, quá tay với sprite, chỉ ghi kèm chú thích).
 
 ## Bảng phong cách
 
@@ -61,9 +77,14 @@ Sự kiện timeline `{ "type": "impact", "t": 0, "frames": 1|2, "tint": "ink|wa
 
 ## Texture dùng chung theo hệ (Họa Pháp Lô 2)
 
-Lớp CHẤT LIỆU dùng chung cho quái/boss và chiêu người chơi (mỗi chiêu/boss vẫn phải có silhouette riêng). Danh sách id ở `FORGE_DECALS`/`FORGE_FLIPS` (`packages/shared/src/fxtimeline.ts`): `warn_crack` (vân nứt đỏ cho vạch báo), `ice_crack` (băng nứt), `ice_flip` (flipbook 4×4 băng trồi/vỡ).
+Lớp CHẤT LIỆU dùng chung cho quái/boss và chiêu người chơi (mỗi chiêu/boss vẫn phải có silhouette riêng). Gộp thành HAI atlas KTX2 (`apps/client/public/assets/vfx/`, tổng ~1,6 MB) để shader chỉ lấy mẫu một texture:
 
-- Sinh: `pnpm --filter @dtl/vfx-forge forge shared <id> --out <thư mục artifact>` (Codex), rồi `forge import <png> --id <id> [--grid 4x4] --sheets <artifact>` (cần `TOKTX`) → `apps/client/public/assets/vfx/<id>.ktx2` + `manifest.json`. `pnpm vfx:check` chặn PNG.
-- Dùng trong timeline: decal `tex: "warn_crack"|"ice_crack"` (thêm `sector` = nửa góc độ để vẽ MẶT QUẠT từ tâm theo hướng vùng; `top` cho vạch báo); mesh `shape: "flip", flip: "ice_flip"`.
-- Client: `render/vfx/forgeTex.ts` (shader `mapDecal`/`mapDecalTop`/`mapFlip`, texture giữ chỗ trong suốt) + `game/fx/forgeLoad.ts` (nạp KTX2 nền sau khi có renderer; lỗi chỉ cảnh báo, lớp này vô hình). Thêm texture mới: thêm id vào `shared`, thêm nút texture ở `forgeTex.ts`, thêm mục ở `tools/vfx-forge/src/sharedTex.ts`.
-- Vạch báo riêng của chiêu quái (`MonFx.ownWarn`) chỉ thay vòng cũ khi `MonFx.warn` thật sự phát (trả `true`); xa/đông FX thì giữ vòng cũ để không mất vạch báo.
+- `decal_atlas` (2048×1024, ô vuông 512, 4×2) theo thứ tự `FORGE_DECALS`: `warn_crack` (vân nứt đỏ cho vạch báo), `ice_crack`, `steel_crack`, `ember_crack` (lõi tối vân vàng trắng, KHÔNG cam phẳng), `bolt_scorch`, `jade_crack` (đất nâu khe ngọc lam), `root_mat`.
+- `flip_atlas` (3072×2048, 3×2 tấm, mỗi tấm 4×4 khung) theo thứ tự `FORGE_FLIPS`: `ice_flip`, `steel_flip`, `fire_flip`, `bolt_flip`, `earth_flip`, `root_flip`.
+
+Thêm/đổi texture: thêm mục ở `tools/vfx-forge/src/sharedTex.ts` (`forge shared <id> --out <artifact>`, Codex vẽ nền đen), thêm id vào `FORGE_DECALS`/`FORGE_FLIPS` (`packages/shared/src/fxtimeline.ts`, GIỮ THỨ TỰ vì là chỉ số ô), dựng lại atlas (PIL, ghép theo thứ tự; hạ gamma/độ bão hòa ô quá sáng: alpha suy từ độ sáng nên vùng sáng càng đặc), rồi `forge import <atlas.png> --id decal_atlas --grid 4x2 --max 2048` và `--id flip_atlas --grid 12x8 --max 3072` (cần `TOKTX`). `pnpm vfx:check` chặn PNG.
+
+- Dùng trong timeline: decal `tex` thuộc `FORGE_DECALS`, thêm `sector` (nửa góc độ, mặt quạt), `swing`/`swingDur` (một tia xoay thay nhiều decal), `strip: [dài, rộng]` (dải chữ nhật cho vùng `rect`, mét thật), `top` cho vạch báo; mesh `shape: "flip", flip: <FORGE_FLIPS>`. Mỗi chiêu quái ≤ 4 decal sống cùng lúc (`DECAL_MAX` = 6 cho cả runner).
+- Client: `render/vfx/forgeTex.ts` (shader `mapDecal`/`mapDecalTop`/`mapFlip`, bảng `FILL`/`BRIGHT` theo hệ) + `game/fx/forgeLoad.ts` (nạp nền; lỗi chỉ cảnh báo, lớp này vô hình).
+- Timeline riêng của quái: `mon_warn*|mon_boom_*|mon_cast__<quái>[__<chiêu>]`, sinh bằng `tools/vfx/gen-fx-han-giao.py` và `gen-fx-a1.py`; timeline riêng được chọn bảng màu riêng (`palette` của file). Không dùng hình `smoke` trong vùng nổ: nó luôn là khói toon trắng ngả lam.
+- Vạch riêng của chiêu quái (`MonFx.ownWarn`) chỉ thay vòng cũ khi `MonFx.warn` thật sự phát và atlas decal đã nạp; xa/đông FX/chưa nạp xong thì giữ vòng cũ để không mất hitbox.

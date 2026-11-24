@@ -11,7 +11,7 @@ const SKIP_DIRS = ['.claude/skills/guizang-game-skill'];
 /** Thư mục gốc để thử khi đường dẫn viết tắt (`game/engine.ts`, `ui/store.ts`, `levels/van_lam.json`...). */
 const BASES = ['', 'apps/client/src', 'apps/client', 'apps/server/src', 'apps/server', 'apps/bot-client/src', 'packages', 'packages/shared/src', 'packages/content', 'packages/content/data', 'packages/content/src', 'tools', 'assets', 'docs'];
 /** File chỉ có sau khi chạy lệnh (không nằm trong git). */
-const GENERATED = [/^bench\/results\//, /^apps\/client\/public\/(assets|audio|map|terrain|art|icons)\//, /^assets\/build\//, /\/dist\//, /\.local$/, /\.env/, /node_modules/, /^\.mcp\.json$/, /data\/game\.db$/, /^assets-online/];
+const GENERATED = [/^bench\/results\//, /^apps\/client\/public\/(assets|audio|map|terrain|art|icons)\//, /^assets\/build\//, /\/dist\//, /\.local$/, /\.env/, /node_modules/, /^\.mcp\.json$/, /data\/game\.db$/, /^assets-online/, /^.asset-cache/];
 
 const files = [];
 const add = (p) => fs.existsSync(path.join(ROOT, p)) && files.push(p);

@@ -19,3 +19,16 @@ tripo-out/
 
 __pycache__/
 *.pyc
+
+# Cache asset kéo từ R2 (pnpm assets:pull), sinh lại được.
+.asset-cache/
+
+# Nhị phân asset game nằm trên R2, không commit (R2-3): `pnpm assets:pull` tải về đây theo assets/asset-lock.json,
+# `pnpm assets:push` đẩy file mới lên R2 và cập nhật sổ khóa. Font (woff2) và manifest json vẫn do git giữ.
+apps/client/public/**/*.glb
+apps/client/public/**/*.ktx2
+apps/client/public/**/*.webp
+apps/client/public/**/*.png
+apps/client/public/**/*.webm
+apps/client/public/**/*.m4a
+apps/client/public/**/*.ogg

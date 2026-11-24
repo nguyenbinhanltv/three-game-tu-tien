@@ -14,7 +14,7 @@ Kiếp cuối chương 5 (`docs/DIVUC_DESIGN.md` mục 2 và 3): Hóa Thần đ�
 - **Phần thưởng**: đường chung `endTribulation` (cấp 32, tu vi 0, `questEvent(breakthrough)`); vật phẩm đột phá bị tiêu qua `c.tx` (sổ cái), hoàn lại nếu trụ qua 45 s. Thất bại mất 15% tu vi cấp.
 - **Vật phẩm**: `itm_anh_bien_lo` (chế ở npc_duoc_su, `rcp_anh_bien_lo`: 3 Kim Dạ Miện Phiến, 10 Tẫn Giác, 5 Tinh Quang Mặc, 20 Yêu Đan, 12.000 linh thạch), `itm_kim_da_mien_phien` (mới) rơi từ `boss_kim_da_ma_hau` (100%) và `boss_tan_hoa_kiem_co` (60%), Tẫn Giác rơi từ cả hai.
 - **Client**: FX `steles` (năm cột sáng, `vfx.steleRing`), `rift` (vết nứt khép, `vfx.riftVein`), HUD "Trấn Giới Bia n/5", thẻ chương `ascend_ab`, skin `boss_nhat_thuc_duc_chu` (dùng lại model Thủ Khích Dực Chủ nhuốm vàng).
-- Công cụ: `pnpm shots anhbien --out <thư mục tuyệt đối>` quay webm + dãy khung; `/gm trib anh_bien`.
+- Công cụ: `pnpm shots anhbien --out <thư mục tuyệt đối>` (kịch bản đã gỡ ở tối ưu Đợt C) quay webm + dãy khung; `/gm trib anh_bien`.
 
 ## Lệch thiết kế / để lại
 

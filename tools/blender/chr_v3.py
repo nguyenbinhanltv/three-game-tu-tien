@@ -938,7 +938,7 @@ if WINGS:
     REP['wing_verts'] = n_w
 if SPRINGS:
     # Cấu hình: {"groups":[{"name":"skirt","parent":"pelvis","axis":"angle|x","zMin":0.16,"zMax":0.5,"minRadius":0.09,"count":8,"links":2,
-    #   "domRegion":["torso","leg"],"yMinRel":0.0,"xAbsMax":0.12}]}; z, bán kính, y, x tính theo PHẦN CHIỀU CAO (mặc định, "frac": false = mét).
+    #   "domRegion":["torso","leg"],"yMinRel":0.0,"xAbsMax":0.12,"xRelMin":-9,"xRelMax":9}]}; z, bán kính, y, x tính theo PHẦN CHIỀU CAO (mặc định, "frac": false = mét).
     SP = json.load(open(SPRINGS, encoding='utf-8'))
     cx, cy = H['pelvis'][0], H['pelvis'][1]
     # Vạt đạo bào: ở giữa (trước/sau) bám hông, ra ngoài mới bám đùi cùng phía; tránh vạt bị xé khi hai chân tách nhau.
@@ -1089,7 +1089,8 @@ if SPRINGS:
         sel = np.array([i for i in range(NV) if zlo <= VP[i][2] <= zhi and math.hypot(VP[i][0] - cx, VP[i][1] - cy) >= rmin
                         and (regs is None or domreg[i] in regs)
                         and (g.get('tex') != 'hair' or (HAIRV_G is not None and HAIRV_G[i]))
-                        and VP[i][1] - cy >= g.get('yMinRel', -9.0) * f and VP[i][1] - cy <= g.get('yMaxRel', 9.0) * f and abs(VP[i][0] - cx) <= g.get('xAbsMax', 9.0) * f], int)
+                        and VP[i][1] - cy >= g.get('yMinRel', -9.0) * f and VP[i][1] - cy <= g.get('yMaxRel', 9.0) * f and abs(VP[i][0] - cx) <= g.get('xAbsMax', 9.0) * f
+                        and g.get('xRelMin', -9.0) * f <= VP[i][0] - cx <= g.get('xRelMax', 9.0) * f], int)
         if len(sel) == 0:
             log(f"lò xo {g['name']}: không có đỉnh nào (y rel max {float((VP[:, 1] - cy).max()):.3f}, ngưỡng {g.get('yMinRel', -9.0) * f:.3f})")
             continue

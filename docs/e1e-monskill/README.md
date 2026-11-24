@@ -34,10 +34,10 @@ Mã: kiểu dữ liệu `packages/shared/src/types.ts` (`MonsterLine`…`Monster
 
 | | |
 | --- | --- |
-| ![line](line.webp) line | ![charge](charge.webp) charge |
-| ![leap](leap.webp) leap | ![burrow](burrow-circles.webp) burrow: ba vòng, quái ẩn |
+| *(ảnh đã gỡ khỏi repo: line)* line | *(ảnh đã gỡ khỏi repo: charge)* charge |
+| *(ảnh đã gỡ khỏi repo: leap)* leap | *(ảnh đã gỡ khỏi repo: burrow)* burrow: ba vòng, quái ẩn |
 | burrow: quái trồi, quạt báo | reflect: vòng đỏ dưới chân |
-| reveal: vòng vàng | ![summon](summon.webp) summon: vòng báo chỗ đệ tử |
+| reveal: vòng vàng | *(ảnh đã gỡ khỏi repo: summon)* summon: vòng báo chỗ đệ tử |
 
 ## Số đo
 

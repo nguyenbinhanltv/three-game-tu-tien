@@ -150,6 +150,12 @@ describe('dòng thời gian hiệu ứng', () => {
         ]).join(),
       ).toMatch(/slowmo cùng một mốc/);
     });
+    it('hình sprite cần ô hợp lệ; ô không gắn vào hình khác', () => {
+      expect(ok([{ type: 'mesh', shape: 'sprite', dur: 0.5, t: 0, sprite: 'hon_hand_claw' }])).toEqual([]);
+      expect(ok([{ type: 'mesh', shape: 'sprite', dur: 0.5, t: 0 }]).join()).toMatch(/thiếu\/sai ô/);
+      expect(ok([{ type: 'mesh', shape: 'sprite', dur: 0.5, t: 0, sprite: 'khong_co' as never }]).join()).toMatch(/thiếu\/sai ô/);
+      expect(ok([{ type: 'mesh', shape: 'spike', dur: 0.5, t: 0, sprite: 'hon_hand_claw' }]).join()).toMatch(/chỉ hình sprite/);
+    });
     it('hình flip cần atlas hợp lệ; atlas không gắn vào hình khác', () => {
       expect(ok([{ type: 'mesh', shape: 'flip', dur: 0.5, t: 0, flip: 'ink_smoke' }])).toEqual([]);
       expect(ok([{ type: 'mesh', shape: 'flip', dur: 0.5, t: 0 }]).join()).toMatch(/thiếu\/sai atlas/);

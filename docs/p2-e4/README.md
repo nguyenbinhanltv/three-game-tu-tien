@@ -5,7 +5,7 @@
 Ảnh chụp bằng GPU thật (RTX 3060 Ti, Chrome), 1280×720, tắt tiếng, `pnpm e4shots` (`tools/perf/src/e4shots.ts`).
 `truoc-*` là `?e4=0` (tắt camera theo khu và kẹp cỡ nhãn); `sau-*` là bản mới. Tên tệp: `<truoc|sau>-<webgpu|webgl2>-<preset>-<điểm>.jpg`.
 
-## 1. Camera theo khu (`game/camZones.ts`)
+## 1. Camera theo khu (`game/camZones.ts`) — đã gỡ (B1, 2026-11-24)
 Mỗi vùng cho (nhân khoảng cách, cộng góc ngẩng, FOV), trọng số giảm mượt (smoothstep) từ trong ra ngoài ranh, engine làm mượt thêm theo thời gian (`easeZoneCam`, ~0,45 s) nên đi qua ranh không giật.
 
 | Vùng | distMul | pitch | FOV |
@@ -36,6 +36,6 @@ Nhân lên khoảng cách người chơi tự đặt (lăn chuột/phím vẫn h
 
 ## Ảnh then chốt
 
-- [`sau-webgl2-low-matroi_san.webp`](sau-webgl2-low-matroi_san.webp)
-- [`sau-webgl2-medium-matroi_san.webp`](sau-webgl2-medium-matroi_san.webp)
-- [`sau-webgpu-medium-matroi_san.webp`](sau-webgpu-medium-matroi_san.webp)
+- `sau-webgl2-low-matroi_san.webp`
+- `sau-webgl2-medium-matroi_san.webp`
+- `sau-webgpu-medium-matroi_san.webp`

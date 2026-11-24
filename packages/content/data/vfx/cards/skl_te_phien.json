@@ -1,0 +1,37 @@
+{
+  "skillId": "skl_te_phien",
+  "idea": "Dựng hồn phiên: lá cờ khói hồn tím-đen cao dựng sau lưng, đuôi cờ uốn bay, sợi hồn xoáy quanh chân, viền sáng lạnh.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "cloud",
+    "spiral"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 7,
+    "particles": 60,
+    "screenCover": 0.09,
+    "overdraw": 4
+  },
+  "textures": [],
+  "impactFrame": true,
+  "silhouette": "một cột phướn khói dựng đứng cao sau lưng, lá cờ dài uốn hình chữ S bay ngang, chân cột xoắn sợi hồn",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles",
+    "smoke"
+  ]
+}

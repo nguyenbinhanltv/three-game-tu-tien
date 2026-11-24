@@ -53,13 +53,13 @@ GPU thật (Chrome, WebGPU), tắt tiếng, chụp trong trang xem asset (`?show
 
 ### Huyết Nha Lang (`elite_huyet_nha_lang`)
 
-![elite_huyet_nha_lang bốn góc](elite_huyet_nha_lang-stills.webp)
+*(ảnh đã gỡ khỏi repo: elite_huyet_nha_lang bốn góc)*
 
-![elite_huyet_nha_lang animation](elite_huyet_nha_lang-anim.webp)
+*(ảnh đã gỡ khỏi repo: elite_huyet_nha_lang animation)*
 
 ### Xích Diễm Hồ (`elite_xich_dien_ho`)
 
-![elite_xich_dien_ho bốn góc](elite_xich_dien_ho-stills.webp)
+*(ảnh đã gỡ khỏi repo: elite_xich_dien_ho bốn góc)*
 
 
 ### Cự Nham Viên (`elite_cu_nham_vien`)
@@ -99,7 +99,7 @@ GPU thật (Chrome, WebGPU), tắt tiếng, chụp trong trang xem asset (`?show
 | | Cũ (khối) | Mới (Tripo) |
 | --- | --- | --- |
 | Huyết Nha Lang · chờ | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
-| Huyết Nha Lang · đánh | ![](game-elite_huyet_nha_lang-cu-3-danh.webp) | ![](game-elite_huyet_nha_lang-moi-3-danh.webp) |
+| Huyết Nha Lang · đánh | *(ảnh đã gỡ khỏi repo)* | *(ảnh đã gỡ khỏi repo)* |
 | Huyết Nha Lang · chết | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
 | Xích Diễm Hồ · chờ | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
 | Xích Diễm Hồ · đánh | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |

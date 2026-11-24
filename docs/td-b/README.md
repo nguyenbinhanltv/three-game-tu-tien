@@ -40,8 +40,8 @@ Ghi chú: Chromium headless không bắt đầu kéo khi Shift đã giữ từ l
 
 ## Ảnh then chốt
 
-- [`01-bag-1280x720.webp`](01-bag-1280x720.webp)
-- [`01-bag-1920x1080.webp`](01-bag-1920x1080.webp)
-- [`02-bag-char-1920x1080.webp`](02-bag-char-1920x1080.webp)
-- [`06-tim-kiem-1920x1080.webp`](06-tim-kiem-1920x1080.webp)
-- [`09-keo-tha-o-1920x1080.webp`](09-keo-tha-o-1920x1080.webp)
+- `01-bag-1280x720.webp`
+- `01-bag-1920x1080.webp`
+- `02-bag-char-1920x1080.webp`
+- `06-tim-kiem-1920x1080.webp`
+- `09-keo-tha-o-1920x1080.webp`

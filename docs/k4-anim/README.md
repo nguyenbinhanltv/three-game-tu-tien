@@ -39,8 +39,8 @@ Chỉ là lớp hình ở client. Server vẫn quyết định sát thương, v�
 
 ## Ảnh then chốt
 
-- [`nam-combo-3-don.webp`](nam-combo-3-don.webp)
-- [`nam-luot-huy-thu-ve.webp`](nam-luot-huy-thu-ve.webp)
-- [`nam-nga-dung-day.webp`](nam-nga-dung-day.webp)
-- [`nam-trung-don-co-huong.webp`](nam-trung-don-co-huong.webp)
-- [`nu-combo-3-don.webp`](nu-combo-3-don.webp)
+- `nam-combo-3-don.webp`
+- `nam-luot-huy-thu-ve.webp`
+- `nam-nga-dung-day.webp`
+- `nam-trung-don-co-huong.webp`
+- `nu-combo-3-don.webp`

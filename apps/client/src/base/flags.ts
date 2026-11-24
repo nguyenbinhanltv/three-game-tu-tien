@@ -22,6 +22,10 @@ interface Flags {
   batching: boolean;
   /** `?vfxlab=1` (chỉ dev) phòng thử VFX: gắn `window.__vfxlab` (tạm dừng, chậm, bước đơn, đồng hồ ngân sách) cho `pnpm shots vfxlab`. */
   vfxLab: boolean;
+  /** `?animlab=1` (chỉ dev) phòng thử animation Thân Pháp: gắn `window.__animlab`. */
+  animLab: boolean;
+  /** `?thanphap=1`: bật lớp Thân Pháp (cường điệu góc chéo, nảy bước...) trên nhân vật v3; mặc định tắt tới khi duyệt pilot. */
+  thanPhap: boolean;
   /** `?vfxwarm=0` tắt biên dịch trước VFX (chẩn đoán). */
   vfxWarm: boolean;
   /** `?aura=0` tắt hào quang cảnh giới (so số đo trước/sau, RFX-1). */
@@ -36,7 +40,7 @@ interface Flags {
   fxq: string | null;
   /** `?chr=v1` quay về nhân vật cũ (N-7: mặc định là v3 Mannequin; `v1` giữ một bản làm dự phòng, `v3` = mặc định). */
   chr: 'v1' | 'v3' | null;
-  /** `?v3model=a|b` chọn bản Lạc Kiếm v3/v3b (mặc định v3b2; so ảnh). */
+  /** `?v3model=a|b|b2` chọn bản Lạc Kiếm cũ để so ảnh (mặc định v3b3 = v3b2 + tua/dải đai lò xo). */
   v3Model: string | null;
   /** `?jog=<số>` ép tốc độ clip chạy v3 (chụp). */
   jog: number;
@@ -112,12 +116,18 @@ interface Flags {
   isoYaw: number | null;
   /** `?isofx=0` tắt nén hình VFX đứng cao ở camera chéo (so ảnh trước/sau, Thiên Nhãn P4-1). */
   isoFxCompress: boolean;
+  /** `?style=painted` phong cách "Họa Cảnh" (nền hoạt hình vẽ tay, thử ở Vân Lam); mặc định không đổi gì. Giá trị lạ = tắt. */
+  style: 'painted' | null;
   /** `?touch=1|0` ép bật/tắt chế độ cảm ứng (U2-6; kiểm thử, ghi đè cài đặt). */
   touch: boolean | null;
 }
 
 /** Mô tả từng tham số, để người sau biết cờ nào còn sống. */
 export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test' | 'viewer'; doc: string }>> = {
+  style: {
+    scope: 'diag',
+    doc: '=painted: phong cách Họa Cảnh (nền hoạt hình vẽ tay, pilot Vân Lam); mặc định tắt, xem docs/handbook/painted.md',
+  },
   isoyaw: { scope: 'diag', doc: 'độ: ghi đè hướng nhìn cố định của camera chéo (chọn hướng đẹp nhất cho từng bản đồ)' },
   isofx: { scope: 'diag', doc: '=0 tắt nén hình VFX đứng cao ở camera chéo (debug, so ảnh trước/sau)' },
   touch: { scope: 'user', doc: '=1 ép chế độ cảm ứng, =0 ép tắt (mặc định theo thiết bị + Cài đặt)' },
@@ -128,6 +138,11 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   models: { scope: 'diag', doc: '=legacy: model khối (dự phòng)' },
   batch: { scope: 'diag', doc: '=0: tắt gộp draw call VFX' },
   vfxlab: { scope: 'test', doc: '=1 (dev): phòng thử VFX, gắn window.__vfxlab; dùng với pnpm shots vfxlab' },
+  animlab: { scope: 'test', doc: '=1 (dev): phòng thử animation Thân Pháp, gắn window.__animlab; dùng với pnpm shots animlab' },
+  thanphap: {
+    scope: 'diag',
+    doc: '=1: lớp Thân Pháp (cường điệu góc chéo, nảy bước, idle/chiêu mới của Kiếm tu); pilot TP-1, mặc định tắt',
+  },
   vfxwarm: { scope: 'diag', doc: '=0: tắt biên dịch trước VFX' },
   auraground: { scope: 'diag', doc: '=0: hào quang cảnh giới kiểu cũ quanh người, không có ấn dưới chân (so ảnh C5)' },
   aura: { scope: 'diag', doc: '=0: tắt hào quang cảnh giới trên nhân vật' },
@@ -135,7 +150,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   mood: { scope: 'diag', doc: 'dawn|day|dusk|night' },
   fxq: { scope: 'diag', doc: 'low|medium|high' },
   chr: { scope: 'user', doc: '=v1 quay về nhân vật cũ (dự phòng một bản sau N-7, model gốc không áo mô-đun); mặc định v3' },
-  v3model: { scope: 'test', doc: '=a bản Lạc Kiếm v3 cũ' },
+  v3model: { scope: 'test', doc: '=a v3 cũ; =b v3b; =b2 v3b2 (không tua); mặc định v3b3' },
   jog: { scope: 'test', doc: 'tốc độ clip chạy v3' },
   proplod0: { scope: 'test', doc: 'hệ số ngưỡng LOD0 của prop (mặc định 0,7)' },
   shadowhz: { scope: 'test', doc: 'tần suất vẽ lại bản đồ bóng tối đa (Hz, 0 = mỗi khung, mặc định 50)' },
@@ -201,6 +216,7 @@ export function readFlags(search: string): Flags {
   const chr = q.get('chr');
   return {
     mute: q.get('mute') === '1',
+    style: q.get('style') === 'painted' ? 'painted' : null,
     isoFxCompress: q.get('isofx') !== '0',
     isoYaw: q.get('isoyaw') === null || Number.isNaN(Number(q.get('isoyaw'))) ? null : (Number(q.get('isoyaw')) * Math.PI) / 180,
     touch: q.get('touch') === '1' ? true : q.get('touch') === '0' ? false : null,
@@ -210,6 +226,8 @@ export function readFlags(search: string): Flags {
     legacyModels: q.get('models') === 'legacy',
     batching: !off(q.get('batch')),
     vfxLab: q.get('vfxlab') === '1',
+    animLab: q.get('animlab') === '1',
+    thanPhap: q.get('thanphap') === '1',
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
     auraGround: !off(q.get('auraground')),

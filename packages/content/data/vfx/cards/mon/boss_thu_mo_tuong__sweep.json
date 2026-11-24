@@ -1,0 +1,34 @@
+{
+  "monId": "boss_thu_mo_tuong",
+  "move": "sweep",
+  "idea": "Thú Mộ Tướng phóng dây sét xuyên: dải chữ nhật cảnh báo ĐỎ dài 18 m rộng 4 m từ boss về phía người chơi, đỏ tô dần từ gốc ra đầu theo nhịp nạp 1,5 s; nổ ra một chuỗi sét zigzag tím-trắng chạy dọc dải, đất cháy sém và tia điện bắn ngang.",
+  "element": "loi",
+  "palette": {
+    "core": "14103a",
+    "body": "7f8cff",
+    "rim": "fff4b0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "line",
+    "beam"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 18,
+    "w": 4,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1500,
+    "impactMs": 120,
+    "lingerMs": 700
+  },
+  "readability": "Hai cạnh dải đỏ thẳng đậm, rộng đúng 4 m; sét zigzag không lan ra ngoài dải; đọc được tiến độ tô.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

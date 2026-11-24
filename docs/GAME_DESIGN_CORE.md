@@ -1,5 +1,7 @@
 # Game Design Core: Đạp Thiên Lộ
 
+> **Lưu ý (2026-11-24):** Thiết kế bản 1 (2026-11-16); một số mục (camera, tab-target, số liệu) đã lỗi thời. Hiện trạng và quyết định mới nhất xem `CLAUDE.md` và `docs/handbook/`.
+
 Bản 1 · 2026-11-16 · đi kèm `docs/AUDIT_AND_ROADMAP.md`.
 
 Tài liệu này chốt **vòng chơi lõi** và những gì bao quanh nó: thế giới, tuyến tân thủ, thang cảnh giới, độ kiếp, ba lối chơi. Mỗi mục tách rõ ba thứ:

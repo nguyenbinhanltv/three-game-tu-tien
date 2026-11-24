@@ -100,7 +100,6 @@ import { MapVis } from './world/mapVis';
 import { SoulVis } from './fx/soulVis';
 import { CloneVis } from './fx/cloneVis';
 import { loadGroundTextures, resolveGroundSet, type GroundTextures } from '../base/groundTextures';
-import { BASE_ZONE, type ZoneCam } from './camera/camZones';
 import { DamageNumbers, Vfx } from './fx/vfx';
 import { loadForgeTextures } from './fx/forgeLoad';
 import { OffscreenIndicators } from './entities/offscreen';
@@ -144,7 +143,8 @@ import { CharPreview } from './camera/charPreview';
 import { IsoRig } from './camera/isoRig';
 import { currentSearch, FLAGS } from '../base/flags';
 import { installVfxLab } from './debug/vfxLab';
-import { VFX_LAB } from './engine/common';
+import { ANIM_LAB, VFX_LAB } from './engine/common';
+import { installAnimLab } from './debug/animLab';
 import { LoginOptions, QUALITY, isWebGPU, isWorldRoom, levelOfInit, levelOfRoom, serverUrl } from './engine/common';
 import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from './engine/frameLoop';
 import { handleFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
@@ -162,6 +162,7 @@ import {
 } from './engine/levelLoad';
 import { applyInit, bindRoom, onHazard, rebind } from './engine/room';
 import { logger } from '../base/log';
+import { ASSET_BASE } from '../base/assetBase';
 
 const levelLog = logger('level');
 const engineLog = logger('engine');
@@ -228,6 +229,7 @@ export class Game {
           // Để tiện gỡ lỗi từ console của trình duyệt.
           (window as unknown as { __game?: Game }).__game = g;
           if (VFX_LAB) installVfxLab(g, onHazard);
+          if (ANIM_LAB) installAnimLab(g);
           g.start().catch((err) => {
             engineLog.error(err);
             set({ phase: 'error', error: t('ui.err.webgl') + ' ' + String(err?.message ?? err) });
@@ -444,9 +446,6 @@ export class Game {
   bossLineId = 0;
   /** Thẻ chương (C2): khung camera nhẹ, thẻ chờ tới khi thế giới đã dựng, đã xét lần đầu vào tông môn chưa. */
   camFrame = new CamFrame();
-  /** Camera theo khu (P2-E4): giá trị đang áp (đã làm mượt) và đích theo vị trí. */
-  zoneCur: ZoneCam = { ...BASE_ZONE };
-  zoneWant: ZoneCam = { ...BASE_ZONE };
   /** Cảnh mở đầu (P2-B1): camera điện ảnh lần đầu vào Lạc Kiếm Tông; xong thì hiện thẻ chương 'sect'. */
   cine = new Cutscene();
   /** Loại cảnh đang chạy (xem CineState.kind) và cờ rung lần hai của cảnh chuyển pha. */
@@ -903,7 +902,7 @@ export class Game {
       await Promise.all([
         newSet
           ? loadGroundTextures(
-              import.meta.env.BASE_URL,
+              ASSET_BASE,
               {
                 get aborted() {
                   return self.disposed;
@@ -1406,7 +1405,7 @@ export class Game {
     try {
       const self = this;
       const next = await loadGroundTextures(
-        import.meta.env.BASE_URL,
+        ASSET_BASE,
         {
           get aborted() {
             return self.disposed;

@@ -60,12 +60,12 @@ import {
   worldToIntent,
 } from '../camera/iso';
 import { assets } from '../core/assets';
-import { BASE_ZONE, easeZoneCam, zoneCamera } from '../camera/camZones';
 import { pickGround } from '../camera/pickGround';
 import { isHeld } from '../../input/bindings';
 import { ULT_FOV, ultFovAt } from '../combat/hitjuice';
+import { animLabDt } from '../debug/animLab';
 import { labDt } from '../debug/vfxLab';
-import { SLOWMO, VFX_LAB, _camFocus, _shakeLook, _shakePos, _v, _v2, isWebGPU } from './common';
+import { ANIM_LAB, SLOWMO, VFX_LAB, _camFocus, _shakeLook, _shakePos, _v, _v2, isWebGPU } from './common';
 import { runCine } from './cine';
 import { heroParams } from '../../render/materials/world';
 import { heroRimOn } from '../fx/fxSettings';
@@ -79,6 +79,8 @@ const renderLog = logger('render');
 const loadLog = logger('load');
 const gpuLog = logger('gpu');
 const qualityLog = logger('quality');
+/** FOV camera quỹ đạo (cảnh điện ảnh/độ kiếp); camera chéo dùng `ISO_FOV`. */
+const ORBIT_FOV = 55;
 
 function* liveMonsters(eng: Game): Generator<{ id: string; x: number; z: number }> {
   for (const [id, m] of eng.ents.monsters) if (m.s.st !== MS_DEAD) yield { id, x: m.x, z: m.z };
@@ -155,7 +157,7 @@ export function runFrame(eng: Game): void {
   const now = performance.now();
   eng.budget.begin();
   const rawDt = Math.min(0.1, (now - eng.lastT) / 1000) * SLOWMO;
-  const dt = VFX_LAB ? labDt(rawDt) : rawDt;
+  const dt = VFX_LAB ? labDt(rawDt) : ANIM_LAB ? animLabDt(rawDt) : rawDt;
   eng.lastT = now;
   eng.frames++;
   // Sát thương chờ khung `hit` mà quá hạn (hoạt ảnh bị hủy, model khối cũ): phát luôn, theo đồng hồ game.
@@ -366,10 +368,6 @@ function updateCamera(eng: Game, dt: number): void {
   const rp = eng.renderPos;
   const flying = eng.cur.flying;
   eng.camFrame.update(dt);
-  // Camera theo khu: trong cảnh điện ảnh/độ kiếp thì về mặc định (cảnh tự đặt camera), ra khỏi cảnh trôi mượt lại.
-  const zw = eng.cine.active || eng.tribScene ? BASE_ZONE : zoneCamera(rp.x, rp.z, eng.zoneWant);
-  easeZoneCam(eng.zoneCur, zw, dt);
-  const zc = eng.zoneCur;
   // Cận cảnh chiêu tối thượng (K-7): FOV +1,5° trong 80 ms rồi về trong 200 ms, kéo camera gần thêm chút; không chặn điều khiển.
   // Theo công tắc "Rung màn hình" (tắt thì không cận cảnh); cảnh điện ảnh tự đặt camera nên bỏ qua.
   let ultPunch = 0;
@@ -392,18 +390,15 @@ function updateCamera(eng: Game, dt: number): void {
     fovKick = f.amt * Math.min(1, f.t / 0.15) * Math.max(0, Math.min(1, (f.dur - f.t) / 0.6));
     if (f.t >= f.dur) eng.fxFov = null;
   }
-  const wantFov = (eng.iso && !eng.cine.active ? ISO_FOV : zc.fov) + ultPunch + fovKick;
+  const wantFov = (eng.iso && !eng.cine.active ? ISO_FOV : ORBIT_FOV) + ultPunch + fovKick;
   if (Math.abs(eng.camera.fov - wantFov) > 0.01) {
     eng.camera.fov = wantFov;
     eng.camera.updateProjectionMatrix();
   }
   // Khung thẻ chương cộng thêm vào góc của người chơi, không ghi đè camDist/camPitch.
-  const want = Math.min(
-    70,
-    eng.camDist * zc.distMul * (flying ? 1.35 : 1) * eng.camFrame.distMul * (1 - 0.05 * (ultPunch / ULT_FOV.kick)) * (1 + pull),
-  );
+  const want = Math.min(70, eng.camDist * (flying ? 1.35 : 1) * eng.camFrame.distMul * (1 - 0.05 * (ultPunch / ULT_FOV.kick)) * (1 + pull));
   eng.camDistCur += (want - eng.camDistCur) * Math.min(1, dt * 6);
-  const pitch = Math.max(-0.45, Math.min(1.45, eng.camPitch + zc.pitchAdd + eng.camFrame.pitchAdd));
+  const pitch = Math.max(-0.45, Math.min(1.45, eng.camPitch + eng.camFrame.pitchAdd));
   const cp = Math.cos(pitch);
   let tx = rp.x;
   // Kiểu FPS: nhìn qua đầu nhân vật để tâm ngắm không bị nhân vật che.
@@ -475,7 +470,7 @@ function updateCamera(eng: Game, dt: number): void {
     cy = Math.max(ty + (cy - ty) * k, groundAt(cx, cz) + 0.7 - (4 - i) * 0.5);
   }
   eng.shake.update(dt, _shakePos, _shakeLook);
-  const fc = FLAGS.debug ? eng.freeCam : null;
+  const fc = FLAGS.debug || ANIM_LAB ? eng.freeCam : null;
   if (fc) {
     eng.camera.position.set(fc.x, fc.y, fc.z);
     eng.camera.lookAt(fc.tx, fc.ty, fc.tz);

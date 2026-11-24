@@ -1,0 +1,34 @@
+{
+  "monId": "boss_thach_tam_khoi_vuong",
+  "move": "line",
+  "idea": "Thạch Tâm Khôi Vương húc thẳng: dải chữ nhật cảnh báo ĐỎ dài 10 m rộng 3 m, vân nứt đỏ chạy dọc theo nhịp nạp 1,3 s; nổ ra sóng xung kích đá, một vệt đất nứt rộng 3 m với mảnh đá văng hai bên và ánh ngọc lam dọc khe.",
+  "element": "tho",
+  "palette": {
+    "core": "3a2308",
+    "body": "b07a32",
+    "rim": "ffe7b0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "line",
+    "burst"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 10,
+    "w": 3,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 120,
+    "lingerMs": 700
+  },
+  "readability": "Hai cạnh dải đỏ đậm, rộng đúng 3 m; sóng đá nâu không rộng quá dải; tiến độ tô thấy rõ.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

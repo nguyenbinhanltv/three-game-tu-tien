@@ -69,6 +69,7 @@ import { LANTERN_LIGHT, QUALITY, isWebGPU, isWorldRoom } from './common';
 import type { Game } from '../engine';
 import { logger } from '../../base/log';
 import { addSectSigns } from '../world/sectSigns';
+import { ASSET_BASE } from '../../base/assetBase';
 
 const groundLog = logger('ground');
 const assetLog = logger('asset');
@@ -81,7 +82,7 @@ export async function loadGround(eng: Game): Promise<void> {
     const self = eng;
     const g0 = levelAssets(levelId()).ground;
     const tex = await loadGroundTextures(
-      import.meta.env.BASE_URL,
+      ASSET_BASE,
       {
         get aborted() {
           return self.disposed;

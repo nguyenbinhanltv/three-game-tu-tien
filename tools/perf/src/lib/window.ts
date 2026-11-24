@@ -55,6 +55,43 @@ export interface VfxLabDebug {
   skills(): string[];
 }
 
+/** `window.__animlab`: phòng thử animation Thân Pháp (apps/client/src/game/debug/animLab.ts). */
+export interface AnimLabDebug {
+  pause(on: boolean): void;
+  scale(x: number): void;
+  step(ms: number): void;
+  cam(kind: 'iso' | 'close' | 'front' | 'side'): void;
+  perform(pose: string): boolean;
+  clock(): { t: number; skill: string } | null;
+  poseInfo(pose: string): { duration: number; hit: number[] } | null;
+  moments(pose: string): { name: string; at: number }[];
+  poseOfSkill(skillId: string): string | null;
+  cpu(): { section: string; avg: number; max: number }[];
+  fx(flags: {
+    exaggerate?: boolean;
+    bounce?: boolean;
+    poses?: boolean;
+    smear?: boolean;
+    spring?: boolean;
+    loco?: boolean;
+    idle?: boolean;
+    cutin?: boolean;
+  }): {
+    exaggerate: boolean;
+    bounce: boolean;
+    poses: boolean;
+    smear: boolean;
+    spring: boolean;
+    loco: boolean;
+    idle: boolean;
+    cutin: boolean;
+  };
+  poses(): string[];
+  hitSelf(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): boolean;
+  hitMon(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): { x: number; y: number } | null;
+  cutin(skill: string, setKey?: string, g?: string): boolean;
+}
+
 /** `window.__game`: phần ổn định có kiểu; phần ruột engine mà bench cố ý bọc/đọc (renderer, vfx, monFx…) để `any`. */
 export interface GameDebug {
   frames: number;
@@ -125,6 +162,7 @@ declare global {
     __game?: GameDebug;
     /** Phòng thử VFX (`?vfxlab=1`, apps/client/src/game/debug/vfxLab.ts). */
     __vfxlab?: VfxLabDebug;
+    __animlab?: AnimLabDebug;
     __viewer?: ViewerDebug;
     gc?: () => void;
   }

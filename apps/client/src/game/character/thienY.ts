@@ -28,22 +28,25 @@ export function averageTexColor(meshes: THREE.Mesh[], palette?: [number, number,
       const img = mat.map?.image as CanvasImageSource & { width: number; height: number };
       const uv = m.geometry.getAttribute('uv');
       if (!img || !uv || !img.width) continue;
+      // thu nhỏ về 64×64 một lần rồi đọc cả khối (getImageData từng điểm trên texture gốc 2K+ tốn vài ms lúc tạo model)
+      const S = 64;
       const cv = document.createElement('canvas');
-      cv.width = img.width;
-      cv.height = img.height;
+      cv.width = S;
+      cv.height = S;
       const cx = cv.getContext('2d', { willReadFrequently: true });
       if (!cx) continue;
-      cx.drawImage(img, 0, 0);
+      cx.drawImage(img, 0, 0, S, S);
+      const px = cx.getImageData(0, 0, S, S).data;
       const step = Math.max(1, Math.floor(uv.count / 200));
       for (let i = 0; i < uv.count; i += step) {
-        const x = Math.min(cv.width - 1, Math.max(0, Math.floor(uv.getX(i) * cv.width)));
-        const y = Math.min(cv.height - 1, Math.max(0, Math.floor((mat.map!.flipY ? 1 - uv.getY(i) : uv.getY(i)) * cv.height)));
-        const d = cx.getImageData(x, y, 1, 1).data;
-        r += d[0]!;
-        g += d[1]!;
-        b += d[2]!;
+        const x = Math.min(S - 1, Math.max(0, Math.floor(uv.getX(i) * S)));
+        const y = Math.min(S - 1, Math.max(0, Math.floor((mat.map!.flipY ? 1 - uv.getY(i) : uv.getY(i)) * S)));
+        const o = (y * S + x) * 4;
+        r += px[o]!;
+        g += px[o + 1]!;
+        b += px[o + 2]!;
         n++;
-        if (palette && palette.length < 24 && n % 7 === 0) palette.push([d[0]! / 255, d[1]! / 255, d[2]! / 255]);
+        if (palette && palette.length < 24 && n % 7 === 0) palette.push([px[o]! / 255, px[o + 1]! / 255, px[o + 2]! / 255]);
       }
     }
     return n ? [r / n / 255, g / n / 255, b / n / 255] : def;
@@ -115,6 +118,10 @@ export interface ClothStats {
   /** Số đỉnh vải nằm trong viên nang thân/chân (< 0,85 r) ở khung vừa mô phỏng, và lớn nhất từ lúc bật `measurePen`. */
   pen: number;
   penMax: number;
+  /** Màu voan (0..1) và số màu mẫu lấy được từ texture tay áo cũ (0 = không đọc được, dùng màu mặc định). */
+  tint: [number, number, number];
+  palette: number;
+  penBy: Record<string, number>;
   verts: number;
   /** ms trung bình mỗi `update` (cửa sổ trượt ngắn). */
   ms: number;
@@ -149,7 +156,7 @@ export class ClothBudget {
   avg = 0;
   max = 0;
   constructor(
-    readonly budgetMs = 0.5,
+    readonly budgetMs = 0.4,
     readonly maxLagS = 0.08,
     private now: () => number = () => performance.now(),
   ) {}
@@ -187,11 +194,16 @@ export class ClothRig {
   private acc = 0;
   private pending = 0;
   private pen = 0;
+  /** Đỉnh xuyên lớn nhất theo từng lưới vải (id → số đỉnh), để biết lưới nào gây xuyên. */
+  penBy: Record<string, number> = {};
   /** Mức khép tay áo [trái, phải] 0..1 theo độ nhấc cánh tay (tính mỗi khung). */
   private fold = [0, 0];
   private penMax = 0;
   /** Bật đo xuyên thân (kịch bản chụp): đếm đỉnh vải nằm trong viên nang mỗi khung mô phỏng. */
   measurePen = false;
+  private uvBox: { l: number[]; r: number[] } = { l: [1, 1, 0, 0], r: [1, 1, 0, 0] };
+  /** Texture của áo (dùng chung với lưới cũ, KHÔNG dispose ở đây). */
+  private sleeveMap: THREE.Texture | null = null;
   private palette: [number, number, number][] = [];
   private tint: [number, number, number] = [0.72, 0.65, 0.9];
   private t = 0;
@@ -233,6 +245,19 @@ export class ClothRig {
         if (target === 'skirt') skirtPos.push(p.getX(i), p.getY(i), p.getZ(i));
         else sleevePos[p.getX(i) >= 0 ? 'l' : 'r'].push(p.getX(i), p.getY(i), p.getZ(i));
       }
+      const uvA = om.geometry.getAttribute('uv');
+      if (target === 'sleeve' && uvA) {
+        // hộp UV của từng tay áo cũ (trái/phải theo dấu x): voan mới lấy chính vùng texture đó của áo (texture KTX2 đọc không được trên CPU nên dùng thẳng trên GPU)
+        for (let i = 0; i < uvA.count; i++) {
+          const b = this.uvBox[p.getX(i) >= 0 ? 'l' : 'r'];
+          b[0] = Math.min(b[0]!, uvA.getX(i));
+          b[1] = Math.min(b[1]!, uvA.getY(i));
+          b[2] = Math.max(b[2]!, uvA.getX(i));
+          b[3] = Math.max(b[3]!, uvA.getY(i));
+        }
+        const mm = (om.material as THREE.MeshStandardMaterial).map;
+        if (mm && !this.sleeveMap) this.sleeveMap = mm;
+      }
     }
     // Màu voan = trung bình texture tay áo cũ, pha 45% về tông áo ấm (hồng nhạt) để không lệch xanh so với thân áo.
     const avg = averageTexColor(
@@ -264,12 +289,29 @@ export class ClothRig {
       }
       const pos = new Float32Array(nv * 3),
         uv = new Float32Array(nv * 2),
+        col = new Float32Array(nv * 4).fill(1),
         index = new Uint32Array(ni);
       let ii = 0;
       ids.forEach((gi, n) => {
         const g = this.grids[gi]!;
         pos.set(g.rest, start[n]! * 3);
-        uv.set(/^(sleeve|ribbon)/.test(g.id) ? g.uv : atlasUv(g), start[n]! * 2);
+        if (/^(sleeve|ribbon)/.test(g.id) && this.sleeveMap) {
+          const b = this.uvBox[g.id.endsWith('l') || g.id.endsWith('la') || g.id.endsWith('lb') ? 'l' : 'r'];
+          const du = Math.max(1e-4, b[2]! - b[0]!),
+            dv = Math.max(1e-4, b[3]! - b[1]!);
+          for (let i = 0; i < g.nu * g.nv; i++) {
+            uv[(start[n]! + i) * 2] = b[0]! + g.uv[2 * i]! * du;
+            uv[(start[n]! + i) * 2 + 1] = b[1]! + g.uv[2 * i + 1]! * dv;
+          }
+        } else uv.set(/^(sleeve|ribbon)/.test(g.id) ? g.uv : atlasUv(g), start[n]! * 2);
+        // alpha đỉnh (voan): đặc ở hàng ghim, mờ dần về gấu và ở hai mép
+        for (let r = 0; r < g.nv; r++)
+          for (let c = 0; c < g.nu; c++) {
+            const o = (start[n]! + r * g.nu + c) * 4;
+            const edge = g.nu > 2 ? Math.min(1, Math.min(c, g.nu - 1 - c) / 2 + 0.4) : 1;
+            col[o] = col[o + 1] = col[o + 2] = 1;
+            col[o + 3] = (0.92 - 0.5 * (r / (g.nv - 1))) * edge;
+          }
         for (let i = 0; i < g.index.length; i++) index[ii++] = g.index[i]! + start[n]!;
       });
       const geo = new THREE.BufferGeometry();
@@ -278,10 +320,12 @@ export class ClothRig {
       geo.setAttribute('position', pa);
       geo.setAttribute('normal', na);
       geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+      if (!solid) geo.setAttribute('color', new THREE.BufferAttribute(col, 4));
       geo.setIndex(new THREE.BufferAttribute(index, 1));
       const mat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        map: !solid ? voanTexture(this.tint, this.palette) : (opt.map ?? null),
+        map: !solid ? (this.sleeveMap ?? voanTexture(this.tint, this.palette)) : (opt.map ?? null),
+        vertexColors: !solid,
         roughness: 0.85,
         metalness: 0,
         side: THREE.DoubleSide,
@@ -305,6 +349,8 @@ export class ClothRig {
       this.normals.push(new Float32Array(g.nu * g.nv * 3));
     });
 
+    this.warm();
+
     // ---- viên nang va chạm (thế giới): hông, đùi, cẳng, thân, tay ----
     const spec: [string, string, number][] = [
       ['pelvis', 'spine_01', 0.11],
@@ -327,6 +373,16 @@ export class ClothRig {
         this.capOut.push({ ax: 0, ay: 0, az: 0, bx: 0, by: 0, bz: 0, r: r * k });
       }
     }
+  }
+
+  /** Chạy thử vài bước giải ở lúc dựng model (JIT + bộ nhớ) để khung đầu tiên hiện vải không đột biến vài ms. */
+  private warm(): void {
+    this.grids.forEach((g, gi) => {
+      const sim = this.sims[gi]!;
+      sim.reset(g.rest);
+      for (let i = 0; i < 6; i++) sim.step(1 / 60, g.rest, [], [0, 0, 0], -1e9);
+      sim.normals(this.normals[gi]!);
+    });
   }
 
   /** Hiện vải mô phỏng và ẩn vải cũ (hoặc ngược lại khi LOD xa/khuất). */
@@ -359,7 +415,7 @@ export class ClothRig {
       _a.setFromMatrixPosition(ua.bone.matrixWorld);
       _v.setFromMatrixPosition(la.bone.matrixWorld).sub(_a);
       const up = _v.y / (_v.length() || 1); // -1 buông xuống, 0 ngang, 1 giơ thẳng lên
-      this.fold[sd] = Math.min(0.7, Math.max(0, (up + 0.55) / 0.9) * 0.7);
+      this.fold[sd] = Math.min(0.4, Math.max(0, (up + 0.55) / 0.9) * 0.4);
     }
     // vị trí đích: skin của vị trí nghỉ theo xương ghim của từng đỉnh (cho MỌI đỉnh: dây neo cần)
     this.grids.forEach((g, gi) => {
@@ -412,7 +468,8 @@ export class ClothRig {
     }
     if (this.measurePen) {
       let n = 0;
-      for (const sim of this.sims)
+      this.sims.forEach((sim, gi) => {
+        let ng = 0;
         for (let i = 0; i < sim.n; i++) {
           const px = sim.pos[3 * i]!,
             py = sim.pos[3 * i + 1]!,
@@ -429,11 +486,15 @@ export class ClothRig {
               dy = py - (c.ay + by * t),
               dz = pz - (c.az + bz * t);
             if (dx * dx + dy * dy + dz * dz < c.r * c.r * 0.7225) {
-              n++;
+              ng++;
               break;
             }
           }
         }
+        n += ng;
+        const id = this.grids[gi]!.id;
+        if (ng > (this.penBy[id] ?? 0)) this.penBy[id] = ng;
+      });
       this.pen = n;
       if (n > this.penMax) this.penMax = n;
     }
@@ -473,7 +534,15 @@ export class ClothRig {
   }
 
   get stats(): ClothStats {
-    return { verts: this.nVerts, ms: this.msAvg, pen: this.pen, penMax: this.penMax };
+    return {
+      verts: this.nVerts,
+      ms: this.msAvg,
+      pen: this.pen,
+      penMax: this.penMax,
+      tint: this.tint,
+      palette: this.palette.length,
+      penBy: this.penBy,
+    };
   }
 
   dispose(): void {
@@ -481,7 +550,7 @@ export class ClothRig {
       this.root.remove(b.mesh);
       b.mesh.geometry.dispose();
       const mat = b.mesh.material as THREE.MeshStandardMaterial;
-      mat.map?.dispose(); // texture riêng của từng nhân vật (TextureLoader ở mannequin.ts); dispose lặp lại vô hại
+      if (mat.map !== this.sleeveMap) mat.map?.dispose(); // texture riêng của từng nhân vật (TextureLoader ở mannequin.ts); dispose lặp lại vô hại
       mat.dispose();
     }
   }

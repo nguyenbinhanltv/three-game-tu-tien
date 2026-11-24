@@ -69,24 +69,24 @@ Khoảng cách từ mọi điểm săn tới mép cụm gần nhất không quá
 
 | | |
 | --- | --- |
-| Bố cục nhìn từ trên (ranh vùng, tinh anh vàng, địa hình) | ![](layout-topdown.jpg) |
-| Nền minimap | ![](minimap-nen.jpg) |
-| Bản đồ lớn (phím M) | ![](worldmap.jpg) |
-| Ngoại Thành Trạm, Cổng Thành Vỡ phía bắc | ![](tram.jpg) |
-| Trạm, gần nhân vật (đọc được thân người ban đêm) | ![](tram-can.jpg) |
-| Đại Lộ Đèn Trời, đầu đại lộ | ![](dai-lo.jpg) |
-| Đại lộ, nhìn xa | ![](dai-lo-xa.jpg) |
-| Điện Tiền Quảng Trường | ![](quang-truong.jpg) |
-| Vùng Đại Lộ Đèn Trời | ![](zone-dai_lo_den_troi.jpg) |
-| Vùng Lâm Sao Viên | ![](zone-lam_sao_vien.jpg) |
-| Vùng Binh Khí Khố | ![](zone-binh_khi_kho.jpg) |
-| Vùng Điện Tiền Quảng Trường | ![](zone-dien_tien_quang_truong.jpg) |
-| Vùng Mộ Đạo | ![](zone-mo_dao.jpg) |
-| Hàng Trụ Khắc Vân | ![](poi-hang_tru_khac_van.jpg) |
-| Tinh Bái Đài | ![](poi-tinh_bai_dai.jpg) |
-| Kho Giáo | ![](poi-kho_giao.jpg) |
-| Cổng Thần Tàng Điện | ![](poi-cong_than_tang_dien.jpg) |
-| Cổ Thành Thất Lộ | ![](poi-co_thanh_that_lo.jpg) |
+| Bố cục nhìn từ trên (ranh vùng, tinh anh vàng, địa hình) | *(ảnh đã gỡ khỏi repo)* |
+| Nền minimap | *(ảnh đã gỡ khỏi repo)* |
+| Bản đồ lớn (phím M) | *(ảnh đã gỡ khỏi repo)* |
+| Ngoại Thành Trạm, Cổng Thành Vỡ phía bắc | *(ảnh đã gỡ khỏi repo)* |
+| Trạm, gần nhân vật (đọc được thân người ban đêm) | *(ảnh đã gỡ khỏi repo)* |
+| Đại Lộ Đèn Trời, đầu đại lộ | *(ảnh đã gỡ khỏi repo)* |
+| Đại lộ, nhìn xa | *(ảnh đã gỡ khỏi repo)* |
+| Điện Tiền Quảng Trường | *(ảnh đã gỡ khỏi repo)* |
+| Vùng Đại Lộ Đèn Trời | *(ảnh đã gỡ khỏi repo)* |
+| Vùng Lâm Sao Viên | *(ảnh đã gỡ khỏi repo)* |
+| Vùng Binh Khí Khố | *(ảnh đã gỡ khỏi repo)* |
+| Vùng Điện Tiền Quảng Trường | *(ảnh đã gỡ khỏi repo)* |
+| Vùng Mộ Đạo | *(ảnh đã gỡ khỏi repo)* |
+| Hàng Trụ Khắc Vân | *(ảnh đã gỡ khỏi repo)* |
+| Tinh Bái Đài | *(ảnh đã gỡ khỏi repo)* |
+| Kho Giáo | *(ảnh đã gỡ khỏi repo)* |
+| Cổng Thần Tàng Điện | *(ảnh đã gỡ khỏi repo)* |
+| Cổ Thành Thất Lộ | *(ảnh đã gỡ khỏi repo)* |
 
 ## Còn lại / để cho gói khác
 
