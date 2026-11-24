@@ -25,6 +25,9 @@ function fake(): MannequinCharacter {
     'PM_Idle_To_Walk',
     'PM_Walk_To_Idle',
     'PM_Idle_Tired',
+    'Hit_Chest',
+    'Hit_Head',
+    'Hit_Knockback',
   ];
   const tpl = {
     bank: null,
@@ -103,6 +106,24 @@ describe('MannequinCharacter: clip Patch (bắt đầu/dừng/thở dốc)', () 
       run(m, anim({ speed: 5.4, flying: true }), 2.5);
       run(m, anim({ speed: 0, flying: true }), 0.3);
       expect(priv(m).patchShot).toBeNull();
+    } finally {
+      ANIM_FX.patch = was;
+    }
+  });
+
+  it('bị đánh giữa clip thở dốc: clip trúng đòn thay vào, patchShot = null', () => {
+    const was = ANIM_FX.patch;
+    ANIM_FX.patch = true;
+    try {
+      const m = fake();
+      run(m, anim(), 0.3);
+      run(m, anim({ speed: 5.4 }), 9);
+      run(m, anim({ speed: 0 }), 1.6);
+      expect(priv(m).patchKind).toBe('tired');
+      expect(priv(m).patchShot?.getClip().name).toBe('PM_Idle_Tired');
+      m.hitReact({ dirX: 0, dirZ: -1 });
+      expect(priv(m).patchShot).toBeNull();
+      expect((m as unknown as { shot: THREE.AnimationAction | null }).shot?.getClip().name).toMatch(/^Hit_/);
     } finally {
       ANIM_FX.patch = was;
     }

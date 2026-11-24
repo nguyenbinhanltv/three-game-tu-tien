@@ -1577,7 +1577,9 @@ export class MannequinCharacter implements CharacterView {
       (this.rag ??= new RagRig(this.rig)).hit(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0, o.tier, !!o.heavy, !!o.crit);
     // Clip theo phía bị đánh (C3b): nặng ngã lùi; nhẹ chạm ngực (trước/bên) hoặc giật đầu (sau gáy).
     const clip = hitClipOf(hitSideOf(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0), !!o.heavy || (o.tier ?? 0) >= 2);
-    if (!this.shot && !o.noFlash) this.oneShot(clip, clip === 'Hit_Knockback' ? 1.2 : 1.4);
+    // Clip Patch (bắt đầu/dừng/thở dốc) là động tác nền đè được: bị đánh thì clip trúng đòn thay vào (không để phản hồi trúng đòn yếu đi khi bật cờ).
+    if ((!this.shot || this.shot === this.patchShot) && !o.noFlash && this.oneShot(clip, clip === 'Hit_Knockback' ? 1.2 : 1.4))
+      this.patchShot = null;
   }
 
   /** Mức LOD hiện tại (cho `EntityManager.lodStats` và đo hiệu năng). */
