@@ -1,21 +1,20 @@
 {
   "skillId": "skl_nghich_kiem_chuyen_phong",
-  "idea": "Nghịch Kiếm Chuyển Phong: Hóa thành một đạo kiếm quang lao thẳng 10 mét, kẻ địch hai bên đường kiếm đều chịu 160% công kích.",
+  "idea": "Nghịch Kiếm Chuyển Phong: một đạo kiếm quang thẳng dài 10 m quấn quanh bởi xoáy gió xoắn ốc như mũi khoan (đường xoắn mực teal + dải gió sáng), cuốn lá và bụi thành vòi nhỏ hai bên đường kiếm. Màu: lõi LAM LỤC TỐI (teal đậm #0A3F5E) ở tâm vệt, thân XANH NGỌC/CYAN (hue 185–195°, #2CC7DC), viền trắng bạc lạnh #F2FDFF mỏng và sáng; KHÔNG xanh lam điện/chàm (dành cho Lôi tu), KHÔNG tím, KHÔNG hồng; vàng #F3C860 chỉ là điểm nhỏ ở mũi kiếm/ấn.",
   "element": "kim",
   "path": "kiem_tu",
   "shapeLang": [
-    "burst",
-    "arc",
-    "ring"
+    "spiral",
+    "line"
   ],
   "timing": {
-    "anticipationMs": 300,
+    "anticipationMs": 0,
     "impactMs": 80,
     "lingerMs": 600
   },
   "footprint": {
     "lengthM": 10,
-    "widthM": 2.5,
+    "widthM": 4,
     "heightM": 2
   },
   "colorRole": "own",
@@ -23,8 +22,14 @@
   "budget": {
     "drawCalls": 10,
     "particles": 129,
-    "screenCover": 0.2,
+    "screenCover": 0.16,
     "overdraw": 4
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "kiếm quang thẳng quấn xoáy gió xoắn ốc như mũi khoan, cuốn lá bụi",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

@@ -585,7 +585,14 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const lWhite = vec3(0.97, 1.0, 1.0);
   const lT = smoothstep(0.1, 0.78, spLum.sqrt());
   const lRamp = mix(mix(mix(lCore, lBody, smoothstep(0.04, 0.4, lT)), lRim, smoothstep(0.36, 0.72, lT)), lWhite, smoothstep(0.78, 1.0, lT));
-  const spStyled = mix(spLift, lRamp, step(0.5, U.a.x));
+  // Kiểu "kiếm" (`fxA.x` = 2): viền mực lam lục tối, thân XANH NGỌC/teal ngả lục (hue ~165–175°), viền bạc ngọc mỏng, ít trắng (chỉ điểm sáng nhất); tách khỏi lam điện của Lôi và tím của Hồn.
+  const kCore = vec3(0.0, 0.04, 0.05);
+  const kBody = vec3(0.0, 0.58, 0.47);
+  const kRim = vec3(0.3, 0.86, 0.72);
+  const kWhite = vec3(0.8, 0.98, 0.92);
+  const kT = smoothstep(0.1, 0.78, spLum.sqrt());
+  const kRamp = mix(mix(mix(kCore, kBody, smoothstep(0.04, 0.4, kT)), kRim, smoothstep(0.4, 0.8, kT)), kWhite, smoothstep(0.9, 1.0, kT));
+  const spStyled = mix(mix(spLift, lRamp, step(0.5, U.a.x).mul(float(1).sub(step(1.5, U.a.x)))), kRamp, step(1.5, U.a.x));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)

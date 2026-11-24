@@ -1,21 +1,20 @@
 {
   "skillId": "skl_thuan_di_tram",
-  "idea": "Thuấn Di Trảm: Thuấn di tới trước mặt kẻ địch rồi chém xuống 320% công kích. Cần cảnh giới Nguyên Anh.",
+  "idea": "Thuấn Di Trảm: người biến mất để lại vài mảnh vỡ không gian nhỏ ở chỗ cũ; ở trước mặt địch một vết RÁCH KHÔNG GIAN thẳng đứng mở ra (khe mảnh, bên trong tối đậm mực teal, mép sáng bạc, mảnh vỡ bay quanh), nhát chém giáng xuống dọc khe. Màu: lõi LAM LỤC TỐI (teal đậm #0A3F5E) ở tâm vệt, thân XANH NGỌC/CYAN (hue 185–195°, #2CC7DC), viền trắng bạc lạnh #F2FDFF mỏng và sáng; KHÔNG xanh lam điện/chàm (dành cho Lôi tu), KHÔNG tím, KHÔNG hồng; vàng #F3C860 chỉ là điểm nhỏ ở mũi kiếm/ấn.",
   "element": "kim",
   "path": "kiem_tu",
   "shapeLang": [
-    "burst",
-    "ring",
-    "spiral"
+    "line",
+    "burst"
   ],
   "timing": {
-    "anticipationMs": 200,
+    "anticipationMs": 300,
     "impactMs": 80,
-    "lingerMs": 750
+    "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 14,
-    "widthM": 2.5,
+    "lengthM": 4,
+    "widthM": 3,
     "heightM": 2
   },
   "colorRole": "own",
@@ -23,8 +22,14 @@
   "budget": {
     "drawCalls": 11,
     "particles": 139,
-    "screenCover": 0.2,
+    "screenCover": 0.07,
     "overdraw": 4
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "một vết rách không gian thẳng đứng mảnh, ruột tối mép bạc, mảnh vỡ bay quanh",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }
