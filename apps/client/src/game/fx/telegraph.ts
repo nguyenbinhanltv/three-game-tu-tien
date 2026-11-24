@@ -16,7 +16,7 @@ import type { Vfx } from './vfx';
 
 const _p = new THREE.Vector3();
 
-export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 = boss ? 2 : 1): void {
+export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 = boss ? 2 : 1, top = false): void {
   if (!m.sh || !(m.r > 0) || !(m.delay > 0)) return;
   const style = hazardStyleDanger(m.kind, danger);
   const light = m.hot && m.kind === 'lightning' ? 0xff9a5a : style.color;
@@ -30,7 +30,7 @@ export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 
 
   const rect = m.sh === 'rect';
   const w = rect ? (m.w ?? 2) : Math.min(Math.PI * 0.45, Math.max(0.05, m.w ?? Math.PI / 6));
-  const s = v.sigil(rect ? SIGIL_RECT : SIGIL_CONE, m.x, m.z, yaw, m.r, w, light, y);
+  const s = v.sigil(rect ? SIGIL_RECT : SIGIL_CONE, m.x, m.z, yaw, m.r, w, light, y, top);
   s.fxColor.multiplyScalar(style.gain);
 
   v.track(
