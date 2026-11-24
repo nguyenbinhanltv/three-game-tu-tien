@@ -9,10 +9,19 @@ export interface AnimFxFlags {
   exaggerate: boolean;
   /** T1: nảy bước + nghiêng thân mạnh hơn khi rẽ. */
   bounce: boolean;
+  /** T4: dùng bản pose `<id>_tp` (dồn lực sâu, đường chém 2 khung, giữ đỉnh đòn ≥3 khung) khi có. */
+  poses: boolean;
+  /** T4: nét kéo lưỡi kiếm ở đường chém. */
+  smear: boolean;
 }
 
 /** Trạng thái cờ chạy (mặc định theo `?thanphap=1`); phòng thử đổi được. */
-export const ANIM_FX: AnimFxFlags = { exaggerate: FLAGS.thanPhap, bounce: FLAGS.thanPhap };
+export const ANIM_FX: AnimFxFlags = {
+  exaggerate: FLAGS.thanPhap,
+  bounce: FLAGS.thanPhap,
+  poses: FLAGS.thanPhap,
+  smear: FLAGS.thanPhap,
+};
 
 /** Hệ số khuếch đại độ lệch quanh tư thế nghỉ theo xương (1 = giữ nguyên). Tay/vai/hông +15–30% (kế hoạch Thân Pháp T1). */
 export const EXAG_GAIN: Readonly<Record<string, number>> = {

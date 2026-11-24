@@ -1,6 +1,7 @@
 // Nhân vật v3 (N-0 → N-7): model nguyên khối có bộ xương UE5 Mannequin (`chr_v3_*`, tools/blender/chr_v3.py) phát
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
+import { BladeSmear, smearWindow } from '../fx/bladeSmear';
 import { ANIM_FX, bobOf, exagGain, EXAG_GAIN, leanBoost } from './animFx';
 import { DEATH_DIR_TTL, DEATH_TURN_S, dashClipOf, holdHipsInPlace, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
 import { boneKey } from './ikpose';
@@ -460,6 +461,8 @@ function rotateWorld(bone: THREE.Object3D | null, axis: THREE.Vector3, ang: numb
   // q_local' = inv(parentW) · R · parentW · q_local
   bone.quaternion.premultiply(_pw).premultiply(_w).premultiply(_pw.invert());
 }
+const _sm0 = new THREE.Vector3();
+const _sm1 = new THREE.Vector3();
 const _tq = new THREE.Quaternion();
 const _tq2 = new THREE.Quaternion();
 /** Lò xo v3 (vạt dài + tóc): cứng vừa, cản nhiều, góc lệch hẹp để vạt không xé/xuyên khi ngồi, lăn, chém (N-4). */
@@ -651,6 +654,8 @@ export class MannequinCharacter implements CharacterView {
   private origBlade: { mesh: THREE.Mesh; len: number } | null = null;
   /** Lôi tu: tia điện dọc kiếm (con của mesh kiếm), dựng lười khi bật lần đầu. */
   private arc: SwordArc | null = null;
+  /** Thân Pháp T4: nét kéo lưỡi kiếm ở đường chém của pose `_tp` (tạo lười). */
+  private smear: BladeSmear | null = null;
   private arcOn = false;
   private scabbard: THREE.Object3D | null = null;
   private hand: THREE.Object3D | null = null;
@@ -1630,7 +1635,18 @@ export class MannequinCharacter implements CharacterView {
       this.clothSit += ((sitNow ? 1 : 0) - this.clothSit) * Math.min(1, this.acc * 6);
       if (on) this.cloth.update(this.acc, this.clothSit, !!(this.springs || this.skirtSprings || this.sleeveSprings));
     }
+    if (ANIM_FX.smear && this.lodLevel === 0 && this.inner.visible) this.updateSmear();
     this.acc = 0;
+  }
+
+  /** T4: dải nét kéo bám lưỡi kiếm trong cửa sổ đường chém của pose `_tp`; hết cửa sổ thì tan dần. */
+  private updateSmear(): void {
+    const p = this.perf;
+    const on = !!p && p.id.endsWith('_tp') && smearWindow(p.t, p.pose.def.hit?.[0] ?? 0);
+    if (!on && !this.smear?.active) return;
+    this.smear ??= new BladeSmear(this.root);
+    if (on && this.bladePoints(_sm0, _sm1)) this.smear.push(_sm0, _sm1);
+    else this.smear.push(null, null);
   }
 
   /** Khóa pha ba clip chạy và chân của đòn nửa trên; tạo/giữ clip nửa dưới khi đang đánh nửa trên. */
@@ -1787,6 +1803,7 @@ export class MannequinCharacter implements CharacterView {
     this.disposed = true;
     this.hit.reset();
     this.arc?.dispose();
+    this.smear?.dispose();
     this.blade?.removeFromParent();
     for (const h of this.held.values()) {
       h.mesh.removeFromParent();
