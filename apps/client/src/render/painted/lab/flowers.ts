@@ -33,7 +33,7 @@ import { TAU, type N, type RefField } from './field';
  * Hoa: dựa trên painted-valley/src/lib/flowers.js (MIT, © 2026 Patch; xem assets/LICENSES.md), dịch từng dòng sang TSL. Cảnh thử cô lập:
  * bỏ `tState`/`tFire` (không giẫm, không cắt, không cháy: bend = 0, cutH = 1 m, charred = 0 → `sCut` giữ nguyên công thức).
  */
-const RING = { cell: 0.4, tile: 12, tiles: 6, fade: [27, 35] as [number, number] };
+export const FLOWER_RING = { cell: 0.4, tile: 12, tiles: 6, fade: [27, 35] as [number, number] };
 const PETALS = 8;
 
 function flowerGeometry(subs = 2): THREE.InstancedBufferGeometry {
@@ -73,7 +73,7 @@ function flowerGeometry(subs = 2): THREE.InstancedBufferGeometry {
     for (let k = 0; k < 6; k++) positions.push(Math.cos((k / 6) * Math.PI * 2), Math.sin((k / 6) * Math.PI * 2), z + 9);
     for (let k = 0; k < 6; k++) indices.push(first, first + 1 + k, first + 1 + ((k + 1) % 6));
   }
-  const n = Math.round(RING.tile / RING.cell);
+  const n = Math.round(FLOWER_RING.tile / FLOWER_RING.cell);
   const cells = new Float32Array(n * n * 2);
   for (let j = 0; j < n; j++) {
     for (let i = 0; i < n; i++) {
@@ -86,7 +86,10 @@ function flowerGeometry(subs = 2): THREE.InstancedBufferGeometry {
   geometry.setIndex(indices);
   geometry.setAttribute('aCell', new THREE.InstancedBufferAttribute(cells, 2));
   geometry.instanceCount = n * n;
-  geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(RING.tile / 2, 0.3, RING.tile / 2), RING.tile * 0.75 + 2.5);
+  geometry.boundingSphere = new THREE.Sphere(
+    new THREE.Vector3(FLOWER_RING.tile / 2, 0.3, FLOWER_RING.tile / 2),
+    FLOWER_RING.tile * 0.75 + 2.5,
+  );
   return geometry;
 }
 
@@ -95,11 +98,11 @@ export function createFlowers(F: RefField, { height, seed }: { height: number; s
   const geometry = flowerGeometry();
   const material = flowerMaterial(F, geometry, height, 400 + seed);
   const tiles: { mesh: THREE.Mesh; i: number; j: number }[] = [];
-  for (let j = 0; j < RING.tiles; j++) {
-    for (let i = 0; i < RING.tiles; i++) {
+  for (let j = 0; j < FLOWER_RING.tiles; j++) {
+    for (let i = 0; i < FLOWER_RING.tiles; i++) {
       const mesh = new THREE.Mesh(geometry, material);
       mesh.matrixAutoUpdate = false;
-      tiles.push({ mesh, i: i - RING.tiles / 2, j: j - RING.tiles / 2 });
+      tiles.push({ mesh, i: i - FLOWER_RING.tiles / 2, j: j - FLOWER_RING.tiles / 2 });
       group.add(mesh);
     }
   }
@@ -107,14 +110,14 @@ export function createFlowers(F: RefField, { height, seed }: { height: number; s
   return {
     group,
     follow(x: number, z: number): void {
-      const sx = Math.floor(x / RING.tile);
-      const sz = Math.floor(z / RING.tile);
+      const sx = Math.floor(x / FLOWER_RING.tile);
+      const sz = Math.floor(z / FLOWER_RING.tile);
       if (sx === at[0] && sz === at[1]) return;
       at = [sx, sz];
       for (const tile of tiles) {
-        const ox = (sx + tile.i) * RING.tile;
-        const oz = (sz + tile.j) * RING.tile;
-        tile.mesh.position.set(ox, heightAt(ox + RING.tile / 2, oz + RING.tile / 2), oz);
+        const ox = (sx + tile.i) * FLOWER_RING.tile;
+        const oz = (sz + tile.j) * FLOWER_RING.tile;
+        tile.mesh.position.set(ox, heightAt(ox + FLOWER_RING.tile / 2, oz + FLOWER_RING.tile / 2), oz);
         tile.mesh.updateMatrix();
         tile.mesh.updateMatrixWorld(true);
       }
@@ -138,13 +141,13 @@ function flowerMaterial(F: RefField, geometry: THREE.InstancedBufferGeometry, uH
     part = part.sub(sub.mul(16));
     let origin: N = modelPosition.xz;
     origin = origin.toVar();
-    let cell: N = floor(origin.div(RING.cell).add(0.5)).add(aCell);
+    let cell: N = floor(origin.div(FLOWER_RING.cell).add(0.5)).add(aCell);
     cell = cell.toVar();
     let r: N = cellRand(cell, float(uSalt).add(sub.mul(5)));
     r = r.toVar();
     let q: N = cellRand(cell, float(uSalt + 53).add(sub.mul(5)));
     q = q.toVar();
-    let xz: N = cell.add(r.xy).mul(RING.cell);
+    let xz: N = cell.add(r.xy).mul(FLOWER_RING.cell);
     xz = xz.toVar();
     let dist: N = distance(xz, cameraPosition.xz);
     dist = dist.toVar();
@@ -155,7 +158,7 @@ function flowerMaterial(F: RefField, geometry: THREE.InstancedBufferGeometry, uH
     drift = drift.toVar();
     let chance: N = m.a.mul(drift.mul(0.84).add(0.16)).mul(step(0.5, m.g));
     chance = chance.toVar();
-    let live: N = step(q.x, chance).mul(float(1).sub(smoothstep(RING.fade[0], RING.fade[1], dist.add(q.y.mul(3)))));
+    let live: N = step(q.x, chance).mul(float(1).sub(smoothstep(FLOWER_RING.fade[0], FLOWER_RING.fade[1], dist.add(q.y.mul(3)))));
     live = live.toVar();
     let alive: N = step(0.0000001, live);
     alive = alive.toVar();

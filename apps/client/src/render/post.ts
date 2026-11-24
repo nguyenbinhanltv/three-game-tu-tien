@@ -28,7 +28,7 @@ import { gaussianBlur } from 'three/addons/tsl/display/GaussianBlurNode.js';
 import type { Node } from 'three/webgpu';
 import { getCloudNoise } from './noiseTex';
 import { FLAGS } from '../base/flags';
-import { paintedFinish } from './painted/kuwahara';
+import { paintedOutput } from './painted/frame';
 import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
 
 /**
@@ -201,6 +201,12 @@ export class PostPipeline {
     this.post.outputColorTransform = false;
     const scenePass = pass(scene, camera, { samples: opts.msaa });
     this.scenePass = scenePass;
+    if (FLAGS.style === 'painted') {
+      // Họa Cảnh: pass cuối của painted-valley (Kuwahara, vignette, đường cong họa sĩ, sRGB); không ACES, chỉnh màu, hạt phim, bloom, AO, FXAA
+      setBloomActive(false);
+      this.post.outputNode = paintedOutput(scenePass, { paint: FLAGS.paint ?? 3, exposure: 1, vignette: 0.14 });
+      return;
+    }
     if (opts.bloom || opts.ao) {
       const targets: Record<string, Node> = { output };
       if (opts.bloom) targets.bloom = vec4(0, 0, 0, output.a);
@@ -221,19 +227,6 @@ export class PostPipeline {
       for (let i = 1; i <= 4; i++) acc = asVec3(acc.add(colorTex.sample(screenUV.sub(dir.mul(i / 4))).rgb.mul(postParams.exposure)));
       const edgeW = smoothstep(0.1, 0.55, length(fromCenter)).mul(postParams.radial.mul(3).min(1));
       hdr = asVec3(mix(hdr, acc.div(5), edgeW));
-    }
-    // Họa Cảnh: lớp hoàn thiện Kuwahara (làm tròn thành nét cọ; bỏ qua trời và điểm sáng HDR của hiệu ứng)
-    const paintR = FLAGS.style === 'painted' ? (FLAGS.paint ?? 1) : 0;
-    if (paintR > 0) {
-      hdr = asVec3(
-        paintedFinish({
-          color: colorTex,
-          depth: scenePass.getTextureNode('depth'),
-          exposure: postParams.exposure,
-          base: hdr,
-          radius: paintR,
-        }),
-      );
     }
     if (opts.ao) {
       // GTAO ở nửa độ phân giải: bán kính 1,3 m (nếp gấp, chân tường, gốc cây), tắt dần theo khoảng cách để không bẩn nền xa.

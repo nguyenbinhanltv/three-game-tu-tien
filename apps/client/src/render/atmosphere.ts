@@ -1,3 +1,4 @@
+import { FLAGS } from '../base/flags';
 import * as THREE from 'three/webgpu';
 import {
   attribute,
@@ -98,7 +99,8 @@ const SUN_DISTANCE = 260;
 
 /** Áp preset chỉnh màu cho đèn, trời, sương. Gọi lại khi đổi thời điểm trong ngày. */
 export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPreset, name: string): void {
-  scene.fogNode = atmosphereFog();
+  // Họa Cảnh: không dùng sương của mood (đất và lá tự áp sương của painted-valley)
+  scene.fogNode = FLAGS.style === 'painted' ? null : atmosphereFog();
   tuneAtmosphere(scene, env, p, name);
 }
 

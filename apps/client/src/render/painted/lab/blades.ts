@@ -120,12 +120,19 @@ export interface BladeOpts {
   height: number;
   seed: number;
   density: number;
+  /** Thay bộ vòng mặc định (game: lá thưa hơn để giữ ngân sách). Muối băm vẫn theo tên vòng (mid, wide). */
+  rings?: Ring[];
 }
 
-export function createBlades(F: RefField, { height, seed, density }: BladeOpts, heightAt: (x: number, z: number) => number) {
+export function createBlades(
+  F: RefField,
+  { height, seed, density, rings: ringDefs = RINGS }: BladeOpts,
+  heightAt: (x: number, z: number) => number,
+) {
   const group = new THREE.Group();
   const random = mulberry(seed * 977 + 3);
-  const rings = RINGS.map((ring, index) => {
+  const rings = ringDefs.map((ring) => {
+    const index = RINGS.findIndex((r) => r.name === ring.name);
     const { geometry, count } = ringGeometry(ring, random);
     const material = bladeMaterial(F, ring, index, seed, height, geometry);
     const tiles: { mesh: THREE.Mesh; i: number; j: number }[] = [];

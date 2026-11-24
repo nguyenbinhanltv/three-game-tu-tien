@@ -49,7 +49,7 @@ const grassLog = logger('grass');
 /** Số vị trí rạp cỏ truyền vào shader (mình + 5 thực thể gần nhất). */
 export const GRASS_PUSH_SLOTS = 6;
 
-/** Giao diện chung của lớp cỏ (bụi cỏ thường `Grass` và cỏ lá mảnh Họa Cảnh `PaintedGrass`). */
+/** Giao diện chung của lớp cỏ (bụi cỏ thường `Grass` và cỏ lá mảnh Họa Cảnh `PaintedGameField`). */
 export interface GrassLayer {
   readonly mesh: THREE.Object3D;
   count: number;

@@ -13,6 +13,7 @@ import {
   length,
   max,
   mix,
+  mod,
   normalize,
   pow,
   select,
@@ -25,7 +26,7 @@ import {
   vec2,
   vec3,
 } from 'three/tsl';
-import { hash42 as hash42f } from '../meadow';
+import { hash42 as hash42f } from './hash';
 
 /**
  * Dựa trên painted-valley/src/lib/glsl.js (COMMON, LEAF_LIGHT) và lib/index.js (createField: các uniform dùng chung), MIT, © 2026 Patch
@@ -79,6 +80,9 @@ export class RefField {
   /** Đẩy lá: 6 vec4 (xyz, bán kính). Cảnh thử không có. */
   readonly uPushers = Array.from({ length: 6 }, () => new THREE.Vector4(0, 0, 0, 0));
 
+  /** Texture độ cao cuộn (game): chỉ số texel lấy theo `mod` thay vì kẹp biên. Cánh đồng của cảnh thử giữ kẹp biên. */
+  wrap = false;
+
   constructor(readonly tex: FieldTextures) {}
 
   // ---- đọc texture (vertex: tầng 0) ----
@@ -110,8 +114,9 @@ export class RefField {
     const i = floor(p);
     const f = p.sub(i);
     const hi = this.uHeightRes.sub(1);
-    const a = vec2(clamp(i.x, 0, hi), clamp(i.y, 0, hi));
-    const b = vec2(clamp(i.x.add(1), 0, hi), clamp(i.y.add(1), 0, hi));
+    const ix = (v: N): N => (this.wrap ? mod(v, this.uHeightRes) : clamp(v, 0, hi));
+    const a = vec2(ix(i.x), ix(i.y));
+    const b = vec2(ix(i.x.add(1)), ix(i.y.add(1)));
     const at = (x: N, y: N): N => textureLoad(this.tex.tHeight, ivec2(x, y)).r;
     const h00 = at(a.x, a.y);
     const h10 = at(b.x, a.y);

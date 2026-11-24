@@ -51,8 +51,6 @@ export async function startPaintedLab(host: HTMLElement): Promise<void> {
   renderer.toneMapping = THREE.NoToneMapping;
   host.appendChild(renderer.domElement);
   await renderer.init();
-  // GPU timeout (TDR) làm mất thiết bị: ghi lại để biết khung có quá nặng không
-  (renderer.backend as { device?: GPUDevice }).device?.lost.then((i) => console.error(`GPU device lost: ${i.reason} ${i.message}`));
 
   // ---- bản đồ trong cửa sổ ----
   const res = WIN;

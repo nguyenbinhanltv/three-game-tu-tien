@@ -1,4 +1,4 @@
-import { uint, uvec3, vec4, float, ivec3 } from 'three/tsl';
+import { dot, fract, float, ivec3, uint, uvec3, vec4 } from 'three/tsl';
 import type { N } from './field';
 
 /**
@@ -29,4 +29,11 @@ export function cellRand(cell: N, salt: N): N {
   return vec4(float(a.x.shiftRight(eight)), float(a.y.shiftRight(eight)), float(a.z.shiftRight(eight)), float(b.x.shiftRight(eight))).div(
     16777216,
   );
+}
+
+/** Băm 4 số từ một vec2 (số thực, dùng được ở mọi backend): hash42 của nguồn (glsl.js). */
+export function hash42(p: N): N {
+  const p4: N = fract(vec4(p.x, p.y, p.x, p.y).mul(vec4(0.1031, 0.103, 0.0973, 0.1099)));
+  const s: N = p4.add(dot(p4, p4.wzxy.add(33.33)));
+  return fract(s.xxyz.add(s.yzzw).mul(s.zywx));
 }
