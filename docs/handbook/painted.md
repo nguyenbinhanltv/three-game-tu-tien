@@ -1,6 +1,6 @@
 # Họa Cảnh (`?style=painted`)
 
-Phong cách nền hoạt hình vẽ tay, thử ở Vân Lam khởi đầu. **Mặc định không đổi gì**: mọi nhánh mới nằm sau `FLAGS.style === 'painted'` (`src/base/flags.ts`). Kế hoạch gốc ở artifact phiên (`ke-hoach-hoa-canh.md`); người dùng duyệt P7 (nhân vật cel) và quyết định mặc định (P8).
+Phong cách nền hoạt hình vẽ tay, thử ở Vân Lam khởi đầu. **Mặc định không đổi gì**: mọi nhánh mới nằm sau `FLAGS.style === 'painted'` (`src/base/flags.ts`). Kế hoạch gốc ở artifact phiên (`ke-hoach-hoa-canh.md`); người dùng duyệt P7 (nhân vật cel) riêng.
 
 ## Nguồn và ranh giới
 
@@ -10,7 +10,7 @@ Phong cách nền hoạt hình vẽ tay, thử ở Vân Lam khởi đầu. **M�
 
 ## Nguyên tắc Họa Cảnh
 
-Rút từ painted-valley (xem README và LICENCE-NOTES của nó). **Phạm vi: chế độ `?style=painted` và các bản đồ làm mới theo hướng này.** Mặc định game vẫn là bán tả thực (art-bible v3) cho tới khi người dùng chốt ở P8.
+Rút từ painted-valley (xem README và LICENCE-NOTES của nó). **Phạm vi: chế độ `?style=painted` và các bản đồ làm mới theo hướng này.** Hiện mặc định game vẫn là bán tả thực (art-bible v3); khi Họa Cảnh hoàn thành trên toàn bộ bản đồ (P10) nó thành mặc định và nguồn cũ bị gỡ (P11).
 
 1. **Ít tông, một bảng màu chung.** Mỗi vật có hai màu (sáng, tối) nối bằng một bước ngắn; màu tối pha tay (lạnh hơn, ít bão hòa hơn), không phải màu sáng nhân cho tối. Một bảng dùng chung cho cỏ, đất, đồi, tán cây để cả cảnh là một bức tranh (`palette.ts`, `meadowGreen`).
 2. **Không texture ảnh chụp, không nhiễu ở mọi cỡ.** Nền là mảng màu chậm cộng nét cọ; chi tiết chỉ đặt nơi nét cọ cần (gần người chơi), mờ hết trước khi thành lấm tấm. Xa không có họa tiết mịn (lấp lánh).
@@ -30,16 +30,21 @@ Rút từ painted-valley (xem README và LICENCE-NOTES của nó). **Phạm vi: 
 
 ## Các bước (mỗi bước một PR, tuần tự)
 
+**Quyết định người dùng (2026-11-25): sau khi Họa Cảnh hoàn thành trên TOÀN BỘ bản đồ, Họa Cảnh thành MẶC ĐỊNH và nguồn đồ họa cũ bị gỡ.** Nhân vật cel (P7) vẫn chờ người dùng quyết riêng.
+
 | | Nội dung | Trạng thái |
 | --- | --- | --- |
-| P1 | cờ `style`, `render/painted/palette.ts` (bảng lit/shade, `cel2`), giấy phép, trang này | xong ở PR này |
-| P2 | mặt đất + cỏ (nét cọ theo dốc, mảng màu chậm) | |
-| P3 | núi xa nướng một lần vào dải sơn, sương theo mood | |
+| P1 | cờ `style`, `render/painted/palette.ts` (bảng lit/shade, `cel2`), giấy phép, trang này | xong |
+| P2 | mặt đất + cỏ lá mảnh + hoa (port từ painted-valley) | PR riêng, đang đo khớp |
+| P3 | núi xa nướng một lần vào dải sơn, sương theo giờ | |
 | P4 | mây trời đắp khối nướng vào cubemap | |
 | P5 | hoàn thiện Kuwahara + mặt nạ (bỏ qua trời/VFX/HUD) | |
 | P6 | cây + nhà ngoài tông (cel2, chi tiết shader) | |
-| P7 | nhân vật cel thử một bộ (cần người dùng duyệt) | |
-| P8 | tổng kết, preset chất lượng, quyết định mặc định | |
+| P7 | nhân vật cel thử một bộ | chờ người dùng quyết |
+| P8 | pilot Vân Lam đạt: đo khớp SSIM ≥ 0,90 và ΔE trung bình ≤ 5, người dùng xem | |
+| P9 | cuốn chiếu từng bản đồ (mỗi bản đồ một PR: nền painted + cảnh xa vẽ một lần), theo thứ tự `LEVELS`; bản đồ mới làm thẳng theo Họa Cảnh | |
+| P10 | BẬT MẶC ĐỊNH: bỏ cờ `?style=painted`, giữ `?style=legacy` tạm một đợt để so | |
+| P11 | XÓA NGUỒN CŨ: hậu kỳ ACES/grading/grain của cảnh, mood cũ, material/texture mặt đất ảnh chụp, cỏ cũ, nhánh `if !painted`; PR nhỏ, 0 tham chiếu, có số đo | |
 
 ## Palette và cel2 (P1)
 

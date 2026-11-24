@@ -358,7 +358,7 @@ Số liệu thật lấy ở M0-3 và đo lại ở M3-9.
 
 ## 12. Họa Cảnh: hướng phụ cho `?style=painted` và bản đồ làm mới
 
-Hướng mặc định của game vẫn là bán tả thực (mục 0 đến 11, quyết định 1). Ngoài ra có một hướng PHỤ, nền hoạt hình vẽ tay, chỉ bật bằng `?style=painted` (pilot Vân Lam) và áp cho các bản đồ làm mới theo hướng này; người dùng chốt có thành mặc định hay không ở bước P8. Nguyên tắc (ít tông và một bảng màu chung, không nhiễu hay texture ảnh chụp, cảnh xa vẽ một lần, cỏ chi tiết chỉ vòng gần, hậu kỳ tối giản, người cel với viền mực chờ người dùng quyết, clip chuyển tiếp, một hướng thống nhất) ở `docs/handbook/painted.md`, mục "Nguyên tắc Họa Cảnh". Trong chế độ này các mục 3 (vật liệu PBR), 5 (ACES, chỉnh màu, hạt phim) và 8 (những điều cấm về cel và viền mực) KHÔNG áp dụng cho cảnh nền; nhân vật vẫn theo model v3 đã duyệt cho tới khi người dùng quyết ở P7.
+Hướng mặc định của game vẫn là bán tả thực (mục 0 đến 11, quyết định 1). Ngoài ra có một hướng PHỤ, nền hoạt hình vẽ tay, chỉ bật bằng `?style=painted` (pilot Vân Lam) và áp cho các bản đồ làm mới theo hướng này; người dùng đã quyết (2026-11-25): xong trên toàn bộ bản đồ thì thành mặc định và gỡ nguồn cũ (P10, P11). Nguyên tắc (ít tông và một bảng màu chung, không nhiễu hay texture ảnh chụp, cảnh xa vẽ một lần, cỏ chi tiết chỉ vòng gần, hậu kỳ tối giản, người cel với viền mực chờ người dùng quyết, clip chuyển tiếp, một hướng thống nhất) ở `docs/handbook/painted.md`, mục "Nguyên tắc Họa Cảnh". Trong chế độ này các mục 3 (vật liệu PBR), 5 (ACES, chỉnh màu, hạt phim) và 8 (những điều cấm về cel và viền mực) KHÔNG áp dụng cho cảnh nền; nhân vật vẫn theo model v3 đã duyệt cho tới khi người dùng quyết ở P7.
 
 ## 11. Nhật ký thay đổi
 
