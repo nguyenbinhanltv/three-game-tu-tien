@@ -147,7 +147,7 @@ export function installAnimLab(g: Game): void {
     },
     cutin(skill, setKey, gender) {
       const me = g.ents.players.get(g.sid);
-      const art = cutinArt(setKey ?? v3SetKeyOf(me?.look.set), gender ?? me?.look.g ?? 'm');
+      const art = cutinArt(setKey ?? v3SetKeyOf(me?.look.g ?? 'm', me?.look.skin, me?.look.set), gender ?? me?.look.g ?? 'm');
       if (!art) return false;
       g.fxSlow = { scale: 0.04, until: performance.now() + CUTIN_FREEZE_MS };
       set({ ultCard: { id: ++g.ultCardId, skill, color: '9fd8ff', until: Date.now() + 900, cutin: art } });
