@@ -5,6 +5,7 @@
 
 import { MON_FX, MONSTER } from '@dtl/content';
 import type { FxTimeline, HazardMsg } from '@dtl/shared';
+import { forgeTexLoaded } from '../../render/vfx/forgeTex';
 import { monPaletteKey } from '../../render/vfx/palette';
 import { groundAt } from '../../base/levelCtx';
 import type { FxCaster, FxRunner, FxTarget } from './fxTimeline';
@@ -202,7 +203,7 @@ export class MonFx {
 
   /**
    * Vạch báo vùng tròn của quái: triện văn đỏ tồn tại đúng tới lúc nổ. Chỉ khi quái thả vùng (không phải thiên kiếp).
-   * Trả `true` khi timeline đã thật sự phát: chiêu có timeline riêng (`ownWarn`) chỉ được bỏ pháp trận cũ khi vạch riêng đã phát,
+   * Trả `true` khi timeline đã thật sự phát VÀ texture của nó đã nạp (`forgeTexLoaded`): chiêu có timeline riêng (`ownWarn`) chỉ được bỏ pháp trận cũ khi vạch riêng đã phát,
    * nếu không (xa quá 60 m, FX quá nhiều, đang ở phòng thử) người chơi sẽ mất vạch báo gây sát thương.
    */
   warn(h: HazardMsg, src: MonLike | undefined): boolean {
@@ -223,7 +224,8 @@ export class MonFx {
       variant: this.variantOf(src),
     });
     this.note(key, src.id);
-    return true;
+    // Vạch riêng dựa vào texture Codex (`warn_crack`, nạp nền): chưa nạp xong thì nó vô hình, giữ vòng cũ để người chơi vẫn thấy hitbox.
+    return forgeTexLoaded('warn_crack');
   }
 
   /** Vùng nổ (đúng lúc hết `delay`). Tròn → gai + vết nứt; chữ nhật → gai nối tiếp; nón → lưỡi liềm quét. */
