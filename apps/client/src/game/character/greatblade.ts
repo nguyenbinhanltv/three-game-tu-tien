@@ -12,11 +12,11 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 /** Loại vũ khí khai ở `paths.json` `weapons` để chọn đao lớn. */
 export const GREATBLADE_WEAPON = 'greatblade';
 
-/** Bảng màu theo concept: huyết dụ / son thẫm / vàng tàn lửa, thép và lưỡi mài, đồng. */
+/** Bảng màu (24/11, bỏ đỏ): thép tối / thép bạc / vàng đồng; lưỡi mài và đồng. Khóa `red`/`ember` giữ tên cũ cho đỡ đổi chỗ dùng. */
 export const GREATBLADE_COLORS = {
-  dark: 0x3a0e0c,
-  red: 0x9e2b22,
-  ember: 0xf2b36a,
+  dark: 0x22262c,
+  red: 0x8e98a4,
+  ember: 0xcfb04a,
   steel: 0x4a4e55,
   edge: 0xc9ced4,
   bronze: 0xb9772e,

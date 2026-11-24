@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLUSTER, clusterGeom, designArea, hudBoxes, minDesignHeight, modeOf, overlaps, skillBox, slotsTouch } from './layout';
+import { CLUSTER, clusterGeom, windowClear, designArea, hudBoxes, minDesignHeight, modeOf, overlaps, skillBox, slotsTouch } from './layout';
 import { uiScaleFor } from '../../uiScale';
 
 // Độ phân giải PC cần phủ (mục 9.2 kế hoạch). Hệ số tự động lấy từ uiScaleFor (cùng hàm CSS dùng).
@@ -97,5 +97,26 @@ describe('cụm kỹ năng PC', () => {
   it('ô nhỏ nhất ≥ 56 (icon ≥ 48 px ở HUD), đòn chính 112', () => {
     expect(CLUSTER.mainD).toBe(112);
     expect(Math.min(CLUSTER.innerD, CLUSTER.outerD, CLUSTER.qerD)).toBeGreaterThanOrEqual(56);
+  });
+});
+
+describe('vùng HUD cửa sổ giữa phải chừa (U13)', () => {
+  for (const [w, h] of PC) {
+    for (const skillLayout of ['arc', 'bar'] as const) {
+      it(`${w}×${h} ${skillLayout}: chừa đáy đủ cao hơn khối HUD đáy, cột phải trên nằm trong màn hình`, () => {
+        const s = uiScaleFor(w, h);
+        const { W, H } = designArea(w, h, s);
+        const mode = modeOf(s);
+        const c = windowClear(W, H, mode, { skillLayout })!;
+        const b = hudBoxes(W, H, mode, { skillLayout });
+        const top = skillLayout === 'bar' ? b.skills.y : b.utility.y;
+        expect(H - c.bottom).toBeLessThan(top); // đỉnh vùng cửa sổ nằm trên đỉnh khối chiêu
+        expect(c.rightX).toBeLessThan(b.hub.x);
+        expect(c.rightY).toBeGreaterThan(b.quest.y);
+      });
+    }
+  }
+  it('cảm ứng có bố cục riêng: không chừa', () => {
+    expect(windowClear(844, 390, 'touch')).toBeNull();
   });
 });

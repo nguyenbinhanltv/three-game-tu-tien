@@ -89,6 +89,7 @@ import uxhint from './scenarios/uxhint';
 import nameplate from './scenarios/nameplate';
 import partyframe from './scenarios/partyframe';
 import charbag from './scenarios/charbag';
+import uicpu from './scenarios/uicpu';
 import uichecks from './scenarios/uichecks';
 import settingstabs from './scenarios/settingstabs';
 import loginfit from './scenarios/loginfit';
@@ -135,6 +136,7 @@ const SCENARIOS: Scenario[] = [
   nameplate,
   partyframe,
   charbag,
+  uicpu,
   uichecks,
   settingstabs,
   loginfit,
