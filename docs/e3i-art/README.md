@@ -79,7 +79,7 @@ Trước | Sau, từng cặp:
 
 | | Trước | Sau |
 | --- | --- | --- |
-| Phù Đảo Các | ![](truoc/hub.webp) | ![](sau/hub.webp) |
+| Phù Đảo Các | *(ảnh đã gỡ khỏi repo)* | *(ảnh đã gỡ khỏi repo)* |
 | Tùng Đài | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
 | Thạch Quy | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
 | Kính Hồ | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
@@ -97,7 +97,7 @@ Chỉ có ở bản sau (`pnpm shots points --level van_hai --out <thư mục tu
 
 | | |
 | --- | --- |
-| Hồ gương Kính Hồ | ![](sau/e3i-ho-guong.webp) |
-| Xương kình ngư, Kình Ngư Đài | ![](sau/e3i-xuong-kinh.webp) |
+| Hồ gương Kính Hồ | *(ảnh đã gỡ khỏi repo)* |
+| Xương kình ngư, Kình Ngư Đài | *(ảnh đã gỡ khỏi repo)* |
 | Rừng tùng, Tùng Đài (có lối mòn) | _(ảnh đã gỡ)_ |
 | Đá phiến sẫm và nhũ đá, Lôi Vân | _(ảnh đã gỡ)_ |

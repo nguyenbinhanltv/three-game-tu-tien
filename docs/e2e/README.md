@@ -51,4 +51,4 @@ Thiết kế: `docs/EXPANSION_DESIGN.md` mục 2.5 (mở khóa), 7.1 (pháp bả
 
 ## Ảnh then chốt
 
-- [`08-than-thuc-cot-sang-minimap.webp`](08-than-thuc-cot-sang-minimap.webp)
+- `08-than-thuc-cot-sang-minimap.webp`

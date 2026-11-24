@@ -44,6 +44,6 @@ Ngày 2026-11-15. Ba pháp bảo dựng trên Tripo web (H3.1, 3000 mặt, textu
 
 ## Ảnh then chốt
 
-- [`an-kich-hoat.webp`](an-kich-hoat.webp)
-- [`ho-lo-kich-hoat.webp`](ho-lo-kich-hoat.webp)
-- [`linh-kich-hoat.webp`](linh-kich-hoat.webp)
+- `an-kich-hoat.webp`
+- `ho-lo-kich-hoat.webp`
+- `linh-kich-hoat.webp`

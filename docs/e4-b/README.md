@@ -37,17 +37,17 @@ Chụp trong bản đồ Thiên Khuyết thật, mỗi quái ở vùng của nó
 
 | | |
 | --- | --- |
-| Thạch Tượng Võ Sĩ | ![](mon_thach_tuong_vo_si.jpg) |
-| Dạ Minh Lộc | ![](mon_da_minh_loc.jpg) |
-| Cốt Vệ Kiếm Thủ | ![](mon_cot_ve_kiem_thu.jpg) |
-| Cổ Thành Chiến Ma | ![](mon_co_thanh_chien_ma.jpg) |
-| Thạch Tượng Đại Tướng | ![](elite_thach_tuong_dai_tuong.jpg) |
-| Dạ Minh Lộc Vương | ![](elite_da_minh_loc_vuong.jpg) |
-| Cốt Kiếm Thống Lĩnh | ![](elite_cot_kiem_thong_linh.jpg) |
-| Thủ Linh, pha 1 (halberd) | ![](boss_thien_khuyet_thu_linh.jpg) |
-| Thủ Linh, 65% | ![](boss_thien_khuyet_thu_linh-hurt65.jpg) |
-| Thủ Linh, 25% (quầng sao lớn, gọi tượng) | ![](boss_thien_khuyet_thu_linh-hurt25.jpg) |
-| Thủ Linh, chết | ![](boss_thien_khuyet_thu_linh-death.jpg) |
+| Thạch Tượng Võ Sĩ | *(ảnh đã gỡ khỏi repo)* |
+| Dạ Minh Lộc | *(ảnh đã gỡ khỏi repo)* |
+| Cốt Vệ Kiếm Thủ | *(ảnh đã gỡ khỏi repo)* |
+| Cổ Thành Chiến Ma | *(ảnh đã gỡ khỏi repo)* |
+| Thạch Tượng Đại Tướng | *(ảnh đã gỡ khỏi repo)* |
+| Dạ Minh Lộc Vương | *(ảnh đã gỡ khỏi repo)* |
+| Cốt Kiếm Thống Lĩnh | *(ảnh đã gỡ khỏi repo)* |
+| Thủ Linh, pha 1 (halberd) | *(ảnh đã gỡ khỏi repo)* |
+| Thủ Linh, 65% | *(ảnh đã gỡ khỏi repo)* |
+| Thủ Linh, 25% (quầng sao lớn, gọi tượng) | *(ảnh đã gỡ khỏi repo)* |
+| Thủ Linh, chết | *(ảnh đã gỡ khỏi repo)* |
 
 ## Kiểm chứng
 

@@ -36,7 +36,7 @@ Giới hạn art bible mục 6 (LOD0 tam giác / texture): quái thường 5–1
 
 ### `elite_xich_sa_ngo_cong` · Xích Sa Ngô Công
 
-![elite_xich_sa_ngo_cong](asset-concepts/elite_xich_sa_ngo_cong.webp)
+*(ảnh đã gỡ khỏi repo: elite_xich_sa_ngo_cong)*
 
 | | |
 | --- | --- |
@@ -61,7 +61,7 @@ an elite giant red-sand centipede about 6 meters long, segmented armored body of
 
 ### `elite_ho_mach_khoi_tuong` · Hộ Mạch Khôi Tướng
 
-![elite_ho_mach_khoi_tuong](asset-concepts/elite_ho_mach_khoi_tuong.webp)
+*(ảnh đã gỡ khỏi repo: elite_ho_mach_khoi_tuong)*
 
 | | |
 | --- | --- |
@@ -86,7 +86,7 @@ an elite vein-guardian stone-and-bronze construct about 3 meters tall, broad blo
 
 ### `elite_liet_cot_bao` · Liệt Cốt Báo Vương
 
-![elite_liet_cot_bao](asset-concepts/elite_liet_cot_bao.webp)
+*(ảnh đã gỡ khỏi repo: elite_liet_cot_bao)*
 
 | | |
 | --- | --- |
@@ -111,7 +111,7 @@ an elite cliff leopard king about 2.8 meters long, lean muscular body, sand-ochr
 
 ### `elite_loi_van_su_vuong` · Lôi Vân Sư Vương
 
-![elite_loi_van_su_vuong](asset-concepts/elite_loi_van_su_vuong.webp)
+*(ảnh đã gỡ khỏi repo: elite_loi_van_su_vuong)*
 
 | | |
 | --- | --- |
@@ -136,7 +136,7 @@ an elite storm-cloud lion king about 3.2 meters long, heavy mane made of dense g
 
 ### `elite_kinh_dien_ma_quan` · Kính Diện Ma Quân
 
-![elite_kinh_dien_ma_quan](asset-concepts/elite_kinh_dien_ma_quan.webp)
+*(ảnh đã gỡ khỏi repo: elite_kinh_dien_ma_quan)*
 
 | | |
 | --- | --- |
@@ -161,7 +161,7 @@ an elite mirror-faced sentinel about 2.6 meters tall, slim humanoid in layered p
 
 ### `elite_van_hac_vuong` · Tuyết Vũ Vân Hạc Vương
 
-![elite_van_hac_vuong](asset-concepts/elite_van_hac_vuong.webp)
+*(ảnh đã gỡ khỏi repo: elite_van_hac_vuong)*
 
 | | |
 | --- | --- |
@@ -186,7 +186,7 @@ an elite cloud crane king with a 7 meter wingspan, snow-white feathers shading t
 
 ### `elite_cot_kiem_thong_linh` · Cốt Kiếm Thống Lĩnh
 
-![elite_cot_kiem_thong_linh](asset-concepts/elite_cot_kiem_thong_linh.webp)
+*(ảnh đã gỡ khỏi repo: elite_cot_kiem_thong_linh)*
 
 | | |
 | --- | --- |
@@ -211,7 +211,7 @@ an elite skeletal sword commander about 2.8 meters tall, ivory aged bones, tatte
 
 ### `elite_da_minh_loc_vuong` · Dạ Minh Lộc Vương
 
-![elite_da_minh_loc_vuong](asset-concepts/elite_da_minh_loc_vuong.webp)
+*(ảnh đã gỡ khỏi repo: elite_da_minh_loc_vuong)*
 
 | | |
 | --- | --- |
@@ -236,7 +236,7 @@ an elite night-glow stag king about 3 meters long, deep indigo-black coat dotted
 
 ### `elite_thach_tuong_dai_tuong` · Thạch Tượng Đại Tướng
 
-![elite_thach_tuong_dai_tuong](asset-concepts/elite_thach_tuong_dai_tuong.webp)
+*(ảnh đã gỡ khỏi repo: elite_thach_tuong_dai_tuong)*
 
 | | |
 | --- | --- |
@@ -261,7 +261,7 @@ an elite ancient stone general statue come alive, about 3.4 meters tall, dark bl
 
 ### `elite_cu_nham_vien` · Cự Nham Viên
 
-![elite_cu_nham_vien](asset-concepts/elite_cu_nham_vien.webp)
+*(ảnh đã gỡ khỏi repo: elite_cu_nham_vien)*
 
 | | |
 | --- | --- |
@@ -286,7 +286,7 @@ an elite giant stone ape about 3.6 meters tall standing, massive grey granite sl
 
 ### `elite_xich_dien_ho` · Xích Diễm Hồ
 
-![elite_xich_dien_ho](asset-concepts/elite_xich_dien_ho.webp)
+*(ảnh đã gỡ khỏi repo: elite_xich_dien_ho)*
 
 | | |
 | --- | --- |
@@ -311,7 +311,7 @@ an elite crimson flame fox about 1.9 meters long, slender but powerful, vermilio
 
 ### `elite_huyet_nha_lang` · Huyết Nha Lang
 
-![elite_huyet_nha_lang](asset-concepts/elite_huyet_nha_lang.webp)
+*(ảnh đã gỡ khỏi repo: elite_huyet_nha_lang)*
 
 | | |
 | --- | --- |
@@ -341,7 +341,7 @@ an elite blood-fanged mountain wolf, about 2.6 meters long, hulking shoulders, d
 
 ### `boss_dia_mach_long` · Địa Mạch Long
 
-![boss_dia_mach_long](asset-concepts/boss_dia_mach_long.webp)
+*(ảnh đã gỡ khỏi repo: boss_dia_mach_long)*
 
 | | |
 | --- | --- |
@@ -366,7 +366,7 @@ a massive ground-dragon guardian about 9 meters long, ochre and rust-red rock-pl
 
 ### `boss_thach_tam_khoi_vuong` · Thạch Tâm Khôi Vương
 
-![boss_thach_tam_khoi_vuong](asset-concepts/boss_thach_tam_khoi_vuong.webp)
+*(ảnh đã gỡ khỏi repo: boss_thach_tam_khoi_vuong)*
 
 | | |
 | --- | --- |
@@ -391,7 +391,7 @@ a huge stone-hearted mining golem king about 5 meters tall, bulky body of ochre 
 
 ### `boss_thon_mach_ngo_cong_vuong` · Thôn Mạch Ngô Công Vương
 
-![boss_thon_mach_ngo_cong_vuong](asset-concepts/boss_thon_mach_ngo_cong_vuong.webp)
+*(ảnh đã gỡ khỏi repo: boss_thon_mach_ngo_cong_vuong)*
 
 | | |
 | --- | --- |
@@ -416,7 +416,7 @@ a colossal vein-devouring centipede king about 14 meters long, thick segmented a
 
 ### `boss_van_hai_kinh_vuong` · Vân Hải Kình Vương
 
-![boss_van_hai_kinh_vuong](asset-concepts/boss_van_hai_kinh_vuong.webp)
+*(ảnh đã gỡ khỏi repo: boss_van_hai_kinh_vuong)*
 
 | | |
 | --- | --- |
@@ -441,7 +441,7 @@ a colossal flying sky whale king about 18 meters long, smooth slate-blue back fa
 
 ### `boss_kinh_nguyet_chan_quan` · Kính Nguyệt Chân Quân
 
-![boss_kinh_nguyet_chan_quan](asset-concepts/boss_kinh_nguyet_chan_quan.webp)
+*(ảnh đã gỡ khỏi repo: boss_kinh_nguyet_chan_quan)*
 
 | | |
 | --- | --- |
@@ -466,7 +466,7 @@ an ancient robed moon-mirror lord about 3.6 meters tall, flowing layered silver-
 
 ### `boss_thien_khuyet_thu_linh` · Thiên Khuyết Thủ Linh
 
-![boss_thien_khuyet_thu_linh](asset-concepts/boss_thien_khuyet_thu_linh.webp)
+*(ảnh đã gỡ khỏi repo: boss_thien_khuyet_thu_linh)*
 
 | | |
 | --- | --- |
@@ -491,7 +491,7 @@ a colossal temple-guardian statue god about 8 meters tall, dark blue-grey stone 
 
 ### `boss_vo_dien_than_quan` · Vô Diện Thần Quân
 
-![boss_vo_dien_than_quan](asset-concepts/boss_vo_dien_than_quan.webp)
+*(ảnh đã gỡ khỏi repo: boss_vo_dien_than_quan)*
 
 | | |
 | --- | --- |
@@ -521,7 +521,7 @@ a towering faceless spirit lord about 4.6 meters tall, an ancient ceremonial arm
 
 ### `mon_mach_thuong_ho_ve` · Mạch Thương Hộ Vệ
 
-![mon_mach_thuong_ho_ve](asset-concepts/mon_mach_thuong_ho_ve.webp)
+*(ảnh đã gỡ khỏi repo: mon_mach_thuong_ho_ve)*
 
 | | |
 | --- | --- |
@@ -546,7 +546,7 @@ a mercenary vein-trader guard, human man about 1.75 meters tall, practical rust-
 
 ### `mon_ngo_cong_au` · Ngô Công Ấu
 
-![mon_ngo_cong_au](asset-concepts/mon_ngo_cong_au.webp)
+*(ảnh đã gỡ khỏi repo: mon_ngo_cong_au)*
 
 | | |
 | --- | --- |
@@ -571,7 +571,7 @@ a juvenile giant centipede about 2.4 meters long, glossy rust-brown segmented bo
 
 ### `mon_khai_mach_khoi_loi` · Khai Mạch Khôi Lỗi
 
-![mon_khai_mach_khoi_loi](asset-concepts/mon_khai_mach_khoi_loi.webp)
+*(ảnh đã gỡ khỏi repo: mon_khai_mach_khoi_loi)*
 
 | | |
 | --- | --- |
@@ -596,7 +596,7 @@ a mining puppet construct about 2.2 meters tall, crude humanoid frame of wood an
 
 ### `mon_thach_giap_te` · Thạch Giáp Tê
 
-![mon_thach_giap_te](asset-concepts/mon_thach_giap_te.webp)
+*(ảnh đã gỡ khỏi repo: mon_thach_giap_te)*
 
 | | |
 | --- | --- |
@@ -621,7 +621,7 @@ a stone-armored rhinoceros about 2.2 meters long, thick grey-ochre hide with ove
 
 ### `mon_bich_ngoc_kim_thien` · Bích Ngọc Kim Thiền
 
-![mon_bich_ngoc_kim_thien](asset-concepts/mon_bich_ngoc_kim_thien.webp)
+*(ảnh đã gỡ khỏi repo: mon_bich_ngoc_kim_thien)*
 
 | | |
 | --- | --- |
@@ -646,7 +646,7 @@ a jade cicada about 0.7 meters long, translucent veined pale jade wings, a smoot
 
 ### `mon_phu_dao_thach_quy` · Phù Đảo Thạch Quy
 
-![mon_phu_dao_thach_quy](asset-concepts/mon_phu_dao_thach_quy.webp)
+*(ảnh đã gỡ khỏi repo: mon_phu_dao_thach_quy)*
 
 | | |
 | --- | --- |
@@ -671,7 +671,7 @@ a floating-island stone tortoise about 2.6 meters long, a grey-green rock shell 
 
 ### `mon_kinh_linh` · Kính Linh
 
-![mon_kinh_linh](asset-concepts/mon_kinh_linh.webp)
+*(ảnh đã gỡ khỏi repo: mon_kinh_linh)*
 
 | | |
 | --- | --- |
@@ -696,7 +696,7 @@ a mirror spirit about 2 meters tall, a slender humanoid body made of overlapping
 
 ### `mon_van_hac` · Vân Hạc
 
-![mon_van_hac](asset-concepts/mon_van_hac.webp)
+*(ảnh đã gỡ khỏi repo: mon_van_hac)*
 
 | | |
 | --- | --- |
@@ -721,7 +721,7 @@ a cloud crane about 3.2 meter wingspan, white feathers with pale grey-blue wingt
 
 ### `mon_co_thanh_chien_ma` · Cổ Thành Chiến Ma
 
-![mon_co_thanh_chien_ma](asset-concepts/mon_co_thanh_chien_ma.webp)
+*(ảnh đã gỡ khỏi repo: mon_co_thanh_chien_ma)*
 
 | | |
 | --- | --- |
@@ -746,7 +746,7 @@ an ancient war demon about 2.6 meters tall, broad hunched shoulders, dark grey-v
 
 ### `mon_cot_ve_kiem_thu` · Cốt Vệ Kiếm Thủ
 
-![mon_cot_ve_kiem_thu](asset-concepts/mon_cot_ve_kiem_thu.webp)
+*(ảnh đã gỡ khỏi repo: mon_cot_ve_kiem_thu)*
 
 | | |
 | --- | --- |
@@ -771,7 +771,7 @@ a skeletal sword guard about 1.8 meters tall, aged ivory bones, a tattered dark 
 
 ### `mon_da_minh_loc` · Dạ Minh Lộc
 
-![mon_da_minh_loc](asset-concepts/mon_da_minh_loc.webp)
+*(ảnh đã gỡ khỏi repo: mon_da_minh_loc)*
 
 | | |
 | --- | --- |
@@ -796,7 +796,7 @@ a night-glow deer about 2.2 meters long, dark indigo coat with small pale silver
 
 ### `mon_thach_tuong_vo_si` · Thạch Tượng Võ Sĩ
 
-![mon_thach_tuong_vo_si](asset-concepts/mon_thach_tuong_vo_si.webp)
+*(ảnh đã gỡ khỏi repo: mon_thach_tuong_vo_si)*
 
 | | |
 | --- | --- |
@@ -915,7 +915,7 @@ a stone warrior statue come alive about 2.4 meters tall, dark blue-grey carved s
 
 ### `prop_cong_khai_mach` · Cổng Mỏ Khai Mạch
 
-![prop_cong_khai_mach](asset-concepts/prop_cong_khai_mach.webp)
+*(ảnh đã gỡ khỏi repo: prop_cong_khai_mach)*
 
 | | |
 | --- | --- |
@@ -940,7 +940,7 @@ a mine entrance gate carved into a cliff about 6 meters tall, a rectangular ston
 
 ### `prop_cau_da_gay` · Cầu Đá Gãy
 
-![prop_cau_da_gay](asset-concepts/prop_cau_da_gay.webp)
+*(ảnh đã gỡ khỏi repo: prop_cau_da_gay)*
 
 | | |
 | --- | --- |
@@ -965,7 +965,7 @@ a ruined ancient stone arch bridge section about 14 meters long, weathered pale 
 
 ### `prop_mach_tinh_tru` · Mạch Tinh Trụ
 
-![prop_mach_tinh_tru](asset-concepts/prop_mach_tinh_tru.webp)
+*(ảnh đã gỡ khỏi repo: prop_mach_tinh_tru)*
 
 | | |
 | --- | --- |
@@ -990,7 +990,7 @@ a cluster of cracked translucent vein-stone crystals about 3.5 meters tall growi
 
 ### `prop_cay_goc_kho` · Cây Gốc Khô
 
-![prop_cay_goc_kho](asset-concepts/prop_cay_goc_kho.webp)
+*(ảnh đã gỡ khỏi repo: prop_cay_goc_kho)*
 
 | | |
 | --- | --- |
@@ -1015,7 +1015,7 @@ a twisted dead canyon tree about 6 meters tall, silver-grey bleached bark with d
 
 ### `prop_tru_nham_do` · Trụ Nham Đỏ
 
-![prop_tru_nham_do](asset-concepts/prop_tru_nham_do.webp)
+*(ảnh đã gỡ khỏi repo: prop_tru_nham_do)*
 
 | | |
 | --- | --- |
@@ -1040,7 +1040,7 @@ a tall weathered sandstone rock pillar about 8 meters tall, warm ochre and rust-
 
 ### `prop_phu_dao_dinh` · Đình Phù Đảo
 
-![prop_phu_dao_dinh](asset-concepts/prop_phu_dao_dinh.webp)
+*(ảnh đã gỡ khỏi repo: prop_phu_dao_dinh)*
 
 | | |
 | --- | --- |
@@ -1065,7 +1065,7 @@ a small open hexagonal pavilion about 6 meters tall on a stone platform, dark wo
 
 ### `prop_cau_may` · Cầu Xích Mây
 
-![prop_cau_may](asset-concepts/prop_cau_may.webp)
+*(ảnh đã gỡ khỏi repo: prop_cau_may)*
 
 | | |
 | --- | --- |
@@ -1090,7 +1090,7 @@ a long hanging chain bridge about 18 meters long, heavy dark iron chains, weathe
 
 ### `prop_kinh_ho_dai` · Kính Hồ Đài
 
-![prop_kinh_ho_dai](asset-concepts/prop_kinh_ho_dai.webp)
+*(ảnh đã gỡ khỏi repo: prop_kinh_ho_dai)*
 
 | | |
 | --- | --- |
@@ -1115,7 +1115,7 @@ a circular raised stone altar about 6 meters wide holding a perfectly still shal
 
 ### `prop_da_troi` · Đá Trôi
 
-![prop_da_troi](asset-concepts/prop_da_troi.webp)
+*(ảnh đã gỡ khỏi repo: prop_da_troi)*
 
 | | |
 | --- | --- |
@@ -1140,7 +1140,7 @@ a floating rock cluster about 8 meters tall, a larger pale grey rock with smalle
 
 ### `prop_tung_phu_dao` · Tùng Phù Đảo
 
-![prop_tung_phu_dao](asset-concepts/prop_tung_phu_dao.webp)
+*(ảnh đã gỡ khỏi repo: prop_tung_phu_dao)*
 
 | | |
 | --- | --- |
@@ -1165,7 +1165,7 @@ a wind-sculpted old pine tree about 7 meters tall growing on a small rock, a fla
 
 ### `prop_dai_tinh_bai` · Tinh Bái Đài
 
-![prop_dai_tinh_bai](asset-concepts/prop_dai_tinh_bai.webp)
+*(ảnh đã gỡ khỏi repo: prop_dai_tinh_bai)*
 
 | | |
 | --- | --- |
@@ -1190,7 +1190,7 @@ an ancient star-worship altar about 8 meters wide, three concentric round stone 
 
 ### `prop_cong_thanh_vo` · Cổng Thành Vỡ
 
-![prop_cong_thanh_vo](asset-concepts/prop_cong_thanh_vo.webp)
+*(ảnh đã gỡ khỏi repo: prop_cong_thanh_vo)*
 
 | | |
 | --- | --- |
@@ -1215,7 +1215,7 @@ a ruined ancient city gate about 14 meters tall, a huge dark blue-grey stone gat
 
 ### `prop_den_long_troi` · Đèn Lồng Trời
 
-![prop_den_long_troi](asset-concepts/prop_den_long_troi.webp)
+*(ảnh đã gỡ khỏi repo: prop_den_long_troi)*
 
 | | |
 | --- | --- |
@@ -1240,7 +1240,7 @@ a floating sky lantern about 1.2 meters tall, a slim hexagonal frame of dark woo
 
 ### `prop_tru_da_khac_van` · Trụ Đá Khắc Vân
 
-![prop_tru_da_khac_van](asset-concepts/prop_tru_da_khac_van.webp)
+*(ảnh đã gỡ khỏi repo: prop_tru_da_khac_van)*
 
 | | |
 | --- | --- |
@@ -1265,7 +1265,7 @@ a tall carved stone pillar about 9 meters tall, a square dark blue-grey granite 
 
 ### `prop_tuong_da_vo_si` · Tượng Đá Cổ Thành
 
-![prop_tuong_da_vo_si](asset-concepts/prop_tuong_da_vo_si.webp)
+*(ảnh đã gỡ khỏi repo: prop_tuong_da_vo_si)*
 
 | | |
 | --- | --- |
@@ -1295,7 +1295,7 @@ a colossal broken stone statue head and shoulders about 7 meters tall half sunke
 
 ### `set_liet_mach_kiem_y` · Liệt Mạch Kiếm Y (bộ kiếm tu bậc 2)
 
-![set_liet_mach_kiem_y](asset-concepts/set_liet_mach_kiem_y.webp)
+*(ảnh đã gỡ khỏi repo: set_liet_mach_kiem_y)*
 
 | | |
 | --- | --- |
@@ -1320,7 +1320,7 @@ a sword cultivator outfit concept shown on a plain dummy figure, a long ochre-sa
 
 ### `prop_ngung_dan_lo` · Ngưng Đan Lô
 
-![prop_ngung_dan_lo](asset-concepts/prop_ngung_dan_lo.webp)
+*(ảnh đã gỡ khỏi repo: prop_ngung_dan_lo)*
 
 | | |
 | --- | --- |
@@ -1345,7 +1345,7 @@ a small elegant three-legged bronze alchemy cauldron about 40 centimeters tall, 
 
 ### `prop_kiem_liet_mach` · Liệt Mạch Kiếm
 
-![prop_kiem_liet_mach](asset-concepts/prop_kiem_liet_mach.webp)
+*(ảnh đã gỡ khỏi repo: prop_kiem_liet_mach)*
 
 | | |
 | --- | --- |
@@ -1370,7 +1370,7 @@ an ornate straight sword about 1.1 meters long, a pale ochre-gold blade with a t
 
 ### `set_kinh_quang_kiem_y` · Kính Quang Kiếm Y (bộ kiếm tu bậc 3)
 
-![set_kinh_quang_kiem_y](asset-concepts/set_kinh_quang_kiem_y.webp)
+*(ảnh đã gỡ khỏi repo: set_kinh_quang_kiem_y)*
 
 | | |
 | --- | --- |
@@ -1395,7 +1395,7 @@ a sword cultivator outfit concept shown on a plain dummy figure, a long pale sil
 
 ### `prop_anh_ngoc_kinh` · Anh Ngọc Kính
 
-![prop_anh_ngoc_kinh](asset-concepts/prop_anh_ngoc_kinh.webp)
+*(ảnh đã gỡ khỏi repo: prop_anh_ngoc_kinh)*
 
 | | |
 | --- | --- |
@@ -1420,7 +1420,7 @@ a small round hand-mirror artifact about 35 centimeters wide, a polished pale si
 
 ### `prop_kiem_kinh_quang` · Kính Quang Kiếm
 
-![prop_kiem_kinh_quang](asset-concepts/prop_kiem_kinh_quang.webp)
+*(ảnh đã gỡ khỏi repo: prop_kiem_kinh_quang)*
 
 | | |
 | --- | --- |
@@ -1445,7 +1445,7 @@ an elegant straight sword about 1.15 meters long, a polished pale silver mirror-
 
 ### `set_tinh_khuyet_kiem_bao` · Tinh Khuyết Kiếm Bào (bộ kiếm tu bậc 4)
 
-![set_tinh_khuyet_kiem_bao](asset-concepts/set_tinh_khuyet_kiem_bao.webp)
+*(ảnh đã gỡ khỏi repo: set_tinh_khuyet_kiem_bao)*
 
 | | |
 | --- | --- |
@@ -1470,7 +1470,7 @@ a sword cultivator outfit concept shown on a plain dummy figure, a long deep nav
 
 ### `prop_than_nien_chau` · Thần Niệm Châu
 
-![prop_than_nien_chau](asset-concepts/prop_than_nien_chau.webp)
+*(ảnh đã gỡ khỏi repo: prop_than_nien_chau)*
 
 | | |
 | --- | --- |
@@ -1495,7 +1495,7 @@ a small floating pearl artifact about 25 centimeters in diameter, a luminous pal
 
 ### `prop_kiem_tinh_khuyet` · Tinh Khuyết Kiếm
 
-![prop_kiem_tinh_khuyet](asset-concepts/prop_kiem_tinh_khuyet.webp)
+*(ảnh đã gỡ khỏi repo: prop_kiem_tinh_khuyet)*
 
 | | |
 | --- | --- |
