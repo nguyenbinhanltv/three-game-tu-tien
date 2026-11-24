@@ -24,7 +24,7 @@ const mesh = (o) => ({
 /** Hệ số cỡ theo chiêu (chỉnh sau khi đo `pnpm shots vfxlab --clean`: chiêu thường phủ ≤ 0,2, chiêu cuối ≤ 0,35). */
 let K = 1;
 const SCALE = {
-  skl_kiem_anh_bo: 1.15,
+  skl_kiem_anh_bo: 1.05,
   skl_phi_kiem_truy_hon: 1,
   skl_van_kiem_quy_tong: 0.75,
   skl_hoanh_kiem_pha_mach: 0.62,
