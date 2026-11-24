@@ -50,8 +50,8 @@
     1.5,
     0.5
    ],
-   "scale": 1.92,
-   "scaleTo": 2.4,
+   "scale": 2.3,
+   "scaleTo": 2.88,
    "move": {
     "to": "ahead",
     "offset": [
@@ -82,8 +82,8 @@
     1.5,
     4
    ],
-   "scale": 2.448,
-   "scaleTo": 2.64
+   "scale": 2.94,
+   "scaleTo": 3.17
   },
   {
    "type": "mesh",
@@ -105,8 +105,8 @@
     1.2,
     -0.5
    ],
-   "scale": 3.1,
-   "scaleTo": 3.1,
+   "scale": 3.72,
+   "scaleTo": 3.72,
    "move": {
     "to": "ahead",
     "offset": [
@@ -203,8 +203,8 @@
     1.2,
     3
    ],
-   "scale": 2.1,
-   "scaleTo": 2.1,
+   "scale": 2.52,
+   "scaleTo": 2.52,
    "move": {
     "to": "ahead",
     "offset": [

@@ -21,8 +21,8 @@
   "telegraph": false,
   "budget": {
     "drawCalls": 7,
-    "particles": 120,
-    "screenCover": 0.2,
+    "particles": 60,
+    "screenCover": 0.12,
     "overdraw": 4
   },
   "textures": [],

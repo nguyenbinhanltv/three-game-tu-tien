@@ -16,16 +16,12 @@ describe('sprite vẽ tay (Họa Pháp Lô 2)', () => {
     expect(shapeGeometry('sprite').getAttribute('position').count).toBeGreaterThanOrEqual(4);
   });
 
-  it('atlas WebP có đủ ô và đúng kích thước lưới (ô vuông 512)', () => {
-    const f = path.resolve(import.meta.dirname, '../../../public/hoa-truc/vfx_sprites.webp');
-    const b = fs.readFileSync(f);
-    // WebP: "RIFF" + size + "WEBP" + chunk "VP8X"; rộng/cao − 1 là 24 bit little-endian ở byte 24 và 27.
-    expect(b.subarray(0, 4).toString()).toBe('RIFF');
-    expect(b.subarray(8, 12).toString()).toBe('WEBP');
-    expect(b.subarray(12, 16).toString()).toBe('VP8X');
-    const w = 1 + (b[24]! | (b[25]! << 8) | (b[26]! << 16));
-    const h = 1 + (b[27]! | (b[28]! << 8) | (b[29]! << 16));
-    expect(w).toBe(SPRITE_COLS * 512);
-    expect(h).toBe(SPRITE_ROWS * 512);
+  it('atlas nằm trong sổ khóa asset (nhị phân ở R2, không commit)', () => {
+    const lock = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, '../../../../../assets/asset-lock.json'), 'utf8')) as {
+      files: Record<string, { sha256: string; bytes: number }>;
+    };
+    const e = lock.files['hoa-truc/vfx_sprites.webp'];
+    expect(e, 'chạy `pnpm assets:push` sau khi đổi atlas').toBeTruthy();
+    expect(e!.bytes).toBeGreaterThan(100_000);
   });
 });

@@ -23,10 +23,21 @@ const mesh = (o) => ({
   seed: S(),
   ...o,
 });
+/** Hệ số cỡ theo chiêu (đo phủ bằng `cover.mjs` rồi chỉnh cho sát trần: chiêu thường ≤ 0,2, chiêu cuối ≤ 0,35). */
+let K = 1;
+const SCALE = { skl_tat_dau_thanh_binh: 1.35, skl_hoang_tuyen_dan: 1.1 };
 /** Sprite vẽ tay (billboard). `size` mét (ô vuông), `off` offset tâm. */
 const sprite = (name, o) => {
   const { size, sizeTo, off = [0, 0, 0], ...rest } = o;
-  return mesh({ shape: 'sprite', sprite: name, billboard: true, offset: off, scale: size, scaleTo: sizeTo ?? size, ...rest });
+  return mesh({
+    shape: 'sprite',
+    sprite: name,
+    billboard: true,
+    offset: off,
+    scale: r2(size * K),
+    scaleTo: r2((sizeTo ?? size) * K),
+    ...rest,
+  });
 };
 /** Khói thấp dưới chân (billboard ink_smoke), mờ: chỉ để nối hình với mặt đất, không phủ khối đặc. */
 const puff = (at, off, sc, t, a = 0.5, dur = 0.8) =>
@@ -304,6 +315,7 @@ const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(S
 for (const id of ids) {
   if (!SPEC[id]) throw new Error(`chưa có công thức cho ${id}`);
   seq = 1000;
+  K = SCALE[id] ?? 1.2;
   const p = `packages/content/data/fx/${id}.json`;
   const t = JSON.parse(fs.readFileSync(p, 'utf8'));
   t.events = t.events.filter((e) => !(e.type === 'mesh' && typeof e.seed === 'number' && e.seed >= 1000));

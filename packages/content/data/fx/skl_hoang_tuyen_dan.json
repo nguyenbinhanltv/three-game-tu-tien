@@ -109,8 +109,8 @@
     1.5,
     0
    ],
-   "scale": 1.2,
-   "scaleTo": 2.2
+   "scale": 1.32,
+   "scaleTo": 2.42
   },
   {
    "type": "particles",
@@ -151,8 +151,8 @@
     1.5,
     0
    ],
-   "scale": 2.2,
-   "scaleTo": 3
+   "scale": 2.42,
+   "scaleTo": 3.3
   },
   {
    "type": "mesh",
@@ -174,8 +174,8 @@
     1.5,
     0.3
    ],
-   "scale": 1.7,
-   "scaleTo": 2,
+   "scale": 1.87,
+   "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
@@ -206,8 +206,8 @@
     1.5,
     0.88
    ],
-   "scale": 1.7,
-   "scaleTo": 2,
+   "scale": 1.87,
+   "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
@@ -238,8 +238,8 @@
     1.5,
     0.96
    ],
-   "scale": 1.7,
-   "scaleTo": 2,
+   "scale": 1.87,
+   "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
@@ -270,8 +270,8 @@
     1.5,
     0.47
    ],
-   "scale": 1.7,
-   "scaleTo": 2,
+   "scale": 1.87,
+   "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
@@ -302,8 +302,8 @@
     1.5,
     -0.3
    ],
-   "scale": 1.7,
-   "scaleTo": 2,
+   "scale": 1.87,
+   "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
@@ -334,8 +334,8 @@
     1.5,
     -0.88
    ],
-   "scale": 1.7,
-   "scaleTo": 2,
+   "scale": 1.87,
+   "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
@@ -366,8 +366,8 @@
     1.5,
     -0.96
    ],
-   "scale": 1.7,
-   "scaleTo": 2,
+   "scale": 1.87,
+   "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
@@ -398,8 +398,8 @@
     1.5,
     -0.47
    ],
-   "scale": 1.7,
-   "scaleTo": 2,
+   "scale": 1.87,
+   "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
@@ -430,8 +430,8 @@
     1.6,
     0
    ],
-   "scale": 3.2,
-   "scaleTo": 3.2
+   "scale": 3.52,
+   "scaleTo": 3.52
   },
   {
    "type": "mesh",
@@ -453,8 +453,8 @@
     2,
     0
    ],
-   "scale": 3.2,
-   "scaleTo": 3.2,
+   "scale": 3.52,
+   "scaleTo": 3.52,
    "move": {
     "to": "target",
     "offset": [

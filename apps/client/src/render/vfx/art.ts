@@ -28,11 +28,18 @@ export function spriteAtlas(): THREE.Texture {
     spriteTex.needsUpdate = true;
     return spriteTex;
   }
-  const base = (import.meta.env?.BASE_URL as string | undefined) ?? '/';
-  const t = new THREE.TextureLoader().load(`${base}hoa-truc/vfx_sprites.webp`);
+  // Ảnh nạp bất đồng bộ qua `ASSET_BASE` (R2 hoặc cùng origin); gán vào texture khi tải xong.
+  const t = new THREE.Texture();
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 4;
   t.generateMipmaps = true;
+  const img = new Image();
+  img.crossOrigin = ASSET_CROSS_ORIGIN ?? null;
+  img.onload = () => {
+    t.image = img;
+    t.needsUpdate = true;
+  };
+  img.src = `${ASSET_BASE}hoa-truc/vfx_sprites.webp`;
   spriteTex = t;
   return t;
 }
