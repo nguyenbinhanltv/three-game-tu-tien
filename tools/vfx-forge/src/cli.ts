@@ -5,6 +5,7 @@
 //   pnpm --filter @dtl/vfx-forge forge check [--out <thư mục>]    kiểm manifest (CI)
 //   pnpm --filter @dtl/vfx-forge forge concept --card <skillId> --shot <ảnh chụp game> [--ref <ảnh mẫu đã duyệt>]... --out <thư mục ngoài repo>
 //   pnpm --filter @dtl/vfx-forge forge texture --card <skillId> --kind flipbook|slash|decal|noise|ramp --name <tên> [--grid 4x4] [--ref <ảnh>]... --out <thư mục ngoài repo>
+//   pnpm --filter @dtl/vfx-forge forge sprites --name <tên> --prompt-file <txt> [--ref <ảnh>]... --out <thư mục ngoài repo>    bảng sprite nền xanh chroma (rồi `sprite-pack.mjs` tách nền + xếp atlas)
 //   pnpm --filter @dtl/vfx-forge forge cards --path <id hướng tu>    sinh thẻ chiêu cho mọi chiêu chưa có thẻ (V-P2..P8)
 //   (concept/texture gọi Codex; thêm --dry chỉ in prompt)
 import fs from 'node:fs';
@@ -14,7 +15,7 @@ import type { AlphaMode } from './forge.js';
 import { sampleSlashFlipbook, sampleTileNoise } from './samples.js';
 import { checkManifest, forge } from './pipeline.js';
 import { toPng } from './io.js';
-import { conceptJob, monConceptJob, runCodex, textureJob } from './codex.js';
+import { conceptJob, monConceptJob, runCodex, spriteJob, textureJob } from './codex.js';
 import { writeCards } from './cards.js';
 import type { TextureKind } from './prompts.js';
 
@@ -83,6 +84,15 @@ async function main(): Promise<void> {
       console.log(job.prompt);
       return;
     }
+    const res = await runCodex(job);
+    if (!res.file) throw new Error(`Codex không ra ảnh (mã thoát ${res.code ?? 'không có'}); xem log: ${res.log}`);
+    console.log(`đã sinh ${res.file}`);
+  } else if (cmd === 'sprites') {
+    const name = flag('--name');
+    const pf = flag('--prompt-file');
+    const out = flag('--out');
+    if (!name || !pf || !out) throw new Error('dùng: sprites --name <tên> --prompt-file <txt> [--ref <ảnh>]... --out <thư mục>');
+    const job = spriteJob(name, fs.readFileSync(pf, 'utf8'), flags('--ref'), out);
     const res = await runCodex(job);
     if (!res.file) throw new Error(`Codex không ra ảnh (mã thoát ${res.code ?? 'không có'}); xem log: ${res.log}`);
     console.log(`đã sinh ${res.file}`);

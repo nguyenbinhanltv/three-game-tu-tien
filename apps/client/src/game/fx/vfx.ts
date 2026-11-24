@@ -156,6 +156,7 @@ export class Vfx {
       'decal',
       'card',
       'art',
+      'sprite',
       'wind',
     ] as const) {
       const m = this.fx(G.ico1, 0xffffff, 0, kind);

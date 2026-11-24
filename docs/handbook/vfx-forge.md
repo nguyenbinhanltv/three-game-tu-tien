@@ -29,6 +29,19 @@
 
 Bật kiểm cho một thẻ bằng cách thêm vào thẻ `"standard": 2`, `"silhouette": "<mô tả hình riêng>"`, `"materials": ["smoke", ...]` (giá trị: `flipbook|smoke|particles|crack|distort`). Thẻ cũ không có `standard` thì không bị kiểm (đợt làm lại sẽ bật dần). Phần đo trên ảnh của `vfxlab` chỉ cảnh báo (cột `overBudget`), vì ảnh có lẫn chuyển động của nhân vật/hình nộm. Mẫu tham chiếu chất lượng: concept Hàn Giao (quái).
 
+## Sprite vẽ tay (Họa Pháp Lô 2, từ đợt Hồn tu)
+
+Hình có hình dạng riêng (bàn tay, mặt hồn, lính giáo, phướn, lốc xoáy, sóng...) không dựng bằng lưới thủ tục mà dùng **sprite Codex vẽ**:
+
+1. **Vẽ**: `pnpm --filter @dtl/vfx-forge forge sprites --name <tên> --prompt-file <txt> [--ref <bảng concept đã duyệt>] --out <thư mục ngoài repo>` gọi Codex vẽ MỘT bảng lưới đều (mặc định 4×2) mỗi ô một sprite trên nền xanh chroma `#00FF00`; prompt dặn không dùng màu xanh lục trong hình (xem `docs` Hồn tu: bảng v1 = bàn tay/mặt/lính/phướn/xích/vuốt, bảng v2 = lốc/màn/sóng/quả cầu hồn/sọ/bóng trùm/roi khói/sợi hồn).
+2. **Đóng atlas**: `node tools/vfx-forge/sprite-pack.mjs --sheet <bảng1.png>:4:2 --sheet <bảng2.png>:4:2 [--preview <jpg>]` tách nền (alpha từ độ lệch xanh lục, khử viền), cắt khung bao từng ô, thu vừa ô vuông 512 và xếp vào `apps/client/public/hoa-truc/vfx_sprites.webp` (lưới 4×4, thứ tự ô = `FX_SPRITES` trong `packages/shared/src/fxtimeline.ts`). Thêm sprite mới thì thêm tên vào cuối `FX_SPRITES` và tăng `SPRITE_ROWS` (`render/vfx/art.ts`) nếu cần.
+3. **Dùng trong timeline**: sự kiện `mesh` với `shape: "sprite"`, `sprite: "<tên>"` (billboard mặc định); `scale` là mét của ô vuông (nội dung chiếm ~60%); `alpha`, `erodeFrom`, `move` như mọi mesh. Kiểu vật liệu riêng `sprite` (`spriteNodes` ở `render/vfx/stylized.ts`), KHÔNG gộp instance: hai lần thử gộp chung với `art` làm sprite chập chờn khi nhiều chiêu ra liên tiếp, nên mỗi sprite là một draw call (giữ ≤ 8 sprite mỗi chiêu). Shader giữ màu vẽ tay nhưng kéo lõi tối xuống theo độ sáng để đọc được trên nền đá trắng; mép đang tan có ánh viền lạnh theo `rim` của nhánh.
+4. **Không đặt `camFade`** cho sprite nằm trên đầu mục tiêu: nó mờ gần hết mọi thứ trong 4 m quanh mục tiêu.
+5. Thẻ khai `materials: ["sprite", "smoke"]`; `checkStandard2` kiểm timeline có sự kiện `sprite`.
+6. `node tools/vfx-forge/hon-tu.mjs [id...]` là bộ sinh timeline 11 chiêu Hồn tu (chạy lại an toàn, bỏ mesh seed ≥ 1000 rồi dựng lại, giữ âm thanh/rung/hitstop/hạt viết tay).
+
+Đo `screenCover` của phòng thử là ước lượng theo hình cầu bao của tấm vuông (quá tay với sprite chỉ chiếm ~35% ô); số đo thật là `pixelCover` (so ảnh nền) và được ghi cả hai trong PR.
+
 ## Bảng phong cách
 
 `tools/vfx-forge/style-sheet.json`: ramp ba tông (lõi tối 15–25%, thân 50–60%, viền sáng 10–20%), nét không mảnh hơn 3% khung, tương phản lõi/viền ≥ 4:1, nền đen thuần cho flipbook, cấm đỏ/cam. Script đưa bảng này, bảng màu hướng tu và phối cảnh camera chéo vào MỌI prompt; luôn đính ảnh mẫu đã duyệt gần nhất bằng `--ref` để các chiêu cùng phong cách.

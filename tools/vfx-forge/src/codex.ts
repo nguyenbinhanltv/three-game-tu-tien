@@ -158,3 +158,8 @@ export function textureJob(
   const card = loadCard(root, skillId);
   return { name, prompt: texturePrompt(kind, card, loadStyle(root), paletteOfCard(card), grid), images: refs, outDir };
 }
+
+/** Bảng sprite một lần vẽ (nhiều hình trong một ảnh, nền xanh chroma để tách alpha). `prompt` do người gọi viết (mô tả từng ô). */
+export function spriteJob(name: string, prompt: string, refs: string[], outDir: string): CodexJob {
+  return { name, prompt, images: refs, outDir, timeoutMs: 6 * 60_000 };
+}

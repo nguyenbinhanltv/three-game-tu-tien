@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "một làn sóng khói thấp tràn ngang như đầu sóng triều: đỉnh sóng cuộn, trong sóng thấp thoáng nhiều mặt hồn mờ, sau sóng là vệt khói kéo dài"
+  "silhouette": "một làn sóng khói thấp tràn ngang như đầu sóng triều: đỉnh sóng cuộn, trong sóng thấp thoáng nhiều mặt hồn mờ, sau sóng là vệt khói kéo dài",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "smoke"
+  ]
 }

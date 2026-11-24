@@ -34,6 +34,8 @@ export type FxShape =
   | 'card'
   /** Chùm đường gió: bảy vệt mảnh cuộn quanh trục +Z, đầu vệt chạy dọc đường rồi tan (kiểu `wind`, Storm & Wind CC BY). */
   | 'gust'
+  /** Sprite vẽ tay (Họa Pháp Lô 2): một ô của atlas `public/hoa-truc/vfx_sprites.webp` (lưới 4×4) (nền trong suốt) quay mặt về camera, tô ink theo bảng màu nhánh; chọn ô bằng `sprite` (kiểu `art`). */
+  | 'sprite'
   /** Tấm flipbook (VS-1): khói mực, tia lửa, bụi, nét bút... phát tuần tự 16 khung theo tiến độ vòng đời; chọn atlas bằng `flip` (kiểu `flip`). */
   | 'flip'
   | FxLibShape;
@@ -112,6 +114,30 @@ export const FLIP_ATLASES = ['ink_smoke', 'spark_burst', 'dust_kick', 'slash_str
 export type FlipAtlas = (typeof FLIP_ATLASES)[number];
 
 /**
+ * Sprite vẽ tay (Codex, qua `tools/vfx-forge/sprite-pack.mjs`): thứ tự = ô trong atlas 4×4 (hàng trên trước, trái sang phải). Mỗi sprite là khối khói/hình có
+ * lõi tối + viền sáng lạnh; shader đọc độ sáng làm tầng màu theo bảng màu nhánh (đọc được cả nền sáng lẫn đêm).
+ */
+export const FX_SPRITES = [
+  'hon_hand_claw',
+  'hon_hand_press',
+  'hon_face_scream',
+  'hon_face_sad',
+  'hon_soldier',
+  'hon_banner',
+  'hon_chain',
+  'hon_claws3',
+  'hon_tornado',
+  'hon_curtain',
+  'hon_wave',
+  'hon_orb',
+  'hon_face_grin',
+  'hon_wraith',
+  'hon_whips',
+  'hon_wisps',
+] as const;
+export type FxSprite = (typeof FX_SPRITES)[number];
+
+/**
  * Luật thứ bậc thị giác (V-P0): 1 chiêu của mình, 2 chiêu/cảnh báo của địch (kể cả đối thủ đấu pháp), 3 chiêu đồng đội, 4 hào quang/môi trường.
  * Chỉ chiêu đồng đội (không phải mình, không thù địch) tự giảm độ sáng 50%; chế độ tĩnh giảm còn 25%. Kích thước và vị trí giữ nguyên (`size` luôn 1)
  * để hình vẫn khớp tầm đánh thật; số hạt của người khác đã giảm riêng ở `particleScale`.
@@ -183,6 +209,8 @@ export interface FxMeshEvent extends FxBase {
   };
   /** Atlas của hình `flip` (bắt buộc với `shape: "flip"`). */
   flip?: FlipAtlas;
+  /** Ô sprite của hình `sprite` (bắt buộc với `shape: "sprite"`). */
+  sprite?: FxSprite;
   /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh); `colossus` (Cổ Thần khổng lồ nửa thân) và `fist` (cự quyền) của Cổ Thần (TN-5). */
   card?: 'arhat' | 'phoenix' | 'ghost' | 'colossus' | 'fist';
   /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */
@@ -499,6 +527,9 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (e.type === 'mesh' && e.shape === 'flip' && !(e.flip && (FLIP_ATLASES as readonly string[]).includes(e.flip)))
         errs.push(`${p}: mesh flip thiếu/sai atlas (${e.flip}), hợp lệ: ${FLIP_ATLASES.join('|')}`);
       if (e.type === 'mesh' && e.shape !== 'flip' && e.flip) errs.push(`${p}: chỉ hình flip mới có trường flip`);
+      if (e.type === 'mesh' && e.shape === 'sprite' && !(e.sprite && (FX_SPRITES as readonly string[]).includes(e.sprite)))
+        errs.push(`${p}: mesh sprite thiếu/sai ô (${e.sprite}), hợp lệ: ${FX_SPRITES.join('|')}`);
+      if (e.type === 'mesh' && e.shape !== 'sprite' && e.sprite) errs.push(`${p}: chỉ hình sprite mới có trường sprite`);
       if (e.type === 'bolt' && !(e.scale === undefined || (e.scale > 0 && e.scale <= 4)))
         errs.push(`${p}: bolt scale=${e.scale} ngoài (0, 4]`);
       if (e.type === 'bolt' && !(e.thick === undefined || (e.thick > 0 && e.thick <= 6)))

@@ -27,5 +27,10 @@
   },
   "textures": [],
   "impactFrame": true,
-  "silhouette": "MỘT CƠN LỐC hình phễu xoắn ốc cao quanh mục tiêu, đáy hẹp, miệng loe rộng, khói tím đen lõi đặc, sợi hồn bị cuốn xoắn lên trên"
+  "silhouette": "MỘT CƠN LỐC hình phễu xoắn ốc cao quanh mục tiêu, đáy hẹp, miệng loe rộng, khói tím đen lõi đặc, sợi hồn bị cuốn xoắn lên trên",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "smoke"
+  ]
 }

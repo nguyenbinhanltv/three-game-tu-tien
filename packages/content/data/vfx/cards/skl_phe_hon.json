@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "một BÀN TAY hồn khổng lồ năm ngón cong như móng chộp từ trên xuống, ngón nào cũng là sợi khói; ở lòng bàn tay có hồn sáng bị kéo ra"
+  "silhouette": "một BÀN TAY hồn khổng lồ năm ngón cong như móng chộp từ trên xuống, ngón nào cũng là sợi khói; ở lòng bàn tay có hồn sáng bị kéo ra",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "smoke"
+  ]
 }

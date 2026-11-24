@@ -12,6 +12,30 @@ const CELL_H = 683;
 
 let atlas: THREE.Texture | null = null;
 
+/**
+ * Atlas sprite vẽ tay của VFX (Họa Pháp Lô 2): `public/hoa-truc/vfx_sprites.webp`, lưới `SPRITE_COLS × SPRITE_ROWS` ô vuông nền trong suốt, thứ tự theo `FX_SPRITES`
+ * (hàng trên trước). Dựng bằng `tools/vfx-forge/sprite-pack.mjs` từ bảng Codex nền xanh chroma. Nạp bất đồng bộ; chưa nạp thì trong suốt. Không có `document` (test) thì texture rỗng.
+ */
+export const SPRITE_COLS = 4;
+export const SPRITE_ROWS = 4;
+let spriteTex: THREE.Texture | null = null;
+
+export function spriteAtlas(): THREE.Texture {
+  if (spriteTex) return spriteTex;
+  if (typeof document === 'undefined') {
+    spriteTex = new THREE.DataTexture(new Uint8Array(16), 2, 2);
+    spriteTex.needsUpdate = true;
+    return spriteTex;
+  }
+  const base = (import.meta.env?.BASE_URL as string | undefined) ?? '/';
+  const t = new THREE.TextureLoader().load(`${base}hoa-truc/vfx_sprites.webp`);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  t.generateMipmaps = true;
+  spriteTex = t;
+  return t;
+}
+
 export function artAtlas(): THREE.Texture {
   if (atlas) return atlas;
   if (typeof document === 'undefined') {

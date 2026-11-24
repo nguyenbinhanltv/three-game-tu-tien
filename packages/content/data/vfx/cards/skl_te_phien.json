@@ -27,5 +27,10 @@
   },
   "textures": [],
   "impactFrame": true,
-  "silhouette": "một cột phướn khói dựng đứng cao sau lưng, lá cờ dài uốn hình chữ S bay ngang, chân cột xoắn sợi hồn"
+  "silhouette": "một cột phướn khói dựng đứng cao sau lưng, lá cờ dài uốn hình chữ S bay ngang, chân cột xoắn sợi hồn",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "smoke"
+  ]
 }

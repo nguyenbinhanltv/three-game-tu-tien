@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "một sợi hồn xanh lam sáng uốn chữ S nối từ mục tiêu về người ra chiêu, dọc sợi có vài hạt cầu hồn, nền khói tím đen thấp ở hai đầu"
+  "silhouette": "một sợi hồn xanh lam sáng uốn chữ S nối từ mục tiêu về người ra chiêu, dọc sợi có vài hạt cầu hồn, nền khói tím đen thấp ở hai đầu",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "smoke"
+  ]
 }

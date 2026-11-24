@@ -26,5 +26,10 @@
     "overdraw": 6
   },
   "textures": [],
-  "silhouette": "một quả cầu khói nổ tung thành chùm MẶT HỒN mờ bay tỏa ra như đàn, mỗi mặt kéo đuôi khói về phía tâm nổ"
+  "silhouette": "một quả cầu khói nổ tung thành chùm MẶT HỒN mờ bay tỏa ra như đàn, mỗi mặt kéo đuôi khói về phía tâm nổ",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "smoke"
+  ]
 }

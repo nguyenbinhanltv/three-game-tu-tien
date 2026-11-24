@@ -8,7 +8,7 @@ import { flipNodes } from '../vfx/flipbook';
 import { beamNodes } from '../vfx/loot';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
-import { artNodes, burstNodes, cardNodes, crystalNodes, decalNodes, toonNodes } from '../vfx/stylized';
+import { artNodes, burstNodes, cardNodes, crystalNodes, decalNodes, spriteNodes, toonNodes } from '../vfx/stylized';
 import { trailNodes } from '../vfx/trail';
 import { FLAGS } from '../../base/flags';
 
@@ -70,6 +70,7 @@ export type FxKind =
   | 'decal'
   | 'card'
   | 'art'
+  | 'sprite'
   | 'wind'
   | 'flip';
 
@@ -93,6 +94,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   decal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: true },
   card: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
   art: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.3, fog: false },
+  sprite: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   wind: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.2, fog: false },
   flip: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
 };
@@ -112,6 +114,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   decal: decalNodes,
   card: cardNodes,
   art: artNodes,
+  sprite: spriteNodes,
   wind: windNodes,
   flip: flipNodes,
   dome: (u) => {

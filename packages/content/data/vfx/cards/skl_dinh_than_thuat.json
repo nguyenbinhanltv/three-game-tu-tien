@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "một bàn tay hồn xòe phẳng ấn từ trên xuống ghìm thân mục tiêu, các sợi xích khói quấn quanh thân thành vòng đai nghiêng"
+  "silhouette": "một bàn tay hồn xòe phẳng ấn từ trên xuống ghìm thân mục tiêu, các sợi xích khói quấn quanh thân thành vòng đai nghiêng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "smoke"
+  ]
 }

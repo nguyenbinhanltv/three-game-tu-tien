@@ -6,6 +6,7 @@
 import * as THREE from 'three/webgpu';
 import {
   FLIP_ATLASES,
+  FX_SPRITES,
   fxAwayFromCam,
   fxCamFade,
   fxEventsFor,
@@ -620,7 +621,7 @@ export class FxRunner {
       } else if (ev.follow) {
         this.anchor(c, ev.at ?? 'self', ev.offset, yaw, this.tgtOf(c) ?? tgt, m.position);
       } else m.position.copy(start);
-      if (ev.billboard ?? kind === 'flip') {
+      if (ev.billboard ?? (kind === 'flip' || ev.shape === 'sprite')) {
         // Quay mặt về camera; `rot[2]` xoay thêm trong mặt phẳng hình (nét chém chéo).
         m.quaternion.copy(cam.quaternion);
         if (ev.rot?.[2]) m.quaternion.multiply(_q.setFromAxisAngle(AXIS_Z, ev.rot[2] * DEG));
@@ -651,6 +652,9 @@ export class FxRunner {
             m.fxA.y = erode;
           } else if (kind === 'card') {
             m.fxA.x = Math.min(1.2, (k / Math.max(sweep, 1e-3)) * 1.2);
+            m.fxA.y = erode;
+          } else if (kind === 'sprite') {
+            // Sprite vẽ tay: hiện cả hình ngay, tan theo ăn mòn.
             m.fxA.y = erode;
           } else if (kind === 'burst') {
             m.fxA.x = easeOut(Math.min(1, k * 1.2));
@@ -712,9 +716,11 @@ export class FxRunner {
                   : ev.card === 'fist'
                     ? 7
                     : 0
-            : kind === 'burst' && ev.cross
-              ? 1
-              : 0;
+            : kind === 'sprite'
+              ? Math.max(0, FX_SPRITES.indexOf(ev.sprite ?? 'hon_hand_claw'))
+              : kind === 'burst' && ev.cross
+                ? 1
+                : 0;
     m.fxA.z = ev.seed ?? 0;
   }
 

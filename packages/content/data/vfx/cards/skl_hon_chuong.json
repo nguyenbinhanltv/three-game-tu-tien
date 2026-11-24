@@ -27,5 +27,10 @@
   },
   "textures": [],
   "impactFrame": true,
-  "silhouette": "một bức màn khói cong như tấm vải khổng lồ bao quanh thân từ vai tới chân, gấp nếp, có một MẶT HỒN mờ hiện ra trong nếp vải"
+  "silhouette": "một bức màn khói cong như tấm vải khổng lồ bao quanh thân từ vai tới chân, gấp nếp, có một MẶT HỒN mờ hiện ra trong nếp vải",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "smoke"
+  ]
 }

@@ -26,5 +26,10 @@
     "overdraw": 6
   },
   "textures": [],
-  "silhouette": "ba bóng lính cầm giáo bằng khói đứng thành thế tam giác quanh người, thân dưới tan thành đuôi khói cuộn, mỗi lính hai điểm mắt sáng"
+  "silhouette": "ba bóng lính cầm giáo bằng khói đứng thành thế tam giác quanh người, thân dưới tan thành đuôi khói cuộn, mỗi lính hai điểm mắt sáng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "smoke"
+  ]
 }

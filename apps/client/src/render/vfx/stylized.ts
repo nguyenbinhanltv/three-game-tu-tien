@@ -29,7 +29,7 @@ import {
 } from 'three/tsl';
 import { hash21, vnoise, type FxUniforms, type N } from './common';
 import { cardTexture } from './cards';
-import { artAtlas, ART_COUNT } from './art';
+import { artAtlas, ART_COUNT, spriteAtlas, SPRITE_COLS, SPRITE_ROWS } from './art';
 
 /**
  * Thư viện shader TSL "vẽ tay, 2D trong 3D" (VFX-V0). Mọi hiệu ứng chiêu mới ghép từ các mảnh này:
@@ -545,4 +545,40 @@ export function artNodes(U: FxUniforms): { color: N; opacity: N } {
   // Ngưỡng alpha: bỏ lớp sương alpha thấp của ảnh gốc (nếu không lớp bóng sẫm lộ thành hình chữ nhật).
   const alpha = smoothstep(0.1, 0.45, t.a);
   return { color, opacity: U.opacity.mul(alpha).mul(edge).mul(reveal) };
+}
+
+/**
+ * `sprite` (Họa Pháp Lô 2): sprite vẽ tay của Codex (atlas `public/hoa-truc/vfx_sprites.webp`, `render/vfx/art.ts`), quay mặt về camera, KHÔNG gộp instance.
+ * `fxA` = (-, tan 0..1,1, seed, ô sprite 0..15). Giữ màu vẽ tay (tím/lam) nhưng kéo lõi tối xuống theo độ sáng để đọc được trên nền đá trắng;
+ * phần sáng nhất của tranh + mép đang tan ăn mòn có ánh viền lạnh theo màu viền của nhánh (`fxB.xyz`).
+ */
+export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
+  const q = uv();
+  const idx = U.a.w;
+  const one = float(1);
+  const sk = idx;
+  const sCol = sk.sub(floor(sk.div(SPRITE_COLS)).mul(SPRITE_COLS));
+  const sRow = floor(sk.div(SPRITE_COLS));
+  const ts = texture(spriteAtlas(), vec2(q.x.add(sCol).div(SPRITE_COLS), q.y.add(float(SPRITE_ROWS - 1).sub(sRow)).div(SPRITE_ROWS)));
+  const spLum = dot(ts.rgb, vec3(0.3, 0.59, 0.11));
+  const spTier = smoothstep(0.28, 0.85, spLum.sqrt());
+  const spBody = U.color;
+  const spRim = U.b.xyz;
+  const spE = vnoise(q.mul(vec2(9, 12)).add(U.a.z.mul(7)))
+    .mul(0.7)
+    .add(q.y.mul(0.3));
+  const spAlive = dissolve(spE, U.a.y, 0.07);
+  const spEdge = one.sub(smoothstep(U.a.y, U.a.y.add(0.1), spE)).mul(step(0.02, U.a.y));
+  // Giữ màu vẽ tay (tím/lam), kéo lõi tối xuống theo độ sáng để đọc được trên nền đá trắng; viền sáng lạnh nhờ phần sáng của tranh + ánh viền khi tan.
+  const spGrey = vec3(spLum, spLum, spLum);
+  const spCol = min(
+    mix(spGrey, ts.rgb, 0.92)
+      .mul(mix(float(0.42), float(1.3), spTier))
+      .mul(vec3(1.1, 0.9, 1.0))
+      .add(spBody.mul(0.06))
+      .add(spRim.mul(spEdge.mul(0.7).add(smoothstep(0.78, 0.98, spLum.sqrt()).mul(0.25)))),
+    U.maxHdr,
+  );
+  const spOpacity = U.opacity.mul(smoothstep(0.02, 0.6, ts.a)).mul(spAlive);
+  return { color: spCol, opacity: spOpacity };
 }
