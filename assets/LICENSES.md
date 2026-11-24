@@ -4,7 +4,7 @@
 
 ## painted-valley: kỹ thuật phong cách Họa Cảnh (2026-11-24)
 
-Phong cách `?style=painted` (bảng màu lit/shade, nét cọ theo dốc, núi xa và mây vẽ một lần, lớp hoàn thiện Kuwahara, nhân vật cel + viền mực) dựa trên kỹ thuật và code của dự án painted-valley, **viết lại bằng TSL** (nguồn là WebGL2/GLSL, không chép GLSL). Code nguồn: MIT, © 2026 Patch. Art của nguồn: CC0 1.0 (không mang sang). **Không dùng** năm âm thanh Sonniss của bản demo gốc (không được phát tán) và không tái tạo cảnh hay nhân vật của phim nào; không commit ảnh chụp/ảnh tham khảo. Mỗi file dựa trực tiếp trên nguồn có dòng đầu ghi rõ. Chi tiết: `docs/handbook/painted.md`.
+Phong cách `?style=painted` (bảng màu lit/shade, nét cọ theo dốc, núi xa và mây vẽ một lần, lớp hoàn thiện Kuwahara, nhân vật cel + viền mực) dựa trên kỹ thuật và code của dự án painted-valley, **viết lại bằng TSL** (nguồn là WebGL2/GLSL, không chép GLSL). Code nguồn: MIT, © 2026 Patch. Art của nguồn: CC0 1.0 (không mang sang). **Không dùng** năm âm thanh Sonniss của bản demo gốc (không được phát tán) và không tái tạo cảnh hay nhân vật của phim nào; không commit ảnh chụp/ảnh tham khảo. Mỗi file dựa trực tiếp trên nguồn có dòng đầu ghi rõ. Chi tiết: `docs/handbook/painted.md` (mục "Nguyên tắc Họa Cảnh" rút các bài học từ nguồn; clip chuyển tiếp của nguồn là Quaternius Universal Animation Library CC0 và clip riêng của Patch CC0, chỉ tham khảo ý, ta không nhập asset).
 
 ```
 MIT License

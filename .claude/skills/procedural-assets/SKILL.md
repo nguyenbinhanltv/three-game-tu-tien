@@ -46,3 +46,7 @@ Cột "Hiện có" ghi đúng chỗ code đang nằm; cột "Hướng tới" là
 ## Kiểm tra bằng mắt
 
 - Sau khi sinh, mở trang xem asset `?mute=1&viewer=asset&file=/assets/<id>.<hash>.glb` khi `pnpm dev` đang chạy (so với người chuẩn 1,7m, xem tam giác, draw call, clip) và chụp ảnh nhìn trước khi báo xong. Chưa có `render_preview.py` hay ảnh xem trước tự động.
+
+## Họa Cảnh (`?style=painted`)
+
+Cảnh xa vẽ MỘT lần: núi nướng vào dải sơn, mây đắp khối nướng vào cubemap, đồng xa một texture cộng thẻ cây, đồi lùi dần trong sương; không sinh chi tiết mịn ở xa (lấp lánh). Texture sinh bằng code lúc chạy khi được; asset nhị phân mới qua `pnpm assets:push`, tên có hash. Chi tiết: `docs/handbook/painted.md`.
