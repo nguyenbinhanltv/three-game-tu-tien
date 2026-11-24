@@ -152,6 +152,21 @@ import fx_mon_boom_circle__boss_dia_mach_long__chant from '../data/fx/mon_boom_c
 import fx_mon_boom_circle__boss_huyet_lang_vuong__slam from '../data/fx/mon_boom_circle__boss_huyet_lang_vuong__slam.json';
 import fx_mon_boom_circle__boss_kiem_khoi__slam from '../data/fx/mon_boom_circle__boss_kiem_khoi__slam.json';
 import fx_mon_boom_circle__boss_thach_tam_khoi_vuong__leap from '../data/fx/mon_boom_circle__boss_thach_tam_khoi_vuong__leap.json';
+import fx_mon_boom_circle__boss_kinh_nguyet_chan_quan__slam from '../data/fx/mon_boom_circle__boss_kinh_nguyet_chan_quan__slam.json';
+import fx_mon_boom_circle__boss_van_hai_kinh_vuong__chant from '../data/fx/mon_boom_circle__boss_van_hai_kinh_vuong__chant.json';
+import fx_mon_boom_circle__boss_van_hai_kinh_vuong__slam from '../data/fx/mon_boom_circle__boss_van_hai_kinh_vuong__slam.json';
+import fx_mon_boom_cone__boss_kinh_nguyet_chan_quan__sweep from '../data/fx/mon_boom_cone__boss_kinh_nguyet_chan_quan__sweep.json';
+import fx_mon_boom_cone__boss_van_hai_kinh_vuong__sweep from '../data/fx/mon_boom_cone__boss_van_hai_kinh_vuong__sweep.json';
+import fx_mon_boom_line__boss_kinh_nguyet_chan_quan__line from '../data/fx/mon_boom_line__boss_kinh_nguyet_chan_quan__line.json';
+import fx_mon_boom_line__boss_van_hai_kinh_vuong__line from '../data/fx/mon_boom_line__boss_van_hai_kinh_vuong__line.json';
+import fx_mon_cast__boss_van_hai_kinh_vuong from '../data/fx/mon_cast__boss_van_hai_kinh_vuong.json';
+import fx_mon_warn__boss_kinh_nguyet_chan_quan__slam from '../data/fx/mon_warn__boss_kinh_nguyet_chan_quan__slam.json';
+import fx_mon_warn__boss_van_hai_kinh_vuong__chant from '../data/fx/mon_warn__boss_van_hai_kinh_vuong__chant.json';
+import fx_mon_warn__boss_van_hai_kinh_vuong__slam from '../data/fx/mon_warn__boss_van_hai_kinh_vuong__slam.json';
+import fx_mon_warn_cone__boss_kinh_nguyet_chan_quan__sweep from '../data/fx/mon_warn_cone__boss_kinh_nguyet_chan_quan__sweep.json';
+import fx_mon_warn_cone__boss_van_hai_kinh_vuong__sweep from '../data/fx/mon_warn_cone__boss_van_hai_kinh_vuong__sweep.json';
+import fx_mon_warn_line__boss_kinh_nguyet_chan_quan__line from '../data/fx/mon_warn_line__boss_kinh_nguyet_chan_quan__line.json';
+import fx_mon_warn_line__boss_van_hai_kinh_vuong__line from '../data/fx/mon_warn_line__boss_van_hai_kinh_vuong__line.json';
 import fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__burrow from '../data/fx/mon_boom_circle__boss_thon_mach_ngo_cong_vuong__burrow.json';
 import fx_mon_boom_cone__boss_thon_mach_ngo_cong_vuong__emerge from '../data/fx/mon_boom_cone__boss_thon_mach_ngo_cong_vuong__emerge.json';
 import fx_mon_warn__boss_thon_mach_ngo_cong_vuong__burrow from '../data/fx/mon_warn__boss_thon_mach_ngo_cong_vuong__burrow.json';
@@ -966,6 +981,21 @@ export const MON_FX_TIMELINES = [
   fx_mon_boom_circle__boss_huyet_lang_vuong__slam,
   fx_mon_boom_circle__boss_kiem_khoi__slam,
   fx_mon_boom_circle__boss_thach_tam_khoi_vuong__leap,
+  fx_mon_boom_circle__boss_kinh_nguyet_chan_quan__slam,
+  fx_mon_boom_circle__boss_van_hai_kinh_vuong__chant,
+  fx_mon_boom_circle__boss_van_hai_kinh_vuong__slam,
+  fx_mon_boom_cone__boss_kinh_nguyet_chan_quan__sweep,
+  fx_mon_boom_cone__boss_van_hai_kinh_vuong__sweep,
+  fx_mon_boom_line__boss_kinh_nguyet_chan_quan__line,
+  fx_mon_boom_line__boss_van_hai_kinh_vuong__line,
+  fx_mon_cast__boss_van_hai_kinh_vuong,
+  fx_mon_warn__boss_kinh_nguyet_chan_quan__slam,
+  fx_mon_warn__boss_van_hai_kinh_vuong__chant,
+  fx_mon_warn__boss_van_hai_kinh_vuong__slam,
+  fx_mon_warn_cone__boss_kinh_nguyet_chan_quan__sweep,
+  fx_mon_warn_cone__boss_van_hai_kinh_vuong__sweep,
+  fx_mon_warn_line__boss_kinh_nguyet_chan_quan__line,
+  fx_mon_warn_line__boss_van_hai_kinh_vuong__line,
   fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__burrow,
   fx_mon_boom_cone__boss_thon_mach_ngo_cong_vuong__emerge,
   fx_mon_warn__boss_thon_mach_ngo_cong_vuong__burrow,
