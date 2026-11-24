@@ -178,13 +178,14 @@ const SPEC = {
   skl_kiem_vu_tam_diep: () => [
     ...[gather('kiem_arcs3', { size: 3, off: [0, 1.2, 0] })],
     pullIn('target', [0, 1.2, 0], -0.22),
-    strike('kiem_slash', { size: 4.2, off: [0, 1.2, 0], t: 0, dur: 0.3, rot: [0, 0, 0], erodeFrom: 0.2 }),
-    strike('kiem_slash', { size: 4.4, off: [0, 1.2, 0], t: 0.16, dur: 0.3, rot: [0, 0, 58], erodeFrom: 0.2 }),
-    strike('kiem_arcs3', { size: 5.2, off: [0, 1.2, 0], t: 0.32, dur: 0.6, rot: [0, 0, -50], erodeFrom: 0.2 }),
-    flash('target', [0, 1.2, 0], 2.4, 0.34),
-    sprite('kiem_seal', { t: 0.4, dur: 0.6, off: [0, 2.4, 0], size: 1.8, alpha: 0.9, erodeFrom: 0.3 }),
-    scorch('target', [0, 0.02, 0], 1.8, 0.3),
-    after('target', [0, 1.3, 0], 2.4, 0.4, 1.3),
+    // gắn `hit` 0/1/2: mỗi nhát chỉ phát ở mốc trúng của nó (server báo hit marks), nét cuối to nhất + Kiếm ấn
+    strike('kiem_slash', { size: 4.2, off: [0, 1.2, 0], t: 0, dur: 0.3, rot: [0, 0, 0], erodeFrom: 0.2, hit: 0 }),
+    strike('kiem_slash', { size: 4.4, off: [0, 1.2, 0], t: 0, dur: 0.3, rot: [0, 0, 58], erodeFrom: 0.2, hit: 1 }),
+    strike('kiem_arcs3', { size: 5.2, off: [0, 1.2, 0], t: 0, dur: 0.6, rot: [0, 0, -50], erodeFrom: 0.2, hit: 2 }),
+    flash('target', [0, 1.2, 0], 2.4, 0.02, { hit: 2 }),
+    sprite('kiem_seal', { t: 0.08, dur: 0.6, off: [0, 2.4, 0], size: 1.8, alpha: 0.9, erodeFrom: 0.3, hit: 2 }),
+    scorch('target', [0, 0.02, 0], 1.8, 0.0),
+    after('target', [0, 1.3, 0], 2.4, 0.2, 1.3),
   ],
   // Kiếm Đan Bản Mệnh: viên kiếm đan sáng lượn trên vòng quỹ đạo mực nghiêng quanh thân, mỗi nhịp phóng một vệt đâm.
   skl_kiem_dan_ban_menh: () => [

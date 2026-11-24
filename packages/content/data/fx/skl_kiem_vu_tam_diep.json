@@ -130,11 +130,12 @@
     0,
     0,
     0
-   ]
+   ],
+   "hit": 0
   },
   {
    "type": "mesh",
-   "t": 0.16,
+   "t": 0,
    "dur": 0.3,
    "at": "target",
    "sweep": 0,
@@ -158,11 +159,12 @@
     0,
     0,
     58
-   ]
+   ],
+   "hit": 1
   },
   {
    "type": "mesh",
-   "t": 0.32,
+   "t": 0,
    "dur": 0.6,
    "at": "target",
    "sweep": 0,
@@ -186,11 +188,12 @@
     0,
     0,
     -50
-   ]
+   ],
+   "hit": 2
   },
   {
    "type": "mesh",
-   "t": 0.34,
+   "t": 0.02,
    "dur": 0.18,
    "at": "target",
    "sweep": 0,
@@ -209,11 +212,12 @@
     0
    ],
    "scale": 2.16,
-   "scaleTo": 2.7
+   "scaleTo": 2.7,
+   "hit": 2
   },
   {
    "type": "mesh",
-   "t": 0.4,
+   "t": 0.08,
    "dur": 0.6,
    "at": "target",
    "sweep": 0,
@@ -232,12 +236,13 @@
     0
    ],
    "scale": 1.62,
-   "scaleTo": 1.62
+   "scaleTo": 1.62,
+   "hit": 2
   },
   {
    "type": "decal",
    "tex": "scorch",
-   "t": 0.3,
+   "t": 0,
    "r": 1.8,
    "dur": 1.6,
    "at": "target",
@@ -253,7 +258,7 @@
   },
   {
    "type": "mesh",
-   "t": 0.4,
+   "t": 0.2,
    "dur": 0.6,
    "at": "target",
    "sweep": 0,
