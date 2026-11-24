@@ -12,6 +12,7 @@ import {
   idleDue,
   idlePoseFor,
   leanBoost,
+  LocoImpulse,
 } from './animFx';
 import { closeCam, keyMoments } from '../debug/animLabMath';
 
@@ -82,5 +83,83 @@ describe('Thân Pháp T2/T3 (di chuyển, idle)', () => {
     expect(idleDue(6.9)).toBe(false);
     expect(idleDue(7)).toBe(true);
     expect(POSE.has(IDLE_POSES.drawn) && POSE.has(IDLE_POSES.free)).toBe(true);
+  });
+});
+
+describe('Thân Pháp T2: xung bắt đầu/dừng/pivot', () => {
+  const run = (li: LocoImpulse, sec: number, speed: number, yaw = 0) => {
+    let ev: string | null = null;
+    for (let i = 0; i < Math.round(sec * 60); i++) ev = li.update(1 / 60, speed, yaw) ?? ev;
+    return ev;
+  };
+  it('bắt đầu chạy: nhận sự kiện start, chúi tới rồi tắt về 0', () => {
+    const li = new LocoImpulse();
+    run(li, 0.5, 0);
+    expect(li.update(1 / 60, 3, 0)).toBe('start');
+    let peak = 0;
+    for (let i = 0; i < 30; i++) {
+      li.update(1 / 60, 3, 0);
+      peak = Math.max(peak, li.pitch);
+    }
+    expect(peak).toBeGreaterThan(0.02);
+    run(li, 2, 3);
+    expect(Math.abs(li.pitch)).toBeLessThan(1e-3);
+  });
+  it('dừng từ tốc độ cao: ngả ra sau, mạnh hơn khi chạy nhanh', () => {
+    const lo = new LocoImpulse();
+    run(lo, 1, 2.6);
+    expect(lo.update(1 / 60, 0, 0)).toBe('stop');
+    let lo_min = 0;
+    for (let i = 0; i < 40; i++) {
+      lo.update(1 / 60, 0, 0);
+      lo_min = Math.min(lo_min, lo.pitch);
+    }
+    const hi = new LocoImpulse();
+    run(hi, 1, 5.4);
+    hi.update(1 / 60, 0, 0);
+    let hi_min = 0;
+    for (let i = 0; i < 40; i++) {
+      hi.update(1 / 60, 0, 0);
+      hi_min = Math.min(hi_min, hi.pitch);
+    }
+    expect(lo_min).toBeLessThan(0);
+    expect(hi_min).toBeLessThan(lo_min);
+  });
+  it('đi bộ chậm dừng lại không có sự kiện dừng', () => {
+    const li = new LocoImpulse();
+    run(li, 1, 1.2);
+    expect(li.update(1 / 60, 0, 0)).toBeNull();
+  });
+  it('pivot: xoay mạnh khi chạy nghiêng ngược chiều, có hồi 0,35 s', () => {
+    const li = new LocoImpulse();
+    run(li, 0.5, 5);
+    expect(li.update(1 / 60, 5, 7)).toBe('pivot');
+    expect(li.update(1 / 60, 5, 7)).toBeNull();
+    let r = 0;
+    for (let i = 0; i < 20; i++) {
+      li.update(1 / 60, 5, 0);
+      r = Math.min(r, li.roll);
+    }
+    expect(r).toBeLessThan(-0.01);
+    run(li, 2, 5);
+    expect(Math.abs(li.roll)).toBeLessThan(1e-3);
+  });
+  it('dt lớn (0,1 s, ~10 fps) vẫn ổn định: hữu hạn và về gần 0', () => {
+    const li = new LocoImpulse();
+    li.kick('stop', 1);
+    li.kick('start', 1);
+    li.kick('pivot', 1, 1);
+    for (let i = 0; i < 200; i++) {
+      li.update(0.1, 0, 0);
+      expect(Number.isFinite(li.pitch + li.roll + li.dip)).toBe(true);
+    }
+    expect(Math.abs(li.pitch) + Math.abs(li.roll) + Math.abs(li.dip)).toBeLessThan(1e-3);
+  });
+  it('reset về nghỉ', () => {
+    const li = new LocoImpulse();
+    li.kick('stop', 1);
+    li.update(1 / 60, 0, 0);
+    li.reset();
+    expect([li.pitch, li.roll, li.dip]).toEqual([0, 0, 0]);
   });
 });
