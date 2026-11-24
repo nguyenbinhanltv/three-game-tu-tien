@@ -71,10 +71,10 @@ interface Ring {
 }
 /** `mid` và `wide` của nguồn (`near` không bao giờ hiện ở camera chéo cách 20 m; `far` là mảng đất vẽ sẵn). */
 const RINGS: Ring[] = [
-  { cell: 0.09, tile: 7.2, tiles: 6, rows: 3, fade: [2.8, 6, 13, 21.6], width: 2.0, tops: 0.05 },
-  { cell: 0.2, tile: 16, tiles: 6, rows: 3, fade: [13, 21.6, 34, 48], width: 4.6, tops: 0.22 },
+  { cell: 0.11, tile: 6.6, tiles: 7, rows: 3, fade: [2.8, 6, 13, 21.6], width: 2.4, tops: 0.05 },
+  { cell: 0.22, tile: 17.6, tiles: 5, rows: 3, fade: [13, 21.6, 34, 48], width: 5.0, tops: 0.22 },
 ];
-const FLOWER = { cell: 0.4, tile: 12, tiles: 5, fade: [24, 32] as const };
+const FLOWER = { cell: 0.4, tile: 12, tiles: 4, fade: [24, 32] as const };
 
 export const paintedGrassParams = {
   /** Nhân sáng của lá cỏ và hoa sau đèn PBR (chỉnh theo ảnh đối chiếu cùng góc). */
@@ -353,7 +353,9 @@ export class PaintedGrass implements GrassLayer {
       .add(sc.sub(0.6).mul(0.1))
       .add(gust.mul(0.1 * Math.min(U / 6, 1)));
     // chỉ vài lá được vẽ: một trong hai chục là nét sẫm hơn, một trong ba chục hứng nắng
-    tone = tone.add(select(q.z.lessThan(0.045), float(-0.26), select(q.z.greaterThan(0.965), float(0.18), float(0))));
+    tone = tone.add(select(q.z.lessThan(0.12), float(-0.3), select(q.z.greaterThan(0.9), float(0.2), float(0))));
+    // khóm cỏ đậm rải không đều: một phần ô ~44 cm là khóm sẫm; thêm mảng đậm/nhạt vài mét
+    tone = tone.sub(step(0.8, cl.x).mul(0.24)).add(this.noise(xz.div(4.5)).g.sub(0.5).mul(0.5));
     tone = tone.add(slopeRel(N).sub(0.5).mul(0.6));
     const albedo: Node = meadowGreen(tone)
       .mul(mix(vec3(1), meadowTint(xz, { lod0: true }), 0.5))
@@ -381,7 +383,7 @@ export class PaintedGrass implements GrassLayer {
     const chance: Node = drift
       .mul(0.84)
       .add(0.16)
-      .mul(0.4)
+      .mul(1.0)
       .mul(step(0.5, clamp(growth, 0, 1)));
     const live: Node = step(q.x, chance).mul(float(1).sub(smoothstep(FLOWER.fade[0], FLOWER.fade[1], dist.add(q.y.mul(3)))));
     // một loài mỗi đám, thỉnh thoảng một cây lạc
@@ -424,7 +426,7 @@ export class PaintedGrass implements GrassLayer {
     const axis: Node = normalize(vec3(L.x.mul(0.5).add(sd.x.mul(0.25)), sd.y.mul(0.25).add(1.1), L.y.mul(0.5).add(sd.z.mul(0.25))));
     const u: Node = normalize(cross(axis, vec3(0.31, 0, 0.95)));
     const v: Node = cross(axis, u);
-    const size: Node = radius.mul(mix(0.9, 1.25, r.z)).mul(live);
+    const size: Node = radius.mul(mix(0.95, 1.3, r.z)).mul(live);
     const world: Node = at.add(u.mul(positionGeometry.x).add(v.mul(positionGeometry.y)).mul(size));
     const rad: Node = length(positionGeometry.xy).toVarying();
     const petalV: Node = petal.toVarying();
@@ -432,7 +434,7 @@ export class PaintedGrass implements GrassLayer {
     const m = new THREE.MeshStandardNodeMaterial({ roughness: 1, metalness: 0, side: THREE.DoubleSide });
     m.name = 'env-grass-painted-flowers';
     m.positionNode = world.sub(modelPosition);
-    m.colorNode = mix(vec3(0.75, 0.5, 0.03), petalV, smoothstep(0.12, 0.4, rad)).mul(paintedGrassParams.gain);
+    m.colorNode = mix(vec3(0.75, 0.5, 0.03), petalV, smoothstep(0.12, 0.4, rad)).mul(1.7);
     m.normalNode = cameraViewMatrix.transformDirection(vec3(0, 1, 0));
     return m;
   }

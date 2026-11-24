@@ -1,4 +1,4 @@
-import { float, luminance, mix, screenSize, screenUV, smoothstep, vec2, vec3 } from 'three/tsl';
+import { float, luminance, mix, screenSize, screenUV, smoothstep, uniform, vec2, vec3 } from 'three/tsl';
 import type { Node } from './meadow';
 
 /**
@@ -10,6 +10,9 @@ import type { Node } from './meadow';
  * Khác nguồn: nguồn bỏ qua phần đã "vẽ rồi" theo alpha < 0,6 của đích HDR và giảm bán kính theo độ sâu. Ở đây (chưa có mặt nạ alpha riêng,
  * sẽ làm ở bước nhân vật cel): bỏ qua trời (độ sâu ≈ 1) và điểm sáng HDR (hiệu ứng chiêu/bloom, độ sáng > ~1,3) để VFX không bị nhòe.
  */
+/** Mức trộn Kuwahara với ảnh gốc (0 = gốc, 1 = Kuwahara thuần): giữ lại nét lá, chỉ làm tròn vừa phải. */
+export const paintedFinishParams = { strength: uniform(0.55) };
+
 export interface FinishIn {
   /** Node màu cảnh HDR (TextureNode của pass cảnh), lấy mẫu bằng `.sample(uv)`. */
   color: Node;
@@ -65,5 +68,5 @@ export function paintedFinish({ color, depth, exposure, base, radius }: FinishIn
   const painted: Node = o.div(float(1).sub(o.min(0.985)));
   const sky: Node = smoothstep(0.9995, 0.99995, depth.sample(screenUV).r);
   const glow: Node = smoothstep(1.3, 2.2, luminance(base));
-  return mix(painted, base, sky.max(glow));
+  return mix(mix(base, painted, paintedFinishParams.strength), base, sky.max(glow));
 }

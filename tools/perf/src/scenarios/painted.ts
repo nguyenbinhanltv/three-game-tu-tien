@@ -2,7 +2,7 @@
 //   pnpm shots painted --out <thư mục tuyệt đối> [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--styles off,painted] [--preset high] [--renderer webgpu|webgl2]
 // Ảnh: <style>-<view>-<mood>-<điểm>.png; số đo: perf.json (drawCalls, triangles, textures, frameMs, heapMB mỗi điểm).
 import { sleep } from '../lib/devserver';
-import { list, opt } from '../lib/env';
+import { list, num, opt } from '../lib/env';
 import { gm, perfSample, tp } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
@@ -19,7 +19,8 @@ const SIZES: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': 
 export default {
   name: 'painted',
   desc: 'Họa Cảnh: ảnh so sánh mặc định | ?style=painted ở Thung Lũng Thanh Phong (ngày/đêm × 720p/1080p) + số đo',
-  usage: '[--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--preset high]',
+  usage:
+    '[--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--preset high] [--burst N] [--spawn <id quái> --spawn-n N]',
   async run(r) {
     const only = list('--points', 'all');
     const pts = POINTS.filter((p) => only.includes('all') || only.includes(p.name));
@@ -39,11 +40,17 @@ export default {
           await gm(page, 'level 15', 2500);
           await gm(page, 'god on', 2500);
           await gm(page, 'killall', 2500);
+          // --spawn <id quái> [--spawn-n N]: đặt quái quanh người để bắt chiêu vùng (telegraph) trên nền cỏ
+          const spawn = opt('--spawn', '');
+          if (spawn) await gm(page, `spawn ${spawn} ${num('--spawn-n', 3)}`, 2500);
           let first = true;
           for (const p of pts) {
             await tp(page, p.x, p.z);
             await sleep(first ? 3000 : 0);
             await snap(page, r.out, `${style}-${view}-${mood}-${p.name}.png`, { wait: first ? 6000 : 4000 });
+            // --burst N: thêm N khung cách nhau ~2,5 s (bắt hiệu ứng thoáng qua như chiêu vùng của quái)
+            for (let b = 1; b < num('--burst', 1); b++)
+              await snap(page, r.out, `${style}-${view}-${mood}-${p.name}-b${b}.png`, { wait: 2500 });
             first = false;
             perf[`${style}-${view}-${mood}-${p.name}`] = await perfSample(page);
           }

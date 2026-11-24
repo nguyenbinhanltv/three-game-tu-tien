@@ -38,6 +38,8 @@ Lần đầu (bụi cỏ hai tông + nét cọ xoay theo dốc) bị người d�
 - `render/painted/ground.ts`: màu đất = `meadowGreen` + `meadowTint` + `paintGround`; đường mòn/đất khô be nhạt.
 - `render/painted/brush.ts`: texture nét cọ dựng như `strokes.js` (mảng lớn, nét, chấm); mảng lớn là thứ cho cỏ các mảng sáng/tối nhiều mét.
 - `render/painted/kuwahara.ts` + `post.ts` (P5 rút gọn): Kuwahara bốn phần tư, `?paint=0..3` (mặc định 1), bỏ qua trời (độ sâu) và điểm sáng HDR (VFX). Chưa có mặt nạ alpha cho nhân vật (làm ở P7).
+- Nét lá (lần 3): lá tối ở gốc, sáng ở ngọn (`mix(0.5, 1.12, up)`), 12% lá là nét sẫm / 10% hứng nắng, khóm sẫm theo ô 44 cm, mảng đậm/nhạt vài mét; hoa dày (xác suất ×2,5, to hơn); Kuwahara trộn 55% với ảnh gốc (`paintedFinishParams.strength`) để không xóa nét lá.
+- Ngân sách: vòng `mid` cell 0,11 m ô 6,6 m; `wide` cell 0,22 m ô 17,6 m; hoa 4×4 ô. Tam giác 1,32–1,43 M, draw call +38..54.
 - Chỉnh nhìn: `paintedGroundParams.gain/.tint`, `paintedGrassParams.gain`.
 - Khác nguồn: bỏ lửa/cắt/giẫm; nhiễu `tNoiseHi` thay bằng nhiễu của ta; ánh sáng qua đèn PBR của cảnh (có bóng, theo mood) thay cho `meadowLight`.
-- Chụp so sánh: `pnpm shots painted --out <thư mục tuyệt đối> [--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points thunglung,giua,suoi]` (Thung Lũng Thanh Phong); ghi `perf.json`. Ảnh tham chiếu painted-valley chỉ để ở artifact phiên, KHÔNG commit.
+- Chụp so sánh: `pnpm shots painted --out <thư mục tuyệt đối> [--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points thunglung,giua,suoi] [--burst N] [--spawn <id quái> --spawn-n N]` (Thung Lũng Thanh Phong); ghi `perf.json`. Ảnh tham chiếu painted-valley chỉ để ở artifact phiên, KHÔNG commit.
