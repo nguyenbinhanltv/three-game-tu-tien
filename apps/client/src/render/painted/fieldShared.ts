@@ -33,7 +33,7 @@ export const LIGHT = {
 
 /** Vòng lá của game: cùng công thức, thưa hơn và ít ô hơn so với nguồn (`RINGS`) để giữ ngân sách tam giác. */
 export const GAME_RINGS: Ring[] = RINGS.filter((r) => r.name === 'mid' || r.name === 'wide').map((r) =>
-  r.name === 'mid' ? { ...r, cell: 0.15, tile: 9.6, tiles: 5, width: 2.9 } : { ...r, cell: 0.4, tile: 25.6, tiles: 4, width: 8 },
+  r.name === 'mid' ? { ...r, cell: 0.15, tile: 9.6, tiles: 5, width: 2.9 } : { ...r, cell: 0.6, tile: 25.6, tiles: 4, width: 11 },
 );
 
 let singleton: RefField | null = null;
