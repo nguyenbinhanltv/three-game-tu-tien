@@ -356,6 +356,10 @@ Số liệu thật lấy ở M0-3 và đo lại ở M3-9.
 3. Cập nhật bảng 4.1 (màu) hoặc 5.1 (chỉnh màu) trong tài liệu này.
 4. Nếu đổi khối `grading`, cập nhật `post.ts` (M1-6) trong cùng commit.
 
+## 12. Họa Cảnh: hướng phụ cho `?style=painted` và bản đồ làm mới
+
+Hướng mặc định của game vẫn là bán tả thực (mục 0 đến 11, quyết định 1). Ngoài ra có một hướng PHỤ, nền hoạt hình vẽ tay, chỉ bật bằng `?style=painted` (pilot Vân Lam) và áp cho các bản đồ làm mới theo hướng này; người dùng đã quyết (2026-11-25): xong trên toàn bộ bản đồ thì thành mặc định và gỡ nguồn cũ (P10, P11). Nguyên tắc (ít tông và một bảng màu chung, không nhiễu hay texture ảnh chụp, cảnh xa vẽ một lần, cỏ chi tiết chỉ vòng gần, hậu kỳ tối giản, người cel với viền mực chờ người dùng quyết, clip chuyển tiếp, một hướng thống nhất) ở `docs/handbook/painted.md`, mục "Nguyên tắc Họa Cảnh". Trong chế độ này các mục 3 (vật liệu PBR), 5 (ACES, chỉnh màu, hạt phim) và 8 (những điều cấm về cel và viền mực) KHÔNG áp dụng cho cảnh nền; nhân vật vẫn theo model v3 đã duyệt cho tới khi người dùng quyết ở P7.
+
 ## 11. Nhật ký thay đổi
 
 | Ngày | Phiên bản | Thay đổi |
@@ -365,3 +369,4 @@ Số liệu thật lấy ở M0-3 và đo lại ở M3-9.
 | 2026-11-16 | 3 | Mục 7: chốt ngôn ngữ UI (nền mực `#0D1117` 80%, viền kim `#C8A96E`, ngọc `#38BDF8`), phóng UI theo màn hình |
 | 2026-11-16 | 3 | Mục 5: lớp sương xa (`fogHaze`), viền sáng nhân vật (`rim`), trời độ kiếp lam đêm thay tím |
 | 2026-11-15 | 3 | **Đổi hướng**: bán tả thực điện ảnh, tỉ lệ 1:7, PBR cách điệu, tông sương sớm (ngọc lam + nắng vàng); bảng màu thành bảng tâm trạng (không ép texture), thay khối `toon` bằng `grading`; người chơi 15–25 nghìn tam giác; chỉnh sắc 6 màu áo |
+| 2026-11-25 | 3 | Mục 12: hướng phụ Họa Cảnh (`?style=painted`), nguyên tắc ở handbook painted; mặc định chưa đổi |

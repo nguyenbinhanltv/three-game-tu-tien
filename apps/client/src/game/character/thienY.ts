@@ -155,9 +155,10 @@ export class ClothBudget {
   /** Tổng ms vải mỗi khung (trung bình trượt) và lớn nhất một khung, để đo ngân sách thật. */
   avg = 0;
   max = 0;
+  /** `maxLagS` 0,12 s (từ 0,08): với bộ vải nặng (Thần Tạng) lệnh ép chạy sau 80 ms làm tổng vượt 0,5 ms với 10 nhân vật (đo 0,60); 0,12 s cho 0,36–0,44 ms. */
   constructor(
     readonly budgetMs = 0.4,
-    readonly maxLagS = 0.08,
+    readonly maxLagS = 0.12,
     private now: () => number = () => performance.now(),
   ) {}
   /** Được chạy lúc này không? `pendingS`: dt đã dồn do bị hoãn; `estMs`: chi phí ước tính của lần chạy (trung bình trượt của chính nó). Nhân vật đầu tiên mỗi khung luôn được chạy. */
