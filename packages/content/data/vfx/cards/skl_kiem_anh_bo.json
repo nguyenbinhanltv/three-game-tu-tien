@@ -1,11 +1,12 @@
 {
   "skillId": "skl_kiem_anh_bo",
-  "idea": "Kiếm Ảnh Bộ: bóng kiếm lướt 8 m: một hàng 4–5 ảnh thanh kiếm đứng nghiêng mờ dần xếp nối nhau dọc đường lướt (như ảnh nhoè của một thanh kiếm đang bay ngang), vệt mực teal tối ở giữa, điểm dừng sát mục tiêu bật một nhát chớp ngang hình chữ thập kiếm. Màu: lõi LAM LỤC TỐI (teal đậm #0A3F5E) ở tâm vệt, thân XANH NGỌC/CYAN (hue 185–195°, #2CC7DC), viền trắng bạc lạnh #F2FDFF mỏng và sáng; KHÔNG xanh lam điện/chàm (dành cho Lôi tu), KHÔNG tím, KHÔNG hồng; vàng #F3C860 chỉ là điểm nhỏ ở mũi kiếm/ấn.",
+  "idea": "Kiếm Ảnh Bộ: Hóa thành bóng kiếm lướt 8 mét về phía mục tiêu, dừng sát người nó. Không xuyên vách, không dùng được khi ngự kiếm.",
   "element": "vo",
   "path": "kiem_tu",
   "shapeLang": [
+    "burst",
     "line",
-    "spike"
+    "spiral"
   ],
   "timing": {
     "anticipationMs": 300,
@@ -13,7 +14,7 @@
     "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 8,
+    "lengthM": 12,
     "widthM": 2.5,
     "heightM": 2
   },
@@ -25,6 +26,5 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [],
-  "silhouette": "hàng ảnh thanh kiếm nối đuôi nhau dọc đường lướt, kết thúc bằng nhát chớp chữ thập"
+  "textures": []
 }

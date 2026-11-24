@@ -1,20 +1,21 @@
 {
   "skillId": "skl_kiem_dan_ban_menh",
-  "idea": "Kiếm Đan Bản Mệnh: một viên kiếm đan sáng tròn (bên trong có hình thanh kiếm nhỏ) lượn quanh thân trên một vòng quỹ đạo mực teal nghiêng, mỗi nhịp phóng ra đâm một nhát thành vệt kim chỉ thẳng tới địch gần nhất rồi thu về. Màu: lõi LAM LỤC TỐI (teal đậm #0A3F5E) ở tâm vệt, thân XANH NGỌC/CYAN (hue 185–195°, #2CC7DC), viền trắng bạc lạnh #F2FDFF mỏng và sáng; KHÔNG xanh lam điện/chàm (dành cho Lôi tu), KHÔNG tím, KHÔNG hồng; vàng #F3C860 chỉ là điểm nhỏ ở mũi kiếm/ấn.",
+  "idea": "Kiếm Đan Bản Mệnh: Phóng ra kiếm đan bản mệnh lượn quanh thân trong 10 giây, mỗi giây đâm kẻ địch gần nhất trong 18 mét một nhát 40% công kích.",
   "element": "kim",
   "path": "kiem_tu",
   "shapeLang": [
     "ring",
+    "burst",
     "line"
   ],
   "timing": {
-    "anticipationMs": 300,
+    "anticipationMs": 500,
     "impactMs": 80,
-    "lingerMs": 600
+    "lingerMs": 500
   },
   "footprint": {
-    "lengthM": 3,
-    "widthM": 3,
+    "lengthM": 4,
+    "widthM": 2.5,
     "heightM": 2
   },
   "colorRole": "own",
@@ -25,6 +26,5 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [],
-  "silhouette": "viên kiếm đan sáng chứa kiếm nhỏ lượn trên vòng quỹ đạo mực nghiêng, phóng vệt đâm thẳng"
+  "textures": []
 }

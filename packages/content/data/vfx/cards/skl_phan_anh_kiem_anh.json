@@ -1,20 +1,21 @@
 {
   "skillId": "skl_phan_anh_kiem_anh",
-  "idea": "Phân Anh Kiếm Ảnh: bên cạnh người xuất hiện một thanh kiếm khổng lồ trong suốt như bóng gương (viền sáng, ruột tối nhạt), lặp lại mỗi nhát chém bằng một vết chém mờ hơn lệch sau nửa nhịp. Màu: lõi LAM LỤC TỐI (teal đậm #0A3F5E) ở tâm vệt, thân XANH NGỌC/CYAN (hue 185–195°, #2CC7DC), viền trắng bạc lạnh #F2FDFF mỏng và sáng; KHÔNG xanh lam điện/chàm (dành cho Lôi tu), KHÔNG tím, KHÔNG hồng; vàng #F3C860 chỉ là điểm nhỏ ở mũi kiếm/ấn.",
+  "idea": "Phân Anh Kiếm Ảnh: Nguyên anh phân ra một đạo kiếm ảnh, lặp lại mỗi chiêu gây sát thương ngươi tung trong 10 giây bằng 60% sức mạnh. Cần cảnh giới Nguyên Anh.",
   "element": "thuy",
   "path": "kiem_tu",
   "shapeLang": [
+    "ring",
     "line",
-    "ring"
+    "burst"
   ],
   "timing": {
-    "anticipationMs": 300,
+    "anticipationMs": 400,
     "impactMs": 80,
     "lingerMs": 600
   },
   "footprint": {
     "lengthM": 4,
-    "widthM": 4,
+    "widthM": 2.5,
     "heightM": 2
   },
   "colorRole": "own",
@@ -25,6 +26,5 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [],
-  "silhouette": "thanh kiếm khổng lồ trong suốt như bóng gương bên cạnh người, lặp lại vết chém mờ"
+  "textures": []
 }
