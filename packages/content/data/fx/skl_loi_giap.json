@@ -1,0 +1,165 @@
+{
+ "skill": "skl_loi_giap",
+ "events": [
+  {
+   "type": "mesh",
+   "t": -0.28,
+   "dur": 0.28,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.8,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.2,
+   "tier": 0,
+   "seed": 1000,
+   "shape": "sprite",
+   "sprite": "loi_scales",
+   "billboard": true,
+   "offset": [
+    0,
+    1,
+    0
+   ],
+   "scale": 1.53,
+   "scaleTo": 2.2
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": -0.1,
+   "r": 1.7,
+   "dur": 1.6,
+   "at": "self",
+   "offset": [
+    0,
+    -1.05,
+    0
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": -0.24,
+   "n": 12,
+   "speed": 1.7,
+   "spread": 1,
+   "life": 0.26,
+   "size": 0.07,
+   "at": "self",
+   "offset": [
+    0,
+    1,
+    0
+   ],
+   "tone": "rim",
+   "tier": 1,
+   "inward": true
+  },
+  {
+   "type": "mesh",
+   "t": 0,
+   "dur": 0.9,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.3,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.48,
+   "tier": 0,
+   "seed": 1001,
+   "shape": "sprite",
+   "sprite": "loi_scales",
+   "billboard": true,
+   "offset": [
+    0,
+    1.05,
+    0
+   ],
+   "scale": 2.51,
+   "scaleTo": 3.06
+  },
+  {
+   "type": "mesh",
+   "t": 0.01,
+   "dur": 0.18,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.3,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.9,
+   "tier": 0,
+   "seed": 1002,
+   "shape": "sprite",
+   "sprite": "loi_flash",
+   "billboard": true,
+   "offset": [
+    0,
+    1.1,
+    0
+   ],
+   "scale": 1.98,
+   "scaleTo": 2.48
+  },
+  {
+   "type": "mesh",
+   "t": 0.06,
+   "dur": 0.5,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.25,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.4,
+   "tier": 0,
+   "seed": 1003,
+   "shape": "sprite",
+   "sprite": "loi_arcs_pair",
+   "billboard": true,
+   "offset": [
+    0,
+    1.4,
+    0.2
+   ],
+   "scale": 1.44,
+   "scaleTo": 1.44
+  },
+  {
+   "type": "mesh",
+   "t": 0.2,
+   "dur": 0.6,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.2,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.38,
+   "tier": 0,
+   "seed": 1004,
+   "shape": "sprite",
+   "sprite": "loi_sparks",
+   "billboard": true,
+   "offset": [
+    0,
+    1.2,
+    0
+   ],
+   "scale": 2.16,
+   "scaleTo": 2.16,
+   "move": {
+    "to": "self",
+    "offset": [
+     0,
+     2.4,
+     0
+    ],
+    "ease": "out"
+   }
+  }
+ ]
+}

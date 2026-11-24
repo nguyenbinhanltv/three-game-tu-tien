@@ -18,12 +18,12 @@ let atlas: THREE.Texture | null = null;
  * (hàng trên trước). Dựng bằng `tools/vfx-forge/sprite-pack.mjs` từ bảng Codex nền xanh chroma. Nạp bất đồng bộ; chưa nạp thì trong suốt. Không có `document` (test) thì texture rỗng.
  */
 /**
- * Khóa của atlas trên R2 (đường dẫn tương đối so với `public/`). Tên cố định hiện tại là file CŨ (nằm trong `assets/asset-fixed-names.json`, ân hạn). R2 bất biến: khi đóng lại atlas phải ra
- * TÊN MỚI theo hash nội dung `hoa-truc/vfx_sprites.<hash10>.webp` (`sprite-pack.mjs` làm sẵn), `assets:push` khóa mới rồi sửa hằng này; không bao giờ đẩy đè khóa cũ.
+ * Tên file atlas trên R2, THEO HASH NỘI DUNG (`vfx_sprites.<10 ký tự sha256>.webp`). R2 là bất biến: không bao giờ ghi đè một khóa đã có;
+ * đổi nội dung atlas thì đóng ra tên mới, `assets:push` khóa mới và sửa hằng này (khóa cũ giữ nguyên cho nhánh/bản dựng cũ).
  */
-export const SPRITE_ATLAS_FILE = 'hoa-truc/vfx_sprites.webp';
+export const SPRITE_ATLAS_FILE = 'hoa-truc/vfx_sprites.6573e2e631.webp';
 export const SPRITE_COLS = 4;
-export const SPRITE_ROWS = 6;
+export const SPRITE_ROWS = 10;
 let spriteTex: THREE.Texture | null = null;
 
 export function spriteAtlas(): THREE.Texture {

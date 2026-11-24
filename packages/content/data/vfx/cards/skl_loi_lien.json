@@ -1,0 +1,35 @@
+{
+  "skillId": "skl_loi_lien",
+  "idea": "Lôi Liên: nhiều quả cầu sét nhỏ nối nhau bằng hồ quang gấp khúc như một sợi xích sét, giáng xuống liên hoàn trong vùng 6 m, mỗi quả bừng chớp khi chạm đất. Màu: lõi trắng xanh lạnh RẤT SÁNG, thân xanh lam điện/chàm (hue 215–240°), chỉ viền ngoài rất mỏng mới hơi tím chàm; KHÔNG tím đậm, KHÔNG hồng; vàng chỉ là điểm nhỏ.",
+  "element": "kim",
+  "path": "loi_tu",
+  "shapeLang": [
+    "arc",
+    "burst"
+  ],
+  "timing": {
+    "anticipationMs": 420,
+    "impactMs": 80,
+    "lingerMs": 530
+  },
+  "footprint": {
+    "lengthM": 10,
+    "widthM": 10,
+    "heightM": 6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 230,
+    "screenCover": 0.08,
+    "overdraw": 3
+  },
+  "textures": [],
+  "silhouette": "một chuỗi quả cầu sét nối nhau bằng hồ quang gấp khúc như xích, đầu mỗi quả có chớp",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}
