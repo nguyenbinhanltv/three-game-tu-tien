@@ -43,7 +43,7 @@ Ba chiêu cấp 28 trong `methods.json` (`skl_thien_kiem_hoa_hinh`, `skl_thien_k
 - `apps/server/src/game/clone.test.ts` (21 test): dữ liệu, tạo/thu/hồi chiêu/kẹp tầm/thiếu linh lực, hết giờ và chết, G trong kiếp, đi theo chủ, ba công pháp (echo + finale, không cộng kiếm ý/sạc, khiêu khích + gánh 60% + vỡ, hồi theo vùng), lĩnh vực (bạo kích, giảm sát thương, hồi), và tải 50 người cùng gọi.
 - Tick server với 50 phân thân cùng hoạt động giữa 40 quái (`GameSim` thật, đồng hồ giả, 10 s): trung bình ~0,6 ms, p95 ~0,8 ms, lớn nhất 5 ms (ngưỡng 25 ms).
 - `pnpm typecheck`, `pnpm test` (shared 214, content 43, client 755, server 670), `pnpm content:check`: sạch. Bot `security` chạy lại vì sửa `rooms.ts` (xem mô tả PR).
-- Chơi thử: `pnpm shots clone --out <thư mục tuyệt đối> [--methods kiem,hophap,dansu] [--genders m,f]` quay webm + ảnh từng công pháp (tắt tiếng, cổng 2675/5175). Chưa quay nữ.
+- Chơi thử: `pnpm shots clone --out <thư mục tuyệt đối> [--methods kiem,hophap,dansu] [--genders m,f]` (kịch bản đã gỡ ở tối ưu Đợt C) quay webm + ảnh từng công pháp (tắt tiếng, cổng 2675/5175). Chưa quay nữ.
 
 ## Chưa làm / giới hạn
 
