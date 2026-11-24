@@ -1,0 +1,33 @@
+{
+  "monId": "boss_van_hai_kinh_vuong",
+  "move": "chant",
+  "idea": "Kình Vương niệm kéo biển: viền đỏ mỏng quanh vòng r8 trong 2,6 s niệm rồi đĩa đỏ đặc 1,2 s; nổ ra xoáy nước xanh thẫm hút vào tâm, bọt trắng xoắn ốc.",
+  "element": "thuy",
+  "palette": {
+    "core": "071a2e",
+    "body": "3f86b8",
+    "rim": "d6f1ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spiral",
+    "ring"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 8,
+    "at": "self"
+  },
+  "timing": {
+    "anticipationMs": 1200,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Viền niệm đỏ mỏng không che người chơi; đĩa đỏ đặc đúng 8 m ở 1,2 s cuối; xoáy nước xanh thẫm viền trắng.",
+  "budget": {
+    "drawCalls": 11,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

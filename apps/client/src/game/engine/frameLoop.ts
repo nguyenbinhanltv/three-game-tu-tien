@@ -257,6 +257,7 @@ export function runFrame(eng: Game): void {
   if (me) updateGrass(eng, dt, rp);
   eng.budget.mark('world'); // bãi cỏ
   eng.vfx.update(dt, pscale);
+  if (eng.burrowFx.active()) eng.burrowFx.update(dt, eng.vfx, groundAt);
   eng.post?.update(dt);
   eng.budget.mark('fx');
   updateCamera(eng, dt);
