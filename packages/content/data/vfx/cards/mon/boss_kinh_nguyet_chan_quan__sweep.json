@@ -1,0 +1,33 @@
+{
+  "monId": "boss_kinh_nguyet_chan_quan",
+  "move": "sweep",
+  "idea": "Kính Nguyệt Chân Quân chém một nhát quạt gương: quạt ĐỎ dài 14 m nửa góc 35° tô dần 1,4 s; nổ ra vệt trăng khuyết bạc quét và mảnh gương bắn theo quạt.",
+  "element": "kim",
+  "palette": {
+    "core": "10151d",
+    "body": "8fa6c4",
+    "rim": "eef3fb",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "arc",
+    "spike"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 14,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1400,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Quạt đỏ đặc đúng 14 m; vệt trăng bạc lõi tối viền sáng, mảnh gương nhỏ tan nhanh.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

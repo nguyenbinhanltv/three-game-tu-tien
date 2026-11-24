@@ -1,0 +1,33 @@
+{
+  "monId": "boss_van_hai_kinh_vuong",
+  "move": "line",
+  "idea": "Kình Vương phun tia nước nén: dải ĐỎ dài 40 m rộng 6 m tô dần theo nhịp 2,0 s; nổ ra tia nước xanh thẫm cắt thẳng, bọt trắng hai bên, hơi nước mỏng tan.",
+  "element": "thuy",
+  "palette": {
+    "core": "071a2e",
+    "body": "3f86b8",
+    "rim": "d6f1ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "beam",
+    "line"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 40,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 2000,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Dải đỏ đặc đúng 40×6 m; tia nước xanh thẫm viền trắng bạc, sương mỏng không che dải.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

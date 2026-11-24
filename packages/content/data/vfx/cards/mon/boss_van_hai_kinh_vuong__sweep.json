@@ -1,0 +1,33 @@
+{
+  "monId": "boss_van_hai_kinh_vuong",
+  "move": "sweep",
+  "idea": "Kình Vương quét thân thành quạt: quạt ĐỎ dài 18 m nửa góc 40° tô dần 1,5 s; nổ ra bức sóng xanh thẫm cuộn từ chân boss quét tỏa theo quạt, vây sóng trắng bạc ở đầu sóng.",
+  "element": "thuy",
+  "palette": {
+    "core": "071a2e",
+    "body": "3f86b8",
+    "rim": "d6f1ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "arc",
+    "cloud"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 18,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1500,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Quạt đỏ đặc đúng 18 m; sóng xanh thẫm lõi tối viền trắng, dư ba mỏng tan nhanh.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}
