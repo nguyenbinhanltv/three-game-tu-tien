@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "anim_patch_move",
+  "type": "anim",
+  "budgetClass": "anim",
+  "itemId": null,
+  "status": "animated",
+  "procedural": {
+    "script": "tools/asset-pipeline/src/patch-clips.ts",
+    "seed": null
+  },
+  "license": {
+    "source": "CC0 1.0 Patch: clip anymove của Patch (run, sprint, các clip bắt đầu/dừng, idle mệt) trong starter-man-clips.glb của dự án painted-valley, cùng bộ xương UE5 Mannequin với anim_ual_native; lọc 10 clip, bỏ root.translation bằng tools/asset-pipeline/src/patch-clips.ts",
+    "owner": "Patch",
+    "date": "2026-11-25",
+    "url": "https://patch.gg",
+    "spdx": "CC0-1.0"
+  }
+}

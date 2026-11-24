@@ -2,6 +2,7 @@
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
 import { BladeSmear, smearWindow } from '../fx/bladeSmear';
+import { PatchMove, PATCH_LIB, type PatchEventKind } from './patchMove';
 import { RagRig } from './ragdollRig';
 import {
   accelLean,
@@ -402,7 +403,7 @@ function applyVeilAlpha(root: THREE.Object3D, silk?: V3Silk, tier: 0 | 1 | 2 = 0
 /** Clip riêng cho áo bào rộng (`tools/blender/anim_robe.py`): ghi đè clip cùng tên của thư viện UAL cho asset giữ gốc. */
 export const ROBE_LIB = 'anim_robe';
 
-export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: AssetHandle): MannequinTemplate {
+export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: AssetHandle, patch?: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
   if (/^chr_v3b[23]?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const m of mats) tuneTripoMaterial(m);
@@ -434,6 +435,13 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
     }
     clips.set(c.name, cl);
   }
+  // Clip Patch (`PM_*`, CC0): cùng bộ xương, đã bỏ root.translation; chỉ kênh vị trí của pelvis nhân theo tỉ lệ như clip UAL.
+  if (patch)
+    for (const c of patch.animations) {
+      const cl = c.clone();
+      for (const t of cl.tracks) if (t.name === 'pelvis.position') for (let i = 0; i < t.values.length; i++) t.values[i]! *= k;
+      clips.set(c.name, cl);
+    }
   const height = box.max.y - Math.max(box.min.y, 0);
   return { handle, lib, height, bank: null, clips, owned };
 }
@@ -736,6 +744,10 @@ export class MannequinCharacter implements CharacterView {
   /** T2: tốc độ khung trước và gia tốc đã làm mượt; T3: thời gian đứng yên liên tục và mốc idle kế. */
   private lastSpeed = 0;
   private loco2 = new LocoImpulse();
+  /** Clip Patch: máy trạng thái bắt đầu/dừng/thở dốc và clip đang phát. */
+  private patchMove = new PatchMove();
+  private patchShot: THREE.AnimationAction | null = null;
+  private patchKind: PatchEventKind | null = null;
   /** T5: ragdoll nhẹ (tạo lười ở lần trúng đòn đầu khi bật cờ). */
   private rag: RagRig | null = null;
   private accel = 0;
@@ -1626,6 +1638,7 @@ export class MannequinCharacter implements CharacterView {
     const name = this.baseFor(a, rawName);
     this.play(name);
     this.syncShotLower();
+    this.stepPatch(dt, a);
     if (this.loco) {
       // Trộn đi/chạy/chạy nhanh theo tốc độ thật; pha chung nên chân trụ không trượt khi đổi nhịp.
       const m = locoMix(a.speed);
@@ -1719,6 +1732,29 @@ export class MannequinCharacter implements CharacterView {
     else this.smear.push(null, null);
   }
 
+  /**
+   * Clip Patch (cờ `patch`): bắt đầu/dừng chạy, chạy nhanh, thở dốc sau chạy dài, phát như đòn một lần (đè nền) NHANH cho vừa nhịp tăng/giảm tốc của game.
+   * Hủy khi có việc khác chen vào: đòn/hit khác chiếm `shot`, bay/chết/niệm chú, dừng lại giữa clip bắt đầu, hoặc lại chạy giữa clip dừng/thở dốc.
+   */
+  private stepPatch(dt: number, a: AnimState): void {
+    if (!ANIM_FX.patch || !this.tpl.clips.has('PM_Run_To_Idle')) return;
+    const free = !a.dead && !a.meditating && !a.flying && !a.sky && !a.airborne && !a.casting && !this.perf && !this.shotUpper;
+    if (this.patchShot && this.shot !== this.patchShot) this.patchShot = null;
+    if (this.patchShot) {
+      const stopLike = this.patchKind !== 'start';
+      if (!free || (stopLike ? a.speed > 0.6 : a.speed < 0.3)) {
+        this.patchShot.fadeOut(0.12);
+        if (this.shot === this.patchShot) this.shot = null;
+        this.patchShot = null;
+      }
+    }
+    const other = !!this.shot && this.shot !== this.patchShot;
+    const ev = this.patchMove.update(dt, a.speed, !free || other);
+    if (!ev || !this.oneShot(ev.clip, ev.rate)) return;
+    this.patchShot = this.shot;
+    this.patchKind = ev.kind;
+  }
+
   /** Khóa pha ba clip chạy và chân của đòn nửa trên; tạo/giữ clip nửa dưới khi đang đánh nửa trên. */
   private syncLoco(dt: number): void {
     this.locoPhase = (this.locoPhase + this.locoCycles * dt) % 1;
@@ -1790,7 +1826,7 @@ export class MannequinCharacter implements CharacterView {
     // T2 (cờ ?thanphap): lướt thấp khi chạy, chúi tới khi tăng tốc (bắt đầu chạy), ngả ra sau khi phanh (dừng). Hạ hông cộng vào độ nảy.
     if (dt > 1e-3) this.accel += (Math.max(-40, Math.min(40, (a.speed - this.lastSpeed) / dt)) - this.accel) * Math.min(1, dt * 12);
     this.lastSpeed = a.speed;
-    if (ANIM_FX.loco && free && !this.perf && !this.shotUpper) {
+    if (ANIM_FX.loco && free && !this.perf && !this.shotUpper && !this.patchShot) {
       const pitch = glideLean(a.speed) + accelLean(this.accel);
       rotateWorld(b.spine_01 ?? null, rgt, pitch * 0.4);
       rotateWorld(b.spine_02 ?? null, rgt, pitch * 0.35);
@@ -1996,16 +2032,18 @@ export class MannequinPlayers {
     const robeP = KEEP_ORIGINAL_ASSETS.has(id)
       ? this.cache.acquire(ROBE_LIB, { priority: 1 }).catch(() => undefined)
       : Promise.resolve(undefined);
-    Promise.all([this.cache.acquire(id, { priority: 1, ...cap }), this.cache.acquire(V3_LIB, { priority: 1 }), robeP]).then(
-      ([h, lib, robe]) => {
+    const patchP = ANIM_FX.patch ? this.cache.acquire(PATCH_LIB, { priority: 1 }).catch(() => undefined) : Promise.resolve(undefined);
+    Promise.all([this.cache.acquire(id, { priority: 1, ...cap }), this.cache.acquire(V3_LIB, { priority: 1 }), robeP, patchP]).then(
+      ([h, lib, robe, patch]) => {
         if (this.disposed) {
           h.release();
           lib.release();
           robe?.release();
+          patch?.release();
           return;
         }
         try {
-          this.tpl.set(key, mannequinTemplate(h, lib, robe));
+          this.tpl.set(key, mannequinTemplate(h, lib, robe, patch));
           this.ensurePoses();
         } catch (err) {
           modelsLog.warn(`không dựng được ${id}`, err);

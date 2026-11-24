@@ -134,6 +134,44 @@
         "build": null
       }
     },
+    "anim_patch_move": {
+      "id": "anim_patch_move",
+      "class": "anim",
+      "source": "assets/build/raw/anim_patch_move.glb",
+      "file": "anim_patch_move.afb3a01854.glb",
+      "bytes": 242604,
+      "rawBytes": 2211928,
+      "triangles": 0,
+      "rawTriangles": 0,
+      "lod0Cap": 0,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [
+        "PM_Idle",
+        "PM_Idle_To_Walk",
+        "PM_Walk_To_Idle",
+        "PM_Run",
+        "PM_Sprint",
+        "PM_Idle_Tired",
+        "PM_Idle_To_Run",
+        "PM_Idle_To_Sprint",
+        "PM_Run_To_Idle",
+        "PM_Sprint_To_Idle"
+      ],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 0
+        }
+      ],
+      "dims": {
+        "raw": null,
+        "build": null
+      }
+    },
     "anim_robe": {
       "id": "anim_robe",
       "class": "anim",
