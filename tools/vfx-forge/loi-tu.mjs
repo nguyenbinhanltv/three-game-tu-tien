@@ -113,7 +113,16 @@ const SPEC = {
   skl_thiem_loi_bo: () => [
     flash('self', [0, 1.1, 0], 2.4, 0),
     strike('loi_bolt_zigzag', { size: 6, at: 'ahead', off: [0, 1.2, 2.8], dur: 0.5, align: 'aim' }),
-    sprite('loi_bolt_zigzag', { t: 0.04, dur: 0.45, at: 'ahead', off: [0.3, 1.0, 3.4], size: 4.2, alpha: 0.5, align: 'aim', erodeFrom: 0.15 }),
+    sprite('loi_bolt_zigzag', {
+      t: 0.04,
+      dur: 0.45,
+      at: 'ahead',
+      off: [0.3, 1.0, 3.4],
+      size: 4.2,
+      alpha: 0.5,
+      align: 'aim',
+      erodeFrom: 0.15,
+    }),
     flash('ahead', [0, 1.2, 5.4], 2.2, 0.02),
     after('ahead', [0, 1.3, 3.8], 2.4, 0.2, 1.1),
     sparks('ahead', [0, 1.2, 4], 10, 0.05),
