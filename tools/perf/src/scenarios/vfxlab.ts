@@ -47,6 +47,30 @@ async function coverage(base: Buffer, shot: Buffer): Promise<number> {
   return diff / n;
 }
 
+/**
+ * Đo trên ảnh (chuẩn Họa Pháp Lô 2): trong các điểm đổi so với nền, `darkShare` = tỉ lệ điểm TỐI hơn nền rõ rệt (lõi tối/ink: đọc được trên nền sáng),
+ * `redShare` = tỉ lệ điểm đỏ/cam bão hòa (dành cho cảnh báo của địch). Chỉ tính điểm đổi; ảnh nhân vật/quái đổi tư thế cũng lẫn vào (cận trên).
+ */
+async function inkMetrics(base: Buffer, shot: Buffer): Promise<{ darkShare: number; redShare: number }> {
+  const a = await sharp(base).removeAlpha().resize(480).raw().toBuffer({ resolveWithObject: true });
+  const b = await sharp(shot).removeAlpha().resize(480).raw().toBuffer();
+  const n = a.info.width * a.info.height;
+  let diff = 0;
+  let dark = 0;
+  let red = 0;
+  for (let i = 0; i < n; i++) {
+    const [r0, g0, b0] = [a.data[i * 3]!, a.data[i * 3 + 1]!, a.data[i * 3 + 2]!];
+    const [r1, g1, b1] = [b[i * 3]!, b[i * 3 + 1]!, b[i * 3 + 2]!];
+    if (Math.abs(r0 - r1) + Math.abs(g0 - g1) + Math.abs(b0 - b1) <= 45) continue;
+    diff++;
+    if (0.299 * r1 + 0.587 * g1 + 0.114 * b1 < 0.299 * r0 + 0.587 * g0 + 0.114 * b0 - 40) dark++;
+    const mx = Math.max(r1, g1, b1);
+    const mn = Math.min(r1, g1, b1);
+    if (mx > 120 && (mx - mn) / mx > 0.55 && r1 === mx && g1 < r1 * 0.75) red++;
+  }
+  return { darkShare: diff ? dark / diff : 0, redShare: diff ? red / diff : 0 };
+}
+
 async function run(r: Run, skills: string[], sizes: string[], at: number[]): Promise<Record<string, unknown>[]> {
   for (const sk of skills) if (!SKILL.get(sk)) throw new Error(`không có chiêu ${sk}`);
   const mon = opt('--mon', DEFAULT_MON);
@@ -131,7 +155,14 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
         const raw = await page.evaluate(() => window.__vfxlab!.budget());
         const b = { ...raw, particles: Math.max(0, raw.particles - b0.particles), drawCalls: Math.max(0, raw.drawCalls - b0.drawCalls) };
         const cover = await coverage(base, buf);
-        rows.push({ ms, ...b, pixelCover: Number(cover.toFixed(3)) });
+        const ink = await inkMetrics(base, buf);
+        rows.push({
+          ms,
+          ...b,
+          pixelCover: Number(cover.toFixed(3)),
+          darkShare: Number(ink.darkShare.toFixed(3)),
+          redShare: Number(ink.redShare.toFixed(3)),
+        });
       }
       shots[tag] = rows;
       // Dải 4 khung cạnh nhau (thu nhỏ) để duyệt nhanh.
@@ -169,7 +200,7 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
       await sleep(2500);
     }
     // Đối chiếu ngân sách thẻ chiêu: lấy số lớn nhất qua các khung.
-    const worst = { drawCalls: 0, particles: 0, screenCover: 0, overdraw: 0, pixelCover: 0 };
+    const worst = { drawCalls: 0, particles: 0, screenCover: 0, overdraw: 0, pixelCover: 0, redShare: 0, darkShare: 1 };
     for (const rows of Object.values(shots) as Record<string, number>[][]) {
       for (const x of rows) {
         worst.drawCalls = Math.max(worst.drawCalls, x.drawCalls ?? 0);
@@ -177,15 +208,25 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
         worst.screenCover = Math.max(worst.screenCover, x.screenCover ?? 0);
         worst.overdraw = Math.max(worst.overdraw, x.overdraw ?? 0);
         worst.pixelCover = Math.max(worst.pixelCover, x.pixelCover ?? 0);
+        worst.redShare = Math.max(worst.redShare, x.redShare ?? 0);
+        // chỉ khung có hiệu ứng đáng kể mới tính độ tối (khung trống không có lõi tối là bình thường)
+        if ((x.pixelCover ?? 0) > 0.02) worst.darkShare = Math.min(worst.darkShare, x.darkShare ?? 0);
       }
     }
     out.worst = worst;
+    // Chuẩn 2: nền sáng cần lõi tối (≥ 12% điểm đổi tối hơn nền) — chỉ đo ban ngày (không `--mood`); đỏ/cam ≤ 3% điểm đổi.
+    const stdWarn = [
+      !opt('--mood', '') && worst.darkShare < 0.12 && `thiếu lõi tối trên nền sáng (darkShare ${worst.darkShare.toFixed(2)} < 0,12)`,
+      worst.redShare > 0.03 && `đỏ/cam ${(worst.redShare * 100).toFixed(1)}% > 3%`,
+    ].filter(Boolean);
+    out.standard2 = stdWarn;
     if (card) {
       const b = card.budget;
       out.overBudget = [
         worst.particles > b.particles && `hạt ${worst.particles} > ${b.particles}`,
         worst.screenCover > b.screenCover && `phủ ước lượng ${worst.screenCover.toFixed(2)} > ${b.screenCover}`,
         worst.overdraw > b.overdraw && `overdraw ${worst.overdraw} > ${b.overdraw}`,
+        ...stdWarn,
       ].filter(Boolean);
     }
     results.push(out);

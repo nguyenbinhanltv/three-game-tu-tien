@@ -65,6 +65,7 @@ Shape language: ${shapeWords(card)}. Ground footprint about ${card.footprint.len
 Output ONE image: a 2x2 grid of the same screenshot framing, four time frames, left to right then top to bottom:
 1) anticipation (about ${t.anticipationMs} ms before impact): energy gathering, small and tight; 2) impact (the instant of the hit): peak brightness and size; 3) +150 ms after impact: effect stretched and fraying; 4) +400 ms: fading, only embers and a faint trail left.
 ${styleBlock(style, pal)}
+Standard 2 (mandatory): the effect has ONE signature silhouette of its own${card.silhouette ? ` (${card.silhouette})` : ''} - NOT a starburst of rays, NOT a rune circle under the feet, NOT a plain crescent as the main shape; it has at least one material layer (smoke, hand-painted texture, cracks, particles or distortion); it is readable on BOTH a bright daylight stone floor and a dark night floor: dark core / ink body with a bright rim, never only additive glow; three beats are visible across the four frames (build-up, hit accent, dissipating aftermath); colors only from the ramp above, never red or orange.
 The effect must never hide the character's body or the target. No text, no labels, no UI, no watermark.`;
 }
 
