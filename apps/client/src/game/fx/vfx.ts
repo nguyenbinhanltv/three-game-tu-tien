@@ -154,9 +154,14 @@ export class Vfx {
       'crystal',
       'burst',
       'decal',
+      'decalTop',
+      'sigilTop',
       'card',
       'art',
       'wind',
+      'mapDecal',
+      'mapDecalTop',
+      'mapFlip',
     ] as const) {
       const m = this.fx(G.ico1, 0xffffff, 0, kind);
       m.scale.setScalar(1e-3);
@@ -195,6 +200,10 @@ export class Vfx {
       ['dome', G.dome, 0],
       ['inkpool', SIGIL_GEO, -2],
       ['decal', QUAD_XZ, -3],
+      ['decalTop', QUAD_XZ, -3],
+      ['mapDecal', QUAD_XZ, -3],
+      ['mapDecalTop', QUAD_XZ, -3],
+      ['mapFlip', shapeGeometry('flip'), 0],
       ['glow', HALO_GEO, 0],
       ['flat', SHADOW_GEO, 0],
       ['solid', G.cone6, 0],
@@ -797,9 +806,9 @@ export class Vfx {
    * sau/đỉnh với chữ nhật/quạt, hướng theo `yaw`. `w`: bề rộng (chữ nhật) hoặc nửa góc (quạt).
    * Tiến độ đặt qua `m.fxA.x` (0..1); vạch tiến độ chạm mép là lúc nổ.
    */
-  sigil(shape: SigilShape, x: number, z: number, yaw: number, r: number, w: number, color: number, y: number): FxMesh {
+  sigil(shape: SigilShape, x: number, z: number, yaw: number, r: number, w: number, color: number, y: number, top = false): FxMesh {
     const L = sigilLayout(shape, r, w);
-    const m = this.fx(SIGIL_GEO, color, 0, 'sigil');
+    const m = this.fx(SIGIL_GEO, color, 0, top ? 'sigilTop' : 'sigil');
     m.position.set(x + Math.sin(yaw) * L.offset, y, z + Math.cos(yaw) * L.offset);
     m.rotation.y = yaw;
     m.scale.set(L.sx, 1, L.sz);
@@ -1187,8 +1196,9 @@ export class Vfx {
     hot = false,
     quiet?: () => boolean,
     danger?: 0 | 1 | 2,
+    noRing = false,
   ): void {
-    return hazard(this, x, z, r, delay, kind, seed, flash, boss, hot, quiet, danger);
+    return hazard(this, x, z, r, delay, kind, seed, flash, boss, hot, quiet, danger, noRing);
   }
 
   /**

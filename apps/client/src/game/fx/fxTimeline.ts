@@ -6,6 +6,8 @@
 import * as THREE from 'three/webgpu';
 import {
   FLIP_ATLASES,
+  FORGE_DECALS,
+  FORGE_FLIPS,
   fxAwayFromCam,
   fxCamFade,
   fxEventsFor,
@@ -36,6 +38,7 @@ import {
   ISO_CARD_SCALE,
   isoFxScaleY,
 } from '../../render/vfx/isoFx';
+import { forgeDecalIndex } from '../../render/vfx/forgeTex';
 import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
 import {
   DECAL_CRACK,
@@ -541,7 +544,7 @@ export class FxRunner {
   private mesh(c: Cast, ev: FxMeshEvent, tgt: FxTarget | null, idx: number): void {
     const yaw = this.aim(c, tgt);
     const geo = shapeGeometry(ev.shape);
-    const kind = shapeKind(ev.shape);
+    const kind = ev.shape === 'flip' && ev.flip && (FORGE_FLIPS as readonly string[]).includes(ev.flip) ? 'mapFlip' : shapeKind(ev.shape);
     const start = this.anchor(c, ev.at ?? 'self', ev.offset, yaw, tgt, new THREE.Vector3());
     if (FLAGS.isoFxCompress && isBoltGroundHit(ev.shape, ev.at)) this.boltFoot(c, ev, start);
     if (FLAGS.isoFxCompress && kind === 'card' && (ev.at ?? 'self') === 'self') {
@@ -620,7 +623,7 @@ export class FxRunner {
       } else if (ev.follow) {
         this.anchor(c, ev.at ?? 'self', ev.offset, yaw, this.tgtOf(c) ?? tgt, m.position);
       } else m.position.copy(start);
-      if (ev.billboard ?? kind === 'flip') {
+      if (ev.billboard ?? (kind === 'flip' || kind === 'mapFlip')) {
         // Quay mặt về camera; `rot[2]` xoay thêm trong mặt phẳng hình (nét chém chéo).
         m.quaternion.copy(cam.quaternion);
         if (ev.rot?.[2]) m.quaternion.multiply(_q.setFromAxisAngle(AXIS_Z, ev.rot[2] * DEG));
@@ -659,7 +662,7 @@ export class FxRunner {
             m.fxA.x = easeOut(Math.min(1, k / Math.max(sweep, 0.2)));
             m.fxA.y = sstep(erodeFrom, 1, k);
           } else if (kind === 'flip') {
-            m.fxA.x = Math.max(0, FLIP_ATLASES.indexOf(ev.flip ?? 'ink_smoke'));
+            m.fxA.x = Math.max(0, (FLIP_ATLASES as readonly string[]).indexOf(ev.flip ?? 'ink_smoke'));
           }
           m.fxK = k;
           place(m, k, isShade ? 1.08 : 1, isShade ? 0.03 * (s0[0]! + 0.5) : 0);
@@ -798,17 +801,26 @@ export class FxRunner {
           : ev.tex === 'strike'
             ? DECAL_STRIKE
             : DECAL_SCORCH;
-    const m = this.v.fx(QUAD_XZ, toneOf(c.pal, ev.tone), ev.alpha ?? 0.95, 'decal');
+    const mapped = (FORGE_DECALS as readonly string[]).includes(ev.tex);
+    const m = this.v.fx(
+      QUAD_XZ,
+      toneOf(c.pal, ev.tone),
+      ev.alpha ?? 0.95,
+      mapped ? (ev.top ? 'mapDecalTop' : 'mapDecal') : ev.top ? 'decalTop' : 'decal',
+    );
     _col.setHex(c.pal.rim);
-    m.fxB.set(_col.r, _col.g, _col.b, 0);
+    m.fxB.set(_col.r, _col.g, _col.b, mapped && ev.sector ? ev.sector * DEG : 0);
     m.fxA.z = (c.seed + idx * 3.3) % 40;
-    m.fxA.w = kind;
+    m.fxA.w = mapped ? forgeDecalIndex(ev.tex) : kind;
     m.renderOrder = -3;
     m.position.copy(at);
-    m.quaternion.setFromAxisAngle(UP, (ev.yaw ?? (c.seed * 57) % 360) * DEG);
+    m.quaternion.setFromAxisAngle(UP, ev.sector ? yaw + (ev.yaw ?? 0) * DEG : (ev.yaw ?? (c.seed * 57) % 360) * DEG);
     m.scale.setScalar(ev.r * c.mul);
     const dur = ev.untilDelay && c.delay ? c.delay : ev.dur;
     const grow = Math.max(0.05, ev.grow ?? 0.15);
+    const swing = ev.sector && ev.swing ? ev.swing : null;
+    const swingYaw = yaw;
+    const swingDur = Math.max(0.05, ev.swingDur ?? 0.3);
     this.decals++;
     this.v.track(
       dur,
@@ -817,6 +829,9 @@ export class FxRunner {
         m.fxA.x = easeOut(Math.min(1, t / grow));
         m.fxA.y = sstep(0.55, 1, k);
         m.fxK = Math.max(0, 1 - k * 1.15);
+        // Tia quét: một decal hẹp xoay từ `swing[0]` sang `swing[1]` độ trong `swingDur` giây (thay nhiều decal, vì trần DECAL_MAX).
+        if (swing)
+          m.quaternion.setFromAxisAngle(UP, swingYaw + (swing[0] + (swing[1] - swing[0]) * easeOut(Math.min(1, t / swingDur))) * DEG);
       },
       () => {
         this.decals--;

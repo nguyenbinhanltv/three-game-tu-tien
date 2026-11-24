@@ -100,6 +100,7 @@ import { CloneVis } from './fx/cloneVis';
 import { loadGroundTextures, resolveGroundSet, type GroundTextures } from '../base/groundTextures';
 import { BASE_ZONE, type ZoneCam } from './camera/camZones';
 import { DamageNumbers, Vfx } from './fx/vfx';
+import { loadForgeTextures } from './fx/forgeLoad';
 import { OffscreenIndicators } from './entities/offscreen';
 import { CameraShake } from './camera/shake';
 import { KeyState } from '../input/keyboard';
@@ -711,6 +712,7 @@ export class Game {
     mark('sect');
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
+    void loadForgeTextures(this.renderer);
     if (this.iso) this.scene.add(this.iso.ring, this.iso.destMark);
     this.vfx.camera = this.camera;
     this.vfx.viewerAt = () => this.renderPos;

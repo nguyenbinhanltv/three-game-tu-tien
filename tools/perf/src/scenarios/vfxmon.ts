@@ -25,10 +25,13 @@ async function advance(page: Page, ms: number): Promise<void> {
 /** Delay (giây) của chiêu `mv` trong `ai` hoặc pha đầu có chiêu đó. */
 function delayOf(mon: string, mv: string): number {
   const def = MONSTER.get(mon) as
-    | { ai?: Record<string, { delay?: number; cone?: { delay: number } }>; phases?: { ai?: Record<string, { delay?: number }> }[] }
+    | {
+        ai?: Record<string, { delay?: number; cast?: number; cone?: { delay: number } }>;
+        phases?: { ai?: Record<string, { delay?: number; cast?: number }> }[];
+      }
     | undefined;
   const c = def?.ai?.[mv] ?? def?.phases?.map((p) => p.ai?.[mv]).find(Boolean);
-  return (c?.delay ?? 1.5) * 1000;
+  return ((c?.delay ?? 1.5) + (mv === 'chant' ? (c?.cast ?? 0) : 0)) * 1000;
 }
 
 async function run(r: Run, mon: string, moves: string[], sizes: string[], at: number[], mood: string): Promise<Record<string, unknown>[]> {
@@ -76,11 +79,13 @@ async function run(r: Run, mon: string, moves: string[], sizes: string[], at: nu
       const rows: Record<string, unknown>[] = [];
       let clock = 0;
       for (const ms of at) {
-        const want = hitMs + ms;
+        // Mốc nổ được xử lý ở tick đầu sau khi tới hạn: khung "+0" lấy sau đúng một tick (16 ms) để thấy khung nổ đầu tiên.
+        const want = hitMs + ms + (ms >= 0 ? 16 : 0);
         if (want > clock) {
           await advance(page, want - clock);
           clock = want;
         }
+        await page.evaluate('window.__game.clearTarget()'); // cast làm hiện vòng chọn mục tiêu thù địch (đỏ), dễ lẫn với vạch báo
         await frame(page);
         const buf = await snap(page, outDir, `${mv}-${tag}-${ms >= 0 ? '+' : ''}${ms}ms.jpg`, { wait: 0 });
         files.push(buf);

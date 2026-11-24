@@ -1,0 +1,53 @@
+[
+  {
+    "id": "ice_crack",
+    "file": "ice_crack.ktx2",
+    "pack": "color",
+    "grid": {
+      "cols": 1,
+      "rows": 1
+    },
+    "size": [
+      1024,
+      1024
+    ],
+    "bytes": 363191,
+    "format": "ktx2",
+    "sha": "10c9744361b0",
+    "source": "Codex-generated, dự án sở hữu"
+  },
+  {
+    "id": "ice_flip",
+    "file": "ice_flip.ktx2",
+    "pack": "color",
+    "grid": {
+      "cols": 4,
+      "rows": 4
+    },
+    "size": [
+      1024,
+      1024
+    ],
+    "bytes": 218281,
+    "format": "ktx2",
+    "sha": "8fd4e5c97b8f",
+    "source": "Codex-generated, dự án sở hữu"
+  },
+  {
+    "id": "warn_crack",
+    "file": "warn_crack.ktx2",
+    "pack": "color",
+    "grid": {
+      "cols": 1,
+      "rows": 1
+    },
+    "size": [
+      1024,
+      1024
+    ],
+    "bytes": 268926,
+    "format": "ktx2",
+    "sha": "3c969e016962",
+    "source": "Codex-generated, dự án sở hữu"
+  }
+]
