@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-// Họa Pháp Lô 2: đo PHỦ MÀN HÌNH tất định (cận trên) của timeline từ dữ liệu, không phụ thuộc ảnh chụp (ảnh lab bị lệch nền theo giờ/rung màn hình nên `pixelCover` nhiễu).
-// Mỗi sự kiện `mesh` kiểu `sprite`/`flip` là một tấm quay mặt về camera: diện tích tấm = (cỡ)² mét vuông trên mặt phẳng nhìn; khung hình ở camera chéo (cách 20 m, FOV dọc 32°, 16:9) rộng 20,4 × 11,5 m.
-// Phủ = Σ diện tích các tấm đang sống ở thời điểm t / diện tích khung (không trừ phần chồng nhau và phần trong suốt của sprite → là CẬN TRÊN). In giá trị ở +30 ms và lớn nhất trong [-0,3; +0,8] s.
+// Họa Pháp Lô 2: ƯỚC LƯỢNG phủ màn hình tất định của timeline từ dữ liệu (có trọng số, KHÔNG phải cận trên), không phụ thuộc ảnh chụp (ảnh lab bị lệch nền theo giờ/rung màn hình nên `pixelCover` nhiễu).
+// Chỉ tính sự kiện `mesh` kiểu `sprite`/`flip` (tấm quay mặt về camera): diện tích tấm = (cỡ)² mét vuông trên mặt phẳng nhìn, NHÂN alpha của sự kiện và (với sprite) phần còn lại sau khi tan; bỏ ribbon/helix/decal/hạt và không xét `from: "start"`
+// (timeline Hồn tu không dùng). Khung camera chéo (cách 20 m, FOV dọc 32°, 16:9) rộng 20,4 × 11,5 m.
+// Phủ = Σ (diện tích × alpha × phần còn lại) các tấm đang sống ở thời điểm t / diện tích khung; không trừ phần chồng nhau và phần trong suốt của tranh (hai sai lệch ngược chiều nhau). In giá trị ở +30 ms và lớn nhất trong [-0,3; +0,8] s.
+// Vì chỉ là ước lượng, số duyệt phải kèm `pixelCover` của `pnpm shots vfxlab` ở khung 0 và +150 ms (không dính rung hitstop) ở các lượt có nền sạch.
 // Dùng: node tools/vfx-forge/cover.mjs [id chiêu ...]  (mặc định 11 chiêu Hồn tu)
 import fs from 'node:fs';
 
