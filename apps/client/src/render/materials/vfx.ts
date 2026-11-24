@@ -5,6 +5,7 @@ import type { FxUniforms } from '../vfx/common';
 import { inkNodes } from '../vfx/ink';
 import { boltNodes, vortexNodes, windNodes } from '../vfx/lightning';
 import { flipNodes } from '../vfx/flipbook';
+import { mapDecalNodes, mapFlipNodes } from '../vfx/forgeTex';
 import { beamNodes } from '../vfx/loot';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
@@ -75,7 +76,13 @@ export type FxKind =
   | 'card'
   | 'art'
   | 'wind'
-  | 'flip';
+  | 'flip'
+  /** Decal từ trên bằng texture Codex (`forgeTex.ts`; vân nứt vạch báo, băng nứt). */
+  | 'mapDecal'
+  /** Như `mapDecal` nhưng không thử độ sâu (vạch báo của boss). */
+  | 'mapDecalTop'
+  /** Flipbook texture Codex (`ice_flip`), quay mặt về camera. */
+  | 'mapFlip';
 
 const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: number; fog: boolean }> = {
   glow: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
@@ -101,6 +108,9 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   art: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.3, fog: false },
   wind: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.2, fog: false },
   flip: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
+  mapDecal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.1, fog: true },
+  mapDecalTop: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.1, fog: true },
+  mapFlip: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.15, fog: false },
 };
 
 const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opacity: unknown }>> = {
@@ -122,6 +132,9 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   art: artNodes,
   wind: windNodes,
   flip: flipNodes,
+  mapDecal: mapDecalNodes,
+  mapDecalTop: mapDecalNodes,
+  mapFlip: mapFlipNodes,
   dome: (u) => {
     // Fresnel: 1 ở rìa (nhìn lướt), ~0 ở giữa (nhìn thẳng). Vân phù văn: dải ngang mờ chạy theo độ cao.
     const fres = pow(float(1).sub(abs(dot(normalize(normalView), normalize(positionView.negate())))), 2.6);
@@ -214,6 +227,9 @@ export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>([
   'card',
   'art',
   'flip',
+  'mapDecal',
+  'mapDecalTop',
+  'mapFlip',
 ]);
 
 /** Tên thuộc tính instance: màu + độ trong, `fxA`, `fxB`, (`fxK`, 0, 0, 0). */
@@ -237,7 +253,7 @@ export function fxBatchMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
   const s = SPEC[kind];
   m = new THREE.MeshBasicNodeMaterial({ transparent: true, blending: s.blending, depthWrite: false, side: THREE.DoubleSide, fog: s.fog });
   m.forceSinglePass = true;
-  if (kind === 'decalTop') m.depthTest = false;
+  if (kind === 'decalTop' || kind === 'mapDecalTop') m.depthTest = false;
   const custom = BUILDERS[kind]?.(batchNodes);
   if (custom) {
     m.colorNode = custom.color as THREE.Node;

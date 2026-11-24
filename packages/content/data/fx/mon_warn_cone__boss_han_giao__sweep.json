@@ -3,6 +3,22 @@
  "palette": "mon_boss_thuy",
  "events": [
   {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 8,
+   "dur": 1.6,
+   "at": "area",
+   "grow": 1.4,
+   "tone": "accent",
+   "alpha": 0.62,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "untilDelay": true,
+   "sector": 35
+  },
+  {
    "type": "particles",
    "kind": "spark",
    "t": 0,

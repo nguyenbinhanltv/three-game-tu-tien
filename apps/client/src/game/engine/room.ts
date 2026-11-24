@@ -86,6 +86,7 @@ export function onHazard(eng: Game, m: HazardMsg): void {
   // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
   if (m.sh && eng.vfx) {
     // Chiêu quái có timeline vạch báo riêng (V-P9): vẫn dùng pháp trận quạt/chữ nhật (hình đúng hitbox, tiến độ quét) nhưng vẽ đè lên thân boss.
+    // `own` ở nhánh này chỉ đổi cách vẽ (đè lên thân boss); pháp trận quạt/chữ nhật luôn được vẽ nên không mất vạch báo khi `warn` bị bỏ qua.
     const own = !!eng.monFx?.ownWarn(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
     if (Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90)
       telegraph(eng.vfx, m, isBossSrc(eng, m.src), hazardDangerOf(eng, m), own);
@@ -95,7 +96,8 @@ export function onHazard(eng: Game, m: HazardMsg): void {
   else if (m.mv === 'pool') eng.vfx?.venomPool(m.x, m.z, m.r, m.delay, m.dur ?? 6, m.kind);
   else {
     const hsrc = m.src ? eng.ents?.monsters.get(m.src) : undefined;
-    eng.monFx?.warn(m, hsrc);
+    // Vòng cũ chỉ bị bỏ khi vạch riêng của chiêu đã thật sự phát (xa/đông FX thì `warn` bỏ qua → giữ vòng cũ, không mất vạch báo).
+    const warned = !!eng.monFx?.warn(m, hsrc);
     eng.vfx?.hazard(
       m.x,
       m.z,
@@ -108,7 +110,7 @@ export function onHazard(eng: Game, m: HazardMsg): void {
       m.hot,
       hsrc ? () => !eng.disposed && !!eng.monFx?.boom(m, eng.ents?.monsters.get(m.src ?? '') ?? hsrc) : undefined,
       hazardDangerOf(eng, m),
-      !!eng.monFx?.ownWarn(m, hsrc),
+      warned && !!eng.monFx?.ownWarn(m, hsrc),
     );
   }
   // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).

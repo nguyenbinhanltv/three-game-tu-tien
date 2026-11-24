@@ -159,6 +159,9 @@ export class Vfx {
       'card',
       'art',
       'wind',
+      'mapDecal',
+      'mapDecalTop',
+      'mapFlip',
     ] as const) {
       const m = this.fx(G.ico1, 0xffffff, 0, kind);
       m.scale.setScalar(1e-3);

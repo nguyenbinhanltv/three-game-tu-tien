@@ -172,7 +172,8 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
       let m: HazardMsg;
       if (mv === 'sweep' || mv === 'line' || mv === 'charge') {
         const rect = cfg.shape === 'rect' || mv !== 'sweep';
-        m = { ...base, x: b.x, z: b.z, yaw, sh: rect ? 'rect' : 'cone', w: cfg.w } as HazardMsg;
+        // Server gửi `w` quạt là NỬA GÓC bằng radian (độ trong monsters.json); chữ nhật là bề rộng (m).
+        m = { ...base, x: b.x, z: b.z, yaw, sh: rect ? 'rect' : 'cone', w: !rect && cfg.w ? (cfg.w * Math.PI) / 180 : cfg.w } as HazardMsg;
       } else if (mv === 'chant') m = { ...base, x: b.x, z: b.z } as HazardMsg;
       else m = { ...base, x: gg.cur.x, z: gg.cur.z } as HazardMsg;
       onHazard(g, m);

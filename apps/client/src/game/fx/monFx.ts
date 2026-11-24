@@ -200,14 +200,18 @@ export class MonFx {
     return src ? this.elemOf(src) : monPaletteKey(ELEM_OF_KIND[h.kind]);
   }
 
-  /** Vạch báo vùng tròn của quái: triện văn đỏ tồn tại đúng tới lúc nổ. Chỉ khi quái thả vùng (không phải thiên kiếp). */
-  warn(h: HazardMsg, src: MonLike | undefined): void {
-    if (!src || !(h.r > 0) || !(h.delay > 0) || !this.near(h.x, h.z)) return;
+  /**
+   * Vạch báo vùng tròn của quái: triện văn đỏ tồn tại đúng tới lúc nổ. Chỉ khi quái thả vùng (không phải thiên kiếp).
+   * Trả `true` khi timeline đã thật sự phát: chiêu có timeline riêng (`ownWarn`) chỉ được bỏ pháp trận cũ khi vạch riêng đã phát,
+   * nếu không (xa quá 60 m, FX quá nhiều, đang ở phòng thử) người chơi sẽ mất vạch báo gây sát thương.
+   */
+  warn(h: HazardMsg, src: MonLike | undefined): boolean {
+    if (!src || !(h.r > 0) || !(h.delay > 0) || !this.near(h.x, h.z)) return false;
     const boss = this.bossOf(src);
     // Vùng tròn: mọi quái; đường/nón: chỉ boss (nhấp nháy dọc vạch, vạch pháp trận cũ vẫn chạy).
     const key = !h.sh ? 'mon_warn' : boss ? (h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone') : undefined;
     const tl = key ? this.tlFor(key, src, h) : undefined;
-    if (!tl || !key) return;
+    if (!tl || !key) return false;
     const y = groundAt(h.x, h.z);
     this.runner.startAt(tl, {
       actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} },
@@ -219,6 +223,7 @@ export class MonFx {
       variant: this.variantOf(src),
     });
     this.note(key, src.id);
+    return true;
   }
 
   /** Vùng nổ (đúng lúc hết `delay`). Tròn → gai + vết nứt; chữ nhật → gai nối tiếp; nón → lưỡi liềm quét. */

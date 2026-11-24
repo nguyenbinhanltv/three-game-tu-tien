@@ -41,3 +41,12 @@ Sự kiện timeline `{ "type": "impact", "t": 0, "frames": 1|2, "tint": "ink|wa
 - Méo không khí (distortion pass) cần bản sao màn hình; làm khi có chiêu đầu cần tới.
 - Phủ điểm ảnh của phòng thử gồm chuyển động của hình nộm; cần quái đứng yên (GM `freeze`) để số chính xác hơn.
 - Shader đọc kênh G/B của texture đóng kênh chưa nối (V-P1 nối cùng chiêu pilot đầu tiên cần texture).
+
+## Texture dùng chung theo hệ (Họa Pháp Lô 2)
+
+Lớp CHẤT LIỆU dùng chung cho quái/boss và chiêu người chơi (mỗi chiêu/boss vẫn phải có silhouette riêng). Danh sách id ở `FORGE_DECALS`/`FORGE_FLIPS` (`packages/shared/src/fxtimeline.ts`): `warn_crack` (vân nứt đỏ cho vạch báo), `ice_crack` (băng nứt), `ice_flip` (flipbook 4×4 băng trồi/vỡ).
+
+- Sinh: `pnpm --filter @dtl/vfx-forge forge shared <id> --out <thư mục artifact>` (Codex), rồi `forge import <png> --id <id> [--grid 4x4] --sheets <artifact>` (cần `TOKTX`) → `apps/client/public/assets/vfx/<id>.ktx2` + `manifest.json`. `pnpm vfx:check` chặn PNG.
+- Dùng trong timeline: decal `tex: "warn_crack"|"ice_crack"` (thêm `sector` = nửa góc độ để vẽ MẶT QUẠT từ tâm theo hướng vùng; `top` cho vạch báo); mesh `shape: "flip", flip: "ice_flip"`.
+- Client: `render/vfx/forgeTex.ts` (shader `mapDecal`/`mapDecalTop`/`mapFlip`, texture giữ chỗ trong suốt) + `game/fx/forgeLoad.ts` (nạp KTX2 nền sau khi có renderer; lỗi chỉ cảnh báo, lớp này vô hình). Thêm texture mới: thêm id vào `shared`, thêm nút texture ở `forgeTex.ts`, thêm mục ở `tools/vfx-forge/src/sharedTex.ts`.
+- Vạch báo riêng của chiêu quái (`MonFx.ownWarn`) chỉ thay vòng cũ khi `MonFx.warn` thật sự phát (trả `true`); xa/đông FX thì giữ vòng cũ để không mất vạch báo.
