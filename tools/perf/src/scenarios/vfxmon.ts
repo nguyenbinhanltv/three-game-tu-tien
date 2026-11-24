@@ -30,6 +30,13 @@ function delayOf(mon: string, mv: string): number {
         phases?: { ai?: Record<string, { delay?: number; cast?: number }> }[];
       }
     | undefined;
+  // Chui đất: `burrow` báo `hide` giây, `emerge` báo `cone.delay` giây (cùng quy ước `content:check`).
+  if (mv === 'burrow' || mv === 'emerge') {
+    const bu = [def?.ai, ...(def?.phases?.map((p) => p.ai) ?? [])]
+      .map((x) => (x as { burrow?: { hide: number; cone: { delay: number } } } | undefined)?.burrow)
+      .find(Boolean);
+    if (bu) return (mv === 'burrow' ? bu.hide : bu.cone.delay) * 1000;
+  }
   const c = def?.ai?.[mv] ?? def?.phases?.map((p) => p.ai?.[mv]).find(Boolean);
   return ((c?.delay ?? 1.5) + (mv === 'chant' ? (c?.cast ?? 0) : 0)) * 1000;
 }
