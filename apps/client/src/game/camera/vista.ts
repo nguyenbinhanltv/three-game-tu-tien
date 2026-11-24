@@ -13,7 +13,7 @@ export interface VistaSpot {
   r: number;
 }
 
-/** 3 điểm trên Vân Lam (tọa độ lấy từ `places.json`): cổng bắc tông môn, Vách Đá Ngọc, bãi ven hồ. */
+/** 3 điểm trên Vân Lam (tọa độ theo bảng địa điểm của level): cổng bắc tông môn, Vách Đá Ngọc, bãi ven hồ. */
 export const VISTA_SPOTS: readonly VistaSpot[] = [
   { id: 'cong', level: 'van_lam', x: 2048, z: 1730, r: 10 },
   { id: 'thach_vien', level: 'van_lam', x: 2450, z: 1760, r: 12 },
