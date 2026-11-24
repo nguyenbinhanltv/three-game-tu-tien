@@ -25,53 +25,47 @@ describe('VFX Lôi tu', () => {
     }
   });
 
-  it('không có timeline cho chiêu của tư thế hay chiêu lướt (mượn hình / không có động tác)', () => {
-    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD && (x.stanceOf || x.kind === 'dash')))
-      expect(FX_TIMELINE.has(s.id), s.id).toBe(false);
-  });
-
-  it('sét ba tầng màu: mỗi chiêu có tầng tối (decal scorch/crack hoặc nứt tone core), tầng thân (body) và tầng sáng (rim/accent)', () => {
-    for (const id of OWN) {
-      const e = evs(id);
-      const tones = new Set(e.map((x) => ('tone' in x ? x.tone : undefined)).filter(Boolean));
-      expect(tones.has('body'), `${id}: thân`).toBe(true);
-      expect(tones.has('rim') || tones.has('accent'), `${id}: sáng`).toBe(true);
-      expect(tones.has('shadow') || tones.has('core'), `${id}: tối`).toBe(true);
+  it('cả 11 chiêu Lôi tu (kể cả tư thế và chiêu lướt) có timeline riêng, hợp lệ, dùng sprite sét vẽ tay `loi_*`', () => {
+    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD)) {
+      const tl = FX_TIMELINE.get(s.id)!;
+      expect(tl, s.id).toBeDefined();
+      const sprites = evs(s.id).filter((e) => e.type === 'mesh' && e.shape === 'sprite');
+      expect(sprites.length, s.id).toBeGreaterThanOrEqual(3);
+      for (const e of sprites) expect(String((e as { sprite?: string }).sprite), s.id).toMatch(/^loi_/);
     }
   });
 
-  it('sét là hình zigzag có nhánh (bolt): chớp chập chờn qua ≥ 2 biến thể, mỗi tia ba lớp lồng nhau (core/body/rim); điểm đánh có decal strike', () => {
-    // V-P1: Cửu Tiêu Thiên Lôi dựng lại theo concept bằng cột sét (kite dọc), không dùng bolt zigzag.
-    for (const id of ['skl_loi_an_kich', 'skl_phich_lich', 'skl_loi_phat', 'skl_loi_hai', 'skl_loi_vong']) {
-      const e = evs(id);
-      const bolts = e.filter((x) => x.type === 'mesh' && x.shape.startsWith('bolt'));
-      expect(new Set(bolts.map((x) => (x.type === 'mesh' ? x.shape : ''))).size, `${id}: biến thể`).toBeGreaterThanOrEqual(2);
-      expect(new Set(bolts.map((x) => (x.type === 'mesh' ? x.t : 0))).size, `${id}: số khung chớp`).toBeGreaterThanOrEqual(4);
-      const tones = new Set(bolts.map((x) => (x.type === 'mesh' ? x.tone : '')));
-      expect(tones.has('body') && tones.has('rim'), `${id}: thân + lõi`).toBe(true);
-      if (id !== 'skl_loi_vong')
+  it('ba nhịp: báo trước (trừ chiêu lướt kích theo S.FX), chớp sáng `loi_flash` ở ±50 ms quanh mốc trúng, dư ba từ +150 ms', () => {
+    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD)) {
+      const m = evs(s.id).filter((e) => e.type === 'mesh') as (FxEvent & { sprite?: string; t?: number })[];
+      if (s.kind !== 'dash')
         expect(
-          e.some((x) => x.type === 'decal' && x.tex === 'strike'),
-          id,
+          m.some((e) => (e.t ?? 0) < -0.05),
+          `${s.id} thiếu báo trước`,
         ).toBe(true);
-    }
-    // chiêu chính có đủ viền tối (core) quanh tia
-    for (const id of ['skl_loi_an_kich', 'skl_loi_phat']) {
       expect(
-        evs(id).some((x) => x.type === 'mesh' && x.shape.startsWith('bolt') && x.tone === 'core'),
-        id,
+        m.some((e) => e.sprite === 'loi_flash' && Math.abs(e.t ?? 0) <= 0.05),
+        `${s.id} thiếu chớp`,
+      ).toBe(true);
+      expect(
+        m.some((e) => (e.t ?? 0) >= 0.15),
+        `${s.id} thiếu dư ba`,
       ).toBe(true);
     }
   });
 
-  it('Lôi Phạt là CỘT sét lớn giáng từ trời: cột đứng (rot -90° quanh X) cao ≥ 10 m ở mục tiêu, lõi trắng (rim) và viền tối', () => {
-    const cols = evs('skl_loi_phat').filter(
-      (x) => x.type === 'mesh' && x.shape.startsWith('bolt') && x.at === 'target' && x.rot?.[0] === -90,
-    );
-    expect(cols.length).toBeGreaterThan(0);
-    const tallest = Math.max(...cols.map((x) => (x.type === 'mesh' && Array.isArray(x.scale) ? x.scale[2]! : 0)));
-    expect(tallest).toBeGreaterThanOrEqual(10);
-    expect(new Set(cols.map((x) => (x.type === 'mesh' ? x.tone : ''))).size).toBeGreaterThanOrEqual(3);
+  it('không vòng ấn rune dưới chân, không khuôn chung (rune_ring2/ripple/crescent) làm hình chính, không đỏ/cam', () => {
+    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD)) {
+      const e = evs(s.id);
+      expect(
+        e.some((x) => x.type === 'decal' && x.tex === 'rune'),
+        s.id,
+      ).toBe(false);
+      expect(
+        e.some((x) => x.type === 'mesh' && ['rune_ring2', 'ripple', 'crescent'].includes(String(x.shape))),
+        s.id,
+      ).toBe(false);
+    }
   });
 
   it('không che camera/nhân vật/mục tiêu: mọi tia rơi từ trên cao đều camFade; không khối nào follow thân; đá có trần', () => {

@@ -1,0 +1,35 @@
+{
+  "skillId": "skl_thiem_loi_bo",
+  "idea": "Thiểm Lôi Bộ: thuấn di thành một vệt sét gấp khúc xanh lam trắng bật từ chỗ đứng sang mục tiêu, hai đầu có quầng chớp, để lại bóng mờ và vài tia nhỏ. Màu: lõi trắng xanh lạnh RẤT SÁNG, thân xanh lam điện/chàm (hue 215–240°), chỉ viền ngoài rất mỏng mới hơi tím chàm; KHÔNG tím đậm, KHÔNG hồng; vàng chỉ là điểm nhỏ.",
+  "element": "kim",
+  "path": "loi_tu",
+  "shapeLang": [
+    "arc",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 7,
+    "particles": 230,
+    "screenCover": 0.1,
+    "overdraw": 4
+  },
+  "textures": [],
+  "silhouette": "một vệt sét gấp khúc (zigzag) dài từ người ra mục tiêu, hai đầu có quầng chớp, vài nhánh rẽ nhỏ bắn hai bên",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}
