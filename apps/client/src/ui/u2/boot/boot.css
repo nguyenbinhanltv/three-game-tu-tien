@@ -388,16 +388,17 @@
     margin-top: 8px;
     gap: 6px;
   }
-  :root:root .ngj-card .look-gender .look-face {
+  :root:root .ngj-card.login-card .look-gender .look-face {
     height: 78px;
   }
 }
 @media (max-height: 950px) {
-  :root:root .ngj-card .look-gender .look-face {
+  :root:root .ngj-card.login-card .look-gender .look-face {
     height: 56px;
   }
+  #root .ts-card.u2-card .login-hint,
   #root .ts-card.u2-card .login-tag {
-    margin: 0 0 2px;
+    display: none;
   }
   .root-picker {
     margin: 4px 0;
@@ -413,16 +414,12 @@
   }
 }
 @media (max-height: 700px) {
-  #root .ts-card.u2-card .login-hint,
-  #root .ts-card.u2-card .login-tag {
-    display: none;
-  }
   .root-opt {
     height: 28px;
   }
 }
 @media (max-height: 640px) {
-  :root:root .ngj-card .look-gender .look-face {
+  :root:root .ngj-card.login-card .look-gender .look-face {
     display: none;
   }
   #root .ts-card.login-card .login-form {
