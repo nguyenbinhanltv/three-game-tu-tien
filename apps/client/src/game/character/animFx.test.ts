@@ -144,6 +144,17 @@ describe('Thân Pháp T2: xung bắt đầu/dừng/pivot', () => {
     run(li, 2, 5);
     expect(Math.abs(li.roll)).toBeLessThan(1e-3);
   });
+  it('dt lớn (0,1 s, ~10 fps) vẫn ổn định: hữu hạn và về gần 0', () => {
+    const li = new LocoImpulse();
+    li.kick('stop', 1);
+    li.kick('start', 1);
+    li.kick('pivot', 1, 1);
+    for (let i = 0; i < 200; i++) {
+      li.update(0.1, 0, 0);
+      expect(Number.isFinite(li.pitch + li.roll + li.dip)).toBe(true);
+    }
+    expect(Math.abs(li.pitch) + Math.abs(li.roll) + Math.abs(li.dip)).toBeLessThan(1e-3);
+  });
   it('reset về nghỉ', () => {
     const li = new LocoImpulse();
     li.kick('stop', 1);

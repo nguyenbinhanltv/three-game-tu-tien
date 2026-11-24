@@ -175,9 +175,15 @@ export class LocoImpulse {
     // Lò xo tắt dần tới 0 (tần số riêng ~2,1 Hz, tắt ~0,6 s): x'' = −k x − c x'.
     const k = 180;
     const c = 14;
+    // Bước con ≤ 16 ms: Euler bán ẩn mất ổn định ở dt ≈ 0,1 (trị riêng ≈ −1,47); kẹp thêm để không bao giờ ra NaN/Infinity.
+    const n = Math.max(1, Math.ceil(dt / 0.016));
+    const h = dt / n;
     const step = (x: number, v: number): [number, number] => {
-      const nv = v + (-k * x - c * v) * dt;
-      return [x + nv * dt, nv];
+      for (let i = 0; i < n; i++) {
+        v += (-k * x - c * v) * h;
+        x += v * h;
+      }
+      return Number.isFinite(x) && Number.isFinite(v) ? [x, v] : [0, 0];
     };
     [this.pitch, this.vp] = step(this.pitch, this.vp);
     [this.roll, this.vr] = step(this.roll, this.vr);
