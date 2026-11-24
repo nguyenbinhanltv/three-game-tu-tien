@@ -155,6 +155,7 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
                 kind?: HazardMsg['kind'];
                 shape?: string;
                 w?: number;
+                cast?: number;
                 cone?: { r: number; w: number; delay: number };
               }
             | undefined
@@ -176,6 +177,20 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
         m = { ...base, x: b.x, z: b.z, yaw, sh: rect ? 'rect' : 'cone', w: !rect && cfg.w ? (cfg.w * Math.PI) / 180 : cfg.w } as HazardMsg;
       } else if (mv === 'chant') m = { ...base, x: b.x, z: b.z } as HazardMsg;
       else m = { ...base, x: gg.cur.x, z: gg.cur.z } as HazardMsg;
+      if (mv === 'chant') {
+        // Như server: niệm `cast` giây (FX niệm riêng của quái) rồi mới thả vạch báo.
+        const mon = (g as unknown as { ents?: { monsters: Map<string, unknown> } }).ents?.monsters.get(id);
+        if (mon) (gg.monFx as unknown as { cast(m: unknown): void }).cast(mon);
+        const wait = cfg.cast ?? 0;
+        if (wait > 0)
+          (g as unknown as { vfx: { add(t: number, f: () => void, e: () => void): void } }).vfx.add(
+            wait,
+            () => {},
+            () => onHazard(g, m),
+          );
+        else onHazard(g, m);
+        return true;
+      }
       onHazard(g, m);
       return true;
     },

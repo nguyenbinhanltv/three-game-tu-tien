@@ -814,7 +814,7 @@ export class FxRunner {
     m.fxA.w = mapped ? forgeDecalIndex(ev.tex) : kind;
     m.renderOrder = -3;
     m.position.copy(at);
-    m.quaternion.setFromAxisAngle(UP, ev.sector ? yaw : (ev.yaw ?? (c.seed * 57) % 360) * DEG);
+    m.quaternion.setFromAxisAngle(UP, ev.sector ? yaw + (ev.yaw ?? 0) * DEG : (ev.yaw ?? (c.seed * 57) % 360) * DEG);
     m.scale.setScalar(ev.r * c.mul);
     const dur = ev.untilDelay && c.delay ? c.delay : ev.dur;
     const grow = Math.max(0.05, ev.grow ?? 0.15);

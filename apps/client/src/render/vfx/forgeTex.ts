@@ -65,11 +65,11 @@ export function mapDecalNodes(U: FxUniforms): { color: N; opacity: N } {
   const fan = step(0.0001, half);
   const inFan = float(1).sub(smoothstep(half.sub(0.02), half, ang));
   const mask = mix(float(1), inFan.mul(step(r, 1.0)), fan);
-  const edge = max(smoothstep(half.sub(0.1), half.sub(0.02), ang), smoothstep(0.9, 0.975, r))
+  const edge = max(smoothstep(half.sub(0.12), half.sub(0.03), ang), smoothstep(0.88, 0.97, r))
     .mul(mask)
     .mul(fan);
   const base = s.rgb.mul(tint).mul(heat.mul(0.55).add(0.7));
-  const lit = mix(base, U.b.xyz.mul(1.3), edge.mul(1.0));
+  const lit = mix(base, U.b.xyz.mul(1.6), edge.mul(1.0));
   // Nền đặc dưới vân (các khe của ảnh Codex trong suốt): vạch báo = đĩa đỏ, băng = đĩa xanh thẫm; đọc được trên nền sáng ban ngày.
   const navy = vec3(0.04, 0.17, 0.42);
   const fillCol = mix(U.color.mul(0.8), navy, step(0.5, sel));

@@ -282,7 +282,7 @@ export interface FxDecalEvent extends FxBase {
   untilDelay?: boolean;
   /** Vẽ ĐÈ lên mọi vật (không thử độ sâu): vạch báo của boss phải đọc được khi thân boss dài nằm đè lên vùng (V-P9). Chỉ dùng cho cảnh báo của địch. */
   top?: boolean;
-  /** Mặt quạt (chỉ tex `FORGE_DECALS`): nửa góc (độ, 1–180) quanh hướng nhìn/hướng vùng; `yaw` bị bỏ qua. `r` là bán kính cung quạt. */
+  /** Mặt quạt (chỉ tex `FORGE_DECALS`): nửa góc (độ, 1–180) quanh hướng nhìn/hướng vùng; `yaw` là độ lệch thêm so với hướng đó (quét từng tia). `r` là bán kính cung quạt. */
   sector?: number;
   /** Nâng decal thêm (m, 0–0,5; mặc định 0) cho chỗ nền có ô đá nhô cao hơn mặt phẳng decal (sân lát đá tông môn). */
   lift?: number;

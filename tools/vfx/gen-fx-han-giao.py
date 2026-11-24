@@ -48,7 +48,7 @@ def ring(n, rad, base_seed, scale, tone='body', tilt=-90, h=0.0):
     return out
 
 
-def flips(n, rad, base_t, scale, h=0.9, dur=0.9, alpha=0.95, tone='rim'):
+def flips(n, rad, base_t, scale, h=0.9, dur=0.9, alpha=0.95, tone='body'):
     """Flipbook băng nứt (texture Codex dùng chung `ice_flip`) tại các điểm quanh tâm vùng; quay mặt về camera."""
     out = []
     for i in range(n):
@@ -84,33 +84,39 @@ write('mon_warn__boss_han_giao__slam', [
 ])
 write('mon_boom_circle__boss_han_giao__slam', [
     mesh('burst', 0, 0.16, 'rim', 0.4, 0, offset=[0, 0.5, 0], scale=1.6, billboard=True, sweep=0),
-    decal('ice_crack', 0, 4.4, 2.4, 'body', 1.0, 0.02, top=False, untilDelay=False),  # đĩa băng xanh sáng + viền vàng, hiện ngay
+    decal('ice_crack', 0, 4.4, 2.4, 'body', 1.0, 0.02, top=False, untilDelay=False, lift=0.35),  # đĩa băng xanh sáng + viền vàng, hiện ngay
     mesh('ripple', 0, 0.5, 'rim', 0.95, 2, scale=0.7, scaleTo=1.04, fit='area', sweep=0.25, erodeFrom=0.5, ragged=0.4),
     mesh('ripple', 0.04, 0.45, 'body', 0.85, 3, scale=0.5, scaleTo=0.85, fit='area', sweep=0.3, erodeFrom=0.45),
     *flips(6, 2.4, 0.0, 1.9),
     *flips(4, 0.9, 0.04, 1.5, tone='body'),
     *ring(8, 3.1, 20, 0.62),  # cột băng nhọn quanh vùng
-    mesh('spike', 0, 0.9, 'rim', 1, 40, offset=[0, 0, 0], rot=[-90, 0, 0], scale=0.95, sweep=0.15, erodeFrom=0.6),
+    mesh('spike', 0, 0.9, 'body', 1, 40, offset=[0, 0, 0], rot=[-90, 0, 0], scale=0.95, sweep=0.15, erodeFrom=0.6),
     mist(0.05, 1.5, 0.4, 7, tone='body'),
-    parts('shard', 0, 26, 6, 0.9, 0.7, 0.12, 'rim', offset=[0, 0.3, 0], grav=9, tier=0),
+    parts('shard', 0, 26, 6, 0.9, 0.7, 0.12, 'body', offset=[0, 0.3, 0], grav=9, tier=0),
     parts('dust', 0, 26, 3, 0.9, 0.9, 0.24, 'core', offset=[0, 0.2, 0], grav=1.2),
 ])
 
 # ---------------- CHANT: tròn r 12–13 quanh boss, niệm 2,6 s rồi báo 0,9 s ----------------
+# Lúc niệm (MonFx.cast, `mon_cast__<quái>`, mét thật): viền đỏ MỎNG r 13 + triện mờ trong suốt thời gian niệm, rồi 0,9 s cuối vạch báo tô đậm.
+write('mon_cast__boss_han_giao', [
+    decal('rune', 0, 13, 3.4, 'accent', 0.7, 0.35, ink=True, untilDelay=False),
+    decal('rune', 0.15, 8.5, 3.3, 'accent', 0.38, 0.5, yaw=25, untilDelay=False),
+    decal('rune', 0.3, 5, 3.2, 'rim', 0.25, 0.5, yaw=-40, untilDelay=False),
+])
 write('mon_warn__boss_han_giao__chant', [
     *warn_disc(0.85, 70, -20),
     parts('spark', 0, 26, 3.2, 1, 0.9, 0.11, 'accent', inward=True, offset=[0, 0.2, 0]),
 ])
 write('mon_boom_circle__boss_han_giao__chant', [
     mesh('burst', 0, 0.16, 'rim', 0.34, 0, offset=[0, 0.7, 0], scale=1.4, billboard=True, sweep=0),
-    decal('ice_crack', 0, 4.5, 2.8, 'body', 1.0, 0.03, top=False, untilDelay=False),
+    decal('ice_crack', 0, 4.5, 2.8, 'body', 1.0, 0.03, top=False, untilDelay=False, lift=0.35),
     mesh('ripple', 0, 0.6, 'rim', 0.95, 2, scale=0.6, scaleTo=1.04, fit='area', sweep=0.25, erodeFrom=0.5, ragged=0.4),
     mesh('ripple', 0.06, 0.55, 'body', 0.85, 3, scale=0.4, scaleTo=0.8, fit='area', sweep=0.3, erodeFrom=0.45),
     *flips(8, 3.3, 0.0, 2.1),
     *flips(6, 1.5, 0.05, 1.7, tone='body'),
     *ring(8, 3.1, 60, 0.6),
     mist(0.05, 1.8, 0.32, 9, tone='body'),
-    parts('shard', 0, 40, 7, 1, 0.85, 0.12, 'rim', offset=[0, 0.3, 0], grav=8, tier=0),
+    parts('shard', 0, 40, 7, 1, 0.85, 0.12, 'body', offset=[0, 0.3, 0], grav=8, tier=0),
     parts('dust', 0, 32, 4, 1, 0.9, 0.26, 'core', offset=[0, 0.2, 0], grav=1.2),
 ])
 
@@ -123,12 +129,14 @@ write('mon_warn_cone__boss_han_giao__sweep', [
 ])
 write('mon_boom_cone__boss_han_giao__sweep', [
     mesh('burst', 0, 0.14, 'rim', 0.36, 0, offset=[0, 0.6, 0.8], scale=1.5, billboard=True, sweep=0),
-    decal('ice_crack', 0, 8, 2.2, 'body', 1.0, 0.03, top=False, untilDelay=False, sector=35),  # mặt quạt băng nứt, viền sáng sắc
-    *[mesh('flip', 0.0 + i * 0.03, 0.9, 'rim', 0.95, 230 + i, flip='ice_flip', scale=1.7 + (i % 3) * 0.25,
+    decal('ice_crack', 0, 8, 2.2, 'body', 1.0, 0.03, top=False, untilDelay=False, sector=35, lift=0.35),
+    # lưỡi băng quét: các tia hẹp sáng trắng lần lượt từ mép này sang mép kia (như concept), từ gốc ra cung
+    *[decal('ice_crack', i * 0.035, 8, 0.55, 'rim', 1.0, 0.07, top=False, untilDelay=False, sector=4, yaw=-31 + i * 62 / 6, lift=0.4) for i in range(7)],  # mặt quạt băng nứt, viền sáng sắc
+    *[mesh('flip', 0.0 + i * 0.03, 0.9, 'body', 0.95, 230 + i, flip='ice_flip', scale=1.7 + (i % 3) * 0.25,
            offset=[round(math.sin(math.radians((i % 3 - 1) * 16)) * (2.5 + i * 1.7), 2), 0.9, round(math.cos(math.radians((i % 3 - 1) * 16)) * (2.5 + i * 1.7), 2)],
            sweep=0, tier=0 if i % 2 == 0 else 1) for i in range(7)],
     mist(0.05, 1.6, 0.5, 11, scale=0.5),
-    parts('shard', 0, 26, 9, 0.35, 0.6, 0.1, 'rim', offset=[0, 0.5, 0.8], grav=4, tier=0),
+    parts('shard', 0, 26, 9, 0.35, 0.6, 0.1, 'body', offset=[0, 0.5, 0.8], grav=4, tier=0),
     parts('dust', 0.04, 14, 3, 0.7, 0.9, 0.26, 'core', offset=[0, 0.1, 4], grav=1),
 ])
 print('ok')

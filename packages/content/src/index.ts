@@ -147,6 +147,7 @@ import fx_mon_strike from '../data/fx/mon_strike.json';
 import fx_mon_warn from '../data/fx/mon_warn.json';
 import fx_mon_warn_cone from '../data/fx/mon_warn_cone.json';
 import fx_mon_warn_line from '../data/fx/mon_warn_line.json';
+import fx_mon_cast__boss_han_giao from '../data/fx/mon_cast__boss_han_giao.json';
 import fx_mon_warn__boss_han_giao__slam from '../data/fx/mon_warn__boss_han_giao__slam.json';
 import fx_mon_boom_circle__boss_han_giao__slam from '../data/fx/mon_boom_circle__boss_han_giao__slam.json';
 import fx_mon_warn__boss_han_giao__chant from '../data/fx/mon_warn__boss_han_giao__chant.json';
@@ -900,6 +901,7 @@ export const MON_FX_TIMELINES = [
   fx_mon_warn_cone,
   fx_mon_warn_line,
   fx_mon_warn,
+  fx_mon_cast__boss_han_giao,
   fx_mon_warn__boss_han_giao__slam,
   fx_mon_boom_circle__boss_han_giao__slam,
   fx_mon_warn__boss_han_giao__chant,

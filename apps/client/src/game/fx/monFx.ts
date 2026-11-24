@@ -127,6 +127,7 @@ export class MonFx {
   /** Quái bị đánh (sát thương lên quái). `victim` = chân quái; chest = 55% chiều cao. */
   hit(m: MonLike): void {
     const tl = this.tl('mon_hit');
+    if (this.lab) return;
     if (!tl || !this.near(m.x, m.z) || !this.gap('hit', m.id, MON_HIT_GAP)) return;
     const tgt: FxTarget = { x: m.x, y: m.y, z: m.z, chest: m.model.height * 0.55 };
     this.runner.startAt(tl, { actor: this.actorOf(m), palette: this.elemOf(m), tgt, mul: Math.min(1.6, monScale(m.model.height)) });
@@ -136,6 +137,7 @@ export class MonFx {
   /** Quái đánh trúng người/vật: vệt chém ở người bị đánh. */
   strike(m: MonLike, dst: { x: number; y: number; z: number }): void {
     const tl = this.tl('mon_strike');
+    if (this.lab) return; // phòng thử chỉ phát FX của chiêu đang xem: đòn đánh thường của boss (đỏ/cam) làm lẫn với vạch báo
     if (!tl || !this.near(dst.x, dst.z) || !this.gap('strike', m.id, MON_STRIKE_GAP)) return;
     const yaw = Math.atan2(dst.x - m.x, dst.z - m.z);
     const tgt: FxTarget = { x: dst.x, y: dst.y, z: dst.z, chest: 1.1 };
@@ -151,13 +153,15 @@ export class MonFx {
 
   /** Quái niệm/tụ lực (cờ chant bật). */
   cast(m: MonLike): void {
-    const tl = this.tl('mon_cast');
+    // Timeline niệm riêng của quái (`mon_cast__<loại>`, kích thước theo mét, không nhân cỡ quái) thay timeline chung.
+    const own = this.tl(`mon_cast__${m.s.t}`);
+    const tl = own ?? this.tl('mon_cast');
     if (!tl || !this.near(m.x, m.z) || !this.gap('cast', m.id, 0.5)) return;
     this.runner.startAt(tl, {
       actor: this.actorOf({ ...m, y: m.y }),
       palette: this.elemOf(m),
       tgt: null,
-      mul: monScale(m.model.height),
+      mul: own ? 1 : monScale(m.model.height),
       variant: this.variantOf(m),
     });
     this.note('mon_cast', m.id);
