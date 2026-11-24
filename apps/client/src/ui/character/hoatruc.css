@@ -375,19 +375,32 @@
   }
 }
 
+/* màn ≤ 1100 cao (1080p, 1366×768…): cửa sổ chừa đáy theo khối HUD nên thấp hơn, lưới thấp lại để khung 3D/tranh không bị bảng cắt chân (U13) */
+@media (max-height: 1100px) {
+  .equip-board-grid {
+    min-height: 460px;
+  }
+}
+
 /* màn thấp (720p): bỏ nhãn dưới ô, thanh khí huyết/linh lực (đã có ở thẻ người chơi trên HUD), lưới chỉ số (xem ở tab Thuộc tính) và dòng gợi ý để tranh cao hơn, không cắt chữ */
 @media (max-height: 800px) {
+  :root:root .char .equip-board-grid {
+    grid-template-columns: 36px 1fr 36px;
+  }
+  :root:root .char .equip-board-grid .equip-cell {
+    width: 36px;
+  }
   .equip-board-grid {
-    min-height: 330px;
+    min-height: 200px;
   }
   .equip-board-grid > .equip-col {
     gap: 2px;
   }
   .equip-board-grid .equip-cell {
-    width: 44px;
+    width: 38px;
   }
   .equip-board-grid {
-    grid-template-columns: 44px 1fr 44px;
+    grid-template-columns: 38px 1fr 38px;
   }
   .equip-board-grid > .equip-col {
     justify-content: space-between;

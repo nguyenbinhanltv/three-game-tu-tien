@@ -183,11 +183,19 @@
 .equip-center > .wd-pv {
   position: absolute;
   inset: 0;
-  padding: 34px 62px var(--u-sp-3);
+  box-sizing: border-box;
+  padding: 34px 62px var(--u-sp-2);
 }
+/* Khung co theo chỗ còn lại (flex) để không bị bảng cắt chân; dòng gợi ý nằm dưới khung, không đè. */
 .equip-center > .wd-pv .wd-pv-stage {
-  height: calc(100% - 20px);
+  flex: 1 1 0;
+  min-height: 0;
+  height: auto;
   aspect-ratio: 190 / 262;
   width: auto;
   background: var(--u-thanh-1);
+}
+.equip-center > .wd-pv .wd-pv-hint {
+  flex: none;
+  line-height: 1.2;
 }

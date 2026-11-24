@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateVfxCard, type VfxCard } from './vfxcard';
+import { checkStandard2, isRedOrange, validateVfxCard, type VfxCard } from './vfxcard';
 
 const ok: VfxCard = {
   skillId: 'a',
@@ -37,4 +37,59 @@ describe('validateVfxCard', () => {
       ).join(),
     ).toMatch(/không tồn tại/));
   it('texture trùng', () => expect(v({ textures: [ok.textures[0]!, ok.textures[0]!] }).join()).toMatch(/trùng/));
+});
+
+describe('checkStandard2 (chuẩn Họa Pháp Lô 2)', () => {
+  const card: VfxCard = { ...ok, standard: 2, silhouette: 'sợi khói tím cuộn quanh mục tiêu', materials: ['smoke'] };
+  const evs = [
+    { type: 'mesh', t: -0.2, shape: 'flip', flip: 'ink_smoke' },
+    { type: 'mesh', t: 0, shape: 'ribbon' },
+    { type: 'particles', t: 0.3 },
+  ];
+  const ctx = { redTones: new Set<string>() };
+  it('thẻ cũ (không standard) không bị kiểm', () => expect(checkStandard2({ ...card, standard: undefined }, [], false, ctx)).toEqual([]));
+  it('thẻ đạt chuẩn không lỗi', () => expect(checkStandard2(card, evs, false, ctx)).toEqual([]));
+  it('bắt khuôn chung, thiếu chất liệu, thiếu ba nhịp, phủ quá 0,2', () => {
+    const bad = checkStandard2(
+      { ...card, budget: { ...card.budget, screenCover: 0.3 } },
+      [{ type: 'mesh', t: 0, shape: 'rune_ring2' }],
+      false,
+      ctx,
+    ).join('|');
+    expect(bad).toMatch(/khuôn chung/);
+    expect(bad).toMatch(/materials "smoke"/);
+    expect(bad).toMatch(/dư ba/);
+    expect(bad).toMatch(/screenCover 0.3 > 0.2/);
+  });
+  it('chiêu cuối được phủ tới 0,35', () =>
+    expect(checkStandard2({ ...card, budget: { ...card.budget, screenCover: 0.3 } }, evs, true, ctx)).toEqual([]));
+  it('bắt tông đỏ/cam của bảng hướng tu', () => {
+    expect(
+      checkStandard2(card, [...evs, { type: 'mesh', t: 0, shape: 'ribbon', tone: 'accent' }], false, {
+        redTones: new Set(['accent']),
+      }).join('|'),
+    ).toMatch(/đỏ\/cam/);
+  });
+  it('sự kiện không khai tone mặc định là body: bắt khi body đỏ', () => {
+    expect(checkStandard2(card, evs, false, { redTones: new Set(['body']) }).join('|')).toMatch(/tông body.*mặc định/);
+    expect(checkStandard2(card, [...evs, { type: 'impact', t: 0 }], false, { redTones: new Set() })).toEqual([]);
+  });
+  it('from: "start" quy về mốc trúng bằng hitAt', () => {
+    const c0 = { redTones: new Set<string>(), hitAt: 0.4 };
+    // t=0.4 từ lúc bấm = đúng mốc trúng; t=0 từ lúc bấm = báo trước; t=0.7 từ lúc bấm = dư ba (+0,3 s)
+    const ok2 = [
+      { type: 'mesh', from: 'start' as const, t: 0, shape: 'flip', flip: 'ink_smoke' },
+      { type: 'mesh', from: 'start' as const, t: 0.4, shape: 'ribbon' },
+      { type: 'particles', from: 'start' as const, t: 0.7 },
+    ];
+    expect(checkStandard2(card, ok2, false, c0)).toEqual([]);
+    // cùng dữ liệu nhưng không quy đổi: t=0 bị tính là điểm nhấn, không còn nhịp báo trước/dư ba đúng
+    expect(checkStandard2(card, ok2, false, { redTones: new Set() }).join('|')).toMatch(/báo trước/);
+  });
+  it('isRedOrange nhận đỏ/cam, bỏ qua lam/vàng nhạt', () => {
+    expect(isRedOrange('e4452f')).toBe(true);
+    expect(isRedOrange('ff9a4a')).toBe(true);
+    expect(isRedOrange('2cc7dc')).toBe(false);
+    expect(isRedOrange('f2d86b')).toBe(false);
+  });
 });

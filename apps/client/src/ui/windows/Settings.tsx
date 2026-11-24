@@ -1,5 +1,5 @@
 import { QUALITIES } from '../../base/quality';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { t } from '@dtl/content';
 import { getVolume, isMuted, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../../game/audio/audio';
 import { Game } from '../../game/engine';
@@ -63,6 +63,32 @@ function LSeg<V extends string | number | boolean>({ bare, hint, ...p }: SegProp
     <Field label={p.label ?? ''} hint={hint} bare={bare}>
       <Segmented {...p} />
     </Field>
+  );
+}
+
+/**
+ * Dấu hiệu còn nội dung bên dưới (U13): phần tử cuối nằm trong vùng cuộn; khi nó chưa lọt vào khung nhìn thì hiện chip dính đáy
+ * "Cuộn xuống". Dùng IntersectionObserver nên không cần biết thẻ nào đang cuộn.
+ */
+function ScrollCue() {
+  const end = useRef<HTMLDivElement>(null);
+  const [more, setMore] = useState(false);
+  useEffect(() => {
+    const el = end.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setMore(!e!.isIntersecting), { threshold: 0.01 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <>
+      <div ref={end} className="set-end" aria-hidden="true" />
+      {more && (
+        <div className="set-cue" role="note" data-testid="settings-more">
+          {t('ui.settings.scroll_more')} ↓
+        </div>
+      )}
+    </>
   );
 }
 
@@ -177,65 +203,68 @@ export function Settings() {
             format={(n) => n + '%'}
             onChange={(n) => Game.current?.setHitStop(n)}
           />
-          <LSeg
-            label={t('ui.settings.fx_quality')}
-            value={fxQ}
-            onChange={(q) => Game.current?.setFxQuality(q)}
-            options={(['low', 'medium', 'high'] as const).map((q) => ({ value: q, label: t('ui.settings.fxq.' + q) }))}
-            hint={t('ui.settings.fx_quality_hint')}
-          />
-          <LSeg
-            label={t('ui.settings.impact_frame')}
-            value={impactFrame}
-            onChange={(on) => Game.current?.setImpactFrame(on)}
-            options={onOff}
-          />
-          <LSeg
-            label={t('ui.settings.hero_rim')}
-            value={heroRim}
-            onChange={(on) => Game.current?.setHeroRim(on)}
-            options={onOff}
-            hint={t('ui.settings.hero_rim_hint')}
-          />
-          <LSeg
-            label={t('ui.settings.fx_static')}
-            value={staticFx}
-            onChange={(on) => Game.current?.setStaticFx(on)}
-            options={onOff}
-            hint={t('ui.settings.fx_static_hint')}
-          />
-          {debugOk && (
-            <>
-              <LSeg
-                label={t('ui.settings.colliders')}
-                value={colliders}
-                onChange={(on) => Game.current?.setDebugColliders(on)}
-                options={onOff}
-                hint={t('ui.settings.colliders_hint')}
-              />
-            </>
-          )}
-          <Divider label={t('ui.settings.realm_aura')} />
-          <LSeg
-            bare
-            label={t('ui.settings.realm_aura')}
-            value={auraMode}
-            onChange={(m) => Game.current?.setAuraMode(m)}
-            options={AURA_MODES.map((m) => ({ value: m, label: t('ui.settings.aura.mode.' + m) }))}
-          />
-          <LSeg
-            label={t('ui.settings.aura_others')}
-            value={auraOthers}
-            onChange={(m) => Game.current?.setAuraOthers(m)}
-            options={AURA_OTHERS.map((m) => ({ value: m, label: t('ui.settings.aura.others.' + m) }))}
-          />
-          <LSeg
-            label={t('ui.settings.aura_combat')}
-            value={auraCombat}
-            onChange={(m) => Game.current?.setAuraCombat(m)}
-            options={AURA_COMBATS.map((m) => ({ value: m, label: t('ui.settings.aura.combat.' + m) }))}
-            hint={t('ui.settings.realm_aura_hint')}
-          />
+          <details className="set-adv" data-testid="settings-advanced">
+            <summary>{t('ui.settings.advanced')}</summary>
+            <LSeg
+              label={t('ui.settings.fx_quality')}
+              value={fxQ}
+              onChange={(q) => Game.current?.setFxQuality(q)}
+              options={(['low', 'medium', 'high'] as const).map((q) => ({ value: q, label: t('ui.settings.fxq.' + q) }))}
+              hint={t('ui.settings.fx_quality_hint')}
+            />
+            <LSeg
+              label={t('ui.settings.impact_frame')}
+              value={impactFrame}
+              onChange={(on) => Game.current?.setImpactFrame(on)}
+              options={onOff}
+            />
+            <LSeg
+              label={t('ui.settings.hero_rim')}
+              value={heroRim}
+              onChange={(on) => Game.current?.setHeroRim(on)}
+              options={onOff}
+              hint={t('ui.settings.hero_rim_hint')}
+            />
+            <LSeg
+              label={t('ui.settings.fx_static')}
+              value={staticFx}
+              onChange={(on) => Game.current?.setStaticFx(on)}
+              options={onOff}
+              hint={t('ui.settings.fx_static_hint')}
+            />
+            {debugOk && (
+              <>
+                <LSeg
+                  label={t('ui.settings.colliders')}
+                  value={colliders}
+                  onChange={(on) => Game.current?.setDebugColliders(on)}
+                  options={onOff}
+                  hint={t('ui.settings.colliders_hint')}
+                />
+              </>
+            )}
+            <Divider label={t('ui.settings.realm_aura')} />
+            <LSeg
+              bare
+              label={t('ui.settings.realm_aura')}
+              value={auraMode}
+              onChange={(m) => Game.current?.setAuraMode(m)}
+              options={AURA_MODES.map((m) => ({ value: m, label: t('ui.settings.aura.mode.' + m) }))}
+            />
+            <LSeg
+              label={t('ui.settings.aura_others')}
+              value={auraOthers}
+              onChange={(m) => Game.current?.setAuraOthers(m)}
+              options={AURA_OTHERS.map((m) => ({ value: m, label: t('ui.settings.aura.others.' + m) }))}
+            />
+            <LSeg
+              label={t('ui.settings.aura_combat')}
+              value={auraCombat}
+              onChange={(m) => Game.current?.setAuraCombat(m)}
+              options={AURA_COMBATS.map((m) => ({ value: m, label: t('ui.settings.aura.combat.' + m) }))}
+              hint={t('ui.settings.realm_aura_hint')}
+            />
+          </details>
         </div>
       )}
       {tab === 'audio' && (
@@ -338,6 +367,7 @@ export function Settings() {
           </div>
         </div>
       )}
+      <ScrollCue key={tab} />
     </PanelWindow>
   );
 }

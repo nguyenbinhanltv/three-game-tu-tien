@@ -12,6 +12,11 @@
       Tiêu đề lấy từ i18n (`ui.title`) lúc build qua plugin trong vite.config.ts.
     -->
     <style>
+      /* Cỡ và vị trí tiêu đề theo CẢ bề ngang lẫn bề cao khung nhìn: màn thấp (Chrome có thanh công cụ, 1280×600) thì logo nhỏ lại để khung đăng nhập còn chỗ. */
+      :root {
+        --ts-fs: clamp(44px, min(10.5vw, 14vh), 148px);
+        --ts-top: min(15vh, 11vh + 4px);
+      }
       @font-face {
         font-family: 'DTL Title';
         src: url(/fonts/dtl-title.woff2) format('woff2');
@@ -74,10 +79,10 @@
         position: absolute;
         left: 0;
         right: 0;
-        top: 15vh;
+        top: var(--ts-top);
         margin: 0;
         text-align: center;
-        font: 700 clamp(64px, 10.5vw, 148px) / 1.1 'DTL Title', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+        font: 700 var(--ts-fs) / 1.1 'DTL Title', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
         color: #29292c;
         letter-spacing: 0.01em;
         text-shadow: 0 0 28px rgba(230, 221, 203, 0.9);

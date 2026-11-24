@@ -90,7 +90,10 @@ import uxhint from './scenarios/uxhint';
 import nameplate from './scenarios/nameplate';
 import partyframe from './scenarios/partyframe';
 import charbag from './scenarios/charbag';
+import uicpu from './scenarios/uicpu';
+import uichecks from './scenarios/uichecks';
 import settingstabs from './scenarios/settingstabs';
+import loginfit from './scenarios/loginfit';
 import vs2 from './scenarios/vs2';
 import hontu from './scenarios/hontu';
 import realmaura from './scenarios/realmaura';
@@ -134,7 +137,10 @@ const SCENARIOS: Scenario[] = [
   nameplate,
   partyframe,
   charbag,
+  uicpu,
+  uichecks,
   settingstabs,
+  loginfit,
   vs2,
   hontu,
   ui,

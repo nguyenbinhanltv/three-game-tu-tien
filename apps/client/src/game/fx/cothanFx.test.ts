@@ -125,7 +125,7 @@ describe('VFX Cổ Thần', () => {
     }
   });
 
-  it('màu theo bảng màu hướng co_than: lõi đỏ sẫm, thân huyết đồng, viền vàng ngà', () => {
+  it('màu theo bảng màu hướng co_than: lõi nâu đất, thân nâu đồng, viền ngà', () => {
     const p = PATH.get('co_than')!.palette;
     const pal = paletteOf(METHOD);
     expect(pal.core).toBe(parseInt(p.core, 16));

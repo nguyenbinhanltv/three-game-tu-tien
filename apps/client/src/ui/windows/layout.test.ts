@@ -111,3 +111,28 @@ describe('cửa sổ dùng chung khung xem trước 3D', () => {
     expect(withoutPreviewPeer([win('bag')], 'char').map((w) => w.id)).toEqual(['bag']);
   });
 });
+
+describe('chừa theo khối HUD thật (U13)', () => {
+  // 1280×720 ở chế độ compact: vùng thiết kế 1506×847; thanh chiêu thanh ngang + máu cao ~264, cột phải bắt đầu x ≈ 1130.
+  const clear = { bottom: 264, rightX: 1130, rightY: 410 };
+  const vp: Viewport = { vw: 1506, vh: 847, clear };
+  it('cửa sổ ở giữa không phủ khối đáy HUD', () => {
+    const st = openWindow([], 'char', vp).opened;
+    const r = winRect(st, vp);
+    expect(r.y + r.h).toBeLessThanOrEqual(vp.vh - clear.bottom);
+  });
+  it('Nhân vật + Túi mở cùng lúc: cả cặp không chạm cột HUD góc phải trên', () => {
+    const a = openWindow([], 'char', vp).list;
+    const both = openWindow(a, 'bag', vp).list;
+    for (const w of both) {
+      const r = winRect(w, vp);
+      expect(r.x + r.w).toBeLessThanOrEqual(clear.rightX);
+      expect(r.x).toBeGreaterThanOrEqual(0);
+    }
+  });
+  it('không có `clear` thì giữ số chừa mặc định (tương thích)', () => {
+    const plain: Viewport = { vw: 1506, vh: 847 };
+    const r = winRect(openWindow([], 'char', plain).opened, plain);
+    expect(r.y + r.h).toBeLessThanOrEqual(plain.vh - 84);
+  });
+});

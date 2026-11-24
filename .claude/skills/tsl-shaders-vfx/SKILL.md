@@ -70,6 +70,10 @@ Hai lớp, đừng trộn.
 
 Chỉ là lớp hình: ai trúng, sát thương, hồi chiêu vẫn do server quyết định.
 
+## Chuẩn "Họa Pháp Lô 2" (24/11, bắt buộc cho VFX mới và làm lại)
+
+Chi tiết và bảng kiểm tự động: `docs/handbook/vfx-forge.md` (mục "Chuẩn Họa Pháp Lô 2"). Tóm tắt khi dựng một chiêu: concept Codex trước; mỗi chiêu một silhouette riêng (cấm sao tỏa tia, vòng rune dưới chân, lưỡi liềm trơn làm hình chính); ≥ 1 lớp chất liệu (flipbook Codex, khói/hạt, vân nứt, distort); lõi tối/ink + viền sáng để đọc được trên nền sáng ban ngày (không chỉ cộng sáng); ba nhịp báo trước → trúng (+30 ms có điểm nhấn) → dư ba; màu đúng hướng tu, không đỏ/cam; phủ ≤ 0,2 (chiêu cuối ≤ 0,35). Bật kiểm trong thẻ chiêu bằng `"standard": 2` (+ `silhouette`, `materials`).
+
 ## Mẫu đặc tả mỗi hiệu ứng
 
 Viết ngắn, đủ các dòng sau. Thiếu dòng nào thì chưa nên viết shader.
