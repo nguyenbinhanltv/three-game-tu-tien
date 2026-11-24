@@ -1,0 +1,37 @@
+{
+  "skillId": "skl_am_phong",
+  "idea": "Gió âm: xoáy khói hồn tím-đen cuộn quanh mục tiêu như lốc, lõi tối đặc, viền sáng lạnh, sợi hồn bị cuốn lên.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "spiral",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 420,
+    "impactMs": 80,
+    "lingerMs": 530
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 12,
+    "heightM": 6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 60,
+    "screenCover": 0.16,
+    "overdraw": 6
+  },
+  "textures": [],
+  "impactFrame": true,
+  "silhouette": "MỘT CƠN LỐC hình phễu xoắn ốc cao quanh mục tiêu, đáy hẹp, miệng loe rộng, khói tím đen lõi đặc, sợi hồn bị cuốn xoắn lên trên",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles",
+    "smoke"
+  ]
+}

@@ -135,7 +135,7 @@ type DaoLook = { body: number; rim: number; mote: number; art: number; artRim: n
 const DAO_LOOK: Record<AuraDao, DaoLook> = {
   kiem: { body: 0x2cc7dc, rim: 0xf2fdff, mote: 0x9fe2f0, art: 0, artRim: 0xa6e8ff, artTint: 0xffffff, artUnder: 0x16243d },
   ho: { body: 0xe39a2c, rim: 0xfff0c2, mote: 0xffc95a, art: 1, artRim: 0xffd27a, artTint: 0xffb24a, artUnder: 0x2a1708 },
-  dan: { body: 0xe4452f, rim: 0xffd9a0, mote: 0x8ff0b0, art: 2, artRim: 0xffb98a, artTint: 0xffffff, artUnder: 0x16243d },
+  dan: { body: 0xf2d86b, rim: 0xfff3c0, mote: 0x8ff0b0, art: 2, artRim: 0xffe9a0, artTint: 0xffffff, artUnder: 0x16243d },
   // TN-2 Hồn tu: tím hồn + bạc lạnh, hạt màu xương. `art: -1` = chưa có tranh pháp tướng nên không dựng thẻ tranh (không mượn tranh đạo khác).
   hon: { body: 0x8f7be8, rim: 0xc9d4e0, mote: 0xe6dfc8, art: -1, artRim: 0xc9d4e0, artTint: 0xffffff, artUnder: 0x14101c },
 };
@@ -487,7 +487,7 @@ export class RealmAuraFx {
         1.3,
         0.07,
         0.0,
-        0xff9a4a,
+        DAO_LOOK.dan.mote,
         0.9,
         0,
         0.8,
@@ -759,8 +759,8 @@ export class RealmAuraFx {
         });
       } else if (dao === 'dan' && ok(orbitRole)) {
         const petals: FxMesh[] = [];
-        for (let i = 0; i < nPetals; i++) petals.push(mk(shapeGeometry('kite'), 0xe4452f, 'crystal', look.rim));
-        const orbs = [0, 1, 2].map(() => mk(G.ico1, 0xff9a4a, 'solid'));
+        for (let i = 0; i < nPetals; i++) petals.push(mk(shapeGeometry('kite'), 0xf2d86b, 'crystal', look.rim));
+        const orbs = [0, 1, 2].map(() => mk(G.ico1, look.mote, 'solid'));
         ups.push((c) => {
           const n = petals.length;
           for (let i = 0; i < n; i++) {

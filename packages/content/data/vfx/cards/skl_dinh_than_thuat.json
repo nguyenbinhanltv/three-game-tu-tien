@@ -1,0 +1,35 @@
+{
+  "skillId": "skl_dinh_than_thuat",
+  "idea": "Định thần: bàn tay hồn mờ ghìm xuống mục tiêu, xích khói tím-đen quấn quanh, viền sáng lạnh.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "spike",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 500
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 7,
+    "particles": 60,
+    "screenCover": 0.16,
+    "overdraw": 4
+  },
+  "textures": [],
+  "silhouette": "một bàn tay hồn xòe phẳng ấn từ trên xuống ghìm thân mục tiêu, các sợi xích khói quấn quanh thân thành vòng đai nghiêng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}
