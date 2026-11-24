@@ -1,6 +1,6 @@
 ---
 name: asset-validator
-description: Kiểm tra asset 3D của Đạp Thiên Lộ trước khi vào game — chạy pipeline kiểm tra, soát quy ước đặt tên, ngân sách tam giác/texture, bộ xương chung, LOD, giấy phép nguồn, và xem ảnh xem trước. Gọi sau khi sinh, tải về hoặc sửa asset.
+description: Kiểm tra asset 3D của Vạn Tiên Lộ trước khi vào game — chạy pipeline kiểm tra, soát quy ước đặt tên, ngân sách tam giác/texture, bộ xương chung, LOD, giấy phép nguồn, và xem ảnh xem trước. Gọi sau khi sinh, tải về hoặc sửa asset.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

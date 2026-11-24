@@ -22,7 +22,7 @@
 //              "pitch": 0.05, "gain": 1, "bus": "sfx", "duck": 0 }
 //   },
 //   "music":   { "sect": { "src": ["music/sect.webm", "music/sect.m4a"], "gain": 1, "loop": true,
-//                         "credit": { "title": "Lạc Kiếm Tông", "by": "Đạp Thiên Lộ (original, CC0/tự soạn)", "license": "CC0-1.0; …" } },
+//                         "credit": { "title": "Lạc Kiếm Tông", "by": "Vạn Tiên Lộ (original, CC0/tự soạn)", "license": "CC0-1.0; …" } },
 //              "sting_levelup": { "src": [...], "loop": false, "credit": {...} } },
 //   "ambient": { "wind": { "src": ["amb/wind.webm", "amb/wind.m4a"] } }
 // }

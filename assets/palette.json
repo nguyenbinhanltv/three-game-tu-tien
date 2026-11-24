@@ -1,5 +1,5 @@
 {
-  "$comment": "Bảng màu tâm trạng (mood palette) của Đạp Thiên Lộ. version 2 của file này đi kèm art bible phiên bản 3 (bán tả thực điện ảnh). Dùng để viết prompt concept, duyệt concept, chọn màu vật liệu thủ tục và làm mốc cho pass chỉnh màu. KHÔNG dùng để ép màu texture. Sửa ở đây rồi chạy `pnpm palette`. Xem docs/art-bible.md mục 4 và 5.",
+  "$comment": "Bảng màu tâm trạng (mood palette) của Vạn Tiên Lộ. version 2 của file này đi kèm art bible phiên bản 3 (bán tả thực điện ảnh). Dùng để viết prompt concept, duyệt concept, chọn màu vật liệu thủ tục và làm mốc cho pass chỉnh màu. KHÔNG dùng để ép màu texture. Sửa ở đây rồi chạy `pnpm palette`. Xem docs/art-bible.md mục 4 và 5.",
   "name": "dtl-mood-palette",
   "version": 2,
   "lut": {

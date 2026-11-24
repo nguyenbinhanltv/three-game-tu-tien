@@ -1,12 +1,12 @@
 ---
 name: guizang-game-skill
 license: AGPL-3.0
-description: Kinh nghiệm thực chiến (tiếng Trung) khi làm game hành động 3D trên web bằng three.js — cảm giác đòn đánh (hit-stop, knockback, đỡ/phản đòn), animation thủ tục bằng IK hai đốt, VFX kiếm khí/pháp trận/rơi đồ, camera, bẫy input bàn phím, tự kiểm chứng bằng bước khung thủ công, nén asset glTF. Chỉ đọc để tham khảo khi làm cảm giác combat, animation, VFX, camera hoặc gỡ lỗi input trong Đạp Thiên Lộ; quy ước dự án (WebGPU/TSL, server quyết định, i18n, ngân sách) luôn thắng. Không dùng làm quy trình dựng game mới.
+description: Kinh nghiệm thực chiến (tiếng Trung) khi làm game hành động 3D trên web bằng three.js — cảm giác đòn đánh (hit-stop, knockback, đỡ/phản đòn), animation thủ tục bằng IK hai đốt, VFX kiếm khí/pháp trận/rơi đồ, camera, bẫy input bàn phím, tự kiểm chứng bằng bước khung thủ công, nén asset glTF. Chỉ đọc để tham khảo khi làm cảm giác combat, animation, VFX, camera hoặc gỡ lỗi input trong Vạn Tiên Lộ; quy ước dự án (WebGPU/TSL, server quyết định, i18n, ngân sách) luôn thắng. Không dùng làm quy trình dựng game mới.
 ---
 
-> **Ghi chú của Đạp Thiên Lộ (thêm khi chép vào dự án, 2026-11-14).** Bản gốc: https://github.com/op7418/guizang-game-skill, commit `6001e56e1eaa60be49e5aa4ef81d08b746a1b4e2`, giấy phép AGPL-3.0 (xem `LICENSE`, `SOURCE.md`). Đã sửa: frontmatter `description` và ghi chú này; bỏ `scripts/` và `media/`. Phần thân bên dưới giữ nguyên.
+> **Ghi chú của Vạn Tiên Lộ (thêm khi chép vào dự án, 2026-11-14).** Bản gốc: https://github.com/op7418/guizang-game-skill, commit `6001e56e1eaa60be49e5aa4ef81d08b746a1b4e2`, giấy phép AGPL-3.0 (xem `LICENSE`, `SOURCE.md`). Đã sửa: frontmatter `description` và ghi chú này; bỏ `scripts/` và `media/`. Phần thân bên dưới giữ nguyên.
 >
-> Skill gốc viết cho game offline chơi một mình, đóng gói thành một file HTML. Đạp Thiên Lộ là MMO có server, nên khi xung đột thì **quy ước trong CLAUDE.md và các skill dự án thắng**:
+> Skill gốc viết cho game offline chơi một mình, đóng gói thành một file HTML. Vạn Tiên Lộ là MMO có server, nên khi xung đột thì **quy ước trong CLAUDE.md và các skill dự án thắng**:
 >
 > - Render là `WebGPURenderer` + shader TSL (skill `threejs-client`, `tsl-shaders-vfx`), không viết GLSL/WebGL thuần như bản gốc.
 > - Combat là tab-target GCD 1 giây, **server quyết định** sát thương, trúng đòn, rơi đồ. Hit-stop, knockback, rung, tia lửa chỉ là hiệu ứng hiển thị phía client; không đưa phán định trúng đòn, "攻击吸附" hay đỡ đòn/phản đòn kiểu action vào client.

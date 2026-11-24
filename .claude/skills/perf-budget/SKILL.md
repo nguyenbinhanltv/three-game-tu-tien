@@ -1,6 +1,6 @@
 ---
 name: perf-budget
-description: Đo và giữ ngân sách hiệu năng của Đạp Thiên Lộ — draw call, số tam giác, bộ nhớ texture/heap, thời gian khung CPU/GPU, kích thước tải lần đầu, thời gian tick server. Dùng sau khi thay đổi render, asset, VFX, streaming hay logic server nặng, và trước khi báo một tính năng là xong.
+description: Đo và giữ ngân sách hiệu năng của Vạn Tiên Lộ — draw call, số tam giác, bộ nhớ texture/heap, thời gian khung CPU/GPU, kích thước tải lần đầu, thời gian tick server. Dùng sau khi thay đổi render, asset, VFX, streaming hay logic server nặng, và trước khi báo một tính năng là xong.
 ---
 
 # Ngân sách hiệu năng

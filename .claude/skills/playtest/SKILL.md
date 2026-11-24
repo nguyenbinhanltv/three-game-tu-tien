@@ -1,6 +1,6 @@
 ---
 name: playtest
-description: Chạy toàn bộ Đạp Thiên Lộ ở máy local (server Colyseus + client Vite), mở trong trình duyệt để chơi thử, chạy bot headless để test tải, chụp ảnh màn hình và đọc log. Dùng khi cần xác nhận một thay đổi hoạt động thật trong game, khi người dùng nói "chạy thử", hoặc trước khi báo một tính năng là xong.
+description: Chạy toàn bộ Vạn Tiên Lộ ở máy local (server Colyseus + client Vite), mở trong trình duyệt để chơi thử, chạy bot headless để test tải, chụp ảnh màn hình và đọc log. Dùng khi cần xác nhận một thay đổi hoạt động thật trong game, khi người dùng nói "chạy thử", hoặc trước khi báo một tính năng là xong.
 ---
 
 # Chạy thử và test tải

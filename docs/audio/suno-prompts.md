@@ -64,7 +64,7 @@ Id bài trùng với máy trạng thái nhạc (`apps/client/src/game/musicDirec
 | M4-10 | `dungeon_boss` | Kiếm Trủng — Thủ Mộ | Đợt boss bí cảnh (Kiếm Khôi, Huyết Lang Vương) | 2:00 | 136 |
 | M4-10 | `tribulation` | Độ Kiếp | Đang độ kiếp Trúc Cơ (khoảng 40 giây) | 1:00 | 100 |
 | M4-10 | `meditate` | Đả Tọa | Đang đả tọa | 2:00 | 60 |
-| sau | `title` | Đạp Thiên Lộ | Màn đăng nhập, màn tải | 1:30 | 70 |
+| sau | `title` | Vạn Tiên Lộ | Màn đăng nhập, màn tải | 1:30 | 70 |
 | sau | `sting_levelup`, `sting_breakthrough`, `sting_death` | (3 nhạc ngắn) | Lên tầng, Trúc Cơ thành công, tử vong | 3–8 giây | — |
 
 `title` (màn đăng nhập/màn tải) và ba sting (khi sự kiện là của chính mình) đã nối vào client. Thứ tự ưu tiên khi nhiều trạng thái cùng lúc: độ kiếp > boss > chiến đấu > đả tọa > vùng.
@@ -195,7 +195,7 @@ Style: instrumental, ancient East Asian cinematic, thunderous massive war drums,
 Style: instrumental, ancient East Asian meditation, singing bowls, warm low drone, guqin harmonics, soft dan bau, gentle flowing water texture, pentatonic, slow 60 BPM pulse, 4/4, cultivator meditating at dawn, spiritual energy circulating, tranquil, still, steady tempo, consistent energy, no fade out, seamless loop
 ```
 
-### `title` — Đạp Thiên Lộ (làm sau)
+### `title` — Vạn Tiên Lộ (làm sau)
 
 - **Mục đích:** màn đăng nhập và màn tải. Chủ đề chính của game, có giai điệu nhớ được.
 - **Độ dài:** vòng tới 1:30. **Tempo:** khoảng 70 BPM.

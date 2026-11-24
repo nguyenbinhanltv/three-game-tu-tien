@@ -1,6 +1,6 @@
 ---
 name: blender-pipeline
-description: Chạy Blender ở chế độ nền bằng script Python (bpy) để sinh, xuất và tối ưu asset GLB cho Đạp Thiên Lộ — quy ước đặt tên, custom properties, bộ xương chung, LOD, gltf-transform, KTX2, kiểm tra ngân sách tam giác/texture. Dùng khi thêm hoặc sửa bất kỳ asset 3D nào, hoặc khi dùng Blender làm level editor.
+description: Chạy Blender ở chế độ nền bằng script Python (bpy) để sinh, xuất và tối ưu asset GLB cho Vạn Tiên Lộ — quy ước đặt tên, custom properties, bộ xương chung, LOD, gltf-transform, KTX2, kiểm tra ngân sách tam giác/texture. Dùng khi thêm hoặc sửa bất kỳ asset 3D nào, hoặc khi dùng Blender làm level editor.
 ---
 
 # Pipeline Blender → glTF

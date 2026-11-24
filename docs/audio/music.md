@@ -34,7 +34,7 @@ Id bài lặp trùng máy trạng thái nhạc (`apps/client/src/game/musicDirec
 | `dungeon_boss` | Kiếm Trủng — Thủ Mộ | Đợt boss bí cảnh | 136, vũ F# | 48 ô, 1:25 | A B C D E F | Taiko, Melodic Tom, Agogo + Wood Block (bánh răng 3-3-2), Fast Strings, Fiddle, Tubular Bells, Shamisen, kit, Contrabass |
 | `tribulation` | Độ Kiếp | Đang độ kiếp | 100, vũ D | 24 ô, 0:58 | A B C | Taiko, Concert Bass Drum, Timpani cuộn, Thunder, Tremolo Strings đi lên, Brass, Fast Strings, Piccolo, Contrabass, kit |
 | `meditate` | Đả Tọa | Đang đả tọa | 60, cung A | 28 ô, 1:52 | A B C D | Warm Pad drone, Slow Strings, Tubular Bells (bát chuông), Stream (suối), Koto bồi âm, Harp, Shakuhachi |
-| `title` | Đạp Thiên Lộ | Màn đăng nhập, màn tải | 70, cung D | 24 ô, 1:22 | A B C | Koto, Flute (chủ đề), Slow Strings, Warm Pad, Cello, Concert Bass Drum, Harp, Tubular Bells |
+| `title` | Vạn Tiên Lộ | Màn đăng nhập, màn tải | 70, cung D | 24 ô, 1:22 | A B C | Koto, Flute (chủ đề), Slow Strings, Warm Pad, Cello, Concert Bass Drum, Harp, Tubular Bells |
 | `sting_levelup` | Tu Vi Tinh Tiến | Mình lên tầng (thay jingle SFX) | 96 | 3,7 s | — | Harp lướt, Koto, Glockenspiel, Slow Strings |
 | `sting_breakthrough` | Trúc Cơ Thành | Mình đột phá/độ kiếp thành công (thay jingle SFX) | 80 | 8 s | — | Timpani cuộn, chũm chọe, Church Bells (chiêng), Fast Strings, Brass, Flute (motif `title`), Harp |
 | `sting_death` | Thân Tử Đạo Tiêu | Mình tử vong (thêm vào tiếng ngã) | 60 | 6,8 s | — | Shakuhachi đi xuống, Church Bells trầm, Slow Strings, Koto |

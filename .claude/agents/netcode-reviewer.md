@@ -1,6 +1,6 @@
 ---
 name: netcode-reviewer
-description: Soát code server và giao thức mạng của Đạp Thiên Lộ để tìm lỗ hổng gian lận, nhân bản vật phẩm, tin client sai chỗ, thiếu giới hạn tần suất và lỗi đồng bộ. Gọi sau khi thay đổi apps/server, packages/shared/src (protocol.ts, formulas.ts, upgrade.ts, party.ts…).
+description: Soát code server và giao thức mạng của Vạn Tiên Lộ để tìm lỗ hổng gian lận, nhân bản vật phẩm, tin client sai chỗ, thiếu giới hạn tần suất và lỗi đồng bộ. Gọi sau khi thay đổi apps/server, packages/shared/src (protocol.ts, formulas.ts, upgrade.ts, party.ts…).
 tools: Read, Grep, Glob, Bash
 model: inherit
 ---

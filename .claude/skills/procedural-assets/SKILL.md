@@ -1,6 +1,6 @@
 ---
 name: procedural-assets
-description: Sinh asset thủ tục cho Đạp Thiên Lộ khi không có artist — địa hình núi non, sông hồ, cây, đá, linh thảo, kiến trúc tông môn kiểu cổ phong, phi kiếm, pháp bảo — bằng code Three.js hoặc script Blender. Dùng khi cần tạo hoặc thay asset môi trường, prop, hay chỉnh nhân vật lấy từ gói CC0.
+description: Sinh asset thủ tục cho Vạn Tiên Lộ khi không có artist — địa hình núi non, sông hồ, cây, đá, linh thảo, kiến trúc tông môn kiểu cổ phong, phi kiếm, pháp bảo — bằng code Three.js hoặc script Blender. Dùng khi cần tạo hoặc thay asset môi trường, prop, hay chỉnh nhân vật lấy từ gói CC0.
 ---
 
 # Asset thủ tục

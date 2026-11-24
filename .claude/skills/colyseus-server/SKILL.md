@@ -1,6 +1,6 @@
 ---
 name: colyseus-server
-description: Quy ước server Colyseus của Đạp Thiên Lộ — cấu trúc room (bản đồ, kênh, bí cảnh, độ kiếp), @colyseus/schema, xác thực input theo nguyên tắc server quyết định, AOI, combat, đăng nhập Google, lưu SQLite/Drizzle bằng transaction và ledger. Dùng khi viết hoặc sửa code trong apps/server hay giao thức trong packages/shared/protocol.
+description: Quy ước server Colyseus của Vạn Tiên Lộ — cấu trúc room (bản đồ, kênh, bí cảnh, độ kiếp), @colyseus/schema, xác thực input theo nguyên tắc server quyết định, AOI, combat, đăng nhập Google, lưu SQLite/Drizzle bằng transaction và ledger. Dùng khi viết hoặc sửa code trong apps/server hay giao thức trong packages/shared/protocol.
 ---
 
 # Server Colyseus

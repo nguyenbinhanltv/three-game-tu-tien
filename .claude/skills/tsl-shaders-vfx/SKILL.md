@@ -1,6 +1,6 @@
 ---
 name: tsl-shaders-vfx
-description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ bằng TSL (Three Shading Language) — material PBR cách điệu, chỉnh màu sương sớm, VFX chiêu theo timeline JSON (stylized tương phản cao, ba tầng màu), hạt GPU, vạch báo, thiên lôi, bloom, ngân sách và cách kiểm. Dùng khi tạo hoặc sửa material, post-processing, hệ hạt hoặc hiệu ứng của chiêu/quái/boss/độ kiếp.
+description: Viết shader và hiệu ứng hình ảnh cho Vạn Tiên Lộ bằng TSL (Three Shading Language) — material PBR cách điệu, chỉnh màu sương sớm, VFX chiêu theo timeline JSON (stylized tương phản cao, ba tầng màu), hạt GPU, vạch báo, thiên lôi, bloom, ngân sách và cách kiểm. Dùng khi tạo hoặc sửa material, post-processing, hệ hạt hoặc hiệu ứng của chiêu/quái/boss/độ kiếp.
 ---
 
 # Shader và VFX bằng TSL

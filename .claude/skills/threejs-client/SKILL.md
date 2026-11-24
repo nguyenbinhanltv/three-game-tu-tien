@@ -1,6 +1,6 @@
 ---
 name: threejs-client
-description: Quy ước code client Three.js của Đạp Thiên Lộ — renderer WebGPU/WebGL2, streaming địa hình theo ô, LOD, instancing, camera, input, giải phóng bộ nhớ. Dùng khi viết hoặc sửa bất kỳ code nào trong apps/client liên quan đến render, thế giới 3D, nhân vật, camera hay vòng lặp game.
+description: Quy ước code client Three.js của Vạn Tiên Lộ — renderer WebGPU/WebGL2, streaming địa hình theo ô, LOD, instancing, camera, input, giải phóng bộ nhớ. Dùng khi viết hoặc sửa bất kỳ code nào trong apps/client liên quan đến render, thế giới 3D, nhân vật, camera hay vòng lặp game.
 ---
 
 # Client Three.js

@@ -1,6 +1,6 @@
 ---
 name: character-3d
-description: Quy trình làm một bộ nhân vật v3 (Tripo → Blender → game) cho Đạp Thiên Lộ từ đầu đến cuối — ảnh A-pose + multiview, Tripo Multiview do người dùng dựng, giữ nguyên lưới/UV/texture gốc, rig bind A-pose trên bộ xương UE5 Mannequin, tách lưới voan/vạt/chân, trọng số theo lớp, clip áo bào, đo rigstretch/v3views và tiêu chí đạt, bảng lỗi đã gặp. Dùng khi thêm hoặc sửa bộ nhân vật mặc đồ (kiếm tu, hộ pháp, đan sư), khi nhân vật bị xé vải/voan bung/hỏng mặt-tay, hoặc khi áp quy trình cho bộ mới.
+description: Quy trình làm một bộ nhân vật v3 (Tripo → Blender → game) cho Vạn Tiên Lộ từ đầu đến cuối — ảnh A-pose + multiview, Tripo Multiview do người dùng dựng, giữ nguyên lưới/UV/texture gốc, rig bind A-pose trên bộ xương UE5 Mannequin, tách lưới voan/vạt/chân, trọng số theo lớp, clip áo bào, đo rigstretch/v3views và tiêu chí đạt, bảng lỗi đã gặp. Dùng khi thêm hoặc sửa bộ nhân vật mặc đồ (kiếm tu, hộ pháp, đan sư), khi nhân vật bị xé vải/voan bung/hỏng mặt-tay, hoặc khi áp quy trình cho bộ mới.
 ---
 
 # Nhân vật 3D v3: từ ảnh đến game

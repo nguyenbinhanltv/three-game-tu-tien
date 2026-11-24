@@ -1,4 +1,4 @@
-# Game Design Core: Đạp Thiên Lộ
+# Game Design Core: Vạn Tiên Lộ
 
 > **Lưu ý (2026-11-24):** Thiết kế bản 1 (2026-11-16); một số mục (camera, tab-target, số liệu) đã lỗi thời. Hiện trạng và quyết định mới nhất xem `CLAUDE.md` và `docs/handbook/`.
 

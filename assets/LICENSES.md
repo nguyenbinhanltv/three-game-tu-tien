@@ -40,7 +40,7 @@ Các trang `.claude/skills/blender-pipeline/references/{reference-match,qa-check
 
 ## Màn tải và chất liệu UI 2D Codex (2026-11-16)
 
-Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`tools/codex-assets/gen.mjs loading|ui`, chủ thể ở `tools/codex-assets/loading.json`, `ui.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/<nhóm>/<id>.png` và `<id>.prompt.txt`. Đóng gói bằng `tools/codex-assets/pack.mjs loading ui` thành WebP ở `apps/client/public/assets/art/` (nạp lười).
+Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Vạn Tiên Lộ (`tools/codex-assets/gen.mjs loading|ui`, chủ thể ở `tools/codex-assets/loading.json`, `ui.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/<nhóm>/<id>.png` và `<id>.prompt.txt`. Đóng gói bằng `tools/codex-assets/pack.mjs loading ui` thành WebP ở `apps/client/public/assets/art/` (nạp lười).
 
 | ID | Nguồn | Giấy phép | Ngày | Tệp |
 | --- | --- | --- | --- | --- |
@@ -59,7 +59,7 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 
 ## Chân dung 2D Codex (2026-11-16)
 
-Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`tools/codex-assets/gen.mjs portraits`, chủ thể ở `tools/codex-assets/portraits.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/chan-dung/portraits/<id>.png` và `<id>.prompt.txt`. Đóng gói bằng `tools/codex-assets/pack.mjs portraits` thành WebP 480×640 ở `apps/client/public/assets/art/portraits/` (nạp lười).
+Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Vạn Tiên Lộ (`tools/codex-assets/gen.mjs portraits`, chủ thể ở `tools/codex-assets/portraits.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/chan-dung/portraits/<id>.png` và `<id>.prompt.txt`. Đóng gói bằng `tools/codex-assets/pack.mjs portraits` thành WebP 480×640 ở `apps/client/public/assets/art/portraits/` (nạp lười).
 
 | ID | Nguồn | Giấy phép | Ngày | Tệp |
 | --- | --- | --- | --- | --- |
@@ -76,7 +76,7 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 
 ## Icon UI M4-7
 
-Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ. Không dùng tài sản hoặc khung icon của guizang. PNG gốc ở `<DTL_ASSET_SOURCE>/2d/icon/v1/<id>.png`; prompt tại `docs/prompts/codex.md` mục 9, chủ thể tại `tools/icons/subjects.json`. Atlas 128px/ô: `apps/client/public/assets/ui/icons.*.webp`. Manifest lưu SHA-256 và dung lượng từng PNG nguồn.
+Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Vạn Tiên Lộ. Không dùng tài sản hoặc khung icon của guizang. PNG gốc ở `<DTL_ASSET_SOURCE>/2d/icon/v1/<id>.png`; prompt tại `docs/prompts/codex.md` mục 9, chủ thể tại `tools/icons/subjects.json`. Atlas 128px/ô: `apps/client/public/assets/ui/icons.*.webp`. Manifest lưu SHA-256 và dung lượng từng PNG nguồn.
 
 | Asset | Nguồn | Giấy phép | Ngày | Chi tiết |
 | --- | --- | --- | --- | --- |
@@ -521,39 +521,39 @@ Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằn
 
 | Bài | Tên | Nguồn | Giấy phép | Ngày | Link |
 | --- | --- | --- | --- | --- | --- |
-| `sect` | Lạc Kiếm Tông | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/sect.mjs` |
-| `combat` | Giao Phong | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/combat.mjs` |
-| `wild` | Vân Lam Sơn Mạch | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild.mjs` |
-| `wild_ochre` | Đoạn Mạch Cổ Cốc | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild_ochre.mjs` |
-| `wild_night` | Thiên Khuyết Cổ Thành | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_night.mjs` |
-| `wild_ash` | Bắc Hoang — Hàn Hôi | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_ash.mjs` |
-| `wild_rift` | Bắc Hoang — Bên Kia Vết Nứt | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_rift.mjs` |
-| `wild_cloud` | Vân Hải Phù Đảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/wild_cloud.mjs` |
-| `forest` | Rừng Linh Thảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/forest.mjs` |
-| `lake` | Hồ Sương Mù | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/lake.mjs` |
-| `dungeon` | Kiếm Trủng | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/dungeon.mjs` |
-| `boss` | Hàn Giao | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/boss.mjs` |
-| `dungeon_boss` | Kiếm Trủng — Thủ Mộ | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/dungeon_boss.mjs` |
-| `dungeon_rift` | Xích Tẫn Khích — Đáy Hẻm | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/dungeon_rift.mjs` |
-| `dungeon_rift_boss` | Xích Tẫn Khích — Chiến Giới | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/dungeon_rift_boss.mjs` |
-| `tribulation` | Độ Kiếp | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/tribulation.mjs` |
-| `meditate` | Đả Tọa | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/meditate.mjs` |
-| `title` | Đạp Thiên Lộ | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/title.mjs` |
-| `sect_pulse` | Lạc Kiếm Tông — lớp nhịp | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/sect_pulse.mjs` |
-| `sect_edge` | Lạc Kiếm Tông — lớp giai điệu căng | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/sect_edge.mjs` |
-| `wild_pulse` | Vân Lam Sơn Mạch — lớp nhịp | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/wild_pulse.mjs` |
-| `wild_edge` | Vân Lam Sơn Mạch — lớp giai điệu căng | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/wild_edge.mjs` |
-| `dungeon_pulse` | Kiếm Trủng — lớp nhịp | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/dungeon_pulse.mjs` |
-| `dungeon_edge` | Kiếm Trủng — lớp giai điệu căng | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/dungeon_edge.mjs` |
-| `sting_levelup` | Tu Vi Tinh Tiến | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/sting_levelup.mjs` |
-| `sting_breakthrough` | Trúc Cơ Thành | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/sting_breakthrough.mjs` |
-| `sting_death` | Thân Tử Đạo Tiêu | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/sting_death.mjs` |
+| `sect` | Lạc Kiếm Tông | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/sect.mjs` |
+| `combat` | Giao Phong | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/combat.mjs` |
+| `wild` | Vân Lam Sơn Mạch | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild.mjs` |
+| `wild_ochre` | Đoạn Mạch Cổ Cốc | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild_ochre.mjs` |
+| `wild_night` | Thiên Khuyết Cổ Thành | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_night.mjs` |
+| `wild_ash` | Bắc Hoang — Hàn Hôi | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_ash.mjs` |
+| `wild_rift` | Bắc Hoang — Bên Kia Vết Nứt | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_rift.mjs` |
+| `wild_cloud` | Vân Hải Phù Đảo | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/wild_cloud.mjs` |
+| `forest` | Rừng Linh Thảo | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/forest.mjs` |
+| `lake` | Hồ Sương Mù | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/lake.mjs` |
+| `dungeon` | Kiếm Trủng | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/dungeon.mjs` |
+| `boss` | Hàn Giao | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/boss.mjs` |
+| `dungeon_boss` | Kiếm Trủng — Thủ Mộ | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/dungeon_boss.mjs` |
+| `dungeon_rift` | Xích Tẫn Khích — Đáy Hẻm | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/dungeon_rift.mjs` |
+| `dungeon_rift_boss` | Xích Tẫn Khích — Chiến Giới | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/dungeon_rift_boss.mjs` |
+| `tribulation` | Độ Kiếp | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/tribulation.mjs` |
+| `meditate` | Đả Tọa | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/meditate.mjs` |
+| `title` | Vạn Tiên Lộ | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/title.mjs` |
+| `sect_pulse` | Lạc Kiếm Tông — lớp nhịp | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/sect_pulse.mjs` |
+| `sect_edge` | Lạc Kiếm Tông — lớp giai điệu căng | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/sect_edge.mjs` |
+| `wild_pulse` | Vân Lam Sơn Mạch — lớp nhịp | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/wild_pulse.mjs` |
+| `wild_edge` | Vân Lam Sơn Mạch — lớp giai điệu căng | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/wild_edge.mjs` |
+| `dungeon_pulse` | Kiếm Trủng — lớp nhịp | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/dungeon_pulse.mjs` |
+| `dungeon_edge` | Kiếm Trủng — lớp giai điệu căng | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/dungeon_edge.mjs` |
+| `sting_levelup` | Tu Vi Tinh Tiến | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/sting_levelup.mjs` |
+| `sting_breakthrough` | Trúc Cơ Thành | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/sting_breakthrough.mjs` |
+| `sting_death` | Thân Tử Đạo Tiêu | Vạn Tiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/sting_death.mjs` |
 
 <!-- music:end -->
 
 ## Icon 2D Codex (2026-11-16)
 
-Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`tools/codex-assets/gen.mjs`, chủ thể ở `tools/codex-assets/icons.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/icon/v1/<id>.png` và `<id>.prompt.txt`. 28 icon trang bị vẽ lại thay bản render Blender (PR #86); ID cũ giữ nguyên ô atlas.
+Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Vạn Tiên Lộ (`tools/codex-assets/gen.mjs`, chủ thể ở `tools/codex-assets/icons.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/icon/v1/<id>.png` và `<id>.prompt.txt`. 28 icon trang bị vẽ lại thay bản render Blender (PR #86); ID cũ giữ nguyên ô atlas.
 
 | ID | Nguồn | Giấy phép | Ngày | Tệp |
 | --- | --- | --- | --- | --- |
@@ -798,7 +798,7 @@ SquigglyFish, https://squigglyfish.itch.io/godot-elemental-spells-vfx-sfx. Chỉ
 
 ## Icon 2D Codex v2 (U2-I, 2026-11-18)
 
-Sinh bằng công cụ ảnh tích hợp Codex (`codex exec`) cho dự án Đạp Thiên Lộ, thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. Mỗi tờ là một lưới 3×2 icon (1536×1024) cắt và căn giữa thành PNG 256 px; atlas WebP 128/64 px ở `apps/client/public/assets/ui/icons-{hud,items}.v2.*.webp`. Nguồn: `<DTL_ASSET_SOURCE>/2d/icon/v2/` (`sheets/` tờ gốc + prompt, `png256/` icon đã cắt). Danh sách tờ và prompt: `tools/icons/sheets.v2.json`.
+Sinh bằng công cụ ảnh tích hợp Codex (`codex exec`) cho dự án Vạn Tiên Lộ, thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. Mỗi tờ là một lưới 3×2 icon (1536×1024) cắt và căn giữa thành PNG 256 px; atlas WebP 128/64 px ở `apps/client/public/assets/ui/icons-{hud,items}.v2.*.webp`. Nguồn: `<DTL_ASSET_SOURCE>/2d/icon/v2/` (`sheets/` tờ gốc + prompt, `png256/` icon đã cắt). Danh sách tờ và prompt: `tools/icons/sheets.v2.json`.
 
 | Nhóm | Số icon | Nguồn |
 | --- | --- | --- |
@@ -1105,7 +1105,7 @@ Mỗi icon trong atlas (tên khóa = id icon):
 
 ## Nền sơn thủy và lớp parallax Codex (U2-4, 2026-11-18)
 
-Sinh bằng công cụ ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`codex exec`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/nen/loading|layers/`; đóng gói bằng `node tools/codex-assets/pack.mjs loading layers` thành WebP có hash ở `apps/client/public/assets/art/`.
+Sinh bằng công cụ ảnh tích hợp Codex cho dự án Vạn Tiên Lộ (`codex exec`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/nen/loading|layers/`; đóng gói bằng `node tools/codex-assets/pack.mjs loading layers` thành WebP có hash ở `apps/client/public/assets/art/`.
 
 | Ảnh | Nguồn tạo | Tác giả | Ngày | Nguồn |
 | --- | --- | --- | --- | --- |

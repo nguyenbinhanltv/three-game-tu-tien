@@ -56,7 +56,7 @@ function handleHttp(req: http.IncomingMessage, res: http.ServerResponse): void {
   if (!fs.existsSync(dist)) {
     res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
     res.end(
-      `Đạp Thiên Lộ — server đang chạy. Client dev ở http://localhost:${process.env.CLIENT_PORT || 5173} (hoặc chạy pnpm build để server phục vụ bản build).`,
+      `Vạn Tiên Lộ — server đang chạy. Client dev ở http://localhost:${process.env.CLIENT_PORT || 5173} (hoặc chạy pnpm build để server phục vụ bản build).`,
     );
     return;
   }
@@ -123,7 +123,7 @@ for (const lv of Object.values(LEVELS)) {
 
 await gameServer.listen(config.port);
 void maybeCpuProfile();
-log.info(`[server] Đạp Thiên Lộ chạy ở cổng ${config.port}`);
+log.info(`[server] Vạn Tiên Lộ chạy ở cổng ${config.port}`);
 log.info(
   `[server] giới hạn /matchmake + websocket: ${rl.burst > 0 ? `${rl.burst} dồn, ${rl.perMin}/phút mỗi IP` : 'TẮT'}` +
     `${rl.trustProxy ? ', tin X-Forwarded-For' : ''}${rl.exempt.size ? `, miễn: ${[...rl.exempt].join(' ')}` : ''}`,

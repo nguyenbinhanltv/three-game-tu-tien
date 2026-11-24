@@ -1,4 +1,6 @@
-# Đạp Thiên Lộ — MMORPG tu tiên 3D trên web
+# Vạn Tiên Lộ — MMORPG tu tiên 3D trên web
+
+Tên game hiển thị: **Vạn Tiên Lộ** (đổi từ Đạp Thiên Lộ 25/11; tên package/biến nội bộ `@dtl/*`, `dtl-*`, tên repo/thư mục, khóa i18n, tên bucket R2 giữ nguyên; "Đạp Thiên" vẫn là tên đoạn kết/bước Cửu Kiều trong game).
 
 Game chơi riêng với bạn bè, không thương mại. Toàn bộ code, shader, script Blender và asset thủ tục do Claude làm; người dùng chạy thử, chơi và báo lỗi.
 

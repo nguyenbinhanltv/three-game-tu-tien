@@ -1,6 +1,6 @@
 ---
 name: game-content
-description: Thêm và cân bằng nội dung game Đạp Thiên Lộ — cảnh giới theo Tiên Nghịch, quái, skill, vật phẩm, đan dược, pháp bảo, nhiệm vụ, bí cảnh, bảng thuật ngữ — dưới dạng dữ liệu trong packages/content, và mô phỏng tốc độ lên cấp/kinh tế. Dùng khi tạo hoặc sửa nội dung, công thức chỉ số, hay chữ hiển thị trong game.
+description: Thêm và cân bằng nội dung game Vạn Tiên Lộ — cảnh giới theo Tiên Nghịch, quái, skill, vật phẩm, đan dược, pháp bảo, nhiệm vụ, bí cảnh, bảng thuật ngữ — dưới dạng dữ liệu trong packages/content, và mô phỏng tốc độ lên cấp/kinh tế. Dùng khi tạo hoặc sửa nội dung, công thức chỉ số, hay chữ hiển thị trong game.
 ---
 
 # Nội dung và cân bằng

@@ -244,7 +244,7 @@ const enc = spawnSync(
     '-b:a',
     '192k',
     '-metadata',
-    'title=Dap Thien Lo - nghe thu P2-D2/D3',
+    'title=Van Tien Lo - nghe thu P2-D2/D3',
     path.resolve(out),
   ],
   { input: Buffer.from(inter.buffer), maxBuffer: 1 << 28 },

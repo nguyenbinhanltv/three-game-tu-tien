@@ -1,6 +1,6 @@
 # docs/
 
-Tài liệu thiết kế và ghi chú theo từng hạng mục của Đạp Thiên Lộ. Sổ tay chính là `CLAUDE.md` ở gốc repo; mỗi thư mục con ở đây ứng với một hạng mục (PR) và có `README.md` riêng.
+Tài liệu thiết kế và ghi chú theo từng hạng mục của Vạn Tiên Lộ. Sổ tay chính là `CLAUDE.md` ở gốc repo; mỗi thư mục con ở đây ứng với một hạng mục (PR) và có `README.md` riêng.
 
 ## Quy ước ảnh và video (từ R-1, 2026-11-18)
 

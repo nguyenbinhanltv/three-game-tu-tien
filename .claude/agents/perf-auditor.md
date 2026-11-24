@@ -1,6 +1,6 @@
 ---
 name: perf-auditor
-description: Đo và soát hiệu năng client Three.js của Đạp Thiên Lộ so với ngân sách (draw call, tam giác, bộ nhớ, thời gian khung, kích thước tải). Gọi sau khi thay đổi render, asset, VFX hoặc streaming, hoặc khi người chơi báo giật lag.
+description: Đo và soát hiệu năng client Three.js của Vạn Tiên Lộ so với ngân sách (draw call, tam giác, bộ nhớ, thời gian khung, kích thước tải). Gọi sau khi thay đổi render, asset, VFX hoặc streaming, hoặc khi người chơi báo giật lag.
 tools: Read, Grep, Glob, Bash
 model: inherit
 ---

@@ -1,6 +1,6 @@
 ---
 name: vfx-reviewer
-description: Soát PR hiệu ứng hình ảnh (VFX) của Đạp Thiên Lộ về độ đọc được (báo trước, thân địch không bị che), chống lóa (HDR, bloom), đúng phong cách đã duyệt, dùng pool, dọn sạch và ngân sách. Gọi sau khi thêm hoặc sửa timeline fx, shader VFX, hạt, vạch báo, FX quái/boss/độ kiếp.
+description: Soát PR hiệu ứng hình ảnh (VFX) của Vạn Tiên Lộ về độ đọc được (báo trước, thân địch không bị che), chống lóa (HDR, bloom), đúng phong cách đã duyệt, dùng pool, dọn sạch và ngân sách. Gọi sau khi thêm hoặc sửa timeline fx, shader VFX, hạt, vạch báo, FX quái/boss/độ kiếp.
 tools: Read, Grep, Glob, Bash
 model: inherit
 ---
