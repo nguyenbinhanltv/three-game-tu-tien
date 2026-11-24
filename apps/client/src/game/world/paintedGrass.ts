@@ -482,9 +482,11 @@ export class PaintedGrass implements GrassLayer {
     const b = baseOf(q);
     this.density = q === 'low' || b === 'low' ? 0 : b === 'medium' ? 0.6 : 1;
     for (const s of this.sets) {
-      s.geo.instanceCount = Math.max(1, Math.round(s.n * (this.density || 1)));
+      // Thấp (density 0): không vẽ gì, như `Grass` cũ (instanceCount 0), kể cả khi bên ngoài đặt `mesh.visible = true`
+      s.geo.instanceCount = this.density > 0 ? Math.max(1, Math.round(s.n * this.density)) : 0;
       for (const t of s.tiles) t.mesh.receiveShadow = shadows;
     }
+    this.count = 0;
     this.mesh.visible = this.enabled && this.density > 0 && this.filled > 0;
   }
 
@@ -496,7 +498,11 @@ export class PaintedGrass implements GrassLayer {
   update(dt: number, center: { x: number; y: number; z: number }, pushers: Pusher[], budget = 1): void {
     this.t += dt;
     this.uTime.value = this.t;
-    if (!this.enabled || this.density <= 0) return;
+    // bên ngoài (levelLoad) có thể đặt `mesh.visible = true` sau `setQuality`: ép lại mỗi khung để Thấp không vẽ cỏ
+    if (!this.enabled || this.density <= 0) {
+      this.mesh.visible = false;
+      return;
+    }
     for (let i = 0; i < GRASS_PUSH_SLOTS; i++) {
       const p = pushers[i];
       if (p) this.pushVec[i]!.set(p.x, p.y, p.z, p.r);
