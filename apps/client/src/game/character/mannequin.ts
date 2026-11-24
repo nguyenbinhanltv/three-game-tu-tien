@@ -109,10 +109,15 @@ export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu'
 /** Bản v3b2: cùng model v3b, vạt 12 chuỗi lò xo; cùng với cải tiến lò xo ở client (gấu cứng hơn, viên nang tay, vạt nằm lên đùi khi ngồi) là mặc định của `?chr=v3`; `?v3model=b` về v3b để so. */
 export const V3_MODELS_B2 = { m: 'chr_v3b2_lac_kiem_nam', f: 'chr_v3b2_lac_kiem_nu' } as const;
 const V3_PICK = FLAGS.v3Model;
-export const V3_MODELS = V3_PICK === 'a' ? V3_MODELS_A : V3_PICK === 'b' ? V3_MODELS_B : V3_MODELS_B2;
+/** Bản v3b3: v3b2 + chuỗi lò xo dải đai/ngọc bội (`tassel`, Thân Pháp T6); chọn bằng `?v3model=c` cho tới khi người dùng duyệt ngoại hình. */
+export const V3_MODELS_B3 = { m: 'chr_v3b3_lac_kiem_nam', f: 'chr_v3b3_lac_kiem_nu' } as const;
+export const V3_MODELS = V3_PICK === 'a' ? V3_MODELS_A : V3_PICK === 'b' ? V3_MODELS_B : V3_PICK === 'c' ? V3_MODELS_B3 : V3_MODELS_B2;
 /** Asset dùng lò xo v2 (`chr_v3b2_*` và các bộ dựng hàng loạt `chr_v3_<bộ>_*`): hệ số cứng gấu vạt, viên nang tay, phình viên nang khi ngồi. */
 export const isSpring2 = (assetId: string | undefined): boolean =>
-  !!assetId && (assetId.startsWith('chr_v3b2_') || Object.values(V3_OWN_SETS).some((k) => assetId.startsWith(`chr_v3_${k}_`)));
+  !!assetId &&
+  (assetId.startsWith('chr_v3b2_') ||
+    assetId.startsWith('chr_v3b3_') ||
+    Object.values(V3_OWN_SETS).some((k) => assetId.startsWith(`chr_v3_${k}_`)));
 /** Độ cứng của xương gấu vạt (khớp thứ hai của chuỗi `dtl_o_skirt_<k>_<l>`) so với khớp gốc. */
 export const HEM_STIFF = 1.7;
 /** Hệ số phình viên nang thân khi ngồi/đả tọa: vạt nằm lên trên đùi thay vì lún xuống. */
@@ -389,7 +394,7 @@ export const ROBE_LIB = 'anim_robe';
 
 export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
-  if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
+  if (/^chr_v3b[23]?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const m of mats) tuneTripoMaterial(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id) && FLAGS.v3Veil) {
     const silk = FLAGS.v3Silk ? v3SilkOf(handle.id) : undefined;
@@ -428,6 +433,8 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
 export const ARM_FIT: Record<string, number> = {
   chr_v3b2_lac_kiem_nam: (16 * Math.PI) / 180,
   chr_v3b2_lac_kiem_nu: (16 * Math.PI) / 180,
+  chr_v3b3_lac_kiem_nam: (16 * Math.PI) / 180,
+  chr_v3b3_lac_kiem_nu: (16 * Math.PI) / 180,
   // Bộ dựng hàng loạt (đo `springMetrics` quét 5/12/16/22°, docs/chr-v3/README.md): Đồ Đệ Tử tay áo vừa nên ít phụ thuộc; Huyền Giáp là giáp (vai + hộ uyển nổi) cần dang nhiều hơn; Đan Tâm như Lạc Kiếm.
   chr_v3_de_tu_nam: (10 * Math.PI) / 180,
   chr_v3_de_tu_nu: (10 * Math.PI) / 180,
