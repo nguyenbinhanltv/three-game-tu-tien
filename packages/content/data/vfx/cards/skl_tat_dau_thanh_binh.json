@@ -20,9 +20,9 @@
   "colorRole": "own",
   "telegraph": false,
   "budget": {
-    "drawCalls": 6,
+    "drawCalls": 7,
     "particles": 282,
-    "screenCover": 0.2,
+    "screenCover": 0.35,
     "overdraw": 6
   },
   "textures": [],
