@@ -46,6 +46,8 @@ import {
   validatePose,
   validateFxTimeline,
   validateVfxCard,
+  checkStandard2,
+  isRedOrange,
   validateMonVfxCard,
   FLIP_ATLASES,
   type VfxCard,
@@ -216,6 +218,21 @@ for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKIL
       (id) => PATH.has(id),
     ))
       err(m);
+    // Chuẩn "Họa Pháp Lô 2": thẻ khai `standard: 2` thì kiểm các luật đo được trên timeline (xem `checkStandard2`).
+    if (card.standard === 2) {
+      const tl2 = FX_TIMELINES.find((t) => t.skill === card.skillId);
+      const pal = PATH.get(card.path)?.palette as Record<string, string> | undefined;
+      const redTones = new Set(
+        Object.entries(pal ?? {})
+          .filter(([, hex]) => isRedOrange(hex))
+          .map(([tone]) => tone),
+      );
+      for (const m of checkStandard2(card, tl2?.events ?? [], !!SKILL.get(card.skillId)?.ult, {
+        redTones,
+        hitAt: SKILL.get(card.skillId)?.hitAt?.[0],
+      }))
+        err(m);
+    }
     // Thẻ là nguồn ý đồ: `impactFrame` phải khớp việc timeline có sự kiện `impact`.
     const tl = FX_TIMELINES.find((t) => t.skill === card.skillId);
     const hasImpact = !!tl?.events.some((e) => e.type === 'impact');
