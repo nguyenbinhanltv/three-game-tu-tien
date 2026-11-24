@@ -45,3 +45,18 @@ AoE nhắm điểm thường có bán kính 6 m (`radius` trong `packages/conten
 - `apps/client/src/game/character/hitDir.ts` (hàm thuần, có test): `hitSideOf` (trước/sau/trái/phải từ hướng nhìn và hướng giật), `hitClipOf` (nặng → `Hit_Knockback`; nhẹ → `Hit_Chest`, sau gáy → `Hit_Head`; thư viện UAL chỉ có ba clip trúng đòn này), `flinchAmpOf` (biên độ giật thân theo cấp đòn S1 `DmgMsg.tr`: 0,10/0,16/0,26/0,36 rad; không có `tr` thì theo cờ cũ), `deathYawOffset` (xoay thân phụ `inner.rotation.y` trong 0,14 s lúc chết để `Death01` ngã ngửa ra xa người hạ gục; chỉ khi đòn cuối cách chết ≤ 1,5 s).
 - Không thêm sự kiện timeline VFX mới (VFX vẫn khớp `hit` của pose); hướng đòn lấy từ vị trí người đánh/nạn nhân như `hitReact` cũ.
 - Quay/chụp: `pnpm shots hitdir --out <thư mục> --mode video [--die front|back] [--gender m|f]` (kịch bản đã gỡ ở tối ưu Đợt C) (webm ~15 s) và `--mode stills` (ảnh +30/+150 ms sau đòn nặng, chết +0,6/+1,8 s).
+
+## Thiên Y (vải mô phỏng, cờ `?cloth=1`, mặc định TẮT)
+
+Chân Cảnh C4: tay áo 2 lớp, vạt, dải lụa hông và bả vai mô phỏng cho các bộ v3 có lưới vải tách (`*_oldsleeve`); voan lấy texture của áo. Mã: `apps/client/src/game/character/thienY.ts` (`ClothRig`, `ClothBudget`), `packages/shared/src/clothfit.ts` + `cloth.ts`; tham số khớp lưới: `fitThienY`. Ngân sách CPU chung `CLOTH_BUDGET` 0,4 ms/khung (`maxLagS` 0,12 s), xa/LOD1+ tắt mô phỏng. Chỉ bật mặc định khi đủ 9 bộ và hết nợ (khung đột biến lúc khởi tạo, xuyên thân tay áo sau/dải lưng).
+
+Kiểm từng bộ: `pnpm shots clothcheck --out <thư mục> --set <bộ> --gender f|m --size 1920x1080|1280x720 [--dpr 2] [--variants lo-xo,thien-y] [--bots 9]` (đứng/chạy/lướt/đòn nặng/đả tọa/ngự kiếm; ảnh cắt đúng độ phân giải gốc; `--bots 9` đo 10 nhân vật). Chỉ chạy MỘT phiên Chromium mỗi lúc.
+
+| Bộ | Cảnh đông 10 nhân vật (ms/khung, TB) | Ghi chú |
+| --- | --- | --- |
+| Tinh Khuyết nữ | pilot #574 | duyệt |
+| Cổ Thanh, Vạn Kinh | #585 | đợt 1 |
+| Lưu Ly | 0,39 (0,44 đo lại) | đợt 2 |
+| Phục Mạch | 0,33 | đợt 2 |
+| Thần Tạng | 0,60 với `maxLagS` 0,08 → 0,36 với 0,12 | đợt 2 |
+
