@@ -15,6 +15,7 @@ const arg = (n, d) => {
 const refDir = path.resolve(arg('--ref', 'painted-ref'));
 const port = Number(arg('--port', '5190'));
 const secs = Number(arg('--secs', '8'));
+const size = arg('--size', '960x540');
 const variants = arg('--variants', 'ground,blades,flowers,all').split(',');
 const dump = JSON.parse(fs.readFileSync(path.join(refDir, 'ref.json'), 'utf8'));
 const root = path.resolve(new URL('../..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
@@ -50,12 +51,19 @@ try {
     args: ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'],
   });
   for (const v of variants) {
-    const parts = v === 'all' ? 'ground,blades,flowers' : v.replace(/\+/g, ',');
-    const page = await (await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 })).newPage();
-    await page.goto(`http://127.0.0.1:${port}/?paintedlab=1&mute=1&parts=${parts}${v.includes('nopaint') ? '&paint=0' : ''}`, {
+    const parts = v === 'all' ? 'ground,blades,flowers' : v.replace(/\+paint0/, '').replace(/\+/g, ',');
+    const page = await (
+      await browser.newContext({
+        viewport: { width: Number(size.split('x')[0]), height: Number(size.split('x')[1]) },
+        deviceScaleFactor: 1,
+      })
+    ).newPage();
+    page.on('console', (m) => ['error', 'warning'].includes(m.type()) && log(`${v} ${m.type()}: ${m.text().slice(0, 300)}`));
+    page.on('pageerror', (e) => log(`${v} pageerror: ${e.message.slice(0, 300)}`));
+    await page.goto(`http://127.0.0.1:${port}/?paintedlab=1&mute=1&parts=${parts}&size=${size}${v.includes('paint0') ? '&paint=0' : ''}`, {
       waitUntil: 'load',
     });
-    await page.waitForFunction(() => window.__paintedLab, null, { timeout: 60000 });
+    await page.waitForFunction(() => window.__paintedLab, null, { timeout: 150000 });
     await page.evaluate((d) => window.__paintedLab.apply(d), dump);
     const t0 = Date.now();
     let info = { drawCalls: 0, frames: 0, triangles: 0 };

@@ -42,10 +42,15 @@ export async function startPaintedLab(host: HTMLElement): Promise<void> {
   host.style.cssText = 'position:fixed;inset:0;margin:0;background:#000';
   const renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: q.get('renderer') === 'webgl2' });
   renderer.setPixelRatio(1);
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  const sizeQ = (q.get('size') ?? '').split('x').map(Number);
+  const VW = sizeQ.length === 2 && sizeQ[0] ? sizeQ[0] : window.innerWidth;
+  const VH = sizeQ.length === 2 && sizeQ[1] ? sizeQ[1] : window.innerHeight;
+  renderer.setSize(VW, VH);
   renderer.toneMapping = THREE.NoToneMapping;
   host.appendChild(renderer.domElement);
   await renderer.init();
+  // GPU timeout (TDR) làm mất thiết bị: ghi lại để biết khung có quá nặng không
+  (renderer.backend as { device?: GPUDevice }).device?.lost.then((i) => console.error(`GPU device lost: ${i.reason} ${i.message}`));
 
   // ---- bản đồ trong cửa sổ ----
   const res = WIN;
@@ -136,7 +141,7 @@ export async function startPaintedLab(host: HTMLElement): Promise<void> {
   if (parts.includes('flowers')) scene.add(flowers.group);
   let frames = 0;
 
-  const camera = new THREE.PerspectiveCamera(32, window.innerWidth / window.innerHeight, 0.12, 40000);
+  const camera = new THREE.PerspectiveCamera(32, VW / VH, 0.12, 40000);
   camera.rotation.order = 'YXZ';
   const frame = createFrame(renderer, scene, camera, { paint: paintLevel, exposure: 1, vignette: 0.14, samples: 4 });
 
@@ -148,7 +153,7 @@ export async function startPaintedLab(host: HTMLElement): Promise<void> {
       camera.fov = d.camera.fov;
       camera.near = d.camera.near;
       camera.far = d.camera.far;
-      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.aspect = VW / VH;
       camera.position.fromArray(d.camera.position);
       camera.rotation.set(d.camera.rotation[0]!, d.camera.rotation[1]!, d.camera.rotation[2]!, 'YXZ');
       camera.updateProjectionMatrix();
