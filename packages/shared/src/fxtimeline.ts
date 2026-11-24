@@ -34,6 +34,8 @@ export type FxShape =
   | 'card'
   /** Chùm đường gió: bảy vệt mảnh cuộn quanh trục +Z, đầu vệt chạy dọc đường rồi tan (kiểu `wind`, Storm & Wind CC BY). */
   | 'gust'
+  /** Sprite vẽ tay (Họa Pháp Lô 2): một ô của atlas `public/hoa-truc/vfx_sprites.webp` (lưới 4×6) (nền trong suốt) quay mặt về camera, tô ink theo bảng màu nhánh; chọn ô bằng `sprite` (kiểu `art`). */
+  | 'sprite'
   /** Tấm flipbook (VS-1): khói mực, tia lửa, bụi, nét bút... phát tuần tự 16 khung theo tiến độ vòng đời; chọn atlas bằng `flip` (kiểu `flip`). */
   | 'flip'
   | FxLibShape;
@@ -110,6 +112,38 @@ export const FX_TOON_SHAPES: ReadonlySet<string> = new Set([
 /** Atlas flipbook có sẵn (4×4 khung mỗi atlas, sinh thủ tục ở `render/vfx/flipbook.ts`). */
 export const FLIP_ATLASES = ['ink_smoke', 'spark_burst', 'dust_kick', 'slash_streak'] as const;
 export type FlipAtlas = (typeof FLIP_ATLASES)[number];
+
+/**
+ * Sprite vẽ tay (Codex, qua `tools/vfx-forge/sprite-pack.mjs`): thứ tự = ô trong atlas 4×6 (hàng trên trước, trái sang phải). Mỗi sprite là khối khói/hình có
+ * lõi tối + viền sáng lạnh; shader đọc độ sáng làm tầng màu theo bảng màu nhánh (đọc được cả nền sáng lẫn đêm).
+ */
+export const FX_SPRITES = [
+  'hon_hand_claw',
+  'hon_hand_press',
+  'hon_face_scream',
+  'hon_face_sad',
+  'hon_soldier',
+  'hon_banner',
+  'hon_chain',
+  'hon_claws3',
+  'hon_tornado',
+  'hon_curtain',
+  'hon_wave',
+  'hon_orb',
+  'hon_face_grin',
+  'hon_wraith',
+  'hon_whips',
+  'hon_wisps',
+  'hon_thread_s1',
+  'hon_thread_s2',
+  'hon_ring',
+  'hon_veil',
+  'hon_face_pale',
+  'hon_face_horn',
+  'hon_bone_hand',
+  'hon_swarm9',
+] as const;
+export type FxSprite = (typeof FX_SPRITES)[number];
 
 /**
  * Texture Họa Pháp Lô 2 dùng chung theo hệ (Codex vẽ → `forge import` → KTX2 ở `public/assets/vfx`). Dùng cho quái/boss và chiêu người chơi;
@@ -199,6 +233,8 @@ export interface FxMeshEvent extends FxBase {
   };
   /** Atlas của hình `flip` (bắt buộc với `shape: "flip"`). */
   flip?: FlipAtlas | ForgeFlip;
+  /** Ô sprite của hình `sprite` (bắt buộc với `shape: "sprite"`). */
+  sprite?: FxSprite;
   /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh); `colossus` (Cổ Thần khổng lồ nửa thân) và `fist` (cự quyền) của Cổ Thần (TN-5). */
   card?: 'arhat' | 'phoenix' | 'ghost' | 'colossus' | 'fist';
   /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */
@@ -530,6 +566,9 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       )
         errs.push(`${p}: mesh flip thiếu/sai atlas (${e.flip}), hợp lệ: ${[...FLIP_ATLASES, ...FORGE_FLIPS].join('|')}`);
       if (e.type === 'mesh' && e.shape !== 'flip' && e.flip) errs.push(`${p}: chỉ hình flip mới có trường flip`);
+      if (e.type === 'mesh' && e.shape === 'sprite' && !(e.sprite && (FX_SPRITES as readonly string[]).includes(e.sprite)))
+        errs.push(`${p}: mesh sprite thiếu/sai ô (${e.sprite}), hợp lệ: ${FX_SPRITES.join('|')}`);
+      if (e.type === 'mesh' && e.shape !== 'sprite' && e.sprite) errs.push(`${p}: chỉ hình sprite mới có trường sprite`);
       if (e.type === 'decal' && e.strip !== undefined) {
         if (!(e.strip[0] > 0 && e.strip[0] <= 40 && e.strip[1] > 0 && e.strip[1] <= 12))
           errs.push(`${p}: decal strip=${e.strip} ngoài (0, 40] × (0, 12] m`);

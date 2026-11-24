@@ -1,0 +1,36 @@
+{
+  "skillId": "skl_hon_trao",
+  "idea": "Vuốt hồn: ba vệt vuốt khói mờ tím-đen cào ngang kèm bàn tay hồn mờ, đuôi khói uốn bay, viền sáng lạnh.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "spike",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 260,
+    "impactMs": 80,
+    "lingerMs": 540
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 6,
+    "particles": 60,
+    "screenCover": 0.16,
+    "overdraw": 4
+  },
+  "textures": [],
+  "impactFrame": true,
+  "silhouette": "ba vệt vuốt song song chéo từ trên xuống bằng khói đặc, mỗi vệt kết thúc ở một đầu ngón bàn tay hồn mờ, đuôi khói tách ngón",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

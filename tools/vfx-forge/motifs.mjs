@@ -107,6 +107,32 @@ const upBlade = (at, x, z, h, w, t, tone = BODY, a = 1) =>
     seed: S(),
   });
 
+/** Cụm khói billboard (flip ink_smoke): `tone` 'shadow' = lõi tối đặc, 'rim' = quầng viền sáng lạnh. */
+const puff = (at, offset, sc, t, tone, alpha) =>
+  mesh({ shape: 'flip', flip: 'ink_smoke', t, dur: 0.95, at, offset, scale: sc, billboard: true, alpha, tone, seed: S() });
+/** Sợi hồn: dải ribbon uốn, lõi tối + viền sáng lạnh mảnh (toon ink), bay lên/ra ngoài với chuyển động. */
+const wisps = (at, R, n, base = [0, 0, 0]) =>
+  Array.from({ length: n }, (_, i) => {
+    const a = (i / n) * Math.PI * 2;
+    return mesh({
+      shape: 'ribbon',
+      t: 0.02 * i,
+      dur: 0.85,
+      at,
+      offset: [r2(base[0] + Math.cos(a) * R * 0.5), 0.4, r2(base[2] + Math.sin(a) * R * 0.5)],
+      rot: [-80, r2(a * 57.3), 0],
+      scale: [R * 1.4, R * 1.4, R * 4],
+      sweep: 0.5,
+      erodeFrom: 0.4,
+      ragged: 0.8,
+      alpha: 0.95,
+      tone: BODY,
+      ink: true,
+      seed: S(),
+      move: { to: at, offset: [r2(base[0] + Math.cos(a) * R * 1.4), R * 1.8, r2(base[2] + Math.sin(a) * R * 1.4)], ease: 'out' },
+    });
+  });
+
 const MOTIFS = {
   rings: (at, R) => [
     ring(at, 0.12, R * 0.4, R * 1.0, 0, 0.85),
@@ -296,6 +322,75 @@ const MOTIFS = {
         move: { to: at, offset: [r2(Math.cos(a) * rr), 0.1, r2(Math.sin(a) * rr)], ease: 'in' },
       });
     }),
+  ],
+  // ---- Hồn tu: khói hồn đặc lõi tối + viền sáng lạnh, sợi hồn uốn, bàn tay/mặt hồn mờ (không vòng ấn, không tia thẳng) ----
+  // Khối khói: mỗi cụm = lớp viền sáng lạnh (rim, to, mờ) vẽ trước + lớp lõi tối (shadow, nhỏ hơn, đặc) vẽ sau; billboard, tan theo ăn mòn.
+  smokeBank: (at, R) => [
+    ...Array.from({ length: 5 }, (_, i) => {
+      const a = (i / 5) * Math.PI * 2 + 0.6;
+      const off = [r2(Math.cos(a) * R * 0.5), 0.9 + (i % 2) * 0.5, r2(Math.sin(a) * R * 0.5)];
+      return [puff(at, off, R * 1.5, 0.02 * i, BODY, 0.55), puff(at, off, R * 1.2, 0.02 * i + 0.01, 'shadow', 0.95)];
+    }).flat(),
+    ...wisps(at, R, 9),
+  ],
+  ghostHand: (at, R) => [
+    puff(at, [0, 1.2, 0], R * 1.7, 0, BODY, 0.5),
+    puff(at, [0, 1.2, 0], R * 1.3, 0.01, 'shadow', 0.95),
+    ...wisps(at, R, 8),
+  ],
+  trail: (at, R) => [
+    ...[0, 1, 2, 3]
+      .map((i) => [
+        puff('ahead', [0, 0.9, 1.5 + i * 1.6], R * 1.3, i * 0.03, BODY, 0.55),
+        puff('ahead', [0, 0.9, 1.5 + i * 1.6], R, i * 0.03 + 0.01, 'shadow', 0.95),
+      ])
+      .flat(),
+    ...wisps('ahead', R, 4, [0, 0, 4]),
+  ],
+  vortex: (at, R) => [
+    mesh({
+      shape: 'helix',
+      t: 0,
+      dur: 0.9,
+      at,
+      offset: [0, 0, 0],
+      scale: [R * 0.9, R * 1.4, R * 0.9],
+      sweep: 0.5,
+      erodeFrom: 0.5,
+      ragged: 0.7,
+      alpha: 0.95,
+      tone: BODY,
+      ink: true,
+      shadow: true,
+      seed: S(),
+    }),
+    mesh({
+      shape: 'helix',
+      t: 0.05,
+      dur: 0.9,
+      at,
+      offset: [0, 0, 0],
+      rot: [0, 90, 0],
+      scale: [R * 1.2, R * 1.8, R * 1.2],
+      sweep: 0.5,
+      erodeFrom: 0.5,
+      ragged: 0.7,
+      alpha: 0.85,
+      tone: 'rim',
+      ink: true,
+      seed: S(),
+    }),
+    puff(at, [0, 0.8, 0], R * 1.6, 0, BODY, 0.5),
+    puff(at, [0, 0.8, 0], R * 1.2, 0.01, 'shadow', 0.95),
+  ],
+  wave: (at, R) => [
+    ...[0, 1, 2, 3, 4, 5]
+      .map((i) => [
+        puff('ahead', [r2((i % 2 ? 1 : -1) * 0.7), 0.9, 1 + i * 1.9], R * 1.4, i * 0.025, BODY, 0.55),
+        puff('ahead', [r2((i % 2 ? 1 : -1) * 0.7), 0.9, 1 + i * 1.9], R * 1.1, i * 0.025 + 0.01, 'shadow', 0.95),
+      ])
+      .flat(),
+    ...wisps('ahead', R, 6, [0, 0, 6]),
   ],
   pillar: (at, R) => [
     upBlade(at, 0, 0, 16, R * 1.1, -0.04, BODY, 0.9),

@@ -477,14 +477,17 @@ export function shapeGeometry(s: ShapeKey): THREE.BufferGeometry {
       return memo('gust', () => gustGeometry());
     case 'flip':
       return QUAD_XY;
+    case 'sprite':
+      return QUAD_XY;
     default:
       return libGeometry(s);
   }
 }
 
 /** Kiểu material của một hình (theo lớp). */
-export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' | 'card' | 'wind' | 'flip' {
+export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' | 'card' | 'sprite' | 'wind' | 'flip' {
   if (s === 'card') return 'card';
+  if (s === 'sprite') return 'sprite';
   if (s === 'flip') return 'flip';
   if (FX_TOON_SHAPES.has(s)) return 'toon';
   if (
