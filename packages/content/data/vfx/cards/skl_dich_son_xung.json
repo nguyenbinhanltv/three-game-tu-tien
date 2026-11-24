@@ -8,7 +8,7 @@
     "spike"
   ],
   "timing": {
-    "anticipationMs": 300,
+    "anticipationMs": 0,
     "impactMs": 80,
     "lingerMs": 600
   },
@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "sóng đất đá hình tường nghiêng hất ra xa, tảng đá lăn theo hướng húc"
+  "silhouette": "sóng đất đá hình tường nghiêng hất ra xa, tảng đá lăn theo hướng húc",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

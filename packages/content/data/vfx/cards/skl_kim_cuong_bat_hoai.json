@@ -26,5 +26,10 @@
     "overdraw": 6
   },
   "textures": [],
-  "silhouette": "vỏ tinh thể vàng nhiều mặt nhọn bao quanh thân như hốc geode, ánh sáng xuyên mặt"
+  "silhouette": "vỏ tinh thể vàng nhiều mặt nhọn bao quanh thân như hốc geode, ánh sáng xuyên mặt",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "con dấu vuông khắc núi ép xuống, đất nứt ô vuông chữ điền, bốn cột đá ở góc"
+  "silhouette": "con dấu vuông khắc núi ép xuống, đất nứt ô vuông chữ điền, bốn cột đá ở góc",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

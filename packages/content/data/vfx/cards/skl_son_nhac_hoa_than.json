@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "ba đỉnh núi đá lởm chởm trồi lên quanh thân, tảng đá và mây bụi quấn chân"
+  "silhouette": "ba đỉnh núi đá lởm chởm trồi lên quanh thân, tảng đá và mây bụi quấn chân",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "bóng giáp trụ trong suốt đứng che sau lưng, mắt xích vàng nối tới đồng đội"
+  "silhouette": "bóng giáp trụ trong suốt đứng che sau lưng, mắt xích vàng nối tới đồng đội",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

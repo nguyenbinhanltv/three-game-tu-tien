@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "pháp tướng giáp trụ vàng khổng lồ không mặt sau lưng, giậm chân nứt đất"
+  "silhouette": "pháp tướng giáp trụ vàng khổng lồ không mặt sau lưng, giậm chân nứt đất",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

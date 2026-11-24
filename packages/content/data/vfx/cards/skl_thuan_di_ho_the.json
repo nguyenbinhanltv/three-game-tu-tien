@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "vệt ánh vàng nối hai điểm, tấm khiên cổ đỉnh nhọn úp lên đồng đội"
+  "silhouette": "vệt ánh vàng nối hai điểm, tấm khiên cổ đỉnh nhọn úp lên đồng đội",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

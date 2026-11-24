@@ -22,7 +22,7 @@
   "budget": {
     "drawCalls": 12,
     "particles": 500,
-    "screenCover": 0.35,
+    "screenCover": 0.2,
     "overdraw": 4
   },
   "textures": [
@@ -32,5 +32,10 @@
     }
   ],
   "impactFrame": true,
-  "silhouette": "nắm đấm khổng lồ vàng-đá giáng xuống, vết nứt tia xòe, đá tảng bay lên"
+  "silhouette": "nắm đấm khổng lồ vàng-đá giáng xuống, vết nứt tia xòe, đá tảng bay lên",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

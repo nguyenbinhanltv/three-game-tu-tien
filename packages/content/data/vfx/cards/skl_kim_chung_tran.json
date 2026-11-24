@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "quả chuông đồng vàng lớn úp xuống thân, hoa văn lồi, sóng âm dọc"
+  "silhouette": "quả chuông đồng vàng lớn úp xuống thân, hoa văn lồi, sóng âm dọc",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

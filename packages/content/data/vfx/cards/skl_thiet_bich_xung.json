@@ -8,7 +8,7 @@
     "spike"
   ],
   "timing": {
-    "anticipationMs": 300,
+    "anticipationMs": 0,
     "impactMs": 80,
     "lingerMs": 600
   },
@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "mũi giáp vàng hình nêm lao ngang, hai rãnh đất cày và quạt gió phía sau"
+  "silhouette": "mũi giáp vàng hình nêm lao ngang, hai rãnh đất cày và quạt gió phía sau",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }
