@@ -19,6 +19,7 @@ import {
   vec3,
 } from 'three/tsl';
 import type { N, RefField } from './field';
+import { cellRand } from './hash';
 
 /**
  * Đất dưới cỏ: dựa trên painted-valley/src/lib/ground.js (MIT, © 2026 Patch; xem assets/LICENSES.md), dịch từng dòng sang TSL. Cảnh thử
@@ -253,7 +254,22 @@ export function createGround(F: RefField, textures: GroundTextures, { extentMin,
     c = mix(c, lit.mul(mix(0.78, 1.0, smoothstep(8, 60, dist))), farK);
     c = c.toVar();
   }
-  material.colorNode = F.applyFog(c, vWorld);
+  const dbg = new URLSearchParams(location.search).get('dbg');
+  if (dbg === 'live') {
+    // gỡ lỗi: `live` của vòng mid (cell 0,09 m, fade 2,8/6/13/21,6, muối 104) tính ở fragment, như shader lá nhưng ở stage khác
+    const cellRaw: N = vWorld.xz.div(0.09).floor();
+    const r: N = cellRand(cellRaw, float(104));
+    const q: N = cellRand(cellRaw, float(135));
+    const xzb: N = cellRaw.add(r.xy).mul(0.09);
+    const db: N = distance(xzb, cameraPosition.xz);
+    const keep: N = smoothstep(2.8, 6, db).mul(float(1).sub(smoothstep(13, 21.6, db)));
+    const mm: N = F.map(F.extentUv(xzb), false);
+    const live: N = smoothstep(0, 0.18, keep.sub(q.x.mul(0.82))).mul(smoothstep(0, 0.22, mm.g.sub(q.y.mul(0.78))));
+    material.colorNode = vec3(live, r.x, q.x);
+  } else if (dbg === 'hash') {
+    const cellRaw: N = vWorld.xz.mul(4).floor();
+    material.colorNode = cellRand(cellRaw, float(104)).xyz;
+  } else material.colorNode = F.applyFog(c, vWorld);
   material.opacityNode = mix(1.0, 0.4, smoothstep(120, 200, dist));
 
   const mesh = new THREE.Mesh(warpedGrid(), material);
