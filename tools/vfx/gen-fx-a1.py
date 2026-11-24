@@ -53,7 +53,7 @@ def unmul(events, k):
 
 
 def write(name, events, palette):
-    with open(os.path.join(OUT, name + '.json'), 'w', encoding='utf8') as f:
+    with open(os.path.join(OUT, name + '.json'), 'w', encoding='utf8', newline='\n') as f:
         json.dump({"skill": name, "palette": palette, "events": events}, f, ensure_ascii=False, indent=1)
         f.write('\n')
 
@@ -299,5 +299,27 @@ write(f'mon_boom_circle__{B}__chant', [
     *flip_ring('root_flip', 5, 3.2, 0.05, 1.9, 530),
     parts('dust', 0, 34, 4, 1, 1.0, 0.26, 'body', offset=[0, 0.2, 0], grav=0.5),
     parts('spark', 0, 30, 5, 1, 0.9, 0.08, 'rim', offset=[0, 0.3, 0], grav=-0.4, tier=0),
+], PAL[B])
+# ---- Chui đất / trồi lên (burrow, emerge; pha 65% máu): vạch tròn r4 báo 2,0 s (chỗ boss chui xuống, n=3 vạch), rồi quạt r14 nửa góc 35° báo 1,5 s ----
+write(f'mon_warn__{B}__burrow', warn_circle(2.0, 20, -65, spark=18), PAL[B])
+write(f'mon_boom_circle__{B}__burrow', [
+    mesh('burst', 0, 0.16, 'rim', 0.3, 0, offset=[0, 0.4, 0], scale=1.3, billboard=True, sweep=0),
+    decal('root_mat', 0, 4, 2.4, 'core', 1.0, 0.02, top=False, untilDelay=False, lift=LIFT),  # hố đất tối, rễ lồi quanh miệng hố
+    ripple(0, 'body', 0.85, 3),
+    *flip_ring('root_flip', 6, 2.4, 0.0, 1.7, 560),
+    *ring_mesh('spike', 8, 2.6, 570, 0.55, tone='body'),  # vòng gai rễ gỗ nhô quanh miệng hố
+    parts('dust', 0, 36, 4.5, 0.9, 1.1, 0.26, 'body', offset=[0, 0.2, 0], grav=1.2),  # đất bắn tung
+    parts('spark', 0, 18, 4, 0.9, 0.9, 0.08, 'rim', offset=[0, 0.3, 0], grav=-0.4, tier=0),  # bào tử xanh lục
+], PAL[B])
+write(f'mon_warn_cone__{B}__emerge', warn_fan(1.5, 35), PAL[B])
+write(f'mon_boom_cone__{B}__emerge', [
+    mesh('burst', 0, 0.16, 'rim', 0.32, 0, offset=[0, 0.6, 0.8], scale=1.5, billboard=True, sweep=0),
+    decal('root_mat', 0, 8, 2.4, 'body', 1.0, 0.03, top=False, untilDelay=False, sector=35, lift=LIFT),
+    *unmul([
+        *[flip('root_flip', i * 0.03, math.sin(math.radians((i % 3 - 1) * 14)) * (2.2 + i * 1.55), math.cos(math.radians((i % 3 - 1) * 14)) * (2.2 + i * 1.55), 1.8 + (i % 3) * 0.2, 580 + i, tier=0 if i % 2 == 0 else 1) for i in range(8)],
+        *[mesh('spike', 0.02 + i * 0.03, 0.9, 'body', 1, 600 + i, offset=[round(math.sin(math.radians((i % 3 - 1) * 12)) * (3 + i * 1.5), 0, 2), 0, 0][:3] if False else [round(math.sin(math.radians((i % 3 - 1) * 12)) * (3 + i * 1.5), 2), 0, round(math.cos(math.radians((i % 3 - 1) * 12)) * (3 + i * 1.5), 2)], rot=[-90, 0, 0], scale=0.8, sweep=0.2, erodeFrom=0.6, tier=0 if i % 2 == 0 else 1) for i in range(7)],  # gai rễ trồi theo quạt
+        parts('dust', 0, 32, 6, 0.5, 1.0, 0.26, 'body', offset=[0, 0.3, 3], grav=1.0),
+        parts('spark', 0.02, 24, 5, 0.5, 0.9, 0.08, 'rim', offset=[0, 0.5, 4], grav=-0.4, tier=0),
+    ], 1.75),
 ], PAL[B])
 print('ok')

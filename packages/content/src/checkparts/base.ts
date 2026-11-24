@@ -132,6 +132,15 @@ for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKIL
           phases?: { ai?: Record<string, { r: number; delay: number; shape?: string } | undefined> }[];
         }
       | undefined;
+    // Chui đất (E1-E): `burrow` = vòng tròn bán kính `r`, báo `hide` giây; `emerge` = quạt `cone` (dài `cone.r`, báo `cone.delay`). Chiêu khác đọc thẳng `ai[mv]`.
+    if (mv === 'burrow' || mv === 'emerge') {
+      const bu = [def?.ai, ...(def?.phases?.map((p) => p.ai) ?? [])].map((a) => a?.burrow).find(Boolean) as
+        { r: number; hide: number; cone: { r: number; delay: number } } | undefined;
+      if (!bu) return undefined;
+      return mv === 'burrow'
+        ? { r: bu.r, delay: bu.hide, shape: 'circle' as const }
+        : { r: bu.cone.r, delay: bu.cone.delay, shape: 'cone' as const };
+    }
     const c = def?.ai?.[mv!] ?? def?.phases?.map((p) => p.ai?.[mv!]).find(Boolean);
     if (!c) return undefined;
     const shape = mv === 'sweep' ? (c.shape === 'rect' ? 'rect' : 'cone') : mv === 'line' || mv === 'charge' ? 'rect' : 'circle';

@@ -152,6 +152,10 @@ import fx_mon_boom_circle__boss_dia_mach_long__chant from '../data/fx/mon_boom_c
 import fx_mon_boom_circle__boss_huyet_lang_vuong__slam from '../data/fx/mon_boom_circle__boss_huyet_lang_vuong__slam.json';
 import fx_mon_boom_circle__boss_kiem_khoi__slam from '../data/fx/mon_boom_circle__boss_kiem_khoi__slam.json';
 import fx_mon_boom_circle__boss_thach_tam_khoi_vuong__leap from '../data/fx/mon_boom_circle__boss_thach_tam_khoi_vuong__leap.json';
+import fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__burrow from '../data/fx/mon_boom_circle__boss_thon_mach_ngo_cong_vuong__burrow.json';
+import fx_mon_boom_cone__boss_thon_mach_ngo_cong_vuong__emerge from '../data/fx/mon_boom_cone__boss_thon_mach_ngo_cong_vuong__emerge.json';
+import fx_mon_warn__boss_thon_mach_ngo_cong_vuong__burrow from '../data/fx/mon_warn__boss_thon_mach_ngo_cong_vuong__burrow.json';
+import fx_mon_warn_cone__boss_thon_mach_ngo_cong_vuong__emerge from '../data/fx/mon_warn_cone__boss_thon_mach_ngo_cong_vuong__emerge.json';
 import fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__chant from '../data/fx/mon_boom_circle__boss_thon_mach_ngo_cong_vuong__chant.json';
 import fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__slam from '../data/fx/mon_boom_circle__boss_thon_mach_ngo_cong_vuong__slam.json';
 import fx_mon_boom_circle__boss_thu_mo_tuong__chant from '../data/fx/mon_boom_circle__boss_thu_mo_tuong__chant.json';
@@ -962,6 +966,10 @@ export const MON_FX_TIMELINES = [
   fx_mon_boom_circle__boss_huyet_lang_vuong__slam,
   fx_mon_boom_circle__boss_kiem_khoi__slam,
   fx_mon_boom_circle__boss_thach_tam_khoi_vuong__leap,
+  fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__burrow,
+  fx_mon_boom_cone__boss_thon_mach_ngo_cong_vuong__emerge,
+  fx_mon_warn__boss_thon_mach_ngo_cong_vuong__burrow,
+  fx_mon_warn_cone__boss_thon_mach_ngo_cong_vuong__emerge,
   fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__chant,
   fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__slam,
   fx_mon_boom_circle__boss_thu_mo_tuong__chant,
