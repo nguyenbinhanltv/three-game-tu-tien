@@ -185,6 +185,10 @@ function bladeMaterial(
 
   // Mọi phép tính vertex nằm trong Fn: `.toVar()` ngoài Fn chỉ được phát ra ở lần dùng đầu tiên (có thể nằm trong một nhánh if của
   // select), khiến biến chưa được tính ở nhánh kia. Trong Fn chúng được phát theo đúng thứ tự. Kết quả sang fragment qua varyingProperty.
+  // ?dbg=bladelive: vẽ mọi lá (dày gấp 8) tô màu (live, keep, growth) tính Ở VERTEX, để so với bản tính ở fragment
+  const dbgMode = new URLSearchParams(location.search).get('dbg') ?? '';
+  // bladelive: màu live/keep/growth; bladepos: bỏ uốn/nghiêng, dải đứng cố định tại gốc; nostalk/allstalk: ép nhánh lá thường / lá hạt
+  const DBG = ['bladelive', 'bladepos', 'nostalk', 'allstalk'].includes(dbgMode);
   const pAlbedo = varyingProperty('vec3');
   const pLightX = varyingProperty('float');
   const pUp = varyingProperty('float');
@@ -220,10 +224,6 @@ function bladeMaterial(
     live = live.mul(smoothstep(0, 0.22, growth.sub(q.y.mul(0.78))));
     live = live.toVar();
     // (the source moves a dead blade out of the clip volume; here it collapses to its root: the same, nothing drawn)
-    // ?dbg=bladelive: vẽ mọi lá (dày gấp 8) tô màu (live, keep, growth) tính Ở VERTEX, để so với bản tính ở fragment
-    const dbgMode = new URLSearchParams(location.search).get('dbg') ?? '';
-    // bladelive: màu live/keep/growth; bladepos: bỏ uốn/nghiêng, dải đứng cố định tại gốc; nostalk/allstalk: ép nhánh lá thường / lá hạt
-    const DBG = ['bladelive', 'bladepos', 'nostalk', 'allstalk'].includes(dbgMode);
     let alive: N = DBG ? float(1) : step(0.0000001, live);
     alive = alive.toVar();
 

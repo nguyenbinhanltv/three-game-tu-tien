@@ -347,6 +347,5 @@ function flowerMaterial(F: RefField, geometry: THREE.InstancedBufferGeometry, uH
   const c: N = min(F.leafLight(pAlbedo, Nn, V, pLightZ, float(0.04), pLightX).mul(0.62), vec3(1.25, 1.25, 1.25));
   material.colorNode = F.applyFog(c, positionWorld);
   void dot;
-  void stB;
   return material;
 }
