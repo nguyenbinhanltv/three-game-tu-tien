@@ -561,7 +561,7 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const sRow = floor(sk.div(SPRITE_COLS));
   const ts = texture(spriteAtlas(), vec2(q.x.add(sCol).div(SPRITE_COLS), q.y.add(float(SPRITE_ROWS - 1).sub(sRow)).div(SPRITE_ROWS)));
   const spLum = dot(ts.rgb, vec3(0.3, 0.59, 0.11));
-  const spTier = smoothstep(0.28, 0.85, spLum.sqrt());
+  const spTier = smoothstep(0.34, 0.88, spLum.sqrt());
   const spBody = U.color;
   const spRim = U.b.xyz;
   const spE = vnoise(q.mul(vec2(9, 12)).add(U.a.z.mul(7)))
@@ -573,7 +573,7 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const spGrey = vec3(spLum, spLum, spLum);
   const spCol = min(
     mix(spGrey, ts.rgb, 0.92)
-      .mul(mix(float(0.42), float(1.3), spTier))
+      .mul(mix(float(0.26), float(1.3), spTier))
       .mul(vec3(1.1, 0.9, 1.0))
       .add(spBody.mul(0.06))
       .add(spRim.mul(spEdge.mul(0.7).add(smoothstep(0.78, 0.98, spLum.sqrt()).mul(0.25)))),
