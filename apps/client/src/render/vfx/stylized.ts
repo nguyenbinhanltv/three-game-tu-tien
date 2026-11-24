@@ -561,14 +561,23 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const sRow = floor(sk.div(SPRITE_COLS));
   const ts = texture(spriteAtlas(), vec2(q.x.add(sCol).div(SPRITE_COLS), q.y.add(float(SPRITE_ROWS - 1).sub(sRow)).div(SPRITE_ROWS)));
   const spLum = dot(ts.rgb, vec3(0.3, 0.59, 0.11));
-  // Độ sáng cảm nhận của tranh, kéo giãn tương phản: vùng tối = lõi, giữa = thân, sáng = viền/chi tiết (ngón tay, mặt, lưỡi giáo).
-  const spTier = smoothstep(0.12, 0.62, spLum.sqrt());
-  const spBody = U.color;
-  const spRim = U.b.xyz;
-  const spCore = spBody.mul(spBody).mul(0.1);
-  // Gradient ba tầng theo bảng màu nhánh: lõi tối → thân tím → viền sáng lạnh, mềm (không cắt cứng).
-  const spRamp = mix(mix(spCore, spBody, smoothstep(0.02, 0.58, spTier)), spRim, smoothstep(0.6, 1.0, spTier));
-  const spPaint = ts.rgb.mul(mix(float(0.35), float(1.2), spTier));
+  // Bảng tím âm hồn (hue ~270–285°, tuyến tính): lõi mực tối gần đen tím → thân tím đậm → viền tím nhạt/trắng lạnh. Giữ quan hệ với màu của sự kiện
+  // (`tone`): màu nhánh sáng hơn (tone `rim`: lớp điểm nhấn ngắn) thì ramp sáng dần về viền; tone `body` giữ ramp tối.
+  const spRimIn = U.b.xyz;
+  const spBright = smoothstep(0.4, 0.62, dot(U.color, vec3(0.3, 0.59, 0.11)));
+  const spCoreC = vec3(0.006, 0.003, 0.026);
+  const spBodyC = vec3(0.15, 0.03, 0.34);
+  const spRimC = mix(vec3(0.62, 0.44, 0.92), spRimIn, 0.15);
+  const spWhiteC = vec3(0.86, 0.8, 1.0);
+  // Độ sáng cảm nhận của tranh, kéo giãn tương phản rồi nén về phía tối: thân/lõi tối (giá trị thấp), chỉ chi tiết sáng nhất mới lên viền.
+  const spT = smoothstep(0.14, 0.7, spLum.sqrt());
+  const spTier = pow(spT, float(1.45));
+  const spRamp = mix(
+    mix(mix(spCoreC, spBodyC, smoothstep(0.05, 0.62, spTier)), spRimC, smoothstep(0.6, 0.92, spTier)),
+    spWhiteC,
+    smoothstep(0.9, 1.0, spTier),
+  );
+  const spLift = mix(spRamp, mix(spRimC, spWhiteC, 0.5), spBright.mul(spTier).mul(0.9));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)
@@ -576,7 +585,11 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
     .add(q.y.mul(0.2));
   const spAlive = dissolve(spE, U.a.y, 0.2);
   const spEdge = one.sub(smoothstep(U.a.y, U.a.y.add(0.16), spE)).mul(step(0.02, U.a.y));
-  const spCol = min(mix(spRamp, spPaint, 0.3).add(spRim.mul(spEdge.mul(0.55))), U.maxHdr);
+  // Chi tiết vẽ tay (ngón tay, mặt, lưỡi giáo) lấy từ tranh nhưng nhuốm tím và tối đi theo bậc.
+  const spPaint = mix(vec3(spLum, spLum, spLum), ts.rgb, 0.5)
+    .mul(mix(float(0.3), float(1.0), spTier))
+    .mul(vec3(1.05, 0.82, 1.1));
+  const spCol = min(mix(spLift, spPaint, 0.2).add(spRimC.mul(spEdge.mul(0.5))), U.maxHdr);
   const spOpacity = U.opacity.mul(smoothstep(0.0, 0.85, ts.a)).mul(spAlive);
   return { color: spCol, opacity: spOpacity };
 }
