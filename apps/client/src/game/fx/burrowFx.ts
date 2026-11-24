@@ -45,6 +45,7 @@ export interface Dive {
   diveFx: boolean;
   riseFx: boolean;
   mound: number;
+  scar: number;
 }
 
 /** Độ chìm 0 (nổi hẳn) … 1 (chìm hẳn) của một lần chui. */
@@ -109,6 +110,7 @@ export class BurrowFx {
       diveFx: false,
       riseFx: false,
       mound: 0,
+      scar: 0,
     });
     this.spots.delete(id);
   }
@@ -153,19 +155,24 @@ export class BurrowFx {
         if (!d.diveFx) {
           d.diveFx = true;
           v.inkSplat(d.from.x, d.from.z, 2.4, undefined, undefined, 1, 0.7, 0.8);
-          this.debris(d.from.x, gy(d.from.x, d.from.z), d.from.z, 26, 4.5, 1.1);
+          this.debris(d.from.x, gy(d.from.x, d.from.z), d.from.z, 44, 5.5, 1.3);
         }
-        if (d.t < BURROW.sink) this.dust(d.from.x, gy(d.from.x, d.from.z), d.from.z, 3, 1.6, 1.4);
+        if (d.t < BURROW.sink) this.dust(d.from.x, gy(d.from.x, d.from.z), d.from.z, 5, 2.0, 1.8);
       }
       // 2) ụ đất chạy dưới mặt đất
       const m = moundPos(d);
       if (m) {
         d.mound += dt;
-        while (d.mound > 0.055) {
-          d.mound -= 0.055;
+        d.scar += dt;
+        while (d.mound > 0.04) {
+          d.mound -= 0.04;
           const y = gy(m.x, m.z);
-          this.dust(m.x, y, m.z, 2, 1.0, 0.9);
-          this.debris(m.x, y, m.z, 3, 2.2, 0.6);
+          this.dust(m.x, y, m.z, 3, 1.2, 1.1);
+          this.debris(m.x, y, m.z, 6, 2.6, 0.9);
+        }
+        if (d.scar > 0.22) {
+          d.scar = 0;
+          v.inkSplat(m.x, m.z, 1.1, undefined, undefined, 1.4, 0.55, 0.8); // vệt đất nứt tối dọc đường ụ đất chạy
         }
       }
       // 3) báo trước trồi lên: mặt đất phồng, đất đá nhích lên ở điểm trồi
@@ -181,8 +188,8 @@ export class BurrowFx {
         const x = d.to.x;
         const z = d.to.z;
         v.inkSplat(x, z, 3.2, undefined, undefined, 1, 0.75, 0.8);
-        this.debris(x, gy(x, z), z, 46, 7, 1.4);
-        this.dust(x, gy(x, z), z, 14, 3.2, 2.2);
+        this.debris(x, gy(x, z), z, 70, 8, 1.6);
+        this.dust(x, gy(x, z), z, 22, 3.6, 2.6);
       }
       if (d.rising >= 0 && d.rising < BURROW.rise * 0.8) this.dust(d.to.x, gy(d.to.x, d.to.z), d.to.z, 2, 1.8, 1.6);
     }
@@ -202,8 +209,8 @@ export class BurrowFx {
         (2 + Math.random() * 4) * up,
         Math.sin(a) * s * 0.6,
         0.6 + Math.random() * 0.5,
-        0.16 + Math.random() * 0.14,
-        0.08,
+        0.3 + Math.random() * 0.26,
+        0.14,
         Math.random() < 0.5 ? DIRT : DIRT_DARK,
         0.95,
         14,
@@ -226,10 +233,10 @@ export class BurrowFx {
         0.8 + Math.random() * 1.6,
         Math.sin(a) * s * 0.5,
         0.7 + Math.random() * 0.5,
-        0.3 * size,
-        0.9 * size,
+        0.5 * size,
+        1.5 * size,
         DUST,
-        0.55,
+        0.85,
         -0.4,
         1.2,
       );
