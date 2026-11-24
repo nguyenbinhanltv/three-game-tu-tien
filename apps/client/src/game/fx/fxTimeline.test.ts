@@ -48,11 +48,20 @@ describe('V2: biến thức, mốc trúng, kích hoạt theo S.FX', () => {
     const tl = FX_TIMELINE.get('skl_kiem_vu_tam_diep')!;
     const hits = [0.2, 0.5, 0.8];
     const s = scheduleEvents(fxEventsFor(tl, -1), hits, 2);
-    const cres = s.filter((x) => x.ev.type === 'mesh' && x.ev.shape === 'crescent');
-    expect(cres).toHaveLength(3);
-    expect(cres.map((x) => x.hit).sort()).toEqual([0, 1, 2]);
-    // Gai nổ chỉ ở nhát cuối.
-    expect(s.filter((x) => x.ev.type === 'mesh' && x.ev.shape === 'spike').every((x) => x.hit === 2)).toBe(true);
+    // Họa Pháp Lô 2: mỗi nhát là một sprite chém `kiem_*` gắn `hit` (nhát cuối là ba cung to + ấn + chớp).
+    const slashes = s.filter(
+      (x) =>
+        x.ev.type === 'mesh' &&
+        x.ev.shape === 'sprite' &&
+        ['kiem_slash', 'kiem_arcs3'].includes(String(x.ev.sprite)) &&
+        x.ev.hit !== undefined,
+    );
+    expect(slashes).toHaveLength(3);
+    expect(slashes.map((x) => x.hit).sort()).toEqual([0, 1, 2]);
+    // Ấn và chớp nhấn chỉ ở nhát cuối.
+    expect(
+      s.filter((x) => x.ev.type === 'mesh' && ['kiem_seal', 'kiem_flash'].includes(String(x.ev.sprite))).every((x) => x.hit === 2),
+    ).toBe(true);
     // Khựng nhẹ ở nhát 1–2, nặng ở nhát cuối.
     const stops = s.filter((x) => x.ev.type === 'hitstop').map((x) => [x.hit, (x.ev as { ms: number }).ms]);
     expect(stops).toEqual(
@@ -174,7 +183,7 @@ describe('V3: Hộ pháp + Đan sư', () => {
 describe('V4: pháp tướng', () => {
   it('3 chiêu tối thượng có pháp tướng + kéo camera (≤ 0,4), đúng hình theo nhánh', () => {
     const want: Record<string, string> = {
-      skl_van_kiem_quy_tong: 'dragon_sword',
+      skl_van_kiem_quy_tong: 'sprite',
       skl_kim_cuong_bat_hoai: 'card',
       skl_hoi_thien_dan_lo: 'card',
     };
@@ -198,7 +207,12 @@ describe('V4: pháp tướng', () => {
   it('pháp tướng mọc (sweep) rồi tan (erodeFrom < 1): có dissolve', () => {
     for (const id of ['skl_van_kiem_quy_tong', 'skl_kim_cuong_bat_hoai', 'skl_hoi_thien_dan_lo']) {
       const big = fxEventsFor(FX_TIMELINE.get(id)!, -1).filter(
-        (e) => e.type === 'mesh' && (e.shape === 'dragon' || e.shape === 'dragon_sword' || e.shape === 'card'),
+        (e) =>
+          e.type === 'mesh' &&
+          (e.shape === 'dragon' ||
+            e.shape === 'dragon_sword' ||
+            e.shape === 'card' ||
+            (e.shape === 'sprite' && /^kiem_(rain|circle)$/.test(String(e.sprite)))),
       );
       expect(big.length).toBeGreaterThan(0);
       for (const e of big) if (e.type === 'mesh') expect(e.erodeFrom ?? 0.5).toBeLessThan(0.9);

@@ -159,6 +159,22 @@ export const FX_SPRITES = [
   'loi_sparks',
   'loi_mark',
   'loi_arcs_pair',
+  'kiem_afterimages',
+  'kiem_flying',
+  'kiem_seal',
+  'kiem_rain',
+  'kiem_circle',
+  'kiem_wave',
+  'kiem_arcs3',
+  'kiem_pill',
+  'kiem_drill',
+  'kiem_ghost',
+  'kiem_rift',
+  'kiem_bigsword',
+  'kiem_cracks',
+  'kiem_flash',
+  'kiem_sparks',
+  'kiem_slash',
 ] as const;
 export type FxSprite = (typeof FX_SPRITES)[number];
 
