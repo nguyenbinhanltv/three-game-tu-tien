@@ -103,7 +103,7 @@ Script `node tools/docs/check-paths.mjs` (chạy ở CI) kiểm mọi đường 
 
 ## Họa Cảnh (`?style=painted`)
 
-Hướng phụ nền hoạt hình vẽ tay, chỉ bật bằng cờ, **mặc định game chưa đổi**; khi Họa Cảnh xong trên toàn bộ bản đồ sẽ thành mặc định và nguồn cũ bị gỡ (P10, P11). Nguyên tắc ở `docs/handbook/painted.md`: ít tông và một bảng màu chung; không nhiễu hay texture ảnh chụp; cảnh xa vẽ MỘT lần (núi dải sơn, mây cubemap, đồng xa một texture và thẻ cây); cỏ chi tiết chỉ vòng gần; hậu kỳ tối giản (Kuwahara, không ACES hay hạt phim); nhân vật cel và viền mực CHỜ người dùng quyết sau P7; animation cần clip start, stop, pivot, sprint, thở dốc; mọi asset mới qua bảng phong cách; đo khớp bằng SSIM và ΔE (`tools/painted-compare` [CHƯA CÓ trên main: đang dựng ở nhánh riêng, dự kiến vào ở bước P2/P8; trước đó chỉ là kế hoạch]). Ghi công MIT (© 2026 Patch) ở `assets/LICENSES.md`; không dùng âm thanh Sonniss, không commit ảnh tham khảo.
+Hướng phụ nền hoạt hình vẽ tay, chỉ bật bằng cờ, **mặc định game chưa đổi**; khi Họa Cảnh xong trên toàn bộ bản đồ sẽ thành mặc định và nguồn cũ bị gỡ (P10, P11). Nguyên tắc ở `docs/handbook/painted.md`: ít tông và một bảng màu chung; không nhiễu hay texture ảnh chụp; cảnh xa vẽ MỘT lần (núi dải sơn, mây cubemap, đồng xa một texture và thẻ cây); cỏ chi tiết chỉ vòng gần; hậu kỳ tối giản (Kuwahara, không ACES hay hạt phim); nhân vật cel và viền mực CHỜ người dùng quyết sau P7; animation cần clip start, stop, pivot, sprint, thở dốc; mọi asset mới qua bảng phong cách; đo khớp bằng SSIM và ΔE (`tools/painted-compare` (vào cùng PR #614)). Ghi công MIT (© 2026 Patch) ở `assets/LICENSES.md`; không dùng âm thanh Sonniss, không commit ảnh tham khảo.
 
 ## Skill và subagent
 

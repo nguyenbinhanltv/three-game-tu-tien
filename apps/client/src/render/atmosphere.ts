@@ -1,3 +1,5 @@
+import { paintedNight } from './painted/frame';
+import { FLAGS } from '../base/flags';
 import * as THREE from 'three/webgpu';
 import {
   attribute,
@@ -98,7 +100,8 @@ const SUN_DISTANCE = 260;
 
 /** Áp preset chỉnh màu cho đèn, trời, sương. Gọi lại khi đổi thời điểm trong ngày. */
 export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPreset, name: string): void {
-  scene.fogNode = atmosphereFog();
+  // Họa Cảnh: không dùng sương của mood (đất và lá tự áp sương của painted-valley)
+  scene.fogNode = FLAGS.style === 'painted' ? null : atmosphereFog();
   tuneAtmosphere(scene, env, p, name);
 }
 
@@ -107,6 +110,7 @@ export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPres
  * (Bắc Hoang, DV-3I). `skyTop` ghi đè màu đỉnh trời (đã trộn giữa hai mood).
  */
 export function tuneAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPreset, name: string, skyTop?: number): void {
+  paintedNight.value = /night/.test(name) ? 1 : 0;
   fogParams.color.value.setHex(p.fogColor);
   fogParams.density.value = p.fogDensity;
   fogParams.glow.value.setHex(p.highlightTint);
