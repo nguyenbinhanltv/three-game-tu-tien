@@ -20,7 +20,9 @@ const paint = arg('--paint', '3');
 const url = arg('--url', 'http://127.0.0.1:5384');
 fs.mkdirSync(out, { recursive: true });
 
-const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'] }).catch(() => chromium.launch({ headless: true, args: ['--mute-audio'] }));
+const browser = await chromium
+  .launch({ channel: 'chrome', headless: true, args: ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'] })
+  .catch(() => chromium.launch({ headless: true, args: ['--mute-audio'] }));
 const page = await (await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })).newPage();
 page.on('pageerror', (e) => console.log('pageerror', e.message));
 await page.goto(`${url}/?quality=high&dpr=1&drift=0&mute=1&paint=${paint}`, { waitUntil: 'load' });
@@ -53,7 +55,14 @@ const info = await page.evaluate(
       hour,
       at: [u, v],
       target: [tx, gT, tz],
-      camera: { position: camera.position.toArray(), rotation: [camera.rotation.x, camera.rotation.y, camera.rotation.z], fov: camera.fov, aspect: camera.aspect, near: camera.near, far: camera.far },
+      camera: {
+        position: camera.position.toArray(),
+        rotation: [camera.rotation.x, camera.rotation.y, camera.rotation.z],
+        fov: camera.fov,
+        aspect: camera.aspect,
+        near: camera.near,
+        far: camera.far,
+      },
       uTime: U.uTime.value,
       uWind: U.uWind.value.toArray(),
       uWindScroll: U.uWindScroll.value.toArray(),
