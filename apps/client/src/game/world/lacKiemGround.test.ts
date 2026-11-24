@@ -17,7 +17,8 @@ describe('lacKiemGround (Chân Cảnh M3)', () => {
   it('có đủ năm loại: vết chân, vũng nước, gạch vỡ, ấn trận, rễ', () => {
     const l = groundLayout();
     expect(l.trails.length).toBeGreaterThanOrEqual(3);
-    for (const k of ['puddle', 'crack', 'seal', 'root'] as const) expect(l.patches.filter((p) => p.kind === k).length, k).toBeGreaterThanOrEqual(3);
+    for (const k of ['puddle', 'crack', 'seal', 'root'] as const)
+      expect(l.patches.filter((p) => p.kind === k).length, k).toBeGreaterThanOrEqual(3);
   });
 
   it('decal bám địa hình: đỉnh cao hơn mặt đất 0,03–0,15 m, không chìm không bay', () => {

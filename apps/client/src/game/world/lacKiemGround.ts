@@ -78,10 +78,32 @@ function puddles(cx: number, cz: number, r: number, n: number, seed: number, siz
 export function groundLayout(): GroundLayout {
   const trails: TrailDef[] = [
     // đường từ đại lộ ra kiếm bia và thạch lâm
-    { pts: [[22, 66], [40, 63], [56, 60]], hw: 1.5 },
-    { pts: [[60, 52], [78, 30], [92, 8], [96, -4]], hw: 1.5 },
+    {
+      pts: [
+        [22, 66],
+        [40, 63],
+        [56, 60],
+      ],
+      hw: 1.5,
+    },
+    {
+      pts: [
+        [60, 52],
+        [78, 30],
+        [92, 8],
+        [96, -4],
+      ],
+      hw: 1.5,
+    },
     // từ sân tới đầu lối men vách (phần sau đã lát phiến đá)
-    { pts: [[-36, 58], [-62, 50], [-92, 54]], hw: 1.5 },
+    {
+      pts: [
+        [-36, 58],
+        [-62, 50],
+        [-92, 54],
+      ],
+      hw: 1.5,
+    },
   ];
   const patches: PatchDef[] = [];
   // vũng nước: bờ ao, trước cổng, quanh kiếm bia, thạch lâm, bờ hác
@@ -221,7 +243,13 @@ function toGeometry(a: Acc): THREE.BufferGeometry {
   g.setAttribute('position', new THREE.Float32BufferAttribute(a.pos, 3));
   g.setAttribute('uv', new THREE.Float32BufferAttribute(a.uv, 2));
   g.setAttribute('aP', new THREE.Float32BufferAttribute(a.seed, 3));
-  g.setAttribute('normal', new THREE.Float32BufferAttribute(a.pos.map((_, i) => (i % 3 === 1 ? 1 : 0)), 3)); // decal dẹt: pháp tuyến hướng lên
+  g.setAttribute(
+    'normal',
+    new THREE.Float32BufferAttribute(
+      a.pos.map((_, i) => (i % 3 === 1 ? 1 : 0)),
+      3,
+    ),
+  ); // decal dẹt: pháp tuyến hướng lên
   g.setIndex(a.idx);
   g.computeBoundingSphere();
   return g;
@@ -310,7 +338,10 @@ function puddleMaterial(): THREE.MeshStandardNodeMaterial {
   const c = cuv();
   const d = length(c).add(vnoise(wp().mul(1.1)).sub(0.5).mul(0.5));
   const mask = smoothstep(1.0, 0.78, d);
-  const rip = sin(length(c).mul(18).sub(time.mul(1.2))).mul(0.5).add(0.5).mul(smoothstep(0.5, 0.0, length(c)));
+  const rip = sin(length(c).mul(18).sub(time.mul(1.2)))
+    .mul(0.5)
+    .add(0.5)
+    .mul(smoothstep(0.5, 0.0, length(c)));
   m.colorNode = mix(vec3(0.012, 0.02, 0.026), vec3(0.03, 0.045, 0.052), smoothstep(0.9, 0.3, d));
   m.emissiveNode = vec3(0.02, 0.03, 0.038).add(vec3(0.02).mul(rip));
   m.opacityNode = mask.mul(0.72);
@@ -326,9 +357,13 @@ function crackMaterial(): THREE.MeshStandardNodeMaterial {
   const n1 = vnoise(wp().mul(0.55));
   const n2 = vnoise(wp().mul(1.4).add(7.3));
   const l1 = float(1).sub(smoothstep(0.0, 0.03, n1.sub(0.5).abs()));
-  const l2 = float(1).sub(smoothstep(0.0, 0.022, n2.sub(0.5).abs())).mul(0.75);
+  const l2 = float(1)
+    .sub(smoothstep(0.0, 0.022, n2.sub(0.5).abs()))
+    .mul(0.75);
   const cracks = max(l1, l2).mul(edge);
-  const bits = smoothstep(0.74, 0.8, vnoise(wp().mul(4.6).add(3.1))).mul(edge).mul(smoothstep(0.55, 0.9, vnoise(wp().mul(0.9))));
+  const bits = smoothstep(0.74, 0.8, vnoise(wp().mul(4.6).add(3.1)))
+    .mul(edge)
+    .mul(smoothstep(0.55, 0.9, vnoise(wp().mul(0.9))));
   m.colorNode = mix(vec3(0.02, 0.022, 0.025), vec3(0.42, 0.44, 0.42), bits);
   m.opacityNode = clamp(cracks.mul(0.85).add(bits.mul(0.8)), 0, 0.9);
   return m;
@@ -342,7 +377,9 @@ function sealMaterial(): THREE.MeshBasicNodeMaterial {
   m.polygonOffsetUnits = -4;
   const c = cuv();
   const r = length(c);
-  const ang = atan(c.y, c.x).div(Math.PI * 2).add(0.5);
+  const ang = atan(c.y, c.x)
+    .div(Math.PI * 2)
+    .add(0.5);
   const ring = (r0: number, w: number) => smoothstep(w, 0, r.sub(r0).abs());
   const rings = max(ring(0.93, 0.045), max(ring(0.64, 0.035), ring(0.32, 0.03)));
   const ticks = smoothstep(0.8, 0.86, fract(ang.mul(72))).mul(smoothstep(0.035, 0.0, r.sub(0.8).abs().sub(0.04)));
@@ -351,8 +388,13 @@ function sealMaterial(): THREE.MeshBasicNodeMaterial {
     .mul(smoothstep(0.1, 0.2, r));
   // mòn: nhiễu khoét từng đoạn ấn cho cũ kỹ
   const erode = smoothstep(0.3, 0.62, vnoise(c.mul(4.2).add(aP().x.mul(31))));
-  const pulse = sin(time.mul(0.9).add(aP().x.mul(20))).mul(0.25).add(0.75);
-  const g = max(rings, max(ticks.mul(0.55), star)).mul(erode).mul(smoothstep(1.0, 0.9, r)).mul(pulse);
+  const pulse = sin(time.mul(0.9).add(aP().x.mul(20)))
+    .mul(0.25)
+    .add(0.75);
+  const g = max(rings, max(ticks.mul(0.55), star))
+    .mul(erode)
+    .mul(smoothstep(1.0, 0.9, r))
+    .mul(pulse);
   m.colorNode = mix(vec3(0.2, 0.55, 0.5), vec3(0.78, 0.5, 0.12), smoothstep(0.3, 0.95, r)).mul(0.9);
   m.opacityNode = clamp(g.mul(0.6), 0, 0.65);
   return m;
@@ -363,13 +405,22 @@ function rootMaterial(): THREE.MeshStandardNodeMaterial {
   const m = baseMat();
   const c = cuv();
   const r = length(c);
-  const ang = atan(c.y, c.x).div(Math.PI * 2).add(0.5);
-  const wob = vnoise(vec2(r.mul(3.2), aP().x.mul(40))).sub(0.5).mul(0.28);
+  const ang = atan(c.y, c.x)
+    .div(Math.PI * 2)
+    .add(0.5);
+  const wob = vnoise(vec2(r.mul(3.2), aP().x.mul(40)))
+    .sub(0.5)
+    .mul(0.28);
   const lane = fract(ang.mul(7).add(wob)).sub(0.5).abs(); // 0 tại tim nhánh
-  const width = float(0.2).mul(smoothstep(1.0, 0.1, r)).add(0.015);
+  const width = float(0.2)
+    .mul(smoothstep(1.0, 0.1, r))
+    .add(0.015);
   const arm = smoothstep(width, width.mul(0.35), lane.mul(r.mul(2.2).add(0.4)));
   const keep = smoothstep(0.4, 0.55, vnoise(vec2(ang.mul(7).floor(), aP().x.mul(13)))); // bỏ vài nhánh
-  const a = arm.mul(keep).mul(smoothstep(1.0, 0.7, r)).mul(smoothstep(0.04, 0.14, r));
+  const a = arm
+    .mul(keep)
+    .mul(smoothstep(1.0, 0.7, r))
+    .mul(smoothstep(0.04, 0.14, r));
   m.colorNode = mix(vec3(0.09, 0.06, 0.04), vec3(0.2, 0.15, 0.09), smoothstep(0.0, width, lane.mul(0.7)).oneMinus().mul(0.6));
   m.opacityNode = a.mul(0.92);
   return m;
