@@ -24,6 +24,10 @@ export class RagRig {
   /** Tắt hẳn (boss). */
   enabled = true;
   private bones: (THREE.Object3D | null)[] | null = null;
+  /** Tư thế clip (gốc) và tư thế ta ghi lần trước của từng xương: mixer không ghi lại xương có giá trị hằng (clip kẹp cuối, tư thế giữ), nên cộng dồn lên quaternion hiện tại sẽ trôi mãi. */
+  private base: THREE.Quaternion[] = [];
+  private written: THREE.Quaternion[] = [];
+  private has: boolean[] = [];
   private side = 1;
 
   constructor(private readonly rig: THREE.Object3D) {}
@@ -61,11 +65,15 @@ export class RagRig {
     if (!this.enabled || !this.bones) return;
     const rg = this.rag;
     if (!near) {
+      this.restore();
       if (rg.active) rg.reset();
       return;
     }
     rg.loose = down ? 1 : Math.max(0, rg.loose - dt * 0.8);
-    if (!rg.active) return;
+    if (!rg.active) {
+      this.restore();
+      return;
+    }
     rg.update(dt);
     const sin = Math.sin(yaw);
     const cos = Math.cos(yaw);
@@ -74,9 +82,24 @@ export class RagRig {
     for (let i = 0; i < RAG_JOINTS.length; i++) {
       const bone = this.bones[i];
       if (!bone) continue;
+      // Gốc = quaternion hiện tại nếu mixer vừa ghi đè (khác lần ta ghi), còn không thì giữ gốc cũ.
+      if (!this.has[i] || !bone.quaternion.equals(this.written[i]!)) (this.base[i] ??= new THREE.Quaternion()).copy(bone.quaternion);
+      else bone.quaternion.copy(this.base[i]!);
       const a = rg.ang[RAG_JOINTS[i]!];
       rotateWorld(bone, _rgt, a[0]);
       rotateWorld(bone, _fwd, a[1] * this.side);
+      (this.written[i] ??= new THREE.Quaternion()).copy(bone.quaternion);
+      this.has[i] = true;
+    }
+  }
+
+  /** Trả các xương về tư thế gốc đã nhớ (khi ragdoll tắt/xa), rồi quên: không để lại góc cuối. */
+  private restore(): void {
+    if (!this.bones) return;
+    for (let i = 0; i < this.bones.length; i++) {
+      const bone = this.bones[i];
+      if (bone && this.has[i] && bone.quaternion.equals(this.written[i]!)) bone.quaternion.copy(this.base[i]!);
+      this.has[i] = false;
     }
   }
 }

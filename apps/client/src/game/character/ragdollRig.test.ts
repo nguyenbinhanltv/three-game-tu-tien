@@ -62,3 +62,60 @@ describe('RagRig (ragdoll nhẹ cho quái thường)', () => {
     expect(r.rag.loose).toBe(1);
   });
 });
+
+describe('RagRig trong SkinnedCharacter: chỉ áp ở khung mixer chạy', () => {
+  it('màn 144 Hz (mixer 1/60): góc spine_03 không vượt biên độ RagLite', async () => {
+    const { SkinnedCharacter } = await import('./skinned');
+    const { ANIM_FX } = await import('./animFx');
+    const { RAG_CFG } = await import('./ragdollLite');
+    const scene = rig(HUMAN);
+    const clip = new THREE.AnimationClip('idle', 1, [
+      new THREE.QuaternionKeyframeTrack('spine_03.quaternion', [0, 1], [0, 0, 0, 1, 0, 0, 0, 1]),
+    ]);
+    const c = new SkinnedCharacter({
+      scene,
+      clips: [clip],
+      height: 1.8,
+      refSpeed: 3,
+      clipMap: { idle: 'idle', run: 'idle', attack: 'idle', hit: 'idle', death: 'idle' },
+    });
+    c.setView({ dist: 5, inView: true, allowLod0: true, self: false });
+    const was = ANIM_FX.ragdoll;
+    ANIM_FX.ragdoll = true;
+    try {
+      const a = { speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false };
+      for (let i = 0; i < 10; i++) c.update(1 / 144, a);
+      c.hitReact({ dirX: 0, dirZ: -1, tier: 3, heavy: true });
+      let worst = 0;
+      const bone = c.rig.getObjectByName('spine_03')!;
+      for (let i = 0; i < 144; i++) {
+        c.update(1 / 144, a);
+        worst = Math.max(worst, 2 * Math.acos(Math.min(1, Math.abs(bone.quaternion.w))));
+      }
+      expect(worst).toBeGreaterThan(0.01);
+      expect(worst).toBeLessThanOrEqual(RAG_CFG.spine_03.max + 0.05);
+    } finally {
+      ANIM_FX.ragdoll = was;
+    }
+  });
+});
+
+describe('RagRig: xương mixer không ghi lại (clip kẹp cuối)', () => {
+  it('chết giữ nhiều giây: góc không trôi quá biên độ, ragdoll tắt thì về đúng tư thế gốc', () => {
+    const g = rig(HUMAN);
+    const bone = g.getObjectByName('spine_03')!;
+    bone.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.3); // tư thế clip hằng số
+    const base = bone.quaternion.clone();
+    const r = new RagRig(g);
+    r.down(0, 0, -1);
+    let worst = 0;
+    for (let i = 0; i < 600; i++) {
+      r.apply(1 / 60, 0, true, true);
+      worst = Math.max(worst, bone.quaternion.angleTo(base));
+    }
+    expect(worst).toBeLessThanOrEqual(0.62 + 1e-6);
+    r.rag.reset();
+    r.apply(1 / 60, 0, true, true);
+    expect(bone.quaternion.angleTo(base)).toBeLessThan(1e-6);
+  });
+});

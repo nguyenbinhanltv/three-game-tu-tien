@@ -695,6 +695,7 @@ export class SkinnedCharacter implements CharacterView {
     }
     if (this.quad) this.tiltToSlope(dt);
     this.postPose(dt, a);
+    // `RagRig` ghi tuyệt đối (tư thế gốc + góc), không cộng dồn, nên áp mỗi khung kể cả khung mixer không chạy.
     if (this.ragRig && ANIM_FX.ragdoll) this.ragRig.apply(dt, this.root.rotation.y, this.dead, this.lodLevel === 0 && this.inner.visible);
     this.updateSprings(dt);
   }
