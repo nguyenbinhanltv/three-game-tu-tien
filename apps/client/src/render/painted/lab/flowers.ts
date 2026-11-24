@@ -109,6 +109,11 @@ export function createFlowers(F: RefField, { height, seed }: { height: number; s
   let at: [number, number] = [NaN, NaN];
   return {
     group,
+    /** Giải phóng geometry và material (đổi level tạo lại cả bộ hoa). */
+    dispose(): void {
+      geometry.dispose();
+      material.dispose();
+    },
     follow(x: number, z: number): void {
       const sx = Math.floor(x / FLOWER_RING.tile);
       const sz = Math.floor(z / FLOWER_RING.tile);

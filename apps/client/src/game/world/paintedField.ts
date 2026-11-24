@@ -144,5 +144,6 @@ export class PaintedGameField implements GrassLayer {
       r.geometry.dispose();
       r.material.dispose();
     }
+    this.flowers.dispose();
   }
 }
