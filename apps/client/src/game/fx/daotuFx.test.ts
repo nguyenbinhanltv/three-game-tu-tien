@@ -57,7 +57,7 @@ describe('VFX Đao tu', () => {
     }
   });
 
-  it('màu theo bảng màu hướng dao_tu: lõi huyết dụ, thân son thẫm, viền vàng tàn lửa', () => {
+  it('màu theo bảng màu hướng dao_tu: lõi thép tối, thân thép bạc, viền bạc sáng', () => {
     const p = PATH.get('dao_tu')!.palette;
     const pal = paletteOf(METHOD);
     expect(pal.core).toBe(parseInt(p.core, 16));
