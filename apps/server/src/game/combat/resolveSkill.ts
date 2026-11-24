@@ -1,5 +1,4 @@
-// Chiêu và công pháp của người chơi (R-7): onSkill/onDash, resolveSkill, hồi/hộ thể/triệu hồi, tickMethods.
-// Tách nguyên văn từ GameSim, chỉ nhận giao diện hẹp `CombatCtx`; mọi sát thương vẫn qua damageMonster/damagePlayer của sim.
+// Thân `CombatSystem.resolveSkill` (áp hiệu quả chiêu), tách khỏi index.ts ở Đợt E tối ưu mã nguồn; hành vi giữ nguyên.
 import {
   formationAdd,
   mergeSlow,
@@ -8,59 +7,19 @@ import {
   healAmount,
   type FxMsg,
   skillDamageMul,
-  type LevelDef,
   MS_DEAD,
   PF_SHIELD,
   type SkillDef,
-  type SysMsg,
   needsTarget,
   dealsDamage,
   inLine,
   hitOffsets,
-  type Terrain,
-  type HitTier,
 } from '@dtl/shared';
 import { MARK } from '@dtl/content';
 import { passiveOf, resolveFor } from '../method';
-import type { DuelSystem } from '../duel';
-import type { MirrorSystem } from '../mirror';
-import type { CloneSystem } from '../clone';
-import type { MonEnt, PlayerEnt, StrikeCtx } from '../entities';
+import type { PlayerEnt, StrikeCtx } from '../entities';
 import { MARK_ALLY_RANGE, TAUNT_BOSS_MUL, visualSeed } from './consts';
 
-/** Phần GameSim mà hệ chiêu cần. */
-export interface CombatCtx {
-  /** Đối tượng room (khóa tra thành viên tổ đội cùng room, VS-2f). */
-  readonly room: object;
-  /** Cộng thanh phá thế của thủ lĩnh (ấn Mất thế, VS-2c). */
-  addPosture(m: MonEnt, n: number): void;
-  readonly clone: CloneSystem;
-  readonly duel: DuelSystem;
-  duelStrike(p: PlayerEnt, o: PlayerEnt, powers: number[], elemMul: number): void;
-  emit(type: string, payload: object): void;
-  fx(m: FxMsg): void;
-  /** Trả true nếu đòn có hiệu lực (quái còn sống, không miễn sát thương, không phải bóng của người khác). */
-  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul?: number, elem?: string, tier?: HitTier): boolean;
-  homeDist(m: MonEnt): number;
-  isDead(p: PlayerEnt): boolean;
-  readonly level: LevelDef;
-  readonly mirror: MirrorSystem;
-  readonly monById: Map<string, MonEnt>;
-  readonly monsters: MonEnt[];
-  readonly now: number;
-  readonly players: Map<string, PlayerEnt>;
-  resetAi(m: MonEnt): void;
-  sendCd(p: PlayerEnt): void;
-  setFlag(p: PlayerEnt, flag: number, on: boolean): void;
-  setMeditating(p: PlayerEnt, on: boolean): void;
-  setMonFlags(m: MonEnt, mf: number, ce: number): void;
-  sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src' | 'q'>): void;
-  readonly terrain: Terrain;
-  /** Người độ kiếp vừa bấm một chiêu mà server chấp nhận (trước kiểm mục tiêu): phản đòn của Dương Thực Kiếp. */
-  tribSkill(p: PlayerEnt): void;
-  tryInterrupt(p: PlayerEnt, mon: MonEnt, extraStun?: number): void;
-  warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
-}
 import type { CombatSystem } from './index';
 
 /** Áp hiệu quả của chiêu (sát thương, hồi, khiên...): tại `hitAt` hoặc ngay khi không có độ trễ. */
