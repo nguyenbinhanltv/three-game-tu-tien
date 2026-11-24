@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import { HeadObjectCommand, ListObjectsV2Command, PutObjectCommand, type S3Client } from '@aws-sdk/client-s3';
 import { cacheControl, contentType, makeClient } from './r2/client.js';
 import { loadR2Env } from './r2/env.js';
-import { isHashedName, localPath, type Lock, pool, readLock, scanLock, writeLock } from './r2/lock.js';
+import { BINARY_EXT, isHashedName, localPath, type Lock, pool, readLock, scanLock, writeLock } from './r2/lock.js';
 
 export interface PushOptions {
   dry?: boolean;
@@ -78,16 +78,28 @@ export interface PushPlan {
   conflicts: PushConflict[];
   /** Tên cố định cùng kích thước nhưng R2 không có metadata sha: không kiểm được, coi như đã có. */
   unverified: string[];
+  /** Khóa văn bản/json tên cố định (không phải nhị phân) đã có trên R2 nhưng khác sổ khóa: được GHI ĐÈ có chủ đích (nằm trong `todo`). */
+  overwrites: string[];
 }
+
+/** Khóa MUTABLE: không phải nhị phân (manifest.json, json cấu hình…), đổi nội dung mỗi lần thêm asset nên được ghi đè; cache 60 s (xem `cacheControl`). Nhị phân thì luôn bất biến. */
+export const isMutableKey = (key: string): boolean => !BINARY_EXT.test(key);
 
 /** Phân loại từng khóa: chưa có → upload; có và khớp → bỏ qua; có nhưng khác kích thước/sha → XUNG ĐỘT (không bao giờ ghi đè). */
 export async function planPush({ keys, lock, remote, remoteSha: shaOf }: PlanInput): Promise<PushPlan> {
-  const plan: PushPlan = { todo: [], present: 0, conflicts: [], unverified: [] };
+  const plan: PushPlan = { todo: [], present: 0, conflicts: [], unverified: [], overwrites: [] };
   for (const key of keys) {
     const r = remote.get(key);
     const e = lock.files[key]!;
     if (!r) plan.todo.push(key);
-    else if (r.size !== e.bytes) plan.conflicts.push({ key, reason: `R2 có ${r.size} byte, sổ khóa ${e.bytes} byte` });
+    else if (isMutableKey(key)) {
+      // manifest/json tên cố định: khớp (kích thước + sha) thì bỏ qua, lệch thì ghi đè (không phải xung đột)
+      if (r.size === e.bytes && (await shaOf(key)) === e.sha256) plan.present++;
+      else {
+        plan.todo.push(key);
+        plan.overwrites.push(key);
+      }
+    } else if (r.size !== e.bytes) plan.conflicts.push({ key, reason: `R2 có ${r.size} byte, sổ khóa ${e.bytes} byte` });
     // Tên cố định (không hash) cùng kích thước vẫn có thể khác nội dung: so sha256 lưu trong metadata.
     else if (!isHashedName(key)) {
       const sha = await shaOf(key);
@@ -109,13 +121,19 @@ export async function push(opts: PushOptions = {}): Promise<PushReport> {
 
   const keys = Object.keys(lock.files).filter((k) => !opts.only || k === opts.only || k.startsWith(opts.only));
   const remote = await listBucket(s3, env.bucket);
-  const { todo, present, conflicts, unverified } = await planPush({ keys, lock, remote, remoteSha: (k) => remoteSha(s3, env.bucket, k) });
+  const { todo, present, conflicts, unverified, overwrites } = await planPush({
+    keys,
+    lock,
+    remote,
+    remoteSha: (k) => remoteSha(s3, env.bucket, k),
+  });
   if (unverified.length)
     console.warn(
       `[push] cảnh báo: ${unverified.length} khóa tên cố định cùng kích thước nhưng R2 không có metadata sha256, không kiểm được nội dung`,
     );
 
   const report: PushReport = { total: keys.length, present, uploaded: [], uploadedBytes: 0, failed: [], lockChanged, conflicts };
+  if (overwrites.length) console.log(`[push] ghi đè ${overwrites.length} khóa json/văn bản tên cố định: ${overwrites.join(', ')}`);
   // R2 bất biến: có xung đột thì không upload gì cả (kể cả file không xung đột), để người chạy sửa rồi chạy lại.
   if (conflicts.length && !opts.dry) throw new PushConflictError(conflicts);
   if (opts.dry) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { planPush, PushConflictError } from '../push.js';
+import { isMutableKey, planPush, PushConflictError } from '../push.js';
 import { hasContentHash, type Lock, unhashedBinaries } from './lock.js';
 
 const sha = (c: string) => c.repeat(64).slice(0, 64);
@@ -74,5 +74,38 @@ describe('nhị phân mới phải có hash trong tên', () => {
       'audio/x.ogg': { sha256: sha('e'), bytes: 1 },
     });
     expect(unhashedBinaries(L, new Set(['map/cu.webp']))).toEqual(['audio/x.ogg', 'map/moi.webp']);
+  });
+});
+
+describe('json/văn bản tên cố định được ghi đè (manifest)', () => {
+  const M = 'assets/manifest.json';
+  const L = lock({ [M]: { sha256: sha('a'), bytes: 100 }, 'x/a.0123456789.glb': { sha256: sha('b'), bytes: 10 } });
+  const keys = Object.keys(L.files);
+
+  it('isMutableKey: json/txt có, nhị phân không', () => {
+    expect(isMutableKey(M)).toBe(true);
+    expect(isMutableKey('audio/manifest.json')).toBe(true);
+    expect(isMutableKey('x/a.glb')).toBe(false);
+    expect(isMutableKey('x/a.0123456789.webp')).toBe(false);
+  });
+
+  it('manifest lệch kích thước → ghi đè (todo + overwrites), KHÔNG xung đột; nhị phân vẫn xung đột', async () => {
+    const remote = new Map([
+      [M, { size: 50 }],
+      ['x/a.0123456789.glb', { size: 99 }],
+    ]);
+    const p = await planPush({ keys, lock: L, remote, remoteSha: async () => sha('a') });
+    expect(p.todo).toEqual([M]);
+    expect(p.overwrites).toEqual([M]);
+    expect(p.conflicts.map((c) => c.key)).toEqual(['x/a.0123456789.glb']);
+  });
+
+  it('manifest cùng kích thước nhưng sha khác → ghi đè; cùng sha → bỏ qua', async () => {
+    const remote = new Map([[M, { size: 100 }]]);
+    const diff = await planPush({ keys: [M], lock: L, remote, remoteSha: async () => sha('z') });
+    expect(diff.overwrites).toEqual([M]);
+    const same = await planPush({ keys: [M], lock: L, remote, remoteSha: async () => sha('a') });
+    expect(same.todo).toEqual([]);
+    expect(same.present).toBe(1);
   });
 });
