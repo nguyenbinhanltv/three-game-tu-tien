@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "thanh kiếm khổng lồ trong suốt như bóng gương bên cạnh người, lặp lại vết chém mờ"
+  "silhouette": "thanh kiếm khổng lồ trong suốt như bóng gương bên cạnh người, lặp lại vết chém mờ",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

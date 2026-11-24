@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "một vết rách không gian thẳng đứng mảnh, ruột tối mép bạc, mảnh vỡ bay quanh"
+  "silhouette": "một vết rách không gian thẳng đứng mảnh, ruột tối mép bạc, mảnh vỡ bay quanh",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

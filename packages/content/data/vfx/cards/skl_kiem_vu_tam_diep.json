@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "ba vòng cung chém ba góc chồng lệch như cánh quạt ba lá, nét cuối to nhất"
+  "silhouette": "ba vòng cung chém ba góc chồng lệch như cánh quạt ba lá, nét cuối to nhất",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

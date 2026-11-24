@@ -8,7 +8,7 @@
     "line"
   ],
   "timing": {
-    "anticipationMs": 300,
+    "anticipationMs": 0,
     "impactMs": 80,
     "lingerMs": 600
   },
@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "kiếm quang thẳng quấn xoáy gió xoắn ốc như mũi khoan, cuốn lá bụi"
+  "silhouette": "kiếm quang thẳng quấn xoáy gió xoắn ốc như mũi khoan, cuốn lá bụi",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

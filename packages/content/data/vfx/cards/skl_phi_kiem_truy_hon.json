@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "một thanh phi kiếm lớn đuôi lụa xoắn bay vòng cung, cắm xuống thành ấn tròn có kiếm dựng"
+  "silhouette": "một thanh phi kiếm lớn đuôi lụa xoắn bay vòng cung, cắm xuống thành ấn tròn có kiếm dựng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

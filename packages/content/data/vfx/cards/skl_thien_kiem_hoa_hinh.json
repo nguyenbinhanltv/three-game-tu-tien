@@ -22,7 +22,7 @@
   "budget": {
     "drawCalls": 12,
     "particles": 264,
-    "screenCover": 0.35,
+    "screenCover": 0.2,
     "overdraw": 6
   },
   "textures": [
@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "thanh kiếm khổng lồ cắm từ trời, nứt đất lan vành đá vỡ bay lên"
+  "silhouette": "thanh kiếm khổng lồ cắm từ trời, nứt đất lan vành đá vỡ bay lên",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

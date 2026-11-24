@@ -739,8 +739,8 @@ export class FxRunner {
                 ? 1
                 : 0;
     m.fxA.z = ev.seed ?? 0;
-    // Sprite: `fxA.x` chọn kiểu tô (0 = âm hồn tím mực, 1 = lôi: viền mực chàm, lõi trắng xanh), theo tiền tố tên.
-    if (kind === 'sprite') m.fxA.x = (ev.sprite ?? '').startsWith('loi_') ? 1 : 0;
+    // Sprite: `fxA.x` chọn kiểu tô (0 = âm hồn tím mực, 1 = lôi: viền mực chàm, lõi trắng xanh, 2 = kiếm: viền mực lam lục, thân xanh ngọc, viền bạc), theo tiền tố tên.
+    if (kind === 'sprite') m.fxA.x = (ev.sprite ?? '').startsWith('kiem_') ? 2 : (ev.sprite ?? '').startsWith('loi_') ? 1 : 0;
   }
 
   // ---- hạt ----

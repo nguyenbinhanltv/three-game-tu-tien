@@ -22,7 +22,7 @@
   "budget": {
     "drawCalls": 12,
     "particles": 269,
-    "screenCover": 0.35,
+    "screenCover": 0.3,
     "overdraw": 6
   },
   "textures": [
@@ -39,5 +39,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "mưa kiếm hình nón rơi chụm, cắm thành vòng kiếm đứng nghiêng vào tâm quanh cột sáng"
+  "silhouette": "mưa kiếm hình nón rơi chụm, cắm thành vòng kiếm đứng nghiêng vào tâm quanh cột sáng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

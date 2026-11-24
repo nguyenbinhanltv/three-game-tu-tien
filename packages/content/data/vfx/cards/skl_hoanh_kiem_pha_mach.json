@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "một đạo kiếm khí bản rộng mép răng cưa quét ngang, để lại vết nứt đất"
+  "silhouette": "một đạo kiếm khí bản rộng mép răng cưa quét ngang, để lại vết nứt đất",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

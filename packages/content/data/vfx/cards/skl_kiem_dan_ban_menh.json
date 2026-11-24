@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "silhouette": "viên kiếm đan sáng chứa kiếm nhỏ lượn trên vòng quỹ đạo mực nghiêng, phóng vệt đâm thẳng"
+  "silhouette": "viên kiếm đan sáng chứa kiếm nhỏ lượn trên vòng quỹ đạo mực nghiêng, phóng vệt đâm thẳng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }
