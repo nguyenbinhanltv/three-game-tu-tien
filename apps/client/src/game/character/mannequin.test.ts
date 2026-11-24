@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three/webgpu';
-import { baseClipOf, CHR_V3, JOG_SPEED, lod0Slots, V3_MODELS, v3AssetOf } from './mannequin';
+import { baseClipOf, CHR_V3, JOG_SPEED, lod0Slots, V3_MODELS, V3_SKINS, v3AssetOf, v3SetKeyOf } from './mannequin';
 import { lodOf, mergeLodMeshes } from './mannequinLod';
 import type { AnimState } from './view';
 
@@ -217,5 +217,39 @@ describe('Lạc Kiếm mặc định = v3b3 (tua/dải đai lò xo)', () => {
     const { v3DyeRefOf } = await import('@dtl/shared');
     expect(v3DyeRefOf('chr_v3b3_lac_kiem_nu')).toEqual(v3DyeRefOf('chr_v3b2_lac_kiem_nu'));
     expect(v3DyeRefOf('chr_v3b3_lac_kiem_nu')).not.toBeNull();
+  });
+});
+
+describe('cut-in theo bộ đang mặc (TP-3)', () => {
+  const skinId = Object.keys(V3_SKINS)[0]!;
+  const skinFemale = V3_SKINS[skinId]!.endsWith('_nu');
+  it('v3SetKeyOf: không mặc bộ → de_tu, bộ nhánh Lạc Kiếm → lac_kiem, bộ riêng → khóa của nó, bộ lạ → lac_kiem (như model)', () => {
+    expect(v3SetKeyOf('f')).toBe('de_tu');
+    expect(v3SetKeyOf('f', undefined, 'set_han_giao')).toBe('lac_kiem');
+    expect(v3SetKeyOf('f', undefined, 'set_tinh_khuyet')).toBe('tinh_khuyet');
+    expect(v3SetKeyOf('f', undefined, 'set_dia_giap')).toBe('dia_long');
+    expect(v3SetKeyOf('f', undefined, 'set_khong_co')).toBe('lac_kiem');
+  });
+  it('skin hợp lệ (đúng giới) → khóa skin; skin sai giới bị bỏ qua như v3AssetOf', () => {
+    const g = skinFemale ? 'f' : 'm';
+    expect(v3SetKeyOf(g, skinId, 'set_tinh_khuyet')).toBe(`skin:${skinId}`);
+    expect(v3AssetOf(g, skinId, 'set_tinh_khuyet')).toBe(V3_SKINS[skinId]);
+    const wrong = skinFemale ? 'm' : 'f';
+    expect(v3SetKeyOf(wrong, skinId, 'set_tinh_khuyet')).toBe('tinh_khuyet');
+  });
+  it('cùng một khóa với v3AssetOf cho mọi tổ hợp (tranh và model luôn cùng bộ)', () => {
+    for (const g of ['m', 'f'])
+      for (const skin of [undefined, skinId, 'skin_khong_co'])
+        for (const set of [undefined, 'set_lac_kiem', 'set_han_giao', 'set_tinh_khuyet', 'set_dia_giap', 'set_van_kinh', 'set_khong_co']) {
+          const key = v3SetKeyOf(g, skin, set);
+          const asset = v3AssetOf(g, skin, set);
+          const sfx = g === 'f' ? 'nu' : 'nam';
+          const want = key.startsWith('skin:')
+            ? V3_SKINS[key.slice(5)]
+            : key === 'lac_kiem'
+              ? V3_MODELS[g as 'm' | 'f']
+              : `chr_v3_${key}_${sfx}`;
+          expect(asset).toBe(want);
+        }
   });
 });

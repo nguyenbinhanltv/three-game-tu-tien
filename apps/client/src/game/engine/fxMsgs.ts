@@ -1,5 +1,6 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt } from '../character/animFx';
+import { v3SetKeyOf } from '../character/mannequin';
 import * as THREE from 'three/webgpu';
 import {
   type DmgMsg,
@@ -326,8 +327,10 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     if (!(replacedFx(m.t) && typeof pSrc?.model.performClock === 'function')) playMethodFx(mctx);
     // Chiêu tối thượng của mình: thẻ ngắn 0,6 giây (viền sáng, tên chiêu), không khóa input.
     const ult = src === eng.sid ? METHOD_SKILLS.find((s) => s.fx === m.t && s.ult) : undefined;
-    // Thân Pháp T7 (cờ ?thanphap): chiêu cuối có tranh thì khựng trình diễn 0,5 s (chỉ hình, không đụng server/input) và hiện cut-in.
-    const cutin = ult && ANIM_FX.cutin ? cutinArt(ult.id, eng.ents.players.get(eng.sid)?.look.g ?? 'm') : null;
+    // Thân Pháp T7/TP-3 (cờ ?thanphap): chiêu cuối của người mặc bộ có tranh cut-in (theo bộ đang mặc) thì khựng trình diễn 0,5 s (chỉ hình, không đụng server/input) và hiện cut-in.
+    const mine = eng.ents.players.get(eng.sid);
+    const cutin =
+      ult && ANIM_FX.cutin ? cutinArt(v3SetKeyOf(mine?.look.g ?? 'm', mine?.look.skin, mine?.look.set), mine?.look.g ?? 'm') : null;
     if (cutin && eng.shake.enabled) eng.fxSlow = { scale: 0.04, until: performance.now() + CUTIN_FREEZE_MS };
     if (ult)
       set({

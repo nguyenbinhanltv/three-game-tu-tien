@@ -203,13 +203,22 @@ const V3_BRANCH_FALLBACK: Readonly<Record<string, string>> = {
   set_dong_dinh: 'huyen_giap',
   set_gioi_tri_dan: 'dan_tam',
 };
+/**
+ * Khóa hiển thị v3 của một nhân vật (giới `g`, skin đang mặc nếu có, bộ trang bị `set`): MỘT nguồn cho cả model (`v3AssetOf`) và tranh cut-in (`v3SetKeyOf`).
+ * Skin hợp lệ (đúng giới) → `skin:<tên skin>`; không mặc bộ → `de_tu`; bộ riêng → khóa của nó; bộ nhánh hoặc bộ lạ không có trong bảng → `lac_kiem` (model Lạc Kiếm).
+ */
+export function v3SetKeyOf(g: string, skin?: string, set?: string): string {
+  const id = skin ? V3_SKINS[skin] : undefined;
+  if (skin && id && id.endsWith(g === 'f' ? '_nu' : '_nam')) return `skin:${skin}`;
+  if (!set) return 'de_tu';
+  return V3_OWN_SETS[set] ?? V3_BRANCH_FALLBACK[set] ?? 'lac_kiem';
+}
 /** Asset v3 của một nhân vật (giới `g`, skin đang mặc nếu có, bộ trang bị `set`). Skin sai giới (server không cho mặc) bị bỏ qua. */
 export function v3AssetOf(g: string, skin?: string, set?: string): string {
   const f = g === 'f';
-  const id = skin ? V3_SKINS[skin] : undefined;
-  if (id && id.endsWith(f ? '_nu' : '_nam')) return id;
-  const key = set ? (V3_OWN_SETS[set] ?? V3_BRANCH_FALLBACK[set]) : 'de_tu';
-  if (key === undefined || key === 'lac_kiem') return f ? V3_MODELS.f : V3_MODELS.m;
+  const key = v3SetKeyOf(g, skin, set);
+  if (key.startsWith('skin:')) return V3_SKINS[key.slice(5)]!;
+  if (key === 'lac_kiem') return f ? V3_MODELS.f : V3_MODELS.m;
   return `chr_v3_${key}_${f ? 'nu' : 'nam'}`;
 }
 /**
