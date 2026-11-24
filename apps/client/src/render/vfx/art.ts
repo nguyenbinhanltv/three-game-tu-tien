@@ -18,7 +18,7 @@ let atlas: THREE.Texture | null = null;
  * (hàng trên trước). Dựng bằng `tools/vfx-forge/sprite-pack.mjs` từ bảng Codex nền xanh chroma. Nạp bất đồng bộ; chưa nạp thì trong suốt. Không có `document` (test) thì texture rỗng.
  */
 export const SPRITE_COLS = 4;
-export const SPRITE_ROWS = 6;
+export const SPRITE_ROWS = 10;
 let spriteTex: THREE.Texture | null = null;
 
 export function spriteAtlas(): THREE.Texture {

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Họa Pháp Lô 2: tách nền xanh chroma của bảng sprite Codex (`forge sprites`) và xếp thành atlas WebP trong suốt cho `FX_SPRITES` (packages/shared/src/fxtimeline.ts).
-// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 4] [--cell 512] [--out apps/client/public/hoa-truc/vfx_sprites.webp] [--preview <png>]
+// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 4] [--base <atlas.webp> nối thêm vào atlas có sẵn] [--cell 512] [--out apps/client/public/hoa-truc/vfx_sprites.webp] [--preview <png>]
 // Mỗi ô lưới đều (cols × rows) của bảng: tìm khung bao của phần không phải nền, cắt, thu vừa ô (chừa lề), xếp vào atlas. alpha = 1 − (g − max(r,b))/255; khử viền xanh bằng cách trừ phần nền.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -34,6 +34,16 @@ if (!sheets.length) sheets.push({ file: input, cols, rows });
 const comps = [];
 const report = [];
 let cellNo = 0;
+// `--base <atlas.webp>`: giữ nguyên atlas đã có (các ô cũ), chỉ NỐI THÊM ô của các bảng mới vào hàng tiếp theo (không cần bảng gốc của các ô cũ).
+const basePath = flag('--base');
+if (basePath) {
+  const bm = await sharp(basePath).metadata();
+  if (bm.width !== cols * cell || bm.height % cell !== 0)
+    throw new Error(`atlas gốc ${bm.width}×${bm.height} không khớp lưới ${cols} cột × ô ${cell}`);
+  comps.push({ input: await sharp(basePath).ensureAlpha().png().toBuffer(), left: 0, top: 0 });
+  cellNo = (bm.height / cell) * cols;
+  report.push(`giữ atlas gốc: ${cellNo} ô`);
+}
 for (const sh of sheets) await packSheet(sh);
 async function packSheet(sh) {
   const { data, info } = await sharp(sh.file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });

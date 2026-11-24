@@ -1,0 +1,35 @@
+{
+  "skillId": "skl_loi_the",
+  "idea": "Lôi Thể: các dải hồ quang xoắn ốc quấn quanh người từ chân lên vai như lò xo sét, giữa hai bàn tay nhảy tia điện, tóc áo dựng nhẹ.",
+  "element": "kim",
+  "path": "loi_tu",
+  "shapeLang": [
+    "spiral",
+    "arc"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 4,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 7,
+    "particles": 230,
+    "screenCover": 0.06,
+    "overdraw": 4
+  },
+  "textures": [],
+  "silhouette": "những dải hồ quang xoắn ốc quấn thân từ chân lên vai, hai bàn tay có tia điện nhảy",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}
