@@ -96,6 +96,8 @@ export function idlePoseFor(drawn: boolean): string {
 }
 
 /** T3: đứng yên liên tục `still` giây thì tới lượt idle khi quá `after` giây (đặt lại về âm ngẫu nhiên sau mỗi lần). */
+/** Kiếm đang cầm (còn trong thế đấu sau đòn cuối, ~4 s): xoay kiếm sau chừng này giây đứng yên, kịp cửa sổ đó. */
+export const IDLE_DRAWN_AFTER = 2.5;
 export function idleDue(still: number, after = 7): boolean {
   return still >= after;
 }

@@ -2,7 +2,20 @@
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
 import { BladeSmear, smearWindow } from '../fx/bladeSmear';
-import { accelLean, ANIM_FX, bobOf, exagGain, EXAG_GAIN, glideDip, glideLean, idleDue, idlePoseFor, leanBoost, SPRING_TP } from './animFx';
+import {
+  accelLean,
+  ANIM_FX,
+  bobOf,
+  exagGain,
+  EXAG_GAIN,
+  glideDip,
+  glideLean,
+  IDLE_DRAWN_AFTER,
+  idleDue,
+  idlePoseFor,
+  leanBoost,
+  SPRING_TP,
+} from './animFx';
 import { DEATH_DIR_TTL, DEATH_TURN_S, dashClipOf, holdHipsInPlace, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
 import { boneKey } from './ikpose';
 import { applyProportions, proportionBones, type BoneScale } from './hero';
@@ -1366,6 +1379,7 @@ export class MannequinCharacter implements CharacterView {
       this.emit('windup', 0);
     }
     if (this.shot) this.shot.fadeOut(0.05);
+    if (o.ambient) return;
     this.attacks++;
     this.combatT = COMBAT_HOLD;
   }
@@ -1737,8 +1751,9 @@ export class MannequinCharacter implements CharacterView {
     if (ANIM_FX.idle) {
       const still = free && a.speed < 0.3 && !this.perf && !a.combat && !a.casting && this.baseName !== 'Sitting_Idle_Loop';
       this.stillT = still ? this.stillT + dt : 0;
-      if (still && idleDue(this.stillT, this.idleAfter)) {
-        this.perform(idlePoseFor(this.drawn), { skill: 'idle' });
+      if (still && idleDue(this.stillT, this.drawn ? IDLE_DRAWN_AFTER : this.idleAfter)) {
+        // Chọn theo trạng thái kiếm thật; `ambient`: idle không kéo vào thế đấu, không rút kiếm.
+        this.perform(idlePoseFor(this.drawn), { skill: 'idle', ambient: true });
         this.stillT = 0;
         this.idleAfter = 6 + Math.random() * 5;
       } else if (a.speed > 0.5 && this.perf && this.perf.id.startsWith('kiem_idle')) this.abortPerform();

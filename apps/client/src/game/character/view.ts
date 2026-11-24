@@ -140,6 +140,8 @@ export interface PerformOpts {
   from?: number;
   /** Chờ bao lâu (giây) rồi mới phát. */
   delay?: number;
+  /** Động tác nền không phải đòn đánh (idle đặc trưng): không tính vào `attacks`, không vào thế đấu/rút kiếm (`combatT`). */
+  ambient?: boolean;
 }
 
 export interface MonsterView extends CharacterView {
