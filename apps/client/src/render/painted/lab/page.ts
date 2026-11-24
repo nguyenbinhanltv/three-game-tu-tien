@@ -189,7 +189,7 @@ export async function startPaintedLab(host: HTMLElement): Promise<void> {
     async shader() {
       const mid = blades.rings.find((r) => r.ring.name === 'mid')!.tiles[0]!.mesh;
       const { vertexShader, fragmentShader } = await renderer.debug.getShaderAsync(scene, camera, mid);
-      return { vertex: vertexShader, fragment: fragmentShader };
+      return { vertex: vertexShader ?? '', fragment: fragmentShader ?? '' };
     },
     info() {
       return { drawCalls: renderer.info.render.drawCalls, triangles: renderer.info.render.triangles, frames };
