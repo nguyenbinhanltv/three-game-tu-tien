@@ -94,13 +94,47 @@
    "type": "decal",
    "tex": "scorch",
    "t": 0,
+   "r": 2.4,
+   "dur": 1.4,
+   "at": "ahead",
+   "offset": [
+    0,
+    0.02,
+    1.6
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.02,
    "r": 3.4,
-   "dur": 1.6,
+   "dur": 1.4,
    "at": "ahead",
    "offset": [
     0,
     0.02,
     4.4
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.04,
+   "r": 2.8,
+   "dur": 1.4,
+   "at": "ahead",
+   "offset": [
+    0,
+    0.02,
+    7.4
    ],
    "grow": 0.1,
    "tone": "shadow",
