@@ -133,6 +133,12 @@ export function createFrame(renderer: THREE.WebGPURenderer, scene: THREE.Scene, 
     render(): void {
       post.render();
     },
+    /** Vẽ khung cuối vào một render target (để đọc ảnh bằng readback thay vì chụp màn hình: chụp treo khi khung nặng). */
+    renderTo(target: THREE.RenderTarget): void {
+      renderer.setRenderTarget(target);
+      post.render();
+      renderer.setRenderTarget(null);
+    },
     dispose(): void {
       post.dispose?.();
     },

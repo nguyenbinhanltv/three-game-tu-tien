@@ -89,7 +89,14 @@ try {
   await page.waitForTimeout(3000);
   log('đã render, chụp');
   await page.waitForTimeout(1500);
-  await page.screenshot({ path: path.join(out, 'ours.png'), timeout: 100000 });
+  // đọc ảnh bằng readback render target (screenshot treo khi khung quá nặng)
+  const rb = await page.evaluate(() => window.__paintedLab.readback());
+  log(`readback ${rb.width}x${rb.height} mất ${rb.ms} ms`);
+  const sharp = require('sharp');
+  await sharp(Buffer.from(rb.b64, 'base64'), { raw: { width: rb.width, height: rb.height, channels: 4 } })
+    .removeAlpha()
+    .png()
+    .toFile(path.join(out, 'ours.png'));
   const info = await page.evaluate(() => window.__paintedLab.info());
   fs.writeFileSync(path.join(out, 'lab-info.json'), JSON.stringify({ info, logs }, null, 2));
   console.log('draw/tri', JSON.stringify(info), logs.length ? `\n${logs.slice(0, 6).join('\n')}` : '');

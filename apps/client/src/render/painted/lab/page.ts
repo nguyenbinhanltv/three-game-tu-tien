@@ -25,6 +25,8 @@ export interface PaintedLab {
   apply(d: RefDump): Promise<void>;
   render(): void;
   info(): { drawCalls: number; triangles: number; frames: number };
+  /** Đọc khung cuối (sRGB 8 bit, RGBA, hàng trên trước) qua render target; base64 để chuyển ra khỏi trang. */
+  readback(): Promise<{ width: number; height: number; ms: number; b64: string }>;
 }
 
 declare global {
@@ -163,6 +165,19 @@ export async function startPaintedLab(host: HTMLElement): Promise<void> {
     },
     render(): void {
       frame.render();
+    },
+    async readback() {
+      const w = renderer.domElement.width;
+      const h = renderer.domElement.height;
+      const rt = new THREE.RenderTarget(w, h, { type: THREE.UnsignedByteType, format: THREE.RGBAFormat, depthBuffer: false });
+      const t0 = performance.now();
+      frame.renderTo(rt);
+      const data = (await renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h)) as Uint8Array;
+      const ms = performance.now() - t0;
+      let bin = '';
+      for (let i = 0; i < data.length; i += 32768) bin += String.fromCharCode(...data.subarray(i, i + 32768));
+      rt.dispose();
+      return { width: w, height: h, ms: Math.round(ms), b64: btoa(bin) };
     },
     info() {
       return { drawCalls: renderer.info.render.drawCalls, triangles: renderer.info.render.triangles, frames };
