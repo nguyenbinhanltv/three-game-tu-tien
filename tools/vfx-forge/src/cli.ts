@@ -17,6 +17,7 @@ import { checkManifest, forge } from './pipeline.js';
 import { toPng } from './io.js';
 import { conceptJob, monConceptJob, runCodex, spriteJob, textureJob } from './codex.js';
 import { writeCards } from './cards.js';
+import { sharedJob } from './sharedTex.js';
 import type { TextureKind } from './prompts.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -93,6 +94,18 @@ async function main(): Promise<void> {
     const out = flag('--out');
     if (!name || !pf || !out) throw new Error('dùng: sprites --name <tên> --prompt-file <txt> [--ref <ảnh>]... --out <thư mục>');
     const job = spriteJob(name, fs.readFileSync(pf, 'utf8'), flags('--ref'), out);
+    const res = await runCodex(job);
+    if (!res.file) throw new Error(`Codex không ra ảnh (mã thoát ${res.code ?? 'không có'}); xem log: ${res.log}`);
+    console.log(`đã sinh ${res.file}`);
+  } else if (cmd === 'shared') {
+    const id = argv[1];
+    const out = flag('--out');
+    if (!id || !out) throw new Error('dùng: shared <warn_crack|ice_crack|ice_flip> --out <thư mục ngoài repo> [--dry]');
+    const job = sharedJob(id, out, flags('--ref'));
+    if (argv.includes('--dry')) {
+      console.log(job.prompt);
+      return;
+    }
     const res = await runCodex(job);
     if (!res.file) throw new Error(`Codex không ra ảnh (mã thoát ${res.code ?? 'không có'}); xem log: ${res.log}`);
     console.log(`đã sinh ${res.file}`);

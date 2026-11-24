@@ -357,7 +357,8 @@ interface UIState {
   /** Lệch đồng hồ client − server (ms) lúc nhận `method`, để đổi `guardUntil` sang giờ client. */
   methodOff: number;
   /** Thẻ ngắn 0,6 giây khi mình tung chiêu tối thượng (tên chiêu, màu); `until` theo đồng hồ client. */
-  ultCard: { id: number; skill: string; color: string; until: number } | null;
+  /** `cutin`: tên tranh cut-in (Thân Pháp T7, `assets/cutin/<tên>.webp`); thiếu thì chỉ có thẻ ngắn cũ. */
+  ultCard: { id: number; skill: string; color: string; until: number; cutin?: string } | null;
   /** Tổ đội của mình (P3-9); null = không có. */
   party: PartyMsg | null;
   /** Bảng tổng kết trận (U5) do server gửi sau khi hoàn thành bí cảnh; null = không hiện. */

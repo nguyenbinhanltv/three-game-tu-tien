@@ -147,6 +147,13 @@ import fx_mon_strike from '../data/fx/mon_strike.json';
 import fx_mon_warn from '../data/fx/mon_warn.json';
 import fx_mon_warn_cone from '../data/fx/mon_warn_cone.json';
 import fx_mon_warn_line from '../data/fx/mon_warn_line.json';
+import fx_mon_cast__boss_han_giao from '../data/fx/mon_cast__boss_han_giao.json';
+import fx_mon_warn__boss_han_giao__slam from '../data/fx/mon_warn__boss_han_giao__slam.json';
+import fx_mon_boom_circle__boss_han_giao__slam from '../data/fx/mon_boom_circle__boss_han_giao__slam.json';
+import fx_mon_warn__boss_han_giao__chant from '../data/fx/mon_warn__boss_han_giao__chant.json';
+import fx_mon_boom_circle__boss_han_giao__chant from '../data/fx/mon_boom_circle__boss_han_giao__chant.json';
+import fx_mon_warn_cone__boss_han_giao__sweep from '../data/fx/mon_warn_cone__boss_han_giao__sweep.json';
+import fx_mon_boom_cone__boss_han_giao__sweep from '../data/fx/mon_boom_cone__boss_han_giao__sweep.json';
 import fx_fx_blink from '../data/fx/fx_blink.json';
 import fx_fx_dotpha_kd from '../data/fx/fx_dotpha_kd.json';
 import fx_fx_dotpha_hn from '../data/fx/fx_dotpha_hn.json';
@@ -342,6 +349,12 @@ import fx_skl_tran_son_an from '../data/fx/skl_tran_son_an.json';
 import fx_skl_van_kiem_quy_tong from '../data/fx/skl_van_kiem_quy_tong.json';
 import posePhiKiemJson from '../data/poses/phi_kiem.json';
 import poseKiemKhiTramJson from '../data/poses/kiem_khi_tram.json';
+// Thân Pháp T4 (pilot TP-1, sinh bằng tools/poses/thanphap.mjs): chỉ được chọn khi bật `?thanphap=1`.
+import poseKiemKhiTramTpJson from '../data/poses/kiem_khi_tram_tp.json';
+import posePhiKiemTpJson from '../data/poses/phi_kiem_tp.json';
+import poseThienKiemVuTpJson from '../data/poses/thien_kiem_vu_tp.json';
+import poseKiemIdleXoayJson from '../data/poses/kiem_idle_xoay.json';
+import poseKiemIdleChapTayJson from '../data/poses/kiem_idle_chap_tay.json';
 import poseHoTheJson from '../data/poses/ho_the.json';
 import poseThienKiemVuJson from '../data/poses/thien_kiem_vu.json';
 import poseHoiNguyenJson from '../data/poses/hoi_nguyen.json';
@@ -622,6 +635,11 @@ export const CREDIT_LICENSE_URL: Record<string, string> = {
 };
 /** Key pose cho công cụ tư thế IK (client nướng thành AnimationClip). Thêm tệp mới trong data/poses thì khai báo ở đây. */
 export const POSES = [
+  poseKiemKhiTramTpJson,
+  posePhiKiemTpJson,
+  poseThienKiemVuTpJson,
+  poseKiemIdleXoayJson,
+  poseKiemIdleChapTayJson,
   poseKiemThuJson,
   poseChemNgangJson,
   posePhiKiemJson,
@@ -902,6 +920,13 @@ export const MON_FX_TIMELINES = [
   fx_mon_warn_cone,
   fx_mon_warn_line,
   fx_mon_warn,
+  fx_mon_cast__boss_han_giao,
+  fx_mon_warn__boss_han_giao__slam,
+  fx_mon_boom_circle__boss_han_giao__slam,
+  fx_mon_warn__boss_han_giao__chant,
+  fx_mon_boom_circle__boss_han_giao__chant,
+  fx_mon_warn_cone__boss_han_giao__sweep,
+  fx_mon_boom_cone__boss_han_giao__sweep,
 ] as unknown as FxTimeline[];
 export const MON_FX = new Map(MON_FX_TIMELINES.map((f) => [f.skill, f]));
 /**

@@ -5,6 +5,7 @@ import type { FxUniforms } from '../vfx/common';
 import { inkNodes } from '../vfx/ink';
 import { boltNodes, vortexNodes, windNodes } from '../vfx/lightning';
 import { flipNodes } from '../vfx/flipbook';
+import { mapDecalNodes, mapFlipNodes } from '../vfx/forgeTex';
 import { beamNodes } from '../vfx/loot';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
@@ -58,6 +59,8 @@ export type FxKind =
   | 'slash'
   | 'ink'
   | 'sigil'
+  /** Như `sigil` nhưng không thử độ sâu (vạch báo của boss luôn thấy; V-P9). */
+  | 'sigilTop'
   | 'bolt'
   | 'vortex'
   | 'trail'
@@ -68,11 +71,19 @@ export type FxKind =
   | 'crystal'
   | 'burst'
   | 'decal'
+  /** Như `decal` nhưng KHÔNG thử độ sâu: luôn vẽ đè lên mọi vật (vạch báo của boss không bị thân boss/vật che; V-P9). */
+  | 'decalTop'
   | 'card'
   | 'art'
   | 'sprite'
   | 'wind'
-  | 'flip';
+  | 'flip'
+  /** Decal từ trên bằng texture Codex (`forgeTex.ts`; vân nứt vạch báo, băng nứt). */
+  | 'mapDecal'
+  /** Như `mapDecal` nhưng không thử độ sâu (vạch báo của boss). */
+  | 'mapDecalTop'
+  /** Flipbook texture Codex (`ice_flip`), quay mặt về camera. */
+  | 'mapFlip';
 
 const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: number; fog: boolean }> = {
   glow: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
@@ -82,6 +93,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   slash: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
   ink: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: true },
   sigil: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.15, fog: false },
+  sigilTop: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.15, fog: false },
   bolt: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.6, fog: false },
   vortex: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: true },
   trail: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.45, fog: false },
@@ -92,17 +104,22 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   crystal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.35, fog: false },
   burst: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
   decal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: true },
+  decalTop: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: true },
   card: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
   art: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.3, fog: false },
   sprite: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   wind: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.2, fog: false },
   flip: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
+  mapDecal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.1, fog: true },
+  mapDecalTop: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.1, fog: true },
+  mapFlip: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.15, fog: false },
 };
 
 const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opacity: unknown }>> = {
   slash: (u) => slashNodes(u, false),
   ink: (u) => slashNodes(u, true),
   sigil: sigilNodes,
+  sigilTop: sigilNodes,
   bolt: boltNodes,
   vortex: vortexNodes,
   trail: trailNodes,
@@ -112,11 +129,15 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   crystal: crystalNodes,
   burst: burstNodes,
   decal: decalNodes,
+  decalTop: decalNodes,
   card: cardNodes,
   art: artNodes,
   sprite: spriteNodes,
   wind: windNodes,
   flip: flipNodes,
+  mapDecal: mapDecalNodes,
+  mapDecalTop: mapDecalNodes,
+  mapFlip: mapFlipNodes,
   dome: (u) => {
     // Fresnel: 1 ở rìa (nhìn lướt), ~0 ở giữa (nhìn thẳng). Vân phù văn: dải ngang mờ chạy theo độ cao.
     const fres = pow(float(1).sub(abs(dot(normalize(normalView), normalize(positionView.negate())))), 2.6);
@@ -165,6 +186,7 @@ export function fxMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
   // Trong suốt + DoubleSide mặc định vẽ 2 lượt (mặt sau rồi mặt trước). Cộng sáng không phụ thuộc
   // thứ tự, còn `solid`/`shade` là một màu phẳng không ghi depth, nên một lượt là đủ: nửa số draw call.
   m.forceSinglePass = true;
+  if (kind === 'sigilTop') m.depthTest = false;
   const custom = BUILDERS[kind]?.(U);
   if (custom) {
     m.colorNode = custom.color as THREE.Node;
@@ -204,9 +226,13 @@ export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>([
   'crystal',
   'burst',
   'decal',
+  'decalTop',
   'card',
   'art',
   'flip',
+  'mapDecal',
+  'mapDecalTop',
+  'mapFlip',
 ]);
 
 /** Tên thuộc tính instance: màu + độ trong, `fxA`, `fxB`, (`fxK`, 0, 0, 0). */
@@ -230,6 +256,7 @@ export function fxBatchMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
   const s = SPEC[kind];
   m = new THREE.MeshBasicNodeMaterial({ transparent: true, blending: s.blending, depthWrite: false, side: THREE.DoubleSide, fog: s.fog });
   m.forceSinglePass = true;
+  if (kind === 'decalTop' || kind === 'mapDecalTop') m.depthTest = false;
   const custom = BUILDERS[kind]?.(batchNodes);
   if (custom) {
     m.colorNode = custom.color as THREE.Node;

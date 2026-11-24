@@ -138,6 +138,16 @@ export const FX_SPRITES = [
 export type FxSprite = (typeof FX_SPRITES)[number];
 
 /**
+ * Texture Họa Pháp Lô 2 dùng chung theo hệ (Codex vẽ → `forge import` → KTX2 ở `public/assets/vfx`). Dùng cho quái/boss và chiêu người chơi;
+ * chỉ là LỚP CHẤT LIỆU, mỗi chiêu/boss vẫn phải có silhouette riêng. `FORGE_DECALS` = decal nhìn thẳng từ trên (tex của `decal`),
+ * `FORGE_FLIPS` = flipbook 4×4 (trường `flip` của hình `flip`). Thêm texture mới: thêm id ở đây + `render/vfx/forgeTex.ts`.
+ */
+export const FORGE_DECALS = ['warn_crack', 'ice_crack'] as const;
+export const FORGE_FLIPS = ['ice_flip'] as const;
+export type ForgeDecal = (typeof FORGE_DECALS)[number];
+export type ForgeFlip = (typeof FORGE_FLIPS)[number];
+
+/**
  * Luật thứ bậc thị giác (V-P0): 1 chiêu của mình, 2 chiêu/cảnh báo của địch (kể cả đối thủ đấu pháp), 3 chiêu đồng đội, 4 hào quang/môi trường.
  * Chỉ chiêu đồng đội (không phải mình, không thù địch) tự giảm độ sáng 50%; chế độ tĩnh giảm còn 25%. Kích thước và vị trí giữ nguyên (`size` luôn 1)
  * để hình vẫn khớp tầm đánh thật; số hạt của người khác đã giảm riêng ở `particleScale`.
@@ -208,7 +218,7 @@ export interface FxMeshEvent extends FxBase {
     /** Dịch đích (khác `offset` của điểm xuất phát), ví dụ rơi thẳng từ trên cao. */ offset?: [number, number, number];
   };
   /** Atlas của hình `flip` (bắt buộc với `shape: "flip"`). */
-  flip?: FlipAtlas;
+  flip?: FlipAtlas | ForgeFlip;
   /** Ô sprite của hình `sprite` (bắt buộc với `shape: "sprite"`). */
   sprite?: FxSprite;
   /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh); `colossus` (Cổ Thần khổng lồ nửa thân) và `fist` (cự quyền) của Cổ Thần (TN-5). */
@@ -283,7 +293,7 @@ export interface FxParticleEvent extends FxBase {
 export interface FxDecalEvent extends FxBase {
   type: 'decal';
   /** `crack` vết nứt phát sáng, `rune` vòng triện văn, `scorch` vết cháy mờ. */
-  tex: 'crack' | 'rune' | 'scorch' | 'strike';
+  tex: 'crack' | 'rune' | 'scorch' | 'strike' | ForgeDecal;
   /** Kiểu mực (V-P1, `rune` và `crack`): màu thân đậm, không pha viền sáng/HDR/nóng sáng, đọc được trên nền sáng. */
   ink?: boolean;
   at?: FxAnchor;
@@ -298,6 +308,13 @@ export interface FxDecalEvent extends FxBase {
   yaw?: number;
   /** Hiệu ứng của quái (V5): `dur` lấy bằng thời gian báo trước `delay` của vạch. */
   untilDelay?: boolean;
+  /** Vẽ ĐÈ lên mọi vật (không thử độ sâu): vạch báo của boss phải đọc được khi thân boss dài nằm đè lên vùng (V-P9). Chỉ dùng cho cảnh báo của địch. */
+  top?: boolean;
+  /** Mặt quạt (chỉ tex `FORGE_DECALS`): nửa góc (độ, 1–180) quanh hướng nhìn/hướng vùng; `yaw` là độ lệch thêm so với hướng đó (quét từng tia). `r` là bán kính cung quạt. */
+  sector?: number;
+  /** Với `sector`: tia xoay từ `swing[0]` sang `swing[1]` độ (so với hướng vùng) trong `swingDur` giây (mặc định 0,3). Một decal quét thay vì nhiều decal (trần 6 decal sống/runner). */
+  swing?: [number, number];
+  swingDur?: number;
   /** Nâng decal thêm (m, 0–0,5; mặc định 0) cho chỗ nền có ô đá nhô cao hơn mặt phẳng decal (sân lát đá tông môn). */
   lift?: number;
 }
@@ -524,12 +541,21 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
         if (!(e.jitter === undefined || (e.jitter >= 0 && e.jitter <= 0.25))) errs.push(`${p}: soundAt jitter=${e.jitter} ngoài 0–0,25`);
         if (!(e.gain === undefined || (e.gain >= 0 && e.gain <= 1.5))) errs.push(`${p}: soundAt gain=${e.gain} ngoài 0–1,5`);
       }
-      if (e.type === 'mesh' && e.shape === 'flip' && !(e.flip && (FLIP_ATLASES as readonly string[]).includes(e.flip)))
-        errs.push(`${p}: mesh flip thiếu/sai atlas (${e.flip}), hợp lệ: ${FLIP_ATLASES.join('|')}`);
+      if (
+        e.type === 'mesh' &&
+        e.shape === 'flip' &&
+        !(e.flip && ((FLIP_ATLASES as readonly string[]).includes(e.flip) || (FORGE_FLIPS as readonly string[]).includes(e.flip)))
+      )
+        errs.push(`${p}: mesh flip thiếu/sai atlas (${e.flip}), hợp lệ: ${[...FLIP_ATLASES, ...FORGE_FLIPS].join('|')}`);
       if (e.type === 'mesh' && e.shape !== 'flip' && e.flip) errs.push(`${p}: chỉ hình flip mới có trường flip`);
       if (e.type === 'mesh' && e.shape === 'sprite' && !(e.sprite && (FX_SPRITES as readonly string[]).includes(e.sprite)))
         errs.push(`${p}: mesh sprite thiếu/sai ô (${e.sprite}), hợp lệ: ${FX_SPRITES.join('|')}`);
       if (e.type === 'mesh' && e.shape !== 'sprite' && e.sprite) errs.push(`${p}: chỉ hình sprite mới có trường sprite`);
+      if (e.type === 'decal' && e.sector !== undefined) {
+        if (!(e.sector >= 1 && e.sector <= 180)) errs.push(`${p}: decal sector=${e.sector} ngoài 1–180°`);
+        if (!(FORGE_DECALS as readonly string[]).includes(e.tex))
+          errs.push(`${p}: decal sector chỉ dùng cho tex ${FORGE_DECALS.join('|')}`);
+      }
       if (e.type === 'bolt' && !(e.scale === undefined || (e.scale > 0 && e.scale <= 4)))
         errs.push(`${p}: bolt scale=${e.scale} ngoài (0, 4]`);
       if (e.type === 'bolt' && !(e.thick === undefined || (e.thick > 0 && e.thick <= 6)))
