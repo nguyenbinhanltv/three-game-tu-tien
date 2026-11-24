@@ -2,6 +2,34 @@
 
 > Đường dẫn nguồn dạng `2d/icons/…` và `icons/…` trong các bảng icon bên dưới là bản cũ, nay nằm ở `../dtl-asset-source-luu-tru/` (ASSET-CLEAN 2026-11-19); atlas hiện tại lấy từ `2d/icon/v2/png256/`. Các đường dẫn khác tính từ gốc cây nguồn mới (`3d/`, `2d/`, `audio/`…).
 
+## painted-valley: kỹ thuật phong cách Họa Cảnh (2026-11-24)
+
+Phong cách `?style=painted` (bảng màu lit/shade, nét cọ theo dốc, núi xa và mây vẽ một lần, lớp hoàn thiện Kuwahara, nhân vật cel + viền mực) dựa trên kỹ thuật và code của dự án painted-valley, **viết lại bằng TSL** (nguồn là WebGL2/GLSL, không chép GLSL). Code nguồn: MIT, © 2026 Patch. Art của nguồn: CC0 1.0 (không mang sang). **Không dùng** năm âm thanh Sonniss của bản demo gốc (không được phát tán) và không tái tạo cảnh hay nhân vật của phim nào; không commit ảnh chụp/ảnh tham khảo. Mỗi file dựa trực tiếp trên nguồn có dòng đầu ghi rõ. Chi tiết: `docs/handbook/painted.md`.
+
+```
+MIT License
+
+Copyright (c) 2026 Patch
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## Chữ thư pháp Giao Long (2026-11-20)
 
 Chữ thư pháp vẽ từ font Fz Thu Phap Giao Long - Thái Hiếu (Fontzin.com). Font nằm ngoài repo (`D:/METAGRIT/fonts-private/`, biến môi trường `CALLI_FONT`), **không commit, không đóng gói vào game**; chỉ commit ảnh đã vẽ bằng `tools/calli/build.mjs` ở `apps/client/public/assets/calli/` (chỉ cho nhóm chuỗi cố định: logo, tên cảnh giới/địa danh/chiêu, biển hiệu, tên bộ trang phục, tiêu đề chương). Ghi công ở màn Ghi công (`credits.json`, mục `fz_thu_phap_giao_long`). Không dùng font Fz Harukaze.
