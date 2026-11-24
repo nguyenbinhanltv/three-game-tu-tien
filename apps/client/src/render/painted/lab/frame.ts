@@ -90,7 +90,7 @@ export function createFrame(renderer: THREE.WebGPURenderer, scene: THREE.Scene, 
   };
 
   const uv: N = screenUV;
-  const c0: N = hdr(uv);
+  const c0: N = hdr(uv).toVar();
   let c: N;
   if (o.paint > 0.5) {
     // a finer brush for what is near: grass at your feet keeps its blades, the far country goes to flat paint

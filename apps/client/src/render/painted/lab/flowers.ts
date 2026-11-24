@@ -48,7 +48,8 @@ function flowerGeometry(subs = 2): THREE.InstancedBufferGeometry {
     // the petals: foot, two shoulders, two further out, the tip
     for (let k = 0; k < PETALS; k++) {
       first = positions.length / 3;
-      const part = z + 1 + k;
+      let part: N = z + 1 + k;
+      part = part.toVar();
       positions.push(0, 0, part, -1, 0.4, part, 1, 0.4, part, -1, 0.75, part, 1, 0.75, part, 0, 1, part);
       indices.push(
         first,
@@ -123,21 +124,34 @@ export function createFlowers(F: RefField, { height, seed }: { height: number; s
 function flowerMaterial(F: RefField, geometry: THREE.InstancedBufferGeometry, uHeight: number, uSalt: number): THREE.MeshBasicNodeMaterial {
   const aCell = instancedBufferAttribute(geometry.getAttribute('aCell') as THREE.InstancedBufferAttribute);
   const position: N = positionGeometry;
-  let part: N = position.z; // 0 stem, 1..8 a petal, 9 the middle
-  const sub: N = floor(part.div(16));
+  let part: N = position.z;
+  part = part.toVar(); // 0 stem, 1..8 a petal, 9 the middle
+  let sub: N = floor(part.div(16));
+  sub = sub.toVar();
   part = part.sub(sub.mul(16));
-  const origin: N = modelPosition.xz;
-  const cell: N = floor(origin.div(RING.cell).add(0.5)).add(aCell);
-  const r: N = cellRand(cell, float(uSalt).add(sub.mul(5)));
-  const q: N = cellRand(cell, float(uSalt + 53).add(sub.mul(5)));
-  const xz: N = cell.add(r.xy).mul(RING.cell);
-  const dist: N = distance(xz, cameraPosition.xz);
-  const m: N = F.map(F.extentUv(xz), true);
+  let origin: N = modelPosition.xz;
+  origin = origin.toVar();
+  let cell: N = floor(origin.div(RING.cell).add(0.5)).add(aCell);
+  cell = cell.toVar();
+  let r: N = cellRand(cell, float(uSalt).add(sub.mul(5)));
+  r = r.toVar();
+  let q: N = cellRand(cell, float(uSalt + 53).add(sub.mul(5)));
+  q = q.toVar();
+  let xz: N = cell.add(r.xy).mul(RING.cell);
+  xz = xz.toVar();
+  let dist: N = distance(xz, cameraPosition.xz);
+  dist = dist.toVar();
+  let m: N = F.map(F.extentUv(xz), true);
+  m = m.toVar();
   // they grow in drifts
-  const drift: N = smoothstep(0.42, 0.7, F.noise(xz.div(23), true).g);
-  const chance: N = m.a.mul(drift.mul(0.84).add(0.16)).mul(step(0.5, m.g));
-  const live: N = step(q.x, chance).mul(float(1).sub(smoothstep(RING.fade[0], RING.fade[1], dist.add(q.y.mul(3)))));
-  const alive: N = step(0.0000001, live);
+  let drift: N = smoothstep(0.42, 0.7, F.noise(xz.div(23), true).g);
+  drift = drift.toVar();
+  let chance: N = m.a.mul(drift.mul(0.84).add(0.16)).mul(step(0.5, m.g));
+  chance = chance.toVar();
+  let live: N = step(q.x, chance).mul(float(1).sub(smoothstep(RING.fade[0], RING.fade[1], dist.add(q.y.mul(3)))));
+  live = live.toVar();
+  let alive: N = step(0.0000001, live);
+  alive = alive.toVar();
 
   // tState: no bend, cutH = 1 m; tFire: 0
   const stB = float(1);
@@ -146,8 +160,10 @@ function flowerMaterial(F: RefField, geometry: THREE.InstancedBufferGeometry, uH
 
   // one kind to a drift, with a few strays
   let kindN: N = F.s(F.tex.tWhite, xz.div(7 * 256), true).r;
+  kindN = kindN.toVar();
   kindN = select(q.z.greaterThan(0.8), q.w, kindN);
-  const kind: N = floor(kindN.mul(3.999));
+  let kind: N = floor(kindN.mul(3.999));
+  kind = kind.toVar();
   let petal: N = vec3(0.8, 0.8, 0.74);
   let middle: N = vec3(0.75, 0.5, 0.03);
   let count: N = float(8);
@@ -180,66 +196,106 @@ function flowerMaterial(F: RefField, geometry: THREE.InstancedBufferGeometry, uH
   set(1, [0.85, 0.62, 0.02], [0.6, 0.45, 0.02], 5, 0.012, 0.011, 0.6, 0.004, 0.85);
   set(2, [0.86, 0.34, 0.55], [0.7, 0.5, 0.08], 8, 0.019, 0.005, 0.55, 0.007, 1.1);
   set(3, [0.93, 0.88, 0.8], [0.8, 0.55, 0.06], 4, 0.03, 0.03, 0.75, 0.006, 1.05);
-  const size: N = mix(2.0, 2.7, r.z);
+  let size: N = mix(2.0, 2.7, r.z);
+  size = size.toVar();
 
-  const gy: N = F.groundAt(xz);
-  const h: N = float(uHeight)
+  let gy: N = F.groundAt(xz);
+  gy = gy.toVar();
+  let h: N = float(uHeight)
     .mul(tall)
     .mul(mix(0.98, 1.32, r.w))
     .mul(float(1).sub(charred.mul(0.7)))
     .mul(F.tallAt(xz, true));
-  const yaw: N = q.w.mul(TAU);
+  h = h.toVar();
+  let yaw: N = q.w.mul(TAU);
+  yaw = yaw.toVar();
   let L: N = vec2(cos(yaw), sin(yaw)).mul(0.18);
-  const gust: N = F.gustAt(xz, true);
-  const U: N = F.uWind.z;
-  const nod: N = sin(r.w.mul(40).add(F.uTime.mul(r.z.mul(2).add(2.4)))).mul(U.mul(0.012).add(0.03));
+  L = L.toVar();
+  let gust: N = F.gustAt(xz, true);
+  gust = gust.toVar();
+  let U: N = F.uWind.z;
+  U = U.toVar();
+  let nod: N = sin(r.w.mul(40).add(F.uTime.mul(r.z.mul(2).add(2.4)))).mul(U.mul(0.012).add(0.03));
+  nod = nod.toVar();
   L = L.add(F.uWind.xy.mul(U.mul(mix(0.02, 0.07, gust)).add(nod)));
   // (no pushers, no bend)
   L = L.mul(float(1).sub(flat_.mul(0.8)));
-  const lean0: N = length(L);
-  const dir: N = L.div(max(lean0, 1e-4));
-  const lean: N = min(lean0, 1.5);
-  const theta0: N = lean.mul(mix(0.3, 0.85, flat_));
-  const A: N = lean.sub(theta0);
-  const Asafe: N = max(A, 1e-3);
-  const aBig: N = A.greaterThan(1e-3);
-  const top: N = select(aBig, h.mul(sin(theta0.add(A)).sub(sin(theta0))).div(Asafe), h.mul(cos(theta0)));
-  const sCut: N = clamp(stB.div(max(top, 1e-3)), 0, 1);
-  const headless: N = sCut.lessThan(0.97).or(charred.greaterThan(0.5));
+  let lean0: N = length(L);
+  lean0 = lean0.toVar();
+  let dir: N = L.div(max(lean0, 1e-4));
+  dir = dir.toVar();
+  let lean: N = min(lean0, 1.5);
+  lean = lean.toVar();
+  let theta0: N = lean.mul(mix(0.3, 0.85, flat_));
+  theta0 = theta0.toVar();
+  let A: N = lean.sub(theta0);
+  A = A.toVar();
+  let Asafe: N = max(A, 1e-3);
+  Asafe = Asafe.toVar();
+  let aBig: N = A.greaterThan(1e-3);
+  aBig = aBig.toVar();
+  let top: N = select(aBig, h.mul(sin(theta0.add(A)).sub(sin(theta0))).div(Asafe), h.mul(cos(theta0)));
+  top = top.toVar();
+  let sCut: N = clamp(stB.div(max(top, 1e-3)), 0, 1);
+  sCut = sCut.toVar();
+  let headless: N = sCut.lessThan(0.97).or(charred.greaterThan(0.5));
+  headless = headless.toVar();
 
-  const s: N = select(part.lessThan(0.5), position.y, float(1)).mul(sCut);
-  const phi: N = theta0.add(A.mul(s));
-  const along: N = select(aBig, h.mul(cos(theta0).sub(cos(phi))).div(Asafe), h.mul(s).mul(sin(theta0)));
-  const rise: N = select(aBig, h.mul(sin(phi).sub(sin(theta0))).div(Asafe), h.mul(s).mul(cos(theta0)));
-  const tangent: N = vec3(dir.x.mul(sin(phi)), cos(phi), dir.y.mul(sin(phi)));
-  const at: N = vec3(xz.x.add(dir.x.mul(along)), gy.add(rise), xz.y.add(dir.y.mul(along)));
+  let s: N = select(part.lessThan(0.5), position.y, float(1)).mul(sCut);
+  s = s.toVar();
+  let phi: N = theta0.add(A.mul(s));
+  phi = phi.toVar();
+  let along: N = select(aBig, h.mul(cos(theta0).sub(cos(phi))).div(Asafe), h.mul(s).mul(sin(theta0)));
+  along = along.toVar();
+  let rise: N = select(aBig, h.mul(sin(phi).sub(sin(theta0))).div(Asafe), h.mul(s).mul(cos(theta0)));
+  rise = rise.toVar();
+  let tangent: N = vec3(dir.x.mul(sin(phi)), cos(phi), dir.y.mul(sin(phi)));
+  tangent = tangent.toVar();
+  let at: N = vec3(xz.x.add(dir.x.mul(along)), gy.add(rise), xz.y.add(dir.y.mul(along)));
+  at = at.toVar();
 
   // stem
-  const acrossS: N = normalize(cross(tangent, cameraPosition.sub(at)));
-  const worldStem: N = at.add(acrossS.mul(position.x).mul(0.0016));
-  const NStem: N = cross(acrossS, tangent);
-  const colStem: N = mix(vec3(0.16, 0.4, 0.1), vec3(0.24, 0.52, 0.13), s);
+  let acrossS: N = normalize(cross(tangent, cameraPosition.sub(at)));
+  acrossS = acrossS.toVar();
+  let worldStem: N = at.add(acrossS.mul(position.x).mul(0.0016));
+  worldStem = worldStem.toVar();
+  let NStem: N = cross(acrossS, tangent);
+  NStem = NStem.toVar();
+  let colStem: N = mix(vec3(0.16, 0.4, 0.1), vec3(0.24, 0.52, 0.13), s);
+  colStem = colStem.toVar();
 
   // the head looks up and a little towards the sun
-  const axis: N = normalize(
+  let axis: N = normalize(
     tangent
       .mul(0.6)
       .add(vec3(0, 0.5, 0))
       .add(F.uSunDir.mul(0.25)),
   );
-  const u: N = normalize(cross(axis, vec3(0.31, 0, 0.95)));
-  const v: N = cross(axis, u);
+  axis = axis.toVar();
+  let u: N = normalize(cross(axis, vec3(0.31, 0, 0.95)));
+  u = u.toVar();
+  let v: N = cross(axis, u);
+  v = v.toVar();
   // the middle
-  const worldMid: N = at.add(u.mul(position.x).add(v.mul(position.y)).mul(mid).mul(size)).add(axis.mul(0.002));
-  const NMid: N = normalize(axis.add(u.mul(position.x).add(v.mul(position.y)).mul(0.6)));
+  let worldMid: N = at.add(u.mul(position.x).add(v.mul(position.y)).mul(mid).mul(size)).add(axis.mul(0.002));
+  worldMid = worldMid.toVar();
+  let NMid: N = normalize(axis.add(u.mul(position.x).add(v.mul(position.y)).mul(0.6)));
+  NMid = NMid.toVar();
   // a petal
-  const k: N = part.sub(1);
-  const a: N = k.add(r.x).div(count).mul(TAU);
-  const out_: N = cos(a).mul(u).add(sin(a).mul(v));
-  const sideV: N = sin(a).negate().mul(u).add(cos(a).mul(v));
-  const t: N = position.y;
-  const wide: N = sin(clamp(t.mul(0.85).add(0.12), 0, 1).mul(3.14159));
-  const droop: N = cup.sub(t.mul(t).mul(float(1).sub(cup)).mul(0.5));
+  let k: N = part.sub(1);
+  k = k.toVar();
+  let a: N = k.add(r.x).div(count).mul(TAU);
+  a = a.toVar();
+  let out_: N = cos(a).mul(u).add(sin(a).mul(v));
+  out_ = out_.toVar();
+  let sideV: N = sin(a).negate().mul(u).add(cos(a).mul(v));
+  sideV = sideV.toVar();
+  let t: N = position.y;
+  t = t.toVar();
+  let wide: N = sin(clamp(t.mul(0.85).add(0.12), 0, 1).mul(3.14159));
+  wide = wide.toVar();
+  let droop: N = cup.sub(t.mul(t).mul(float(1).sub(cup)).mul(0.5));
+  droop = droop.toVar();
   let worldPetal: N = at
     .add(
       out_
@@ -251,11 +307,15 @@ function flowerMaterial(F: RefField, geometry: THREE.InstancedBufferGeometry, uH
     )
     .add(sideV.mul(position.x).mul(pw).mul(size).mul(wide));
   worldPetal = select(k.greaterThanEqual(count), at, worldPetal);
-  const NPetal: N = normalize(axis.mul(cos(droop)).sub(out_.mul(sin(droop))));
-  const colPetal: N = petal.mul(mix(0.8, 1.05, t));
+  let NPetal: N = normalize(axis.mul(cos(droop)).sub(out_.mul(sin(droop))));
+  NPetal = NPetal.toVar();
+  let colPetal: N = petal.mul(mix(0.8, 1.05, t));
+  colPetal = colPetal.toVar();
 
-  const isStem: N = part.lessThan(0.5);
-  const isMid: N = part.greaterThan(8.5);
+  let isStem: N = part.lessThan(0.5);
+  isStem = isStem.toVar();
+  let isMid: N = part.greaterThan(8.5);
+  isMid = isMid.toVar();
   let world: N = select(isStem, worldStem, select(headless, at, select(isMid, worldMid, worldPetal)));
   const Nrm: N = select(isStem, NStem, select(headless, axis, select(isMid, NMid, NPetal)));
   let col: N = select(isStem, colStem, select(headless, vec3(0, 0, 0), select(isMid, middle, colPetal)));

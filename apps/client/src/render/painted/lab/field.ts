@@ -167,7 +167,8 @@ export class RefField {
     const a = this.noiseHi(xz.div(520), v).a;
     const b = this.noiseHi(xz.div(37).add(0.23), v).r;
     const w = smoothstep(0.3, 0.7, a.mul(0.6).add(b.mul(0.4)));
-    const t = mix(vec3(0.8, 0.96, 1.1), vec3(1.2, 1.06, 0.76), w);
+    let t: N = mix(vec3(0.8, 0.96, 1.1), vec3(1.2, 1.06, 0.76), w);
+    t = t.toVar();
     // here and there a patch of something darker and bluer: clover, sedge
     const c = this.noiseHi(xz.div(13).add(0.61), v).g;
     return t.mul(mix(vec3(1), vec3(0.72, 0.87, 0.96), smoothstep(0.6, 0.72, c)));
@@ -231,20 +232,20 @@ export class RefField {
   paintCells(x: N): N {
     const n = floor(x);
     const f = x.sub(n);
-    let d1: N = float(8);
-    let d2: N = float(8);
-    let id: N = n;
+    let d1: N = float(8).toVar();
+    let d2: N = float(8).toVar();
+    let id: N = n.toVar();
     for (let j = -1; j <= 1; j++) {
       for (let i = -1; i <= 1; i++) {
         const c = vec2(i, j);
         const r = c.add(hash42f(n.add(c)).xy).sub(f);
-        const d = dot(r, r);
-        const lt1 = d.lessThan(d1);
-        const lt2 = d.lessThan(d2);
+        const d = dot(r, r).toVar();
+        const lt1 = d.lessThan(d1).toVar();
+        const lt2 = d.lessThan(d2).toVar();
         const nd2 = select(lt1, d1, select(lt2, d, d2));
-        id = select(lt1, n.add(c), id);
-        d1 = select(lt1, d, d1);
-        d2 = nd2;
+        id = select(lt1, n.add(c), id).toVar();
+        d1 = select(lt1, d, d1).toVar();
+        d2 = nd2.toVar();
       }
     }
     const h = hash42f(id.add(0.37));
@@ -259,16 +260,20 @@ export class RefField {
     const r = distance(world.xz, this.uHeroEye.xz);
     // not at your feet, where the blades are the brushwork; not past the plain; not behind the start, where the
     // picture's two edges meet
-    const k = smoothstep(70, 150, dist)
+    let k: N = smoothstep(70, 150, dist)
       .mul(float(1).sub(smoothstep(2200, 3600, r)))
       .mul(float(1).sub(smoothstep(2.1, 2.8, abs(q.x))));
-    const px = max(w.x, w.y);
+    k = k.toVar();
+    let px: N = max(w.x, w.y);
+    px = px.toVar();
     // soft patches of three greens at two sizes, and long strokes of them lying level
-    const soft = k.mul(float(1).sub(smoothstep(0.0015, 0.005, px)));
-    const vv = this.noiseHi(q.div(0.42).add(0.2), false)
+    let soft: N = k.mul(float(1).sub(smoothstep(0.0015, 0.005, px)));
+    soft = soft.toVar();
+    let vv: N = this.noiseHi(q.div(0.42).add(0.2), false)
       .r.mul(0.4)
       .add(this.noiseHi(q.div(0.15).add(0.6), false).g.mul(0.3))
       .add(this.noiseHi(vec2(q.x.div(0.5), q.y.div(0.07)).add(0.4), false).b.mul(0.3));
+    vv = vv.toVar();
     let out: N = g.mul(
       mix(
         vec3(1),
@@ -279,11 +284,16 @@ export class RefField {
           .mul(0.9),
       ),
     );
+    out = out.toVar();
     out = out.mul(mix(vec3(1), vec3(1.34, 1.15, 0.8), smoothstep(0.53, 0.59, vv).mul(soft).mul(0.9)));
+    out = out.toVar();
     // clumps of rough grass, gathered into masses as the woods on the hills are
-    const coarse = k.mul(float(1).sub(smoothstep(0.3, 0.7, px.mul(70)))).mul(smoothstep(0.016, 0.03, px.mul(70)));
-    const t = this.paintCells(q.mul(70));
-    const mass = smoothstep(0.48, 0.56, this.noiseHi(q.div(0.3).add(0.7), false).a);
+    let coarse: N = k.mul(float(1).sub(smoothstep(0.3, 0.7, px.mul(70)))).mul(smoothstep(0.016, 0.03, px.mul(70)));
+    coarse = coarse.toVar();
+    let t: N = this.paintCells(q.mul(70));
+    t = t.toVar();
+    let mass: N = smoothstep(0.48, 0.56, this.noiseHi(q.div(0.3).add(0.7), false).a);
+    mass = mass.toVar();
     out = out.mul(
       mix(
         vec3(1),
@@ -293,12 +303,17 @@ export class RefField {
           .mul(coarse),
       ),
     );
+    out = out.toVar();
     // dabs: a darker tuft, a fleck of sun, a few flowers
-    const fine = k.mul(float(1).sub(smoothstep(0.3, 0.7, px.mul(220)))).mul(smoothstep(0.05, 0.09, px.mul(220)));
+    let fine: N = k.mul(float(1).sub(smoothstep(0.3, 0.7, px.mul(220)))).mul(smoothstep(0.05, 0.09, px.mul(220)));
+    fine = fine.toVar();
     const c = this.paintCells(q.mul(220));
-    const dab = smoothstep(0.1, 0.22, c.x).mul(fine);
+    let dab: N = smoothstep(0.1, 0.22, c.x).mul(fine);
+    dab = dab.toVar();
     out = out.mul(mix(vec3(1), vec3(0.72, 0.85, 0.92), dab.mul(step(0.8, c.y))));
+    out = out.toVar();
     out = out.mul(mix(vec3(1), vec3(1.26, 1.13, 0.84), dab.mul(step(c.y, 0.15))));
+    out = out.toVar();
     const petal = select(c.z.greaterThan(0.985), vec3(0.88, 0.86, 0.78), vec3(0.86, 0.8, 0.4));
     return mix(out, petal, smoothstep(0.3, 0.42, c.x).mul(fine).mul(step(0.965, c.z)).mul(0.6));
   }
@@ -318,12 +333,16 @@ export class RefField {
 
   /** Vài nét mảnh dài theo đường đồng mức, vài nét sáng hơn cỏ, vài nét đậm hơn. x = strokeCoord, w = fwidth(x). */
   landStrokes(g: N, xz: N, dist: N, x: N, w: N): N {
-    const far = smoothstep(70, 170, dist).mul(float(1).sub(smoothstep(2600, 4600, dist)));
-    const line = float(1).sub(smoothstep(1.5, 3.2, abs(fract(x).sub(0.5)).div(max(w, 1e-5))));
+    let far: N = smoothstep(70, 170, dist).mul(float(1).sub(smoothstep(2600, 4600, dist)));
+    far = far.toVar();
+    let line: N = float(1).sub(smoothstep(1.5, 3.2, abs(fract(x).sub(0.5)).div(max(w, 1e-5))));
+    line = line.toVar();
     const id = floor(x);
     // only here and there, and each for a different length
-    const here = smoothstep(0.45, 0.53, this.noiseHi(xz.div(340).add(id.mul(0.37)), false).b);
-    const k = line.mul(here).mul(far);
+    let here: N = smoothstep(0.45, 0.53, this.noiseHi(xz.div(340).add(id.mul(0.37)), false).b);
+    here = here.toVar();
+    let k: N = line.mul(here).mul(far);
+    k = k.toVar();
     // most are pale, as a track or a line of sunlit grass is; some are a deeper green
     return select(
       fract(id.mul(0.618)).lessThan(0.62),
@@ -336,24 +355,29 @@ export class RefField {
   paintGround(g: N, xz: N, dist: N): N {
     // at your feet, the brush's dabs, the same the blades take their tone from; gone by a hundred metres
     const nearK = float(1).sub(smoothstep(40, 110, dist));
-    const t0 = this.strokes(xz.div(6), false)
+    let t0: N = this.strokes(xz.div(6), false)
       .r.sub(0.5)
       .mul(0.5)
       .add(this.strokes(vec2(xz.y, xz.x).div(27).add(0.37), false).r.sub(0.5).mul(0.7))
       .add(this.strokes(xz.div(95).add(0.11), false).r.sub(0.5).mul(0.9))
       .mul(0.7)
       .mul(nearK);
+    t0 = t0.toVar();
     const farK = float(1).sub(nearK);
     // beyond, one slow change of green across the land,
-    const t = t0.add(this.noiseHi(xz.div(1100).add(0.2), false).r.sub(0.5).mul(0.5).mul(farK));
+    let t: N = t0.add(this.noiseHi(xz.div(1100).add(0.2), false).r.sub(0.5).mul(0.5).mul(farK));
+    t = t.toVar();
     let out: N = g
       .mul(float(1).add(t.mul(0.5)))
       .mul(mix(vec3(0.9, 1.0, 1.1), vec3(1.1, 1.03, 0.84), clamp(float(0.5).add(t.mul(1.4)), 0, 1)));
+    out = out.toVar();
     // and on it, as on the far hills, soft patches at two sizes
-    const v = this.noiseHi(xz.div(520).add(0.2), false)
+    let v: N = this.noiseHi(xz.div(520).add(0.2), false)
       .g.mul(0.58)
       .add(this.noiseHi(xz.div(170).add(0.61), false).b.mul(0.42));
+    v = v.toVar();
     out = out.mul(mix(vec3(1), vec3(1.26, 1.13, 0.76), smoothstep(0.5, 0.62, v).mul(farK).mul(0.4)));
+    out = out.toVar();
     out = out.mul(
       mix(
         vec3(1),
@@ -364,9 +388,11 @@ export class RefField {
           .mul(0.4),
       ),
     );
+    out = out.toVar();
     // a few tufts of longer grass standing darker in it: short dashes lying across the view, on the nearer ground only
     const q = vec2(dot(xz, vec2(this.uFloor.y.negate(), this.uFloor.x)).div(130), dot(xz, this.uFloor.xy).div(64));
-    const tuft = float(1).sub(smoothstep(0.13, 0.2, this.strokes(q, false).r));
+    let tuft: N = float(1).sub(smoothstep(0.13, 0.2, this.strokes(q, false).r));
+    tuft = tuft.toVar();
     out = out.mul(
       mix(
         vec3(1),
@@ -377,6 +403,7 @@ export class RefField {
           .mul(0.6),
       ),
     );
+    out = out.toVar();
     // (a far meadow in the sun is a lighter, yellower green than the grass at your feet, which you see into)
     return out.mul(mix(vec3(1), vec3(1.16, 1.1, 0.9), farK));
   }
