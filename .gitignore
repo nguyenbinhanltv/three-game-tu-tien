@@ -19,3 +19,6 @@ tripo-out/
 
 __pycache__/
 *.pyc
+
+# Cache asset kéo từ R2 (pnpm assets:pull), sinh lại được.
+.asset-cache/

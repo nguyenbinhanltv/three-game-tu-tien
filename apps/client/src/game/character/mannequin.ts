@@ -93,6 +93,7 @@ import UAL_HIT from './ualHit.json';
 import type { AnimState, AttackOpts, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
 import { FLAGS } from '../../base/flags';
 import { logger } from '../../base/log';
+import { ASSET_BASE } from '../../base/assetBase';
 
 const modelsLog = logger('models');
 const thienYLog = logger('thienY');
@@ -786,7 +787,7 @@ export class MannequinCharacter implements CharacterView {
     if (FLAGS.cloth && !shadow && oldCloth.length) {
       try {
         // Texture đã bake (tools/asset-pipeline/src/thienybake.ts) nếu có; chưa có thì vải màu trơn.
-        const map = new THREE.TextureLoader().load(`/thien_y/${tpl.handle.id}.png`, undefined, undefined, () => undefined);
+        const map = new THREE.TextureLoader().load(`${ASSET_BASE}thien_y/${tpl.handle.id}.png`, undefined, undefined, () => undefined);
         map.colorSpace = THREE.SRGBColorSpace;
         map.flipY = false;
         this.cloth = new ClothRig(this.rig, this.root, tpl.height, oldCloth, { map });
