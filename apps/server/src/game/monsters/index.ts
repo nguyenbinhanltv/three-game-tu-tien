@@ -1,18 +1,17 @@
 // Quái (R-7): AI từng tick, hồi sinh, vùng nổ (Hazard), đạn, sát thương/chết/rơi đồ của quái, pha và thế của boss.
 // Tách nguyên văn từ GameSim, chỉ nhận giao diện hẹp `MonsterCtx`; sát thương lên người vẫn qua damagePlayer của sim.
+import { tickMonsterImpl } from './tickMonster';
+import { tickHazardsImpl } from './tickHazards';
+import { tickBoltsImpl } from './tickBolts';
 import { noteDealt } from '../matchstats';
 import {
   BOLT_MAX_LIFE,
   BOLT_MAX_LIVE,
-  boltBlockedAt,
-  BOLT_HEIGHT,
   type CollisionSet,
   slideOut,
   boltLift,
   type BoltEndMsg,
-  boltHits,
   type BoltMsg,
-  boltXZ,
   boltYaws,
   chargeFromDealt,
   bossPhaseAt,
@@ -31,10 +30,8 @@ import {
   elemCounter,
   STAT_CAPS,
   counterMul,
-  hazardHit,
   type HazardGeom,
   type HazardMsg,
-  inHazard,
   isHeavyHit,
   BOSS_STAGGER_GAP_MS,
   monsterReaction,
@@ -51,7 +48,6 @@ import {
   monsterStats,
   monsterXp,
   phaseRules,
-  postureDecay,
   postureGain,
   QUALITY_THAN,
   MS_ATTACK,
@@ -62,15 +58,11 @@ import {
   S,
   type SpawnDef,
   type SysMsg,
-  buffMag,
   vulnerableDamage,
-  WATER_Y,
   xpLevelFactor,
   type BossTimerMsg,
   markAmp,
   MARK_DOT_MS,
-  marksPrune,
-  packMarks,
 } from '@dtl/shared';
 import { type GuardCfg } from '../trib';
 import { ITEM_SYS, ITEMS, itemName, MARK, MONSTER, monsterName, t } from '@dtl/content';
@@ -97,7 +89,7 @@ import type { ThanTangSystem } from '../thantang';
 import type { TribSystem } from '../trib';
 import type { MonZones } from '../monzone';
 
-import { at, mergeSlow } from '@dtl/shared';
+import { mergeSlow } from '@dtl/shared';
 /** Bộ trang bị (P3-4): hệ số tốc độ của quái bị làm chậm (thường / boss). */
 const SET_SLOW_MUL = 0.5;
 const SET_SLOW_BOSS = 0.8;
@@ -107,7 +99,6 @@ const SLOT_HOLD_MS = 5000;
 const SLOT_REST_MS = 1500;
 /** Quái chỉ giành ô khi đã ở gần mục tiêu trong khoảng này (mét, ngoài tầm đánh). */
 const SLOT_CLAIM_DIST = 4;
-const _bp = { x: 0, z: 0 };
 const boltCount = (c: MonsterCaster) => Math.max(1, Math.min(5, c.n ?? 1));
 
 /** Phần GameSim mà hệ quái cần. */
@@ -168,7 +159,7 @@ const BLOCK_PROGRESS = 1;
 const BLOCK_GAP_MS = 600;
 
 export class MonsterSystem {
-  constructor(private readonly c: MonsterCtx) {}
+  constructor(readonly c: MonsterCtx) {}
 
   /** sid người chơi → id quái đang giữ ô cận chiến của người đó. */
   meleeSlot = new Map<string, string>();
@@ -501,7 +492,7 @@ export class MonsterSystem {
   }
 
   /** Nổ các nhịp `dot` của ấn trên `m`. Trả true nếu `m` chết vì nhịp này (nơi gọi dừng xử lý con này). */
-  private tickMarkDots(m: MonEnt): boolean {
+  tickMarkDots(m: MonEnt): boolean {
     const now = this.c.now;
     // Duyệt bản sao: sát thương có thể làm quái chết và xóa sạch `m.marks`.
     for (const mk of [...m.marks]) {
@@ -801,7 +792,7 @@ export class MonsterSystem {
    * Quái bị vật rắn (cây, đá, tường, phiến đá người đang đứng trên) giữ lại liên tục ≥ `BLOCK_STALL_MS` mà vẫn ngoài tầm đánh và không tiến gần mục tiêu
    * ≥ `BLOCK_PROGRESS` m: coi là không với tới, dùng chung nhánh `unreachableSince` → `evadeUntil` (không đứng ép vật mãi cho người đánh xa an toàn).
    */
-  private blockedStall(m: MonEnt, d: number, reach: number): boolean {
+  blockedStall(m: MonEnt, d: number, reach: number): boolean {
     if (!m.slideSince || this.c.now - m.slideLast > BLOCK_GAP_MS) return false;
     if (d <= reach) return false;
     return this.c.now - m.slideSince > BLOCK_STALL_MS && d > m.slideD0 - BLOCK_PROGRESS;
@@ -998,218 +989,7 @@ export class MonsterSystem {
   }
 
   tickMonster(m: MonEnt, dt: number): void {
-    if (m.state === MS_DEAD) {
-      if (m.camp) return;
-      if (m.spawn) {
-        if (this.c.now >= m.respawnAt) this.respawnMonster(m);
-      } else if (this.c.now >= m.removeAt) {
-        this.removeMonster(m);
-      }
-      return;
-    }
-    const def = m.def;
-    if (m.poison) {
-      if (this.c.now >= m.poison.until) m.poison = undefined;
-      else if (this.c.now >= m.poison.nextAt) {
-        m.poison.nextAt += 1000;
-        const owner = this.c.players.get(m.poison.sid) ?? null;
-        this.damageMonster(m, m.poison.per, owner, false, false, false, 0, true);
-        if (owner) this.c.resDot(owner);
-        if (m.state === MS_DEAD) return;
-      }
-    }
-    // Ấn hết hạn (VS-2c): dọn và cập nhật gói bit đồng bộ.
-    if (m.marks.length && marksPrune(m.marks, this.c.now)) m.s.mk = packMarks(m.marks, this.c.now);
-    // TN-2: ấn có sát thương theo thời gian (Hồn ấn). Mỗi nhịp: sát thương = `per` × số tầng, người đặt rút máu và tích tài nguyên.
-    if (m.marks.length && this.tickMarkDots(m)) return;
-    if (m.state === MS_IDLE) {
-      if (this.c.now >= m.thinkAt) {
-        m.thinkAt = this.c.now + 400;
-        let best: PlayerEnt | null = null;
-        let bestD = def.aggro * def.aggro;
-        for (const p of this.c.players.values()) {
-          if (this.c.isDead(p) || this.c.soul.isScouting(p) || (m.owner && p.sid !== m.owner)) continue;
-          const dx = p.move.x - m.s.x;
-          const dz = p.move.z - m.s.z;
-          const dy = p.move.y - m.s.y;
-          const d2 = dx * dx + dz * dz + dy * dy;
-          if (d2 < bestD) {
-            bestD = d2;
-            best = p;
-          }
-        }
-        if (best) {
-          m.target = best.sid;
-          m.unreachableSince = 0;
-          this.setMonState(m, MS_CHASE);
-          return;
-        }
-      }
-      if (this.c.now >= m.wanderAt) {
-        m.wanderAt = this.c.now + 4000 + Math.random() * 7000;
-        if (!def.boss) {
-          const a = Math.random() * Math.PI * 2;
-          const r = 3 + Math.random() * 7;
-          const wx = m.homeX + Math.cos(a) * r;
-          const wz = m.homeZ + Math.sin(a) * r;
-          if (this.c.terrain.heightAt(wx, wz) > WATER_Y + 0.3) {
-            m.wx = wx;
-            m.wz = wz;
-          }
-        }
-      }
-      if (Math.abs(m.wx - m.s.x) > 0.3 || Math.abs(m.wz - m.s.z) > 0.3) this.moveToward(m, m.wx, m.wz, def.speed * 0.35, dt);
-      return;
-    }
-    if (m.state === MS_RETURN) {
-      const left = this.moveToward(m, m.homeX, m.homeZ, def.speed * 1.6, dt);
-      if (m.s.hp < m.s.mhp) m.s.hp = Math.min(m.s.mhp, m.s.hp + Math.ceil(m.s.mhp * 0.25 * dt));
-      // Hồi đầy máu thì trận mới bắt đầu lại từ pha đầu.
-      if (m.s.hp >= m.s.mhp) this.setPhase(m, 0);
-      if (left < 0.5) {
-        if (def.boss) {
-          // Boss về tới chỗ: đầy máu, trận sau bắt đầu lại từ pha đầu (cả khi cả đội chết ngay cạnh chỗ sinh).
-          m.s.hp = m.s.mhp;
-          this.setPhase(m, 0);
-        }
-        m.threat.clear();
-        m.wx = m.homeX;
-        m.wz = m.homeZ;
-        this.setMonState(m, MS_IDLE);
-      }
-      return;
-    }
-    // CHASE / ATTACK
-    const ps = def.posture;
-    if (ps && m.posture > 0) {
-      m.posture = postureDecay(ps, m.posture, (this.c.now - m.lastHitAt) / 1000, dt);
-      this.syncPosture(m);
-    }
-    if (m.stunUntil) {
-      if (this.c.now < m.stunUntil) return;
-      // Khựng do đòn (S1) hết thì đánh lại ngay; chỉ choáng thật (ngắt chú, phá thế, choáng chiêu) mới chậm nhịp 600 ms.
-      const onlyStagger = m.stunUntil === m.staggerUntil;
-      m.stunUntil = 0;
-      this.setMonFlags(m, 0, 0);
-      if (!onlyStagger) m.attackAt = Math.max(m.attackAt, this.c.now + 600);
-    }
-    if (m.taunt) {
-      const tp = this.c.players.get(m.taunt.sid);
-      if (this.c.now >= m.taunt.until || !tp || this.c.isDead(tp)) m.taunt = undefined;
-      else if (m.target !== tp.sid) {
-        m.target = tp.sid;
-        this.resetTargetAi(m);
-      }
-    }
-    let target = this.c.players.get(m.target);
-    if (!target || this.c.isDead(target) || this.c.soul.isScouting(target)) {
-      // Chuyển sang kẻ gây sát thương nhiều nhất còn sống.
-      target = undefined;
-      let top = 0;
-      for (const [sid, v] of m.threat) {
-        const q = this.c.players.get(sid);
-        if (q && !this.c.isDead(q) && !this.c.soul.isScouting(q) && v > top && Math.hypot(q.move.x - m.s.x, q.move.z - m.s.z) < 50) {
-          top = v;
-          target = q;
-        }
-      }
-      if (!target) {
-        m.target = '';
-        this.setMonState(m, MS_RETURN);
-        return;
-      }
-      // Đổi mục tiêu: hủy chú đang đọc/đòn đôi đang dở, người mới phải được báo trước từ đầu.
-      this.resetTargetAi(m);
-      m.target = target.sid;
-    }
-    const leash = def.boss ? 80 : LEASH;
-    const dx = target.move.x - m.s.x;
-    const dz = target.move.z - m.s.z;
-    const d = Math.sqrt(dx * dx + dz * dz);
-    const dy = target.move.y - m.s.y;
-    if ((!m.owner && this.homeDist(m) > leash) || d > 70) {
-      m.target = '';
-      this.setMonState(m, MS_RETURN);
-      return;
-    }
-    if (m.comboAt && this.c.now >= m.comboAt) this.resolveCombo(m);
-    const reach = def.attackRange + 0.4;
-    const stalled = this.blockedStall(m, d, reach);
-    const reachable = dy < 3.5 + def.scale * 1.5 && !stalled;
-    if (!reachable) {
-      if (!m.unreachableSince) m.unreachableSince = this.c.now;
-      if (stalled || this.c.now - m.unreachableSince > 5000) {
-        // Mục tiêu đứng ở chỗ không với tới: bỏ đuổi, hồi đầy và miễn sát thương một lúc.
-        m.target = '';
-        m.threat.clear();
-        m.unreachableSince = 0;
-        m.slideSince = 0;
-        m.s.hp = m.s.mhp;
-        this.setPhase(m, 0);
-        m.evadeUntil = this.c.now + 6000;
-        this.setMonState(m, MS_RETURN);
-        return;
-      }
-    } else {
-      m.unreachableSince = 0;
-    }
-    const ai = m.rules.ai;
-    this.c.monSkills.face(m);
-    this.c.monSkills.armor(m);
-    if (!m.windUntil && this.c.monSkills.tick(m, target, d, reachable, dt)) return;
-    if (m.windUntil) {
-      // Đang vung chiêu chém vùng: đứng yên, giữ hướng đã khóa cho khớp vùng báo trước.
-      if (this.c.now < m.windUntil) {
-        this.setMonState(m, MS_ATTACK);
-        return;
-      }
-      m.windUntil = 0;
-    }
-    const chant = ai.chant;
-    if (chant && this.tickChant(m, chant, target, d, reachable)) return;
-    const sweep = ai.sweep;
-    if (sweep && reachable && !m.comboAt) {
-      if (!m.sweepAt) m.sweepAt = this.c.now + sweep.cd * 500;
-      else if (this.c.now >= m.sweepAt && d <= sweep.r * 0.85) {
-        this.startSweep(m, target, sweep);
-        return;
-      }
-    }
-    const caster = ai.caster;
-    if (caster) {
-      this.tickCaster(m, target, caster, d, reachable, dt);
-    } else if (!def.boss && !this.holdsMeleeSlot(m, target, d, reach)) {
-      this.orbit(m, target, d, reach, dt);
-    } else if (d > reach) {
-      this.moveToward(m, target.move.x, target.move.z, def.speed * m.rules.speedMul, dt);
-      this.setMonState(m, MS_CHASE);
-    } else {
-      m.s.yaw = Math.atan2(dx, dz);
-      this.setMonState(m, MS_ATTACK);
-      if (reachable && this.c.now >= m.attackAt && !m.comboAt) {
-        m.attackAt = this.c.now + def.attackCd * m.rules.cdMul * 1000;
-        const { dmg } = computeDamage(m.atk, 1, target.char.def, Math.random(), 1);
-        this.c.fx({ t: 'bite', src: m.id, dst: target.sid });
-        this.c.damagePlayer(target, dmg, m.id);
-        const combo = ai.combo;
-        if (combo && !this.c.isDead(target) && Math.random() < combo.chance) {
-          m.comboAt = this.c.now + combo.delay * 1000;
-          m.comboTarget = target.sid;
-        }
-      }
-    }
-    const slam = ai.slam;
-    if (slam && this.c.now >= m.abilityAt) {
-      m.abilityAt = this.c.now + slam.cd * 1000;
-      // Chiêu diện rộng báo trước dưới chân từng người: né ra khỏi vòng.
-      let n = 0;
-      for (const p of this.c.players.values()) {
-        if (this.c.isDead(p) || n >= slam.max) continue;
-        if (Math.hypot(p.move.x - m.s.x, p.move.z - m.s.z) > 45) continue;
-        this.addHazard({ x: p.move.x, z: p.move.z, r: slam.r }, slam.delay, slam.mul, false, slam.kind, m.id, m.atk);
-        n++;
-      }
-    }
+    tickMonsterImpl(this, m, dt);
   }
 
   // ---------- vùng nguy hiểm (thiên lôi, chiêu boss) ----------
@@ -1275,71 +1055,7 @@ export class MonsterSystem {
   }
 
   tickHazards(): void {
-    const hitGrp = new Set<string>();
-    for (let i = this.c.hazards.length - 1; i >= 0; i--) {
-      const h = at(this.c.hazards, i);
-      if (this.c.now < h.at) continue;
-      this.c.hazards.splice(i, 1);
-      // Quái thả vùng đã chết hoặc đang bỏ đuổi (miễn sát thương) thì vùng không gây sát thương.
-      if (h.mon && (h.mon.state === MS_DEAD || h.mon.state === MS_RETURN || !this.c.monById.has(h.mon.id))) continue;
-      // Vạch chỉ để báo (gọi đệ tử): không sát thương.
-      if (h.dmg <= 0 && !h.pct) continue;
-      // Tia khóa mệnh có hộ pháp: hộ pháp chỉ chịu phần chắn thay (shareToGuards), không ăn thêm đòn của vòng.
-      const guards = h.guard && h.lock ? this.c.pickGuards(h) : null;
-      for (const p of this.c.players.values()) {
-        if (this.c.isDead(p)) continue;
-        if (guards?.includes(p)) continue;
-        // Tia cuối khóa mệnh: chủ kiếp luôn trúng (không né bằng chạy hay bay); người khác chỉ trúng khi đứng trong vòng.
-        // Chỉ khi kiếp còn chạy: chết/hồi sinh/hủy kiếp trước lúc nổ thì tia mất khóa và rơi về kiểm vị trí.
-        const locked = !!h.lock && h.src === p.sid && !!p.trib;
-        const reached = !!h.reach && h.src === p.sid && !!p.trib;
-        if (!locked && !reached && !inHazard(h, p.move.x, p.move.z)) continue;
-        if (!locked && !reached && p.move.y - this.c.terrain.groundAt(p.move.x, p.move.z) > 8) continue;
-        if (h.grp) {
-          const key = h.grp + ':' + p.sid;
-          if (hitGrp.has(key)) continue;
-          hitGrp.add(key);
-        }
-        let n =
-          h.atk > 0
-            ? computeDamage(h.atk, h.dmg, p.char.def, Math.random(), 1).dmg
-            : h.pct
-              ? p.char.mhp *
-                h.dmg *
-                (h.lock
-                  ? 1 - Math.min(this.c.lockCut(h, p).max, buffMag(p.char.meta.buffs, 'def', Date.now()) * this.c.lockCut(h, p).mul)
-                  : 1)
-              : Math.max(1, h.dmg - p.char.def * 0.6);
-        if (h.mon) {
-          // Vùng của quái: trong cửa sổ HAZARD_IFRAME chỉ chịu vùng mạnh nhất (chống dồn đòn).
-          const r = hazardHit(Math.max(1, Math.round(n)), p.hazardWin.until, p.hazardWin.taken, this.c.now);
-          p.hazardWin.until = r.until;
-          p.hazardWin.taken = r.taken;
-          if (r.dmg <= 0) {
-            this.c.emit(S.DMG, { dst: p.sid, n: 0, src: h.src } satisfies DmgMsg);
-            continue;
-          }
-          n = r.dmg;
-        }
-        // Thiên kiếp của người khác: đứng trong vòng vẫn trúng đòn, nhưng không chết vì kiếp của người khác (dừng ở 1 khí huyết).
-        // Nếu không, độ kiếp ở sân tông môn giết oan người mới và người treo máy (mất tu vi), kể cả khi chủ kiếp đã rớt mạng.
-        if (!h.mon && h.src !== p.sid) {
-          n = Math.min(n, p.char.hp - 1);
-          if (n <= 0) continue;
-        }
-        // Trận môn khắc chế (Thiên Nhân Kiếp, E4-D): đứng trong vòng lúc nổ thì giảm `cut`, báo cờ `ke`.
-        let ke: 1 | undefined;
-        if (h.seal && Math.hypot(p.move.x - h.seal.x, p.move.z - h.seal.z) <= h.seal.r) {
-          n *= 1 - h.seal.cut;
-          ke = 1;
-        }
-        // Tia khóa mệnh: thế thân thần niệm còn sống chắn thay một phần, rồi hộ pháp chắn phần của mình (tính trên sát thương gốc).
-        const full = n;
-        if (locked && h.lock) n -= this.c.tribSys.cloneAbsorb(p, n);
-        if (h.guard && locked) n -= this.c.shareToGuards(p, full, h);
-        this.c.damagePlayer(p, n, h.src, true, ke);
-      }
-    }
+    tickHazardsImpl(this);
   }
 
   /**
@@ -1389,55 +1105,7 @@ export class MonsterSystem {
   }
 
   tickBolts(): void {
-    for (let i = this.c.bolts.length - 1; i >= 0; i--) {
-      const b = at(this.c.bolts, i);
-      const m = b.mon;
-      // Quái bắn đã chết, đã bị gỡ, hoặc đang bỏ đuổi (hồi đầy + miễn sát thương): đạn tan, không gây sát thương.
-      if (m.state === MS_DEAD || m.state === MS_RETURN || !this.c.monById.has(m.id)) {
-        this.endBolt(i, b.px, b.pz);
-        continue;
-      }
-      const t = Math.min(this.c.now, b.endAt);
-      boltXZ(b.x0, b.z0, b.yaw, b.v, (t - b.t0) / 1000, _bp);
-      // Vật cản trên đường quét: rút ngắn đoạn tới chỗ chạm trước khi xét người (không trúng người sau tường).
-      const bt = boltBlockedAt(b.px, b.pz, _bp.x, _bp.z, b.r, this.c.collision, this.c.terrain.groundAt(b.px, b.pz) + BOLT_HEIGHT + b.lift);
-      if (bt >= 0) {
-        _bp.x = b.px + (_bp.x - b.px) * bt;
-        _bp.z = b.pz + (_bp.z - b.pz) * bt;
-      }
-      let hit: PlayerEnt | null = null;
-      let best = Infinity;
-      for (const p of this.c.players.values()) {
-        if (this.c.isDead(p)) continue;
-        if (!boltHits(b.px, b.pz, _bp.x, _bp.z, b.r, b.lift, p.move.x, p.move.y, p.move.z)) continue;
-        // Nhiều người trên đường bay: trúng người gần điểm xuất phát tick này nhất.
-        const dd = (p.move.x - b.px) ** 2 + (p.move.z - b.pz) ** 2;
-        if (dd < best) {
-          best = dd;
-          hit = p;
-        }
-      }
-      if (hit) {
-        this.endBolt(i, hit.move.x, hit.move.z, hit.sid);
-        const n = computeDamage(b.atk, b.mul, hit.char.def, Math.random(), 1).dmg;
-        // Chung cửa sổ miễn với vùng nổ của quái: nhiều quái bắn trúng cùng lúc chỉ tính đòn mạnh nhất
-        // (giữ cân bằng cũ khi đổi Kiếm Linh từ vùng chữ nhật sang đạn).
-        const r = hazardHit(Math.max(1, Math.round(n)), hit.hazardWin.until, hit.hazardWin.taken, this.c.now);
-        hit.hazardWin.until = r.until;
-        hit.hazardWin.taken = r.taken;
-        if (r.dmg <= 0) this.c.emit(S.DMG, { dst: hit.sid, n: 0, src: m.id } satisfies DmgMsg);
-        else this.c.damagePlayer(hit, r.dmg, m.id, true);
-        continue;
-      }
-      if (bt >= 0) {
-        this.endBolt(i, _bp.x, _bp.z);
-        continue;
-      }
-      b.px = _bp.x;
-      b.pz = _bp.z;
-      // Hết hạn: client tự tắt theo `life`, không cần gửi tin.
-      if (this.c.now >= b.endAt) this.c.bolts.splice(i, 1);
-    }
+    tickBoltsImpl(this);
   }
 
   // ---------- độ kiếp ----------
