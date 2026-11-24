@@ -1,8 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { heightAt, LAKE, PORTAL_PAD, SECT, VALLEY, WATER_Y } from '@dtl/shared';
+import { bridgeModel, cauTreoDeckY, heightAt, LAKE, VAN_LAM, PORTAL_PAD, SECT, VALLEY, WATER_Y } from '@dtl/shared';
 import { pathPolylines } from '../../render/groundMask';
 import { shorePoints } from '../audio/soundscape';
 import { ROCK_SLOPE, SURFACES, surfaceAt, WOOD_ZONES } from './surface';
+
+describe('surfaceAt: cầu treo Lạc Kiếm', () => {
+  const m = bridgeModel(VAN_LAM.groundAt);
+  const mid = { x: (m.ax + m.bx) / 2, z: (m.az + m.bz) / 2 };
+  it('trên ván là gỗ (có cao độ chân), dưới đáy hác ngay dưới cầu không phải gỗ', () => {
+    expect(surfaceAt(mid.x, mid.z, 'van_lam', cauTreoDeckY(m, 0.5))).toBe('wood');
+    expect(surfaceAt(mid.x, mid.z, 'van_lam', heightAt(mid.x, mid.z))).not.toBe('wood');
+  });
+  it('không biết cao độ thì coi trên ván; ngoài dải cầu không phải gỗ; bí cảnh luôn đá', () => {
+    expect(surfaceAt(mid.x, mid.z)).toBe('wood');
+    expect(surfaceAt(mid.x + 6, mid.z)).not.toBe('wood');
+    expect(surfaceAt(mid.x, mid.z, 'kiem_trung')).toBe('stone');
+  });
+});
 
 describe('surfaceAt', () => {
   it('sân tông môn, bệ cổng bí cảnh và bậc thang là đá', () => {

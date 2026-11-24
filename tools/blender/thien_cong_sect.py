@@ -84,7 +84,7 @@ def build_sect():
             b.box(x, 0.07 + lift, z, 2.86, 0.1, 3.86, kit.JADE if (k + col) % 2 == 0 else kit.JADE_SHADE)
     for sx in (-1, 1):
         b.box(sx * 6.4, 0.07, 22, 0.8, 0.14, 108, kit.JADE_GREEN)
-    P('prop_bat_quai', 0, 0.02, 18, scale=3.4)
+    P('prop_bat_quai', 0, 0.02, 18)  # dựng đúng cỡ (bán kính 10,2 m), không nhân tỉ lệ
 
     # ----- Chính điện Thiên Kiếm (0,-44) -----
     P('dien_lon', 0, 0, -44)

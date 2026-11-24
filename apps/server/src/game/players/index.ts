@@ -6,6 +6,7 @@ import {
   newDodgeBank,
   PLAYER_STAGGER_GAP_MS,
   planDash,
+  standingY,
   playerReaction,
   type HitTier,
   caveBoundOf,
@@ -334,7 +335,7 @@ export class PlayerSystem {
     if (plan.dist < 0.05) return;
     p.move.x = plan.x;
     p.move.z = plan.z;
-    p.move.y = this.c.terrain.groundAt(plan.x, plan.z);
+    p.move.y = standingY(this.c.terrain, collisionOf(this.c.level), plan.x, plan.z, plan.y);
     p.move.vy = 0;
     p.move.grounded = true;
     p.inputs?.splice(0);

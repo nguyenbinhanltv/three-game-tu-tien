@@ -68,6 +68,8 @@ export interface DashPlan {
   /** Điểm đến (đã dừng trước vật cản, vách, hay mục tiêu). */
   x: number;
   z: number;
+  /** Cao độ chân tại điểm đến theo mô phỏng `stepMove` (ván cầu/bậc nó thực sự đi qua; đáy hác nếu bắt đầu từ đáy). Nơi đặt lại y của người chơi dùng `standingY(..., plan.y)`. */
+  y: number;
   /** Quãng đã đi (m). */
   dist: number;
   /** true nếu dừng sớm hơn dự định (vật cản, dốc đứng, mép bản đồ, mục tiêu). */
@@ -135,7 +137,7 @@ export function planDash(
     }
     moved += run;
   }
-  return { x: s.x, z: s.z, dist: Math.min(moved, dist), blocked };
+  return { x: s.x, z: s.z, y: s.y, dist: Math.min(moved, dist), blocked };
 }
 
 /**
