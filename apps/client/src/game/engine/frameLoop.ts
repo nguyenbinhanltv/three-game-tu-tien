@@ -435,9 +435,12 @@ function updateCamera(eng: Game, dt: number): void {
     const kk = Math.min(1, dt * 3);
     iso.lead.x += (ld.x - iso.lead.x) * kk;
     iso.lead.z += (ld.z - iso.lead.z) * kk;
-    // Đang giao chiến (có mục tiêu, tự đánh, vừa ra đòn trong 4 s, hoặc có quái sống trong 10 m): bỏ điểm ngắm cảnh, giữ camera khóa 52° để ngắm chiêu chính xác.
+    // Đang giao chiến (có mục tiêu trong 12 m, tự đánh, vừa ra đòn trong 4 s, hoặc có quái sống trong 10 m): bỏ điểm ngắm cảnh, giữ camera khóa 52° để ngắm chiêu chính xác.
     const lh = eng.lastHit.get(eng.sid);
-    let combat = !!eng.targetId || eng.autoAttack || (!!lh && performance.now() - lh.at < 4000);
+    let combat =
+      (!!eng.targetId && eng.ents.chestOf(eng.targetId, _v) && Math.hypot(_v.x - rp.x, _v.z - rp.z) < 12) ||
+      eng.autoAttack ||
+      (!!lh && performance.now() - lh.at < 4000);
     if (!combat)
       for (const m of eng.ents.monsters.values())
         if (m.s.st !== MS_DEAD && Math.hypot(m.x - rp.x, m.z - rp.z) < 10) {
