@@ -16,7 +16,10 @@ describe('assetBase', () => {
     for (const f of walk(src)) {
       if (f.endsWith('assetBase.ts') || f.endsWith('.test.ts') || f.endsWith('.test.tsx')) continue;
       const text = fs.readFileSync(f, 'utf8');
-      if (/import\.meta(\s+as\s+[^)]+\))?\)?\.env\.BASE_URL/.test(text) || /['"`]\/(assets|audio|thien_y|hoa-truc|terrain[\w-]*|sky|map)\//.test(text)) {
+      if (
+        /import\.meta(\s+as\s+[^)]+\))?\)?\.env\.BASE_URL/.test(text) ||
+        /['"`]\/(assets|audio|thien_y|hoa-truc|terrain[\w-]*|sky|map)\//.test(text)
+      ) {
         bad.push(path.relative(src, f));
       }
     }

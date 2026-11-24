@@ -34,7 +34,8 @@ export async function verifyRemote(base: string, lock: Lock = readLock()): Promi
       else {
         const len = Number(res.headers.get('content-length'));
         // CDN có thể nén/bỏ content-length: chỉ báo lỗi khi có số và lệch.
-        if (Number.isFinite(len) && len > 0 && len !== lock.files[key].bytes) rep.errors.push(`${key}: kích thước R2 ${len} ≠ sổ khóa ${lock.files[key].bytes}`);
+        if (Number.isFinite(len) && len > 0 && len !== lock.files[key].bytes)
+          rep.errors.push(`${key}: kích thước R2 ${len} ≠ sổ khóa ${lock.files[key].bytes}`);
       }
     } catch {
       network++;

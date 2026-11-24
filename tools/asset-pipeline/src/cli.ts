@@ -83,7 +83,9 @@ else if (cmd === 'lock') {
 } else if (cmd === 'push') {
   try {
     const r = await push({ dry: args.includes('--dry'), only: flag('--only'), noLock: args.includes('--no-lock') });
-    console.log(`[push] ${r.total} file trong sổ, ${r.present} đã có trên R2, ${args.includes('--dry') ? 'sẽ đẩy' : 'đã đẩy'} ${r.uploaded.length} (${mb(r.uploadedBytes)}), ${r.failed.length} lỗi${r.lockChanged ? ', sổ khóa đã cập nhật' : ''}`);
+    console.log(
+      `[push] ${r.total} file trong sổ, ${r.present} đã có trên R2, ${args.includes('--dry') ? 'sẽ đẩy' : 'đã đẩy'} ${r.uploaded.length} (${mb(r.uploadedBytes)}), ${r.failed.length} lỗi${r.lockChanged ? ', sổ khóa đã cập nhật' : ''}`,
+    );
     for (const f of r.failed) console.error(`[push] LỖI ${f.key}: ${f.error}`);
     ok = r.failed.length === 0;
   } catch (e) {
@@ -105,7 +107,9 @@ else if (cmd === 'lock') {
     const apply = args.includes('--apply');
     const r = await gc({ days: flag('--days') ? Number(flag('--days')) : undefined, apply });
     const size = r.garbage.reduce((n, g) => n + g.size, 0);
-    console.log(`[gc] ${r.total} object trên R2, ${r.referenced} khóa còn tham chiếu, ${r.garbage.length} rác (${mb(size)})${apply ? `, đã xóa ${r.deleted}` : ' — chạy thử, thêm --apply để xóa'}`);
+    console.log(
+      `[gc] ${r.total} object trên R2, ${r.referenced} khóa còn tham chiếu, ${r.garbage.length} rác (${mb(size)})${apply ? `, đã xóa ${r.deleted}` : ' — chạy thử, thêm --apply để xóa'}`,
+    );
     for (const g of r.garbage.slice(0, 20)) console.log(`[gc]   ${g.key}`);
   } catch (e) {
     console.error(`[gc] LỖI: ${e instanceof Error ? e.message : String(e)}`);

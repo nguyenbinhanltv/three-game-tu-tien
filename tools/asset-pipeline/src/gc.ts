@@ -10,6 +10,8 @@ import { loadR2Env } from './r2/env.js';
 import { LOCK_FILE, type Lock, readLock } from './r2/lock.js';
 import { listBucket } from './push.js';
 
+export const MIN_DAYS = 7;
+
 export interface GcOptions {
   days?: number;
   apply?: boolean;
@@ -24,11 +26,16 @@ export interface GcReport {
 
 /** Mọi khóa được tham chiếu bởi sổ khóa ở HEAD và ở các commit sửa sổ trong `days` ngày qua. */
 export function referencedKeys(days: number): Set<string> {
+  if (!Number.isInteger(days) || days < MIN_DAYS) throw new Error(`days phải là số nguyên >= ${MIN_DAYS}`);
   const keys = new Set(Object.keys(readLock().files));
-  const rel = LOCK_FILE.slice(ROOT.length + 1).split('\\').join('/');
+  const rel = LOCK_FILE.slice(ROOT.length + 1)
+    .split('\\')
+    .join('/');
   let shas: string[] = [];
   try {
-    shas = execFileSync('git', ['log', `--since=${days}.days`, '--format=%H', '--', rel], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter(Boolean);
+    shas = execFileSync('git', ['log', `--since=${days}.days`, '--format=%H', '--', rel], { cwd: ROOT, encoding: 'utf8' })
+      .split('\n')
+      .filter(Boolean);
   } catch {
     throw new Error('Không đọc được lịch sử git: từ chối dọn để tránh xóa nhầm');
   }
@@ -45,6 +52,8 @@ export function referencedKeys(days: number): Set<string> {
 
 export async function gc(opts: GcOptions = {}): Promise<GcReport> {
   const days = opts.days ?? 90;
+  // Giá trị lạ (NaN, âm, quá nhỏ) làm mọi object chưa vào sổ khóa thành "rác": từ chối ngay cả khi gọi trực tiếp.
+  if (!Number.isInteger(days) || days < MIN_DAYS) throw new Error(`--days phải là số nguyên >= ${MIN_DAYS} (nhận ${String(opts.days)})`);
   const env = loadR2Env();
   const s3 = makeClient(env);
   const refs = referencedKeys(days);

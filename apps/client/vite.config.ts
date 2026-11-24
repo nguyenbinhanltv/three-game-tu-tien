@@ -40,11 +40,12 @@ const MIME: Record<string, string> = {
 };
 
 /**
- * Dev/preview: phục vụ `.asset-cache/` (do `pnpm assets:pull` kéo từ R2) trước `public/`, để chạy offline
- * khi không đặt VITE_ASSET_BASE. File không có trong cache thì rơi xuống public/ của Vite.
+ * Dev/preview: phục vụ `.asset-cache/` (do `pnpm assets:pull` kéo từ R2) cho file không có ở `public/`, để chạy offline
+ * khi không đặt VITE_ASSET_BASE. File có ở public/ thì public/ thắng (như push/lock); chỉ file thiếu ở public/ mới lấy từ cache.
  */
 function assetCache(): Plugin {
   const root = path.resolve(here, '../../.asset-cache');
+  const publicDir = path.resolve(here, 'public');
   const serve = (req: { url?: string; method?: string }, res: import('node:http').ServerResponse, next: () => void) => {
     if (!fs.existsSync(root) || (req.method !== 'GET' && req.method !== 'HEAD') || !req.url) return next();
     let rel: string;
@@ -53,13 +54,17 @@ function assetCache(): Plugin {
     } catch {
       return next();
     }
+    // Cùng thứ tự với tools/asset-pipeline (localPath/scanLock/push): public/ thắng .asset-cache/.
+    if (fs.existsSync(path.join(publicDir, rel))) return next();
     const file = path.normalize(path.join(root, rel));
     if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return next();
     res.setHeader('Content-Type', MIME[path.extname(file)] ?? 'application/octet-stream');
     res.setHeader('Content-Length', fs.statSync(file).size);
     res.setHeader('Cache-Control', 'no-cache');
     if (req.method === 'HEAD') return void res.end();
-    fs.createReadStream(file).on('error', () => res.destroy()).pipe(res);
+    fs.createReadStream(file)
+      .on('error', () => res.destroy())
+      .pipe(res);
   };
   return {
     name: 'dtl-asset-cache',

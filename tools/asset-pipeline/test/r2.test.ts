@@ -30,3 +30,10 @@ describe('r2', () => {
     expect(urlOf('https://cdn.test', 'assets/a b/c.glb')).toBe('https://cdn.test/assets/a%20b/c.glb');
   });
 });
+
+describe('gc', () => {
+  it('từ chối --days không hợp lệ trước khi chạm R2', async () => {
+    const { gc } = await import('../src/gc.js');
+    for (const d of [Number.NaN, 0, -1, 3, 1.5]) await expect(gc({ days: d, apply: true })).rejects.toThrow(/--days/);
+  });
+});
