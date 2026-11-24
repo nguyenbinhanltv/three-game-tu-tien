@@ -1,0 +1,33 @@
+{
+  "monId": "elite_xich_sa_ngo_cong",
+  "move": "burrow",
+  "idea": "Xích Sa Ngô Công chui đất: 3 vòng ĐỎ tròn đúng 3 m quanh người chơi tô dần theo nhịp 2,0 s; đất nứt bụi bốc, thân thụt dần xuống; vòng đầu là chỗ trồi lên, nổ ra đất đá và bào tử xanh lục.",
+  "element": "moc",
+  "palette": {
+    "core": "1c140c",
+    "body": "6b4a32",
+    "rim": "bfe8a0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "ring"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 3,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 2000,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Ba vòng đỏ đặc đúng 3 m, đủ xa nhau (cách 4 m); hố đất nâu và gai rễ không lẫn đỏ.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.25,
+    "overdraw": 5
+  }
+}

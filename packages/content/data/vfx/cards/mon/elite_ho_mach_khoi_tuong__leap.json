@@ -1,0 +1,33 @@
+{
+  "monId": "elite_ho_mach_khoi_tuong",
+  "move": "leap",
+  "idea": "Hổ Mạch Khôi Tướng (khôi đá) nhảy nện xuống: vòng ĐỎ tròn đúng 5 m tô dần theo nhịp 1,4 s; nổ ra đá nâu nhô lên theo vòng, khe ngọc lam nứt tỏa, bụi đất nâu xám.",
+  "element": "tho",
+  "palette": {
+    "core": "2a1a10",
+    "body": "7a4a2c",
+    "rim": "6fd0d8",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "ring"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1400,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Đĩa đỏ đặc đúng 5 m; đá nâu và khe ngọc lam đọc rõ trên nền sáng, không lẫn đỏ; bụi mỏng.",
+  "budget": {
+    "drawCalls": 9,
+    "particles": 300,
+    "screenCover": 0.25,
+    "overdraw": 5
+  }
+}

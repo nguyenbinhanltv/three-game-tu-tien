@@ -190,7 +190,10 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
       if (!known) return false;
       const base: Partial<HazardMsg> = { delay: cfg.delay, kind, src: id, r: cfg.r };
       let m: HazardMsg;
-      if (mv === 'emerge') {
+      if (mv === 'caster' && cfg.shape === 'cone') {
+        // Đòn niệm quạt của tinh anh: niệm `cast` giây rồi quạt từ chỗ quái đứng về phía người.
+        m = { ...base, x: b.x, z: b.z, yaw, sh: 'cone', w: ((cfg.w ?? 30) * Math.PI) / 180 } as HazardMsg;
+      } else if (mv === 'emerge') {
         m = { ...base, mv, x: b.x, z: b.z, yaw, sh: 'cone', w: ((cfg as { w: number }).w * Math.PI) / 180 } as HazardMsg;
       } else if (mv === 'sweep' || mv === 'line' || mv === 'charge') {
         const rect = cfg.shape === 'rect' || mv !== 'sweep';
