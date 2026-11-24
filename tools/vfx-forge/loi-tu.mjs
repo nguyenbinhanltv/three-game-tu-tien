@@ -25,17 +25,29 @@ const mesh = (o) => ({
 /** Hệ số cỡ theo chiêu (đo phủ bằng `cover.mjs` rồi chỉnh cho sát trần: chiêu thường ≤ 0,2, chiêu cuối ≤ 0,35). */
 let K = 1;
 const SCALE = {
-  skl_thiem_loi_bo: 1.3,
-  skl_loi_an_kich: 1.2,
-  skl_cuu_tieu_thien_loi: 1.15,
-  skl_loi_the: 1.5,
-  skl_loi_chich: 1.4,
-  skl_loi_lien: 1.2,
-  skl_loi_giap: 1.5,
-  skl_phich_lich: 1,
-  skl_loi_vong: 1.5,
-  skl_loi_phat: 1.3,
-  skl_loi_hai: 0.9,
+  skl_thiem_loi_bo: 0.95,
+  skl_loi_an_kich: 0.85,
+  skl_cuu_tieu_thien_loi: 0.8,
+  skl_loi_the: 0.95,
+  skl_loi_chich: 1.0,
+  skl_loi_lien: 0.8,
+  skl_loi_giap: 0.9,
+  skl_phich_lich: 0.85,
+  skl_loi_vong: 0.95,
+  skl_loi_phat: 0.85,
+  skl_loi_hai: 0.6,
+};
+/** Hệ số alpha thân theo chiêu (không áp cho chớp `loi_flash`): chiêu bao quanh người để mục tiêu/tên/thanh máu còn đọc được (duyệt 25/11: bớt mảng đặc, giữ nét sét + viền). */
+let A = 1;
+const ALPHA = {
+  skl_loi_the: 0.55,
+  skl_loi_giap: 0.5,
+  skl_loi_vong: 0.55,
+  skl_phich_lich: 0.7,
+  skl_loi_hai: 0.7,
+  skl_loi_lien: 0.75,
+  skl_loi_phat: 0.8,
+  skl_cuu_tieu_thien_loi: 0.8,
 };
 /** Sprite vẽ tay (billboard). `size` mét (ô vuông), `off` offset tâm. */
 const sprite = (name, o) => {
@@ -48,6 +60,7 @@ const sprite = (name, o) => {
     scale: r2(size * K),
     scaleTo: r2((sizeTo ?? size) * K),
     ...rest,
+    ...(name === 'loi_flash' || rest.alpha === undefined ? {} : { alpha: r2(rest.alpha * A) }),
   });
 };
 const sparks = (at, off, n, t, extra = {}) => ({
@@ -99,11 +112,11 @@ const SPEC = {
   // Thiểm Lôi Bộ (lướt, kích theo S.FX: mọi mốc ≥ 0): vệt sét zigzag từ chỗ đứng sang mục tiêu, hai đầu quầng chớp, vài tia nhỏ.
   skl_thiem_loi_bo: () => [
     flash('self', [0, 1.1, 0], 2.4, 0),
-    strike('loi_bolt_zigzag', { size: 7, at: 'ahead', off: [0, 1.2, 3.2], dur: 0.5, align: 'aim' }),
-    sprite('loi_bolt_zigzag', { t: 0.04, dur: 0.45, at: 'ahead', off: [0.3, 1.0, 4], size: 5, alpha: 0.5, align: 'aim', erodeFrom: 0.15 }),
-    flash('ahead', [0, 1.2, 7], 2.8, 0.02),
-    after('ahead', [0, 1.3, 4.5], 3, 0.2, 1.1),
-    sparks('ahead', [0, 1.2, 5], 10, 0.05),
+    strike('loi_bolt_zigzag', { size: 6, at: 'ahead', off: [0, 1.2, 2.8], dur: 0.5, align: 'aim' }),
+    sprite('loi_bolt_zigzag', { t: 0.04, dur: 0.45, at: 'ahead', off: [0.3, 1.0, 3.4], size: 4.2, alpha: 0.5, align: 'aim', erodeFrom: 0.15 }),
+    flash('ahead', [0, 1.2, 5.4], 2.2, 0.02),
+    after('ahead', [0, 1.3, 3.8], 2.4, 0.2, 1.1),
+    sparks('ahead', [0, 1.2, 4], 10, 0.05),
   ],
   // Lôi Ấn Kích: tia sét dày chẻ nhánh giáng thẳng từ trên xuống, điểm trúng bừng dấu ấn ba vạch chụm.
   skl_loi_an_kich: () => [
@@ -118,10 +131,10 @@ const SPEC = {
   ],
   // Cửu Tiêu Thiên Lôi (chiêu cuối): mây giông cuộn trên đầu mục tiêu, chín nhánh sét lớn tụ về một điểm, cột sét lõi trắng chói nổ sáng.
   skl_cuu_tieu_thien_loi: () => [
-    ...[gather('loi_cloud', { size: 8, off: [0, 5.6, 0] })],
+    ...[gather('loi_cloud', { size: 6.2, off: [0, 5.6, 0] })],
     pullIn('target', [0, 5.6, 0], -0.3),
-    strike('loi_cloud', { size: 8, off: [0, 6.2, 0], dur: 1.0, erodeFrom: 0.35, alpha: 0.95 }),
-    strike('loi_bolts9', { size: 7.4, off: [0, 3.5, 0], dur: 0.6, erodeFrom: 0.15 }),
+    strike('loi_cloud', { size: 6.2, off: [0, 6.0, 0], dur: 1.0, erodeFrom: 0.35, alpha: 0.95 }),
+    strike('loi_bolts9', { size: 6, off: [0, 3.5, 0], dur: 0.6, erodeFrom: 0.15 }),
     flash('target', [0, 1.1, 0], 5, 0.02, { dur: 0.22 }),
     ground('target', [0, 0.7, 0], 7, 0.03, { dur: 0.7 }),
     after('target', [0, 1.8, 0], 4, 0.2, 1.8),
@@ -192,8 +205,8 @@ const SPEC = {
       align: 'aim',
       erodeFrom: 0.15,
     }),
-    flash('ahead', [0, 1.2, 0.8], 3, 0.01),
-    flash('ahead', [0, 1.2, 10.8], 3.2, 0.02),
+    flash('ahead', [0, 1.2, 0.8], 1.5, 0.01, { dur: 0.1 }),
+    flash('ahead', [0, 1.2, 10.8], 1.6, 0.02, { dur: 0.1 }),
     after('ahead', [0, 1.3, 6], 3.4, 0.2, 1.2),
     sparks('ahead', [0, 1.2, 6], 12, 0.02),
   ],
@@ -248,6 +261,7 @@ for (const id of ids) {
   if (!SPEC[id]) throw new Error(`chưa có công thức cho ${id}`);
   seq = 1000;
   K = SCALE[id] ?? 1;
+  A = ALPHA[id] ?? 1;
   const p = `packages/content/data/fx/${id}.json`;
   const t = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : { skill: id, ...(HEAD[id] ?? {}), events: [] };
   // bỏ hình cũ (mesh bolt/vòng rune/shock_cone...), decal rune và hạt rim/inward do bản trước sinh; giữ âm thanh, rung, hitstop, chớp, vignette, camera, hạt viết tay

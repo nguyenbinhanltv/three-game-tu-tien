@@ -10,7 +10,7 @@
    "erodeFrom": 0.8,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.4,
+   "alpha": 0.3,
    "tier": 0,
    "seed": 1000,
    "shape": "sprite",
@@ -21,8 +21,8 @@
     1.4,
     0
    ],
-   "scale": 3,
-   "scaleTo": 4.32
+   "scale": 2,
+   "scaleTo": 2.88
   },
   {
    "type": "particles",
@@ -52,7 +52,7 @@
    "erodeFrom": 0.12,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 0.71,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -63,8 +63,8 @@
     1.4,
     0
    ],
-   "scale": 5.12,
-   "scaleTo": 6.24,
+   "scale": 3.41,
+   "scaleTo": 4.16,
    "rot": [
     0,
     0,
@@ -80,7 +80,7 @@
    "erodeFrom": 0.12,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 0.71,
    "tier": 0,
    "seed": 1002,
    "shape": "sprite",
@@ -91,8 +91,8 @@
     1.4,
     0
    ],
-   "scale": 5.12,
-   "scaleTo": 6.24,
+   "scale": 3.41,
+   "scaleTo": 4.16,
    "rot": [
     0,
     0,
@@ -108,7 +108,7 @@
    "erodeFrom": 0.12,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 0.71,
    "tier": 0,
    "seed": 1003,
    "shape": "sprite",
@@ -119,8 +119,8 @@
     1.4,
     0
    ],
-   "scale": 5.12,
-   "scaleTo": 6.24,
+   "scale": 3.41,
+   "scaleTo": 4.16,
    "rot": [
     0,
     0,
@@ -147,8 +147,8 @@
     1.2,
     0
    ],
-   "scale": 3.84,
-   "scaleTo": 4.8
+   "scale": 2.56,
+   "scaleTo": 3.2
   },
   {
    "type": "mesh",
@@ -159,7 +159,7 @@
    "erodeFrom": 0.15,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.8,
+   "alpha": 0.6,
    "tier": 0,
    "seed": 1005,
    "shape": "sprite",
@@ -170,8 +170,8 @@
     0.6,
     0
    ],
-   "scale": 7.68,
-   "scaleTo": 8.83
+   "scale": 5.12,
+   "scaleTo": 5.89
   },
   {
    "type": "mesh",
@@ -182,7 +182,7 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.75,
+   "alpha": 0.56,
    "tier": 0,
    "seed": 1006,
    "shape": "sprite",
@@ -193,8 +193,8 @@
     1.4,
     0
    ],
-   "scale": 3.6,
-   "scaleTo": 3.6,
+   "scale": 2.4,
+   "scaleTo": 2.4,
    "move": {
     "to": "target",
     "offset": [

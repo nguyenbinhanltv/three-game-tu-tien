@@ -62,7 +62,7 @@
    "erodeFrom": 0.8,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.4,
+   "alpha": 0.22,
    "tier": 0,
    "seed": 1000,
    "shape": "sprite",
@@ -73,8 +73,8 @@
     1.1,
     0
    ],
-   "scale": 2.7,
-   "scaleTo": 3.89
+   "scale": 1.71,
+   "scaleTo": 2.46
   },
   {
    "type": "particles",
@@ -104,7 +104,7 @@
    "erodeFrom": 0.35,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 0.52,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -115,8 +115,8 @@
     1.15,
     0
    ],
-   "scale": 4.43,
-   "scaleTo": 5.4
+   "scale": 2.8,
+   "scaleTo": 3.42
   },
   {
    "type": "mesh",
@@ -138,8 +138,8 @@
     1.2,
     0
    ],
-   "scale": 3.3,
-   "scaleTo": 4.13
+   "scale": 2.09,
+   "scaleTo": 2.61
   },
   {
    "type": "mesh",
@@ -150,7 +150,7 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.75,
+   "alpha": 0.41,
    "tier": 0,
    "seed": 1003,
    "shape": "sprite",
@@ -161,8 +161,8 @@
     1.2,
     0
    ],
-   "scale": 3.9,
-   "scaleTo": 3.9,
+   "scale": 2.47,
+   "scaleTo": 2.47,
    "move": {
     "to": "self",
     "offset": [

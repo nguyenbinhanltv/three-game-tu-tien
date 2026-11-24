@@ -149,8 +149,8 @@
     1.4,
     0
    ],
-   "scale": 1.44,
-   "scaleTo": 2.07
+   "scale": 1.02,
+   "scaleTo": 1.47
   },
   {
    "type": "particles",
@@ -191,8 +191,8 @@
     3.2,
     0
    ],
-   "scale": 5.9,
-   "scaleTo": 7.2
+   "scale": 4.18,
+   "scaleTo": 5.1
   },
   {
    "type": "mesh",
@@ -214,8 +214,8 @@
     1.2,
     0
    ],
-   "scale": 3.6,
-   "scaleTo": 4.5
+   "scale": 2.55,
+   "scaleTo": 3.19
   },
   {
    "type": "mesh",
@@ -237,8 +237,8 @@
     1,
     0
    ],
-   "scale": 3.12,
-   "scaleTo": 3.12
+   "scale": 2.21,
+   "scaleTo": 2.21
   },
   {
    "type": "mesh",
@@ -260,8 +260,8 @@
     0.6,
     0
    ],
-   "scale": 5.52,
-   "scaleTo": 6.35
+   "scale": 3.91,
+   "scaleTo": 4.5
   },
   {
    "type": "mesh",
@@ -283,8 +283,8 @@
     1.4,
     0
    ],
-   "scale": 3.12,
-   "scaleTo": 3.12,
+   "scale": 2.21,
+   "scaleTo": 2.21,
    "move": {
     "to": "target",
     "offset": [

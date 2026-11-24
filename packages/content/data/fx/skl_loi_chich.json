@@ -21,8 +21,8 @@
     1.2,
     1.2
    ],
-   "scale": 3.5,
-   "scaleTo": 5.04,
+   "scale": 2.5,
+   "scaleTo": 3.6,
    "align": "aim"
   },
   {
@@ -64,8 +64,8 @@
     1.25,
     2.2
    ],
-   "scale": 9.1,
-   "scaleTo": 9.1,
+   "scale": 6.5,
+   "scaleTo": 6.5,
    "align": "aim",
    "move": {
     "to": "target",
@@ -97,8 +97,8 @@
     1.3,
     0
    ],
-   "scale": 3.64,
-   "scaleTo": 4.55
+   "scale": 2.6,
+   "scaleTo": 3.25
   },
   {
    "type": "mesh",
@@ -120,8 +120,8 @@
     1,
     0
    ],
-   "scale": 2.8,
-   "scaleTo": 2.8
+   "scale": 2,
+   "scaleTo": 2
   },
   {
    "type": "mesh",
@@ -143,8 +143,8 @@
     1.3,
     0
    ],
-   "scale": 3.36,
-   "scaleTo": 3.36,
+   "scale": 2.4,
+   "scaleTo": 2.4,
    "move": {
     "to": "target",
     "offset": [
