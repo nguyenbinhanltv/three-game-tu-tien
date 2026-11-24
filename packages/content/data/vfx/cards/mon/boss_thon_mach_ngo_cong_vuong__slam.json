@@ -1,0 +1,33 @@
+{
+  "monId": "boss_thon_mach_ngo_cong_vuong",
+  "move": "slam",
+  "idea": "Thôn Mạch Ngô Công Vương đập đầu xuống: vòng cảnh báo ĐỎ tròn đúng 5,5 m, vân nứt đỏ tỏa từ tâm, đĩa đỏ tô dần theo nhịp nạp 1,7 s; nổ ra gai rễ gỗ nâu nhọn xoắn trồi từ đất, bào tử xanh lục và sương độc nhẹ tan.",
+  "element": "moc",
+  "palette": {
+    "core": "10260f",
+    "body": "6fbf3a",
+    "rim": "dff7a8",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "spiral"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5.5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1700,
+    "impactMs": 120,
+    "lingerMs": 700
+  },
+  "readability": "Đĩa đỏ đặc đúng 5,5 m; gai rễ nâu-xanh lục đọc rõ cả nền sáng, không lẫn với đỏ; sương độc mỏng không che người chơi.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

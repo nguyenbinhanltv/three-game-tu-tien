@@ -1,0 +1,33 @@
+{
+  "monId": "boss_huyet_lang_vuong",
+  "move": "slam",
+  "idea": "Huyết Lang Vương vồ xuống: vòng cảnh báo ĐỎ tròn đúng 5,5 m, ba vệt vuốt đỏ rạch qua đĩa và vân nứt nóng tỏa từ tâm, đĩa đỏ tô dần theo nhịp nạp 1,7 s; nổ ra ba vết vuốt than cháy rực kéo qua vùng, hỏa tinh bắn tung, tro đen và hơi nóng.",
+  "element": "hoa",
+  "palette": {
+    "core": "1c0a08",
+    "body": "e8741f",
+    "rim": "fff0c0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "burst",
+    "arc"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5.5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1700,
+    "impactMs": 120,
+    "lingerMs": 700
+  },
+  "readability": "Phần nổ phải tối ở lõi (than đen/tro) với vết vuốt vàng trắng nóng, KHÔNG đỏ để khỏi lẫn với vạch báo; vạch báo đĩa đỏ đặc đọc rõ.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

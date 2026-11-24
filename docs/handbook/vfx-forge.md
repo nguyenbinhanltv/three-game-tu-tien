@@ -61,9 +61,14 @@ Sự kiện timeline `{ "type": "impact", "t": 0, "frames": 1|2, "tint": "ink|wa
 
 ## Texture dùng chung theo hệ (Họa Pháp Lô 2)
 
-Lớp CHẤT LIỆU dùng chung cho quái/boss và chiêu người chơi (mỗi chiêu/boss vẫn phải có silhouette riêng). Danh sách id ở `FORGE_DECALS`/`FORGE_FLIPS` (`packages/shared/src/fxtimeline.ts`): `warn_crack` (vân nứt đỏ cho vạch báo), `ice_crack` (băng nứt), `ice_flip` (flipbook 4×4 băng trồi/vỡ).
+Lớp CHẤT LIỆU dùng chung cho quái/boss và chiêu người chơi (mỗi chiêu/boss vẫn phải có silhouette riêng). Gộp thành HAI atlas KTX2 (`apps/client/public/assets/vfx/`, tổng ~1,6 MB) để shader chỉ lấy mẫu một texture:
 
-- Sinh: `pnpm --filter @dtl/vfx-forge forge shared <id> --out <thư mục artifact>` (Codex), rồi `forge import <png> --id <id> [--grid 4x4] --sheets <artifact>` (cần `TOKTX`) → `apps/client/public/assets/vfx/<id>.ktx2` + `manifest.json`. `pnpm vfx:check` chặn PNG.
-- Dùng trong timeline: decal `tex: "warn_crack"|"ice_crack"` (thêm `sector` = nửa góc độ để vẽ MẶT QUẠT từ tâm theo hướng vùng; `top` cho vạch báo); mesh `shape: "flip", flip: "ice_flip"`.
-- Client: `render/vfx/forgeTex.ts` (shader `mapDecal`/`mapDecalTop`/`mapFlip`, texture giữ chỗ trong suốt) + `game/fx/forgeLoad.ts` (nạp KTX2 nền sau khi có renderer; lỗi chỉ cảnh báo, lớp này vô hình). Thêm texture mới: thêm id vào `shared`, thêm nút texture ở `forgeTex.ts`, thêm mục ở `tools/vfx-forge/src/sharedTex.ts`.
-- Vạch báo riêng của chiêu quái (`MonFx.ownWarn`) chỉ thay vòng cũ khi `MonFx.warn` thật sự phát (trả `true`); xa/đông FX thì giữ vòng cũ để không mất vạch báo.
+- `decal_atlas` (2048×1024, ô vuông 512, 4×2) theo thứ tự `FORGE_DECALS`: `warn_crack` (vân nứt đỏ cho vạch báo), `ice_crack`, `steel_crack`, `ember_crack` (lõi tối vân vàng trắng, KHÔNG cam phẳng), `bolt_scorch`, `jade_crack` (đất nâu khe ngọc lam), `root_mat`.
+- `flip_atlas` (3072×2048, 3×2 tấm, mỗi tấm 4×4 khung) theo thứ tự `FORGE_FLIPS`: `ice_flip`, `steel_flip`, `fire_flip`, `bolt_flip`, `earth_flip`, `root_flip`.
+
+Thêm/đổi texture: thêm mục ở `tools/vfx-forge/src/sharedTex.ts` (`forge shared <id> --out <artifact>`, Codex vẽ nền đen), thêm id vào `FORGE_DECALS`/`FORGE_FLIPS` (`packages/shared/src/fxtimeline.ts`, GIỮ THỨ TỰ vì là chỉ số ô), dựng lại atlas (PIL, ghép theo thứ tự; hạ gamma/độ bão hòa ô quá sáng: alpha suy từ độ sáng nên vùng sáng càng đặc), rồi `forge import <atlas.png> --id decal_atlas --grid 4x2 --max 2048` và `--id flip_atlas --grid 12x8 --max 3072` (cần `TOKTX`). `pnpm vfx:check` chặn PNG.
+
+- Dùng trong timeline: decal `tex` thuộc `FORGE_DECALS`, thêm `sector` (nửa góc độ, mặt quạt), `swing`/`swingDur` (một tia xoay thay nhiều decal), `strip: [dài, rộng]` (dải chữ nhật cho vùng `rect`, mét thật), `top` cho vạch báo; mesh `shape: "flip", flip: <FORGE_FLIPS>`. Mỗi chiêu quái ≤ 4 decal sống cùng lúc (`DECAL_MAX` = 6 cho cả runner).
+- Client: `render/vfx/forgeTex.ts` (shader `mapDecal`/`mapDecalTop`/`mapFlip`, bảng `FILL`/`BRIGHT` theo hệ) + `game/fx/forgeLoad.ts` (nạp nền; lỗi chỉ cảnh báo, lớp này vô hình).
+- Timeline riêng của quái: `mon_warn*|mon_boom_*|mon_cast__<quái>[__<chiêu>]`, sinh bằng `tools/vfx/gen-fx-han-giao.py` và `gen-fx-a1.py`; timeline riêng được chọn bảng màu riêng (`palette` của file). Không dùng hình `smoke` trong vùng nổ: nó luôn là khói toon trắng ngả lam.
+- Vạch riêng của chiêu quái (`MonFx.ownWarn`) chỉ thay vòng cũ khi `MonFx.warn` thật sự phát và atlas decal đã nạp; xa/đông FX/chưa nạp xong thì giữ vòng cũ để không mất hitbox.
