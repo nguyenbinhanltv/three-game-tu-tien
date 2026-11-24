@@ -739,8 +739,22 @@ export class FxRunner {
                 ? 1
                 : 0;
     m.fxA.z = ev.seed ?? 0;
-    // Sprite: `fxA.x` chọn kiểu tô (0 = âm hồn tím mực, 1 = lôi: viền mực chàm, lõi trắng xanh, 2 = kiếm: viền mực lam lục, thân xanh ngọc, viền bạc), theo tiền tố tên.
-    if (kind === 'sprite') m.fxA.x = (ev.sprite ?? '').startsWith('kiem_') ? 2 : (ev.sprite ?? '').startsWith('loi_') ? 1 : 0;
+    // Sprite: `fxA.x` chọn kiểu tô (0 = âm hồn tím mực, 1 = lôi: viền mực chàm, lõi trắng xanh, 2 = kiếm: viền mực lam lục, thân xanh ngọc, viền bạc,
+    // 3 = thủy: chàm → xanh biển → bọt trắng, 4 = nguyệt: thép sẫm → bạc → trắng, 5 = vẽ tay nguyên màu: cot_/tho_/doc_/tim_), theo tiền tố tên.
+    if (kind === 'sprite') {
+      const sn = ev.sprite ?? '';
+      m.fxA.x = sn.startsWith('kiem_')
+        ? 2
+        : sn.startsWith('loi_')
+          ? 1
+          : sn.startsWith('thuy_')
+            ? 3
+            : sn.startsWith('nguyet_')
+              ? 4
+              : /^(cot|tho|doc|tim)_/.test(sn)
+                ? 5
+                : 0;
+    }
   }
 
   // ---- hạt ----

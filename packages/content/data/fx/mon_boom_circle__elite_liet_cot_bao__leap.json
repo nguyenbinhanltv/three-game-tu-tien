@@ -1,0 +1,230 @@
+{
+ "skill": "mon_boom_circle__elite_liet_cot_bao__leap",
+ "palette": "mon_kim",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0,
+   "r": 4,
+   "dur": 2.2,
+   "at": "area",
+   "grow": 0.02,
+   "tone": "core",
+   "alpha": 0.9,
+   "tier": 0,
+   "from": "start",
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 2100,
+   "tier": 0,
+   "sprite": "cot_crack",
+   "scale": 4.0,
+   "scaleTo": 4.0,
+   "offset": [
+    0.0,
+    0.4,
+    0.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.03,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.75,
+   "seed": 2101,
+   "tier": 0,
+   "sprite": "cot_dust",
+   "scale": 4.2,
+   "scaleTo": 4.2,
+   "offset": [
+    0.0,
+    0.45,
+    0.0
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.02,
+   "dur": 0.6,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 2102,
+   "tier": 0,
+   "sprite": "cot_burst",
+   "scale": 3.5,
+   "scaleTo": 3.5,
+   "offset": [
+    0.0,
+    0.5,
+    0.0
+   ],
+   "erodeFrom": 0.25,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.02,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 2103,
+   "tier": 0,
+   "sprite": "cot_claw",
+   "scale": 3.067,
+   "scaleTo": 3.067,
+   "offset": [
+    -1.733,
+    1.733,
+    0.4
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.06,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 2104,
+   "tier": 0,
+   "sprite": "cot_claw",
+   "scale": 3.067,
+   "scaleTo": 3.067,
+   "offset": [
+    1.733,
+    1.733,
+    0.4
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.03,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 2110,
+   "tier": 0,
+   "sprite": "cot_frags",
+   "scale": 2.933,
+   "scaleTo": 2.933,
+   "offset": [
+    0.0,
+    2.0,
+    0.0
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 2111,
+   "tier": 0,
+   "sprite": "cot_swipe",
+   "scale": 3.467,
+   "scaleTo": 3.467,
+   "offset": [
+    0.0,
+    1.867,
+    -0.533
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 28,
+   "speed": 6,
+   "spread": 0.9,
+   "life": 0.7,
+   "size": 0.1,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "grav": 9
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0,
+   "n": 22,
+   "speed": 3,
+   "spread": 0.9,
+   "life": 0.9,
+   "size": 0.22,
+   "at": "area",
+   "tone": "core",
+   "tier": 1,
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "grav": 0.8
+  }
+ ]
+}
