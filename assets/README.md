@@ -11,7 +11,7 @@ Nơi chứa dữ liệu nhẹ về asset 3D và cấu hình pipeline. File ngu�
 | `assets/source/_batches/*.json` | nhật ký đợt Tripo CLI (`docs/tripo-runbook.md` mục 5.5) | có |
 | `assets/build/raw/<asset_id>.glb` | **đầu vào pipeline**: GLB thô do Blender xuất (`tools/blender/run.mjs`): script thủ tục hoặc `import_tripo.py` chuẩn hóa GLB Tripo | không (sinh lại được) |
 | `assets/build/.cache.json` | cache theo mtime của bước tối ưu | không |
-| `apps/client/public/assets/<asset_id>.<hash>.glb` | GLB đã tối ưu, tên theo hash nội dung (cache CDN vĩnh viễn) | có, vì nguồn nằm ngoài repo |
+| `apps/client/public/assets/<asset_id>.<hash>.glb` | GLB đã tối ưu, tên theo hash nội dung (cache CDN vĩnh viễn) | KHÔNG: gitignore, nằm trên Cloudflare R2; git chỉ giữ `assets/asset-lock.json` (đường dẫn → sha256, kích thước) |
 | `apps/client/public/assets/manifest.json` | id → file, tam giác từng LOD, texture, xương, clip, kích thước raw/build | có |
 | [`budgets.json`](budgets.json) | ngân sách theo lớp asset (tam giác LOD0, đích LOD, cạnh texture, số xương) | có |
 | [`LICENSES.md`](LICENSES.md) | một dòng cho mỗi asset trong game | có |
@@ -29,7 +29,9 @@ Asset id = tiền tố loại + `snake_case` không dấu, trùng tên thư mụ
 pnpm assets:build              # Blender sinh GLB thô (bỏ qua nếu script không đổi) → tối ưu → public/assets + manifest
 pnpm assets:build --only <id>  # một asset;  --force bỏ qua cache;  --no-ktx không nén texture
 pnpm assets:optimize           # chỉ bước tối ưu từ assets/build/raw/
-pnpm assets:validate           # kiểm theo manifest; có lỗi thì exit 1 và in lý do
+pnpm assets:validate           # kiểm theo manifest + sổ khóa khớp đĩa + mọi file có trên R2 (cần VITE_ASSET_BASE); có lỗi thì exit 1 và in lý do
+pnpm assets:push               # SAU build: cập nhật assets/asset-lock.json rồi đẩy file mới lên R2 (cần khóa R2 trong .env.local), commit sổ khóa cùng manifest
+pnpm assets:pull               # máy mới / sau khi merge main: tải nhị phân về apps/client/public theo sổ khóa (không cần khóa)
 pnpm --filter @dtl/asset-pipeline test   # test pipeline (sect.glb + nhân vật có xương sinh bằng Blender headless)
 ```
 
@@ -107,7 +109,7 @@ Sau đó chạy subagent `asset-validator` để soát bằng mắt những gì 
 2. Đưa GLB thô vào `assets/build/raw/<id>.glb`: job thủ tục trong `tools/blender/run.mjs`, hoặc khối `import` trong `meta.json` cho GLB Tripo (mục Nhập Tripo). Job thủ tục có trường `source` (ví dụ `prop_phi_kiem`: lưới Tripo v02 tô màu bằng `recolor_phi_kiem.py`) đọc file trong `DTL_ASSET_SOURCE`; máy không có thư mục nguồn thì job bị bỏ qua kèm cảnh báo, GLB build đã commit vẫn dùng được.
 3. Thêm dòng vào `assets/LICENSES.md`.
 4. `pnpm assets:build --only <id>` rồi `pnpm assets:validate --only <id>`; xem trong trang `?viewer=asset`.
-5. Commit `meta.json`, dòng LICENSES, GLB có hash và `manifest.json`.
+5. `pnpm assets:push`, rồi commit `meta.json`, dòng LICENSES, `manifest.json` và `assets/asset-lock.json`. KHÔNG commit GLB/KTX2/WebP/PNG/âm thanh: chúng gitignore, hook pre-commit (`pnpm hooks:install`) và CI (`pnpm docs:binaries`) chặn nhị phân > 200 KB trong `apps/client/public` và `docs/`.
 6. Trong client: `await assets.attach(renderer)` rồi `const h = await assets.acquire('<id>', { pos })`, thêm `h.scene` vào cảnh, `h.release()` khi bỏ (xem `apps/client/src/game/assets.ts`).
 
 ## Âm thanh (`tools/audio/`)

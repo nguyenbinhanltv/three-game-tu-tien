@@ -119,4 +119,6 @@ else if (cmd === 'lock') {
   console.error(`Lệnh không rõ: ${cmd} (build | optimize | validate | lock | push | pull | gc)`);
   ok = false;
 }
+// Node trên Windows có thể abort (libuv UV_HANDLE_CLOSING) nếu thoát ngay khi socket fetch còn đang đóng: chờ một nhịp.
+await new Promise((r) => setTimeout(r, 150));
 process.exit(ok ? 0 : 1);

@@ -1,5 +1,5 @@
-// Tải file thiếu về .asset-cache/ theo sổ khóa, có kiểm sha256. Không cần khóa R2: đọc qua URL
-// công khai VITE_ASSET_BASE (CDN). File đã có đủ ở public/ (cùng kích thước) hoặc .asset-cache/ thì bỏ qua.
+// Tải file thiếu về apps/client/public/ (gitignore, git chỉ giữ sổ khóa) theo sổ khóa, có kiểm sha256. Không cần khóa R2:
+// đọc qua URL công khai VITE_ASSET_BASE (CDN). File đã có đủ (cùng kích thước) ở public/ hoặc .asset-cache/ thì bỏ qua.
 //   pnpm assets:pull [--base <url>] [--verify] [--only <tiền tố>]
 
 import fs from 'node:fs';
@@ -48,7 +48,7 @@ export async function pull(opts: PullOptions = {}): Promise<PullReport> {
   let done = 0;
   await pool(todo, 6, async (key) => {
     const e = lock.files[key];
-    const dest = path.join(CACHE_DIR, key);
+    const dest = path.join(PUBLIC_DIR, key);
     const tmp = `${dest}.part`;
     try {
       const res = await fetch(urlOf(base, key));
