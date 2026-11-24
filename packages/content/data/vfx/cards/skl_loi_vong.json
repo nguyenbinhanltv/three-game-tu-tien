@@ -1,0 +1,40 @@
+{
+  "skillId": "skl_loi_vong",
+  "idea": "Lôi Võng: quả cầu lưới hồ quang bao quanh người, các sợi sét đan nhau thành mắt lưới, chỗ giao nhau có điểm sáng, tia lửa tóe ra ngoài khi chịu đòn. Màu: lõi trắng xanh lạnh RẤT SÁNG, thân xanh lam điện/chàm (hue 215–240°), chỉ viền ngoài rất mỏng mới hơi tím chàm; KHÔNG tím đậm, KHÔNG hồng; vàng chỉ là điểm nhỏ.",
+  "element": "kim",
+  "path": "loi_tu",
+  "shapeLang": [
+    "arc",
+    "spiral"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 550
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 4,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 6,
+    "particles": 189,
+    "screenCover": 0.1,
+    "overdraw": 2
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    }
+  ],
+  "silhouette": "quả cầu lưới sét: sợi hồ quang đan thành mắt lưới bao quanh thân",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

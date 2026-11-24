@@ -1,0 +1,34 @@
+{
+  "skillId": "skl_loi_giap",
+  "idea": "Lôi Giáp: các mảnh giáp sét sáu cạnh ghép bao quanh thân như vảy rồng, hồ quang chạy giữa các vảy, viền sáng xanh lam trắng. Màu: lõi trắng xanh lạnh RẤT SÁNG, thân xanh lam điện/chàm (hue 215–240°), chỉ viền ngoài rất mỏng mới hơi tím chàm; KHÔNG tím đậm, KHÔNG hồng; vàng chỉ là điểm nhỏ.",
+  "element": "kim",
+  "path": "loi_tu",
+  "shapeLang": [
+    "arc"
+  ],
+  "timing": {
+    "anticipationMs": 380,
+    "impactMs": 80,
+    "lingerMs": 520
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 4,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 7,
+    "particles": 230,
+    "screenCover": 0.1,
+    "overdraw": 3
+  },
+  "textures": [],
+  "silhouette": "vảy giáp sét sáu cạnh ghép bao quanh thân, hồ quang chạy giữa các vảy",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

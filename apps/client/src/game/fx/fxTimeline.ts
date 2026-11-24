@@ -606,6 +606,15 @@ export class FxRunner {
       shade.renderOrder = -2;
     }
     const cam = this.env.camera();
+    // `align: 'aim'`: góc trên màn hình của hướng ngắm (trục +x của tranh dọc theo hướng đó).
+    let alignAng = 0;
+    if (ev.align === 'aim') {
+      const camR = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion);
+      const camU = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
+      const dx = Math.sin(yaw);
+      const dz = Math.cos(yaw);
+      alignAng = Math.atan2(dx * camU.x + dz * camU.z, dx * camR.x + dz * camR.z);
+    }
     // Camera chéo: nén chiều cao thật (mét) của hình đứng cao; chiều cao gốc đo từ bounding box y của lưới.
     const isoK = FLAGS.isoFxCompress;
     if (isoK && !geo.boundingBox) geo.computeBoundingBox();
@@ -628,7 +637,7 @@ export class FxRunner {
       if (ev.billboard ?? (kind === 'flip' || kind === 'mapFlip' || ev.shape === 'sprite')) {
         // Quay mặt về camera; `rot[2]` xoay thêm trong mặt phẳng hình (nét chém chéo).
         m.quaternion.copy(cam.quaternion);
-        if (ev.rot?.[2]) m.quaternion.multiply(_q.setFromAxisAngle(AXIS_Z, ev.rot[2] * DEG));
+        if (alignAng || ev.rot?.[2]) m.quaternion.multiply(_q.setFromAxisAngle(AXIS_Z, alignAng + (ev.rot?.[2] ?? 0) * DEG));
       } else {
         m.quaternion.copy(baseQ);
         if (spin) m.quaternion.multiply(_q.setFromAxisAngle(AXIS_Z, spin * k * dur));
@@ -730,6 +739,8 @@ export class FxRunner {
                 ? 1
                 : 0;
     m.fxA.z = ev.seed ?? 0;
+    // Sprite: `fxA.x` chọn kiểu tô (0 = âm hồn tím mực, 1 = lôi: viền mực chàm, lõi trắng xanh), theo tiền tố tên.
+    if (kind === 'sprite') m.fxA.x = (ev.sprite ?? '').startsWith('loi_') ? 1 : 0;
   }
 
   // ---- hạt ----

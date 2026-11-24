@@ -1,7 +1,7 @@
 // Phòng thử VFX (V-P0): chụp một chiêu ở 0 / +30 / +150 / +400 ms sau khung trúng đòn, 720p + 1080p cùng góc camera chéo, dừng thời gian
 // bằng `window.__vfxlab` để các khung đúng từng mili giây; đo ngân sách (draw call, hạt, phủ màn hình, overdraw), so với thẻ chiêu
 // (`packages/content/data/vfx/cards/<id>.json`) và (tùy chọn) đặt ảnh concept cạnh khung +30 ms.
-// Dùng: pnpm shots vfxlab --skill <id> --out <thư mục tuyệt đối> [--dummies 1..5] [--mon <id quái>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400]
+// Dùng: pnpm shots vfxlab --skill <id> --out <thư mục tuyệt đối> [--dummies 1..5] [--mon <id quái>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400] [--clean]
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -82,6 +82,8 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
     look: { g: 'm' },
     extra: opt('--query', ''),
     query: { realm: 'nk12', god: 1, chr: 'v3', vfxlab: 1, quiet: 1, mood: opt('--mood', '') || undefined },
+    // `--clean`: đo phủ CHỈ của hình chiêu: tắt chớp/vignette/khung impact (`dtl.fxStatic`), rung/zoom/chậm camera (`dtl.camShakePct`=0) và khựng hình để pixelCover không dính hiệu ứng màn hình.
+    ...(process.argv.includes('--clean') ? { store: { 'dtl.fxStatic': '1', 'dtl.camShakePct': '0', 'dtl.hitStop': '0' } } : {}),
     ...(opt('--clip', '') ? { video: path.join(r.out, 'clip') } : {}),
     hide: 'hud',
   });
