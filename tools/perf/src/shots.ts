@@ -66,6 +66,7 @@ import cothanvfx from './scenarios/cothanvfx';
 import daotu from './scenarios/daotu';
 import cotu from './scenarios/cotu';
 import camchevfx from './scenarios/camchevfx';
+import animlab from './scenarios/animlab';
 import vfxlab from './scenarios/vfxlab';
 import vfxmon from './scenarios/vfxmon';
 import path2428vfx from './scenarios/path2428vfx';
@@ -176,6 +177,7 @@ const SCENARIOS: Scenario[] = [
   daotu,
   cotu,
   camchevfx,
+  animlab,
   vfxlab,
   vfxmon,
   path2428vfx,
