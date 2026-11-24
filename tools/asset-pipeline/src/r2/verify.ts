@@ -20,7 +20,7 @@ export interface VerifyReport {
 /** Sổ khóa phải khớp file đang có trên đĩa (thiếu/thừa/lệch) — chạy `pnpm assets:lock` để cập nhật. */
 export async function verifyLock(): Promise<string[]> {
   const lock = readLock();
-  const disk = await scanLock(lock);
+  const disk = await scanLock(lock, { hashLinked: true });
   const errs: string[] = [];
   for (const [k, e] of Object.entries(disk.files)) {
     const l = lock.files[k];

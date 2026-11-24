@@ -2,9 +2,10 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pull } from '../pull.js';
-import { hasInStore, placeFromStore, putInStore, storeFile } from './store.js';
+import { DEFAULT_STORE, hasInStore, placeFromStore, putInStore, storeDir, storeFile, verifyInStore } from './store.js';
+import { sha256File } from './lock.js';
 import { changedKeys, compareListing, rotatingSample } from './verify.js';
 import type { Lock } from './lock.js';
 
@@ -90,5 +91,45 @@ describe('validate giảm yêu cầu tới R2', () => {
   it('changedKeys: chỉ khóa mới/đổi so với sổ gốc', () => {
     const base: Lock = { version: 1, files: { a: { sha256: 'x', bytes: 1 }, b: { sha256: 'OLD', bytes: 2 } } };
     expect(changedKeys(L, base)).toEqual(['b', 'c']);
+  });
+});
+
+describe('mặc định kho', () => {
+  afterEach(() => vi.unstubAllEnvs());
+  it('không CI, chưa đặt env → bật ở ~/.dtl-asset-store; CI → tắt; off → tắt; đặt tường minh → dùng', () => {
+    vi.stubEnv('DTL_ASSET_STORE', '');
+    vi.stubEnv('CI', '');
+    expect(storeDir()).toBe(DEFAULT_STORE);
+    expect(DEFAULT_STORE.split(path.sep).pop()).toBe('.dtl-asset-store');
+    vi.stubEnv('CI', 'true');
+    expect(storeDir()).toBeNull();
+    vi.stubEnv('DTL_ASSET_STORE', path.join(tmp, 'x'));
+    expect(storeDir()).toBe(path.join(tmp, 'x'));
+    vi.stubEnv('DTL_ASSET_STORE', 'off');
+    expect(storeDir()).toBeNull();
+  });
+});
+
+describe('an toàn hardlink', () => {
+  it('verifyInStore xóa file kho bị hỏng; pull băm lại file hardlink bị ghi đè tại chỗ và đặt lại bản đúng', async () => {
+    const data = Buffer.from('noi-dung-dung');
+    const key = 'x/b.0123456789.glb';
+    const lock: Lock = { version: 1, files: { [key]: { sha256: sha(data), bytes: data.length } } };
+    const store = path.join(tmp, 'store');
+    const fetchFn = (async () => new Response(new Uint8Array(data), { status: 200 })) as unknown as typeof fetch;
+    const opts = { base: 'https://cdn.example', store, fetchFn, lock, publicDir: path.join(tmp, 'p'), cacheDir: path.join(tmp, 'c') };
+    await pull(opts);
+    const dest = path.join(tmp, 'p', key);
+    const sf = storeFile(store, sha(data));
+    // ghi đè tại chỗ cùng kích thước (nếu là hardlink thì hỏng cả bản trong kho)
+    fs.chmodSync(dest, 0o666);
+    fs.writeFileSync(dest, Buffer.from('XXXXXXXXXXXXX'));
+    const corruptedStore = fs.statSync(dest).nlink > 1;
+    if (corruptedStore) expect(await sha256File(sf)).not.toBe(sha(data));
+    const r = await pull(opts);
+    expect(fs.readFileSync(dest)).toEqual(data);
+    // kho hỏng → tải lại từ CDN; kho không hỏng (bản chép) → đặt lại từ kho
+    expect(corruptedStore ? r.downloaded : r.fromStore).toBe(1);
+    expect(await verifyInStore(store, sha(data), data.length)).toBe(true);
   });
 });

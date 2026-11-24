@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { assetBase } from './r2/env.js';
 import { CACHE_DIR, type Lock, PUBLIC_DIR, pool, readLock, sha256File } from './r2/lock.js';
-import { hasInStore, placeFromStore, putInStore, storeDir } from './r2/store.js';
+import { placeFromStore, putInStore, storeDir, verifyInStore } from './r2/store.js';
 
 export interface PullOptions {
   base?: string;
@@ -64,7 +64,9 @@ export async function pull(opts: PullOptions = {}): Promise<PullReport> {
     const e = lock.files[key];
     for (const dir of [publicDir, cacheDir]) {
       const f = path.join(dir, key);
-      if (fs.existsSync(f) && fs.statSync(f).size === e.bytes && (!opts.verify || (await sha256File(f)) === e.sha256)) {
+      // File hardlink với kho (nlink>1) luôn băm lại: ghi đè tại chỗ sẽ làm hỏng cả bản trong kho.
+      const linked = fs.existsSync(f) && fs.statSync(f).nlink > 1;
+      if (fs.existsSync(f) && fs.statSync(f).size === e.bytes && (!(opts.verify || linked) || (await sha256File(f)) === e.sha256)) {
         report.have++;
         return;
       }
@@ -78,7 +80,7 @@ export async function pull(opts: PullOptions = {}): Promise<PullReport> {
     const dest = path.join(publicDir, key);
     const tmp = `${dest}.part`;
     try {
-      if (store && hasInStore(store, e.sha256, e.bytes)) {
+      if (store && (await verifyInStore(store, e.sha256, e.bytes))) {
         if (placeFromStore(store, e.sha256, dest) === 'link') report.linked++;
         report.fromStore++;
         report.fromStoreBytes += e.bytes;

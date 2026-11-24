@@ -112,7 +112,8 @@ export async function pool<T>(items: T[], n: number, fn: (x: T) => Promise<void>
  * Quét đĩa dựng sổ khóa. Hash lấy lại từ sổ cũ khi kích thước không đổi và tên đã chứa hash,
  * còn lại tính sha256 thật. File chỉ có trong .asset-cache (sau R2-3) cũng được tính.
  */
-export async function scanLock(prev: Lock = readLock()): Promise<Lock> {
+/** `hashLinked`: băm lại cả file hardlink (nlink>1, chung inode với kho) dù tên có hash và kích thước khớp — bắt trường hợp ghi đè tại chỗ làm hỏng kho. */
+export async function scanLock(prev: Lock = readLock(), opts: { hashLinked?: boolean } = {}): Promise<Lock> {
   const rels = new Set<string>();
   for (const dir of [PUBLIC_DIR, CACHE_DIR]) for (const r of walk(dir)) if (isLocked(r)) rels.add(r);
   const files: Record<string, LockEntry> = {};
@@ -120,7 +121,8 @@ export async function scanLock(prev: Lock = readLock()): Promise<Lock> {
     const f = localPath(rel)!;
     const bytes = fs.statSync(f).size;
     const old = prev.files[rel];
-    if (old && old.bytes === bytes && isHashedName(rel)) files[rel] = old;
+    const linked = opts.hashLinked === true && fs.statSync(f).nlink > 1;
+    if (old && old.bytes === bytes && isHashedName(rel) && !linked) files[rel] = old;
     else files[rel] = { sha256: await sha256File(f), bytes };
   });
   return { version: 1, files };

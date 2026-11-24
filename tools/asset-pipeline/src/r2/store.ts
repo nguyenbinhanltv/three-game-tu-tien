@@ -1,17 +1,35 @@
 // Kho asset chung theo hash nội dung (tùy chọn, mặc định TẮT): các worktree/máy dev dùng chung một thư mục để KHÔNG tải lại cùng một file từ CDN.
-//   DTL_ASSET_STORE=D:/dtl-asset-store   (biến môi trường hoặc .env.local; không đặt = tắt, CI không đặt)
+//   Mặc định BẬT ở ~/.dtl-asset-store khi không chạy CI; đổi chỗ bằng DTL_ASSET_STORE=<thư mục> (biến môi trường hoặc .env.local); tắt bằng DTL_ASSET_STORE=off; CI (biến CI) luôn tắt trừ khi đặt tường minh.
 // Bố cục: <kho>/<2 ký tự đầu sha256>/<sha256 đầy đủ>. File vào `apps/client/public` bằng hardlink (cùng ổ đĩa) hoặc chép (khác ổ đĩa, vd worktree ở C:, kho ở D:).
 // File trong kho để CHỈ ĐỌC (hardlink dùng chung một inode: ghi đè tại chỗ sẽ làm hỏng kho). Công cụ ghi file phải xóa rồi tạo mới, không ghi tại chỗ.
 // `assets:pull` luôn tải qua URL công khai (CDN, `VITE_ASSET_BASE`), không bao giờ qua S3 API.
 
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { envVar } from './env.js';
+import { sha256File } from './lock.js';
 
-/** Thư mục kho từ DTL_ASSET_STORE, hoặc null nếu tắt. */
+/** Mặc định: `~/.dtl-asset-store` (cùng ổ với repo trên máy dev thường → hardlink được). */
+export const DEFAULT_STORE = path.join(os.homedir(), '.dtl-asset-store');
+
+/**
+ * Thư mục kho. Thứ tự: DTL_ASSET_STORE (`off`/`0`/`false`/`none` = tắt) → đang chạy CI (`CI` có giá trị) thì tắt → mặc định BẬT ở `~/.dtl-asset-store`.
+ */
 export function storeDir(): string | null {
   const v = envVar('DTL_ASSET_STORE');
-  return v ? path.resolve(v) : null;
+  if (v) return /^(off|0|false|none)$/i.test(v) ? null : path.resolve(v);
+  if (process.env.CI) return null;
+  return DEFAULT_STORE;
+}
+
+/** Kho có file này VÀ nội dung đúng sha256 (băm lại)? Nếu hỏng thì xóa khỏi kho để tải lại. */
+export async function verifyInStore(store: string, sha256: string, bytes: number): Promise<boolean> {
+  if (!hasInStore(store, sha256, bytes)) return false;
+  const f = storeFile(store, sha256);
+  if ((await sha256File(f)) === sha256) return true;
+  fs.rmSync(f, { force: true });
+  return false;
 }
 
 export function storeFile(store: string, sha256: string): string {
