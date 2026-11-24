@@ -1,4 +1,6 @@
 import { baseOf } from '../../base/quality';
+import { FLAGS } from '../../base/flags';
+import { paintedGrassColor } from '../../render/painted/ground';
 import * as THREE from 'three/webgpu';
 import {
   abs,
@@ -566,13 +568,13 @@ export class Grass {
       const tuv: N = vec2(cell.x.add(uv().x), cell.y.add(float(1).sub(uv().y))).div(vec2(cols, rows));
       const t: N = texture(atlas, tuv);
       // Gốc tối (khuất), ngọn sáng; màu thẻ nhân sắc từng bụi.
-      this.material.colorNode = t.rgb.mul(p1.yzw).mul(mix(1.1, 2.6, h));
+      this.material.colorNode = FLAGS.style === 'painted' ? paintedGrassColor(p1.yzw, h) : t.rgb.mul(p1.yzw).mul(mix(1.1, 2.6, h));
       this.material.opacityNode = t.a;
       this.material.alphaTest = 0.45;
       return;
     }
     // Gốc tối (khuất), ngọn sáng.
-    this.material.colorNode = p1.yzw.mul(mix(0.42, 1.08, h));
+    this.material.colorNode = FLAGS.style === 'painted' ? paintedGrassColor(p1.yzw, h) : p1.yzw.mul(mix(0.42, 1.08, h));
   }
 
   /** Nạp atlas thẻ cỏ (WebP RGBA, ~270 KB) rồi mới dựng shader; chưa xong thì lưới ẩn. */

@@ -29,7 +29,9 @@ import {
 } from 'three/tsl';
 import { WORLD_SIZE } from '@dtl/shared';
 import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
+import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
+import { paintedGroundColor } from '../painted/ground';
 
 /**
  * Shader mặt đất PBR (P2-A2): trộn 8 lớp texture CC0 Poly Haven theo vùng, độ dốc, độ cao.
@@ -638,6 +640,21 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     }
     col = mix(col, rock3, rockish3.mul(0.96));
   }
+  if (FLAGS.style === 'painted') {
+    // Họa Cảnh (P2): đất cỏ và đường mòn thành mảng màu hai tông + nét cọ theo dốc; đá, vách, tuyết, lát đá, mộ giữ nguyên.
+    const keep = max(max(max(rockW, cliffW), snowW), max(pav, bio.z));
+    col = paintedGroundColor(col, {
+      p,
+      dist,
+      nGeo,
+      patchA: noise2,
+      patchB: texture(tex.mask, p.mul(0.0098).add(0.19)).a,
+      forest: bio.x,
+      dry: bio.y,
+      path: pathW,
+      weight: float(1).sub(keep),
+    });
+  }
   mat.vertexColors = false;
   mat.colorNode = col;
 
@@ -674,6 +691,12 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     );
     mat.normalNode = transformNormalToView(nrm);
     mat.roughnessNode = mix(clamp(rough, 0.35, 1), float(0.7), snowW);
+    if (FLAGS.style === 'painted') {
+      // đất vẽ tay phẳng: bỏ vân pháp tuyến của texture ở phần được tô (đá/vách vẫn giữ), nhám cao
+      const paintW = float(1).sub(max(max(max(rockW, cliffW), snowW), max(pav, bio.z)));
+      mat.normalNode = transformNormalToView(normalize(mix(nrm, nShade, paintW)));
+      mat.roughnessNode = mix(mat.roughnessNode, float(0.95), paintW);
+    }
   }
   mat.needsUpdate = true;
 }

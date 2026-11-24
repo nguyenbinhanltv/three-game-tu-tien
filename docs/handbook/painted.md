@@ -13,7 +13,7 @@ Phong cách nền hoạt hình vẽ tay, thử ở Vân Lam khởi đầu. **M�
 | | Nội dung | Trạng thái |
 | --- | --- | --- |
 | P1 | cờ `style`, `render/painted/palette.ts` (bảng lit/shade, `cel2`), giấy phép, trang này | xong ở PR này |
-| P2 | mặt đất + cỏ (nét cọ theo dốc, mảng màu chậm) | |
+| P2 | mặt đất + cỏ (nét cọ theo dốc, mảng màu chậm) | xong ở PR này |
 | P3 | núi xa nướng một lần vào dải sơn, sương theo mood | |
 | P4 | mây trời đắp khối nướng vào cubemap | |
 | P5 | hoàn thiện Kuwahara + mặt nạ (bỏ qua trời/VFX/HUD) | |
@@ -28,3 +28,10 @@ Phong cách nền hoạt hình vẽ tay, thử ở Vân Lam khởi đầu. **M�
 ## Đo
 
 Mỗi PR từ P2 ghi số trước/sau cùng điểm `?at=` (draw call, CPU, GPU, texture) cho `?style=painted` và mặc định, trên cả `?renderer=webgpu` lẫn `webgl2`; luôn `?mute=1`.
+
+## Mặt đất + cỏ (P2)
+
+- `render/painted/brush.ts`: texture nét cọ 512 liền mạch sinh bằng CPU (R = nét mảnh dài theo x + chấm tròn, G = mảng mềm lớn); không có asset.
+- `render/painted/ground.ts`: `paintedGroundColor` (gọi cuối `applyGroundShader` khi `FLAGS.style === 'painted'`) và `paintedGrassColor` (`game/world/grass.ts`). Đất cỏ và đường mòn thành hai tông (sáng/tối) từ bảng `PAINTED`, mảng xanh chậm lấy từ mặt nạ vĩ mô, nét cọ xoay theo hướng xuống dốc (đất bằng: chéo cố định), mờ hết ở ~38–120 m để không lấp lánh. Đá/vách/tuyết/lát đá/mộ giữ nguyên; pháp tuyến texture bị bỏ ở phần được tô. Tông tối của nét là nét cọ (pha nửa với tông sáng), bóng thật vẫn do bản đồ bóng của cảnh.
+- Chỉnh nhìn: `paintedGroundParams.gain` (sáng) và `.strokes` (tương phản nét).
+- Chụp so sánh: `pnpm shots painted --out <thư mục tuyệt đối> [--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points thunglung,giua,suoi]` (Thung Lũng Thanh Phong); ghi `perf.json` (draw call, tam giác, texture, ms/khung).
