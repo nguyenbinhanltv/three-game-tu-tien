@@ -122,7 +122,10 @@ interface Flags {
 
 /** Mô tả từng tham số, để người sau biết cờ nào còn sống. */
 export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test' | 'viewer'; doc: string }>> = {
-  style: { scope: 'diag', doc: '=painted: phong cách Họa Cảnh (nền hoạt hình vẽ tay, pilot Vân Lam); mặc định tắt, xem docs/handbook/painted.md' },
+  style: {
+    scope: 'diag',
+    doc: '=painted: phong cách Họa Cảnh (nền hoạt hình vẽ tay, pilot Vân Lam); mặc định tắt, xem docs/handbook/painted.md',
+  },
   isoyaw: { scope: 'diag', doc: 'độ: ghi đè hướng nhìn cố định của camera chéo (chọn hướng đẹp nhất cho từng bản đồ)' },
   isofx: { scope: 'diag', doc: '=0 tắt nén hình VFX đứng cao ở camera chéo (debug, so ảnh trước/sau)' },
   touch: { scope: 'user', doc: '=1 ép chế độ cảm ứng, =0 ép tắt (mặc định theo thiết bị + Cài đặt)' },
