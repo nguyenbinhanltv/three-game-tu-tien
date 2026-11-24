@@ -1,0 +1,176 @@
+{
+ "skill": "mon_boom_line__boss_thach_tam_khoi_vuong__line",
+ "palette": "mon_boss_tho",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0,
+   "dur": 0.14,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.34,
+   "seed": 0,
+   "tier": 0,
+   "offset": [
+    0,
+    0.6,
+    1.0
+   ],
+   "scale": 1.4,
+   "billboard": true,
+   "sweep": 0
+  },
+  {
+   "type": "decal",
+   "tex": "jade_crack",
+   "t": 0,
+   "r": 1,
+   "dur": 2.4,
+   "at": "area",
+   "grow": 0.08,
+   "tone": "body",
+   "alpha": 1.0,
+   "tier": 0,
+   "from": "start",
+   "strip": [
+    10,
+    3
+   ],
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 480,
+   "tier": 0,
+   "flip": "earth_flip",
+   "scale": 1.8,
+   "offset": [
+    -0.5,
+    0.9,
+    1.5
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.03,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 481,
+   "tier": 1,
+   "flip": "earth_flip",
+   "scale": 1.95,
+   "offset": [
+    0.0,
+    0.9,
+    3.25
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.06,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 482,
+   "tier": 0,
+   "flip": "earth_flip",
+   "scale": 2.1,
+   "offset": [
+    0.5,
+    0.9,
+    5.0
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.09,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 483,
+   "tier": 1,
+   "flip": "earth_flip",
+   "scale": 1.8,
+   "offset": [
+    -0.5,
+    0.9,
+    6.75
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.12,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 484,
+   "tier": 0,
+   "flip": "earth_flip",
+   "scale": 1.95,
+   "offset": [
+    0.0,
+    0.9,
+    8.5
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0,
+   "n": 24,
+   "speed": 4,
+   "spread": 0.5,
+   "life": 0.9,
+   "size": 0.26,
+   "at": "area",
+   "tone": "core",
+   "tier": 0,
+   "offset": [
+    0,
+    0.2,
+    4
+   ],
+   "grav": 0.8
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0.03,
+   "n": 18,
+   "speed": 8,
+   "spread": 0.5,
+   "life": 0.7,
+   "size": 0.11,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.4,
+    5
+   ],
+   "grav": 8
+  }
+ ]
+}

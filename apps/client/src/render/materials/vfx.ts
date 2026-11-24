@@ -108,8 +108,8 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   art: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.3, fog: false },
   wind: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.2, fog: false },
   flip: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
-  mapDecal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.1, fog: true },
-  mapDecalTop: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.1, fog: true },
+  mapDecal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.1, fog: false },
+  mapDecalTop: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.1, fog: false },
   mapFlip: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.15, fog: false },
 };
 

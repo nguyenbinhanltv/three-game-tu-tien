@@ -229,7 +229,7 @@ export class MonFx {
     });
     this.note(key, src.id);
     // Vạch riêng dựa vào texture Codex (`warn_crack`, nạp nền): chưa nạp xong thì nó vô hình, giữ vòng cũ để người chơi vẫn thấy hitbox.
-    return forgeTexLoaded('warn_crack');
+    return forgeTexLoaded('decal_atlas');
   }
 
   /** Vùng nổ (đúng lúc hết `delay`). Tròn → gai + vết nứt; chữ nhật → gai nối tiếp; nón → lưỡi liềm quét. */

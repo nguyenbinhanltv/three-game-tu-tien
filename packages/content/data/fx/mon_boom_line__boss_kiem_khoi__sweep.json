@@ -1,0 +1,195 @@
+{
+ "skill": "mon_boom_line__boss_kiem_khoi__sweep",
+ "palette": "mon_boss_kim",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0,
+   "dur": 0.14,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.36,
+   "seed": 0,
+   "tier": 0,
+   "offset": [
+    0,
+    0.6,
+    1.0
+   ],
+   "scale": 1.4,
+   "billboard": true,
+   "sweep": 0
+  },
+  {
+   "type": "decal",
+   "tex": "steel_crack",
+   "t": 0,
+   "r": 1,
+   "dur": 2.2,
+   "at": "area",
+   "grow": 0.1,
+   "tone": "body",
+   "alpha": 1.0,
+   "tier": 0,
+   "from": "start",
+   "strip": [
+    16,
+    3
+   ],
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 320,
+   "tier": 0,
+   "flip": "steel_flip",
+   "scale": 1.7,
+   "offset": [
+    -0.5,
+    0.9,
+    1.5
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.03,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 321,
+   "tier": 1,
+   "flip": "steel_flip",
+   "scale": 1.8499999999999999,
+   "offset": [
+    0.0,
+    0.9,
+    4.1
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.06,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 322,
+   "tier": 0,
+   "flip": "steel_flip",
+   "scale": 2.0,
+   "offset": [
+    0.5,
+    0.9,
+    6.7
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.09,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 323,
+   "tier": 1,
+   "flip": "steel_flip",
+   "scale": 1.7,
+   "offset": [
+    -0.5,
+    0.9,
+    9.3
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.12,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 324,
+   "tier": 0,
+   "flip": "steel_flip",
+   "scale": 1.8499999999999999,
+   "offset": [
+    0.0,
+    0.9,
+    11.9
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.15,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 325,
+   "tier": 1,
+   "flip": "steel_flip",
+   "scale": 2.0,
+   "offset": [
+    0.5,
+    0.9,
+    14.5
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 30,
+   "speed": 10,
+   "spread": 0.3,
+   "life": 0.6,
+   "size": 0.1,
+   "at": "area",
+   "tone": "body",
+   "tier": 0,
+   "offset": [
+    0,
+    0.5,
+    3
+   ],
+   "grav": 3
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0.04,
+   "n": 18,
+   "speed": 8,
+   "spread": 0.4,
+   "life": 0.6,
+   "size": 0.1,
+   "at": "area",
+   "tone": "body",
+   "tier": 0,
+   "offset": [
+    0,
+    0.4,
+    8
+   ],
+   "grav": 6
+  }
+ ]
+}

@@ -1,0 +1,57 @@
+{
+ "skill": "mon_warn__boss_thon_mach_ngo_cong_vuong__chant",
+ "palette": "mon_boss_moc",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 4,
+   "dur": 2,
+   "at": "area",
+   "grow": 0.04,
+   "tone": "accent",
+   "alpha": 0.9,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "yaw": -20,
+   "untilDelay": true
+  },
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 4,
+   "dur": 2,
+   "at": "area",
+   "grow": 0.85,
+   "tone": "accent",
+   "alpha": 0.95,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "yaw": 70,
+   "untilDelay": true
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 24,
+   "speed": 1.7,
+   "spread": 1,
+   "life": 0.9,
+   "size": 0.09,
+   "at": "area",
+   "tone": "accent",
+   "tier": 1,
+   "inward": true,
+   "offset": [
+    0,
+    0.2,
+    0
+   ]
+  }
+ ]
+}
