@@ -171,6 +171,28 @@ export function hudBoxes(W: number, H: number, mode: HudMode = 'standard', o: Hu
   return { mode, W, H, tl, tc, hub, map, quest, chat, skills, utility: utilityBox(skills, o.skillLayout ?? 'arc'), dock };
 }
 
+/**
+ * Vùng HUD mà cửa sổ giữa màn hình không được phủ (Chân Cảnh U13), tính từ chính các hộp HUD (không số cứng):
+ * `bottom` = từ mép dưới lên tới đỉnh thanh chiêu/ô tiện ích (+ chừa 8); `rightX`, `rightY` = cột góc phải trên (hub, minimap,
+ * nhiệm vụ) bắt đầu từ x này (chừa 12) và kết thúc ở y này (+ chừa 8). Chế độ cảm ứng có bố cục riêng nên trả null.
+ */
+export interface HudClear {
+  bottom: number;
+  rightX: number;
+  rightY: number;
+}
+
+export function windowClear(W: number, H: number, mode: HudMode, o: HudOpts = {}): HudClear | null {
+  if (mode === 'touch') return null;
+  const b = hudBoxes(W, H, mode, o);
+  const top = (o.skillLayout ?? 'arc') === 'bar' ? b.skills.y : b.utility.y;
+  return {
+    bottom: Math.round(H - top + 8),
+    rightX: Math.round(Math.min(b.hub.x, b.map.x, b.quest.x) - 12),
+    rightY: Math.round(b.quest.y + b.quest.h + 8),
+  };
+}
+
 /** Bố cục cảm ứng ngang/dọc/tablet (chỉ chuẩn bị): lề 8, cụm kỹ năng dưới phải, hub gom lại thành một nút. */
 function touchBoxes(W: number, H: number, o: HudOpts): HudBoxes {
   const m = SAFE_TOUCH;
