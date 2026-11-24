@@ -78,6 +78,23 @@
    }
   },
   {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.02,
+   "r": 2,
+   "dur": 1.6,
+   "at": "target",
+   "offset": [
+    0,
+    0.02,
+    0
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
    "type": "mesh",
    "t": 0.03,
    "dur": 0.18,

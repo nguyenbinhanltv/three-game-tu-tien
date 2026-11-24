@@ -221,6 +221,23 @@
    "align": "aim"
   },
   {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0,
+   "r": 2.6,
+   "dur": 1.6,
+   "at": "ahead",
+   "offset": [
+    0,
+    0.02,
+    5.8
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
    "type": "mesh",
    "t": 0.01,
    "dur": 0.1,
