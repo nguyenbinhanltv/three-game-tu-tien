@@ -20,7 +20,7 @@ Rút từ painted-valley (xem README và LICENCE-NOTES của nó). **Phạm vi: 
 6. **Nền vẽ tay, người cel với viền mực.** Người vẽ ba tông phẳng (sáng, tối, nếp gấp), viền mực theo số nhận dạng từng bộ phận. **Hướng nhân vật CHỜ người dùng xem ảnh P7 rồi quyết**; trước đó nhân vật v3 đã duyệt giữ nguyên.
 7. **Animation cần clip chuyển tiếp.** Nhân vật đi bộ trên nền hoạt hình thiếu start, stop, pivot (xoay đột ngột), sprint và nhịp thở dốc (idle mệt) thì đọc là trượt; mỗi bộ cần các clip này (nối với `vfx-animation.md`, Thân Pháp).
 8. **Một hướng mỹ thuật thống nhất.** Mọi asset mới (kiến trúc, cây, prop, thẻ cây) đi qua bảng phong cách của chế độ này; không trộn bán tả thực với painted trong cùng một cảnh.
-9. **Đo khớp, không "nhìn cho giống".** Port từ nguồn phải dịch từng dòng, giữ hằng số, rồi so bằng số (SSIM, ΔE) ở cảnh thử cô lập (`tools/painted-compare` và cờ `?paintedlab=1`) [CHƯA CÓ trên main: đang dựng ở nhánh riêng, dự kiến vào ở bước P2/P8; trước đó chỉ là kế hoạch] trước khi áp vào địa hình thật.
+9. **Đo khớp, không "nhìn cho giống".** Port từ nguồn phải dịch từng dòng, giữ hằng số, rồi so bằng số (SSIM, ΔE) ở cảnh thử cô lập (`tools/painted-compare` và cờ `?paintedlab=1`) (vào cùng PR #614) trước khi áp vào địa hình thật.
 10. **Giữ ngân sách.** Dưới 300 draw call, dưới 2 triệu tam giác, CPU dưới 8 ms; số đo trước/sau ở mỗi PR.
 
 ### Ghi công
@@ -68,3 +68,7 @@ Lần đầu (bụi cỏ hai tông + nét cọ xoay theo dốc) bị người d�
 - Chỉnh nhìn: `paintedGroundParams.gain` và `paintedGroundParams.tint`, `paintedGrassParams.gain`.
 - Khác nguồn: bỏ lửa/cắt/giẫm; nhiễu `tNoiseHi` thay bằng nhiễu của ta; ánh sáng qua đèn PBR của cảnh (có bóng, theo mood) thay cho `meadowLight`.
 - Chụp so sánh: `pnpm shots painted --out <thư mục tuyệt đối> [--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points thunglung,giua,suoi] [--burst N] [--spawn <id quái> --spawn-n N]` (Thung Lũng Thanh Phong); ghi `perf.json`. Ảnh tham chiếu painted-valley chỉ để ở artifact phiên, KHÔNG commit.
+
+## Cảnh thử đo khớp (đạt)
+
+`?paintedlab=1` (`render/painted/lab/`) dựng cánh đồng của painted-valley (đất, lá mảnh, hoa, Kuwahara paint 3) bằng TSL dịch từng dòng; `tools/painted-compare/ref-capture.mjs` chụp tham chiếu (giờ 15,5, thời gian đóng băng, camera 52°/20 m/FOV 32°, 1080p) và `lab-capture.mjs` chụp bản của ta rồi `compare.mjs` tính SSIM và ΔE. **Kết quả: SSIM 0,931, ΔE00 trung bình 1,82** (ngưỡng ≥ 0,90 và ≤ 5). Dải trên cùng của ảnh (khoảng 7%) còn khác: đất ở xa phía sau đỉnh đồi chưa vẽ trong cảnh thử. Bài học TSL rút ra (`.toVar()` trong `select` phải bọc `Fn` + `varyingProperty`) ở skill `tsl-shaders-vfx`, mục "Bẫy three r178 / TSL".
