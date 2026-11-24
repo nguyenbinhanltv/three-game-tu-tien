@@ -87,6 +87,7 @@ export interface AnimLabDebug {
     cutin: boolean;
   };
   poses(): string[];
+  hitSelf(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): boolean;
   cutin(skill: string): boolean;
 }
 

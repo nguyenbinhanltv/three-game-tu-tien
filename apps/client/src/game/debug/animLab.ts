@@ -45,6 +45,8 @@ export interface AnimLabApi {
   /** Bật/tắt lớp Thân Pháp (so A/B). */
   fx(flags: Partial<AnimFxFlags>): AnimFxFlags;
   poses(): string[];
+  /** T5: cho chính mình trúng đòn từ hướng `from` ('front'|'back'|'left'|'right'), cấp `tier` 0..3; `knock` = ngã (knockdown). */
+  hitSelf(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): boolean;
   /** T7: phát cut-in chiêu cuối `skill` như khi mình tung chiêu (khựng + thẻ); trả false nếu chiêu chưa có tranh. */
   cutin(skill: string): boolean;
 }
@@ -104,6 +106,24 @@ export function installAnimLab(g: Game): void {
       return { ...ANIM_FX };
     },
     poses: () => [...POSE.keys()],
+    hitSelf(from, tier, knock) {
+      const m = self() as unknown as
+        | {
+            root: { rotation: { y: number } };
+            hitReact?(o: object): void;
+            knockdown?(): void;
+          }
+        | undefined;
+      if (!m?.hitReact) return false;
+      const y = m.root.rotation.y;
+      const f: [number, number] = [Math.sin(y), Math.cos(y)];
+      const r: [number, number] = [Math.cos(y), -Math.sin(y)];
+      // dir = từ người đánh tới người bị đánh: bị đánh từ phía trước thì bị đẩy ra sau (−f).
+      const d = from === 'front' ? [-f[0], -f[1]] : from === 'back' ? f : from === 'left' ? [-r[0], -r[1]] : r;
+      m.hitReact({ dirX: d[0], dirZ: d[1], tier, heavy: tier >= 2 });
+      if (knock) m.knockdown?.();
+      return true;
+    },
     cutin(skill) {
       const art = cutinArt(skill, g.ents.players.get(g.sid)?.look.g ?? 'm');
       if (!art) return false;
