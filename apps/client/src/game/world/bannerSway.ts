@@ -25,8 +25,8 @@ export function bannerSway(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandar
   return m;
 }
 
-/** Phần treo của prop nằm ở x > 0,3 m và y > 1,5 m (cột tre và đế ở x ≈ 0 hoặc y ≈ 0 đứng yên). */
-const LANTERN_ARM_X = [0.25, 0.45] as const;
+/** Phần treo của prop (đèn thứ nhất tâm x = 0,5 m, bán kính 0,3 m ⇒ trải x ∈ [0,2; 0,8]) nằm ở x > 0,15 m và y > 1,5 m. Cột tre (bán kính 0,05 m) và đế (y ≈ 0) đứng yên; ngưỡng x nằm trong khoảng [0,07; 0,15] để mọi phần của đèn đầu có `arm` = 1. */
+const LANTERN_ARM_X = [0.07, 0.15] as const;
 const LANTERN_ARM_Y = [1.4, 1.6] as const;
 
 /** Đỉnh chỗ treo của lồng đèn giấy `prop_tc_long_den_giay` (m, hình học đã nướng ma trận nút): đèn nằm 1,84–2,76 m, cần treo ~2,85 m. */
