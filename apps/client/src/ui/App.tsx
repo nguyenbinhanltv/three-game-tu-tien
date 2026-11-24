@@ -167,60 +167,68 @@ function Login() {
     Game.connect({ token: tk });
   };
 
-  return (
-    <div className={'ts-card' + ' ngj-card u2-card'}>
-      <Corners material="paper" />
-      <p className="login-tag">{t('ui.tagline')}</p>
-
-      {needName && token ? (
-        <div className="login-form">
-          <label>{t('ui.login.need_name')}</label>
-          <input
-            autoFocus
-            value={name}
-            maxLength={14}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && submitName()}
-          />
-          <div className="login-hint">{t('ui.login.name_rule')}</div>
-          <LookPicker look={look} onChange={setLook} />
-          <RootPicker value={root} onChange={setRoot} />
-          <button className="btn primary" onClick={submitName}>
-            {t('ui.login.enter')}
-          </button>
-        </div>
-      ) : (
-        <>
-          {GOOGLE_CLIENT_ID && (
-            <div className="login-form">
-              <label>{t('ui.login.google_title')}</label>
-              <GoogleButton onToken={onToken} />
-              <div className="login-hint">{t('ui.login.google_hint')}</div>
-            </div>
-          )}
-          {DEV_LOGIN && (
-            <div className="login-form">
-              <label>{t('ui.login.dev_title')}</label>
-              <input
-                autoFocus
-                placeholder={t('ui.login.dev_name')}
-                value={name}
-                maxLength={14}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && submitDev()}
-              />
-              <div className="login-hint">{t('ui.login.dev_hint')}</div>
-              <LookPicker look={look} onChange={setLook} />
-              <RootPicker value={root} onChange={setRoot} />
-              <button className="btn primary" onClick={submitDev}>
-                {t('ui.login.enter')}
-              </button>
-            </div>
-          )}
-          {!GOOGLE_CLIENT_ID && !DEV_LOGIN && <div className="login-error">{t('ui.login.no_method')}</div>}
-        </>
-      )}
+  // Thanh hành động nằm NGOÀI vùng cuộn: nút vào game (và lỗi) luôn thấy mà không đè lên nội dung bên trên.
+  const showActions = (needName && !!token) || DEV_LOGIN;
+  const actions = showActions ? (
+    <div className="login-actions">
       {(err || nameError) && <div className="login-error">{nameError || err}</div>}
+      <button className="btn primary" onClick={needName && token ? submitName : submitDev}>
+        {t('ui.login.enter')}
+      </button>
+    </div>
+  ) : null;
+
+  return (
+    <div className={'ts-card login-card ngj-card u2-card'}>
+      <Corners material="paper" />
+      <div className="login-scroll">
+        <p className="login-tag">{t('ui.tagline')}</p>
+
+        {needName && token ? (
+          <div className="login-form">
+            <label>{t('ui.login.need_name')}</label>
+            <input
+              autoFocus
+              value={name}
+              maxLength={14}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && submitName()}
+            />
+            <div className="login-hint">{t('ui.login.name_rule')}</div>
+            <LookPicker look={look} onChange={setLook} />
+            <RootPicker value={root} onChange={setRoot} />
+          </div>
+        ) : (
+          <>
+            {GOOGLE_CLIENT_ID && (
+              <div className="login-form">
+                <label>{t('ui.login.google_title')}</label>
+                <GoogleButton onToken={onToken} />
+                <div className="login-hint">{t('ui.login.google_hint')}</div>
+              </div>
+            )}
+            {DEV_LOGIN && (
+              <div className="login-form">
+                <label>{t('ui.login.dev_title')}</label>
+                <input
+                  autoFocus
+                  placeholder={t('ui.login.dev_name')}
+                  value={name}
+                  maxLength={14}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && submitDev()}
+                />
+                <div className="login-hint">{t('ui.login.dev_hint')}</div>
+                <LookPicker look={look} onChange={setLook} />
+                <RootPicker value={root} onChange={setRoot} />
+              </div>
+            )}
+            {!GOOGLE_CLIENT_ID && !DEV_LOGIN && <div className="login-error">{t('ui.login.no_method')}</div>}
+          </>
+        )}
+        {!showActions && (err || nameError) && <div className="login-error">{nameError || err}</div>}
+      </div>
+      {actions}
     </div>
   );
 }
