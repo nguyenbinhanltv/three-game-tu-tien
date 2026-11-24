@@ -68,6 +68,7 @@ import { Beacons } from '../render/beacons';
 import type { GodRays } from '../render/godRays';
 import type { CardForest } from './world/cardForest';
 import type { LacKiemGarden } from './world/lacKiemGarden';
+import type { LacKiemGround } from './world/lacKiemGround';
 import type { LacKiemScenes } from './world/lacKiemScenes';
 import type { DoanMachArt } from './world/doanMachArt';
 import type { KiemTrungArt } from './world/kiemTrungArt';
@@ -142,7 +143,8 @@ import { CharPreview } from './camera/charPreview';
 import { IsoRig } from './camera/isoRig';
 import { currentSearch, FLAGS } from '../base/flags';
 import { installVfxLab } from './debug/vfxLab';
-import { VFX_LAB } from './engine/common';
+import { ANIM_LAB, VFX_LAB } from './engine/common';
+import { installAnimLab } from './debug/animLab';
 import { LoginOptions, QUALITY, isWebGPU, isWorldRoom, levelOfInit, levelOfRoom, serverUrl } from './engine/common';
 import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from './engine/frameLoop';
 import { handleFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
@@ -226,6 +228,7 @@ export class Game {
           // Để tiện gỡ lỗi từ console của trình duyệt.
           (window as unknown as { __game?: Game }).__game = g;
           if (VFX_LAB) installVfxLab(g, onHazard);
+          if (ANIM_LAB) installAnimLab(g);
           g.start().catch((err) => {
             engineLog.error(err);
             set({ phase: 'error', error: t('ui.err.webgl') + ' ' + String(err?.message ?? err) });
@@ -277,6 +280,7 @@ export class Game {
   lacKiemGarden: LacKiemGarden | null = null;
   /** Tiểu cảnh Lạc Kiếm (Chân Cảnh M1+M2): cổng bài, ao sen, kiếm bia, lối men vách, cầu treo. */
   lacKiemScenes: LacKiemScenes | null = null;
+  lacKiemGround: LacKiemGround | null = null;
   /** Cây thẻ alpha thay cây Tripo ở Lạc Kiếm (MAP-1 bản B). */
   cardForest: CardForest | null = null;
   doanMachArt: DoanMachArt | null = null;

@@ -22,6 +22,10 @@ interface Flags {
   batching: boolean;
   /** `?vfxlab=1` (chỉ dev) phòng thử VFX: gắn `window.__vfxlab` (tạm dừng, chậm, bước đơn, đồng hồ ngân sách) cho `pnpm shots vfxlab`. */
   vfxLab: boolean;
+  /** `?animlab=1` (chỉ dev) phòng thử animation Thân Pháp: gắn `window.__animlab`. */
+  animLab: boolean;
+  /** `?thanphap=1`: bật lớp Thân Pháp (cường điệu góc chéo, nảy bước...) trên nhân vật v3; mặc định tắt tới khi duyệt pilot. */
+  thanPhap: boolean;
   /** `?vfxwarm=0` tắt biên dịch trước VFX (chẩn đoán). */
   vfxWarm: boolean;
   /** `?aura=0` tắt hào quang cảnh giới (so số đo trước/sau, RFX-1). */
@@ -104,6 +108,8 @@ interface Flags {
   breakables: boolean;
   /** `?scenes=0` tắt tiểu cảnh Lạc Kiếm (cổng bài, ao sen, kiếm bia, cầu treo; Chân Cảnh M1+M2): ảnh đối chứng (chỉ tắt hình; va chạm vẫn còn, ảnh có thể có tường vô hình). */
   scenes: boolean;
+  /** `?ground=0` tắt decal mặt đất kể chuyện Lạc Kiếm (vết chân, vũng nước, gạch vỡ, ấn trận, rễ; Chân Cảnh M3): ảnh đối chứng. */
+  ground: boolean;
   /** `?isoyaw=<độ>` ghi đè hướng nhìn cố định của camera chéo (chỉ để chọn hướng đẹp nhất cho từng bản đồ). */
   isoYaw: number | null;
   /** `?isofx=0` tắt nén hình VFX đứng cao ở camera chéo (so ảnh trước/sau, Thiên Nhãn P4-1). */
@@ -124,6 +130,11 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   models: { scope: 'diag', doc: '=legacy: model khối (dự phòng)' },
   batch: { scope: 'diag', doc: '=0: tắt gộp draw call VFX' },
   vfxlab: { scope: 'test', doc: '=1 (dev): phòng thử VFX, gắn window.__vfxlab; dùng với pnpm shots vfxlab' },
+  animlab: { scope: 'test', doc: '=1 (dev): phòng thử animation Thân Pháp, gắn window.__animlab; dùng với pnpm shots animlab' },
+  thanphap: {
+    scope: 'diag',
+    doc: '=1: lớp Thân Pháp (cường điệu góc chéo, nảy bước, idle/chiêu mới của Kiếm tu); pilot TP-1, mặc định tắt',
+  },
   vfxwarm: { scope: 'diag', doc: '=0: tắt biên dịch trước VFX' },
   auraground: { scope: 'diag', doc: '=0: hào quang cảnh giới kiểu cũ quanh người, không có ấn dưới chân (so ảnh C5)' },
   aura: { scope: 'diag', doc: '=0: tắt hào quang cảnh giới trên nhân vật' },
@@ -163,6 +174,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   tc: { scope: 'diag', doc: '=0 ẩn bộ prop Thiên Công Khai Vật (PROP-1, so ảnh/đo)' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
   hero: { scope: 'diag', doc: '=0 tắt viền nhân vật (hero light)' },
+  ground: { scope: 'diag', doc: '=0 tắt decal mặt đất kể chuyện Lạc Kiếm (Chân Cảnh M3)' },
   scenes: { scope: 'diag', doc: '=0 tắt HÌNH tiểu cảnh Lạc Kiếm (Chân Cảnh M1+M2); va chạm vật đặc vẫn còn (shared)' },
   brk: { scope: 'diag', doc: '=0 tắt vật thể vỡ (vò, bia, cọc)' },
   god: { scope: 'test', doc: 'bất tử (server kiểm lại, xem testParams.ts)' },
@@ -204,6 +216,8 @@ export function readFlags(search: string): Flags {
     legacyModels: q.get('models') === 'legacy',
     batching: !off(q.get('batch')),
     vfxLab: q.get('vfxlab') === '1',
+    animLab: q.get('animlab') === '1',
+    thanPhap: q.get('thanphap') === '1',
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
     auraGround: !off(q.get('auraground')),
@@ -245,6 +259,7 @@ export function readFlags(search: string): Flags {
     hero: !off(q.get('hero')),
     breakables: !off(q.get('brk')),
     scenes: !off(q.get('scenes')),
+    ground: !off(q.get('ground')),
   };
 }
 

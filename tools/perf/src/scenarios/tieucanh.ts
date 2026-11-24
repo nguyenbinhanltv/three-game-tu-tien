@@ -1,5 +1,6 @@
 // Chân Cảnh M1–M5 (pilot Lạc Kiếm Tông): ảnh tiểu cảnh camera chéo, 6 điểm × 4 thời điểm × 2 cỡ ảnh, cùng góc trước/sau, kèm số đo.
 //   pnpm shots tieucanh --out <thư mục> [--tag truoc|sau] [--moods dawn,day,dusk,night] [--views 720p,1080p] [--points a,b|all] [--perf 1] [--at x,z;x,z] (tọa độ tương đối tâm)
+//   `--dpr 2` ảnh cận (độ phân giải gấp đôi, dùng với --views 720p).
 //   `--deck 1` đi bộ lên cầu treo, ảnh đầu cầu/giữa cầu/bờ kia (ghi cao độ người);
 //   `--clip 1` quay đoạn đi bộ xuyên tông môn (webm ~60 s, 1080p, `--mood`); `--hit 1` thêm khung +30 ms sau trúng đòn ở điểm đánh.
 import { SECT } from '@dtl/shared';
@@ -145,6 +146,7 @@ export default {
           name: `Tc${mood[0]}${view[0]}`,
           quality: opt('--preset', 'high'),
           viewport: SIZES[view]!,
+          dpr: Number(opt('--dpr', '1')),
           query: { mood, cam: 'iso', quiet: 1 },
           extra: opt('--query', ''),
           seenIntro: true,
