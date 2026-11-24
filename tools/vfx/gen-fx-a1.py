@@ -37,6 +37,21 @@ def parts(kind, t, n, speed, spread, life, size, tone, **kw):
     return e
 
 
+def unmul(events, k):
+    """FxRunner nhân `offset` (cả y) và `scale` của mesh (trừ fit='area') với `mul` = hazardMul(r, 8) của vùng dải/nón: chia ngược để kích thước/vị trí
+    bằng đúng mét ghi ở đây (vùng tròn đã viết theo `mul` nên không dùng)."""
+    out = []
+    for e in events:
+        e = dict(e)
+        if e['type'] in ('mesh', 'particles') and 'offset' in e:
+            e['offset'] = [round(v / k, 3) for v in e['offset']]
+        if e['type'] == 'mesh' and e.get('fit') != 'area':
+            sc = e.get('scale', 1)
+            e['scale'] = [round(v / k, 3) for v in sc] if isinstance(sc, list) else round(sc / k, 3)
+        out.append(e)
+    return out
+
+
 def write(name, events, palette):
     with open(os.path.join(OUT, name + '.json'), 'w', encoding='utf8') as f:
         json.dump({"skill": name, "palette": palette, "events": events}, f, ensure_ascii=False, indent=1)
@@ -78,8 +93,25 @@ def ring_mesh(shape, n, rad, base_seed, scale, tone='body', tilt=-90, h=0.0, t0=
     return out
 
 
-def ripple(t, tone, alpha, seed, s0=0.6, s1=1.04, dur=0.55):
-    return mesh('ripple', t, dur, tone, alpha, seed, scale=s0, scaleTo=s1, fit='area', sweep=0.25, erodeFrom=0.5, ragged=0.4)
+def ripple(t, tone, alpha, seed, s0=0.85, s1=1.04, dur=0.55):
+    # sóng đầu tiên: bắt đầu gần đủ bán kính + sweep ngắn để thấy ngay ở khung +0 ms
+    return mesh('ripple', t, dur, tone, alpha, seed, scale=s0, scaleTo=s1, fit='area', sweep=0.08, erodeFrom=0.5, ragged=0.4)
+
+
+def spires(length, n, half_w, scale, seed, tone='body', t0=0.0, step=0.025):
+    """Hai hàng gai đá hai bên dải (rock_spire, đứng +Y), mật độ cao dọc dải."""
+    out = []
+    for i in range(n):
+        z = 1.2 + (length - 2.4) * i / max(1, n - 1)
+        for sd in (-1, 1):
+            out.append(mesh('rock_spire', t0 + i * step, 0.9, tone, 1, seed + i * 2 + (sd > 0), offset=[sd * half_w, 0, round(z, 2)],
+                            scale=scale * (0.8 + 0.4 * ((i + (sd > 0)) % 3) / 2), sweep=0.2, erodeFrom=0.6, tier=0 if i % 2 == 0 else 1))
+    return out
+
+
+def rift(length, width, tone='rim', alpha=0.95, seed=60, t=0.0, dur=1.1):
+    """Khe nứt thẳng dọc dải (rift_line: rộng ≈ 0,14 × scale x)."""
+    return mesh('rift_line', t, dur, tone, alpha, seed, offset=[0, 0.3, 0], scale=[round(width / 0.14, 2), 1, length], sweep=0.22, erodeFrom=0.55)
 
 
 # ---------- vạch báo: đĩa/quạt/dải đỏ đặc, vân nứt tô dần theo delay ----------
@@ -136,13 +168,15 @@ write(f'mon_boom_circle__{B}__slam', [
     parts('shard', 0, 20, 6, 0.9, 0.7, 0.11, 'body', offset=[0, 0.3, 0], grav=9, tier=0),
 ], PAL[B])
 write(f'mon_warn_line__{B}__sweep', warn_strip(1.3, 16, 3), PAL[B])
-write(f'mon_boom_line__{B}__sweep', [
-    mesh('burst', 0, 0.14, 'rim', 0.36, 0, offset=[0, 0.6, 1.0], scale=1.4, billboard=True, sweep=0),
-    decal('steel_crack', 0, 1, 2.2, 'body', 1.0, 0.1, top=False, untilDelay=False, strip=[16, 3], lift=LIFT),
-    *flip_line('steel_flip', 6, 16, 0.0, 1.7, 320, step=0.03),
-    parts('spark', 0, 30, 10, 0.3, 0.6, 0.1, 'body', offset=[0, 0.5, 3], grav=3, tier=0),
-    parts('shard', 0.04, 18, 8, 0.4, 0.6, 0.1, 'body', offset=[0, 0.4, 8], grav=6, tier=0),
-], PAL[B])
+write(f'mon_boom_line__{B}__sweep', unmul([
+    decal('steel_crack', 0, 1, 2.4, 'body', 1.0, 0.04, top=False, untilDelay=False, strip=[16, 3], lift=LIFT),
+    decal('steel_crack', 0, 1, 2.4, 'body', 1.0, 0.04, top=False, untilDelay=False, strip=[16, 3], lift=0.36),
+    rift(16, 0.7, tone='rim', seed=60),  # rãnh nứt sáng bạc chạy dọc đường chém
+    *flip_line('steel_flip', 8, 16, 0.0, 1.2, 320, step=0.02, jitter=0.9),
+    *[mesh('spark_streak', 0.0 + i * 0.02, 0.45, 'rim', 1, 330 + i, offset=[(i - 1) * 0.9, 0.5, 0.5], scale=[0.6, 0.6, 15], sweep=0.2, erodeFrom=0.5) for i in range(3)],  # vệt kiếm khí trắng bạc
+    parts('spark', 0, 40, 10, 0.3, 0.6, 0.1, 'body', offset=[0, 0.5, 3], grav=3, tier=0),
+    parts('shard', 0.0, 26, 9, 0.4, 0.6, 0.1, 'body', offset=[0, 0.4, 8], grav=6, tier=0),
+], 2.0), PAL[B])
 
 # ================= Huyết Lang Vương (hỏa): vuốt than cháy, lõi tối viền vàng trắng =================
 B = 'boss_huyet_lang_vuong'
@@ -164,7 +198,6 @@ write(f'mon_warn_cone__{B}__sweep', warn_fan(1.2, 50), PAL[B])
 write(f'mon_boom_cone__{B}__sweep', [
     mesh('burst', 0, 0.14, 'rim', 0.34, 0, offset=[0, 0.6, 0.8], scale=1.4, billboard=True, sweep=0),
     decal('ember_crack', 0, 8, 2.2, 'body', 1.0, 0.04, top=False, untilDelay=False, sector=50, lift=LIFT),
-    decal('ember_crack', 0, 8, 0.6, 'rim', 1.0, 0.06, top=False, untilDelay=False, sector=9, swing=[-44, 44], swingDur=0.28, lift=0.4),  # đầu sóng lửa quét ngang
     *[flip('fire_flip', i * 0.03, math.sin(math.radians((i % 3 - 1) * 22)) * (2 + i * 1.3), math.cos(math.radians((i % 3 - 1) * 22)) * (2 + i * 1.3), 1.6 + (i % 3) * 0.2, 360 + i, tier=0 if i % 2 == 0 else 1) for i in range(7)],
     parts('spark', 0, 26, 8, 0.4, 0.6, 0.09, 'rim', offset=[0, 0.5, 0.8], grav=4, tier=0),
     parts('dust', 0.04, 14, 3, 0.7, 0.9, 0.24, 'core', offset=[0, 0.1, 4], grav=0.8),
@@ -185,25 +218,31 @@ write(f'mon_boom_circle__{B}__chant', [
     parts('dust', 0, 20, 4, 1, 0.9, 0.22, 'core', offset=[0, 0.2, 0], grav=1),
 ], PAL[B])
 write(f'mon_warn_line__{B}__sweep', warn_strip(1.5, 18, 4), PAL[B])
-write(f'mon_boom_line__{B}__sweep', [
-    mesh('burst', 0, 0.14, 'rim', 0.36, 0, offset=[0, 0.6, 1.0], scale=1.4, billboard=True, sweep=0),
-    decal('bolt_scorch', 0, 1, 2.2, 'body', 1.0, 0.1, top=False, untilDelay=False, strip=[18, 4], lift=LIFT),
-    *flip_line('bolt_flip', 7, 18, 0.0, 1.4, 400, step=0.03),
-    parts('spark', 0, 36, 10, 0.3, 0.6, 0.09, 'rim', offset=[0, 0.5, 4], grav=2, tier=0),
-    parts('dust', 0.04, 14, 3, 0.7, 0.8, 0.22, 'core', offset=[0, 0.1, 6], grav=1),
-], PAL[B])
+write(f'mon_boom_line__{B}__sweep', unmul([
+    mesh('burst', 0, 0.16, 'rim', 0.4, 0, offset=[0, 0.6, 1.0], scale=1.5, billboard=True, sweep=0),
+    decal('bolt_scorch', 0, 1, 2.4, 'body', 1.0, 0.04, top=False, untilDelay=False, strip=[18, 4], lift=LIFT),
+    decal('bolt_scorch', 0, 1, 2.4, 'body', 1.0, 0.04, top=False, untilDelay=False, strip=[18, 4], lift=0.36),
+    # chuỗi sét zigzag chạy dọc dải (ba biến thể bolt để chập chờn)
+    *[mesh(sh, 0.0 + i * 0.015, 0.7, 'rim', 1, 400 + i, offset=[(i - 1) * 0.8, 0.45, 0.3], scale=[1.4, 1.4, 17.5], sweep=0.25, erodeFrom=0.5) for i, sh in enumerate(['bolt', 'bolt_b', 'bolt_c'])],
+    *flip_line('bolt_flip', 9, 18, 0.0, 1.2, 410, step=0.02, jitter=1.0),
+    parts('spark', 0, 44, 11, 0.3, 0.6, 0.09, 'rim', offset=[0, 0.5, 5], grav=2, tier=0),
+    parts('dust', 0.02, 16, 3, 0.7, 0.8, 0.22, 'core', offset=[0, 0.1, 6], grav=1),
+], 2.25), PAL[B])
 
 # ================= Địa Mạch Long (thổ/ngọc lam): khe nứt gai đá, địa chấn =================
 B = 'boss_dia_mach_long'
 cast_ring(B, 14)
 write(f'mon_warn_line__{B}__line', warn_strip(2.0, 30, 4, spark=26), PAL[B])
-write(f'mon_boom_line__{B}__line', [
-    mesh('burst', 0, 0.14, 'rim', 0.34, 0, offset=[0, 0.6, 1.0], scale=1.4, billboard=True, sweep=0),
-    decal('jade_crack', 0, 1, 2.6, 'body', 1.0, 0.18, top=False, untilDelay=False, strip=[30, 4], lift=LIFT),
-    *flip_line('earth_flip', 10, 30, 0.0, 2.0, 420, step=0.025),
-    parts('dust', 0, 40, 4, 0.5, 1.0, 0.3, 'core', offset=[0, 0.2, 8], grav=0.8, tier=0),
-    parts('shard', 0.03, 24, 8, 0.5, 0.7, 0.12, 'rim', offset=[0, 0.4, 12], grav=8, tier=0),
-], PAL[B])
+write(f'mon_boom_line__{B}__line', unmul([
+    mesh('burst', 0, 0.16, 'rim', 0.36, 0, offset=[0, 0.6, 1.0], scale=1.5, billboard=True, sweep=0),
+    decal('jade_crack', 0, 1, 2.6, 'body', 1.0, 0.1, top=False, untilDelay=False, strip=[30, 4], lift=LIFT),
+    decal('jade_crack', 0, 1, 2.6, 'body', 1.0, 0.1, top=False, untilDelay=False, strip=[30, 4], lift=0.36),
+    rift(30, 1.6, tone='rim', seed=70),  # khe nứt dài, lõi sẫm viền sáng
+    *spires(30, 10, 1.9, 1.3, 440, tone='body'),  # gai đá nâu hai bên khe
+    *flip_line('earth_flip', 12, 30, 0.0, 1.2, 420, step=0.02, jitter=1.0),
+    parts('dust', 0, 44, 4, 0.5, 1.0, 0.3, 'core', offset=[0, 0.2, 8], grav=0.8, tier=0),
+    parts('shard', 0.0, 30, 8, 0.5, 0.7, 0.12, 'body', offset=[0, 0.4, 12], grav=8, tier=0),
+], 3.75), PAL[B])
 write(f'mon_warn__{B}__chant', warn_circle(0.85, 70, -20, spark=26), PAL[B])
 write(f'mon_boom_circle__{B}__chant', [
     mesh('burst', 0, 0.16, 'rim', 0.32, 0, offset=[0, 0.7, 0], scale=1.4, billboard=True, sweep=0),
@@ -218,23 +257,28 @@ write(f'mon_boom_circle__{B}__chant', [
 # ================= Thạch Tâm Khôi Vương (thổ/ngọc lam): hố nứt hình sao, sóng đá =================
 B = 'boss_thach_tam_khoi_vuong'
 write(f'mon_warn__{B}__leap', warn_circle(1.2, 25, -60), PAL[B])
-write(f'mon_boom_circle__{B}__leap', [
-    mesh('burst', 0, 0.16, 'rim', 0.36, 0, offset=[0, 0.5, 0], scale=1.5, billboard=True, sweep=0),
+write(f'mon_boom_circle__{B}__leap', unmul([
+    mesh('burst', 0, 0.16, 'rim', 0.4, 0, offset=[0, 0.5, 0], scale=1.5, billboard=True, sweep=0),
     decal('jade_crack', 0, 4, 2.4, 'body', 1.0, 0.02, top=False, untilDelay=False, lift=LIFT),
+    mesh('crack_radial', 0, 1.0, 'rim', 1, 470, offset=[0, 0.3, 0], fit='area', scale=1.0, sweep=0.1, erodeFrom=0.55),  # hố nứt hình sao
     ripple(0, 'rim', 0.9, 2),
-    *flip_ring('earth_flip', 6, 2.8, 0.0, 1.7, 460),
-    flip('earth_flip', 0.0, 0, 0, 2.2, 469, h=1.1),
-    parts('dust', 0, 30, 4, 1, 0.9, 0.28, 'core', offset=[0, 0.2, 0], grav=0.8),
-    parts('shard', 0, 28, 7, 1, 0.7, 0.12, 'rim', offset=[0, 0.3, 0], grav=9, tier=0),
-], PAL[B])
+    *spires(4, 3, 1.8, 1.1, 480),
+    *flip_ring('earth_flip', 6, 2.8, 0.0, 1.5, 460),
+    flip('earth_flip', 0.0, 0, 0, 2.0, 469, h=1.1),
+    parts('dust', 0, 36, 4, 1, 0.9, 0.28, 'core', offset=[0, 0.2, 0], grav=0.8),
+    parts('shard', 0, 46, 9, 1, 0.8, 0.14, 'body', offset=[0, 0.3, 0], grav=10, tier=0),  # đá văng
+], 1.125), PAL[B])
 write(f'mon_warn_line__{B}__line', warn_strip(1.3, 10, 3), PAL[B])
-write(f'mon_boom_line__{B}__line', [
-    mesh('burst', 0, 0.14, 'rim', 0.34, 0, offset=[0, 0.6, 1.0], scale=1.4, billboard=True, sweep=0),
-    decal('jade_crack', 0, 1, 2.4, 'body', 1.0, 0.08, top=False, untilDelay=False, strip=[10, 3], lift=LIFT),
-    *flip_line('earth_flip', 5, 10, 0.0, 1.8, 480, step=0.03),
-    parts('dust', 0, 24, 4, 0.5, 0.9, 0.26, 'core', offset=[0, 0.2, 4], grav=0.8, tier=0),
-    parts('shard', 0.03, 18, 8, 0.5, 0.7, 0.11, 'rim', offset=[0, 0.4, 5], grav=8, tier=0),
-], PAL[B])
+write(f'mon_boom_line__{B}__line', unmul([
+    mesh('burst', 0, 0.16, 'rim', 0.36, 0, offset=[0, 0.6, 1.0], scale=1.5, billboard=True, sweep=0),
+    decal('jade_crack', 0, 1, 2.4, 'body', 1.0, 0.06, top=False, untilDelay=False, strip=[10, 3], lift=LIFT),
+    decal('jade_crack', 0, 1, 2.4, 'body', 1.0, 0.06, top=False, untilDelay=False, strip=[10, 3], lift=0.36),
+    rift(10, 1.0, tone='rim', seed=80),
+    *spires(10, 5, 1.5, 1.2, 490),  # sóng đá: gai trồi hai bên dải
+    *flip_line('earth_flip', 6, 10, 0.0, 1.3, 500, step=0.02, jitter=0.7),
+    parts('dust', 0, 28, 4, 0.5, 0.9, 0.26, 'core', offset=[0, 0.2, 4], grav=0.8, tier=0),
+    parts('shard', 0.0, 26, 8, 0.5, 0.7, 0.11, 'body', offset=[0, 0.4, 5], grav=8, tier=0),
+], 1.25), PAL[B])
 
 # ================= Thôn Mạch Ngô Công Vương (mộc/độc): gai rễ gỗ, bào tử xanh lục =================
 B = 'boss_thon_mach_ngo_cong_vuong'

@@ -680,6 +680,8 @@ export class FxRunner {
       c.mine,
     );
     main.fxA.z = seed;
+    // Tấm flipbook Codex: chọn đúng tấm ngay khung đầu (trước lần cập nhật đầu `fxA.x` còn 0 = tấm đầu tiên).
+    if (kind === 'mapFlip') main.fxA.x = forgeFlipIndex(ev.flip ?? 'ice_flip');
     if (shade) shade.fxA.z = seed;
     // Khung đầu: đặt ngay để không lóe một khung ở gốc.
     place(main, 0, 1, 0);
@@ -831,6 +833,9 @@ export class FxRunner {
     const swing = ev.sector && ev.swing ? ev.swing : null;
     const swingYaw = yaw;
     const swingDur = Math.max(0.05, ev.swingDur ?? 0.3);
+    // Khung đầu (trước lần cập nhật đầu): đã mọc gần xong nếu `grow` ngắn, để vùng nổ hiện ngay lúc trúng (+0 ms) thay vì trống.
+    m.fxA.x = easeOut(Math.min(1, 0.016 / grow));
+    m.fxK = 1;
     this.decals++;
     this.v.track(
       dur,

@@ -65,7 +65,7 @@ const FILL: Record<string, [number, number, number]> = {
 };
 
 /** Độ sáng nhân vào texture theo decal (theo `FORGE_DECALS`): đất/ngọc và thép vốn sáng nên hạ để không lẫn với vạch báo đỏ-cam hay băng. */
-const BRIGHT: Record<string, number> = { steel_crack: 0.7, ember_crack: 0.8, jade_crack: 0.6, root_mat: 0.65 };
+const BRIGHT: Record<string, number> = { steel_crack: 0.7, ember_crack: 0.8, jade_crack: 0.3, root_mat: 0.65 };
 
 /**
  * `mapDecal`: decal nhìn thẳng từ trên, ảnh Codex làm lớp chất liệu. `fxA` = (mọc 0..1, mờ 0..1, seed, chỉ số `FORGE_DECALS`); `fxK` 1→0 độ nóng.
