@@ -1,5 +1,24 @@
-import { abs, dot, exp, float, fract, mix, screenCoordinate, screenSize, screenUV, select, step, vec2, vec3, vec4 } from 'three/tsl';
+import {
+  abs,
+  dot,
+  exp,
+  float,
+  fract,
+  mix,
+  screenCoordinate,
+  screenSize,
+  screenUV,
+  select,
+  step,
+  uniform,
+  vec2,
+  vec3,
+  vec4,
+} from 'three/tsl';
 import type { N } from './lab/field';
+
+/** 0 ban ngày, 1 ban đêm: tông trăng lam lạnh ở pass cuối (đặt từ mood trong render/atmosphere.ts). */
+export const paintedNight = uniform(0);
 
 /**
  * Khung hình: dựa trên painted-valley/src/lib/frame.js (finalMaterial; MIT, © 2026 Patch; xem assets/LICENSES.md), dịch từng dòng sang
@@ -93,6 +112,12 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
   const d: N = uv.sub(0.5);
   c = c.mul(float(1).sub(float(o.vignette).mul(dot(d, d)).mul(1.6)));
   c = c.mul(o.exposure);
+  // đêm Họa Cảnh: giữ ít tông (sáng/tối của bản vẽ), nhuộm lam ánh trăng, tối rõ nhưng còn đọc được hình
+  const ln: N = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  const moon: N = mix(vec3(ln, ln, ln), c, 0.4)
+    .mul(vec3(0.3, 0.46, 0.88))
+    .mul(0.62);
+  c = mix(c, moon, paintedNight);
   // a painter's curve: what is below white stays as it was mixed, and only the brightest lights are eased in
   const hi: N = c.sub(0.62).max(0);
   c = c.min(0.62).add(float(0.38).mul(float(1).sub(exp(hi.negate().div(0.38)))));

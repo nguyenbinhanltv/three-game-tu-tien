@@ -1,3 +1,4 @@
+import { paintedNight } from './painted/frame';
 import { FLAGS } from '../base/flags';
 import * as THREE from 'three/webgpu';
 import {
@@ -109,6 +110,7 @@ export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPres
  * (Bắc Hoang, DV-3I). `skyTop` ghi đè màu đỉnh trời (đã trộn giữa hai mood).
  */
 export function tuneAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPreset, name: string, skyTop?: number): void {
+  paintedNight.value = /night/.test(name) ? 1 : 0;
   fogParams.color.value.setHex(p.fogColor);
   fogParams.density.value = p.fogDensity;
   fogParams.glow.value.setHex(p.highlightTint);
