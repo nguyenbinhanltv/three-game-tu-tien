@@ -36,6 +36,6 @@ Nhân lên khoảng cách người chơi tự đặt (lăn chuột/phím vẫn h
 
 ## Ảnh then chốt
 
-- [`sau-webgl2-low-matroi_san.webp`](sau-webgl2-low-matroi_san.webp)
-- [`sau-webgl2-medium-matroi_san.webp`](sau-webgl2-medium-matroi_san.webp)
-- [`sau-webgpu-medium-matroi_san.webp`](sau-webgpu-medium-matroi_san.webp)
+- `sau-webgl2-low-matroi_san.webp`
+- `sau-webgl2-medium-matroi_san.webp`
+- `sau-webgpu-medium-matroi_san.webp`

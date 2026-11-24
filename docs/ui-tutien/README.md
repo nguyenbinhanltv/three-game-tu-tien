@@ -67,15 +67,15 @@ Script Playwright (Chrome headless có GPU, `?mute=1`, `--mute-audio`) ở ba đ
 ## Ảnh
 
 
-![HUD 1920×1080](hud-1920.webp)
+*(ảnh đã gỡ khỏi repo: HUD 1920×1080)*
 
 
-![Túi trữ vật và tooltip, 1280×720](tui-tooltip-1280.webp)
+*(ảnh đã gỡ khỏi repo: Túi trữ vật và tooltip, 1280×720)*
 
 
-![Màn tiêu đề 1280×720](man-tieu-de-1280.webp)
+*(ảnh đã gỡ khỏi repo: Màn tiêu đề 1280×720)*
 
-![Chiến đấu: bảng tên, hồi chiêu vòng linh văn](chien-dau-1280.webp)
+*(ảnh đã gỡ khỏi repo: Chiến đấu: bảng tên, hồi chiêu vòng linh văn)*
 
 
-![HUD độ kiếp](do-kiep-1280.webp)
+*(ảnh đã gỡ khỏi repo: HUD độ kiếp)*

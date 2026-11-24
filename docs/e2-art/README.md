@@ -29,7 +29,7 @@ Gói E2-I (`docs/EXPANSION_DESIGN.md` 11.2). Chỉ hình/âm, không đụng sim
 
 ## Ảnh then chốt
 
-- [`boss-dia-mach-long.webp`](boss-dia-mach-long.webp)
-- [`poi-mach-tinh-tru.webp`](poi-mach-tinh-tru.webp)
-- [`zone-cuu-mo-khu.webp`](zone-cuu-mo-khu.webp)
-- [`zone-sa-thach-pha.webp`](zone-sa-thach-pha.webp)
+- `boss-dia-mach-long.webp`
+- `poi-mach-tinh-tru.webp`
+- `zone-cuu-mo-khu.webp`
+- `zone-sa-thach-pha.webp`

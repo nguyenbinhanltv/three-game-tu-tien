@@ -74,4 +74,4 @@ Test mới: `promote.test.ts` (Thăng Bậc 2 → 3 cho cả ba bộ, kiếm, ch
 
 ## Ảnh then chốt
 
-- [`set_kinh_quang-m-truoc.webp`](set_kinh_quang-m-truoc.webp)
+- `set_kinh_quang-m-truoc.webp`

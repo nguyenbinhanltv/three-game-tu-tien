@@ -10,10 +10,10 @@ Gói concept để **bạn dựng từng mảnh trên Tripo web** (image-to-3D),
 
 | Bộ | Công pháp, ngũ hành | Tổng tam giác 6 mảnh | Bảng thiết kế | Mảnh rời |
 | --- | --- | --- | --- | --- |
-| **Kính Quang Kiếm Y** | Kiếm tu, Kim (gương, ánh bạc) | 11900 | [3 góc](img/kinh_quang_views.webp), [bóc lớp](img/kinh_quang_layers.webp), [chi tiết](img/kinh_quang_detail.webp) | [Áo ngoài](img/kinh_quang_ao_ngoai.webp), [Lớp dưới](img/kinh_quang_lop_duoi.webp), [Vai giáp](img/kinh_quang_vai_giap.webp), [Đai và tua](img/kinh_quang_dai_tua.webp), [Ủng](img/kinh_quang_ung.webp), [Trang sức đầu](img/kinh_quang_trang_suc_dau.webp) |
-| **Vân Kình Thiết Giáp** | Hộ pháp, Thủy/Kim (kình ngư trong biển mây) | 12700 | [3 góc](img/van_kinh_views.webp), [bóc lớp](img/van_kinh_layers.webp), [chi tiết](img/van_kinh_detail.webp) | [Áo ngoài](img/van_kinh_ao_ngoai.webp), [Lớp dưới](img/van_kinh_lop_duoi.webp), [Vai giáp](img/van_kinh_vai_giap.webp), [Đai và tua](img/van_kinh_dai_tua.webp), [Ủng](img/van_kinh_ung.webp), [Trang sức đầu](img/van_kinh_trang_suc_dau.webp) |
-| **Lưu Ly Đan Y** | Đan sư, Thủy (lưu ly trong suốt) | 12000 | [3 góc](img/luu_ly_views.webp), [bóc lớp](img/luu_ly_layers.webp), [chi tiết](img/luu_ly_detail.webp) | [Áo ngoài](img/luu_ly_ao_ngoai.webp), [Lớp dưới](img/luu_ly_lop_duoi.webp), [Vai giáp](img/luu_ly_vai_giap.webp), [Đai, hồ lô và dải lụa](img/luu_ly_dai_tua.webp), [Ủng](img/luu_ly_ung.webp), [Trang sức đầu](img/luu_ly_trang_suc_dau.webp) |
-| **Kính Quang Kiếm** | dạng cuối +10 và vỏ | 5500 | – | [dạng cuối](img/kiem_kinh_quang_cuoi.webp), [vỏ](img/kiem_kinh_quang_vo.webp) |
+| **Kính Quang Kiếm Y** | Kiếm tu, Kim (gương, ánh bạc) | 11900 | 3 góc, bóc lớp, chi tiết | Áo ngoài, Lớp dưới, Vai giáp, Đai và tua, Ủng, Trang sức đầu |
+| **Vân Kình Thiết Giáp** | Hộ pháp, Thủy/Kim (kình ngư trong biển mây) | 12700 | 3 góc, bóc lớp, chi tiết | Áo ngoài, Lớp dưới, Vai giáp, Đai và tua, Ủng, Trang sức đầu |
+| **Lưu Ly Đan Y** | Đan sư, Thủy (lưu ly trong suốt) | 12000 | 3 góc, bóc lớp, chi tiết | Áo ngoài, Lớp dưới, Vai giáp, Đai, hồ lô và dải lụa, Ủng, Trang sức đầu |
+| **Kính Quang Kiếm** | dạng cuối +10 và vỏ | 5500 | – | dạng cuối, vỏ |
 
 Ô **trang sức đầu** là ô trang bị thứ 9 (ẩn/hiện được), mỗi bộ có một món. Mỗi bậc **một kiếm chung** cho cả ba công pháp (đã chốt 16/11), không làm kiếm riêng cho Hộ pháp hay Đan sư.
 
@@ -22,11 +22,11 @@ Gói concept để **bạn dựng từng mảnh trên Tripo web** (image-to-3D),
 
 Kiếm tu · Kim (gương, ánh bạc) · cảm hứng: ref-04 (áo khoác dài nền sáng, lót đậm, viền kim loại) và ref-01/02 (tay áo voan xuyên sáng); dáng tham chiếu: mẫu #119 Kính Quang.
 
-![3 góc nhìn](img/kinh_quang_views.webp)
+*(ảnh đã gỡ khỏi repo: 3 góc nhìn)*
 
-![Bóc lớp](img/kinh_quang_layers.webp)
+*(ảnh đã gỡ khỏi repo: Bóc lớp)*
 
-![Chi tiết, bảng màu, chất liệu](img/kinh_quang_detail.webp)
+*(ảnh đã gỡ khỏi repo: Chi tiết, bảng màu, chất liệu)*
 
 **Bảng màu 3 kênh** (mặt nạ nhuộm của shader T-5 dùng đúng 3 kênh này):
 
@@ -43,23 +43,23 @@ Kiếm tu · Kim (gương, ánh bạc) · cảm hứng: ref-04 (áo khoác dài 
 
 | Mảnh | Ảnh | Tam giác | Xương gắn vào | Xương lò xo |
 | --- | --- | --- | --- | --- |
-| Áo ngoài | [`kinh_quang_ao_ngoai`](img/kinh_quang_ao_ngoai.webp) | 5000 | spine1/spine2 (thân), upperarm L/R, forearm L/R, cổ áo gắn neck. Trọng số lấy từ thân nền | Tay áo voan: 2 chuỗi × 4 xương mỗi bên (nửa dưới tay áo). Vạt sau: 3 chuỗi × 3 xương. Vạt xẻ tà hai bên: 1 chuỗi × 2 xương mỗi bên |
-| Lớp dưới | [`kinh_quang_lop_duoi`](img/kinh_quang_lop_duoi.webp) | 2000 | pelvis/hips, thigh L/R, calf L/R. Trọng số từ thân nền | Vạt dưới trước và sau: 2 chuỗi × 2 xương |
-| Vai giáp | [`kinh_quang_vai_giap`](img/kinh_quang_vai_giap.webp) | 1500 | clavicle/shoulder L và R (cứng, không co giãn); một mảnh có hai nửa đối xứng | Không. Mảnh cứng |
-| Đai và tua | [`kinh_quang_dai_tua`](img/kinh_quang_dai_tua.webp) | 1300 | đai: hips/spine (cứng, quấn quanh eo). Tua: neo ở đai | Tua: 2 chuỗi × 4 xương. Dải thắt nút: 1 chuỗi × 3 xương |
-| Ủng | [`kinh_quang_ung`](img/kinh_quang_ung.webp) | 1300 | foot L/R, toe L/R, calf L/R (cứng; ống ủng bám bắp chân) | Không |
-| Trang sức đầu | [`kinh_quang_trang_suc_dau`](img/kinh_quang_trang_suc_dau.webp) | 800 | head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện) | Dải ruy băng sau: 1 chuỗi × 3 xương mỗi dải |
+| Áo ngoài | `kinh_quang_ao_ngoai` | 5000 | spine1/spine2 (thân), upperarm L/R, forearm L/R, cổ áo gắn neck. Trọng số lấy từ thân nền | Tay áo voan: 2 chuỗi × 4 xương mỗi bên (nửa dưới tay áo). Vạt sau: 3 chuỗi × 3 xương. Vạt xẻ tà hai bên: 1 chuỗi × 2 xương mỗi bên |
+| Lớp dưới | `kinh_quang_lop_duoi` | 2000 | pelvis/hips, thigh L/R, calf L/R. Trọng số từ thân nền | Vạt dưới trước và sau: 2 chuỗi × 2 xương |
+| Vai giáp | `kinh_quang_vai_giap` | 1500 | clavicle/shoulder L và R (cứng, không co giãn); một mảnh có hai nửa đối xứng | Không. Mảnh cứng |
+| Đai và tua | `kinh_quang_dai_tua` | 1300 | đai: hips/spine (cứng, quấn quanh eo). Tua: neo ở đai | Tua: 2 chuỗi × 4 xương. Dải thắt nút: 1 chuỗi × 3 xương |
+| Ủng | `kinh_quang_ung` | 1300 | foot L/R, toe L/R, calf L/R (cứng; ống ủng bám bắp chân) | Không |
+| Trang sức đầu | `kinh_quang_trang_suc_dau` | 800 | head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện) | Dải ruy băng sau: 1 chuỗi × 3 xương mỗi dải |
 
 
 ## Vân Kình Thiết Giáp
 
 Hộ pháp · Thủy/Kim (kình ngư trong biển mây) · cảm hứng: ref-05 (dáng nặng, vai to, váy nhiều tầng) nhưng bằng thép lạnh và vảy kình ngư biển mây; kế thừa khối nặng của Địa Long ở bậc 2.
 
-![3 góc nhìn](img/van_kinh_views.webp)
+*(ảnh đã gỡ khỏi repo: 3 góc nhìn)*
 
-![Bóc lớp](img/van_kinh_layers.webp)
+*(ảnh đã gỡ khỏi repo: Bóc lớp)*
 
-![Chi tiết, bảng màu, chất liệu](img/van_kinh_detail.webp)
+*(ảnh đã gỡ khỏi repo: Chi tiết, bảng màu, chất liệu)*
 
 **Bảng màu 3 kênh** (mặt nạ nhuộm của shader T-5 dùng đúng 3 kênh này):
 
@@ -76,23 +76,23 @@ Hộ pháp · Thủy/Kim (kình ngư trong biển mây) · cảm hứng: ref-05 
 
 | Mảnh | Ảnh | Tam giác | Xương gắn vào | Xương lò xo |
 | --- | --- | --- | --- | --- |
-| Áo ngoài (giáp thân) | [`van_kinh_ao_ngoai`](img/van_kinh_ao_ngoai.webp) | 5000 | spine1/spine2 (giáp ngực cứng gắn spine2), upperarm L/R (tay áo ngắn), neck. Trọng số từ thân nền | Gần như không: 1 chuỗi × 2 xương cho vạt vải dưới giáp ngực. Giáp ngực cứng |
-| Lớp dưới (váy giáp) | [`van_kinh_lop_duoi`](img/van_kinh_lop_duoi.webp) | 2000 | pelvis/hips, thigh L/R. Các tầng váy gắn pelvis, trọng số mềm về thigh | Mỗi tầng váy 1 xương treo (3 tầng × 2 bên, tổng ~8 xương), biên độ nhỏ cho giáp nặng |
-| Vai giáp | [`van_kinh_vai_giap`](img/van_kinh_vai_giap.webp) | 2200 | clavicle/shoulder L/R (cứng); tầng dưới nối upperarm L/R | Không. Tầng dưới có 1 xương xoay nhẹ theo cánh tay |
-| Đai và tua | [`van_kinh_dai_tua`](img/van_kinh_dai_tua.webp) | 1400 | hips/spine (cứng). Tua và charm neo ở đai | Tua và charm: 2 chuỗi × 3 xương |
-| Ủng | [`van_kinh_ung`](img/van_kinh_ung.webp) | 1400 | foot L/R, toe L/R, calf L/R (cứng) | Không |
-| Trang sức đầu | [`van_kinh_trang_suc_dau`](img/van_kinh_trang_suc_dau.webp) | 700 | head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện) | Không |
+| Áo ngoài (giáp thân) | `van_kinh_ao_ngoai` | 5000 | spine1/spine2 (giáp ngực cứng gắn spine2), upperarm L/R (tay áo ngắn), neck. Trọng số từ thân nền | Gần như không: 1 chuỗi × 2 xương cho vạt vải dưới giáp ngực. Giáp ngực cứng |
+| Lớp dưới (váy giáp) | `van_kinh_lop_duoi` | 2000 | pelvis/hips, thigh L/R. Các tầng váy gắn pelvis, trọng số mềm về thigh | Mỗi tầng váy 1 xương treo (3 tầng × 2 bên, tổng ~8 xương), biên độ nhỏ cho giáp nặng |
+| Vai giáp | `van_kinh_vai_giap` | 2200 | clavicle/shoulder L/R (cứng); tầng dưới nối upperarm L/R | Không. Tầng dưới có 1 xương xoay nhẹ theo cánh tay |
+| Đai và tua | `van_kinh_dai_tua` | 1400 | hips/spine (cứng). Tua và charm neo ở đai | Tua và charm: 2 chuỗi × 3 xương |
+| Ủng | `van_kinh_ung` | 1400 | foot L/R, toe L/R, calf L/R (cứng) | Không |
+| Trang sức đầu | `van_kinh_trang_suc_dau` | 700 | head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện) | Không |
 
 
 ## Lưu Ly Đan Y
 
 Đan sư · Thủy (lưu ly trong suốt) · cảm hứng: ref-01 và ref-06 (lớp voan, tay áo lụa mỏng, dải lụa) ở bậc 3: lưu ly trong như thủy tinh.
 
-![3 góc nhìn](img/luu_ly_views.webp)
+*(ảnh đã gỡ khỏi repo: 3 góc nhìn)*
 
-![Bóc lớp](img/luu_ly_layers.webp)
+*(ảnh đã gỡ khỏi repo: Bóc lớp)*
 
-![Chi tiết, bảng màu, chất liệu](img/luu_ly_detail.webp)
+*(ảnh đã gỡ khỏi repo: Chi tiết, bảng màu, chất liệu)*
 
 **Bảng màu 3 kênh** (mặt nạ nhuộm của shader T-5 dùng đúng 3 kênh này):
 
@@ -109,12 +109,12 @@ Hộ pháp · Thủy/Kim (kình ngư trong biển mây) · cảm hứng: ref-05 
 
 | Mảnh | Ảnh | Tam giác | Xương gắn vào | Xương lò xo |
 | --- | --- | --- | --- | --- |
-| Áo ngoài (đạo bào + voan choàng) | [`luu_ly_ao_ngoai`](img/luu_ly_ao_ngoai.webp) | 5000 | spine1/spine2, upperarm L/R, forearm L/R, neck. Voan choàng gắn spine2 và shoulder | Tay áo rộng: 3 chuỗi × 3 xương mỗi bên. Voan choàng: 2 đuôi × 4 xương. Vạt sau: 2 chuỗi × 3 xương |
-| Lớp dưới | [`luu_ly_lop_duoi`](img/luu_ly_lop_duoi.webp) | 2000 | pelvis/hips, thigh L/R, calf L/R | Vạt trước và sau: 2 chuỗi × 3 xương |
-| Vai giáp (vai nhẹ) | [`luu_ly_vai_giap`](img/luu_ly_vai_giap.webp) | 1500 | clavicle/shoulder L/R (cứng) | Chuỗi hạt lưu ly: 1 chuỗi × 3 xương mỗi bên |
-| Đai, hồ lô và dải lụa | [`luu_ly_dai_tua`](img/luu_ly_dai_tua.webp) | 1500 | hips/spine (đai cứng). Hồ lô và túi neo ở đai | Dải lụa: 1 chuỗi × 5 xương. Hồ lô và túi: 2 chuỗi × 3 xương. Tua: 1 chuỗi × 3 xương |
-| Ủng | [`luu_ly_ung`](img/luu_ly_ung.webp) | 1200 | foot L/R, toe L/R, calf L/R (cứng) | Không |
-| Trang sức đầu | [`luu_ly_trang_suc_dau`](img/luu_ly_trang_suc_dau.webp) | 800 | head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện) | Chuỗi hạt: 2 chuỗi × 3 xương. Dải sau: 1 chuỗi × 3 xương mỗi dải |
+| Áo ngoài (đạo bào + voan choàng) | `luu_ly_ao_ngoai` | 5000 | spine1/spine2, upperarm L/R, forearm L/R, neck. Voan choàng gắn spine2 và shoulder | Tay áo rộng: 3 chuỗi × 3 xương mỗi bên. Voan choàng: 2 đuôi × 4 xương. Vạt sau: 2 chuỗi × 3 xương |
+| Lớp dưới | `luu_ly_lop_duoi` | 2000 | pelvis/hips, thigh L/R, calf L/R | Vạt trước và sau: 2 chuỗi × 3 xương |
+| Vai giáp (vai nhẹ) | `luu_ly_vai_giap` | 1500 | clavicle/shoulder L/R (cứng) | Chuỗi hạt lưu ly: 1 chuỗi × 3 xương mỗi bên |
+| Đai, hồ lô và dải lụa | `luu_ly_dai_tua` | 1500 | hips/spine (đai cứng). Hồ lô và túi neo ở đai | Dải lụa: 1 chuỗi × 5 xương. Hồ lô và túi: 2 chuỗi × 3 xương. Tua: 1 chuỗi × 3 xương |
+| Ủng | `luu_ly_ung` | 1200 | foot L/R, toe L/R, calf L/R (cứng) | Không |
+| Trang sức đầu | `luu_ly_trang_suc_dau` | 800 | head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện) | Chuỗi hạt: 2 chuỗi × 3 xương. Dải sau: 1 chuỗi × 3 xương mỗi dải |
 
 
 ## Kính Quang Kiếm: dạng cuối +10 và vỏ
@@ -123,12 +123,12 @@ Dạng gốc dùng model #119 có sẵn (`prop_kiem_kinh_quang`), giữ nguyên 
 
 | Mảnh | Ảnh | Tam giác | Gắn vào | Ghi chú |
 | --- | --- | --- | --- | --- |
-| Dạng cuối +10 | [`kiem_kinh_quang_cuoi`](img/kiem_kinh_quang_cuoi.webp) | 4000 | prop gắn bone `dtl_sword` (xương cầm kiếm); điểm gốc tại giữa chuôi, trục dọc theo lưỡi. Phát sáng là vật liệu riêng | Lưỡi bạc gương là khối đặc có độ dày thật, mép xuyên sáng lạnh chỉ là viền mảnh dựng đặc (worker làm phát sáng bằng vật liệu riêng); KHÔNG dùng trong suốt thật. Chắn hình cánh mỏng phải có độ dày. Dạng gốc (#119) vẫn giữ cho +0…+9; dạng cuối thay lúc cường hóa +10. |
-| Vỏ kiếm | [`kiem_kinh_quang_vo`](img/kiem_kinh_quang_vo.webp) | 1500 | prop gắn ổ cắm lưng (`dtl_scabbard_back`, tạo bởi T-1/T-2); khi rút kiếm thì vỏ ở lại lưng | Vỏ dài vừa khớp lưỡi dạng gốc (#119), kín hoàn toàn. Cửa vỏ ở ngang vai khi đeo chéo lưng. |
+| Dạng cuối +10 | `kiem_kinh_quang_cuoi` | 4000 | prop gắn bone `dtl_sword` (xương cầm kiếm); điểm gốc tại giữa chuôi, trục dọc theo lưỡi. Phát sáng là vật liệu riêng | Lưỡi bạc gương là khối đặc có độ dày thật, mép xuyên sáng lạnh chỉ là viền mảnh dựng đặc (worker làm phát sáng bằng vật liệu riêng); KHÔNG dùng trong suốt thật. Chắn hình cánh mỏng phải có độ dày. Dạng gốc (#119) vẫn giữ cho +0…+9; dạng cuối thay lúc cường hóa +10. |
+| Vỏ kiếm | `kiem_kinh_quang_vo` | 1500 | prop gắn ổ cắm lưng (`dtl_scabbard_back`, tạo bởi T-1/T-2); khi rút kiếm thì vỏ ở lại lưng | Vỏ dài vừa khớp lưỡi dạng gốc (#119), kín hoàn toàn. Cửa vỏ ở ngang vai khi đeo chéo lưng. |
 
-![Dạng cuối](img/kiem_kinh_quang_cuoi.webp)
+*(ảnh đã gỡ khỏi repo: Dạng cuối)*
 
-![Vỏ kiếm](img/kiem_kinh_quang_vo.webp)
+*(ảnh đã gỡ khỏi repo: Vỏ kiếm)*
 
 # Hướng dẫn dựng trên Tripo (Image to 3D)
 
