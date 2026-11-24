@@ -284,6 +284,9 @@ export interface FxDecalEvent extends FxBase {
   top?: boolean;
   /** Mặt quạt (chỉ tex `FORGE_DECALS`): nửa góc (độ, 1–180) quanh hướng nhìn/hướng vùng; `yaw` là độ lệch thêm so với hướng đó (quét từng tia). `r` là bán kính cung quạt. */
   sector?: number;
+  /** Với `sector`: tia xoay từ `swing[0]` sang `swing[1]` độ (so với hướng vùng) trong `swingDur` giây (mặc định 0,3). Một decal quét thay vì nhiều decal (trần 6 decal sống/runner). */
+  swing?: [number, number];
+  swingDur?: number;
   /** Nâng decal thêm (m, 0–0,5; mặc định 0) cho chỗ nền có ô đá nhô cao hơn mặt phẳng decal (sân lát đá tông môn). */
   lift?: number;
 }

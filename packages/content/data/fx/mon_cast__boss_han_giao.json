@@ -11,41 +11,11 @@
    "at": "self",
    "grow": 0.35,
    "tone": "accent",
-   "alpha": 0.7,
+   "alpha": 0.75,
    "tier": 0,
    "from": "start",
    "top": true,
    "ink": true
-  },
-  {
-   "type": "decal",
-   "tex": "rune",
-   "t": 0.15,
-   "r": 8.5,
-   "dur": 3.3,
-   "at": "self",
-   "grow": 0.5,
-   "tone": "accent",
-   "alpha": 0.38,
-   "tier": 0,
-   "from": "start",
-   "top": true,
-   "yaw": 25
-  },
-  {
-   "type": "decal",
-   "tex": "rune",
-   "t": 0.3,
-   "r": 5,
-   "dur": 3.2,
-   "at": "self",
-   "grow": 0.5,
-   "tone": "rim",
-   "alpha": 0.25,
-   "tier": 0,
-   "from": "start",
-   "top": true,
-   "yaw": -40
   }
  ]
 }

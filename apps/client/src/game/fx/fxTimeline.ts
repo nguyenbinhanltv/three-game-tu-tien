@@ -818,6 +818,9 @@ export class FxRunner {
     m.scale.setScalar(ev.r * c.mul);
     const dur = ev.untilDelay && c.delay ? c.delay : ev.dur;
     const grow = Math.max(0.05, ev.grow ?? 0.15);
+    const swing = ev.sector && ev.swing ? ev.swing : null;
+    const swingYaw = yaw;
+    const swingDur = Math.max(0.05, ev.swingDur ?? 0.3);
     this.decals++;
     this.v.track(
       dur,
@@ -826,6 +829,9 @@ export class FxRunner {
         m.fxA.x = easeOut(Math.min(1, t / grow));
         m.fxA.y = sstep(0.55, 1, k);
         m.fxK = Math.max(0, 1 - k * 1.15);
+        // Tia quét: một decal hẹp xoay từ `swing[0]` sang `swing[1]` độ trong `swingDur` giây (thay nhiều decal, vì trần DECAL_MAX).
+        if (swing)
+          m.quaternion.setFromAxisAngle(UP, swingYaw + (swing[0] + (swing[1] - swing[0]) * easeOut(Math.min(1, t / swingDur))) * DEG);
       },
       () => {
         this.decals--;

@@ -99,9 +99,7 @@ write('mon_boom_circle__boss_han_giao__slam', [
 # ---------------- CHANT: tròn r 12–13 quanh boss, niệm 2,6 s rồi báo 0,9 s ----------------
 # Lúc niệm (MonFx.cast, `mon_cast__<quái>`, mét thật): viền đỏ MỎNG r 13 + triện mờ trong suốt thời gian niệm, rồi 0,9 s cuối vạch báo tô đậm.
 write('mon_cast__boss_han_giao', [
-    decal('rune', 0, 13, 3.4, 'accent', 0.7, 0.35, ink=True, untilDelay=False, at='self'),
-    decal('rune', 0.15, 8.5, 3.3, 'accent', 0.38, 0.5, yaw=25, untilDelay=False, at='self'),
-    decal('rune', 0.3, 5, 3.2, 'rim', 0.25, 0.5, yaw=-40, untilDelay=False, at='self'),
+    decal('rune', 0, 13, 3.4, 'accent', 0.75, 0.35, ink=True, untilDelay=False, at='self'),  # 1 decal (trần DECAL_MAX): viền đỏ mỏng + triện
 ])
 write('mon_warn__boss_han_giao__chant', [
     *warn_disc(0.85, 70, -20),
@@ -130,8 +128,8 @@ write('mon_warn_cone__boss_han_giao__sweep', [
 write('mon_boom_cone__boss_han_giao__sweep', [
     mesh('burst', 0, 0.14, 'rim', 0.36, 0, offset=[0, 0.6, 0.8], scale=1.5, billboard=True, sweep=0),
     decal('ice_crack', 0, 8, 2.2, 'body', 1.0, 0.03, top=False, untilDelay=False, sector=35, lift=0.35),
-    # lưỡi băng quét: các tia hẹp sáng trắng lần lượt từ mép này sang mép kia (như concept), từ gốc ra cung
-    *[decal('ice_crack', i * 0.035, 8, 0.55, 'rim', 1.0, 0.07, top=False, untilDelay=False, sector=4, yaw=-31 + i * 62 / 6, lift=0.4) for i in range(7)],  # mặt quạt băng nứt, viền sáng sắc
+    # lưỡi băng quét: MỘT tia sáng trắng xoay từ mép này sang mép kia (swing), từ gốc ra cung (như concept); 1 decal để chừa trần DECAL_MAX
+    decal('ice_crack', 0, 8, 0.6, 'rim', 1.0, 0.06, top=False, untilDelay=False, sector=9, swing=[-31, 31], swingDur=0.28, lift=0.4),
     *[mesh('flip', 0.0 + i * 0.03, 0.9, 'body', 0.95, 230 + i, flip='ice_flip', scale=1.7 + (i % 3) * 0.25,
            offset=[round(math.sin(math.radians((i % 3 - 1) * 16)) * (2.5 + i * 1.7), 2), 0.9, round(math.cos(math.radians((i % 3 - 1) * 16)) * (2.5 + i * 1.7), 2)],
            sweep=0, tier=0 if i % 2 == 0 else 1) for i in range(7)],
