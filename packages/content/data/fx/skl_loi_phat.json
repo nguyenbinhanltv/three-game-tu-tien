@@ -165,7 +165,7 @@
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
-   "sprite": "loi_hammer",
+   "sprite": "loi_tablet",
    "billboard": true,
    "offset": [
     0,
@@ -207,7 +207,7 @@
    "tier": 0,
    "seed": 1002,
    "shape": "sprite",
-   "sprite": "loi_hammer",
+   "sprite": "loi_tablet",
    "billboard": true,
    "offset": [
     0,

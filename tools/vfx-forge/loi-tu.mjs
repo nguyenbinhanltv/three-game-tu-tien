@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Họa Pháp Lô 2 — đợt Lôi tu: dựng timeline 11 chiêu theo concept Codex đã duyệt bằng sprite sét vẽ tay (ô `loi_*` của `vfx_sprites.webp`, kiểu tô "lôi": viền mực chàm tối → thân tím-lam → lõi trắng xanh).
-// Mỗi chiêu một hình riêng (tia chẻ nhánh + dấu ấn, vệt zigzag, giáo sét, mây giông + chùm 9 nhánh, chuỗi cầu sét, vảy giáp, cầu lưới, búa sét, biển hồ quang, hồ quang xoắn, đường sét ngang) và ba nhịp:
+// Mỗi chiêu một hình riêng (tia chẻ nhánh + dấu ấn, vệt zigzag, giáo sét, mây giông + chùm 9 nhánh, chuỗi cầu sét, vảy giáp, cầu lưới, lệnh bài sét, biển hồ quang, hồ quang xoắn, đường sét ngang) và ba nhịp:
 //   báo trước (t < 0): bản mờ nhỏ + hạt hút vào;  trúng (t = 0): hình bật gần đủ cỡ + chớp sáng (`loi_flash`) ở +30 ms;  dư ba (t ≥ 0,17): hình mỏng dần + tia lửa bay lên.
 // Chạy lại an toàn: bỏ mọi sự kiện `mesh` và decal rune cũ (bolt/vòng rune/shock_cone...), giữ âm thanh, rung, hitstop, chớp, hạt, vignette, camera viết tay. Dùng: node tools/vfx-forge/loi-tu.mjs [id...]
 import fs from 'node:fs';
@@ -206,12 +206,12 @@ const SPEC = {
     after('self', [0, 1.2, 0], 2.6, 0.2, 1.2),
     sparks('self', [0, 1.2, 0], 10, 0.05),
   ],
-  // Lôi Phạt: búa sét khổng lồ giáng từ trên xuống đầu mục tiêu, đầu búa trắng chói, tia điện lan trên đất.
+  // Lôi Phạt: lệnh bài đạo gia cổ phong khắc phù sét giáng từ mây xuống đầu mục tiêu, xích sét quấn, tia điện lan trên đất.
   skl_loi_phat: () => [
     gather('loi_cloud', { size: 4, off: [0, 5, 0] }),
-    ...[gather('loi_hammer', { size: 5.2, off: [0, 4.6, 0] })],
+    ...[gather('loi_tablet', { size: 5.2, off: [0, 4.6, 0] })],
     pullIn('target', [0, 1.3, 0], -0.24),
-    strike('loi_hammer', {
+    strike('loi_tablet', {
       size: 5.2,
       off: [0, 4.4, 0],
       dur: 0.55,

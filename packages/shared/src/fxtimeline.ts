@@ -149,7 +149,7 @@ export const FX_SPRITES = [
   'loi_cloud',
   'loi_bolts9',
   'loi_orbs',
-  'loi_hammer',
+  'loi_tablet',
   'loi_web',
   'loi_spiral',
   'loi_scales',

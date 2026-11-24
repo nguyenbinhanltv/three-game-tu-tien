@@ -307,11 +307,11 @@
       "sword"
     ],
     "palette": {
-      "core": "1a1240",
-      "body": "7a5cff",
-      "rim": "e6f0ff",
+      "core": "0c1550",
+      "body": "2f6bff",
+      "rim": "e8f6ff",
       "accent": "ffe45c",
-      "shadow": "0a0820"
+      "shadow": "060a2a"
     },
     "tint": "cfe6ff",
     "hit": {

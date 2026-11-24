@@ -1,11 +1,11 @@
 {
   "skillId": "skl_loi_phat",
-  "idea": "Lôi Phạt: một chiếc búa trời khổng lồ làm bằng sét giáng từ trên xuống đầu mục tiêu, đầu búa trắng chói, khối chớp nổ ở điểm trúng, tia điện lan trên đất.",
+  "idea": "Lôi Phạt: một chiếc LỆNH BÀI đạo gia cổ phong (tấm bài hình chữ nhật đỉnh bo tròn, mép chạm mây, khắc nét bút phù lôi phát sáng, không có chữ đọc được) từ mây giáng thẳng xuống đầu mục tiêu như tờ lệnh trời, quanh bài sét bò thành xích, chạm đất nổ chớp lớn và tia điện lan trên đất. Màu: lõi trắng xanh lạnh RẤT SÁNG, thân xanh lam điện/chàm (hue 215–240°), chỉ viền ngoài rất mỏng mới hơi tím chàm; KHÔNG tím đậm, KHÔNG hồng; vàng chỉ là điểm nhỏ.",
   "element": "kim",
   "path": "loi_tu",
   "shapeLang": [
-    "line",
-    "burst"
+    "spike",
+    "line"
   ],
   "timing": {
     "anticipationMs": 400,
@@ -35,7 +35,7 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "búa/lưỡi phạt khổng lồ làm bằng sét giáng từ trên xuống, đầu búa sáng trắng",
+  "silhouette": "một lệnh bài đạo gia cao hình chữ nhật đỉnh bo tròn, mép chạm mây, nét phù sét sáng trên mặt bài, giáng thẳng từ trên xuống, sét quấn quanh như xích",
   "standard": 2,
   "materials": [
     "sprite",

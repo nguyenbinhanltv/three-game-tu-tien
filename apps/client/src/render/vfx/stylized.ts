@@ -578,17 +578,13 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
     smoothstep(0.9, 1.0, spTier),
   );
   const spLift = mix(spRamp, mix(spRimC, spWhiteC, 0.5), spBright.mul(spTier).mul(0.9));
-  // Kiểu "lôi" (`fxA.x` = 1): viền mực chàm tối bọc ngoài, thân tím-lam bão hòa, lõi trắng xanh sáng (tia sét sáng ở TÂM, khác khói hồn tối ở tâm).
-  const lCore = vec3(0.01, 0.006, 0.075);
-  const lBody = vec3(0.2, 0.13, 0.92);
-  const lRim = vec3(0.5, 0.58, 1.0);
-  const lWhite = vec3(0.96, 0.98, 1.0);
+  // Kiểu "lôi" (`fxA.x` = 1): viền mực chàm tối (hơi tím, rất mỏng) bọc ngoài, thân XANH LAM ĐIỆN (hue ~215–235°), lõi trắng xanh lạnh rất sáng (tia sét sáng ở TÂM, khác khói hồn tối ở tâm).
+  const lCore = vec3(0.02, 0.012, 0.1);
+  const lBody = vec3(0.03, 0.17, 1.0);
+  const lRim = vec3(0.45, 0.78, 1.0);
+  const lWhite = vec3(0.97, 1.0, 1.0);
   const lT = smoothstep(0.1, 0.78, spLum.sqrt());
-  const lRamp = mix(
-    mix(mix(lCore, lBody, smoothstep(0.04, 0.45, lT)), lRim, smoothstep(0.42, 0.78, lT)),
-    lWhite,
-    smoothstep(0.78, 1.0, lT),
-  );
+  const lRamp = mix(mix(mix(lCore, lBody, smoothstep(0.04, 0.4, lT)), lRim, smoothstep(0.36, 0.72, lT)), lWhite, smoothstep(0.78, 1.0, lT));
   const spStyled = mix(spLift, lRamp, step(0.5, U.a.x));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))

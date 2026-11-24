@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Họa Pháp Lô 2: tách nền xanh chroma của bảng sprite Codex (`forge sprites`) và xếp thành atlas WebP trong suốt cho `FX_SPRITES` (packages/shared/src/fxtimeline.ts).
-// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 4] [--base <atlas.webp> nối thêm vào atlas có sẵn] [--cell 512] [--out apps/client/public/hoa-truc/vfx_sprites.webp] [--preview <png>]
+// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 4] [--base <atlas.webp> nối thêm vào atlas có sẵn] [--patch <ô>=<bảng.png>:<cột>:<hàng>:<số cột>:<số hàng> thay một ô] [--cell 512] [--out apps/client/public/hoa-truc/vfx_sprites.webp] [--preview <png>]
 // Mỗi ô lưới đều (cols × rows) của bảng: tìm khung bao của phần không phải nền, cắt, thu vừa ô (chừa lề), xếp vào atlas. alpha = 1 − (g − max(r,b))/255; khử viền xanh bằng cách trừ phần nền.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -30,7 +30,19 @@ const sheets = argv
     const c = Number(parts.pop());
     return { file: parts.join(':'), cols: c, rows: r };
   });
-if (!sheets.length) sheets.push({ file: input, cols, rows });
+// `--patch <ô>=<bảng.png>:<cột>:<hàng>:<số cột>:<số hàng>`: THAY một ô của atlas gốc (xóa ô cũ) bằng sprite ở (cột, hàng) của bảng mới; cần `--base`.
+const patches = argv
+  .filter((a, i) => argv[i - 1] === '--patch')
+  .map((v) => {
+    const [idx, rest] = v.split('=');
+    const parts = rest.split(':');
+    const rows2 = Number(parts.pop());
+    const cols2 = Number(parts.pop());
+    const row = Number(parts.pop());
+    const col = Number(parts.pop());
+    return { file: parts.join(':'), cols: cols2, rows: rows2, only: { col, row }, forcedIdx: Number(idx) };
+  });
+if (!sheets.length && !patches.length) sheets.push({ file: input, cols, rows });
 const comps = [];
 const report = [];
 let cellNo = 0;
@@ -45,6 +57,16 @@ if (basePath) {
   report.push(`giữ atlas gốc: ${cellNo} ô`);
 }
 for (const sh of sheets) await packSheet(sh);
+for (const sh of patches) {
+  if (!basePath) throw new Error('--patch cần --base');
+  const ax = sh.forcedIdx % cols;
+  const ay = Math.floor(sh.forcedIdx / cols);
+  const white = await sharp({ create: { width: cell, height: cell, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 1 } } })
+    .png()
+    .toBuffer();
+  comps.push({ input: white, left: ax * cell, top: ay * cell, blend: 'dest-out' });
+  await packSheet(sh);
+}
 async function packSheet(sh) {
   const { data, info } = await sharp(sh.file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const W = info.width;
@@ -72,6 +94,7 @@ async function packSheet(sh) {
   const ch = Math.floor(H / sh.rows);
   for (let r = 0; r < sh.rows; r++)
     for (let c = 0; c < sh.cols; c++) {
+      if (sh.only && (r !== sh.only.row || c !== sh.only.col)) continue;
       let x0 = cw;
       let y0 = ch;
       let x1 = -1;
@@ -85,7 +108,7 @@ async function packSheet(sh) {
             if (y > y1) y1 = y;
           }
         }
-      const idx = cellNo++;
+      const idx = sh.forcedIdx ?? cellNo++;
       if (x1 < 0) {
         report.push(`ô ${idx}: trống`);
         continue;
