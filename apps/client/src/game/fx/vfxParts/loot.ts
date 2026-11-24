@@ -28,7 +28,7 @@ export const LOOT_CAM_CLEAR = 1.5;
 
 /**
  * Hệ số 0..1 cho cột sáng/chớp của đồ rơi, theo khoảng cách THẬT của camera (không dùng ngưỡng tuyệt đối vì camera mặc định cách người
- * ≈ 12 m trên mặt bằng, vùng `camZones` sát hơn nữa, zoom được tới 3 m): `distCam` = camera → điểm rơi, `distViewer` = camera → người chơi
+ * ≈ 12 m trên mặt bằng, zoom được tới 3 m): `distCam` = camera → điểm rơi, `distViewer` = camera → người chơi
  * (mặt bằng; `null` khi chưa biết). Mờ khi điểm rơi nằm chắn trước người chơi (gần camera hơn người từ 1,5 m, hết hẳn ở 5,5 m) hoặc camera
  * nằm trong cột. Đồ rơi quanh chân nhân vật ở mọi góc camera mặc định cho 1.
  */

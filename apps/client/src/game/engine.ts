@@ -99,7 +99,6 @@ import { MapVis } from './world/mapVis';
 import { SoulVis } from './fx/soulVis';
 import { CloneVis } from './fx/cloneVis';
 import { loadGroundTextures, resolveGroundSet, type GroundTextures } from '../base/groundTextures';
-import { BASE_ZONE, type ZoneCam } from './camera/camZones';
 import { DamageNumbers, Vfx } from './fx/vfx';
 import { loadForgeTextures } from './fx/forgeLoad';
 import { OffscreenIndicators } from './entities/offscreen';
@@ -445,9 +444,6 @@ export class Game {
   bossLineId = 0;
   /** Thẻ chương (C2): khung camera nhẹ, thẻ chờ tới khi thế giới đã dựng, đã xét lần đầu vào tông môn chưa. */
   camFrame = new CamFrame();
-  /** Camera theo khu (P2-E4): giá trị đang áp (đã làm mượt) và đích theo vị trí. */
-  zoneCur: ZoneCam = { ...BASE_ZONE };
-  zoneWant: ZoneCam = { ...BASE_ZONE };
   /** Cảnh mở đầu (P2-B1): camera điện ảnh lần đầu vào Lạc Kiếm Tông; xong thì hiện thẻ chương 'sect'. */
   cine = new Cutscene();
   /** Loại cảnh đang chạy (xem CineState.kind) và cờ rung lần hai của cảnh chuyển pha. */
