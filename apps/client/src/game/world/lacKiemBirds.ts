@@ -1,13 +1,36 @@
 import * as THREE from 'three/webgpu';
-import { attribute, cos, float, length, mix, positionLocal, sin, smoothstep, time, uniform, vec2, vec3 } from 'three/tsl';
+import { attribute, clamp, cos, dot, float, length, mix, positionLocal, sin, smoothstep, time, uniform, vec2, vec3 } from 'three/tsl';
 import { hash01, SECT } from '@dtl/shared';
 
 /**
  * Đàn chim lượn trên tông môn (Chân Cảnh M4): hai đàn bay vòng tròn ngược chiều ở độ cao 8–15 m (một đàn trên đại lộ, một trên ao sen: chỗ người chơi qua lại nhiều), vỗ cánh. Một InstancedMesh (1 draw call, ~70 tam giác/con),
  * toàn bộ chuyển động tính trong shader từ thuộc tính instance (tâm, bán kính, tốc độ, pha) — không việc CPU mỗi khung ngoài một uniform vị trí người chơi.
- * Camera chéo nhìn từ ~16 m cao: chim bay trong tầm nhìn có thể che người, nên con nào lại gần người (< 3,5 m trên mặt phẳng) thì thu nhỏ về 0 (từ 8 m trở ra đủ cỡ).
+ * Camera chéo nghiêng 52°: chim cao h m chỉ che người khi nằm trên TIA NHÌN camera→ngực người (lệch ~0,78·h m về phía camera), không phải ngay trên đầu. Nên cỡ chim theo khoảng cách 3D
+ * từ chim tới đoạn camera→ngực (`birdScale`, shader làm đúng công thức này): ≤ 2,5 m thu về 0, ≥ 6 m đủ cỡ.
  * Không đổ bóng, không va chạm. Tắt bằng `?birds=0`.
  */
+
+/** Ngực người cách chân (m): đích của tia nhìn. */
+export const BIRD_CHEST = 1.2;
+export const BIRD_HIDE = [2.5, 6] as const;
+
+/**
+ * Cỡ chim (0..1) theo khoảng cách 3D từ chim tới đoạn camera→ngực người. Hàm thuần, bản JS của đoạn shader trong `LacKiemBirds` (có test).
+ * `bird`, `cam`, `foot` là [x, y, z] thế giới; `foot` là chân người chơi.
+ */
+export function birdScale(bird: readonly number[], cam: readonly number[], foot: readonly number[]): number {
+  const a = cam;
+  const b = [foot[0]!, foot[1]! + BIRD_CHEST, foot[2]!];
+  const ab = [b[0]! - a[0]!, b[1]! - a[1]!, b[2]! - a[2]!];
+  const ap = [bird[0]! - a[0]!, bird[1]! - a[1]!, bird[2]! - a[2]!];
+  const t = Math.min(
+    1,
+    Math.max(0, (ap[0]! * ab[0]! + ap[1]! * ab[1]! + ap[2]! * ab[2]!) / (ab[0]! ** 2 + ab[1]! ** 2 + ab[2]! ** 2 || 1)),
+  );
+  const d = Math.hypot(ap[0]! - ab[0]! * t, ap[1]! - ab[1]! * t, ap[2]! - ab[2]! * t);
+  const k = Math.min(1, Math.max(0, (d - BIRD_HIDE[0]) / (BIRD_HIDE[1] - BIRD_HIDE[0])));
+  return k * k * (3 - 2 * k);
+}
 
 interface Flock {
   cx: number;
@@ -54,6 +77,7 @@ function birdGeometry(): THREE.BufferGeometry {
 export class LacKiemBirds {
   readonly mesh: THREE.InstancedMesh;
   private readonly focus = uniform(new THREE.Vector3());
+  private readonly cam = uniform(new THREE.Vector3());
   private readonly geo: THREE.BufferGeometry;
   private readonly mat: THREE.MeshBasicNodeMaterial;
   readonly count: number;
@@ -102,7 +126,13 @@ export class LacKiemBirds {
     const lx = positionLocal.x;
     const ly = positionLocal.y.add(flap).add(lx.abs().mul(bank).mul(0.0)).add(lx.mul(bank).mul(0.3));
     const lz = positionLocal.z;
-    const near = smoothstep(3.5, 8, length(pos2.sub(vec2(this.focus.x, this.focus.z)))); // thu nhỏ khi gần người chơi
+    // thu nhỏ khi nằm trên tia nhìn camera→ngực người (khoảng cách điểm–đoạn 3D; khớp `birdScale`)
+    const bird = vec3(pos2.x, B.x.add(sin(time.mul(0.7).add(B.y)).mul(0.8)), pos2.y);
+    const segB = this.focus.add(vec3(0, BIRD_CHEST, 0));
+    const ab = segB.sub(this.cam);
+    const ap = bird.sub(this.cam);
+    const tt = clamp(dot(ap, ab).div(dot(ab, ab).max(1e-4)), 0, 1);
+    const near = smoothstep(BIRD_HIDE[0], BIRD_HIDE[1], length(ap.sub(ab.mul(tt))));
     const s = B.z.mul(near);
     const wx = pos2.x.add(right.x.mul(lx.mul(s)).add(fwd.x.mul(lz.mul(s))));
     const wz = pos2.y.add(right.y.mul(lx.mul(s)).add(fwd.y.mul(lz.mul(s))));
@@ -120,9 +150,10 @@ export class LacKiemBirds {
     this.mesh.matrixAutoUpdate = false;
   }
 
-  /** Mỗi khung: vị trí người chơi (thu nhỏ chim đang bay gần). */
-  update(x: number, y: number, z: number): void {
+  /** Mỗi khung: chân người chơi và vị trí camera (chim trên tia nhìn thu nhỏ về 0). */
+  update(x: number, y: number, z: number, cam: THREE.Vector3): void {
     (this.focus.value as THREE.Vector3).set(x, y, z);
+    (this.cam.value as THREE.Vector3).copy(cam);
   }
 
   dispose(): void {
