@@ -1,5 +1,5 @@
 // Hào quang riêng của ba hướng tu Đao tu / Cổ tu / Cấm chế sư: MỘT lớp nhẹ mỗi hướng, thay hào quang cảnh giới mặc định (luật ở `pathAuraRules.ts`).
-//   Đao tu    : 2–3 vệt đao đỏ sậm (lưỡi liềm dựng đứng, nghiêng) xoay rất chậm quanh thân + tàn đỏ thưa bay lên.
+//   Đao tu    : 2–3 vệt đao thép bạc (lưỡi liềm dựng đứng, nghiêng) xoay rất chậm quanh thân + tàn thép thưa bay lên.
 //   Cổ tu     : 3–5 cổ trùng nhỏ (viên lục + quầng mờ) bay lượn quanh người, mỗi con một nhịp.
 //   Cấm chế sư: một vòng văn trận mờ dưới chân, xoay chậm.
 // Mọi lưới đi qua `FxPool` kiểu gộp (cả đám đông dùng chung vài draw call), hạt dùng hạt GPU chung. Khối ở độ cao thân đều mờ khi nằm giữa camera
@@ -218,7 +218,7 @@ export class PathAuraFx {
         1.8,
         0.35,
         0.9,
-        0x8a1c14,
+        0x8e98a4,
         0.9 * Math.min(1, c.w + 0.2),
         0,
         0.5,
@@ -263,7 +263,7 @@ export class PathAuraFx {
 
     if (kind === 'dao') {
       // Vệt đao mảnh lướt qua theo nhịp, KHÔNG có khối cố định hai bên: mỗi vệt chỉ hiện ~0,45 s trong chu kỳ rồi tắt, quét một cung hẹp;
-      // khí đỏ sậm bốc nhẹ từ vai/lưng do hạt GPU lo (emit).
+      // khí thép bạc bốc nhẹ từ vai/lưng do hạt GPU lo (emit).
       const slashes: FxMesh[] = [];
       for (let i = 0; i < n; i++) slashes.push(mk(shapeGeometry('crescent'), pal.core, 'toon', pal.body));
       ups.push((c) => {

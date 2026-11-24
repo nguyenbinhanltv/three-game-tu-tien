@@ -178,13 +178,13 @@
       "greatblade"
     ],
     "palette": {
-      "core": "3a0e0c",
-      "body": "9e2b22",
-      "rim": "f2b36a",
-      "accent": "c9ced4",
-      "shadow": "1a0706"
+      "core": "22262c",
+      "body": "a9b4c0",
+      "rim": "eef2f6",
+      "accent": "cfb04a",
+      "shadow": "101216"
     },
-    "tint": "f2b36a",
+    "tint": "d6dde6",
     "hit": {
       "sfx": "impact",
       "gain": 0.18,
@@ -222,13 +222,13 @@
       "fist"
     ],
     "palette": {
-      "core": "3a0d0d",
-      "body": "b3322a",
-      "rim": "ffd9a8",
-      "accent": "e8b04a",
-      "shadow": "180606"
+      "core": "2a1d12",
+      "body": "7a5a3a",
+      "rim": "ede3bd",
+      "accent": "e0bc40",
+      "shadow": "120b06"
     },
-    "tint": "ffcf9a",
+    "tint": "e6cf86",
     "hit": {
       "sfx": "impact",
       "gain": 0.22,

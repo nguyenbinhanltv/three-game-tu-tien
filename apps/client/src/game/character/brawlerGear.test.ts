@@ -138,7 +138,7 @@ describe('Thể tu: găng + giáp nhẹ thủ tục', () => {
   });
 });
 
-describe('Cổ Thần: bộ giáp nâng cấp (huyết đồng + gai xương)', () => {
+describe('Cổ Thần: bộ giáp nâng cấp (nâu đất + hổ phách + gai xương)', () => {
   const colors = (geo: THREE.BufferGeometry): Set<string> => {
     const a = geo.getAttribute('color');
     const out = new Set<string>();
@@ -158,7 +158,7 @@ describe('Cổ Thần: bộ giáp nâng cấp (huyết đồng + gai xương)', 
     expect(m.geometry.getAttribute('position').count / 3).toBeLessThan(6500);
     expect(m.geometry.getAttribute('skinIndex').count).toBe(m.geometry.getAttribute('position').count);
   });
-  it('đổi màu sang huyết đồng, không còn màu đồng gốc của Thể tu; vải gai giữ nguyên', () => {
+  it('đổi màu sang nâu đất + hổ phách, không còn màu đồng gốc của Thể tu; vải gai giữ nguyên', () => {
     const r = rig();
     const base = colors((attachBrawlerGear(r, snapshotBind(r), 1.7).meshes[0] as THREE.Mesh).geometry);
     const r2 = rig();
