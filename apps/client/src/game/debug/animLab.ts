@@ -7,6 +7,7 @@ import { POSE, SKILLS } from '@dtl/content';
 import type { Game } from '../engine';
 import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt, type AnimFxFlags } from '../character/animFx';
 import { set } from '../../ui/store';
+import { v3SetKeyOf } from '../character/mannequin';
 import { closeCam, keyMoments, type LabCam } from './animLabMath';
 
 /** Trạng thái điều khiển thời gian, đọc bởi vòng khung (`animLabDt`). */
@@ -51,7 +52,7 @@ export interface AnimLabApi {
   /** T5: như `hitSelf` nhưng cho quái đầu tiên trong cảnh; trả toạ độ màn hình (px) của quái để cắt ảnh, hoặc null nếu không có quái. */
   hitMon(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): { x: number; y: number } | null;
   /** T7: phát cut-in chiêu cuối `skill` như khi mình tung chiêu (khựng + thẻ); trả false nếu chiêu chưa có tranh. */
-  cutin(skill: string): boolean;
+  cutin(skill: string, setKey?: string, g?: string): boolean;
 }
 
 /** Gắn `window.__animlab` (gọi một lần khi tạo Game, chỉ khi `?animlab=1` ở bản dev). */
@@ -144,8 +145,9 @@ export function installAnimLab(g: Game): void {
       v.project(g.camera);
       return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
     },
-    cutin(skill) {
-      const art = cutinArt(skill, g.ents.players.get(g.sid)?.look.g ?? 'm');
+    cutin(skill, setKey, gender) {
+      const me = g.ents.players.get(g.sid);
+      const art = cutinArt(setKey ?? v3SetKeyOf(me?.look.g ?? 'm', me?.look.skin, me?.look.set), gender ?? me?.look.g ?? 'm');
       if (!art) return false;
       g.fxSlow = { scale: 0.04, until: performance.now() + CUTIN_FREEZE_MS };
       set({ ultCard: { id: ++g.ultCardId, skill, color: '9fd8ff', until: Date.now() + 900, cutin: art } });

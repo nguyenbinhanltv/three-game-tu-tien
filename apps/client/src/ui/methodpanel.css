@@ -493,11 +493,11 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 22%;
-  height: 52%;
-  overflow: hidden;
+  /* Dải mực chỉ cao 34% màn hình (phủ ≤ ~0,35, như chiêu cuối); tranh vượt lên/xuống khỏi dải để vẫn lớn, tên chiêu nằm trong dải bên trái. */
+  top: 33%;
+  height: 34%;
+  overflow: visible;
   animation: cutin-band 0.9s ease-out forwards;
-  mask-image: linear-gradient(180deg, transparent 0%, var(--u-ink-0) 12%, var(--u-ink-0) 86%, transparent 100%);
 }
 .cutin-ink {
   position: absolute;
@@ -507,8 +507,8 @@
     linear-gradient(
       90deg,
       transparent 0%,
-      color-mix(in srgb, var(--u-ink-0) 82%, transparent) 18%,
-      color-mix(in srgb, var(--u-ink-0) 88%, transparent) 70%,
+      color-mix(in srgb, var(--u-ink-0) 40%, transparent) 20%,
+      color-mix(in srgb, var(--u-ink-0) 48%, transparent) 62%,
       transparent 100%
     );
   mask-image: linear-gradient(180deg, transparent 0%, var(--u-ink-0) 14%, var(--u-ink-0) 86%, transparent 100%);
@@ -516,17 +516,19 @@
 .cutin-art {
   position: absolute;
   right: -2%;
-  top: 0;
-  height: 100%;
+  top: -42%;
+  height: 184%;
   width: auto;
   max-width: none;
   animation: cutin-sweep 0.9s cubic-bezier(0.16, 0.8, 0.3, 1) forwards;
 }
 .cutin-name {
   position: absolute;
-  left: 7%;
-  bottom: 16%;
-  font: 700 clamp(30px, 4.2vw, 60px) var(--u-p-font-serif);
+  left: 5%;
+  bottom: 18%;
+  /* Rộng tối đa ~40% màn hình để không chui xuống tranh (tranh bắt đầu ~60% từ trái ở 720p và 1080p). */
+  max-width: 40vw;
+  font: 700 clamp(22px, 2.6vw, 44px) var(--u-p-font-serif);
   letter-spacing: 0.16em;
   color: color-mix(in srgb, var(--mc) 55%, var(--u-gold-text));
   text-shadow:
@@ -534,6 +536,13 @@
     0 2px 5px var(--u-ink-0);
   filter: drop-shadow(0 2px 10px color-mix(in srgb, var(--u-ink-0) 70%, transparent));
   animation: cutin-name 0.9s ease-out forwards;
+}
+/* Ảnh thư pháp rất dài: đặt theo bề rộng (không đặt chiều cao) để giữ tỉ lệ, kết thúc trước mép tranh ở mọi cỡ màn hình. */
+.cutin-name .calli {
+  display: block;
+  width: 44vw;
+  max-width: none;
+  height: auto;
 }
 @keyframes cutin-band {
   0% {
