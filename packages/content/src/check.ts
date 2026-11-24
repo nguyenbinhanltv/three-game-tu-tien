@@ -227,7 +227,7 @@ for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKIL
           .filter(([, hex]) => isRedOrange(hex))
           .map(([tone]) => tone),
       );
-      for (const m of checkStandard2(card, tl2?.events ?? [], !!SKILL.get(card.skillId)?.ult, { redTones })) err(m);
+      for (const m of checkStandard2(card, tl2?.events ?? [], !!SKILL.get(card.skillId)?.ult, { redTones, hitAt: SKILL.get(card.skillId)?.hitAt?.[0] })) err(m);
     }
     // Thẻ là nguồn ý đồ: `impactFrame` phải khớp việc timeline có sự kiện `impact`.
     const tl = FX_TIMELINES.find((t) => t.skill === card.skillId);

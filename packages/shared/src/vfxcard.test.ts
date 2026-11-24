@@ -70,6 +70,22 @@ describe('checkStandard2 (chuẩn Họa Pháp Lô 2)', () => {
       }).join('|'),
     ).toMatch(/đỏ\/cam/);
   });
+  it('sự kiện không khai tone mặc định là body: bắt khi body đỏ', () => {
+    expect(checkStandard2(card, evs, false, { redTones: new Set(['body']) }).join('|')).toMatch(/tông body.*mặc định/);
+    expect(checkStandard2(card, [...evs, { type: 'impact', t: 0 }], false, { redTones: new Set() })).toEqual([]);
+  });
+  it('from: "start" quy về mốc trúng bằng hitAt', () => {
+    const c0 = { redTones: new Set<string>(), hitAt: 0.4 };
+    // t=0.4 từ lúc bấm = đúng mốc trúng; t=0 từ lúc bấm = báo trước; t=0.7 từ lúc bấm = dư ba (+0,3 s)
+    const ok2 = [
+      { type: 'mesh', from: 'start' as const, t: 0, shape: 'flip', flip: 'ink_smoke' },
+      { type: 'mesh', from: 'start' as const, t: 0.4, shape: 'ribbon' },
+      { type: 'particles', from: 'start' as const, t: 0.7 },
+    ];
+    expect(checkStandard2(card, ok2, false, c0)).toEqual([]);
+    // cùng dữ liệu nhưng không quy đổi: t=0 bị tính là điểm nhấn, không còn nhịp báo trước/dư ba đúng
+    expect(checkStandard2(card, ok2, false, { redTones: new Set() }).join('|')).toMatch(/báo trước/);
+  });
   it('isRedOrange nhận đỏ/cam, bỏ qua lam/vàng nhạt', () => {
     expect(isRedOrange('e4452f')).toBe(true);
     expect(isRedOrange('ff9a4a')).toBe(true);

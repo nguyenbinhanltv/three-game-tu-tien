@@ -197,12 +197,16 @@ const GENERIC_SHAPES: ReadonlySet<string> = new Set([
 export interface Standard2Ctx {
   /** Tông của hướng tu có sắc đỏ/cam (HSL: đỏ-cam 0–45° hoặc 345–360°, bão hòa > 0,45). Chiêu người chơi không được dùng. */
   redTones: ReadonlySet<string>;
+  /** `hitAt[0]` của chiêu (giây từ lúc bấm): đổi `t` của sự kiện `from: "start"` về mốc trúng. Không truyền = 0. */
+  hitAt?: number;
 }
 
 interface TlEvent {
   type: string;
   /** Giây so với mốc trúng (âm = trước). */
   t?: number;
+  /** `start`: `t` tính từ lúc bấm chiêu (không phải mốc trúng). */
+  from?: 'hit' | 'start';
   shape?: string;
   tone?: string;
   tex?: string;
@@ -260,18 +264,24 @@ export function checkStandard2(c: VfxCard, events: readonly TlEvent[], ult: bool
   ) {
     e.push(`${at}: vòng ấn rune dưới chân làm hình chính (rune + rune_ring2, ít hình khác)`);
   }
+  // Client tô sự kiện hình không khai tone bằng `body` (render/vfx/palette.ts), nên tính cả trường hợp đó.
   for (const x of events) {
-    if (x.tone && ctx.redTones.has(x.tone)) {
-      e.push(`${at}: dùng tông ${x.tone} (đỏ/cam theo bảng màu hướng tu) — dành cho cảnh báo của địch`);
+    if (x.type !== 'mesh' && x.type !== 'decal' && x.type !== 'particles') continue;
+    const tone = x.tone ?? 'body';
+    if (ctx.redTones.has(tone)) {
+      e.push(`${at}: dùng tông ${tone}${x.tone ? '' : ' (mặc định khi không khai tone)'} (đỏ/cam theo bảng màu hướng tu) — dành cho cảnh báo của địch`);
       break;
     }
   }
+  const hit = ctx.hitAt ?? 0;
+  // Mọi `t` quy về mốc trúng: `from: "start"` thì trừ `hitAt` (t tính từ lúc bấm).
+  const rel = (x: TlEvent): number => (x.t ?? 0) - (x.from === 'start' ? hit : 0);
   const vis = events.filter((x) => x.type === 'mesh' || x.type === 'decal' || x.type === 'particles');
-  if (!vis.some((x) => (x.t ?? 0) < -0.05) && c.timing.anticipationMs >= 150)
+  if (!vis.some((x) => rel(x) < -0.05) && c.timing.anticipationMs >= 150)
     e.push(`${at}: thiếu nhịp báo trước (không có sự kiện hình trước mốc trúng dù anticipationMs ${c.timing.anticipationMs})`);
-  if (!vis.some((x) => Math.abs(x.t ?? 0) <= 0.05))
+  if (!vis.some((x) => Math.abs(rel(x)) <= 0.05))
     e.push(`${at}: thiếu điểm nhấn lúc trúng (không có sự kiện hình ở ±50 ms quanh mốc trúng)`);
-  if (!vis.some((x) => (x.t ?? 0) >= 0.15)) e.push(`${at}: thiếu dư ba (không có sự kiện hình từ +150 ms trở đi)`);
+  if (!vis.some((x) => rel(x) >= 0.15)) e.push(`${at}: thiếu dư ba (không có sự kiện hình từ +150 ms trở đi)`);
   const cap = ult ? 0.35 : 0.2;
   if (c.budget.screenCover > cap)
     e.push(`${at}: budget.screenCover ${c.budget.screenCover} > ${cap}${ult ? '' : ' (chỉ chiêu cuối được tới 0,35)'}`);
