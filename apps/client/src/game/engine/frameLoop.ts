@@ -504,9 +504,12 @@ function updateCamera(eng: Game, dt: number): void {
   updateOcclusion(dt, eng.camera.position, _camFocus.set(rp.x, rp.y + 1.2, rp.z), rp.y, iso ? (flying ? 2 : 1) : 0, hasTgt ? _v2 : null);
   // Chuyển vào/ra camera chéo: bán kính ô địa hình và bản đồ bóng đổi theo.
   const isoOn = !!iso;
-  if (eng.iso && eng.iso.applied !== isoOn) {
+  // Mở tầm nhìn (camera gần ngang): cần địa hình tầm xa + trời/biển mây/núi nền, nên tạm coi như không iso cho phần cảnh xa (có trễ để không chớp).
+  const farOn = eng.vista.farOn();
+  if (eng.iso && (eng.iso.applied !== isoOn || eng.iso.terrainIso !== (isoOn && !farOn))) {
     eng.iso.applied = isoOn;
-    eng.terrain.setIso(isoOn);
+    eng.iso.terrainIso = isoOn && !farOn;
+    eng.terrain.setIso(eng.iso.terrainIso);
     eng.env.setIso(isoOn);
   }
   if (iso) {
@@ -514,11 +517,21 @@ function updateCamera(eng: Game, dt: number): void {
     iso.project(eng.camera, window.innerWidth, window.innerHeight, pickGround(eng.renderPos));
     iso.updateVisuals(performance.now() / 1000);
     // Tầm nhìn ~250 m: không vẽ cảnh xa (biển mây, đảo trời, núi nền).
-    if (!iso.farHidden) iso.cloudWas = eng.env.cloudSea.group.visible;
-    eng.env.cloudSea.group.visible = false;
-    if (eng.lacKiemSky) eng.lacKiemSky.group.visible = false;
-    if (eng.lacKiemFar) eng.lacKiemFar.group.visible = false;
-    iso.farHidden = true;
+    if (farOn) {
+      // Vista: trả cảnh xa (nếu iso đã ẩn) và để nguyên.
+      if (iso.farHidden) {
+        eng.env.cloudSea.group.visible = iso.cloudWas;
+        if (eng.lacKiemSky) eng.lacKiemSky.group.visible = true;
+        if (eng.lacKiemFar) eng.lacKiemFar.group.visible = true;
+        iso.farHidden = false;
+      }
+    } else {
+      if (!iso.farHidden) iso.cloudWas = eng.env.cloudSea.group.visible;
+      eng.env.cloudSea.group.visible = false;
+      if (eng.lacKiemSky) eng.lacKiemSky.group.visible = false;
+      if (eng.lacKiemFar) eng.lacKiemFar.group.visible = false;
+      iso.farHidden = true;
+    }
   } else if (eng.iso?.farHidden) {
     // Iso tạm tắt (cine/độ kiếp): hiện lại cảnh xa mà iso đã ẩn.
     eng.env.cloudSea.group.visible = eng.iso.cloudWas;

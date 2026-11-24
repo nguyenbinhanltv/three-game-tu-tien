@@ -60,6 +60,14 @@ export class VistaRig {
     return spot.id !== this.dismissed;
   }
 
+  private far = false;
+
+  /** Cần cảnh xa (địa hình tầm xa, trời, biển mây, núi nền)? Bật khi mở > 5%, tắt khi đóng < 1% (có trễ, không chớp). */
+  farOn(): boolean {
+    if (this.far ? this.amount < 0.01 : this.amount > 0.05) this.far = !this.far;
+    return this.far;
+  }
+
   /** Bấm phím thoát: bỏ mở tầm nhìn ở điểm hiện tại (ngự kiếm thì thôi, không ép). */
   dismiss(spot: VistaSpot | null): void {
     if (spot) this.dismissed = spot.id;

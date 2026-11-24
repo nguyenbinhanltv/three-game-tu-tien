@@ -56,6 +56,16 @@ describe('vista', () => {
     for (let i = 0; i < 120; i++) r.update(1 / 60, false, s, true, false);
     expect(r.amount).toBeCloseTo(1);
   });
+  it('farOn có trễ: bật khi mở > 5%, tắt khi < 1%', () => {
+    const r = new VistaRig();
+    expect(r.farOn()).toBe(false);
+    for (let i = 0; i < 120; i++) r.update(1 / 60, true, null, true);
+    expect(r.farOn()).toBe(true);
+    r.update(1 / 60, false, null, true);
+    expect(r.farOn()).toBe(true);
+    for (let i = 0; i < 120; i++) r.update(1 / 60, false, null, true);
+    expect(r.farOn()).toBe(false);
+  });
   it('cờ tắt thì không mở', () => {
     const r = new VistaRig();
     for (let i = 0; i < 60; i++) r.update(1 / 60, true, null, false);
