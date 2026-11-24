@@ -58,11 +58,11 @@ Mỗi PR từ P2 ghi số trước/sau cùng điểm `?at=` (draw call, CPU, GPU
 
 Lần đầu (bụi cỏ hai tông + nét cọ xoay theo dốc) bị người dùng loại: "không giống painted-valley". Làm lại bằng cách chạy chính painted-valley, đặt camera của nó đúng góc game (chéo 52°, 20 m, FOV 32°, `__tg.view`) để có ảnh tham chiếu cùng góc, rồi port SÁT công thức nguồn:
 
-- `render/painted/meadow.ts`: `meadowGreen` (ba xanh đúng giá trị nguồn), `meadowTint`, `tallAt`, `slopeRel`, `paintGround`, `hash42` (nguồn: tệp glsl.js của painted-valley).
-- `game/world/paintedGrass.ts`: `PaintedGrass` thay `Grass` ở level dùng bụi lá thủ tục khi `?style=painted` (port `blades.js` + `flowers.js`): hai vòng lá mảnh `mid`/`wide` mờ qua nhau theo khoảng cách tới camera, mọi thứ suy ra từ số ô thế giới; hoa trắng/vàng/hồng/be thành đám. Độ cao và mật độ đọc từ texture lưới 1 m cuộn quanh người chơi (dựng bằng CPU, luật mọc chung với cỏ thường qua `grassDensityAt`).
-- `render/painted/ground.ts`: màu đất = `meadowGreen` + `meadowTint` + `paintGround`; đường mòn/đất khô be nhạt.
-- `render/painted/brush.ts`: texture nét cọ dựng như `strokes.js` (mảng lớn, nét, chấm); mảng lớn là thứ cho cỏ các mảng sáng/tối nhiều mét.
-- `render/painted/kuwahara.ts` + `post.ts` (P5 rút gọn): Kuwahara bốn phần tư, `?paint=0..3` (mặc định 1), bỏ qua trời (độ sâu) và điểm sáng HDR (VFX). Chưa có mặt nạ alpha cho nhân vật (làm ở P7).
+- `render/painted/lab/field.ts`: `meadowGreen` (ba xanh đúng giá trị nguồn), `meadowTint`, `tallAt`, `slopeRel`, `paintGround`, `hash42` (nguồn: tệp glsl.js của painted-valley).
+- `game/world/paintedField.ts`: `PaintedGameField` thay `Grass` ở level dùng bụi lá thủ tục khi `?style=painted` (port `blades.js` + `flowers.js`): hai vòng lá mảnh `mid`/`wide` mờ qua nhau theo khoảng cách tới camera, mọi thứ suy ra từ số ô thế giới; hoa trắng/vàng/hồng/be thành đám. Độ cao và mật độ đọc từ texture lưới 1 m cuộn quanh người chơi (dựng bằng CPU, luật mọc chung với cỏ thường qua `grassDensityAt`).
+- `render/painted/lab/ground.ts`: màu đất = `meadowGreen` + `meadowTint` + `paintGround`; đường mòn/đất khô be nhạt.
+- `render/painted/lab/ref/textures.ts`: texture nét cọ dựng như `strokes.js` (mảng lớn, nét, chấm); mảng lớn là thứ cho cỏ các mảng sáng/tối nhiều mét.
+- `render/painted/frame.ts` + `post.ts` (P5 rút gọn): Kuwahara bốn phần tư, `?paint=0..3` (mặc định 1), bỏ qua trời (độ sâu) và điểm sáng HDR (VFX). Chưa có mặt nạ alpha cho nhân vật (làm ở P7).
 - Nét lá (lần 3): lá tối ở gốc, sáng ở ngọn (`mix(0.5, 1.12, up)`), 12% lá là nét sẫm / 10% hứng nắng, khóm sẫm theo ô 44 cm, mảng đậm/nhạt vài mét; hoa dày (xác suất ×2,5, to hơn); Kuwahara trộn 55% với ảnh gốc (`paintedFinishParams.strength`) để không xóa nét lá.
 - Ngân sách: vòng `mid` cell 0,11 m ô 6,6 m; `wide` cell 0,22 m ô 17,6 m; hoa 4×4 ô. Tam giác 1,32–1,43 M, draw call +38..54.
 - Chỉnh nhìn: `paintedGroundParams.gain` và `paintedGroundParams.tint`, `paintedGrassParams.gain`.
