@@ -26,5 +26,6 @@
     "overdraw": 4
   },
   "textures": [],
-  "impactFrame": true
+  "impactFrame": true,
+  "silhouette": "ba vệt vuốt song song chéo từ trên xuống bằng khói đặc, mỗi vệt kết thúc ở một đầu ngón bàn tay hồn mờ, đuôi khói tách ngón"
 }

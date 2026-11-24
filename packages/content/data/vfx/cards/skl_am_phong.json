@@ -22,9 +22,10 @@
   "budget": {
     "drawCalls": 4,
     "particles": 120,
-    "screenCover": 0.35,
+    "screenCover": 0.2,
     "overdraw": 6
   },
   "textures": [],
-  "impactFrame": true
+  "impactFrame": true,
+  "silhouette": "MỘT CƠN LỐC hình phễu xoắn ốc cao quanh mục tiêu, đáy hẹp, miệng loe rộng, khói tím đen lõi đặc, sợi hồn bị cuốn xoắn lên trên"
 }

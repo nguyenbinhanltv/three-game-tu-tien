@@ -22,8 +22,9 @@
   "budget": {
     "drawCalls": 6,
     "particles": 241,
-    "screenCover": 0.35,
+    "screenCover": 0.2,
     "overdraw": 6
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "một quả cầu khói nổ tung thành chùm MẶT HỒN mờ bay tỏa ra như đàn, mỗi mặt kéo đuôi khói về phía tâm nổ"
 }

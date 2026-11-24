@@ -22,8 +22,9 @@
   "budget": {
     "drawCalls": 6,
     "particles": 282,
-    "screenCover": 0.35,
+    "screenCover": 0.2,
     "overdraw": 6
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "ba bóng lính cầm giáo bằng khói đứng thành thế tam giác quanh người, thân dưới tan thành đuôi khói cuộn, mỗi lính hai điểm mắt sáng"
 }
