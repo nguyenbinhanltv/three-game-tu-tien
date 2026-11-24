@@ -8,14 +8,15 @@ describe('lacKiemGround (Chân Cảnh M3)', () => {
   it('tất định, 6 draw call (một mesh/loại) và ≤ 40k tam giác', () => {
     const a = groundStats();
     expect(groundStats()).toEqual(a);
-    expect(a.kinds).toBe(6);
+    expect(a.kinds).toBe(6); // foot, puddle, crack, seal, root, wash
     expect(a.tris).toBeGreaterThan(500);
     expect(a.tris).toBeLessThan(40_000);
   });
 
-  it('có đủ năm loại: vết chân, vũng nước, gạch vỡ, ấn trận, rễ', () => {
+  it('có đủ sáu loại: vết chân, vũng nước, gạch vỡ, ấn trận, rễ, wash', () => {
     const l = groundLayout();
     expect(l.trails.length).toBeGreaterThanOrEqual(3);
+    expect([...buildGroundGeometry().keys()].sort()).toEqual(['crack', 'foot', 'puddle', 'root', 'seal', 'wash']);
     for (const k of ['puddle', 'crack', 'seal', 'root'] as const)
       expect(l.patches.filter((p) => p.kind === k).length, k).toBeGreaterThanOrEqual(3);
   });

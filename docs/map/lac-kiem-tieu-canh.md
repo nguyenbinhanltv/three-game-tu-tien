@@ -45,7 +45,7 @@ Client-only, tất định, không va chạm; dẹt ≤ 0,15 m nên không bao g
 | Rễ cây (`root`) | ven ao, bờ hác, chân đồi thạch lâm, hai bên cổng | tám nhánh tỏa mảnh dần, bỏ ngẫu nhiên vài nhánh |
 
 Bẫy: đường lát đá trước cổng bài và phiến lối men vách là vật 3D nằm TRÊN mặt đất, decal bị che nên không đặt ở đó. Dải tam giác phải quay mặt lên (đã gặp: bị cắt mặt sau nên mất vết chân). Cộng sáng (additive) làm ấn trận trắng bệch giữa ngày, dùng pha trộn thường.
-Ngân sách đo (`pnpm shots tieucanh --perf 1`, trung bình 24 ảnh A/B): +~7 draw call, +~39k tam giác (+4%), khung ~+1,6 ms (lớp wash trong suốt phủ rộng; nhiễu đo ±1 ms). Ảnh cận: `--dpr 2`.
+Ngân sách đo (`pnpm shots tieucanh --perf 1`, A/B `--query "&ground=0"` chạy liền nhau, 720p ngày, 6 điểm): đúng +6 draw call (107→113, 80→86, 72→78 ở các điểm không bị streaming xen vào), ~+15k tam giác (+2%: lớp wash chỉ dựng quanh điểm kể chuyện và rìa, bỏ ô dốc/hác), khung 8,35 → 8,45 ms trung bình (máy khóa ở nhịp 8,33 ms nên chênh thật ≤ ~0,3 ms, trong nhiễu đo). Shader wash 4 lần lấy nhiễu/điểm ảnh (đã bỏ sàn mật độ và 4 lần lấy nhiễu thừa). Ảnh cận: `--dpr 2`.
 
 ## Sight fade (bắt buộc)
 

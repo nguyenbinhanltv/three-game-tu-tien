@@ -24,7 +24,7 @@ import { vnoise } from '../../render/materials/isoDetail';
 /**
  * Mặt đất "kể chuyện" Lạc Kiếm Tông (Chân Cảnh M3): decal bám địa hình, thứ người chơi nhìn 90% thời gian.
  * Vết chân + vệt mòn dọc lối, vũng nước phản chiếu, gạch vỡ + đá vụn trên sân, ấn trận mờ phát sáng, rễ cây trồi.
- * Client-only, tất định, không va chạm. Mỗi loại gộp MỘT mesh (≤ 5 draw call), thủ tục hoàn toàn (không texture mới).
+ * Client-only, tất định, không va chạm. Mỗi loại gộp MỘT mesh (đúng 6 draw call: foot, puddle, crack, seal, root, wash), thủ tục hoàn toàn (không texture mới).
  * Dẹt sát đất (≤ 0,15 m) nên không bao giờ che người/mục tiêu của camera chéo; không cần sight fade.
  * Bố cục (tọa độ tương đối tâm tông môn): `groundLayout()`; lý do chọn chỗ: `docs/map/lac-kiem-tieu-canh.md` (M3).
  */
@@ -90,7 +90,7 @@ const HOT: [number, number, number, number][] = [
 ];
 /** Mật độ "kể chuyện" tại (x, z) ∈ [0,1]: đậm ở điểm kể chuyện và rìa sân, sạch ở lối chính (đại lộ) và dưới chân công trình giữa sân. */
 export function groundWeight(x: number, z: number): number {
-  let w = 0.28;
+  let w = 0; // không có sàn: chỉ dựng lưới quanh điểm kể chuyện và rìa (giảm overdraw/chi phí fragment)
   for (const [hx, hz, r, k] of HOT) w = Math.max(w, k * Math.max(0, 1 - Math.hypot(x - hx, z - hz) / r));
   const d = Math.hypot(x, z);
   w = Math.max(w, Math.min(1, Math.max(0, (d - 62) / 30)) * 0.85); // rìa sân
@@ -330,7 +330,7 @@ function washGeo(): Acc {
   for (let j = 0; j < nz; j++)
     for (let i = 0; i < nx; i++) {
       const w = Math.max(groundWeight(x0 + i * step, z0 + j * step), groundWeight(x0 + (i + 1) * step, z0 + (j + 1) * step));
-      if (w < 0.06) continue;
+      if (w < 0.18) continue;
       // bỏ ô dốc/gồ ghề (mép hác, sườn núi): dây cung lơ lửng trên khoảng trống hoặc cắm vào vách, nhiễu bị kéo thành sọc dọc
       const xa = x0 + i * step;
       const za = z0 + j * step;
@@ -509,7 +509,7 @@ function rootMaterial(): THREE.MeshStandardNodeMaterial {
   return m;
 }
 
-/** Lá rụng gom đống, rêu loang, đất trọc: ba lớp nhiễu thế giới, độ dày theo trọng số đỉnh (aP.y). */
+/** Lá rụng gom đống, rêu loang, đất trọc: bốn lần lấy nhiễu thế giới, độ dày theo trọng số đỉnh (aP.y). */
 function washMaterial(): THREE.MeshStandardNodeMaterial {
   const m = baseMat();
   m.polygonOffsetFactor = -1;
@@ -518,19 +518,15 @@ function washMaterial(): THREE.MeshStandardNodeMaterial {
   const w = aP().y;
   const big = vnoise(p.mul(0.07).add(vec2(11, 3)));
   const mid = vnoise(p.mul(0.21).add(vec2(2, 17)));
-  const fine = vnoise(p.mul(1.7));
   // đất trọc: vài mảng lớn, mép rách theo nhiễu mịn
-  const bare = smoothstep(0.5, 0.56, big.mul(0.7).add(mid.mul(0.3)).add(fine.sub(0.5).mul(0.12))).mul(w);
+  const bare = smoothstep(0.5, 0.56, big.mul(0.7).add(mid.mul(0.3))).mul(w);
   // rêu: mảng vừa, xanh đậm
-  const moss = smoothstep(0.46, 0.6, mid.mul(0.65).add(vnoise(p.mul(0.6).add(5)).mul(0.35))).mul(w.mul(0.9));
+  const moss = smoothstep(0.46, 0.6, mid.mul(0.8).add(big.mul(0.2))).mul(w.mul(0.9));
   // lá rụng: đống (cụm nhiễu thấp tần) × từng chiếc lá (nhiễu cao tần ngưỡng)
   const pile = smoothstep(0.5, 0.68, vnoise(p.mul(0.33).add(vec2(7, 1)))).mul(w);
   const leafA = smoothstep(0.58, 0.65, vnoise(p.mul(3.4).add(vec2(3, 9))));
-  const leafB = smoothstep(0.6, 0.67, vnoise(p.mul(5.2).add(vec2(8, 2))));
-  const leaf = max(leafA, leafB)
-    .mul(pile.mul(1.4).add(w.mul(0.08)))
-    .clamp(0, 1);
-  const tone = vnoise(p.mul(1.3));
+  const leaf = leafA.mul(pile.mul(1.4).add(w.mul(0.08))).clamp(0, 1);
+  const tone = mid;
   const leafCol = mix(
     mix(vec3(0.15, 0.095, 0.04), vec3(0.2, 0.16, 0.07), smoothstep(0.35, 0.6, tone)),
     vec3(0.12, 0.18, 0.05),
