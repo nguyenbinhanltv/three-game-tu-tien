@@ -4,8 +4,10 @@
 //   Đổi nội dung = đổi tên: `<tên>.<hash10>.<đuôi>` (xem docs/handbook/assets.md).
 // Khóa R2 đọc từ biến môi trường / .env.local (xem r2/env.ts), không bao giờ được in ra.
 
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import { HeadObjectCommand, ListObjectsV2Command, PutObjectCommand, type S3Client } from '@aws-sdk/client-s3';
+import { ROOT } from './config.js';
 import { cacheControl, contentType, makeClient } from './r2/client.js';
 import { loadR2Env } from './r2/env.js';
 import { BINARY_EXT, isHashedName, localPath, type Lock, pool, readLock, scanLock, writeLock } from './r2/lock.js';
@@ -15,6 +17,8 @@ export interface PushOptions {
   only?: string;
   /** Không ghi lại sổ khóa (dùng khi chỉ thử một file). */
   noLock?: boolean;
+  /** Cho ghi đè json/văn bản mutable dù không ở main (hiếm; mặc định chỉ main). */
+  mutable?: boolean;
 }
 
 export interface PushReport {
@@ -70,6 +74,8 @@ export interface PlanInput {
   remote: Map<string, { size: number }>;
   /** sha256 lưu trong metadata của đối tượng R2 (undefined nếu đối tượng cũ không có metadata). */
   remoteSha: (key: string) => Promise<string | undefined>;
+  /** Cho ghi đè khóa json/văn bản (mutable) đã có trên R2: CHỈ khi push từ main hoặc có cờ `--mutable`. Nhánh khác không được đè bản main đang dùng. */
+  allowMutable?: boolean;
 }
 
 export interface PushPlan {
@@ -80,21 +86,37 @@ export interface PushPlan {
   unverified: string[];
   /** Khóa văn bản/json tên cố định (không phải nhị phân) đã có trên R2 nhưng khác sổ khóa: được GHI ĐÈ có chủ đích (nằm trong `todo`). */
   overwrites: string[];
+  /** Khóa mutable lệch R2 nhưng KHÔNG ghi (đang ở nhánh, không phải main): chờ push từ main. */
+  deferred: string[];
 }
 
 /** Khóa MUTABLE: không phải nhị phân (manifest.json, json cấu hình…), đổi nội dung mỗi lần thêm asset nên được ghi đè; cache 60 s (xem `cacheControl`). Nhị phân thì luôn bất biến. */
 export const isMutableKey = (key: string): boolean => !BINARY_EXT.test(key);
 
+/** Nhánh git hiện tại ('' nếu không đọc được). */
+export function currentBranch(): string {
+  try {
+    return execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return '';
+  }
+}
+
 /** Phân loại từng khóa: chưa có → upload; có và khớp → bỏ qua; có nhưng khác kích thước/sha → XUNG ĐỘT (không bao giờ ghi đè). */
-export async function planPush({ keys, lock, remote, remoteSha: shaOf }: PlanInput): Promise<PushPlan> {
-  const plan: PushPlan = { todo: [], present: 0, conflicts: [], unverified: [], overwrites: [] };
+export async function planPush({ keys, lock, remote, remoteSha: shaOf, allowMutable = false }: PlanInput): Promise<PushPlan> {
+  const plan: PushPlan = { todo: [], present: 0, conflicts: [], unverified: [], overwrites: [], deferred: [] };
   for (const key of keys) {
     const r = remote.get(key);
     const e = lock.files[key]!;
     if (!r) plan.todo.push(key);
     else if (isMutableKey(key)) {
-      // manifest/json tên cố định: khớp (kích thước + sha) thì bỏ qua, lệch thì ghi đè (không phải xung đột)
+      // manifest/json tên cố định: khớp (kích thước + sha) thì bỏ qua; lệch thì ghi đè CHỈ khi allowMutable (main), còn lại hoãn (client đọc manifest từ CDN, nhánh không được đè bản main)
       if (r.size === e.bytes && (await shaOf(key)) === e.sha256) plan.present++;
+      else if (!allowMutable) plan.deferred.push(key);
       else {
         plan.todo.push(key);
         plan.overwrites.push(key);
@@ -121,7 +143,9 @@ export async function push(opts: PushOptions = {}): Promise<PushReport> {
 
   const keys = Object.keys(lock.files).filter((k) => !opts.only || k === opts.only || k.startsWith(opts.only));
   const remote = await listBucket(s3, env.bucket);
-  const { todo, present, conflicts, unverified, overwrites } = await planPush({
+  const allowMutable = opts.mutable === true || currentBranch() === 'main';
+  const { todo, present, conflicts, unverified, overwrites, deferred } = await planPush({
+    allowMutable,
     keys,
     lock,
     remote,
@@ -133,6 +157,10 @@ export async function push(opts: PushOptions = {}): Promise<PushReport> {
     );
 
   const report: PushReport = { total: keys.length, present, uploaded: [], uploadedBytes: 0, failed: [], lockChanged, conflicts };
+  if (deferred.length)
+    console.warn(
+      `[push] hoãn ${deferred.length} khóa json/văn bản (${deferred.join(', ')}): client đọc manifest từ CDN nên nhánh KHÔNG ghi đè bản main đang dùng; sau khi merge chạy pnpm assets:push trên main (hoặc --mutable)`,
+    );
   if (overwrites.length) console.log(`[push] ghi đè ${overwrites.length} khóa json/văn bản tên cố định: ${overwrites.join(', ')}`);
   // R2 bất biến: có xung đột thì không upload gì cả (kể cả file không xung đột), để người chạy sửa rồi chạy lại.
   if (conflicts.length && !opts.dry) throw new PushConflictError(conflicts);
