@@ -14,7 +14,7 @@ import { pull } from './pull.js';
 import { push } from './push.js';
 import { assetBase } from './r2/env.js';
 import { readLock, scanLock, unhashedBinaries, writeLock } from './r2/lock.js';
-import { changedKeys, hasR2Credentials, readBaseLock, verifyLock, verifyRemote, verifyRemoteList } from './r2/verify.js';
+import { changedKeys, hasR2Credentials, readBaseLock, rotatingSample, verifyLock, verifyRemote, verifyRemoteList } from './r2/verify.js';
 import { validate } from './validate.js';
 
 const [cmd = 'build', ...args] = process.argv.slice(2).filter((a) => a !== '--');
@@ -64,7 +64,13 @@ async function runValidate(): Promise<boolean> {
     } else if (base) {
       const lockNow = readLock();
       const baseLock = args.includes('--all-head') ? null : readBaseLock();
-      const r = await verifyRemote(base, lockNow, baseLock ? changedKeys(lockNow, baseLock) : undefined);
+      const changed = baseLock ? changedKeys(lockNow, baseLock) : [];
+      // Không có sổ gốc hoặc không có khóa đổi (chạy tay trên main) → HEAD tất cả; ngược lại khóa đổi + lát lấy mẫu theo ngày.
+      const subsetKeys =
+        baseLock && changed.length > 0
+          ? [...new Set([...changed, ...rotatingSample(lockNow, Math.floor(Date.now() / 86_400_000))])]
+          : undefined;
+      const r = await verifyRemote(base, lockNow, subsetKeys);
       for (const w of r.warnings) console.warn(`[validate] cảnh báo R2: ${w}`);
       for (const e of r.errors) console.error(`[validate] LỖI R2 ${e}`);
       console.log(`[validate] R2: ${r.checked} file, ${r.errors.length} lỗi`);

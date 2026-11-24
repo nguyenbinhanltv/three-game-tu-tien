@@ -5,7 +5,7 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { pull } from '../pull.js';
 import { hasInStore, placeFromStore, putInStore, storeFile } from './store.js';
-import { changedKeys, compareListing } from './verify.js';
+import { changedKeys, compareListing, rotatingSample } from './verify.js';
 import type { Lock } from './lock.js';
 
 const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex');
@@ -77,6 +77,15 @@ describe('validate giảm yêu cầu tới R2', () => {
     expect(errs).toHaveLength(2);
     expect(errs.join('|')).toMatch(/b: kích thước R2 9/);
     expect(errs.join('|')).toMatch(/c: chưa có trên R2/);
+  });
+  it('rotatingSample: các lát theo ngày phủ hết khóa, không trùng', () => {
+    const big: Lock = {
+      version: 1,
+      files: Object.fromEntries(Array.from({ length: 200 }, (_, i) => [`k${i}`, { sha256: 'x', bytes: 1 }])),
+    };
+    const all = Array.from({ length: 14 }, (_, d) => rotatingSample(big, d)).flat();
+    expect(new Set(all).size).toBe(200);
+    expect(all).toHaveLength(200);
   });
   it('changedKeys: chỉ khóa mới/đổi so với sổ gốc', () => {
     const base: Lock = { version: 1, files: { a: { sha256: 'x', bytes: 1 }, b: { sha256: 'OLD', bytes: 2 } } };

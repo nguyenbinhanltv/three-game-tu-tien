@@ -1,8 +1,9 @@
 // Kiểm sổ khóa khớp đĩa và khớp R2. Giảm số yêu cầu tới R2/CDN:
 //   - có khóa R2 (máy dev): MỘT lượt ListObjectsV2 (1 thao tác mỗi 1000 file) rồi so kích thước, không HEAD từng file;
-//   - không có khóa (CI): HEAD qua URL công khai CHỈ cho file mới/đổi so với sổ khóa của nhánh gốc (main), vì phần còn lại đã được CI của main kiểm; không đọc được sổ gốc thì HEAD tất cả.
+//   - không có khóa (CI): HEAD qua URL công khai cho file mới/đổi so với sổ khóa của nhánh gốc (main) CỘNG một lát lấy mẫu xoay vòng theo ngày (1/ROTATE_BUCKETS số khóa, hết một vòng sau ROTATE_BUCKETS ngày) để vẫn phát hiện R2 trôi khỏi sổ khóa (CI không chạy trên main); không đọc được sổ gốc, hoặc không có khóa đổi (vd chạy tay trên main) thì HEAD tất cả.
 
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { ROOT } from '../config.js';
 import { urlOf } from '../pull.js';
 import { listBucket } from '../push.js';
@@ -41,6 +42,16 @@ export function changedKeys(lock: Lock, base: Lock): string[] {
       const e = lock.files[k]!;
       return !b || b.sha256 !== e.sha256 || b.bytes !== e.bytes;
     })
+    .sort();
+}
+
+export const ROTATE_BUCKETS = 14;
+
+/** Lát lấy mẫu xoay vòng: khóa có bucket(sha256 của khóa) === day mod ROTATE_BUCKETS. Cùng ngày → cùng lát, qua ROTATE_BUCKETS ngày phủ hết. */
+export function rotatingSample(lock: Lock, day: number, buckets = ROTATE_BUCKETS): string[] {
+  const want = ((day % buckets) + buckets) % buckets;
+  return Object.keys(lock.files)
+    .filter((k) => parseInt(createHash('sha256').update(k).digest('hex').slice(0, 8), 16) % buckets === want)
     .sort();
 }
 
@@ -92,7 +103,10 @@ export async function verifyRemoteList(lock: Lock = readLock()): Promise<VerifyR
 export async function verifyRemote(base: string, lock: Lock = readLock(), only?: string[]): Promise<VerifyReport> {
   const keys = only ?? Object.keys(lock.files);
   const rep: VerifyReport = { checked: keys.length, errors: [], warnings: [] };
-  if (only) rep.warnings.push(`chỉ kiểm ${keys.length}/${Object.keys(lock.files).length} khóa mới/đổi so với sổ khóa nhánh gốc`);
+  if (only)
+    rep.warnings.push(
+      `chỉ kiểm ${keys.length}/${Object.keys(lock.files).length} khóa (mới/đổi so với sổ khóa nhánh gốc + lát lấy mẫu theo ngày)`,
+    );
   let network = 0;
   await pool(keys, 16, async (key) => {
     try {
