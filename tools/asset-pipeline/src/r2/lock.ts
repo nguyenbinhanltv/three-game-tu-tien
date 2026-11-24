@@ -10,6 +10,8 @@ import { ROOT } from '../config.js';
 export const PUBLIC_DIR = path.join(ROOT, 'apps/client/public');
 export const CACHE_DIR = path.join(ROOT, '.asset-cache');
 export const LOCK_FILE = path.join(ROOT, 'assets/asset-lock.json');
+/** Nhị phân CŨ có tên cố định (không hash) được miễn quy tắc tên-theo-hash. Chỉ thu hẹp, không thêm file mới vào đây. */
+export const GRACE_FILE = path.join(ROOT, 'assets/asset-fixed-names.json');
 
 export interface LockEntry {
   sha256: string;
@@ -30,6 +32,29 @@ export function isLocked(rel: string): boolean {
 /** Tên có đoạn hash nội dung 10 hex (`<id>.<hash10>.<ext>`): bất biến, cache immutable. */
 export function isHashedName(rel: string): boolean {
   return /\.[0-9a-f]{10}\.[a-z0-9]+$/.test(rel);
+}
+
+/** Nhị phân (phải có hash nội dung trong tên); manifest/json/văn bản được miễn. */
+export const BINARY_EXT = /\.(glb|ktx2|webp|png|jpe?g|gif|webm|mp4|m4a|ogg|mp3|wav|bin)$/i;
+
+/** Tên có đoạn hash nội dung hex 8–64 ký tự (`<id>.<hash>.<ext>`; bản mới dùng 10 ký tự đầu của sha256). */
+export function hasContentHash(rel: string): boolean {
+  return /\.[0-9a-f]{8,64}\.[a-z0-9]+$/.test(rel);
+}
+
+export function readGrace(file = GRACE_FILE): Set<string> {
+  if (!fs.existsSync(file)) return new Set();
+  return new Set((JSON.parse(fs.readFileSync(file, 'utf8')) as { files: string[] }).files);
+}
+
+/**
+ * Nhị phân trong sổ khóa mà tên KHÔNG chứa hash nội dung và không nằm trong danh sách ân hạn. R2 là bất biến: một khóa đã có không bao giờ được ghi lại
+ * nội dung khác (main và các nhánh khác đang tải khóa đó), nên nhị phân mới phải có tên `<tên>.<hash10>.<đuôi>` (hash10 = 10 ký tự đầu của sha256 nội dung).
+ */
+export function unhashedBinaries(lock: Lock, grace: Set<string> = readGrace()): string[] {
+  return Object.keys(lock.files)
+    .filter((k) => BINARY_EXT.test(k) && !hasContentHash(k) && !grace.has(k))
+    .sort();
 }
 
 export function walk(dir: string, base = dir): string[] {
@@ -87,7 +112,8 @@ export async function pool<T>(items: T[], n: number, fn: (x: T) => Promise<void>
  * Quét đĩa dựng sổ khóa. Hash lấy lại từ sổ cũ khi kích thước không đổi và tên đã chứa hash,
  * còn lại tính sha256 thật. File chỉ có trong .asset-cache (sau R2-3) cũng được tính.
  */
-export async function scanLock(prev: Lock = readLock()): Promise<Lock> {
+/** `hashLinked`: băm lại cả file hardlink (nlink>1, chung inode với kho) dù tên có hash và kích thước khớp — bắt trường hợp ghi đè tại chỗ làm hỏng kho. */
+export async function scanLock(prev: Lock = readLock(), opts: { hashLinked?: boolean } = {}): Promise<Lock> {
   const rels = new Set<string>();
   for (const dir of [PUBLIC_DIR, CACHE_DIR]) for (const r of walk(dir)) if (isLocked(r)) rels.add(r);
   const files: Record<string, LockEntry> = {};
@@ -95,7 +121,8 @@ export async function scanLock(prev: Lock = readLock()): Promise<Lock> {
     const f = localPath(rel)!;
     const bytes = fs.statSync(f).size;
     const old = prev.files[rel];
-    if (old && old.bytes === bytes && isHashedName(rel)) files[rel] = old;
+    const linked = opts.hashLinked === true && fs.statSync(f).nlink > 1;
+    if (old && old.bytes === bytes && isHashedName(rel) && !linked) files[rel] = old;
     else files[rel] = { sha256: await sha256File(f), bytes };
   });
   return { version: 1, files };

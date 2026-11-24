@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Họa Pháp Lô 2: tách nền xanh chroma của bảng sprite Codex (`forge sprites`) và xếp thành atlas WebP trong suốt cho `FX_SPRITES` (packages/shared/src/fxtimeline.ts).
-// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 4] [--cell 512] [--out apps/client/public/hoa-truc/vfx_sprites.webp] [--preview <png>]
+// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 4] [--cell 512] [--out <đường dẫn>; mặc định public/hoa-truc/vfx_sprites.<hash10>.webp] [--preview <png>]
 // Mỗi ô lưới đều (cols × rows) của bảng: tìm khung bao của phần không phải nền, cắt, thu vừa ô (chừa lề), xếp vào atlas. alpha = 1 − (g − max(r,b))/255; khử viền xanh bằng cách trừ phần nền.
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -19,7 +20,8 @@ if (!input) throw new Error('dùng: sprite-pack.mjs <bảng.png> [--cols 4] [--r
 const cols = Number(flag('--cols', 4));
 const rows = Number(flag('--rows', 2));
 const cell = Number(flag('--cell', 512));
-const out = flag('--out', path.join(here, '../../apps/client/public/hoa-truc/vfx_sprites.webp'));
+// Mặc định ghi ra `apps/client/public/hoa-truc/vfx_sprites.<hash10>.webp` (hash10 = 10 ký tự đầu của sha256 nội dung): R2 bất biến, không bao giờ đè tên cũ.
+const outArg = flag('--out');
 const MARGIN = 0.06;
 
 const sheets = argv
@@ -103,8 +105,11 @@ const totalRows = Math.ceil(cellNo / cols);
 const atlas = sharp({
   create: { width: cols * cell, height: totalRows * cell, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
 }).composite(comps);
+const webpBuf = await atlas.clone().webp({ quality: 90, alphaQuality: 100 }).toBuffer();
+const hash10 = createHash('sha256').update(webpBuf).digest('hex').slice(0, 10);
+const out = outArg ?? path.join(here, '../../apps/client/public/hoa-truc', `vfx_sprites.${hash10}.webp`);
 fs.mkdirSync(path.dirname(out), { recursive: true });
-await atlas.clone().webp({ quality: 90, alphaQuality: 100 }).toFile(out);
+fs.writeFileSync(out, webpBuf);
 const pv = flag('--preview');
 if (pv) {
   // xem thử trên nền xám tối + nền sáng cạnh nhau
@@ -128,3 +133,6 @@ if (pv) {
 }
 console.log(report.join('\n'));
 console.log(`đã ghi ${out} (${fs.statSync(out).size} byte)`);
+console.log(
+  `Tiếp: sửa SPRITE_ATLAS_FILE ở apps/client/src/render/vfx/art.ts thành 'hoa-truc/vfx_sprites.${hash10}.webp', rồi pnpm assets:lock và pnpm assets:push --only hoa-truc/vfx_sprites.${hash10}.webp (KHÔNG đẩy đè tên cũ).`,
+);

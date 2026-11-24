@@ -17,6 +17,11 @@ let atlas: THREE.Texture | null = null;
  * Atlas sprite vẽ tay của VFX (Họa Pháp Lô 2): `public/hoa-truc/vfx_sprites.webp`, lưới `SPRITE_COLS × SPRITE_ROWS` ô vuông nền trong suốt, thứ tự theo `FX_SPRITES`
  * (hàng trên trước). Dựng bằng `tools/vfx-forge/sprite-pack.mjs` từ bảng Codex nền xanh chroma. Nạp bất đồng bộ; chưa nạp thì trong suốt. Không có `document` (test) thì texture rỗng.
  */
+/**
+ * Khóa của atlas trên R2 (đường dẫn tương đối so với `public/`). Tên cố định hiện tại là file CŨ (nằm trong `assets/asset-fixed-names.json`, ân hạn). R2 bất biến: khi đóng lại atlas phải ra
+ * TÊN MỚI theo hash nội dung `hoa-truc/vfx_sprites.<hash10>.webp` (`sprite-pack.mjs` làm sẵn), `assets:push` khóa mới rồi sửa hằng này; không bao giờ đẩy đè khóa cũ.
+ */
+export const SPRITE_ATLAS_FILE = 'hoa-truc/vfx_sprites.webp';
 export const SPRITE_COLS = 4;
 export const SPRITE_ROWS = 6;
 let spriteTex: THREE.Texture | null = null;
@@ -39,7 +44,7 @@ export function spriteAtlas(): THREE.Texture {
     t.image = img;
     t.needsUpdate = true;
   };
-  img.src = `${ASSET_BASE}hoa-truc/vfx_sprites.webp`;
+  img.src = `${ASSET_BASE}${SPRITE_ATLAS_FILE}`;
   spriteTex = t;
   return t;
 }
