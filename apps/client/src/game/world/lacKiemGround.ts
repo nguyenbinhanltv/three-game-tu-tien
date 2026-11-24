@@ -79,19 +79,19 @@ function puddles(cx: number, cz: number, r: number, n: number, seed: number, siz
 
 /** Điểm kể chuyện: chỗ mặt đất được "bày" dày (lá rụng, rêu, đất trọc). [x, z, bán kính, mức]. */
 const HOT: [number, number, number, number][] = [
-  [0, 112, 16, 0.9], // hai bên cổng bài
-  [TC_POND.x, TC_POND.z, 20, 1],
-  [66, 62, 17, 1],
-  [96, -8, 17, 1],
-  [-112, 70, 16, 0.9],
-  [-136, 66, 14, 0.9],
+  [0, 112, 20, 0.9], // hai bên cổng bài
+  [-60, 58, 22, 1], // ao sen
+  [66, 58, 22, 1], // kiếm bia
+  [96, -8, 22, 1], // thạch lâm
+  [-112, 69, 20, 1], // lối men vách
+  [-136, 64, 18, 1], // đầu cầu
   [-52, 4, 12, 0.8],
   [52, 4, 12, 0.8],
 ];
 /** Mật độ "kể chuyện" tại (x, z) ∈ [0,1]: đậm ở điểm kể chuyện và rìa sân, sạch ở lối chính (đại lộ) và dưới chân công trình giữa sân. */
 export function groundWeight(x: number, z: number): number {
   let w = 0; // không có sàn: chỉ dựng lưới quanh điểm kể chuyện và rìa (giảm overdraw/chi phí fragment)
-  for (const [hx, hz, r, k] of HOT) w = Math.max(w, k * Math.max(0, 1 - Math.hypot(x - hx, z - hz) / r));
+  for (const [hx, hz, r, k] of HOT) w = Math.max(w, k * Math.min(1, 1.5 * Math.max(0, 1 - Math.hypot(x - hx, z - hz) / r))); // bình nguyên ở giữa (khung camera ~±12 m), rồi nhạt dần
   const d = Math.hypot(x, z);
   w = Math.max(w, Math.min(1, Math.max(0, (d - 62) / 30)) * 0.85); // rìa sân
   const avenue = Math.max(0, 1 - Math.max(0, Math.abs(x) - 5) / 9) * (z > -30 && z < 140 ? 1 : 0); // đại lộ giữa
@@ -100,7 +100,21 @@ export function groundWeight(x: number, z: number): number {
 
 /** Bố cục tất định. Chỗ đặt khớp tiểu cảnh (docs/map/lac-kiem-tieu-canh.md). */
 export function groundLayout(): GroundLayout {
+  // vòng quanh bờ ao phía camera nhìn thấy, và con đường mòn qua kiếm bia
+  const rim: [number, number][] = Array.from({ length: 7 }, (_, i) => {
+    const t = ((-150 + i * 20) * Math.PI) / 180;
+    return [TC_POND.x + Math.cos(t) * 11.8, TC_POND.z + Math.sin(t) * 11.8];
+  });
   const trails: TrailDef[] = [
+    { pts: rim, hw: 1.3 },
+    {
+      pts: [
+        [56, 60],
+        [66, 57],
+        [78, 51],
+      ],
+      hw: 2,
+    },
     // đường từ đại lộ ra kiếm bia và thạch lâm
     {
       pts: [
@@ -150,13 +164,22 @@ export function groundLayout(): GroundLayout {
   for (const [x, z, r, yaw] of plaza) patches.push({ kind: 'crack', x, z, hx: r, hz: r * 0.8, yaw, plaza: true });
   // ấn trận mờ: bên kiếm bia (kiếm trận cổ), thạch lâm, đầu cầu, thoáng dưới cổng bài
   patches.push(
-    { kind: 'seal', x: 66, z: 64, hx: 5.6, hz: 5.6, yaw: 0.4 },
+    { kind: 'seal', x: 66, z: 60, hx: 6.4, hz: 6.4, yaw: 0.4 },
     { kind: 'seal', x: 96, z: -8, hx: 5.2, hz: 5.2, yaw: 1.1 },
     { kind: 'seal', x: BRIDGE_A[0] + 2, z: BRIDGE_A[1] - 4, hx: 3.6, hz: 3.6, yaw: 0.2 },
     { kind: 'seal', x: 0, z: 112, hx: 5.6, hz: 5.6, yaw: 0.8 },
   );
   // rễ cây trồi: ven ao, bờ hác, chân đồi quanh thạch lâm, lối men vách
+  patches.push(
+    { kind: 'puddle', x: -48.5, z: 51, hx: 2.6, hz: 1.8, yaw: 0.5 },
+    { kind: 'puddle', x: -72, z: 50, hx: 2.2, hz: 1.5, yaw: 2.6 },
+    { kind: 'puddle', x: 74, z: 54, hx: 2.4, hz: 1.7, yaw: 1.2 },
+  );
   const roots: [number, number, number][] = [
+    [-108, 77, 3.4],
+    [-119, 61, 3.2],
+    [58, 52, 3.4],
+    [76, 68, 3.2],
     [TC_POND.x - 9, TC_POND.z - 5, 3.4],
     [TC_POND.x + 4, TC_POND.z + 10.5, 3],
     [-131, 56, 3.2],
@@ -523,9 +546,9 @@ function washMaterial(): THREE.MeshStandardNodeMaterial {
   // rêu: mảng vừa, xanh đậm
   const moss = smoothstep(0.46, 0.6, mid.mul(0.8).add(big.mul(0.2))).mul(w.mul(0.9));
   // lá rụng: đống (cụm nhiễu thấp tần) × từng chiếc lá (nhiễu cao tần ngưỡng)
-  const pile = smoothstep(0.5, 0.68, vnoise(p.mul(0.33).add(vec2(7, 1)))).mul(w);
-  const leafA = smoothstep(0.58, 0.65, vnoise(p.mul(3.4).add(vec2(3, 9))));
-  const leaf = leafA.mul(pile.mul(1.4).add(w.mul(0.08))).clamp(0, 1);
+  const pile = smoothstep(w.mul(-0.22).add(0.68), w.mul(-0.12).add(0.8), vnoise(p.mul(0.33).add(vec2(7, 1)))).mul(w);
+  const leafA = max(smoothstep(0.56, 0.63, vnoise(p.mul(3.4).add(vec2(3, 9)))), smoothstep(0.6, 0.66, vnoise(p.mul(5.3).add(vec2(8, 2)))));
+  const leaf = leafA.mul(pile.mul(1.6).add(w.mul(0.1))).clamp(0, 1);
   const tone = mid;
   const leafCol = mix(
     mix(vec3(0.15, 0.095, 0.04), vec3(0.2, 0.16, 0.07), smoothstep(0.35, 0.6, tone)),
