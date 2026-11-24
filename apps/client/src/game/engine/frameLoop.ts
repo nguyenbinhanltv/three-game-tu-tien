@@ -1,5 +1,6 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { FLAGS } from '../../base/flags';
+import { spotAt, vistaView } from '../camera/vista';
 import { downgradeOf, getGpuHint, setGpuHint, suggestQuality } from '../../base/quality';
 import * as THREE from 'three/webgpu';
 import {
@@ -43,7 +44,6 @@ import { monsterPushRadius, pickPushers } from '../world/grass';
 import { postParams } from '../../render/post';
 import { updateOcclusion } from '../world/occlusion';
 import {
-  ISO_FAR,
   ISO_FOV,
   ISO_DIST,
   isoDistFor,
@@ -389,7 +389,7 @@ function updateCamera(eng: Game, dt: number): void {
     fovKick = f.amt * Math.min(1, f.t / 0.15) * Math.max(0, Math.min(1, (f.dur - f.t) / 0.6));
     if (f.t >= f.dur) eng.fxFov = null;
   }
-  const wantFov = (eng.iso && !eng.cine.active ? ISO_FOV : ORBIT_FOV) + ultPunch + fovKick;
+  const wantFov = (eng.iso && !eng.cine.active ? ISO_FOV + vistaView(eng.vista.amount).fov - ISO_FOV : ORBIT_FOV) + ultPunch + fovKick;
   if (Math.abs(eng.camera.fov - wantFov) > 0.01) {
     eng.camera.fov = wantFov;
     eng.camera.updateProjectionMatrix();
@@ -435,23 +435,26 @@ function updateCamera(eng: Game, dt: number): void {
     const kk = Math.min(1, dt * 3);
     iso.lead.x += (ld.x - iso.lead.x) * kk;
     iso.lead.z += (ld.z - iso.lead.z) * kk;
-    const wantD = isoDistFor(levelId()) * (flying ? 1.35 : 1) * (1 + pull);
+    const spot = spotAt(levelId(), rp.x, rp.z);
+    const vv = vistaView(eng.vista.update(dt, flying, spot, FLAGS.vista && !eng.cine.active));
+    if (eng.vista.hint(spot) && FLAGS.vista) pushToast(t('ui.vista_hint'));
+    const wantD = isoDistFor(levelId()) * (flying ? 1.35 : 1) * vv.distMul * (1 + pull);
     iso.distCur += (wantD - iso.distCur) * Math.min(1, dt * 6);
     tx = rp.x + iso.lead.x;
-    ty = rp.y + 1.0;
+    ty = rp.y + 1.0 + vv.lift;
     tz = rp.z + iso.lead.z;
     iso.look.set(tx, ty, tz);
-    let p = isoCameraPos(tx, ty, tz, iso.distCur, eng.camYaw);
+    let p = isoCameraPos(tx, ty, tz, iso.distCur, eng.camYaw, vv.pitch);
     // Địa hình/vách nằm giữa camera và điểm nhìn: kéo camera lại gần (co ngay, nở từ từ) để không nhìn xuyên mặt vách từ phía sau.
     const need = isoClearScale({ x: tx, y: ty, z: tz }, p, groundAt);
     iso.occ = need < iso.occ ? need : Math.min(need, iso.occ + dt * 0.8);
-    if (iso.occ < 1) p = isoCameraPos(tx, ty, tz, iso.distCur * iso.occ, eng.camYaw);
+    if (iso.occ < 1) p = isoCameraPos(tx, ty, tz, iso.distCur * iso.occ, eng.camYaw, vv.pitch);
     cx = p.x;
     cy = Math.max(p.y, groundAt(p.x, p.z) + 2);
     cz = p.z;
     if (!iso.baseFar) iso.baseFar = eng.camera.far;
-    if (eng.camera.far !== ISO_FAR) {
-      eng.camera.far = ISO_FAR;
+    if (Math.abs(eng.camera.far - vv.far) > 0.5) {
+      eng.camera.far = vv.far;
       eng.camera.updateProjectionMatrix();
     }
   } else if (eng.iso?.baseFar && eng.camera.far !== eng.iso.baseFar) {
