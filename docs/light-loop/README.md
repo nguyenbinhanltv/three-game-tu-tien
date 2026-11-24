@@ -27,18 +27,18 @@ Số theo preset (`palette.json`, bảng 5.1 của art bible đã cập nhật):
 Ảnh đêm của M-5 cho thấy preset đêm tối tới mức thân nhân vật gần như mất, chỉ còn bảng tên. Đã nâng trong `palette.json` (preset `night`): ánh trăng 0,45 → 1,25, ánh trời đêm `#1A2938` × 0,5 → `#3B5873` × 1,0, phơi sáng 0,9 → 1,2, nâng đen `#0B1720` → `#0E1C27`, viền sáng 0,9. Màu sương, sắc bóng, độ bão hòa giữ nguyên: vẫn lam đêm trầm, đèn lồng vẫn là điểm ấm. Xem bằng `?mood=night`.
 
 
-![Đêm, sân: trước | sau](dem-truoc-sau-san.webp)
+*(ảnh đã gỡ khỏi repo: Đêm, sân: trước | sau)*
 
 ### Ảnh trước | sau (`pnpm shots`, WebGPU, Vừa; trái là `main`)
 
 
-![Sân tông môn](truoc-sau-san.webp)
+*(ảnh đã gỡ khỏi repo: Sân tông môn)*
 
-![Rừng](truoc-sau-rung.webp)
+*(ảnh đã gỡ khỏi repo: Rừng)*
 
 Rim tắt | bật, hai góc (ngược nắng, xuôi nắng):
 
-![Rim](rim-tat-bat.webp)
+*(ảnh đã gỡ khỏi repo: Rim)*
 
 Độ kiếp sau khi đổi sắc trời, và cảnh hồ trên WebGL2:
 
@@ -91,7 +91,7 @@ Kịch bản Playwright hai tab trên server dev, nhân vật mới, **không b�
 18/19, 0 lỗi console. Ngoài thiên lôi, không thấy lỗi logic nào khác trong vòng lõi. Chưa soát: luyện đan, cường hóa, bí cảnh, mua bán (đã có test riêng và ảnh ở `docs/p3-*`).
 
 
-![Trúc Cơ](loop-truc-co.webp)
+*(ảnh đã gỡ khỏi repo: Trúc Cơ)*
 
 ## Nội suy người chơi khác (30 bot)
 

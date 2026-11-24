@@ -53,17 +53,17 @@ Chỉ ở `loot.json` (server). Quái/tinh anh/boss Vân Hải đã nằm trong 
 
 | | |
 | --- | --- |
-| Vân Hạc (Tùng Đài) | ![](mon_van_hac.webp) |
+| Vân Hạc (Tùng Đài) | *(ảnh đã gỡ khỏi repo)* |
 | Bích Ngọc Kim Thiền (Tùng Đài) | _(ảnh đã gỡ)_ |
 | Phù Đảo Thạch Quy (Thạch Quy) | _(ảnh đã gỡ)_ |
-| Kính Linh (Kính Hồ) | ![](mon_kinh_linh.webp) |
-| Tuyết Vũ Vân Hạc Vương | ![](elite_van_hac_vuong.webp) |
+| Kính Linh (Kính Hồ) | *(ảnh đã gỡ khỏi repo)* |
+| Tuyết Vũ Vân Hạc Vương | *(ảnh đã gỡ khỏi repo)* |
 | Kính Diện Ma Quân | _(ảnh đã gỡ)_ |
 | Lôi Vân Sư Vương | _(ảnh đã gỡ)_ |
-| Kình Vương, pha 1: bay lơ lửng + vạch báo trên sàn; 3 khung cuối: chết (ngã xuống, không méo) | ![](boss_van_hai_kinh_vuong.webp) |
+| Kình Vương, pha 1: bay lơ lửng + vạch báo trên sàn; 3 khung cuối: chết (ngã xuống, không méo) | *(ảnh đã gỡ khỏi repo)* |
 | Kình Vương, 99% máu (cửa sổ đánh: hạ thấp) | _(ảnh đã gỡ)_ |
 | Kình Vương, ≤ 45% | _(ảnh đã gỡ)_ |
-| Kình Vương, ≤ 25% (Nuốt) | ![](boss_van_hai_kinh_vuong-hurt25.webp) |
+| Kình Vương, ≤ 25% (Nuốt) | *(ảnh đã gỡ khỏi repo)* |
 
 Mặt đảo vẫn là cỏ Vân Lam nhạt màu (bộ texture riêng thuộc E3-I).
 

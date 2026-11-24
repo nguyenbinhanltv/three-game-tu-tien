@@ -11,7 +11,7 @@ Tổng tam giác 6 mảnh: **11700**. Thư mục lưu: `<DTL_ASSET_SOURCE>/3d/nh
 
 ### Áo ngoài · `liet_mach_ao_ngoai`
 
-![liet_mach_ao_ngoai](liet_mach_ao_ngoai.webp)
+*(ảnh đã gỡ khỏi repo: liet_mach_ao_ngoai)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **5000** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_ao_ngoai_v01.glb`
@@ -27,7 +27,7 @@ A long ivory outer swordsman coat (dao pao): crossed collar, wide sleeves with c
 
 ### Lớp dưới · `liet_mach_lop_duoi`
 
-![liet_mach_lop_duoi](liet_mach_lop_duoi.webp)
+*(ảnh đã gỡ khỏi repo: liet_mach_lop_duoi)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **2000** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_lop_duoi_v01.glb`
@@ -43,7 +43,7 @@ Wide-leg trousers in plain dark cinnabar-brown linen, with a front-and-back long
 
 ### Vai giáp · `liet_mach_vai_giap`
 
-![liet_mach_vai_giap](liet_mach_vai_giap.webp)
+*(ảnh đã gỡ khỏi repo: liet_mach_vai_giap)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1500** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_vai_giap_v01.glb`
@@ -59,7 +59,7 @@ A matching pair of angular bronze shoulder armor plates (pauldrons) shaped like 
 
 ### Đai và tua · `liet_mach_dai_tua`
 
-![liet_mach_dai_tua](liet_mach_dai_tua.webp)
+*(ảnh đã gỡ khỏi repo: liet_mach_dai_tua)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1200** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_dai_tua_v01.glb`
@@ -75,7 +75,7 @@ A wide cinnabar leather belt with a large rectangular bronze buckle plate engrav
 
 ### Ủng · `liet_mach_ung`
 
-![liet_mach_ung](liet_mach_ung.webp)
+*(ảnh đã gỡ khỏi repo: liet_mach_ung)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1300** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_ung_v01.glb`
@@ -91,7 +91,7 @@ A pair of tall cinnabar leather riding boots reaching below the knee, bronze-cap
 
 ### Trang sức đầu · `liet_mach_trang_suc_dau`
 
-![liet_mach_trang_suc_dau](liet_mach_trang_suc_dau.webp)
+*(ảnh đã gỡ khỏi repo: liet_mach_trang_suc_dau)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **700** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_liet_mach_kiem_y/tripo/raw_trang_suc_dau_v01.glb`
@@ -112,7 +112,7 @@ Tổng tam giác 6 mảnh: **12900**. Thư mục lưu: `<DTL_ASSET_SOURCE>/3d/nh
 
 ### Áo ngoài (giáp thân) · `dia_long_ao_ngoai`
 
-![dia_long_ao_ngoai](dia_long_ao_ngoai.webp)
+*(ảnh đã gỡ khỏi repo: dia_long_ao_ngoai)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **5000** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_ao_ngoai_v01.glb`
@@ -128,7 +128,7 @@ A heavy guardian chest armor over a thick dark jade-green tunic: a half-breastpl
 
 ### Lớp dưới (váy giáp) · `dia_long_lop_duoi`
 
-![dia_long_lop_duoi](dia_long_lop_duoi.webp)
+*(ảnh đã gỡ khỏi repo: dia_long_lop_duoi)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **2000** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_lop_duoi_v01.glb`
@@ -144,7 +144,7 @@ A tiered armored skirt: three overlapping rows of dark jade scale plates with ol
 
 ### Vai giáp · `dia_long_vai_giap`
 
-![dia_long_vai_giap](dia_long_vai_giap.webp)
+*(ảnh đã gỡ khỏi repo: dia_long_vai_giap)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **2200** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_vai_giap_v01.glb`
@@ -160,7 +160,7 @@ A matching pair of huge shoulder guards built from overlapping stone dragon scal
 
 ### Đai và tua · `dia_long_dai_tua`
 
-![dia_long_dai_tua](dia_long_dai_tua.webp)
+*(ảnh đã gỡ khỏi repo: dia_long_dai_tua)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1500** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_dai_tua_v01.glb`
@@ -176,7 +176,7 @@ A broad dark leather belt with a large old-gold dragon-head clasp, studded stone
 
 ### Ủng · `dia_long_ung`
 
-![dia_long_ung](dia_long_ung.webp)
+*(ảnh đã gỡ khỏi repo: dia_long_ung)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1500** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_ung_v01.glb`
@@ -192,7 +192,7 @@ A pair of heavy stone-grey boots with dark jade scale-plated shins, old gold tri
 
 ### Trang sức đầu · `dia_long_trang_suc_dau`
 
-![dia_long_trang_suc_dau](dia_long_trang_suc_dau.webp)
+*(ảnh đã gỡ khỏi repo: dia_long_trang_suc_dau)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **700** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_dia_long_ho_giap/tripo/raw_trang_suc_dau_v01.glb`
@@ -213,7 +213,7 @@ Tổng tam giác 6 mảnh: **11800**. Thư mục lưu: `<DTL_ASSET_SOURCE>/3d/nh
 
 ### Áo ngoài (đạo bào + voan choàng) · `phuc_mach_ao_ngoai`
 
-![phuc_mach_ao_ngoai](phuc_mach_ao_ngoai.webp)
+*(ảnh đã gỡ khỏi repo: phuc_mach_ao_ngoai)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **5000** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_ao_ngoai_v01.glb`
@@ -229,7 +229,7 @@ A wide ivory alchemist robe with crossed collar and very wide flowing sleeves, a
 
 ### Lớp dưới · `phuc_mach_lop_duoi`
 
-![phuc_mach_lop_duoi](phuc_mach_lop_duoi.webp)
+*(ảnh đã gỡ khỏi repo: phuc_mach_lop_duoi)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **2000** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_lop_duoi_v01.glb`
@@ -245,7 +245,7 @@ A long pale jade-green under-robe skirt with a soft wrap front, an ivory inner h
 
 ### Vai giáp (vai nhẹ) · `phuc_mach_vai_giap`
 
-![phuc_mach_vai_giap](phuc_mach_vai_giap.webp)
+*(ảnh đã gỡ khỏi repo: phuc_mach_vai_giap)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1500** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_vai_giap_v01.glb`
@@ -261,7 +261,7 @@ A light decorative shoulder piece pair: curved silver filigree leaf-shaped shoul
 
 ### Đai, hồ lô và dải lụa · `phuc_mach_dai_tua`
 
-![phuc_mach_dai_tua](phuc_mach_dai_tua.webp)
+*(ảnh đã gỡ khỏi repo: phuc_mach_dai_tua)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1400** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_dai_tua_v01.glb`
@@ -277,7 +277,7 @@ A pale jade sash belt with a small silver clasp, a long thin silk ribbon tied in
 
 ### Ủng · `phuc_mach_ung`
 
-![phuc_mach_ung](phuc_mach_ung.webp)
+*(ảnh đã gỡ khỏi repo: phuc_mach_ung)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1200** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_ung_v01.glb`
@@ -293,7 +293,7 @@ A pair of soft ankle-high ivory cloth-and-leather boots with silver trim bands a
 
 ### Trang sức đầu · `phuc_mach_trang_suc_dau`
 
-![phuc_mach_trang_suc_dau](phuc_mach_trang_suc_dau.webp)
+*(ảnh đã gỡ khỏi repo: phuc_mach_trang_suc_dau)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **700** · không quad · không rig
 - **Lưu GLB:** `3d/nhan-vat/set_phuc_mach_dan_bao/tripo/raw_trang_suc_dau_v01.glb`
@@ -314,7 +314,7 @@ Dạng gốc dùng model #119 có sẵn (`prop_kiem_liet_mach`). Concept này ch
 
 ### Dạng cuối +10 · `kiem_liet_mach_cuoi`
 
-![kiem_liet_mach_cuoi](kiem_liet_mach_cuoi.webp)
+*(ảnh đã gỡ khỏi repo: kiem_liet_mach_cuoi)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **4000** · không quad · không rig
 - **Lưu GLB:** `3d/vu-khi/prop_kiem_liet_mach/tripo/raw_cuoi_v01.glb`
@@ -328,7 +328,7 @@ A single the final awakened form of an earth-vein sword: a long slender double-e
 
 ### Vỏ kiếm · `kiem_liet_mach_vo`
 
-![kiem_liet_mach_vo](kiem_liet_mach_vo.webp)
+*(ảnh đã gỡ khỏi repo: kiem_liet_mach_vo)*
 
 - **Tripo:** Image to 3D · model H3.1 · texture Detailed · PBR bật · Smart Low-poly bật · Polycount (face limit) **1500** · không quad · không rig
 - **Lưu GLB:** `3d/vu-khi/prop_kiem_liet_mach/tripo/raw_vo_v01.glb`

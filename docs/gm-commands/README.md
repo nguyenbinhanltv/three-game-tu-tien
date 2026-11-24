@@ -8,9 +8,9 @@ Chụp bằng `pnpm --filter @dtl/perf run shots:gm --out <thư mục tuyệt đ
 
 | Nhóm | Ảnh |
 | --- | --- |
-| Nhân vật | ![](panel-char.webp) |
+| Nhân vật | *(ảnh đã gỡ khỏi repo)* |
 | Kỹ năng | _(ảnh đã gỡ)_ |
-| Trang bị (bậc / nhánh / +N / giới tính) | ![](panel-gear.webp) |
+| Trang bị (bậc / nhánh / +N / giới tính) | *(ảnh đã gỡ khỏi repo)* |
 | Trang phục | _(ảnh đã gỡ)_ |
 | Vũ khí | _(ảnh đã gỡ)_ |
 | Bản đồ | _(ảnh đã gỡ)_ |
@@ -18,10 +18,10 @@ Chụp bằng `pnpm --filter @dtl/perf run shots:gm --out <thư mục tuyệt đ
 
 ## Lệnh chạy thật
 
-- `kit 2 kiem +10 f` bấm từ bảng (bậc 2, Kiếm tu, +10, nữ): ![](kit-bac2-kiem-tu-+10-sau.webp)
+- `kit 2 kiem +10 f` bấm từ bảng (bậc 2, Kiếm tu, +10, nữ): *(ảnh đã gỡ khỏi repo)*
 - `help kit`, `find liet mach`: _(ảnh đã gỡ)_
-- `help` (đủ danh sách): ![](help-full.webp)
-- `outfit set_dia_giap m`, `outfit set_phuc_mach f`: ![](outfit-set_dia_giap.webp)
+- `help` (đủ danh sách): *(ảnh đã gỡ khỏi repo)*
+- `outfit set_dia_giap m`, `outfit set_phuc_mach f`: *(ảnh đã gỡ khỏi repo)*
 - `weapon itm_liet_mach_kiem +10`: _(ảnh đã gỡ)_
 
 Góc camera là camera chơi bình thường (nhân vật nhỏ trong khung); xem kỹ hình dạng đồ thì dùng trang xem asset `?mute=1&show=char`.

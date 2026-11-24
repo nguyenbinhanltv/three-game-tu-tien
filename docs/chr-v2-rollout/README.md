@@ -4,7 +4,7 @@
 
 > **Cập nhật (người dùng chọn phương án A):** mặc định giữ **v1** (hai model Tripo cũ); v2 chỉ bật bằng `?chr=v2`. Ảnh xác nhận: `mac-dinh-v1.webp` (trái: không tham số = v1; phải: `?chr=v2`). Phần mã tốt được giữ: chọn tóc A/B (hàng chọn tóc ở màn tạo nhân vật chỉ hiện khi bật v2, server vẫn lưu `hair`), prefetch theo tóc (chỉ khi v2), áo nạp lười, nén WebP. Bộ đạo bào thủ tục (tân thủ, Lạc Kiếm...) chỉ chạy dưới `?chr=v2`, không còn nằm trên đường mặc định.
 
-![](mac-dinh-v1.webp)
+*(ảnh đã gỡ khỏi repo)*
 
 (Phần dưới mô tả hành vi khi bật `?chr=v2`.)
 
@@ -31,10 +31,10 @@ CPU p95 vượt 8 ms ở cả hai (đã vượt trước PR này), v2 thêm ~0,6
 
 Tệp `<tan-thu|lac-kiem|liet-mach>-<nam|nu>-<matcan|matgan|toanthan|chay|chem|datoa>.webp` (trái = `?chr=v1`, phải = v2) và `toc-b-<tan-thu|lac-kiem>-<nam|nu>.webp` (tóc B). Sinh bằng `pnpm shots chrv2 --out <thư mục>`.
 
-![](man-tao-nhan-vat-chon-toc.webp)
-![](tan-thu-nam-toanthan.webp)
-![](lac-kiem-nu-chem.webp)
-![](toc-b-tan-thu-nu.webp)
+*(ảnh đã gỡ khỏi repo)*
+*(ảnh đã gỡ khỏi repo)*
+*(ảnh đã gỡ khỏi repo)*
+*(ảnh đã gỡ khỏi repo)*
 
 ## Giới hạn
 

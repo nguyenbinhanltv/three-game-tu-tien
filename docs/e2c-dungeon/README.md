@@ -47,16 +47,16 @@ Lòng chảo Kiếm Trủng (địa hình Vân Lam, `terrain: van_lam`) dựng t
 
 | | |
 | --- | --- |
-| Cổng ở Đoạn Mạch | ![](00-cong-doan-mach.webp) |
-| Vào hầm | ![](01-vao-hang.webp) |
+| Cổng ở Đoạn Mạch | *(ảnh đã gỡ khỏi repo)* |
+| Vào hầm | *(ảnh đã gỡ khỏi repo)* |
 | Vách hang và trần tối | _(ảnh đã gỡ)_ |
-| Đợt 1 khôi lỗi | ![](02-dot1-khoi-loi.webp) |
+| Đợt 1 khôi lỗi | *(ảnh đã gỡ khỏi repo)* |
 | Đợt 2 hộ vệ + khôi tướng | _(ảnh đã gỡ)_ |
 | Đợt 3 ngô công ấu (ba điểm trên minimap; rết nhỏ nên khó thấy từ trên cao) | _(ảnh đã gỡ)_ |
 | Thạch Tâm: vạch đập | _(ảnh đã gỡ)_ |
-| Thạch Tâm: vạch đường | ![](06-dot4-thach-tam-line.webp) |
+| Thạch Tâm: vạch đường | *(ảnh đã gỡ khỏi repo)* |
 | Thôn Mạch: slam | _(ảnh đã gỡ)_ |
-| Thôn Mạch: niệm Thôn Mạch (r 12) | ![](08-dot5-thon-mach-chant.webp) |
+| Thôn Mạch: niệm Thôn Mạch (r 12) | *(ảnh đã gỡ khỏi repo)* |
 | Thôn Mạch: slam ở pha 35% | _(ảnh đã gỡ)_ |
 | Thôn Mạch: vạch dài 22×3 m (từ 35% máu) | _(ảnh đã gỡ)_ |
 

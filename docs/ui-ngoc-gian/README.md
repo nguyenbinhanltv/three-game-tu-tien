@@ -64,5 +64,5 @@ Lưu ý:
 
 ## Ảnh then chốt
 
-- [`mock-hud-lac-kiem.webp`](mock-hud-lac-kiem.webp)
-- [`mock-hud-van-hai.webp`](mock-hud-van-hai.webp)
+- `mock-hud-lac-kiem.webp`
+- `mock-hud-van-hai.webp`

@@ -41,18 +41,18 @@ Gói E2-B (`docs/EXPANSION_DESIGN.md` 6.1, 5.4, 11.2). Dữ liệu thay bản t�
 
 | | |
 | --- | --- |
-| Thạch Giáp Tê | ![](mon_thach_giap_te.webp) |
+| Thạch Giáp Tê | *(ảnh đã gỡ khỏi repo)* |
 | Khai Mạch Khôi Lỗi | _(ảnh đã gỡ)_ |
 | Ngô Công Ấu | _(ảnh đã gỡ)_ |
 | Mạch Thương Hộ Vệ | _(ảnh đã gỡ)_ |
-| Liệt Cốt Báo Vương | ![](elite_liet_cot_bao.webp) |
+| Liệt Cốt Báo Vương | *(ảnh đã gỡ khỏi repo)* |
 | Hộ Mạch Khôi Tướng | _(ảnh đã gỡ)_ |
 | Xích Sa Ngô Công | _(ảnh đã gỡ)_ |
-| Địa Mạch Long (pha 1) | ![](boss_dia_mach_long.webp) |
+| Địa Mạch Long (pha 1) | *(ảnh đã gỡ khỏi repo)* |
 | Địa Mạch Long (99% máu, chiêu slam) | _(ảnh đã gỡ)_ |
 | Ngô Công Ấu / Xích Sa trong trang xem | _(ảnh đã gỡ)_ |
 | Địa Mạch Long (≤ 45% máu) | _(ảnh đã gỡ)_ |
-| Địa Mạch Long (≤ 25% máu) | ![](boss_dia_mach_long-hurt25.webp) |
+| Địa Mạch Long (≤ 25% máu) | *(ảnh đã gỡ khỏi repo)* |
 | Boss: các clip (`pnpm shots asset --group boss_`) | _(ảnh đã gỡ)_ |
 
 `hazards.json`: các vạch báo ghi được ở client. Cảnh boss xuất hiện (B2) tự bỏ qua trước khi chụp. Mặt đất vẫn là cỏ Vân Lam (E2-I lo).

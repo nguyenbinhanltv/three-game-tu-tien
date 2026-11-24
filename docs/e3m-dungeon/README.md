@@ -62,22 +62,22 @@ Lòng chảo Kiếm Trủng dựng thành sảnh gương treo giữa mây, bằn
 
 | | |
 | --- | --- |
-| Cổng | ![](00-cong.webp) |
+| Cổng | *(ảnh đã gỡ khỏi repo)* |
 | Vào cung | _(ảnh đã gỡ)_ |
 | Vách cung | _(ảnh đã gỡ)_ |
-| Toàn cảnh sảnh | ![](01c-toan-canh.webp) |
+| Toàn cảnh sảnh | *(ảnh đã gỡ khỏi repo)* |
 | Cột đá và gương lớn treo vách | _(ảnh đã gỡ)_ |
 | Đợt 1 Kính Linh | _(ảnh đã gỡ)_ |
 | Đợt 2 Kính Diện Ma Quân | _(ảnh đã gỡ)_ |
-| Đợt 3 đố ba gương (cột lam góc trái, thứ tự trong tin hệ thống) | ![](04-dot3-do-ba-guong.webp) |
+| Đợt 3 đố ba gương (cột lam góc trái, thứ tự trong tin hệ thống) | *(ảnh đã gỡ khỏi repo)* |
 | Chạm cột đúng thứ tự | _(ảnh đã gỡ)_ |
 | Giải xong | _(ảnh đã gỡ)_ |
 | Đợt 4 Thạch Quy | _(ảnh đã gỡ)_ |
-| Boss: bốn thân, thể thật có vết lam | ![](06-boss-bon-than.webp) |
+| Boss: bốn thân, thể thật có vết lam | *(ảnh đã gỡ khỏi repo)* |
 | Lặp lại | _(ảnh đã gỡ)_ |
 | Bóng giả vỡ | _(ảnh đã gỡ)_ |
 | Đĩa gương (ba tia xoay) | _(ảnh đã gỡ)_ |
-| Nguyệt phản (Tâm Ma Ảnh) | ![](08-nguyet-phan-1.webp) |
+| Nguyệt phản (Tâm Ma Ảnh) | *(ảnh đã gỡ khỏi repo)* |
 | Hoàn thành | _(ảnh đã gỡ)_ |
 
 ## Giới hạn / việc để lại

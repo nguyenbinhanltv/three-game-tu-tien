@@ -72,8 +72,8 @@ Các số còn lại của bảng spec (chân bước tới 0,38 m / hai chân r
 
 ## Ảnh then chốt
 
-- [`game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp`](game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp)
-- [`game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp`](game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp)
+- `game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp`
+- `game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp`
 
 ## C3a: cường điệu thân người cho camera chéo 52° (Chân Cảnh)
 

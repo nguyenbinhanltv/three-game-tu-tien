@@ -55,15 +55,15 @@ do các lượt kiểm chạy nối tiếp trên cùng server.
 
 Preset Vừa:
 
-![Bốn trình duyệt, preset Vừa](screenshots/compat/m6-4-vua.webp)
+*(ảnh đã gỡ khỏi repo: Bốn trình duyệt, preset Vừa)*
 
 Preset Cao (có bóng):
 
-![Bốn trình duyệt, preset Cao](screenshots/compat/m6-4-cao.webp)
+*(ảnh đã gỡ khỏi repo: Bốn trình duyệt, preset Cao)*
 
 Chrome, WebGPU và ép WebGL2:
 
-![Chrome WebGPU và WebGL2](screenshots/compat/m6-4-webgpu-webgl2.webp)
+*(ảnh đã gỡ khỏi repo: Chrome WebGPU và WebGL2)*
 
 ## Đã sửa trong PR này
 

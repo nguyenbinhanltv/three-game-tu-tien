@@ -25,8 +25,8 @@ Ghi chú:
 
 | Nhãn tên rừng, trước | sau |
 | --- | --- |
-| ![](truoc-webgpu-rung-nhan.webp) | ![](sau-webgpu-rung-nhan.webp) |
+| *(ảnh đã gỡ khỏi repo)* | *(ảnh đã gỡ khỏi repo)* |
 
 | Trúng đòn (cắn), trước | sau |
 | --- | --- |
-| ![](truoc-webgpu-hit-0.webp) | ![](sau-webgpu-hit-0.webp) |
+| *(ảnh đã gỡ khỏi repo)* | *(ảnh đã gỡ khỏi repo)* |
