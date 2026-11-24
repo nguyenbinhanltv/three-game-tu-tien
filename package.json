@@ -65,6 +65,8 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,mjs,css}\"",
     "docs:check": "node tools/docs/check.mjs",
     "docs:paths": "node tools/docs/check-paths.mjs",
+    "docs:binaries": "node tools/docs/check-binaries.mjs",
+    "hooks:install": "git config core.hooksPath .githooks",
     "colliders:lib": "pnpm --filter @dtl/asset-pipeline run colliders",
     "colliders:bake": "node tools/maps/bake-colliders.mjs",
     "colliders:arch": "pnpm --filter @dtl/asset-pipeline run colliders:arch --",

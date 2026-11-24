@@ -54,7 +54,7 @@ pnpm --filter @dtl/asset-pipeline test
 
 - **Không có Blender**: bước 1 bị bỏ qua có cảnh báo, bước tối ưu vẫn chạy với GLB thô đang có.
 - **Không có `toktx`** (KTX-Software 4.4.2; dò `TOKTX`, PATH, thư mục cài mặc định `Program Files/KTX-Software/bin`, rồi bản di động `<dtl-asset-source>/tools/KTX-Software/bin`): `assets:build`/`assets:optimize` dừng với lỗi và in cách cài, vì mọi asset đã commit dùng KTX2 và build thiếu `toktx` sẽ làm manifest lẫn hai định dạng. `--no-ktx` chỉ để thử. Client gọi `detectKtx2Support(ktx2, renderer)` (không gọi thẳng `detectSupportAsync`): `GameKtx2Loader` giải normal map UASTC ra RGBA8 trên WebGPU vì backend WebGPU của three r178 không có BC7.
-- Commit cả GLB có hash lẫn `manifest.json` (nguồn lớn nằm ngoài repo). `assets/build/` không commit.
+- GLB có hash KHÔNG commit (gitignore): sau `assets:build` chạy `pnpm assets:push` (đẩy lên Cloudflare R2 + cập nhật `assets/asset-lock.json`), rồi commit `manifest.json` và sổ khóa. Máy mới/sau merge: `pnpm assets:pull`. Nhị phân > 200 KB trong `apps/client/public` và `docs/` bị hook/CI chặn; ảnh duyệt PR để ở artifact phiên. `assets/build/` không commit. Chi tiết: `docs/handbook/assets.md`.
 
 ## Client nạp asset
 

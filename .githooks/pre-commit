@@ -1,0 +1,3 @@
+#!/bin/sh
+# Bật bằng `pnpm hooks:install` (git config core.hooksPath .githooks). CI chạy cùng kiểm tra nên hook chỉ để báo sớm.
+node tools/docs/check-binaries.mjs --staged
