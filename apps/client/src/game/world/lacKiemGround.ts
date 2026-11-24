@@ -17,7 +17,7 @@ import {
   vec2,
   vec3,
 } from 'three/tsl';
-import { BRIDGE_A, hash01, SECT, TC_GATE, TC_POND } from '@dtl/shared';
+import { BRIDGE_A, gorgeDrop, hash01, SECT, TC_GATE, TC_GORGE, TC_POND } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { vnoise } from '../../render/materials/isoDetail';
 
@@ -55,6 +55,9 @@ export interface GroundLayout {
 
 /** Dốc lớn nhất (rad tan) cho vũng nước: vũng chỉ nằm chỗ gần phẳng. */
 const PUDDLE_MAX_TAN = 0.09;
+/** Lớp wash: ô 3 m bị bỏ khi chênh cao bốn đỉnh vượt ngưỡng này (m) hoặc tâm ô lệch mặt phẳng quá `WASH_MAX_SAG`. */
+export const WASH_MAX_RANGE = 0.7;
+export const WASH_MAX_SAG = 0.2;
 const gy = (x: number, z: number): number => heightAt(SECT.x + x, SECT.z + z);
 const slopeAt = (x: number, z: number): number => Math.hypot(gy(x + 1.5, z) - gy(x - 1.5, z), gy(x, z + 1.5) - gy(x, z - 1.5)) / 3;
 
@@ -328,6 +331,22 @@ function washGeo(): Acc {
     for (let i = 0; i < nx; i++) {
       const w = Math.max(groundWeight(x0 + i * step, z0 + j * step), groundWeight(x0 + (i + 1) * step, z0 + (j + 1) * step));
       if (w < 0.06) continue;
+      // bỏ ô dốc/gồ ghề (mép hác, sườn núi): dây cung lơ lửng trên khoảng trống hoặc cắm vào vách, nhiễu bị kéo thành sọc dọc
+      const xa = x0 + i * step;
+      const za = z0 + j * step;
+      const hs = [gy(xa, za), gy(xa + step, za), gy(xa, za + step), gy(xa + step, za + step)];
+      const mid = gy(xa + step / 2, za + step / 2);
+      if (Math.max(...hs) - Math.min(...hs) > WASH_MAX_RANGE || Math.abs((hs[0]! + hs[3]!) / 2 - mid) > WASH_MAX_SAG) continue;
+      if (
+        [
+          [xa, za],
+          [xa + step, za],
+          [xa, za + step],
+          [xa + step, za + step],
+          [xa + step / 2, za + step / 2],
+        ].some(([cx, cz]) => gorgeDrop(TC_GORGE, SECT.x + cx!, SECT.z + cz!) > 0)
+      )
+        continue;
       const p = vtx(i, j);
       const q = vtx(i + 1, j);
       const r = vtx(i, j + 1);
