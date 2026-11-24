@@ -2,7 +2,7 @@
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
 import { BladeSmear, smearWindow } from '../fx/bladeSmear';
-import { impulseOfTier, RagLite, RAG_JOINTS } from './ragdollLite';
+import { RagRig } from './ragdollRig';
 import {
   accelLean,
   ANIM_FX,
@@ -109,10 +109,15 @@ export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu'
 /** Bản v3b2: cùng model v3b, vạt 12 chuỗi lò xo; cùng với cải tiến lò xo ở client (gấu cứng hơn, viên nang tay, vạt nằm lên đùi khi ngồi) là mặc định của `?chr=v3`; `?v3model=b` về v3b để so. */
 export const V3_MODELS_B2 = { m: 'chr_v3b2_lac_kiem_nam', f: 'chr_v3b2_lac_kiem_nu' } as const;
 const V3_PICK = FLAGS.v3Model;
-export const V3_MODELS = V3_PICK === 'a' ? V3_MODELS_A : V3_PICK === 'b' ? V3_MODELS_B : V3_MODELS_B2;
+/** Bản v3b3: v3b2 + chuỗi lò xo dải đai/ngọc bội (`tassel`, Thân Pháp T6); chọn bằng `?v3model=c` cho tới khi người dùng duyệt ngoại hình. */
+export const V3_MODELS_B3 = { m: 'chr_v3b3_lac_kiem_nam', f: 'chr_v3b3_lac_kiem_nu' } as const;
+export const V3_MODELS = V3_PICK === 'a' ? V3_MODELS_A : V3_PICK === 'b' ? V3_MODELS_B : V3_PICK === 'c' ? V3_MODELS_B3 : V3_MODELS_B2;
 /** Asset dùng lò xo v2 (`chr_v3b2_*` và các bộ dựng hàng loạt `chr_v3_<bộ>_*`): hệ số cứng gấu vạt, viên nang tay, phình viên nang khi ngồi. */
 export const isSpring2 = (assetId: string | undefined): boolean =>
-  !!assetId && (assetId.startsWith('chr_v3b2_') || Object.values(V3_OWN_SETS).some((k) => assetId.startsWith(`chr_v3_${k}_`)));
+  !!assetId &&
+  (assetId.startsWith('chr_v3b2_') ||
+    assetId.startsWith('chr_v3b3_') ||
+    Object.values(V3_OWN_SETS).some((k) => assetId.startsWith(`chr_v3_${k}_`)));
 /** Độ cứng của xương gấu vạt (khớp thứ hai của chuỗi `dtl_o_skirt_<k>_<l>`) so với khớp gốc. */
 export const HEM_STIFF = 1.7;
 /** Hệ số phình viên nang thân khi ngồi/đả tọa: vạt nằm lên trên đùi thay vì lún xuống. */
@@ -389,7 +394,7 @@ export const ROBE_LIB = 'anim_robe';
 
 export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
-  if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
+  if (/^chr_v3b[23]?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const m of mats) tuneTripoMaterial(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id) && FLAGS.v3Veil) {
     const silk = FLAGS.v3Silk ? v3SilkOf(handle.id) : undefined;
@@ -428,6 +433,8 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
 export const ARM_FIT: Record<string, number> = {
   chr_v3b2_lac_kiem_nam: (16 * Math.PI) / 180,
   chr_v3b2_lac_kiem_nu: (16 * Math.PI) / 180,
+  chr_v3b3_lac_kiem_nam: (16 * Math.PI) / 180,
+  chr_v3b3_lac_kiem_nu: (16 * Math.PI) / 180,
   // Bộ dựng hàng loạt (đo `springMetrics` quét 5/12/16/22°, docs/chr-v3/README.md): Đồ Đệ Tử tay áo vừa nên ít phụ thuộc; Huyền Giáp là giáp (vai + hộ uyển nổi) cần dang nhiều hơn; Đan Tâm như Lạc Kiếm.
   chr_v3_de_tu_nam: (10 * Math.PI) / 180,
   chr_v3_de_tu_nu: (10 * Math.PI) / 180,
@@ -716,7 +723,7 @@ export class MannequinCharacter implements CharacterView {
   private lastSpeed = 0;
   private loco2 = new LocoImpulse();
   /** T5: ragdoll nhẹ (tạo lười ở lần trúng đòn đầu khi bật cờ). */
-  private rag: RagLite | null = null;
+  private rag: RagRig | null = null;
   private accel = 0;
   private stillT = 0;
   private idleAfter = 7;
@@ -1516,10 +1523,7 @@ export class MannequinCharacter implements CharacterView {
     if (ANIM_FX.ragdoll && this.lodLevel === 0) {
       // Ngã: xung mạnh theo hướng đòn cuối, khớp mềm hẳn trong lúc nằm.
       const lh = this.lastHit;
-      const d = flinchDirOf(this.root.rotation.y, lh.dx, lh.dz);
-      const r = (this.rag ??= new RagLite());
-      r.impulse(d.pitch, d.roll, impulseOfTier(3, true, false));
-      r.loose = 1;
+      (this.rag ??= new RagRig(this.rig)).down(this.root.rotation.y, lh.dx, lh.dz);
     }
   }
 
@@ -1533,10 +1537,8 @@ export class MannequinCharacter implements CharacterView {
         age: -(o.delay ?? 0),
         ...flinchDirOf(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0),
       };
-    if (ANIM_FX.ragdoll && this.lodLevel === 0) {
-      const d = flinchDirOf(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0);
-      (this.rag ??= new RagLite()).impulse(d.pitch, d.roll, impulseOfTier(o.tier, !!o.heavy, !!o.crit));
-    }
+    if (ANIM_FX.ragdoll && this.lodLevel === 0)
+      (this.rag ??= new RagRig(this.rig)).hit(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0, o.tier, !!o.heavy, !!o.crit);
     // Clip theo phía bị đánh (C3b): nặng ngã lùi; nhẹ chạm ngực (trước/bên) hoặc giật đầu (sau gáy).
     const clip = hitClipOf(hitSideOf(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0), !!o.heavy || (o.tier ?? 0) >= 2);
     if (!this.shot && !o.noFlash) this.oneShot(clip, clip === 'Hit_Knockback' ? 1.2 : 1.4);
@@ -1585,10 +1587,7 @@ export class MannequinCharacter implements CharacterView {
     }
     if (a.dead && !this.dead && ANIM_FX.ragdoll && this.lodLevel === 0) {
       const lh = this.lastHit;
-      const d = flinchDirOf(this.root.rotation.y, lh.dx, lh.dz);
-      const r = (this.rag ??= new RagLite());
-      r.impulse(d.pitch, d.roll, impulseOfTier(3, true, false));
-      r.loose = 1;
+      (this.rag ??= new RagRig(this.rig)).down(this.root.rotation.y, lh.dx, lh.dz);
     }
     this.dead = a.dead;
     if (this.dead && this.deathTurn.t < 1) {
@@ -1797,18 +1796,8 @@ export class MannequinCharacter implements CharacterView {
       } else if (a.speed > 0.5 && this.perf && this.perf.id.startsWith('kiem_idle')) this.abortPerform();
     }
     // T5: ragdoll nhẹ cộng lên tư thế clip (thân trên, đầu, tay); độ lỏng hồi về 0 sau ~1,2 s, riêng lúc chết giữ lỏng.
-    const rg = this.rag;
-    if (rg && ANIM_FX.ragdoll && this.lodLevel === 0 && this.viewDist < 30) {
-      rg.loose = a.dead ? 1 : Math.max(0, rg.loose - dt * 0.8);
-      if (rg.active) {
-        rg.update(dt);
-        for (const j of RAG_JOINTS) {
-          const bone = b[j] ?? null;
-          rotateWorld(bone, rgt, rg.ang[j][0]);
-          rotateWorld(bone, fwd, rg.ang[j][1] * this.side);
-        }
-      }
-    } else if (rg?.active) rg.reset();
+    // Ragdoll ghi tuyệt đối (gốc + góc), không cộng dồn lên xương mixer không ghi lại (clip kẹp cuối).
+    if (this.rag && ANIM_FX.ragdoll) this.rag.apply(dt, y, a.dead, this.lodLevel === 0 && this.viewDist < 30);
     // Thở (cộng thêm, chỉ biên độ nhỏ).
     if (free) rotateWorld(b.spine_03 ?? null, rgt, breathOf(this.clock, a.speed < 0.3));
     // Giật nhẹ khi trúng đòn: thân ngửa ra sau rồi về.

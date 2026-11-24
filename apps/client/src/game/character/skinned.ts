@@ -3,7 +3,9 @@ import * as THREE from 'three/webgpu';
 import { bodyClassOf, canCancel, HIT_FEEL, hitDirOf, hitsPassed, lungeOffset, type MonsterDef, type SkillTiming } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { HitReact, type HitOpts } from '../combat/hitreact';
+import { ANIM_FX } from './animFx';
 import { IkRig } from './ikpose';
+import { RagRig } from './ragdollRig';
 import { type PoseClips, type PoseLibrary, libraryClips } from './poseLib';
 import { type SpringDef, type SpringParams, SpringBones } from './spring';
 import { baseState, type CharState, type ClipMap, clipFor, LOCO_STATES, locomotionScale, MOVE_MIN } from './states';
@@ -257,6 +259,14 @@ export class SkinnedCharacter implements CharacterView {
   private deadT = 0;
   private acc = 0;
   private interval = 0;
+  /** Thân Pháp T5: ragdoll nhẹ (tạo lười ở lần trúng đòn đầu khi bật cờ `ragdoll`); xem `ragdollRig.ts`. */
+  protected ragRig: RagRig | null = null;
+  private lastHitDir = { dx: 0, dz: 0 };
+  /** Lớp con tắt ragdoll (boss). */
+  protected ragEnabled = true;
+  private ragOf(): RagRig | null {
+    return this.ragEnabled ? (this.ragRig ??= new RagRig(this.rig)) : null;
+  }
   private disposed = false;
   private rates: Partial<Record<CharState, number>>;
   private maxLoco: number;
@@ -442,7 +452,9 @@ export class SkinnedCharacter implements CharacterView {
 
   /** Bị hất ngã rồi đứng dậy (K-3 `knockdown` → `getup`). Thiếu clip thì bỏ qua. */
   knockdown(): void {
-    if (this.dead || !this.clips.has('knockdown')) return;
+    if (this.dead) return;
+    if (ANIM_FX.ragdoll && this.lodLevel === 0) this.ragOf()?.down(this.root.rotation.y, this.lastHitDir.dx, this.lastHitDir.dz);
+    if (!this.clips.has('knockdown')) return;
     this.stopPerform();
     this.pendingPerform = null;
     const long = (this.clips.get('knockdown')?.duration ?? 0) > KNOCK_LONG;
@@ -536,6 +548,9 @@ export class SkinnedCharacter implements CharacterView {
 
   hitReact(o: HitOpts): void {
     this.hit.react(o);
+    if (o.dirX || o.dirZ) this.lastHitDir = { dx: o.dirX ?? 0, dz: o.dirZ ?? 0 };
+    if (ANIM_FX.ragdoll && this.lodLevel === 0 && !this.dead)
+      this.ragOf()?.hit(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0, o.tier, !!o.heavy, !!o.crit);
     this.hitOpts = o;
     if (o.delay && o.delay > 0) this.pendingHit = this.pendingHit < 0 ? o.delay : Math.min(this.pendingHit, o.delay);
     else this.onHit();
@@ -590,6 +605,7 @@ export class SkinnedCharacter implements CharacterView {
         this.shot = null;
         this.pendingHit = -1;
         this.pendingMove = null;
+        if (ANIM_FX.ragdoll && this.lodLevel === 0) this.ragOf()?.down(this.root.rotation.y, this.lastHitDir.dx, this.lastHitDir.dz);
         this.enterBase('death', FADE_DEATH);
       }
       this.deadT += dt;
@@ -679,6 +695,8 @@ export class SkinnedCharacter implements CharacterView {
     }
     if (this.quad) this.tiltToSlope(dt);
     this.postPose(dt, a);
+    // `RagRig` ghi tuyệt đối (tư thế gốc + góc), không cộng dồn, nên áp mỗi khung kể cả khung mixer không chạy.
+    if (this.ragRig && ANIM_FX.ragdoll) this.ragRig.apply(dt, this.root.rotation.y, this.dead, this.lodLevel === 0 && this.inner.visible);
     this.updateSprings(dt);
   }
 
@@ -1131,6 +1149,8 @@ export class SkinnedMonster extends SkinnedCharacter implements MonsterView {
     this.moves = o.moves ?? {};
     this.holdStates = new Set<CharState>(['cast', 'stun']);
     this.hit.feel = HIT_FEEL[bodyClassOf(def)];
+    // Ragdoll nhẹ (Thân Pháp T5) chỉ cho quái thường, không cho boss.
+    this.ragEnabled = !def.boss;
   }
 
   /**
