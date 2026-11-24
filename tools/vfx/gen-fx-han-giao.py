@@ -99,9 +99,9 @@ write('mon_boom_circle__boss_han_giao__slam', [
 # ---------------- CHANT: tròn r 12–13 quanh boss, niệm 2,6 s rồi báo 0,9 s ----------------
 # Lúc niệm (MonFx.cast, `mon_cast__<quái>`, mét thật): viền đỏ MỎNG r 13 + triện mờ trong suốt thời gian niệm, rồi 0,9 s cuối vạch báo tô đậm.
 write('mon_cast__boss_han_giao', [
-    decal('rune', 0, 13, 3.4, 'accent', 0.7, 0.35, ink=True, untilDelay=False),
-    decal('rune', 0.15, 8.5, 3.3, 'accent', 0.38, 0.5, yaw=25, untilDelay=False),
-    decal('rune', 0.3, 5, 3.2, 'rim', 0.25, 0.5, yaw=-40, untilDelay=False),
+    decal('rune', 0, 13, 3.4, 'accent', 0.7, 0.35, ink=True, untilDelay=False, at='self'),
+    decal('rune', 0.15, 8.5, 3.3, 'accent', 0.38, 0.5, yaw=25, untilDelay=False, at='self'),
+    decal('rune', 0.3, 5, 3.2, 'rim', 0.25, 0.5, yaw=-40, untilDelay=False, at='self'),
 ])
 write('mon_warn__boss_han_giao__chant', [
     *warn_disc(0.85, 70, -20),
