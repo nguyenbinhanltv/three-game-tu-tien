@@ -22,8 +22,8 @@
   "budget": {
     "drawCalls": 7,
     "particles": 230,
-    "screenCover": 0.03,
-    "overdraw": 4
+    "screenCover": 0.06,
+    "overdraw": 3
   },
   "textures": [],
   "silhouette": "những dải hồ quang xoắn ốc quấn thân từ chân lên vai, hai bàn tay có tia điện nhảy",

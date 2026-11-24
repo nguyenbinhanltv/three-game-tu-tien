@@ -22,8 +22,8 @@
   "budget": {
     "drawCalls": 9,
     "particles": 230,
-    "screenCover": 0.06,
-    "overdraw": 6
+    "screenCover": 0.08,
+    "overdraw": 3
   },
   "textures": [],
   "silhouette": "một chuỗi quả cầu sét nối nhau bằng hồ quang gấp khúc như xích, đầu mỗi quả có chớp",

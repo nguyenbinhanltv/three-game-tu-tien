@@ -29,7 +29,7 @@ const SCALE = {
   skl_loi_an_kich: 0.85,
   skl_cuu_tieu_thien_loi: 0.8,
   skl_loi_the: 0.95,
-  skl_loi_chich: 1.0,
+  skl_loi_chich: 0.8,
   skl_loi_lien: 0.8,
   skl_loi_giap: 0.9,
   skl_phich_lich: 0.85,
