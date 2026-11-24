@@ -1,0 +1,21 @@
+{
+ "skill": "mon_cast__boss_han_giao",
+ "palette": "mon_boss_thuy",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0,
+   "r": 13,
+   "dur": 3.4,
+   "at": "self",
+   "grow": 0.35,
+   "tone": "accent",
+   "alpha": 0.75,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "ink": true
+  }
+ ]
+}

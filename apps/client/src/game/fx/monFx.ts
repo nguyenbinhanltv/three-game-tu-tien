@@ -5,6 +5,7 @@
 
 import { MON_FX, MONSTER } from '@dtl/content';
 import type { FxTimeline, HazardMsg } from '@dtl/shared';
+import { forgeTexLoaded } from '../../render/vfx/forgeTex';
 import { monPaletteKey } from '../../render/vfx/palette';
 import { groundAt } from '../../base/levelCtx';
 import type { FxCaster, FxRunner, FxTarget } from './fxTimeline';
@@ -91,6 +92,14 @@ export class MonFx {
     return this.tl(key);
   }
 
+  /** Chiêu này có timeline vạch báo RIÊNG (không phải timeline chung theo hệ)? Khi có, `room.ts` bỏ pháp trận cũ (V-P9). */
+  ownWarn(h: Pick<HazardMsg, 'r' | 'delay' | 'sh'>, src: MonLike | undefined): boolean {
+    if (!src || !(h.r > 0) || !(h.delay > 0)) return false;
+    const key = !h.sh ? 'mon_warn' : h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone';
+    const mv = moveOfHazard(MONSTER.get(src.s.t), h);
+    return !!((mv ? this.tl(`${key}__${src.s.t}__${mv}`) : undefined) ?? this.tl(`${key}__${src.s.t}`));
+  }
+
   private note(key: string, id: string): void {
     if (!import.meta.env.DEV) return;
     this.log.push({ key, id, at: performance.now() });
@@ -118,6 +127,7 @@ export class MonFx {
   /** Quái bị đánh (sát thương lên quái). `victim` = chân quái; chest = 55% chiều cao. */
   hit(m: MonLike): void {
     const tl = this.tl('mon_hit');
+    if (this.lab) return;
     if (!tl || !this.near(m.x, m.z) || !this.gap('hit', m.id, MON_HIT_GAP)) return;
     const tgt: FxTarget = { x: m.x, y: m.y, z: m.z, chest: m.model.height * 0.55 };
     this.runner.startAt(tl, { actor: this.actorOf(m), palette: this.elemOf(m), tgt, mul: Math.min(1.6, monScale(m.model.height)) });
@@ -127,6 +137,7 @@ export class MonFx {
   /** Quái đánh trúng người/vật: vệt chém ở người bị đánh. */
   strike(m: MonLike, dst: { x: number; y: number; z: number }): void {
     const tl = this.tl('mon_strike');
+    if (this.lab) return; // phòng thử chỉ phát FX của chiêu đang xem: đòn đánh thường của boss (đỏ/cam) làm lẫn với vạch báo
     if (!tl || !this.near(dst.x, dst.z) || !this.gap('strike', m.id, MON_STRIKE_GAP)) return;
     const yaw = Math.atan2(dst.x - m.x, dst.z - m.z);
     const tgt: FxTarget = { x: dst.x, y: dst.y, z: dst.z, chest: 1.1 };
@@ -142,13 +153,15 @@ export class MonFx {
 
   /** Quái niệm/tụ lực (cờ chant bật). */
   cast(m: MonLike): void {
-    const tl = this.tl('mon_cast');
+    // Timeline niệm riêng của quái (`mon_cast__<loại>`, kích thước theo mét, không nhân cỡ quái) thay timeline chung.
+    const own = this.tl(`mon_cast__${m.s.t}`);
+    const tl = own ?? this.tl('mon_cast');
     if (!tl || !this.near(m.x, m.z) || !this.gap('cast', m.id, 0.5)) return;
     this.runner.startAt(tl, {
       actor: this.actorOf({ ...m, y: m.y }),
       palette: this.elemOf(m),
       tgt: null,
-      mul: monScale(m.model.height),
+      mul: own ? 1 : monScale(m.model.height),
       variant: this.variantOf(m),
     });
     this.note('mon_cast', m.id);
@@ -192,14 +205,18 @@ export class MonFx {
     return src ? this.elemOf(src) : monPaletteKey(ELEM_OF_KIND[h.kind]);
   }
 
-  /** Vạch báo vùng tròn của quái: triện văn đỏ tồn tại đúng tới lúc nổ. Chỉ khi quái thả vùng (không phải thiên kiếp). */
-  warn(h: HazardMsg, src: MonLike | undefined): void {
-    if (!src || !(h.r > 0) || !(h.delay > 0) || !this.near(h.x, h.z)) return;
+  /**
+   * Vạch báo vùng tròn của quái: triện văn đỏ tồn tại đúng tới lúc nổ. Chỉ khi quái thả vùng (không phải thiên kiếp).
+   * Trả `true` khi timeline đã thật sự phát VÀ texture của nó đã nạp (`forgeTexLoaded`): chiêu có timeline riêng (`ownWarn`) chỉ được bỏ pháp trận cũ khi vạch riêng đã phát,
+   * nếu không (xa quá 60 m, FX quá nhiều, đang ở phòng thử) người chơi sẽ mất vạch báo gây sát thương.
+   */
+  warn(h: HazardMsg, src: MonLike | undefined): boolean {
+    if (!src || !(h.r > 0) || !(h.delay > 0) || !this.near(h.x, h.z)) return false;
     const boss = this.bossOf(src);
     // Vùng tròn: mọi quái; đường/nón: chỉ boss (nhấp nháy dọc vạch, vạch pháp trận cũ vẫn chạy).
     const key = !h.sh ? 'mon_warn' : boss ? (h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone') : undefined;
     const tl = key ? this.tlFor(key, src, h) : undefined;
-    if (!tl || !key) return;
+    if (!tl || !key) return false;
     const y = groundAt(h.x, h.z);
     this.runner.startAt(tl, {
       actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} },
@@ -211,6 +228,8 @@ export class MonFx {
       variant: this.variantOf(src),
     });
     this.note(key, src.id);
+    // Vạch riêng dựa vào texture Codex (`warn_crack`, nạp nền): chưa nạp xong thì nó vô hình, giữ vòng cũ để người chơi vẫn thấy hitbox.
+    return forgeTexLoaded('warn_crack');
   }
 
   /** Vùng nổ (đúng lúc hết `delay`). Tròn → gai + vết nứt; chữ nhật → gai nối tiếp; nón → lưỡi liềm quét. */
