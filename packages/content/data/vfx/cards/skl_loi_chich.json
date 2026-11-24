@@ -22,8 +22,8 @@
   "budget": {
     "drawCalls": 7,
     "particles": 230,
-    "screenCover": 0.2,
-    "overdraw": 3
+    "screenCover": 0.1,
+    "overdraw": 4
   },
   "textures": [],
   "silhouette": "ngọn giáo/mũi tên sét dài thẳng, mũi nhọn lõi trắng, thân gấp khúc nhẹ, đuôi xòe tia",

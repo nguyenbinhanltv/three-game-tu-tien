@@ -149,8 +149,8 @@
     1.2,
     3
    ],
-   "scale": 2.13,
-   "scaleTo": 3.06,
+   "scale": 2,
+   "scaleTo": 2.88,
    "align": "aim"
   },
   {
@@ -192,8 +192,8 @@
     1.2,
     5.8
    ],
-   "scale": 8.36,
-   "scaleTo": 10.2,
+   "scale": 7.87,
+   "scaleTo": 9.6,
    "align": "aim"
   },
   {
@@ -216,15 +216,15 @@
     1,
     6
    ],
-   "scale": 7.23,
-   "scaleTo": 7.23,
+   "scale": 6.8,
+   "scaleTo": 6.8,
    "align": "aim"
   },
   {
    "type": "decal",
    "tex": "scorch",
    "t": 0,
-   "r": 2.6,
+   "r": 3.4,
    "dur": 1.6,
    "at": "ahead",
    "offset": [
@@ -257,8 +257,8 @@
     1.2,
     0.8
    ],
-   "scale": 1.27,
-   "scaleTo": 1.59
+   "scale": 1.2,
+   "scaleTo": 1.5
   },
   {
    "type": "mesh",
@@ -280,8 +280,8 @@
     1.2,
     10.8
    ],
-   "scale": 1.36,
-   "scaleTo": 1.7
+   "scale": 1.28,
+   "scaleTo": 1.6
   },
   {
    "type": "mesh",
@@ -303,8 +303,8 @@
     1.3,
     6
    ],
-   "scale": 2.89,
-   "scaleTo": 2.89,
+   "scale": 2.72,
+   "scaleTo": 2.72,
    "move": {
     "to": "ahead",
     "offset": [
