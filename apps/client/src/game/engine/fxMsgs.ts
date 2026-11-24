@@ -330,7 +330,15 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     const cutin = ult && ANIM_FX.cutin ? cutinArt(ult.id, eng.ents.players.get(eng.sid)?.look.g ?? 'm') : null;
     if (cutin && eng.shake.enabled) eng.fxSlow = { scale: 0.04, until: performance.now() + CUTIN_FREEZE_MS };
     if (ult)
-      set({ ultCard: { id: ++eng.ultCardId, skill: ult.id, color: m.c ?? 'ffffff', until: Date.now() + (cutin ? 900 : 600), ...(cutin && { cutin }) } });
+      set({
+        ultCard: {
+          id: ++eng.ultCardId,
+          skill: ult.id,
+          color: m.c ?? 'ffffff',
+          until: Date.now() + (cutin ? 900 : 600),
+          ...(cutin && { cutin }),
+        },
+      });
     return;
   }
   // Chiêu đã có dòng thời gian hiệu ứng (data/fx/<id>.json): hình do `SkillFx.runner` phát theo sự kiện chiêu, bỏ hình cũ.

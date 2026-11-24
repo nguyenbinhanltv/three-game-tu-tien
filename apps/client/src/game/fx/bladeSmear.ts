@@ -39,7 +39,14 @@ export class BladeSmear {
     const idx: number[] = [];
     for (let i = 0; i < SMEAR_N - 1; i++) idx.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2);
     g.setIndex(idx);
-    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide, fog: false });
+    const mat = new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.6,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      fog: false,
+    });
     markBloom(mat, 1.2);
     this.mesh = new THREE.Mesh(g, mat);
     this.mesh.frustumCulled = false;

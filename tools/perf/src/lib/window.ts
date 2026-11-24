@@ -67,7 +67,25 @@ export interface AnimLabDebug {
   moments(pose: string): { name: string; at: number }[];
   poseOfSkill(skillId: string): string | null;
   cpu(): { section: string; avg: number; max: number }[];
-  fx(flags: { exaggerate?: boolean; bounce?: boolean; poses?: boolean; smear?: boolean; spring?: boolean; loco?: boolean; idle?: boolean; cutin?: boolean }): { exaggerate: boolean; bounce: boolean; poses: boolean; smear: boolean; spring: boolean; loco: boolean; idle: boolean; cutin: boolean };
+  fx(flags: {
+    exaggerate?: boolean;
+    bounce?: boolean;
+    poses?: boolean;
+    smear?: boolean;
+    spring?: boolean;
+    loco?: boolean;
+    idle?: boolean;
+    cutin?: boolean;
+  }): {
+    exaggerate: boolean;
+    bounce: boolean;
+    poses: boolean;
+    smear: boolean;
+    spring: boolean;
+    loco: boolean;
+    idle: boolean;
+    cutin: boolean;
+  };
   poses(): string[];
   cutin(skill: string): boolean;
 }

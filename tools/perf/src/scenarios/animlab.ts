@@ -130,12 +130,33 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
           for (let k = 0; k < SETTLE_FRAMES; k++) await frame(page);
           files.push(await snap(page, r.out, `${pose}-${cam}-${tag}-${m.name}.jpg`, { wait: 0 }));
           const ck = await page.evaluate(() => window.__animlab!.clock());
-          rows.push({ cam, size: tag, moment: m.name, ms: want, poseT: ck ? Number(ck.t.toFixed(3)) : null, dbg: await page.evaluate(() => { const m = (window.__game as any).ents.players.get((window.__game as any).sid).model; const u = m.perf?.upper; const hb = m.rig?.getObjectByName('hand_r'); const w = hb ? hb.getWorldPosition(new (hb.position.constructor as any)()) : null; return { upT: u ? +u.time.toFixed(3) : null, upW: u ? +u.getEffectiveWeight().toFixed(2) : null, hand: w ? [w.x, w.y, w.z].map((v: number) => +v.toFixed(2)) : null, root: m.root.position.y }; }) });
+          rows.push({
+            cam,
+            size: tag,
+            moment: m.name,
+            ms: want,
+            poseT: ck ? Number(ck.t.toFixed(3)) : null,
+            dbg: await page.evaluate(() => {
+              const m = (window.__game as any).ents.players.get((window.__game as any).sid).model;
+              const u = m.perf?.upper;
+              const hb = m.rig?.getObjectByName('hand_r');
+              const w = hb ? hb.getWorldPosition(new (hb.position.constructor as any)()) : null;
+              return {
+                upT: u ? +u.time.toFixed(3) : null,
+                upW: u ? +u.getEffectiveWeight().toFixed(2) : null,
+                hand: w ? [w.x, w.y, w.z].map((v: number) => +v.toFixed(2)) : null,
+                root: m.root.position.y,
+              };
+            }),
+          });
         }
         const cw = 480;
         const ch = Math.round((cw * h) / w);
         // Camera chéo: nhân vật nhỏ nên dải duyệt cắt 30% giữa khung (nhân vật luôn ở tâm) rồi phóng lên; ảnh gốc đầy đủ vẫn ở từng khung riêng.
-        const crop = cam === 'iso' ? { left: Math.round(w * 0.35), top: Math.round(h * 0.3), width: Math.round(w * 0.3), height: Math.round(h * 0.4) } : null;
+        const crop =
+          cam === 'iso'
+            ? { left: Math.round(w * 0.35), top: Math.round(h * 0.3), width: Math.round(w * 0.3), height: Math.round(h * 0.4) }
+            : null;
         const tiles = await Promise.all(
           files.map((f) => (crop ? sharp(f).extract(crop) : sharp(f)).resize(cw, ch, { fit: 'cover' }).jpeg({ quality: 85 }).toBuffer()),
         );

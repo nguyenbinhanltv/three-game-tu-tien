@@ -787,7 +787,8 @@ export class MannequinCharacter implements CharacterView {
       const skirt = defs.filter((d) => d.bone.startsWith('dtl_o_skirt_'));
       const sleeve = tune?.sleeve ? defs.filter((d) => isSleeve(d.bone)) : [];
       const rest = defs.filter((d) => !d.bone.startsWith('dtl_o_skirt_') && !(tune?.sleeve && isSleeve(d.bone)));
-      if (rest.length && !shadow) this.springs = new SpringBones(this.rig, rest, ANIM_FX.spring ? SPRING_TP : V3_SPRING, colliderDefs(this.rig, tpl.height));
+      if (rest.length && !shadow)
+        this.springs = new SpringBones(this.rig, rest, ANIM_FX.spring ? SPRING_TP : V3_SPRING, colliderDefs(this.rig, tpl.height));
       if (sleeve.length && !shadow)
         this.sleeveSprings = new SpringBones(this.rig, sleeve, { ...V3_SPRING, ...tune!.sleeve }, colliderDefs(this.rig, tpl.height));
       if (skirt.length && !shadow)
@@ -1721,8 +1722,7 @@ export class MannequinCharacter implements CharacterView {
     rotateWorld(b.spine_03 ?? null, _up, -this.turnLag * 0.5);
     // Thân Pháp T1 (cờ ?thanphap): khuếch đại tay/vai/hông quanh tư thế nghỉ và nảy bước, chỉ khi chạy tự do.
     if (ANIM_FX.exaggerate && free && !this.perf && !this.shotUpper) this.exaggerate(a.speed);
-    this.inner.position.y =
-      ANIM_FX.bounce && free && !this.perf && !this.shotUpper ? bobOf(this.loco ? this.locoPhase : 0, a.speed) : 0;
+    this.inner.position.y = ANIM_FX.bounce && free && !this.perf && !this.shotUpper ? bobOf(this.loco ? this.locoPhase : 0, a.speed) : 0;
     // T2 (cờ ?thanphap): lướt thấp khi chạy, chúi tới khi tăng tốc (bắt đầu chạy), ngả ra sau khi phanh (dừng). Hạ hông cộng vào độ nảy.
     if (dt > 1e-3) this.accel += (Math.max(-40, Math.min(40, (a.speed - this.lastSpeed) / dt)) - this.accel) * Math.min(1, dt * 12);
     this.lastSpeed = a.speed;
