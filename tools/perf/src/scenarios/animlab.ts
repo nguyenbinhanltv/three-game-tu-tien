@@ -2,7 +2,7 @@
 // 720p + 1080p, dừng thời gian bằng `window.__animlab` để khung đúng từng mili giây; đo CPU xương (mục `anim` của FrameBudget) lúc đứng yên và lúc chạy;
 // tùy chọn đặt ảnh tham chiếu cạnh khung đỉnh đòn, và quay clip thời gian thật (đứng, chạy, từng chiêu) để so trước/sau (`--thanphap 0|1`).
 // Dùng: pnpm shots animlab --out <thư mục tuyệt đối> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1]
-//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--stills tp1b|tp2] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
+//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--stills tp1b|tp2|tp2mon] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
 import path from 'node:path';
 import sharp from 'sharp';
 import { list, opt } from '../lib/env';
@@ -77,6 +77,50 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       await sleep(ms);
       await page.keyboard.up(k);
     };
+    if (stillsMode === 'tp2mon') {
+      // Quái hình người Mannequin (Bắc Hoang): chụp quanh quái, cùng bốn phía + ngã + chết như người chơi.
+      await gm(page, 'tp bh_tram', 6000);
+      await gm(page, 'spawn clear', 1000);
+      await gm(page, 'spawn mon_tan_chung 1', 6000);
+      await page.evaluate(() => window.__animlab!.pause(false));
+      await sleep(2500);
+      const monShot = async (name: string, p: { x: number; y: number } | null) => {
+        const c = p ?? { x: 640, y: 360 };
+        const clip = { x: Math.max(0, Math.round(c.x - 120)), y: Math.max(0, Math.round(c.y - 140)), width: 240, height: 220 };
+        const buf = await page.screenshot({ clip, type: 'png' });
+        await sharp(buf)
+          .resize(480, 440)
+          .png()
+          .toFile(path.join(r.out, `${stillsMode}-${name}.png`));
+        console.log('  ảnh', `${stillsMode}-${name}.png`);
+      };
+      const mcases: [string, 'front' | 'back' | 'left' | 'right', number, boolean][] = [
+        ['1-truoc', 'front', 2, false],
+        ['2-sau', 'back', 2, false],
+        ['3-trai', 'left', 2, false],
+        ['4-phai', 'right', 2, false],
+        ['5-nga', 'front', 3, true],
+      ];
+      for (const [name, from, tier, knock] of mcases) {
+        await page.evaluate(() => window.__animlab!.pause(false));
+        await sleep(1800);
+        await page.evaluate(() => window.__animlab!.pause(true));
+        await frame(page);
+        const p = await page.evaluate((a) => window.__animlab!.hitMon(a[0] as never, a[1] as number, a[2] as boolean), [
+          from,
+          tier,
+          knock,
+        ] as const);
+        await advance(page, knock ? 450 : 140);
+        for (let k = 0; k < SETTLE_FRAMES; k++) await frame(page);
+        await monShot(name, p);
+      }
+      await page.evaluate(() => window.__animlab!.pause(false));
+      await gm(page, 'killall', 700);
+      await monShot('6-chet', await page.evaluate(() => window.__animlab!.hitMon('front', 0, false)));
+      await ctx.close();
+      return { ...out, stills: stillsMode };
+    }
     if (stillsMode === 'tp1b') {
       await page.evaluate(() => window.__animlab!.cam('iso'));
       await sleep(1200);

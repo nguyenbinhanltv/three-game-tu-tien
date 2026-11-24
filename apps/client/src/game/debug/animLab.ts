@@ -2,6 +2,7 @@
 // chiêu (pose) của chính nhân vật, đồng hồ CPU xương. Dùng game thật (cùng camera chéo, cùng nhân vật v3) nên ảnh chụp đúng cái người chơi thấy.
 // Không đổi luật chơi: chỉ nhân dt trình diễn, đặt `freeCam` và gọi `perform` ở phía hiển thị.
 
+import * as THREE from 'three/webgpu';
 import { POSE, SKILLS } from '@dtl/content';
 import type { Game } from '../engine';
 import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt, type AnimFxFlags } from '../character/animFx';
@@ -47,6 +48,8 @@ export interface AnimLabApi {
   poses(): string[];
   /** T5: cho chính mình trúng đòn từ hướng `from` ('front'|'back'|'left'|'right'), cấp `tier` 0..3; `knock` = ngã (knockdown). */
   hitSelf(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): boolean;
+  /** T5: như `hitSelf` nhưng cho quái đầu tiên trong cảnh; trả toạ độ màn hình (px) của quái để cắt ảnh, hoặc null nếu không có quái. */
+  hitMon(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): { x: number; y: number } | null;
   /** T7: phát cut-in chiêu cuối `skill` như khi mình tung chiêu (khựng + thẻ); trả false nếu chiêu chưa có tranh. */
   cutin(skill: string): boolean;
 }
@@ -123,6 +126,23 @@ export function installAnimLab(g: Game): void {
       m.hitReact({ dirX: d[0], dirZ: d[1], tier, heavy: tier >= 2 });
       if (knock) m.knockdown?.();
       return true;
+    },
+    hitMon(from, tier, knock) {
+      const e = [...g.ents.monsters.values()][0] as
+        | { model: { root: THREE.Object3D & { rotation: { y: number } }; height: number; hitReact?(o: object): void; knockdown?(): void } }
+        | undefined;
+      const m = e?.model;
+      if (!m?.hitReact) return null;
+      const y = m.root.rotation.y;
+      const f: [number, number] = [Math.sin(y), Math.cos(y)];
+      const r: [number, number] = [Math.cos(y), -Math.sin(y)];
+      const d = from === 'front' ? [-f[0], -f[1]] : from === 'back' ? f : from === 'left' ? [-r[0], -r[1]] : r;
+      m.hitReact({ dirX: d[0], dirZ: d[1], tier, heavy: tier >= 2 });
+      if (knock) m.knockdown?.();
+      const v = m.root.getWorldPosition(new THREE.Vector3());
+      v.y += m.height * 0.5;
+      v.project(g.camera);
+      return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
     },
     cutin(skill) {
       const art = cutinArt(skill, g.ents.players.get(g.sid)?.look.g ?? 'm');
