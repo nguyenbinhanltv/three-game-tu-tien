@@ -23,7 +23,15 @@ describe('sprite vẽ tay (Họa Pháp Lô 2)', () => {
     const e = lock.files[SPRITE_ATLAS_FILE];
     expect(e, 'chạy `pnpm assets:push` sau khi đổi atlas').toBeTruthy();
     expect(e!.bytes).toBeGreaterThan(100_000);
-    // R2 bất biến: tên file phải chứa 10 ký tự đầu của sha256 nội dung (đổi nội dung = tên mới, không ghi đè)
-    expect(SPRITE_ATLAS_FILE).toContain(`.${e!.sha256.slice(0, 10)}.webp`);
+    // R2 bất biến: tên mới phải chứa hash nội dung; tên cố định chỉ được nếu là file cũ trong danh sách ân hạn
+    const grace = new Set(
+      (
+        JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, '../../../../../assets/asset-fixed-names.json'), 'utf8')) as {
+          files: string[];
+        }
+      ).files,
+    );
+    const hashed = SPRITE_ATLAS_FILE.includes(`.${e!.sha256.slice(0, 10)}.webp`);
+    expect(hashed || grace.has(SPRITE_ATLAS_FILE), 'atlas mới phải đặt tên theo hash (xem docs/handbook/vfx-forge.md)').toBe(true);
   });
 });

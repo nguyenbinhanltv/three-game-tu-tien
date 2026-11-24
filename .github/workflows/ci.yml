@@ -83,6 +83,9 @@ jobs:
       - name: content:check
         run: pnpm content:check
 
+      - name: Lấy main để so sổ khóa (chỉ HEAD file mới/đổi)
+        run: git fetch --no-tags --depth=1 origin main:refs/remotes/origin/main || true
+
       - name: Asset khớp sổ khóa và R2 (assets:validate)
         run: pnpm assets:validate
         env:
