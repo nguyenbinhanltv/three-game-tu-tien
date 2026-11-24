@@ -301,7 +301,7 @@ def build_palace(b, isl, rnd, big):
 
 
 def build_avenue_pillars(b, pillars, rnd):
-    """Cột son dọc đại lộ ở vị trí/độ cao đất thật trong dữ liệu (`tools/perf/src/tk-pillars.ts`), chân bệ chìm 0,6 m để bám đất dốc."""
+    """Cột son dọc đại lộ ở vị trí/độ cao đất thật trong dữ liệu, chân bệ chìm 0,6 m để bám đất dốc."""
     for p in pillars:
         lx, ly, lz = loc(p['x'], p['y'], p['z'])
         b.box(lx, ly + 0.2, lz, 3.6, 1.6, 3.6, kit.JADE_SHADE)

@@ -10,7 +10,6 @@
 import {
   PF_DEAD,
   amInside,
-  amPoolHurts,
   dapDamage,
   dapParryOk,
   gatePos,
@@ -219,11 +218,6 @@ function spawnPool(c: TribMechCtx, st: AmLanState, cfg: TribAmLan): void {
     mark(c.host, c.p, 'am', { n: id, x, z, r: cfg.r1, d: cfg.seed + cfg.grow + cfg.hold, pg: 1 });
     return;
   }
-}
-
-/** Số vực đang gây hại (cho test). */
-export function amHurting(st: AmLanState, cfg: TribAmLan, now: number): number {
-  return st.pools.filter((p) => amPoolHurts(cfg, now - p.at)).length;
 }
 
 // ---------- duong_dap ----------

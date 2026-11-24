@@ -55,7 +55,6 @@ const P: Record<string, string> = {
 };
 
 export type SysIconName = keyof typeof P;
-export const SYS_ICON_NAMES = Object.keys(P) as SysIconName[];
 
 export function isSysIcon(name: string): name is SysIconName {
   return name in P;

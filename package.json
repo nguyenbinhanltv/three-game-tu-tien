@@ -11,7 +11,7 @@
     "start": "pnpm --filter @dtl/server start",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "test:slow": "pnpm audio:test",
+    "test:slow": "pnpm audio:test && pnpm --filter @dtl/content test:slow",
     "test:all": "pnpm test && pnpm test:slow",
     "content:check": "pnpm --filter @dtl/content check && pnpm icons:check && pnpm calli:check && pnpm vfx:check",
     "sim:progress": "pnpm --filter @dtl/content sim",
