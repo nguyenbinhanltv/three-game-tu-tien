@@ -17,6 +17,7 @@
     "sim": "tsx src/sim.ts",
     "map:report": "tsx src/mapreport.ts",
     "test": "vitest run",
+    "test:slow": "vitest run --config vitest.slow.config.ts",
     "sources:build": "tsx src/gen-sources.ts",
     "sources:check": "tsx src/gen-sources.ts --check"
   },

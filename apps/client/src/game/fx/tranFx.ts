@@ -5,7 +5,6 @@ import type { FxMsg, FxTimeline } from '@dtl/shared';
 import { TRAN_FX } from '@dtl/content';
 import type { FxCaster } from './fxTimeline';
 
-export const TRAN_MODES = ['sat', 'khon', 'ho', 'sinhtu'] as const;
 /** Xa hơn chừng này (mét) thì bỏ hình trận của người khác. */
 export const TRAN_FX_DIST = 50;
 /** Số lưới VFX đang sống từ mức này thì bỏ nhịp trận của người khác (sân đông). */

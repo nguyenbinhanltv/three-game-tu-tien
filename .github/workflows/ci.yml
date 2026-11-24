@@ -1,5 +1,5 @@
 # CI tối thiểu (R-0): cài theo lockfile, typecheck, test nhanh, content:check trên mỗi PR vào main.
-# Không chạy test chậm (pnpm test:slow: ffmpeg thật), bench, shots hay playtest: những thứ đó chạy ở máy dev.
+# Test chậm: CI chỉ chạy bước pace (sim.ts); ffmpeg thật (audio:test), bench, shots hay playtest chạy ở máy dev.
 name: CI
 
 on:
@@ -48,6 +48,9 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Nhịp chương (pace.slow.test.ts, chạy sim.ts, chậm)
+        run: pnpm --filter @dtl/content test:slow
 
       - name: content:check
         run: pnpm content:check

@@ -7,6 +7,8 @@ import { defineConfig } from 'vitest/config';
 //  - giới hạn số tiến trình test để không tự tranh CPU với chính mình.
 export default defineConfig({
   test: {
+    // `*.slow.test.ts` (chạy cả sim.ts, ~1–4 phút) chỉ chạy qua `pnpm test:slow` (vitest.slow.config.ts) và bước CI riêng.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/*.slow.test.ts'],
     testTimeout: 30_000,
     hookTimeout: 60_000,
     teardownTimeout: 30_000,

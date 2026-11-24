@@ -1,5 +1,7 @@
 # Kiểm toán và lộ trình: nâng cấp core loop
 
+> **Lưu ý (2026-11-24):** Kiểm toán một thời điểm (2026-11-16); một số mục (camera, tab-target, số liệu) đã lỗi thời. Hiện trạng và quyết định mới nhất xem `CLAUDE.md` và `docs/handbook/`.
+
 Ngày đo: 2026-11-16 · bản `main` tại `59f0051` · đi kèm `docs/GAME_DESIGN_CORE.md`.
 
 Tài liệu này trả lời ba câu: game đang yếu ở đâu (có số đo và ảnh), việc nào làm trước, và **ai làm**. Ảnh bằng chứng ở `docs/audit/`.
