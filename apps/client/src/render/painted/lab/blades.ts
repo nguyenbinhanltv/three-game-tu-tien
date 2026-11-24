@@ -210,7 +210,9 @@ function bladeMaterial(
   live = live.toVar();
   // (the source moves a dead blade out of the clip volume; here it collapses to its root: the same, nothing drawn)
   // ?dbg=bladelive: vẽ mọi lá (dày gấp 8) tô màu (live, keep, growth) tính Ở VERTEX, để so với bản tính ở fragment
-  const DBG = new URLSearchParams(location.search).get('dbg') === 'bladelive';
+  const dbgMode = new URLSearchParams(location.search).get('dbg') ?? '';
+  // bladelive: màu live/keep/growth; bladepos: bỏ uốn/nghiêng, dải đứng cố định tại gốc; nostalk/allstalk: ép nhánh lá thường / lá hạt
+  const DBG = ['bladelive', 'bladepos', 'nostalk', 'allstalk'].includes(dbgMode);
   let alive: N = DBG ? float(1) : step(0.0000001, live);
   alive = alive.toVar();
 
@@ -228,6 +230,8 @@ function bladeMaterial(
   let dry: N = smoothstep(0.3, 0.7, m.r.add(q.z.sub(0.5).mul(0.5)).add(cl.g.sub(0.5).mul(0.26)));
   dry = dry.toVar();
   let stalk: N = uRows > 3.5 ? q.w.lessThan(m.r.mul(0.045).add(0.012)) : float(0).greaterThan(1);
+  if (dbgMode === 'nostalk') stalk = float(0).greaterThan(1);
+  if (dbgMode === 'allstalk') stalk = float(1).greaterThan(0);
   stalk = stalk.toVar();
   let h: N = float(uHeight)
     .mul(mix(0.5, 1.0, cl.r))
@@ -415,7 +419,7 @@ function bladeMaterial(
   const material = new THREE.MeshBasicNodeMaterial({ side: THREE.DoubleSide });
   material.fog = false;
   material.name = `ref-blades-${ring.name}`;
-  material.positionNode = world.sub(modelPosition);
+  material.positionNode = (dbgMode === 'bladepos' ? base.add(vec3(side.mul(0.3), t.mul(0.8), 0)) : world).sub(modelPosition);
   // fragment: c = vAlbedo * meadowLight(vLight.x) * mix(0.84, 1.0, vMisc.y), then the haze (no fire: it is 0 here)
   const c: N = vAlbedo.mul(F.meadowLight(vLightX)).mul(mix(0.84, 1.0, vUp));
   material.colorNode = DBG ? vec3(live.toVarying(), keep.toVarying(), growth.toVarying()) : F.applyFog(c, positionWorld);
