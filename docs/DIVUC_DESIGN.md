@@ -1,5 +1,7 @@
 # Thiết kế chương 5: Bắc Hoang Dị Vực (DV-0)
 
+> **Lưu ý (2026-11-24):** Thiết kế bản 2 (2026-11-18); một số mục (camera, tab-target, số liệu) đã lỗi thời. Hiện trạng và quyết định mới nhất xem `CLAUDE.md` và `docs/handbook/`.
+
 Bản 2 · 2026-11-18 (sau lượt soát lore độc lập) · nối tiếp `docs/EXPANSION_DESIGN.md` (chương 2–4), cùng khuôn mục. Đi kèm `docs/art-bible.md` (bảng màu, điều cấm) và `assets/LICENSES.md` (ghi công).
 
 Đây là tài liệu **thiết kế**, không đổi code game. Mọi con số là điểm khởi đầu cho `pnpm sim:progress` và `fight:check`; mọi tên mới (đánh dấu †) phải vào `glossary.json` trước khi vào i18n (mục 13); lượt soát `lore-keeper` độc lập đã chạy và đã áp (mục 14.1). Mười hai quyết định ở mục 15 đã được người dùng **chốt ngày 2026-11-18** (tất cả theo đề xuất).

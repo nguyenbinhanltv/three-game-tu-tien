@@ -50,7 +50,6 @@ Tạo `tools/perf/src/scenarios/<tên>.ts` export default một `Scenario` (`lib
 | `browser.ts` | `launchChrome` (tắt tiếng, WebGPU headless), `gameUrl` (luôn `mute=1`), gom lỗi console |
 | `game.ts` | `openGame` (đăng nhập thử), `gm`, `cam`, `tp`, `enterLevel`, quái, vạch báo |
 | `shot.ts` | `snap`, `sheet` (tờ ảnh lưới), `snapSizes`, `writeJson` |
-| `charshots.ts` | Bộ góc chụp nhân vật (đứng, chạy, bay, đả tọa, chém, chết) |
 | `window.ts` | Kiểu cho `window.__game`/`__viewer`; mã trong `page.evaluate` gọi thẳng, không ép `as unknown as` |
 
 Lưu ý: hàm truyền vào `page.evaluate` không khai báo hàm có tên bên trong (tsx chèn `__name`, trình duyệt không có); cần thì viết thành chuỗi như `monAct` trong `scenarios/vfx.ts`.

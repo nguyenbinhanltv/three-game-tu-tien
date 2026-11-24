@@ -62,7 +62,7 @@ Nguyên liệu: Ngưng Đan Mạch Tinh ≈ 14 (cần ≈ 4,4 cho Kết Đan D�
 
 ## CI
 
-`packages/content/src/pace.test.ts` chạy thật `sim.ts` và kiểm: không dòng LỖI, ba công pháp ở 3,52–4,48 giờ, Ngưng Khí 1 → 15 vẫn 3–4 giờ. Thêm trong `sim.ts`: TTK quái thường chương 2 trong 3,8–7,3 s, tinh anh 18–40 s, Đan Hỏa Kiếp (tay thường qua 55–90% một mình, tay giỏi ≥ 90%, tay vụng ≤ 50%, có hộ pháp không kém một mình), nguyên liệu Kết Đan Dịch dư 1,3×.
+`packages/content/src/pace.slow.test.ts` (chạy bằng `pnpm test:slow`) chạy thật `sim.ts` và kiểm: không dòng LỖI, ba công pháp ở 3,52–4,48 giờ, Ngưng Khí 1 → 15 vẫn 3–4 giờ. Thêm trong `sim.ts`: TTK quái thường chương 2 trong 3,8–7,3 s, tinh anh 18–40 s, Đan Hỏa Kiếp (tay thường qua 55–90% một mình, tay giỏi ≥ 90%, tay vụng ≤ 50%, có hộ pháp không kém một mình), nguyên liệu Kết Đan Dịch dư 1,3×.
 
 Kiểm đã chạy: `pnpm typecheck`, `pnpm content:check`, `pnpm test` (một test roll trang bị ngẫu nhiên `equipment.test.ts` lỗi một lần khi chạy cả bộ, đạt khi chạy riêng; không liên quan thay đổi này), `pnpm --filter @dtl/bot-client security` (tất cả ĐẠT), `pnpm bots --count 100 --duration 120` (0 thất bại, 0 dòng `refId`, tick p95 ≈ 4–6 ms trên máy đang tải) và `pnpm ledger:check` (khớp).
 
