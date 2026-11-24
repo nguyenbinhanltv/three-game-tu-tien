@@ -346,3 +346,92 @@
   font-style: normal;
   animation: none;
 }
+
+/* Đăng nhập / tạo nhân vật trên màn thấp (lỗi "không thấy nút vào game"): thẻ là cột flex, nội dung cuộn trong `.login-scroll`,
+   thanh hành động `.login-actions` nằm NGOÀI vùng cuộn (nền đặc, viền + chuyển mờ phía trên) nên không đè lên gì. Cao tối đa ở `.ts-card`. */
+#root .ts-card.login-card {
+  margin-bottom: min(9vh, 40px);
+  max-height: calc(100% - min(9vh, 40px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+#root .ts-card.login-card .login-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-bottom: 8px;
+}
+#root .ts-card.login-card .login-actions {
+  position: relative;
+  flex: none;
+  margin: 0 -22px 6px;
+  padding: 10px 22px 8px;
+  background: var(--u-thanh-0);
+  border-top: 1px solid var(--u-gold-line);
+}
+#root .ts-card.login-card .login-actions::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -15px;
+  height: 14px;
+  background: linear-gradient(180deg, transparent, var(--u-thanh-0));
+  pointer-events: none;
+}
+#root .ts-card.login-card .login-actions .login-error {
+  margin: 0 0 6px;
+}
+@media (max-height: 1000px) {
+  #root .ts-card.login-card {
+    width: min(92vw, 620px);
+    margin-bottom: min(3vh, 24px);
+    max-height: calc(100% - min(3vh, 24px));
+    padding: 12px 28px 0;
+  }
+  #root .ts-card.u2-card .login-form {
+    margin-top: 8px;
+    gap: 6px;
+  }
+  :root:root .ngj-card.login-card .look-gender .look-face {
+    height: 78px;
+  }
+}
+@media (max-height: 950px) {
+  :root:root .ngj-card.login-card .look-gender .look-face {
+    height: 56px;
+  }
+  #root .ts-card.u2-card .login-hint,
+  #root .ts-card.u2-card .login-tag {
+    display: none;
+  }
+  .root-picker {
+    margin: 4px 0;
+    gap: 4px;
+  }
+  .root-locked {
+    gap: 2px;
+  }
+  .root-locked-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+}
+@media (max-height: 700px) {
+  .root-opt {
+    height: 28px;
+  }
+}
+@media (max-height: 640px) {
+  :root:root .ngj-card.login-card .look-gender .look-face {
+    display: none;
+  }
+  #root .ts-card.login-card .login-form {
+    margin-top: 4px;
+    gap: 4px;
+  }
+}
