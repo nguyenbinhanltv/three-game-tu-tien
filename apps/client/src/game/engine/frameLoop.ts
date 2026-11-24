@@ -61,6 +61,7 @@ import {
 } from '../camera/iso';
 import { assets } from '../core/assets';
 import { BASE_ZONE, easeZoneCam, zoneCamera } from '../camera/camZones';
+import { pickGround } from '../camera/pickGround';
 import { isHeld } from '../../input/bindings';
 import { ULT_FOV, ultFovAt } from '../combat/hitjuice';
 import { labDt } from '../debug/vfxLab';
@@ -503,7 +504,7 @@ function updateCamera(eng: Game, dt: number): void {
   }
   if (iso) {
     eng.camera.updateMatrixWorld();
-    iso.project(eng.camera, window.innerWidth, window.innerHeight, groundAt);
+    iso.project(eng.camera, window.innerWidth, window.innerHeight, pickGround(eng.renderPos));
     iso.updateVisuals(performance.now() / 1000);
     // Tầm nhìn ~250 m: không vẽ cảnh xa (biển mây, đảo trời, núi nền).
     if (!iso.farHidden) iso.cloudWas = eng.env.cloudSea.group.visible;

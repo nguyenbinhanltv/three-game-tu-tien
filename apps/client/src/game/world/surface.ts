@@ -1,4 +1,4 @@
-import { featureWeight, LAKE, SECT, WATER_Y } from '@dtl/shared';
+import { bridgeModel, bridgeSurfaceT, featureWeight, LAKE, SECT, VAN_LAM, WATER_Y } from '@dtl/shared';
 import { heightAt, inLakeWater } from '../../base/levelCtx';
 import { distToPaths, PATH_HALF_WIDTH, pathPolylines, portalPaving, sectPaving } from '../../render/groundMask';
 
@@ -31,17 +31,24 @@ export const WOOD_ZONES: Rect[] = [];
 /** Bậc thang đá ngoài cổng tông môn (sect.ts buildStaticRest): x ± 3,75 quanh trục, z từ 2136, 26 bậc × 4,2 m. */
 const STAIRS: Rect = { x0: SECT.x - 4, z0: 2136, x1: SECT.x + 4, z1: 2136 + 26 * 4.2 };
 
+/** Ván cầu treo Lạc Kiếm (cùng mô hình với va chạm, shared/cautreo.ts): trên ván là gỗ. Dựng lười vì cần địa hình đã đăng ký. */
+let bridge: ReturnType<typeof bridgeModel> | null = null;
+/** Cao hơn mặt đất ít nhất chừng này (m) mới coi là đang đứng TRÊN ván (đi dưới đáy hác ngay dưới cầu thì không phải gỗ). */
+const DECK_MIN_ABOVE = 2;
+
 let lines: ReturnType<typeof pathPolylines> | null = null;
 
 const inRect = (r: Rect, x: number, z: number) => x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1;
 
 /**
- * Chất liệu tại (x, z). `level` 'kiem_trung' (bí cảnh) là nền đá. Thứ tự ưu tiên: nước nông > gỗ > đá lát/bậc thang >
+ * Chất liệu tại (x, z). `level` 'kiem_trung' (bí cảnh) là nền đá. `y` (cao độ chân, nếu biết) để phân biệt đứng trên cầu với đi dưới cầu. Thứ tự ưu tiên: ván cầu/nước nông > gỗ > đá lát/bậc thang >
  * cát ven hồ > sườn dốc/đỉnh cao (đá) > đường đất mòn > cỏ.
  */
-export function surfaceAt(x: number, z: number, level: 'van_lam' | 'kiem_trung' = 'van_lam'): Surface {
+export function surfaceAt(x: number, z: number, level: 'van_lam' | 'kiem_trung' = 'van_lam', y?: number): Surface {
   if (level === 'kiem_trung') return 'stone';
   const h = heightAt(x, z);
+  bridge ??= bridgeModel(VAN_LAM.groundAt);
+  if (bridgeSurfaceT(bridge, x, z, 0) !== null && (y === undefined || y > h + DECK_MIN_ABOVE)) return 'wood';
   // Lội nước: trong mặt hồ và đáy thấp hơn mặt nước (bờ hồ thoải nên đoạn lội rộng vài mét).
   if (h < WATER_Y - 0.05 && inLakeWater(x, z)) return 'water';
   for (const r of WOOD_ZONES) if (inRect(r, x, z)) return 'wood';

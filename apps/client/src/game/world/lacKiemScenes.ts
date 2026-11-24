@@ -21,7 +21,11 @@ import {
   viewZToOrthographicDepth,
 } from 'three/tsl';
 import {
+  BRIDGE,
   BRIDGE_A,
+  bridgeModel,
+  cauTreoDeckY,
+  VAN_LAM,
   BRIDGE_B,
   hash01,
   SCENE_GLB,
@@ -54,7 +58,7 @@ export type ScenePiece =
   | ({ k: 'glb' } & SceneGlb)
   | { k: 'cong_bai'; x: number; z: number; yaw: number; w: number }
   | { k: 'ao'; x: number; z: number; r: number }
-  | { k: 'cau_treo'; ax: number; az: number; bx: number; bz: number; lift: number }
+  | { k: 'cau_treo'; ax: number; az: number; bx: number; bz: number }
   | { k: 'loi_vach'; pts: [number, number][] }
   /** Hác sâu: áo đá phủ sườn dốc + suối dưới đáy + sương. (x, z) tâm; `dir` hướng dọc hác (rad). */
   | { k: 'hac'; x: number; z: number; dir: number; len: number; wid: number }
@@ -98,10 +102,10 @@ export const SCENES: TieuCanh[] = [
   },
   {
     id: 'cau_treo',
-    at: [-134, 72],
+    at: [-136, 64],
     pieces: [
       { k: 'hac', x: BR.cx, z: BR.cz, dir: BR.dir - Math.PI / 2, len: 34, wid: 22 },
-      { k: 'cau_treo', ax: BRIDGE_A[0], az: BRIDGE_A[1], bx: BRIDGE_B[0], bz: BRIDGE_B[1], lift: 0.35 },
+      { k: 'cau_treo', ax: BRIDGE_A[0], az: BRIDGE_A[1], bx: BRIDGE_B[0], bz: BRIDGE_B[1] },
       ...glbs('cau_treo'),
     ],
   },
@@ -353,23 +357,23 @@ function lotus(o: Out, x: number, y: number, z: number, r: number): void {
 
 /** Cầu treo gỗ: sàn ván, hai dầm dọc, hai dây lan can + dây dưới, cọc đỡ, xà ngang đầu cầu; cột đá hai đầu là prop kit. */
 function cauTreo(o: Out, p: Extract<ScenePiece, { k: 'cau_treo' }>): void {
-  const ya = gy(p.ax, p.az) + p.lift;
-  const yb = gy(p.bx, p.bz) + p.lift;
+  // Cùng mô hình với va chạm (shared/cautreo.ts): ván dựng đúng chỗ người đứng. p.ax… là tọa độ tương đối tông môn; mô hình dùng tọa độ thế giới.
+  const m = bridgeModel(VAN_LAM.groundAt);
+  const { ya, yb } = m;
   const len = Math.hypot(p.bx - p.ax, p.bz - p.az);
   const dx = (p.bx - p.ax) / len;
   const dz = (p.bz - p.az) / len;
   const nx = -dz;
   const nz = dx;
   const yaw = Math.atan2(dx, dz);
-  const sag = 1.6;
-  const deck = (t: number) => ya + (yb - ya) * t - sag * 4 * t * (1 - t);
+  const deck = (t: number) => cauTreoDeckY({ ya, yb }, t);
   const N = Math.round(len / 0.9);
-  const hw = 1.5;
+  const hw = BRIDGE.width / 2;
   for (let i = 0; i < N; i++) {
     const t = (i + 0.5) / N;
     const slope = (deck((i + 1) / N) - deck(i / N)) / (len / N);
     const col = [C.wood, C.woodDark, C.woodLight][(i * 7) % 3]!;
-    o.wood.put(BOX, p.ax + dx * len * t, deck(t), p.az + dz * len * t, hw * 2, 0.1, 0.78, col, yaw, -slope);
+    o.wood.put(BOX, p.ax + dx * len * t, deck(t) - 0.05, p.az + dz * len * t, hw * 2, 0.1, 0.78, col, yaw, -slope);
   }
   for (const side of [-0.9, 0.9])
     for (let i = 0; i < N; i += 2) {

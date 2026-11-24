@@ -1,6 +1,6 @@
 // Dựng prompt Codex cho quy trình Họa Pháp Lô: concept 4 khung đúng góc camera (image-to-image trên ảnh chụp game) và bộ texture
 // (flipbook nền đen, decal nhìn từ trên, noise lát được, ramp 3 tông). Hàm thuần để kiểm; chạy Codex ở codex.ts.
-import type { VfxCard } from '@dtl/shared';
+import type { MonVfxCard, VfxCard } from '@dtl/shared';
 
 export interface StyleSheet {
   name: string;
@@ -107,3 +107,33 @@ ${sb}`;
 /** Phần mềm chạy Codex đọc tiêu đề này để biết cần đính kèm những ảnh nào (xem codex.ts). */
 export const DEFAULT_RUN_NOTE =
   'Use the built-in image generation tool to create exactly ONE image from the brief below, then copy the generated PNG to ./OUT in the current directory (shell copy). Do nothing else.';
+
+/** Cách tả hình vùng server bằng mét (kèm tỉ lệ so với nhân vật cao 1,7 m) để Codex vẽ ĐÚNG cỡ. */
+export function zoneWords(z: MonVfxCard['zone']): string {
+  const rel = (m: number) => `${(m / 1.7).toFixed(1)} character heights`;
+  if (z.shape === 'circle')
+    return `a perfect circle of radius ${z.r} m (diameter ${z.r * 2} m = about ${rel(z.r * 2)}), ${z.at === 'self' ? "centered on the boss's own body" : 'centered under the targeted player'}`;
+  if (z.shape === 'cone')
+    return `a circular sector (fan) of radius ${z.r} m (about ${rel(z.r)}) and half-angle ${z.w}° (total opening ${(z.w ?? 0) * 2}°), its apex at the boss's mouth, opening toward the player`;
+  return `a rectangle ${z.r} m long (about ${rel(z.r)}) and ${z.w} m wide from the boss toward the player`;
+}
+
+/**
+ * Concept VFX của QUÁI/BOSS (V-P9): 4 khung trong một ảnh lưới 2×2 — vạch báo vừa hiện, vạch báo đã nạp ~60%, lúc nổ, +150 ms dư ba.
+ * Vạch báo ĐỎ/CAM (accent của bảng quái, luật màu: đỏ/cam chỉ dành cho cảnh báo địch), đúng HÌNH và CỠ vùng server; vùng nổ/dư ba theo màu hệ.
+ */
+export function monConceptPrompt(card: MonVfxCard, style: StyleSheet): string {
+  const t = card.timing;
+  const p = card.palette;
+  const H = (x: string) => `#${x.toUpperCase()}`;
+  return `Use case: stylized-concept (image-to-image on the attached game screenshot). Original VFX concept for an enemy boss attack telegraph in a Chinese-fantasy cultivation action game. Do not copy any existing game's effects.
+The FIRST attached image is a real screenshot of our game from its locked diagonal camera (tilt 52 degrees, FOV 32). Keep the background, the player character, the boss and the camera perspective EXACTLY as in the screenshot; only paint the attack effect on top.
+Attack idea: ${card.idea}
+DANGER ZONE GEOMETRY (must be exact, the zone is the real hitbox): ${zoneWords(card.zone)}. The painted warning must cover exactly this area on the ground (seen at the 52 degree tilt, a circle appears as an ellipse) and not one meter more or less.
+Output ONE image: a 2x2 grid of the same screenshot framing, four time frames, left to right then top to bottom:
+1) telegraph just appeared (${t.anticipationMs} ms before the hit): thin bright warning outline of the full zone with faint ground runes/cracks; 2) telegraph about 60% charged (about ${Math.round(t.anticipationMs * 0.4)} ms before the hit): the fill is advancing and the outline is brighter, readable progress so a player knows how long is left; 3) the instant of the hit (${t.impactMs} ms): the zone detonates in the boss's element, peak size and brightness, the warning outline flashes; 4) +150 ms after: the element effect lingers and fades, the warning gone.
+COLOR RULES: the WARNING (frames 1 and 2) uses vivid RED-ORANGE only, accent ${H(p.accent)} with a hot rim ${H(p.rim)}; red is reserved for enemy warnings and must read clearly on a bright stone floor and on dark floors. The HIT effect (frames 3 and 4) uses the element palette: core ${H(p.core)} (darkest, 15-25%), body ${H(p.body)} (50-60%), rim ${H(p.rim)} (10-20%).
+Readability: ${card.readability}
+Stroke weight: not thinner than ${style.stroke.minWidthPctOfFrame}% of the frame. Perspective: ${style.perspective}.
+The effect must never hide the player character's body. No text, no labels, no numbers, no UI, no watermark.`;
+}

@@ -96,6 +96,8 @@ export interface VfxLabApi {
    * hướng về người chơi. Trả false nếu không có quái hoặc chiêu.
    */
   castMon(mon: string, mv: string): boolean;
+  /** Phòng thử quái: bật thì bỏ vạch báo/FX do server gửi (quái thật vẫn đánh nhưng không vẽ) và dùng đồng hồ trình diễn; chỉ `castMon` mới vẽ. */
+  monLab(on: boolean): void;
   pause(on: boolean): void;
   /** Hệ số thời gian trình diễn (0,25 = chậm gấp 4). */
   scale(x: number): void;
@@ -127,6 +129,13 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
       if (tl?.trigger === 'fx') gg.skillFx.startFromFx(gg.sid, tl);
       else gg.skillFx.handle(gg.sid, { kind: 'windup', skill, combo: -1, index: 0, t: 0, kb: false });
       return !!hit;
+    },
+    monLab(on) {
+      const mf = (g as unknown as { monFx: { lab: boolean; bypass: boolean } | null }).monFx;
+      if (mf) {
+        mf.lab = on;
+        mf.bypass = on;
+      }
     },
     castMon(mon, mv) {
       const gg = g as unknown as {

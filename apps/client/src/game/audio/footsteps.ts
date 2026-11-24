@@ -77,12 +77,14 @@ export function stepVolume(dist: number, local: boolean, monster: boolean): numb
 
 interface PlayerV {
   x: number;
+  y?: number;
   z: number;
   speed: number;
   s: { fl: number; gr?: boolean };
 }
 interface MonV {
   x: number;
+  y?: number;
   z: number;
   speed: number;
   s: { st: number };
@@ -154,7 +156,7 @@ export class FootstepDriver {
 
   private tick(
     key: string,
-    v: { x: number; z: number; speed: number },
+    v: { x: number; y?: number; z: number; speed: number },
     walking: boolean,
     local: boolean,
     monster: boolean,
@@ -169,7 +171,7 @@ export class FootstepDriver {
       return;
     }
     if (c.advance(v.x, v.z, v.speed, walking) > 0)
-      this.cand.push({ local, x: v.x, z: v.z, d: local ? 0 : d, monster, surface: surfaceAt(v.x, v.z, this.level) });
+      this.cand.push({ local, x: v.x, z: v.z, d: local ? 0 : d, monster, surface: surfaceAt(v.x, v.z, this.level, v.y) });
   }
 
   private flush(now: number): void {

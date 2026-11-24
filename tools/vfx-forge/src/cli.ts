@@ -14,7 +14,7 @@ import type { AlphaMode } from './forge.js';
 import { sampleSlashFlipbook, sampleTileNoise } from './samples.js';
 import { checkManifest, forge } from './pipeline.js';
 import { toPng } from './io.js';
-import { conceptJob, runCodex, textureJob } from './codex.js';
+import { conceptJob, monConceptJob, runCodex, textureJob } from './codex.js';
 import { writeCards } from './cards.js';
 import type { TextureKind } from './prompts.js';
 
@@ -64,14 +64,15 @@ async function main(): Promise<void> {
     console.log(`${e.id}: ${e.file} ${e.size.join('×')} lưới ${e.grid.cols}×${e.grid.rows} ${e.format} ${(e.bytes / 1024).toFixed(1)} KB`);
     for (const w of res.warnings) console.warn(`cảnh báo: ${w}`);
   } else if (cmd === 'concept' || cmd === 'texture') {
-    const card = flag('--card');
+    const monCard = flag('--mon-card');
+    const card = flag('--card') ?? monCard;
     const out = flag('--out');
-    if (!card || !out) throw new Error(`dùng: ${cmd} --card <skillId> --out <thư mục>`);
+    if (!card || !out) throw new Error(`dùng: ${cmd} --card <skillId> | --mon-card <monId__chiêu> --out <thư mục>`);
     let job;
     if (cmd === 'concept') {
       const shot = flag('--shot');
       if (!shot) throw new Error('concept cần --shot <ảnh chụp game camera chéo>');
-      job = conceptJob(root, card, shot, flags('--ref'), out);
+      job = monCard ? monConceptJob(root, card, shot, flags('--ref'), out) : conceptJob(root, card, shot, flags('--ref'), out);
     } else {
       const kind = flag('--kind') as TextureKind | undefined;
       const name = flag('--name');
