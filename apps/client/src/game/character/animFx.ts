@@ -20,6 +20,8 @@ export interface AnimFxFlags {
   loco: boolean;
   /** T3: idle đặc trưng Kiếm tu khi đứng lâu. */
   idle: boolean;
+  /** T7: cut-in chiêu cuối (khựng 0,5 s + tranh Codex quét ngang + tên chiêu); chỉ Kiếm tu trong pilot. */
+  cutin: boolean;
 }
 
 /** Trạng thái cờ chạy (mặc định theo `?thanphap=1`); phòng thử đổi được. */
@@ -31,6 +33,7 @@ export const ANIM_FX: AnimFxFlags = {
   spring: FLAGS.thanPhap,
   loco: FLAGS.thanPhap,
   idle: FLAGS.thanPhap,
+  cutin: FLAGS.thanPhap,
 };
 
 /** T6: thông số lò xo sống động hơn `V3_SPRING` (130/8/30°): tần số riêng thấp hơn, cản nhẹ hơn, góc rộng hơn; ở góc chéo tóc/dải đọc được rõ. */
@@ -95,4 +98,16 @@ export function idlePoseFor(drawn: boolean): string {
 /** T3: đứng yên liên tục `still` giây thì tới lượt idle khi quá `after` giây (đặt lại về âm ngẫu nhiên sau mỗi lần). */
 export function idleDue(still: number, after = 7): boolean {
   return still >= after;
+}
+
+/** T7: chiêu cuối có tranh cut-in trong pilot (khóa theo id chiêu; mở rộng khi cuốn chiếu TP-3). Giá trị = tiền tố tên tranh `<tiền tố>_<m|f>.webp`. */
+export const CUTIN_ART: Readonly<Record<string, string>> = { skl_van_kiem_quy_tong: 'kiem_tu' };
+
+/** Thời gian khựng của cut-in (ms): trong khoảng 0,4–0,6 s của kế hoạch. */
+export const CUTIN_FREEZE_MS = 500;
+
+/** Tên file tranh cut-in của chiêu `skill` cho người chơi giới `g` ('m'|'f'), hoặc null nếu chiêu chưa có tranh. */
+export function cutinArt(skill: string, g: string): string | null {
+  const k = CUTIN_ART[skill];
+  return k ? `${k}_${g === 'f' ? 'f' : 'm'}` : null;
 }

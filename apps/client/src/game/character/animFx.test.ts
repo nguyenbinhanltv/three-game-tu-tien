@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { POSE } from '@dtl/content';
 import { accelLean, bobOf, EXAG_GAIN, exagBlend, exagGain, glideDip, glideLean, IDLE_POSES, idleDue, idlePoseFor, leanBoost } from './animFx';
-import { closeCam, keyMoments } from '../debug/animLab';
+import { closeCam, keyMoments } from '../debug/animLabMath';
 
 describe('Thân Pháp T1 (cường điệu)', () => {
   it('đứng yên giữ nguyên clip, chạy thì đủ hệ số', () => {

@@ -4,7 +4,9 @@
 
 import { POSE, SKILLS } from '@dtl/content';
 import type { Game } from '../engine';
-import { ANIM_FX, type AnimFxFlags } from '../character/animFx';
+import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt, type AnimFxFlags } from '../character/animFx';
+import { set } from '../../ui/store';
+import { closeCam, keyMoments, type LabCam } from './animLabMath';
 
 /** Trạng thái điều khiển thời gian, đọc bởi vòng khung (`animLabDt`). */
 const state = { scale: 1, paused: false, stepSec: 0 };
@@ -19,44 +21,7 @@ export function animLabDt(dt: number): number {
   return dt * state.scale;
 }
 
-export type LabCam = 'iso' | 'close' | 'front' | 'side';
-
-export interface CamPose {
-  x: number;
-  y: number;
-  z: number;
-  tx: number;
-  ty: number;
-  tz: number;
-  fov: number;
-}
-
-/**
- * Camera cận quanh một người đứng ở (px, py, pz) cao `h` m. `bearing` là hướng ngang (rad) từ người tới camera (lấy từ camera chéo hiện tại cho
- * `close`; cộng thêm π/2, π cho `side`, `front` do hướng nhìn của nhân vật). Cận để thấy tay, kiếm, mặt: FOV 28°, cách ~3,6 m.
- */
-export function closeCam(px: number, py: number, pz: number, h: number, bearing: number, dist = 3.6): CamPose {
-  return {
-    x: px + Math.sin(bearing) * dist,
-    y: py + h * 0.82,
-    z: pz + Math.cos(bearing) * dist,
-    tx: px,
-    ty: py + h * 0.55,
-    tz: pz,
-    fov: 28,
-  };
-}
-
-/** Các mốc tự chụp quanh một đòn (ms so với `hit[0]`): dồn lực, đỉnh đòn, +30 ms (khung giữ), thu đòn. */
-export function keyMoments(hit: number, dur: number): { name: string; at: number }[] {
-  const h = Math.max(0.05, hit);
-  return [
-    { name: 'dolu', at: Math.max(0, h * 0.45) },
-    { name: 'dinh', at: h },
-    { name: 'p30', at: h + 0.03 },
-    { name: 'thu', at: Math.min(dur - 0.02, h + (dur - h) * 0.6) },
-  ];
-}
+export type { LabCam, CamPose } from './animLabMath';
 
 export interface AnimLabApi {
   pause(on: boolean): void;
@@ -80,6 +45,8 @@ export interface AnimLabApi {
   /** Bật/tắt lớp Thân Pháp (so A/B). */
   fx(flags: Partial<AnimFxFlags>): AnimFxFlags;
   poses(): string[];
+  /** T7: phát cut-in chiêu cuối `skill` như khi mình tung chiêu (khựng + thẻ); trả false nếu chiêu chưa có tranh. */
+  cutin(skill: string): boolean;
 }
 
 /** Gắn `window.__animlab` (gọi một lần khi tạo Game, chỉ khi `?animlab=1` ở bản dev). */
@@ -137,6 +104,13 @@ export function installAnimLab(g: Game): void {
       return { ...ANIM_FX };
     },
     poses: () => [...POSE.keys()],
+    cutin(skill) {
+      const art = cutinArt(skill, g.ents.players.get(g.sid)?.look.g ?? 'm');
+      if (!art) return false;
+      g.fxSlow = { scale: 0.04, until: performance.now() + CUTIN_FREEZE_MS };
+      set({ ultCard: { id: ++g.ultCardId, skill, color: '9fd8ff', until: Date.now() + 900, cutin: art } });
+      return true;
+    },
   };
   (window as unknown as { __animlab?: AnimLabApi }).__animlab = api;
 }

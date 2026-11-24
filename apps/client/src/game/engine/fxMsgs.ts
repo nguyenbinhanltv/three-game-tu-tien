@@ -1,4 +1,5 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
+import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt } from '../character/animFx';
 import * as THREE from 'three/webgpu';
 import {
   type DmgMsg,
@@ -325,7 +326,11 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     if (!(replacedFx(m.t) && typeof pSrc?.model.performClock === 'function')) playMethodFx(mctx);
     // Chiêu tối thượng của mình: thẻ ngắn 0,6 giây (viền sáng, tên chiêu), không khóa input.
     const ult = src === eng.sid ? METHOD_SKILLS.find((s) => s.fx === m.t && s.ult) : undefined;
-    if (ult) set({ ultCard: { id: ++eng.ultCardId, skill: ult.id, color: m.c ?? 'ffffff', until: Date.now() + 600 } });
+    // Thân Pháp T7 (cờ ?thanphap): chiêu cuối có tranh thì khựng trình diễn 0,5 s (chỉ hình, không đụng server/input) và hiện cut-in.
+    const cutin = ult && ANIM_FX.cutin ? cutinArt(ult.id, eng.ents.players.get(eng.sid)?.look.g ?? 'm') : null;
+    if (cutin && eng.shake.enabled) eng.fxSlow = { scale: 0.04, until: performance.now() + CUTIN_FREEZE_MS };
+    if (ult)
+      set({ ultCard: { id: ++eng.ultCardId, skill: ult.id, color: m.c ?? 'ffffff', until: Date.now() + (cutin ? 900 : 600), ...(cutin && { cutin }) } });
     return;
   }
   // Chiêu đã có dòng thời gian hiệu ứng (data/fx/<id>.json): hình do `SkillFx.runner` phát theo sự kiện chiêu, bỏ hình cũ.

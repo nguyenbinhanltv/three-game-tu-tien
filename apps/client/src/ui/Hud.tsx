@@ -148,6 +148,15 @@ function UltCardView() {
   if (!card || now >= card.until) return null;
   return (
     <div className="ult-card" key={card.id} style={{ '--mc': '#' + card.color } as CSSProperties}>
+      {card.cutin && (
+        <div className="cutin" aria-hidden="true">
+          <div className="cutin-ink" />
+          <img className="cutin-art" src={`${import.meta.env.BASE_URL}assets/cutin/${card.cutin}.webp`} alt="" draggable={false} />
+          <div className="cutin-name">
+            <Calli k={`skill.${card.skill}.name`} em={4.2} />
+          </div>
+        </div>
+      )}
       <div className="ult-card-name">
         <Calli k={`skill.${card.skill}.name`} em={3.2} />
       </div>
