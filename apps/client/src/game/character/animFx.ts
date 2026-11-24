@@ -22,6 +22,10 @@ export interface AnimFxFlags {
   idle: boolean;
   /** T7: cut-in chiêu cuối (khựng 0,5 s + tranh Codex quét ngang + tên chiêu); chỉ Kiếm tu trong pilot. */
   cutin: boolean;
+  /** T2: xung bắt đầu/dừng/pivot (`LocoImpulse`); tắt riêng để so sánh với phần còn lại của lớp loco. */
+  impulse: boolean;
+  /** T5: ragdoll nhẹ (khớp lò xo lỏng) khi trúng đòn/ngã/chết. */
+  ragdoll: boolean;
 }
 
 /** Trạng thái cờ chạy (mặc định theo `?thanphap=1`); phòng thử đổi được. */
@@ -34,6 +38,8 @@ export const ANIM_FX: AnimFxFlags = {
   loco: FLAGS.thanPhap,
   idle: FLAGS.thanPhap,
   cutin: FLAGS.thanPhap,
+  impulse: FLAGS.thanPhap,
+  ragdoll: FLAGS.thanPhap,
 };
 
 /** T6: thông số lò xo sống động hơn `V3_SPRING` (130/8/30°): tần số riêng thấp hơn, cản nhẹ hơn, góc rộng hơn; ở góc chéo tóc/dải đọc được rõ. */
@@ -76,7 +82,7 @@ export function leanBoost(base: number): number {
 
 /** T2: nghiêng thân (rad, dương = cúi về trước) theo gia tốc dọc (m/s²): tăng tốc thì chúi tới, phanh thì ngả ra sau; kẹp ±0,16. */
 export function accelLean(accel: number): number {
-  return Math.max(-0.16, Math.min(0.16, accel * 0.012));
+  return Math.max(-0.16, Math.min(0.16, accel * 0.006));
 }
 
 /** T2: dáng "lướt thấp" của Kiếm tu khi chạy: thân chúi nhẹ (rad) tăng theo tốc độ, 0 khi đi bộ/đứng. */
@@ -113,3 +119,87 @@ export function cutinArt(skill: string, g: string): string | null {
   const k = CUTIN_ART[skill];
   return k ? `${k}_${g === 'f' ? 'f' : 'm'}` : null;
 }
+
+/** T2: sự kiện di chuyển nhận ra từ tốc độ và tốc độ xoay. */
+export type LocoEvent = 'start' | 'stop' | 'pivot';
+
+/**
+ * T2 bắt đầu/dừng/pivot (thay clip riêng bằng xung lò xo tắt dần cộng thêm lên thân): nhận sự kiện từ tốc độ (m/s) và tốc độ xoay (rad/s) rồi trả
+ * độ chúi thân `pitch` (rad, dương = cúi về trước), nghiêng `roll` (rad, dương = nghiêng sang trái người chạy) và hạ hông `dip` (m).
+ * - bắt đầu chạy (vọt qua 0,8 m/s từ đứng yên): chúi tới + hạ hông (đạp đà);
+ * - dừng (rớt dưới 0,6 m/s từ ≥ 2,5 m/s): ngả ra sau + hạ hông (phanh), mạnh theo tốc độ trước đó;
+ * - pivot (xoay ≥ 5 rad/s khi đang ≥ 2 m/s, cách nhau ≥ 0,35 s): nghiêng ngược chiều xoay + hạ hông.
+ * Vị trí do server quyết định, đây chỉ là dáng người; không đụng vị trí.
+ */
+export class LocoImpulse {
+  pitch = 0;
+  roll = 0;
+  dip = 0;
+  private vp = 0;
+  private vr = 0;
+  private vd = 0;
+  private prevSpeed = 0;
+  private peak = 0;
+  private cool = 0;
+
+  /** Đẩy xung (vận tốc ban đầu của lò xo). */
+  kick(e: LocoEvent, mag: number, dir = 1): void {
+    if (e === 'start') {
+      this.vp += 1.6 * mag;
+      this.vd += -0.5 * mag;
+    } else if (e === 'stop') {
+      this.vp += -2.2 * mag;
+      this.vd += -0.6 * mag;
+    } else {
+      this.vr += 2.4 * mag * dir;
+      this.vd += -0.35 * mag;
+    }
+  }
+
+  /** Cập nhật một bước; trả sự kiện vừa nhận ra (nếu có). */
+  update(dt: number, speed: number, yawRate: number): LocoEvent | null {
+    if (dt <= 0) return null;
+    this.cool = Math.max(0, this.cool - dt);
+    this.peak = speed > this.peak ? speed : this.peak - dt * 1.5;
+    let ev: LocoEvent | null = null;
+    if (this.prevSpeed < 0.3 && speed >= 0.8) {
+      ev = 'start';
+      this.kick('start', 1);
+    } else if (this.prevSpeed >= 0.6 && speed < 0.6 && this.peak >= 2.5) {
+      ev = 'stop';
+      this.kick('stop', Math.min(1, this.peak / 5.4));
+      this.peak = 0;
+    } else if (this.cool === 0 && speed >= 2 && Math.abs(yawRate) >= 5) {
+      ev = 'pivot';
+      this.kick('pivot', Math.min(1, Math.abs(yawRate) / 8), -Math.sign(yawRate));
+      this.cool = 0.35;
+    }
+    this.prevSpeed = speed;
+    // Lò xo tắt dần tới 0 (tần số riêng ~2,1 Hz, tắt ~0,6 s): x'' = −k x − c x'.
+    const k = 180;
+    const c = 14;
+    // Bước con ≤ 16 ms: Euler bán ẩn mất ổn định ở dt ≈ 0,1 (trị riêng ≈ −1,47); kẹp thêm để không bao giờ ra NaN/Infinity.
+    const n = Math.max(1, Math.ceil(dt / 0.016));
+    const h = dt / n;
+    const step = (x: number, v: number): [number, number] => {
+      for (let i = 0; i < n; i++) {
+        v += (-k * x - c * v) * h;
+        x += v * h;
+      }
+      return Number.isFinite(x) && Number.isFinite(v) ? [x, v] : [0, 0];
+    };
+    [this.pitch, this.vp] = step(this.pitch, this.vp);
+    [this.roll, this.vr] = step(this.roll, this.vr);
+    [this.dip, this.vd] = step(this.dip, this.vd);
+    return ev;
+  }
+
+  /** Đặt lại về nghỉ (đổi LOD, hồi sinh, bay...). */
+  reset(): void {
+    this.pitch = this.roll = this.dip = this.vp = this.vr = this.vd = 0;
+    this.prevSpeed = this.peak = this.cool = 0;
+  }
+}
+
+/** Biên độ kẹp của xung T2 để không bao giờ làm gãy thân. */
+export const LOCO_CLAMP = { pitch: 0.22, roll: 0.16, dip: 0.07 } as const;
