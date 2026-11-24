@@ -118,7 +118,7 @@ def rift(length, width, tone='rim', alpha=0.95, seed=60, t=0.0, dur=1.1):
 def warn_circle(delay, yaw_a=35, yaw_b=-50, spark=16):
     return [
         decal('warn_crack', 0, 4, 2, 'accent', 0.9, 0.04, yaw=yaw_b),  # viền + nền mờ: hitbox đọc được ngay (kể cả khi texture chưa nạp xong: vòng cũ được giữ, xem MonFx.warn)
-        decal('warn_crack', 0, 4, 2, 'accent', 0.95, delay, yaw=yaw_a),  # vân nứt đỏ sáng lan từ tâm
+        decal('warn_crack', 0, 4, 2, 'accent', 0.95, delay, yaw=yaw_a, growUntilDelay=True),  # vân nứt đỏ sáng lan từ tâm
         parts('spark', 0, spark, 1.7, 1, 0.9, 0.09, 'accent', inward=True, offset=[0, 0.2, 0]),
     ]
 
@@ -126,7 +126,7 @@ def warn_circle(delay, yaw_a=35, yaw_b=-50, spark=16):
 def warn_fan(delay, half, spark=20):
     return [
         decal('warn_crack', 0, 8, 2, 'accent', 0.9, 0.04, sector=half),
-        decal('warn_crack', 0, 8, 2, 'accent', 0.95, delay, sector=half),
+        decal('warn_crack', 0, 8, 2, 'accent', 0.95, delay, sector=half, growUntilDelay=True),
         parts('spark', 0, spark, 2.2, 0.5, 1.2, 0.1, 'accent', inward=True, offset=[0, 0.3, 3]),
     ]
 
@@ -134,7 +134,7 @@ def warn_fan(delay, half, spark=20):
 def warn_strip(delay, length, width, spark=20):
     return [
         decal('warn_crack', 0, 1, 2, 'accent', 0.9, 0.04, strip=[length, width]),
-        decal('warn_crack', 0, 1, 2, 'accent', 0.95, delay, strip=[length, width]),
+        decal('warn_crack', 0, 1, 2, 'accent', 0.95, delay, strip=[length, width], growUntilDelay=True),
         parts('spark', 0, spark, 2.2, 0.4, 1.2, 0.1, 'accent', inward=True, offset=[0, 0.3, length * 0.3]),
     ]
 

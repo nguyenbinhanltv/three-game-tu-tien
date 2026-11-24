@@ -286,6 +286,8 @@ export interface FxDecalEvent extends FxBase {
   yaw?: number;
   /** Hiệu ứng của quái (V5): `dur` lấy bằng thời gian báo trước `delay` của vạch. */
   untilDelay?: boolean;
+  /** Lớp tô tiến độ của vạch báo: `grow` lấy bằng `delay` thật của vạch (chiêu cùng khóa nhưng khác `delay` giữa các pha, vd. chant pha cuối), thay vì hằng số trong timeline. */
+  growUntilDelay?: boolean;
   /** Vẽ ĐÈ lên mọi vật (không thử độ sâu): vạch báo của boss phải đọc được khi thân boss dài nằm đè lên vùng (V-P9). Chỉ dùng cho cảnh báo của địch. */
   top?: boolean;
   /** Mặt quạt (chỉ tex `FORGE_DECALS`): nửa góc (độ, 1–180) quanh hướng nhìn/hướng vùng; `yaw` là độ lệch thêm so với hướng đó (quét từng tia). `r` là bán kính cung quạt. */

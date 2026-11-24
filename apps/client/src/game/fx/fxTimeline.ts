@@ -829,7 +829,7 @@ export class FxRunner {
       m.scale.set(ev.strip[1] * 0.5, 1, ev.strip[0] * 0.5);
     } else m.scale.setScalar(ev.r * c.mul);
     const dur = ev.untilDelay && c.delay ? c.delay : ev.dur;
-    const grow = Math.max(0.05, ev.grow ?? 0.15);
+    const grow = Math.max(0.05, ev.growUntilDelay && c.delay ? c.delay : (ev.grow ?? 0.15));
     const swing = ev.sector && ev.swing ? ev.swing : null;
     const swingYaw = yaw;
     const swingDur = Math.max(0.05, ev.swingDur ?? 0.3);

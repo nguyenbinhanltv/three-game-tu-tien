@@ -38,7 +38,8 @@
    "strip": [
     18,
     4
-   ]
+   ],
+   "growUntilDelay": true
   },
   {
    "type": "particles",

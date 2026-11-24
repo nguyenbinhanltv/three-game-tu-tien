@@ -32,7 +32,8 @@
    "from": "start",
    "top": true,
    "yaw": 40,
-   "untilDelay": true
+   "untilDelay": true,
+   "growUntilDelay": true
   },
   {
    "type": "particles",
