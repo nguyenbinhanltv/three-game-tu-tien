@@ -33,7 +33,12 @@ export async function verifyInStore(store: string, sha256: string, bytes: number
 }
 
 export function storeFile(store: string, sha256: string): string {
-  return path.join(store, sha256.slice(0, 2), sha256);
+  // Chặn path traversal: sha256 đến từ sổ khóa, chỉ nhận đúng 64 ký tự hex thường trước khi đụng tới hệ thống file (kể cả xóa).
+  if (!/^[0-9a-f]{64}$/.test(sha256)) throw new Error('sha256 không hợp lệ trong sổ khóa');
+  const root = path.resolve(store);
+  const f = path.resolve(root, sha256.slice(0, 2), sha256);
+  if (!f.startsWith(root + path.sep)) throw new Error('đường dẫn kho nằm ngoài thư mục kho');
+  return f;
 }
 
 /** Kho có file này (đúng kích thước)? */
