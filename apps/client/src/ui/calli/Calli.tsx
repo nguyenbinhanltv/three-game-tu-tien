@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react';
 import { t } from '@dtl/content';
 import { calliOf } from '../../base/calli';
+import { ASSET_BASE } from '../../base/assetBase';
 
 const loaded = new Set<string>();
 /** Danh sách ảnh cần nạp trước cho các i18n key (bỏ key chưa có ảnh); tách riêng để test. */
@@ -13,7 +14,7 @@ export function preloadCalli(keys: readonly string[]): void {
     if (loaded.has(file)) continue;
     const im = new Image();
     im.onload = () => loaded.add(file);
-    im.src = `/assets/calli/${file}`;
+    im.src = `${ASSET_BASE}assets/calli/${file}`;
     void im.decode?.().catch(() => undefined);
   }
 }
@@ -34,7 +35,7 @@ export function Calli({ k, text, em = 2.2, big }: { k: string; text?: string; em
       <>
         {label}
         <img
-          src={`/assets/calli/${e.file}`}
+          src={`${ASSET_BASE}assets/calli/${e.file}`}
           alt=""
           hidden
           onLoad={() => {
@@ -49,7 +50,7 @@ export function Calli({ k, text, em = 2.2, big }: { k: string; text?: string; em
     <span className="calli-wrap" role="img" aria-label={label}>
       <img
         className={'calli calli-reveal' + (big ? ' calli-big' : '')}
-        src={`/assets/calli/${e.file}`}
+        src={`${ASSET_BASE}assets/calli/${e.file}`}
         alt=""
         width={e.w}
         height={e.h}

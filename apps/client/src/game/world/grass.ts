@@ -31,6 +31,7 @@ import { vanHaiArt } from './vanHaiArt';
 import { tkGrassDensity } from './thienKhuyetArt';
 import type { N } from '../../render/vfx/common';
 import { logger } from '../../base/log';
+import { ASSET_BASE } from '../../base/assetBase';
 
 const grassLog = logger('grass');
 
@@ -577,7 +578,7 @@ export class Grass {
   /** Nạp atlas thẻ cỏ (WebP RGBA, ~270 KB) rồi mới dựng shader; chưa xong thì lưới ẩn. */
   private async loadCards(set: string): Promise<void> {
     try {
-      const base = import.meta.env.BASE_URL;
+      const base = ASSET_BASE;
       const man = (await (await fetch(`${base}${set}/manifest.json`)).json()) as { atlas: string; cols: number; rows: number };
       const res = await fetch(`${base}${set}/${man.atlas}`);
       if (!res.ok) throw new Error(`${man.atlas}: ${res.status}`);

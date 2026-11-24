@@ -9,6 +9,7 @@ import basisJsUrl from 'three/addons/libs/basis/basis_transcoder.js?url';
 import basisWasmUrl from 'three/addons/libs/basis/basis_transcoder.wasm?url';
 import { logger } from '../../base/log';
 import { FLAGS } from '../../base/flags';
+import { ASSET_BASE } from '../../base/assetBase';
 
 const assetLog = logger('asset');
 
@@ -279,7 +280,7 @@ async function fetchBytes(url: string, onBytes: (loaded: number) => void): Promi
 
 /** URL thư mục asset tĩnh, theo `base` của Vite (CDN đặt qua `base` lúc build). */
 export function assetBaseUrl(): string {
-  return `${import.meta.env.BASE_URL}assets/`;
+  return `${ASSET_BASE}assets/`;
 }
 
 /** LoadingManager chuyển tên file transcoder Basis sang URL cục bộ do Vite sinh. */

@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { ASSET_BASE, ASSET_CROSS_ORIGIN } from '../../base/assetBase';
 
 /**
  * Atlas tranh pháp tướng vẽ tay (RFX-1 v3): ba tranh nền trong suốt của Thiên Giải (`public/hoa-truc/phap_tuong_*.webp`) xếp ngang, mỗi ô `CELL_W × CELL_H`.
@@ -26,9 +27,10 @@ export function artAtlas(): THREE.Texture {
   const t = new THREE.CanvasTexture(cv);
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 4;
-  const base = (import.meta.env?.BASE_URL as string | undefined) ?? '/';
+  const base = ASSET_BASE;
   ART_FILES.forEach((name, i) => {
     const img = new Image();
+    img.crossOrigin = ASSET_CROSS_ORIGIN ?? null;
     img.onload = () => {
       g.clearRect(i * CELL_W, 0, CELL_W, CELL_H);
       g.drawImage(img, i * CELL_W, 0, CELL_W, CELL_H);

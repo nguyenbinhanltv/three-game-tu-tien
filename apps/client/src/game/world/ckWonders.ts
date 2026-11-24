@@ -33,6 +33,7 @@ import {
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { markBloom } from '../../render/post';
 import { withSightFade } from './occlusion';
+import { ASSET_BASE } from '../../base/assetBase';
 
 /**
  * Kiến trúc và cảnh quan Thiên Lộ Giới (TN-7, mỹ thuật), dựng bằng code, không asset ngoài, chỉ để nhìn:
@@ -332,7 +333,7 @@ export class CkWonders {
   /** Nạp ba texture từ `terrain-ck/manifest.json` (mục `extras`); null nếu thiếu/lỗi. */
   private async loadTextures(): Promise<CkTex | null> {
     try {
-      const base = `${import.meta.env.BASE_URL}terrain-ck/`;
+      const base = `${ASSET_BASE}terrain-ck/`;
       const man = (await (await fetch(`${base}manifest.json`)).json()) as { extras?: Record<string, string> };
       const ex = man.extras;
       if (!ex?.masonry || !ex.leaf || !ex.water) return null;
