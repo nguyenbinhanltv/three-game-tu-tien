@@ -96,35 +96,7 @@
    "rot": [
     0,
     0,
-    120
-   ]
-  },
-  {
-   "type": "mesh",
-   "t": 0.06,
-   "dur": 0.6,
-   "at": "target",
-   "sweep": 0,
-   "erodeFrom": 0.12,
-   "ragged": 0.5,
-   "tone": "body",
-   "alpha": 0.71,
-   "tier": 0,
-   "seed": 1003,
-   "shape": "sprite",
-   "sprite": "loi_orbs",
-   "billboard": true,
-   "offset": [
-    0,
-    1.4,
-    0
-   ],
-   "scale": 3.41,
-   "scaleTo": 4.16,
-   "rot": [
-    0,
-    0,
-    240
+    180
    ]
   },
   {
@@ -138,7 +110,7 @@
    "tone": "body",
    "alpha": 0.9,
    "tier": 0,
-   "seed": 1004,
+   "seed": 1003,
    "shape": "sprite",
    "sprite": "loi_flash",
    "billboard": true,
@@ -151,27 +123,21 @@
    "scaleTo": 3.2
   },
   {
-   "type": "mesh",
-   "t": 0.03,
-   "dur": 0.6,
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0,
+   "r": 3,
+   "dur": 1.6,
    "at": "target",
-   "sweep": 0,
-   "erodeFrom": 0.15,
-   "ragged": 0.5,
-   "tone": "body",
-   "alpha": 0.6,
-   "tier": 0,
-   "seed": 1005,
-   "shape": "sprite",
-   "sprite": "loi_ground_arcs",
-   "billboard": true,
    "offset": [
     0,
-    0.6,
+    0.02,
     0
    ],
-   "scale": 5.12,
-   "scaleTo": 5.89
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
   },
   {
    "type": "mesh",
@@ -184,7 +150,7 @@
    "tone": "body",
    "alpha": 0.56,
    "tier": 0,
-   "seed": 1006,
+   "seed": 1004,
    "shape": "sprite",
    "sprite": "loi_sparks",
    "billboard": true,

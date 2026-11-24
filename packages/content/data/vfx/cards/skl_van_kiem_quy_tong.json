@@ -1,22 +1,21 @@
 {
   "skillId": "skl_van_kiem_quy_tong",
-  "idea": "Vạn Kiếm Quy Tông: Chiêu tối thượng. Vạn kiếm từ trời giáng xuống, gây 420% công kích lên mọi kẻ địch trong 10 mét quanh mục tiêu. Xả hết Kiếm ý, mỗi ô tăng 10% sát thương. Cần đầy vòng sạc linh khí. Tiêu Kiếm ấn, mỗi tầng tăng 20% sát thương lên kẻ mang ấn.",
+  "idea": "Vạn Kiếm Quy Tông: chiêu cuối. Vô số thanh kiếm từ trời rơi xuống thành màn mưa kiếm hình nón chụm vào mục tiêu, cắm nghiêng chụm vào tâm thành một vòng kiếm đứng bán kính 10 m (như lễ triều bái); giữa vòng bừng cột sáng trắng bạc. Màu: lõi LAM LỤC TỐI (teal đậm #0A3F5E) ở tâm vệt, thân XANH NGỌC/CYAN (hue 185–195°, #2CC7DC), viền trắng bạc lạnh #F2FDFF mỏng và sáng; KHÔNG xanh lam điện/chàm (dành cho Lôi tu), KHÔNG tím, KHÔNG hồng; vàng #F3C860 chỉ là điểm nhỏ ở mũi kiếm/ấn.",
   "element": "kim",
   "path": "kiem_tu",
   "shapeLang": [
-    "ring",
-    "arc",
-    "spike"
+    "line",
+    "ring"
   ],
   "timing": {
-    "anticipationMs": 500,
+    "anticipationMs": 300,
     "impactMs": 80,
-    "lingerMs": 500
+    "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 20,
-    "widthM": 20,
-    "heightM": 6
+    "lengthM": 10,
+    "widthM": 10,
+    "heightM": 2
   },
   "colorRole": "own",
   "telegraph": false,
@@ -39,5 +38,6 @@
       "id": "proc:ink_smoke",
       "kind": "flipbook"
     }
-  ]
+  ],
+  "silhouette": "mưa kiếm hình nón rơi chụm, cắm thành vòng kiếm đứng nghiêng vào tâm quanh cột sáng"
 }

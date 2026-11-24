@@ -1,22 +1,21 @@
 {
   "skillId": "skl_thien_kiem_hoa_hinh",
-  "idea": "Thiên Kiếm Hóa Hình: Thần thông tối thượng: hóa thân thành một thanh kiếm khổng lồ giáng xuống, gây 750% công kích trong 12 mét. Cần cảnh giới Hóa Thần.",
+  "idea": "Thiên Kiếm Hóa Hình: chiêu cuối. Một thanh kiếm khổng lồ trong suốt (ruột mực tối, viền sáng, chuôi chạm khắc cổ phong) từ trời cắm xuống, mũi chạm đất, sóng nứt đất lan 12 m tạo vành đá vỡ bay lên quanh thân kiếm. Màu: lõi LAM LỤC TỐI (teal đậm #0A3F5E) ở tâm vệt, thân XANH NGỌC/CYAN (hue 185–195°, #2CC7DC), viền trắng bạc lạnh #F2FDFF mỏng và sáng; KHÔNG xanh lam điện/chàm (dành cho Lôi tu), KHÔNG tím, KHÔNG hồng; vàng #F3C860 chỉ là điểm nhỏ ở mũi kiếm/ấn.",
   "element": "thuy",
   "path": "kiem_tu",
   "shapeLang": [
-    "ring",
-    "arc",
-    "burst"
+    "line",
+    "ring"
   ],
   "timing": {
-    "anticipationMs": 600,
+    "anticipationMs": 300,
     "impactMs": 80,
-    "lingerMs": 400
+    "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 24,
-    "widthM": 24,
-    "heightM": 6
+    "lengthM": 12,
+    "widthM": 12,
+    "heightM": 2
   },
   "colorRole": "own",
   "telegraph": false,
@@ -35,5 +34,6 @@
       "id": "proc:dust_kick",
       "kind": "flipbook"
     }
-  ]
+  ],
+  "silhouette": "thanh kiếm khổng lồ cắm từ trời, nứt đất lan vành đá vỡ bay lên"
 }

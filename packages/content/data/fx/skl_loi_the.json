@@ -25,6 +25,23 @@
    "scaleTo": 2.33
   },
   {
+   "type": "decal",
+   "tex": "scorch",
+   "t": -0.1,
+   "r": 1.7,
+   "dur": 1.6,
+   "at": "self",
+   "offset": [
+    0,
+    -1.05,
+    0
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
    "type": "particles",
    "kind": "spark",
    "t": -0.24,

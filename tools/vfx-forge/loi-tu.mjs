@@ -105,6 +105,20 @@ const after = (at, off, size = 2.6, t = 0.17, up = 1.4) =>
     erodeFrom: 0.2,
     move: { to: at, offset: [off[0], off[1] + up, off[2]], ease: 'out' },
   });
+/** Vết cháy mực tối trên đất (decal `scorch`, tông shadow): lõi tối cho nền sáng ban ngày (chuẩn 2 luật 4). alpha 0,78 làm dấu để chạy lại không nhân đôi. */
+const scorch = (at, off, r, t = 0, dur = 1.6) => ({
+  type: 'decal',
+  tex: 'scorch',
+  t,
+  r,
+  dur,
+  at,
+  offset: off,
+  grow: 0.1,
+  tone: 'shadow',
+  alpha: 0.78,
+  tier: 0,
+});
 const ground = (at, off, size, t = 0.02, o = {}) =>
   sprite('loi_ground_arcs', { t, dur: 0.6, at, off, size, sizeTo: size * 1.15, alpha: 0.8, erodeFrom: 0.15, ...o });
 
@@ -123,6 +137,7 @@ const SPEC = {
       align: 'aim',
       erodeFrom: 0.15,
     }),
+    scorch('ahead', [0, 0.02, 3.2], 2.4),
     flash('ahead', [0, 1.2, 5.4], 2.2, 0.02),
     after('ahead', [0, 1.3, 3.8], 2.4, 0.2, 1.1),
     sparks('ahead', [0, 1.2, 4], 10, 0.05),
@@ -134,7 +149,6 @@ const SPEC = {
     strike('loi_bolt_forked', { size: 6, off: [0.2, 3.2, 0], erodeFrom: 0.12 }),
     flash('target', [0, 1.2, 0], 3, 0.01),
     sprite('loi_mark', { t: 0.04, dur: 0.55, off: [0, 1.0, 0], size: 2.6, alpha: 0.95, erodeFrom: 0.2 }),
-    ground('target', [0, 0.6, 0], 4.6),
     after('target', [0, 1.4, 0], 2.6, 0.18, 1.5),
     sparks('target', [0, 1.3, 0], 12, 0),
   ],
@@ -152,6 +166,7 @@ const SPEC = {
   // Lôi Thể (tư thế): dải hồ quang xoắn ốc quấn thân từ chân lên vai, tia điện nhảy giữa hai bàn tay.
   skl_loi_the: () => [
     ...[gather('loi_spiral', { size: 3.4, off: [0, 1.2, 0], rest: { at: 'self' } })],
+    scorch('self', [0, -1.05, 0], 1.7, -0.1),
     pullIn('self', [0, 1, 0], -0.24),
     strike('loi_spiral', { size: 3.4, at: 'self', off: [0, 1.25, 0], dur: 0.9, erodeFrom: 0.3 }),
     sprite('loi_arcs_pair', { t: 0.02, dur: 0.6, at: 'self', off: [0, 1.2, 0.3], size: 1.8, alpha: 0.9, erodeFrom: 0.25 }),
@@ -182,17 +197,16 @@ const SPEC = {
   skl_loi_lien: () => [
     ...[gather('loi_orbs', { size: 5, off: [0, 1.4, 0] })],
     pullIn('target', [0, 1.4, 0], -0.24),
-    ...[0, 120, 240].map((a, i) =>
-      strike('loi_orbs', { size: 5.2, off: [0, 1.4, 0], t: i * 0.03, dur: 0.6, rot: [0, 0, a], erodeFrom: 0.12 }),
-    ),
+    ...[0, 180].map((a, i) => strike('loi_orbs', { size: 5.2, off: [0, 1.4, 0], t: i * 0.03, dur: 0.6, rot: [0, 0, a], erodeFrom: 0.12 })),
     flash('target', [0, 1.2, 0], 3.2, 0.01),
-    ground('target', [0, 0.6, 0], 6.4, 0.03),
+    scorch('target', [0, 0.02, 0], 3, 0.0),
     after('target', [0, 1.4, 0], 3, 0.19, 1.5),
     sparks('target', [0, 1.3, 0], 12, 0),
   ],
   // Lôi Giáp (khiên): vảy giáp sét sáu cạnh ghép bao quanh thân, hồ quang chạy giữa các vảy.
   skl_loi_giap: () => [
     ...[gather('loi_scales', { size: 3.4, off: [0, 1.0, 0], rest: { at: 'self' } })],
+    scorch('self', [0, -1.05, 0], 1.7, -0.1),
     pullIn('self', [0, 1, 0], -0.24),
     strike('loi_scales', { size: 3.4, at: 'self', off: [0, 1.05, 0], dur: 0.9, erodeFrom: 0.3 }),
     flash('self', [0, 1.1, 0], 2.2, 0.01),
@@ -252,7 +266,6 @@ const SPEC = {
     ...[
       [-2.2, 0.8, 0],
       [2.2, 0.8, 0.04],
-      [0, -1.8, 0.08],
     ].map(([x, z, dt]) => strike('loi_wave', { size: 5, off: [x, 1.7, z], t: dt, dur: 0.6, erodeFrom: 0.12 })),
     ground('target', [0, 0.6, 0], 7, 0.0, { dur: 0.7 }),
     flash('target', [0, 1.2, 0], 3.8, 0.02),
@@ -278,6 +291,7 @@ for (const id of ids) {
     (e) =>
       e.type !== 'mesh' &&
       !(e.type === 'decal' && e.tex === 'rune') &&
+      !(e.type === 'decal' && e.tex === 'scorch' && e.alpha === 0.78) &&
       !(e.type === 'particles' && e.tier === 1 && e.tone === 'rim' && e.kind === 'spark'),
   );
   const evs = SPEC[id]().flat();
