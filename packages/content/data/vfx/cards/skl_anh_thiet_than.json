@@ -1,20 +1,20 @@
 {
   "skillId": "skl_anh_thiet_than",
-  "idea": "Anh Thiết Thân: Nguyên anh hóa sắt che thân trong 8 giây, nhận thay 30% sát thương cho đồng đội gần. Cần cảnh giới Nguyên Anh.",
+  "idea": "Anh Thiết Thân: nguyên anh hóa sắt: một bóng giáp trụ cổ phong (thân giáp vảy, mũ trụ có tấm che, không mặt) trong suốt đứng che sau lưng, vài mắt xích vàng nối tới đồng đội. Màu: lõi nâu đồng sẫm ngả vàng olive (#3B3010) ở tâm, thân VÀNG KIM–ĐỒNG ẤM (hue 46–50°, #D9B13A), viền vàng nhạt kem sáng (#FFF1B8) mỏng; KHÔNG đỏ, KHÔNG cam, KHÔNG nâu đỏ/gạch, KHÔNG tím (Hồn tu), KHÔNG xanh lam (Lôi tu), KHÔNG xanh ngọc/teal (Kiếm tu); vàng sáng #FFE27A chỉ là điểm nhỏ.",
   "element": "tho",
   "path": "the_tu",
   "shapeLang": [
-    "ring",
-    "line"
+    "line",
+    "ring"
   ],
   "timing": {
-    "anticipationMs": 350,
+    "anticipationMs": 300,
     "impactMs": 80,
-    "lingerMs": 500
+    "lingerMs": 600
   },
   "footprint": {
     "lengthM": 4,
-    "widthM": 2.5,
+    "widthM": 4,
     "heightM": 2
   },
   "colorRole": "own",
@@ -25,5 +25,6 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "bóng giáp trụ trong suốt đứng che sau lưng, mắt xích vàng nối tới đồng đội"
 }

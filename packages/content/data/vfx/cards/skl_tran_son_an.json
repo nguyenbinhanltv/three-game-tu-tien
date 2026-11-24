@@ -1,20 +1,20 @@
 {
   "skillId": "skl_tran_son_an",
-  "idea": "Trấn Sơn Ấn: Giậm chân hạ ấn, kẻ địch trong 12 mét bị buộc quay sang đánh ngươi trong 5 giây và chịu 50% công kích. Tích 20 Huyết khí. Kẻ bị khiêu khích mang Trấn ấn 6 giây.",
+  "idea": "Trấn Sơn Ấn: giậm chân hạ ấn: một con dấu vuông khổng lồ (núi khắc nổi trên mặt) từ trên ép xuống, đất nứt thành ô vuông chữ điền quanh ấn với bốn cột đá nhỏ ở bốn góc, bụi tỏa. Màu: lõi nâu đồng sẫm ngả vàng olive (#3B3010) ở tâm, thân VÀNG KIM–ĐỒNG ẤM (hue 46–50°, #D9B13A), viền vàng nhạt kem sáng (#FFF1B8) mỏng; KHÔNG đỏ, KHÔNG cam, KHÔNG nâu đỏ/gạch, KHÔNG tím (Hồn tu), KHÔNG xanh lam (Lôi tu), KHÔNG xanh ngọc/teal (Kiếm tu); vàng sáng #FFE27A chỉ là điểm nhỏ.",
   "element": "tho",
   "path": "the_tu",
   "shapeLang": [
     "ring",
-    "line"
+    "spike"
   ],
   "timing": {
-    "anticipationMs": 400,
+    "anticipationMs": 300,
     "impactMs": 80,
-    "lingerMs": 500
+    "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 24,
-    "widthM": 24,
+    "lengthM": 12,
+    "widthM": 12,
     "heightM": 2
   },
   "colorRole": "own",
@@ -25,5 +25,6 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "con dấu vuông khắc núi ép xuống, đất nứt ô vuông chữ điền, bốn cột đá ở góc"
 }

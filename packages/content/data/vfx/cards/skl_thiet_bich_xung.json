@@ -1,12 +1,11 @@
 {
   "skillId": "skl_thiet_bich_xung",
-  "idea": "Thiết Bích Xung: Lao 8 mét tới mục tiêu và húc gây 120% công kích và làm quái thường choáng 1 giây (tinh anh nửa giây, boss miễn). Không xuyên vách, không dùng được khi ngự kiếm. Húc kẻ mang Trấn ấn: choáng thêm nửa giây, tích 10 Huyết khí; có đủ 40 Huyết khí thì xả ra khiến nó m",
+  "idea": "Thiết Bích Xung: húc vai lao 8 m: một mũi giáp vàng hình nêm/đầu mũi tên (các tấm giáp chồng như vảy) lao ngang, hai bên là hai rãnh đất cày dài bốc bụi, phía sau quạt vệt gió; tới nơi bật một cú va nhọn hình sao 4 cánh nhỏ. Màu: lõi nâu đồng sẫm ngả vàng olive (#3B3010) ở tâm, thân VÀNG KIM–ĐỒNG ẤM (hue 46–50°, #D9B13A), viền vàng nhạt kem sáng (#FFF1B8) mỏng; KHÔNG đỏ, KHÔNG cam, KHÔNG nâu đỏ/gạch, KHÔNG tím (Hồn tu), KHÔNG xanh lam (Lôi tu), KHÔNG xanh ngọc/teal (Kiếm tu); vàng sáng #FFE27A chỉ là điểm nhỏ.",
   "element": "tho",
   "path": "the_tu",
   "shapeLang": [
-    "ring",
     "line",
-    "arc"
+    "spike"
   ],
   "timing": {
     "anticipationMs": 300,
@@ -14,8 +13,8 @@
     "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 12,
-    "widthM": 2.5,
+    "lengthM": 8,
+    "widthM": 3,
     "heightM": 2
   },
   "colorRole": "own",
@@ -26,5 +25,6 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "mũi giáp vàng hình nêm lao ngang, hai rãnh đất cày và quạt gió phía sau"
 }

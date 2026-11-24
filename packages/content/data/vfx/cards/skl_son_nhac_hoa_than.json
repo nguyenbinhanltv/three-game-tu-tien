@@ -1,21 +1,20 @@
 {
   "skillId": "skl_son_nhac_hoa_than",
-  "idea": "Sơn Nhạc Hóa Thân: Thần thông: thân hóa ngọc thạch, phình lớn 1,3 lần trong 10 giây, giảm 20% sát thương nhận.",
+  "idea": "Sơn Nhạc Hóa Thân: thân phình lớn thành ngọn núi: ba đỉnh núi đá vàng-nâu lởm chởm trồi lên sau lưng và quanh người, tảng đá và mây bụi quấn chân núi. Màu: lõi nâu đồng sẫm ngả vàng olive (#3B3010) ở tâm, thân VÀNG KIM–ĐỒNG ẤM (hue 46–50°, #D9B13A), viền vàng nhạt kem sáng (#FFF1B8) mỏng; KHÔNG đỏ, KHÔNG cam, KHÔNG nâu đỏ/gạch, KHÔNG tím (Hồn tu), KHÔNG xanh lam (Lôi tu), KHÔNG xanh ngọc/teal (Kiếm tu); vàng sáng #FFE27A chỉ là điểm nhỏ.",
   "element": "tho",
   "path": "the_tu",
   "shapeLang": [
     "spike",
-    "ring",
-    "line"
+    "cloud"
   ],
   "timing": {
-    "anticipationMs": 600,
+    "anticipationMs": 300,
     "impactMs": 80,
-    "lingerMs": 400
+    "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 4,
-    "widthM": 2.5,
+    "lengthM": 5,
+    "widthM": 5,
     "heightM": 2
   },
   "colorRole": "own",
@@ -26,5 +25,6 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "ba đỉnh núi đá lởm chởm trồi lên quanh thân, tảng đá và mây bụi quấn chân"
 }

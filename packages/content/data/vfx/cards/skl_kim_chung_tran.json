@@ -1,20 +1,20 @@
 {
   "skillId": "skl_kim_chung_tran",
-  "idea": "Kim Chung Trấn: Chuông vàng úp thân trong 6 giây: giảm 30% sát thương nhận và phản lại 20% sát thương quái đánh vào ngươi.",
+  "idea": "Kim Chung Trấn: một quả chuông đồng vàng lớn (quai chuông cổ, hoa văn lồi) úp xuống che thân, vài vòng sóng âm dọc quanh thân chuông, bụi bay. Màu: lõi nâu đồng sẫm ngả vàng olive (#3B3010) ở tâm, thân VÀNG KIM–ĐỒNG ẤM (hue 46–50°, #D9B13A), viền vàng nhạt kem sáng (#FFF1B8) mỏng; KHÔNG đỏ, KHÔNG cam, KHÔNG nâu đỏ/gạch, KHÔNG tím (Hồn tu), KHÔNG xanh lam (Lôi tu), KHÔNG xanh ngọc/teal (Kiếm tu); vàng sáng #FFE27A chỉ là điểm nhỏ.",
   "element": "tho",
   "path": "the_tu",
   "shapeLang": [
-    "ring",
+    "cloud",
     "line"
   ],
   "timing": {
-    "anticipationMs": 400,
+    "anticipationMs": 300,
     "impactMs": 80,
-    "lingerMs": 550
+    "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 4,
-    "widthM": 2.5,
+    "lengthM": 3,
+    "widthM": 3,
     "heightM": 2
   },
   "colorRole": "own",
@@ -25,5 +25,6 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "quả chuông đồng vàng lớn úp xuống thân, hoa văn lồi, sóng âm dọc"
 }

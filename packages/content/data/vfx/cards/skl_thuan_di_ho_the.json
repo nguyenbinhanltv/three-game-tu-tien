@@ -1,20 +1,20 @@
 {
   "skillId": "skl_thuan_di_ho_the",
-  "idea": "Thuấn Di Hộ Thế: Thuấn di tới đồng đội gần nhất và phủ lên người đó lớp khiên bằng 20% khí huyết tối đa. Cần cảnh giới Nguyên Anh.",
+  "idea": "Thuấn Di Hộ Thế: thuấn di tới đồng đội: một vệt lông vũ-ánh vàng nối hai điểm, tới nơi úp lên đồng đội một tấm khiên hình khiên cổ (đỉnh nhọn, viền chạm) sáng vàng nhạt, các mảnh khiên nhỏ xoay quanh rồi ghép lại. Màu: lõi nâu đồng sẫm ngả vàng olive (#3B3010) ở tâm, thân VÀNG KIM–ĐỒNG ẤM (hue 46–50°, #D9B13A), viền vàng nhạt kem sáng (#FFF1B8) mỏng; KHÔNG đỏ, KHÔNG cam, KHÔNG nâu đỏ/gạch, KHÔNG tím (Hồn tu), KHÔNG xanh lam (Lôi tu), KHÔNG xanh ngọc/teal (Kiếm tu); vàng sáng #FFE27A chỉ là điểm nhỏ.",
   "element": "tho",
   "path": "the_tu",
   "shapeLang": [
     "line",
-    "ring"
+    "arc"
   ],
   "timing": {
-    "anticipationMs": 250,
+    "anticipationMs": 300,
     "impactMs": 80,
-    "lingerMs": 400
+    "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 4,
-    "widthM": 2.5,
+    "lengthM": 3,
+    "widthM": 3,
     "heightM": 2
   },
   "colorRole": "own",
@@ -25,5 +25,6 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "vệt ánh vàng nối hai điểm, tấm khiên cổ đỉnh nhọn úp lên đồng đội"
 }

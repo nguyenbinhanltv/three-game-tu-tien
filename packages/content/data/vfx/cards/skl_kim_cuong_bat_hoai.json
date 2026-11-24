@@ -1,21 +1,21 @@
 {
   "skillId": "skl_kim_cuong_bat_hoai",
-  "idea": "Kim Cương Bất Hoại: Chiêu tối thượng. Thân hóa kim cương, sát thương nhận vào giảm 60% trong 6 giây. Cần đầy vòng sạc linh khí.",
+  "idea": "Kim Cương Bất Hoại: chiêu cuối. Thân hóa kim cương: một vỏ tinh thể vàng nhiều mặt cắt (cụm tinh thể nhọn như hốc geode) bao quanh thân, ánh sáng xuyên qua các mặt, vài mảnh tinh thể rơi. Màu: lõi nâu đồng sẫm ngả vàng olive (#3B3010) ở tâm, thân VÀNG KIM–ĐỒNG ẤM (hue 46–50°, #D9B13A), viền vàng nhạt kem sáng (#FFF1B8) mỏng; KHÔNG đỏ, KHÔNG cam, KHÔNG nâu đỏ/gạch, KHÔNG tím (Hồn tu), KHÔNG xanh lam (Lôi tu), KHÔNG xanh ngọc/teal (Kiếm tu); vàng sáng #FFE27A chỉ là điểm nhỏ.",
   "element": "vo",
   "path": "the_tu",
   "shapeLang": [
-    "ring",
-    "line"
+    "spike",
+    "burst"
   ],
   "timing": {
-    "anticipationMs": 400,
+    "anticipationMs": 300,
     "impactMs": 80,
     "lingerMs": 600
   },
   "footprint": {
     "lengthM": 4,
-    "widthM": 2.5,
-    "heightM": 6
+    "widthM": 4,
+    "heightM": 2
   },
   "colorRole": "own",
   "telegraph": false,
@@ -25,5 +25,6 @@
     "screenCover": 0.35,
     "overdraw": 6
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "vỏ tinh thể vàng nhiều mặt nhọn bao quanh thân như hốc geode, ánh sáng xuyên mặt"
 }
