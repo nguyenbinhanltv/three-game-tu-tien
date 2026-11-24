@@ -1,5 +1,6 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { FLAGS } from '../../base/flags';
+import { spotAt, vistaView } from '../camera/vista';
 import { downgradeOf, getGpuHint, setGpuHint, suggestQuality } from '../../base/quality';
 import * as THREE from 'three/webgpu';
 import {
@@ -43,7 +44,6 @@ import { monsterPushRadius, pickPushers } from '../world/grass';
 import { postParams } from '../../render/post';
 import { updateOcclusion } from '../world/occlusion';
 import {
-  ISO_FAR,
   ISO_FOV,
   ISO_DIST,
   isoDistFor,
@@ -389,7 +389,7 @@ function updateCamera(eng: Game, dt: number): void {
     fovKick = f.amt * Math.min(1, f.t / 0.15) * Math.max(0, Math.min(1, (f.dur - f.t) / 0.6));
     if (f.t >= f.dur) eng.fxFov = null;
   }
-  const wantFov = (eng.iso && !eng.cine.active ? ISO_FOV : ORBIT_FOV) + ultPunch + fovKick;
+  const wantFov = (eng.iso && !eng.cine.active ? ISO_FOV + vistaView(eng.vista.amount).fov - ISO_FOV : ORBIT_FOV) + ultPunch + fovKick;
   if (Math.abs(eng.camera.fov - wantFov) > 0.01) {
     eng.camera.fov = wantFov;
     eng.camera.updateProjectionMatrix();
@@ -435,23 +435,38 @@ function updateCamera(eng: Game, dt: number): void {
     const kk = Math.min(1, dt * 3);
     iso.lead.x += (ld.x - iso.lead.x) * kk;
     iso.lead.z += (ld.z - iso.lead.z) * kk;
-    const wantD = isoDistFor(levelId()) * (flying ? 1.35 : 1) * (1 + pull);
+    // Đang giao chiến (có mục tiêu trong 12 m, tự đánh, vừa ra đòn trong 4 s, hoặc có quái sống trong 10 m): bỏ điểm ngắm cảnh, giữ camera khóa 52° để ngắm chiêu chính xác.
+    const lh = eng.lastHit.get(eng.sid);
+    let combat =
+      (!!eng.targetId && eng.ents.chestOf(eng.targetId, _v) && Math.hypot(_v.x - rp.x, _v.z - rp.z) < 12) ||
+      eng.autoAttack ||
+      (!!lh && performance.now() - lh.at < 4000);
+    if (!combat)
+      for (const m of eng.ents.monsters.values())
+        if (m.s.st !== MS_DEAD && Math.hypot(m.x - rp.x, m.z - rp.z) < 10) {
+          combat = true;
+          break;
+        }
+    const spot = combat ? null : spotAt(levelId(), rp.x, rp.z);
+    const vv = vistaView(eng.vista.update(dt, flying, spot, FLAGS.vista && !eng.cine.active, combat));
+    if (eng.vista.hint(spot) && FLAGS.vista) pushToast(t('ui.vista_hint'));
+    const wantD = isoDistFor(levelId()) * (flying ? 1.35 : 1) * vv.distMul * (1 + pull);
     iso.distCur += (wantD - iso.distCur) * Math.min(1, dt * 6);
     tx = rp.x + iso.lead.x;
-    ty = rp.y + 1.0;
+    ty = rp.y + 1.0 + vv.lift;
     tz = rp.z + iso.lead.z;
     iso.look.set(tx, ty, tz);
-    let p = isoCameraPos(tx, ty, tz, iso.distCur, eng.camYaw);
+    let p = isoCameraPos(tx, ty, tz, iso.distCur, eng.camYaw, vv.pitch);
     // Địa hình/vách nằm giữa camera và điểm nhìn: kéo camera lại gần (co ngay, nở từ từ) để không nhìn xuyên mặt vách từ phía sau.
     const need = isoClearScale({ x: tx, y: ty, z: tz }, p, groundAt);
     iso.occ = need < iso.occ ? need : Math.min(need, iso.occ + dt * 0.8);
-    if (iso.occ < 1) p = isoCameraPos(tx, ty, tz, iso.distCur * iso.occ, eng.camYaw);
+    if (iso.occ < 1) p = isoCameraPos(tx, ty, tz, iso.distCur * iso.occ, eng.camYaw, vv.pitch);
     cx = p.x;
     cy = Math.max(p.y, groundAt(p.x, p.z) + 2);
     cz = p.z;
     if (!iso.baseFar) iso.baseFar = eng.camera.far;
-    if (eng.camera.far !== ISO_FAR) {
-      eng.camera.far = ISO_FAR;
+    if (Math.abs(eng.camera.far - vv.far) > 0.5) {
+      eng.camera.far = vv.far;
       eng.camera.updateProjectionMatrix();
     }
   } else if (eng.iso?.baseFar && eng.camera.far !== eng.iso.baseFar) {
@@ -492,9 +507,12 @@ function updateCamera(eng: Game, dt: number): void {
   updateOcclusion(dt, eng.camera.position, _camFocus.set(rp.x, rp.y + 1.2, rp.z), rp.y, iso ? (flying ? 2 : 1) : 0, hasTgt ? _v2 : null);
   // Chuyển vào/ra camera chéo: bán kính ô địa hình và bản đồ bóng đổi theo.
   const isoOn = !!iso;
-  if (eng.iso && eng.iso.applied !== isoOn) {
+  // Mở tầm nhìn (camera gần ngang): cần địa hình tầm xa + trời/biển mây/núi nền, nên tạm coi như không iso cho phần cảnh xa (có trễ để không chớp).
+  const farOn = eng.vista.farOn();
+  if (eng.iso && (eng.iso.applied !== isoOn || eng.iso.terrainIso !== (isoOn && !farOn))) {
     eng.iso.applied = isoOn;
-    eng.terrain.setIso(isoOn);
+    eng.iso.terrainIso = isoOn && !farOn;
+    eng.terrain.setIso(eng.iso.terrainIso);
     eng.env.setIso(isoOn);
   }
   if (iso) {
@@ -502,11 +520,21 @@ function updateCamera(eng: Game, dt: number): void {
     iso.project(eng.camera, window.innerWidth, window.innerHeight, pickGround(eng.renderPos));
     iso.updateVisuals(performance.now() / 1000);
     // Tầm nhìn ~250 m: không vẽ cảnh xa (biển mây, đảo trời, núi nền).
-    if (!iso.farHidden) iso.cloudWas = eng.env.cloudSea.group.visible;
-    eng.env.cloudSea.group.visible = false;
-    if (eng.lacKiemSky) eng.lacKiemSky.group.visible = false;
-    if (eng.lacKiemFar) eng.lacKiemFar.group.visible = false;
-    iso.farHidden = true;
+    if (farOn) {
+      // Vista: trả cảnh xa (nếu iso đã ẩn) và để nguyên.
+      if (iso.farHidden) {
+        eng.env.cloudSea.group.visible = iso.cloudWas;
+        if (eng.lacKiemSky) eng.lacKiemSky.group.visible = true;
+        if (eng.lacKiemFar) eng.lacKiemFar.group.visible = true;
+        iso.farHidden = false;
+      }
+    } else {
+      if (!iso.farHidden) iso.cloudWas = eng.env.cloudSea.group.visible;
+      eng.env.cloudSea.group.visible = false;
+      if (eng.lacKiemSky) eng.lacKiemSky.group.visible = false;
+      if (eng.lacKiemFar) eng.lacKiemFar.group.visible = false;
+      iso.farHidden = true;
+    }
   } else if (eng.iso?.farHidden) {
     // Iso tạm tắt (cine/độ kiếp): hiện lại cảnh xa mà iso đã ẩn.
     eng.env.cloudSea.group.visible = eng.iso.cloudWas;

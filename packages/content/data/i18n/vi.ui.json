@@ -97,6 +97,7 @@
   "ui.err.webgl": "Trình duyệt không khởi tạo được đồ họa 3D.",
   "ui.reconnecting": "Mất kết nối, đang nối lại…",
   "ui.reconnected": "Đã nối lại.",
+  "ui.vista_hint": "Ngắm cảnh: camera đang mở tầm nhìn. Nhấn U để về góc chiến đấu.",
   "ui.help_hint": "Chuột phải vào mặt đất để đi (hoặc W A S D). Nhấn H để xem cách điều khiển. Tìm Lạc Vân chân nhân trước Chính điện để nhận nhiệm vụ đầu tiên.",
   "ui.level_short": "tầng {n}",
   "ui.absorbed": "chặn",
