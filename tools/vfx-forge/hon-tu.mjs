@@ -91,7 +91,7 @@ const cold = (at, off, n, t) => ({
   tier: 1,
 });
 /** Sợi hồn bị rút từ mục tiêu về người ra chiêu. */
-const pull = (i, t, len = 3) =>
+const pull = (i, t, len = 3, w = 1.2) =>
   mesh({
     shape: 'ribbon',
     t,
@@ -99,7 +99,7 @@ const pull = (i, t, len = 3) =>
     at: 'target',
     offset: [r2((i - 1) * 0.6), 1.3, 0],
     rot: [-80, r2(90 + (i - 1) * 28), 0],
-    scale: [1.2, 1.2, len],
+    scale: [w, w, len],
     sweep: 0.55,
     erodeFrom: 0.4,
     ragged: 0.8,
@@ -245,8 +245,8 @@ const SPEC = {
       dur: 1.4,
       at: 'self',
       off: [-1.4, 1.3, -0.6],
-      size: 2.5,
-      sizeTo: 2.7,
+      size: 2.0,
+      sizeTo: 2.2,
       alpha: 0.85,
       rot: [0, 0, 9],
       erodeFrom: 0.6,
@@ -256,30 +256,30 @@ const SPEC = {
       dur: 1.35,
       at: 'self',
       off: [1.4, 1.3, -0.6],
-      size: 2.5,
-      sizeTo: 2.7,
+      size: 2.0,
+      sizeTo: 2.2,
       alpha: 0.85,
       rot: [0, 0, -9],
       erodeFrom: 0.6,
     }),
-    sprite('hon_curtain', { t: 0.06, dur: 1.2, at: 'self', off: [0, 1.5, -1.5], size: 3.1, sizeTo: 3.3, alpha: 0.85, erodeFrom: 0.6 }),
+    sprite('hon_curtain', { t: 0.06, dur: 1.2, at: 'self', off: [0, 1.4, -1.4], size: 2.5, sizeTo: 2.7, alpha: 0.85, erodeFrom: 0.6 }),
     ...[0, 1, 2, 3].flatMap((i) => {
       const a = (i / 4) * Math.PI * 2 + 0.4;
-      return puff('self', [r2(Math.cos(a) * 1.3), 0.6, r2(Math.sin(a) * 1.3)], 2, i * 0.02, 0.8, 1.1);
+      return puff('self', [r2(Math.cos(a) * 1.1), 0.6, r2(Math.sin(a) * 1.1)], 1.6, i * 0.02, 0.75, 1.1);
     }),
-    sprite('hon_face_scream', { t: 0.1, dur: 1.1, at: 'self', off: [0, 2.7, -0.2], size: 2.2, sizeTo: 2.5, alpha: 0.85, erodeFrom: 0.6 }),
+    sprite('hon_face_scream', { t: 0.1, dur: 1.1, at: 'self', off: [0, 2.5, -0.2], size: 1.9, sizeTo: 2.1, alpha: 0.85, erodeFrom: 0.6 }),
     sprite('hon_wisps', { t: 0.22, dur: 0.9, at: 'self', off: [0, 1.5, 0], size: 2.4, alpha: 0.6, erodeFrom: 0.4 }),
     cold('self', [0, 1.6, 0], 8, 0.1),
   ],
   // Sưu Hồn Thuật: sợi hồn sáng rút từ mục tiêu về người ra chiêu, đầu mũi là quả cầu hồn sáng kéo đuôi sao chổi.
   skl_suu_hon_thuat: () => [
-    ...[0, 1, 2].map((i) => pull(i, -0.02 + i * 0.05, 3.6)),
+    ...[0, 1, 2].map((i) => pull(i, -0.02 + i * 0.05, 3, 0.95)),
     sprite('hon_orb', {
       t: 0,
       dur: 0.6,
       off: [0, 1.5, 0],
-      size: 2.4,
-      sizeTo: 1.6,
+      size: 2.3,
+      sizeTo: 1.5,
       alpha: 0.98,
       erodeFrom: 0.75,
       move: { to: 'self', offset: [0, 1.5, 0], ease: 'in' },
@@ -288,13 +288,13 @@ const SPEC = {
       t: 0.1,
       dur: 0.55,
       off: [0.6, 1.6, 0],
-      size: 1.4,
+      size: 1.2,
       alpha: 0.7,
       erodeFrom: 0.6,
       move: { to: 'self', offset: [0, 1.5, 0], ease: 'in' },
     }),
-    sprite('hon_wisps', { t: 0, dur: 0.6, off: [0, 1.4, 0], size: 2.4, alpha: 0.6, erodeFrom: 0.5 }),
-    ...puff('target', [0, 0.9, 0], 2.4, 0, 0.75, 0.8),
+    sprite('hon_wisps', { t: 0, dur: 0.6, off: [0, 1.4, 0], size: 2.0, alpha: 0.6, erodeFrom: 0.5 }),
+    ...puff('target', [0, 0.9, 0], 2.0, 0, 0.75, 0.8),
     {
       type: 'particles',
       kind: 'spark',
