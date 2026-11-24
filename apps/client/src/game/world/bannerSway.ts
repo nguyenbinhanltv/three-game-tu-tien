@@ -24,3 +24,30 @@ export function bannerSway(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandar
   m.positionNode = vec3(p.x.add(dx), p.y.sub(w2.mul(0.04).mul(float(1))), p.z.add(dz));
   return m;
 }
+
+/** Đỉnh chỗ treo của lồng đèn giấy `prop_tc_long_den_giay` (m, hình học đã nướng ma trận nút): đèn nằm 1,84–2,76 m, cần treo ~2,85 m. */
+const LANTERN_PIVOT_Y = 2.85;
+/** Thân đèn dưới điểm treo (m) tại đó độ lắc đạt tối đa. */
+const LANTERN_HANG = 0.9;
+
+/**
+ * Đèn lồng lắc (M4): con lắc quanh điểm treo, biên độ tỉ lệ với độ thấp so với điểm treo (đèn lắc nhiều, cần treo đứng yên), hai tần số lệch pha theo instance
+ * nên cả hàng đèn không đồng bộ, thêm nhịp "gió giật" chậm. Chỉ áp cho vật liệu `lamp` của prop có cờ `lantern` (đèn đá cũng dùng vật liệu `lamp` nhưng không lắc).
+ */
+export function lanternSway(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardNodeMaterial {
+  if (!m.name.includes('lamp')) return m;
+  const p = positionLocal;
+  const w = float(LANTERN_PIVOT_Y).sub(p.y).div(LANTERN_HANG).clamp(0, 1);
+  const phase = instanceIndex.toFloat().mul(2.39);
+  const gust = sin(time.mul(0.31).add(phase.mul(0.37)))
+    .mul(0.5)
+    .add(0.9);
+  const t = time.mul(1.35).add(phase);
+  const ax = sin(t)
+    .mul(0.1)
+    .add(sin(t.mul(2.1).add(1.3)).mul(0.03))
+    .mul(gust);
+  const az = sin(t.mul(0.83).add(2.0)).mul(0.07).mul(gust);
+  m.positionNode = vec3(p.x.add(ax.mul(w)), p.y.sub(ax.abs().mul(w).mul(0.25)), p.z.add(az.mul(w)));
+  return m;
+}

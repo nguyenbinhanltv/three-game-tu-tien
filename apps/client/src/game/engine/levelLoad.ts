@@ -25,6 +25,7 @@ import { GodRays } from '../../render/godRays';
 import { CARD_TREE_IDS, CardForest } from '../world/cardForest';
 import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
+import { LacKiemBirds } from '../world/lacKiemBirds';
 import { LacKiemGround } from '../world/lacKiemGround';
 import { LacKiemScenes } from '../world/lacKiemScenes';
 import { DoanMachArt } from '../world/doanMachArt';
@@ -547,6 +548,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.lacKiemSky.group);
     eng.lacKiemGarden = new LacKiemGarden();
     eng.scene.add(eng.lacKiemGarden.group);
+    if (FLAGS.birds) {
+      eng.lacKiemBirds = new LacKiemBirds();
+      eng.scene.add(eng.lacKiemBirds.mesh);
+    }
     if (FLAGS.ground) {
       eng.lacKiemGround = new LacKiemGround();
       eng.scene.add(eng.lacKiemGround.group);
@@ -766,6 +771,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.kiemTrungArt.group);
     eng.kiemTrungArt.dispose();
     eng.kiemTrungArt = null;
+  }
+  if (eng.lacKiemBirds) {
+    drop(eng.lacKiemBirds.mesh);
+    eng.lacKiemBirds.dispose();
+    eng.lacKiemBirds = null;
   }
   if (eng.lacKiemGround) {
     drop(eng.lacKiemGround.group);

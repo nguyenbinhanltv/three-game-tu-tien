@@ -6,6 +6,7 @@ import {
   cameraNear,
   clamp,
   float,
+  fract,
   length,
   mix,
   normalWorld,
@@ -604,6 +605,19 @@ export function sceneStats(): { tris: number; ponds: number; mist: number; glbPl
 }
 
 /** Làm mềm mép theo độ sâu: 0 khi mặt phẳng chạm đất/vật phía sau, 1 khi cách ≥ `k` m. */
+/**
+ * Dòng chảy theo bản đồ hướng (M4): lấy mẫu nhiễu hai pha lệch nửa chu kỳ rồi trộn theo trọng số tam giác (kỹ thuật "flow map" kinh điển): mẫu trôi theo vector `f`
+ * (m/chu kỳ) mà không bị kéo giãn, chu kỳ 4 s. `f` là trường vector thủ tục (xoáy quanh ao, dọc suối) thay cho ảnh flow map.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const flowNoise = (q: any, f: any) => {
+  const t = time.mul(0.25);
+  const p0 = fract(t);
+  const p1 = fract(t.add(0.5));
+  const w = abs(p0.mul(2).sub(1));
+  return mix(vnoise(q.sub(f.mul(p0))), vnoise(q.sub(f.mul(p1)).add(0.37)), w);
+};
+
 const softDepth = (k: number) =>
   clamp(
     viewportLinearDepth
@@ -702,10 +716,13 @@ export class LacKiemScenes {
   private waterMaterial(kind: 'pond' | 'stream'): THREE.MeshStandardNodeMaterial {
     const mat = new THREE.MeshStandardNodeMaterial({ transparent: true, depthWrite: false, roughness: 0.3, metalness: 0.0 });
     const p = positionWorld;
+    // ao: xoáy chậm quanh tâm (ngược chiều kim đồng hồ), mạnh dần ra bờ
+    const rel = p.xz.sub(vec2(SECT.x + TC_POND.x, SECT.z + TC_POND.z));
+    const swirl = vec2(rel.y.negate(), rel.x).div(length(rel).add(1)).mul(0.9);
     const rip = sin(p.x.mul(2.3).add(time.mul(0.9)))
       .mul(sin(p.z.mul(1.9).sub(time.mul(0.7))))
       .mul(0.5)
-      .add(vnoise(p.xz.mul(1.3).add(time.mul(0.2))).mul(0.5));
+      .add(flowNoise(p.xz.mul(1.3), swirl).mul(0.5));
     if (kind === 'pond') {
       const d = length(uv().sub(0.5)).mul(2);
       const deep = vec3(0.012, 0.055, 0.07);
@@ -725,7 +742,7 @@ export class LacKiemScenes {
         u.y
           .mul(18)
           .sub(time.mul(3.2))
-          .add(vnoise(vec2(u.x.mul(6), u.y.mul(3))).mul(5)),
+          .add(flowNoise(vec2(u.x.mul(6), u.y.mul(3)), vec2(0, 1.4)).mul(5)),
       );
       const foam = smoothstep(0.55, 0.95, flow.mul(0.5).add(0.5)).mul(abs(u.x.sub(0.5)).mul(2).add(0.2));
       mat.colorNode = mix(vec3(0.07, 0.2, 0.2), vec3(0.62, 0.74, 0.74), foam.mul(0.7));
